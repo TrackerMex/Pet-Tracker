@@ -42,6 +42,9 @@ levántalo manualmente cuando la feature lo necesite.
   community; mapa completo de adaptaciones locales en `docs/architecture.md`.
 - Infra local: `docker-compose.yml` (Postgres 17 + LocalStack),
   `.env.example` en raíz, `DATABASE_URL` verificada por `init.sh`.
+- CI: GitHub Actions (`.github/workflows/ci.yml`) corre `init.sh` en cada PR
+  y push a main — verde. Flujo por feature: branch `feature/<id>-<nombre>` +
+  PR que el humano mergea (`docs/conventions.md` §Branches y Pull Requests).
 - Brief maestro copiado a `docs/brief.md`.
 - Próximo paso SDD: `spec_author` escribe la spec de `db-setup-drizzle`
   (#1) y para hasta aprobación humana.
@@ -58,7 +61,11 @@ levántalo manualmente cuando la feature lo necesite.
   LocalStack), posiciones GPS en DynamoDB LocalStack (fiel al plan),
   workers como cron+SQS en el mismo proceso NestJS. `docs/data-model.md`
   reescrito con el modelo del plan 001; brief → `docs/brief.md`.
-  Resultado: verde. Próximo: spec de `db-setup-drizzle`.
+  Después: CI con GitHub Actions (init.sh en cada PR/push, verde en
+  25s) y flujo PR-por-feature documentado en conventions/AGENTS/CLAUDE —
+  el humano aprueba mergeando cada PR.
+  Resultado: verde. Próximo: spec de `db-setup-drizzle` (#1) vía
+  `spec_author` + aprobación humana.
 
 ---
 
