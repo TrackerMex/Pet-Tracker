@@ -1,0 +1,32 @@
+# Infraestructura local de pet-tracker: Postgres + LocalStack.
+# Uso: docker compose up -d
+# Credenciales de desarrollo local únicamente — no son secretos reales.
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: pet-tracker-postgres
+    environment:
+      POSTGRES_USER: pet_tracker
+      POSTGRES_PASSWORD: pet_tracker
+      POSTGRES_DB: pet_tracker
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pet_tracker -d pet_tracker"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  localstack:
+    image: localstack/localstack:latest
+    container_name: pet-tracker-localstack
+    ports:
+      - "4566:4566"
+    volumes:
+      - localstack_data:/var/lib/localstack
+
+volumes:
+  postgres_data:
+  localstack_data:

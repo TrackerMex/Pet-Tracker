@@ -48,6 +48,7 @@ duplica.
 | `.claude/agents/` | Definiciones de subagentes (leader, spec_author, explorer, implementer, reviewer) | Si orquestas trabajo |
 | `.claude/skills/` | Skills reutilizables, un nivel plano (`<track>-<nombre>/SKILL.md`) — ver `.claude/skills/README.md` | Antes de repetir una tarea ya resuelta en otro proyecto |
 | `init.config.sh` | Comandos de build/test/lint específicos de este proyecto | Antes de correr `init.sh` por primera vez |
+| `docker-compose.yml` | Infra local: Postgres + LocalStack (`docker compose up -d`) | Antes de trabajar features con persistencia o AWS |
 | ver `docs/architecture.md` | Dónde vive el código de la aplicación y cómo se organiza | Para implementar |
 
 ---

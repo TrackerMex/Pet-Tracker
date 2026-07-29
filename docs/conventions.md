@@ -135,7 +135,14 @@ commit que la introduce (regla dura de `AGENTS.md` §4). Acceso vía
 `@nestjs/config` (`ConfigService`), nunca `process.env` directo fuera de la
 configuración.
 
+El `.env` vive en la **raíz del repo** (docker-compose e `init.sh` lo leen
+desde ahí). Como la app corre en `backend-pet-tracker/`, el `ConfigModule`
+debe cargarlo con `envFilePath: ['../.env']`.
+
 | Variable | Para qué | Estado |
 |---|---|---|
-| `DATABASE_URL` | Connection string de Postgres (Docker local) | planificada — la introduce la primera feature con persistencia |
-| `PORT` | Puerto HTTP del backend (default 3000) | planificada |
+| `DATABASE_URL` | Connection string de Postgres (Docker local) | en `.env.example` — la app la consume desde la primera feature con persistencia |
+| `PORT` | Puerto HTTP del backend (default 3000) | en `.env.example` |
+| `AWS_ENDPOINT_URL` | Endpoint de LocalStack (`http://localhost:4566`) | en `.env.example` — sin uso todavía |
+| `AWS_REGION` | Región AWS para SDK contra LocalStack | en `.env.example` — sin uso todavía |
+| `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` | Credenciales dummy para LocalStack (valor `test`) | en `.env.example` — sin uso todavía |

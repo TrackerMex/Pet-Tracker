@@ -18,11 +18,12 @@ veterinarias, peso, medicación), ubicaciones GPS y recordatorios de cuidado.
 ## Cómo arrancar
 
 ```bash
+docker compose up -d   # Postgres + LocalStack (solo si la sesión toca DB/AWS)
 ./init.sh
 ```
 
-<!-- Añade aquí cualquier paso manual adicional (levantar servicios, cargar
-     secretos, etc.) que init.sh no cubra. -->
+`init.sh` copia `.env.example` → `.env` si falta. Docker no arranca solo:
+levántalo manualmente cuando la feature lo necesite.
 
 ---
 
@@ -34,8 +35,9 @@ veterinarias, peso, medicación), ubicaciones GPS y recordatorios de cuidado.
   (runner-up DynamoDB rechazado) — ver `docs/data-model.md`.
 - ORM decidido: **Drizzle**. Convenciones (`docs/conventions.md`) y
   estructura de módulo (`docs/architecture.md`) rellenadas.
-- Pendiente: docker-compose (Postgres + LocalStack), `.env.example`,
-  y declarar features en `feature_list.json`.
+- Infra local lista: `docker-compose.yml` (Postgres 17 + LocalStack),
+  `.env.example` en raíz, `DATABASE_URL` verificada por `init.sh`.
+- Pendiente: declarar features en `feature_list.json`.
 
 ---
 
@@ -45,8 +47,9 @@ veterinarias, peso, medicación), ubicaciones GPS y recordatorios de cuidado.
   (`data-postgresql-table-design`, `backend-nestjs-best-practices`). Alcance
   del MVP definido (salud/cuidado + GPS + recordatorios, dueños con cuenta).
   Decisión M0 de engine: Postgres; modelo starter y ERD en
-  `docs/data-model.md`. Resultado: verde. Próximo: conventions.md y
-  estructura de módulo, luego docker-compose + .env.example, luego features.
+  `docs/data-model.md`. ORM: Drizzle; conventions y estructura de módulo
+  rellenadas. Infra local: docker-compose (Postgres 17 + LocalStack) +
+  `.env.example`. Resultado: verde. Próximo: declarar features.
 
 ---
 

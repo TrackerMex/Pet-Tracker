@@ -8,7 +8,8 @@ PROJECT_NAME="pet-tracker"
 REQUIRED_TOOLS=("node" "pnpm")
 
 # Variables de entorno críticas, ej: ("DATABASE_URL" "JWT_SECRET")
-REQUIRED_ENV_VARS=()
+# .env vive en la raíz (docker-compose e init.sh lo consumen desde aquí)
+REQUIRED_ENV_VARS=("DATABASE_URL")
 
 # Comandos del stack. Vacío = saltar con aviso. Rellenar cuando el proyecto
 # tenga manifest. Ejemplo NestJS/pnpm:
