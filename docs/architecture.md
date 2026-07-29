@@ -29,25 +29,41 @@ las capas externas.
 
 ---
 
-## Estructura de módulo en NestJS + TypeScript + pnpm + LocalStack (AWS local)
+## Estructura de módulo en este proyecto (NestJS + Drizzle)
 
-<!-- Rellenar con la convención de carpetas/archivos real de este proyecto,
-     análoga a la de la sección "Estructura de módulo" del framework elegido.
-     Ejemplo de estructura genérica esperada por capa: -->
+Persistencia: **PostgreSQL + Drizzle ORM** (ver `docs/data-model.md` para la
+decisión). El schema Drizzle es infraestructura compartida: vive en
+`src/db/schema/`, un archivo por módulo, porque `drizzle-kit` necesita un punto
+de entrada único para generar migraciones.
 
 ```
-<module>/
-├── domain/
-│   ├── entities/
-│   └── repositories/       ← interfaces, sin implementación
-├── application/
-│   ├── dto/
-│   └── use-cases/
-└── infrastructure/
-    ├── entities/           ← modelos del ORM/DB concreto
-    ├── repositories/       ← implementación de las interfaces de domain
-    └── controller/ o handlers/
+backend-pet-tracker/src/
+├── db/                                  ← infraestructura Drizzle compartida
+│   ├── schema/
+│   │   ├── index.ts                     ← barrel; drizzle.config.ts apunta aquí
+│   │   └── <module>.schema.ts           ← pgTable(...) del módulo
+│   ├── migrations/                      ← generadas por drizzle-kit, versionadas
+│   └── drizzle.module.ts                ← provee pg Pool + cliente drizzle (token DRIZZLE)
+│
+└── modules/<feature>/
+    ├── domain/
+    │   ├── entities/<nombre>.entity.ts        ← clase pura, sin imports de framework/ORM
+    │   ├── errors/<nombre>.errors.ts          ← errores de dominio tipados, sin @nestjs/common
+    │   └── repositories/<nombre>.repository.ts ← interface + token de inyección
+    ├── application/
+    │   ├── dto/                               ← class-validator
+    │   └── use-cases/<accion>-<nombre>.use-case.ts
+    ├── infrastructure/
+    │   ├── repositories/<nombre>.drizzle.repository.ts ← implementa la interface
+    │   └── <nombre>.controller.ts             ← HTTP; mapea errores de dominio → HttpException
+    └── <feature>.module.ts
 ```
+
+Notas:
+- `<module>.schema.ts` es la única pieza del módulo que vive fuera de su
+  carpeta — es el precio de las migraciones centralizadas de drizzle-kit.
+- El repositorio Drizzle convierte filas ↔ entidades de dominio; si la
+  conversión crece, extraer `mappers/`.
 
 ---
 
@@ -63,6 +79,14 @@ tocar la lógica de negocio.
 
 **Por qué casos de uso de responsabilidad única en lugar de servicios genéricos:**
 Cada caso de uso hace una sola cosa. Es más testeable y más fácil de razonar.
+
+**Por qué PostgreSQL + Drizzle:**
+Workload dominantemente relacional; Postgres es el default de menor riesgo y
+cubre GPS append-only y recordatorios con índices normales (decisión completa
+y triggers de desviación en `docs/data-model.md`). Drizzle por ser SQL-first
+y ligero: el schema TypeScript espeja el DDL casi 1:1, drizzle-kit genera
+migraciones versionadas, y el cliente queda confinado a `infrastructure` sin
+codegen pesado ni decoradores en entidades.
 
 ---
 

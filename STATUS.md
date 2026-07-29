@@ -32,9 +32,10 @@ veterinarias, peso, medicación), ubicaciones GPS y recordatorios de cuidado.
 - Scaffold NestJS en `backend-pet-tracker/` — sin features todavía.
 - Decisión de base de datos tomada: **PostgreSQL en Docker local**
   (runner-up DynamoDB rechazado) — ver `docs/data-model.md`.
-- Pendiente: rellenar `docs/conventions.md`, estructura de módulo en
-  `docs/architecture.md`, docker-compose (Postgres + LocalStack),
-  `.env.example`, y declarar features en `feature_list.json`.
+- ORM decidido: **Drizzle**. Convenciones (`docs/conventions.md`) y
+  estructura de módulo (`docs/architecture.md`) rellenadas.
+- Pendiente: docker-compose (Postgres + LocalStack), `.env.example`,
+  y declarar features en `feature_list.json`.
 
 ---
 
