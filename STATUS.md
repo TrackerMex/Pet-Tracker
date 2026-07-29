@@ -1,8 +1,8 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-07-29
-**Features completadas**: 0/0 (`feature_list.json`)
-**Pendientes**: definir features iniciales
+**Features completadas**: 0/7 (`feature_list.json`)
+**Pendientes**: 7 (db-setup-drizzle, auth-registration, auth-login, pets-crud, pet-health-records, pet-locations, pet-reminders)
 **En producción**: no
 
 ---
@@ -37,7 +37,9 @@ levántalo manualmente cuando la feature lo necesite.
   estructura de módulo (`docs/architecture.md`) rellenadas.
 - Infra local lista: `docker-compose.yml` (Postgres 17 + LocalStack),
   `.env.example` en raíz, `DATABASE_URL` verificada por `init.sh`.
-- Pendiente: declarar features en `feature_list.json`.
+- 7 features declaradas en `feature_list.json`, todas `pending` (sin spec).
+- Próximo paso SDD: `spec_author` escribe la spec de `db-setup-drizzle`
+  (#1) y para hasta aprobación humana.
 
 ---
 

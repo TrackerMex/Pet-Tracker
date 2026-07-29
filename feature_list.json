@@ -1,1 +1,123 @@
-[]
+[
+  {
+    "id": 1,
+    "name": "db-setup-drizzle",
+    "status": "pending",
+    "priority": "P1",
+    "description": "Cablear Drizzle ORM al backend: dependencias (drizzle-orm, pg, drizzle-kit), drizzle.config.ts, src/db/ (barrel de schema, drizzle.module.ts con token DRIZZLE), ConfigModule global leyendo ../.env, y endpoint /health que verifica conexión a Postgres. Fundación de toda feature con persistencia.",
+    "acceptance_criteria": [
+      "pnpm run build y tests pasan con las nuevas dependencias",
+      "drizzle-kit generate produce migraciones en src/db/migrations/",
+      "GET /health responde 200 con estado de la conexión a Postgres (Docker levantado)",
+      "La app lee DATABASE_URL desde el .env de la raíz vía ConfigService, nunca process.env directo"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/db/",
+      "backend-pet-tracker/drizzle.config.ts",
+      "backend-pet-tracker/src/app.module.ts",
+      "backend-pet-tracker/package.json"
+    ]
+  },
+  {
+    "id": 2,
+    "name": "auth-registration",
+    "status": "pending",
+    "priority": "P1",
+    "description": "Registro de dueños: tabla users (migración desde docs/data-model.md), POST /auth/register con email único, password hasheado (argon2 o bcrypt), respuesta sin password_hash.",
+    "acceptance_criteria": [
+      "Usuario se registra con email, password y display_name válidos → 201 con id UUIDv7",
+      "Email duplicado → 409",
+      "Password se almacena hasheado, nunca en claro; la respuesta nunca incluye password_hash",
+      "Payload inválido (email malformado, password corto) → 400 vía ValidationPipe"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/modules/auth/",
+      "backend-pet-tracker/src/db/schema/users.schema.ts"
+    ]
+  },
+  {
+    "id": 3,
+    "name": "auth-login",
+    "status": "pending",
+    "priority": "P1",
+    "description": "Login con JWT: POST /auth/login devuelve access token firmado, JwtAuthGuard reutilizable que inyecta el userId autenticado, GET /auth/me como verificación. Introduce JWT_SECRET (documentar en conventions y .env.example).",
+    "acceptance_criteria": [
+      "Credenciales válidas → 200 con access_token JWT",
+      "Credenciales inválidas → 401 sin revelar si el email existe",
+      "Ruta protegida con JwtAuthGuard rechaza sin token o con token inválido → 401",
+      "GET /auth/me con token válido devuelve id, email y display_name del usuario"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/modules/auth/"
+    ]
+  },
+  {
+    "id": 4,
+    "name": "pets-crud",
+    "status": "pending",
+    "priority": "P1",
+    "description": "CRUD de mascotas del dueño autenticado: tabla pets (migración), crear, listar propias, ver detalle, actualizar y borrar. Ownership estricto: nadie ve ni toca mascotas ajenas.",
+    "acceptance_criteria": [
+      "Dueño autenticado crea mascota (name, species, breed?, birth_date?) → 201",
+      "GET /pets lista solo las mascotas del dueño autenticado",
+      "GET/PATCH/DELETE de una mascota de otro dueño → 403 (o 404, decidir en spec)",
+      "DELETE borra la mascota y sus datos dependientes (cascade)",
+      "Sin token → 401 en todos los endpoints"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/modules/pets/",
+      "backend-pet-tracker/src/db/schema/pets.schema.ts"
+    ]
+  },
+  {
+    "id": 5,
+    "name": "pet-health-records",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Historial de salud por mascota: vacunas, citas veterinarias, medicación y registros de peso (4 tablas de docs/data-model.md). Alta y consulta por mascota ordenada por fecha descendente, con ownership vía la mascota.",
+    "acceptance_criteria": [
+      "Dueño registra vacuna, cita, medicación y peso en sus mascotas → 201",
+      "GET por mascota devuelve cada historial ordenado por fecha descendente",
+      "Registros sobre mascota ajena → 403/404 (consistente con pets-crud)",
+      "Peso rechaza valores <= 0; medicación rechaza ends_on < starts_on → 400"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/modules/health-records/",
+      "backend-pet-tracker/src/db/schema/health-records.schema.ts"
+    ]
+  },
+  {
+    "id": 6,
+    "name": "pet-locations",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Ubicaciones GPS append-only por mascota: registrar punto (lat/lng + recorded_at), consultar la última ubicación y un rango temporal. Tabla pet_locations con índice (pet_id, recorded_at DESC).",
+    "acceptance_criteria": [
+      "POST de ubicación con lat/lng válidos → 201; fuera de rango (-90..90 / -180..180) → 400",
+      "GET última ubicación de la mascota → la más reciente por recorded_at",
+      "GET por rango temporal (from/to) devuelve puntos ordenados descendente",
+      "Ownership: ubicaciones de mascota ajena inaccesibles"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/modules/locations/",
+      "backend-pet-tracker/src/db/schema/pet-locations.schema.ts"
+    ]
+  },
+  {
+    "id": 7,
+    "name": "pet-reminders",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Recordatorios de cuidado por mascota: crear (kind: vaccination/medication/appointment/custom), listar pendientes antes de una fecha (índice parcial WHERE completed_at IS NULL), marcar como completado.",
+    "acceptance_criteria": [
+      "Dueño crea recordatorio con kind, title y due_at → 201; kind fuera del CHECK → 400",
+      "GET /reminders?due_before=X devuelve solo pendientes (completed_at IS NULL) del dueño, ordenados por due_at",
+      "Marcar completado fija completed_at; ya no aparece en pendientes",
+      "Ownership vía mascota, consistente con el resto"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/modules/reminders/",
+      "backend-pet-tracker/src/db/schema/reminders.schema.ts"
+    ]
+  }
+]
