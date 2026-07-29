@@ -49,6 +49,7 @@ duplica.
 | `.claude/skills/` | Skills reutilizables, un nivel plano (`<track>-<nombre>/SKILL.md`) — ver `.claude/skills/README.md` | Antes de repetir una tarea ya resuelta en otro proyecto |
 | `init.config.sh` | Comandos de build/test/lint específicos de este proyecto | Antes de correr `init.sh` por primera vez |
 | `docker-compose.yml` | Infra local: Postgres + LocalStack (`docker compose up -d`) | Antes de trabajar features con persistencia o AWS |
+| `.github/workflows/ci.yml` | CI: ejecuta `init.sh` en cada PR y push a main | Si CI falla en un PR |
 | ver `docs/architecture.md` | Dónde vive el código de la aplicación y cómo se organiza | Para implementar |
 
 ---
@@ -77,6 +78,9 @@ implementar. Ningún agente se auto-aprueba la spec.
 ## 4. Reglas duras (no negociables)
 
 - **Una sola feature a la vez.** No mezcles cambios de varias tareas en la misma sesión.
+- **Código de features siempre por PR.** Branch `feature/<id>-<nombre>` + PR
+  que un humano mergea; CI debe estar verde. Solo cambios de harness/docs/specs
+  pueden ir directo a `main` (ver `docs/conventions.md`).
 - **No se implementa sin spec aprobada.** Si la feature está `pending`, primero
   se escribe y aprueba la spec (ver §3).
 - **No declares una tarea `done` sin build verde y tests sin regresión.**
@@ -130,6 +134,10 @@ Antes de terminar:
 4. Mueve el resumen de `progress/current.md` al final de `progress/history.md`.
 5. Vacía `progress/current.md` dejando solo la plantilla base.
 6. No dejes archivos temporales, ni `console.log` de debug, ni TODOs sin contexto.
+7. Si la sesión trabajó una feature: push de la branch `feature/<id>-<nombre>`
+   y abre PR con `gh pr create` (flujo completo en `docs/conventions.md`
+   §Branches y Pull Requests). **Ningún agente mergea** — el humano revisa y
+   mergea en GitHub. Código de features nunca directo a `main`.
 
 ---
 

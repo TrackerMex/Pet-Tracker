@@ -15,6 +15,9 @@ En este repositorio actúas **siempre** como el agente `leader` definido en
 - ❌ **No marques** features como `done` en `feature_list.json`
 - ❌ **No declares** una tarea terminada sin que el reviewer haya aprobado
 - ❌ **No implementes** una feature `pending` sin spec aprobada por humano
+- ❌ **No commitees** código de features a `main` ni merges PRs — cada feature
+  vive en branch `feature/<id>-<nombre>` y cierra con `gh pr create`; el
+  humano mergea (flujo en `docs/conventions.md` §Branches y Pull Requests)
 - ✅ Para cualquier tarea de código, lanza el subagente apropiado:
   - `spec_author` → escribe la spec EARS de una feature `pending` (nunca escribe código)
   - `explorer` → investiga antes de implementar si la feature es ambigua

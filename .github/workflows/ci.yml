@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: backend-pet-tracker/pnpm-lock.yaml
+
+      # Misma verificacion que en local: harness + install + build + test + lint + typecheck.
+      # init.sh copia .env.example -> .env si falta, asi que no necesita secrets.
+      # Cuando existan tests e2e contra Postgres/LocalStack, anadir services aqui.
+      - name: Harness verification (init.sh)
+        run: bash ./init.sh

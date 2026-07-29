@@ -128,6 +128,30 @@ requisitos de `specs/<feature>/requirements.md` que ese commit satisface.
 
 ---
 
+## Branches y Pull Requests
+
+El código de features **nunca** va directo a `main` — siempre por PR, que un
+humano revisa y mergea. CI (`.github/workflows/ci.yml`) ejecuta `init.sh` en
+cada PR y debe estar verde antes del merge.
+
+Flujo por feature (arranca tras el gate humano de la spec, ver `AGENTS.md` §3):
+
+1. Desde `main` actualizado (`git checkout main && git pull`), crear branch
+   `feature/<id>-<nombre>` (ej: `feature/1-db-setup-drizzle`).
+2. Todo el trabajo de la feature se commitea en esa branch: código, tests,
+   specs, `feature_list.json` → `done`, `STATUS.md`, `progress/`.
+3. Con el reviewer aprobado e `init.sh` verde: push y
+   `gh pr create --title "feat(<feature>): <resumen>" --body "..."`.
+   El body enlaza `specs/<feature>/` y lista los R-ids cubiertos.
+4. **PARA.** El humano revisa y mergea el PR en GitHub. Ningún agente mergea.
+5. Tras el merge: `git checkout main && git pull` antes de la siguiente feature.
+
+**Excepción**: cambios que no tocan código de la app (harness, `docs/`,
+`specs/`, `progress/`, `feature_list.json` en fase de spec) pueden ir directo
+a `main`.
+
+---
+
 ## Variables de entorno
 
 Toda variable nueva se añade a esta tabla y a `.env.example` en el mismo
