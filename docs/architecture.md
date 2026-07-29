@@ -81,12 +81,31 @@ tocar la lógica de negocio.
 Cada caso de uso hace una sola cosa. Es más testeable y más fácil de razonar.
 
 **Por qué PostgreSQL + Drizzle:**
-Workload dominantemente relacional; Postgres es el default de menor riesgo y
-cubre GPS append-only y recordatorios con índices normales (decisión completa
-y triggers de desviación en `docs/data-model.md`). Drizzle por ser SQL-first
-y ligero: el schema TypeScript espeja el DDL casi 1:1, drizzle-kit genera
-migraciones versionadas, y el cliente queda confinado a `infrastructure` sin
-codegen pesado ni decoradores en entidades.
+Workload de dominio relacional; Postgres es el default de menor riesgo.
+Drizzle por ser SQL-first y ligero: el schema TypeScript espeja el DDL casi
+1:1, drizzle-kit genera migraciones versionadas, y el cliente queda confinado
+a `infrastructure`. La telemetría GPS va a DynamoDB (ver `docs/data-model.md`).
+
+## Adaptación local de la arquitectura del plan
+
+La arquitectura objetivo es la serverless AWS de `plans/README.md` (API
+Gateway → Lambda NestJS, SQS, EventBridge, DynamoDB, Scheduler). **En local no
+usamos AWS real**: todo corre contra Docker + LocalStack community. Mapa de
+equivalencias:
+
+| Plan (AWS real) | Local | Nota |
+|---|---|---|
+| Lambda NestJS + API Gateway | NestJS como servidor HTTP normal | Mismo monolito modular; serverless-express se añade solo al desplegar |
+| Cognito | **Auth propia** (JWT + hash) | Cognito no existe en LocalStack community. El guard conserva el contrato (`@CurrentUser()`, `@Public()`) para swap futuro |
+| Aurora Serverless v2 | Postgres 17 en Docker | Misma SQL; cambia solo la connection string |
+| DynamoDB `positions` | DynamoDB en LocalStack | Idéntico (endpoint desde `AWS_ENDPOINT_URL`) |
+| SQS / EventBridge | SQS / EventBridge en LocalStack | Idéntico |
+| Lambda poller/processor/engine/notifier | Workers en el mismo proceso NestJS: cron de `@nestjs/schedule` + consumidores SQS (`src/workers/`) | La lógica vive en funciones puras (`src/pipeline/`) — portarla a Lambdas después es empaquetado, no reescritura |
+| EventBridge Scheduler (recordatorios) | No disponible en community — mecanismo local decidido en la spec de `pet-reminders` | Deviación documentada; el plan 008 vuelve a aplicar al desplegar |
+| Expo Push real | `PUSH_ENABLED=false` (log estructurado) | El notifier queda cableado; push real requiere build EAS |
+
+Regla: **ningún código apunta a AWS real** — todo cliente AWS SDK se
+construye con `AWS_ENDPOINT_URL` del env.
 
 ---
 

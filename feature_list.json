@@ -4,31 +4,47 @@
     "name": "db-setup-drizzle",
     "status": "pending",
     "priority": "P1",
-    "description": "Cablear Drizzle ORM al backend: dependencias (drizzle-orm, pg, drizzle-kit), drizzle.config.ts, src/db/ (barrel de schema, drizzle.module.ts con token DRIZZLE), ConfigModule global leyendo ../.env, y endpoint /health que verifica conexión a Postgres. Fundación de toda feature con persistencia.",
+    "description": "Plan 002 (parte datos, local): cablear Drizzle ORM al backend — dependencias (drizzle-orm, pg, drizzle-kit), drizzle.config.ts, src/db/ (barrel de schema, drizzle.module.ts con token DRIZZLE), ConfigModule global leyendo ../.env, endpoint GET /v1/health (público) que verifica conexión a Postgres.",
     "acceptance_criteria": [
       "pnpm run build y tests pasan con las nuevas dependencias",
       "drizzle-kit generate produce migraciones en src/db/migrations/",
-      "GET /health responde 200 con estado de la conexión a Postgres (Docker levantado)",
-      "La app lee DATABASE_URL desde el .env de la raíz vía ConfigService, nunca process.env directo"
+      "GET /v1/health responde 200 con estado de la conexión a Postgres (Docker levantado)",
+      "DATABASE_URL leída desde el .env raíz vía ConfigService, nunca process.env directo"
     ],
     "files_affected": [
       "backend-pet-tracker/src/db/",
       "backend-pet-tracker/drizzle.config.ts",
-      "backend-pet-tracker/src/app.module.ts",
-      "backend-pet-tracker/package.json"
+      "backend-pet-tracker/src/app.module.ts"
     ]
   },
   {
     "id": 2,
+    "name": "localstack-provisioning",
+    "status": "pending",
+    "priority": "P1",
+    "description": "Plan 002 (parte AWS, adaptado a LocalStack): script idempotente que crea los recursos locales — colas SQS positions-raw + notifications (cada una con DLQ), tabla DynamoDB positions (pk/sk + TTL), bucket S3 de media, bus EventBridge pet-tracker. Cliente AWS SDK v3 configurado contra AWS_ENDPOINT_URL. Documentar en STATUS.md cómo arrancar.",
+    "acceptance_criteria": [
+      "Script (pnpm run provision:local) crea todos los recursos contra LocalStack y es idempotente (segunda corrida no falla)",
+      "aws --endpoint-url=http://localhost:4566 sqs list-queues muestra las 4 colas",
+      "Tabla positions existe con TTL habilitado sobre expires_at",
+      "Ningún recurso apunta a AWS real: endpoint siempre desde env"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/scripts/provision-local.ts",
+      "backend-pet-tracker/src/aws/"
+    ]
+  },
+  {
+    "id": 3,
     "name": "auth-registration",
     "status": "pending",
     "priority": "P1",
-    "description": "Registro de dueños: tabla users (migración desde docs/data-model.md), POST /auth/register con email único, password hasheado (argon2 o bcrypt), respuesta sin password_hash.",
+    "description": "Plan 003 adaptado a auth propia (sin Cognito en local): tabla users (modelo docs/data-model.md), POST /v1/auth/register con email único, password hasheado (argon2/bcrypt — decidir en spec), first_name, last_name, timezone. Respuesta nunca expone password_hash.",
     "acceptance_criteria": [
-      "Usuario se registra con email, password y display_name válidos → 201 con id UUIDv7",
-      "Email duplicado → 409",
-      "Password se almacena hasheado, nunca en claro; la respuesta nunca incluye password_hash",
-      "Payload inválido (email malformado, password corto) → 400 vía ValidationPipe"
+      "Registro válido → 201 con id UUIDv7; fila en users con password hasheado",
+      "Email duplicado → 409; payload inválido → 400 vía ValidationPipe",
+      "audit_log registra 'user.register'",
+      "La respuesta y todo DTO de salida omiten password_hash"
     ],
     "files_affected": [
       "backend-pet-tracker/src/modules/auth/",
@@ -36,33 +52,34 @@
     ]
   },
   {
-    "id": 3,
-    "name": "auth-login",
+    "id": 4,
+    "name": "auth-login-me",
     "status": "pending",
     "priority": "P1",
-    "description": "Login con JWT: POST /auth/login devuelve access token firmado, JwtAuthGuard reutilizable que inyecta el userId autenticado, GET /auth/me como verificación. Introduce JWT_SECRET (documentar en conventions y .env.example).",
+    "description": "Plan 003 (guard + perfil): POST /v1/auth/login → JWT firmado (introduce JWT_SECRET en .env.example y conventions); AuthGuard global con @Public() y @CurrentUser() — mismo contrato que el plan para swap futuro a Cognito; GET /v1/me y PATCH /v1/me (firstName, lastName, phone, country, timezone validada contra Intl.supportedValuesOf).",
     "acceptance_criteria": [
-      "Credenciales válidas → 200 con access_token JWT",
-      "Credenciales inválidas → 401 sin revelar si el email existe",
-      "Ruta protegida con JwtAuthGuard rechaza sin token o con token inválido → 401",
-      "GET /auth/me con token válido devuelve id, email y display_name del usuario"
+      "Credenciales válidas → 200 con access_token; inválidas → 401 sin revelar si el email existe",
+      "Guard global: ruta sin token → 401; /v1/health sigue público vía @Public()",
+      "GET /v1/me devuelve el perfil; PATCH parcial actualiza y audita 'user.update'",
+      "timezone inválida → 400"
     ],
     "files_affected": [
-      "backend-pet-tracker/src/modules/auth/"
+      "backend-pet-tracker/src/modules/auth/",
+      "backend-pet-tracker/src/modules/users/"
     ]
   },
   {
-    "id": 4,
-    "name": "pets-crud",
+    "id": 5,
+    "name": "pets-crud-permissions",
     "status": "pending",
     "priority": "P1",
-    "description": "CRUD de mascotas del dueño autenticado: tabla pets (migración), crear, listar propias, ver detalle, actualizar y borrar. Ownership estricto: nadie ve ni toca mascotas ajenas.",
+    "description": "Plan 004 (núcleo): tablas pets, pet_users, audit_log; PetAccessGuard + @RequirePetRole — sin membresía en pet_users → 404 (no revelar existencia, brief §4); CRUD /v1/pets con el DTO del brief §7 (species dog|cat, birthDate o approxAgeMonths, etc.), creador como owner en transacción, edad calculada, DELETE cascade. Es el mecanismo de autorización de TODAS las features posteriores.",
     "acceptance_criteria": [
-      "Dueño autenticado crea mascota (name, species, breed?, birth_date?) → 201",
-      "GET /pets lista solo las mascotas del dueño autenticado",
-      "GET/PATCH/DELETE de una mascota de otro dueño → 403 (o 404, decidir en spec)",
-      "DELETE borra la mascota y sus datos dependientes (cascade)",
-      "Sin token → 401 en todos los endpoints"
+      "POST /v1/pets → 201 con transacción pets + pet_users(owner) + audit",
+      "GET /v1/pets lista solo mascotas donde soy miembro, con mi rol",
+      "Usuario B sobre mascota de A → 404 en GET/PATCH/DELETE (IDOR bloqueado, test e2e obligatorio)",
+      "Rol insuficiente con @RequirePetRole('owner') → 403",
+      "GET /v1/pets/:petId devuelve el shape completo del perfil con device/nextVaccine/nextReminder/activitySummary en null (los rellenan features posteriores sin cambiar contrato)"
     ],
     "files_affected": [
       "backend-pet-tracker/src/modules/pets/",
@@ -70,54 +87,226 @@
     ]
   },
   {
-    "id": 5,
-    "name": "pet-health-records",
-    "status": "pending",
-    "priority": "P2",
-    "description": "Historial de salud por mascota: vacunas, citas veterinarias, medicación y registros de peso (4 tablas de docs/data-model.md). Alta y consulta por mascota ordenada por fecha descendente, con ownership vía la mascota.",
-    "acceptance_criteria": [
-      "Dueño registra vacuna, cita, medicación y peso en sus mascotas → 201",
-      "GET por mascota devuelve cada historial ordenado por fecha descendente",
-      "Registros sobre mascota ajena → 403/404 (consistente con pets-crud)",
-      "Peso rechaza valores <= 0; medicación rechaza ends_on < starts_on → 400"
-    ],
-    "files_affected": [
-      "backend-pet-tracker/src/modules/health-records/",
-      "backend-pet-tracker/src/db/schema/health-records.schema.ts"
-    ]
-  },
-  {
     "id": 6,
-    "name": "pet-locations",
+    "name": "pet-photos-s3",
     "status": "pending",
     "priority": "P2",
-    "description": "Ubicaciones GPS append-only por mascota: registrar punto (lat/lng + recorded_at), consultar la última ubicación y un rango temporal. Tabla pet_locations con índice (pet_id, recorded_at DESC).",
+    "description": "Plan 004 (fotos): POST /v1/pets/:petId/photo-upload-url {contentType} → URL PUT prefirmada (10 min) contra el bucket S3 de LocalStack, key pets/<petId>/photo-<ts>; lecturas devuelven URL GET prefirmada 1 h. Solo image/jpeg|png|webp.",
     "acceptance_criteria": [
-      "POST de ubicación con lat/lng válidos → 201; fuera de rango (-90..90 / -180..180) → 400",
-      "GET última ubicación de la mascota → la más reciente por recorded_at",
-      "GET por rango temporal (from/to) devuelve puntos ordenados descendente",
-      "Ownership: ubicaciones de mascota ajena inaccesibles"
+      "Pedir URL, subir con PUT y leer photoUrl descargable — e2e contra LocalStack",
+      "contentType no imagen → 400",
+      "Bucket jamás público; solo URLs prefirmadas",
+      "Mascota ajena → 404 (PetAccessGuard)"
     ],
     "files_affected": [
-      "backend-pet-tracker/src/modules/locations/",
-      "backend-pet-tracker/src/db/schema/pet-locations.schema.ts"
+      "backend-pet-tracker/src/modules/media/"
     ]
   },
   {
     "id": 7,
+    "name": "devices-claim",
+    "status": "pending",
+    "priority": "P1",
+    "description": "Plan 005 (asociación): tablas devices y pet_devices (índice único parcial: un collar activo por mascota); seed de 3 dispositivos simulados (SIM-001..003, ACT-001..003); POST /v1/devices/claim validando existencia (404), disponibilidad (409) y unicidad; GET/DELETE /v1/pets/:petId/device.",
+    "acceptance_criteria": [
+      "Claim con ACT-001 → 201; segundo claim del mismo device → 409; sobre mascota ajena → 404",
+      "DELETE cierra released_at y libera el device (status available)",
+      "Seed idempotente (pnpm run seed:devices)",
+      "audit_log registra device.claim / device.release"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/modules/devices/",
+      "backend-pet-tracker/src/db/schema/devices.schema.ts",
+      "backend-pet-tracker/scripts/seed-devices.ts"
+    ]
+  },
+  {
+    "id": 8,
+    "name": "wialon-ingestion-pipeline",
+    "status": "pending",
+    "priority": "P1",
+    "description": "Plan 005 (pipeline, adaptado a local): interfaz WialonClient + FakeWialonClient determinista (SIM_MODE, paseo realista con ruido, saltos y duplicados) + WialonHttpClient real; funciones puras de validación (src/pipeline/: rango, duplicados, suspect_jump >60km/h, low_accuracy, haversine); poller como cron de @nestjs/schedule (sustituye Lambda+Scheduler en local) → SQS positions-raw (LocalStack) → consumidor que normaliza, escribe DynamoDB positions, actualiza devices y pets.last_position, y emite position.updated / battery.low al bus EventBridge.",
+    "acceptance_criteria": [
+      "Fake determinista: misma semilla+intervalo → mismas posiciones (test)",
+      "Pipeline puro testeado con fixture walk.json: descarta (0,0) y duplicados, marca suspect_jump, conserva orden",
+      "Cadena e2e local: claim ACT-001 + SIM_MODE=true → en ~2 min hay items en DynamoDB (query PET#<petId>) y pets.last_position actualizado",
+      "Consumidor idempotente (PutItem por sk); mensajes malformados van a DLQ, DLQ en 0 en operación normal",
+      "Eventos position.updated (detail.version=1) y battery.low visibles en el bus"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/integrations/wialon/",
+      "backend-pet-tracker/src/pipeline/",
+      "backend-pet-tracker/src/workers/"
+    ]
+  },
+  {
+    "id": 9,
+    "name": "positions-api",
+    "status": "pending",
+    "priority": "P1",
+    "description": "Plan 005 (lectura): GET /v1/pets/:petId/positions/last desde pets.last_position (+ staleSeconds); GET /v1/pets/:petId/positions?from&to&cursor con Query a DynamoDB (máx 24 h por página, cursor base64, excluye low_accuracy salvo ?includeSuspect=true).",
+    "acceptance_criteria": [
+      "last → 200 con lat/lng frescos del simulador (ts < 2 min)",
+      "history de un rango devuelve lista ordenada con cursor funcional",
+      "Rango > 24 h → 400; mascota ajena → 404",
+      "low_accuracy excluidas por defecto, incluidas con flag"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/modules/positions/"
+    ]
+  },
+  {
+    "id": 10,
+    "name": "trips-activity",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Plan 006: tabla activity_daily; funciones puras groupTrips (umbrales en pipeline/constants.ts: movimiento >1.8 km/h, cierre 10 min, descartar <5 min o <100 m, excluir suspect_jump) y computeDailyActivity (tz del owner); agregador nocturno como cron local; GET /v1/pets/:petId/trips?date (+/trips/:n con path) y GET /v1/pets/:petId/activity/daily?from&to (máx 31 días, hoy al vuelo, weekComparison vs 7 días previos).",
+    "acceptance_criteria": [
+      "Fixtures: walk.json → ≥1 paseo; reposo total → 0; salto absurdo excluido de distancia; gap 20 min parte paseos",
+      "Caso timezone explícito: posición 23:50 America/Mexico_City cae en el día local correcto",
+      "Agregador upsertea filas en activity_daily; hoy se computa al vuelo sin persistir",
+      "time_away_minutes queda NULL (lo llena la feature de geocercas) y está documentado"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/pipeline/",
+      "backend-pet-tracker/src/modules/positions/",
+      "backend-pet-tracker/src/db/schema/activity.schema.ts"
+    ]
+  },
+  {
+    "id": 11,
+    "name": "geofences-crud",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Plan 007 (paso 1-2): tabla geofences (geometry jsonb, geofence_state); CRUD /v1/pets/:petId/geofences (MVP type=safe_circle, radiusM 20-2000, máx 5 por mascota); evaluación pura en pipeline/geofence-eval.ts: isInside (círculo haversine + polígono ray-casting), histéresis anti-parpadeo (salida radio×1.1 y accuracy ≤50 m; entrada radio×0.9; low_accuracy no cambia estado), máquina de estados evaluate().",
+    "acceptance_criteria": [
+      "CRUD con validaciones: radio 10 → 400; sexta geocerca → 400; mascota ajena → 404",
+      "Tests de evaluate: dentro→fuera emite exit; fuera→fuera no re-emite; borde radio×1.05 no dispara; low_accuracy ignorado; unknown inicial silencioso; polígono dentro/fuera",
+      "geofence-eval.ts sin I/O (100% puro)"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/modules/geofences/",
+      "backend-pet-tracker/src/pipeline/geofence-eval.ts",
+      "backend-pet-tracker/src/db/schema/geofences.schema.ts"
+    ]
+  },
+  {
+    "id": 12,
+    "name": "alerts-engine",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Plan 007 (paso 3): tabla alert_events con índice único parcial anti-spam (un open por pet+type+geofence, brief §12); worker que consume position.updated y battery.low del bus: evalúa geocercas, exit → INSERT alert_events (si el índice rechaza, NO notifica) + mensaje a SQS notifications; enter → cierra open y notifica regreso; battery.low mismo flujo, se cierra con batería ≥30. Actualiza geofence_state.",
+    "acceptance_criteria": [
+      "Anti-spam probado: exit/exit/enter → exactamente 1 open, 1 resolved",
+      "Salida simulada (geocerca lejos del paseo del fake) → en ≤2 min fila open y mensaje en la cola",
+      "Regreso cierra el evento (status closed, closed_at)",
+      "Worker idempotente ante redelivery del mismo evento"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/workers/",
+      "backend-pet-tracker/src/db/schema/alerts.schema.ts"
+    ]
+  },
+  {
+    "id": 13,
+    "name": "alerts-center-notifier",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Plan 007 (paso 4): tabla push_tokens + POST/DELETE /v1/me/push-tokens; notifier que consume SQS notifications → resuelve push_tokens de los miembros de la mascota → en local PUSH_ENABLED=false: log estructurado {wouldSend} (expo-server-sdk queda cableado para cuando haya build real, tokens DeviceNotRegistered se borran); centro de alertas: GET /v1/alerts?status= (paginado, todas mis mascotas) y POST /v1/alerts/:id/ack. Rellena time_away_minutes en el agregador (aproximación desde alert_events del día).",
+    "acceptance_criteria": [
+      "Con PUSH_ENABLED=false el log muestra el payload correcto tras una salida simulada",
+      "GET /v1/alerts muestra la alerta open; ack → 200 y status acked (ack ≠ closed)",
+      "Upsert de push token idempotente; DELETE elimina",
+      "Sin tokens registrados el notifier no falla (log y fin)"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/workers/",
+      "backend-pet-tracker/src/modules/alerts/",
+      "backend-pet-tracker/src/modules/users/"
+    ]
+  },
+  {
+    "id": 14,
+    "name": "health-vaccines",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Plan 008 (paso 1-2): tablas vaccine_catalog y pet_vaccines; seed del catálogo (perro: Rabia, Polivalente, Leptospirosis, Tos de perreras; gato: Triple felina, Leucemia, Rabia — schemes del plan); GET /v1/vaccine-catalog?species=; CRUD /v1/pets/:petId/vaccines con next_dose_at calculada desde el scheme si viene catalogId sin override. Rellena nextVaccine del perfil de mascota.",
+    "acceptance_criteria": [
+      "Catálogo seedeado: dog → 4, cat → 3 (idempotente)",
+      "Alta con catalogId → next_dose_at = applied_at + boosterMonths; override manual respetado",
+      "GET orden desc; PATCH/DELETE con guard; mascota ajena → 404",
+      "Perfil de mascota muestra nextVaccine (mínima next_dose_at futura)"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/modules/health/",
+      "backend-pet-tracker/src/db/schema/health.schema.ts",
+      "backend-pet-tracker/scripts/seed-vaccines.ts"
+    ]
+  },
+  {
+    "id": 15,
+    "name": "health-weights",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Plan 008 (peso): tabla weights; POST /v1/pets/:petId/weights {weightKg, measuredAt, bodyCondition?} → insert + actualizar pets.current_weight_kg si es la medición más reciente; GET .../weights?limit= con variation (delta vs medición anterior).",
+    "acceptance_criteria": [
+      "Variación correcta con 0/1/2 mediciones (tests)",
+      "current_weight_kg solo se actualiza si la medición es la más reciente",
+      "weightKg <= 0 → 400; bodyCondition fuera de 1-9 → 400",
+      "Mascota ajena → 404"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/modules/health/"
+    ]
+  },
+  {
+    "id": 16,
     "name": "pet-reminders",
     "status": "pending",
     "priority": "P2",
-    "description": "Recordatorios de cuidado por mascota: crear (kind: vaccination/medication/appointment/custom), listar pendientes antes de una fecha (índice parcial WHERE completed_at IS NULL), marcar como completado.",
+    "description": "Plan 008 (paso 3, adaptado a local): tabla reminders; POST /v1/pets/:petId/reminders {type, title, dueAt, advanceMinutes=60} (dueAt futuro); PATCH /v1/reminders/:id (reprogramar/cancelar; autorización vía reminder.pet_id → 404 sin membresía). Programación local: EventBridge Scheduler no existe en LocalStack community — la spec decide el mecanismo (cron local que encola vencidos a SQS notifications es el candidato; el notifier marca status=sent). Documentar la deviación del plan y el camino de vuelta a Scheduler en deploy real.",
     "acceptance_criteria": [
-      "Dueño crea recordatorio con kind, title y due_at → 201; kind fuera del CHECK → 400",
-      "GET /reminders?due_before=X devuelve solo pendientes (completed_at IS NULL) del dueño, ordenados por due_at",
-      "Marcar completado fija completed_at; ya no aparece en pendientes",
-      "Ownership vía mascota, consistente con el resto"
+      "Crear recordatorio con dueAt = now+3 min → mensaje en la cola notifications ~2 min después (advance 1 min) y status pasa a sent al procesarse",
+      "Cancelar → status cancelled y no se envía",
+      "Reprogramar reemplaza la programación anterior sin duplicar envíos",
+      "PATCH sin membresía sobre la mascota del reminder → 404"
     ],
     "files_affected": [
       "backend-pet-tracker/src/modules/reminders/",
       "backend-pet-tracker/src/db/schema/reminders.schema.ts"
+    ]
+  },
+  {
+    "id": 17,
+    "name": "nutrition-profile-engine",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Plan 009 (paso 1-2): tablas nutrition_profiles y nutrition_plans; PUT/GET /v1/pets/:petId/nutrition-profile (kcalPer100g 80-600, defaults dry 350 / wet 100); motor determinístico puro nutrition-engine.ts: RER = 70×peso^0.75 (target si BCS≥7), tabla de factores MER del plan (cachorro/joven/adulto×esterilizado×actividad), porción diaria (múltiplo de 5 g), comidas por edad, horarios 07:00-20:00, warnings (weight_loss_plan, underweight_vet, chronic_disease_vet, check_food_allergens, too_young_vet), objective. POST .../nutrition-plan/generate con inputs_hash idempotente (mismo hash → mismo plan); GET .../nutrition-plan. Sin IA todavía (ai_explanation null).",
+    "acceptance_criteria": [
+      "Valores exactos del plan en tests: perro 20 kg esterilizado medium dry350 → ~1059 kcal / 305 g / 2 comidas; gato 4 kg low → ~218 kcal / 60 g",
+      "Perfil ausente → 422 NUTRITION_PROFILE_REQUIRED",
+      "Mismo input → mismo plan (hash hit, sin fila nueva)",
+      "kcalPer100g 900 → 400; los factores MER son constantes nombradas, no números mágicos dispersos"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/modules/nutrition/",
+      "backend-pet-tracker/src/db/schema/nutrition.schema.ts"
+    ]
+  },
+  {
+    "id": 18,
+    "name": "nutrition-ai-explainer",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Plan 009 (paso 3): ai-explainer.ts — si OPENAI_ENABLED=true y hay clave: SDK openai (modelo desde env OPENAI_MODEL, jamás hardcodeado), timeout 15 s, system prompt del plan (español cálido, orientativo, máx 180 palabras); resultado → ai_explanation. Cualquier fallo/clave ausente → ai_explanation=null y 200 igualmente (la IA nunca produce 5xx). Introduce OPENAI_ENABLED, OPENAI_API_KEY, OPENAI_MODEL en .env.example y conventions. La IA solo se llama desde backend (brief §9/§19).",
+    "acceptance_criteria": [
+      "Con OPENAI_ENABLED=false → plan 200 con aiExplanation null y warning en log",
+      "SDK mockeado: éxito guarda texto; timeout no rompe el endpoint",
+      "Hash hit no re-llama a la IA",
+      "grep -rn 'gpt-' src/ → cero literales de modelo en código"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/modules/nutrition/"
     ]
   }
 ]

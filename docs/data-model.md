@@ -1,208 +1,91 @@
 # Data model — pet-tracker
 
-> Decisión M0 (selección de engine) tomada el 2026-07-29 vía `/claude-db:design`.
-> Modelo starter de referencia — cada feature formalizará su parte en su spec
-> y la primera migración real saldrá de ahí. No es una migración ejecutable.
+> Fuente: modelo del plan 001 (`plans/001-paquete-diseno-aprobacion.md` §Paso 4),
+> derivado del brief (`docs/brief.md` §4, §7, §15–17), **adaptado a desarrollo
+> 100% local** (decisiones 2026-07-29):
+>
+> - **Dominio: PostgreSQL 17** en Docker (el plan asume Aurora Serverless v2;
+>   misma SQL, distinta operación — el código no cambia).
+> - **Telemetría GPS: DynamoDB en LocalStack** (tabla `positions`), fiel al plan.
+> - **Auth propia (JWT + hash de password)** en vez de Cognito: LocalStack
+>   community no emula Cognito. `users` cambia `cognito_sub` por
+>   `password_hash`. El guard conserva el contrato del plan (`@CurrentUser()`),
+>   así el swap a Cognito en un deploy real solo toca el módulo auth.
+>
+> Referencia viva: cada feature formaliza su slice en `specs/<feature>/` y la
+> migración Drizzle correspondiente. Este documento se actualiza cuando una
+> migración real agrega o cambia tablas.
 
-## Engine: PostgreSQL (contenedor Docker local)
-
-**Por qué**: el workload es dominantemente relacional — usuarios → mascotas →
-historial de salud consultado por mascota, por fecha y por tipo. Postgres es el
-default aburrido que cubre además los patrones secundarios sin añadir stores:
-
-- Ubicaciones GPS (append-only, consulta por rango temporal): tabla normal con
-  índice `(pet_id, recorded_at DESC)` sobra a esta escala.
-- Recordatorios pendientes: índice parcial `WHERE completed_at IS NULL`.
-
-**Restricción local**: corre como contenedor Docker normal junto a LocalStack.
-RDS emulado requiere LocalStack Pro (pago) — no lo necesitamos: la app conecta
-por connection string, local hoy, RDS/managed real si algún día se despliega.
-
-**Runner-up: DynamoDB en LocalStack** (community, gratis). Trade-off que
-rechazamos: modelado single-table por access patterns fijos encaja mal con el
-historial de salud (consultas ad-hoc por fecha/tipo/mascota) y castiga la
-iteración del MVP. Ganaría si el proyecto pivotara a serverless AWS-native
-(Lambda-first) con patrones de acceso cerrados.
-
-**Triggers de desviación** (qué cambiaría la decisión):
-- Ingesta GPS alta sostenida (IoT real, millones de filas) → extensión
-  TimescaleDB sobre el mismo Postgres (aditivo, no rewrite).
-- Consultas geoespaciales (radio, cercanía) → extensión PostGIS (aditivo).
-- Pivote a Lambda-first serverless → reevaluar DynamoDB.
-
-## ERD
+## ERD (dominio Postgres)
 
 ```mermaid
 erDiagram
-  users ||--o{ pets : "owns"
-  pets ||--o{ vaccinations : "has"
-  pets ||--o{ vet_appointments : "has"
-  pets ||--o{ medications : "has"
-  pets ||--o{ weight_entries : "has"
-  pets ||--o{ pet_locations : "has"
+  users ||--o{ pet_users : "member"
+  pets ||--o{ pet_users : "member"
+  users ||--o{ push_tokens : "has"
+  pets ||--o{ pet_devices : "wears"
+  devices ||--o{ pet_devices : "assigned"
+  pets ||--o{ geofences : "has"
+  pets ||--o{ alert_events : "has"
+  geofences ||--o{ alert_events : "triggers"
+  pets ||--o{ pet_vaccines : "has"
+  vaccine_catalog ||--o{ pet_vaccines : "from"
+  pets ||--o{ weights : "has"
   pets ||--o{ reminders : "has"
-
-  users {
-    uuid id PK
-    text email UK
-    text password_hash
-    text display_name
-    timestamptz created_at
-  }
-  pets {
-    uuid id PK
-    uuid owner_id FK
-    text name
-    text species
-    text breed
-    date birth_date
-    timestamptz created_at
-  }
-  vaccinations {
-    uuid id PK
-    uuid pet_id FK
-    text vaccine_name
-    date administered_on
-    date next_due_on
-    text notes
-  }
-  vet_appointments {
-    uuid id PK
-    uuid pet_id FK
-    timestamptz scheduled_at
-    text reason
-    text notes
-  }
-  medications {
-    uuid id PK
-    uuid pet_id FK
-    text name
-    text dose
-    text schedule
-    date starts_on
-    date ends_on
-  }
-  weight_entries {
-    bigint id PK
-    uuid pet_id FK
-    timestamptz measured_at
-    numeric weight_kg
-  }
-  pet_locations {
-    bigint id PK
-    uuid pet_id FK
-    timestamptz recorded_at
-    double latitude
-    double longitude
-  }
-  reminders {
-    uuid id PK
-    uuid pet_id FK
-    text kind
-    text title
-    timestamptz due_at
-    timestamptz completed_at
-  }
+  pets ||--|| nutrition_profiles : "has"
+  pets ||--o{ nutrition_plans : "has"
+  pets ||--o{ activity_daily : "has"
 ```
 
-## Decisiones de diseño (y qué regla de auditoría satisfacen)
+## Catálogo de tablas (PostgreSQL)
 
-| Decisión | Regla |
+Convención: snake_case, PK `uuid` (UUIDv7 generado en app) salvo indicado,
+`timestamptz` para instantes, `date` para fechas de calendario.
+
+| Tabla | Columnas clave | Notas |
+|---|---|---|
+| `users` | id PK, email UNIQUE NOT NULL, **password_hash NOT NULL**, first_name, last_name, phone, country, timezone DEFAULT 'UTC', created_at, updated_at | Adaptación local: sin `cognito_sub` |
+| `pets` | id PK, name, species CHECK ('dog','cat'), breed, birth_date, approx_age_months, sex, current_weight_kg numeric(5,2), size, color, sterilized, microchip, photo_key, lost_mode DEFAULT false, last_position jsonb, last_communication_at | `last_position` = caché desnormalizada; la serie vive en DynamoDB |
+| `pet_users` | PK (pet_id, user_id), role CHECK ('owner','family','walker','vet'), permissions jsonb, status DEFAULT 'active' | **Toda autorización pasa por aquí** (brief §4) — `PetAccessGuard` |
+| `devices` | id PK, esn UNIQUE, imei UNIQUE, serial_number, activation_code, wialon_unit_id UNIQUE, model, status CHECK ('available','assigned','inactive'), battery_pct, connectivity, last_message_at, ingest_watermark, is_simulated | Collares; seed simulado SIM-001..003 |
+| `pet_devices` | id PK, pet_id FK, device_id FK, assigned_at, released_at NULL | Índice único parcial `(device_id) WHERE released_at IS NULL` — un collar activo por mascota |
+| `geofences` | id PK, pet_id FK CASCADE, name, type CHECK ('safe_circle','safe_polygon','restricted','home','park','vet','daycare'), geometry jsonb, active DEFAULT true, geofence_state jsonb | `geofence_state` = `{state, updatedAt}` del motor (plan 007) |
+| `alert_events` | id PK, pet_id FK, geofence_id FK NULL, type, status CHECK ('open','acked','closed'), payload jsonb, opened_at, acked_at, closed_at | Índice único parcial anti-spam: `(pet_id, type, coalesce(geofence_id, uuid_nil)) WHERE status='open'` (brief §12) |
+| `vaccine_catalog` | id PK, species, name, scheme jsonb, UNIQUE(species,name) | Esquema orientativo de dosis/refuerzos en meses |
+| `pet_vaccines` | id PK, pet_id FK, catalog_id FK NULL, name, applied_at date, next_dose_at date NULL, vet_name, clinic, notes, document_key, created_by FK | `name` libre a propósito (lectura IA post-MVP) |
+| `weights` | id PK, pet_id FK, weight_kg numeric(5,2), body_condition CHECK (1..9), measured_at date, created_by FK | Actualiza `pets.current_weight_kg` si es la más reciente |
+| `reminders` | id PK, pet_id FK, type ('vaccine','deworming','medication','appointment','weight','food','custom'), title, due_at, advance_minutes DEFAULT 60, channel DEFAULT 'push', status ('scheduled','sent','cancelled'), schedule_name NULL, created_by FK | Programación local: ver deviación en architecture.md (EventBridge Scheduler no está en LocalStack community) |
+| `nutrition_profiles` | pet_id PK FK, activity_level ('low','medium','high'), body_condition, target_weight_kg, food_type, kcal_per_100g numeric(6,1), allergies jsonb, diseases jsonb, updated_at | 1:1 con mascota |
+| `nutrition_plans` | id PK, pet_id FK, rer_kcal, mer_kcal, daily_grams, meals_per_day, meal_times jsonb, objective, warnings jsonb, ai_explanation NULL, inputs_hash, generated_at | `inputs_hash` = idempotencia (no re-llamar a la IA sin cambios) |
+| `push_tokens` | id PK, user_id FK CASCADE, expo_token UNIQUE, platform, created_at, last_seen_at | En local el notifier corre `PUSH_ENABLED=false` (solo log) |
+| `audit_log` | id bigint identity PK, user_id NULL, action, entity, entity_id, meta jsonb, at DEFAULT now() | Brief §19 |
+| `activity_daily` | PK (pet_id, date), distance_m, active_minutes, rest_minutes, walk_count, avg_walk_minutes, first_walk_at, last_walk_at, time_away_minutes NULL, computed_at | KPIs diarios (plan 006); `time_away_minutes` se llena con geocercas (007) |
+
+Índices además de los implícitos: toda columna FK lleva índice manual
+(Postgres no indexa FKs), compuestos `(pet_id, <fecha> DESC)` en historial,
+parcial `reminders(due_at) WHERE status='scheduled'`.
+
+## DynamoDB (LocalStack) — telemetría
+
+**Tabla `positions`** — acceso siempre por mascota + rango temporal; volumen
+(~2 880 posiciones/día/mascota a 30 s) incompatible con el Postgres barato.
+
+| Atributo | Valor |
 |---|---|
-| PK `UUID` (UUIDv7 generado en app) en entidades expuestas por API — opacidad, sin fragmentación de índice; `BIGINT IDENTITY` en tablas append-only internas (`weight_entries`, `pet_locations`) | M2 llaves |
-| `TIMESTAMPTZ` para instantes, `DATE` para fechas de calendario (vacunas, medicación) | M4 tipos |
-| `NUMERIC(5,2)` para peso — nunca float para medidas exactas | M4 tipos |
-| `DOUBLE PRECISION` para lat/lng con `CHECK` de rango; PostGIS solo si llegan queries geo | M4 tipos |
-| FKs con `ON DELETE CASCADE` — borrar mascota/usuario arrastra sus datos (simplifica derecho al olvido) | M3 integridad |
-| Índice manual en toda columna FK — Postgres no indexa FKs solo | M11 indexing |
-| Compuestos `(pet_id, <fecha> DESC)` en historial — patrón "historial de mascota X ordenado" | M11 indexing |
-| Índice parcial `reminders(due_at) WHERE completed_at IS NULL` — query dominante es "pendientes antes de X" | M11 indexing |
-| Tablas separadas por tipo de registro de salud (no tabla única + jsonb) — campos distintos, constraints tipados | M1 normalización, M4 |
-| `kind` con `CHECK IN (...)` en vez de enum nativo — evolucionar sin `ALTER TYPE` | M4 tipos |
-| `UNIQUE(email)`, `NOT NULL` en todo lo semánticamente requerido, `CHECK` de dominio (peso > 0, rango lat/lng, periodo medicación) | M5 constraints |
+| PK `pk` | `PET#<petId>` |
+| SK `sk` | epoch ms del dispositivo (number) |
+| Atributos | lat, lng, speed_kmh, course, altitude, sats, accuracy_m, battery_pct, device_ts, received_ts, processed_ts, flags (['suspect_jump','low_accuracy',…]) |
+| TTL | `expires_at` = device_ts + 90 días |
+| Idempotencia | PutItem sobre el mismo `sk` sobrescribe — reintentos seguros |
 
-## DDL de referencia
+`ws_connections` (plan 010, post-MVP) queda fuera del alcance actual.
 
-```sql
-CREATE TABLE users (
-    id            UUID PRIMARY KEY,                     -- UUIDv7, app-generated
-    email         TEXT NOT NULL UNIQUE,
-    password_hash TEXT NOT NULL,
-    display_name  TEXT NOT NULL,
-    created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
-);
+## Decisiones y triggers de desviación
 
-CREATE TABLE pets (
-    id         UUID PRIMARY KEY,
-    owner_id   UUID NOT NULL REFERENCES users (id) ON DELETE CASCADE,
-    name       TEXT NOT NULL,
-    species    TEXT NOT NULL,
-    breed      TEXT,
-    birth_date DATE,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-CREATE INDEX idx_pets_owner ON pets (owner_id);
-
-CREATE TABLE vaccinations (
-    id              UUID PRIMARY KEY,
-    pet_id          UUID NOT NULL REFERENCES pets (id) ON DELETE CASCADE,
-    vaccine_name    TEXT NOT NULL,
-    administered_on DATE NOT NULL,
-    next_due_on     DATE,
-    notes           TEXT,
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-CREATE INDEX idx_vaccinations_pet_date ON vaccinations (pet_id, administered_on DESC);
-
-CREATE TABLE vet_appointments (
-    id           UUID PRIMARY KEY,
-    pet_id       UUID NOT NULL REFERENCES pets (id) ON DELETE CASCADE,
-    scheduled_at TIMESTAMPTZ NOT NULL,
-    reason       TEXT NOT NULL,
-    notes        TEXT,
-    created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-CREATE INDEX idx_vet_appointments_pet_date ON vet_appointments (pet_id, scheduled_at DESC);
-
-CREATE TABLE medications (
-    id         UUID PRIMARY KEY,
-    pet_id     UUID NOT NULL REFERENCES pets (id) ON DELETE CASCADE,
-    name       TEXT NOT NULL,
-    dose       TEXT NOT NULL,
-    schedule   TEXT NOT NULL,                           -- e.g. "every 12h"
-    starts_on  DATE NOT NULL,
-    ends_on    DATE,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    CONSTRAINT chk_medication_period CHECK (ends_on IS NULL OR ends_on >= starts_on)
-);
-CREATE INDEX idx_medications_pet ON medications (pet_id);
-
-CREATE TABLE weight_entries (
-    id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    pet_id      UUID NOT NULL REFERENCES pets (id) ON DELETE CASCADE,
-    measured_at TIMESTAMPTZ NOT NULL,
-    weight_kg   NUMERIC(5, 2) NOT NULL CHECK (weight_kg > 0)
-);
-CREATE INDEX idx_weight_entries_pet_date ON weight_entries (pet_id, measured_at DESC);
-
-CREATE TABLE pet_locations (
-    id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    pet_id      UUID NOT NULL REFERENCES pets (id) ON DELETE CASCADE,
-    recorded_at TIMESTAMPTZ NOT NULL,
-    latitude    DOUBLE PRECISION NOT NULL CHECK (latitude BETWEEN -90 AND 90),
-    longitude   DOUBLE PRECISION NOT NULL CHECK (longitude BETWEEN -180 AND 180)
-);
-CREATE INDEX idx_pet_locations_pet_time ON pet_locations (pet_id, recorded_at DESC);
-
-CREATE TABLE reminders (
-    id           UUID PRIMARY KEY,
-    pet_id       UUID NOT NULL REFERENCES pets (id) ON DELETE CASCADE,
-    kind         TEXT NOT NULL CHECK (kind IN ('vaccination', 'medication', 'appointment', 'custom')),
-    title        TEXT NOT NULL,
-    due_at       TIMESTAMPTZ NOT NULL,
-    completed_at TIMESTAMPTZ,
-    created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-CREATE INDEX idx_reminders_pending ON reminders (due_at) WHERE completed_at IS NULL;
-CREATE INDEX idx_reminders_pet ON reminders (pet_id);
-```
+- **Postgres dominio / DynamoDB telemetría**: revisada 2026-07-29 al
+  reconciliar con `plans/` — sustituye la decisión M0 inicial de guardar GPS
+  en Postgres. El pipeline de ingesta (plan 005) escribe en DynamoDB desde el
+  día uno para no reescribirlo después.
+- Consultas geoespaciales ricas (radio, cercanía) → PostGIS (aditivo).
+- Deploy real futuro: Postgres → RDS/Aurora vía connection string; DynamoDB
+  LocalStack → DynamoDB real; auth propia → módulo swap a Cognito.
