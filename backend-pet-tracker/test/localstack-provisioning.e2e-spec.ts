@@ -78,6 +78,13 @@ describe('localstack-provisioning e2e (requiere LocalStack real — docker compo
   let dynamoDb: DynamoDBClient;
   let s3: S3Client;
   let eventBridge: EventBridgeClient;
+  // R4: resultado de la primera corrida de runProvisioning sobre un
+  // LocalStack limpio (o ya idempotente si el LocalStack de CI ya tenía los
+  // recursos). Se calcula una única vez en el beforeAll para no duplicar
+  // llamadas de red, y se verifica en su propio describe/it más abajo para
+  // que el requisito R4 tenga un test nombrado explícitamente (no solo un
+  // side effect de un hook).
+  let firstRunExitCode: number;
 
   beforeAll(async () => {
     const clients = buildClients();
@@ -86,10 +93,7 @@ describe('localstack-provisioning e2e (requiere LocalStack real — docker compo
     s3 = clients.s3;
     eventBridge = clients.eventBridge;
 
-    // R4: primera corrida (o corrida ya idempotente si el LocalStack de CI
-    // ya tenía los recursos) — debe terminar en 0 antes de verificar nada.
-    const exitCode = await runProvisioning(process.env);
-    expect(exitCode).toBe(0);
+    firstRunExitCode = await runProvisioning(process.env);
   }, 30000);
 
   afterAll(() => {
@@ -97,6 +101,12 @@ describe('localstack-provisioning e2e (requiere LocalStack real — docker compo
     dynamoDb.destroy();
     s3.destroy();
     eventBridge.destroy();
+  });
+
+  describe('R4: primera corrida sobre LocalStack crea los 8 recursos y termina en 0', () => {
+    it('runProvisioning devuelve exit code 0', () => {
+      expect(firstRunExitCode).toBe(0);
+    });
   });
 
   describe('R5: segunda corrida es idempotente', () => {

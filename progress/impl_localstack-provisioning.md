@@ -115,3 +115,26 @@ en este sandbox (ver el commit `024b7ee`).
 - **R9 y R16 sí corren de verdad** en este sandbox sin necesitar LocalStack: R9 usa un `SQSClient` mockeado para verificar el orden de creación (DLQ antes que cola principal) sin red; R16 usa un puerto real cerrado (`http://localhost:1`), una llamada de red genuina que falla rápido sin necesitar ningún servidor.
 - El resto de requisitos "estáticos" (R3, R15, R18) ya estaban satisfechos por construcción en el momento de escribir su test (ningún literal hardcodeado, ningún import relativo cruzado) — mismo patrón que el guard de R6 en `db-setup-drizzle` (#1): el test es la salvaguarda contra una regresión futura, no encontró una violación al escribirse.
 - `AwsModule` se importa globalmente en `AppModule` aunque ningún módulo de negocio lo consume todavía (correcto: el consumo real —`media`, `positions`, `workers`— es de features futuras, fuera de alcance aquí). Construir los 4 clientes AWS SDK v3 no hace ninguna llamada de red hasta que se envía un comando, así que esto no afecta a `test/app.e2e-spec.ts` ni a `test/health.e2e-spec.ts`, que siguen en verde.
+
+## Fix post-review (2026-07-30)
+
+El reviewer rechazó la feature por un único defecto: R4 solo se verificaba
+dentro del `beforeAll` de `test/localstack-provisioning.e2e-spec.ts`, sin
+`describe`/`it` propio (violación de CHECKPOINTS C4). Fix aplicado:
+- `beforeAll` ahora solo arma los 4 clientes AWS y corre `runProvisioning`
+  una única vez, guardando el resultado en la variable de closure
+  `firstRunExitCode` (sin `expect` dentro del hook).
+- Nuevo bloque `describe('R4: primera corrida sobre LocalStack crea los 8
+  recursos y termina en 0', () => { it('runProvisioning devuelve exit code
+  0', () => { expect(firstRunExitCode).toBe(0); }); })`, ubicado antes de
+  `describe('R5: ...')`, sin volver a llamar a `runProvisioning` (evita
+  duplicar tráfico de red).
+- `specs/localstack-provisioning/traceability.md` fila R4 actualizada al
+  nuevo nombre de test; la marca ⚠️ de "no ejecutado contra LocalStack real"
+  se mantiene, sigue siendo cierta en este sandbox.
+- Reverificado: `tsc --noEmit` limpio, `pnpm run lint` limpio, y
+  `pnpm run test:e2e -- test/localstack-provisioning.e2e-spec.ts` sigue
+  fallando de forma controlada (conexión rechazada a `:4566`, no error de
+  compilación), y ahora el nombre `R4: primera corrida sobre LocalStack crea
+  los 8 recursos y termina en 0 › runProvisioning devuelve exit code 0`
+  aparece explícitamente en el output de Jest.

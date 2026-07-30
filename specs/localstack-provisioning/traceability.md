@@ -11,7 +11,7 @@ tags: [harness, spec]
 | R1 | `src/aws/aws-clients.spec.ts::R1`, `src/aws/aws.module.spec.ts::R1` | `df0df03` feat(localstack-provisioning): add AWS SDK v3 client factories + AwsModule (R1) |
 | R2 | `src/aws/aws-env-config.spec.ts::R2` | `4d9bf65` feat(localstack-provisioning): abort with clear error if AWS_ENDPOINT_URL missing (R2) |
 | R3 | `src/aws/no-hardcoded-credentials.spec.ts::R3` | `7edf495` test(localstack-provisioning): guard against hardcoded AWS region/credentials in src/aws/ (R3) |
-| R4 | `test/localstack-provisioning.e2e-spec.ts::"R4 (beforeAll)"` ⚠️ no ejecutado contra LocalStack real | `303fa22` test(localstack-provisioning): add real-LocalStack integration spec for R4,R5,R6,R7,R8,R10,R11,R12,R13,R14 |
+| R4 | `test/localstack-provisioning.e2e-spec.ts::"R4: primera corrida sobre LocalStack crea los 8 recursos y termina en 0"` ⚠️ no ejecutado contra LocalStack real | `303fa22` test(localstack-provisioning): add real-LocalStack integration spec for R4,R5,R6,R7,R8,R10,R11,R12,R13,R14; fix posterior a review: R4 pasó de vivir solo en `beforeAll` a tener su propio `describe`/`it` nombrado |
 | R5 | `src/aws/run-provisioning.spec.ts::R16` (exit code, sin infra) + `test/localstack-provisioning.e2e-spec.ts::"R5: segunda corrida es idempotente"` ⚠️ e2e no ejecutado contra LocalStack real | `e97591f`, `303fa22` |
 | R6 | `test/localstack-provisioning.e2e-spec.ts::"R6: las 4 colas SQS existen con los nombres correctos"` ⚠️ no ejecutado contra LocalStack real | `303fa22` |
 | R7 | `test/localstack-provisioning.e2e-spec.ts::"R7: positions-raw tiene RedrivePolicy hacia positions-raw-dlq"` ⚠️ no ejecutado contra LocalStack real | `303fa22` |
