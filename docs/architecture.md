@@ -103,6 +103,7 @@ equivalencias:
 | Lambda poller/processor/engine/notifier | Workers en el mismo proceso NestJS: cron de `@nestjs/schedule` + consumidores SQS (`src/workers/`) | La lógica vive en funciones puras (`src/pipeline/`) — portarla a Lambdas después es empaquetado, no reescritura |
 | EventBridge Scheduler (recordatorios) | No disponible en community — mecanismo local decidido en la spec de `pet-reminders` | Deviación documentada; el plan 008 vuelve a aplicar al desplegar |
 | Expo Push real | `PUSH_ENABLED=false` (log estructurado) | El notifier queda cableado; push real requiere build EAS |
+| SES (verificación de email en registro) | `EMAIL_ENABLED=false` (log estructurado) — mecanismo decidido en la spec de `auth-registration` (#3) | Cognito enviaba la confirmación nativa (plan 003); sin Cognito/SES en local, mismo patrón que `PUSH_ENABLED=false`: el código/enlace se loguea en vez de enviarse |
 
 Regla: **ningún código apunta a AWS real** — todo cliente AWS SDK se
 construye con `AWS_ENDPOINT_URL` del env.

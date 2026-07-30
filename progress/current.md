@@ -16,18 +16,16 @@ estado: sin sesión activa
 
 ---
 
-_Cuando inicies una sesión, reemplaza la plantilla con:_
-
 ```
-feature: <nombre de la feature>
-id: <id en feature_list.json>
-inicio: <fecha y hora>
+feature: auth-registration
+id: 3
+inicio: 2026-07-30
 plan:
-  - <paso 1>
-  - <paso 2>
-estado: pending / spec_ready / in_progress / done
+  - spec_author escribe requirements.md (EARS) + design.md + tasks.md + traceability.md
+  - PARAR hasta aprobación humana en specs/auth-registration/requirements.md
+estado: pending → spec_ready (en curso)
 bloqueos: —
-spec_author: pendiente / en curso / done
-implementer: pendiente / en curso / done
-reviewer: pendiente / en curso / aprobado / rechazado
+spec_author: en curso
+implementer: pendiente
+reviewer: pendiente
 ```
