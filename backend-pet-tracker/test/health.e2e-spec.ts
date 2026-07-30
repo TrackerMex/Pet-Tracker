@@ -4,26 +4,24 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module';
 
-// DATABASE_URL se fija por describe block ANTES de compilar el AppModule,
-// para probar tanto la rama sana como la caída contra Postgres real —
-// dotenv (usado por ConfigModule) no pisa un process.env ya seteado, así
-// que esto tiene prioridad sobre el ../.env real sin tocar ese archivo.
-//
-// NOTA PARA EL REVIEWER: en este sandbox de ejecución no hay acceso al
-// socket de Docker (permission denied, sin sudo), así que no se pudo usar
-// `docker compose up -d` con Postgres 17 como documenta
-// docs/architecture.md. La rama "ok" (R7) corre contra un Postgres 16
-// levantado a mano con `initdb`/`pg_ctl` fuera de Docker
-// (ver progress/current.md y progress/impl_db-setup-drizzle.md para el
-// detalle de la desviación). El código de producción no cambia por esto:
-// sigue leyendo DATABASE_URL vía ConfigService desde ../.env, que en
-// Docker real apunta a Postgres 17 en :5432.
-const REACHABLE_DATABASE_URL =
-  process.env.HEALTH_E2E_REACHABLE_DATABASE_URL ??
-  'postgresql://pet_tracker:pet_tracker@localhost:5544/pet_tracker';
+// El escenario "Postgres caído" (R8) fuerza un DATABASE_URL a un puerto que
+// nadie escucha, sin importar el entorno — dotenv (usado por ConfigModule)
+// nunca pisa un process.env ya seteado, así que esto tiene prioridad sobre
+// el ../.env real sin tocar ese archivo.
 const UNREACHABLE_DATABASE_URL =
   'postgresql://pet_tracker:pet_tracker@localhost:5599/pet_tracker';
 
+// NOTA PARA EL REVIEWER: el escenario "Postgres arriba" (R7) NO fuerza
+// ningún DATABASE_URL — usa el que ya resuelva ../.env / el entorno, igual
+// que en producción, así que en cualquier máquina con
+// `docker compose up -d` corriendo (Postgres 17 en :5432, ver
+// docker-compose.yml) este archivo pasa tal cual. Este sandbox de
+// ejecución no tiene acceso al socket de Docker (permission denied, sin
+// sudo) y no puede levantar ese contenedor, así que para verificar R7 acá
+// se corrió `pnpm run test:e2e` con DATABASE_URL exportado a mano en el
+// shell apuntando a un Postgres 16 propio (initdb/pg_ctl, sin Docker) —
+// ver progress/current.md y progress/impl_db-setup-drizzle.md. Ningún
+// archivo de código ni de test quedó con ese valor hardcodeado.
 async function bootstrapApp(): Promise<INestApplication<App>> {
   const moduleFixture: TestingModule = await Test.createTestingModule({
     imports: [AppModule],
@@ -37,16 +35,13 @@ async function bootstrapApp(): Promise<INestApplication<App>> {
 
 describe('R7: GET /v1/health responde 200 con Postgres arriba', () => {
   let app: INestApplication<App>;
-  const originalDatabaseUrl = process.env.DATABASE_URL;
 
   beforeAll(async () => {
-    process.env.DATABASE_URL = REACHABLE_DATABASE_URL;
     app = await bootstrapApp();
   });
 
   afterAll(async () => {
     await app.close();
-    process.env.DATABASE_URL = originalDatabaseUrl;
   });
 
   it('devuelve 200 con { postgres: "ok" }', () => {
