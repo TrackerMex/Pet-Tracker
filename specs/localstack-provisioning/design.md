@@ -123,6 +123,26 @@ tags: [harness, spec]
   todavía" a su uso real por esta feature (cambio menor de documentación,
   no de código).
 
+## Imports: alias `@/*`
+
+`docs/conventions.md` §Imports fija `@/* -> src/*` como el alias a usar para
+cualquier import que cruce de módulo (ya resuelto en build vía `tsc-alias`,
+en Jest vía `moduleNameMapper`, y en scripts standalone vía `ts-node -r
+tsconfig-paths/register`, sin trabajo adicional de esta feature). Aplica así:
+
+- Dentro de `src/aws/`: `aws.module.ts` importa `aws-clients.ts` y
+  `constants.ts` con import relativo (`./aws-clients`, `./constants`) —
+  mismo directorio, no cruza módulo.
+- Cualquier módulo futuro que consuma los tokens de `src/aws/` (fuera de
+  `src/aws/` mismo) debe importarlos vía `@/aws/aws.module` o
+  `@/aws/constants`, nunca con `../../aws/...`.
+- `scripts/provision-local.ts` vive fuera de `src/`, así que sus imports a
+  `src/aws/aws-clients.ts` y `src/aws/constants.ts` usan el alias
+  (`@/aws/aws-clients`, `@/aws/constants`), y el script se invoca como
+  `ts-node -r tsconfig-paths/register scripts/provision-local.ts` en el
+  `package.json` script `provision:local` (no como `ts-node
+  scripts/provision-local.ts` a secas, que no resolvería `@/`).
+
 ## Alternativas descartadas
 
 - **Terraform / CDK Local para provisionar LocalStack**: añade una

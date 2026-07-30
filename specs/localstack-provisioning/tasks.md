@@ -147,3 +147,24 @@ tags: [harness, spec]
 - [ ] (2) Implementación mínima que lo pasa (editar `STATUS.md`)
 - [ ] (3) Refactor con tests verdes (revisión de redacción, sin cambiar el
       contenido verificado)
+
+## R18 — Imports fuera de src/aws/ usan el alias @/aws/..., nunca ../
+
+- [ ] (1) Escribir test que falla para R18 (test estático: `grep -rn
+      "from '\.\./.*aws" backend-pet-tracker/src backend-pet-tracker/scripts`
+      debe devolver cero resultados fuera de `src/aws/` — escribir el test
+      antes de que exista ningún import relativo cruzado que lo viole)
+- [ ] (2) Implementación mínima que lo pasa (todos los imports a `src/aws/`
+      desde fuera del directorio usan `@/aws/...`)
+- [ ] (3) Refactor con tests verdes
+
+## R19 — provision:local resuelve @/ vía tsconfig-paths en runtime
+
+- [ ] (1) Escribir test que falla para R19 (test de integración: correr
+      `pnpm run provision:local` contra LocalStack levantado y verificar que
+      no falla con `Cannot find module '@/aws/...'`; o test más rápido:
+      confirmar que el script `provision:local` en `package.json` invoca
+      `ts-node -r tsconfig-paths/register`, no `ts-node` a secas)
+- [ ] (2) Implementación mínima que lo pasa (definir el script en
+      `package.json` con el flag `-r tsconfig-paths/register`)
+- [ ] (3) Refactor con tests verdes

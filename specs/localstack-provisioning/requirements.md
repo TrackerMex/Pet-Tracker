@@ -141,6 +141,24 @@ tags: [harness, spec]
   list-queues`) — verificable leyendo `STATUS.md` y confirmando que ambos
   comandos aparecen documentados.
 
+### Convención de imports
+
+- **R18**: WHEN cualquier archivo fuera de `src/aws/` importa algo de
+  `src/aws/` (ej. un módulo futuro inyectando los tokens de clientes AWS, o
+  `scripts/provision-local.ts` importando las factories/constantes) THE
+  SYSTEM SHALL usar el alias `@/aws/...` (`docs/conventions.md`
+  §Imports), nunca una ruta relativa con `../`. Dentro de `src/aws/`
+  (archivos hermanos en el mismo directorio) se usa import relativo.
+  Verificable con `grep -rn "from '\.\./.*aws" backend-pet-tracker/src
+  backend-pet-tracker/scripts` devolviendo cero resultados fuera de
+  `src/aws/` mismo.
+- **R19**: WHEN se ejecuta `pnpm run provision:local` THE SYSTEM SHALL
+  invocar el script con `ts-node -r tsconfig-paths/register` (no `ts-node`
+  a secas) para que los imports `@/aws/...` del script standalone resuelvan
+  en runtime — verificable corriendo `pnpm run provision:local` contra
+  LocalStack levantado y confirmando que no falla con `Cannot find module
+  '@/aws/...'`.
+
 ## Fuera de alcance
 
 - El pipeline de ingestión Wialon (poller, consumidor SQS, escritura en
