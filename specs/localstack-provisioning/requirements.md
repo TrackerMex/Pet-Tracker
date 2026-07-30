@@ -1,6 +1,6 @@
 ---
 feature: "localstack-provisioning"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec]
 ---
 
@@ -182,4 +182,4 @@ tags: [harness, spec]
 
 ## Aprobación
 
-- [X] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [X] Aprobado por humano (fecha: 2026-07-30) ← gate obligatorio antes de implementar
