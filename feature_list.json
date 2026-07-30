@@ -20,7 +20,7 @@
   {
     "id": 2,
     "name": "localstack-provisioning",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P1",
     "description": "Plan 002 (parte AWS, adaptado a LocalStack): script idempotente que crea los recursos locales — colas SQS positions-raw + notifications (cada una con DLQ), tabla DynamoDB positions (pk/sk + TTL), bucket S3 de media, bus EventBridge pet-tracker. Cliente AWS SDK v3 configurado contra AWS_ENDPOINT_URL. Documentar en STATUS.md cómo arrancar.",
     "acceptance_criteria": [
