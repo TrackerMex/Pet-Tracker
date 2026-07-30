@@ -12,6 +12,49 @@ export interface AwsRuntimeConfig {
 }
 
 /**
+ * Se lanza cuando falta AWS_ENDPOINT_URL al arrancar el script de
+ * provisioning (R2) — evita que el SDK v3 caiga a su endpoint público de
+ * AWS real por defecto cuando `endpoint` queda `undefined`.
+ */
+export class MissingAwsEndpointError extends Error {
+  constructor() {
+    super(
+      'AWS_ENDPOINT_URL no está definida (o está vacía). El script de ' +
+        'provisioning se detiene antes de crear ningún recurso: define ' +
+        'AWS_ENDPOINT_URL (ej. http://localhost:4566) en el .env raíz — ' +
+        'nunca se usa un endpoint de AWS real por defecto.',
+    );
+    this.name = 'MissingAwsEndpointError';
+  }
+}
+
+function assertEndpoint(endpoint: string | undefined): string {
+  if (!endpoint || endpoint.trim() === '') {
+    throw new MissingAwsEndpointError();
+  }
+  return endpoint;
+}
+
+/**
+ * Lee la configuración de los clientes AWS SDK v3 desde `process.env` — la
+ * excepción documentada para el script standalone de provisioning
+ * (`scripts/provision-local.ts`), que corre fuera del bootstrap de Nest y
+ * por lo tanto no tiene ConfigService disponible (mismo patrón que
+ * `drizzle.config.ts`, ver design.md). Aborta con MissingAwsEndpointError
+ * si AWS_ENDPOINT_URL falta, antes de construir cualquier cliente.
+ */
+export function resolveAwsConfigFromEnv(
+  env: NodeJS.ProcessEnv,
+): AwsRuntimeConfig {
+  return {
+    endpoint: assertEndpoint(env.AWS_ENDPOINT_URL),
+    region: env.AWS_REGION ?? '',
+    accessKeyId: env.AWS_ACCESS_KEY_ID ?? '',
+    secretAccessKey: env.AWS_SECRET_ACCESS_KEY ?? '',
+  };
+}
+
+/**
  * Lee la configuración de los clientes AWS SDK v3 desde ConfigService — la
  * única vía dentro del runtime NestJS (nunca process.env directo, ver
  * docs/conventions.md). El script standalone de provisioning usa
