@@ -1,0 +1,120 @@
+import { ConfigService } from '@nestjs/config';
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { EventBridgeClient } from '@aws-sdk/client-eventbridge';
+import { S3Client } from '@aws-sdk/client-s3';
+import { SQSClient } from '@aws-sdk/client-sqs';
+
+export interface AwsRuntimeConfig {
+  endpoint: string;
+  region: string;
+  accessKeyId: string;
+  secretAccessKey: string;
+}
+
+/**
+ * Se lanza cuando falta AWS_ENDPOINT_URL al arrancar el script de
+ * provisioning (R2) — evita que el SDK v3 caiga a su endpoint público de
+ * AWS real por defecto cuando `endpoint` queda `undefined`.
+ */
+export class MissingAwsEndpointError extends Error {
+  constructor() {
+    super(
+      'AWS_ENDPOINT_URL no está definida (o está vacía). El script de ' +
+        'provisioning se detiene antes de crear ningún recurso: define ' +
+        'AWS_ENDPOINT_URL (ej. http://localhost:4566) en el .env raíz — ' +
+        'nunca se usa un endpoint de AWS real por defecto.',
+    );
+    this.name = 'MissingAwsEndpointError';
+  }
+}
+
+function assertEndpoint(endpoint: string | undefined): string {
+  if (!endpoint || endpoint.trim() === '') {
+    throw new MissingAwsEndpointError();
+  }
+  return endpoint;
+}
+
+/**
+ * Lee la configuración de los clientes AWS SDK v3 desde `process.env` — la
+ * excepción documentada para el script standalone de provisioning
+ * (`scripts/provision-local.ts`), que corre fuera del bootstrap de Nest y
+ * por lo tanto no tiene ConfigService disponible (mismo patrón que
+ * `drizzle.config.ts`, ver design.md). Aborta con MissingAwsEndpointError
+ * si AWS_ENDPOINT_URL falta, antes de construir cualquier cliente.
+ */
+export function resolveAwsConfigFromEnv(
+  env: NodeJS.ProcessEnv,
+): AwsRuntimeConfig {
+  return {
+    endpoint: assertEndpoint(env.AWS_ENDPOINT_URL),
+    region: env.AWS_REGION ?? '',
+    accessKeyId: env.AWS_ACCESS_KEY_ID ?? '',
+    secretAccessKey: env.AWS_SECRET_ACCESS_KEY ?? '',
+  };
+}
+
+/**
+ * Lee la configuración de los clientes AWS SDK v3 desde ConfigService — la
+ * única vía dentro del runtime NestJS (nunca process.env directo, ver
+ * docs/conventions.md). El script standalone de provisioning usa
+ * resolveAwsConfigFromEnv en su lugar (excepción documentada, igual que
+ * drizzle.config.ts).
+ */
+export function resolveAwsConfigFromConfigService(
+  config: ConfigService,
+): AwsRuntimeConfig {
+  return {
+    endpoint: config.get<string>('AWS_ENDPOINT_URL') ?? '',
+    region: config.get<string>('AWS_REGION') ?? '',
+    accessKeyId: config.get<string>('AWS_ACCESS_KEY_ID') ?? '',
+    secretAccessKey: config.get<string>('AWS_SECRET_ACCESS_KEY') ?? '',
+  };
+}
+
+function credentials(config: AwsRuntimeConfig): {
+  accessKeyId: string;
+  secretAccessKey: string;
+} {
+  return {
+    accessKeyId: config.accessKeyId,
+    secretAccessKey: config.secretAccessKey,
+  };
+}
+
+export function createSqsClient(config: AwsRuntimeConfig): SQSClient {
+  return new SQSClient({
+    endpoint: config.endpoint,
+    region: config.region,
+    credentials: credentials(config),
+  });
+}
+
+export function createDynamoDbClient(config: AwsRuntimeConfig): DynamoDBClient {
+  return new DynamoDBClient({
+    endpoint: config.endpoint,
+    region: config.region,
+    credentials: credentials(config),
+  });
+}
+
+export function createS3Client(config: AwsRuntimeConfig): S3Client {
+  return new S3Client({
+    endpoint: config.endpoint,
+    region: config.region,
+    credentials: credentials(config),
+    // LocalStack no resuelve bien el estilo virtual-hosted (bucket.localhost);
+    // path-style (localhost/bucket) es lo que LocalStack community espera.
+    forcePathStyle: true,
+  });
+}
+
+export function createEventBridgeClient(
+  config: AwsRuntimeConfig,
+): EventBridgeClient {
+  return new EventBridgeClient({
+    endpoint: config.endpoint,
+    region: config.region,
+    credentials: credentials(config),
+  });
+}

@@ -34,6 +34,34 @@ En la base de datos: tablas y columnas en `snake_case`, tablas en plural
 
 ---
 
+## Imports / alias de rutas
+
+- `tsconfig.json` define `@/* -> src/*`. **Usar el alias `@/...` para
+  cualquier import que cruce de módulo/feature** (ej. `@/db/drizzle.constants`,
+  `@/modules/health/domain/...`) — evita cadenas `../../../../` frágiles al
+  mover archivos. Import relativo (`./`, `../`) solo entre archivos del mismo
+  módulo o directorio inmediato (ej. `use-case` importando su propio
+  `repository` hermano).
+- El alias está resuelto en las 3 rutas de ejecución del proyecto — no
+  requiere configuración adicional por feature:
+  - **Build** (`pnpm run build`): `nest build && tsc-alias -p
+    tsconfig.build.json` — `tsc-alias` reescribe `@/...` a rutas relativas
+    en el JS compilado (`tsc` no lo hace solo).
+  - **Tests** (`pnpm test` / `pnpm run test:e2e`): `moduleNameMapper` en el
+    bloque `jest` de `package.json` y en `test/jest-e2e.json`
+    (`"^@/(.*)$": "<rootDir>/$1"`, ajustado al `rootDir` de cada config).
+  - **Scripts standalone fuera de Nest** (ej. `drizzle.config.ts`, futuros
+    scripts en `scripts/`): si el script importa algo de `src/` via `@/`,
+    ejecutarlo con `ts-node -r tsconfig-paths/register <script>` (paquete
+    `tsconfig-paths` ya está en `devDependencies`).
+- La feature `db-setup-drizzle` (#1) se implementó **antes** de que esta
+  convención quedara documentada y usa imports relativos en todo `src/`
+  (incluye una cadena `../../../../db/drizzle.constants`); no se corrigió
+  retroactivamente. Todo código nuevo debe seguir la regla del alias de
+  aquí en adelante.
+
+---
+
 ## Tokens de inyección / resolución de dependencias
 
 Los casos de uso dependen de interfaces, no de implementaciones. NestJS borra
@@ -68,14 +96,25 @@ La conexión Drizzle se inyecta con el token `DRIZZLE` exportado por
 
 ## DTOs / validación de entrada
 
-- Librería: **class-validator + class-transformer**, con `ValidationPipe`
-  global en `main.ts`: `{ whitelist: true, forbidNonWhitelisted: true,
-  transform: true }`.
-- DTO de creación: campos requeridos con decoradores de validación.
-- DTO de actualización: `PartialType(CreateXDto)` de `@nestjs/mapped-types`
-  (PATCH semántico — todos los campos opcionales).
-- Los DTOs viven en `application/dto/` y no salen de la capa application:
-  el controller los recibe, el use case los consume, el domain nunca los ve.
+- Librería: **zod** (`class-validator`/`class-transformer` no se instalaron —
+  decisión 2026-07-30: `zod` en su lugar). Cada DTO se define como un
+  `z.object({...})` + `type XDto = z.infer<typeof XSchema>`; la validación
+  corre explícita en el controller (`schema.parse(body)`, que lanza
+  `ZodError` en input inválido) o vía un `ZodValidationPipe` propio del
+  proyecto (a introducir cuando la primera feature con DTOs lo necesite) —
+  NestJS no trae soporte nativo de Zod como sí lo tiene con `ValidationPipe`
+  + class-validator, así que el pipe/mapeo de errores es responsabilidad de
+  este proyecto.
+- DTO de creación: schema con campos requeridos (`z.string()`, `z.number()`,
+  etc., sin `.optional()`).
+- DTO de actualización: `CreateXSchema.partial()` (PATCH semántico — todos
+  los campos opcionales), en vez de `PartialType` de `@nestjs/mapped-types`.
+- Los DTOs (schemas + tipos inferidos) viven en `application/dto/` y no
+  salen de la capa application: el controller los recibe, el use case los
+  consume, el domain nunca los ve.
+- Un `ZodError` capturado en el borde HTTP se mapea a `BadRequestException`
+  (400) — mismo contrato que la fila "Datos inválidos" de la tabla de
+  errores más abajo, solo cambia quién lo produce.
 
 ---
 
@@ -91,7 +130,7 @@ exception filter) los mapea a HTTP:
 | Conflicto (email duplicado) | `EmailAlreadyRegisteredError` | `ConflictException` | 409 |
 | Sin autenticación | — (lo produce el guard) | `UnauthorizedException` | 401 |
 | Recurso de otro dueño | `NotPetOwnerError` | `ForbiddenException` | 403 |
-| Datos inválidos | — (lo produce `ValidationPipe`) | `BadRequestException` | 400 |
+| Datos inválidos | — (lo produce el parseo del schema `zod`) | `BadRequestException` | 400 |
 
 **Regla**: nunca lanzar `HttpException` desde domain o application; nunca
 dejar que un error de Drizzle/pg llegue crudo al cliente.
@@ -167,6 +206,6 @@ debe cargarlo con `envFilePath: ['../.env']`.
 |---|---|---|
 | `DATABASE_URL` | Connection string de Postgres (Docker local) | en `.env.example` — la app la consume desde la primera feature con persistencia |
 | `PORT` | Puerto HTTP del backend (default 3000) | en `.env.example` |
-| `AWS_ENDPOINT_URL` | Endpoint de LocalStack (`http://localhost:4566`) | en `.env.example` — sin uso todavía |
-| `AWS_REGION` | Región AWS para SDK contra LocalStack | en `.env.example` — sin uso todavía |
-| `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` | Credenciales dummy para LocalStack (valor `test`) | en `.env.example` — sin uso todavía |
+| `AWS_ENDPOINT_URL` | Endpoint de LocalStack (`http://localhost:4566`) | en `.env.example` — consumida desde `localstack-provisioning` (#2): `src/aws/` vía `ConfigService`, `scripts/provision-local.ts` vía `process.env` (excepción documentada, ver `specs/localstack-provisioning/design.md`) |
+| `AWS_REGION` | Región AWS para SDK contra LocalStack | en `.env.example` — consumida desde `localstack-provisioning` (#2), misma vía que `AWS_ENDPOINT_URL` |
+| `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` | Credenciales dummy para LocalStack (valor `test`) | en `.env.example` — consumidas desde `localstack-provisioning` (#2), misma vía que `AWS_ENDPOINT_URL` |
