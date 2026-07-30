@@ -29,6 +29,31 @@ docker compose up -d   # Postgres + LocalStack (solo si la sesión toca DB/AWS)
 `init.sh` copia `.env.example` → `.env` si falta. Docker no arranca solo:
 levántalo manualmente cuando la feature lo necesite.
 
+### Aprovisionar los recursos de LocalStack (`localstack-provisioning`, #2)
+
+Con `docker compose up -d` levantado (Postgres + LocalStack), desde
+`backend-pet-tracker/`:
+
+```bash
+docker compose up -d          # si no estaba levantado ya
+pnpm run provision:local
+```
+
+`provision:local` crea de forma idempotente (correrlo dos veces no falla ni
+duplica nada): las colas SQS `positions-raw` + `positions-raw-dlq` +
+`notifications` + `notifications-dlq` (con RedrivePolicy DLQ), la tabla
+DynamoDB `positions` (pk/sk + TTL sobre `expires_at`), el bucket S3
+`pet-tracker-media-local` (sin acceso público) y el bus EventBridge
+`pet-tracker`.
+
+Verificación manual:
+
+```bash
+aws --endpoint-url=http://localhost:4566 sqs list-queues
+```
+
+debe listar las 4 URLs de cola.
+
 ---
 
 ## Estado actual
@@ -55,8 +80,21 @@ levántalo manualmente cuando la feature lo necesite.
   `DrizzleModule` bajo token `DRIZZLE`), `AppConfigModule` global (`../.env`),
   `GET /v1/health` público. Branch `feature/1-db-setup-drizzle`, revisado y
   aprobado por el `reviewer` — pendiente de PR + merge humano a `main`.
-- Próximo paso SDD: `spec_author` escribe la spec de `localstack-provisioning`
-  (#2) y para hasta aprobación humana.
+- **`localstack-provisioning` (#2) implementado, pendiente de verificación
+  con Docker**: `src/aws/` (clientes AWS SDK v3 vía ConfigService,
+  `AwsModule` con tokens de inyección, `provisioning.ts` idempotente para
+  las 4 colas SQS + tabla `positions` con TTL + bucket S3 + bus
+  EventBridge) y `scripts/provision-local.ts` (`pnpm run provision:local`).
+  9/19 requisitos (R1, R2, R3, R9, R15, R16, R17, R18, R19) verificados con
+  tests reales que corren y pasan en este sandbox; los 10 restantes (R4-R8,
+  R10-R14) están implementados y tienen un test de integración escrito
+  (`test/localstack-provisioning.e2e-spec.ts`) pero **no** se pudieron
+  ejecutar con éxito aquí — sandbox sin acceso al socket de Docker, y a
+  diferencia de Postgres (#1) LocalStack no tiene alternativa nativa
+  viable. Ver `progress/impl_localstack-provisioning.md`.
+- Próximo paso SDD: `reviewer` valida `localstack-provisioning` (#2) y, en
+  una máquina con Docker disponible, corre `docker compose up -d && pnpm
+  run test:e2e` para cerrar la verificación real de R4-R14.
 
 ---
 
