@@ -206,6 +206,6 @@ debe cargarlo con `envFilePath: ['../.env']`.
 |---|---|---|
 | `DATABASE_URL` | Connection string de Postgres (Docker local) | en `.env.example` — la app la consume desde la primera feature con persistencia |
 | `PORT` | Puerto HTTP del backend (default 3000) | en `.env.example` |
-| `AWS_ENDPOINT_URL` | Endpoint de LocalStack (`http://localhost:4566`) | en `.env.example` — sin uso todavía |
-| `AWS_REGION` | Región AWS para SDK contra LocalStack | en `.env.example` — sin uso todavía |
-| `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` | Credenciales dummy para LocalStack (valor `test`) | en `.env.example` — sin uso todavía |
+| `AWS_ENDPOINT_URL` | Endpoint de LocalStack (`http://localhost:4566`) | en `.env.example` — consumida desde `localstack-provisioning` (#2): `src/aws/` vía `ConfigService`, `scripts/provision-local.ts` vía `process.env` (excepción documentada, ver `specs/localstack-provisioning/design.md`) |
+| `AWS_REGION` | Región AWS para SDK contra LocalStack | en `.env.example` — consumida desde `localstack-provisioning` (#2), misma vía que `AWS_ENDPOINT_URL` |
+| `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` | Credenciales dummy para LocalStack (valor `test`) | en `.env.example` — consumidas desde `localstack-provisioning` (#2), misma vía que `AWS_ENDPOINT_URL` |
