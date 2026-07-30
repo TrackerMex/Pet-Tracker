@@ -1,13 +1,8 @@
 import { readdirSync, readFileSync, statSync } from 'fs';
 import { join } from 'path';
 
-// drizzle.config.ts vive en la raíz de backend-pet-tracker/ (fuera de
-// src/), no en este árbol — es la única excepción documentada a R6 porque
-// drizzle-kit corre como CLI fuera del runtime de Nest/ConfigService (ver
-// design.md "Alternativas descartadas"). Este test escanea src/** completo,
-// así que esa excepción queda fuera de alcance sin necesidad de un allowlist.
 const SRC_DIR = join(__dirname, '..', '..', 'src');
-const FORBIDDEN = 'process.env.' + 'DATABASE_URL'; // concatenado para no auto-matchear este propio archivo
+const FORBIDDEN = 'process.env.' + 'DATABASE_URL';
 
 function collectTsFiles(dir: string): string[] {
   return readdirSync(dir).flatMap((entry) => {

@@ -8,8 +8,6 @@ export interface HealthCheckResult {
   postgres: PostgresHealthStatus;
 }
 
-// Orquesta la verificación de salud de Postgres. No sabe de HTTP ni de
-// Drizzle — depende solo de la interface de domain (sirve a R7, R8).
 @Injectable()
 export class CheckHealthUseCase {
   constructor(
