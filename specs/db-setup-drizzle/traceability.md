@@ -13,7 +13,7 @@ tags: [harness, spec]
 | R3 | `backend-pet-tracker/src/db/migrations.spec.ts::R3: drizzle-kit generate produces versioned SQL migrations` | `c853471` feat(db-setup-drizzle): add schema barrel and first generated migration (R3) |
 | R4 | `backend-pet-tracker/src/db/drizzle.module.spec.ts::R4: DrizzleModule exposes a Drizzle client under the DRIZZLE token` | `f4553d1` feat(db-setup-drizzle): add global DrizzleModule under DRIZZLE token (R4) |
 | R5 | `backend-pet-tracker/src/config/config.module.spec.ts::R5: ConfigModule global lee variables desde ../.env sin reimportarlo` | `b912c47` feat(db-setup-drizzle): add global AppConfigModule reading ../.env (R5) |
-| R6 | pendiente | pendiente |
+| R6 | `backend-pet-tracker/src/db/database-url-source.spec.ts::R6: DATABASE_URL nunca via process.env directo dentro de src/**` | `57556ae` feat(db-setup-drizzle): add static guard against process.env.DATABASE_URL in src/** (R6) |
 | R7 | pendiente | pendiente |
 | R8 | pendiente | pendiente |
 | R9 | pendiente | pendiente |
