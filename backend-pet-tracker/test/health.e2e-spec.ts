@@ -82,7 +82,9 @@ describe('R8: GET /v1/health responde 503 con Postgres caído', () => {
   });
 
   it('devuelve 503 con { postgres: "error" }, sin exponer la excepción cruda del driver', async () => {
-    const response = await request(app.getHttpServer()).get('/v1/health').expect(503);
+    const response = await request(app.getHttpServer())
+      .get('/v1/health')
+      .expect(503);
 
     expect(response.body).toMatchObject({ postgres: 'error' });
     // La respuesta no debe filtrar detalles internos del driver pg (stack,

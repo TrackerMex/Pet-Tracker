@@ -7,7 +7,9 @@ function buildUseCase(checker: DatabaseHealthChecker): CheckHealthUseCase {
 
 describe('R7: CheckHealthUseCase devuelve postgres ok cuando ping() resuelve true', () => {
   it('devuelve { postgres: "ok" }', async () => {
-    const checker: DatabaseHealthChecker = { ping: jest.fn().mockResolvedValue(true) };
+    const checker: DatabaseHealthChecker = {
+      ping: jest.fn().mockResolvedValue(true),
+    };
     const useCase = buildUseCase(checker);
 
     const result = await useCase.execute();
@@ -18,7 +20,9 @@ describe('R7: CheckHealthUseCase devuelve postgres ok cuando ping() resuelve tru
 
 describe('R8: CheckHealthUseCase devuelve postgres error cuando la verificación falla', () => {
   it('devuelve { postgres: "error" } si ping() resuelve false', async () => {
-    const checker: DatabaseHealthChecker = { ping: jest.fn().mockResolvedValue(false) };
+    const checker: DatabaseHealthChecker = {
+      ping: jest.fn().mockResolvedValue(false),
+    };
     const useCase = buildUseCase(checker);
 
     const result = await useCase.execute();

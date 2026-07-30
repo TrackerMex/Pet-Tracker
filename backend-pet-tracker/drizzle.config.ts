@@ -6,7 +6,7 @@ import { defineConfig } from 'drizzle-kit';
 // is the one documented exception to "always use ConfigService.get(...)"
 // (see specs/db-setup-drizzle/design.md, "Alternativas descartadas"). No
 // other file under src/** may read process.env.DATABASE_URL directly — see
-// the R6 static check in src/db/env-access.static.spec.ts.
+// the R6 static check in src/db/database-url-source.spec.ts.
 export default defineConfig({
   schema: 'src/db/schema/index.ts',
   out: 'src/db/migrations',

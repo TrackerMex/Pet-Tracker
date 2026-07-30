@@ -8,7 +8,10 @@ import { DatabaseHealthDrizzleRepository } from './infrastructure/repositories/d
   controllers: [HealthController],
   providers: [
     CheckHealthUseCase,
-    { provide: DATABASE_HEALTH_CHECKER, useClass: DatabaseHealthDrizzleRepository },
+    {
+      provide: DATABASE_HEALTH_CHECKER,
+      useClass: DatabaseHealthDrizzleRepository,
+    },
   ],
 })
 export class HealthModule {}

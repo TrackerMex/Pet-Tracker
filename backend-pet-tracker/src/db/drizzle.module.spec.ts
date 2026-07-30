@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DrizzleModule } from './drizzle.module';
 import { DRIZZLE } from './drizzle.constants';
 
@@ -25,7 +26,7 @@ describe('R4: DrizzleModule exposes a Drizzle client under the DRIZZLE token', (
   });
 
   it('resolves a drizzle-orm/node-postgres client under DRIZZLE', () => {
-    const db = moduleRef.get(DRIZZLE);
+    const db = moduleRef.get<NodePgDatabase>(DRIZZLE);
 
     expect(db).toBeDefined();
     expect(typeof db.select).toBe('function');
