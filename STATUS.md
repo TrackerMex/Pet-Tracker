@@ -1,8 +1,8 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-07-29
-**Features completadas**: 0/18 (`feature_list.json`)
-**Pendientes**: 18 — backlog backend derivado de `plans/` 002–009 (fundaciones, auth propia, mascotas+permisos, collar Wialon SIM, recorridos, geocercas+alertas, salud, nutrición)
+**Última actualización**: 2026-07-30
+**Features completadas**: 1/18 (`feature_list.json`)
+**Pendientes**: 17 — backlog backend derivado de `plans/` 002–009 (fundaciones, auth propia, mascotas+permisos, collar Wialon SIM, recorridos, geocercas+alertas, salud, nutrición)
 **En producción**: no
 
 ---
@@ -50,12 +50,27 @@ levántalo manualmente cuando la feature lo necesite.
   `graphify-out/` (gitignored) sobre código + plans + docs, sin LLM.
   Hooks PreToolUse activos (consultar grafo antes de grep/read);
   refrescar con `graphify update .` tras cambios de código.
-- Próximo paso SDD: `spec_author` escribe la spec de `db-setup-drizzle`
-  (#1) y para hasta aprobación humana.
+- **`db-setup-drizzle` (#1) done**: Drizzle ORM cableado (drizzle-orm/pg/
+  drizzle-kit, `drizzle.config.ts`, `src/db/` con schema barrel +
+  `DrizzleModule` bajo token `DRIZZLE`), `AppConfigModule` global (`../.env`),
+  `GET /v1/health` público. Branch `feature/1-db-setup-drizzle`, revisado y
+  aprobado por el `reviewer` — pendiente de PR + merge humano a `main`.
+- Próximo paso SDD: `spec_author` escribe la spec de `localstack-provisioning`
+  (#2) y para hasta aprobación humana.
 
 ---
 
 ## Última sesión
+
+- **2026-07-30** — Ciclo SDD completo de `db-setup-drizzle` (#1): spec (R1-R9)
+  → aprobación humana → `implementer` (TDD estricto, 9 commits) → limpieza de
+  comentarios por el humano → `reviewer` (verificación independiente:
+  `init.sh` verde + e2e 5/5, aprobado con una observación no bloqueante ya
+  corregida). Desviación de entorno: sandbox sin acceso al socket de Docker,
+  se usó Postgres 16 local (`:5544`) para e2e en vez de Postgres 17 vía
+  Docker — `.env`/`docker-compose.yml` sin modificar, pendiente validar 1:1
+  contra Docker real. Feature marcada `done`. Próximo: PR + merge humano,
+  luego spec de `localstack-provisioning` (#2).
 
 - **2026-07-29 (2)** — Sesión de tooling: instalado graphify 0.9.30
   (paquete PyPI `graphifyy`, verificado contra PyPI y GitHub antes de
