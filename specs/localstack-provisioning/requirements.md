@@ -182,4 +182,4 @@ tags: [harness, spec]
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [X] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
