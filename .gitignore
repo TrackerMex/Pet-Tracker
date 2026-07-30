@@ -17,3 +17,4 @@ coverage/
 
 # Graphify generated output
 graphify-out/
+*.graphify-bak

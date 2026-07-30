@@ -46,12 +46,26 @@ levántalo manualmente cuando la feature lo necesite.
   y push a main — verde. Flujo por feature: branch `feature/<id>-<nombre>` +
   PR que el humano mergea (`docs/conventions.md` §Branches y Pull Requests).
 - Brief maestro copiado a `docs/brief.md`.
+- Knowledge graph con graphify (`pip install graphifyy`): grafo local en
+  `graphify-out/` (gitignored) sobre código + plans + docs, sin LLM.
+  Hooks PreToolUse activos (consultar grafo antes de grep/read);
+  refrescar con `graphify update .` tras cambios de código.
 - Próximo paso SDD: `spec_author` escribe la spec de `db-setup-drizzle`
   (#1) y para hasta aprobación humana.
 
 ---
 
 ## Última sesión
+
+- **2026-07-29 (2)** — Sesión de tooling: instalado graphify 0.9.30
+  (paquete PyPI `graphifyy`, verificado contra PyPI y GitHub antes de
+  instalar). Grafo construido 100% local (tree-sitter, sin LLM): 703
+  nodos / 638 edges / 85 comunidades sobre código + plans + docs.
+  Integración Claude Code (`graphify claude install`): sección en
+  CLAUDE.md + hooks PreToolUse — commit `c4219a7`; `graphify-out/` y
+  `*.graphify-bak` al .gitignore. Alias `@/*` en tsconfig por el humano
+  (`16f7d45`). Sin trabajo de features. Próximo sin cambio: spec de
+  `db-setup-drizzle` (#1).
 
 - **2026-07-29** — Skills instaladas bajo convención del harness. Harness
   configurado: Postgres+Drizzle, conventions, estructura de módulo, infra
