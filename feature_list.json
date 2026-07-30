@@ -2,7 +2,7 @@
   {
     "id": 1,
     "name": "db-setup-drizzle",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P1",
     "description": "Plan 002 (parte datos, local): cablear Drizzle ORM al backend — dependencias (drizzle-orm, pg, drizzle-kit), drizzle.config.ts, src/db/ (barrel de schema, drizzle.module.ts con token DRIZZLE), ConfigModule global leyendo ../.env, endpoint GET /v1/health (público) que verifica conexión a Postgres.",
     "acceptance_criteria": [
