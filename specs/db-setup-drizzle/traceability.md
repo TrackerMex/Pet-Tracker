@@ -10,7 +10,7 @@ tags: [harness, spec]
 |---|---|---|
 | R1 | `backend-pet-tracker/src/db/dependencies.spec.ts::R1: build/test toolchain has drizzle-orm and pg available` | `1a3adf3` feat(db-setup-drizzle): add drizzle-orm, pg, drizzle-kit deps (R1) |
 | R2 | `backend-pet-tracker/src/db/drizzle-config.spec.ts::R2: drizzle.config.ts points to schema barrel and migrations folder` | `a3ca672` feat(db-setup-drizzle): add drizzle.config.ts for drizzle-kit (R2) |
-| R3 | pendiente | pendiente |
+| R3 | `backend-pet-tracker/src/db/migrations.spec.ts::R3: drizzle-kit generate produces versioned SQL migrations` | `c853471` feat(db-setup-drizzle): add schema barrel and first generated migration (R3) |
 | R4 | pendiente | pendiente |
 | R5 | pendiente | pendiente |
 | R6 | pendiente | pendiente |
