@@ -13,14 +13,17 @@ describe('AppController (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    // Mismo prefijo global que main.ts (R9) — sin esto, /v1/* devolvería 404
+    // en este árbol de test aunque funcione en producción.
+    app.setGlobalPrefix('v1');
     await app.init();
   });
 
-  it('/ (GET)', () => {
+  it('/v1 (GET)', () => {
     return request(app.getHttpServer())
-      .get('/')
+      .get('/v1')
       .expect(200)
-      .expect('Hello World!');
+      .expect('Hello Pet Tracker!');
   });
 
   afterEach(async () => {
