@@ -32,6 +32,9 @@ describe('R1: clientes AWS SDK v3 construidos con endpoint desde ConfigService',
     'el cliente %s resuelve su endpoint al valor de AWS_ENDPOINT_URL',
     async (_name, factory) => {
       const client = factory(config);
+      if (!client.config.endpoint) {
+        throw new Error('El cliente no resolvió un endpoint custom');
+      }
       const resolvedEndpoint = await client.config.endpoint();
 
       expect(resolvedEndpoint.hostname).toBe('localhost');

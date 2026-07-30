@@ -22,8 +22,7 @@ function collectTsFiles(dir: string): string[] {
 
 // Literales de región AWS real conocidos — si alguno aparece hardcodeado en
 // vez de leerse de AWS_REGION, algo está mal.
-const HARDCODED_REGION_PATTERN =
-  /['"`](us|eu|ap|sa|ca|me|af)-[a-z]+-\d['"`]/;
+const HARDCODED_REGION_PATTERN = /['"`](us|eu|ap|sa|ca|me|af)-[a-z]+-\d['"`]/;
 // Credenciales dummy de LocalStack ('test') están permitidas como fallback
 // documental, pero un access key con forma real (AKIA...) nunca debe
 // aparecer.
