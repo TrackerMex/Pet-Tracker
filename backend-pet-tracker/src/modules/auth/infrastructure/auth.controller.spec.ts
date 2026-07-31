@@ -166,6 +166,26 @@ describe('R5: POST /v1/auth/register con payload invalido responde 400 con el de
   });
 });
 
+describe('R7: la respuesta de registro nunca incluye el token de verificacion', () => {
+  it('el body trae solo los campos permitidos, sin token', async () => {
+    const { controller } = buildRegisterUserDouble();
+
+    const body = await controller.register(validBody);
+
+    expect(Object.keys(body).sort()).toEqual([
+      'country',
+      'createdAt',
+      'email',
+      'firstName',
+      'id',
+      'lastName',
+      'phone',
+      'timezone',
+    ]);
+    expect(JSON.stringify(body).toLowerCase()).not.toContain('token');
+  });
+});
+
 describe('R14: la respuesta de registro nunca expone password_hash', () => {
   it('serializa solo la lista explicita de campos permitidos', async () => {
     const { controller } = buildRegisterUserDouble();
