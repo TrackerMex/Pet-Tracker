@@ -3,8 +3,10 @@ import {
   BadRequestException,
   ConflictException,
   HttpException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { GoneException } from '@nestjs/common';
+import { LoginUserUseCase } from '@/modules/auth/application/use-cases/login-user.use-case';
 import { RegisterUserUseCase } from '@/modules/auth/application/use-cases/register-user.use-case';
 import { VerifyEmailUseCase } from '@/modules/auth/application/use-cases/verify-email.use-case';
 import { User } from '@/modules/auth/domain/entities/user.entity';
@@ -12,7 +14,10 @@ import {
   InvalidVerificationTokenError,
   VerificationTokenExpiredError,
 } from '@/modules/auth/domain/errors/email-verification.errors';
-import { EmailAlreadyRegisteredError } from '@/modules/auth/domain/errors/user.errors';
+import {
+  EmailAlreadyRegisteredError,
+  InvalidCredentialsError,
+} from '@/modules/auth/domain/errors/user.errors';
 import { AuthController } from './auth.controller';
 
 const VERIFICATION_TOKEN = 'kQ8s0Zr4Vv1nT7yQ2bXpL9dW3fH6jM0aC5eR8uY1oI4';
@@ -55,6 +60,7 @@ function buildRegisterUserDouble(
   const controller = new AuthController(
     { execute } as unknown as RegisterUserUseCase,
     { execute: jest.fn() } as unknown as VerifyEmailUseCase,
+    { execute: jest.fn() } as unknown as LoginUserUseCase,
   );
 
   return { controller, execute };
@@ -67,6 +73,21 @@ function buildVerifyEmailDouble(
   const controller = new AuthController(
     { execute: jest.fn() } as unknown as RegisterUserUseCase,
     { execute } as unknown as VerifyEmailUseCase,
+    { execute: jest.fn() } as unknown as LoginUserUseCase,
+  );
+
+  return { controller, execute };
+}
+
+function buildLoginDouble(
+  behaviour: () => Promise<{ accessToken: string }> = () =>
+    Promise.resolve({ accessToken: 'signed.jwt.token' }),
+) {
+  const execute = jest.fn(behaviour);
+  const controller = new AuthController(
+    { execute: jest.fn() } as unknown as RegisterUserUseCase,
+    { execute: jest.fn() } as unknown as VerifyEmailUseCase,
+    { execute } as unknown as LoginUserUseCase,
   );
 
   return { controller, execute };
@@ -281,5 +302,68 @@ describe('R14: la respuesta de registro nunca expone password_hash', () => {
 
     expect(JSON.stringify(body)).not.toContain('argon2id');
     expect(Object.keys(body)).not.toContain('passwordHash');
+  });
+});
+
+const validLoginBody = { email: 'ada@example.com', password: 'sup3rsecret' };
+
+describe('R1 (auth-login-me): POST /v1/auth/login responde 200 con access_token', () => {
+  it('devuelve el access_token del caso de uso y declara el status 200', async () => {
+    const { controller, execute } = buildLoginDouble();
+
+    const body = await controller.login(validLoginBody);
+
+    expect(body).toEqual({ access_token: 'signed.jwt.token' });
+    expect(execute).toHaveBeenCalledWith(validLoginBody);
+    expect(httpCodeOf('login')).toBe(200);
+  });
+});
+
+describe('R2 (auth-login-me): POST /v1/auth/login con credenciales invalidas responde 401 generico', () => {
+  it('mapea InvalidCredentialsError a UnauthorizedException 401', async () => {
+    const { controller } = buildLoginDouble(() =>
+      Promise.reject(new InvalidCredentialsError()),
+    );
+
+    const error = await captureHttpError(controller.login(validLoginBody));
+
+    expect(error).toBeInstanceOf(UnauthorizedException);
+    expect(error.getStatus()).toBe(401);
+  });
+
+  it('el body de error no revela si el email existe', async () => {
+    const { controller } = buildLoginDouble(() =>
+      Promise.reject(new InvalidCredentialsError()),
+    );
+
+    const error = await captureHttpError(controller.login(validLoginBody));
+
+    expect(JSON.stringify(error.getResponse())).not.toContain(
+      'ada@example.com',
+    );
+  });
+});
+
+describe('R3 (auth-login-me): POST /v1/auth/login con payload invalido responde 400', () => {
+  it('lanza BadRequestException sin invocar el caso de uso', async () => {
+    const { controller, execute } = buildLoginDouble();
+
+    const error = await captureHttpError(
+      controller.login({ email: 'no-es-un-email', password: '' }),
+    );
+
+    expect(error).toBeInstanceOf(BadRequestException);
+    expect(error.getStatus()).toBe(400);
+    expect(execute).not.toHaveBeenCalled();
+  });
+});
+
+describe('R15 (auth-login-me): la respuesta de login nunca expone password_hash', () => {
+  it('el body de login solo trae access_token', async () => {
+    const { controller } = buildLoginDouble();
+
+    const body = await controller.login(validLoginBody);
+
+    expect(Object.keys(body)).toEqual(['access_token']);
   });
 });

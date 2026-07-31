@@ -57,12 +57,24 @@ function buildScenario(options: { emailExists?: boolean } = {}) {
   const markEmailVerified = jest.fn<Promise<void>, [string, Date]>(() =>
     Promise.resolve(),
   );
-  const users: UserRepository = { existsByEmail, create, markEmailVerified };
+  const users: UserRepository = {
+    existsByEmail,
+    create,
+    markEmailVerified,
+    // Metodos de UserRepository que no participan del registro (auth-login-me
+    // R1, R9, R10): mocks vacios, este use case nunca los llama.
+    findByEmail: jest.fn(),
+    findById: jest.fn(),
+    updateProfile: jest.fn(),
+  };
 
   const hash = jest.fn<Promise<string>, [string]>(() =>
     Promise.resolve(HASHED_PASSWORD),
   );
-  const passwordHasher: PasswordHasher = { hash };
+  const verify = jest.fn<Promise<boolean>, [string, string]>(() =>
+    Promise.resolve(true),
+  );
+  const passwordHasher: PasswordHasher = { hash, verify };
 
   const createToken = jest.fn<Promise<void>, [NewEmailVerificationToken]>(() =>
     Promise.resolve(),

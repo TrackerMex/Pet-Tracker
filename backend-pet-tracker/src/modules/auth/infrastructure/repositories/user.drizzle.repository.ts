@@ -7,6 +7,7 @@ import { users } from '@/db/schema/users.schema';
 import { User } from '@/modules/auth/domain/entities/user.entity';
 import {
   NewUser,
+  ProfileFieldChanges,
   UserRepository,
 } from '@/modules/auth/domain/repositories/user.repository';
 
@@ -40,6 +41,39 @@ export class UserDrizzleRepository implements UserRepository {
       .update(users)
       .set({ emailVerifiedAt: verifiedAt, updatedAt: verifiedAt })
       .where(eq(users.id, userId));
+  }
+
+  async findByEmail(email: string): Promise<User | null> {
+    const rows = await this.db
+      .select()
+      .from(users)
+      .where(eq(users.email, email))
+      .limit(1);
+
+    return rows[0] ? toDomain(rows[0]) : null;
+  }
+
+  async findById(id: string): Promise<User | null> {
+    const rows = await this.db
+      .select()
+      .from(users)
+      .where(eq(users.id, id))
+      .limit(1);
+
+    return rows[0] ? toDomain(rows[0]) : null;
+  }
+
+  async updateProfile(
+    userId: string,
+    changes: ProfileFieldChanges,
+  ): Promise<User> {
+    const [row] = await this.db
+      .update(users)
+      .set({ ...changes, updatedAt: new Date() })
+      .where(eq(users.id, userId))
+      .returning();
+
+    return toDomain(row);
   }
 }
 

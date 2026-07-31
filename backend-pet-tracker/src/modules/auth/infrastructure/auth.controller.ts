@@ -7,6 +7,7 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ZodType } from 'zod';
 import {
@@ -14,20 +15,34 @@ import {
   RegisterUserDto,
 } from '@/modules/auth/application/dto/register-user.dto';
 import {
+  LoginUserDto,
+  LoginUserSchema,
+} from '@/modules/auth/application/dto/login-user.dto';
+import {
   VerifyEmailDto,
   VerifyEmailSchema,
 } from '@/modules/auth/application/dto/verify-email.dto';
+import { LoginUserUseCase } from '@/modules/auth/application/use-cases/login-user.use-case';
 import { RegisterUserUseCase } from '@/modules/auth/application/use-cases/register-user.use-case';
 import { VerifyEmailUseCase } from '@/modules/auth/application/use-cases/verify-email.use-case';
 import {
   InvalidVerificationTokenError,
   VerificationTokenExpiredError,
 } from '@/modules/auth/domain/errors/email-verification.errors';
-import { EmailAlreadyRegisteredError } from '@/modules/auth/domain/errors/user.errors';
+import {
+  EmailAlreadyRegisteredError,
+  InvalidCredentialsError,
+} from '@/modules/auth/domain/errors/user.errors';
+import { Public } from './decorators/public.decorator';
 import { toUserResponse, UserResponse } from './mappers/user-response.mapper';
 
 export interface VerifyEmailResponse {
   verified: true;
+}
+
+export interface LoginResponse {
+  // snake_case a proposito: contrato literal de auth-login-me R1/R4.
+  access_token: string;
 }
 
 @Controller('auth')
@@ -35,8 +50,10 @@ export class AuthController {
   constructor(
     private readonly registerUser: RegisterUserUseCase,
     private readonly verifyEmailUseCase: VerifyEmailUseCase,
+    private readonly loginUser: LoginUserUseCase,
   ) {}
 
+  @Public()
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   async register(@Body() body: unknown): Promise<UserResponse> {
@@ -54,6 +71,7 @@ export class AuthController {
     }
   }
 
+  @Public()
   @Post('verify-email')
   @HttpCode(HttpStatus.OK)
   async verifyEmail(@Body() body: unknown): Promise<VerifyEmailResponse> {
@@ -69,6 +87,26 @@ export class AuthController {
       }
       if (error instanceof InvalidVerificationTokenError) {
         throw new BadRequestException('Invalid verification token');
+      }
+      throw error;
+    }
+  }
+
+  @Public()
+  @Post('login')
+  @HttpCode(HttpStatus.OK)
+  async login(@Body() body: unknown): Promise<LoginResponse> {
+    const dto = parseBody<LoginUserDto>(LoginUserSchema, body);
+
+    try {
+      const { accessToken } = await this.loginUser.execute(dto);
+
+      return { access_token: accessToken };
+    } catch (error) {
+      if (error instanceof InvalidCredentialsError) {
+        // Mismo mensaje generico para email inexistente y password
+        // incorrecto (R2): no revela si el email existe.
+        throw new UnauthorizedException('Invalid credentials');
       }
       throw error;
     }
