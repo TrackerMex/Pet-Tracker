@@ -12,10 +12,10 @@ tags: [harness, spec]
 | R2 | `application/use-cases/login-user.use-case.spec.ts::R2`, `infrastructure/auth.controller.spec.ts::R2 (auth-login-me)` | `501bd01` |
 | R3 | `application/dto/login-user.dto.spec.ts::R3`, `infrastructure/auth.controller.spec.ts::R3 (auth-login-me)` | `501bd01` |
 | R4 | `application/use-cases/login-user.use-case.spec.ts::R4`, `infrastructure/security/jwt-token-service.spec.ts::R4` | `501bd01` |
-| R5 | pendiente | pendiente |
-| R6 | pendiente | pendiente |
-| R7 | pendiente | pendiente |
-| R8 | pendiente | pendiente |
+| R5 | `infrastructure/guards/auth.guard.spec.ts::R5` | `42310f6` |
+| R6 | `infrastructure/guards/auth.guard.spec.ts::R6` | `42310f6` |
+| R7 | `infrastructure/guards/auth.guard.spec.ts::R7`, `infrastructure/decorators/public.decorator.spec.ts::R7`, `modules/health/infrastructure/health.controller.spec.ts::R7` | `42310f6` |
+| R8 | `infrastructure/guards/auth.guard.spec.ts::R8`, `infrastructure/decorators/current-user.decorator.spec.ts::R8` | `42310f6` |
 | R9 | pendiente | pendiente |
 | R10 | pendiente | pendiente |
 | R11 | pendiente | pendiente |
