@@ -37,7 +37,7 @@
   {
     "id": 3,
     "name": "auth-registration",
-    "status": "in_progress",
+    "status": "done",
     "priority": "P1",
     "description": "Plan 003 adaptado a auth propia (sin Cognito en local): tabla users (modelo docs/data-model.md), POST /v1/auth/register con email único, password hasheado (argon2/bcrypt — decidir en spec), first_name, last_name, phone, country, timezone. Campos completos del alta de usuario según brief §6: el DTO valida passwordConfirmation (debe igualar password, no se persiste) y termsAccepted (obligatorio, persiste terms_accepted_at). Incluye verificación de email por código/enlace (brief §6): sin Cognito/SES en local, el mecanismo de confirmación (endpoint + token, a definir en la spec) se loguea en vez de enviarse de verdad, mismo patrón que PUSH_ENABLED=false en push_tokens. Respuesta nunca expone password_hash.",
     "acceptance_criteria": [
@@ -75,7 +75,7 @@
     "name": "pets-crud-permissions",
     "status": "pending",
     "priority": "P1",
-    "description": "Plan 004 (núcleo): tablas pets, pet_users, audit_log; PetAccessGuard + @RequirePetRole — sin membresía en pet_users → 404 (no revelar existencia, brief §4); CRUD /v1/pets con el DTO del brief §7 (species dog|cat, birthDate o approxAgeMonths, etc.), creador como owner en transacción, edad calculada, DELETE cascade. Es el mecanismo de autorización de TODAS las features posteriores.",
+    "description": "Plan 004 (núcleo): tablas pets y pet_users (audit_log ya existe: la creó auth-registration #3 en src/audit/ como módulo @Global() — reutilizar el puerto AuditLogger, NO generar otra migración para esa tabla); PetAccessGuard + @RequirePetRole — sin membresía en pet_users → 404 (no revelar existencia, brief §4); CRUD /v1/pets con el DTO del brief §7 (species dog|cat, birthDate o approxAgeMonths, etc.), creador como owner en transacción, edad calculada, DELETE cascade. Es el mecanismo de autorización de TODAS las features posteriores.",
     "acceptance_criteria": [
       "POST /v1/pets → 201 con transacción pets + pet_users(owner) + audit",
       "GET /v1/pets lista solo mascotas donde soy miembro, con mi rol",
