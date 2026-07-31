@@ -37,7 +37,7 @@
   {
     "id": 3,
     "name": "auth-registration",
-    "status": "spec_ready",
+    "status": "in_progress",
     "priority": "P1",
     "description": "Plan 003 adaptado a auth propia (sin Cognito en local): tabla users (modelo docs/data-model.md), POST /v1/auth/register con email único, password hasheado (argon2/bcrypt — decidir en spec), first_name, last_name, phone, country, timezone. Campos completos del alta de usuario según brief §6: el DTO valida passwordConfirmation (debe igualar password, no se persiste) y termsAccepted (obligatorio, persiste terms_accepted_at). Incluye verificación de email por código/enlace (brief §6): sin Cognito/SES en local, el mecanismo de confirmación (endpoint + token, a definir en la spec) se loguea en vez de enviarse de verdad, mismo patrón que PUSH_ENABLED=false en push_tokens. Respuesta nunca expone password_hash.",
     "acceptance_criteria": [
