@@ -5,6 +5,7 @@ import { AuditModule } from './audit/audit.module';
 import { AwsModule } from './aws/aws.module';
 import { AppConfigModule } from './config/config.module';
 import { DrizzleModule } from './db/drizzle.module';
+import { AuthModule } from './modules/auth/auth.module';
 import { HealthModule } from './modules/health/health.module';
 
 @Module({
@@ -14,6 +15,7 @@ import { HealthModule } from './modules/health/health.module';
     AwsModule,
     AuditModule,
     HealthModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
