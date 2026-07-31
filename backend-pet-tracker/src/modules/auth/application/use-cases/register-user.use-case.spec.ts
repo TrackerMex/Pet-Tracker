@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { AuditLogEntry, AuditLogger } from '@/audit/audit-log.repository';
 import { User } from '../../domain/entities/user.entity';
 import { EmailAlreadyRegisteredError } from '../../domain/errors/user.errors';
 import {
@@ -77,14 +78,20 @@ function buildScenario(options: { emailExists?: boolean } = {}) {
   );
   const sender: EmailVerificationSender = { send };
 
+  const record = jest.fn<Promise<void>, [AuditLogEntry]>(() =>
+    Promise.resolve(),
+  );
+  const auditLogger: AuditLogger = { record };
+
   const useCase = new RegisterUserUseCase(
     users,
     passwordHasher,
     tokens,
     sender,
+    auditLogger,
   );
 
-  return { useCase, existsByEmail, create, hash, createToken, send };
+  return { useCase, existsByEmail, create, hash, createToken, send, record };
 }
 
 describe('R1: el registro valido crea el usuario con los datos del payload', () => {
@@ -206,6 +213,30 @@ describe('R7: el token de verificacion no viaja en el resultado del registro', (
     const user = await useCase.execute(buildDto());
 
     expect(JSON.stringify(user)).not.toContain(send.mock.calls[0][0].token);
+  });
+});
+
+describe('R12: el registro exitoso deja una entrada user.register en audit_log', () => {
+  it('audita la accion con entity user y el id del usuario creado', async () => {
+    const { useCase, record } = buildScenario();
+
+    await useCase.execute(buildDto());
+
+    expect(record).toHaveBeenCalledWith({
+      userId: CREATED_USER_ID,
+      action: 'user.register',
+      entity: 'user',
+      entityId: CREATED_USER_ID,
+    });
+  });
+
+  it('no audita nada si el registro falla por email duplicado', async () => {
+    const { useCase, record } = buildScenario({ emailExists: true });
+
+    await expect(useCase.execute(buildDto())).rejects.toBeInstanceOf(
+      EmailAlreadyRegisteredError,
+    );
+    expect(record).not.toHaveBeenCalled();
   });
 });
 

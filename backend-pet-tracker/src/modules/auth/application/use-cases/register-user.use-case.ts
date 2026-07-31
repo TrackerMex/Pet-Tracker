@@ -1,4 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { AUDIT_LOGGER } from '@/audit/audit-log.repository';
+import type { AuditLogger } from '@/audit/audit-log.repository';
 import {
   DEFAULT_TIMEZONE,
   normalizeEmail,
@@ -31,6 +33,8 @@ export class RegisterUserUseCase {
     private readonly verificationTokens: EmailVerificationTokenRepository,
     @Inject(EMAIL_VERIFICATION_SENDER)
     private readonly verificationSender: EmailVerificationSender,
+    @Inject(AUDIT_LOGGER)
+    private readonly auditLogger: AuditLogger,
   ) {}
 
   async execute(dto: RegisterUserDto): Promise<User> {
@@ -53,6 +57,13 @@ export class RegisterUserUseCase {
     });
 
     await this.issueVerificationToken(user, registeredAt);
+
+    await this.auditLogger.record({
+      userId: user.id,
+      action: 'user.register',
+      entity: 'user',
+      entityId: user.id,
+    });
 
     return user;
   }
