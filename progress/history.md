@@ -30,6 +30,43 @@ Formato de cada entrada de `history.md` (una por sesión cerrada):
 
 ---
 
+## Sesión 2026-07-31 — auth-login-me (id: 4)
+
+- **Feature:** `POST /v1/auth/login` (JWT HS256, 24h TTL) detrás de un puerto
+  `TokenService` nuevo; `AuthGuard` global vía `APP_GUARD` +
+  `@Public()`/`@CurrentUser()`; módulo nuevo `modules/users/` con
+  `GET`/`PATCH /v1/me` (update parcial atómico, `timezone` validada con
+  `Intl.supportedValuesOf`, auditoría `user.update` con solo nombres de
+  campo). Reutiliza `UserRepository`/`PasswordHasher`/`AuditLogger` de
+  `auth-registration` (#3) sin duplicar dominio.
+- **Spec:** [[specs/auth-login-me/requirements|spec]] — aprobada por humano
+  2026-07-31, R1-R15.
+- **Acciones:** `spec_author` escribió la spec → aprobación humana →
+  `implementer` (10 commits, TDD rojo-verde-refactor por requisito) →
+  `reviewer` verificó código real de forma independiente (no solo el
+  reporte) → **aprobado** sin observaciones bloqueantes ni no bloqueantes.
+  PR #5 abierto (`feature/4-auth-login-me` → `main`), pendiente merge humano.
+- **Resultado:** build/lint/`tsc --noEmit` verdes; 41/41 suites, 161/161
+  tests verdes (baseline previo 28/96, sin regresiones). `access_token` en
+  snake_case confirmado como contrato literal de la spec, no descuido de
+  estilo.
+- **Commits:** `0199fab`..`980ef58` (10 commits en
+  `feature/4-auth-login-me`, ver `progress/impl_auth-login-me.md` para el
+  detalle por requisito).
+- **Estado final:** `done`.
+- **Nota de entorno:** dos hallazgos de este sandbox concreto, ninguno del
+  código: (1) Docker sin acceso (permisos, no socket) — sin e2e contra
+  Postgres real, mismo criterio ya aceptado en #1-#3; (2) **nuevo**, el
+  binding nativo de `argon2` da segfault al cargar en 2 archivos
+  (`argon2-password-hasher.spec.ts`, `auth.module.spec.ts`) — prebuild roto
+  en este sandbox y sin `make` para recompilar desde fuente. Confirmado por
+  ejecución directa tanto por el implementer como por el reviewer; el resto
+  de la suite corre normal. No es una regresión — CI en GitHub Actions sigue
+  verde sobre el mismo commit. Detalle completo en `STATUS.md` ("Nuevo
+  hallazgo de entorno 2026-07-31").
+
+---
+
 ## Sesión 2026-07-30 — db-setup-drizzle (id: 1)
 
 - **Feature:** Cablear Drizzle ORM al backend NestJS — deps (drizzle-orm, pg,

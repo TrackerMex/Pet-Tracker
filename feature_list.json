@@ -56,7 +56,7 @@
   {
     "id": 4,
     "name": "auth-login-me",
-    "status": "pending",
+    "status": "done",
     "priority": "P1",
     "description": "Plan 003 (guard + perfil): POST /v1/auth/login → JWT firmado (introduce JWT_SECRET en .env.example y conventions); AuthGuard global con @Public() y @CurrentUser() — mismo contrato que el plan para swap futuro a Cognito; GET /v1/me y PATCH /v1/me (firstName, lastName, phone, country, timezone validada contra Intl.supportedValuesOf).",
     "acceptance_criteria": [
