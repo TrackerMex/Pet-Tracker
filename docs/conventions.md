@@ -214,3 +214,4 @@ debe cargarlo con `envFilePath: ['../.env']`.
 | `AWS_REGION` | Región AWS para SDK contra LocalStack | en `.env.example` — consumida desde `localstack-provisioning` (#2), misma vía que `AWS_ENDPOINT_URL` |
 | `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` | Credenciales dummy para LocalStack (valor `test`) | en `.env.example` — consumidas desde `localstack-provisioning` (#2), misma vía que `AWS_ENDPOINT_URL` |
 | `EMAIL_ENABLED` | Envío real de email de verificación. `false` (default local, sin SES): `ConsoleEmailVerificationSender` escribe el token en un log estructurado en vez de enviarlo | en `.env.example` — consumida desde `auth-registration` (#3): `src/modules/auth/infrastructure/email/` vía `ConfigService` |
+| `JWT_SECRET` | Clave HS256 para firmar/verificar los `access_token` del login propio | en `.env.example` — consumida desde `auth-login-me` (#4): `src/modules/auth/infrastructure/security/jwt-token-service.ts` vía `ConfigService` |
