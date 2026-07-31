@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { RegisterUserUseCase } from './application/use-cases/register-user.use-case';
+import { VerifyEmailUseCase } from './application/use-cases/verify-email.use-case';
 import { EMAIL_VERIFICATION_SENDER } from './domain/ports/email-verification-sender';
 import { PASSWORD_HASHER } from './domain/ports/password-hasher';
 import { EMAIL_VERIFICATION_TOKEN_REPOSITORY } from './domain/repositories/email-verification-token.repository';
@@ -16,6 +17,7 @@ import { Argon2PasswordHasher } from './infrastructure/security/argon2-password-
   controllers: [AuthController],
   providers: [
     RegisterUserUseCase,
+    VerifyEmailUseCase,
     {
       provide: USER_REPOSITORY,
       useClass: UserDrizzleRepository,

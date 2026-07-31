@@ -21,7 +21,7 @@ Rutas de test relativas a `backend-pet-tracker/src/`.
 | R9 | pendiente | pendiente |
 | R10 | pendiente | pendiente |
 | R11 | pendiente | pendiente |
-| R12 | pendiente | pendiente |
+| R12 | `modules/auth/application/use-cases/register-user.use-case.spec.ts::R12: el registro exitoso deja una entrada user.register en audit_log` | `e964260` feat(auth-registration): audit successful registrations (R12) |
 | R13 | pendiente | pendiente |
 | R14 | `modules/auth/infrastructure/mappers/user-response.mapper.spec.ts::R14: la serializacion de un usuario excluye password_hash`; `modules/auth/infrastructure/auth.controller.spec.ts::R14: la respuesta de registro nunca expone password_hash` | `92dbda4` feat(auth-registration): POST /v1/auth/register with argon2id hashing (R1,R2,R3,R4,R5,R14,R15) |
 | R15 | `modules/auth/application/use-cases/register-user.use-case.spec.ts::R15: passwordConfirmation nunca se persiste`; `modules/auth/infrastructure/repositories/user.drizzle.repository.spec.ts::R15: passwordConfirmation nunca se persiste` | `92dbda4` feat(auth-registration): POST /v1/auth/register with argon2id hashing (R1,R2,R3,R4,R5,R14,R15) |

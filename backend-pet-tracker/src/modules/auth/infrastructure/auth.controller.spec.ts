@@ -4,10 +4,18 @@ import {
   ConflictException,
   HttpException,
 } from '@nestjs/common';
+import { GoneException } from '@nestjs/common';
 import { RegisterUserUseCase } from '../application/use-cases/register-user.use-case';
+import { VerifyEmailUseCase } from '../application/use-cases/verify-email.use-case';
 import { User } from '../domain/entities/user.entity';
+import {
+  InvalidVerificationTokenError,
+  VerificationTokenExpiredError,
+} from '../domain/errors/email-verification.errors';
 import { EmailAlreadyRegisteredError } from '../domain/errors/user.errors';
 import { AuthController } from './auth.controller';
+
+const VERIFICATION_TOKEN = 'kQ8s0Zr4Vv1nT7yQ2bXpL9dW3fH6jM0aC5eR8uY1oI4';
 
 const CREATED_USER_ID = '0198a1f0-3d5c-7f21-b0a1-6f1c9e2d4b77';
 
@@ -44,9 +52,22 @@ function buildRegisterUserDouble(
   behaviour: () => Promise<User> = () => Promise.resolve(buildCreatedUser()),
 ) {
   const execute = jest.fn(behaviour);
-  const controller = new AuthController({
-    execute,
-  } as unknown as RegisterUserUseCase);
+  const controller = new AuthController(
+    { execute } as unknown as RegisterUserUseCase,
+    { execute: jest.fn() } as unknown as VerifyEmailUseCase,
+  );
+
+  return { controller, execute };
+}
+
+function buildVerifyEmailDouble(
+  behaviour: () => Promise<void> = () => Promise.resolve(),
+) {
+  const execute = jest.fn(behaviour);
+  const controller = new AuthController(
+    { execute: jest.fn() } as unknown as RegisterUserUseCase,
+    { execute } as unknown as VerifyEmailUseCase,
+  );
 
   return { controller, execute };
 }
@@ -183,6 +204,72 @@ describe('R7: la respuesta de registro nunca incluye el token de verificacion', 
       'timezone',
     ]);
     expect(JSON.stringify(body).toLowerCase()).not.toContain('token');
+  });
+});
+
+describe('R8: POST /v1/auth/verify-email con token valido responde 200', () => {
+  it('invoca el caso de uso con el token y declara el status 200', async () => {
+    const { controller, execute } = buildVerifyEmailDouble();
+
+    const body = await controller.verifyEmail({ token: VERIFICATION_TOKEN });
+
+    expect(execute).toHaveBeenCalledWith({ token: VERIFICATION_TOKEN });
+    expect(body).toEqual({ verified: true });
+    expect(httpCodeOf('verifyEmail')).toBe(200);
+  });
+});
+
+describe('R9: POST /v1/auth/verify-email con token inexistente responde 400', () => {
+  it('mapea InvalidVerificationTokenError a BadRequestException 400', async () => {
+    const { controller } = buildVerifyEmailDouble(() =>
+      Promise.reject(new InvalidVerificationTokenError()),
+    );
+
+    const error = await captureHttpError(
+      controller.verifyEmail({ token: VERIFICATION_TOKEN }),
+    );
+
+    expect(error).toBeInstanceOf(BadRequestException);
+    expect(error.getStatus()).toBe(400);
+  });
+
+  it('responde 400 si el body no trae token', async () => {
+    const { controller, execute } = buildVerifyEmailDouble();
+
+    const error = await captureHttpError(controller.verifyEmail({}));
+
+    expect(error.getStatus()).toBe(400);
+    expect(execute).not.toHaveBeenCalled();
+  });
+});
+
+describe('R10: POST /v1/auth/verify-email con token expirado responde 410', () => {
+  it('mapea VerificationTokenExpiredError a GoneException 410', async () => {
+    const { controller } = buildVerifyEmailDouble(() =>
+      Promise.reject(new VerificationTokenExpiredError()),
+    );
+
+    const error = await captureHttpError(
+      controller.verifyEmail({ token: VERIFICATION_TOKEN }),
+    );
+
+    expect(error).toBeInstanceOf(GoneException);
+    expect(error.getStatus()).toBe(410);
+  });
+});
+
+describe('R11: POST /v1/auth/verify-email con token ya usado responde 400', () => {
+  it('un token consumido llega como InvalidVerificationTokenError y se mapea a 400', async () => {
+    const { controller } = buildVerifyEmailDouble(() =>
+      Promise.reject(new InvalidVerificationTokenError()),
+    );
+
+    const error = await captureHttpError(
+      controller.verifyEmail({ token: VERIFICATION_TOKEN }),
+    );
+
+    expect(error).toBeInstanceOf(BadRequestException);
+    expect(error.getStatus()).toBe(400);
   });
 });
 

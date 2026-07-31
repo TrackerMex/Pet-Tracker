@@ -3,6 +3,7 @@ import {
   Body,
   ConflictException,
   Controller,
+  GoneException,
   HttpCode,
   HttpStatus,
   Post,
@@ -12,13 +13,29 @@ import {
   RegisterUserSchema,
   RegisterUserDto,
 } from '../application/dto/register-user.dto';
+import {
+  VerifyEmailDto,
+  VerifyEmailSchema,
+} from '../application/dto/verify-email.dto';
 import { RegisterUserUseCase } from '../application/use-cases/register-user.use-case';
+import { VerifyEmailUseCase } from '../application/use-cases/verify-email.use-case';
+import {
+  InvalidVerificationTokenError,
+  VerificationTokenExpiredError,
+} from '../domain/errors/email-verification.errors';
 import { EmailAlreadyRegisteredError } from '../domain/errors/user.errors';
 import { toUserResponse, UserResponse } from './mappers/user-response.mapper';
 
+export interface VerifyEmailResponse {
+  verified: true;
+}
+
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly registerUser: RegisterUserUseCase) {}
+  constructor(
+    private readonly registerUser: RegisterUserUseCase,
+    private readonly verifyEmailUseCase: VerifyEmailUseCase,
+  ) {}
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
@@ -32,6 +49,26 @@ export class AuthController {
         // Mensaje generico a proposito: el detalle (que email) no vuelve al
         // cliente para no confirmar que direcciones estan registradas.
         throw new ConflictException('Email already registered');
+      }
+      throw error;
+    }
+  }
+
+  @Post('verify-email')
+  @HttpCode(HttpStatus.OK)
+  async verifyEmail(@Body() body: unknown): Promise<VerifyEmailResponse> {
+    const dto = parseBody<VerifyEmailDto>(VerifyEmailSchema, body);
+
+    try {
+      await this.verifyEmailUseCase.execute(dto);
+
+      return { verified: true };
+    } catch (error) {
+      if (error instanceof VerificationTokenExpiredError) {
+        throw new GoneException('Verification token expired');
+      }
+      if (error instanceof InvalidVerificationTokenError) {
+        throw new BadRequestException('Invalid verification token');
       }
       throw error;
     }
