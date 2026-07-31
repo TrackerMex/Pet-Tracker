@@ -123,8 +123,8 @@ debe listar las 4 URLs de cola.
 - Deuda menor detectada en #3: no existe script `db:migrate` en
   `package.json` (solo `db:generate`), aplicar migraciones exige hoy
   `exec drizzle-kit migrate` a mano. Candidato a tarea propia.
-- Próximo paso SDD: PR + merge humano de #2 y #3 a `main` (#1 ya mergeado),
-  luego `spec_author` escribe la spec de `auth-login-me` (#4).
+- Próximo paso SDD: merge humano del PR #4 (feature #3) a `main` — #1 y #2 ya
+  mergeados — luego `spec_author` escribe la spec de `auth-login-me` (#4).
 
 ---
 
