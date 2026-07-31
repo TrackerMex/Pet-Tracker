@@ -17,12 +17,12 @@ tags: [harness, spec]
 | R7 | `infrastructure/guards/auth.guard.spec.ts::R7`, `infrastructure/decorators/public.decorator.spec.ts::R7`, `modules/health/infrastructure/health.controller.spec.ts::R7` | `42310f6` |
 | R8 | `infrastructure/guards/auth.guard.spec.ts::R8`, `infrastructure/decorators/current-user.decorator.spec.ts::R8` | `42310f6` |
 | R9 | `application/use-cases/get-profile.use-case.spec.ts::R9`, `infrastructure/mappers/profile-response.mapper.spec.ts::R9`, `infrastructure/users.controller.spec.ts::R9` | `4c37f52` |
-| R10 | pendiente | pendiente |
-| R11 | pendiente | pendiente |
-| R12 | pendiente | pendiente |
-| R13 | pendiente | pendiente |
-| R14 | pendiente | pendiente |
-| R15 | `infrastructure/auth.controller.spec.ts::R15 (auth-login-me)` (login), `infrastructure/mappers/profile-response.mapper.spec.ts::R15` (GET /v1/me) — pendiente de completar con PATCH /v1/me | pendiente |
+| R10 | `application/dto/update-profile.dto.spec.ts::R10`, `application/use-cases/update-profile.use-case.spec.ts::R10`, `infrastructure/users.controller.spec.ts::R10` | `f87f45b` |
+| R11 | `application/dto/update-profile.dto.spec.ts::R11`, `infrastructure/users.controller.spec.ts::R11` | `f87f45b` |
+| R12 | `application/dto/country.schema.spec.ts::R12`, `application/dto/update-profile.dto.spec.ts::R12`, `infrastructure/users.controller.spec.ts::R12` | `f87f45b` |
+| R13 | `application/dto/update-profile.dto.spec.ts::R13`, `application/use-cases/update-profile.use-case.spec.ts::R13`, `infrastructure/users.controller.spec.ts::R13` | `f87f45b` |
+| R14 | `application/use-cases/update-profile.use-case.spec.ts::R14` | `f87f45b` |
+| R15 | `infrastructure/auth.controller.spec.ts::R15 (auth-login-me)` (login), `infrastructure/mappers/profile-response.mapper.spec.ts::R15` (GET), `infrastructure/users.controller.spec.ts::R15` (PATCH) | `501bd01`, `4c37f52`, `f87f45b` |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
 Convención de commit: `feat(<scope>): <desc> (R1,R2)`.
