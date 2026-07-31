@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
 import { LoginUserUseCase } from './application/use-cases/login-user.use-case';
 import { RegisterUserUseCase } from './application/use-cases/register-user.use-case';
 import { VerifyEmailUseCase } from './application/use-cases/verify-email.use-case';
@@ -10,6 +11,7 @@ import { EMAIL_VERIFICATION_TOKEN_REPOSITORY } from './domain/repositories/email
 import { USER_REPOSITORY } from './domain/repositories/user.repository';
 import { AuthController } from './infrastructure/auth.controller';
 import { ConsoleEmailVerificationSender } from './infrastructure/email/console-email-verification-sender';
+import { AuthGuard } from './infrastructure/guards/auth.guard';
 import { EmailVerificationTokenDrizzleRepository } from './infrastructure/repositories/email-verification-token.drizzle.repository';
 import { UserDrizzleRepository } from './infrastructure/repositories/user.drizzle.repository';
 import { Argon2PasswordHasher } from './infrastructure/security/argon2-password-hasher';
@@ -41,6 +43,12 @@ import { JwtTokenService } from './infrastructure/security/jwt-token-service';
     {
       provide: TOKEN_SERVICE,
       useClass: JwtTokenService,
+    },
+    // APP_GUARD: token especial de Nest que aplica el guard a nivel de toda
+    // la app sin necesitar @Global() (design.md `auth-login-me` R5-R7).
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
     },
   ],
   // USER_REPOSITORY se reexporta para que UsersModule (GET/PATCH /v1/me) lo
