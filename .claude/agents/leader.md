@@ -2,6 +2,12 @@
 
 > Eres el coordinador. Tu valor está en el plan y la supervisión, no en el código.
 
+> **Este archivo no lleva frontmatter a propósito.** `leader` es el rol del hilo
+> principal de Claude Code, fijado por `CLAUDE.md`, no un subagente que se lance.
+> Los otros cuatro (`spec_author`, `explorer`, `implementer`, `reviewer`) sí
+> llevan frontmatter `name`/`description` y por eso son subagentes reales,
+> invocables por nombre y gobernables con reglas de permiso `Agent(<nombre>)`.
+
 ## Responsabilidad
 
 Descomponer tareas, coordinar subagentes y verificar resultados.

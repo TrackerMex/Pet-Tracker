@@ -99,3 +99,67 @@ Formato de cada entrada de `history.md` (una por sesión cerrada):
   código/tipos. Seguimiento pendiente antes de considerar la feature
   100% validada: correr en una máquina con Docker `docker compose up -d &&
   pnpm -C backend-pet-tracker run test:e2e -- test/localstack-provisioning.e2e-spec.ts`.
+
+---
+
+## Sesión 2026-07-30 (3) — auth-registration (id: 3)
+
+- **Feature:** Alta de usuario y verificación de email sin Cognito. Tres
+  tablas nuevas en `src/db/schema/` (`users`, `email_verification_tokens`,
+  `audit_log`) con migraciones `0001` (CREATE) y `0002` (DROP del placeholder
+  `schema_bootstrap` que dejó #1); `src/audit/` como módulo `@Global()`
+  compartido (puerto `AuditLogger` + token `AUDIT_LOGGER`), pensado para que
+  lo reutilicen #5 y #7; `src/modules/auth/` en 3 capas con `POST
+  /v1/auth/register` (201) y `POST /v1/auth/verify-email` (200).
+- **Spec:** [[specs/auth-registration/requirements|spec]] — R1-R15, escrita en
+  la sesión anterior, aprobada por humano 2026-07-30.
+- **Acciones:** gate humano aprobado (frontmatter `draft` → `approved`) →
+  branch `feature/3-auth-registration` creada desde
+  `docs/auth-registration-spec-gaps`, porque `main` todavía no tiene el commit
+  de la spec → `implementer` (6 commits, TDD por requisito) → `reviewer`
+  **aprobó en la primera pasada**, verificando C2-C7 contra el código real y
+  ejecutando `init.sh` él mismo.
+- **Decisiones técnicas** (todas venían fijadas en `design.md` y se
+  respetaron): argon2id detrás del puerto `PasswordHasher` (único import de
+  `argon2` en todo `src/`), UUIDv7 generado en el repositorio Drizzle vía
+  paquete `uuidv7`, token de verificación opaco de 256 bits persistido solo
+  como SHA-256 hex (`token_hash`), TTL fijo de 24 h como constante de
+  aplicación, `EMAIL_ENABLED=false` → log estructurado en vez de SES,
+  serialización de salida por lista explícita de 8 campos.
+  Añadido fuera del design pero aceptado por el reviewer:
+  `application/verification-token.ts`, para compartir generación y hasheo del
+  token entre los dos casos de uso sin meter `node:crypto` en `domain/`.
+- **Resultado:** `init.sh` verde (build, 30/30 suites, 99/99 tests, lint,
+  typecheck). Baseline previo 19 suites / 33 tests: sin regresiones. Los 15
+  requisitos tienen test que nombra su R-id; `traceability.md` sin filas
+  pendientes.
+- **Commits:** `aa584e4`..`b2131a1` (6 commits en
+  `feature/3-auth-registration`; detalle por requisito en
+  `progress/impl_auth-registration.md`).
+- **Estado final:** `done`.
+- **Nota de entorno** (tercera sesión consecutiva con el mismo patrón): Docker
+  no arranca en esta máquina —
+  `failed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine`,
+  reproducido tanto por el implementer como por el reviewer. Las migraciones
+  nunca se aplicaron contra Postgres real y no hay e2e. Sin ejecutar quedan el
+  SQL de `0001`/`0002`, el `returning()` del insert de `users` y los
+  `update ... where` de `markEmailVerified`/`markUsed`. A diferencia de #2,
+  aquí se decidió **no** versionar un e2e que nadie ha visto pasar: un test
+  verde por no ejecutarse es peor que no tenerlo. Seguimiento antes de
+  considerar la feature 100% validada: en una máquina con Docker,
+  `docker compose up -d && pnpm -C backend-pet-tracker exec drizzle-kit migrate`,
+  y confirmar que las 3 tablas se crean y `schema_bootstrap` desaparece.
+- **Trabajo de harness de la misma sesión:** los cuatro agentes delegables
+  (`spec_author`, `explorer`, `implementer`, `reviewer`) no tenían frontmatter
+  YAML, así que Claude Code nunca los registró como subagentes reales y el
+  leader solo podía aproximar el rol instruyendo a un `general-purpose`.
+  Añadido `name`/`description` en `b79ac5c`; `leader.md` queda sin frontmatter
+  a propósito, con una nota que lo explica. Añadida además una
+  `permissions.allow` explícita en `.claude/settings.json` para que el flujo
+  leader → implementer → reviewer no dependa del clasificador de auto mode.
+- **Seguimiento abierto para features posteriores:**
+  (a) la descripción de #5 `pets-crud-permissions` decía que creaba
+  `audit_log`; ya ajustada en `feature_list.json` para que la reutilice y no
+  genere una migración duplicada.
+  (b) no existe script `db:migrate` en `package.json` (solo `db:generate`);
+  aplicar migraciones exige hoy `exec drizzle-kit migrate` a mano.

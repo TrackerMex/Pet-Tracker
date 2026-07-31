@@ -37,14 +37,16 @@
   {
     "id": 3,
     "name": "auth-registration",
-    "status": "pending",
+    "status": "done",
     "priority": "P1",
-    "description": "Plan 003 adaptado a auth propia (sin Cognito en local): tabla users (modelo docs/data-model.md), POST /v1/auth/register con email único, password hasheado (argon2/bcrypt — decidir en spec), first_name, last_name, timezone. Respuesta nunca expone password_hash.",
+    "description": "Plan 003 adaptado a auth propia (sin Cognito en local): tabla users (modelo docs/data-model.md), POST /v1/auth/register con email único, password hasheado (argon2/bcrypt — decidir en spec), first_name, last_name, phone, country, timezone. Campos completos del alta de usuario según brief §6: el DTO valida passwordConfirmation (debe igualar password, no se persiste) y termsAccepted (obligatorio, persiste terms_accepted_at). Incluye verificación de email por código/enlace (brief §6): sin Cognito/SES en local, el mecanismo de confirmación (endpoint + token, a definir en la spec) se loguea en vez de enviarse de verdad, mismo patrón que PUSH_ENABLED=false en push_tokens. Respuesta nunca expone password_hash.",
     "acceptance_criteria": [
-      "Registro válido → 201 con id UUIDv7; fila en users con password hasheado",
-      "Email duplicado → 409; payload inválido → 400 vía ValidationPipe",
-      "audit_log registra 'user.register'",
-      "La respuesta y todo DTO de salida omiten password_hash"
+      "Registro válido con first_name, last_name, email, phone, password, passwordConfirmation, country, timezone y termsAccepted=true → 201 con id UUIDv7; fila en users con password hasheado, phone, country y terms_accepted_at seteado",
+      "Email duplicado → 409; payload inválido (incluye passwordConfirmation distinto de password, o termsAccepted ausente/false) → 400 vía validación zod",
+      "Usuario recién registrado queda con email_verified_at = NULL; el sistema genera un código/token de verificación con expiración y lo loguea (sin envío real de email en local, ver docs/architecture.md)",
+      "Endpoint de confirmación (ej. POST /v1/auth/verify-email) con código/token válido y no expirado → 200 y setea email_verified_at; código inválido o expirado → 400/410",
+      "audit_log registra 'user.register' y 'user.email_verified'",
+      "La respuesta y todo DTO de salida omiten password_hash; passwordConfirmation nunca se persiste"
     ],
     "files_affected": [
       "backend-pet-tracker/src/modules/auth/",
@@ -73,7 +75,7 @@
     "name": "pets-crud-permissions",
     "status": "pending",
     "priority": "P1",
-    "description": "Plan 004 (núcleo): tablas pets, pet_users, audit_log; PetAccessGuard + @RequirePetRole — sin membresía en pet_users → 404 (no revelar existencia, brief §4); CRUD /v1/pets con el DTO del brief §7 (species dog|cat, birthDate o approxAgeMonths, etc.), creador como owner en transacción, edad calculada, DELETE cascade. Es el mecanismo de autorización de TODAS las features posteriores.",
+    "description": "Plan 004 (núcleo): tablas pets y pet_users (audit_log ya existe: la creó auth-registration #3 en src/audit/ como módulo @Global() — reutilizar el puerto AuditLogger, NO generar otra migración para esa tabla); PetAccessGuard + @RequirePetRole — sin membresía en pet_users → 404 (no revelar existencia, brief §4); CRUD /v1/pets con el DTO del brief §7 (species dog|cat, birthDate o approxAgeMonths, etc.), creador como owner en transacción, edad calculada, DELETE cascade. Es el mecanismo de autorización de TODAS las features posteriores.",
     "acceptance_criteria": [
       "POST /v1/pets → 201 con transacción pets + pet_users(owner) + audit",
       "GET /v1/pets lista solo mascotas donde soy miembro, con mi rol",

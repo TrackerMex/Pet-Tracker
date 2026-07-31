@@ -3,11 +3,10 @@
 // futura agrega su propio `<module>.schema.ts` en este directorio y lo
 // re-exporta aquí; el barrel en sí nunca contiene tablas de dominio.
 //
-// `schemaBootstrap` es un placeholder técnico (no representa ningún
-// concepto de negocio) que existe únicamente para que `drizzle-kit
-// generate` tenga al menos una migración versionada desde esta feature
-// (R3 de specs/db-setup-drizzle/requirements.md) — un schema totalmente
-// vacío no produce ningún archivo .sql. Elimínalo (con su migración de
-// down correspondiente) en cuanto la primera feature con tablas de
-// dominio reales (auth-registration, id=3, users.schema.ts) se implemente.
-export * from './bootstrap.schema';
+// El placeholder técnico `schemaBootstrap` de db-setup-drizzle (#1) se
+// eliminó aquí: auth-registration (#3) es la primera feature con tablas de
+// dominio reales, que es la condición que su propio comentario fijaba para
+// borrarlo.
+export * from './audit-log.schema';
+export * from './email-verification-tokens.schema';
+export * from './users.schema';

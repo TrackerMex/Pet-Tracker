@@ -8,6 +8,20 @@
       "when": 1785421632910,
       "tag": "0000_windy_pete_wisdom",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1785470225718,
+      "tag": "0001_auth_registration_tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1785470338699,
+      "tag": "0002_drop_schema_bootstrap_placeholder",
+      "breakpoints": true
     }
   ]
 }

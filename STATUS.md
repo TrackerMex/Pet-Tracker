@@ -1,8 +1,8 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-07-30
-**Features completadas**: 2/18 (`feature_list.json`)
-**Pendientes**: 16 — backlog backend derivado de `plans/` 002–009 (fundaciones, auth propia, mascotas+permisos, collar Wialon SIM, recorridos, geocercas+alertas, salud, nutrición)
+**Features completadas**: 3/18 (`feature_list.json`)
+**Pendientes**: 15 — backlog backend derivado de `plans/` 002–009 (fundaciones, auth propia, mascotas+permisos, collar Wialon SIM, recorridos, geocercas+alertas, salud, nutrición)
 **En producción**: no
 
 ---
@@ -99,12 +99,53 @@ debe listar las 4 URLs de cola.
   test:e2e -- test/localstack-provisioning.e2e-spec.ts`. Ver
   `progress/impl_localstack-provisioning.md` y
   `progress/review_localstack-provisioning.md`.
-- Próximo paso SDD: PR + merge humano de #2 a `main` (#1 ya mergeado), luego
-  `spec_author` escribe la spec de `auth-registration` (#3).
+- **`auth-registration` (#3) done**: primera feature con tablas de dominio
+  reales. `src/db/schema/` con `users`, `email_verification_tokens` y
+  `audit_log` (+ migraciones `0001` CREATE y `0002` DROP del placeholder
+  `schema_bootstrap` de #1, que queda eliminado); `src/audit/` como módulo
+  `@Global()` compartido (puerto `AuditLogger` + token `AUDIT_LOGGER`) que
+  reutilizarán #5 y #7; `src/modules/auth/` en 3 capas con `POST
+  /v1/auth/register` (201) y `POST /v1/auth/verify-email` (200). argon2id tras
+  el puerto `PasswordHasher`, UUIDv7 generado en el repositorio Drizzle, token
+  opaco de un solo uso persistido solo como SHA-256, `EMAIL_ENABLED=false` →
+  log estructurado en vez de SES. Branch `feature/3-auth-registration`,
+  revisado y **aprobado** por el `reviewer` — pendiente de PR + merge humano.
+  **Seguimiento pendiente no bloqueante**: Docker no arranca en esta máquina
+  (`npipe:////./pipe/dockerDesktopLinuxEngine` no responde), así que las
+  migraciones nunca se aplicaron contra Postgres real y no hay e2e. Sin
+  ejecutar quedan el SQL de `0001`/`0002`, el `returning()` del insert de
+  `users` y los `update ... where` de `markEmailVerified`/`markUsed`.
+  Deliberadamente **no** se versionó un e2e sin ver pasar. En una máquina con
+  Docker: `docker compose up -d && pnpm -C backend-pet-tracker exec drizzle-kit
+  migrate`, y confirmar que las 3 tablas se crean y `schema_bootstrap`
+  desaparece. Ver `progress/impl_auth-registration.md` y
+  `progress/review_auth-registration.md`.
+- Deuda menor detectada en #3: no existe script `db:migrate` en
+  `package.json` (solo `db:generate`), aplicar migraciones exige hoy
+  `exec drizzle-kit migrate` a mano. Candidato a tarea propia.
+- Próximo paso SDD: merge humano del PR #4 (feature #3) a `main` — #1 y #2 ya
+  mergeados — luego `spec_author` escribe la spec de `auth-login-me` (#4).
 
 ---
 
 ## Última sesión
+
+- **2026-07-30 (3)** — Ciclo SDD de `auth-registration` (#3): spec R1-R15
+  escrita en la sesión anterior → **gate humano aprobado** (frontmatter
+  `approved`) → `implementer` (6 commits, `aa584e4`..`b2131a1`, TDD por
+  requisito) → `reviewer` **aprobó** en la primera pasada, verificando C2-C7
+  contra el código real y corriendo `init.sh` él mismo. 30 suites / 99 tests
+  (baseline 19 / 33), sin regresiones. Desviación de entorno, tercera sesión
+  consecutiva con el mismo patrón: sin Docker, las migraciones no se aplicaron
+  contra Postgres real; a diferencia de #2 aquí **no** se versionó un e2e sin
+  ejecutar. Trabajo de harness de la misma sesión: los cuatro agentes
+  delegables (`spec_author`, `explorer`, `implementer`, `reviewer`) no tenían
+  frontmatter YAML, así que Claude Code nunca los registró como subagentes
+  reales — añadido `name`/`description` en `b79ac5c`, ahora son invocables por
+  nombre; `leader.md` queda sin frontmatter a propósito (es el rol del hilo
+  principal). Añadida `permissions.allow` explícita en `.claude/settings.json`
+  para que el flujo no dependa del clasificador de auto mode. Feature marcada
+  `done`. Próximo: PR + merge humano, luego spec de `auth-login-me` (#4).
 
 - **2026-07-30 (2)** — Ciclo SDD de `localstack-provisioning` (#2): spec
   (R1-R19, ampliada con R18/R19 tras feedback humano sobre la convención del
