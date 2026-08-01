@@ -16,6 +16,7 @@ import {
 } from '@/modules/pets/domain/entities/pet-membership';
 import {
   NewPet,
+  PetFieldChanges,
   PetRepository,
   PetWithRole,
 } from '@/modules/pets/domain/repositories/pet.repository';
@@ -108,6 +109,24 @@ export class PetDrizzleRepository implements PetRepository {
       .limit(1);
 
     return rows[0] ? toDomain(rows[0]) : null;
+  }
+
+  async update(petId: string, changes: PetFieldChanges): Promise<Pet> {
+    const { currentWeightKg, ...rest } = changes;
+
+    const [row] = await this.db
+      .update(pets)
+      .set({
+        ...rest,
+        ...(currentWeightKg === undefined
+          ? {}
+          : { currentWeightKg: String(currentWeightKg) }),
+        updatedAt: new Date(),
+      })
+      .where(eq(pets.id, petId))
+      .returning();
+
+    return toDomain(row);
   }
 }
 

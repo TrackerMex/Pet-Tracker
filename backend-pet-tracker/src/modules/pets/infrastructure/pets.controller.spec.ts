@@ -4,6 +4,7 @@ import { PetNotFoundError } from '@/modules/pets/domain/errors/pet.errors';
 import { CreatePetUseCase } from '@/modules/pets/application/use-cases/create-pet.use-case';
 import { GetPetUseCase } from '@/modules/pets/application/use-cases/get-pet.use-case';
 import { ListPetsUseCase } from '@/modules/pets/application/use-cases/list-pets.use-case';
+import { UpdatePetUseCase } from '@/modules/pets/application/use-cases/update-pet.use-case';
 import { PetAccessRequest } from './guards/pet-access.guard';
 import { PetsController } from './pets.controller';
 
@@ -40,9 +41,11 @@ function buildController() {
   const listPets = { execute: listExecute } as unknown as ListPetsUseCase;
   const getExecute = jest.fn().mockResolvedValue(buildPet());
   const getPet = { execute: getExecute } as unknown as GetPetUseCase;
-  const controller = new PetsController(createPet, listPets, getPet);
+  const updateExecute = jest.fn().mockResolvedValue(buildPet());
+  const updatePet = { execute: updateExecute } as unknown as UpdatePetUseCase;
+  const controller = new PetsController(createPet, listPets, getPet, updatePet);
 
-  return { controller, createExecute, listExecute, getExecute };
+  return { controller, createExecute, listExecute, getExecute, updateExecute };
 }
 
 function buildPetRequest(role: 'owner' | 'family' | 'walker' | 'vet') {
@@ -123,6 +126,44 @@ describe('R9: PetNotFoundError se mapea al mismo 404 generico del guard', () => 
     await expect(controller.detail(buildPetRequest('owner'))).rejects.toThrow(
       NotFoundException,
     );
+  });
+});
+
+describe('R13: PATCH /v1/pets/:petId delega el subconjunto validado', () => {
+  it('pasa petId, usuario y dto al use case y responde el perfil', async () => {
+    const { controller, updateExecute } = buildController();
+
+    const response = await controller.update(buildPetRequest('owner'), {
+      name: 'Firu',
+    });
+
+    expect(updateExecute).toHaveBeenCalledWith(PET_ID, USER.id, {
+      name: 'Firu',
+    });
+    expect(response.myRole).toBe('owner');
+  });
+
+  it('responde 400 sin invocar el use case si algun campo no valida (atomico)', async () => {
+    const { controller, updateExecute } = buildController();
+
+    await expect(
+      controller.update(buildPetRequest('owner'), { name: '' }),
+    ).rejects.toThrow(BadRequestException);
+    expect(updateExecute).not.toHaveBeenCalled();
+  });
+});
+
+describe('R14: PATCH con birthDate y approxAgeMonths a la vez responde 400', () => {
+  it('rechaza el body en el borde HTTP sin invocar el use case', async () => {
+    const { controller, updateExecute } = buildController();
+
+    await expect(
+      controller.update(buildPetRequest('owner'), {
+        birthDate: '2024-01-15',
+        approxAgeMonths: 6,
+      }),
+    ).rejects.toThrow(BadRequestException);
+    expect(updateExecute).not.toHaveBeenCalled();
   });
 });
 

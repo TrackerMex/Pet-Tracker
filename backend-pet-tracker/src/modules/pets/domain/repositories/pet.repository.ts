@@ -46,4 +46,26 @@ export interface PetRepository {
   findMembership(petId: string, userId: string): Promise<PetMembership | null>;
 
   findById(petId: string): Promise<Pet | null>;
+
+  /**
+   * Actualiza solo las claves presentes en `changes` y refresca
+   * `updated_at` (R13). `birthDate`/`approxAgeMonths` admiten `null`
+   * explicito: persistir uno anula el otro (R14).
+   */
+  update(petId: string, changes: PetFieldChanges): Promise<Pet>;
+}
+
+/** Subconjunto editable de la ficha (R13); claves ausentes no se tocan. */
+export interface PetFieldChanges {
+  name?: string;
+  species?: PetSpecies;
+  breed?: string;
+  birthDate?: string | null;
+  approxAgeMonths?: number | null;
+  sex?: PetSex;
+  currentWeightKg?: number;
+  size?: PetSize;
+  color?: string;
+  sterilized?: boolean;
+  microchip?: string;
 }

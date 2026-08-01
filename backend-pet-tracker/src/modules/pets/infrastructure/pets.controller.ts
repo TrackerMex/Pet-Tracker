@@ -5,6 +5,7 @@ import {
   Get,
   HttpStatus,
   NotFoundException,
+  Patch,
   Post,
   Req,
   UseGuards,
@@ -17,9 +18,15 @@ import {
   CreatePetDto,
   CreatePetSchema,
 } from '@/modules/pets/application/dto/create-pet.dto';
+import {
+  UpdatePetDto,
+  UpdatePetSchema,
+} from '@/modules/pets/application/dto/update-pet.dto';
 import { CreatePetUseCase } from '@/modules/pets/application/use-cases/create-pet.use-case';
 import { GetPetUseCase } from '@/modules/pets/application/use-cases/get-pet.use-case';
 import { ListPetsUseCase } from '@/modules/pets/application/use-cases/list-pets.use-case';
+import { UpdatePetUseCase } from '@/modules/pets/application/use-cases/update-pet.use-case';
+import { RequirePetRole } from './decorators/require-pet-role.decorator';
 import { PetAccessGuard } from './guards/pet-access.guard';
 import type { PetAccessRequest } from './guards/pet-access.guard';
 import {
@@ -33,6 +40,7 @@ export class PetsController {
     private readonly createPet: CreatePetUseCase,
     private readonly listPets: ListPetsUseCase,
     private readonly getPet: GetPetUseCase,
+    private readonly updatePet: UpdatePetUseCase,
   ) {}
 
   @Post()
@@ -67,6 +75,28 @@ export class PetsController {
 
     try {
       return toPetProfileResponse(await this.getPet.execute(petId), role);
+    } catch (error) {
+      throw mapPetError(error);
+    }
+  }
+
+  @Patch(':petId')
+  @UseGuards(PetAccessGuard)
+  @RequirePetRole('owner')
+  async update(
+    @Req() request: PetAccessRequest,
+    @Body() body: unknown,
+  ): Promise<PetProfileResponse> {
+    // R13: la validacion completa corre antes del use case — un campo
+    // invalido rechaza el body entero sin persistir nada.
+    const dto = parseBody<UpdatePetDto>(UpdatePetSchema, body);
+    const { petId, role } = request.petMembership;
+
+    try {
+      return toPetProfileResponse(
+        await this.updatePet.execute(petId, request.user.id, dto),
+        role,
+      );
     } catch (error) {
       throw mapPetError(error);
     }
