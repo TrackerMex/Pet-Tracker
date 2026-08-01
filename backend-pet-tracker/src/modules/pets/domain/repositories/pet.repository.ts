@@ -53,6 +53,12 @@ export interface PetRepository {
    * explicito: persistir uno anula el otro (R14).
    */
   update(petId: string, changes: PetFieldChanges): Promise<Pet>;
+
+  /**
+   * Borra la fila de `pets` (R16); las membresias caen por el ON DELETE
+   * CASCADE de `pet_users` (R1).
+   */
+  delete(petId: string): Promise<void>;
 }
 
 /** Subconjunto editable de la ficha (R13); claves ausentes no se tocan. */

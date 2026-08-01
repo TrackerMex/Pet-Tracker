@@ -2,6 +2,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Pet } from '@/modules/pets/domain/entities/pet.entity';
 import { PetNotFoundError } from '@/modules/pets/domain/errors/pet.errors';
 import { CreatePetUseCase } from '@/modules/pets/application/use-cases/create-pet.use-case';
+import { DeletePetUseCase } from '@/modules/pets/application/use-cases/delete-pet.use-case';
 import { GetPetUseCase } from '@/modules/pets/application/use-cases/get-pet.use-case';
 import { ListPetsUseCase } from '@/modules/pets/application/use-cases/list-pets.use-case';
 import { UpdatePetUseCase } from '@/modules/pets/application/use-cases/update-pet.use-case';
@@ -43,9 +44,24 @@ function buildController() {
   const getPet = { execute: getExecute } as unknown as GetPetUseCase;
   const updateExecute = jest.fn().mockResolvedValue(buildPet());
   const updatePet = { execute: updateExecute } as unknown as UpdatePetUseCase;
-  const controller = new PetsController(createPet, listPets, getPet, updatePet);
+  const deleteExecute = jest.fn().mockResolvedValue(undefined);
+  const deletePet = { execute: deleteExecute } as unknown as DeletePetUseCase;
+  const controller = new PetsController(
+    createPet,
+    listPets,
+    getPet,
+    updatePet,
+    deletePet,
+  );
 
-  return { controller, createExecute, listExecute, getExecute, updateExecute };
+  return {
+    controller,
+    createExecute,
+    listExecute,
+    getExecute,
+    updateExecute,
+    deleteExecute,
+  };
 }
 
 function buildPetRequest(role: 'owner' | 'family' | 'walker' | 'vet') {
@@ -164,6 +180,17 @@ describe('R14: PATCH con birthDate y approxAgeMonths a la vez responde 400', () 
       }),
     ).rejects.toThrow(BadRequestException);
     expect(updateExecute).not.toHaveBeenCalled();
+  });
+});
+
+describe('R16: DELETE /v1/pets/:petId borra y responde sin body', () => {
+  it('delega el petId del guard y el usuario autenticado; no devuelve nada (204)', async () => {
+    const { controller, deleteExecute } = buildController();
+
+    const result = await controller.remove(buildPetRequest('owner'));
+
+    expect(deleteExecute).toHaveBeenCalledWith(PET_ID, USER.id);
+    expect(result).toBeUndefined();
   });
 });
 

@@ -128,6 +128,10 @@ export class PetDrizzleRepository implements PetRepository {
 
     return toDomain(row);
   }
+
+  async delete(petId: string): Promise<void> {
+    await this.db.delete(pets).where(eq(pets.id, petId));
+  }
 }
 
 /** numeric(5,2) viaja como string en el driver pg. */

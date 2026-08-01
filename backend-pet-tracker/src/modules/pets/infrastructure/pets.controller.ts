@@ -2,7 +2,9 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
   HttpStatus,
   NotFoundException,
   Patch,
@@ -23,6 +25,7 @@ import {
   UpdatePetSchema,
 } from '@/modules/pets/application/dto/update-pet.dto';
 import { CreatePetUseCase } from '@/modules/pets/application/use-cases/create-pet.use-case';
+import { DeletePetUseCase } from '@/modules/pets/application/use-cases/delete-pet.use-case';
 import { GetPetUseCase } from '@/modules/pets/application/use-cases/get-pet.use-case';
 import { ListPetsUseCase } from '@/modules/pets/application/use-cases/list-pets.use-case';
 import { UpdatePetUseCase } from '@/modules/pets/application/use-cases/update-pet.use-case';
@@ -41,6 +44,7 @@ export class PetsController {
     private readonly listPets: ListPetsUseCase,
     private readonly getPet: GetPetUseCase,
     private readonly updatePet: UpdatePetUseCase,
+    private readonly deletePet: DeletePetUseCase,
   ) {}
 
   @Post()
@@ -100,6 +104,15 @@ export class PetsController {
     } catch (error) {
       throw mapPetError(error);
     }
+  }
+
+  // R16: 204 sin body; el cascade de pet_users borra las membresias.
+  @Delete(':petId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(PetAccessGuard)
+  @RequirePetRole('owner')
+  async remove(@Req() request: PetAccessRequest): Promise<void> {
+    await this.deletePet.execute(request.petMembership.petId, request.user.id);
   }
 }
 

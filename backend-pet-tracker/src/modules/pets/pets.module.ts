@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { PET_REPOSITORY } from './domain/repositories/pet.repository';
 import { CreatePetUseCase } from './application/use-cases/create-pet.use-case';
+import { DeletePetUseCase } from './application/use-cases/delete-pet.use-case';
 import { GetPetUseCase } from './application/use-cases/get-pet.use-case';
 import { ListPetsUseCase } from './application/use-cases/list-pets.use-case';
 import { UpdatePetUseCase } from './application/use-cases/update-pet.use-case';
@@ -22,6 +23,7 @@ import { PetDrizzleRepository } from './infrastructure/repositories/pet.drizzle.
     ListPetsUseCase,
     GetPetUseCase,
     UpdatePetUseCase,
+    DeletePetUseCase,
     PetAccessGuard,
     {
       provide: PET_REPOSITORY,
