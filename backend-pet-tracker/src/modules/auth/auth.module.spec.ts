@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import { Global, Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { Test } from '@nestjs/testing';
@@ -22,14 +23,6 @@ import { AuthGuard } from './infrastructure/guards/auth.guard';
 })
 class FakeSharedInfrastructureModule {}
 
-// SEGFAULT CONOCIDO EN ESTE SANDBOX (no en CI de GitHub, ver
-// progress/impl_auth-login-me.md): AuthModule declara Argon2PasswordHasher
-// como provider real; con solo importar este archivo, `require('argon2')`
-// hace segfaultear el proceso de Jest. No se pudo confirmar en ejecucion
-// local que auth-login-me R1/R4/R5/R7/R8 (guard/TokenService/LoginUserUseCase
-// via DI real) queden correctamente resueltos por Nest — se verifico
-// manualmente leyendo el modulo y por los tests unitarios con dobles
-// (login-user.use-case.spec.ts, auth.guard.spec.ts, etc.) que si corren.
 describe('AuthModule: la inyeccion de dependencias resuelve todos los tokens', () => {
   const previousJwtSecret = process.env.JWT_SECRET;
 
@@ -41,7 +34,7 @@ describe('AuthModule: la inyeccion de dependencias resuelve todos los tokens', (
     process.env.JWT_SECRET = previousJwtSecret;
   });
 
-  it('instancia el controller, los tres casos de uso y el guard global', async () => {
+  it('instancia el controller y los tres casos de uso', async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [FakeSharedInfrastructureModule, AuthModule],
     }).compile();
@@ -54,10 +47,20 @@ describe('AuthModule: la inyeccion de dependencias resuelve todos los tokens', (
       VerifyEmailUseCase,
     );
     expect(moduleRef.get(LoginUserUseCase)).toBeInstanceOf(LoginUserUseCase);
-    // APP_GUARD, no AuthGuard: es el token bajo el que Nest lo resuelve
-    // cuando se registra { provide: APP_GUARD, useClass: AuthGuard }.
-    expect(moduleRef.get(APP_GUARD)).toBeInstanceOf(AuthGuard);
 
     await moduleRef.close();
+  });
+
+  // APP_GUARD nunca es recuperable via moduleRef.get(APP_GUARD): Nest
+  // reempaqueta esos providers bajo tokens unicos internos del core module.
+  // El wiring se verifica sobre la metadata del decorador @Module, que es
+  // exactamente lo que Nest lee al registrar el guard global (R5).
+  it('R5: registra AuthGuard como guard global via APP_GUARD', () => {
+    const providers = Reflect.getMetadata('providers', AuthModule) as unknown[];
+
+    expect(providers).toContainEqual({
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    });
   });
 });
