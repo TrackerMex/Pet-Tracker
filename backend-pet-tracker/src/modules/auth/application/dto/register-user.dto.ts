@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { CountrySchema } from './country.schema';
 
 const MIN_PASSWORD_LENGTH = 8;
 const MAX_PASSWORD_LENGTH = 128;
@@ -18,11 +19,7 @@ export const RegisterUserSchema = z
     phone: z.string().trim().min(7).max(20),
     password: passwordSchema,
     passwordConfirmation: passwordSchema,
-    // ISO 3166-1 alpha-2 en mayusculas.
-    country: z
-      .string()
-      .length(2)
-      .regex(/^[A-Z]{2}$/),
+    country: CountrySchema,
     // Opcional: el caso de uso persiste 'UTC' si no llega.
     timezone: z.string().trim().min(1).max(64).optional(),
     termsAccepted: z.literal(true),

@@ -1,8 +1,8 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-08-01
-**Features completadas**: 3/18 (`feature_list.json`)
-**Pendientes**: 15 — backlog backend derivado de `plans/` 002–009 (fundaciones, auth propia, mascotas+permisos, collar Wialon SIM, recorridos, geocercas+alertas, salud, nutrición)
+**Features completadas**: 4/18 (`feature_list.json`)
+**Pendientes**: 14 — backlog backend derivado de `plans/` 002–009 (mascotas+permisos, collar Wialon SIM, recorridos, geocercas+alertas, salud, nutrición)
 **En producción**: no
 
 ---
@@ -112,13 +112,42 @@ debe listar las 4 URLs de cola.
   menor, candidato a e2e cuando `auth-login-me` #4 toque el mismo módulo).
   Ver `progress/impl_auth-registration.md` y
   `progress/review_auth-registration.md`.
+- **`auth-login-me` (#4) done**: `POST /v1/auth/login` (JWT HS256, 24h TTL)
+  detrás de un puerto `TokenService` nuevo (`JwtTokenService`, único archivo
+  que importa `jsonwebtoken`); `AuthGuard` global vía `APP_GUARD` +
+  `@Public()`/`@CurrentUser()` (cubre `/v1/health`,
+  `/v1/auth/{register,verify-email,login}` como públicas, todo lo demás
+  protegido); módulo nuevo `src/modules/users/` con `GET`/`PATCH /v1/me`
+  (update parcial atómico, `timezone` validada con
+  `Intl.supportedValuesOf('timeZone')`, auditoría `user.update` con solo
+  nombres de campo). Reutiliza `UserRepository`/`PasswordHasher`/
+  `AuditLogger` de #3 sin duplicar dominio. Branch `feature/4-auth-login-me`,
+  revisado y **aprobado** por el `reviewer` (sin observaciones bloqueantes
+  ni no bloqueantes) — PR #5 abierto; su CI estaba rojo por un test de
+  `auth.module.spec.ts` que intentaba recuperar `APP_GUARD` vía
+  `moduleRef.get()` (imposible en un TestingModule: Nest reempaqueta esos
+  providers bajo tokens internos), corregido en el rebase del 2026-08-01.
+  Pendiente merge humano. Ver `progress/impl_auth-login-me.md` y
+  `progress/review_auth-login-me.md`.
+- **Hallazgo de entorno (2026-07-31, propio de AQUEL sandbox — resuelto)**:
+  en el sandbox Linux donde se trabajó #4, `pnpm test` (vía `init.sh`) daba
+  **segfault** — el binding nativo de `argon2` (usado tras el puerto
+  `PasswordHasher`, #3) no cargaba: el prebuild
+  `linux-x64/argon2.glibc.node` segfaulteaba al hacer `require('argon2')`, y
+  compilarlo desde fuente fallaba porque no había `make` instalado (sin sudo
+  para instalarlo). Nunca fue un problema del código — CI en GitHub Actions
+  siempre estuvo verde en ese aspecto, y en la máquina actual (Windows,
+  2026-08-01) los 2 archivos afectados (`argon2-password-hasher.spec.ts` y
+  `auth.module.spec.ts`) corren y pasan con normalidad. Se conserva la nota
+  solo como registro: si se vuelve a trabajar en un sandbox sin toolchain
+  nativo, el patrón de acotar con `npx jest --testPathIgnorePatterns=...`
+  sigue siendo válido.
 - Deuda menor detectada en #3: no existe script `db:migrate` en
   `package.json` (solo `db:generate`), aplicar migraciones exige hoy
   `exec drizzle-kit migrate` a mano. Candidato a tarea propia.
-- Próximo paso SDD: merge humano del PR de `fix/jest-e2e-alias` (pin de
-  LocalStack a `4.14` + fix del alias `@/` en `test/jest-e2e.json` +
-  convención de alias endurecida y refactor de imports en `src/modules/auth/`),
-  luego `spec_author` escribe la spec de `auth-login-me` (#4).
+- Próximo paso SDD: merge humano del PR #5 (feature #4) a `main`, luego
+  `spec_author` escribe la spec de `pets-crud-permissions` (#5) — #1-#3 ya
+  mergeados, #4 en PR.
 
 ---
 
@@ -142,6 +171,29 @@ debe listar las 4 URLs de cola.
   refactor mecánico de `src/modules/auth/` para cumplirla (46 imports en 14
   archivos, `626bb10`, vía `implementer`, `reviewer` aprobó). Próximo: merge
   humano del PR del fix, luego spec de `auth-login-me` (#4).
+
+- **2026-07-31 (2)** — Ciclo SDD completo de `auth-login-me` (#4) en el
+  mismo sandbox: `spec_author` escribió R1-R15 → **gate humano aprobado** →
+  `implementer` (10 commits, TDD por requisito, reutiliza
+  `PasswordHasher`/`UserRepository`/`AuditLogger` de #3) → `reviewer`
+  verificó código real de forma independiente (no solo el reporte) y
+  **aprobó** sin observaciones. 41/41 suites, 161/161 tests (baseline
+  28/96), sin regresiones. De paso se acotó el hallazgo de argon2 de la
+  sesión anterior: solo 2 archivos afectados (no 3) —
+  `auth.controller.spec.ts` corre normal. Feature marcada `done`, PR #5
+  abierto. Próximo: merge humano, luego spec de `pets-crud-permissions` (#5).
+
+- **2026-07-31** — Sesión de sandbox nuevo: confirmado merge humano del PR #4
+  (`auth-registration`, #3) a `main` — `feature_list.json` ya reflejaba
+  `done` desde el close-out de la sesión anterior. Se intentó validar la
+  deuda de Docker pendiente (migraciones/e2e reales de #2 y #3); el sandbox
+  actual bloquea Docker por permisos (`claude` no está en el grupo `docker`,
+  sin password para `sudo`). Al intentar `init.sh` igual se encontró un
+  segfault nuevo y no relacionado con Docker: el binding nativo de `argon2`
+  no carga en este sandbox (prebuild segfaultea, build desde fuente falla
+  por falta de `make`) — documentado arriba, no bloquea specs, CI remoto
+  sigue verde. Decisión: no perseguir el entorno, avanzar con
+  `spec_author` para `auth-login-me` (#4).
 
 - **2026-07-30 (3)** — Ciclo SDD de `auth-registration` (#3): spec R1-R15
   escrita en la sesión anterior → **gate humano aprobado** (frontmatter

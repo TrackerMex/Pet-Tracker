@@ -12,4 +12,13 @@ export class Argon2PasswordHasher implements PasswordHasher {
   hash(plainPassword: string): Promise<string> {
     return argon2.hash(plainPassword, { type: argon2.argon2id });
   }
+
+  /**
+   * Delega en argon2.verify, que compara en tiempo constante y valida los
+   * parametros del hash PHC almacenado (auth-login-me R1/R2). El use case de
+   * login nunca ve argon2 directamente.
+   */
+  verify(plainPassword: string, hash: string): Promise<boolean> {
+    return argon2.verify(hash, plainPassword);
+  }
 }

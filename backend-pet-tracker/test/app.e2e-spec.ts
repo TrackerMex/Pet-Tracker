@@ -19,11 +19,11 @@ describe('AppController (e2e)', () => {
     await app.init();
   });
 
-  it('/v1 (GET)', () => {
-    return request(app.getHttpServer())
-      .get('/v1')
-      .expect(200)
-      .expect('Hello Pet Tracker!');
+  // Desde auth-login-me (#4) el AuthGuard global protege toda ruta que no
+  // esté marcada @Public() (R5); la raíz /v1 no está en la lista pública de
+  // R7, así que sin Authorization debe responder 401 antes del handler.
+  it('/v1 (GET) sin token responde 401 (R5: guard global por defecto)', () => {
+    return request(app.getHttpServer()).get('/v1').expect(401);
   });
 
   afterEach(async () => {

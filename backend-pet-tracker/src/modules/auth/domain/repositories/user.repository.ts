@@ -18,8 +18,25 @@ export interface NewUser {
   termsAcceptedAt: Date;
 }
 
+/** Subconjunto editable de un perfil vía PATCH /v1/me (auth-login-me R10). */
+export interface ProfileFieldChanges {
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  country?: string;
+  timezone?: string;
+}
+
 export interface UserRepository {
   existsByEmail(email: string): Promise<boolean>;
   create(user: NewUser): Promise<User>;
   markEmailVerified(userId: string, verifiedAt: Date): Promise<void>;
+  /** auth-login-me R1: necesita el password_hash real para verificar. */
+  findByEmail(email: string): Promise<User | null>;
+  /** auth-login-me R9. */
+  findById(id: string): Promise<User | null>;
+  /**
+   * auth-login-me R10: solo actualiza las columnas presentes en `changes`.
+   */
+  updateProfile(userId: string, changes: ProfileFieldChanges): Promise<User>;
 }

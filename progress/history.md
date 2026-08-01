@@ -30,6 +30,43 @@ Formato de cada entrada de `history.md` (una por sesión cerrada):
 
 ---
 
+## Sesión 2026-07-31 — auth-login-me (id: 4)
+
+- **Feature:** `POST /v1/auth/login` (JWT HS256, 24h TTL) detrás de un puerto
+  `TokenService` nuevo; `AuthGuard` global vía `APP_GUARD` +
+  `@Public()`/`@CurrentUser()`; módulo nuevo `modules/users/` con
+  `GET`/`PATCH /v1/me` (update parcial atómico, `timezone` validada con
+  `Intl.supportedValuesOf`, auditoría `user.update` con solo nombres de
+  campo). Reutiliza `UserRepository`/`PasswordHasher`/`AuditLogger` de
+  `auth-registration` (#3) sin duplicar dominio.
+- **Spec:** [[specs/auth-login-me/requirements|spec]] — aprobada por humano
+  2026-07-31, R1-R15.
+- **Acciones:** `spec_author` escribió la spec → aprobación humana →
+  `implementer` (10 commits, TDD rojo-verde-refactor por requisito) →
+  `reviewer` verificó código real de forma independiente (no solo el
+  reporte) → **aprobado** sin observaciones bloqueantes ni no bloqueantes.
+  PR #5 abierto (`feature/4-auth-login-me` → `main`), pendiente merge humano.
+- **Resultado:** build/lint/`tsc --noEmit` verdes; 41/41 suites, 161/161
+  tests verdes (baseline previo 28/96, sin regresiones). `access_token` en
+  snake_case confirmado como contrato literal de la spec, no descuido de
+  estilo.
+- **Commits:** `0199fab`..`980ef58` (10 commits en
+  `feature/4-auth-login-me`, ver `progress/impl_auth-login-me.md` para el
+  detalle por requisito).
+- **Estado final:** `done`.
+- **Nota de entorno:** dos hallazgos de este sandbox concreto, ninguno del
+  código: (1) Docker sin acceso (permisos, no socket) — sin e2e contra
+  Postgres real, mismo criterio ya aceptado en #1-#3; (2) **nuevo**, el
+  binding nativo de `argon2` da segfault al cargar en 2 archivos
+  (`argon2-password-hasher.spec.ts`, `auth.module.spec.ts`) — prebuild roto
+  en este sandbox y sin `make` para recompilar desde fuente. Confirmado por
+  ejecución directa tanto por el implementer como por el reviewer; el resto
+  de la suite corre normal. No es una regresión — CI en GitHub Actions sigue
+  verde sobre el mismo commit. Detalle completo en `STATUS.md` ("Nuevo
+  hallazgo de entorno 2026-07-31").
+
+---
+
 ## Sesión 2026-07-30 — db-setup-drizzle (id: 1)
 
 - **Feature:** Cablear Drizzle ORM al backend NestJS — deps (drizzle-orm, pg,
@@ -228,3 +265,27 @@ relativo `../../domain/...` era válido por la regla "mismo módulo").
 
 Nota: `src/db/` y `src/modules/health/` (#1) siguen con relativos — la
 exención histórica documentada en conventions.md se mantiene.
+
+### Adenda misma sesión — cierre del PR #5 (auth-login-me, #4)
+
+El branch `feature/4-auth-login-me` (trabajado 2026-07-31 en un sandbox
+Linux sin Docker y con segfault de argon2) llegó con CI rojo, 7 commits
+detrás de main y 3 archivos en conflicto. Cierre en esta máquina:
+
+- Rebase sobre main vía `implementer`: 12 commits reaplicados, conflictos
+  resueltos (auth.controller.ts/spec con imports en alias conservando el
+  endpoint de login; STATUS.md reconciliado preservando la sesión
+  2026-08-01 y acotando el hallazgo de argon2 a aquel sandbox).
+- Refactor de 22 imports cross-layer del código nuevo de #4 a alias
+  (`28179a1`), convención endurecida cumplida en `auth/` y `users/`.
+- Fix del test imposible `moduleRef.get(APP_GUARD)` → aserción por
+  `Reflect.getMetadata('providers', AuthModule)`, nombrada R5 (`c8ab4d6`);
+  trazabilidad re-mapeada post-rebase (`69c7935`).
+- `test/app.e2e-spec.ts` alineado al guard global: `GET /v1` sin token
+  ahora espera 401 por R5/R7 (`8ae4687`) — el scaffold esperaba 200.
+- Verificación en real: unit 43/43 (167), e2e 3/3 (15) contra Postgres y
+  LocalStack, `init.sh` verde, CI del PR #5 **verde**.
+- `reviewer` **aprobó** (`progress/review_auth-login-me-rebase.md`).
+
+Deuda detectada (fuera de alcance, candidata a limpieza propia):
+`src/modules/health/` (#1) conserva 5 imports relativos cross-layer.
