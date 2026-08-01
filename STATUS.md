@@ -123,12 +123,12 @@ debe listar las 4 URLs de cola.
   nombres de campo). Reutiliza `UserRepository`/`PasswordHasher`/
   `AuditLogger` de #3 sin duplicar dominio. Branch `feature/4-auth-login-me`,
   revisado y **aprobado** por el `reviewer` (sin observaciones bloqueantes
-  ni no bloqueantes) — PR #5 abierto; su CI estaba rojo por un test de
+  ni no bloqueantes) — PR #5 tuvo CI rojo por un test de
   `auth.module.spec.ts` que intentaba recuperar `APP_GUARD` vía
   `moduleRef.get()` (imposible en un TestingModule: Nest reempaqueta esos
   providers bajo tokens internos), corregido en el rebase del 2026-08-01.
-  Pendiente merge humano. Ver `progress/impl_auth-login-me.md` y
-  `progress/review_auth-login-me.md`.
+  **Mergeado a `main` por el humano (PR #5, `86dbcd5`)**. Ver
+  `progress/impl_auth-login-me.md` y `progress/review_auth-login-me.md`.
 - **Hallazgo de entorno (2026-07-31, propio de AQUEL sandbox — resuelto)**:
   en el sandbox Linux donde se trabajó #4, `pnpm test` (vía `init.sh`) daba
   **segfault** — el binding nativo de `argon2` (usado tras el puerto
@@ -145,13 +145,17 @@ debe listar las 4 URLs de cola.
 - Deuda menor detectada en #3: no existe script `db:migrate` en
   `package.json` (solo `db:generate`), aplicar migraciones exige hoy
   `exec drizzle-kit migrate` a mano. Candidato a tarea propia.
-- Próximo paso SDD: merge humano del PR #5 (feature #4) a `main`, luego
-  `spec_author` escribe la spec de `pets-crud-permissions` (#5) — #1-#3 ya
-  mergeados, #4 en PR.
+- Próximo paso SDD: `spec_author` escribe la spec de `pets-crud-permissions`
+  (#5) + gate humano de aprobación — #1-#4 ya mergeados a `main`.
 
 ---
 
 ## Última sesión
+
+- **2026-08-01 (2)** — Sesión corta de cierre: confirmado el merge humano
+  del PR #5 (`auth-login-me`, #4) a `main` (`86dbcd5`) — working tree limpio,
+  4/18 features done. Sin trabajo de features. Próximo: `spec_author` para
+  `pets-crud-permissions` (#5) + gate humano.
 
 - **2026-08-01** — Primera sesión con Docker real: cerrados los seguimientos
   de entorno que venían arrastrándose desde #1. Migraciones de #3 aplicadas
