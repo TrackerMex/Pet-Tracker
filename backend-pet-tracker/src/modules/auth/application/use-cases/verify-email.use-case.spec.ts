@@ -1,14 +1,14 @@
 import { AuditLogEntry, AuditLogger } from '@/audit/audit-log.repository';
-import { EmailVerificationToken } from '../../domain/entities/email-verification-token.entity';
+import { EmailVerificationToken } from '@/modules/auth/domain/entities/email-verification-token.entity';
 import {
   InvalidVerificationTokenError,
   VerificationTokenExpiredError,
-} from '../../domain/errors/email-verification.errors';
+} from '@/modules/auth/domain/errors/email-verification.errors';
 import {
   EmailVerificationTokenRepository,
   NewEmailVerificationToken,
-} from '../../domain/repositories/email-verification-token.repository';
-import { UserRepository } from '../../domain/repositories/user.repository';
+} from '@/modules/auth/domain/repositories/email-verification-token.repository';
+import { UserRepository } from '@/modules/auth/domain/repositories/user.repository';
 import { hashVerificationToken } from '../verification-token';
 import { VerifyEmailUseCase } from './verify-email.use-case';
 

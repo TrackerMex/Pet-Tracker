@@ -37,11 +37,12 @@ En la base de datos: tablas y columnas en `snake_case`, tablas en plural
 ## Imports / alias de rutas
 
 - `tsconfig.json` define `@/* -> src/*`. **Usar el alias `@/...` para
-  cualquier import que cruce de módulo/feature** (ej. `@/db/drizzle.constants`,
-  `@/modules/health/domain/...`) — evita cadenas `../../../../` frágiles al
-  mover archivos. Import relativo (`./`, `../`) solo entre archivos del mismo
-  módulo o directorio inmediato (ej. `use-case` importando su propio
-  `repository` hermano).
+  cualquier import que cruce de módulo/feature o de capa dentro del mismo
+  módulo** (ej. `@/db/drizzle.constants`,
+  `@/modules/auth/domain/ports/password-hasher` desde `application/`) —
+  evita cadenas `../../` frágiles al mover archivos. Import relativo (`./`,
+  `../`) solo dentro de la misma capa (ej. `use-case` importando un helper
+  hermano en `application/`).
 - El alias está resuelto en las 3 rutas de ejecución del proyecto — no
   requiere configuración adicional por feature:
   - **Build** (`pnpm run build`): `nest build && tsc-alias -p
@@ -59,6 +60,9 @@ En la base de datos: tablas y columnas en `snake_case`, tablas en plural
   (incluye una cadena `../../../../db/drizzle.constants`); no se corrigió
   retroactivamente. Todo código nuevo debe seguir la regla del alias de
   aquí en adelante.
+- Historial de la regla: hasta 2026-08-01 el salto de capa dentro del mismo
+  módulo permitía import relativo (`../../domain/...`); se endureció a alias
+  por decisión humana y `src/modules/auth/` se refactorizó para cumplirla.
 
 ---
 

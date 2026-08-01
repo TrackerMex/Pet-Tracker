@@ -4,11 +4,11 @@ import type { AuditLogger } from '@/audit/audit-log.repository';
 import {
   InvalidVerificationTokenError,
   VerificationTokenExpiredError,
-} from '../../domain/errors/email-verification.errors';
-import { EMAIL_VERIFICATION_TOKEN_REPOSITORY } from '../../domain/repositories/email-verification-token.repository';
-import type { EmailVerificationTokenRepository } from '../../domain/repositories/email-verification-token.repository';
-import { USER_REPOSITORY } from '../../domain/repositories/user.repository';
-import type { UserRepository } from '../../domain/repositories/user.repository';
+} from '@/modules/auth/domain/errors/email-verification.errors';
+import { EMAIL_VERIFICATION_TOKEN_REPOSITORY } from '@/modules/auth/domain/repositories/email-verification-token.repository';
+import type { EmailVerificationTokenRepository } from '@/modules/auth/domain/repositories/email-verification-token.repository';
+import { USER_REPOSITORY } from '@/modules/auth/domain/repositories/user.repository';
+import type { UserRepository } from '@/modules/auth/domain/repositories/user.repository';
 import { VerifyEmailDto } from '../dto/verify-email.dto';
 import { hashVerificationToken } from '../verification-token';
 

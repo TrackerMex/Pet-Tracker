@@ -1,20 +1,20 @@
 import { createHash } from 'node:crypto';
 import { AuditLogEntry, AuditLogger } from '@/audit/audit-log.repository';
-import { User } from '../../domain/entities/user.entity';
-import { EmailAlreadyRegisteredError } from '../../domain/errors/user.errors';
+import { User } from '@/modules/auth/domain/entities/user.entity';
+import { EmailAlreadyRegisteredError } from '@/modules/auth/domain/errors/user.errors';
 import {
   EmailVerificationMessage,
   EmailVerificationSender,
-} from '../../domain/ports/email-verification-sender';
-import { PasswordHasher } from '../../domain/ports/password-hasher';
+} from '@/modules/auth/domain/ports/email-verification-sender';
+import { PasswordHasher } from '@/modules/auth/domain/ports/password-hasher';
 import {
   EmailVerificationTokenRepository,
   NewEmailVerificationToken,
-} from '../../domain/repositories/email-verification-token.repository';
+} from '@/modules/auth/domain/repositories/email-verification-token.repository';
 import {
   NewUser,
   UserRepository,
-} from '../../domain/repositories/user.repository';
+} from '@/modules/auth/domain/repositories/user.repository';
 import { RegisterUserDto } from '../dto/register-user.dto';
 import { VERIFICATION_TOKEN_TTL_MS } from '../verification-token';
 import { RegisterUserUseCase } from './register-user.use-case';

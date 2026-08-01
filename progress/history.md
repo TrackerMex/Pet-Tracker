@@ -163,3 +163,68 @@ Formato de cada entrada de `history.md` (una por sesión cerrada):
   genere una migración duplicada.
   (b) no existe script `db:migrate` en `package.json` (solo `db:generate`);
   aplicar migraciones exige hoy `exec drizzle-kit migrate` a mano.
+
+## Sesión 2026-08-01 — verificación con Docker real + fix/jest-e2e-alias
+
+**Alcance**: sin feature nueva. Primera sesión con Docker funcionando en la
+máquina; se cierran los seguimientos de entorno pendientes de #2 y #3 y se
+corrigen dos bugs de infraestructura local descubiertos al ejecutar de verdad.
+
+**Verificaciones cerradas**:
+- #3 `auth-registration`: `drizzle-kit migrate` contra Postgres 17 (Docker)
+  aplicó `0001`/`0002` — `users`, `email_verification_tokens` y `audit_log`
+  creadas, `schema_bootstrap` eliminado (confirmado con `\dt` y
+  `drizzle.__drizzle_migrations`, 3 migraciones registradas).
+- #2 `localstack-provisioning`: `pnpm run provision:local` +
+  `test/localstack-provisioning.e2e-spec.ts` contra LocalStack real —
+  10/10 verdes. R4-R8 y R10-R14 quedan ejecutados; 19/19 requisitos de la
+  feature verificados.
+
+**Bugs encontrados y corregidos** (branch `fix/jest-e2e-alias`):
+1. `localstack/localstack:latest` (serie CalVer 2026.x) exige
+   `LOCALSTACK_AUTH_TOKEN` y sale con exit 55 sin él. Pineado a `4.14`,
+   última versión community sin token — commit `7b0e492` (leader, infra
+   harness).
+2. `test/jest-e2e.json` con `rootDir: "."` mapeaba `@/` a
+   `<rootDir>/src/$1` = `test/src/*` (inexistente): todo e2e que cargara
+   `app.module.ts` fallaba con `createNoMappedModuleFoundError`. Nunca se
+   detectó porque los e2e no habían corrido con Docker real. Fix de una
+   línea (`<rootDir>/../src/$1`) vía `implementer` — commit `1edcd38`;
+   `reviewer` **aprobó** (diff limitado a los 2 archivos esperados,
+   `init.sh` verde, e2e re-ejecutado por él mismo). Ciclo "bug en 1 archivo"
+   de la tabla de escalado del leader. Reportes:
+   `progress/impl_fix-jest-e2e-alias.md`,
+   `progress/review_fix-jest-e2e-alias.md`.
+
+**Resultado**: suite completa contra infra real — e2e 3/3 (15 tests), unit
+30/30 (99 tests), `init.sh` verde. PR del branch abierto para merge humano.
+
+**Nota**: el error original del humano al migrar (`ENOENT ...
+backend-pet-tracker\backend-pet-tracker`) era solo de ruta: corrió
+`pnpm -C backend-pet-tracker ...` desde dentro de `backend-pet-tracker/`.
+
+**Pendientes que siguen abiertos**:
+- Runtime real de auth sin e2e: `returning()` del insert de `users` y
+  `update ... where` de `markEmailVerified`/`markUsed` — candidato a e2e
+  cuando `auth-login-me` (#4) toque el módulo.
+- No existe script `db:migrate` en `package.json` (solo `db:generate`).
+
+### Adenda misma sesión — convención de alias endurecida + refactor auth
+
+Por decisión humana tras revisar el módulo auth: el alias `@/` pasa a ser
+obligatorio también para saltos de capa dentro del mismo módulo (antes el
+relativo `../../domain/...` era válido por la regla "mismo módulo").
+
+- `docs/conventions.md` §Imports actualizado por el leader (`25ee4ae`),
+  con nota de historial del cambio de regla.
+- Refactor mecánico de `src/modules/auth/` vía `implementer` (`626bb10`):
+  46 líneas de import en 14 archivos, cero cambios de lógica (diff
+  verificado línea a línea). Relativos que quedan: misma capa y wiring de
+  `auth.module.ts`. Verificación completa: unit 30/30 (99), build,
+  e2e 3/3 (15), `init.sh` verde, lint sin reordenar nada.
+- `reviewer` **aprobó** (`progress/review_auth-alias-refactor.md`);
+  reporte del implementer en `progress/impl_auth-alias-refactor.md`.
+- `graphify update .` ejecutado tras el commit.
+
+Nota: `src/db/` y `src/modules/health/` (#1) siguen con relativos — la
+exención histórica documentada en conventions.md se mantiene.

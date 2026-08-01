@@ -12,18 +12,18 @@ import { ZodType } from 'zod';
 import {
   RegisterUserSchema,
   RegisterUserDto,
-} from '../application/dto/register-user.dto';
+} from '@/modules/auth/application/dto/register-user.dto';
 import {
   VerifyEmailDto,
   VerifyEmailSchema,
-} from '../application/dto/verify-email.dto';
-import { RegisterUserUseCase } from '../application/use-cases/register-user.use-case';
-import { VerifyEmailUseCase } from '../application/use-cases/verify-email.use-case';
+} from '@/modules/auth/application/dto/verify-email.dto';
+import { RegisterUserUseCase } from '@/modules/auth/application/use-cases/register-user.use-case';
+import { VerifyEmailUseCase } from '@/modules/auth/application/use-cases/verify-email.use-case';
 import {
   InvalidVerificationTokenError,
   VerificationTokenExpiredError,
-} from '../domain/errors/email-verification.errors';
-import { EmailAlreadyRegisteredError } from '../domain/errors/user.errors';
+} from '@/modules/auth/domain/errors/email-verification.errors';
+import { EmailAlreadyRegisteredError } from '@/modules/auth/domain/errors/user.errors';
 import { toUserResponse, UserResponse } from './mappers/user-response.mapper';
 
 export interface VerifyEmailResponse {

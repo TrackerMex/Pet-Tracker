@@ -20,7 +20,9 @@ services:
       retries: 10
 
   localstack:
-    image: localstack/localstack:latest
+    # Pineado a 4.14: última versión community sin licencia — desde la serie
+    # CalVer 2026.x la imagen exige LOCALSTACK_AUTH_TOKEN y sale con código 55.
+    image: localstack/localstack:4.14
     container_name: pet-tracker-localstack
     ports:
       - "4566:4566"

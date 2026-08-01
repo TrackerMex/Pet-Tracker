@@ -5,14 +5,14 @@ import {
   HttpException,
 } from '@nestjs/common';
 import { GoneException } from '@nestjs/common';
-import { RegisterUserUseCase } from '../application/use-cases/register-user.use-case';
-import { VerifyEmailUseCase } from '../application/use-cases/verify-email.use-case';
-import { User } from '../domain/entities/user.entity';
+import { RegisterUserUseCase } from '@/modules/auth/application/use-cases/register-user.use-case';
+import { VerifyEmailUseCase } from '@/modules/auth/application/use-cases/verify-email.use-case';
+import { User } from '@/modules/auth/domain/entities/user.entity';
 import {
   InvalidVerificationTokenError,
   VerificationTokenExpiredError,
-} from '../domain/errors/email-verification.errors';
-import { EmailAlreadyRegisteredError } from '../domain/errors/user.errors';
+} from '@/modules/auth/domain/errors/email-verification.errors';
+import { EmailAlreadyRegisteredError } from '@/modules/auth/domain/errors/user.errors';
 import { AuthController } from './auth.controller';
 
 const VERIFICATION_TOKEN = 'kQ8s0Zr4Vv1nT7yQ2bXpL9dW3fH6jM0aC5eR8uY1oI4';

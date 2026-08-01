@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import {
   EmailVerificationMessage,
   EmailVerificationSender,
-} from '../../domain/ports/email-verification-sender';
+} from '@/modules/auth/domain/ports/email-verification-sender';
 
 /**
  * Entrega local del token: mismo patron que PUSH_ENABLED=false del notifier
