@@ -1,8 +1,8 @@
-import { User } from '../../domain/entities/user.entity';
-import { InvalidCredentialsError } from '../../domain/errors/user.errors';
-import { PasswordHasher } from '../../domain/ports/password-hasher';
-import { TokenService } from '../../domain/ports/token-service';
-import { UserRepository } from '../../domain/repositories/user.repository';
+import { User } from '@/modules/auth/domain/entities/user.entity';
+import { InvalidCredentialsError } from '@/modules/auth/domain/errors/user.errors';
+import { PasswordHasher } from '@/modules/auth/domain/ports/password-hasher';
+import { TokenService } from '@/modules/auth/domain/ports/token-service';
+import { UserRepository } from '@/modules/auth/domain/repositories/user.repository';
 import { LoginUserUseCase } from './login-user.use-case';
 
 const STORED_USER_ID = '0198a1f0-3d5c-7f21-b0a1-6f1c9e2d4b77';

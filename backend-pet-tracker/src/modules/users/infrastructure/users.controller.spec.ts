@@ -5,8 +5,8 @@ import {
 } from '@nestjs/common';
 import { User } from '@/modules/auth/domain/entities/user.entity';
 import { UserNotFoundError } from '@/modules/auth/domain/errors/user.errors';
-import { GetProfileUseCase } from '../application/use-cases/get-profile.use-case';
-import { UpdateProfileUseCase } from '../application/use-cases/update-profile.use-case';
+import { GetProfileUseCase } from '@/modules/users/application/use-cases/get-profile.use-case';
+import { UpdateProfileUseCase } from '@/modules/users/application/use-cases/update-profile.use-case';
 import { UsersController } from './users.controller';
 
 const USER_ID = '0198a1f0-3d5c-7f21-b0a1-6f1c9e2d4b77';

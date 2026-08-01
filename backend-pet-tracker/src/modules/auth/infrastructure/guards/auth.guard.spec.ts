@@ -1,6 +1,6 @@
 import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { TokenService } from '../../domain/ports/token-service';
+import { TokenService } from '@/modules/auth/domain/ports/token-service';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 import { AuthGuard } from './auth.guard';
 

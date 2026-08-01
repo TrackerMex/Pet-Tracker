@@ -14,9 +14,9 @@ import { UserNotFoundError } from '@/modules/auth/domain/errors/user.errors';
 import {
   UpdateProfileDto,
   UpdateProfileSchema,
-} from '../application/dto/update-profile.dto';
-import { GetProfileUseCase } from '../application/use-cases/get-profile.use-case';
-import { UpdateProfileUseCase } from '../application/use-cases/update-profile.use-case';
+} from '@/modules/users/application/dto/update-profile.dto';
+import { GetProfileUseCase } from '@/modules/users/application/use-cases/get-profile.use-case';
+import { UpdateProfileUseCase } from '@/modules/users/application/use-cases/update-profile.use-case';
 import {
   ProfileResponse,
   toProfileResponse,

@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as jwt from 'jsonwebtoken';
-import { TokenPayload, TokenService } from '../../domain/ports/token-service';
+import {
+  TokenPayload,
+  TokenService,
+} from '@/modules/auth/domain/ports/token-service';
 
 /**
  * TTL del access_token: constante de aplicacion, no env var (design.md

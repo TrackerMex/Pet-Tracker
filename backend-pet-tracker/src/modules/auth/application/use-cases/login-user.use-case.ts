@@ -1,12 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { normalizeEmail } from '../../domain/entities/user.entity';
-import { InvalidCredentialsError } from '../../domain/errors/user.errors';
-import { PASSWORD_HASHER } from '../../domain/ports/password-hasher';
-import type { PasswordHasher } from '../../domain/ports/password-hasher';
-import { TOKEN_SERVICE } from '../../domain/ports/token-service';
-import type { TokenService } from '../../domain/ports/token-service';
-import { USER_REPOSITORY } from '../../domain/repositories/user.repository';
-import type { UserRepository } from '../../domain/repositories/user.repository';
+import { normalizeEmail } from '@/modules/auth/domain/entities/user.entity';
+import { InvalidCredentialsError } from '@/modules/auth/domain/errors/user.errors';
+import { PASSWORD_HASHER } from '@/modules/auth/domain/ports/password-hasher';
+import type { PasswordHasher } from '@/modules/auth/domain/ports/password-hasher';
+import { TOKEN_SERVICE } from '@/modules/auth/domain/ports/token-service';
+import type { TokenService } from '@/modules/auth/domain/ports/token-service';
+import { USER_REPOSITORY } from '@/modules/auth/domain/repositories/user.repository';
+import type { UserRepository } from '@/modules/auth/domain/repositories/user.repository';
 import { LoginUserDto } from '../dto/login-user.dto';
 
 export interface LoginResult {
