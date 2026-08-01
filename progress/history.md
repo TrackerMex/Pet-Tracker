@@ -208,3 +208,23 @@ backend-pet-tracker\backend-pet-tracker`) era solo de ruta: corrió
   `update ... where` de `markEmailVerified`/`markUsed` — candidato a e2e
   cuando `auth-login-me` (#4) toque el módulo.
 - No existe script `db:migrate` en `package.json` (solo `db:generate`).
+
+### Adenda misma sesión — convención de alias endurecida + refactor auth
+
+Por decisión humana tras revisar el módulo auth: el alias `@/` pasa a ser
+obligatorio también para saltos de capa dentro del mismo módulo (antes el
+relativo `../../domain/...` era válido por la regla "mismo módulo").
+
+- `docs/conventions.md` §Imports actualizado por el leader (`25ee4ae`),
+  con nota de historial del cambio de regla.
+- Refactor mecánico de `src/modules/auth/` vía `implementer` (`626bb10`):
+  46 líneas de import en 14 archivos, cero cambios de lógica (diff
+  verificado línea a línea). Relativos que quedan: misma capa y wiring de
+  `auth.module.ts`. Verificación completa: unit 30/30 (99), build,
+  e2e 3/3 (15), `init.sh` verde, lint sin reordenar nada.
+- `reviewer` **aprobó** (`progress/review_auth-alias-refactor.md`);
+  reporte del implementer en `progress/impl_auth-alias-refactor.md`.
+- `graphify update .` ejecutado tras el commit.
+
+Nota: `src/db/` y `src/modules/health/` (#1) siguen con relativos — la
+exención histórica documentada en conventions.md se mantiene.

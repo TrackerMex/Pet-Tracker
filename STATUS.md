@@ -116,8 +116,9 @@ debe listar las 4 URLs de cola.
   `package.json` (solo `db:generate`), aplicar migraciones exige hoy
   `exec drizzle-kit migrate` a mano. Candidato a tarea propia.
 - Próximo paso SDD: merge humano del PR de `fix/jest-e2e-alias` (pin de
-  LocalStack a `4.14` + fix del alias `@/` en `test/jest-e2e.json`), luego
-  `spec_author` escribe la spec de `auth-login-me` (#4).
+  LocalStack a `4.14` + fix del alias `@/` en `test/jest-e2e.json` +
+  convención de alias endurecida y refactor de imports en `src/modules/auth/`),
+  luego `spec_author` escribe la spec de `auth-login-me` (#4).
 
 ---
 
@@ -135,8 +136,12 @@ debe listar las 4 URLs de cola.
   `app.module.ts` — nunca visto porque los e2e jamás habían corrido con
   Docker → fix de una línea vía `implementer` (`1edcd38`), `reviewer` aprobó.
   Suite completa contra infra real: e2e 3/3 (15 tests), unit 30/30 (99
-  tests), `init.sh` verde. Próximo: merge humano del PR del fix, luego spec
-  de `auth-login-me` (#4).
+  tests), `init.sh` verde. Además, por decisión humana: convención de
+  imports endurecida (`docs/conventions.md` §Imports, `25ee4ae`) — alias
+  `@/` obligatorio también para saltos de capa dentro del mismo módulo — y
+  refactor mecánico de `src/modules/auth/` para cumplirla (46 imports en 14
+  archivos, `626bb10`, vía `implementer`, `reviewer` aprobó). Próximo: merge
+  humano del PR del fix, luego spec de `auth-login-me` (#4).
 
 - **2026-07-30 (3)** — Ciclo SDD de `auth-registration` (#3): spec R1-R15
   escrita en la sesión anterior → **gate humano aprobado** (frontmatter
