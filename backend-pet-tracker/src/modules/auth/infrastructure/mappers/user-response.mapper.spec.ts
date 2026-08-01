@@ -1,4 +1,4 @@
-import { User } from '../../domain/entities/user.entity';
+import { User } from '@/modules/auth/domain/entities/user.entity';
 import { toUserResponse } from './user-response.mapper';
 
 const SECRET_HASH = '$argon2id$v=19$m=65536,t=3,p=4$salt$digest';

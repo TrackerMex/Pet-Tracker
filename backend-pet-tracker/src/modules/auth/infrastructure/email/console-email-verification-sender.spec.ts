@@ -1,6 +1,6 @@
 import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { EmailVerificationMessage } from '../../domain/ports/email-verification-sender';
+import { EmailVerificationMessage } from '@/modules/auth/domain/ports/email-verification-sender';
 import { ConsoleEmailVerificationSender } from './console-email-verification-sender';
 
 const message: EmailVerificationMessage = {

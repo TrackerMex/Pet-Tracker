@@ -1,7 +1,7 @@
 import { getTableColumns } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { users } from '@/db/schema/users.schema';
-import { NewUser } from '../../domain/repositories/user.repository';
+import { NewUser } from '@/modules/auth/domain/repositories/user.repository';
 import { UserDrizzleRepository } from './user.drizzle.repository';
 
 const UUID_V7_PATTERN =

@@ -5,16 +5,16 @@ import {
   DEFAULT_TIMEZONE,
   normalizeEmail,
   User,
-} from '../../domain/entities/user.entity';
-import { EmailAlreadyRegisteredError } from '../../domain/errors/user.errors';
-import { EMAIL_VERIFICATION_SENDER } from '../../domain/ports/email-verification-sender';
-import type { EmailVerificationSender } from '../../domain/ports/email-verification-sender';
-import { PASSWORD_HASHER } from '../../domain/ports/password-hasher';
-import type { PasswordHasher } from '../../domain/ports/password-hasher';
-import { EMAIL_VERIFICATION_TOKEN_REPOSITORY } from '../../domain/repositories/email-verification-token.repository';
-import type { EmailVerificationTokenRepository } from '../../domain/repositories/email-verification-token.repository';
-import { USER_REPOSITORY } from '../../domain/repositories/user.repository';
-import type { UserRepository } from '../../domain/repositories/user.repository';
+} from '@/modules/auth/domain/entities/user.entity';
+import { EmailAlreadyRegisteredError } from '@/modules/auth/domain/errors/user.errors';
+import { EMAIL_VERIFICATION_SENDER } from '@/modules/auth/domain/ports/email-verification-sender';
+import type { EmailVerificationSender } from '@/modules/auth/domain/ports/email-verification-sender';
+import { PASSWORD_HASHER } from '@/modules/auth/domain/ports/password-hasher';
+import type { PasswordHasher } from '@/modules/auth/domain/ports/password-hasher';
+import { EMAIL_VERIFICATION_TOKEN_REPOSITORY } from '@/modules/auth/domain/repositories/email-verification-token.repository';
+import type { EmailVerificationTokenRepository } from '@/modules/auth/domain/repositories/email-verification-token.repository';
+import { USER_REPOSITORY } from '@/modules/auth/domain/repositories/user.repository';
+import type { UserRepository } from '@/modules/auth/domain/repositories/user.repository';
 import { RegisterUserDto } from '../dto/register-user.dto';
 import {
   generateVerificationToken,

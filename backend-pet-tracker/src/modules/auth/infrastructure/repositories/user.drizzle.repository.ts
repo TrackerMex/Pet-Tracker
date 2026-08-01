@@ -4,11 +4,11 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { uuidv7 } from 'uuidv7';
 import { DRIZZLE } from '@/db/drizzle.constants';
 import { users } from '@/db/schema/users.schema';
-import { User } from '../../domain/entities/user.entity';
+import { User } from '@/modules/auth/domain/entities/user.entity';
 import {
   NewUser,
   UserRepository,
-} from '../../domain/repositories/user.repository';
+} from '@/modules/auth/domain/repositories/user.repository';
 
 type UserRow = typeof users.$inferSelect;
 

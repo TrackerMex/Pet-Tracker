@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import * as argon2 from 'argon2';
-import { PasswordHasher } from '../../domain/ports/password-hasher';
+import { PasswordHasher } from '@/modules/auth/domain/ports/password-hasher';
 
 /**
  * Unica pieza del proyecto que conoce el paquete `argon2`. El string PHC que

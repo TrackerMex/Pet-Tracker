@@ -4,11 +4,11 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { uuidv7 } from 'uuidv7';
 import { DRIZZLE } from '@/db/drizzle.constants';
 import { emailVerificationTokens } from '@/db/schema/email-verification-tokens.schema';
-import { EmailVerificationToken } from '../../domain/entities/email-verification-token.entity';
+import { EmailVerificationToken } from '@/modules/auth/domain/entities/email-verification-token.entity';
 import {
   EmailVerificationTokenRepository,
   NewEmailVerificationToken,
-} from '../../domain/repositories/email-verification-token.repository';
+} from '@/modules/auth/domain/repositories/email-verification-token.repository';
 
 type EmailVerificationTokenRow = typeof emailVerificationTokens.$inferSelect;
 
