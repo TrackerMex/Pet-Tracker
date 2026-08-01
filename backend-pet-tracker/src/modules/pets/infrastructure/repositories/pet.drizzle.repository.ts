@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { and, eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { uuidv7 } from 'uuidv7';
 import { DRIZZLE } from '@/db/drizzle.constants';
@@ -9,9 +10,11 @@ import {
   PetSize,
   PetSpecies,
 } from '@/modules/pets/domain/entities/pet.entity';
+import { PetRole } from '@/modules/pets/domain/entities/pet-membership';
 import {
   NewPet,
   PetRepository,
+  PetWithRole,
 } from '@/modules/pets/domain/repositories/pet.repository';
 
 type PetRow = typeof pets.$inferSelect;
@@ -55,6 +58,19 @@ export class PetDrizzleRepository implements PetRepository {
     });
 
     return toDomain(row);
+  }
+
+  async findAllByMember(userId: string): Promise<PetWithRole[]> {
+    const rows = await this.db
+      .select({ pet: pets, role: petUsers.role })
+      .from(petUsers)
+      .innerJoin(pets, eq(petUsers.petId, pets.id))
+      .where(and(eq(petUsers.userId, userId), eq(petUsers.status, 'active')));
+
+    return rows.map((row) => ({
+      pet: toDomain(row.pet),
+      role: row.role as PetRole,
+    }));
   }
 }
 

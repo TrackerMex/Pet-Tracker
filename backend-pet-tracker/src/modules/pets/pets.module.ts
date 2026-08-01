@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { PET_REPOSITORY } from './domain/repositories/pet.repository';
 import { CreatePetUseCase } from './application/use-cases/create-pet.use-case';
+import { ListPetsUseCase } from './application/use-cases/list-pets.use-case';
 import { PetsController } from './infrastructure/pets.controller';
 import { PetDrizzleRepository } from './infrastructure/repositories/pet.drizzle.repository';
 
@@ -14,6 +15,7 @@ import { PetDrizzleRepository } from './infrastructure/repositories/pet.drizzle.
   controllers: [PetsController],
   providers: [
     CreatePetUseCase,
+    ListPetsUseCase,
     {
       provide: PET_REPOSITORY,
       useClass: PetDrizzleRepository,

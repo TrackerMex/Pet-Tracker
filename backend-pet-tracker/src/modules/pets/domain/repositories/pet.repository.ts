@@ -1,6 +1,13 @@
 import { Pet, PetSex, PetSize, PetSpecies } from '../entities/pet.entity';
+import { PetRole } from '../entities/pet-membership';
 
 export const PET_REPOSITORY = Symbol('PetRepository');
+
+/** Mascota + rol del usuario consultante en ella (R7: myRole). */
+export interface PetWithRole {
+  pet: Pet;
+  role: PetRole;
+}
 
 /** Datos de alta ya validados por el DTO (R4/R5); el id lo genera el repo. */
 export interface NewPet {
@@ -24,4 +31,10 @@ export interface PetRepository {
    * ninguno persiste.
    */
   createWithOwner(data: NewPet, ownerId: string): Promise<Pet>;
+
+  /**
+   * Mascotas con membresia `status = 'active'` del usuario (R7), cada una
+   * con el `role` de esa membresia.
+   */
+  findAllByMember(userId: string): Promise<PetWithRole[]>;
 }

@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Get,
   HttpStatus,
   Post,
 } from '@nestjs/common';
@@ -13,6 +14,7 @@ import {
   CreatePetSchema,
 } from '@/modules/pets/application/dto/create-pet.dto';
 import { CreatePetUseCase } from '@/modules/pets/application/use-cases/create-pet.use-case';
+import { ListPetsUseCase } from '@/modules/pets/application/use-cases/list-pets.use-case';
 import {
   PetProfileResponse,
   toPetProfileResponse,
@@ -20,7 +22,10 @@ import {
 
 @Controller('pets')
 export class PetsController {
-  constructor(private readonly createPet: CreatePetUseCase) {}
+  constructor(
+    private readonly createPet: CreatePetUseCase,
+    private readonly listPets: ListPetsUseCase,
+  ) {}
 
   @Post()
   async create(
@@ -32,6 +37,18 @@ export class PetsController {
 
     // R2: el creador siempre queda como owner de su mascota recien creada.
     return toPetProfileResponse(pet, 'owner');
+  }
+
+  @Get()
+  async list(
+    @CurrentUser() user: CurrentUserPayload,
+  ): Promise<PetProfileResponse[]> {
+    const memberships = await this.listPets.execute(user.id);
+    const now = new Date();
+
+    return memberships.map(({ pet, role }) =>
+      toPetProfileResponse(pet, role, now),
+    );
   }
 }
 

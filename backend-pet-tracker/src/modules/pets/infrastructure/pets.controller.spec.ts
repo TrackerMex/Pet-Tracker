@@ -1,6 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { Pet } from '@/modules/pets/domain/entities/pet.entity';
 import { CreatePetUseCase } from '@/modules/pets/application/use-cases/create-pet.use-case';
+import { ListPetsUseCase } from '@/modules/pets/application/use-cases/list-pets.use-case';
 import { PetsController } from './pets.controller';
 
 const USER = { id: '0198a1f0-3d5c-7f21-b0a1-6f1c9e2d4b77', email: 'ada@example.com' };
@@ -32,9 +33,11 @@ function buildPet(): Pet {
 function buildController() {
   const createExecute = jest.fn().mockResolvedValue(buildPet());
   const createPet = { execute: createExecute } as unknown as CreatePetUseCase;
-  const controller = new PetsController(createPet);
+  const listExecute = jest.fn().mockResolvedValue([]);
+  const listPets = { execute: listExecute } as unknown as ListPetsUseCase;
+  const controller = new PetsController(createPet, listPets);
 
-  return { controller, createExecute };
+  return { controller, createExecute, listExecute };
 }
 
 describe('R2: POST /v1/pets responde el perfil creado con myRole owner', () => {
@@ -65,6 +68,26 @@ describe('R2: POST /v1/pets responde el perfil creado con myRole owner', () => {
     expect(response.id).toBe(PET_ID);
     expect(response.myRole).toBe('owner');
     expect(response.name).toBe('Firulais');
+  });
+});
+
+describe('R7: GET /v1/pets lista las mascotas del usuario con myRole', () => {
+  it('serializa cada membresia con el rol propio del usuario', async () => {
+    const { controller, listExecute } = buildController();
+    listExecute.mockResolvedValue([{ pet: buildPet(), role: 'family' }]);
+
+    const response = await controller.list(USER);
+
+    expect(listExecute).toHaveBeenCalledWith(USER.id);
+    expect(response).toHaveLength(1);
+    expect(response[0].id).toBe(PET_ID);
+    expect(response[0].myRole).toBe('family');
+  });
+
+  it('responde array vacio si el usuario no tiene membresias', async () => {
+    const { controller } = buildController();
+
+    await expect(controller.list(USER)).resolves.toEqual([]);
   });
 });
 
