@@ -4,17 +4,24 @@ import {
   Controller,
   Get,
   HttpStatus,
+  NotFoundException,
   Post,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { ZodType } from 'zod';
 import { CurrentUser } from '@/modules/auth/infrastructure/decorators/current-user.decorator';
 import type { CurrentUserPayload } from '@/modules/auth/infrastructure/decorators/current-user.decorator';
+import { PetNotFoundError } from '@/modules/pets/domain/errors/pet.errors';
 import {
   CreatePetDto,
   CreatePetSchema,
 } from '@/modules/pets/application/dto/create-pet.dto';
 import { CreatePetUseCase } from '@/modules/pets/application/use-cases/create-pet.use-case';
+import { GetPetUseCase } from '@/modules/pets/application/use-cases/get-pet.use-case';
 import { ListPetsUseCase } from '@/modules/pets/application/use-cases/list-pets.use-case';
+import { PetAccessGuard } from './guards/pet-access.guard';
+import type { PetAccessRequest } from './guards/pet-access.guard';
 import {
   PetProfileResponse,
   toPetProfileResponse,
@@ -25,6 +32,7 @@ export class PetsController {
   constructor(
     private readonly createPet: CreatePetUseCase,
     private readonly listPets: ListPetsUseCase,
+    private readonly getPet: GetPetUseCase,
   ) {}
 
   @Post()
@@ -50,6 +58,27 @@ export class PetsController {
       toPetProfileResponse(pet, role, now),
     );
   }
+
+  // R12: sin @RequirePetRole — cualquier rol con membresia activa accede.
+  @Get(':petId')
+  @UseGuards(PetAccessGuard)
+  async detail(@Req() request: PetAccessRequest): Promise<PetProfileResponse> {
+    const { petId, role } = request.petMembership;
+
+    try {
+      return toPetProfileResponse(await this.getPet.execute(petId), role);
+    } catch (error) {
+      throw mapPetError(error);
+    }
+  }
+}
+
+/**
+ * R9 (caso borde): la fila desaparecio entre el guard y el use case — el
+ * error de dominio se traduce al mismo 404 generico que emite el guard.
+ */
+function mapPetError(error: unknown): unknown {
+  return error instanceof PetNotFoundError ? new NotFoundException() : error;
 }
 
 /**

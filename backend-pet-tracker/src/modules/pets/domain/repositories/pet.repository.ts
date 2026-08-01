@@ -1,5 +1,5 @@
 import { Pet, PetSex, PetSize, PetSpecies } from '../entities/pet.entity';
-import { PetRole } from '../entities/pet-membership';
+import { PetMembership, PetRole } from '../entities/pet-membership';
 
 export const PET_REPOSITORY = Symbol('PetRepository');
 
@@ -37,4 +37,13 @@ export interface PetRepository {
    * con el `role` de esa membresia.
    */
   findAllByMember(userId: string): Promise<PetWithRole[]>;
+
+  /**
+   * Fila de `pet_users` para (petId, userId), cualquiera sea su status —
+   * la unica consulta del PetAccessGuard (R9): sin fila, "no existe" y
+   * "no eres miembro" son indistinguibles por diseño.
+   */
+  findMembership(petId: string, userId: string): Promise<PetMembership | null>;
+
+  findById(petId: string): Promise<Pet | null>;
 }

@@ -1,7 +1,10 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Pet } from '@/modules/pets/domain/entities/pet.entity';
+import { PetNotFoundError } from '@/modules/pets/domain/errors/pet.errors';
 import { CreatePetUseCase } from '@/modules/pets/application/use-cases/create-pet.use-case';
+import { GetPetUseCase } from '@/modules/pets/application/use-cases/get-pet.use-case';
 import { ListPetsUseCase } from '@/modules/pets/application/use-cases/list-pets.use-case';
+import { PetAccessRequest } from './guards/pet-access.guard';
 import { PetsController } from './pets.controller';
 
 const USER = { id: '0198a1f0-3d5c-7f21-b0a1-6f1c9e2d4b77', email: 'ada@example.com' };
@@ -35,9 +38,18 @@ function buildController() {
   const createPet = { execute: createExecute } as unknown as CreatePetUseCase;
   const listExecute = jest.fn().mockResolvedValue([]);
   const listPets = { execute: listExecute } as unknown as ListPetsUseCase;
-  const controller = new PetsController(createPet, listPets);
+  const getExecute = jest.fn().mockResolvedValue(buildPet());
+  const getPet = { execute: getExecute } as unknown as GetPetUseCase;
+  const controller = new PetsController(createPet, listPets, getPet);
 
-  return { controller, createExecute, listExecute };
+  return { controller, createExecute, listExecute, getExecute };
+}
+
+function buildPetRequest(role: 'owner' | 'family' | 'walker' | 'vet') {
+  return {
+    user: USER,
+    petMembership: { petId: PET_ID, role },
+  } as unknown as PetAccessRequest;
 }
 
 describe('R2: POST /v1/pets responde el perfil creado con myRole owner', () => {
@@ -88,6 +100,29 @@ describe('R7: GET /v1/pets lista las mascotas del usuario con myRole', () => {
     const { controller } = buildController();
 
     await expect(controller.list(USER)).resolves.toEqual([]);
+  });
+});
+
+describe('R8: GET /v1/pets/:petId responde el perfil con el rol de la membresia', () => {
+  it('usa el petId y el rol adjuntados por PetAccessGuard', async () => {
+    const { controller, getExecute } = buildController();
+
+    const response = await controller.detail(buildPetRequest('vet'));
+
+    expect(getExecute).toHaveBeenCalledWith(PET_ID);
+    expect(response.id).toBe(PET_ID);
+    expect(response.myRole).toBe('vet');
+  });
+});
+
+describe('R9: PetNotFoundError se mapea al mismo 404 generico del guard', () => {
+  it('convierte el error de dominio en NotFoundException (delete concurrente)', async () => {
+    const { controller, getExecute } = buildController();
+    getExecute.mockRejectedValue(new PetNotFoundError(PET_ID));
+
+    await expect(controller.detail(buildPetRequest('owner'))).rejects.toThrow(
+      NotFoundException,
+    );
   });
 });
 

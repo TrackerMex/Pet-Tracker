@@ -10,7 +10,10 @@ import {
   PetSize,
   PetSpecies,
 } from '@/modules/pets/domain/entities/pet.entity';
-import { PetRole } from '@/modules/pets/domain/entities/pet-membership';
+import {
+  PetMembership,
+  PetRole,
+} from '@/modules/pets/domain/entities/pet-membership';
 import {
   NewPet,
   PetRepository,
@@ -71,6 +74,40 @@ export class PetDrizzleRepository implements PetRepository {
       pet: toDomain(row.pet),
       role: row.role as PetRole,
     }));
+  }
+
+  async findMembership(
+    petId: string,
+    userId: string,
+  ): Promise<PetMembership | null> {
+    const rows = await this.db
+      .select()
+      .from(petUsers)
+      .where(and(eq(petUsers.petId, petId), eq(petUsers.userId, userId)))
+      .limit(1);
+
+    const row = rows[0];
+
+    if (!row) {
+      return null;
+    }
+
+    return {
+      petId: row.petId,
+      userId: row.userId,
+      role: row.role as PetRole,
+      status: row.status,
+    };
+  }
+
+  async findById(petId: string): Promise<Pet | null> {
+    const rows = await this.db
+      .select()
+      .from(pets)
+      .where(eq(pets.id, petId))
+      .limit(1);
+
+    return rows[0] ? toDomain(rows[0]) : null;
   }
 }
 
