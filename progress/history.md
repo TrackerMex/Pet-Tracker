@@ -265,3 +265,27 @@ relativo `../../domain/...` era válido por la regla "mismo módulo").
 
 Nota: `src/db/` y `src/modules/health/` (#1) siguen con relativos — la
 exención histórica documentada en conventions.md se mantiene.
+
+### Adenda misma sesión — cierre del PR #5 (auth-login-me, #4)
+
+El branch `feature/4-auth-login-me` (trabajado 2026-07-31 en un sandbox
+Linux sin Docker y con segfault de argon2) llegó con CI rojo, 7 commits
+detrás de main y 3 archivos en conflicto. Cierre en esta máquina:
+
+- Rebase sobre main vía `implementer`: 12 commits reaplicados, conflictos
+  resueltos (auth.controller.ts/spec con imports en alias conservando el
+  endpoint de login; STATUS.md reconciliado preservando la sesión
+  2026-08-01 y acotando el hallazgo de argon2 a aquel sandbox).
+- Refactor de 22 imports cross-layer del código nuevo de #4 a alias
+  (`28179a1`), convención endurecida cumplida en `auth/` y `users/`.
+- Fix del test imposible `moduleRef.get(APP_GUARD)` → aserción por
+  `Reflect.getMetadata('providers', AuthModule)`, nombrada R5 (`c8ab4d6`);
+  trazabilidad re-mapeada post-rebase (`69c7935`).
+- `test/app.e2e-spec.ts` alineado al guard global: `GET /v1` sin token
+  ahora espera 401 por R5/R7 (`8ae4687`) — el scaffold esperaba 200.
+- Verificación en real: unit 43/43 (167), e2e 3/3 (15) contra Postgres y
+  LocalStack, `init.sh` verde, CI del PR #5 **verde**.
+- `reviewer` **aprobó** (`progress/review_auth-login-me-rebase.md`).
+
+Deuda detectada (fuera de alcance, candidata a limpieza propia):
+`src/modules/health/` (#1) conserva 5 imports relativos cross-layer.
