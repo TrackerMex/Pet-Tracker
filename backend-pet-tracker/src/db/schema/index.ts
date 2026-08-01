@@ -9,4 +9,5 @@
 // borrarlo.
 export * from './audit-log.schema';
 export * from './email-verification-tokens.schema';
+export * from './pets.schema';
 export * from './users.schema';
