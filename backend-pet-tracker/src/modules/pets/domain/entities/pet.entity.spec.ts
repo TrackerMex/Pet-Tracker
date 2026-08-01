@@ -6,7 +6,11 @@ describe('R6: ageMonths con birth_date son los meses completos hasta hoy', () =>
   it('devuelve 24 en el cumplemes exacto', () => {
     expect(
       calculateAgeMonths(
-        { birthDate: '2024-01-15', approxAgeMonths: null, createdAt: CREATED_AT },
+        {
+          birthDate: '2024-01-15',
+          approxAgeMonths: null,
+          createdAt: CREATED_AT,
+        },
         new Date('2026-01-15T00:00:00.000Z'),
       ),
     ).toBe(24);
@@ -15,7 +19,11 @@ describe('R6: ageMonths con birth_date son los meses completos hasta hoy', () =>
   it('devuelve 23 un dia antes del cumplemes (mes incompleto no cuenta)', () => {
     expect(
       calculateAgeMonths(
-        { birthDate: '2024-01-15', approxAgeMonths: null, createdAt: CREATED_AT },
+        {
+          birthDate: '2024-01-15',
+          approxAgeMonths: null,
+          createdAt: CREATED_AT,
+        },
         new Date('2026-01-14T23:59:59.000Z'),
       ),
     ).toBe(23);
@@ -24,7 +32,11 @@ describe('R6: ageMonths con birth_date son los meses completos hasta hoy', () =>
   it('borde fin de mes: nacido el 31/01, al 28/02 aun no cumple el mes', () => {
     expect(
       calculateAgeMonths(
-        { birthDate: '2024-01-31', approxAgeMonths: null, createdAt: CREATED_AT },
+        {
+          birthDate: '2024-01-31',
+          approxAgeMonths: null,
+          createdAt: CREATED_AT,
+        },
         new Date('2024-02-28T00:00:00.000Z'),
       ),
     ).toBe(0);
@@ -33,7 +45,11 @@ describe('R6: ageMonths con birth_date son los meses completos hasta hoy', () =>
   it('borde fin de mes: nacido el 31/01, al 01/03 ya cumplio un mes', () => {
     expect(
       calculateAgeMonths(
-        { birthDate: '2024-01-31', approxAgeMonths: null, createdAt: CREATED_AT },
+        {
+          birthDate: '2024-01-31',
+          approxAgeMonths: null,
+          createdAt: CREATED_AT,
+        },
         new Date('2024-03-01T00:00:00.000Z'),
       ),
     ).toBe(1);
@@ -42,7 +58,11 @@ describe('R6: ageMonths con birth_date son los meses completos hasta hoy', () =>
   it('devuelve 0 para un cachorro de dias', () => {
     expect(
       calculateAgeMonths(
-        { birthDate: '2026-01-05', approxAgeMonths: null, createdAt: CREATED_AT },
+        {
+          birthDate: '2026-01-05',
+          approxAgeMonths: null,
+          createdAt: CREATED_AT,
+        },
         new Date('2026-01-20T00:00:00.000Z'),
       ),
     ).toBe(0);

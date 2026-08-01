@@ -85,7 +85,9 @@ describe('R1: la migracion crea pets conforme a docs/data-model.md', () => {
   });
 
   it('current_weight_kg es numeric(5,2) y birth_date es date', () => {
-    expect(columns.get('current_weight_kg')?.getSQLType()).toBe('numeric(5, 2)');
+    expect(columns.get('current_weight_kg')?.getSQLType()).toBe(
+      'numeric(5, 2)',
+    );
     expect(columns.get('birth_date')?.getSQLType()).toBe('date');
   });
 
@@ -111,7 +113,14 @@ describe('R1: la migracion crea pet_users conforme a docs/data-model.md', () => 
 
   it('tiene PK compuesta (pet_id, user_id) sin id propio', () => {
     expect([...columns.keys()].sort()).toEqual(
-      ['pet_id', 'user_id', 'role', 'permissions', 'status', 'created_at'].sort(),
+      [
+        'pet_id',
+        'user_id',
+        'role',
+        'permissions',
+        'status',
+        'created_at',
+      ].sort(),
     );
     const pk = config.primaryKeys[0];
     expect(pk).toBeDefined();

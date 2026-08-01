@@ -7,7 +7,12 @@ function isoDateDaysFromNow(days: number): string {
 }
 
 function validBody(overrides: Record<string, unknown> = {}) {
-  return { name: 'Firulais', species: 'dog', birthDate: '2024-01-15', ...overrides };
+  return {
+    name: 'Firulais',
+    species: 'dog',
+    birthDate: '2024-01-15',
+    ...overrides,
+  };
 }
 
 describe('R4: el schema de POST /v1/pets acepta el body valido', () => {

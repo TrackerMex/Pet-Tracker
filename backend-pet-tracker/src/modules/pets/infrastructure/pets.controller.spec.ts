@@ -9,7 +9,10 @@ import { UpdatePetUseCase } from '@/modules/pets/application/use-cases/update-pe
 import { PetAccessRequest } from './guards/pet-access.guard';
 import { PetsController } from './pets.controller';
 
-const USER = { id: '0198a1f0-3d5c-7f21-b0a1-6f1c9e2d4b77', email: 'ada@example.com' };
+const USER = {
+  id: '0198a1f0-3d5c-7f21-b0a1-6f1c9e2d4b77',
+  email: 'ada@example.com',
+};
 const PET_ID = '0198b2c3-4d5e-7a01-b234-56789abcdef0';
 
 function buildPet(): Pet {
@@ -199,7 +202,11 @@ describe('R4: body invalido en POST /v1/pets responde 400 sin persistir', () => 
     const { controller, createExecute } = buildController();
 
     await expect(
-      controller.create(USER, { name: '', species: 'dog', birthDate: '2024-01-15' }),
+      controller.create(USER, {
+        name: '',
+        species: 'dog',
+        birthDate: '2024-01-15',
+      }),
     ).rejects.toThrow(BadRequestException);
     expect(createExecute).not.toHaveBeenCalled();
   });

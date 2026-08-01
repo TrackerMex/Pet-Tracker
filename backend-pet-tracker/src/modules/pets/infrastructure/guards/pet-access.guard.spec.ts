@@ -15,12 +15,14 @@ const USER_ID = '0198a1f0-3d5c-7f21-b0a1-6f1c9e2d4b77';
 /** Handlers de prueba: uno exige owner (R11), el otro no exige rol (R12). */
 class HandlersDouble {
   @RequirePetRole('owner')
-  ownerOnly(): void {}
+  ownerOnly(this: void): void {}
 
-  anyRole(): void {}
+  anyRole(this: void): void {}
 }
 
-function buildMembership(overrides: Partial<PetMembership> = {}): PetMembership {
+function buildMembership(
+  overrides: Partial<PetMembership> = {},
+): PetMembership {
   return {
     petId: PET_ID,
     userId: USER_ID,
@@ -41,8 +43,7 @@ function buildContext(options: {
 
   const context = {
     switchToHttp: () => ({ getRequest: () => request }),
-    getHandler: () =>
-      HandlersDouble.prototype[options.handler ?? 'anyRole'],
+    getHandler: () => HandlersDouble.prototype[options.handler ?? 'anyRole'],
     getClass: () => HandlersDouble,
   } as unknown as ExecutionContext;
 

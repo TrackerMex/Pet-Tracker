@@ -4,7 +4,9 @@ import { toPetProfileResponse } from './pet-profile-response.mapper';
 const PET_ID = '0198b2c3-4d5e-7a01-b234-56789abcdef0';
 const NOW = new Date('2026-08-01T12:00:00.000Z');
 
-function buildPet(overrides: Partial<ConstructorParameters<typeof Pet>[0]> = {}): Pet {
+function buildPet(
+  overrides: Partial<ConstructorParameters<typeof Pet>[0]> = {},
+): Pet {
   return new Pet({
     id: PET_ID,
     name: 'Firulais',

@@ -40,9 +40,9 @@ describe('R14: PATCH con birthDate y approxAgeMonths a la vez responde 400', () 
   });
 
   it('acepta solo birthDate', () => {
-    expect(
-      UpdatePetSchema.safeParse({ birthDate: '2024-01-15' }).success,
-    ).toBe(true);
+    expect(UpdatePetSchema.safeParse({ birthDate: '2024-01-15' }).success).toBe(
+      true,
+    );
   });
 
   it('acepta solo approxAgeMonths', () => {

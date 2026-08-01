@@ -40,10 +40,13 @@ export class PetAccessGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<PetAccessRequest>();
-    const petId = request.params.petId;
+    // Express tipa los params como string | string[]; un array (ruta
+    // malformada) cae igual que un no-UUID.
+    const petIdParam = request.params.petId;
+    const petId = typeof petIdParam === 'string' ? petIdParam : '';
 
     // R10: un :petId malformado ni siquiera toca la base.
-    if (!petId || !UUID_PATTERN.test(petId)) {
+    if (!UUID_PATTERN.test(petId)) {
       throw new NotFoundException();
     }
 

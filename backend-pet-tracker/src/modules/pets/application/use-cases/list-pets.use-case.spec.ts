@@ -33,8 +33,14 @@ function buildPet(id: string, name: string): Pet {
 describe('R7: ListPetsUseCase devuelve solo las membresias activas del usuario', () => {
   it('delega en findAllByMember y devuelve cada mascota con su rol', async () => {
     const memberships: PetWithRole[] = [
-      { pet: buildPet('0198b2c3-4d5e-7a01-b234-56789abcdef0', 'Firulais'), role: 'owner' },
-      { pet: buildPet('0198b2c3-4d5e-7a01-b234-56789abcdef1', 'Michi'), role: 'family' },
+      {
+        pet: buildPet('0198b2c3-4d5e-7a01-b234-56789abcdef0', 'Firulais'),
+        role: 'owner',
+      },
+      {
+        pet: buildPet('0198b2c3-4d5e-7a01-b234-56789abcdef1', 'Michi'),
+        role: 'family',
+      },
     ];
     const findAllByMember = jest.fn().mockResolvedValue(memberships);
     const useCase = new ListPetsUseCase({

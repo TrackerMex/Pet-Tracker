@@ -2,7 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { and, eq, inArray } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import request from 'supertest';
+import request, { Response } from 'supertest';
 import { App } from 'supertest/types';
 import { uuidv7 } from 'uuidv7';
 import { DRIZZLE } from '@/db/drizzle.constants';
@@ -12,6 +12,42 @@ import { users } from '@/db/schema/users.schema';
 import { TOKEN_SERVICE } from '@/modules/auth/domain/ports/token-service';
 import type { TokenService } from '@/modules/auth/domain/ports/token-service';
 import { AppModule } from './../src/app.module';
+
+/** Shape del contrato R8 tal como viaja por HTTP (todo serializado). */
+interface PetProfileBody {
+  id: string;
+  name: string;
+  species: string;
+  breed: string | null;
+  sex: string | null;
+  birthDate: string | null;
+  approxAgeMonths: number | null;
+  ageMonths: number;
+  currentWeightKg: number | null;
+  size: string | null;
+  color: string | null;
+  sterilized: boolean | null;
+  microchip: string | null;
+  photoUrl: string | null;
+  lostMode: boolean;
+  lastPosition: unknown;
+  lastCommunicationAt: string | null;
+  myRole: string;
+  device: null;
+  nextVaccine: null;
+  nextReminder: null;
+  activitySummary: null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+function profileBody(response: Response): PetProfileBody {
+  return response.body as PetProfileBody;
+}
+
+function listBody(response: Response): PetProfileBody[] {
+  return response.body as PetProfileBody[];
+}
 
 /**
  * e2e del CRUD de mascotas contra Postgres real (R2-R16). El e2e de IDOR
@@ -87,7 +123,7 @@ describe('Pets CRUD (e2e)', () => {
   async function createPetViaApi(
     owner: TestUser,
     overrides: Record<string, unknown> = {},
-  ): Promise<Record<string, any>> {
+  ): Promise<PetProfileBody> {
     const response = await request(app.getHttpServer())
       .post('/v1/pets')
       .set('Authorization', `Bearer ${owner.token}`)
@@ -99,9 +135,10 @@ describe('Pets CRUD (e2e)', () => {
       })
       .expect(201);
 
-    createdPetIds.push(response.body.id);
+    const body = profileBody(response);
+    createdPetIds.push(body.id);
 
-    return response.body;
+    return body;
   }
 
   function seedMembership(
@@ -133,9 +170,7 @@ describe('Pets CRUD (e2e)', () => {
 
   afterAll(async () => {
     if (createdUserIds.length > 0) {
-      await db
-        .delete(auditLog)
-        .where(inArray(auditLog.userId, createdUserIds));
+      await db.delete(auditLog).where(inArray(auditLog.userId, createdUserIds));
     }
     if (createdPetIds.length > 0) {
       await db.delete(pets).where(inArray(pets.id, createdPetIds));
@@ -155,18 +190,13 @@ describe('Pets CRUD (e2e)', () => {
       expect(body.myRole).toBe('owner');
       expect(body.name).toBe(`R2-${RUN_ID}`);
 
-      const petRows = await db
-        .select()
-        .from(pets)
-        .where(eq(pets.id, body.id));
+      const petRows = await db.select().from(pets).where(eq(pets.id, body.id));
       expect(petRows).toHaveLength(1);
 
       const membershipRows = await db
         .select()
         .from(petUsers)
-        .where(
-          and(eq(petUsers.petId, body.id), eq(petUsers.userId, owner.id)),
-        );
+        .where(and(eq(petUsers.petId, body.id), eq(petUsers.userId, owner.id)));
       expect(membershipRows).toHaveLength(1);
       expect(membershipRows[0].role).toBe('owner');
       expect(membershipRows[0].status).toBe('active');
@@ -207,7 +237,10 @@ describe('Pets CRUD (e2e)', () => {
         .select()
         .from(auditLog)
         .where(
-          and(eq(auditLog.action, 'pet.create'), eq(auditLog.entityId, body.id)),
+          and(
+            eq(auditLog.action, 'pet.create'),
+            eq(auditLog.entityId, body.id),
+          ),
         );
 
       expect(entries).toHaveLength(1);
@@ -279,9 +312,11 @@ describe('Pets CRUD (e2e)', () => {
         .set('Authorization', `Bearer ${owner.token}`)
         .expect(200);
 
-      const ids = response.body.map((pet: { id: string }) => pet.id).sort();
-      expect(ids).toEqual([petA.id, petB.id].sort());
-      for (const pet of response.body) {
+      const items = listBody(response);
+      expect(items.map((pet) => pet.id).sort()).toEqual(
+        [petA.id, petB.id].sort(),
+      );
+      for (const pet of items) {
         expect(pet.myRole).toBe('owner');
       }
 
@@ -289,7 +324,7 @@ describe('Pets CRUD (e2e)', () => {
         .get('/v1/pets')
         .set('Authorization', `Bearer ${stranger.token}`)
         .expect(200);
-      expect(strangerList.body).toEqual([]);
+      expect(listBody(strangerList)).toEqual([]);
     });
 
     it('excluye membresias con status distinto de active', async () => {
@@ -303,7 +338,7 @@ describe('Pets CRUD (e2e)', () => {
         .set('Authorization', `Bearer ${revoked.token}`)
         .expect(200);
 
-      expect(response.body).toEqual([]);
+      expect(listBody(response)).toEqual([]);
     });
   });
 
@@ -317,16 +352,17 @@ describe('Pets CRUD (e2e)', () => {
         .set('Authorization', `Bearer ${owner.token}`)
         .expect(200);
 
-      expect(Object.keys(response.body).sort()).toEqual(PROFILE_KEYS);
-      expect(response.body.device).toBeNull();
-      expect(response.body.nextVaccine).toBeNull();
-      expect(response.body.nextReminder).toBeNull();
-      expect(response.body.activitySummary).toBeNull();
-      expect(response.body.photoUrl).toBeNull();
-      expect(response.body.lastPosition).toBeNull();
-      expect(response.body.lastCommunicationAt).toBeNull();
-      expect(response.body.myRole).toBe('owner');
-      expect(typeof response.body.ageMonths).toBe('number');
+      const body = profileBody(response);
+      expect(Object.keys(body).sort()).toEqual(PROFILE_KEYS);
+      expect(body.device).toBeNull();
+      expect(body.nextVaccine).toBeNull();
+      expect(body.nextReminder).toBeNull();
+      expect(body.activitySummary).toBeNull();
+      expect(body.photoUrl).toBeNull();
+      expect(body.lastPosition).toBeNull();
+      expect(body.lastCommunicationAt).toBeNull();
+      expect(body.myRole).toBe('owner');
+      expect(typeof body.ageMonths).toBe('number');
     });
   });
 
@@ -366,7 +402,7 @@ describe('Pets CRUD (e2e)', () => {
         .get(`/v1/pets/${pet.id}`)
         .set('Authorization', `Bearer ${owner.token}`)
         .expect(200);
-      expect(stillThere.body.name).toBe(`R9-${RUN_ID}`);
+      expect(profileBody(stillThere).name).toBe(`R9-${RUN_ID}`);
     });
 
     it('una membresia no activa recibe el mismo 404 que un no-miembro', async () => {
@@ -441,7 +477,7 @@ describe('Pets CRUD (e2e)', () => {
         .set('Authorization', `Bearer ${family.token}`)
         .expect(200);
 
-      expect(response.body.myRole).toBe('family');
+      expect(profileBody(response).myRole).toBe('family');
     });
   });
 
@@ -459,14 +495,15 @@ describe('Pets CRUD (e2e)', () => {
         .send({ name: `R13-updated-${RUN_ID}`, weightKg: 22.5 })
         .expect(200);
 
-      expect(response.body.name).toBe(`R13-updated-${RUN_ID}`);
-      expect(response.body.currentWeightKg).toBe(22.5);
+      const body = profileBody(response);
+      expect(body.name).toBe(`R13-updated-${RUN_ID}`);
+      expect(body.currentWeightKg).toBe(22.5);
       // Campos no enviados intactos:
-      expect(response.body.species).toBe('dog');
-      expect(response.body.birthDate).toBe('2024-01-15');
-      expect(
-        new Date(response.body.updatedAt).getTime(),
-      ).toBeGreaterThanOrEqual(new Date(pet.updatedAt).getTime());
+      expect(body.species).toBe('dog');
+      expect(body.birthDate).toBe('2024-01-15');
+      expect(new Date(body.updatedAt).getTime()).toBeGreaterThanOrEqual(
+        new Date(pet.updatedAt).getTime(),
+      );
     });
 
     it('un campo invalido rechaza el body completo sin persistir nada', async () => {
@@ -483,7 +520,7 @@ describe('Pets CRUD (e2e)', () => {
         .get(`/v1/pets/${pet.id}`)
         .set('Authorization', `Bearer ${owner.token}`)
         .expect(200);
-      expect(unchanged.body.name).toBe(`R13b-${RUN_ID}`);
+      expect(profileBody(unchanged).name).toBe(`R13b-${RUN_ID}`);
     });
   });
 
@@ -497,16 +534,16 @@ describe('Pets CRUD (e2e)', () => {
         .set('Authorization', `Bearer ${owner.token}`)
         .send({ approxAgeMonths: 24 })
         .expect(200);
-      expect(withApprox.body.approxAgeMonths).toBe(24);
-      expect(withApprox.body.birthDate).toBeNull();
+      expect(profileBody(withApprox).approxAgeMonths).toBe(24);
+      expect(profileBody(withApprox).birthDate).toBeNull();
 
       const withBirthDate = await api()
         .patch(`/v1/pets/${pet.id}`)
         .set('Authorization', `Bearer ${owner.token}`)
         .send({ birthDate: '2024-06-01' })
         .expect(200);
-      expect(withBirthDate.body.birthDate).toBe('2024-06-01');
-      expect(withBirthDate.body.approxAgeMonths).toBeNull();
+      expect(profileBody(withBirthDate).birthDate).toBe('2024-06-01');
+      expect(profileBody(withBirthDate).approxAgeMonths).toBeNull();
 
       await api()
         .patch(`/v1/pets/${pet.id}`)
@@ -541,7 +578,7 @@ describe('Pets CRUD (e2e)', () => {
         .set('Authorization', `Bearer ${owner.token}`)
         .send({})
         .expect(200);
-      expect(noop.body.color).toBe('black');
+      expect(profileBody(noop).color).toBe('black');
 
       const updatesAfterNoop = await db
         .select()
@@ -590,9 +627,7 @@ describe('Pets CRUD (e2e)', () => {
         .get('/v1/pets')
         .set('Authorization', `Bearer ${owner.token}`)
         .expect(200);
-      expect(
-        list.body.some((item: { id: string }) => item.id === pet.id),
-      ).toBe(false);
+      expect(listBody(list).some((item) => item.id === pet.id)).toBe(false);
     });
   });
 });
