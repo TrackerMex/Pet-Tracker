@@ -1,6 +1,6 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-07-30
+**Última actualización**: 2026-08-01
 **Features completadas**: 3/18 (`feature_list.json`)
 **Pendientes**: 15 — backlog backend derivado de `plans/` 002–009 (fundaciones, auth propia, mascotas+permisos, collar Wialon SIM, recorridos, geocercas+alertas, salud, nutrición)
 **En producción**: no
@@ -86,18 +86,12 @@ debe listar las 4 URLs de cola.
   bus EventBridge) y `scripts/provision-local.ts` (`pnpm run
   provision:local`). Branch `feature/2-localstack-provisioning`, revisado y
   aprobado por el `reviewer` (rechazo inicial por R4 sin test nombrado,
-  corregido en `2bd5de2` y re-aprobado) — pendiente de PR + merge humano.
-  **Seguimiento pendiente no bloqueante**: 9/19 requisitos (R1, R2, R3, R9,
-  R15, R16, R17, R18, R19) verificados con tests reales que corren y pasan
-  en este sandbox; los otros 10 (R4-R8, R10-R14) están implementados con
-  test de integración escrito y commiteado
-  (`test/localstack-provisioning.e2e-spec.ts`) pero sin ejecutar con éxito
-  contra LocalStack real — sandbox sin acceso al socket de Docker, y a
-  diferencia de Postgres (#1) LocalStack no tiene alternativa nativa
-  viable. Antes de dar la feature por 100% validada, correr en una máquina
-  con Docker: `docker compose up -d && pnpm -C backend-pet-tracker run
-  test:e2e -- test/localstack-provisioning.e2e-spec.ts`. Ver
-  `progress/impl_localstack-provisioning.md` y
+  corregido en `2bd5de2` y re-aprobado), mergeado a `main` (`71efa13`).
+  **Seguimiento cerrado (2026-08-01)**: el e2e
+  `test/localstack-provisioning.e2e-spec.ts` corrió contra LocalStack real
+  (imagen pineada a `4.14`, ver sesión 2026-08-01) — 10/10 verdes, con lo
+  que R4-R8 y R10-R14 quedan verificados y los 19/19 requisitos ejecutados.
+  Ver `progress/impl_localstack-provisioning.md` y
   `progress/review_localstack-provisioning.md`.
 - **`auth-registration` (#3) done**: primera feature con tablas de dominio
   reales. `src/db/schema/` con `users`, `email_verification_tokens` y
@@ -109,26 +103,40 @@ debe listar las 4 URLs de cola.
   el puerto `PasswordHasher`, UUIDv7 generado en el repositorio Drizzle, token
   opaco de un solo uso persistido solo como SHA-256, `EMAIL_ENABLED=false` →
   log estructurado en vez de SES. Branch `feature/3-auth-registration`,
-  revisado y **aprobado** por el `reviewer` — pendiente de PR + merge humano.
-  **Seguimiento pendiente no bloqueante**: Docker no arranca en esta máquina
-  (`npipe:////./pipe/dockerDesktopLinuxEngine` no responde), así que las
-  migraciones nunca se aplicaron contra Postgres real y no hay e2e. Sin
-  ejecutar quedan el SQL de `0001`/`0002`, el `returning()` del insert de
-  `users` y los `update ... where` de `markEmailVerified`/`markUsed`.
-  Deliberadamente **no** se versionó un e2e sin ver pasar. En una máquina con
-  Docker: `docker compose up -d && pnpm -C backend-pet-tracker exec drizzle-kit
-  migrate`, y confirmar que las 3 tablas se crean y `schema_bootstrap`
-  desaparece. Ver `progress/impl_auth-registration.md` y
+  revisado y **aprobado** por el `reviewer`, mergeado a `main` (PR #4,
+  `1c7a9fe`). **Seguimiento cerrado (2026-08-01)**: migraciones `0001`/`0002`
+  aplicadas contra Postgres 17 real (Docker) — las 3 tablas creadas y
+  `schema_bootstrap` eliminado. Sin ejecutar en runtime real quedan solo el
+  `returning()` del insert de `users` y los `update ... where` de
+  `markEmailVerified`/`markUsed` (no hay e2e de auth versionado — deuda
+  menor, candidato a e2e cuando `auth-login-me` #4 toque el mismo módulo).
+  Ver `progress/impl_auth-registration.md` y
   `progress/review_auth-registration.md`.
 - Deuda menor detectada en #3: no existe script `db:migrate` en
   `package.json` (solo `db:generate`), aplicar migraciones exige hoy
   `exec drizzle-kit migrate` a mano. Candidato a tarea propia.
-- Próximo paso SDD: merge humano del PR #4 (feature #3) a `main` — #1 y #2 ya
-  mergeados — luego `spec_author` escribe la spec de `auth-login-me` (#4).
+- Próximo paso SDD: merge humano del PR de `fix/jest-e2e-alias` (pin de
+  LocalStack a `4.14` + fix del alias `@/` en `test/jest-e2e.json`), luego
+  `spec_author` escribe la spec de `auth-login-me` (#4).
 
 ---
 
 ## Última sesión
+
+- **2026-08-01** — Primera sesión con Docker real: cerrados los seguimientos
+  de entorno que venían arrastrándose desde #1. Migraciones de #3 aplicadas
+  contra Postgres 17 (3 tablas creadas, `schema_bootstrap` eliminado) y e2e
+  de #2 ejecutado contra LocalStack real — 10/10, 19/19 requisitos de esa
+  feature ya ejecutados. Dos bugs de entorno encontrados y corregidos en
+  branch `fix/jest-e2e-alias`: (1) `localstack/localstack:latest` ahora exige
+  `LOCALSTACK_AUTH_TOKEN` (serie CalVer 2026.x, exit 55) → imagen pineada a
+  `4.14`, última community (leader, `7b0e492`); (2) `test/jest-e2e.json`
+  mapeaba `@/` a `test/src/*` (inexistente) y rompía todo e2e que cargara
+  `app.module.ts` — nunca visto porque los e2e jamás habían corrido con
+  Docker → fix de una línea vía `implementer` (`1edcd38`), `reviewer` aprobó.
+  Suite completa contra infra real: e2e 3/3 (15 tests), unit 30/30 (99
+  tests), `init.sh` verde. Próximo: merge humano del PR del fix, luego spec
+  de `auth-login-me` (#4).
 
 - **2026-07-30 (3)** — Ciclo SDD de `auth-registration` (#3): spec R1-R15
   escrita en la sesión anterior → **gate humano aprobado** (frontmatter
