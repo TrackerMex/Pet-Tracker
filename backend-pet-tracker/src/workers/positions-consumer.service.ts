@@ -327,10 +327,6 @@ export class PositionsConsumerService {
     };
 
     for (let attempt = 0; attempt < DYNAMO_BATCH_WRITE_ATTEMPTS; attempt++) {
-      // El overload de send() de lib-dynamodb resuelve a `any` con este par
-      // de versiones del SDK: se anota el output del comando y se suprime
-      // solo la asignacion.
-
       const result: BatchWriteCommandOutput = await this.documents.send(
         new BatchWriteCommand({ RequestItems: requestItems }),
       );

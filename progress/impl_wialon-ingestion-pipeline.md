@@ -193,3 +193,10 @@ pet de evidencia expiran por TTL (90 días) y no interfieren (pk único).
   (fetch inyectable, fixtures); el smoke real es trabajo futuro declarado.
 - Verificar en el diff que `pipeline/` no importa framework/SDK — hay un
   test que lo hace por inspección de imports (`R5` purity check).
+
+## Post-review
+
+- 2026-08-02 — NB2 del review corregido: eliminado el comentario huérfano de
+  `positions-consumer.service.ts` (writeBatch) que referenciaba una
+  supresión eslint ya inexistente. Sin otro cambio; lint + 23 unit del
+  consumer verdes.
