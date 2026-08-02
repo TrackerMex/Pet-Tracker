@@ -8,6 +8,7 @@
 // dominio reales, que es la condición que su propio comentario fijaba para
 // borrarlo.
 export * from './audit-log.schema';
+export * from './devices.schema';
 export * from './email-verification-tokens.schema';
 export * from './pets.schema';
 export * from './users.schema';
