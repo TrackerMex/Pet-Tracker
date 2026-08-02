@@ -1,6 +1,14 @@
-// Nucleo puro del pipeline (R5): sin imports de NestJS/SDK/ORM, sin reloj,
-// sin red — solo funcion de datos a datos. La pureza se verifica por
+// Nucleo puro del pipeline (R5, R6): sin imports de NestJS/SDK/ORM, sin
+// reloj, sin red — solo funcion de datos a datos. La pureza se verifica por
 // inspeccion de imports en el spec.
+import {
+  FLAG_LOW_ACCURACY,
+  FLAG_SUSPECT_JUMP,
+  LOW_ACCURACY_MAX_ACCURACY_M,
+  LOW_ACCURACY_MIN_SATS,
+  SUSPECT_JUMP_SPEED_KMH,
+} from './constants';
+import { haversineMeters } from './geo';
 import type { DiscardedStat, ProcessedPosition, RawPosition } from './types';
 
 export interface NormalizeResult {
@@ -9,10 +17,12 @@ export interface NormalizeResult {
 }
 
 /**
- * Valida y ordena posiciones crudas (R5): descarta lat/lng fuera de rango o
- * exactamente (0,0), posiciones sin ts y duplicados exactos por device_ts
- * (queda la primera aparicion); cada descarte registra su razon. `accepted`
- * sale en orden cronologico ascendente.
+ * Valida, ordena y marca posiciones crudas (R5, R6): descarta lat/lng fuera
+ * de rango o exactamente (0,0), posiciones sin ts y duplicados exactos por
+ * device_ts (queda la primera aparicion); cada descarte registra su razon.
+ * `accepted` sale en orden cronologico ascendente con flags de calidad:
+ * suspect_jump (velocidad implicita > umbral, NO se descarta) y low_accuracy
+ * (accuracy o sats fuera de umbral, tampoco se descarta).
  */
 export function normalize(raw: RawPosition[]): NormalizeResult {
   const accepted: ProcessedPosition[] = [];
@@ -38,8 +48,47 @@ export function normalize(raw: RawPosition[]): NormalizeResult {
   }
 
   accepted.sort((a, b) => a.ts - b.ts);
+  assignQualityFlags(accepted);
 
   return { accepted, discarded };
+}
+
+function assignQualityFlags(accepted: ProcessedPosition[]): void {
+  for (let i = 0; i < accepted.length; i++) {
+    const position = accepted[i];
+
+    if (hasLowAccuracy(position)) {
+      position.flags.push(FLAG_LOW_ACCURACY);
+    }
+
+    if (i === 0) {
+      continue;
+    }
+    const previous = accepted[i - 1];
+    const dtSeconds = (position.ts - previous.ts) / 1000;
+    if (dtSeconds <= 0) {
+      continue;
+    }
+    const impliedKmh =
+      (haversineMeters(previous.lat, previous.lng, position.lat, position.lng) /
+        dtSeconds) *
+      3.6;
+    if (impliedKmh > SUSPECT_JUMP_SPEED_KMH) {
+      position.flags.push(FLAG_SUSPECT_JUMP);
+    }
+  }
+}
+
+function hasLowAccuracy(position: ProcessedPosition): boolean {
+  if (
+    typeof position.accuracyM === 'number' &&
+    position.accuracyM > LOW_ACCURACY_MAX_ACCURACY_M
+  ) {
+    return true;
+  }
+  return (
+    typeof position.sats === 'number' && position.sats < LOW_ACCURACY_MIN_SATS
+  );
 }
 
 function hasValidCoordinates(position: RawPosition): boolean {

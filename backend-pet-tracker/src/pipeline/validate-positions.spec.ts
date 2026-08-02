@@ -1,5 +1,14 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import {
+  BATTERY_LOW_THRESHOLD_PCT,
+  FLAG_LOW_ACCURACY,
+  FLAG_SUSPECT_JUMP,
+  LOW_ACCURACY_MAX_ACCURACY_M,
+  LOW_ACCURACY_MIN_SATS,
+  SUSPECT_JUMP_SPEED_KMH,
+} from './constants';
+import { haversineMeters } from './geo';
 import type { RawPosition } from './types';
 import { normalize } from './validate-positions';
 
@@ -64,6 +73,13 @@ describe('R5: normalize() descarta (0,0)/fuera de rango/sin ts/duplicados, orden
     expect(Array.isArray(result.accepted[0].flags)).toBe(true);
   });
 
+  it('R6/R17: los umbrales viven como constantes nombradas en pipeline/constants.ts', () => {
+    expect(SUSPECT_JUMP_SPEED_KMH).toBe(60);
+    expect(LOW_ACCURACY_MAX_ACCURACY_M).toBe(100);
+    expect(LOW_ACCURACY_MIN_SATS).toBe(4);
+    expect(BATTERY_LOW_THRESHOLD_PCT).toBe(20);
+  });
+
   it('es una funcion pura: sin imports de NestJS/SDK/ORM, sin reloj ni red (inspeccion de imports)', () => {
     const source = readFileSync(
       join(__dirname, 'validate-positions.ts'),
@@ -78,5 +94,68 @@ describe('R5: normalize() descarta (0,0)/fuera de rango/sin ts/duplicados, orden
     expect(importSpecifiers.every((s) => s.startsWith('./'))).toBe(true);
     // Sin reloj ni aleatoriedad.
     expect(source).not.toMatch(/Date\.now|new Date\(|Math\.random/);
+  });
+});
+
+describe('R6: flags suspect_jump (>60 km/h, no descarta) y low_accuracy (>100 m o <4 sats)', () => {
+  // 30 s entre puntos; 0.01 grados de lat ~ 1113 m => ~133 km/h implicitos.
+  const JUMP_DELTA_LAT = 0.01;
+
+  it('marca suspect_jump en la posterior de un par que implica >60 km/h, sin descartarla', () => {
+    const result = normalize([
+      { lat: 19.4326, lng: -99.1332, ts: 0 },
+      { lat: 19.4326 + JUMP_DELTA_LAT, lng: -99.1332, ts: 30_000 },
+    ]);
+
+    expect(result.accepted).toHaveLength(2);
+    expect(result.discarded).toHaveLength(0);
+    expect(result.accepted[0].flags).not.toContain(FLAG_SUSPECT_JUMP);
+    expect(result.accepted[1].flags).toContain(FLAG_SUSPECT_JUMP);
+  });
+
+  it('no marca suspect_jump a velocidades de caminata', () => {
+    const result = normalize([
+      { lat: 19.4326, lng: -99.1332, ts: 0 },
+      { lat: 19.4328, lng: -99.1332, ts: 30_000 },
+    ]);
+
+    expect(result.accepted[1].flags).not.toContain(FLAG_SUSPECT_JUMP);
+  });
+
+  it('marca low_accuracy con accuracyM > 100 o sats < 4, sin descartar', () => {
+    const result = normalize([
+      { lat: 19.4326, lng: -99.1332, ts: 0, accuracyM: 101 },
+      { lat: 19.4326, lng: -99.1331, ts: 30_000, sats: 3 },
+      { lat: 19.4326, lng: -99.133, ts: 60_000, accuracyM: 100, sats: 4 },
+    ]);
+
+    expect(result.accepted).toHaveLength(3);
+    expect(result.accepted[0].flags).toContain(FLAG_LOW_ACCURACY);
+    expect(result.accepted[1].flags).toContain(FLAG_LOW_ACCURACY);
+    // En el umbral exacto (100 m / 4 sats) no hay flag.
+    expect(result.accepted[2].flags).not.toContain(FLAG_LOW_ACCURACY);
+  });
+
+  it('una posicion puede llevar ambos flags a la vez', () => {
+    const result = normalize([
+      { lat: 19.4326, lng: -99.1332, ts: 0 },
+      {
+        lat: 19.4326 + JUMP_DELTA_LAT,
+        lng: -99.1332,
+        ts: 30_000,
+        accuracyM: 150,
+      },
+    ]);
+
+    expect(result.accepted[1].flags).toEqual(
+      expect.arrayContaining([FLAG_SUSPECT_JUMP, FLAG_LOW_ACCURACY]),
+    );
+  });
+
+  it('haversineMeters de pipeline/geo.ts da distancias correctas (~111.3 m por 0.001 grados de lat)', () => {
+    const meters = haversineMeters(19.4326, -99.1332, 19.4336, -99.1332);
+    expect(meters).toBeGreaterThan(105);
+    expect(meters).toBeLessThan(118);
+    expect(haversineMeters(19.4326, -99.1332, 19.4326, -99.1332)).toBe(0);
   });
 });

@@ -12,7 +12,7 @@ tags: [harness, spec]
 | R2 | src/integrations/wialon/fake-wialon.client.spec.ts::R2: fake determinista — misma semilla+intervalo => mismas posiciones; un punto por slot de 30 s; unitIds del seed | `0098847` feat(wialon-ingestion-pipeline): deterministic slot-indexed fake wialon client (R2) |
 | R3 | src/integrations/wialon/fake-wialon.client.spec.ts::R3: paseo realista — arranque en casa, <=8 km/h salvo saltos, ruido ~10 m, duplicado exacto, salto >60 km/h y bateria decreciente | `9be3159` feat(wialon-ingestion-pipeline): realistic walk with injected anomalies and battery drain (R3) |
 | R4 | src/integrations/wialon/wialon-http.client.spec.ts::R4: WialonHttpClient mapea la respuesta real (pos.y/x/s/c/sc) y {error: N} => WialonApiError tipado | `3eaecb5` feat(wialon-ingestion-pipeline): wialon http client with typed domain errors (R4) |
-| R5 | pendiente | pendiente |
+| R5 | src/pipeline/validate-positions.spec.ts::R5: normalize() descarta (0,0)/fuera de rango/sin ts/duplicados, ordena y reporta discarded; 100% puro | `59baab3` feat(wialon-ingestion-pipeline): pure normalize() with discard reasons and ordering (R5) |
 | R6 | pendiente | pendiente |
 | R7 | pendiente | pendiente |
 | R8 | pendiente | pendiente |
