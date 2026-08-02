@@ -421,3 +421,30 @@ describe('R14: cache devices + pets.last_position con la ultima aceptada, solo s
     );
   });
 });
+
+describe('R15: asignacion liberada — escribe el historico en DynamoDB pero no toca cache ni emite eventos', () => {
+  it('con la asignacion liberada escribe los items bajo PET#<petId> y borra el mensaje, sin cache ni eventos', async () => {
+    const { service, sqs, store, documents, events } = makeHarness([
+      [message('a', validBody({ positions: [
+        { lat: 19.4326, lng: -99.1332, ts: BASE_TS, batteryPct: 15 },
+      ] }))],
+      [],
+    ]);
+    store.isAssignmentActive.mockResolvedValue(false);
+
+    await service.drainOnce(NOW);
+
+    // Historico legitimo del periodo de asignacion: se escribe igual (R15).
+    const items = writtenItems(documents);
+    expect(items).toHaveLength(1);
+    expect(items[0].pk).toBe('PET#pet-1');
+
+    // Cache y bus solo reflejan collares activos.
+    expect(store.updateDeviceTelemetry).not.toHaveBeenCalled();
+    expect(store.updatePetLastPosition).not.toHaveBeenCalled();
+    expect(events.send).not.toHaveBeenCalled();
+
+    // El mensaje se proceso completo: se borra (no es un fallo).
+    expect(sqs.deleted).toEqual(['rh-a']);
+  });
+});

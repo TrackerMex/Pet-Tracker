@@ -21,7 +21,7 @@ tags: [harness, spec]
 | R11 | src/workers/poller.service.spec.ts::R11: aislamiento — error por device no aborta el ciclo; LocalStack caido no tumba el proceso; sin solape | `2ce248c` feat(wialon-ingestion-pipeline): poller resilience — per-device isolation, overlap guard, sqs-down tolerance (R11) |
 | R12 | src/workers/positions-consumer.service.spec.ts::R12: consumer — long-polling batch <=10, zod, delete por mensaje procesado; el fallido no envenena el lote; drainOnce() | `564ec00` feat(wialon-ingestion-pipeline): sqs consumer skeleton with zod contract and per-message delete (R12) |
 | R13 | src/workers/positions-consumer.service.spec.ts::R13: escritura DynamoDB — pk PET#<petId>, sk device_ts, atributos data-model, expires_at en segundos; dedupe por sk; reproceso idempotente | `6f9b884` feat(wialon-ingestion-pipeline): idempotent dynamodb batch writes for accepted positions (R13) |
-| R14 | pendiente | pendiente |
+| R14 | src/workers/positions-consumer.service.spec.ts::R14: cache devices + pets.last_position con la ultima aceptada, solo si el ts entrante es mas reciente (guard WHERE cubierto en test/ingestion.e2e-spec.ts) | `fe531da` feat(wialon-ingestion-pipeline): device and pet cache updates from latest accepted position (R14) |
 | R15 | pendiente | pendiente |
 | R16 | pendiente | pendiente |
 | R17 | pendiente | pendiente |
