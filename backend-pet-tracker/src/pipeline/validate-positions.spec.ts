@@ -159,3 +159,68 @@ describe('R6: flags suspect_jump (>60 km/h, no descarta) y low_accuracy (>100 m 
     expect(haversineMeters(19.4326, -99.1332, 19.4326, -99.1332)).toBe(0);
   });
 });
+
+describe('R7: fixture walk.json (~200 puntos del fake) + casos borde', () => {
+  const walk = JSON.parse(
+    readFileSync(join(__dirname, '__fixtures__', 'walk.json'), 'utf8'),
+  ) as RawPosition[];
+
+  it('el fixture trae ~200 puntos generados con el fake (R3)', () => {
+    expect(walk.length).toBeGreaterThanOrEqual(200);
+    expect(walk.length).toBeLessThanOrEqual(210);
+  });
+
+  it('descarta el (0,0) y los duplicados presentes en el fixture, cada uno con su razon', () => {
+    const { accepted, discarded } = normalize(walk);
+
+    const zeroDiscards = discarded.filter(
+      (d) => d.reason === 'invalid_coordinates',
+    );
+    expect(zeroDiscards).toHaveLength(1);
+    expect(zeroDiscards[0].position.lat).toBe(0);
+    expect(zeroDiscards[0].position.lng).toBe(0);
+
+    const duplicateDiscards = discarded.filter(
+      (d) => d.reason === 'duplicate_ts',
+    );
+    expect(duplicateDiscards.length).toBeGreaterThanOrEqual(1);
+
+    expect(accepted).toHaveLength(walk.length - discarded.length);
+  });
+
+  it('marca el salto del fixture como suspect_jump y conserva el orden cronologico', () => {
+    const { accepted } = normalize(walk);
+
+    expect(
+      accepted.some((p) => p.flags.includes(FLAG_SUSPECT_JUMP)),
+    ).toBe(true);
+
+    for (let i = 1; i < accepted.length; i++) {
+      expect(accepted[i].ts).toBeGreaterThan(accepted[i - 1].ts);
+    }
+  });
+
+  it('lista vacia => {accepted: [], discarded: []}', () => {
+    expect(normalize([])).toEqual({ accepted: [], discarded: [] });
+  });
+
+  it('un solo punto => aceptado sin flags de velocidad', () => {
+    const { accepted, discarded } = normalize([walk[0]]);
+
+    expect(discarded).toHaveLength(0);
+    expect(accepted).toHaveLength(1);
+    expect(accepted[0].flags).not.toContain(FLAG_SUSPECT_JUMP);
+  });
+
+  it('todos invalidos => accepted vacio con discarded completo', () => {
+    const invalid: RawPosition[] = [
+      { lat: 0, lng: 0, ts: 1000 },
+      { lat: 95, lng: -99.1, ts: 2000 },
+      { lat: 19.4, lng: -99.1 } as RawPosition,
+    ];
+
+    const { accepted, discarded } = normalize(invalid);
+    expect(accepted).toHaveLength(0);
+    expect(discarded).toHaveLength(3);
+  });
+});
