@@ -10,7 +10,7 @@ tags: [harness, spec]
 |---|---|---|
 | R1 | src/integrations/wialon/wialon.factory.spec.ts::R1: el factory resuelve WIALON_CLIENT con fake por default y http solo con SIM_MODE=false + token real | `8284a0f` feat(wialon-ingestion-pipeline): wialon client port and config-driven factory (R1) |
 | R2 | src/integrations/wialon/fake-wialon.client.spec.ts::R2: fake determinista — misma semilla+intervalo => mismas posiciones; un punto por slot de 30 s; unitIds del seed | `0098847` feat(wialon-ingestion-pipeline): deterministic slot-indexed fake wialon client (R2) |
-| R3 | pendiente | pendiente |
+| R3 | src/integrations/wialon/fake-wialon.client.spec.ts::R3: paseo realista — arranque en casa, <=8 km/h salvo saltos, ruido ~10 m, duplicado exacto, salto >60 km/h y bateria decreciente | `9be3159` feat(wialon-ingestion-pipeline): realistic walk with injected anomalies and battery drain (R3) |
 | R4 | pendiente | pendiente |
 | R5 | pendiente | pendiente |
 | R6 | pendiente | pendiente |
