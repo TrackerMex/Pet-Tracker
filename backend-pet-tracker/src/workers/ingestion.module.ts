@@ -3,6 +3,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { WIALON_CLIENT } from '@/integrations/wialon/wialon-client.interface';
 import { createWialonClient } from '@/integrations/wialon/wialon.factory';
 import { IngestionSchedulerService } from './ingestion-scheduler.service';
+import { INGESTION_STORE } from './ingestion-store';
+import { IngestionDrizzleStore } from './ingestion.drizzle.store';
 import { PollerService } from './poller.service';
 import { PositionsConsumerService } from './positions-consumer.service';
 
@@ -19,6 +21,7 @@ import { PositionsConsumerService } from './positions-consumer.service';
       useFactory: createWialonClient,
       inject: [ConfigService],
     },
+    { provide: INGESTION_STORE, useClass: IngestionDrizzleStore },
     PollerService,
     PositionsConsumerService,
     IngestionSchedulerService,

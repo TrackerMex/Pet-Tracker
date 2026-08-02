@@ -15,7 +15,7 @@ tags: [harness, spec]
 | R5 | src/pipeline/validate-positions.spec.ts::R5: normalize() descarta (0,0)/fuera de rango/sin ts/duplicados, ordena y reporta discarded; 100% puro | `59baab3` feat(wialon-ingestion-pipeline): pure normalize() with discard reasons and ordering (R5) |
 | R6 | src/pipeline/validate-positions.spec.ts::R6: flags suspect_jump (>60 km/h, no descarta) y low_accuracy (>100 m o <4 sats) | `36fd6fd` feat(wialon-ingestion-pipeline): quality flags and named thresholds in pipeline core (R6) |
 | R7 | src/pipeline/validate-positions.spec.ts::R7: fixture walk.json (~200 puntos del fake) + casos borde | `bc7b5fe` feat(wialon-ingestion-pipeline): walk.json fixture and pipeline edge cases (R7) |
-| R8 | pendiente | pendiente |
+| R8 | src/workers/ingestion-scheduler.service.spec.ts::R8: scheduling gated — cron solo con POLLER_ENABLED=true y NODE_ENV distinto de test; runOnce() invocable | `e178dee` feat(wialon-ingestion-pipeline): gated scheduling shell for ingestion workers (R8) |
 | R9 | pendiente | pendiente |
 | R10 | pendiente | pendiente |
 | R11 | pendiente | pendiente |
