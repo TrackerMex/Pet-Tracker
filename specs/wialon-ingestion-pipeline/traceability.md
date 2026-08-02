@@ -9,7 +9,7 @@ tags: [harness, spec]
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
 | R1 | src/integrations/wialon/wialon.factory.spec.ts::R1: el factory resuelve WIALON_CLIENT con fake por default y http solo con SIM_MODE=false + token real | `8284a0f` feat(wialon-ingestion-pipeline): wialon client port and config-driven factory (R1) |
-| R2 | pendiente | pendiente |
+| R2 | src/integrations/wialon/fake-wialon.client.spec.ts::R2: fake determinista — misma semilla+intervalo => mismas posiciones; un punto por slot de 30 s; unitIds del seed | `0098847` feat(wialon-ingestion-pipeline): deterministic slot-indexed fake wialon client (R2) |
 | R3 | pendiente | pendiente |
 | R4 | pendiente | pendiente |
 | R5 | pendiente | pendiente |

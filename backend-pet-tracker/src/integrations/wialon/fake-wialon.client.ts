@@ -21,6 +21,18 @@ const MAX_WALK_SPEED_KMH = 4;
 const PAUSE_PROBABILITY = 0.3;
 const NOISE_AMPLITUDE_M = 10;
 
+// Anomalias deterministas cada ~50 slots (D2): un salto absurdo (1000 m en
+// 30 s => 120 km/h implicitos, supera el umbral suspect_jump de 60) y un
+// duplicado exacto (el punto se emite dos veces). Offsets distintos mod 50.
+const ANOMALY_PERIOD_SLOTS = 50;
+const JUMP_SLOT_OFFSET = 17;
+const DUPLICATE_SLOT_OFFSET = 42;
+const JUMP_DISTANCE_M = 1000;
+
+// Bateria: -1 % por cada 30 min simulados (60 slots), reinicia en 100 al
+// empezar cada dia simulado — "collar cargado cada noche".
+const BATTERY_DRAIN_SLOTS = 60;
+
 const METERS_PER_DEGREE_LAT = 111_320;
 
 /** PRNG stateless mulberry32 (~10 lineas, sin dependencia nueva — D2). */
@@ -110,7 +122,14 @@ export class FakeWialonClient implements WialonClient {
         continue;
       }
 
-      positions.push(this.toPosition(slot, draw, eastM, northM));
+      const position = this.toPosition(slot, draw, eastM, northM);
+      positions.push(position);
+
+      if (slot % ANOMALY_PERIOD_SLOTS === DUPLICATE_SLOT_OFFSET) {
+        // Duplicado exacto: mismo ts y coordenadas (R3) — normalize() lo
+        // descarta por device_ts (R5).
+        positions.push({ ...position });
+      }
     }
 
     return Promise.resolve(positions);
@@ -143,10 +162,21 @@ export class FakeWialonClient implements WialonClient {
     const latRad = (this.options.homeLat * Math.PI) / 180;
     const metersPerDegreeLng = METERS_PER_DEGREE_LAT * Math.cos(latRad);
 
+    // Salto absurdo (outlier posicional transitorio): solo desplaza el punto
+    // reportado de este slot, no la trayectoria acumulada (R3).
+    const jumpNorthM =
+      slot % ANOMALY_PERIOD_SLOTS === JUMP_SLOT_OFFSET ? JUMP_DISTANCE_M : 0;
+
+    const slotOfDay = slot % SLOTS_PER_DAY;
+    const batteryPct = Math.max(
+      0,
+      100 - Math.floor(slotOfDay / BATTERY_DRAIN_SLOTS),
+    );
+
     return {
       lat:
         this.options.homeLat +
-        (northM + draw.noiseNorthM) / METERS_PER_DEGREE_LAT,
+        (northM + draw.noiseNorthM + jumpNorthM) / METERS_PER_DEGREE_LAT,
       lng:
         this.options.homeLng + (eastM + draw.noiseEastM) / metersPerDegreeLng,
       ts: slot * SIM_STEP_MS,
@@ -154,6 +184,7 @@ export class FakeWialonClient implements WialonClient {
       course: (draw.directionRad * 180) / Math.PI,
       sats: draw.sats,
       accuracyM: draw.accuracyM,
+      batteryPct,
     };
   }
 }
