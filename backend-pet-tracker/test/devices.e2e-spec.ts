@@ -464,7 +464,10 @@ describe('Devices claim (e2e)', () => {
         .select()
         .from(petDevices)
         .where(
-          and(eq(petDevices.deviceId, device.id), isNull(petDevices.releasedAt)),
+          and(
+            eq(petDevices.deviceId, device.id),
+            isNull(petDevices.releasedAt),
+          ),
         );
       expect(activeRows).toHaveLength(1);
     });
@@ -749,7 +752,10 @@ describe('Devices claim (e2e)', () => {
         .select()
         .from(petDevices)
         .where(
-          and(eq(petDevices.deviceId, device.id), isNull(petDevices.releasedAt)),
+          and(
+            eq(petDevices.deviceId, device.id),
+            isNull(petDevices.releasedAt),
+          ),
         );
       expect(activeRows).toHaveLength(1);
     });
@@ -798,7 +804,10 @@ describe('Devices claim (e2e)', () => {
         .select()
         .from(petDevices)
         .where(
-          and(eq(petDevices.deviceId, device.id), isNull(petDevices.releasedAt)),
+          and(
+            eq(petDevices.deviceId, device.id),
+            isNull(petDevices.releasedAt),
+          ),
         );
       expect(activeRows).toHaveLength(1);
       expect(activeRows[0].petId).toBe(petB.id);

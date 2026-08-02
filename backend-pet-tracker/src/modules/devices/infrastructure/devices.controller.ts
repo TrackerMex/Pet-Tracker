@@ -38,7 +38,9 @@ export class DevicesController {
     const dto = parseBody<ClaimDeviceDto>(ClaimDeviceSchema, body);
 
     try {
-      return toDeviceStatusResponse(await this.claimDevice.execute(dto, user.id));
+      return toDeviceStatusResponse(
+        await this.claimDevice.execute(dto, user.id),
+      );
     } catch (error) {
       throw mapDeviceError(error);
     }

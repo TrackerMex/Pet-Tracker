@@ -42,7 +42,9 @@ function buildDevice(overrides: Partial<Device> = {}): Device {
   });
 }
 
-function buildMembership(overrides: Partial<PetMembership> = {}): PetMembership {
+function buildMembership(
+  overrides: Partial<PetMembership> = {},
+): PetMembership {
   return {
     petId: PET_ID,
     userId: USER_ID,

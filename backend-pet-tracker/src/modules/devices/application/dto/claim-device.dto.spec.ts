@@ -1,7 +1,4 @@
-import {
-  ClaimDeviceSchema,
-  toDeviceIdentifier,
-} from './claim-device.dto';
+import { ClaimDeviceSchema, toDeviceIdentifier } from './claim-device.dto';
 
 const PET_ID = '0198b2c3-4d5e-7a01-b234-56789abcdef0';
 
