@@ -144,7 +144,7 @@
   {
     "id": 9,
     "name": "positions-api",
-    "status": "pending",
+    "status": "in_progress",
     "priority": "P1",
     "description": "Plan 005 (lectura): GET /v1/pets/:petId/positions/last desde pets.last_position (+ staleSeconds); GET /v1/pets/:petId/positions?from&to&cursor con Query a DynamoDB (máx 24 h por página, cursor base64, excluye low_accuracy salvo ?includeSuspect=true).",
     "acceptance_criteria": [
