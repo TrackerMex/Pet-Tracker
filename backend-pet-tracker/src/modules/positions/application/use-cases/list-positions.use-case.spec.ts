@@ -1,7 +1,12 @@
 import {
+  FLAG_LOW_ACCURACY,
+  FLAG_SUSPECT_JUMP,
+} from '@/pipeline/constants';
+import {
   encodeCursor,
   queryFingerprint,
 } from '@/modules/positions/domain/cursor';
+import type { StoredPosition } from '@/modules/positions/domain/entities/position.entity';
 import {
   InvalidCursorError,
   InvalidRangeError,
@@ -319,5 +324,166 @@ describe('R14: cursor corrupto, de otra mascota o de otra consulta => InvalidCur
     await useCase.execute({ petId: PET_A, from: FROM, to: TO, cursor }, NOW);
 
     expect(calls[0].petId).toBe(PET_A);
+  });
+});
+
+/** Tres puntos sembrados: limpio, low_accuracy y suspect_jump (D1). */
+function threeFlaggedItems(): StoredPosition[] {
+  const base = {
+    lat: 19.4,
+    lng: -99.1,
+    speedKmh: 4,
+    course: 90,
+    altitude: 2240,
+    sats: 9,
+    accuracyM: 8,
+    batteryPct: 77,
+  };
+
+  return [
+    { ...base, ts: 1_000, flags: [] },
+    { ...base, ts: 2_000, flags: [FLAG_LOW_ACCURACY] },
+    { ...base, ts: 3_000, flags: [FLAG_SUSPECT_JUMP] },
+  ];
+}
+
+describe('R12: por defecto se ocultan solo los low_accuracy; includeSuspect=true no filtra nada', () => {
+  it('sin includeSuspect devuelve 2 de 3: cae el low_accuracy, se queda el suspect_jump', async () => {
+    const { reader } = fakeReader({
+      items: threeFlaggedItems(),
+      lastKey: null,
+    });
+    const useCase = new ListPositionsUseCase(reader);
+
+    const result = await useCase.execute(
+      { petId: PET_A, from: FROM, to: TO },
+      NOW,
+    );
+
+    expect(result.items.map((item) => item.ts)).toEqual([1_000, 3_000]);
+  });
+
+  it('includeSuspect=false se comporta igual que la ausencia del parametro', async () => {
+    const { reader } = fakeReader({
+      items: threeFlaggedItems(),
+      lastKey: null,
+    });
+    const useCase = new ListPositionsUseCase(reader);
+
+    const result = await useCase.execute(
+      { petId: PET_A, from: FROM, to: TO, includeSuspect: 'false' },
+      NOW,
+    );
+
+    expect(result.items.map((item) => item.ts)).toEqual([1_000, 3_000]);
+  });
+
+  it('includeSuspect=true devuelve los 3 sin filtrar por flags', async () => {
+    const { reader } = fakeReader({
+      items: threeFlaggedItems(),
+      lastKey: null,
+    });
+    const useCase = new ListPositionsUseCase(reader);
+
+    const result = await useCase.execute(
+      { petId: PET_A, from: FROM, to: TO, includeSuspect: 'true' },
+      NOW,
+    );
+
+    expect(result.items.map((item) => item.ts)).toEqual([1_000, 2_000, 3_000]);
+  });
+
+  it('un punto con ambos flags cae por defecto y vuelve con includeSuspect=true', async () => {
+    const both: StoredPosition[] = [
+      {
+        ts: 5_000,
+        lat: 19.4,
+        lng: -99.1,
+        speedKmh: null,
+        course: null,
+        altitude: null,
+        sats: null,
+        accuracyM: null,
+        batteryPct: null,
+        flags: [FLAG_LOW_ACCURACY, FLAG_SUSPECT_JUMP],
+      },
+    ];
+    const useCase = new ListPositionsUseCase(
+      fakeReader({ items: both, lastKey: null }).reader,
+    );
+    const withFlag = new ListPositionsUseCase(
+      fakeReader({ items: both, lastKey: null }).reader,
+    );
+
+    await expect(
+      useCase.execute({ petId: PET_A, from: FROM, to: TO }, NOW),
+    ).resolves.toEqual({ items: [], nextCursor: null });
+    await expect(
+      withFlag.execute(
+        { petId: PET_A, from: FROM, to: TO, includeSuspect: 'true' },
+        NOW,
+      ),
+    ).resolves.toEqual({ items: both, nextCursor: null });
+  });
+});
+
+describe('R15: la paginacion es de la Query, no del resultado filtrado', () => {
+  it('una pagina que el filtro deja vacia conserva su nextCursor no nulo', async () => {
+    const onlyLowAccuracy = threeFlaggedItems().filter((item) =>
+      item.flags.includes(FLAG_LOW_ACCURACY),
+    );
+    const { reader } = fakeReader({ items: onlyLowAccuracy, lastKey: 9_999 });
+    const useCase = new ListPositionsUseCase(reader);
+
+    const result = await useCase.execute(
+      { petId: PET_A, from: FROM, to: TO },
+      NOW,
+    );
+
+    expect(result.items).toEqual([]);
+    expect(result.nextCursor).not.toBeNull();
+  });
+
+  it('un rango sin ninguna posicion devuelve items vacios y nextCursor null', async () => {
+    const { reader } = fakeReader({ items: [], lastKey: null });
+    const useCase = new ListPositionsUseCase(reader);
+
+    await expect(
+      useCase.execute({ petId: PET_A, from: FROM, to: TO }, NOW),
+    ).resolves.toEqual({ items: [], nextCursor: null });
+  });
+});
+
+describe('R11: el envelope tiene exactamente items y nextCursor', () => {
+  it('la respuesta no lleva ninguna clave extra', async () => {
+    const { reader } = fakeReader({
+      items: threeFlaggedItems(),
+      lastKey: null,
+    });
+    const useCase = new ListPositionsUseCase(reader);
+
+    const result = await useCase.execute(
+      { petId: PET_A, from: FROM, to: TO },
+      NOW,
+    );
+
+    expect(Object.keys(result).sort()).toEqual(['items', 'nextCursor']);
+  });
+
+  it('los items salen ordenados por ts estrictamente ascendente', async () => {
+    const { reader } = fakeReader({
+      items: threeFlaggedItems(),
+      lastKey: null,
+    });
+    const useCase = new ListPositionsUseCase(reader);
+
+    const result = await useCase.execute(
+      { petId: PET_A, from: FROM, to: TO, includeSuspect: 'true' },
+      NOW,
+    );
+
+    const timestamps = result.items.map((item) => item.ts);
+    expect(timestamps).toEqual([...timestamps].sort((a, b) => a - b));
+    expect(new Set(timestamps).size).toBe(timestamps.length);
   });
 });

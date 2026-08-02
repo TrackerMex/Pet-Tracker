@@ -16,6 +16,7 @@ import {
   DEFAULT_RANGE_MINUTES,
   MAX_RANGE_HOURS,
 } from '@/modules/positions/positions.constants';
+import { FLAG_LOW_ACCURACY } from '@/pipeline/constants';
 
 const MS_PER_MINUTE = 60_000;
 const MS_PER_HOUR = 3_600_000;
@@ -84,7 +85,14 @@ export class ListPositionsUseCase {
     });
 
     return {
-      items: page.items,
+      // R12/D1: el modo por defecto oculta solo low_accuracy — los
+      // suspect_jump son movimiento real marcado, y el plan 006 los necesita
+      // para segmentar recorridos. Se filtra en memoria y no con
+      // FilterExpression: DynamoDB filtra despues de leer (misma capacidad,
+      // mismo resultado) y convertiria una regla de negocio en un string.
+      items: includeSuspect
+        ? page.items
+        : page.items.filter((item) => !item.flags.includes(FLAG_LOW_ACCURACY)),
       // R13: la paginacion es de la Query, no del resultado filtrado (R15).
       nextCursor:
         page.lastKey === null
