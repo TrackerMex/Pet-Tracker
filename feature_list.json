@@ -125,7 +125,7 @@
   {
     "id": 8,
     "name": "wialon-ingestion-pipeline",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P1",
     "description": "Plan 005 (pipeline, adaptado a local): interfaz WialonClient + FakeWialonClient determinista (SIM_MODE, paseo realista con ruido, saltos y duplicados) + WialonHttpClient real; funciones puras de validación (src/pipeline/: rango, duplicados, suspect_jump >60km/h, low_accuracy, haversine); poller como cron de @nestjs/schedule (sustituye Lambda+Scheduler en local) → SQS positions-raw (LocalStack) → consumidor que normaliza, escribe DynamoDB positions, actualiza devices y pets.last_position, y emite position.updated / battery.low al bus EventBridge.",
     "acceptance_criteria": [
