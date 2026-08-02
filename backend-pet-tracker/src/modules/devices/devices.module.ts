@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common';
 import { PetsModule } from '@/modules/pets/pets.module';
 import { ClaimDeviceUseCase } from './application/use-cases/claim-device.use-case';
+import { GetPetDeviceUseCase } from './application/use-cases/get-pet-device.use-case';
 import { DEVICE_REPOSITORY } from './domain/repositories/device.repository';
 import { DevicesController } from './infrastructure/devices.controller';
+import { PetDeviceController } from './infrastructure/pet-device.controller';
 import { DeviceDrizzleRepository } from './infrastructure/repositories/device.drizzle.repository';
 
 /**
@@ -13,9 +15,10 @@ import { DeviceDrizzleRepository } from './infrastructure/repositories/device.dr
  */
 @Module({
   imports: [PetsModule],
-  controllers: [DevicesController],
+  controllers: [DevicesController, PetDeviceController],
   providers: [
     ClaimDeviceUseCase,
+    GetPetDeviceUseCase,
     {
       provide: DEVICE_REPOSITORY,
       useClass: DeviceDrizzleRepository,

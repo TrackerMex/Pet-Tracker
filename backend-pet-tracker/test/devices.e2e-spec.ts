@@ -538,4 +538,65 @@ describe('Devices claim (e2e)', () => {
       expect(entries).toHaveLength(0);
     });
   });
+
+  describe('R11: GET /v1/pets/:petId/device devuelve el estado o null', () => {
+    it('con collar activo responde las 5 claves para cualquier rol activo', async () => {
+      const owner = await seedUser('r11-owner');
+      const family = await seedUser('r11-family');
+      const pet = await createPetViaApi(owner, `R11-${RUN_ID}`);
+      await seedMembership(pet.id, family.id, 'family');
+      const device = await seedDevice('R11');
+
+      await claim(owner, { petId: pet.id, esn: device.esn }).expect(201);
+
+      const response = await api()
+        .get(`/v1/pets/${pet.id}/device`)
+        .set('Authorization', `Bearer ${family.token}`)
+        .expect(200);
+
+      expect(response.body).toEqual({
+        model: 'e2e-collar',
+        batteryPct: null,
+        connectivity: null,
+        lastMessageAt: null,
+        esn: device.esn,
+      });
+    });
+
+    it('sin collar activo responde 200 con body JSON null — estado, no error', async () => {
+      const owner = await seedUser('r11b-owner');
+      const pet = await createPetViaApi(owner, `R11b-${RUN_ID}`);
+
+      const response = await api()
+        .get(`/v1/pets/${pet.id}/device`)
+        .set('Authorization', `Bearer ${owner.token}`)
+        .expect(200);
+
+      expect(response.body).toBeNull();
+    });
+
+    it('mascota ajena, inexistente o malformada: 404 generico del guard', async () => {
+      const owner = await seedUser('r11c-owner');
+      const outsider = await seedUser('r11c-outsider');
+      const pet = await createPetViaApi(owner, `R11c-${RUN_ID}`);
+
+      const baseline = await guardBaseline404(outsider);
+
+      const foreign = await api()
+        .get(`/v1/pets/${pet.id}/device`)
+        .set('Authorization', `Bearer ${outsider.token}`)
+        .expect(404);
+      expect(foreign.body).toEqual(baseline);
+
+      await api()
+        .get(`/v1/pets/${uuidv7()}/device`)
+        .set('Authorization', `Bearer ${outsider.token}`)
+        .expect(404);
+
+      await api()
+        .get('/v1/pets/not-a-uuid/device')
+        .set('Authorization', `Bearer ${outsider.token}`)
+        .expect(404);
+    });
+  });
 });
