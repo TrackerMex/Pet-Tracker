@@ -142,7 +142,11 @@ describe('Wialon ingestion pipeline (e2e)', () => {
     const petResponse = await request(app.getHttpServer())
       .post('/v1/pets')
       .set('Authorization', `Bearer ${ownerToken}`)
-      .send({ name: `Ingest-${RUN_ID}`, species: 'dog', birthDate: '2024-01-15' })
+      .send({
+        name: `Ingest-${RUN_ID}`,
+        species: 'dog',
+        birthDate: '2024-01-15',
+      })
       .expect(201);
     petId = (petResponse.body as { id: string }).id;
   });
@@ -204,9 +208,7 @@ describe('Wialon ingestion pipeline (e2e)', () => {
         accuracy: number | null;
         battery: number | null;
       };
-      expect(lastPosition.ts).toBeGreaterThanOrEqual(
-        pollStarted - 10 * 60_000,
-      );
+      expect(lastPosition.ts).toBeGreaterThanOrEqual(pollStarted - 10 * 60_000);
       expect(lastPosition.ts).toBeLessThanOrEqual(pollFinished);
       expect(petRow.lastCommunicationAt).not.toBeNull();
 
@@ -275,7 +277,13 @@ describe('Wialon ingestion pipeline (e2e)', () => {
       });
       await store.updatePetLastPosition(
         petId,
-        { lat: 0.1, lng: 0.1, ts: staleMoment.getTime(), accuracy: null, battery: 1 },
+        {
+          lat: 0.1,
+          lng: 0.1,
+          ts: staleMoment.getTime(),
+          accuracy: null,
+          battery: 1,
+        },
         staleMoment,
       );
 

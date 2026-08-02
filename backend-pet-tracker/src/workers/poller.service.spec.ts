@@ -13,7 +13,13 @@ import { PollerService, POSITIONS_PER_MESSAGE_MAX } from './poller.service';
 const QUEUE_URL = 'http://localhost:4566/000000000000/positions-raw';
 const NOW = new Date('2026-08-01T12:00:00.000Z');
 
-function assignment(overrides: Partial<ActiveAssignment> = {}): ActiveAssignment {
+// Mocks como propiedades jest.Mock (no metodos de interface): evita el
+// falso positivo de @typescript-eslint/unbound-method en los expect().
+type MockOf<T> = { [K in keyof T]: jest.Mock };
+
+function assignment(
+  overrides: Partial<ActiveAssignment> = {},
+): ActiveAssignment {
   return {
     deviceId: 'device-1',
     petId: 'pet-1',
@@ -51,10 +57,11 @@ function sqsStub(): SqsStub {
     sentBodies: () =>
       send.mock.calls
         .filter(([command]) => command instanceof SendMessageCommand)
-        .map(([command]) =>
-          JSON.parse(
-            (command as SendMessageCommand).input.MessageBody as string,
-          ),
+        .map(
+          ([command]) =>
+            JSON.parse(
+              (command as SendMessageCommand).input.MessageBody as string,
+            ) as unknown,
         ),
     getQueueUrlCalls: () =>
       send.mock.calls.filter(
@@ -63,7 +70,7 @@ function sqsStub(): SqsStub {
   };
 }
 
-function storeStub(assignments: ActiveAssignment[]): jest.Mocked<IngestionStore> {
+function storeStub(assignments: ActiveAssignment[]): MockOf<IngestionStore> {
   return {
     listActiveAssignments: jest.fn().mockResolvedValue(assignments),
     advanceWatermark: jest.fn().mockResolvedValue(undefined),
@@ -74,7 +81,7 @@ function storeStub(assignments: ActiveAssignment[]): jest.Mocked<IngestionStore>
   };
 }
 
-function wialonStub(positions: RawPosition[]): jest.Mocked<WialonClient> {
+function wialonStub(positions: RawPosition[]): MockOf<WialonClient> {
   return {
     listUnits: jest.fn().mockResolvedValue([]),
     getMessages: jest.fn().mockResolvedValue(positions),
@@ -82,8 +89,8 @@ function wialonStub(positions: RawPosition[]): jest.Mocked<WialonClient> {
 }
 
 function makeService(
-  store: IngestionStore,
-  wialon: WialonClient,
+  store: MockOf<IngestionStore>,
+  wialon: MockOf<WialonClient>,
   sqs: SQSClient,
 ): PollerService {
   return new PollerService(store, wialon, sqs);
@@ -184,13 +191,16 @@ describe('R9: poller — asignaciones activas -> getMessages(unitId, watermark, 
     await service.runOnce(NOW);
 
     expect(sqs.getQueueUrlCalls()).toBe(1);
-    const getQueueUrl = sqs.send.mock.calls.find(
-      ([command]) => command instanceof GetQueueUrlCommand,
-    )![0] as GetQueueUrlCommand;
+    const commands = (sqs.send.mock.calls as [unknown][]).map(
+      ([command]) => command,
+    );
+    const getQueueUrl = commands.find(
+      (command) => command instanceof GetQueueUrlCommand,
+    ) as GetQueueUrlCommand;
     expect(getQueueUrl.input.QueueName).toBe(QUEUE_POSITIONS_RAW);
-    const sendMessage = sqs.send.mock.calls.find(
-      ([command]) => command instanceof SendMessageCommand,
-    )![0] as SendMessageCommand;
+    const sendMessage = commands.find(
+      (command) => command instanceof SendMessageCommand,
+    ) as SendMessageCommand;
     expect(sendMessage.input.QueueUrl).toBe(QUEUE_URL);
   });
 });
@@ -216,9 +226,10 @@ describe('R10: watermark avanza tras publicar y solo si hubo mensajes; fallo de 
     );
 
     // Despues de publicar, nunca antes (orden de invocacion).
+    const sendCalls = sqs.send.mock.calls as [unknown][];
     const lastSendOrder = Math.max(
-      ...sqs.send.mock.invocationCallOrder.filter((_, i) =>
-        Boolean(sqs.send.mock.calls[i][0] instanceof SendMessageCommand),
+      ...sqs.send.mock.invocationCallOrder.filter(
+        (_, i) => sendCalls[i][0] instanceof SendMessageCommand,
       ),
     );
     const advanceOrder = store.advanceWatermark.mock.invocationCallOrder[0];
@@ -265,7 +276,7 @@ describe('R11: aislamiento — error por device no aborta el ciclo; LocalStack c
     });
     const store = storeStub([failing, healthy]);
     const sqs = sqsStub();
-    const wialon: jest.Mocked<WialonClient> = {
+    const wialon: MockOf<WialonClient> = {
       listUnits: jest.fn().mockResolvedValue([]),
       getMessages: jest
         .fn()
@@ -306,8 +317,9 @@ describe('R11: aislamiento — error por device no aborta el ciclo; LocalStack c
 
   it('mientras un ciclo sigue en curso no se inicia el siguiente (guard de solape en memoria)', async () => {
     const store = storeStub([assignment()]);
-    let releaseGetMessages: (positions: RawPosition[]) => void = () => undefined;
-    const wialon: jest.Mocked<WialonClient> = {
+    let releaseGetMessages: (positions: RawPosition[]) => void = () =>
+      undefined;
+    const wialon: MockOf<WialonClient> = {
       listUnits: jest.fn().mockResolvedValue([]),
       getMessages: jest.fn().mockImplementation(
         () =>

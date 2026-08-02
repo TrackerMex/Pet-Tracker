@@ -191,9 +191,9 @@ describe('R7: fixture walk.json (~200 puntos del fake) + casos borde', () => {
   it('marca el salto del fixture como suspect_jump y conserva el orden cronologico', () => {
     const { accepted } = normalize(walk);
 
-    expect(
-      accepted.some((p) => p.flags.includes(FLAG_SUSPECT_JUMP)),
-    ).toBe(true);
+    expect(accepted.some((p) => p.flags.includes(FLAG_SUSPECT_JUMP))).toBe(
+      true,
+    );
 
     for (let i = 1; i < accepted.length; i++) {
       expect(accepted[i].ts).toBeGreaterThan(accepted[i - 1].ts);

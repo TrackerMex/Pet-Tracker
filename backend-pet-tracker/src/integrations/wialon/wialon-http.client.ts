@@ -38,7 +38,7 @@ interface WialonMessage {
 
 function extractErrorCode(payload: unknown): number | undefined {
   if (payload !== null && typeof payload === 'object' && 'error' in payload) {
-    const code = (payload as { error: unknown }).error;
+    const code = payload.error;
     if (typeof code === 'number' && code !== 0) {
       return code;
     }
@@ -135,7 +135,10 @@ export class WialonHttpClient implements WialonClient {
         body: body.toString(),
       });
       if (!response.ok) {
-        throw new WialonTransportError(svc, new Error(`HTTP ${response.status}`));
+        throw new WialonTransportError(
+          svc,
+          new Error(`HTTP ${response.status}`),
+        );
       }
       payload = await response.json();
     } catch (cause) {
@@ -154,7 +157,9 @@ export class WialonHttpClient implements WialonClient {
   }
 }
 
-function toRawPosition(message: WialonMessage & { pos: WialonPos }): RawPosition {
+function toRawPosition(
+  message: WialonMessage & { pos: WialonPos },
+): RawPosition {
   const position: RawPosition = {
     lat: message.pos.y,
     lng: message.pos.x,

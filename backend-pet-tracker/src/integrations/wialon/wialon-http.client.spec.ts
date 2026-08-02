@@ -29,7 +29,8 @@ function fetchStub(payloads: unknown[]): {
   let index = 0;
 
   const fetchFn = ((_url: unknown, init?: { body?: unknown }) => {
-    const body = new URLSearchParams(String(init?.body ?? ''));
+    const rawBody = typeof init?.body === 'string' ? init.body : '';
+    const body = new URLSearchParams(rawBody);
     calls.push({
       svc: body.get('svc') ?? '',
       params: JSON.parse(body.get('params') ?? 'null'),
@@ -128,9 +129,10 @@ describe('R4: WialonHttpClient mapea la respuesta real (pos.y/x/s/c/sc) y {error
     const attempt = client.getMessages('900001', 0, 1000);
 
     await expect(attempt).rejects.toBeInstanceOf(WialonApiError);
-    await expect(
-      client.getMessages('900001', 0, 1000),
-    ).rejects.toMatchObject({ code: 4, name: 'WialonApiError' });
+    await expect(client.getMessages('900001', 0, 1000)).rejects.toMatchObject({
+      code: 4,
+      name: 'WialonApiError',
+    });
   });
 
   it('un fallo HTTP (status no-ok) tambien llega como error de dominio tipado', async () => {

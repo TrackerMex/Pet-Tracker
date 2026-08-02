@@ -59,7 +59,11 @@ describe('R2: fake determinista — misma semilla+intervalo => mismas posiciones
   });
 
   it('genera un punto por cada slot de 30 s del intervalo (ts distintos consecutivos)', async () => {
-    const list = await client().getMessages('900001', T0, T0 + 100 * SIM_STEP_MS);
+    const list = await client().getMessages(
+      '900001',
+      T0,
+      T0 + 100 * SIM_STEP_MS,
+    );
 
     const distinctTs = [...new Set(list.map((p) => p.ts))];
     expect(distinctTs).toHaveLength(100);
@@ -83,7 +87,11 @@ describe('R2: fake determinista — misma semilla+intervalo => mismas posiciones
   });
 
   it('semillas o unidades distintas producen paseos distintos', async () => {
-    const base = await client(1).getMessages('900001', T0, T0 + 20 * SIM_STEP_MS);
+    const base = await client(1).getMessages(
+      '900001',
+      T0,
+      T0 + 20 * SIM_STEP_MS,
+    );
     const otherSeed = await client(2).getMessages(
       '900001',
       T0,

@@ -5,9 +5,18 @@ import {
   SQSClient,
 } from '@aws-sdk/client-sqs';
 import type { Message } from '@aws-sdk/client-sqs';
-import { EventBridgeClient, PutEventsCommand } from '@aws-sdk/client-eventbridge';
-import { BatchWriteCommand, DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
-import type { BatchWriteCommandInput } from '@aws-sdk/lib-dynamodb';
+import {
+  EventBridgeClient,
+  PutEventsCommand,
+} from '@aws-sdk/client-eventbridge';
+import {
+  BatchWriteCommand,
+  DynamoDBDocumentClient,
+} from '@aws-sdk/lib-dynamodb';
+import type {
+  BatchWriteCommandInput,
+  BatchWriteCommandOutput,
+} from '@aws-sdk/lib-dynamodb';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { EVENTBRIDGE_CLIENT, SQS_CLIENT } from '@/aws/aws.constants';
 import {
@@ -306,7 +315,9 @@ export class PositionsConsumerService {
       offset < items.length;
       offset += DYNAMO_BATCH_WRITE_MAX
     ) {
-      await this.writeBatch(items.slice(offset, offset + DYNAMO_BATCH_WRITE_MAX));
+      await this.writeBatch(
+        items.slice(offset, offset + DYNAMO_BATCH_WRITE_MAX),
+      );
     }
   }
 
@@ -316,7 +327,11 @@ export class PositionsConsumerService {
     };
 
     for (let attempt = 0; attempt < DYNAMO_BATCH_WRITE_ATTEMPTS; attempt++) {
-      const result = await this.documents.send(
+      // El overload de send() de lib-dynamodb resuelve a `any` con este par
+      // de versiones del SDK: se anota el output del comando y se suprime
+      // solo la asignacion.
+
+      const result: BatchWriteCommandOutput = await this.documents.send(
         new BatchWriteCommand({ RequestItems: requestItems }),
       );
 

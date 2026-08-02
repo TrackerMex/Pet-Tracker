@@ -15,16 +15,18 @@ function configWith(values: Record<string, string>): ConfigService {
 
 describe('R8: scheduling gated — cron solo con POLLER_ENABLED=true y NODE_ENV distinto de test; runOnce() invocable', () => {
   let registry: { addInterval: jest.Mock };
+  let runOnce: jest.Mock;
+  let drainOnce: jest.Mock;
   let poller: PollerService;
   let consumer: PositionsConsumerService;
 
   beforeEach(() => {
     jest.useFakeTimers();
     registry = { addInterval: jest.fn() };
-    poller = { runOnce: jest.fn() } as unknown as PollerService;
-    consumer = {
-      drainOnce: jest.fn(),
-    } as unknown as PositionsConsumerService;
+    runOnce = jest.fn();
+    drainOnce = jest.fn();
+    poller = { runOnce } as unknown as PollerService;
+    consumer = { drainOnce } as unknown as PositionsConsumerService;
   });
 
   afterEach(() => {
@@ -41,7 +43,10 @@ describe('R8: scheduling gated — cron solo con POLLER_ENABLED=true y NODE_ENV 
   }
 
   it('con NODE_ENV=test no agenda nada aunque POLLER_ENABLED=true (los e2e de #5/#7 no arrancan workers)', () => {
-    service({ POLLER_ENABLED: 'true', NODE_ENV: 'test' }).onApplicationBootstrap();
+    service({
+      POLLER_ENABLED: 'true',
+      NODE_ENV: 'test',
+    }).onApplicationBootstrap();
     expect(registry.addInterval).not.toHaveBeenCalled();
   });
 
@@ -79,8 +84,9 @@ describe('R8: scheduling gated — cron solo con POLLER_ENABLED=true y NODE_ENV 
     }).onApplicationBootstrap();
 
     jest.advanceTimersByTime(POLLER_INTERVAL_MS);
-    expect(poller.runOnce).toHaveBeenCalledTimes(1);
+    expect(runOnce).toHaveBeenCalledTimes(1);
     jest.advanceTimersByTime(POLLER_INTERVAL_MS);
-    expect(poller.runOnce).toHaveBeenCalledTimes(2);
+    expect(runOnce).toHaveBeenCalledTimes(2);
+    expect(drainOnce).toHaveBeenCalled();
   });
 });

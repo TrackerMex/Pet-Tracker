@@ -6,7 +6,10 @@ import {
   SQSClient,
 } from '@aws-sdk/client-sqs';
 import type { Message } from '@aws-sdk/client-sqs';
-import { EventBridgeClient, PutEventsCommand } from '@aws-sdk/client-eventbridge';
+import {
+  EventBridgeClient,
+  PutEventsCommand,
+} from '@aws-sdk/client-eventbridge';
 import { BatchWriteCommand } from '@aws-sdk/lib-dynamodb';
 import type { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 import { Logger } from '@nestjs/common';
@@ -26,6 +29,10 @@ import { PositionsConsumerService } from './positions-consumer.service';
 const QUEUE_URL = 'http://localhost:4566/000000000000/positions-raw';
 const NOW = new Date('2026-08-01T12:00:00.000Z');
 const BASE_TS = NOW.getTime() - 60_000;
+
+// Mocks como propiedades jest.Mock (no metodos de interface): evita el
+// falso positivo de @typescript-eslint/unbound-method en los expect().
+type MockOf<T> = { [K in keyof T]: jest.Mock };
 
 interface SqsQueueStub {
   client: SQSClient;
@@ -69,7 +76,7 @@ function sqsQueueStub(batches: Message[][]): SqsQueueStub {
   };
 }
 
-function storeStub(): jest.Mocked<IngestionStore> {
+function storeStub(): MockOf<IngestionStore> {
   return {
     listActiveAssignments: jest.fn().mockResolvedValue([]),
     advanceWatermark: jest.fn().mockResolvedValue(undefined),
@@ -124,7 +131,7 @@ function message(id: string, body: unknown): Message {
 interface Harness {
   service: PositionsConsumerService;
   sqs: SqsQueueStub;
-  store: jest.Mocked<IngestionStore>;
+  store: MockOf<IngestionStore>;
   documents: DocStub;
   events: EventBridgeStub;
 }
@@ -316,13 +323,13 @@ describe('R13: escritura DynamoDB — pk PET#<petId>, sk device_ts, atributos da
 
     await service.drainOnce(NOW);
 
-    const batchCalls = documents.send.mock.calls.filter(
+    const batchCalls = (documents.send.mock.calls as [unknown][]).filter(
       ([command]) => command instanceof BatchWriteCommand,
-    );
+    ) as [BatchWriteCommand][];
     expect(batchCalls).toHaveLength(2);
-    expect(
-      (batchCalls[1][0] as BatchWriteCommand).input.RequestItems,
-    ).toEqual({ [TABLE_POSITIONS]: [leftoverItem] });
+    expect(batchCalls[1][0].input.RequestItems).toEqual({
+      [TABLE_POSITIONS]: [leftoverItem],
+    });
   });
 
   it('R14/R15 borde: un mensaje sin aceptadas se borra sin tocar cache ni emitir eventos', async () => {
@@ -675,7 +682,7 @@ describe('R18: malformado — log estructurado + no-delete; el redrive provision
       expect.objectContaining({
         scope: 'consumer',
         messageId: 'bad-json',
-        message: expect.stringContaining('malformed'),
+        message: expect.stringContaining('malformed') as unknown,
       }),
     );
   });
@@ -705,9 +712,16 @@ describe('R18: malformado — log estructurado + no-delete; el redrive provision
 describe('R15: asignacion liberada — escribe el historico en DynamoDB pero no toca cache ni emite eventos', () => {
   it('con la asignacion liberada escribe los items bajo PET#<petId> y borra el mensaje, sin cache ni eventos', async () => {
     const { service, sqs, store, documents, events } = makeHarness([
-      [message('a', validBody({ positions: [
-        { lat: 19.4326, lng: -99.1332, ts: BASE_TS, batteryPct: 15 },
-      ] }))],
+      [
+        message(
+          'a',
+          validBody({
+            positions: [
+              { lat: 19.4326, lng: -99.1332, ts: BASE_TS, batteryPct: 15 },
+            ],
+          }),
+        ),
+      ],
       [],
     ]);
     store.isAssignmentActive.mockResolvedValue(false);
