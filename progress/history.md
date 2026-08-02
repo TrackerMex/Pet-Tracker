@@ -289,3 +289,21 @@ detrás de main y 3 archivos en conflicto. Cierre en esta máquina:
 
 Deuda detectada (fuera de alcance, candidata a limpieza propia):
 `src/modules/health/` (#1) conserva 5 imports relativos cross-layer.
+
+## Sesión 2026-08-01 — pets-crud-permissions (id: 5)
+
+- **Feature:** tablas `pets` + `pet_users`, `PetAccessGuard` + `@RequirePetRole`,
+  CRUD `/v1/pets` — mecanismo de autorización de todas las features posteriores.
+- **Spec:** [[specs/pets-crud-permissions/requirements|spec]] — 16 EARS (R1-R16),
+  aprobada por humano el 2026-08-01 con 5 decisiones registradas (audit post-commit
+  vía puerto, DTO mínimo obligatorio, enums sex/size, PATCH birthDate XOR
+  approxAgeMonths, GET detalle para cualquier rol activo).
+- **Acciones:** ciclo SDD completo — `spec_author` → gate humano → `implementer`
+  (13 commits TDD por R-id en `feature/5-pets-crud-permissions`) → `reviewer`
+  (rechazo por B1: frontmatter de la spec en `draft` pese a aprobación humana;
+  fix del leader `3a0b481`, todo lo demás aprobado) → PR #8 → merge humano.
+- **Resultado:** `./init.sh` verde (build, 275 unit / 56 suites, lint, typecheck);
+  e2e 19/19 contra Postgres real, IDOR (R9) verificado. Trazabilidad R1-R16
+  completa. `audit_log` reutilizado sin migración nueva; guard global de #4 intacto.
+- **Commits:** `c2d889b`..`3a0b481` (14 en la branch), merge `ebc3d59` (PR #8).
+- **Estado final:** done
