@@ -1,0 +1,44 @@
+---
+feature: "trips-activity"
+status: spec_ready   # draft | spec_ready (pendiente gate humano) | approved
+tags: [harness, spec]
+---
+
+# Trazabilidad — [[trips-activity]]
+
+| Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
+|---|---|---|
+| R1 | pendiente | pendiente |
+| R2 | pendiente | pendiente |
+| R3 | pendiente | pendiente |
+| R4 | pendiente | pendiente |
+| R5 | pendiente | pendiente |
+| R6 | pendiente | pendiente |
+| R7 | pendiente | pendiente |
+| R8 | pendiente | pendiente |
+| R9 | pendiente | pendiente |
+| R10 | pendiente | pendiente |
+| R11 | pendiente | pendiente |
+| R12 | pendiente | pendiente |
+| R13 | pendiente | pendiente |
+| R14 | pendiente | pendiente |
+| R15 | pendiente | pendiente |
+| R16 | pendiente | pendiente |
+| R17 | pendiente | pendiente |
+| R18 | pendiente | pendiente |
+| R19 | pendiente | pendiente |
+| R20 | pendiente | pendiente |
+| R21 | pendiente | pendiente |
+| R22 | pendiente | pendiente |
+| R23 | pendiente | pendiente |
+
+Regla: el reviewer no aprueba si alguna fila queda "pendiente".
+Convención de commit: `feat(<scope>): <desc> (R1,R2)`.
+El implementer actualiza esta tabla tras cada commit; el reviewer la valida
+al aprobar (ver [[../../docs/specs|specs]] y [[../../CHECKPOINTS|CHECKPOINTS]] C5).
+
+Nota para el implementer: R22 y R23 no tienen test automatizado (son reglas de
+cierre documental y de no regresión). Sus filas se completan con la referencia
+a la sección correspondiente de `progress/impl_trips-activity.md` y el commit
+que las verifica — mismo tratamiento que R6/R16 en
+`specs/positions-api/traceability.md`.
