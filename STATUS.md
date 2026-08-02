@@ -1,8 +1,8 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-08-01
-**Features completadas**: 6/18 (`feature_list.json`)
-**Pendientes**: 12 — backlog backend derivado de `plans/` 002–009 (collar Wialon SIM, recorridos, geocercas+alertas, salud, nutrición)
+**Última actualización**: 2026-08-02
+**Features completadas**: 7/18 (`feature_list.json`)
+**Pendientes**: 11 — backlog backend derivado de `plans/` 002–009 (collar Wialon SIM, recorridos, geocercas+alertas, salud, nutrición)
 **En producción**: no
 
 ---
@@ -179,16 +179,46 @@ debe listar las 4 URLs de cola.
   re-señaló como NB): no existe script `db:migrate` en `package.json`
   (solo `db:generate`), aplicar migraciones exige hoy
   `exec drizzle-kit migrate` a mano. Candidato a tarea propia.
-- Próximo paso SDD: `wialon-ingestion-pipeline` (#8, siguiente P1) —
-  feature grande (3 módulos nuevos): lanzar `explorer` primero, luego
-  `spec_author` + gate humano (`pet-photos-s3` #6 sigue en P2).
-  Integración Wialon real: diferida hasta #9 done + hardware en mano
-  (SIM_MODE es el camino; conectar real será smoke test de config,
-  no feature).
+- **`wialon-ingestion-pipeline` (#8) done**: cadena GPS completa en local —
+  `src/integrations/wialon/` (puerto `WialonClient` + factory por
+  ConfigService: `FakeWialonClient` determinista con `SIM_SEED`/mulberry32
+  por slot, `WialonHttpClient` real mapeado pero sin conectar),
+  `src/pipeline/` (núcleo puro sin I/O: `normalize`, haversine, umbrales
+  60/100/4/20 en `constants.ts` que #10-#12 importarán), `src/workers/`
+  (poller cron 1 min vía `@nestjs/schedule` → SQS `positions-raw` →
+  consumidor: BatchWrite idempotente a DynamoDB `positions`, update
+  condicionado por ts de `devices` + `pets.last_position`, eventos
+  `position.updated`/`battery.low` detail.version=1 a EventBridge;
+  malformados vía redrive a DLQ). Workers apagados con `NODE_ENV=test` o
+  sin `POLLER_ENABLED` — e2e previos intactos. Cero migraciones; deps
+  nuevas `@nestjs/schedule` + `@aws-sdk/lib-dynamodb`; 7 env vars nuevas
+  documentadas; `docs/wialon-module.md` creado (cierra drift del plan 005).
+  Spec 19 EARS + D1-D14 aprobada por humano 2026-08-02. `reviewer` aprobó
+  (C2-C7, init.sh + e2e ejecutados por él mismo, trazabilidad 19/19
+  muestreada; NB1/NB2 corregidos). init.sh verde: 397 unit / 69 suites;
+  e2e 58/58 contra Docker real. **PR #13 abierto — espera merge humano.**
+  Ver `progress/impl_wialon-ingestion-pipeline.md` y
+  `progress/review_wialon-ingestion-pipeline.md`.
+- Próximo paso SDD: `positions-api` (#9, siguiente P1) — lectura de
+  posiciones (last + history con cursor DynamoDB); depende del merge de
+  PR #13. `pet-photos-s3` (#6) sigue en P2. Integración Wialon real:
+  diferida hasta #9 done + hardware en mano (SIM_MODE es el camino;
+  conectar real será smoke test de config, no feature).
 
 ---
 
 ## Última sesión
+
+- **2026-08-02** — Ciclo SDD completo de `wialon-ingestion-pipeline` (#8):
+  `explorer` → `spec_author` (19 EARS, D1-D14) → gate humano (aprobó spec
+  y las 14 decisiones íntegras) → `implementer` (21 commits TDD, cero
+  migraciones) → `reviewer` **aprobó** (397 unit + 58/58 e2e verificados
+  por él mismo contra Docker real; NB1 frontmatter `125685b`, NB2
+  comentario huérfano `a2fb802`, ambos corregidos) → **PR #13 abierto**,
+  espera merge humano. Feature marcada `done`. Incidente menor: primer
+  intento de reviewer murió por límite de sesión del API, relanzado sin
+  consecuencias. Próximo: merge de PR #13, luego ciclo de `positions-api`
+  (#9).
 
 - **2026-08-01 (5)** — Sin ciclo SDD (consulta + cierre). Se explicó el
   diseño de la integración Wialon de #8 (fake determinista vs

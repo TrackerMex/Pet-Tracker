@@ -330,3 +330,37 @@ Deuda detectada (fuera de alcance, candidata a limpieza propia):
   `docs/data-model.md` actualizado por D2/D4.
 - **Commits:** `9133343`..`ffcc6f8` (15 en la branch), PR #11 abierto.
 - **Estado final:** done — espera merge humano del PR #11
+
+## Sesión 2026-08-02 — wialon-ingestion-pipeline (id: 8)
+
+- **Feature:** pipeline de ingesta GPS completo: puerto `WialonClient`
+  (fake determinista `SIM_MODE` + `WialonHttpClient` real sin conectar),
+  pipeline puro de validación (`src/pipeline/`), poller cron + consumidor
+  SQS → DynamoDB `positions` + `pets.last_position` + eventos
+  `position.updated`/`battery.low` (detail.version=1) a EventBridge.
+  Cero migraciones nuevas (sustrato de #2/#5/#7 reutilizado).
+- **Spec:** [[specs/wialon-ingestion-pipeline/requirements|spec]] — 19 EARS
+  (R1-R19), aprobada por humano el 2026-08-02 con decisiones D1-D14
+  aceptadas íntegras (D1: `docs/wialon-module.md` como entregable, cierra
+  drift del plan 005; D2: fake stateless mulberry32 por slot con
+  `SIM_SEED`; D3: malformados vía redrive a DLQ; D8: `battery.low` por
+  flanco 20/30; D9: contrato de eventos congelado v1; D10: workers
+  invocables `runOnce()`/`drainOnce()` con gating `POLLER_ENABLED` +
+  `NODE_ENV !== 'test'`; D11: 7 env vars nuevas; D14: puerto propio
+  `IngestionStore` sin reabrir repos aprobados).
+- **Acciones:** ciclo SDD completo — `explorer`
+  (`progress/explore_wialon-ingestion-pipeline.md`) → `spec_author` →
+  gate humano → `implementer` (21 commits TDD por R-id en
+  `feature/8-wialon-ingestion-pipeline`) → `reviewer` **aprobó** (C2-C7,
+  init.sh y e2e ejecutados por él mismo, trazabilidad 19/19 muestreada
+  por R-id; NB1 frontmatter de spec corregido por leader `125685b`, NB2
+  comentario huérfano corregido por implementer `a2fb802`) → PR #13.
+- **Resultado:** `./init.sh` verde (build, 397 unit / 69 suites, lint,
+  typecheck); e2e 58/58 contra Docker real (3 nuevos: cadena claim →
+  runOnce → drainOnce → DynamoDB + `pets.last_position`). Evidencia
+  manual del cron real: claim ACT-001 → 21 items a ~1.5 min → 35 a
+  ~8 min, DLQ en 0. Dependencias nuevas: `@nestjs/schedule`,
+  `@aws-sdk/lib-dynamodb`. Desviaciones aceptadas: `SIMULATED_DEVICES`
+  movida a `src/db/seed/` (re-exportada), `jest-e2e maxWorkers: 1`.
+- **Commits:** 23 en la branch (incl. NB1/NB2), PR #13 abierto.
+- **Estado final:** done — espera merge humano del PR #13
