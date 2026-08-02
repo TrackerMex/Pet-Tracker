@@ -107,7 +107,7 @@
   {
     "id": 7,
     "name": "devices-claim",
-    "status": "pending",
+    "status": "done",
     "priority": "P1",
     "description": "Plan 005 (asociación): tablas devices y pet_devices (índice único parcial: un collar activo por mascota); seed de 3 dispositivos simulados (SIM-001..003, ACT-001..003); POST /v1/devices/claim validando existencia (404), disponibilidad (409) y unicidad; GET/DELETE /v1/pets/:petId/device.",
     "acceptance_criteria": [

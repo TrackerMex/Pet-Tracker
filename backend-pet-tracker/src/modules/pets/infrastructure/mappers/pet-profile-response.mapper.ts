@@ -1,3 +1,4 @@
+import type { DeviceStatusResponse } from '@/modules/devices/infrastructure/mappers/device-status.mapper';
 import {
   calculateAgeMonths,
   Pet,
@@ -35,8 +36,8 @@ export interface PetProfileResponse {
   /** null hasta que el pipeline de ingesta (#8) alimente la cache. */
   lastCommunicationAt: string | null;
   myRole: PetRole;
-  /** null hasta devices-claim (#7). */
-  device: null;
+  /** Collar activo (devices-claim #7 R12) o null si la mascota no lleva. */
+  device: DeviceStatusResponse | null;
   /** null hasta pet-vaccines (#14). */
   nextVaccine: null;
   /** null hasta pet-reminders (#16). */
@@ -52,6 +53,7 @@ export function toPetProfileResponse(
   pet: Pet,
   myRole: PetRole,
   now: Date = new Date(),
+  device: DeviceStatusResponse | null = null,
 ): PetProfileResponse {
   return {
     id: pet.id,
@@ -74,7 +76,7 @@ export function toPetProfileResponse(
       ? pet.lastCommunicationAt.toISOString()
       : null,
     myRole,
-    device: null,
+    device,
     nextVaccine: null,
     nextReminder: null,
     activitySummary: null,

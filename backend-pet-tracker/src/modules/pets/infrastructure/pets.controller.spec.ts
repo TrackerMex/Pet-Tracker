@@ -43,7 +43,9 @@ function buildController() {
   const createPet = { execute: createExecute } as unknown as CreatePetUseCase;
   const listExecute = jest.fn().mockResolvedValue([]);
   const listPets = { execute: listExecute } as unknown as ListPetsUseCase;
-  const getExecute = jest.fn().mockResolvedValue(buildPet());
+  const getExecute = jest
+    .fn()
+    .mockResolvedValue({ pet: buildPet(), device: null });
   const getPet = { execute: getExecute } as unknown as GetPetUseCase;
   const updateExecute = jest.fn().mockResolvedValue(buildPet());
   const updatePet = { execute: updateExecute } as unknown as UpdatePetUseCase;
@@ -134,6 +136,40 @@ describe('R8: GET /v1/pets/:petId responde el perfil con el rol de la membresia'
     expect(getExecute).toHaveBeenCalledWith(PET_ID);
     expect(response.id).toBe(PET_ID);
     expect(response.myRole).toBe('vet');
+  });
+});
+
+describe('R12 (devices-claim): el detalle serializa la clave device del use case', () => {
+  it('mapea el collar activo a las 5 claves del contrato de device', async () => {
+    const { controller, getExecute } = buildController();
+    getExecute.mockResolvedValue({
+      pet: buildPet(),
+      device: {
+        model: 'sim-collar',
+        batteryPct: null,
+        connectivity: null,
+        lastMessageAt: new Date('2026-08-01T11:59:00.000Z'),
+        esn: 'SIM-001',
+      },
+    });
+
+    const response = await controller.detail(buildPetRequest('owner'));
+
+    expect(response.device).toEqual({
+      model: 'sim-collar',
+      batteryPct: null,
+      connectivity: null,
+      lastMessageAt: '2026-08-01T11:59:00.000Z',
+      esn: 'SIM-001',
+    });
+  });
+
+  it('sin collar activo la clave device sigue en null', async () => {
+    const { controller } = buildController();
+
+    const response = await controller.detail(buildPetRequest('owner'));
+
+    expect(response.device).toBeNull();
   });
 });
 

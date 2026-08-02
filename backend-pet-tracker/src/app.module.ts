@@ -6,6 +6,7 @@ import { AwsModule } from './aws/aws.module';
 import { AppConfigModule } from './config/config.module';
 import { DrizzleModule } from './db/drizzle.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { DevicesModule } from './modules/devices/devices.module';
 import { HealthModule } from './modules/health/health.module';
 import { PetsModule } from './modules/pets/pets.module';
 import { UsersModule } from './modules/users/users.module';
@@ -20,6 +21,7 @@ import { UsersModule } from './modules/users/users.module';
     AuthModule,
     UsersModule,
     PetsModule,
+    DevicesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

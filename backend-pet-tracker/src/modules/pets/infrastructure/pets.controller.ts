@@ -13,6 +13,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ZodType } from 'zod';
+import { toDeviceStatusResponse } from '@/modules/devices/infrastructure/mappers/device-status.mapper';
 import { CurrentUser } from '@/modules/auth/infrastructure/decorators/current-user.decorator';
 import type { CurrentUserPayload } from '@/modules/auth/infrastructure/decorators/current-user.decorator';
 import { PetNotFoundError } from '@/modules/pets/domain/errors/pet.errors';
@@ -78,7 +79,16 @@ export class PetsController {
     const { petId, role } = request.petMembership;
 
     try {
-      return toPetProfileResponse(await this.getPet.execute(petId), role);
+      // devices-claim (#7) R12: mismo mapper de estado de device que el
+      // claim y GET .../device — la forma del contrato no cambia.
+      const { pet, device } = await this.getPet.execute(petId);
+
+      return toPetProfileResponse(
+        pet,
+        role,
+        new Date(),
+        device ? toDeviceStatusResponse(device) : null,
+      );
     } catch (error) {
       throw mapPetError(error);
     }
