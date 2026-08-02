@@ -5,12 +5,13 @@ import {
   SQSClient,
 } from '@aws-sdk/client-sqs';
 import type { Message } from '@aws-sdk/client-sqs';
-import { EventBridgeClient } from '@aws-sdk/client-eventbridge';
+import { EventBridgeClient, PutEventsCommand } from '@aws-sdk/client-eventbridge';
 import { BatchWriteCommand, DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 import type { BatchWriteCommandInput } from '@aws-sdk/lib-dynamodb';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { EVENTBRIDGE_CLIENT, SQS_CLIENT } from '@/aws/aws.constants';
 import {
+  EVENT_BUS_NAME,
   QUEUE_POSITIONS_RAW,
   TABLE_POSITIONS,
   TABLE_POSITIONS_PARTITION_KEY,
@@ -21,7 +22,11 @@ import type { ProcessedPosition } from '@/pipeline/types';
 import { normalize } from '@/pipeline/validate-positions';
 import { INGESTION_STORE } from './ingestion-store';
 import type { IngestionStore } from './ingestion-store';
-import { POSITIONS_DOC_CLIENT } from './ingestion.constants';
+import {
+  DETAIL_TYPE_POSITION_UPDATED,
+  EVENT_SOURCE,
+  POSITIONS_DOC_CLIENT,
+} from './ingestion.constants';
 import { positionsMessageSchema } from './positions-message.schema';
 import type { PositionsMessage } from './positions-message.schema';
 
@@ -202,6 +207,47 @@ export class PositionsConsumerService {
         battery: latest.batteryPct ?? null,
       },
       latestMoment,
+    );
+
+    await this.emitPositionUpdated(parsed, latest);
+  }
+
+  /**
+   * Un evento position.updated por mensaje SQS, no por posicion (R16).
+   * Shape congelado (D9) — consumido por 006/007/010; cambios incrementan
+   * detail.version.
+   */
+  private async emitPositionUpdated(
+    parsed: PositionsMessage,
+    latest: ProcessedPosition,
+  ): Promise<void> {
+    await this.eventBridge.send(
+      new PutEventsCommand({
+        Entries: [
+          {
+            EventBusName: EVENT_BUS_NAME,
+            Source: EVENT_SOURCE,
+            DetailType: DETAIL_TYPE_POSITION_UPDATED,
+            Detail: JSON.stringify({
+              version: 1,
+              petId: parsed.petId,
+              deviceId: parsed.deviceId,
+              position: {
+                lat: latest.lat,
+                lng: latest.lng,
+                ts: latest.ts,
+                speedKmh: latest.speedKmh ?? null,
+                course: latest.course ?? null,
+                sats: latest.sats ?? null,
+                accuracyM: latest.accuracyM ?? null,
+                batteryPct: latest.batteryPct ?? null,
+                flags: latest.flags,
+              },
+              batteryPct: latest.batteryPct ?? null,
+            }),
+          },
+        ],
+      }),
     );
   }
 

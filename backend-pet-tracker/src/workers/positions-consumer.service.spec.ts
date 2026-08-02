@@ -5,11 +5,16 @@ import {
   SQSClient,
 } from '@aws-sdk/client-sqs';
 import type { Message } from '@aws-sdk/client-sqs';
-import { EventBridgeClient } from '@aws-sdk/client-eventbridge';
+import { EventBridgeClient, PutEventsCommand } from '@aws-sdk/client-eventbridge';
 import { BatchWriteCommand } from '@aws-sdk/lib-dynamodb';
 import type { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
-import { TABLE_POSITIONS } from '@/aws/constants';
+import { EVENT_BUS_NAME, TABLE_POSITIONS } from '@/aws/constants';
 import type { IngestionStore } from './ingestion-store';
+import {
+  DETAIL_TYPE_BATTERY_LOW,
+  DETAIL_TYPE_POSITION_UPDATED,
+  EVENT_SOURCE,
+} from './ingestion.constants';
 import { PositionsConsumerService } from './positions-consumer.service';
 
 const QUEUE_URL = 'http://localhost:4566/000000000000/positions-raw';
@@ -419,6 +424,114 @@ describe('R14: cache devices + pets.last_position con la ultima aceptada, solo s
       { lat: 19.43, lng: -99.13, ts: BASE_TS, accuracy: null, battery: null },
       new Date(BASE_TS),
     );
+  });
+});
+
+interface EmittedEvent {
+  EventBusName?: string;
+  Source?: string;
+  DetailType?: string;
+  detail: Record<string, unknown>;
+}
+
+/** Entradas PutEvents emitidas al bus por todos los sends del stub. */
+function emittedEvents(events: EventBridgeStub): EmittedEvent[] {
+  return events.send.mock.calls
+    .filter(([command]) => command instanceof PutEventsCommand)
+    .flatMap(([command]) =>
+      ((command as PutEventsCommand).input.Entries ?? []).map((entry) => ({
+        EventBusName: entry.EventBusName,
+        Source: entry.Source,
+        DetailType: entry.DetailType,
+        detail: JSON.parse(entry.Detail ?? 'null') as Record<string, unknown>,
+      })),
+    );
+}
+
+describe('R16: position.updated — un evento por mensaje, detail {version:1, petId, deviceId, position, batteryPct} (contrato congelado)', () => {
+  it('emite exactamente un position.updated por mensaje con >=1 aceptada, con el shape congelado', async () => {
+    const lastTs = BASE_TS + 60_000;
+    const { service, events } = makeHarness([
+      [
+        message(
+          'a',
+          validBody({
+            positions: [
+              { lat: 19.43, lng: -99.13, ts: BASE_TS, batteryPct: 81 },
+              {
+                // ~75 m en 60 s (~4.5 km/h): caminata, sin suspect_jump.
+                lat: 19.4305,
+                lng: -99.1305,
+                ts: lastTs,
+                speedKmh: 3.5,
+                course: 90,
+                sats: 8,
+                accuracyM: 9,
+                batteryPct: 80,
+              },
+            ],
+          }),
+        ),
+      ],
+      [],
+    ]);
+
+    await service.drainOnce(NOW);
+
+    const positionUpdated = emittedEvents(events).filter(
+      (event) => event.DetailType === DETAIL_TYPE_POSITION_UPDATED,
+    );
+    expect(positionUpdated).toHaveLength(1);
+    expect(positionUpdated[0].EventBusName).toBe(EVENT_BUS_NAME);
+    expect(positionUpdated[0].Source).toBe(EVENT_SOURCE);
+    expect(EVENT_SOURCE).toBe('pet-tracker');
+    expect(positionUpdated[0].detail).toEqual({
+      version: 1,
+      petId: 'pet-1',
+      deviceId: 'device-1',
+      position: {
+        lat: 19.4305,
+        lng: -99.1305,
+        ts: lastTs,
+        speedKmh: 3.5,
+        course: 90,
+        sats: 8,
+        accuracyM: 9,
+        batteryPct: 80,
+        flags: [],
+      },
+      batteryPct: 80,
+    });
+  });
+
+  it('serializa con null los campos ausentes de la ultima aceptada', async () => {
+    const { service, events } = makeHarness([
+      [
+        message(
+          'a',
+          validBody({
+            positions: [{ lat: 19.43, lng: -99.13, ts: BASE_TS }],
+          }),
+        ),
+      ],
+      [],
+    ]);
+
+    await service.drainOnce(NOW);
+
+    const [event] = emittedEvents(events);
+    expect(event.detail.position).toEqual({
+      lat: 19.43,
+      lng: -99.13,
+      ts: BASE_TS,
+      speedKmh: null,
+      course: null,
+      sats: null,
+      accuracyM: null,
+      batteryPct: null,
+      flags: [],
+    });
+    expect(event.detail.batteryPct).toBeNull();
   });
 });
 
