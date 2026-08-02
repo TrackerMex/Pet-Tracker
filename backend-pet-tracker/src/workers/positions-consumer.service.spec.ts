@@ -2,13 +2,19 @@ import {
   DeleteMessageCommand,
   GetQueueUrlCommand,
   ReceiveMessageCommand,
+  SendMessageCommand,
   SQSClient,
 } from '@aws-sdk/client-sqs';
 import type { Message } from '@aws-sdk/client-sqs';
 import { EventBridgeClient, PutEventsCommand } from '@aws-sdk/client-eventbridge';
 import { BatchWriteCommand } from '@aws-sdk/lib-dynamodb';
 import type { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
-import { EVENT_BUS_NAME, TABLE_POSITIONS } from '@/aws/constants';
+import { Logger } from '@nestjs/common';
+import {
+  EVENT_BUS_NAME,
+  SQS_MAX_RECEIVE_COUNT,
+  TABLE_POSITIONS,
+} from '@/aws/constants';
 import type { IngestionStore } from './ingestion-store';
 import {
   DETAIL_TYPE_BATTERY_LOW,
@@ -633,6 +639,66 @@ describe('R17: battery.low solo en cruce descendente del umbral 20 (flanco vs de
     const readOrder = store.getDeviceBattery.mock.invocationCallOrder[0];
     const writeOrder = store.updateDeviceTelemetry.mock.invocationCallOrder[0];
     expect(readOrder).toBeLessThan(writeOrder);
+  });
+});
+
+describe('R18: malformado — log estructurado + no-delete; el redrive provisionado (3 recepciones) lo mueve a la DLQ', () => {
+  let errorSpy: jest.SpyInstance;
+
+  beforeEach(() => {
+    errorSpy = jest.spyOn(Logger.prototype, 'error').mockImplementation();
+  });
+
+  afterEach(() => {
+    errorSpy.mockRestore();
+  });
+
+  it('JSON invalido: log estructurado, sin borrar y sin escritura manual a la DLQ', async () => {
+    const { service, sqs, documents, events } = makeHarness([
+      [message('bad-json', 'esto no es json {{{')],
+      [],
+    ]);
+
+    await expect(service.drainOnce(NOW)).resolves.toBeUndefined();
+
+    expect(sqs.deleted).toEqual([]);
+    // Jamas se escribe a mano en la DLQ: cero SendMessage desde el consumer.
+    expect(
+      sqs.send.mock.calls.some(
+        ([command]) => command instanceof SendMessageCommand,
+      ),
+    ).toBe(false);
+    expect(documents.send).not.toHaveBeenCalled();
+    expect(events.send).not.toHaveBeenCalled();
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        scope: 'consumer',
+        messageId: 'bad-json',
+        message: expect.stringContaining('malformed'),
+      }),
+    );
+  });
+
+  it('body que no valida contra el schema zod: log estructurado y sin borrar', async () => {
+    const { service, sqs } = makeHarness([
+      [message('bad-schema', { version: 2, positions: 'nope' })],
+      [],
+    ]);
+
+    await service.drainOnce(NOW);
+
+    expect(sqs.deleted).toEqual([]);
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        scope: 'consumer',
+        messageId: 'bad-schema',
+      }),
+    );
+  });
+
+  it('la RedrivePolicy provisionada por #2 usa SQS_MAX_RECEIVE_COUNT = 3 (constante importada, no re-tecleada)', () => {
+    expect(SQS_MAX_RECEIVE_COUNT).toBe(3);
   });
 });
 

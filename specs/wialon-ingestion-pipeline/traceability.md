@@ -24,7 +24,7 @@ tags: [harness, spec]
 | R14 | src/workers/positions-consumer.service.spec.ts::R14: cache devices + pets.last_position con la ultima aceptada, solo si el ts entrante es mas reciente (guard WHERE cubierto en test/ingestion.e2e-spec.ts) | `fe531da` feat(wialon-ingestion-pipeline): device and pet cache updates from latest accepted position (R14) |
 | R15 | src/workers/positions-consumer.service.spec.ts::R15: asignacion liberada — escribe el historico en DynamoDB pero no toca cache ni emite eventos | `aa54b5a` test(wialon-ingestion-pipeline): released assignment keeps history, skips cache and events (R15) |
 | R16 | src/workers/positions-consumer.service.spec.ts::R16: position.updated — un evento por mensaje, detail {version:1, petId, deviceId, position, batteryPct} (contrato congelado) | `08dff63` feat(wialon-ingestion-pipeline): emit frozen position.updated event per processed message (R16) |
-| R17 | pendiente | pendiente |
+| R17 | src/workers/positions-consumer.service.spec.ts::R17: battery.low solo en cruce descendente del umbral 20 (flanco vs devices.battery_pct previo) | `fb7bf94` feat(wialon-ingestion-pipeline): battery.low emitted only on downward threshold crossing (R17) |
 | R18 | pendiente | pendiente |
 | R19 | pendiente | pendiente |
 
