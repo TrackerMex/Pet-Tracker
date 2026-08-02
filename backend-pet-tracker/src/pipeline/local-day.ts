@@ -44,6 +44,16 @@ const HOUR_MS = 3_600_000;
 const dayFormatters = new Map<string, Intl.DateTimeFormat>();
 const partsFormatters = new Map<string, Intl.DateTimeFormat>();
 
+/**
+ * ¿Es `timeZone` una zona que `Intl` reconoce? Unica fuente del catalogo:
+ * el store de #10 la usa para degradar a 'UTC' con warn (R13) en vez de
+ * repetir el `Set` (el registro de #3 no valida contra IANA, asi que un
+ * `users.timezone` puede ser cualquier cosa de hasta 64 caracteres).
+ */
+export function isSupportedTimeZone(timeZone: string): boolean {
+  return SUPPORTED_TIME_ZONES.has(timeZone);
+}
+
 /** Dia de calendario 'YYYY-MM-DD' al que pertenece un instante en `timeZone`. */
 export function localDayOf(tsMs: number, timeZone: string): string {
   assertTimeZone(timeZone);
@@ -68,6 +78,41 @@ export function localDayRange(day: string, timeZone: string): LocalDayRange {
     startMs: startOfLocalDay(year, month, date, timeZone),
     endMs: startOfLocalDay(year, month, date + 1, timeZone),
   };
+}
+
+/**
+ * ¿Es `value` una fecha de calendario real 'YYYY-MM-DD'? '2026-02-30' pasa
+ * el patron pero no existe: lo consume la validacion de query de R17.
+ */
+export function isCalendarDate(value: string): boolean {
+  if (!DAY_PATTERN.test(value)) {
+    return false;
+  }
+
+  const [year, month, date] = value.split('-').map(Number);
+  const normalized = new Date(Date.UTC(year, month - 1, date));
+
+  return normalized.toISOString().slice(0, 10) === value;
+}
+
+/** Dia de calendario desplazado `days` dias (negativo hacia atras). */
+export function shiftDay(day: string, days: number): string {
+  const [year, month, date] = day.split('-').map(Number);
+
+  return new Date(Date.UTC(year, month - 1, date + days))
+    .toISOString()
+    .slice(0, 10);
+}
+
+/** Dias de calendario de `fromDay` a `toDay`, ambos incluidos y sin huecos. */
+export function listDays(fromDay: string, toDay: string): string[] {
+  const days: string[] = [];
+
+  for (let day = fromDay; day <= toDay; day = shiftDay(day, 1)) {
+    days.push(day);
+  }
+
+  return days;
 }
 
 /** Primer instante del dia local; `date` admite desbordes (day + 1). */

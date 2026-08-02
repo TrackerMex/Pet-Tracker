@@ -1,6 +1,13 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { InvalidTimeZoneError, localDayOf, localDayRange } from './local-day';
+import {
+  InvalidTimeZoneError,
+  isCalendarDate,
+  listDays,
+  localDayOf,
+  localDayRange,
+  shiftDay,
+} from './local-day';
 
 const HOUR_MS = 3_600_000;
 
@@ -97,6 +104,30 @@ describe('R7: localDayOf / localDayRange con Intl, sin dependencia nueva', () =>
     }
 
     expect(offenders).toEqual([]);
+  });
+
+  it('isCalendarDate rechaza formatos y fechas que no existen', () => {
+    expect(isCalendarDate('2026-08-02')).toBe(true);
+    expect(isCalendarDate('2026-02-28')).toBe(true);
+    expect(isCalendarDate('2026-02-30')).toBe(false);
+    expect(isCalendarDate('2026-13-01')).toBe(false);
+    expect(isCalendarDate('2026-8-2')).toBe(false);
+    expect(isCalendarDate('02/08/2026')).toBe(false);
+    expect(isCalendarDate('2026-08-02T00:00:00Z')).toBe(false);
+  });
+
+  it('shiftDay y listDays hacen aritmetica de calendario sin huecos', () => {
+    expect(shiftDay('2026-03-01', -1)).toBe('2026-02-28');
+    expect(shiftDay('2026-12-31', 1)).toBe('2027-01-01');
+    expect(shiftDay('2026-08-02', -7)).toBe('2026-07-26');
+    expect(listDays('2026-02-27', '2026-03-02')).toEqual([
+      '2026-02-27',
+      '2026-02-28',
+      '2026-03-01',
+      '2026-03-02',
+    ]);
+    expect(listDays('2026-08-02', '2026-08-02')).toEqual(['2026-08-02']);
+    expect(listDays('2026-08-03', '2026-08-02')).toEqual([]);
   });
 
   it('local-day.ts no importa nada: nucleo puro sin @nestjs/common', () => {

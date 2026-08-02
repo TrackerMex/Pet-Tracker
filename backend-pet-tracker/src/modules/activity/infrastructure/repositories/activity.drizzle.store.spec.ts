@@ -26,7 +26,9 @@ function migrationSql(file: string): string {
 
 describe('R10: la migracion 0005 crea unicamente activity_daily', () => {
   const config = getTableConfig(activityDaily);
-  const columns = new Map(config.columns.map((column) => [column.name, column]));
+  const columns = new Map(
+    config.columns.map((column) => [column.name, column]),
+  );
 
   it('la tabla tiene exactamente las once columnas de la spec', () => {
     expect(config.name).toBe('activity_daily');
