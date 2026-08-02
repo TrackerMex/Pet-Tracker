@@ -1,8 +1,8 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-08-01
-**Features completadas**: 4/18 (`feature_list.json`)
-**Pendientes**: 14 — backlog backend derivado de `plans/` 002–009 (mascotas+permisos, collar Wialon SIM, recorridos, geocercas+alertas, salud, nutrición)
+**Features completadas**: 5/18 (`feature_list.json`)
+**Pendientes**: 13 — backlog backend derivado de `plans/` 002–009 (collar Wialon SIM, recorridos, geocercas+alertas, salud, nutrición)
 **En producción**: no
 
 ---
@@ -142,15 +142,43 @@ debe listar las 4 URLs de cola.
   solo como registro: si se vuelve a trabajar en un sandbox sin toolchain
   nativo, el patrón de acotar con `npx jest --testPathIgnorePatterns=...`
   sigue siendo válido.
+- **`pets-crud-permissions` (#5) done**: tablas `pets` + `pet_users`
+  (migración `0003`), `PetAccessGuard` + `@RequirePetRole` — sin membresía
+  activa → 404 (IDOR bloqueado, e2e obligatorio verificado), rol
+  insuficiente → 403; CRUD `/v1/pets` (POST transaccional pets +
+  pet_users(owner) con audit `pet.create` post-commit vía puerto
+  `AuditLogger` de #3; GET lista solo membresías con `myRole`; GET detalle
+  con shape completo y `device`/`nextVaccine`/`nextReminder`/
+  `activitySummary` en `null` para features posteriores; PATCH con
+  birthDate XOR approxAgeMonths; DELETE cascade solo owner). Spec 16 EARS
+  aprobada por humano 2026-08-01. `reviewer` rechazó primero por B1
+  (frontmatter de spec en `draft`), fix del leader, resto aprobado a la
+  primera: init.sh verde, 275 unit (56 suites), e2e 19/19 contra Postgres
+  real. Branch `feature/5-pets-crud-permissions` (14 commits), **mergeado
+  por el humano (PR #8, `ebc3d59`)**. Ver
+  `progress/impl_pets-crud-permissions.md` y
+  `progress/review_pets-crud-permissions.md`.
 - Deuda menor detectada en #3: no existe script `db:migrate` en
   `package.json` (solo `db:generate`), aplicar migraciones exige hoy
   `exec drizzle-kit migrate` a mano. Candidato a tarea propia.
-- Próximo paso SDD: `spec_author` escribe la spec de `pets-crud-permissions`
-  (#5) + gate humano de aprobación — #1-#4 ya mergeados a `main`.
+- Próximo paso SDD: siguiente P1 del backlog es `devices-claim` (#7) —
+  `spec_author` + gate humano (`pet-photos-s3` #6 es P2 y puede esperar).
 
 ---
 
 ## Última sesión
+
+- **2026-08-01 (3)** — Ciclo SDD completo de `pets-crud-permissions` (#5)
+  en una sola sesión: `spec_author` (16 EARS, 5 decisiones abiertas) →
+  **gate humano aprobado** (se aclaró de paso que `microchip` en pets es el
+  chip veterinario de identificación, no el collar GPS — eso es #7/#8) →
+  `implementer` (13 commits TDD por R-id) → `reviewer` **rechazó** por B1
+  (frontmatter `draft` en los 4 archivos de spec pese a aprobación humana;
+  único bloqueante, fix del leader `3a0b481`) con todo lo demás verde:
+  init.sh completo (275 unit / 56 suites), e2e 19/19 contra Postgres real
+  con IDOR verificado, C2-C7, main y auth intactos → PR #8 → **merge
+  humano** (`ebc3d59`; PR #9 del humano registró el arranque de sesión).
+  Próximo: spec de `devices-claim` (#7, siguiente P1) + gate humano.
 
 - **2026-08-01 (2)** — Sesión corta de cierre: confirmado el merge humano
   del PR #5 (`auth-login-me`, #4) a `main` (`86dbcd5`) — working tree limpio,
