@@ -535,6 +535,107 @@ describe('R16: position.updated — un evento por mensaje, detail {version:1, pe
   });
 });
 
+describe('R17: battery.low solo en cruce descendente del umbral 20 (flanco vs devices.battery_pct previo)', () => {
+  function harnessWithBattery(
+    previousBattery: number | null,
+    incomingBattery?: number,
+  ): Harness {
+    const harness = makeHarness([
+      [
+        message(
+          'a',
+          validBody({
+            positions: [
+              {
+                lat: 19.4326,
+                lng: -99.1332,
+                ts: BASE_TS,
+                ...(incomingBattery === undefined
+                  ? {}
+                  : { batteryPct: incomingBattery }),
+              },
+            ],
+          }),
+        ),
+      ],
+      [],
+    ]);
+    harness.store.getDeviceBattery.mockResolvedValue(previousBattery);
+    return harness;
+  }
+
+  function batteryLowEvents(events: EventBridgeStub): EmittedEvent[] {
+    return emittedEvents(events).filter(
+      (event) => event.DetailType === DETAIL_TYPE_BATTERY_LOW,
+    );
+  }
+
+  it('entrante <20 con previa >=20 emite battery.low con detail {version:1, petId, deviceId, batteryPct}', async () => {
+    const { service, events } = harnessWithBattery(25, 15);
+
+    await service.drainOnce(NOW);
+
+    const lows = batteryLowEvents(events);
+    expect(lows).toHaveLength(1);
+    expect(lows[0].EventBusName).toBe(EVENT_BUS_NAME);
+    expect(lows[0].Source).toBe(EVENT_SOURCE);
+    expect(lows[0].detail).toEqual({
+      version: 1,
+      petId: 'pet-1',
+      deviceId: 'device-1',
+      batteryPct: 15,
+    });
+  });
+
+  it('previa NULL tambien es cruce: emite battery.low', async () => {
+    const { service, events } = harnessWithBattery(null, 12);
+
+    await service.drainOnce(NOW);
+
+    expect(batteryLowEvents(events)).toHaveLength(1);
+  });
+
+  it('mientras se mantiene <20 no re-emite (previa 15, entrante 12)', async () => {
+    const { service, events } = harnessWithBattery(15, 12);
+
+    await service.drainOnce(NOW);
+
+    expect(batteryLowEvents(events)).toHaveLength(0);
+    // El position.updated de R16 sigue saliendo.
+    expect(
+      emittedEvents(events).filter(
+        (event) => event.DetailType === DETAIL_TYPE_POSITION_UPDATED,
+      ),
+    ).toHaveLength(1);
+  });
+
+  it('entrante >=20 no emite battery.low', async () => {
+    const { service, events } = harnessWithBattery(25, 21);
+
+    await service.drainOnce(NOW);
+
+    expect(batteryLowEvents(events)).toHaveLength(0);
+  });
+
+  it('sin bateria en la ultima aceptada no emite battery.low', async () => {
+    const { service, events } = harnessWithBattery(25);
+
+    await service.drainOnce(NOW);
+
+    expect(batteryLowEvents(events)).toHaveLength(0);
+  });
+
+  it('lee la bateria previa antes de actualizar la telemetria (el flanco compara contra el valor viejo)', async () => {
+    const { service, store } = harnessWithBattery(25, 15);
+
+    await service.drainOnce(NOW);
+
+    const readOrder = store.getDeviceBattery.mock.invocationCallOrder[0];
+    const writeOrder = store.updateDeviceTelemetry.mock.invocationCallOrder[0];
+    expect(readOrder).toBeLessThan(writeOrder);
+  });
+});
+
 describe('R15: asignacion liberada — escribe el historico en DynamoDB pero no toca cache ni emite eventos', () => {
   it('con la asignacion liberada escribe los items bajo PET#<petId> y borra el mensaje, sin cache ni eventos', async () => {
     const { service, sqs, store, documents, events } = makeHarness([

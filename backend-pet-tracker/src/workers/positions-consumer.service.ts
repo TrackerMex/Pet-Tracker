@@ -22,7 +22,9 @@ import type { ProcessedPosition } from '@/pipeline/types';
 import { normalize } from '@/pipeline/validate-positions';
 import { INGESTION_STORE } from './ingestion-store';
 import type { IngestionStore } from './ingestion-store';
+import { BATTERY_LOW_THRESHOLD_PCT } from '@/pipeline/constants';
 import {
+  DETAIL_TYPE_BATTERY_LOW,
   DETAIL_TYPE_POSITION_UPDATED,
   EVENT_SOURCE,
   POSITIONS_DOC_CLIENT,
@@ -191,6 +193,10 @@ export class PositionsConsumerService {
     const latest = accepted[accepted.length - 1];
     const latestMoment = new Date(latest.ts);
 
+    // Bateria previa ANTES de escribir la telemetria — el flanco de R17
+    // compara contra el valor viejo de devices.battery_pct (D8).
+    const previousBattery = await this.store.getDeviceBattery(parsed.deviceId);
+
     // El guard "solo si el ts entrante es mas reciente" vive en el WHERE de
     // la implementacion del store (R14, D14) — redelivery no retrocede nada.
     await this.store.updateDeviceTelemetry(parsed.deviceId, {
@@ -209,46 +215,67 @@ export class PositionsConsumerService {
       latestMoment,
     );
 
-    await this.emitPositionUpdated(parsed, latest);
+    await this.emitEvents(parsed, latest, previousBattery);
   }
 
   /**
-   * Un evento position.updated por mensaje SQS, no por posicion (R16).
-   * Shape congelado (D9) — consumido por 006/007/010; cambios incrementan
-   * detail.version.
+   * Un evento position.updated por mensaje SQS, no por posicion (R16), mas
+   * battery.low solo en el cruce descendente del umbral 20 (R17, D8 —
+   * disparo por flanco; #12 cierra con bateria >= 30). Shapes congelados
+   * (D9) — consumidos por 006/007/010; cambios incrementan detail.version.
    */
-  private async emitPositionUpdated(
+  private async emitEvents(
     parsed: PositionsMessage,
     latest: ProcessedPosition,
+    previousBattery: number | null,
   ): Promise<void> {
-    await this.eventBridge.send(
-      new PutEventsCommand({
-        Entries: [
-          {
-            EventBusName: EVENT_BUS_NAME,
-            Source: EVENT_SOURCE,
-            DetailType: DETAIL_TYPE_POSITION_UPDATED,
-            Detail: JSON.stringify({
-              version: 1,
-              petId: parsed.petId,
-              deviceId: parsed.deviceId,
-              position: {
-                lat: latest.lat,
-                lng: latest.lng,
-                ts: latest.ts,
-                speedKmh: latest.speedKmh ?? null,
-                course: latest.course ?? null,
-                sats: latest.sats ?? null,
-                accuracyM: latest.accuracyM ?? null,
-                batteryPct: latest.batteryPct ?? null,
-                flags: latest.flags,
-              },
-              batteryPct: latest.batteryPct ?? null,
-            }),
+    const entries = [
+      {
+        EventBusName: EVENT_BUS_NAME,
+        Source: EVENT_SOURCE,
+        DetailType: DETAIL_TYPE_POSITION_UPDATED,
+        Detail: JSON.stringify({
+          version: 1,
+          petId: parsed.petId,
+          deviceId: parsed.deviceId,
+          position: {
+            lat: latest.lat,
+            lng: latest.lng,
+            ts: latest.ts,
+            speedKmh: latest.speedKmh ?? null,
+            course: latest.course ?? null,
+            sats: latest.sats ?? null,
+            accuracyM: latest.accuracyM ?? null,
+            batteryPct: latest.batteryPct ?? null,
+            flags: latest.flags,
           },
-        ],
-      }),
-    );
+          batteryPct: latest.batteryPct ?? null,
+        }),
+      },
+    ];
+
+    const incomingBattery = latest.batteryPct;
+    const crossedThresholdDown =
+      typeof incomingBattery === 'number' &&
+      incomingBattery < BATTERY_LOW_THRESHOLD_PCT &&
+      (previousBattery === null ||
+        previousBattery >= BATTERY_LOW_THRESHOLD_PCT);
+
+    if (crossedThresholdDown) {
+      entries.push({
+        EventBusName: EVENT_BUS_NAME,
+        Source: EVENT_SOURCE,
+        DetailType: DETAIL_TYPE_BATTERY_LOW,
+        Detail: JSON.stringify({
+          version: 1,
+          petId: parsed.petId,
+          deviceId: parsed.deviceId,
+          batteryPct: incomingBattery,
+        }),
+      });
+    }
+
+    await this.eventBridge.send(new PutEventsCommand({ Entries: entries }));
   }
 
   /**
