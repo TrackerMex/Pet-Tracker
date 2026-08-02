@@ -14,7 +14,7 @@ tags: [harness, spec]
 | R4 | src/integrations/wialon/wialon-http.client.spec.ts::R4: WialonHttpClient mapea la respuesta real (pos.y/x/s/c/sc) y {error: N} => WialonApiError tipado | `3eaecb5` feat(wialon-ingestion-pipeline): wialon http client with typed domain errors (R4) |
 | R5 | src/pipeline/validate-positions.spec.ts::R5: normalize() descarta (0,0)/fuera de rango/sin ts/duplicados, ordena y reporta discarded; 100% puro | `59baab3` feat(wialon-ingestion-pipeline): pure normalize() with discard reasons and ordering (R5) |
 | R6 | src/pipeline/validate-positions.spec.ts::R6: flags suspect_jump (>60 km/h, no descarta) y low_accuracy (>100 m o <4 sats) | `36fd6fd` feat(wialon-ingestion-pipeline): quality flags and named thresholds in pipeline core (R6) |
-| R7 | pendiente | pendiente |
+| R7 | src/pipeline/validate-positions.spec.ts::R7: fixture walk.json (~200 puntos del fake) + casos borde | `bc7b5fe` feat(wialon-ingestion-pipeline): walk.json fixture and pipeline edge cases (R7) |
 | R8 | pendiente | pendiente |
 | R9 | pendiente | pendiente |
 | R10 | pendiente | pendiente |

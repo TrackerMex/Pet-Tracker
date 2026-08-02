@@ -220,3 +220,4 @@ debe cargarlo con `envFilePath: ['../.env']`.
 | `SIM_HOME_LAT` / `SIM_HOME_LNG` | Punto de arranque del paseo simulado (default CDMX 19.4326 / -99.1332) | en `.env.example` — consumidas desde #8, misma vía que `SIM_MODE` |
 | `WIALON_TOKEN` | Token de la API real de Wialon. Ausente, vacío o `PENDING` ⇒ fake aunque `SIM_MODE=false` | en `.env.example` — consumida desde #8, misma vía que `SIM_MODE`. Sustituye al SSM del plan 005 en local |
 | `WIALON_BASE_URL` | Endpoint de la API Wialon (default `https://hst-api.wialon.com/wialon/ajax.html`) | en `.env.example` — consumida desde #8, misma vía que `SIM_MODE` |
+| `POLLER_ENABLED` | Arranque de los workers de ingesta (`true` agenda cron 1 min + consumidor; default `false`; con `NODE_ENV=test` nunca se agendan) | en `.env.example` (con `true` para que la cadena local funcione out-of-the-box, D11) — consumida desde #8: `src/workers/ingestion-scheduler.service.ts` vía `ConfigService` |
