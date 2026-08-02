@@ -1,8 +1,20 @@
-import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import type { Response } from 'express';
 import { GetPetDeviceUseCase } from '@/modules/devices/application/use-cases/get-pet-device.use-case';
+import { ReleaseDeviceUseCase } from '@/modules/devices/application/use-cases/release-device.use-case';
+import { RequirePetRole } from '@/modules/pets/infrastructure/decorators/require-pet-role.decorator';
 import { PetAccessGuard } from '@/modules/pets/infrastructure/guards/pet-access.guard';
 import type { PetAccessRequest } from '@/modules/pets/infrastructure/guards/pet-access.guard';
+import { mapDeviceError } from './mappers/device-error.mapper';
 import { toDeviceStatusResponse } from './mappers/device-status.mapper';
 
 /**
@@ -13,7 +25,10 @@ import { toDeviceStatusResponse } from './mappers/device-status.mapper';
 @Controller('pets/:petId/device')
 @UseGuards(PetAccessGuard)
 export class PetDeviceController {
-  constructor(private readonly getPetDevice: GetPetDeviceUseCase) {}
+  constructor(
+    private readonly getPetDevice: GetPetDeviceUseCase,
+    private readonly releaseDevice: ReleaseDeviceUseCase,
+  ) {}
 
   // R11: sin @RequirePetRole — cualquier rol con membresia activa accede.
   @Get()
@@ -26,5 +41,21 @@ export class PetDeviceController {
     // @Res explicito: Nest deja el body vacio cuando el handler devuelve
     // null, y el contrato de R11 exige body JSON `null` literal.
     response.json(device ? toDeviceStatusResponse(device) : null);
+  }
+
+  // R13/R14: solo el owner libera; el 404 de membresia del guard precede
+  // siempre a este 403 (semantica heredada de #5).
+  @Delete()
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @RequirePetRole('owner')
+  async release(@Req() request: PetAccessRequest): Promise<void> {
+    try {
+      await this.releaseDevice.execute(
+        request.petMembership.petId,
+        request.user.id,
+      );
+    } catch (error) {
+      throw mapDeviceError(error);
+    }
   }
 }

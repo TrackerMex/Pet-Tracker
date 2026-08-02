@@ -659,4 +659,99 @@ describe('Devices claim (e2e)', () => {
       });
     });
   });
+
+  describe('R13: DELETE libera el collar, audita y habilita el ciclo claim de nuevo', () => {
+    it('204 sin body; released_at y status available; re-claim del device es 201', async () => {
+      const ownerA = await seedUser('r13-owner-a');
+      const ownerB = await seedUser('r13-owner-b');
+      const petA = await createPetViaApi(ownerA, `R13a-${RUN_ID}`);
+      const petB = await createPetViaApi(ownerB, `R13b-${RUN_ID}`);
+      const device = await seedDevice('R13');
+
+      await claim(ownerA, { petId: petA.id, esn: device.esn }).expect(201);
+
+      const response = await api()
+        .delete(`/v1/pets/${petA.id}/device`)
+        .set('Authorization', `Bearer ${ownerA.token}`)
+        .expect(204);
+      expect(response.body).toEqual({});
+
+      const assignments = await db
+        .select()
+        .from(petDevices)
+        .where(eq(petDevices.deviceId, device.id));
+      expect(assignments).toHaveLength(1);
+      expect(assignments[0].releasedAt).not.toBeNull();
+
+      const [deviceRow] = await db
+        .select()
+        .from(devices)
+        .where(eq(devices.id, device.id));
+      expect(deviceRow.status).toBe('available');
+
+      const audits = await db
+        .select()
+        .from(auditLog)
+        .where(
+          and(
+            eq(auditLog.action, 'device.release'),
+            eq(auditLog.entityId, device.id),
+          ),
+        );
+      expect(audits).toHaveLength(1);
+      expect(audits[0].userId).toBe(ownerA.id);
+      expect(audits[0].meta).toEqual({ petId: petA.id });
+
+      // Ciclo completo claim -> release -> claim, con otro owner (R13).
+      await claim(ownerB, { petId: petB.id, esn: device.esn }).expect(201);
+    });
+  });
+
+  describe('R14: DELETE sin collar es 404 DEVICE_NOT_ASSIGNED; 404 de membresia precede al 403', () => {
+    it('sin collar activo responde DEVICE_NOT_ASSIGNED', async () => {
+      const owner = await seedUser('r14-owner');
+      const pet = await createPetViaApi(owner, `R14-${RUN_ID}`);
+
+      const response = await api()
+        .delete(`/v1/pets/${pet.id}/device`)
+        .set('Authorization', `Bearer ${owner.token}`)
+        .expect(404);
+
+      expect((response.body as { code: string }).code).toBe(
+        'DEVICE_NOT_ASSIGNED',
+      );
+    });
+
+    it('miembro no-owner recibe 403; sin membresia el 404 generico del guard', async () => {
+      const owner = await seedUser('r14b-owner');
+      const family = await seedUser('r14b-family');
+      const outsider = await seedUser('r14b-outsider');
+      const pet = await createPetViaApi(owner, `R14b-${RUN_ID}`);
+      await seedMembership(pet.id, family.id, 'family');
+      const device = await seedDevice('R14B');
+
+      await claim(owner, { petId: pet.id, esn: device.esn }).expect(201);
+
+      await api()
+        .delete(`/v1/pets/${pet.id}/device`)
+        .set('Authorization', `Bearer ${family.token}`)
+        .expect(403);
+
+      const baseline = await guardBaseline404(outsider);
+      const foreign = await api()
+        .delete(`/v1/pets/${pet.id}/device`)
+        .set('Authorization', `Bearer ${outsider.token}`)
+        .expect(404);
+      expect(foreign.body).toEqual(baseline);
+
+      // El collar sigue asignado: ni el 403 ni el 404 escribieron nada.
+      const activeRows = await db
+        .select()
+        .from(petDevices)
+        .where(
+          and(eq(petDevices.deviceId, device.id), isNull(petDevices.releasedAt)),
+        );
+      expect(activeRows).toHaveLength(1);
+    });
+  });
 });

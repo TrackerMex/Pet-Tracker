@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { PetsModule } from '@/modules/pets/pets.module';
 import { ClaimDeviceUseCase } from './application/use-cases/claim-device.use-case';
 import { GetPetDeviceUseCase } from './application/use-cases/get-pet-device.use-case';
+import { ReleaseDeviceUseCase } from './application/use-cases/release-device.use-case';
 import { DEVICE_REPOSITORY } from './domain/repositories/device.repository';
 import { DevicesController } from './infrastructure/devices.controller';
 import { PetDeviceController } from './infrastructure/pet-device.controller';
@@ -19,6 +20,7 @@ import { DeviceDrizzleRepository } from './infrastructure/repositories/device.dr
   providers: [
     ClaimDeviceUseCase,
     GetPetDeviceUseCase,
+    ReleaseDeviceUseCase,
     {
       provide: DEVICE_REPOSITORY,
       useClass: DeviceDrizzleRepository,
