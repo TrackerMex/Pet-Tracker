@@ -364,3 +364,41 @@ Deuda detectada (fuera de alcance, candidata a limpieza propia):
   movida a `src/db/seed/` (re-exportada), `jest-e2e maxWorkers: 1`.
 - **Commits:** 23 en la branch (incl. NB1/NB2), PR #13 abierto.
 - **Estado final:** done — espera merge humano del PR #13
+
+## Sesión 2026-08-02 (2) — positions-api (id: 9)
+
+- **Feature:** lectura de posiciones — `GET /v1/pets/:petId/positions/last`
+  desde la caché `pets.last_position` (+ `staleSeconds`, sin tocar DynamoDB)
+  y `GET /v1/pets/:petId/positions?from&to&cursor&includeSuspect` con Query
+  paginada a DynamoDB y cursor opaco base64url. Módulo nuevo
+  `src/modules/positions/` en 3 capas; solo lectura: cero migraciones, cero
+  env vars nuevas, cero dependencias nuevas.
+- **Spec:** [[specs/positions-api/requirements|spec]] — 16 EARS (R1-R16),
+  aprobada por humano el 2026-08-02 con D1-D6 íntegras (D2: `200` con body
+  `null` cuando no hay caché, precedente de `GET /v1/pets/:petId/device`;
+  D3: cursor sin firma HMAC porque la `pk` se reconstruye desde la ruta ya
+  autorizada; D4: página fija de 1000, sin `?limit=` del cliente; D6:
+  `DocumentClient` propio desde `DYNAMODB_CLIENT` en vez de importar
+  `IngestionModule`, que habría obligado a editar `src/workers/` — prohibido
+  por R16).
+- **Acciones:** sesión de rescate, no ciclo completo. La feature venía a
+  medias de la sesión anterior: código de R1-R5 y R7-R15 commiteado
+  (`c33deb2`..`d862b62`) pero sin cerrar — `traceability.md` con las 16 filas
+  en "pendiente", `tasks.md` sin marcar, sin `progress/impl_positions-api.md`,
+  R6 y R16 sin verificar y el guion temporal `scripts/r6-evidence.tmp.ts`
+  sin correr. Se relanzó el `implementer` acotado al cierre (R6 + R16 +
+  trazabilidad + reporte, `72d8c94`) y después el `reviewer`, que
+  **aprobó sin bloqueantes**.
+- **Resultado:** `./init.sh` verde (482 unit); e2e 84 contra Postgres +
+  LocalStack reales. Trazabilidad 16/16. Evidencia manual de R6 con la
+  cadena real (claim `ACT-002` → poller → SQS → consumidor → Postgres):
+  `200`, `staleSeconds: 47`, `lat/lng` reales, 24 items de historial.
+  R16 verificado: cero migraciones, `src/workers/**` y `src/pipeline/**`
+  intactos, único cambio fuera del módulo el registro en `app.module.ts`.
+  3 NB del reviewer: `feature_list.json` fuera de la lista literal de R16
+  (bookkeeping aceptable), DX de la paginación sin `from`/`to` explícitos
+  (deuda menor abierta), `graphify-out/` desactualizado (refrescado, 2361
+  nodos).
+- **Commits:** `c33deb2`..`9e92809` (12 en la branch), merge `c833956`
+  (PR #15).
+- **Estado final:** done — sin features P1 pendientes en el backlog.

@@ -1,8 +1,8 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-08-02
-**Features completadas**: 7/18 (`feature_list.json`)
-**Pendientes**: 11 — backlog backend derivado de `plans/` 002–009 (collar Wialon SIM, recorridos, geocercas+alertas, salud, nutrición)
+**Features completadas**: 8/18 (`feature_list.json`)
+**Pendientes**: 10 — backlog backend derivado de `plans/` 002–009 (fotos S3, recorridos, geocercas+alertas, salud, nutrición). **Sin P1 pendientes**: el resto es P2/P3.
 **En producción**: no
 
 ---
@@ -196,26 +196,78 @@ debe listar las 4 URLs de cola.
   Spec 19 EARS + D1-D14 aprobada por humano 2026-08-02. `reviewer` aprobó
   (C2-C7, init.sh + e2e ejecutados por él mismo, trazabilidad 19/19
   muestreada; NB1/NB2 corregidos). init.sh verde: 397 unit / 69 suites;
-  e2e 58/58 contra Docker real. **PR #13 abierto — espera merge humano.**
-  Ver `progress/impl_wialon-ingestion-pipeline.md` y
+  e2e 58/58 contra Docker real. **PR #13 mergeado a `main`** (2026-08-02,
+  merge `77d530f`). Ver `progress/impl_wialon-ingestion-pipeline.md` y
   `progress/review_wialon-ingestion-pipeline.md`.
-- Próximo paso SDD: `positions-api` (#9, siguiente P1) — lectura de
-  posiciones (last + history con cursor DynamoDB); depende del merge de
-  PR #13. `pet-photos-s3` (#6) sigue en P2. Integración Wialon real:
-  diferida hasta #9 done + hardware en mano (SIM_MODE es el camino;
-  conectar real será smoke test de config, no feature).
+- **`positions-api` (#9) done**: cierra la cadena GPS por el lado de
+  lectura. Módulo nuevo `src/modules/positions/` en 3 capas con dos rutas
+  bajo `PetAccessGuard` de #5 sin `@RequirePetRole` (mascota ajena → 404,
+  `petId` siempre desde `request.petMembership`): `GET
+  /v1/pets/:petId/positions/last` sirve desde la caché `pets.last_position`
+  sin tocar DynamoDB (+ `staleSeconds` con reloj inyectado; caché NULL o
+  corrupta → `200` con body `null`), y `GET /v1/pets/:petId/positions`
+  pagina el historial con una `Query` por página (`pk = PET#<petId>` +
+  `sk BETWEEN`, ascendente, `Limit 1000`), query string zod `.strict()`
+  (defaults `to = now` / `from = to − 60 min`, `INVALID_RANGE` y
+  `RANGE_TOO_LARGE` a 400), filtro de `low_accuracy` por defecto
+  (`?includeSuspect=true` no filtra) y cursor opaco base64url `{v,p,q,k}`
+  que rechaza cursores corruptos, de otra mascota o de otra consulta sin
+  llegar a hacer la Query. **Feature de solo lectura: cero migraciones,
+  cero env vars nuevas, cero dependencias nuevas**; único cambio fuera del
+  módulo, el registro en `app.module.ts`. Spec 16 EARS + D1-D6 aprobada
+  por humano 2026-08-02 (D6: `DocumentClient` propio desde
+  `DYNAMODB_CLIENT` en vez de importar `IngestionModule`, que habría
+  obligado a editar `src/workers/`). `reviewer` **aprobó sin
+  bloqueantes**: init.sh verde (482 unit), e2e 84 contra Postgres +
+  LocalStack reales, trazabilidad 16/16. Evidencia manual R6 con la cadena
+  real (claim `ACT-002` → poller → SQS → consumidor → Postgres): `200`,
+  `staleSeconds: 47`, 24 items de historial. Branch
+  `feature/9-positions-api` (12 commits), **PR #15 mergeado a `main`**
+  (2026-08-02, merge `c833956`). Ver `progress/impl_positions-api.md` y
+  `progress/review_positions-api.md`.
+- Deuda menor abierta de #9 (NB del reviewer, no bloqueante): la
+  paginación sin `from`/`to` explícitos usa la ventana por defecto de
+  60 min, así que un cursor emitido en esa llamada sigue anclado a la
+  ventana original — correcto pero poco obvio; candidato a documentar en
+  el contrato del endpoint cuando la app móvil lo consuma.
+- Próximo paso SDD: **no quedan features P1**. El backlog sigue con
+  `pet-photos-s3` (#6, P2) o `trips-activity` (#10, P2) — #10 es la
+  continuación natural de la cadena GPS (#8 escribe, #9 lee, #10 agrega) y
+  ya tiene el sustrato que necesita: umbrales en `pipeline/constants.ts` y
+  los datos en DynamoDB. Decisión de orden pendiente del humano.
+  Integración Wialon real: diferida hasta tener hardware en mano (SIM_MODE
+  es el camino; conectar real será smoke test de config, no feature).
 
 ---
 
 ## Última sesión
+
+- **2026-08-02 (2)** — Cierre de `positions-api` (#9). La sesión arrancó con
+  la feature a medias: el `implementer` de la sesión anterior había
+  commiteado R1-R5 y R7-R15 pero murió sin cerrar (trazabilidad en blanco,
+  sin reporte, R6 y R16 sin verificar, guion temporal
+  `scripts/r6-evidence.tmp.ts` sin correr). Se relanzó el `implementer`
+  acotado a lo que faltaba: ejecutó la evidencia real de R6 (docker compose
+  + poller `SIM_MODE` + claim `ACT-002`, 150 s de ciclos de cron →
+  `staleSeconds: 47`), verificó R16 (cero migraciones, `workers/` y
+  `pipeline/` intactos, init.sh 482 unit y e2e 84 en verde), rellenó las 16
+  filas de trazabilidad y escribió el reporte (`72d8c94`). El `reviewer`
+  **aprobó sin bloqueantes** con 3 NB (uno medio: `feature_list.json` fuera
+  de la lista literal de R16, dictaminado bookkeeping aceptable; dos bajos:
+  DX de paginación sin `from`/`to` y `graphify-out/` desactualizado, ya
+  refrescado a 2361 nodos). **PR #15 mergeado por el humano** (`c833956`).
+  Lección del arranque: cuando un `implementer` no deja
+  `progress/impl_<feature>.md`, la trazabilidad en blanco es la señal fiable
+  de que la feature no está cerrada aunque los commits de código estén.
+  Próximo: elegir entre #6 (fotos S3) y #10 (recorridos) — ya no hay P1.
 
 - **2026-08-02** — Ciclo SDD completo de `wialon-ingestion-pipeline` (#8):
   `explorer` → `spec_author` (19 EARS, D1-D14) → gate humano (aprobó spec
   y las 14 decisiones íntegras) → `implementer` (21 commits TDD, cero
   migraciones) → `reviewer` **aprobó** (397 unit + 58/58 e2e verificados
   por él mismo contra Docker real; NB1 frontmatter `125685b`, NB2
-  comentario huérfano `a2fb802`, ambos corregidos) → **PR #13 abierto**,
-  espera merge humano. Feature marcada `done`. Incidente menor: primer
+  comentario huérfano `a2fb802`, ambos corregidos) → **PR #13 abierto** y
+  mergeado por el humano el mismo día (`77d530f`). Feature marcada `done`. Incidente menor: primer
   intento de reviewer murió por límite de sesión del API, relanzado sin
   consecuencias. Próximo: merge de PR #13, luego ciclo de `positions-api`
   (#9).
