@@ -20,7 +20,7 @@ tags: [harness, spec]
 | R10 | src/workers/poller.service.spec.ts::R10: watermark avanza tras publicar y solo si hubo mensajes; fallo de publicacion no avanza | `bc3144f` feat(wialon-ingestion-pipeline): advance watermark only after successful publish (R10) |
 | R11 | src/workers/poller.service.spec.ts::R11: aislamiento — error por device no aborta el ciclo; LocalStack caido no tumba el proceso; sin solape | `2ce248c` feat(wialon-ingestion-pipeline): poller resilience — per-device isolation, overlap guard, sqs-down tolerance (R11) |
 | R12 | src/workers/positions-consumer.service.spec.ts::R12: consumer — long-polling batch <=10, zod, delete por mensaje procesado; el fallido no envenena el lote; drainOnce() | `564ec00` feat(wialon-ingestion-pipeline): sqs consumer skeleton with zod contract and per-message delete (R12) |
-| R13 | pendiente | pendiente |
+| R13 | src/workers/positions-consumer.service.spec.ts::R13: escritura DynamoDB — pk PET#<petId>, sk device_ts, atributos data-model, expires_at en segundos; dedupe por sk; reproceso idempotente | `6f9b884` feat(wialon-ingestion-pipeline): idempotent dynamodb batch writes for accepted positions (R13) |
 | R14 | pendiente | pendiente |
 | R15 | pendiente | pendiente |
 | R16 | pendiente | pendiente |

@@ -314,6 +314,25 @@ describe('R13: escritura DynamoDB — pk PET#<petId>, sk device_ts, atributos da
     ).toEqual({ [TABLE_POSITIONS]: [leftoverItem] });
   });
 
+  it('R14/R15 borde: un mensaje sin aceptadas se borra sin tocar cache ni emitir eventos', async () => {
+    const { service, sqs, store, events } = makeHarness([
+      [
+        message(
+          'all-invalid',
+          validBody({ positions: [{ lat: 0, lng: 0, ts: BASE_TS }] }),
+        ),
+      ],
+      [],
+    ]);
+
+    await service.drainOnce(NOW);
+
+    expect(sqs.deleted).toEqual(['rh-all-invalid']);
+    expect(store.updateDeviceTelemetry).not.toHaveBeenCalled();
+    expect(store.updatePetLastPosition).not.toHaveBeenCalled();
+    expect(events.send).not.toHaveBeenCalled();
+  });
+
   it('reprocesar el mismo mensaje (redelivery) produce exactamente los mismos items', async () => {
     const body = validBody({
       positions: [
@@ -332,5 +351,73 @@ describe('R13: escritura DynamoDB — pk PET#<petId>, sk device_ts, atributos da
     const secondItems = writtenItems(second.documents);
     expect(firstItems).toHaveLength(2);
     expect(secondItems).toEqual(firstItems);
+  });
+});
+
+describe('R14: cache devices + pets.last_position con la ultima aceptada, solo si el ts entrante es mas reciente', () => {
+  it('con asignacion activa actualiza devices y pets con la ultima posicion aceptada (mas reciente por ts)', async () => {
+    const lastTs = BASE_TS + 60_000;
+    const { service, store } = makeHarness([
+      [
+        message(
+          'a',
+          validBody({
+            positions: [
+              // Desordenadas a proposito: la "ultima" es la de mayor ts.
+              {
+                lat: 19.44,
+                lng: -99.14,
+                ts: lastTs,
+                accuracyM: 8,
+                batteryPct: 76,
+              },
+              { lat: 19.43, lng: -99.13, ts: BASE_TS, batteryPct: 77 },
+            ],
+          }),
+        ),
+      ],
+      [],
+    ]);
+
+    await service.drainOnce(NOW);
+
+    expect(store.isAssignmentActive).toHaveBeenCalledWith('device-1', 'pet-1');
+    expect(store.updateDeviceTelemetry).toHaveBeenCalledTimes(1);
+    expect(store.updateDeviceTelemetry).toHaveBeenCalledWith('device-1', {
+      batteryPct: 76,
+      lastMessageAt: new Date(lastTs),
+    });
+    expect(store.updatePetLastPosition).toHaveBeenCalledTimes(1);
+    expect(store.updatePetLastPosition).toHaveBeenCalledWith(
+      'pet-1',
+      { lat: 19.44, lng: -99.14, ts: lastTs, accuracy: 8, battery: 76 },
+      new Date(lastTs),
+    );
+  });
+
+  it('sin bateria ni accuracy en la ultima aceptada cachea null, no 0', async () => {
+    const { service, store } = makeHarness([
+      [
+        message(
+          'a',
+          validBody({
+            positions: [{ lat: 19.43, lng: -99.13, ts: BASE_TS }],
+          }),
+        ),
+      ],
+      [],
+    ]);
+
+    await service.drainOnce(NOW);
+
+    expect(store.updateDeviceTelemetry).toHaveBeenCalledWith('device-1', {
+      batteryPct: null,
+      lastMessageAt: new Date(BASE_TS),
+    });
+    expect(store.updatePetLastPosition).toHaveBeenCalledWith(
+      'pet-1',
+      { lat: 19.43, lng: -99.13, ts: BASE_TS, accuracy: null, battery: null },
+      new Date(BASE_TS),
+    );
   });
 });

@@ -167,6 +167,42 @@ export class PositionsConsumerService {
     // El historico se escribe siempre (R13) — incluso si la asignacion ya
     // fue liberada (R15): el dato es del periodo de asignacion.
     await this.writePositions(parsed.petId, accepted, now);
+
+    if (accepted.length === 0) {
+      return;
+    }
+
+    // Asignacion liberada tras el encolado (R15): el historico ya se
+    // escribio arriba, pero cache y bus solo reflejan collares activos.
+    const isActive = await this.store.isAssignmentActive(
+      parsed.deviceId,
+      parsed.petId,
+    );
+    if (!isActive) {
+      return;
+    }
+
+    // normalize() ordena ascendente: la ultima aceptada es la mas reciente.
+    const latest = accepted[accepted.length - 1];
+    const latestMoment = new Date(latest.ts);
+
+    // El guard "solo si el ts entrante es mas reciente" vive en el WHERE de
+    // la implementacion del store (R14, D14) — redelivery no retrocede nada.
+    await this.store.updateDeviceTelemetry(parsed.deviceId, {
+      batteryPct: latest.batteryPct ?? null,
+      lastMessageAt: latestMoment,
+    });
+    await this.store.updatePetLastPosition(
+      parsed.petId,
+      {
+        lat: latest.lat,
+        lng: latest.lng,
+        ts: latest.ts,
+        accuracy: latest.accuracyM ?? null,
+        battery: latest.batteryPct ?? null,
+      },
+      latestMoment,
+    );
   }
 
   /**
