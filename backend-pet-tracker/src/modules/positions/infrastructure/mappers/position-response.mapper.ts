@@ -7,7 +7,9 @@ import type { StoredPosition } from '@/modules/positions/domain/entities/positio
  * `expires_at` son internos del pipeline, y un atributo nuevo que #8 empiece
  * a escribir no llega al cliente sin una decision de por medio.
  */
-export function toStoredPosition(item: Record<string, unknown>): StoredPosition {
+export function toStoredPosition(
+  item: Record<string, unknown>,
+): StoredPosition {
   return {
     ts: numberOr(item[TABLE_POSITIONS_SORT_KEY], 0),
     lat: numberOr(item.lat, 0),

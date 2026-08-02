@@ -5,7 +5,11 @@ import { InvalidCursorError } from './errors/position.errors';
 const PET_A = '018f5a3e-0000-7000-8000-000000000001';
 const PET_B = '018f5a3e-0000-7000-8000-000000000002';
 
-const FINGERPRINT = queryFingerprint(1_754_121_600_000, 1_754_125_200_000, false);
+const FINGERPRINT = queryFingerprint(
+  1_754_121_600_000,
+  1_754_125_200_000,
+  false,
+);
 
 function envelope(raw: string): Record<string, unknown> {
   return JSON.parse(Buffer.from(raw, 'base64url').toString('utf-8')) as Record<
@@ -66,7 +70,9 @@ describe('R13: el cursor es base64url opaco {v, p, q, k} y hace round-trip exact
   });
 
   it('la huella es determinista y distingue rango e includeSuspect', () => {
-    expect(queryFingerprint(10, 20, false)).toBe(queryFingerprint(10, 20, false));
+    expect(queryFingerprint(10, 20, false)).toBe(
+      queryFingerprint(10, 20, false),
+    );
     expect(queryFingerprint(10, 20, false)).not.toBe(
       queryFingerprint(10, 21, false),
     );

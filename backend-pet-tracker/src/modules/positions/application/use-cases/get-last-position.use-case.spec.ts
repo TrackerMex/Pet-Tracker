@@ -61,13 +61,13 @@ describe('R3: GET .../positions/last devuelve exactamente las 6 claves de la cac
   });
 
   it('lee la cache por el petId recibido y una sola vez', async () => {
-    const reader = readerReturning(CACHED);
-    const useCase = new GetLastPositionUseCase(reader);
+    const findLastPosition = jest.fn().mockResolvedValue(CACHED);
+    const useCase = new GetLastPositionUseCase({ findLastPosition });
 
     await useCase.execute('pet-42', now);
 
-    expect(reader.findLastPosition).toHaveBeenCalledTimes(1);
-    expect(reader.findLastPosition).toHaveBeenCalledWith('pet-42');
+    expect(findLastPosition).toHaveBeenCalledTimes(1);
+    expect(findLastPosition).toHaveBeenCalledWith('pet-42');
   });
 
   it('el caso de uso no recibe cliente DynamoDB: una sola dependencia y cero imports del SDK', () => {
@@ -115,7 +115,9 @@ describe('R5: last_position NULL o corrupta => null (200 con body null), con war
 
   it('un jsonb corrupto no propaga el error al llamador', async () => {
     jest.spyOn(Logger.prototype, 'warn').mockImplementation();
-    const useCase = new GetLastPositionUseCase(readerReturning('cadena suelta'));
+    const useCase = new GetLastPositionUseCase(
+      readerReturning('cadena suelta'),
+    );
 
     await expect(useCase.execute('pet-1', now)).resolves.toBeNull();
 

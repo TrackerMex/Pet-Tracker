@@ -26,9 +26,9 @@ describe('R7: la query string se valida con zod estricto (4 opcionales, nada mas
   });
 
   it('rechaza un to invalido igual que un from invalido', () => {
-    expect(
-      ListPositionsQuerySchema.safeParse({ to: 'manana' }).success,
-    ).toBe(false);
+    expect(ListPositionsQuerySchema.safeParse({ to: 'manana' }).success).toBe(
+      false,
+    );
   });
 
   it('rechaza includeSuspect con un valor distinto de true/false', () => {

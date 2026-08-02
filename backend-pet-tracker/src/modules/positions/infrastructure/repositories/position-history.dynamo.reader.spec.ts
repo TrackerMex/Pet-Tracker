@@ -33,7 +33,7 @@ function fakeDocuments(output: Record<string, unknown> = { Items: [] }) {
 
   return {
     documents,
-    lastInput: (): QueryInput => sent[sent.length - 1].input as QueryInput,
+    lastInput: (): QueryInput => sent[sent.length - 1].input,
     sent,
   };
 }

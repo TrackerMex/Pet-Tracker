@@ -1,7 +1,4 @@
-import {
-  FLAG_LOW_ACCURACY,
-  FLAG_SUSPECT_JUMP,
-} from '@/pipeline/constants';
+import { FLAG_LOW_ACCURACY, FLAG_SUSPECT_JUMP } from '@/pipeline/constants';
 import {
   encodeCursor,
   queryFingerprint,

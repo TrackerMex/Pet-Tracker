@@ -56,7 +56,9 @@ export class PositionHistoryDynamoReader implements PositionHistoryReader {
       }),
     );
 
-    const lastSk = result.LastEvaluatedKey?.[TABLE_POSITIONS_SORT_KEY];
+    const lastEvaluatedKey = result.LastEvaluatedKey as
+      Record<string, unknown> | undefined;
+    const lastSk = lastEvaluatedKey?.[TABLE_POSITIONS_SORT_KEY];
 
     return {
       items: (result.Items ?? []).map((item) =>
