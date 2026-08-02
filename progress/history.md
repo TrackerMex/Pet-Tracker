@@ -307,3 +307,26 @@ Deuda detectada (fuera de alcance, candidata a limpieza propia):
   completa. `audit_log` reutilizado sin migración nueva; guard global de #4 intacto.
 - **Commits:** `c2d889b`..`3a0b481` (14 en la branch), merge `ebc3d59` (PR #8).
 - **Estado final:** done
+
+## Sesión 2026-08-01 (2) — devices-claim (id: 7)
+
+- **Feature:** tablas `devices` + `pet_devices`, `POST /v1/devices/claim`,
+  `GET`/`DELETE /v1/pets/:petId/device`, seed idempotente de 3 devices
+  simulados — prerequisito de la cadena GPS (#8 pipeline, #9 positions).
+- **Spec:** [[specs/devices-claim/requirements|spec]] — 15 EARS (R1-R15),
+  aprobada por humano el 2026-08-01 con 4 decisiones (D1: membresía del
+  claim en el use case vía `PET_REPOSITORY.findMembership()`, guard de #5
+  intacto; D2: índice único parcial sobre `pet_id` activo + 409
+  `PET_ALREADY_HAS_DEVICE`; D3: disponibilidad derivada de la fila activa,
+  self-healing tras borrar mascota; D4: UNIQUE en los 4 identificadores
+  de claim).
+- **Acciones:** ciclo SDD completo en una sesión — `spec_author` → gate
+  humano (D1-D4 aceptadas como propone la spec) → `implementer` (13
+  commits TDD por R-id en `feature/7-devices-claim`) → `reviewer`
+  **aprobó a la primera**, sin bloqueantes (4 observaciones NB) → PR #11.
+- **Resultado:** `./init.sh` verde (build, 319 unit, lint, typecheck);
+  e2e 55/55 contra Postgres real (devices 21/21: IDOR R5, carrera
+  concurrente R8, self-healing R15). Trazabilidad 15/15.
+  `docs/data-model.md` actualizado por D2/D4.
+- **Commits:** `9133343`..`ffcc6f8` (15 en la branch), PR #11 abierto.
+- **Estado final:** done — espera merge humano del PR #11

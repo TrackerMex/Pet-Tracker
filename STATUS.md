@@ -1,8 +1,8 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-08-01
-**Features completadas**: 5/18 (`feature_list.json`)
-**Pendientes**: 13 — backlog backend derivado de `plans/` 002–009 (collar Wialon SIM, recorridos, geocercas+alertas, salud, nutrición)
+**Features completadas**: 6/18 (`feature_list.json`)
+**Pendientes**: 12 — backlog backend derivado de `plans/` 002–009 (collar Wialon SIM, recorridos, geocercas+alertas, salud, nutrición)
 **En producción**: no
 
 ---
@@ -158,15 +158,48 @@ debe listar las 4 URLs de cola.
   por el humano (PR #8, `ebc3d59`)**. Ver
   `progress/impl_pets-crud-permissions.md` y
   `progress/review_pets-crud-permissions.md`.
-- Deuda menor detectada en #3: no existe script `db:migrate` en
-  `package.json` (solo `db:generate`), aplicar migraciones exige hoy
+- **`devices-claim` (#7) done**: tablas `devices` + `pet_devices`
+  (migración `0004`: índice único parcial por `device_id` activo y por
+  `pet_id` activo, UNIQUE en `esn`/`imei`/`wialon_unit_id`/
+  `activation_code`/`serial_number`); `POST /v1/devices/claim` con
+  membresía en el use case vía `PET_REPOSITORY.findMembership()` (D1 —
+  guard de #5 intacto), 404/403/404/409/409; disponibilidad derivada de
+  la fila activa (D3, self-healing tras borrar mascota); `GET`/`DELETE
+  /v1/pets/:petId/device` con `PetAccessGuard`; seed idempotente
+  `pnpm run seed:devices` (SIM-001..003/ACT-001..003); auditoría
+  `device.claim`/`device.release`. Spec 15 EARS aprobada por humano
+  2026-08-01 (D1-D4). `reviewer` aprobó a la primera sin bloqueantes:
+  init.sh verde (319 unit), e2e 55/55 contra Postgres real (devices
+  21/21: IDOR R5, carrera R8, self-healing R15), trazabilidad 15/15.
+  Branch `feature/7-devices-claim` (15 commits), **PR #11 abierto —
+  espera merge humano**. Ver `progress/impl_devices-claim.md` y
+  `progress/review_devices-claim.md`.
+- Deuda menor detectada en #3 (sigue abierta, reviewer de #7 la
+  re-señaló como NB): no existe script `db:migrate` en `package.json`
+  (solo `db:generate`), aplicar migraciones exige hoy
   `exec drizzle-kit migrate` a mano. Candidato a tarea propia.
-- Próximo paso SDD: siguiente P1 del backlog es `devices-claim` (#7) —
-  `spec_author` + gate humano (`pet-photos-s3` #6 es P2 y puede esperar).
+- Próximo paso SDD: merge humano del PR #11; después, siguiente P1 es
+  `wialon-ingestion-pipeline` (#8) — `spec_author` + gate humano
+  (`pet-photos-s3` #6 sigue en P2; #8 es grande, valorar `explorer`
+  previo).
 
 ---
 
 ## Última sesión
+
+- **2026-08-01 (4)** — Ciclo SDD completo de `devices-claim` (#7) en una
+  sesión: `spec_author` (15 EARS, 4 decisiones abiertas D1-D4) → **gate
+  humano aprobado** (D1-D4 aceptadas como propone la spec: membresía en
+  use case, doble índice único parcial, disponibilidad derivada de fila
+  activa, UNIQUE en los 4 identificadores) → `implementer` (13 commits
+  TDD por R-id, `docs/data-model.md` actualizado por D2/D4) → `reviewer`
+  **aprobó a la primera** sin bloqueantes (4 NB: ruido de consola de un
+  test de #5, cita cosmética en traceability R1, `db:migrate` sigue
+  manual, cierre del leader pendiente en ese momento) → **PR #11
+  abierto**, espera merge humano. Verificación independiente del
+  reviewer: init.sh verde (319 unit), e2e 55/55 contra Postgres real.
+  Próximo: merge humano de PR #11, luego spec de
+  `wialon-ingestion-pipeline` (#8, siguiente P1).
 
 - **2026-08-01 (3)** — Ciclo SDD completo de `pets-crud-permissions` (#5)
   en una sola sesión: `spec_author` (16 EARS, 5 decisiones abiertas) →
