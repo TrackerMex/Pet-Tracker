@@ -36,6 +36,13 @@
       "when": 1785636677239,
       "tag": "0004_devices_claim_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1785711686855,
+      "tag": "0005_activity_daily",
+      "breakpoints": true
     }
   ]
 }
