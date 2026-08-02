@@ -754,4 +754,54 @@ describe('Devices claim (e2e)', () => {
       expect(activeRows).toHaveLength(1);
     });
   });
+
+  describe('R15: borrar una mascota con collar deja el device reclamable (D3)', () => {
+    it('claim -> DELETE /v1/pets/:petId -> claim con otra mascota responde 201', async () => {
+      const ownerA = await seedUser('r15-owner-a');
+      const ownerB = await seedUser('r15-owner-b');
+      const petA = await createPetViaApi(ownerA, `R15a-${RUN_ID}`);
+      const petB = await createPetViaApi(ownerB, `R15b-${RUN_ID}`);
+      const device = await seedDevice('R15');
+
+      await claim(ownerA, { petId: petA.id, esn: device.esn }).expect(201);
+
+      // DELETE de #5: el ON DELETE CASCADE borra la fila de pet_devices y
+      // nadie actualiza devices.status — queda 'assigned' huerfano.
+      await api()
+        .delete(`/v1/pets/${petA.id}`)
+        .set('Authorization', `Bearer ${ownerA.token}`)
+        .expect(204);
+
+      const [orphaned] = await db
+        .select()
+        .from(devices)
+        .where(eq(devices.id, device.id));
+      expect(orphaned.status).toBe('assigned');
+
+      const assignments = await db
+        .select()
+        .from(petDevices)
+        .where(eq(petDevices.deviceId, device.id));
+      expect(assignments).toHaveLength(0);
+
+      // La disponibilidad se deriva de la fila activa, no del cache de
+      // status: el device sigue reclamable (D3).
+      await claim(ownerB, { petId: petB.id, esn: device.esn }).expect(201);
+
+      const [reclaimed] = await db
+        .select()
+        .from(devices)
+        .where(eq(devices.id, device.id));
+      expect(reclaimed.status).toBe('assigned');
+
+      const activeRows = await db
+        .select()
+        .from(petDevices)
+        .where(
+          and(eq(petDevices.deviceId, device.id), isNull(petDevices.releasedAt)),
+        );
+      expect(activeRows).toHaveLength(1);
+      expect(activeRows[0].petId).toBe(petB.id);
+    });
+  });
 });
