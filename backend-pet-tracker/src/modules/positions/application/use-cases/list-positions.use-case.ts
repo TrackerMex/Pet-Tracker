@@ -1,6 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
+import {
+  decodeCursor,
+  encodeCursor,
+  queryFingerprint,
+} from '@/modules/positions/domain/cursor';
 import type { StoredPosition } from '@/modules/positions/domain/entities/position.entity';
 import {
+  InvalidCursorError,
   InvalidRangeError,
   RangeTooLargeError,
 } from '@/modules/positions/domain/errors/position.errors';
@@ -59,13 +65,49 @@ export class ListPositionsUseCase {
       throw new RangeTooLargeError();
     }
 
+    const includeSuspect = input.includeSuspect === 'true';
+    const fingerprint = queryFingerprint(fromMs, toMs, includeSuspect);
+
+    // R14: el cursor se valida ANTES de cualquier Query. Solo puede mover el
+    // arranque dentro de la particion ya autorizada — la mascota sale de
+    // input.petId (que viene de request.petMembership, R2), nunca del sobre.
+    const startAfterSk =
+      input.cursor === undefined
+        ? null
+        : this.resolveStartKey(input.cursor, input.petId, fingerprint);
+
     const page = await this.history.queryPage({
       petId: input.petId,
       fromMs,
       toMs,
-      startAfterSk: null,
+      startAfterSk,
     });
 
-    return { items: page.items, nextCursor: null };
+    return {
+      items: page.items,
+      // R13: la paginacion es de la Query, no del resultado filtrado (R15).
+      nextCursor:
+        page.lastKey === null
+          ? null
+          : encodeCursor({
+              petId: input.petId,
+              fingerprint,
+              lastSk: page.lastKey,
+            }),
+    };
+  }
+
+  private resolveStartKey(
+    cursor: string,
+    petId: string,
+    fingerprint: string,
+  ): number {
+    const decoded = decodeCursor(cursor);
+
+    if (decoded.petId !== petId || decoded.fingerprint !== fingerprint) {
+      throw new InvalidCursorError();
+    }
+
+    return decoded.lastSk;
   }
 }

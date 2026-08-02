@@ -1,4 +1,9 @@
 import {
+  encodeCursor,
+  queryFingerprint,
+} from '@/modules/positions/domain/cursor';
+import {
+  InvalidCursorError,
   InvalidRangeError,
   RangeTooLargeError,
 } from '@/modules/positions/domain/errors/position.errors';
@@ -14,8 +19,12 @@ import {
 import { ListPositionsUseCase } from './list-positions.use-case';
 
 const PET_A = '018f5a3e-0000-7000-8000-000000000001';
+const PET_B = '018f5a3e-0000-7000-8000-000000000002';
 
 const NOW = new Date('2026-08-02T12:00:00.000Z');
+
+const FROM = '2026-08-02T08:00:00.000Z';
+const TO = '2026-08-02T09:00:00.000Z';
 
 /** Reader espia: registra la Query emitida y devuelve la pagina que se le fije. */
 function fakeReader(page: PositionHistoryPage = { items: [], lastKey: null }) {
@@ -151,5 +160,164 @@ describe('R9: from >= to es INVALID_RANGE y > 24 h es RANGE_TOO_LARGE, ambos sin
       ),
     ).resolves.toEqual({ items: [], nextCursor: null });
     expect(calls).toHaveLength(1);
+  });
+});
+
+describe('R13: nextCursor sale del LastEvaluatedKey y reanuda la lectura en el sk codificado', () => {
+  it('sin LastEvaluatedKey el nextCursor es null', async () => {
+    const { reader } = fakeReader({ items: [], lastKey: null });
+    const useCase = new ListPositionsUseCase(reader);
+
+    const result = await useCase.execute(
+      { petId: PET_A, from: FROM, to: TO },
+      NOW,
+    );
+
+    expect(result.nextCursor).toBeNull();
+  });
+
+  it('con LastEvaluatedKey emite un cursor que codifica ese sk, la mascota y la huella', async () => {
+    const { reader } = fakeReader({ items: [], lastKey: 1_754_123_456_789 });
+    const useCase = new ListPositionsUseCase(reader);
+
+    const result = await useCase.execute(
+      { petId: PET_A, from: FROM, to: TO },
+      NOW,
+    );
+
+    expect(result.nextCursor).toBe(
+      encodeCursor({
+        petId: PET_A,
+        fingerprint: queryFingerprint(Date.parse(FROM), Date.parse(TO), false),
+        lastSk: 1_754_123_456_789,
+      }),
+    );
+  });
+
+  it('la huella distingue includeSuspect: el cursor emitido con el flag es otro', async () => {
+    const { reader } = fakeReader({ items: [], lastKey: 7 });
+    const useCase = new ListPositionsUseCase(reader);
+
+    const plain = await useCase.execute(
+      { petId: PET_A, from: FROM, to: TO },
+      NOW,
+    );
+    const withFlag = await useCase.execute(
+      { petId: PET_A, from: FROM, to: TO, includeSuspect: 'true' },
+      NOW,
+    );
+
+    expect(plain.nextCursor).not.toBe(withFlag.nextCursor);
+  });
+
+  it('reenviar el cursor arranca la Query tras el sk codificado', async () => {
+    const { reader, calls } = fakeReader({ items: [], lastKey: null });
+    const useCase = new ListPositionsUseCase(reader);
+    const cursor = encodeCursor({
+      petId: PET_A,
+      fingerprint: queryFingerprint(Date.parse(FROM), Date.parse(TO), false),
+      lastSk: 1_754_123_456_789,
+    });
+
+    await useCase.execute({ petId: PET_A, from: FROM, to: TO, cursor }, NOW);
+
+    expect(calls[0].startAfterSk).toBe(1_754_123_456_789);
+    expect(calls[0].fromMs).toBe(Date.parse(FROM));
+    expect(calls[0].toMs).toBe(Date.parse(TO));
+  });
+
+  it('sin cursor la Query arranca por el principio del rango', async () => {
+    const { reader, calls } = fakeReader();
+    const useCase = new ListPositionsUseCase(reader);
+
+    await useCase.execute({ petId: PET_A, from: FROM, to: TO }, NOW);
+
+    expect(calls[0].startAfterSk).toBeNull();
+  });
+});
+
+describe('R14: cursor corrupto, de otra mascota o de otra consulta => InvalidCursorError sin Query', () => {
+  it('un cursor que no decodifica se rechaza sin llamar al reader', async () => {
+    const { reader, calls } = fakeReader();
+    const useCase = new ListPositionsUseCase(reader);
+
+    await expect(
+      useCase.execute({ petId: PET_A, from: FROM, to: TO, cursor: '???' }, NOW),
+    ).rejects.toBeInstanceOf(InvalidCursorError);
+    expect(calls).toHaveLength(0);
+  });
+
+  it('un cursor legitimo de la mascota A reenviado en la ruta de B se rechaza sin Query', async () => {
+    const { reader, calls } = fakeReader();
+    const useCase = new ListPositionsUseCase(reader);
+    const cursorOfA = encodeCursor({
+      petId: PET_A,
+      fingerprint: queryFingerprint(Date.parse(FROM), Date.parse(TO), false),
+      lastSk: 42,
+    });
+
+    await expect(
+      useCase.execute(
+        { petId: PET_B, from: FROM, to: TO, cursor: cursorOfA },
+        NOW,
+      ),
+    ).rejects.toBeInstanceOf(InvalidCursorError);
+    expect(calls).toHaveLength(0);
+  });
+
+  it('un cursor de otro rango se rechaza sin Query', async () => {
+    const { reader, calls } = fakeReader();
+    const useCase = new ListPositionsUseCase(reader);
+    const cursorOfAnotherRange = encodeCursor({
+      petId: PET_A,
+      fingerprint: queryFingerprint(0, 1, false),
+      lastSk: 42,
+    });
+
+    await expect(
+      useCase.execute(
+        { petId: PET_A, from: FROM, to: TO, cursor: cursorOfAnotherRange },
+        NOW,
+      ),
+    ).rejects.toBeInstanceOf(InvalidCursorError);
+    expect(calls).toHaveLength(0);
+  });
+
+  it('un cursor emitido sin includeSuspect no vale para la consulta con el flag', async () => {
+    const { reader, calls } = fakeReader();
+    const useCase = new ListPositionsUseCase(reader);
+    const cursorWithoutFlag = encodeCursor({
+      petId: PET_A,
+      fingerprint: queryFingerprint(Date.parse(FROM), Date.parse(TO), false),
+      lastSk: 42,
+    });
+
+    await expect(
+      useCase.execute(
+        {
+          petId: PET_A,
+          from: FROM,
+          to: TO,
+          cursor: cursorWithoutFlag,
+          includeSuspect: 'true',
+        },
+        NOW,
+      ),
+    ).rejects.toBeInstanceOf(InvalidCursorError);
+    expect(calls).toHaveLength(0);
+  });
+
+  it('la mascota consultada sale siempre del input autorizado, nunca del cursor', async () => {
+    const { reader, calls } = fakeReader();
+    const useCase = new ListPositionsUseCase(reader);
+    const cursor = encodeCursor({
+      petId: PET_A,
+      fingerprint: queryFingerprint(Date.parse(FROM), Date.parse(TO), false),
+      lastSk: 42,
+    });
+
+    await useCase.execute({ petId: PET_A, from: FROM, to: TO, cursor }, NOW);
+
+    expect(calls[0].petId).toBe(PET_A);
   });
 });
