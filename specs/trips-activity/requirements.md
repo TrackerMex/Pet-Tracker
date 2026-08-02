@@ -1,6 +1,6 @@
 ---
 feature: "trips-activity"
-status: spec_ready   # draft | spec_ready (pendiente gate humano) | approved
+status: approved   # draft | spec_ready (pendiente gate humano) | approved
 tags: [harness, spec]
 ---
 
@@ -517,7 +517,8 @@ mayor impacto, por si el gate quiere leer solo esas:
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [X] Aprobado por humano (fecha: 2026-08-02) ← gate obligatorio antes de implementar
+      D1-D15 confirmadas íntegras, tal como las propone [[design]].
 
 Al aprobar, confirma también **D1-D15** de [[design]] §Decisiones propuestas
 (íntegras o con las correcciones que indiques). Si alguna decisión cambia un

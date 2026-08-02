@@ -1,6 +1,6 @@
 ---
 feature: "trips-activity"
-status: spec_ready   # draft | spec_ready (pendiente gate humano) | approved
+status: approved   # draft | spec_ready (pendiente gate humano) | approved
 tags: [harness, spec]
 ---
 
