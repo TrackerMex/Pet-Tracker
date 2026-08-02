@@ -73,7 +73,7 @@
   {
     "id": 5,
     "name": "pets-crud-permissions",
-    "status": "pending",
+    "status": "in_progress",
     "priority": "P1",
     "description": "Plan 004 (núcleo): tablas pets y pet_users (audit_log ya existe: la creó auth-registration #3 en src/audit/ como módulo @Global() — reutilizar el puerto AuditLogger, NO generar otra migración para esa tabla); PetAccessGuard + @RequirePetRole — sin membresía en pet_users → 404 (no revelar existencia, brief §4); CRUD /v1/pets con el DTO del brief §7 (species dog|cat, birthDate o approxAgeMonths, etc.), creador como owner en transacción, edad calculada, DELETE cascade. Es el mecanismo de autorización de TODAS las features posteriores.",
     "acceptance_criteria": [
