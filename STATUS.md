@@ -171,21 +171,31 @@ debe listar las 4 URLs de cola.
   2026-08-01 (D1-D4). `reviewer` aprobó a la primera sin bloqueantes:
   init.sh verde (319 unit), e2e 55/55 contra Postgres real (devices
   21/21: IDOR R5, carrera R8, self-healing R15), trazabilidad 15/15.
-  Branch `feature/7-devices-claim` (15 commits), **PR #11 abierto —
-  espera merge humano**. Ver `progress/impl_devices-claim.md` y
+  Branch `feature/7-devices-claim` (15 commits), **PR #11 mergeado a
+  main** (2026-08-01, merge `eff7361`); init.sh verde en main
+  post-merge. Ver `progress/impl_devices-claim.md` y
   `progress/review_devices-claim.md`.
 - Deuda menor detectada en #3 (sigue abierta, reviewer de #7 la
   re-señaló como NB): no existe script `db:migrate` en `package.json`
   (solo `db:generate`), aplicar migraciones exige hoy
   `exec drizzle-kit migrate` a mano. Candidato a tarea propia.
-- Próximo paso SDD: merge humano del PR #11; después, siguiente P1 es
-  `wialon-ingestion-pipeline` (#8) — `spec_author` + gate humano
-  (`pet-photos-s3` #6 sigue en P2; #8 es grande, valorar `explorer`
-  previo).
+- Próximo paso SDD: `wialon-ingestion-pipeline` (#8, siguiente P1) —
+  feature grande (3 módulos nuevos): lanzar `explorer` primero, luego
+  `spec_author` + gate humano (`pet-photos-s3` #6 sigue en P2).
+  Integración Wialon real: diferida hasta #9 done + hardware en mano
+  (SIM_MODE es el camino; conectar real será smoke test de config,
+  no feature).
 
 ---
 
 ## Última sesión
+
+- **2026-08-01 (5)** — Sin ciclo SDD (consulta + cierre). Se explicó el
+  diseño de la integración Wialon de #8 (fake determinista vs
+  `WialonHttpClient` real por factory) y se acordó diferir la conexión
+  real hasta #9 done + collar físico. El humano mergeó **PR #11**
+  (`eff7361`); validado: main sincronizado, branch local borrada,
+  init.sh verde 6/18. Próximo: ciclo #8 con `explorer` previo.
 
 - **2026-08-01 (4)** — Ciclo SDD completo de `devices-claim` (#7) en una
   sesión: `spec_author` (15 EARS, 4 decisiones abiertas D1-D4) → **gate
