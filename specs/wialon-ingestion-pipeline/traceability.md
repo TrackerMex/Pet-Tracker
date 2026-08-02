@@ -26,7 +26,7 @@ tags: [harness, spec]
 | R16 | src/workers/positions-consumer.service.spec.ts::R16: position.updated — un evento por mensaje, detail {version:1, petId, deviceId, position, batteryPct} (contrato congelado) | `08dff63` feat(wialon-ingestion-pipeline): emit frozen position.updated event per processed message (R16) |
 | R17 | src/workers/positions-consumer.service.spec.ts::R17: battery.low solo en cruce descendente del umbral 20 (flanco vs devices.battery_pct previo) | `fb7bf94` feat(wialon-ingestion-pipeline): battery.low emitted only on downward threshold crossing (R17) |
 | R18 | src/workers/positions-consumer.service.spec.ts::R18: malformado — log estructurado + no-delete; el redrive provisionado (3 recepciones) lo mueve a la DLQ (DLQ=0 verificado en test/ingestion.e2e-spec.ts) | `337aa5b` test(wialon-ingestion-pipeline): malformed messages log, stay in queue and rely on provisioned redrive (R18) |
-| R19 | pendiente | pendiente |
+| R19 | test/ingestion.e2e-spec.ts::R19: claim ACT-001 + SIM_MODE=true + runOnce() + drainOnce() => items en PET#<petId>, last_position actualizado, DLQ 0 | `139fb36` feat(wialon-ingestion-pipeline): end-to-end chain claim -> runOnce -> drainOnce against real infra (R19) |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
 Convención de commit: `feat(<scope>): <desc> (R1,R2)`.
