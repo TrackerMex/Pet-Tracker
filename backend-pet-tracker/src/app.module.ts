@@ -7,6 +7,7 @@ import { AppConfigModule } from './config/config.module';
 import { DrizzleModule } from './db/drizzle.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { HealthModule } from './modules/health/health.module';
+import { PetsModule } from './modules/pets/pets.module';
 import { UsersModule } from './modules/users/users.module';
 
 @Module({
@@ -18,6 +19,7 @@ import { UsersModule } from './modules/users/users.module';
     HealthModule,
     AuthModule,
     UsersModule,
+    PetsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

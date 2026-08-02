@@ -22,6 +22,13 @@
       "when": 1785470338699,
       "tag": "0002_drop_schema_bootstrap_placeholder",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1785627175794,
+      "tag": "0003_pets_crud_tables",
+      "breakpoints": true
     }
   ]
 }
