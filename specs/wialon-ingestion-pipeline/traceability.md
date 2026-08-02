@@ -18,7 +18,7 @@ tags: [harness, spec]
 | R8 | src/workers/ingestion-scheduler.service.spec.ts::R8: scheduling gated — cron solo con POLLER_ENABLED=true y NODE_ENV distinto de test; runOnce() invocable | `e178dee` feat(wialon-ingestion-pipeline): gated scheduling shell for ingestion workers (R8) |
 | R9 | src/workers/poller.service.spec.ts::R9: poller — asignaciones activas -> getMessages(unitId, watermark, now) -> SQS {version:1,...} en lotes <=100 | `f5c643d` feat(wialon-ingestion-pipeline): poller cycle publishing raw positions to SQS (R9) |
 | R10 | src/workers/poller.service.spec.ts::R10: watermark avanza tras publicar y solo si hubo mensajes; fallo de publicacion no avanza | `bc3144f` feat(wialon-ingestion-pipeline): advance watermark only after successful publish (R10) |
-| R11 | pendiente | pendiente |
+| R11 | src/workers/poller.service.spec.ts::R11: aislamiento — error por device no aborta el ciclo; LocalStack caido no tumba el proceso; sin solape | `2ce248c` feat(wialon-ingestion-pipeline): poller resilience — per-device isolation, overlap guard, sqs-down tolerance (R11) |
 | R12 | pendiente | pendiente |
 | R13 | pendiente | pendiente |
 | R14 | pendiente | pendiente |
