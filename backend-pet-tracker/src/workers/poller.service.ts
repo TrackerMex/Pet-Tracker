@@ -81,6 +81,12 @@ export class PollerService {
         }),
       );
     }
+
+    // Despues de publicar, nunca antes (R10): si el send falla arriba, el
+    // watermark no avanza y el siguiente ciclo re-publica (at-least-once;
+    // los duplicados los absorbe la idempotencia de R13).
+    const lastTs = Math.max(...positions.map((position) => position.ts));
+    await this.store.advanceWatermark(assignment.deviceId, new Date(lastTs));
   }
 
   /** El provisioning (#2) no persiste URLs: se deriva del nombre y se cachea. */

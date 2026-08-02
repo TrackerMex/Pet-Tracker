@@ -194,3 +194,63 @@ describe('R9: poller — asignaciones activas -> getMessages(unitId, watermark, 
     expect(sendMessage.input.QueueUrl).toBe(QUEUE_URL);
   });
 });
+
+describe('R10: watermark avanza tras publicar y solo si hubo mensajes; fallo de publicacion no avanza', () => {
+  it('avanza el watermark al ts del ultimo mensaje, solo despues de publicar', async () => {
+    const lastTs = NOW.getTime() - 30_000;
+    const positions = [
+      positionAt(lastTs - 60_000),
+      positionAt(lastTs),
+      positionAt(lastTs - 30_000),
+    ];
+    const store = storeStub([assignment()]);
+    const sqs = sqsStub();
+    const service = makeService(store, wialonStub(positions), sqs.client);
+
+    await service.runOnce(NOW);
+
+    expect(store.advanceWatermark).toHaveBeenCalledTimes(1);
+    expect(store.advanceWatermark).toHaveBeenCalledWith(
+      'device-1',
+      new Date(lastTs),
+    );
+
+    // Despues de publicar, nunca antes (orden de invocacion).
+    const lastSendOrder = Math.max(
+      ...sqs.send.mock.invocationCallOrder.filter((_, i) =>
+        Boolean(sqs.send.mock.calls[i][0] instanceof SendMessageCommand),
+      ),
+    );
+    const advanceOrder = store.advanceWatermark.mock.invocationCallOrder[0];
+    expect(advanceOrder).toBeGreaterThan(lastSendOrder);
+  });
+
+  it('sin posiciones en el intervalo el watermark no cambia', async () => {
+    const store = storeStub([assignment()]);
+    const service = makeService(store, wialonStub([]), sqsStub().client);
+
+    await service.runOnce(NOW);
+
+    expect(store.advanceWatermark).not.toHaveBeenCalled();
+  });
+
+  it('si la publicacion a SQS falla el watermark no avanza (at-least-once)', async () => {
+    const store = storeStub([assignment()]);
+    const send = jest.fn((command: unknown) => {
+      if (command instanceof GetQueueUrlCommand) {
+        return Promise.resolve({ QueueUrl: QUEUE_URL });
+      }
+      return Promise.reject(new Error('sqs unavailable'));
+    });
+    const service = makeService(
+      store,
+      wialonStub([positionAt(NOW.getTime() - 30_000)]),
+      { send } as unknown as SQSClient,
+    );
+
+    // R11 exige ademas que el ciclo no explote; aqui solo importa el watermark.
+    await service.runOnce(NOW).catch(() => undefined);
+
+    expect(store.advanceWatermark).not.toHaveBeenCalled();
+  });
+});
