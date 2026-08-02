@@ -6,7 +6,9 @@ import {
 } from '@aws-sdk/client-sqs';
 import type { Message } from '@aws-sdk/client-sqs';
 import { EventBridgeClient } from '@aws-sdk/client-eventbridge';
+import { BatchWriteCommand } from '@aws-sdk/lib-dynamodb';
 import type { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
+import { TABLE_POSITIONS } from '@/aws/constants';
 import type { IngestionStore } from './ingestion-store';
 import { PositionsConsumerService } from './positions-consumer.service';
 
@@ -173,5 +175,162 @@ describe('R12: consumer — long-polling batch <=10, zod, delete por mensaje pro
     await service.drainOnce(NOW);
 
     expect(sqs.deleted).toEqual(['rh-ok-1', 'rh-ok-2']);
+  });
+});
+
+/** Items PutRequest enviados a DynamoDB por todos los BatchWrite del stub. */
+function writtenItems(documents: DocStub): Record<string, unknown>[] {
+  return documents.send.mock.calls
+    .filter(([command]) => command instanceof BatchWriteCommand)
+    .flatMap(([command]) => {
+      const requests = (command as BatchWriteCommand).input.RequestItems?.[
+        TABLE_POSITIONS
+      ] as Array<{ PutRequest: { Item: Record<string, unknown> } }>;
+      return requests.map((request) => request.PutRequest.Item);
+    });
+}
+
+describe('R13: escritura DynamoDB — pk PET#<petId>, sk device_ts, atributos data-model, expires_at en segundos; dedupe por sk; reproceso idempotente', () => {
+  it('escribe cada aceptada con pk/sk y los atributos exactos de docs/data-model.md', async () => {
+    const { service, documents } = makeHarness([
+      [
+        message(
+          'a',
+          validBody({
+            positions: [
+              {
+                lat: 19.4326,
+                lng: -99.1332,
+                ts: BASE_TS,
+                speedKmh: 4,
+                course: 90,
+                altitude: 2240,
+                sats: 8,
+                accuracyM: 12,
+                batteryPct: 87,
+              },
+            ],
+          }),
+        ),
+      ],
+      [],
+    ]);
+
+    await service.drainOnce(NOW);
+
+    const items = writtenItems(documents);
+    expect(items).toHaveLength(1);
+    expect(items[0]).toEqual({
+      pk: 'PET#pet-1',
+      sk: BASE_TS,
+      lat: 19.4326,
+      lng: -99.1332,
+      speed_kmh: 4,
+      course: 90,
+      altitude: 2240,
+      sats: 8,
+      accuracy_m: 12,
+      battery_pct: 87,
+      device_ts: BASE_TS,
+      received_ts: NOW.getTime(),
+      processed_ts: NOW.getTime(),
+      flags: [],
+      expires_at: Math.floor(BASE_TS / 1000) + 90 * 86_400,
+    });
+  });
+
+  it('dedupea por sk dentro del lote: dos posiciones con el mismo device_ts producen un solo item', async () => {
+    const { service, documents } = makeHarness([
+      [
+        message(
+          'a',
+          validBody({
+            positions: [
+              { lat: 19.4326, lng: -99.1332, ts: BASE_TS },
+              { lat: 19.4327, lng: -99.1331, ts: BASE_TS },
+              { lat: 19.4328, lng: -99.133, ts: BASE_TS + 30_000 },
+            ],
+          }),
+        ),
+      ],
+      [],
+    ]);
+
+    await service.drainOnce(NOW);
+
+    const items = writtenItems(documents);
+    expect(items).toHaveLength(2);
+    expect(new Set(items.map((item) => item.sk)).size).toBe(2);
+  });
+
+  it('parte lotes de mas de 25 items en BatchWrite de <=25', async () => {
+    const positions = Array.from({ length: 60 }, (_, i) => ({
+      lat: 19.4326,
+      lng: -99.1332,
+      ts: BASE_TS + i * 30_000,
+    }));
+    const { service, documents } = makeHarness([
+      [message('a', validBody({ positions }))],
+      [],
+    ]);
+
+    await service.drainOnce(NOW);
+
+    const batchSizes = documents.send.mock.calls
+      .filter(([command]) => command instanceof BatchWriteCommand)
+      .map(
+        ([command]) =>
+          (
+            (command as BatchWriteCommand).input.RequestItems?.[
+              TABLE_POSITIONS
+            ] as unknown[]
+          ).length,
+      );
+    expect(batchSizes).toEqual([25, 25, 10]);
+  });
+
+  it('reintenta UnprocessedItems del BatchWrite', async () => {
+    const { service, documents } = makeHarness([
+      [message('a', validBody())],
+      [],
+    ]);
+    const leftoverItem = {
+      PutRequest: { Item: { pk: 'PET#pet-1', sk: BASE_TS } },
+    };
+    documents.send
+      .mockResolvedValueOnce({
+        UnprocessedItems: { [TABLE_POSITIONS]: [leftoverItem] },
+      })
+      .mockResolvedValueOnce({ UnprocessedItems: {} });
+
+    await service.drainOnce(NOW);
+
+    const batchCalls = documents.send.mock.calls.filter(
+      ([command]) => command instanceof BatchWriteCommand,
+    );
+    expect(batchCalls).toHaveLength(2);
+    expect(
+      (batchCalls[1][0] as BatchWriteCommand).input.RequestItems,
+    ).toEqual({ [TABLE_POSITIONS]: [leftoverItem] });
+  });
+
+  it('reprocesar el mismo mensaje (redelivery) produce exactamente los mismos items', async () => {
+    const body = validBody({
+      positions: [
+        { lat: 19.4326, lng: -99.1332, ts: BASE_TS, batteryPct: 80 },
+        { lat: 19.4327, lng: -99.1331, ts: BASE_TS + 30_000, batteryPct: 79 },
+      ],
+    });
+
+    const first = makeHarness([[message('a', body)], []]);
+    await first.service.drainOnce(NOW);
+
+    const second = makeHarness([[message('a', body)], []]);
+    await second.service.drainOnce(NOW);
+
+    const firstItems = writtenItems(first.documents);
+    const secondItems = writtenItems(second.documents);
+    expect(firstItems).toHaveLength(2);
+    expect(secondItems).toEqual(firstItems);
   });
 });
