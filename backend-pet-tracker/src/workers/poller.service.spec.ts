@@ -254,3 +254,87 @@ describe('R10: watermark avanza tras publicar y solo si hubo mensajes; fallo de 
     expect(store.advanceWatermark).not.toHaveBeenCalled();
   });
 });
+
+describe('R11: aislamiento — error por device no aborta el ciclo; LocalStack caido no tumba el proceso; sin solape', () => {
+  it('un getMessages que falla no impide polear y publicar los demas devices', async () => {
+    const failing = assignment();
+    const healthy = assignment({
+      deviceId: 'device-2',
+      petId: 'pet-2',
+      unitId: '900002',
+    });
+    const store = storeStub([failing, healthy]);
+    const sqs = sqsStub();
+    const wialon: jest.Mocked<WialonClient> = {
+      listUnits: jest.fn().mockResolvedValue([]),
+      getMessages: jest
+        .fn()
+        .mockRejectedValueOnce(new Error('wialon down for device-1'))
+        .mockResolvedValueOnce([positionAt(NOW.getTime() - 30_000)]),
+    };
+    const service = makeService(store, wialon, sqs.client);
+
+    await expect(service.runOnce(NOW)).resolves.toBeUndefined();
+
+    expect(wialon.getMessages).toHaveBeenCalledTimes(2);
+    expect(sqs.sentBodies()).toHaveLength(1);
+    expect(store.advanceWatermark).toHaveBeenCalledTimes(1);
+    expect(store.advanceWatermark).toHaveBeenCalledWith(
+      'device-2',
+      expect.any(Date),
+    );
+  });
+
+  it('con SQS caido (GetQueueUrl falla) el ciclo se salta sin tumbar el proceso y reintenta al siguiente tick', async () => {
+    const store = storeStub([assignment()]);
+    const send = jest
+      .fn()
+      .mockRejectedValue(new Error('connect ECONNREFUSED 127.0.0.1:4566'));
+    const service = makeService(
+      store,
+      wialonStub([positionAt(NOW.getTime() - 30_000)]),
+      { send } as unknown as SQSClient,
+    );
+
+    await expect(service.runOnce(NOW)).resolves.toBeUndefined();
+    expect(store.listActiveAssignments).not.toHaveBeenCalled();
+
+    // Siguiente tick: la URL no quedo cacheada y se reintenta.
+    await expect(service.runOnce(NOW)).resolves.toBeUndefined();
+    expect(send.mock.calls.length).toBe(2);
+  });
+
+  it('mientras un ciclo sigue en curso no se inicia el siguiente (guard de solape en memoria)', async () => {
+    const store = storeStub([assignment()]);
+    let releaseGetMessages: (positions: RawPosition[]) => void = () => undefined;
+    const wialon: jest.Mocked<WialonClient> = {
+      listUnits: jest.fn().mockResolvedValue([]),
+      getMessages: jest.fn().mockImplementation(
+        () =>
+          new Promise<RawPosition[]>((resolve) => {
+            releaseGetMessages = resolve;
+          }),
+      ),
+    };
+    const service = makeService(store, wialon, sqsStub().client);
+
+    const firstCycle = service.runOnce(NOW);
+    // Deja avanzar el primer ciclo hasta el getMessages pendiente.
+    await new Promise((resolve) => setImmediate(resolve));
+    expect(store.listActiveAssignments).toHaveBeenCalledTimes(1);
+
+    await service.runOnce(NOW);
+    expect(store.listActiveAssignments).toHaveBeenCalledTimes(1);
+
+    releaseGetMessages([]);
+    await firstCycle;
+
+    // Terminado el primero, el siguiente ciclo si corre.
+    releaseGetMessages([]);
+    const thirdCycle = service.runOnce(NOW);
+    await new Promise((resolve) => setImmediate(resolve));
+    expect(store.listActiveAssignments).toHaveBeenCalledTimes(2);
+    releaseGetMessages([]);
+    await thirdCycle;
+  });
+});

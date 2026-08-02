@@ -24,6 +24,7 @@ export const POSITIONS_PER_MESSAGE_MAX = 100;
 export class PollerService {
   private readonly logger = new Logger(PollerService.name);
   private queueUrl: string | null = null;
+  private running = false;
 
   constructor(
     @Inject(INGESTION_STORE) private readonly store: IngestionStore,
@@ -32,11 +33,48 @@ export class PollerService {
   ) {}
 
   async runOnce(now: Date = new Date()): Promise<void> {
-    const queueUrl = await this.resolveQueueUrl();
-    const assignments = await this.store.listActiveAssignments();
+    // Guard de solape en memoria (R11, D4): proceso unico local — si el
+    // ciclo anterior sigue en curso, este tick se salta.
+    if (this.running) {
+      return;
+    }
+    this.running = true;
 
-    for (const assignment of assignments) {
-      await this.pollAssignment(assignment, queueUrl, now);
+    try {
+      // SQS/LocalStack caido: un solo log de error por tick y reintento al
+      // siguiente — jamas tumbar el proceso NestJS (R11, D12).
+      let queueUrl: string;
+      try {
+        queueUrl = await this.resolveQueueUrl();
+      } catch (error) {
+        this.logger.error({
+          scope: 'poller',
+          message: `cycle skipped, cannot resolve queue url: ${describeError(error)}`,
+        });
+        return;
+      }
+
+      const assignments = await this.store.listActiveAssignments();
+      for (const assignment of assignments) {
+        try {
+          await this.pollAssignment(assignment, queueUrl, now);
+        } catch (error) {
+          // Un device que falla no aborta el ciclo de los demas (R11).
+          this.logger.error({
+            scope: 'poller',
+            deviceId: assignment.deviceId,
+            unitId: assignment.unitId,
+            message: describeError(error),
+          });
+        }
+      }
+    } catch (error) {
+      this.logger.error({
+        scope: 'poller',
+        message: `cycle failed: ${describeError(error)}`,
+      });
+    } finally {
+      this.running = false;
     }
   }
 
@@ -105,4 +143,8 @@ export class PollerService {
     this.queueUrl = response.QueueUrl;
     return this.queueUrl;
   }
+}
+
+function describeError(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
 }

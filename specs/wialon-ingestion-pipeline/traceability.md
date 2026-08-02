@@ -17,7 +17,7 @@ tags: [harness, spec]
 | R7 | src/pipeline/validate-positions.spec.ts::R7: fixture walk.json (~200 puntos del fake) + casos borde | `bc7b5fe` feat(wialon-ingestion-pipeline): walk.json fixture and pipeline edge cases (R7) |
 | R8 | src/workers/ingestion-scheduler.service.spec.ts::R8: scheduling gated — cron solo con POLLER_ENABLED=true y NODE_ENV distinto de test; runOnce() invocable | `e178dee` feat(wialon-ingestion-pipeline): gated scheduling shell for ingestion workers (R8) |
 | R9 | src/workers/poller.service.spec.ts::R9: poller — asignaciones activas -> getMessages(unitId, watermark, now) -> SQS {version:1,...} en lotes <=100 | `f5c643d` feat(wialon-ingestion-pipeline): poller cycle publishing raw positions to SQS (R9) |
-| R10 | pendiente | pendiente |
+| R10 | src/workers/poller.service.spec.ts::R10: watermark avanza tras publicar y solo si hubo mensajes; fallo de publicacion no avanza | `bc3144f` feat(wialon-ingestion-pipeline): advance watermark only after successful publish (R10) |
 | R11 | pendiente | pendiente |
 | R12 | pendiente | pendiente |
 | R13 | pendiente | pendiente |
