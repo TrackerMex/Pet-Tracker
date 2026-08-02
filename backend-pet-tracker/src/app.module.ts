@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuditModule } from './audit/audit.module';
@@ -10,10 +11,13 @@ import { DevicesModule } from './modules/devices/devices.module';
 import { HealthModule } from './modules/health/health.module';
 import { PetsModule } from './modules/pets/pets.module';
 import { UsersModule } from './modules/users/users.module';
+import { IngestionModule } from './workers/ingestion.module';
 
 @Module({
   imports: [
     AppConfigModule.forRoot(),
+    // Primer cron del repo (#8); #10/#16 heredan este forRoot (design.md).
+    ScheduleModule.forRoot(),
     DrizzleModule,
     AwsModule,
     AuditModule,
@@ -22,6 +26,7 @@ import { UsersModule } from './modules/users/users.module';
     UsersModule,
     PetsModule,
     DevicesModule,
+    IngestionModule,
   ],
   controllers: [AppController],
   providers: [AppService],
