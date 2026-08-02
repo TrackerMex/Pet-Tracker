@@ -599,4 +599,64 @@ describe('Devices claim (e2e)', () => {
         .expect(404);
     });
   });
+
+  describe('R12: el perfil GET /v1/pets/:petId rellena la clave device', () => {
+    // Contrato congelado del perfil (R8 de #5): mismas 24 claves siempre.
+    const PROFILE_KEYS = [
+      'id',
+      'name',
+      'species',
+      'breed',
+      'sex',
+      'birthDate',
+      'approxAgeMonths',
+      'ageMonths',
+      'currentWeightKg',
+      'size',
+      'color',
+      'sterilized',
+      'microchip',
+      'photoUrl',
+      'lostMode',
+      'lastPosition',
+      'lastCommunicationAt',
+      'myRole',
+      'device',
+      'nextVaccine',
+      'nextReminder',
+      'activitySummary',
+      'createdAt',
+      'updatedAt',
+    ].sort();
+
+    it('con collar activo device trae el objeto de R11; sin collar sigue null', async () => {
+      const owner = await seedUser('r12-owner');
+      const pet = await createPetViaApi(owner, `R12-${RUN_ID}`);
+      const device = await seedDevice('R12');
+
+      const before = await api()
+        .get(`/v1/pets/${pet.id}`)
+        .set('Authorization', `Bearer ${owner.token}`)
+        .expect(200);
+      expect((before.body as { device: unknown }).device).toBeNull();
+
+      await claim(owner, { petId: pet.id, esn: device.esn }).expect(201);
+
+      const after = await api()
+        .get(`/v1/pets/${pet.id}`)
+        .set('Authorization', `Bearer ${owner.token}`)
+        .expect(200);
+
+      const body = after.body as Record<string, unknown>;
+      // El resto del contrato no cambia: ni claves nuevas ni renombradas.
+      expect(Object.keys(body).sort()).toEqual(PROFILE_KEYS);
+      expect(body.device).toEqual({
+        model: 'e2e-collar',
+        batteryPct: null,
+        connectivity: null,
+        lastMessageAt: null,
+        esn: device.esn,
+      });
+    });
+  });
 });
