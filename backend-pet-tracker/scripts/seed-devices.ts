@@ -4,13 +4,13 @@ import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import { uuidv7 } from 'uuidv7';
 import { devices } from '@/db/schema/devices.schema';
+import { SIMULATED_DEVICES } from '@/db/seed/simulated-devices';
 
-/** Los 3 collares simulados del MVP (devices-claim R2, plan 005 §Paso 2). */
-export const SIMULATED_DEVICES = [
-  { esn: 'SIM-001', activationCode: 'ACT-001', wialonUnitId: '900001' },
-  { esn: 'SIM-002', activationCode: 'ACT-002', wialonUnitId: '900002' },
-  { esn: 'SIM-003', activationCode: 'ACT-003', wialonUnitId: '900003' },
-] as const;
+// La constante SIMULATED_DEVICES vive en src/db/seed/simulated-devices.ts
+// desde #8 (el FakeWialonClient la importa y src/ no puede depender de
+// scripts/). Se re-exporta aqui para conservar la superficie que ya usan
+// los e2e de #7.
+export { SIMULATED_DEVICES };
 
 /**
  * Inserta los devices simulados que falten (R2). `ON CONFLICT (esn) DO
