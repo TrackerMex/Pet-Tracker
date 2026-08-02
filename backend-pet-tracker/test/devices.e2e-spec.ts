@@ -246,4 +246,296 @@ describe('Devices claim (e2e)', () => {
       expect(activeRows).toHaveLength(1);
     });
   });
+
+  const CLAIM_KEYS = [
+    'model',
+    'batteryPct',
+    'connectivity',
+    'lastMessageAt',
+    'esn',
+  ].sort();
+
+  function claim(user: TestUser, body: Record<string, unknown>) {
+    return api()
+      .post('/v1/devices/claim')
+      .set('Authorization', `Bearer ${user.token}`)
+      .send(body);
+  }
+
+  /** 404 generico del guard: el baseline contra el que se compara R5. */
+  async function guardBaseline404(user: TestUser) {
+    const response = await api()
+      .get(`/v1/pets/${uuidv7()}`)
+      .set('Authorization', `Bearer ${user.token}`)
+      .expect(404);
+
+    return response.body as Record<string, unknown>;
+  }
+
+  describe('R3: claim feliz — transaccion + status assigned + watermark now-10min', () => {
+    it('responde 201 con las 5 claves y persiste la asignacion atomica', async () => {
+      const owner = await seedUser('r3-owner');
+      const pet = await createPetViaApi(owner, `R3-${RUN_ID}`);
+      const device = await seedDevice('R3');
+
+      const before = Date.now();
+      const response = await claim(owner, {
+        petId: pet.id,
+        esn: device.esn,
+      }).expect(201);
+      const after = Date.now();
+
+      const body = response.body as Record<string, unknown>;
+      expect(Object.keys(body).sort()).toEqual(CLAIM_KEYS);
+      expect(body).toEqual({
+        model: 'e2e-collar',
+        batteryPct: null,
+        connectivity: null,
+        lastMessageAt: null,
+        esn: device.esn,
+      });
+
+      const activeRows = await db
+        .select()
+        .from(petDevices)
+        .where(
+          and(
+            eq(petDevices.deviceId, device.id),
+            eq(petDevices.petId, pet.id),
+            isNull(petDevices.releasedAt),
+          ),
+        );
+      expect(activeRows).toHaveLength(1);
+
+      const [deviceRow] = await db
+        .select()
+        .from(devices)
+        .where(eq(devices.id, device.id));
+      expect(deviceRow.status).toBe('assigned');
+
+      // R3: ingest_watermark = now() - 10 minutos (ventana del roundtrip).
+      const watermark = deviceRow.ingestWatermark?.getTime() ?? 0;
+      const tenMinutes = 10 * 60_000;
+      expect(watermark).toBeGreaterThanOrEqual(before - tenMinutes);
+      expect(watermark).toBeLessThanOrEqual(after - tenMinutes + 60_000);
+    });
+  });
+
+  describe('R4: body invalido responde 400 sin escribir en ninguna tabla', () => {
+    it('rechaza petId no-UUID, cero identificadores y dos identificadores', async () => {
+      const owner = await seedUser('r4-owner');
+      const pet = await createPetViaApi(owner, `R4-${RUN_ID}`);
+      const device = await seedDevice('R4');
+
+      await claim(owner, { petId: 'not-a-uuid', esn: device.esn }).expect(400);
+      await claim(owner, { petId: pet.id }).expect(400);
+      await claim(owner, {
+        petId: pet.id,
+        esn: device.esn,
+        imei: '123456789012345',
+      }).expect(400);
+
+      const rows = await db
+        .select()
+        .from(petDevices)
+        .where(eq(petDevices.petId, pet.id));
+      expect(rows).toHaveLength(0);
+    });
+  });
+
+  describe('R5: mascota inexistente o ajena responde el 404 generico del guard', () => {
+    it('usuario B sobre mascota de A recibe 404 (no 409, no 403) con el mismo body', async () => {
+      const owner = await seedUser('r5-owner');
+      const attacker = await seedUser('r5-attacker');
+      const pet = await createPetViaApi(owner, `R5-${RUN_ID}`);
+      const device = await seedDevice('R5');
+
+      const baseline = await guardBaseline404(attacker);
+
+      const response = await claim(attacker, {
+        petId: pet.id,
+        esn: device.esn,
+      }).expect(404);
+      expect(response.body).toEqual(baseline);
+
+      // petId bien formado pero inexistente: mismo 404 indistinguible.
+      const ghost = await claim(attacker, {
+        petId: uuidv7(),
+        esn: device.esn,
+      }).expect(404);
+      expect(ghost.body).toEqual(baseline);
+
+      const rows = await db
+        .select()
+        .from(petDevices)
+        .where(eq(petDevices.deviceId, device.id));
+      expect(rows).toHaveLength(0);
+    });
+  });
+
+  describe('R6: miembro activo con rol distinto de owner recibe 403', () => {
+    it('family recibe 403 sin escribir nada', async () => {
+      const owner = await seedUser('r6-owner');
+      const family = await seedUser('r6-family');
+      const pet = await createPetViaApi(owner, `R6-${RUN_ID}`);
+      await seedMembership(pet.id, family.id, 'family');
+      const device = await seedDevice('R6');
+
+      await claim(family, { petId: pet.id, esn: device.esn }).expect(403);
+
+      const rows = await db
+        .select()
+        .from(petDevices)
+        .where(eq(petDevices.deviceId, device.id));
+      expect(rows).toHaveLength(0);
+    });
+  });
+
+  describe('R7: identificador sin device responde 404 DEVICE_NOT_FOUND', () => {
+    it('devuelve el codigo DEVICE_NOT_FOUND en el body', async () => {
+      const owner = await seedUser('r7-owner');
+      const pet = await createPetViaApi(owner, `R7-${RUN_ID}`);
+
+      const response = await claim(owner, {
+        petId: pet.id,
+        esn: `NOPE-${RUN_ID}`,
+      }).expect(404);
+
+      expect((response.body as { code: string }).code).toBe('DEVICE_NOT_FOUND');
+    });
+  });
+
+  describe('R8: device con fila activa o inactive responde 409 DEVICE_ALREADY_ASSIGNED', () => {
+    it('el segundo claim del mismo device (misma u otra mascota) es 409', async () => {
+      const ownerA = await seedUser('r8-owner-a');
+      const ownerB = await seedUser('r8-owner-b');
+      const petA = await createPetViaApi(ownerA, `R8a-${RUN_ID}`);
+      const petB = await createPetViaApi(ownerB, `R8b-${RUN_ID}`);
+      const device = await seedDevice('R8');
+
+      await claim(ownerA, { petId: petA.id, esn: device.esn }).expect(201);
+
+      const samePet = await claim(ownerA, {
+        petId: petA.id,
+        esn: device.esn,
+      }).expect(409);
+      expect((samePet.body as { code: string }).code).toBe(
+        'DEVICE_ALREADY_ASSIGNED',
+      );
+
+      const otherPet = await claim(ownerB, {
+        petId: petB.id,
+        esn: device.esn,
+      }).expect(409);
+      expect((otherPet.body as { code: string }).code).toBe(
+        'DEVICE_ALREADY_ASSIGNED',
+      );
+    });
+
+    it('un device inactive no es reclamable aunque no tenga fila activa (D3)', async () => {
+      const owner = await seedUser('r8c-owner');
+      const pet = await createPetViaApi(owner, `R8c-${RUN_ID}`);
+      const device = await seedDevice('R8C', { status: 'inactive' });
+
+      const response = await claim(owner, {
+        petId: pet.id,
+        esn: device.esn,
+      }).expect(409);
+      expect((response.body as { code: string }).code).toBe(
+        'DEVICE_ALREADY_ASSIGNED',
+      );
+    });
+
+    it('dos claims concurrentes del mismo device: a lo sumo un 201, jamas un 500', async () => {
+      const ownerA = await seedUser('r8d-owner-a');
+      const ownerB = await seedUser('r8d-owner-b');
+      const petA = await createPetViaApi(ownerA, `R8d-a-${RUN_ID}`);
+      const petB = await createPetViaApi(ownerB, `R8d-b-${RUN_ID}`);
+      const device = await seedDevice('R8D');
+
+      const [first, second] = await Promise.all([
+        claim(ownerA, { petId: petA.id, esn: device.esn }),
+        claim(ownerB, { petId: petB.id, esn: device.esn }),
+      ]);
+
+      expect([first.status, second.status].sort()).toEqual([201, 409]);
+
+      const activeRows = await db
+        .select()
+        .from(petDevices)
+        .where(
+          and(eq(petDevices.deviceId, device.id), isNull(petDevices.releasedAt)),
+        );
+      expect(activeRows).toHaveLength(1);
+    });
+  });
+
+  describe('R9: mascota con collar activo responde 409 PET_ALREADY_HAS_DEVICE', () => {
+    it('el segundo collar para la misma mascota es 409 con su codigo (D2)', async () => {
+      const owner = await seedUser('r9-owner');
+      const pet = await createPetViaApi(owner, `R9-${RUN_ID}`);
+      const first = await seedDevice('R9A');
+      const second = await seedDevice('R9B');
+
+      await claim(owner, { petId: pet.id, esn: first.esn }).expect(201);
+
+      const response = await claim(owner, {
+        petId: pet.id,
+        esn: second.esn,
+      }).expect(409);
+      expect((response.body as { code: string }).code).toBe(
+        'PET_ALREADY_HAS_DEVICE',
+      );
+
+      // El segundo device sigue sin fila alguna.
+      const rows = await db
+        .select()
+        .from(petDevices)
+        .where(eq(petDevices.deviceId, second.id));
+      expect(rows).toHaveLength(0);
+    });
+  });
+
+  describe('R10: el claim exitoso audita device.claim con meta {petId}', () => {
+    it('deja exactamente una entrada sin el identificador enviado', async () => {
+      const owner = await seedUser('r10-owner');
+      const pet = await createPetViaApi(owner, `R10-${RUN_ID}`);
+      const device = await seedDevice('R10');
+
+      await claim(owner, { petId: pet.id, esn: device.esn }).expect(201);
+
+      const entries = await db
+        .select()
+        .from(auditLog)
+        .where(
+          and(
+            eq(auditLog.action, 'device.claim'),
+            eq(auditLog.entityId, device.id),
+          ),
+        );
+      expect(entries).toHaveLength(1);
+      expect(entries[0].entity).toBe('device');
+      expect(entries[0].userId).toBe(owner.id);
+      expect(entries[0].meta).toEqual({ petId: pet.id });
+    });
+
+    it('un claim rechazado (409) no audita nada', async () => {
+      const owner = await seedUser('r10b-owner');
+      const pet = await createPetViaApi(owner, `R10b-${RUN_ID}`);
+      const device = await seedDevice('R10B', { status: 'inactive' });
+
+      await claim(owner, { petId: pet.id, esn: device.esn }).expect(409);
+
+      const entries = await db
+        .select()
+        .from(auditLog)
+        .where(
+          and(
+            eq(auditLog.action, 'device.claim'),
+            eq(auditLog.entityId, device.id),
+          ),
+        );
+      expect(entries).toHaveLength(0);
+    });
+  });
 });
