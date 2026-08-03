@@ -160,7 +160,7 @@
   {
     "id": 10,
     "name": "trips-activity",
-    "status": "spec_ready",
+    "status": "done",
     "priority": "P2",
     "description": "Plan 006: tabla activity_daily; funciones puras groupTrips (umbrales en pipeline/constants.ts: movimiento >1.8 km/h, cierre 10 min, descartar <5 min o <100 m, excluir suspect_jump) y computeDailyActivity (tz del owner); agregador nocturno como cron local; GET /v1/pets/:petId/trips?date (+/trips/:n con path) y GET /v1/pets/:petId/activity/daily?from&to (máx 31 días, hoy al vuelo, weekComparison vs 7 días previos).",
     "acceptance_criteria": [
