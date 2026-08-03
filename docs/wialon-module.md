@@ -78,6 +78,21 @@ Umbrales (fuente: `src/pipeline/constants.ts` — los importan #10/#11/#12):
 | `SUSPECT_JUMP_SPEED_KMH` (60) | velocidad implícita > umbral ⇒ flag `suspect_jump` |
 | `LOW_ACCURACY_MAX_ACCURACY_M` (100) / `LOW_ACCURACY_MIN_SATS` (4) | precisión pobre ⇒ flag `low_accuracy` |
 | `BATTERY_LOW_THRESHOLD_PCT` (20) | cruce descendente ⇒ evento `battery.low` |
+| `TRIP_MOVING_SPEED_KMH` (1.8) | `speedKmh` por encima ⇒ punto en movimiento (#10 R2) |
+| `TRIP_MOVING_IMPLIED_MPS` (0.5) | velocidad implícita alternativa de movimiento; no se evalúa en puntos `suspect_jump` (sería circular) |
+| `TRIP_MIN_MOVING_POINTS` (3) | puntos consecutivos en movimiento que abren un paseo |
+| `TRIP_IDLE_CLOSE_MINUTES` (10) | minutos sin movimiento que cierran el paseo, en su último punto en movimiento |
+| `TRIP_MAX_GAP_MINUTES` (15) | hueco de datos por encima del cual el paseo cierra en el punto anterior |
+| `TRIP_MIN_DURATION_MINUTES` (5) | por debajo, el paseo se descarta como ruido |
+| `TRIP_MIN_DISTANCE_M` (100) | metros **recorridos** mínimos; comparte valor con `LOW_ACCURACY_MAX_ACCURACY_M` (metros de **precisión GPS**) por coincidencia — son magnitudes distintas y no se reutiliza la constante |
+
+Los siete umbrales `TRIP_*` los introduce `trips-activity` (#10) y los
+consumen `src/pipeline/trips.ts` y, a través de él, `src/pipeline/activity.ts`.
+Son **producto**: si el simulador diera 0 paseos, se para y se reporta con los
+números, no se recalibran a ojo (condición de STOP del plan 006).
+`src/pipeline/local-day.ts` completa el núcleo puro de #10 con la aritmética
+de día local (`localDayOf`, `localDayRange`, `isCalendarDate`, `shiftDay`,
+`listDays`), construida solo con `Intl` y sin dependencias nuevas.
 
 ## Poller, watermark y consumidor
 

@@ -6,6 +6,7 @@ import { AuditModule } from './audit/audit.module';
 import { AwsModule } from './aws/aws.module';
 import { AppConfigModule } from './config/config.module';
 import { DrizzleModule } from './db/drizzle.module';
+import { ActivityModule } from './modules/activity/activity.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { DevicesModule } from './modules/devices/devices.module';
 import { HealthModule } from './modules/health/health.module';
@@ -28,6 +29,7 @@ import { IngestionModule } from './workers/ingestion.module';
     PetsModule,
     DevicesModule,
     PositionsModule,
+    ActivityModule,
     IngestionModule,
   ],
   controllers: [AppController],
