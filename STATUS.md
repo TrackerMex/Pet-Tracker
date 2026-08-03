@@ -1,8 +1,8 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-08-02
-**Features completadas**: 8/18 (`feature_list.json`)
-**Pendientes**: 10 — backlog backend derivado de `plans/` 002–009 (fotos S3, recorridos, geocercas+alertas, salud, nutrición). **Sin P1 pendientes**: el resto es P2/P3.
+**Features completadas**: 9/18 (`feature_list.json`)
+**Pendientes**: 9 — backlog backend derivado de `plans/` 002–009 (fotos S3, geocercas+alertas, salud, nutrición). **Sin P1 pendientes**: el resto es P2/P3.
 **En producción**: no
 
 ---
@@ -230,17 +230,79 @@ debe listar las 4 URLs de cola.
   60 min, así que un cursor emitido en esa llamada sigue anclado a la
   ventana original — correcto pero poco obvio; candidato a documentar en
   el contrato del endpoint cuando la app móvil lo consuma.
-- Próximo paso SDD: **no quedan features P1**. El backlog sigue con
-  `pet-photos-s3` (#6, P2) o `trips-activity` (#10, P2) — #10 es la
-  continuación natural de la cadena GPS (#8 escribe, #9 lee, #10 agrega) y
-  ya tiene el sustrato que necesita: umbrales en `pipeline/constants.ts` y
-  los datos en DynamoDB. Decisión de orden pendiente del humano.
-  Integración Wialon real: diferida hasta tener hardware en mano (SIM_MODE
-  es el camino; conectar real será smoke test de config, no feature).
+- **`trips-activity` (#10) done**: cierra la cadena GPS (#8 escribe, #9 lee,
+  #10 agrega). Núcleo puro nuevo en `src/pipeline/` — `trips.ts`
+  (`groupTrips`: apertura con 3 puntos consecutivos > 1,8 km/h, cierre por
+  10 min sin movimiento o gap > 15 min, descarte de paseos < 5 min o
+  < 100 m, distancia que excluye pares con `suspect_jump`), `local-day.ts`
+  (`localDayOf`/`localDayRange` con `Intl`, **sin dependencia nueva**: el
+  `endMs` de un día es el `startMs` del siguiente, así los días DST de 23 h
+  y 25 h salen correctos por construcción) y `activity.ts`
+  (`computeDailyActivity`, 7 métricas sobre la ventana observada). Módulo
+  `src/modules/activity/` con migración `0005_activity_daily` (PK
+  `(pet_id, date)`, upsert `ON CONFLICT` idempotente que **preserva
+  `time_away_minutes`** para #13), agregador de tick horario que procesa por
+  owner el último día local **cerrado** (`runOnce(now)` invocable, gating
+  `ACTIVITY_AGGREGATOR_ENABLED` + `NODE_ENV !== 'test'`, patrón de #8) y tres
+  rutas tras el `PetAccessGuard` de #5: `GET /trips?date`, `GET /trips/:n`
+  (índice estable, `path` completo) y `GET /activity/daily?from&to`
+  (`source: stored | computed | missing`, hoy al vuelo sin persistir,
+  `weekComparison` contra los 7 días previos). Spec 23 EARS + D1-D15
+  aprobada por humano 2026-08-02, precedida de `explorer`. `reviewer`
+  **aprobó**: init.sh verde (88 suites / 606 tests), e2e 111 contra Postgres
+  + LocalStack, trazabilidad 23/23, 0 bloqueantes. Branch
+  `feature/10-trips-activity` (10 commits), **PR #17 mergeado a `main`**
+  (2026-08-02, merge `a503f36`). Ver `progress/explore_trips-activity.md`,
+  `progress/impl_trips-activity.md` y `progress/review_trips-activity.md`.
+- **Desviación de plan documentada en #10 (D2)**: el `cron(15 2 * * *)` que
+  proponía el plan 006 §Paso 3 es un bug latente — 02:15 UTC son las 20:15
+  del día anterior en `America/Mexico_City`, así que el agregador habría
+  persistido una fila de un día local **aún sin cerrar**, que además nunca se
+  recomputaba. Sustituido por un tick horario que procesa, por owner, el
+  último día local cerrado. Vale para cualquier zona y no necesita aritmética
+  de offsets.
+- **Hallazgo de entorno de #10, verificado por el reviewer**:
+  `Intl.supportedValuesOf('timeZone')` **no incluye `'UTC'`** en Node
+  v24.16.0 (devuelve 418 zonas canónicas; tampoco `Etc/UTC`), pese a que
+  `Intl.DateTimeFormat` sí acepta `'UTC'`. Como `users.timezone` tiene
+  default `'UTC'` desde #3, validar contra ese catálogo a secas habría hecho
+  reventar a toda mascota con el default. El código usa
+  `new Set([...Intl.supportedValuesOf('timeZone'), 'UTC'])` — corrige un
+  artefacto de enumeración, no amplía el catálogo (`'Marte/Olympus'`,
+  `'utc'`, `''` y `'Etc/UTC'` siguen rechazados). A tener en cuenta en
+  cualquier feature futura que valide timezones.
+- Deuda menor abierta de #10 (3 NB bajos del reviewer, ninguno bloqueante):
+  el spread `{petId, ...query}` del controller está a salvo solo gracias a
+  `strictObject`; el borde `n === trips.length` de `GET /trips/:n` no tiene
+  test aunque el código es correcto; `RANGE_TOO_LARGE` con un solo extremo
+  toca Postgres una vez antes de rechazar.
+- Próximo paso SDD: **no quedan features P1**. Candidatos P2:
+  `geofences-crud` (#11) — continuación natural, su evaluación consume las
+  mismas posiciones y `pipeline/constants.ts` ya es la fuente única de
+  umbrales — o `pet-photos-s3` (#6), independiente y más corta. Decisión de
+  orden pendiente del humano. Integración Wialon real: diferida hasta tener
+  hardware en mano (SIM_MODE es el camino; conectar real será smoke test de
+  config, no feature).
 
 ---
 
 ## Última sesión
+
+- **2026-08-02 (3)** — Ciclo SDD completo de `trips-activity` (#10), la
+  feature más grande hasta ahora: `explorer` (775 líneas, 15 decisiones
+  abiertas detectadas, incluido el bug del cron del plan 006) →
+  `spec_author` (23 EARS, D1-D15 con propuesta explícita cada una) → **gate
+  humano aprobado** (D1-D15 íntegras) → `implementer` (6 commits TDD, una
+  migración, cero dependencias nuevas) → `reviewer` **aprobó** sin
+  bloqueantes (init.sh y e2e ejecutados por él mismo: 606 unit / 111 e2e;
+  dictaminó las 9 desviaciones declaradas una por una) → **PR #17 mergeado
+  por el humano** (`a503f36`). Lo que salió de aquí y trasciende a la
+  feature: la desviación D2 del cron nocturno y el hallazgo de que
+  `Intl.supportedValuesOf('timeZone')` no enumera `'UTC'` en Node v24.16.0
+  (ambos documentados arriba). Incidente de harness: el primer intento de
+  lanzar el `implementer` lo cortó el clasificador de auto mode; el humano
+  cambió de modo y se relanzó sin consecuencias. Próximo: elegir entre #11
+  (geocercas) y #6 (fotos S3).
 
 - **2026-08-02 (2)** — Cierre de `positions-api` (#9). La sesión arrancó con
   la feature a medias: el `implementer` de la sesión anterior había

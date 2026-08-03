@@ -402,3 +402,50 @@ Deuda detectada (fuera de alcance, candidata a limpieza propia):
 - **Commits:** `c33deb2`..`9e92809` (12 en la branch), merge `c833956`
   (PR #15).
 - **Estado final:** done — sin features P1 pendientes en el backlog.
+
+## Sesión 2026-08-02 (3) — trips-activity (id: 10)
+
+- **Feature:** cierre de la cadena GPS por el lado del agregado (#8 escribe,
+  #9 lee, #10 agrega). Núcleo puro nuevo en `src/pipeline/` (`trips.ts`,
+  `local-day.ts`, `activity.ts`), módulo `src/modules/activity/` con
+  migración `0005_activity_daily`, agregador de tick horario y tres rutas:
+  `GET /trips?date`, `GET /trips/:n` y `GET /activity/daily?from&to`.
+- **Spec:** [[specs/trips-activity/requirements|spec]] — 23 EARS (R1-R23),
+  aprobada por humano el 2026-08-02 con D1-D15 íntegras. Las de peso: D1
+  (puerto propio `DailyPositionsReader`, `PositionsModule` de #9 intacto y
+  `ListPositionsUseCase` no reutilizado porque `MAX_RANGE_HOURS = 24` no
+  cubre un día local de 25 h por DST); D2 (tick horario en vez del
+  `cron(15 2 * * *)` del plan 006, que habría persistido días locales sin
+  cerrar); D3 (aritmética de día local con `Intl` y sin dependencia nueva);
+  D12 (`activitySummary` del perfil fuera de alcance, sigue `null`).
+- **Acciones:** ciclo SDD completo — `explorer`
+  (`progress/explore_trips-activity.md`, 775 líneas, 15 decisiones abiertas
+  detectadas) → `spec_author` → gate humano → `implementer` (6 commits TDD
+  por R-id en `feature/10-trips-activity`) → `reviewer` **aprobó sin
+  bloqueantes**, dictaminando una por una las 9 desviaciones declaradas por
+  el implementer → PR #17.
+- **Resultado:** `./init.sh` verde (build, 88 suites / 606 unit, lint,
+  typecheck); e2e 8 suites / 111 tests contra Postgres + LocalStack reales.
+  Trazabilidad 23/23. Los 4 fixtures del plan como tests puros (walk.json
+  → ≥1 paseo; reposo total → 0; salto absurdo fuera de la distancia; gap de
+  20 min parte dos paseos) más los casos DST de `Europe/Madrid` y el 23:50
+  de `America/Mexico_City`. R23 verificado: exactamente una migración
+  `0005_*`, cero cambios en `src/modules/{pets,positions,devices,users,auth}/**`,
+  `src/workers/**`, `src/integrations/**`, `src/aws/**` ni `package.json`.
+  Cero dependencias nuevas; una env var nueva (`ACTIVITY_AGGREGATOR_ENABLED`)
+  documentada en `docs/conventions.md` y `.env.example` en el mismo commit.
+  3 NB bajos abiertos (spread `{petId, ...query}` a salvo por `strictObject`;
+  borde `n === trips.length` sin test; `RANGE_TOO_LARGE` con un extremo toca
+  Postgres una vez).
+- **Hallazgo de entorno:** `Intl.supportedValuesOf('timeZone')` no incluye
+  `'UTC'` en Node v24.16.0 (418 zonas, tampoco `Etc/UTC`) pese a que
+  `Intl.DateTimeFormat` sí lo acepta. Con el default `'UTC'` de
+  `users.timezone` (#3), validar contra ese catálogo a secas reventaba.
+  Reconciliado con `new Set([...Intl.supportedValuesOf('timeZone'), 'UTC'])`
+  y verificado de forma independiente por el reviewer.
+- **Incidente de harness:** el primer lanzamiento del `implementer` lo cortó
+  el clasificador de auto mode; el humano cambió de modo y se relanzó sin
+  consecuencias.
+- **Commits:** `eb4d09e`..`4427d9a` (10 en la branch), merge `a503f36`
+  (PR #17).
+- **Estado final:** done — 9/18, sin features P1 pendientes.
