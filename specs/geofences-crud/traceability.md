@@ -33,7 +33,7 @@ tags: [harness, spec]
 | R23 | `src/pipeline/geofence-eval.spec.ts::R23: outside -> outside (distance > radius*0.9) no re-emite` | `aba0ff9` feat(geofences-crud): pure isInside/evaluate core with hysteresis (R16-R25) |
 | R24 | `src/pipeline/geofence-eval.spec.ts::R24: outside -> inside emite enter si distance <= radius*0.9, sin condicion de accuracy` | `aba0ff9` feat(geofences-crud): pure isInside/evaluate core with hysteresis (R16-R25) |
 | R25 | `src/pipeline/geofence-eval.spec.ts::R25: geofence-eval.ts sin imports de framework/ORM/SDK; evaluate determinista` | `aba0ff9` feat(geofences-crud): pure isInside/evaluate core with hysteresis (R16-R25) |
-| R26 | pendiente | pendiente |
+| R26 | sin test automatizado (regla de no regresion, mismo criterio que R23 de trips-activity): `git diff main --name-only` contra la lista cerrada + `pnpm run build`/`lint`/`tsc --noEmit`/`test`/`test:e2e` — evidencia en `progress/impl_geofences-crud.md` §"Verificacion de no regresion — R26" | verificado sobre `080f59d`; registrado en el commit de cierre |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
 Convención de commit: `feat(<scope>): <desc> (R1,R2)`.
