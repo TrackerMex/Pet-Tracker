@@ -1,8 +1,8 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-08-02
-**Features completadas**: 9/18 (`feature_list.json`)
-**Pendientes**: 9 — backlog backend derivado de `plans/` 002–009 (fotos S3, geocercas+alertas, salud, nutrición). **Sin P1 pendientes**: el resto es P2/P3.
+**Última actualización**: 2026-08-05
+**Features completadas**: 11/18 (`feature_list.json`)
+**Pendientes**: 7 — backlog backend derivado de `plans/` 002–009 (alertas, salud, nutrición). **Sin P1 pendientes**: el resto es P2/P3.
 **En producción**: no
 
 ---
@@ -299,17 +299,75 @@ debe listar las 4 URLs de cola.
   R13). No es un defecto de código: el único puerto de acceso
   (`PHOTO_STORAGE`) solo expone URLs firmadas. **Decisión humana: aceptado
   como limitación documentada**, no bloquea el cierre.
-- Próximo paso SDD: **no quedan features P1**. Candidatos P2:
-  `geofences-crud` (#11) — continuación natural, su evaluación consume las
-  mismas posiciones y `pipeline/constants.ts` ya es la fuente única de
-  umbrales — o `alerts-engine` (#12). Decisión de orden pendiente del
-  humano. Integración Wialon real: diferida hasta tener hardware en mano
-  (SIM_MODE es el camino; conectar real será smoke test de config, no
-  feature).
+- **`geofences-crud` (#11) done**: núcleo puro nuevo `src/pipeline/
+  geofence-eval.ts` (`isInside` círculo haversine + polígono ray-casting;
+  `evaluate` máquina de estados con histéresis anti-parpadeo — salida
+  radio×1.1 con accuracy ≤50 m, entrada radio×0.9 sin exigencia de
+  accuracy, low_accuracy corta-circuita devolviendo el estado previo
+  intacto; sin I/O, sin reloj de sistema, `nowMs` siempre del caller) +
+  módulo `src/modules/geofences/` (CRUD de 5 rutas tras `PetAccessGuard`
+  de #5, mutaciones owner-only vía `@RequirePetRole`, lectura abierta a
+  cualquier rol activo). Migración `0006` (tabla `geofences`: `type` CHECK
+  restringido a `'safe_circle'` — MVP solo círculo aunque `isInside` ya
+  soporta polígono para cuando exista CRUD que lo produzca —, único
+  `(pet_id, name)`, tope de 5 por mascota vía `COUNT` en el use case,
+  carrera documentada como `ponytail`). `geofence_state` (`{state,
+  updatedAt}`) vive como columna jsonb en la propia fila, congelado desde
+  el primer commit para que `alerts-engine` (#12) lo reutilice sin
+  migración nueva — ningún caso de uso de esta feature llama a
+  `evaluate()` todavía, es núcleo puro sin conectar. Spec 26 EARS + D1-D5
+  aprobada por humano 2026-08-05. `reviewer` **aprobó** verificando C2-C7
+  y R1-R26 línea por línea contra el código real, IDOR entre mascotas del
+  mismo owner incluido; init.sh + e2e corridos por él mismo (642 unit,
+  20/20 e2e de la feature). Branch `feature/11-geofences-crud`.
+- **Bloqueante de cierre encontrado y resuelto (2026-08-05)**: el
+  `reviewer` de #11 detectó que `./init.sh` no cerraba en verde por una
+  aserción preexistente y ajena en
+  `activity.drizzle.store.spec.ts` (`trips-activity` #10, ya mergeada) que
+  afirmaba "0005 es la última migración del repo" — una propiedad global
+  y temporal que revienta con la primera migración de cualquier feature
+  futura (la propia `0006` de #11 la disparó). Corregido en branch aparte
+  `fix/activity-migration-assertion` (mismo precedente que
+  `fix/jest-e2e-alias`, 2026-08-01): la aserción ahora localiza la
+  migración `0005` por contenido (`CREATE TABLE "activity_daily"`) y
+  verifica que no crea otras tablas, mismo patrón que
+  `devices.schema.spec.ts`/`pets.schema.spec.ts` — inmune a migraciones
+  posteriores. `implementer` + `reviewer` en ciclo corto (sin spec, bugfix
+  de 1 archivo), **PR #22 mergeado por el humano**; `feature/11-geofences-
+  crud` rebaseado sobre `main` post-merge, `init.sh` verde completo
+  (92 suites / 642 tests) y e2e 141/142 (único fallo:
+  `media.e2e-spec.ts`, flakiness de LocalStack ya aceptada en el cierre de
+  `pet-photos-s3` #6, no relacionada). Relevante para el futuro: la
+  próxima migración (candidata: `alert_events` de `alerts-engine` #12) ya
+  no debería repetir este bloqueante.
+- Próximo paso SDD: **no quedan features P1**. `alerts-engine` (#12) es la
+  continuación natural — lee y escribe `geofence_state` de #11 sin
+  migración adicional, y su descripción ya asume `evaluate()` cableado a
+  un worker que consume `position.updated`. Integración Wialon real:
+  diferida hasta tener hardware en mano (SIM_MODE es el camino; conectar
+  real será smoke test de config, no feature).
 
 ---
 
 ## Última sesión
+
+- **2026-08-05 (2)** — Ciclo SDD completo de `geofences-crud` (#11):
+  `spec_author` (26 EARS, D1-D5 con propuesta explícita cada una) →
+  **gate humano aprobado** (D1-D5 íntegras) → `implementer` (4 commits:
+  núcleo puro R16-R25, módulo CRUD R1-R15, docs/trazabilidad) → `reviewer`
+  **aprobó** verificando código real y corriendo `init.sh`/e2e él mismo,
+  pero encontró que el cierre a `done` quedaba bloqueado por un test
+  ajeno y preexistente de `activity` que rompe con cualquier migración
+  nueva (diagnóstico y fix ya propuestos por el propio reviewer). Ciclo
+  corto aparte para ese bloqueante: branch `fix/activity-migration-
+  assertion` → `implementer` (repro rojo→verde con migración de prueba
+  descartable) → `reviewer` **aprobó** → **PR #22 mergeado por el
+  humano**. `feature/11-geofences-crud` rebaseado sobre `main`, `init.sh`
+  verde completo confirmado por el leader, feature marcada `done`.
+  Lo que trasciende a la feature: el patrón "localizar migración por
+  contenido, no por posición" (`devices.schema.spec.ts`/
+  `pets.schema.spec.ts`) evita que la próxima migración de cualquier
+  feature repita el mismo bloqueante. Próximo: `alerts-engine` (#12).
 
 - **2026-08-05** — Ciclo SDD completo de `pet-photos-s3` (#6): `spec_author`
   (9 EARS, D1-D3 con propuesta explícita cada una) → **gate humano
