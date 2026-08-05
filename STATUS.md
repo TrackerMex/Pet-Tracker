@@ -1,8 +1,8 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-08-02
-**Features completadas**: 9/18 (`feature_list.json`)
-**Pendientes**: 9 — backlog backend derivado de `plans/` 002–009 (fotos S3, geocercas+alertas, salud, nutrición). **Sin P1 pendientes**: el resto es P2/P3.
+**Última actualización**: 2026-08-05
+**Features completadas**: 10/18 (`feature_list.json`)
+**Pendientes**: 8 — backlog backend derivado de `plans/` 002–009 (geocercas+alertas, salud, nutrición). **Sin P1 pendientes**: el resto es P2/P3.
 **En producción**: no
 
 ---
