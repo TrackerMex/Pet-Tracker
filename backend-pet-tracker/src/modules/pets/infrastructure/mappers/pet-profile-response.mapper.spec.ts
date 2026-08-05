@@ -73,7 +73,7 @@ describe('R8: el perfil de mascota expone exactamente las claves del contrato', 
     expect(response.activitySummary).toBeNull();
   });
 
-  it('photoUrl, lastPosition y lastCommunicationAt son null mientras #6/#8 no los alimenten', () => {
+  it('photoUrl es null por defecto; lastPosition y lastCommunicationAt son null mientras #8 no los alimente', () => {
     const response = toPetProfileResponse(buildPet(), 'owner', NOW);
 
     expect(response.photoUrl).toBeNull();
@@ -94,5 +94,19 @@ describe('R8: el perfil de mascota expone exactamente las claves del contrato', 
 
     expect(response.createdAt).toBe('2026-07-01T10:00:00.000Z');
     expect(response.updatedAt).toBe('2026-07-15T10:00:00.000Z');
+  });
+});
+
+describe('R6 (pet-photos-s3 #6): photoUrl recibido se incluye tal cual', () => {
+  it('con un photoUrl no nulo, el mapper lo devuelve sin transformar', () => {
+    const response = toPetProfileResponse(
+      buildPet(),
+      'owner',
+      NOW,
+      null,
+      'https://example.local/signed-get-url',
+    );
+
+    expect(response.photoUrl).toBe('https://example.local/signed-get-url');
   });
 });

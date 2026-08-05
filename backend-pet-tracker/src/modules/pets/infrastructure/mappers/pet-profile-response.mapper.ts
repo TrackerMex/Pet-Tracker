@@ -28,7 +28,7 @@ export interface PetProfileResponse {
   color: string | null;
   sterilized: boolean | null;
   microchip: string | null;
-  /** null hasta pet-photos-s3 (#6): URL prefirmada desde photo_key. */
+  /** URL GET prefirmada desde photo_key (#6 R6), o null sin foto (R7). */
   photoUrl: string | null;
   lostMode: boolean;
   /** null hasta que el pipeline de ingesta (#8) alimente la cache. */
@@ -54,6 +54,7 @@ export function toPetProfileResponse(
   myRole: PetRole,
   now: Date = new Date(),
   device: DeviceStatusResponse | null = null,
+  photoUrl: string | null = null,
 ): PetProfileResponse {
   return {
     id: pet.id,
@@ -69,7 +70,7 @@ export function toPetProfileResponse(
     color: pet.color,
     sterilized: pet.sterilized,
     microchip: pet.microchip,
-    photoUrl: null,
+    photoUrl,
     lostMode: pet.lostMode,
     lastPosition: pet.lastPosition,
     lastCommunicationAt: pet.lastCommunicationAt

@@ -74,4 +74,6 @@ export interface PetFieldChanges {
   color?: string;
   sterilized?: boolean;
   microchip?: string;
+  /** pet-photos-s3 (#6) R1: clave S3 generada al pedir la URL de subida. */
+  photoKey?: string;
 }

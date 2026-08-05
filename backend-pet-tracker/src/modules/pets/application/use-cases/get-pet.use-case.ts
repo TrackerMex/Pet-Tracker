@@ -6,20 +6,29 @@ import type {
   ActivePetDeviceStatus,
   PetDeviceReader,
 } from '@/modules/pets/domain/ports/pet-device-reader';
+import { PET_PHOTO_URL_RESOLVER } from '@/modules/pets/domain/ports/pet-photo-url-resolver';
+import type { PetPhotoUrlResolver } from '@/modules/pets/domain/ports/pet-photo-url-resolver';
 import { PET_REPOSITORY } from '@/modules/pets/domain/repositories/pet.repository';
 import type { PetRepository } from '@/modules/pets/domain/repositories/pet.repository';
+
+/** Vigencia del GET prefirmado del perfil (R6): exactamente 1 hora. */
+export const PHOTO_DOWNLOAD_URL_EXPIRES_IN_SECONDS = 3600;
 
 /** Perfil de detalle: la ficha + el collar activo o null (R8 + R12 de #7). */
 export interface PetProfile {
   pet: Pet;
   device: ActivePetDeviceStatus | null;
+  /** URL GET prefirmada (R6) o null si la mascota no tiene foto (R7). */
+  photoUrl: string | null;
 }
 
 /**
  * GET /v1/pets/:petId (R8). La autorizacion ya corrio en PetAccessGuard
  * (R9-R12): aqui solo queda el caso borde de la fila borrada entre el guard
  * y esta consulta. Desde devices-claim (#7 R12) el perfil incluye el collar
- * activo via el puerto PET_DEVICE_READER.
+ * activo via el puerto PET_DEVICE_READER. Desde pet-photos-s3 (#6 R6/R7)
+ * resuelve `photoUrl` via PET_PHOTO_URL_RESOLVER solo cuando `photoKey` no
+ * es nulo — evita una firma S3 innecesaria cuando no hay foto.
  */
 @Injectable()
 export class GetPetUseCase {
@@ -28,6 +37,8 @@ export class GetPetUseCase {
     private readonly pets: PetRepository,
     @Inject(PET_DEVICE_READER)
     private readonly deviceReader: PetDeviceReader,
+    @Inject(PET_PHOTO_URL_RESOLVER)
+    private readonly photoUrlResolver: PetPhotoUrlResolver,
   ) {}
 
   async execute(petId: string): Promise<PetProfile> {
@@ -37,6 +48,18 @@ export class GetPetUseCase {
       throw new PetNotFoundError(petId);
     }
 
-    return { pet, device: await this.deviceReader.findActiveDevice(petId) };
+    const photoUrl =
+      pet.photoKey !== null
+        ? await this.photoUrlResolver.resolveDownloadUrl(
+            pet.photoKey,
+            PHOTO_DOWNLOAD_URL_EXPIRES_IN_SECONDS,
+          )
+        : null;
+
+    return {
+      pet,
+      device: await this.deviceReader.findActiveDevice(petId),
+      photoUrl,
+    };
   }
 }
