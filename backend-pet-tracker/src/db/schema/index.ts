@@ -11,5 +11,6 @@ export * from './activity.schema';
 export * from './audit-log.schema';
 export * from './devices.schema';
 export * from './email-verification-tokens.schema';
+export * from './geofences.schema';
 export * from './pets.schema';
 export * from './users.schema';
