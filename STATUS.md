@@ -276,17 +276,53 @@ debe listar las 4 URLs de cola.
   `strictObject`; el borde `n === trips.length` de `GET /trips/:n` no tiene
   test aunque el código es correcto; `RANGE_TOO_LARGE` con un solo extremo
   toca Postgres una vez antes de rechazar.
+- **`pet-photos-s3` (#6) done**: módulo nuevo `src/modules/media/` — `POST
+  /v1/pets/:petId/photo-upload-url` (owner-only vía `PetAccessGuard` +
+  `@RequirePetRole('owner')`, D1) valida `contentType` (zod,
+  `image/jpeg|png|webp`), persiste `pets.photo_key` y emite un PUT S3
+  prefirmado de 10 min; `GET /v1/pets/:petId` resuelve `photoUrl` a un GET
+  prefirmado de 1 h cuando `photo_key` no es nulo (D2: solo detalle, mismo
+  alcance que `device` en #7). Reutiliza `PetAccessGuard`, `PET_REPOSITORY`,
+  `S3_CLIENT`/bucket y `AUDIT_LOGGER` sin mecanismos nuevos; cero migración
+  (`pets.photo_key` ya existía desde #5). Spec 9 EARS + D1-D3 aprobada por
+  humano 2026-08-05. `reviewer` aprobó condicional a R8 (verificó código e
+  init.sh/e2e de forma independiente): init.sh verde (91 suites / 623
+  unit), e2e 10/11 contra Postgres + LocalStack reales, trazabilidad 9/9.
+  Branch `feature/6-pet-photos-s3` (8 commits), **PR #19 mergeado por el
+  humano** (`1aede70`). Ver `progress/impl_pet-photos-s3.md` y
+  `progress/review_pet-photos-s3.md`.
+- **Hallazgo de entorno de #6, verificado por implementer y reviewer por
+  separado (R8)**: LocalStack Community 4.14 no aplica
+  `PutPublicAccessBlock`/ACLs/bucket-policy en el plano de datos de S3 — un
+  `GET` anónimo sobre un objeto existente responde `200`, no `403`, aunque
+  la config sí persiste (mismo patrón que `localstack-provisioning` #2
+  R13). No es un defecto de código: el único puerto de acceso
+  (`PHOTO_STORAGE`) solo expone URLs firmadas. **Decisión humana: aceptado
+  como limitación documentada**, no bloquea el cierre.
 - Próximo paso SDD: **no quedan features P1**. Candidatos P2:
   `geofences-crud` (#11) — continuación natural, su evaluación consume las
   mismas posiciones y `pipeline/constants.ts` ya es la fuente única de
-  umbrales — o `pet-photos-s3` (#6), independiente y más corta. Decisión de
-  orden pendiente del humano. Integración Wialon real: diferida hasta tener
-  hardware en mano (SIM_MODE es el camino; conectar real será smoke test de
-  config, no feature).
+  umbrales — o `alerts-engine` (#12). Decisión de orden pendiente del
+  humano. Integración Wialon real: diferida hasta tener hardware en mano
+  (SIM_MODE es el camino; conectar real será smoke test de config, no
+  feature).
 
 ---
 
 ## Última sesión
+
+- **2026-08-05** — Ciclo SDD completo de `pet-photos-s3` (#6): `spec_author`
+  (9 EARS, D1-D3 con propuesta explícita cada una) → **gate humano
+  aprobado** (D1-D3 confirmadas tal como las proponía la spec vía
+  `AskUserQuestion`) → `implementer` (7 commits TDD por R-id) → `reviewer`
+  **aprobó condicional a R8** (verificó código real de forma independiente,
+  corrió `init.sh` y el e2e él mismo: 623 unit / 10 de 11 e2e) → decisión
+  humana sobre R8 (aceptado como limitación documentada de LocalStack
+  Community, no bloqueante) → **PR #19 mergeado por el humano** (`1aede70`).
+  Lo que trasciende a la feature: LocalStack Community no aplica ACL/
+  bucket-policy/Block-Public-Access en el plano de datos de S3, solo
+  persiste la config (documentado arriba). Próximo: elegir entre
+  `geofences-crud` (#11) y `alerts-engine` (#12).
 
 - **2026-08-02 (3)** — Ciclo SDD completo de `trips-activity` (#10), la
   feature más grande hasta ahora: `explorer` (775 líneas, 15 decisiones

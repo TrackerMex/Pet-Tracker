@@ -449,3 +449,49 @@ Deuda detectada (fuera de alcance, candidata a limpieza propia):
 - **Commits:** `eb4d09e`..`4427d9a` (10 en la branch), merge `a503f36`
   (PR #17).
 - **Estado final:** done — 9/18, sin features P1 pendientes.
+
+## Sesión 2026-08-05 — pet-photos-s3 (id: 6)
+
+- **Feature:** flujo de fotos de mascota vía URLs S3 prefirmadas. Módulo
+  nuevo `src/modules/media/` en 3 capas: `POST
+  /v1/pets/:petId/photo-upload-url` (owner-only, `PetAccessGuard` +
+  `@RequirePetRole('owner')`) valida `contentType` (zod,
+  `image/jpeg|png|webp`), genera la clave `pets/<petId>/photo-<ts>`,
+  persiste `pets.photo_key` y emite un PUT prefirmado de 10 min; `GET
+  /v1/pets/:petId` resuelve `photoUrl` a un GET prefirmado de 1 h cuando
+  `photo_key` no es nulo (D2: solo el detalle, listado sigue en `null`,
+  mismo alcance que `device` en #7). Reutiliza `PetAccessGuard`,
+  `PET_REPOSITORY`, `S3_CLIENT`/bucket y `AUDIT_LOGGER` sin crear
+  mecanismos nuevos; cero migración nueva (`pets.photo_key` ya existía
+  desde #5).
+- **Spec:** [[specs/pet-photos-s3/requirements|spec]] — 9 EARS (R1-R9),
+  aprobada por humano 2026-08-05 con D1 (`'owner'` para subir foto), D2
+  (alcance solo-detalle) y D3 (el PUT prefirmado no fija `Content-Type` en
+  la firma) confirmados tal como los proponía la spec.
+- **Acciones:** `spec_author` → gate humano (D1-D3 vía `AskUserQuestion`) →
+  `implementer` (7 commits TDD por R-id en `feature/6-pet-photos-s3`) →
+  `reviewer` **aprobó condicional a R8** (verificó código real de forma
+  independiente, corrió `./init.sh` y el e2e él mismo) → decisión humana
+  sobre R8 → PR #19 → **mergeado por el humano** (`1aede70`).
+- **Resultado:** `./init.sh` verde (91 suites / 623 unit, lint,
+  typecheck); e2e `media.e2e-spec.ts` 10/11 contra Postgres + LocalStack
+  reales. Trazabilidad 9/9 (R8 documenta el hallazgo en vez de afirmar un
+  passing falso). El fix de `@HttpCode(HttpStatus.OK)` (R1 pide `200`, no
+  el `201` default de Nest en `@Post()`) solo se detectó corriendo el e2e
+  real.
+- **Hallazgo de entorno (R8):** LocalStack Community 4.14 no aplica
+  `PutPublicAccessBlock`/ACLs/bucket-policy en el plano de datos de S3 —
+  un `GET` anónimo sobre un objeto existente responde `200`, no `403`,
+  aunque la config sí queda persistida (`GetPublicAccessBlockCommand`
+  devuelve los 4 flags en `true`, mismo patrón que
+  `localstack-provisioning` #2 R13). Verificado también con una bucket
+  policy `Deny` explícita y con `S3_SKIP_SIGNATURE_VALIDATION=0` — mismo
+  resultado en ambos casos. No es un defecto de esta feature: el único
+  puerto de acceso (`PHOTO_STORAGE`) solo expone URLs firmadas. **Decisión
+  humana: aceptado como limitación documentada del entorno local**, no
+  bloquea el cierre — la garantía real de "nunca público" vive en revisión
+  de código.
+- **Commits:** `801e3cf`..`53430f7` (8 en la branch), merge `1aede70`
+  (PR #19).
+- **Estado final:** done — 10/18, próximo candidato P2: `geofences-crud`
+  (#11) o `alerts-engine` (#12).
