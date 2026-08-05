@@ -173,6 +173,34 @@ describe('R12 (devices-claim): el detalle serializa la clave device del use case
   });
 });
 
+describe('R6 (pet-photos-s3 #6): el detalle serializa el photoUrl resuelto por el use case', () => {
+  it('pasa el photoUrl del use case al mapper tal cual', async () => {
+    const { controller, getExecute } = buildController();
+    getExecute.mockResolvedValue({
+      pet: buildPet(),
+      device: null,
+      photoUrl: 'https://example.local/signed-get-url',
+    });
+
+    const response = await controller.detail(buildPetRequest('owner'));
+
+    expect(response.photoUrl).toBe('https://example.local/signed-get-url');
+  });
+
+  it('sin foto, photoUrl sigue en null', async () => {
+    const { controller, getExecute } = buildController();
+    getExecute.mockResolvedValue({
+      pet: buildPet(),
+      device: null,
+      photoUrl: null,
+    });
+
+    const response = await controller.detail(buildPetRequest('owner'));
+
+    expect(response.photoUrl).toBeNull();
+  });
+});
+
 describe('R9: PetNotFoundError se mapea al mismo 404 generico del guard', () => {
   it('convierte el error de dominio en NotFoundException (delete concurrente)', async () => {
     const { controller, getExecute } = buildController();
