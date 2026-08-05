@@ -91,7 +91,7 @@
   {
     "id": 6,
     "name": "pet-photos-s3",
-    "status": "pending",
+    "status": "done",
     "priority": "P2",
     "description": "Plan 004 (fotos): POST /v1/pets/:petId/photo-upload-url {contentType} → URL PUT prefirmada (10 min) contra el bucket S3 de LocalStack, key pets/<petId>/photo-<ts>; lecturas devuelven URL GET prefirmada 1 h. Solo image/jpeg|png|webp.",
     "acceptance_criteria": [
