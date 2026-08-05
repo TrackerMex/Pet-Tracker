@@ -10,6 +10,7 @@ import { ActivityModule } from './modules/activity/activity.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { DevicesModule } from './modules/devices/devices.module';
 import { HealthModule } from './modules/health/health.module';
+import { MediaModule } from './modules/media/media.module';
 import { PetsModule } from './modules/pets/pets.module';
 import { PositionsModule } from './modules/positions/positions.module';
 import { UsersModule } from './modules/users/users.module';
@@ -27,6 +28,7 @@ import { IngestionModule } from './workers/ingestion.module';
     AuthModule,
     UsersModule,
     PetsModule,
+    MediaModule,
     DevicesModule,
     PositionsModule,
     ActivityModule,

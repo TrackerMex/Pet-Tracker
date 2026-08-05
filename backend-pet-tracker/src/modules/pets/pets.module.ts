@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { PetDeviceReadModule } from '@/modules/devices/pet-device-read.module';
+import { PetPhotoReadModule } from '@/modules/media/pet-photo-read.module';
 import { PET_REPOSITORY } from './domain/repositories/pet.repository';
 import { CreatePetUseCase } from './application/use-cases/create-pet.use-case';
 import { DeletePetUseCase } from './application/use-cases/delete-pet.use-case';
@@ -18,7 +19,7 @@ import { PetDrizzleRepository } from './infrastructure/repositories/pet.drizzle.
  * de reutilizacion que llevo AuditLogger a src/audit/.
  */
 @Module({
-  imports: [PetDeviceReadModule],
+  imports: [PetDeviceReadModule, PetPhotoReadModule],
   controllers: [PetsController],
   providers: [
     CreatePetUseCase,
