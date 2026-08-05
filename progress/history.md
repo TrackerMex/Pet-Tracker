@@ -495,3 +495,67 @@ Deuda detectada (fuera de alcance, candidata a limpieza propia):
   (PR #19).
 - **Estado final:** done — 10/18, próximo candidato P2: `geofences-crud`
   (#11) o `alerts-engine` (#12).
+
+## Sesión 2026-08-05 (2) — geofences-crud (id: 11)
+
+- **Feature:** núcleo puro `src/pipeline/geofence-eval.ts` (`isInside`
+  círculo haversine + polígono ray-casting; `evaluate` máquina de estados
+  con histéresis anti-parpadeo: salida radio×1.1 + accuracy ≤50 m, entrada
+  radio×0.9 sin exigencia de accuracy, low_accuracy corta-circuita) +
+  módulo `src/modules/geofences/` (CRUD de 5 rutas tras `PetAccessGuard`
+  de #5, mutaciones owner-only, lectura abierta a cualquier rol activo).
+  Migración `0006` (tabla `geofences`, `type` CHECK solo `'safe_circle'`,
+  único `(pet_id, name)`, tope de 5 por mascota). `geofence_state`
+  (`{state, updatedAt}`) congelado como columna jsonb desde el primer
+  commit para que `alerts-engine` (#12) lo reutilice sin migración nueva.
+- **Spec:** [[specs/geofences-crud/requirements|spec]] — 26 EARS (R1-R26),
+  aprobada por humano 2026-08-05 con D1-D5 confirmadas tal como las
+  proponía la spec (CRUD MVP solo círculo, shape de `geofence_state`,
+  firma de `evaluate()`, autorización owner-only en mutaciones, detalle de
+  migración).
+- **Acciones:** `spec_author` → gate humano (D1-D5) → `implementer`
+  (4 commits TDD en `feature/11-geofences-crud`: núcleo puro R16-R25,
+  módulo CRUD R1-R15, docs+trazabilidad) → `reviewer` **aprobó** (C2-C7,
+  R1-R26 verificados línea por línea contra el código real, IDOR entre
+  mascotas del mismo owner incluido) — pero encontró el cierre bloqueado
+  por `./init.sh` no verde por causa ajena (ver sesión siguiente) →
+  bloqueante resuelto → branch rebaseada sobre `main` → **`init.sh`
+  verde confirmado por el leader** → feature marcada `done`.
+- **Resultado:** `init.sh` verde completo (92 suites / 642 unit, lint,
+  typecheck); e2e 141/142 (único fallo `media.e2e-spec.ts`, flakiness de
+  LocalStack ya aceptada en el cierre de `pet-photos-s3` #6, no
+  relacionada). `geofences.e2e-spec.ts` propio: 20/20. Trazabilidad 26/26
+  sin filas pendientes.
+- **Commits:** `aba0ff9`..`34b2ec9` (4 en la branch original) + rebase
+  sobre `main` tras el merge de PR #22 (ver sesión siguiente).
+- **Estado final:** done — 11/18, próximo candidato P2: `alerts-engine`
+  (#12), único que queda sin decisión de orden (lee `geofence_state` de
+  esta feature).
+
+## Sesión 2026-08-05 (3) — fix: aserción frágil de migración en activity (sin id, bugfix de harness)
+
+- **Feature:** no es una feature de `feature_list.json` — bugfix de 1
+  archivo detectado durante la revisión de `geofences-crud` (#11).
+  `activity.drizzle.store.spec.ts` (`trips-activity` #10, ya `done`)
+  afirmaba "0005 es la última migración del repo", una propiedad global y
+  temporal que revienta con la primera migración de cualquier feature
+  futura — la `0006` de #11 la disparó. Corregido para localizar la
+  migración `0005` por contenido (`CREATE TABLE "activity_daily"`) y
+  verificar que no crea otras tablas, mismo patrón que
+  `devices.schema.spec.ts`/`pets.schema.spec.ts` — inmune a migraciones
+  posteriores.
+- **Spec:** ninguna — bugfix de 1 archivo, sin spec (mismo criterio que
+  `fix/jest-e2e-alias` del 2026-08-01).
+- **Acciones:** causa raíz y fix diagnosticados por el `reviewer` de #11
+  → branch `fix/activity-migration-assertion` desde `main` → `implementer`
+  (repro rojo con una migración `0006` descartable, fix, verde) →
+  `reviewer` **aprobó** (diff acotado a 1 archivo, patrón fiel a los
+  hermanos `devices`/`pets`, `init.sh` + e2e corridos de forma
+  independiente) → **PR #22 mergeado por el humano**.
+- **Resultado:** `init.sh` verde completo tras el fix. Desbloqueó el
+  cierre de `geofences-crud` (#11) y evita que la próxima migración de
+  cualquier feature (candidata: `alert_events` de `alerts-engine` #12)
+  repita el mismo bloqueante.
+- **Commits:** `4314edb` (fix) + `92c9399` (docs), merge PR #22.
+- **Estado final:** done (harness), sin entrada propia en
+  `feature_list.json`.

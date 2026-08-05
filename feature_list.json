@@ -178,7 +178,7 @@
   {
     "id": 11,
     "name": "geofences-crud",
-    "status": "in_progress",
+    "status": "done",
     "priority": "P2",
     "description": "Plan 007 (paso 1-2): tabla geofences (geometry jsonb, geofence_state); CRUD /v1/pets/:petId/geofences (MVP type=safe_circle, radiusM 20-2000, máx 5 por mascota); evaluación pura en pipeline/geofence-eval.ts: isInside (círculo haversine + polígono ray-casting), histéresis anti-parpadeo (salida radio×1.1 y accuracy ≤50 m; entrada radio×0.9; low_accuracy no cambia estado), máquina de estados evaluate().",
     "acceptance_criteria": [
