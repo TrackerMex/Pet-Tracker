@@ -132,7 +132,18 @@ describe('R10: la migracion 0005 crea unicamente activity_daily', () => {
     const added = files.filter((file) => file.startsWith('0005_'));
 
     expect(added).toHaveLength(1);
-    expect(files.filter((file) => file > '0005_zzzz')).toHaveLength(0);
+
+    // Local a 0005: localiza la migracion por contenido (no por ser la
+    // ultima del directorio) y confirma que no crea ninguna otra tabla.
+    const activityMigrationSql = files
+      .map((file) => migrationSql(file))
+      .find((content) => content.includes('CREATE TABLE "activity_daily"'));
+    expect(activityMigrationSql).not.toContain('CREATE TABLE "pets"');
+    expect(activityMigrationSql).not.toContain('CREATE TABLE "pet_users"');
+    expect(activityMigrationSql).not.toContain('CREATE TABLE "devices"');
+    expect(activityMigrationSql).not.toContain('CREATE TABLE "pet_devices"');
+    expect(activityMigrationSql).not.toContain('CREATE TABLE "users"');
+    expect(activityMigrationSql).not.toContain('CREATE TABLE "audit_log"');
 
     const sql = migrationSql(added[0]);
     const createdTables = [...sql.matchAll(/CREATE TABLE "([^"]+)"/g)].map(
