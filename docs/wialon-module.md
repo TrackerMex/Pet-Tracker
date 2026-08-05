@@ -85,9 +85,16 @@ Umbrales (fuente: `src/pipeline/constants.ts` — los importan #10/#11/#12):
 | `TRIP_MAX_GAP_MINUTES` (15) | hueco de datos por encima del cual el paseo cierra en el punto anterior |
 | `TRIP_MIN_DURATION_MINUTES` (5) | por debajo, el paseo se descarta como ruido |
 | `TRIP_MIN_DISTANCE_M` (100) | metros **recorridos** mínimos; comparte valor con `LOW_ACCURACY_MAX_ACCURACY_M` (metros de **precisión GPS**) por coincidencia — son magnitudes distintas y no se reutiliza la constante |
+| `GEOFENCE_EXIT_RADIUS_MULTIPLIER` (1.1) | histéresis de salida: `evaluate()` solo emite `exit` con `distanceM >= radiusM × 1.1` (#11 R19) |
+| `GEOFENCE_ENTER_RADIUS_MULTIPLIER` (0.9) | histéresis de entrada: `evaluate()` emite `enter` con `distanceM <= radiusM × 0.9`, sin condición de accuracy (#11 R24) |
+| `GEOFENCE_EXIT_MAX_ACCURACY_M` (50) | accuracy máxima para declarar `exit` — más estricta que `LOW_ACCURACY_MAX_ACCURACY_M`: una falsa alarma de salida cuesta más que una entrada tardía (#11 R19/R21) |
 
 Los siete umbrales `TRIP_*` los introduce `trips-activity` (#10) y los
 consumen `src/pipeline/trips.ts` y, a través de él, `src/pipeline/activity.ts`.
+Los tres umbrales `GEOFENCE_*` los introduce `geofences-crud` (#11) y los
+consume `src/pipeline/geofence-eval.ts` (`evaluate()`); ningún caso de uso de
+#11 los invoca todavía — el consumidor real es el worker de `alerts-engine`
+(#12).
 Son **producto**: si el simulador diera 0 paseos, se para y se reporta con los
 números, no se recalibran a ojo (condición de STOP del plan 006).
 `src/pipeline/local-day.ts` completa el núcleo puro de #10 con la aritmética
