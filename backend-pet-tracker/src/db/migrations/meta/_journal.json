@@ -43,6 +43,13 @@
       "when": 1785711686855,
       "tag": "0005_activity_daily",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1785965831443,
+      "tag": "0006_violet_cammi",
+      "breakpoints": true
     }
   ]
 }

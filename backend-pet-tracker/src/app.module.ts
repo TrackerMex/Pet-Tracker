@@ -9,6 +9,7 @@ import { DrizzleModule } from './db/drizzle.module';
 import { ActivityModule } from './modules/activity/activity.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { DevicesModule } from './modules/devices/devices.module';
+import { GeofencesModule } from './modules/geofences/geofences.module';
 import { HealthModule } from './modules/health/health.module';
 import { MediaModule } from './modules/media/media.module';
 import { PetsModule } from './modules/pets/pets.module';
@@ -30,6 +31,7 @@ import { IngestionModule } from './workers/ingestion.module';
     PetsModule,
     MediaModule,
     DevicesModule,
+    GeofencesModule,
     PositionsModule,
     ActivityModule,
     IngestionModule,
