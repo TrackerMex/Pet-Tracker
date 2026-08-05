@@ -47,3 +47,18 @@ export const TRIP_MIN_DURATION_MINUTES = 5;
  * PRECISION GPS) por coincidencia: son magnitudes distintas y calibrar una
  * no debe mover la otra (R1). */
 export const TRIP_MIN_DISTANCE_M = 100;
+
+// Umbrales de histeresis de geocercas (#11 geofences-crud R19-R24). Evitan
+// el parpadeo enter/exit cerca del borde: salir exige alejarse mas de lo
+// que basta para entrar.
+
+/** Multiplicador de radio a partir del cual una geocerca circular emite 'exit' (R19). */
+export const GEOFENCE_EXIT_RADIUS_MULTIPLIER = 1.1;
+
+/** Multiplicador de radio por debajo del cual una geocerca circular emite 'enter' (R24). */
+export const GEOFENCE_ENTER_RADIUS_MULTIPLIER = 0.9;
+
+/** Accuracy maxima (m) exigida para declarar 'exit' (R19/R21) — mas estricta
+ * que LOW_ACCURACY_MAX_ACCURACY_M: una falsa alarma de salida cuesta mas que
+ * una entrada tardia (asimetria deliberada, D3). */
+export const GEOFENCE_EXIT_MAX_ACCURACY_M = 50;
