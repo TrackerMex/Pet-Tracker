@@ -178,6 +178,13 @@ tags: [harness, spec]
 ## Aprobación
 
 - [X] Aprobado por humano (fecha: 2026-08-05) ← gate obligatorio antes de implementar
+- [X] Re-confirmado por humano (fecha: 2026-08-07) — cubre **únicamente** el
+  cambio del criterio de verificación de R8 (branch `fix/media-r8-localstack`).
+  La cláusula `THE SYSTEM SHALL` de R8 es byte-idéntica a la aprobada el
+  2026-08-05: el requisito "el bucket nunca es público" no cambió. Lo que
+  cambió es cómo se verifica en local, porque LocalStack almacena los flags de
+  `PublicAccessBlock` pero no los hace cumplir y el `GET` anónimo devolvía 200
+  donde AWS real daría 403.
 
 D1: confirmado `'owner'` (@RequirePetRole('owner')).
 D2: confirmado alcance solo-detalle (GET /v1/pets/:petId); listado sigue con photoUrl: null.
