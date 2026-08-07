@@ -559,3 +559,66 @@ Deuda detectada (fuera de alcance, candidata a limpieza propia):
 - **Commits:** `4314edb` (fix) + `92c9399` (docs), merge PR #22.
 - **Estado final:** done (harness), sin entrada propia en
   `feature_list.json`.
+
+## Sesión 2026-08-07 — Ciclo SDD completo de `alerts-engine` (#12)
+
+- **Feature:** plan 007 paso 3 — worker que consume `position.updated`/
+  `battery.low` del bus, evalúa geocercas vía `evaluate()` de #11 (sin
+  modificarla), abre/cierra `alert_events` con índice único parcial
+  anti-spam (`pet_id`, `type`, `coalesce(geofence_id, uuid nil)` WHERE
+  `open`), cierra `battery_low` con batería ≥30, encola en SQS
+  `notifications`. Cola nueva `geofence-events` + DLQ + regla EventBridge
+  (infra que #2 no había previsto).
+- **Spec:** 20 EARS + D1-D5 (`spec_author`). Gate humano vía
+  `AskUserQuestion` (**D1: opción A, `geofence_id ON DELETE SET NULL`**;
+  **D2-D5 confirmados íntegros**: infra nueva con reubicación de 3
+  constantes a `src/aws/constants.ts`, orden `alert_events`-antes-que-
+  `geofence_state` a prueba de caídas, literal uuid nil sin extensión
+  `uuid-ossp`, `version: 1` en el mensaje de `notifications`). Bloqueado
+  hasta confirmación explícita: el checkbox de aprobación llegó marcado
+  sin fecha y con el frontmatter todavía en `draft`, y un "listo, continúa"
+  de chat no cubre lo que la propia spec exige confirmar — mismo criterio
+  de no fiarse de una aprobación implícita que ya aplicó `pets-crud-
+  permissions` (#5) con B1.
+- **Acciones:** `spec_author` → gate humano (D1-D5) → leader aprueba
+  `requirements.md` (fecha + status) → `implementer` (5 commits TDD por
+  R-id: schema+índice R1-R2, provisioning R3-R4, consumer+scheduler
+  R5-R17, e2e+guarda de pureza R18-R19, trazabilidad R20) → `reviewer`
+  **aprobó**: verificó código real (no el reporte a ciegas), corrió
+  `init.sh` y el e2e él mismo, reprodujo en aislamiento el fallo de
+  `media.e2e-spec.ts` para confirmar que era el mismo flakiness conocido
+  de LocalStack antes de aceptarlo. **Bug B1 repetido** (mismo patrón que
+  #5): frontmatter `draft` en `design.md`/`tasks.md`/`traceability.md`
+  pese al gate humano ya cerrado en `requirements.md` — detectado y
+  corregido por el leader antes del cierre.
+- **Resultado:** `init.sh` verde completo (699 tests). E2e propio de la
+  feature 3/3 (corrido 3× para descartar flakiness, escenario de salida
+  de geocerca 100% determinista). Trazabilidad 20/20 sin filas
+  pendientes. R19 (`geofence-eval.ts` intacto) y D1 (`ON DELETE SET
+  NULL`) verificados directamente contra migración/diff; D3 (orden de
+  escritura) verificado con aserción explícita de `invocationCallOrder`,
+  no solo happy-path. **NB no bloqueante:** los tests etiquetados "R14"
+  ejercitan en realidad el guard de R7 (indirectamente, bajo el
+  `describe` de R8), no el caso borde de caída-a-mitad-de-camino que su
+  comentario dice cubrir — mecanismo sí probado, cobertura mal rotulada;
+  queda como seguimiento. **Hallazgo ajeno reportado por transparencia:**
+  una de dos corridas completas del e2e mostró un fallo intermitente
+  distinto (`pet_users` FK) no relacionado con los archivos de esta rama
+  — candidato a investigar aparte. `media.e2e-spec.ts` sigue con el
+  mismo flakiness de LocalStack ya aceptado desde `pet-photos-s3` (#6).
+- **Hallazgo de seguridad, ajeno a esta feature (reportado, no tocado):**
+  `.mcp.json` tiene un PAT de GitHub en texto plano en un cambio ya
+  presente en el working tree **antes** de esta sesión (no commiteado
+  por ningún agente de este ciclo) — el archivo no está en
+  `.gitignore` pese a que el diff de `.gitignore` intenta excluirlo con
+  un patrón no válido (`./.mcp.json`), y de todas formas ya está
+  trackeado. Podría ser un intento de resolver el bloqueo ya conocido de
+  `GITHUB_TOKEN` con scope insuficiente para crear PRs (ver memoria). Sin
+  acción del leader — queda para que el humano decida (rotar el token,
+  sacarlo a variable de entorno, corregir el patrón de `.gitignore`).
+- **Commits:** `ae21e51`..`7f2cacf` (6 en la branch) + cierre del leader
+  (frontmatter B1 + bookkeeping).
+- **Estado final:** done — 12/18, próximo candidato P2: `alerts-center-
+  notifier` (#13), consume la cola `notifications` que esta feature ya
+  llena y añade el centro de alertas (`GET /v1/alerts`, `POST /v1/alerts/
+  :id/ack`).

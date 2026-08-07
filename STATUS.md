@@ -1,8 +1,8 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-08-05
-**Features completadas**: 11/18 (`feature_list.json`)
-**Pendientes**: 7 — backlog backend derivado de `plans/` 002–009 (alertas, salud, nutrición). **Sin P1 pendientes**: el resto es P2/P3.
+**Última actualización**: 2026-08-07
+**Features completadas**: 12/18 (`feature_list.json`)
+**Pendientes**: 6 — backlog backend derivado de `plans/` 002–009 (alertas, salud, nutrición). **Sin P1 pendientes**: el resto es P2/P3.
 **En producción**: no
 
 ---
@@ -340,16 +340,76 @@ debe listar las 4 URLs de cola.
   `pet-photos-s3` #6, no relacionada). Relevante para el futuro: la
   próxima migración (candidata: `alert_events` de `alerts-engine` #12) ya
   no debería repetir este bloqueante.
-- Próximo paso SDD: **no quedan features P1**. `alerts-engine` (#12) es la
-  continuación natural — lee y escribe `geofence_state` de #11 sin
-  migración adicional, y su descripción ya asume `evaluate()` cableado a
-  un worker que consume `position.updated`. Integración Wialon real:
-  diferida hasta tener hardware en mano (SIM_MODE es el camino; conectar
-  real será smoke test de config, no feature).
+- **`alerts-engine` (#12) done**: worker nuevo `src/workers/alerts-engine/`
+  que consume `position.updated`/`battery.low` desde la cola nueva
+  `geofence-events` (+ DLQ, regla EventBridge sin `RawMessageDelivery` —
+  infra que #2 no había previsto, `provisionAllResources()` extendido);
+  despacha por `detail-type`, evalúa geocercas con `evaluate()` de #11
+  (**intacta, sin tocar**, primer consumidor real), abre/cierra
+  `alert_events` (migración `0007`, índice único parcial anti-spam
+  `(pet_id, type, coalesce(geofence_id, '00000000-…'::uuid)) WHERE
+  status='open'` — D1 `geofence_id` con `ON DELETE SET NULL`, D4 literal
+  fijo en vez de `uuid_nil()` sin extensión `uuid-ossp`); orden de
+  escritura a prueba de caídas (`alert_events` antes que `geofence_state`,
+  D3, con aserción de `invocationCallOrder`); cierra `battery_low` con
+  batería ≥30 (`BATTERY_RECOVERY_THRESHOLD_PCT`, nueva constante en
+  `pipeline/constants.ts`, único añadido a ese archivo); encola en SQS
+  `notifications` con shape versionado (`version: 1`, D5) que consumirá
+  `alerts-center-notifier` (#13). Reubicadas 3 constantes de contrato
+  (`EVENT_SOURCE`/`DETAIL_TYPE_POSITION_UPDATED`/`DETAIL_TYPE_BATTERY_LOW`)
+  de `workers/ingestion.constants.ts` a `aws/constants.ts` (D2, mismo
+  valor, sin romper el contrato R16/R17 de #8). Spec 20 EARS + D1-D5
+  aprobada por humano 2026-08-07 vía `AskUserQuestion` (bloqueado hasta
+  confirmación explícita — un "listo" de chat no bastaba, la spec exigía
+  confirmar D1-D5 uno por uno). `reviewer` **aprobó** verificando código
+  real, corriendo `init.sh` y el e2e él mismo (699 tests, e2e propio 3/3
+  ×3 corridas anti-flake), trazabilidad 20/20. **Bug B1 repetido** (mismo
+  que #5): frontmatter `draft` en 3 de los 4 archivos de spec pese al
+  gate humano cerrado — corregido por el leader antes de marcar `done`.
+  NB no bloqueante: los tests "R14" ejercitan el guard de R7, no el caso
+  borde de caída-a-mitad-de-camino que describen — mecanismo sí probado,
+  rótulo a corregir. Branch `feature/12-alerts-engine` (6 commits). Ver
+  `progress/impl_alerts-engine.md` y `progress/review_alerts-engine.md`.
+- **Hallazgo de seguridad ajeno a esta feature (2026-08-07, sin tocar,
+  pendiente de decisión humana)**: `.mcp.json` tiene un PAT de GitHub en
+  texto plano en un cambio que ya estaba sin commitear en el working tree
+  **antes** de esta sesión — no lo trackea `.gitignore` (el patrón nuevo
+  `./.mcp.json` no es sintaxis válida y el archivo de todas formas ya
+  está trackeado). Posible intento de resolver el bloqueo conocido de
+  `GITHUB_TOKEN` con scope insuficiente para crear PRs. Pendiente: rotar
+  el token, sacarlo a variable de entorno, corregir `.gitignore`.
+- Próximo paso SDD: **no quedan features P1**. `alerts-center-notifier`
+  (#13) es la continuación natural — consume la cola `notifications` que
+  #12 ya llena (push simulado con `PUSH_ENABLED=false`) y añade el centro
+  de alertas (`GET /v1/alerts`, `POST /v1/alerts/:id/ack`); también
+  rellena `time_away_minutes` de `activity_daily` (#10) desde
+  `alert_events`. Integración Wialon real: diferida hasta tener hardware
+  en mano (SIM_MODE es el camino; conectar real será smoke test de
+  config, no feature).
 
 ---
 
 ## Última sesión
+
+- **2026-08-07** — Ciclo SDD completo de `alerts-engine` (#12):
+  `spec_author` (20 EARS, D1-D5 con propuesta explícita cada una) →
+  **gate humano** vía `AskUserQuestion` (D1: opción A `ON DELETE SET
+  NULL`; D2-D5 confirmados íntegros) — bloqueado hasta esa confirmación
+  explícita porque el checkbox llegó marcado sin fecha, el frontmatter
+  seguía en `draft` y un "listo, continúa" de chat no cubría lo que la
+  spec pedía confirmar → `implementer` (5 commits TDD por R-id: schema+
+  índice R1-R2, provisioning cola/regla R3-R4, consumer+scheduler
+  R5-R17, e2e+guarda de pureza R18-R19, trazabilidad R20) → `reviewer`
+  **aprobó** verificando código real (no el reporte a ciegas), corriendo
+  `init.sh` y el e2e él mismo (699 tests, e2e propio 3/3 ×3 corridas), y
+  reproduciendo en aislamiento el fallo ajeno de `media.e2e-spec.ts`
+  antes de aceptarlo como flakiness ya conocido. **Bug B1 repetido**
+  (mismo que `pets-crud-permissions` #5): frontmatter `draft` en 3 de los
+  4 archivos de spec pese al gate humano — corregido por el leader.
+  Feature marcada `done`, branch `feature/12-alerts-engine` (6 commits),
+  espera push + PR. Hallazgo de seguridad ajeno reportado al humano sin
+  tocar: PAT de GitHub en texto plano en `.mcp.json` (cambio preexistente
+  a la sesión, no commiteado). Próximo: `alerts-center-notifier` (#13).
 
 - **2026-08-05 (2)** — Ciclo SDD completo de `geofences-crud` (#11):
   `spec_author` (26 EARS, D1-D5 con propuesta explícita cada una) →
