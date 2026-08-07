@@ -50,6 +50,13 @@
       "when": 1785965831443,
       "tag": "0006_violet_cammi",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1786121136104,
+      "tag": "0007_narrow_whirlwind",
+      "breakpoints": true
     }
   ]
 }
