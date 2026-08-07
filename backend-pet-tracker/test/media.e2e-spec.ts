@@ -1,3 +1,8 @@
+import {
+  GetBucketPolicyCommand,
+  GetPublicAccessBlockCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { config as loadDotenv } from 'dotenv';
@@ -6,6 +11,8 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { uuidv7 } from 'uuidv7';
+import { S3_CLIENT } from '@/aws/aws.constants';
+import { BUCKET_MEDIA } from '@/aws/constants';
 import { DRIZZLE } from '@/db/drizzle.constants';
 import { auditLog } from '@/db/schema/audit-log.schema';
 import { pets, petUsers } from '@/db/schema/pets.schema';
@@ -17,6 +24,24 @@ import { AppModule } from './../src/app.module';
 // Direct S3 access (R8/R9) construye su propia URL contra AWS_ENDPOINT_URL
 // fuera del bootstrap de Nest — mismo patron que localstack-provisioning.e2e-spec.ts.
 loadDotenv({ path: '../.env' });
+
+interface PolicyStatement {
+  Effect?: string;
+  Principal?: unknown;
+}
+
+/**
+ * R8: un statement concede acceso publico si es `Allow` sobre el principal
+ * anonimo, en cualquiera de sus tres formas — `"*"`, `{"AWS": "*"}` y
+ * `{"AWS": ["*"]}`. Se buscan como el token `"*"` ya serializado, asi que un
+ * ARN con comodin interno (`arn:aws:iam::*:root`) no cuenta como publico.
+ */
+function grantsPublicAccess(statement: PolicyStatement): boolean {
+  return (
+    statement.Effect === 'Allow' &&
+    JSON.stringify(statement.Principal ?? null).includes('"*"')
+  );
+}
 
 /**
  * e2e de pet-photos-s3 contra Postgres + LocalStack reales (R1-R9). Requiere
@@ -272,49 +297,69 @@ describe('Pet photo upload (e2e)', () => {
     });
   });
 
-  // NOTA PARA EL REVIEWER: verificado experimentalmente contra el LocalStack
-  // Community 4.14 de este repo (docker-compose.yml) que un GET anonimo/sin
-  // firmar sobre un objeto S3 EXISTENTE responde 200 con el contenido, no
-  // 403 — probado tanto con el PutPublicAccessBlock que #2 aplica sobre
-  // pet-tracker-media-local como con una bucket policy explicita de Deny
-  // sobre un bucket descartable aparte; ninguno de los dos fue aplicado por
-  // LocalStack en la respuesta HTTP. LocalStack Community no hace cumplir
-  // ACLs/bucket policies/Block-Public-Access en el plano de datos de S3
-  // (enforcement de IAM es funcionalidad Pro) — solo persiste esa
-  // configuracion como metadata, igual que localstack-provisioning
-  // (#2 R13) ya solo verifica que los 4 flags queden en `true`, sin probar
-  // el efecto real de bloqueo. Esta feature no toca AwsModule ni
-  // provisioning.ts (fuera de alcance, ver requirements.md R8) — el test
-  // queda escrito exactamente como pide la spec (403) y hoy falla en este
-  // entorno por esa limitacion de LocalStack Community, no por el codigo de
-  // la app: el codigo de pet-photos-s3 nunca emite una URL sin firmar (el
-  // unico puerto de lectura/escritura es PHOTO_STORAGE.createDownloadUrl /
-  // createUploadUrl, ambos siempre presignan). Reportado en
-  // progress/impl_pet-photos-s3.md para que un humano decida si acepta la
-  // limitacion documentada o reabre R8 para redefinir su verificacion local.
-  describe('R8: el bucket nunca es publico — GET directo sin firma responde 403', () => {
-    it('un GET sin parametros de firma sobre el objeto responde 403', async () => {
-      const owner = await seedUser('r8-owner');
-      const pet = await createPetViaApi(owner, `R8-${RUN_ID}`);
+  // POR QUE ESTE TEST NO HACE UN GET ANONIMO:
+  //
+  // La forma obvia de verificar "el bucket nunca es publico" seria un GET sin
+  // firma sobre el objeto esperando 403. Contra LocalStack esa asercion no
+  // vale: LocalStack Community NO aplica PublicAccessBlock, ACLs ni bucket
+  // policies en el plano de datos de S3 — el enforcement de IAM es
+  // funcionalidad Pro. Solo persiste esa configuracion como metadata y sirve
+  // el objeto igual. Verificado experimentalmente contra el LocalStack 4.14
+  // de docker-compose.yml: con los 4 flags en `true` (y tambien con una
+  // bucket policy Deny explicita sobre un bucket descartable), un GET anonimo
+  // sobre un objeto existente responde 200 con el contenido. Contra AWS real,
+  // esa misma configuracion hace que ese GET responda 403.
+  //
+  // O sea: el GET anonimo mide el emulador, no el codigo. Aqui se verifica lo
+  // que el codigo si controla y LocalStack si modela — y que es exactamente lo
+  // que produce el 403 en AWS real: los 4 flags de PublicAccessBlock en `true`
+  // y la ausencia de una bucket policy que conceda acceso publico. Sigue
+  // siendo e2e contra LocalStack real (cliente S3 del contenedor Nest), no un
+  // unit test con mocks.
+  //
+  // Queda pendiente de verificar contra un despliegue AWS real que ese GET sin
+  // firma responde 403 de verdad. Ver specs/pet-photos-s3/requirements.md R8 y
+  // docs/architecture.md §Adaptacion local.
+  describe('R8: el bucket nunca es publico — PublicAccessBlock en los 4 flags y sin bucket policy publica', () => {
+    function s3Client() {
+      return app.get<S3Client>(S3_CLIENT);
+    }
 
-      const uploadResponse = await requestUploadUrl(owner, pet.id, {
-        contentType: 'image/jpeg',
-      }).expect(200);
-      const { uploadUrl } = uploadResponse.body as { uploadUrl: string };
+    it('GetPublicAccessBlock devuelve los 4 flags de bloqueo en true', async () => {
+      const { PublicAccessBlockConfiguration } = await s3Client().send(
+        new GetPublicAccessBlockCommand({ Bucket: BUCKET_MEDIA }),
+      );
 
-      // El objeto existe de verdad (mismo camino que R9) — descarta que el
-      // 403 esperado sea en realidad un 404 por objeto inexistente.
-      await fetch(uploadUrl, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'image/jpeg' },
-        body: Buffer.from('r8-fixture-bytes'),
-      });
+      expect(PublicAccessBlockConfiguration).toEqual(
+        expect.objectContaining({
+          BlockPublicAcls: true,
+          IgnorePublicAcls: true,
+          BlockPublicPolicy: true,
+          RestrictPublicBuckets: true,
+        }),
+      );
+    });
 
-      const unsignedUrl = new URL(uploadUrl);
-      unsignedUrl.search = '';
+    it('no existe una bucket policy que conceda acceso publico', async () => {
+      const policy = await s3Client()
+        .send(new GetBucketPolicyCommand({ Bucket: BUCKET_MEDIA }))
+        .then((response) => response.Policy ?? null)
+        .catch((error: { name?: string }) => {
+          // provisionMediaBucket no crea ninguna policy: "no hay policy" es el
+          // estado esperado. Cualquier otro error si debe romper el test.
+          if (error.name === 'NoSuchBucketPolicy') {
+            return null;
+          }
+          throw error;
+        });
 
-      const response = await fetch(unsignedUrl.toString());
-      expect(response.status).toBe(403);
+      const statements =
+        policy === null
+          ? []
+          : ((JSON.parse(policy) as { Statement?: PolicyStatement[] })
+              .Statement ?? []);
+
+      expect(statements.filter(grantsPublicAccess)).toEqual([]);
     });
   });
 
