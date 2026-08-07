@@ -18,3 +18,10 @@ coverage/
 # Graphify generated output
 graphify-out/
 *.graphify-bak
+
+# GitHub PAT
+.github_pat
+
+# MCP
+./.mcp.json
+mpc.json
