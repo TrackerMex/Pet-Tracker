@@ -305,6 +305,200 @@ para que falle en el primer intento y verificando la segunda pasada), o
 al menos corregir el comentario del e2e para no afirmar que cubre ese
 escenario cuando cubre el otro.
 
+---
+
+# Re-revisión: fix CRLF/LF post-CI
+Fecha: 2026-08-07
+Veredicto: **APROBADO**
+
+## Alcance de esta re-revisión
+
+Bugfix acotado sobre la PR #12 (alerts-engine) ya aprobada arriba. CI
+(GitHub Actions, runner Linux) falló en
+`src/pipeline/geofence-eval-untouched.spec.ts` (guarda estática de R19)
+aunque `./init.sh` local (Windows) pasaba en verde. El implementer aplicó
+un fix de un solo archivo en `c4f09e5` + bookkeeping puro en `2944916`.
+**No reabro R1-R18 ni D1-D5** — ya cerrados en la revisión original de
+arriba y no tocados por este fix. Los cuatro puntos pedidos:
+
+## 1. `geofence-eval.ts` / `geofence-eval.spec.ts` siguen sin ningún cambio real
+
+```
+git diff main -- backend-pet-tracker/src/pipeline/geofence-eval.ts backend-pet-tracker/src/pipeline/geofence-eval.spec.ts
+```
+→ **vacío**, corrido por mí. `git show c4f09e5 --stat` confirma que el
+fix toca **un único archivo**: `geofence-eval-untouched.spec.ts` (18
+inserciones, 4 borrados). `git show 2944916 --stat` confirma que el
+commit de bookkeeping toca solo `progress/impl_alerts-engine.md` y
+`specs/alerts-engine/traceability.md` (2 archivos, 21 inserciones, 1
+borrado) — cero código.
+
+## 2. Juicio sobre la normalización CRLF/LF + BOM-strip
+
+Código del fix:
+```ts
+function normalizeLineEndings(content: string): string {
+  const withoutBom =
+    content.charCodeAt(0) === 0xfeff ? content.slice(1) : content;
+  return withoutBom.replace(/\r\n/g, '\n');
+}
+```
+
+**Causa raíz confirmada independientemente**, no solo aceptada del
+mensaje de commit: `git ls-files --eol` muestra `i/lf` (blob) pero
+`w/crlf` (working tree) para ambos archivos hasheados — `core.autocrlf`
+local es `true` y no hay `.gitattributes` en el repo que fuerce ningún
+eol. El hash viejo hardcodeado (`1f9484c8...`) es exactamente el hash RAW
+del working tree local en CRLF (lo recomputé yo mismo, ver punto 4).
+
+**La normalización es correcta y suficiente para el propósito de R19**:
+solo colapsa `\r\n`→`\n` y descarta un BOM inicial; no toca ningún
+carácter de contenido. Por construcción:
+- Cualquier cambio real de texto (línea añadida, editada o borrada)
+  cambia el string normalizado y por lo tanto el hash — sin importar qué
+  convención de line-ending use el editor que lo introduce.
+- Un cambio que sea *puramente* de line-endings (mismo texto, distinto
+  CRLF/LF/BOM) nunca cambia el hash normalizado.
+
+Eso es exactamente "detectar cambios de CONTENIDO, no de formato" — el
+criterio que pide R19.
+
+### Edge case pedido explícitamente
+
+Probé la función `normalizeLineEndings` tal cual (fuera del suite real,
+para no tocar los hashes congelados) contra tres escenarios derivados del
+blob real de `geofence-eval.ts`:
+
+| Caso | Escenario | Hash normalizado vs. baseline | ¿Correcto? |
+|---|---|---|---|
+| B | Flip de line-ending en una línea **existente**, cero cambio de texto | igual | Sí — debe seguir en verde (es ruido de formato) |
+| A | Línea **nueva real** agregada, terminada en CRLF (el caso que preguntas) | distinto | Sí — debe fallar (sí hay contenido nuevo, más allá de qué EOL traiga) |
+| C | Línea nueva real agregada, terminada en CR suelto (el único patrón que la regex `\r\n`→`\n` no toca) | distinto | Sí — sigue fallando; en el peor caso el guard es *más* sensible de lo necesario, nunca menos |
+
+Conclusión: no encontré ningún caso borde donde la normalización
+enmascare un cambio de contenido real. Lo único que oculta, por diseño,
+es el formato de line-ending — que es precisamente lo que R19 no debe
+evaluar. Nota menor no bloqueante: la regex no colapsa un CR suelto (sin
+`\n` siguiente, convención Mac clásico pre-OSX) — irrelevante en la
+práctica (ningún editor/toolchain de este proyecto lo produce, y como
+muestra el Caso C, tampoco genera un falso negativo si ocurriera).
+
+También revisé si esta normalización debía reutilizar algo ya existente
+en el repo en vez de reimplementarse: `no-hardcoded-credentials.spec.ts`
+y `relative-import-guard.spec.ts` (citados en el comentario del fix como
+mismo criterio) no usan `createHash` — verifican contenido por
+substring/regex, no por hash exacto, así que no comparten esta
+vulnerabilidad a CRLF y no había ningún helper equivalente preexistente
+que debiera haberse reusado (grep sin resultados en `src/`). La función
+es nueva, de 4 líneas, colocada junto a su único call site — no es
+sobre-ingeniería ni tampoco duplica algo que ya existía.
+
+## 3. `./init.sh` corrido por mí, no aceptado del reporte
+
+```
+✅ node disponible / ✅ pnpm disponible
+✅ .env encontrado / ✅ DATABASE_URL definida
+✅ Dependencias instaladas
+✅ Archivos del harness presentes
+⚠️  Feature en progreso: alerts-engine
+⚠️  STATUS.md desactualizado (12/18 declarado vs 11/18 real) — actualízalo antes de cerrar la sesión
+
+→ Build...
+✅ Build exitoso
+
+→ Ejecutando tests...
+Test Suites: 97 passed, 97 total
+Tests:       699 passed, 699 total
+✅ Tests pasados
+
+→ Lint...
+✅ Lint sin errores
+
+→ Typecheck...
+✅ Typecheck sin errores
+
+✅ Todo verde. Listo para trabajar.
+```
+Mismo conteo que la revisión original (97 suites / 699 tests) — sin
+regresión introducida por el fix.
+
+## 4. Verificación empírica Windows↔Linux — no solo razonamiento
+
+En vez de asumir que la normalización converge en ambas plataformas,
+computé los hashes yo mismo con el mismo algoritmo exacto del test
+(`node:crypto`, `node:fs`), en tres fuentes distintas:
+
+1. **Working tree local (Windows, CRLF confirmado)**: hash RAW =
+   `1f9484c8...` (= la constante vieja — confirma la causa raíz) | hash
+   NORMALIZADO = `134dbadd7...` (= la constante nueva).
+2. **Contenido del blob de git** (`git show HEAD:<path>`, sin
+   smudge/autocrlf — exactamente lo que produce un checkout Linux, dado
+   que no hay `.gitattributes` y los runners Linux no convierten line
+   endings por defecto): **no tiene ningún CRLF**. Su hash RAW ya es
+   `134dbadd7...` — igual a la constante nueva, sin necesitar
+   normalización, porque ya está en LF.
+3. `wtNormHash === blobNormHash` → **true** para ambos archivos.
+
+Y para no depender solo de mi propia simulación del checkout Linux, fui
+al log real de la corrida de CI que falló
+(`gh run view 31204303616 --log-failed`, run enlazado desde `gh pr checks 25`,
+que **aún no incluye el fix** — ver nota de estado abajo):
+
+```
+geofence-eval.ts:
+  Expected: "1f9484c8ee99dc3a84289b7ef7191706a3fd7cd1bd64f719641c7e3319413f97"
+  Received: "134dbadd77599e589359dc4931ec6007dae7bfb3354207f0717a143891c89afa"
+
+geofence-eval.spec.ts:
+  Expected: "add70269b639c8b7bd0b970915463444b85d6c135de48f03441bed8d29ab2527"
+  Received: "80bb7ad04c1828bec4242b43fdd115db04034d18a926a6fe63c2791afc0d9503"
+```
+
+Los dos valores `Received` (calculados por el runner Linux real, sobre
+el checkout real de CI) coinciden **byte a byte** con los dos hashes que
+el fix ahora hardcodea como `GEOFENCE_EVAL_TS_SHA256` /
+`GEOFENCE_EVAL_SPEC_TS_SHA256`, y con los que yo derivé de forma
+independiente en los pasos 1-3 sin mirar este log. Esto no es
+razonamiento sobre lo que "debería" pasar en Linux — es la confirmación
+directa, con la salida real del runner de CI, de que el fix hardcodea
+exactamente el valor que Linux produce.
+
+## Nota de estado — no bloqueante para este veredicto, sí para cerrar la feature
+
+`git log origin/feature/12-alerts-engine..HEAD` muestra que `c4f09e5` y
+`2944916` **todavía no están pusheados** (origin sigue en `55120d9`).
+`gh pr checks 25` todavía reporta `verify fail` porque ese check
+corresponde al commit viejo — CI **no ha corrido contra el fix
+todavía**. Esto es exactamente lo que `progress/current.md` ya anticipa
+en su "plan breve" ("confirmar verde en CI real... antes de re-marcar
+done"). Mi aprobación cubre la corrección del fix en sí (lógica, hashes,
+`init.sh` local, y ahora también el log real de CI histórico) — pushear
+y confirmar el check `verify` en verde sobre el nuevo commit sigue siendo
+un paso pendiente antes de que el leader vuelva a marcar `alerts-engine`
+como `done`.
+
+Relacionado y tampoco bloqueante: `init.sh` marca `STATUS.md`
+desactualizado (12/18 declarado vs 11/18 real) porque `STATUS.md` quedó
+en el texto de `55120d9` (feature ya cerrada) mientras `feature_list.json`
+volvió a `in_progress` para este bugfix (working tree, sin commitear).
+`progress/current.md` sí está coherente y describe la sesión reabierta
+con precisión. Recomiendo que el leader corrija `STATUS.md` en el mismo
+commit que vuelva a cerrar la feature tras confirmar CI verde.
+
+## Conclusión de la re-revisión
+
+El fix (`c4f09e5`) es correcto, mínimo y suficiente: un solo archivo
+tocado, `geofence-eval.ts`/`.spec.ts` intactos, la normalización
+CRLF/LF+BOM neutraliza exactamente el ruido de checkout sin enmascarar
+ningún cambio de contenido real (verificado con casos borde), y los dos
+hashes recalculados coinciden exactamente con los valores `Received` del
+propio log de la corrida de CI que falló — no solo con mi propia
+simulación. `./init.sh` corrido por mí: verde, 699/699 tests, sin
+regresión. **APROBADO** — condicionado únicamente (no como rechazo, como
+siguiente paso operativo) a pushear `c4f09e5`+`2944916` y confirmar el
+check `verify` en verde en la PR #25 antes de volver a marcar la feature
+`done`.
+
 ### 2. Flakiness adicional de la suite e2e completa, no mencionada por el implementer (no bloqueante, ajena a esta feature)
 
 Corrí `pnpm run test:e2e` (las 11 suites) dos veces:

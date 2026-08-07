@@ -368,8 +368,28 @@ debe listar las 4 URLs de cola.
   gate humano cerrado — corregido por el leader antes de marcar `done`.
   NB no bloqueante: los tests "R14" ejercitan el guard de R7, no el caso
   borde de caída-a-mitad-de-camino que describen — mecanismo sí probado,
-  rótulo a corregir. Branch `feature/12-alerts-engine` (6 commits). Ver
+  rótulo a corregir. Branch `feature/12-alerts-engine` (8 commits). Ver
   `progress/impl_alerts-engine.md` y `progress/review_alerts-engine.md`.
+- **Corrección post-cierre (2026-08-07, mismo día)**: el humano abrió la PR
+  (#25) y CI (GitHub Actions, runner Linux) salió **roja** en
+  `geofence-eval-untouched.spec.ts` pese a que `init.sh` local (Windows) y
+  el `reviewer` habían dado verde — la guarda de R19 hasheaba el archivo
+  con line endings crudos; CRLF en el checkout Windows donde se implementó
+  vs. LF en CI, mismo blob de git, hash distinto sin que
+  `geofence-eval.ts` cambiara de verdad (diff contra `main` seguía vacío).
+  Feature reabierta a `in_progress` puntualmente (CI es el gate de verdad,
+  no el `init.sh` local — regla ya vigente, esta vez hizo falta
+  ejercerla) → `implementer` normalizó BOM+CRLF→LF antes de hashear
+  (`c4f09e5`) → `reviewer` re-verificó, incluido comparar los hashes
+  recalculados contra el log real de la corrida de CI que había fallado
+  (coinciden byte a byte) → push → **CI confirmado verde en el runner
+  real** (`gh pr checks --watch`, 50s). Recién entonces vuelta a `done`.
+  Lección: un `init.sh` verde en Windows no certifica CI verde en Linux
+  cuando hay una guarda que hashea contenido de archivo sin normalizar
+  line endings — candidato a revisar si aparece un patrón similar en
+  `no-hardcoded-credentials.spec.ts`/`relative-import-guard.spec.ts`
+  (mismo criterio de hash citado en el comentario de la guarda de R19,
+  ninguna de las dos falló esta vez pero comparten la técnica).
 - **Hallazgo de seguridad ajeno a esta feature (2026-08-07, sin tocar,
   pendiente de decisión humana)**: `.mcp.json` tiene un PAT de GitHub en
   texto plano en un cambio que ya estaba sin commitear en el working tree
@@ -406,10 +426,16 @@ debe listar las 4 URLs de cola.
   antes de aceptarlo como flakiness ya conocido. **Bug B1 repetido**
   (mismo que `pets-crud-permissions` #5): frontmatter `draft` en 3 de los
   4 archivos de spec pese al gate humano — corregido por el leader.
-  Feature marcada `done`, branch `feature/12-alerts-engine` (6 commits),
-  espera push + PR. Hallazgo de seguridad ajeno reportado al humano sin
-  tocar: PAT de GitHub en texto plano en `.mcp.json` (cambio preexistente
-  a la sesión, no commiteado). Próximo: `alerts-center-notifier` (#13).
+  Feature marcada `done`, branch `feature/12-alerts-engine` pusheada, PR
+  #25 abierta por el humano. Hallazgo de seguridad ajeno reportado al
+  humano sin tocar: PAT de GitHub en texto plano en `.mcp.json` (cambio
+  preexistente a la sesión, no commiteado). **Continuación same-day**: CI
+  de la PR #25 salió roja (guarda R19 sensible a CRLF/LF, ver bullet
+  "Corrección post-cierre" arriba) — reabierta a `in_progress`,
+  `implementer` fix (`c4f09e5`) → `reviewer` re-aprobó verificando contra
+  el log real de CI → push → **CI verde confirmado en el runner real**,
+  vuelta a `done`. 8 commits en total en la branch. Próximo:
+  `alerts-center-notifier` (#13).
 
 - **2026-08-05 (2)** — Ciclo SDD completo de `geofences-crud` (#11):
   `spec_author` (26 EARS, D1-D5 con propuesta explícita cada una) →
