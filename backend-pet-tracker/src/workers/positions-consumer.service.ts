@@ -20,7 +20,10 @@ import type {
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { EVENTBRIDGE_CLIENT, SQS_CLIENT } from '@/aws/aws.constants';
 import {
+  DETAIL_TYPE_BATTERY_LOW,
+  DETAIL_TYPE_POSITION_UPDATED,
   EVENT_BUS_NAME,
+  EVENT_SOURCE,
   QUEUE_POSITIONS_RAW,
   TABLE_POSITIONS,
   TABLE_POSITIONS_PARTITION_KEY,
@@ -32,12 +35,7 @@ import { normalize } from '@/pipeline/validate-positions';
 import { INGESTION_STORE } from './ingestion-store';
 import type { IngestionStore } from './ingestion-store';
 import { BATTERY_LOW_THRESHOLD_PCT } from '@/pipeline/constants';
-import {
-  DETAIL_TYPE_BATTERY_LOW,
-  DETAIL_TYPE_POSITION_UPDATED,
-  EVENT_SOURCE,
-  POSITIONS_DOC_CLIENT,
-} from './ingestion.constants';
+import { POSITIONS_DOC_CLIENT } from './ingestion.constants';
 import { positionsMessageSchema } from './positions-message.schema';
 import type { PositionsMessage } from './positions-message.schema';
 

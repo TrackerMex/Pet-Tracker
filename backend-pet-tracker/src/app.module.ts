@@ -15,6 +15,7 @@ import { MediaModule } from './modules/media/media.module';
 import { PetsModule } from './modules/pets/pets.module';
 import { PositionsModule } from './modules/positions/positions.module';
 import { UsersModule } from './modules/users/users.module';
+import { AlertsEngineModule } from './workers/alerts-engine/alerts-engine.module';
 import { IngestionModule } from './workers/ingestion.module';
 
 @Module({
@@ -35,6 +36,7 @@ import { IngestionModule } from './workers/ingestion.module';
     PositionsModule,
     ActivityModule,
     IngestionModule,
+    AlertsEngineModule,
   ],
   controllers: [AppController],
   providers: [AppService],

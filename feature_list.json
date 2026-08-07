@@ -195,7 +195,7 @@
   {
     "id": 12,
     "name": "alerts-engine",
-    "status": "pending",
+    "status": "done",
     "priority": "P2",
     "description": "Plan 007 (paso 3): tabla alert_events con índice único parcial anti-spam (un open por pet+type+geofence, brief §12); worker que consume position.updated y battery.low del bus: evalúa geocercas, exit → INSERT alert_events (si el índice rechaza, NO notifica) + mensaje a SQS notifications; enter → cierra open y notifica regreso; battery.low mismo flujo, se cierra con batería ≥30. Actualiza geofence_state.",
     "acceptance_criteria": [

@@ -11,6 +11,15 @@ export const QUEUE_POSITIONS_RAW_DLQ = 'positions-raw-dlq';
 export const QUEUE_NOTIFICATIONS = 'notifications';
 export const QUEUE_NOTIFICATIONS_DLQ = 'notifications-dlq';
 
+// Cola destino de la regla EventBridge de alerts-engine (#12 R3/R4, D2):
+// recibe el sobre completo de position.updated/battery.low.
+export const QUEUE_GEOFENCE_EVENTS = 'geofence-events';
+export const QUEUE_GEOFENCE_EVENTS_DLQ = 'geofence-events-dlq';
+
+// Nombre de la regla EventBridge de alerts-engine (#12 R4, D2) — mismo
+// string que la cola destino, namespaces distintos (SQS vs EventBridge).
+export const RULE_GEOFENCE_EVENTS = 'geofence-events';
+
 // maxReceiveCount para ambas RedrivePolicy — valor conservador fijado en
 // design.md, ajustable sin migración (LocalStack se reprovisiona en cada
 // `docker compose down -v`).
@@ -28,3 +37,12 @@ export const BUCKET_MEDIA = 'pet-tracker-media-local';
 
 // EventBridge
 export const EVENT_BUS_NAME = 'pet-tracker';
+
+// Contrato de eventos congelado (wialon-ingestion-pipeline #8 R16/R17) —
+// reubicado desde workers/ingestion.constants.ts (alerts-engine #12 D2):
+// aws/provisioning.ts (capa compartida) los necesita para el EventPattern
+// de la regla de R4 sin invertir la direccion de dependencia hacia una
+// capa de feature. Valor identico, contrato intacto — relocacion mecanica.
+export const EVENT_SOURCE = 'pet-tracker';
+export const DETAIL_TYPE_POSITION_UPDATED = 'position.updated';
+export const DETAIL_TYPE_BATTERY_LOW = 'battery.low';
