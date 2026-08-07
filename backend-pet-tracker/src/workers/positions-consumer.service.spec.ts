@@ -14,16 +14,14 @@ import { BatchWriteCommand } from '@aws-sdk/lib-dynamodb';
 import type { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 import { Logger } from '@nestjs/common';
 import {
+  DETAIL_TYPE_BATTERY_LOW,
+  DETAIL_TYPE_POSITION_UPDATED,
   EVENT_BUS_NAME,
+  EVENT_SOURCE,
   SQS_MAX_RECEIVE_COUNT,
   TABLE_POSITIONS,
 } from '@/aws/constants';
 import type { IngestionStore } from './ingestion-store';
-import {
-  DETAIL_TYPE_BATTERY_LOW,
-  DETAIL_TYPE_POSITION_UPDATED,
-  EVENT_SOURCE,
-} from './ingestion.constants';
 import { PositionsConsumerService } from './positions-consumer.service';
 
 const QUEUE_URL = 'http://localhost:4566/000000000000/positions-raw';

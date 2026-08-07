@@ -77,7 +77,9 @@ describe('R1: la migracion crea alert_events conforme a docs/data-model.md (D1/D
   it('type es NOT NULL con CHECK reducido a geofence_exit/battery_low', () => {
     const type = columns.get('type');
     expect(type?.notNull).toBe(true);
-    const check = config.checks.find((c) => c.name === 'alert_events_type_check');
+    const check = config.checks.find(
+      (c) => c.name === 'alert_events_type_check',
+    );
     expect(check).toBeDefined();
   });
 
@@ -133,11 +135,11 @@ describe('R2: indice unico parcial anti-spam (pet_id, type, coalesce(geofence_id
 
   it('el SQL de la migracion usa el literal uuid_nil (D4) en vez de la funcion uuid_nil()', () => {
     const sql = readAlertEventsMigrationSql();
-    expect(sql).toContain(
-      "'00000000-0000-0000-0000-000000000000'::uuid",
-    );
+    expect(sql).toContain("'00000000-0000-0000-0000-000000000000'::uuid");
     expect(sql).not.toContain('uuid_nil()');
-    expect(sql).toContain('CREATE UNIQUE INDEX "alert_events_open_anti_spam_idx"');
+    expect(sql).toContain(
+      'CREATE UNIQUE INDEX "alert_events_open_anti_spam_idx"',
+    );
   });
 });
 

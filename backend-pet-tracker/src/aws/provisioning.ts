@@ -21,15 +21,23 @@ import {
 import {
   CreateEventBusCommand,
   EventBridgeClient,
+  PutRuleCommand,
+  PutTargetsCommand,
   ResourceAlreadyExistsException,
 } from '@aws-sdk/client-eventbridge';
 import {
   BUCKET_MEDIA,
+  DETAIL_TYPE_BATTERY_LOW,
+  DETAIL_TYPE_POSITION_UPDATED,
   EVENT_BUS_NAME,
+  EVENT_SOURCE,
+  QUEUE_GEOFENCE_EVENTS,
+  QUEUE_GEOFENCE_EVENTS_DLQ,
   QUEUE_NOTIFICATIONS,
   QUEUE_NOTIFICATIONS_DLQ,
   QUEUE_POSITIONS_RAW,
   QUEUE_POSITIONS_RAW_DLQ,
+  RULE_GEOFENCE_EVENTS,
   SQS_MAX_RECEIVE_COUNT,
   TABLE_POSITIONS,
   TABLE_POSITIONS_PARTITION_KEY,
@@ -262,6 +270,49 @@ export async function provisionEventBus(
   }
 }
 
+/**
+ * Cola `geofence-events` + DLQ (alerts-engine #12 R3, D2) y regla
+ * EventBridge sobre el bus `pet-tracker` con target unico esa cola (R4):
+ * EventPattern `{source:['pet-tracker'], detail-type:['position.updated',
+ * 'battery.low']}`, sin InputTransformer — el mensaje SQS conserva el
+ * sobre EventBridge completo (incluida `detail-type`), asi el worker
+ * despacha por ese campo en vez de inferir el tipo de evento por la forma
+ * del `detail` (D2). `ensureQueueWithDlq` reutilizada tal cual (cero
+ * codigo nuevo para esa parte); `PutRuleCommand`/`PutTargetsCommand` son
+ * upsert nativos — a diferencia de `CreateQueueCommand`, no requieren
+ * capturar una excepcion de duplicado para ser idempotentes (R4).
+ */
+export async function provisionGeofenceEventsRoute(clients: {
+  sqs: SQSClient;
+  eventBridge: EventBridgeClient;
+}): Promise<void> {
+  const { mainQueueUrl } = await ensureQueueWithDlq(
+    clients.sqs,
+    QUEUE_GEOFENCE_EVENTS,
+    QUEUE_GEOFENCE_EVENTS_DLQ,
+  );
+  const queueArn = await getQueueArn(clients.sqs, mainQueueUrl);
+
+  await clients.eventBridge.send(
+    new PutRuleCommand({
+      Name: RULE_GEOFENCE_EVENTS,
+      EventBusName: EVENT_BUS_NAME,
+      EventPattern: JSON.stringify({
+        source: [EVENT_SOURCE],
+        'detail-type': [DETAIL_TYPE_POSITION_UPDATED, DETAIL_TYPE_BATTERY_LOW],
+      }),
+    }),
+  );
+
+  await clients.eventBridge.send(
+    new PutTargetsCommand({
+      Rule: RULE_GEOFENCE_EVENTS,
+      EventBusName: EVENT_BUS_NAME,
+      Targets: [{ Id: QUEUE_GEOFENCE_EVENTS, Arn: queueArn }],
+    }),
+  );
+}
+
 export interface AwsClientBundle {
   sqs: SQSClient;
   dynamoDb: DynamoDBClient;
@@ -270,10 +321,11 @@ export interface AwsClientBundle {
 }
 
 /**
- * Orquesta la creación idempotente de los 8 recursos (R4): 4 colas SQS
- * (con sus RedrivePolicy, DLQ primero — R6-R9), la tabla `positions` con
- * TTL (R10, R11), el bucket de media sin acceso público (R12, R13) y el
- * bus EventBridge (R14). Correr esta función dos veces seguidas (R5) no
+ * Orquesta la creación idempotente de los recursos de LocalStack (R4): 5
+ * colas SQS (con sus RedrivePolicy, DLQ primero — R6-R9, R3), la tabla
+ * `positions` con TTL (R10, R11), el bucket de media sin acceso público
+ * (R12, R13), el bus EventBridge (R14) y la regla de alerts-engine sobre
+ * ese bus (R4, D2). Correr esta función dos veces seguidas (R5) no
  * duplica recursos ni lanza una excepción no controlada.
  */
 export async function provisionAllResources(
@@ -283,6 +335,7 @@ export async function provisionAllResources(
   await provisionPositionsTable(clients.dynamoDb);
   await provisionMediaBucket(clients.s3);
   await provisionEventBus(clients.eventBridge);
+  await provisionGeofenceEventsRoute(clients);
 }
 
 // AggregateError aparece en el mensaje cuando Node intenta conectar por

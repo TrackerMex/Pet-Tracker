@@ -15,6 +15,10 @@ export const LOW_ACCURACY_MIN_SATS = 4;
  * Histeresis: #12 cierra la alerta con bateria >= 30 (design.md D8). */
 export const BATTERY_LOW_THRESHOLD_PCT = 20;
 
+/** Umbral de recuperacion: alerts-engine (#12 R11) cierra la alerta
+ * battery_low abierta cuando batteryPct entrante es >= a este valor. */
+export const BATTERY_RECOVERY_THRESHOLD_PCT = 30;
+
 /** Nombres de flags de calidad (docs/data-model.md §DynamoDB `flags`). */
 export const FLAG_SUSPECT_JUMP = 'suspect_jump';
 export const FLAG_LOW_ACCURACY = 'low_accuracy';
