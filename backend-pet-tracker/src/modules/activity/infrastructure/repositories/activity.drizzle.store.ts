@@ -1,9 +1,11 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { and, asc, eq, gt, gte, isNull, lte } from 'drizzle-orm';
+import { and, asc, eq, gt, gte, isNull, lt, lte, or, sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DRIZZLE } from '@/db/drizzle.constants';
 import { activityDaily } from '@/db/schema/activity.schema';
+import { alertEvents } from '@/db/schema/alerts.schema';
 import { petDevices } from '@/db/schema/devices.schema';
+import { geofences } from '@/db/schema/geofences.schema';
 import { petUsers } from '@/db/schema/pets.schema';
 import { users } from '@/db/schema/users.schema';
 import type {
@@ -15,11 +17,14 @@ import type {
   PetToAggregate,
 } from '@/modules/activity/domain/repositories/activity-store';
 import { isSupportedTimeZone } from '@/pipeline/local-day';
+import type { LocalDayRange } from '@/pipeline/local-day';
+import type { AwaySpan } from '@/pipeline/time-away';
 
 const FALLBACK_TIME_ZONE = 'UTC';
 const OWNER_ROLE = 'owner';
 const ACTIVE_STATUS = 'active';
 const AVG_WALK_MINUTES_SCALE = 2;
+const GEOFENCE_EXIT_TYPE = 'geofence_exit';
 
 /**
  * Implementacion Drizzle del puerto de actividad (D8). Cobertura contra
@@ -92,9 +97,10 @@ export class ActivityDrizzleStore implements ActivityStore {
   }
 
   /**
-   * R11: `DO UPDATE SET` con lista EXPLICITA de columnas que **excluye**
-   * `time_away_minutes`. Sin esa exclusion, el primer re-run de #10 tras un
-   * cierre de #13 borraria su trabajo.
+   * R11: `DO UPDATE SET` con lista EXPLICITA de columnas. #13 (R28/D4) añadio
+   * `time_away_minutes` con `coalesce(excluded, actual)`: un valor calculado
+   * NULL (mascota que se quedo sin geocercas) **nunca** pisa un valor
+   * historico bueno, asi que R11 sigue siendo literalmente verdadera.
    */
   async upsertDailyActivity(row: DailyActivityUpsert): Promise<void> {
     const computedAt = new Date();
@@ -111,11 +117,68 @@ export class ActivityDrizzleStore implements ActivityStore {
 
     await this.db
       .insert(activityDaily)
-      .values({ petId: row.petId, date: row.date, ...values })
+      .values({
+        petId: row.petId,
+        date: row.date,
+        timeAwayMinutes: row.timeAwayMinutes ?? null,
+        ...values,
+      })
       .onConflictDoUpdate({
         target: [activityDaily.petId, activityDaily.date],
-        set: values,
+        set: {
+          ...values,
+          timeAwayMinutes: sql`coalesce(excluded.time_away_minutes, ${activityDaily.timeAwayMinutes})`,
+        },
       });
+  }
+
+  /**
+   * R24/R25: dos consultas — la geocerca de referencia (la mas antigua, SIN
+   * filtrar por `active`, D3) y los `geofence_exit` suyos que solapan el dia.
+   * Las filas con `geofence_id IS NULL` (geocerca borrada, ON DELETE SET NULL
+   * de #12) y las de `battery_low` quedan fuera por el propio filtro: ya no
+   * son atribuibles a esta geocerca.
+   */
+  async findAwaySpans(
+    petId: string,
+    range: LocalDayRange,
+  ): Promise<AwaySpan[] | null> {
+    const [reference] = await this.db
+      .select({ id: geofences.id })
+      .from(geofences)
+      .where(eq(geofences.petId, petId))
+      .orderBy(asc(geofences.createdAt), asc(geofences.id))
+      .limit(1);
+
+    if (reference === undefined) {
+      // R27: sin geocerca de referencia el KPI no es medible (NULL), que es
+      // distinto de "medido y nunca salio" (0).
+      return null;
+    }
+
+    const rows = await this.db
+      .select({
+        openedAt: alertEvents.openedAt,
+        closedAt: alertEvents.closedAt,
+      })
+      .from(alertEvents)
+      .where(
+        and(
+          eq(alertEvents.petId, petId),
+          eq(alertEvents.type, GEOFENCE_EXIT_TYPE),
+          eq(alertEvents.geofenceId, reference.id),
+          lt(alertEvents.openedAt, new Date(range.endMs)),
+          or(
+            isNull(alertEvents.closedAt),
+            gt(alertEvents.closedAt, new Date(range.startMs)),
+          ),
+        ),
+      );
+
+    return rows.map((row) => ({
+      openedAtMs: row.openedAt.getTime(),
+      closedAtMs: row.closedAt === null ? null : row.closedAt.getTime(),
+    }));
   }
 
   async findDailyRange(

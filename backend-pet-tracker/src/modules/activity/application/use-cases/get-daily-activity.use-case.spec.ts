@@ -54,6 +54,8 @@ function fakeStore(
       );
     },
     findOwnerTimezone: () => Promise.resolve(timeZone),
+    // Puerto ampliado por #13 (R24); este use case no lo usa.
+    findAwaySpans: () => Promise.resolve(null),
   };
 
   return { store, calls };

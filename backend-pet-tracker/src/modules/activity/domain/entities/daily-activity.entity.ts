@@ -18,8 +18,13 @@ export interface DailyActivityRow {
 }
 
 /**
- * Payload del upsert (R11). No lleva `timeAwayMinutes` — la columna se
- * preserva a proposito — ni `computedAt`, que fija el store.
+ * Payload del upsert (R11). No lleva `computedAt`, que fija el store.
+ *
+ * `timeAwayMinutes` lo añadio #13 (R28): `null` significa **no medible** (la
+ * mascota no tiene geocerca de referencia) y el `coalesce` del `ON CONFLICT`
+ * hace que un `null` nuevo nunca pise un valor ya escrito — por eso R11 de
+ * #10 ("el upsert preserva time_away_minutes") sigue siendo literalmente
+ * verdadera.
  */
 export interface DailyActivityUpsert {
   petId: string;
@@ -31,6 +36,7 @@ export interface DailyActivityUpsert {
   avgWalkMinutes: number;
   firstWalkAt: Date | null;
   lastWalkAt: Date | null;
+  timeAwayMinutes?: number | null;
 }
 
 /** Procedencia de cada dia de la respuesta de /activity/daily (R20). */
