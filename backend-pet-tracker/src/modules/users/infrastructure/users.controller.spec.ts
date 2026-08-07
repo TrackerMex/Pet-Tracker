@@ -1,159 +1,139 @@
+import { HttpStatus, RequestMethod } from '@nestjs/common';
 import {
-  BadRequestException,
-  HttpException,
-  NotFoundException,
-} from '@nestjs/common';
-import { User } from '@/modules/auth/domain/entities/user.entity';
-import { UserNotFoundError } from '@/modules/auth/domain/errors/user.errors';
-import { GetProfileUseCase } from '@/modules/users/application/use-cases/get-profile.use-case';
-import { UpdateProfileUseCase } from '@/modules/users/application/use-cases/update-profile.use-case';
+  HTTP_CODE_METADATA,
+  METHOD_METADATA,
+  PATH_METADATA,
+} from '@nestjs/common/constants';
+import { IS_PUBLIC_KEY } from '@/modules/auth/infrastructure/decorators/public.decorator';
+import type { CurrentUserPayload } from '@/modules/auth/infrastructure/decorators/current-user.decorator';
+import type { DeletePushTokenUseCase } from '@/modules/users/application/use-cases/delete-push-token.use-case';
+import type { GetProfileUseCase } from '@/modules/users/application/use-cases/get-profile.use-case';
+import type { RegisterPushTokenUseCase } from '@/modules/users/application/use-cases/register-push-token.use-case';
+import type { UpdateProfileUseCase } from '@/modules/users/application/use-cases/update-profile.use-case';
 import { UsersController } from './users.controller';
 
-const USER_ID = '0198a1f0-3d5c-7f21-b0a1-6f1c9e2d4b77';
-const CURRENT_USER = { id: USER_ID, email: 'ada@example.com' };
+const USER: CurrentUserPayload = { id: 'user-1', email: 'a@example.com' };
+const EXPO_TOKEN = 'ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]';
+const CREATED_AT = new Date('2026-08-01T00:00:00.000Z');
+const LAST_SEEN_AT = new Date('2026-08-07T10:00:00.000Z');
 
-function buildUser(overrides: Partial<User> = {}): User {
-  return new User({
-    id: USER_ID,
-    email: 'ada@example.com',
-    passwordHash: '$argon2id$stored-hash',
-    firstName: 'Ada',
-    lastName: 'Lovelace',
-    phone: '+525512345678',
-    country: 'MX',
-    timezone: 'America/Mexico_City',
-    termsAcceptedAt: new Date('2026-07-30T10:00:00.000Z'),
-    emailVerifiedAt: null,
-    createdAt: new Date('2026-07-30T10:00:00.000Z'),
-    updatedAt: new Date('2026-07-30T10:00:00.000Z'),
-    ...overrides,
-  });
+function controller(overrides: {
+  register?: jest.Mock;
+  remove?: jest.Mock;
+}): UsersController {
+  return new UsersController(
+    {} as GetProfileUseCase,
+    {} as UpdateProfileUseCase,
+    {
+      execute:
+        overrides.register ??
+        jest.fn().mockResolvedValue({
+          id: 'token-row-1',
+          platform: 'ios',
+          createdAt: CREATED_AT,
+          lastSeenAt: LAST_SEEN_AT,
+        }),
+    } as unknown as RegisterPushTokenUseCase,
+    {
+      execute: overrides.remove ?? jest.fn().mockResolvedValue(undefined),
+    } as unknown as DeletePushTokenUseCase,
+  );
 }
 
-function buildController(options?: {
-  getProfile?: () => Promise<User>;
-  updateProfile?: () => Promise<User>;
-}) {
-  const getProfileExecute = jest.fn(
-    options?.getProfile ?? (() => Promise.resolve(buildUser())),
+/**
+ * Handler como objeto opaco: los decoradores de Nest cuelgan su metadata del
+ * propio metodo. Se lee por descriptor y no como `Clase.prototype.metodo` para
+ * no arrastrar el `this` sin ligar que @typescript-eslint/unbound-method
+ * (con razon) prohibe.
+ */
+function handlerOf(name: 'registerPushToken' | 'deletePushToken'): object {
+  const descriptor = Object.getOwnPropertyDescriptor(
+    UsersController.prototype,
+    name,
   );
-  const updateProfileExecute = jest.fn(
-    options?.updateProfile ?? (() => Promise.resolve(buildUser())),
-  );
-  const controller = new UsersController(
-    { execute: getProfileExecute } as unknown as GetProfileUseCase,
-    { execute: updateProfileExecute } as unknown as UpdateProfileUseCase,
-  );
-
-  return { controller, getProfileExecute, updateProfileExecute };
+  return descriptor?.value as object;
 }
 
-describe('R9: GET /v1/me responde 200 con el perfil del usuario autenticado', () => {
-  it('invoca GetProfileUseCase con el id del token y devuelve el perfil serializado', async () => {
-    const { controller, getProfileExecute } = buildController();
+describe('R6: ambas rutas de push-tokens exigen JWT (sin @Public, las cubre el AuthGuard global)', () => {
+  it('ni el controller ni sus handlers llevan la metadata de @Public()', () => {
+    expect(Reflect.getMetadata(IS_PUBLIC_KEY, UsersController)).toBeUndefined();
 
-    const body = await controller.me(CURRENT_USER);
+    for (const name of ['registerPushToken', 'deletePushToken'] as const) {
+      expect(
+        Reflect.getMetadata(IS_PUBLIC_KEY, handlerOf(name)),
+      ).toBeUndefined();
+    }
+  });
 
-    expect(getProfileExecute).toHaveBeenCalledWith(USER_ID);
-    expect(body).toEqual({
-      id: USER_ID,
-      email: 'ada@example.com',
-      firstName: 'Ada',
-      lastName: 'Lovelace',
-      phone: '+525512345678',
-      country: 'MX',
-      timezone: 'America/Mexico_City',
-      createdAt: '2026-07-30T10:00:00.000Z',
-      updatedAt: '2026-07-30T10:00:00.000Z',
-    });
+  it('las rutas cuelgan de @Controller("me") con el path push-tokens', () => {
+    expect(Reflect.getMetadata(PATH_METADATA, UsersController)).toBe('me');
+
+    for (const name of ['registerPushToken', 'deletePushToken'] as const) {
+      expect(Reflect.getMetadata(PATH_METADATA, handlerOf(name))).toBe(
+        'push-tokens',
+      );
+    }
+
+    expect(
+      Reflect.getMetadata(METHOD_METADATA, handlerOf('registerPushToken')),
+    ).toBe(RequestMethod.POST);
+    expect(
+      Reflect.getMetadata(METHOD_METADATA, handlerOf('deletePushToken')),
+    ).toBe(RequestMethod.DELETE);
   });
 });
 
-describe('caso borde (sin R-id): usuario del token ya no existe en users', () => {
-  it('mapea UserNotFoundError a NotFoundException 404 en vez de dejarlo crudo', async () => {
-    const { controller } = buildController({
-      getProfile: () => Promise.reject(new UserNotFoundError(USER_ID)),
-    });
+describe('R3/R5: codigos de respuesta del contrato (D5: 200 en POST, 204 en DELETE)', () => {
+  it('el POST responde 200 y no 201 — el upsert idempotente no crea nada la segunda vez', () => {
+    expect(
+      Reflect.getMetadata(HTTP_CODE_METADATA, handlerOf('registerPushToken')),
+    ).toBe(HttpStatus.OK);
+  });
 
-    let caught: unknown;
-    await controller.me(CURRENT_USER).catch((error: unknown) => {
-      caught = error;
-    });
-
-    expect(caught).toBeInstanceOf(NotFoundException);
-    expect((caught as HttpException).getStatus()).toBe(404);
+  it('el DELETE responde 204 sin body', () => {
+    expect(
+      Reflect.getMetadata(HTTP_CODE_METADATA, handlerOf('deletePushToken')),
+    ).toBe(HttpStatus.NO_CONTENT);
   });
 });
 
-describe('R10: PATCH /v1/me actualiza los campos provistos y responde 200', () => {
-  it('invoca UpdateProfileUseCase con el dto validado y devuelve el perfil actualizado', async () => {
-    const { controller, updateProfileExecute } = buildController({
-      updateProfile: () => Promise.resolve(buildUser({ firstName: 'Grace' })),
+describe('R13: ninguna respuesta HTTP de push-tokens contiene el token completo', () => {
+  it('el body del POST son exactamente {id, platform, createdAt, lastSeenAt}', async () => {
+    const response = await controller({}).registerPushToken(USER, {
+      expoToken: EXPO_TOKEN,
+      platform: 'ios',
     });
 
-    const body = await controller.updateMe(CURRENT_USER, {
-      firstName: 'Grace',
+    expect(Object.keys(response).sort()).toEqual(
+      ['id', 'platform', 'createdAt', 'lastSeenAt'].sort(),
+    );
+    expect(JSON.stringify(response)).not.toContain(EXPO_TOKEN);
+    expect(JSON.stringify(response)).not.toContain(USER.id);
+  });
+
+  it('el DELETE no devuelve body', async () => {
+    const response = await controller({}).deletePushToken(USER, {
+      expoToken: EXPO_TOKEN,
     });
 
-    expect(updateProfileExecute).toHaveBeenCalledWith(USER_ID, {
-      firstName: 'Grace',
-    });
-    expect(body.firstName).toBe('Grace');
+    expect(response).toBeUndefined();
   });
 });
 
-describe('R11: PATCH /v1/me con timezone invalida responde 400 sin invocar el caso de uso', () => {
-  it('lanza BadRequestException', async () => {
-    const { controller, updateProfileExecute } = buildController();
+describe('R4: el body invalido es 400 antes de tocar la base', () => {
+  it('no invoca el caso de uso cuando el schema falla', async () => {
+    const register = jest.fn();
+    const remove = jest.fn();
+    const target = controller({ register, remove });
 
-    let caught: unknown;
-    await controller
-      .updateMe(CURRENT_USER, { timezone: 'Not/A_Timezone' })
-      .catch((error: unknown) => {
-        caught = error;
-      });
+    await expect(
+      target.registerPushToken(USER, { expoToken: 'nope', platform: 'ios' }),
+    ).rejects.toMatchObject({ status: HttpStatus.BAD_REQUEST });
+    await expect(
+      target.deletePushToken(USER, { expoToken: 'nope' }),
+    ).rejects.toMatchObject({ status: HttpStatus.BAD_REQUEST });
 
-    expect(caught).toBeInstanceOf(BadRequestException);
-    expect(updateProfileExecute).not.toHaveBeenCalled();
-  });
-});
-
-describe('R12: PATCH /v1/me con country invalido responde 400 sin invocar el caso de uso', () => {
-  it('lanza BadRequestException', async () => {
-    const { controller, updateProfileExecute } = buildController();
-
-    let caught: unknown;
-    await controller
-      .updateMe(CURRENT_USER, { country: 'mx' })
-      .catch((error: unknown) => {
-        caught = error;
-      });
-
-    expect(caught).toBeInstanceOf(BadRequestException);
-    expect(updateProfileExecute).not.toHaveBeenCalled();
-  });
-});
-
-describe('R13: PATCH /v1/me con body vacio responde 200 (no-op)', () => {
-  it('invoca el caso de uso con un objeto vacio y no lanza', async () => {
-    const { controller, updateProfileExecute } = buildController();
-
-    const body = await controller.updateMe(CURRENT_USER, {});
-
-    expect(updateProfileExecute).toHaveBeenCalledWith(USER_ID, {});
-    expect(body.id).toBe(USER_ID);
-  });
-});
-
-describe('R15: la respuesta de PATCH /v1/me nunca expone password_hash', () => {
-  it('serializa solo la lista explicita de campos permitidos', async () => {
-    const { controller } = buildController();
-
-    const body = await controller.updateMe(CURRENT_USER, {
-      firstName: 'Grace',
-    });
-
-    expect(Object.keys(body)).not.toContain('passwordHash');
-    expect(JSON.stringify(body)).not.toContain('argon2id');
+    expect(register).not.toHaveBeenCalled();
+    expect(remove).not.toHaveBeenCalled();
   });
 });

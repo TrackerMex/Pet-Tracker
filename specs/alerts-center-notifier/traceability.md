@@ -1,0 +1,45 @@
+---
+feature: "alerts-center-notifier"
+status: approved     # draft | approved
+tags: [harness, spec]
+---
+
+# Trazabilidad — [[alerts-center-notifier]]
+
+| Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
+|---|---|---|
+| R1 | `src/db/schema/push-tokens.schema.spec.ts::R1: la migracion 0008 crea push_tokens conforme a docs/data-model.md (D5)` | `7652ff0` feat(alerts-center-notifier): push_tokens table and anti-spam index widened to status <> closed (R1,R2) |
+| R2 | `src/db/schema/push-tokens.schema.spec.ts::R2: la migracion 0008 redefine el indice anti-spam a WHERE status <> closed (D1)` + `test/alerts-engine.e2e-spec.ts::R2` (de #12, sigue verde sin editarlo) | `7652ff0` |
+| R3 | `src/modules/users/application/use-cases/push-token.use-cases.spec.ts::R3: POST /v1/me/push-tokens hace upsert idempotente por expo_token` + `test/alerts-center-notifier.e2e-spec.ts::R3: N POST con el mismo expoToken dejan 1 fila, mismo id y last_seen_at creciente` | `dea4631` feat(alerts-center-notifier): push token registration endpoints on /v1/me (R3,R4,R5,R6) (e2e `dd3e434`) |
+| R4 | `src/modules/users/application/dto/push-token.dto.spec.ts::R4: validacion zod del body de /v1/me/push-tokens (strictObject → 400)` + `src/modules/users/infrastructure/users.controller.spec.ts::R4: el body invalido es 400 antes de tocar la base` | `dea4631` |
+| R5 | `src/modules/users/application/use-cases/push-token.use-cases.spec.ts::R5: DELETE /v1/me/push-tokens es 204 idempotente y solo borra la fila propia` + `test/alerts-center-notifier.e2e-spec.ts::R5: DELETE borra la fila propia y es 204 idempotente; no borra la ajena` | `dea4631` (e2e `dd3e434`) |
+| R6 | `src/modules/users/infrastructure/users.controller.spec.ts::R6: ambas rutas de push-tokens exigen JWT (sin @Public, las cubre el AuthGuard global)` + `test/alerts-center-notifier.e2e-spec.ts::R6: sin JWT valido es 401 en ambas rutas, sin tocar la base` | `dea4631` (e2e `dd3e434`) |
+| R7 | `src/workers/notifier/notifier-consumer.service.spec.ts::R7: drenado de notifications y parseo zod del contrato v1 congelado de #12` | `4cb2578` feat(alerts-center-notifier): notifier worker consuming the notifications queue (R7-R15) |
+| R8 | `src/workers/notifier/notifier-consumer.service.spec.ts::R8: destinatarios = push tokens de todos los miembros activos de la mascota` + `test/alerts-center-notifier.e2e-spec.ts::R8/R9/R13` | `4cb2578` (e2e `dd3e434`) |
+| R9 | `src/workers/notifier/console-push-sender.spec.ts::R9: con PUSH_ENABLED != true se emite un log {wouldSend} y no se toca Expo` + `test/alerts-center-notifier.e2e-spec.ts::R8/R9/R13: loguea {wouldSend} con recipients = tokens de los miembros activos` | `4cb2578` (e2e `dd3e434`) |
+| R10 | `src/workers/notifier/notifier-consumer.service.spec.ts::R10: sin tokens registrados el notifier no falla (log y fin)` + `test/alerts-center-notifier.e2e-spec.ts::R10: sin tokens registrados no falla — log y fin, mensaje borrado` | `4cb2578` (e2e `dd3e434`) |
+| R11 | `src/workers/notifier/expo-push-sender.spec.ts::R11: con PUSH_ENABLED=true el envio pasa por isExpoPushToken/chunk/send` | `4cb2578` |
+| R12 | `src/workers/notifier/expo-push-sender.spec.ts::R12: los tickets se traducen a PushResult emparejados con su token de origen` + `src/workers/notifier/notifier-consumer.service.spec.ts::R12: ticket DeviceNotRegistered borra esa fila de push_tokens; otro error no` | `4cb2578` |
+| R13 | `src/workers/notifier/console-push-sender.spec.ts::R13: el log de ConsolePushSender jamas contiene el token completo` + `src/workers/notifier/notifier-consumer.service.spec.ts::R13: ningun log del consumer contiene el expo_token completo` + `src/modules/users/infrastructure/users.controller.spec.ts::R13: ninguna respuesta HTTP de push-tokens contiene el token completo` | `4cb2578` |
+| R14 | `src/workers/notifier/notifier-consumer.service.spec.ts::R14: un error no controlado no envenena el resto del lote` | `4cb2578` |
+| R15 | `src/workers/notifier/notifier-scheduler.service.spec.ts::R15: scheduler gateado por NOTIFIER_ENABLED (+ NODE_ENV=test), D6` | `4cb2578` |
+| R16 | `src/modules/alerts/application/use-cases/list-alerts.use-case.spec.ts::R16: GET /v1/alerts agrega las alertas de todas mis mascotas en una lista` + `test/alerts-center-notifier.e2e-spec.ts::R16: agrega en una sola lista con petName, ordenada opened_at DESC` | `76be277` feat(alerts-center-notifier): alerts center with keyset pagination and ack state machine (R16-R22) (e2e `dd3e434`) |
+| R17 | `src/modules/alerts/application/dto/list-alerts.dto.spec.ts::R17: la query string de GET /v1/alerts es strictObject (400 en lo demas)` + `src/modules/alerts/application/use-cases/list-alerts.use-case.spec.ts::R17: filtro ?status= exacto; ausente devuelve los tres estados` | `76be277` (e2e `dd3e434`) |
+| R18 | `src/modules/alerts/application/use-cases/list-alerts.use-case.spec.ts::R18: paginacion keyset {items, nextCursor} sin duplicados ni saltos` + `src/modules/alerts/domain/cursor.spec.ts::R18: cursor keyset (opened_at, id) en base64url versionado` | `76be277` |
+| R19 | `src/modules/alerts/application/use-cases/list-alerts.use-case.spec.ts::R19: aislamiento — el conjunto de mascotas sale del pet_users del usuario` + `test/alerts-center-notifier.e2e-spec.ts::R19: aislamiento — el ajeno no ve nada de esta mascota, y sin membresias la lista es vacia` | `76be277` (e2e `dd3e434`) |
+| R20 | `src/modules/alerts/application/use-cases/ack-alert.use-case.spec.ts::R20: POST /v1/alerts/:id/ack pasa open -> acked con acked_at, sin tocar closed_at` + `test/alerts-center-notifier.e2e-spec.ts::R20/R22: el ack pasa a acked, fija acked_at, deja closed_at NULL y audita una vez` | `76be277` (e2e `dd3e434`) |
+| R21 | `src/modules/alerts/application/use-cases/ack-alert.use-case.spec.ts::R21: maquina de estados del ack y 404 generico` + `test/alerts-center-notifier.e2e-spec.ts::R21: ack sobre una alerta closed es 409; sobre un id ajeno o basura, 404` | `76be277` (e2e `dd3e434`) |
+| R22 | `src/modules/alerts/application/use-cases/ack-alert.use-case.spec.ts::R22: auditoria alert.ack solo cuando el ack cambia el estado` | `76be277` (e2e `dd3e434`) |
+| R23 | `src/workers/alerts-engine/alerts-engine.drizzle.store.spec.ts::R23: el regreso sigue cerrando una alerta que el usuario ya acko (D1)` + `test/alerts-center-notifier.e2e-spec.ts::R23: exit -> ack -> exit -> enter con el motor de #12 (D1)` (4 its) | `0e5cc3c` feat(alerts-center-notifier): closeOpenAlert covers acked so the return still closes (R23) (e2e `dd3e434`) |
+| R24 | `src/modules/activity/application/use-cases/aggregate-time-away.spec.ts::R24: geocerca de referencia y NULL si la mascota no tiene ninguna` + `src/modules/activity/infrastructure/repositories/activity-time-away.drizzle.spec.ts::R24: la geocerca de referencia es la mas antigua, ACTIVA O NO (D3)` + `test/alerts-center-notifier.e2e-spec.ts::R24: la geocerca de referencia es la mas antigua aunque este inactiva` | `cd3e9c2` feat(alerts-center-notifier): time_away_minutes in the nightly aggregator (R24-R28) (e2e `dd3e434`) |
+| R25 | `src/pipeline/time-away.spec.ts::R25: solape de los geofence_exit con el dia local, sin unir intervalos` + `src/modules/activity/infrastructure/repositories/activity-time-away.drizzle.spec.ts::R25: la consulta de spans filtra geofence_exit de la geocerca de referencia` | `cd3e9c2` |
+| R26 | `src/pipeline/time-away.spec.ts::R26: cruce de medianoche local y eventos abiertos, sin caso especial` | `cd3e9c2` |
+| R27 | `src/modules/activity/application/use-cases/aggregate-time-away.spec.ts::R27: NULL (no medible) es distinto de 0 (medido y nunca salio)` + `test/alerts-center-notifier.e2e-spec.ts::R27: sin geocercas devuelve null (no medible), no una lista vacia` | `cd3e9c2` (e2e `dd3e434`) |
+| R28 | `src/modules/activity/infrastructure/repositories/activity-time-away.drizzle.spec.ts::R28: el upsert fija time_away_minutes con coalesce(excluded, actual) (D4)` + `src/modules/activity/application/use-cases/aggregate-time-away.spec.ts::R28` + `test/alerts-center-notifier.e2e-spec.ts::R28/D4: el upsert con NULL preserva el time_away_minutes ya escrito` + `test/activity.e2e-spec.ts::R11` de #10 (sigue verde **sin editarlo**) | `cd3e9c2` (e2e `dd3e434`) |
+| R29 | `src/workers/notifier/notifier-env.spec.ts::R29: PUSH_ENABLED y NOTIFIER_ENABLED documentadas en el mismo cierre` + `::R29: ninguna fuente nueva lee process.env — todo via ConfigService` | `dd3e434` docs(alerts-center-notifier): env vars, e2e over Postgres/LocalStack and traceability (R29,R30) |
+| R30 | verificado con `git diff main --name-only` y `git diff main -- backend-pet-tracker/package.json` (salida literal en `progress/impl_alerts-center-notifier.md`) — misma via que R20 de #12, sin commit de test | `dd3e434` (verificación manual documentada en el reporte) |
+
+Regla: el reviewer no aprueba si alguna fila queda "pendiente".
+Convención de commit: `feat(<scope>): <desc> (R1,R2)`.
+El implementer actualiza esta tabla tras cada commit; el reviewer la valida
+al aprobar (ver [[../../docs/specs|specs]] y [[../../CHECKPOINTS|CHECKPOINTS]] C5).

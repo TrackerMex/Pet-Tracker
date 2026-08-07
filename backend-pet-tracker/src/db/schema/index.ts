@@ -14,4 +14,5 @@ export * from './devices.schema';
 export * from './email-verification-tokens.schema';
 export * from './geofences.schema';
 export * from './pets.schema';
+export * from './push-tokens.schema';
 export * from './users.schema';

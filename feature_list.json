@@ -212,7 +212,7 @@
   {
     "id": 13,
     "name": "alerts-center-notifier",
-    "status": "pending",
+    "status": "done",
     "priority": "P2",
     "description": "Plan 007 (paso 4): tabla push_tokens + POST/DELETE /v1/me/push-tokens; notifier que consume SQS notifications → resuelve push_tokens de los miembros de la mascota → en local PUSH_ENABLED=false: log estructurado {wouldSend} (expo-server-sdk queda cableado para cuando haya build real, tokens DeviceNotRegistered se borran); centro de alertas: GET /v1/alerts?status= (paginado, todas mis mascotas) y POST /v1/alerts/:id/ack. Rellena time_away_minutes en el agregador (aproximación desde alert_events del día).",
     "acceptance_criteria": [

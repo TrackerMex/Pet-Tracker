@@ -19,6 +19,8 @@ function fakeStore(timeZone: string): ActivityStore {
     upsertDailyActivity: () => Promise.resolve(),
     findDailyRange: () => Promise.resolve([]),
     findOwnerTimezone: () => Promise.resolve(timeZone),
+    // Puerto ampliado por #13 (R24); este use case no lo usa.
+    findAwaySpans: () => Promise.resolve(null),
   };
 }
 

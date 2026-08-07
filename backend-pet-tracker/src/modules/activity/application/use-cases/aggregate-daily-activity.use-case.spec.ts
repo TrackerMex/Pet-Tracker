@@ -37,6 +37,10 @@ function fakeStore(
     },
     findDailyRange: () => Promise.resolve([]),
     findOwnerTimezone: () => Promise.resolve('UTC'),
+    // Puerto ampliado por #13 (R24): estas mascotas no tienen geocercas, asi
+    // que el KPI no es medible. La cobertura de time_away_minutes vive en
+    // aggregate-time-away.spec.ts; aqui solo mantiene el fake en sintonia.
+    findAwaySpans: () => Promise.resolve(null),
     ...overrides,
   };
 
@@ -234,8 +238,10 @@ describe('R14: runOnce procesa el ultimo dia local cerrado de cada mascota', () 
       avgWalkMinutes: 0,
       firstWalkAt: null,
       lastWalkAt: null,
+      // #13 R28 añadio la clave al payload; `null` = no medible (esta mascota
+      // no tiene geocercas). El `coalesce` del ON CONFLICT hace que un null
+      // nunca pise un valor ya escrito, asi que R11 de #10 se mantiene.
+      timeAwayMinutes: null,
     });
-    // El payload del upsert nunca lleva time_away_minutes (R11).
-    expect(Object.keys(calls.upserts[0])).not.toContain('timeAwayMinutes');
   });
 });

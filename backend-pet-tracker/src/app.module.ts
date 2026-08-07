@@ -7,6 +7,7 @@ import { AwsModule } from './aws/aws.module';
 import { AppConfigModule } from './config/config.module';
 import { DrizzleModule } from './db/drizzle.module';
 import { ActivityModule } from './modules/activity/activity.module';
+import { AlertsModule } from './modules/alerts/alerts.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { DevicesModule } from './modules/devices/devices.module';
 import { GeofencesModule } from './modules/geofences/geofences.module';
@@ -17,6 +18,7 @@ import { PositionsModule } from './modules/positions/positions.module';
 import { UsersModule } from './modules/users/users.module';
 import { AlertsEngineModule } from './workers/alerts-engine/alerts-engine.module';
 import { IngestionModule } from './workers/ingestion.module';
+import { NotifierModule } from './workers/notifier/notifier.module';
 
 @Module({
   imports: [
@@ -35,8 +37,10 @@ import { IngestionModule } from './workers/ingestion.module';
     GeofencesModule,
     PositionsModule,
     ActivityModule,
+    AlertsModule,
     IngestionModule,
     AlertsEngineModule,
+    NotifierModule,
   ],
   controllers: [AppController],
   providers: [AppService],

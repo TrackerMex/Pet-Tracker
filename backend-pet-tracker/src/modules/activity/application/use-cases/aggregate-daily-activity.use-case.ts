@@ -8,6 +8,7 @@ import { DAILY_POSITIONS_READER } from '@/modules/activity/domain/repositories/d
 import type { DailyPositionsReader } from '@/modules/activity/domain/repositories/daily-positions.reader';
 import { computeDailyActivity } from '@/pipeline/activity';
 import { localDayOf, localDayRange, shiftDay } from '@/pipeline/local-day';
+import { computeTimeAwayMinutes } from '@/pipeline/time-away';
 
 /** Resultado del barrido: una mascota cae en exactamente uno de los tres. */
 export interface AggregateSummary {
@@ -97,7 +98,12 @@ export class AggregateDailyActivityUseCase {
     );
     const activity = computeDailyActivity(positions, range);
 
-    // Sin `timeAwayMinutes`: la columna nace NULL y la rellena #13 (R11).
+    // #13 R24-R27: una lectura mas por mascota, en el mismo bucle y bajo el
+    // mismo try/catch. `null` = sin geocerca de referencia ⇒ no medible.
+    const awaySpans = await this.store.findAwaySpans(pet.petId, range);
+    const timeAwayMinutes =
+      awaySpans === null ? null : computeTimeAwayMinutes(awaySpans, range);
+
     await this.store.upsertDailyActivity({
       petId: pet.petId,
       date: targetDay,
@@ -110,6 +116,7 @@ export class AggregateDailyActivityUseCase {
         activity.firstWalkAt === null ? null : new Date(activity.firstWalkAt),
       lastWalkAt:
         activity.lastWalkAt === null ? null : new Date(activity.lastWalkAt),
+      timeAwayMinutes,
     });
 
     return true;
