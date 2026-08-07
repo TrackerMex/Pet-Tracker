@@ -10,20 +10,34 @@ import * as constants from './constants';
 // de CI) — mismo criterio de "verificacion estatica de contenido de
 // archivo" que no-hardcoded-credentials.spec.ts / relative-import-guard.
 // spec.ts en src/aws/.
+//
+// El contenido se normaliza (BOM fuera, CRLF -> LF) antes de hashear: sin
+// esto, el hash depende de core.autocrlf del checkout (CRLF en Windows,
+// LF en el runner de CI Linux) y no del contenido real del archivo.
 
 const PIPELINE_DIR = join(__dirname);
 
+function normalizeLineEndings(content: string): string {
+  const withoutBom =
+    content.charCodeAt(0) === 0xfeff ? content.slice(1) : content;
+  return withoutBom.replace(/\r\n/g, '\n');
+}
+
 function sha256Of(fileName: string): string {
   const content = readFileSync(join(PIPELINE_DIR, fileName), 'utf8');
-  return createHash('sha256').update(content).digest('hex');
+  return createHash('sha256')
+    .update(normalizeLineEndings(content))
+    .digest('hex');
 }
 
 // Hashes congelados al estado de #11 (geofences-crud, done), confirmados
-// sin diff contra main al implementar #12.
+// sin diff contra main al implementar #12. Calculados sobre el contenido
+// normalizado a LF (ver normalizeLineEndings) — inmunes al core.autocrlf
+// del checkout.
 const GEOFENCE_EVAL_TS_SHA256 =
-  '1f9484c8ee99dc3a84289b7ef7191706a3fd7cd1bd64f719641c7e3319413f97';
+  '134dbadd77599e589359dc4931ec6007dae7bfb3354207f0717a143891c89afa';
 const GEOFENCE_EVAL_SPEC_TS_SHA256 =
-  'add70269b639c8b7bd0b970915463444b85d6c135de48f03441bed8d29ab2527';
+  '80bb7ad04c1828bec4242b43fdd115db04034d18a926a6fe63c2791afc0d9503';
 
 describe('R19: geofence-eval.ts y su suite no se modifican', () => {
   it('geofence-eval.ts conserva exactamente su contenido de #11', () => {
