@@ -2,31 +2,48 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
   HttpStatus,
   NotFoundException,
   Patch,
+  Post,
 } from '@nestjs/common';
 import { ZodType } from 'zod';
 import { CurrentUser } from '@/modules/auth/infrastructure/decorators/current-user.decorator';
 import type { CurrentUserPayload } from '@/modules/auth/infrastructure/decorators/current-user.decorator';
 import { UserNotFoundError } from '@/modules/auth/domain/errors/user.errors';
 import {
+  DeletePushTokenDto,
+  DeletePushTokenSchema,
+  RegisterPushTokenDto,
+  RegisterPushTokenSchema,
+} from '@/modules/users/application/dto/register-push-token.dto';
+import {
   UpdateProfileDto,
   UpdateProfileSchema,
 } from '@/modules/users/application/dto/update-profile.dto';
+import { DeletePushTokenUseCase } from '@/modules/users/application/use-cases/delete-push-token.use-case';
 import { GetProfileUseCase } from '@/modules/users/application/use-cases/get-profile.use-case';
+import { RegisterPushTokenUseCase } from '@/modules/users/application/use-cases/register-push-token.use-case';
 import { UpdateProfileUseCase } from '@/modules/users/application/use-cases/update-profile.use-case';
 import {
   ProfileResponse,
   toProfileResponse,
 } from './mappers/profile-response.mapper';
+import {
+  PushTokenResponse,
+  toPushTokenResponse,
+} from './mappers/push-token-response.mapper';
 
 @Controller('me')
 export class UsersController {
   constructor(
     private readonly getProfile: GetProfileUseCase,
     private readonly updateProfile: UpdateProfileUseCase,
+    private readonly registerPushTokenUseCase: RegisterPushTokenUseCase,
+    private readonly deletePushTokenUseCase: DeletePushTokenUseCase,
   ) {}
 
   @Get()
@@ -50,6 +67,35 @@ export class UsersController {
     } catch (error) {
       throw mapProfileError(error);
     }
+  }
+
+  /**
+   * R3 (D5-i): 200 y no 201 — el upsert es idempotente y la segunda llamada
+   * con el mismo `expoToken` no crea nada.
+   */
+  @Post('push-tokens')
+  @HttpCode(HttpStatus.OK)
+  async registerPushToken(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() body: unknown,
+  ): Promise<PushTokenResponse> {
+    const dto = parseBody<RegisterPushTokenDto>(RegisterPushTokenSchema, body);
+
+    return toPushTokenResponse(
+      await this.registerPushTokenUseCase.execute(user.id, dto),
+    );
+  }
+
+  /** R5 (D5-ii): 204 siempre, incluso si el token no existia o es ajeno. */
+  @Delete('push-tokens')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deletePushToken(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() body: unknown,
+  ): Promise<void> {
+    const dto = parseBody<DeletePushTokenDto>(DeletePushTokenSchema, body);
+
+    await this.deletePushTokenUseCase.execute(user.id, dto);
   }
 }
 
