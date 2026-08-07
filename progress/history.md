@@ -701,3 +701,53 @@ Deuda detectada (fuera de alcance, candidata a limpieza propia):
   pendiente de PR y merge humano. Próximo: `health-vaccines` (#14), aunque
   antes conviene decidir qué se hace con los e2e fuera de `init.sh` y con el
   bucket de #6.
+
+---
+
+## Sesión 2026-08-07 (3) — fix: los e2e entran en el gate + R8 de media (sin id, bugfix de harness)
+
+- **Origen:** al cerrar `alerts-center-notifier` (#13) se descubrió que
+  `init.sh` **nunca había ejecutado los tests e2e**. `TEST_CMD` lanza jest con
+  `rootDir: "src"` y `testRegex: ".*\.spec\.ts$"`; los e2e viven en
+  `backend-pet-tracker/test/` como `*.e2e-spec.ts` con config propia
+  (`test/jest-e2e.json`). CI corre `init.sh`, así que tampoco los corría: las
+  12 features cerradas hasta entonces tenían sus criterios de aceptación e2e
+  dados por buenos sin haberse ejecutado en ningún gate automático.
+- **Branch:** `fix/media-r8-localstack` (ciclo corto, sin entrada en
+  `feature_list.json`). Precedente: `fix/activity-migration-assertion`.
+- **Parte 1 — harness (`6df9ab4`):** `init.config.sh` define `E2E_CMD` y
+  `E2E_REQUIRED_PORTS`; `init.sh` gana `port_open()` (bash `/dev/tcp`, sin
+  depender de `nc`/`lsof`, que no están garantizados en Git Bash ni en los
+  runners) y un bloque que corre los e2e solo si 5432 y 4566 responden. Infra
+  ausente ⇒ aviso y continúa, para que `init.sh` siga sirviendo sin Docker;
+  infra presente y e2e rojo ⇒ exit 1.
+- **Parte 2 — `media.e2e-spec.ts::R8`:** al activar los e2e salió rojo de
+  forma determinista (esperaba 403 en un `GET` sin firma sobre el bucket S3,
+  recibía 200). **No era una vulnerabilidad**: `GetPublicAccessBlock` devuelve
+  los cuatro flags en `true`, o sea `provisionMediaBucket()` hace lo correcto
+  y el bucket no está expuesto — LocalStack almacena los flags pero no los
+  hace cumplir, y en AWS real ese GET daría 403. El test comprobaba algo que
+  el emulador no emula. `implementer` reescribió R8 contra la configuración
+  efectiva (cuatro flags + ausencia de bucket policy pública) **sin tocar
+  `src/`**, con la limitación anotada en el propio test, en R8 de
+  `specs/pet-photos-s3/requirements.md`, en su `traceability.md` y en
+  `docs/architecture.md`.
+- **Revisión:** `reviewer` **aprobó** sin bloqueantes, tras reproducir él
+  mismo la regresión en tres variantes (config borrada, 3 de 4 flags, bucket
+  policy pública → las tres rojas) más un caso de control que se mantiene
+  verde, y tras verificar el gate de `init.sh` en ambas direcciones y que
+  `port_open()` no fuga descriptores bajo `set -e`.
+- **Gate:** re-confirmado el de `pet-photos-s3` (#6) con fecha 2026-08-07 — la
+  cláusula `THE SYSTEM SHALL` de R8 es byte-idéntica a la aprobada el
+  2026-08-05, solo cambió su criterio de verificación. La casilla no podía
+  quedarse firmada con la fecha vieja sobre un texto ya distinto.
+- **Corrección de registro:** la sesión de #12 había archivado este fallo de
+  `media.e2e-spec.ts` como "flakiness de LocalStack ya aceptada". Era
+  determinista; lo que pasaba es que nadie lo ejecutaba.
+- **Estado final:** PR #29 mergeada junto con la #28 de la feature #13.
+  `main` verde con **832 unit + 166 e2e** — primera vez que el harness
+  verifica ambas cosas.
+- **Queda abierto:** CI no levanta Postgres ni LocalStack (`ci.yml:27` lo dejó
+  anotado hace tiempo), así que en el runner el paso e2e se salta con aviso y
+  CI sigue verde verificando solo unit tests. Cerrarlo pide `services` +
+  migraciones + `provision:local` en el workflow.
