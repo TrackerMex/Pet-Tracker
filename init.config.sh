@@ -25,3 +25,12 @@ BUILD_CMD="pnpm -C backend-pet-tracker run build"
 TEST_CMD="pnpm -C backend-pet-tracker test --passWithNoTests"
 LINT_CMD="pnpm -C backend-pet-tracker run lint"
 TYPECHECK_CMD="pnpm -C backend-pet-tracker exec tsc --noEmit"
+
+# Tests e2e. Viven en backend-pet-tracker/test/ como *.e2e-spec.ts con su
+# propia config (test/jest-e2e.json), así que TEST_CMD no los alcanza:
+# ese jest usa rootDir "src" y testRegex ".*\.spec\.ts$".
+E2E_CMD="pnpm -C backend-pet-tracker run test:e2e"
+
+# Puertos que deben responder para que los e2e tengan sentido (docker-compose).
+# Si no responden, init.sh los salta con aviso en vez de fallar.
+E2E_REQUIRED_PORTS=(5432 4566)

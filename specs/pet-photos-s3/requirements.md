@@ -97,11 +97,31 @@ tags: [harness, spec]
 
 - **R8**: THE SYSTEM SHALL exponer el acceso a fotos de mascotas
   exclusivamente a través de URLs S3 prefirmadas (`PUT` para subir, `GET`
-  para leer) — nunca una URL pública o sin firmar. Verificable e2e: un `GET`
-  directo sobre `http://<endpoint>/pet-tracker-media-local/<key>` sin
-  parámetros de firma responde `403` (el `PutPublicAccessBlock` ya
-  configurado por `localstack-provisioning` #2 rechaza el acceso público;
-  esta feature no lo modifica ni lo bypasea).
+  para leer) — nunca una URL pública o sin firmar. El `PutPublicAccessBlock`
+  ya configurado por `localstack-provisioning` #2 rechaza el acceso público;
+  esta feature no lo modifica ni lo bypasea.
+
+  **Criterio de verificación en local (LocalStack)**: e2e contra LocalStack
+  real — `GetPublicAccessBlock` sobre `pet-tracker-media-local` devuelve los
+  4 flags (`BlockPublicAcls`, `IgnorePublicAcls`, `BlockPublicPolicy`,
+  `RestrictPublicBuckets`) en `true`, y no existe una bucket policy con un
+  statement `Allow` sobre el principal anónimo (`"*"`).
+
+  > **Limitación del entorno local (documentada 2026-08-07)**: el criterio
+  > original — un `GET` directo sobre
+  > `http://<endpoint>/pet-tracker-media-local/<key>` sin parámetros de firma
+  > responde `403` — **no es verificable contra LocalStack**. LocalStack
+  > Community no aplica `PublicAccessBlock`, ACLs ni bucket policies en el
+  > plano de datos de S3 (el enforcement de IAM es funcionalidad Pro): solo
+  > persiste esa configuración como metadata y sirve el objeto con `200`
+  > igualmente. Verificado experimentalmente contra LocalStack 4.14 con los 4
+  > flags en `true` y también con una bucket policy `Deny` explícita. El
+  > requisito **no cambia** — cambia solo cómo se verifica en local: se
+  > comprueba la configuración que produce ese `403` en AWS real, en vez del
+  > `403` en sí. **Pendiente de verificar en un despliegue AWS real**: que el
+  > `GET` sin firma responde efectivamente `403`. Mismo precedente que
+  > `localstack-provisioning` #2 R13; ver `docs/architecture.md`
+  > §Adaptación local.
 
 ### Flujo end-to-end
 
@@ -158,6 +178,13 @@ tags: [harness, spec]
 ## Aprobación
 
 - [X] Aprobado por humano (fecha: 2026-08-05) ← gate obligatorio antes de implementar
+- [X] Re-confirmado por humano (fecha: 2026-08-07) — cubre **únicamente** el
+  cambio del criterio de verificación de R8 (branch `fix/media-r8-localstack`).
+  La cláusula `THE SYSTEM SHALL` de R8 es byte-idéntica a la aprobada el
+  2026-08-05: el requisito "el bucket nunca es público" no cambió. Lo que
+  cambió es cómo se verifica en local, porque LocalStack almacena los flags de
+  `PublicAccessBlock` pero no los hace cumplir y el `GET` anónimo devolvía 200
+  donde AWS real daría 403.
 
 D1: confirmado `'owner'` (@RequirePetRole('owner')).
 D2: confirmado alcance solo-detalle (GET /v1/pets/:petId); listado sigue con photoUrl: null.
