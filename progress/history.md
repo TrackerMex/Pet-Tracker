@@ -616,9 +616,23 @@ Deuda detectada (fuera de alcance, candidata a limpieza propia):
   `GITHUB_TOKEN` con scope insuficiente para crear PRs (ver memoria). Sin
   acción del leader — queda para que el humano decida (rotar el token,
   sacarlo a variable de entorno, corregir el patrón de `.gitignore`).
-- **Commits:** `ae21e51`..`7f2cacf` (6 en la branch) + cierre del leader
-  (frontmatter B1 + bookkeeping).
-- **Estado final:** done — 12/18, próximo candidato P2: `alerts-center-
-  notifier` (#13), consume la cola `notifications` que esta feature ya
-  llena y añade el centro de alertas (`GET /v1/alerts`, `POST /v1/alerts/
-  :id/ack`).
+- **Continuación same-day (CI roja → fix):** el humano abrió la PR #25;
+  CI (GitHub Actions, Linux) salió roja en
+  `geofence-eval-untouched.spec.ts` pese a `init.sh` local (Windows) y
+  `reviewer` en verde — la guarda de R19 hasheaba el archivo con line
+  endings crudos, CRLF local vs. LF en CI sobre el mismo blob de git,
+  sin que `geofence-eval.ts` cambiara de verdad (diff contra `main`
+  seguía vacío). Feature reabierta a `in_progress` → `implementer`
+  normalizó BOM+CRLF→LF antes de hashear y recalculó las dos constantes
+  (`c4f09e5`) → `reviewer` re-aprobó, verificando los hashes recalculados
+  contra el log real de la corrida de CI que había fallado (coinciden
+  byte a byte) → push (`2944916`) → **CI confirmado verde en el runner
+  real** (`gh pr checks --watch`, 50s) → vuelta a `done`. Lección: verde
+  local en Windows no certifica verde en CI (Linux) cuando una guarda
+  hashea contenido de archivo sin normalizar line endings.
+- **Commits:** `ae21e51`..`2944916` (8 en la branch) + cierre del leader
+  (frontmatter B1 + bookkeeping + fix CRLF/LF post-CI).
+- **Estado final:** done — 12/18, CI verde confirmado en PR #25, próximo
+  candidato P2: `alerts-center-notifier` (#13), consume la cola
+  `notifications` que esta feature ya llena y añade el centro de alertas
+  (`GET /v1/alerts`, `POST /v1/alerts/:id/ack`).
