@@ -68,8 +68,10 @@ debe listar las 4 URLs de cola.
 - Infra local: `docker-compose.yml` (Postgres 17 + LocalStack),
   `.env.example` en raíz, `DATABASE_URL` verificada por `init.sh`.
 - CI: GitHub Actions (`.github/workflows/ci.yml`) corre `init.sh` en cada PR
-  y push a main — verde. Flujo por feature: branch `feature/<id>-<nombre>` +
-  PR que el humano mergea (`docs/conventions.md` §Branches y Pull Requests).
+  y push a main — verde, **pero sin e2e**: el runner no levanta Postgres ni
+  LocalStack, así que ese paso se salta con aviso (ver el pendiente abierto
+  más abajo). Flujo por feature: branch `feature/<id>-<nombre>` + PR que el
+  humano mergea (`docs/conventions.md` §Branches y Pull Requests).
 - Brief maestro copiado a `docs/brief.md`.
 - Knowledge graph con graphify (`pip install graphifyy`): grafo local en
   `graphify-out/` (gitignored) sobre código + plans + docs, sin LLM.
@@ -420,34 +422,69 @@ debe listar las 4 URLs de cola.
   Branch `feature/13-alerts-center-notifier`. Ver
   `progress/impl_alerts-center-notifier.md` y
   `progress/review_alerts-center-notifier.md`.
-- **Agujero de verificación descubierto en esta sesión (afecta a TODAS las
-  features cerradas hasta ahora)**: `init.sh` **nunca ha corrido los e2e**.
-  `init.config.sh:25` usa `TEST_CMD="pnpm -C backend-pet-tracker test"` →
-  jest con `rootDir: "src"` y `testRegex: ".*\.spec\.ts$"`; los e2e viven en
-  `test/` como `*.e2e-spec.ts` con config aparte (`test/jest-e2e.json`,
-  script `test:e2e`). CI corre `init.sh`, así que tampoco. Consecuencia: los
-  criterios de aceptación e2e de las 12 features anteriores se dieron por
-  buenos sin ejecutarse en ningún gate automático. Corrida manual en esta
-  sesión: **164/165 pasan**. Pendiente decidir si `TEST_CMD` pasa a incluir
-  los e2e (dejaría CI rojo hasta resolver el punto siguiente).
-- **`media.e2e-spec.ts:317::R8` falla de forma determinista** (espera 403,
-  recibe 200 en un `GET` sin firma sobre el bucket S3). Es el criterio de
-  aceptación literal de `pet-photos-s3` (#6, `done`): "Bucket jamás
-  público". La sesión de #12 lo registró como "flakiness ya conocido" —
-  **ese diagnóstico era incorrecto**: no es intermitente, es que nadie lo
-  ejecutaba. Ajeno a #13 (su diff no toca media/aws/s3/provisioning).
-  Pendiente: determinar si es que LocalStack no aplica block-public-access
-  como S3 real o si el bucket está realmente abierto.
+- **Agujero de verificación descubierto y cerrado (2026-08-07, PR #29)**:
+  `init.sh` **nunca había corrido los e2e**. `TEST_CMD` lanza jest con
+  `rootDir: "src"` y `testRegex: ".*\.spec\.ts$"`, y los e2e viven en `test/`
+  como `*.e2e-spec.ts` con config aparte (`test/jest-e2e.json`). CI corre
+  `init.sh`, así que tampoco los corría: los criterios de aceptación e2e de
+  las 12 features anteriores se habían dado por buenos sin ejecutarse en
+  ningún gate automático. **Arreglado**: `init.config.sh` define `E2E_CMD` y
+  `E2E_REQUIRED_PORTS`, e `init.sh` los ejecuta cuando los puertos 5432 y
+  4566 responden; si la infra no está, avisa y continúa (para no romper
+  `init.sh` en máquinas sin Docker), y con infra levantada un e2e rojo sí
+  aborta con exit 1. `main` verde con **832 unit + 166 e2e**.
+- **`media.e2e-spec.ts::R8`: no había vulnerabilidad** (2026-08-07, PR #29).
+  El test esperaba 403 en un `GET` sin firma sobre el bucket y recibía 200 —
+  criterio de aceptación literal de `pet-photos-s3` (#6): "Bucket jamás
+  público". Diagnóstico: `GetPublicAccessBlock` devuelve los cuatro flags en
+  `true`, o sea `provisionMediaBucket()` hace lo correcto y el bucket **no
+  está expuesto**; LocalStack almacena los flags pero **no los hace cumplir**,
+  y en AWS real ese GET daría 403. El test verificaba algo que el emulador no
+  emula. R8 pasa a comprobar los cuatro flags + ausencia de bucket policy
+  pública, sin tocar `src/`. Que el GET anónimo responda 403 queda **sin
+  verificar hasta un despliegue AWS real**, dicho explícitamente en el test,
+  en R8 de `specs/pet-photos-s3/requirements.md`, en su `traceability.md` y
+  en `docs/architecture.md`. Corrige de paso el registro de la sesión de #12,
+  que lo archivó como "flakiness ya conocido": era determinista, solo que
+  nadie lo ejecutaba.
+- **Pendiente abierto — CI no levanta infra para los e2e**: `ci.yml:27` dejó
+  anotado hace tiempo "cuando existan tests e2e contra Postgres/LocalStack,
+  anadir services aqui", y sigue sin hacerse. Tras la PR #29, en el runner
+  los puertos están cerrados y el paso e2e **se salta con aviso**: CI sale
+  verde habiendo verificado solo los unit tests. Cerrarlo del todo pide
+  `services` de Postgres + LocalStack, migraciones y `provision:local` en el
+  workflow. Mientras tanto, los e2e solo se verifican en local — y conviene
+  correrlos a mano antes de dar una feature por cerrada.
 - Próximo paso SDD: **no quedan features P1**. `health-vaccines` (#14) es la
   siguiente por prioridad y orden — catálogo de vacunas + `pet_vaccines`,
   rellena el `nextVaccine` que el perfil de mascota (#5) ya expone en null.
-  Antes conviene decidir los dos pendientes de verificación de arriba.
   Integración Wialon real: diferida hasta tener hardware en mano (SIM_MODE
   es el camino; conectar real será smoke test de config, no feature).
 
 ---
 
 ## Última sesión
+
+- **2026-08-07 (3)** — Ciclo corto de fix, sin id: **los e2e entran en el
+  gate**. Al cerrar #13 se descubrió que `init.sh` nunca había ejecutado los
+  e2e y que CI, que corre `init.sh`, tampoco — 12 features cerradas con sus
+  criterios e2e nunca verificados automáticamente. Branch
+  `fix/media-r8-localstack`: `E2E_CMD` + `E2E_REQUIRED_PORTS` en
+  `init.config.sh` y un bloque en `init.sh` que comprueba los puertos 5432 y
+  4566 antes de lanzarlos (infra ausente ⇒ aviso y sigue; infra presente y
+  e2e rojo ⇒ exit 1). Al activarlos saltó `media.e2e-spec.ts::R8`, que
+  resultó **no ser una vulnerabilidad**: el bucket tiene los cuatro flags de
+  `PublicAccessBlock` en `true` y es LocalStack quien no los hace cumplir, así
+  que el test comprobaba algo que el emulador no emula. `implementer`
+  reescribió R8 contra la configuración efectiva sin tocar `src/` →
+  `reviewer` **aprobó** tras reproducir él mismo la regresión en tres
+  variantes (config borrada, 3 de 4 flags, policy pública: las tres rojas) más
+  un caso de control que se mantiene verde, y tras verificar el gate de
+  `init.sh` en ambas direcciones. Gate humano de #6 re-confirmado con fecha
+  de hoy: la cláusula `THE SYSTEM SHALL` de R8 no cambió, solo su criterio de
+  verificación. PR #29 mergeada. `main` verde con **832 unit + 166 e2e** — la
+  primera vez que el harness verifica ambas cosas. Queda abierto que CI monte
+  la infra para que esos e2e corran también en el runner.
 
 - **2026-08-07 (2)** — Ciclo SDD completo de `alerts-center-notifier` (#13):
   `spec_author` (30 EARS, D1-D6 con propuesta explícita cada una) → **gate
