@@ -21,9 +21,12 @@ import { pets } from './pets.schema';
 // alerts-center-notifier (#13) sin necesitar una migracion de CHECK nueva.
 // `geofence_id` ON DELETE SET NULL (D1-A): la fila sobrevive al borrado de
 // la geocerca que la origino; `payload` ya conserva su nombre al abrir.
-// Indice unico parcial anti-spam: un `open` por (pet_id, type, geofence_id)
-// — `coalesce` con el literal uuid_nil (D4, sin extension uuid-ossp) trata
-// `geofence_id IS NULL` (alertas de bateria) como un slot propio.
+// Indice unico parcial anti-spam: una alerta ACTIVA por (pet_id, type,
+// geofence_id) — `coalesce` con el literal uuid_nil (D4, sin extension
+// uuid-ossp) trata `geofence_id IS NULL` (alertas de bateria) como un slot
+// propio. #13 (D1) amplio el predicado de `status = 'open'` a
+// `status <> 'closed'`: en cuanto existe `acked`, "activa" dejo de ser
+// sinonimo de `open` y un ack del usuario no debe reabrir el anti-spam.
 export const alertEvents = pgTable(
   'alert_events',
   {
@@ -58,6 +61,6 @@ export const alertEvents = pgTable(
         table.type,
         sql`coalesce(${table.geofenceId}, '00000000-0000-0000-0000-000000000000'::uuid)`,
       )
-      .where(sql`${table.status} = 'open'`),
+      .where(sql`${table.status} <> 'closed'`),
   ],
 );
