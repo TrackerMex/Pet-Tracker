@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, eq, isNull } from 'drizzle-orm';
+import { and, eq, inArray, isNull } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { uuidv7 } from 'uuidv7';
 import { DRIZZLE } from '@/db/drizzle.constants';
@@ -96,7 +96,10 @@ export class AlertsEngineDrizzleStore implements AlertsEngineStore {
         and(
           eq(alertEvents.petId, input.petId),
           eq(alertEvents.type, input.type),
-          eq(alertEvents.status, 'open'),
+          // #13 R23/D1: "activa" = "no cerrada". Sin `acked` en el filtro, la
+          // alerta que el usuario acuso quedaria colgada para siempre y su
+          // `alert_resolved` no se encolaria nunca.
+          inArray(alertEvents.status, ['open', 'acked']),
           geofenceCondition,
         ),
       )

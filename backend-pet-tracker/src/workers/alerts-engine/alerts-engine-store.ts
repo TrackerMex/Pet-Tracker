@@ -44,6 +44,11 @@ export interface AlertsEngineStore {
   /** INSERT; null si el indice unico de R2 rechazo (anti-spam, R8/R12). */
   openAlert(input: OpenAlertInput): Promise<{ id: string } | null>;
 
-  /** UPDATE condicional WHERE status='open'; null si cero filas (R9/R11). */
+  /**
+   * UPDATE condicional sobre la alerta ACTIVA; null si cero filas (R9/R11).
+   * "Activa" = `status IN ('open','acked')` desde #13 (R23/D1): un `ack` del
+   * usuario es una anotacion, no una resolucion, y el regreso de la mascota
+   * debe cerrar la alerta igualmente. Firma y contrato de retorno intactos.
+   */
   closeOpenAlert(input: CloseOpenAlertInput): Promise<{ id: string } | null>;
 }
