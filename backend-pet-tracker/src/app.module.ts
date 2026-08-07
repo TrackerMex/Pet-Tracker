@@ -7,6 +7,7 @@ import { AwsModule } from './aws/aws.module';
 import { AppConfigModule } from './config/config.module';
 import { DrizzleModule } from './db/drizzle.module';
 import { ActivityModule } from './modules/activity/activity.module';
+import { AlertsModule } from './modules/alerts/alerts.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { DevicesModule } from './modules/devices/devices.module';
 import { GeofencesModule } from './modules/geofences/geofences.module';
@@ -36,6 +37,7 @@ import { NotifierModule } from './workers/notifier/notifier.module';
     GeofencesModule,
     PositionsModule,
     ActivityModule,
+    AlertsModule,
     IngestionModule,
     AlertsEngineModule,
     NotifierModule,
