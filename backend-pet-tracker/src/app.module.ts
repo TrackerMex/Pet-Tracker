@@ -17,6 +17,7 @@ import { PositionsModule } from './modules/positions/positions.module';
 import { UsersModule } from './modules/users/users.module';
 import { AlertsEngineModule } from './workers/alerts-engine/alerts-engine.module';
 import { IngestionModule } from './workers/ingestion.module';
+import { NotifierModule } from './workers/notifier/notifier.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { IngestionModule } from './workers/ingestion.module';
     ActivityModule,
     IngestionModule,
     AlertsEngineModule,
+    NotifierModule,
   ],
   controllers: [AppController],
   providers: [AppService],

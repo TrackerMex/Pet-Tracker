@@ -56,9 +56,9 @@ describe('R4: validacion zod del body de /v1/me/push-tokens (strictObject → 40
   });
 
   it('el schema del DELETE es el mismo sin platform', () => {
-    expect(DeletePushTokenSchema.safeParse({ expoToken: VALID_TOKEN }).success).toBe(
-      true,
-    );
+    expect(
+      DeletePushTokenSchema.safeParse({ expoToken: VALID_TOKEN }).success,
+    ).toBe(true);
     expect(
       DeletePushTokenSchema.safeParse({
         expoToken: VALID_TOKEN,

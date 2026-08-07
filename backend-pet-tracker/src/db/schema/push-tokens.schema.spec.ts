@@ -31,7 +31,14 @@ describe('R1: la migracion 0008 crea push_tokens conforme a docs/data-model.md (
   it('se llama push_tokens y tiene exactamente las columnas de la spec', () => {
     expect(config.name).toBe('push_tokens');
     expect([...columns.keys()].sort()).toEqual(
-      ['id', 'user_id', 'expo_token', 'platform', 'created_at', 'last_seen_at'].sort(),
+      [
+        'id',
+        'user_id',
+        'expo_token',
+        'platform',
+        'created_at',
+        'last_seen_at',
+      ].sort(),
     );
   });
 
@@ -99,7 +106,9 @@ describe('R1: la migracion 0008 crea push_tokens conforme a docs/data-model.md (
     const sql = readMigration0008();
     expect(sql).toContain('CREATE TABLE "push_tokens"');
     expect(sql).toContain('CREATE INDEX "push_tokens_user_id_idx"');
-    expect(sql).toContain('REFERENCES "public"."users"("id") ON DELETE cascade');
+    expect(sql).toContain(
+      'REFERENCES "public"."users"("id") ON DELETE cascade',
+    );
   });
 });
 

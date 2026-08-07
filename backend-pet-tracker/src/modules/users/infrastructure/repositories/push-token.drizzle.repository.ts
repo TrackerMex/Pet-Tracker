@@ -59,10 +59,7 @@ export class PushTokenDrizzleRepository implements PushTokenRepository {
     await this.db
       .delete(pushTokens)
       .where(
-        and(
-          eq(pushTokens.userId, userId),
-          eq(pushTokens.expoToken, expoToken),
-        ),
+        and(eq(pushTokens.userId, userId), eq(pushTokens.expoToken, expoToken)),
       );
   }
 
@@ -87,8 +84,6 @@ export class PushTokenDrizzleRepository implements PushTokenRepository {
   }
 
   async deleteByToken(expoToken: string): Promise<void> {
-    await this.db
-      .delete(pushTokens)
-      .where(eq(pushTokens.expoToken, expoToken));
+    await this.db.delete(pushTokens).where(eq(pushTokens.expoToken, expoToken));
   }
 }

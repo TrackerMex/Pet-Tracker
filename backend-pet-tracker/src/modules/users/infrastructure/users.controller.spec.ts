@@ -40,37 +40,45 @@ function controller(overrides: {
   );
 }
 
+/**
+ * Handler como objeto opaco: los decoradores de Nest cuelgan su metadata del
+ * propio metodo. Se lee por descriptor y no como `Clase.prototype.metodo` para
+ * no arrastrar el `this` sin ligar que @typescript-eslint/unbound-method
+ * (con razon) prohibe.
+ */
+function handlerOf(name: 'registerPushToken' | 'deletePushToken'): object {
+  const descriptor = Object.getOwnPropertyDescriptor(
+    UsersController.prototype,
+    name,
+  );
+  return descriptor?.value as object;
+}
+
 describe('R6: ambas rutas de push-tokens exigen JWT (sin @Public, las cubre el AuthGuard global)', () => {
   it('ni el controller ni sus handlers llevan la metadata de @Public()', () => {
     expect(Reflect.getMetadata(IS_PUBLIC_KEY, UsersController)).toBeUndefined();
 
-    for (const handler of [
-      UsersController.prototype.registerPushToken,
-      UsersController.prototype.deletePushToken,
-    ]) {
-      expect(Reflect.getMetadata(IS_PUBLIC_KEY, handler)).toBeUndefined();
+    for (const name of ['registerPushToken', 'deletePushToken'] as const) {
+      expect(
+        Reflect.getMetadata(IS_PUBLIC_KEY, handlerOf(name)),
+      ).toBeUndefined();
     }
   });
 
   it('las rutas cuelgan de @Controller("me") con el path push-tokens', () => {
     expect(Reflect.getMetadata(PATH_METADATA, UsersController)).toBe('me');
+
+    for (const name of ['registerPushToken', 'deletePushToken'] as const) {
+      expect(Reflect.getMetadata(PATH_METADATA, handlerOf(name))).toBe(
+        'push-tokens',
+      );
+    }
+
     expect(
-      Reflect.getMetadata(PATH_METADATA, UsersController.prototype.registerPushToken),
-    ).toBe('push-tokens');
-    expect(
-      Reflect.getMetadata(PATH_METADATA, UsersController.prototype.deletePushToken),
-    ).toBe('push-tokens');
-    expect(
-      Reflect.getMetadata(
-        METHOD_METADATA,
-        UsersController.prototype.registerPushToken,
-      ),
+      Reflect.getMetadata(METHOD_METADATA, handlerOf('registerPushToken')),
     ).toBe(RequestMethod.POST);
     expect(
-      Reflect.getMetadata(
-        METHOD_METADATA,
-        UsersController.prototype.deletePushToken,
-      ),
+      Reflect.getMetadata(METHOD_METADATA, handlerOf('deletePushToken')),
     ).toBe(RequestMethod.DELETE);
   });
 });
@@ -78,19 +86,13 @@ describe('R6: ambas rutas de push-tokens exigen JWT (sin @Public, las cubre el A
 describe('R3/R5: codigos de respuesta del contrato (D5: 200 en POST, 204 en DELETE)', () => {
   it('el POST responde 200 y no 201 — el upsert idempotente no crea nada la segunda vez', () => {
     expect(
-      Reflect.getMetadata(
-        HTTP_CODE_METADATA,
-        UsersController.prototype.registerPushToken,
-      ),
+      Reflect.getMetadata(HTTP_CODE_METADATA, handlerOf('registerPushToken')),
     ).toBe(HttpStatus.OK);
   });
 
   it('el DELETE responde 204 sin body', () => {
     expect(
-      Reflect.getMetadata(
-        HTTP_CODE_METADATA,
-        UsersController.prototype.deletePushToken,
-      ),
+      Reflect.getMetadata(HTTP_CODE_METADATA, handlerOf('deletePushToken')),
     ).toBe(HttpStatus.NO_CONTENT);
   });
 });
