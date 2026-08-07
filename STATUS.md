@@ -1,8 +1,8 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-08-07
-**Features completadas**: 12/18 (`feature_list.json`)
-**Pendientes**: 6 — backlog backend derivado de `plans/` 002–009 (alertas, salud, nutrición). **Sin P1 pendientes**: el resto es P2/P3.
+**Features completadas**: 13/18 (`feature_list.json`)
+**Pendientes**: 5 — backlog backend derivado de `plans/` 002–009 (salud, recordatorios, nutrición). **Sin P1 pendientes**: el resto es P2/P3.
 **En producción**: no
 
 ---
@@ -398,18 +398,87 @@ debe listar las 4 URLs de cola.
   está trackeado). Posible intento de resolver el bloqueo conocido de
   `GITHUB_TOKEN` con scope insuficiente para crear PRs. Pendiente: rotar
   el token, sacarlo a variable de entorno, corregir `.gitignore`.
-- Próximo paso SDD: **no quedan features P1**. `alerts-center-notifier`
-  (#13) es la continuación natural — consume la cola `notifications` que
-  #12 ya llena (push simulado con `PUSH_ENABLED=false`) y añade el centro
-  de alertas (`GET /v1/alerts`, `POST /v1/alerts/:id/ack`); también
-  rellena `time_away_minutes` de `activity_daily` (#10) desde
-  `alert_events`. Integración Wialon real: diferida hasta tener hardware
-  en mano (SIM_MODE es el camino; conectar real será smoke test de
-  config, no feature).
+- **`alerts-center-notifier` (#13) done**: worker nuevo
+  `src/workers/notifier/` que consume la cola `notifications` que llena #12,
+  resuelve los `push_tokens` de todos los miembros activos de la mascota y
+  despacha por el puerto `PushSender` con dos adaptadores —
+  `ConsolePushSender` (el que corre en local con `PUSH_ENABLED=false`, log
+  `{wouldSend}`) y `ExpoPushSender` (`expo-server-sdk`, borra tokens
+  `DeviceNotRegistered`). Tabla `push_tokens` + `POST/DELETE
+  /v1/me/push-tokens` (upsert idempotente por `expo_token`, `200`/`204`,
+  reasigna al re-registrar un token de otro usuario). Centro de alertas
+  `src/modules/alerts/`: `GET /v1/alerts?status=` paginado por cursor sobre
+  todas mis mascotas + `POST /v1/alerts/:id/ack` (autorización dentro del
+  caso de uso, no por `PetAccessGuard` — la ruta no lleva `:petId`).
+  `time_away_minutes` de `activity_daily` (#10) por fin se rellena, desde
+  los `alert_events` del día contra la geocerca más antigua de la mascota.
+  **D1 tocó código de #12, ya mergeado**: migración `0008` reemplaza el
+  índice anti-spam por `WHERE status <> 'closed'` y `closeOpenAlert()` pasa
+  a `status IN ('open','acked')` — sin eso un `ack` reabría el spam y dejaba
+  la alerta sin cerrar al regresar. Spec 30 EARS + D1-D6, `reviewer`
+  **aprobó** sin bloqueantes (832 unit tests + e2e propio verde).
+  Branch `feature/13-alerts-center-notifier`. Ver
+  `progress/impl_alerts-center-notifier.md` y
+  `progress/review_alerts-center-notifier.md`.
+- **Agujero de verificación descubierto en esta sesión (afecta a TODAS las
+  features cerradas hasta ahora)**: `init.sh` **nunca ha corrido los e2e**.
+  `init.config.sh:25` usa `TEST_CMD="pnpm -C backend-pet-tracker test"` →
+  jest con `rootDir: "src"` y `testRegex: ".*\.spec\.ts$"`; los e2e viven en
+  `test/` como `*.e2e-spec.ts` con config aparte (`test/jest-e2e.json`,
+  script `test:e2e`). CI corre `init.sh`, así que tampoco. Consecuencia: los
+  criterios de aceptación e2e de las 12 features anteriores se dieron por
+  buenos sin ejecutarse en ningún gate automático. Corrida manual en esta
+  sesión: **164/165 pasan**. Pendiente decidir si `TEST_CMD` pasa a incluir
+  los e2e (dejaría CI rojo hasta resolver el punto siguiente).
+- **`media.e2e-spec.ts:317::R8` falla de forma determinista** (espera 403,
+  recibe 200 en un `GET` sin firma sobre el bucket S3). Es el criterio de
+  aceptación literal de `pet-photos-s3` (#6, `done`): "Bucket jamás
+  público". La sesión de #12 lo registró como "flakiness ya conocido" —
+  **ese diagnóstico era incorrecto**: no es intermitente, es que nadie lo
+  ejecutaba. Ajeno a #13 (su diff no toca media/aws/s3/provisioning).
+  Pendiente: determinar si es que LocalStack no aplica block-public-access
+  como S3 real o si el bucket está realmente abierto.
+- Próximo paso SDD: **no quedan features P1**. `health-vaccines` (#14) es la
+  siguiente por prioridad y orden — catálogo de vacunas + `pet_vaccines`,
+  rellena el `nextVaccine` que el perfil de mascota (#5) ya expone en null.
+  Antes conviene decidir los dos pendientes de verificación de arriba.
+  Integración Wialon real: diferida hasta tener hardware en mano (SIM_MODE
+  es el camino; conectar real será smoke test de config, no feature).
 
 ---
 
 ## Última sesión
+
+- **2026-08-07 (2)** — Ciclo SDD completo de `alerts-center-notifier` (#13):
+  `spec_author` (30 EARS, D1-D6 con propuesta explícita cada una) → **gate
+  humano** aprobado en chat con las seis propuestas confirmadas → `implementer`
+  (TDD por R-id: `push_tokens` + endpoints, worker `notifier` con puerto
+  `PushSender` y sus dos adaptadores, módulo `alerts`, `time_away_minutes`,
+  migración `0008`) → primer `reviewer` **cancelado por el humano** a mitad de
+  camino (sin veredicto, no llegó a escribir su archivo; el harness no permite
+  reanudar un agente detenido) → el leader verificó a mano los dos puntos que
+  ese reviewer había dejado señalados → `reviewer` nuevo **aprobó** sin
+  bloqueantes. 832 unit tests verdes, e2e propio verde, trazabilidad 30/30.
+  **Bug B1 no se repitió**: los 4 archivos de spec quedaron en `approved`.
+  **Pero el checkbox del gate volvió a llegar marcado por el `spec_author`**
+  (con la fecha vacía) — tercera vez que un agente toca el gate que no le
+  corresponde; queda anotado en `requirements.md` §Aprobación. A diferencia de
+  #12, esta vez el leader aceptó un "listo, puedes continuar" de chat como
+  aprobación en vez de exigir confirmación D-por-D vía `AskUserQuestion`; las
+  D1-D6 se registraron por escrito antes de lanzar al `implementer`.
+  **Hallazgo mayor, ajeno a la feature**: `init.sh` nunca ha ejecutado los e2e
+  (detalle y consecuencias en "Estado actual"), lo que a su vez desmiente el
+  diagnóstico de "flakiness" que la sesión de #12 dio al fallo de
+  `media.e2e-spec.ts::R8` — es determinista y apunta a un bucket S3 accesible
+  sin firma, criterio de aceptación de #6. Ambos quedan pendientes de decisión
+  humana, ninguno bloquea #13. Anotado también un `DrizzleQueryError` (FK
+  `pet_users_user_id_users_id_fk`) que aparece durante los e2e sin tumbar
+  ningún test: el reviewer descartó carrera entre suites
+  (`test/jest-e2e.json` fija `maxWorkers: 1`), queda como promesa no esperada
+  u orden de `afterAll` dentro de una sola suite. Deuda declarada en la spec:
+  `DeviceNotRegistered` solo se atiende vía tickets inmediatos, no vía
+  receipts diferidos de Expo. Feature marcada `done`, branch
+  `feature/13-alerts-center-notifier`. Próximo: `health-vaccines` (#14).
 
 - **2026-08-07** — Ciclo SDD completo de `alerts-engine` (#12):
   `spec_author` (20 EARS, D1-D5 con propuesta explícita cada una) →

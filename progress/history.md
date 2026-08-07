@@ -636,3 +636,68 @@ Deuda detectada (fuera de alcance, candidata a limpieza propia):
   candidato P2: `alerts-center-notifier` (#13), consume la cola
   `notifications` que esta feature ya llena y añade el centro de alertas
   (`GET /v1/alerts`, `POST /v1/alerts/:id/ack`).
+
+---
+
+## Sesión 2026-08-07 (2) — alerts-center-notifier (id: 13)
+
+- **Feature:** #13 `alerts-center-notifier` (P2) — último eslabón del plan 007.
+  Entró `pending` (sin spec), salió `done`.
+- **Agentes:** `spec_author` → gate humano → `implementer` → `reviewer`
+  (cancelado por el humano sin veredicto) → verificación manual del leader →
+  `reviewer` nuevo, **aprobado**.
+- **Spec:** 30 requisitos EARS, decisiones D1-D6 con propuesta explícita cada
+  una. Aprobadas en chat las seis propuestas y registradas por escrito en
+  `requirements.md` §Aprobación antes de lanzar al `implementer`.
+  - **D1 (la de fondo):** `ack` rompía dos supuestos de #12, que codificaba
+    "alerta activa" como `status='open'` en el índice único anti-spam y en
+    `closeOpenAlert()`. Sin tocarlos, un `ack` reabría el spam y dejaba la
+    alerta sin cerrarse al regresar la mascota. Opción C: "activa" pasa a ser
+    "no cerrada" en ambos sitios — migración `0008` (`WHERE status <> 'closed'`)
+    y `status IN ('open','acked')`. Única intromisión en código ya mergeado.
+  - D2 instalar `expo-server-sdk` con puerto `PushSender` + 2 adaptadores;
+    D3 geocerca de referencia = la más antigua, activa o no; D4 `coalesce` en
+    el upsert de `activity_daily` para no tocar el test de R11 de #10;
+    D5 contrato de `/v1/me/push-tokens` (200/204, `ios|android`, re-registro
+    reasigna); D6 `NOTIFIER_ENABLED` propia.
+- **Entregado:** tabla `push_tokens` + `POST/DELETE /v1/me/push-tokens`;
+  worker `src/workers/notifier/` (consumer, scheduler, puerto `PushSender`,
+  `ConsolePushSender` y `ExpoPushSender`); módulo `src/modules/alerts/`
+  (`GET /v1/alerts?status=` paginado por cursor sobre todas mis mascotas,
+  `POST /v1/alerts/:id/ack`); `time_away_minutes` de `activity_daily` por fin
+  relleno desde `alert_events`. Migración `0008`. Una sola dependencia nueva.
+- **Verificación:** 832 unit tests verdes (113 suites), lint y typecheck OK.
+  E2E corridos a mano: **164/165**, con `test/alerts-center-notifier.e2e-spec.ts`
+  entero en verde.
+- **Incidencias de proceso:**
+  - El `spec_author` volvió a entregar el checkbox del gate ya marcado (fecha
+    vacía) — tercera vez que un agente toca un gate que no le corresponde.
+    Anotado en `requirements.md` §Aprobación.
+  - El primer `reviewer` fue detenido por el humano a media revisión; el
+    harness no permite reanudar un agente cancelado, así que hubo que
+    relanzar uno nuevo con lo ya verificado precargado para no repetir trabajo.
+  - A diferencia de #12, el leader aceptó un "listo, puedes continuar" de chat
+    como aprobación del gate en vez de exigir confirmación D-por-D vía
+    `AskUserQuestion`.
+- **Hallazgos no bloqueantes (del reviewer):** vía residual de fuga de
+  `expo_token` completo si `deleteByToken()` lanza y drizzle serializa los
+  params en el mensaje de error (`notifier-consumer.service.ts:169`, rama de
+  fallo de infra); R30 sin test que lo nombre (verificado a mano); dos
+  archivos nuevos fuera de la lista literal de R30, justificados.
+- **Hallazgo mayor, ajeno a la feature:** `init.sh` **nunca ha ejecutado los
+  e2e** — `init.config.sh:25` lanza jest con `rootDir: "src"` y
+  `testRegex: ".*\.spec\.ts$"`, y los e2e viven en `test/` como
+  `*.e2e-spec.ts` con config aparte. CI corre `init.sh`, así que tampoco los
+  corre. Los criterios e2e de las 12 features anteriores se dieron por buenos
+  sin ejecutarse nunca en un gate automático. De rebote desmiente el
+  diagnóstico de "flakiness ya conocido" que la sesión de #12 dio al fallo de
+  `media.e2e-spec.ts:317::R8` (403 esperado / 200 recibido): no es
+  intermitente, es que nadie lo corría — y es el criterio de aceptación
+  literal de #6 ("Bucket jamás público"). Ambos pendientes de decisión humana.
+- **Deuda declarada en la spec:** `DeviceNotRegistered` solo se atiende vía
+  tickets inmediatos, no vía receipts diferidos de Expo (`ponytail:` con su
+  camino de salida).
+- **Estado final:** done — 13/18. Branch `feature/13-alerts-center-notifier`,
+  pendiente de PR y merge humano. Próximo: `health-vaccines` (#14), aunque
+  antes conviene decidir qué se hace con los e2e fuera de `init.sh` y con el
+  bucket de #6.
