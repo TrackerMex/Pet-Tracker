@@ -18,6 +18,14 @@ ok()   { echo -e "${GREEN}✅ $1${NC}"; }
 warn() { echo -e "${YELLOW}⚠️  $1${NC}"; }
 fail() { echo -e "${RED}❌ $1${NC}"; exit 1; }
 
+# ¿Hay algo escuchando en un puerto de localhost? Sin dependencias externas:
+# nc/lsof no están garantizados en Git Bash ni en los runners.
+port_open() {
+  (exec 3<>"/dev/tcp/127.0.0.1/$1") 2>/dev/null || return 1
+  exec 3<&-
+  return 0
+}
+
 echo ""
 echo "══════════════════════════════════════════"
 echo "  INIT — ${PROJECT_NAME} (Harness SDD)"
@@ -187,6 +195,32 @@ if [ -n "$TEST_CMD" ]; then
   ok "Tests pasados"
 else
   warn "TEST_CMD vacío en init.config.sh — se salta tests"
+fi
+
+# ── 6b. TESTS E2E ────────────────────────────
+# Necesitan Postgres + LocalStack arriba (docker compose up -d). Si la infra no
+# responde se saltan con aviso en vez de fallar: init.sh tiene que poder correr
+# sin Docker. Contrapartida: donde de verdad importa — CI — la infra debe estar
+# levantada, o este paso pasa de largo sin verificar nada.
+if [ -n "$E2E_CMD" ]; then
+  echo ""
+  echo "→ Tests e2e..."
+  E2E_MISSING_PORT=""
+  for port in "${E2E_REQUIRED_PORTS[@]}"; do
+    if ! port_open "$port"; then
+      E2E_MISSING_PORT="$port"
+      break
+    fi
+  done
+
+  if [ -n "$E2E_MISSING_PORT" ]; then
+    warn "Puerto $E2E_MISSING_PORT sin respuesta — se saltan los e2e (levanta la infra con: docker compose up -d)"
+  else
+    eval "$E2E_CMD" 2>&1
+    ok "Tests e2e pasados"
+  fi
+else
+  warn "E2E_CMD vacío en init.config.sh — se saltan tests e2e"
 fi
 
 if [ -n "$LINT_CMD" ]; then
