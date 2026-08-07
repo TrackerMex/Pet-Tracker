@@ -191,3 +191,23 @@ Suite e2e completa (`pnpm run test:e2e`, las 11 suites incluyendo la nueva): **1
 - **`AlertsEngineDrizzleStore` no tiene spec unitario propio** — mismo criterio que `IngestionDrizzleStore` (#8): su SQL se ejercita indirectamente pero de verdad en `alerts-engine.e2e-spec.ts` (los 3 escenarios ahí pasan por el store real, no un mock). Si el reviewer prefiere un spec unitario dedicado (con una base de datos real o un fake), lo puedo agregar — no lo consideré necesario dado el patrón ya establecido en el repo y la cobertura e2e existente.
 - **No mergeé ni abrí PR** — la branch `feature/12-alerts-engine` queda lista, con el último commit en `df1270f`. `feature_list.json` sigue en `"status": "in_progress"` — no lo edité.
 - Docker (`docker compose up -d`) y LocalStack quedaron aprovisionados y corriendo al cierre de esta sesión, con las migraciones aplicadas — el reviewer puede correr `pnpm run test:e2e -- alerts-engine` directamente sin repetir el setup, o `pnpm run test:e2e` completo para confirmar el estado descrito arriba.
+
+## Fix CRLF/LF post-CI
+
+Sesión de bugfix puntual sobre #12 ya reabierta (misma branch `feature/12-alerts-engine`), disparada por un fallo real en CI (Linux) no reproducido en local (Windows).
+
+**Bug**: `R19` fallaba en CI con hashes distintos a los hardcodeados en `geofence-eval-untouched.spec.ts`, pese a que `geofence-eval.ts`/`.spec.ts` nunca cambiaron — confirmado con `git diff main -- <ambos archivos>`, vacío.
+
+**Causa raíz**: `sha256Of()` hasheaba `readFileSync(path, 'utf8')` crudo, incluidos los line endings. `GEOFENCE_EVAL_TS_SHA256`/`GEOFENCE_EVAL_SPEC_TS_SHA256` se congelaron en un checkout Windows (`core.autocrlf=true` → CRLF en disco). El runner de CI (Linux) hace checkout del mismo blob de git en LF, así que hashea `\n` donde el constante espera `\r\n` — falla aunque el contenido real es idéntico.
+
+**Fix elegido — (a) normalizar antes de hashear**, no (b) comparar contra `git show HEAD`: `normalizeLineEndings()` (nueva, en el mismo archivo) quita un BOM inicial si existe y colapsa `\r\n` → `\n` antes de `sha256Of()`; recalculé ambas constantes contra el contenido normalizado. Descarté (b) porque compara contra un HEAD que se mueve en cada commit de la feature (no contra el estado congelado de #11 que R19 realmente quiere verificar) y reintroduce en runtime la misma dependencia de `git` en un checkout superficial de CI que el comentario del propio archivo (líneas 6-12) ya documenta como indeseable — ese criterio sigue vigente, (a) no lo contradice.
+
+**Por qué es inmune a CRLF/LF y no "pasa en mi máquina"**: con un script aparte (no versionado) confirmé que (1) el hash crudo, sin normalizar, del contenido CRLF de mi checkout local == el valor `Expected` que reportó CI (la constante vieja) — mi entorno Windows reproduce el escenario exacto que generó el hash original; y (2) el hash de ese mismo contenido normalizado a LF == el valor `Received` que reportó CI — normalizar el CRLF local produce el mismo string, byte a byte, que ya tiene nativamente el checkout LF de Linux. CRLF→LF y el strip de BOM son operaciones idempotentes (LF normalizado no tiene `\r\n` que reemplazar; sin BOM no hay nada que cortar), así que cualquier checkout converge en el mismo string antes de hashear — la única variable que distinguía Windows de Linux queda eliminada del cálculo por construcción, no por casualidad de mi máquina.
+
+**Verificación**: `pnpm test -- geofence-eval-untouched` → 4/4 verde (local, Windows/CRLF). `./init.sh` completo corrido por mí → verde: build, 97 suites/699 tests, lint, typecheck. `git diff`/`git status` confirmaron que el commit toca un único archivo (18 inserciones, 4 eliminaciones).
+
+**Commit**: `c4f09e5` — `fix(alerts-engine): make R19 purity guard immune to CRLF/LF checkout differences`.
+
+**Traceability**: fila R19 de `specs/alerts-engine/traceability.md` actualizada para citar también `c4f09e5` junto al `df1270f` original — el `describe`/test de R19 es el mismo, cambió su implementación interna.
+
+**No tocado**: `geofence-eval.ts`, `geofence-eval.spec.ts`, `feature_list.json`, `STATUS.md`. Los 4 archivos que ya aparecían modificados en el working tree antes de esta sesión (`.gitignore`, `.mcp.json`, `feature_list.json`, `progress/current.md`) siguen sin stagear — no son míos, no los toqué.

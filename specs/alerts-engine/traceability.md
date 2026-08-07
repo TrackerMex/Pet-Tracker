@@ -26,7 +26,7 @@ tags: [harness, spec]
 | R16 | alerts-engine-consumer.service.spec.ts::R16 | 193ff9d feat(alerts-engine): geofence-events consumer, worker module and scheduler (R5-R17) |
 | R17 | alerts-engine-scheduler.service.spec.ts::R17 | 193ff9d feat(alerts-engine): geofence-events consumer, worker module and scheduler (R5-R17) |
 | R18 | test/alerts-engine.e2e-spec.ts::R18 | df1270f test(alerts-engine): e2e over Postgres/LocalStack and R19 static purity guard (R18,R19) |
-| R19 | geofence-eval-untouched.spec.ts::R19 | df1270f test(alerts-engine): e2e over Postgres/LocalStack and R19 static purity guard (R18,R19) |
+| R19 | geofence-eval-untouched.spec.ts::R19 | df1270f test(alerts-engine): e2e over Postgres/LocalStack and R19 static purity guard (R18,R19); c4f09e5 fix(alerts-engine): make R19 purity guard immune to CRLF/LF checkout differences |
 | R20 | verificado con `git diff main HEAD --name-only` (ver progress/impl_alerts-engine.md) | (verificación manual, sin commit de test — ver nota en tasks.md) |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
