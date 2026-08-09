@@ -8,8 +8,8 @@ tags: [harness, spec]
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | pendiente | pendiente |
-| R2 | pendiente | pendiente |
+| R1 | `src/db/schema/health.schema.spec.ts::R1: schema y migracion de vacunas` | `aa12c8c feat(health-vaccines): add schema and catalog seed (R1,R2)` |
+| R2 | `src/db/seed/vaccine-catalog.spec.ts::R2: seed idempotente del catalogo de vacunas` | `aa12c8c feat(health-vaccines): add schema and catalog seed (R1,R2)` |
 | R3 | pendiente | pendiente |
 | R4 | pendiente | pendiente |
 | R5 | pendiente | pendiente |
