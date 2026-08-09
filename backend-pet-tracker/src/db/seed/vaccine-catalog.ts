@@ -1,4 +1,4 @@
-import { sql } from 'drizzle-orm';
+import { and, eq, not, or, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { uuidv7 } from 'uuidv7';
 import { vaccineCatalog } from '@/db/schema/health.schema';
@@ -51,11 +51,23 @@ export const VACCINE_CATALOG_SEED: VaccineCatalogSeedEntry[] = [
 ];
 
 export async function seedVaccineCatalog(db: NodePgDatabase): Promise<void> {
-  await db
-    .insert(vaccineCatalog)
-    .values(VACCINE_CATALOG_SEED.map((entry) => ({ id: uuidv7(), ...entry })))
-    .onConflictDoUpdate({
-      target: [vaccineCatalog.species, vaccineCatalog.name],
-      set: { scheme: sql`excluded.scheme` },
-    });
+  await db.transaction(async (tx) => {
+    const canonicalEntry = or(
+      ...VACCINE_CATALOG_SEED.map((entry) =>
+        and(
+          eq(vaccineCatalog.species, entry.species),
+          eq(vaccineCatalog.name, entry.name),
+        ),
+      ),
+    );
+
+    await tx.delete(vaccineCatalog).where(not(canonicalEntry!));
+    await tx
+      .insert(vaccineCatalog)
+      .values(VACCINE_CATALOG_SEED.map((entry) => ({ id: uuidv7(), ...entry })))
+      .onConflictDoUpdate({
+        target: [vaccineCatalog.species, vaccineCatalog.name],
+        set: { scheme: sql`excluded.scheme` },
+      });
+  });
 }

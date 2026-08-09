@@ -128,9 +128,7 @@ describe('Health vaccines (e2e)', () => {
         expect(rows.filter((row) => row.species === 'dog')).toHaveLength(4);
         expect(rows.filter((row) => row.species === 'cat')).toHaveLength(3);
       } finally {
-        await db
-          .delete(vaccineCatalog)
-          .where(eq(vaccineCatalog.id, extraId));
+        await db.delete(vaccineCatalog).where(eq(vaccineCatalog.id, extraId));
       }
     });
   });

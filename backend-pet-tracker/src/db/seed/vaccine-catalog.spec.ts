@@ -43,13 +43,21 @@ describe('R2: seed idempotente del catalogo de vacunas', () => {
     ]);
   });
 
-  it('usa un upsert por species+name en una sola escritura', async () => {
+  it('elimina extras y hace upsert por species+name en una transaccion', async () => {
     const onConflictDoUpdate = jest.fn().mockResolvedValue(undefined);
     const values = jest.fn().mockReturnValue({ onConflictDoUpdate });
     const insert = jest.fn().mockReturnValue({ values });
+    const where = jest.fn().mockResolvedValue(undefined);
+    const remove = jest.fn().mockReturnValue({ where });
+    const transaction = jest.fn(async (work: (tx: unknown) => Promise<void>) =>
+      work({ insert, delete: remove }),
+    );
 
-    await seedVaccineCatalog({ insert } as never);
+    await seedVaccineCatalog({ transaction } as never);
 
+    expect(transaction).toHaveBeenCalledTimes(1);
+    expect(remove).toHaveBeenCalledTimes(1);
+    expect(where).toHaveBeenCalledTimes(1);
     expect(values).toHaveBeenCalledWith(
       expect.arrayContaining([
         expect.objectContaining({ species: 'dog', name: 'Rabia' }),

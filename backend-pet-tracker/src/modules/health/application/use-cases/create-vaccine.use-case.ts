@@ -54,7 +54,7 @@ export class CreateVaccineUseCase {
       vetName: dto.vetName ?? null,
       clinic: dto.clinic ?? null,
       notes: dto.notes ?? null,
-      documentKey: dto.documentKey ?? null,
+      documentKey: null,
       createdBy: userId,
     });
 
