@@ -13,6 +13,7 @@ export * from './audit-log.schema';
 export * from './devices.schema';
 export * from './email-verification-tokens.schema';
 export * from './geofences.schema';
+export * from './health.schema';
 export * from './pets.schema';
 export * from './push-tokens.schema';
 export * from './users.schema';

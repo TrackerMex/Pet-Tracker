@@ -8,6 +8,11 @@ import type {
 } from '@/modules/pets/domain/ports/pet-device-reader';
 import { PET_PHOTO_URL_RESOLVER } from '@/modules/pets/domain/ports/pet-photo-url-resolver';
 import type { PetPhotoUrlResolver } from '@/modules/pets/domain/ports/pet-photo-url-resolver';
+import { PET_VACCINE_READER } from '@/modules/pets/domain/ports/pet-vaccine-reader';
+import type {
+  NextPetVaccine,
+  PetVaccineReader,
+} from '@/modules/pets/domain/ports/pet-vaccine-reader';
 import { PET_REPOSITORY } from '@/modules/pets/domain/repositories/pet.repository';
 import type { PetRepository } from '@/modules/pets/domain/repositories/pet.repository';
 
@@ -20,6 +25,7 @@ export interface PetProfile {
   device: ActivePetDeviceStatus | null;
   /** URL GET prefirmada (R6) o null si la mascota no tiene foto (R7). */
   photoUrl: string | null;
+  nextVaccine: NextPetVaccine | null;
 }
 
 /**
@@ -39,6 +45,8 @@ export class GetPetUseCase {
     private readonly deviceReader: PetDeviceReader,
     @Inject(PET_PHOTO_URL_RESOLVER)
     private readonly photoUrlResolver: PetPhotoUrlResolver,
+    @Inject(PET_VACCINE_READER)
+    private readonly vaccineReader: PetVaccineReader,
   ) {}
 
   async execute(petId: string): Promise<PetProfile> {
@@ -60,6 +68,10 @@ export class GetPetUseCase {
       pet,
       device: await this.deviceReader.findActiveDevice(petId),
       photoUrl,
+      nextVaccine: await this.vaccineReader.findNextVaccine(
+        petId,
+        new Date().toISOString().slice(0, 10),
+      ),
     };
   }
 }

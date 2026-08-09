@@ -82,7 +82,8 @@ export class PetsController {
       // devices-claim (#7) R12: mismo mapper de estado de device que el
       // claim y GET .../device — la forma del contrato no cambia.
       // pet-photos-s3 (#6) R6/R7: photoUrl ya viene resuelto (o null).
-      const { pet, device, photoUrl } = await this.getPet.execute(petId);
+      const { pet, device, photoUrl, nextVaccine } =
+        await this.getPet.execute(petId);
 
       return toPetProfileResponse(
         pet,
@@ -90,6 +91,7 @@ export class PetsController {
         new Date(),
         device ? toDeviceStatusResponse(device) : null,
         photoUrl,
+        nextVaccine,
       );
     } catch (error) {
       throw mapPetError(error);

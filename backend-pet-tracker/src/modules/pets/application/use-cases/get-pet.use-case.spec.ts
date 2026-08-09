@@ -2,6 +2,7 @@ import { Pet } from '@/modules/pets/domain/entities/pet.entity';
 import { PetNotFoundError } from '@/modules/pets/domain/errors/pet.errors';
 import { PetDeviceReader } from '@/modules/pets/domain/ports/pet-device-reader';
 import { PetPhotoUrlResolver } from '@/modules/pets/domain/ports/pet-photo-url-resolver';
+import { PetVaccineReader } from '@/modules/pets/domain/ports/pet-vaccine-reader';
 import { PetRepository } from '@/modules/pets/domain/repositories/pet.repository';
 import { GetPetUseCase } from './get-pet.use-case';
 
@@ -39,14 +40,18 @@ function buildDeps(petOverrides: Partial<{ photoKey: string | null }> = {}) {
   const pets = { findById } as unknown as PetRepository;
   const deviceReader: PetDeviceReader = { findActiveDevice };
   const photoUrlResolver: PetPhotoUrlResolver = { resolveDownloadUrl };
+  const findNextVaccine = jest.fn().mockResolvedValue(null);
+  const vaccineReader: PetVaccineReader = { findNextVaccine };
 
   return {
     pets,
     deviceReader,
     photoUrlResolver,
+    vaccineReader,
     findById,
     findActiveDevice,
     resolveDownloadUrl,
+    findNextVaccine,
   };
 }
 
@@ -57,6 +62,7 @@ describe('R8: GetPetUseCase devuelve la mascota para el perfil de detalle', () =
       deps.pets,
       deps.deviceReader,
       deps.photoUrlResolver,
+      deps.vaccineReader,
     );
 
     const profile = await useCase.execute(PET_ID);
@@ -74,6 +80,7 @@ describe('R9: si la fila desaparecio tras pasar el guard, el use case lanza PetN
       deps.pets,
       deps.deviceReader,
       deps.photoUrlResolver,
+      deps.vaccineReader,
     );
 
     await expect(useCase.execute(PET_ID)).rejects.toThrow(PetNotFoundError);
@@ -96,6 +103,7 @@ describe('R12 (devices-claim): el perfil incluye el collar activo del puerto', (
       deps.pets,
       deps.deviceReader,
       deps.photoUrlResolver,
+      deps.vaccineReader,
     );
 
     const profile = await useCase.execute(PET_ID);
@@ -116,6 +124,7 @@ describe('R12 (devices-claim): el perfil incluye el collar activo del puerto', (
       deps.pets,
       deps.deviceReader,
       deps.photoUrlResolver,
+      deps.vaccineReader,
     );
 
     const profile = await useCase.execute(PET_ID);
@@ -131,6 +140,7 @@ describe('R6 (pet-photos-s3 #6): con photoKey no nulo, photoUrl viene de PET_PHO
       deps.pets,
       deps.deviceReader,
       deps.photoUrlResolver,
+      deps.vaccineReader,
     );
 
     const profile = await useCase.execute(PET_ID);
@@ -150,11 +160,40 @@ describe('R7 (pet-photos-s3 #6): con photoKey nulo, photoUrl es null sin invocar
       deps.pets,
       deps.deviceReader,
       deps.photoUrlResolver,
+      deps.vaccineReader,
     );
 
     const profile = await useCase.execute(PET_ID);
 
     expect(deps.resolveDownloadUrl).not.toHaveBeenCalled();
     expect(profile.photoUrl).toBeNull();
+  });
+});
+
+describe('R13 (health-vaccines #14): el perfil consulta la proxima vacuna futura', () => {
+  it('devuelve el valor del PET_VACCINE_READER usando la fecha actual', async () => {
+    jest.useFakeTimers({ now: new Date('2026-08-09T12:00:00.000Z') });
+    const deps = buildDeps();
+    deps.findNextVaccine.mockResolvedValue({
+      id: '0198dead-beef-7c23-d456-789abcdef012',
+      name: 'Rabia',
+      nextDoseAt: '2026-08-10',
+    });
+    const useCase = new GetPetUseCase(
+      deps.pets,
+      deps.deviceReader,
+      deps.photoUrlResolver,
+      deps.vaccineReader,
+    );
+
+    const profile = await useCase.execute(PET_ID);
+
+    expect(deps.findNextVaccine).toHaveBeenCalledWith(PET_ID, '2026-08-09');
+    expect(profile.nextVaccine).toEqual({
+      id: '0198dead-beef-7c23-d456-789abcdef012',
+      name: 'Rabia',
+      nextDoseAt: '2026-08-10',
+    });
+    jest.useRealTimers();
   });
 });

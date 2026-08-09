@@ -1,8 +1,8 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-08-07
-**Features completadas**: 13/18 (`feature_list.json`)
-**Pendientes**: 5 — backlog backend derivado de `plans/` 002–009 (salud, recordatorios, nutrición). **Sin P1 pendientes**: el resto es P2/P3.
+**Última actualización**: 2026-08-09
+**Features completadas**: 14/18 (`feature_list.json`)
+**Pendientes**: 4 — backlog backend derivado de `plans/` 002–009 (peso, recordatorios, nutrición). **Sin P1 pendientes**: el resto es P2/P3.
 **En producción**: no
 
 ---
@@ -447,6 +447,15 @@ debe listar las 4 URLs de cola.
   en `docs/architecture.md`. Corrige de paso el registro de la sesión de #12,
   que lo archivó como "flakiness ya conocido": era determinista, solo que
   nadie lo ejecutaba.
+- **`health-vaccines` (#14) done**: migración `0009` con
+  `vaccine_catalog`/`pet_vaccines`, seed canónico idempotente (4 dog/3 cat),
+  catálogo por especie, CRUD owner-only bajo `PetAccessGuard`, cálculo de
+  próxima dosis con meses calendario, auditoría y `nextVaccine` en el perfil.
+  El primer review rechazó tres huecos R2/R8 (fecha inválida → 500, filas extra
+  del catálogo y `documentKey` escribible); corregidos con commits rojo/verde
+  y aprobados en la segunda revisión. Gate final verde: 117 suites/843 unit y
+  13 suites/181 e2e contra Postgres + LocalStack locales. Branch
+  `feature/14-health-vaccines`, pendiente de PR y merge humano.
 - **Pendiente abierto — CI no levanta infra para los e2e**: `ci.yml:27` dejó
   anotado hace tiempo "cuando existan tests e2e contra Postgres/LocalStack,
   anadir services aqui", y sigue sin hacerse. Tras la PR #29, en el runner
@@ -455,15 +464,25 @@ debe listar las 4 URLs de cola.
   `services` de Postgres + LocalStack, migraciones y `provision:local` en el
   workflow. Mientras tanto, los e2e solo se verifican en local — y conviene
   correrlos a mano antes de dar una feature por cerrada.
-- Próximo paso SDD: **no quedan features P1**. `health-vaccines` (#14) es la
-  siguiente por prioridad y orden — catálogo de vacunas + `pet_vaccines`,
-  rellena el `nextVaccine` que el perfil de mascota (#5) ya expone en null.
+- Próximo paso SDD: **no quedan features P1**. `health-weights` (#15) es la
+  siguiente por prioridad y orden — historial de peso, variación y actualización
+  segura de `pets.current_weight_kg`.
   Integración Wialon real: diferida hasta tener hardware en mano (SIM_MODE
   es el camino; conectar real será smoke test de config, no feature).
 
 ---
 
 ## Última sesión
+
+- **2026-08-09** — Ciclo SDD completo de `health-vaccines` (#14): spec de 13
+  requisitos aprobada por humano → implementación TDD de migración `0009`,
+  seed 4 dog/3 cat, catálogo, CRUD con guard/auditoría y `nextVaccine` → primer
+  reviewer **rechazó** R8 (fecha calendario inválida devolvía 500) y detectó
+  que el seed no purgaba extras y POST aceptaba `documentKey`; regresiones
+  comprometidas primero (`5d53ac3`) y fixes después (`eb9c67b`) → segunda
+  revisión **APROBADA**. Verificación independiente: 117 suites/843 unit y
+  13 suites/181 e2e, build/lint/typecheck verdes. Feature marcada `done`;
+  branch `feature/14-health-vaccines`, sigue PR + merge humano. Próximo: #15.
 
 - **2026-08-07 (3)** — Ciclo corto de fix, sin id: **los e2e entran en el
   gate**. Al cerrar #13 se descubrió que `init.sh` nunca había ejecutado los
