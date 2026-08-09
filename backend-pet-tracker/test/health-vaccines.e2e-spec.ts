@@ -111,6 +111,28 @@ describe('Health vaccines (e2e)', () => {
       expect(rows.filter((row) => row.species === 'dog')).toHaveLength(4);
       expect(rows.filter((row) => row.species === 'cat')).toHaveLength(3);
     });
+
+    it('elimina filas no canonicas y termina exactamente en 4 dog y 3 cat', async () => {
+      const extraId = uuidv7();
+      await db.insert(vaccineCatalog).values({
+        id: extraId,
+        species: 'dog',
+        name: `Extra reviewer ${runId}`,
+        scheme: { firstDoseMonths: 1, boosterMonths: 1 },
+      });
+
+      try {
+        await seedVaccineCatalog(db);
+
+        const rows = await db.select().from(vaccineCatalog);
+        expect(rows.filter((row) => row.species === 'dog')).toHaveLength(4);
+        expect(rows.filter((row) => row.species === 'cat')).toHaveLength(3);
+      } finally {
+        await db
+          .delete(vaccineCatalog)
+          .where(eq(vaccineCatalog.id, extraId));
+      }
+    });
   });
 
   describe('R3: GET /v1/vaccine-catalog', () => {
@@ -307,6 +329,27 @@ describe('Health vaccines (e2e)', () => {
       expect((mismatch.body as { code: string }).code).toBe(
         'VACCINE_SPECIES_MISMATCH',
       );
+    });
+
+    it('fecha calendario invalida responde 400 sin dejar escapar RangeError', async () => {
+      const owner = await seedUser('r8-invalid-date');
+      const dog = await seedPet(owner, 'dog');
+
+      await postVaccine(owner, dog.id, {
+        name: 'X',
+        appliedAt: '2025-13-01',
+      }).expect(400);
+    });
+
+    it('documentKey en POST es clave desconocida porque upload queda fuera de alcance', async () => {
+      const owner = await seedUser('r8-document-key');
+      const dog = await seedPet(owner, 'dog');
+
+      await postVaccine(owner, dog.id, {
+        name: 'X',
+        appliedAt: '2025-01-01',
+        documentKey: 'vaccines/not-allowed.pdf',
+      }).expect(400);
     });
   });
 
