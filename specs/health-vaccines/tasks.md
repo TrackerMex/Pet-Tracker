@@ -9,14 +9,14 @@ tags: [harness, spec]
 > Disciplina TDD. Cada test nombra su R-id.
 
 ## R1 — Schema y migración
-- [ ] (1) Escribir test que falla para R1
-- [ ] (2) Implementación mínima que lo pasa
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R1
+- [x] (2) Implementación mínima que lo pasa
+- [x] (3) Refactor con tests verdes
 
 ## R2 — Seed idempotente del catálogo
-- [ ] (1) Escribir test que falla para R2
-- [ ] (2) Implementación mínima que lo pasa
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R2
+- [x] (2) Implementación mínima que lo pasa
+- [x] (3) Refactor con tests verdes
 
 ## R3 — GET del catálogo por especie
 - [ ] (1) Escribir test que falla para R3
