@@ -17,8 +17,10 @@ estado: sin sesión activa
 ---
 
 ```
-feature: —
-inicio: —
-agentes lanzados: —
-estado: sin sesión activa
+feature: #14 health-vaccines
+inicio: 2026-08-09 00:14 America/Mexico_City
+implementación: 2026-08-09 01:24 America/Mexico_City
+agentes lanzados: spec_author_14; implementer_14
+estado: in_progress
+plan: schema y seed → CRUD con autorización/auditoría → nextVaccine → verificación y review
 ```

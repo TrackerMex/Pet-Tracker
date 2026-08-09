@@ -230,7 +230,7 @@
   {
     "id": 14,
     "name": "health-vaccines",
-    "status": "pending",
+    "status": "in_progress",
     "priority": "P2",
     "description": "Plan 008 (paso 1-2): tablas vaccine_catalog y pet_vaccines; seed del catálogo (perro: Rabia, Polivalente, Leptospirosis, Tos de perreras; gato: Triple felina, Leucemia, Rabia — schemes del plan); GET /v1/vaccine-catalog?species=; CRUD /v1/pets/:petId/vaccines con next_dose_at calculada desde el scheme si viene catalogId sin override. Rellena nextVaccine del perfil de mascota.",
     "acceptance_criteria": [
