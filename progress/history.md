@@ -751,3 +751,22 @@ Deuda detectada (fuera de alcance, candidata a limpieza propia):
   anotado hace tiempo), así que en el runner el paso e2e se salta con aviso y
   CI sigue verde verificando solo unit tests. Cerrarlo pide `services` +
   migraciones + `provision:local` en el workflow.
+
+---
+
+## Sesión 2026-08-09 — health-vaccines (#14)
+
+- **Feature:** `health-vaccines`, rama `feature/14-health-vaccines`.
+- **Flujo:** `spec_author` → aprobación humana → `implementer` → `reviewer`.
+- **Entregado:** migración `0009` (`vaccine_catalog`, `pet_vaccines`), seed
+  canónico idempotente 4 dog/3 cat, catálogo por especie, CRUD protegido por
+  `PetAccessGuard` con mutaciones owner-only y auditoría, cálculo de próxima
+  dosis y `nextVaccine` en el perfil.
+- **Primer review:** rechazado por fecha inválida que escapaba como 500, seed
+  que conservaba filas extra y POST que aceptaba `documentKey` fuera de
+  alcance. Tests rojos `5d53ac3`; fix mínimo `eb9c67b`.
+- **Revisión final:** APROBADA; trazabilidad R1-R13 completa, sin pendientes.
+- **Gate:** build, lint y typecheck verdes; 117 suites/843 unit y 13
+  suites/181 e2e contra Postgres + LocalStack locales.
+- **Estado final:** feature `done`; sigue abrir PR y esperar merge humano.
+- **Próximo:** `health-weights` (#15).
