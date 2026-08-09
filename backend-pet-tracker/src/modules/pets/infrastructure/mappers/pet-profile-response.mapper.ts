@@ -7,6 +7,7 @@ import {
   PetSpecies,
 } from '@/modules/pets/domain/entities/pet.entity';
 import { PetRole } from '@/modules/pets/domain/entities/pet-membership';
+import type { NextPetVaccine } from '@/modules/pets/domain/ports/pet-vaccine-reader';
 
 /**
  * Contrato congelado del perfil de mascota (R8): exactamente estas claves,
@@ -39,7 +40,7 @@ export interface PetProfileResponse {
   /** Collar activo (devices-claim #7 R12) o null si la mascota no lleva. */
   device: DeviceStatusResponse | null;
   /** null hasta pet-vaccines (#14). */
-  nextVaccine: null;
+  nextVaccine: NextPetVaccine | null;
   /** null hasta pet-reminders (#16). */
   nextReminder: null;
   /** null hasta activity-summary (#10). */
@@ -55,6 +56,7 @@ export function toPetProfileResponse(
   now: Date = new Date(),
   device: DeviceStatusResponse | null = null,
   photoUrl: string | null = null,
+  nextVaccine: NextPetVaccine | null = null,
 ): PetProfileResponse {
   return {
     id: pet.id,
@@ -78,7 +80,7 @@ export function toPetProfileResponse(
       : null,
     myRole,
     device,
-    nextVaccine: null,
+    nextVaccine,
     nextReminder: null,
     activitySummary: null,
     createdAt: pet.createdAt.toISOString(),

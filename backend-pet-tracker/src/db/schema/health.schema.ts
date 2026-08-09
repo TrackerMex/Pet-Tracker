@@ -12,12 +12,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { pets } from './pets.schema';
 import { users } from './users.schema';
-
-export interface VaccineScheme {
-  firstDoseMonths: number;
-  series?: number[];
-  boosterMonths: number;
-}
+import type { VaccineScheme } from '@/modules/health/domain/entities/vaccine.entity';
 
 export const vaccineCatalog = pgTable(
   'vaccine_catalog',

@@ -1,9 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import {
-  seedVaccineCatalog,
-  VACCINE_CATALOG_SEED,
-} from './vaccine-catalog';
+import { seedVaccineCatalog, VACCINE_CATALOG_SEED } from './vaccine-catalog';
 
 describe('R2: seed idempotente del catalogo de vacunas', () => {
   it('declara exactamente cuatro vacunas dog y tres cat con sus schemes', () => {

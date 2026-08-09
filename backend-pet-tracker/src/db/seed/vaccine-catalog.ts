@@ -1,10 +1,8 @@
 import { sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { uuidv7 } from 'uuidv7';
-import {
-  VaccineScheme,
-  vaccineCatalog,
-} from '@/db/schema/health.schema';
+import { vaccineCatalog } from '@/db/schema/health.schema';
+import type { VaccineScheme } from '@/modules/health/domain/entities/vaccine.entity';
 
 export type VaccineSpecies = 'dog' | 'cat';
 
