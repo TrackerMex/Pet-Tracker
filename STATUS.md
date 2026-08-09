@@ -1,8 +1,8 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-08-09
-**Features completadas**: 14/18 (`feature_list.json`)
-**Pendientes**: 4 — backlog backend derivado de `plans/` 002–009 (peso, recordatorios, nutrición). **Sin P1 pendientes**: el resto es P2/P3.
+**Features completadas**: 14/20 (`feature_list.json`)
+**Pendientes**: 6 — backlog backend derivado de `plans/` 002–009 (peso, recordatorios, nutrición) más la fase AWS real (#19 credenciales, #20 stack CDK dev). **Sin P1 pendientes**: el resto es P2/P3.
 **En producción**: no
 
 ---
