@@ -26,7 +26,7 @@ import {
   TABLE_POSITIONS_TTL_ATTRIBUTE,
 } from '@backend/aws/constants';
 
-export const DEV_REGION = 'us-west-2';
+export const DEV_REGION = 'us-east-1';
 const ENV_NAME = 'dev';
 const ENV_SUFFIX = '';
 
