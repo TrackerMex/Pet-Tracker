@@ -32,11 +32,11 @@ tags: [harness, spec]
 | R14 | implementer | `infra/test/pet-tracker-dev-stack.test.ts::R14: el stack se despliega en us-east-1 sin fijar la cuenta` | `infra/test/pet-tracker-dev-stack.test.ts::R14: el stack se despliega en us-east-1 sin fijar la cuenta` | `df37daf` test rojo; `7f482be` implementación verde |
 | R15 | implementer | `backend-pet-tracker/src/aws/cdk-dev-stack-docs.spec.ts::R15: architecture.md documenta el bucket dev y una cuenta por entorno` | `backend-pet-tracker/src/aws/cdk-dev-stack-docs.spec.ts::R15: architecture.md documenta el bucket dev y una cuenta por entorno` | `86298fe` test rojo; `e2506be` implementación verde |
 | R16 | implementer | `backend-pet-tracker/src/aws/cdk-dev-stack-docs.spec.ts::R16: verification.md documenta el procedimiento manual de #20` | `backend-pet-tracker/src/aws/cdk-dev-stack-docs.spec.ts::R16: verification.md documenta el procedimiento manual de #20` | `f06167e` test rojo; `18a99b3` implementación verde |
-| **R17** | **humano** | Verificación en la consola de AWS Billing + registro en `progress/impl_aws-cdk-dev-stack.md` (§Free tier) — no automatizable | pendiente | pendiente |
-| **R18** | **humano** | `cdk bootstrap … --termination-protection` + registro en `progress/impl_aws-cdk-dev-stack.md` (§Bootstrap) — no automatizable, requiere `iam:*` | pendiente | pendiente |
-| **R19** | **humano** | `pnpm -C infra exec cdk deploy PetTrackerDev` → `CREATE_COMPLETE` + registro en `progress/impl_aws-cdk-dev-stack.md` (§Deploy) — crea recursos reales | pendiente | pendiente |
-| **R20** | **humano** | Segundo `cdk deploy` sin cambios → no-op + registro en `progress/impl_aws-cdk-dev-stack.md` (§Deploy idempotente) | pendiente | pendiente |
-| **R21** | mitad A: implementer / **mitad B: humano** | A: `backend-pet-tracker/test/aws-real-ingest.e2e-spec.ts::R21: ingest contra AWS real` existe y sale `skipped` sin `AWS_MODE=aws`. B: la misma suite en verde **sin `skipped`** con los recursos de R19 desplegados + output redactado en `progress/impl_aws-cdk-dev-stack.md` | `backend-pet-tracker/test/aws-real-ingest.e2e-spec.ts::R21: ingest contra AWS real` (mitad A: 3 tests `skipped`); mitad B pendiente | `ef76602` test rojo; `1fe9022` implementación mitad A verde/skipped; mitad B pendiente (humano) |
+| **R17** | **humano** | Verificación en la consola de AWS Billing + registro en `progress/impl_aws-cdk-dev-stack.md` (§Free tier) — no automatizable | 2026-08-10: cobertura de DynamoDB Standard provisionado 25 RCU / 25 WCU / 25 GB confirmada en consola (créditos, ventana de 6 meses). Falta anotar el detalle de qué muestra la consola al agotarlos | registro en `progress/impl_aws-cdk-dev-stack.md` §Free tier |
+| **R18** | **humano** | `cdk bootstrap … --termination-protection` + registro en `progress/impl_aws-cdk-dev-stack.md` (§Bootstrap) — no automatizable, requiere `iam:*` | 2026-08-10: `bootstrapped (no changes)`; verificado contra el stack real — `CDKToolkit` `CREATE_COMPLETE`, `EnableTerminationProtection=true`, `FileAssetsBucketKmsKeyId=AWS_MANAGED_KEY`. `simulate-principal-policy` confirmó `implicitDeny` de PowerUserAccess sobre `iam:CreateRole` | registro en `progress/impl_aws-cdk-dev-stack.md` §Bootstrap |
+| **R19** | **humano** | `pnpm -C infra exec cdk deploy PetTrackerDev` → `CREATE_COMPLETE` + registro en `progress/impl_aws-cdk-dev-stack.md` (§Deploy) — crea recursos reales | 2026-08-10: `CREATE_COMPLETE` en 91 s con **PowerUserAccess** (sin admin). `list-stack-resources` devuelve 11 recursos y coincide exacto con el inventario de R13 | registro en `progress/impl_aws-cdk-dev-stack.md` §Deploy |
+| **R20** | **humano** | Segundo `cdk deploy` sin cambios → no-op + registro en `progress/impl_aws-cdk-dev-stack.md` (§Deploy idempotente) | 2026-08-10: `✅ PetTrackerDev (no changes)`, `Deployment time: 0s`, mismo stack ARN | registro en `progress/impl_aws-cdk-dev-stack.md` §Deploy idempotente |
+| **R21** | mitad A: implementer / **mitad B: humano** | A: `backend-pet-tracker/test/aws-real-ingest.e2e-spec.ts::R21: ingest contra AWS real` existe y sale `skipped` sin `AWS_MODE=aws`. B: la misma suite en verde **sin `skipped`** con los recursos de R19 desplegados + output redactado en `progress/impl_aws-cdk-dev-stack.md` | A: `backend-pet-tracker/test/aws-real-ingest.e2e-spec.ts::R21: ingest contra AWS real` (3 tests `skipped`). B: 2026-08-10, 3 passed / 0 skipped contra AWS real, verificado **con LocalStack apagado**. Los dos intentos previos fueron falso negativo (shell) y falso positivo (contra LocalStack) — ver §E2E AWS real | `ef76602` test rojo; `1fe9022` implementación mitad A verde/skipped; mitad B cerrada por humano el 2026-08-10 |
 
 ## Nota para el reviewer
 
@@ -62,5 +62,18 @@ propio): `git diff --name-only main...HEAD` **no** debe listar `init.sh`,
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
 Convención de commit: `feat(<scope>): <desc> (R1,R2)`.
+
+## Hallazgo al cerrar R21 (2026-08-10)
+
+Cerrar la mitad B destapó un defecto **de la feature #19**, no de esta: en
+`AWS_MODE=aws` el SDK v3 sigue leyendo `AWS_ENDPOINT_URL` del entorno, así que
+con el `.env` local sin tocar la suite pasa en verde **contra LocalStack**. No
+basta comentar las credenciales estáticas; hay que comentar también el
+endpoint. `docs/verification.md` ya lo exige, y la prueba de destino
+recomendada es apagar LocalStack y repetir.
+
+No bloquea #20 (sus 21 requisitos se cumplen), pero deja pendiente añadir en
+`src/aws/aws-clients.ts` una guarda simétrica a `assertNoStaticAccessKey` que
+aborte si `AWS_ENDPOINT_URL` está definida en modo `aws`.
 El implementer actualiza esta tabla tras cada commit; el reviewer la valida
 al aprobar (ver [[../../docs/specs|specs]] y [[../../CHECKPOINTS|CHECKPOINTS]] C5).

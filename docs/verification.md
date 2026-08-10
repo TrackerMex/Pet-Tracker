@@ -99,9 +99,28 @@ account-id redactados.
    plan nuevo (creada después del 2025-07-15) cubre DynamoDB Standard
    provisionado hasta 25 RCU, 25 WCU y 25 GB. Registra también qué ocurre al
    agotar los créditos o al cumplirse la ventana de 6 meses antes de desplegar.
-2. **R18 — Bootstrap.** Comenta `AWS_ACCESS_KEY_ID=test` y
-   `AWS_SECRET_ACCESS_KEY=test` en el `.env` raíz, inicia una sesión válida con
-   `aws login` y usa un principal con `iam:*`:
+2. **R18 — Bootstrap.** Comenta **las tres** variables de LocalStack en el
+   `.env` raíz — `AWS_ENDPOINT_URL`, `AWS_ACCESS_KEY_ID` y
+   `AWS_SECRET_ACCESS_KEY`. Comentar solo las credenciales **no basta**: el SDK
+   v3 lee `AWS_ENDPOINT_URL` del entorno por su cuenta, así que con esa variable
+   puesta `AWS_MODE=aws` sigue hablando con LocalStack y los tests pasan en
+   verde sin tocar AWS (ocurrió de verdad al cerrar #20, ver
+   `progress/impl_aws-cdk-dev-stack.md` §E2E AWS real).
+
+   Después inicia una sesión válida con `aws login` y usa un principal con
+   `iam:*`. `PowerUserAccess` **no** los incluye; confírmalo antes de gastar un
+   intento:
+
+   ```bash
+   aws iam simulate-principal-policy \
+     --policy-source-arn arn:aws:iam::<accountId>:user/<user> \
+     --action-names iam:CreateRole iam:AttachRolePolicy iam:PutRolePolicy \
+     --query 'EvaluationResults[].{action:EvalActionName,decision:EvalDecision}'
+   ```
+
+   Si sale `implicitDeny`, adjunta `AdministratorAccess` al usuario desde la
+   consola con el root user, corre el bootstrap y **quítala después**: los
+   deploys de R19-R20 funcionan con PowerUserAccess, verificado.
 
    ```bash
    pnpm -C infra exec cdk bootstrap aws://<accountId>/us-east-1 --termination-protection
@@ -111,10 +130,23 @@ account-id redactados.
 3. **R19 — Primer deploy.** Con PowerUserAccess y la sesión anterior:
 
    ```bash
-   pnpm -C infra exec cdk deploy PetTrackerDev
+   pnpm -C infra exec cdk deploy PetTrackerDev --require-approval never
    ```
 
-   Debe terminar en `CREATE_COMPLETE` con los 11 recursos de R13.
+   `--require-approval never` hace falta si lo lanzas desde un agente: sin TTY,
+   CDK crea el changeset y se queda esperando una confirmación que nadie puede
+   dar (`terminal (TTY) is not attached`). El cambio que pide aprobar es el de
+   R11, la `QueuePolicy` de `geofence-events`. Desde una terminal normal puedes
+   omitir el flag y confirmar a mano.
+
+   Debe terminar en `CREATE_COMPLETE`. El contador de CDK dirá `12/12` porque
+   incluye el propio `AWS::CloudFormation::Stack`; los recursos de R13 son 11.
+   No te fíes del contador, cuéntalos:
+
+   ```bash
+   aws cloudformation list-stack-resources --stack-name PetTrackerDev \
+     --query 'StackResourceSummaries[].ResourceType' --output json
+   ```
 4. **R20 — Deploy idempotente.** Ejecuta de nuevo el mismo comando `cdk deploy`
    sin cambiar `infra/`. Debe reportar `no changes` y no actualizar la stack.
 5. **R21 — Ingest real.** Desde Bash, ejecuta la suite específica:
@@ -123,9 +155,27 @@ account-id redactados.
    AWS_MODE=aws pnpm -C backend-pet-tracker run test:e2e -- --runInBand test/aws-real-ingest.e2e-spec.ts
    ```
 
-   Debe quedar verde y **sin `skipped`**. En PowerShell, exporta primero
-   `$env:AWS_MODE='aws'`. Al terminar, restaura las credenciales dummy y
-   `AWS_MODE=local` para LocalStack.
+   Ojo con el shell: el prefijo `!` de Claude Code corre **Bash**, no
+   PowerShell. Si escribes ahí la forma `$env:AWS_MODE='aws'`, Bash la rechaza
+   con `command not found`, `AWS_MODE` no llega al proceso y la suite se salta
+   entera — verde falso por omisión. Usa `$env:` solo en una terminal
+   PowerShell de verdad.
+
+   Debe quedar verde y **sin `skipped`**.
+
+   **Verde no basta como evidencia.** Con `AWS_ENDPOINT_URL` puesta la suite
+   pasa contra LocalStack. Antes de dar R21 por cerrado, comprueba el destino
+   de una de estas dos formas:
+
+   - Mira los `QueueUrl` del output: si aparece
+     `localhost.localstack.cloud` o el account `000000000000`, fuiste a
+     LocalStack.
+   - Mejor, prueba positiva: apaga LocalStack
+     (`docker compose stop localstack`) y repite la suite. Si sigue verde, fue
+     contra AWS real sin ambigüedad.
+
+   Al terminar, restaura las tres variables comentadas, vuelve a
+   `AWS_MODE=local` y levanta LocalStack (`docker compose start localstack`).
 
 Consecuencias de las políticas de borrado: si el bucket tiene objetos,
 `cdk destroy` falla y hay que vaciarlo manualmente antes; la tabla retenida
