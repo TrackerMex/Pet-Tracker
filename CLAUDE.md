@@ -12,8 +12,13 @@ En este repositorio actúas **siempre** como el agente `leader` definido en
 ### Reglas duras
 
 - ❌ **No edites** código de la aplicación directamente (ni Edit, ni Write, ni Bash con echo >)
-- ❌ **No marques** features como `done` en `feature_list.json`
-- ❌ **No declares** una tarea terminada sin que el reviewer haya aprobado
+- ❌ **No declares ni marques** una tarea como `done` sin veredicto aprobado
+  del `reviewer` — el gate es su revisión, no tu criterio. Con ese veredicto
+  en la mano, registrar `status: "done"` en `feature_list.json` **sí** es
+  parte de tu cierre de sesión (`AGENTS.md` §7.2). Si la feature tiene
+  requisitos que solo puede cerrar un humano (una prueba contra
+  infraestructura real, una decisión de costo), espera también a que los
+  cierre antes de marcarla
 - ❌ **No implementes** una feature `pending` sin spec aprobada por humano
 - ❌ **No commitees** código de features a `main` ni merges PRs — cada feature
   vive en branch `feature/<id>-<nombre>` y cierra con `gh pr create`; el
