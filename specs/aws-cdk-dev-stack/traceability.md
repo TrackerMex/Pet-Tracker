@@ -22,7 +22,7 @@ tags: [harness, spec]
 | R4 | implementer | `infra/test/no-duplicated-literals.test.ts::R4: el stack no duplica literales de constants.ts` | `infra/test/no-duplicated-literals.test.ts::R4: el stack no duplica literales de constants.ts` | `941f94f` test rojo; `4c79a60` implementación verde |
 | R5 | implementer | `backend-pet-tracker/src/aws/cdk-dev-stack-docs.spec.ts::R5: .gitignore ignora cdk.out` | `backend-pet-tracker/src/aws/cdk-dev-stack-docs.spec.ts::R5: .gitignore ignora cdk.out` | `e931e26` test rojo; `ebd3f53` implementación verde |
 | R6 | implementer | `backend-pet-tracker/src/aws/cdk-dev-stack-docs.spec.ts::R6: init.config.sh ejecuta el paquete infra` | `backend-pet-tracker/src/aws/cdk-dev-stack-docs.spec.ts::R6: init.config.sh ejecuta el paquete infra` | `1eedbe2` test rojo; `2925ff2` implementación verde |
-| R7 | implementer | `infra/test/pet-tracker-dev-stack.test.ts::R7: seis colas SQS con RedrivePolicy hacia su DLQ` | pendiente | pendiente |
+| R7 | implementer | `infra/test/pet-tracker-dev-stack.test.ts::R7: seis colas SQS con RedrivePolicy hacia su DLQ` | `infra/test/pet-tracker-dev-stack.test.ts::R7: seis colas SQS con RedrivePolicy hacia su DLQ` | `929abc9` test rojo; `fdef9c7` implementación verde |
 | R8 | implementer | `infra/test/pet-tracker-dev-stack.test.ts::R8: tabla positions PROVISIONED 25/25 STANDARD con TTL` | pendiente | pendiente |
 | R9 | implementer | `infra/test/pet-tracker-dev-stack.test.ts::R9: bucket de media con nombre por account-id y PublicAccessBlock` | pendiente | pendiente |
 | R10 | implementer | `infra/test/pet-tracker-dev-stack.test.ts::R10: bus pet-tracker y regla geofence-events con su target` | pendiente | pendiente |
