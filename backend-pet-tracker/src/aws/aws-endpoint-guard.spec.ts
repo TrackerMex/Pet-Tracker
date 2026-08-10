@@ -1,5 +1,6 @@
 import {
   UnexpectedAwsEndpointError,
+  resolveAwsClientOptions,
   resolveAwsConfigFromEnv,
 } from './aws-clients';
 
@@ -34,4 +35,23 @@ describe('R2: el mensaje del error nombra la variable y la acción', () => {
     expect(message).toMatch(/process\.env/);
     expect(message).toMatch(/\.env/);
   });
+});
+
+describe('R3: modo aws sin AWS_ENDPOINT_URL no cambia', () => {
+  it.each([undefined, '', '   '])(
+    'acepta y normaliza el valor %p',
+    (endpoint) => {
+      const env: NodeJS.ProcessEnv = { AWS_MODE: 'aws' };
+      if (endpoint !== undefined) {
+        env.AWS_ENDPOINT_URL = endpoint;
+      }
+
+      const config = resolveAwsConfigFromEnv(env);
+      const options = resolveAwsClientOptions(config);
+
+      expect(config).toMatchObject({ mode: 'aws', endpoint: '' });
+      expect('endpoint' in options).toBe(false);
+      expect('credentials' in options).toBe(false);
+    },
+  );
 });
