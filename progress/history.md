@@ -855,3 +855,41 @@ Deuda detectada (fuera de alcance, candidata a limpieza propia):
 - **Próximo:** el humano registra R17 (Billing), R18 (bootstrap), R19
   (deploy), R20 (no-op) y R21 mitad B (e2e AWS real) en
   `progress/impl_aws-cdk-dev-stack.md`; después corresponde revisión.
+
+---
+
+## Sesión 2026-08-10 (cierre) — aws-cdk-dev-stack (id: 20)
+
+- **Feature:** cierre de #20 — revisión, verificaciones humanas contra AWS real
+  (R17-R21) y apertura del defecto que destaparon.
+- **Acciones:** el `reviewer` aprobó R1-R16 y R21 mitad A. Después el humano
+  cerró las cinco filas restantes: Billing (R17), `cdk bootstrap` con
+  termination protection (R18), deploy (R19), no-op (R20) y el e2e de ingest
+  contra AWS real (R21 mitad B).
+- **Resultado:** stack `PetTrackerDev` desplegada en `us-east-1` con los 11
+  recursos de R13, verificados con `list-stack-resources` en vez de con el
+  contador de CDK (que muestra 12 porque incluye el propio stack). El deploy
+  corrió con **PowerUserAccess**; `AdministratorAccess` solo hizo falta para el
+  bootstrap y se retiró después. `init.sh` exit 0: 879 unit, 14 infra, 181 e2e
+  pasados y 5 omitidos.
+- **Hallazgo (lo importante de la sesión):** la suite de ingest real pasó en
+  verde **dos veces sin tocar AWS**. La primera por sintaxis de PowerShell
+  ejecutada bajo Bash — `AWS_MODE` no llegó al proceso y la suite se auto-saltó.
+  La segunda contra LocalStack: el SDK v3 lee `AWS_ENDPOINT_URL` de
+  `process.env` por su cuenta, así que omitir el parámetro `endpoint` en modo
+  `aws` no aísla nada. Solo se detectó apagando LocalStack y repitiendo. Mismo
+  patrón de bug latente que R11, pero disfrazado de test aprobado.
+- **Consecuencias:** se abrió la feature #21 `aws-mode-endpoint-guard` (P1) para
+  la guarda simétrica a `assertNoStaticAccessKey`, y `docs/verification.md`
+  ahora exige comentar también `AWS_ENDPOINT_URL` y probar el destino apagando
+  LocalStack.
+- **Nota operativa:** apagar LocalStack borra su estado (community no persiste);
+  hay que correr `pnpm -C backend-pet-tracker run provision:local` antes de
+  volver a pasar el gate.
+- **Coste:** la tabla queda en 25 RCU / 25 WCU, tramo de `$0.00/hora` según el
+  Price List API. Cuenta `PAID` con 120 USD de crédito. Budget de alerta
+  `pet-tracker-dev-monthly` creado a 5 USD/mes.
+- **Commits:** `a8d2355`, `48ab936`, `2a7fbb1`.
+- **Estado final:** #20 `done`; PR #38 pendiente de merge humano.
+- **Próximo:** `aws-mode-endpoint-guard` (#21, P1, sin spec) o
+  `health-weights` (#15).
