@@ -36,7 +36,7 @@ tags: [harness, spec]
 | **R18** | **humano** | `cdk bootstrap … --termination-protection` + registro en `progress/impl_aws-cdk-dev-stack.md` (§Bootstrap) — no automatizable, requiere `iam:*` | pendiente | pendiente |
 | **R19** | **humano** | `pnpm -C infra exec cdk deploy PetTrackerDev` → `CREATE_COMPLETE` + registro en `progress/impl_aws-cdk-dev-stack.md` (§Deploy) — crea recursos reales | pendiente | pendiente |
 | **R20** | **humano** | Segundo `cdk deploy` sin cambios → no-op + registro en `progress/impl_aws-cdk-dev-stack.md` (§Deploy idempotente) | pendiente | pendiente |
-| **R21** | mitad A: implementer / **mitad B: humano** | A: `backend-pet-tracker/test/aws-real-ingest.e2e-spec.ts::R21: ingest contra AWS real` existe y sale `skipped` sin `AWS_MODE=aws`. B: la misma suite en verde **sin `skipped`** con los recursos de R19 desplegados + output redactado en `progress/impl_aws-cdk-dev-stack.md` | pendiente | pendiente |
+| **R21** | mitad A: implementer / **mitad B: humano** | A: `backend-pet-tracker/test/aws-real-ingest.e2e-spec.ts::R21: ingest contra AWS real` existe y sale `skipped` sin `AWS_MODE=aws`. B: la misma suite en verde **sin `skipped`** con los recursos de R19 desplegados + output redactado en `progress/impl_aws-cdk-dev-stack.md` | `backend-pet-tracker/test/aws-real-ingest.e2e-spec.ts::R21: ingest contra AWS real` (mitad A); mitad B pendiente | `ef76602` test rojo; implementación mitad A pendiente; mitad B pendiente (humano) |
 
 ## Nota para el reviewer
 
