@@ -21,7 +21,7 @@ feature: #19 aws-real-credentials
 inicio: 2026-08-09 18:35 America/Mexico_City
 rama: feature/19-aws-real-credentials
 agentes lanzados: spec_author_19
-estado: esperando spec; gate humano pendiente
+estado: spec aprobada por humano 2026-08-09; implementación en manos de Codex CLI
 ```
 
 ## Reparto multi-IA (nuevo en esta sesión)
