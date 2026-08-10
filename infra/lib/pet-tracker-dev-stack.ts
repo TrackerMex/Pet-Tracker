@@ -5,9 +5,6 @@ export const DEV_REGION = 'us-west-2';
 
 export class PetTrackerDevStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
-    super(scope, id, {
-      description: 'pet-tracker',
-      ...props,
-    });
+    super(scope, id, props);
   }
 }
