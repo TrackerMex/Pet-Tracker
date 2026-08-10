@@ -31,11 +31,25 @@ export class MissingAwsEndpointError extends Error {
   }
 }
 
+export class UnexpectedAwsEndpointError extends Error {
+  constructor() {
+    super('Unexpected AWS endpoint');
+    this.name = 'UnexpectedAwsEndpointError';
+  }
+}
+
 function assertEndpoint(endpoint: string | undefined): string {
   if (!endpoint || endpoint.trim() === '') {
     throw new MissingAwsEndpointError();
   }
   return endpoint;
+}
+
+function assertNoEndpoint(endpoint: string | undefined): string {
+  if (endpoint && endpoint.trim() !== '') {
+    throw new UnexpectedAwsEndpointError();
+  }
+  return endpoint ?? '';
 }
 
 function resolveAwsMode(raw: string | undefined): AwsMode {
@@ -48,7 +62,8 @@ function resolveAwsMode(raw: string | undefined): AwsMode {
  * (`scripts/provision-local.ts`), que corre fuera del bootstrap de Nest y
  * por lo tanto no tiene ConfigService disponible (mismo patrón que
  * `drizzle.config.ts`, ver design.md). Aborta con MissingAwsEndpointError
- * si AWS_ENDPOINT_URL falta, antes de construir cualquier cliente.
+ * En modo local aborta si AWS_ENDPOINT_URL falta. En modo aws aborta si la
+ * variable está definida, antes de construir cualquier cliente.
  */
 export function resolveAwsConfigFromEnv(
   env: NodeJS.ProcessEnv,
@@ -60,7 +75,7 @@ export function resolveAwsConfigFromEnv(
     endpoint:
       mode === 'local'
         ? assertEndpoint(env.AWS_ENDPOINT_URL)
-        : (env.AWS_ENDPOINT_URL ?? ''),
+        : assertNoEndpoint(env.AWS_ENDPOINT_URL),
     region: env.AWS_REGION ?? '',
     accessKeyId: env.AWS_ACCESS_KEY_ID ?? '',
     secretAccessKey: env.AWS_SECRET_ACCESS_KEY ?? '',
