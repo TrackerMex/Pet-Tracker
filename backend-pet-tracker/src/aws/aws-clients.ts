@@ -94,14 +94,17 @@ export function resolveAwsConfigFromEnv(
  * única vía dentro del runtime NestJS (nunca process.env directo, ver
  * docs/conventions.md). El script standalone de provisioning usa
  * resolveAwsConfigFromEnv en su lugar (excepción documentada, igual que
- * drizzle.config.ts).
+ * drizzle.config.ts). En modo aws aborta si AWS_ENDPOINT_URL está definida.
  */
 export function resolveAwsConfigFromConfigService(
   config: ConfigService,
 ): AwsRuntimeConfig {
+  const mode = resolveAwsMode(config.get<string>('AWS_MODE'));
+  const endpoint = config.get<string>('AWS_ENDPOINT_URL') ?? '';
+
   return {
-    mode: resolveAwsMode(config.get<string>('AWS_MODE')),
-    endpoint: config.get<string>('AWS_ENDPOINT_URL') ?? '',
+    mode,
+    endpoint: mode === 'aws' ? assertNoEndpoint(endpoint) : endpoint,
     region: config.get<string>('AWS_REGION') ?? '',
     accessKeyId: config.get<string>('AWS_ACCESS_KEY_ID') ?? '',
     secretAccessKey: config.get<string>('AWS_SECRET_ACCESS_KEY') ?? '',
