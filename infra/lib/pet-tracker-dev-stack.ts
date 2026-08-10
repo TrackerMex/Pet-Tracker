@@ -1,4 +1,5 @@
 import { Stack, StackProps } from 'aws-cdk-lib';
+import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as sqs from 'aws-cdk-lib/aws-sqs';
 import { Construct } from 'constructs';
 import {
@@ -10,6 +11,10 @@ import {
   QUEUE_POSITIONS_RAW_DLQ,
   resourceName,
   SQS_MAX_RECEIVE_COUNT,
+  TABLE_POSITIONS,
+  TABLE_POSITIONS_PARTITION_KEY,
+  TABLE_POSITIONS_SORT_KEY,
+  TABLE_POSITIONS_TTL_ATTRIBUTE,
 } from '@backend/aws/constants';
 
 export const DEV_REGION = 'us-west-2';
@@ -51,5 +56,26 @@ export class PetTrackerDevStack extends Stack {
         maxReceiveCount: SQS_MAX_RECEIVE_COUNT,
       },
     });
+
+    const positionsTable = new dynamodb.Table(this, 'PositionsTable', {
+      tableName: resourceName(TABLE_POSITIONS, ENV_SUFFIX),
+      billingMode: dynamodb.BillingMode.PROVISIONED,
+      readCapacity: 25,
+      writeCapacity: 25,
+      tableClass: dynamodb.TableClass.STANDARD,
+      partitionKey: {
+        name: TABLE_POSITIONS_PARTITION_KEY,
+        type: dynamodb.AttributeType.STRING,
+      },
+      sortKey: {
+        name: TABLE_POSITIONS_SORT_KEY,
+        type: dynamodb.AttributeType.NUMBER,
+      },
+      timeToLiveAttribute: TABLE_POSITIONS_TTL_ATTRIBUTE,
+    });
+    const cfnPositionsTable = positionsTable.node.defaultChild as dynamodb.CfnTable;
+    // Table omite PROVISIONED por ser el default de CloudFormation; R8 lo
+    // exige explícito para que el template documente el límite de costo.
+    cfnPositionsTable.addPropertyOverride('BillingMode', 'PROVISIONED');
   }
 }
