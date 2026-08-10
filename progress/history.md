@@ -831,3 +831,27 @@ Deuda detectada (fuera de alcance, candidata a limpieza propia):
   falla con mensaje explícito en vez de con un error críptico del SDK.
 - **Estado final:** feature `done`; sigue PR y merge humano.
 - **Próximo:** `aws-cdk-dev-stack` (#20) o `health-weights` (#15).
+
+---
+
+## Sesión 2026-08-10 — aws-cdk-dev-stack (id: 20)
+
+- **Feature:** stack CDK de desarrollo para los recursos AWS que usa el
+  backend, sin modificar el provisioning de LocalStack.
+- **Spec:** [[../specs/aws-cdk-dev-stack/requirements|spec]] aprobada por el
+  humano; decisiones previas en `progress/explore_aws-cdk-dev-stack.md`.
+- **Acciones:** se implementaron R1-R16 en el orden fijado por `tasks.md`, con
+  commits separados de test rojo e implementación verde; se añadió R21 mitad
+  A, auto-saltada salvo `AWS_MODE=aws`; la trazabilidad se actualizó tras cada
+  requisito. El stack declara exactamente 11 recursos y `init.config.sh`
+  incorpora synth, tests, lint y typecheck de `infra/`.
+- **Resultado:** `init.sh` exit 0: backend 121 suites / 879 tests,
+  infraestructura 2 suites / 14 tests, e2e 181 pasados y 5 omitidos, synth,
+  lint y typecheck verdes. Ningún archivo prohibido cambió. No se ejecutó
+  `cdk bootstrap` ni `cdk deploy`.
+- **Commits:** secuencia TDD `f4d6ae0`…`d97cbf8`; detalle por R-id en
+  `specs/aws-cdk-dev-stack/traceability.md`.
+- **Estado final:** `in_progress`; implementación del agente terminada.
+- **Próximo:** el humano registra R17 (Billing), R18 (bootstrap), R19
+  (deploy), R20 (no-op) y R21 mitad B (e2e AWS real) en
+  `progress/impl_aws-cdk-dev-stack.md`; después corresponde revisión.

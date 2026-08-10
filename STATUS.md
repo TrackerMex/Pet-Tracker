@@ -1,8 +1,10 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-08-09
+**Última actualización**: 2026-08-10
 **Features completadas**: 15/20 (`feature_list.json`)
-**Pendientes**: 5 — backlog backend derivado de `plans/` 002–009 (peso, recordatorios, nutrición) más el stack CDK dev (#20) de la fase AWS real. **Sin P1 pendientes**: el resto es P2/P3.
+**Pendientes**: 5 — cuatro features del backlog backend y el stack CDK dev
+(#20), cuya implementación está lista pero conserva verificaciones humanas
+contra AWS real. **Sin P1 pendientes**: el resto es P2/P3.
 **En producción**: no
 
 ---
@@ -58,6 +60,11 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
+- **`aws-cdk-dev-stack` (#20) in_progress**: R1-R16 implementados con TDD y
+  R21 mitad A auto-saltada. El synth declara 11 recursos en `us-east-1` y el
+  gate integra `infra/`; faltan R17-R20 y R21 mitad B, que ejecuta el humano
+  porque implican Billing, bootstrap, deploy y llamadas contra AWS real. Ver
+  `progress/impl_aws-cdk-dev-stack.md`.
 - Harness SDD configurado y verde (`init.sh` pasa completo).
 - Scaffold NestJS en `backend-pet-tracker/` — sin features todavía.
 - Backlog reconciliado con `plans/` (002–009, solo backend): 18 features.
@@ -513,6 +520,17 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-08-10** — Implementación de `aws-cdk-dev-stack` (#20) en
+  `feature/20-aws-cdk-dev-stack`: R1-R16 y R21 mitad A completados siguiendo
+  el orden de `tasks.md`, con un commit rojo anterior a cada implementación y
+  trazabilidad actualizada. Se creó `infra/` con el stack CDK de 11 recursos,
+  se integró su gate en `init.config.sh`, se actualizaron arquitectura y
+  verificación, y se añadió el e2e AWS-only de tres tramos. `init.sh` final
+  verde: 879 unitarios backend, 14 tests de infraestructura y 181 e2e; la
+  suite nueva aportó 3 tests omitidos. No se ejecutó `cdk bootstrap` ni
+  `cdk deploy`. Próximo: el humano completa R17-R20 y R21 mitad B con el
+  procedimiento de `docs/verification.md`; después corresponde reviewer.
 
 - **2026-08-09 (2)** — Ciclo SDD de `aws-real-credentials` (#19) con **reparto
   multi-IA estrenado**: Claude Code como `leader` (spec, review, bookkeeping,
