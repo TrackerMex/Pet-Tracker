@@ -38,11 +38,34 @@
 - `init.sh` final: verde; build, 119 suites / 869 tests, lint y typecheck
   pasaron. E2E generales saltados por Postgres 5432 no disponible.
 
-## Abierto para el humano
+## R11 — corrida real contra la cuenta (ejecutada por el humano)
 
-- La corrida real de R11 con `AWS_MODE=aws` no se ejecutó, por instrucción
-  expresa. No existe output de cuenta que redactar.
-- Seguir `docs/verification.md`, comentar las credenciales dummy del `.env` y
-  registrar aquí el resultado redactado, sin ARNs ni credenciales.
-- La feature permanece `in_progress`; no se cambió `feature_list.json`, no se
-  abrió PR y no se marcó `done`.
+Fecha: 2026-08-09. Sesión abierta con `aws login` (usuario IAM de desarrollo,
+región `us-east-1`). Identidad y número de cuenta omitidos a propósito.
+
+Procedimiento seguido, el de `docs/verification.md` §"Feature 19":
+credenciales dummy de LocalStack comentadas en el `.env` raíz antes de correr,
+y restauradas justo después (el `.env` quedó byte-idéntico al original,
+verificado con `diff` contra una copia previa).
+
+```
+$ AWS_MODE=aws pnpm -C backend-pet-tracker run test:e2e -- --runInBand test/aws-real-smoke.e2e-spec.ts
+
+Test Suites: 1 passed, 1 total
+Tests:       2 passed, 2 total
+Time:        1.517 s
+```
+
+Sin `skipped`: la suite se ejecutó de verdad contra AWS. La única llamada
+remota fue `ListQueues`; no se creó ni modificó ningún recurso, y la cuenta no
+tiene todavía las colas del proyecto (eso es la feature #20).
+
+Esto cierra R11 y la segunda mitad de R12.
+
+## Notas de cierre
+
+- El comando que estaba documentado en `docs/verification.md` omitía el `--`
+  antes de `--runInBand`; con esa forma pnpm no reenvía los flags a jest. La
+  documentación quedó corregida con la forma verificada arriba.
+- Nada que corregir en el código: el reviewer aprobó R1-R10 con infraestructura
+  real (ver `progress/review_aws-real-credentials.md`).

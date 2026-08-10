@@ -770,3 +770,64 @@ Deuda detectada (fuera de alcance, candidata a limpieza propia):
   suites/181 e2e contra Postgres + LocalStack locales.
 - **Estado final:** feature `done`; sigue abrir PR y esperar merge humano.
 - **Próximo:** `health-weights` (#15).
+
+---
+
+## Sesión 2026-08-09 (2) — aws-real-credentials (#19)
+
+- **Feature:** `aws-real-credentials`, rama `feature/19-aws-real-credentials`.
+  Primera de la fase AWS real. Se eligió por delante de #15 porque no depende
+  de nada, desbloquea #20 y evita que `pet-reminders` (#16) se implemente
+  contra el workaround de cron local.
+- **Reparto multi-IA estrenado:** Claude Code como `leader` (spec, review,
+  bookkeeping, PR) y **Codex CLI en terminal aparte** como implementador.
+  Handoff por disco: Codex lee `specs/aws-real-credentials/` y escribe
+  `progress/impl_aws-real-credentials.md`; ningún contenido viaja por chat
+  entre las dos IAs. La ganancia no es velocidad sino que **quien implementa
+  no revisa**.
+- **Flujo:** `spec_author` → gate humano → Codex CLI → `reviewer` → prueba de
+  humo del humano → `done`.
+- **Entregado:** `AWS_MODE=local|aws` en `src/aws/aws-clients.ts`. En `local`,
+  comportamiento byte a byte idéntico al anterior; en `aws`, los cuatro
+  clientes se construyen sin `endpoint` y sin `credentials` para que el SDK v3
+  resuelva por su cadena por defecto (las de `aws login` rotan cada pocos
+  minutos, no son un par fijo). `forcePathStyle` y `MissingAwsEndpointError`
+  quedan condicionados a `local`. Guarda extra en `run-provisioning.ts`: exit 1
+  si `AWS_MODE=aws`, **antes** de construir clientes, para que un `.env` mal
+  puesto no cree los 8 recursos del provisioning en la cuenta real.
+- **Spec autosuficiente a propósito:** el implementador no tenía acceso a la
+  conversación que la originó, así que la spec fijó rutas, nombres de símbolos
+  y qué test prueba cada R-id, sin dejar preguntas abiertas.
+- **Revisión:** APROBADA. El `reviewer` levantó `docker compose` y provisionó
+  LocalStack él mismo en vez de fiarse del reporte: `init.sh` exit 0, 119
+  suites/869 unit, 13 suites/181 e2e. R2 (el criterio que de verdad importaba)
+  verificado con `localstack-provisioning.e2e-spec.ts` 10/10 **sin modificar
+  el archivo**; R9 confirmado comprobando que los guardas estáticos no se
+  relajaron.
+- **R11/R12 los cerró el humano:** `aws login`, credenciales dummy comentadas
+  en el `.env` raíz, `AWS_MODE=aws` → 2/2 tests verdes contra la cuenta real
+  con un `ListQueues` de solo lectura. `.env` restaurado byte-idéntico
+  (verificado con `diff` contra copia previa) y backup borrado.
+- **Incidente de git:** el commit de la spec cayó en `main`. El humano hizo
+  `checkout main` + `pull` en otra terminal entre que Claude creó la branch y
+  commiteó; el working tree es uno solo. Recuperado sin pérdida con
+  `merge --ff-only` + `cherry-pick` + `git branch -f main origin/main` (los dos
+  `reset --hard` los bloqueó el clasificador de permisos). **Lección para el
+  reparto multi-IA: un solo escritor sobre el working tree a la vez**, o
+  `git worktree` para que cada agente tenga su propio HEAD.
+- **Hallazgos de proceso (no bloqueantes):**
+  1. Codex metió implementación + tests + docs en un único commit (`d884dad`),
+     sin historial test-primero. El próximo prompt de handoff debe exigir
+     granularidad de commits explícitamente.
+  2. `CLAUDE.md` prohíbe al leader marcar `done` mientras `AGENTS.md` §7.2 se
+     lo pide en el cierre. Resuelto por decisión humana explícita; conviene
+     redactar la prohibición como "sin veredicto aprobado del reviewer".
+  3. El comando de humo documentado omitía el `--` antes de `--runInBand`, sin
+     el cual pnpm no reenvía flags a jest. Corregido en `docs/verification.md`.
+- **Gotcha que costará repetir:** la cadena del SDK prioriza
+  `AWS_ACCESS_KEY_ID` del entorno sobre la sesión de `aws login`, y el `.env`
+  de desarrollo trae el par dummy de LocalStack. Sin comentar esas dos líneas
+  el modo `aws` falla aunque el código sea correcto — la suite lo detecta y
+  falla con mensaje explícito en vez de con un error críptico del SDK.
+- **Estado final:** feature `done`; sigue PR y merge humano.
+- **Próximo:** `aws-cdk-dev-stack` (#20) o `health-weights` (#15).

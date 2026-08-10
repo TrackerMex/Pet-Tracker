@@ -77,12 +77,17 @@ Esta es la regla central de verificación de este harness, no una sugerencia:
 3. Desde la raíz del repositorio, ejecuta:
 
 ```bash
-AWS_MODE=aws pnpm -C backend-pet-tracker run test:e2e --runInBand test/aws-real-smoke.e2e-spec.ts
+AWS_MODE=aws pnpm -C backend-pet-tracker run test:e2e -- --runInBand test/aws-real-smoke.e2e-spec.ts
 ```
 
-Resultado esperado: una suite con dos tests verdes. La única llamada remota es
-`ListQueues`; no crea ni modifica recursos. Después de verificar, restaura las
-dos credenciales dummy para seguir usando LocalStack.
+El `--` antes de `--runInBand` es obligatorio: sin él pnpm no reenvía los flags
+a jest. En PowerShell no existe el prefijo `VAR=valor comando`, así que usa
+Bash, o exporta `$env:AWS_MODE='aws'` en una línea aparte.
+
+Resultado esperado: una suite con dos tests verdes, **sin `skipped`** — si la
+suite aparece saltada, `AWS_MODE` no llegó al proceso. La única llamada remota
+es `ListQueues`; no crea ni modifica recursos. Después de verificar, restaura
+las dos credenciales dummy para seguir usando LocalStack.
 
 ---
 
