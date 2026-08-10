@@ -1,6 +1,6 @@
 ---
 feature: "aws-cdk-dev-stack"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec]
 ---
 
@@ -379,4 +379,4 @@ lanza si `process.env.AWS_ACCESS_KEY_ID` tiene valor. R21 lo replica.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [X] Aprobado por humano (fecha: 2026-08-10) ← gate obligatorio antes de implementar

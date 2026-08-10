@@ -20,8 +20,13 @@ estado: sin sesión activa
 feature: aws-cdk-dev-stack (#20)
 inicio: 2026-08-10
 agentes lanzados: explorer, spec_author
-estado: escribiendo spec — para en el gate humano
+estado: spec aprobada por humano (2026-08-10) → in_progress, handoff a Codex CLI
 ```
+
+Codex implementa R1-R16 en `feature/20-aws-cdk-dev-stack`. R17-R21 los cierra
+el humano (`cdk bootstrap`, `cdk deploy`, deploy no-op, e2e contra AWS real).
+Mientras Codex escribe, el leader no toca `backend-pet-tracker/` ni `infra/` —
+un solo escritor sobre el working tree.
 
 Cerrado antes en esta sesión: fix del harness sobre quién implementa
 (PR #37, mergeada) — Codex CLI queda como implementador por defecto.
