@@ -182,7 +182,7 @@ describe('Pet photo upload (e2e)', () => {
       );
       expect(body.expiresInSeconds).toBe(600);
       expect(body.uploadUrl).toEqual(
-        expect.stringContaining('pet-tracker-media-local'),
+        expect.stringContaining(BUCKET_MEDIA),
       );
 
       const photoKey = await photoKeyOf(pet.id);
