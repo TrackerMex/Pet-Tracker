@@ -1,8 +1,4 @@
-import {
-  BUCKET_MEDIA,
-  BUCKET_MEDIA_BASE,
-  resourceName,
-} from './constants';
+import { BUCKET_MEDIA, BUCKET_MEDIA_BASE, resourceName } from './constants';
 
 describe('R2: base y helper de composicion de nombres de recurso', () => {
   it('preserva el nombre local y compone sufijos opcionales', () => {
