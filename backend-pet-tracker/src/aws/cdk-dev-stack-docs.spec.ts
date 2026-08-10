@@ -7,6 +7,19 @@ function readRepositoryFile(...segments: string[]): string {
   return readFileSync(join(REPOSITORY_ROOT, ...segments), 'utf-8');
 }
 
+describe('R3: media e2e usa BUCKET_MEDIA sin literal local', () => {
+  it('delega el nombre del bucket a constants.ts', () => {
+    const mediaE2e = readRepositoryFile(
+      'backend-pet-tracker',
+      'test',
+      'media.e2e-spec.ts',
+    );
+
+    expect(mediaE2e).not.toContain("'pet-tracker-media-local'");
+    expect(mediaE2e).toContain('expect.stringContaining(BUCKET_MEDIA)');
+  });
+});
+
 describe('R5: .gitignore ignora cdk.out', () => {
   it('incluye el directorio generado por CDK', () => {
     const lines = readRepositoryFile('.gitignore').split(/\r?\n/);
