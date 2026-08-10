@@ -1,10 +1,15 @@
 import { Aws, Stack, StackProps } from 'aws-cdk-lib';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
+import * as events from 'aws-cdk-lib/aws-events';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as sqs from 'aws-cdk-lib/aws-sqs';
 import { Construct } from 'constructs';
 import {
   BUCKET_MEDIA_BASE,
+  DETAIL_TYPE_BATTERY_LOW,
+  DETAIL_TYPE_POSITION_UPDATED,
+  EVENT_BUS_NAME,
+  EVENT_SOURCE,
   QUEUE_GEOFENCE_EVENTS,
   QUEUE_GEOFENCE_EVENTS_DLQ,
   QUEUE_NOTIFICATIONS,
@@ -12,6 +17,7 @@ import {
   QUEUE_POSITIONS_RAW,
   QUEUE_POSITIONS_RAW_DLQ,
   resourceName,
+  RULE_GEOFENCE_EVENTS,
   SQS_MAX_RECEIVE_COUNT,
   TABLE_POSITIONS,
   TABLE_POSITIONS_PARTITION_KEY,
@@ -52,7 +58,7 @@ export class PetTrackerDevStack extends Stack {
     const geofenceEventsDlq = new sqs.Queue(this, 'GeofenceEventsDlq', {
       queueName: resourceName(QUEUE_GEOFENCE_EVENTS_DLQ, ENV_SUFFIX),
     });
-    new sqs.Queue(this, 'GeofenceEvents', {
+    const geofenceEventsQueue = new sqs.Queue(this, 'GeofenceEvents', {
       queueName: resourceName(QUEUE_GEOFENCE_EVENTS, ENV_SUFFIX),
       deadLetterQueue: {
         queue: geofenceEventsDlq,
@@ -85,6 +91,24 @@ export class PetTrackerDevStack extends Stack {
     new s3.Bucket(this, 'MediaBucket', {
       bucketName: resourceName(BUCKET_MEDIA_BASE, bucketSuffix),
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+    });
+
+    const eventBus = new events.EventBus(this, 'EventBus', {
+      eventBusName: resourceName(EVENT_BUS_NAME, ENV_SUFFIX),
+    });
+    const geofenceEventsRule = new events.Rule(this, 'GeofenceEventsRule', {
+      eventBus,
+      ruleName: resourceName(RULE_GEOFENCE_EVENTS, ENV_SUFFIX),
+      eventPattern: {
+        source: [EVENT_SOURCE],
+        detailType: [
+          DETAIL_TYPE_POSITION_UPDATED,
+          DETAIL_TYPE_BATTERY_LOW,
+        ],
+      },
+    });
+    geofenceEventsRule.addTarget({
+      bind: () => ({ arn: geofenceEventsQueue.queueArn }),
     });
   }
 }
