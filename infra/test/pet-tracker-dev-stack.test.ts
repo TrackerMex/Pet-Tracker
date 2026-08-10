@@ -252,7 +252,7 @@ describe('R11: resource-policy de SQS para el target de EventBridge', () => {
           Match.objectLike({
             Effect: 'Allow',
             Principal: { Service: 'events.amazonaws.com' },
-            Action: 'sqs:SendMessage',
+            Action: Match.arrayWith(['sqs:SendMessage']),
           }),
         ]),
       },

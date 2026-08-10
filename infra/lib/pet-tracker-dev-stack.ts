@@ -1,6 +1,7 @@
 import { Aws, Stack, StackProps } from 'aws-cdk-lib';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as events from 'aws-cdk-lib/aws-events';
+import * as targets from 'aws-cdk-lib/aws-events-targets';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as sqs from 'aws-cdk-lib/aws-sqs';
 import { Construct } from 'constructs';
@@ -107,8 +108,6 @@ export class PetTrackerDevStack extends Stack {
         ],
       },
     });
-    geofenceEventsRule.addTarget({
-      bind: () => ({ arn: geofenceEventsQueue.queueArn }),
-    });
+    geofenceEventsRule.addTarget(new targets.SqsQueue(geofenceEventsQueue));
   }
 }
