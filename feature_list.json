@@ -334,7 +334,7 @@
   {
     "id": 20,
     "name": "aws-cdk-dev-stack",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P2",
     "description": "Fase AWS real (paso 2): stack CDK en TypeScript que declara en AWS real (us-east-1, entorno dev) exactamente los recursos que hoy crea por SDK src/aws/provisioning.ts, que se queda intacto para LocalStack. Alcance: los tres pares de colas SQS (positions-raw, notifications, geofence-events, cada una con su DLQ y RedrivePolicy), la tabla DynamoDB positions (pk String HASH, sk Number RANGE, TTL sobre expires_at), el bucket S3 de media sin acceso público, el bus EventBridge pet-tracker y la regla geofence-events con su target. Decisión de costo tomada: la tabla va en BillingMode PROVISIONED con 25 RCU y 25 WCU y clase Standard, que es lo que cubre el Always Free tier de DynamoDB (on-demand queda fuera de esa cobertura); se acepta throttling si el ingest supera esa capacidad. El stack no incluye RDS, Fargate ni NAT Gateway: Postgres sigue en docker en esta fase porque son los recursos con costo fijo por hora. Los nombres salen de src/aws/constants.ts, no se duplican literales en el stack. El `cdk bootstrap` inicial lo corre un humano con permisos de IAM; los deploys posteriores van con PowerUserAccess.",
     "acceptance_criteria": [
