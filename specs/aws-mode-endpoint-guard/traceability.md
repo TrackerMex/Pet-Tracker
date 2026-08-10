@@ -9,7 +9,7 @@ tags: [harness, spec]
 | Requisito | Test (archivo::nombre) | Archivo implementado | Commit (hash + mensaje) |
 |---|---|---|---|
 | R1 | `backend-pet-tracker/src/aws/aws-endpoint-guard.spec.ts::R1: modo aws con AWS_ENDPOINT_URL definida aborta` | `backend-pet-tracker/src/aws/aws-clients.ts` | rojo: `4d12b0b test(aws-mode-endpoint-guard): cover unexpected endpoint rejection (R1)`; verde: `1b0be58 feat(aws-mode-endpoint-guard): reject unexpected env endpoint (R1)` |
-| R2 | `backend-pet-tracker/src/aws/aws-endpoint-guard.spec.ts::R2: el mensaje del error nombra la variable y la acción` | `backend-pet-tracker/src/aws/aws-clients.ts` | pendiente |
+| R2 | `backend-pet-tracker/src/aws/aws-endpoint-guard.spec.ts::R2: el mensaje del error nombra la variable y la acción` | `backend-pet-tracker/src/aws/aws-clients.ts` | rojo: `2db156b test(aws-mode-endpoint-guard): require actionable error message (R2)`; verde: `99de872 feat(aws-mode-endpoint-guard): explain rejected endpoint configuration (R2)` |
 | R3 | `backend-pet-tracker/src/aws/aws-endpoint-guard.spec.ts::R3: modo aws sin AWS_ENDPOINT_URL no cambia` | `backend-pet-tracker/src/aws/aws-clients.ts` | pendiente |
 | R4 | `backend-pet-tracker/src/aws/aws-endpoint-guard.spec.ts::R4: modo local intacto` | `backend-pet-tracker/src/aws/aws-clients.ts` | pendiente |
 | R5 | `backend-pet-tracker/src/aws/aws-endpoint-guard.spec.ts::R5: la guarda cubre las dos vías de resolución` | `backend-pet-tracker/src/aws/aws-clients.ts` | pendiente |
