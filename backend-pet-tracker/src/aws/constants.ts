@@ -31,9 +31,15 @@ export const TABLE_POSITIONS_PARTITION_KEY = 'pk';
 export const TABLE_POSITIONS_SORT_KEY = 'sk';
 export const TABLE_POSITIONS_TTL_ATTRIBUTE = 'expires_at';
 
-// S3 — sufijo -local explícito: nunca se reutiliza este nombre contra un
-// bucket de AWS real (design.md).
-export const BUCKET_MEDIA = 'pet-tracker-media-local';
+// S3 — base compartida; el runtime local conserva el sufijo -local y el
+// stack CDK de #20 compone dev-<accountId> para el bucket de AWS real.
+export const BUCKET_MEDIA_BASE = 'pet-tracker-media';
+
+/** Compone `<base>-<suffix>`; con suffix vacío devuelve `base` sin tocar. */
+export const resourceName = (base: string, suffix: string): string =>
+  suffix === '' ? base : `${base}-${suffix}`;
+
+export const BUCKET_MEDIA = resourceName(BUCKET_MEDIA_BASE, 'local');
 
 // EventBridge
 export const EVENT_BUS_NAME = 'pet-tracker';
