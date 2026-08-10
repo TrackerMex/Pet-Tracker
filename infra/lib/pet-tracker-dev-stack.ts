@@ -1,4 +1,4 @@
-import { Aws, Stack, StackProps } from 'aws-cdk-lib';
+import { Aws, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as events from 'aws-cdk-lib/aws-events';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
@@ -82,6 +82,7 @@ export class PetTrackerDevStack extends Stack {
         type: dynamodb.AttributeType.NUMBER,
       },
       timeToLiveAttribute: TABLE_POSITIONS_TTL_ATTRIBUTE,
+      removalPolicy: RemovalPolicy.RETAIN,
     });
     const cfnPositionsTable = positionsTable.node.defaultChild as dynamodb.CfnTable;
     // Table omite PROVISIONED por ser el default de CloudFormation; R8 lo
@@ -92,6 +93,7 @@ export class PetTrackerDevStack extends Stack {
     new s3.Bucket(this, 'MediaBucket', {
       bucketName: resourceName(BUCKET_MEDIA_BASE, bucketSuffix),
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      removalPolicy: RemovalPolicy.DESTROY,
     });
 
     const eventBus = new events.EventBus(this, 'EventBus', {
