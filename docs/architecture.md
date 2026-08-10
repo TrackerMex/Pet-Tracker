@@ -100,11 +100,13 @@ equivalencias:
 | Aurora Serverless v2 | Postgres 17 en Docker | Misma SQL; cambia solo la connection string |
 | DynamoDB `positions` | DynamoDB en LocalStack | Idéntico (endpoint desde `AWS_ENDPOINT_URL`) |
 | SQS / EventBridge | SQS / EventBridge en LocalStack | Idéntico |
-| S3 `pet-tracker-media-local` — bloqueo de acceso público | S3 en LocalStack, pero **sin enforcement**: LocalStack Community no aplica `PublicAccessBlock`, ACLs ni bucket policies en el plano de datos de S3 (el enforcement de IAM es funcionalidad Pro) — los persiste como metadata y sirve el objeto con `200` igualmente | En AWS real un `GET` sin firma sobre el objeto responde `403`; en local responde `200` aunque los 4 flags estén en `true`. Los tests verifican la **configuración** (`GetPublicAccessBlock` en los 4 flags + ausencia de bucket policy pública), no el `403`: ver `localstack-provisioning` #2 R13 y `pet-photos-s3` #6 R8. **Pendiente de verificar en un despliegue AWS real** |
+| S3 `pet-tracker-media-local` / AWS real `pet-tracker-media-dev-<accountId>` — bloqueo de acceso público | S3 en LocalStack, pero **sin enforcement**: LocalStack Community no aplica `PublicAccessBlock`, ACLs ni bucket policies en el plano de datos de S3 (el enforcement de IAM es funcionalidad Pro) — los persiste como metadata y sirve el objeto con `200` igualmente | En AWS real un `GET` sin firma sobre el objeto responde `403`; en local responde `200` aunque los 4 flags estén en `true`. Los tests verifican la **configuración** (`GetPublicAccessBlock` en los 4 flags + ausencia de bucket policy pública), no el `403`: ver `localstack-provisioning` #2 R13 y `pet-photos-s3` #6 R8. La verificación en AWS real corresponde a `aws-cdk-dev-stack` #20 R21. |
 | Lambda poller/processor/engine/notifier | Workers en el mismo proceso NestJS: cron de `@nestjs/schedule` + consumidores SQS (`src/workers/`) | La lógica vive en funciones puras (`src/pipeline/`) — portarla a Lambdas después es empaquetado, no reescritura |
 | EventBridge Scheduler (recordatorios) | No disponible en community — mecanismo local decidido en la spec de `pet-reminders` | Deviación documentada; el plan 008 vuelve a aplicar al desplegar |
 | Expo Push real | `PUSH_ENABLED=false` (log estructurado) | El notifier queda cableado; push real requiere build EAS |
 | SES (verificación de email en registro) | `EMAIL_ENABLED=false` (log estructurado) — mecanismo decidido en la spec de `auth-registration` (#3) | Cognito enviaba la confirmación nativa (plan 003); sin Cognito/SES en local, mismo patrón que `PUSH_ENABLED=false`: el código/enlace se loguea en vez de enviarse |
+
+Los nombres desnudos de SQS, DynamoDB y EventBridge asumen **una cuenta AWS por entorno**. Un segundo entorno en la misma cuenta y región exige activar el sufijo del helper `resourceName`.
 
 Regla: **ningún código apunta a AWS real** — todo cliente AWS SDK se
 construye con `AWS_ENDPOINT_URL` del env.
