@@ -2,12 +2,17 @@ import { App } from 'aws-cdk-lib';
 import { Match, Template } from 'aws-cdk-lib/assertions';
 import {
   BUCKET_MEDIA_BASE,
+  DETAIL_TYPE_BATTERY_LOW,
+  DETAIL_TYPE_POSITION_UPDATED,
+  EVENT_BUS_NAME,
+  EVENT_SOURCE,
   QUEUE_GEOFENCE_EVENTS,
   QUEUE_GEOFENCE_EVENTS_DLQ,
   QUEUE_NOTIFICATIONS,
   QUEUE_NOTIFICATIONS_DLQ,
   QUEUE_POSITIONS_RAW,
   QUEUE_POSITIONS_RAW_DLQ,
+  RULE_GEOFENCE_EVENTS,
   SQS_MAX_RECEIVE_COUNT,
   TABLE_POSITIONS,
   TABLE_POSITIONS_PARTITION_KEY,
@@ -46,6 +51,23 @@ function queueLogicalId(template: Template, queueName: string): string {
 
   if (!match) {
     throw new Error(`queue ${queueName} no existe en el template`);
+  }
+
+  return match[0];
+}
+
+function eventBusLogicalId(template: Template): string {
+  const resources = (template.toJSON() as {
+    Resources?: Record<string, SynthesizedResource>;
+  }).Resources;
+  const match = Object.entries(resources ?? {}).find(
+    ([, resource]) =>
+      resource.Type === 'AWS::Events::EventBus' &&
+      resource.Properties?.Name === EVENT_BUS_NAME,
+  );
+
+  if (!match) {
+    throw new Error(`event bus ${EVENT_BUS_NAME} no existe en el template`);
   }
 
   return match[0];
@@ -167,5 +189,49 @@ describe('R9: bucket de media con nombre por account-id y PublicAccessBlock', ()
       },
     });
     template.resourceCountIs('AWS::S3::BucketPolicy', 0);
+  });
+});
+
+describe('R10: bus pet-tracker y regla geofence-events con su target', () => {
+  it('declara el bus y el patrón exacto sobre una regla habilitada', () => {
+    const template = createTemplate();
+
+    template.resourceCountIs('AWS::Events::EventBus', 1);
+    template.resourceCountIs('AWS::Events::Rule', 1);
+    template.hasResourceProperties('AWS::Events::EventBus', {
+      Name: EVENT_BUS_NAME,
+    });
+    template.hasResourceProperties('AWS::Events::Rule', {
+      Name: RULE_GEOFENCE_EVENTS,
+      EventBusName: { Ref: eventBusLogicalId(template) },
+      State: 'ENABLED',
+      EventPattern: {
+        source: [EVENT_SOURCE],
+        'detail-type': [
+          DETAIL_TYPE_POSITION_UPDATED,
+          DETAIL_TYPE_BATTERY_LOW,
+        ],
+      },
+    });
+  });
+
+  it('apunta un único target a geofence-events sin transformar el sobre', () => {
+    const template = createTemplate();
+
+    template.hasResourceProperties('AWS::Events::Rule', {
+      Targets: [
+        {
+          Arn: {
+            'Fn::GetAtt': [
+              queueLogicalId(template, QUEUE_GEOFENCE_EVENTS),
+              'Arn',
+            ],
+          },
+          Id: Match.anyValue(),
+          InputTransformer: Match.absent(),
+          RoleArn: Match.absent(),
+        },
+      ],
+    });
   });
 });
