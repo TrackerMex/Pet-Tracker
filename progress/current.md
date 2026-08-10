@@ -30,7 +30,8 @@ estado: spec aprobada por humano 2026-08-09; implementación en manos de Codex C
 - Codex CLI (terminal aparte, lee `AGENTS.md`): implementación TDD.
 - Humano: aprueba spec, mergea PR, corre cualquier comando con costo AWS.
 - Handoff por disco: Codex lee `specs/aws-real-credentials/`, escribe
-  `progress/impl_19.md`. Nada de contenido por chat entre las dos IAs.
+  `progress/impl_aws-real-credentials.md`. Nada de contenido por chat entre
+  las dos IAs.
 - Un solo escritor sobre `backend-pet-tracker/src/` a la vez: mientras Codex
   implementa, Claude solo toca `docs/`, `specs/`, `progress/`, `feature_list.json`.
 
