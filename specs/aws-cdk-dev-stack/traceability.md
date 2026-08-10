@@ -1,6 +1,6 @@
 ---
 feature: "aws-cdk-dev-stack"
-status: draft        # draft | approved
+status: approved   # draft | approved
 tags: [harness, spec]
 ---
 
@@ -32,7 +32,7 @@ tags: [harness, spec]
 | R14 | implementer | `infra/test/pet-tracker-dev-stack.test.ts::R14: el stack se despliega en us-east-1 sin fijar la cuenta` | `infra/test/pet-tracker-dev-stack.test.ts::R14: el stack se despliega en us-east-1 sin fijar la cuenta` | `df37daf` test rojo; `7f482be` implementación verde |
 | R15 | implementer | `backend-pet-tracker/src/aws/cdk-dev-stack-docs.spec.ts::R15: architecture.md documenta el bucket dev y una cuenta por entorno` | `backend-pet-tracker/src/aws/cdk-dev-stack-docs.spec.ts::R15: architecture.md documenta el bucket dev y una cuenta por entorno` | `86298fe` test rojo; `e2506be` implementación verde |
 | R16 | implementer | `backend-pet-tracker/src/aws/cdk-dev-stack-docs.spec.ts::R16: verification.md documenta el procedimiento manual de #20` | `backend-pet-tracker/src/aws/cdk-dev-stack-docs.spec.ts::R16: verification.md documenta el procedimiento manual de #20` | `f06167e` test rojo; `18a99b3` implementación verde |
-| **R17** | **humano** | Verificación en la consola de AWS Billing + registro en `progress/impl_aws-cdk-dev-stack.md` (§Free tier) — no automatizable | 2026-08-10: cobertura de DynamoDB Standard provisionado 25 RCU / 25 WCU / 25 GB confirmada en consola (créditos, ventana de 6 meses). Falta anotar el detalle de qué muestra la consola al agotarlos | registro en `progress/impl_aws-cdk-dev-stack.md` §Free tier |
+| **R17** | **humano** | Verificación en la consola de AWS Billing + registro en `progress/impl_aws-cdk-dev-stack.md` (§Free tier) — no automatizable | 2026-08-10: cobertura de DynamoDB Standard provisionado 25 RCU / 25 WCU / 25 GB confirmada; a los 6 meses los servicios pasan a cobro normal. Cuantificado con el Price List API (25/25 = `$0.00/hora`; por encima `$0.00013` RCU-h y `$0.00065` WCU-h → 14.24 USD/mes) y con `freetier get-account-plan-state` (cuenta `PAID`, 120 USD de crédito) | registro en `progress/impl_aws-cdk-dev-stack.md` §Free tier |
 | **R18** | **humano** | `cdk bootstrap … --termination-protection` + registro en `progress/impl_aws-cdk-dev-stack.md` (§Bootstrap) — no automatizable, requiere `iam:*` | 2026-08-10: `bootstrapped (no changes)`; verificado contra el stack real — `CDKToolkit` `CREATE_COMPLETE`, `EnableTerminationProtection=true`, `FileAssetsBucketKmsKeyId=AWS_MANAGED_KEY`. `simulate-principal-policy` confirmó `implicitDeny` de PowerUserAccess sobre `iam:CreateRole` | registro en `progress/impl_aws-cdk-dev-stack.md` §Bootstrap |
 | **R19** | **humano** | `pnpm -C infra exec cdk deploy PetTrackerDev` → `CREATE_COMPLETE` + registro en `progress/impl_aws-cdk-dev-stack.md` (§Deploy) — crea recursos reales | 2026-08-10: `CREATE_COMPLETE` en 91 s con **PowerUserAccess** (sin admin). `list-stack-resources` devuelve 11 recursos y coincide exacto con el inventario de R13 | registro en `progress/impl_aws-cdk-dev-stack.md` §Deploy |
 | **R20** | **humano** | Segundo `cdk deploy` sin cambios → no-op + registro en `progress/impl_aws-cdk-dev-stack.md` (§Deploy idempotente) | 2026-08-10: `✅ PetTrackerDev (no changes)`, `Deployment time: 0s`, mismo stack ARN | registro en `progress/impl_aws-cdk-dev-stack.md` §Deploy idempotente |

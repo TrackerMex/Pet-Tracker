@@ -57,10 +57,44 @@ Management. La cuenta cubre DynamoDB Standard provisionado 25 RCU / 25 WCU /
 25 GB mediante créditos, con ventana de seis meses (plan nuevo, no Always Free
 clásico).
 
-Consecuencia al agotar los créditos o cumplirse la ventana: pendiente de
-anotar el detalle exacto que muestra la consola.
+Consecuencia confirmada por el humano: **al cumplirse los seis meses los
+servicios pasan a cobro normal**.
 
-Fecha y resultado: 2026-08-10, cobertura confirmada. Gate de costo abierto.
+Estado real de la cuenta, verificado el 2026-08-10 con la Free Tier API
+(`aws freetier get-account-plan-state`), no por lectura de la consola:
+
+```
+accountPlanType   = PAID
+accountPlanStatus = ACTIVE
+remainingCredits  = 120.00 USD
+```
+
+La cuenta **ya está en Paid Plan**, con 120 USD de créditos vivos.
+
+Precios verificados contra el Price List API (`aws pricing get-products`,
+`AmazonDynamoDB`, US East N. Virginia) — no estimados de memoria:
+
+| Dimensión | Precio |
+|---|---|
+| Primeras 25 unidades de lectura | `$0.00 / ReadCapacityUnit-Hrs` (free tier) |
+| Lectura más allá del free tier | `$0.00013 / ReadCapacityUnit-Hrs` |
+| Primeras 25 unidades de escritura | `$0.00 / WriteCapacityUnit-Hrs` (free tier) |
+| Escritura más allá del free tier | `$0.00065 / WriteCapacityUnit-Hrs` |
+
+La tabla `positions` está exactamente en 25/25, es decir en el tramo de coste
+cero. Si esa cobertura desapareciera, el coste calculado (script, no aritmética
+a ojo) sería **14.24 USD/mes** (2.37 de lectura + 11.86 de escritura sobre
+730 h), o 85.41 USD en seis meses; los 120 USD de crédito darían para 8.4
+meses.
+
+El resto de la stack no tiene coste fijo por hora: SQS y EventBridge cobran por
+request/evento y hoy no reciben tráfico, y el bucket de media está vacío. El
+techo de gasto lo pone `BillingMode PROVISIONED` sin auto-scaling: si el ingest
+supera 25 WCU hay throttling, no factura mayor. **Ese techo desaparece si
+alguien activa auto-scaling o cambia la tabla a on-demand.**
+
+Fecha y resultado: 2026-08-10, cobertura confirmada y cuantificada. R17
+cerrado.
 
 ## Bootstrap — R18
 
