@@ -6,6 +6,8 @@ Implementación iniciada el 2026-08-10 15:59:43 -06:00 en
 `feature/21-aws-mode-endpoint-guard`. La feature permanece `in_progress` y no
 se marcará `done`; el cierre corresponde al reviewer.
 
+Implementación terminada el 2026-08-10 16:22:52 -06:00. Lista para revisión.
+
 ## Restricciones
 
 - Sin llamadas ni creación de recursos en AWS real.
@@ -34,6 +36,20 @@ se marcará `done`; el cierre corresponde al reviewer.
 - R5: rojo `71d52b6` → verde `4eb9dca`.
 - R6: canario `852a403`; la corrida contaminada falló antes de construir
   clientes.
+- R7: rojo `4857274` → verde `4b4142f`.
+
+### Commit de cierre por requisito
+
+| R-id | Commit de cierre |
+|---|---|
+| R1 | `1b0be58 feat(aws-mode-endpoint-guard): reject unexpected env endpoint (R1)` |
+| R2 | `99de872 feat(aws-mode-endpoint-guard): explain rejected endpoint configuration (R2)` |
+| R3 | `f19cff6 feat(aws-mode-endpoint-guard): normalize absent aws endpoint (R3)` |
+| R4 | `9fb6a3c test(aws-mode-endpoint-guard): adapt #19 mode fixtures to the endpoint guard (R4)` |
+| R5 | `4eb9dca feat(aws-mode-endpoint-guard): guard ConfigService endpoint resolution (R5)` |
+| R6 | `852a403 test(aws-mode-endpoint-guard): expose contaminated real-ingest runs (R6)` |
+| R7 | `4b4142f docs(aws-mode-endpoint-guard): document automatic endpoint guard (R7)` |
+| R9 | `__R9_FINAL_COMMIT__` |
 
 ## Bloqueo de spec (resuelto)
 
@@ -84,4 +100,16 @@ tests omitidos.
 
 ## Verificación final
 
-Pendiente.
+- `./init.sh` ejecutado mediante Git Bash.
+- Exit code: 0.
+- Backend unit: 123 suites / 889 tests pasados.
+- Infra unit: 2 suites / 14 tests pasados.
+- E2E: 13 suites pasadas, 2 omitidas / 181 tests pasados, 6 omitidos.
+- Build, synth, lint y typecheck: verdes.
+- La suite `aws-real-ingest.e2e-spec.ts` aporta 4 de los 6 tests omitidos en
+  modo local, conservando su auto-skip.
+- Los cuatro tests de #19 aún intocables están ausentes del diff y verdes.
+- `docs/conventions.md`, `.env.example`, los módulos AWS excluidos e `infra/`
+  están ausentes del diff.
+- No se ejecutó `cdk bootstrap`, `cdk deploy` ni ninguna llamada contra AWS
+  real. El único synth fue el incluido obligatoriamente por `./init.sh`.
