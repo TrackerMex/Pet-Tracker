@@ -1,8 +1,8 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-08-09
-**Features completadas**: 14/20 (`feature_list.json`)
-**Pendientes**: 6 — backlog backend derivado de `plans/` 002–009 (peso, recordatorios, nutrición) más la fase AWS real (#19 credenciales, #20 stack CDK dev). **Sin P1 pendientes**: el resto es P2/P3.
+**Features completadas**: 15/20 (`feature_list.json`)
+**Pendientes**: 5 — backlog backend derivado de `plans/` 002–009 (peso, recordatorios, nutrición) más el stack CDK dev (#20) de la fase AWS real. **Sin P1 pendientes**: el resto es P2/P3.
 **En producción**: no
 
 ---
@@ -455,7 +455,41 @@ debe listar las 4 URLs de cola.
   del catálogo y `documentKey` escribible); corregidos con commits rojo/verde
   y aprobados en la segunda revisión. Gate final verde: 117 suites/843 unit y
   13 suites/181 e2e contra Postgres + LocalStack locales. Branch
-  `feature/14-health-vaccines`, pendiente de PR y merge humano.
+  `feature/14-health-vaccines`, **PR #32 mergeado por el humano**
+  (2026-08-09).
+- **`aws-real-credentials` (#19) done — primera feature que habla con AWS
+  real**: `AWS_MODE=local|aws` en `src/aws/aws-clients.ts`. En `local` todo
+  queda idéntico (endpoint de LocalStack, par estático de credenciales,
+  `forcePathStyle`, `MissingAwsEndpointError`); en `aws` los cuatro clientes
+  se construyen **sin `endpoint` y sin `credentials`**, dejando que el SDK v3
+  resuelva por su cadena por defecto — necesario porque las credenciales de
+  `aws login` son de sesión y rotan, no un par fijo. `AWS_MODE` es exact-match
+  sobre `aws` tras `.trim().toLowerCase()`: **cualquier otro valor cae a
+  `local`**, así que un typo no puede dirigir tráfico a la cuenta real.
+  Extra defensivo fuera de los criterios originales: `run-provisioning.ts`
+  aborta con exit 1 si detecta `AWS_MODE=aws` **antes** de construir ningún
+  cliente — sin esa guarda, un `.env` mal puesto crearía los 8 recursos del
+  provisioning en la cuenta real. Cero migraciones, cero deps nuevas,
+  `provisioning.ts` sin tocar. Spec 12 EARS aprobada por humano 2026-08-09.
+  **Primera feature implementada por Codex CLI** en vez de por el subagente
+  `implementer` (reparto: Claude spec+review+PR, Codex implementación);
+  `reviewer` **aprobó** R1-R10 con infraestructura levantada por él mismo —
+  `init.sh` exit 0, 119 suites/869 unit y 13 suites/181 e2e, y el criterio
+  clave R2 verificado con `localstack-provisioning.e2e-spec.ts` 10/10 **sin
+  modificar el archivo**. R11/R12 los cerró el humano con la prueba de humo
+  real (ver abajo). Branch `feature/19-aws-real-credentials`. Ver
+  `progress/impl_aws-real-credentials.md` y
+  `progress/review_aws-real-credentials.md`.
+- **Prueba de humo contra la cuenta real ejecutada (2026-08-09)**: con sesión
+  de `aws login` y `AWS_MODE=aws`, `test/aws-real-smoke.e2e-spec.ts` pasó 2/2
+  — un `ListQueues` de solo lectura, sin crear ni modificar nada. **Gotcha que
+  costará repetir**: el `.env` raíz trae el par dummy de LocalStack y la
+  cadena del SDK prioriza `AWS_ACCESS_KEY_ID` del entorno sobre la sesión de
+  `aws login`, así que hay que comentar esas dos líneas antes de correrla (y
+  restaurarlas después, o LocalStack deja de funcionar). La suite falla con
+  mensaje explícito si se olvidan. Procedimiento en `docs/verification.md`
+  §"Feature 19"; el `--` antes de `--runInBand` es obligatorio o pnpm no
+  reenvía los flags a jest.
 - **Pendiente abierto — CI no levanta infra para los e2e**: `ci.yml:27` dejó
   anotado hace tiempo "cuando existan tests e2e contra Postgres/LocalStack,
   anadir services aqui", y sigue sin hacerse. Tras la PR #29, en el runner
@@ -464,15 +498,48 @@ debe listar las 4 URLs de cola.
   `services` de Postgres + LocalStack, migraciones y `provision:local` en el
   workflow. Mientras tanto, los e2e solo se verifican en local — y conviene
   correrlos a mano antes de dar una feature por cerrada.
-- Próximo paso SDD: **no quedan features P1**. `health-weights` (#15) es la
-  siguiente por prioridad y orden — historial de peso, variación y actualización
-  segura de `pets.current_weight_kg`.
+- Próximo paso SDD: **no quedan features P1**. Con #19 cerrada, la candidata
+  natural es `aws-cdk-dev-stack` (#20) — declara en AWS real los mismos
+  recursos que hoy crea `provisioning.ts` por SDK. Ojo con el orden: hacer #20
+  antes que `pet-reminders` (#16) evita escribir el workaround de cron local
+  que #16 arrastra por no existir EventBridge Scheduler en LocalStack
+  community. `cdk bootstrap` y `cdk deploy` los corre el humano: crean
+  recursos con costo. Alternativa si se prefiere seguir por orden numérico:
+  `health-weights` (#15), historial de peso y actualización segura de
+  `pets.current_weight_kg`.
   Integración Wialon real: diferida hasta tener hardware en mano (SIM_MODE
   es el camino; conectar real será smoke test de config, no feature).
 
 ---
 
 ## Última sesión
+
+- **2026-08-09 (2)** — Ciclo SDD de `aws-real-credentials` (#19) con **reparto
+  multi-IA estrenado**: Claude Code como `leader` (spec, review, bookkeeping,
+  PR) y **Codex CLI en terminal aparte como implementador**, con handoff por
+  disco — Codex lee `specs/aws-real-credentials/` y escribe
+  `progress/impl_aws-real-credentials.md`; nada de contenido viajando por chat
+  entre las dos IAs. El valor real del reparto es que **quien implementa no
+  revisa**: `spec_author` (12 EARS, spec deliberadamente autosuficiente porque
+  el implementador no tiene acceso a la conversación) → gate humano →
+  Codex (2 commits) → `reviewer` de Claude **aprobó** R1-R10 tras levantar
+  `docker compose` y provisionar LocalStack él mismo (`init.sh` exit 0,
+  119 suites/869 unit, 13 suites/181 e2e) → prueba de humo del humano contra
+  la cuenta real, 2/2 verdes → `done`.
+  **Incidente de git**: el commit de la spec cayó en `main` en vez de en la
+  feature branch — el humano hizo `checkout main` + `pull` en otra terminal
+  entre que Claude creó la branch y commiteó, y el working tree es uno solo y
+  compartido. Recuperado sin pérdida (`merge --ff-only` + `cherry-pick` +
+  `git branch -f main origin/main`; los dos `reset --hard` los bloqueó el
+  clasificador). Lección para el reparto multi-IA: **un solo escritor sobre el
+  working tree a la vez**, o `git worktree` para que cada agente tenga su HEAD.
+  Hallazgo de proceso, no bloqueante: Codex metió implementación + tests +
+  docs en un único commit (`d884dad`), sin historial test-primero — el próximo
+  prompt de handoff debe exigir granularidad de commits. Choque de reglas
+  detectado: `CLAUDE.md` prohíbe al leader marcar `done` mientras `AGENTS.md`
+  §7.2 se lo pide; resuelto por decisión humana explícita esta vez, conviene
+  redactarlo como "no marcar `done` sin veredicto aprobado del reviewer".
+  Próximo: `aws-cdk-dev-stack` (#20) o `health-weights` (#15).
 
 - **2026-08-09** — Ciclo SDD completo de `health-vaccines` (#14): spec de 13
   requisitos aprobada por humano → implementación TDD de migración `0009`,
@@ -794,5 +861,5 @@ debe listar las 4 URLs de cola.
 - **Backend**: NestJS 11 + TypeScript, pnpm (código en `backend-pet-tracker/`)
 - **Datos**: PostgreSQL 17 (Docker) dominio + DynamoDB (LocalStack) telemetría GPS; Drizzle ORM
 - **Mensajería local**: SQS + EventBridge en LocalStack (positions-raw, notifications, bus pet-tracker)
-- **Infra local**: LocalStack community — **sin AWS real**; arquitectura objetivo serverless en `plans/README.md`
+- **Infra local**: LocalStack community por defecto (`AWS_MODE=local`). Desde #19 el backend **puede** hablar con AWS real vía `AWS_MODE=aws` + cadena de credenciales del SDK, pero todavía no hay recursos desplegados allí (eso es #20); arquitectura objetivo serverless en `plans/README.md`
 - **Tests**: Jest + supertest

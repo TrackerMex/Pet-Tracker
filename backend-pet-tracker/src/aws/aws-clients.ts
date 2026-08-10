@@ -4,7 +4,10 @@ import { EventBridgeClient } from '@aws-sdk/client-eventbridge';
 import { S3Client } from '@aws-sdk/client-s3';
 import { SQSClient } from '@aws-sdk/client-sqs';
 
+export type AwsMode = 'local' | 'aws';
+
 export interface AwsRuntimeConfig {
+  mode: AwsMode;
   endpoint: string;
   region: string;
   accessKeyId: string;
@@ -35,6 +38,10 @@ function assertEndpoint(endpoint: string | undefined): string {
   return endpoint;
 }
 
+function resolveAwsMode(raw: string | undefined): AwsMode {
+  return (raw ?? '').trim().toLowerCase() === 'aws' ? 'aws' : 'local';
+}
+
 /**
  * Lee la configuración de los clientes AWS SDK v3 desde `process.env` — la
  * excepción documentada para el script standalone de provisioning
@@ -46,8 +53,14 @@ function assertEndpoint(endpoint: string | undefined): string {
 export function resolveAwsConfigFromEnv(
   env: NodeJS.ProcessEnv,
 ): AwsRuntimeConfig {
+  const mode = resolveAwsMode(env.AWS_MODE);
+
   return {
-    endpoint: assertEndpoint(env.AWS_ENDPOINT_URL),
+    mode,
+    endpoint:
+      mode === 'local'
+        ? assertEndpoint(env.AWS_ENDPOINT_URL)
+        : (env.AWS_ENDPOINT_URL ?? ''),
     region: env.AWS_REGION ?? '',
     accessKeyId: env.AWS_ACCESS_KEY_ID ?? '',
     secretAccessKey: env.AWS_SECRET_ACCESS_KEY ?? '',
@@ -65,6 +78,7 @@ export function resolveAwsConfigFromConfigService(
   config: ConfigService,
 ): AwsRuntimeConfig {
   return {
+    mode: resolveAwsMode(config.get<string>('AWS_MODE')),
     endpoint: config.get<string>('AWS_ENDPOINT_URL') ?? '',
     region: config.get<string>('AWS_REGION') ?? '',
     accessKeyId: config.get<string>('AWS_ACCESS_KEY_ID') ?? '',
@@ -72,49 +86,51 @@ export function resolveAwsConfigFromConfigService(
   };
 }
 
-function credentials(config: AwsRuntimeConfig): {
-  accessKeyId: string;
-  secretAccessKey: string;
-} {
+export interface AwsClientOptions {
+  endpoint?: string;
+  region?: string;
+  credentials?: {
+    accessKeyId: string;
+    secretAccessKey: string;
+  };
+}
+
+export function resolveAwsClientOptions(
+  config: AwsRuntimeConfig,
+): AwsClientOptions {
+  if (config.mode === 'aws') {
+    return config.region === '' ? {} : { region: config.region };
+  }
+
   return {
-    accessKeyId: config.accessKeyId,
-    secretAccessKey: config.secretAccessKey,
+    endpoint: config.endpoint,
+    region: config.region,
+    credentials: {
+      accessKeyId: config.accessKeyId,
+      secretAccessKey: config.secretAccessKey,
+    },
   };
 }
 
 export function createSqsClient(config: AwsRuntimeConfig): SQSClient {
-  return new SQSClient({
-    endpoint: config.endpoint,
-    region: config.region,
-    credentials: credentials(config),
-  });
+  return new SQSClient(resolveAwsClientOptions(config));
 }
 
 export function createDynamoDbClient(config: AwsRuntimeConfig): DynamoDBClient {
-  return new DynamoDBClient({
-    endpoint: config.endpoint,
-    region: config.region,
-    credentials: credentials(config),
-  });
+  return new DynamoDBClient(resolveAwsClientOptions(config));
 }
 
 export function createS3Client(config: AwsRuntimeConfig): S3Client {
   return new S3Client({
-    endpoint: config.endpoint,
-    region: config.region,
-    credentials: credentials(config),
+    ...resolveAwsClientOptions(config),
     // LocalStack no resuelve bien el estilo virtual-hosted (bucket.localhost);
     // path-style (localhost/bucket) es lo que LocalStack community espera.
-    forcePathStyle: true,
+    ...(config.mode === 'local' ? { forcePathStyle: true } : {}),
   });
 }
 
 export function createEventBridgeClient(
   config: AwsRuntimeConfig,
 ): EventBridgeClient {
-  return new EventBridgeClient({
-    endpoint: config.endpoint,
-    region: config.region,
-    credentials: credentials(config),
-  });
+  return new EventBridgeClient(resolveAwsClientOptions(config));
 }

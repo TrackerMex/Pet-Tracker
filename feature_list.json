@@ -314,7 +314,7 @@
   {
     "id": 19,
     "name": "aws-real-credentials",
-    "status": "pending",
+    "status": "done",
     "priority": "P2",
     "description": "Fase AWS real (paso 1): hoy los cuatro clientes de src/aws/aws-clients.ts siempre reciben endpoint y un par estático accessKeyId/secretAccessKey, así que solo pueden hablar con LocalStack. Introducir un modo explícito (AWS_MODE=local|aws, en .env.example y conventions): en local el comportamiento es idéntico al actual; en aws el cliente se construye sin endpoint y sin credentials explícitas, dejando que el SDK v3 resuelva por la cadena de credenciales por defecto (las de `aws login` son de sesión y rotan cada 15 min, no un par fijo). MissingAwsEndpointError deja de ser incondicional y pasa a aplicar solo en modo local, conservando su función de red de seguridad. forcePathStyle del cliente S3 queda también condicionado a local (LocalStack lo necesita, S3 real no). No toca provisioning.ts ni crea recursos.",
     "acceptance_criteria": [
