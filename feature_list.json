@@ -334,7 +334,7 @@
   {
     "id": 20,
     "name": "aws-cdk-dev-stack",
-    "status": "pending",
+    "status": "done",
     "priority": "P2",
     "description": "Fase AWS real (paso 2): stack CDK en TypeScript que declara en AWS real (us-east-1, entorno dev) exactamente los recursos que hoy crea por SDK src/aws/provisioning.ts, que se queda intacto para LocalStack. Alcance: los tres pares de colas SQS (positions-raw, notifications, geofence-events, cada una con su DLQ y RedrivePolicy), la tabla DynamoDB positions (pk String HASH, sk Number RANGE, TTL sobre expires_at), el bucket S3 de media sin acceso público, el bus EventBridge pet-tracker y la regla geofence-events con su target. Decisión de costo tomada: la tabla va en BillingMode PROVISIONED con 25 RCU y 25 WCU y clase Standard, que es lo que cubre el Always Free tier de DynamoDB (on-demand queda fuera de esa cobertura); se acepta throttling si el ingest supera esa capacidad. El stack no incluye RDS, Fargate ni NAT Gateway: Postgres sigue en docker en esta fase porque son los recursos con costo fijo por hora. Los nombres salen de src/aws/constants.ts, no se duplican literales en el stack. El `cdk bootstrap` inicial lo corre un humano con permisos de IAM; los deploys posteriores van con PowerUserAccess.",
     "acceptance_criteria": [
@@ -351,6 +351,26 @@
     "files_affected": [
       "infra/",
       "backend-pet-tracker/src/aws/constants.ts"
+    ]
+  },
+  {
+    "id": 21,
+    "name": "aws-mode-endpoint-guard",
+    "status": "pending",
+    "priority": "P1",
+    "description": "Fase AWS real (paso 3, defecto destapado al cerrar #20 R21): la feature 19 asumió que no pasar `endpoint` al construir los clientes bastaba para aislar el modo aws de LocalStack. No basta. El AWS SDK v3 lee AWS_ENDPOINT_URL de process.env por su cuenta, como configuración global del SDK, así que con el .env raíz sin tocar AWS_MODE=aws sigue hablando con LocalStack. El síntoma es peor que un fallo: la suite test/aws-real-ingest.e2e-spec.ts pasó en verde contra LocalStack (QueueUrl con account 000000000000) haciendo creer que se había verificado AWS real; solo se detectó apagando LocalStack y repitiendo. Hoy la asimetría es clara: existe assertNoStaticAccessKey para las credenciales pero nada equivalente para el endpoint. Añadir la guarda simétrica en src/aws/aws-clients.ts: en modo aws, si AWS_ENDPOINT_URL está definida y no vacía, abortar con un error nombrado antes de construir ningún cliente, igual que MissingAwsEndpointError hace la guarda inversa en modo local. No toca el modo local ni provisioning.ts, y no crea recursos.",
+    "acceptance_criteria": [
+      "Con AWS_MODE=aws y AWS_ENDPOINT_URL definida, resolver la config lanza un error nombrado (ej. UnexpectedAwsEndpointError) antes de construir ningún cliente; test unitario que lo comprueba",
+      "Con AWS_MODE=aws y AWS_ENDPOINT_URL ausente o vacía, el comportamiento es idéntico al actual: clientes sin endpoint y sin credentials explícitas",
+      "Con AWS_MODE=local el comportamiento no cambia: AWS_ENDPOINT_URL ausente sigue lanzando MissingAwsEndpointError y los e2e de LocalStack siguen verdes sin tocar su flujo",
+      "La guarda cubre las dos vías de resolución de config (resolveAwsConfigFromEnv y resolveAwsConfigFromConfigService), no solo una",
+      "test/aws-real-ingest.e2e-spec.ts falla con un mensaje explícito en vez de pasar en verde si se ejecuta con AWS_MODE=aws y AWS_ENDPOINT_URL puesta",
+      "docs/verification.md refleja que la guarda existe y que ya no hace falta confiar solo en el procedimiento manual de comentar la variable"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/aws/aws-clients.ts",
+      "backend-pet-tracker/test/aws-real-ingest.e2e-spec.ts",
+      "docs/verification.md"
     ]
   }
 ]

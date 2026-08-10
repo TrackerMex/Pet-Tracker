@@ -1,9 +1,12 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-08-09
-**Features completadas**: 15/20 (`feature_list.json`)
-**Pendientes**: 5 — backlog backend derivado de `plans/` 002–009 (peso, recordatorios, nutrición) más el stack CDK dev (#20) de la fase AWS real. **Sin P1 pendientes**: el resto es P2/P3.
+**Última actualización**: 2026-08-10
+**Features completadas**: 16/21 (`feature_list.json`)
+**Pendientes**: 5 — cuatro del backlog backend (P2/P3) y la nueva #21
+`aws-mode-endpoint-guard` (P1), abierta por un defecto destapado al cerrar #20.
 **En producción**: no
+**Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
+desde 2026-08-10. Hay recursos vivos en la cuenta, aunque hoy sin coste.
 
 ---
 
@@ -58,6 +61,26 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
+- **`aws-cdk-dev-stack` (#20) done** (2026-08-10): implementada por Codex CLI
+  (R1-R16 + R21 mitad A) con veredicto aprobado del `reviewer`, y R17-R21
+  cerrados por el humano el mismo día. La stack está desplegada en `us-east-1`
+  con los 11 recursos de R13, `CDKToolkit` tiene termination protection y el
+  segundo deploy dio `no changes`. El deploy corrió con **PowerUserAccess**;
+  el admin solo hizo falta para el bootstrap. Ver
+  `progress/impl_aws-cdk-dev-stack.md` y `progress/review_aws-cdk-dev-stack.md`.
+- **`aws-mode-endpoint-guard` (#21) pending, P1** — abierta por un defecto que
+  destapó el cierre de #20 R21: el SDK v3 lee `AWS_ENDPOINT_URL` del entorno
+  por su cuenta, así que `AWS_MODE=aws` **no aísla de LocalStack**. La suite de
+  ingest real pasó en verde contra LocalStack antes de detectarse; solo se
+  cazó apagando LocalStack y repitiendo. Falta la guarda simétrica a
+  `assertNoStaticAccessKey` en `src/aws/aws-clients.ts`.
+- **Coste de la infra desplegada** (verificado con el Price List API y
+  `freetier get-account-plan-state`, no estimado): la tabla `positions` está en
+  25 RCU / 25 WCU, el tramo de `$0.00/hora`. SQS, S3 y EventBridge cobran por
+  uso y hoy no tienen tráfico. La cuenta es `PAID` con 120 USD de crédito. El
+  techo lo pone `BillingMode PROVISIONED` sin auto-scaling: exceso = throttling,
+  no factura. **Ese techo desaparece si alguien activa auto-scaling o pasa la
+  tabla a on-demand.**
 - Harness SDD configurado y verde (`init.sh` pasa completo).
 - Scaffold NestJS en `backend-pet-tracker/` — sin features todavía.
 - Backlog reconciliado con `plans/` (002–009, solo backend): 18 features.
@@ -513,6 +536,17 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-08-10** — Implementación de `aws-cdk-dev-stack` (#20) en
+  `feature/20-aws-cdk-dev-stack`: R1-R16 y R21 mitad A completados siguiendo
+  el orden de `tasks.md`, con un commit rojo anterior a cada implementación y
+  trazabilidad actualizada. Se creó `infra/` con el stack CDK de 11 recursos,
+  se integró su gate en `init.config.sh`, se actualizaron arquitectura y
+  verificación, y se añadió el e2e AWS-only de tres tramos. `init.sh` final
+  verde: 879 unitarios backend, 14 tests de infraestructura y 181 e2e; la
+  suite nueva aportó 3 tests omitidos. No se ejecutó `cdk bootstrap` ni
+  `cdk deploy`. Próximo: el humano completa R17-R20 y R21 mitad B con el
+  procedimiento de `docs/verification.md`; después corresponde reviewer.
 
 - **2026-08-09 (2)** — Ciclo SDD de `aws-real-credentials` (#19) con **reparto
   multi-IA estrenado**: Claude Code como `leader` (spec, review, bookkeeping,

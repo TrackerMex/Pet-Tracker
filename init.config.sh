@@ -20,11 +20,11 @@ REQUIRED_ENV_VARS=("DATABASE_URL")
 #   LINT_CMD="pnpm run lint"
 #   TYPECHECK_CMD="pnpm exec tsc --noEmit"
 # El backend vive en backend-pet-tracker/ — pnpm -C apunta ahí desde la raíz
-INSTALL_CMD="pnpm -C backend-pet-tracker install"
-BUILD_CMD="pnpm -C backend-pet-tracker run build"
-TEST_CMD="pnpm -C backend-pet-tracker test --passWithNoTests"
-LINT_CMD="pnpm -C backend-pet-tracker run lint"
-TYPECHECK_CMD="pnpm -C backend-pet-tracker exec tsc --noEmit"
+INSTALL_CMD="pnpm -C backend-pet-tracker install && pnpm -C infra install"
+BUILD_CMD="pnpm -C backend-pet-tracker run build && pnpm -C infra run synth"
+TEST_CMD="pnpm -C backend-pet-tracker test --passWithNoTests && pnpm -C infra test --passWithNoTests"
+LINT_CMD="pnpm -C backend-pet-tracker run lint && pnpm -C infra run lint"
+TYPECHECK_CMD="pnpm -C backend-pet-tracker exec tsc --noEmit && pnpm -C infra exec tsc --noEmit"
 
 # Tests e2e. Viven en backend-pet-tracker/test/ como *.e2e-spec.ts con su
 # propia config (test/jest-e2e.json), así que TEST_CMD no los alcanza:
