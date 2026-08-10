@@ -10,9 +10,7 @@ describe('R7: verification.md documenta la guarda', () => {
       'utf-8',
     );
 
-    expect(verification).toContain(
-      '### Feature 21 — aws-mode-endpoint-guard',
-    );
+    expect(verification).toContain('### Feature 21 — aws-mode-endpoint-guard');
     expect(verification).toContain('UnexpectedAwsEndpointError');
     expect(verification).toContain('AWS_ENDPOINT_URL');
   });

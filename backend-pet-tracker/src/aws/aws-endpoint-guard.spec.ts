@@ -71,9 +71,9 @@ describe('R4: modo local intacto', () => {
 
   it('mantiene la validación estricta del resolver de entorno', () => {
     expect(() => resolveAwsConfigFromEnv({})).toThrow(MissingAwsEndpointError);
-    expect(resolveAwsConfigFromEnv({ AWS_ENDPOINT_URL: endpoint }).endpoint).toBe(
-      endpoint,
-    );
+    expect(
+      resolveAwsConfigFromEnv({ AWS_ENDPOINT_URL: endpoint }).endpoint,
+    ).toBe(endpoint);
   });
 
   it('mantiene la semántica permisiva de ConfigService', () => {
