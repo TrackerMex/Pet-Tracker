@@ -163,9 +163,13 @@ account-id redactados.
 
    Debe quedar verde y **sin `skipped`**.
 
-   **Verde no basta como evidencia.** Con `AWS_ENDPOINT_URL` puesta la suite
-   pasa contra LocalStack. Antes de dar R21 por cerrado, comprueba el destino
-   de una de estas dos formas:
+   Desde la feature 21 la guarda automática aborta la corrida si
+   `AWS_ENDPOINT_URL` sigue definida: resolver la configuración lanza
+   `UnexpectedAwsEndpointError` antes de construir ningún cliente. El
+   procedimiento manual ya no es la única red contra un verde falso.
+
+   Como verificación positiva opcional, comprueba el destino de una de estas
+   dos formas:
 
    - Mira los `QueueUrl` del output: si aparece
      `localhost.localstack.cloud` o el account `000000000000`, fuiste a
@@ -181,6 +185,31 @@ Consecuencias de las políticas de borrado: si el bucket tiene objetos,
 `cdk destroy` falla y hay que vaciarlo manualmente antes; la tabla retenida
 sigue provisionada a 25/25 y consumiendo el cupo de la cuenta después de
 destruir la stack, hasta que el humano la elimine por separado.
+
+### Feature 21 — aws-mode-endpoint-guard
+
+La guarda es automática y vive en `backend-pet-tracker/src/aws/aws-clients.ts`:
+con `AWS_MODE=aws` y `AWS_ENDPOINT_URL` definida, resolver la configuración
+lanza `UnexpectedAwsEndpointError` antes de construir ningún cliente, así que
+ninguna suite puede volver a pasar en verde contra LocalStack creyendo hablar
+con AWS real. Es simétrica a `MissingAwsEndpointError`, que cubre el caso
+inverso en modo `local`.
+
+Para comprobarla a mano, desde la raíz y con `AWS_ENDPOINT_URL` sin comentar
+en el `.env`:
+
+```bash
+AWS_MODE=aws pnpm -C backend-pet-tracker run test:e2e -- --runInBand test/aws-real-ingest.e2e-spec.ts
+```
+
+Resultado esperado: la suite **falla** nombrando `AWS_ENDPOINT_URL`, sin
+ejecutar ninguna llamada remota. No hay que apagar LocalStack para
+distinguirlo.
+
+Lo que la guarda **no** cubre: la CLI de CDK (`cdk bootstrap`, `cdk deploy`)
+no pasa por `aws-clients.ts` y lee `AWS_ENDPOINT_URL` del entorno por su
+cuenta, así que el paso R18 de la feature 20 sigue exigiendo comentar la
+variable a mano.
 
 ---
 

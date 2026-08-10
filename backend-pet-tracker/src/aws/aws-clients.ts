@@ -31,11 +31,32 @@ export class MissingAwsEndpointError extends Error {
   }
 }
 
+export class UnexpectedAwsEndpointError extends Error {
+  constructor() {
+    super(
+      'AWS_ENDPOINT_URL está definida (valor no vacío) y AWS_MODE=aws. El ' +
+        'AWS SDK v3 lee AWS_ENDPOINT_URL de process.env por su cuenta, así ' +
+        'que los clientes hablarían con LocalStack creyendo hablar con AWS ' +
+        'real: se aborta antes de construir ningún cliente. Comenta ' +
+        'AWS_ENDPOINT_URL en el .env raíz para el modo aws, o vuelve a ' +
+        'AWS_MODE=local (ver docs/verification.md, feature 21).',
+    );
+    this.name = 'UnexpectedAwsEndpointError';
+  }
+}
+
 function assertEndpoint(endpoint: string | undefined): string {
   if (!endpoint || endpoint.trim() === '') {
     throw new MissingAwsEndpointError();
   }
   return endpoint;
+}
+
+function assertNoEndpoint(endpoint: string | undefined): string {
+  if (endpoint && endpoint.trim() !== '') {
+    throw new UnexpectedAwsEndpointError();
+  }
+  return '';
 }
 
 function resolveAwsMode(raw: string | undefined): AwsMode {
@@ -48,7 +69,8 @@ function resolveAwsMode(raw: string | undefined): AwsMode {
  * (`scripts/provision-local.ts`), que corre fuera del bootstrap de Nest y
  * por lo tanto no tiene ConfigService disponible (mismo patrón que
  * `drizzle.config.ts`, ver design.md). Aborta con MissingAwsEndpointError
- * si AWS_ENDPOINT_URL falta, antes de construir cualquier cliente.
+ * En modo local aborta si AWS_ENDPOINT_URL falta. En modo aws aborta si la
+ * variable está definida, antes de construir cualquier cliente.
  */
 export function resolveAwsConfigFromEnv(
   env: NodeJS.ProcessEnv,
@@ -60,7 +82,7 @@ export function resolveAwsConfigFromEnv(
     endpoint:
       mode === 'local'
         ? assertEndpoint(env.AWS_ENDPOINT_URL)
-        : (env.AWS_ENDPOINT_URL ?? ''),
+        : assertNoEndpoint(env.AWS_ENDPOINT_URL),
     region: env.AWS_REGION ?? '',
     accessKeyId: env.AWS_ACCESS_KEY_ID ?? '',
     secretAccessKey: env.AWS_SECRET_ACCESS_KEY ?? '',
@@ -72,14 +94,17 @@ export function resolveAwsConfigFromEnv(
  * única vía dentro del runtime NestJS (nunca process.env directo, ver
  * docs/conventions.md). El script standalone de provisioning usa
  * resolveAwsConfigFromEnv en su lugar (excepción documentada, igual que
- * drizzle.config.ts).
+ * drizzle.config.ts). En modo aws aborta si AWS_ENDPOINT_URL está definida.
  */
 export function resolveAwsConfigFromConfigService(
   config: ConfigService,
 ): AwsRuntimeConfig {
+  const mode = resolveAwsMode(config.get<string>('AWS_MODE'));
+  const endpoint = config.get<string>('AWS_ENDPOINT_URL') ?? '';
+
   return {
-    mode: resolveAwsMode(config.get<string>('AWS_MODE')),
-    endpoint: config.get<string>('AWS_ENDPOINT_URL') ?? '',
+    mode,
+    endpoint: mode === 'aws' ? assertNoEndpoint(endpoint) : endpoint,
     region: config.get<string>('AWS_REGION') ?? '',
     accessKeyId: config.get<string>('AWS_ACCESS_KEY_ID') ?? '',
     secretAccessKey: config.get<string>('AWS_SECRET_ACCESS_KEY') ?? '',

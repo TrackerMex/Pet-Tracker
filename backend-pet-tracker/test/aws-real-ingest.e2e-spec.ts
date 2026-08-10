@@ -173,6 +173,10 @@ function eventHasRunId(message: Message, runId: string): boolean {
     }
   }, 75000);
 
+  it('R6: aborta si AWS_ENDPOINT_URL sigue definida', () => {
+    expect(() => resolveAwsConfigFromEnv(process.env)).not.toThrow();
+  });
+
   it('resuelve positions-raw y completa send/receive/delete', async () => {
     if (!sqs) {
       throw new Error('SQS client no inicializado');
