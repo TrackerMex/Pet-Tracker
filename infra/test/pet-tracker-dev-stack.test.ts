@@ -1,6 +1,7 @@
 import { App } from 'aws-cdk-lib';
 import { Match, Template } from 'aws-cdk-lib/assertions';
 import {
+  BUCKET_MEDIA_BASE,
   QUEUE_GEOFENCE_EVENTS,
   QUEUE_GEOFENCE_EVENTS_DLQ,
   QUEUE_NOTIFICATIONS,
@@ -143,5 +144,28 @@ describe('R8: tabla positions PROVISIONED 25/25 STANDARD con TTL', () => {
       GlobalSecondaryIndexes: Match.absent(),
       LocalSecondaryIndexes: Match.absent(),
     });
+  });
+});
+
+describe('R9: bucket de media con nombre por account-id y PublicAccessBlock', () => {
+  it('compone el nombre sin resolver la cuenta y bloquea acceso público', () => {
+    const template = createTemplate();
+
+    template.resourceCountIs('AWS::S3::Bucket', 1);
+    template.hasResourceProperties('AWS::S3::Bucket', {
+      BucketName: {
+        'Fn::Join': [
+          '',
+          [`${BUCKET_MEDIA_BASE}-dev-`, { Ref: 'AWS::AccountId' }],
+        ],
+      },
+      PublicAccessBlockConfiguration: {
+        BlockPublicAcls: true,
+        BlockPublicPolicy: true,
+        IgnorePublicAcls: true,
+        RestrictPublicBuckets: true,
+      },
+    });
+    template.resourceCountIs('AWS::S3::BucketPolicy', 0);
   });
 });
