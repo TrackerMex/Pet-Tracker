@@ -25,7 +25,7 @@ tags: [harness, spec]
 | R7 | implementer | `infra/test/pet-tracker-dev-stack.test.ts::R7: seis colas SQS con RedrivePolicy hacia su DLQ` | `infra/test/pet-tracker-dev-stack.test.ts::R7: seis colas SQS con RedrivePolicy hacia su DLQ` | `929abc9` test rojo; `fdef9c7` implementación verde |
 | R8 | implementer | `infra/test/pet-tracker-dev-stack.test.ts::R8: tabla positions PROVISIONED 25/25 STANDARD con TTL` | `infra/test/pet-tracker-dev-stack.test.ts::R8: tabla positions PROVISIONED 25/25 STANDARD con TTL` | `8cbf757` test rojo; `2ccd90e` implementación verde |
 | R9 | implementer | `infra/test/pet-tracker-dev-stack.test.ts::R9: bucket de media con nombre por account-id y PublicAccessBlock` | `infra/test/pet-tracker-dev-stack.test.ts::R9: bucket de media con nombre por account-id y PublicAccessBlock` | `c9f03fd` test rojo; `e49457a` implementación verde |
-| R10 | implementer | `infra/test/pet-tracker-dev-stack.test.ts::R10: bus pet-tracker y regla geofence-events con su target` | pendiente | pendiente |
+| R10 | implementer | `infra/test/pet-tracker-dev-stack.test.ts::R10: bus pet-tracker y regla geofence-events con su target` | `infra/test/pet-tracker-dev-stack.test.ts::R10: bus pet-tracker y regla geofence-events con su target` | `74bcddb` test rojo; `a1ea71c` implementación verde |
 | R11 | implementer | `infra/test/pet-tracker-dev-stack.test.ts::R11: resource-policy de SQS para el target de EventBridge` | pendiente | pendiente |
 | R12 | implementer | `infra/test/pet-tracker-dev-stack.test.ts::R12: removalPolicy Retain en la tabla y Delete en el bucket` | pendiente | pendiente |
 | R13 | implementer | `infra/test/pet-tracker-dev-stack.test.ts::R13: el template declara exactamente 11 recursos de 6 tipos` | pendiente | pendiente |
