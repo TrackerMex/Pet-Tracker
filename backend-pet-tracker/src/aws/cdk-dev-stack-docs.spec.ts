@@ -66,3 +66,19 @@ describe('R15: architecture.md documenta el bucket dev y una cuenta por entorno'
     expect(architecture).toContain('una cuenta AWS por entorno');
   });
 });
+
+describe('R16: verification.md documenta el procedimiento manual de #20', () => {
+  it('incluye los cinco pasos, las credenciales y las políticas de borrado', () => {
+    const verification = readRepositoryFile('docs', 'verification.md');
+
+    expect(verification).toContain('### Feature 20 — aws-cdk-dev-stack');
+    expect(verification).toContain('cdk bootstrap');
+    expect(verification).toContain('cdk deploy');
+    expect(verification).toContain('AWS_MODE=aws');
+    expect(verification).toContain('aws-real-ingest.e2e-spec.ts');
+    expect(verification).toContain('AWS_ACCESS_KEY_ID');
+    expect(verification).toContain('AWS_SECRET_ACCESS_KEY');
+    expect(verification).toContain('bucket tiene objetos');
+    expect(verification).toContain('tabla retenida');
+  });
+});
