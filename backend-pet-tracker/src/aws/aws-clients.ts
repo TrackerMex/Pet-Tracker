@@ -56,7 +56,7 @@ function assertNoEndpoint(endpoint: string | undefined): string {
   if (endpoint && endpoint.trim() !== '') {
     throw new UnexpectedAwsEndpointError();
   }
-  return endpoint ?? '';
+  return '';
 }
 
 function resolveAwsMode(raw: string | undefined): AwsMode {
