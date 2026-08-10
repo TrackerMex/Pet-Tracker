@@ -259,3 +259,18 @@ describe('R11: resource-policy de SQS para el target de EventBridge', () => {
     });
   });
 });
+
+describe('R12: removalPolicy Retain en la tabla y Delete en el bucket', () => {
+  it('retiene telemetría y elimina el bucket solo cuando está vacío', () => {
+    const template = createTemplate();
+
+    template.hasResource('AWS::DynamoDB::Table', {
+      DeletionPolicy: 'Retain',
+      UpdateReplacePolicy: 'Retain',
+    });
+    template.hasResource('AWS::S3::Bucket', {
+      DeletionPolicy: 'Delete',
+      UpdateReplacePolicy: 'Delete',
+    });
+  });
+});
