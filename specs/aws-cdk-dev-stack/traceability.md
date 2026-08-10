@@ -20,7 +20,7 @@ tags: [harness, spec]
 | R2 | implementer | `backend-pet-tracker/src/aws/constants.spec.ts::R2: base y helper de composicion de nombres de recurso` | `backend-pet-tracker/src/aws/constants.spec.ts::R2: base y helper de composicion de nombres de recurso` | `f4d6ae0` test rojo; `8c036a9` implementación verde |
 | R3 | implementer | `backend-pet-tracker/test/media.e2e-spec.ts` (suite existente, línea 185 editada; requiere LocalStack arriba) | pendiente | pendiente |
 | R4 | implementer | `infra/test/no-duplicated-literals.test.ts::R4: el stack no duplica literales de constants.ts` | pendiente | pendiente |
-| R5 | implementer | `backend-pet-tracker/src/aws/cdk-dev-stack-docs.spec.ts::R5: .gitignore ignora cdk.out` | pendiente | pendiente |
+| R5 | implementer | `backend-pet-tracker/src/aws/cdk-dev-stack-docs.spec.ts::R5: .gitignore ignora cdk.out` | `backend-pet-tracker/src/aws/cdk-dev-stack-docs.spec.ts::R5: .gitignore ignora cdk.out` | `e931e26` test rojo; `ebd3f53` implementación verde |
 | R6 | implementer | `backend-pet-tracker/src/aws/cdk-dev-stack-docs.spec.ts::R6: init.config.sh ejecuta el paquete infra` | pendiente | pendiente |
 | R7 | implementer | `infra/test/pet-tracker-dev-stack.test.ts::R7: seis colas SQS con RedrivePolicy hacia su DLQ` | pendiente | pendiente |
 | R8 | implementer | `infra/test/pet-tracker-dev-stack.test.ts::R8: tabla positions PROVISIONED 25/25 STANDARD con TTL` | pendiente | pendiente |
