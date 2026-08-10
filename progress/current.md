@@ -28,6 +28,12 @@ el humano (`cdk bootstrap`, `cdk deploy`, deploy no-op, e2e contra AWS real).
 Mientras Codex escribe, el leader no toca `backend-pet-tracker/` ni `infra/` —
 un solo escritor sobre el working tree.
 
+Implementación iniciada por Codex a las 11:04 (America/Mexico_City). Línea
+base verificada con `init.sh` en verde tras reprovisionar LocalStack: 119
+suites / 869 tests unitarios, 13 suites / 181 tests e2e ejecutados (1 suite /
+2 tests omitidos), build, lint y typecheck limpios. Orden activo:
+R2→R1→R5→R6→R4→R7→R8→R9→R10→R11→R12→R13→R14→R3→R15→R16→R21-A.
+
 Cerrado antes en esta sesión: fix del harness sobre quién implementa
 (PR #37, mergeada) — Codex CLI queda como implementador por defecto.
 

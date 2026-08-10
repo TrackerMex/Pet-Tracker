@@ -17,7 +17,7 @@ tags: [harness, spec]
 | Requisito | Cierra | Test previsto (archivo::describe) | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|---|---|
 | R1 | implementer | `infra/test/pet-tracker-dev-stack.test.ts::R1: el stack sintetiza sin credenciales AWS` (+ `init.sh`/CI en verde con `BUILD_CMD`) | pendiente | pendiente |
-| R2 | implementer | `backend-pet-tracker/src/aws/constants.spec.ts::R2: base y helper de composicion de nombres de recurso` | pendiente | pendiente |
+| R2 | implementer | `backend-pet-tracker/src/aws/constants.spec.ts::R2: base y helper de composicion de nombres de recurso` | `backend-pet-tracker/src/aws/constants.spec.ts::R2: base y helper de composicion de nombres de recurso` | `f4d6ae0` test rojo; `8c036a9` implementación verde |
 | R3 | implementer | `backend-pet-tracker/test/media.e2e-spec.ts` (suite existente, línea 185 editada; requiere LocalStack arriba) | pendiente | pendiente |
 | R4 | implementer | `infra/test/no-duplicated-literals.test.ts::R4: el stack no duplica literales de constants.ts` | pendiente | pendiente |
 | R5 | implementer | `backend-pet-tracker/src/aws/cdk-dev-stack-docs.spec.ts::R5: .gitignore ignora cdk.out` | pendiente | pendiente |
