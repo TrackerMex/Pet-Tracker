@@ -1,5 +1,6 @@
 import type { ConfigService } from '@nestjs/config';
 import {
+  type AwsRuntimeConfig,
   MissingAwsEndpointError,
   UnexpectedAwsEndpointError,
   resolveAwsClientOptions,
@@ -89,5 +90,34 @@ describe('R4: modo local intacto', () => {
         buildConfigServiceMock({ AWS_MODE: 'local' }),
       ).endpoint,
     ).toBe('');
+  });
+});
+
+describe('R5: la guarda cubre las dos vías de resolución', () => {
+  const resolvers: Array<
+    [string, (env: NodeJS.ProcessEnv) => AwsRuntimeConfig]
+  > = [
+    ['process.env', resolveAwsConfigFromEnv],
+    [
+      'ConfigService',
+      (env) => resolveAwsConfigFromConfigService(buildConfigServiceMock(env)),
+    ],
+  ];
+
+  it.each(resolvers)('rechaza el endpoint desde %s', (_name, resolve) => {
+    let thrown: unknown;
+
+    try {
+      resolve({
+        AWS_MODE: 'aws',
+        AWS_ENDPOINT_URL: 'http://localhost:4566',
+      });
+    } catch (error) {
+      thrown = error;
+    }
+
+    expect(thrown).toBeInstanceOf(UnexpectedAwsEndpointError);
+    expect((thrown as Error).message).toMatch(/AWS_ENDPOINT_URL/);
+    expect((thrown as Error).message).toMatch(/process\.env/);
   });
 });
