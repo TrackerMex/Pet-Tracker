@@ -33,7 +33,14 @@ export class MissingAwsEndpointError extends Error {
 
 export class UnexpectedAwsEndpointError extends Error {
   constructor() {
-    super('Unexpected AWS endpoint');
+    super(
+      'AWS_ENDPOINT_URL está definida (valor no vacío) y AWS_MODE=aws. El ' +
+        'AWS SDK v3 lee AWS_ENDPOINT_URL de process.env por su cuenta, así ' +
+        'que los clientes hablarían con LocalStack creyendo hablar con AWS ' +
+        'real: se aborta antes de construir ningún cliente. Comenta ' +
+        'AWS_ENDPOINT_URL en el .env raíz para el modo aws, o vuelve a ' +
+        'AWS_MODE=local (ver docs/verification.md, feature 21).',
+    );
     this.name = 'UnexpectedAwsEndpointError';
   }
 }
