@@ -14,3 +14,27 @@ describe('R5: .gitignore ignora cdk.out', () => {
     expect(lines).toContain('cdk.out/');
   });
 });
+
+describe('R6: init.config.sh ejecuta el paquete infra', () => {
+  it.each([
+    'INSTALL_CMD',
+    'BUILD_CMD',
+    'TEST_CMD',
+    'LINT_CMD',
+    'TYPECHECK_CMD',
+  ])('%s encadena pnpm -C infra', (variableName) => {
+    const config = readRepositoryFile('init.config.sh');
+    const assignment = config.match(
+      new RegExp(`^${variableName}="([^"]*)"$`, 'm'),
+    );
+
+    if (!assignment) {
+      throw new Error(`${variableName} no está definida`);
+    }
+    if (!assignment[1].includes('pnpm -C infra')) {
+      throw new Error(`${variableName} no ejecuta pnpm -C infra`);
+    }
+
+    expect(assignment[1]).toContain('pnpm -C infra');
+  });
+});
