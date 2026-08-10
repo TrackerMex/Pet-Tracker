@@ -64,7 +64,7 @@ pending → spec_ready → in_progress → done
 |---|---|---|
 | `pending` | Existe en `feature_list.json`, sin spec todavía | — |
 | `spec_ready` | `specs/<feature>/requirements.md` escrito, **aprobado por humano** | `spec_author` + gate humano |
-| `in_progress` | Implementación en curso, TDD por requisito | `implementer` |
+| `in_progress` | Implementación en curso, TDD por requisito | **Codex CLI** (por defecto) o `implementer` (fallback) |
 | `done` | Implementado, revisado, tests nombran sus R-ids, traceability sin filas pendientes | `reviewer` |
 
 **Gate de aprobación humana**: entre `spec_ready` e `in_progress` hay un punto
@@ -78,9 +78,10 @@ implementar. Ningún agente se auto-aprueba la spec.
 ## 4. Reglas duras (no negociables)
 
 - **Una sola feature a la vez.** No mezcles cambios de varias tareas en la misma sesión.
-- **Código de features siempre por PR.** Branch `feature/<id>-<nombre>` + PR
-  que un humano mergea; CI debe estar verde. Solo cambios de harness/docs/specs
-  pueden ir directo a `main` (ver `docs/conventions.md`).
+- **Todo va por PR.** `main` está protegida: el push directo se rechaza, también
+  para harness/docs/specs. Código de features en branch `feature/<id>-<nombre>`,
+  bookkeeping y docs en `docs/<tema>` o `update-status-<id>`. Un humano mergea;
+  CI debe estar verde (ver `docs/conventions.md`).
 - **No se implementa sin spec aprobada.** Si la feature está `pending`, primero
   se escribe y aprueba la spec (ver §3).
 - **No declares una tarea `done` sin build verde y tests sin regresión.**
