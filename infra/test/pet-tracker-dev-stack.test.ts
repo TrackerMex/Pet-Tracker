@@ -1,5 +1,7 @@
 import { App } from 'aws-cdk-lib';
 import { Match, Template } from 'aws-cdk-lib/assertions';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import {
   BUCKET_MEDIA_BASE,
   DETAIL_TYPE_BATTERY_LOW,
@@ -272,5 +274,37 @@ describe('R12: removalPolicy Retain en la tabla y Delete en el bucket', () => {
       DeletionPolicy: 'Delete',
       UpdateReplacePolicy: 'Delete',
     });
+  });
+});
+
+describe('R13: el template declara exactamente 11 recursos de 6 tipos', () => {
+  it('compara el inventario completo y rechaza cualquier tipo adicional', () => {
+    const resources = (createTemplate().toJSON() as {
+      Resources?: Record<string, SynthesizedResource>;
+    }).Resources;
+    const counts = Object.values(resources ?? {}).reduce<Record<string, number>>(
+      (result, resource) => ({
+        ...result,
+        [resource.Type]: (result[resource.Type] ?? 0) + 1,
+      }),
+      {},
+    );
+
+    expect(counts).toEqual({
+      'AWS::SQS::Queue': 6,
+      'AWS::SQS::QueuePolicy': 1,
+      'AWS::DynamoDB::Table': 1,
+      'AWS::S3::Bucket': 1,
+      'AWS::Events::EventBus': 1,
+      'AWS::Events::Rule': 1,
+    });
+  });
+
+  it('desactiva el recurso de metadata en los synth del CLI', () => {
+    const cdkConfig = JSON.parse(
+      readFileSync(join(__dirname, '..', 'cdk.json'), 'utf-8'),
+    ) as { versionReporting?: boolean };
+
+    expect(cdkConfig.versionReporting).toBe(false);
   });
 });
