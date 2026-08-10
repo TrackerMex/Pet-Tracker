@@ -356,7 +356,7 @@
   {
     "id": 21,
     "name": "aws-mode-endpoint-guard",
-    "status": "pending",
+    "status": "in_progress",
     "priority": "P1",
     "description": "Fase AWS real (paso 3, defecto destapado al cerrar #20 R21): la feature 19 asumió que no pasar `endpoint` al construir los clientes bastaba para aislar el modo aws de LocalStack. No basta. El AWS SDK v3 lee AWS_ENDPOINT_URL de process.env por su cuenta, como configuración global del SDK, así que con el .env raíz sin tocar AWS_MODE=aws sigue hablando con LocalStack. El síntoma es peor que un fallo: la suite test/aws-real-ingest.e2e-spec.ts pasó en verde contra LocalStack (QueueUrl con account 000000000000) haciendo creer que se había verificado AWS real; solo se detectó apagando LocalStack y repitiendo. Hoy la asimetría es clara: existe assertNoStaticAccessKey para las credenciales pero nada equivalente para el endpoint. Añadir la guarda simétrica en src/aws/aws-clients.ts: en modo aws, si AWS_ENDPOINT_URL está definida y no vacía, abortar con un error nombrado antes de construir ningún cliente, igual que MissingAwsEndpointError hace la guarda inversa en modo local. No toca el modo local ni provisioning.ts, y no crea recursos.",
     "acceptance_criteria": [
