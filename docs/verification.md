@@ -68,6 +68,22 @@ Esta es la regla central de verificación de este harness, no una sugerencia:
 ```
 -->
 
+### Feature 19 — aws-real-credentials
+
+1. Inicia una sesión válida con `aws login`.
+2. En el `.env` raíz, comenta `AWS_ACCESS_KEY_ID=test` y
+   `AWS_SECRET_ACCESS_KEY=test`. La cadena del SDK prioriza esas variables
+   sobre la sesión y la suite falla de forma explícita si siguen presentes.
+3. Desde la raíz del repositorio, ejecuta:
+
+```bash
+AWS_MODE=aws pnpm -C backend-pet-tracker run test:e2e --runInBand test/aws-real-smoke.e2e-spec.ts
+```
+
+Resultado esperado: una suite con dos tests verdes. La única llamada remota es
+`ListQueues`; no crea ni modifica recursos. Después de verificar, restaura las
+dos credenciales dummy para seguir usando LocalStack.
+
 ---
 
 ## Notas para el implementer

@@ -36,6 +36,11 @@ export async function runProvisioning(
     return 1;
   }
 
+  if (config.mode === 'aws') {
+    logger.error('AWS_MODE=aws no está permitido en el provisioning local');
+    return 1;
+  }
+
   const clients: AwsClientBundle = {
     sqs: createSqsClient(config),
     dynamoDb: createDynamoDbClient(config),
