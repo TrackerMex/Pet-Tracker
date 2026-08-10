@@ -49,7 +49,7 @@ Implementación terminada el 2026-08-10 16:22:52 -06:00. Lista para revisión.
 | R5 | `4eb9dca feat(aws-mode-endpoint-guard): guard ConfigService endpoint resolution (R5)` |
 | R6 | `852a403 test(aws-mode-endpoint-guard): expose contaminated real-ingest runs (R6)` |
 | R7 | `4b4142f docs(aws-mode-endpoint-guard): document automatic endpoint guard (R7)` |
-| R9 | `__R9_FINAL_COMMIT__` |
+| R9 | `8708b88 docs(aws-mode-endpoint-guard): record final verification (R9)` |
 
 ## Bloqueo de spec (resuelto)
 
