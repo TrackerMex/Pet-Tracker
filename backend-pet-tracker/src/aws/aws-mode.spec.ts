@@ -46,7 +46,7 @@ describe('R1: AWS_MODE resuelve el modo con default local', () => {
   ] as const)('resuelve %p como %s', (rawMode, expectedMode) => {
     const env = {
       AWS_MODE: rawMode,
-      AWS_ENDPOINT_URL: ENDPOINT,
+      AWS_ENDPOINT_URL: expectedMode === 'local' ? ENDPOINT : undefined,
     };
 
     expect(resolveAwsConfigFromEnv(env).mode).toBe(expectedMode);
@@ -119,7 +119,6 @@ describe('R5: modo aws pasa region solo si tiene valor', () => {
   it.each([undefined, ''])('omite region cuando AWS_REGION es %p', (region) => {
     const config = resolveAwsConfigFromEnv({
       AWS_MODE: 'aws',
-      AWS_ENDPOINT_URL: ENDPOINT,
       AWS_REGION: region,
     });
     const options = resolveAwsClientOptions(config);
