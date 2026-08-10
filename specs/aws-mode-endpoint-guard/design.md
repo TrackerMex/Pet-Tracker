@@ -212,6 +212,37 @@ tags: [harness, spec]
   `aws-endpoint-guard-docs.spec.ts`) y `traceability.md` cita siempre
   `archivo::describe`. Sirve a C4/C5.
 
+- **D10 — `aws-mode.spec.ts` se adapta al contrato nuevo, con dos cambios y
+  nada más.** (Añadido en la enmienda de R4 del 2026-08-10.) Cinco de sus tests
+  pasan `{ AWS_MODE: 'aws', AWS_ENDPOINT_URL: ENDPOINT }` a los resolvers, que
+  con la guarda de R1 pasa a ser una combinación ilegal. En los cinco el
+  endpoint es **incidental**: prueban resolución de modo y de región, no el
+  endpoint — el fixture lo arrastraba por comodidad. Los dos cambios:
+
+  1. `describe('R1: AWS_MODE resuelve el modo con default local')` (L47-50). El
+     `it.each` mezcla casos `local` y `aws` en una tabla; los `local`
+     **necesitan** el endpoint o salta `MissingAwsEndpointError`. El env pasa a
+     depender del modo esperado:
+
+     ```ts
+     const env = {
+       AWS_MODE: rawMode,
+       AWS_ENDPOINT_URL: expectedMode === 'local' ? ENDPOINT : undefined,
+     };
+     ```
+
+  2. `describe('R5: modo aws pasa region solo si tiene valor')`, el `it.each` de
+     L119-128: se borra la línea `AWS_ENDPOINT_URL: ENDPOINT,` del objeto que
+     recibe `resolveAwsConfigFromEnv`. Modo `aws` sin endpoint no lanza (lo fija
+     R7 de #19), y el test sigue probando lo suyo: que `region` se omite.
+
+  Prohibido todo lo demás en ese archivo: no se añade, borra ni renombra ningún
+  `describe`/`it`, no se debilita ninguna aserción, no se toca
+  `buildAwsConfig()` — sus consumidores (`resolveAwsClientOptions` y los cuatro
+  factories) siguen verdes sin cambios, que es lo que §D3 predijo bien. La
+  cobertura que se pierde es la de "modo aws con endpoint", combinación que
+  ahora está prohibida y cuya prueba es R1 de esta feature. Sirve a R4.
+
 ## Archivos afectados
 
 Todo lo de `backend-pet-tracker/` es capa **infrastructure**; el resto es
@@ -221,6 +252,7 @@ documentación del harness.
 |---|---|---|
 | `backend-pet-tracker/src/aws/aws-clients.ts` | **Modificar.** `UnexpectedAwsEndpointError` (exportada), `assertNoEndpoint` (privada), guarda en los dos resolvers, JSDoc actualizado | R1, R2, R3, R4, R5 |
 | `backend-pet-tracker/src/aws/aws-endpoint-guard.spec.ts` | **Nuevo.** Tests unitarios | R1, R2, R3, R4, R5 |
+| `backend-pet-tracker/src/aws/aws-mode.spec.ts` | **Modificar.** Solo los dos cambios de D10; nada más | R4 |
 | `backend-pet-tracker/test/aws-real-ingest.e2e-spec.ts` | **Modificar.** Un `it` nuevo (D8); ningún otro cambio | R6 |
 | `backend-pet-tracker/src/aws/aws-endpoint-guard-docs.spec.ts` | **Nuevo.** Tests de documentación | R7 |
 | `docs/verification.md` | **Modificar.** Sección "Feature 21" + reescritura del párrafo R21 de la feature 20 (D6) | R7 |
@@ -232,7 +264,7 @@ documentación del harness.
 `src/aws/aws.constants.ts`, `src/aws/constants.ts`, `src/config/config.module.ts`,
 `scripts/provision-local.ts`, `test/localstack-provisioning.e2e-spec.ts`,
 `test/aws-real-smoke.e2e-spec.ts`, `test/fixtures/.env.aws-fixture`,
-`src/aws/aws-mode.spec.ts`, `src/aws/aws-clients.spec.ts`,
+`src/aws/aws-clients.spec.ts`,
 `src/aws/aws-env-config.spec.ts`, `src/aws/aws.module.spec.ts`,
 `src/aws/aws-mode-docs.spec.ts`, `src/aws/no-hardcoded-credentials.spec.ts`,
 `src/aws/no-real-aws-endpoint.spec.ts`, `.env.example`, `docs/conventions.md`,

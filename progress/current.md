@@ -38,6 +38,29 @@ Nota para futuras specs: `spec_author` dejó marcado él mismo el checkbox
 "Aprobado por humano" de `requirements.md` antes de que hubiera gate. El
 contenido no cambió, pero ese checkbox no lo marca quien escribe la spec.
 
+## Gate reabierto — enmienda de R4 (2026-08-10)
+
+Codex paró en R5 con una contradicción real de la spec, no un fallo suyo: R4
+exigía `src/aws/aws-mode.spec.ts` verde **sin tocarlo**, pero ese archivo pasa
+`{ AWS_MODE: 'aws', AWS_ENDPOINT_URL: ENDPOINT }` a los dos resolvers en cinco
+tests (R1 de #19, casos `'aws'`/`'AWS'`/`' aws '`; R5 de #19, casos `AWS_REGION`
+`undefined`/`''`) — la combinación que R1 de esta feature declara ilegal.
+Verificado a mano: 5 fallos, exactamente esos. Los otros cuatro archivos de #19
+siguen verdes.
+
+El fallo fue del `spec_author`: verificó §D3 contra `resolveAwsClientOptions`
+—donde acertó, `buildAwsConfig()` sigue verde— pero no contra las llamadas a los
+resolvers del mismo archivo.
+
+El humano autorizó enmendar R4. Ahora permite adaptar **solo**
+`aws-mode.spec.ts`, con los dos cambios de [[design]] §D10 y nada más; los otros
+cuatro archivos siguen intocables. En esos cinco tests el endpoint era
+incidental (prueban modo y región), así que no se pierde cobertura real.
+
+Mérito de Codex: paró en vez de inventar una excepción por `NODE_ENV`, no tocó
+archivos prohibidos y su historial rojo→verde por R-id cumple C4 — lo que falló
+en #19.
+
 ## Pendiente tras Codex
 
 1. El humano confirma que Codex terminó y existe `progress/impl_aws-mode-endpoint-guard.md`.

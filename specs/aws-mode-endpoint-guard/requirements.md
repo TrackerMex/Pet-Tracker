@@ -89,12 +89,25 @@ Consumidores de los dos resolvers (ninguno puede romperse en modo `local`):
   `MissingAwsEndpointError` cuando `AWS_ENDPOINT_URL` falta o está vacía;
   `resolveAwsConfigFromConfigService` SHALL seguir devolviendo `endpoint: ''`
   sin lanzar en ese caso; y con `AWS_ENDPOINT_URL` definida los dos resolvers
-  SHALL devolver ese endpoint tal cual. Los cinco archivos de test de #19
-  (`src/aws/aws-mode.spec.ts`, `src/aws/aws-clients.spec.ts`,
-  `src/aws/aws-env-config.spec.ts`, `src/aws/aws.module.spec.ts`,
-  `test/localstack-provisioning.e2e-spec.ts`) SHALL seguir verdes **sin una
-  sola línea modificada** (verificable con `git diff --name-only` al cerrar la
-  feature).
+  SHALL devolver ese endpoint tal cual. Cuatro de los cinco archivos de test de
+  #19 (`src/aws/aws-clients.spec.ts`, `src/aws/aws-env-config.spec.ts`,
+  `src/aws/aws.module.spec.ts`, `test/localstack-provisioning.e2e-spec.ts`)
+  SHALL seguir verdes **sin una sola línea modificada** (verificable con `git
+  diff --name-only` al cerrar la feature). El quinto,
+  `src/aws/aws-mode.spec.ts`, SHALL adaptarse al contrato nuevo con el cambio
+  mínimo descrito en [[design]] §D10 — y nada más: ningún `describe`/`it`
+  añadido, borrado ni renombrado, ninguna aserción debilitada.
+
+  > **Enmienda del 2026-08-10 (gate humano reabierto).** La redacción original
+  > exigía los cinco archivos intactos y era **imposible**: `aws-mode.spec.ts`
+  > pasa `{ AWS_MODE: 'aws', AWS_ENDPOINT_URL: ENDPOINT }` a los dos resolvers
+  > en cinco tests (R1 de #19, casos `'aws'`/`'AWS'`/`' aws '`, L47-52; y R5 de
+  > #19, casos `AWS_REGION` `undefined`/`''`, L120-124) — justo la combinación
+  > que R1 de esta feature declara ilegal. El borrador verificó §D3 contra
+  > `resolveAwsClientOptions`, donde `buildAwsConfig()` efectivamente sigue
+  > verde, pero no contra las llamadas a los resolvers del mismo archivo.
+  > Codex CLI detectó la contradicción, paró sin inventar excepciones y la
+  > documentó en `progress/impl_aws-mode-endpoint-guard.md` (commit `250f37e`).
 
 - **R5**: WHEN se ejerce la guarda de R1, THE SYSTEM SHALL cubrir las **dos**
   vías de resolución de configuración —`resolveAwsConfigFromEnv(env)` y

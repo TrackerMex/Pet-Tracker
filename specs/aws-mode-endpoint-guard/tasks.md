@@ -68,8 +68,16 @@ tags: [harness, spec]
 - [ ] (2) Implementación mínima que lo pasa — normalmente ninguna: si el test
       pasa a la primera porque la guarda ya está bien colocada, **dilo en el
       mensaje del commit** en vez de forzar un cambio artificial.
-- [ ] (3) Refactor con tests verdes — `git diff --name-only` no debe incluir
-      ninguno de los cinco archivos que R4 declara intocables.
+- [ ] (3) Adaptar `src/aws/aws-mode.spec.ts` al contrato nuevo — los **dos**
+      cambios de [[design]] §D10, en su propio commit
+      (`test(aws-mode-endpoint-guard): adapt #19 mode fixtures to the endpoint
+      guard (R4)`). Nada más en ese archivo. Enmienda del gate humano del
+      2026-08-10: la redacción original de R4 lo declaraba intocable y era
+      imposible.
+- [ ] (4) Refactor con tests verdes — `git diff --name-only` no debe incluir
+      ninguno de los cuatro archivos que R4 sigue declarando intocables
+      (`aws-clients.spec.ts`, `aws-env-config.spec.ts`, `aws.module.spec.ts`,
+      `test/localstack-provisioning.e2e-spec.ts`).
 
 ## R5 — La guarda cubre las dos vías de resolución
 
