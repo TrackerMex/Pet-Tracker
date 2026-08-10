@@ -1,4 +1,7 @@
 {
+  "env": {
+    "GITHUB_TOKEN": ""
+  },
   "permissions": {
     "allow": [
       "Agent",
