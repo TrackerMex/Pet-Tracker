@@ -1,8 +1,17 @@
+import type { ConfigService } from '@nestjs/config';
 import {
+  MissingAwsEndpointError,
   UnexpectedAwsEndpointError,
   resolveAwsClientOptions,
+  resolveAwsConfigFromConfigService,
   resolveAwsConfigFromEnv,
 } from './aws-clients';
+
+function buildConfigServiceMock(env: NodeJS.ProcessEnv): ConfigService {
+  return {
+    get: (key: string) => env[key],
+  } as unknown as ConfigService;
+}
 
 describe('R1: modo aws con AWS_ENDPOINT_URL definida aborta', () => {
   it('lanza el error nombrado para un endpoint no vacío', () => {
@@ -54,4 +63,31 @@ describe('R3: modo aws sin AWS_ENDPOINT_URL no cambia', () => {
       expect('credentials' in options).toBe(false);
     },
   );
+});
+
+describe('R4: modo local intacto', () => {
+  const endpoint = 'http://localhost:4566';
+
+  it('mantiene la validación estricta del resolver de entorno', () => {
+    expect(() => resolveAwsConfigFromEnv({})).toThrow(MissingAwsEndpointError);
+    expect(resolveAwsConfigFromEnv({ AWS_ENDPOINT_URL: endpoint }).endpoint).toBe(
+      endpoint,
+    );
+  });
+
+  it('mantiene la semántica permisiva de ConfigService', () => {
+    expect(
+      resolveAwsConfigFromConfigService(
+        buildConfigServiceMock({
+          AWS_MODE: 'local',
+          AWS_ENDPOINT_URL: endpoint,
+        }),
+      ).endpoint,
+    ).toBe(endpoint);
+    expect(
+      resolveAwsConfigFromConfigService(
+        buildConfigServiceMock({ AWS_MODE: 'local' }),
+      ).endpoint,
+    ).toBe('');
+  });
 });
