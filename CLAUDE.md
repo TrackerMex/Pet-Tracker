@@ -26,8 +26,48 @@ En este repositorio actúas **siempre** como el agente `leader` definido en
 - ✅ Para cualquier tarea de código, lanza el subagente apropiado:
   - `spec_author` → escribe la spec EARS de una feature `pending` (nunca escribe código)
   - `explorer` → investiga antes de implementar si la feature es ambigua
-  - `implementer` → escribe código de **una** feature siguiendo TDD y la spec aprobada
   - `reviewer` → valida el trabajo antes de cerrar
+- ✅ **La implementación la escribe Codex CLI**, no tú ni un subagente tuyo.
+  Ver §Implementación (Codex CLI)
+
+## Implementación: Codex CLI
+
+Desde la feature #19 (2026-08-09) el implementador por defecto es **Codex CLI
+corriendo en una terminal aparte**, que el humano lanza. Tú preparas el handoff
+y revisas; no ves el output de Codex y no debe contaminar tu contexto.
+
+La ganancia no es velocidad: es que **quien implementa no revisa**. Si el
+reviewer fuese del mismo modelo que implementó, se pierde el punto entero.
+
+### Qué te toca a ti
+
+1. Dejar la spec **autosuficiente** antes del handoff: rutas exactas, nombres de
+   símbolos exactos y qué test prueba cada R-id. Codex no tiene acceso a la
+   conversación que originó la spec — toda decisión abierta debe quedar cerrada
+   por escrito.
+2. Escribir el prompt de handoff (plantilla en `.claude/agents/leader.md`
+   §Handoff a Codex CLI) y dárselo al humano. **Exige commits test-primero
+   explícitamente**: en #19 Codex metió implementación + tests + docs en un solo
+   commit, sin historial rojo→verde, incumpliendo C4 de `CHECKPOINTS.md`.
+3. Esperar. Codex escribe `progress/impl_<feature>.md`; el handoff es **por
+   disco**, nada de contenido entre las dos IAs por chat.
+4. Lanzar `reviewer` cuando el humano confirme que Codex terminó.
+
+### Un solo escritor sobre el working tree
+
+Mientras Codex implementa, tú solo tocas `docs/`, `specs/`, `progress/` y
+`feature_list.json` — nunca `backend-pet-tracker/`. El working tree es uno solo
+y ya falló una vez (el commit de una spec cayó en `main`). Si hace falta
+solapar de verdad, `git worktree` da a cada agente su propio HEAD.
+
+### Excepciones
+
+- **Fallback al subagente `implementer`**: solo si Codex CLI no está disponible
+  o el cambio es trivial (una línea, un typo en un mensaje de error). Dilo
+  explícitamente en `progress/current.md` cuando lo uses.
+- **Lo que no se delega a ninguna IA**: nada que cree recursos AWS reales o
+  cueste dinero (`cdk bootstrap`, `cdk deploy`) ni la prueba de humo contra la
+  cuenta real. Eso lo corre el humano.
 
 ### Protocolo de arranque (al recibir la primera tarea)
 

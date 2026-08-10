@@ -19,12 +19,16 @@ Descomponer tareas, coordinar subagentes y verificar resultados.
 
 | Tipo de tarea | Acción |
 |---|---|
-| Feature `pending` sin spec | 1 `spec_author` → PARA hasta aprobación humana → luego implementer + reviewer |
-| Bug en 1 archivo | 1 `implementer` directo + 1 `reviewer` |
-| Feature nueva en 1 módulo (ya `spec_ready`) | 1 `implementer` + 1 `reviewer` |
-| Feature cross-módulo | 2 `implementer` en paralelo + 1 `reviewer` al final |
-| Feature ambigua o con decisiones de diseño abiertas | 1 `explorer` primero → luego `spec_author` (si sigue pendiente) → `implementer` + `reviewer` |
-| Refactor arquitectural | Analizar impacto → plan escrito → implementer por módulo |
+| Feature `pending` sin spec | 1 `spec_author` → PARA hasta aprobación humana → luego handoff a Codex + `reviewer` |
+| Bug en 1 archivo | handoff a Codex + 1 `reviewer` |
+| Feature nueva en 1 módulo (ya `spec_ready`) | handoff a Codex + 1 `reviewer` |
+| Feature cross-módulo | handoff a Codex (una sola sesión, un solo escritor) + 1 `reviewer` al final |
+| Feature ambigua o con decisiones de diseño abiertas | 1 `explorer` primero → luego `spec_author` (si sigue pendiente) → handoff a Codex + `reviewer` |
+| Refactor arquitectural | Analizar impacto → plan escrito → handoff a Codex por módulo |
+| Cambio trivial (typo, una línea) o Codex no disponible | 1 `implementer` (fallback, anótalo en `progress/current.md`) + 1 `reviewer` |
+
+"Handoff a Codex" = escribes el prompt de §Handoff a Codex CLI y **paras**; el
+humano lo corre en su terminal. No lanzas tú al implementador por defecto.
 
 ---
 
@@ -56,9 +60,10 @@ Descomponer tareas, coordinar subagentes y verificar resultados.
 8. Escribe en progress/current.md:
    - feature: <name>
    - inicio: <timestamp>
-   - plan: <descripción breve de qué hará el implementer>
-9. Lanza implementer con instrucciones precisas (ver §Instrucciones para subagentes)
-10. Espera: implementer escribe progress/impl_<feature>.md y devuelve la ruta
+   - plan: <descripción breve de qué implementará Codex>
+9. Escribe el prompt de handoff (§Handoff a Codex CLI) y PARA. El humano
+   corre Codex en su terminal. Mientras tanto no toques backend-pet-tracker/
+10. El humano confirma que Codex terminó; lee progress/impl_<feature>.md
 11. Lanza reviewer con referencia a ese archivo
 12. Espera: reviewer escribe progress/review_<feature>.md y devuelve veredicto
 ```
@@ -74,8 +79,8 @@ Descomponer tareas, coordinar subagentes y verificar resultados.
 ### Si reviewer rechaza
 ```
 - Lee progress/review_<feature>.md para entender qué falló
-- Lanza un nuevo implementer con las correcciones específicas señaladas
-- NO lances otro reviewer hasta que el implementer reporte build verde
+- Escribe un nuevo prompt de handoff con las correcciones específicas señaladas
+- NO lances otro reviewer hasta que el reporte de impl diga build verde
 ```
 
 ---
@@ -90,19 +95,9 @@ Escribe requisitos EARS concretos y medibles en requirements.md
 Al terminar: cambia status a "spec_ready", devuelve solo la ruta de la spec
 ```
 
-Al lanzar un `implementer`, siempre incluye:
-```
-Feature: <nombre>
-Spec aprobada: specs/<feature>/requirements.md (confirma que status: approved)
-Archivos a crear/modificar: <lista de paths>
-Reglas críticas:
-  - Seguir la arquitectura documentada en docs/architecture.md
-  - Seguir convenciones de docs/conventions.md
-  - TDD por requisito: test rojo → verde → refactor (ver specs/<feature>/tasks.md)
-  - Actualizar specs/<feature>/traceability.md tras cada commit
-Criterios de aceptación: <los R-ids de requirements.md>
-Al terminar: escribir resultado en progress/impl_<feature>.md y devolver solo la ruta
-```
+En el fallback documentado (Codex no disponible, cambio trivial), al lanzar un
+`implementer` incluye lo mismo que la plantilla de handoff de abajo — cambia
+solo el destinatario.
 
 Al lanzar un `reviewer`, siempre incluye:
 ```
@@ -112,6 +107,34 @@ Ejecuta: ./init.sh
 Escribe resultado en: progress/review_<feature>.md
 Devuelve: "aprobado" o "rechazado → <razón breve>"
 ```
+
+---
+
+## Handoff a Codex CLI
+
+El implementador por defecto es Codex CLI en terminal aparte (ver `CLAUDE.md`
+§Implementación). Tú no lo lanzas: escribes este prompt, lo entregas al humano
+y paras.
+
+```
+Feature: <nombre>, branch: feature/<id>-<nombre>
+Spec aprobada: specs/<feature>/requirements.md (status: approved)
+Lee también: specs/<feature>/design.md y tasks.md
+Archivos a crear/modificar: <lista de paths>
+Reglas críticas:
+  - Seguir la arquitectura documentada en docs/architecture.md
+  - Seguir convenciones de docs/conventions.md
+  - TDD por requisito: test rojo → verde → refactor (ver specs/<feature>/tasks.md)
+  - UN COMMIT POR REQUISITO como mínimo, con el test rojo antes que su
+    implementación. Un único commit con todo incumple C4 de CHECKPOINTS.md
+  - Actualizar specs/<feature>/traceability.md tras cada commit
+  - No crear recursos AWS reales ni correr cdk deploy: eso lo hace el humano
+Criterios de aceptación: <los R-ids de requirements.md>
+Al terminar: escribir resultado en progress/impl_<feature>.md
+```
+
+Codex ya lee `AGENTS.md` de forma nativa, así que no repitas ahí el mapa del
+repo. Lo que sí debe ir explícito es todo lo que dependa de **esta** feature.
 
 ---
 

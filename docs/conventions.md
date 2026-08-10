@@ -189,9 +189,16 @@ Flujo por feature (arranca tras el gate humano de la spec, ver `AGENTS.md` §3):
 4. **PARA.** El humano revisa y mergea el PR en GitHub. Ningún agente mergea.
 5. Tras el merge: `git checkout main && git pull` antes de la siguiente feature.
 
-**Excepción**: cambios que no tocan código de la app (harness, `docs/`,
-`specs/`, `progress/`, `feature_list.json` en fase de spec) pueden ir directo
-a `main`.
+**Un solo escritor sobre el working tree.** La branch la crea el `leader` en el
+paso 1; a partir de ahí, mientras Codex implementa, nadie más commitea ni hace
+`checkout` en otra terminal. El tree es uno solo y ya costó un rescate: un
+`checkout main` simultáneo dejó el commit de una spec en `main`. Si hace falta
+solapar, `git worktree`.
+
+**No hay excepción por tipo de cambio**: `main` está protegida y rechaza el
+push directo. Lo que no toca código de la app (harness, `docs/`, `specs/`,
+`progress/`, `feature_list.json` en fase de spec) va igualmente por branch —
+`docs/<tema>` o `update-status-<id>` — y PR, solo que sin esperar al reviewer.
 
 ---
 
