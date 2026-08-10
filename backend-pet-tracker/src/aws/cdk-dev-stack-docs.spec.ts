@@ -51,3 +51,18 @@ describe('R6: init.config.sh ejecuta el paquete infra', () => {
     expect(assignment[1]).toContain('pnpm -C infra');
   });
 });
+
+describe('R15: architecture.md documenta el bucket dev y una cuenta por entorno', () => {
+  it('actualiza la equivalencia S3 y registra la estrategia de nombres', () => {
+    const architecture = readRepositoryFile('docs', 'architecture.md');
+    const s3Row = architecture
+      .split(/\r?\n/)
+      .find((line) => line.startsWith('| S3 `pet-tracker-media-local`'));
+
+    expect(s3Row).toContain('pet-tracker-media-dev-<accountId>');
+    expect(s3Row).not.toContain(
+      'Pendiente de verificar en un despliegue AWS real',
+    );
+    expect(architecture).toContain('una cuenta AWS por entorno');
+  });
+});
