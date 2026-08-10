@@ -235,3 +235,27 @@ describe('R10: bus pet-tracker y regla geofence-events con su target', () => {
     });
   });
 });
+
+describe('R11: resource-policy de SQS para el target de EventBridge', () => {
+  it('autoriza events.amazonaws.com a enviar a geofence-events', () => {
+    const template = createTemplate();
+
+    // LocalStack Community no aplica IAM: sin esta aserción el target casa
+    // eventos localmente pero la entrega falla silenciosamente en AWS real.
+    template.resourceCountIs('AWS::SQS::QueuePolicy', 1);
+    template.hasResourceProperties('AWS::SQS::QueuePolicy', {
+      Queues: [
+        { Ref: queueLogicalId(template, QUEUE_GEOFENCE_EVENTS) },
+      ],
+      PolicyDocument: {
+        Statement: Match.arrayWith([
+          Match.objectLike({
+            Effect: 'Allow',
+            Principal: { Service: 'events.amazonaws.com' },
+            Action: 'sqs:SendMessage',
+          }),
+        ]),
+      },
+    });
+  });
+});
