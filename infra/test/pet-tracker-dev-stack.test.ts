@@ -1,4 +1,4 @@
-import { App } from 'aws-cdk-lib';
+import { App, Stack, Token } from 'aws-cdk-lib';
 import { Match, Template } from 'aws-cdk-lib/assertions';
 import { readFileSync } from 'fs';
 import { join } from 'path';
@@ -306,5 +306,15 @@ describe('R13: el template declara exactamente 11 recursos de 6 tipos', () => {
     ) as { versionReporting?: boolean };
 
     expect(cdkConfig.versionReporting).toBe(false);
+  });
+});
+
+describe('R14: el stack se despliega en us-east-1 sin fijar la cuenta', () => {
+  it('fija solo la región y conserva el account-id como token', () => {
+    const stack = createStack();
+
+    expect(DEV_REGION).toBe('us-east-1');
+    expect(Stack.of(stack).region).toBe('us-east-1');
+    expect(Token.isUnresolved(Stack.of(stack).account)).toBe(true);
   });
 });
