@@ -1,9 +1,9 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-08-10
-**Features completadas**: 16/21 (`feature_list.json`)
-**Pendientes**: 5 — cuatro del backlog backend (P2/P3) y la nueva #21
-`aws-mode-endpoint-guard` (P1), abierta por un defecto destapado al cerrar #20.
+**Features completadas**: 17/21 (`feature_list.json`)
+**Pendientes**: 4, todas del backlog backend (P2/P3): #15 `health-weights`,
+#16 `pet-reminders`, #17 `nutrition-profile-engine`, #18 `nutrition-ai-explainer`.
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
 desde 2026-08-10. Hay recursos vivos en la cuenta, aunque hoy sin coste.
@@ -68,12 +68,22 @@ debe listar las 4 URLs de cola.
   segundo deploy dio `no changes`. El deploy corrió con **PowerUserAccess**;
   el admin solo hizo falta para el bootstrap. Ver
   `progress/impl_aws-cdk-dev-stack.md` y `progress/review_aws-cdk-dev-stack.md`.
-- **`aws-mode-endpoint-guard` (#21) pending, P1** — abierta por un defecto que
-  destapó el cierre de #20 R21: el SDK v3 lee `AWS_ENDPOINT_URL` del entorno
-  por su cuenta, así que `AWS_MODE=aws` **no aísla de LocalStack**. La suite de
-  ingest real pasó en verde contra LocalStack antes de detectarse; solo se
-  cazó apagando LocalStack y repitiendo. Falta la guarda simétrica a
-  `assertNoStaticAccessKey` en `src/aws/aws-clients.ts`.
+- **`aws-mode-endpoint-guard` (#21) done** (2026-08-10): cierra el defecto que
+  destapó #20 R21 — el SDK v3 lee `AWS_ENDPOINT_URL` del entorno por su cuenta,
+  así que `AWS_MODE=aws` **no aislaba de LocalStack** y la suite de ingest real
+  pasó en verde contra LocalStack fingiendo haber verificado AWS. Ahora los dos
+  resolvers de `src/aws/aws-clients.ts` lanzan `UnexpectedAwsEndpointError` en
+  modo `aws` si la variable tiene valor, antes de construir ningún cliente:
+  la guarda simétrica a `assertNoStaticAccessKey` que faltaba. El modo `local`
+  no cambia. **No cubre la CLI de CDK**, que no pasa por `aws-clients.ts`: antes
+  de un `cdk deploy` sigue habiendo que comentar las variables a mano
+  (`docs/verification.md`). El `reviewer` ejecutó el escenario contaminado él
+  mismo — 4 tests rojos, 0 en verde, sin construir clientes. Implementada por
+  Codex CLI, que **paró a mitad** al topar con una contradicción real de la
+  spec (R4 exigía `aws-mode.spec.ts` intacto y R1 lo rompía por diseño) en vez
+  de inventar una excepción por `NODE_ENV`; el gate humano se reabrió y R4 se
+  enmendó. Ver `progress/impl_aws-mode-endpoint-guard.md` y
+  `progress/review_aws-mode-endpoint-guard.md`.
 - **Coste de la infra desplegada** (verificado con el Price List API y
   `freetier get-account-plan-state`, no estimado): la tabla `positions` está en
   25 RCU / 25 WCU, el tramo de `$0.00/hora`. SQS, S3 y EventBridge cobran por
@@ -895,5 +905,5 @@ debe listar las 4 URLs de cola.
 - **Backend**: NestJS 11 + TypeScript, pnpm (código en `backend-pet-tracker/`)
 - **Datos**: PostgreSQL 17 (Docker) dominio + DynamoDB (LocalStack) telemetría GPS; Drizzle ORM
 - **Mensajería local**: SQS + EventBridge en LocalStack (positions-raw, notifications, bus pet-tracker)
-- **Infra local**: LocalStack community por defecto (`AWS_MODE=local`). Desde #19 el backend **puede** hablar con AWS real vía `AWS_MODE=aws` + cadena de credenciales del SDK, pero todavía no hay recursos desplegados allí (eso es #20); arquitectura objetivo serverless en `plans/README.md`
+- **Infra local**: LocalStack community por defecto (`AWS_MODE=local`). Desde #19 el backend habla con AWS real vía `AWS_MODE=aws` + cadena de credenciales del SDK, con los recursos que despliega la stack de #20; desde #21 ese modo **aborta** si `AWS_ENDPOINT_URL` sigue definida, en vez de caer en LocalStack sin avisar. Arquitectura objetivo serverless en `plans/README.md`
 - **Tests**: Jest + supertest

@@ -893,3 +893,50 @@ Deuda detectada (fuera de alcance, candidata a limpieza propia):
 - **Estado final:** #20 `done`; PR #38 pendiente de merge humano.
 - **Próximo:** `aws-mode-endpoint-guard` (#21, P1, sin spec) o
   `health-weights` (#15).
+
+---
+
+## Sesión 2026-08-10 (tarde) — aws-mode-endpoint-guard (id: 21)
+
+- **Feature:** #21 completa, de spec a veredicto aprobado. Cierra el defecto que
+  destapó el cierre de #20: el AWS SDK v3 lee `AWS_ENDPOINT_URL` de `process.env`
+  por su cuenta, así que `AWS_MODE=aws` no aislaba nada de LocalStack.
+- **Agentes:** `spec_author` (spec), Codex CLI (implementación), `reviewer`
+  (veredicto). Reparto de #19 en adelante: quien implementa no revisa.
+- **Resultado:** `UnexpectedAwsEndpointError` en los dos resolvers de
+  `src/aws/aws-clients.ts`, guarda simétrica a `assertNoStaticAccessKey`. Modo
+  `local` sin cambios. `./init.sh` exit 0 corrido por el reviewer: 123 suites /
+  889 tests backend, 2/14 infra, 13 suites + 181 tests e2e (2 y 6 omitidos).
+- **Lo importante de la sesión — Codex paró en vez de forzar el verde.** A mitad
+  de R5 encontró que R4 era **imposible**: exigía `src/aws/aws-mode.spec.ts`
+  verde sin tocarlo, pero ese archivo pasa `{ AWS_MODE: 'aws', AWS_ENDPOINT_URL:
+  ENDPOINT }` a los dos resolvers en cinco tests — justo la combinación que R1
+  declara ilegal. En vez de añadir una excepción por `NODE_ENV` (que habría
+  reabierto el agujero exacto de la feature), documentó el bloqueo y preguntó.
+  Verificado a mano antes de decidir: 5 fallos, exactamente esos.
+- **Fallo del `spec_author`:** verificó §D3 contra `resolveAwsClientOptions`
+  —donde acertó, `buildAwsConfig()` sigue verde— pero no contra las llamadas a
+  los resolvers del mismo archivo. Lección para specs futuras: cuando una guarda
+  cambia el contrato de una función, hay que revisar **todas** sus llamadas en
+  los tests existentes, no solo el consumidor obvio.
+- **Enmienda:** gate humano reabierto, R4 reescrito para permitir adaptar solo
+  `aws-mode.spec.ts` con los dos cambios de `design.md` §D10 (commit `ddfa9c8`,
+  previo a la adaptación `9fb6a3c` — el orden importa). Los otros cuatro
+  archivos de test de #19 siguen intocables y ausentes del diff.
+- **R8 descartado en el gate** (documentar el modo de fallo en
+  `docs/conventions.md`): scope creep sobre los seis criterios. El hueco de
+  numeración es deliberado; ningún R-id se renumeró.
+- **C4 cumplido esta vez:** historial rojo→verde por R-id, verificado por el
+  reviewer commit a commit demostrando *por qué* cada test estaba rojo. Era el
+  checkpoint que Codex incumplió en #19.
+- **Límite conocido:** la guarda vive en el backend, así que **no cubre la CLI
+  de CDK**. El paso R18 de #20 (comentar las variables a mano antes de
+  `cdk deploy`) sigue vigente y `docs/verification.md` lo conserva.
+- **Observaciones no bloqueantes del reviewer** (las cuatro en
+  `progress/review_aws-mode-endpoint-guard.md`): el `it` de R6 es tautológico en
+  aislamiento y solo funciona como canario — es lo que §D8 especifica;
+  `assertNoStaticAccessKey` puede adelantarse al mensaje de R2 si además hay
+  credenciales estáticas, sin cambiar el resultado (exit 1, 0 verdes).
+- **Estado final:** #21 `done`. Sin pasos de cierre humano: la feature no crea
+  recursos ni toca la cuenta real.
+- **Próximo:** `health-weights` (#15, P2), el primero de los cuatro que quedan.
