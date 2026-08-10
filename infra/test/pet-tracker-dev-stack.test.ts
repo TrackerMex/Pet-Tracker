@@ -8,6 +8,10 @@ import {
   QUEUE_POSITIONS_RAW,
   QUEUE_POSITIONS_RAW_DLQ,
   SQS_MAX_RECEIVE_COUNT,
+  TABLE_POSITIONS,
+  TABLE_POSITIONS_PARTITION_KEY,
+  TABLE_POSITIONS_SORT_KEY,
+  TABLE_POSITIONS_TTL_ATTRIBUTE,
 } from '@backend/aws/constants';
 import {
   DEV_REGION,
@@ -95,5 +99,49 @@ describe('R7: seis colas SQS con RedrivePolicy hacia su DLQ', () => {
         RedrivePolicy: Match.absent(),
       });
     }
+  });
+});
+
+describe('R8: tabla positions PROVISIONED 25/25 STANDARD con TTL', () => {
+  it('declara capacidad, clase, claves y expiración exactas', () => {
+    const template = createTemplate();
+
+    template.resourceCountIs('AWS::DynamoDB::Table', 1);
+    template.resourceCountIs('AWS::DynamoDB::GlobalTable', 0);
+    template.hasResourceProperties('AWS::DynamoDB::Table', {
+      TableName: TABLE_POSITIONS,
+      BillingMode: 'PROVISIONED',
+      ProvisionedThroughput: {
+        ReadCapacityUnits: 25,
+        WriteCapacityUnits: 25,
+      },
+      TableClass: 'STANDARD',
+      KeySchema: [
+        { AttributeName: TABLE_POSITIONS_PARTITION_KEY, KeyType: 'HASH' },
+        { AttributeName: TABLE_POSITIONS_SORT_KEY, KeyType: 'RANGE' },
+      ],
+      AttributeDefinitions: [
+        {
+          AttributeName: TABLE_POSITIONS_PARTITION_KEY,
+          AttributeType: 'S',
+        },
+        { AttributeName: TABLE_POSITIONS_SORT_KEY, AttributeType: 'N' },
+      ],
+      TimeToLiveSpecification: {
+        AttributeName: TABLE_POSITIONS_TTL_ATTRIBUTE,
+        Enabled: true,
+      },
+    });
+  });
+
+  it('no activa backups, KMS ni índices secundarios', () => {
+    const template = createTemplate();
+
+    template.hasResourceProperties('AWS::DynamoDB::Table', {
+      PointInTimeRecoverySpecification: Match.absent(),
+      SSESpecification: Match.absent(),
+      GlobalSecondaryIndexes: Match.absent(),
+      LocalSecondaryIndexes: Match.absent(),
+    });
   });
 });
