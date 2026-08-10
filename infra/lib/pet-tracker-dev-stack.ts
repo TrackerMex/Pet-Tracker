@@ -1,8 +1,10 @@
-import { Stack, StackProps } from 'aws-cdk-lib';
+import { Aws, Stack, StackProps } from 'aws-cdk-lib';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
+import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as sqs from 'aws-cdk-lib/aws-sqs';
 import { Construct } from 'constructs';
 import {
+  BUCKET_MEDIA_BASE,
   QUEUE_GEOFENCE_EVENTS,
   QUEUE_GEOFENCE_EVENTS_DLQ,
   QUEUE_NOTIFICATIONS,
@@ -18,6 +20,7 @@ import {
 } from '@backend/aws/constants';
 
 export const DEV_REGION = 'us-west-2';
+const ENV_NAME = 'dev';
 const ENV_SUFFIX = '';
 
 export class PetTrackerDevStack extends Stack {
@@ -77,5 +80,11 @@ export class PetTrackerDevStack extends Stack {
     // Table omite PROVISIONED por ser el default de CloudFormation; R8 lo
     // exige explícito para que el template documente el límite de costo.
     cfnPositionsTable.addPropertyOverride('BillingMode', 'PROVISIONED');
+
+    const bucketSuffix = `${ENV_NAME}-${Aws.ACCOUNT_ID}`;
+    new s3.Bucket(this, 'MediaBucket', {
+      bucketName: resourceName(BUCKET_MEDIA_BASE, bucketSuffix),
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+    });
   }
 }
