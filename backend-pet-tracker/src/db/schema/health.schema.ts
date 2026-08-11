@@ -3,7 +3,9 @@ import {
   check,
   date,
   index,
+  integer,
   jsonb,
+  numeric,
   pgTable,
   text,
   uniqueIndex,
@@ -60,5 +62,32 @@ export const petVaccines = pgTable(
     ),
     index('pet_vaccines_catalog_id_idx').on(table.catalogId),
     index('pet_vaccines_created_by_idx').on(table.createdBy),
+  ],
+);
+
+export const weights = pgTable(
+  'weights',
+  {
+    id: uuid('id').primaryKey(),
+    petId: uuid('pet_id')
+      .notNull()
+      .references(() => pets.id, { onDelete: 'cascade' }),
+    weightKg: numeric('weight_kg', { precision: 5, scale: 2 }).notNull(),
+    bodyCondition: integer('body_condition'),
+    measuredAt: date('measured_at').notNull(),
+    createdBy: uuid('created_by')
+      .notNull()
+      .references(() => users.id),
+  },
+  (table) => [
+    check(
+      'weights_body_condition_check',
+      sql`${table.bodyCondition} between 1 and 9`,
+    ),
+    index('weights_pet_id_measured_at_idx').on(
+      table.petId,
+      table.measuredAt.desc(),
+    ),
+    index('weights_created_by_idx').on(table.createdBy),
   ],
 );

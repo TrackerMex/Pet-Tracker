@@ -71,6 +71,13 @@
       "when": 1786260584317,
       "tag": "0009_shallow_dust",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1786467151219,
+      "tag": "0010_low_miracleman",
+      "breakpoints": true
     }
   ]
 }
