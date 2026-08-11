@@ -67,10 +67,10 @@ tags: [harness, spec]
 
 ## R6 — `?limit=` con default 50, tope 100 y 400 en inválidos
 
-- [ ] (1) Escribir test que falla para R6 — `test/health-weights.e2e-spec.ts`
+- [x] (1) Escribir test que falla para R6 — `test/health-weights.e2e-spec.ts`
       (`limit` ausente, `1`, `0`, `101`, `abc`, vacío, y parámetro desconocido)
-- [ ] (2) Implementación mínima que lo pasa
-- [ ] (3) Refactor con tests verdes
+- [x] (2) Implementación mínima que lo pasa
+- [x] (3) Refactor con tests verdes
 
 ## R7 — Validación del body: 400 sin persistir (fecha futura: tolerancia de 1 día)
 

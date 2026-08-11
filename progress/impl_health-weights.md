@@ -22,6 +22,8 @@
 - R5 — rojo `2c27056`; verde `b34a2b0`. GET ordena por fecha/id descendente y
   calcula `variation` con redondeo y fila sonda `limit + 1` sobre el historial
   completo.
+- R6 — rojo `b7fc54b`; verde `f3b6c80`. La query estricta aplica default 50,
+  máximo 100 y rechaza enteros fuera de rango, vacíos y parámetros extra.
 
 ## Verificación final
 
