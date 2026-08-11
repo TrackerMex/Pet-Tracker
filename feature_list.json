@@ -248,7 +248,7 @@
   {
     "id": 15,
     "name": "health-weights",
-    "status": "in_progress",
+    "status": "done",
     "priority": "P2",
     "description": "Plan 008 (peso): tabla weights; POST /v1/pets/:petId/weights {weightKg, measuredAt, bodyCondition?} → insert + actualizar pets.current_weight_kg si es la medición más reciente; GET .../weights?limit= con variation (delta vs medición anterior).",
     "acceptance_criteria": [

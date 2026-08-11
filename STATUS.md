@@ -1,9 +1,8 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-08-11
-**Features completadas**: 17/22 (`feature_list.json`)
-**En progreso**: #15 `health-weights`, implementación terminada y pendiente de
-revisión.
+**Features completadas**: 18/22 (`feature_list.json`)
+**En progreso**: ninguna.
 **Pendientes**: 4, todas del backlog backend (P2/P3): #16 `pet-reminders`, #17
 `nutrition-profile-engine`, #18 `nutrition-ai-explainer` y #22
 `weight-single-source-of-truth`.
@@ -64,12 +63,33 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
-- **`health-weights` (#15) in_progress** (2026-08-11): implementación TDD de
-  R1-R10 terminada en `feature/15-health-weights`, con migración nueva `0010`,
-  POST/GET de pesos, proyección condicional a `pets.current_weight_kg`,
-  variación sobre el historial completo, permisos y auditoría. Pendiente del
-  veredicto independiente del `reviewer`; detalle en
-  `progress/impl_health-weights.md`.
+- **`health-weights` (#15) done** (2026-08-11): historial de peso extendiendo el
+  módulo `src/modules/health/` de #14 — migración nueva `0010` con la tabla
+  `weights`, `POST /v1/pets/:petId/weights` (owner-only) y
+  `GET .../weights?limit=` con `variation`. Tres puntos que la spec cerró por
+  escrito y el `reviewer` verificó uno a uno: la proyección a
+  `pets.current_weight_kg` va con `notExists(gt(measured_at, nueva))` dentro del
+  `UPDATE`, así que una medición **retroactiva no pisa** el perfil y un empate
+  exacto de fecha sí (la última escrita gana); `variation` se calcula sobre el
+  **historial completo** con una fila sonda `limit + 1`, de modo que con dos
+  mediciones y `?limit=1` el único elemento devuelto trae variación no nula; y
+  la validación de fecha futura usa una tolerancia de un día
+  (`MEASURED_AT_MAX_FUTURE_DAYS`) en vez de la tz del owner, porque el planeta
+  abarca UTC-12..UTC+14 y leer `users.timezone` habría metido una dependencia
+  health→users permanente en un POST autocontenido (razonado en `design.md` D5).
+  Implementada por Codex CLI con **historial rojo→verde impecable**: 10 tríos
+  `test → feat → docs`, uno por R-id — el C4 que #19 incumplió. `reviewer`
+  **aprobó sin bloqueantes**, verificando cada commit rojo en un worktree
+  aparte. Branch `feature/15-health-weights` (33 commits). Ver
+  `progress/impl_health-weights.md` y `progress/review_health-weights.md`.
+- **Deuda de test declarada en #15 (NB-3 del reviewer, no bloqueante)**: el
+  `variation` **no nulo en la respuesta del `POST`** no tiene ningún test, así
+  que `WeightDrizzleRepository.findPrevious` —con su desempate
+  `or(lt(measured_at), and(eq(measured_at), lt(id)))`— no tiene una sola línea
+  ejecutada contra Postgres. Todas las aserciones de `variation != null` van por
+  el `GET`, que usa el camino de la fila sonda, **código distinto**. La lógica se
+  revisó a mano y es correcta, pero una regresión ahí saldría verde. Lo cierra un
+  `it` que haga dos POST y asevere el `variation` del segundo.
 - **`aws-cdk-dev-stack` (#20) done** (2026-08-10): implementada por Codex CLI
   (R1-R16 + R21 mitad A) con veredicto aprobado del `reviewer`, y R17-R21
   cerrados por el humano el mismo día. La stack está desplegada en `us-east-1`
@@ -556,13 +576,25 @@ debe listar las 4 URLs de cola.
 
 ## Última sesión
 
-- **2026-08-11** — Implementación TDD de `health-weights` (#15) en
-  `feature/15-health-weights`: R1-R10 completados con commits separados de test
-  rojo e implementación verde. Se añadió la migración `0010`, el registro e
-  historial de pesos, la proyección transaccional del peso actual, validación,
-  permisos y auditoría. `./init.sh` exit 0: 901 tests backend, 14 de infra y
-  213 e2e pasados; build, synth, lint y typecheck verdes. Estado final:
-  `in_progress`, pendiente del veredicto del `reviewer`.
+- **2026-08-11** — Ciclo SDD completo de `health-weights` (#15): `spec_author`
+  (10 EARS) → enmienda de R7 antes del gate → gate humano → Codex CLI (33
+  commits) → `reviewer` **aprobado sin bloqueantes** → `done`. `./init.sh` exit
+  0 corrido por el reviewer: 127 suites / 901 unit, 14 de infra, 213 e2e.
+  **Hallazgo de entorno que invalidaba el gate**: el contenedor
+  `pet-tracker-postgres` llevaba desde el 2026-08-01 con un port binding
+  malformado (`PortBindings: map[5432/tcp:[{invalid IP 5432}]]`), así que el
+  5432 no estaba publicado al host. `docker compose ps` lo daba por `healthy` e
+  `init.sh` **saltaba los e2e con un warning y terminaba verde igualmente** —
+  el mismo modo de fallo que #21: un verde que no prueba lo que aparenta.
+  Recreado el contenedor (`--force-recreate`, volumen intacto), los e2e vuelven
+  a correr: +32 tests que cuadran uno a uno con los `it` de la feature. **Antes
+  de fiarse de un `init.sh` verde conviene comprobar `docker port
+  pet-tracker-postgres`**, no el estado `healthy`. Enmienda de spec previa al
+  gate: R7 rechazaba `measuredAt > hoy_UTC`, lo que daba un 400 falso a usuarios
+  en husos adelantados; se sustituyó por tolerancia de un día. Abierta la #22
+  `weight-single-source-of-truth` (P3) al descubrir que
+  `pets.current_weight_kg` tiene **tres** escritores y solo uno crea historial.
+  Próximo: `pet-reminders` (#16).
 
 - **2026-08-10** — Implementación de `aws-cdk-dev-stack` (#20) en
   `feature/20-aws-cdk-dev-stack`: R1-R16 y R21 mitad A completados siguiendo

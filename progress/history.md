@@ -940,3 +940,83 @@ Deuda detectada (fuera de alcance, candidata a limpieza propia):
 - **Estado final:** #21 `done`. Sin pasos de cierre humano: la feature no crea
   recursos ni toca la cuenta real.
 - **Próximo:** `health-weights` (#15, P2), el primero de los cuatro que quedan.
+
+---
+
+## 2026-08-11 — health-weights (#15)
+
+- **Feature:** #15 `health-weights` (P2), branch `feature/15-health-weights`
+  (33 commits). Historial de peso extendiendo el módulo `health` de #14:
+  migración `0010`, `POST /v1/pets/:petId/weights` y `GET .../weights?limit=`
+  con `variation`.
+- **Agentes:** `spec_author` (spec + enmienda), Codex CLI (implementación),
+  `reviewer` (veredicto). Reparto de #19 en adelante: quien implementa no revisa.
+- **Resultado:** `reviewer` **aprobó sin bloqueantes**. `./init.sh` exit 0
+  corrido por él: 127 suites / 901 unit, 2 suites / 14 infra, 213 e2e
+  (2 suites y 6 tests omitidos, los de `AWS_MODE=aws`, ya omitidos en el
+  baseline).
+- **El gate de verdad casi no existe: los e2e llevaban tiempo sin correr.** Al
+  levantar Docker se vio que `pet-tracker-postgres` arrastraba desde el
+  2026-08-01 un port binding malformado —`PortBindings: map[5432/tcp:[{invalid
+  IP 5432}]]`, el host IP guardado como `5432`— así que el puerto nunca se
+  publicó. `docker compose ps` lo mostraba `healthy`, e `init.sh` no falla por
+  eso: **salta los e2e con un warning amarillo y termina verde**. Mismo modo de
+  fallo que el defecto que cerró #21: un verde que no prueba lo que parece.
+  Recreado con `--force-recreate` (volumen nombrado, cero pérdida de datos) y
+  verificado con `docker port` antes de lanzar al reviewer. Regla práctica: el
+  estado `healthy` no dice nada del binding; comprobar `docker port
+  pet-tracker-postgres` → `0.0.0.0:5432`.
+- **Los e2e corrieron de verdad, comprobado por conteo y no por confianza.**
+  El reviewer cuadró el delta contra el baseline: +4 suites y +12 unit, y +32
+  e2e que corresponden exactamente a los `it` de `health-weights.e2e-spec.ts`
+  (R2:2, R3:3, R5:3, R6:8, R7:10, R8:3, R9:2, R10:1).
+- **C4 cumplido y verificado commit a commit.** Codex entregó 10 tríos
+  `test → feat → docs`, uno por R-id. El reviewer no se fió del mensaje del
+  commit: montó un `git worktree` aparte, hizo checkout de cada commit rojo y
+  ejecutó su test. Los 10 fallan de verdad; 8 por aserción genuina y 2 por
+  símbolo aún no definido (NB-4) —el schema `weights` y `toWeightHistory`—,
+  que son el sujeto del test y no un import roto. Es el checkpoint que #19
+  incumplió.
+- **Enmienda de spec antes del gate (única).** R7 rechazaba `measuredAt`
+  posterior a hoy en UTC, lo que da un **400 falso** a un usuario en huso
+  adelantado: el planeta abarca UTC-12..UTC+14, 26 horas. Se adoptó tolerancia
+  de un día (`MEASURED_AT_MAX_FUTURE_DAYS = 1`) en vez de leer
+  `users.timezone` con `localDayOf()` de #10 — lo exacto costaba una query y
+  una dependencia permanente health→users en un POST autocontenido, para
+  blindar un caso sin consecuencia. El porqué quedó escrito en `design.md` D5
+  para que nadie lo "arregle" luego metiendo la dependencia.
+- **Dos objeciones del leader que la verificación tumbó**, y conviene recordar
+  el método: `measured_at` como `date` no era invento del `spec_author`, lo
+  manda `docs/data-model.md:57` y la convención de la línea 43; y el
+  `@RequirePetRole('owner')` en el POST es el patrón unánime del repo (todas
+  las mutaciones sobre mascota son owner, todos los GET van sin decorador).
+  Verificar antes de recomendar evitó dos cambios innecesarios.
+- **Deuda de test declarada (NB-3), el hallazgo con más sustancia:** el
+  `variation` **no nulo en la respuesta del POST** no tiene ningún test.
+  `findPrevious` —con su desempate `or(lt(measured_at), and(eq(measured_at),
+  lt(id)))`— no se ejecuta ni una vez contra Postgres: el use-case lo mockea a
+  `null`, el doble del repositorio no entra en el `select`, y todas las
+  aserciones de `variation != null` van por el `GET`, que usa el camino de la
+  fila sonda, **código distinto**. La lógica se revisó a mano y es correcta,
+  pero una regresión ahí saldría verde. Lo cierra un `it` con dos POST.
+- **Otros no bloqueantes** (los ocho en `progress/review_health-weights.md`):
+  el test de atomicidad de R4 asevera contra su propio doble y no contra el
+  rollback real de Postgres (NB-5); el `it` de precedencia 404-antes-de-403 ya
+  estaba verde en el commit rojo de R9 porque lo cubría el guard de R8 (NB-6);
+  se tocó `vaccine.dto.ts` de #14 para extraer `isIsoDate` a
+  `application/dto/iso-date.ts`, extracción DRY sin cambio de comportamiento
+  (NB-7); y R7 no cubre `measuredAt` con formato no-ISO (NB-8).
+- **Alcance respetado:** `PetProfileResponse` intacto (contrato de 24 claves,
+  tres tests de contrato sin tocar), `weightKg` de `POST/PATCH /v1/pets` sin
+  tocar, y sin `PATCH`/`DELETE` de mediciones.
+- **Backlog:** abierta **#22 `weight-single-source-of-truth`** (P3, pending) al
+  descubrir que `pets.current_weight_kg` tiene **tres** escritores
+  independientes —`create-pet.use-case.ts:45`, `update-pet.use-case.ts:70` y el
+  POST de #15— y solo el último crea historial. Dar de alta una mascota con
+  `weightKg` deja el perfil poblado y `weights` vacío. Unificarlo cambia el
+  contrato público de dos endpoints de #5: feature propia, no apéndice de ésta.
+  También quedó fuera `weightVariation` en el perfil (el plan 008 lo menciona,
+  pero su consumidor real es el hub de salud, que ya carga la lista de pesos).
+- **Estado final:** #15 `done`. Sin pasos de cierre humano: la feature no crea
+  recursos ni toca la cuenta real.
+- **Próximo:** `pet-reminders` (#16, P2).
