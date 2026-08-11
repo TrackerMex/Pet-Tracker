@@ -57,16 +57,18 @@ Cada ejecutor: lee el plan completo antes de empezar, respeta sus condiciones de
 
 | Plan | Título | Prioridad | Esfuerzo | Depende de | Estado |
 |------|--------|-----------|----------|------------|--------|
-| 001 | Paquete de diseño y gate de aprobación | P1 | M | — | TODO |
-| 002 | Fundaciones: monorepo, CDK e infraestructura dev | P1 | L | 001 **aprobado por el usuario** | TODO |
-| 003 | Autenticación y usuarios (Cognito) | P1 | M | 002 | TODO |
-| 004 | Mascotas: CRUD, fotos y permisos por mascota | P1 | M | 003 | TODO |
-| 005 | Collar GPS: asociación, ingesta Wialon y última posición | P1 | L | 004 | TODO |
-| 006 | Recorridos, validación de posiciones y actividad | P1 | M | 005 | TODO |
-| 007 | Geocercas, motor de alertas y push | P1 | L | 006 | TODO |
-| 008 | Salud: vacunas, peso y recordatorios | P1 | M | 004 (y 007 para push) | TODO |
+| 001 | Paquete de diseño y gate de aprobación | P1 | M | — | DONE |
+| 002 | Fundaciones: monorepo, CDK e infraestructura dev | P1 | L | 001 **aprobado por el usuario** | DONE (adaptado: infra local en LocalStack; stack CDK dev real llegó con feature #20) |
+| 003 | Autenticación y usuarios (Cognito) | P1 | M | 002 | DONE (deviación: auth propia JWT en local, sin Cognito; swap preparado en el guard) |
+| 004 | Mascotas: CRUD, fotos y permisos por mascota | P1 | M | 003 | DONE |
+| 005 | Collar GPS: asociación, ingesta Wialon y última posición | P1 | L | 004 | DONE |
+| 006 | Recorridos, validación de posiciones y actividad | P1 | M | 005 | DONE |
+| 007 | Geocercas, motor de alertas y push | P1 | L | 006 | DONE |
+| 008 | Salud: vacunas, peso y recordatorios | P1 | M | 004 (y 007 para push) | IN PROGRESS (vacunas #14 y peso #15 done; recordatorios #16 pending) |
 | 009 | Alimentación: motor de reglas + explicación IA | P1 | M | 004 | TODO |
 | 010 | Endurecimiento, tiempo real (WebSocket) y observabilidad | P2 | M | 007 | TODO |
+| 011 | Mapa de arquitectura AWS en Excalidraw (dev actual + objetivo prod) | P2 | S | — | DONE (revisado 2026-08-11; commit a7b868c en branch docs/architecture-map, worktree del ejecutor — pendiente de merge por humano) |
+| 012 | Validación de escalabilidad y costos de la arquitectura serverless | P2 | M | — | DONE (revisado 2026-08-11; commit 37c44ed en branch docs/aws-scalability-review, worktree del ejecutor — pendiente de merge por humano; veredicto del doc: GO con condiciones) |
 
 Estados: TODO | IN PROGRESS | DONE | BLOCKED (con motivo de una línea) | REJECTED (con justificación de una línea).
 
@@ -78,6 +80,11 @@ Estados: TODO | IN PROGRESS | DONE | BLOCKED (con motivo de una línea) | REJECT
 - 007 requiere 006 porque el motor de geocercas escucha `position.updated` con posiciones ya validadas.
 - 008 y 009 solo requieren 004 para su parte de datos; los recordatorios push de 008 necesitan la Lambda notificadora creada en 007. Pueden ejecutarse en paralelo con 005–007 si hay dos ejecutores (008 deja los push en modo log hasta que exista 007).
 - El MVP del brief (§20) queda cubierto al completar 001–009; 010 es post-MVP temprano.
+- 011 y 012 son independientes entre sí y de 009/010; pueden ejecutarse en paralelo y no tocan código de aplicación (solo `docs/`).
+
+## Reconciliación 2026-08-11
+
+Estados 001–010 actualizados contra `feature_list.json` (features 1–15 y 19–21 done; 16–18 pending). La fase "AWS real" (features 19–21: AWS_MODE, stack CDK dev `infra/`, guarda de endpoint) no tenía plan numerado aquí; vive en `feature_list.json`. Planes 011–012 añadidos por invocación del skill improve (gap detectado por el usuario: sin mapa de arquitectura y sin validación formal de escalabilidad/costo). El presupuesto de producción ya existía en `plans/presupuesto-produccion.md` — 012 lo referencia, no lo duplica.
 
 ## Supuestos globales (verificados en el diseño, confirmar en 001)
 
