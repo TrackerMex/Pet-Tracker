@@ -1,6 +1,6 @@
 import { z } from 'zod';
+import { IsoDateSchema, todayIsoDateUtc } from './iso-date';
 
-const IsoDateSchema = z.string().refine(isIsoDate, 'Invalid ISO date');
 const NonEmptyText = (max: number) => z.string().trim().min(1).max(max);
 
 export const VaccineSpeciesSchema = z.enum(['dog', 'cat']);
@@ -10,7 +10,7 @@ export const CreateVaccineSchema = z
     catalogId: z.uuid().optional(),
     name: NonEmptyText(120).optional(),
     appliedAt: IsoDateSchema.refine(
-      (date) => date <= new Date().toISOString().slice(0, 10),
+      (date) => date <= todayIsoDateUtc(),
       'Applied date cannot be in the future',
     ),
     nextDoseAt: IsoDateSchema.optional(),
@@ -27,7 +27,7 @@ export const UpdateVaccineSchema = z
   .object({
     name: NonEmptyText(120).optional(),
     appliedAt: IsoDateSchema.refine(
-      (date) => date <= new Date().toISOString().slice(0, 10),
+      (date) => date <= todayIsoDateUtc(),
       'Applied date cannot be in the future',
     ).optional(),
     nextDoseAt: IsoDateSchema.nullable().optional(),
@@ -40,10 +40,3 @@ export const UpdateVaccineSchema = z
 export type CreateVaccineDto = z.infer<typeof CreateVaccineSchema>;
 export type UpdateVaccineDto = z.infer<typeof UpdateVaccineSchema>;
 
-function isIsoDate(value: string): boolean {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
-  const date = new Date(`${value}T00:00:00.000Z`);
-  return (
-    !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value
-  );
-}
