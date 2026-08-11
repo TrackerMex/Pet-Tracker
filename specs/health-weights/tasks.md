@@ -34,9 +34,9 @@ tags: [harness, spec]
 
 ## R2 — POST inserta y responde 201 con el shape congelado
 
-- [ ] (1) Escribir test que falla para R2 — `test/health-weights.e2e-spec.ts`
-- [ ] (2) Implementación mínima que lo pasa
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R2 — `test/health-weights.e2e-spec.ts`
+- [x] (2) Implementación mínima que lo pasa
+- [x] (3) Refactor con tests verdes
 
 ## R3 — `current_weight_kg` solo si es la medición más reciente
 

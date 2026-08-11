@@ -41,6 +41,8 @@ estado: spec aprobada por humano — handoff entregado, esperando a Codex CLI
   provisionar Docker; se seguirá TDD rojo→verde por R1..R10.
 - R1 completado: schema `weights`, índices y migración nueva `0010`; tests de
   R1 y regresión de `health.schema.spec.ts` verdes.
+- R2 completado: POST inserta pesos, acepta empates de fecha y devuelve el
+  contrato exacto con `numeric` convertido a `number`.
 - Spec escrita en `specs/health-weights/` — 10 R-ids (R1..R10), sin huecos.
 - Revisión del leader sobre tres decisiones del `spec_author`. Dos se confirman
   contra el repo y **no** se tocan:

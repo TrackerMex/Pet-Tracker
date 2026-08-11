@@ -12,6 +12,9 @@
 - R1 — rojo `281663d`; verde `0e1dae1`. Se añadió `weights` a
   `health.schema.ts` y se generó la migración nueva
   `0010_low_miracleman.sql`, sin modificar `0009` ni alterar `pets`.
+- R2 — rojo `0abc655`; verde `8da976c`. POST crea la medición, convierte
+  `numeric(5,2)` manualmente y responde el shape congelado con `weightKg`
+  numérico.
 
 ## Verificación final
 
