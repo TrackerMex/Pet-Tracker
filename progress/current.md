@@ -43,6 +43,8 @@ estado: spec aprobada por humano — handoff entregado, esperando a Codex CLI
   R1 y regresión de `health.schema.spec.ts` verdes.
 - R2 completado: POST inserta pesos, acepta empates de fecha y devuelve el
   contrato exacto con `numeric` convertido a `number`.
+- R3 completado: `currentWeightKg` se refresca solo para la medición más
+  reciente; retroactiva conserva el valor y empate deja ganar la última.
 - Spec escrita en `specs/health-weights/` — 10 R-ids (R1..R10), sin huecos.
 - Revisión del leader sobre tres decisiones del `spec_author`. Dos se confirman
   contra el repo y **no** se tocan:

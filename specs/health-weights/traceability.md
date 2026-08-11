@@ -13,7 +13,7 @@ tags: [harness, spec]
 |---|---|---|
 | R1 | `src/db/schema/weights.schema.spec.ts::R1 (health-weights #15): tabla weights y migracion 0010 nueva` | rojo: `281663d test(health-weights): require weights schema and migration (R1)`; verde: `0e1dae1 feat(health-weights): add weights table migration (R1)` |
 | R2 | `test/health-weights.e2e-spec.ts::R2 (health-weights #15): POST inserta y responde el shape congelado` | rojo: `0abc655 test(health-weights): require weight creation endpoint (R2)`; verde: `8da976c feat(health-weights): create weight records (R2)` |
-| R3 | pendiente — previsto `test/health-weights.e2e-spec.ts` | pendiente |
+| R3 | `test/health-weights.e2e-spec.ts::R3 (health-weights #15): current_weight_kg refleja solo la medicion mas reciente` | rojo: `f5a4fea test(health-weights): require latest weight projection (R3)`; verde: `1b2d1f9 feat(health-weights): project latest weight to pet (R3)` |
 | R4 | pendiente — previsto `src/modules/health/infrastructure/repositories/weight.drizzle.repository.spec.ts` | pendiente |
 | R5 | pendiente — previsto `src/modules/health/application/weight-variation.spec.ts` + `test/health-weights.e2e-spec.ts` | pendiente |
 | R6 | pendiente — previsto `test/health-weights.e2e-spec.ts` | pendiente |

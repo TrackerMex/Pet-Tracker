@@ -15,6 +15,8 @@
 - R2 — rojo `0abc655`; verde `8da976c`. POST crea la medición, convierte
   `numeric(5,2)` manualmente y responde el shape congelado con `weightKg`
   numérico.
+- R3 — rojo `f5a4fea`; verde `1b2d1f9`. El `UPDATE` usa `NOT EXISTS` con
+  comparación estricta de `measured_at`: retroactivas no pisan y el empate sí.
 
 ## Verificación final
 

@@ -40,11 +40,11 @@ tags: [harness, spec]
 
 ## R3 — `current_weight_kg` solo si es la medición más reciente
 
-- [ ] (1) Escribir test que falla para R3 — `test/health-weights.e2e-spec.ts`
+- [x] (1) Escribir test que falla para R3 — `test/health-weights.e2e-spec.ts`
       (tres casos: primera medición actualiza; retroactiva no pisa; empate de
       `measuredAt` sí pisa — verificados leyendo `GET /v1/pets/:petId`)
-- [ ] (2) Implementación mínima que lo pasa
-- [ ] (3) Refactor con tests verdes
+- [x] (2) Implementación mínima que lo pasa
+- [x] (3) Refactor con tests verdes
 
 ## R4 — Insert y update de `pets` en una sola transacción
 
