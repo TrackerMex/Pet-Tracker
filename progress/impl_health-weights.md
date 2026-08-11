@@ -36,7 +36,15 @@
 
 ## Verificación final
 
-Pendiente.
+- `./init.sh` exit 0 con Docker levantado.
+- Build NestJS y synth CDK verdes.
+- Backend: 127 suites / 901 tests pasados.
+- Infra: 2 suites / 14 tests pasados.
+- E2E: 14 suites y 213 tests pasados; 2 suites y 6 tests omitidos.
+- Lint y typecheck verdes.
+- El log e2e mostró la carrera conocida de FK en `pet_users`, pero la suite
+  terminó verde en la misma ejecución; no fue necesario repetirla.
+- Refactor de lint posterior a R1..R10: `aaf5d3e`.
 
 ## Decisiones
 

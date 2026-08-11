@@ -58,6 +58,9 @@ estado: spec aprobada por humano — handoff entregado, esperando a Codex CLI
   precedencia sobre validación/rol.
 - R10 completado: la creación exitosa audita `weight.create` con actor,
   medición y mascota; una escritura fallida no genera auditoría.
+- Verificación final: `./init.sh` exit 0 con 901 tests backend, 14 de infra y
+  213 e2e pasados; build, synth, lint y typecheck verdes. Implementación lista
+  para revisión independiente.
 - Spec escrita en `specs/health-weights/` — 10 R-ids (R1..R10), sin huecos.
 - Revisión del leader sobre tres decisiones del `spec_author`. Dos se confirman
   contra el repo y **no** se tocan:

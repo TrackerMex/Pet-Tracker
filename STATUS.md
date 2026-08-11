@@ -1,9 +1,12 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-08-10
-**Features completadas**: 17/21 (`feature_list.json`)
-**Pendientes**: 4, todas del backlog backend (P2/P3): #15 `health-weights`,
-#16 `pet-reminders`, #17 `nutrition-profile-engine`, #18 `nutrition-ai-explainer`.
+**Última actualización**: 2026-08-11
+**Features completadas**: 17/22 (`feature_list.json`)
+**En progreso**: #15 `health-weights`, implementación terminada y pendiente de
+revisión.
+**Pendientes**: 4, todas del backlog backend (P2/P3): #16 `pet-reminders`, #17
+`nutrition-profile-engine`, #18 `nutrition-ai-explainer` y #22
+`weight-single-source-of-truth`.
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
 desde 2026-08-10. Hay recursos vivos en la cuenta, aunque hoy sin coste.
@@ -61,6 +64,12 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
+- **`health-weights` (#15) in_progress** (2026-08-11): implementación TDD de
+  R1-R10 terminada en `feature/15-health-weights`, con migración nueva `0010`,
+  POST/GET de pesos, proyección condicional a `pets.current_weight_kg`,
+  variación sobre el historial completo, permisos y auditoría. Pendiente del
+  veredicto independiente del `reviewer`; detalle en
+  `progress/impl_health-weights.md`.
 - **`aws-cdk-dev-stack` (#20) done** (2026-08-10): implementada por Codex CLI
   (R1-R16 + R21 mitad A) con veredicto aprobado del `reviewer`, y R17-R21
   cerrados por el humano el mismo día. La stack está desplegada en `us-east-1`
@@ -546,6 +555,14 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-08-11** — Implementación TDD de `health-weights` (#15) en
+  `feature/15-health-weights`: R1-R10 completados con commits separados de test
+  rojo e implementación verde. Se añadió la migración `0010`, el registro e
+  historial de pesos, la proyección transaccional del peso actual, validación,
+  permisos y auditoría. `./init.sh` exit 0: 901 tests backend, 14 de infra y
+  213 e2e pasados; build, synth, lint y typecheck verdes. Estado final:
+  `in_progress`, pendiente del veredicto del `reviewer`.
 
 - **2026-08-10** — Implementación de `aws-cdk-dev-stack` (#20) en
   `feature/20-aws-cdk-dev-stack`: R1-R16 y R21 mitad A completados siguiendo

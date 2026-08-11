@@ -109,7 +109,7 @@ tags: [harness, spec]
 
 ## Cierre
 
-- [ ] `./init.sh` verde (incluye e2e con Docker levantado)
-- [ ] `specs/health-weights/traceability.md` sin filas "pendiente"
-- [ ] `docs/data-model.md` fila `weights`: anotar la migración `0010`
-- [ ] `progress/impl_health-weights.md` escrito
+- [x] `./init.sh` verde (incluye e2e con Docker levantado)
+- [x] `specs/health-weights/traceability.md` sin filas "pendiente"
+- [x] `docs/data-model.md` fila `weights`: anotar la migración `0010`
+- [x] `progress/impl_health-weights.md` escrito
