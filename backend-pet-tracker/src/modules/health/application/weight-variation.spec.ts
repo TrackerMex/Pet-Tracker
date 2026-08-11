@@ -1,11 +1,7 @@
 import { PetWeight } from '@/modules/health/domain/entities/weight.entity';
 import { toWeightHistory, weightDelta } from './weight-variation';
 
-function weight(
-  id: string,
-  weightKg: number,
-  measuredAt: string,
-): PetWeight {
+function weight(id: string, weightKg: number, measuredAt: string): PetWeight {
   return new PetWeight({
     id,
     petId: 'pet-1',
@@ -45,8 +41,16 @@ describe('R5 (health-weights #15): variation usa el historial total ordenado', (
   });
 
   it('respeta el desempate por id cuando measuredAt coincide', () => {
-    const first = weight('019ff000-0000-7000-8000-000000000001', 20, '2026-01-01');
-    const second = weight('019ff000-0000-7000-8000-000000000002', 20.75, '2026-01-01');
+    const first = weight(
+      '019ff000-0000-7000-8000-000000000001',
+      20,
+      '2026-01-01',
+    );
+    const second = weight(
+      '019ff000-0000-7000-8000-000000000002',
+      20.75,
+      '2026-01-01',
+    );
 
     expect(toWeightHistory([second, first], 50)).toEqual([
       { ...second, variation: 0.75 },

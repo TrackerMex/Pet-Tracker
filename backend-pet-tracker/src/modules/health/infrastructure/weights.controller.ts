@@ -21,10 +21,7 @@ import { ListWeightsUseCase } from '@/modules/health/application/use-cases/list-
 import { RequirePetRole } from '@/modules/pets/infrastructure/decorators/require-pet-role.decorator';
 import { PetAccessGuard } from '@/modules/pets/infrastructure/guards/pet-access.guard';
 import type { PetAccessRequest } from '@/modules/pets/infrastructure/guards/pet-access.guard';
-import {
-  toWeightResponse,
-  WeightResponse,
-} from './mappers/weight.mapper';
+import { toWeightResponse, WeightResponse } from './mappers/weight.mapper';
 
 @Controller('pets/:petId/weights')
 @UseGuards(PetAccessGuard)

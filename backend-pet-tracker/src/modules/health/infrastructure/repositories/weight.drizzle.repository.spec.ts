@@ -22,19 +22,22 @@ function buildDbDouble(options: { updateFails?: boolean } = {}) {
   const client = {
     insert: () => ({
       values: (values: Record<string, unknown>) => ({
-        returning: async () => {
+        returning: () => {
           captured.operationsInsideTransaction.push(insideTransaction);
           if (insideTransaction) stagedInserts.push(values);
           else captured.committedInserts.push(values);
-          return [values];
+          return Promise.resolve([values]);
         },
       }),
     }),
     update: () => ({
       set: () => ({
-        where: async () => {
+        where: () => {
           captured.operationsInsideTransaction.push(insideTransaction);
-          if (options.updateFails) throw new Error('pets update failed');
+          if (options.updateFails) {
+            return Promise.reject(new Error('pets update failed'));
+          }
+          return Promise.resolve();
         },
       }),
     }),

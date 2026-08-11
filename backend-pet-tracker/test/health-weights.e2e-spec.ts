@@ -59,7 +59,11 @@ describe('Health weights (e2e)', () => {
     const response = await api()
       .post('/v1/pets')
       .set(auth(owner.token))
-      .send({ name: `Pet-${uuidv7()}`, species: 'dog', birthDate: '2024-01-15' })
+      .send({
+        name: `Pet-${uuidv7()}`,
+        species: 'dog',
+        birthDate: '2024-01-15',
+      })
       .expect(201);
     const pet = response.body as { id: string };
     petIds.push(pet.id);
@@ -358,12 +362,15 @@ describe('Health weights (e2e)', () => {
       const pet = await seedPet(owner);
 
       const response = await postWeight(owner, pet.id, body).expect(400);
+      const validationBody = response.body as {
+        statusCode: number;
+        message: string;
+        errors: unknown[];
+      };
 
-      expect(response.body).toMatchObject({
-        statusCode: 400,
-        message: 'Validation failed',
-        errors: expect.any(Array),
-      });
+      expect(validationBody.statusCode).toBe(400);
+      expect(validationBody.message).toBe('Validation failed');
+      expect(Array.isArray(validationBody.errors)).toBe(true);
       expect(
         await db.select().from(weights).where(eq(weights.petId, pet.id)),
       ).toEqual([]);
@@ -491,10 +498,7 @@ describe('Health weights (e2e)', () => {
         .select()
         .from(auditLog)
         .where(
-          and(
-            eq(auditLog.entity, 'weight'),
-            eq(auditLog.entityId, weightId),
-          ),
+          and(eq(auditLog.entity, 'weight'), eq(auditLog.entityId, weightId)),
         );
 
       expect(rows).toHaveLength(1);

@@ -39,4 +39,3 @@ export const UpdateVaccineSchema = z
 
 export type CreateVaccineDto = z.infer<typeof CreateVaccineSchema>;
 export type UpdateVaccineDto = z.infer<typeof UpdateVaccineSchema>;
-

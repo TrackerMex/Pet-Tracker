@@ -1,4 +1,3 @@
-import type { AuditLogger } from '@/audit/audit-log.repository';
 import { PetWeight } from '@/modules/health/domain/entities/weight.entity';
 import type { WeightRepository } from '@/modules/health/domain/repositories/weight.repository';
 import { CreateWeightUseCase } from './create-weight.use-case';
@@ -33,7 +32,7 @@ describe('R10 (health-weights #15): auditoria weight.create ocurre despues de es
       repository({
         create: jest.fn().mockRejectedValue(new Error('write failed')),
       }),
-      { record } as AuditLogger,
+      { record },
     );
 
     await expect(
@@ -49,10 +48,9 @@ describe('R10 (health-weights #15): auditoria weight.create ocurre despues de es
   it('audita el id creado con actor y petId tras resolver la escritura', async () => {
     const create = jest.fn().mockResolvedValue(persistedWeight());
     const record = jest.fn().mockResolvedValue(undefined);
-    const useCase = new CreateWeightUseCase(
-      repository({ create }),
-      { record } as AuditLogger,
-    );
+    const useCase = new CreateWeightUseCase(repository({ create }), {
+      record,
+    });
 
     await useCase.execute(
       PET_ID,

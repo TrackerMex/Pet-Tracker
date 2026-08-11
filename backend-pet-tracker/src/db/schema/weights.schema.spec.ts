@@ -20,7 +20,9 @@ function findWeightsMigration(): { file: string; sql: string } {
 
 describe('R1 (health-weights #15): tabla weights y migracion 0010 nueva', () => {
   const config = getTableConfig(weights);
-  const columns = new Map(config.columns.map((column) => [column.name, column]));
+  const columns = new Map(
+    config.columns.map((column) => [column.name, column]),
+  );
 
   it('declara exactamente las columnas, tipos y nulabilidad aprobados', () => {
     expect([...columns.keys()].sort()).toEqual(
