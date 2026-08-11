@@ -45,6 +45,8 @@ estado: spec aprobada por humano — handoff entregado, esperando a Codex CLI
   contrato exacto con `numeric` convertido a `number`.
 - R3 completado: `currentWeightKg` se refresca solo para la medición más
   reciente; retroactiva conserva el valor y empate deja ganar la última.
+- R4 completado: insert y actualización del perfil comparten transacción; el
+  doble verifica rollback cuando falla la segunda escritura.
 - Spec escrita en `specs/health-weights/` — 10 R-ids (R1..R10), sin huecos.
 - Revisión del leader sobre tres decisiones del `spec_author`. Dos se confirman
   contra el repo y **no** se tocan:

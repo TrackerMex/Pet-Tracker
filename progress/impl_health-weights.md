@@ -17,6 +17,8 @@
   numérico.
 - R3 — rojo `f5a4fea`; verde `1b2d1f9`. El `UPDATE` usa `NOT EXISTS` con
   comparación estricta de `measured_at`: retroactivas no pisan y el empate sí.
+- R4 — rojo `5033761`; verde `9b65281`. El `INSERT` y el `UPDATE` condicional
+  usan el mismo callback de `db.transaction`; un fallo descarta la inserción.
 
 ## Verificación final
 

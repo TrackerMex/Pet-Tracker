@@ -48,12 +48,12 @@ tags: [harness, spec]
 
 ## R4 — Insert y update de `pets` en una sola transacción
 
-- [ ] (1) Escribir test que falla para R4 —
+- [x] (1) Escribir test que falla para R4 —
       `src/modules/health/infrastructure/repositories/weight.drizzle.repository.spec.ts`
       (doble de Drizzle que captura que ambas sentencias corren dentro del
       callback de `db.transaction`; patrón de `pet.drizzle.repository.spec.ts`)
-- [ ] (2) Implementación mínima que lo pasa
-- [ ] (3) Refactor con tests verdes
+- [x] (2) Implementación mínima que lo pasa
+- [x] (3) Refactor con tests verdes
 
 ## R5 — Historial ordenado con `variation`
 

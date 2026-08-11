@@ -14,7 +14,7 @@ tags: [harness, spec]
 | R1 | `src/db/schema/weights.schema.spec.ts::R1 (health-weights #15): tabla weights y migracion 0010 nueva` | rojo: `281663d test(health-weights): require weights schema and migration (R1)`; verde: `0e1dae1 feat(health-weights): add weights table migration (R1)` |
 | R2 | `test/health-weights.e2e-spec.ts::R2 (health-weights #15): POST inserta y responde el shape congelado` | rojo: `0abc655 test(health-weights): require weight creation endpoint (R2)`; verde: `8da976c feat(health-weights): create weight records (R2)` |
 | R3 | `test/health-weights.e2e-spec.ts::R3 (health-weights #15): current_weight_kg refleja solo la medicion mas reciente` | rojo: `f5a4fea test(health-weights): require latest weight projection (R3)`; verde: `1b2d1f9 feat(health-weights): project latest weight to pet (R3)` |
-| R4 | pendiente — previsto `src/modules/health/infrastructure/repositories/weight.drizzle.repository.spec.ts` | pendiente |
+| R4 | `src/modules/health/infrastructure/repositories/weight.drizzle.repository.spec.ts::R4 (health-weights #15): insert y update comparten una transaccion` | rojo: `5033761 test(health-weights): require atomic weight writes (R4)`; verde: `9b65281 feat(health-weights): make weight writes atomic (R4)` |
 | R5 | pendiente — previsto `src/modules/health/application/weight-variation.spec.ts` + `test/health-weights.e2e-spec.ts` | pendiente |
 | R6 | pendiente — previsto `test/health-weights.e2e-spec.ts` | pendiente |
 | R7 | pendiente — previsto `test/health-weights.e2e-spec.ts` (incluye los bordes `hoy` / `hoy+1` → 201 y `hoy+2` → 400 de `MEASURED_AT_MAX_FUTURE_DAYS`) | pendiente |
