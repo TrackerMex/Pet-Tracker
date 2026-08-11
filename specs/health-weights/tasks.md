@@ -74,15 +74,15 @@ tags: [harness, spec]
 
 ## R7 — Validación del body: 400 sin persistir (fecha futura: tolerancia de 1 día)
 
-- [ ] (1) Escribir test que falla para R7 — `test/health-weights.e2e-spec.ts`
+- [x] (1) Escribir test que falla para R7 — `test/health-weights.e2e-spec.ts`
       (`weightKg` 0 / negativo / 1000, `bodyCondition` 0 / 10 / 4.5,
       `measuredAt` `2026-02-30`, clave desconocida; en cada caso comprobar que
       no se creó fila ni cambió `currentWeightKg`). **Los tres bordes de fecha
       futura, con la fecha de hoy en UTC como referencia y sin fechas
       literales**: `hoy` → `201`, `hoy + 1` → `201`, `hoy + 2` → `400`
       (`MEASURED_AT_MAX_FUTURE_DAYS`, ver [[design]] D5)
-- [ ] (2) Implementación mínima que lo pasa
-- [ ] (3) Refactor con tests verdes
+- [x] (2) Implementación mínima que lo pasa
+- [x] (3) Refactor con tests verdes
 
 ## R8 — `PetAccessGuard` bloquea IDOR con 404 en POST y GET
 

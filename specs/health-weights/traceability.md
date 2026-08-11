@@ -17,7 +17,7 @@ tags: [harness, spec]
 | R4 | `src/modules/health/infrastructure/repositories/weight.drizzle.repository.spec.ts::R4 (health-weights #15): insert y update comparten una transaccion` | rojo: `5033761 test(health-weights): require atomic weight writes (R4)`; verde: `9b65281 feat(health-weights): make weight writes atomic (R4)` |
 | R5 | `src/modules/health/application/weight-variation.spec.ts::R5 (health-weights #15): variation usa el historial total ordenado` + `test/health-weights.e2e-spec.ts::R5 (health-weights #15): historial ordenado con variation` | rojo: `2c27056 test(health-weights): require ordered weight variation (R5)`; verde: `b34a2b0 feat(health-weights): list weight history with variation (R5)` |
 | R6 | `test/health-weights.e2e-spec.ts::R6 (health-weights #15): limit usa default 50, maximo 100 y validacion estricta` | rojo: `b7fc54b test(health-weights): require strict history limits (R6)`; verde: `f3b6c80 feat(health-weights): validate history limits (R6)` |
-| R7 | pendiente — previsto `test/health-weights.e2e-spec.ts` (incluye los bordes `hoy` / `hoy+1` → 201 y `hoy+2` → 400 de `MEASURED_AT_MAX_FUTURE_DAYS`) | pendiente |
+| R7 | `test/health-weights.e2e-spec.ts::R7 (health-weights #15): body invalido responde 400 sin persistir` (incluye `hoy` / `hoy+1` → 201 y `hoy+2` → 400) | rojo: `f3c6ec2 test(health-weights): require safe weight validation (R7)`; verde: `2b230aa feat(health-weights): validate weight measurements (R7)` |
 | R8 | pendiente — previsto `test/health-weights.e2e-spec.ts` | pendiente |
 | R9 | pendiente — previsto `test/health-weights.e2e-spec.ts` | pendiente |
 | R10 | pendiente — previsto `src/modules/health/application/use-cases/create-weight.use-case.spec.ts` + `test/health-weights.e2e-spec.ts` | pendiente |

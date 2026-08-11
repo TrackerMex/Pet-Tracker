@@ -50,6 +50,8 @@ estado: spec aprobada por humano — handoff entregado, esperando a Codex CLI
 - R5 completado: historial ordenado y `variation` calculada con fila sonda,
   incluido `limit=1` sobre dos mediciones.
 - R6 completado: `limit` estricto con default 50, máximo 100 y errores 400.
+- R7 completado: validación 400 sin persistencia, incluidos hoy/hoy+1 válidos
+  y hoy+2 rechazado con fechas calculadas dinámicamente.
 - Spec escrita en `specs/health-weights/` — 10 R-ids (R1..R10), sin huecos.
 - Revisión del leader sobre tres decisiones del `spec_author`. Dos se confirman
   contra el repo y **no** se tocan:

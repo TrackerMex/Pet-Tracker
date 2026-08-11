@@ -24,6 +24,9 @@
   completo.
 - R6 — rojo `b7fc54b`; verde `f3b6c80`. La query estricta aplica default 50,
   máximo 100 y rechaza enteros fuera de rango, vacíos y parámetros extra.
+- R7 — rojo `f3c6ec2`; verde `2b230aa`. El body estricto valida rangos, entero
+  `bodyCondition`, fecha real y futuro hasta `hoy UTC + 1`; todo rechazo deja
+  historial y perfil intactos.
 
 ## Verificación final
 
