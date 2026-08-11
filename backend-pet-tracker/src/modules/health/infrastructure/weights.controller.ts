@@ -4,10 +4,10 @@ import {
   Controller,
   Get,
   HttpStatus,
-  Param,
   Post,
   Query,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import { ZodType } from 'zod';
 import {
@@ -18,13 +18,15 @@ import {
 } from '@/modules/health/application/dto/weight.dto';
 import { CreateWeightUseCase } from '@/modules/health/application/use-cases/create-weight.use-case';
 import { ListWeightsUseCase } from '@/modules/health/application/use-cases/list-weights.use-case';
-import type { AuthenticatedRequest } from '@/modules/auth/infrastructure/guards/auth.guard';
+import { PetAccessGuard } from '@/modules/pets/infrastructure/guards/pet-access.guard';
+import type { PetAccessRequest } from '@/modules/pets/infrastructure/guards/pet-access.guard';
 import {
   toWeightResponse,
   WeightResponse,
 } from './mappers/weight.mapper';
 
 @Controller('pets/:petId/weights')
+@UseGuards(PetAccessGuard)
 export class WeightsController {
   constructor(
     private readonly createWeight: CreateWeightUseCase,
@@ -33,25 +35,28 @@ export class WeightsController {
 
   @Post()
   async create(
-    @Param('petId') petId: string,
-    @Req() request: AuthenticatedRequest,
+    @Req() request: PetAccessRequest,
     @Body() body: unknown,
   ): Promise<WeightResponse> {
     const dto = parseBody<CreateWeightDto>(CreateWeightSchema, body);
     return toWeightResponse(
-      await this.createWeight.execute(petId, dto, request.user.id),
+      await this.createWeight.execute(
+        request.petMembership.petId,
+        dto,
+        request.user.id,
+      ),
     );
   }
 
   @Get()
   async list(
-    @Param('petId') petId: string,
+    @Req() request: PetAccessRequest,
     @Query() query: unknown,
   ): Promise<WeightResponse[]> {
     const dto = parseQuery<ListWeightsQueryDto>(ListWeightsQuerySchema, query);
-    return (await this.listWeights.execute(petId, dto.limit)).map(
-      toWeightResponse,
-    );
+    return (
+      await this.listWeights.execute(request.petMembership.petId, dto.limit)
+    ).map(toWeightResponse);
   }
 }
 
