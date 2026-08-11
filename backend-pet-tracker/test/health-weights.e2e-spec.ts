@@ -259,4 +259,67 @@ describe('Health weights (e2e)', () => {
       );
     });
   });
+
+  describe('R6 (health-weights #15): limit usa default 50, maximo 100 y validacion estricta', () => {
+    it('sin limit devuelve como maximo los 50 pesos mas recientes', async () => {
+      const owner = await seedUser('r6-default');
+      const pet = await seedPet(owner);
+      await db.insert(weights).values(
+        Array.from({ length: 55 }, (_, index) => ({
+          id: uuidv7(),
+          petId: pet.id,
+          weightKg: String(10 + index / 100),
+          measuredAt: '2026-01-01',
+          createdBy: owner.id,
+        })),
+      );
+
+      const response = await api()
+        .get(`/v1/pets/${pet.id}/weights`)
+        .set(auth(owner.token))
+        .expect(200);
+
+      expect(response.body).toHaveLength(50);
+    });
+
+    it('limit=1 devuelve solo la medicion mas reciente', async () => {
+      const owner = await seedUser('r6-one');
+      const pet = await seedPet(owner);
+      await postWeight(owner, pet.id, {
+        weightKg: 10,
+        measuredAt: '2026-01-01',
+      }).expect(201);
+      const latest = await postWeight(owner, pet.id, {
+        weightKg: 11,
+        measuredAt: '2026-02-01',
+      }).expect(201);
+
+      const response = await api()
+        .get(`/v1/pets/${pet.id}/weights?limit=1`)
+        .set(auth(owner.token))
+        .expect(200);
+
+      expect(response.body).toHaveLength(1);
+      expect((response.body as Array<{ id: string }>)[0].id).toBe(
+        (latest.body as { id: string }).id,
+      );
+    });
+
+    it.each([
+      'limit=0',
+      'limit=101',
+      'limit=1.5',
+      'limit=abc',
+      'limit=',
+      'other=1',
+    ])('rechaza query invalida: %s', async (query) => {
+      const owner = await seedUser(`r6-invalid-${query}`);
+      const pet = await seedPet(owner);
+
+      await api()
+        .get(`/v1/pets/${pet.id}/weights?${query}`)
+        .set(auth(owner.token))
+        .expect(400);
+    });
+  });
 });
