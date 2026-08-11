@@ -9,7 +9,9 @@
 
 ## Requisitos
 
-Pendiente de implementación.
+- R1 — rojo `281663d`; verde `0e1dae1`. Se añadió `weights` a
+  `health.schema.ts` y se generó la migración nueva
+  `0010_low_miracleman.sql`, sin modificar `0009` ni alterar `pets`.
 
 ## Verificación final
 

@@ -11,7 +11,7 @@ tags: [harness, spec]
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | pendiente — previsto `src/db/schema/weights.schema.spec.ts` | pendiente |
+| R1 | `src/db/schema/weights.schema.spec.ts::R1 (health-weights #15): tabla weights y migracion 0010 nueva` | rojo: `281663d test(health-weights): require weights schema and migration (R1)`; verde: `0e1dae1 feat(health-weights): add weights table migration (R1)` |
 | R2 | pendiente — previsto `test/health-weights.e2e-spec.ts` | pendiente |
 | R3 | pendiente — previsto `test/health-weights.e2e-spec.ts` | pendiente |
 | R4 | pendiente — previsto `src/modules/health/infrastructure/repositories/weight.drizzle.repository.spec.ts` | pendiente |

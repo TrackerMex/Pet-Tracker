@@ -23,12 +23,12 @@ tags: [harness, spec]
 
 ## R1 — Tabla `weights`, índices y migración nueva
 
-- [ ] (1) Escribir test que falla para R1 — `src/db/schema/weights.schema.spec.ts`
+- [x] (1) Escribir test que falla para R1 — `src/db/schema/weights.schema.spec.ts`
       (`getTableConfig(weights)`: columnas exactas, check
       `weights_body_condition_check`, índices; y que la migración que contiene
       `CREATE TABLE "weights"` no contiene `ALTER TABLE "pets"`)
-- [ ] (2) Implementación mínima que lo pasa (`health.schema.ts` + `db:generate`)
-- [ ] (3) Refactor con tests verdes — confirmar que
+- [x] (2) Implementación mínima que lo pasa (`health.schema.ts` + `db:generate`)
+- [x] (3) Refactor con tests verdes — confirmar que
       `src/db/schema/health.schema.spec.ts` sigue verde (la migración `0009` no
       se toca)
 
