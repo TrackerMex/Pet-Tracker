@@ -11,6 +11,7 @@ import { pets } from '@/db/schema/pets.schema';
 import { users } from '@/db/schema/users.schema';
 import { TOKEN_SERVICE } from '@/modules/auth/domain/ports/token-service';
 import type { TokenService } from '@/modules/auth/domain/ports/token-service';
+import { MEASURED_AT_MAX_FUTURE_DAYS } from '@/modules/health/application/dto/weight.dto';
 import { AppModule } from '../src/app.module';
 
 describe('Health weights (e2e)', () => {
@@ -28,7 +29,12 @@ describe('Health weights (e2e)', () => {
 
   const api = () => request(app.getHttpServer());
   const auth = (token: string) => ({ Authorization: `Bearer ${token}` });
-  const today = () => new Date().toISOString().slice(0, 10);
+  const isoDateOffset = (days: number) => {
+    const date = new Date();
+    date.setUTCDate(date.getUTCDate() + days);
+    return date.toISOString().slice(0, 10);
+  };
+  const today = () => isoDateOffset(0);
 
   async function seedUser(label: string): Promise<UserFixture> {
     const id = uuidv7();
@@ -64,6 +70,15 @@ describe('Health weights (e2e)', () => {
     petId: string,
     body: Record<string, unknown>,
   ) => api().post(`/v1/pets/${petId}/weights`).set(auth(user.token)).send(body);
+
+  async function currentWeight(user: UserFixture, petId: string) {
+    const response = await api()
+      .get(`/v1/pets/${petId}`)
+      .set(auth(user.token))
+      .expect(200);
+    return (response.body as { currentWeightKg: number | null })
+      .currentWeightKg;
+  }
 
   beforeAll(async () => {
     const module = await Test.createTestingModule({
@@ -136,15 +151,6 @@ describe('Health weights (e2e)', () => {
   });
 
   describe('R3 (health-weights #15): current_weight_kg refleja solo la medicion mas reciente', () => {
-    async function currentWeight(user: UserFixture, petId: string) {
-      const response = await api()
-        .get(`/v1/pets/${petId}`)
-        .set(auth(user.token))
-        .expect(200);
-      return (response.body as { currentWeightKg: number | null })
-        .currentWeightKg;
-    }
-
     it('la primera medicion actualiza el perfil', async () => {
       const owner = await seedUser('r3-first');
       const pet = await seedPet(owner);
@@ -320,6 +326,67 @@ describe('Health weights (e2e)', () => {
         .get(`/v1/pets/${pet.id}/weights?${query}`)
         .set(auth(owner.token))
         .expect(400);
+    });
+  });
+
+  describe('R7 (health-weights #15): body invalido responde 400 sin persistir', () => {
+    it.each<[string, Record<string, unknown>]>([
+      ['weight-zero', { weightKg: 0, measuredAt: today() }],
+      ['weight-negative', { weightKg: -1, measuredAt: today() }],
+      ['weight-overflow', { weightKg: 1000, measuredAt: today() }],
+      ['weight-string', { weightKg: '10', measuredAt: today() }],
+      [
+        'condition-zero',
+        { weightKg: 10, measuredAt: today(), bodyCondition: 0 },
+      ],
+      [
+        'condition-ten',
+        { weightKg: 10, measuredAt: today(), bodyCondition: 10 },
+      ],
+      [
+        'condition-decimal',
+        { weightKg: 10, measuredAt: today(), bodyCondition: 4.5 },
+      ],
+      ['invalid-date', { weightKg: 10, measuredAt: '2026-02-30' }],
+      ['unknown-key', { weightKg: 10, measuredAt: today(), extra: true }],
+    ])('rechaza %s y deja historial y perfil intactos', async (label, body) => {
+      const owner = await seedUser(`r7-${label}`);
+      const pet = await seedPet(owner);
+
+      const response = await postWeight(owner, pet.id, body).expect(400);
+
+      expect(response.body).toMatchObject({
+        statusCode: 400,
+        message: 'Validation failed',
+        errors: expect.any(Array),
+      });
+      expect(
+        await db.select().from(weights).where(eq(weights.petId, pet.id)),
+      ).toEqual([]);
+      expect(await currentWeight(owner, pet.id)).toBeNull();
+    });
+
+    it('acepta hoy y hoy mas un dia, pero rechaza hoy mas dos', async () => {
+      const owner = await seedUser('r7-future-boundary');
+      const pet = await seedPet(owner);
+
+      await postWeight(owner, pet.id, {
+        weightKg: 20,
+        measuredAt: isoDateOffset(0),
+      }).expect(201);
+      await postWeight(owner, pet.id, {
+        weightKg: 21,
+        measuredAt: isoDateOffset(MEASURED_AT_MAX_FUTURE_DAYS),
+      }).expect(201);
+      await postWeight(owner, pet.id, {
+        weightKg: 22,
+        measuredAt: isoDateOffset(MEASURED_AT_MAX_FUTURE_DAYS + 1),
+      }).expect(400);
+
+      expect(
+        await db.select().from(weights).where(eq(weights.petId, pet.id)),
+      ).toHaveLength(2);
+      expect(await currentWeight(owner, pet.id)).toBe(21);
     });
   });
 });
