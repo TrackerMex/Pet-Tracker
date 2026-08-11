@@ -10,7 +10,7 @@ feature: #15 health-weights (P2)
 inicio: 2026-08-11
 branch: feature/15-health-weights
 agentes lanzados: spec_author
-estado: spec en redacción — bloqueado en gate humano al terminar
+estado: spec aprobada por humano — handoff entregado, esperando a Codex CLI
 ```
 
 ## Contexto de arranque
@@ -57,15 +57,36 @@ estado: spec en redacción — bloqueado en gate humano al terminar
   `current_weight_kg`, el orden sigue siendo correcto). El porqué queda escrito
   en `design.md` D5 para que nadie lo "arregle" después metiendo la dependencia.
 
-## Pendiente de decisión humana en el gate
+## Gate humano — resuelto el 2026-08-11
 
-1. `weightVariation` en el perfil de mascota: el plan 008 paso 2 lo pide, la
-   spec lo deja fuera. Meterlo obliga a ampliar el contrato congelado de 24
-   claves aseverado en `pet-profile-response.mapper.spec.ts:33-47`,
-   `test/pets.e2e-spec.ts:72` y `test/devices.e2e-spec.ts:617`.
-2. `PATCH /v1/pets {weightKg}` sigue escribiendo `current_weight_kg` sin crear
-   medición → perfil e historial pueden divergir. Fuera de alcance; unificarlo
-   rompe 3 tests de #5.
-3. `health.schema.spec.ts:63` asevera `not.toContain('CREATE TABLE "weights"')`
-   sobre la migración `0009`: Codex tiene que generar `0010` nueva, no editar
-   la existente. Ya está recogido en R1.
+Spec aprobada sin cambios adicionales. Las tres cuestiones abiertas se
+resolvieron así:
+
+1. **`weightVariation` en el perfil de mascota: fuera.** El plan 008 lo menciona
+   en la línea 51, pero su consumidor real es el hub de salud (línea 68:
+   "Peso (último + flecha de variación)"), que ya carga la lista de pesos
+   (línea 70) y saca la flecha de `GET .../weights?limit=2`, con `variation` ya
+   calculada por #15. Añadirlo al perfil obligaba a ampliar un contrato
+   congelado de 24 claves aseverado en tres archivos de test para ahorrar una
+   llamada que el cliente hace igualmente. Los `acceptance_criteria` de #15
+   tampoco lo piden — a diferencia de #14, donde `nextVaccine` en el perfil sí
+   era criterio explícito.
+2. **Divergencia de `current_weight_kg`: fuera de #15, con feature propia.** Al
+   verificarlo resultó haber **tres** escritores, no dos:
+   `create-pet.use-case.ts:45` (alta), `update-pet.use-case.ts:70` (PATCH) y el
+   POST de #15. Unificarlo es cambiar el contrato público de dos endpoints de
+   #5, con su propia spec y su propio gate. Se abre como **#22
+   `weight-single-source-of-truth` (P3, pending)** para que la deuda viva en el
+   backlog y no solo en un `design.md`.
+3. **Migración `0010`:** no era una decisión sino una restricción de
+   `health.schema.spec.ts:63`. Ya recogida en R1 y repetida en el handoff.
+
+## Handoff
+
+`progress/handoff_health-weights.md` — prompt listo para Codex CLI. Exige
+explícitamente commits test-primero por R-id (C4, lo que falló en #19) y avisa
+de las tres trampas de esta feature: migración nueva y no editar `0009`,
+`numeric` que el driver `pg` devuelve como string, y `variation` calculada
+sobre el historial completo y no sobre la página.
+
+**Mientras Codex implementa, el leader no toca `backend-pet-tracker/`.**

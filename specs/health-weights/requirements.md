@@ -1,6 +1,6 @@
 ---
 feature: "health-weights"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec]
 ---
 
@@ -138,4 +138,4 @@ tags: [harness, spec]
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [X] Aprobado por humano (fecha: 2026-08-11) ← gate obligatorio antes de implementar
