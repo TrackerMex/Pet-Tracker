@@ -27,6 +27,8 @@
 - R7 — rojo `f3c6ec2`; verde `2b230aa`. El body estricto valida rangos, entero
   `bodyCondition`, fecha real y futuro hasta `hoy UTC + 1`; todo rechazo deja
   historial y perfil intactos.
+- R8 — rojo `5d8bedf`; verde `28fe600`. `PetAccessGuard` protege POST y GET;
+  no-miembro, mascota inexistente y `petId` inválido reciben 404.
 
 ## Verificación final
 

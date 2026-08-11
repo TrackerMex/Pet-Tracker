@@ -86,10 +86,10 @@ tags: [harness, spec]
 
 ## R8 — `PetAccessGuard` bloquea IDOR con 404 en POST y GET
 
-- [ ] (1) Escribir test que falla para R8 — `test/health-weights.e2e-spec.ts`
+- [x] (1) Escribir test que falla para R8 — `test/health-weights.e2e-spec.ts`
       (usuario B sobre mascota de A, y `:petId` no-UUID)
-- [ ] (2) Implementación mínima que lo pasa
-- [ ] (3) Refactor con tests verdes
+- [x] (2) Implementación mínima que lo pasa
+- [x] (3) Refactor con tests verdes
 
 ## R9 — Owner muta, cualquier miembro activo lee
 
