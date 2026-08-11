@@ -47,6 +47,8 @@ estado: spec aprobada por humano — handoff entregado, esperando a Codex CLI
   reciente; retroactiva conserva el valor y empate deja ganar la última.
 - R4 completado: insert y actualización del perfil comparten transacción; el
   doble verifica rollback cuando falla la segunda escritura.
+- R5 completado: historial ordenado y `variation` calculada con fila sonda,
+  incluido `limit=1` sobre dos mediciones.
 - Spec escrita en `specs/health-weights/` — 10 R-ids (R1..R10), sin huecos.
 - Revisión del leader sobre tres decisiones del `spec_author`. Dos se confirman
   contra el repo y **no** se tocan:

@@ -57,13 +57,13 @@ tags: [harness, spec]
 
 ## R5 — Historial ordenado con `variation`
 
-- [ ] (1) Escribir test que falla para R5 —
+- [x] (1) Escribir test que falla para R5 —
       `src/modules/health/application/weight-variation.spec.ts` (casos 0/1/2
       mediciones, `null` en la más antigua, redondeo a 2 decimales, desempate
       por id el mismo día) + `test/health-weights.e2e-spec.ts` (orden desc y
       `variation` no nula con `?limit=1` sobre 2 mediciones)
-- [ ] (2) Implementación mínima que lo pasa
-- [ ] (3) Refactor con tests verdes
+- [x] (2) Implementación mínima que lo pasa
+- [x] (3) Refactor con tests verdes
 
 ## R6 — `?limit=` con default 50, tope 100 y 400 en inválidos
 

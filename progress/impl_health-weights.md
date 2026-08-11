@@ -19,6 +19,9 @@
   comparación estricta de `measured_at`: retroactivas no pisan y el empate sí.
 - R4 — rojo `5033761`; verde `9b65281`. El `INSERT` y el `UPDATE` condicional
   usan el mismo callback de `db.transaction`; un fallo descarta la inserción.
+- R5 — rojo `2c27056`; verde `b34a2b0`. GET ordena por fecha/id descendente y
+  calcula `variation` con redondeo y fila sonda `limit + 1` sobre el historial
+  completo.
 
 ## Verificación final
 
