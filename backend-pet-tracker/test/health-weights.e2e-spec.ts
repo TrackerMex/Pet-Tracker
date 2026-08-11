@@ -1,11 +1,12 @@
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { eq, inArray } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { uuidv7 } from 'uuidv7';
 import { DRIZZLE } from '@/db/drizzle.constants';
+import { auditLog } from '@/db/schema/audit-log.schema';
 import { weights } from '@/db/schema/health.schema';
 import { pets, petUsers } from '@/db/schema/pets.schema';
 import { users } from '@/db/schema/users.schema';
@@ -92,6 +93,9 @@ describe('Health weights (e2e)', () => {
   });
 
   afterAll(async () => {
+    if (userIds.length) {
+      await db.delete(auditLog).where(inArray(auditLog.userId, userIds));
+    }
     if (petIds.length) {
       await db.delete(pets).where(inArray(pets.id, petIds));
     }
@@ -470,6 +474,37 @@ describe('Health weights (e2e)', () => {
         .get(`/v1/pets/${pet.id}/weights`)
         .set(auth(outsider.token))
         .expect(404);
+    });
+  });
+
+  describe('R10 (health-weights #15): POST registra auditoria weight.create', () => {
+    it('persiste action, entity, entityId, actor y petId', async () => {
+      const owner = await seedUser('r10');
+      const pet = await seedPet(owner);
+
+      const created = await postWeight(owner, pet.id, {
+        weightKg: 21.35,
+        measuredAt: today(),
+      }).expect(201);
+      const weightId = (created.body as { id: string }).id;
+      const rows = await db
+        .select()
+        .from(auditLog)
+        .where(
+          and(
+            eq(auditLog.entity, 'weight'),
+            eq(auditLog.entityId, weightId),
+          ),
+        );
+
+      expect(rows).toHaveLength(1);
+      expect(rows[0]).toMatchObject({
+        userId: owner.id,
+        action: 'weight.create',
+        entity: 'weight',
+        entityId: weightId,
+        meta: { petId: pet.id },
+      });
     });
   });
 });
