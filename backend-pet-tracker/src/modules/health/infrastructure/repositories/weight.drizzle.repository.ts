@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, eq, gt, notExists } from 'drizzle-orm';
+import { and, desc, eq, gt, lt, notExists, or } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { uuidv7 } from 'uuidv7';
 import { DRIZZLE } from '@/db/drizzle.constants';
@@ -53,6 +53,40 @@ export class WeightDrizzleRepository implements WeightRepository {
 
       return toDomain(row);
     });
+  }
+
+  async listByPet(petId: string, limit: number): Promise<PetWeight[]> {
+    const rows = await this.db
+      .select()
+      .from(weights)
+      .where(eq(weights.petId, petId))
+      .orderBy(desc(weights.measuredAt), desc(weights.id))
+      .limit(limit);
+
+    return rows.map(toDomain);
+  }
+
+  async findPrevious(
+    petId: string,
+    measuredAt: string,
+    id: string,
+  ): Promise<PetWeight | null> {
+    const [row] = await this.db
+      .select()
+      .from(weights)
+      .where(
+        and(
+          eq(weights.petId, petId),
+          or(
+            lt(weights.measuredAt, measuredAt),
+            and(eq(weights.measuredAt, measuredAt), lt(weights.id, id)),
+          ),
+        ),
+      )
+      .orderBy(desc(weights.measuredAt), desc(weights.id))
+      .limit(1);
+
+    return row ? toDomain(row) : null;
   }
 }
 

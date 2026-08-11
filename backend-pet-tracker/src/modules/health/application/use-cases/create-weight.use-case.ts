@@ -1,6 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CreateWeightDto } from '@/modules/health/application/dto/weight.dto';
-import { WeightEntry } from '@/modules/health/application/weight-variation';
+import {
+  WeightEntry,
+  weightDelta,
+} from '@/modules/health/application/weight-variation';
 import { WEIGHT_REPOSITORY } from '@/modules/health/domain/repositories/weight.repository';
 import type { WeightRepository } from '@/modules/health/domain/repositories/weight.repository';
 
@@ -22,7 +25,15 @@ export class CreateWeightUseCase {
       bodyCondition: dto.bodyCondition ?? null,
       createdBy: userId,
     });
+    const previous = await this.weights.findPrevious(
+      petId,
+      weight.measuredAt,
+      weight.id,
+    );
 
-    return { ...weight, variation: null };
+    return {
+      ...weight,
+      variation: weightDelta(weight.weightKg, previous?.weightKg ?? null),
+    };
   }
 }

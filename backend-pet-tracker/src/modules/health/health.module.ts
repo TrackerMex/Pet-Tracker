@@ -16,6 +16,7 @@ import {
 } from './infrastructure/vaccines.controller';
 import { VaccineDrizzleRepository } from './infrastructure/repositories/vaccine.drizzle.repository';
 import { CreateWeightUseCase } from '@/modules/health/application/use-cases/create-weight.use-case';
+import { ListWeightsUseCase } from '@/modules/health/application/use-cases/list-weights.use-case';
 import { WEIGHT_REPOSITORY } from '@/modules/health/domain/repositories/weight.repository';
 import { WeightDrizzleRepository } from '@/modules/health/infrastructure/repositories/weight.drizzle.repository';
 import { WeightsController } from '@/modules/health/infrastructure/weights.controller';
@@ -36,6 +37,7 @@ import { WeightsController } from '@/modules/health/infrastructure/weights.contr
     UpdateVaccineUseCase,
     DeleteVaccineUseCase,
     CreateWeightUseCase,
+    ListWeightsUseCase,
     {
       provide: DATABASE_HEALTH_CHECKER,
       useClass: DatabaseHealthDrizzleRepository,

@@ -12,4 +12,10 @@ export interface NewPetWeight {
 
 export interface WeightRepository {
   create(data: NewPetWeight): Promise<PetWeight>;
+  listByPet(petId: string, limit: number): Promise<PetWeight[]>;
+  findPrevious(
+    petId: string,
+    measuredAt: string,
+    id: string,
+  ): Promise<PetWeight | null>;
 }

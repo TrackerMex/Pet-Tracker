@@ -2,17 +2,21 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Get,
   HttpStatus,
   Param,
   Post,
+  Query,
   Req,
 } from '@nestjs/common';
 import { ZodType } from 'zod';
 import {
   CreateWeightDto,
   CreateWeightSchema,
+  WEIGHTS_DEFAULT_LIMIT,
 } from '@/modules/health/application/dto/weight.dto';
 import { CreateWeightUseCase } from '@/modules/health/application/use-cases/create-weight.use-case';
+import { ListWeightsUseCase } from '@/modules/health/application/use-cases/list-weights.use-case';
 import type { AuthenticatedRequest } from '@/modules/auth/infrastructure/guards/auth.guard';
 import {
   toWeightResponse,
@@ -21,7 +25,10 @@ import {
 
 @Controller('pets/:petId/weights')
 export class WeightsController {
-  constructor(private readonly createWeight: CreateWeightUseCase) {}
+  constructor(
+    private readonly createWeight: CreateWeightUseCase,
+    private readonly listWeights: ListWeightsUseCase,
+  ) {}
 
   @Post()
   async create(
@@ -32,6 +39,18 @@ export class WeightsController {
     const dto = parseBody<CreateWeightDto>(CreateWeightSchema, body);
     return toWeightResponse(
       await this.createWeight.execute(petId, dto, request.user.id),
+    );
+  }
+
+  @Get()
+  async list(
+    @Param('petId') petId: string,
+    @Query('limit') limit: string | undefined,
+  ): Promise<WeightResponse[]> {
+    const parsedLimit =
+      limit === undefined ? WEIGHTS_DEFAULT_LIMIT : Number(limit);
+    return (await this.listWeights.execute(petId, parsedLimit)).map(
+      toWeightResponse,
     );
   }
 }
