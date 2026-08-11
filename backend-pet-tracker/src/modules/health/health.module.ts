@@ -15,10 +15,20 @@ import {
   VaccinesController,
 } from './infrastructure/vaccines.controller';
 import { VaccineDrizzleRepository } from './infrastructure/repositories/vaccine.drizzle.repository';
+import { CreateWeightUseCase } from '@/modules/health/application/use-cases/create-weight.use-case';
+import { ListWeightsUseCase } from '@/modules/health/application/use-cases/list-weights.use-case';
+import { WEIGHT_REPOSITORY } from '@/modules/health/domain/repositories/weight.repository';
+import { WeightDrizzleRepository } from '@/modules/health/infrastructure/repositories/weight.drizzle.repository';
+import { WeightsController } from '@/modules/health/infrastructure/weights.controller';
 
 @Module({
   imports: [PetsModule],
-  controllers: [HealthController, VaccineCatalogController, VaccinesController],
+  controllers: [
+    HealthController,
+    VaccineCatalogController,
+    VaccinesController,
+    WeightsController,
+  ],
   providers: [
     CheckHealthUseCase,
     ListVaccineCatalogUseCase,
@@ -26,11 +36,14 @@ import { VaccineDrizzleRepository } from './infrastructure/repositories/vaccine.
     ListVaccinesUseCase,
     UpdateVaccineUseCase,
     DeleteVaccineUseCase,
+    CreateWeightUseCase,
+    ListWeightsUseCase,
     {
       provide: DATABASE_HEALTH_CHECKER,
       useClass: DatabaseHealthDrizzleRepository,
     },
     { provide: VACCINE_REPOSITORY, useClass: VaccineDrizzleRepository },
+    { provide: WEIGHT_REPOSITORY, useClass: WeightDrizzleRepository },
   ],
 })
 export class HealthModule {}

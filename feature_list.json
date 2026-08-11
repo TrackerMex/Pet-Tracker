@@ -248,7 +248,7 @@
   {
     "id": 15,
     "name": "health-weights",
-    "status": "pending",
+    "status": "done",
     "priority": "P2",
     "description": "Plan 008 (peso): tabla weights; POST /v1/pets/:petId/weights {weightKg, measuredAt, bodyCondition?} → insert + actualizar pets.current_weight_kg si es la medición más reciente; GET .../weights?limit= con variation (delta vs medición anterior).",
     "acceptance_criteria": [
@@ -371,6 +371,25 @@
       "backend-pet-tracker/src/aws/aws-clients.ts",
       "backend-pet-tracker/test/aws-real-ingest.e2e-spec.ts",
       "docs/verification.md"
+    ]
+  },
+  {
+    "id": 22,
+    "name": "weight-single-source-of-truth",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Deuda destapada al escribir la spec de #15 (health-weights): pets.current_weight_kg tiene tres escritores independientes y solo uno crea historial. create-pet.use-case.ts:45 lo escribe en el alta cuando el DTO trae weightKg, update-pet.use-case.ts:70 lo escribe en PATCH /v1/pets, y el POST de #15 lo escribe junto con su fila en weights. El efecto es que el perfil y el historial divergen: dar de alta una mascota con weightKg=20 deja current_weight_kg=20 y la tabla weights vacía, así que el gráfico de peso del hub de salud nunca ve esos 20 kg y la primera medición real sale con variation null en vez de comparar contra el alta. Unificar significa que weightKg deje de ser escribible desde el contrato de pets y que toda escritura de peso pase por el endpoint de #15 creando su medición, o bien que los use-cases de pets inserten la fila de weights correspondiente. Es un cambio del contrato público de dos endpoints de #5, con su propia spec y su propio gate: no cabía como apéndice de #15. Decidir en la spec qué pasa con las mascotas ya existentes que tienen current_weight_kg sin ninguna fila en weights (backfill con measured_at = fecha de alta, o dejarlas como están y documentarlo).",
+    "acceptance_criteria": [
+      "Tras el cambio existe un único camino de escritura de pets.current_weight_kg y está documentado en docs/data-model.md",
+      "Dar de alta una mascota con weightKg y consultar GET /v1/pets/:petId/weights devuelve una medición coherente con el perfil, o el DTO de alta deja de aceptar weightKg (decisión de la spec, no del implementador)",
+      "Los tres tests de #5 que asertan el comportamiento actual de weightKg en POST/PATCH /v1/pets quedan actualizados, no borrados, y su cambio está justificado en la traceability",
+      "GET /v1/pets/:petId sigue devolviendo currentWeightKg con el mismo tipo y nulabilidad: el contrato de 24 claves de PetProfileResponse no cambia",
+      "Decisión de backfill tomada y ejecutada o documentada como no necesaria"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/modules/pets/application/use-cases/create-pet.use-case.ts",
+      "backend-pet-tracker/src/modules/pets/application/use-cases/update-pet.use-case.ts",
+      "backend-pet-tracker/src/modules/health/"
     ]
   }
 ]
