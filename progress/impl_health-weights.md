@@ -31,6 +31,8 @@
   no-miembro, mascota inexistente y `petId` inválido reciben 404.
 - R9 — rojo `e216a1b`; verde `8271b7a`. POST exige rol `owner`; GET queda
   disponible para miembros activos y el 404 del guard precede al 403.
+- R10 — rojo `97742cd`; verde `b324099`. `CreateWeightUseCase` registra
+  `weight.create` después de que la escritura resuelve y no audita si falla.
 
 ## Verificación final
 

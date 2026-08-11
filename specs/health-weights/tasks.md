@@ -100,12 +100,12 @@ tags: [harness, spec]
 
 ## R10 — Auditoría `weight.create`
 
-- [ ] (1) Escribir test que falla para R10 —
+- [x] (1) Escribir test que falla para R10 —
       `src/modules/health/application/use-cases/create-weight.use-case.spec.ts`
       (una escritura fallida nunca audita) + `test/health-weights.e2e-spec.ts`
       (fila en `audit_log` con action/entity/entityId/meta.petId)
-- [ ] (2) Implementación mínima que lo pasa
-- [ ] (3) Refactor con tests verdes
+- [x] (2) Implementación mínima que lo pasa
+- [x] (3) Refactor con tests verdes
 
 ## Cierre
 

@@ -56,6 +56,8 @@ estado: spec aprobada por humano — handoff entregado, esperando a Codex CLI
   mascota inexistente y `petId` inválido.
 - R9 completado: POST solo owner, GET para cualquier miembro activo y 404 con
   precedencia sobre validación/rol.
+- R10 completado: la creación exitosa audita `weight.create` con actor,
+  medición y mascota; una escritura fallida no genera auditoría.
 - Spec escrita en `specs/health-weights/` — 10 R-ids (R1..R10), sin huecos.
 - Revisión del leader sobre tres decisiones del `spec_author`. Dos se confirman
   contra el repo y **no** se tocan:
