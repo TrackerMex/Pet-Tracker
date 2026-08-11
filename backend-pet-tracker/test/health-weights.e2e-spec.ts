@@ -134,4 +134,60 @@ describe('Health weights (e2e)', () => {
       await postWeight(owner, pet.id, body).expect(201);
     });
   });
+
+  describe('R3 (health-weights #15): current_weight_kg refleja solo la medicion mas reciente', () => {
+    async function currentWeight(user: UserFixture, petId: string) {
+      const response = await api()
+        .get(`/v1/pets/${petId}`)
+        .set(auth(user.token))
+        .expect(200);
+      return (response.body as { currentWeightKg: number | null })
+        .currentWeightKg;
+    }
+
+    it('la primera medicion actualiza el perfil', async () => {
+      const owner = await seedUser('r3-first');
+      const pet = await seedPet(owner);
+
+      await postWeight(owner, pet.id, {
+        weightKg: 18.4,
+        measuredAt: '2026-01-15',
+      }).expect(201);
+
+      expect(await currentWeight(owner, pet.id)).toBe(18.4);
+    });
+
+    it('una medicion retroactiva no pisa el peso mas reciente', async () => {
+      const owner = await seedUser('r3-retroactive');
+      const pet = await seedPet(owner);
+
+      await postWeight(owner, pet.id, {
+        weightKg: 20,
+        measuredAt: '2026-02-15',
+      }).expect(201);
+      await postWeight(owner, pet.id, {
+        weightKg: 17,
+        measuredAt: '2026-01-15',
+      }).expect(201);
+
+      expect(await currentWeight(owner, pet.id)).toBe(20);
+    });
+
+    it('un empate de measuredAt deja ganar la ultima escritura', async () => {
+      const owner = await seedUser('r3-tie');
+      const pet = await seedPet(owner);
+      const measuredAt = '2026-03-15';
+
+      await postWeight(owner, pet.id, {
+        weightKg: 22,
+        measuredAt,
+      }).expect(201);
+      await postWeight(owner, pet.id, {
+        weightKg: 22.8,
+        measuredAt,
+      }).expect(201);
+
+      expect(await currentWeight(owner, pet.id)).toBe(22.8);
+    });
+  });
 });
