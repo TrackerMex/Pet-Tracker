@@ -1,4 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { AUDIT_LOGGER } from '@/audit/audit-log.repository';
+import type { AuditLogger } from '@/audit/audit-log.repository';
 import { CreateWeightDto } from '@/modules/health/application/dto/weight.dto';
 import {
   WeightEntry,
@@ -11,6 +13,7 @@ import type { WeightRepository } from '@/modules/health/domain/repositories/weig
 export class CreateWeightUseCase {
   constructor(
     @Inject(WEIGHT_REPOSITORY) private readonly weights: WeightRepository,
+    @Inject(AUDIT_LOGGER) private readonly audit: AuditLogger,
   ) {}
 
   async execute(
@@ -30,6 +33,14 @@ export class CreateWeightUseCase {
       weight.measuredAt,
       weight.id,
     );
+
+    await this.audit.record({
+      userId,
+      action: 'weight.create',
+      entity: 'weight',
+      entityId: weight.id,
+      meta: { petId },
+    });
 
     return {
       ...weight,
