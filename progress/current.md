@@ -54,6 +54,8 @@ estado: spec aprobada por humano — handoff entregado, esperando a Codex CLI
   y hoy+2 rechazado con fechas calculadas dinámicamente.
 - R8 completado: `PetAccessGuard` devuelve 404 en POST/GET para no-miembro,
   mascota inexistente y `petId` inválido.
+- R9 completado: POST solo owner, GET para cualquier miembro activo y 404 con
+  precedencia sobre validación/rol.
 - Spec escrita en `specs/health-weights/` — 10 R-ids (R1..R10), sin huecos.
 - Revisión del leader sobre tres decisiones del `spec_author`. Dos se confirman
   contra el repo y **no** se tocan:

@@ -93,10 +93,10 @@ tags: [harness, spec]
 
 ## R9 — Owner muta, cualquier miembro activo lee
 
-- [ ] (1) Escribir test que falla para R9 — `test/health-weights.e2e-spec.ts`
+- [x] (1) Escribir test que falla para R9 — `test/health-weights.e2e-spec.ts`
       (miembro `family` → 403 en POST, 200 en GET; no-miembro → 404 en ambas)
-- [ ] (2) Implementación mínima que lo pasa
-- [ ] (3) Refactor con tests verdes
+- [x] (2) Implementación mínima que lo pasa
+- [x] (3) Refactor con tests verdes
 
 ## R10 — Auditoría `weight.create`
 

@@ -29,6 +29,8 @@
   historial y perfil intactos.
 - R8 — rojo `5d8bedf`; verde `28fe600`. `PetAccessGuard` protege POST y GET;
   no-miembro, mascota inexistente y `petId` inválido reciben 404.
+- R9 — rojo `e216a1b`; verde `8271b7a`. POST exige rol `owner`; GET queda
+  disponible para miembros activos y el 404 del guard precede al 403.
 
 ## Verificación final
 
