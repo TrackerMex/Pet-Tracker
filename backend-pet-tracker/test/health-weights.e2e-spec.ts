@@ -389,4 +389,49 @@ describe('Health weights (e2e)', () => {
       expect(await currentWeight(owner, pet.id)).toBe(21);
     });
   });
+
+  describe('R8 (health-weights #15): PetAccessGuard responde 404 antes de tocar pesos', () => {
+    it('un usuario sin membresia recibe 404 en POST y GET', async () => {
+      const owner = await seedUser('r8-owner');
+      const outsider = await seedUser('r8-outsider');
+      const pet = await seedPet(owner);
+
+      await postWeight(outsider, pet.id, {
+        weightKg: 10,
+        measuredAt: today(),
+      }).expect(404);
+      await api()
+        .get(`/v1/pets/${pet.id}/weights`)
+        .set(auth(outsider.token))
+        .expect(404);
+    });
+
+    it('una mascota inexistente recibe 404 en POST y GET', async () => {
+      const owner = await seedUser('r8-missing');
+      const missingPetId = uuidv7();
+
+      await postWeight(owner, missingPetId, {
+        weightKg: 10,
+        measuredAt: today(),
+      }).expect(404);
+      await api()
+        .get(`/v1/pets/${missingPetId}/weights`)
+        .set(auth(owner.token))
+        .expect(404);
+    });
+
+    it('un petId no UUID recibe 404 en POST y GET', async () => {
+      const owner = await seedUser('r8-invalid');
+      const invalidPetId = 'not-a-uuid';
+
+      await postWeight(owner, invalidPetId, {
+        weightKg: 10,
+        measuredAt: today(),
+      }).expect(404);
+      await api()
+        .get(`/v1/pets/${invalidPetId}/weights`)
+        .set(auth(owner.token))
+        .expect(404);
+    });
+  });
 });
