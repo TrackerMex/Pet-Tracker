@@ -264,7 +264,7 @@
   {
     "id": 16,
     "name": "pet-reminders",
-    "status": "spec_ready",
+    "status": "in_progress",
     "priority": "P2",
     "description": "Plan 008 (paso 3, adaptado a local): tabla reminders; POST /v1/pets/:petId/reminders {type, title, dueAt, advanceMinutes=60} (dueAt futuro); PATCH /v1/reminders/:id (reprogramar/cancelar; autorización vía reminder.pet_id → 404 sin membresía). Programación local: EventBridge Scheduler no existe en LocalStack community — la spec decide el mecanismo (cron local que encola vencidos a SQS notifications es el candidato; el notifier marca status=sent). Documentar la deviación del plan y el camino de vuelta a Scheduler en deploy real.",
     "acceptance_criteria": [

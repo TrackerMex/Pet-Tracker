@@ -6,10 +6,10 @@
 ---
 
 ```
-feature: #16 pet-reminders (P2, spec_ready)
+feature: #16 pet-reminders (P2, in_progress)
 inicio: 2026-08-11
 agentes lanzados: spec_author (terminado)
-estado: spec escrita, PR abierta, esperando gate humano
+estado: spec aprobada por humano (2026-08-11), handoff a Codex entregado
 ```
 
 ## Hecho
@@ -28,8 +28,10 @@ estado: spec escrita, PR abierta, esperando gate humano
 
 ## Siguiente
 
-1. GATE HUMANO: aprobar specs/pet-reminders/requirements.md (casilla) y
-   mergear la PR de la spec
-2. Tras aprobación: handoff a Codex CLI (plantilla en .claude/agents/leader.md),
-   exigir commits test-primero
-3. Al terminar Codex: lanzar reviewer
+1. HECHO: gate humano — spec aprobada y PR #44 mergeada (2026-08-11)
+2. HECHO: feature_list.json #16 → in_progress; handoff escrito en
+   progress/handoff_pet-reminders.md; branch feature/16-pet-reminders creada
+3. Humano corre Codex CLI en terminal aparte con el prompt del handoff.
+   Mientras Codex implementa, el leader NO toca backend-pet-tracker/
+4. Cuando el humano confirme que Codex terminó: leer
+   progress/impl_pet-reminders.md y lanzar reviewer
