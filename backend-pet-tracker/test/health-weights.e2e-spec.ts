@@ -190,4 +190,73 @@ describe('Health weights (e2e)', () => {
       expect(await currentWeight(owner, pet.id)).toBe(22.8);
     });
   });
+
+  describe('R5 (health-weights #15): historial ordenado con variation', () => {
+    it('devuelve [] para una mascota sin mediciones', async () => {
+      const owner = await seedUser('r5-empty');
+      const pet = await seedPet(owner);
+
+      const response = await api()
+        .get(`/v1/pets/${pet.id}/weights`)
+        .set(auth(owner.token))
+        .expect(200);
+
+      expect(response.body).toEqual([]);
+    });
+
+    it('ordena measuredAt DESC, id DESC y calcula la variacion inmediata', async () => {
+      const owner = await seedUser('r5-history');
+      const pet = await seedPet(owner);
+      const createdIds: string[] = [];
+
+      for (const body of [
+        { weightKg: 10, measuredAt: '2026-01-01' },
+        { weightKg: 12.5, measuredAt: '2026-02-01' },
+        { weightKg: 13.25, measuredAt: '2026-02-01' },
+      ]) {
+        const response = await postWeight(owner, pet.id, body).expect(201);
+        createdIds.push((response.body as { id: string }).id);
+      }
+
+      const response = await api()
+        .get(`/v1/pets/${pet.id}/weights`)
+        .set(auth(owner.token))
+        .expect(200);
+      const rows = response.body as Array<{
+        id: string;
+        variation: number | null;
+      }>;
+
+      expect(rows.map((row) => row.id)).toEqual([
+        createdIds[2],
+        createdIds[1],
+        createdIds[0],
+      ]);
+      expect(rows.map((row) => row.variation)).toEqual([0.75, 2.5, null]);
+    });
+
+    it('con limit=1 calcula variation usando una fila fuera de la pagina', async () => {
+      const owner = await seedUser('r5-probe');
+      const pet = await seedPet(owner);
+
+      await postWeight(owner, pet.id, {
+        weightKg: 69.8,
+        measuredAt: '2026-01-01',
+      }).expect(201);
+      await postWeight(owner, pet.id, {
+        weightKg: 70.2,
+        measuredAt: '2026-02-01',
+      }).expect(201);
+
+      const response = await api()
+        .get(`/v1/pets/${pet.id}/weights?limit=1`)
+        .set(auth(owner.token))
+        .expect(200);
+
+      expect(response.body).toHaveLength(1);
+      expect((response.body as Array<{ variation: number }>)[0].variation).toBe(
+        0.4,
+      );
+    });
+  });
 });
