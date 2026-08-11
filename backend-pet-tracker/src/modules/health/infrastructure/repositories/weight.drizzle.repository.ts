@@ -18,39 +18,41 @@ export class WeightDrizzleRepository implements WeightRepository {
   constructor(@Inject(DRIZZLE) private readonly db: NodePgDatabase) {}
 
   async create(data: NewPetWeight): Promise<PetWeight> {
-    const [row] = await this.db
-      .insert(weights)
-      .values({
-        ...data,
-        id: uuidv7(),
-        weightKg: String(data.weightKg),
-      })
-      .returning();
+    return this.db.transaction(async (tx) => {
+      const [row] = await tx
+        .insert(weights)
+        .values({
+          ...data,
+          id: uuidv7(),
+          weightKg: String(data.weightKg),
+        })
+        .returning();
 
-    await this.db
-      .update(pets)
-      .set({
-        currentWeightKg: String(data.weightKg),
-        updatedAt: new Date(),
-      })
-      .where(
-        and(
-          eq(pets.id, data.petId),
-          notExists(
-            this.db
-              .select({ id: weights.id })
-              .from(weights)
-              .where(
-                and(
-                  eq(weights.petId, data.petId),
-                  gt(weights.measuredAt, data.measuredAt),
+      await tx
+        .update(pets)
+        .set({
+          currentWeightKg: String(data.weightKg),
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(pets.id, data.petId),
+            notExists(
+              tx
+                .select({ id: weights.id })
+                .from(weights)
+                .where(
+                  and(
+                    eq(weights.petId, data.petId),
+                    gt(weights.measuredAt, data.measuredAt),
+                  ),
                 ),
-              ),
+            ),
           ),
-        ),
-      );
+        );
 
-    return toDomain(row);
+      return toDomain(row);
+    });
   }
 }
 
