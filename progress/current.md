@@ -37,6 +37,8 @@ estado: spec aprobada por humano — handoff entregado, esperando a Codex CLI
 ## Bitácora
 
 - Sesión abierta, branch creada, `spec_author` lanzado.
+- Implementación iniciada por Codex: baseline `./init.sh` verde tras levantar y
+  provisionar Docker; se seguirá TDD rojo→verde por R1..R10.
 - Spec escrita en `specs/health-weights/` — 10 R-ids (R1..R10), sin huecos.
 - Revisión del leader sobre tres decisiones del `spec_author`. Dos se confirman
   contra el repo y **no** se tocan:
