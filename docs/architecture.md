@@ -195,3 +195,12 @@ export class CreateBookingUseCase {
 })
 export class BookingModule {}
 ```
+
+## Mapa de arquitectura AWS
+
+Diagrama editable en `docs/diagrams/architecture-aws.excalidraw` (abrir en
+excalidraw.com o con la extensión Excalidraw de VS Code). Dos vistas: dev
+actual (NestJS local + stack `PetTrackerDevStack` en us-east-1) y objetivo de
+producción (decisiones de servicios en `plans/README.md`). Fuente:
+`docs/diagrams/architecture-aws.gen.mjs` — editar ahí y regenerar, o editar el
+.excalidraw a mano y borrar el generador.
