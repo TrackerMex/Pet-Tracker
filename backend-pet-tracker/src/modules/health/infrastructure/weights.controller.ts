@@ -13,7 +13,8 @@ import { ZodType } from 'zod';
 import {
   CreateWeightDto,
   CreateWeightSchema,
-  WEIGHTS_DEFAULT_LIMIT,
+  ListWeightsQueryDto,
+  ListWeightsQuerySchema,
 } from '@/modules/health/application/dto/weight.dto';
 import { CreateWeightUseCase } from '@/modules/health/application/use-cases/create-weight.use-case';
 import { ListWeightsUseCase } from '@/modules/health/application/use-cases/list-weights.use-case';
@@ -45,11 +46,10 @@ export class WeightsController {
   @Get()
   async list(
     @Param('petId') petId: string,
-    @Query('limit') limit: string | undefined,
+    @Query() query: unknown,
   ): Promise<WeightResponse[]> {
-    const parsedLimit =
-      limit === undefined ? WEIGHTS_DEFAULT_LIMIT : Number(limit);
-    return (await this.listWeights.execute(petId, parsedLimit)).map(
+    const dto = parseQuery<ListWeightsQueryDto>(ListWeightsQuerySchema, query);
+    return (await this.listWeights.execute(petId, dto.limit)).map(
       toWeightResponse,
     );
   }
@@ -57,6 +57,12 @@ export class WeightsController {
 
 function parseBody<T>(schema: ZodType<T>, body: unknown): T {
   const parsed = schema.safeParse(body);
+  if (!parsed.success) throw validationError(parsed.error.issues);
+  return parsed.data;
+}
+
+function parseQuery<T>(schema: ZodType<T>, query: unknown): T {
+  const parsed = schema.safeParse(query);
   if (!parsed.success) throw validationError(parsed.error.issues);
   return parsed.data;
 }
