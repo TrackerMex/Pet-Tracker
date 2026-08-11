@@ -7,7 +7,7 @@ import { App } from 'supertest/types';
 import { uuidv7 } from 'uuidv7';
 import { DRIZZLE } from '@/db/drizzle.constants';
 import { weights } from '@/db/schema/health.schema';
-import { pets } from '@/db/schema/pets.schema';
+import { pets, petUsers } from '@/db/schema/pets.schema';
 import { users } from '@/db/schema/users.schema';
 import { TOKEN_SERVICE } from '@/modules/auth/domain/ports/token-service';
 import type { TokenService } from '@/modules/auth/domain/ports/token-service';
@@ -431,6 +431,44 @@ describe('Health weights (e2e)', () => {
       await api()
         .get(`/v1/pets/${invalidPetId}/weights`)
         .set(auth(owner.token))
+        .expect(404);
+    });
+  });
+
+  describe('R9 (health-weights #15): solo owner crea y cualquier miembro activo lee', () => {
+    it('family recibe 403 en POST y 200 en GET', async () => {
+      const owner = await seedUser('r9-owner');
+      const family = await seedUser('r9-family');
+      const pet = await seedPet(owner);
+      await db.insert(petUsers).values({
+        petId: pet.id,
+        userId: family.id,
+        role: 'family',
+        status: 'active',
+      });
+
+      await postWeight(family, pet.id, {
+        weightKg: 10,
+        measuredAt: today(),
+      }).expect(403);
+      await api()
+        .get(`/v1/pets/${pet.id}/weights`)
+        .set(auth(family.token))
+        .expect(200);
+    });
+
+    it('un no-miembro recibe 404 antes de validar body o rol', async () => {
+      const owner = await seedUser('r9-priority-owner');
+      const outsider = await seedUser('r9-priority-outsider');
+      const pet = await seedPet(owner);
+
+      await postWeight(outsider, pet.id, {
+        weightKg: 0,
+        measuredAt: today(),
+      }).expect(404);
+      await api()
+        .get(`/v1/pets/${pet.id}/weights`)
+        .set(auth(outsider.token))
         .expect(404);
     });
   });
