@@ -27,6 +27,8 @@
   push existente, marca sent condicionalmente y elimina skips/duplicados.
 - R8 — rojo `1de5b67`; verde `f01d71a`. PATCH reprograma con token nuevo,
   resetea el encolado y deja obsoleto cualquier mensaje anterior.
+- R9 — rojo `4179065`; verde `52821a3`. Cancelar antes o después del encolado
+  deja status cancelled y ningún mensaje produce push.
 
 ## Verificación final
 

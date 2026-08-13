@@ -97,9 +97,9 @@ Test: `backend-pet-tracker/test/pet-reminders.e2e-spec.ts` → `describe('R9: ..
 (cancel antes del encolado → `dispatchOnce()` no encola; cancel después del
 encolado → `drainOnce()` no pushea y el status queda `'cancelled'`).
 
-- [ ] (1) Escribir test que falla para R9
-- [ ] (2) Implementación mínima que lo pasa
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R9
+- [x] (2) Implementación mínima que lo pasa
+- [x] (3) Refactor con tests verdes
 
 ## R10 — Autorización del PATCH vía `reminder.pet_id` (404/403)
 
