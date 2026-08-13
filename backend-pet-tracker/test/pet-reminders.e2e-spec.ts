@@ -267,6 +267,14 @@ describe('Pet reminders (e2e)', () => {
       await sqs.send(new PurgeQueueCommand({ QueueUrl: notificationsUrl }));
       const owner = await seedUser('r7');
       const pet = await seedPet(owner);
+      await api()
+        .post('/v1/me/push-tokens')
+        .set(auth(owner.token))
+        .send({
+          expoToken: `ExponentPushToken[reminders-${runId}]`,
+          platform: 'android',
+        })
+        .expect(200);
       const created = await api()
         .post(`/v1/pets/${pet.id}/reminders`)
         .set(auth(owner.token))

@@ -24,6 +24,15 @@ export class ReminderDrizzleRepository implements ReminderRepository {
     return toDomain(row);
   }
 
+  async findById(id: string): Promise<Reminder | null> {
+    const [row] = await this.db
+      .select()
+      .from(reminders)
+      .where(eq(reminders.id, id))
+      .limit(1);
+    return row ? toDomain(row) : null;
+  }
+
   async findDue(now: Date): Promise<Reminder[]> {
     const rows = await this.db
       .select()
@@ -44,6 +53,15 @@ export class ReminderDrizzleRepository implements ReminderRepository {
       .update(reminders)
       .set({ enqueuedAt: at })
       .where(eq(reminders.id, id));
+  }
+
+  async markSent(id: string): Promise<boolean> {
+    const rows = await this.db
+      .update(reminders)
+      .set({ status: 'sent' })
+      .where(and(eq(reminders.id, id), eq(reminders.status, 'scheduled')))
+      .returning({ id: reminders.id });
+    return rows.length === 1;
   }
 }
 
