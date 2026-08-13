@@ -47,6 +47,15 @@ export class ReminderDrizzleRepository implements ReminderRepository {
     return toDomain(row);
   }
 
+  async cancel(id: string): Promise<Reminder> {
+    const [row] = await this.db
+      .update(reminders)
+      .set({ status: 'cancelled' })
+      .where(and(eq(reminders.id, id), eq(reminders.status, 'scheduled')))
+      .returning();
+    return toDomain(row);
+  }
+
   async findDue(now: Date): Promise<Reminder[]> {
     const rows = await this.db
       .select()

@@ -18,6 +18,7 @@ export interface ReminderRepository {
     changes: ReminderChanges,
     newScheduleName: string,
   ): Promise<Reminder>;
+  cancel(id: string): Promise<Reminder>;
   findDue(now: Date): Promise<Reminder[]>;
   markEnqueued(id: string, at: Date): Promise<void>;
   markSent(id: string): Promise<boolean>;

@@ -16,6 +16,10 @@ export class UpdateReminderUseCase {
   ) {}
 
   execute(id: string, dto: UpdateReminderDto): Promise<Reminder> {
+    if (dto.status === 'cancelled') {
+      return this.reminders.cancel(id);
+    }
+
     const changes: ReminderChanges = {};
     if (dto.dueAt !== undefined) changes.dueAt = new Date(dto.dueAt);
     if (dto.advanceMinutes !== undefined) {

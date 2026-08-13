@@ -28,4 +28,5 @@ export interface UpdateReminderDto {
   dueAt?: string;
   advanceMinutes?: number;
   title?: string;
+  status?: 'cancelled';
 }
