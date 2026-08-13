@@ -87,9 +87,9 @@ Test: `backend-pet-tracker/test/pet-reminders.e2e-spec.ts` → `describe('R8: ..
 (create elegible → `dispatchOnce()` → PATCH `{dueAt}` → `dispatchOnce()` →
 `drainOnce()` procesa ambos mensajes → exactamente un push, `status='sent'`).
 
-- [ ] (1) Escribir test que falla para R8
-- [ ] (2) Implementación mínima que lo pasa
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R8
+- [x] (2) Implementación mínima que lo pasa
+- [x] (3) Refactor con tests verdes
 
 ## R9 — PATCH cancela y nunca se envía
 

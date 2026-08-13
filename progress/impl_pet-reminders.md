@@ -25,6 +25,8 @@
   discriminado alert/reminder sin cambiar claves ni tests de alertas.
 - R7 — rojo `355d5cc`; verde `15b0274`. Notifier valida token vigente, usa el
   push existente, marca sent condicionalmente y elimina skips/duplicados.
+- R8 — rojo `1de5b67`; verde `f01d71a`. PATCH reprograma con token nuevo,
+  resetea el encolado y deja obsoleto cualquier mensaje anterior.
 
 ## Verificación final
 
