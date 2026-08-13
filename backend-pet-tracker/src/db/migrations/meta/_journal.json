@@ -78,6 +78,13 @@
       "when": 1786467151219,
       "tag": "0010_low_miracleman",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1786649564040,
+      "tag": "0011_fancy_turbo",
+      "breakpoints": true
     }
   ]
 }

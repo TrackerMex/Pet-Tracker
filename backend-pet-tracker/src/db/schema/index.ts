@@ -16,4 +16,5 @@ export * from './geofences.schema';
 export * from './health.schema';
 export * from './pets.schema';
 export * from './push-tokens.schema';
+export * from './reminders.schema';
 export * from './users.schema';

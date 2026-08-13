@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { getTableConfig, getTableName } from 'drizzle-orm/pg-core';
+import { getTableName } from 'drizzle-orm';
+import { getTableConfig } from 'drizzle-orm/pg-core';
 import * as schema from './index';
 import { reminders } from './reminders.schema';
 
