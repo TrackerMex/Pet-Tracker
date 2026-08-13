@@ -35,9 +35,9 @@ Test: `backend-pet-tracker/test/pet-reminders.e2e-spec.ts` → `describe('R2: ..
 
 Test: `backend-pet-tracker/src/modules/reminders/application/dto/reminder.dto.spec.ts`.
 
-- [ ] (1) Escribir test que falla para R3
-- [ ] (2) Implementación mínima que lo pasa
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R3
+- [x] (2) Implementación mínima que lo pasa
+- [x] (3) Refactor con tests verdes
 
 ## R4 — Autorización del POST (404 guard / 403 rol)
 
