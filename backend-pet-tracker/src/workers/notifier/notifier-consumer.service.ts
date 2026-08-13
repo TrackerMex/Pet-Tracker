@@ -141,6 +141,10 @@ export class NotifierConsumerService {
     message: NotificationMessage,
     messageId: string,
   ): Promise<void> {
+    if (message.kind === 'reminder') {
+      throw new Error('Reminder notifications are not implemented');
+    }
+
     const tokens = await this.pushTokens.findActiveMembersTokens(message.petId);
 
     if (tokens.length === 0) {

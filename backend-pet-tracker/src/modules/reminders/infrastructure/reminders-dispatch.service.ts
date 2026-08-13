@@ -37,7 +37,19 @@ export class RemindersDispatchService {
     for (const reminder of dueReminders) {
       try {
         await this.sqs.send(
-          new SendMessageCommand({ QueueUrl: queueUrl, MessageBody: '{}' }),
+          new SendMessageCommand({
+            QueueUrl: queueUrl,
+            MessageBody: JSON.stringify({
+              version: 1,
+              kind: 'reminder',
+              reminderId: reminder.id,
+              petId: reminder.petId,
+              scheduleName: reminder.scheduleName,
+              title: reminder.title,
+              body: `Recordatorio: ${reminder.title}`,
+              data: { petId: reminder.petId, reminderId: reminder.id },
+            }),
+          }),
         );
         await this.reminders.markEnqueued(reminder.id, new Date());
       } catch (error) {
