@@ -133,4 +133,43 @@ describe('Pet reminders (e2e)', () => {
       expect(row.scheduleName).toMatch(/^reminder-[0-9a-f-]{36}$/);
     });
   });
+
+  describe('R3: POST invalido responde 400 sin insertar', () => {
+    it.each<[string, Record<string, unknown>]>([
+      ['type', { type: 'other' }],
+      ['title-empty', { title: '   ' }],
+      ['title-long', { title: 'x'.repeat(121) }],
+      ['due-no-offset', { dueAt: '2099-01-01T00:00:00' }],
+      ['due-past', { dueAt: new Date(Date.now() - 60_000).toISOString() }],
+      ['advance-decimal', { advanceMinutes: 1.5 }],
+      ['advance-negative', { advanceMinutes: -1 }],
+      ['advance-too-large', { advanceMinutes: 10_081 }],
+      ['unknown-key', { extra: true }],
+    ])(
+      'rechaza %s con el error de validacion estable',
+      async (label, changes) => {
+        const owner = await seedUser(`r3-${label}`);
+        const pet = await seedPet(owner);
+        const response = await api()
+          .post(`/v1/pets/${pet.id}/reminders`)
+          .set(auth(owner.token))
+          .send({
+            type: 'custom',
+            title: 'Valido',
+            dueAt: new Date(Date.now() + 60_000).toISOString(),
+            ...changes,
+          })
+          .expect(400);
+
+        expect(response.body).toMatchObject({
+          statusCode: 400,
+          message: 'Validation failed',
+          errors: expect.any(Array),
+        });
+        expect(
+          await db.select().from(reminders).where(eq(reminders.petId, pet.id)),
+        ).toEqual([]);
+      },
+    );
+  });
 });
