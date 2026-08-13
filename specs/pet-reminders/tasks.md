@@ -132,7 +132,7 @@ Test: `backend-pet-tracker/src/modules/reminders/infrastructure/reminders-schedu
 
 ## Cierre (mismo PR, sin R-id)
 
-- [ ] Actualizar `docs/data-model.md` (fila `reminders`: `enqueued_at`, doble
+- [x] Actualizar `docs/data-model.md` (fila `reminders`: `enqueued_at`, doble
       uso de `schedule_name`, mecanismo local — [[design]] D2/D3)
 - [x] `REMINDERS_ENABLED` en `.env.example` (=true) y tabla de
       `docs/conventions.md` (R12, mismo commit que la introduce)
