@@ -7,6 +7,7 @@ import { reminders } from '@/db/schema/reminders.schema';
 import { Reminder } from '@/modules/reminders/domain/entities/reminder.entity';
 import {
   NewReminder,
+  ReminderChanges,
   ReminderRepository,
 } from '@/modules/reminders/domain/repositories/reminder.repository';
 
@@ -31,6 +32,19 @@ export class ReminderDrizzleRepository implements ReminderRepository {
       .where(eq(reminders.id, id))
       .limit(1);
     return row ? toDomain(row) : null;
+  }
+
+  async reschedule(
+    id: string,
+    changes: ReminderChanges,
+    newScheduleName: string,
+  ): Promise<Reminder> {
+    const [row] = await this.db
+      .update(reminders)
+      .set({ ...changes, scheduleName: newScheduleName, enqueuedAt: null })
+      .where(and(eq(reminders.id, id), eq(reminders.status, 'scheduled')))
+      .returning();
+    return toDomain(row);
   }
 
   async findDue(now: Date): Promise<Reminder[]> {

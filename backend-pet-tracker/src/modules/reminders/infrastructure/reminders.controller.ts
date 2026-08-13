@@ -3,6 +3,8 @@ import {
   Body,
   Controller,
   HttpStatus,
+  Param,
+  Patch,
   Post,
   Req,
   UseGuards,
@@ -11,7 +13,9 @@ import {
   CreateReminderDto,
   CreateReminderSchema,
 } from '@/modules/reminders/application/dto/reminder.dto';
+import type { UpdateReminderDto } from '@/modules/reminders/application/dto/reminder.dto';
 import { CreateReminderUseCase } from '@/modules/reminders/application/use-cases/create-reminder.use-case';
+import { UpdateReminderUseCase } from '@/modules/reminders/application/use-cases/update-reminder.use-case';
 import {
   ReminderResponse,
   toReminderResponse,
@@ -39,6 +43,19 @@ export class PetRemindersController {
         request.user.id,
       ),
     );
+  }
+}
+
+@Controller('reminders')
+export class RemindersController {
+  constructor(private readonly updateReminder: UpdateReminderUseCase) {}
+
+  @Patch(':id')
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateReminderDto,
+  ): Promise<ReminderResponse> {
+    return toReminderResponse(await this.updateReminder.execute(id, dto));
   }
 }
 

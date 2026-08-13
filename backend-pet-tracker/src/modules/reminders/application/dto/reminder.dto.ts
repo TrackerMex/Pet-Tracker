@@ -23,3 +23,9 @@ export const CreateReminderSchema = z.strictObject({
 });
 
 export type CreateReminderDto = z.infer<typeof CreateReminderSchema>;
+
+export interface UpdateReminderDto {
+  dueAt?: string;
+  advanceMinutes?: number;
+  title?: string;
+}
