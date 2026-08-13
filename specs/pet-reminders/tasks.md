@@ -136,4 +136,4 @@ Test: `backend-pet-tracker/src/modules/reminders/infrastructure/reminders-schedu
       uso de `schedule_name`, mecanismo local — [[design]] D2/D3)
 - [x] `REMINDERS_ENABLED` en `.env.example` (=true) y tabla de
       `docs/conventions.md` (R12, mismo commit que la introduce)
-- [ ] `traceability.md` sin filas "pendiente"; `init.sh` verde
+- [x] `traceability.md` sin filas "pendiente"; `init.sh` verde

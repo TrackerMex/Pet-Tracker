@@ -30,7 +30,8 @@ estado: spec aprobada por humano (2026-08-11), handoff a Codex entregado
 - R12 completado con historial TDD rojo `ef91e6c` → verde `6147f96`.
 - Verificación final detectó y corrigió en `4f20037` la compatibilidad de tipos
   del constructor del notifier con los tests alert congelados de #13.
-- init.sh verde (e2e saltados: puerto 4566 sin infra — spec no la necesita)
+- Verificación final `./init.sh` verde: 132 suites / 956 tests backend, 2 / 14
+  infra, 15 suites / 238 tests e2e, lint y typecheck sin errores.
 - spec_author escribió specs/pet-reminders/ (requirements R1-R12, design D1-D11,
   tasks, traceability)
 - Decisiones clave de la spec: cron 60s RemindersDispatchService gated por

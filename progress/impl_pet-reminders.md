@@ -29,11 +29,38 @@
   resetea el encolado y deja obsoleto cualquier mensaje anterior.
 - R9 — rojo `4179065`; verde `52821a3`. Cancelar antes o después del encolado
   deja status cancelled y ningún mensaje produce push.
+- R10 — rojo `56fdd11`; verde `7a29488`. El PATCH resuelve `pet_id` desde el
+  reminder, devuelve 404 opaco para id/membresía y 403 para no-owner.
+- R11 — rojo `e4fb8e4`; verde `0e2419c`. PATCH estricto con Zod; reminders
+  `sent`/`cancelled` devuelven 409 sin mutar la fila.
+- R12 — rojo `ef91e6c`; verde `6147f96`. Scheduler local gateado por
+  `REMINDERS_ENABLED` y `NODE_ENV`, con env documentada en el mismo commit.
+
+Commits adicionales:
+
+- `4f20037` — compatibilidad de typecheck del constructor del notifier con los
+  tests alert congelados de #13; evidencia añadida a R7 en traceability.
+- `8c350d1` — modelo de datos local (`enqueued_at` y `schedule_name`).
+- Un commit de trazabilidad después de cada requisito; todas las filas R1-R12
+  contienen los hashes rojo/verde.
 
 ## Verificación final
 
-Pendiente.
+- `./init.sh`: exit 0.
+- Build backend y `cdk synth`: verde, sin deploy/bootstrap.
+- Backend unit: 132 suites / 956 tests pasados.
+- Infra: 2 suites / 14 tests pasados.
+- E2E: 15 suites / 238 tests pasados; 2 suites / 6 tests omitidos por su gate
+  existente.
+- Lint y typecheck: verdes.
+- Suite específica `pet-reminders.e2e-spec.ts`: 25/25 pasada.
+- Árbol de la feature limpio. Se preservaron sin tocar `.agents/`, `.codex/`
+  y `skills-lock.json`, no rastreados y ajenos a la feature.
 
 ## Desviaciones
 
-Ninguna.
+- Ninguna respecto de requirements R1-R12 ni design D1-D11.
+- Entorno local: el journal de Drizzle estaba desincronizado (tablas 0009/0010
+  presentes sin sus filas de journal), por lo que se aplicó solo la migración
+  0011 al Postgres Docker para ejecutar e2e. No se modificaron recursos AWS.
+- No se abrió PR ni se hizo merge; queda para el leader/reviewer.
