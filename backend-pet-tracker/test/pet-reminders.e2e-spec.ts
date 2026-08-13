@@ -306,4 +306,70 @@ describe('Pet reminders (e2e)', () => {
       expect(row.enqueuedAt).not.toBeNull();
     });
   });
+
+  describe('R8: PATCH reprograma e invalida el mensaje anterior', () => {
+    it('regenera scheduleName, resetea enqueuedAt y produce un solo push', async () => {
+      sendPush.mockClear();
+      await sqs.send(new PurgeQueueCommand({ QueueUrl: notificationsUrl }));
+      const owner = await seedUser('r8');
+      const pet = await seedPet(owner);
+      await api()
+        .post('/v1/me/push-tokens')
+        .set(auth(owner.token))
+        .send({
+          expoToken: `ExponentPushToken[reminders-r8-${runId}]`,
+          platform: 'android',
+        })
+        .expect(200);
+      const created = await api()
+        .post(`/v1/pets/${pet.id}/reminders`)
+        .set(auth(owner.token))
+        .send({
+          type: 'custom',
+          title: 'Hora original',
+          dueAt: new Date(Date.now() + 60_000).toISOString(),
+          advanceMinutes: 60,
+        })
+        .expect(201);
+      const reminderId = (created.body as { id: string }).id;
+      const [before] = await db
+        .select()
+        .from(reminders)
+        .where(eq(reminders.id, reminderId));
+
+      await dispatcher.dispatchOnce();
+      const dueAt = new Date(Date.now() + 120_000).toISOString();
+      const updated = await api()
+        .patch(`/v1/reminders/${reminderId}`)
+        .set(auth(owner.token))
+        .send({ dueAt })
+        .expect(200);
+
+      expect(updated.body).toMatchObject({
+        id: reminderId,
+        petId: pet.id,
+        title: 'Hora original',
+        dueAt,
+        advanceMinutes: 60,
+        status: 'scheduled',
+      });
+      const [rescheduled] = await db
+        .select()
+        .from(reminders)
+        .where(eq(reminders.id, reminderId));
+      expect(rescheduled.scheduleName).not.toBe(before.scheduleName);
+      expect(rescheduled.scheduleName).toMatch(/^reminder-[0-9a-f-]{36}$/);
+      expect(rescheduled.enqueuedAt).toBeNull();
+
+      await dispatcher.dispatchOnce();
+      await notifier.drainOnce();
+
+      expect(sendPush).toHaveBeenCalledTimes(1);
+      expect(
+        (
+          await db.select().from(reminders).where(eq(reminders.id, reminderId))
+        )[0].status,
+      ).toBe('sent');
+    });
+  });
 });
