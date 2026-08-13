@@ -108,9 +108,9 @@ Test: `backend-pet-tracker/test/pet-reminders.e2e-spec.ts` → `describe('R10: .
 no-owner → 403) + unit en
 `src/modules/reminders/application/use-cases/update-reminder.use-case.spec.ts`.
 
-- [ ] (1) Escribir test que falla para R10
-- [ ] (2) Implementación mínima que lo pasa
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R10
+- [x] (2) Implementación mínima que lo pasa
+- [x] (3) Refactor con tests verdes
 
 ## R11 — PATCH sobre sent/cancelled → 409; body inválido → 400
 
