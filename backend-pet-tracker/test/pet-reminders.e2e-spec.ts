@@ -1,3 +1,8 @@
+import {
+  GetQueueUrlCommand,
+  PurgeQueueCommand,
+  SQSClient,
+} from '@aws-sdk/client-sqs';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { eq, inArray } from 'drizzle-orm';
@@ -5,6 +10,8 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { uuidv7 } from 'uuidv7';
+import { SQS_CLIENT } from '@/aws/aws.constants';
+import { QUEUE_NOTIFICATIONS } from '@/aws/constants';
 import { auditLog } from '@/db/schema/audit-log.schema';
 import { pets, petUsers } from '@/db/schema/pets.schema';
 import { reminders } from '@/db/schema/reminders.schema';
@@ -12,6 +19,9 @@ import { users } from '@/db/schema/users.schema';
 import { DRIZZLE } from '@/db/drizzle.constants';
 import { TOKEN_SERVICE } from '@/modules/auth/domain/ports/token-service';
 import type { TokenService } from '@/modules/auth/domain/ports/token-service';
+import { RemindersDispatchService } from '@/modules/reminders/infrastructure/reminders-dispatch.service';
+import { NotifierConsumerService } from '@/workers/notifier/notifier-consumer.service';
+import { PUSH_SENDER } from '@/workers/notifier/push-sender';
 import { AppModule } from '../src/app.module';
 
 describe('Pet reminders (e2e)', () => {
@@ -19,6 +29,11 @@ describe('Pet reminders (e2e)', () => {
   let app: INestApplication<App>;
   let db: NodePgDatabase;
   let tokens: TokenService;
+  let sqs: SQSClient;
+  let notificationsUrl: string;
+  let dispatcher: RemindersDispatchService;
+  let notifier: NotifierConsumerService;
+  const sendPush = jest.fn().mockResolvedValue([]);
   const userIds: string[] = [];
   const petIds: string[] = [];
 
@@ -66,12 +81,22 @@ describe('Pet reminders (e2e)', () => {
   beforeAll(async () => {
     const module = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      .overrideProvider(PUSH_SENDER)
+      .useValue({ send: sendPush })
+      .compile();
     app = module.createNestApplication();
     app.setGlobalPrefix('v1');
     await app.init();
     db = app.get<NodePgDatabase>(DRIZZLE);
     tokens = app.get<TokenService>(TOKEN_SERVICE);
+    sqs = app.get<SQSClient>(SQS_CLIENT);
+    dispatcher = app.get(RemindersDispatchService);
+    notifier = app.get(NotifierConsumerService);
+    notificationsUrl = (
+      await sqs.send(new GetQueueUrlCommand({ QueueName: QUEUE_NOTIFICATIONS }))
+    ).QueueUrl as string;
+    await sqs.send(new PurgeQueueCommand({ QueueUrl: notificationsUrl }));
   });
 
   afterAll(async () => {
@@ -233,6 +258,44 @@ describe('Pet reminders (e2e)', () => {
         .set(auth(outsider.token))
         .send({ type: 'invalid' })
         .expect(404);
+    });
+  });
+
+  describe('R7: create, dispatch y notifier dejan sent sin duplicar push', () => {
+    it('procesa la cadena real y un segundo tick no vuelve a enviar', async () => {
+      sendPush.mockClear();
+      await sqs.send(new PurgeQueueCommand({ QueueUrl: notificationsUrl }));
+      const owner = await seedUser('r7');
+      const pet = await seedPet(owner);
+      const created = await api()
+        .post(`/v1/pets/${pet.id}/reminders`)
+        .set(auth(owner.token))
+        .send({
+          type: 'deworming',
+          title: 'Desparasitación',
+          dueAt: new Date(Date.now() + 60_000).toISOString(),
+          advanceMinutes: 60,
+        })
+        .expect(201);
+      const reminderId = (created.body as { id: string }).id;
+
+      await dispatcher.dispatchOnce();
+      await notifier.drainOnce();
+      await dispatcher.dispatchOnce();
+      await notifier.drainOnce();
+
+      expect(sendPush).toHaveBeenCalledTimes(1);
+      expect(sendPush).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: { petId: pet.id, reminderId },
+        }),
+      );
+      const [row] = await db
+        .select()
+        .from(reminders)
+        .where(eq(reminders.id, reminderId));
+      expect(row.status).toBe('sent');
+      expect(row.enqueuedAt).not.toBeNull();
     });
   });
 });
