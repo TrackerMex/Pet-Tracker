@@ -443,4 +443,58 @@ describe('Pet reminders (e2e)', () => {
       ).toBe('cancelled');
     });
   });
+
+  describe('R10: PATCH autoriza opacamente via reminder.petId', () => {
+    it('id invalido, inexistente, no-miembro e inactivo comparten 404; family recibe 403', async () => {
+      const owner = await seedUser('r10-owner');
+      const outsider = await seedUser('r10-outsider');
+      const inactive = await seedUser('r10-inactive');
+      const family = await seedUser('r10-family');
+      const pet = await seedPet(owner);
+      await db.insert(petUsers).values([
+        {
+          petId: pet.id,
+          userId: inactive.id,
+          role: 'owner',
+          status: 'inactive',
+        },
+        {
+          petId: pet.id,
+          userId: family.id,
+          role: 'family',
+          status: 'active',
+        },
+      ]);
+      const created = await api()
+        .post(`/v1/pets/${pet.id}/reminders`)
+        .set(auth(owner.token))
+        .send({
+          type: 'custom',
+          title: 'Privado',
+          dueAt: new Date(Date.now() + 60_000).toISOString(),
+        })
+        .expect(201);
+      const reminderId = (created.body as { id: string }).id;
+      const patch = (id: string, user: UserFixture) =>
+        api()
+          .patch(`/v1/reminders/${id}`)
+          .set(auth(user.token))
+          .send({ title: 'Intrusión' });
+
+      const invalid = await patch('not-a-uuid', owner).expect(404);
+      const missing = await patch(uuidv7(), owner).expect(404);
+      const hidden = await patch(reminderId, outsider).expect(404);
+      const inactiveResponse = await patch(reminderId, inactive).expect(404);
+      expect(missing.body).toEqual(invalid.body);
+      expect(hidden.body).toEqual(invalid.body);
+      expect(inactiveResponse.body).toEqual(invalid.body);
+      await patch(reminderId, family).expect(403);
+
+      expect(
+        (
+          await db.select().from(reminders).where(eq(reminders.id, reminderId))
+        )[0].title,
+      ).toBe('Privado');
+    });
+  });
 });
