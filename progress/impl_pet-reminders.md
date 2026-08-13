@@ -19,6 +19,8 @@
   offset, futuro, advance y claves desconocidas; rechazos no persisten.
 - R4 — rojo `f899527`; verde `713d285`. `PetAccessGuard` y rol owner protegen
   el POST con precedencia 404 antes de 403/validación.
+- R5 — rojo `0479f29`; verde `c2e1e3e`. Dispatcher selecciona vencidos en
+  orden, envía antes de marcar y reintenta solo fallos sin frenar el lote.
 
 ## Verificación final
 

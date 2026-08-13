@@ -53,9 +53,9 @@ Test: `backend-pet-tracker/src/modules/reminders/infrastructure/reminders-dispat
 (SQS y repo mockeados: encola el elegible, marca `enqueued_at`, no re-encola,
 fallo de un send no frena a los demás). La cadena completa la cubre el e2e de R7.
 
-- [ ] (1) Escribir test que falla para R5
-- [ ] (2) Implementación mínima que lo pasa
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R5
+- [x] (2) Implementación mínima que lo pasa
+- [x] (3) Refactor con tests verdes
 
 ## R6 — Mensaje exacto + extensión del schema del notifier
 

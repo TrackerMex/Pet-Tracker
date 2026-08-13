@@ -12,7 +12,7 @@ tags: [harness, spec]
 | R2 | `test/pet-reminders.e2e-spec.ts::R2: POST crea reminder programado con shape exacto` | rojo: `5decc79 test(pet-reminders): require reminder creation endpoint (R2)`; verde: `aaf7788 feat(pet-reminders): create scheduled reminders (R2)` |
 | R3 | `src/modules/reminders/application/dto/reminder.dto.spec.ts::R3: validacion estricta del POST de reminders` + `test/pet-reminders.e2e-spec.ts::R3: POST invalido responde 400 sin insertar` | rojo: `ef01906 test(pet-reminders): require strict creation validation (R3)`; verde: `a118440 feat(pet-reminders): validate reminder creation (R3)` |
 | R4 | `test/pet-reminders.e2e-spec.ts::R4: POST usa PetAccessGuard y exige owner` | rojo: `f899527 test(pet-reminders): require owner access for creation (R4)`; verde: `713d285 feat(pet-reminders): enforce owner access on creation (R4)` |
-| R5 | pendiente | pendiente |
+| R5 | `src/modules/reminders/infrastructure/reminders-dispatch.service.spec.ts::R5: dispatcher encola vencidos una sola vez` | rojo: `0479f29 test(pet-reminders): require idempotent reminder dispatch (R5)`; verde: `c2e1e3e feat(pet-reminders): dispatch due reminders once (R5)` |
 | R6 | pendiente | pendiente |
 | R7 | pendiente | pendiente |
 | R8 | pendiente | pendiente |

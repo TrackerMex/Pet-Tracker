@@ -20,6 +20,7 @@ estado: spec aprobada por humano (2026-08-11), handoff a Codex entregado
 - R2 completado con historial TDD rojo `5decc79` → verde `aaf7788`.
 - R3 completado con historial TDD rojo `ef01906` → verde `a118440`.
 - R4 completado con historial TDD rojo `f899527` → verde `713d285`.
+- R5 completado con historial TDD rojo `0479f29` → verde `c2e1e3e`.
 - init.sh verde (e2e saltados: puerto 4566 sin infra — spec no la necesita)
 - spec_author escribió specs/pet-reminders/ (requirements R1-R12, design D1-D11,
   tasks, traceability)
