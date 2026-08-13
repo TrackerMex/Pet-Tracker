@@ -11,6 +11,7 @@ import { RemindersDispatchService } from './reminders-dispatch.service';
 
 const NOW = new Date('2026-08-13T18:00:00.000Z');
 const QUEUE_URL = 'http://localhost:4566/000000000000/notifications';
+const REMINDER_ID = '01924a3f-0000-7000-8000-0000000000cc';
 
 function reminder(id: string, dueAt: string): Reminder {
   return new Reminder({
@@ -128,5 +129,36 @@ describe('R5: dispatcher encola vencidos una sola vez', () => {
     expect(repository.markEnqueued).toHaveBeenCalledWith(sent.id, NOW);
     expect(repository.markEnqueued).not.toHaveBeenCalledWith(failed.id, NOW);
     expect(logError).toHaveBeenCalled();
+  });
+});
+
+describe('R6: dispatcher publica el mensaje reminder exacto', () => {
+  beforeEach(() => jest.useFakeTimers().setSystemTime(NOW));
+  afterEach(() => jest.useRealTimers());
+
+  it('incluye version, ids, scheduleName, copy y data sin claves extra', async () => {
+    const due = reminder(REMINDER_ID, '2026-08-13T17:00:00.000Z');
+    const repository = repositoryStub();
+    repository.findDue.mockResolvedValue([due]);
+    const sqs = sqsStub();
+
+    await new RemindersDispatchService(
+      sqs.client,
+      repository.client,
+    ).dispatchOnce();
+
+    const command = sqs.send.mock.calls
+      .map((call: unknown[]) => call[0])
+      .find((item) => item instanceof SendMessageCommand);
+    expect(JSON.parse(command?.input.MessageBody ?? '')).toEqual({
+      version: 1,
+      kind: 'reminder',
+      reminderId: REMINDER_ID,
+      petId: due.petId,
+      scheduleName: due.scheduleName,
+      title: due.title,
+      body: `Recordatorio: ${due.title}`,
+      data: { petId: due.petId, reminderId: REMINDER_ID },
+    });
   });
 });

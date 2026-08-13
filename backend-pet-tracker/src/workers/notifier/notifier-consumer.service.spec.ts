@@ -8,6 +8,7 @@ import type { Message } from '@aws-sdk/client-sqs';
 import { Logger } from '@nestjs/common';
 import { QUEUE_NOTIFICATIONS } from '@/aws/constants';
 import type { PushTokenRepository } from '@/modules/users/domain/repositories/push-token.repository';
+import { notificationMessageSchema } from './notification-message.schema';
 import { NotifierConsumerService } from './notifier-consumer.service';
 import type { PushResult, PushSender } from './push-sender';
 
@@ -305,5 +306,25 @@ describe('R14: un error no controlado no envenena el resto del lote', () => {
     await service(sqs, tokens, senderStub()).drainOnce();
 
     expect(sqs.deleted).toEqual(['r-1', 'r-3']);
+  });
+});
+
+describe('R6 (pet-reminders #16): schema acepta el mensaje reminder', () => {
+  it('acepta la rama reminder con scheduleName y data exactos', () => {
+    expect(
+      notificationMessageSchema.parse({
+        version: 1,
+        kind: 'reminder',
+        reminderId: '01924a3f-0000-7000-8000-0000000000cc',
+        petId: PET_ID,
+        scheduleName: 'reminder-01924a3f-0000-7000-8000-0000000000cc',
+        title: 'Desparasitación',
+        body: 'Recordatorio: Desparasitación',
+        data: {
+          petId: PET_ID,
+          reminderId: '01924a3f-0000-7000-8000-0000000000cc',
+        },
+      }),
+    ).toMatchObject({ kind: 'reminder' });
   });
 });
