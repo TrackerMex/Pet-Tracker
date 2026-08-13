@@ -497,4 +497,81 @@ describe('Pet reminders (e2e)', () => {
       ).toBe('Privado');
     });
   });
+
+  describe('R11: PATCH rechaza estado no editable y body invalido', () => {
+    it.each(['sent', 'cancelled'] as const)(
+      'status=%s responde 409 sin modificar la fila',
+      async (status) => {
+        const owner = await seedUser(`r11-${status}`);
+        const pet = await seedPet(owner);
+        const created = await api()
+          .post(`/v1/pets/${pet.id}/reminders`)
+          .set(auth(owner.token))
+          .send({
+            type: 'custom',
+            title: 'Inmutable',
+            dueAt: new Date(Date.now() + 60_000).toISOString(),
+          })
+          .expect(201);
+        const reminderId = (created.body as { id: string }).id;
+        await db
+          .update(reminders)
+          .set({ status })
+          .where(eq(reminders.id, reminderId));
+
+        const response = await api()
+          .patch(`/v1/reminders/${reminderId}`)
+          .set(auth(owner.token))
+          .send({ title: 'Cambio rechazado' })
+          .expect(409);
+        expect((response.body as { message: string }).message).toBe(
+          'Reminder is not editable',
+        );
+        const [stored] = await db
+          .select()
+          .from(reminders)
+          .where(eq(reminders.id, reminderId));
+        expect(stored).toMatchObject({ title: 'Inmutable', status });
+      },
+    );
+
+    it.each([
+      {},
+      { status: 'cancelled', title: 'No permitido' },
+      { status: 'scheduled' },
+      { extra: true },
+      { dueAt: '2020-01-01T00:00:00.000Z' },
+    ])('body invalido %o responde 400 sin modificar la fila', async (body) => {
+      const owner = await seedUser(`r11-invalid-${uuidv7()}`);
+      const pet = await seedPet(owner);
+      const created = await api()
+        .post(`/v1/pets/${pet.id}/reminders`)
+        .set(auth(owner.token))
+        .send({
+          type: 'custom',
+          title: 'Sin cambios',
+          dueAt: new Date(Date.now() + 60_000).toISOString(),
+        })
+        .expect(201);
+      const reminderId = (created.body as { id: string }).id;
+      const [before] = await db
+        .select()
+        .from(reminders)
+        .where(eq(reminders.id, reminderId));
+
+      const response = await api()
+        .patch(`/v1/reminders/${reminderId}`)
+        .set(auth(owner.token))
+        .send(body)
+        .expect(400);
+      expect((response.body as { message: string }).message).toBe(
+        'Validation failed',
+      );
+      const [after] = await db
+        .select()
+        .from(reminders)
+        .where(eq(reminders.id, reminderId));
+      expect(after).toEqual(before);
+    });
+  });
 });

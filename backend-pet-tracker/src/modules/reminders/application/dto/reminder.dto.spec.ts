@@ -2,6 +2,7 @@ import {
   CreateReminderSchema,
   REMINDER_MAX_ADVANCE_MINUTES,
   REMINDER_TITLE_MAX_LENGTH,
+  UpdateReminderSchema,
 } from './reminder.dto';
 
 const futureDueAt = () => new Date(Date.now() + 60_000).toISOString();
@@ -50,5 +51,31 @@ describe('R3: validacion estricta del POST de reminders', () => {
         ...changes,
       }).success,
     ).toBe(false);
+  });
+});
+
+describe('R11: validacion estricta del PATCH de reminders', () => {
+  it.each([
+    { status: 'cancelled' },
+    { dueAt: futureDueAt() },
+    { advanceMinutes: 0 },
+    { title: '  Nuevo titulo  ' },
+  ])('acepta %o', (body) => {
+    expect(UpdateReminderSchema.safeParse(body).success).toBe(true);
+  });
+
+  it.each([
+    {},
+    { status: 'cancelled', title: 'No permitido' },
+    { status: 'scheduled' },
+    { extra: true },
+    { dueAt: new Date(Date.now() - 1_000).toISOString() },
+    { advanceMinutes: 1.5 },
+    { advanceMinutes: -1 },
+    { advanceMinutes: REMINDER_MAX_ADVANCE_MINUTES + 1 },
+    { title: '   ' },
+    { title: 'x'.repeat(REMINDER_TITLE_MAX_LENGTH + 1) },
+  ])('rechaza %o', (body) => {
+    expect(UpdateReminderSchema.safeParse(body).success).toBe(false);
   });
 });

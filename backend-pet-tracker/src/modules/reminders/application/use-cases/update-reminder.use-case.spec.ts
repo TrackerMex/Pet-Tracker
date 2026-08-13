@@ -23,6 +23,10 @@ function reminder(): Reminder {
   });
 }
 
+function reminderWithStatus(status: Reminder['status']): Reminder {
+  return new Reminder({ ...reminder(), status });
+}
+
 function repositoryStubs() {
   const findById = jest.fn();
   const reschedule = jest.fn().mockResolvedValue(reminder());
@@ -95,4 +99,30 @@ describe('R10: UpdateReminderUseCase autoriza via reminder.petId', () => {
     ).rejects.toMatchObject({ name: 'NotReminderOwnerError' });
     expect(stubs.reschedule).not.toHaveBeenCalled();
   });
+});
+
+describe('R11: UpdateReminderUseCase rechaza reminders no editables', () => {
+  it.each(['sent', 'cancelled'] as const)(
+    'status=%s produce ReminderNotEditableError sin mutar',
+    async (status) => {
+      const stubs = repositoryStubs();
+      stubs.findById.mockResolvedValue(reminderWithStatus(status));
+      stubs.findMembership.mockResolvedValue({
+        petId: PET_ID,
+        userId: USER_ID,
+        role: 'owner',
+        status: 'active',
+      });
+
+      await expect(
+        new UpdateReminderUseCase(stubs.reminders, stubs.pets).execute(
+          REMINDER_ID,
+          { title: 'Nuevo' },
+          USER_ID,
+        ),
+      ).rejects.toMatchObject({ name: 'ReminderNotEditableError' });
+      expect(stubs.reschedule).not.toHaveBeenCalled();
+      expect(stubs.reminders.cancel).not.toHaveBeenCalled();
+    },
+  );
 });
