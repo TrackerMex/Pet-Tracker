@@ -15,6 +15,7 @@ import { HealthModule } from './modules/health/health.module';
 import { MediaModule } from './modules/media/media.module';
 import { PetsModule } from './modules/pets/pets.module';
 import { PositionsModule } from './modules/positions/positions.module';
+import { RemindersModule } from './modules/reminders/reminders.module';
 import { UsersModule } from './modules/users/users.module';
 import { AlertsEngineModule } from './workers/alerts-engine/alerts-engine.module';
 import { IngestionModule } from './workers/ingestion.module';
@@ -36,6 +37,7 @@ import { NotifierModule } from './workers/notifier/notifier.module';
     DevicesModule,
     GeofencesModule,
     PositionsModule,
+    RemindersModule,
     ActivityModule,
     AlertsModule,
     IngestionModule,
