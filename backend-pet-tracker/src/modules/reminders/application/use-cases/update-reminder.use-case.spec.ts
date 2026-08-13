@@ -30,18 +30,19 @@ function reminderWithStatus(status: Reminder['status']): Reminder {
 function repositoryStubs() {
   const findById = jest.fn();
   const reschedule = jest.fn().mockResolvedValue(reminder());
+  const cancel = jest.fn();
   const reminders = {
     create: jest.fn(),
     findById,
     reschedule,
-    cancel: jest.fn(),
+    cancel,
     findDue: jest.fn(),
     markEnqueued: jest.fn(),
     markSent: jest.fn(),
   } as unknown as ReminderRepository;
   const findMembership = jest.fn();
   const pets = { findMembership } as unknown as PetRepository;
-  return { reminders, findById, reschedule, pets, findMembership };
+  return { reminders, findById, reschedule, cancel, pets, findMembership };
 }
 
 describe('R10: UpdateReminderUseCase autoriza via reminder.petId', () => {
@@ -122,7 +123,7 @@ describe('R11: UpdateReminderUseCase rechaza reminders no editables', () => {
         ),
       ).rejects.toMatchObject({ name: 'ReminderNotEditableError' });
       expect(stubs.reschedule).not.toHaveBeenCalled();
-      expect(stubs.reminders.cancel).not.toHaveBeenCalled();
+      expect(stubs.cancel).not.toHaveBeenCalled();
     },
   );
 });

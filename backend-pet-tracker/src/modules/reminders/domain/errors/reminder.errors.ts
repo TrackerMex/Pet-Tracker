@@ -11,3 +11,10 @@ export class NotReminderOwnerError extends Error {
     this.name = 'NotReminderOwnerError';
   }
 }
+
+export class ReminderNotEditableError extends Error {
+  constructor() {
+    super('Reminder is not editable');
+    this.name = 'ReminderNotEditableError';
+  }
+}

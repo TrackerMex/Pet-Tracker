@@ -4,6 +4,7 @@ import type { UpdateReminderDto } from '@/modules/reminders/application/dto/remi
 import { Reminder } from '@/modules/reminders/domain/entities/reminder.entity';
 import {
   NotReminderOwnerError,
+  ReminderNotEditableError,
   ReminderNotFoundError,
 } from '@/modules/reminders/domain/errors/reminder.errors';
 import { REMINDER_REPOSITORY } from '@/modules/reminders/domain/repositories/reminder.repository';
@@ -38,8 +39,11 @@ export class UpdateReminderUseCase {
       throw new ReminderNotFoundError(id);
     }
     if (membership.role !== 'owner') throw new NotReminderOwnerError();
+    if (reminder.status !== 'scheduled') {
+      throw new ReminderNotEditableError();
+    }
 
-    if (dto.status === 'cancelled') {
+    if ('status' in dto) {
       return this.reminders.cancel(id);
     }
 

@@ -10,23 +10,43 @@ const FutureDueAtSchema = z.iso
     message: 'Due date must be in the future',
   });
 
+const ReminderTitleSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(REMINDER_TITLE_MAX_LENGTH);
+const AdvanceMinutesSchema = z
+  .number()
+  .int()
+  .min(0)
+  .max(REMINDER_MAX_ADVANCE_MINUTES);
+
 export const CreateReminderSchema = z.strictObject({
   type: z.enum(REMINDER_TYPES),
-  title: z.string().trim().min(1).max(REMINDER_TITLE_MAX_LENGTH),
+  title: ReminderTitleSchema,
   dueAt: FutureDueAtSchema,
-  advanceMinutes: z
-    .number()
-    .int()
-    .min(0)
-    .max(REMINDER_MAX_ADVANCE_MINUTES)
-    .optional(),
+  advanceMinutes: AdvanceMinutesSchema.optional(),
 });
 
 export type CreateReminderDto = z.infer<typeof CreateReminderSchema>;
 
-export interface UpdateReminderDto {
-  dueAt?: string;
-  advanceMinutes?: number;
-  title?: string;
-  status?: 'cancelled';
-}
+const CancelReminderSchema = z.strictObject({
+  status: z.literal('cancelled'),
+});
+
+const EditReminderSchema = z
+  .strictObject({
+    dueAt: FutureDueAtSchema.optional(),
+    advanceMinutes: AdvanceMinutesSchema.optional(),
+    title: ReminderTitleSchema.optional(),
+  })
+  .refine((body) => Object.values(body).some((value) => value !== undefined), {
+    message: 'At least one field is required',
+  });
+
+export const UpdateReminderSchema = z.union([
+  CancelReminderSchema,
+  EditReminderSchema,
+]);
+
+export type UpdateReminderDto = z.infer<typeof UpdateReminderSchema>;

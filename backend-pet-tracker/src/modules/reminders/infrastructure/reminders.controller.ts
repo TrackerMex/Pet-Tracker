@@ -10,11 +10,13 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import type { ZodType } from 'zod';
 import { CurrentUser } from '@/modules/auth/infrastructure/decorators/current-user.decorator';
 import type { CurrentUserPayload } from '@/modules/auth/infrastructure/decorators/current-user.decorator';
 import {
   CreateReminderDto,
   CreateReminderSchema,
+  UpdateReminderSchema,
 } from '@/modules/reminders/application/dto/reminder.dto';
 import type { UpdateReminderDto } from '@/modules/reminders/application/dto/reminder.dto';
 import { CreateReminderUseCase } from '@/modules/reminders/application/use-cases/create-reminder.use-case';
@@ -39,7 +41,7 @@ export class PetRemindersController {
     @Req() request: PetAccessRequest,
     @Body() body: unknown,
   ): Promise<ReminderResponse> {
-    const dto = parseBody(body);
+    const dto = parseBody<CreateReminderDto>(CreateReminderSchema, body);
     return toReminderResponse(
       await this.createReminder.execute(
         request.petMembership.petId,
@@ -57,10 +59,11 @@ export class RemindersController {
   @Patch(':id')
   async update(
     @Param('id') id: string,
-    @Body() dto: UpdateReminderDto,
+    @Body() body: unknown,
     @CurrentUser() user: CurrentUserPayload,
   ): Promise<ReminderResponse> {
     if (!UUID_PATTERN.test(id)) throw new NotFoundException();
+    const dto = parseBody<UpdateReminderDto>(UpdateReminderSchema, body);
 
     try {
       return toReminderResponse(
@@ -75,8 +78,8 @@ export class RemindersController {
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-function parseBody(body: unknown): CreateReminderDto {
-  const parsed = CreateReminderSchema.safeParse(body);
+function parseBody<T>(schema: ZodType<T>, body: unknown): T {
+  const parsed = schema.safeParse(body);
   if (parsed.success) return parsed.data;
   throw new BadRequestException({
     statusCode: HttpStatus.BAD_REQUEST,
