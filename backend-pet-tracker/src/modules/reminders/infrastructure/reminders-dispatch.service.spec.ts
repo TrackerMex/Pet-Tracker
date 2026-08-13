@@ -29,11 +29,14 @@ function reminder(id: string, dueAt: string): Reminder {
 }
 
 function repositoryStub() {
-  return {
+  const findDue = jest.fn();
+  const markEnqueued = jest.fn().mockResolvedValue(undefined);
+  const client = {
     create: jest.fn(),
-    findDue: jest.fn(),
-    markEnqueued: jest.fn().mockResolvedValue(undefined),
+    findDue,
+    markEnqueued,
   } as unknown as jest.Mocked<ReminderRepository>;
+  return { client, findDue, markEnqueued };
 }
 
 function sqsStub(failSendNumber?: number) {
@@ -55,9 +58,11 @@ function sqsStub(failSendNumber?: number) {
 }
 
 describe('R5: dispatcher encola vencidos una sola vez', () => {
+  let logError: jest.SpyInstance;
+
   beforeEach(() => {
     jest.useFakeTimers().setSystemTime(NOW);
-    jest.spyOn(Logger.prototype, 'error').mockImplementation();
+    logError = jest.spyOn(Logger.prototype, 'error').mockImplementation();
   });
 
   afterEach(() => {
@@ -72,7 +77,10 @@ describe('R5: dispatcher encola vencidos una sola vez', () => {
     repository.findDue.mockResolvedValue([first, second]);
     const sqs = sqsStub();
 
-    await new RemindersDispatchService(sqs.client, repository).dispatchOnce();
+    await new RemindersDispatchService(
+      sqs.client,
+      repository.client,
+    ).dispatchOnce();
 
     expect(repository.findDue).toHaveBeenCalledWith(NOW);
     expect(
@@ -91,7 +99,7 @@ describe('R5: dispatcher encola vencidos una sola vez', () => {
     const repository = repositoryStub();
     repository.findDue.mockResolvedValueOnce([due]).mockResolvedValueOnce([]);
     const sqs = sqsStub();
-    const service = new RemindersDispatchService(sqs.client, repository);
+    const service = new RemindersDispatchService(sqs.client, repository.client);
 
     await service.dispatchOnce();
     await service.dispatchOnce();
@@ -111,11 +119,14 @@ describe('R5: dispatcher encola vencidos una sola vez', () => {
     repository.findDue.mockResolvedValue([failed, sent]);
     const sqs = sqsStub(1);
 
-    await new RemindersDispatchService(sqs.client, repository).dispatchOnce();
+    await new RemindersDispatchService(
+      sqs.client,
+      repository.client,
+    ).dispatchOnce();
 
     expect(repository.markEnqueued).toHaveBeenCalledTimes(1);
     expect(repository.markEnqueued).toHaveBeenCalledWith(sent.id, NOW);
     expect(repository.markEnqueued).not.toHaveBeenCalledWith(failed.id, NOW);
-    expect(Logger.prototype.error).toHaveBeenCalled();
+    expect(logError).toHaveBeenCalled();
   });
 });

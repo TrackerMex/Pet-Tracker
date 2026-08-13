@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { and, asc, eq, isNull, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { uuidv7 } from 'uuidv7';
 import { DRIZZLE } from '@/db/drizzle.constants';
@@ -21,6 +22,28 @@ export class ReminderDrizzleRepository implements ReminderRepository {
       .values({ id: uuidv7(), ...data })
       .returning();
     return toDomain(row);
+  }
+
+  async findDue(now: Date): Promise<Reminder[]> {
+    const rows = await this.db
+      .select()
+      .from(reminders)
+      .where(
+        and(
+          eq(reminders.status, 'scheduled'),
+          isNull(reminders.enqueuedAt),
+          sql`${reminders.dueAt} - (${reminders.advanceMinutes} * interval '1 minute') <= ${now}`,
+        ),
+      )
+      .orderBy(asc(reminders.dueAt));
+    return rows.map(toDomain);
+  }
+
+  async markEnqueued(id: string, at: Date): Promise<void> {
+    await this.db
+      .update(reminders)
+      .set({ enqueuedAt: at })
+      .where(eq(reminders.id, id));
   }
 }
 
