@@ -43,9 +43,9 @@ Test: `backend-pet-tracker/src/modules/reminders/application/dto/reminder.dto.sp
 
 Test: `backend-pet-tracker/test/pet-reminders.e2e-spec.ts` → `describe('R4: ...')`.
 
-- [ ] (1) Escribir test que falla para R4
-- [ ] (2) Implementación mínima que lo pasa
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R4
+- [x] (2) Implementación mínima que lo pasa
+- [x] (3) Refactor con tests verdes
 
 ## R5 — Dispatcher encola vencidos una sola vez
 

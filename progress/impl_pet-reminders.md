@@ -17,6 +17,8 @@
   defaults, actor, token vigente y response shape exacto.
 - R3 — rojo `ef01906`; verde `a118440`. Zod valida enum, título, ISO con
   offset, futuro, advance y claves desconocidas; rechazos no persisten.
+- R4 — rojo `f899527`; verde `713d285`. `PetAccessGuard` y rol owner protegen
+  el POST con precedencia 404 antes de 403/validación.
 
 ## Verificación final
 
