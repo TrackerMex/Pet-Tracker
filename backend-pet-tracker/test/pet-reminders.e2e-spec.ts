@@ -372,4 +372,75 @@ describe('Pet reminders (e2e)', () => {
       ).toBe('sent');
     });
   });
+
+  describe('R9: PATCH cancelled impide cualquier push', () => {
+    async function createEligible(owner: UserFixture, petId: string) {
+      const response = await api()
+        .post(`/v1/pets/${petId}/reminders`)
+        .set(auth(owner.token))
+        .send({
+          type: 'custom',
+          title: 'Cancelar',
+          dueAt: new Date(Date.now() + 60_000).toISOString(),
+          advanceMinutes: 60,
+        })
+        .expect(201);
+      return (response.body as { id: string }).id;
+    }
+
+    it('cancelar antes del dispatch deja cancelled y no encola', async () => {
+      sendPush.mockClear();
+      await sqs.send(new PurgeQueueCommand({ QueueUrl: notificationsUrl }));
+      const owner = await seedUser('r9-before');
+      const pet = await seedPet(owner);
+      const reminderId = await createEligible(owner, pet.id);
+
+      const response = await api()
+        .patch(`/v1/reminders/${reminderId}`)
+        .set(auth(owner.token))
+        .send({ status: 'cancelled' })
+        .expect(200);
+      expect((response.body as { status: string }).status).toBe('cancelled');
+
+      await dispatcher.dispatchOnce();
+      await notifier.drainOnce();
+      expect(sendPush).not.toHaveBeenCalled();
+      expect(
+        (
+          await db.select().from(reminders).where(eq(reminders.id, reminderId))
+        )[0].status,
+      ).toBe('cancelled');
+    });
+
+    it('cancelar despues del dispatch vuelve inocuo el mensaje en vuelo', async () => {
+      sendPush.mockClear();
+      await sqs.send(new PurgeQueueCommand({ QueueUrl: notificationsUrl }));
+      const owner = await seedUser('r9-after');
+      const pet = await seedPet(owner);
+      await api()
+        .post('/v1/me/push-tokens')
+        .set(auth(owner.token))
+        .send({
+          expoToken: `ExponentPushToken[reminders-r9-${runId}]`,
+          platform: 'android',
+        })
+        .expect(200);
+      const reminderId = await createEligible(owner, pet.id);
+
+      await dispatcher.dispatchOnce();
+      await api()
+        .patch(`/v1/reminders/${reminderId}`)
+        .set(auth(owner.token))
+        .send({ status: 'cancelled' })
+        .expect(200);
+      await notifier.drainOnce();
+
+      expect(sendPush).not.toHaveBeenCalled();
+      expect(
+        (
+          await db.select().from(reminders).where(eq(reminders.id, reminderId))
+        )[0].status,
+      ).toBe('cancelled');
+    });
+  });
 });
