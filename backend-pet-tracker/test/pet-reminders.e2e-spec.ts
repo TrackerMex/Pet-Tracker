@@ -161,11 +161,14 @@ describe('Pet reminders (e2e)', () => {
           })
           .expect(400);
 
-        expect(response.body).toMatchObject({
-          statusCode: 400,
-          message: 'Validation failed',
-          errors: expect.any(Array),
-        });
+        const validationBody = response.body as {
+          statusCode: number;
+          message: string;
+          errors: unknown[];
+        };
+        expect(validationBody.statusCode).toBe(400);
+        expect(validationBody.message).toBe('Validation failed');
+        expect(Array.isArray(validationBody.errors)).toBe(true);
         expect(
           await db.select().from(reminders).where(eq(reminders.petId, pet.id)),
         ).toEqual([]);
