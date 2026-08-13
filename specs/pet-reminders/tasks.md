@@ -126,14 +126,14 @@ Test: `backend-pet-tracker/src/modules/reminders/application/use-cases/update-re
 Test: `backend-pet-tracker/src/modules/reminders/infrastructure/reminders-scheduler.service.spec.ts`
 (`shouldSchedule()` en las 4 combinaciones).
 
-- [ ] (1) Escribir test que falla para R12
-- [ ] (2) Implementación mínima que lo pasa
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R12
+- [x] (2) Implementación mínima que lo pasa
+- [x] (3) Refactor con tests verdes
 
 ## Cierre (mismo PR, sin R-id)
 
 - [ ] Actualizar `docs/data-model.md` (fila `reminders`: `enqueued_at`, doble
       uso de `schedule_name`, mecanismo local — [[design]] D2/D3)
-- [ ] `REMINDERS_ENABLED` en `.env.example` (=true) y tabla de
+- [x] `REMINDERS_ENABLED` en `.env.example` (=true) y tabla de
       `docs/conventions.md` (R12, mismo commit que la introduce)
 - [ ] `traceability.md` sin filas "pendiente"; `init.sh` verde
