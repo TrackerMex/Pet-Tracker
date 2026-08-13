@@ -6,7 +6,7 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { uuidv7 } from 'uuidv7';
 import { auditLog } from '@/db/schema/audit-log.schema';
-import { pets } from '@/db/schema/pets.schema';
+import { pets, petUsers } from '@/db/schema/pets.schema';
 import { reminders } from '@/db/schema/reminders.schema';
 import { users } from '@/db/schema/users.schema';
 import { DRIZZLE } from '@/db/drizzle.constants';
@@ -174,5 +174,65 @@ describe('Pet reminders (e2e)', () => {
         ).toEqual([]);
       },
     );
+  });
+
+  describe('R4: POST usa PetAccessGuard y exige owner', () => {
+    const validBody = () => ({
+      type: 'custom',
+      title: 'Privado',
+      dueAt: new Date(Date.now() + 60_000).toISOString(),
+    });
+
+    it('responde 404 para no-miembro, mascota inexistente e id invalido', async () => {
+      const owner = await seedUser('r4-owner');
+      const outsider = await seedUser('r4-outsider');
+      const pet = await seedPet(owner);
+
+      await api()
+        .post(`/v1/pets/${pet.id}/reminders`)
+        .set(auth(outsider.token))
+        .send(validBody())
+        .expect(404);
+      await api()
+        .post(`/v1/pets/${uuidv7()}/reminders`)
+        .set(auth(owner.token))
+        .send(validBody())
+        .expect(404);
+      await api()
+        .post('/v1/pets/not-a-uuid/reminders')
+        .set(auth(owner.token))
+        .send(validBody())
+        .expect(404);
+    });
+
+    it('responde 403 para un miembro family activo', async () => {
+      const owner = await seedUser('r4-role-owner');
+      const family = await seedUser('r4-role-family');
+      const pet = await seedPet(owner);
+      await db.insert(petUsers).values({
+        petId: pet.id,
+        userId: family.id,
+        role: 'family',
+        status: 'active',
+      });
+
+      await api()
+        .post(`/v1/pets/${pet.id}/reminders`)
+        .set(auth(family.token))
+        .send(validBody())
+        .expect(403);
+    });
+
+    it('el 404 del no-miembro precede a la validacion del body', async () => {
+      const owner = await seedUser('r4-priority-owner');
+      const outsider = await seedUser('r4-priority-outsider');
+      const pet = await seedPet(owner);
+
+      await api()
+        .post(`/v1/pets/${pet.id}/reminders`)
+        .set(auth(outsider.token))
+        .send({ type: 'invalid' })
+        .expect(404);
+    });
   });
 });
