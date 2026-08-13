@@ -9,7 +9,7 @@ tags: [harness, spec]
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
 | R1 | `src/db/schema/reminders.schema.spec.ts::R1: tabla reminders y migracion 0011 aditiva` | rojo: `a834a82 test(pet-reminders): require reminders schema and migration (R1)`; verde: `9745aa8 feat(pet-reminders): add reminders table migration (R1)` |
-| R2 | pendiente | pendiente |
+| R2 | `test/pet-reminders.e2e-spec.ts::R2: POST crea reminder programado con shape exacto` | rojo: `5decc79 test(pet-reminders): require reminder creation endpoint (R2)`; verde: `aaf7788 feat(pet-reminders): create scheduled reminders (R2)` |
 | R3 | pendiente | pendiente |
 | R4 | pendiente | pendiente |
 | R5 | pendiente | pendiente |

@@ -27,9 +27,9 @@ Test: `backend-pet-tracker/src/db/schema/reminders.schema.spec.ts`
 
 Test: `backend-pet-tracker/test/pet-reminders.e2e-spec.ts` → `describe('R2: ...')`.
 
-- [ ] (1) Escribir test que falla para R2
-- [ ] (2) Implementación mínima que lo pasa
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R2
+- [x] (2) Implementación mínima que lo pasa
+- [x] (3) Refactor con tests verdes
 
 ## R3 — Validación del POST (400 sin insertar)
 

@@ -17,6 +17,7 @@ estado: spec aprobada por humano (2026-08-11), handoff a Codex entregado
 - Codex inició la implementación: baseline `./init.sh` verde (127 suites / 901
   tests backend; 2 suites / 14 tests infra; e2e omitidos sin Postgres).
 - R1 completado con historial TDD rojo `a834a82` → verde `9745aa8`.
+- R2 completado con historial TDD rojo `5decc79` → verde `aaf7788`.
 - init.sh verde (e2e saltados: puerto 4566 sin infra — spec no la necesita)
 - spec_author escribió specs/pet-reminders/ (requirements R1-R12, design D1-D11,
   tasks, traceability)

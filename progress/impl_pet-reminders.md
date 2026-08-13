@@ -13,6 +13,8 @@
 
 - R1 — rojo `a834a82`; verde `9745aa8`. Tabla `reminders` y migración
   `0011_fancy_turbo.sql` generada sin alterar tablas existentes.
+- R2 — rojo `5decc79`; verde `aaf7788`. POST crea un reminder programado con
+  defaults, actor, token vigente y response shape exacto.
 
 ## Verificación final
 
