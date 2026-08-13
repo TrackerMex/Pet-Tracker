@@ -50,7 +50,7 @@ export class NotifierConsumerService {
     private readonly pushTokens: PushTokenRepository,
     @Inject(PUSH_SENDER) private readonly sender: PushSender,
     @Inject(REMINDER_REPOSITORY)
-    private readonly reminders: ReminderRepository,
+    private readonly reminders?: ReminderRepository,
   ) {}
 
   async drainOnce(): Promise<void> {
@@ -157,6 +157,7 @@ export class NotifierConsumerService {
     message: Extract<NotificationMessage, { kind: 'reminder' }>,
     messageId: string,
   ): Promise<void> {
+    if (!this.reminders) throw new Error('Reminder repository unavailable');
     const reminder = await this.reminders.findById(message.reminderId);
     if (!reminder) {
       this.logReminderSkipped(messageId, message.reminderId, 'not_found');
