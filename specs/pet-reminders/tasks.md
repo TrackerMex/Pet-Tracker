@@ -117,9 +117,9 @@ no-owner → 403) + unit en
 Test: `backend-pet-tracker/src/modules/reminders/application/use-cases/update-reminder.use-case.spec.ts`
 (409 con fila intacta) y `reminder.dto.spec.ts` (formas 400 del body).
 
-- [ ] (1) Escribir test que falla para R11
-- [ ] (2) Implementación mínima que lo pasa
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R11
+- [x] (2) Implementación mínima que lo pasa
+- [x] (3) Refactor con tests verdes
 
 ## R12 — Gating `REMINDERS_ENABLED` / `NODE_ENV=test`
 

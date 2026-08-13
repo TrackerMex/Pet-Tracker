@@ -18,7 +18,7 @@ tags: [harness, spec]
 | R8 | `test/pet-reminders.e2e-spec.ts::R8: PATCH reprograma e invalida el mensaje anterior` | rojo: `1de5b67 test(pet-reminders): require safe reminder rescheduling (R8)`; verde: `f01d71a feat(pet-reminders): reschedule reminders safely (R8)` |
 | R9 | `test/pet-reminders.e2e-spec.ts::R9: PATCH cancelled impide cualquier push` | rojo: `4179065 test(pet-reminders): require cancellation without delivery (R9)`; verde: `52821a3 feat(pet-reminders): cancel reminders safely (R9)` |
 | R10 | `src/modules/reminders/application/use-cases/update-reminder.use-case.spec.ts::R10: UpdateReminderUseCase autoriza via reminder.petId` + `test/pet-reminders.e2e-spec.ts::R10: PATCH autoriza opacamente via reminder.petId` | rojo: `56fdd11 test(pet-reminders): require opaque update authorization (R10)`; verde: `7a29488 feat(pet-reminders): authorize reminder updates opaquely (R10)` |
-| R11 | pendiente | pendiente |
+| R11 | `src/modules/reminders/application/dto/reminder.dto.spec.ts::R11: validacion estricta del PATCH de reminders` + `src/modules/reminders/application/use-cases/update-reminder.use-case.spec.ts::R11: UpdateReminderUseCase rechaza reminders no editables` + `test/pet-reminders.e2e-spec.ts::R11: PATCH rechaza estado no editable y body invalido` | rojo: `e4fb8e4 test(pet-reminders): require strict safe reminder updates (R11)`; verde: `0e2419c feat(pet-reminders): reject invalid reminder updates (R11)` |
 | R12 | pendiente | pendiente |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
