@@ -77,9 +77,9 @@ Cadena real: `test/pet-reminders.e2e-spec.ts` → `describe('R7: ...')`
 (create elegible → `dispatchOnce()` → mensaje en cola → `drainOnce()` →
 `status='sent'`; segundo `dispatchOnce()` no encola nada).
 
-- [ ] (1) Escribir test que falla para R7
-- [ ] (2) Implementación mínima que lo pasa
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R7
+- [x] (2) Implementación mínima que lo pasa
+- [x] (3) Refactor con tests verdes
 
 ## R8 — PATCH reprograma sin duplicar envíos
 

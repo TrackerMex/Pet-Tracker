@@ -23,6 +23,8 @@
   orden, envía antes de marcar y reintenta solo fallos sin frenar el lote.
 - R6 — rojo `a58fbe3`; verde `13f5859`. Payload reminder exacto y schema
   discriminado alert/reminder sin cambiar claves ni tests de alertas.
+- R7 — rojo `355d5cc`; verde `15b0274`. Notifier valida token vigente, usa el
+  push existente, marca sent condicionalmente y elimina skips/duplicados.
 
 ## Verificación final
 

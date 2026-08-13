@@ -14,7 +14,7 @@ tags: [harness, spec]
 | R4 | `test/pet-reminders.e2e-spec.ts::R4: POST usa PetAccessGuard y exige owner` | rojo: `f899527 test(pet-reminders): require owner access for creation (R4)`; verde: `713d285 feat(pet-reminders): enforce owner access on creation (R4)` |
 | R5 | `src/modules/reminders/infrastructure/reminders-dispatch.service.spec.ts::R5: dispatcher encola vencidos una sola vez` | rojo: `0479f29 test(pet-reminders): require idempotent reminder dispatch (R5)`; verde: `c2e1e3e feat(pet-reminders): dispatch due reminders once (R5)` |
 | R6 | `src/modules/reminders/infrastructure/reminders-dispatch.service.spec.ts::R6: dispatcher publica el mensaje reminder exacto` + `src/workers/notifier/notifier-consumer.service.spec.ts::R6 (pet-reminders #16): schema acepta el mensaje reminder` | rojo: `a58fbe3 test(pet-reminders): require reminder notification contract (R6)`; verde: `13f5859 feat(pet-reminders): add reminder notification contract (R6)` |
-| R7 | pendiente | pendiente |
+| R7 | `src/workers/notifier/notifier-consumer.service.spec.ts::R7 (pet-reminders #16): notifier procesa reminder idempotentemente` + `test/pet-reminders.e2e-spec.ts::R7: create, dispatch y notifier dejan sent sin duplicar push` | rojo: `355d5cc test(pet-reminders): require idempotent reminder delivery (R7)`; verde: `15b0274 feat(pet-reminders): deliver reminders idempotently (R7)` |
 | R8 | pendiente | pendiente |
 | R9 | pendiente | pendiente |
 | R10 | pendiente | pendiente |
