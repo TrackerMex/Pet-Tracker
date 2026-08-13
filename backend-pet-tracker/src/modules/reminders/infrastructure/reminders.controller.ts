@@ -3,11 +3,10 @@ import {
   Body,
   Controller,
   HttpStatus,
-  Param,
   Post,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
-import { CurrentUser } from '@/modules/auth/infrastructure/decorators/current-user.decorator';
-import type { CurrentUserPayload } from '@/modules/auth/infrastructure/decorators/current-user.decorator';
 import {
   CreateReminderDto,
   CreateReminderSchema,
@@ -17,20 +16,28 @@ import {
   ReminderResponse,
   toReminderResponse,
 } from '@/modules/reminders/infrastructure/mappers/reminder.mapper';
+import { RequirePetRole } from '@/modules/pets/infrastructure/decorators/require-pet-role.decorator';
+import { PetAccessGuard } from '@/modules/pets/infrastructure/guards/pet-access.guard';
+import type { PetAccessRequest } from '@/modules/pets/infrastructure/guards/pet-access.guard';
 
 @Controller('pets/:petId/reminders')
+@UseGuards(PetAccessGuard)
 export class PetRemindersController {
   constructor(private readonly createReminder: CreateReminderUseCase) {}
 
   @Post()
+  @RequirePetRole('owner')
   async create(
-    @Param('petId') petId: string,
-    @CurrentUser() user: CurrentUserPayload,
+    @Req() request: PetAccessRequest,
     @Body() body: unknown,
   ): Promise<ReminderResponse> {
     const dto = parseBody(body);
     return toReminderResponse(
-      await this.createReminder.execute(petId, dto, user.id),
+      await this.createReminder.execute(
+        request.petMembership.petId,
+        dto,
+        request.user.id,
+      ),
     );
   }
 }
