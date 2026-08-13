@@ -8,7 +8,7 @@ tags: [harness, spec]
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | pendiente | pendiente |
+| R1 | `src/db/schema/reminders.schema.spec.ts::R1: tabla reminders y migracion 0011 aditiva` | rojo: `a834a82 test(pet-reminders): require reminders schema and migration (R1)`; verde: `9745aa8 feat(pet-reminders): add reminders table migration (R1)` |
 | R2 | pendiente | pendiente |
 | R3 | pendiente | pendiente |
 | R4 | pendiente | pendiente |

@@ -19,9 +19,9 @@ tags: [harness, spec]
 Test: `backend-pet-tracker/src/db/schema/reminders.schema.spec.ts`
 (patrón de `weights.schema.spec.ts`: columnas, CHECKs, índices, FKs).
 
-- [ ] (1) Escribir test que falla para R1
-- [ ] (2) Implementación mínima que lo pasa (schema + `drizzle-kit generate` → `0011_*.sql`)
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R1
+- [x] (2) Implementación mínima que lo pasa (schema + `drizzle-kit generate` → `0011_*.sql`)
+- [x] (3) Refactor con tests verdes
 
 ## R2 — POST crea reminder programado (201, shape exacto)
 
