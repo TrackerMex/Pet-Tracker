@@ -28,6 +28,8 @@ estado: spec aprobada por humano (2026-08-11), handoff a Codex entregado
 - R10 completado con historial TDD rojo `56fdd11` → verde `7a29488`.
 - R11 completado con historial TDD rojo `e4fb8e4` → verde `0e2419c`.
 - R12 completado con historial TDD rojo `ef91e6c` → verde `6147f96`.
+- Verificación final detectó y corrigió en `4f20037` la compatibilidad de tipos
+  del constructor del notifier con los tests alert congelados de #13.
 - init.sh verde (e2e saltados: puerto 4566 sin infra — spec no la necesita)
 - spec_author escribió specs/pet-reminders/ (requirements R1-R12, design D1-D11,
   tasks, traceability)
