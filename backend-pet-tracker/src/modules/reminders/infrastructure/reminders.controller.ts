@@ -3,12 +3,15 @@ import {
   Body,
   Controller,
   HttpStatus,
+  NotFoundException,
   Param,
   Patch,
   Post,
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { CurrentUser } from '@/modules/auth/infrastructure/decorators/current-user.decorator';
+import type { CurrentUserPayload } from '@/modules/auth/infrastructure/decorators/current-user.decorator';
 import {
   CreateReminderDto,
   CreateReminderSchema,
@@ -20,6 +23,7 @@ import {
   ReminderResponse,
   toReminderResponse,
 } from '@/modules/reminders/infrastructure/mappers/reminder.mapper';
+import { mapReminderError } from '@/modules/reminders/infrastructure/mappers/reminder-error.mapper';
 import { RequirePetRole } from '@/modules/pets/infrastructure/decorators/require-pet-role.decorator';
 import { PetAccessGuard } from '@/modules/pets/infrastructure/guards/pet-access.guard';
 import type { PetAccessRequest } from '@/modules/pets/infrastructure/guards/pet-access.guard';
@@ -54,10 +58,22 @@ export class RemindersController {
   async update(
     @Param('id') id: string,
     @Body() dto: UpdateReminderDto,
+    @CurrentUser() user: CurrentUserPayload,
   ): Promise<ReminderResponse> {
-    return toReminderResponse(await this.updateReminder.execute(id, dto));
+    if (!UUID_PATTERN.test(id)) throw new NotFoundException();
+
+    try {
+      return toReminderResponse(
+        await this.updateReminder.execute(id, dto, user.id),
+      );
+    } catch (error) {
+      throw mapReminderError(error);
+    }
   }
 }
+
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function parseBody(body: unknown): CreateReminderDto {
   const parsed = CreateReminderSchema.safeParse(body);
