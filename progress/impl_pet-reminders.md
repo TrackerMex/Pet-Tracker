@@ -21,6 +21,8 @@
   el POST con precedencia 404 antes de 403/validación.
 - R5 — rojo `0479f29`; verde `c2e1e3e`. Dispatcher selecciona vencidos en
   orden, envía antes de marcar y reintenta solo fallos sin frenar el lote.
+- R6 — rojo `a58fbe3`; verde `13f5859`. Payload reminder exacto y schema
+  discriminado alert/reminder sin cambiar claves ni tests de alertas.
 
 ## Verificación final
 

@@ -64,9 +64,9 @@ Test: `reminders-dispatch.service.spec.ts` (cuerpo JSON exacto) y
 `describe('R6 (pet-reminders #16): ...')` (el schema acepta el mensaje reminder;
 los tests de #13 de la rama alert siguen verdes **sin editarse**).
 
-- [ ] (1) Escribir test que falla para R6
-- [ ] (2) Implementación mínima que lo pasa
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R6
+- [x] (2) Implementación mínima que lo pasa
+- [x] (3) Refactor con tests verdes
 
 ## R7 — Notifier procesa `kind:'reminder'` (push + `sent`, skips idempotentes)
 
