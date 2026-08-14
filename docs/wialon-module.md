@@ -22,6 +22,10 @@ interface WialonClient {
 (núcleo puro): `{lat, lng, ts, speedKmh?, course?, altitude?, sats?,
 accuracyM?, batteryPct?}`.
 
+`listUnits()` tiene dos consumidores: el pipeline de ingesta y
+`scripts/provision-device.ts`, que comprueba que una unidad existe en la
+cuenta antes de registrar un collar real.
+
 Selección de implementación (`wialon.factory.ts`, R1): `FakeWialonClient`
 salvo `SIM_MODE=false` **y** `WIALON_TOKEN` real (no vacío, no `PENDING`).
 Default dev: fake. Env vars en la tabla de `docs/conventions.md`.
