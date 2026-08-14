@@ -14,6 +14,7 @@ import { users } from '@/db/schema/users.schema';
 import { FakeWialonClient } from '@/integrations/wialon/fake-wialon.client';
 import { WialonHttpClient } from '@/integrations/wialon/wialon-http.client';
 import type { WialonClient } from '@/integrations/wialon/wialon-client.interface';
+import { WialonTransportError } from '@/integrations/wialon/wialon.errors';
 import { TOKEN_SERVICE } from '@/modules/auth/domain/ports/token-service';
 import type { TokenService } from '@/modules/auth/domain/ports/token-service';
 import {
@@ -178,6 +179,61 @@ describe('Device provisioning (e2e)', () => {
 
       expect(result.status).not.toBe(0);
       expect(result.stderr).toContain('--unit-id');
+    });
+  });
+
+  describe('R2 (device-provisioning-admin #24): unidad inexistente en la cuenta -> WialonUnitNotFoundError y cero filas insertadas', () => {
+    it('rechaza la unidad ausente sin cambiar el conteo de devices', async () => {
+      const unitId = `e2e-r2-missing-${RUN_ID}`;
+      const before = await db.select({ id: devices.id }).from(devices);
+      let thrown: unknown;
+
+      try {
+        const result = await provisionDevice(db, wialonStub(['otra-unidad']), {
+          wialonUnitId: unitId,
+        });
+        createdDeviceIds.push(result.deviceId);
+      } catch (error) {
+        thrown = error;
+      }
+
+      const after = await db.select({ id: devices.id }).from(devices);
+      const ErrorType = (
+        provisionScript as typeof provisionScript & {
+          WialonUnitNotFoundError: new (...args: never[]) => Error;
+        }
+      ).WialonUnitNotFoundError;
+
+      expect(after).toHaveLength(before.length);
+      expect(thrown).toBeInstanceOf(ErrorType);
+      expect(thrown).toMatchObject({ unitId, visibleUnits: 1 });
+      expect((thrown as Error).message).toContain(unitId);
+      expect((thrown as Error).message).toContain('1');
+    });
+
+    it('propaga el error de Wialon por identidad y no inserta', async () => {
+      const failure = new WialonTransportError('core/search_items', 'offline');
+      const failingWialon: WialonClient = {
+        listUnits: () => Promise.reject(failure),
+        getMessages: () => Promise.resolve([]),
+      };
+      const unitId = `e2e-r2-error-${RUN_ID}`;
+      const before = await db.select({ id: devices.id }).from(devices);
+
+      try {
+        await expect(
+          provisionDevice(db, failingWialon, { wialonUnitId: unitId }),
+        ).rejects.toBe(failure);
+      } finally {
+        const inserted = await db
+          .select({ id: devices.id })
+          .from(devices)
+          .where(eq(devices.wialonUnitId, unitId));
+        createdDeviceIds.push(...inserted.map((row) => row.id));
+      }
+
+      const after = await db.select({ id: devices.id }).from(devices);
+      expect(after).toHaveLength(before.length);
     });
   });
 
