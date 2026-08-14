@@ -43,7 +43,6 @@ export class PetDrizzleRepository implements PetRepository {
           birthDate: data.birthDate,
           approxAgeMonths: data.approxAgeMonths,
           sex: data.sex,
-          currentWeightKg: toWeightColumn(data.currentWeightKg),
           size: data.size,
           color: data.color,
           sterilized: data.sterilized,
@@ -132,11 +131,6 @@ export class PetDrizzleRepository implements PetRepository {
   async delete(petId: string): Promise<void> {
     await this.db.delete(pets).where(eq(pets.id, petId));
   }
-}
-
-/** numeric(5,2) viaja como string en el driver pg. */
-function toWeightColumn(weightKg: number | undefined): string | undefined {
-  return weightKg === undefined ? undefined : String(weightKg);
 }
 
 function toDomain(row: PetRow): Pet {

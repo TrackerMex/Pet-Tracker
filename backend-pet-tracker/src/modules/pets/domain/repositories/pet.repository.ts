@@ -17,7 +17,6 @@ export interface NewPet {
   birthDate?: string;
   approxAgeMonths?: number;
   sex?: PetSex;
-  currentWeightKg?: number;
   size?: PetSize;
   color?: string;
   sterilized?: boolean;

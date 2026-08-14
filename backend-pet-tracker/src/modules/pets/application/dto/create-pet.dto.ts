@@ -14,9 +14,8 @@ const BirthDateSchema = z
 /**
  * Campos de la ficha de mascota compartidos por POST (create) y PATCH
  * (update). Limites de R4: name 1-120, approxAgeMonths entero 0-480,
- * weightKg (0, 999.99] (tope de numeric(5,2)), microchip <= 32 — el numero
- * de chip veterinario de identificacion, sin relacion con el collar GPS
- * (#7/#8).
+ * microchip <= 32 — el numero de chip veterinario de identificacion, sin
+ * relacion con el collar GPS (#7/#8).
  */
 export const PetFieldsSchema = z.object({
   name: z.string().trim().min(1).max(120),
@@ -25,7 +24,6 @@ export const PetFieldsSchema = z.object({
   birthDate: BirthDateSchema.optional(),
   approxAgeMonths: z.number().int().min(0).max(480).optional(),
   sex: z.enum(['male', 'female']).optional(),
-  weightKg: z.number().gt(0).lte(999.99).optional(),
   size: z.enum(['small', 'medium', 'large']).optional(),
   color: z.string().trim().min(1).max(60).optional(),
   sterilized: z.boolean().optional(),

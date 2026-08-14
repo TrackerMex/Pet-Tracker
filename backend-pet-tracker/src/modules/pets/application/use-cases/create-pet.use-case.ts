@@ -3,10 +3,7 @@ import { AUDIT_LOGGER } from '@/audit/audit-log.repository';
 import type { AuditLogger } from '@/audit/audit-log.repository';
 import { Pet } from '@/modules/pets/domain/entities/pet.entity';
 import { PET_REPOSITORY } from '@/modules/pets/domain/repositories/pet.repository';
-import type {
-  NewPet,
-  PetRepository,
-} from '@/modules/pets/domain/repositories/pet.repository';
+import type { PetRepository } from '@/modules/pets/domain/repositories/pet.repository';
 import { CreatePetDto } from '../dto/create-pet.dto';
 
 /**
@@ -25,7 +22,7 @@ export class CreatePetUseCase {
   ) {}
 
   async execute(dto: CreatePetDto, userId: string): Promise<Pet> {
-    const pet = await this.pets.createWithOwner(toNewPet(dto), userId);
+    const pet = await this.pets.createWithOwner(dto, userId);
 
     await this.auditLogger.record({
       userId,
@@ -36,11 +33,4 @@ export class CreatePetUseCase {
 
     return pet;
   }
-}
-
-/** El DTO expone `weightKg`; la ficha persiste `currentWeightKg` (R4). */
-function toNewPet(dto: CreatePetDto): NewPet {
-  const { weightKg, ...rest } = dto;
-
-  return weightKg === undefined ? rest : { ...rest, currentWeightKg: weightKg };
 }
