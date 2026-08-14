@@ -159,6 +159,36 @@ describe('Device provisioning (e2e)', () => {
       expect(result.status).not.toBe(0);
       expect(result.stderr).toContain('--unit-id');
     });
+
+    // `pnpm run provision:device -- --unit-id X` reenvia el separador literal
+    // al script; sin filtrarlo parseArgs lo trata como fin de opciones.
+    it('lee --unit-id cuando pnpm reenvia el separador -- literal', () => {
+      const result = spawnSync(
+        process.execPath,
+        [
+          '-r',
+          'ts-node/register',
+          '-r',
+          'tsconfig-paths/register',
+          'scripts/provision-device.ts',
+          '--',
+          '--unit-id',
+          `cli-r1-${RUN_ID}`,
+        ],
+        {
+          cwd: process.cwd(),
+          encoding: 'utf8',
+          env: { ...process.env, SIM_MODE: 'true', WIALON_TOKEN: 'PENDING' },
+        },
+      );
+
+      expect(result.stderr).not.toContain(
+        'ERR_PARSE_ARGS_UNEXPECTED_POSITIONAL',
+      );
+      expect(result.stderr).not.toContain('falta --unit-id');
+      // Llega al guard de R5 (cliente simulado), o sea que ya parseo --unit-id.
+      expect(result.stderr).toContain('SimulatedWialonClientError');
+    });
   });
 
   describe('R2 (device-provisioning-admin #24): unidad inexistente en la cuenta -> WialonUnitNotFoundError y cero filas insertadas', () => {
