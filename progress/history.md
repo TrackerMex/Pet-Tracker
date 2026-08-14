@@ -1020,3 +1020,34 @@ Deuda detectada (fuera de alcance, candidata a limpieza propia):
 - **Estado final:** #15 `done`. Sin pasos de cierre humano: la feature no crea
   recursos ni toca la cuenta real.
 - **Próximo:** `pet-reminders` (#16, P2).
+
+## Sesión 2026-08-11/13 — pet-reminders (id: 16)
+
+- **Feature:** tabla `reminders` (migración 0011 aditiva), `POST
+  /v1/pets/:petId/reminders` (owner, guard, DTO estricto), `PATCH
+  /v1/reminders/:id` (cancel/reschedule, 404 opaco → 403 → 409);
+  programación local: cron 60s `RemindersDispatchService` gated por
+  `REMINDERS_ENABLED` encola vencidos a SQS `notifications`; idempotencia
+  por `enqueued_at` + `schedule_name` como token vigente; notifier de #13
+  extendido a `discriminatedUnion kind alert|reminder` sin tocar la rama
+  alert; camino de vuelta a EventBridge Scheduler en D9.
+- **Spec:** [[specs/pet-reminders/requirements|spec]] (R1-R12, aprobada
+  2026-08-11, PR #44)
+- **Acciones:** reparto Claude/Codex — `spec_author` escribió la spec, gate
+  humano, handoff por disco a Codex CLI, Codex implementó con 12 tripletas
+  test-primero rojo→verde (`progress/impl_pet-reminders.md`) más fix de
+  compatibilidad `4f20037` para los tests alert congelados de #13;
+  `reviewer` validó C2-C7, trazabilidad 1:1 y corrió `./init.sh`
+  independiente (primera pasada roja por las dos fallas de entorno
+  conocidas, segunda con infra caliente exit 0: 238 e2e, lint, typecheck).
+- **Resultado:** APROBADO sin bloqueantes
+  (`progress/review_pet-reminders.md`). PR #45 mergeada por el humano.
+  Smoke de reloj real (humano, 2026-08-13): primer intento sin envío —
+  `.env` viejo sin `REMINDERS_ENABLED`/`NOTIFIER_ENABLED` (init.sh solo
+  copia `.env.example` si `.env` falta); añadidos los flags, reinicio y el
+  reminder pasó a `status=sent` con `enqueued_at` seteado y push logueado.
+  Deuda registrada como #23 `init-env-drift-warning` (warning de claves
+  faltantes en init.sh).
+- **Commits:** implementación `a834a82..4f20037` (36 commits en PR #45,
+  merge `7ddbd97`); review `52fa796`; STATUS `826c4bf`.
+- **Estado final:** done

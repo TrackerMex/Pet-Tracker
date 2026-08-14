@@ -1,11 +1,11 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-08-13
-**Features completadas**: 18/22 (`feature_list.json`)
-**En progreso**: #16 `pet-reminders` — implementada y aprobada por el reviewer,
-PR #45 abierta; falta merge humano + smoke de reloj real para marcarla `done`.
-**Pendientes**: 3 del backlog backend (P3): #17 `nutrition-profile-engine`,
-#18 `nutrition-ai-explainer` y #22 `weight-single-source-of-truth`.
+**Features completadas**: 19/23 (`feature_list.json`)
+**En progreso**: ninguna.
+**Pendientes**: 4 (P3): #17 `nutrition-profile-engine`, #18
+`nutrition-ai-explainer`, #22 `weight-single-source-of-truth` y #23
+`init-env-drift-warning`.
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
 desde 2026-08-10. Hay recursos vivos en la cuenta, aunque hoy sin coste.
@@ -590,9 +590,13 @@ debe listar las 4 URLs de cola.
   por `REMINDERS_ENABLED` encola a SQS `notifications`; idempotencia por
   `enqueued_at` + `schedule_name` como token vigente; notifier con
   `discriminatedUnion kind alert|reminder`; camino de vuelta a EventBridge
-  Scheduler en D9. PR #45 abierta. **#16 sigue `in_progress`**: falta merge
-  humano y el smoke de reloj real (~2 min) de design.md §Verificación manual.
-  Próximo: cerrar #16 tras el smoke, luego #22 o #17.
+  Scheduler en D9. PR #45 mergeada por el humano. Smoke de reloj real
+  (humano): primer intento sin envío — **`.env` viejo sin
+  `REMINDERS_ENABLED`** (init.sh solo copia `.env.example` si `.env` falta,
+  cuarto fallo silencioso del entorno local); añadidos
+  `REMINDERS_ENABLED`/`NOTIFIER_ENABLED`, reinicio, y el reminder pasó a
+  `status=sent` con push logueado. **#16 `done`**; deuda registrada como
+  #23 `init-env-drift-warning`. Próximo: #22 o #17.
 
 - **2026-08-11** — Ciclo SDD completo de `health-weights` (#15): `spec_author`
   (10 EARS) → enmienda de R7 antes del gate → gate humano → Codex CLI (33
