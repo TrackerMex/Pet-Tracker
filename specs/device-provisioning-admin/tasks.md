@@ -27,13 +27,13 @@ tags: [harness, spec]
 
 ## R4 — `generateActivationCode()` aleatorio, base32, aridad cero
 
-- [ ] (1) Escribir test que falla para R4 —
+- [x] (1) Escribir test que falla para R4 —
       `src/modules/devices/application/activation-code.spec.ts`: formato
       `/^PT-[0-9A-HJKMNP-TV-Z]{10}$/`, `generateActivationCode.length === 0`,
       1000 llamadas → `new Set(...).size === 1000`
-- [ ] (2) Implementación mínima que lo pasa —
+- [x] (2) Implementación mínima que lo pasa —
       `src/modules/devices/application/activation-code.ts` ([[design]] D3)
-- [ ] (3) Refactor con tests verdes — `pnpm -C backend-pet-tracker test`
+- [x] (3) Refactor con tests verdes — `pnpm -C backend-pet-tracker test`
       completo sigue verde (no se ha tocado nada más)
 
 ## R5 — El camino es interno: sin ruta HTTP y con guarda contra el simulador
