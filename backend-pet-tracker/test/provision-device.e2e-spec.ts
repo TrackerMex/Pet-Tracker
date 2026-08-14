@@ -12,6 +12,7 @@ import {
   assertRealWialonClient,
   SimulatedWialonClientError,
 } from '../scripts/provision-device';
+import { seedSimulatedDevices } from '../scripts/seed-devices';
 import * as provisionScript from '../scripts/provision-device';
 import { AppModule } from '../src/app.module';
 
@@ -123,6 +124,32 @@ describe('Device provisioning (e2e)', () => {
 
       expect(result.status).not.toBe(0);
       expect(result.stderr).toContain('--unit-id');
+    });
+  });
+
+  describe('R6 (device-provisioning-admin #24): seed-devices sigue sembrando los simulados sin tocar el collar real', () => {
+    it('conserva el collar real y distingue las filas simuladas', async () => {
+      const unitId = `e2e-r6-unit-${RUN_ID}`;
+      const result = await provisionDevice(db, wialonStub([unitId]), {
+        wialonUnitId: unitId,
+      });
+      createdDeviceIds.push(result.deviceId);
+
+      await seedSimulatedDevices(db);
+
+      const [real] = await db
+        .select()
+        .from(devices)
+        .where(eq(devices.id, result.deviceId));
+      const simulated = await db
+        .select()
+        .from(devices)
+        .where(inArray(devices.esn, ['SIM-001', 'SIM-002', 'SIM-003']));
+
+      expect(real.isSimulated).toBe(false);
+      expect(real.activationCode).toBe(result.activationCode);
+      expect(simulated).toHaveLength(3);
+      expect(simulated.every((row) => row.isSimulated)).toBe(true);
     });
   });
 });
