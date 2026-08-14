@@ -25,6 +25,18 @@ export interface ProvisionDeviceResult {
   activationCode: string | null;
 }
 
+export class WialonUnitNotFoundError extends Error {
+  constructor(
+    readonly unitId: string,
+    readonly visibleUnits: number,
+  ) {
+    super(
+      `wialon unit "${unitId}" no existe en la cuenta (${visibleUnits} unidades visibles); no se inserto ninguna fila`,
+    );
+    this.name = 'WialonUnitNotFoundError';
+  }
+}
+
 export class SimulatedWialonClientError extends Error {
   constructor() {
     super(
@@ -45,7 +57,11 @@ export async function provisionDevice(
   wialon: WialonClient,
   input: ProvisionDeviceInput,
 ): Promise<ProvisionDeviceResult> {
-  void wialon;
+  const units = await wialon.listUnits();
+  if (!units.some((unit) => unit.unitId === input.wialonUnitId)) {
+    throw new WialonUnitNotFoundError(input.wialonUnitId, units.length);
+  }
+
   const row = {
     id: uuidv7(),
     wialonUnitId: input.wialonUnitId,

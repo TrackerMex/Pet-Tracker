@@ -20,6 +20,7 @@ import type { TokenService } from '@/modules/auth/domain/ports/token-service';
 import {
   assertRealWialonClient,
   SimulatedWialonClientError,
+  WialonUnitNotFoundError,
 } from '../scripts/provision-device';
 import { seedSimulatedDevices } from '../scripts/seed-devices';
 import * as provisionScript from '../scripts/provision-device';
@@ -198,14 +199,8 @@ describe('Device provisioning (e2e)', () => {
       }
 
       const after = await db.select({ id: devices.id }).from(devices);
-      const ErrorType = (
-        provisionScript as typeof provisionScript & {
-          WialonUnitNotFoundError: new (...args: never[]) => Error;
-        }
-      ).WialonUnitNotFoundError;
-
       expect(after).toHaveLength(before.length);
-      expect(thrown).toBeInstanceOf(ErrorType);
+      expect(thrown).toBeInstanceOf(WialonUnitNotFoundError);
       expect(thrown).toMatchObject({ unitId, visibleUnits: 1 });
       expect((thrown as Error).message).toContain(unitId);
       expect((thrown as Error).message).toContain('1');
