@@ -1,11 +1,11 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-08-11
+**Última actualización**: 2026-08-13
 **Features completadas**: 18/22 (`feature_list.json`)
-**En progreso**: ninguna.
-**Pendientes**: 4, todas del backlog backend (P2/P3): #16 `pet-reminders`, #17
-`nutrition-profile-engine`, #18 `nutrition-ai-explainer` y #22
-`weight-single-source-of-truth`.
+**En progreso**: #16 `pet-reminders` — implementada y aprobada por el reviewer,
+PR #45 abierta; falta merge humano + smoke de reloj real para marcarla `done`.
+**Pendientes**: 3 del backlog backend (P3): #17 `nutrition-profile-engine`,
+#18 `nutrition-ai-explainer` y #22 `weight-single-source-of-truth`.
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
 desde 2026-08-10. Hay recursos vivos en la cuenta, aunque hoy sin coste.
@@ -575,6 +575,24 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-08-13** — Ciclo SDD de `pet-reminders` (#16), reparto Claude/Codex:
+  `spec_author` escribió la spec (R1-R12, D1-D11) el 2026-08-11 → gate humano
+  (PR #44 mergeada) → handoff por disco a Codex CLI → Codex implementó con 12
+  tripletas test-primero rojo→verde más un fix de compatibilidad (`4f20037`)
+  para los tests alert congelados de #13 → `reviewer` **aprobado sin
+  bloqueantes** (C2-C7, trazabilidad 1:1 con `git log`, rama alert del
+  notifier con 0 borrados). `./init.sh` corrido por el reviewer: primera
+  pasada roja por las dos fallas de entorno conocidas (LocalStack recién
+  reiniciado pierde recursos + carrera de arranque de Postgres), segunda
+  pasada con infra caliente **exit 0** (238 e2e, lint, typecheck; `docker
+  port` verificado). Diseño clave: cron 60s `RemindersDispatchService` gated
+  por `REMINDERS_ENABLED` encola a SQS `notifications`; idempotencia por
+  `enqueued_at` + `schedule_name` como token vigente; notifier con
+  `discriminatedUnion kind alert|reminder`; camino de vuelta a EventBridge
+  Scheduler en D9. PR #45 abierta. **#16 sigue `in_progress`**: falta merge
+  humano y el smoke de reloj real (~2 min) de design.md §Verificación manual.
+  Próximo: cerrar #16 tras el smoke, luego #22 o #17.
 
 - **2026-08-11** — Ciclo SDD completo de `health-weights` (#15): `spec_author`
   (10 EARS) → enmienda de R7 antes del gate → gate humano → Codex CLI (33
