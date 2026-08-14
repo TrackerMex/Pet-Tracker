@@ -14,5 +14,6 @@
   `scripts/backfill-weights.ts` (R3, R4), documenta en docs/data-model.md (R5)
   y deja sin cambios el contrato de lectura de GET /v1/pets/:petId (R6).
 - implementador: Codex CLI
-- estado: R1 verde en `13af2dc`; R2 rojo commiteado en `bb5cf21`
-- siguiente paso: retirar las ramas `weightKg`/`currentWeightKg` de PATCH
+- estado: R1 verde en `13af2dc`; R2 verde en `cf6f302` (49 unitarios,
+  typecheck y 20 e2e de pets verdes)
+- siguiente paso: escribir y demostrar el e2e rojo de R3/R4
