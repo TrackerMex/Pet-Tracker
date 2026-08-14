@@ -4,6 +4,7 @@ import { Test } from '@nestjs/testing';
 import { and, eq, inArray, isNull } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import request from 'supertest';
+import type { App } from 'supertest/types';
 import { uuidv7 } from 'uuidv7';
 import { DRIZZLE } from '@/db/drizzle.constants';
 import { auditLog } from '@/db/schema/audit-log.schema';
@@ -58,7 +59,7 @@ function wialonStub(unitIds: string[]): WialonClient {
 }
 
 describe('Device provisioning (e2e)', () => {
-  let app: INestApplication;
+  let app: INestApplication<App>;
   let db: NodePgDatabase;
   let tokenService: TokenService;
   const createdDeviceIds: string[] = [];
@@ -89,7 +90,11 @@ describe('Device provisioning (e2e)', () => {
     const response = await request(app.getHttpServer())
       .post('/v1/pets')
       .set('Authorization', `Bearer ${ownerToken}`)
-      .send({ name: `Provision-${RUN_ID}`, species: 'dog', birthDate: '2024-01-15' })
+      .send({
+        name: `Provision-${RUN_ID}`,
+        species: 'dog',
+        birthDate: '2024-01-15',
+      })
       .expect(201);
     const pet = response.body as { id: string };
     createdPetIds.push(pet.id);
@@ -140,9 +145,7 @@ describe('Device provisioning (e2e)', () => {
         .where(eq(devices.id, result.deviceId));
 
       expect(result.created).toBe(true);
-      expect(result.activationCode).toMatch(
-        /^PT-[0-9A-HJKMNP-TV-Z]{10}$/,
-      );
+      expect(result.activationCode).toMatch(/^PT-[0-9A-HJKMNP-TV-Z]{10}$/);
       expect(row).toMatchObject({
         id: result.deviceId,
         wialonUnitId: unitId,
