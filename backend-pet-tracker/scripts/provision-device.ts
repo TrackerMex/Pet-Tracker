@@ -1,6 +1,7 @@
 import { parseArgs } from 'node:util';
 import { ConfigService } from '@nestjs/config';
 import { config as loadDotenv } from 'dotenv';
+import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
@@ -57,6 +58,20 @@ export async function provisionDevice(
   wialon: WialonClient,
   input: ProvisionDeviceInput,
 ): Promise<ProvisionDeviceResult> {
+  // ponytail: SELECT+INSERT asume una corrida manual; UNIQUE rechaza un duplicado concurrente.
+  const [existing] = await db
+    .select({ id: devices.id, activationCode: devices.activationCode })
+    .from(devices)
+    .where(eq(devices.wialonUnitId, input.wialonUnitId));
+
+  if (existing) {
+    return {
+      created: false,
+      deviceId: existing.id,
+      activationCode: existing.activationCode,
+    };
+  }
+
   const units = await wialon.listUnits();
   if (!units.some((unit) => unit.unitId === input.wialonUnitId)) {
     throw new WialonUnitNotFoundError(input.wialonUnitId, units.length);
