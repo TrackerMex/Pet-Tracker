@@ -12,7 +12,7 @@ tags: [harness, spec]
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
 | R1 | `test/provision-device.e2e-spec.ts::R1 (device-provisioning-admin #24): da de alta el collar real con activation_code generado, is_simulated=false y status available` | rojo `b613ab5`; verde `94be544` (`feat(device-provisioning-admin): provision real devices from CLI (R1,R6,R7)`) |
-| R2 | `test/provision-device.e2e-spec.ts::R2 (device-provisioning-admin #24): unidad inexistente en la cuenta -> WialonUnitNotFoundError y cero filas insertadas` | pendiente |
+| R2 | `test/provision-device.e2e-spec.ts::R2 (device-provisioning-admin #24): unidad inexistente en la cuenta -> WialonUnitNotFoundError y cero filas insertadas` | rojo `94dbfa6`; verde `2253495` (`feat(device-provisioning-admin): verify Wialon unit before insert (R2)`) |
 | R3 | `test/provision-device.e2e-spec.ts::R3 (device-provisioning-admin #24): reprovisionar el mismo wialon_unit_id no duplica ni regenera el codigo` + caso de colisión de IMEI | pendiente |
 | R4 | `src/modules/devices/application/activation-code.spec.ts::R4 (device-provisioning-admin #24): codigo aleatorio base32, aridad cero, 1000 sin repetir` | rojo `fd2cc24`, corrección del matcher `00a3640`; verde `776f546` (`feat(device-provisioning-admin): generate secure activation codes (R4)`) |
 | R5 | `test/provision-device.e2e-spec.ts::R5 (device-provisioning-admin #24): assertRealWialonClient rechaza el simulador` (+ ausencia de controllers nuevos, verificada por el reviewer en el diff) | rojo `d940644`; verde `665ac47` (`feat(device-provisioning-admin): require real Wialon client (R5)`) |

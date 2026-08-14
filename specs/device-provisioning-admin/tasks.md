@@ -61,12 +61,12 @@ tags: [harness, spec]
 
 ## R2 — Verificación contra `listUnits()` antes de insertar
 
-- [ ] (1) Escribir test que falla para R2 — caso "unidad inexistente":
+- [x] (1) Escribir test que falla para R2 — caso "unidad inexistente":
       rechaza con `WialonUnitNotFoundError` **y** el conteo de filas de
       `devices` no cambia
-- [ ] (2) Implementación mínima que lo pasa — `listUnits()` +
+- [x] (2) Implementación mínima que lo pasa — `listUnits()` +
       `WialonUnitNotFoundError` antes del `INSERT`
-- [ ] (3) Refactor con tests verdes
+- [x] (3) Refactor con tests verdes
 
 ## R3 — Idempotente por `wialon_unit_id`; colisión de otro identificador falla
 
