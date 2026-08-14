@@ -70,13 +70,13 @@ tags: [harness, spec]
 
 ## R3 — Idempotente por `wialon_unit_id`; colisión de otro identificador falla
 
-- [ ] (1) Escribir tests que fallan para R3 — casos "segunda ejecución"
+- [x] (1) Escribir tests que fallan para R3 — casos "segunda ejecución"
       (mismo `deviceId`, mismo `activationCode`, mismo `updatedAt`, una sola
       fila) y "colisión de IMEI" (error `23505`, sin fila nueva)
-- [ ] (2) Implementación mínima que lo pasa — `SELECT` previo por
+- [x] (2) Implementación mínima que lo pasa — `SELECT` previo por
       `wialon_unit_id` con retorno temprano `{ created: false }`, sin
       `onConflictDoNothing`
-- [ ] (3) Refactor con tests verdes
+- [x] (3) Refactor con tests verdes
 
 ## R6 — Coexistencia con `seed-devices.ts`
 
