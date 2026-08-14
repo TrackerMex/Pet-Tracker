@@ -8,8 +8,8 @@
 ```
 feature: #16 pet-reminders (P2, in_progress)
 inicio: 2026-08-11
-agentes lanzados: spec_author (terminado)
-estado: spec aprobada por humano (2026-08-11), handoff a Codex entregado
+agentes lanzados: spec_author (terminado), reviewer (terminado)
+estado: implementación de Codex APROBADA por reviewer (2026-08-13), PR abierta
 ```
 
 ## Hecho
@@ -43,12 +43,20 @@ estado: spec aprobada por humano (2026-08-11), handoff a Codex entregado
   camino de vuelta a EventBridge Scheduler en D9
 - feature_list.json: #16 pending → spec_ready
 
+- reviewer validó C2-C7, trazabilidad R1-R12 (12 tripletas rojo→verde), los 4
+  acceptance criteria y la rama alert intacta del notifier; corrió ./init.sh
+  independiente (exit 0 con infra caliente). Veredicto APROBADO en
+  progress/review_pet-reminders.md (2026-08-13)
+
 ## Siguiente
 
 1. HECHO: gate humano — spec aprobada y PR #44 mergeada (2026-08-11)
-2. HECHO: feature_list.json #16 → in_progress; handoff escrito en
-   progress/handoff_pet-reminders.md; branch feature/16-pet-reminders creada
-3. Humano corre Codex CLI en terminal aparte con el prompt del handoff.
-   Mientras Codex implementa, el leader NO toca backend-pet-tracker/
-4. Cuando el humano confirme que Codex terminó: leer
-   progress/impl_pet-reminders.md y lanzar reviewer
+2. HECHO: handoff a Codex; implementación completa R1-R12 en
+   branch feature/16-pet-reminders
+3. HECHO: reviewer emitió APROBADO (progress/review_pet-reminders.md)
+4. Humano: mergear la PR de feature/16-pet-reminders
+5. Humano post-merge: smoke de reloj real — crear reminder con dueAt = now+3 min
+   y ver el mensaje en la cola notifications ~2 min después, status → sent
+   (design.md §Verificación manual). #16 NO se marca done hasta este paso
+6. Leader tras el smoke: feature_list.json #16 → done (branch
+   update-status-16 + PR, main protegida) y cerrar sesión en progress/history.md
