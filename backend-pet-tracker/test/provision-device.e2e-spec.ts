@@ -19,34 +19,12 @@ import { TOKEN_SERVICE } from '@/modules/auth/domain/ports/token-service';
 import type { TokenService } from '@/modules/auth/domain/ports/token-service';
 import {
   assertRealWialonClient,
+  provisionDevice,
   SimulatedWialonClientError,
   WialonUnitNotFoundError,
 } from '../scripts/provision-device';
 import { seedSimulatedDevices } from '../scripts/seed-devices';
-import * as provisionScript from '../scripts/provision-device';
 import { AppModule } from '../src/app.module';
-
-interface ProvisionResult {
-  created: boolean;
-  deviceId: string;
-  activationCode: string | null;
-}
-
-const provisionDevice = (
-  provisionScript as typeof provisionScript & {
-    provisionDevice: (
-      db: NodePgDatabase,
-      wialon: WialonClient,
-      input: {
-        wialonUnitId: string;
-        imei?: string;
-        serialNumber?: string;
-        esn?: string;
-        model?: string;
-      },
-    ) => Promise<ProvisionResult>;
-  }
-).provisionDevice;
 
 const RUN_ID = `${Date.now()}`;
 
@@ -229,6 +207,83 @@ describe('Device provisioning (e2e)', () => {
 
       const after = await db.select({ id: devices.id }).from(devices);
       expect(after).toHaveLength(before.length);
+    });
+  });
+
+  describe('R3 (device-provisioning-admin #24): reprovisionar el mismo wialon_unit_id no duplica ni regenera el codigo', () => {
+    it('devuelve la fila existente sin llamar otra vez a Wialon ni modificarla', async () => {
+      const unitId = `e2e-r3-unit-${RUN_ID}`;
+      const listUnits = jest
+        .fn()
+        .mockResolvedValue([{ unitId, name: `collar ${unitId}` }]);
+      const wialon: WialonClient = {
+        listUnits,
+        getMessages: () => Promise.resolve([]),
+      };
+      const first = await provisionDevice(db, wialon, {
+        wialonUnitId: unitId,
+        imei: `imei-r3-${RUN_ID}`,
+        model: 'tracker-original',
+      });
+      createdDeviceIds.push(first.deviceId);
+      const [before] = await db
+        .select()
+        .from(devices)
+        .where(eq(devices.id, first.deviceId));
+
+      const second = await provisionDevice(db, wialon, {
+        wialonUnitId: unitId,
+        imei: `imei-r3-changed-${RUN_ID}`,
+        model: 'tracker-changed',
+      });
+      const rows = await db
+        .select()
+        .from(devices)
+        .where(eq(devices.wialonUnitId, unitId));
+
+      expect(second).toEqual({
+        created: false,
+        deviceId: first.deviceId,
+        activationCode: first.activationCode,
+      });
+      expect(listUnits).toHaveBeenCalledTimes(1);
+      expect(rows).toHaveLength(1);
+      expect(rows[0]).toMatchObject({
+        activationCode: before.activationCode,
+        status: before.status,
+        isSimulated: before.isSimulated,
+        updatedAt: before.updatedAt,
+        imei: before.imei,
+        model: before.model,
+      });
+    });
+
+    it('propaga 23505 por IMEI ajeno sin dejar una fila nueva', async () => {
+      const firstUnitId = `e2e-r3-a-${RUN_ID}`;
+      const secondUnitId = `e2e-r3-b-${RUN_ID}`;
+      const imei = `imei-r3-collision-${RUN_ID}`;
+      const wialon = wialonStub([firstUnitId, secondUnitId]);
+      const first = await provisionDevice(db, wialon, {
+        wialonUnitId: firstUnitId,
+        imei,
+      });
+      createdDeviceIds.push(first.deviceId);
+      const before = await db.select({ id: devices.id }).from(devices);
+
+      await expect(
+        provisionDevice(db, wialon, {
+          wialonUnitId: secondUnitId,
+          imei,
+        }),
+      ).rejects.toMatchObject({ cause: { code: '23505' } });
+
+      const after = await db.select({ id: devices.id }).from(devices);
+      const inserted = await db
+        .select()
+        .from(devices)
+        .where(eq(devices.wialonUnitId, secondUnitId));
+      expect(after).toHaveLength(before.length);
+      expect(inserted).toHaveLength(0);
     });
   });
 
