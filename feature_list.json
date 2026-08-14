@@ -264,7 +264,7 @@
   {
     "id": 16,
     "name": "pet-reminders",
-    "status": "in_progress",
+    "status": "done",
     "priority": "P2",
     "description": "Plan 008 (paso 3, adaptado a local): tabla reminders; POST /v1/pets/:petId/reminders {type, title, dueAt, advanceMinutes=60} (dueAt futuro); PATCH /v1/reminders/:id (reprogramar/cancelar; autorización vía reminder.pet_id → 404 sin membresía). Programación local: EventBridge Scheduler no existe en LocalStack community — la spec decide el mecanismo (cron local que encola vencidos a SQS notifications es el candidato; el notifier marca status=sent). Documentar la deviación del plan y el camino de vuelta a Scheduler en deploy real.",
     "acceptance_criteria": [
@@ -390,6 +390,22 @@
       "backend-pet-tracker/src/modules/pets/application/use-cases/create-pet.use-case.ts",
       "backend-pet-tracker/src/modules/pets/application/use-cases/update-pet.use-case.ts",
       "backend-pet-tracker/src/modules/health/"
+    ]
+  },
+  {
+    "id": 23,
+    "name": "init-env-drift-warning",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Deuda destapada en el smoke de #16: init.sh copia .env.example a .env solo si falta, así que un .env viejo carece de las variables gate añadidas por features posteriores. Con REMINDERS_ENABLED ausente el scheduler de #16 quedó apagado en silencio y el smoke falló sin ningún error visible; es el tercer modo de fallo silencioso del entorno local (tras el skip de e2e sin puerto de Postgres publicado y el verde falso de #21). Añadir a init.sh un diff de claves entre .env y .env.example que imprima un warning listando las variables faltantes. Solo avisar: no copiar valores automáticamente, el humano decide qué setear.",
+    "acceptance_criteria": [
+      "Con un .env al que le falta una clave presente en .env.example, ./init.sh imprime un warning que lista exactamente las claves faltantes",
+      "Con .env completo no hay warning y el output no cambia",
+      "init.sh nunca modifica .env: el warning es informativo",
+      "El warning no aborta: init.sh conserva su exit code actual"
+    ],
+    "files_affected": [
+      "init.sh"
     ]
   }
 ]
