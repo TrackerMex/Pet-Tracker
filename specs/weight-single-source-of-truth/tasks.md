@@ -94,11 +94,11 @@ tags: [harness, spec]
 
 ## Cierre
 
-- [ ] `./init.sh` verde (incluye e2e con Docker levantado)
-- [ ] `specs/weight-single-source-of-truth/traceability.md` sin filas
+- [x] `./init.sh` verde (incluye e2e con Docker levantado)
+- [x] `specs/weight-single-source-of-truth/traceability.md` sin filas
       "pendiente"
-- [ ] `docs/data-model.md` filas `pets` y `weights` actualizadas (R5)
-- [ ] Confirmar que ningún archivo de `health-weights` (#15) ni de
+- [x] `docs/data-model.md` filas `pets` y `weights` actualizadas (R5)
+- [x] Confirmar que ningún archivo de `health-weights` (#15) ni de
       `pets-crud-permissions` fuera de los listados en
       [[design]] §Archivos afectados quedó modificado
-- [ ] `progress/impl_weight-single-source-of-truth.md` escrito
+- [x] `progress/impl_weight-single-source-of-truth.md` escrito
