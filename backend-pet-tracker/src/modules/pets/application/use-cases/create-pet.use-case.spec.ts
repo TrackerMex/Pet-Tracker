@@ -35,7 +35,6 @@ function buildDto(): CreatePetDto {
     name: 'Firulais',
     species: 'dog',
     birthDate: '2024-01-15',
-    weightKg: 25.5,
   };
 }
 
@@ -70,7 +69,6 @@ describe('R2: CreatePetUseCase crea la mascota con su membresia owner', () => {
         name: 'Firulais',
         species: 'dog',
         birthDate: '2024-01-15',
-        currentWeightKg: 25.5,
       },
       OWNER_ID,
     );

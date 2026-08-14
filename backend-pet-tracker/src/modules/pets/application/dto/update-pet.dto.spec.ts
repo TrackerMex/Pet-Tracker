@@ -3,7 +3,6 @@ import { UpdatePetSchema } from './update-pet.dto';
 describe('R13: el schema de PATCH acepta subconjuntos validos del DTO de creacion', () => {
   it.each([
     ['solo name', { name: 'Firu' }],
-    ['solo weightKg', { weightKg: 12.25 }],
     ['varios campos', { breed: 'Criollo', sterilized: false, size: 'medium' }],
     ['body vacio (no-op de R15)', {}],
   ])('acepta %s', (_label, body) => {
@@ -13,7 +12,6 @@ describe('R13: el schema de PATCH acepta subconjuntos validos del DTO de creacio
   it.each([
     ['name vacio', { name: '' }],
     ['species fuera de dog/cat', { species: 'bird' }],
-    ['weightKg cero', { weightKg: 0 }],
     ['approxAgeMonths no entero', { approxAgeMonths: 3.5 }],
     ['birthDate futura', { birthDate: '2999-01-01' }],
     ['microchip de mas de 32 caracteres', { microchip: 'a'.repeat(33) }],
@@ -23,6 +21,13 @@ describe('R13: el schema de PATCH acepta subconjuntos validos del DTO de creacio
 
   it('descarta claves no reconocidas (quedan fuera del no-op de R15)', () => {
     const result = UpdatePetSchema.safeParse({ unknownField: 1 });
+
+    expect(result.success).toBe(true);
+    expect(result.success && result.data).toEqual({});
+  });
+
+  it('descarta weightKg como campo no reconocido (R2 #22)', () => {
+    const result = UpdatePetSchema.safeParse({ weightKg: 99 });
 
     expect(result.success).toBe(true);
     expect(result.success && result.data).toEqual({});

@@ -21,7 +21,8 @@
     "db:generate": "drizzle-kit generate",
     "provision:local": "ts-node -r tsconfig-paths/register scripts/provision-local.ts",
     "seed:devices": "ts-node -r tsconfig-paths/register scripts/seed-devices.ts",
-    "seed:vaccines": "ts-node -r tsconfig-paths/register scripts/seed-vaccines.ts"
+    "seed:vaccines": "ts-node -r tsconfig-paths/register scripts/seed-vaccines.ts",
+    "backfill:weights": "ts-node -r tsconfig-paths/register scripts/backfill-weights.ts"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.1098.0",
