@@ -10,6 +10,6 @@ describe('R4 (device-provisioning-admin #24): codigo aleatorio base32, aridad ce
     expect(codes.every((code) => /^PT-[0-9A-HJKMNP-TV-Z]{10}$/.test(code))).toBe(
       true,
     );
-    expect(new Set(codes)).toHaveLength(1000);
+    expect(new Set(codes).size).toBe(1000);
   });
 });
