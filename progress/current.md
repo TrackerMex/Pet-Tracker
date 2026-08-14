@@ -14,6 +14,6 @@
   `scripts/backfill-weights.ts` (R3, R4), documenta en docs/data-model.md (R5)
   y deja sin cambios el contrato de lectura de GET /v1/pets/:petId (R6).
 - implementador: Codex CLI
-- estado: R1/R2 verdes; R3/R4 verdes en `79121d2` (6 e2e, typecheck y
-  dos ejecuciones CLI idempotentes)
-- siguiente paso: documentar el escritor único en `docs/data-model.md` (R5)
+- estado: R1-R5 implementados; R6 verificado con 6 tests del mapper, 20 e2e
+  de pets y el e2e R12 de devices. Los tres archivos congelados no cambiaron.
+- siguiente paso: cierre de trazabilidad, suite completa e informe de implementación

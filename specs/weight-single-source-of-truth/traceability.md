@@ -17,7 +17,7 @@ tags: [harness, spec]
 | R2 | `src/modules/pets/application/dto/update-pet.dto.spec.ts` (filas 3-4) + `src/modules/pets/application/use-cases/update-pet.use-case.spec.ts` (filas 7-8) + `test/pets.e2e-spec.ts` bloque R13/R13b (filas 11-12) | rojo `bb5cf21`; verde `cf6f302` (`feat(weight-single-source-of-truth): remove weight from pet updates (R2)`) |
 | R3 | `test/backfill-weights.e2e-spec.ts::R3 (weight-single-source-of-truth #22): crea el historial faltante` | rojo `dbd4fae`; verde `79121d2` (`feat(weight-single-source-of-truth): backfill missing weight history (R3,R4)`) |
 | R4 | `test/backfill-weights.e2e-spec.ts::R4 (weight-single-source-of-truth #22): conserva la proyeccion` | rojo `dbd4fae`; verde `79121d2` (`feat(weight-single-source-of-truth): backfill missing weight history (R3,R4)`) |
-| R5 | N/A (cambio documental en `docs/data-model.md`, verificado por revisión manual del reviewer, no por test automatizado) | pendiente |
+| R5 | N/A (cambio documental en `docs/data-model.md`, verificado por revisión manual del reviewer, no por test automatizado) | `95d00c9` (`docs(weight-single-source-of-truth): document sole weight writer (R5)`) |
 | R6 | `src/modules/pets/infrastructure/mappers/pet-profile-response.mapper.spec.ts` (sin cambios) + `test/pets.e2e-spec.ts::PROFILE_KEYS` (sin cambios) + `test/devices.e2e-spec.ts::PROFILE_KEYS` (sin cambios) | pendiente |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente" en la columna
