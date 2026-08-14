@@ -106,13 +106,13 @@ tags: [harness, spec]
 
 ## R8 — Documentación de los dos caminos
 
-- [ ] (1) N/A (requisito documental, sin test automatizado — lo verifica el
+- [x] (1) N/A (requisito documental, sin test automatizado — lo verifica el
       reviewer leyendo)
-- [ ] (2) `docs/data-model.md` fila `devices`: seed simulado vs
+- [x] (2) `docs/data-model.md` fila `devices`: seed simulado vs
       aprovisionamiento real, distinguidos por `is_simulated`;
       `docs/wialon-module.md`: `listUnits()` tiene un segundo consumidor
       (el script de aprovisionamiento, como verificación de existencia)
-- [ ] (3) Commit `docs(device-provisioning-admin): ... (R8)` aparte del
+- [x] (3) Commit `docs(device-provisioning-admin): ... (R8)` aparte del
       commit de código
 
 ## Cierre — no lo hace ninguna IA

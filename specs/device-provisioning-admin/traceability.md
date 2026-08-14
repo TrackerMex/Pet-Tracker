@@ -18,7 +18,7 @@ tags: [harness, spec]
 | R5 | `test/provision-device.e2e-spec.ts::R5 (device-provisioning-admin #24): assertRealWialonClient rechaza el simulador` (+ ausencia de controllers nuevos, verificada por el reviewer en el diff) | rojo `d940644`; verde `665ac47` (`feat(device-provisioning-admin): require real Wialon client (R5)`) |
 | R6 | `test/provision-device.e2e-spec.ts::R6 (device-provisioning-admin #24): seed-devices sigue sembrando los simulados sin tocar el collar real` | rojo `922988f`; verde `94be544` (`feat(device-provisioning-admin): provision real devices from CLI (R1,R6,R7)`) |
 | R7 | `test/provision-device.e2e-spec.ts::R7 (device-provisioning-admin #24): el collar aprovisionado se reclama con POST /v1/devices/claim` | rojo `244a6eb`; verde `94be544` (`feat(device-provisioning-admin): provision real devices from CLI (R1,R6,R7)`) |
-| R8 | N/A (cambio documental en `docs/data-model.md` y `docs/wialon-module.md`, verificado por revisión manual del reviewer) | pendiente |
+| R8 | N/A (cambio documental en `docs/data-model.md` y `docs/wialon-module.md`, verificado por revisión manual del reviewer) | `2f91102` (`docs(device-provisioning-admin): document provisioning paths (R8)`) |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente" en la columna
 Commit — la columna Test puede decir "N/A" solo para R8 (requisito
