@@ -1,13 +1,20 @@
 import { spawnSync } from 'node:child_process';
 import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { eq, inArray } from 'drizzle-orm';
+import { and, eq, inArray, isNull } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import request from 'supertest';
+import { uuidv7 } from 'uuidv7';
 import { DRIZZLE } from '@/db/drizzle.constants';
-import { devices } from '@/db/schema/devices.schema';
+import { auditLog } from '@/db/schema/audit-log.schema';
+import { devices, petDevices } from '@/db/schema/devices.schema';
+import { pets } from '@/db/schema/pets.schema';
+import { users } from '@/db/schema/users.schema';
 import { FakeWialonClient } from '@/integrations/wialon/fake-wialon.client';
 import { WialonHttpClient } from '@/integrations/wialon/wialon-http.client';
 import type { WialonClient } from '@/integrations/wialon/wialon-client.interface';
+import { TOKEN_SERVICE } from '@/modules/auth/domain/ports/token-service';
+import type { TokenService } from '@/modules/auth/domain/ports/token-service';
 import {
   assertRealWialonClient,
   SimulatedWialonClientError,
@@ -53,7 +60,41 @@ function wialonStub(unitIds: string[]): WialonClient {
 describe('Device provisioning (e2e)', () => {
   let app: INestApplication;
   let db: NodePgDatabase;
+  let tokenService: TokenService;
   const createdDeviceIds: string[] = [];
+  const createdPetIds: string[] = [];
+  const createdUserIds: string[] = [];
+
+  async function seedUser() {
+    const id = uuidv7();
+    const email = `provision-device-${RUN_ID}@example.com`;
+
+    await db.insert(users).values({
+      id,
+      email,
+      passwordHash: '$argon2id$v=19$m=65536,t=3,p=4$e2e$dummy',
+      firstName: 'Provision',
+      lastName: 'Owner',
+      phone: '+525512345678',
+      country: 'MX',
+      timezone: 'UTC',
+      termsAcceptedAt: new Date(),
+    });
+    createdUserIds.push(id);
+
+    return { id, token: tokenService.sign({ sub: id, email }) };
+  }
+
+  async function createPet(ownerToken: string) {
+    const response = await request(app.getHttpServer())
+      .post('/v1/pets')
+      .set('Authorization', `Bearer ${ownerToken}`)
+      .send({ name: `Provision-${RUN_ID}`, species: 'dog', birthDate: '2024-01-15' })
+      .expect(201);
+    const pet = response.body as { id: string };
+    createdPetIds.push(pet.id);
+    return pet;
+  }
 
   beforeAll(async () => {
     const moduleFixture = await Test.createTestingModule({
@@ -64,11 +105,21 @@ describe('Device provisioning (e2e)', () => {
     app.setGlobalPrefix('v1');
     await app.init();
     db = app.get<NodePgDatabase>(DRIZZLE);
+    tokenService = app.get<TokenService>(TOKEN_SERVICE);
   });
 
   afterAll(async () => {
+    if (createdUserIds.length > 0) {
+      await db.delete(auditLog).where(inArray(auditLog.userId, createdUserIds));
+    }
+    if (createdPetIds.length > 0) {
+      await db.delete(pets).where(inArray(pets.id, createdPetIds));
+    }
     if (createdDeviceIds.length > 0) {
       await db.delete(devices).where(inArray(devices.id, createdDeviceIds));
+    }
+    if (createdUserIds.length > 0) {
+      await db.delete(users).where(inArray(users.id, createdUserIds));
     }
     await app.close();
   });
@@ -150,6 +201,42 @@ describe('Device provisioning (e2e)', () => {
       expect(real.activationCode).toBe(result.activationCode);
       expect(simulated).toHaveLength(3);
       expect(simulated.every((row) => row.isSimulated)).toBe(true);
+    });
+  });
+
+  describe('R7 (device-provisioning-admin #24): el collar aprovisionado se reclama con POST /v1/devices/claim', () => {
+    it('crea la asignacion activa y marca el collar assigned', async () => {
+      const unitId = `e2e-r7-unit-${RUN_ID}`;
+      const provisioned = await provisionDevice(db, wialonStub([unitId]), {
+        wialonUnitId: unitId,
+      });
+      createdDeviceIds.push(provisioned.deviceId);
+      const owner = await seedUser();
+      const pet = await createPet(owner.token);
+
+      await request(app.getHttpServer())
+        .post('/v1/devices/claim')
+        .set('Authorization', `Bearer ${owner.token}`)
+        .send({ petId: pet.id, activationCode: provisioned.activationCode })
+        .expect(201);
+
+      const assignments = await db
+        .select()
+        .from(petDevices)
+        .where(
+          and(
+            eq(petDevices.petId, pet.id),
+            eq(petDevices.deviceId, provisioned.deviceId),
+            isNull(petDevices.releasedAt),
+          ),
+        );
+      const [device] = await db
+        .select()
+        .from(devices)
+        .where(eq(devices.id, provisioned.deviceId));
+
+      expect(assignments).toHaveLength(1);
+      expect(device.status).toBe('assigned');
     });
   });
 });
