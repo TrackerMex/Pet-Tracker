@@ -38,14 +38,14 @@ tags: [harness, spec]
 
 ## R5 — El camino es interno: sin ruta HTTP y con guarda contra el simulador
 
-- [ ] (1) Escribir test que falla para R5 —
+- [x] (1) Escribir test que falla para R5 —
       `test/provision-device.e2e-spec.ts`: `assertRealWialonClient(new
       FakeWialonClient({ seed: 1, homeLat: 0, homeLng: 0 }))` lanza
       `SimulatedWialonClientError`; `assertRealWialonClient(new
       WialonHttpClient('https://wialon.test', 'token'))` no lanza
-- [ ] (2) Implementación mínima que lo pasa — `assertRealWialonClient()` y
+- [x] (2) Implementación mínima que lo pasa — `assertRealWialonClient()` y
       `SimulatedWialonClientError` en `scripts/provision-device.ts`
-- [ ] (3) Refactor con tests verdes — confirmar que no se creó ni modificó
+- [x] (3) Refactor con tests verdes — confirmar que no se creó ni modificó
       ningún `*.controller.ts` (la otra mitad de R5 es una ausencia:
       `git diff --stat` no debe listar ningún controller)
 
