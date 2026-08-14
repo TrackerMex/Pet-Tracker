@@ -1,0 +1,1869 @@
+{
+  "id": "9db30318-51a2-4d22-8b69-746c2cc5d150",
+  "prevId": "13a45417-1ef4-45de-bb56-b24638810916",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.activity_daily": {
+      "name": "activity_daily",
+      "schema": "",
+      "columns": {
+        "pet_id": {
+          "name": "pet_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "date": {
+          "name": "date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "distance_m": {
+          "name": "distance_m",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "active_minutes": {
+          "name": "active_minutes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "rest_minutes": {
+          "name": "rest_minutes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "walk_count": {
+          "name": "walk_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "avg_walk_minutes": {
+          "name": "avg_walk_minutes",
+          "type": "numeric(6, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "first_walk_at": {
+          "name": "first_walk_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_walk_at": {
+          "name": "last_walk_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "time_away_minutes": {
+          "name": "time_away_minutes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "computed_at": {
+          "name": "computed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "activity_daily_pet_id_pets_id_fk": {
+          "name": "activity_daily_pet_id_pets_id_fk",
+          "tableFrom": "activity_daily",
+          "tableTo": "pets",
+          "columnsFrom": [
+            "pet_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "activity_daily_pet_id_date_pk": {
+          "name": "activity_daily_pet_id_date_pk",
+          "columns": [
+            "pet_id",
+            "date"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "activity_daily_distance_m_check": {
+          "name": "activity_daily_distance_m_check",
+          "value": "\"activity_daily\".\"distance_m\" >= 0"
+        },
+        "activity_daily_active_minutes_check": {
+          "name": "activity_daily_active_minutes_check",
+          "value": "\"activity_daily\".\"active_minutes\" >= 0"
+        },
+        "activity_daily_rest_minutes_check": {
+          "name": "activity_daily_rest_minutes_check",
+          "value": "\"activity_daily\".\"rest_minutes\" >= 0"
+        },
+        "activity_daily_walk_count_check": {
+          "name": "activity_daily_walk_count_check",
+          "value": "\"activity_daily\".\"walk_count\" >= 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.alert_events": {
+      "name": "alert_events",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "pet_id": {
+          "name": "pet_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "geofence_id": {
+          "name": "geofence_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "type": {
+          "name": "type",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'open'"
+        },
+        "payload": {
+          "name": "payload",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "opened_at": {
+          "name": "opened_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "acked_at": {
+          "name": "acked_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "closed_at": {
+          "name": "closed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "alert_events_pet_id_idx": {
+          "name": "alert_events_pet_id_idx",
+          "columns": [
+            {
+              "expression": "pet_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "alert_events_geofence_id_idx": {
+          "name": "alert_events_geofence_id_idx",
+          "columns": [
+            {
+              "expression": "geofence_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "alert_events_open_anti_spam_idx": {
+          "name": "alert_events_open_anti_spam_idx",
+          "columns": [
+            {
+              "expression": "pet_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "type",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "coalesce(\"geofence_id\", '00000000-0000-0000-0000-000000000000'::uuid)",
+              "asc": true,
+              "isExpression": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"alert_events\".\"status\" <> 'closed'",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "alert_events_pet_id_pets_id_fk": {
+          "name": "alert_events_pet_id_pets_id_fk",
+          "tableFrom": "alert_events",
+          "tableTo": "pets",
+          "columnsFrom": [
+            "pet_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "alert_events_geofence_id_geofences_id_fk": {
+          "name": "alert_events_geofence_id_geofences_id_fk",
+          "tableFrom": "alert_events",
+          "tableTo": "geofences",
+          "columnsFrom": [
+            "geofence_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "alert_events_type_check": {
+          "name": "alert_events_type_check",
+          "value": "\"alert_events\".\"type\" in ('geofence_exit', 'battery_low')"
+        },
+        "alert_events_status_check": {
+          "name": "alert_events_status_check",
+          "value": "\"alert_events\".\"status\" in ('open', 'acked', 'closed')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.audit_log": {
+      "name": "audit_log",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "always",
+            "name": "audit_log_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "9223372036854775807",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "action": {
+          "name": "action",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "entity": {
+          "name": "entity",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "entity_id": {
+          "name": "entity_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "meta": {
+          "name": "meta",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "at": {
+          "name": "at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "audit_log_user_id_idx": {
+          "name": "audit_log_user_id_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "audit_log_entity_idx": {
+          "name": "audit_log_entity_idx",
+          "columns": [
+            {
+              "expression": "entity",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "entity_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "audit_log_user_id_users_id_fk": {
+          "name": "audit_log_user_id_users_id_fk",
+          "tableFrom": "audit_log",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.devices": {
+      "name": "devices",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "esn": {
+          "name": "esn",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "imei": {
+          "name": "imei",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "serial_number": {
+          "name": "serial_number",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "activation_code": {
+          "name": "activation_code",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "wialon_unit_id": {
+          "name": "wialon_unit_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "model": {
+          "name": "model",
+          "type": "varchar(120)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'available'"
+        },
+        "battery_pct": {
+          "name": "battery_pct",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "connectivity": {
+          "name": "connectivity",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_message_at": {
+          "name": "last_message_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ingest_watermark": {
+          "name": "ingest_watermark",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_simulated": {
+          "name": "is_simulated",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "devices_esn_unique": {
+          "name": "devices_esn_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "esn"
+          ]
+        },
+        "devices_imei_unique": {
+          "name": "devices_imei_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "imei"
+          ]
+        },
+        "devices_serial_number_unique": {
+          "name": "devices_serial_number_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "serial_number"
+          ]
+        },
+        "devices_activation_code_unique": {
+          "name": "devices_activation_code_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "activation_code"
+          ]
+        },
+        "devices_wialon_unit_id_unique": {
+          "name": "devices_wialon_unit_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "wialon_unit_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "devices_status_check": {
+          "name": "devices_status_check",
+          "value": "\"devices\".\"status\" in ('available', 'assigned', 'inactive')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.pet_devices": {
+      "name": "pet_devices",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "pet_id": {
+          "name": "pet_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "device_id": {
+          "name": "device_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "assigned_at": {
+          "name": "assigned_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "released_at": {
+          "name": "released_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "pet_devices_active_device_id_idx": {
+          "name": "pet_devices_active_device_id_idx",
+          "columns": [
+            {
+              "expression": "device_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"pet_devices\".\"released_at\" is null",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "pet_devices_active_pet_id_idx": {
+          "name": "pet_devices_active_pet_id_idx",
+          "columns": [
+            {
+              "expression": "pet_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"pet_devices\".\"released_at\" is null",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "pet_devices_pet_id_idx": {
+          "name": "pet_devices_pet_id_idx",
+          "columns": [
+            {
+              "expression": "pet_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "pet_devices_device_id_idx": {
+          "name": "pet_devices_device_id_idx",
+          "columns": [
+            {
+              "expression": "device_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "pet_devices_pet_id_pets_id_fk": {
+          "name": "pet_devices_pet_id_pets_id_fk",
+          "tableFrom": "pet_devices",
+          "tableTo": "pets",
+          "columnsFrom": [
+            "pet_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "pet_devices_device_id_devices_id_fk": {
+          "name": "pet_devices_device_id_devices_id_fk",
+          "tableFrom": "pet_devices",
+          "tableTo": "devices",
+          "columnsFrom": [
+            "device_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.email_verification_tokens": {
+      "name": "email_verification_tokens",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "token_hash": {
+          "name": "token_hash",
+          "type": "char(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "used_at": {
+          "name": "used_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "email_verification_tokens_user_id_idx": {
+          "name": "email_verification_tokens_user_id_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "email_verification_tokens_user_id_users_id_fk": {
+          "name": "email_verification_tokens_user_id_users_id_fk",
+          "tableFrom": "email_verification_tokens",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "email_verification_tokens_token_hash_unique": {
+          "name": "email_verification_tokens_token_hash_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "token_hash"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.geofences": {
+      "name": "geofences",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "pet_id": {
+          "name": "pet_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(120)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'safe_circle'"
+        },
+        "geometry": {
+          "name": "geometry",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "active": {
+          "name": "active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "geofence_state": {
+          "name": "geofence_state",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{\"state\":\"unknown\",\"updatedAt\":null}'::jsonb"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "geofences_pet_id_name_idx": {
+          "name": "geofences_pet_id_name_idx",
+          "columns": [
+            {
+              "expression": "pet_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "name",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "geofences_pet_id_idx": {
+          "name": "geofences_pet_id_idx",
+          "columns": [
+            {
+              "expression": "pet_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "geofences_pet_id_pets_id_fk": {
+          "name": "geofences_pet_id_pets_id_fk",
+          "tableFrom": "geofences",
+          "tableTo": "pets",
+          "columnsFrom": [
+            "pet_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "geofences_type_check": {
+          "name": "geofences_type_check",
+          "value": "\"geofences\".\"type\" in ('safe_circle')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.pet_vaccines": {
+      "name": "pet_vaccines",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "pet_id": {
+          "name": "pet_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "catalog_id": {
+          "name": "catalog_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(120)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "applied_at": {
+          "name": "applied_at",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "next_dose_at": {
+          "name": "next_dose_at",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "vet_name": {
+          "name": "vet_name",
+          "type": "varchar(120)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "clinic": {
+          "name": "clinic",
+          "type": "varchar(120)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "document_key": {
+          "name": "document_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "pet_vaccines_pet_id_applied_at_idx": {
+          "name": "pet_vaccines_pet_id_applied_at_idx",
+          "columns": [
+            {
+              "expression": "pet_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "applied_at",
+              "isExpression": false,
+              "asc": false,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "pet_vaccines_catalog_id_idx": {
+          "name": "pet_vaccines_catalog_id_idx",
+          "columns": [
+            {
+              "expression": "catalog_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "pet_vaccines_created_by_idx": {
+          "name": "pet_vaccines_created_by_idx",
+          "columns": [
+            {
+              "expression": "created_by",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "pet_vaccines_pet_id_pets_id_fk": {
+          "name": "pet_vaccines_pet_id_pets_id_fk",
+          "tableFrom": "pet_vaccines",
+          "tableTo": "pets",
+          "columnsFrom": [
+            "pet_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "pet_vaccines_catalog_id_vaccine_catalog_id_fk": {
+          "name": "pet_vaccines_catalog_id_vaccine_catalog_id_fk",
+          "tableFrom": "pet_vaccines",
+          "tableTo": "vaccine_catalog",
+          "columnsFrom": [
+            "catalog_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "pet_vaccines_created_by_users_id_fk": {
+          "name": "pet_vaccines_created_by_users_id_fk",
+          "tableFrom": "pet_vaccines",
+          "tableTo": "users",
+          "columnsFrom": [
+            "created_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.vaccine_catalog": {
+      "name": "vaccine_catalog",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "species": {
+          "name": "species",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(120)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "scheme": {
+          "name": "scheme",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "vaccine_catalog_species_name_idx": {
+          "name": "vaccine_catalog_species_name_idx",
+          "columns": [
+            {
+              "expression": "species",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "name",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "vaccine_catalog_species_check": {
+          "name": "vaccine_catalog_species_check",
+          "value": "\"vaccine_catalog\".\"species\" in ('dog', 'cat')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.weights": {
+      "name": "weights",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "pet_id": {
+          "name": "pet_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "weight_kg": {
+          "name": "weight_kg",
+          "type": "numeric(5, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "body_condition": {
+          "name": "body_condition",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "measured_at": {
+          "name": "measured_at",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "weights_pet_id_measured_at_idx": {
+          "name": "weights_pet_id_measured_at_idx",
+          "columns": [
+            {
+              "expression": "pet_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "measured_at",
+              "isExpression": false,
+              "asc": false,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "weights_created_by_idx": {
+          "name": "weights_created_by_idx",
+          "columns": [
+            {
+              "expression": "created_by",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "weights_pet_id_pets_id_fk": {
+          "name": "weights_pet_id_pets_id_fk",
+          "tableFrom": "weights",
+          "tableTo": "pets",
+          "columnsFrom": [
+            "pet_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "weights_created_by_users_id_fk": {
+          "name": "weights_created_by_users_id_fk",
+          "tableFrom": "weights",
+          "tableTo": "users",
+          "columnsFrom": [
+            "created_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "weights_body_condition_check": {
+          "name": "weights_body_condition_check",
+          "value": "\"weights\".\"body_condition\" between 1 and 9"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.pet_users": {
+      "name": "pet_users",
+      "schema": "",
+      "columns": {
+        "pet_id": {
+          "name": "pet_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "role": {
+          "name": "role",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "permissions": {
+          "name": "permissions",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'active'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "pet_users_user_id_idx": {
+          "name": "pet_users_user_id_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "pet_users_pet_id_pets_id_fk": {
+          "name": "pet_users_pet_id_pets_id_fk",
+          "tableFrom": "pet_users",
+          "tableTo": "pets",
+          "columnsFrom": [
+            "pet_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "pet_users_user_id_users_id_fk": {
+          "name": "pet_users_user_id_users_id_fk",
+          "tableFrom": "pet_users",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "pet_users_pet_id_user_id_pk": {
+          "name": "pet_users_pet_id_user_id_pk",
+          "columns": [
+            "pet_id",
+            "user_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "pet_users_role_check": {
+          "name": "pet_users_role_check",
+          "value": "\"pet_users\".\"role\" in ('owner', 'family', 'walker', 'vet')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.pets": {
+      "name": "pets",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(120)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "species": {
+          "name": "species",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "breed": {
+          "name": "breed",
+          "type": "varchar(120)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "birth_date": {
+          "name": "birth_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "approx_age_months": {
+          "name": "approx_age_months",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sex": {
+          "name": "sex",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "current_weight_kg": {
+          "name": "current_weight_kg",
+          "type": "numeric(5, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "size": {
+          "name": "size",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "color": {
+          "name": "color",
+          "type": "varchar(60)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sterilized": {
+          "name": "sterilized",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "microchip": {
+          "name": "microchip",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "photo_key": {
+          "name": "photo_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "lost_mode": {
+          "name": "lost_mode",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "last_position": {
+          "name": "last_position",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_communication_at": {
+          "name": "last_communication_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "pets_species_check": {
+          "name": "pets_species_check",
+          "value": "\"pets\".\"species\" in ('dog', 'cat')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.push_tokens": {
+      "name": "push_tokens",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "expo_token": {
+          "name": "expo_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "platform": {
+          "name": "platform",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "last_seen_at": {
+          "name": "last_seen_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "push_tokens_user_id_idx": {
+          "name": "push_tokens_user_id_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "push_tokens_user_id_users_id_fk": {
+          "name": "push_tokens_user_id_users_id_fk",
+          "tableFrom": "push_tokens",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "push_tokens_expo_token_unique": {
+          "name": "push_tokens_expo_token_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "expo_token"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "push_tokens_platform_check": {
+          "name": "push_tokens_platform_check",
+          "value": "\"push_tokens\".\"platform\" in ('ios', 'android')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.reminders": {
+      "name": "reminders",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "pet_id": {
+          "name": "pet_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "varchar(120)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "due_at": {
+          "name": "due_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "advance_minutes": {
+          "name": "advance_minutes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 60
+        },
+        "channel": {
+          "name": "channel",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'push'"
+        },
+        "status": {
+          "name": "status",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'scheduled'"
+        },
+        "schedule_name": {
+          "name": "schedule_name",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "enqueued_at": {
+          "name": "enqueued_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "reminders_pet_id_idx": {
+          "name": "reminders_pet_id_idx",
+          "columns": [
+            {
+              "expression": "pet_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "reminders_created_by_idx": {
+          "name": "reminders_created_by_idx",
+          "columns": [
+            {
+              "expression": "created_by",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "reminders_due_at_scheduled_idx": {
+          "name": "reminders_due_at_scheduled_idx",
+          "columns": [
+            {
+              "expression": "due_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "\"reminders\".\"status\" = 'scheduled'",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "reminders_pet_id_pets_id_fk": {
+          "name": "reminders_pet_id_pets_id_fk",
+          "tableFrom": "reminders",
+          "tableTo": "pets",
+          "columnsFrom": [
+            "pet_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "reminders_created_by_users_id_fk": {
+          "name": "reminders_created_by_users_id_fk",
+          "tableFrom": "reminders",
+          "tableTo": "users",
+          "columnsFrom": [
+            "created_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "reminders_type_check": {
+          "name": "reminders_type_check",
+          "value": "\"reminders\".\"type\" in ('vaccine', 'deworming', 'medication', 'appointment', 'weight', 'food', 'custom')"
+        },
+        "reminders_advance_minutes_check": {
+          "name": "reminders_advance_minutes_check",
+          "value": "\"reminders\".\"advance_minutes\" between 0 and 10080"
+        },
+        "reminders_channel_check": {
+          "name": "reminders_channel_check",
+          "value": "\"reminders\".\"channel\" in ('push')"
+        },
+        "reminders_status_check": {
+          "name": "reminders_status_check",
+          "value": "\"reminders\".\"status\" in ('scheduled', 'sent', 'cancelled')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.users": {
+      "name": "users",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar(320)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "password_hash": {
+          "name": "password_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "first_name": {
+          "name": "first_name",
+          "type": "varchar(120)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "last_name": {
+          "name": "last_name",
+          "type": "varchar(120)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "phone": {
+          "name": "phone",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "country": {
+          "name": "country",
+          "type": "char(2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "timezone": {
+          "name": "timezone",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'UTC'"
+        },
+        "terms_accepted_at": {
+          "name": "terms_accepted_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email_verified_at": {
+          "name": "email_verified_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "users_email_unique": {
+          "name": "users_email_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "email"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

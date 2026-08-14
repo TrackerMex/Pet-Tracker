@@ -12,7 +12,7 @@ import { z } from 'zod';
  * (strictObject) es deliberada: alli el input es de un cliente, aqui de otro
  * worker del mismo repo.
  */
-export const notificationMessageSchema = z.object({
+export const alertMessageSchema = z.object({
   version: z.literal(1),
   kind: z.enum(['alert', 'alert_resolved']),
   alertId: z.uuid(),
@@ -24,5 +24,24 @@ export const notificationMessageSchema = z.object({
     alertId: z.uuid(),
   }),
 });
+
+export const reminderMessageSchema = z.object({
+  version: z.literal(1),
+  kind: z.literal('reminder'),
+  reminderId: z.uuid(),
+  petId: z.uuid(),
+  scheduleName: z.string(),
+  title: z.string(),
+  body: z.string(),
+  data: z.object({
+    petId: z.uuid(),
+    reminderId: z.uuid(),
+  }),
+});
+
+export const notificationMessageSchema = z.discriminatedUnion('kind', [
+  alertMessageSchema,
+  reminderMessageSchema,
+]);
 
 export type NotificationMessage = z.infer<typeof notificationMessageSchema>;

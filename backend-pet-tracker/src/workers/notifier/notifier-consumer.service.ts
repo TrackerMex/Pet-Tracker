@@ -8,6 +8,8 @@ import type { Message } from '@aws-sdk/client-sqs';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { SQS_CLIENT } from '@/aws/aws.constants';
 import { QUEUE_NOTIFICATIONS } from '@/aws/constants';
+import { REMINDER_REPOSITORY } from '@/modules/reminders/domain/repositories/reminder.repository';
+import type { ReminderRepository } from '@/modules/reminders/domain/repositories/reminder.repository';
 import { PUSH_TOKEN_REPOSITORY } from '@/modules/users/domain/repositories/push-token.repository';
 import type { PushTokenRepository } from '@/modules/users/domain/repositories/push-token.repository';
 import { notificationMessageSchema } from './notification-message.schema';
@@ -47,6 +49,8 @@ export class NotifierConsumerService {
     @Inject(PUSH_TOKEN_REPOSITORY)
     private readonly pushTokens: PushTokenRepository,
     @Inject(PUSH_SENDER) private readonly sender: PushSender,
+    @Inject(REMINDER_REPOSITORY)
+    private readonly reminders?: ReminderRepository,
   ) {}
 
   async drainOnce(): Promise<void> {
@@ -141,7 +145,56 @@ export class NotifierConsumerService {
     message: NotificationMessage,
     messageId: string,
   ): Promise<void> {
-    const tokens = await this.pushTokens.findActiveMembersTokens(message.petId);
+    if (message.kind === 'reminder') {
+      await this.notifyReminder(message, messageId);
+      return;
+    }
+
+    await this.sendPush(message.petId, message, messageId);
+  }
+
+  private async notifyReminder(
+    message: Extract<NotificationMessage, { kind: 'reminder' }>,
+    messageId: string,
+  ): Promise<void> {
+    if (!this.reminders) throw new Error('Reminder repository unavailable');
+    const reminder = await this.reminders.findById(message.reminderId);
+    if (!reminder) {
+      this.logReminderSkipped(messageId, message.reminderId, 'not_found');
+      return;
+    }
+    if (reminder.status !== 'scheduled') {
+      this.logReminderSkipped(messageId, message.reminderId, 'not_scheduled');
+      return;
+    }
+    if (reminder.scheduleName !== message.scheduleName) {
+      this.logReminderSkipped(messageId, message.reminderId, 'stale_schedule');
+      return;
+    }
+
+    await this.sendPush(reminder.petId, message, messageId);
+    await this.reminders.markSent(message.reminderId);
+  }
+
+  private logReminderSkipped(
+    messageId: string,
+    reminderId: string,
+    skipped: 'not_found' | 'not_scheduled' | 'stale_schedule',
+  ): void {
+    this.logger.log({
+      scope: NOTIFIER_SCOPE,
+      messageId,
+      reminderId,
+      skipped,
+    });
+  }
+
+  private async sendPush(
+    petId: string,
+    message: NotificationMessage,
+    messageId: string,
+  ): Promise<void> {
+    const tokens = await this.pushTokens.findActiveMembersTokens(petId);
 
     if (tokens.length === 0) {
       // R10: log informativo, sin excepcion y sin llamar a Expo. El mensaje
@@ -149,7 +202,7 @@ export class NotifierConsumerService {
       this.logger.log({
         scope: NOTIFIER_SCOPE,
         messageId,
-        petId: message.petId,
+        petId,
         recipients: 0,
       });
       return;
@@ -160,7 +213,9 @@ export class NotifierConsumerService {
       tokens,
       title: message.title,
       body: message.body,
-      data: message.data,
+      // Los adaptadores existentes reenvian data sin inspeccionarla; su tipo
+      // conserva alertId porque la rama alert de #13 esta congelada.
+      data: message.data as { petId: string; alertId: string },
     });
 
     for (const result of results) {

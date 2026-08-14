@@ -6,15 +6,32 @@
 ---
 
 ```
-feature: #16 pet-reminders (P2, spec_ready)
+feature: #16 pet-reminders (P2, in_progress)
 inicio: 2026-08-11
-agentes lanzados: spec_author (terminado)
-estado: spec escrita, PR abierta, esperando gate humano
+agentes lanzados: spec_author (terminado), reviewer (terminado)
+estado: implementación de Codex APROBADA por reviewer (2026-08-13), PR abierta
 ```
 
 ## Hecho
 
-- init.sh verde (e2e saltados: puerto 4566 sin infra — spec no la necesita)
+- Codex inició la implementación: baseline `./init.sh` verde (127 suites / 901
+  tests backend; 2 suites / 14 tests infra; e2e omitidos sin Postgres).
+- R1 completado con historial TDD rojo `a834a82` → verde `9745aa8`.
+- R2 completado con historial TDD rojo `5decc79` → verde `aaf7788`.
+- R3 completado con historial TDD rojo `ef01906` → verde `a118440`.
+- R4 completado con historial TDD rojo `f899527` → verde `713d285`.
+- R5 completado con historial TDD rojo `0479f29` → verde `c2e1e3e`.
+- R6 completado con historial TDD rojo `a58fbe3` → verde `13f5859`.
+- R7 completado con historial TDD rojo `355d5cc` → verde `15b0274`.
+- R8 completado con historial TDD rojo `1de5b67` → verde `f01d71a`.
+- R9 completado con historial TDD rojo `4179065` → verde `52821a3`.
+- R10 completado con historial TDD rojo `56fdd11` → verde `7a29488`.
+- R11 completado con historial TDD rojo `e4fb8e4` → verde `0e2419c`.
+- R12 completado con historial TDD rojo `ef91e6c` → verde `6147f96`.
+- Verificación final detectó y corrigió en `4f20037` la compatibilidad de tipos
+  del constructor del notifier con los tests alert congelados de #13.
+- Verificación final `./init.sh` verde: 132 suites / 956 tests backend, 2 / 14
+  infra, 15 suites / 238 tests e2e, lint y typecheck sin errores.
 - spec_author escribió specs/pet-reminders/ (requirements R1-R12, design D1-D11,
   tasks, traceability)
 - Decisiones clave de la spec: cron 60s RemindersDispatchService gated por
@@ -26,10 +43,20 @@ estado: spec escrita, PR abierta, esperando gate humano
   camino de vuelta a EventBridge Scheduler en D9
 - feature_list.json: #16 pending → spec_ready
 
+- reviewer validó C2-C7, trazabilidad R1-R12 (12 tripletas rojo→verde), los 4
+  acceptance criteria y la rama alert intacta del notifier; corrió ./init.sh
+  independiente (exit 0 con infra caliente). Veredicto APROBADO en
+  progress/review_pet-reminders.md (2026-08-13)
+
 ## Siguiente
 
-1. GATE HUMANO: aprobar specs/pet-reminders/requirements.md (casilla) y
-   mergear la PR de la spec
-2. Tras aprobación: handoff a Codex CLI (plantilla en .claude/agents/leader.md),
-   exigir commits test-primero
-3. Al terminar Codex: lanzar reviewer
+1. HECHO: gate humano — spec aprobada y PR #44 mergeada (2026-08-11)
+2. HECHO: handoff a Codex; implementación completa R1-R12 en
+   branch feature/16-pet-reminders
+3. HECHO: reviewer emitió APROBADO (progress/review_pet-reminders.md)
+4. Humano: mergear la PR de feature/16-pet-reminders
+5. Humano post-merge: smoke de reloj real — crear reminder con dueAt = now+3 min
+   y ver el mensaje en la cola notifications ~2 min después, status → sent
+   (design.md §Verificación manual). #16 NO se marca done hasta este paso
+6. Leader tras el smoke: feature_list.json #16 → done (branch
+   update-status-16 + PR, main protegida) y cerrar sesión en progress/history.md

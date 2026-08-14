@@ -7,7 +7,10 @@ import {
 import type { Message } from '@aws-sdk/client-sqs';
 import { Logger } from '@nestjs/common';
 import { QUEUE_NOTIFICATIONS } from '@/aws/constants';
+import { Reminder } from '@/modules/reminders/domain/entities/reminder.entity';
+import type { ReminderRepository } from '@/modules/reminders/domain/repositories/reminder.repository';
 import type { PushTokenRepository } from '@/modules/users/domain/repositories/push-token.repository';
+import { notificationMessageSchema } from './notification-message.schema';
 import { NotifierConsumerService } from './notifier-consumer.service';
 import type { PushResult, PushSender } from './push-sender';
 
@@ -305,5 +308,194 @@ describe('R14: un error no controlado no envenena el resto del lote', () => {
     await service(sqs, tokens, senderStub()).drainOnce();
 
     expect(sqs.deleted).toEqual(['r-1', 'r-3']);
+  });
+});
+
+describe('R6 (pet-reminders #16): schema acepta el mensaje reminder', () => {
+  it('acepta la rama reminder con scheduleName y data exactos', () => {
+    expect(
+      notificationMessageSchema.parse({
+        version: 1,
+        kind: 'reminder',
+        reminderId: '01924a3f-0000-7000-8000-0000000000cc',
+        petId: PET_ID,
+        scheduleName: 'reminder-01924a3f-0000-7000-8000-0000000000cc',
+        title: 'Desparasitación',
+        body: 'Recordatorio: Desparasitación',
+        data: {
+          petId: PET_ID,
+          reminderId: '01924a3f-0000-7000-8000-0000000000cc',
+        },
+      }),
+    ).toMatchObject({ kind: 'reminder' });
+  });
+});
+
+const REMINDER_ID = '01924a3f-0000-7000-8000-0000000000cc';
+const SCHEDULE_NAME = `reminder-${REMINDER_ID}`;
+
+function reminderBody(scheduleName = SCHEDULE_NAME): string {
+  return JSON.stringify({
+    version: 1,
+    kind: 'reminder',
+    reminderId: REMINDER_ID,
+    petId: PET_ID,
+    scheduleName,
+    title: 'Desparasitación',
+    body: 'Recordatorio: Desparasitación',
+    data: { petId: PET_ID, reminderId: REMINDER_ID },
+  });
+}
+
+function reminderRow(
+  status: Reminder['status'] = 'scheduled',
+  scheduleName = SCHEDULE_NAME,
+): Reminder {
+  return new Reminder({
+    id: REMINDER_ID,
+    petId: PET_ID,
+    type: 'deworming',
+    title: 'Desparasitación',
+    dueAt: new Date('2026-08-14T00:00:00.000Z'),
+    advanceMinutes: 60,
+    channel: 'push',
+    status,
+    scheduleName,
+    enqueuedAt: new Date('2026-08-13T23:00:00.000Z'),
+    createdBy: '01924a3f-0000-7000-8000-0000000000dd',
+  });
+}
+
+function reminderRepositoryStub() {
+  const findById = jest.fn();
+  const markSent = jest.fn().mockResolvedValue(true);
+  const client = {
+    create: jest.fn(),
+    findDue: jest.fn(),
+    markEnqueued: jest.fn(),
+    findById,
+    markSent,
+  } as unknown as ReminderRepository;
+  return { client, findById, markSent };
+}
+
+function reminderService(
+  sqs: SqsStub,
+  tokens: MockOf<PushTokenRepository>,
+  sender: MockOf<PushSender>,
+  reminders: ReminderRepository,
+): NotifierConsumerService {
+  return new NotifierConsumerService(sqs.client, tokens, sender, reminders);
+}
+
+describe('R7 (pet-reminders #16): notifier procesa reminder idempotentemente', () => {
+  let logInfo: jest.SpyInstance;
+
+  beforeEach(() => {
+    logInfo = jest.spyOn(Logger.prototype, 'log').mockImplementation();
+    jest.spyOn(Logger.prototype, 'error').mockImplementation();
+  });
+  afterEach(() => jest.restoreAllMocks());
+
+  it('envia push, marca sent despues y borra el mensaje', async () => {
+    const sqs = sqsStub([[message(reminderBody())]]);
+    const tokens = tokensStub([TOKEN_A]);
+    const sender = senderStub();
+    const reminders = reminderRepositoryStub();
+    reminders.findById.mockResolvedValue(reminderRow());
+
+    await reminderService(sqs, tokens, sender, reminders.client).drainOnce();
+
+    expect(sender.send).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tokens: [TOKEN_A],
+        data: { petId: PET_ID, reminderId: REMINDER_ID },
+      }),
+    );
+    expect(reminders.markSent).toHaveBeenCalledWith(REMINDER_ID);
+    expect(sender.send.mock.invocationCallOrder[0]).toBeLessThan(
+      reminders.markSent.mock.invocationCallOrder[0],
+    );
+    expect(sqs.deleted).toEqual(['receipt-1']);
+  });
+
+  it.each([
+    ['not_found', null, SCHEDULE_NAME],
+    ['not_scheduled', reminderRow('cancelled'), SCHEDULE_NAME],
+    [
+      'stale_schedule',
+      reminderRow('scheduled', 'reminder-new'),
+      'reminder-old',
+    ],
+  ] as const)(
+    'skip %s no pushea, no marca y borra el mensaje',
+    async (skipped, row, messageScheduleName) => {
+      const sqs = sqsStub([[message(reminderBody(messageScheduleName))]]);
+      const tokens = tokensStub([TOKEN_A]);
+      const sender = senderStub();
+      const reminders = reminderRepositoryStub();
+      reminders.findById.mockResolvedValue(row);
+
+      await reminderService(sqs, tokens, sender, reminders.client).drainOnce();
+
+      expect(sender.send).not.toHaveBeenCalled();
+      expect(tokens.findActiveMembersTokens).not.toHaveBeenCalled();
+      expect(reminders.markSent).not.toHaveBeenCalled();
+      expect(sqs.deleted).toEqual(['receipt-1']);
+      expect(logInfo).toHaveBeenCalledWith({
+        scope: 'notifier-consumer',
+        messageId: 'msg-receipt-1',
+        reminderId: REMINDER_ID,
+        skipped,
+      });
+    },
+  );
+
+  it('una entrega duplicada produce un solo push y luego not_scheduled', async () => {
+    const sqs = sqsStub([
+      [message(reminderBody(), 'first'), message(reminderBody(), 'second')],
+    ]);
+    const sender = senderStub();
+    const reminders = reminderRepositoryStub();
+    let status: Reminder['status'] = 'scheduled';
+    reminders.findById.mockImplementation(() =>
+      Promise.resolve(reminderRow(status)),
+    );
+    reminders.markSent.mockImplementation(() => {
+      status = 'sent';
+      return Promise.resolve(true);
+    });
+
+    await reminderService(
+      sqs,
+      tokensStub([TOKEN_A]),
+      sender,
+      reminders.client,
+    ).drainOnce();
+
+    expect(sender.send).toHaveBeenCalledTimes(1);
+    expect(reminders.markSent).toHaveBeenCalledTimes(1);
+    expect(sqs.deleted).toEqual(['first', 'second']);
+    expect(logInfo).toHaveBeenCalledWith(
+      expect.objectContaining({ skipped: 'not_scheduled' }),
+    );
+  });
+
+  it('cero destinatarios sigue marcando sent y borra el mensaje', async () => {
+    const sqs = sqsStub([[message(reminderBody())]]);
+    const sender = senderStub();
+    const reminders = reminderRepositoryStub();
+    reminders.findById.mockResolvedValue(reminderRow());
+
+    await reminderService(
+      sqs,
+      tokensStub([]),
+      sender,
+      reminders.client,
+    ).drainOnce();
+
+    expect(sender.send).not.toHaveBeenCalled();
+    expect(reminders.markSent).toHaveBeenCalledWith(REMINDER_ID);
+    expect(sqs.deleted).toEqual(['receipt-1']);
   });
 });
