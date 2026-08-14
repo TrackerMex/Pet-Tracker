@@ -1,5 +1,29 @@
+import { parseArgs } from 'node:util';
+import { ConfigService } from '@nestjs/config';
+import { config as loadDotenv } from 'dotenv';
+import { drizzle } from 'drizzle-orm/node-postgres';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { Pool } from 'pg';
+import { uuidv7 } from 'uuidv7';
+import { devices } from '@/db/schema/devices.schema';
+import { createWialonClient } from '@/integrations/wialon/wialon.factory';
 import { WialonHttpClient } from '@/integrations/wialon/wialon-http.client';
 import type { WialonClient } from '@/integrations/wialon/wialon-client.interface';
+import { generateActivationCode } from '@/modules/devices/application/activation-code';
+
+export interface ProvisionDeviceInput {
+  wialonUnitId: string;
+  imei?: string;
+  serialNumber?: string;
+  esn?: string;
+  model?: string;
+}
+
+export interface ProvisionDeviceResult {
+  created: boolean;
+  deviceId: string;
+  activationCode: string | null;
+}
 
 export class SimulatedWialonClientError extends Error {
   constructor() {
@@ -14,4 +38,75 @@ export function assertRealWialonClient(client: WialonClient): void {
   if (!(client instanceof WialonHttpClient)) {
     throw new SimulatedWialonClientError();
   }
+}
+
+export async function provisionDevice(
+  db: NodePgDatabase,
+  wialon: WialonClient,
+  input: ProvisionDeviceInput,
+): Promise<ProvisionDeviceResult> {
+  void wialon;
+  const row = {
+    id: uuidv7(),
+    wialonUnitId: input.wialonUnitId,
+    imei: input.imei ?? null,
+    serialNumber: input.serialNumber ?? null,
+    esn: input.esn ?? null,
+    model: input.model ?? null,
+    activationCode: generateActivationCode(),
+    status: 'available' as const,
+    isSimulated: false,
+  };
+
+  await db.insert(devices).values(row);
+
+  return {
+    created: true,
+    deviceId: row.id,
+    activationCode: row.activationCode,
+  };
+}
+
+async function main(): Promise<void> {
+  loadDotenv({ path: '../.env' });
+  const { values } = parseArgs({
+    options: {
+      'unit-id': { type: 'string' },
+      imei: { type: 'string' },
+      serial: { type: 'string' },
+      esn: { type: 'string' },
+      model: { type: 'string' },
+    },
+  });
+  const wialonUnitId = values['unit-id'];
+
+  if (!wialonUnitId) {
+    throw new Error('falta --unit-id');
+  }
+
+  const wialon = createWialonClient(new ConfigService());
+  assertRealWialonClient(wialon);
+  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+
+  try {
+    const result = await provisionDevice(drizzle(pool), wialon, {
+      wialonUnitId,
+      imei: values.imei,
+      serialNumber: values.serial,
+      esn: values.esn,
+      model: values.model,
+    });
+    console.log(
+      `provision-device: ${result.created ? 'alta OK' : 'sin cambios'}, device ${result.deviceId}, activation_code ${result.activationCode}`,
+    );
+  } finally {
+    await pool.end();
+  }
+}
+
+if (require.main === module) {
+  main().catch((error: unknown) => {
+    console.error('provision-device failed:', error);
+    process.exitCode = 1;
+  });
 }
