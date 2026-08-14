@@ -14,5 +14,6 @@
   `scripts/backfill-weights.ts` (R3, R4), documenta en docs/data-model.md (R5)
   y deja sin cambios el contrato de lectura de GET /v1/pets/:petId (R6).
 - implementador: Codex CLI
-- estado: R1/R2 verdes; R3/R4 rojo commiteado en `dbd4fae`
-- siguiente paso: implementar `backfillWeights(db)` y verificar idempotencia
+- estado: R1/R2 verdes; R3/R4 verdes en `79121d2` (6 e2e, typecheck y
+  dos ejecuciones CLI idempotentes)
+- siguiente paso: documentar el escritor único en `docs/data-model.md` (R5)
