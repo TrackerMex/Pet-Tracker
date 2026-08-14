@@ -1,11 +1,11 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-08-13
-**Features completadas**: 19/23 (`feature_list.json`)
-**En progreso**: ninguna.
-**Pendientes**: 4 (P3): #17 `nutrition-profile-engine`, #18
-`nutrition-ai-explainer`, #22 `weight-single-source-of-truth` y #23
-`init-env-drift-warning`.
+**Última actualización**: 2026-08-14
+**Features completadas**: 20/26 (`feature_list.json`)
+**En progreso**: #24 `device-provisioning-admin` (implementación lista para review).
+**Pendientes**: 5: #17 `nutrition-profile-engine`, #18
+`nutrition-ai-explainer`, #23 `init-env-drift-warning`, #25
+`device-subscriptions` y #26 `claim-activation-code-only`.
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
 desde 2026-08-10. Hay recursos vivos en la cuenta, aunque hoy sin coste.
@@ -63,6 +63,12 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
+- **`device-provisioning-admin` (#24) implementada, pendiente de review**
+  (2026-08-14): CLI interno `provision:device`, verificación por
+  `WialonClient.listUnits()`, idempotencia por `wialon_unit_id` y secreto
+  Crockford de aridad cero. TDD R1-R8 trazado; `init.sh` verde con 956 unit y
+  254 e2e; sin migración ni cambios en claim, seed, poller o controllers. Ver
+  `progress/impl_device-provisioning-admin.md`.
 - **`health-weights` (#15) done** (2026-08-11): historial de peso extendiendo el
   módulo `src/modules/health/` de #14 — migración nueva `0010` con la tabla
   `weights`, `POST /v1/pets/:petId/weights` (owner-only) y
@@ -575,6 +581,18 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-08-14 (2)** — Implementación TDD de `device-provisioning-admin`
+  (#24) en `feature/24-device-provisioning-admin`: R1-R8 completos y
+  trazabilidad sin pendientes. Nuevo CLI interno `provision:device` para
+  registrar hardware real, validando la unidad con `listUnits()` antes del
+  INSERT; reprovisionar conserva el secreto; `generateActivationCode()` usa
+  `randomBytes()` y tiene aridad cero. `init.sh` exit 0 (956 unit, 254 e2e,
+  build/lint/typecheck), `drizzle-kit generate` sin cambios. No se tocó #7,
+  #8, seed, schema, migraciones ni controllers; no se usó Wialon real.
+  Implementación lista en
+  `progress/impl_device-provisioning-admin.md`; siguiente: `reviewer` y, si
+  aprueba, marcar `done`, push y PR.
 
 - **2026-08-14** — Ciclo SDD de `weight-single-source-of-truth` (#22), reparto
   Claude/Codex: `spec_author` escribió la spec (R1-R6) sobre la deuda destapada
