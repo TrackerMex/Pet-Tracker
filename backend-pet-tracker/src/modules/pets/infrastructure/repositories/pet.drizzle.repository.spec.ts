@@ -13,7 +13,6 @@ function buildNewPet(): NewPet {
     name: 'Firulais',
     species: 'dog',
     birthDate: '2024-01-15',
-    currentWeightKg: 25.5,
   };
 }
 
@@ -117,13 +116,12 @@ describe('R2: createWithOwner inserta pets y pet_users(owner) en una transaccion
     );
   });
 
-  it('convierte weightKg a string para numeric(5,2) y de vuelta a number en la entidad', async () => {
+  it('no envia current_weight_kg al insertar pets (R1 #22)', async () => {
     const { db, captured } = buildTransactionDbDouble();
     const repository = new PetDrizzleRepository(db);
 
-    const pet = await repository.createWithOwner(buildNewPet(), OWNER_ID);
+    await repository.createWithOwner(buildNewPet(), OWNER_ID);
 
-    expect(captured.petInsert?.currentWeightKg).toBe('25.5');
-    expect(pet.currentWeightKg).toBe(25.5);
+    expect(captured.petInsert).not.toHaveProperty('currentWeightKg');
   });
 });

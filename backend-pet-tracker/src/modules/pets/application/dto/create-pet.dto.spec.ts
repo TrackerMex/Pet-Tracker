@@ -35,7 +35,6 @@ describe('R4: el schema de POST /v1/pets acepta el body valido', () => {
       validBody({
         breed: 'Labrador',
         sex: 'male',
-        weightKg: 25.5,
         size: 'large',
         color: 'golden',
         sterilized: true,
@@ -59,9 +58,6 @@ describe('R4: el schema de POST /v1/pets rechaza cada campo invalido', () => {
     ['size fuera de small/medium/large', { size: 'xl' }],
     ['sterilized no booleano', { sterilized: 'yes' }],
     ['microchip de mas de 32 caracteres', { microchip: 'a'.repeat(33) }],
-    ['weightKg cero', { weightKg: 0 }],
-    ['weightKg negativo', { weightKg: -1 }],
-    ['weightKg por encima de numeric(5,2)', { weightKg: 1000 }],
   ])('rechaza %s', (_label, overrides) => {
     const result = CreatePetSchema.safeParse(validBody(overrides));
     expect(result.success).toBe(false);
@@ -85,6 +81,15 @@ describe('R4: el schema de POST /v1/pets rechaza cada campo invalido', () => {
       validBody({ birthDate: isoDateDaysFromNow(0) }),
     );
     expect(result.success).toBe(true);
+  });
+});
+
+describe('R1 (weight-single-source-of-truth #22): POST ignora weightKg', () => {
+  it('descarta weightKg aunque su valor antes fuera invalido', () => {
+    const result = CreatePetSchema.safeParse(validBody({ weightKg: -1 }));
+
+    expect(result.success).toBe(true);
+    expect(result.success && 'weightKg' in result.data).toBe(false);
   });
 });
 
