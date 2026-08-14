@@ -51,13 +51,13 @@ tags: [harness, spec]
 
 ## R1 — Alta de un collar real en `devices`
 
-- [ ] (1) Escribir test que falla para R1 —
+- [x] (1) Escribir test que falla para R1 —
       `test/provision-device.e2e-spec.ts`, caso "alta de un collar nuevo"
       de la tabla de [[design]] §Test
-- [ ] (2) Implementación mínima que lo pasa — `provisionDevice()` +
+- [x] (2) Implementación mínima que lo pasa — `provisionDevice()` +
       `main()` con `parseArgs` en `scripts/provision-device.ts`, y el script
       `provision:device` en `backend-pet-tracker/package.json` ([[design]] D4)
-- [ ] (3) Refactor con tests verdes
+- [x] (3) Refactor con tests verdes
 
 ## R2 — Verificación contra `listUnits()` antes de insertar
 
@@ -80,27 +80,27 @@ tags: [harness, spec]
 
 ## R6 — Coexistencia con `seed-devices.ts`
 
-- [ ] (1) Escribir test que falla para R6 — caso "coexistencia con el seed":
+- [x] (1) Escribir test que falla para R6 — caso "coexistencia con el seed":
       tras `seedSimulatedDevices(db)`, la fila aprovisionada sigue con
       `isSimulated === false` y su `activationCode` intacto; SIM-001..003
       con `isSimulated === true`
-- [ ] (2) Implementación mínima que lo pasa — **ninguna**: si el test es
+- [x] (2) Implementación mínima que lo pasa — **ninguna**: si el test es
       rojo, el bug está en `provisionDevice()`, no en el seed
       (`scripts/seed-devices.ts` y `src/db/seed/simulated-devices.ts` no se
       tocan, por spec)
-- [ ] (3) Refactor con tests verdes — `git diff` no debe listar ninguno de
+- [x] (3) Refactor con tests verdes — `git diff` no debe listar ninguno de
       esos dos archivos
 
 ## R7 — El collar aprovisionado se reclama con el flujo de #7 sin cambios
 
-- [ ] (1) Escribir test que falla para R7 — caso "claim end-to-end":
+- [x] (1) Escribir test que falla para R7 — caso "claim end-to-end":
       `POST /v1/devices/claim` con `{ petId, activationCode }` → `201`,
       fila activa en `pet_devices`, `devices.status === 'assigned'`
-- [ ] (2) Implementación mínima que lo pasa — **ninguna** en
+- [x] (2) Implementación mínima que lo pasa — **ninguna** en
       `src/modules/devices/`: si el test es rojo, el aprovisionamiento está
       generando filas que el claim no entiende y hay que arreglar
       `provisionDevice()`
-- [ ] (3) Refactor con tests verdes — `pnpm -C backend-pet-tracker run
+- [x] (3) Refactor con tests verdes — `pnpm -C backend-pet-tracker run
       test:e2e` completo (incluido `test/devices.e2e-spec.ts` de #7) sigue
       verde
 
