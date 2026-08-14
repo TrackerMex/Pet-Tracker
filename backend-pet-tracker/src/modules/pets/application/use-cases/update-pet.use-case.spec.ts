@@ -1,7 +1,11 @@
 import { AuditLogger } from '@/audit/audit-log.repository';
 import { Pet } from '@/modules/pets/domain/entities/pet.entity';
 import { PetNotFoundError } from '@/modules/pets/domain/errors/pet.errors';
-import { PetRepository } from '@/modules/pets/domain/repositories/pet.repository';
+import {
+  PetFieldChanges,
+  PetRepository,
+} from '@/modules/pets/domain/repositories/pet.repository';
+import { UpdatePetSchema } from '../dto/update-pet.dto';
 import { UpdatePetUseCase } from './update-pet.use-case';
 
 const PET_ID = '0198b2c3-4d5e-7a01-b234-56789abcdef0';
@@ -41,16 +45,22 @@ function buildDeps() {
 }
 
 describe('R13: PATCH actualiza unicamente los campos presentes', () => {
-  it('pasa al repositorio solo lo enviado, con weightKg mapeado', async () => {
+  it('pasa al repositorio solo lo enviado', async () => {
     const { pets, auditLogger, update } = buildDeps();
     const useCase = new UpdatePetUseCase(pets, auditLogger);
 
-    await useCase.execute(PET_ID, USER_ID, { name: 'Firu', weightKg: 12.5 });
+    await useCase.execute(PET_ID, USER_ID, { name: 'Firu' });
 
-    expect(update).toHaveBeenCalledWith(PET_ID, {
-      name: 'Firu',
+    expect(update).toHaveBeenCalledWith(PET_ID, { name: 'Firu' });
+  });
+
+  it('PetFieldChanges no permite currentWeightKg (R2 #22)', () => {
+    const changes: PetFieldChanges = {
+      // @ts-expect-error R2: el peso solo se escribe desde health-weights.
       currentWeightKg: 12.5,
-    });
+    };
+
+    expect(changes).toEqual({ currentWeightKg: 12.5 });
   });
 });
 
@@ -85,14 +95,14 @@ describe('R15: el PATCH con cambios audita pet.update con nombres de campos', ()
     const { pets, auditLogger, record } = buildDeps();
     const useCase = new UpdatePetUseCase(pets, auditLogger);
 
-    await useCase.execute(PET_ID, USER_ID, { name: 'Firu', weightKg: 12.5 });
+    await useCase.execute(PET_ID, USER_ID, { name: 'Firu' });
 
     expect(record).toHaveBeenCalledWith({
       userId: USER_ID,
       action: 'pet.update',
       entity: 'pet',
       entityId: PET_ID,
-      meta: { fields: ['name', 'weightKg'] },
+      meta: { fields: ['name'] },
     });
   });
 });
@@ -105,6 +115,18 @@ describe('R15: el body vacio es un no-op 200 sin escritura ni auditoria', () => 
     const pet = await useCase.execute(PET_ID, USER_ID, {});
 
     expect(pet.id).toBe(PET_ID);
+    expect(findById).toHaveBeenCalledWith(PET_ID);
+    expect(update).not.toHaveBeenCalled();
+    expect(record).not.toHaveBeenCalled();
+  });
+
+  it('trata weightKg descartado como no-op (R2 #22)', async () => {
+    const { pets, auditLogger, update, findById, record } = buildDeps();
+    const useCase = new UpdatePetUseCase(pets, auditLogger);
+
+    const dto = UpdatePetSchema.parse({ weightKg: 99 });
+    await useCase.execute(PET_ID, USER_ID, dto);
+
     expect(findById).toHaveBeenCalledWith(PET_ID);
     expect(update).not.toHaveBeenCalled();
     expect(record).not.toHaveBeenCalled();

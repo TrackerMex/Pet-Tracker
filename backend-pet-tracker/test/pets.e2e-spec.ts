@@ -486,24 +486,37 @@ describe('Pets CRUD (e2e)', () => {
       const owner = await seedUser('r13-owner');
       const pet = await createPetViaApi(owner, {
         name: `R13-${RUN_ID}`,
-        weightKg: 20,
       });
 
       const response = await api()
         .patch(`/v1/pets/${pet.id}`)
         .set('Authorization', `Bearer ${owner.token}`)
-        .send({ name: `R13-updated-${RUN_ID}`, weightKg: 22.5 })
+        .send({ name: `R13-updated-${RUN_ID}`, color: 'golden' })
         .expect(200);
 
       const body = profileBody(response);
       expect(body.name).toBe(`R13-updated-${RUN_ID}`);
-      expect(body.currentWeightKg).toBe(22.5);
+      expect(body.color).toBe('golden');
+      expect(body.currentWeightKg).toBeNull();
       // Campos no enviados intactos:
       expect(body.species).toBe('dog');
       expect(body.birthDate).toBe('2024-01-15');
       expect(new Date(body.updatedAt).getTime()).toBeGreaterThanOrEqual(
         new Date(pet.updatedAt).getTime(),
       );
+    });
+
+    it('PATCH con weightKg es un no-op sobre current_weight_kg (R2 #22)', async () => {
+      const owner = await seedUser('r13-weight-no-op-owner');
+      const pet = await createPetViaApi(owner);
+
+      const response = await api()
+        .patch(`/v1/pets/${pet.id}`)
+        .set('Authorization', `Bearer ${owner.token}`)
+        .send({ weightKg: 99 })
+        .expect(200);
+
+      expect(profileBody(response).currentWeightKg).toBeNull();
     });
 
     it('un campo invalido rechaza el body completo sin persistir nada', async () => {
@@ -513,7 +526,7 @@ describe('Pets CRUD (e2e)', () => {
       await api()
         .patch(`/v1/pets/${pet.id}`)
         .set('Authorization', `Bearer ${owner.token}`)
-        .send({ name: 'Valid name', weightKg: -5 })
+        .send({ name: 'Valid name', microchip: 'a'.repeat(33) })
         .expect(400);
 
       const unchanged = await api()
