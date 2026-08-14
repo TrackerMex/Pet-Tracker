@@ -58,17 +58,9 @@ export class UpdatePetUseCase {
   }
 }
 
-/**
- * `weightKg` del DTO persiste como `currentWeightKg`; enviar un campo de
- * edad anula el otro (R14) — birth_date y approx_age_months nunca conviven.
- */
+/** Enviar un campo de edad anula el otro (R14). */
 function toFieldChanges(dto: UpdatePetDto): PetFieldChanges {
-  const { weightKg, ...rest } = dto;
-  const changes: PetFieldChanges = { ...rest };
-
-  if (weightKg !== undefined) {
-    changes.currentWeightKg = weightKg;
-  }
+  const changes: PetFieldChanges = { ...dto };
 
   if (dto.birthDate !== undefined) {
     changes.approxAgeMonths = null;

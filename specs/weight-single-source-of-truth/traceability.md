@@ -14,7 +14,7 @@ tags: [harness, spec]
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
 | R1 | `src/modules/pets/application/dto/create-pet.dto.spec.ts` (filas 1-2 de `design.md` D3) + `src/modules/pets/application/use-cases/create-pet.use-case.spec.ts` (filas 5-6) + `src/modules/pets/infrastructure/repositories/pet.drizzle.repository.spec.ts` (filas 9-10) | rojo `0f45ac4`; verde `13af2dc` (`feat(weight-single-source-of-truth): remove weight from pet creation (R1)`) |
-| R2 | `src/modules/pets/application/dto/update-pet.dto.spec.ts` (filas 3-4) + `src/modules/pets/application/use-cases/update-pet.use-case.spec.ts` (filas 7-8) + `test/pets.e2e-spec.ts` bloque R13/R13b (filas 11-12) | pendiente |
+| R2 | `src/modules/pets/application/dto/update-pet.dto.spec.ts` (filas 3-4) + `src/modules/pets/application/use-cases/update-pet.use-case.spec.ts` (filas 7-8) + `test/pets.e2e-spec.ts` bloque R13/R13b (filas 11-12) | rojo `bb5cf21` (`test(weight-single-source-of-truth): define PATCH weight behavior (R2)`); verde pendiente |
 | R3 | `test/backfill-weights.e2e-spec.ts::R3 (weight-single-source-of-truth #22): ...` | pendiente |
 | R4 | `test/backfill-weights.e2e-spec.ts::R4 (weight-single-source-of-truth #22): ...` | pendiente |
 | R5 | N/A (cambio documental en `docs/data-model.md`, verificado por revisión manual del reviewer, no por test automatizado) | pendiente |

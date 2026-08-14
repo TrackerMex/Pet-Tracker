@@ -68,7 +68,6 @@ export interface PetFieldChanges {
   birthDate?: string | null;
   approxAgeMonths?: number | null;
   sex?: PetSex;
-  currentWeightKg?: number;
   size?: PetSize;
   color?: string;
   sterilized?: boolean;
