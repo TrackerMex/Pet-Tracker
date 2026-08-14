@@ -1051,3 +1051,48 @@ Deuda detectada (fuera de alcance, candidata a limpieza propia):
 - **Commits:** implementación `a834a82..4f20037` (36 commits en PR #45,
   merge `7ddbd97`); review `52fa796`; STATUS `826c4bf`.
 - **Estado final:** done
+
+---
+
+## Sesión 2026-08-14 — weight-single-source-of-truth (id: 22)
+
+- **Feature:** consolidación del único escritor de `pets.current_weight_kg`.
+  `weightKg` sale de `PetFieldsSchema`, así que `POST /v1/pets` y `PATCH
+  /v1/pets/:petId` dejan de aceptarlo — descarte silencioso vía `z.object`,
+  no 400, para no introducir una asimetría con el resto de claves
+  desconocidas (D1). `CreatePetUseCase`, `UpdatePetUseCase.toFieldChanges()`
+  y `PetDrizzleRepository` (`createWithOwner` y `update`) dejan de escribir
+  la columna; `toNewPet()` y `toWeightColumn()` eliminadas por quedarse sin
+  callers. Nuevo `scripts/backfill-weights.ts` idempotente
+  (`pnpm run backfill:weights`) que rellena el historial faltante con
+  `measured_at` = fecha de calendario de `pets.created_at` y `created_by` =
+  owner activo, sin tocar `current_weight_kg` ni `updated_at` (R4).
+  `WeightDrizzleRepository.create()` de #15 queda como único escritor.
+- **Spec:** [[specs/weight-single-source-of-truth/requirements|spec]]
+  (R1-R6, aprobada 2026-08-14, commit `6fef86d`)
+- **Acciones:** reparto Claude/Codex — `spec_author` escribió la spec sobre
+  la deuda destapada al especificar #15, gate humano, handoff por disco a
+  Codex CLI, Codex implementó con 3 tripletas test-primero rojo→verde
+  (`progress/impl_weight-single-source-of-truth.md`); `reviewer` validó
+  C2-C7 y corrió `./init.sh` independiente con infra caliente (exit 0: 245
+  e2e, lint, typecheck).
+- **Resultado:** APROBADO sin bloqueantes
+  (`progress/review_weight-single-source-of-truth.md`). R6 —el requisito
+  crítico de no-regresión— verificado por diff vacío contra `afc522e` en el
+  mapper de perfil y ambos arrays `PROFILE_KEYS`: las 24 claves de
+  `PetProfileResponse` intactas. Los seis tests de #5 quedaron actualizados,
+  no borrados, con cada assertion vieja de `weightKg` mapeada a su sustituta
+  en la trazabilidad; la cobertura neta sube (2 tests nuevos, incluida una
+  guarda `@ts-expect-error` que solo compila si `PetFieldChanges` realmente
+  perdió `currentWeightKg`). C4 limpio a diferencia de #19: los commits
+  `test(...)` tocan solo `*.spec.ts` y los `feat(...)` solo `src/`.
+  Observación no bloqueante: `86040d5` va prefijado `test(...)` pero solo
+  mueve bookkeeping; debió ser `docs(...)`.
+- **Commits:** implementación `0f45ac4..e663746` (9 commits en PR #47, merge
+  `2157cc1`); review `f7e1928`.
+- **Backlog:** en esta sesión se añadieron #24 `device-provisioning-admin` y
+  #25 `device-subscriptions` (ambas P2) tras integrar el token real de
+  Wialon y decidir el modelo de membresías: la suscripción cuelga del
+  dispositivo, no del usuario, porque el costo es por collar; free es la app
+  de salud sin GPS. Pasan por delante de #17/#18.
+- **Estado final:** done

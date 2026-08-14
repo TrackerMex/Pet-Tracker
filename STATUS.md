@@ -576,6 +576,31 @@ debe listar las 4 URLs de cola.
 
 ## Última sesión
 
+- **2026-08-14** — Ciclo SDD de `weight-single-source-of-truth` (#22), reparto
+  Claude/Codex: `spec_author` escribió la spec (R1-R6) sobre la deuda destapada
+  al especificar #15 → gate humano → handoff por disco a Codex CLI → Codex
+  implementó con 3 tripletas test-primero rojo→verde → `reviewer` **aprobado
+  sin bloqueantes** (`./init.sh` independiente con infra caliente, exit 0: 245
+  e2e, lint, typecheck). PR #47 mergeada (`2157cc1`). `weightKg` sale del
+  contrato de `POST`/`PATCH /v1/pets` (descarte silencioso, no 400) y
+  `WeightDrizzleRepository.create()` de #15 queda como **único escritor** de
+  `pets.current_weight_kg`; nuevo `pnpm run backfill:weights` idempotente para
+  el historial faltante. El contrato de lectura no cambia: las 24 claves de
+  `PetProfileResponse` verificadas por diff vacío contra `afc522e`.
+  **Integración Wialon real: el humano ya integró el token de la cuenta.**
+  Decidido el modelo de membresías: la suscripción cuelga del **dispositivo**,
+  no del usuario, porque el costo real es por collar (SIM + licencia de unidad
+  + polling + writes); efecto secundario deseado, la mascota compartida se
+  resuelve sola. Plan free = la app de salud **sin GPS** (perfil, vacunas,
+  peso, recordatorios, plan nutricional determinístico de #17), que es el
+  embudo de adquisición y no un pro capado; la IA de #18 es de pago. Backlog
+  ampliado con #24 `device-provisioning-admin` (no hay camino para dar de alta
+  un collar físico: `devices` solo se llena con simulados) y #25
+  `device-subscriptions` (tabla + `isPetTracked()` + 4 gates, sin Stripe),
+  ambas P2 y por delante de #17/#18. Aviso operativo:
+  `wialon.factory.ts` cae al `FakeWialonClient` **en silencio** si `SIM_MODE`
+  no es exactamente `'false'` — verificar el `.env` antes de probar hardware.
+
 - **2026-08-13** — Ciclo SDD de `pet-reminders` (#16), reparto Claude/Codex:
   `spec_author` escribió la spec (R1-R12, D1-D11) el 2026-08-11 → gate humano
   (PR #44 mergeada) → handoff por disco a Codex CLI → Codex implementó con 12

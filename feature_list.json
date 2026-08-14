@@ -376,7 +376,7 @@
   {
     "id": 22,
     "name": "weight-single-source-of-truth",
-    "status": "in_progress",
+    "status": "done",
     "priority": "P3",
     "description": "Deuda destapada al escribir la spec de #15 (health-weights): pets.current_weight_kg tiene tres escritores independientes y solo uno crea historial. create-pet.use-case.ts:45 lo escribe en el alta cuando el DTO trae weightKg, update-pet.use-case.ts:70 lo escribe en PATCH /v1/pets, y el POST de #15 lo escribe junto con su fila en weights. El efecto es que el perfil y el historial divergen: dar de alta una mascota con weightKg=20 deja current_weight_kg=20 y la tabla weights vacía, así que el gráfico de peso del hub de salud nunca ve esos 20 kg y la primera medición real sale con variation null en vez de comparar contra el alta. Unificar significa que weightKg deje de ser escribible desde el contrato de pets y que toda escritura de peso pase por el endpoint de #15 creando su medición, o bien que los use-cases de pets inserten la fila de weights correspondiente. Es un cambio del contrato público de dos endpoints de #5, con su propia spec y su propio gate: no cabía como apéndice de #15. Decidir en la spec qué pasa con las mascotas ya existentes que tienen current_weight_kg sin ninguna fila en weights (backfill con measured_at = fecha de alta, o dejarlas como están y documentarlo).",
     "acceptance_criteria": [
@@ -406,6 +406,48 @@
     ],
     "files_affected": [
       "init.sh"
+    ]
+  },
+  {
+    "id": 24,
+    "name": "device-provisioning-admin",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Bloqueante para probar hardware real: hoy la tabla devices solo se llena con scripts/seed-devices.ts (SIM-001..003, ACT-001..003, is_simulated=true), pensado para el FakeWialonClient de #8. Con el token real de Wialon ya integrado no existe camino para dar de alta un collar físico, y el claim de #7 valida contra devices (no contra Wialon), así que un collar que no esté en esa tabla es inclaimable. Añadir un camino de aprovisionamiento INTERNO (nunca expuesto al usuario final) que registre un collar real en devices con su wialon_unit_id, imei/esn/serial, model, activation_code generado e is_simulated=false. La spec decide la forma (script CLI idempotente tipo scripts/provision-device.ts es el candidato mínimo; un endpoint admin exige antes un modelo de rol de plataforma que hoy no existe — pet_users.role es rol POR MASCOTA, no global). Debe poder verificar contra la API real que el wialon_unit_id existe en la cuenta, vía WialonClient.listUnits(), antes de insertar. El activation_code es el secreto que va impreso en la caja: el IMEI NO sirve como credencial porque es adivinable/enumerable, y el claim de #7 debe seguir exigiendo el código. No toca el flujo de claim ni el pipeline de ingesta.",
+    "acceptance_criteria": [
+      "Dar de alta un collar real deja una fila en devices con wialon_unit_id no nulo, is_simulated=false, status='available' y activation_code único generado (no derivado del IMEI ni del serial)",
+      "El aprovisionamiento verifica contra WialonClient.listUnits() que el wialon_unit_id existe en la cuenta; unit_id inexistente → error explícito y ninguna fila insertada",
+      "Idempotente: reprovisionar el mismo wialon_unit_id no duplica filas ni regenera el activation_code",
+      "El camino es interno: ninguna ruta HTTP nueva accesible con un JWT de usuario normal (si la spec elige endpoint, exige un mecanismo de autorización de plataforma explícito y documentado, no pet_users.role)",
+      "Un collar aprovisionado se puede reclamar con POST /v1/devices/claim usando su activation_code, y el flujo de #7 sigue verde sin cambios",
+      "scripts/seed-devices.ts sigue funcionando para los simulados: los dos caminos coexisten y se distinguen por is_simulated"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/scripts/",
+      "backend-pet-tracker/src/modules/devices/",
+      "backend-pet-tracker/src/integrations/wialon/"
+    ]
+  },
+  {
+    "id": 25,
+    "name": "device-subscriptions",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Modelo de membresías, decidido en sesión el 2026-08-14: la suscripción cuelga del DISPOSITIVO, no del usuario, porque el costo real es por collar (datos SIM + licencia de unidad Wialon + polling + writes a DynamoDB) y cobrar por usuario desalinea precio y costo. Efecto secundario deseado: la mascota compartida se resuelve sola — el collar está pagado, así que todos los miembros de pet_users ven el mapa sin pagar aparte (si el plan colgara del usuario, el caso familiar se rompe). La cuenta de usuario es gratis siempre; el plan free es la app de salud SIN GPS (perfil, vacunas, peso, recordatorios, plan nutricional determinístico de #17) y es el embudo de adquisición, no un pro capado. Alcance: tabla device_subscriptions (device_id, status, plan_code, current_period_end), un único derivador isPetTracked(petId) y CUATRO puntos de gate — (1) el poller de #8 filtra por suscripción activa, que es donde está el 90% del ahorro; (2) ClaimDeviceUseCase de #7 exige suscripción activa; (3) las lecturas de tracking (positions #9, trips #10, geofences #11, alerts #13) responden 402 sin entitlement; (4) el ai-explainer de #18 sin entitlement deja ai_explanation=null, que ya es su comportamiento de fallo. Vencimiento: periodo de gracia y luego el poller deja de encolar, pero NUNCA se libera el device — liberar cierra pet_devices.released_at, pierde el vínculo mascota-collar y deja el historial huérfano; al pagar debe revivir sin re-claim. FUERA DE ALCANCE deliberado: integración de pagos (Stripe). El status se administra manualmente en esta fase; cuando llegue el proveedor de pagos su webhook escribe la misma fila sin cambiar el modelo. Depende de #24 (necesita collares reales que suscribir).",
+    "acceptance_criteria": [
+      "Existe device_subscriptions y un único derivador isPetTracked(petId) que resuelve entitlement desde el pet_devices activo de la mascota; ningún otro punto del código recalcula esa regla",
+      "Poller de #8 con suscripción inactiva o vencida no encola posiciones de ese device (test), y con suscripción activa el comportamiento es idéntico al actual",
+      "Suscripción vencida NO libera el device: pet_devices.released_at sigue NULL y reactivar la suscripción restaura la ingesta sin re-claim (test)",
+      "Lecturas de tracking (positions, trips, geofences, alerts) sin entitlement → 402; con entitlement el contrato no cambia en ninguna clave",
+      "Mascota compartida: miembro no-owner de una mascota cuyo collar tiene suscripción activa ve el mapa sin suscripción propia",
+      "ai-explainer de #18 sin entitlement devuelve 200 con aiExplanation null (nunca 5xx, nunca 402: la IA degrada, no bloquea)",
+      "Ningún acoplamiento a un proveedor de pagos: grep de 'stripe' en src/ da cero"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/modules/subscriptions/",
+      "backend-pet-tracker/src/db/schema/subscriptions.schema.ts",
+      "backend-pet-tracker/src/workers/",
+      "backend-pet-tracker/src/modules/devices/"
     ]
   }
 ]
