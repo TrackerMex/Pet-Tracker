@@ -279,39 +279,6 @@
     ]
   },
   {
-    "id": 17,
-    "name": "nutrition-profile-engine",
-    "status": "pending",
-    "priority": "P3",
-    "description": "Plan 009 (paso 1-2): tablas nutrition_profiles y nutrition_plans; PUT/GET /v1/pets/:petId/nutrition-profile (kcalPer100g 80-600, defaults dry 350 / wet 100); motor determinístico puro nutrition-engine.ts: RER = 70×peso^0.75 (target si BCS≥7), tabla de factores MER del plan (cachorro/joven/adulto×esterilizado×actividad), porción diaria (múltiplo de 5 g), comidas por edad, horarios 07:00-20:00, warnings (weight_loss_plan, underweight_vet, chronic_disease_vet, check_food_allergens, too_young_vet), objective. POST .../nutrition-plan/generate con inputs_hash idempotente (mismo hash → mismo plan); GET .../nutrition-plan. Sin IA todavía (ai_explanation null).",
-    "acceptance_criteria": [
-      "Valores exactos del plan en tests: perro 20 kg esterilizado medium dry350 → ~1059 kcal / 305 g / 2 comidas; gato 4 kg low → ~218 kcal / 60 g",
-      "Perfil ausente → 422 NUTRITION_PROFILE_REQUIRED",
-      "Mismo input → mismo plan (hash hit, sin fila nueva)",
-      "kcalPer100g 900 → 400; los factores MER son constantes nombradas, no números mágicos dispersos"
-    ],
-    "files_affected": [
-      "backend-pet-tracker/src/modules/nutrition/",
-      "backend-pet-tracker/src/db/schema/nutrition.schema.ts"
-    ]
-  },
-  {
-    "id": 18,
-    "name": "nutrition-ai-explainer",
-    "status": "pending",
-    "priority": "P3",
-    "description": "Plan 009 (paso 3): ai-explainer.ts — si OPENAI_ENABLED=true y hay clave: SDK openai (modelo desde env OPENAI_MODEL, jamás hardcodeado), timeout 15 s, system prompt del plan (español cálido, orientativo, máx 180 palabras); resultado → ai_explanation. Cualquier fallo/clave ausente → ai_explanation=null y 200 igualmente (la IA nunca produce 5xx). Introduce OPENAI_ENABLED, OPENAI_API_KEY, OPENAI_MODEL en .env.example y conventions. La IA solo se llama desde backend (brief §9/§19).",
-    "acceptance_criteria": [
-      "Con OPENAI_ENABLED=false → plan 200 con aiExplanation null y warning en log",
-      "SDK mockeado: éxito guarda texto; timeout no rompe el endpoint",
-      "Hash hit no re-llama a la IA",
-      "grep -rn 'gpt-' src/ → cero literales de modelo en código"
-    ],
-    "files_affected": [
-      "backend-pet-tracker/src/modules/nutrition/"
-    ]
-  },
-  {
     "id": 19,
     "name": "aws-real-credentials",
     "status": "done",
@@ -393,22 +360,6 @@
     ]
   },
   {
-    "id": 23,
-    "name": "init-env-drift-warning",
-    "status": "pending",
-    "priority": "P2",
-    "description": "Deuda destapada en el smoke de #16: init.sh copia .env.example a .env solo si falta, así que un .env viejo carece de las variables gate añadidas por features posteriores. Con REMINDERS_ENABLED ausente el scheduler de #16 quedó apagado en silencio y el smoke falló sin ningún error visible; es el tercer modo de fallo silencioso del entorno local (tras el skip de e2e sin puerto de Postgres publicado y el verde falso de #21). Añadir a init.sh un diff de claves entre .env y .env.example que imprima un warning listando las variables faltantes. Solo avisar: no copiar valores automáticamente, el humano decide qué setear. SUBIDA A P2 el 2026-08-14: volvió a morder en el smoke de #24 con hardware real, esta vez costando una sesión de debugging. Al .env le faltaban NUEVE claves de .env.example, cuatro de ellas gates que apagan features enteras en silencio: POLLER_ENABLED (la ingesta GPS entera — el collar transmitía y el cron nunca se agendaba), ALERTS_ENGINE_ENABLED, ACTIVITY_AGGREGATOR_ENABLED y PUSH_ENABLED. Además el diagnóstico se alargó porque el watermark no distingue 'el poller no corrió' de 'corrió y Wialon devolvió vacío' (poller.service.spec.ts:239 fija que sin posiciones el watermark no avanza). Considerar en la spec si el warning debe destacar específicamente las claves *_ENABLED ausentes, que son las que producen apagados silenciosos, frente a las que solo son configuración.",
-    "acceptance_criteria": [
-      "Con un .env al que le falta una clave presente en .env.example, ./init.sh imprime un warning que lista exactamente las claves faltantes",
-      "Con .env completo no hay warning y el output no cambia",
-      "init.sh nunca modifica .env: el warning es informativo",
-      "El warning no aborta: init.sh conserva su exit code actual"
-    ],
-    "files_affected": [
-      "init.sh"
-    ]
-  },
-  {
     "id": 24,
     "name": "device-provisioning-admin",
     "status": "done",
@@ -426,28 +377,6 @@
       "backend-pet-tracker/scripts/",
       "backend-pet-tracker/src/modules/devices/",
       "backend-pet-tracker/src/integrations/wialon/"
-    ]
-  },
-  {
-    "id": 25,
-    "name": "device-subscriptions",
-    "status": "pending",
-    "priority": "P2",
-    "description": "Modelo de membresías, decidido en sesión el 2026-08-14: la suscripción cuelga del DISPOSITIVO, no del usuario, porque el costo real es por collar (datos SIM + licencia de unidad Wialon + polling + writes a DynamoDB) y cobrar por usuario desalinea precio y costo. Efecto secundario deseado: la mascota compartida se resuelve sola — el collar está pagado, así que todos los miembros de pet_users ven el mapa sin pagar aparte (si el plan colgara del usuario, el caso familiar se rompe). La cuenta de usuario es gratis siempre; el plan free es la app de salud SIN GPS (perfil, vacunas, peso, recordatorios, plan nutricional determinístico de #17) y es el embudo de adquisición, no un pro capado. Alcance: tabla device_subscriptions (device_id, status, plan_code, current_period_end), un único derivador isPetTracked(petId) y CUATRO puntos de gate — (1) el poller de #8 filtra por suscripción activa, que es donde está el 90% del ahorro; (2) ClaimDeviceUseCase de #7 exige suscripción activa; (3) las lecturas de tracking (positions #9, trips #10, geofences #11, alerts #13) responden 402 sin entitlement; (4) el ai-explainer de #18 sin entitlement deja ai_explanation=null, que ya es su comportamiento de fallo. Vencimiento: periodo de gracia y luego el poller deja de encolar, pero NUNCA se libera el device — liberar cierra pet_devices.released_at, pierde el vínculo mascota-collar y deja el historial huérfano; al pagar debe revivir sin re-claim. FUERA DE ALCANCE deliberado: integración de pagos (Stripe). El status se administra manualmente en esta fase; cuando llegue el proveedor de pagos su webhook escribe la misma fila sin cambiar el modelo. Depende de #24 (necesita collares reales que suscribir).",
-    "acceptance_criteria": [
-      "Existe device_subscriptions y un único derivador isPetTracked(petId) que resuelve entitlement desde el pet_devices activo de la mascota; ningún otro punto del código recalcula esa regla",
-      "Poller de #8 con suscripción inactiva o vencida no encola posiciones de ese device (test), y con suscripción activa el comportamiento es idéntico al actual",
-      "Suscripción vencida NO libera el device: pet_devices.released_at sigue NULL y reactivar la suscripción restaura la ingesta sin re-claim (test)",
-      "Lecturas de tracking (positions, trips, geofences, alerts) sin entitlement → 402; con entitlement el contrato no cambia en ninguna clave",
-      "Mascota compartida: miembro no-owner de una mascota cuyo collar tiene suscripción activa ve el mapa sin suscripción propia",
-      "ai-explainer de #18 sin entitlement devuelve 200 con aiExplanation null (nunca 5xx, nunca 402: la IA degrada, no bloquea)",
-      "Ningún acoplamiento a un proveedor de pagos: grep de 'stripe' en src/ da cero"
-    ],
-    "files_affected": [
-      "backend-pet-tracker/src/modules/subscriptions/",
-      "backend-pet-tracker/src/db/schema/subscriptions.schema.ts",
-      "backend-pet-tracker/src/workers/",
-      "backend-pet-tracker/src/modules/devices/"
     ]
   },
   {
@@ -471,6 +400,28 @@
     ]
   },
   {
+    "id": 30,
+    "name": "geofence-eval-full-batch",
+    "status": "pending",
+    "priority": "P1",
+    "description": "El motor de geocercas evalúa una sola posición por ciclo de sondeo, no el lote entero, y eso no fue una decisión de geocercas: es un efecto colateral de R16 de #8, que emite un evento position.updated por mensaje SQS y no por posición (positions-consumer.service.ts:234) para abaratar EventBridge. La máquina de estados de src/pipeline/geofence-eval.ts está escrita para consumir un stream de posiciones en orden — el consumidor de #12 tiene incluso el guard monotónico previousUpdatedAtMs (alerts-engine-consumer.service.ts:241) — pero solo recibe la más reciente del mensaje. En régimen estable el collar reporta cada 30 s y el poller corre cada 60 s (POLLER_INTERVAL_MS), así que se descarta la mitad de las muestras; el daño real está en los lotes grandes, donde un mensaje trae hasta POSITIONS_PER_MESSAGE_MAX=100 posiciones de más de una hora: descarga del búfer del collar tras perder cobertura, reinicio del poller, o el lookback del claim. Ahí toda la ventana colapsa en una única evaluación y una salida con regreso dentro del lote no genera ninguna alerta — justo la ventana donde es más probable que la mascota se haya perdido de verdad, porque el dispositivo estuvo sin señal. Arreglo: llevar el lote completo dentro del evento (campo positions[] nuevo, detail.version a 2, conservando position con la última posición para no tocar a los consumidores de 006/007/010) y que el motor itere en orden ascendente. El conteo de eventos del bus no cambia, así que el costo tampoco (docs/aws-scalability-review.md §Discrepancias). PRERREQUISITO dentro de esta misma feature: evaluate() corta hoy solo con FLAG_LOW_ACCURACY (geofence-eval.ts:105), de modo que una posición marcada suspect_jump — el salto absurdo, a kilómetros del recorrido real — con buena precisión ya dispara un exit falso; y la histéresis es espacial (1.1R/0.9R más accuracy <= 50 m), no temporal: no hay confirmación por N muestras consecutivas, una sola muestra mala basta. Subir el muestreo sin filtrar el salto duplicaría la exposición a falsa alarma, y una falsa alarma de fuga es lo que hace que el usuario silencie las notificaciones.",
+    "acceptance_criteria": [
+      "evaluate() ignora una posición con flag suspect_jump igual que ignora low_accuracy: devuelve el estado previo sin evento, con test que nombre el R-id y que hoy fallaría",
+      "Un mensaje con varias posiciones donde una intermedia cruza el radio de salida abre la alerta de exit, aunque la última del lote esté dentro de la geocerca",
+      "La alerta se abre con el ts de la posición que cruzó, no con el de la última del lote ni con la hora del servidor",
+      "Las posiciones se evalúan en orden ascendente de ts y el guard monotónico previousUpdatedAtMs se sigue respetando: un lote reentregado no reabre ni retrocede nada",
+      "Se sigue emitiendo exactamente un evento position.updated por mensaje SQS: test que asevera un único Entry en el PutEventsCommand con un lote de varias posiciones",
+      "El campo position del detail sigue siendo la posición más reciente del lote: los consumidores y fixtures de 006/007/010 quedan verdes sin tocarlos",
+      "Un evento sin positions[] (detail.version 1, mensaje legado en vuelo durante el despliegue) se sigue procesando con position, sin ir a la DLQ"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/pipeline/geofence-eval.ts",
+      "backend-pet-tracker/src/workers/positions-consumer.service.ts",
+      "backend-pet-tracker/src/workers/alerts-engine/geofence-event-message.schema.ts",
+      "backend-pet-tracker/src/workers/alerts-engine/alerts-engine-consumer.service.ts"
+    ]
+  },
+  {
     "id": 27,
     "name": "reject-future-positions",
     "status": "pending",
@@ -488,6 +439,44 @@
       "backend-pet-tracker/src/pipeline/",
       "backend-pet-tracker/src/pipeline/constants.ts",
       "backend-pet-tracker/src/workers/poller.service.ts"
+    ]
+  },
+  {
+    "id": 23,
+    "name": "init-env-drift-warning",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Deuda destapada en el smoke de #16: init.sh copia .env.example a .env solo si falta, así que un .env viejo carece de las variables gate añadidas por features posteriores. Con REMINDERS_ENABLED ausente el scheduler de #16 quedó apagado en silencio y el smoke falló sin ningún error visible; es el tercer modo de fallo silencioso del entorno local (tras el skip de e2e sin puerto de Postgres publicado y el verde falso de #21). Añadir a init.sh un diff de claves entre .env y .env.example que imprima un warning listando las variables faltantes. Solo avisar: no copiar valores automáticamente, el humano decide qué setear. SUBIDA A P2 el 2026-08-14: volvió a morder en el smoke de #24 con hardware real, esta vez costando una sesión de debugging. Al .env le faltaban NUEVE claves de .env.example, cuatro de ellas gates que apagan features enteras en silencio: POLLER_ENABLED (la ingesta GPS entera — el collar transmitía y el cron nunca se agendaba), ALERTS_ENGINE_ENABLED, ACTIVITY_AGGREGATOR_ENABLED y PUSH_ENABLED. Además el diagnóstico se alargó porque el watermark no distingue 'el poller no corrió' de 'corrió y Wialon devolvió vacío' (poller.service.spec.ts:239 fija que sin posiciones el watermark no avanza). Considerar en la spec si el warning debe destacar específicamente las claves *_ENABLED ausentes, que son las que producen apagados silenciosos, frente a las que solo son configuración.",
+    "acceptance_criteria": [
+      "Con un .env al que le falta una clave presente en .env.example, ./init.sh imprime un warning que lista exactamente las claves faltantes",
+      "Con .env completo no hay warning y el output no cambia",
+      "init.sh nunca modifica .env: el warning es informativo",
+      "El warning no aborta: init.sh conserva su exit code actual"
+    ],
+    "files_affected": [
+      "init.sh"
+    ]
+  },
+  {
+    "id": 25,
+    "name": "device-subscriptions",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Modelo de membresías, decidido en sesión el 2026-08-14: la suscripción cuelga del DISPOSITIVO, no del usuario, porque el costo real es por collar (datos SIM + licencia de unidad Wialon + polling + writes a DynamoDB) y cobrar por usuario desalinea precio y costo. Efecto secundario deseado: la mascota compartida se resuelve sola — el collar está pagado, así que todos los miembros de pet_users ven el mapa sin pagar aparte (si el plan colgara del usuario, el caso familiar se rompe). La cuenta de usuario es gratis siempre; el plan free es la app de salud SIN GPS (perfil, vacunas, peso, recordatorios, plan nutricional determinístico de #17) y es el embudo de adquisición, no un pro capado. Alcance: tabla device_subscriptions (device_id, status, plan_code, current_period_end), un único derivador isPetTracked(petId) y CUATRO puntos de gate — (1) el poller de #8 filtra por suscripción activa, que es donde está el 90% del ahorro; (2) ClaimDeviceUseCase de #7 exige suscripción activa; (3) las lecturas de tracking (positions #9, trips #10, geofences #11, alerts #13) responden 402 sin entitlement; (4) el ai-explainer de #18 sin entitlement deja ai_explanation=null, que ya es su comportamiento de fallo. Vencimiento: periodo de gracia y luego el poller deja de encolar, pero NUNCA se libera el device — liberar cierra pet_devices.released_at, pierde el vínculo mascota-collar y deja el historial huérfano; al pagar debe revivir sin re-claim. FUERA DE ALCANCE deliberado: integración de pagos (Stripe). El status se administra manualmente en esta fase; cuando llegue el proveedor de pagos su webhook escribe la misma fila sin cambiar el modelo. Depende de #24 (necesita collares reales que suscribir).",
+    "acceptance_criteria": [
+      "Existe device_subscriptions y un único derivador isPetTracked(petId) que resuelve entitlement desde el pet_devices activo de la mascota; ningún otro punto del código recalcula esa regla",
+      "Poller de #8 con suscripción inactiva o vencida no encola posiciones de ese device (test), y con suscripción activa el comportamiento es idéntico al actual",
+      "Suscripción vencida NO libera el device: pet_devices.released_at sigue NULL y reactivar la suscripción restaura la ingesta sin re-claim (test)",
+      "Lecturas de tracking (positions, trips, geofences, alerts) sin entitlement → 402; con entitlement el contrato no cambia en ninguna clave",
+      "Mascota compartida: miembro no-owner de una mascota cuyo collar tiene suscripción activa ve el mapa sin suscripción propia",
+      "ai-explainer de #18 sin entitlement devuelve 200 con aiExplanation null (nunca 5xx, nunca 402: la IA degrada, no bloquea)",
+      "Ningún acoplamiento a un proveedor de pagos: grep de 'stripe' en src/ da cero"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/modules/subscriptions/",
+      "backend-pet-tracker/src/db/schema/subscriptions.schema.ts",
+      "backend-pet-tracker/src/workers/",
+      "backend-pet-tracker/src/modules/devices/"
     ]
   },
   {
@@ -526,6 +515,39 @@
     "files_affected": [
       "backend-pet-tracker/src/integrations/wialon/wialon-http.client.ts",
       "backend-pet-tracker/src/integrations/wialon/wialon.errors.ts"
+    ]
+  },
+  {
+    "id": 17,
+    "name": "nutrition-profile-engine",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Plan 009 (paso 1-2): tablas nutrition_profiles y nutrition_plans; PUT/GET /v1/pets/:petId/nutrition-profile (kcalPer100g 80-600, defaults dry 350 / wet 100); motor determinístico puro nutrition-engine.ts: RER = 70×peso^0.75 (target si BCS≥7), tabla de factores MER del plan (cachorro/joven/adulto×esterilizado×actividad), porción diaria (múltiplo de 5 g), comidas por edad, horarios 07:00-20:00, warnings (weight_loss_plan, underweight_vet, chronic_disease_vet, check_food_allergens, too_young_vet), objective. POST .../nutrition-plan/generate con inputs_hash idempotente (mismo hash → mismo plan); GET .../nutrition-plan. Sin IA todavía (ai_explanation null).",
+    "acceptance_criteria": [
+      "Valores exactos del plan en tests: perro 20 kg esterilizado medium dry350 → ~1059 kcal / 305 g / 2 comidas; gato 4 kg low → ~218 kcal / 60 g",
+      "Perfil ausente → 422 NUTRITION_PROFILE_REQUIRED",
+      "Mismo input → mismo plan (hash hit, sin fila nueva)",
+      "kcalPer100g 900 → 400; los factores MER son constantes nombradas, no números mágicos dispersos"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/modules/nutrition/",
+      "backend-pet-tracker/src/db/schema/nutrition.schema.ts"
+    ]
+  },
+  {
+    "id": 18,
+    "name": "nutrition-ai-explainer",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Plan 009 (paso 3): ai-explainer.ts — si OPENAI_ENABLED=true y hay clave: SDK openai (modelo desde env OPENAI_MODEL, jamás hardcodeado), timeout 15 s, system prompt del plan (español cálido, orientativo, máx 180 palabras); resultado → ai_explanation. Cualquier fallo/clave ausente → ai_explanation=null y 200 igualmente (la IA nunca produce 5xx). Introduce OPENAI_ENABLED, OPENAI_API_KEY, OPENAI_MODEL en .env.example y conventions. La IA solo se llama desde backend (brief §9/§19).",
+    "acceptance_criteria": [
+      "Con OPENAI_ENABLED=false → plan 200 con aiExplanation null y warning en log",
+      "SDK mockeado: éxito guarda texto; timeout no rompe el endpoint",
+      "Hash hit no re-llama a la IA",
+      "grep -rn 'gpt-' src/ → cero literales de modelo en código"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/modules/nutrition/"
     ]
   }
 ]
