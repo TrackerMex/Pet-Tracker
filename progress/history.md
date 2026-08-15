@@ -1156,3 +1156,63 @@ Deuda detectada (fuera de alcance, candidata a limpieza propia):
 - **Commits:** implementación `fb66eb7..7575ef8` (24 commits), fix
   `fda4ec9`/`9833364`, evidencia `8602263`; PR #49 mergeada (`dd71fae`).
 - **Estado final:** done
+
+---
+
+## Sesión 2026-08-15 — claim-activation-code-only (id: 26)
+
+- **Ciclo:** `spec_author` → gate humano → Codex CLI → `reviewer` → `done`.
+  Reparto de siempre: Claude escribe spec y revisa, Codex implementa.
+- **Qué cierra:** el hueco de autorización de `POST /v1/devices/claim` que
+  heredaba #7 y que se destapó al escribir la spec de #24.
+  `DEVICE_IDENTIFIER_FIELDS` publicaba `esn`/`imei`/`serialNumber`/
+  `activationCode` como credenciales intercambiables y el `superRefine` del DTO
+  solo exigía **exactamente uno** de los cuatro. Los IMEI de un lote de fábrica
+  son casi consecutivos: con uno válido se enumeraban vecinos y se reclamaban
+  collares ajenos en la ventana entre la venta y la activación legítima,
+  quedándose con la ubicación GPS de esa mascota. Ahora `activationCode` es
+  obligatorio y única credencial del borde HTTP.
+- **Decisiones que cerró la spec, no el implementador:**
+  - **D1**: `esn`/`imei`/`serialNumber` salen del schema y se ignoran en
+    silencio (precedente `weightKg` de #22), con `activationCode` pasando de
+    `.optional()` a obligatorio — eso es lo que convierte `{petId, imei}` en un
+    `400` por `activationCode` ausente en vez de un claim silencioso. El `400`
+    explícito por campo desconocido se descartó por escrito: no hay ni un
+    `z.strictObject` ni un `ValidationPipe` con `forbidNonWhitelisted` en el
+    repo, así que habría creado la misma asimetría que #22 rechazó y habría
+    roto un claim legítimo que mandara `imei` de más.
+  - **D2**: `DEVICE_IDENTIFIER_FIELDS` se **borra** en vez de reducirse a un
+    array de un elemento, y `DeviceIdentifierField` pasa a unión literal
+    explícita de los cuatro valores. Reducirlo a un miembro habría roto
+    `IDENTIFIER_COLUMNS` y `findByIdentifier({field:'imei'})`; el array era
+    justamente el símbolo compartido que hacía que el **dominio** publicara la
+    política del **borde HTTP** — el acoplamiento que causó el hueco.
+- **Alcance real vs. `files_affected`:** el inventario de tests de #7 a tocar
+  eran 13 filas en 3 archivos (`design.md` D5), no los 3 paths que declaraba
+  `feature_list.json`. Las 3 assertions de respuesta con `esn` se marcaron
+  intocables desde la spec: `esn` es salida del contrato, nunca credencial.
+- **Verificación:** `reviewer` aprobado sin bloqueantes, con `init.sh` corrido
+  por él mismo e infra comprobada con `docker port` — 260 e2e passed, 6
+  skipped, 0 fallos. Los cinco archivos declarados intocables no aparecen en
+  `git diff --stat`; el bloque `R2: seed:devices` de los e2e conserva md5
+  idéntico; ningún `it` de #7 desapareció (saldo neto positivo) y
+  `traceability.md` tiene una fila por cada cambio de comportamiento.
+- **El baseline como herramienta, no como trámite:** la primera corrida de
+  `init.sh` de la sesión saltó los e2e (Docker apagado) y la primera con Docker
+  recién levantado dio 77 fallos por la carrera de arranque conocida de la FK
+  `pet_users_user_id_users_id_fk`. Se fijó un baseline explícito **antes** del
+  handoff (255 passed, 6 skipped, 0 fallos, con contenedores calientes) para que
+  un rojo durante la implementación no se pudiera confundir con infra fría. El
+  cierre dio 260: delta +5 que cuadra uno a uno con los tests nuevos (3 del
+  `it.each` de R2, 1 de R1c, 1 de R4). Repetir solo
+  `pnpm -C backend-pet-tracker test:e2e` basta para descartar la carrera; no
+  hace falta el `init.sh` entero.
+- **Observación no bloqueante del reviewer:** los e2e de R2/R4 se commitearon
+  después de la implementación de R1 —literalmente lo que prescribía
+  `tasks.md`—, así que nacieron verdes. Siguen siendo regresiones válidas
+  (fallan contra `cc89690`), pero para la próxima spec de seguridad conviene
+  que **el e2e que prueba el agujero vaya primero**, aunque lo cierre la misma
+  implementación que el requisito unitario.
+- **Commits:** spec `572fdda`, aprobación `7663a3e`, baseline `cc89690`,
+  implementación `740a0d4..3c03a21` (12 commits).
+- **Estado final:** done

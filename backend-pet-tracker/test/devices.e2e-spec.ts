@@ -12,6 +12,8 @@ import { pets, petUsers } from '@/db/schema/pets.schema';
 import { users } from '@/db/schema/users.schema';
 import { TOKEN_SERVICE } from '@/modules/auth/domain/ports/token-service';
 import type { TokenService } from '@/modules/auth/domain/ports/token-service';
+import { DEVICE_REPOSITORY } from '@/modules/devices/domain/repositories/device.repository';
+import type { DeviceRepository } from '@/modules/devices/domain/repositories/device.repository';
 import { seedSimulatedDevices } from '../scripts/seed-devices';
 import { AppModule } from './../src/app.module';
 
@@ -31,6 +33,7 @@ describe('Devices claim (e2e)', () => {
   let app: INestApplication<App>;
   let db: NodePgDatabase;
   let tokenService: TokenService;
+  let deviceRepository: DeviceRepository;
 
   const createdUserIds: string[] = [];
   const createdPetIds: string[] = [];
@@ -94,6 +97,9 @@ describe('Devices claim (e2e)', () => {
     await db.insert(devices).values({
       id,
       esn: `E2E-${label}-${RUN_ID}`,
+      imei: `IMEI-${label}-${RUN_ID}`,
+      serialNumber: `SER-${label}-${RUN_ID}`,
+      activationCode: `ACT-${label}-${RUN_ID}`,
       model: 'e2e-collar',
       isSimulated: true,
       ...overrides,
@@ -120,6 +126,7 @@ describe('Devices claim (e2e)', () => {
 
     db = app.get<NodePgDatabase>(DRIZZLE);
     tokenService = app.get<TokenService>(TOKEN_SERVICE);
+    deviceRepository = app.get<DeviceRepository>(DEVICE_REPOSITORY);
   });
 
   afterAll(async () => {
@@ -281,7 +288,7 @@ describe('Devices claim (e2e)', () => {
       const before = Date.now();
       const response = await claim(owner, {
         petId: pet.id,
-        esn: device.esn,
+        activationCode: device.activationCode,
       }).expect(201);
       const after = Date.now();
 
@@ -322,12 +329,15 @@ describe('Devices claim (e2e)', () => {
   });
 
   describe('R4: body invalido responde 400 sin escribir en ninguna tabla', () => {
-    it('rechaza petId no-UUID, cero identificadores y dos identificadores', async () => {
+    it('rechaza petId no-UUID, activationCode ausente y solo-identificadores-viejos', async () => {
       const owner = await seedUser('r4-owner');
       const pet = await createPetViaApi(owner, `R4-${RUN_ID}`);
       const device = await seedDevice('R4');
 
-      await claim(owner, { petId: 'not-a-uuid', esn: device.esn }).expect(400);
+      await claim(owner, {
+        petId: 'not-a-uuid',
+        activationCode: device.activationCode,
+      }).expect(400);
       await claim(owner, { petId: pet.id }).expect(400);
       await claim(owner, {
         petId: pet.id,
@@ -343,6 +353,115 @@ describe('Devices claim (e2e)', () => {
     });
   });
 
+  describe('R2 (claim-activation-code-only #26): imei, esn y serialNumber no reclaman nada', () => {
+    it.each(['imei', 'esn', 'serialNumber'] as const)(
+      '%s sin activationCode responde 400 y no escribe',
+      async (field) => {
+        const owner = await seedUser(`r2-26-${field}-owner`);
+        const pet = await createPetViaApi(owner, `R2-26-${field}-${RUN_ID}`);
+        const device = await seedDevice(`R2-26-${field}`);
+
+        await claim(owner, {
+          petId: pet.id,
+          [field]: device[field],
+        }).expect(400);
+
+        const assignments = await db
+          .select()
+          .from(petDevices)
+          .where(eq(petDevices.deviceId, device.id));
+        expect(assignments).toHaveLength(0);
+
+        const [deviceAfterRejectedClaim] = await db
+          .select()
+          .from(devices)
+          .where(eq(devices.id, device.id));
+        expect(deviceAfterRejectedClaim.status).toBe('available');
+
+        const audits = await db
+          .select()
+          .from(auditLog)
+          .where(
+            and(
+              eq(auditLog.action, 'device.claim'),
+              eq(auditLog.entityId, device.id),
+            ),
+          );
+        expect(audits).toHaveLength(0);
+
+        await claim(owner, {
+          petId: pet.id,
+          activationCode: device.activationCode,
+        }).expect(201);
+      },
+    );
+  });
+
+  describe('R1c (claim-activation-code-only #26): un imei ajeno junto al activationCode correcto se ignora', () => {
+    it('reclama el device del activationCode y no el del imei', async () => {
+      const owner = await seedUser('r1c-26-owner');
+      const pet = await createPetViaApi(owner, `R1c-26-${RUN_ID}`);
+      const victim = await seedDevice('R1c-26-victim');
+      const attackerDevice = await seedDevice('R1c-26-attacker');
+
+      await claim(owner, {
+        petId: pet.id,
+        activationCode: attackerDevice.activationCode,
+        imei: victim.imei,
+      }).expect(201);
+
+      const assignments = await db
+        .select()
+        .from(petDevices)
+        .where(eq(petDevices.petId, pet.id));
+      expect(assignments).toHaveLength(1);
+      expect(assignments[0].deviceId).toBe(attackerDevice.id);
+
+      const victimAssignments = await db
+        .select()
+        .from(petDevices)
+        .where(eq(petDevices.deviceId, victim.id));
+      expect(victimAssignments).toHaveLength(0);
+
+      const [victimAfterClaim] = await db
+        .select()
+        .from(devices)
+        .where(eq(devices.id, victim.id));
+      expect(victimAfterClaim.status).toBe('available');
+    });
+  });
+
+  describe('R4 (claim-activation-code-only #26): findByIdentifier sigue buscando por los 4 campos', () => {
+    it('encuentra el mismo device por cada identificador y null si no existe', async () => {
+      const device = await seedDevice('R4-26');
+      const identifiers = [
+        { field: 'imei' as const, value: device.imei },
+        { field: 'esn' as const, value: device.esn },
+        { field: 'serialNumber' as const, value: device.serialNumber },
+        {
+          field: 'activationCode' as const,
+          value: device.activationCode,
+        },
+      ];
+
+      for (const identifier of identifiers) {
+        expect(identifier.value).not.toBeNull();
+        const found = await deviceRepository.findByIdentifier({
+          field: identifier.field,
+          value: identifier.value ?? '',
+        });
+        expect(found?.id).toBe(device.id);
+      }
+
+      await expect(
+        deviceRepository.findByIdentifier({
+          field: 'imei',
+          value: 'no-existe',
+        }),
+      ).resolves.toBeNull();
+    });
+  });
+
   describe('R5: mascota inexistente o ajena responde el 404 generico del guard', () => {
     it('usuario B sobre mascota de A recibe 404 (no 409, no 403) con el mismo body', async () => {
       const owner = await seedUser('r5-owner');
@@ -354,14 +473,14 @@ describe('Devices claim (e2e)', () => {
 
       const response = await claim(attacker, {
         petId: pet.id,
-        esn: device.esn,
+        activationCode: device.activationCode,
       }).expect(404);
       expect(response.body).toEqual(baseline);
 
       // petId bien formado pero inexistente: mismo 404 indistinguible.
       const ghost = await claim(attacker, {
         petId: uuidv7(),
-        esn: device.esn,
+        activationCode: device.activationCode,
       }).expect(404);
       expect(ghost.body).toEqual(baseline);
 
@@ -381,7 +500,10 @@ describe('Devices claim (e2e)', () => {
       await seedMembership(pet.id, family.id, 'family');
       const device = await seedDevice('R6');
 
-      await claim(family, { petId: pet.id, esn: device.esn }).expect(403);
+      await claim(family, {
+        petId: pet.id,
+        activationCode: device.activationCode,
+      }).expect(403);
 
       const rows = await db
         .select()
@@ -398,7 +520,7 @@ describe('Devices claim (e2e)', () => {
 
       const response = await claim(owner, {
         petId: pet.id,
-        esn: `NOPE-${RUN_ID}`,
+        activationCode: `NOPE-${RUN_ID}`,
       }).expect(404);
 
       expect((response.body as { code: string }).code).toBe('DEVICE_NOT_FOUND');
@@ -413,11 +535,14 @@ describe('Devices claim (e2e)', () => {
       const petB = await createPetViaApi(ownerB, `R8b-${RUN_ID}`);
       const device = await seedDevice('R8');
 
-      await claim(ownerA, { petId: petA.id, esn: device.esn }).expect(201);
+      await claim(ownerA, {
+        petId: petA.id,
+        activationCode: device.activationCode,
+      }).expect(201);
 
       const samePet = await claim(ownerA, {
         petId: petA.id,
-        esn: device.esn,
+        activationCode: device.activationCode,
       }).expect(409);
       expect((samePet.body as { code: string }).code).toBe(
         'DEVICE_ALREADY_ASSIGNED',
@@ -425,7 +550,7 @@ describe('Devices claim (e2e)', () => {
 
       const otherPet = await claim(ownerB, {
         petId: petB.id,
-        esn: device.esn,
+        activationCode: device.activationCode,
       }).expect(409);
       expect((otherPet.body as { code: string }).code).toBe(
         'DEVICE_ALREADY_ASSIGNED',
@@ -439,7 +564,7 @@ describe('Devices claim (e2e)', () => {
 
       const response = await claim(owner, {
         petId: pet.id,
-        esn: device.esn,
+        activationCode: device.activationCode,
       }).expect(409);
       expect((response.body as { code: string }).code).toBe(
         'DEVICE_ALREADY_ASSIGNED',
@@ -454,8 +579,14 @@ describe('Devices claim (e2e)', () => {
       const device = await seedDevice('R8D');
 
       const [first, second] = await Promise.all([
-        claim(ownerA, { petId: petA.id, esn: device.esn }),
-        claim(ownerB, { petId: petB.id, esn: device.esn }),
+        claim(ownerA, {
+          petId: petA.id,
+          activationCode: device.activationCode,
+        }),
+        claim(ownerB, {
+          petId: petB.id,
+          activationCode: device.activationCode,
+        }),
       ]);
 
       expect([first.status, second.status].sort()).toEqual([201, 409]);
@@ -480,11 +611,14 @@ describe('Devices claim (e2e)', () => {
       const first = await seedDevice('R9A');
       const second = await seedDevice('R9B');
 
-      await claim(owner, { petId: pet.id, esn: first.esn }).expect(201);
+      await claim(owner, {
+        petId: pet.id,
+        activationCode: first.activationCode,
+      }).expect(201);
 
       const response = await claim(owner, {
         petId: pet.id,
-        esn: second.esn,
+        activationCode: second.activationCode,
       }).expect(409);
       expect((response.body as { code: string }).code).toBe(
         'PET_ALREADY_HAS_DEVICE',
@@ -505,7 +639,10 @@ describe('Devices claim (e2e)', () => {
       const pet = await createPetViaApi(owner, `R10-${RUN_ID}`);
       const device = await seedDevice('R10');
 
-      await claim(owner, { petId: pet.id, esn: device.esn }).expect(201);
+      await claim(owner, {
+        petId: pet.id,
+        activationCode: device.activationCode,
+      }).expect(201);
 
       const entries = await db
         .select()
@@ -527,7 +664,10 @@ describe('Devices claim (e2e)', () => {
       const pet = await createPetViaApi(owner, `R10b-${RUN_ID}`);
       const device = await seedDevice('R10B', { status: 'inactive' });
 
-      await claim(owner, { petId: pet.id, esn: device.esn }).expect(409);
+      await claim(owner, {
+        petId: pet.id,
+        activationCode: device.activationCode,
+      }).expect(409);
 
       const entries = await db
         .select()
@@ -550,7 +690,10 @@ describe('Devices claim (e2e)', () => {
       await seedMembership(pet.id, family.id, 'family');
       const device = await seedDevice('R11');
 
-      await claim(owner, { petId: pet.id, esn: device.esn }).expect(201);
+      await claim(owner, {
+        petId: pet.id,
+        activationCode: device.activationCode,
+      }).expect(201);
 
       const response = await api()
         .get(`/v1/pets/${pet.id}/device`)
@@ -643,7 +786,10 @@ describe('Devices claim (e2e)', () => {
         .expect(200);
       expect((before.body as { device: unknown }).device).toBeNull();
 
-      await claim(owner, { petId: pet.id, esn: device.esn }).expect(201);
+      await claim(owner, {
+        petId: pet.id,
+        activationCode: device.activationCode,
+      }).expect(201);
 
       const after = await api()
         .get(`/v1/pets/${pet.id}`)
@@ -671,7 +817,10 @@ describe('Devices claim (e2e)', () => {
       const petB = await createPetViaApi(ownerB, `R13b-${RUN_ID}`);
       const device = await seedDevice('R13');
 
-      await claim(ownerA, { petId: petA.id, esn: device.esn }).expect(201);
+      await claim(ownerA, {
+        petId: petA.id,
+        activationCode: device.activationCode,
+      }).expect(201);
 
       const response = await api()
         .delete(`/v1/pets/${petA.id}/device`)
@@ -706,7 +855,10 @@ describe('Devices claim (e2e)', () => {
       expect(audits[0].meta).toEqual({ petId: petA.id });
 
       // Ciclo completo claim -> release -> claim, con otro owner (R13).
-      await claim(ownerB, { petId: petB.id, esn: device.esn }).expect(201);
+      await claim(ownerB, {
+        petId: petB.id,
+        activationCode: device.activationCode,
+      }).expect(201);
     });
   });
 
@@ -733,7 +885,10 @@ describe('Devices claim (e2e)', () => {
       await seedMembership(pet.id, family.id, 'family');
       const device = await seedDevice('R14B');
 
-      await claim(owner, { petId: pet.id, esn: device.esn }).expect(201);
+      await claim(owner, {
+        petId: pet.id,
+        activationCode: device.activationCode,
+      }).expect(201);
 
       await api()
         .delete(`/v1/pets/${pet.id}/device`)
@@ -769,7 +924,10 @@ describe('Devices claim (e2e)', () => {
       const petB = await createPetViaApi(ownerB, `R15b-${RUN_ID}`);
       const device = await seedDevice('R15');
 
-      await claim(ownerA, { petId: petA.id, esn: device.esn }).expect(201);
+      await claim(ownerA, {
+        petId: petA.id,
+        activationCode: device.activationCode,
+      }).expect(201);
 
       // DELETE de #5: el ON DELETE CASCADE borra la fila de pet_devices y
       // nadie actualiza devices.status — queda 'assigned' huerfano.
@@ -792,7 +950,10 @@ describe('Devices claim (e2e)', () => {
 
       // La disponibilidad se deriva de la fila activa, no del cache de
       // status: el device sigue reclamable (D3).
-      await claim(ownerB, { petId: petB.id, esn: device.esn }).expect(201);
+      await claim(ownerB, {
+        petId: petB.id,
+        activationCode: device.activationCode,
+      }).expect(201);
 
       const [reclaimed] = await db
         .select()

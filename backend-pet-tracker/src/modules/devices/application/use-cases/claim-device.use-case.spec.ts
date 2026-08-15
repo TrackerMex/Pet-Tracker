@@ -19,7 +19,7 @@ const PET_ID = '0198b2c3-4d5e-7a01-b234-56789abcdef0';
 const USER_ID = '0198a1f0-3d5c-7f21-b0a1-6f1c9e2d4b77';
 const DEVICE_ID = '0198c4d5-6e7f-7b12-c345-6789abcdef01';
 
-const DTO = { petId: PET_ID, esn: 'SIM-001' };
+const DTO = { petId: PET_ID, activationCode: 'ACT-001' };
 
 function buildDevice(overrides: Partial<Device> = {}): Device {
   return new Device({
@@ -104,8 +104,8 @@ describe('R3: claim feliz ejecuta la transaccion con watermark now-10min', () =>
     const device = await useCase.execute(DTO, USER_ID);
 
     expect(deps.findByIdentifier).toHaveBeenCalledWith({
-      field: 'esn',
-      value: 'SIM-001',
+      field: 'activationCode',
+      value: 'ACT-001',
     });
     expect(deps.claim).toHaveBeenCalledWith(
       DEVICE_ID,
