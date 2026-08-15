@@ -21,8 +21,8 @@
    (`specs/claim-activation-code-only/`, R1-R8).
 2. ~~Gate humano~~ — aprobado 2026-08-15; `requirements.md` con casilla marcada
    y `status: approved`. Feature `spec_ready` → `in_progress`.
-3. **Handoff a Codex CLI** — prompt entregado al humano; Codex implementa en su
-   terminal. Mientras tanto no se toca `backend-pet-tracker/`.
+3. **Implementación Codex CLI en curso** — baseline verde confirmado con
+   Postgres y LocalStack; TDD en orden R1, R3, R5, R2/R4.
 4. `reviewer` cuando el humano confirme que Codex terminó
    (`progress/impl_claim-activation-code-only.md`).
 

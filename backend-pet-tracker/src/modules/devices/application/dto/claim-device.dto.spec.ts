@@ -48,14 +48,18 @@ describe('R1 (claim-activation-code-only #26): ClaimDeviceSchema exige petId UUI
   });
 
   it('rechaza petId ausente y petId no-UUID', () => {
-    expect(ClaimDeviceSchema.safeParse({ esn: 'SIM-001' }).success).toBe(false);
+    expect(ClaimDeviceSchema.safeParse({ activationCode: 'ACT-001' }).success).toBe(
+      false,
+    );
     expect(
-      ClaimDeviceSchema.safeParse({ petId: 'not-a-uuid', esn: 'SIM-001' })
-        .success,
+      ClaimDeviceSchema.safeParse({
+        petId: 'not-a-uuid',
+        activationCode: 'ACT-001',
+      }).success,
     ).toBe(false);
   });
 
-  it('rechaza cero identificadores presentes', () => {
+  it('rechaza body sin activationCode (R1b #26)', () => {
     expect(ClaimDeviceSchema.safeParse({ petId: PET_ID }).success).toBe(false);
   });
 
@@ -78,14 +82,18 @@ describe('R1 (claim-activation-code-only #26): ClaimDeviceSchema exige petId UUI
 
   it('rechaza identificador vacio, no-string o de mas de 64 caracteres', () => {
     expect(
-      ClaimDeviceSchema.safeParse({ petId: PET_ID, esn: '   ' }).success,
-    ).toBe(false);
-    expect(
-      ClaimDeviceSchema.safeParse({ petId: PET_ID, esn: 12345 }).success,
-    ).toBe(false);
-    expect(
-      ClaimDeviceSchema.safeParse({ petId: PET_ID, esn: 'x'.repeat(65) })
+      ClaimDeviceSchema.safeParse({ petId: PET_ID, activationCode: '   ' })
         .success,
+    ).toBe(false);
+    expect(
+      ClaimDeviceSchema.safeParse({ petId: PET_ID, activationCode: 12345 })
+        .success,
+    ).toBe(false);
+    expect(
+      ClaimDeviceSchema.safeParse({
+        petId: PET_ID,
+        activationCode: 'x'.repeat(65),
+      }).success,
     ).toBe(false);
   });
 });
