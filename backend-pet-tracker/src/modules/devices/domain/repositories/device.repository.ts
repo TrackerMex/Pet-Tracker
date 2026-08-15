@@ -8,10 +8,7 @@ export const DEVICE_REPOSITORY = Symbol('DeviceRepository');
  * credencial (claim-activation-code-only #26, R1).
  */
 export type DeviceIdentifierField =
-  | 'esn'
-  | 'imei'
-  | 'serialNumber'
-  | 'activationCode';
+  'esn' | 'imei' | 'serialNumber' | 'activationCode';
 
 /** Identificador con el que se busca la fila de devices. */
 export interface DeviceIdentifier {

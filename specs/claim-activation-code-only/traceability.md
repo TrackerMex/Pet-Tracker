@@ -20,7 +20,7 @@ tags: [harness, spec]
 | R5 | N/A como test unitario (el requisito es una ausencia + un tipo): `grep -rn "DEVICE_IDENTIFIER_FIELDS" src test` sin resultados y `pnpm -C backend-pet-tracker run build` verde; el test de R4 falla en compilación si el tipo se redujo a un miembro. Verificado por el reviewer en el diff | `7456f83` (`refactor(claim-activation-code-only): separate repository identifiers from claim policy (R5)`) |
 | R6 | `test/devices.e2e-spec.ts` `describe` R3 y R5-R15 de `devices-claim` (#7) verdes con la credencial sustituida, y `CLAIM_KEYS` / las 3 assertions de respuesta con `esn` / el bloque `R2: seed:devices` sin modificar | implementación `cd33883` (R1); tests `f758129` |
 | R7 | N/A (requisito de proceso sobre el diff): se cierra con la tabla §Tests de #7 actualizados de abajo, completa y sin filas "pendiente" | `f758129` (`test(claim-activation-code-only): update claim regressions for activation code (R6,R7)`) |
-| R8 | N/A (cambio documental en `docs/data-model.md` fila `devices` y en el comentario de `src/db/schema/devices.schema.ts:16-18`, verificado por revisión manual del reviewer) | este commit (`docs(claim-activation-code-only): document activation code credential (R8)`) |
+| R8 | N/A (cambio documental en `docs/data-model.md` fila `devices` y en el comentario de `src/db/schema/devices.schema.ts:16-18`, verificado por revisión manual del reviewer) | `a9f62c0` (`docs(claim-activation-code-only): document activation code credential (R8)`) |
 
 ## Tests de #7 actualizados, no borrados (R7)
 

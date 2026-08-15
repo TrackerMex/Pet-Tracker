@@ -29,7 +29,9 @@ describe('R1 (claim-activation-code-only #26): ClaimDeviceSchema exige petId UUI
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(
-          result.error.issues.some((issue) => issue.path[0] === 'activationCode'),
+          result.error.issues.some(
+            (issue) => issue.path[0] === 'activationCode',
+          ),
         ).toBe(true);
       }
     },
@@ -48,9 +50,9 @@ describe('R1 (claim-activation-code-only #26): ClaimDeviceSchema exige petId UUI
   });
 
   it('rechaza petId ausente y petId no-UUID', () => {
-    expect(ClaimDeviceSchema.safeParse({ activationCode: 'ACT-001' }).success).toBe(
-      false,
-    );
+    expect(
+      ClaimDeviceSchema.safeParse({ activationCode: 'ACT-001' }).success,
+    ).toBe(false);
     expect(
       ClaimDeviceSchema.safeParse({
         petId: 'not-a-uuid',
