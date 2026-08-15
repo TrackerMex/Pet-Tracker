@@ -104,8 +104,8 @@ describe('R3: claim feliz ejecuta la transaccion con watermark now-10min', () =>
     const device = await useCase.execute(DTO, USER_ID);
 
     expect(deps.findByIdentifier).toHaveBeenCalledWith({
-      field: 'esn',
-      value: 'SIM-001',
+      field: 'activationCode',
+      value: 'ACT-001',
     });
     expect(deps.claim).toHaveBeenCalledWith(
       DEVICE_ID,
