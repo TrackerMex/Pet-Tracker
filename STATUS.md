@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-08-14
-**Features completadas**: 21/30 (`feature_list.json`)
+**Última actualización**: 2026-08-15
+**Features completadas**: 22/30 (`feature_list.json`)
 **En progreso**: ninguna.
-**Pendientes**: 9, por prioridad — **P1**: #26 `claim-activation-code-only`,
-#30 `geofence-eval-full-batch`, #27 `reject-future-positions`. **P2**: #23
+**Pendientes**: 8, por prioridad — **P1**: #30 `geofence-eval-full-batch`,
+#27 `reject-future-positions`. **P2**: #23
 `init-env-drift-warning`, #25 `device-subscriptions`, #28
 `test-dev-resource-isolation`, #29 `wialon-session-reuse`. **P3**: #17
 `nutrition-profile-engine`, #18 `nutrition-ai-explainer`.
@@ -65,12 +65,47 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
-- **`device-provisioning-admin` (#24) implementada, pendiente de review**
-  (2026-08-14): CLI interno `provision:device`, verificación por
-  `WialonClient.listUnits()`, idempotencia por `wialon_unit_id` y secreto
-  Crockford de aridad cero. TDD R1-R8 trazado; `init.sh` verde con 956 unit y
-  254 e2e; sin migración ni cambios en claim, seed, poller o controllers. Ver
-  `progress/impl_device-provisioning-admin.md`.
+- **`claim-activation-code-only` (#26) done** (2026-08-15): cierra el hueco de
+  autorización que #7 dejó abierto y que se destapó al escribir la spec de #24.
+  `DEVICE_IDENTIFIER_FIELDS` listaba `esn`/`imei`/`serialNumber`/
+  `activationCode` y el `superRefine` del DTO solo exigía **exactamente uno** de
+  los cuatro: un IMEI adivinado reclamaba el collar igual que el código secreto.
+  Con collares simulados era teórico; con hardware real es explotable, porque
+  los IMEI de un lote de fábrica son casi consecutivos — quien tuviera uno
+  válido enumeraba vecinos y se quedaba con la ubicación GPS de mascotas ajenas
+  en la ventana entre la venta y la activación legítima. Ahora `activationCode`
+  es **obligatorio y única credencial**; los otros tres salen del schema y se
+  ignoran en silencio (D1, precedente `weightKg` de #22 — el repo no tiene
+  `z.strictObject` ni `forbidNonWhitelisted`, así que un 400 por campo
+  desconocido habría sido asimetría nueva y habría roto un claim legítimo que
+  mande `imei` de más). `DEVICE_IDENTIFIER_FIELDS` se **borra** en vez de
+  reducirse a un elemento y `DeviceIdentifierField` pasa a unión literal
+  explícita de los cuatro valores (D2): `IDENTIFIER_COLUMNS` y
+  `findByIdentifier({field:'imei'})` conservan su capacidad para búsquedas
+  internas — lo que se retira es su uso como credencial en el borde HTTP, no
+  del repositorio. Cero migraciones: `esn`, `imei` y `serial_number` siguen
+  siendo columnas `UNIQUE`, y `esn` sigue en la respuesta de
+  `DeviceStatusResponse` (es salida, nunca credencial). Implementada por Codex
+  CLI en 12 commits con rojo→verde por requisito; `reviewer` **aprobó sin
+  bloqueantes** tras correr `init.sh` él mismo con infra publicada verificada
+  por `docker port`: 260 e2e passed contra el baseline de 255 de la sesión,
+  delta +5 que cuadra exactamente con los tests nuevos, cero regresiones. Ver
+  `progress/impl_claim-activation-code-only.md` y
+  `progress/review_claim-activation-code-only.md`.
+- **La propiedad de seguridad está probada, no solo implementada**: el e2e de R2
+  siembra un device con los cuatro identificadores poblados, `available` y sin
+  fila en `pet_devices` — o sea perfectamente reclamable — y por cada uno de
+  `imei`/`esn`/`serialNumber` verifica `400`, cero filas en `pet_devices`,
+  `status` intacto en `available` y cero entradas `device.claim` en `audit_log`;
+  **acto seguido** reclama el mismo device con su `activationCode` y espera
+  `201`. Ese último paso es el que cierra el argumento: el `400` es por
+  credencial rechazada, no por un device en mal estado.
+- **`device-provisioning-admin` (#24) done** (2026-08-14): CLI interno
+  `provision:device`, verificación por `WialonClient.listUnits()`, idempotencia
+  por `wialon_unit_id` y secreto Crockford de aridad cero. TDD R1-R8 trazado;
+  `init.sh` verde con 956 unit y 254 e2e; sin migración ni cambios en claim,
+  seed, poller o controllers. `reviewer` aprobado sin bloqueantes, PR #49
+  mergeada (`dd71fae`). Ver `progress/impl_device-provisioning-admin.md`.
 - **`health-weights` (#15) done** (2026-08-11): historial de peso extendiendo el
   módulo `src/modules/health/` de #14 — migración nueva `0010` con la tabla
   `weights`, `POST /v1/pets/:petId/weights` (owner-only) y
@@ -583,6 +618,36 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-08-15** — Ciclo SDD completo de `claim-activation-code-only` (#26),
+  reparto Claude/Codex: `spec_author` escribió la spec (R1-R8, D1-D5, commit
+  `572fdda`) → gate humano el mismo día → handoff por disco a Codex CLI → 12
+  commits con el test rojo antes de su implementación en R1 y R3 → `reviewer`
+  **aprobado sin bloqueantes**. `activationCode` queda como única credencial de
+  `POST /v1/devices/claim`; `DEVICE_IDENTIFIER_FIELDS` eliminado y el tipo
+  `DeviceIdentifierField` conservando sus cuatro miembros para que
+  `findByIdentifier` no pierda capacidad. Cero migraciones, cero env vars, cero
+  deps. Los cinco archivos que la spec declaró intocables —
+  `claim-device.use-case.ts`, `device.drizzle.repository.ts`,
+  `devices.controller.ts` y los dos mappers — **no aparecen en el diff**, y el
+  reviewer lo verificó con `git diff --stat`; `CLAIM_KEYS` y el bloque
+  `R2: seed:devices` de los e2e quedaron byte a byte iguales (md5 idéntico).
+  Los 13 tests de #7 inventariados en `design.md` D5 se actualizaron sin borrar
+  ninguno, con saldo neto positivo de `it` y una fila de justificación por cada
+  cambio de comportamiento en `traceability.md`.
+  **Dos verdes que no probaban nada, evitados a propósito**: la primera corrida
+  de `init.sh` de la sesión saltó los e2e con Docker apagado, y la primera con
+  Docker recién levantado dio 77 fallos por la carrera de arranque conocida de
+  la FK `pet_users_user_id_users_id_fk`. Se estableció un **baseline explícito
+  pre-implementación con infra caliente (255 passed, 6 skipped, 0 fallos)**
+  antes del handoff, precisamente para que un rojo durante la implementación no
+  se pudiera confundir con infra fría. El reviewer cerró con 260 passed: +5, que
+  son los 3 del `it.each` de R2 más R1c más R4.
+  Observación no bloqueante del reviewer, útil para la próxima spec de
+  seguridad: los e2e de R2/R4 se commitearon después de la implementación de R1
+  —tal y como prescribía `tasks.md`—, así que nacieron verdes. Siguen fallando
+  contra el commit previo, pero **el e2e que prueba el agujero merece ir
+  primero**, aunque lo cierre la misma implementación que el requisito unitario.
 
 - **2026-08-14 (2)** — Implementación TDD de `device-provisioning-admin`
   (#24) en `feature/24-device-provisioning-admin`: R1-R8 completos y

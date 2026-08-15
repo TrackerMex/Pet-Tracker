@@ -382,7 +382,7 @@
   {
     "id": 26,
     "name": "claim-activation-code-only",
-    "status": "in_progress",
+    "status": "done",
     "priority": "P1",
     "description": "Hueco de autorización destapado al escribir la spec de #24 y confirmado leyendo el código: DEVICE_IDENTIFIER_FIELDS en src/modules/devices/domain/repositories/device.repository.ts:10 lista 'esn', 'imei', 'serialNumber' y 'activationCode', y el superRefine de claim-device.dto.ts:24 solo exige que venga EXACTAMENTE UNO de los cuatro — no que sea el activation_code. Es decir, un imei/esn/serial adivinado reclama el collar igual que el código secreto. Con collares simulados el riesgo era teórico; con hardware real es explotable, porque los IMEI de un lote de fábrica son casi consecutivos: quien tenga uno válido enumera sus vecinos y reclama collares ajenos en la ventana entre la venta y la activación legítima, quedándose con la ubicación GPS de esa mascota (tras el claim legítimo el segundo claim ya da 409, que es el único mitigante). Arreglo: dejar activationCode como ÚNICA credencial de claim, eliminando los otros tres de DEVICE_IDENTIFIER_FIELDS y del DTO. Es un cambio del contrato público de POST /v1/devices/claim (#7), con su propia spec y su propio gate, por el mismo criterio que llevó #22 a separarse de #5. La spec debe decidir qué pasa con los tres campos en el DTO: si desaparecen del schema (y por tanto se ignoran en silencio, como weightKg en #22) o si se rechazan con 400 — hay precedente para ambas y no es decisión del implementador. Los tres campos siguen siendo columnas UNIQUE de devices y siguen sirviendo para búsquedas internas; lo que se retira es su uso como credencial.",
     "acceptance_criteria": [
