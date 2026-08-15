@@ -390,6 +390,40 @@ describe('Devices claim (e2e)', () => {
     );
   });
 
+  describe('R1c (claim-activation-code-only #26): un imei ajeno junto al activationCode correcto se ignora', () => {
+    it('reclama el device del activationCode y no el del imei', async () => {
+      const owner = await seedUser('r1c-26-owner');
+      const pet = await createPetViaApi(owner, `R1c-26-${RUN_ID}`);
+      const victim = await seedDevice('R1c-26-victim');
+      const attackerDevice = await seedDevice('R1c-26-attacker');
+
+      await claim(owner, {
+        petId: pet.id,
+        activationCode: attackerDevice.activationCode,
+        imei: victim.imei,
+      }).expect(201);
+
+      const assignments = await db
+        .select()
+        .from(petDevices)
+        .where(eq(petDevices.petId, pet.id));
+      expect(assignments).toHaveLength(1);
+      expect(assignments[0].deviceId).toBe(attackerDevice.id);
+
+      const victimAssignments = await db
+        .select()
+        .from(petDevices)
+        .where(eq(petDevices.deviceId, victim.id));
+      expect(victimAssignments).toHaveLength(0);
+
+      const [victimAfterClaim] = await db
+        .select()
+        .from(devices)
+        .where(eq(devices.id, victim.id));
+      expect(victimAfterClaim.status).toBe('available');
+    });
+  });
+
   describe('R5: mascota inexistente o ajena responde el 404 generico del guard', () => {
     it('usuario B sobre mascota de A recibe 404 (no 409, no 403) con el mismo body', async () => {
       const owner = await seedUser('r5-owner');
