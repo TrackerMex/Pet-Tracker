@@ -1,6 +1,6 @@
 ---
 feature: "claim-activation-code-only"
-status: draft        # draft | approved
+status: approved        # draft | approved
 tags: [harness, spec]
 ---
 
@@ -218,4 +218,4 @@ tags: [harness, spec]
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [X] Aprobado por humano (fecha: 26-08-15) ← gate obligatorio antes de implementar

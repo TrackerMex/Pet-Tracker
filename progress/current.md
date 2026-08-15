@@ -17,15 +17,33 @@
 
 ### Plan
 
-1. `spec_author` escribe `specs/claim-activation-code-only/` (requirements EARS,
-   design, tasks, traceability) y cierra la decisión abierta: ¿los tres campos
-   retirados se ignoran en silencio (precedente #22) o devuelven 400?
-2. **PARADA** — gate humano: aprobar la spec en `requirements.md`.
-3. Handoff a Codex CLI (implementación), con commits test-primero explícitos.
-4. `reviewer` cuando Codex termine.
+1. ~~`spec_author` escribe la spec~~ — hecho, commit `572fdda`
+   (`specs/claim-activation-code-only/`, R1-R8).
+2. ~~Gate humano~~ — aprobado 2026-08-15; `requirements.md` con casilla marcada
+   y `status: approved`. Feature `spec_ready` → `in_progress`.
+3. **Handoff a Codex CLI** — prompt entregado al humano; Codex implementa en su
+   terminal. Mientras tanto no se toca `backend-pet-tracker/`.
+4. `reviewer` cuando el humano confirme que Codex terminó
+   (`progress/impl_claim-activation-code-only.md`).
+
+### Decisiones cerradas en la spec (no las reabra el implementador)
+
+- **D1**: `esn`/`imei`/`serialNumber` salen del schema de claim y se ignoran en
+  silencio (precedente `weightKg` de #22); `activationCode` pasa a
+  obligatorio, que es lo que convierte `{petId, imei}` en `400` en vez de un
+  claim silencioso. La opción del `400` explícito queda descartada: no hay
+  `z.strictObject` ni `ValidationPipe` con `forbidNonWhitelisted` en el repo.
+- **D2**: `DEVICE_IDENTIFIER_FIELDS` se **borra**; `DeviceIdentifierField` pasa
+  a unión literal explícita de los cuatro valores, para que
+  `findByIdentifier({field:'imei'})` e `IDENTIFIER_COLUMNS` conserven su
+  capacidad (criterio 5 del `feature_list.json`).
 
 ### Notas de entorno
 
-- `./init.sh` verde, **pero los e2e se saltaron**: Docker Desktop apagado
-  (puerto 5432 sin respuesta). Antes de implementar hay que levantar la infra
-  (`docker compose up -d`) — esta feature se valida con e2e de devices.
+- Docker levantado por el humano: `postgres` y `localstack` running, `5432` y
+  `4566` publicados. La corrida de `init.sh` sin infra saltó los e2e y **no es
+  evidencia** (`tasks.md` §Infra).
+- Inventario real de tests de #7 a tocar: 13 filas en 3 archivos
+  (`design.md` D5), no los 3 paths de `files_affected`. Las 3 assertions de
+  respuesta con `esn` (L295/L565/L661 de `devices.e2e-spec.ts`) son
+  intocables: `esn` es salida, nunca credencial.
