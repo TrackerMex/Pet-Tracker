@@ -1116,6 +1116,43 @@ Deuda detectada (fuera de alcance, candidata a limpieza propia):
 - **Alcance respetado:** sin cambios en claim (#7), integración/poller (#8),
   seed, schema, migraciones o controllers; sin acceso a Wialon real ni
   hardware.
-- **Estado final:** implementación completa, #24 sigue `in_progress` hasta el
-  veredicto independiente del `reviewer`.
-- **Próximo:** lanzar `reviewer`; si aprueba, marcar `done`, push y abrir PR.
+- **Review:** APROBADO sin bloqueantes
+  (`progress/review_device-provisioning-admin.md`). El `reviewer` corrió
+  `./init.sh` él mismo y verificó por diff que no se tocaron #7, #8, el seed
+  ni el schema. Detalle que destacó de R4: como 256 es múltiplo de 32,
+  `byte % 32` es uniforme, así que el alfabeto Crockford no introduce sesgo
+  de módulo y los ~50 bits de entropía son reales.
+- **Fix posterior al review (R1):** la invocación documentada
+  `pnpm run provision:device -- --unit-id <id>` **fallaba**: pnpm reenvía el
+  separador `--` literal y `parseArgs` lo leía como fin de opciones
+  (`ERR_PARSE_ARGS_UNEXPECTED_POSITIONAL`). Ningún test lo cubría porque
+  todos llamaban a `provisionDevice()` directamente. Corregido con el
+  fallback del `implementer` (cambio de una línea, `CLAUDE.md` §Excepciones)
+  en dos commits test-primero: `fda4ec9` (test que hace `spawnSync` del
+  script real con el separador puesto, usando el guard de R5 como sonda de
+  que el parseo avanzó) y `9833364` (el filtro del separador).
+- **Prueba de humo con hardware real (humano, 2026-08-14):** cadena completa
+  verificada por primera vez contra un collar físico JT808 en la unidad
+  Wialon `401775970` — `provision-device` → `claim` desde la app → poller →
+  SQS → 35 posiciones reales en DynamoDB con `sats` y `course`. Es el
+  §Cierre que la spec reservaba al humano.
+- **Incidencias de entorno durante el smoke** (ninguna del código de la
+  feature, todas silenciosas): `POLLER_ENABLED` ausente del `.env` dejaba el
+  cron sin agendar; LocalStack pierde sus recursos al reiniciar el
+  contenedor y el poller encolaba al vacío; y sobre todo, **procesos de jest
+  huérfanos** de corridas de `init.sh` interrumpidas siguieron levantando
+  `AppModule` y poleando en bucle, empujando el watermark ~50 min por vuelta
+  hasta timestamps de 2027 y llenando `positions-raw` con miles de mensajes.
+  Resistió purgas, liberar el device y reiniciar LocalStack; solo cayó al
+  matar los PID huérfanos. Diagnóstico costoso porque cada corrida
+  interrumpida sumaba otro zombie.
+- **Backlog abierto por esos hallazgos:** #27 `reject-future-positions`
+  (P1 — un `ts` futuro envenena el watermark y el device deja de reportar
+  para siempre, disparable en producción por un collar con el reloj mal),
+  #28 `test-dev-resource-isolation` (P2 — e2e y dev comparten las colas de
+  LocalStack, por eso el simulador encoló a nombre del collar real) y #29
+  `wialon-session-reuse` (P2 — un `token/login` por collar por ciclo no
+  escala; cachear el `sid` obliga a manejar su caducidad).
+- **Commits:** implementación `fb66eb7..7575ef8` (24 commits), fix
+  `fda4ec9`/`9833364`, evidencia `8602263`; PR #49 mergeada (`dd71fae`).
+- **Estado final:** done

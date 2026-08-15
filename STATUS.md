@@ -1,11 +1,13 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-08-14
-**Features completadas**: 20/26 (`feature_list.json`)
-**En progreso**: #24 `device-provisioning-admin` (implementación lista para review).
-**Pendientes**: 5: #17 `nutrition-profile-engine`, #18
-`nutrition-ai-explainer`, #23 `init-env-drift-warning`, #25
-`device-subscriptions` y #26 `claim-activation-code-only`.
+**Features completadas**: 21/29 (`feature_list.json`)
+**En progreso**: ninguna.
+**Pendientes**: 8, por prioridad — **P1**: #26 `claim-activation-code-only`,
+#27 `reject-future-positions`. **P2**: #23 `init-env-drift-warning`, #25
+`device-subscriptions`, #28 `test-dev-resource-isolation`, #29
+`wialon-session-reuse`. **P3**: #17 `nutrition-profile-engine`, #18
+`nutrition-ai-explainer`.
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
 desde 2026-08-10. Hay recursos vivos en la cuenta, aunque hoy sin coste.
@@ -589,10 +591,25 @@ debe listar las 4 URLs de cola.
   INSERT; reprovisionar conserva el secreto; `generateActivationCode()` usa
   `randomBytes()` y tiene aridad cero. `init.sh` exit 0 (956 unit, 254 e2e,
   build/lint/typecheck), `drizzle-kit generate` sin cambios. No se tocó #7,
-  #8, seed, schema, migraciones ni controllers; no se usó Wialon real.
-  Implementación lista en
-  `progress/impl_device-provisioning-admin.md`; siguiente: `reviewer` y, si
-  aprueba, marcar `done`, push y PR.
+  #8, seed, schema, migraciones ni controllers.
+  `reviewer` **aprobado sin bloqueantes**; PR #49 mergeada (`dd71fae`),
+  feature `done`.
+  Se corrigió después un defecto de R1 que ningún test cubría: la invocación
+  documentada `pnpm run provision:device -- --unit-id <id>` fallaba porque
+  pnpm reenvía el separador `--` literal y `parseArgs` lo tomaba como fin de
+  opciones.
+  **Hito: primera verificación de la cadena completa con hardware real** —
+  collar JT808 en la unidad Wialon `401775970`, aprovisionado, reclamado
+  desde la app y con 35 posiciones GPS reales ingestadas a DynamoDB.
+  El smoke destapó tres fallos silenciosos de entorno, ninguno del código:
+  `POLLER_ENABLED` ausente del `.env`; LocalStack pierde sus recursos al
+  reiniciar el contenedor (hay que rehacer `provision:local`); y **procesos
+  de jest huérfanos** de corridas de `init.sh` interrumpidas, que siguieron
+  poleando en bucle hasta llenar `positions-raw` con miles de mensajes y
+  timestamps de 2027. De ahí salieron #27 (P1, un `ts` futuro envenena el
+  watermark y el device deja de reportar para siempre), #28 (e2e y dev
+  comparten las colas de LocalStack) y #29 (un `token/login` por collar por
+  ciclo no escala).
 
 - **2026-08-14** — Ciclo SDD de `weight-single-source-of-truth` (#22), reparto
   Claude/Codex: `spec_author` escribió la spec (R1-R6) sobre la deuda destapada
