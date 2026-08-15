@@ -43,6 +43,12 @@
 - Docker levantado por el humano: `postgres` y `localstack` running, `5432` y
   `4566` publicados. La corrida de `init.sh` sin infra saltó los e2e y **no es
   evidencia** (`tasks.md` §Infra).
+- **Baseline verde antes del handoff**: primera corrida con la infra recién
+  levantada dio 77 fallos e2e con la FK `pet_users_user_id_users_id_fk` — la
+  carrera de arranque conocida, no una regresión; repetida con los contenedores
+  calientes, `pnpm -C backend-pet-tracker test:e2e` da **255 passed, 6 skipped,
+  0 fallos**. Ese es el punto de partida contra el que se compara el trabajo de
+  Codex.
 - Inventario real de tests de #7 a tocar: 13 filas en 3 archivos
   (`design.md` D5), no los 3 paths de `files_affected`. Las 3 assertions de
   respuesta con `esn` (L295/L565/L661 de `devices.e2e-spec.ts`) son
