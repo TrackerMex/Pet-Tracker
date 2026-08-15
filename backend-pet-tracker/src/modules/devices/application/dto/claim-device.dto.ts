@@ -1,8 +1,5 @@
 import { z } from 'zod';
-import {
-  DEVICE_IDENTIFIER_FIELDS,
-  DeviceIdentifier,
-} from '@/modules/devices/domain/repositories/device.repository';
+import { DeviceIdentifier } from '@/modules/devices/domain/repositories/device.repository';
 
 /** Codigo de activacion: string no vacio de hasta 64 chars (#26 R1). */
 const ActivationCodeSchema = z.string().trim().min(1).max(64);
@@ -18,15 +15,7 @@ export const ClaimDeviceSchema = z.object({
 
 export type ClaimDeviceDto = z.infer<typeof ClaimDeviceSchema>;
 
-/** El schema garantiza exactamente un identificador presente (R4). */
+/** El schema garantiza activationCode presente (#26 R1, R3). */
 export function toDeviceIdentifier(dto: ClaimDeviceDto): DeviceIdentifier {
-  for (const field of DEVICE_IDENTIFIER_FIELDS) {
-    const value = dto[field];
-
-    if (value !== undefined) {
-      return { field, value };
-    }
-  }
-
-  throw new Error('ClaimDeviceDto without device identifier');
+  return { field: 'activationCode', value: dto.activationCode };
 }

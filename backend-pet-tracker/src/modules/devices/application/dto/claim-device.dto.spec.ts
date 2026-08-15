@@ -98,7 +98,7 @@ describe('R1 (claim-activation-code-only #26): ClaimDeviceSchema exige petId UUI
   });
 });
 
-describe('R4: toDeviceIdentifier extrae el unico identificador presente', () => {
+describe('R3 (claim-activation-code-only #26): toDeviceIdentifier devuelve siempre activationCode', () => {
   it('devuelve el campo y el valor del identificador', () => {
     const dto = ClaimDeviceSchema.parse({
       petId: PET_ID,
