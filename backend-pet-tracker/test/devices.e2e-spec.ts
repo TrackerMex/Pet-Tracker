@@ -12,6 +12,8 @@ import { pets, petUsers } from '@/db/schema/pets.schema';
 import { users } from '@/db/schema/users.schema';
 import { TOKEN_SERVICE } from '@/modules/auth/domain/ports/token-service';
 import type { TokenService } from '@/modules/auth/domain/ports/token-service';
+import { DEVICE_REPOSITORY } from '@/modules/devices/domain/repositories/device.repository';
+import type { DeviceRepository } from '@/modules/devices/domain/repositories/device.repository';
 import { seedSimulatedDevices } from '../scripts/seed-devices';
 import { AppModule } from './../src/app.module';
 
@@ -31,6 +33,7 @@ describe('Devices claim (e2e)', () => {
   let app: INestApplication<App>;
   let db: NodePgDatabase;
   let tokenService: TokenService;
+  let deviceRepository: DeviceRepository;
 
   const createdUserIds: string[] = [];
   const createdPetIds: string[] = [];
@@ -123,6 +126,7 @@ describe('Devices claim (e2e)', () => {
 
     db = app.get<NodePgDatabase>(DRIZZLE);
     tokenService = app.get<TokenService>(TOKEN_SERVICE);
+    deviceRepository = app.get<DeviceRepository>(DEVICE_REPOSITORY);
   });
 
   afterAll(async () => {
@@ -421,6 +425,37 @@ describe('Devices claim (e2e)', () => {
         .from(devices)
         .where(eq(devices.id, victim.id));
       expect(victimAfterClaim.status).toBe('available');
+    });
+  });
+
+  describe('R4 (claim-activation-code-only #26): findByIdentifier sigue buscando por los 4 campos', () => {
+    it('encuentra el mismo device por cada identificador y null si no existe', async () => {
+      const device = await seedDevice('R4-26');
+      const identifiers = [
+        { field: 'imei' as const, value: device.imei },
+        { field: 'esn' as const, value: device.esn },
+        { field: 'serialNumber' as const, value: device.serialNumber },
+        {
+          field: 'activationCode' as const,
+          value: device.activationCode,
+        },
+      ];
+
+      for (const identifier of identifiers) {
+        expect(identifier.value).not.toBeNull();
+        const found = await deviceRepository.findByIdentifier({
+          field: identifier.field,
+          value: identifier.value ?? '',
+        });
+        expect(found?.id).toBe(device.id);
+      }
+
+      await expect(
+        deviceRepository.findByIdentifier({
+          field: 'imei',
+          value: 'no-existe',
+        }),
+      ).resolves.toBeNull();
     });
   });
 
