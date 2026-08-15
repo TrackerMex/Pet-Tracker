@@ -1,13 +1,13 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-08-14
-**Features completadas**: 21/29 (`feature_list.json`)
+**Features completadas**: 21/30 (`feature_list.json`)
 **En progreso**: ninguna.
-**Pendientes**: 8, por prioridad — **P1**: #26 `claim-activation-code-only`,
-#27 `reject-future-positions`. **P2**: #23 `init-env-drift-warning`, #25
-`device-subscriptions`, #28 `test-dev-resource-isolation`, #29
-`wialon-session-reuse`. **P3**: #17 `nutrition-profile-engine`, #18
-`nutrition-ai-explainer`.
+**Pendientes**: 9, por prioridad — **P1**: #26 `claim-activation-code-only`,
+#30 `geofence-eval-full-batch`, #27 `reject-future-positions`. **P2**: #23
+`init-env-drift-warning`, #25 `device-subscriptions`, #28
+`test-dev-resource-isolation`, #29 `wialon-session-reuse`. **P3**: #17
+`nutrition-profile-engine`, #18 `nutrition-ai-explainer`.
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
 desde 2026-08-10. Hay recursos vivos en la cuenta, aunque hoy sin coste.
