@@ -14,9 +14,10 @@ import {
 import { pets } from './pets.schema';
 
 // Collares GPS (docs/data-model.md fila `devices`, devices-claim R1).
-// Los 5 identificadores son UNIQUE NULL (decision D4): el claim busca por
-// cualquiera de esn/imei/serial_number/activation_code y un match multiple
-// seria ambiguo. `status` es cache de presentacion — la disponibilidad real
+// Los 5 identificadores son UNIQUE NULL (decision D4); el claim solo busca
+// por activation_code (#26), mientras los demas identifican inventario y
+// permiten busquedas internas. `status` es cache de presentacion — la
+// disponibilidad real
 // se deriva de la fila activa en `pet_devices` (decision D3, R15).
 // `battery_pct`/`connectivity`/`last_message_at` quedan NULL hasta que el
 // pipeline de ingesta (#8) los alimente; `ingest_watermark` arranca en el
