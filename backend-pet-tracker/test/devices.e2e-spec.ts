@@ -94,6 +94,9 @@ describe('Devices claim (e2e)', () => {
     await db.insert(devices).values({
       id,
       esn: `E2E-${label}-${RUN_ID}`,
+      imei: `IMEI-${label}-${RUN_ID}`,
+      serialNumber: `SER-${label}-${RUN_ID}`,
+      activationCode: `ACT-${label}-${RUN_ID}`,
       model: 'e2e-collar',
       isSimulated: true,
       ...overrides,
@@ -341,6 +344,50 @@ describe('Devices claim (e2e)', () => {
         .where(eq(petDevices.petId, pet.id));
       expect(rows).toHaveLength(0);
     });
+  });
+
+  describe('R2 (claim-activation-code-only #26): imei, esn y serialNumber no reclaman nada', () => {
+    it.each(['imei', 'esn', 'serialNumber'] as const)(
+      '%s sin activationCode responde 400 y no escribe',
+      async (field) => {
+        const owner = await seedUser(`r2-26-${field}-owner`);
+        const pet = await createPetViaApi(owner, `R2-26-${field}-${RUN_ID}`);
+        const device = await seedDevice(`R2-26-${field}`);
+
+        await claim(owner, {
+          petId: pet.id,
+          [field]: device[field],
+        }).expect(400);
+
+        const assignments = await db
+          .select()
+          .from(petDevices)
+          .where(eq(petDevices.deviceId, device.id));
+        expect(assignments).toHaveLength(0);
+
+        const [deviceAfterRejectedClaim] = await db
+          .select()
+          .from(devices)
+          .where(eq(devices.id, device.id));
+        expect(deviceAfterRejectedClaim.status).toBe('available');
+
+        const audits = await db
+          .select()
+          .from(auditLog)
+          .where(
+            and(
+              eq(auditLog.action, 'device.claim'),
+              eq(auditLog.entityId, device.id),
+            ),
+          );
+        expect(audits).toHaveLength(0);
+
+        await claim(owner, {
+          petId: pet.id,
+          activationCode: device.activationCode,
+        }).expect(201);
+      },
+    );
   });
 
   describe('R5: mascota inexistente o ajena responde el 404 generico del guard', () => {
