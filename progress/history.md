@@ -1096,3 +1096,26 @@ Deuda detectada (fuera de alcance, candidata a limpieza propia):
   dispositivo, no del usuario, porque el costo es por collar; free es la app
   de salud sin GPS. Pasan por delante de #17/#18.
 - **Estado final:** done
+
+---
+
+## Sesión 2026-08-14 (2) — device-provisioning-admin (id: 24)
+
+- **Feature:** CLI interno `provision:device` para registrar collares reales
+  en `devices`, validando antes `wialon_unit_id` con
+  `WialonClient.listUnits()`; idempotencia sin regenerar `activation_code` y
+  secreto Crockford de aridad cero generado con `randomBytes()`.
+- **Spec:** [[specs/device-provisioning-admin/requirements|spec]] (R1-R8,
+  aprobada 2026-08-14, opción A: IMEI recibido por `--imei`).
+- **Acciones:** Codex implementó R1-R8 con commits test-rojo → feat-verde →
+  trazabilidad por requisito. Reporte en
+  `progress/impl_device-provisioning-admin.md`.
+- **Verificación:** `init.sh` exit 0: 133 suites/956 tests unitarios, 2
+  suites/14 tests de infra, 17 suites/254 tests e2e, build, lint y typecheck
+  verdes. `drizzle-kit generate`: sin cambios de schema.
+- **Alcance respetado:** sin cambios en claim (#7), integración/poller (#8),
+  seed, schema, migraciones o controllers; sin acceso a Wialon real ni
+  hardware.
+- **Estado final:** implementación completa, #24 sigue `in_progress` hasta el
+  veredicto independiente del `reviewer`.
+- **Próximo:** lanzar `reviewer`; si aprueba, marcar `done`, push y abrir PR.

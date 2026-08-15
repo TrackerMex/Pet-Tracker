@@ -1,0 +1,393 @@
+import { spawnSync } from 'node:child_process';
+import type { INestApplication } from '@nestjs/common';
+import { Test } from '@nestjs/testing';
+import { and, eq, inArray, isNull } from 'drizzle-orm';
+import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import request from 'supertest';
+import type { App } from 'supertest/types';
+import { uuidv7 } from 'uuidv7';
+import { DRIZZLE } from '@/db/drizzle.constants';
+import { auditLog } from '@/db/schema/audit-log.schema';
+import { devices, petDevices } from '@/db/schema/devices.schema';
+import { pets } from '@/db/schema/pets.schema';
+import { users } from '@/db/schema/users.schema';
+import { FakeWialonClient } from '@/integrations/wialon/fake-wialon.client';
+import { WialonHttpClient } from '@/integrations/wialon/wialon-http.client';
+import type { WialonClient } from '@/integrations/wialon/wialon-client.interface';
+import { WialonTransportError } from '@/integrations/wialon/wialon.errors';
+import { TOKEN_SERVICE } from '@/modules/auth/domain/ports/token-service';
+import type { TokenService } from '@/modules/auth/domain/ports/token-service';
+import {
+  assertRealWialonClient,
+  provisionDevice,
+  SimulatedWialonClientError,
+  WialonUnitNotFoundError,
+} from '../scripts/provision-device';
+import { seedSimulatedDevices } from '../scripts/seed-devices';
+import { AppModule } from '../src/app.module';
+
+const RUN_ID = `${Date.now()}`;
+
+function wialonStub(unitIds: string[]): WialonClient {
+  return {
+    listUnits: () =>
+      Promise.resolve(
+        unitIds.map((unitId) => ({ unitId, name: `collar ${unitId}` })),
+      ),
+    getMessages: () => Promise.resolve([]),
+  };
+}
+
+describe('Device provisioning (e2e)', () => {
+  let app: INestApplication<App>;
+  let db: NodePgDatabase;
+  let tokenService: TokenService;
+  const createdDeviceIds: string[] = [];
+  const createdPetIds: string[] = [];
+  const createdUserIds: string[] = [];
+
+  async function seedUser() {
+    const id = uuidv7();
+    const email = `provision-device-${RUN_ID}@example.com`;
+
+    await db.insert(users).values({
+      id,
+      email,
+      passwordHash: '$argon2id$v=19$m=65536,t=3,p=4$e2e$dummy',
+      firstName: 'Provision',
+      lastName: 'Owner',
+      phone: '+525512345678',
+      country: 'MX',
+      timezone: 'UTC',
+      termsAcceptedAt: new Date(),
+    });
+    createdUserIds.push(id);
+
+    return { id, token: tokenService.sign({ sub: id, email }) };
+  }
+
+  async function createPet(ownerToken: string) {
+    const response = await request(app.getHttpServer())
+      .post('/v1/pets')
+      .set('Authorization', `Bearer ${ownerToken}`)
+      .send({
+        name: `Provision-${RUN_ID}`,
+        species: 'dog',
+        birthDate: '2024-01-15',
+      })
+      .expect(201);
+    const pet = response.body as { id: string };
+    createdPetIds.push(pet.id);
+    return pet;
+  }
+
+  beforeAll(async () => {
+    const moduleFixture = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile();
+
+    app = moduleFixture.createNestApplication();
+    app.setGlobalPrefix('v1');
+    await app.init();
+    db = app.get<NodePgDatabase>(DRIZZLE);
+    tokenService = app.get<TokenService>(TOKEN_SERVICE);
+  });
+
+  afterAll(async () => {
+    if (createdUserIds.length > 0) {
+      await db.delete(auditLog).where(inArray(auditLog.userId, createdUserIds));
+    }
+    if (createdPetIds.length > 0) {
+      await db.delete(pets).where(inArray(pets.id, createdPetIds));
+    }
+    if (createdDeviceIds.length > 0) {
+      await db.delete(devices).where(inArray(devices.id, createdDeviceIds));
+    }
+    if (createdUserIds.length > 0) {
+      await db.delete(users).where(inArray(users.id, createdUserIds));
+    }
+    await app.close();
+  });
+
+  describe('R1 (device-provisioning-admin #24): da de alta el collar real con activation_code generado, is_simulated=false y status available', () => {
+    it('inserta exactamente una fila real con los flags y nulos requeridos', async () => {
+      const unitId = `e2e-r1-unit-${RUN_ID}`;
+      const result = await provisionDevice(db, wialonStub([unitId]), {
+        wialonUnitId: unitId,
+        imei: `imei-r1-${RUN_ID}`,
+        model: 'tracker-r1',
+      });
+      createdDeviceIds.push(result.deviceId);
+
+      const [row] = await db
+        .select()
+        .from(devices)
+        .where(eq(devices.id, result.deviceId));
+
+      expect(result.created).toBe(true);
+      expect(result.activationCode).toMatch(/^PT-[0-9A-HJKMNP-TV-Z]{10}$/);
+      expect(row).toMatchObject({
+        id: result.deviceId,
+        wialonUnitId: unitId,
+        imei: `imei-r1-${RUN_ID}`,
+        serialNumber: null,
+        esn: null,
+        model: 'tracker-r1',
+        activationCode: result.activationCode,
+        status: 'available',
+        isSimulated: false,
+        batteryPct: null,
+        connectivity: null,
+        lastMessageAt: null,
+        ingestWatermark: null,
+      });
+    });
+
+    it('falla antes de conectar si falta --unit-id', () => {
+      const result = spawnSync(
+        process.execPath,
+        [
+          '-r',
+          'ts-node/register',
+          '-r',
+          'tsconfig-paths/register',
+          'scripts/provision-device.ts',
+        ],
+        { cwd: process.cwd(), encoding: 'utf8' },
+      );
+
+      expect(result.status).not.toBe(0);
+      expect(result.stderr).toContain('--unit-id');
+    });
+
+    // `pnpm run provision:device -- --unit-id X` reenvia el separador literal
+    // al script; sin filtrarlo parseArgs lo trata como fin de opciones.
+    it('lee --unit-id cuando pnpm reenvia el separador -- literal', () => {
+      const result = spawnSync(
+        process.execPath,
+        [
+          '-r',
+          'ts-node/register',
+          '-r',
+          'tsconfig-paths/register',
+          'scripts/provision-device.ts',
+          '--',
+          '--unit-id',
+          `cli-r1-${RUN_ID}`,
+        ],
+        {
+          cwd: process.cwd(),
+          encoding: 'utf8',
+          env: { ...process.env, SIM_MODE: 'true', WIALON_TOKEN: 'PENDING' },
+        },
+      );
+
+      expect(result.stderr).not.toContain(
+        'ERR_PARSE_ARGS_UNEXPECTED_POSITIONAL',
+      );
+      expect(result.stderr).not.toContain('falta --unit-id');
+      // Llega al guard de R5 (cliente simulado), o sea que ya parseo --unit-id.
+      expect(result.stderr).toContain('SimulatedWialonClientError');
+    });
+  });
+
+  describe('R2 (device-provisioning-admin #24): unidad inexistente en la cuenta -> WialonUnitNotFoundError y cero filas insertadas', () => {
+    it('rechaza la unidad ausente sin cambiar el conteo de devices', async () => {
+      const unitId = `e2e-r2-missing-${RUN_ID}`;
+      const before = await db.select({ id: devices.id }).from(devices);
+      let thrown: unknown;
+
+      try {
+        const result = await provisionDevice(db, wialonStub(['otra-unidad']), {
+          wialonUnitId: unitId,
+        });
+        createdDeviceIds.push(result.deviceId);
+      } catch (error) {
+        thrown = error;
+      }
+
+      const after = await db.select({ id: devices.id }).from(devices);
+      expect(after).toHaveLength(before.length);
+      expect(thrown).toBeInstanceOf(WialonUnitNotFoundError);
+      expect(thrown).toMatchObject({ unitId, visibleUnits: 1 });
+      expect((thrown as Error).message).toContain(unitId);
+      expect((thrown as Error).message).toContain('1');
+    });
+
+    it('propaga el error de Wialon por identidad y no inserta', async () => {
+      const failure = new WialonTransportError('core/search_items', 'offline');
+      const failingWialon: WialonClient = {
+        listUnits: () => Promise.reject(failure),
+        getMessages: () => Promise.resolve([]),
+      };
+      const unitId = `e2e-r2-error-${RUN_ID}`;
+      const before = await db.select({ id: devices.id }).from(devices);
+
+      try {
+        await expect(
+          provisionDevice(db, failingWialon, { wialonUnitId: unitId }),
+        ).rejects.toBe(failure);
+      } finally {
+        const inserted = await db
+          .select({ id: devices.id })
+          .from(devices)
+          .where(eq(devices.wialonUnitId, unitId));
+        createdDeviceIds.push(...inserted.map((row) => row.id));
+      }
+
+      const after = await db.select({ id: devices.id }).from(devices);
+      expect(after).toHaveLength(before.length);
+    });
+  });
+
+  describe('R3 (device-provisioning-admin #24): reprovisionar el mismo wialon_unit_id no duplica ni regenera el codigo', () => {
+    it('devuelve la fila existente sin llamar otra vez a Wialon ni modificarla', async () => {
+      const unitId = `e2e-r3-unit-${RUN_ID}`;
+      const listUnits = jest
+        .fn()
+        .mockResolvedValue([{ unitId, name: `collar ${unitId}` }]);
+      const wialon: WialonClient = {
+        listUnits,
+        getMessages: () => Promise.resolve([]),
+      };
+      const first = await provisionDevice(db, wialon, {
+        wialonUnitId: unitId,
+        imei: `imei-r3-${RUN_ID}`,
+        model: 'tracker-original',
+      });
+      createdDeviceIds.push(first.deviceId);
+      const [before] = await db
+        .select()
+        .from(devices)
+        .where(eq(devices.id, first.deviceId));
+
+      const second = await provisionDevice(db, wialon, {
+        wialonUnitId: unitId,
+        imei: `imei-r3-changed-${RUN_ID}`,
+        model: 'tracker-changed',
+      });
+      const rows = await db
+        .select()
+        .from(devices)
+        .where(eq(devices.wialonUnitId, unitId));
+
+      expect(second).toEqual({
+        created: false,
+        deviceId: first.deviceId,
+        activationCode: first.activationCode,
+      });
+      expect(listUnits).toHaveBeenCalledTimes(1);
+      expect(rows).toHaveLength(1);
+      expect(rows[0]).toMatchObject({
+        activationCode: before.activationCode,
+        status: before.status,
+        isSimulated: before.isSimulated,
+        updatedAt: before.updatedAt,
+        imei: before.imei,
+        model: before.model,
+      });
+    });
+
+    it('propaga 23505 por IMEI ajeno sin dejar una fila nueva', async () => {
+      const firstUnitId = `e2e-r3-a-${RUN_ID}`;
+      const secondUnitId = `e2e-r3-b-${RUN_ID}`;
+      const imei = `imei-r3-collision-${RUN_ID}`;
+      const wialon = wialonStub([firstUnitId, secondUnitId]);
+      const first = await provisionDevice(db, wialon, {
+        wialonUnitId: firstUnitId,
+        imei,
+      });
+      createdDeviceIds.push(first.deviceId);
+      const before = await db.select({ id: devices.id }).from(devices);
+
+      await expect(
+        provisionDevice(db, wialon, {
+          wialonUnitId: secondUnitId,
+          imei,
+        }),
+      ).rejects.toMatchObject({ cause: { code: '23505' } });
+
+      const after = await db.select({ id: devices.id }).from(devices);
+      const inserted = await db
+        .select()
+        .from(devices)
+        .where(eq(devices.wialonUnitId, secondUnitId));
+      expect(after).toHaveLength(before.length);
+      expect(inserted).toHaveLength(0);
+    });
+  });
+
+  describe('R6 (device-provisioning-admin #24): seed-devices sigue sembrando los simulados sin tocar el collar real', () => {
+    it('conserva el collar real y distingue las filas simuladas', async () => {
+      const unitId = `e2e-r6-unit-${RUN_ID}`;
+      const result = await provisionDevice(db, wialonStub([unitId]), {
+        wialonUnitId: unitId,
+      });
+      createdDeviceIds.push(result.deviceId);
+
+      await seedSimulatedDevices(db);
+
+      const [real] = await db
+        .select()
+        .from(devices)
+        .where(eq(devices.id, result.deviceId));
+      const simulated = await db
+        .select()
+        .from(devices)
+        .where(inArray(devices.esn, ['SIM-001', 'SIM-002', 'SIM-003']));
+
+      expect(real.isSimulated).toBe(false);
+      expect(real.activationCode).toBe(result.activationCode);
+      expect(simulated).toHaveLength(3);
+      expect(simulated.every((row) => row.isSimulated)).toBe(true);
+    });
+  });
+
+  describe('R7 (device-provisioning-admin #24): el collar aprovisionado se reclama con POST /v1/devices/claim', () => {
+    it('crea la asignacion activa y marca el collar assigned', async () => {
+      const unitId = `e2e-r7-unit-${RUN_ID}`;
+      const provisioned = await provisionDevice(db, wialonStub([unitId]), {
+        wialonUnitId: unitId,
+      });
+      createdDeviceIds.push(provisioned.deviceId);
+      const owner = await seedUser();
+      const pet = await createPet(owner.token);
+
+      await request(app.getHttpServer())
+        .post('/v1/devices/claim')
+        .set('Authorization', `Bearer ${owner.token}`)
+        .send({ petId: pet.id, activationCode: provisioned.activationCode })
+        .expect(201);
+
+      const assignments = await db
+        .select()
+        .from(petDevices)
+        .where(
+          and(
+            eq(petDevices.petId, pet.id),
+            eq(petDevices.deviceId, provisioned.deviceId),
+            isNull(petDevices.releasedAt),
+          ),
+        );
+      const [device] = await db
+        .select()
+        .from(devices)
+        .where(eq(devices.id, provisioned.deviceId));
+
+      expect(assignments).toHaveLength(1);
+      expect(device.status).toBe('assigned');
+    });
+  });
+});
+
+describe('R5 (device-provisioning-admin #24): assertRealWialonClient rechaza el simulador', () => {
+  it('rechaza el fake y acepta el cliente HTTP real', () => {
+    const fake = new FakeWialonClient({ seed: 1, homeLat: 0, homeLng: 0 });
+    const real = new WialonHttpClient('https://wialon.test', 'token');
+
+    expect(() => assertRealWialonClient(fake)).toThrow(
+      SimulatedWialonClientError,
+    );
+    expect(() => assertRealWialonClient(real)).not.toThrow();
+  });
+});

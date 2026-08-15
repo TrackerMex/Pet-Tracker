@@ -20,6 +20,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "db:generate": "drizzle-kit generate",
     "provision:local": "ts-node -r tsconfig-paths/register scripts/provision-local.ts",
+    "provision:device": "ts-node -r tsconfig-paths/register scripts/provision-device.ts",
     "seed:devices": "ts-node -r tsconfig-paths/register scripts/seed-devices.ts",
     "seed:vaccines": "ts-node -r tsconfig-paths/register scripts/seed-vaccines.ts",
     "backfill:weights": "ts-node -r tsconfig-paths/register scripts/backfill-weights.ts"

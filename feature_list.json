@@ -411,7 +411,7 @@
   {
     "id": 24,
     "name": "device-provisioning-admin",
-    "status": "pending",
+    "status": "in_progress",
     "priority": "P2",
     "description": "Bloqueante para probar hardware real: hoy la tabla devices solo se llena con scripts/seed-devices.ts (SIM-001..003, ACT-001..003, is_simulated=true), pensado para el FakeWialonClient de #8. Con el token real de Wialon ya integrado no existe camino para dar de alta un collar físico, y el claim de #7 valida contra devices (no contra Wialon), así que un collar que no esté en esa tabla es inclaimable. Añadir un camino de aprovisionamiento INTERNO (nunca expuesto al usuario final) que registre un collar real en devices con su wialon_unit_id, imei/esn/serial, model, activation_code generado e is_simulated=false. La spec decide la forma (script CLI idempotente tipo scripts/provision-device.ts es el candidato mínimo; un endpoint admin exige antes un modelo de rol de plataforma que hoy no existe — pet_users.role es rol POR MASCOTA, no global). Debe poder verificar contra la API real que el wialon_unit_id existe en la cuenta, vía WialonClient.listUnits(), antes de insertar. El activation_code es el secreto que va impreso en la caja: el IMEI NO sirve como credencial porque es adivinable/enumerable, y el claim de #7 debe seguir exigiendo el código. No toca el flujo de claim ni el pipeline de ingesta.",
     "acceptance_criteria": [
@@ -448,6 +448,26 @@
       "backend-pet-tracker/src/db/schema/subscriptions.schema.ts",
       "backend-pet-tracker/src/workers/",
       "backend-pet-tracker/src/modules/devices/"
+    ]
+  },
+  {
+    "id": 26,
+    "name": "claim-activation-code-only",
+    "status": "pending",
+    "priority": "P1",
+    "description": "Hueco de autorización destapado al escribir la spec de #24 y confirmado leyendo el código: DEVICE_IDENTIFIER_FIELDS en src/modules/devices/domain/repositories/device.repository.ts:10 lista 'esn', 'imei', 'serialNumber' y 'activationCode', y el superRefine de claim-device.dto.ts:24 solo exige que venga EXACTAMENTE UNO de los cuatro — no que sea el activation_code. Es decir, un imei/esn/serial adivinado reclama el collar igual que el código secreto. Con collares simulados el riesgo era teórico; con hardware real es explotable, porque los IMEI de un lote de fábrica son casi consecutivos: quien tenga uno válido enumera sus vecinos y reclama collares ajenos en la ventana entre la venta y la activación legítima, quedándose con la ubicación GPS de esa mascota (tras el claim legítimo el segundo claim ya da 409, que es el único mitigante). Arreglo: dejar activationCode como ÚNICA credencial de claim, eliminando los otros tres de DEVICE_IDENTIFIER_FIELDS y del DTO. Es un cambio del contrato público de POST /v1/devices/claim (#7), con su propia spec y su propio gate, por el mismo criterio que llevó #22 a separarse de #5. La spec debe decidir qué pasa con los tres campos en el DTO: si desaparecen del schema (y por tanto se ignoran en silencio, como weightKg en #22) o si se rechazan con 400 — hay precedente para ambas y no es decisión del implementador. Los tres campos siguen siendo columnas UNIQUE de devices y siguen sirviendo para búsquedas internas; lo que se retira es su uso como credencial.",
+    "acceptance_criteria": [
+      "POST /v1/devices/claim con activationCode válido → 201, comportamiento idéntico al actual",
+      "POST /v1/devices/claim con imei, esn o serialNumber de un device existente y disponible NO lo reclama: ningún claim tiene éxito por esa vía (test e2e por cada uno de los tres campos)",
+      "Los tests de #7 que hoy asertan el claim por imei/esn/serialNumber quedan actualizados, no borrados, y su cambio está justificado en la traceability",
+      "DEVICE_IDENTIFIER_FIELDS deja de ser un array de cuatro elementos; si el tipo DeviceIdentifierField se queda con un solo miembro, la spec decide si la indirección sigue aportando o se simplifica",
+      "findByIdentifier sigue existiendo para búsquedas internas: lo que cambia es qué campos acepta el borde HTTP, no la capacidad del repositorio",
+      "Decisión tomada y documentada sobre el trato de imei/esn/serialNumber en el DTO (ignorados en silencio vs 400)"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/modules/devices/domain/repositories/device.repository.ts",
+      "backend-pet-tracker/src/modules/devices/application/dto/claim-device.dto.ts",
+      "backend-pet-tracker/test/devices.e2e-spec.ts"
     ]
   }
 ]
