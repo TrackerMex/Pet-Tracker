@@ -21,10 +21,9 @@
    (`specs/claim-activation-code-only/`, R1-R8).
 2. ~~Gate humano~~ — aprobado 2026-08-15; `requirements.md` con casilla marcada
    y `status: approved`. Feature `spec_ready` → `in_progress`.
-3. **Implementación Codex CLI en curso** — baseline verde confirmado con
-   Postgres y LocalStack; TDD en orden R1, R3, R5, R2/R4.
-4. `reviewer` cuando el humano confirme que Codex terminó
-   (`progress/impl_claim-activation-code-only.md`).
+3. ~~Implementación Codex CLI~~ — completa; `init.sh` verde con e2e reales y
+   reporte en `progress/impl_claim-activation-code-only.md`.
+4. **Siguiente:** `reviewer` valida C2-C7 y emite el veredicto independiente.
 
 ### Decisiones cerradas en la spec (no las reabra el implementador)
 
