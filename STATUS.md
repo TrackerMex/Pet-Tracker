@@ -1,9 +1,8 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-08-15
-**Features completadas**: 22/30 (`feature_list.json`)
-**En progreso**: #30 `geofence-eval-full-batch` — implementación completa,
-pendiente de revisión independiente.
+**Features completadas**: 23/30 (`feature_list.json`)
+**En progreso**: ninguna.
 **Pendientes**: 7, por prioridad — **P1**: #27 `reject-future-positions`. **P2**: #23
 `init-env-drift-warning`, #25 `device-subscriptions`, #28
 `test-dev-resource-isolation`, #29 `wialon-session-reuse`. **P3**: #17
@@ -65,13 +64,54 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
-- **`geofence-eval-full-batch` (#30) in_progress** (2026-08-15): implementación
-  TDD completa, pendiente del `reviewer`. `evaluate()` ignora `suspect_jump`;
-  `position.updated` v2 conserva `position` y añade `positions[]`; el
-  alerts-engine ordena y pliega el lote en memoria con guard monotónico y el
-  `ts` real del cruce. Un lote de 100 mantiene un solo evento EventBridge y una
-  sola escritura final de estado sin transiciones. `init.sh` verde: 977 unit,
-  14 infra y 260 e2e. Ver `progress/impl_geofence-eval-full-batch.md`.
+- **`geofence-eval-full-batch` (#30) done** (2026-08-15): el motor de geocercas
+  evaluaba **una sola posición por ciclo**, no el lote entero — efecto colateral
+  de R16 de #8, que emite un `position.updated` por mensaje SQS y no por posición
+  para abaratar EventBridge. `evaluate()` es una máquina de estados escrita para
+  consumir un stream ordenado (el consumidor de #12 tiene hasta el guard
+  monotónico `previousUpdatedAtMs`) pero solo recibía la más reciente del
+  mensaje. En régimen estable se perdía la mitad de las muestras; el daño real
+  estaba en los lotes de hasta `POSITIONS_PER_MESSAGE_MAX=100` —descarga del
+  búfer del collar tras perder cobertura, reinicio del poller, lookback del
+  claim—, donde toda la ventana colapsaba en una evaluación y **una salida con
+  regreso dentro del lote no generaba ninguna alerta**: justo la ventana donde es
+  más probable que la mascota se haya perdido de verdad, porque el dispositivo
+  estuvo sin señal. Ahora el `detail` va en `version: 2` con `positions[]`
+  (todas las aceptadas, ascendente por `ts`) conservando `position` con la última
+  para no tocar a los consumidores de 006/007/010, y el alerts-engine ordena
+  sobre una copia e itera encadenando el estado en memoria. **Prerrequisito
+  dentro de la misma feature (R1)**: `evaluate()` cortaba solo con
+  `FLAG_LOW_ACCURACY`, así que una posición `suspect_jump` con buena precisión
+  disparaba un `exit` falso; la histéresis es espacial (1.1R/0.9R), no temporal,
+  y una sola muestra mala basta — multiplicar por ~100 las muestras sin filtrar
+  el salto habría multiplicado la falsa alarma de fuga. Un lote de 100 mantiene
+  **un solo evento EventBridge** (R5, con `Detail` < 256 KB) y **una sola
+  escritura de estado** por geocerca (R11, plegado en memoria, orden a prueba de
+  caídas de #12 D3 conservado); la alerta lleva el `ts` de la posición que cruzó
+  (R8) y un `detail` v1 legado se procesa como lote de uno sin ir a la DLQ (R10).
+  Cero migraciones, cero env vars, cero deps y **nada que desplegar**: la regla de
+  EventBridge filtra solo por `source` y `detail-type`, no por `detail.version`.
+  Implementada por Codex CLI en 22 commits con rojo→verde por R-id; `reviewer`
+  **aprobó sin bloqueantes** tras correr `init.sh` él mismo con infra verificada
+  por `docker port` (977 unit, 14 infra, 260 e2e), recalcular los dos sha256 de
+  R2 por su cuenta e inspeccionar los commits con `git show --stat` para
+  confirmar que los "rojos" tocan solo `.spec.ts`. Ver
+  `progress/impl_geofence-eval-full-batch.md` y
+  `progress/review_geofence-eval-full-batch.md`.
+- **El guard de hash de #12 R19 se re-congeló a propósito** (#30 R2):
+  `geofence-eval-untouched.spec.ts` congela por sha256 `geofence-eval.ts` y su
+  suite, y R1 lo invalida por construcción. Se recalcularon los hashes
+  normalizando BOM y CRLF→LF —la lección de la corrección post-cierre de #12, CI
+  Linux vs. checkout Windows— **sin borrar el guard**: sigue impidiendo que una
+  feature futura toque el motor sin spec. Si vuelve a tocarse `evaluate()`, el
+  camino es el mismo: spec primero, hashes después.
+- **Hueco del harness abierto, detectado en #30 (no bloqueante)**: `init.sh:250`
+  y `:270` eligen y cuentan la próxima feature con `x.status === 'pending'`, así
+  que **la feature en curso desaparece del anuncio** en cuanto pasa a
+  `spec_ready` o `in_progress` — la sesión siguiente ve una menos y anuncia la
+  equivocada. Además `docs/specs.md` se contradice consigo mismo: §Estados exige
+  la marca humana para `spec_ready`, §86 manda al `spec_author` ponerlo antes del
+  gate. Candidato natural a plegarse en #23 `init-env-drift-warning`.
 - **`claim-activation-code-only` (#26) done** (2026-08-15): cierra el hueco de
   autorización que #7 dejó abierto y que se destapó al escribir la spec de #24.
   `DEVICE_IDENTIFIER_FIELDS` listaba `esn`/`imei`/`serialNumber`/
@@ -626,13 +666,30 @@ debe listar las 4 URLs de cola.
 
 ## Última sesión
 
-- **2026-08-15 (2)** — Implementación TDD de `geofence-eval-full-batch` (#30)
-  en `feature/30-geofence-eval-full-batch`: R1-R11 completos y trazabilidad sin
-  pendientes. Commits rojos separados antes de sus verdes; R10 fijado como
-  regresión v1 antes del bucle R7. Hashes LF finales registrados, Docker
-  verificado en 5432/4566 y `init.sh` exit 0 (977 unit, 14 infra, 260 e2e,
-  lint/typecheck). Sin recursos AWS reales, deploy, migraciones, dependencias
-  ni variables de entorno. Sigue `in_progress` hasta revisión independiente.
+- **2026-08-15 (2)** — Ciclo SDD completo de `geofence-eval-full-batch` (#30),
+  reparto Claude/Codex: `spec_author` escribió la spec (R1-R11, `19da1f9`) →
+  gate humano el mismo día (`a9d81d1`) → handoff por disco a Codex CLI → 22
+  commits con el test rojo antes de su implementación por R-id → `reviewer`
+  **aprobado sin bloqueantes**. El motor de geocercas pasa de evaluar una sola
+  posición por ciclo a evaluar el lote entero: `detail.version: 2` con
+  `positions[]` ascendente, `position` conservada como la última para no tocar a
+  los consumidores de 006/007/010, e iteración encadenando el estado en memoria.
+  R1 fue primero por ser prerrequisito duro — sin filtrar `suspect_jump`, subir
+  el muestreo ~100× habría multiplicado la falsa alarma de fuga, que es lo que
+  hace que el usuario silencie las notificaciones. Un lote de 100 sigue costando
+  un solo evento EventBridge y una sola escritura de estado. Cero migraciones,
+  env vars, deps y nada que desplegar.
+  **Verificación independiente, no declarada**: el reviewer corrió `init.sh` él
+  mismo con `docker port` comprobado antes (los e2e se saltan en silencio sin
+  Postgres, y un verde sin e2e no es evidencia) — 977 unit, 14 infra, 260 e2e;
+  recalculó los dos sha256 de R2 y coinciden; inspeccionó los 19 commits con
+  `git show --stat` confirmando que los "rojos" tocan solo `.spec.ts`. Los tests
+  congelados de #8 y #12 quedaron intactos: hunks de inserción pura, diff vacío
+  en los dos e2e, y solo el `it` autorizado de la línea 463 editado.
+  **Dos notas no bloqueantes**: R2 y R10 no tienen rojo clásico (imposible en un
+  test de congelación; R10 es regresión escrita antes del commit que podía
+  romperla), y `init.sh:250/:270` oculta del anuncio la feature en curso — ajeno
+  a #30, candidato a #23.
 
 - **2026-08-15** — Ciclo SDD completo de `claim-activation-code-only` (#26),
   reparto Claude/Codex: `spec_author` escribió la spec (R1-R8, D1-D5, commit

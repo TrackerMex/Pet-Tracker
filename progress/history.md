@@ -1216,3 +1216,76 @@ Deuda detectada (fuera de alcance, candidata a limpieza propia):
 - **Commits:** spec `572fdda`, aprobación `7663a3e`, baseline `cc89690`,
   implementación `740a0d4..3c03a21` (12 commits).
 - **Estado final:** done
+
+---
+
+## 2026-08-15 (2) — `geofence-eval-full-batch` (#30)
+
+- **Qué se hizo:** ciclo SDD completo con el reparto Claude/Codex. `spec_author`
+  escribió la spec (R1-R11, `19da1f9`) → gate humano el mismo día (`a9d81d1`) →
+  handoff por disco a Codex CLI → 22 commits de implementación → `reviewer`
+  **aprobado sin bloqueantes**.
+- **El problema:** el motor de geocercas evaluaba **una sola posición por ciclo**,
+  no el lote entero. No fue una decisión de geocercas: efecto colateral de R16 de
+  #8, que emite un `position.updated` por mensaje SQS y no por posición para
+  abaratar EventBridge. `evaluate()` es una máquina de estados escrita para
+  consumir un stream ordenado —el consumidor de #12 tiene hasta el guard
+  monotónico `previousUpdatedAtMs`— pero solo recibía la más reciente del
+  mensaje. En régimen estable se descartaba la mitad de las muestras; el daño
+  real estaba en los lotes de hasta `POSITIONS_PER_MESSAGE_MAX=100` (descarga del
+  búfer del collar tras perder cobertura, reinicio del poller, lookback del
+  claim): toda la ventana colapsaba en una evaluación y **una salida con regreso
+  dentro del lote no generaba ninguna alerta** — justo la ventana donde es más
+  probable que la mascota se haya perdido de verdad, porque el dispositivo estuvo
+  sin señal.
+- **El prerrequisito que iba dentro de la misma feature (R1):** `evaluate()`
+  cortaba solo con `FLAG_LOW_ACCURACY`, así que una posición marcada
+  `suspect_jump` —el salto absurdo, a kilómetros del recorrido real— con buena
+  precisión disparaba un `exit` falso. La histéresis es **espacial** (1.1R/0.9R +
+  `accuracyM <= 50`), no temporal: una sola muestra mala basta. Multiplicar por
+  ~100 las muestras evaluadas sin filtrar el salto habría multiplicado la falsa
+  alarma de fuga, y una falsa alarma de fuga es lo que hace que el usuario
+  silencie las notificaciones. Por eso R1 fue primero y no otra feature.
+- **La solución:** el `detail` del evento pasa a `version: 2` con un campo nuevo
+  `positions[]` (todas las aceptadas del mensaje, ascendente por `ts`),
+  conservando `position` con la última para no tocar a los consumidores de
+  006/007/010; el alerts-engine ordena sobre una copia e itera encadenando el
+  estado **en memoria**. El conteo de eventos del bus no cambia —R5 lo fija como
+  requisito verificable, un solo `Entry` por mensaje SQS y `Detail` < 256 KB—,
+  así que el costo tampoco. R11 pliega las escrituras: máximo un
+  `updateGeofenceState` por geocerca y mensaje, no uno por posición, conservando
+  el orden a prueba de caídas de #12 D3 (alerta primero, estado después). R8 hace
+  que la alerta lleve el `ts` **de la posición que cruzó**, no el de la última del
+  lote ni el del reloj. R10 deja que un `detail` v1 sin `positions[]` (mensaje
+  legado en vuelo durante el despliegue) se procese como lote de uno, sin DLQ.
+- **La decisión que más juicio llevó (R2):** `geofence-eval-untouched.spec.ts`
+  congela por sha256 `geofence-eval.ts` y su suite (R19 de #12), y R1 lo invalida
+  por construcción. Se decidió **re-congelar con los hashes nuevos, no borrar el
+  guard**: sigue impidiendo que una feature futura toque el motor sin spec. Los
+  hashes se recalculan normalizando BOM y CRLF→LF, la lección que dejó la
+  corrección post-cierre de #12 (CI en Linux vs. checkout Windows).
+- **Verificación:** el `reviewer` corrió `init.sh` él mismo con la infra
+  comprobada por `docker port` antes (5432 y 4566) — los e2e se ejecutaron de
+  verdad: 17 suites / 260 tests, más 134 suites / 977 unitarios y 14 de infra.
+  **Recalculó los dos sha256 de R2 por su cuenta** y coinciden con los del
+  guard. Inspeccionó los 19 commits con `git show --stat`: todos los "rojos"
+  tocan solo `.spec.ts`, así que C4 quedó verificado, no declarado — no se
+  repitió el fallo de #19. Los tests congelados siguen intactos: los hunks de
+  `alerts-engine-consumer.service.spec.ts` son inserciones puras (cero
+  borrados), los dos e2e dan diff vacío, y en `positions-consumer.service.spec.ts`
+  solo se editó el `it` autorizado de la línea 463.
+- **Dos notas no bloqueantes del reviewer:** R2 y R10 no tienen "rojo" clásico
+  —imposible en un test de congelación, y R10 es una regresión escrita antes del
+  commit que podía romperla—; y `init.sh:250/:270` eligen y cuentan con
+  `x.status === 'pending'`, así que **la feature en curso desaparece del
+  anuncio** en cuanto pasa a `spec_ready` o `in_progress`. Ajeno a #30,
+  candidato natural a plegarse en #23. `docs/specs.md` además se contradice
+  consigo mismo: §Estados exige la marca humana para `spec_ready`, §86 manda al
+  `spec_author` ponerlo antes del gate.
+- **Sin migraciones, sin variables de entorno nuevas, sin dependencias nuevas y
+  sin nada que desplegar:** se verificó que la regla de EventBridge filtra solo
+  por `source` y `detail-type` (`provisioning.ts:300-303`,
+  `pet-tracker-dev-stack.ts:105-108`), no por `detail.version`.
+- **Commits:** spec `19da1f9`, aprobación `a9d81d1`, implementación
+  `033fdcd..654a002` (22 commits, rojo→verde por R-id).
+- **Estado final:** done
