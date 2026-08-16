@@ -228,13 +228,16 @@ export class AlertsEngineConsumerService {
     }
   }
 
-  /** R7-R10: bucle por geocerca activa con el guard de "solo si es mas reciente". */
+  /** #30 R7: pliega cada lote ordenado sobre el estado de cada geocerca. */
   private async evaluateGeofences(
     detail: PositionUpdatedDetail,
   ): Promise<void> {
     const activeGeofences = await this.store.listActiveGeofencesForPet(
       detail.petId,
     );
+    const positions = [
+      ...(detail.positions ?? [detail.position]),
+    ].sort((a, b) => a.ts - b.ts);
 
     for (const geofence of activeGeofences) {
       const previousUpdatedAtMs =
@@ -250,30 +253,33 @@ export class AlertsEngineConsumerService {
         continue;
       }
 
-      const result = evaluate(
-        geofence.state,
-        {
-          shape: 'circle',
-          centerLat: geofence.centerLat,
-          centerLng: geofence.centerLng,
-          radiusM: geofence.radiusM,
-        },
-        {
-          lat: detail.position.lat,
-          lng: detail.position.lng,
-          accuracyM: detail.position.accuracyM ?? undefined,
-          flags: detail.position.flags,
-        },
-        detail.position.ts,
-      );
+      let state = geofence.state;
+      for (const position of positions) {
+        const result = evaluate(
+          state,
+          {
+            shape: 'circle',
+            centerLat: geofence.centerLat,
+            centerLng: geofence.centerLng,
+            radiusM: geofence.radiusM,
+          },
+          {
+            lat: position.lat,
+            lng: position.lng,
+            accuracyM: position.accuracyM ?? undefined,
+            flags: position.flags,
+          },
+          position.ts,
+        );
+        state = result.state;
 
-      if (result.event === 'exit') {
-        await this.handleExit(detail, geofence, result.state);
-      } else if (result.event === 'enter') {
-        await this.handleEnter(detail, geofence, result.state);
-      } else {
-        // R10: unknown->estado inicial y low_accuracy (mismo `previous`).
-        await this.store.updateGeofenceState(geofence.id, result.state);
+        if (result.event === 'exit') {
+          await this.handleExit(detail, geofence, state);
+        } else if (result.event === 'enter') {
+          await this.handleEnter(detail, geofence, state);
+        } else {
+          await this.store.updateGeofenceState(geofence.id, state);
+        }
       }
     }
   }
