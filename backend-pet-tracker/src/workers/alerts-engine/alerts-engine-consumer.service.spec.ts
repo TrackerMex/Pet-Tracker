@@ -1331,3 +1331,43 @@ describe('R9 (geofence-eval-full-batch #30): el guard monotónico sobrevive al l
     });
   });
 });
+
+describe('R11 (geofence-eval-full-batch #30): un solo updateGeofenceState por geocerca y mensaje', () => {
+  it('pliega 100 posiciones dentro y persiste solo el estado final', async () => {
+    const firstTs = NOW.getTime();
+    const positions = Array.from({ length: 100 }, (_, index) =>
+      basePosition({ ...AT_CENTER, ts: firstTs + index * 30_000 }),
+    );
+    const lastTs = positions[positions.length - 1].ts;
+    const store = storeStub();
+    store.listActiveGeofencesForPet.mockResolvedValue([
+      activeGeofence({
+        state: 'inside',
+        updatedAt: new Date(firstTs - 60_000).toISOString(),
+      }),
+    ]);
+    const { service } = makeHarness(
+      [
+        [
+          message(
+            'batch-100-state',
+            envelope(
+              DETAIL_TYPE_POSITION_UPDATED,
+              positionUpdatedDetailV2(positions),
+            ),
+          ),
+        ],
+        [],
+      ],
+      { store },
+    );
+
+    await service.drainOnce(NOW);
+
+    expect(store.updateGeofenceState).toHaveBeenCalledTimes(1);
+    expect(store.updateGeofenceState).toHaveBeenCalledWith(GEOFENCE_ID, {
+      state: 'inside',
+      updatedAt: new Date(lastTs).toISOString(),
+    });
+  });
+});
