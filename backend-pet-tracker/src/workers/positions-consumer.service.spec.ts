@@ -21,6 +21,7 @@ import {
   SQS_MAX_RECEIVE_COUNT,
   TABLE_POSITIONS,
 } from '@/aws/constants';
+import { FUTURE_TS_TOLERANCE_MS } from '@/pipeline/constants';
 import type { IngestionStore } from './ingestion-store';
 import { PositionsConsumerService } from './positions-consumer.service';
 
@@ -926,5 +927,42 @@ describe('R15: asignacion liberada — escribe el historico en DynamoDB pero no 
 
     // El mensaje se proceso completo: se borra (no es un fallo).
     expect(sqs.deleted).toEqual(['rh-a']);
+  });
+});
+
+describe('R4 (reject-future-positions #27): el consumidor pasa now a normalize() y no persiste la posición futura', () => {
+  it('persiste, cachea y emite solo la posicion dentro del margen', async () => {
+    const { service, store, documents, events } = makeHarness([
+      [
+        message(
+          'future-position',
+          validBody({
+            positions: [
+              { lat: 19.4326, lng: -99.1332, ts: BASE_TS },
+              {
+                lat: 19.4327,
+                lng: -99.1331,
+                ts:
+                  NOW.getTime() + FUTURE_TS_TOLERANCE_MS + 60_000,
+              },
+            ],
+          }),
+        ),
+      ],
+      [],
+    ]);
+
+    await service.drainOnce(NOW);
+
+    expect(writtenItems(documents)).toHaveLength(1);
+    expect(store.updatePetLastPosition).toHaveBeenCalledWith(
+      'pet-1',
+      expect.objectContaining({ ts: BASE_TS }),
+      new Date(BASE_TS),
+    );
+    const [positionUpdated] = emittedEvents(events).filter(
+      ({ DetailType }) => DetailType === DETAIL_TYPE_POSITION_UPDATED,
+    );
+    expect(positionUpdated.detail.positions).toHaveLength(1);
   });
 });
