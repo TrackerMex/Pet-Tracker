@@ -14,9 +14,9 @@ tags: [harness, spec]
 | R4 | `env-drift.test.mjs::R4 (init-env-drift-warning #23): sin deriva no hay salida` | rojo: `1e60bfb test(init-env-drift-warning): require silent complete env (R4)`; verde: `15e188b feat(init-env-drift-warning): add silent drift CLI (R4)` |
 | R5 | `env-drift.test.mjs::R5 (init-env-drift-warning #23): sin .env.example el script calla y sale 0` | rojo: `ba75bdc test(init-env-drift-warning): require silent missing files (R5)`; verde: `aeef03d feat(init-env-drift-warning): ignore unreadable env files (R5)` |
 | R6 | `env-drift.test.mjs::R6 (init-env-drift-warning #23): el script nunca escribe en disco` | rojo: `e09c1ed test(init-env-drift-warning): require read-only execution (R6)`; verde: `2ba4ccc feat(init-env-drift-warning): use read-only filesystem access (R6)` |
-| R7 | pendiente | pendiente |
-| R8 | pendiente | pendiente |
-| R9 | pendiente | pendiente |
+| R7 | `env-drift.test.mjs::R7 (init-env-drift-warning #23): init.sh invoca el chequeo con warn()` | rojo: `d85dc9a test(init-env-drift-warning): require init warning integration (R7)`; verde: este commit — `feat(init-env-drift-warning): warn about env key drift (R7,R8,R9)` |
+| R8 | `env-drift.test.mjs::R8 (init-env-drift-warning #23): el aviso no aborta` | rojo: `e5ec8ba test(init-env-drift-warning): require non-blocking warning (R8)`; verde: este commit — `feat(init-env-drift-warning): warn about env key drift (R7,R8,R9)` |
+| R9 | `env-drift.test.mjs::R9 (init-env-drift-warning #23): sin deriva la seccion 2 no cambia` | rojo: `ee356a2 test(init-env-drift-warning): require unchanged quiet section (R9)`; verde: este commit — `feat(init-env-drift-warning): warn about env key drift (R7,R8,R9)` |
 | R10 | pendiente | pendiente |
 | R11 | pendiente | pendiente |
 | R12 | sin test automatizado — ver §Verificación manual | pendiente |
