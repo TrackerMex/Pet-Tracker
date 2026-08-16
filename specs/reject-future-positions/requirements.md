@@ -1,6 +1,6 @@
 ---
 feature: "reject-future-positions"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec]
 ---
 
@@ -282,4 +282,4 @@ huérfanos poleando con un `now` adelantado, no de un defecto del simulador.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [X] Aprobado por humano (fecha: 2026-08-15) ← gate obligatorio antes de implementar

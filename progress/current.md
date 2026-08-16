@@ -9,14 +9,24 @@
 
 - **Inicio**: 2026-08-15, 23:40
 - **Branch**: `feature/27-reject-future-positions` (desde `main` con #30 ya mergeada, `c8ef83b`)
-- **Estado**: `pending` → escribiendo spec (gate humano pendiente)
+- **Estado**: `in_progress` — handoff entregado, **Codex CLI implementando**
 
 ### Plan
 
-1. `spec_author` escribe `specs/reject-future-positions/{requirements,design,tasks,traceability}.md`
-2. **PARADA** — gate humano: aprobar la spec en `requirements.md`
-3. Handoff a Codex CLI (commits test-primero, rojo→verde por R-id)
+1. ~~`spec_author` escribe `specs/reject-future-positions/{requirements,design,tasks,traceability}.md`~~ — hecho, 9 R-ids (R1..R9)
+2. ~~Gate humano: casilla marcada en `requirements.md:285` (2026-08-15), frontmatter de los 4 archivos a `approved`~~
+3. **AQUÍ** — Codex CLI implementa, commits test-primero, reporta en
+   `progress/impl_reject-future-positions.md`
 4. `reviewer` cuando el humano confirme que Codex terminó
+
+### Qué implementa Codex
+
+Bloques A → B → C → D de `tasks.md`. R8 primero (la constante es prerrequisito
+de compilación de R1), luego el filtro puro (R1-R3), el watermark (R6-R7, que es
+lo que cierra el fallo irreversible) y el consumidor (R4-R5).
+
+**Un solo escritor**: mientras Codex trabaja, yo solo toco `docs/`, `specs/`,
+`progress/` y `feature_list.json` — nunca `backend-pet-tracker/`.
 
 ### Problema
 
