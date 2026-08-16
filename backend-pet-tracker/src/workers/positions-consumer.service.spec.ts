@@ -497,7 +497,7 @@ describe('R16: position.updated — un evento por mensaje, detail {version:1, pe
     expect(positionUpdated[0].Source).toBe(EVENT_SOURCE);
     expect(EVENT_SOURCE).toBe('pet-tracker');
     expect(positionUpdated[0].detail).toEqual({
-      version: 1,
+      version: 2,
       petId: 'pet-1',
       deviceId: 'device-1',
       position: {
@@ -511,6 +511,30 @@ describe('R16: position.updated — un evento por mensaje, detail {version:1, pe
         batteryPct: 80,
         flags: [],
       },
+      positions: [
+        {
+          lat: 19.43,
+          lng: -99.13,
+          ts: BASE_TS,
+          speedKmh: null,
+          course: null,
+          sats: null,
+          accuracyM: null,
+          batteryPct: 81,
+          flags: [],
+        },
+        {
+          lat: 19.4305,
+          lng: -99.1305,
+          ts: lastTs,
+          speedKmh: 3.5,
+          course: 90,
+          sats: 8,
+          accuracyM: 9,
+          batteryPct: 80,
+          flags: [],
+        },
+      ],
       batteryPct: 80,
     });
   });
