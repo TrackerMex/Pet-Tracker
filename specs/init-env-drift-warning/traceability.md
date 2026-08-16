@@ -10,7 +10,7 @@ tags: [harness, spec]
 |---|---|---|
 | R1 | `env-drift.test.mjs::R1 (init-env-drift-warning #23): parseEnvKeys aplica las reglas de parseo` | rojo: `d7e5295 test(init-env-drift-warning): require env key parsing (R1)`; verde: `2a1a94c feat(init-env-drift-warning): parse env keys (R1)` |
 | R2 | `env-drift.test.mjs::R2 (init-env-drift-warning #23): missingKeys solo reporta example → env` | rojo: `8c0d84e test(init-env-drift-warning): require one-way key diff (R2)`; verde: `5f9c1a5 feat(init-env-drift-warning): report missing env keys (R2)` |
-| R3 | `env-drift.test.mjs::R3 (init-env-drift-warning #23): formatDriftLines separa gates de configuración` | rojo: `0c6aacb test(init-env-drift-warning): require drift warning format (R3)`; verde: este commit — `feat(init-env-drift-warning): format drift warnings (R3)` |
+| R3 | `env-drift.test.mjs::R3 (init-env-drift-warning #23): formatDriftLines separa gates de configuración` | rojo: `0c6aacb test(init-env-drift-warning): require drift warning format (R3)`; verde: `7f85092 feat(init-env-drift-warning): format drift warnings (R3)` |
 | R4 | pendiente | pendiente |
 | R5 | pendiente | pendiente |
 | R6 | pendiente | pendiente |

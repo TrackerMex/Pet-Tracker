@@ -1,9 +1,15 @@
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
+import { mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, it } from 'node:test';
+import { fileURLToPath } from 'node:url';
 
 import * as envDrift from './env-drift.mjs';
 
 const { parseEnvKeys } = envDrift;
+const scriptPath = fileURLToPath(new URL('./env-drift.mjs', import.meta.url));
 
 describe('R1 (init-env-drift-warning #23): parseEnvKeys aplica las reglas de parseo', () => {
   it('trata CRLF y LF igual', () => {
@@ -88,5 +94,25 @@ describe('R3 (init-env-drift-warning #23): formatDriftLines separa gates de conf
       '  configuración ausente: AWS_MODE',
       '  init.sh no modifica .env — añade a mano las que necesites desde .env.example',
     ]);
+  });
+});
+
+describe('R4 (init-env-drift-warning #23): sin deriva no hay salida', () => {
+  it('no formatea lineas sin claves faltantes', () => {
+    assert.deepEqual(envDrift.formatDriftLines([]), []);
+  });
+
+  it('escribe cero bytes y sale 0 con todas las claves presentes', () => {
+    const fixtureDir = mkdtempSync(join(tmpdir(), 'env-drift-'));
+    const envPath = join(fixtureDir, '.env');
+    const examplePath = join(fixtureDir, '.env.example');
+    writeFileSync(envPath, 'A=local\nB=local\nSOLO_MIA=1\n');
+    writeFileSync(examplePath, 'A=example\nB=example\n');
+
+    const stdout = execFileSync(process.execPath, [scriptPath, envPath, examplePath], {
+      encoding: 'utf8',
+    });
+
+    assert.equal(stdout, '');
   });
 });
