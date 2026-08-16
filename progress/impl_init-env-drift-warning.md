@@ -125,4 +125,4 @@ vacío. El `.env` humano no se editó, reemplazó ni renombró.
 | R9 | `4f738d5 feat(init-env-drift-warning): warn about env key drift (R7,R8,R9)`; manual `5f583b4` |
 | R10 | `cdd1343 feat(init-env-drift-warning): run drift suite from init (R10)` |
 | R11 | `9a1c23d docs(init-env-drift-warning): document manual verification (R11)` |
-| R12 | este commit — `docs(init-env-drift-warning): record manual verification (R12)` |
+| R12 | `ed23bbe docs(init-env-drift-warning): record manual verification (R12)` |
