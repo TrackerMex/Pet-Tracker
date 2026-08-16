@@ -9,3 +9,11 @@ export function parseEnvKeys(text) {
 
   return [...new Set(keys)];
 }
+
+export function missingKeys(exampleText, envText) {
+  const envKeys = new Set(parseEnvKeys(envText));
+
+  return parseEnvKeys(exampleText)
+    .filter((key) => !envKeys.has(key))
+    .sort();
+}
