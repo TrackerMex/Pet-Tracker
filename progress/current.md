@@ -43,10 +43,16 @@ duplica la falsa alarma de fuga.
 
 ### Notas de arranque
 
-- `./init.sh` verde: 956 tests + 14 de infra, lint y typecheck OK.
-- **e2e saltados**: puerto 5432 sin respuesta, no hay contenedores corriendo
-  (`docker ps` vacío). Levantar `docker compose up -d` antes de la revisión
-  final de la feature.
+- `./init.sh` verde: 956 tests + 14 de infra + 260 e2e, build, lint y typecheck OK.
+- Docker verificado con `docker port`: Postgres en 5432 y LocalStack en 4566.
+- LocalStack se provisionó con `pnpm -C backend-pet-tracker run provision:local`;
+  no se ejecutó CDK bootstrap/deploy ni se accedió a AWS real.
+
+### Avance
+
+- Bloque A completo: R1 rojo `033fdcd` → verde `bad02af`; R2 verde `7080113`.
+- SHA-256 LF: `geofence-eval.ts` = `d430f100cb41ad2f8ea8c2fc661939404d9a45f072a15e874a8f510c7b924914`.
+- SHA-256 LF: `geofence-eval.spec.ts` = `e250da1b467aedfe2082a88b7847486eda10c400edbac31d159d25fc76a9a6b9`.
 
 ### Hueco del harness detectado (no es de esta feature)
 
