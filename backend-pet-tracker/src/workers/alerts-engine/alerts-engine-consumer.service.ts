@@ -245,16 +245,15 @@ export class AlertsEngineConsumerService {
           ? null
           : Date.parse(geofence.state.updatedAt);
 
-      if (
-        previousUpdatedAtMs !== null &&
-        detail.position.ts <= previousUpdatedAtMs
-      ) {
-        // R7: redelivery/desorden — ni evaluate() ni escritura alguna.
-        continue;
-      }
-
       let state = geofence.state;
       for (const position of positions) {
+        if (
+          previousUpdatedAtMs !== null &&
+          position.ts <= previousUpdatedAtMs
+        ) {
+          continue;
+        }
+
         const result = evaluate(
           state,
           {
