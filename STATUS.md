@@ -2,9 +2,9 @@
 
 **Última actualización**: 2026-08-15
 **Features completadas**: 22/30 (`feature_list.json`)
-**En progreso**: ninguna.
-**Pendientes**: 8, por prioridad — **P1**: #30 `geofence-eval-full-batch`,
-#27 `reject-future-positions`. **P2**: #23
+**En progreso**: #30 `geofence-eval-full-batch` — implementación completa,
+pendiente de revisión independiente.
+**Pendientes**: 7, por prioridad — **P1**: #27 `reject-future-positions`. **P2**: #23
 `init-env-drift-warning`, #25 `device-subscriptions`, #28
 `test-dev-resource-isolation`, #29 `wialon-session-reuse`. **P3**: #17
 `nutrition-profile-engine`, #18 `nutrition-ai-explainer`.
@@ -65,6 +65,13 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
+- **`geofence-eval-full-batch` (#30) in_progress** (2026-08-15): implementación
+  TDD completa, pendiente del `reviewer`. `evaluate()` ignora `suspect_jump`;
+  `position.updated` v2 conserva `position` y añade `positions[]`; el
+  alerts-engine ordena y pliega el lote en memoria con guard monotónico y el
+  `ts` real del cruce. Un lote de 100 mantiene un solo evento EventBridge y una
+  sola escritura final de estado sin transiciones. `init.sh` verde: 977 unit,
+  14 infra y 260 e2e. Ver `progress/impl_geofence-eval-full-batch.md`.
 - **`claim-activation-code-only` (#26) done** (2026-08-15): cierra el hueco de
   autorización que #7 dejó abierto y que se destapó al escribir la spec de #24.
   `DEVICE_IDENTIFIER_FIELDS` listaba `esn`/`imei`/`serialNumber`/
@@ -618,6 +625,14 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-08-15 (2)** — Implementación TDD de `geofence-eval-full-batch` (#30)
+  en `feature/30-geofence-eval-full-batch`: R1-R11 completos y trazabilidad sin
+  pendientes. Commits rojos separados antes de sus verdes; R10 fijado como
+  regresión v1 antes del bucle R7. Hashes LF finales registrados, Docker
+  verificado en 5432/4566 y `init.sh` exit 0 (977 unit, 14 infra, 260 e2e,
+  lint/typecheck). Sin recursos AWS reales, deploy, migraciones, dependencias
+  ni variables de entorno. Sigue `in_progress` hasta revisión independiente.
 
 - **2026-08-15** — Ciclo SDD completo de `claim-activation-code-only` (#26),
   reparto Claude/Codex: `spec_author` escribió la spec (R1-R8, D1-D5, commit

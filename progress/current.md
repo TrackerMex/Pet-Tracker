@@ -52,7 +52,7 @@ duplica la falsa alarma de fuga.
 
 - Bloque A completo: R1 rojo `033fdcd` → verde `bad02af`; R2 verde `7080113`.
 - SHA-256 LF: `geofence-eval.ts` = `d430f100cb41ad2f8ea8c2fc661939404d9a45f072a15e874a8f510c7b924914`.
-- SHA-256 LF: `geofence-eval.spec.ts` = `e250da1b467aedfe2082a88b7847486eda10c400edbac31d159d25fc76a9a6b9`.
+- SHA-256 LF: `geofence-eval.spec.ts` = `eaaa93e58951592ca8cbebbda3a3ecf5d377e6a30d2fb5dd78d96491bba6d8a7`.
 - Bloque B completo: R3 rojo `59075e6`, R4 rojo `bb52775`, R5 rojo
   `a2919f0` → verdes en `3219407`.
 - Bloque C completo: R6 rojo `6a68633` → verde `c8f1b35`.
@@ -60,6 +60,17 @@ duplica la falsa alarma de fuga.
   `a37fe41` → verde `9dc7f9a`; R9 rojo `10bc6a6` → verde `1ba9256`;
   R10 regresión verde `39e7ff8` + fallback `13a65dd`; R11 rojo `9e1e2e9`
   → verde `8f00ce5`.
+
+### Verificación final
+
+- Build: exit 0.
+- Unitarios: 134 suites, 977 tests verdes.
+- Infra: 2 suites, 14 tests verdes.
+- E2E con puertos 5432/4566 publicados: 17 suites, 260 tests verdes;
+  2 suites/6 tests AWS-real omitidos por su gate existente.
+- `./init.sh`: exit 0; build, unitarios, infra, e2e, lint y typecheck verdes.
+- Trazabilidad sin filas pendientes. Implementación completa, pendiente de
+  revisión independiente; #30 permanece `in_progress`.
 
 ### Hueco del harness detectado (no es de esta feature)
 
