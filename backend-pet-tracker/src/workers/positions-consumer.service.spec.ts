@@ -965,3 +965,59 @@ describe('R4 (reject-future-positions #27): el consumidor pasa now a normalize()
     expect(positionUpdated.detail.positions).toHaveLength(1);
   });
 });
+
+describe('R5 (reject-future-positions #27): los descartes se loguean agrupados por razón', () => {
+  let warnSpy: jest.SpyInstance;
+
+  beforeEach(() => {
+    warnSpy = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+  });
+
+  afterEach(() => {
+    warnSpy.mockRestore();
+  });
+
+  it('emite un warn agrupado y borra el mensaje procesado', async () => {
+    const { service, sqs } = makeHarness([
+      [
+        message(
+          'discarded',
+          validBody({
+            positions: [
+              { lat: 19.4326, lng: -99.1332, ts: BASE_TS },
+              {
+                lat: 19.4327,
+                lng: -99.1331,
+                ts: NOW.getTime() + FUTURE_TS_TOLERANCE_MS + 1,
+              },
+              { lat: 19.4328, lng: -99.133, ts: BASE_TS },
+            ],
+          }),
+        ),
+      ],
+      [],
+    ]);
+
+    await service.drainOnce(NOW);
+
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    expect(warnSpy).toHaveBeenCalledWith({
+      scope: 'consumer',
+      deviceId: 'device-1',
+      petId: 'pet-1',
+      discarded: { future_ts: 1, duplicate_ts: 1 },
+    });
+    expect(sqs.deleted).toEqual(['rh-discarded']);
+  });
+
+  it('no emite warn cuando no hay descartes', async () => {
+    const { service } = makeHarness([
+      [message('clean', validBody())],
+      [],
+    ]);
+
+    await service.drainOnce(NOW);
+
+    expect(warnSpy).not.toHaveBeenCalled();
+  });
+});
