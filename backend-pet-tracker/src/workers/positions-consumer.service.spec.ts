@@ -1011,10 +1011,7 @@ describe('R5 (reject-future-positions #27): los descartes se loguean agrupados p
   });
 
   it('no emite warn cuando no hay descartes', async () => {
-    const { service } = makeHarness([
-      [message('clean', validBody())],
-      [],
-    ]);
+    const { service } = makeHarness([[message('clean', validBody())], []]);
 
     await service.drainOnce(NOW);
 
