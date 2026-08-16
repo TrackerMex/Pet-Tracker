@@ -44,3 +44,49 @@ describe('R2 (init-env-drift-warning #23): missingKeys solo reporta example → 
     assert.deepEqual(envDrift.missingKeys('', 'A=1'), []);
   });
 });
+
+describe('R3 (init-env-drift-warning #23): formatDriftLines separa gates de configuración', () => {
+  it('formatea el inventario actual en cuatro lineas literales', () => {
+    const missing = [
+      'ACTIVITY_AGGREGATOR_ENABLED',
+      'ALERTS_ENGINE_ENABLED',
+      'AWS_MODE',
+      'EMAIL_ENABLED',
+      'PUSH_ENABLED',
+      'SIM_HOME_LAT',
+      'SIM_HOME_LNG',
+      'SIM_SEED',
+    ];
+
+    assert.deepEqual(envDrift.formatDriftLines(missing), [
+      '.env desactualizado: faltan 8 claves de .env.example',
+      '  gates ausentes (apagan features enteras en silencio): ACTIVITY_AGGREGATOR_ENABLED, ALERTS_ENGINE_ENABLED, EMAIL_ENABLED, PUSH_ENABLED',
+      '  configuración ausente: AWS_MODE, SIM_HOME_LAT, SIM_HOME_LNG, SIM_SEED',
+      '  init.sh no modifica .env — añade a mano las que necesites desde .env.example',
+    ]);
+  });
+
+  it('omite configuracion cuando solo faltan gates', () => {
+    assert.deepEqual(envDrift.formatDriftLines(['ALERTS_ENGINE_ENABLED']), [
+      '.env desactualizado: falta 1 clave de .env.example',
+      '  gates ausentes (apagan features enteras en silencio): ALERTS_ENGINE_ENABLED',
+      '  init.sh no modifica .env — añade a mano las que necesites desde .env.example',
+    ]);
+  });
+
+  it('omite gates cuando solo falta configuracion', () => {
+    assert.deepEqual(envDrift.formatDriftLines(['AWS_MODE', 'SIM_SEED']), [
+      '.env desactualizado: faltan 2 claves de .env.example',
+      '  configuración ausente: AWS_MODE, SIM_SEED',
+      '  init.sh no modifica .env — añade a mano las que necesites desde .env.example',
+    ]);
+  });
+
+  it('usa singular para una sola clave', () => {
+    assert.deepEqual(envDrift.formatDriftLines(['AWS_MODE']), [
+      '.env desactualizado: falta 1 clave de .env.example',
+      '  configuración ausente: AWS_MODE',
+      '  init.sh no modifica .env — añade a mano las que necesites desde .env.example',
+    ]);
+  });
+});
