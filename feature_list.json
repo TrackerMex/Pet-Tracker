@@ -444,7 +444,7 @@
   {
     "id": 23,
     "name": "init-env-drift-warning",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P2",
     "description": "Deuda destapada en el smoke de #16: init.sh copia .env.example a .env solo si falta, así que un .env viejo carece de las variables gate añadidas por features posteriores. Con REMINDERS_ENABLED ausente el scheduler de #16 quedó apagado en silencio y el smoke falló sin ningún error visible; es el tercer modo de fallo silencioso del entorno local (tras el skip de e2e sin puerto de Postgres publicado y el verde falso de #21). Añadir a init.sh un diff de claves entre .env y .env.example que imprima un warning listando las variables faltantes. Solo avisar: no copiar valores automáticamente, el humano decide qué setear. SUBIDA A P2 el 2026-08-14: volvió a morder en el smoke de #24 con hardware real, esta vez costando una sesión de debugging. Al .env le faltaban NUEVE claves de .env.example, cuatro de ellas gates que apagan features enteras en silencio: POLLER_ENABLED (la ingesta GPS entera — el collar transmitía y el cron nunca se agendaba), ALERTS_ENGINE_ENABLED, ACTIVITY_AGGREGATOR_ENABLED y PUSH_ENABLED. Además el diagnóstico se alargó porque el watermark no distingue 'el poller no corrió' de 'corrió y Wialon devolvió vacío' (poller.service.spec.ts:239 fija que sin posiciones el watermark no avanza). Considerar en la spec si el warning debe destacar específicamente las claves *_ENABLED ausentes, que son las que producen apagados silenciosos, frente a las que solo son configuración.",
     "acceptance_criteria": [
@@ -454,7 +454,12 @@
       "El warning no aborta: init.sh conserva su exit code actual"
     ],
     "files_affected": [
-      "init.sh"
+      "init.sh",
+      "env-drift.mjs",
+      "env-drift.test.mjs",
+      "init.config.sh",
+      "docs/verification.md",
+      "AGENTS.md"
     ]
   },
   {
