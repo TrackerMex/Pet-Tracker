@@ -546,6 +546,84 @@ describe('R16: position.updated — un evento por mensaje, detail {version:1, pe
   });
 });
 
+describe('R3 (geofence-eval-full-batch #30): el detail v2 lleva el lote completo en positions[]', () => {
+  it('serializa todas las aceptadas en orden ascendente con las mismas 9 claves', async () => {
+    const middleTs = BASE_TS + 30_000;
+    const lastTs = BASE_TS + 60_000;
+    const { service, events } = makeHarness([
+      [
+        message(
+          'batch-v2',
+          validBody({
+            positions: [
+              {
+                lat: 19.4328,
+                lng: -99.133,
+                ts: lastTs,
+                speedKmh: 3.5,
+                course: 90,
+                sats: 8,
+                accuracyM: 9,
+                batteryPct: 80,
+              },
+              { lat: 19.4326, lng: -99.1332, ts: BASE_TS },
+              {
+                lat: 19.4327,
+                lng: -99.1331,
+                ts: middleTs,
+                speedKmh: 2,
+              },
+            ],
+          }),
+        ),
+      ],
+      [],
+    ]);
+
+    await service.drainOnce(NOW);
+
+    const [event] = emittedEvents(events).filter(
+      ({ DetailType }) => DetailType === DETAIL_TYPE_POSITION_UPDATED,
+    );
+    expect(event.detail.version).toBe(2);
+    expect(event.detail.positions).toEqual([
+      {
+        lat: 19.4326,
+        lng: -99.1332,
+        ts: BASE_TS,
+        speedKmh: null,
+        course: null,
+        sats: null,
+        accuracyM: null,
+        batteryPct: null,
+        flags: [],
+      },
+      {
+        lat: 19.4327,
+        lng: -99.1331,
+        ts: middleTs,
+        speedKmh: 2,
+        course: null,
+        sats: null,
+        accuracyM: null,
+        batteryPct: null,
+        flags: [],
+      },
+      {
+        lat: 19.4328,
+        lng: -99.133,
+        ts: lastTs,
+        speedKmh: 3.5,
+        course: 90,
+        sats: 8,
+        accuracyM: 9,
+        batteryPct: 80,
+        flags: [],
+      },
+    ]);
+  });
+});
+
 describe('R17: battery.low solo en cruce descendente del umbral 20 (flanco vs devices.battery_pct previo)', () => {
   function harnessWithBattery(
     previousBattery: number | null,
