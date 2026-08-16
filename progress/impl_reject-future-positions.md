@@ -235,3 +235,160 @@ c1a8404 feat(reject-future-positions): add poisoned watermark recovery tests (R7
 No se ejecutaron build, suite unitaria completa, e2e, Docker ni `init.sh` de
 cierre después del bloqueo. Tampoco se actualizó `docs/wialon-module.md`: la
 feature no está completa y R4/R5 siguen pendientes.
+
+## Continuación tras la enmienda aprobada (`479ee7d`)
+
+La evidencia anterior se conserva como registro del STOP. Se releyeron, en
+orden, `requirements.md`, `tasks.md` y `traceability.md` antes de continuar.
+
+### R9(f): ventanas largas corregidas
+
+Solo se desplazó la expresión `ts` de los dos `it` autorizados. La suite quedó
+verde antes de tocar código de producción:
+
+```text
+$ pnpm -C backend-pet-tracker exec jest src/workers/positions-consumer.service.spec.ts --runInBand --silent
+Test Suites: 1 passed, 1 total
+Tests:       27 passed, 27 total
+Snapshots:   0 total
+```
+
+```text
+5396c55 test(reject-future-positions): move long batch windows into the past (R9)
+2a62098 feat(reject-future-positions): record amended fixture traceability (R9)
+```
+
+### R4: reloj único del consumidor
+
+Rojo, antes de la implementación:
+
+```text
+$ pnpm -C backend-pet-tracker exec jest src/workers/positions-consumer.service.spec.ts --runInBand --silent
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 27 passed, 28 total
+Expected number of BatchWrite items: 1
+Received number of BatchWrite items: 2
+```
+
+```text
+6182328 feat(reject-future-positions): add consumer clock test (R4)
+```
+
+Verde tras pasar `now.getTime()` a `normalize()`:
+
+```text
+$ pnpm -C backend-pet-tracker exec jest src/workers/positions-consumer.service.spec.ts --runInBand --silent
+Test Suites: 1 passed, 1 total
+Tests:       28 passed, 28 total
+Snapshots:   0 total
+```
+
+```text
+577c7f4 feat(reject-future-positions): filter future positions in consumer (R4)
+128cfb8 feat(reject-future-positions): record consumer clock traceability (R4)
+```
+
+### R5: descartes agrupados por razón
+
+Rojo, antes de la implementación:
+
+```text
+$ pnpm -C backend-pet-tracker exec jest src/workers/positions-consumer.service.spec.ts --runInBand --silent
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 29 passed, 30 total
+Expected number of calls: 1
+Received number of calls: 0
+```
+
+```text
+a90f796 feat(reject-future-positions): add discarded position warning tests (R5)
+```
+
+Verde tras registrar un warning por mensaje con conteos por razón:
+
+```text
+$ pnpm -C backend-pet-tracker exec jest src/workers/positions-consumer.service.spec.ts --runInBand --silent
+Test Suites: 1 passed, 1 total
+Tests:       30 passed, 30 total
+Snapshots:   0 total
+```
+
+```text
+7cddf71 feat(reject-future-positions): log discarded position counts (R5)
+78cc9bb feat(reject-future-positions): record discard logging traceability (R5)
+```
+
+### Docker y verificaciones de cierre
+
+```text
+$ docker compose up -d
+Container pet-tracker-postgres Running
+Container pet-tracker-localstack Running
+
+$ docker port pet-tracker-postgres 5432/tcp
+0.0.0.0:5432
+[::]:5432
+
+$ docker port pet-tracker-localstack 4566/tcp
+0.0.0.0:4566
+[::]:4566
+```
+
+```text
+$ pnpm -C backend-pet-tracker run build
+Exit code: 0
+```
+
+```text
+$ pnpm -C backend-pet-tracker test
+Test Suites: 134 passed, 134 total
+Tests:       993 passed, 993 total
+Snapshots:   0 total
+Exit code: 0
+```
+
+```text
+$ pnpm -C backend-pet-tracker run test:e2e
+Test Suites: 2 skipped, 17 passed, 17 of 19 total
+Tests:       6 skipped, 260 passed, 266 total
+Snapshots:   0 total
+Time:        77.446 s
+Exit code: 0
+```
+
+El error de clave foránea de Drizzle que imprime la suite e2e es salida conocida
+del caso negativo; Jest terminó con código 0 y los 260 e2e ejecutados pasaron.
+
+Comprobación de los siete archivos prohibidos:
+
+```text
+$ git diff --name-only main...HEAD | comprobar lista prohibida
+FORBIDDEN_COUNT=0
+```
+
+### Historial completo rojo → verde
+
+```text
+e83b891 feat(reject-future-positions): add tolerance constant tests (R8)
+d304c71 feat(reject-future-positions): define future timestamp tolerance (R8)
+47d29dc feat(reject-future-positions): add future timestamp rejection tests (R1)
+951feb4 feat(reject-future-positions): add tolerance boundary tests (R2)
+22d6442 feat(reject-future-positions): preserve clock-free normalization (R3)
+f9e6c03 feat(reject-future-positions): reject implausible future positions (R1,R2,R3,R8)
+4ae0b89 feat(reject-future-positions): add watermark ceiling tests (R6)
+8da6cf9 feat(reject-future-positions): cap watermark at current time (R6)
+c1a8404 feat(reject-future-positions): add poisoned watermark recovery tests (R7)
+2719a6b feat(reject-future-positions): recover poisoned watermarks (R7)
+5396c55 test(reject-future-positions): move long batch windows into the past (R9)
+6182328 feat(reject-future-positions): add consumer clock test (R4)
+577c7f4 feat(reject-future-positions): filter future positions in consumer (R4)
+a90f796 feat(reject-future-positions): add discarded position warning tests (R5)
+7cddf71 feat(reject-future-positions): log discarded position counts (R5)
+```
+
+Commits de documentación y trazabilidad posteriores:
+
+```text
+65b3af3 feat(reject-future-positions): document future timestamp handling (R1,R2,R5,R8)
+55dae7a feat(reject-future-positions): close verification traceability (R9)
+```

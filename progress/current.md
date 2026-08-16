@@ -9,7 +9,7 @@
 
 - **Inicio**: 2026-08-15, 23:40
 - **Branch**: `feature/27-reject-future-positions` (desde `main` con #30 ya mergeada, `c8ef83b`)
-- **Estado**: `in_progress` — implementación pausada por desvío de diseño en R4
+- **Estado**: `in_progress` — implementación completa, pendiente de `reviewer`
 
 ### Avance de implementación
 
@@ -29,14 +29,18 @@
   una hora **pasada**. R9(f) autoriza editar **solo** la construcción de sus
   `ts`, con conteos y assertions intactos. Enmienda aprobada por el humano el
   2026-08-16. Handoff de continuación entregado a Codex.
+- 2026-08-16: implementación R1-R9 completa tras la enmienda. R9(f), R4 y R5
+  siguieron rojo → verde; build, 993 unitarios y 260 e2e verdes con Postgres y
+  LocalStack publicados. Los siete archivos prohibidos no aparecen en el diff.
+  Evidencia completa en `progress/impl_reject-future-positions.md`.
 
 ### Plan
 
 1. ~~`spec_author` escribe `specs/reject-future-positions/{requirements,design,tasks,traceability}.md`~~ — hecho, 9 R-ids (R1..R9)
 2. ~~Gate humano: casilla marcada en `requirements.md:285` (2026-08-15), frontmatter de los 4 archivos a `approved`~~
-3. **AQUÍ** — Codex CLI implementa, commits test-primero, reporta en
-   `progress/impl_reject-future-positions.md`
-4. `reviewer` cuando el humano confirme que Codex terminó
+3. ~~Codex CLI implementa, commits test-primero, reporta en
+   `progress/impl_reject-future-positions.md`~~ — hecho
+4. **AQUÍ** — `reviewer` cuando el humano confirme que Codex terminó
 
 ### Qué implementa Codex
 

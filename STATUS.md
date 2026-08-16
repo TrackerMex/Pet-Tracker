@@ -1,10 +1,11 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-08-15
+**Última actualización**: 2026-08-16
 **Features completadas**: 23/30 (`feature_list.json`)
-**En progreso**: ninguna.
-**Pendientes**: 7, por prioridad — **P1**: #27 `reject-future-positions`. **P2**: #23
-`init-env-drift-warning`, #25 `device-subscriptions`, #28
+**En progreso**: #27 `reject-future-positions`, implementación completa y
+pendiente de revisión.
+**Pendientes**: 6, por prioridad — **P2**: #23 `init-env-drift-warning`, #25
+`device-subscriptions`, #28
 `test-dev-resource-isolation`, #29 `wialon-session-reuse`. **P3**: #17
 `nutrition-profile-engine`, #18 `nutrition-ai-explainer`.
 **En producción**: no
@@ -64,6 +65,15 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
+- **`reject-future-positions` (#27) implementada, pendiente de revisión**
+  (2026-08-16): `normalize()` descarta posiciones más de cinco minutos futuras,
+  conserva el borde inclusivo y sigue siendo pura sin reloj; el consumidor le
+  pasa un único `now` y registra descartes agrupados. El poller limita el
+  watermark tanto al leer como al escribir, recuperando devices ya envenenados.
+  Los dos lotes largos autorizados por R9(f) terminan en `BASE_TS` sin cambiar
+  conteos ni assertions. Build, 993 unitarios y 260 e2e verdes; ninguno de los
+  siete archivos prohibidos aparece en el diff. Evidencia en
+  `progress/impl_reject-future-positions.md`.
 - **`geofence-eval-full-batch` (#30) done** (2026-08-15): el motor de geocercas
   evaluaba **una sola posición por ciclo**, no el lote entero — efecto colateral
   de R16 de #8, que emite un `position.updated` por mensaje SQS y no por posición
@@ -665,6 +675,14 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-08-16** — Continuación de `reject-future-positions` (#27) tras la
+  enmienda humana `479ee7d`: los dos lotes largos se movieron al pasado en el
+  commit aislado `5396c55`; R4 y R5 se completaron con commits rojos antes de
+  sus implementaciones. La validación rechaza `future_ts`, el consumidor usa
+  un reloj estable y agrupa warnings, y el watermark queda protegido en lectura
+  y escritura. Build, 993 unitarios y 260 e2e verdes con puertos 5432/4566
+  publicados. La feature sigue `in_progress` hasta la revisión independiente.
 
 - **2026-08-15 (2)** — Ciclo SDD completo de `geofence-eval-full-batch` (#30),
   reparto Claude/Codex: `spec_author` escribió la spec (R1-R11, `19da1f9`) →
