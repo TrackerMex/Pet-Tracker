@@ -8,7 +8,7 @@ tags: [harness, spec]
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | pendiente | pendiente |
+| R1 | `env-drift.test.mjs::R1 (init-env-drift-warning #23): parseEnvKeys aplica las reglas de parseo` | rojo: `d7e5295 test(init-env-drift-warning): require env key parsing (R1)`; verde: este commit — `feat(init-env-drift-warning): parse env keys (R1)` |
 | R2 | pendiente | pendiente |
 | R3 | pendiente | pendiente |
 | R4 | pendiente | pendiente |
