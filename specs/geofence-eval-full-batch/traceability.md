@@ -20,7 +20,7 @@ tags: [harness, spec]
 | R3 | `src/workers/positions-consumer.service.spec.ts::R3 (geofence-eval-full-batch #30): el detail v2 lleva el lote completo en positions[]` | rojo: `59075e6 feat(geofence-eval-full-batch): add full batch event regression test (R3)`; verde: `3219407 feat(geofence-eval-full-batch): emit full position batches (R3,R4,R5)` |
 | R4 | `src/workers/positions-consumer.service.spec.ts::R4 (geofence-eval-full-batch #30): position sigue siendo la última de positions[]` + el `it` de la línea 518 (`R16` de #8) verde sin editar | rojo: `bb52775 feat(geofence-eval-full-batch): add latest position compatibility test (R4)`; verde: `3219407 feat(geofence-eval-full-batch): emit full position batches (R3,R4,R5)` |
 | R5 | `src/workers/positions-consumer.service.spec.ts::R5 (geofence-eval-full-batch #30): un solo Entry position.updated por mensaje SQS aunque el lote traiga 100 posiciones` (2 `it`) | rojo: `a2919f0 feat(geofence-eval-full-batch): add batched event size test (R5)`; verde: `3219407 feat(geofence-eval-full-batch): emit full position batches (R3,R4,R5)` |
-| R6 | `src/workers/alerts-engine/geofence-event-message.schema.spec.ts::R6 (geofence-eval-full-batch #30): positionUpdatedDetailSchema acepta v1 y v2` (4 `it`: a, b, c, d) | rojo: `6a68633 feat(geofence-eval-full-batch): add event schema compatibility tests (R6)`; verde: pendiente |
+| R6 | `src/workers/alerts-engine/geofence-event-message.schema.spec.ts::R6 (geofence-eval-full-batch #30): positionUpdatedDetailSchema acepta v1 y v2` (4 `it`: a, b, c, d) | rojo: `6a68633 feat(geofence-eval-full-batch): add event schema compatibility tests (R6)`; verde: `c8f1b35 feat(geofence-eval-full-batch): accept versioned position batches (R6)` |
 | R7 | `src/workers/alerts-engine/alerts-engine-consumer.service.spec.ts::R7 (geofence-eval-full-batch #30): evalúa el lote entero en orden ascendente de ts` (3 `it`: a, b, c) | pendiente |
 | R8 | `src/workers/alerts-engine/alerts-engine-consumer.service.spec.ts::R8 (geofence-eval-full-batch #30): la alerta lleva el ts de la posición que cruzó` | pendiente |
 | R9 | `src/workers/alerts-engine/alerts-engine-consumer.service.spec.ts::R9 (geofence-eval-full-batch #30): el guard monotónico sobrevive al lote` (2 `it`: a, b) + `test/alerts-engine.e2e-spec.ts::R14: redeliverar el mismo position.updated no duplica la fila ni reenvia la notificacion` verde sin editar | pendiente |
@@ -37,7 +37,7 @@ tags: [harness, spec]
 | 4 | Orden ascendente de `ts` y guard monotónico `previousUpdatedAtMs` respetado; un lote reentregado no reabre ni retrocede | R7 (orden) + R9a/R9b (guard) | pendiente |
 | 5 | Exactamente un `position.updated` por mensaje SQS: un único `Entry` en el `PutEventsCommand` con un lote de varias posiciones | R5 | cubierto por `a2919f0` → `3219407` |
 | 6 | `detail.position` sigue siendo la posición más reciente del lote; consumidores y fixtures de 006/007/010 verdes sin tocarlos | R4 | cubierto por `bb52775` → `3219407` |
-| 7 | Un evento sin `positions[]` (`detail.version` 1, mensaje legado en vuelo) se sigue procesando con `position`, sin ir a la DLQ | R6b (schema) + R10 (consumidor) | pendiente |
+| 7 | Un evento sin `positions[]` (`detail.version` 1, mensaje legado en vuelo) se sigue procesando con `position`, sin ir a la DLQ | R6b (schema) + R10 (consumidor) | schema cubierto por `6a68633` → `c8f1b35`; consumidor pendiente |
 
 ## Tests de features anteriores actualizados, no borrados
 

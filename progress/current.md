@@ -55,6 +55,7 @@ duplica la falsa alarma de fuga.
 - SHA-256 LF: `geofence-eval.spec.ts` = `e250da1b467aedfe2082a88b7847486eda10c400edbac31d159d25fc76a9a6b9`.
 - Bloque B completo: R3 rojo `59075e6`, R4 rojo `bb52775`, R5 rojo
   `a2919f0` → verdes en `3219407`.
+- Bloque C completo: R6 rojo `6a68633` → verde `c8f1b35`.
 
 ### Hueco del harness detectado (no es de esta feature)
 
