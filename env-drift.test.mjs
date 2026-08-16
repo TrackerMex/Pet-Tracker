@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { parseEnvKeys } from './env-drift.mjs';
+import * as envDrift from './env-drift.mjs';
+
+const { parseEnvKeys } = envDrift;
 
 describe('R1 (init-env-drift-warning #23): parseEnvKeys aplica las reglas de parseo', () => {
   it('trata CRLF y LF igual', () => {
@@ -26,5 +28,19 @@ describe('R1 (init-env-drift-warning #23): parseEnvKeys aplica las reglas de par
 
   it('elimina claves duplicadas', () => {
     assert.deepEqual(parseEnvKeys('A=1\nA=2'), ['A']);
+  });
+});
+
+describe('R2 (init-env-drift-warning #23): missingKeys solo reporta example → env', () => {
+  it('devuelve las claves faltantes en orden alfabetico', () => {
+    assert.deepEqual(envDrift.missingKeys('C=1\nA=1\nB=1', 'B=2'), ['A', 'C']);
+  });
+
+  it('ignora la deriva inversa', () => {
+    assert.deepEqual(envDrift.missingKeys('A=1', 'A=2\nSOLO_MIA=1'), []);
+  });
+
+  it('devuelve una lista vacia si el ejemplo esta vacio', () => {
+    assert.deepEqual(envDrift.missingKeys('', 'A=1'), []);
   });
 });
