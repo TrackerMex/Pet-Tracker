@@ -1250,3 +1250,84 @@ describe('R8 (geofence-eval-full-batch #30): la alerta lleva el ts de la posici�
     expect(closeInput.closedAt.getTime()).toBe(ts2);
   });
 });
+
+describe('R9 (geofence-eval-full-batch #30): el guard monotónico sobrevive al lote', () => {
+  const ts1 = NOW.getTime();
+  const ts2 = ts1 + 1_000;
+  const ts3 = ts2 + 1_000;
+
+  it('(a) una redelivery completa no escribe, notifica ni queda sin borrar', async () => {
+    const store = storeStub();
+    store.listActiveGeofencesForPet.mockResolvedValue([
+      activeGeofence({
+        state: 'inside',
+        updatedAt: new Date(ts3).toISOString(),
+      }),
+    ]);
+    const { service, sqs } = makeHarness(
+      [
+        [
+          message(
+            'redelivery-batch',
+            envelope(
+              DETAIL_TYPE_POSITION_UPDATED,
+              positionUpdatedDetailV2([
+                basePosition({ ...AT_CENTER, ts: ts1 }),
+                basePosition({ ...FAR_AWAY, ts: ts2 }),
+                basePosition({ ...AT_CENTER, ts: ts3 }),
+              ]),
+            ),
+          ),
+        ],
+        [],
+      ],
+      { store },
+    );
+
+    await service.drainOnce(NOW);
+
+    expect(store.openAlert).not.toHaveBeenCalled();
+    expect(store.closeOpenAlert).not.toHaveBeenCalled();
+    expect(store.updateGeofenceState).not.toHaveBeenCalled();
+    expect(sqs.sentToNotifications()).toHaveLength(0);
+    expect(sqs.deleted).toContain('rh-redelivery-batch');
+  });
+
+  it('(b) un lote mixto evalúa solo posiciones posteriores a updatedAt', async () => {
+    const store = storeStub();
+    store.listActiveGeofencesForPet.mockResolvedValue([
+      activeGeofence({
+        state: 'inside',
+        updatedAt: new Date(ts2).toISOString(),
+      }),
+    ]);
+    const { service } = makeHarness(
+      [
+        [
+          message(
+            'mixed-batch',
+            envelope(
+              DETAIL_TYPE_POSITION_UPDATED,
+              positionUpdatedDetailV2([
+                basePosition({ ...FAR_AWAY, ts: ts1 }),
+                basePosition({ ...AT_CENTER, ts: ts3 }),
+              ]),
+            ),
+          ),
+        ],
+        [],
+      ],
+      { store },
+    );
+
+    await service.drainOnce(NOW);
+
+    expect(store.openAlert).not.toHaveBeenCalled();
+    expect(store.closeOpenAlert).not.toHaveBeenCalled();
+    expect(store.updateGeofenceState).toHaveBeenCalledTimes(1);
+    expect(store.updateGeofenceState).toHaveBeenCalledWith(GEOFENCE_ID, {
+      state: 'inside',
+      updatedAt: new Date(ts3).toISOString(),
+    });
+  });
+});
