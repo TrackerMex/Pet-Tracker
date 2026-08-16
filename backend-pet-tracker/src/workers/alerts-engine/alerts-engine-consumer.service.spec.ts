@@ -25,11 +25,17 @@ const PET_ID = 'pet-1';
 const CENTER_LAT = 19.4326;
 const CENTER_LNG = -99.1332;
 const RADIUS_M = 100;
+const EARTH_RADIUS_M = 6_371_000;
 
 // Punto a ~0 m del centro (queda dentro con cualquier radio > 0).
 const AT_CENTER = { lat: CENTER_LAT, lng: CENTER_LNG };
 // Punto a ~1113 m del centro (0.01 grados de latitud) — fuera de sobra.
 const FAR_AWAY = { lat: CENTER_LAT + 0.01, lng: CENTER_LNG };
+
+function pointAtDistance(distanceM: number): { lat: number; lng: number } {
+  const dLatDeg = (distanceM / EARTH_RADIUS_M) * (180 / Math.PI);
+  return { lat: CENTER_LAT + dLatDeg, lng: CENTER_LNG };
+}
 
 type MockOf<T> = { [K in keyof T]: jest.Mock };
 
@@ -156,6 +162,20 @@ function positionUpdatedDetail(
     petId: PET_ID,
     deviceId: 'device-1',
     position: basePosition(overrides.position),
+    batteryPct: overrides.batteryPct ?? null,
+  };
+}
+
+function positionUpdatedDetailV2(
+  positions: PositionDetail[],
+  overrides: { batteryPct?: number | null } = {},
+): Record<string, unknown> {
+  return {
+    version: 2,
+    petId: PET_ID,
+    deviceId: 'device-1',
+    position: positions[positions.length - 1],
+    positions,
     batteryPct: overrides.batteryPct ?? null,
   };
 }
@@ -1032,5 +1052,92 @@ describe('R16: error no controlado — mensaje sin borrar, log, no interrumpe el
       }),
     );
     errorSpy.mockRestore();
+  });
+});
+
+describe('R7 (geofence-eval-full-batch #30): evalúa el lote entero en orden ascendente de ts', () => {
+  const ts1 = NOW.getTime();
+  const ts2 = ts1 + 1_000;
+  const ts3 = ts2 + 1_000;
+  const previousUpdatedAt = new Date(ts1 - 60_000).toISOString();
+
+  function batchHarness(positions: PositionDetail[]): Harness {
+    const store = storeStub();
+    store.listActiveGeofencesForPet.mockResolvedValue([
+      activeGeofence({ state: 'inside', updatedAt: previousUpdatedAt }),
+    ]);
+    return makeHarness(
+      [
+        [
+          message(
+            'batch',
+            envelope(
+              DETAIL_TYPE_POSITION_UPDATED,
+              positionUpdatedDetailV2(positions),
+            ),
+          ),
+        ],
+        [],
+      ],
+      { store },
+    );
+  }
+
+  it('(a) abre exit en la posición intermedia y termina outside a 95 m', async () => {
+    const nearOutside = pointAtDistance(95);
+    const { service, store } = batchHarness([
+      basePosition({ ...FAR_AWAY, ts: ts2 }),
+      basePosition({ ...AT_CENTER, ts: ts1 }),
+      basePosition({ ...nearOutside, ts: ts3 }),
+    ]);
+
+    await service.drainOnce(NOW);
+
+    expect(store.openAlert).toHaveBeenCalledTimes(1);
+    expect(store.openAlert).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'geofence_exit' }),
+    );
+    expect(store.closeOpenAlert).not.toHaveBeenCalled();
+    expect(store.updateGeofenceState.mock.calls.at(-1)?.[1]).toEqual({
+      state: 'outside',
+      updatedAt: new Date(ts3).toISOString(),
+    });
+  });
+
+  it('(b) detecta exit y enter dentro del mismo lote y envía ambas notificaciones', async () => {
+    const { service, store, sqs } = batchHarness([
+      basePosition({ ...FAR_AWAY, ts: ts2 }),
+      basePosition({ ...AT_CENTER, ts: ts1 }),
+      basePosition({ ...AT_CENTER, ts: ts3 }),
+    ]);
+
+    await service.drainOnce(NOW);
+
+    expect(store.openAlert).toHaveBeenCalledTimes(1);
+    expect(store.closeOpenAlert).toHaveBeenCalledTimes(1);
+    expect(sqs.sentToNotifications().map(({ kind }) => kind)).toEqual([
+      'alert',
+      'alert_resolved',
+    ]);
+    expect(store.updateGeofenceState.mock.calls.at(-1)?.[1]).toEqual({
+      state: 'inside',
+      updatedAt: new Date(ts3).toISOString(),
+    });
+  });
+
+  it('(c) suspect_jump intermedio no altera el estado ni abre alerta', async () => {
+    const { service, store } = batchHarness([
+      basePosition({ ...FAR_AWAY, ts: ts2, flags: ['suspect_jump'] }),
+      basePosition({ ...AT_CENTER, ts: ts1 }),
+      basePosition({ ...AT_CENTER, ts: ts3 }),
+    ]);
+
+    await service.drainOnce(NOW);
+
+    expect(store.openAlert).not.toHaveBeenCalled();
+    expect(store.updateGeofenceState.mock.calls.at(-1)?.[1]).toEqual({
+      state: 'inside',
+      updatedAt: new Date(ts3).toISOString(),
+    });
   });
 });
