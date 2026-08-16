@@ -235,3 +235,16 @@ describe('R9 (init-env-drift-warning #23): sin deriva la seccion 2 no cambia', (
     assert.doesNotMatch(fragment, /\b(?:ok|echo)\b/);
   });
 });
+
+describe('R10 (init-env-drift-warning #23): init.config.sh mantiene REQUIRED_ENV_VARS y ejecuta la suite', () => {
+  it('incluye la suite nueva sin reemplazar el chequeo existente', () => {
+    const configSource = readFileSync(new URL('./init.config.sh', import.meta.url), 'utf8');
+    const initSource = readFileSync(new URL('./init.sh', import.meta.url), 'utf8');
+
+    assert.match(configSource, /node --test env-drift\.test\.mjs/);
+    assert.match(configSource, /REQUIRED_ENV_VARS=\("DATABASE_URL"\)/);
+    assert.ok(initSource.includes('check_env() {'));
+    assert.ok(initSource.includes('grep -q "^${var}=" .env'));
+    assert.ok(initSource.includes('cp .env.example .env'));
+  });
+});
