@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, it } from 'node:test';
@@ -155,5 +155,29 @@ describe('R5 (init-env-drift-warning #23): sin .env.example el script calla y sa
     );
 
     assert.equal(stdout, '');
+  });
+});
+
+describe('R6 (init-env-drift-warning #23): el script nunca escribe en disco', () => {
+  it('conserva el contenido y mtime de .env cuando hay deriva', () => {
+    const fixtureDir = mkdtempSync(join(tmpdir(), 'env-drift-'));
+    const envPath = join(fixtureDir, '.env');
+    const examplePath = join(fixtureDir, '.env.example');
+    writeFileSync(envPath, 'A=local\n');
+    writeFileSync(examplePath, 'A=example\nB=example\n');
+    const contentBefore = readFileSync(envPath, 'utf8');
+    const mtimeBefore = statSync(envPath).mtimeMs;
+
+    execFileSync(process.execPath, [scriptPath, envPath, examplePath]);
+
+    assert.equal(readFileSync(envPath, 'utf8'), contentBefore);
+    assert.equal(statSync(envPath).mtimeMs, mtimeBefore);
+  });
+
+  it('solo importa readFileSync para acceder al filesystem', () => {
+    const source = readFileSync(scriptPath, 'utf8');
+
+    assert.match(source, /import \{ readFileSync \} from 'node:fs';/);
+    assert.doesNotMatch(source, /write|append|copyFile|rmSync|unlink|mkdir/);
   });
 });
