@@ -303,4 +303,13 @@ describe('R2 (reject-future-positions #27): un ts adelantado dentro del margen d
     expect(result.accepted).toHaveLength(0);
     expect(result.discarded[0].reason).toBe('future_ts');
   });
+
+  it('R3 (reject-future-positions #27): sin nowMs no se filtra nada', () => {
+    const future = position({ ts: nowMs + 10 * 365 * 24 * 60 * 60_000 });
+
+    const result = normalize([future]);
+
+    expect(result.accepted).toHaveLength(1);
+    expect(result.discarded).toHaveLength(0);
+  });
 });
