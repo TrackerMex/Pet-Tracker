@@ -274,9 +274,9 @@ export class AlertsEngineConsumerService {
         state = result.state;
 
         if (result.event === 'exit') {
-          await this.handleExit(detail, geofence, state);
+          await this.handleExit(detail, geofence, state, position);
         } else if (result.event === 'enter') {
-          await this.handleEnter(detail, geofence, state);
+          await this.handleEnter(detail, geofence, state, position);
         } else {
           await this.store.updateGeofenceState(geofence.id, state);
         }
@@ -289,13 +289,14 @@ export class AlertsEngineConsumerService {
     detail: PositionUpdatedDetail,
     geofence: ActiveGeofenceForEval,
     newState: ActiveGeofenceForEval['state'],
+    position: PositionUpdatedDetail['position'],
   ): Promise<void> {
     const openInput: OpenAlertInput = {
       petId: detail.petId,
       type: ALERT_TYPE_GEOFENCE_EXIT,
       geofenceId: geofence.id,
-      payload: { position: detail.position, geofenceName: geofence.name },
-      openedAt: new Date(detail.position.ts),
+      payload: { position, geofenceName: geofence.name },
+      openedAt: new Date(position.ts),
     };
 
     const opened = await this.store.openAlert(openInput);
@@ -318,12 +319,13 @@ export class AlertsEngineConsumerService {
     detail: PositionUpdatedDetail,
     geofence: ActiveGeofenceForEval,
     newState: ActiveGeofenceForEval['state'],
+    position: PositionUpdatedDetail['position'],
   ): Promise<void> {
     const closeInput: CloseOpenAlertInput = {
       petId: detail.petId,
       type: ALERT_TYPE_GEOFENCE_EXIT,
       geofenceId: geofence.id,
-      closedAt: new Date(detail.position.ts),
+      closedAt: new Date(position.ts),
     };
 
     const closed = await this.store.closeOpenAlert(closeInput);
