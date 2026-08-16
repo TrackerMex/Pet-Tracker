@@ -4,6 +4,7 @@ import {
   BATTERY_LOW_THRESHOLD_PCT,
   FLAG_LOW_ACCURACY,
   FLAG_SUSPECT_JUMP,
+  FUTURE_TS_TOLERANCE_MS,
   LOW_ACCURACY_MAX_ACCURACY_M,
   LOW_ACCURACY_MIN_SATS,
   SUSPECT_JUMP_SPEED_KMH,
@@ -222,5 +223,22 @@ describe('R7: fixture walk.json (~200 puntos del fake) + casos borde', () => {
     const { accepted, discarded } = normalize(invalid);
     expect(accepted).toHaveLength(0);
     expect(discarded).toHaveLength(3);
+  });
+});
+
+describe('R8 (reject-future-positions #27): FUTURE_TS_TOLERANCE_MS vive en pipeline/constants.ts', () => {
+  it('define una tolerancia de 5 minutos', () => {
+    expect(FUTURE_TS_TOLERANCE_MS).toBe(5 * 60_000);
+  });
+
+  it('validate-positions.ts usa la constante nombrada sin duplicar su valor', () => {
+    const source = readFileSync(
+      join(__dirname, 'validate-positions.ts'),
+      'utf8',
+    );
+
+    expect(source).toContain('FUTURE_TS_TOLERANCE_MS');
+    expect(source).not.toContain('300_000');
+    expect(source).not.toContain('300000');
   });
 });
