@@ -362,7 +362,32 @@ del caso negativo; Jest terminó con código 0 y los 260 e2e ejecutados pasaron.
 Comprobación de los siete archivos prohibidos:
 
 ```text
-$ git diff --name-only main...HEAD | comprobar lista prohibida
+$ $diffFiles = @(git diff --name-only main...HEAD); $forbidden = @(
+  'backend-pet-tracker/src/pipeline/__fixtures__/walk.json',
+  'backend-pet-tracker/src/pipeline/geofence-eval.ts',
+  'backend-pet-tracker/src/pipeline/geofence-eval.spec.ts',
+  'backend-pet-tracker/src/pipeline/geofence-eval-untouched.spec.ts',
+  'backend-pet-tracker/src/pipeline/trips.spec.ts',
+  'backend-pet-tracker/src/integrations/wialon/fake-wialon.client.ts',
+  'test/ingestion.e2e-spec.ts'
+); $diffFiles; "FORBIDDEN_COUNT=$(@($diffFiles | Where-Object { $_ -in $forbidden }).Count)"
+STATUS.md
+backend-pet-tracker/src/pipeline/constants.ts
+backend-pet-tracker/src/pipeline/types.ts
+backend-pet-tracker/src/pipeline/validate-positions.spec.ts
+backend-pet-tracker/src/pipeline/validate-positions.ts
+backend-pet-tracker/src/workers/poller.service.spec.ts
+backend-pet-tracker/src/workers/poller.service.ts
+backend-pet-tracker/src/workers/positions-consumer.service.spec.ts
+backend-pet-tracker/src/workers/positions-consumer.service.ts
+docs/wialon-module.md
+feature_list.json
+progress/current.md
+progress/impl_reject-future-positions.md
+specs/reject-future-positions/design.md
+specs/reject-future-positions/requirements.md
+specs/reject-future-positions/tasks.md
+specs/reject-future-positions/traceability.md
 FORBIDDEN_COUNT=0
 ```
 
@@ -391,4 +416,27 @@ Commits de documentación y trazabilidad posteriores:
 ```text
 65b3af3 feat(reject-future-positions): document future timestamp handling (R1,R2,R5,R8)
 55dae7a feat(reject-future-positions): close verification traceability (R9)
+```
+
+### `init.sh` de cierre
+
+El wrapper temporal solo expone el `node.exe` ya instalado a WSL; no modifica
+el repositorio.
+
+```text
+$ bash -lc 'mkdir -p /tmp/pet-tracker-codex-bin; ln -sf "/mnt/c/Program Files/nodejs/node.exe" /tmp/pet-tracker-codex-bin/node; PATH="/tmp/pet-tracker-codex-bin:$PATH" ./init.sh'
+Exit code: 0
+✅ Build exitoso
+Test Suites: 134 passed, 134 total
+Tests:       993 passed, 993 total
+Test Suites: 2 passed, 2 total
+Tests:       14 passed, 14 total
+✅ Tests pasados
+Test Suites: 2 skipped, 17 passed, 17 of 19 total
+Tests:       6 skipped, 260 passed, 266 total
+✅ Tests e2e pasados
+✅ Lint sin errores
+✅ Typecheck sin errores
+✅ Todo verde. Listo para trabajar.
+Features: 23/30 completadas | 6 pendientes
 ```
