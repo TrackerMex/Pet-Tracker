@@ -222,3 +222,16 @@ describe('R8 (init-env-drift-warning #23): el aviso no aborta', () => {
     assert.match(stdout, /rc=0/);
   });
 });
+
+describe('R9 (init-env-drift-warning #23): sin deriva la seccion 2 no cambia', () => {
+  it('solo imprime dentro de la guarda de salida no vacia', () => {
+    const source = readFileSync(new URL('./init.sh', import.meta.url), 'utf8');
+    const driftBlockIndex = source.indexOf('# Deriva de claves entre .env y .env.example (#23)');
+    const dependenciesIndex = source.indexOf('# ── 3. DEPENDENCIAS');
+
+    assert.notEqual(driftBlockIndex, -1);
+    const fragment = source.slice(driftBlockIndex, dependenciesIndex);
+    assert.match(fragment, /if \[ -n "\$ENV_DRIFT" \]; then/);
+    assert.doesNotMatch(fragment, /\b(?:ok|echo)\b/);
+  });
+});
