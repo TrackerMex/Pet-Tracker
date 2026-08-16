@@ -283,7 +283,7 @@ describe('R13: escritura DynamoDB — pk PET#<petId>, sk device_ts, atributos da
     const positions = Array.from({ length: 60 }, (_, i) => ({
       lat: 19.4326,
       lng: -99.1332,
-      ts: BASE_TS + i * 30_000,
+      ts: BASE_TS - (60 - 1 - i) * 30_000,
     }));
     const { service, documents } = makeHarness([
       [message('a', validBody({ positions }))],
@@ -683,7 +683,7 @@ describe('R5 (geofence-eval-full-batch #30): un solo Entry position.updated por 
     return Array.from({ length: 100 }, (_, index) => ({
       lat: 19.4326 + index * 0.00001,
       lng: -99.1332,
-      ts: BASE_TS + index * 30_000,
+      ts: BASE_TS - (100 - 1 - index) * 30_000,
     }));
   }
 
