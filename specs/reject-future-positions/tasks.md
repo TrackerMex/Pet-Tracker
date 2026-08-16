@@ -29,6 +29,14 @@ tags: [harness, spec]
 > [[design]] §Inventario de riesgo dice que ninguno lo necesita, así que una
 > edición significa que el diseño se desvió.
 >
+> **Excepción única, enmienda del 2026-08-16** ([[requirements]] R9(f) y
+> §Enmienda): los dos `it` de lote largo de
+> `src/workers/positions-consumer.service.spec.ts` (líneas 282 y 677) **sí**
+> se editan, y solo ellos, y solo en cómo construyen sus `ts`. La regla dura
+> sigue vigente para todo lo demás. Esta excepción nació precisamente de
+> aplicarla: Codex paró en R4 en vez de manipular el fixture, se reabrió el
+> gate humano y se enmendó la spec.
+>
 > Comandos: `pnpm -C backend-pet-tracker test` (unitarios),
 > `pnpm -C backend-pet-tracker run test:e2e` (e2e, exige Docker arriba),
 > `./init.sh` desde la raíz antes de cerrar.
@@ -141,6 +149,18 @@ tags: [harness, spec]
 
 ### R4 — el consumidor pasa `now` a `normalize()`
 
+- [ ] (0) **Primero, commit aparte** (enmienda R9(f), 2026-08-16): desplazar
+      al pasado la ventana de los dos `it` de lote largo de
+      `src/workers/positions-consumer.service.spec.ts` — línea 282 (60
+      posiciones, de #8) y línea 677 (100 posiciones, describe `R5` de #30):
+      `ts: BASE_TS - (N - 1 - index) * 30_000` en vez de
+      `ts: BASE_TS + index * 30_000`. **Solo esa expresión**: ni conteos, ni
+      espaciado, ni orden, ni assertions, ni nombres de `it`. Los dos deben
+      quedar verdes **antes** de tocar el código de producción, y ese commit
+      va solo, con mensaje
+      `test(reject-future-positions): move long batch windows into the past (R9)`.
+      Registrar ambas ediciones en [[traceability]] §Tests de features
+      anteriores actualizados.
 - [ ] (1) Test rojo en `src/workers/positions-consumer.service.spec.ts`:
       describe nuevo `R4 (reject-future-positions #27): el consumidor pasa
       now a normalize() y no persiste la posición futura`, con un body de 2

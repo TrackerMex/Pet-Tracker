@@ -246,6 +246,21 @@ huérfanos poleando con un `now` adelantado, no de un defecto del simulador.
     valores concretos de cada constante, no el conjunto de claves
     exportadas, así que añadir `FUTURE_TS_TOLERANCE_MS` no lo rompe.
   - **(e)** `test/ingestion.e2e-spec.ts` SHALL quedar verde sin editarse.
+  - **(f)** **Excepción única, añadida por la enmienda del 2026-08-16** (ver
+    §Enmienda al final del archivo): los dos `it` de
+    `src/workers/positions-consumer.service.spec.ts` que construyen lotes
+    largos con `ts` **crecientes a partir de** `BASE_TS` —
+    `'parte lotes de mas de 25 items en BatchWrite de <=25'` (línea 282, de
+    #8) y el `it` de 100 posiciones dentro del describe
+    `R5 (geofence-eval-full-batch #30)` (línea 677)— SHALL editarse para que
+    su ventana **termine** en `BASE_TS` en vez de empezar ahí:
+    `ts: BASE_TS - (N - 1 - index) * 30_000`. SHALL conservarse intactos el
+    número de posiciones, el espaciado de 30 s, el orden ascendente y todas
+    las assertions (`batchSizes` `[25, 25, 10]`,
+    `detail.positions` con longitud 100). Ningún `it` SHALL borrarse ni
+    renombrarse, y la edición SHALL registrarse en [[traceability]] §Tests de
+    features anteriores actualizados. Fuera de estos dos `it`, (a)-(e) siguen
+    vigentes tal cual.
 
   - Test: no hay test nuevo — R9 se verifica ejecutando
     `pnpm -C backend-pet-tracker test` y `run test:e2e` y comprobando en el
@@ -280,6 +295,41 @@ huérfanos poleando con un `now` adelantado, no de un defecto del simulador.
   spec, no con un `.env`.
 - **Infraestructura AWS**: nada que reprovisionar ni desplegar.
 
+## Enmienda 2026-08-16 — R9(f), la ventana de los lotes largos
+
+Codex CLI **paró** al llegar a R4, como le exigía la regla dura de
+[[tasks]], en vez de editar un test existente para ponerlo verde. Hizo bien:
+el error era de esta spec.
+
+El inventario de [[design]] §Inventario de riesgo afirmaba que en
+`src/workers/positions-consumer.service.spec.ts` "todas las posiciones son
+anteriores a `NOW`, así que R4 no cambia ningún resultado". Es falso para dos
+`it`. `BASE_TS = NOW - 60_000`, pero ambos construyen sus posiciones con
+`ts: BASE_TS + index * 30_000`, así que la ventana **avanza hacia el futuro**:
+
+| `it` | Posiciones | Última respecto a `NOW` | Descartadas por R4 |
+|---|---|---|---|
+| `'parte lotes de mas de 25 items en BatchWrite de <=25'` (#8, línea 282) | 60 | +28,5 min | 47 de 60 |
+| `R5 (geofence-eval-full-batch #30)`, lote de 100 (línea 677) | 100 | +48,5 min | 87 de 100 |
+
+La auditoría miró `BASE_TS` y no el incremento acumulado. Ningún otro `it`
+del archivo pasa de `BASE_TS + 60_000`, que es exactamente `NOW`.
+
+**Decisión (humano, 2026-08-16): se corrige el fixture, no el requisito.**
+Esas dos ventanas simulan telemetría del futuro, que es justo lo que el
+hardware no produce y lo que esta feature existe para rechazar: un lote de
+100 posiciones en producción es una descarga de búfer que cubre una hora
+**pasada**. Lo que esos `it` miden —el particionado del `BatchWrite` en
+trozos de 25 y que un lote grande siga emitiendo un solo `Entry`— no depende
+del signo de la ventana, así que desplazarla al pasado conserva su intención
+completa. Las alternativas eran peores: subir `FUTURE_TS_TOLERANCE_MS` a más
+de 50 min para acomodar un fixture la vaciaría de sentido, y renunciar a R4
+dejaría el filtro de R1 sin ningún llamador en producción.
+
+R9(f) recoge la excepción. R1-R3 y R6-R8 no cambian: ya estaban verdes
+cuando se detectó esto.
+
 ## Aprobación
 
 - [X] Aprobado por humano (fecha: 2026-08-15) ← gate obligatorio antes de implementar
+- [X] Enmienda R9(f) aprobada por humano (fecha: 2026-08-16) ← reapertura del gate, precedente #21

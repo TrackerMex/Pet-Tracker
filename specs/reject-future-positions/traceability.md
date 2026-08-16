@@ -44,7 +44,8 @@ tags: [harness, spec]
 
 | Test | Feature dueña | Qué cambia y por qué | Commit |
 |---|---|---|---|
-| _(ninguno previsto)_ | — | El inventario de [[design]] §Inventario de riesgo audita test por test y concluye que ninguno necesita edición. Si esta tabla deja de estar vacía, el diseño se desvió de la spec y el reviewer debe pedir justificación explícita | — |
+| `positions-consumer.service.spec.ts::'parte lotes de mas de 25 items en BatchWrite de <=25'` (línea 282) | #8 | Sus 60 posiciones iban de `BASE_TS` hacia arriba en pasos de 30 s, terminando en `NOW + 28,5 min`: telemetría del futuro, justo lo que #27 rechaza. La ventana pasa a **terminar** en `BASE_TS` (`ts: BASE_TS - (59 - index) * 30_000`). Conteo, espaciado, orden y la assertion `batchSizes [25, 25, 10]` intactos — el test sigue midiendo el particionado del `BatchWrite`, que no depende del signo de la ventana. Autorizado por R9(f), enmienda del 2026-08-16 | pendiente |
+| `positions-consumer.service.spec.ts::R5 (geofence-eval-full-batch #30) ...` lote de 100 (línea 677) | #30 | Igual que el anterior: terminaba en `NOW + 48,5 min`. La ventana pasa a terminar en `BASE_TS` (`ts: BASE_TS - (99 - index) * 30_000`). `detail.positions` sigue con longitud 100 y el `Entry` único sigue siendo único. Autorizado por R9(f), enmienda del 2026-08-16 | pendiente |
 
 ## Tests que deben quedar verdes SIN editarse
 
@@ -66,8 +67,12 @@ tags: [harness, spec]
   52-75) — R9c/R9d. Ese describe asevera valores, no el conjunto de claves
   exportadas.
 - `src/workers/positions-consumer.service.spec.ts`, todos los describes de
-  #8 y #30 (líneas 151-1000+) — R4/R9. Todos llaman `drainOnce(NOW)` con
-  `BASE_TS = NOW.getTime() - 60_000`, anterior a `NOW`.
+  #8 y #30 (líneas 151-1000+) — R4/R9, **salvo los dos `it` de lote largo
+  autorizados en R9(f)** y listados en la tabla de arriba. Los demás llaman
+  `drainOnce(NOW)` con `ts` que no pasan de `BASE_TS + 60_000` = `NOW`, así
+  que quedan verdes sin tocarse. El reviewer debe comprobar que la edición se
+  limita a la construcción de los `ts` de esos dos `it`: cualquier assertion
+  cambiada o cualquier otro `it` tocado es un rechazo.
 - `src/workers/poller.service.spec.ts`, describes `R9`, `R10` y `R11` de #8
   (líneas 99-350) — R6/R7. Auditado: los `ts` del describe `R10` son
   anteriores a `NOW`, así que `Math.min(lastTs, now)` devuelve `lastTs`.

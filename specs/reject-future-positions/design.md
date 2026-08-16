@@ -239,14 +239,17 @@ posiciones con `ts` futuro o relativo a `Date.now()`:
 | `src/pipeline/trips.spec.ts:101-106` | `normalizedWalkFixture()` → `normalize(raw).accepted` sobre `walk.json`, sin `nowMs` | **No** |
 | `src/pipeline/activity.spec.ts`, `local-day.spec.ts`, `time-away.spec.ts` | no llaman a `normalize()` | **No** |
 | `src/pipeline/time-away.spec.ts:97` | `jest.useFakeTimers().setSystemTime(new Date('2030-01-01'))` | **No** para #27 — es una suite distinta, no toca `normalize()` ni el poller. Sí es la pista de cómo un proceso jest huérfano acabó poleando con un `now` de años en el futuro (§Contexto de [[requirements]]) |
-| `src/workers/positions-consumer.service.spec.ts` | `NOW = 2026-08-01T12:00Z` fijo y `BASE_TS = NOW.getTime() - 60_000`; **todas** las llamadas son `drainOnce(NOW)` | **No**. `BASE_TS` es anterior a `NOW`, así que pasar `now.getTime()` a `normalize()` (R4) no cambia ningún resultado |
+| `src/workers/positions-consumer.service.spec.ts` | `NOW = 2026-08-01T12:00Z` fijo y `BASE_TS = NOW.getTime() - 60_000`; **todas** las llamadas son `drainOnce(NOW)` | **SÍ, en dos `it`** — esta fila decía "No" y era incorrecta; corregida por la enmienda del 2026-08-16 ([[requirements]] §Enmienda). La auditoría miró `BASE_TS` y no el incremento acumulado: los `it` que construyen lotes largos con `ts: BASE_TS + index * 30_000` terminan en `NOW + 28,5 min` (60 posiciones, línea 282) y `NOW + 48,5 min` (100 posiciones, línea 677), así que R4 descarta 47 y 87. Se corrigen esos dos fixtures desplazando la ventana al pasado (R9f). El resto del archivo no pasa de `BASE_TS + 60_000` = `NOW` y queda intacto |
 | `src/workers/poller.service.spec.ts` | `NOW = 2026-08-01T12:00Z` fijo, watermark `11:55`, `positionAt(ts)` con `ts` derivados de `NOW` hacia atrás | **No** para R7 (watermark pasado ⇒ rama `else`, `fromTs = watermarkMs`, idéntico a hoy). **Revisar** en R6: cualquier `it` que asevere `advanceWatermark` con un `lastTs` **posterior** a `NOW` rompería. Auditado el describe `R10` (líneas 208-268): los `ts` usados son anteriores a `NOW`, así que `Math.min(lastTs, nowMs) === lastTs` y quedan verdes |
 | `test/ingestion.e2e-spec.ts` | `runOnce()`/`drainOnce()` sin argumento ⇒ `now` real, y el `FakeWialonClient` acota `ts <= toTs` | **No**. El fake no puede emitir futuro (§Contexto); el tope de R6 es un no-op ahí |
 | `src/pipeline/geofence-eval-untouched.spec.ts` | asevera valores de constantes, no claves | **No** (D6) |
 
-Conclusión: ningún test existente necesita edición. Si el implementador se
-encuentra teniendo que tocar alguno, el diseño se desvió de la spec y hay
-que parar y decirlo, no editar el test.
+Conclusión (corregida el 2026-08-16): **dos `it` necesitan edición**, los de
+la fila del consumidor, y están autorizados uno por uno en R9(f) — nada más.
+Para cualquier otro test la regla sigue en pie: si el implementador se
+encuentra teniendo que tocarlo, el diseño se desvió de la spec y hay que
+parar y decirlo, no editar el test. Codex paró exactamente así, y por eso
+esta enmienda existe en vez de un fixture manipulado en silencio.
 
 ## Alternativas descartadas
 

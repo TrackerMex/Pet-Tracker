@@ -20,6 +20,15 @@
   dos tests existentes generan 47/87 posiciones fuera del margen futuro y
   esperan persistir 60/100; implementar R4 los rompe y la regla dura prohíbe
   editarlos. Evidencia en `progress/impl_reject-future-positions.md`.
+- 2026-08-16: **spec enmendada y gate reabierto** (precedente #21). El error
+  era de la spec, no de Codex: `design.md` §Inventario de riesgo auditó
+  `BASE_TS` pero no el incremento acumulado, y los dos `it` de lote largo
+  (líneas 282 y 677) terminan en `NOW + 28,5 min` y `NOW + 48,5 min`. Se
+  corrige el fixture, no el requisito — esas ventanas simulan telemetría del
+  futuro, que es justo lo que #27 rechaza; un lote de 100 en producción cubre
+  una hora **pasada**. R9(f) autoriza editar **solo** la construcción de sus
+  `ts`, con conteos y assertions intactos. Enmienda aprobada por el humano el
+  2026-08-16. Handoff de continuación entregado a Codex.
 
 ### Plan
 
