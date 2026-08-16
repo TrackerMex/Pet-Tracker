@@ -5,6 +5,7 @@
 // consumidor real es el worker de alerts-engine (#12).
 import {
   FLAG_LOW_ACCURACY,
+  FLAG_SUSPECT_JUMP,
   GEOFENCE_ENTER_RADIUS_MULTIPLIER,
   GEOFENCE_EXIT_MAX_ACCURACY_M,
   GEOFENCE_EXIT_RADIUS_MULTIPLIER,
@@ -102,8 +103,11 @@ export function evaluate(
   position: Pick<ProcessedPosition, 'lat' | 'lng' | 'accuracyM' | 'flags'>,
   nowMs: number,
 ): EvaluateResult {
-  // R22: low_accuracy corto-circuita antes de leer distancia o estado previo.
-  if (position.flags.includes(FLAG_LOW_ACCURACY)) {
+  // R22/#30 R1: posiciones no confiables cortocircuitan antes de leer distancia o estado.
+  if (
+    position.flags.includes(FLAG_LOW_ACCURACY) ||
+    position.flags.includes(FLAG_SUSPECT_JUMP)
+  ) {
     return { state: previous, event: null };
   }
 
