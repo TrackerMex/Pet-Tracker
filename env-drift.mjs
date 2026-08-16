@@ -1,3 +1,5 @@
+import { readFile } from 'node:fs/promises';
+
 export function parseEnvKeys(text) {
   const keys = text
     .replace(/^\uFEFF/, '')
@@ -19,6 +21,10 @@ export function missingKeys(exampleText, envText) {
 }
 
 export function formatDriftLines(missing) {
+  if (!missing.length) {
+    return [];
+  }
+
   const gates = missing.filter((key) => key.endsWith('_ENABLED'));
   const config = missing.filter((key) => !key.endsWith('_ENABLED'));
   const lines = [
@@ -36,4 +42,17 @@ export function formatDriftLines(missing) {
   lines.push('  init.sh no modifica .env — añade a mano las que necesites desde .env.example');
 
   return lines;
+}
+
+if (import.meta.filename === process.argv[1]) {
+  const envPath = process.argv[2] ?? new URL('./.env', import.meta.url);
+  const examplePath = process.argv[3] ?? new URL('./.env.example', import.meta.url);
+  const [envText, exampleText] = await Promise.all([
+    readFile(envPath, 'utf8'),
+    readFile(examplePath, 'utf8'),
+  ]);
+
+  for (const line of formatDriftLines(missingKeys(exampleText, envText))) {
+    console.log(line);
+  }
 }
