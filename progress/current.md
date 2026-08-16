@@ -56,6 +56,10 @@ duplica la falsa alarma de fuga.
 - Bloque B completo: R3 rojo `59075e6`, R4 rojo `bb52775`, R5 rojo
   `a2919f0` → verdes en `3219407`.
 - Bloque C completo: R6 rojo `6a68633` → verde `c8f1b35`.
+- Bloque D completo: R7 rojo `312804c` → verde `13a65dd`; R8 rojo
+  `a37fe41` → verde `9dc7f9a`; R9 rojo `10bc6a6` → verde `1ba9256`;
+  R10 regresión verde `39e7ff8` + fallback `13a65dd`; R11 rojo `9e1e2e9`
+  → verde `8f00ce5`.
 
 ### Hueco del harness detectado (no es de esta feature)
 
