@@ -22,7 +22,7 @@ REQUIRED_ENV_VARS=("DATABASE_URL")
 # El backend vive en backend-pet-tracker/ — pnpm -C apunta ahí desde la raíz
 INSTALL_CMD="pnpm -C backend-pet-tracker install && pnpm -C infra install"
 BUILD_CMD="pnpm -C backend-pet-tracker run build && pnpm -C infra run synth"
-TEST_CMD="pnpm -C backend-pet-tracker test --passWithNoTests && pnpm -C infra test --passWithNoTests"
+TEST_CMD="pnpm -C backend-pet-tracker test --passWithNoTests && pnpm -C infra test --passWithNoTests && node --test env-drift.test.mjs"
 LINT_CMD="pnpm -C backend-pet-tracker run lint && pnpm -C infra run lint"
 TYPECHECK_CMD="pnpm -C backend-pet-tracker exec tsc --noEmit && pnpm -C infra exec tsc --noEmit"
 
