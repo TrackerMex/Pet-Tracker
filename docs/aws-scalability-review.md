@@ -245,6 +245,10 @@ del resultado exacto.
   aplicar además la palanca de transiciones). Esta cifra recalculada (≈43,2 USD/mes) es el punto de
   partida real antes de decidir la palanca, no el resultado de aplicarla — el ahorro adicional de
   filtrar por transición sigue sin cuantificar (ver Palancas de costo).
+- **Cierre de `geofence-eval-full-batch` (#30)**: `position.updated` v2 transporta hasta 100
+  posiciones aceptadas en un solo `Entry`; el alerts-engine pliega el lote en memoria. El conteo
+  y costo de EventBridge siguen siendo uno por mensaje SQS, y un test verifica que el `Detail` de
+  100 posiciones permanece bajo el límite de 256 KB.
 - Ninguna otra cifra revisada en este plan (Aurora, DynamoDB, Lambda, API Gateway, SQS, Cognito,
   EventBridge Scheduler) contradice lo publicado en `plans/presupuesto-produccion.md`; las cuotas
   oficiales verificadas quedan muy por encima de los volúmenes de Lanzamiento y Crecimiento salvo

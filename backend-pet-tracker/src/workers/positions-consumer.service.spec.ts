@@ -497,7 +497,7 @@ describe('R16: position.updated — un evento por mensaje, detail {version:1, pe
     expect(positionUpdated[0].Source).toBe(EVENT_SOURCE);
     expect(EVENT_SOURCE).toBe('pet-tracker');
     expect(positionUpdated[0].detail).toEqual({
-      version: 1,
+      version: 2,
       petId: 'pet-1',
       deviceId: 'device-1',
       position: {
@@ -511,6 +511,30 @@ describe('R16: position.updated — un evento por mensaje, detail {version:1, pe
         batteryPct: 80,
         flags: [],
       },
+      positions: [
+        {
+          lat: 19.43,
+          lng: -99.13,
+          ts: BASE_TS,
+          speedKmh: null,
+          course: null,
+          sats: null,
+          accuracyM: null,
+          batteryPct: 81,
+          flags: [],
+        },
+        {
+          lat: 19.4305,
+          lng: -99.1305,
+          ts: lastTs,
+          speedKmh: 3.5,
+          course: 90,
+          sats: 8,
+          accuracyM: 9,
+          batteryPct: 80,
+          flags: [],
+        },
+      ],
       batteryPct: 80,
     });
   });
@@ -543,6 +567,170 @@ describe('R16: position.updated — un evento por mensaje, detail {version:1, pe
       flags: [],
     });
     expect(event.detail.batteryPct).toBeNull();
+  });
+});
+
+describe('R3 (geofence-eval-full-batch #30): el detail v2 lleva el lote completo en positions[]', () => {
+  it('serializa todas las aceptadas en orden ascendente con las mismas 9 claves', async () => {
+    const middleTs = BASE_TS + 30_000;
+    const lastTs = BASE_TS + 60_000;
+    const { service, events } = makeHarness([
+      [
+        message(
+          'batch-v2',
+          validBody({
+            positions: [
+              {
+                lat: 19.4328,
+                lng: -99.133,
+                ts: lastTs,
+                speedKmh: 3.5,
+                course: 90,
+                sats: 8,
+                accuracyM: 9,
+                batteryPct: 80,
+              },
+              { lat: 19.4326, lng: -99.1332, ts: BASE_TS },
+              {
+                lat: 19.4327,
+                lng: -99.1331,
+                ts: middleTs,
+                speedKmh: 2,
+              },
+            ],
+          }),
+        ),
+      ],
+      [],
+    ]);
+
+    await service.drainOnce(NOW);
+
+    const [event] = emittedEvents(events).filter(
+      ({ DetailType }) => DetailType === DETAIL_TYPE_POSITION_UPDATED,
+    );
+    expect(event.detail.version).toBe(2);
+    expect(event.detail.positions).toEqual([
+      {
+        lat: 19.4326,
+        lng: -99.1332,
+        ts: BASE_TS,
+        speedKmh: null,
+        course: null,
+        sats: null,
+        accuracyM: null,
+        batteryPct: null,
+        flags: [],
+      },
+      {
+        lat: 19.4327,
+        lng: -99.1331,
+        ts: middleTs,
+        speedKmh: 2,
+        course: null,
+        sats: null,
+        accuracyM: null,
+        batteryPct: null,
+        flags: [],
+      },
+      {
+        lat: 19.4328,
+        lng: -99.133,
+        ts: lastTs,
+        speedKmh: 3.5,
+        course: 90,
+        sats: 8,
+        accuracyM: 9,
+        batteryPct: 80,
+        flags: [],
+      },
+    ]);
+  });
+
+  it('R4 (geofence-eval-full-batch #30): position sigue siendo la última de positions[]', async () => {
+    const { service, events } = makeHarness([
+      [
+        message(
+          'latest-position',
+          validBody({
+            positions: [
+              { lat: 19.4327, lng: -99.1331, ts: BASE_TS + 30_000 },
+              { lat: 19.4326, lng: -99.1332, ts: BASE_TS },
+            ],
+          }),
+        ),
+      ],
+      [],
+    ]);
+
+    await service.drainOnce(NOW);
+
+    const [event] = emittedEvents(events).filter(
+      ({ DetailType }) => DetailType === DETAIL_TYPE_POSITION_UPDATED,
+    );
+    expect(event.detail.position).toEqual(
+      (event.detail.positions as unknown[]).at(-1),
+    );
+  });
+});
+
+describe('R5 (geofence-eval-full-batch #30): un solo Entry position.updated por mensaje SQS aunque el lote traiga 100 posiciones', () => {
+  function oneHundredPositions(): Array<{
+    lat: number;
+    lng: number;
+    ts: number;
+  }> {
+    return Array.from({ length: 100 }, (_, index) => ({
+      lat: 19.4326 + index * 0.00001,
+      lng: -99.1332,
+      ts: BASE_TS + index * 30_000,
+    }));
+  }
+
+  it('emite exactamente un Entry position.updated', async () => {
+    const { service, events } = makeHarness([
+      [
+        message(
+          'batch-100-count',
+          validBody({ positions: oneHundredPositions() }),
+        ),
+      ],
+      [],
+    ]);
+
+    await service.drainOnce(NOW);
+
+    expect(
+      emittedEvents(events).filter(
+        ({ DetailType }) => DetailType === DETAIL_TYPE_POSITION_UPDATED,
+      ),
+    ).toHaveLength(1);
+  });
+
+  it('serializa las 100 posiciones en menos de 256 KB', async () => {
+    const { service, events } = makeHarness([
+      [
+        message(
+          'batch-100-size',
+          validBody({ positions: oneHundredPositions() }),
+        ),
+      ],
+      [],
+    ]);
+
+    await service.drainOnce(NOW);
+
+    const [entry] = events.send.mock.calls
+      .filter(([command]) => command instanceof PutEventsCommand)
+      .flatMap(([command]) => (command as PutEventsCommand).input.Entries ?? [])
+      .filter(({ DetailType }) => DetailType === DETAIL_TYPE_POSITION_UPDATED);
+    const detail = JSON.parse(entry.Detail ?? 'null') as {
+      positions?: unknown[];
+    };
+    expect(detail.positions).toHaveLength(100);
+    expect(Buffer.byteLength(entry.Detail ?? '', 'utf8')).toBeLessThan(
+      256 * 1024,
+    );
   });
 });
 

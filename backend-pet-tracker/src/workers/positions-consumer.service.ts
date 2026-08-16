@@ -222,40 +222,32 @@ export class PositionsConsumerService {
       latestMoment,
     );
 
-    await this.emitEvents(parsed, latest, previousBattery);
+    await this.emitEvents(parsed, accepted, previousBattery);
   }
 
   /**
    * Un evento position.updated por mensaje SQS, no por posicion (R16), mas
    * battery.low solo en el cruce descendente del umbral 20 (R17, D8 —
-   * disparo por flanco; #12 cierra con bateria >= 30). Shapes congelados
-   * (D9) — consumidos por 006/007/010; cambios incrementan detail.version.
+   * disparo por flanco; #12 cierra con bateria >= 30). Desde #30 el detail
+   * v2 conserva position y añade el lote completo en positions[].
    */
   private async emitEvents(
     parsed: PositionsMessage,
-    latest: ProcessedPosition,
+    accepted: ProcessedPosition[],
     previousBattery: number | null,
   ): Promise<void> {
+    const latest = accepted[accepted.length - 1];
     const entries = [
       {
         EventBusName: EVENT_BUS_NAME,
         Source: EVENT_SOURCE,
         DetailType: DETAIL_TYPE_POSITION_UPDATED,
         Detail: JSON.stringify({
-          version: 1,
+          version: 2,
           petId: parsed.petId,
           deviceId: parsed.deviceId,
-          position: {
-            lat: latest.lat,
-            lng: latest.lng,
-            ts: latest.ts,
-            speedKmh: latest.speedKmh ?? null,
-            course: latest.course ?? null,
-            sats: latest.sats ?? null,
-            accuracyM: latest.accuracyM ?? null,
-            batteryPct: latest.batteryPct ?? null,
-            flags: latest.flags,
-          },
+          position: toEventPosition(latest),
+          positions: accepted.map(toEventPosition),
           batteryPct: latest.batteryPct ?? null,
         }),
       },
@@ -363,6 +355,20 @@ export class PositionsConsumerService {
 
 function describeError(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
+}
+
+function toEventPosition(position: ProcessedPosition): Record<string, unknown> {
+  return {
+    lat: position.lat,
+    lng: position.lng,
+    ts: position.ts,
+    speedKmh: position.speedKmh ?? null,
+    course: position.course ?? null,
+    sats: position.sats ?? null,
+    accuracyM: position.accuracyM ?? null,
+    batteryPct: position.batteryPct ?? null,
+    flags: position.flags,
+  };
 }
 
 /** Item con los atributos exactos de docs/data-model.md §DynamoDB (R13). */

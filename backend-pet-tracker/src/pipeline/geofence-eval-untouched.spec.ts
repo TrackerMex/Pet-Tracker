@@ -3,12 +3,11 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import * as constants from './constants';
 
-// R19: geofence-eval.ts (isInside, evaluate, sus tipos, geofence-eval.spec.ts)
-// no se modifica — alerts-engine (#12) es su primer consumidor, no su
-// segundo diseñador. Verificacion estatica por contenido exacto (hash),
-// sin depender de `git diff` (que no es fiable en un checkout superficial
-// de CI) — mismo criterio de "verificacion estatica de contenido de
-// archivo" que no-hardcoded-credentials.spec.ts / relative-import-guard.
+// R2 (#30): geofence-eval.ts y su suite quedan congelados tras el rediseño
+// autorizado de geofence-eval-full-batch. Verificacion estatica por contenido
+// exacto (hash), sin depender de `git diff` (que no es fiable en un checkout
+// superficial de CI) — mismo criterio de "verificacion estatica de contenido
+// de archivo" que no-hardcoded-credentials.spec.ts / relative-import-guard.
 // spec.ts en src/aws/.
 //
 // El contenido se normaliza (BOM fuera, CRLF -> LF) antes de hashear: sin
@@ -30,21 +29,20 @@ function sha256Of(fileName: string): string {
     .digest('hex');
 }
 
-// Hashes congelados al estado de #11 (geofences-crud, done), confirmados
-// sin diff contra main al implementar #12. Calculados sobre el contenido
-// normalizado a LF (ver normalizeLineEndings) — inmunes al core.autocrlf
-// del checkout.
+// Hashes congelados al estado autorizado de #30 (geofence-eval-full-batch).
+// Calculados sobre el contenido normalizado a LF (ver normalizeLineEndings)
+// — inmunes al core.autocrlf del checkout.
 const GEOFENCE_EVAL_TS_SHA256 =
-  '134dbadd77599e589359dc4931ec6007dae7bfb3354207f0717a143891c89afa';
+  'd430f100cb41ad2f8ea8c2fc661939404d9a45f072a15e874a8f510c7b924914';
 const GEOFENCE_EVAL_SPEC_TS_SHA256 =
-  '80bb7ad04c1828bec4242b43fdd115db04034d18a926a6fe63c2791afc0d9503';
+  'eaaa93e58951592ca8cbebbda3a3ecf5d377e6a30d2fb5dd78d96491bba6d8a7';
 
-describe('R19: geofence-eval.ts y su suite no se modifican', () => {
-  it('geofence-eval.ts conserva exactamente su contenido de #11', () => {
+describe('R2 (geofence-eval-full-batch #30): geofence-eval.ts queda congelado en el estado de #30', () => {
+  it('geofence-eval.ts conserva exactamente su contenido de #30', () => {
     expect(sha256Of('geofence-eval.ts')).toBe(GEOFENCE_EVAL_TS_SHA256);
   });
 
-  it('geofence-eval.spec.ts conserva exactamente su contenido de #11', () => {
+  it('geofence-eval.spec.ts conserva exactamente su contenido de #30', () => {
     expect(sha256Of('geofence-eval.spec.ts')).toBe(
       GEOFENCE_EVAL_SPEC_TS_SHA256,
     );

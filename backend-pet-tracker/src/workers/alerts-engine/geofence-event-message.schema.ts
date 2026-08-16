@@ -16,9 +16,8 @@ export const geofenceEventEnvelopeSchema = z.object({
 
 export type GeofenceEventEnvelope = z.infer<typeof geofenceEventEnvelopeSchema>;
 
-// Mismo shape que position.updated emite en positions-consumer.service.ts
-// (contrato R16/R17 de wialon-ingestion-pipeline #8, congelado) — sin
-// altitude, que esa feature nunca incluyo en el detail.
+// Shape de position.updated: #30 añade positions[] en v2 y mantiene v1 para
+// mensajes legados en vuelo. Sin altitude, que #8 nunca incluyo en el detail.
 const positionDetailSchema = z.object({
   lat: z.number(),
   lng: z.number(),
@@ -32,10 +31,11 @@ const positionDetailSchema = z.object({
 });
 
 export const positionUpdatedDetailSchema = z.object({
-  version: z.literal(1),
+  version: z.union([z.literal(1), z.literal(2)]),
   petId: z.string().min(1),
   deviceId: z.string().min(1),
   position: positionDetailSchema,
+  positions: z.array(positionDetailSchema).min(1).optional(),
   batteryPct: z.number().nullable(),
 });
 

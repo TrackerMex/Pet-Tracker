@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { FLAG_LOW_ACCURACY } from './constants';
+import { FLAG_LOW_ACCURACY, FLAG_SUSPECT_JUMP } from './constants';
 import { evaluate, isInside } from './geofence-eval';
 import type {
   CircleGeometry,
@@ -226,6 +226,75 @@ describe('R22: low_accuracy congela el estado completo (incl. updatedAt), event 
       state: outsidePrev,
       event: null,
     });
+  });
+});
+
+describe('R1 (geofence-eval-full-batch #30): suspect_jump congela el estado igual que low_accuracy', () => {
+  const nowMs = Date.UTC(2026, 7, 5, 12, 0, 0);
+
+  it('con previous inside devuelve el mismo estado pese a estar fuera', () => {
+    const previous: GeofenceState = {
+      state: 'inside',
+      updatedAt: '2026-08-05T11:00:00.000Z',
+    };
+    const point = pointAtDistance(CENTER, 115);
+
+    const result = evaluate(
+      previous,
+      CIRCLE,
+      {
+        ...point,
+        accuracyM: 10,
+        flags: [FLAG_SUSPECT_JUMP],
+      },
+      nowMs,
+    );
+
+    expect(result.event).toBeNull();
+    expect(result.state).toBe(previous);
+  });
+
+  it.each([
+    { state: 'unknown', updatedAt: null },
+    { state: 'outside', updatedAt: '2026-08-05T10:00:00.000Z' },
+  ] satisfies GeofenceState[])(
+    'con previous $state devuelve el mismo estado',
+    (previous) => {
+      const result = evaluate(
+        previous,
+        CIRCLE,
+        {
+          lat: CIRCLE.centerLat,
+          lng: CIRCLE.centerLng,
+          flags: [FLAG_SUSPECT_JUMP],
+        },
+        nowMs,
+      );
+
+      expect(result.event).toBeNull();
+      expect(result.state).toBe(previous);
+    },
+  );
+
+  it('con suspect_jump y low_accuracy devuelve el mismo estado', () => {
+    const previous: GeofenceState = {
+      state: 'inside',
+      updatedAt: '2026-08-05T11:00:00.000Z',
+    };
+    const point = pointAtDistance(CENTER, 115);
+    const result = evaluate(
+      previous,
+      CIRCLE,
+      {
+        ...point,
+        accuracyM: 10,
+        flags: [FLAG_SUSPECT_JUMP, FLAG_LOW_ACCURACY],
+      },
+      nowMs,
+    );
+
+    expect(result.event).toBeNull();
+    expect(result.state).toBe(previous);
   });
 });
 

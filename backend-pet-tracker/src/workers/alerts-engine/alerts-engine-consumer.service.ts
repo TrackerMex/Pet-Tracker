@@ -228,12 +228,15 @@ export class AlertsEngineConsumerService {
     }
   }
 
-  /** R7-R10: bucle por geocerca activa con el guard de "solo si es mas reciente". */
+  /** #30 R7: pliega cada lote ordenado sobre el estado de cada geocerca. */
   private async evaluateGeofences(
     detail: PositionUpdatedDetail,
   ): Promise<void> {
     const activeGeofences = await this.store.listActiveGeofencesForPet(
       detail.petId,
+    );
+    const positions = [...(detail.positions ?? [detail.position])].sort(
+      (a, b) => a.ts - b.ts,
     );
 
     for (const geofence of activeGeofences) {
@@ -242,38 +245,47 @@ export class AlertsEngineConsumerService {
           ? null
           : Date.parse(geofence.state.updatedAt);
 
-      if (
-        previousUpdatedAtMs !== null &&
-        detail.position.ts <= previousUpdatedAtMs
-      ) {
-        // R7: redelivery/desorden — ni evaluate() ni escritura alguna.
-        continue;
+      let state = geofence.state;
+      let pendingStateWrite = false;
+      for (const position of positions) {
+        if (
+          previousUpdatedAtMs !== null &&
+          position.ts <= previousUpdatedAtMs
+        ) {
+          continue;
+        }
+
+        const result = evaluate(
+          state,
+          {
+            shape: 'circle',
+            centerLat: geofence.centerLat,
+            centerLng: geofence.centerLng,
+            radiusM: geofence.radiusM,
+          },
+          {
+            lat: position.lat,
+            lng: position.lng,
+            accuracyM: position.accuracyM ?? undefined,
+            flags: position.flags,
+          },
+          position.ts,
+        );
+        state = result.state;
+
+        if (result.event === 'exit') {
+          await this.handleExit(detail, geofence, state, position);
+          pendingStateWrite = false;
+        } else if (result.event === 'enter') {
+          await this.handleEnter(detail, geofence, state, position);
+          pendingStateWrite = false;
+        } else {
+          pendingStateWrite = true;
+        }
       }
 
-      const result = evaluate(
-        geofence.state,
-        {
-          shape: 'circle',
-          centerLat: geofence.centerLat,
-          centerLng: geofence.centerLng,
-          radiusM: geofence.radiusM,
-        },
-        {
-          lat: detail.position.lat,
-          lng: detail.position.lng,
-          accuracyM: detail.position.accuracyM ?? undefined,
-          flags: detail.position.flags,
-        },
-        detail.position.ts,
-      );
-
-      if (result.event === 'exit') {
-        await this.handleExit(detail, geofence, result.state);
-      } else if (result.event === 'enter') {
-        await this.handleEnter(detail, geofence, result.state);
-      } else {
-        // R10: unknown->estado inicial y low_accuracy (mismo `previous`).
-        await this.store.updateGeofenceState(geofence.id, result.state);
+      if (pendingStateWrite) {
+        await this.store.updateGeofenceState(geofence.id, state);
       }
     }
   }
@@ -283,13 +295,14 @@ export class AlertsEngineConsumerService {
     detail: PositionUpdatedDetail,
     geofence: ActiveGeofenceForEval,
     newState: ActiveGeofenceForEval['state'],
+    position: PositionUpdatedDetail['position'],
   ): Promise<void> {
     const openInput: OpenAlertInput = {
       petId: detail.petId,
       type: ALERT_TYPE_GEOFENCE_EXIT,
       geofenceId: geofence.id,
-      payload: { position: detail.position, geofenceName: geofence.name },
-      openedAt: new Date(detail.position.ts),
+      payload: { position, geofenceName: geofence.name },
+      openedAt: new Date(position.ts),
     };
 
     const opened = await this.store.openAlert(openInput);
@@ -312,12 +325,13 @@ export class AlertsEngineConsumerService {
     detail: PositionUpdatedDetail,
     geofence: ActiveGeofenceForEval,
     newState: ActiveGeofenceForEval['state'],
+    position: PositionUpdatedDetail['position'],
   ): Promise<void> {
     const closeInput: CloseOpenAlertInput = {
       petId: detail.petId,
       type: ALERT_TYPE_GEOFENCE_EXIT,
       geofenceId: geofence.id,
-      closedAt: new Date(detail.position.ts),
+      closedAt: new Date(position.ts),
     };
 
     const closed = await this.store.closeOpenAlert(closeInput);

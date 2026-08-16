@@ -25,11 +25,17 @@ const PET_ID = 'pet-1';
 const CENTER_LAT = 19.4326;
 const CENTER_LNG = -99.1332;
 const RADIUS_M = 100;
+const EARTH_RADIUS_M = 6_371_000;
 
 // Punto a ~0 m del centro (queda dentro con cualquier radio > 0).
 const AT_CENTER = { lat: CENTER_LAT, lng: CENTER_LNG };
 // Punto a ~1113 m del centro (0.01 grados de latitud) — fuera de sobra.
 const FAR_AWAY = { lat: CENTER_LAT + 0.01, lng: CENTER_LNG };
+
+function pointAtDistance(distanceM: number): { lat: number; lng: number } {
+  const dLatDeg = (distanceM / EARTH_RADIUS_M) * (180 / Math.PI);
+  return { lat: CENTER_LAT + dLatDeg, lng: CENTER_LNG };
+}
 
 type MockOf<T> = { [K in keyof T]: jest.Mock };
 
@@ -156,6 +162,20 @@ function positionUpdatedDetail(
     petId: PET_ID,
     deviceId: 'device-1',
     position: basePosition(overrides.position),
+    batteryPct: overrides.batteryPct ?? null,
+  };
+}
+
+function positionUpdatedDetailV2(
+  positions: PositionDetail[],
+  overrides: { batteryPct?: number | null } = {},
+): Record<string, unknown> {
+  return {
+    version: 2,
+    petId: PET_ID,
+    deviceId: 'device-1',
+    position: positions[positions.length - 1],
+    positions,
     batteryPct: overrides.batteryPct ?? null,
   };
 }
@@ -1032,5 +1052,337 @@ describe('R16: error no controlado — mensaje sin borrar, log, no interrumpe el
       }),
     );
     errorSpy.mockRestore();
+  });
+});
+
+describe('R7 (geofence-eval-full-batch #30): evalúa el lote entero en orden ascendente de ts', () => {
+  const ts1 = NOW.getTime();
+  const ts2 = ts1 + 1_000;
+  const ts3 = ts2 + 1_000;
+  const previousUpdatedAt = new Date(ts1 - 60_000).toISOString();
+
+  function batchHarness(positions: PositionDetail[]): Harness {
+    const store = storeStub();
+    store.listActiveGeofencesForPet.mockResolvedValue([
+      activeGeofence({ state: 'inside', updatedAt: previousUpdatedAt }),
+    ]);
+    return makeHarness(
+      [
+        [
+          message(
+            'batch',
+            envelope(
+              DETAIL_TYPE_POSITION_UPDATED,
+              positionUpdatedDetailV2(positions),
+            ),
+          ),
+        ],
+        [],
+      ],
+      { store },
+    );
+  }
+
+  it('(a) abre exit en la posición intermedia y termina outside a 95 m', async () => {
+    const nearOutside = pointAtDistance(95);
+    const { service, store } = batchHarness([
+      basePosition({ ...FAR_AWAY, ts: ts2 }),
+      basePosition({ ...AT_CENTER, ts: ts1 }),
+      basePosition({ ...nearOutside, ts: ts3 }),
+    ]);
+
+    await service.drainOnce(NOW);
+
+    expect(store.openAlert).toHaveBeenCalledTimes(1);
+    expect(store.openAlert).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'geofence_exit' }),
+    );
+    expect(store.closeOpenAlert).not.toHaveBeenCalled();
+    const finalUpdate = (
+      store.updateGeofenceState.mock.calls as Array<[string, unknown]>
+    ).at(-1);
+    expect(finalUpdate?.[1]).toEqual({
+      state: 'outside',
+      updatedAt: new Date(ts3).toISOString(),
+    });
+  });
+
+  it('(b) detecta exit y enter dentro del mismo lote y envía ambas notificaciones', async () => {
+    const { service, store, sqs } = batchHarness([
+      basePosition({ ...FAR_AWAY, ts: ts2 }),
+      basePosition({ ...AT_CENTER, ts: ts1 }),
+      basePosition({ ...AT_CENTER, ts: ts3 }),
+    ]);
+
+    await service.drainOnce(NOW);
+
+    expect(store.openAlert).toHaveBeenCalledTimes(1);
+    expect(store.closeOpenAlert).toHaveBeenCalledTimes(1);
+    expect(sqs.sentToNotifications().map(({ kind }) => kind)).toEqual([
+      'alert',
+      'alert_resolved',
+    ]);
+    const finalUpdate = (
+      store.updateGeofenceState.mock.calls as Array<[string, unknown]>
+    ).at(-1);
+    expect(finalUpdate?.[1]).toEqual({
+      state: 'inside',
+      updatedAt: new Date(ts3).toISOString(),
+    });
+  });
+
+  it('(c) suspect_jump intermedio no altera el estado ni abre alerta', async () => {
+    const { service, store } = batchHarness([
+      basePosition({ ...FAR_AWAY, ts: ts2, flags: ['suspect_jump'] }),
+      basePosition({ ...AT_CENTER, ts: ts1 }),
+      basePosition({ ...AT_CENTER, ts: ts3 }),
+    ]);
+
+    await service.drainOnce(NOW);
+
+    expect(store.openAlert).not.toHaveBeenCalled();
+    const finalUpdate = (
+      store.updateGeofenceState.mock.calls as Array<[string, unknown]>
+    ).at(-1);
+    expect(finalUpdate?.[1]).toEqual({
+      state: 'inside',
+      updatedAt: new Date(ts3).toISOString(),
+    });
+  });
+});
+
+describe('R10 (geofence-eval-full-batch #30): un detail v1 sin positions[] se sigue procesando', () => {
+  it('abre la alerta y borra el mensaje legado', async () => {
+    const store = storeStub();
+    store.listActiveGeofencesForPet.mockResolvedValue([
+      activeGeofence({
+        state: 'inside',
+        updatedAt: new Date(NOW.getTime() - 60_000).toISOString(),
+      }),
+    ]);
+    const { service, sqs } = makeHarness(
+      [
+        [
+          message(
+            'legacy-v1',
+            envelope(
+              DETAIL_TYPE_POSITION_UPDATED,
+              positionUpdatedDetail({ position: { ...FAR_AWAY } }),
+            ),
+          ),
+        ],
+        [],
+      ],
+      { store },
+    );
+
+    await service.drainOnce(NOW);
+
+    expect(store.openAlert).toHaveBeenCalledTimes(1);
+    expect(sqs.deleted).toContain('rh-legacy-v1');
+  });
+});
+
+describe('R8 (geofence-eval-full-batch #30): la alerta lleva el ts de la posición que cruzó', () => {
+  const ts1 = NOW.getTime() + 10_000;
+  const ts2 = ts1 + 1_000;
+  const ts3 = ts2 + 1_000;
+  const previousUpdatedAt = new Date(NOW.getTime() - 60_000).toISOString();
+
+  it('abre el exit con el ts y payload de la posición intermedia', async () => {
+    const store = storeStub();
+    store.listActiveGeofencesForPet.mockResolvedValue([
+      activeGeofence({ state: 'inside', updatedAt: previousUpdatedAt }),
+    ]);
+    const { service } = makeHarness(
+      [
+        [
+          message(
+            'exit-ts',
+            envelope(
+              DETAIL_TYPE_POSITION_UPDATED,
+              positionUpdatedDetailV2([
+                basePosition({ ...AT_CENTER, ts: ts1 }),
+                basePosition({ ...FAR_AWAY, ts: ts2 }),
+                basePosition({ ...pointAtDistance(95), ts: ts3 }),
+              ]),
+            ),
+          ),
+        ],
+        [],
+      ],
+      { store },
+    );
+
+    await service.drainOnce(NOW);
+
+    const [openInput] = (
+      store.openAlert.mock.calls as Array<
+        [
+          {
+            openedAt: Date;
+            payload: { position: PositionDetail };
+          },
+        ]
+      >
+    )[0];
+    expect(openInput.openedAt.getTime()).toBe(ts2);
+    expect(openInput.payload.position.ts).toBe(ts2);
+    expect(ts2).not.toBe(ts3);
+    expect(ts2).not.toBe(NOW.getTime());
+  });
+
+  it('cierra el enter con el ts de la posición que reentró', async () => {
+    const store = storeStub();
+    store.listActiveGeofencesForPet.mockResolvedValue([
+      activeGeofence({ state: 'outside', updatedAt: previousUpdatedAt }),
+    ]);
+    const { service } = makeHarness(
+      [
+        [
+          message(
+            'enter-ts',
+            envelope(
+              DETAIL_TYPE_POSITION_UPDATED,
+              positionUpdatedDetailV2([
+                basePosition({ ...FAR_AWAY, ts: ts1 }),
+                basePosition({ ...AT_CENTER, ts: ts2 }),
+                basePosition({ ...pointAtDistance(95), ts: ts3 }),
+              ]),
+            ),
+          ),
+        ],
+        [],
+      ],
+      { store },
+    );
+
+    await service.drainOnce(NOW);
+
+    const [closeInput] = (
+      store.closeOpenAlert.mock.calls as Array<[{ closedAt: Date }]>
+    )[0];
+    expect(closeInput.closedAt.getTime()).toBe(ts2);
+  });
+});
+
+describe('R9 (geofence-eval-full-batch #30): el guard monotónico sobrevive al lote', () => {
+  const ts1 = NOW.getTime();
+  const ts2 = ts1 + 1_000;
+  const ts3 = ts2 + 1_000;
+
+  it('(a) una redelivery completa no escribe, notifica ni queda sin borrar', async () => {
+    const store = storeStub();
+    store.listActiveGeofencesForPet.mockResolvedValue([
+      activeGeofence({
+        state: 'inside',
+        updatedAt: new Date(ts3).toISOString(),
+      }),
+    ]);
+    const { service, sqs } = makeHarness(
+      [
+        [
+          message(
+            'redelivery-batch',
+            envelope(
+              DETAIL_TYPE_POSITION_UPDATED,
+              positionUpdatedDetailV2([
+                basePosition({ ...AT_CENTER, ts: ts1 }),
+                basePosition({ ...FAR_AWAY, ts: ts2 }),
+                basePosition({ ...AT_CENTER, ts: ts3 }),
+              ]),
+            ),
+          ),
+        ],
+        [],
+      ],
+      { store },
+    );
+
+    await service.drainOnce(NOW);
+
+    expect(store.openAlert).not.toHaveBeenCalled();
+    expect(store.closeOpenAlert).not.toHaveBeenCalled();
+    expect(store.updateGeofenceState).not.toHaveBeenCalled();
+    expect(sqs.sentToNotifications()).toHaveLength(0);
+    expect(sqs.deleted).toContain('rh-redelivery-batch');
+  });
+
+  it('(b) un lote mixto evalúa solo posiciones posteriores a updatedAt', async () => {
+    const store = storeStub();
+    store.listActiveGeofencesForPet.mockResolvedValue([
+      activeGeofence({
+        state: 'inside',
+        updatedAt: new Date(ts2).toISOString(),
+      }),
+    ]);
+    const { service } = makeHarness(
+      [
+        [
+          message(
+            'mixed-batch',
+            envelope(
+              DETAIL_TYPE_POSITION_UPDATED,
+              positionUpdatedDetailV2([
+                basePosition({ ...FAR_AWAY, ts: ts1 }),
+                basePosition({ ...AT_CENTER, ts: ts3 }),
+              ]),
+            ),
+          ),
+        ],
+        [],
+      ],
+      { store },
+    );
+
+    await service.drainOnce(NOW);
+
+    expect(store.openAlert).not.toHaveBeenCalled();
+    expect(store.closeOpenAlert).not.toHaveBeenCalled();
+    expect(store.updateGeofenceState).toHaveBeenCalledTimes(1);
+    expect(store.updateGeofenceState).toHaveBeenCalledWith(GEOFENCE_ID, {
+      state: 'inside',
+      updatedAt: new Date(ts3).toISOString(),
+    });
+  });
+});
+
+describe('R11 (geofence-eval-full-batch #30): un solo updateGeofenceState por geocerca y mensaje', () => {
+  it('pliega 100 posiciones dentro y persiste solo el estado final', async () => {
+    const firstTs = NOW.getTime();
+    const positions = Array.from({ length: 100 }, (_, index) =>
+      basePosition({ ...AT_CENTER, ts: firstTs + index * 30_000 }),
+    );
+    const lastTs = positions[positions.length - 1].ts;
+    const store = storeStub();
+    store.listActiveGeofencesForPet.mockResolvedValue([
+      activeGeofence({
+        state: 'inside',
+        updatedAt: new Date(firstTs - 60_000).toISOString(),
+      }),
+    ]);
+    const { service } = makeHarness(
+      [
+        [
+          message(
+            'batch-100-state',
+            envelope(
+              DETAIL_TYPE_POSITION_UPDATED,
+              positionUpdatedDetailV2(positions),
+            ),
+          ),
+        ],
+        [],
+      ],
+      { store },
+    );
+
+    await service.drainOnce(NOW);
+
+    expect(store.updateGeofenceState).toHaveBeenCalledTimes(1);
+    expect(store.updateGeofenceState).toHaveBeenCalledWith(GEOFENCE_ID, {
+      state: 'inside',
+      updatedAt: new Date(lastTs).toISOString(),
+    });
   });
 });
