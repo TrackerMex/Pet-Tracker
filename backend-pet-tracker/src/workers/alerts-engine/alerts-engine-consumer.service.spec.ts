@@ -1173,3 +1173,80 @@ describe('R10 (geofence-eval-full-batch #30): un detail v1 sin positions[] se si
     expect(sqs.deleted).toContain('rh-legacy-v1');
   });
 });
+
+describe('R8 (geofence-eval-full-batch #30): la alerta lleva el ts de la posición que cruzó', () => {
+  const ts1 = NOW.getTime() + 10_000;
+  const ts2 = ts1 + 1_000;
+  const ts3 = ts2 + 1_000;
+  const previousUpdatedAt = new Date(NOW.getTime() - 60_000).toISOString();
+
+  it('abre el exit con el ts y payload de la posición intermedia', async () => {
+    const store = storeStub();
+    store.listActiveGeofencesForPet.mockResolvedValue([
+      activeGeofence({ state: 'inside', updatedAt: previousUpdatedAt }),
+    ]);
+    const { service } = makeHarness(
+      [
+        [
+          message(
+            'exit-ts',
+            envelope(
+              DETAIL_TYPE_POSITION_UPDATED,
+              positionUpdatedDetailV2([
+                basePosition({ ...AT_CENTER, ts: ts1 }),
+                basePosition({ ...FAR_AWAY, ts: ts2 }),
+                basePosition({ ...pointAtDistance(95), ts: ts3 }),
+              ]),
+            ),
+          ),
+        ],
+        [],
+      ],
+      { store },
+    );
+
+    await service.drainOnce(NOW);
+
+    const openInput = store.openAlert.mock.calls[0][0] as {
+      openedAt: Date;
+      payload: { position: PositionDetail };
+    };
+    expect(openInput.openedAt.getTime()).toBe(ts2);
+    expect(openInput.payload.position.ts).toBe(ts2);
+    expect(ts2).not.toBe(ts3);
+    expect(ts2).not.toBe(NOW.getTime());
+  });
+
+  it('cierra el enter con el ts de la posición que reentró', async () => {
+    const store = storeStub();
+    store.listActiveGeofencesForPet.mockResolvedValue([
+      activeGeofence({ state: 'outside', updatedAt: previousUpdatedAt }),
+    ]);
+    const { service } = makeHarness(
+      [
+        [
+          message(
+            'enter-ts',
+            envelope(
+              DETAIL_TYPE_POSITION_UPDATED,
+              positionUpdatedDetailV2([
+                basePosition({ ...FAR_AWAY, ts: ts1 }),
+                basePosition({ ...AT_CENTER, ts: ts2 }),
+                basePosition({ ...pointAtDistance(95), ts: ts3 }),
+              ]),
+            ),
+          ),
+        ],
+        [],
+      ],
+      { store },
+    );
+
+    await service.drainOnce(NOW);
+
+    const closeInput = store.closeOpenAlert.mock.calls[0][0] as {
+      closedAt: Date;
+    };
+    expect(closeInput.closedAt.getTime()).toBe(ts2);
+  });
+});
