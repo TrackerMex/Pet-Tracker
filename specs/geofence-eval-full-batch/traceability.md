@@ -15,8 +15,8 @@ tags: [harness, spec]
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | `src/pipeline/geofence-eval.spec.ts::R1 (geofence-eval-full-batch #30): suspect_jump congela el estado igual que low_accuracy` | rojo: `033fdcd feat(geofence-eval-full-batch): add suspect jump regression test (R1)`; verde: pendiente |
-| R2 | `src/pipeline/geofence-eval-untouched.spec.ts::R2 (geofence-eval-full-batch #30): geofence-eval.ts queda congelado en el estado de #30` (2 `it`) | pendiente |
+| R1 | `src/pipeline/geofence-eval.spec.ts::R1 (geofence-eval-full-batch #30): suspect_jump congela el estado igual que low_accuracy` | rojo: `033fdcd feat(geofence-eval-full-batch): add suspect jump regression test (R1)`; verde: `bad02af feat(geofence-eval-full-batch): ignore suspect jumps in geofence evaluation (R1)` |
+| R2 | `src/pipeline/geofence-eval-untouched.spec.ts::R2 (geofence-eval-full-batch #30): geofence-eval.ts queda congelado en el estado de #30` (2 `it`) | rojo: `bad02af` (R1 rompe ambos hashes); verde: pendiente |
 | R3 | `src/workers/positions-consumer.service.spec.ts::R3 (geofence-eval-full-batch #30): el detail v2 lleva el lote completo en positions[]` | pendiente |
 | R4 | `src/workers/positions-consumer.service.spec.ts::R4 (geofence-eval-full-batch #30): position sigue siendo la última de positions[]` + el `it` de la línea 518 (`R16` de #8) verde sin editar | pendiente |
 | R5 | `src/workers/positions-consumer.service.spec.ts::R5 (geofence-eval-full-batch #30): un solo Entry position.updated por mensaje SQS aunque el lote traiga 100 posiciones` (2 `it`) | pendiente |
