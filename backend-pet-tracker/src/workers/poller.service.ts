@@ -83,16 +83,32 @@ export class PollerService {
     queueUrl: string,
     now: Date,
   ): Promise<void> {
-    // Watermark NULL: primer ciclo tras un claim viejo o dato legado —
-    // mismo lookback que inicializa el claim de #7 (R9).
+    // Watermark NULL o futuro: no es utilizable, asi que se recupera con el
+    // mismo lookback que inicializa el claim de #7. Uno pasado se conserva.
+    const nowMs = now.getTime();
+    const lookbackTs = nowMs - CLAIM_WATERMARK_LOOKBACK_MINUTES * 60_000;
+    const watermarkTs = assignment.ingestWatermark?.getTime();
+    const hasFutureWatermark = watermarkTs !== undefined && watermarkTs > nowMs;
+
+    if (hasFutureWatermark) {
+      this.logger.warn({
+        scope: 'poller',
+        deviceId: assignment.deviceId,
+        unitId: assignment.unitId,
+        ingestWatermark: assignment.ingestWatermark?.toISOString(),
+        message: 'future ingest watermark ignored',
+      });
+    }
+
     const fromTs =
-      assignment.ingestWatermark?.getTime() ??
-      now.getTime() - CLAIM_WATERMARK_LOOKBACK_MINUTES * 60_000;
+      watermarkTs === undefined || hasFutureWatermark
+        ? lookbackTs
+        : watermarkTs;
 
     const positions = await this.wialon.getMessages(
       assignment.unitId,
       fromTs,
-      now.getTime(),
+      nowMs,
     );
     if (positions.length === 0) {
       return;
@@ -120,11 +136,15 @@ export class PollerService {
       );
     }
 
-    // Despues de publicar, nunca antes (R10): si el send falla arriba, el
-    // watermark no avanza y el siguiente ciclo re-publica (at-least-once;
-    // los duplicados los absorbe la idempotencia de R13).
+    // Despues de publicar, nunca antes (R10), y nunca mas alla de now (R6):
+    // este tope protege el watermark aunque el filtro del consumidor se omita.
+    // Si el send falla, el siguiente ciclo re-publica (at-least-once; los
+    // duplicados los absorbe la idempotencia de R13).
     const lastTs = Math.max(...positions.map((position) => position.ts));
-    await this.store.advanceWatermark(assignment.deviceId, new Date(lastTs));
+    await this.store.advanceWatermark(
+      assignment.deviceId,
+      new Date(Math.min(lastTs, nowMs)),
+    );
   }
 
   /** El provisioning (#2) no persiste URLs: se deriva del nombre y se cachea. */

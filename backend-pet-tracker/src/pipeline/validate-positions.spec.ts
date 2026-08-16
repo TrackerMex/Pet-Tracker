@@ -4,6 +4,7 @@ import {
   BATTERY_LOW_THRESHOLD_PCT,
   FLAG_LOW_ACCURACY,
   FLAG_SUSPECT_JUMP,
+  FUTURE_TS_TOLERANCE_MS,
   LOW_ACCURACY_MAX_ACCURACY_M,
   LOW_ACCURACY_MIN_SATS,
   SUSPECT_JUMP_SPEED_KMH,
@@ -222,5 +223,93 @@ describe('R7: fixture walk.json (~200 puntos del fake) + casos borde', () => {
     const { accepted, discarded } = normalize(invalid);
     expect(accepted).toHaveLength(0);
     expect(discarded).toHaveLength(3);
+  });
+});
+
+describe('R8 (reject-future-positions #27): FUTURE_TS_TOLERANCE_MS vive en pipeline/constants.ts', () => {
+  it('define una tolerancia de 5 minutos', () => {
+    expect(FUTURE_TS_TOLERANCE_MS).toBe(5 * 60_000);
+  });
+
+  it('validate-positions.ts usa la constante nombrada sin duplicar su valor', () => {
+    const source = readFileSync(
+      join(__dirname, 'validate-positions.ts'),
+      'utf8',
+    );
+
+    expect(source).toContain('FUTURE_TS_TOLERANCE_MS');
+    expect(source).not.toContain('300_000');
+    expect(source).not.toContain('300000');
+  });
+});
+
+describe('R1 (reject-future-positions #27): normalize() descarta el ts futuro fuera del margen de tolerancia', () => {
+  const nowMs = 1_000_000;
+
+  it('descarta una posicion posterior al margen con razon future_ts', () => {
+    const future = position({
+      ts: nowMs + FUTURE_TS_TOLERANCE_MS + 1,
+    });
+
+    const result = normalize([future], nowMs);
+
+    expect(result.accepted).toHaveLength(0);
+    expect(result.discarded).toEqual([
+      { reason: 'future_ts', position: future },
+    ]);
+  });
+
+  it('en un lote mixto descarta solo la posicion futura', () => {
+    const past = position({ ts: nowMs - 1 });
+    const future = position({
+      ts: nowMs + FUTURE_TS_TOLERANCE_MS + 1,
+    });
+
+    const result = normalize([past, future], nowMs);
+
+    expect(result.accepted.map(({ ts }) => ts)).toEqual([past.ts]);
+    expect(result.discarded).toEqual([
+      { reason: 'future_ts', position: future },
+    ]);
+  });
+});
+
+describe('R2 (reject-future-positions #27): un ts adelantado dentro del margen de tolerancia se acepta', () => {
+  const nowMs = 1_000_000;
+
+  it('acepta un ts adelantado por 1 ms', () => {
+    const result = normalize([position({ ts: nowMs + 1 })], nowMs);
+
+    expect(result.accepted).toHaveLength(1);
+    expect(result.discarded).toHaveLength(0);
+  });
+
+  it('acepta el borde inclusivo del margen', () => {
+    const result = normalize(
+      [position({ ts: nowMs + FUTURE_TS_TOLERANCE_MS })],
+      nowMs,
+    );
+
+    expect(result.accepted).toHaveLength(1);
+    expect(result.discarded).toHaveLength(0);
+  });
+
+  it('descarta 1 ms despues del margen', () => {
+    const result = normalize(
+      [position({ ts: nowMs + FUTURE_TS_TOLERANCE_MS + 1 })],
+      nowMs,
+    );
+
+    expect(result.accepted).toHaveLength(0);
+    expect(result.discarded[0].reason).toBe('future_ts');
+  });
+
+  it('R3 (reject-future-positions #27): sin nowMs no se filtra nada', () => {
+    const future = position({ ts: nowMs + 10 * 365 * 24 * 60 * 60_000 });
+
+    const result = normalize([future]);
+
+    expect(result.accepted).toHaveLength(1);
+    expect(result.discarded).toHaveLength(0);
   });
 });

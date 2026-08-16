@@ -30,7 +30,7 @@ import {
   TABLE_POSITIONS_SORT_KEY,
   TABLE_POSITIONS_TTL_ATTRIBUTE,
 } from '@/aws/constants';
-import type { ProcessedPosition } from '@/pipeline/types';
+import type { DiscardedStat, ProcessedPosition } from '@/pipeline/types';
 import { normalize } from '@/pipeline/validate-positions';
 import { INGESTION_STORE } from './ingestion-store';
 import type { IngestionStore } from './ingestion-store';
@@ -176,7 +176,16 @@ export class PositionsConsumerService {
     parsed: PositionsMessage,
     now: Date,
   ): Promise<void> {
-    const { accepted } = normalize(parsed.positions);
+    const { accepted, discarded } = normalize(parsed.positions, now.getTime());
+
+    if (discarded.length > 0) {
+      this.logger.warn({
+        scope: 'consumer',
+        deviceId: parsed.deviceId,
+        petId: parsed.petId,
+        discarded: countByReason(discarded),
+      });
+    }
 
     // El historico se escribe siempre (R13) — incluso si la asignacion ya
     // fue liberada (R15): el dato es del periodo de asignacion.
@@ -355,6 +364,14 @@ export class PositionsConsumerService {
 
 function describeError(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
+}
+
+function countByReason(discarded: DiscardedStat[]): Record<string, number> {
+  const counts: Record<string, number> = {};
+  for (const { reason } of discarded) {
+    counts[reason] = (counts[reason] ?? 0) + 1;
+  }
+  return counts;
 }
 
 function toEventPosition(position: ProcessedPosition): Record<string, unknown> {

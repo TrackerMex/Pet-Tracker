@@ -4,6 +4,7 @@
 import {
   FLAG_LOW_ACCURACY,
   FLAG_SUSPECT_JUMP,
+  FUTURE_TS_TOLERANCE_MS,
   LOW_ACCURACY_MAX_ACCURACY_M,
   LOW_ACCURACY_MIN_SATS,
   SUSPECT_JUMP_SPEED_KMH,
@@ -18,13 +19,14 @@ export interface NormalizeResult {
 
 /**
  * Valida, ordena y marca posiciones crudas (R5, R6): descarta lat/lng fuera
- * de rango o exactamente (0,0), posiciones sin ts y duplicados exactos por
- * device_ts (queda la primera aparicion); cada descarte registra su razon.
+ * de rango o exactamente (0,0), posiciones sin ts, posteriores a `nowMs` mas
+ * la tolerancia y duplicados exactos por device_ts (queda la primera
+ * aparicion); cada descarte registra su razon. Sin `nowMs`, no filtra futuro.
  * `accepted` sale en orden cronologico ascendente con flags de calidad:
  * suspect_jump (velocidad implicita > umbral, NO se descarta) y low_accuracy
  * (accuracy o sats fuera de umbral, tampoco se descarta).
  */
-export function normalize(raw: RawPosition[]): NormalizeResult {
+export function normalize(raw: RawPosition[], nowMs?: number): NormalizeResult {
   const accepted: ProcessedPosition[] = [];
   const discarded: DiscardedStat[] = [];
   const seenTs = new Set<number>();
@@ -36,6 +38,10 @@ export function normalize(raw: RawPosition[]): NormalizeResult {
     }
     if (!hasValidTs(position)) {
       discarded.push({ reason: 'missing_ts', position });
+      continue;
+    }
+    if (nowMs !== undefined && position.ts > nowMs + FUTURE_TS_TOLERANCE_MS) {
+      discarded.push({ reason: 'future_ts', position });
       continue;
     }
     if (seenTs.has(position.ts)) {

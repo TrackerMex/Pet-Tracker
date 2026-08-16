@@ -22,7 +22,7 @@ export interface ProcessedPosition extends RawPosition {
 
 /** Razones de descarte de normalize() (R5). */
 export type DiscardReason =
-  'invalid_coordinates' | 'missing_ts' | 'duplicate_ts';
+  'invalid_coordinates' | 'missing_ts' | 'duplicate_ts' | 'future_ts';
 
 /** Registro de un descarte: la razon y la posicion cruda descartada (R5). */
 export interface DiscardedStat {

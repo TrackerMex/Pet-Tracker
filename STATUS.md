@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-08-15
-**Features completadas**: 23/30 (`feature_list.json`)
+**Última actualización**: 2026-08-16
+**Features completadas**: 24/30 (`feature_list.json`)
 **En progreso**: ninguna.
-**Pendientes**: 7, por prioridad — **P1**: #27 `reject-future-positions`. **P2**: #23
-`init-env-drift-warning`, #25 `device-subscriptions`, #28
+**Pendientes**: 6, por prioridad — **P2**: #23 `init-env-drift-warning`, #25
+`device-subscriptions`, #28
 `test-dev-resource-isolation`, #29 `wialon-session-reuse`. **P3**: #17
 `nutrition-profile-engine`, #18 `nutrition-ai-explainer`.
 **En producción**: no
@@ -64,6 +64,53 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
+- **`reject-future-positions` (#27) done** (2026-08-16): cierra un **fallo
+  permanente disparable por hardware ordinario**, destapado el 2026-08-14
+  durante el smoke de #24 con el collar real. Nada validaba que el `ts` de una
+  posición estuviera en el pasado, y el `ts` lo pone el collar
+  (`wialon-http.client.ts:166`, `message.t * 1000`), no el servidor.
+  `poller.service.ts:126` avanzaba el watermark a `Math.max(...)` sin tope, así
+  que **una sola** posición con `ts` futuro dejaba `devices.ingest_watermark` en
+  el futuro; a partir de ahí el poller pedía `getMessages(unitId, fromTs, now)`
+  con `fromTs > toTs`, un rango invertido que devuelve lista vacía, y la guarda
+  de la línea 97 hacía `return` sin tocar el watermark. **El device dejaba de
+  reportar para siempre, en silencio, sin excepción, sin log y sin alerta**, y
+  la única salida era un `UPDATE` manual sobre `devices`. Un collar con el RTC
+  mal configurado o con el GPS aún sin fijar la hora se autodestruía solo.
+  Arreglo deliberadamente redundante en dos capas: `normalize()` descarta con
+  razón `future_ts` lo que exceda `nowMs + FUTURE_TS_TOLERANCE_MS` (5 min,
+  constante justificada en `pipeline/constants.ts`) conservando el borde
+  inclusivo para no cobrarse telemetría real por un desfase de reloj legítimo,
+  **y** el poller topa el watermark en la escritura (`Math.min(lastTs, now)`)
+  además de ignorarlo en la **lectura** si ya está envenenado, cayendo al suelo
+  de `CLAIM_WATERMARK_LOOKBACK_MINUTES`. Esa segunda mitad es la que recupera a
+  los devices ya rotos: un envenenado nunca llega a `advanceWatermark` porque
+  el rango invertido corta antes, así que topar solo en la escritura no habría
+  arreglado a nadie. Al reingestar, la escritura de `min(lastTs, now)` **hace
+  retroceder** el watermark y repara la fila en disco — verificado por el
+  reviewer contra el `UPDATE` real de `IngestionDrizzleStore`, que no tiene
+  guarda de monotonía. `normalize()` mantiene la pureza del núcleo: `nowMs` es
+  opcional y viene siempre del caller, nunca `Date.now()`. Los descartes dejan
+  de desaparecer: el consumidor emite un `warn` por mensaje con el conteo
+  agrupado por razón. Cero migraciones, cero env vars, cero deps. `reviewer`
+  **aprobó sin bloqueantes**. Ver `progress/impl_reject-future-positions.md` y
+  `progress/review_reject-future-positions.md`.
+- **La regla dura de #27 funcionó, y por eso la spec cambió** (2026-08-16):
+  `tasks.md` prohibía editar un test existente para ponerlo verde, obligando a
+  parar y reportar. Codex paró en R4 — dos `it` de lote largo del spec del
+  consumidor construían sus posiciones como `BASE_TS + index * 30_000` y
+  terminaban en `NOW + 28,5 min` y `NOW + 48,5 min`, así que R4 les descartaba
+  47 de 60 y 87 de 100. El fallo era de la spec: su inventario de riesgo auditó
+  `BASE_TS` pero no el incremento acumulado. Se **enmendó la spec** con gate
+  humano reabierto (`479ee7d`, precedente #21): R9(f) autoriza editar solo la
+  expresión que construye esos `ts`, desplazando la ventana al pasado —
+  telemetría del futuro es justo lo que la feature rechaza, y un lote real de
+  100 posiciones es una descarga de búfer que cubre una hora **pasada**. El
+  reviewer lo verificó con la prueba más fuerte disponible: en todo el branch
+  el spec del consumidor tiene **solo dos líneas suprimidas**, las dos
+  autorizadas. Conteos, espaciado, orden y assertions (`batchSizes [25,25,10]`,
+  `detail.positions` de 100) intactos. La alternativa —subir la tolerancia a
+  más de 50 min para acomodar un fixture— habría vaciado la feature de sentido.
 - **`geofence-eval-full-batch` (#30) done** (2026-08-15): el motor de geocercas
   evaluaba **una sola posición por ciclo**, no el lote entero — efecto colateral
   de R16 de #8, que emite un `position.updated` por mensaje SQS y no por posición
@@ -665,6 +712,35 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-08-16** — Ciclo SDD completo de `reject-future-positions` (#27),
+  reparto Claude/Codex, con **una parada a mitad que salió bien**:
+  `spec_author` escribió la spec (R1-R9, `243c639`) → gate humano
+  (`ae0dfc2`) → Codex implementó R1-R3 y R6-R8 → **paró en R4** en vez de
+  editar dos tests existentes que lo contradecían, como le exigía la regla
+  dura → se comprobó que el error era de la spec (el inventario de riesgo
+  auditó `BASE_TS` pero no el incremento acumulado de 30 s por posición) →
+  **enmienda con gate humano reabierto** (`479ee7d`, R9(f), precedente #21) →
+  Codex retomó, movió las dos ventanas al pasado en un commit aislado
+  (`5396c55`) y cerró R4, R5 y R9 → `reviewer` **aprobado sin bloqueantes**.
+  Queda cerrado un fallo permanente que un collar con el reloj mal puesto
+  disparaba solo: `ts` futuro → watermark en el futuro → rango invertido →
+  device mudo para siempre, sin log ni excepción. La protección es doble a
+  propósito (filtro puro con tolerancia de 5 min **y** tope del watermark en
+  lectura y escritura), de modo que el device envenenado se recupera solo y la
+  fila queda reparada al retroceder el watermark.
+  **Verificación independiente**: el reviewer corrió `init.sh` dos veces con
+  5432 y 4566 comprobados por `docker port` — 993 unitarios (977 + 16, que son
+  exactamente los tests nuevos) y 260 e2e ejecutados de verdad; los 8 commits
+  rojos tocan solo `.spec.ts`; en todo el branch el spec del consumidor tiene
+  **solo dos líneas suprimidas**, las dos autorizadas por R9(f); ninguno de los
+  siete archivos prohibidos aparece en el diff y los sha256 del guard de #30 no
+  se recalcularon. Confirmó además R7(b) más allá del mock: `advanceWatermark()`
+  es un `UPDATE` sin guarda de monotonía, así que el watermark retrocede de
+  verdad en Postgres.
+  Nota menor: Codex editó `STATUS.md` (`e1ff5bc`), fuera de su alcance, aunque
+  sin reclamar `done` ni tocar el conteo que valida `init.sh`. Corregido en el
+  cierre.
 
 - **2026-08-15 (2)** — Ciclo SDD completo de `geofence-eval-full-batch` (#30),
   reparto Claude/Codex: `spec_author` escribió la spec (R1-R11, `19da1f9`) →

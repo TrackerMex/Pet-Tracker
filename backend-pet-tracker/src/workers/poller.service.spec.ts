@@ -3,6 +3,7 @@ import {
   SendMessageCommand,
   SQSClient,
 } from '@aws-sdk/client-sqs';
+import { Logger } from '@nestjs/common';
 import { QUEUE_POSITIONS_RAW } from '@/aws/constants';
 import type { WialonClient } from '@/integrations/wialon/wialon-client.interface';
 import { CLAIM_WATERMARK_LOOKBACK_MINUTES } from '@/modules/devices/application/use-cases/claim-device.use-case';
@@ -348,5 +349,123 @@ describe('R11: aislamiento — error por device no aborta el ciclo; LocalStack c
     expect(store.listActiveAssignments).toHaveBeenCalledTimes(2);
     releaseGetMessages([]);
     await thirdCycle;
+  });
+});
+
+describe('R6 (reject-future-positions #27): el watermark nunca avanza por delante de now', () => {
+  it('topa en now cuando el lote contiene una posicion futura', async () => {
+    const store = storeStub([assignment()]);
+    const service = makeService(
+      store,
+      wialonStub([
+        positionAt(NOW.getTime() - 30_000),
+        positionAt(NOW.getTime() + 86_400_000),
+      ]),
+      sqsStub().client,
+    );
+
+    await service.runOnce(NOW);
+
+    const advancedWatermark = (
+      store.advanceWatermark.mock.calls[0] as [string, Date]
+    )[1];
+    expect(advancedWatermark.getTime()).toBe(NOW.getTime());
+  });
+
+  it('con posiciones pasadas conserva el ultimo ts', async () => {
+    const lastTs = NOW.getTime() - 30_000;
+    const store = storeStub([assignment()]);
+    const service = makeService(
+      store,
+      wialonStub([positionAt(lastTs - 30_000), positionAt(lastTs)]),
+      sqsStub().client,
+    );
+
+    await service.runOnce(NOW);
+
+    expect(store.advanceWatermark).toHaveBeenCalledWith(
+      'device-1',
+      new Date(lastTs),
+    );
+  });
+});
+
+describe('R7 (reject-future-positions #27): un watermark envenenado en el futuro se recupera solo en el siguiente ciclo', () => {
+  const poisonedWatermark = new Date(NOW.getTime() + 86_400_000);
+  const recoveryFromTs =
+    NOW.getTime() - CLAIM_WATERMARK_LOOKBACK_MINUTES * 60_000;
+  let warnSpy: jest.SpyInstance;
+
+  beforeEach(() => {
+    warnSpy = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+  });
+
+  afterEach(() => {
+    warnSpy.mockRestore();
+  });
+
+  it('ignora el watermark futuro, usa el lookback y publica posiciones', async () => {
+    const wialon = wialonStub([positionAt(NOW.getTime() - 30_000)]);
+    const sqs = sqsStub();
+    const service = makeService(
+      storeStub([assignment({ ingestWatermark: poisonedWatermark })]),
+      wialon,
+      sqs.client,
+    );
+
+    await service.runOnce(NOW);
+
+    expect(wialon.getMessages).toHaveBeenCalledWith(
+      '900001',
+      recoveryFromTs,
+      NOW.getTime(),
+    );
+    expect(sqs.sentBodies()).toHaveLength(1);
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        scope: 'poller',
+        deviceId: 'device-1',
+        unitId: '900001',
+        ingestWatermark: poisonedWatermark.toISOString(),
+      }),
+    );
+  });
+
+  it('repara el watermark en disco con un valor no futuro', async () => {
+    const store = storeStub([
+      assignment({ ingestWatermark: poisonedWatermark }),
+    ]);
+    const service = makeService(
+      store,
+      wialonStub([positionAt(NOW.getTime() - 30_000)]),
+      sqsStub().client,
+    );
+
+    await service.runOnce(NOW);
+
+    const repairedWatermark = (
+      store.advanceWatermark.mock.calls[0] as [string, Date]
+    )[1];
+    expect(repairedWatermark.getTime()).toBeLessThanOrEqual(NOW.getTime());
+    expect(repairedWatermark.getTime()).toBeLessThan(
+      poisonedWatermark.getTime(),
+    );
+  });
+
+  it('sin posiciones conserva la fila pero vuelve a usar el lookback', async () => {
+    const store = storeStub([
+      assignment({ ingestWatermark: poisonedWatermark }),
+    ]);
+    const wialon = wialonStub([]);
+    const service = makeService(store, wialon, sqsStub().client);
+
+    await service.runOnce(NOW);
+
+    expect(store.advanceWatermark).not.toHaveBeenCalled();
+    expect(wialon.getMessages).toHaveBeenCalledWith(
+      '900001',
+      recoveryFromTs,
+      NOW.getTime(),
+    );
   });
 });

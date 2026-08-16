@@ -21,6 +21,7 @@ import {
   SQS_MAX_RECEIVE_COUNT,
   TABLE_POSITIONS,
 } from '@/aws/constants';
+import { FUTURE_TS_TOLERANCE_MS } from '@/pipeline/constants';
 import type { IngestionStore } from './ingestion-store';
 import { PositionsConsumerService } from './positions-consumer.service';
 
@@ -283,7 +284,7 @@ describe('R13: escritura DynamoDB — pk PET#<petId>, sk device_ts, atributos da
     const positions = Array.from({ length: 60 }, (_, i) => ({
       lat: 19.4326,
       lng: -99.1332,
-      ts: BASE_TS + i * 30_000,
+      ts: BASE_TS - (60 - 1 - i) * 30_000,
     }));
     const { service, documents } = makeHarness([
       [message('a', validBody({ positions }))],
@@ -683,7 +684,7 @@ describe('R5 (geofence-eval-full-batch #30): un solo Entry position.updated por 
     return Array.from({ length: 100 }, (_, index) => ({
       lat: 19.4326 + index * 0.00001,
       lng: -99.1332,
-      ts: BASE_TS + index * 30_000,
+      ts: BASE_TS - (100 - 1 - index) * 30_000,
     }));
   }
 
@@ -926,5 +927,94 @@ describe('R15: asignacion liberada — escribe el historico en DynamoDB pero no 
 
     // El mensaje se proceso completo: se borra (no es un fallo).
     expect(sqs.deleted).toEqual(['rh-a']);
+  });
+});
+
+describe('R4 (reject-future-positions #27): el consumidor pasa now a normalize() y no persiste la posición futura', () => {
+  it('persiste, cachea y emite solo la posicion dentro del margen', async () => {
+    const { service, store, documents, events } = makeHarness([
+      [
+        message(
+          'future-position',
+          validBody({
+            positions: [
+              { lat: 19.4326, lng: -99.1332, ts: BASE_TS },
+              {
+                lat: 19.4327,
+                lng: -99.1331,
+                ts: NOW.getTime() + FUTURE_TS_TOLERANCE_MS + 60_000,
+              },
+            ],
+          }),
+        ),
+      ],
+      [],
+    ]);
+
+    await service.drainOnce(NOW);
+
+    expect(writtenItems(documents)).toHaveLength(1);
+    expect(store.updatePetLastPosition).toHaveBeenCalledWith(
+      'pet-1',
+      expect.objectContaining({ ts: BASE_TS }),
+      new Date(BASE_TS),
+    );
+    const [positionUpdated] = emittedEvents(events).filter(
+      ({ DetailType }) => DetailType === DETAIL_TYPE_POSITION_UPDATED,
+    );
+    expect(positionUpdated.detail.positions).toHaveLength(1);
+  });
+});
+
+describe('R5 (reject-future-positions #27): los descartes se loguean agrupados por razón', () => {
+  let warnSpy: jest.SpyInstance;
+
+  beforeEach(() => {
+    warnSpy = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+  });
+
+  afterEach(() => {
+    warnSpy.mockRestore();
+  });
+
+  it('emite un warn agrupado y borra el mensaje procesado', async () => {
+    const { service, sqs } = makeHarness([
+      [
+        message(
+          'discarded',
+          validBody({
+            positions: [
+              { lat: 19.4326, lng: -99.1332, ts: BASE_TS },
+              {
+                lat: 19.4327,
+                lng: -99.1331,
+                ts: NOW.getTime() + FUTURE_TS_TOLERANCE_MS + 1,
+              },
+              { lat: 19.4328, lng: -99.133, ts: BASE_TS },
+            ],
+          }),
+        ),
+      ],
+      [],
+    ]);
+
+    await service.drainOnce(NOW);
+
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    expect(warnSpy).toHaveBeenCalledWith({
+      scope: 'consumer',
+      deviceId: 'device-1',
+      petId: 'pet-1',
+      discarded: { future_ts: 1, duplicate_ts: 1 },
+    });
+    expect(sqs.deleted).toEqual(['rh-discarded']);
+  });
+
+  it('no emite warn cuando no hay descartes', async () => {
+    const { service } = makeHarness([[message('clean', validBody())], []]);
+
+    await service.drainOnce(NOW);
+
+    expect(warnSpy).not.toHaveBeenCalled();
   });
 });

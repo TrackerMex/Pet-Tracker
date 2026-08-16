@@ -71,9 +71,10 @@ insertado en el índice 10).
 
 ## Pipeline puro y umbrales
 
-`normalize(raw)` (`src/pipeline/validate-positions.ts`, sin I/O): descarta
-lat/lng fuera de rango o `(0,0)`, sin `ts` y duplicados exactos por
-`device_ts` (queda la primera); ordena ascendente; marca flags sin descartar.
+`normalize(raw, nowMs?)` (`src/pipeline/validate-positions.ts`, sin I/O):
+descarta lat/lng fuera de rango o `(0,0)`, sin `ts`, `future_ts` posterior al
+margen de tolerancia y duplicados exactos por `device_ts` (queda la primera);
+ordena ascendente; marca flags sin descartar.
 
 Umbrales (fuente: `src/pipeline/constants.ts` — los importan #10/#11/#12):
 
@@ -81,6 +82,7 @@ Umbrales (fuente: `src/pipeline/constants.ts` — los importan #10/#11/#12):
 |---|---|
 | `SUSPECT_JUMP_SPEED_KMH` (60) | velocidad implícita > umbral ⇒ flag `suspect_jump` |
 | `LOW_ACCURACY_MAX_ACCURACY_M` (100) / `LOW_ACCURACY_MIN_SATS` (4) | precisión pobre ⇒ flag `low_accuracy` |
+| `FUTURE_TS_TOLERANCE_MS` (5 min) | desfase máximo aceptado entre collar y servidor; por encima ⇒ descarte `future_ts` (#27 R1/R2) |
 | `BATTERY_LOW_THRESHOLD_PCT` (20) | cruce descendente ⇒ evento `battery.low` |
 | `TRIP_MOVING_SPEED_KMH` (1.8) | `speedKmh` por encima ⇒ punto en movimiento (#10 R2) |
 | `TRIP_MOVING_IMPLIED_MPS` (0.5) | velocidad implícita alternativa de movimiento; no se evalúa en puntos `suspect_jump` (sería circular) |
