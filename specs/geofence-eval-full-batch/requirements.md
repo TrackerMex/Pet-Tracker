@@ -1,6 +1,6 @@
 ---
 feature: "geofence-eval-full-batch"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec]
 ---
 
@@ -318,4 +318,4 @@ notificaciones. Por eso R1 va **primero** y no en otra feature.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [X] Aprobado por humano (fecha: 26-08-15) ← gate obligatorio antes de implementar

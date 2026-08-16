@@ -1,6 +1,6 @@
 ---
 feature: "geofence-eval-full-batch"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec]
 ---
 

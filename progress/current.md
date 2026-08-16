@@ -9,14 +9,27 @@
 
 - **Inicio**: 2026-08-15, 20:21
 - **Branch**: `feature/30-geofence-eval-full-batch`
-- **Estado**: `spec_ready` (spec escrita) — **PARADO en el gate humano**
+- **Estado**: `in_progress` — handoff entregado, **Codex CLI implementando**
 
 ### Plan
 
 1. ~~`spec_author` escribe `specs/geofence-eval-full-batch/{requirements,design,tasks,traceability}.md`~~ — hecho, 11 R-ids (R1..R11)
-2. **PARADA AQUÍ** — gate humano: marcar la casilla en `requirements.md:321`
-3. Handoff a Codex CLI (commits test-primero, rojo→verde por R-id)
+2. ~~Gate humano: casilla marcada en `requirements.md:321` (2026-08-15), frontmatter de los 4 archivos a `status: approved`~~
+3. **AQUÍ** — Codex CLI implementa en `feature/30-geofence-eval-full-batch`,
+   commits test-primero (rojo → verde por R-id), reporta en
+   `progress/impl_geofence-eval-full-batch.md`
 4. `reviewer` cuando el humano confirme que Codex terminó
+
+### Qué implementa Codex
+
+Bloques A → B → C → D de `tasks.md`. R1 primero (prerrequisito duro:
+`evaluate()` filtra `suspect_jump`), R2 re-congela los sha256 del guard,
+R3-R5 el productor emite `detail.version: 2` con `positions[]`, R6 el schema
+acepta v1 y v2, R7-R11 el consumidor itera el lote encadenando estado en
+memoria con una sola escritura por geocerca.
+
+**Un solo escritor**: mientras Codex trabaja, yo solo toco `docs/`, `specs/`,
+`progress/` y `feature_list.json` — nunca `backend-pet-tracker/`.
 
 ### Problema
 
