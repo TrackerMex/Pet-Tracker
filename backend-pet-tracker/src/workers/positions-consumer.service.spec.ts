@@ -942,8 +942,7 @@ describe('R4 (reject-future-positions #27): el consumidor pasa now a normalize()
               {
                 lat: 19.4327,
                 lng: -99.1331,
-                ts:
-                  NOW.getTime() + FUTURE_TS_TOLERANCE_MS + 60_000,
+                ts: NOW.getTime() + FUTURE_TS_TOLERANCE_MS + 60_000,
               },
             ],
           }),

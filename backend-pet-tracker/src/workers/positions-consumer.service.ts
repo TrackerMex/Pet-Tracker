@@ -176,7 +176,7 @@ export class PositionsConsumerService {
     parsed: PositionsMessage,
     now: Date,
   ): Promise<void> {
-    const { accepted } = normalize(parsed.positions);
+    const { accepted } = normalize(parsed.positions, now.getTime());
 
     // El historico se escribe siempre (R13) — incluso si la asignacion ya
     // fue liberada (R15): el dato es del periodo de asignacion.
