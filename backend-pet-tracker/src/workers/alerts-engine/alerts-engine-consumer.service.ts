@@ -246,6 +246,7 @@ export class AlertsEngineConsumerService {
           : Date.parse(geofence.state.updatedAt);
 
       let state = geofence.state;
+      let pendingStateWrite = false;
       for (const position of positions) {
         if (
           previousUpdatedAtMs !== null &&
@@ -274,11 +275,17 @@ export class AlertsEngineConsumerService {
 
         if (result.event === 'exit') {
           await this.handleExit(detail, geofence, state, position);
+          pendingStateWrite = false;
         } else if (result.event === 'enter') {
           await this.handleEnter(detail, geofence, state, position);
+          pendingStateWrite = false;
         } else {
-          await this.store.updateGeofenceState(geofence.id, state);
+          pendingStateWrite = true;
         }
+      }
+
+      if (pendingStateWrite) {
+        await this.store.updateGeofenceState(geofence.id, state);
       }
     }
   }
