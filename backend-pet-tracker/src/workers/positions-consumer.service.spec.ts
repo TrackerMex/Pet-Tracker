@@ -622,6 +622,32 @@ describe('R3 (geofence-eval-full-batch #30): el detail v2 lleva el lote completo
       },
     ]);
   });
+
+  it('R4 (geofence-eval-full-batch #30): position sigue siendo la última de positions[]', async () => {
+    const { service, events } = makeHarness([
+      [
+        message(
+          'latest-position',
+          validBody({
+            positions: [
+              { lat: 19.4327, lng: -99.1331, ts: BASE_TS + 30_000 },
+              { lat: 19.4326, lng: -99.1332, ts: BASE_TS },
+            ],
+          }),
+        ),
+      ],
+      [],
+    ]);
+
+    await service.drainOnce(NOW);
+
+    const [event] = emittedEvents(events).filter(
+      ({ DetailType }) => DetailType === DETAIL_TYPE_POSITION_UPDATED,
+    );
+    expect(event.detail.position).toEqual(
+      (event.detail.positions as unknown[]).at(-1),
+    );
+  });
 });
 
 describe('R17: battery.low solo en cruce descendente del umbral 20 (flanco vs devices.battery_pct previo)', () => {
