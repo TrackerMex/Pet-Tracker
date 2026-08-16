@@ -18,7 +18,7 @@ tags: [harness, spec]
 | R8 | `env-drift.test.mjs::R8 (init-env-drift-warning #23): el aviso no aborta` | rojo: `e5ec8ba test(init-env-drift-warning): require non-blocking warning (R8)`; verde: `4f738d5 feat(init-env-drift-warning): warn about env key drift (R7,R8,R9)` |
 | R9 | `env-drift.test.mjs::R9 (init-env-drift-warning #23): sin deriva la seccion 2 no cambia` | rojo: `ee356a2 test(init-env-drift-warning): require unchanged quiet section (R9)`; verde: `4f738d5 feat(init-env-drift-warning): warn about env key drift (R7,R8,R9)`; manual: ver `progress/impl_init-env-drift-warning.md` §R9(b) |
 | R10 | `env-drift.test.mjs::R10 (init-env-drift-warning #23): init.config.sh mantiene REQUIRED_ENV_VARS y ejecuta la suite` | rojo: `4235ed7 test(init-env-drift-warning): require suite integration (R10)`; verde: `cdd1343 feat(init-env-drift-warning): run drift suite from init (R10)` |
-| R11 | pendiente | pendiente |
+| R11 | `env-drift.test.mjs::R11 (init-env-drift-warning #23): documentacion y cero variables nuevas` | rojo: `45087f1 test(init-env-drift-warning): require verification docs (R11)`; verde: este commit — `docs(init-env-drift-warning): document manual verification (R11)` |
 | R12 | sin test automatizado — ver §Verificación manual | pendiente |
 
 Todos los tests viven en `env-drift.test.mjs` (raíz del repo), suite de

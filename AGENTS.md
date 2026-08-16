@@ -47,6 +47,7 @@ duplica.
 | `CHECKPOINTS.md` | Criterios objetivos de "estado final correcto" (C1..C6) | Para auto-evaluarte |
 | `.claude/agents/` | Definiciones de subagentes (leader, spec_author, explorer, implementer, reviewer) | Si orquestas trabajo |
 | `.claude/skills/` | Skills reutilizables, un nivel plano (`<track>-<nombre>/SKILL.md`) — ver `.claude/skills/README.md` | Antes de repetir una tarea ya resuelta en otro proyecto |
+| `env-drift.mjs` | Diff de claves entre `.env` y `.env.example` que usa `init.sh` §2 (#23) | Si `init.sh` avisa de claves faltantes |
 | `init.config.sh` | Comandos de build/test/lint específicos de este proyecto | Antes de correr `init.sh` por primera vez |
 | `docker-compose.yml` | Infra local: Postgres + LocalStack (`docker compose up -d`) | Antes de trabajar features con persistencia o AWS |
 | `.github/workflows/ci.yml` | CI: ejecuta `init.sh` en cada PR y push a main | Si CI falla en un PR |
