@@ -9,15 +9,32 @@
 
 - **Inicio**: 2026-08-16
 - **Branch**: `feature/23-init-env-drift-warning`
-- **Estado de entrada**: `pending` (sin spec) → fase de spec
+- **Estado**: `in_progress` (spec aprobada por humano el 2026-08-16)
 - **Rol**: leader (coordina; no implementa)
+- **Implementador**: Codex CLI en terminal aparte
 
 ### Plan de la sesión
 
 1. `./init.sh` verde — hecho (ver Incidencias)
-2. `spec_author` escribe `specs/init-env-drift-warning/` → **PARADA** en el
-   gate humano (`AGENTS.md` §3)
-3. Tras aprobación: handoff a Codex CLI, luego `reviewer`
+2. `spec_author` escribe `specs/init-env-drift-warning/` — hecho, 12 R-ids
+3. Gate humano — **aprobado** (casilla marcada, frontmatter sincronizado a
+   `approved` en los cuatro archivos de la spec)
+4. Handoff a Codex CLI entregado — **en espera de que termine**
+5. Tras confirmación del humano: leer `progress/impl_init-env-drift-warning.md`
+   y lanzar `reviewer`
+
+### Qué implementa Codex
+
+`env-drift.mjs` en la raíz (tres funciones puras: `parseEnvKeys`, `missingKeys`,
+`formatDriftLines`) más su suite `env-drift.test.mjs` con `node --test`, y el
+bloque que lo invoca en la §2 de `init.sh`. El diff es unidireccional
+`.env.example` → `.env`, destaca los gates `*_ENABLED` en lista aparte, nunca
+escribe en disco y nunca aborta. `backend-pet-tracker/` e `infra/` NO se tocan.
+
+### Un solo escritor
+
+Mientras Codex trabaja, el leader no toca el working tree salvo `docs/`,
+`specs/`, `progress/` y `feature_list.json`.
 
 ### Incidencias de arranque
 

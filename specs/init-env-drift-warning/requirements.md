@@ -1,6 +1,6 @@
 ---
 feature: "init-env-drift-warning"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec]
 ---
 
@@ -408,4 +408,4 @@ Dos trampas de entorno que la implementación tiene que sortear:
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [X] Aprobado por humano (fecha: 26-08-16) ← gate obligatorio antes de implementar
