@@ -181,3 +181,20 @@ describe('R6 (init-env-drift-warning #23): el script nunca escribe en disco', ()
     assert.doesNotMatch(source, /write|append|copyFile|rmSync|unlink|mkdir/);
   });
 });
+
+describe('R7 (init-env-drift-warning #23): init.sh invoca el chequeo con warn()', () => {
+  it('ubica el bloque portable en la seccion 2', () => {
+    const source = readFileSync(new URL('./init.sh', import.meta.url), 'utf8');
+    const requiredLoopIndex = source.indexOf('for var in "${REQUIRED_ENV_VARS[@]}"');
+    const driftBlockIndex = source.indexOf('# Deriva de claves entre .env y .env.example (#23)');
+    const dependenciesIndex = source.indexOf('# ── 3. DEPENDENCIAS');
+
+    assert.match(source, /node env-drift\.mjs \|\| true/);
+    assert.match(source, /warn "\$drift_line"/);
+    assert.ok(driftBlockIndex > requiredLoopIndex);
+    assert.ok(driftBlockIndex < dependenciesIndex);
+
+    const fragment = source.slice(driftBlockIndex, dependenciesIndex);
+    assert.doesNotMatch(fragment, /\b(?:comm|sort|awk|sed|jq)\s/);
+  });
+});

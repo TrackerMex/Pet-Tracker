@@ -17,3 +17,9 @@ Contenido capturado:
 
 → Instalando dependencias...
 ```
+
+## Decisiones de implementación
+
+- R7, R8 y R9 dependen del mismo bloque literal de `init.sh`. Para conservar
+  un rojo propio por requisito antes de esa implementación compartida, sus
+  tests se commitean por separado y el bloque se inserta después de los tres.
