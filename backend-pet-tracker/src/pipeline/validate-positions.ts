@@ -26,10 +26,7 @@ export interface NormalizeResult {
  * suspect_jump (velocidad implicita > umbral, NO se descarta) y low_accuracy
  * (accuracy o sats fuera de umbral, tampoco se descarta).
  */
-export function normalize(
-  raw: RawPosition[],
-  nowMs?: number,
-): NormalizeResult {
+export function normalize(raw: RawPosition[], nowMs?: number): NormalizeResult {
   const accepted: ProcessedPosition[] = [];
   const discarded: DiscardedStat[] = [];
   const seenTs = new Set<number>();
@@ -43,10 +40,7 @@ export function normalize(
       discarded.push({ reason: 'missing_ts', position });
       continue;
     }
-    if (
-      nowMs !== undefined &&
-      position.ts > nowMs + FUTURE_TS_TOLERANCE_MS
-    ) {
+    if (nowMs !== undefined && position.ts > nowMs + FUTURE_TS_TOLERANCE_MS) {
       discarded.push({ reason: 'future_ts', position });
       continue;
     }

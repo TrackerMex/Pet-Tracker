@@ -86,11 +86,9 @@ export class PollerService {
     // Watermark NULL o futuro: no es utilizable, asi que se recupera con el
     // mismo lookback que inicializa el claim de #7. Uno pasado se conserva.
     const nowMs = now.getTime();
-    const lookbackTs =
-      nowMs - CLAIM_WATERMARK_LOOKBACK_MINUTES * 60_000;
+    const lookbackTs = nowMs - CLAIM_WATERMARK_LOOKBACK_MINUTES * 60_000;
     const watermarkTs = assignment.ingestWatermark?.getTime();
-    const hasFutureWatermark =
-      watermarkTs !== undefined && watermarkTs > nowMs;
+    const hasFutureWatermark = watermarkTs !== undefined && watermarkTs > nowMs;
 
     if (hasFutureWatermark) {
       this.logger.warn({

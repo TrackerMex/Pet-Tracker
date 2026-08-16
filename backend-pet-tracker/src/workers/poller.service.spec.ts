@@ -366,9 +366,10 @@ describe('R6 (reject-future-positions #27): el watermark nunca avanza por delant
 
     await service.runOnce(NOW);
 
-    expect(store.advanceWatermark.mock.calls[0][1].getTime()).toBe(
-      NOW.getTime(),
-    );
+    const advancedWatermark = (
+      store.advanceWatermark.mock.calls[0] as [string, Date]
+    )[1];
+    expect(advancedWatermark.getTime()).toBe(NOW.getTime());
   });
 
   it('con posiciones pasadas conserva el ultimo ts', async () => {
@@ -442,7 +443,9 @@ describe('R7 (reject-future-positions #27): un watermark envenenado en el futuro
 
     await service.runOnce(NOW);
 
-    const repairedWatermark = store.advanceWatermark.mock.calls[0][1] as Date;
+    const repairedWatermark = (
+      store.advanceWatermark.mock.calls[0] as [string, Date]
+    )[1];
     expect(repairedWatermark.getTime()).toBeLessThanOrEqual(NOW.getTime());
     expect(repairedWatermark.getTime()).toBeLessThan(
       poisonedWatermark.getTime(),
