@@ -1360,3 +1360,64 @@ Deuda detectada (fuera de alcance, candidata a limpieza propia):
 - **Commits:** spec `243c639`, aprobación `ae0dfc2`, enmienda `479ee7d`,
   implementación `e83b891..95f9bba` (29 commits).
 - **Estado final:** done
+
+---
+
+## 2026-08-16 — init-env-drift-warning (#23)
+
+- **Rol:** leader (Claude Code). Spec: `spec_author`. Implementación: Codex CLI.
+  Revisión: `reviewer`. Branch `feature/23-init-env-drift-warning`.
+- **Qué queda cerrado:** el tercer modo de fallo silencioso del entorno local.
+  `init.sh` copiaba `.env.example` a `.env` solo si faltaba, así que un `.env`
+  viejo se quedaba sin las claves que introducían las features nuevas. Con
+  `REMINDERS_ENABLED` ausente el scheduler de #16 quedó apagado sin error
+  visible; en el smoke de #24 con hardware real faltaban nueve claves, cuatro de
+  ellas gates, y `POLLER_ENABLED` ausente tenía la ingesta GPS entera parada
+  mientras el collar transmitía. Ahora `init.sh` imprime el diff de **claves**
+  (nunca de valores) entre `.env.example` y `.env`, con los `*_ENABLED` en lista
+  aparte por ser los que apagan features enteras.
+- **Forma de la solución:** `env-drift.mjs` en la raíz con tres funciones puras
+  (`parseEnvKeys`, `missingKeys`, `formatDriftLines`), solo `node:fs`, cero
+  dependencias; suite `env-drift.test.mjs` con `node --test` de la stdlib,
+  enganchada a `TEST_CMD`. El bloque de `init.sh` es aditivo: 13 líneas
+  insertadas, cero suprimidas, `check_env()` y `REQUIRED_ENV_VARS` intactos y
+  conviviendo con el chequeo nuevo. Prohibidas `comm/sort/awk/sed/grep -f/jq`
+  por portabilidad Git Bash + CI, igual que el precedente de `port_open` con
+  `nc`/`lsof`.
+- **Decisiones de spec que cerraron ambigüedad antes del handoff:** diff
+  unidireccional example→env (la deriva inversa no se reporta: los extras
+  locales son legítimos); clave comentada en `.env` cuenta como ausente, porque
+  comentada apaga igual; CRLF y BOM se eliminan antes de comparar; sin
+  `.env.example` el bloque calla, que el caso "faltan los dos" ya lo cubre el
+  `fail` existente.
+- **Hallazgo de la primera corrida real:** el `.env` de la máquina arrastraba
+  **8 claves faltantes, 4 de ellas gates** (`ACTIVITY_AGGREGATOR_ENABLED`,
+  `ALERTS_ENGINE_ENABLED`, `EMAIL_ENABLED`, `PUSH_ENABLED`). La feature destapó
+  su propio caso de uso en el momento de nacer.
+- **Verificación independiente del reviewer** (no se fió del reporte de Codex):
+  auditó C4 commit a commit en un worktree desechable y confirmó que los 11
+  commits `test(...)` fallan de verdad en su propio commit — ninguno era un rojo
+  que ya pasaba en verde, que es lo que falló en #19 y el motivo de separar
+  implementador de revisor. Rehízo el diff de R9 desde cero con dos árboles
+  (`init.sh` de `main` vs de HEAD, ambos con `.env` completo): §2 byte a byte
+  idéntica. CRLF/BOM comprobado funcionalmente, no leyendo el regex: reportar 8
+  y no 21 claves es la prueba de que el `\r` no tropieza.
+- **El `.env` real nunca se tocó:** mismo mtime y tamaño (`1786743239 895`)
+  antes y después, fuera del diff y sin trackear. R9(4) se resolvió con copia
+  temporal en `mktemp -d`, no editando el archivo con las credenciales de
+  Wialon.
+- **Incidencia de arranque (no regresión):** primera corrida de `init.sh` roja
+  con 107 e2e fallando por `NoSuchBucket`. LocalStack había reiniciado y perdido
+  sus recursos; `pnpm run provision:local` y verde. Ya está en memoria, vuelve a
+  pasar cada vez que el contenedor reinicia.
+- **Nit conocido, no corregido a propósito:** el comentario de `init.sh:78` cita
+  "la linea 115" cuando el `node -e` quedó en la 128 tras la inserción. El texto
+  lo dictó la spec verbatim y el test de R7 asevera ese literal; corregirlo
+  exigiría enmendar una spec aprobada por un comentario que no afecta al
+  comportamiento.
+- **Sin migraciones, sin variables de entorno nuevas, sin dependencias y sin
+  nada que desplegar.** `docs/conventions.md` no gana filas: confirmado contra
+  las 21 claves de `.env.example`.
+- **Commits:** spec `b843d5a`, aprobación `f24e1c6`, handoff `7de0445`,
+  implementación `7b1b16b..6b256d9` (21 commits, rojo→verde separado por R-id).
+- **Estado final:** done

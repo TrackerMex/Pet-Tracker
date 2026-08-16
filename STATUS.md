@@ -1,10 +1,9 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-08-16
-**Features completadas**: 24/30 (`feature_list.json`)
+**Features completadas**: 25/30 (`feature_list.json`)
 **En progreso**: ninguna.
-**Pendientes**: 6, por prioridad — **P2**: #23 `init-env-drift-warning`, #25
-`device-subscriptions`, #28
+**Pendientes**: 5, por prioridad — **P2**: #25 `device-subscriptions`, #28
 `test-dev-resource-isolation`, #29 `wialon-session-reuse`. **P3**: #17
 `nutrition-profile-engine`, #18 `nutrition-ai-explainer`.
 **En producción**: no
@@ -34,6 +33,13 @@ docker compose up -d   # Postgres + LocalStack (solo si la sesión toca DB/AWS)
 
 `init.sh` copia `.env.example` → `.env` si falta. Docker no arranca solo:
 levántalo manualmente cuando la feature lo necesite.
+
+Desde `init-env-drift-warning` (#23), `init.sh` compara además las **claves**
+de `.env` contra las de `.env.example` y avisa de las que faltan, destacando
+aparte los gates `*_ENABLED` porque son los que apagan features enteras en
+silencio. Solo avisa: nunca modifica `.env` ni aborta. Si ves ese warning,
+copia a mano las claves que necesites — es la deriva que costó las sesiones de
+#16 y #24.
 
 ### Aprovisionar los recursos de LocalStack (`localstack-provisioning`, #2)
 
@@ -712,6 +718,35 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-08-16** — Ciclo SDD completo de `init-env-drift-warning` (#23),
+  reparto Claude/Codex, sin ninguna parada: `spec_author` escribió la spec
+  (R1-R12, `b843d5a`) → gate humano (`f24e1c6`) → handoff (`7de0445`) → Codex
+  implementó los 12 requisitos en 21 commits con historial rojo→verde
+  separado por R-id → `reviewer` **aprobado sin bloqueantes**.
+  Queda cerrado el tercer modo de fallo silencioso del entorno local: un `.env`
+  viejo al que le faltan claves de `.env.example` ahora se ve. `init.sh` imprime
+  el diff de claves con los gates `*_ENABLED` en lista aparte, y en la primera
+  corrida real destapó **8 claves faltantes en el `.env` de la máquina, 4 de
+  ellas gates** (`ACTIVITY_AGGREGATOR_ENABLED`, `ALERTS_ENGINE_ENABLED`,
+  `EMAIL_ENABLED`, `PUSH_ENABLED`) — exactamente el defecto que costó los smokes
+  de #16 y #24. El diff de `init.sh` es puramente aditivo: 13 líneas insertadas,
+  cero suprimidas; `check_env()` y `REQUIRED_ENV_VARS` intactos.
+  **Verificación independiente**: el reviewer no se fió del reporte de Codex.
+  Auditó C4 commit a commit en un worktree desechable y confirmó que **los 11
+  commits `test(...)` fallan de verdad en su propio commit** — ninguno era un
+  rojo que ya pasaba en verde, que es justo lo que falló en #19. Rehízo desde
+  cero el diff de R9 montando dos árboles (uno con el `init.sh` de `main`, otro
+  con el de HEAD), los dos con `.env` completo: la §2 queda byte a byte
+  idéntica. Verificó CRLF/BOM de forma funcional y no solo leyendo el regex
+  (`.env.example` es CRLF, `.env` es LF: si el parser tropezara con el `\r`
+  reportaría las 21 claves en vez de 8). El `.env` real no se tocó — mismo
+  mtime y tamaño (`1786743239 895`) antes y después, y nunca entró en el diff:
+  R9(4) se resolvió con una copia temporal.
+  Nit conocido no corregido a propósito: el comentario de `init.sh:78` cita "la
+  linea 115" y el `node -e` quedó en la 128 tras insertar el bloque. El texto lo
+  dictó la spec verbatim y el test de R7 asevera ese literal, así que tocarlo
+  exigiría enmendar una spec ya aprobada por un comentario. No compensa.
 
 - **2026-08-16** — Ciclo SDD completo de `reject-future-positions` (#27),
   reparto Claude/Codex, con **una parada a mitad que salió bien**:
