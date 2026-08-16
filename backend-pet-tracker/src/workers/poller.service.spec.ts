@@ -350,3 +350,40 @@ describe('R11: aislamiento — error por device no aborta el ciclo; LocalStack c
     await thirdCycle;
   });
 });
+
+describe('R6 (reject-future-positions #27): el watermark nunca avanza por delante de now', () => {
+  it('topa en now cuando el lote contiene una posicion futura', async () => {
+    const store = storeStub([assignment()]);
+    const service = makeService(
+      store,
+      wialonStub([
+        positionAt(NOW.getTime() - 30_000),
+        positionAt(NOW.getTime() + 86_400_000),
+      ]),
+      sqsStub().client,
+    );
+
+    await service.runOnce(NOW);
+
+    expect(store.advanceWatermark.mock.calls[0][1].getTime()).toBe(
+      NOW.getTime(),
+    );
+  });
+
+  it('con posiciones pasadas conserva el ultimo ts', async () => {
+    const lastTs = NOW.getTime() - 30_000;
+    const store = storeStub([assignment()]);
+    const service = makeService(
+      store,
+      wialonStub([positionAt(lastTs - 30_000), positionAt(lastTs)]),
+      sqsStub().client,
+    );
+
+    await service.runOnce(NOW);
+
+    expect(store.advanceWatermark).toHaveBeenCalledWith(
+      'device-1',
+      new Date(lastTs),
+    );
+  });
+});
