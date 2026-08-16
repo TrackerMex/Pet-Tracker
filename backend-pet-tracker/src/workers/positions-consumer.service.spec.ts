@@ -650,6 +650,70 @@ describe('R3 (geofence-eval-full-batch #30): el detail v2 lleva el lote completo
   });
 });
 
+describe('R5 (geofence-eval-full-batch #30): un solo Entry position.updated por mensaje SQS aunque el lote traiga 100 posiciones', () => {
+  function oneHundredPositions(): Array<{
+    lat: number;
+    lng: number;
+    ts: number;
+  }> {
+    return Array.from({ length: 100 }, (_, index) => ({
+      lat: 19.4326 + index * 0.00001,
+      lng: -99.1332,
+      ts: BASE_TS + index * 30_000,
+    }));
+  }
+
+  it('emite exactamente un Entry position.updated', async () => {
+    const { service, events } = makeHarness([
+      [
+        message(
+          'batch-100-count',
+          validBody({ positions: oneHundredPositions() }),
+        ),
+      ],
+      [],
+    ]);
+
+    await service.drainOnce(NOW);
+
+    expect(
+      emittedEvents(events).filter(
+        ({ DetailType }) => DetailType === DETAIL_TYPE_POSITION_UPDATED,
+      ),
+    ).toHaveLength(1);
+  });
+
+  it('serializa las 100 posiciones en menos de 256 KB', async () => {
+    const { service, events } = makeHarness([
+      [
+        message(
+          'batch-100-size',
+          validBody({ positions: oneHundredPositions() }),
+        ),
+      ],
+      [],
+    ]);
+
+    await service.drainOnce(NOW);
+
+    const [entry] = events.send.mock.calls
+      .filter(([command]) => command instanceof PutEventsCommand)
+      .flatMap(
+        ([command]) => (command as PutEventsCommand).input.Entries ?? [],
+      )
+      .filter(
+        ({ DetailType }) => DetailType === DETAIL_TYPE_POSITION_UPDATED,
+      );
+    const detail = JSON.parse(entry.Detail ?? 'null') as {
+      positions?: unknown[];
+    };
+    expect(detail.positions).toHaveLength(100);
+    expect(Buffer.byteLength(entry.Detail ?? '', 'utf8')).toBeLessThan(
+      256 * 1024,
+    );
+  });
+});
+
 describe('R17: battery.low solo en cruce descendente del umbral 20 (flanco vs devices.battery_pct previo)', () => {
   function harnessWithBattery(
     previousBattery: number | null,
