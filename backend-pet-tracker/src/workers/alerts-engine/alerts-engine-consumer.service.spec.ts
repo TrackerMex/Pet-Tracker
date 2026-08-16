@@ -1098,7 +1098,10 @@ describe('R7 (geofence-eval-full-batch #30): eval√∫a el lote entero en orden asc
       expect.objectContaining({ type: 'geofence_exit' }),
     );
     expect(store.closeOpenAlert).not.toHaveBeenCalled();
-    expect(store.updateGeofenceState.mock.calls.at(-1)?.[1]).toEqual({
+    const finalUpdate = (
+      store.updateGeofenceState.mock.calls as Array<[string, unknown]>
+    ).at(-1);
+    expect(finalUpdate?.[1]).toEqual({
       state: 'outside',
       updatedAt: new Date(ts3).toISOString(),
     });
@@ -1119,7 +1122,10 @@ describe('R7 (geofence-eval-full-batch #30): eval√∫a el lote entero en orden asc
       'alert',
       'alert_resolved',
     ]);
-    expect(store.updateGeofenceState.mock.calls.at(-1)?.[1]).toEqual({
+    const finalUpdate = (
+      store.updateGeofenceState.mock.calls as Array<[string, unknown]>
+    ).at(-1);
+    expect(finalUpdate?.[1]).toEqual({
       state: 'inside',
       updatedAt: new Date(ts3).toISOString(),
     });
@@ -1135,7 +1141,10 @@ describe('R7 (geofence-eval-full-batch #30): eval√∫a el lote entero en orden asc
     await service.drainOnce(NOW);
 
     expect(store.openAlert).not.toHaveBeenCalled();
-    expect(store.updateGeofenceState.mock.calls.at(-1)?.[1]).toEqual({
+    const finalUpdate = (
+      store.updateGeofenceState.mock.calls as Array<[string, unknown]>
+    ).at(-1);
+    expect(finalUpdate?.[1]).toEqual({
       state: 'inside',
       updatedAt: new Date(ts3).toISOString(),
     });
@@ -1207,10 +1216,16 @@ describe('R8 (geofence-eval-full-batch #30): la alerta lleva el ts de la posici√
 
     await service.drainOnce(NOW);
 
-    const openInput = store.openAlert.mock.calls[0][0] as {
-      openedAt: Date;
-      payload: { position: PositionDetail };
-    };
+    const [openInput] = (
+      store.openAlert.mock.calls as Array<
+        [
+          {
+            openedAt: Date;
+            payload: { position: PositionDetail };
+          },
+        ]
+      >
+    )[0];
     expect(openInput.openedAt.getTime()).toBe(ts2);
     expect(openInput.payload.position.ts).toBe(ts2);
     expect(ts2).not.toBe(ts3);
@@ -1244,9 +1259,9 @@ describe('R8 (geofence-eval-full-batch #30): la alerta lleva el ts de la posici√
 
     await service.drainOnce(NOW);
 
-    const closeInput = store.closeOpenAlert.mock.calls[0][0] as {
-      closedAt: Date;
-    };
+    const [closeInput] = (
+      store.closeOpenAlert.mock.calls as Array<[{ closedAt: Date }]>
+    )[0];
     expect(closeInput.closedAt.getTime()).toBe(ts2);
   });
 });

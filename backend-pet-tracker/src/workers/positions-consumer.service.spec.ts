@@ -722,12 +722,8 @@ describe('R5 (geofence-eval-full-batch #30): un solo Entry position.updated por 
 
     const [entry] = events.send.mock.calls
       .filter(([command]) => command instanceof PutEventsCommand)
-      .flatMap(
-        ([command]) => (command as PutEventsCommand).input.Entries ?? [],
-      )
-      .filter(
-        ({ DetailType }) => DetailType === DETAIL_TYPE_POSITION_UPDATED,
-      );
+      .flatMap(([command]) => (command as PutEventsCommand).input.Entries ?? [])
+      .filter(({ DetailType }) => DetailType === DETAIL_TYPE_POSITION_UPDATED);
     const detail = JSON.parse(entry.Detail ?? 'null') as {
       positions?: unknown[];
     };

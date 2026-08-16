@@ -235,9 +235,9 @@ export class AlertsEngineConsumerService {
     const activeGeofences = await this.store.listActiveGeofencesForPet(
       detail.petId,
     );
-    const positions = [
-      ...(detail.positions ?? [detail.position]),
-    ].sort((a, b) => a.ts - b.ts);
+    const positions = [...(detail.positions ?? [detail.position])].sort(
+      (a, b) => a.ts - b.ts,
+    );
 
     for (const geofence of activeGeofences) {
       const previousUpdatedAtMs =

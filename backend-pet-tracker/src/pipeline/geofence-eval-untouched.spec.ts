@@ -35,7 +35,7 @@ function sha256Of(fileName: string): string {
 const GEOFENCE_EVAL_TS_SHA256 =
   'd430f100cb41ad2f8ea8c2fc661939404d9a45f072a15e874a8f510c7b924914';
 const GEOFENCE_EVAL_SPEC_TS_SHA256 =
-  'e250da1b467aedfe2082a88b7847486eda10c400edbac31d159d25fc76a9a6b9';
+  'eaaa93e58951592ca8cbebbda3a3ecf5d377e6a30d2fb5dd78d96491bba6d8a7';
 
 describe('R2 (geofence-eval-full-batch #30): geofence-eval.ts queda congelado en el estado de #30', () => {
   it('geofence-eval.ts conserva exactamente su contenido de #30', () => {

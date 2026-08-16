@@ -257,21 +257,24 @@ describe('R1 (geofence-eval-full-batch #30): suspect_jump congela el estado igua
   it.each([
     { state: 'unknown', updatedAt: null },
     { state: 'outside', updatedAt: '2026-08-05T10:00:00.000Z' },
-  ] satisfies GeofenceState[])('con previous $state devuelve el mismo estado', (previous) => {
-    const result = evaluate(
-      previous,
-      CIRCLE,
-      {
-        lat: CIRCLE.centerLat,
-        lng: CIRCLE.centerLng,
-        flags: [FLAG_SUSPECT_JUMP],
-      },
-      nowMs,
-    );
+  ] satisfies GeofenceState[])(
+    'con previous $state devuelve el mismo estado',
+    (previous) => {
+      const result = evaluate(
+        previous,
+        CIRCLE,
+        {
+          lat: CIRCLE.centerLat,
+          lng: CIRCLE.centerLng,
+          flags: [FLAG_SUSPECT_JUMP],
+        },
+        nowMs,
+      );
 
-    expect(result.event).toBeNull();
-    expect(result.state).toBe(previous);
-  });
+      expect(result.event).toBeNull();
+      expect(result.state).toBe(previous);
+    },
+  );
 
   it('con suspect_jump y low_accuracy devuelve el mismo estado', () => {
     const previous: GeofenceState = {
