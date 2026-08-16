@@ -116,3 +116,44 @@ describe('R4 (init-env-drift-warning #23): sin deriva no hay salida', () => {
     assert.equal(stdout, '');
   });
 });
+
+describe('R5 (init-env-drift-warning #23): sin .env.example el script calla y sale 0', () => {
+  it('calla si falta .env.example', () => {
+    const fixtureDir = mkdtempSync(join(tmpdir(), 'env-drift-'));
+    const envPath = join(fixtureDir, '.env');
+    writeFileSync(envPath, 'A=1\n');
+
+    const stdout = execFileSync(
+      process.execPath,
+      [scriptPath, envPath, join(fixtureDir, '.env.example')],
+      { encoding: 'utf8' },
+    );
+
+    assert.equal(stdout, '');
+  });
+
+  it('calla si falta .env', () => {
+    const fixtureDir = mkdtempSync(join(tmpdir(), 'env-drift-'));
+    const examplePath = join(fixtureDir, '.env.example');
+    writeFileSync(examplePath, 'A=1\n');
+
+    const stdout = execFileSync(
+      process.execPath,
+      [scriptPath, join(fixtureDir, '.env'), examplePath],
+      { encoding: 'utf8' },
+    );
+
+    assert.equal(stdout, '');
+  });
+
+  it('calla si faltan ambos archivos', () => {
+    const fixtureDir = mkdtempSync(join(tmpdir(), 'env-drift-'));
+    const stdout = execFileSync(
+      process.execPath,
+      [scriptPath, join(fixtureDir, '.env'), join(fixtureDir, '.env.example')],
+      { encoding: 'utf8' },
+    );
+
+    assert.equal(stdout, '');
+  });
+});
