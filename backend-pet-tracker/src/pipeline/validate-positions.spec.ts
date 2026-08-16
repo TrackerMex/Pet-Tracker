@@ -242,3 +242,34 @@ describe('R8 (reject-future-positions #27): FUTURE_TS_TOLERANCE_MS vive en pipel
     expect(source).not.toContain('300000');
   });
 });
+
+describe('R1 (reject-future-positions #27): normalize() descarta el ts futuro fuera del margen de tolerancia', () => {
+  const nowMs = 1_000_000;
+
+  it('descarta una posicion posterior al margen con razon future_ts', () => {
+    const future = position({
+      ts: nowMs + FUTURE_TS_TOLERANCE_MS + 1,
+    });
+
+    const result = normalize([future], nowMs);
+
+    expect(result.accepted).toHaveLength(0);
+    expect(result.discarded).toEqual([
+      { reason: 'future_ts', position: future },
+    ]);
+  });
+
+  it('en un lote mixto descarta solo la posicion futura', () => {
+    const past = position({ ts: nowMs - 1 });
+    const future = position({
+      ts: nowMs + FUTURE_TS_TOLERANCE_MS + 1,
+    });
+
+    const result = normalize([past, future], nowMs);
+
+    expect(result.accepted.map(({ ts }) => ts)).toEqual([past.ts]);
+    expect(result.discarded).toEqual([
+      { reason: 'future_ts', position: future },
+    ]);
+  });
+});
