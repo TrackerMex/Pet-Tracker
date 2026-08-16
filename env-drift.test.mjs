@@ -248,3 +248,25 @@ describe('R10 (init-env-drift-warning #23): init.config.sh mantiene REQUIRED_ENV
     assert.ok(initSource.includes('cp .env.example .env'));
   });
 });
+
+describe('R11 (init-env-drift-warning #23): documentacion y cero variables nuevas', () => {
+  it('documenta la verificacion manual', () => {
+    const source = readFileSync(new URL('./docs/verification.md', import.meta.url), 'utf8');
+
+    assert.match(source, /### Feature 23 — init-env-drift-warning/);
+  });
+
+  it('añade env-drift.mjs al mapa del repositorio', () => {
+    const source = readFileSync(new URL('./AGENTS.md', import.meta.url), 'utf8');
+
+    assert.match(source, /env-drift\.mjs/);
+  });
+
+  it('no añade variables de entorno', () => {
+    const exampleText = readFileSync(new URL('./.env.example', import.meta.url), 'utf8');
+    const keys = parseEnvKeys(exampleText);
+
+    assert.equal(keys.length, 21);
+    assert.equal(keys.some((key) => key.startsWith('DRIFT') || key.startsWith('ENV_DRIFT')), false);
+  });
+});

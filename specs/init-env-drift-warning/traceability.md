@@ -17,7 +17,7 @@ tags: [harness, spec]
 | R7 | `env-drift.test.mjs::R7 (init-env-drift-warning #23): init.sh invoca el chequeo con warn()` | rojo: `d85dc9a test(init-env-drift-warning): require init warning integration (R7)`; verde: `4f738d5 feat(init-env-drift-warning): warn about env key drift (R7,R8,R9)` |
 | R8 | `env-drift.test.mjs::R8 (init-env-drift-warning #23): el aviso no aborta` | rojo: `e5ec8ba test(init-env-drift-warning): require non-blocking warning (R8)`; verde: `4f738d5 feat(init-env-drift-warning): warn about env key drift (R7,R8,R9)` |
 | R9 | `env-drift.test.mjs::R9 (init-env-drift-warning #23): sin deriva la seccion 2 no cambia` | rojo: `ee356a2 test(init-env-drift-warning): require unchanged quiet section (R9)`; verde: `4f738d5 feat(init-env-drift-warning): warn about env key drift (R7,R8,R9)`; manual: ver `progress/impl_init-env-drift-warning.md` §R9(b) |
-| R10 | `env-drift.test.mjs::R10 (init-env-drift-warning #23): init.config.sh mantiene REQUIRED_ENV_VARS y ejecuta la suite` | rojo: `4235ed7 test(init-env-drift-warning): require suite integration (R10)`; verde: este commit — `feat(init-env-drift-warning): run drift suite from init (R10)` |
+| R10 | `env-drift.test.mjs::R10 (init-env-drift-warning #23): init.config.sh mantiene REQUIRED_ENV_VARS y ejecuta la suite` | rojo: `4235ed7 test(init-env-drift-warning): require suite integration (R10)`; verde: `cdd1343 feat(init-env-drift-warning): run drift suite from init (R10)` |
 | R11 | pendiente | pendiente |
 | R12 | sin test automatizado — ver §Verificación manual | pendiente |
 
