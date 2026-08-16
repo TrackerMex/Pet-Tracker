@@ -9,7 +9,17 @@
 
 - **Inicio**: 2026-08-15, 23:40
 - **Branch**: `feature/27-reject-future-positions` (desde `main` con #30 ya mergeada, `c8ef83b`)
-- **Estado**: `in_progress` — handoff entregado, **Codex CLI implementando**
+- **Estado**: `in_progress` — implementación pausada por desvío de diseño en R4
+
+### Avance de implementación
+
+- 2026-08-16 00:04: `./init.sh` inicial verde (build, 977 unitarios, 260 e2e,
+  lint y typecheck); spec aprobada y archivos afectados leídos. Inicio de R8
+  con disciplina test rojo → implementación.
+- 2026-08-16 00:15: R1-R3 y R6-R8 verdes y trazados. STOP antes de R4:
+  dos tests existentes generan 47/87 posiciones fuera del margen futuro y
+  esperan persistir 60/100; implementar R4 los rompe y la regla dura prohíbe
+  editarlos. Evidencia en `progress/impl_reject-future-positions.md`.
 
 ### Plan
 
