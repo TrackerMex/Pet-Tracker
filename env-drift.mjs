@@ -1,4 +1,4 @@
-import { readFile } from 'node:fs/promises';
+import { readFileSync } from 'node:fs';
 
 export function parseEnvKeys(text) {
   const keys = text
@@ -48,10 +48,8 @@ if (import.meta.filename === process.argv[1]) {
   const envPath = process.argv[2] ?? new URL('./.env', import.meta.url);
   const examplePath = process.argv[3] ?? new URL('./.env.example', import.meta.url);
   try {
-    const [envText, exampleText] = await Promise.all([
-      readFile(envPath, 'utf8'),
-      readFile(examplePath, 'utf8'),
-    ]);
+    const envText = readFileSync(envPath, 'utf8');
+    const exampleText = readFileSync(examplePath, 'utf8');
 
     for (const line of formatDriftLines(missingKeys(exampleText, envText))) {
       console.log(line);

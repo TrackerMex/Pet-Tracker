@@ -13,7 +13,7 @@ tags: [harness, spec]
 | R3 | `env-drift.test.mjs::R3 (init-env-drift-warning #23): formatDriftLines separa gates de configuración` | rojo: `0c6aacb test(init-env-drift-warning): require drift warning format (R3)`; verde: `7f85092 feat(init-env-drift-warning): format drift warnings (R3)` |
 | R4 | `env-drift.test.mjs::R4 (init-env-drift-warning #23): sin deriva no hay salida` | rojo: `1e60bfb test(init-env-drift-warning): require silent complete env (R4)`; verde: `15e188b feat(init-env-drift-warning): add silent drift CLI (R4)` |
 | R5 | `env-drift.test.mjs::R5 (init-env-drift-warning #23): sin .env.example el script calla y sale 0` | rojo: `ba75bdc test(init-env-drift-warning): require silent missing files (R5)`; verde: `aeef03d feat(init-env-drift-warning): ignore unreadable env files (R5)` |
-| R6 | pendiente | pendiente |
+| R6 | `env-drift.test.mjs::R6 (init-env-drift-warning #23): el script nunca escribe en disco` | rojo: `e09c1ed test(init-env-drift-warning): require read-only execution (R6)`; verde: este commit — `feat(init-env-drift-warning): use read-only filesystem access (R6)` |
 | R7 | pendiente | pendiente |
 | R8 | pendiente | pendiente |
 | R9 | pendiente | pendiente |
