@@ -23,7 +23,7 @@ tags: [harness, spec]
 | R6 | `src/workers/poller.service.spec.ts::R6 (reject-future-positions #27): el watermark nunca avanza por delante de now` (2 `it`) | rojo: `4ae0b89 feat(reject-future-positions): add watermark ceiling tests (R6)`; verde: `8da6cf9 feat(reject-future-positions): cap watermark at current time (R6)` |
 | R7 | `src/workers/poller.service.spec.ts::R7 (reject-future-positions #27): un watermark envenenado en el futuro se recupera solo en el siguiente ciclo` (3 `it`: a, b, c) | rojo: `c1a8404 feat(reject-future-positions): add poisoned watermark recovery tests (R7)`; verde: `2719a6b feat(reject-future-positions): recover poisoned watermarks (R7)` |
 | R8 | `src/pipeline/validate-positions.spec.ts::R8 (reject-future-positions #27): FUTURE_TS_TOLERANCE_MS vive en pipeline/constants.ts` (2 `it`) | rojo: `e83b891 feat(reject-future-positions): add tolerance constant tests (R8)`; constante: `d304c71 feat(reject-future-positions): define future timestamp tolerance (R8)`; verde: `f9e6c03 feat(reject-future-positions): reject implausible future positions (R1,R2,R3,R8)` |
-| R9 | Sin test nuevo: `pnpm -C backend-pet-tracker test` + `run test:e2e` verdes y `git diff --name-only main...HEAD` sin los archivos de [[tasks]] §Cierre | pendiente |
+| R9 | Sin test nuevo: `pnpm -C backend-pet-tracker test` + `run test:e2e` verdes y `git diff --name-only main...HEAD` sin los archivos de [[tasks]] §Cierre | fixture: `5396c55 test(reject-future-positions): move long batch windows into the past (R9)`; verificación: 993 unitarios + 260 e2e verdes, `FORBIDDEN_COUNT=0` |
 
 ## Cobertura de los `acceptance_criteria` de `feature_list.json` #27
 
@@ -34,7 +34,7 @@ tags: [harness, spec]
 | 3 | El watermark nunca queda por delante de ahora, ni aunque el filtro anterior se salte: test que alimenta una posición futura directamente al avance | R6 (`Math.min(lastTs, now)` en el poller, que no invoca `normalize()`) | cubierto por `4ae0b89` → `8da6cf9` |
 | 4 | Un device con el watermark ya envenenado se recupera solo en el siguiente ciclo, sin tocar la base a mano | R7a (vuelve a ingestar), R7b (la fila queda reparada en disco), R7c (se recupera igual si el ciclo no trae posiciones) | cubierto por `c1a8404` → `2719a6b` |
 | 5 | La constante de tolerancia vive en `src/pipeline/constants.ts` con su justificación, no dispersa en el poller | R8 (valor + ausencia de literales) | cubierto por `e83b891` → `d304c71`/`f9e6c03` |
-| 6 | El comportamiento con `ts` normal no cambia: los fixtures de #8 y #10 siguen verdes sin tocarlos | R9a-R9e, habilitado por R3 (`nowMs` opcional — ver [[design]] §D2) | pendiente |
+| 6 | El comportamiento con `ts` normal no cambia: los fixtures de #8 y #10 siguen verdes sin tocarlos | R9a-R9e, habilitado por R3 (`nowMs` opcional — ver [[design]] §D2) | cubierto por `5396c55`, 993 unitarios + 260 e2e verdes y `FORBIDDEN_COUNT=0` |
 
 ## Tests de features anteriores actualizados, no borrados
 
