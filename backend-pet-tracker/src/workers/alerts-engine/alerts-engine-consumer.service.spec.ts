@@ -1141,3 +1141,35 @@ describe('R7 (geofence-eval-full-batch #30): evalúa el lote entero en orden asc
     });
   });
 });
+
+describe('R10 (geofence-eval-full-batch #30): un detail v1 sin positions[] se sigue procesando', () => {
+  it('abre la alerta y borra el mensaje legado', async () => {
+    const store = storeStub();
+    store.listActiveGeofencesForPet.mockResolvedValue([
+      activeGeofence({
+        state: 'inside',
+        updatedAt: new Date(NOW.getTime() - 60_000).toISOString(),
+      }),
+    ]);
+    const { service, sqs } = makeHarness(
+      [
+        [
+          message(
+            'legacy-v1',
+            envelope(
+              DETAIL_TYPE_POSITION_UPDATED,
+              positionUpdatedDetail({ position: { ...FAR_AWAY } }),
+            ),
+          ),
+        ],
+        [],
+      ],
+      { store },
+    );
+
+    await service.drainOnce(NOW);
+
+    expect(store.openAlert).toHaveBeenCalledTimes(1);
+    expect(sqs.deleted).toContain('rh-legacy-v1');
+  });
+});
