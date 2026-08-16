@@ -273,3 +273,34 @@ describe('R1 (reject-future-positions #27): normalize() descarta el ts futuro fu
     ]);
   });
 });
+
+describe('R2 (reject-future-positions #27): un ts adelantado dentro del margen de tolerancia se acepta', () => {
+  const nowMs = 1_000_000;
+
+  it('acepta un ts adelantado por 1 ms', () => {
+    const result = normalize([position({ ts: nowMs + 1 })], nowMs);
+
+    expect(result.accepted).toHaveLength(1);
+    expect(result.discarded).toHaveLength(0);
+  });
+
+  it('acepta el borde inclusivo del margen', () => {
+    const result = normalize(
+      [position({ ts: nowMs + FUTURE_TS_TOLERANCE_MS })],
+      nowMs,
+    );
+
+    expect(result.accepted).toHaveLength(1);
+    expect(result.discarded).toHaveLength(0);
+  });
+
+  it('descarta 1 ms despues del margen', () => {
+    const result = normalize(
+      [position({ ts: nowMs + FUTURE_TS_TOLERANCE_MS + 1 })],
+      nowMs,
+    );
+
+    expect(result.accepted).toHaveLength(0);
+    expect(result.discarded[0].reason).toBe('future_ts');
+  });
+});
