@@ -12,7 +12,7 @@ tags: [harness, spec]
 | R2 | `env-drift.test.mjs::R2 (init-env-drift-warning #23): missingKeys solo reporta example → env` | rojo: `8c0d84e test(init-env-drift-warning): require one-way key diff (R2)`; verde: `5f9c1a5 feat(init-env-drift-warning): report missing env keys (R2)` |
 | R3 | `env-drift.test.mjs::R3 (init-env-drift-warning #23): formatDriftLines separa gates de configuración` | rojo: `0c6aacb test(init-env-drift-warning): require drift warning format (R3)`; verde: `7f85092 feat(init-env-drift-warning): format drift warnings (R3)` |
 | R4 | `env-drift.test.mjs::R4 (init-env-drift-warning #23): sin deriva no hay salida` | rojo: `1e60bfb test(init-env-drift-warning): require silent complete env (R4)`; verde: `15e188b feat(init-env-drift-warning): add silent drift CLI (R4)` |
-| R5 | pendiente | pendiente |
+| R5 | `env-drift.test.mjs::R5 (init-env-drift-warning #23): sin .env.example el script calla y sale 0` | rojo: `ba75bdc test(init-env-drift-warning): require silent missing files (R5)`; verde: este commit — `feat(init-env-drift-warning): ignore unreadable env files (R5)` |
 | R6 | pendiente | pendiente |
 | R7 | pendiente | pendiente |
 | R8 | pendiente | pendiente |

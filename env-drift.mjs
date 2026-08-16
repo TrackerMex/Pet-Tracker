@@ -47,12 +47,16 @@ export function formatDriftLines(missing) {
 if (import.meta.filename === process.argv[1]) {
   const envPath = process.argv[2] ?? new URL('./.env', import.meta.url);
   const examplePath = process.argv[3] ?? new URL('./.env.example', import.meta.url);
-  const [envText, exampleText] = await Promise.all([
-    readFile(envPath, 'utf8'),
-    readFile(examplePath, 'utf8'),
-  ]);
+  try {
+    const [envText, exampleText] = await Promise.all([
+      readFile(envPath, 'utf8'),
+      readFile(examplePath, 'utf8'),
+    ]);
 
-  for (const line of formatDriftLines(missingKeys(exampleText, envText))) {
-    console.log(line);
+    for (const line of formatDriftLines(missingKeys(exampleText, envText))) {
+      console.log(line);
+    }
+  } catch {
+    // El chequeo es informativo y nunca debe bloquear init.sh.
   }
 }
