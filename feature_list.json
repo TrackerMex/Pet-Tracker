@@ -424,7 +424,7 @@
   {
     "id": 27,
     "name": "reject-future-positions",
-    "status": "in_progress",
+    "status": "done",
     "priority": "P1",
     "description": "Fallo permanente disparable por hardware defectuoso, destapado el 2026-08-14 durante el smoke de #24. Nada en el pipeline valida que el ts de una posición esté en el pasado. poller.service.ts:126 avanza el watermark a Math.max(...positions.map(p => p.ts)) sin acotarlo al presente, así que una sola posición con ts futuro deja ingest_watermark en el futuro; a partir de ahí el poller pide getMessages(unitId, watermarkFuturo, now) con un rango invertido que no devuelve nada, y el device DEJA DE REPORTAR PARA SIEMPRE, en silencio y sin ningún error. Un collar con el reloj mal configurado o con un GPS que aún no ha fijado la hora se autodestruye así de forma irreversible sin intervención manual en la base. En local el mismo defecto produjo un bucle de amplificación: procesos jest huérfanos poleando en bucle con el FakeWialonClient empujaron el watermark ~50 minutos por vuelta hasta timestamps de 2027, generando miles de mensajes en positions-raw. Arreglo: descartar en la validación pura de src/pipeline/ las posiciones con ts posterior a ahora más un margen de tolerancia de reloj (definir la constante en pipeline/constants.ts, no un número mágico; el margen cubre el desfase legítimo entre el reloj del collar y el del servidor), y acotar además el avance del watermark para que nunca supere el presente, de modo que el sistema sea robusto aunque la validación se saltee. Marcar las descartadas igual que las otras anomalías del pipeline (rango, duplicados, suspect_jump, low_accuracy) para que sean observables en vez de desaparecer.",
     "acceptance_criteria": [
