@@ -198,3 +198,27 @@ describe('R7 (init-env-drift-warning #23): init.sh invoca el chequeo con warn()'
     assert.doesNotMatch(fragment, /\b(?:comm|sort|awk|sed|jq)\s/);
   });
 });
+
+describe('R8 (init-env-drift-warning #23): el aviso no aborta', () => {
+  it('no llama fail ni exit', () => {
+    const source = readFileSync(new URL('./init.sh', import.meta.url), 'utf8');
+    const driftBlockIndex = source.indexOf('# Deriva de claves entre .env y .env.example (#23)');
+    const dependenciesIndex = source.indexOf('# ── 3. DEPENDENCIAS');
+
+    assert.notEqual(driftBlockIndex, -1);
+    assert.doesNotMatch(source.slice(driftBlockIndex, dependenciesIndex), /\b(?:fail|exit)\b/);
+  });
+
+  it('sobrevive a set -e', () => {
+    const stdout = execFileSync(
+      'bash',
+      [
+        '-c',
+        `set -e; OUT="$(node "${scriptPath}" /no/existe /tampoco || true)"; echo "rc=$?"`,
+      ],
+      { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] },
+    );
+
+    assert.match(stdout, /rc=0/);
+  });
+});
