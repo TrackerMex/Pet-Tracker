@@ -12,6 +12,7 @@ import {
   DeviceSubscriptionPlanCode,
   DeviceSubscriptionStatus,
 } from '@/modules/subscriptions/domain/subscription.constants';
+import { CLAIM_WATERMARK_LOOKBACK_MINUTES } from '@/modules/devices/application/use-cases/claim-device.use-case';
 import { SubscriptionDrizzleRepository } from '@/modules/subscriptions/infrastructure/repositories/subscription.drizzle.repository';
 
 const DEFAULT_PERIOD_DAYS = 30;
@@ -82,6 +83,9 @@ export async function setDeviceSubscription(
     throw new Error(`device not found for ${selector}`);
   }
 
+  const subscriptions = new SubscriptionDrizzleRepository(db);
+  const wasEntitled = await subscriptions.isDeviceEntitled(device.id);
+
   await db
     .insert(deviceSubscriptions)
     .values({
@@ -101,9 +105,20 @@ export async function setDeviceSubscription(
       },
     });
 
-  const entitled = await new SubscriptionDrizzleRepository(db).isDeviceEntitled(
-    device.id,
-  );
+  const entitled = await subscriptions.isDeviceEntitled(device.id);
+  const watermarkReset = !wasEntitled && entitled;
+
+  if (watermarkReset) {
+    await db
+      .update(devices)
+      .set({
+        ingestWatermark: new Date(
+          now.getTime() - CLAIM_WATERMARK_LOOKBACK_MINUTES * 60_000,
+        ),
+        updatedAt: now,
+      })
+      .where(eq(devices.id, device.id));
+  }
 
   return {
     deviceId: device.id,
@@ -111,7 +126,7 @@ export async function setDeviceSubscription(
     planCode: planCode as DeviceSubscriptionPlanCode,
     currentPeriodEnd,
     entitled,
-    watermarkReset: false,
+    watermarkReset,
   };
 }
 
