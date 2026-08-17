@@ -249,6 +249,33 @@ rm -r "$tmp_dir"
 El `diff` debe salir vacío y la captura no debe contener ninguna línea de
 deriva. Esta feature no añade variables de entorno.
 
+### Feature 28 — test-dev-resource-isolation
+
+Este procedimiento manual lo ejecuta un humano desde la raíz del repositorio.
+Compara las tres colas de desarrollo antes y después de la corrida e2e
+completa; los valores deben quedar exactamente iguales.
+
+```bash
+# 1. Infra levantada y recursos de ambos entornos creados
+docker compose up -d
+pnpm -C backend-pet-tracker run provision:local
+
+# 2. Recuento ANTES, de las tres colas de desarrollo
+for q in positions-raw notifications geofence-events; do
+  aws --endpoint-url http://localhost:4566 sqs get-queue-attributes \
+    --queue-url "$(aws --endpoint-url http://localhost:4566 sqs get-queue-url \
+      --queue-name "$q" --query QueueUrl --output text)" \
+    --attribute-names ApproximateNumberOfMessages \
+      ApproximateNumberOfMessagesNotVisible ApproximateNumberOfMessagesDelayed
+done
+
+# 3. Corrida e2e COMPLETA
+pnpm -C backend-pet-tracker run test:e2e
+
+# 4. Recuento DESPUÉS: repetir el paso 2
+# Esperado: los tres recuentos idénticos a los del paso 2.
+```
+
 ---
 
 ## Notas para el implementer
