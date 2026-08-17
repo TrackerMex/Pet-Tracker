@@ -312,3 +312,51 @@ describe('R3 (wialon-session-reuse #29): el sid caducado fuerza un login nuevo',
     expect(messageCalls[2].sid).toBe('sid-456');
   });
 });
+
+describe('R4 (wialon-session-reuse #29): una sesión inválida se recupera con un re-login transparente', () => {
+  const LOGIN_OK_2 = { eid: 'sid-456', user: { nm: 'other' } };
+
+  it('reintenta la llamada con sid nuevo cuando recibe error: 1', async () => {
+    const { fetchFn, calls } = fetchStub([
+      LOGIN_OK,
+      { error: 1 },
+      LOGIN_OK_2,
+      loadIntervalFixture,
+    ]);
+    const client = new WialonHttpClient(BASE_URL, 'real-token', fetchFn);
+
+    const positions = await client.getMessages('900001', 1_754_049_600_000, 1_754_049_690_000);
+
+    const messageCalls = calls.filter((call) => call.svc === 'messages/load_interval');
+    const loginCalls = calls.filter((call) => call.svc === 'token/login');
+    expect(positions).toHaveLength(3);
+    expect(loginCalls).toHaveLength(2);
+    expect(messageCalls).toHaveLength(2);
+    expect(calls).toHaveLength(4);
+    expect(messageCalls[0].sid).toBe('sid-123');
+    expect(messageCalls[1].sid).toBe('sid-456');
+    expect(messageCalls[0].params).toEqual(messageCalls[1].params);
+  });
+
+  it('reintenta la llamada con sid nuevo cuando recibe error: 1011', async () => {
+    const { fetchFn, calls } = fetchStub([
+      LOGIN_OK,
+      { error: 1011 },
+      LOGIN_OK_2,
+      loadIntervalFixture,
+    ]);
+    const client = new WialonHttpClient(BASE_URL, 'real-token', fetchFn);
+
+    const positions = await client.getMessages('900001', 1_754_049_600_000, 1_754_049_690_000);
+
+    const messageCalls = calls.filter((call) => call.svc === 'messages/load_interval');
+    const loginCalls = calls.filter((call) => call.svc === 'token/login');
+    expect(positions).toHaveLength(3);
+    expect(loginCalls).toHaveLength(2);
+    expect(messageCalls).toHaveLength(2);
+    expect(calls).toHaveLength(4);
+    expect(messageCalls[0].sid).toBe('sid-123');
+    expect(messageCalls[1].sid).toBe('sid-456');
+    expect(messageCalls[0].params).toEqual(messageCalls[1].params);
+  });
+});
