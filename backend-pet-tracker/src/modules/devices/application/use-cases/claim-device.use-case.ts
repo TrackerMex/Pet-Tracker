@@ -13,6 +13,9 @@ import { DEVICE_REPOSITORY } from '@/modules/devices/domain/repositories/device.
 import type { DeviceRepository } from '@/modules/devices/domain/repositories/device.repository';
 import { PET_REPOSITORY } from '@/modules/pets/domain/repositories/pet.repository';
 import type { PetRepository } from '@/modules/pets/domain/repositories/pet.repository';
+import { DeviceNotSubscribedError } from '@/modules/subscriptions/domain/errors/subscription.errors';
+import { SUBSCRIPTION_REPOSITORY } from '@/modules/subscriptions/domain/repositories/subscription.repository';
+import type { SubscriptionRepository } from '@/modules/subscriptions/domain/repositories/subscription.repository';
 import { ClaimDeviceDto, toDeviceIdentifier } from '../dto/claim-device.dto';
 
 /**
@@ -37,6 +40,8 @@ export class ClaimDeviceUseCase {
     private readonly devices: DeviceRepository,
     @Inject(AUDIT_LOGGER)
     private readonly auditLogger: AuditLogger,
+    @Inject(SUBSCRIPTION_REPOSITORY)
+    private readonly subscriptions: SubscriptionRepository,
   ) {}
 
   async execute(dto: ClaimDeviceDto, userId: string): Promise<Device> {
@@ -72,6 +77,10 @@ export class ClaimDeviceUseCase {
     // R9: una mascota lleva a lo sumo un collar activo (D2).
     if (await this.devices.findActiveByPetId(dto.petId)) {
       throw new PetAlreadyHasDeviceError(dto.petId);
+    }
+
+    if (!(await this.subscriptions.isDeviceEntitled(device.id))) {
+      throw new DeviceNotSubscribedError(device.id);
     }
 
     const ingestWatermark = new Date(
