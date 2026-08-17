@@ -62,3 +62,10 @@ anti-vacío de más de 100 archivos; la guarda se commiteó en `a26ecf2`.
 
 - Corrida final de `./init.sh`.
 - Procedimiento manual de R13 por el humano.
+
+## Evidencia R12
+
+- Guarda de fuente: 1 suite / 2 tests verdes (`resource-names-guard.spec.ts`).
+- Infra: 2 suites / 14 tests verdes.
+- `git diff --name-only <merge-base>..HEAD -- infra` no devolvió rutas: `infra/`
+  permanece sin cambios.
