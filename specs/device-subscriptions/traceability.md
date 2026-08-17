@@ -17,7 +17,7 @@ tags: [harness, spec]
 | R7 | `src/modules/devices/application/use-cases/claim-device.use-case.spec.ts::R7 (device-subscriptions #25): subscription is the last claim check`; `test/devices.e2e-spec.ts::R7 (device-subscriptions #25): claim requires an active subscription last` | `a6bc9ca` red; `a4682cd` claim + 402 mapping |
 | R8 | `src/modules/subscriptions/infrastructure/guards/pet-tracking.guard.spec.ts::R8 (device-subscriptions #25): PetTrackingGuard` | `e5bb926` red; `b8df30d` guard |
 | R9 | `test/device-subscriptions.e2e-spec.ts::R9 (device-subscriptions #25): exact tracking route gate` | `8256ac4` red; `6a217d4` controller guards |
-| R10 | pendiente | pendiente |
+| R10 | `test/device-subscriptions.e2e-spec.ts::R10 (device-subscriptions #25): alerts filter by entitlement`; regresión `test/alerts-center-notifier.e2e-spec.ts` | `fc1dcd7` red; `5ebc02b` repository joins |
 | R11 | pendiente | pendiente |
 | R12 | pendiente | pendiente |
 | R13 | `test/device-subscriptions.e2e-spec.ts::R13 (device-subscriptions #25): idempotent subscription:set` | `6b07d89` red; `6ba4350` CLI/upsert |
