@@ -7,6 +7,12 @@ const LOAD_INTERVAL_FLAGS = 1;
 const LOAD_INTERVAL_FLAGS_MASK = 65281;
 const LOAD_INTERVAL_MAX_COUNT = 500;
 
+/**
+ * 4 minutos, por debajo de los 5 minutos de inactividad de Wialon (si no hay
+ * actividad, la sesión deja de ser válida): https://help.wialon.com/en/api/expert-articles/faq/frequently-asked-questions
+ */
+export const WIALON_SID_TTL_MS = 4 * 60_000;
+
 /** Busqueda de unidades AVL — spec estandar de core/search_items. */
 const SEARCH_UNITS_PARAMS = {
   spec: {

@@ -15,7 +15,7 @@ tags: [harness, spec]
 | R3 | `backend-pet-tracker/src/integrations/wialon/wialon-http.client.spec.ts::R3 (wialon-session-reuse #29): el sid caducado fuerza un login nuevo` | pendiente | pendiente |
 | R4 | `backend-pet-tracker/src/integrations/wialon/wialon-http.client.spec.ts::R4 (wialon-session-reuse #29): una sesión inválida se recupera con un re-login transparente` | pendiente | pendiente |
 | R5 | `backend-pet-tracker/src/integrations/wialon/wialon-http.client.spec.ts::R5 (wialon-session-reuse #29): el segundo fallo se propaga sin bucle y los demás errores no se reintentan` | pendiente | pendiente |
-| R6 | `backend-pet-tracker/src/integrations/wialon/wialon-http.client.spec.ts::R6 (wialon-session-reuse #29): WIALON_SID_TTL_MS está por debajo de la caducidad de Wialon` | pendiente | pendiente |
+| R6 | `backend-pet-tracker/src/integrations/wialon/wialon-http.client.spec.ts::R6 (wialon-session-reuse #29): WIALON_SID_TTL_MS está por debajo de la caducidad de Wialon` | `backend-pet-tracker/src/integrations/wialon/wialon-http.client.ts` | `c3d5b16` *(feat(wialon-session-reuse): export WIALON_SID_TTL_MS (R6))* |
 | R7 | `backend-pet-tracker/src/integrations/wialon/wialon-http.client.spec.ts::R7 (wialon-session-reuse #29): el token no aparece en logs ni en errores` | pendiente (guarda de seguridad, **nace verde**) | pendiente |
 | R8 | `backend-pet-tracker/src/integrations/wialon/wialon-http.client.spec.ts::R8 (wialon-session-reuse #29): el puerto y el simulador no cambian` | pendiente (guarda de regresión, **nace verde**) | pendiente |
 | R9 | `backend-pet-tracker/src/integrations/wialon/wialon-http.client.spec.ts::R9 (wialon-session-reuse #29): docs/wialon-module.md describe la sesión reutilizada` | pendiente | pendiente |

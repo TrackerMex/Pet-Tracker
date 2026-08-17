@@ -10,3 +10,5 @@
 ## Progreso
 
 - 2026-08-17: sesión iniciada.
+- 2026-08-17: `R6` rojo escrito y validado (commit `c329797`).
+- 2026-08-17: `R6` verde en `WIALON_SID_TTL_MS` (commit `pending`).
