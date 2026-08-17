@@ -58,14 +58,31 @@ El trabajo se detuvo sin fabricar un infractor. El gate humano del 2026-08-17
 aprobó R11 como guarda verde en `bfd572f`, condicionado a una aserción
 anti-vacío de más de 100 archivos; la guarda se commiteó en `a26ecf2`.
 
-## Evidencia pendiente
-
-- Corrida final de `./init.sh`.
-- Procedimiento manual de R13 por el humano.
-
 ## Evidencia R12
 
 - Guarda de fuente: 1 suite / 2 tests verdes (`resource-names-guard.spec.ts`).
 - Infra: 2 suites / 14 tests verdes.
 - `git diff --name-only <merge-base>..HEAD -- infra` no devolvió rutas: `infra/`
   permanece sin cambios.
+
+## Evidencia final R14
+
+- `./init.sh` final: exit 0 el 2026-08-17.
+- Build, lint y typecheck: verdes.
+- Unitarios backend: 139 suites / 1026 tests verdes.
+- Infra: 2 suites / 14 tests verdes.
+- Harness `env-drift`: 11 suites / 28 tests verdes.
+- E2E: 19 suites / 296 tests verdes; 2 suites AWS / 6 tests omitidos por
+  ejecutarse en modo local.
+- Historial auditado: R1, R2, R3, R4, R6, R9 y R13 tienen commit rojo anterior
+  al verde; R5, R7, R8, R10, R11 y R12 son las excepciones verdes aprobadas;
+  R14 no lleva test.
+- `constants.ts`, `infra/**` y `test/jest-e2e.json` no cambiaron.
+- El primer intento final detectó tres errores de lint en specs de R4/R6; se
+  corrigieron en `257954a` y la corrida completa posterior quedó verde.
+
+## Verificación manual R13
+
+No ejecutada por Codex: el gate humano reservó el recuento externo de las tres
+colas. El procedimiento está documentado en `docs/verification.md`; su resultado
+debe añadirse aquí cuando el humano lo ejecute.
