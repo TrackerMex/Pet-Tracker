@@ -11,6 +11,7 @@ import request from 'supertest';
 import { uuidv7 } from 'uuidv7';
 import { DRIZZLE } from '@/db/drizzle.constants';
 import { AppModule } from '@/app.module';
+import { alertEvents } from '@/db/schema/alerts.schema';
 import { devices, petDevices } from '@/db/schema/devices.schema';
 import { pets, petUsers } from '@/db/schema/pets.schema';
 import { deviceSubscriptions } from '@/db/schema/subscriptions.schema';
@@ -880,6 +881,63 @@ describe('Device subscriptions (e2e)', () => {
 
       expect(second.watermarkReset).toBe(false);
       expect(afterSecond.ingestWatermark?.getTime()).toBe(resetWatermark);
+    });
+  });
+
+  describe('R10 (device-subscriptions #25): alerts filter by entitlement', () => {
+    it('lists only entitled alerts and hides an unentitled alert from ack', async () => {
+      const owner = await seedUser('r10-owner');
+      const entitledPetId = await seedPet('R10 entitled pet');
+      const freePetId = await seedPet('R10 free pet');
+      await seedMembership(entitledPetId, owner.id);
+      await seedMembership(freePetId, owner.id);
+
+      const entitledDeviceId = await seedActiveCollar(
+        entitledPetId,
+        'r10-entitled',
+      );
+      await seedSubscription(
+        entitledDeviceId,
+        'active',
+        new Date('2099-12-31T00:00:00.000Z'),
+      );
+      await seedActiveCollar(freePetId, 'r10-free');
+
+      const entitledAlertId = uuidv7();
+      const freeAlertId = uuidv7();
+      await db.insert(alertEvents).values([
+        {
+          id: entitledAlertId,
+          petId: entitledPetId,
+          type: 'battery_low',
+          payload: {},
+          openedAt: new Date('2030-01-02T00:00:00.000Z'),
+        },
+        {
+          id: freeAlertId,
+          petId: freePetId,
+          type: 'battery_low',
+          payload: {},
+          openedAt: new Date('2030-01-01T00:00:00.000Z'),
+        },
+      ]);
+      const auth = { Authorization: `Bearer ${owner.token}` };
+
+      const list = await request(app.getHttpServer())
+        .get('/v1/alerts')
+        .set(auth)
+        .expect(200);
+      expect(list.body).toMatchObject({
+        items: [{ id: entitledAlertId, petId: entitledPetId }],
+        nextCursor: null,
+      });
+      expect(JSON.stringify(list.body)).not.toContain(freeAlertId);
+
+      const ack = await request(app.getHttpServer())
+        .post(`/v1/alerts/${freeAlertId}/ack`)
+        .set(auth)
+        .expect(404);
+      expect(ack.status).not.toBe(402);
     });
   });
 });
