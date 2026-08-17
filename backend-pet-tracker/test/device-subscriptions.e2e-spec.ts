@@ -5,7 +5,7 @@ import {
 } from '@aws-sdk/client-sqs';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { inArray, sql } from 'drizzle-orm';
+import { eq, inArray, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { uuidv7 } from 'uuidv7';
 import { DRIZZLE } from '@/db/drizzle.constants';
@@ -467,6 +467,59 @@ describe('Device subscriptions (e2e)', () => {
             ingestWatermark?.getTime() === initialWatermark.getTime(),
         ),
       ).toBe(true);
+    });
+  });
+
+  describe('R5 (device-subscriptions #25): expiration keeps the assignment', () => {
+    it('reactivates polling with the same pet_devices row and no re-claim', async () => {
+      const petId = await seedPet('R5-retained');
+      const deviceId = await seedDevice('R5-retained', {
+        wialonUnitId: 'R5-retained-unit',
+      });
+      const assignmentId = uuidv7();
+      await db.insert(petDevices).values({
+        id: assignmentId,
+        petId,
+        deviceId,
+      });
+      await seedSubscription(
+        deviceId,
+        'active',
+        new Date(Date.now() - 4 * 24 * 60 * 60_000),
+      );
+
+      const store = new IngestionDrizzleStore(db);
+      expect(
+        (await store.listActiveAssignments()).map(({ deviceId }) => deviceId),
+      ).not.toContain(deviceId);
+
+      const [expiredAssignment] = await db
+        .select()
+        .from(petDevices)
+        .where(eq(petDevices.id, assignmentId));
+      const [expiredDevice] = await db
+        .select()
+        .from(devices)
+        .where(eq(devices.id, deviceId));
+      expect(expiredAssignment.releasedAt).toBeNull();
+      expect(expiredDevice.status).toBe('assigned');
+
+      await db
+        .update(deviceSubscriptions)
+        .set({ currentPeriodEnd: new Date(Date.now() + 24 * 60 * 60_000) })
+        .where(eq(deviceSubscriptions.deviceId, deviceId));
+
+      expect(
+        (await store.listActiveAssignments()).map(({ deviceId }) => deviceId),
+      ).toContain(deviceId);
+
+      const assignments = await db
+        .select()
+        .from(petDevices)
+        .where(eq(petDevices.deviceId, deviceId));
+      expect(assignments).toHaveLength(1);
+      expect(assignments[0].id).toBe(assignmentId);
+      expect(assignments[0].releasedAt).toBeNull();
     });
   });
 });
