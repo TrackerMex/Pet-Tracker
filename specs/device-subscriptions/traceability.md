@@ -22,7 +22,7 @@ tags: [harness, spec]
 | R12 | pendiente | pendiente |
 | R13 | `test/device-subscriptions.e2e-spec.ts::R13 (device-subscriptions #25): idempotent subscription:set` | `6b07d89` red; `6ba4350` CLI/upsert |
 | R14 | pendiente | pendiente |
-| R15 | pendiente | pendiente |
+| R15 | `test/device-subscriptions.e2e-spec.ts::R15 (device-subscriptions #25): subscriptions module wiring` | `c06fd74` red; `b8bc340` module wiring |
 | R16 | pendiente | pendiente |
 | R17 | `test/device-subscriptions.e2e-spec.ts::R17 (device-subscriptions #25): grandfather existing devices` | `f171ffa` red; `e86435f` backfill + seed |
 | R18 | pendiente | pendiente |
