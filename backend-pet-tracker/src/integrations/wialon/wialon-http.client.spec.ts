@@ -169,3 +169,47 @@ describe('R6 (wialon-session-reuse #29): WIALON_SID_TTL_MS está por debajo de l
     expect(source.length).toBeGreaterThan(1000);
   });
 });
+
+describe('R1 (wialon-session-reuse #29): el sid se cachea y se comparte entre listUnits() y getMessages()', () => {
+  it('una misma instancia reutiliza el sid entre listUnits() y llamadas posteriores', async () => {
+    const { fetchFn, calls } = fetchStub([
+      LOGIN_OK,
+      loadIntervalFixture,
+      loadIntervalFixture,
+      loadIntervalFixture,
+      loadIntervalFixture,
+    ]);
+    const client = new WialonHttpClient(BASE_URL, 'real-token', fetchFn);
+
+    await client.listUnits();
+    await client.getMessages('900001', 1_754_049_600_000, 1_754_049_690_000);
+    await client.getMessages('900001', 1_754_049_700_000, 1_754_049_790_000);
+    await client.getMessages('900001', 1_754_049_800_000, 1_754_049_890_000);
+
+    expect(calls.filter((call) => call.svc === 'token/login')).toHaveLength(1);
+    expect(calls).toHaveLength(5);
+    for (const call of calls.filter((call) => call.svc !== 'token/login')) {
+      expect(call.sid).toBe('sid-123');
+    }
+  });
+
+  it('dos instancias mantienen cachés de sid independientes', async () => {
+    const { fetchFn, calls } = fetchStub([
+      LOGIN_OK,
+      loadIntervalFixture,
+      { eid: 'sid-456', user: { nm: 'other' } },
+      loadIntervalFixture,
+    ]);
+    const clientA = new WialonHttpClient(BASE_URL, 'real-token', fetchFn);
+    const clientB = new WialonHttpClient(BASE_URL, 'real-token', fetchFn);
+
+    await clientA.getMessages('900001', 1_754_049_600_000, 1_754_049_690_000);
+    await clientB.getMessages('900001', 1_754_049_600_000, 1_754_049_690_000);
+
+    const loginCalls = calls.filter((call) => call.svc === 'token/login');
+    expect(loginCalls).toHaveLength(2);
+    expect(calls).toHaveLength(4);
+    expect(loginCalls[0].params).toEqual({ token: 'real-token' });
+    expect(loginCalls[1].params).toEqual({ token: 'real-token' });
+  });
+});
