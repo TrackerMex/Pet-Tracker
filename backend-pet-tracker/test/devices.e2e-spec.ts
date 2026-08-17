@@ -92,6 +92,7 @@ describe('Devices claim (e2e)', () => {
   async function seedDevice(
     label: string,
     overrides: Partial<typeof devices.$inferInsert> = {},
+    subscribed = true,
   ) {
     const id = uuidv7();
 
@@ -106,6 +107,15 @@ describe('Devices claim (e2e)', () => {
       ...overrides,
     });
     createdDeviceIds.push(id);
+
+    if (subscribed) {
+      await db.insert(deviceSubscriptions).values({
+        deviceId: id,
+        status: 'active',
+        planCode: 'grandfathered',
+        currentPeriodEnd: new Date('2099-12-31T00:00:00.000Z'),
+      });
+    }
 
     const [row] = await db.select().from(devices).where(eq(devices.id, id));
     return row;
@@ -142,6 +152,9 @@ describe('Devices claim (e2e)', () => {
       await db
         .delete(petDevices)
         .where(inArray(petDevices.deviceId, createdDeviceIds));
+      await db
+        .delete(deviceSubscriptions)
+        .where(inArray(deviceSubscriptions.deviceId, createdDeviceIds));
       await db.delete(devices).where(inArray(devices.id, createdDeviceIds));
     }
     if (createdUserIds.length > 0) {
@@ -528,6 +541,31 @@ describe('Devices claim (e2e)', () => {
       }).expect(404);
 
       expect((response.body as { code: string }).code).toBe('DEVICE_NOT_FOUND');
+    });
+  });
+
+  describe('R7 (device-subscriptions #25): claim requires an active subscription last', () => {
+    it('returns the exact 402 body and does not create an assignment', async () => {
+      const owner = await seedUser('r7-25-owner');
+      const pet = await createPetViaApi(owner, `R7-25-${RUN_ID}`);
+      const device = await seedDevice('R7-25', {}, false);
+
+      const response = await claim(owner, {
+        petId: pet.id,
+        activationCode: device.activationCode,
+      }).expect(402);
+
+      expect(response.body).toEqual({
+        statusCode: 402,
+        code: 'DEVICE_SUBSCRIPTION_REQUIRED',
+        message: 'Pet tracking requires an active device subscription',
+      });
+
+      const rows = await db
+        .select()
+        .from(petDevices)
+        .where(eq(petDevices.deviceId, device.id));
+      expect(rows).toHaveLength(0);
     });
   });
 
