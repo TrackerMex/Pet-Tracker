@@ -8,7 +8,7 @@
 - **feature**: `device-subscriptions` (#25, P2)
 - **branch**: `feature/25-device-subscriptions`
 - **inicio**: 2026-08-17
-- **estado**: implementación en curso; R1 test rojo
+- **estado**: implementación en curso; R1 y R17 verdes, iniciando R2
 - **spec**: `specs/device-subscriptions/requirements.md` (18 requisitos, R1–R18)
 - **implementador**: Codex CLI en terminal aparte (no el subagente `implementer`)
 
@@ -56,5 +56,14 @@ mascota ajena revelaría que existe (brief §4). `PetTrackingGuard` va después 
 
 ## Siguiente paso
 
-Completar R1 con schema + migración sin aplicarla; después R17 añade el
-backfill antes de ejecutar `drizzle-kit migrate`.
+Implementar R2: constante y predicado SQL único de entitlement.
+
+## Entorno local
+
+- `drizzle-kit migrate` encontró las tablas de `0009`–`0011` presentes pero
+  sin sus filas de journal (drift ya documentado en
+  `progress/impl_pet-reminders.md`). Se validaron columnas, constraints e
+  índices, se reconciliaron solo esas tres filas en el Postgres Docker y el
+  comando aplicó `0012` correctamente.
+- R1/R17: 3/3 e2e verdes. Suite e2e completa: 18 suites / 263 tests verdes,
+  2 suites / 6 tests omitidos por sus gates existentes.

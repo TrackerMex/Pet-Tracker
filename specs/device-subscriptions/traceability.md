@@ -24,7 +24,7 @@ tags: [harness, spec]
 | R14 | pendiente | pendiente |
 | R15 | pendiente | pendiente |
 | R16 | pendiente | pendiente |
-| R17 | pendiente | pendiente |
+| R17 | `test/device-subscriptions.e2e-spec.ts::R17 (device-subscriptions #25): grandfather existing devices` | `f171ffa` red; `e86435f` backfill + seed |
 | R18 | pendiente | pendiente |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
