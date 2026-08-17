@@ -109,11 +109,14 @@ describe('R2: runProvisioning aborta antes de construir clientes si falta AWS_EN
 describe('R8: runProvisioning aborta en modo aws', () => {
   it('devuelve 1 y registra AWS_MODE antes de construir clientes', async () => {
     const logger = silentLogger();
-    const createSqsClient = jest
-      .spyOn(awsClients, 'createSqsClient')
-      .mockImplementation(() => {
+    const factorySpies = [
+      jest.spyOn(awsClients, 'createSqsClient').mockImplementation(() => {
         throw new Error('client constructed');
-      });
+      }),
+      jest.spyOn(awsClients, 'createDynamoDbClient'),
+      jest.spyOn(awsClients, 'createS3Client'),
+      jest.spyOn(awsClients, 'createEventBridgeClient'),
+    ];
 
     try {
       const exitCode = await runProvisioning(
@@ -125,9 +128,11 @@ describe('R8: runProvisioning aborta en modo aws', () => {
       expect(logger.error).toHaveBeenCalledWith(
         expect.stringMatching(/AWS_MODE/),
       );
-      expect(createSqsClient).not.toHaveBeenCalled();
+      for (const factory of factorySpies) {
+        expect(factory).not.toHaveBeenCalled();
+      }
     } finally {
-      createSqsClient.mockRestore();
+      for (const factory of factorySpies) factory.mockRestore();
     }
   });
 });
