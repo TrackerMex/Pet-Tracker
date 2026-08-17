@@ -8,7 +8,7 @@
 - **feature**: `device-subscriptions` (#25, P2)
 - **branch**: `feature/25-device-subscriptions`
 - **inicio**: 2026-08-17
-- **estado**: implementación en curso; R1 y R17 verdes, iniciando R2
+- **estado**: implementación en curso; R1-R7 del orden obligatorio verdes, iniciando R8
 - **spec**: `specs/device-subscriptions/requirements.md` (18 requisitos, R1–R18)
 - **implementador**: Codex CLI en terminal aparte (no el subagente `implementer`)
 
@@ -50,13 +50,10 @@ mascota ajena revelaría que existe (brief §4). `PetTrackingGuard` va después 
 - **Opción A**: el criterio del ai-explainer se trasladó a
   `acceptance_criteria` de la entrada #18 de `feature_list.json`. #25 cierra sin
   ese runtime porque #17 y #18 siguen `pending`.
-- **Pendiente de confirmar**: R17 modifica `scripts/seed-devices.ts`, que la
-  spec de #24 congelaba en su R6. Está justificado por escrito en la spec, pero
-  es una enmienda sobre una spec ya aprobada.
 
 ## Siguiente paso
 
-Implementar R2: constante y predicado SQL único de entitlement.
+Implementar R8: `PetTrackingGuard` fail-closed y body exacto del 402.
 
 ## Entorno local
 
@@ -67,3 +64,5 @@ Implementar R2: constante y predicado SQL único de entitlement.
   comando aplicó `0012` correctamente.
 - R1/R17: 3/3 e2e verdes. Suite e2e completa: 18 suites / 263 tests verdes,
   2 suites / 6 tests omitidos por sus gates existentes.
+- R2-R7: predicado, repositorio, poller, retención, CLI/reset y claim verdes.
+  R7: 14 unitarios y 27 e2e de devices verdes.
