@@ -1,14 +1,23 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { sql } from 'drizzle-orm';
+import { inArray, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { uuidv7 } from 'uuidv7';
 import { DRIZZLE } from '@/db/drizzle.constants';
 import { AppModule } from '@/app.module';
+import { devices, petDevices } from '@/db/schema/devices.schema';
+import { pets } from '@/db/schema/pets.schema';
+import { deviceSubscriptions } from '@/db/schema/subscriptions.schema';
+import { SubscriptionDrizzleRepository } from '@/modules/subscriptions/infrastructure/repositories/subscription.drizzle.repository';
 import { seedSimulatedDevices } from '../scripts/seed-devices';
 
 describe('Device subscriptions (e2e)', () => {
   let app: INestApplication;
   let db: NodePgDatabase;
+  let subscriptions: SubscriptionDrizzleRepository;
+
+  const createdPetIds: string[] = [];
+  const createdDeviceIds: string[] = [];
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -18,11 +27,66 @@ describe('Device subscriptions (e2e)', () => {
     app = moduleFixture.createNestApplication();
     await app.init();
     db = app.get<NodePgDatabase>(DRIZZLE);
+    subscriptions = new SubscriptionDrizzleRepository(db);
   });
 
   afterAll(async () => {
+    if (createdDeviceIds.length > 0) {
+      await db
+        .delete(deviceSubscriptions)
+        .where(inArray(deviceSubscriptions.deviceId, createdDeviceIds));
+      await db
+        .delete(petDevices)
+        .where(inArray(petDevices.deviceId, createdDeviceIds));
+      await db.delete(devices).where(inArray(devices.id, createdDeviceIds));
+    }
+    if (createdPetIds.length > 0) {
+      await db.delete(pets).where(inArray(pets.id, createdPetIds));
+    }
     await app.close();
   });
+
+  async function seedPet(label: string): Promise<string> {
+    const id = uuidv7();
+    await db.insert(pets).values({ id, name: label, species: 'dog' });
+    createdPetIds.push(id);
+    return id;
+  }
+
+  async function seedDevice(label: string): Promise<string> {
+    const id = uuidv7();
+    await db.insert(devices).values({
+      id,
+      esn: `SUB-${label}-${id}`,
+      status: 'assigned',
+      isSimulated: true,
+    });
+    createdDeviceIds.push(id);
+    return id;
+  }
+
+  async function seedActiveCollar(petId: string, label: string) {
+    const deviceId = await seedDevice(label);
+    await db.insert(petDevices).values({
+      id: uuidv7(),
+      petId,
+      deviceId,
+    });
+    return deviceId;
+  }
+
+  async function seedSubscription(
+    deviceId: string,
+    status: 'active' | 'canceled',
+    currentPeriodEnd: Date,
+  ) {
+    await db.insert(deviceSubscriptions).values({
+      deviceId,
+      status,
+      planCode: 'track_monthly',
+      currentPeriodEnd,
+    });
+  }
 
   describe('R1 (device-subscriptions #25): device_subscriptions schema', () => {
     it('has the exact columns, primary key, foreign key and checks', async () => {
@@ -157,6 +221,85 @@ describe('Device subscriptions (e2e)', () => {
             '2099-12-31T00:00:00.000Z',
         ),
       ).toBe(true);
+    });
+  });
+
+  describe('R3 (device-subscriptions #25): derive pet and device entitlement', () => {
+    it('returns false when the pet has no active collar', async () => {
+      const petId = await seedPet('R3-no-collar');
+
+      await expect(subscriptions.isPetTracked(petId)).resolves.toBe(false);
+    });
+
+    it('returns false when the active collar has no subscription row', async () => {
+      const petId = await seedPet('R3-no-subscription');
+      await seedActiveCollar(petId, 'R3-no-subscription');
+
+      await expect(subscriptions.isPetTracked(petId)).resolves.toBe(false);
+    });
+
+    it('returns false for a canceled subscription with a future period end', async () => {
+      const petId = await seedPet('R3-canceled');
+      const deviceId = await seedActiveCollar(petId, 'R3-canceled');
+      await seedSubscription(
+        deviceId,
+        'canceled',
+        new Date(Date.now() + 24 * 60 * 60_000),
+      );
+
+      await expect(subscriptions.isPetTracked(petId)).resolves.toBe(false);
+    });
+
+    it('returns true for an active subscription with a future period end', async () => {
+      const petId = await seedPet('R3-current');
+      const deviceId = await seedActiveCollar(petId, 'R3-current');
+      await seedSubscription(
+        deviceId,
+        'active',
+        new Date(Date.now() + 24 * 60 * 60_000),
+      );
+
+      await expect(subscriptions.isPetTracked(petId)).resolves.toBe(true);
+      await expect(subscriptions.isDeviceEntitled(deviceId)).resolves.toBe(
+        true,
+      );
+    });
+
+    it('returns true one day after period end within grace', async () => {
+      const petId = await seedPet('R3-grace');
+      const deviceId = await seedActiveCollar(petId, 'R3-grace');
+      await seedSubscription(
+        deviceId,
+        'active',
+        new Date(Date.now() - 24 * 60 * 60_000),
+      );
+
+      await expect(subscriptions.isPetTracked(petId)).resolves.toBe(true);
+    });
+
+    it('returns false four days after period end outside grace', async () => {
+      const petId = await seedPet('R3-expired');
+      const deviceId = await seedActiveCollar(petId, 'R3-expired');
+      await seedSubscription(
+        deviceId,
+        'active',
+        new Date(Date.now() - 4 * 24 * 60 * 60_000),
+      );
+
+      await expect(subscriptions.isPetTracked(petId)).resolves.toBe(false);
+      await expect(subscriptions.isDeviceEntitled(deviceId)).resolves.toBe(
+        false,
+      );
+    });
+
+    it('returns false for a valid nonexistent pet id', async () => {
+      await expect(subscriptions.isPetTracked(uuidv7())).resolves.toBe(false);
+    });
+
+    it('accepts only petId in isPetTracked', () => {
+      expect(SubscriptionDrizzleRepository.prototype.isPetTracked.length).toBe(
+        1,
+      );
     });
   });
 });
