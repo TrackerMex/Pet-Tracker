@@ -19,7 +19,7 @@ tags: [harness, spec]
 | R9 | `test/device-subscriptions.e2e-spec.ts::R9 (device-subscriptions #25): exact tracking route gate` | `8256ac4` red; `6a217d4` controller guards |
 | R10 | `test/device-subscriptions.e2e-spec.ts::R10 (device-subscriptions #25): alerts filter by entitlement`; regresión `test/alerts-center-notifier.e2e-spec.ts` | `fc1dcd7` red; `5ebc02b` repository joins |
 | R11 | `test/device-subscriptions.e2e-spec.ts::R11 (device-subscriptions #25): entitlement is shared by pet members` | `e534063` propiedad verde tras R9; sin implementación adicional |
-| R12 | ausencia de `src/modules/nutrition`/`aiExplanation` + export del puerto | evidencia documental verde; sin implementación anticipada |
+| R12 | ausencia de `src/modules/nutrition`/`aiExplanation` + export del puerto | `cf77e6a` evidencia verde; sin implementación anticipada |
 | R13 | `test/device-subscriptions.e2e-spec.ts::R13 (device-subscriptions #25): idempotent subscription:set` | `6b07d89` red; `6ba4350` CLI/upsert |
 | R14 | grep de proveedores + diff de dependencias/env/docs | `3a83c14` restricción verde; sin implementación |
 | R15 | `test/device-subscriptions.e2e-spec.ts::R15 (device-subscriptions #25): subscriptions module wiring` | `c06fd74` red; `b8bc340` module wiring |
