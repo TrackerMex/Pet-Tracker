@@ -9,7 +9,7 @@ tags: [harness, spec]
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
 | R1 | `test/device-subscriptions.e2e-spec.ts::R1 (device-subscriptions #25): device_subscriptions schema` | `ae15c15` red; `d8eb957` schema + migration |
-| R2 | pendiente | pendiente |
+| R2 | `src/modules/subscriptions/infrastructure/entitlement.predicate.spec.ts::R2 (device-subscriptions #25): single entitlement predicate` | `7f75218` red; `238b7df` predicate |
 | R3 | pendiente | pendiente |
 | R4 | pendiente | pendiente |
 | R5 | pendiente | pendiente |
@@ -40,12 +40,27 @@ ejecuten:
 
 | Requisito | Comando | Salida registrada |
 |---|---|---|
-| R2 | `grep -rn "current_period_end\|currentPeriodEnd\|GRACE_DAYS" backend-pet-tracker/src/` | pendiente |
+| R2 | `grep -rn "current_period_end\|currentPeriodEnd\|GRACE_DAYS" backend-pet-tracker/src/` | 10 coincidencias: migración/snapshot versionados, schema, constante, predicado y spec; ver salida debajo |
 | R5 | `grep -rn "releasedAt" <archivos nuevos/modificados de la feature>` | pendiente |
 | R11 | inspección: ninguna columna/parámetro liga `device_subscriptions` a `users` | pendiente |
 | R12 | `ls backend-pet-tracker/src/modules/nutrition` + `grep -rn "aiExplanation" backend-pet-tracker/src/` | pendiente |
 | R14 | `grep -rni "stripe\|paypal\|mercadopago\|checkout.session\|webhook" backend-pet-tracker/src/` | pendiente |
 | R16 | `grep -rn "tracked\|entitled\|planCode\|subscription" backend-pet-tracker/src/modules/*/infrastructure/mappers/` | pendiente |
+
+### Salida R2
+
+```text
+backend-pet-tracker/src/db/migrations/0012_absent_black_bolt.sql:5: "current_period_end" timestamp with time zone NOT NULL,
+backend-pet-tracker/src/db/migrations/0012_absent_black_bolt.sql:14:INSERT INTO device_subscriptions (device_id, status, plan_code, current_period_end)
+backend-pet-tracker/src/db/migrations/meta/0012_snapshot.json:1783: "current_period_end": {
+backend-pet-tracker/src/db/migrations/meta/0012_snapshot.json:1784: "name": "current_period_end",
+backend-pet-tracker/src/db/schema/subscriptions.schema.ts:15: currentPeriodEnd: timestamp('current_period_end', {
+backend-pet-tracker/src/modules/subscriptions/domain/subscription.constants.ts:1:export const DEVICE_SUBSCRIPTION_GRACE_DAYS = 3;
+backend-pet-tracker/src/modules/subscriptions/infrastructure/entitlement.predicate.spec.ts:2:import { DEVICE_SUBSCRIPTION_GRACE_DAYS } from '@/modules/subscriptions/domain/subscription.constants';
+backend-pet-tracker/src/modules/subscriptions/infrastructure/entitlement.predicate.spec.ts:9: expect(query.params).toContain(DEVICE_SUBSCRIPTION_GRACE_DAYS);
+backend-pet-tracker/src/modules/subscriptions/infrastructure/entitlement.predicate.ts:3:import { DEVICE_SUBSCRIPTION_GRACE_DAYS } from '@/modules/subscriptions/domain/subscription.constants';
+backend-pet-tracker/src/modules/subscriptions/infrastructure/entitlement.predicate.ts:7-8: and ${deviceSubscriptions.currentPeriodEnd} > now() - (${DEVICE_SUBSCRIPTION_GRACE_DAYS} * interval '1 day')
+```
 
 ## Verificación manual (la corre el humano, no un agente)
 
