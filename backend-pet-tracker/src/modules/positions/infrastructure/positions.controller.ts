@@ -10,6 +10,7 @@ import {
 import type { Response } from 'express';
 import { PetAccessGuard } from '@/modules/pets/infrastructure/guards/pet-access.guard';
 import type { PetAccessRequest } from '@/modules/pets/infrastructure/guards/pet-access.guard';
+import { PetTrackingGuard } from '@/modules/subscriptions/infrastructure/guards/pet-tracking.guard';
 import {
   ListPositionsQueryDto,
   ListPositionsQuerySchema,
@@ -30,7 +31,7 @@ import { mapPositionError } from './mappers/position-error.mapper';
  * compita con nada.
  */
 @Controller('pets/:petId/positions')
-@UseGuards(PetAccessGuard)
+@UseGuards(PetAccessGuard, PetTrackingGuard)
 export class PositionsController {
   constructor(
     private readonly getLastPosition: GetLastPositionUseCase,
