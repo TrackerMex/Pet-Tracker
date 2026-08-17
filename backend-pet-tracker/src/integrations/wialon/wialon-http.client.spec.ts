@@ -39,6 +39,9 @@ function fetchStub(payloads: unknown[]): {
     });
     const payload = payloads[Math.min(index, payloads.length - 1)];
     index += 1;
+    if (payload instanceof Error) {
+      return Promise.reject(payload);
+    }
     return Promise.resolve({
       ok: true,
       status: 200,
@@ -211,5 +214,101 @@ describe('R1 (wialon-session-reuse #29): el sid se cachea y se comparte entre li
     expect(calls).toHaveLength(4);
     expect(loginCalls[0].params).toEqual({ token: 'real-token' });
     expect(loginCalls[1].params).toEqual({ token: 'real-token' });
+  });
+});
+
+describe('R3 (wialon-session-reuse #29): el sid caducado fuerza un login nuevo', () => {
+  const LOGIN_OK_2 = { eid: 'sid-456', user: { nm: 'other' } };
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-08-01T12:00:00.000Z'));
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('con menos de 4 min transcurridas mantiene el sid', async () => {
+    const { fetchFn, calls } = fetchStub([
+      LOGIN_OK,
+      loadIntervalFixture,
+      loadIntervalFixture,
+    ]);
+    const client = new WialonHttpClient(
+      BASE_URL,
+      'real-token',
+      fetchFn,
+    );
+
+    await client.getMessages('900001', 1_754_049_600_000, 1_754_049_690_000);
+    jest.advanceTimersByTime(WIALON_SID_TTL_MS - 1);
+    await client.getMessages('900001', 1_754_049_700_000, 1_754_049_790_000);
+
+    const loginCalls = calls.filter((call) => call.svc === 'token/login');
+    const messageCalls = calls.filter(
+      (call) => call.svc === 'messages/load_interval',
+    );
+    expect(loginCalls).toHaveLength(1);
+    expect(messageCalls).toHaveLength(2);
+    expect(messageCalls[0].sid).toBe('sid-123');
+    expect(messageCalls[1].sid).toBe('sid-123');
+  });
+
+  it('en el borde exacto del TTL se reinicia la sesión', async () => {
+    const { fetchFn, calls } = fetchStub([
+      LOGIN_OK,
+      loadIntervalFixture,
+      LOGIN_OK_2,
+      loadIntervalFixture,
+    ]);
+    const client = new WialonHttpClient(
+      BASE_URL,
+      'real-token',
+      fetchFn,
+    );
+
+    await client.getMessages('900001', 1_754_049_600_000, 1_754_049_690_000);
+    jest.advanceTimersByTime(WIALON_SID_TTL_MS);
+    await client.getMessages('900001', 1_754_049_700_000, 1_754_049_790_000);
+
+    const loginCalls = calls.filter((call) => call.svc === 'token/login');
+    const messageCalls = calls.filter(
+      (call) => call.svc === 'messages/load_interval',
+    );
+    expect(loginCalls).toHaveLength(2);
+    expect(messageCalls).toHaveLength(2);
+    expect(messageCalls[0].sid).toBe('sid-123');
+    expect(messageCalls[1].sid).toBe('sid-456');
+  });
+
+  it('cuando pasan 3 TTL y se vuelve a usar, reloguea sólo una vez', async () => {
+    const { fetchFn, calls } = fetchStub([
+      LOGIN_OK,
+      loadIntervalFixture,
+      LOGIN_OK_2,
+      loadIntervalFixture,
+      loadIntervalFixture,
+    ]);
+    const client = new WialonHttpClient(
+      BASE_URL,
+      'real-token',
+      fetchFn,
+    );
+
+    await client.getMessages('900001', 1_754_049_600_000, 1_754_049_690_000);
+    jest.advanceTimersByTime(WIALON_SID_TTL_MS * 3);
+    await client.getMessages('900001', 1_754_049_700_000, 1_754_049_790_000);
+    await client.getMessages('900001', 1_754_049_800_000, 1_754_049_890_000);
+
+    const loginCalls = calls.filter((call) => call.svc === 'token/login');
+    const messageCalls = calls.filter(
+      (call) => call.svc === 'messages/load_interval',
+    );
+    expect(loginCalls).toHaveLength(2);
+    expect(messageCalls).toHaveLength(3);
+    expect(messageCalls[0].sid).toBe('sid-123');
+    expect(messageCalls[1].sid).toBe('sid-456');
+    expect(messageCalls[2].sid).toBe('sid-456');
   });
 });
