@@ -575,3 +575,18 @@ describe('R8 (wialon-session-reuse #29): el puerto y el simulador no cambian', (
     expect(interfaceSource.length).toBeGreaterThan(500);
   });
 });
+
+describe('R9 (wialon-session-reuse #29): docs/wialon-module.md describe la sesión reutilizada', () => {
+  it('documenta cacheo por instancia, TTL y re-login ante errores de sesión 1/1011', () => {
+    const docsSource = readFileSync(
+      join(__dirname, '..', '..', '..', '..', 'docs', 'wialon-module.md'),
+      'utf8',
+    );
+
+    expect(docsSource).toContain('WIALON_SID_TTL_MS');
+    expect(docsSource).toContain('1011');
+    expect(docsSource).toContain('token/login');
+    expect(docsSource).not.toContain('por token en cada ejecución');
+    expect(docsSource.length).toBeGreaterThan(1000);
+  });
+});
