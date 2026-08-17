@@ -1,5 +1,6 @@
 import type { RawPosition } from '@/pipeline/types';
 import type { WialonClient, WialonUnit } from './wialon-client.interface';
+import { isInvalidSessionError } from './wialon.errors';
 import { WialonApiError, WialonTransportError } from './wialon.errors';
 
 // Parametros fijos del plan 005 §Paso 1 para messages/load_interval.
@@ -77,11 +78,9 @@ export class WialonHttpClient implements WialonClient {
   ) {}
 
   async listUnits(): Promise<WialonUnit[]> {
-    const sid = await this.session();
-    const response = await this.call<{ items?: { id: number; nm: string }[] }>(
+    const response = await this.callWithSession<{ items?: { id: number; nm: string }[] }>(
       'core/search_items',
       SEARCH_UNITS_PARAMS,
-      sid,
     );
 
     return (response.items ?? []).map((item) => ({
@@ -95,8 +94,7 @@ export class WialonHttpClient implements WialonClient {
     fromTs: number,
     toTs: number,
   ): Promise<RawPosition[]> {
-    const sid = await this.session();
-    const response = await this.call<{ messages?: WialonMessage[] }>(
+    const response = await this.callWithSession<{ messages?: WialonMessage[] }>(
       'messages/load_interval',
       {
         itemId: Number(unitId),
@@ -106,7 +104,6 @@ export class WialonHttpClient implements WialonClient {
         flagsMask: LOAD_INTERVAL_FLAGS_MASK,
         loadCount: LOAD_INTERVAL_MAX_COUNT,
       },
-      sid,
     );
 
     return (response.messages ?? [])
@@ -125,6 +122,21 @@ export class WialonHttpClient implements WialonClient {
     this.sid = sid;
     this.sidExpiresAtMs = Date.now() + WIALON_SID_TTL_MS;
     return sid;
+  }
+
+  private async callWithSession<T>(svc: string, params: unknown): Promise<T> {
+    const sid = await this.session();
+    try {
+      return await this.call<T>(svc, params, sid);
+    } catch (error) {
+      if (!isInvalidSessionError(error)) {
+        throw error;
+      }
+
+      this.sid = null;
+      this.sidExpiresAtMs = 0;
+      return await this.call<T>(svc, params, await this.session());
+    }
   }
 
   /** Login por token en cada ejecucion — devuelve el session id (`eid`). */
