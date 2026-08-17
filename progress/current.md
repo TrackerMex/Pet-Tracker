@@ -8,7 +8,7 @@
 - **feature**: `device-subscriptions` (#25, P2)
 - **branch**: `feature/25-device-subscriptions`
 - **inicio**: 2026-08-17
-- **estado**: implementación en curso; R1-R10 y R15 verdes, iniciando R11
+- **estado**: implementación en curso; R1-R11 y R15 verdes, iniciando R16
 - **spec**: `specs/device-subscriptions/requirements.md` (18 requisitos, R1–R18)
 - **implementador**: Codex CLI en terminal aparte (no el subagente `implementer`)
 
@@ -53,7 +53,7 @@ mascota ajena revelaría que existe (brief §4). `PetTrackingGuard` va después 
 
 ## Siguiente paso
 
-Verificar R11: miembros no-owner comparten el entitlement del collar.
+Verificar R16: forma de respuestas HTTP congelada.
 
 ## Entorno local
 
@@ -70,3 +70,4 @@ Verificar R11: miembros no-owner comparten el entitlement del collar.
 - R15: AppModule resuelve repositorio y guard; 23 e2e de suscripciones y build verdes.
 - R9: 10 rutas gateadas, rutas excluidas y precedencia 404 verificadas; 26 e2e verdes.
 - R10: lista y ack filtran por entitlement; 47 e2e de suscripciones/alertas y build verdes.
+- R11: owner, family, walker y vet comparten la misma ruta trackeada; 30 e2e verdes.
