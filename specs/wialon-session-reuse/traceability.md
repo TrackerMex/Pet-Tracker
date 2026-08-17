@@ -16,9 +16,9 @@ tags: [harness, spec]
 | R4 | `backend-pet-tracker/src/integrations/wialon/wialon-http.client.spec.ts::R4 (wialon-session-reuse #29): una sesión inválida se recupera con un re-login transparente` | `backend-pet-tracker/src/integrations/wialon/wialon-http.client.ts` | `9102489` *(feat(wialon-session-reuse): add invalid-session detection and retry path (R4))* |
 | R5 | `backend-pet-tracker/src/integrations/wialon/wialon-http.client.spec.ts::R5 (wialon-session-reuse #29): el segundo fallo se propaga sin bucle y los demás errores no se reintentan` | `backend-pet-tracker/src/integrations/wialon/wialon-http.client.ts` | `0ce9788` *(test(wialon-session-reuse): add R5 non-retry coverage)* |
 | R6 | `backend-pet-tracker/src/integrations/wialon/wialon-http.client.spec.ts::R6 (wialon-session-reuse #29): WIALON_SID_TTL_MS está por debajo de la caducidad de Wialon` | `backend-pet-tracker/src/integrations/wialon/wialon-http.client.ts` | `2d8aa6b` *(feat(wialon-session-reuse): export WIALON_SID_TTL_MS (R6))* |
-| R7 | `backend-pet-tracker/src/integrations/wialon/wialon-http.client.spec.ts::R7 (wialon-session-reuse #29): el token no aparece en logs ni en errores` | `backend-pet-tracker/src/integrations/wialon/wialon-http.client.spec.ts` + `backend-pet-tracker/src/integrations/wialon/wialon.errors.ts` | `1636682` *(feat(wialon-session-reuse): add R7/R8 born-green guard specs)* |
-| R8 | `backend-pet-tracker/src/integrations/wialon/wialon-http.client.spec.ts::R8 (wialon-session-reuse #29): el puerto y el simulador no cambian` | `backend-pet-tracker/src/integrations/wialon/wialon-http.client.spec.ts` | `1636682` *(feat(wialon-session-reuse): add R7/R8 born-green guard specs)* |
-| R9 | `backend-pet-tracker/src/integrations/wialon/wialon-http.client.spec.ts::R9 (wialon-session-reuse #29): docs/wialon-module.md describe la sesión reutilizada` | pendiente | pendiente |
+| R7 | `backend-pet-tracker/src/integrations/wialon/wialon-http.client.spec.ts::R7 (wialon-session-reuse #29): el token no aparece en logs ni en errores` | `backend-pet-tracker/src/integrations/wialon/wialon-http.client.spec.ts` + `backend-pet-tracker/src/integrations/wialon/wialon.errors.ts` | `3e4dfd6` *(feat(wialon-session-reuse): add R7/R8 born-green guard specs)* |
+| R8 | `backend-pet-tracker/src/integrations/wialon/wialon-http.client.spec.ts::R8 (wialon-session-reuse #29): el puerto y el simulador no cambian` | `backend-pet-tracker/src/integrations/wialon/wialon-http.client.spec.ts` | `3e4dfd6` *(feat(wialon-session-reuse): add R7/R8 born-green guard specs)* |
+| R9 | `backend-pet-tracker/src/integrations/wialon/wialon-http.client.spec.ts::R9 (wialon-session-reuse #29): docs/wialon-module.md describe la sesión reutilizada` | `docs/wialon-module.md` | `a2b2e2b` *(docs(wialon-session-reuse): document reused sid cache and session re-login (R9))* |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
 Convención de commit: `feat(wialon-session-reuse): <desc> (R1,R2)`, con el
@@ -51,13 +51,14 @@ así llegara verde, se declara aquí.
 
 ## Aserciones anti-vacío obligatorias
 
-Herencia directa de #28 R11 y del hallazgo O4 del review de #25. Cuatro tests
+Herencia directa de #28 R11 y del hallazgo O4 del review de #25. Cinco tests
 de esta feature leen ficheros con `readFileSync` y aseveran sobre su
 contenido — R6(b), R7(b), R8(a), R8(b) y R9. **Un `expect(source).not.toMatch(...)`
 pasa igual si `source` es la cadena vacía**, así que cada uno de esos `it`
-SHALL asertar además que el fuente leído tiene longitud mínima (> 1000 para
-`wialon-http.client.ts`, `fake-wialon.client.ts`, `wialon-client.interface.ts`
-y `docs/wialon-module.md`; > 500 para `wialon.errors.ts`, que hoy tiene 26
+SHALL asertar además que el fuente leído tiene longitud mínima:
+`wialon-http.client.ts`, `fake-wialon.client.ts` y `docs/wialon-module.md`:
+>1000; `wialon.errors.ts`: >500; `wialon-client.interface.ts`:
+>500 (mismo archivo y tamaño del diseño base).
 líneas). Sin esa aserción, el requisito no se da por cubierto.
 
 ## Tests que deben quedar verdes SIN editarse

@@ -18,5 +18,11 @@
 - 2026-08-17: `R4` verde: reintento de sesión inválida en `callWithSession` (commit `9102489`).
 - 2026-08-17: `R5` nació verde tras R4 (sin fase roja propia), registrado con tests (`0ce9788`) + excepción en trazabilidad.
 - 2026-08-17: `R2` verde: una llamada al poller con `WialonHttpClient` real inyectado hace 1 login por ciclo (impl `278018e`).
-- 2026-08-17: `R7` verde (nace como guarda de seguridad): test añadido en `wialon-http.client.spec.ts` (sin cambios de código) — commit `1636682` *(feat(wialon-session-reuse): add R7/R8 born-green guard specs)*.
-- 2026-08-17: `R8` verde (nace como guarda de regresión): test añadido en `wialon-http.client.spec.ts` (sin cambios de código) — commit `1636682` *(feat(wialon-session-reuse): add R7/R8 born-green guard specs)*.
+- 2026-08-17: `R7` verde (nace como guarda de seguridad): test añadido en `wialon-http.client.spec.ts` (sin cambios de código) — commit `3e4dfd6` *(feat(wialon-session-reuse): add R7/R8 born-green guard specs)*.
+- 2026-08-17: `R8` verde (nace como guarda de regresión): test añadido en `wialon-http.client.spec.ts` (sin cambios de código) — commit `3e4dfd6` *(feat(wialon-session-reuse): add R7/R8 born-green guard specs)*.
+- 2026-08-17: `R9` rojo (`wialon-http.client.spec.ts`): assert anti-vacío/documentación en `docs/wialon-module.md` (commit `63c9b21`).
+- 2026-08-17: `R9` verde: documentación actualizada en `docs/wialon-module.md` con cacheo por instancia, `WIALON_SID_TTL_MS` y re-login ante `1`/`1011` (commit `a2b2e2b`).
+- 2026-08-17: R8(2) evidencia de no-deriva de contratos: `git diff --name-only main..HEAD -- backend-pet-tracker/src/integrations/wialon`
+  - `backend-pet-tracker/src/integrations/wialon/wialon-http.client.spec.ts`
+  - `backend-pet-tracker/src/integrations/wialon/wialon-http.client.ts`
+  - `backend-pet-tracker/src/integrations/wialon/wialon.errors.ts`
