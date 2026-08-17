@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { PetsModule } from '@/modules/pets/pets.module';
-import { SUBSCRIPTION_REPOSITORY } from '@/modules/subscriptions/domain/repositories/subscription.repository';
-import { SubscriptionDrizzleRepository } from '@/modules/subscriptions/infrastructure/repositories/subscription.drizzle.repository';
+import { SubscriptionsModule } from '@/modules/subscriptions/subscriptions.module';
 import { ClaimDeviceUseCase } from './application/use-cases/claim-device.use-case';
 import { GetPetDeviceUseCase } from './application/use-cases/get-pet-device.use-case';
 import { ReleaseDeviceUseCase } from './application/use-cases/release-device.use-case';
@@ -17,7 +16,7 @@ import { DeviceDrizzleRepository } from './infrastructure/repositories/device.dr
  * :petId. AUDIT_LOGGER y DRIZZLE los resuelven los modulos @Global().
  */
 @Module({
-  imports: [PetsModule],
+  imports: [PetsModule, SubscriptionsModule],
   controllers: [DevicesController, PetDeviceController],
   providers: [
     ClaimDeviceUseCase,
@@ -26,10 +25,6 @@ import { DeviceDrizzleRepository } from './infrastructure/repositories/device.dr
     {
       provide: DEVICE_REPOSITORY,
       useClass: DeviceDrizzleRepository,
-    },
-    {
-      provide: SUBSCRIPTION_REPOSITORY,
-      useClass: SubscriptionDrizzleRepository,
     },
   ],
 })

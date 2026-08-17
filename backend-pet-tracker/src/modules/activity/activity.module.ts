@@ -3,6 +3,7 @@ import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 import { Module } from '@nestjs/common';
 import { DYNAMODB_CLIENT } from '@/aws/aws.constants';
 import { PetsModule } from '@/modules/pets/pets.module';
+import { SubscriptionsModule } from '@/modules/subscriptions/subscriptions.module';
 import { ACTIVITY_DAILY_DOC_CLIENT } from './activity.constants';
 import { AggregateDailyActivityUseCase } from './application/use-cases/aggregate-daily-activity.use-case';
 import { GetDailyActivityUseCase } from './application/use-cases/get-daily-activity.use-case';
@@ -28,7 +29,7 @@ import { TripsController } from './infrastructure/trips.controller';
  * ambos invocan casos de uso de la capa application.
  */
 @Module({
-  imports: [PetsModule],
+  imports: [PetsModule, SubscriptionsModule],
   controllers: [TripsController, ActivityController],
   providers: [
     ListTripsUseCase,
