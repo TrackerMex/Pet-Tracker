@@ -10,10 +10,9 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import {
   DETAIL_TYPE_BATTERY_LOW,
   DETAIL_TYPE_POSITION_UPDATED,
-  QUEUE_GEOFENCE_EVENTS,
-  QUEUE_NOTIFICATIONS,
 } from '@/aws/constants';
-import { SQS_CLIENT } from '@/aws/aws.constants';
+import { AWS_RESOURCE_NAMES, SQS_CLIENT } from '@/aws/aws.constants';
+import type { AwsResourceNames } from '@/aws/resource-names';
 import { PET_REPOSITORY } from '@/modules/pets/domain/repositories/pet.repository';
 import type { PetRepository } from '@/modules/pets/domain/repositories/pet.repository';
 import { evaluate } from '@/pipeline/geofence-eval';
@@ -78,12 +77,13 @@ export class AlertsEngineConsumerService {
     @Inject(ALERTS_ENGINE_STORE) private readonly store: AlertsEngineStore,
     @Inject(SQS_CLIENT) private readonly sqs: SQSClient,
     @Inject(PET_REPOSITORY) private readonly pets: PetRepository,
+    @Inject(AWS_RESOURCE_NAMES) private readonly names: AwsResourceNames,
   ) {}
 
   async drainOnce(now: Date = new Date()): Promise<void> {
     let queueUrl: string;
     try {
-      queueUrl = await this.resolveQueueUrl(QUEUE_GEOFENCE_EVENTS);
+      queueUrl = await this.resolveQueueUrl(this.names.geofenceEvents);
     } catch (error) {
       this.logger.error({
         scope: 'alerts-engine-consumer',
@@ -409,7 +409,7 @@ export class AlertsEngineConsumerService {
     const petName = pet?.name ?? 'tu mascota';
     const { title, body } = buildCopy(params, petName);
 
-    const queueUrl = await this.resolveQueueUrl(QUEUE_NOTIFICATIONS);
+    const queueUrl = await this.resolveQueueUrl(this.names.notifications);
     await this.sqs.send(
       new SendMessageCommand({
         QueueUrl: queueUrl,
