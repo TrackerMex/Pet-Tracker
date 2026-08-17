@@ -16,11 +16,10 @@ import { Logger } from '@nestjs/common';
 import {
   DETAIL_TYPE_BATTERY_LOW,
   DETAIL_TYPE_POSITION_UPDATED,
-  EVENT_BUS_NAME,
   EVENT_SOURCE,
   SQS_MAX_RECEIVE_COUNT,
-  TABLE_POSITIONS,
 } from '@/aws/constants';
+import { buildResourceNames } from '@/aws/resource-names';
 import { FUTURE_TS_TOLERANCE_MS } from '@/pipeline/constants';
 import type { IngestionStore } from './ingestion-store';
 import { PositionsConsumerService } from './positions-consumer.service';
@@ -28,6 +27,7 @@ import { PositionsConsumerService } from './positions-consumer.service';
 const QUEUE_URL = 'http://localhost:4566/000000000000/positions-raw';
 const NOW = new Date('2026-08-01T12:00:00.000Z');
 const BASE_TS = NOW.getTime() - 60_000;
+const NAMES = buildResourceNames('');
 
 // Mocks como propiedades jest.Mock (no metodos de interface): evita el
 // falso positivo de @typescript-eslint/unbound-method en los expect().
@@ -145,6 +145,7 @@ function makeHarness(batches: Message[][]): Harness {
     sqs.client,
     documents.client,
     events.client,
+    NAMES,
   );
   return { service, sqs, store, documents, events };
 }
@@ -201,7 +202,7 @@ function writtenItems(documents: DocStub): Record<string, unknown>[] {
     .filter(([command]) => command instanceof BatchWriteCommand)
     .flatMap(([command]) => {
       const requests = (command as BatchWriteCommand).input.RequestItems?.[
-        TABLE_POSITIONS
+        NAMES.positionsTable
       ] as Array<{ PutRequest: { Item: Record<string, unknown> } }>;
       return requests.map((request) => request.PutRequest.Item);
     });
@@ -299,7 +300,7 @@ describe('R13: escritura DynamoDB — pk PET#<petId>, sk device_ts, atributos da
         ([command]) =>
           (
             (command as BatchWriteCommand).input.RequestItems?.[
-              TABLE_POSITIONS
+              NAMES.positionsTable
             ] as unknown[]
           ).length,
       );
@@ -316,7 +317,7 @@ describe('R13: escritura DynamoDB — pk PET#<petId>, sk device_ts, atributos da
     };
     documents.send
       .mockResolvedValueOnce({
-        UnprocessedItems: { [TABLE_POSITIONS]: [leftoverItem] },
+        UnprocessedItems: { [NAMES.positionsTable]: [leftoverItem] },
       })
       .mockResolvedValueOnce({ UnprocessedItems: {} });
 
@@ -327,7 +328,7 @@ describe('R13: escritura DynamoDB — pk PET#<petId>, sk device_ts, atributos da
     ) as [BatchWriteCommand][];
     expect(batchCalls).toHaveLength(2);
     expect(batchCalls[1][0].input.RequestItems).toEqual({
-      [TABLE_POSITIONS]: [leftoverItem],
+      [NAMES.positionsTable]: [leftoverItem],
     });
   });
 
@@ -494,7 +495,7 @@ describe('R16: position.updated — un evento por mensaje, detail {version:1, pe
       (event) => event.DetailType === DETAIL_TYPE_POSITION_UPDATED,
     );
     expect(positionUpdated).toHaveLength(1);
-    expect(positionUpdated[0].EventBusName).toBe(EVENT_BUS_NAME);
+    expect(positionUpdated[0].EventBusName).toBe(NAMES.eventBus);
     expect(positionUpdated[0].Source).toBe(EVENT_SOURCE);
     expect(EVENT_SOURCE).toBe('pet-tracker');
     expect(positionUpdated[0].detail).toEqual({
@@ -777,7 +778,7 @@ describe('R17: battery.low solo en cruce descendente del umbral 20 (flanco vs de
 
     const lows = batteryLowEvents(events);
     expect(lows).toHaveLength(1);
-    expect(lows[0].EventBusName).toBe(EVENT_BUS_NAME);
+    expect(lows[0].EventBusName).toBe(NAMES.eventBus);
     expect(lows[0].Source).toBe(EVENT_SOURCE);
     expect(lows[0].detail).toEqual({
       version: 1,
