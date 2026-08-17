@@ -303,6 +303,58 @@ describe('Device subscriptions (e2e)', () => {
     );
   });
 
+  describe('R16 (device-subscriptions #25): HTTP response shape stays frozen', () => {
+    it('keeps the 24 profile keys and the 5 nested device keys', async () => {
+      const owner = await seedUser('r16-owner');
+      const petId = await seedPet('R16 pet');
+      await seedMembership(petId, owner.id);
+      const deviceId = await seedActiveCollar(petId, 'r16');
+      await seedSubscription(
+        deviceId,
+        'active',
+        new Date('2099-12-31T00:00:00.000Z'),
+      );
+
+      const response = await request(app.getHttpServer())
+        .get(`/v1/pets/${petId}`)
+        .set('Authorization', `Bearer ${owner.token}`)
+        .expect(200);
+      const body = response.body as Record<string, unknown>;
+
+      expect(Object.keys(body).sort()).toEqual(
+        [
+          'id',
+          'name',
+          'species',
+          'breed',
+          'sex',
+          'birthDate',
+          'approxAgeMonths',
+          'ageMonths',
+          'currentWeightKg',
+          'size',
+          'color',
+          'sterilized',
+          'microchip',
+          'photoUrl',
+          'lostMode',
+          'lastPosition',
+          'lastCommunicationAt',
+          'myRole',
+          'device',
+          'nextVaccine',
+          'nextReminder',
+          'activitySummary',
+          'createdAt',
+          'updatedAt',
+        ].sort(),
+      );
+      expect(Object.keys(body.device as object).sort()).toEqual(
+        ['model', 'batteryPct', 'connectivity', 'lastMessageAt', 'esn'].sort(),
+      );
+    });
+  });
+
   describe('R1 (device-subscriptions #25): device_subscriptions schema', () => {
     it('has the exact columns, primary key, foreign key and checks', async () => {
       const columns = await db.execute<{
