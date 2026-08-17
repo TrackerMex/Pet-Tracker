@@ -23,7 +23,7 @@ tags: [harness, spec]
 | R13 | `test/device-subscriptions.e2e-spec.ts::R13 (device-subscriptions #25): idempotent subscription:set` | `6b07d89` red; `6ba4350` CLI/upsert |
 | R14 | pendiente | pendiente |
 | R15 | `test/device-subscriptions.e2e-spec.ts::R15 (device-subscriptions #25): subscriptions module wiring` | `c06fd74` red; `b8bc340` module wiring |
-| R16 | pendiente | pendiente |
+| R16 | `test/device-subscriptions.e2e-spec.ts::R16 (device-subscriptions #25): HTTP response shape stays frozen` | `746c476` propiedad verde; sin implementación adicional |
 | R17 | `test/device-subscriptions.e2e-spec.ts::R17 (device-subscriptions #25): grandfather existing devices` | `f171ffa` red; `e86435f` backfill + seed |
 | R18 | pendiente | pendiente |
 
@@ -45,7 +45,7 @@ ejecuten:
 | R11 | `rg -n "device_subscriptions\|deviceSubscriptions" src/db/schema/subscriptions.schema.ts src/modules/subscriptions \| rg "userId\|user_id"` | sin salida (exit 1); el entitlement no se liga a usuarios |
 | R12 | `ls backend-pet-tracker/src/modules/nutrition` + `grep -rn "aiExplanation" backend-pet-tracker/src/` | pendiente |
 | R14 | `grep -rni "stripe\|paypal\|mercadopago\|checkout.session\|webhook" backend-pet-tracker/src/` | pendiente |
-| R16 | `grep -rn "tracked\|entitled\|planCode\|subscription" backend-pet-tracker/src/modules/*/infrastructure/mappers/` | pendiente |
+| R16 | `rg -n "tracked\|entitled\|planCode\|subscription" src/modules -g "*/infrastructure/mappers/*.ts"` | `NO_MATCHES` |
 
 ### Salida R2
 
