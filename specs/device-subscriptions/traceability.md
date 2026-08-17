@@ -19,7 +19,7 @@ tags: [harness, spec]
 | R9 | `test/device-subscriptions.e2e-spec.ts::R9 (device-subscriptions #25): exact tracking route gate` | `8256ac4` red; `6a217d4` controller guards |
 | R10 | `test/device-subscriptions.e2e-spec.ts::R10 (device-subscriptions #25): alerts filter by entitlement`; regresión `test/alerts-center-notifier.e2e-spec.ts` | `fc1dcd7` red; `5ebc02b` repository joins |
 | R11 | `test/device-subscriptions.e2e-spec.ts::R11 (device-subscriptions #25): entitlement is shared by pet members` | `e534063` propiedad verde tras R9; sin implementación adicional |
-| R12 | pendiente | pendiente |
+| R12 | ausencia de `src/modules/nutrition`/`aiExplanation` + export del puerto | evidencia documental verde; sin implementación anticipada |
 | R13 | `test/device-subscriptions.e2e-spec.ts::R13 (device-subscriptions #25): idempotent subscription:set` | `6b07d89` red; `6ba4350` CLI/upsert |
 | R14 | grep de proveedores + diff de dependencias/env/docs | `3a83c14` restricción verde; sin implementación |
 | R15 | `test/device-subscriptions.e2e-spec.ts::R15 (device-subscriptions #25): subscriptions module wiring` | `c06fd74` red; `b8bc340` module wiring |
@@ -43,7 +43,7 @@ ejecuten:
 | R2 | `grep -rn "current_period_end\|currentPeriodEnd\|GRACE_DAYS" backend-pet-tracker/src/` | 10 coincidencias: migración/snapshot versionados, schema, constante, predicado y spec; ver salida debajo |
 | R5 | `grep -rnE "update\(petDevices\)\|update\(devices\).*status\|set\(\{[^}]*releasedAt" backend-pet-tracker/src/modules/subscriptions backend-pet-tracker/src/workers/ingestion.drizzle.store.ts backend-pet-tracker/scripts/seed-devices.ts` | sin salida (exit 1 de grep); no hay UPDATE de asignación/status |
 | R11 | `rg -n "device_subscriptions\|deviceSubscriptions" src/db/schema/subscriptions.schema.ts src/modules/subscriptions \| rg "userId\|user_id"` | sin salida (exit 1); el entitlement no se liga a usuarios |
-| R12 | `ls backend-pet-tracker/src/modules/nutrition` + `grep -rn "aiExplanation" backend-pet-tracker/src/` | pendiente |
+| R12 | `Test-Path backend-pet-tracker/src/modules/nutrition` + `rg -n "aiExplanation" backend-pet-tracker/src` + inspección de `SubscriptionsModule.exports` | `NUTRITION_DIR=ABSENT`; `AI_EXPLANATION=NO_MATCHES`; exporta `SUBSCRIPTION_REPOSITORY` |
 | R14 | `rg -ni "stripe\|paypal\|mercadopago\|checkout\.session\|webhook" backend-pet-tracker/src` + `git diff $(git merge-base origin/main HEAD) -- backend-pet-tracker/package.json backend-pet-tracker/.env.example docs/conventions.md` | `PROVIDER_GREP=NO_MATCHES`; package solo añade el script `subscription:set`, sin dependencias; `.env.example` y convenciones sin diff |
 | R16 | `rg -n "tracked\|entitled\|planCode\|subscription" src/modules -g "*/infrastructure/mappers/*.ts"` | `NO_MATCHES` |
 
