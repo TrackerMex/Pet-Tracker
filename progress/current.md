@@ -78,3 +78,5 @@ Ejecutar el cierre completo: `init.sh`, trazabilidad, bookkeeping y revisión de
 - Primer `init.sh`: build y 1,042 unit/infra tests verdes; e2e detectó 60
   expectativas históricas sin entitlement. Se actualizaron solo sus fixtures;
   las 4 suites afectadas quedaron verdes (83/83).
+- Segundo `init.sh`: build, unit/infra y 18/18 e2e verdes; lint detectó dos
+  tipos `any` en el e2e nuevo, ya corregidos.

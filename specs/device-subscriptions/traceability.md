@@ -8,10 +8,10 @@ tags: [harness, spec]
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | `test/device-subscriptions.e2e-spec.ts::R1 (device-subscriptions #25): device_subscriptions schema` | `ae15c15` red; `d8eb957` schema + migration |
+| R1 | `test/device-subscriptions.e2e-spec.ts::R1 (device-subscriptions #25): device_subscriptions schema` | `ae15c15` red; `d8eb957` schema + migration; `ee6c2df` lint del test |
 | R2 | `src/modules/subscriptions/infrastructure/entitlement.predicate.spec.ts::R2 (device-subscriptions #25): single entitlement predicate` | `7f75218` red; `238b7df` predicate |
 | R3 | `test/device-subscriptions.e2e-spec.ts::R3 (device-subscriptions #25): derive pet and device entitlement` | `fe506d6` red; `1686166` repository |
-| R4 | `test/device-subscriptions.e2e-spec.ts::R4 (device-subscriptions #25): poll only entitled assignments` | `07cc06d` red; `c61c729` store join |
+| R4 | `test/device-subscriptions.e2e-spec.ts::R4 (device-subscriptions #25): poll only entitled assignments` | `07cc06d` red; `c61c729` store join; `ee6c2df` lint del test |
 | R5 | `test/device-subscriptions.e2e-spec.ts::R5 (device-subscriptions #25): expiration keeps the assignment` | `1a95002` test verde al añadirse; propiedad de ausencia, sin implementación adicional |
 | R6 | `test/device-subscriptions.e2e-spec.ts::R6 (device-subscriptions #25): reset watermark on reactivation` | `0341d62` red; `4356417` transition reset |
 | R7 | `src/modules/devices/application/use-cases/claim-device.use-case.spec.ts::R7 (device-subscriptions #25): subscription is the last claim check`; `test/devices.e2e-spec.ts::R7 (device-subscriptions #25): claim requires an active subscription last`; regresión provisioning | `a6bc9ca` red; `a4682cd` claim + 402 mapping; `90cb9f1` fixtures |
