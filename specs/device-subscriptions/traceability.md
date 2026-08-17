@@ -15,7 +15,7 @@ tags: [harness, spec]
 | R5 | `test/device-subscriptions.e2e-spec.ts::R5 (device-subscriptions #25): expiration keeps the assignment` | `1a95002` test verde al añadirse; propiedad de ausencia, sin implementación adicional |
 | R6 | `test/device-subscriptions.e2e-spec.ts::R6 (device-subscriptions #25): reset watermark on reactivation` | `0341d62` red; `4356417` transition reset |
 | R7 | `src/modules/devices/application/use-cases/claim-device.use-case.spec.ts::R7 (device-subscriptions #25): subscription is the last claim check`; `test/devices.e2e-spec.ts::R7 (device-subscriptions #25): claim requires an active subscription last` | `a6bc9ca` red; `a4682cd` claim + 402 mapping |
-| R8 | pendiente | pendiente |
+| R8 | `src/modules/subscriptions/infrastructure/guards/pet-tracking.guard.spec.ts::R8 (device-subscriptions #25): PetTrackingGuard` | `e5bb926` red; `b8df30d` guard |
 | R9 | pendiente | pendiente |
 | R10 | pendiente | pendiente |
 | R11 | pendiente | pendiente |

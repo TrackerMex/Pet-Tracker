@@ -8,7 +8,7 @@
 - **feature**: `device-subscriptions` (#25, P2)
 - **branch**: `feature/25-device-subscriptions`
 - **inicio**: 2026-08-17
-- **estado**: implementación en curso; R1-R7 del orden obligatorio verdes, iniciando R8
+- **estado**: implementación en curso; R1-R8 del orden obligatorio verdes, iniciando R15
 - **spec**: `specs/device-subscriptions/requirements.md` (18 requisitos, R1–R18)
 - **implementador**: Codex CLI en terminal aparte (no el subagente `implementer`)
 
@@ -53,7 +53,7 @@ mascota ajena revelaría que existe (brief §4). `PetTrackingGuard` va después 
 
 ## Siguiente paso
 
-Implementar R8: `PetTrackingGuard` fail-closed y body exacto del 402.
+Implementar R15: `SubscriptionsModule` y cableado sin ciclos.
 
 ## Entorno local
 
@@ -66,3 +66,4 @@ Implementar R8: `PetTrackingGuard` fail-closed y body exacto del 402.
   2 suites / 6 tests omitidos por sus gates existentes.
 - R2-R7: predicado, repositorio, poller, retención, CLI/reset y claim verdes.
   R7: 14 unitarios y 27 e2e de devices verdes.
+- R8: 3 unitarios del guard verdes; build verde.
