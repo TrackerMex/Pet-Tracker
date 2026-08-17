@@ -400,11 +400,14 @@ describe('Device subscriptions (e2e)', () => {
       const count = POSITIONS_PER_MESSAGE_MAX + 1;
       const stepMs = 30_000;
       const baseTs = now.getTime() - count * stepMs - 60_000;
-      const positions: RawPosition[] = Array.from({ length: count }, (_, i) => ({
-        lat: 19.4326,
-        lng: -99.1332,
-        ts: baseTs + i * stepMs,
-      }));
+      const positions: RawPosition[] = Array.from(
+        { length: count },
+        (_, i) => ({
+          lat: 19.4326,
+          lng: -99.1332,
+          ts: baseTs + i * stepMs,
+        }),
+      );
       expect(Math.max(...positions.map(({ ts }) => ts))).toBeLessThan(
         now.getTime(),
       );
@@ -420,11 +423,9 @@ describe('Device subscriptions (e2e)', () => {
         }
         return Promise.resolve({ MessageId: 'r4' });
       });
-      const poller = new PollerService(
-        new IngestionDrizzleStore(db),
-        wialon,
-        { send } as unknown as SQSClient,
-      );
+      const poller = new PollerService(new IngestionDrizzleStore(db), wialon, {
+        send,
+      } as unknown as SQSClient);
 
       await poller.runOnce(now);
 
@@ -525,6 +526,8 @@ describe('Device subscriptions (e2e)', () => {
   });
 
   describe('R13 (device-subscriptions #25): idempotent subscription:set', () => {
+    let invalidCaseSequence = 0;
+
     it('upserts by unit id and device id without touching assignment state', async () => {
       const byUnitId = await seedDevice('R13-unit', {
         wialonUnitId: 'R13-unit-selector',
@@ -637,19 +640,25 @@ describe('Device subscriptions (e2e)', () => {
         message: '--device-id',
       },
     ])('rejects $label without writing', async ({ input, message }) => {
-      const targetId = await seedDevice(`R13-invalid-${message}`, {
-        wialonUnitId: 'target-unit',
+      invalidCaseSequence += 1;
+      const unitId = `target-unit-${invalidCaseSequence}`;
+      const targetId = await seedDevice(`R13I${invalidCaseSequence}`, {
+        wialonUnitId: unitId,
       });
       const resolvedInput = Object.fromEntries(
         Object.entries(input).map(([key, value]) => [
           key,
-          value === 'target' ? targetId : value,
+          value === 'target'
+            ? targetId
+            : value === 'target-unit'
+              ? unitId
+              : value,
         ]),
       );
 
-      await expect(
-        setDeviceSubscription(db, resolvedInput),
-      ).rejects.toThrow(message);
+      await expect(setDeviceSubscription(db, resolvedInput)).rejects.toThrow(
+        message,
+      );
 
       const rows = await db
         .select({ deviceId: deviceSubscriptions.deviceId })
