@@ -8,7 +8,7 @@
 - **feature**: `device-subscriptions` (#25, P2)
 - **branch**: `feature/25-device-subscriptions`
 - **inicio**: 2026-08-17
-- **estado**: spec aprobada por humano el 2026-08-17, esperando a Codex CLI
+- **estado**: implementación en curso; R1 test rojo
 - **spec**: `specs/device-subscriptions/requirements.md` (18 requisitos, R1–R18)
 - **implementador**: Codex CLI en terminal aparte (no el subagente `implementer`)
 
@@ -56,5 +56,5 @@ mascota ajena revelaría que existe (brief §4). `PetTrackingGuard` va después 
 
 ## Siguiente paso
 
-El humano corre Codex CLI con el prompt de handoff. Mientras tanto el `leader`
-no toca `backend-pet-tracker/` — un solo escritor sobre el working tree.
+Completar R1 con schema + migración sin aplicarla; después R17 añade el
+backfill antes de ejecutar `drizzle-kit migrate`.
