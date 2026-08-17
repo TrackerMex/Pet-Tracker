@@ -15,3 +15,4 @@
 - 2026-08-17: `R1` y `R2` tests rojos (`this.session` aún no existe) (commit `b304db7`).
 - 2026-08-17: `R1` verde: sesión cacheada por instancia (constante por instancia `sid` + `sidExpiresAtMs`) (commit `278018e`).
 - 2026-08-17: `R3` verde: cacheo con caducidad absoluta `Date.now() < sidExpiresAtMs` (commit `c8abd6c`).
+- 2026-08-17: `R4` verde: reintento de sesión inválida en `callWithSession` (commit `9102489`).
