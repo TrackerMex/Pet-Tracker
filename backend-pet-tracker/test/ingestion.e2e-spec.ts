@@ -14,11 +14,7 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { uuidv7 } from 'uuidv7';
 import { SQS_CLIENT } from '@/aws/aws.constants';
-import {
-  QUEUE_POSITIONS_RAW,
-  QUEUE_POSITIONS_RAW_DLQ,
-  TABLE_POSITIONS,
-} from '@/aws/constants';
+import { resolveResourceNamesFromEnv } from '@/aws/resource-names';
 import { DRIZZLE } from '@/db/drizzle.constants';
 import { auditLog } from '@/db/schema/audit-log.schema';
 import { devices, petDevices } from '@/db/schema/devices.schema';
@@ -33,6 +29,8 @@ import { PollerService } from '@/workers/poller.service';
 import { PositionsConsumerService } from '@/workers/positions-consumer.service';
 import { seedSimulatedDevices } from '../scripts/seed-devices';
 import { AppModule } from './../src/app.module';
+
+const names = resolveResourceNamesFromEnv(process.env);
 
 /**
  * e2e de la cadena de ingesta (R19) contra Postgres + LocalStack reales:
@@ -113,8 +111,8 @@ describe('Wialon ingestion pipeline (e2e)', () => {
     poller = app.get(PollerService);
     consumer = app.get(PositionsConsumerService);
 
-    rawQueueUrl = await queueUrl(QUEUE_POSITIONS_RAW);
-    dlqUrl = await queueUrl(QUEUE_POSITIONS_RAW_DLQ);
+    rawQueueUrl = await queueUrl(names.positionsRaw);
+    dlqUrl = await queueUrl(names.positionsRawDlq);
 
     // Cola y DLQ limpias: el criterio (c) mide ESTA corrida, no residuos.
     await sqs.send(new PurgeQueueCommand({ QueueUrl: rawQueueUrl }));
@@ -181,7 +179,7 @@ describe('Wialon ingestion pipeline (e2e)', () => {
       // (a) >= 1 item consultable con Query pk = PET#<petId>.
       const query = await documents.send(
         new QueryCommand({
-          TableName: TABLE_POSITIONS,
+          TableName: names.positionsTable,
           KeyConditionExpression: 'pk = :pk',
           ExpressionAttributeValues: { ':pk': `PET#${petId}` },
         }),
