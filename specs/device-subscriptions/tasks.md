@@ -1,6 +1,6 @@
 ---
 feature: "device-subscriptions"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec]
 ---
 
@@ -48,133 +48,133 @@ R2  → R3 → R4 → R5 → R13 → R6 → R7 → R8 → R15 → R9 → R10 →
 
 ## R1 — Tabla `device_subscriptions` + migración
 
-- [ ] (1) Escribir test que falla para R1 — `test/device-subscriptions.e2e-spec.ts`:
+- [x] (1) Escribir test que falla para R1 — `test/device-subscriptions.e2e-spec.ts`:
       consulta `information_schema.columns` y `pg_constraint` y afirma las 6
       columnas con sus tipos/NOT NULL, la PK sobre `device_id`, la FK a
       `devices(id)` y los dos checks
       (`device_subscriptions_status_check`, `device_subscriptions_plan_code_check`)
-- [ ] (2) Implementación mínima que lo pasa — `src/db/schema/subscriptions.schema.ts`,
+- [x] (2) Implementación mínima que lo pasa — `src/db/schema/subscriptions.schema.ts`,
       `export * from './subscriptions.schema'` en `src/db/schema/index.ts`,
       `pnpm -C backend-pet-tracker run db:generate` (verificar: **exactamente
       un** `.sql` nuevo). **No aplicar todavía** (ver §Orden obligatorio)
-- [ ] (3) Refactor con tests verdes — comentario de cabecera del schema en la
+- [x] (3) Refactor con tests verdes — comentario de cabecera del schema en la
       línea de `devices.schema.ts` (por qué `device_id` es PK, por qué sin
       índices extra)
 
 ## R17 — Backfill de devices preexistentes + seed de simulados
 
-- [ ] (1) Escribir test que falla para R17 — e2e: (a) tras la migración,
+- [x] (1) Escribir test que falla para R17 — e2e: (a) tras la migración,
       `SELECT count(*) FROM devices d LEFT JOIN device_subscriptions s ON
       s.device_id = d.id WHERE s.device_id IS NULL` es `0`; (b)
       `seedSimulatedDevices(db)` sobre una base con los `SIM-001..003` ya
       sembrados deja una suscripción `active`/`grandfathered` por cada uno y es
       idempotente al ejecutarse dos veces
-- [ ] (2) Implementación mínima que lo pasa — `INSERT ... SELECT ... ON CONFLICT
+- [x] (2) Implementación mínima que lo pasa — `INSERT ... SELECT ... ON CONFLICT
       (device_id) DO NOTHING` añadido a mano al `.sql` de R1 + extensión de
       `seedSimulatedDevices()` en `scripts/seed-devices.ts`. **Ahora sí**:
       `pnpm -C backend-pet-tracker exec drizzle-kit migrate`
-- [ ] (3) Refactor con tests verdes — `pnpm -C backend-pet-tracker run test:e2e`
+- [x] (3) Refactor con tests verdes — `pnpm -C backend-pet-tracker run test:e2e`
       completo: **todos** los e2e previos (positions, activity, geofences,
       alerts-engine, alerts-center-notifier, ingestion, devices) verdes **sin
       editarlos**. Si alguno pide edición, el backfill está mal
 
 ## R2 — La regla de entitlement, en un solo sitio
 
-- [ ] (1) Escribir test que falla para R2 —
+- [x] (1) Escribir test que falla para R2 —
       `src/modules/subscriptions/infrastructure/entitlement.predicate.spec.ts`:
       el SQL renderizado contiene el valor de `DEVICE_SUBSCRIPTION_GRACE_DAYS`
       como parámetro/valor interpolado y **no** contiene `AT TIME ZONE`
-- [ ] (2) Implementación mínima que lo pasa —
+- [x] (2) Implementación mínima que lo pasa —
       `src/modules/subscriptions/domain/subscription.constants.ts` +
       `src/modules/subscriptions/infrastructure/entitlement.predicate.ts`
       ([[design]] D4)
-- [ ] (3) Refactor con tests verdes — ejecutar y **pegar en [[traceability]]** la
+- [x] (3) Refactor con tests verdes — ejecutar y **pegar en [[traceability]]** la
       salida de
       `grep -rn "current_period_end\|currentPeriodEnd\|GRACE_DAYS" backend-pet-tracker/src/`:
       solo schema, constants, predicate y sus `.spec.ts`
 
 ## R3 — `isPetTracked(petId)` / `isDeviceEntitled(deviceId)`
 
-- [ ] (1) Escribir test que falla para R3 — e2e con **los 7 casos** de la tabla
+- [x] (1) Escribir test que falla para R3 — e2e con **los 7 casos** de la tabla
       de [[requirements]] R3 (sin collar, sin fila, `canceled`, vigente,
       dentro de gracia, fuera de gracia, mascota inexistente), fijando
       `current_period_end` con offsets relativos a `now()`
-- [ ] (2) Implementación mínima que lo pasa —
+- [x] (2) Implementación mínima que lo pasa —
       `subscription.repository.ts` (puerto + token) y
       `subscription.drizzle.repository.ts`, ambos consumiendo el predicado de R2
-- [ ] (3) Refactor con tests verdes — afirmar en el test que
+- [x] (3) Refactor con tests verdes — afirmar en el test que
       `SubscriptionRepository.prototype.isPetTracked.length === 1` (un solo
       parámetro: **no** hay `userId`, prueba estructural de D1)
 
 ## R4 — El poller no encola devices sin suscripción vigente
 
-- [ ] (1) Escribir test que falla para R4 — e2e: tres devices asignados
+- [x] (1) Escribir test que falla para R4 — e2e: tres devices asignados
       (vigente / sin fila / vencido fuera de gracia) →
       `listActiveAssignments()` devuelve **solo** el primero; y
       `PollerService.runOnce()` con `WialonClient` stub y `SQSClient` espía
       manda mensajes solo del primero, y `ingest_watermark` de los otros dos no
       se mueve
-- [ ] (2) Implementación mínima que lo pasa — `innerJoin` +
+- [x] (2) Implementación mínima que lo pasa — `innerJoin` +
       `entitledDeviceSubscription()` en
       `src/workers/ingestion.drizzle.store.ts:24`. `poller.service.ts` y el
       puerto `ingestion-store.ts` **no se tocan**
-- [ ] (3) Refactor con tests verdes — el mismo e2e afirma que, con suscripción
+- [x] (3) Refactor con tests verdes — el mismo e2e afirma que, con suscripción
       vigente, el body del mensaje SQS es idéntico al de hoy
       (`{version:1, deviceId, petId, unitId, positions}`) y el troceado por
       `POSITIONS_PER_MESSAGE_MAX` no cambia
 
 ## R5 — Vencer no libera el device; reactivar no exige re-claim
 
-- [ ] (1) Escribir test que falla para R5 — e2e: device con suscripción vencida
+- [x] (1) Escribir test que falla para R5 — e2e: device con suscripción vencida
       fuera de gracia → `pet_devices.released_at IS NULL` y `devices.status`
       sigue `'assigned'`; luego se renueva `current_period_end` y
       `listActiveAssignments()` vuelve a incluirlo **con el mismo
       `pet_devices.id`**, sin ninguna llamada a `POST /v1/devices/claim` y sin
       filas nuevas en `pet_devices`
-- [ ] (2) Implementación mínima que lo pasa — no debería hacer falta código: el
+- [x] (2) Implementación mínima que lo pasa — no debería hacer falta código: el
       requisito es una **propiedad de ausencia**. Si el test falla, algo escribió
       en `pet_devices`/`devices.status` y hay que quitarlo
-- [ ] (3) Refactor con tests verdes — grep de confirmación: ningún archivo nuevo
+- [x] (3) Refactor con tests verdes — grep de confirmación: ningún archivo nuevo
       o modificado de esta feature contiene `releasedAt`, `petDevices` en un
       `.update(` ni `devices.status` en un `.set(`
 
 ## R13 — Script `subscription:set` idempotente
 
-- [ ] (1) Escribir test que falla para R13 — e2e sobre `setDeviceSubscription()`:
+- [x] (1) Escribir test que falla para R13 — e2e sobre `setDeviceSubscription()`:
       alta por `--unit-id` y por `--device-id`; segunda ejecución idéntica ⇒
       mismo estado y **una** fila; `devices.status`/`pet_devices` intactos; y
       los casos de error (sin selector, con los dos, `status`/`plan` fuera del
       enum, `--period-end` no parseable, device inexistente) ⇒ error explícito
       y **cero** filas escritas
-- [ ] (2) Implementación mínima que lo pasa —
+- [x] (2) Implementación mínima que lo pasa —
       `scripts/set-device-subscription.ts` (`parseArgs`, `loadDotenv({ path:
       '../.env' })`, `onConflictDoUpdate` sobre la PK) + entrada
       `subscription:set` en `package.json`, siguiendo el patrón de
       `scripts/provision-device.ts`
-- [ ] (3) Refactor con tests verdes — línea de stdout con `deviceId`, `status`,
+- [x] (3) Refactor con tests verdes — línea de stdout con `deviceId`, `status`,
       `planCode`, `currentPeriodEnd`, `entitled`, `watermarkReset`
 
 ## R6 — Reset del watermark solo en la transición no-vigente → vigente
 
-- [ ] (1) Escribir test que falla para R6 — e2e: device con
+- [x] (1) Escribir test que falla para R6 — e2e: device con
       `ingest_watermark` de hace 90 días y suscripción vencida →
       `setDeviceSubscription()` a `active` ⇒ `ingest_watermark` queda a
       `now - CLAIM_WATERMARK_LOOKBACK_MINUTES` (tolerancia de segundos) y el
       resultado reporta `watermarkReset: true`; ejecutarlo **otra vez** sobre la
       suscripción ya vigente ⇒ `ingest_watermark` **no cambia** y
       `watermarkReset: false`
-- [ ] (2) Implementación mínima que lo pasa — en
+- [x] (2) Implementación mínima que lo pasa — en
       `scripts/set-device-subscription.ts`: `isDeviceEntitled()` antes y después
       del upsert (vía `new SubscriptionDrizzleRepository(db)`, **nunca**
       re-escribiendo el predicado), y `UPDATE devices SET ingest_watermark`
       solo en la transición
-- [ ] (3) Refactor con tests verdes — importar
+- [x] (3) Refactor con tests verdes — importar
       `CLAIM_WATERMARK_LOOKBACK_MINUTES` de
       `claim-device.use-case.ts:22`, no re-teclear el `10`
 
 ## R7 — El claim exige suscripción activa, en el último lugar del orden
 
-- [ ] (1) Escribir test que falla para R7 — (a) unitario: nuevo `describe` en
+- [x] (1) Escribir test que falla para R7 — (a) unitario: nuevo `describe` en
       `src/modules/devices/application/use-cases/claim-device.use-case.spec.ts`
       con `SubscriptionRepository` mock ⇒ `DeviceNotSubscribedError` y
       `devices.claim` **no** llamado, `auditLogger.record` **no** llamado; y el
@@ -182,48 +182,48 @@ R2  → R3 → R4 → R5 → R13 → R6 → R7 → R8 → R15 → R9 → R10 →
       mascota-con-collar(409) → suscripción(402); (b) e2e:
       `POST /v1/devices/claim` sobre un device sin suscripción ⇒ `402` con el
       body exacto y `pet_devices` sin fila nueva
-- [ ] (2) Implementación mínima que lo pasa —
+- [x] (2) Implementación mínima que lo pasa —
       `subscription.errors.ts` (`DEVICE_SUBSCRIPTION_REQUIRED`,
       `DeviceNotSubscribedError`), inyección en `ClaimDeviceUseCase`, chequeo
       justo antes de `this.devices.claim(...)`, rama en
       `device-error.mapper.ts`
-- [ ] (3) Refactor con tests verdes — los tests previos de #7/#26
+- [x] (3) Refactor con tests verdes — los tests previos de #7/#26
       (`devices.e2e-spec.ts`, `claim-device.use-case.spec.ts`) siguen verdes sin
       editarlos, gracias al backfill de R17
 
 ## R8 — `PetTrackingGuard` y el body del 402
 
-- [ ] (1) Escribir test que falla para R8 —
+- [x] (1) Escribir test que falla para R8 —
       `src/modules/subscriptions/infrastructure/guards/pet-tracking.guard.spec.ts`
       con repo mock: `isPetTracked` `false` ⇒ `HttpException` con
       `getStatus() === 402` y `getResponse()` **exactamente**
       `{statusCode:402, code:'DEVICE_SUBSCRIPTION_REQUIRED', message:'Pet tracking requires an active device subscription'}`;
       `true` ⇒ `canActivate` devuelve `true`; `request.petMembership`
       `undefined` ⇒ `NotFoundException` y `isPetTracked` **no** llamado
-- [ ] (2) Implementación mínima que lo pasa —
+- [x] (2) Implementación mínima que lo pasa —
       `pet-tracking.guard.ts` con `HttpException` +
       `HttpStatus.PAYMENT_REQUIRED` (`@nestjs/common` **no** exporta
       `PaymentRequiredException`)
-- [ ] (3) Refactor con tests verdes — el literal del `code` sale de la constante
+- [x] (3) Refactor con tests verdes — el literal del `code` sale de la constante
       `DEVICE_SUBSCRIPTION_REQUIRED` que R7 ya creó, no re-tecleado
 
 ## R15 — `SubscriptionsModule` y su cableado
 
-- [ ] (1) Escribir test que falla para R15 — e2e mínimo que arranca `AppModule`
+- [x] (1) Escribir test que falla para R15 — e2e mínimo que arranca `AppModule`
       y golpea una ruta gateada: sin el módulo cableado, Nest falla al resolver
       `SUBSCRIPTION_REPOSITORY` del guard
-- [ ] (2) Implementación mínima que lo pasa — `subscriptions.module.ts`
+- [x] (2) Implementación mínima que lo pasa — `subscriptions.module.ts`
       (providers + exports, sin controllers) e `imports: [..., SubscriptionsModule]`
       en `positions.module.ts`, `activity.module.ts`, `geofences.module.ts`,
       `devices.module.ts`
-- [ ] (3) Refactor con tests verdes — comprobar que `AlertsModule` e
+- [x] (3) Refactor con tests verdes — comprobar que `AlertsModule` e
       `IngestionModule` **no** lo importan (solo usan el predicado como función)
       y que `SubscriptionsModule` no importa ningún módulo de dominio (sin
       ciclos)
 
 ## R9 — La tabla exacta de rutas gateadas, y ninguna más
 
-- [ ] (1) Escribir test que falla para R9 — e2e que recorre **las 10 rutas** de
+- [x] (1) Escribir test que falla para R9 — e2e que recorre **las 10 rutas** de
       la tabla de [[requirements]] R9 sobre una mascota sin entitlement ⇒ `402`
       en todas; y sobre la lista de rutas **no** gateadas (incluidas
       `GET /v1/pets/:petId/device`, `DELETE /v1/pets/:petId/device`,
@@ -232,84 +232,84 @@ R2  → R3 → R4 → R5 → R13 → R6 → R7 → R8 → R15 → R9 → R10 →
       hoy, nunca `402`. Más el caso de seguridad: usuario **sin** membresía
       sobre una mascota **con** entitlement ⇒ `404`, y `:petId` malformado ⇒
       `404`
-- [ ] (2) Implementación mínima que lo pasa — `@UseGuards(PetAccessGuard,
+- [x] (2) Implementación mínima que lo pasa — `@UseGuards(PetAccessGuard,
       PetTrackingGuard)` en `PositionsController`, `TripsController`,
       `ActivityController`, `GeofencesController` (decorador de clase; handlers
       intactos)
-- [ ] (3) Refactor con tests verdes — confirmar que no se creó ningún
+- [x] (3) Refactor con tests verdes — confirmar que no se creó ningún
       `*.controller.ts` nuevo ni ninguna ruta nueva
 
 ## R10 — `/v1/alerts` filtra, nunca responde 402
 
-- [ ] (1) Escribir test que falla para R10 — e2e: usuario con mascota A
+- [x] (1) Escribir test que falla para R10 — e2e: usuario con mascota A
       (vigente) y B (sin suscripción), una alerta en cada una ⇒
       `GET /v1/alerts` responde `200` con la de A y **cero** de B; `POST
       /v1/alerts/:id/ack` sobre la de B ⇒ `404`; ninguna respuesta de `/v1/alerts`
       es `402`; el `nextCursor` sigue teniendo el mismo shape
-- [ ] (2) Implementación mínima que lo pasa — joins de entitlement en
+- [x] (2) Implementación mínima que lo pasa — joins de entitlement en
       `listForMember()` y `findForMember()` de
       `alert.drizzle.repository.ts`. `ListAlertsUseCase`, `AckAlertUseCase`,
       `AlertsController` y los mappers **no se tocan**
-- [ ] (3) Refactor con tests verdes — `test/alerts-center-notifier.e2e-spec.ts`
+- [x] (3) Refactor con tests verdes — `test/alerts-center-notifier.e2e-spec.ts`
       sigue verde sin editarlo
 
 ## R11 — Mascota compartida: el no-owner ve el mapa sin suscripción propia
 
-- [ ] (1) Escribir test que falla para R11 — e2e: owner + miembro `family`
+- [x] (1) Escribir test que falla para R11 — e2e: owner + miembro `family`
       activo sobre la misma mascota con collar suscrito ⇒ el `family` recibe
       `200` en `GET /v1/pets/:petId/positions/last`,
       `GET /v1/pets/:petId/trips` y `GET /v1/pets/:petId/geofences`, sin ninguna
       fila de suscripción ligada a su `user_id`
-- [ ] (2) Implementación mínima que lo pasa — ninguna: debe pasar solo, porque
+- [x] (2) Implementación mínima que lo pasa — ninguna: debe pasar solo, porque
       `isPetTracked` no recibe `userId` (R3). Si falla, alguien introdujo una
       dimensión de usuario y hay que quitarla
-- [ ] (3) Refactor con tests verdes — grep: no existe ninguna columna, tipo ni
+- [x] (3) Refactor con tests verdes — grep: no existe ninguna columna, tipo ni
       parámetro que ligue `device_subscriptions` a `users`
 
 ## R16 — El contrato HTTP no cambia de forma
 
-- [ ] (1) Escribir test que falla para R16 — e2e/unitario:
+- [x] (1) Escribir test que falla para R16 — e2e/unitario:
       `Object.keys(response.body).sort()` de `GET /v1/pets/:petId` es
       exactamente la lista de 24 claves de [[requirements]] R16, y las 5 de
       `device`; con entitlement, las respuestas de positions, trips,
       activity/daily, geofences y alerts tienen las mismas claves que antes
-- [ ] (2) Implementación mínima que lo pasa — ninguna: propiedad de ausencia.
+- [x] (2) Implementación mínima que lo pasa — ninguna: propiedad de ausencia.
       Si falla, se añadió una clave y hay que quitarla
-- [ ] (3) Refactor con tests verdes — pegar en [[traceability]] la salida de
+- [x] (3) Refactor con tests verdes — pegar en [[traceability]] la salida de
       `grep -rn "tracked\|entitled\|planCode\|subscription" backend-pet-tracker/src/modules/*/infrastructure/mappers/`
       (debe ser vacía)
 
 ## R14 — Cero acoplamiento a proveedores de pago
 
-- [ ] (1) Escribir test que falla para R14 — el "test" es el grep, registrado en
+- [x] (1) Escribir test que falla para R14 — el "test" es el grep, registrado en
       [[traceability]]:
       `grep -rni "stripe\|paypal\|mercadopago\|checkout.session\|webhook" backend-pet-tracker/src/`
       ⇒ cero coincidencias; `git diff` de `backend-pet-tracker/package.json`
       sin dependencias nuevas; `git diff` de `.env.example` vacío
-- [ ] (2) Implementación mínima que lo pasa — ninguna, es una restricción
-- [ ] (3) Refactor con tests verdes — confirmar que `docs/conventions.md`
+- [x] (2) Implementación mínima que lo pasa — ninguna, es una restricción
+- [x] (3) Refactor con tests verdes — confirmar que `docs/conventions.md`
       §Variables de entorno no gana ninguna fila
 
 ## R12 — Contrato heredado por #18 (ai-explainer), sin código de nutrición
 
-- [ ] (1) Escribir test que falla para R12 — grep registrado en
+- [x] (1) Escribir test que falla para R12 — grep registrado en
       [[traceability]]: `ls backend-pet-tracker/src/modules/nutrition` ⇒ no
       existe, y `grep -rn "aiExplanation" backend-pet-tracker/src/` ⇒ cero
-- [ ] (2) Implementación mínima que lo pasa — ninguna en `src/`: la sección
+- [x] (2) Implementación mínima que lo pasa — ninguna en `src/`: la sección
       [[design]] §Contrato heredado por #18 ya está escrita en esta spec y es el
       entregable
-- [ ] (3) Refactor con tests verdes — verificar que `SubscriptionsModule`
+- [x] (3) Refactor con tests verdes — verificar que `SubscriptionsModule`
       **exporta** `SUBSCRIPTION_REPOSITORY` (sin eso, #18 no puede consumirlo)
 
 ## R18 — `docs/data-model.md`
 
-- [ ] (1) Escribir test que falla para R18 — verificación documental: el ERD no
+- [x] (1) Escribir test que falla para R18 — verificación documental: el ERD no
       contiene `device_subscriptions` y el catálogo no tiene su fila
-- [ ] (2) Implementación mínima que lo pasa — añadir
+- [x] (2) Implementación mínima que lo pasa — añadir
       `devices ||--o| device_subscriptions : "subscribed"` al ERD y la fila de
       catálogo con columnas, enum de `status`, la gracia **derivada**
       (`current_period_end` + `DEVICE_SUBSCRIPTION_GRACE_DAYS`, no un estado) y
       los tres caminos de alta (backfill de la migración, `seed:devices`,
       `subscription:set`)
-- [ ] (3) Refactor con tests verdes — `./init.sh` completo en verde y
+- [x] (3) Refactor con tests verdes — `./init.sh` completo en verde y
       [[traceability]] sin ninguna fila "pendiente"

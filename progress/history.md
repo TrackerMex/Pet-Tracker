@@ -1421,3 +1421,27 @@ Deuda detectada (fuera de alcance, candidata a limpieza propia):
 - **Commits:** spec `b843d5a`, aprobación `f24e1c6`, handoff `7de0445`,
   implementación `7b1b16b..6b256d9` (21 commits, rojo→verde separado por R-id).
 - **Estado final:** done
+
+## Sesión 2026-08-17 — device-subscriptions (#25)
+
+- **Feature/branch:** `device-subscriptions`,
+  `feature/25-device-subscriptions`.
+- **Alcance:** R1–R18 implementados en el orden obligatorio. Tabla y migración,
+  predicado único de entitlement, repositorio, poller, claim, guard, diez rutas
+  de tracking, filtro de alertas, CLI, seed/backfill y modelo de datos.
+- **Seguridad:** `PetTrackingGuard` se ejecuta después de `PetAccessGuard`; el
+  402 nunca adelanta el 404 opaco de membresía. El guard de acceso y los mappers
+  de respuesta permanecen intactos.
+- **TDD/trazabilidad:** commits rojo→verde separados por requisito aplicable;
+  R5, R11 y R16 son propiedades verdes, R12/R14 restricciones de ausencia y R18
+  usa rojo documental. Hashes completos en
+  `specs/device-subscriptions/traceability.md`.
+- **Verificación:** `init.sh` exit 0; 136 suites / 1,000 tests backend, 2 / 14
+  infra, 28 del harness y 18 suites / 292 tests e2e pasados; lint y typecheck
+  verdes. Dos suites / 6 e2e omitidos por sus gates existentes.
+- **Entorno:** se reconciliaron solo las filas faltantes 0009–0011 del journal
+  del Postgres Docker y se aplicó 0012 localmente. Sin recursos AWS reales,
+  deploy, base no local ni proveedor de pago.
+- **Manual:** smoke del collar Wialon real y `subscription:set` sobre ese collar
+  reservados al humano.
+- **Estado final:** done.

@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-08-16
-**Features completadas**: 25/30 (`feature_list.json`)
+**Última actualización**: 2026-08-17
+**Features completadas**: 26/30 (`feature_list.json`)
 **En progreso**: ninguna.
-**Pendientes**: 5, por prioridad — **P2**: #25 `device-subscriptions`, #28
-`test-dev-resource-isolation`, #29 `wialon-session-reuse`. **P3**: #17
+**Pendientes**: 4, por prioridad — **P2**: #28 `test-dev-resource-isolation`,
+#29 `wialon-session-reuse`. **P3**: #17
 `nutrition-profile-engine`, #18 `nutrition-ai-explainer`.
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
@@ -69,6 +69,15 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Estado actual
+
+- **`device-subscriptions` (#25) done** (2026-08-17): el entitlement cuelga del
+  collar mediante `device_subscriptions`; un único predicado SQL alimenta
+  repositorio, poller, claim, las 10 rutas de tracking y el filtro de alertas.
+  La gracia es de 3 días, vencer no libera la asignación y reactivar restablece
+  la ingesta sin re-claim. `PetAccessGuard` conserva precedencia sobre el 402,
+  el contrato HTTP permanece intacto y `src/` no contiene proveedores de pago.
+  `init.sh` completo verde. Siguiente feature elegible: #28
+  `test-dev-resource-isolation`.
 
 - **`reject-future-positions` (#27) done** (2026-08-16): cierra un **fallo
   permanente disparable por hardware ordinario**, destapado el 2026-08-14
@@ -718,6 +727,17 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-08-17** — Implementación completa de `device-subscriptions` (#25),
+  R1–R18 en el orden obligatorio de la spec y con historial TDD rojo→verde por
+  requisito aplicable. Se añadió el modelo `device_subscriptions`, el predicado
+  único de entitlement, los gates de poller/claim/tracking, el filtro de alertas,
+  el CLI manual y el backfill de grandfathering. La precedencia 404 de
+  `PetAccessGuard` sobre el 402 queda fijada por test; no se tocaron el guard de
+  acceso ni los mappers de respuesta. Verificación final: build y synth verdes,
+  1,000 tests backend, 14 de infra, 28 del harness y 292 e2e pasados; lint y
+  typecheck verdes. No se crearon recursos AWS ni se usaron proveedores de pago.
+  Los smokes sobre el collar Wialon real quedan reservados al humano.
 
 - **2026-08-16** — Ciclo SDD completo de `init-env-drift-warning` (#23),
   reparto Claude/Codex, sin ninguna parada: `spec_author` escribió la spec

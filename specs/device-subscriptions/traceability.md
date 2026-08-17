@@ -1,6 +1,6 @@
 ---
 feature: "device-subscriptions"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec]
 ---
 
@@ -66,5 +66,5 @@ backend-pet-tracker/src/modules/subscriptions/infrastructure/entitlement.predica
 
 | Qué | Por qué no lo cierra un agente | Estado |
 |---|---|---|
-| Smoke de GPS real (unidad Wialon `401775970`) tras el backfill de R17 | exige `SIM_MODE=false` + token real y hardware físico (`CLAUDE.md` §Excepciones) | pendiente |
-| `subscription:set` contra el collar real | escribe sobre el device que alimenta el smoke | pendiente |
+| Smoke de GPS real (unidad Wialon `401775970`) tras el backfill de R17 | exige `SIM_MODE=false` + token real y hardware físico (`CLAUDE.md` §Excepciones) | reservado al humano |
+| `subscription:set` contra el collar real | escribe sobre el device que alimenta el smoke | reservado al humano |
