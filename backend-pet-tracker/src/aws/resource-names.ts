@@ -1,3 +1,4 @@
+import { ConfigService } from '@nestjs/config';
 import {
   BUCKET_MEDIA,
   EVENT_BUS_NAME,
@@ -11,6 +12,7 @@ import {
   TABLE_POSITIONS,
   resourceName,
 } from './constants';
+import { resolveAwsMode } from './aws-clients';
 
 export const RESOURCE_SUFFIX_TEST = 'test';
 
@@ -43,8 +45,28 @@ export function buildResourceNames(suffix: string): AwsResourceNames {
 }
 
 export function resolveResourceSuffix(
-  _rawMode: string | undefined,
+  rawMode: string | undefined,
   rawNodeEnv: string | undefined,
 ): string {
+  if (resolveAwsMode(rawMode) === 'aws') return '';
   return (rawNodeEnv ?? '').trim() === 'test' ? RESOURCE_SUFFIX_TEST : '';
+}
+
+export function resolveResourceNamesFromEnv(
+  env: NodeJS.ProcessEnv,
+): AwsResourceNames {
+  return buildResourceNames(
+    resolveResourceSuffix(env.AWS_MODE, env.NODE_ENV),
+  );
+}
+
+export function resolveResourceNamesFromConfigService(
+  config: ConfigService,
+): AwsResourceNames {
+  return buildResourceNames(
+    resolveResourceSuffix(
+      config.get<string>('AWS_MODE'),
+      config.get<string>('NODE_ENV'),
+    ),
+  );
 }
