@@ -20,7 +20,7 @@ tags: [harness, spec]
 | R10 | pendiente | pendiente |
 | R11 | pendiente | pendiente |
 | R12 | pendiente | pendiente |
-| R13 | pendiente | pendiente |
+| R13 | `test/device-subscriptions.e2e-spec.ts::R13 (device-subscriptions #25): idempotent subscription:set` | `6b07d89` red; `6ba4350` CLI/upsert |
 | R14 | pendiente | pendiente |
 | R15 | pendiente | pendiente |
 | R16 | pendiente | pendiente |
