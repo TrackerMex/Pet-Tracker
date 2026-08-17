@@ -209,13 +209,29 @@ tags: [harness, spec]
 
 ## R11 — Guarda anti-regresión: nadie importa los diez literales
 
-- [ ] (1) Escribir test que falla para R11 en el archivo nuevo
+> **CORRECCIÓN del 2026-08-17, gate humano.** Este requisito **nace verde**,
+> igual que R7 y R10, y se añadió a la lista de excepciones a C4 de
+> [[traceability]]. Es una guarda anti-regresión por su propio enunciado, y el
+> punto (2) de abajo ya lo anticipaba ("si R4 y R9 se hicieron completos,
+> deberían ser cero"). **No fabriques un fallo**: commitea el test verde
+> diciéndolo en el mensaje — pero antes añade la aserción anti-vacío del punto
+> (1b), que es condición para dar R11 por cubierto.
+
+- [x] (1) Escribir el test de R11 en el archivo nuevo
       `backend-pet-tracker/src/aws/resource-names-guard.spec.ts`, con la lista
       blanca exacta de [[design]] §D8 y el patrón de escaneo de
       `src/aws/relative-import-guard.spec.ts`.
-- [ ] (2) Implementación mínima: corregir los import sites que la guarda
-      delate. Si R4 y R9 se hicieron completos, deberían ser cero.
-- [ ] (3) Refactor con tests verdes.
+- [ ] (1b) **Aserción anti-vacío, obligatoria.** `expect(offenders).toEqual([])`
+      pasa igual si `collectTsFiles` devuelve **cero archivos** — basta con que
+      alguien mueva `src/` o cambie la profundidad de `join(__dirname, '..',
+      '..')` para que la guarda se apague en silencio. Asevera además que el
+      escaneo encontró archivos, con un umbral holgado (hoy hay 408 `.ts` en
+      `src/` y 21 en `test/`; algo como `> 100` sirve — no un número exacto que
+      se rompa al crecer el repo). Mismo defecto que motiva [[design]] §D2 y
+      que el review de #25 encontró como O4.
+- [ ] (2) Sin implementación propia: corregir los import sites que la guarda
+      delate. Si R4 y R9 se hicieron completos, son cero.
+- [ ] (3) Commit verde único, con la excepción declarada en el mensaje.
 
 ## R12 — El stack CDK no cambia
 

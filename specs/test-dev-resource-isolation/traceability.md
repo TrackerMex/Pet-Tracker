@@ -18,7 +18,7 @@ tags: [harness, spec]
 | R8 | `backend-pet-tracker/src/aws/run-provisioning.spec.ts::R8: runProvisioning aborta en modo aws` | `backend-pet-tracker/src/aws/run-provisioning.ts` (**sin cambios** — guarda de regresión) | verde por excepción aprobada: `c194ce3 test(test-dev-resource-isolation): strengthen green aws provisioning guard (R8)` |
 | R9 | `backend-pet-tracker/test/resource-isolation.e2e-spec.ts::R9: las colas de dev y test tienen URLs distintas` | las 7 suites e2e + `backend-pet-tracker/test/localstack-provisioning.e2e-spec.ts` + `backend-pet-tracker/test/aws-real-ingest.e2e-spec.ts` + `backend-pet-tracker/src/aws/cdk-dev-stack-docs.spec.ts` (solo L19) | rojo: `6c8c1b2 test(test-dev-resource-isolation): add failing e2e resource isolation case (R9)`; suites: `0bad511`, `0ddbda4`, `a454807`, `8afca45`, `3c53a24`, `0b733c8`, `6003490`; provisioning: `0394f37`; AWS real: `026e744`; verde: 9 suites / 129 tests |
 | R10 | `backend-pet-tracker/test/resource-isolation.e2e-spec.ts::R10: la ingesta no mueve las colas de desarrollo` | sin código propio (verifica R4+R6+R9) — **guarda de regresión, nace verde** | verde por excepción aprobada: `6adf304 test(test-dev-resource-isolation): add approved green ingestion isolation guard (R10)` |
-| R11 | pendiente — previsto `backend-pet-tracker/src/aws/resource-names-guard.spec.ts::R11: nadie importa los diez literales de nombre` | `backend-pet-tracker/src/aws/resource-names-guard.spec.ts` | pendiente |
+| R11 | `backend-pet-tracker/src/aws/resource-names-guard.spec.ts::R11: nadie importa los diez literales de nombre` | `backend-pet-tracker/src/aws/resource-names-guard.spec.ts` — **guarda de regresión, nace verde** | pendiente — commit verde por excepción aprobada el 2026-08-17, **con la aserción anti-vacío exigida abajo** |
 | R12 | pendiente — previsto `backend-pet-tracker/src/aws/resource-names-guard.spec.ts::R12: el stack CDK no importa la resolucion de sufijo` | `infra/` (**sin cambios** — evidencia: `git diff --name-only`) | pendiente |
 | R13 | pendiente — previsto `backend-pet-tracker/src/aws/resource-names-guard.spec.ts::R13: verification.md documenta el recuento manual` | `docs/verification.md` | pendiente |
 | R14 | pendiente — sin test; evidencia: `git log --oneline` de `feature/28-test-dev-resource-isolation`, esta tabla completa y `progress/impl_test-dev-resource-isolation.md` con `./init.sh` exit 0 | `progress/impl_test-dev-resource-isolation.md` | pendiente |
@@ -28,10 +28,37 @@ Convención de commit: `feat(test-dev-resource-isolation): <desc> (R1,R2)`, con 
 commit del test en rojo (`test(test-dev-resource-isolation): …`) **antes** que el
 de la implementación — C4 exige historial rojo→verde por R-id.
 
-**Excepción declarada:** R5, R7, R8, R10 y R12 son guardas de regresión y
+**Excepción declarada:** R5, R7, R8, R10, R11 y R12 son guardas de regresión y
 **nacen verdes** (no hay rojo posible: afirman que algo que hoy funciona sigue
 funcionando). Su commit de test debe decirlo explícitamente en el mensaje. Las
-otras nueve filas exigen rojo→verde.
+otras ocho filas exigen rojo→verde.
+
+**Causa raíz de las tres paradas (R7, R10, R11).** No son tres incidentes: son
+el mismo defecto de esta spec tres veces. `tasks.md` ordena las guardas de
+regresión **después** de los requisitos que las vuelven verdes, y la lista de
+excepciones se escribió mirando solo las tres guardas obvias (R5, R8, R12).
+Cualquier requisito que verifique lo que otro arregló nace verde por
+construcción. El implementador paró las tres veces en vez de fabricar un
+fallo, que es la conducta correcta. Si aparece un cuarto caso, la resolución es
+la misma sin volver a consultar.
+
+**R11 se añadió a la excepción durante la implementación** (gate humano del
+2026-08-17, mismo criterio que R7 y R10). Es una guarda anti-regresión por su
+propio enunciado: asevera que nadie importa los diez literales de nombre, cosa
+que R4 y R9 ya dejaron en cero infractores. Debió estar en la lista original
+junto a R5, R8 y R12.
+
+**Condición para su commit — aserción anti-vacío obligatoria.** El test recorre
+`src/` y `test/` con `collectTsFiles` y asevera `expect(offenders).toEqual([])`.
+Esa aserción pasa igual con 429 archivos escaneados y cero infractores que con
+**cero archivos escaneados**: si alguien mueve `src/` o cambia la profundidad
+de `join(__dirname, '..', '..')`, la guarda se apaga en silencio y nadie se
+entera. El test SHALL asertar además que el escaneo encontró archivos (hoy son
+408 en `src/` y 21 en `test/`; un umbral holgado tipo `> 100` sirve, no un
+número exacto que se rompa al crecer el repo). Es el mismo defecto que motiva
+[[design]] §D2 y que el review de #25 encontró como O4 — y sería especialmente
+irónico dentro de la feature contra los fallos silenciosos. Sin esa aserción,
+R11 no se da por cubierto.
 
 **R10 se añadió a la excepción durante la implementación** (gate humano del
 2026-08-17, mismo criterio que R7 más abajo). El orden de [[tasks]] pone R4, R6
