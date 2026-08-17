@@ -6,7 +6,7 @@ import {
 } from '@aws-sdk/client-sqs';
 import type { Message } from '@aws-sdk/client-sqs';
 import { Logger } from '@nestjs/common';
-import { QUEUE_NOTIFICATIONS } from '@/aws/constants';
+import { buildResourceNames } from '@/aws/resource-names';
 import { Reminder } from '@/modules/reminders/domain/entities/reminder.entity';
 import type { ReminderRepository } from '@/modules/reminders/domain/repositories/reminder.repository';
 import type { PushTokenRepository } from '@/modules/users/domain/repositories/push-token.repository';
@@ -19,6 +19,7 @@ const PET_ID = '01924a3f-0000-7000-8000-0000000000aa';
 const ALERT_ID = '01924a3f-0000-7000-8000-0000000000bb';
 const TOKEN_A = 'ExponentPushToken[aaaaaaaaaaaaaaaaaaaaAA]';
 const TOKEN_B = 'ExponentPushToken[bbbbbbbbbbbbbbbbbbbbBB]';
+const NAMES = buildResourceNames('');
 
 type MockOf<T> = { [K in keyof T]: jest.Mock };
 
@@ -33,7 +34,7 @@ function sqsStub(batches: Message[][]): SqsStub {
 
   const send = jest.fn((command: unknown) => {
     if (command instanceof GetQueueUrlCommand) {
-      return command.input.QueueName === QUEUE_NOTIFICATIONS
+      return command.input.QueueName === NAMES.notifications
         ? Promise.resolve({ QueueUrl: QUEUE_URL })
         : Promise.reject(new Error('unexpected queue name'));
     }
@@ -87,7 +88,7 @@ function service(
   tokens: MockOf<PushTokenRepository>,
   sender: MockOf<PushSender>,
 ): NotifierConsumerService {
-  return new NotifierConsumerService(sqs.client, tokens, sender);
+  return new NotifierConsumerService(sqs.client, NAMES, tokens, sender);
 }
 
 describe('R7: drenado de notifications y parseo zod del contrato v1 congelado de #12', () => {
@@ -385,7 +386,13 @@ function reminderService(
   sender: MockOf<PushSender>,
   reminders: ReminderRepository,
 ): NotifierConsumerService {
-  return new NotifierConsumerService(sqs.client, tokens, sender, reminders);
+  return new NotifierConsumerService(
+    sqs.client,
+    NAMES,
+    tokens,
+    sender,
+    reminders,
+  );
 }
 
 describe('R7 (pet-reminders #16): notifier procesa reminder idempotentemente', () => {
