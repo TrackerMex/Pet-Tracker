@@ -8,10 +8,10 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { uuidv7 } from 'uuidv7';
 import {
-  TABLE_POSITIONS,
   TABLE_POSITIONS_PARTITION_KEY,
   TABLE_POSITIONS_SORT_KEY,
 } from '@/aws/constants';
+import { resolveResourceNamesFromEnv } from '@/aws/resource-names';
 import { DRIZZLE } from '@/db/drizzle.constants';
 import { auditLog } from '@/db/schema/audit-log.schema';
 import { devices, petDevices } from '@/db/schema/devices.schema';
@@ -26,6 +26,7 @@ import { FLAG_LOW_ACCURACY, FLAG_SUSPECT_JUMP } from '@/pipeline/constants';
 import { AppModule } from './../src/app.module';
 
 const DYNAMO_BATCH_WRITE_MAX = 25;
+const names = resolveResourceNamesFromEnv(process.env);
 
 interface PositionItemBody {
   items: Array<Record<string, unknown>>;
@@ -165,7 +166,7 @@ describe('Positions API (e2e)', () => {
       await documents.send(
         new BatchWriteCommand({
           RequestItems: {
-            [TABLE_POSITIONS]: items
+            [names.positionsTable]: items
               .slice(offset, offset + DYNAMO_BATCH_WRITE_MAX)
               .map((Item) => ({ PutRequest: { Item } })),
           },
