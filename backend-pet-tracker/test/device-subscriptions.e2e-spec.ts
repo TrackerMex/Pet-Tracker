@@ -8,6 +8,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { eq, inArray, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import request from 'supertest';
+import type { App } from 'supertest/types';
 import { uuidv7 } from 'uuidv7';
 import { DRIZZLE } from '@/db/drizzle.constants';
 import { AppModule } from '@/app.module';
@@ -33,7 +34,7 @@ import { setDeviceSubscription } from '../scripts/set-device-subscription';
 import { seedSimulatedDevices } from '../scripts/seed-devices';
 
 describe('Device subscriptions (e2e)', () => {
-  let app: INestApplication;
+  let app: INestApplication<App>;
   let db: NodePgDatabase;
   let subscriptions: SubscriptionDrizzleRepository;
   let tokenService: TokenService;
@@ -422,12 +423,6 @@ describe('Device subscriptions (e2e)', () => {
             definition: 'PRIMARY KEY (device_id)',
           }),
           expect.objectContaining({
-            constraint_type: 'f',
-            definition: expect.stringMatching(
-              /^FOREIGN KEY \(device_id\) REFERENCES devices\(id\)$/,
-            ),
-          }),
-          expect.objectContaining({
             constraint_name: 'device_subscriptions_status_check',
             constraint_type: 'c',
           }),
@@ -437,6 +432,9 @@ describe('Device subscriptions (e2e)', () => {
           }),
         ]),
       );
+      expect(
+        constraints.rows.find((row) => row.constraint_type === 'f')?.definition,
+      ).toMatch(/^FOREIGN KEY \(device_id\) REFERENCES devices\(id\)$/);
     });
   });
 
@@ -692,8 +690,9 @@ describe('Device subscriptions (e2e)', () => {
           (command): command is SendMessageCommand =>
             command instanceof SendMessageCommand,
         )
-        .map((command) =>
-          JSON.parse(command.input.MessageBody as string),
+        .map(
+          (command) =>
+            JSON.parse(command.input.MessageBody as string) as unknown,
         ) as Array<Record<string, unknown> & { positions: RawPosition[] }>;
 
       expect(bodies.map(({ positions: batch }) => batch.length)).toEqual([
