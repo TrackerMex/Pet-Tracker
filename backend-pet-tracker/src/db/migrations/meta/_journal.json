@@ -85,6 +85,13 @@
       "when": 1786649564040,
       "tag": "0011_fancy_turbo",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1786978434954,
+      "tag": "0012_absent_black_bolt",
+      "breakpoints": true
     }
   ]
 }
