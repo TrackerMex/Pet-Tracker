@@ -1,4 +1,18 @@
 import { ConfigService } from '@nestjs/config';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import {
+  BUCKET_MEDIA,
+  EVENT_BUS_NAME,
+  QUEUE_GEOFENCE_EVENTS,
+  QUEUE_GEOFENCE_EVENTS_DLQ,
+  QUEUE_NOTIFICATIONS,
+  QUEUE_NOTIFICATIONS_DLQ,
+  QUEUE_POSITIONS_RAW,
+  QUEUE_POSITIONS_RAW_DLQ,
+  RULE_GEOFENCE_EVENTS,
+  TABLE_POSITIONS,
+} from './constants';
 import {
   RESOURCE_SUFFIX_TEST,
   buildResourceNames,
@@ -101,5 +115,31 @@ describe('R3: AWS_MODE=aws fuerza sufijo vacio', () => {
     expect(resolveResourceNamesFromConfigService(config)).toEqual(
       developmentNames,
     );
+  });
+});
+
+describe('R5: constants.ts sigue siendo literales const', () => {
+  it('mantiene los diez nombres como strings', () => {
+    const names = [
+      QUEUE_POSITIONS_RAW,
+      QUEUE_POSITIONS_RAW_DLQ,
+      QUEUE_NOTIFICATIONS,
+      QUEUE_NOTIFICATIONS_DLQ,
+      QUEUE_GEOFENCE_EVENTS,
+      QUEUE_GEOFENCE_EVENTS_DLQ,
+      RULE_GEOFENCE_EVENTS,
+      TABLE_POSITIONS,
+      BUCKET_MEDIA,
+      EVENT_BUS_NAME,
+    ];
+
+    for (const name of names) expect(typeof name).toBe('string');
+  });
+
+  it('no acopla constants.ts al entorno ni a NestJS', () => {
+    const source = readFileSync(join(__dirname, 'constants.ts'), 'utf8');
+
+    expect(source).not.toContain('process.env');
+    expect(source).not.toContain('@nestjs/config');
   });
 });
