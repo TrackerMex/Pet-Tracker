@@ -21,7 +21,7 @@ tags: [harness, spec]
 | R11 | `test/device-subscriptions.e2e-spec.ts::R11 (device-subscriptions #25): entitlement is shared by pet members` | `e534063` propiedad verde tras R9; sin implementación adicional |
 | R12 | pendiente | pendiente |
 | R13 | `test/device-subscriptions.e2e-spec.ts::R13 (device-subscriptions #25): idempotent subscription:set` | `6b07d89` red; `6ba4350` CLI/upsert |
-| R14 | grep de proveedores + diff de dependencias/env/docs | commit de evidencia en esta fila; restricción verde, sin implementación |
+| R14 | grep de proveedores + diff de dependencias/env/docs | `3a83c14` restricción verde; sin implementación |
 | R15 | `test/device-subscriptions.e2e-spec.ts::R15 (device-subscriptions #25): subscriptions module wiring` | `c06fd74` red; `b8bc340` module wiring |
 | R16 | `test/device-subscriptions.e2e-spec.ts::R16 (device-subscriptions #25): HTTP response shape stays frozen` | `746c476` propiedad verde; sin implementación adicional |
 | R17 | `test/device-subscriptions.e2e-spec.ts::R17 (device-subscriptions #25): grandfather existing devices` | `f171ffa` red; `e86435f` backfill + seed |
