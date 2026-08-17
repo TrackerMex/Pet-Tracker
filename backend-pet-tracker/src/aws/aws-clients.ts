@@ -59,7 +59,7 @@ function assertNoEndpoint(endpoint: string | undefined): string {
   return '';
 }
 
-function resolveAwsMode(raw: string | undefined): AwsMode {
+export function resolveAwsMode(raw: string | undefined): AwsMode {
   return (raw ?? '').trim().toLowerCase() === 'aws' ? 'aws' : 'local';
 }
 

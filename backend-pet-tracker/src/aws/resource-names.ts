@@ -12,6 +12,8 @@ import {
   resourceName,
 } from './constants';
 
+export const RESOURCE_SUFFIX_TEST = 'test';
+
 export interface AwsResourceNames {
   positionsRaw: string;
   positionsRawDlq: string;
@@ -38,4 +40,11 @@ export function buildResourceNames(suffix: string): AwsResourceNames {
     mediaBucket: resourceName(BUCKET_MEDIA, suffix),
     eventBus: resourceName(EVENT_BUS_NAME, suffix),
   };
+}
+
+export function resolveResourceSuffix(
+  _rawMode: string | undefined,
+  rawNodeEnv: string | undefined,
+): string {
+  return (rawNodeEnv ?? '').trim() === 'test' ? RESOURCE_SUFFIX_TEST : '';
 }
