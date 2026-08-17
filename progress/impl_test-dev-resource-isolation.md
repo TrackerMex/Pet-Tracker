@@ -40,6 +40,24 @@ Tests: 3 passed, 3 total
 El trabajo se detuvo sin fabricar un fallo. El gate humano del 2026-08-17
 aprobó R10 como guarda verde en `c74b031`; el test se commiteó en `6adf304`.
 
+## Contradicción de spec — R11
+
+La guarda exigida por R11 nació verde después de completar las migraciones de
+R4 y R9: el escaneo exacto de `src/**` y `test/**` no encontró importadores de
+los diez nombres fuera de la lista blanca de D8. `tasks.md` anticipa que los
+infractores deberían ser cero, pero R11 no está en la lista de excepciones a
+C4 de `traceability.md`. Comando:
+
+```text
+pnpm exec jest --runInBand src/aws/resource-names-guard.spec.ts
+Test Suites: 1 passed, 1 total
+Tests: 1 passed, 1 total
+```
+
+El trabajo se detuvo sin fabricar un infractor. El gate humano del 2026-08-17
+aprobó R11 como guarda verde en `bfd572f`, condicionado a una aserción
+anti-vacío de más de 100 archivos; la guarda se commiteó en `a26ecf2`.
+
 ## Evidencia pendiente
 
 - Corrida final de `./init.sh`.
