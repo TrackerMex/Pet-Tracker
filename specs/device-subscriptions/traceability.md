@@ -8,7 +8,7 @@ tags: [harness, spec]
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | pendiente | pendiente |
+| R1 | `test/device-subscriptions.e2e-spec.ts::R1 (device-subscriptions #25): device_subscriptions schema` | `ae15c15` red; `d8eb957` schema + migration |
 | R2 | pendiente | pendiente |
 | R3 | pendiente | pendiente |
 | R4 | pendiente | pendiente |
