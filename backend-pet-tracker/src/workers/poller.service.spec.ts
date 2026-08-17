@@ -4,7 +4,7 @@ import {
   SQSClient,
 } from '@aws-sdk/client-sqs';
 import { Logger } from '@nestjs/common';
-import { QUEUE_POSITIONS_RAW } from '@/aws/constants';
+import { buildResourceNames } from '@/aws/resource-names';
 import type { WialonClient } from '@/integrations/wialon/wialon-client.interface';
 import { CLAIM_WATERMARK_LOOKBACK_MINUTES } from '@/modules/devices/application/use-cases/claim-device.use-case';
 import type { RawPosition } from '@/pipeline/types';
@@ -13,6 +13,7 @@ import { PollerService, POSITIONS_PER_MESSAGE_MAX } from './poller.service';
 
 const QUEUE_URL = 'http://localhost:4566/000000000000/positions-raw';
 const NOW = new Date('2026-08-01T12:00:00.000Z');
+const NAMES = buildResourceNames('');
 
 // Mocks como propiedades jest.Mock (no metodos de interface): evita el
 // falso positivo de @typescript-eslint/unbound-method en los expect().
@@ -94,7 +95,7 @@ function makeService(
   wialon: MockOf<WialonClient>,
   sqs: SQSClient,
 ): PollerService {
-  return new PollerService(store, wialon, sqs);
+  return new PollerService(store, wialon, sqs, NAMES);
 }
 
 describe('R9: poller — asignaciones activas -> getMessages(unitId, watermark, now) -> SQS {version:1,...} en lotes <=100', () => {
@@ -198,7 +199,7 @@ describe('R9: poller — asignaciones activas -> getMessages(unitId, watermark, 
     const getQueueUrl = commands.find(
       (command) => command instanceof GetQueueUrlCommand,
     ) as GetQueueUrlCommand;
-    expect(getQueueUrl.input.QueueName).toBe(QUEUE_POSITIONS_RAW);
+    expect(getQueueUrl.input.QueueName).toBe(NAMES.positionsRaw);
     const sendMessage = commands.find(
       (command) => command instanceof SendMessageCommand,
     ) as SendMessageCommand;

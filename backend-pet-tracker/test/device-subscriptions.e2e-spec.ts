@@ -10,6 +10,7 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import request from 'supertest';
 import type { App } from 'supertest/types';
 import { uuidv7 } from 'uuidv7';
+import { buildResourceNames } from '@/aws/resource-names';
 import { DRIZZLE } from '@/db/drizzle.constants';
 import { AppModule } from '@/app.module';
 import { alertEvents } from '@/db/schema/alerts.schema';
@@ -671,9 +672,14 @@ describe('Device subscriptions (e2e)', () => {
         }
         return Promise.resolve({ MessageId: 'r4' });
       });
-      const poller = new PollerService(new IngestionDrizzleStore(db), wialon, {
-        send,
-      } as unknown as SQSClient);
+      const poller = new PollerService(
+        new IngestionDrizzleStore(db),
+        wialon,
+        {
+          send,
+        } as unknown as SQSClient,
+        buildResourceNames(''),
+      );
 
       await poller.runOnce(now);
 
