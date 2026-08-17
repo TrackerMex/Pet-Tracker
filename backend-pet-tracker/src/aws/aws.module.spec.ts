@@ -83,9 +83,7 @@ describe('R4: AWS_RESOURCE_NAMES resuelve nombres sufijados', () => {
   });
 
   it('no lee NODE_ENV ni AWS_MODE directamente desde process.env en src', () => {
-    const directEnvRead = new RegExp(
-      'process[.]env[.](NODE_ENV|AWS_MODE)',
-    );
+    const directEnvRead = new RegExp('process[.]env[.](NODE_ENV|AWS_MODE)');
     const offenders = collectTsFiles(join(__dirname, '..')).filter((file) =>
       directEnvRead.test(readFileSync(file, 'utf8')),
     );

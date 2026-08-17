@@ -11,6 +11,14 @@ jest.mock('@aws-sdk/s3-request-presigner', () => ({
   getSignedUrl: jest.fn().mockResolvedValue('https://signed.example'),
 }));
 
+const getSignedUrlMock = getSignedUrl as unknown as jest.MockedFunction<
+  (
+    client: S3Client,
+    command: PutObjectCommand | GetObjectCommand,
+    options: { expiresIn: number },
+  ) => Promise<string>
+>;
+
 describe('R4: PhotoStorageS3Adapter usa los nombres inyectados', () => {
   const names = buildResourceNames('');
   const s3 = {} as S3Client;
@@ -34,11 +42,10 @@ describe('R4: PhotoStorageS3Adapter usa los nombres inyectados', () => {
     async (_kind, createUrl, Command) => {
       await createUrl();
 
-      expect(getSignedUrl).toHaveBeenCalledWith(s3, expect.any(Command), {
+      expect(getSignedUrlMock).toHaveBeenCalledWith(s3, expect.any(Command), {
         expiresIn: 300,
       });
-      const command = (getSignedUrl as jest.Mock).mock.calls[0][1] as
-        PutObjectCommand | GetObjectCommand;
+      const command = getSignedUrlMock.mock.calls[0][1];
       expect(command.input).toMatchObject({
         Bucket: names.mediaBucket,
         Key: 'pets/photo.jpg',

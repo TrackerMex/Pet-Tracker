@@ -71,8 +71,10 @@ describe('R6: runProvisioning crea los dos juegos de recursos', () => {
 
       expect(createdNames.sort()).toEqual(
         [
-          ...Object.values(buildResourceNames('')),
-          ...Object.values(buildResourceNames(RESOURCE_SUFFIX_TEST)),
+          ...(Object.values(buildResourceNames('')) as string[]),
+          ...(Object.values(
+            buildResourceNames(RESOURCE_SUFFIX_TEST),
+          ) as string[]),
         ].sort(),
       );
     } finally {
