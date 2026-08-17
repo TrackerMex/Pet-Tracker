@@ -2,10 +2,11 @@ import { QueryCommand } from '@aws-sdk/lib-dynamodb';
 import type { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 import { Inject, Injectable } from '@nestjs/common';
 import {
-  TABLE_POSITIONS,
   TABLE_POSITIONS_PARTITION_KEY,
   TABLE_POSITIONS_SORT_KEY,
 } from '@/aws/constants';
+import { AWS_RESOURCE_NAMES } from '@/aws/aws.constants';
+import type { AwsResourceNames } from '@/aws/resource-names';
 import type {
   PositionHistoryPage,
   PositionHistoryQuery,
@@ -28,6 +29,7 @@ export class PositionHistoryDynamoReader implements PositionHistoryReader {
   constructor(
     @Inject(POSITIONS_READ_DOC_CLIENT)
     private readonly documents: DynamoDBDocumentClient,
+    @Inject(AWS_RESOURCE_NAMES) private readonly names: AwsResourceNames,
   ) {}
 
   async queryPage(query: PositionHistoryQuery): Promise<PositionHistoryPage> {
@@ -35,7 +37,7 @@ export class PositionHistoryDynamoReader implements PositionHistoryReader {
 
     const result = await this.documents.send(
       new QueryCommand({
-        TableName: TABLE_POSITIONS,
+        TableName: this.names.positionsTable,
         // BETWEEN es inclusive en ambos extremos, como exige R10.
         KeyConditionExpression: `${TABLE_POSITIONS_PARTITION_KEY} = :pk AND ${TABLE_POSITIONS_SORT_KEY} BETWEEN :from AND :to`,
         ExpressionAttributeValues: {

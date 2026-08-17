@@ -3,14 +3,15 @@ import { join } from 'path';
 import { QueryCommand } from '@aws-sdk/lib-dynamodb';
 import type { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 import {
-  TABLE_POSITIONS,
   TABLE_POSITIONS_PARTITION_KEY,
   TABLE_POSITIONS_SORT_KEY,
 } from '@/aws/constants';
+import { buildResourceNames } from '@/aws/resource-names';
 import { POSITIONS_PAGE_LIMIT } from '@/modules/positions/positions.constants';
 import { PositionHistoryDynamoReader } from './position-history.dynamo.reader';
 
 const PET_A = '018f5a3e-0000-7000-8000-000000000001';
+const NAMES = buildResourceNames('');
 
 interface QueryInput {
   TableName?: string;
@@ -41,7 +42,7 @@ function fakeDocuments(output: Record<string, unknown> = { Items: [] }) {
 describe('R10: una sola Query por pagina, pk = PET#<petId>, sk BETWEEN inclusive, ascendente y Limit fijo', () => {
   it('emite la KeyConditionExpression del contrato con los limites en epoch ms', async () => {
     const { documents, lastInput, sent } = fakeDocuments();
-    const reader = new PositionHistoryDynamoReader(documents);
+    const reader = new PositionHistoryDynamoReader(documents, NAMES);
 
     await reader.queryPage({
       petId: PET_A,
@@ -51,7 +52,7 @@ describe('R10: una sola Query por pagina, pk = PET#<petId>, sk BETWEEN inclusive
     });
 
     expect(sent).toHaveLength(1);
-    expect(lastInput().TableName).toBe(TABLE_POSITIONS);
+    expect(lastInput().TableName).toBe(NAMES.positionsTable);
     expect(lastInput().KeyConditionExpression).toBe(
       `${TABLE_POSITIONS_PARTITION_KEY} = :pk AND ${TABLE_POSITIONS_SORT_KEY} BETWEEN :from AND :to`,
     );
@@ -64,7 +65,7 @@ describe('R10: una sola Query por pagina, pk = PET#<petId>, sk BETWEEN inclusive
 
   it('lee en orden cronologico ascendente con el Limit nombrado del modulo', async () => {
     const { documents, lastInput } = fakeDocuments();
-    const reader = new PositionHistoryDynamoReader(documents);
+    const reader = new PositionHistoryDynamoReader(documents, NAMES);
 
     await reader.queryPage({
       petId: PET_A,
@@ -80,7 +81,7 @@ describe('R10: una sola Query por pagina, pk = PET#<petId>, sk BETWEEN inclusive
 
   it('sin cursor no manda ExclusiveStartKey', async () => {
     const { documents, lastInput } = fakeDocuments();
-    const reader = new PositionHistoryDynamoReader(documents);
+    const reader = new PositionHistoryDynamoReader(documents, NAMES);
 
     await reader.queryPage({
       petId: PET_A,
@@ -94,7 +95,7 @@ describe('R10: una sola Query por pagina, pk = PET#<petId>, sk BETWEEN inclusive
 
   it('con cursor construye la pk desde el petId de la ruta, no desde el cursor', async () => {
     const { documents, lastInput } = fakeDocuments();
-    const reader = new PositionHistoryDynamoReader(documents);
+    const reader = new PositionHistoryDynamoReader(documents, NAMES);
 
     await reader.queryPage({
       petId: PET_A,
@@ -111,7 +112,7 @@ describe('R10: una sola Query por pagina, pk = PET#<petId>, sk BETWEEN inclusive
 
   it('no usa FilterExpression: el filtro de flags es del caso de uso', async () => {
     const { documents, lastInput } = fakeDocuments();
-    const reader = new PositionHistoryDynamoReader(documents);
+    const reader = new PositionHistoryDynamoReader(documents, NAMES);
 
     await reader.queryPage({
       petId: PET_A,
@@ -134,7 +135,7 @@ describe('R10: una sola Query por pagina, pk = PET#<petId>, sk BETWEEN inclusive
     const exhausted = fakeDocuments({ Items: [] });
 
     await expect(
-      new PositionHistoryDynamoReader(withMore.documents).queryPage({
+      new PositionHistoryDynamoReader(withMore.documents, NAMES).queryPage({
         petId: PET_A,
         fromMs: 1,
         toMs: 2,
@@ -142,7 +143,7 @@ describe('R10: una sola Query por pagina, pk = PET#<petId>, sk BETWEEN inclusive
       }),
     ).resolves.toEqual({ items: [], lastKey: 777 });
     await expect(
-      new PositionHistoryDynamoReader(exhausted.documents).queryPage({
+      new PositionHistoryDynamoReader(exhausted.documents, NAMES).queryPage({
         petId: PET_A,
         fromMs: 1,
         toMs: 2,
@@ -173,7 +174,7 @@ describe('R10: una sola Query por pagina, pk = PET#<petId>, sk BETWEEN inclusive
         },
       ],
     });
-    const reader = new PositionHistoryDynamoReader(documents);
+    const reader = new PositionHistoryDynamoReader(documents, NAMES);
 
     const page = await reader.queryPage({
       petId: PET_A,
