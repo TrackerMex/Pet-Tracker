@@ -8,7 +8,7 @@
 - **feature**: `device-subscriptions` (#25, P2)
 - **branch**: `feature/25-device-subscriptions`
 - **inicio**: 2026-08-17
-- **estado**: implementación en curso; R1-R8 y R15 verdes, iniciando R9
+- **estado**: implementación en curso; R1-R9 y R15 verdes, iniciando R10
 - **spec**: `specs/device-subscriptions/requirements.md` (18 requisitos, R1–R18)
 - **implementador**: Codex CLI en terminal aparte (no el subagente `implementer`)
 
@@ -53,7 +53,7 @@ mascota ajena revelaría que existe (brief §4). `PetTrackingGuard` va después 
 
 ## Siguiente paso
 
-Implementar R9: gatear exactamente los cuatro controllers y sus 10 rutas.
+Implementar R10: filtrar el centro de alertas por entitlement sin responder 402.
 
 ## Entorno local
 
@@ -68,3 +68,4 @@ Implementar R9: gatear exactamente los cuatro controllers y sus 10 rutas.
   R7: 14 unitarios y 27 e2e de devices verdes.
 - R8: 3 unitarios del guard verdes; build verde.
 - R15: AppModule resuelve repositorio y guard; 23 e2e de suscripciones y build verdes.
+- R9: 10 rutas gateadas, rutas excluidas y precedencia 404 verificadas; 26 e2e verdes.
