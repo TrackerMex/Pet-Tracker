@@ -5,3 +5,4 @@ export const SQS_CLIENT = Symbol('SQS_CLIENT');
 export const DYNAMODB_CLIENT = Symbol('DYNAMODB_CLIENT');
 export const S3_CLIENT = Symbol('S3_CLIENT');
 export const EVENTBRIDGE_CLIENT = Symbol('EVENTBRIDGE_CLIENT');
+export const AWS_RESOURCE_NAMES = Symbol('AWS_RESOURCE_NAMES');
