@@ -211,6 +211,44 @@ no pasa por `aws-clients.ts` y lee `AWS_ENDPOINT_URL` del entorno por su
 cuenta, así que el paso R18 de la feature 20 sigue exigiendo comentar la
 variable a mano.
 
+### Feature 23 — init-env-drift-warning
+
+Desde Git Bash y con la infraestructura local levantada, verifica el `.env`
+incompleto sin modificarlo:
+
+```bash
+stat -c '%Y %s' .env
+./init.sh 2>&1 | tee /tmp/init-env-drift.txt
+stat -c '%Y %s' .env
+./init.sh; echo $?
+```
+
+Los dos `stat` deben ser idénticos y el último comando debe imprimir `0`. Con
+las ocho claves del caso de #23 ausentes, §2 debe incluir exactamente:
+
+```text
+⚠️  .env desactualizado: faltan 8 claves de .env.example
+⚠️    gates ausentes (apagan features enteras en silencio): ACTIVITY_AGGREGATOR_ENABLED, ALERTS_ENGINE_ENABLED, EMAIL_ENABLED, PUSH_ENABLED
+⚠️    configuración ausente: AWS_MODE, SIM_HOME_LAT, SIM_HOME_LNG, SIM_SEED
+⚠️    init.sh no modifica .env — añade a mano las que necesites desde .env.example
+```
+
+Para R9(b), captura `/tmp/env-section-antes.txt` antes de editar `init.sh`.
+Después usa una copia temporal con un `.env` completo; no reemplaces el `.env`
+humano:
+
+```bash
+tmp_dir="$(mktemp -d)"
+cp init.sh init.config.sh env-drift.mjs .env.example "$tmp_dir/"
+cp .env.example "$tmp_dir/.env"
+(cd "$tmp_dir" && ./init.sh 2>&1 | sed -n '/→ Verificando variables de entorno/,/→ Instalando dependencias/p') > /tmp/env-section-despues.txt
+diff /tmp/env-section-antes.txt /tmp/env-section-despues.txt
+rm -r "$tmp_dir"
+```
+
+El `diff` debe salir vacío y la captura no debe contener ninguna línea de
+deriva. Esta feature no añade variables de entorno.
+
 ---
 
 ## Notas para el implementer

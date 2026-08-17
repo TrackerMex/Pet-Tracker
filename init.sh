@@ -73,6 +73,19 @@ else
   done
 fi
 
+# Deriva de claves entre .env y .env.example (#23). Solo avisa: no copia
+# valores, no escribe .env y no aborta. El diff lo hace node —ya es
+# REQUIRED_TOOL y init.sh lo usa desde la linea 115— porque .env.example
+# esta commiteado con CRLF y sort/comm/grep de Git Bash tropiezan con ellos.
+if [ -f .env ] && [ -f .env.example ]; then
+  ENV_DRIFT="$(node env-drift.mjs || true)"
+  if [ -n "$ENV_DRIFT" ]; then
+    while IFS= read -r drift_line; do
+      warn "$drift_line"
+    done <<< "$ENV_DRIFT"
+  fi
+fi
+
 # ── 3. DEPENDENCIAS ─────────────────────────
 echo ""
 echo "→ Instalando dependencias..."
