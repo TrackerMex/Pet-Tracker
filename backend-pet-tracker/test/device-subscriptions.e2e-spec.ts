@@ -139,11 +139,11 @@ describe('Device subscriptions (e2e)', () => {
     });
   }
 
-  async function seedMembership(petId: string, userId: string) {
+  async function seedMembership(petId: string, userId: string, role = 'owner') {
     await db.insert(petUsers).values({
       petId,
       userId,
-      role: 'owner',
+      role,
       status: 'active',
     });
   }
@@ -271,6 +271,36 @@ describe('Device subscriptions (e2e)', () => {
         .set('Authorization', `Bearer ${owner.token}`)
         .expect(404);
     });
+  });
+
+  describe('R11 (device-subscriptions #25): entitlement is shared by pet members', () => {
+    it.each(['family', 'walker', 'vet'])(
+      '%s sees the same tracked route as the owner',
+      async (role) => {
+        const owner = await seedUser(`r11-owner-${role}`);
+        const member = await seedUser(`r11-${role}`);
+        const petId = await seedPet(`R11 ${role} pet`);
+        await seedMembership(petId, owner.id);
+        await seedMembership(petId, member.id, role);
+        const deviceId = await seedActiveCollar(petId, `r11-${role}`);
+        await seedSubscription(
+          deviceId,
+          'active',
+          new Date('2099-12-31T00:00:00.000Z'),
+        );
+
+        const ownerResponse = await request(app.getHttpServer())
+          .get(`/v1/pets/${petId}/positions/last`)
+          .set('Authorization', `Bearer ${owner.token}`)
+          .expect(200);
+        const memberResponse = await request(app.getHttpServer())
+          .get(`/v1/pets/${petId}/positions/last`)
+          .set('Authorization', `Bearer ${member.token}`)
+          .expect(200);
+
+        expect(memberResponse.body).toEqual(ownerResponse.body);
+      },
+    );
   });
 
   describe('R1 (device-subscriptions #25): device_subscriptions schema', () => {
