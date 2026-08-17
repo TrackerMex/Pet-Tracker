@@ -21,6 +21,7 @@ import {
   PollerService,
   POSITIONS_PER_MESSAGE_MAX,
 } from '@/workers/poller.service';
+import { setDeviceSubscription } from '../scripts/set-device-subscription';
 import { seedSimulatedDevices } from '../scripts/seed-devices';
 
 describe('Device subscriptions (e2e)', () => {
@@ -520,6 +521,141 @@ describe('Device subscriptions (e2e)', () => {
       expect(assignments).toHaveLength(1);
       expect(assignments[0].id).toBe(assignmentId);
       expect(assignments[0].releasedAt).toBeNull();
+    });
+  });
+
+  describe('R13 (device-subscriptions #25): idempotent subscription:set', () => {
+    it('upserts by unit id and device id without touching assignment state', async () => {
+      const byUnitId = await seedDevice('R13-unit', {
+        wialonUnitId: 'R13-unit-selector',
+        status: 'available',
+      });
+      const periodEnd = '2030-01-15T12:00:00.000Z';
+
+      const first = await setDeviceSubscription(db, {
+        unitId: 'R13-unit-selector',
+        status: 'active',
+        planCode: 'grandfathered',
+        periodEnd,
+      });
+      const second = await setDeviceSubscription(db, {
+        unitId: 'R13-unit-selector',
+        status: 'active',
+        planCode: 'grandfathered',
+        periodEnd,
+      });
+
+      expect(first).toMatchObject({
+        deviceId: byUnitId,
+        status: 'active',
+        planCode: 'grandfathered',
+        currentPeriodEnd: new Date(periodEnd),
+        entitled: true,
+      });
+      expect(typeof first.watermarkReset).toBe('boolean');
+      expect(second).toMatchObject({
+        deviceId: byUnitId,
+        status: first.status,
+        planCode: first.planCode,
+        currentPeriodEnd: first.currentPeriodEnd,
+      });
+
+      const unitRows = await db
+        .select()
+        .from(deviceSubscriptions)
+        .where(eq(deviceSubscriptions.deviceId, byUnitId));
+      expect(unitRows).toHaveLength(1);
+
+      const byDeviceId = await seedDevice('R13-device', {
+        status: 'available',
+      });
+      const beforeDefault = Date.now();
+      const defaults = await setDeviceSubscription(db, {
+        deviceId: byDeviceId,
+      });
+      const afterDefault = Date.now();
+
+      expect(defaults).toMatchObject({
+        deviceId: byDeviceId,
+        status: 'active',
+        planCode: 'track_monthly',
+        entitled: true,
+      });
+      expect(defaults.currentPeriodEnd.getTime()).toBeGreaterThanOrEqual(
+        beforeDefault + 30 * 24 * 60 * 60_000,
+      );
+      expect(defaults.currentPeriodEnd.getTime()).toBeLessThanOrEqual(
+        afterDefault + 30 * 24 * 60 * 60_000,
+      );
+
+      const deviceRows = await db
+        .select({ id: devices.id, status: devices.status })
+        .from(devices)
+        .where(inArray(devices.id, [byUnitId, byDeviceId]));
+      expect(deviceRows).toEqual(
+        expect.arrayContaining([
+          { id: byUnitId, status: 'available' },
+          { id: byDeviceId, status: 'available' },
+        ]),
+      );
+      const assignments = await db
+        .select({ id: petDevices.id })
+        .from(petDevices)
+        .where(inArray(petDevices.deviceId, [byUnitId, byDeviceId]));
+      expect(assignments).toHaveLength(0);
+    });
+
+    it.each([
+      {
+        label: 'missing selector',
+        input: {},
+        message: '--device-id or --unit-id',
+      },
+      {
+        label: 'both selectors',
+        input: { deviceId: 'target', unitId: 'target-unit' },
+        message: 'only one of --device-id or --unit-id',
+      },
+      {
+        label: 'invalid status',
+        input: { deviceId: 'target', status: 'paused' },
+        message: '--status',
+      },
+      {
+        label: 'invalid plan',
+        input: { deviceId: 'target', planCode: 'annual' },
+        message: '--plan',
+      },
+      {
+        label: 'invalid period end',
+        input: { deviceId: 'target', periodEnd: 'not-a-date' },
+        message: '--period-end',
+      },
+      {
+        label: 'missing device',
+        input: { deviceId: uuidv7() },
+        message: '--device-id',
+      },
+    ])('rejects $label without writing', async ({ input, message }) => {
+      const targetId = await seedDevice(`R13-invalid-${message}`, {
+        wialonUnitId: 'target-unit',
+      });
+      const resolvedInput = Object.fromEntries(
+        Object.entries(input).map(([key, value]) => [
+          key,
+          value === 'target' ? targetId : value,
+        ]),
+      );
+
+      await expect(
+        setDeviceSubscription(db, resolvedInput),
+      ).rejects.toThrow(message);
+
+      const rows = await db
+        .select({ deviceId: deviceSubscriptions.deviceId })
+        .from(deviceSubscriptions)
+        .where(eq(deviceSubscriptions.deviceId, targetId));
+      expect(rows).toHaveLength(0);
     });
   });
 });
