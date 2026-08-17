@@ -1,4 +1,8 @@
-import { buildResourceNames } from './resource-names';
+import {
+  RESOURCE_SUFFIX_TEST,
+  buildResourceNames,
+  resolveResourceSuffix,
+} from './resource-names';
 
 describe('R1: los diez nombres con sufijo test', () => {
   it('devuelve los nombres aislados de test', () => {
@@ -29,5 +33,24 @@ describe('R1: los diez nombres con sufijo test', () => {
       mediaBucket: 'pet-tracker-media-local',
       eventBus: 'pet-tracker',
     });
+  });
+});
+
+describe('R2: el sufijo se deriva de NODE_ENV en modo local', () => {
+  it.each([
+    ['test', 'test'],
+    [' test ', 'test'],
+    [undefined, ''],
+    ['', ''],
+    ['  ', ''],
+    ['development', ''],
+    ['production', ''],
+    ['testing', ''],
+  ])('con NODE_ENV=%p devuelve %p', (rawNodeEnv, expected) => {
+    expect(resolveResourceSuffix('local', rawNodeEnv)).toBe(expected);
+  });
+
+  it('expone el sufijo de test', () => {
+    expect(RESOURCE_SUFFIX_TEST).toBe('test');
   });
 });
