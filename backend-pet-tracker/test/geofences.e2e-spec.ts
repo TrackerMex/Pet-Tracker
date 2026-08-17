@@ -7,8 +7,10 @@ import { App } from 'supertest/types';
 import { uuidv7 } from 'uuidv7';
 import { DRIZZLE } from '@/db/drizzle.constants';
 import { auditLog } from '@/db/schema/audit-log.schema';
+import { devices, petDevices } from '@/db/schema/devices.schema';
 import { geofences } from '@/db/schema/geofences.schema';
 import { pets, petUsers } from '@/db/schema/pets.schema';
+import { deviceSubscriptions } from '@/db/schema/subscriptions.schema';
 import { users } from '@/db/schema/users.schema';
 import { TOKEN_SERVICE } from '@/modules/auth/domain/ports/token-service';
 import type { TokenService } from '@/modules/auth/domain/ports/token-service';
@@ -29,6 +31,7 @@ describe('Geofences CRUD (e2e)', () => {
 
   const createdUserIds: string[] = [];
   const createdPetIds: string[] = [];
+  const createdDeviceIds: string[] = [];
 
   interface TestUser {
     id: string;
@@ -65,6 +68,24 @@ describe('Geofences CRUD (e2e)', () => {
 
     const body = response.body as { id: string };
     createdPetIds.push(body.id);
+
+    const deviceId = uuidv7();
+    await db.insert(devices).values({
+      id: deviceId,
+      esn: `GEOFENCE-${deviceId}`,
+      status: 'assigned',
+      isSimulated: true,
+    });
+    await db
+      .insert(petDevices)
+      .values({ id: uuidv7(), petId: body.id, deviceId });
+    await db.insert(deviceSubscriptions).values({
+      deviceId,
+      status: 'active',
+      planCode: 'grandfathered',
+      currentPeriodEnd: new Date('2099-12-31T00:00:00.000Z'),
+    });
+    createdDeviceIds.push(deviceId);
 
     return body;
   }
@@ -146,6 +167,12 @@ describe('Geofences CRUD (e2e)', () => {
     if (createdPetIds.length > 0) {
       // Cascadea pet_users y geofences (ON DELETE CASCADE de R1).
       await db.delete(pets).where(inArray(pets.id, createdPetIds));
+    }
+    if (createdDeviceIds.length > 0) {
+      await db
+        .delete(deviceSubscriptions)
+        .where(inArray(deviceSubscriptions.deviceId, createdDeviceIds));
+      await db.delete(devices).where(inArray(devices.id, createdDeviceIds));
     }
     if (createdUserIds.length > 0) {
       await db.delete(users).where(inArray(users.id, createdUserIds));

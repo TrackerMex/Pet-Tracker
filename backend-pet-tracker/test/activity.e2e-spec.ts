@@ -17,6 +17,7 @@ import { activityDaily } from '@/db/schema/activity.schema';
 import { auditLog } from '@/db/schema/audit-log.schema';
 import { devices, petDevices } from '@/db/schema/devices.schema';
 import { pets } from '@/db/schema/pets.schema';
+import { deviceSubscriptions } from '@/db/schema/subscriptions.schema';
 import { users } from '@/db/schema/users.schema';
 import { AggregateDailyActivityUseCase } from '@/modules/activity/application/use-cases/aggregate-daily-activity.use-case';
 import { ACTIVITY_STORE } from '@/modules/activity/domain/repositories/activity-store';
@@ -155,6 +156,12 @@ describe('Trips & Activity API (e2e)', () => {
     createdDeviceIds.push(deviceId);
 
     await db.insert(petDevices).values({ id: uuidv7(), petId, deviceId });
+    await db.insert(deviceSubscriptions).values({
+      deviceId,
+      status: 'active',
+      planCode: 'grandfathered',
+      currentPeriodEnd: new Date('2099-12-31T00:00:00.000Z'),
+    });
   }
 
   /** Item con los atributos exactos que escribe el consumidor de #8. */
@@ -247,6 +254,9 @@ describe('Trips & Activity API (e2e)', () => {
     petBadTz = await createPet(badTzOwner, `BadTz-${RUN_ID}`);
 
     await attachCollar(petAgg, 'agg');
+    await attachCollar(petTrips, 'trips');
+    await attachCollar(petDaily, 'daily');
+    await attachCollar(petEmpty, 'empty');
     await attachCollar(petBadTz, 'badtz');
 
     today = localDayOf(Date.now(), OWNER_TZ);
@@ -269,6 +279,9 @@ describe('Trips & Activity API (e2e)', () => {
         await db.delete(pets).where(inArray(pets.id, createdPetIds));
       }
       if (createdDeviceIds.length > 0) {
+        await db
+          .delete(deviceSubscriptions)
+          .where(inArray(deviceSubscriptions.deviceId, createdDeviceIds));
         await db.delete(devices).where(inArray(devices.id, createdDeviceIds));
       }
       if (createdUserIds.length > 0) {
@@ -588,7 +601,6 @@ describe('Trips & Activity API (e2e)', () => {
       const list = await store.listPetsToAggregate();
 
       expect(list.map((entry) => entry.petId)).not.toContain(petNoCollar);
-      expect(list.map((entry) => entry.petId)).not.toContain(petEmpty);
     });
   });
 
