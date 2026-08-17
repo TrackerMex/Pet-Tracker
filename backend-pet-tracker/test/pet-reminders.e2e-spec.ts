@@ -11,7 +11,7 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { uuidv7 } from 'uuidv7';
 import { SQS_CLIENT } from '@/aws/aws.constants';
-import { QUEUE_NOTIFICATIONS } from '@/aws/constants';
+import { resolveResourceNamesFromEnv } from '@/aws/resource-names';
 import { auditLog } from '@/db/schema/audit-log.schema';
 import { pets, petUsers } from '@/db/schema/pets.schema';
 import { reminders } from '@/db/schema/reminders.schema';
@@ -23,6 +23,8 @@ import { RemindersDispatchService } from '@/modules/reminders/infrastructure/rem
 import { NotifierConsumerService } from '@/workers/notifier/notifier-consumer.service';
 import { PUSH_SENDER } from '@/workers/notifier/push-sender';
 import { AppModule } from '../src/app.module';
+
+const names = resolveResourceNamesFromEnv(process.env);
 
 describe('Pet reminders (e2e)', () => {
   const runId = Date.now();
@@ -94,7 +96,7 @@ describe('Pet reminders (e2e)', () => {
     dispatcher = app.get(RemindersDispatchService);
     notifier = app.get(NotifierConsumerService);
     notificationsUrl = (
-      await sqs.send(new GetQueueUrlCommand({ QueueName: QUEUE_NOTIFICATIONS }))
+      await sqs.send(new GetQueueUrlCommand({ QueueName: names.notifications }))
     ).QueueUrl as string;
     await sqs.send(new PurgeQueueCommand({ QueueUrl: notificationsUrl }));
   });
