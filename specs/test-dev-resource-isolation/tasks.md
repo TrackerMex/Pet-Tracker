@@ -189,16 +189,23 @@ tags: [harness, spec]
 
 ## R10 — La cadena de ingesta no mueve las colas de desarrollo
 
-- [ ] (1) Escribir test que falla para R10 en
+> **CORRECCIÓN del 2026-08-17, gate humano.** Este requisito **nace verde**,
+> igual que R7, y se añadió a la lista de excepciones a C4 de [[traceability]].
+> El punto (2) de abajo ya lo anticipaba y contradecía al (1): R4, R6 y R9 van
+> antes, y R10 no aporta código propio — verifica end-to-end lo que esos tres
+> arreglaron. **No fabriques un fallo**: commitea el test verde diciéndolo en el
+> mensaje.
+
+- [x] (1) Escribir el test de R10 en
       `test/resource-isolation.e2e-spec.ts`: `describe('R10: …')` con el
       recuento antes/después de las tres colas de desarrollo (suma de los tres
       atributos `Approximate*`), la aserción de igualdad exacta, **y** la
       aserción de que la cola de test sí se movió ([[design]] §D9a, punto 4-ii:
       sin ella el test pasaría en vacío).
-- [ ] (2) Implementación mínima: la que haga falta; si R4/R6/R9 están bien, este
-      requisito debería quedar verde sin código nuevo. **Si no lo está, hay una
-      fuga real** — encuéntrala en vez de ajustar el test.
-- [ ] (3) Refactor con tests verdes.
+- [ ] (2) Sin implementación propia: si hiciera falta código nuevo para que este
+      requisito quede verde, **hay una fuga real** — encuéntrala en vez de
+      ajustar el test.
+- [ ] (3) Commit verde único, con la excepción declarada en el mensaje.
 
 ## R11 — Guarda anti-regresión: nadie importa los diez literales
 

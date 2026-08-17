@@ -17,7 +17,7 @@ tags: [harness, spec]
 | R7 | `backend-pet-tracker/test/localstack-provisioning.e2e-spec.ts::R7: la doble corrida deja ambos juegos utilizables` | sin código propio (verifica el bucle de R6) — **guarda de regresión, nace verde** | verde por excepción aprobada: `0394f37 test(test-dev-resource-isolation): add approved green dual-run guard (R7)` |
 | R8 | `backend-pet-tracker/src/aws/run-provisioning.spec.ts::R8: runProvisioning aborta en modo aws` | `backend-pet-tracker/src/aws/run-provisioning.ts` (**sin cambios** — guarda de regresión) | verde por excepción aprobada: `c194ce3 test(test-dev-resource-isolation): strengthen green aws provisioning guard (R8)` |
 | R9 | `backend-pet-tracker/test/resource-isolation.e2e-spec.ts::R9: las colas de dev y test tienen URLs distintas` | las 7 suites e2e + `backend-pet-tracker/test/localstack-provisioning.e2e-spec.ts` + `backend-pet-tracker/test/aws-real-ingest.e2e-spec.ts` + `backend-pet-tracker/src/aws/cdk-dev-stack-docs.spec.ts` (solo L19) | rojo: `6c8c1b2 test(test-dev-resource-isolation): add failing e2e resource isolation case (R9)`; suites: `0bad511`, `0ddbda4`, `a454807`, `8afca45`, `3c53a24`, `0b733c8`, `6003490`; provisioning: `0394f37`; AWS real: `026e744`; verde: 9 suites / 129 tests |
-| R10 | pendiente — previsto `backend-pet-tracker/test/resource-isolation.e2e-spec.ts::R10: la ingesta no mueve las colas de desarrollo` | sin código propio (verifica R4+R6+R9) | pendiente |
+| R10 | `backend-pet-tracker/test/resource-isolation.e2e-spec.ts::R10: la ingesta no mueve las colas de desarrollo` | sin código propio (verifica R4+R6+R9) — **guarda de regresión, nace verde** | pendiente — commit verde por excepción aprobada el 2026-08-17 |
 | R11 | pendiente — previsto `backend-pet-tracker/src/aws/resource-names-guard.spec.ts::R11: nadie importa los diez literales de nombre` | `backend-pet-tracker/src/aws/resource-names-guard.spec.ts` | pendiente |
 | R12 | pendiente — previsto `backend-pet-tracker/src/aws/resource-names-guard.spec.ts::R12: el stack CDK no importa la resolucion de sufijo` | `infra/` (**sin cambios** — evidencia: `git diff --name-only`) | pendiente |
 | R13 | pendiente — previsto `backend-pet-tracker/src/aws/resource-names-guard.spec.ts::R13: verification.md documenta el recuento manual` | `docs/verification.md` | pendiente |
@@ -28,10 +28,33 @@ Convención de commit: `feat(test-dev-resource-isolation): <desc> (R1,R2)`, con 
 commit del test en rojo (`test(test-dev-resource-isolation): …`) **antes** que el
 de la implementación — C4 exige historial rojo→verde por R-id.
 
-**Excepción declarada:** R5, R7, R8 y R12 son guardas de regresión y **nacen
-verdes** (no hay rojo posible: afirman que algo que hoy funciona sigue
+**Excepción declarada:** R5, R7, R8, R10 y R12 son guardas de regresión y
+**nacen verdes** (no hay rojo posible: afirman que algo que hoy funciona sigue
 funcionando). Su commit de test debe decirlo explícitamente en el mensaje. Las
-otras diez filas exigen rojo→verde.
+otras nueve filas exigen rojo→verde.
+
+**R10 se añadió a la excepción durante la implementación** (gate humano del
+2026-08-17, mismo criterio que R7 más abajo). El orden de [[tasks]] pone R4, R6
+y R9 antes que R10, y R10 no aporta código: verifica end-to-end lo que esos
+tres arreglaron. Con los tres verdes el fallo es inalcanzable. El propio
+`tasks.md` §R10 ya se contradecía —su punto (1) pedía rojo y su punto (2) decía
+"si R4/R6/R9 están bien, este requisito debería quedar verde sin código
+nuevo"—; el rojo honesto de R10 solo existía en el commit inicial de la branch,
+antes de arreglar nada, que es el bug entero de #28.
+
+**El test no pasa en vacío**, comprobado línea por línea: `resource-isolation.e2e-spec.ts:225`
+asevera que la cola de test **sí se movió** tras `poller.runOnce()`
+(`testCountAfterPoll > testCountBefore`), que es exactamente la aserción que
+[[design]] §D9a punto 4-ii exige para que el recuento de las colas de
+desarrollo signifique algo. Revertir R9 haría que el poller escribiese en
+`positions-raw` de desarrollo y la aserción de igualdad de L235 fallaría.
+
+**Deuda anotada para el reviewer**: la aserción de `ItemCount` de DynamoDB
+(L243-245) es la parte **débil** del test. `ItemCount` no se actualiza en
+tiempo real —en AWS real va con ~6 h de retraso— así que puede coincidir
+aunque hubiera habido escrituras. La garantía fuerte de R10 son los recuentos
+de las tres colas (L235), que sí son inmediatos. No bloquea: el requisito queda
+cubierto por la aserción de colas.
 
 **R7 se añadió a la excepción durante la implementación** (gate humano del
 2026-08-17, tras el reporte de Codex en
