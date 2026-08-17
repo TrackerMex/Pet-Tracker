@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { WIALON_SID_TTL_MS } from './wialon-http.client';
 import { WialonApiError } from './wialon.errors';
 import { WialonHttpClient } from './wialon-http.client';
 
@@ -147,5 +148,24 @@ describe('R4: WialonHttpClient mapea la respuesta real (pos.y/x/s/c/sc) y {error
     await expect(client.listUnits()).rejects.toMatchObject({
       name: 'WialonTransportError',
     });
+  });
+});
+
+describe('R6 (wialon-session-reuse #29): WIALON_SID_TTL_MS está por debajo de la caducidad de Wialon', () => {
+  it('la constante existe y no supera los 5 minutos documentados', () => {
+    const WIALON_DOCUMENTED_INACTIVITY_MS = 5 * 60_000;
+    expect(WIALON_SID_TTL_MS).toBe(4 * 60_000);
+    expect(WIALON_SID_TTL_MS).toBeLessThan(WIALON_DOCUMENTED_INACTIVITY_MS);
+  });
+
+  it('la fuente exporta la justificación completa y no usa literales de 4 minutos', () => {
+    const source = readFileSync(
+      join(__dirname, 'wialon-http.client.ts'),
+      'utf8',
+    );
+    expect(source).toContain('WIALON_SID_TTL_MS');
+    expect(source).toContain('help.wialon.com');
+    expect(source).not.toMatch(/240_?000/);
+    expect(source.length).toBeGreaterThan(1000);
   });
 });
