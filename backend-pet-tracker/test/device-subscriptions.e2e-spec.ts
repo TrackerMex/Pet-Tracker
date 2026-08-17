@@ -15,6 +15,8 @@ import { pets } from '@/db/schema/pets.schema';
 import { deviceSubscriptions } from '@/db/schema/subscriptions.schema';
 import type { WialonClient } from '@/integrations/wialon/wialon-client.interface';
 import { CLAIM_WATERMARK_LOOKBACK_MINUTES } from '@/modules/devices/application/use-cases/claim-device.use-case';
+import { SUBSCRIPTION_REPOSITORY } from '@/modules/subscriptions/domain/repositories/subscription.repository';
+import { PetTrackingGuard } from '@/modules/subscriptions/infrastructure/guards/pet-tracking.guard';
 import { SubscriptionDrizzleRepository } from '@/modules/subscriptions/infrastructure/repositories/subscription.drizzle.repository';
 import type { RawPosition } from '@/pipeline/types';
 import { IngestionDrizzleStore } from '@/workers/ingestion.drizzle.store';
@@ -105,6 +107,15 @@ describe('Device subscriptions (e2e)', () => {
       currentPeriodEnd,
     });
   }
+
+  describe('R15 (device-subscriptions #25): subscriptions module wiring', () => {
+    it('exposes the shared repository and tracking guard from AppModule', () => {
+      expect(app.get(SUBSCRIPTION_REPOSITORY)).toBeInstanceOf(
+        SubscriptionDrizzleRepository,
+      );
+      expect(app.get(PetTrackingGuard)).toBeInstanceOf(PetTrackingGuard);
+    });
+  });
 
   describe('R1 (device-subscriptions #25): device_subscriptions schema', () => {
     it('has the exact columns, primary key, foreign key and checks', async () => {
