@@ -14,6 +14,7 @@ import { devices, petDevices } from '@/db/schema/devices.schema';
 import { pets } from '@/db/schema/pets.schema';
 import { deviceSubscriptions } from '@/db/schema/subscriptions.schema';
 import type { WialonClient } from '@/integrations/wialon/wialon-client.interface';
+import { CLAIM_WATERMARK_LOOKBACK_MINUTES } from '@/modules/devices/application/use-cases/claim-device.use-case';
 import { SubscriptionDrizzleRepository } from '@/modules/subscriptions/infrastructure/repositories/subscription.drizzle.repository';
 import type { RawPosition } from '@/pipeline/types';
 import { IngestionDrizzleStore } from '@/workers/ingestion.drizzle.store';
@@ -665,6 +666,54 @@ describe('Device subscriptions (e2e)', () => {
         .from(deviceSubscriptions)
         .where(eq(deviceSubscriptions.deviceId, targetId));
       expect(rows).toHaveLength(0);
+    });
+  });
+
+  describe('R6 (device-subscriptions #25): reset watermark on reactivation', () => {
+    it('resets only on the transition from not entitled to entitled', async () => {
+      const staleWatermark = new Date(Date.now() - 90 * 24 * 60 * 60_000);
+      const deviceId = await seedDevice('R6-reactivate', {
+        ingestWatermark: staleWatermark,
+      });
+      await seedSubscription(
+        deviceId,
+        'active',
+        new Date(Date.now() - 4 * 24 * 60 * 60_000),
+      );
+
+      const before = Date.now();
+      const first = await setDeviceSubscription(db, {
+        deviceId,
+        status: 'active',
+        periodEnd: new Date(Date.now() + 24 * 60 * 60_000).toISOString(),
+      });
+      const after = Date.now();
+      const [afterFirst] = await db
+        .select({ ingestWatermark: devices.ingestWatermark })
+        .from(devices)
+        .where(eq(devices.id, deviceId));
+      const resetWatermark = afterFirst.ingestWatermark?.getTime() ?? 0;
+
+      expect(first.watermarkReset).toBe(true);
+      expect(resetWatermark).toBeGreaterThanOrEqual(
+        before - CLAIM_WATERMARK_LOOKBACK_MINUTES * 60_000,
+      );
+      expect(resetWatermark).toBeLessThanOrEqual(
+        after - CLAIM_WATERMARK_LOOKBACK_MINUTES * 60_000 + 1_000,
+      );
+
+      const second = await setDeviceSubscription(db, {
+        deviceId,
+        status: 'active',
+        periodEnd: first.currentPeriodEnd.toISOString(),
+      });
+      const [afterSecond] = await db
+        .select({ ingestWatermark: devices.ingestWatermark })
+        .from(devices)
+        .where(eq(devices.id, deviceId));
+
+      expect(second.watermarkReset).toBe(false);
+      expect(afterSecond.ingestWatermark?.getTime()).toBe(resetWatermark);
     });
   });
 });
