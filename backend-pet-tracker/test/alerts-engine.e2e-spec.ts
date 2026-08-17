@@ -13,10 +13,7 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { uuidv7 } from 'uuidv7';
 import { SQS_CLIENT } from '@/aws/aws.constants';
-import {
-  QUEUE_GEOFENCE_EVENTS,
-  QUEUE_GEOFENCE_EVENTS_DLQ,
-} from '@/aws/constants';
+import { resolveResourceNamesFromEnv } from '@/aws/resource-names';
 import { DRIZZLE } from '@/db/drizzle.constants';
 import { alertEvents } from '@/db/schema/alerts.schema';
 import { auditLog } from '@/db/schema/audit-log.schema';
@@ -36,6 +33,8 @@ import { PollerService } from '@/workers/poller.service';
 import { PositionsConsumerService } from '@/workers/positions-consumer.service';
 import { seedSimulatedDevices } from '../scripts/seed-devices';
 import { AppModule } from './../src/app.module';
+
+const names = resolveResourceNamesFromEnv(process.env);
 
 /**
  * e2e de alerts-engine (R2, R18) contra Postgres + LocalStack reales.
@@ -158,8 +157,8 @@ describe('Alerts engine (e2e)', () => {
     ingestionConsumer = app.get(PositionsConsumerService);
     alertsConsumer = app.get(AlertsEngineConsumerService);
 
-    geofenceEventsQueueUrl = await queueUrl(QUEUE_GEOFENCE_EVENTS);
-    geofenceEventsDlqUrl = await queueUrl(QUEUE_GEOFENCE_EVENTS_DLQ);
+    geofenceEventsQueueUrl = await queueUrl(names.geofenceEvents);
+    geofenceEventsDlqUrl = await queueUrl(names.geofenceEventsDlq);
     await sqs.send(new PurgeQueueCommand({ QueueUrl: geofenceEventsQueueUrl }));
     await sqs.send(new PurgeQueueCommand({ QueueUrl: geofenceEventsDlqUrl }));
 

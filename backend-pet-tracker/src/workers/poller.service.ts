@@ -4,8 +4,8 @@ import {
   SQSClient,
 } from '@aws-sdk/client-sqs';
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { SQS_CLIENT } from '@/aws/aws.constants';
-import { QUEUE_POSITIONS_RAW } from '@/aws/constants';
+import { AWS_RESOURCE_NAMES, SQS_CLIENT } from '@/aws/aws.constants';
+import type { AwsResourceNames } from '@/aws/resource-names';
 import { WIALON_CLIENT } from '@/integrations/wialon/wialon-client.interface';
 import type { WialonClient } from '@/integrations/wialon/wialon-client.interface';
 import { CLAIM_WATERMARK_LOOKBACK_MINUTES } from '@/modules/devices/application/use-cases/claim-device.use-case';
@@ -30,6 +30,7 @@ export class PollerService {
     @Inject(INGESTION_STORE) private readonly store: IngestionStore,
     @Inject(WIALON_CLIENT) private readonly wialon: WialonClient,
     @Inject(SQS_CLIENT) private readonly sqs: SQSClient,
+    @Inject(AWS_RESOURCE_NAMES) private readonly names: AwsResourceNames,
   ) {}
 
   async runOnce(now: Date = new Date()): Promise<void> {
@@ -154,10 +155,10 @@ export class PollerService {
     }
 
     const response = await this.sqs.send(
-      new GetQueueUrlCommand({ QueueName: QUEUE_POSITIONS_RAW }),
+      new GetQueueUrlCommand({ QueueName: this.names.positionsRaw }),
     );
     if (!response.QueueUrl) {
-      throw new Error(`queue ${QUEUE_POSITIONS_RAW} has no QueueUrl`);
+      throw new Error(`queue ${this.names.positionsRaw} has no QueueUrl`);
     }
 
     this.queueUrl = response.QueueUrl;

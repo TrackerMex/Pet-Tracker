@@ -23,17 +23,15 @@ import {
 } from '../src/aws/aws-clients';
 import {
   DETAIL_TYPE_POSITION_UPDATED,
-  EVENT_BUS_NAME,
   EVENT_SOURCE,
-  QUEUE_GEOFENCE_EVENTS,
-  QUEUE_POSITIONS_RAW,
-  TABLE_POSITIONS,
   TABLE_POSITIONS_PARTITION_KEY,
   TABLE_POSITIONS_SORT_KEY,
   TABLE_POSITIONS_TTL_ATTRIBUTE,
 } from '../src/aws/constants';
+import { resolveResourceNamesFromEnv } from '@/aws/resource-names';
 
 loadDotenv({ path: '../.env', quiet: true });
+const names = resolveResourceNamesFromEnv(process.env);
 
 const runAwsIngest =
   (process.env.AWS_MODE ?? '').trim().toLowerCase() === 'aws';
@@ -126,7 +124,7 @@ function eventHasRunId(message: Message, runId: string): boolean {
       cleanup.push(
         documents.send(
           new DeleteCommand({
-            TableName: TABLE_POSITIONS,
+            TableName: names.positionsTable,
             Key: {
               [TABLE_POSITIONS_PARTITION_KEY]: positionKey.pk,
               [TABLE_POSITIONS_SORT_KEY]: positionKey.sk,
@@ -183,10 +181,10 @@ function eventHasRunId(message: Message, runId: string): boolean {
     }
 
     const queue = await sqs.send(
-      new GetQueueUrlCommand({ QueueName: QUEUE_POSITIONS_RAW }),
+      new GetQueueUrlCommand({ QueueName: names.positionsRaw }),
     );
     if (!queue.QueueUrl) {
-      throw new Error(`queue URL ausente para ${QUEUE_POSITIONS_RAW}`);
+      throw new Error(`queue URL ausente para ${names.positionsRaw}`);
     }
     positionsQueueUrl = queue.QueueUrl;
     pendingRawBody = JSON.stringify({ runId });
@@ -222,11 +220,11 @@ function eventHasRunId(message: Message, runId: string): boolean {
     };
 
     await documents.send(
-      new PutCommand({ TableName: TABLE_POSITIONS, Item: item }),
+      new PutCommand({ TableName: names.positionsTable, Item: item }),
     );
     const result = await documents.send(
       new QueryCommand({
-        TableName: TABLE_POSITIONS,
+        TableName: names.positionsTable,
         KeyConditionExpression: '#pk = :pk',
         ExpressionAttributeNames: {
           '#pk': TABLE_POSITIONS_PARTITION_KEY,
@@ -245,10 +243,10 @@ function eventHasRunId(message: Message, runId: string): boolean {
     }
 
     const queue = await sqs.send(
-      new GetQueueUrlCommand({ QueueName: QUEUE_GEOFENCE_EVENTS }),
+      new GetQueueUrlCommand({ QueueName: names.geofenceEvents }),
     );
     if (!queue.QueueUrl) {
-      throw new Error(`queue URL ausente para ${QUEUE_GEOFENCE_EVENTS}`);
+      throw new Error(`queue URL ausente para ${names.geofenceEvents}`);
     }
     geofenceQueueUrl = queue.QueueUrl;
     pendingEventRunId = runId;
@@ -257,7 +255,7 @@ function eventHasRunId(message: Message, runId: string): boolean {
       new PutEventsCommand({
         Entries: [
           {
-            EventBusName: EVENT_BUS_NAME,
+            EventBusName: names.eventBus,
             Source: EVENT_SOURCE,
             DetailType: DETAIL_TYPE_POSITION_UPDATED,
             Detail: JSON.stringify({ version: 1, runId }),

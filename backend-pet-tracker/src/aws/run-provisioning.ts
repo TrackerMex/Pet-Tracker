@@ -11,6 +11,7 @@ import {
   describeProvisioningError,
   provisionAllResources,
 } from './provisioning';
+import { PROVISIONED_SUFFIXES, buildResourceNames } from './resource-names';
 
 export interface ProvisioningLogger {
   error(message: string): void;
@@ -49,7 +50,9 @@ export async function runProvisioning(
   };
 
   try {
-    await provisionAllResources(clients);
+    for (const suffix of PROVISIONED_SUFFIXES) {
+      await provisionAllResources(clients, buildResourceNames(suffix));
+    }
     return 0;
   } catch (error) {
     logger.error(describeProvisioningError(error, config.endpoint));

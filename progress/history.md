@@ -1458,3 +1458,42 @@ Deuda detectada (fuera de alcance, candidata a limpieza propia):
   alguien invirtiera el orden.
 - **Estado final:** done (marcado por el `leader` con el veredicto en la mano,
   2026-08-17).
+
+## Sesión 2026-08-17 (2) — test-dev-resource-isolation (#28)
+
+- **Feature/branch:** `test-dev-resource-isolation`,
+  `feature/28-test-dev-resource-isolation`.
+- **Spec:** [[../specs/test-dev-resource-isolation/requirements|spec]], R1–R14,
+  aprobada por humano el 2026-08-17.
+- **Alcance:** los e2e y el entorno de desarrollo dejan de compartir recursos de
+  LocalStack. Sufijo `-test` derivado de `NODE_ENV`, token inyectable
+  `AWS_RESOURCE_NAMES` en los ocho consumidores de producción, `provision:local`
+  creando los dos juegos, y las suites e2e migradas a sus propios recursos.
+- **Riesgo económico:** la stack `PetTrackerDev` vive en `us-east-1` con los
+  nombres sin sufijo. Cerrado por tres vías independientes: el modo se comprueba
+  antes que `NODE_ENV` (R3), el provisioning rechaza `AWS_MODE=aws` (R8) y el
+  stack CDK no importa nada de `resource-names.ts` (R12).
+- **Tres paradas, un solo defecto:** R7, R10 y R11 nacieron verdes porque
+  `tasks.md` ordena las guardas de regresión después de los requisitos que las
+  vuelven verdes, y la lista de excepciones a C4 nació corta. Las tres se
+  resolvieron por gate (`03bb649`, `c74b031`, `bfd572f`); el implementador paró
+  las tres veces en vez de fabricar un fallo. En `bfd572f` la aprobación de R11
+  fue además condicionada: se le exigió una aserción anti-vacío, porque
+  `expect(offenders).toEqual([])` pasaba igual con cero archivos escaneados.
+- **Rechazo y corrección:** el primer veredicto fue **rechazado** por C6 —
+  `requirements.md` seguía con `status: draft` pese a la casilla humana firmada.
+  Defecto del `leader`, no del implementador; corregido en `921b6e7` y
+  re-verificado de forma acotada, sin repetir la revisión.
+- **Verificación:** `init.sh` exit 0 con los e2e corriendo de verdad (5432
+  comprobado con `docker port`). El reviewer ejecutó él mismo el recuento manual
+  de R13 sobre una corrida e2e completa: las tres colas de desarrollo idénticas,
+  con mensajes previos que los `PurgeQueueCommand` no borraron. Midió también
+  que el `ItemCount` de DynamoDB en LocalStack es exacto e inmediato (+1135 en
+  `positions-test`, 0 en `positions`), cerrando la duda anotada sobre R10.
+- **Limpieza de cierre:** borrado `progress/imp.md`, duplicado del reporte con
+  nombre fuera de la convención `impl_<feature>.md`, y quitada su referencia de
+  la fila R14 de `traceability.md`.
+- **Veredicto:** **aprobado** — [[review_test-dev-resource-isolation|review]],
+  2026-08-17.
+- **Estado final:** done (marcado por el `leader` con el veredicto en la mano,
+  2026-08-17).

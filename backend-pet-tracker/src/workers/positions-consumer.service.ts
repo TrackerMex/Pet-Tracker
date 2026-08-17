@@ -18,18 +18,20 @@ import type {
   BatchWriteCommandOutput,
 } from '@aws-sdk/lib-dynamodb';
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { EVENTBRIDGE_CLIENT, SQS_CLIENT } from '@/aws/aws.constants';
+import {
+  AWS_RESOURCE_NAMES,
+  EVENTBRIDGE_CLIENT,
+  SQS_CLIENT,
+} from '@/aws/aws.constants';
 import {
   DETAIL_TYPE_BATTERY_LOW,
   DETAIL_TYPE_POSITION_UPDATED,
-  EVENT_BUS_NAME,
   EVENT_SOURCE,
-  QUEUE_POSITIONS_RAW,
-  TABLE_POSITIONS,
   TABLE_POSITIONS_PARTITION_KEY,
   TABLE_POSITIONS_SORT_KEY,
   TABLE_POSITIONS_TTL_ATTRIBUTE,
 } from '@/aws/constants';
+import type { AwsResourceNames } from '@/aws/resource-names';
 import type { DiscardedStat, ProcessedPosition } from '@/pipeline/types';
 import { normalize } from '@/pipeline/validate-positions';
 import { INGESTION_STORE } from './ingestion-store';
@@ -78,6 +80,7 @@ export class PositionsConsumerService {
     @Inject(POSITIONS_DOC_CLIENT)
     private readonly documents: DynamoDBDocumentClient,
     @Inject(EVENTBRIDGE_CLIENT) private readonly eventBridge: EventBridgeClient,
+    @Inject(AWS_RESOURCE_NAMES) private readonly names: AwsResourceNames,
   ) {}
 
   async drainOnce(now: Date = new Date()): Promise<void> {
@@ -248,7 +251,7 @@ export class PositionsConsumerService {
     const latest = accepted[accepted.length - 1];
     const entries = [
       {
-        EventBusName: EVENT_BUS_NAME,
+        EventBusName: this.names.eventBus,
         Source: EVENT_SOURCE,
         DetailType: DETAIL_TYPE_POSITION_UPDATED,
         Detail: JSON.stringify({
@@ -271,7 +274,7 @@ export class PositionsConsumerService {
 
     if (crossedThresholdDown) {
       entries.push({
-        EventBusName: EVENT_BUS_NAME,
+        EventBusName: this.names.eventBus,
         Source: EVENT_SOURCE,
         DetailType: DETAIL_TYPE_BATTERY_LOW,
         Detail: JSON.stringify({
@@ -322,7 +325,9 @@ export class PositionsConsumerService {
 
   private async writeBatch(items: Record<string, unknown>[]): Promise<void> {
     let requestItems: BatchWriteCommandInput['RequestItems'] = {
-      [TABLE_POSITIONS]: items.map((item) => ({ PutRequest: { Item: item } })),
+      [this.names.positionsTable]: items.map((item) => ({
+        PutRequest: { Item: item },
+      })),
     };
 
     for (let attempt = 0; attempt < DYNAMO_BATCH_WRITE_ATTEMPTS; attempt++) {
@@ -330,11 +335,11 @@ export class PositionsConsumerService {
         new BatchWriteCommand({ RequestItems: requestItems }),
       );
 
-      const unprocessed = result.UnprocessedItems?.[TABLE_POSITIONS];
+      const unprocessed = result.UnprocessedItems?.[this.names.positionsTable];
       if (!unprocessed || unprocessed.length === 0) {
         return;
       }
-      requestItems = { [TABLE_POSITIONS]: unprocessed };
+      requestItems = { [this.names.positionsTable]: unprocessed };
     }
 
     // El mensaje queda sin borrar y vuelve por redelivery (R12); el PutItem
@@ -351,10 +356,10 @@ export class PositionsConsumerService {
     }
 
     const response = await this.sqs.send(
-      new GetQueueUrlCommand({ QueueName: QUEUE_POSITIONS_RAW }),
+      new GetQueueUrlCommand({ QueueName: this.names.positionsRaw }),
     );
     if (!response.QueueUrl) {
-      throw new Error(`queue ${QUEUE_POSITIONS_RAW} has no QueueUrl`);
+      throw new Error(`queue ${this.names.positionsRaw} has no QueueUrl`);
     }
 
     this.queueUrl = response.QueueUrl;

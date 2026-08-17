@@ -6,8 +6,8 @@ import {
 } from '@aws-sdk/client-sqs';
 import type { Message } from '@aws-sdk/client-sqs';
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { SQS_CLIENT } from '@/aws/aws.constants';
-import { QUEUE_NOTIFICATIONS } from '@/aws/constants';
+import { AWS_RESOURCE_NAMES, SQS_CLIENT } from '@/aws/aws.constants';
+import type { AwsResourceNames } from '@/aws/resource-names';
 import { REMINDER_REPOSITORY } from '@/modules/reminders/domain/repositories/reminder.repository';
 import type { ReminderRepository } from '@/modules/reminders/domain/repositories/reminder.repository';
 import { PUSH_TOKEN_REPOSITORY } from '@/modules/users/domain/repositories/push-token.repository';
@@ -46,6 +46,7 @@ export class NotifierConsumerService {
 
   constructor(
     @Inject(SQS_CLIENT) private readonly sqs: SQSClient,
+    @Inject(AWS_RESOURCE_NAMES) private readonly names: AwsResourceNames,
     @Inject(PUSH_TOKEN_REPOSITORY)
     private readonly pushTokens: PushTokenRepository,
     @Inject(PUSH_SENDER) private readonly sender: PushSender,
@@ -245,10 +246,10 @@ export class NotifierConsumerService {
     }
 
     const response = await this.sqs.send(
-      new GetQueueUrlCommand({ QueueName: QUEUE_NOTIFICATIONS }),
+      new GetQueueUrlCommand({ QueueName: this.names.notifications }),
     );
     if (!response.QueueUrl) {
-      throw new Error(`queue ${QUEUE_NOTIFICATIONS} has no QueueUrl`);
+      throw new Error(`queue ${this.names.notifications} has no QueueUrl`);
     }
 
     this.queueUrl = response.QueueUrl;

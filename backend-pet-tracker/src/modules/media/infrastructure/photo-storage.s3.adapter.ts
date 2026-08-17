@@ -5,8 +5,8 @@ import {
   S3Client,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { S3_CLIENT } from '@/aws/aws.constants';
-import { BUCKET_MEDIA } from '@/aws/constants';
+import { AWS_RESOURCE_NAMES, S3_CLIENT } from '@/aws/aws.constants';
+import type { AwsResourceNames } from '@/aws/resource-names';
 import type { PhotoStorage } from '../domain/ports/photo-storage';
 
 /**
@@ -17,15 +17,24 @@ import type { PhotoStorage } from '../domain/ports/photo-storage';
  */
 @Injectable()
 export class PhotoStorageS3Adapter implements PhotoStorage {
-  constructor(@Inject(S3_CLIENT) private readonly s3: S3Client) {}
+  constructor(
+    @Inject(S3_CLIENT) private readonly s3: S3Client,
+    @Inject(AWS_RESOURCE_NAMES) private readonly names: AwsResourceNames,
+  ) {}
 
   createUploadUrl(key: string, expiresInSeconds: number): Promise<string> {
-    const command = new PutObjectCommand({ Bucket: BUCKET_MEDIA, Key: key });
+    const command = new PutObjectCommand({
+      Bucket: this.names.mediaBucket,
+      Key: key,
+    });
     return getSignedUrl(this.s3, command, { expiresIn: expiresInSeconds });
   }
 
   createDownloadUrl(key: string, expiresInSeconds: number): Promise<string> {
-    const command = new GetObjectCommand({ Bucket: BUCKET_MEDIA, Key: key });
+    const command = new GetObjectCommand({
+      Bucket: this.names.mediaBucket,
+      Key: key,
+    });
     return getSignedUrl(this.s3, command, { expiresIn: expiresInSeconds });
   }
 }

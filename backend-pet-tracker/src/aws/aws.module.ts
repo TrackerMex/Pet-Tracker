@@ -9,11 +9,13 @@ import {
   resolveAwsConfigFromConfigService,
 } from './aws-clients';
 import {
+  AWS_RESOURCE_NAMES,
   DYNAMODB_CLIENT,
   EVENTBRIDGE_CLIENT,
   S3_CLIENT,
   SQS_CLIENT,
 } from './aws.constants';
+import { resolveResourceNamesFromConfigService } from './resource-names';
 
 /**
  * Infraestructura compartida (análoga a src/db/drizzle.module.ts): expone
@@ -26,6 +28,12 @@ import {
 @Module({
   imports: [ConfigModule],
   providers: [
+    {
+      provide: AWS_RESOURCE_NAMES,
+      useFactory: (config: ConfigService) =>
+        resolveResourceNamesFromConfigService(config),
+      inject: [ConfigService],
+    },
     {
       provide: SQS_CLIENT,
       useFactory: (config: ConfigService) =>
@@ -51,7 +59,13 @@ import {
       inject: [ConfigService],
     },
   ],
-  exports: [SQS_CLIENT, DYNAMODB_CLIENT, S3_CLIENT, EVENTBRIDGE_CLIENT],
+  exports: [
+    SQS_CLIENT,
+    DYNAMODB_CLIENT,
+    S3_CLIENT,
+    EVENTBRIDGE_CLIENT,
+    AWS_RESOURCE_NAMES,
+  ],
 })
 export class AwsModule {}
 

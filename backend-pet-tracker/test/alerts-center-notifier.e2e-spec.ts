@@ -13,11 +13,8 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { uuidv7 } from 'uuidv7';
 import { SQS_CLIENT } from '@/aws/aws.constants';
-import {
-  DETAIL_TYPE_POSITION_UPDATED,
-  QUEUE_GEOFENCE_EVENTS,
-  QUEUE_NOTIFICATIONS,
-} from '@/aws/constants';
+import { DETAIL_TYPE_POSITION_UPDATED } from '@/aws/constants';
+import { resolveResourceNamesFromEnv } from '@/aws/resource-names';
 import { DRIZZLE } from '@/db/drizzle.constants';
 import { activityDaily } from '@/db/schema/activity.schema';
 import { alertEvents } from '@/db/schema/alerts.schema';
@@ -37,6 +34,8 @@ import { NotifierConsumerService } from '@/workers/notifier/notifier-consumer.se
 import { localDayRange } from '@/pipeline/local-day';
 import { computeTimeAwayMinutes } from '@/pipeline/time-away';
 import { AppModule } from './../src/app.module';
+
+const names = resolveResourceNamesFromEnv(process.env);
 
 /**
  * e2e de alerts-center-notifier contra Postgres + LocalStack reales.
@@ -187,8 +186,8 @@ describe('Alerts center + notifier (e2e)', () => {
     notifier = app.get(NotifierConsumerService);
     activityStore = app.get<ActivityStore>(ACTIVITY_STORE);
 
-    geofenceEventsUrl = await queueUrl(QUEUE_GEOFENCE_EVENTS);
-    notificationsUrl = await queueUrl(QUEUE_NOTIFICATIONS);
+    geofenceEventsUrl = await queueUrl(names.geofenceEvents);
+    notificationsUrl = await queueUrl(names.notifications);
     await sqs.send(new PurgeQueueCommand({ QueueUrl: geofenceEventsUrl }));
     await sqs.send(new PurgeQueueCommand({ QueueUrl: notificationsUrl }));
 

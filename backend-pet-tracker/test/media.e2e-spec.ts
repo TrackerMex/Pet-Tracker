@@ -12,7 +12,7 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { uuidv7 } from 'uuidv7';
 import { S3_CLIENT } from '@/aws/aws.constants';
-import { BUCKET_MEDIA } from '@/aws/constants';
+import { resolveResourceNamesFromEnv } from '@/aws/resource-names';
 import { DRIZZLE } from '@/db/drizzle.constants';
 import { auditLog } from '@/db/schema/audit-log.schema';
 import { pets, petUsers } from '@/db/schema/pets.schema';
@@ -24,6 +24,7 @@ import { AppModule } from './../src/app.module';
 // Direct S3 access (R8/R9) construye su propia URL contra AWS_ENDPOINT_URL
 // fuera del bootstrap de Nest — mismo patron que localstack-provisioning.e2e-spec.ts.
 loadDotenv({ path: '../.env' });
+const names = resolveResourceNamesFromEnv(process.env);
 
 interface PolicyStatement {
   Effect?: string;
@@ -181,7 +182,9 @@ describe('Pet photo upload (e2e)', () => {
         ['uploadUrl', 'expiresInSeconds'].sort(),
       );
       expect(body.expiresInSeconds).toBe(600);
-      expect(body.uploadUrl).toEqual(expect.stringContaining(BUCKET_MEDIA));
+      expect(body.uploadUrl).toEqual(
+        expect.stringContaining(names.mediaBucket),
+      );
 
       const photoKey = await photoKeyOf(pet.id);
       expect(photoKey).toEqual(
@@ -325,7 +328,7 @@ describe('Pet photo upload (e2e)', () => {
 
     it('GetPublicAccessBlock devuelve los 4 flags de bloqueo en true', async () => {
       const { PublicAccessBlockConfiguration } = await s3Client().send(
-        new GetPublicAccessBlockCommand({ Bucket: BUCKET_MEDIA }),
+        new GetPublicAccessBlockCommand({ Bucket: names.mediaBucket }),
       );
 
       expect(PublicAccessBlockConfiguration).toEqual(
@@ -340,7 +343,7 @@ describe('Pet photo upload (e2e)', () => {
 
     it('no existe una bucket policy que conceda acceso publico', async () => {
       const policy = await s3Client()
-        .send(new GetBucketPolicyCommand({ Bucket: BUCKET_MEDIA }))
+        .send(new GetBucketPolicyCommand({ Bucket: names.mediaBucket }))
         .then((response) => response.Policy ?? null)
         .catch((error: { name?: string }) => {
           // provisionMediaBucket no crea ninguna policy: "no hay policy" es el

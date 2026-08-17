@@ -1,11 +1,10 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-08-17
-**Features completadas**: 26/30 (`feature_list.json`)
+**Features completadas**: 27/30 (`feature_list.json`)
 **En progreso**: ninguna.
-**Pendientes**: 4, por prioridad — **P2**: #28 `test-dev-resource-isolation`,
-#29 `wialon-session-reuse`. **P3**: #17
-`nutrition-profile-engine`, #18 `nutrition-ai-explainer`.
+**Pendientes**: 3, por prioridad — **P2**: #29 `wialon-session-reuse`.
+**P3**: #17 `nutrition-profile-engine`, #18 `nutrition-ai-explainer`.
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
 desde 2026-08-10. Hay recursos vivos en la cuenta, aunque hoy sin coste.
@@ -727,6 +726,26 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-08-17 (2)** — Ciclo SDD completo de `test-dev-resource-isolation`
+  (#28), reparto Claude/Codex. Los e2e y el entorno de desarrollo dejan de
+  compartir recursos de LocalStack: los diez nombres se derivan con un sufijo
+  `-test` bajo `NODE_ENV=test`, viajan por el token inyectable
+  `AWS_RESOURCE_NAMES` y `provision:local` crea los dos juegos en una
+  invocación. `constants.ts` sigue siendo literales `const` a propósito —
+  convertirlos en funciones habría dejado el guard de literales duplicados de
+  #20 verde en vacío. Con `AWS_MODE=aws` el sufijo es siempre `''` y no se
+  aborta: es la combinación normal de los dos e2e de AWS real, que corren bajo
+  Jest. El riesgo de duplicar recursos en `us-east-1` queda cerrado por tres
+  vías independientes (el modo manda sobre `NODE_ENV`, el provisioning rechaza
+  `AWS_MODE=aws`, y el stack CDK no importa nada de `resource-names.ts`).
+  La implementación paró **tres veces** (R7, R10, R11) por el mismo defecto de
+  la spec —las guardas de regresión iban ordenadas después de los requisitos
+  que las vuelven verdes— y las tres se resolvieron por gate en vez de
+  fabricando un fallo. Verificación: `init.sh` exit 0 con los e2e corriendo de
+  verdad; el reviewer ejecutó además el recuento manual de colas y midió que el
+  `ItemCount` de DynamoDB en LocalStack es exacto e inmediato. Aprobado en
+  `progress/review_test-dev-resource-isolation.md`.
 
 - **2026-08-17** — Implementación completa de `device-subscriptions` (#25),
   R1–R18 en el orden obligatorio de la spec y con historial TDD rojo→verde por

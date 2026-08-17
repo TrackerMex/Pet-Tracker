@@ -7,6 +7,7 @@ import {
 import {
   EventBridgeClient,
   ListEventBusesCommand,
+  ListRulesCommand,
 } from '@aws-sdk/client-eventbridge';
 import {
   GetPublicAccessBlockCommand,
@@ -26,16 +27,14 @@ import {
   resolveAwsConfigFromEnv,
 } from '../src/aws/aws-clients';
 import { runProvisioning } from '../src/aws/run-provisioning';
+import { TABLE_POSITIONS_TTL_ATTRIBUTE } from '../src/aws/constants';
 import {
-  BUCKET_MEDIA,
-  EVENT_BUS_NAME,
-  QUEUE_NOTIFICATIONS,
-  QUEUE_NOTIFICATIONS_DLQ,
-  QUEUE_POSITIONS_RAW,
-  QUEUE_POSITIONS_RAW_DLQ,
-  TABLE_POSITIONS,
-  TABLE_POSITIONS_TTL_ATTRIBUTE,
-} from '../src/aws/constants';
+  RESOURCE_SUFFIX_TEST,
+  buildResourceNames,
+} from '../src/aws/resource-names';
+
+const DEVELOPMENT_NAMES = buildResourceNames('');
+const TEST_NAMES = buildResourceNames(RESOURCE_SUFFIX_TEST);
 
 // NOTA PARA EL REVIEWER: este archivo requiere LocalStack real levantado
 // (`docker compose up -d`, ver docker-compose.yml) para pasar — es la
@@ -116,7 +115,7 @@ describe('localstack-provisioning e2e (requiere LocalStack real — docker compo
 
       const { QueueUrls } = await sqs.send(new ListQueuesCommand({}));
       const positionsRawUrls = (QueueUrls ?? []).filter((url) =>
-        url.endsWith(`/${QUEUE_POSITIONS_RAW}`),
+        url.endsWith(`/${DEVELOPMENT_NAMES.positionsRaw}`),
       );
       expect(positionsRawUrls).toHaveLength(1);
     }, 30000);
@@ -126,10 +125,10 @@ describe('localstack-provisioning e2e (requiere LocalStack real — docker compo
     it('list-queues incluye las 4 URLs', async () => {
       const { QueueUrls } = await sqs.send(new ListQueuesCommand({}));
       const names = [
-        QUEUE_POSITIONS_RAW,
-        QUEUE_POSITIONS_RAW_DLQ,
-        QUEUE_NOTIFICATIONS,
-        QUEUE_NOTIFICATIONS_DLQ,
+        DEVELOPMENT_NAMES.positionsRaw,
+        DEVELOPMENT_NAMES.positionsRawDlq,
+        DEVELOPMENT_NAMES.notifications,
+        DEVELOPMENT_NAMES.notificationsDlq,
       ];
 
       for (const name of names) {
@@ -144,7 +143,7 @@ describe('localstack-provisioning e2e (requiere LocalStack real — docker compo
     it('GetQueueAttributes muestra RedrivePolicy con el ARN de la DLQ y maxReceiveCount', async () => {
       const { QueueUrls } = await sqs.send(new ListQueuesCommand({}));
       const queueUrl = (QueueUrls ?? []).find((url) =>
-        url.endsWith(`/${QUEUE_POSITIONS_RAW}`),
+        url.endsWith(`/${DEVELOPMENT_NAMES.positionsRaw}`),
       );
       expect(queueUrl).toBeDefined();
 
@@ -157,7 +156,7 @@ describe('localstack-provisioning e2e (requiere LocalStack real — docker compo
       const redrivePolicy = parseRedrivePolicy(Attributes?.RedrivePolicy);
 
       expect(redrivePolicy.deadLetterTargetArn).toEqual(
-        expect.stringContaining(QUEUE_POSITIONS_RAW_DLQ),
+        expect.stringContaining(DEVELOPMENT_NAMES.positionsRawDlq),
       );
       expect(typeof redrivePolicy.maxReceiveCount).toBe('number');
     });
@@ -167,7 +166,7 @@ describe('localstack-provisioning e2e (requiere LocalStack real — docker compo
     it('GetQueueAttributes muestra RedrivePolicy con el ARN de la DLQ y maxReceiveCount', async () => {
       const { QueueUrls } = await sqs.send(new ListQueuesCommand({}));
       const queueUrl = (QueueUrls ?? []).find((url) =>
-        url.endsWith(`/${QUEUE_NOTIFICATIONS}`),
+        url.endsWith(`/${DEVELOPMENT_NAMES.notifications}`),
       );
       expect(queueUrl).toBeDefined();
 
@@ -180,7 +179,7 @@ describe('localstack-provisioning e2e (requiere LocalStack real — docker compo
       const redrivePolicy = parseRedrivePolicy(Attributes?.RedrivePolicy);
 
       expect(redrivePolicy.deadLetterTargetArn).toEqual(
-        expect.stringContaining(QUEUE_NOTIFICATIONS_DLQ),
+        expect.stringContaining(DEVELOPMENT_NAMES.notificationsDlq),
       );
       expect(typeof redrivePolicy.maxReceiveCount).toBe('number');
     });
@@ -189,7 +188,9 @@ describe('localstack-provisioning e2e (requiere LocalStack real — docker compo
   describe('R10: tabla DynamoDB positions con pk/sk correctos', () => {
     it('DescribeTable muestra KeySchema con pk (HASH) y sk (RANGE)', async () => {
       const { Table } = await dynamoDb.send(
-        new DescribeTableCommand({ TableName: TABLE_POSITIONS }),
+        new DescribeTableCommand({
+          TableName: DEVELOPMENT_NAMES.positionsTable,
+        }),
       );
 
       const pk = Table?.KeySchema?.find((k) => k.AttributeName === 'pk');
@@ -211,7 +212,9 @@ describe('localstack-provisioning e2e (requiere LocalStack real — docker compo
   describe('R11: TTL habilitado sobre expires_at', () => {
     it('DescribeTimeToLive muestra AttributeName expires_at y TimeToLiveStatus ENABLED', async () => {
       const { TimeToLiveDescription } = await dynamoDb.send(
-        new DescribeTimeToLiveCommand({ TableName: TABLE_POSITIONS }),
+        new DescribeTimeToLiveCommand({
+          TableName: DEVELOPMENT_NAMES.positionsTable,
+        }),
       );
 
       expect(TimeToLiveDescription?.AttributeName).toBe(
@@ -224,16 +227,20 @@ describe('localstack-provisioning e2e (requiere LocalStack real — docker compo
   describe('R12: bucket S3 de media existe', () => {
     it('ListBuckets incluye el bucket de media', async () => {
       const { Buckets } = await s3.send(new ListBucketsCommand({}));
-      expect(Buckets?.some((bucket) => bucket.Name === BUCKET_MEDIA)).toBe(
-        true,
-      );
+      expect(
+        Buckets?.some(
+          (bucket) => bucket.Name === DEVELOPMENT_NAMES.mediaBucket,
+        ),
+      ).toBe(true);
     });
   });
 
   describe('R13: bucket S3 sin acceso público', () => {
     it('GetPublicAccessBlock muestra los 4 flags de bloqueo en true', async () => {
       const { PublicAccessBlockConfiguration } = await s3.send(
-        new GetPublicAccessBlockCommand({ Bucket: BUCKET_MEDIA }),
+        new GetPublicAccessBlockCommand({
+          Bucket: DEVELOPMENT_NAMES.mediaBucket,
+        }),
       );
 
       expect(PublicAccessBlockConfiguration?.BlockPublicAcls).toBe(true);
@@ -248,7 +255,56 @@ describe('localstack-provisioning e2e (requiere LocalStack real — docker compo
       const { EventBuses } = await eventBridge.send(
         new ListEventBusesCommand({}),
       );
-      expect(EventBuses?.some((bus) => bus.Name === EVENT_BUS_NAME)).toBe(true);
+      expect(
+        EventBuses?.some((bus) => bus.Name === DEVELOPMENT_NAMES.eventBus),
+      ).toBe(true);
     });
+  });
+
+  describe('R7: la doble corrida deja ambos juegos utilizables', () => {
+    it('devuelve 0 y conserva los veinte recursos', async () => {
+      await expect(runProvisioning(process.env)).resolves.toBe(0);
+
+      const nameSets = [DEVELOPMENT_NAMES, TEST_NAMES];
+      const { QueueUrls = [] } = await sqs.send(new ListQueuesCommand({}));
+      const { Buckets = [] } = await s3.send(new ListBucketsCommand({}));
+      const { EventBuses = [] } = await eventBridge.send(
+        new ListEventBusesCommand({}),
+      );
+
+      for (const names of nameSets) {
+        for (const queueName of [
+          names.positionsRaw,
+          names.positionsRawDlq,
+          names.notifications,
+          names.notificationsDlq,
+          names.geofenceEvents,
+          names.geofenceEventsDlq,
+        ]) {
+          expect(QueueUrls.some((url) => url.endsWith(`/${queueName}`))).toBe(
+            true,
+          );
+        }
+
+        await expect(
+          dynamoDb.send(
+            new DescribeTableCommand({ TableName: names.positionsTable }),
+          ),
+        ).resolves.toBeDefined();
+        expect(
+          Buckets.some((bucket) => bucket.Name === names.mediaBucket),
+        ).toBe(true);
+        expect(EventBuses.some((bus) => bus.Name === names.eventBus)).toBe(
+          true,
+        );
+
+        const { Rules = [] } = await eventBridge.send(
+          new ListRulesCommand({ EventBusName: names.eventBus }),
+        );
+        expect(
+          Rules.some((rule) => rule.Name === names.geofenceEventsRule),
+        ).toBe(true);
+      }
+    }, 30000);
   });
 });

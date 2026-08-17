@@ -4,7 +4,7 @@ import {
   SQSClient,
 } from '@aws-sdk/client-sqs';
 import { Logger } from '@nestjs/common';
-import { QUEUE_NOTIFICATIONS } from '@/aws/constants';
+import { buildResourceNames } from '@/aws/resource-names';
 import { Reminder } from '@/modules/reminders/domain/entities/reminder.entity';
 import type { ReminderRepository } from '@/modules/reminders/domain/repositories/reminder.repository';
 import { RemindersDispatchService } from './reminders-dispatch.service';
@@ -12,6 +12,7 @@ import { RemindersDispatchService } from './reminders-dispatch.service';
 const NOW = new Date('2026-08-13T18:00:00.000Z');
 const QUEUE_URL = 'http://localhost:4566/000000000000/notifications';
 const REMINDER_ID = '01924a3f-0000-7000-8000-0000000000cc';
+const NAMES = buildResourceNames('');
 
 function reminder(id: string, dueAt: string): Reminder {
   return new Reminder({
@@ -44,7 +45,7 @@ function sqsStub(failSendNumber?: number) {
   let sendNumber = 0;
   const send = jest.fn((command: unknown) => {
     if (command instanceof GetQueueUrlCommand) {
-      expect(command.input.QueueName).toBe(QUEUE_NOTIFICATIONS);
+      expect(command.input.QueueName).toBe(NAMES.notifications);
       return Promise.resolve({ QueueUrl: QUEUE_URL });
     }
     if (command instanceof SendMessageCommand) {
@@ -80,6 +81,7 @@ describe('R5: dispatcher encola vencidos una sola vez', () => {
 
     await new RemindersDispatchService(
       sqs.client,
+      NAMES,
       repository.client,
     ).dispatchOnce();
 
@@ -100,7 +102,11 @@ describe('R5: dispatcher encola vencidos una sola vez', () => {
     const repository = repositoryStub();
     repository.findDue.mockResolvedValueOnce([due]).mockResolvedValueOnce([]);
     const sqs = sqsStub();
-    const service = new RemindersDispatchService(sqs.client, repository.client);
+    const service = new RemindersDispatchService(
+      sqs.client,
+      NAMES,
+      repository.client,
+    );
 
     await service.dispatchOnce();
     await service.dispatchOnce();
@@ -122,6 +128,7 @@ describe('R5: dispatcher encola vencidos una sola vez', () => {
 
     await new RemindersDispatchService(
       sqs.client,
+      NAMES,
       repository.client,
     ).dispatchOnce();
 
@@ -144,6 +151,7 @@ describe('R6: dispatcher publica el mensaje reminder exacto', () => {
 
     await new RemindersDispatchService(
       sqs.client,
+      NAMES,
       repository.client,
     ).dispatchOnce();
 

@@ -2,10 +2,10 @@ import { Logger } from '@nestjs/common';
 import { QueryCommand } from '@aws-sdk/lib-dynamodb';
 import type { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 import {
-  TABLE_POSITIONS,
   TABLE_POSITIONS_PARTITION_KEY,
   TABLE_POSITIONS_SORT_KEY,
 } from '@/aws/constants';
+import { buildResourceNames } from '@/aws/resource-names';
 import {
   ACTIVITY_MAX_PAGES_PER_DAY,
   ACTIVITY_PAGE_LIMIT,
@@ -15,6 +15,7 @@ import { DailyPositionsDynamoReader } from './daily-positions.dynamo.reader';
 const PET_A = '018f5a3e-0000-7000-8000-000000000001';
 const START_MS = Date.UTC(2026, 7, 2, 6, 0, 0);
 const END_MS = Date.UTC(2026, 7, 3, 6, 0, 0);
+const NAMES = buildResourceNames('');
 
 interface QueryInput {
   TableName?: string;
@@ -68,14 +69,14 @@ describe('R12: DailyPositionsReader lee un dia entero paginando por dentro', () 
   it('emite la Query del contrato: pk de la mascota, sk BETWEEN semiabierto y ascendente', async () => {
     const { documents, sent, inputAt } = fakeDocuments([{ Items: [] }]);
 
-    await new DailyPositionsDynamoReader(documents).readDay(
+    await new DailyPositionsDynamoReader(documents, NAMES).readDay(
       PET_A,
       START_MS,
       END_MS,
     );
 
     expect(sent).toHaveLength(1);
-    expect(inputAt(0).TableName).toBe(TABLE_POSITIONS);
+    expect(inputAt(0).TableName).toBe(NAMES.positionsTable);
     expect(inputAt(0).KeyConditionExpression).toBe(
       `${TABLE_POSITIONS_PARTITION_KEY} = :pk AND ${TABLE_POSITIONS_SORT_KEY} BETWEEN :from AND :to`,
     );
@@ -109,11 +110,10 @@ describe('R12: DailyPositionsReader lee un dia entero paginando por dentro', () 
       { Items: [item(START_MS + 4_000)] },
     ]);
 
-    const positions = await new DailyPositionsDynamoReader(documents).readDay(
-      PET_A,
-      START_MS,
-      END_MS,
-    );
+    const positions = await new DailyPositionsDynamoReader(
+      documents,
+      NAMES,
+    ).readDay(PET_A, START_MS, END_MS);
 
     expect(sent).toHaveLength(3);
     expect(positions.map((position) => position.ts)).toEqual([
@@ -147,11 +147,10 @@ describe('R12: DailyPositionsReader lee un dia entero paginando por dentro', () 
       },
     ]);
 
-    const [position] = await new DailyPositionsDynamoReader(documents).readDay(
-      PET_A,
-      START_MS,
-      END_MS,
-    );
+    const [position] = await new DailyPositionsDynamoReader(
+      documents,
+      NAMES,
+    ).readDay(PET_A, START_MS, END_MS);
 
     expect(position).toEqual({
       lat: 19.4326,
@@ -165,11 +164,10 @@ describe('R12: DailyPositionsReader lee un dia entero paginando por dentro', () 
   it('conserva los opcionales presentes y no filtra los atributos internos', async () => {
     const { documents } = fakeDocuments([{ Items: [item(START_MS)] }]);
 
-    const [position] = await new DailyPositionsDynamoReader(documents).readDay(
-      PET_A,
-      START_MS,
-      END_MS,
-    );
+    const [position] = await new DailyPositionsDynamoReader(
+      documents,
+      NAMES,
+    ).readDay(PET_A, START_MS, END_MS);
 
     expect(position).toEqual({
       lat: 19.4326,
@@ -202,11 +200,10 @@ describe('R12: DailyPositionsReader lee un dia entero paginando por dentro', () 
       },
     ]);
 
-    const positions = await new DailyPositionsDynamoReader(documents).readDay(
-      PET_A,
-      START_MS,
-      END_MS,
-    );
+    const positions = await new DailyPositionsDynamoReader(
+      documents,
+      NAMES,
+    ).readDay(PET_A, START_MS, END_MS);
 
     expect(sent).toHaveLength(ACTIVITY_MAX_PAGES_PER_DAY);
     expect(positions).toHaveLength(ACTIVITY_MAX_PAGES_PER_DAY);

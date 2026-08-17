@@ -10,9 +10,8 @@ import { Logger } from '@nestjs/common';
 import {
   DETAIL_TYPE_BATTERY_LOW,
   DETAIL_TYPE_POSITION_UPDATED,
-  QUEUE_GEOFENCE_EVENTS,
-  QUEUE_NOTIFICATIONS,
 } from '@/aws/constants';
+import { buildResourceNames } from '@/aws/resource-names';
 import type { PetRepository } from '@/modules/pets/domain/repositories/pet.repository';
 import { AlertsEngineConsumerService } from './alerts-engine-consumer.service';
 import type { AlertsEngineStore } from './alerts-engine-store';
@@ -20,6 +19,7 @@ import type { AlertsEngineStore } from './alerts-engine-store';
 const NOW = new Date('2026-08-01T12:00:00.000Z');
 const GEOFENCE_ID = 'geofence-1';
 const PET_ID = 'pet-1';
+const NAMES = buildResourceNames('');
 
 // Geocerca circular fija para todos los escenarios de evaluate() (100 m).
 const CENTER_LAT = 19.4326;
@@ -58,10 +58,10 @@ function sqsStub(batches: Message[][]): SqsStub {
   const send = jest.fn((command: unknown) => {
     if (command instanceof GetQueueUrlCommand) {
       const name = command.input.QueueName;
-      if (name === QUEUE_GEOFENCE_EVENTS) {
+      if (name === NAMES.geofenceEvents) {
         return Promise.resolve({ QueueUrl: CONSUME_QUEUE_URL });
       }
-      if (name === QUEUE_NOTIFICATIONS) {
+      if (name === NAMES.notifications) {
         return Promise.resolve({ QueueUrl: NOTIFICATIONS_QUEUE_URL });
       }
       return Promise.reject(
@@ -217,7 +217,12 @@ function makeHarness(
   const sqs = sqsStub(batches);
   const store = overrides.store ?? storeStub();
   const pets = overrides.pets ?? petsStub();
-  const service = new AlertsEngineConsumerService(store, sqs.client, pets);
+  const service = new AlertsEngineConsumerService(
+    store,
+    sqs.client,
+    pets,
+    NAMES,
+  );
   return { service, sqs, store, pets };
 }
 
