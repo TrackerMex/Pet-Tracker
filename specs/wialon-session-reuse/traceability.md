@@ -14,7 +14,7 @@ tags: [harness, spec]
 | R2 | `backend-pet-tracker/src/workers/poller.service.spec.ts::R2 (wialon-session-reuse #29): un ciclo del poller sobre N devices hace un solo token/login` | pendiente | pendiente |
 | R3 | `backend-pet-tracker/src/integrations/wialon/wialon-http.client.spec.ts::R3 (wialon-session-reuse #29): el sid caducado fuerza un login nuevo` | `backend-pet-tracker/src/integrations/wialon/wialon-http.client.ts` | `c8abd6c` *(feat(wialon-session-reuse): add ttl expiry to session cache (R3))* |
 | R4 | `backend-pet-tracker/src/integrations/wialon/wialon-http.client.spec.ts::R4 (wialon-session-reuse #29): una sesión inválida se recupera con un re-login transparente` | `backend-pet-tracker/src/integrations/wialon/wialon-http.client.ts` | `9102489` *(feat(wialon-session-reuse): add invalid-session detection and retry path (R4))* |
-| R5 | `backend-pet-tracker/src/integrations/wialon/wialon-http.client.spec.ts::R5 (wialon-session-reuse #29): el segundo fallo se propaga sin bucle y los demás errores no se reintentan` | pendiente | pendiente |
+| R5 | `backend-pet-tracker/src/integrations/wialon/wialon-http.client.spec.ts::R5 (wialon-session-reuse #29): el segundo fallo se propaga sin bucle y los demás errores no se reintentan` | `backend-pet-tracker/src/integrations/wialon/wialon-http.client.ts` | `0ce9788` *(test(wialon-session-reuse): add R5 non-retry coverage)* |
 | R6 | `backend-pet-tracker/src/integrations/wialon/wialon-http.client.spec.ts::R6 (wialon-session-reuse #29): WIALON_SID_TTL_MS está por debajo de la caducidad de Wialon` | `backend-pet-tracker/src/integrations/wialon/wialon-http.client.ts` | `2d8aa6b` *(feat(wialon-session-reuse): export WIALON_SID_TTL_MS (R6))* |
 | R7 | `backend-pet-tracker/src/integrations/wialon/wialon-http.client.spec.ts::R7 (wialon-session-reuse #29): el token no aparece en logs ni en errores` | pendiente (guarda de seguridad, **nace verde**) | pendiente |
 | R8 | `backend-pet-tracker/src/integrations/wialon/wialon-http.client.spec.ts::R8 (wialon-session-reuse #29): el puerto y el simulador no cambian` | pendiente (guarda de regresión, **nace verde**) | pendiente |
@@ -35,6 +35,7 @@ la lista se escribe **antes** de implementar:
 |---|---|---|
 | R7 | El cliente hoy no tiene `Logger` ni `console.*`, y R4-R6 no añaden ninguno. Es una guarda de **seguridad**: asevera que una propiedad que ya se cumple sigue cumpliéndose después del cambio. | "guarda de seguridad, nace verde" |
 | R8 | Es una congelación por su propio enunciado: asevera que tres archivos **no** cambiaron. | "guarda de regresión, nace verde" |
+| R5 | `callWithSession` + `isInvalidSessionError` cubrieron los 4 caminos de R5 sin código adicional. Nació verde en la implementación y no tenía fase roja propia. | "bloque de verificación nacido verde (sin rediseño propio)" |
 
 **R5 es un caso frontera y está previsto.** Si R4 se implementa con la forma
 de [[design]] §D1, tres de sus cuatro `it` (b, c, d) nacen verdes: son las

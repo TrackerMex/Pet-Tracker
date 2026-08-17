@@ -16,3 +16,4 @@
 - 2026-08-17: `R1` verde: sesión cacheada por instancia (constante por instancia `sid` + `sidExpiresAtMs`) (commit `278018e`).
 - 2026-08-17: `R3` verde: cacheo con caducidad absoluta `Date.now() < sidExpiresAtMs` (commit `c8abd6c`).
 - 2026-08-17: `R4` verde: reintento de sesión inválida en `callWithSession` (commit `9102489`).
+- 2026-08-17: `R5` nació verde tras R4 (sin fase roja propia), registrado con tests (`0ce9788`) + excepción en trazabilidad.
