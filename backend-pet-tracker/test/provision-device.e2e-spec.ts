@@ -10,6 +10,7 @@ import { DRIZZLE } from '@/db/drizzle.constants';
 import { auditLog } from '@/db/schema/audit-log.schema';
 import { devices, petDevices } from '@/db/schema/devices.schema';
 import { pets } from '@/db/schema/pets.schema';
+import { deviceSubscriptions } from '@/db/schema/subscriptions.schema';
 import { users } from '@/db/schema/users.schema';
 import { FakeWialonClient } from '@/integrations/wialon/fake-wialon.client';
 import { WialonHttpClient } from '@/integrations/wialon/wialon-http.client';
@@ -101,6 +102,9 @@ describe('Device provisioning (e2e)', () => {
       await db.delete(pets).where(inArray(pets.id, createdPetIds));
     }
     if (createdDeviceIds.length > 0) {
+      await db
+        .delete(deviceSubscriptions)
+        .where(inArray(deviceSubscriptions.deviceId, createdDeviceIds));
       await db.delete(devices).where(inArray(devices.id, createdDeviceIds));
     }
     if (createdUserIds.length > 0) {
@@ -352,6 +356,12 @@ describe('Device provisioning (e2e)', () => {
       createdDeviceIds.push(provisioned.deviceId);
       const owner = await seedUser();
       const pet = await createPet(owner.token);
+      await db.insert(deviceSubscriptions).values({
+        deviceId: provisioned.deviceId,
+        status: 'active',
+        planCode: 'track_monthly',
+        currentPeriodEnd: new Date('2099-12-31T00:00:00.000Z'),
+      });
 
       await request(app.getHttpServer())
         .post('/v1/devices/claim')

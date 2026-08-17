@@ -4,6 +4,8 @@ import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DRIZZLE } from '@/db/drizzle.constants';
 import { devices, petDevices } from '@/db/schema/devices.schema';
 import { pets } from '@/db/schema/pets.schema';
+import { deviceSubscriptions } from '@/db/schema/subscriptions.schema';
+import { entitledDeviceSubscription } from '@/modules/subscriptions/infrastructure/entitlement.predicate';
 import type {
   ActiveAssignment,
   DeviceTelemetryUpdate,
@@ -31,6 +33,13 @@ export class IngestionDrizzleStore implements IngestionStore {
       })
       .from(petDevices)
       .innerJoin(devices, eq(petDevices.deviceId, devices.id))
+      .innerJoin(
+        deviceSubscriptions,
+        and(
+          eq(deviceSubscriptions.deviceId, devices.id),
+          entitledDeviceSubscription(),
+        ),
+      )
       .where(
         and(isNull(petDevices.releasedAt), isNotNull(devices.wialonUnitId)),
       );

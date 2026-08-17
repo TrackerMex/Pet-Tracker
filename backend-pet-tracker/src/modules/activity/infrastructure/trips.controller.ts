@@ -18,6 +18,7 @@ import type {
 } from '@/modules/activity/application/use-cases/list-trips.use-case';
 import { PetAccessGuard } from '@/modules/pets/infrastructure/guards/pet-access.guard';
 import type { PetAccessRequest } from '@/modules/pets/infrastructure/guards/pet-access.guard';
+import { PetTrackingGuard } from '@/modules/subscriptions/infrastructure/guards/pet-tracking.guard';
 import { mapActivityError } from './mappers/activity-error.mapper';
 
 /**
@@ -28,7 +29,7 @@ import { mapActivityError } from './mappers/activity-error.mapper';
  * guard, antes de tocar Postgres o DynamoDB.
  */
 @Controller('pets/:petId/trips')
-@UseGuards(PetAccessGuard)
+@UseGuards(PetAccessGuard, PetTrackingGuard)
 export class TripsController {
   constructor(private readonly listTrips: ListTripsUseCase) {}
 

@@ -1,6 +1,7 @@
 import {
   ConflictException,
   ForbiddenException,
+  HttpException,
   HttpStatus,
   NotFoundException,
 } from '@nestjs/common';
@@ -12,6 +13,10 @@ import {
   PetAlreadyHasDeviceError,
   PetNotAccessibleError,
 } from '@/modules/devices/domain/errors/device.errors';
+import {
+  DEVICE_SUBSCRIPTION_REQUIRED,
+  DeviceNotSubscribedError,
+} from '@/modules/subscriptions/domain/errors/subscription.errors';
 
 /**
  * Tabla error de dominio -> HTTP de specs/devices-claim/design.md. El 404
@@ -50,6 +55,17 @@ export function mapDeviceError(error: unknown): unknown {
       code: 'PET_ALREADY_HAS_DEVICE',
       message: 'Pet already has an active device',
     });
+  }
+
+  if (error instanceof DeviceNotSubscribedError) {
+    return new HttpException(
+      {
+        statusCode: HttpStatus.PAYMENT_REQUIRED,
+        code: DEVICE_SUBSCRIPTION_REQUIRED,
+        message: 'Pet tracking requires an active device subscription',
+      },
+      HttpStatus.PAYMENT_REQUIRED,
+    );
   }
 
   if (error instanceof DeviceNotAssignedError) {

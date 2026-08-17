@@ -16,6 +16,7 @@ import { ZodType } from 'zod';
 import { RequirePetRole } from '@/modules/pets/infrastructure/decorators/require-pet-role.decorator';
 import { PetAccessGuard } from '@/modules/pets/infrastructure/guards/pet-access.guard';
 import type { PetAccessRequest } from '@/modules/pets/infrastructure/guards/pet-access.guard';
+import { PetTrackingGuard } from '@/modules/subscriptions/infrastructure/guards/pet-tracking.guard';
 import {
   CreateGeofenceDto,
   CreateGeofenceSchema,
@@ -38,7 +39,7 @@ import type { GeofenceResponse } from './mappers/geofence-response.mapper';
  * decorador — cualquier rol con membresia activa lee.
  */
 @Controller('pets/:petId/geofences')
-@UseGuards(PetAccessGuard)
+@UseGuards(PetAccessGuard, PetTrackingGuard)
 export class GeofencesController {
   constructor(
     private readonly createGeofence: CreateGeofenceUseCase,

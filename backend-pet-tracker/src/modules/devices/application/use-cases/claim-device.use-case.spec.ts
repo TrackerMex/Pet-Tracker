@@ -10,6 +10,8 @@ import {
 import { DeviceRepository } from '@/modules/devices/domain/repositories/device.repository';
 import { PetMembership } from '@/modules/pets/domain/entities/pet-membership';
 import { PetRepository } from '@/modules/pets/domain/repositories/pet.repository';
+import { DeviceNotSubscribedError } from '@/modules/subscriptions/domain/errors/subscription.errors';
+import { SubscriptionRepository } from '@/modules/subscriptions/domain/repositories/subscription.repository';
 import {
   CLAIM_WATERMARK_LOOKBACK_MINUTES,
   ClaimDeviceUseCase,
@@ -61,6 +63,7 @@ function buildDeps() {
   const findActiveByPetId = jest.fn().mockResolvedValue(null);
   const claim = jest.fn().mockResolvedValue(undefined);
   const record = jest.fn().mockResolvedValue(undefined);
+  const isDeviceEntitled = jest.fn().mockResolvedValue(true);
 
   const pets = { findMembership } as unknown as PetRepository;
   const devices = {
@@ -70,22 +73,32 @@ function buildDeps() {
     claim,
   } as unknown as DeviceRepository;
   const auditLogger: AuditLogger = { record };
+  const subscriptions = {
+    isDeviceEntitled,
+  } as unknown as SubscriptionRepository;
 
   return {
     pets,
     devices,
     auditLogger,
+    subscriptions,
     findMembership,
     findByIdentifier,
     hasActiveAssignment,
     findActiveByPetId,
     claim,
     record,
+    isDeviceEntitled,
   };
 }
 
 function buildUseCase(deps: ReturnType<typeof buildDeps>) {
-  return new ClaimDeviceUseCase(deps.pets, deps.devices, deps.auditLogger);
+  return new ClaimDeviceUseCase(
+    deps.pets,
+    deps.devices,
+    deps.auditLogger,
+    deps.subscriptions,
+  );
 }
 
 describe('R3: claim feliz ejecuta la transaccion con watermark now-10min', () => {
@@ -251,6 +264,76 @@ describe('R10: la auditoria device.claim corre tras el commit con meta {petId}',
 
     await expect(useCase.execute(DTO, USER_ID)).rejects.toThrow('tx aborted');
     expect(deps.record).not.toHaveBeenCalled();
+  });
+});
+
+describe('R7 (device-subscriptions #25): subscription is the last claim check', () => {
+  it('rejects an unsubscribed device without claim or audit', async () => {
+    const deps = buildDeps();
+    deps.isDeviceEntitled.mockResolvedValue(false);
+    const useCase = buildUseCase(deps);
+
+    await expect(useCase.execute(DTO, USER_ID)).rejects.toThrow(
+      DeviceNotSubscribedError,
+    );
+    expect(deps.isDeviceEntitled).toHaveBeenCalledWith(DEVICE_ID);
+    expect(deps.claim).not.toHaveBeenCalled();
+    expect(deps.record).not.toHaveBeenCalled();
+  });
+
+  it('does not inspect subscriptions before membership, role, device and assignment checks', async () => {
+    const cases: Array<{
+      configure: (deps: ReturnType<typeof buildDeps>) => void;
+      error: new (...args: never[]) => Error;
+    }> = [
+      {
+        configure: (deps) => deps.findMembership.mockResolvedValue(null),
+        error: PetNotAccessibleError,
+      },
+      {
+        configure: (deps) =>
+          deps.findMembership.mockResolvedValue(
+            buildMembership({ role: 'family' }),
+          ),
+        error: InsufficientPetRoleError,
+      },
+      {
+        configure: (deps) => deps.findByIdentifier.mockResolvedValue(null),
+        error: DeviceNotFoundError,
+      },
+      {
+        configure: (deps) => deps.hasActiveAssignment.mockResolvedValue(true),
+        error: DeviceAlreadyAssignedError,
+      },
+      {
+        configure: (deps) =>
+          deps.findActiveByPetId.mockResolvedValue({
+            assignmentId: uuidLike(),
+            device: buildDevice({ id: uuidLike() }),
+          }),
+        error: PetAlreadyHasDeviceError,
+      },
+    ];
+
+    for (const testCase of cases) {
+      const deps = buildDeps();
+      testCase.configure(deps);
+
+      await expect(buildUseCase(deps).execute(DTO, USER_ID)).rejects.toThrow(
+        testCase.error,
+      );
+      expect(deps.isDeviceEntitled).not.toHaveBeenCalled();
+    }
+  });
+
+  it('checks entitlement immediately before claim on the happy path', async () => {
+    const deps = buildDeps();
+
+    await buildUseCase(deps).execute(DTO, USER_ID);
+
+    expect(deps.isDeviceEntitled.mock.invocationCallOrder[0]).toBeLessThan(
+      deps.claim.mock.invocationCallOrder[0],
+    );
   });
 });
 

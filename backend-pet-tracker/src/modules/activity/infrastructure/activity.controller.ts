@@ -14,6 +14,7 @@ import { GetDailyActivityUseCase } from '@/modules/activity/application/use-case
 import type { GetDailyActivityResult } from '@/modules/activity/application/use-cases/get-daily-activity.use-case';
 import { PetAccessGuard } from '@/modules/pets/infrastructure/guards/pet-access.guard';
 import type { PetAccessRequest } from '@/modules/pets/infrastructure/guards/pet-access.guard';
+import { PetTrackingGuard } from '@/modules/subscriptions/infrastructure/guards/pet-tracking.guard';
 import { mapActivityError } from './mappers/activity-error.mapper';
 
 /**
@@ -22,7 +23,7 @@ import { mapActivityError } from './mappers/activity-error.mapper';
  * sale de `request.petMembership`.
  */
 @Controller('pets/:petId/activity')
-@UseGuards(PetAccessGuard)
+@UseGuards(PetAccessGuard, PetTrackingGuard)
 export class ActivityController {
   constructor(private readonly getDailyActivity: GetDailyActivityUseCase) {}
 

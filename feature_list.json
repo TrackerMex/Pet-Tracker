@@ -465,7 +465,7 @@
   {
     "id": 25,
     "name": "device-subscriptions",
-    "status": "pending",
+    "status": "done",
     "priority": "P2",
     "description": "Modelo de membresías, decidido en sesión el 2026-08-14: la suscripción cuelga del DISPOSITIVO, no del usuario, porque el costo real es por collar (datos SIM + licencia de unidad Wialon + polling + writes a DynamoDB) y cobrar por usuario desalinea precio y costo. Efecto secundario deseado: la mascota compartida se resuelve sola — el collar está pagado, así que todos los miembros de pet_users ven el mapa sin pagar aparte (si el plan colgara del usuario, el caso familiar se rompe). La cuenta de usuario es gratis siempre; el plan free es la app de salud SIN GPS (perfil, vacunas, peso, recordatorios, plan nutricional determinístico de #17) y es el embudo de adquisición, no un pro capado. Alcance: tabla device_subscriptions (device_id, status, plan_code, current_period_end), un único derivador isPetTracked(petId) y CUATRO puntos de gate — (1) el poller de #8 filtra por suscripción activa, que es donde está el 90% del ahorro; (2) ClaimDeviceUseCase de #7 exige suscripción activa; (3) las lecturas de tracking (positions #9, trips #10, geofences #11, alerts #13) responden 402 sin entitlement; (4) el ai-explainer de #18 sin entitlement deja ai_explanation=null, que ya es su comportamiento de fallo. Vencimiento: periodo de gracia y luego el poller deja de encolar, pero NUNCA se libera el device — liberar cierra pet_devices.released_at, pierde el vínculo mascota-collar y deja el historial huérfano; al pagar debe revivir sin re-claim. FUERA DE ALCANCE deliberado: integración de pagos (Stripe). El status se administra manualmente en esta fase; cuando llegue el proveedor de pagos su webhook escribe la misma fila sin cambiar el modelo. Depende de #24 (necesita collares reales que suscribir).",
     "acceptance_criteria": [
@@ -549,7 +549,8 @@
       "Con OPENAI_ENABLED=false → plan 200 con aiExplanation null y warning en log",
       "SDK mockeado: éxito guarda texto; timeout no rompe el endpoint",
       "Hash hit no re-llama a la IA",
-      "grep -rn 'gpt-' src/ → cero literales de modelo en código"
+      "grep -rn 'gpt-' src/ → cero literales de modelo en código",
+      "Sin entitlement de la mascota, aiExplanation es null con 200, consumiendo SubscriptionRepository.isPetTracked() de #25; no se recalcula la regla (criterio trasladado desde #25 por la Opción A del gate humano del 2026-08-17: el gate 4 de #25 no tenía runtime porque #17/#18 estaban pending)"
     ],
     "files_affected": [
       "backend-pet-tracker/src/modules/nutrition/"

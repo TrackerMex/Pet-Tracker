@@ -22,9 +22,11 @@ import { DRIZZLE } from '@/db/drizzle.constants';
 import { activityDaily } from '@/db/schema/activity.schema';
 import { alertEvents } from '@/db/schema/alerts.schema';
 import { auditLog } from '@/db/schema/audit-log.schema';
+import { devices, petDevices } from '@/db/schema/devices.schema';
 import { geofences } from '@/db/schema/geofences.schema';
 import { petUsers, pets } from '@/db/schema/pets.schema';
 import { pushTokens } from '@/db/schema/push-tokens.schema';
+import { deviceSubscriptions } from '@/db/schema/subscriptions.schema';
 import { users } from '@/db/schema/users.schema';
 import { TOKEN_SERVICE } from '@/modules/auth/domain/ports/token-service';
 import type { TokenService } from '@/modules/auth/domain/ports/token-service';
@@ -79,6 +81,7 @@ describe('Alerts center + notifier (e2e)', () => {
   let strangerToken: string;
   let petId: string;
   let strangerPetId: string;
+  let deviceId: string;
   let geofenceId: string;
 
   async function queueUrl(name: string): Promise<string> {
@@ -222,6 +225,25 @@ describe('Alerts center + notifier (e2e)', () => {
       },
     ]);
 
+    deviceId = uuidv7();
+    await db.insert(devices).values({
+      id: deviceId,
+      esn: `ACN-${RUN_ID}`,
+      status: 'assigned',
+      isSimulated: true,
+    });
+    await db.insert(petDevices).values({
+      id: uuidv7(),
+      petId,
+      deviceId,
+    });
+    await db.insert(deviceSubscriptions).values({
+      deviceId,
+      status: 'active',
+      planCode: 'grandfathered',
+      currentPeriodEnd: new Date('2099-12-31T00:00:00.000Z'),
+    });
+
     geofenceId = uuidv7();
     await db.insert(geofences).values({
       id: geofenceId,
@@ -242,6 +264,11 @@ describe('Alerts center + notifier (e2e)', () => {
       await db
         .delete(auditLog)
         .where(inArray(auditLog.userId, [ownerId, familyId, strangerId]));
+      await db
+        .delete(deviceSubscriptions)
+        .where(eq(deviceSubscriptions.deviceId, deviceId));
+      await db.delete(petDevices).where(eq(petDevices.deviceId, deviceId));
+      await db.delete(devices).where(eq(devices.id, deviceId));
       await db.delete(pets).where(inArray(pets.id, [petId, strangerPetId]));
       await db
         .delete(users)

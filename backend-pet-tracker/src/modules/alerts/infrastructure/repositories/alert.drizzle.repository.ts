@@ -1,10 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, desc, eq, sql } from 'drizzle-orm';
+import { and, desc, eq, isNull, sql } from 'drizzle-orm';
 import type { SQL } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DRIZZLE } from '@/db/drizzle.constants';
 import { alertEvents } from '@/db/schema/alerts.schema';
+import { petDevices } from '@/db/schema/devices.schema';
 import { petUsers, pets } from '@/db/schema/pets.schema';
+import { deviceSubscriptions } from '@/db/schema/subscriptions.schema';
 import type {
   AlertEvent,
   AlertStatus,
@@ -13,6 +15,7 @@ import type {
   AlertRepository,
   ListAlertsForMemberInput,
 } from '@/modules/alerts/domain/repositories/alert.repository';
+import { entitledDeviceSubscription } from '@/modules/subscriptions/infrastructure/entitlement.predicate';
 
 const ACTIVE_STATUS = 'active';
 const OPEN_STATUS = 'open';
@@ -70,6 +73,20 @@ export class AlertDrizzleRepository implements AlertRepository {
           eq(petUsers.status, ACTIVE_STATUS),
         ),
       )
+      .innerJoin(
+        petDevices,
+        and(
+          eq(petDevices.petId, alertEvents.petId),
+          isNull(petDevices.releasedAt),
+        ),
+      )
+      .innerJoin(
+        deviceSubscriptions,
+        and(
+          eq(deviceSubscriptions.deviceId, petDevices.deviceId),
+          entitledDeviceSubscription(),
+        ),
+      )
       .innerJoin(pets, eq(pets.id, alertEvents.petId))
       .where(conditions.length === 0 ? undefined : and(...conditions))
       // R16: desempate estable por id, imprescindible para el cursor de R18.
@@ -92,6 +109,20 @@ export class AlertDrizzleRepository implements AlertRepository {
           eq(petUsers.petId, alertEvents.petId),
           eq(petUsers.userId, userId),
           eq(petUsers.status, ACTIVE_STATUS),
+        ),
+      )
+      .innerJoin(
+        petDevices,
+        and(
+          eq(petDevices.petId, alertEvents.petId),
+          isNull(petDevices.releasedAt),
+        ),
+      )
+      .innerJoin(
+        deviceSubscriptions,
+        and(
+          eq(deviceSubscriptions.deviceId, petDevices.deviceId),
+          entitledDeviceSubscription(),
         ),
       )
       .innerJoin(pets, eq(pets.id, alertEvents.petId))

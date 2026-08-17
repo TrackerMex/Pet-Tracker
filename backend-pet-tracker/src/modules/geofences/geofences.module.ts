@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { PetsModule } from '@/modules/pets/pets.module';
+import { SubscriptionsModule } from '@/modules/subscriptions/subscriptions.module';
 import { CreateGeofenceUseCase } from './application/use-cases/create-geofence.use-case';
 import { DeleteGeofenceUseCase } from './application/use-cases/delete-geofence.use-case';
 import { GetGeofenceUseCase } from './application/use-cases/get-geofence.use-case';
@@ -16,7 +17,7 @@ import { GeofenceDrizzleRepository } from './infrastructure/repositories/geofenc
  * los resuelven los modulos @Global().
  */
 @Module({
-  imports: [PetsModule],
+  imports: [PetsModule, SubscriptionsModule],
   controllers: [GeofencesController],
   providers: [
     CreateGeofenceUseCase,

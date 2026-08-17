@@ -3,6 +3,7 @@ import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 import { Module } from '@nestjs/common';
 import { DYNAMODB_CLIENT } from '@/aws/aws.constants';
 import { PetsModule } from '@/modules/pets/pets.module';
+import { SubscriptionsModule } from '@/modules/subscriptions/subscriptions.module';
 import { GetLastPositionUseCase } from './application/use-cases/get-last-position.use-case';
 import { ListPositionsUseCase } from './application/use-cases/list-positions.use-case';
 import { LAST_POSITION_READER } from './domain/repositories/last-position.reader';
@@ -23,7 +24,7 @@ import { POSITIONS_READ_DOC_CLIENT } from './positions.constants';
  * proceso que solo quiera servir HTTP.
  */
 @Module({
-  imports: [PetsModule],
+  imports: [PetsModule, SubscriptionsModule],
   controllers: [PositionsController],
   providers: [
     GetLastPositionUseCase,
