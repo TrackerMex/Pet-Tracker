@@ -21,7 +21,7 @@ tags: [harness, spec]
 | R11 | `test/device-subscriptions.e2e-spec.ts::R11 (device-subscriptions #25): entitlement is shared by pet members` | `e534063` propiedad verde tras R9; sin implementación adicional |
 | R12 | pendiente | pendiente |
 | R13 | `test/device-subscriptions.e2e-spec.ts::R13 (device-subscriptions #25): idempotent subscription:set` | `6b07d89` red; `6ba4350` CLI/upsert |
-| R14 | pendiente | pendiente |
+| R14 | grep de proveedores + diff de dependencias/env/docs | commit de evidencia en esta fila; restricción verde, sin implementación |
 | R15 | `test/device-subscriptions.e2e-spec.ts::R15 (device-subscriptions #25): subscriptions module wiring` | `c06fd74` red; `b8bc340` module wiring |
 | R16 | `test/device-subscriptions.e2e-spec.ts::R16 (device-subscriptions #25): HTTP response shape stays frozen` | `746c476` propiedad verde; sin implementación adicional |
 | R17 | `test/device-subscriptions.e2e-spec.ts::R17 (device-subscriptions #25): grandfather existing devices` | `f171ffa` red; `e86435f` backfill + seed |
@@ -44,7 +44,7 @@ ejecuten:
 | R5 | `grep -rnE "update\(petDevices\)\|update\(devices\).*status\|set\(\{[^}]*releasedAt" backend-pet-tracker/src/modules/subscriptions backend-pet-tracker/src/workers/ingestion.drizzle.store.ts backend-pet-tracker/scripts/seed-devices.ts` | sin salida (exit 1 de grep); no hay UPDATE de asignación/status |
 | R11 | `rg -n "device_subscriptions\|deviceSubscriptions" src/db/schema/subscriptions.schema.ts src/modules/subscriptions \| rg "userId\|user_id"` | sin salida (exit 1); el entitlement no se liga a usuarios |
 | R12 | `ls backend-pet-tracker/src/modules/nutrition` + `grep -rn "aiExplanation" backend-pet-tracker/src/` | pendiente |
-| R14 | `grep -rni "stripe\|paypal\|mercadopago\|checkout.session\|webhook" backend-pet-tracker/src/` | pendiente |
+| R14 | `rg -ni "stripe\|paypal\|mercadopago\|checkout\.session\|webhook" backend-pet-tracker/src` + `git diff $(git merge-base origin/main HEAD) -- backend-pet-tracker/package.json backend-pet-tracker/.env.example docs/conventions.md` | `PROVIDER_GREP=NO_MATCHES`; package solo añade el script `subscription:set`, sin dependencias; `.env.example` y convenciones sin diff |
 | R16 | `rg -n "tracked\|entitled\|planCode\|subscription" src/modules -g "*/infrastructure/mappers/*.ts"` | `NO_MATCHES` |
 
 ### Salida R2

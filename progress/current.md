@@ -8,7 +8,7 @@
 - **feature**: `device-subscriptions` (#25, P2)
 - **branch**: `feature/25-device-subscriptions`
 - **inicio**: 2026-08-17
-- **estado**: implementación en curso; R1-R11, R15 y R16 verdes, iniciando R14
+- **estado**: implementación en curso; R1-R11, R14-R16 verdes, iniciando R12
 - **spec**: `specs/device-subscriptions/requirements.md` (18 requisitos, R1–R18)
 - **implementador**: Codex CLI en terminal aparte (no el subagente `implementer`)
 
@@ -53,7 +53,7 @@ mascota ajena revelaría que existe (brief §4). `PetTrackingGuard` va después 
 
 ## Siguiente paso
 
-Verificar R14: cero acoplamiento a proveedores de pago.
+Verificar R12: contrato heredado por #18 sin código de nutrición.
 
 ## Entorno local
 
@@ -72,3 +72,4 @@ Verificar R14: cero acoplamiento a proveedores de pago.
 - R10: lista y ack filtran por entitlement; 47 e2e de suscripciones/alertas y build verdes.
 - R11: owner, family, walker y vet comparten la misma ruta trackeada; 30 e2e verdes.
 - R16: perfil conserva 24 claves y device 5; grep de mappers sin exposición de suscripción.
+- R14: cero proveedores, dependencias o variables de entorno nuevas.
