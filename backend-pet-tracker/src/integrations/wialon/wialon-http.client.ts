@@ -117,12 +117,13 @@ export class WialonHttpClient implements WialonClient {
   }
 
   private async session(): Promise<string> {
-    if (this.sid !== null) {
+    if (this.sid !== null && Date.now() < this.sidExpiresAtMs) {
       return this.sid;
     }
 
     const sid = await this.login();
     this.sid = sid;
+    this.sidExpiresAtMs = Date.now() + WIALON_SID_TTL_MS;
     return sid;
   }
 
