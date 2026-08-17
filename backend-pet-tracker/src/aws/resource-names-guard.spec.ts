@@ -57,3 +57,16 @@ describe('R11: nadie importa los diez literales de nombre', () => {
     expect(offenders).toEqual([]);
   });
 });
+
+describe('R12: el stack CDK no importa la resolucion de sufijo', () => {
+  it('conserva el sufijo de desarrollo vacio', () => {
+    const stackSource = readFileSync(
+      join(ROOT_DIR, '..', 'infra', 'lib', 'pet-tracker-dev-stack.ts'),
+      'utf-8',
+    );
+
+    expect(stackSource).not.toContain('resource-names');
+    expect(stackSource).not.toContain('RESOURCE_SUFFIX_TEST');
+    expect(stackSource).toContain("const ENV_SUFFIX = '';");
+  });
+});
