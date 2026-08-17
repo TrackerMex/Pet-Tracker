@@ -8,10 +8,10 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { uuidv7 } from 'uuidv7';
 import {
-  TABLE_POSITIONS,
   TABLE_POSITIONS_PARTITION_KEY,
   TABLE_POSITIONS_SORT_KEY,
 } from '@/aws/constants';
+import { resolveResourceNamesFromEnv } from '@/aws/resource-names';
 import { DRIZZLE } from '@/db/drizzle.constants';
 import { activityDaily } from '@/db/schema/activity.schema';
 import { auditLog } from '@/db/schema/audit-log.schema';
@@ -34,6 +34,7 @@ import { POSITIONS_DOC_CLIENT } from '@/workers/ingestion.constants';
 import { AppModule } from './../src/app.module';
 
 const DYNAMO_BATCH_WRITE_MAX = 25;
+const names = resolveResourceNamesFromEnv(process.env);
 const OWNER_TZ = 'America/Mexico_City';
 const BAD_TZ = 'Marte/Olympus';
 const METERS_PER_DEGREE_LAT = (6_371_000 * Math.PI) / 180;
@@ -207,7 +208,7 @@ describe('Trips & Activity API (e2e)', () => {
       await documents.send(
         new BatchWriteCommand({
           RequestItems: {
-            [TABLE_POSITIONS]: items
+            [names.positionsTable]: items
               .slice(offset, offset + DYNAMO_BATCH_WRITE_MAX)
               .map((Item) => ({ PutRequest: { Item } })),
           },
