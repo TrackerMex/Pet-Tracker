@@ -446,3 +446,132 @@ describe('R5 (wialon-session-reuse #29): el segundo fallo se propaga sin bucle y
     expect(calls.filter((call) => call.svc === 'messages/load_interval')).toHaveLength(0);
   });
 });
+
+describe('R7 (wialon-session-reuse #29): el token no aparece en logs ni en errores', () => {
+  const SECRET_TOKEN = 'super-secret-wialon-token';
+
+  it('no se loga ni se propaga en los errores de los caminos de R1, R4 y R5', async () => {
+    const errorSpies = [
+      jest.spyOn(console, 'log').mockImplementation(),
+      jest.spyOn(console, 'info').mockImplementation(),
+      jest.spyOn(console, 'warn').mockImplementation(),
+      jest.spyOn(console, 'error').mockImplementation(),
+      jest.spyOn(console, 'debug').mockImplementation(),
+    ];
+
+    const failureErrors: unknown[] = [];
+
+    try {
+      const { fetchFn } = fetchStub([LOGIN_OK, loadIntervalFixture]);
+      const clientA = new WialonHttpClient(BASE_URL, SECRET_TOKEN, fetchFn);
+      await clientA.listUnits();
+      await clientA.getMessages('900001', 1_754_049_600_000, 1_754_049_690_000);
+
+      const { fetchFn: fetchFnInvalid } = fetchStub([
+        LOGIN_OK,
+        { error: 1 },
+        { eid: 'sid-456', user: { nm: 'other' } },
+        loadIntervalFixture,
+      ]);
+      const clientB = new WialonHttpClient(
+        BASE_URL,
+        SECRET_TOKEN,
+        fetchFnInvalid,
+      );
+      await clientB.getMessages('900001', 1_754_049_700_000, 1_754_049_790_000);
+
+      const { fetchFn: fetchFnRetryFailure } = fetchStub([
+        LOGIN_OK,
+        { error: 1 },
+        { eid: 'sid-456', user: { nm: 'other' } },
+        { error: 1 },
+      ]);
+      const clientC = new WialonHttpClient(
+        BASE_URL,
+        SECRET_TOKEN,
+        fetchFnRetryFailure,
+      );
+      try {
+        await clientC.getMessages('900001', 1_754_049_800_000, 1_754_049_890_000);
+      } catch (error) {
+        failureErrors.push(error);
+      }
+
+      const transportError = new WialonTransportError(
+        'messages/load_interval',
+        new Error('network down'),
+      );
+      const { fetchFn: fetchFnTransport } = fetchStub([
+        LOGIN_OK,
+        transportError,
+      ]);
+      const clientD = new WialonHttpClient(
+        BASE_URL,
+        SECRET_TOKEN,
+        fetchFnTransport,
+      );
+      try {
+        await clientD.getMessages('900001', 1_754_049_900_000, 1_754_049_990_000);
+      } catch (error) {
+        failureErrors.push(error);
+      }
+
+      for (const error of failureErrors) {
+        expect(String(error)).not.toContain(SECRET_TOKEN);
+        expect((error as Error).message).not.toContain(SECRET_TOKEN);
+        expect((error as Error).stack ?? '').not.toContain(SECRET_TOKEN);
+      }
+    } finally {
+      for (const spy of errorSpies) {
+        spy.mockRestore();
+      }
+    }
+
+    expect(errorSpies[0]).toHaveBeenCalledTimes(0);
+    expect(errorSpies[1]).toHaveBeenCalledTimes(0);
+    expect(errorSpies[2]).toHaveBeenCalledTimes(0);
+    expect(errorSpies[3]).toHaveBeenCalledTimes(0);
+    expect(errorSpies[4]).toHaveBeenCalledTimes(0);
+    expect(failureErrors).toHaveLength(2);
+  });
+
+  it('los archivos no introducen console.*, Logger ni @nestjs/common', () => {
+    const clientSource = readFileSync(
+      join(__dirname, 'wialon-http.client.ts'),
+      'utf8',
+    );
+    const errorsSource = readFileSync(
+      join(__dirname, 'wialon.errors.ts'),
+      'utf8',
+    );
+
+    expect(clientSource).not.toMatch(/console\./);
+    expect(errorsSource).not.toMatch(/console\./);
+    expect(clientSource).not.toContain('@nestjs/common');
+    expect(errorsSource).not.toContain('@nestjs/common');
+    expect(clientSource.length).toBeGreaterThan(1000);
+    expect(errorsSource.length).toBeGreaterThan(500);
+  });
+});
+
+describe('R8 (wialon-session-reuse #29): el puerto y el simulador no cambian', () => {
+  it('el archivo del fake no menciona sid/login/expire/ttl', () => {
+    const fakeSource = readFileSync(
+      join(__dirname, 'fake-wialon.client.ts'),
+      'utf8',
+    );
+    expect(fakeSource.length).toBeGreaterThan(1000);
+    expect(fakeSource).not.toMatch(/sid|login|expire|ttl/i);
+  });
+
+  it('el contrato del puerto no expone sid y declara sus dos métodos', () => {
+    const interfaceSource = readFileSync(
+      join(__dirname, 'wialon-client.interface.ts'),
+      'utf8',
+    );
+    expect(interfaceSource).toContain('listUnits(): Promise<WialonUnit[]>;');
+    expect(interfaceSource).toContain('getMessages(');
+    expect(interfaceSource).not.toContain('sid');
+    expect(interfaceSource.length).toBeGreaterThan(500);
+  });
+});
