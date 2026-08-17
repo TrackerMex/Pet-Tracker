@@ -16,7 +16,7 @@ describe('R3: media e2e usa BUCKET_MEDIA sin literal local', () => {
     );
 
     expect(mediaE2e).not.toContain("'pet-tracker-media-local'");
-    expect(mediaE2e).toContain('expect.stringContaining(BUCKET_MEDIA)');
+    expect(mediaE2e).toContain('expect.stringContaining(names.mediaBucket)');
   });
 });
 
