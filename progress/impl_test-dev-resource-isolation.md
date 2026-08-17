@@ -23,6 +23,23 @@ Tests: 11 passed, 11 total
 El trabajo se detuvo sin fabricar un fallo. El gate humano del 2026-08-17
 aprobó R7 como guarda verde en `03bb649`; el test se commiteó en `0394f37`.
 
+## Contradicción de spec — R10
+
+Después de completar R4, R6 y R9, el test exigido por R10 nació verde, como el
+propio `tasks.md` anticipa, pero R10 no está en la lista de excepciones a C4 de
+`traceability.md`. El test verifica el recuento total de las tres colas de
+desarrollo, movimiento no vacío de `positions-raw-test` y `ItemCount` estable
+en la tabla de desarrollo. Comando:
+
+```text
+pnpm exec jest --config ./test/jest-e2e.json --runInBand test/resource-isolation.e2e-spec.ts
+Test Suites: 1 passed, 1 total
+Tests: 3 passed, 3 total
+```
+
+El trabajo se detuvo sin fabricar un fallo. El gate humano del 2026-08-17
+aprobó R10 como guarda verde en `c74b031`; el test se commiteó en `6adf304`.
+
 ## Evidencia pendiente
 
 - Corrida final de `./init.sh`.
