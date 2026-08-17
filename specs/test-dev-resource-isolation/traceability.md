@@ -14,7 +14,7 @@ tags: [harness, spec]
 | R4 | `backend-pet-tracker/src/aws/aws.module.spec.ts::R4: AWS_RESOURCE_NAMES resuelve nombres sufijados` + specs colocadas de los 8 consumidores | `backend-pet-tracker/src/aws/aws.constants.ts`, `backend-pet-tracker/src/aws/aws.module.ts` + los 8 consumidores de [[design]] §Archivos afectados | rojo: `4621333 test(test-dev-resource-isolation): add failing resource names provider test (R4)`; token: `c9c8e26`; consumidores: `342395b`, `64bd74c`, `b48ae35`, `6009569`, `873c00d`, `a9bbff7`, `5dbe2a3`, `b690727` |
 | R5 | `backend-pet-tracker/src/aws/resource-names.spec.ts::R5: constants.ts sigue siendo literales const` | `backend-pet-tracker/src/aws/constants.ts` (**sin cambios** — guarda de regresión) | verde por excepción aprobada: `057c637 test(test-dev-resource-isolation): add green constants regression guard (R5)` |
 | R6 | `backend-pet-tracker/src/aws/run-provisioning.spec.ts::R6: runProvisioning crea los dos juegos de recursos` | `backend-pet-tracker/src/aws/run-provisioning.ts`, `backend-pet-tracker/src/aws/provisioning.ts` | rojo: `050576d test(test-dev-resource-isolation): add failing dual provisioning test (R6)`; verde: `20d5d4c feat(test-dev-resource-isolation): provision dev and test resources (R6)` |
-| R7 | pendiente — previsto `backend-pet-tracker/test/localstack-provisioning.e2e-spec.ts::R7: la doble corrida sigue siendo idempotente` | `backend-pet-tracker/src/aws/provisioning.ts` | pendiente |
+| R7 | `backend-pet-tracker/test/localstack-provisioning.e2e-spec.ts::R7: la doble corrida deja ambos juegos utilizables` | sin código propio (verifica el bucle de R6) — **guarda de regresión, nace verde** | pendiente — commit verde por excepción aprobada el 2026-08-17 |
 | R8 | pendiente — previsto `backend-pet-tracker/src/aws/run-provisioning.spec.ts::R8: AWS_MODE=aws aborta sin crear nada` | `backend-pet-tracker/src/aws/run-provisioning.ts` (**sin cambios** — guarda de regresión) | pendiente |
 | R9 | pendiente — previsto `backend-pet-tracker/test/resource-isolation.e2e-spec.ts::R9: las colas de dev y test tienen URLs distintas` | las 7 suites e2e + `backend-pet-tracker/test/localstack-provisioning.e2e-spec.ts` + `backend-pet-tracker/src/aws/cdk-dev-stack-docs.spec.ts` (L19) | pendiente |
 | R10 | pendiente — previsto `backend-pet-tracker/test/resource-isolation.e2e-spec.ts::R10: la ingesta no mueve las colas de desarrollo` | sin código propio (verifica R4+R6+R9) | pendiente |
@@ -28,10 +28,26 @@ Convención de commit: `feat(test-dev-resource-isolation): <desc> (R1,R2)`, con 
 commit del test en rojo (`test(test-dev-resource-isolation): …`) **antes** que el
 de la implementación — C4 exige historial rojo→verde por R-id.
 
-**Excepción declarada:** R5, R8 y R12 son guardas de regresión y **nacen
+**Excepción declarada:** R5, R7, R8 y R12 son guardas de regresión y **nacen
 verdes** (no hay rojo posible: afirman que algo que hoy funciona sigue
 funcionando). Su commit de test debe decirlo explícitamente en el mensaje. Las
-otras once filas exigen rojo→verde.
+otras diez filas exigen rojo→verde.
+
+**R7 se añadió a la excepción durante la implementación** (gate humano del
+2026-08-17, tras el reporte de Codex en
+`progress/impl_test-dev-resource-isolation.md` §Contradicción de spec — R7).
+Razón: el orden de [[tasks]] pone **R6 antes que R7**. R6 crea el bucle sobre
+los dos sufijos; R7 solo asevera que la segunda corrida sigue devolviendo 0.
+Con R6 verde el fallo es inalcanzable, y adelantar R7 no daría un rojo propio
+sino el de R6 con otro nombre (*"la cola sufijada no existe"*). Además la
+idempotencia de `provision:local` no es conducta nueva de #28: la fija #2
+("segunda corrida no falla"), y R7 solo extiende esa garantía al segundo juego.
+
+El test **sí** ejerce la doble corrida, no es un test vacío: el `beforeAll` de
+`localstack-provisioning.e2e-spec.ts` ya llama a `runProvisioning`, y el caso
+de R7 lo llama otra vez antes de comprobar los veinte recursos. Es un defecto
+de la spec —esta lista nació corta—, no del código ni del implementador, que
+paró en vez de fabricar un rojo falso.
 
 El implementer actualiza esta tabla tras cada commit; el reviewer la valida
 al aprobar (ver [[../../docs/specs|specs]] y [[../../CHECKPOINTS|CHECKPOINTS]] C5).

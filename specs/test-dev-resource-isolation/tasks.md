@@ -140,16 +140,24 @@ tags: [harness, spec]
 
 ## R7 — La doble corrida sigue devolviendo 0
 
-- [ ] (1) Escribir test que falla para R7: extender
+> **CORRECCIÓN del 2026-08-17, gate humano.** Este requisito **nace verde** y se
+> añadió a la lista de excepciones a C4 de [[traceability]], junto a R5, R8 y
+> R12. Lo de abajo pedía un rojo que este orden hace imposible: R6 va primero y
+> crea el bucle sobre los dos sufijos, así que cuando llega R7 el fallo ya es
+> inalcanzable, y adelantar R7 solo daría el rojo de R6 con otro nombre. **No
+> fabriques un fallo**: commitea el test verde diciéndolo en el mensaje.
+
+- [x] (1) Extender
       `backend-pet-tracker/test/localstack-provisioning.e2e-spec.ts` para que
       verifique **los dos** juegos con `buildResourceNames('')` y
       `buildResourceNames(RESOURCE_SUFFIX_TEST)`; el bloque de idempotencia ya
       existente (L112-L115) debe seguir afirmando exit 0 en la segunda corrida.
-- [ ] (2) Implementación mínima: la que haga falta para que el segundo juego se
-      recupere por las ramas *catch-then-recover* existentes. Si hiciera falta
-      un `catch` nuevo, **es señal de que el bucle está mal puesto** — revisar
-      §D6 antes de añadirlo.
-- [ ] (3) Refactor con tests verdes.
+      El test debe llamar a `runProvisioning` **además** de la llamada del
+      `beforeAll`, para ejercer de verdad la doble corrida.
+- [ ] (2) Sin implementación propia: si hiciera falta tocar código para que el
+      segundo juego se recupere, **es señal de que el bucle de R6 está mal
+      puesto** — revisar §D6 antes de añadir nada.
+- [ ] (3) Commit verde único, con la excepción declarada en el mensaje.
 
 ## R8 — La guarda de `AWS_MODE=aws` en el provisioning sigue intacta
 
