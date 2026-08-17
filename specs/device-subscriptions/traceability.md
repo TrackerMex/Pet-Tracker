@@ -12,7 +12,7 @@ tags: [harness, spec]
 | R2 | `src/modules/subscriptions/infrastructure/entitlement.predicate.spec.ts::R2 (device-subscriptions #25): single entitlement predicate` | `7f75218` red; `238b7df` predicate |
 | R3 | `test/device-subscriptions.e2e-spec.ts::R3 (device-subscriptions #25): derive pet and device entitlement` | `fe506d6` red; `1686166` repository |
 | R4 | `test/device-subscriptions.e2e-spec.ts::R4 (device-subscriptions #25): poll only entitled assignments` | `07cc06d` red; `c61c729` store join |
-| R5 | pendiente | pendiente |
+| R5 | `test/device-subscriptions.e2e-spec.ts::R5 (device-subscriptions #25): expiration keeps the assignment` | `1a95002` test verde al añadirse; propiedad de ausencia, sin implementación adicional |
 | R6 | pendiente | pendiente |
 | R7 | pendiente | pendiente |
 | R8 | pendiente | pendiente |
@@ -41,7 +41,7 @@ ejecuten:
 | Requisito | Comando | Salida registrada |
 |---|---|---|
 | R2 | `grep -rn "current_period_end\|currentPeriodEnd\|GRACE_DAYS" backend-pet-tracker/src/` | 10 coincidencias: migración/snapshot versionados, schema, constante, predicado y spec; ver salida debajo |
-| R5 | `grep -rn "releasedAt" <archivos nuevos/modificados de la feature>` | pendiente |
+| R5 | `grep -rnE "update\(petDevices\)\|update\(devices\).*status\|set\(\{[^}]*releasedAt" backend-pet-tracker/src/modules/subscriptions backend-pet-tracker/src/workers/ingestion.drizzle.store.ts backend-pet-tracker/scripts/seed-devices.ts` | sin salida (exit 1 de grep); no hay UPDATE de asignación/status |
 | R11 | inspección: ninguna columna/parámetro liga `device_subscriptions` a `users` | pendiente |
 | R12 | `ls backend-pet-tracker/src/modules/nutrition` + `grep -rn "aiExplanation" backend-pet-tracker/src/` | pendiente |
 | R14 | `grep -rni "stripe\|paypal\|mercadopago\|checkout.session\|webhook" backend-pet-tracker/src/` | pendiente |
