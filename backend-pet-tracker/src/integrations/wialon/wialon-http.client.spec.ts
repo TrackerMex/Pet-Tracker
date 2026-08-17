@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { WIALON_SID_TTL_MS } from './wialon-http.client';
-import { WialonApiError } from './wialon.errors';
+import { WialonApiError, WialonTransportError } from './wialon.errors';
 import { WialonHttpClient } from './wialon-http.client';
 
 const BASE_URL = 'https://wialon.test/wialon/ajax.html';
@@ -358,5 +358,91 @@ describe('R4 (wialon-session-reuse #29): una sesión inválida se recupera con u
     expect(messageCalls[0].sid).toBe('sid-123');
     expect(messageCalls[1].sid).toBe('sid-456');
     expect(messageCalls[0].params).toEqual(messageCalls[1].params);
+  });
+});
+
+describe('R5 (wialon-session-reuse #29): el segundo fallo se propaga sin bucle y los demás errores no se reintentan', () => {
+  const LOGIN_OK_2 = { eid: 'sid-456', user: { nm: 'other' } };
+
+  it('si el reintento también falla con sesión inválida, propaga WialonApiError sin más reintentos', async () => {
+    const { fetchFn, calls } = fetchStub([
+      LOGIN_OK,
+      { error: 1 },
+      LOGIN_OK_2,
+      { error: 1 },
+    ]);
+    const client = new WialonHttpClient(BASE_URL, 'real-token', fetchFn);
+
+    await expect(
+      client.getMessages('900001', 1_754_049_600_000, 1_754_049_690_000),
+    ).rejects.toMatchObject({
+      name: 'WialonApiError',
+      code: 1,
+    });
+
+    const loginCalls = calls.filter((call) => call.svc === 'token/login');
+    const messageCalls = calls.filter(
+      (call) => call.svc === 'messages/load_interval',
+    );
+    expect(loginCalls).toHaveLength(2);
+    expect(messageCalls).toHaveLength(2);
+    expect(calls).toHaveLength(4);
+  });
+
+  it('un error distinto de sesión inválida no reintenta y se propaga', async () => {
+    const { fetchFn, calls } = fetchStub([LOGIN_OK, { error: 4 }]);
+    const client = new WialonHttpClient(BASE_URL, 'real-token', fetchFn);
+
+    await expect(
+      client.getMessages('900001', 1_754_049_600_000, 1_754_049_690_000),
+    ).rejects.toMatchObject({
+      name: 'WialonApiError',
+      code: 4,
+    });
+
+    expect(calls.filter((call) => call.svc === 'token/login')).toHaveLength(1);
+    expect(calls.filter((call) => call.svc === 'messages/load_interval')).toHaveLength(
+      1,
+    );
+    expect(calls).toHaveLength(2);
+  });
+
+  it('un fallo de transporte no invalida sid y se reutiliza al siguiente intento', async () => {
+    const { fetchFn, calls } = fetchStub([
+      LOGIN_OK,
+      new WialonTransportError('messages/load_interval', new Error('network')),
+      loadIntervalFixture,
+    ]);
+    const client = new WialonHttpClient(BASE_URL, 'real-token', fetchFn);
+
+    await expect(
+      client.getMessages('900001', 1_754_049_600_000, 1_754_049_690_000),
+    ).rejects.toMatchObject({
+      name: 'WialonTransportError',
+    });
+
+    await client.getMessages('900001', 1_754_049_700_000, 1_754_049_790_000);
+
+    expect(calls.filter((call) => call.svc === 'token/login')).toHaveLength(1);
+    const messageCalls = calls.filter(
+      (call) => call.svc === 'messages/load_interval',
+    );
+    expect(messageCalls).toHaveLength(2);
+    expect(messageCalls[1].sid).toBe('sid-123');
+  });
+
+  it('si falla token/login, propaga su error y no reintenta', async () => {
+    const { fetchFn, calls } = fetchStub([{ error: 1 }]);
+    const client = new WialonHttpClient(BASE_URL, 'real-token', fetchFn);
+
+    await expect(
+      client.getMessages('900001', 1_754_049_600_000, 1_754_049_690_000),
+    ).rejects.toMatchObject({
+      name: 'WialonApiError',
+      code: 1,
+    });
+    expect(calls).toHaveLength(1);
+    expect(calls.filter((call) => call.svc === 'token/login')).toHaveLength(1);
+    expect(calls.filter((call) => call.svc === 'messages/load_interval')).toHaveLength(0);
   });
 });
