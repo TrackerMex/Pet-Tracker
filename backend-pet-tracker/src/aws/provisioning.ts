@@ -26,24 +26,15 @@ import {
   ResourceAlreadyExistsException,
 } from '@aws-sdk/client-eventbridge';
 import {
-  BUCKET_MEDIA,
   DETAIL_TYPE_BATTERY_LOW,
   DETAIL_TYPE_POSITION_UPDATED,
-  EVENT_BUS_NAME,
   EVENT_SOURCE,
-  QUEUE_GEOFENCE_EVENTS,
-  QUEUE_GEOFENCE_EVENTS_DLQ,
-  QUEUE_NOTIFICATIONS,
-  QUEUE_NOTIFICATIONS_DLQ,
-  QUEUE_POSITIONS_RAW,
-  QUEUE_POSITIONS_RAW_DLQ,
-  RULE_GEOFENCE_EVENTS,
   SQS_MAX_RECEIVE_COUNT,
-  TABLE_POSITIONS,
   TABLE_POSITIONS_PARTITION_KEY,
   TABLE_POSITIONS_SORT_KEY,
   TABLE_POSITIONS_TTL_ATTRIBUTE,
 } from './constants';
+import type { AwsResourceNames } from './resource-names';
 
 async function ensureQueue(
   client: SQSClient,
@@ -127,23 +118,24 @@ async function ensureQueueWithDlq(
  */
 export async function provisionQueues(
   client: SQSClient,
+  names: AwsResourceNames,
 ): Promise<Record<string, string>> {
   const positionsRaw = await ensureQueueWithDlq(
     client,
-    QUEUE_POSITIONS_RAW,
-    QUEUE_POSITIONS_RAW_DLQ,
+    names.positionsRaw,
+    names.positionsRawDlq,
   );
   const notifications = await ensureQueueWithDlq(
     client,
-    QUEUE_NOTIFICATIONS,
-    QUEUE_NOTIFICATIONS_DLQ,
+    names.notifications,
+    names.notificationsDlq,
   );
 
   return {
-    [QUEUE_POSITIONS_RAW]: positionsRaw.mainQueueUrl,
-    [QUEUE_POSITIONS_RAW_DLQ]: positionsRaw.dlqUrl,
-    [QUEUE_NOTIFICATIONS]: notifications.mainQueueUrl,
-    [QUEUE_NOTIFICATIONS_DLQ]: notifications.dlqUrl,
+    [names.positionsRaw]: positionsRaw.mainQueueUrl,
+    [names.positionsRawDlq]: positionsRaw.dlqUrl,
+    [names.notifications]: notifications.mainQueueUrl,
+    [names.notificationsDlq]: notifications.dlqUrl,
   };
 }
 
@@ -177,11 +169,12 @@ async function waitForTableActive(
  */
 export async function provisionPositionsTable(
   client: DynamoDBClient,
+  names: AwsResourceNames,
 ): Promise<void> {
   try {
     await client.send(
       new CreateTableCommand({
-        TableName: TABLE_POSITIONS,
+        TableName: names.positionsTable,
         BillingMode: 'PAY_PER_REQUEST',
         AttributeDefinitions: [
           { AttributeName: TABLE_POSITIONS_PARTITION_KEY, AttributeType: 'S' },
@@ -199,12 +192,12 @@ export async function provisionPositionsTable(
     }
   }
 
-  await waitForTableActive(client, TABLE_POSITIONS);
+  await waitForTableActive(client, names.positionsTable);
 
   try {
     await client.send(
       new UpdateTimeToLiveCommand({
-        TableName: TABLE_POSITIONS,
+        TableName: names.positionsTable,
         TimeToLiveSpecification: {
           AttributeName: TABLE_POSITIONS_TTL_ATTRIBUTE,
           Enabled: true,
@@ -232,9 +225,12 @@ export async function provisionPositionsTable(
  * los 4 flags de PublicAccessBlock (R13). Idempotente (R5):
  * BucketAlreadyOwnedByYou al recrear el mismo bucket se ignora.
  */
-export async function provisionMediaBucket(client: S3Client): Promise<void> {
+export async function provisionMediaBucket(
+  client: S3Client,
+  names: AwsResourceNames,
+): Promise<void> {
   try {
-    await client.send(new CreateBucketCommand({ Bucket: BUCKET_MEDIA }));
+    await client.send(new CreateBucketCommand({ Bucket: names.mediaBucket }));
   } catch (error) {
     if (!(error instanceof BucketAlreadyOwnedByYou)) {
       throw error;
@@ -243,7 +239,7 @@ export async function provisionMediaBucket(client: S3Client): Promise<void> {
 
   await client.send(
     new PutPublicAccessBlockCommand({
-      Bucket: BUCKET_MEDIA,
+      Bucket: names.mediaBucket,
       PublicAccessBlockConfiguration: {
         BlockPublicAcls: true,
         IgnorePublicAcls: true,
@@ -260,9 +256,10 @@ export async function provisionMediaBucket(client: S3Client): Promise<void> {
  */
 export async function provisionEventBus(
   client: EventBridgeClient,
+  names: AwsResourceNames,
 ): Promise<void> {
   try {
-    await client.send(new CreateEventBusCommand({ Name: EVENT_BUS_NAME }));
+    await client.send(new CreateEventBusCommand({ Name: names.eventBus }));
   } catch (error) {
     if (!(error instanceof ResourceAlreadyExistsException)) {
       throw error;
@@ -282,21 +279,24 @@ export async function provisionEventBus(
  * upsert nativos — a diferencia de `CreateQueueCommand`, no requieren
  * capturar una excepcion de duplicado para ser idempotentes (R4).
  */
-export async function provisionGeofenceEventsRoute(clients: {
-  sqs: SQSClient;
-  eventBridge: EventBridgeClient;
-}): Promise<void> {
+export async function provisionGeofenceEventsRoute(
+  clients: {
+    sqs: SQSClient;
+    eventBridge: EventBridgeClient;
+  },
+  names: AwsResourceNames,
+): Promise<void> {
   const { mainQueueUrl } = await ensureQueueWithDlq(
     clients.sqs,
-    QUEUE_GEOFENCE_EVENTS,
-    QUEUE_GEOFENCE_EVENTS_DLQ,
+    names.geofenceEvents,
+    names.geofenceEventsDlq,
   );
   const queueArn = await getQueueArn(clients.sqs, mainQueueUrl);
 
   await clients.eventBridge.send(
     new PutRuleCommand({
-      Name: RULE_GEOFENCE_EVENTS,
-      EventBusName: EVENT_BUS_NAME,
+      Name: names.geofenceEventsRule,
+      EventBusName: names.eventBus,
       EventPattern: JSON.stringify({
         source: [EVENT_SOURCE],
         'detail-type': [DETAIL_TYPE_POSITION_UPDATED, DETAIL_TYPE_BATTERY_LOW],
@@ -306,9 +306,9 @@ export async function provisionGeofenceEventsRoute(clients: {
 
   await clients.eventBridge.send(
     new PutTargetsCommand({
-      Rule: RULE_GEOFENCE_EVENTS,
-      EventBusName: EVENT_BUS_NAME,
-      Targets: [{ Id: QUEUE_GEOFENCE_EVENTS, Arn: queueArn }],
+      Rule: names.geofenceEventsRule,
+      EventBusName: names.eventBus,
+      Targets: [{ Id: names.geofenceEvents, Arn: queueArn }],
     }),
   );
 }
@@ -330,12 +330,13 @@ export interface AwsClientBundle {
  */
 export async function provisionAllResources(
   clients: AwsClientBundle,
+  names: AwsResourceNames,
 ): Promise<void> {
-  await provisionQueues(clients.sqs);
-  await provisionPositionsTable(clients.dynamoDb);
-  await provisionMediaBucket(clients.s3);
-  await provisionEventBus(clients.eventBridge);
-  await provisionGeofenceEventsRoute(clients);
+  await provisionQueues(clients.sqs, names);
+  await provisionPositionsTable(clients.dynamoDb, names);
+  await provisionMediaBucket(clients.s3, names);
+  await provisionEventBus(clients.eventBridge, names);
+  await provisionGeofenceEventsRoute(clients, names);
 }
 
 // AggregateError aparece en el mensaje cuando Node intenta conectar por

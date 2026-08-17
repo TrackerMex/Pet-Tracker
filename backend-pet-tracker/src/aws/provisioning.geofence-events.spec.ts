@@ -4,13 +4,12 @@ import { provisionGeofenceEventsRoute } from './provisioning';
 import {
   DETAIL_TYPE_BATTERY_LOW,
   DETAIL_TYPE_POSITION_UPDATED,
-  EVENT_BUS_NAME,
   EVENT_SOURCE,
-  QUEUE_GEOFENCE_EVENTS,
-  QUEUE_GEOFENCE_EVENTS_DLQ,
-  RULE_GEOFENCE_EVENTS,
   SQS_MAX_RECEIVE_COUNT,
 } from './constants';
+import { buildResourceNames } from './resource-names';
+
+const NAMES = buildResourceNames('');
 
 interface FakeCommand {
   constructor: { name: string };
@@ -76,13 +75,16 @@ describe('R3: cola geofence-events + DLQ, aprovisionamiento idempotente', () => 
     const sqs = buildFakeSqsClient(createdQueueNames);
     const eventBridge = buildFakeEventBridgeClient();
 
-    await provisionGeofenceEventsRoute({
-      sqs: sqs.client,
-      eventBridge: eventBridge.client,
-    });
+    await provisionGeofenceEventsRoute(
+      {
+        sqs: sqs.client,
+        eventBridge: eventBridge.client,
+      },
+      NAMES,
+    );
 
-    const dlqIndex = createdQueueNames.indexOf(QUEUE_GEOFENCE_EVENTS_DLQ);
-    const mainIndex = createdQueueNames.indexOf(QUEUE_GEOFENCE_EVENTS);
+    const dlqIndex = createdQueueNames.indexOf(NAMES.geofenceEventsDlq);
+    const mainIndex = createdQueueNames.indexOf(NAMES.geofenceEvents);
     expect(dlqIndex).toBeGreaterThanOrEqual(0);
     expect(mainIndex).toBeGreaterThan(dlqIndex);
   });
@@ -92,15 +94,18 @@ describe('R3: cola geofence-events + DLQ, aprovisionamiento idempotente', () => 
     const sqs = buildFakeSqsClient(createdQueueNames);
     const eventBridge = buildFakeEventBridgeClient();
 
-    await provisionGeofenceEventsRoute({
-      sqs: sqs.client,
-      eventBridge: eventBridge.client,
-    });
+    await provisionGeofenceEventsRoute(
+      {
+        sqs: sqs.client,
+        eventBridge: eventBridge.client,
+      },
+      NAMES,
+    );
 
     const createMainCall = sqs.send.mock.calls.find(
       ([command]: [FakeCommand]) =>
         command.constructor.name === 'CreateQueueCommand' &&
-        command.input.QueueName === QUEUE_GEOFENCE_EVENTS,
+        command.input.QueueName === NAMES.geofenceEvents,
     ) as [FakeCommand] | undefined;
     expect(createMainCall).toBeDefined();
     const redrivePolicy = JSON.parse(
@@ -109,7 +114,7 @@ describe('R3: cola geofence-events + DLQ, aprovisionamiento idempotente', () => 
     ) as { deadLetterTargetArn: string; maxReceiveCount: number };
     expect(redrivePolicy.maxReceiveCount).toBe(SQS_MAX_RECEIVE_COUNT);
     expect(redrivePolicy.deadLetterTargetArn).toContain(
-      QUEUE_GEOFENCE_EVENTS_DLQ,
+      NAMES.geofenceEventsDlq,
     );
   });
 
@@ -117,15 +122,21 @@ describe('R3: cola geofence-events + DLQ, aprovisionamiento idempotente', () => 
     const sqs = buildFakeSqsClient([]);
     const eventBridge = buildFakeEventBridgeClient();
 
-    await provisionGeofenceEventsRoute({
-      sqs: sqs.client,
-      eventBridge: eventBridge.client,
-    });
-    await expect(
-      provisionGeofenceEventsRoute({
+    await provisionGeofenceEventsRoute(
+      {
         sqs: sqs.client,
         eventBridge: eventBridge.client,
-      }),
+      },
+      NAMES,
+    );
+    await expect(
+      provisionGeofenceEventsRoute(
+        {
+          sqs: sqs.client,
+          eventBridge: eventBridge.client,
+        },
+        NAMES,
+      ),
     ).resolves.toBeUndefined();
   });
 });
@@ -135,18 +146,21 @@ describe('R4: regla EventBridge sobre pet-tracker con target unico SQS geofence-
     const sqs = buildFakeSqsClient([]);
     const eventBridge = buildFakeEventBridgeClient();
 
-    await provisionGeofenceEventsRoute({
-      sqs: sqs.client,
-      eventBridge: eventBridge.client,
-    });
+    await provisionGeofenceEventsRoute(
+      {
+        sqs: sqs.client,
+        eventBridge: eventBridge.client,
+      },
+      NAMES,
+    );
 
     const putRuleCall = eventBridge.send.mock.calls.find(
       ([command]: [FakeCommand]) =>
         command.constructor.name === 'PutRuleCommand',
     ) as [FakeCommand] | undefined;
     expect(putRuleCall).toBeDefined();
-    expect(putRuleCall![0].input.Name).toBe(RULE_GEOFENCE_EVENTS);
-    expect(putRuleCall![0].input.EventBusName).toBe(EVENT_BUS_NAME);
+    expect(putRuleCall![0].input.Name).toBe(NAMES.geofenceEventsRule);
+    expect(putRuleCall![0].input.EventBusName).toBe(NAMES.eventBus);
     expect(
       JSON.parse(putRuleCall![0].input.EventPattern as string) as unknown,
     ).toEqual({
@@ -159,25 +173,28 @@ describe('R4: regla EventBridge sobre pet-tracker con target unico SQS geofence-
     const sqs = buildFakeSqsClient([]);
     const eventBridge = buildFakeEventBridgeClient();
 
-    await provisionGeofenceEventsRoute({
-      sqs: sqs.client,
-      eventBridge: eventBridge.client,
-    });
+    await provisionGeofenceEventsRoute(
+      {
+        sqs: sqs.client,
+        eventBridge: eventBridge.client,
+      },
+      NAMES,
+    );
 
     const putTargetsCall = eventBridge.send.mock.calls.find(
       ([command]: [FakeCommand]) =>
         command.constructor.name === 'PutTargetsCommand',
     ) as [FakeCommand] | undefined;
     expect(putTargetsCall).toBeDefined();
-    expect(putTargetsCall![0].input.Rule).toBe(RULE_GEOFENCE_EVENTS);
-    expect(putTargetsCall![0].input.EventBusName).toBe(EVENT_BUS_NAME);
+    expect(putTargetsCall![0].input.Rule).toBe(NAMES.geofenceEventsRule);
+    expect(putTargetsCall![0].input.EventBusName).toBe(NAMES.eventBus);
 
     const targets = putTargetsCall![0].input.Targets as Array<{
       Arn: string;
       InputTransformer?: unknown;
     }>;
     expect(targets).toHaveLength(1);
-    expect(targets[0].Arn).toContain(QUEUE_GEOFENCE_EVENTS);
+    expect(targets[0].Arn).toContain(NAMES.geofenceEvents);
     expect(targets[0].InputTransformer).toBeUndefined();
   });
 
@@ -185,10 +202,13 @@ describe('R4: regla EventBridge sobre pet-tracker con target unico SQS geofence-
     const sqs = buildFakeSqsClient([]);
     const eventBridge = buildFakeEventBridgeClient();
 
-    await provisionGeofenceEventsRoute({
-      sqs: sqs.client,
-      eventBridge: eventBridge.client,
-    });
+    await provisionGeofenceEventsRoute(
+      {
+        sqs: sqs.client,
+        eventBridge: eventBridge.client,
+      },
+      NAMES,
+    );
 
     const createQueueOrder = sqs.send.mock.invocationCallOrder[0];
     const putTargetsOrder = eventBridge.send.mock.calls.findIndex(
@@ -204,14 +224,20 @@ describe('R4: regla EventBridge sobre pet-tracker con target unico SQS geofence-
     const sqs = buildFakeSqsClient([]);
     const eventBridge = buildFakeEventBridgeClient();
 
-    await provisionGeofenceEventsRoute({
-      sqs: sqs.client,
-      eventBridge: eventBridge.client,
-    });
-    await provisionGeofenceEventsRoute({
-      sqs: sqs.client,
-      eventBridge: eventBridge.client,
-    });
+    await provisionGeofenceEventsRoute(
+      {
+        sqs: sqs.client,
+        eventBridge: eventBridge.client,
+      },
+      NAMES,
+    );
+    await provisionGeofenceEventsRoute(
+      {
+        sqs: sqs.client,
+        eventBridge: eventBridge.client,
+      },
+      NAMES,
+    );
 
     const putRuleCalls = eventBridge.send.mock.calls.filter(
       ([command]: [FakeCommand]) =>
@@ -219,7 +245,7 @@ describe('R4: regla EventBridge sobre pet-tracker con target unico SQS geofence-
     );
     expect(putRuleCalls).toHaveLength(2);
     for (const [command] of putRuleCalls as [FakeCommand][]) {
-      expect(command.input.Name).toBe(RULE_GEOFENCE_EVENTS);
+      expect(command.input.Name).toBe(NAMES.geofenceEventsRule);
     }
   });
 });

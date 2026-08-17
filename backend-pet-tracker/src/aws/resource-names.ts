@@ -15,6 +15,10 @@ import {
 import { resolveAwsMode } from './aws-clients';
 
 export const RESOURCE_SUFFIX_TEST = 'test';
+export const PROVISIONED_SUFFIXES: readonly string[] = [
+  '',
+  RESOURCE_SUFFIX_TEST,
+];
 
 export interface AwsResourceNames {
   positionsRaw: string;
@@ -55,9 +59,7 @@ export function resolveResourceSuffix(
 export function resolveResourceNamesFromEnv(
   env: NodeJS.ProcessEnv,
 ): AwsResourceNames {
-  return buildResourceNames(
-    resolveResourceSuffix(env.AWS_MODE, env.NODE_ENV),
-  );
+  return buildResourceNames(resolveResourceSuffix(env.AWS_MODE, env.NODE_ENV));
 }
 
 export function resolveResourceNamesFromConfigService(

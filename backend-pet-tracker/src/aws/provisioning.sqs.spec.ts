@@ -1,11 +1,8 @@
 import { SQSClient } from '@aws-sdk/client-sqs';
 import { provisionQueues } from './provisioning';
-import {
-  QUEUE_NOTIFICATIONS,
-  QUEUE_NOTIFICATIONS_DLQ,
-  QUEUE_POSITIONS_RAW,
-  QUEUE_POSITIONS_RAW_DLQ,
-} from './constants';
+import { buildResourceNames } from './resource-names';
+
+const NAMES = buildResourceNames('');
 
 interface FakeCommand {
   constructor: { name: string };
@@ -45,10 +42,10 @@ describe('R9: orden de creación de colas — cada DLQ se crea antes que su cola
     const createdQueueNames: string[] = [];
     const client = buildFakeSqsClient(createdQueueNames);
 
-    await provisionQueues(client);
+    await provisionQueues(client, NAMES);
 
-    const dlqIndex = createdQueueNames.indexOf(QUEUE_POSITIONS_RAW_DLQ);
-    const mainIndex = createdQueueNames.indexOf(QUEUE_POSITIONS_RAW);
+    const dlqIndex = createdQueueNames.indexOf(NAMES.positionsRawDlq);
+    const mainIndex = createdQueueNames.indexOf(NAMES.positionsRaw);
 
     expect(dlqIndex).toBeGreaterThanOrEqual(0);
     expect(mainIndex).toBeGreaterThan(dlqIndex);
@@ -58,10 +55,10 @@ describe('R9: orden de creación de colas — cada DLQ se crea antes que su cola
     const createdQueueNames: string[] = [];
     const client = buildFakeSqsClient(createdQueueNames);
 
-    await provisionQueues(client);
+    await provisionQueues(client, NAMES);
 
-    const dlqIndex = createdQueueNames.indexOf(QUEUE_NOTIFICATIONS_DLQ);
-    const mainIndex = createdQueueNames.indexOf(QUEUE_NOTIFICATIONS);
+    const dlqIndex = createdQueueNames.indexOf(NAMES.notificationsDlq);
+    const mainIndex = createdQueueNames.indexOf(NAMES.notifications);
 
     expect(dlqIndex).toBeGreaterThanOrEqual(0);
     expect(mainIndex).toBeGreaterThan(dlqIndex);
@@ -71,14 +68,14 @@ describe('R9: orden de creación de colas — cada DLQ se crea antes que su cola
     const createdQueueNames: string[] = [];
     const client = buildFakeSqsClient(createdQueueNames);
 
-    const urls = await provisionQueues(client);
+    const urls = await provisionQueues(client, NAMES);
 
     expect(Object.keys(urls).sort()).toEqual(
       [
-        QUEUE_POSITIONS_RAW,
-        QUEUE_POSITIONS_RAW_DLQ,
-        QUEUE_NOTIFICATIONS,
-        QUEUE_NOTIFICATIONS_DLQ,
+        NAMES.positionsRaw,
+        NAMES.positionsRawDlq,
+        NAMES.notifications,
+        NAMES.notificationsDlq,
       ].sort(),
     );
   });
