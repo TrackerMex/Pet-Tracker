@@ -8,7 +8,7 @@
 - **feature**: `device-subscriptions` (#25, P2)
 - **branch**: `feature/25-device-subscriptions`
 - **inicio**: 2026-08-17
-- **estado**: implementación en curso; R1-R16 y R17 verdes, iniciando R18
+- **estado**: R1-R18 implementados; verificación completa en curso
 - **spec**: `specs/device-subscriptions/requirements.md` (18 requisitos, R1–R18)
 - **implementador**: Codex CLI en terminal aparte (no el subagente `implementer`)
 
@@ -53,7 +53,7 @@ mascota ajena revelaría que existe (brief §4). `PetTrackingGuard` va después 
 
 ## Siguiente paso
 
-Implementar R18: documentar `device_subscriptions` en el modelo de datos.
+Ejecutar el cierre completo: `init.sh`, trazabilidad, bookkeeping y revisión del diff.
 
 ## Entorno local
 
@@ -74,3 +74,4 @@ Implementar R18: documentar `device_subscriptions` en el modelo de datos.
 - R16: perfil conserva 24 claves y device 5; grep de mappers sin exposición de suscripción.
 - R14: cero proveedores, dependencias o variables de entorno nuevas.
 - R12: contrato de #18 documentado, puerto exportado y cero código anticipado de nutrición.
+- R18: ERD y catálogo documentan tabla, gracia derivada y tres caminos de alta.

@@ -25,7 +25,7 @@ tags: [harness, spec]
 | R15 | `test/device-subscriptions.e2e-spec.ts::R15 (device-subscriptions #25): subscriptions module wiring` | `c06fd74` red; `b8bc340` module wiring |
 | R16 | `test/device-subscriptions.e2e-spec.ts::R16 (device-subscriptions #25): HTTP response shape stays frozen` | `746c476` propiedad verde; sin implementación adicional |
 | R17 | `test/device-subscriptions.e2e-spec.ts::R17 (device-subscriptions #25): grandfather existing devices` | `f171ffa` red; `e86435f` backfill + seed |
-| R18 | `rg -n "device_subscriptions\|devices \\|\\|--o\\| device_subscriptions" docs/data-model.md` | rojo: sin coincidencias antes de documentar |
+| R18 | `rg -n "device_subscriptions\|DEVICE_SUBSCRIPTION_GRACE_DAYS\|backfill de la migración\|seed:devices\|subscription:set" docs/data-model.md` | `cec3fc4` red; `b16192b` ERD + catálogo |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
 Convención de commit: `feat(device-subscriptions): <desc> (R1,R2)`.
