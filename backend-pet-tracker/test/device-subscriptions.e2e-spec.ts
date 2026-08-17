@@ -4,6 +4,7 @@ import { sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DRIZZLE } from '@/db/drizzle.constants';
 import { AppModule } from '@/app.module';
+import { seedSimulatedDevices } from '../scripts/seed-devices';
 
 describe('Device subscriptions (e2e)', () => {
   let app: INestApplication;
@@ -105,6 +106,57 @@ describe('Device subscriptions (e2e)', () => {
           }),
         ]),
       );
+    });
+  });
+
+  describe('R17 (device-subscriptions #25): grandfather existing devices', () => {
+    it('backfills every device present when the migration runs', async () => {
+      const missing = await db.execute<{ count: string }>(sql`
+        select count(*)::text as count
+        from devices d
+        left join device_subscriptions s on s.device_id = d.id
+        where s.device_id is null
+      `);
+
+      expect(missing.rows[0].count).toBe('0');
+    });
+
+    it('seeds one idempotent grandfathered subscription per simulated device', async () => {
+      await seedSimulatedDevices(db);
+      await seedSimulatedDevices(db);
+
+      const subscriptions = await db.execute<{
+        esn: string;
+        status: string;
+        plan_code: string;
+        current_period_end: Date;
+      }>(sql`
+        select d.esn, s.status, s.plan_code, s.current_period_end
+        from devices d
+        inner join device_subscriptions s on s.device_id = d.id
+        where d.esn in ('SIM-001', 'SIM-002', 'SIM-003')
+        order by d.esn
+      `);
+
+      expect(subscriptions.rows).toHaveLength(3);
+      expect(
+        subscriptions.rows.map(({ esn, status, plan_code }) => ({
+          esn,
+          status,
+          plan_code,
+        })),
+      ).toEqual([
+        { esn: 'SIM-001', status: 'active', plan_code: 'grandfathered' },
+        { esn: 'SIM-002', status: 'active', plan_code: 'grandfathered' },
+        { esn: 'SIM-003', status: 'active', plan_code: 'grandfathered' },
+      ]);
+      expect(
+        subscriptions.rows.every(
+          ({ current_period_end }) =>
+            new Date(current_period_end).toISOString() ===
+            '2099-12-31T00:00:00.000Z',
+        ),
+      ).toBe(true);
     });
   });
 });
