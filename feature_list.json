@@ -487,7 +487,7 @@
   {
     "id": 28,
     "name": "test-dev-resource-isolation",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P2",
     "description": "Los e2e y el entorno de desarrollo comparten los mismos recursos de LocalStack: las colas SQS, la tabla DynamoDB positions y el bucket S3 salen todos de src/aws/constants.ts con nombres fijos, sin distinción de entorno. Consecuencias vistas en la sesión del 2026-08-14 al probar hardware real: mensajes generados por el FakeWialonClient de los tests aparecieron en positions-raw a nombre del device real (deviceId y petId reales, coordenadas del simulador y ts en el futuro), y el backlog acumulado por los tests dejaba a las suites siguientes drenando cola ajena hasta morir por timeout. Cualquiera de los dos entornos puede envenenar al otro y el diagnóstico es caro porque los datos parecen legítimos. Arreglo: derivar un sufijo o prefijo de entorno para los nombres de recursos (la spec decide la forma; NODE_ENV=test es el discriminador natural, ya usado por los gates de los workers) de modo que los e2e creen y consuman sus propios recursos. El provisioning de LocalStack debe crear ambos juegos o crearlos bajo demanda. No toca AWS real ni el stack CDK de #20, donde el aislamiento ya lo da la cuenta.",
     "acceptance_criteria": [
