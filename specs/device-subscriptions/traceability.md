@@ -11,7 +11,7 @@ tags: [harness, spec]
 | R1 | `test/device-subscriptions.e2e-spec.ts::R1 (device-subscriptions #25): device_subscriptions schema` | `ae15c15` red; `d8eb957` schema + migration |
 | R2 | `src/modules/subscriptions/infrastructure/entitlement.predicate.spec.ts::R2 (device-subscriptions #25): single entitlement predicate` | `7f75218` red; `238b7df` predicate |
 | R3 | `test/device-subscriptions.e2e-spec.ts::R3 (device-subscriptions #25): derive pet and device entitlement` | `fe506d6` red; `1686166` repository |
-| R4 | pendiente | pendiente |
+| R4 | `test/device-subscriptions.e2e-spec.ts::R4 (device-subscriptions #25): poll only entitled assignments` | `07cc06d` red; `c61c729` store join |
 | R5 | pendiente | pendiente |
 | R6 | pendiente | pendiente |
 | R7 | pendiente | pendiente |
