@@ -7,13 +7,17 @@ import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { eq, inArray, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import request from 'supertest';
 import { uuidv7 } from 'uuidv7';
 import { DRIZZLE } from '@/db/drizzle.constants';
 import { AppModule } from '@/app.module';
 import { devices, petDevices } from '@/db/schema/devices.schema';
-import { pets } from '@/db/schema/pets.schema';
+import { pets, petUsers } from '@/db/schema/pets.schema';
 import { deviceSubscriptions } from '@/db/schema/subscriptions.schema';
+import { users } from '@/db/schema/users.schema';
 import type { WialonClient } from '@/integrations/wialon/wialon-client.interface';
+import { TOKEN_SERVICE } from '@/modules/auth/domain/ports/token-service';
+import type { TokenService } from '@/modules/auth/domain/ports/token-service';
 import { CLAIM_WATERMARK_LOOKBACK_MINUTES } from '@/modules/devices/application/use-cases/claim-device.use-case';
 import { SUBSCRIPTION_REPOSITORY } from '@/modules/subscriptions/domain/repositories/subscription.repository';
 import { PetTrackingGuard } from '@/modules/subscriptions/infrastructure/guards/pet-tracking.guard';
@@ -31,7 +35,9 @@ describe('Device subscriptions (e2e)', () => {
   let app: INestApplication;
   let db: NodePgDatabase;
   let subscriptions: SubscriptionDrizzleRepository;
+  let tokenService: TokenService;
 
+  const createdUserIds: string[] = [];
   const createdPetIds: string[] = [];
   const createdDeviceIds: string[] = [];
 
@@ -41,8 +47,10 @@ describe('Device subscriptions (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    app.setGlobalPrefix('v1');
     await app.init();
     db = app.get<NodePgDatabase>(DRIZZLE);
+    tokenService = app.get<TokenService>(TOKEN_SERVICE);
     subscriptions = new SubscriptionDrizzleRepository(db);
   });
 
@@ -59,8 +67,30 @@ describe('Device subscriptions (e2e)', () => {
     if (createdPetIds.length > 0) {
       await db.delete(pets).where(inArray(pets.id, createdPetIds));
     }
+    if (createdUserIds.length > 0) {
+      await db.delete(users).where(inArray(users.id, createdUserIds));
+    }
     await app.close();
   });
+
+  async function seedUser(label: string) {
+    const id = uuidv7();
+    const email = `subscriptions-${label}-${id}@example.com`;
+    await db.insert(users).values({
+      id,
+      email,
+      passwordHash: 'not-used-by-e2e',
+      firstName: 'Subscription',
+      lastName: label,
+      phone: '+525512345678',
+      country: 'MX',
+      timezone: 'UTC',
+      termsAcceptedAt: new Date(),
+    });
+    createdUserIds.push(id);
+
+    return { id, token: tokenService.sign({ sub: id, email }) };
+  }
 
   async function seedPet(label: string): Promise<string> {
     const id = uuidv7();
@@ -108,12 +138,137 @@ describe('Device subscriptions (e2e)', () => {
     });
   }
 
+  async function seedMembership(petId: string, userId: string) {
+    await db.insert(petUsers).values({
+      petId,
+      userId,
+      role: 'owner',
+      status: 'active',
+    });
+  }
+
   describe('R15 (device-subscriptions #25): subscriptions module wiring', () => {
     it('exposes the shared repository and tracking guard from AppModule', () => {
       expect(app.get(SUBSCRIPTION_REPOSITORY)).toBeInstanceOf(
         SubscriptionDrizzleRepository,
       );
       expect(app.get(PetTrackingGuard)).toBeInstanceOf(PetTrackingGuard);
+    });
+  });
+
+  describe('R9 (device-subscriptions #25): exact tracking route gate', () => {
+    it('returns the exact 402 body on all 10 tracking routes', async () => {
+      const owner = await seedUser('r9-owner');
+      const petId = await seedPet('R9 free pet');
+      await seedMembership(petId, owner.id);
+      const geofenceId = uuidv7();
+      const auth = { Authorization: `Bearer ${owner.token}` };
+      const calls = [
+        () =>
+          request(app.getHttpServer())
+            .get(`/v1/pets/${petId}/positions/last`)
+            .set(auth),
+        () =>
+          request(app.getHttpServer())
+            .get(`/v1/pets/${petId}/positions`)
+            .set(auth),
+        () =>
+          request(app.getHttpServer()).get(`/v1/pets/${petId}/trips`).set(auth),
+        () =>
+          request(app.getHttpServer())
+            .get(`/v1/pets/${petId}/trips/1`)
+            .set(auth),
+        () =>
+          request(app.getHttpServer())
+            .get(`/v1/pets/${petId}/activity/daily`)
+            .set(auth),
+        () =>
+          request(app.getHttpServer())
+            .post(`/v1/pets/${petId}/geofences`)
+            .set(auth)
+            .send({}),
+        () =>
+          request(app.getHttpServer())
+            .get(`/v1/pets/${petId}/geofences`)
+            .set(auth),
+        () =>
+          request(app.getHttpServer())
+            .get(`/v1/pets/${petId}/geofences/${geofenceId}`)
+            .set(auth),
+        () =>
+          request(app.getHttpServer())
+            .patch(`/v1/pets/${petId}/geofences/${geofenceId}`)
+            .set(auth)
+            .send({}),
+        () =>
+          request(app.getHttpServer())
+            .delete(`/v1/pets/${petId}/geofences/${geofenceId}`)
+            .set(auth),
+      ];
+
+      for (const call of calls) {
+        const response = await call().expect(402);
+        expect(response.body).toEqual({
+          statusCode: 402,
+          code: 'DEVICE_SUBSCRIPTION_REQUIRED',
+          message: 'Pet tracking requires an active device subscription',
+        });
+      }
+    });
+
+    it('does not gate profile, device management, health or reminders', async () => {
+      const owner = await seedUser('r9-ungated');
+      const petId = await seedPet('R9 ungated pet');
+      await seedMembership(petId, owner.id);
+      const auth = { Authorization: `Bearer ${owner.token}` };
+
+      await request(app.getHttpServer())
+        .get(`/v1/pets/${petId}`)
+        .set(auth)
+        .expect(200);
+      await request(app.getHttpServer())
+        .get(`/v1/pets/${petId}/device`)
+        .set(auth)
+        .expect(200);
+      await request(app.getHttpServer())
+        .delete(`/v1/pets/${petId}/device`)
+        .set(auth)
+        .expect(404);
+      await request(app.getHttpServer())
+        .get(`/v1/pets/${petId}/weights`)
+        .set(auth)
+        .expect(200);
+      await request(app.getHttpServer())
+        .get(`/v1/pets/${petId}/vaccines`)
+        .set(auth)
+        .expect(200);
+      await request(app.getHttpServer())
+        .post(`/v1/pets/${petId}/reminders`)
+        .set(auth)
+        .send({})
+        .expect(400);
+    });
+
+    it('returns 404 before entitlement for a non-member and malformed petId', async () => {
+      const owner = await seedUser('r9-sec-owner');
+      const attacker = await seedUser('r9-sec-attacker');
+      const petId = await seedPet('R9 subscribed pet');
+      await seedMembership(petId, owner.id);
+      const deviceId = await seedActiveCollar(petId, 'r9-sec');
+      await seedSubscription(
+        deviceId,
+        'active',
+        new Date('2099-12-31T00:00:00.000Z'),
+      );
+
+      await request(app.getHttpServer())
+        .get(`/v1/pets/${petId}/positions/last`)
+        .set('Authorization', `Bearer ${attacker.token}`)
+        .expect(404);
+      await request(app.getHttpServer())
+        .get('/v1/pets/not-a-uuid/positions/last')
+        .set('Authorization', `Bearer ${owner.token}`)
+        .expect(404);
     });
   });
 
