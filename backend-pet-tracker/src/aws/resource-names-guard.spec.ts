@@ -70,3 +70,20 @@ describe('R12: el stack CDK no importa la resolucion de sufijo', () => {
     expect(stackSource).toContain("const ENV_SUFFIX = '';");
   });
 });
+
+describe('R13: verification.md documenta el recuento manual', () => {
+  it('incluye el procedimiento de aislamiento de la feature 28', () => {
+    const verification = readFileSync(
+      join(ROOT_DIR, '..', 'docs', 'verification.md'),
+      'utf-8',
+    );
+
+    expect(verification).toContain(
+      '### Feature 28 — test-dev-resource-isolation',
+    );
+    expect(verification).toContain('get-queue-attributes');
+    expect(verification).toContain('ApproximateNumberOfMessagesNotVisible');
+    expect(verification).toContain('provision:local');
+    expect(verification).toContain('test:e2e');
+  });
+});
