@@ -1,0 +1,53 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Grep",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "C:/Users/alex/AppData/Local/Programs/Python/Python314/Scripts/graphify.EXE hook-guard search"
+          }
+        ]
+      },
+      {
+        "matcher": "Read|Glob",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "C:/Users/alex/AppData/Local/Programs/Python/Python314/Scripts/graphify.EXE hook-guard read"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python -c \"\nimport json,sys,os\nd=json.load(sys.stdin)\nf=d.get('tool_input',{}).get('file_path','') or ''\nif os.path.basename(f) == '.env':\n    print(json.dumps({'hookSpecificOutput':{'hookEventName':'PreToolUse','permissionDecision':'deny','permissionDecisionReason':'.env has real secrets, edit .env.example instead'}}))\n\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=$(python -c \"import json,sys;d=json.load(sys.stdin);print(d.get('tool_input',{}).get('file_path') or d.get('tool_response',{}).get('filePath') or '')\"); case \"$f\" in *backend-pet-tracker/*.ts) cd \"C:/Users/alex/Documents/sites/pet-tracker/backend-pet-tracker\" && node_modules/.bin/prettier --write \"$f\" 2>/dev/null; node_modules/.bin/eslint --fix \"$f\" 2>/dev/null; ;; esac; true"
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=$(python -c \"import json,sys;d=json.load(sys.stdin);print(d.get('tool_input',{}).get('file_path') or '')\"); case \"$f\" in *progress/review_*.md) if grep -qi APROBADO \"$f\" 2>/dev/null; then feat=$(basename \"$f\" .md); feat=${feat#review_}; FEAT=\"$feat\" powershell.exe -NoProfile -EncodedCommand \"QQBkAGQALQBUAHkAcABlACAALQBBAHMAcwBlAG0AYgBsAHkATgBhAG0AZQAgAFMAeQBzAHQAZQBtAC4AVwBpAG4AZABvAHcAcwAuAEYAbwByAG0AcwA7ACQAbgA9AE4AZQB3AC0ATwBiAGoAZQBjAHQAIABTAHkAcwB0AGUAbQAuAFcAaQBuAGQAbwB3AHMALgBGAG8AcgBtAHMALgBOAG8AdABpAGYAeQBJAGMAbwBuADsAJABuAC4ASQBjAG8AbgA9AFsAUwB5AHMAdABlAG0ALgBEAHIAYQB3AGkAbgBnAC4AUwB5AHMAdABlAG0ASQBjAG8AbgBzAF0AOgA6AEkAbgBmAG8AcgBtAGEAdABpAG8AbgA7ACQAbgAuAFYAaQBzAGkAYgBsAGUAPQAkAHQAcgB1AGUAOwAkAG4ALgBTAGgAbwB3AEIAYQBsAGwAbwBvAG4AVABpAHAAKAA1ADAAMAAwACwAJwBDAGwAYQB1AGQAZQAgAEMAbwBkAGUAJwAsACcARgBlAGEAdAB1AHIAZQAgAGEAcAByAG8AYgBhAGQAYQA6ACAAJwArACQAZQBuAHYAOgBGAEUAQQBUACwAWwBTAHkAcwB0AGUAbQAuAFcAaQBuAGQAbwB3AHMALgBGAG8AcgBtAHMALgBUAG8AbwBsAFQAaQBwAEkAYwBvAG4AXQA6ADoASQBuAGYAbwApADsAUwB0AGEAcgB0AC0AUwBsAGUAZQBwACAALQBTAGUAYwBvAG4AZABzACAANgA7ACQAbgAuAEQAaQBzAHAAbwBzAGUAKAApAA==\" >/dev/null 2>&1; fi ;; esac; true"
+          }
+        ]
+      }
+    ]
+  }
+}
