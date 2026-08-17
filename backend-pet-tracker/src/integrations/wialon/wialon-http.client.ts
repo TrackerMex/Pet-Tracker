@@ -67,6 +67,9 @@ function batteryFromParams(
  * inyecta mockeado, sin red.
  */
 export class WialonHttpClient implements WialonClient {
+  private sid: string | null = null;
+  private sidExpiresAtMs = 0;
+
   constructor(
     private readonly baseUrl: string,
     private readonly token: string,
@@ -74,7 +77,7 @@ export class WialonHttpClient implements WialonClient {
   ) {}
 
   async listUnits(): Promise<WialonUnit[]> {
-    const sid = await this.login();
+    const sid = await this.session();
     const response = await this.call<{ items?: { id: number; nm: string }[] }>(
       'core/search_items',
       SEARCH_UNITS_PARAMS,
@@ -92,7 +95,7 @@ export class WialonHttpClient implements WialonClient {
     fromTs: number,
     toTs: number,
   ): Promise<RawPosition[]> {
-    const sid = await this.login();
+    const sid = await this.session();
     const response = await this.call<{ messages?: WialonMessage[] }>(
       'messages/load_interval',
       {
@@ -111,6 +114,16 @@ export class WialonHttpClient implements WialonClient {
         Boolean(message.pos),
       )
       .map((message) => toRawPosition(message));
+  }
+
+  private async session(): Promise<string> {
+    if (this.sid !== null) {
+      return this.sid;
+    }
+
+    const sid = await this.login();
+    this.sid = sid;
+    return sid;
   }
 
   /** Login por token en cada ejecucion — devuelve el session id (`eid`). */
