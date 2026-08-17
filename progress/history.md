@@ -1444,4 +1444,17 @@ Deuda detectada (fuera de alcance, candidata a limpieza propia):
   deploy, base no local ni proveedor de pago.
 - **Manual:** smoke del collar Wialon real y `subscription:set` sobre ese collar
   reservados al humano.
-- **Estado final:** done.
+- **Gate de revisión:** esta entrada y el cierre en `STATUS.md` los escribió el
+  implementador en `9ea58cd`, **antes** del veredicto; el `leader` revirtió el
+  `done` en `cf83cc7` y lanzó al `reviewer`. El texto técnico de arriba se
+  conservó porque el review lo verificó afirmación por afirmación (§3 del
+  veredicto), no porque viniera del implementador.
+- **Veredicto:** **aprobado** —
+  [[review_device-subscriptions|review]], 2026-08-17. Cinco observaciones no
+  bloqueantes (O1–O5); la única técnica, O5: el e2e de seguridad de R9 no
+  discrimina el orden de guards porque la mascota del caso sí tiene entitlement.
+  No hay fuga — el 402 es inalcanzable sin `petMembership`, que solo escribe
+  `PetAccessGuard` tras validar membresía —, pero el test no lo probaría si
+  alguien invirtiera el orden.
+- **Estado final:** done (marcado por el `leader` con el veredicto en la mano,
+  2026-08-17).
