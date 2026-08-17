@@ -75,3 +75,6 @@ Ejecutar el cierre completo: `init.sh`, trazabilidad, bookkeeping y revisión de
 - R14: cero proveedores, dependencias o variables de entorno nuevas.
 - R12: contrato de #18 documentado, puerto exportado y cero código anticipado de nutrición.
 - R18: ERD y catálogo documentan tabla, gracia derivada y tres caminos de alta.
+- Primer `init.sh`: build y 1,042 unit/infra tests verdes; e2e detectó 60
+  expectativas históricas sin entitlement. Se actualizaron solo sus fixtures;
+  las 4 suites afectadas quedaron verdes (83/83).

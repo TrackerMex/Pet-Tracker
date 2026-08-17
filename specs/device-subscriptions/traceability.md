@@ -14,9 +14,9 @@ tags: [harness, spec]
 | R4 | `test/device-subscriptions.e2e-spec.ts::R4 (device-subscriptions #25): poll only entitled assignments` | `07cc06d` red; `c61c729` store join |
 | R5 | `test/device-subscriptions.e2e-spec.ts::R5 (device-subscriptions #25): expiration keeps the assignment` | `1a95002` test verde al añadirse; propiedad de ausencia, sin implementación adicional |
 | R6 | `test/device-subscriptions.e2e-spec.ts::R6 (device-subscriptions #25): reset watermark on reactivation` | `0341d62` red; `4356417` transition reset |
-| R7 | `src/modules/devices/application/use-cases/claim-device.use-case.spec.ts::R7 (device-subscriptions #25): subscription is the last claim check`; `test/devices.e2e-spec.ts::R7 (device-subscriptions #25): claim requires an active subscription last` | `a6bc9ca` red; `a4682cd` claim + 402 mapping |
+| R7 | `src/modules/devices/application/use-cases/claim-device.use-case.spec.ts::R7 (device-subscriptions #25): subscription is the last claim check`; `test/devices.e2e-spec.ts::R7 (device-subscriptions #25): claim requires an active subscription last`; regresión provisioning | `a6bc9ca` red; `a4682cd` claim + 402 mapping; `90cb9f1` fixtures |
 | R8 | `src/modules/subscriptions/infrastructure/guards/pet-tracking.guard.spec.ts::R8 (device-subscriptions #25): PetTrackingGuard` | `e5bb926` red; `b8df30d` guard |
-| R9 | `test/device-subscriptions.e2e-spec.ts::R9 (device-subscriptions #25): exact tracking route gate` | `8256ac4` red; `6a217d4` controller guards |
+| R9 | `test/device-subscriptions.e2e-spec.ts::R9 (device-subscriptions #25): exact tracking route gate`; regresiones positions/activity/geofences | `8256ac4` red; `6a217d4` controller guards; `90cb9f1` fixtures |
 | R10 | `test/device-subscriptions.e2e-spec.ts::R10 (device-subscriptions #25): alerts filter by entitlement`; regresión `test/alerts-center-notifier.e2e-spec.ts` | `fc1dcd7` red; `5ebc02b` repository joins |
 | R11 | `test/device-subscriptions.e2e-spec.ts::R11 (device-subscriptions #25): entitlement is shared by pet members` | `e534063` propiedad verde tras R9; sin implementación adicional |
 | R12 | ausencia de `src/modules/nutrition`/`aiExplanation` + export del puerto | `cf77e6a` evidencia verde; sin implementación anticipada |
