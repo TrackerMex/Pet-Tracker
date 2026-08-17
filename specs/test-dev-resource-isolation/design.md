@@ -1,6 +1,6 @@
 ---
 feature: "test-dev-resource-isolation"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec]
 ---
 

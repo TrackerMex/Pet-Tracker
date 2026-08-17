@@ -1,6 +1,6 @@
 ---
 feature: "test-dev-resource-isolation"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec]
 ---
 
@@ -76,12 +76,15 @@ asevera que la cola de test **sí se movió** tras `poller.runOnce()`
 desarrollo signifique algo. Revertir R9 haría que el poller escribiese en
 `positions-raw` de desarrollo y la aserción de igualdad de L235 fallaría.
 
-**Deuda anotada para el reviewer**: la aserción de `ItemCount` de DynamoDB
-(L243-245) es la parte **débil** del test. `ItemCount` no se actualiza en
-tiempo real —en AWS real va con ~6 h de retraso— así que puede coincidir
-aunque hubiera habido escrituras. La garantía fuerte de R10 son los recuentos
-de las tres colas (L235), que sí son inmediatos. No bloquea: el requisito queda
-cubierto por la aserción de colas.
+**Deuda de `ItemCount` — CERRADA por el reviewer el 2026-08-17.** Se anotó la
+sospecha de que la aserción de `ItemCount` de DynamoDB (L243-245) fuese
+decorativa, porque en AWS real ese contador va ~6 h por detrás y coincidiría
+aunque hubiera habido escrituras. **Medido, y es al revés**: en LocalStack el
+contador es exacto e inmediato. El reviewer lo contrastó contra
+`scan --select COUNT` en cuatro puntos de una corrida e2e completa, y se movió
++1135 en `positions-test` mientras `positions` se quedaba en 0. La aserción
+vale. La garantía sigue siendo doble: recuentos de colas (L235, inmediatos) más
+`ItemCount` de las dos tablas.
 
 **R7 se añadió a la excepción durante la implementación** (gate humano del
 2026-08-17, tras el reporte de Codex en
