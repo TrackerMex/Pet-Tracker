@@ -13,7 +13,7 @@ tags: [harness, spec]
 | R3 | `test/device-subscriptions.e2e-spec.ts::R3 (device-subscriptions #25): derive pet and device entitlement` | `fe506d6` red; `1686166` repository |
 | R4 | `test/device-subscriptions.e2e-spec.ts::R4 (device-subscriptions #25): poll only entitled assignments` | `07cc06d` red; `c61c729` store join |
 | R5 | `test/device-subscriptions.e2e-spec.ts::R5 (device-subscriptions #25): expiration keeps the assignment` | `1a95002` test verde al añadirse; propiedad de ausencia, sin implementación adicional |
-| R6 | pendiente | pendiente |
+| R6 | `test/device-subscriptions.e2e-spec.ts::R6 (device-subscriptions #25): reset watermark on reactivation` | `0341d62` red; `4356417` transition reset |
 | R7 | pendiente | pendiente |
 | R8 | pendiente | pendiente |
 | R9 | pendiente | pendiente |
