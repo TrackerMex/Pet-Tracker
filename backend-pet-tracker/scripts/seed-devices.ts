@@ -1,9 +1,11 @@
 import { config as loadDotenv } from 'dotenv';
+import { inArray } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import { uuidv7 } from 'uuidv7';
 import { devices } from '@/db/schema/devices.schema';
+import { deviceSubscriptions } from '@/db/schema/subscriptions.schema';
 import { SIMULATED_DEVICES } from '@/db/seed/simulated-devices';
 
 // La constante SIMULATED_DEVICES vive en src/db/seed/simulated-devices.ts
@@ -33,6 +35,28 @@ export async function seedSimulatedDevices(db: NodePgDatabase): Promise<void> {
       })),
     )
     .onConflictDoNothing({ target: devices.esn });
+
+  const simulatedDevices = await db
+    .select({ id: devices.id })
+    .from(devices)
+    .where(
+      inArray(
+        devices.esn,
+        SIMULATED_DEVICES.map(({ esn }) => esn),
+      ),
+    );
+
+  await db
+    .insert(deviceSubscriptions)
+    .values(
+      simulatedDevices.map(({ id }) => ({
+        deviceId: id,
+        status: 'active',
+        planCode: 'grandfathered',
+        currentPeriodEnd: new Date('2099-12-31T00:00:00Z'),
+      })),
+    )
+    .onConflictDoNothing({ target: deviceSubscriptions.deviceId });
 }
 
 /**

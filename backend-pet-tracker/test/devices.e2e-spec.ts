@@ -9,6 +9,7 @@ import { DRIZZLE } from '@/db/drizzle.constants';
 import { auditLog } from '@/db/schema/audit-log.schema';
 import { devices, petDevices } from '@/db/schema/devices.schema';
 import { pets, petUsers } from '@/db/schema/pets.schema';
+import { deviceSubscriptions } from '@/db/schema/subscriptions.schema';
 import { users } from '@/db/schema/users.schema';
 import { TOKEN_SERVICE } from '@/modules/auth/domain/ports/token-service';
 import type { TokenService } from '@/modules/auth/domain/ports/token-service';
@@ -161,6 +162,9 @@ describe('Devices claim (e2e)', () => {
 
       if (ids.length > 0) {
         await db.delete(petDevices).where(inArray(petDevices.deviceId, ids));
+        await db
+          .delete(deviceSubscriptions)
+          .where(inArray(deviceSubscriptions.deviceId, ids));
         await db.delete(devices).where(inArray(devices.id, ids));
       }
     });
