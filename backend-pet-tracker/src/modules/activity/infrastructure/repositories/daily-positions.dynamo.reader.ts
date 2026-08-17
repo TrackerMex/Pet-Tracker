@@ -2,10 +2,11 @@ import { QueryCommand } from '@aws-sdk/lib-dynamodb';
 import type { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import {
-  TABLE_POSITIONS,
   TABLE_POSITIONS_PARTITION_KEY,
   TABLE_POSITIONS_SORT_KEY,
 } from '@/aws/constants';
+import { AWS_RESOURCE_NAMES } from '@/aws/aws.constants';
+import type { AwsResourceNames } from '@/aws/resource-names';
 import {
   ACTIVITY_DAILY_DOC_CLIENT,
   ACTIVITY_MAX_PAGES_PER_DAY,
@@ -27,6 +28,7 @@ export class DailyPositionsDynamoReader implements DailyPositionsReader {
   constructor(
     @Inject(ACTIVITY_DAILY_DOC_CLIENT)
     private readonly documents: DynamoDBDocumentClient,
+    @Inject(AWS_RESOURCE_NAMES) private readonly names: AwsResourceNames,
   ) {}
 
   async readDay(
@@ -42,7 +44,7 @@ export class DailyPositionsDynamoReader implements DailyPositionsReader {
     do {
       const result = await this.documents.send(
         new QueryCommand({
-          TableName: TABLE_POSITIONS,
+          TableName: this.names.positionsTable,
           // BETWEEN es inclusive en ambos extremos: `endMs - 1` conserva el
           // rango semiabierto [startMs, endMs) que resuelve local-day.ts.
           KeyConditionExpression: `${TABLE_POSITIONS_PARTITION_KEY} = :pk AND ${TABLE_POSITIONS_SORT_KEY} BETWEEN :from AND :to`,
