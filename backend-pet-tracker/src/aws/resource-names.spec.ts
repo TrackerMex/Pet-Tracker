@@ -1,6 +1,9 @@
+import { ConfigService } from '@nestjs/config';
 import {
   RESOURCE_SUFFIX_TEST,
   buildResourceNames,
+  resolveResourceNamesFromConfigService,
+  resolveResourceNamesFromEnv,
   resolveResourceSuffix,
 } from './resource-names';
 
@@ -52,5 +55,51 @@ describe('R2: el sufijo se deriva de NODE_ENV en modo local', () => {
 
   it('expone el sufijo de test', () => {
     expect(RESOURCE_SUFFIX_TEST).toBe('test');
+  });
+});
+
+describe('R3: AWS_MODE=aws fuerza sufijo vacio', () => {
+  const developmentNames = {
+    positionsRaw: 'positions-raw',
+    positionsRawDlq: 'positions-raw-dlq',
+    notifications: 'notifications',
+    notificationsDlq: 'notifications-dlq',
+    geofenceEvents: 'geofence-events',
+    geofenceEventsDlq: 'geofence-events-dlq',
+    geofenceEventsRule: 'geofence-events',
+    positionsTable: 'positions',
+    mediaBucket: 'pet-tracker-media-local',
+    eventBus: 'pet-tracker',
+  };
+
+  it.each(['aws', 'AWS', ' aws '])(
+    'ignora NODE_ENV=test con AWS_MODE=%p sin lanzar',
+    (rawMode) => {
+      expect(() => resolveResourceSuffix(rawMode, 'test')).not.toThrow();
+      expect(resolveResourceSuffix(rawMode, 'test')).toBe('');
+      expect(
+        buildResourceNames(resolveResourceSuffix(rawMode, 'test')),
+      ).toEqual(developmentNames);
+    },
+  );
+
+  it('resuelve nombres desnudos desde process.env', () => {
+    expect(
+      resolveResourceNamesFromEnv({ AWS_MODE: 'aws', NODE_ENV: 'test' }),
+    ).toEqual(developmentNames);
+  });
+
+  it('resuelve nombres desnudos desde ConfigService', () => {
+    const values: Record<string, string> = {
+      AWS_MODE: 'aws',
+      NODE_ENV: 'test',
+    };
+    const config = {
+      get: (key: string) => values[key],
+    } as ConfigService;
+
+    expect(resolveResourceNamesFromConfigService(config)).toEqual(
+      developmentNames,
+    );
   });
 });
