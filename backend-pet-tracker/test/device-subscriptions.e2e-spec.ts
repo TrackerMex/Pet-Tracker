@@ -1,3 +1,8 @@
+import {
+  GetQueueUrlCommand,
+  SendMessageCommand,
+  SQSClient,
+} from '@aws-sdk/client-sqs';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { inArray, sql } from 'drizzle-orm';
@@ -8,7 +13,14 @@ import { AppModule } from '@/app.module';
 import { devices, petDevices } from '@/db/schema/devices.schema';
 import { pets } from '@/db/schema/pets.schema';
 import { deviceSubscriptions } from '@/db/schema/subscriptions.schema';
+import type { WialonClient } from '@/integrations/wialon/wialon-client.interface';
 import { SubscriptionDrizzleRepository } from '@/modules/subscriptions/infrastructure/repositories/subscription.drizzle.repository';
+import type { RawPosition } from '@/pipeline/types';
+import { IngestionDrizzleStore } from '@/workers/ingestion.drizzle.store';
+import {
+  PollerService,
+  POSITIONS_PER_MESSAGE_MAX,
+} from '@/workers/poller.service';
 import { seedSimulatedDevices } from '../scripts/seed-devices';
 
 describe('Device subscriptions (e2e)', () => {
@@ -53,13 +65,17 @@ describe('Device subscriptions (e2e)', () => {
     return id;
   }
 
-  async function seedDevice(label: string): Promise<string> {
+  async function seedDevice(
+    label: string,
+    overrides: Partial<typeof devices.$inferInsert> = {},
+  ): Promise<string> {
     const id = uuidv7();
     await db.insert(devices).values({
       id,
       esn: `SUB-${label}-${id}`,
       status: 'assigned',
       isSimulated: true,
+      ...overrides,
     });
     createdDeviceIds.push(id);
     return id;
@@ -300,6 +316,157 @@ describe('Device subscriptions (e2e)', () => {
       expect(SubscriptionDrizzleRepository.prototype.isPetTracked.length).toBe(
         1,
       );
+    });
+  });
+
+  describe('R4 (device-subscriptions #25): poll only entitled assignments', () => {
+    const queueUrl = 'http://localhost:4566/000000000000/positions-raw';
+    const now = new Date();
+    const initialWatermark = new Date(now.getTime() - 60 * 60_000);
+
+    let activePetId: string;
+    let activeDeviceId: string;
+    let unsubscribedDeviceId: string;
+    let expiredDeviceId: string;
+
+    beforeAll(async () => {
+      activePetId = await seedPet('R4-active');
+      activeDeviceId = await seedDevice('R4-active', {
+        wialonUnitId: 'R4-active-unit',
+        ingestWatermark: initialWatermark,
+      });
+      await db.insert(petDevices).values({
+        id: uuidv7(),
+        petId: activePetId,
+        deviceId: activeDeviceId,
+      });
+      await seedSubscription(
+        activeDeviceId,
+        'active',
+        new Date(now.getTime() + 24 * 60 * 60_000),
+      );
+
+      const unsubscribedPetId = await seedPet('R4-unsubscribed');
+      unsubscribedDeviceId = await seedDevice('R4-unsubscribed', {
+        wialonUnitId: 'R4-unsubscribed-unit',
+        ingestWatermark: initialWatermark,
+      });
+      await db.insert(petDevices).values({
+        id: uuidv7(),
+        petId: unsubscribedPetId,
+        deviceId: unsubscribedDeviceId,
+      });
+
+      const expiredPetId = await seedPet('R4-expired');
+      expiredDeviceId = await seedDevice('R4-expired', {
+        wialonUnitId: 'R4-expired-unit',
+        ingestWatermark: initialWatermark,
+      });
+      await db.insert(petDevices).values({
+        id: uuidv7(),
+        petId: expiredPetId,
+        deviceId: expiredDeviceId,
+      });
+      await seedSubscription(
+        expiredDeviceId,
+        'active',
+        new Date(now.getTime() - 4 * 24 * 60 * 60_000),
+      );
+    });
+
+    it('lists only the assignment with a current subscription', async () => {
+      const store = new IngestionDrizzleStore(db);
+
+      await expect(store.listActiveAssignments()).resolves.toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            deviceId: activeDeviceId,
+            petId: activePetId,
+            unitId: 'R4-active-unit',
+          }),
+        ]),
+      );
+
+      const assignmentIds = (await store.listActiveAssignments()).map(
+        ({ deviceId }) => deviceId,
+      );
+      expect(assignmentIds).toContain(activeDeviceId);
+      expect(assignmentIds).not.toContain(unsubscribedDeviceId);
+      expect(assignmentIds).not.toContain(expiredDeviceId);
+    });
+
+    it('preserves message shape and chunking without moving excluded watermarks', async () => {
+      const count = POSITIONS_PER_MESSAGE_MAX + 1;
+      const stepMs = 30_000;
+      const baseTs = now.getTime() - count * stepMs - 60_000;
+      const positions: RawPosition[] = Array.from({ length: count }, (_, i) => ({
+        lat: 19.4326,
+        lng: -99.1332,
+        ts: baseTs + i * stepMs,
+      }));
+      expect(Math.max(...positions.map(({ ts }) => ts))).toBeLessThan(
+        now.getTime(),
+      );
+
+      const getMessages = jest.fn().mockResolvedValue(positions);
+      const wialon = {
+        listUnits: jest.fn().mockResolvedValue([]),
+        getMessages,
+      } as jest.Mocked<WialonClient>;
+      const send = jest.fn((command: unknown) => {
+        if (command instanceof GetQueueUrlCommand) {
+          return Promise.resolve({ QueueUrl: queueUrl });
+        }
+        return Promise.resolve({ MessageId: 'r4' });
+      });
+      const poller = new PollerService(
+        new IngestionDrizzleStore(db),
+        wialon,
+        { send } as unknown as SQSClient,
+      );
+
+      await poller.runOnce(now);
+
+      expect(getMessages).toHaveBeenCalledTimes(1);
+      expect(getMessages).toHaveBeenCalledWith(
+        'R4-active-unit',
+        initialWatermark.getTime(),
+        now.getTime(),
+      );
+
+      const bodies = send.mock.calls
+        .map(([command]) => command)
+        .filter(
+          (command): command is SendMessageCommand =>
+            command instanceof SendMessageCommand,
+        )
+        .map((command) =>
+          JSON.parse(command.input.MessageBody as string),
+        ) as Array<Record<string, unknown> & { positions: RawPosition[] }>;
+
+      expect(bodies.map(({ positions: batch }) => batch.length)).toEqual([
+        POSITIONS_PER_MESSAGE_MAX,
+        1,
+      ]);
+      expect(bodies[0]).toEqual({
+        version: 1,
+        deviceId: activeDeviceId,
+        petId: activePetId,
+        unitId: 'R4-active-unit',
+        positions: positions.slice(0, POSITIONS_PER_MESSAGE_MAX),
+      });
+
+      const excluded = await db
+        .select({ id: devices.id, ingestWatermark: devices.ingestWatermark })
+        .from(devices)
+        .where(inArray(devices.id, [unsubscribedDeviceId, expiredDeviceId]));
+      expect(excluded).toHaveLength(2);
+      expect(
+        excluded.every(
+          ({ ingestWatermark }) =>
+            ingestWatermark?.getTime() === initialWatermark.getTime(),
+        ),
+      ).toBe(true);
     });
   });
 });
