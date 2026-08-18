@@ -54,6 +54,7 @@ describe('R15 (nutrition-profile-engine #17): tablas de nutricion y migracion 00
       expect.arrayContaining([
         'nutrition_profiles_activity_level_check',
         'nutrition_profiles_body_condition_check',
+        'nutrition_profiles_food_type_check',
         'nutrition_profiles_kcal_per_100g_check',
       ]),
     );
