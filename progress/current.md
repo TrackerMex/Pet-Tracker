@@ -135,9 +135,29 @@ ninguna IA, la corre el humano (`CLAUDE.md` §Excepciones).
   use-case (obligaría a que el adaptador devolviera `finishReason` y `usage` en un
   tipo de retorno más rico: más código para el mismo efecto).
 
+- **Segundo bloqueo reportado por Codex (2026-08-18): `env-drift.test.mjs`.**
+  Implementó R1..R18 y paró con `init.sh` rojo: `env-drift.test.mjs` línea 269
+  congela el número de claves de `.env.example` (`assert.equal(keys.length, 21)`)
+  y las tres claves de R4 lo suben a 24. La spec prohibía tocar ese archivo, así
+  que **no aplicó ningún workaround** — correcto otra vez.
+  La prohibición venía de una premisa incompleta mía: el `explorer` verificó que
+  `env-drift.mjs` no tiene lista de claves (cierto) pero nadie miró el conteo
+  congelado del **test**. Esa aserción es de R11 de #23, dentro del `it` "no añade
+  variables de entorno", y es un **canario**: cuando una feature añade claves
+  legítimamente, la respuesta prevista es actualizar el número.
+  **Enmienda aplicada**: #18 cambia `21` por `24` en esa única línea y deja
+  intacta la segunda aserción del mismo `it` (la de `DRIFT`/`ENV_DRIFT`), que es
+  la que expresa de verdad el requisito de #23. `env-drift.mjs` sigue sin tocarse.
+- **Verificado antes de enmendar**: ninguna clave real commiteada
+  (`git diff | grep -E 'sk-[a-zA-Z0-9]{10}'` sin resultados), `.env.example` con
+  el centinela `PENDING`, la casilla de la prueba de humo de R19 **sin marcar** y
+  #18 todavía en `in_progress`: Codex respetó las dos prohibiciones del handoff.
+  Usó `max_completion_tokens` (confirmado contra los tipos de `openai@7.5.0`),
+  que es lo que la trampa 5 le pedía documentar.
+
 ## Siguiente
 
-**Codex sigue implementando** con la spec enmendada. Cuando el humano confirme
-que terminó: leer `progress/impl_nutrition-ai-explainer.md` y lanzar el
+Codex aplica la enmienda de `env-drift.test.mjs` y termina de dejar `init.sh`
+verde (sus e2e y lint no llegaron a correr: la corrida se detuvo antes). Después,
 `reviewer`. El cierre de #18 necesita además la prueba de humo de R19, que corre
 el humano.

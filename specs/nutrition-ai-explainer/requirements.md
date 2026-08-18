@@ -171,7 +171,20 @@ EventBridge, S3 y SQS) y `infra/` no menciona SSM.
 extrae por regex todas las claves de `.env.example` y `formatDriftLines()`
 clasifica como "gate" cualquiera que termine en `_ENABLED`. Añadir
 `OPENAI_ENABLED` a `.env.example` lo convierte automáticamente en gate
-reportado. Tampoco se toca `env-drift.test.mjs`.
+reportado.
+
+**Enmienda del 2026-08-18 (posterior a la aprobación), sobre `env-drift.test.mjs`.**
+La spec decía "tampoco se toca `env-drift.test.mjs`". Era falso por premisa
+incompleta: ese archivo **sí** congela el número de claves de `.env.example`
+(`assert.equal(keys.length, 21)`, línea 269, dentro del `it` *"no añade variables
+de entorno"* de R11 de #23). Codex lo encontró al implementar y **paró** en vez de
+rodearlo, que es lo correcto. Esa aserción es un **canario**: la respuesta prevista
+cuando una feature añade claves legítimamente es **actualizar el número**, no
+neutralizar el test. Por tanto #18 SHALL cambiar `21` por `24` en esa única línea
+—las tres claves de C-4— y SHALL dejar intacta la segunda aserción del mismo `it`
+(`keys.some(key => key.startsWith('DRIFT') || key.startsWith('ENV_DRIFT')) === false`),
+que es la que expresa de verdad el requisito de #23. Ningún otro cambio en
+`env-drift.test.mjs` ni ninguno en `env-drift.mjs`.
 
 ### C-5 · Formato del user prompt
 
@@ -354,9 +367,12 @@ asevera `warn.mock.calls[0][0]` con `{ petId }`). El R-id de R11 no cambia.
   `| VAR | para qué | en .env.example — consumida desde nutrition-ai-explainer (#18): <ruta> vía ConfigService |`;
   modelo de tono más cercano: la fila de `PUSH_ENABLED`, línea 235). La clave
   real SHALL **no** aparecer nunca en ningún archivo versionado: `.env.example`
-  lleva el centinela `PENDING`. `env-drift.mjs` y `env-drift.test.mjs` SHALL
-  **no** modificarse (C-4: la clasificación de gates es por sufijo `_ENABLED`,
-  automática).
+  lleva el centinela `PENDING`. `env-drift.mjs` SHALL **no** modificarse (C-4: la
+  clasificación de gates es por sufijo `_ENABLED`, automática). De
+  `env-drift.test.mjs` SHALL modificarse **exactamente una línea**: el conteo
+  congelado `assert.equal(keys.length, 21)` pasa a `24` (enmienda de C-4); el
+  resto del archivo, incluida la segunda aserción de ese mismo `it`, SHALL quedar
+  intacto.
   *Test*: aserciones (2) y (3) invertidas de
   `src/modules/nutrition/nutrition-scope.spec.ts` (R1a), más
   `expect(envExample).not.toMatch(/^OPENAI_API_KEY=sk-/m)` como guarda de
