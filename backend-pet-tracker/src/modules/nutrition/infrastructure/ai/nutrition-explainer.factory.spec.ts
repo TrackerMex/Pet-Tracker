@@ -44,7 +44,6 @@ function sourceFiles(directory: string): string[] {
   });
 }
 
-
 describe('R5 (nutrition-ai-explainer #18): las cuatro condiciones del gate', () => {
   const validConfig = {
     OPENAI_ENABLED: 'true',
@@ -60,21 +59,43 @@ describe('R5 (nutrition-ai-explainer #18): las cuatro condiciones del gate', () 
 
   it.each([
     ['test environment', 'test', validConfig],
-    ['missing enabled flag', 'development', { ...validConfig, OPENAI_ENABLED: undefined }],
-    ['disabled flag', 'development', { ...validConfig, OPENAI_ENABLED: 'false' }],
-    ['case-sensitive enabled flag', 'development', { ...validConfig, OPENAI_ENABLED: 'TRUE' }],
-    ['missing API key', 'development', { ...validConfig, OPENAI_API_KEY: undefined }],
+    [
+      'missing enabled flag',
+      'development',
+      { ...validConfig, OPENAI_ENABLED: undefined },
+    ],
+    [
+      'disabled flag',
+      'development',
+      { ...validConfig, OPENAI_ENABLED: 'false' },
+    ],
+    [
+      'case-sensitive enabled flag',
+      'development',
+      { ...validConfig, OPENAI_ENABLED: 'TRUE' },
+    ],
+    [
+      'missing API key',
+      'development',
+      { ...validConfig, OPENAI_API_KEY: undefined },
+    ],
     ['empty API key', 'development', { ...validConfig, OPENAI_API_KEY: '' }],
     ['blank API key', 'development', { ...validConfig, OPENAI_API_KEY: '   ' }],
-    ['pending API key', 'development', { ...validConfig, OPENAI_API_KEY: 'PENDING' }],
-    ['missing model', 'development', { ...validConfig, OPENAI_MODEL: undefined }],
+    [
+      'pending API key',
+      'development',
+      { ...validConfig, OPENAI_API_KEY: 'PENDING' },
+    ],
+    [
+      'missing model',
+      'development',
+      { ...validConfig, OPENAI_MODEL: undefined },
+    ],
     ['empty model', 'development', { ...validConfig, OPENAI_MODEL: '' }],
   ])('uses the null explainer for %s', (_case, nodeEnv, values) => {
     expect(
       createNutritionExplainer(config({ ...values, NODE_ENV: nodeEnv })),
-    ).toBeInstanceOf(
-      NullNutritionExplainer,
-    );
+    ).toBeInstanceOf(NullNutritionExplainer);
   });
 
   it('uses the real explainer only when every gate is valid', () => {
@@ -85,4 +106,3 @@ describe('R5 (nutrition-ai-explainer #18): las cuatro condiciones del gate', () 
     ).toBeInstanceOf(OpenAiNutritionExplainer);
   });
 });
-

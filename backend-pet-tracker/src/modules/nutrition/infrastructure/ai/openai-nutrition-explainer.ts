@@ -91,8 +91,7 @@ export class OpenAiNutritionExplainer implements NutritionExplainer {
       maxRetries: 0,
     });
     this.client = {
-      create: (params) =>
-        sdk.chat.completions.create(params as never) as Promise<OpenAiChatResponse>,
+      create: (params) => sdk.chat.completions.create(params as never),
     };
     return this.client;
   }

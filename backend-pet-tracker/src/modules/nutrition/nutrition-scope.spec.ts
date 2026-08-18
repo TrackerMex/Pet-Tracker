@@ -19,7 +19,9 @@ describe('R1 (nutrition-ai-explainer #18): la IA esta cableada y sin literales d
       .join('\n');
     const openAiConfigFiles = sourceFiles(join(backendRoot, 'src'))
       .filter((path) => readFileSync(path, 'utf8').includes('OPENAI_'))
-      .map((path) => relative(join(backendRoot, 'src'), path).replaceAll('\\', '/'));
+      .map((path) =>
+        relative(join(backendRoot, 'src'), path).replaceAll('\\', '/'),
+      );
 
     expect(envExample).toMatch(/^OPENAI_ENABLED=false$/m);
     expect(envExample).toMatch(/^OPENAI_API_KEY=PENDING$/m);

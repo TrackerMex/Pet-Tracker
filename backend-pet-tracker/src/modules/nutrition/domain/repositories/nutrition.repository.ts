@@ -17,8 +17,5 @@ export interface NutritionRepository {
   ): Promise<NutritionProfile>;
   findLatestPlan(petId: string): Promise<NutritionPlan | null>;
   insertPlan(plan: NewNutritionPlan): Promise<NutritionPlan>;
-  setAiExplanation(
-    planId: string,
-    explanation: string,
-  ): Promise<NutritionPlan>;
+  setAiExplanation(planId: string, explanation: string): Promise<NutritionPlan>;
 }
