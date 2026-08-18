@@ -127,3 +127,54 @@ describe('R10 (nutrition-ai-explainer #18): respuesta vacia o truncada se normal
     expect(warn).not.toHaveBeenCalled();
   });
 });
+
+describe('R11 (nutrition-ai-explainer #18): todo fallo degrada a null con warn', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('contains provider failures and logs only safe context', async () => {
+    const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    const explainer = new OpenAiNutritionExplainer(
+      'model',
+      'SECRET_API_KEY',
+      { create: jest.fn().mockRejectedValue(new Error('provider failed')) },
+    );
+    const sensitiveInput = {
+      ...input,
+      allergies: ['SECRET_ALLERGY'],
+      diseases: ['SECRET_DISEASE'],
+    } as NutritionEngineInput;
+
+    await expect(
+      explainer.explain(sensitiveInput, result, ctx),
+    ).resolves.toBeNull();
+    expect(warn).toHaveBeenCalledWith(
+      expect.objectContaining({
+        scope: 'nutrition-ai',
+        petId: ctx.petId,
+        planId: ctx.planId,
+      }),
+    );
+    const logged = JSON.stringify(warn.mock.calls);
+    expect(logged).not.toContain('SECRET_API_KEY');
+    expect(logged).not.toContain('SECRET_ALLERGY');
+    expect(logged).not.toContain('SECRET_DISEASE');
+  });
+
+  it('still returns a non-empty successful explanation', async () => {
+    const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    const explainer = new OpenAiNutritionExplainer('model', 'key', {
+      create: jest.fn().mockResolvedValue({
+        choices: [
+          { message: { content: 'Available explanation' }, finish_reason: 'stop' },
+        ],
+      }),
+    });
+
+    await expect(explainer.explain(input, result, ctx)).resolves.toBe(
+      'Available explanation',
+    );
+    expect(warn).not.toHaveBeenCalled();
+  });
+});
