@@ -12,8 +12,13 @@ export function createNutritionExplainer(
     return new NullNutritionExplainer();
   }
 
-  return new OpenAiNutritionExplainer(
-    config.get<string>('OPENAI_MODEL') ?? '',
-    config.get<string>('OPENAI_API_KEY') ?? '',
-  );
+  const enabled = config.get<string>('OPENAI_ENABLED');
+  const apiKey = config.get<string>('OPENAI_API_KEY')?.trim();
+  const model = config.get<string>('OPENAI_MODEL')?.trim();
+
+  if (enabled !== 'true' || !apiKey || apiKey === 'PENDING' || !model) {
+    return new NullNutritionExplainer();
+  }
+
+  return new OpenAiNutritionExplainer(model, apiKey);
 }

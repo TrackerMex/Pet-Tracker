@@ -1,3 +1,5 @@
+process.env.OPENAI_ENABLED = 'false';
+
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { count, eq, inArray } from 'drizzle-orm';
