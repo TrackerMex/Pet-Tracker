@@ -20,7 +20,7 @@ tags: [harness, spec]
 | R2 | `src/modules/nutrition/domain/nutrition-engine.spec.ts::R2 (nutrition-profile-engine #17): RER y peso base` | rojo: `469340f test(nutrition-profile-engine): cover RER base weight precedence (R2)`; verde: `f093a2b feat(nutrition-profile-engine): calculate RER from clinical base weight (R2)` |
 | R3 | `src/modules/nutrition/domain/nutrition-engine.spec.ts::R3 (nutrition-profile-engine #17): tabla de factores MER y precedencia` | rojo: `b9ab034 test(nutrition-profile-engine): cover MER factors and precedence (R3)`; verde: `ac74daa feat(nutrition-profile-engine): apply MER factor precedence (R3)` |
 | R4 | `src/modules/nutrition/domain/nutrition-engine.spec.ts::R4 (nutrition-profile-engine #17): redondeo de kcal y gramos` | rojo: `3a39b1c test(nutrition-profile-engine): pin calorie and gram rounding (R4)`; verde: `bd9fa4c feat(nutrition-profile-engine): round calories and daily grams (R4)` |
-| R5 | `src/modules/nutrition/domain/nutrition-engine.spec.ts::R5 (nutrition-profile-engine #17): comidas por dia` | pendiente |
+| R5 | `src/modules/nutrition/domain/nutrition-engine.spec.ts::R5 (nutrition-profile-engine #17): comidas por dia` | rojo: `e19bd1e test(nutrition-profile-engine): cover meals by age and species (R5)`; verde: `893bc0b feat(nutrition-profile-engine): assign meals per day (R5)` |
 | R6 | `src/modules/nutrition/domain/nutrition-engine.spec.ts::R6 (nutrition-profile-engine #17): horarios por numero de comidas` | pendiente |
 | R7 | `src/modules/nutrition/domain/nutrition-engine.spec.ts::R7 (nutrition-profile-engine #17): objective` | pendiente |
 | R8 | `src/modules/nutrition/domain/nutrition-engine.spec.ts::R8 (nutrition-profile-engine #17): warning weight_loss_plan` | pendiente |
