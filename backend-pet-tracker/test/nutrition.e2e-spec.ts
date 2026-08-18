@@ -622,3 +622,86 @@ describe('Nutrition profile and plans (e2e)', () => {
     });
   });
 });
+
+
+describe('R18 (nutrition-ai-explainer #18): la explicacion llega de punta a punta', () => {
+  it('returns and persists a non-empty explanation through the module flow', async () => {
+    const [
+      { Test: NestTest },
+      { NutritionModule },
+      { GenerateNutritionPlanUseCase },
+      { NutritionPlan },
+      { NUTRITION_REPOSITORY },
+      { PET_REPOSITORY },
+      { SUBSCRIPTION_REPOSITORY },
+      { toNutritionPlanResponse },
+    ] = await Promise.all([
+      import('@nestjs/testing'),
+      import('../src/modules/nutrition/nutrition.module'),
+      import('../src/modules/nutrition/application/use-cases/generate-nutrition-plan.use-case'),
+      import('../src/modules/nutrition/domain/entities/nutrition-plan.entity'),
+      import('../src/modules/nutrition/domain/repositories/nutrition.repository'),
+      import('../src/modules/pets/domain/repositories/pet.repository'),
+      import('../src/modules/subscriptions/domain/repositories/subscription.repository'),
+      import('../src/modules/nutrition/infrastructure/mappers/nutrition.mapper'),
+    ]);
+
+    let latestPlan: InstanceType<typeof NutritionPlan> | null = null;
+    const nutritionRepository = {
+      findProfile: jest.fn().mockResolvedValue({
+        petId: 'pet-1',
+        foodType: 'dry',
+        kcalPer100g: 350,
+        activityLevel: 'moderate',
+        bodyCondition: 5,
+        targetWeightKg: null,
+        allergies: [],
+        diseases: [],
+        updatedAt: new Date(),
+      }),
+      findLatestPlan: jest.fn(async () => latestPlan),
+      insertPlan: jest.fn(async (plan) => {
+        latestPlan = new NutritionPlan({
+          id: 'plan-1',
+          ...plan,
+          generatedAt: new Date(),
+        });
+        return latestPlan;
+      }),
+      setAiExplanation: jest.fn(async (_planId, explanation) => {
+        latestPlan = new NutritionPlan({
+          ...latestPlan!,
+          aiExplanation: explanation,
+        });
+        return latestPlan;
+      }),
+    };
+    const moduleRef = await NestTest.createTestingModule({
+      imports: [NutritionModule],
+    })
+      .overrideProvider(NUTRITION_REPOSITORY)
+      .useValue(nutritionRepository)
+      .overrideProvider(PET_REPOSITORY)
+      .useValue({
+        findById: jest.fn().mockResolvedValue({
+          id: 'pet-1',
+          species: 'dog',
+          currentWeightKg: 20,
+          birthDate: '2024-08-18',
+          sterilized: true,
+        }),
+      })
+      .overrideProvider(SUBSCRIPTION_REPOSITORY)
+      .useValue({ isPetTracked: jest.fn().mockResolvedValue(true) })
+      .compile();
+
+    const plan = await moduleRef.get(GenerateNutritionPlanUseCase).execute('pet-1');
+    const response = toNutritionPlanResponse(plan);
+
+    expect(response.aiExplanation).toBe('Generated explanation');
+    expect(latestPlan?.aiExplanation).toBe('Generated explanation');
+    expect(nutritionRepository.setAiExplanation).toHaveBeenCalledTimes(1);
+
+    await moduleRef.close();
+  });
+});
