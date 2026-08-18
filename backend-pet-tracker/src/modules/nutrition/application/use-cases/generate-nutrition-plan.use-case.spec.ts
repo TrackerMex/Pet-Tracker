@@ -89,3 +89,31 @@ describe('R12 (nutrition-ai-explainer #18): insert antes de la IA y update despu
     expect(plan.aiExplanation).toBe('Generated explanation');
   });
 });
+
+describe('R14 (nutrition-ai-explainer #18): sin entitlement no se llama a la IA', () => {
+  it('keeps the inserted plan null when the pet is not tracked', async () => {
+    const harness = createHarness();
+    harness.subscriptionRepository.isPetTracked.mockImplementation(async () => {
+      harness.calls.push('gate');
+      return false;
+    });
+
+    const plan = await harness.useCase.execute('pet-1', now);
+
+    expect(harness.subscriptionRepository.isPetTracked).toHaveBeenCalledWith(
+      'pet-1',
+    );
+    expect(harness.explainer.explain).not.toHaveBeenCalled();
+    expect(harness.nutritionRepository.setAiExplanation).not.toHaveBeenCalled();
+    expect(plan.aiExplanation).toBeNull();
+  });
+
+  it('calls the explainer and returns non-empty text when the pet is tracked', async () => {
+    const harness = createHarness();
+
+    const plan = await harness.useCase.execute('pet-1', now);
+
+    expect(harness.explainer.explain).toHaveBeenCalledTimes(1);
+    expect(plan.aiExplanation).toBe('Generated explanation');
+  });
+});
