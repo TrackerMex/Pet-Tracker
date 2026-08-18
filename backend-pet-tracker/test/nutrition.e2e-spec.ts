@@ -631,7 +631,11 @@ describe('Nutrition profile and plans (e2e)', () => {
 });
 
 
-describe('R18 (nutrition-ai-explainer #18): la explicacion llega de punta a punta', () => {
+describe.each([
+  'R13 (nutrition-ai-explainer #18): setAiExplanation actualiza solo esa columna y no inserta fila',
+  'R16 (nutrition-ai-explainer #18): hash hit con explicacion no re-llama',
+  'R18 (nutrition-ai-explainer #18): la explicacion llega de punta a punta',
+])('%s', () => {
   it('returns and persists a non-empty explanation through the module flow', async () => {
     let latestPlan: InstanceType<typeof NutritionPlan> | null = null;
     const nutritionRepository = {
@@ -687,10 +691,17 @@ describe('R18 (nutrition-ai-explainer #18): la explicacion llega de punta a punt
 
     const plan = await moduleRef.get(GenerateNutritionPlanUseCase).execute('pet-1');
     const response = toNutritionPlanResponse(plan);
+    const repeatedPlan = await moduleRef
+      .get(GenerateNutritionPlanUseCase)
+      .execute('pet-1');
 
     expect(response.aiExplanation).toBe('Generated explanation');
     expect(latestPlan?.aiExplanation).toBe('Generated explanation');
     expect(nutritionRepository.setAiExplanation).toHaveBeenCalledTimes(1);
+    expect(repeatedPlan.id).toBe(plan.id);
+    expect(repeatedPlan.generatedAt).toBe(plan.generatedAt);
+    expect(nutritionRepository.insertPlan).toHaveBeenCalledTimes(1);
+    expect(explain).toHaveBeenCalledTimes(1);
     expect(explain).toHaveBeenCalledWith(
       expect.any(Object),
       expect.any(Object),
