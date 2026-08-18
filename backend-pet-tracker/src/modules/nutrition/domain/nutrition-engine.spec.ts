@@ -449,3 +449,101 @@ describe('R13 (nutrition-profile-engine #17): orden fijo y acumulacion de warnin
     expect(computePlan(BASE_INPUT).warnings).toEqual([]);
   });
 });
+
+describe('R14 (nutrition-profile-engine #17): los cuatro casos ancla con valores exactos', () => {
+  it('caso 1: perro adulto esterilizado elimina floor', () => {
+    expect(computePlan(BASE_INPUT)).toEqual({
+      rerKcal: 662,
+      merKcal: 1059,
+      dailyGrams: 305,
+      mealsPerDay: 2,
+      mealTimes: ['07:30', '19:30'],
+      objective: 'maintenance',
+      warnings: [],
+    });
+  });
+
+  it('caso 2: gato adulto esterilizado elimina ceil', () => {
+    expect(
+      computePlan({
+        species: 'cat',
+        weightKg: 4,
+        targetWeightKg: null,
+        ageMonths: 36,
+        sterilized: true,
+        activityLevel: 'low',
+        bodyCondition: null,
+        kcalPer100g: 350,
+        allergies: [],
+        diseases: [],
+      }),
+    ).toEqual({
+      rerKcal: 198,
+      merKcal: 218,
+      dailyGrams: 60,
+      mealsPerDay: 2,
+      mealTimes: ['07:30', '19:30'],
+      objective: 'maintenance',
+      warnings: [],
+    });
+  });
+
+  it('caso 3: cachorro conserva factor y salida con actividad high', () => {
+    const input: NutritionEngineInput = {
+      species: 'dog',
+      weightKg: 5,
+      targetWeightKg: null,
+      ageMonths: 3,
+      sterilized: false,
+      activityLevel: 'medium',
+      bodyCondition: null,
+      kcalPer100g: 350,
+      allergies: [],
+      diseases: [],
+    };
+    const expected = {
+      rerKcal: 234,
+      merKcal: 702,
+      dailyGrams: 200,
+      mealsPerDay: 4,
+      mealTimes: ['07:00', '11:00', '15:00', '19:00'],
+      objective: 'growth',
+      warnings: [],
+    };
+
+    expect(computePlan(input)).toEqual(expected);
+    expect(computePlan({ ...input, activityLevel: 'high' })).toEqual(expected);
+  });
+
+  it('caso 4: perdida usa target y no modifica por actividad high', () => {
+    const input: NutritionEngineInput = {
+      species: 'dog',
+      weightKg: 30,
+      targetWeightKg: 25,
+      ageMonths: 72,
+      sterilized: true,
+      activityLevel: 'medium',
+      bodyCondition: 8,
+      kcalPer100g: 350,
+      allergies: [],
+      diseases: [],
+    };
+    const expected = {
+      rerKcal: 783,
+      merKcal: 783,
+      dailyGrams: 225,
+      mealsPerDay: 2,
+      mealTimes: ['07:30', '19:30'],
+      objective: 'weight_loss',
+      warnings: [
+        {
+          code: 'weight_loss_plan',
+          message: NUTRITION_WARNING_MESSAGES.weight_loss_plan,
+        },
+      ],
+    };
+
+    expect(computePlan(input)).toEqual(expected);
+    expect(computePlan({ ...input, activityLevel: 'high' })).toEqual(expected);
+  });
+});
