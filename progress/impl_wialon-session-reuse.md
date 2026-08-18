@@ -26,3 +26,10 @@
   - `backend-pet-tracker/src/integrations/wialon/wialon-http.client.spec.ts`
   - `backend-pet-tracker/src/integrations/wialon/wialon-http.client.ts`
   - `backend-pet-tracker/src/integrations/wialon/wialon.errors.ts`
+
+## Verificación final ejecutada
+
+- `./init.sh` final: ejecutado en PowerShell sin errores (exit code 0).
+- `pnpm -C backend-pet-tracker test`: 139 suites, 1045 tests.
+- `pnpm -C backend-pet-tracker test -- src/integrations/wialon/wialon-http.client.spec.ts`: 23 tests.
+- `pnpm -C backend-pet-tracker test -- src/workers/poller.service.spec.ts -t "R2 (wialon-session-reuse #29)"`: verde.
