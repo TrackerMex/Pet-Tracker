@@ -73,6 +73,12 @@ describe('Nutrition profile and plans (e2e)', () => {
       .set(auth(user.token))
       .send(body);
 
+  const postWeight = (user: UserFixture, petId: string, weightKg: number) =>
+    api()
+      .post(`/v1/pets/${petId}/weights`)
+      .set(auth(user.token))
+      .send({ weightKg, measuredAt: new Date().toISOString().slice(0, 10) });
+
   beforeAll(async () => {
     const module = await Test.createTestingModule({
       imports: [AppModule],
@@ -252,6 +258,55 @@ describe('Nutrition profile and plans (e2e)', () => {
           .from(nutritionProfiles)
           .where(eq(nutritionProfiles.petId, pet.id)),
       ).toEqual([]);
+    });
+  });
+
+  describe('R19 (nutrition-profile-engine #17): generate compone el input y responde el plan', () => {
+    it('recorre el ancla del perro de 20 kg y no expone inputsHash', async () => {
+      const owner = await seedUser('r19');
+      const pet = await seedPet(owner);
+      await postWeight(owner, pet.id, 20).expect(201);
+      await putProfile(owner, pet.id, {
+        activityLevel: 'medium',
+        foodType: 'dry',
+        kcalPer100g: 350,
+      }).expect(200);
+
+      const response = await api()
+        .post(`/v1/pets/${pet.id}/nutrition-plan/generate`)
+        .set(auth(owner.token))
+        .expect(200);
+
+      expect(Object.keys(response.body as object).sort()).toEqual(
+        [
+          'id',
+          'petId',
+          'rerKcal',
+          'merKcal',
+          'dailyGrams',
+          'mealsPerDay',
+          'mealTimes',
+          'objective',
+          'warnings',
+          'aiExplanation',
+          'generatedAt',
+        ].sort(),
+      );
+      expect(response.body).toMatchObject({
+        petId: pet.id,
+        rerKcal: 662,
+        merKcal: 1059,
+        dailyGrams: 305,
+        mealsPerDay: 2,
+        mealTimes: ['07:30', '19:30'],
+        objective: 'maintenance',
+        warnings: [],
+        aiExplanation: null,
+      });
+      expect(response.body).not.toHaveProperty('inputsHash');
+      expect(
+        new Date((response.body as { generatedAt: string }).generatedAt).toISOString(),
+      ).toBe((response.body as { generatedAt: string }).generatedAt);
     });
   });
 });
