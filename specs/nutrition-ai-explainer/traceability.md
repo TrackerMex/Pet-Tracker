@@ -26,9 +26,9 @@ tags: [harness, spec]
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | `src/modules/nutrition/nutrition-scope.spec.ts::R1 (nutrition-ai-explainer #18): la IA esta cableada y sin literales de modelo` + recorte del bloque R26 en `test/nutrition.e2e-spec.ts` | pendiente |
+| R1 | `src/modules/nutrition/nutrition-scope.spec.ts::R1 (nutrition-ai-explainer #18): la IA esta cableada y sin literales de modelo` + recorte del bloque R26 en `test/nutrition.e2e-spec.ts` | rojo: `7cadd2c test(nutrition-ai-explainer): derogate R26 of #17 (R1)`; verde: `4e615b3 feat(nutrition-ai-explainer): isolate tests from real client (R1,R3)` |
 | R2 | `src/modules/nutrition/nutrition-scope.spec.ts::R1 ...` (aserción (5) conservada: `not.toContain('gpt-')`) | pendiente |
-| R3 | `src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts::R3 (nutrition-ai-explainer #18): con NODE_ENV=test nunca se construye el cliente real` | pendiente |
+| R3 | `src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts::R3 (nutrition-ai-explainer #18): con NODE_ENV=test nunca se construye el cliente real` | rojo: `3dcaf3b test(nutrition-ai-explainer): prevent real client in tests (R3)`; verde: `4e615b3 feat(nutrition-ai-explainer): isolate tests from real client (R1,R3)` |
 | R4 | `src/modules/nutrition/nutrition-scope.spec.ts::R1 ...` (aserciones (2) y (3) invertidas + guarda de clave real) | rojo: `7cadd2c test(nutrition-ai-explainer): derogate R26 of #17 (R1)`; verde: `8aab678 feat(nutrition-ai-explainer): document OpenAI configuration (R4)` |
 | R5 | `src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts::R5 (nutrition-ai-explainer #18): las cuatro condiciones del gate` | pendiente |
 | R6 | `src/modules/nutrition/infrastructure/ai/nutrition-prompt.spec.ts::R6 (nutrition-ai-explainer #18): system prompt literal y fechado` | rojo: `d0ac8cd test(nutrition-ai-explainer): lock approved system prompt (R6)`; verde: `f15c312 feat(nutrition-ai-explainer): add versioned system prompt (R6)` |
