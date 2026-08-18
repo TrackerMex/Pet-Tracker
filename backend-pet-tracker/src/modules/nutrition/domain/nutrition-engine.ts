@@ -160,6 +160,12 @@ export function computePlan(input: NutritionEngineInput): NutritionPlanResult {
       message: NUTRITION_WARNING_MESSAGES.chronic_disease_vet,
     });
   }
+  if (input.allergies.length > 0) {
+    warnings.push({
+      code: 'check_food_allergens',
+      message: NUTRITION_WARNING_MESSAGES.check_food_allergens,
+    });
+  }
 
   return {
     rerKcal,
