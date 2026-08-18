@@ -20,7 +20,6 @@ import { GenerateNutritionPlanUseCase } from '@/modules/nutrition/application/us
 import { NutritionPlan } from '@/modules/nutrition/domain/entities/nutrition-plan.entity';
 import { NUTRITION_REPOSITORY } from '@/modules/nutrition/domain/repositories/nutrition.repository';
 import { toNutritionPlanResponse } from '@/modules/nutrition/infrastructure/mappers/nutrition.mapper';
-import { NutritionModule } from '@/modules/nutrition/nutrition.module';
 import { PET_REPOSITORY } from '@/modules/pets/domain/repositories/pet.repository';
 import { SUBSCRIPTION_REPOSITORY } from '@/modules/subscriptions/domain/repositories/subscription.repository';
 import { AppModule } from '../src/app.module';
@@ -664,7 +663,7 @@ describe('R18 (nutrition-ai-explainer #18): la explicacion llega de punta a punt
       }),
     };
     const moduleRef = await Test.createTestingModule({
-      imports: [NutritionModule],
+      imports: [AppModule],
     })
       .overrideProvider(NUTRITION_REPOSITORY)
       .useValue(nutritionRepository)
