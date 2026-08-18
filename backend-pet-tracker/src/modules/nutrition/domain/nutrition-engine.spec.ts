@@ -360,3 +360,22 @@ describe('R9 (nutrition-profile-engine #17): warning underweight_vet', () => {
     expect(hasWarning(null)).toBe(false);
   });
 });
+
+describe('R10 (nutrition-profile-engine #17): warning chronic_disease_vet', () => {
+  it('aparece con enfermedad y texto literal', () => {
+    expect(
+      computePlan({ ...BASE_INPUT, diseases: ['diabetes'] }).warnings,
+    ).toContainEqual({
+      code: 'chronic_disease_vet',
+      message: 'Plan general; tu veterinario debe ajustarlo.',
+    });
+  });
+
+  it('anti-vacio: no aparece sin enfermedades', () => {
+    expect(
+      computePlan({ ...BASE_INPUT, diseases: [] }).warnings.some(
+        (warning) => warning.code === 'chronic_disease_vet',
+      ),
+    ).toBe(false);
+  });
+});
