@@ -379,3 +379,22 @@ describe('R10 (nutrition-profile-engine #17): warning chronic_disease_vet', () =
     ).toBe(false);
   });
 });
+
+describe('R11 (nutrition-profile-engine #17): warning check_food_allergens', () => {
+  it('aparece con alergias y texto aprobado', () => {
+    expect(
+      computePlan({ ...BASE_INPUT, allergies: ['pollo'] }).warnings,
+    ).toContainEqual({
+      code: 'check_food_allergens',
+      message: NUTRITION_WARNING_MESSAGES.check_food_allergens,
+    });
+  });
+
+  it('anti-vacio: no aparece sin alergias', () => {
+    expect(
+      computePlan({ ...BASE_INPUT, allergies: [] }).warnings.some(
+        (warning) => warning.code === 'check_food_allergens',
+      ),
+    ).toBe(false);
+  });
+});
