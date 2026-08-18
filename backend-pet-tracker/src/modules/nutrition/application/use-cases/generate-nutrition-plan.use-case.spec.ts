@@ -25,8 +25,8 @@ function createHarness() {
     sterilized: true,
   };
   const nutritionRepository = {
-    findProfileByPetId: jest.fn().mockResolvedValue(profile),
-    findLatestPlanByPetId: jest.fn(async () => latestPlan),
+    findProfile: jest.fn().mockResolvedValue(profile),
+    findLatestPlan: jest.fn(async () => latestPlan),
     insertPlan: jest.fn(async (plan: Record<string, unknown>) => {
       calls.push('insert');
       latestPlan = plan;
