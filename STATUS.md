@@ -2,7 +2,8 @@
 
 **Última actualización**: 2026-08-17
 **Features completadas**: 28/30 (`feature_list.json`)
-**En progreso**: ninguna.
+**En progreso**: ninguna. #17 `nutrition-profile-engine` está `spec_ready`,
+parada en el gate humano de aprobación de la spec.
 **Pendientes**: 2, ambas **P3** — #17 `nutrition-profile-engine`, #18
 `nutrition-ai-explainer`.
 **En producción**: no
@@ -726,6 +727,28 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-08-17 (5)** — Spec de `nutrition-profile-engine` (#17) escrita y
+  detenida en el gate humano: `pending` -> `spec_ready`, sin tocar
+  `backend-pet-tracker/`. El `explorer` corrigió la premisa del encargo
+  (`plans/009-alimentacion-ia.md` sí existe y es la fuente normativa de las
+  cifras clínicas) y dejó 19 decisiones D1..D19 en
+  `progress/explore_nutrition-profile-engine.md`, con un hallazgo que la spec
+  blinda en R14: los dos anclajes del criterio de aceptación (perro 20 kg ->
+  1059 kcal / 305 g, gato 4 kg -> 218 kcal / 60 g) son un **par mínimo
+  indivisible** — el del perro elimina `floor`, el del gato elimina `ceil`, y
+  solo juntos prueban que el redondeo a múltiplo de 5 es `round`. Seis
+  decisiones de producto/clínica las cerró el humano (condición de STOP
+  declarada por el propio plan 009): la edad gana sobre la pérdida de peso en
+  menores de 12 meses (con el warning igualmente), `kcalPer100g` obligatorio
+  siempre — anula los defaults dry 350 / wet 100 del plan —, nutrición sin
+  `PetTrackingGuard` (app de salud gratuita, coherente con #25), `sterilized`
+  null tratado como adulto entero, `targetWeightKg` por encima del peso actual
+  aceptado sin juicio, y los cuatro textos de warning nuevos aprobados. Spec en
+  `specs/nutrition-profile-engine/` (14 R-ids, tabla MER transcrita para que
+  Codex no la invente), commit `c04da20` en `feature/17-nutrition-profile-engine`.
+  `./init.sh` verde al arrancar. **Siguiente**: el humano marca la casilla de
+  aprobación y entonces se escribe el handoff a Codex CLI.
 
 - **2026-08-17 (4)** — Cerrada `wialon-session-reuse` (#29): el `sid` de Wialon
   se cachea por instancia con `WIALON_SID_TTL_MS = 4 * 60_000` (por debajo de
