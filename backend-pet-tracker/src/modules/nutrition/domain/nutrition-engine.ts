@@ -24,6 +24,7 @@ import {
   MER_FACTOR_WEIGHT_LOSS_DOG,
   MER_FACTOR_YOUNG_DOG,
   NUTRITION_WARNING_MESSAGES,
+  NUTRITION_WARNING_ORDER,
   RER_COEFFICIENT,
   RER_EXPONENT,
 } from './nutrition.constants';
@@ -136,43 +137,20 @@ export function computePlan(input: NutritionEngineInput): NutritionPlanResult {
         : input.species === 'cat' && input.activityLevel === 'high'
           ? MEALS_ADULT_CAT_HIGH_ACTIVITY
           : MEALS_ADULT;
-  const warnings: NutritionWarning[] = [];
-  if (
-    input.bodyCondition !== null &&
-    input.bodyCondition >= BODY_CONDITION_OVERWEIGHT_MIN
-  ) {
-    warnings.push({
-      code: 'weight_loss_plan',
-      message: NUTRITION_WARNING_MESSAGES.weight_loss_plan,
-    });
-  }
-  if (
-    input.bodyCondition !== null &&
-    input.bodyCondition <= BODY_CONDITION_UNDERWEIGHT_MAX
-  ) {
-    warnings.push({
-      code: 'underweight_vet',
-      message: NUTRITION_WARNING_MESSAGES.underweight_vet,
-    });
-  }
-  if (input.diseases.length > 0) {
-    warnings.unshift({
-      code: 'chronic_disease_vet',
-      message: NUTRITION_WARNING_MESSAGES.chronic_disease_vet,
-    });
-  }
-  if (input.allergies.length > 0) {
-    warnings.push({
-      code: 'check_food_allergens',
-      message: NUTRITION_WARNING_MESSAGES.check_food_allergens,
-    });
-  }
-  if (input.ageMonths < AGE_MONTHS_TOO_YOUNG_MAX) {
-    warnings.push({
-      code: 'too_young_vet',
-      message: NUTRITION_WARNING_MESSAGES.too_young_vet,
-    });
-  }
+  const warningConditions: Readonly<Record<NutritionWarningCode, boolean>> = {
+    weight_loss_plan:
+      input.bodyCondition !== null &&
+      input.bodyCondition >= BODY_CONDITION_OVERWEIGHT_MIN,
+    underweight_vet:
+      input.bodyCondition !== null &&
+      input.bodyCondition <= BODY_CONDITION_UNDERWEIGHT_MAX,
+    chronic_disease_vet: input.diseases.length > 0,
+    check_food_allergens: input.allergies.length > 0,
+    too_young_vet: input.ageMonths < AGE_MONTHS_TOO_YOUNG_MAX,
+  };
+  const warnings = NUTRITION_WARNING_ORDER.filter(
+    (code) => warningConditions[code],
+  ).map((code) => ({ code, message: NUTRITION_WARNING_MESSAGES[code] }));
 
   return {
     rerKcal,
