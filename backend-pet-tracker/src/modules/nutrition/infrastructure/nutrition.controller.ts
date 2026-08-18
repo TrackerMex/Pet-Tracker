@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Get,
   HttpStatus,
   Param,
   Put,
@@ -12,6 +13,8 @@ import {
   UpsertNutritionProfileSchema,
 } from '@/modules/nutrition/application/dto/nutrition-profile.dto';
 import { UpsertNutritionProfileUseCase } from '@/modules/nutrition/application/use-cases/upsert-nutrition-profile.use-case';
+import { GetNutritionProfileUseCase } from '@/modules/nutrition/application/use-cases/get-nutrition-profile.use-case';
+import { mapNutritionError } from '@/modules/nutrition/infrastructure/mappers/nutrition-error.mapper';
 import {
   NutritionProfileResponse,
   toNutritionProfileResponse,
@@ -19,7 +22,10 @@ import {
 
 @Controller('pets/:petId')
 export class NutritionController {
-  constructor(private readonly upsertProfile: UpsertNutritionProfileUseCase) {}
+  constructor(
+    private readonly upsertProfile: UpsertNutritionProfileUseCase,
+    private readonly getProfile: GetNutritionProfileUseCase,
+  ) {}
 
   @Put('nutrition-profile')
   async upsert(
@@ -33,6 +39,15 @@ export class NutritionController {
     return toNutritionProfileResponse(
       await this.upsertProfile.execute(petId, dto),
     );
+  }
+
+  @Get('nutrition-profile')
+  async get(@Param('petId') petId: string): Promise<NutritionProfileResponse> {
+    try {
+      return toNutritionProfileResponse(await this.getProfile.execute(petId));
+    } catch (error) {
+      throw mapNutritionError(error);
+    }
   }
 }
 
