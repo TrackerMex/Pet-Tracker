@@ -1,12 +1,15 @@
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { eq, inArray } from 'drizzle-orm';
+import { count, eq, inArray } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { uuidv7 } from 'uuidv7';
 import { DRIZZLE } from '@/db/drizzle.constants';
-import { nutritionProfiles } from '@/db/schema/nutrition.schema';
+import {
+  nutritionPlans,
+  nutritionProfiles,
+} from '@/db/schema/nutrition.schema';
 import { pets } from '@/db/schema/pets.schema';
 import { users } from '@/db/schema/users.schema';
 import { TOKEN_SERVICE } from '@/modules/auth/domain/ports/token-service';
@@ -78,6 +81,19 @@ describe('Nutrition profile and plans (e2e)', () => {
       .post(`/v1/pets/${petId}/weights`)
       .set(auth(user.token))
       .send({ weightKg, measuredAt: new Date().toISOString().slice(0, 10) });
+
+  const generatePlan = (user: UserFixture, petId: string) =>
+    api()
+      .post(`/v1/pets/${petId}/nutrition-plan/generate`)
+      .set(auth(user.token));
+
+  async function planCount(petId: string): Promise<number> {
+    const [row] = await db
+      .select({ value: count() })
+      .from(nutritionPlans)
+      .where(eq(nutritionPlans.petId, petId));
+    return row.value;
+  }
 
   beforeAll(async () => {
     const module = await Test.createTestingModule({
@@ -307,6 +323,37 @@ describe('Nutrition profile and plans (e2e)', () => {
       expect(
         new Date((response.body as { generatedAt: string }).generatedAt).toISOString(),
       ).toBe((response.body as { generatedAt: string }).generatedAt);
+    });
+  });
+
+  describe('R21 (nutrition-profile-engine #17): mismo input devuelve el mismo plan sin fila nueva', () => {
+    it('compara con el ultimo hash y solo inserta cuando cambia', async () => {
+      const owner = await seedUser('r21');
+      const pet = await seedPet(owner);
+      await postWeight(owner, pet.id, 20).expect(201);
+      await putProfile(owner, pet.id, {
+        activityLevel: 'medium',
+        foodType: 'dry',
+        kcalPer100g: 350,
+      }).expect(200);
+
+      const first = await generatePlan(owner, pet.id).expect(200);
+      const second = await generatePlan(owner, pet.id).expect(200);
+      expect((second.body as { id: string }).id).toBe(
+        (first.body as { id: string }).id,
+      );
+      expect(await planCount(pet.id)).toBe(1);
+
+      await putProfile(owner, pet.id, {
+        activityLevel: 'medium',
+        foodType: 'dry',
+        kcalPer100g: 360,
+      }).expect(200);
+      const third = await generatePlan(owner, pet.id).expect(200);
+      expect((third.body as { id: string }).id).not.toBe(
+        (first.body as { id: string }).id,
+      );
+      expect(await planCount(pet.id)).toBe(2);
     });
   });
 });
