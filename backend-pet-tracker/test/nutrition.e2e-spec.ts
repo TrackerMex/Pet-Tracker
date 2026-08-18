@@ -17,6 +17,7 @@ import { users } from '@/db/schema/users.schema';
 import { TOKEN_SERVICE } from '@/modules/auth/domain/ports/token-service';
 import type { TokenService } from '@/modules/auth/domain/ports/token-service';
 import { GenerateNutritionPlanUseCase } from '@/modules/nutrition/application/use-cases/generate-nutrition-plan.use-case';
+import type { NewNutritionPlan } from '@/modules/nutrition/domain/entities/nutrition-plan.entity';
 import { NutritionPlan } from '@/modules/nutrition/domain/entities/nutrition-plan.entity';
 import { NUTRITION_EXPLAINER } from '@/modules/nutrition/domain/ports/nutrition-explainer';
 import { NUTRITION_REPOSITORY } from '@/modules/nutrition/domain/repositories/nutrition.repository';
@@ -630,7 +631,6 @@ describe('Nutrition profile and plans (e2e)', () => {
   });
 });
 
-
 describe.each([
   'R13 (nutrition-ai-explainer #18): setAiExplanation actualiza solo esa columna y no inserta fila',
   'R16 (nutrition-ai-explainer #18): hash hit con explicacion no re-llama',
@@ -651,21 +651,21 @@ describe.each([
         diseases: [],
         updatedAt: new Date(),
       }),
-      findLatestPlan: jest.fn(async () => latestPlan),
-      insertPlan: jest.fn(async (plan) => {
+      findLatestPlan: jest.fn(() => Promise.resolve(latestPlan)),
+      insertPlan: jest.fn((plan: NewNutritionPlan) => {
         latestPlan = new NutritionPlan({
           id: 'plan-1',
           ...plan,
           generatedAt: new Date(),
         });
-        return latestPlan;
+        return Promise.resolve(latestPlan);
       }),
-      setAiExplanation: jest.fn(async (_planId, explanation) => {
+      setAiExplanation: jest.fn((_planId: string, explanation: string) => {
         latestPlan = new NutritionPlan({
           ...latestPlan!,
           aiExplanation: explanation,
         });
-        return latestPlan;
+        return Promise.resolve(latestPlan);
       }),
     };
     const explain = jest.fn().mockResolvedValue('Generated explanation');
@@ -690,7 +690,9 @@ describe.each([
       .useValue({ explain })
       .compile();
 
-    const plan = await moduleRef.get(GenerateNutritionPlanUseCase).execute('pet-1');
+    const plan = await moduleRef
+      .get(GenerateNutritionPlanUseCase)
+      .execute('pet-1');
     const response = toNutritionPlanResponse(plan);
     const repeatedPlan = await moduleRef
       .get(GenerateNutritionPlanUseCase)

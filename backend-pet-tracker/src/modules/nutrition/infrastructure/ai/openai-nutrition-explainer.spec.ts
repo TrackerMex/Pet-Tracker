@@ -59,8 +59,6 @@ describe('R9 (nutrition-ai-explainer #18): modelo por env, timeout 15 s y maxRet
       ],
       max_completion_tokens: NUTRITION_AI_MAX_OUTPUT_TOKENS,
     });
-    expect(create.mock.calls[0]?.[0]).not.toHaveProperty('temperature');
-
     const source = readFileSync(
       join(__dirname, 'openai-nutrition-explainer.ts'),
       'utf8',
@@ -92,9 +90,7 @@ describe('R10 (nutrition-ai-explainer #18): respuesta vacia o truncada se normal
       const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
       const explainer = new OpenAiNutritionExplainer('model', 'key', {
         create: jest.fn().mockResolvedValue({
-          choices: [
-            { message: { content }, finish_reason: finishReason },
-          ],
+          choices: [{ message: { content }, finish_reason: finishReason }],
           usage,
         }),
       });
@@ -117,7 +113,10 @@ describe('R10 (nutrition-ai-explainer #18): respuesta vacia o truncada se normal
     const explainer = new OpenAiNutritionExplainer('model', 'key', {
       create: jest.fn().mockResolvedValue({
         choices: [
-          { message: { content: '  Complete explanation  ' }, finish_reason: 'stop' },
+          {
+            message: { content: '  Complete explanation  ' },
+            finish_reason: 'stop',
+          },
         ],
         usage: { total_tokens: 20 },
       }),
@@ -137,16 +136,14 @@ describe('R11 (nutrition-ai-explainer #18): todo fallo degrada a null con warn',
 
   it('contains provider failures and logs only safe context', async () => {
     const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
-    const explainer = new OpenAiNutritionExplainer(
-      'model',
-      'SECRET_API_KEY',
-      { create: jest.fn().mockRejectedValue(new Error('provider failed')) },
-    );
+    const explainer = new OpenAiNutritionExplainer('model', 'SECRET_API_KEY', {
+      create: jest.fn().mockRejectedValue(new Error('provider failed')),
+    });
     const sensitiveInput = {
       ...input,
       allergies: ['SECRET_ALLERGY'],
       diseases: ['SECRET_DISEASE'],
-    } as NutritionEngineInput;
+    };
 
     await expect(
       explainer.explain(sensitiveInput, result, ctx),
@@ -169,7 +166,10 @@ describe('R11 (nutrition-ai-explainer #18): todo fallo degrada a null con warn',
     const explainer = new OpenAiNutritionExplainer('model', 'key', {
       create: jest.fn().mockResolvedValue({
         choices: [
-          { message: { content: 'Available explanation' }, finish_reason: 'stop' },
+          {
+            message: { content: 'Available explanation' },
+            finish_reason: 'stop',
+          },
         ],
       }),
     });

@@ -12,7 +12,7 @@ import { NUTRITION_AI_SCOPE } from './nutrition-prompt';
 export class NullNutritionExplainer implements NutritionExplainer {
   private readonly logger = new Logger(NullNutritionExplainer.name);
 
-  async explain(
+  explain(
     _input: NutritionEngineInput,
     _result: NutritionPlanResult,
     ctx: NutritionExplainerContext,
@@ -23,6 +23,6 @@ export class NullNutritionExplainer implements NutritionExplainer {
       planId: ctx.planId,
       reason: 'disabled',
     });
-    return null;
+    return Promise.resolve(null);
   }
 }

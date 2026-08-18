@@ -26,37 +26,37 @@ function createHarness() {
   };
   const nutritionRepository = {
     findProfile: jest.fn().mockResolvedValue(profile),
-    findLatestPlan: jest.fn(async () => latestPlan),
-    insertPlan: jest.fn(async (plan: Record<string, unknown>) => {
+    findLatestPlan: jest.fn(() => Promise.resolve(latestPlan)),
+    insertPlan: jest.fn((plan: Record<string, unknown>) => {
       calls.push('insert');
       latestPlan = plan;
-      return plan;
+      return Promise.resolve(plan);
     }),
-    setAiExplanation: jest.fn(async (planId: string, explanation: string) => {
+    setAiExplanation: jest.fn((planId: string, explanation: string) => {
       calls.push('update');
       latestPlan = { ...latestPlan, id: planId, aiExplanation: explanation };
-      return latestPlan;
+      return Promise.resolve(latestPlan);
     }),
   };
   const petRepository = {
     findById: jest.fn().mockResolvedValue(pet),
   };
   const explainer = {
-    explain: jest.fn(async () => {
+    explain: jest.fn(() => {
       calls.push('explain');
-      return 'Generated explanation';
+      return Promise.resolve('Generated explanation');
     }),
   };
   const subscriptionRepository = {
-    isPetTracked: jest.fn(async () => {
+    isPetTracked: jest.fn(() => {
       calls.push('gate');
-      return true;
+      return Promise.resolve(true);
     }),
   };
   const useCase = new GenerateNutritionPlanUseCase(
     nutritionRepository as never,
     petRepository as never,
-    explainer as never,
+    explainer,
     subscriptionRepository as never,
   );
 
@@ -93,9 +93,9 @@ describe('R12 (nutrition-ai-explainer #18): insert antes de la IA y update despu
 describe('R14 (nutrition-ai-explainer #18): sin entitlement no se llama a la IA', () => {
   it('keeps the inserted plan null when the pet is not tracked', async () => {
     const harness = createHarness();
-    harness.subscriptionRepository.isPetTracked.mockImplementation(async () => {
+    harness.subscriptionRepository.isPetTracked.mockImplementation(() => {
       harness.calls.push('gate');
-      return false;
+      return Promise.resolve(false);
     });
 
     const plan = await harness.useCase.execute('pet-1', now);
@@ -122,10 +122,10 @@ describe('R15 (nutrition-ai-explainer #18): hash hit con null reintenta sobre la
   it('enriches the existing null plan without inserting another row', async () => {
     const harness = createHarness();
     let gateCall = 0;
-    harness.subscriptionRepository.isPetTracked.mockImplementation(async () => {
+    harness.subscriptionRepository.isPetTracked.mockImplementation(() => {
       harness.calls.push('gate');
       gateCall += 1;
-      return gateCall > 1;
+      return Promise.resolve(gateCall > 1);
     });
 
     const first = await harness.useCase.execute('pet-1', now);
@@ -154,7 +154,9 @@ describe('R16 (nutrition-ai-explainer #18): hash hit con explicacion no re-llama
     expect(second.id).toBe(first.id);
     expect(second.aiExplanation).toBe('Generated explanation');
     expect(harness.nutritionRepository.insertPlan).toHaveBeenCalledTimes(1);
-    expect(harness.subscriptionRepository.isPetTracked).toHaveBeenCalledTimes(1);
+    expect(harness.subscriptionRepository.isPetTracked).toHaveBeenCalledTimes(
+      1,
+    );
     expect(harness.explainer.explain).toHaveBeenCalledTimes(1);
     expect(harness.nutritionRepository.setAiExplanation).toHaveBeenCalledTimes(
       1,
