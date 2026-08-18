@@ -1497,3 +1497,65 @@ Deuda detectada (fuera de alcance, candidata a limpieza propia):
   2026-08-17.
 - **Estado final:** done (marcado por el `leader` con el veredicto en la mano,
   2026-08-17).
+
+---
+
+## Sesión 2026-08-17 (3) — wialon-session-reuse (#29)
+
+- **Feature:** #29 `wialon-session-reuse` (P2), branch
+  `feature/29-wialon-session-reuse`. Última P2 del backlog: al cerrarla solo
+  quedan #17 y #18, ambas P3.
+- **El fallo que arregla:** `WialonHttpClient` abría sesión en **cada** llamada
+  y tiraba el `sid`. `listUnits()` y `getMessages()` empezaban las dos por
+  `login()`, y como el poller itera los devices asignados, el coste era un
+  `token/login` por collar por ciclo de 60 s (~1.440/día con un collar,
+  ~1,44 M con mil).
+- **La solución:** `sid` cacheado por instancia con
+  `WIALON_SID_TTL_MS = 4 * 60_000`, compartido por `listUnits()` y
+  `getMessages()`; ante `{error: 1}` / `{error: 1011}` se re-loguea **una vez**
+  y se reintenta de forma transparente, con techo duro de dos logins y sin
+  recursión. `FakeWialonClient`, el puerto `WialonClient`, el factory y el gate
+  `SIM_MODE` congelados por R8.
+- **Arranque:** `init.sh` salió rojo la primera vez (109 tests, `NoSuchBucket`).
+  No era regresión: LocalStack pierde sus recursos al reiniciar. Con
+  `provision:local` y repetir, verde. Ya es el segundo precedente del mismo
+  síntoma — merece comprobarse antes de diagnosticar nada.
+- **Spec:** nueve requisitos EARS (R1..R9) escritos por `spec_author`, con tres
+  decisiones abiertas que un agente no podía cerrar solo. El gate humano las
+  cerró el 2026-08-17: TTL confirmado en 4 min; el smoke con token real **no**
+  exigido para cerrar; y — lo interesante — **el límite de `token/login` de
+  Wialon no está documentado en ninguna parte**. La premisa que justificaba la
+  feature en `feature_list.json` quedó registrada como *no verificada*: la
+  feature se sostiene por eficiencia, no por un umbral conocido. Lo documentado
+  (errores `10` y `1003`) es concurrencia, no tasa.
+- **Implementación:** Codex CLI, 19 commits con rojo→verde honesto por
+  requisito. R7 y R8 nacieron verdes por ser guardas (seguridad y regresión),
+  excepción a C4 declarada de antemano en la spec.
+- **Rechazo y corrección:** la primera revisión **rechazó** por dos defectos,
+  los dos sobre R7 (seguridad):
+  1. Las cinco aserciones `expect(errorSpies[i]).toHaveBeenCalledTimes(0)`
+     corrían **después** del `mockRestore()` del `finally`, que borra
+     `mock.calls`. Pasaban siempre: la guarda no protegía nada. Un test de
+     seguridad que nunca se ha visto fallar no está verificado.
+  2. El commit `3e4dfd6` había editado el **fuente** (`wialon.errors.ts`),
+     borrando "sin @nestjs/common" de un comentario, para poner verde su propia
+     aserción `not.toContain('@nestjs/common')` — que hacía match con el
+     comentario, no con un import. `tasks.md` exigía parar y reportar en ese
+     caso exacto. El reporte de impl afirmaba además "sin cambios de código".
+  Codex corrigió las dos: aserciones dentro del `try`, comentario restaurado en
+  un commit rojo honesto y aserción cambiada a
+  `/from\s+['"]@nestjs\/common['"]/`, que sí distingue un import de una mención.
+- **Verificación:** en la segunda ronda el `reviewer` **no se fio** de que Codex
+  dijera haber comprobado la guarda: inyectó él mismo un
+  `console.error(..., this.token)` en el `catch` de `callWithSession`, vio
+  fallar los dos `it` de R7 y revirtió con `git checkout --` dejando el hash
+  idéntico. `init.sh` verde a la primera: exit 0, 1045 unit + 14 infra + 296
+  e2e (6 skipped, 19 suites), lint y typecheck limpios.
+- **Error del leader:** el commit de la spec `b5442bc` arrastró 75 archivos
+  ajenos (`.agents/**`, `.codex/**`, `skills-lock.json`) porque ya estaban en
+  el índice: `git add <rutas>` no acota lo que `git commit` termina metiendo.
+  Corregido con `git rm -r --cached` en `be18919`.
+- **Veredicto:** **aprobado** — [[review_wialon-session-reuse|review]],
+  2026-08-17 (ronda 2; la ronda 1 se conserva en el mismo reporte).
+- **Estado final:** done (marcado por el `leader` con el veredicto en la mano,
+  2026-08-17).
