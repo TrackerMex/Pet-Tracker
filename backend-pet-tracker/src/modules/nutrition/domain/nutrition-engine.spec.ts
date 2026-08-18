@@ -30,7 +30,20 @@ import {
   RER_COEFFICIENT,
   RER_EXPONENT,
 } from './nutrition.constants';
-import { computePlan } from './nutrition-engine';
+import { computePlan, NutritionEngineInput } from './nutrition-engine';
+
+const BASE_INPUT: NutritionEngineInput = {
+  species: 'dog',
+  weightKg: 20,
+  targetWeightKg: null,
+  ageMonths: 60,
+  sterilized: true,
+  activityLevel: 'medium',
+  bodyCondition: null,
+  kcalPer100g: 350,
+  allergies: [],
+  diseases: [],
+};
 
 describe('R1 (nutrition-profile-engine #17): el motor es puro y sin literales', () => {
   it('expone computePlan y concentra todas las cifras y textos en constantes', () => {
@@ -104,5 +117,41 @@ describe('R1 (nutrition-profile-engine #17): el motor es puro y sin literales', 
     ]) {
       expect(source).not.toContain(forbidden);
     }
+  });
+});
+
+describe('R2 (nutrition-profile-engine #17): RER y peso base', () => {
+  it('calcula el RER sobre el peso actual en mantenimiento', () => {
+    expect(computePlan(BASE_INPUT).rerKcal).toBe(
+      Math.round(RER_COEFFICIENT * Math.pow(20, RER_EXPONENT)),
+    );
+  });
+
+  it('usa targetWeightKg solo para un adulto en perdida de peso', () => {
+    const result = computePlan({
+      ...BASE_INPUT,
+      weightKg: 30,
+      targetWeightKg: 25,
+      ageMonths: 72,
+      bodyCondition: 8,
+    });
+
+    expect(result.rerKcal).toBe(
+      Math.round(RER_COEFFICIENT * Math.pow(25, RER_EXPONENT)),
+    );
+  });
+
+  it('OV2 usa weightKg en crecimiento aunque BCS y target esten informados', () => {
+    const result = computePlan({
+      ...BASE_INPUT,
+      weightKg: 5,
+      targetWeightKg: 4,
+      ageMonths: 3,
+      bodyCondition: 8,
+    });
+
+    expect(result.rerKcal).toBe(
+      Math.round(RER_COEFFICIENT * Math.pow(5, RER_EXPONENT)),
+    );
   });
 });
