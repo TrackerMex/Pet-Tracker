@@ -1,8 +1,8 @@
-# Sesión activa
+# Sesion activa
 
-> Este archivo describe el estado de la sesión en curso.
-> Al cerrar la sesión, mueve este contenido a progress/history.md y deja solo esta plantilla.
+> Este archivo describe el estado de la sesion en curso.
+> Al cerrar la sesion, mueve este contenido a progress/history.md y deja solo esta plantilla.
 
 ---
 
-(sin sesión activa)
+(sin sesion activa)

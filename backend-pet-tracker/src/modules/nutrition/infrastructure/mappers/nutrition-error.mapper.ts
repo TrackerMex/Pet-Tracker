@@ -1,0 +1,47 @@
+import {
+  HttpStatus,
+  NotFoundException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
+import {
+  NutritionPlanNotFoundError,
+  NutritionProfileNotFoundError,
+  NutritionProfileRequiredError,
+  PetWeightRequiredError,
+} from '@/modules/nutrition/domain/errors/nutrition.errors';
+
+export function mapNutritionError(error: unknown): unknown {
+  if (error instanceof NutritionPlanNotFoundError) {
+    return new NotFoundException({
+      statusCode: HttpStatus.NOT_FOUND,
+      code: 'NUTRITION_PLAN_NOT_FOUND',
+      message: 'Nutrition plan not found',
+    });
+  }
+
+  if (error instanceof NutritionProfileNotFoundError) {
+    return new NotFoundException({
+      statusCode: HttpStatus.NOT_FOUND,
+      code: 'NUTRITION_PROFILE_NOT_FOUND',
+      message: 'Nutrition profile not found',
+    });
+  }
+
+  if (error instanceof NutritionProfileRequiredError) {
+    return new UnprocessableEntityException({
+      statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+      code: 'NUTRITION_PROFILE_REQUIRED',
+      message: 'Create a nutrition profile before generating a plan',
+    });
+  }
+
+  if (error instanceof PetWeightRequiredError) {
+    return new UnprocessableEntityException({
+      statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+      code: 'PET_WEIGHT_REQUIRED',
+      message: 'Register a current weight before generating a plan',
+    });
+  }
+
+  return error;
+}

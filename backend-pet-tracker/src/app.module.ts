@@ -13,6 +13,7 @@ import { DevicesModule } from './modules/devices/devices.module';
 import { GeofencesModule } from './modules/geofences/geofences.module';
 import { HealthModule } from './modules/health/health.module';
 import { MediaModule } from './modules/media/media.module';
+import { NutritionModule } from './modules/nutrition/nutrition.module';
 import { PetsModule } from './modules/pets/pets.module';
 import { PositionsModule } from './modules/positions/positions.module';
 import { RemindersModule } from './modules/reminders/reminders.module';
@@ -33,6 +34,7 @@ import { NotifierModule } from './workers/notifier/notifier.module';
     AuthModule,
     UsersModule,
     PetsModule,
+    NutritionModule,
     MediaModule,
     DevicesModule,
     GeofencesModule,
