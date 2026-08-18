@@ -45,6 +45,9 @@ ninguna IA, la corre el humano (`CLAUDE.md` §Excepciones).
   línea, en `backend-pet-tracker/test/health-vaccines.e2e-spec.ts`). Anotado
   aquí para no perderlo; no se toca en esta sesión — #18 es la feature activa y
   el working tree tiene un solo escritor.
+  **Decisión del humano (2026-08-18): no se abre entrada de backlog todavía; se
+  abre como bug solo si el fallo se repite.** Disparador guardado en la memoria
+  del proyecto para que sobreviva al cierre de sesión.
 - **Error de medición del leader, corregido**: la primera corrida se lanzó como
   `./init.sh | tail -40`, y en bash el exit code de una tubería es el del último
   comando (`tail`), no el de `init.sh`. El "exit 0" inicial no significaba nada.
