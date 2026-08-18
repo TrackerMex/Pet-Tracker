@@ -525,7 +525,7 @@
   {
     "id": 17,
     "name": "nutrition-profile-engine",
-    "status": "in_progress",
+    "status": "done",
     "priority": "P3",
     "description": "Plan 009 (paso 1-2): tablas nutrition_profiles y nutrition_plans; PUT/GET /v1/pets/:petId/nutrition-profile (kcalPer100g 80-600, obligatorio siempre: el gate humano del 2026-08-17 anula los defaults dry 350 / wet 100 del plan 009, que quedan como precarga de la UI); motor determinístico puro nutrition-engine.ts: RER = 70×peso^0.75 (target si BCS≥7), tabla de factores MER del plan (cachorro/joven/adulto×esterilizado×actividad), porción diaria (múltiplo de 5 g), comidas por edad, horarios 07:00-20:00, warnings (weight_loss_plan, underweight_vet, chronic_disease_vet, check_food_allergens, too_young_vet), objective. POST .../nutrition-plan/generate con inputs_hash idempotente (mismo hash → mismo plan); GET .../nutrition-plan. Sin IA todavía (ai_explanation null).",
     "acceptance_criteria": [

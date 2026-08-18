@@ -1559,3 +1559,56 @@ Deuda detectada (fuera de alcance, candidata a limpieza propia):
   2026-08-17 (ronda 2; la ronda 1 se conserva en el mismo reporte).
 - **Estado final:** done (marcado por el `leader` con el veredicto en la mano,
   2026-08-17).
+
+---
+
+## Sesion 2026-08-17/18 - nutrition-profile-engine (#17)
+
+- **Feature:** motor calorico determinista (`computePlan`: RER = 70 x peso^0.75,
+  tabla de factores MER, gramos a multiplo de 5, comidas y horarios por edad,
+  cinco warnings clinicos, `objective`), perfil nutricional 1:1 con la mascota e
+  historial de planes idempotente por `inputs_hash` (sha256 del input canonico).
+  Cuatro rutas bajo `PetAccessGuard`, sin muro de pago. Sin IA: `ai_explanation`
+  nace `NULL` para que #18 no necesite migracion propia.
+- **Spec:** [[specs/nutrition-profile-engine/requirements|spec]] - aprobada por
+  humano 2026-08-18, R1..R27.
+- **Acciones:** `explorer` (corrigio la premisa del encargo: `plans/009` si
+  existe y es la fuente normativa) -> `spec_author` -> dos rondas de gate humano
+  sobre las decisiones clinicas y de producto (OV1 `kcalPer100g` obligatorio sin
+  defaults, OV2 la edad gana a la perdida de peso, OV3 sin `PetTrackingGuard`;
+  mas P1 textos de warning, P2 `sterilized` null cuenta como entero, P3
+  `targetWeightKg` mayor que el peso se acepta) -> revision de la spec pedida
+  por el humano antes de aprobarla -> gate humano -> handoff a Codex CLI ->
+  implementacion -> `reviewer`.
+- **Revision de la spec antes del gate (leader):** aritmetica de los cinco casos
+  numericos verificada en `node`. Dos defectos corregidos: (1) R1 aseveraba por
+  `readFileSync` que `nutrition-engine.ts` no contiene las cifras de C-1..C-10,
+  mientras el paso (3) de su propia tarea pedia un JSDoc con esas mismas cifras
+  en ese archivo - el refactor habria puesto rojo el test del paso (1) del mismo
+  requisito; las cifras se movieron a `nutrition.constants.ts`. (2) R3 pedia "un
+  caso por fila de C-2 (10 filas)" sobre una tabla de 8 filas: son 10 casos = 5
+  filas clinicas x 2 especies.
+- **Resultado:** `./init.sh` verde en la corrida propia del `reviewer` (exit 0,
+  Postgres publicando puerto, e2e no saltados). 83 commits de Codex con patron
+  test-primero rojo->verde por cada uno de los 27 requisitos; migracion nueva
+  `0013_wet_may_parker.sql`. El `reviewer` verifico **por mutacion** que el par
+  ancla de R14 discrimina: el perro de 305 g muere con `floor`, el gato de 60 g
+  con `ceil` y el caso de R4 con el MER sin redondear. Las ocho guardas clinicas
+  conservan su asercion anti-vacio; el commit final `b0ef38f` ("satisfy quality
+  gates", 5 archivos de test tocados despues de estar verdes) resulto ser solo
+  Prettier y tipos, sin aflojar ninguna asercion.
+- **Codex no cerro la feature:** el handoff se lo prohibia explicitamente tras lo
+  ocurrido en #29, y lo respeto - `feature_list.json`, `STATUS.md` y los archivos
+  de cierre llegaron intactos al `reviewer`.
+- **Dos defectos menores corregidos por el leader antes del PR:** la tabla del
+  catalogo de `docs/data-model.md` habia quedado partida en dos por un parrafo
+  intercalado entre `nutrition_plans` y `push_tokens` (las tres filas siguientes
+  renderizaban como texto suelto), y la fila R27 de `traceability.md` citaba mal
+  el mensaje de `45e9f24` (el hash era correcto).
+- **Commits:** `c04da20` spec + informe del explorer, `1475339` STATUS, `b506a22`
+  y `b1e0e5d` correcciones de la spec, `ae6c6aa` aprobacion + handoff,
+  `f255ca6..1a6544d` los 83 de Codex, mas el commit de cierre de sesion.
+- **Veredicto:** **aprobado** - [[review_nutrition-profile-engine|review]],
+  2026-08-18.
+- **Estado final:** done (marcado por el `leader` con el veredicto en la mano,
+  2026-08-18). PR abierto; el merge lo hace el humano.

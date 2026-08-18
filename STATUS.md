@@ -1,11 +1,10 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-08-17
-**Features completadas**: 28/30 (`feature_list.json`)
-**En progreso**: ninguna. #17 `nutrition-profile-engine` está `spec_ready`,
-parada en el gate humano de aprobación de la spec.
-**Pendientes**: 2, ambas **P3** — #17 `nutrition-profile-engine`, #18
-`nutrition-ai-explainer`.
+**Última actualización**: 2026-08-18
+**Features completadas**: 29/30 (`feature_list.json`)
+**En progreso**: ninguna. #17 `nutrition-profile-engine` cerró con veredicto
+aprobado del `reviewer`; su PR está abierto a la espera del merge humano.
+**Pendientes**: 1, **P3** — #18 `nutrition-ai-explainer`.
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
 desde 2026-08-10. Hay recursos vivos en la cuenta, aunque hoy sin coste.
@@ -727,6 +726,35 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-08-18** — #17 `nutrition-profile-engine` **cerrada** (29/30). Ciclo
+  completo en un día: revisión de la spec antes de aprobarla, gate humano,
+  handoff a Codex CLI, implementación y revisión aprobada.
+  - **Revisión previa a la aprobación**: la aritmética de los cinco casos
+    numéricos de la spec se verificó en `node` (los cuatro anclas de R14 y el
+    discriminante de R4 dan exactamente los valores escritos, ruido IEEE-754
+    incluido). Aparecieron dos defectos: R1 aseveraba por `readFileSync` que
+    `nutrition-engine.ts` no contiene las cifras clínicas, mientras el paso (3)
+    de su propia tarea pedía un JSDoc con esas mismas cifras en ese archivo —
+    el refactor habría puesto rojo el test del paso (1) del mismo requisito; y
+    R3 pedía "un caso por fila de C-2 (10 filas)" sobre una tabla de 8. Ambos
+    corregidos antes del gate (`b506a22`, `b1e0e5d`).
+  - **Implementación (Codex CLI)**: 83 commits, patrón test-primero rojo→verde
+    por cada uno de los 27 requisitos, migración nueva `0013_wet_may_parker.sql`.
+    Esta vez **no cerró la feature él mismo** — el handoff se lo prohibía
+    explícitamente tras lo ocurrido en #29.
+  - **Revisión (`reviewer`)**: **aprobado**. `./init.sh` verde en corrida propia
+    con Postgres publicando puerto y e2e no saltados. Verificó por mutación que
+    el par ancla de R14 discrimina de verdad: el perro de 305 g muere con
+    `floor`, el gato de 60 g con `ceil` y el caso de R4 con el MER sin redondear.
+    Las ocho guardas clínicas conservan su aserción anti-vacío; el commit final
+    `b0ef38f` resultó ser solo Prettier y tipos, sin aflojar ninguna aserción.
+    Dos defectos menores de documentación corregidos por el `leader` antes del
+    PR: la tabla de `docs/data-model.md` había quedado partida por un párrafo
+    intercalado, y la fila R27 de `traceability.md` citaba mal el mensaje de un
+    commit (el hash era correcto).
+  - Detalle en `progress/history.md`, `progress/impl_nutrition-profile-engine.md`
+    y `progress/review_nutrition-profile-engine.md`.
 
 - **2026-08-17 (5)** — Spec de `nutrition-profile-engine` (#17) escrita y
   detenida en el gate humano: `pending` -> `spec_ready`, sin tocar
