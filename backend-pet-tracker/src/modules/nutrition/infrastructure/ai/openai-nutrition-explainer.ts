@@ -40,31 +40,43 @@ export class OpenAiNutritionExplainer implements NutritionExplainer {
     result: NutritionPlanResult,
     ctx: NutritionExplainerContext,
   ): Promise<string | null> {
-    const client = await this.getClient();
-    const response = await client.create({
-      model: this.model,
-      messages: [
-        { role: 'system', content: NUTRITION_AI_SYSTEM_PROMPT },
-        { role: 'user', content: buildUserPrompt(input, result) },
-      ],
-      max_completion_tokens: NUTRITION_AI_MAX_OUTPUT_TOKENS,
-    });
+    try {
+      const client = await this.getClient();
+      const response = await client.create({
+        model: this.model,
+        messages: [
+          { role: 'system', content: NUTRITION_AI_SYSTEM_PROMPT },
+          { role: 'user', content: buildUserPrompt(input, result) },
+        ],
+        max_completion_tokens: NUTRITION_AI_MAX_OUTPUT_TOKENS,
+      });
 
-    const choice = response.choices[0];
-    const content = choice?.message.content?.trim();
+      const choice = response.choices[0];
+      const content = choice?.message.content?.trim();
 
-    if (!content || choice.finish_reason === 'length') {
+      if (!content || choice.finish_reason === 'length') {
+        this.logger.warn({
+          scope: NUTRITION_AI_SCOPE,
+          petId: ctx.petId,
+          planId: ctx.planId,
+          finishReason: choice?.finish_reason ?? null,
+          usage: response.usage ?? null,
+        });
+        return null;
+      }
+
+      return content;
+    } catch (error) {
       this.logger.warn({
         scope: NUTRITION_AI_SCOPE,
         petId: ctx.petId,
         planId: ctx.planId,
-        finishReason: choice?.finish_reason ?? null,
-        usage: response.usage ?? null,
+        finishReason: null,
+        usage: null,
+        errorName: error instanceof Error ? error.name : 'UnknownError',
       });
       return null;
     }
-
-    return content;
   }
 
   private async getClient(): Promise<OpenAiChatClient> {
