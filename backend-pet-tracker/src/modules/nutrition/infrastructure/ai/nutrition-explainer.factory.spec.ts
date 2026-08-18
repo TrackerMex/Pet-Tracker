@@ -43,3 +43,46 @@ function sourceFiles(directory: string): string[] {
     return entry.isDirectory() ? sourceFiles(path) : [path];
   });
 }
+
+
+describe('R5 (nutrition-ai-explainer #18): las cuatro condiciones del gate', () => {
+  const validConfig = {
+    OPENAI_ENABLED: 'true',
+    OPENAI_API_KEY: 'test-key',
+    OPENAI_MODEL: 'model-from-env',
+  };
+
+  function config(values: Record<string, string | undefined>): ConfigService {
+    return {
+      get: (key: string) => values[key],
+    } as ConfigService;
+  }
+
+  it.each([
+    ['test environment', 'test', validConfig],
+    ['missing enabled flag', 'development', { ...validConfig, OPENAI_ENABLED: undefined }],
+    ['disabled flag', 'development', { ...validConfig, OPENAI_ENABLED: 'false' }],
+    ['case-sensitive enabled flag', 'development', { ...validConfig, OPENAI_ENABLED: 'TRUE' }],
+    ['missing API key', 'development', { ...validConfig, OPENAI_API_KEY: undefined }],
+    ['empty API key', 'development', { ...validConfig, OPENAI_API_KEY: '' }],
+    ['blank API key', 'development', { ...validConfig, OPENAI_API_KEY: '   ' }],
+    ['pending API key', 'development', { ...validConfig, OPENAI_API_KEY: 'PENDING' }],
+    ['missing model', 'development', { ...validConfig, OPENAI_MODEL: undefined }],
+    ['empty model', 'development', { ...validConfig, OPENAI_MODEL: '' }],
+  ])('uses the null explainer for %s', (_case, nodeEnv, values) => {
+    expect(
+      createNutritionExplainer(config({ ...values, NODE_ENV: nodeEnv })),
+    ).toBeInstanceOf(
+      NullNutritionExplainer,
+    );
+  });
+
+  it('uses the real explainer only when every gate is valid', () => {
+    expect(
+      createNutritionExplainer(
+        config({ ...validConfig, NODE_ENV: 'development' }),
+      ),
+    ).toBeInstanceOf(OpenAiNutritionExplainer);
+  });
+});
+
