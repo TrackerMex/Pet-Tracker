@@ -337,3 +337,26 @@ describe('R8 (nutrition-profile-engine #17): warning weight_loss_plan', () => {
     expect(hasWarning(null)).toBe(false);
   });
 });
+
+describe('R9 (nutrition-profile-engine #17): warning underweight_vet', () => {
+  const hasWarning = (bodyCondition: number | null) =>
+    computePlan({ ...BASE_INPUT, bodyCondition }).warnings.some(
+      (warning) => warning.code === 'underweight_vet',
+    );
+
+  it('aparece en el umbral y por debajo con el texto aprobado', () => {
+    for (const bodyCondition of [3, 1]) {
+      expect(
+        computePlan({ ...BASE_INPUT, bodyCondition }).warnings,
+      ).toContainEqual({
+        code: 'underweight_vet',
+        message: NUTRITION_WARNING_MESSAGES.underweight_vet,
+      });
+    }
+  });
+
+  it('anti-vacio: no aparece con BCS normal o ausente', () => {
+    expect(hasWarning(5)).toBe(false);
+    expect(hasWarning(null)).toBe(false);
+  });
+});
