@@ -592,4 +592,28 @@ describe('Nutrition profile and plans (e2e)', () => {
       expect(latest.body.aiExplanation).toBeNull();
     });
   });
+
+  describe('R27 (nutrition-profile-engine #17): numeric llega al cliente como number', () => {
+    it('convierte kcalPer100g y targetWeightKg al leer el perfil', async () => {
+      const owner = await seedUser('r27');
+      const pet = await seedPet(owner);
+      await putProfile(owner, pet.id, {
+        activityLevel: 'medium',
+        targetWeightKg: 18.5,
+        foodType: 'dry',
+        kcalPer100g: 350,
+      }).expect(200);
+
+      const response = await api()
+        .get(`/v1/pets/${pet.id}/nutrition-profile`)
+        .set(auth(owner.token))
+        .expect(200);
+      expect(typeof response.body.kcalPer100g).toBe('number');
+      expect(typeof response.body.targetWeightKg).toBe('number');
+      expect(response.body).toMatchObject({
+        kcalPer100g: 350,
+        targetWeightKg: 18.5,
+      });
+    });
+  });
 });
