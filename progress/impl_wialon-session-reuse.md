@@ -23,6 +23,9 @@
 - 2026-08-17: `R7` verde (D1): mover assert de `errorSpies` antes de `finally` en `wialon-http.client.spec.ts` para que no quede inerte (commit `7f0873f`).
 - 2026-08-17: `R7`: verificación adicional por defecto de regresión: se inyectó temporalmente `console.error(this.token)` en `callWithSession` y el `it` de seguridad de `R7` pasó a fallar; luego se quitó ese cambio de código.
 - 2026-08-17: `R7`: se actualizaron `wialon-http.client.ts` para deduplicar import de errores y ajustar JSDoc a la forma final (`5ef90f8`).
+- 2026-08-17: `R7`: solo formato `eslint --fix` en
+  `wialon-http.client.ts` y `wialon-http.client.spec.ts` (sin cambios
+  funcionales) (`ddc87f0`).
 - 2026-08-17: `R8` verde (nace como guarda de regresión): test añadido en `wialon-http.client.spec.ts` (sin cambios de código en ese bloque) — commit `3e4dfd6` *(feat(wialon-session-reuse): add R7/R8 born-green guard specs)*.
 - 2026-08-17: `R9` rojo (`wialon-http.client.spec.ts`): assert anti-vacío/documentación en `docs/wialon-module.md` (commit `63c9b21`).
 - 2026-08-17: `R9` verde: documentación actualizada en `docs/wialon-module.md` con cacheo por instancia, `WIALON_SID_TTL_MS` y re-login ante `1`/`1011` (commit `a2b2e2b`).
