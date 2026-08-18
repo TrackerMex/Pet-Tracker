@@ -155,3 +155,84 @@ describe('R2 (nutrition-profile-engine #17): RER y peso base', () => {
     );
   });
 });
+
+describe('R3 (nutrition-profile-engine #17): tabla de factores MER y precedencia', () => {
+  const expectedMer = (weightKg: number, factor: number) =>
+    Math.round(
+      RER_COEFFICIENT * Math.pow(weightKg, RER_EXPONENT) * factor,
+    );
+
+  it.each<Array<[string, Partial<NutritionEngineInput>, number]>>([
+    ['cachorro perro', { species: 'dog', ageMonths: 3 }, 3],
+    ['cachorro gato', { species: 'cat', ageMonths: 3 }, 2.5],
+    ['joven perro', { species: 'dog', ageMonths: 6 }, 2],
+    ['joven gato', { species: 'cat', ageMonths: 6 }, 2.5],
+    [
+      'adulto perro esterilizado',
+      { species: 'dog', ageMonths: 24, sterilized: true },
+      1.6,
+    ],
+    [
+      'adulto gato esterilizado',
+      { species: 'cat', ageMonths: 24, sterilized: true },
+      1.2,
+    ],
+    [
+      'adulto perro entero',
+      { species: 'dog', ageMonths: 24, sterilized: false },
+      1.8,
+    ],
+    [
+      'adulto gato entero',
+      { species: 'cat', ageMonths: 24, sterilized: false },
+      1.4,
+    ],
+    [
+      'perdida de peso perro',
+      { species: 'dog', ageMonths: 24, bodyCondition: 8 },
+      1,
+    ],
+    [
+      'perdida de peso gato',
+      { species: 'cat', ageMonths: 24, bodyCondition: 8 },
+      0.8,
+    ],
+  ])('aplica el factor de %s', (_label, changes, factor) => {
+    const input = { ...BASE_INPUT, weightKg: 10, ...changes };
+    expect(computePlan(input).merKcal).toBe(expectedMer(10, factor));
+  });
+
+  it.each<Array<[string, Partial<NutritionEngineInput>, number]>>([
+    ['perro high', { species: 'dog', activityLevel: 'high' }, 1.8],
+    ['perro low', { species: 'dog', activityLevel: 'low' }, 1.4],
+    ['gato high', { species: 'cat', activityLevel: 'high' }, 1.3],
+    ['gato low', { species: 'cat', activityLevel: 'low' }, 1.1],
+  ])('aplica el modificador adulto %s', (_label, changes, factor) => {
+    const input = { ...BASE_INPUT, weightKg: 10, ...changes };
+    expect(computePlan(input).merKcal).toBe(expectedMer(10, factor));
+  });
+
+  it('no aplica actividad a crecimiento ni perdida de peso', () => {
+    for (const changes of [
+      { ageMonths: 3 },
+      { ageMonths: 24, bodyCondition: 8 },
+    ]) {
+      const medium = computePlan({ ...BASE_INPUT, ...changes });
+      const high = computePlan({
+        ...BASE_INPUT,
+        ...changes,
+        activityLevel: 'high',
+      });
+      expect(high.merKcal).toBe(medium.merKcal);
+    }
+  });
+
+  it('trata sterilized null como entero', () => {
+    const result = computePlan({
+      ...BASE_INPUT,
+      weightKg: 10,
+      sterilized: null as unknown as boolean,
+    });
+    expect(result.merKcal).toBe(expectedMer(10, 1.8));
+  });
+});
