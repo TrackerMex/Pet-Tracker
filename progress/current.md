@@ -95,3 +95,18 @@ en el repo, es una decisión aparte.
 
 Un solo escritor sobre el working tree: Claude solo toca `docs/`, `specs/`,
 `progress/` y `feature_list.json`. `backend-pet-tracker/` es de Codex.
+
+### Corrección tras revisión 1 — lista para nueva revisión (2026-08-17)
+
+- D1 corregido: las cinco aserciones de `console.*` corren antes de
+  `mockRestore()`. Se comprobó la guarda inyectando temporalmente
+  `console.error(this.token)` en el re-login: R7 falló y el cambio temporal se
+  retiró.
+- D2 corregido con rojo honesto: comentario original restaurado en
+  `wialon.errors.ts`; después, la aserción pasó a detectar solo imports reales
+  de `@nestjs/common`.
+- JSDoc e import duplicado corregidos; formato de `eslint --fix` aislado en
+  `ddc87f0`.
+- `./init.sh` final con Git Bash: exit 0; 139 suites unit backend, 2 infra,
+  11 del harness y 19 e2e pasadas (2 e2e omitidas).
+- Feature sigue `in_progress`; siguiente paso: nueva ejecución del `reviewer`.

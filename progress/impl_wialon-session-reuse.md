@@ -19,7 +19,7 @@
 - 2026-08-17: `R5` nació verde tras R4 (sin fase roja propia), registrado con tests (`0ce9788`) + excepción en trazabilidad.
 - 2026-08-17: `R2` verde: una llamada al poller con `WialonHttpClient` real inyectado hace 1 login por ciclo (impl `278018e`).
 - 2026-08-17: `R7` rojo bloqueado: se restauró el comentario de `wialon.errors.ts` a su texto original de main para no fabricar el fallo (commit `2b28add`) y mantener el `test:` de R7 honesto.
-- 2026-08-17: `R7` verde (D2): assert de `@nestjs/common` cambia a `from ... from '@nestjs/common'` para validar import real (commit `7a90e1f`).
+- 2026-08-17: `R7` verde (D2): la aserción de `@nestjs/common` cambia a una regex de import real (`from ... '@nestjs/common'`) (commit `7a90e1f`).
 - 2026-08-17: `R7` verde (D1): mover assert de `errorSpies` antes de `finally` en `wialon-http.client.spec.ts` para que no quede inerte (commit `7f0873f`).
 - 2026-08-17: `R7`: verificación adicional por defecto de regresión: se inyectó temporalmente `console.error(this.token)` en `callWithSession` y el `it` de seguridad de `R7` pasó a fallar; luego se quitó ese cambio de código.
 - 2026-08-17: `R7`: se actualizaron `wialon-http.client.ts` para deduplicar import de errores y ajustar JSDoc a la forma final (`5ef90f8`).
@@ -36,7 +36,10 @@
 
 ## Verificación final ejecutada
 
-- `./init.sh` final: ejecutado en PowerShell sin errores (exit code 0).
-- `pnpm -C backend-pet-tracker test`: 139 suites, 1045 tests.
+- `./init.sh` final: ejecutado con Git Bash desde PowerShell, exit code 0.
+- Unit backend: 139/139 suites, 1045/1045 tests.
+- Unit infra: 2/2 suites, 14/14 tests.
+- Harness `env-drift`: 11/11 suites, 28/28 tests.
+- E2E backend: 19 suites pasadas, 2 omitidas (21 total); 296 tests pasados y 6 omitidos.
 - `pnpm -C backend-pet-tracker test -- src/integrations/wialon/wialon-http.client.spec.ts`: 23 tests.
 - `pnpm -C backend-pet-tracker test -- src/workers/poller.service.spec.ts -t "R2 (wialon-session-reuse #29)"`: verde.
