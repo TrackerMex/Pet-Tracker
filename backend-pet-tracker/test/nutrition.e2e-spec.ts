@@ -387,4 +387,47 @@ describe('Nutrition profile and plans (e2e)', () => {
       );
     });
   });
+
+  describe('R23 (nutrition-profile-engine #17): generate sin peso responde 422 PET_WEIGHT_REQUIRED', () => {
+    it('responde 422 sin insertar cuando existe perfil pero no peso', async () => {
+      const owner = await seedUser('r23-missing-weight');
+      const pet = await seedPet(owner);
+      await putProfile(owner, pet.id, {
+        activityLevel: 'medium',
+        foodType: 'dry',
+        kcalPer100g: 350,
+      }).expect(200);
+
+      const response = await generatePlan(owner, pet.id).expect(422);
+      expect(response.body).toMatchObject({
+        statusCode: 422,
+        code: 'PET_WEIGHT_REQUIRED',
+      });
+      expect(await planCount(pet.id)).toBe(0);
+    });
+
+    it('evalua perfil antes que peso cuando faltan ambos', async () => {
+      const owner = await seedUser('r23-precedence');
+      const pet = await seedPet(owner);
+
+      const response = await generatePlan(owner, pet.id).expect(422);
+      expect(response.body).toMatchObject({
+        code: 'NUTRITION_PROFILE_REQUIRED',
+      });
+    });
+
+    it('anti-vacio: con peso el codigo no aparece', async () => {
+      const owner = await seedUser('r23-present');
+      const pet = await seedPet(owner);
+      await putProfile(owner, pet.id, {
+        activityLevel: 'medium',
+        foodType: 'dry',
+        kcalPer100g: 350,
+      }).expect(200);
+      await postWeight(owner, pet.id, 20).expect(201);
+
+      const response = await generatePlan(owner, pet.id).expect(200);
+      expect(JSON.stringify(response.body)).not.toContain('PET_WEIGHT_REQUIRED');
+    });
+  });
 });
