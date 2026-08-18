@@ -284,3 +284,15 @@ describe('R5 (nutrition-profile-engine #17): comidas por dia', () => {
     );
   });
 });
+
+describe('R6 (nutrition-profile-engine #17): horarios por numero de comidas', () => {
+  it.each<Array<[number, Partial<NutritionEngineInput>, string[]]>>([
+    [2, { ageMonths: 24 }, ['07:30', '19:30']],
+    [3, { ageMonths: 6 }, ['07:30', '14:00', '19:30']],
+    [4, { ageMonths: 3 }, ['07:00', '11:00', '15:00', '19:00']],
+  ])('devuelve la tabla fija para %i comidas', (_count, changes, expected) => {
+    const result = computePlan({ ...BASE_INPUT, ...changes });
+    expect(result.mealTimes).toEqual(expected);
+    expect(result.mealTimes).toHaveLength(result.mealsPerDay);
+  });
+});
