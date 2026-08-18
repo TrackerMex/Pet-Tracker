@@ -3,6 +3,8 @@ export const NUTRITION_AI_SYSTEM_PROMPT =
   'Eres el asistente de nutrición de Pet Tracker. Explica planes de alimentación de mascotas en español sencillo y cálido. Nunca des diagnósticos, nunca contradigas al veterinario, incluye siempre que es orientativo. Máximo 180 palabras.';
 
 export const NUTRITION_AI_SCOPE = 'nutrition-ai';
+export const NUTRITION_AI_MAX_LIST_ITEMS = 20;
+export const NUTRITION_AI_MAX_ITEM_CHARS = 100;
 
 export function buildUserPrompt(
   input: NutritionEngineInput,
@@ -18,8 +20,8 @@ export function buildUserPrompt(
       activityLevel: input.activityLevel,
       bodyCondition: input.bodyCondition,
       kcalPer100g: input.kcalPer100g,
-      allergies: input.allergies,
-      diseases: input.diseases,
+      allergies: boundedList(input.allergies),
+      diseases: boundedList(input.diseases),
     },
     result: {
       rerKcal: result.rerKcal,
@@ -31,6 +33,12 @@ export function buildUserPrompt(
       warnings: result.warnings,
     },
   });
+}
+
+function boundedList(values: string[]): string[] {
+  return values
+    .slice(0, NUTRITION_AI_MAX_LIST_ITEMS)
+    .map((value) => value.slice(0, NUTRITION_AI_MAX_ITEM_CHARS));
 }
 import type {
   NutritionEngineInput,
