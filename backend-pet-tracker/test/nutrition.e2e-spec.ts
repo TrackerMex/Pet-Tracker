@@ -217,4 +217,41 @@ describe('Nutrition profile and plans (e2e)', () => {
       });
     });
   });
+
+  describe('R18 (nutrition-profile-engine #17): validacion del DTO sin defaults de kcalPer100g', () => {
+    const validBody = {
+      activityLevel: 'medium',
+      foodType: 'dry',
+      kcalPer100g: 350,
+    };
+
+    it.each<Array<[string, Record<string, unknown>]>>([
+      ['kcal 900', { ...validBody, kcalPer100g: 900 }],
+      ['kcal 79', { ...validBody, kcalPer100g: 79 }],
+      [
+        'dry sin kcal',
+        { activityLevel: 'medium', foodType: 'dry' },
+      ],
+      ['actividad invalida', { ...validBody, activityLevel: 'extreme' }],
+      ['clave desconocida', { ...validBody, extra: true }],
+    ])('rechaza %s con 400 y no escribe fila', async (label, body) => {
+      const owner = await seedUser(`r18-${label}`);
+      const pet = await seedPet(owner);
+
+      const response = await putProfile(owner, pet.id, body).expect(400);
+      expect(response.body).toMatchObject({
+        statusCode: 400,
+        message: 'Validation failed',
+      });
+      expect(Array.isArray((response.body as { errors: unknown[] }).errors)).toBe(
+        true,
+      );
+      expect(
+        await db
+          .select()
+          .from(nutritionProfiles)
+          .where(eq(nutritionProfiles.petId, pet.id)),
+      ).toEqual([]);
+    });
+  });
 });
