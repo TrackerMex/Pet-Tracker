@@ -78,10 +78,9 @@ export class WialonHttpClient implements WialonClient {
   ) {}
 
   async listUnits(): Promise<WialonUnit[]> {
-    const response = await this.callWithSession<{ items?: { id: number; nm: string }[] }>(
-      'core/search_items',
-      SEARCH_UNITS_PARAMS,
-    );
+    const response = await this.callWithSession<{
+      items?: { id: number; nm: string }[];
+    }>('core/search_items', SEARCH_UNITS_PARAMS);
 
     return (response.items ?? []).map((item) => ({
       unitId: String(item.id),

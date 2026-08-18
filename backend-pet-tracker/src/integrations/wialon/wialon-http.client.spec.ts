@@ -235,11 +235,7 @@ describe('R3 (wialon-session-reuse #29): el sid caducado fuerza un login nuevo',
       loadIntervalFixture,
       loadIntervalFixture,
     ]);
-    const client = new WialonHttpClient(
-      BASE_URL,
-      'real-token',
-      fetchFn,
-    );
+    const client = new WialonHttpClient(BASE_URL, 'real-token', fetchFn);
 
     await client.getMessages('900001', 1_754_049_600_000, 1_754_049_690_000);
     jest.advanceTimersByTime(WIALON_SID_TTL_MS - 1);
@@ -262,11 +258,7 @@ describe('R3 (wialon-session-reuse #29): el sid caducado fuerza un login nuevo',
       LOGIN_OK_2,
       loadIntervalFixture,
     ]);
-    const client = new WialonHttpClient(
-      BASE_URL,
-      'real-token',
-      fetchFn,
-    );
+    const client = new WialonHttpClient(BASE_URL, 'real-token', fetchFn);
 
     await client.getMessages('900001', 1_754_049_600_000, 1_754_049_690_000);
     jest.advanceTimersByTime(WIALON_SID_TTL_MS);
@@ -290,11 +282,7 @@ describe('R3 (wialon-session-reuse #29): el sid caducado fuerza un login nuevo',
       loadIntervalFixture,
       loadIntervalFixture,
     ]);
-    const client = new WialonHttpClient(
-      BASE_URL,
-      'real-token',
-      fetchFn,
-    );
+    const client = new WialonHttpClient(BASE_URL, 'real-token', fetchFn);
 
     await client.getMessages('900001', 1_754_049_600_000, 1_754_049_690_000);
     jest.advanceTimersByTime(WIALON_SID_TTL_MS * 3);
@@ -325,9 +313,15 @@ describe('R4 (wialon-session-reuse #29): una sesión inválida se recupera con u
     ]);
     const client = new WialonHttpClient(BASE_URL, 'real-token', fetchFn);
 
-    const positions = await client.getMessages('900001', 1_754_049_600_000, 1_754_049_690_000);
+    const positions = await client.getMessages(
+      '900001',
+      1_754_049_600_000,
+      1_754_049_690_000,
+    );
 
-    const messageCalls = calls.filter((call) => call.svc === 'messages/load_interval');
+    const messageCalls = calls.filter(
+      (call) => call.svc === 'messages/load_interval',
+    );
     const loginCalls = calls.filter((call) => call.svc === 'token/login');
     expect(positions).toHaveLength(3);
     expect(loginCalls).toHaveLength(2);
@@ -347,9 +341,15 @@ describe('R4 (wialon-session-reuse #29): una sesión inválida se recupera con u
     ]);
     const client = new WialonHttpClient(BASE_URL, 'real-token', fetchFn);
 
-    const positions = await client.getMessages('900001', 1_754_049_600_000, 1_754_049_690_000);
+    const positions = await client.getMessages(
+      '900001',
+      1_754_049_600_000,
+      1_754_049_690_000,
+    );
 
-    const messageCalls = calls.filter((call) => call.svc === 'messages/load_interval');
+    const messageCalls = calls.filter(
+      (call) => call.svc === 'messages/load_interval',
+    );
     const loginCalls = calls.filter((call) => call.svc === 'token/login');
     expect(positions).toHaveLength(3);
     expect(loginCalls).toHaveLength(2);
@@ -401,9 +401,9 @@ describe('R5 (wialon-session-reuse #29): el segundo fallo se propaga sin bucle y
     });
 
     expect(calls.filter((call) => call.svc === 'token/login')).toHaveLength(1);
-    expect(calls.filter((call) => call.svc === 'messages/load_interval')).toHaveLength(
-      1,
-    );
+    expect(
+      calls.filter((call) => call.svc === 'messages/load_interval'),
+    ).toHaveLength(1);
     expect(calls).toHaveLength(2);
   });
 
@@ -443,7 +443,9 @@ describe('R5 (wialon-session-reuse #29): el segundo fallo se propaga sin bucle y
     });
     expect(calls).toHaveLength(1);
     expect(calls.filter((call) => call.svc === 'token/login')).toHaveLength(1);
-    expect(calls.filter((call) => call.svc === 'messages/load_interval')).toHaveLength(0);
+    expect(
+      calls.filter((call) => call.svc === 'messages/load_interval'),
+    ).toHaveLength(0);
   });
 });
 
@@ -492,7 +494,11 @@ describe('R7 (wialon-session-reuse #29): el token no aparece en logs ni en error
         fetchFnRetryFailure,
       );
       try {
-        await clientC.getMessages('900001', 1_754_049_800_000, 1_754_049_890_000);
+        await clientC.getMessages(
+          '900001',
+          1_754_049_800_000,
+          1_754_049_890_000,
+        );
       } catch (error) {
         failureErrors.push(error);
       }
@@ -511,7 +517,11 @@ describe('R7 (wialon-session-reuse #29): el token no aparece en logs ni en error
         fetchFnTransport,
       );
       try {
-        await clientD.getMessages('900001', 1_754_049_900_000, 1_754_049_990_000);
+        await clientD.getMessages(
+          '900001',
+          1_754_049_900_000,
+          1_754_049_990_000,
+        );
       } catch (error) {
         failureErrors.push(error);
       }
