@@ -9,7 +9,7 @@ function createHarness() {
     petId: 'pet-1',
     foodType: 'dry',
     kcalPer100g: 350,
-    activityLevel: 'moderate',
+    activityLevel: 'medium',
     bodyCondition: 5,
     targetWeightKg: null,
     allergies: [],
@@ -74,7 +74,7 @@ describe('R12 (nutrition-ai-explainer #18): insert antes de la IA y update despu
   it('persists first and passes the persisted identifiers only as log context', async () => {
     const harness = createHarness();
 
-    const plan = await harness.useCase.execute('pet-1', now);
+    const plan = await harness.useCase.execute('pet-1');
 
     expect(harness.calls).toEqual(['insert', 'gate', 'explain', 'update']);
     expect(harness.explainer.explain).toHaveBeenCalledWith(
@@ -98,7 +98,7 @@ describe('R14 (nutrition-ai-explainer #18): sin entitlement no se llama a la IA'
       return Promise.resolve(false);
     });
 
-    const plan = await harness.useCase.execute('pet-1', now);
+    const plan = await harness.useCase.execute('pet-1');
 
     expect(harness.subscriptionRepository.isPetTracked).toHaveBeenCalledWith(
       'pet-1',
@@ -111,7 +111,7 @@ describe('R14 (nutrition-ai-explainer #18): sin entitlement no se llama a la IA'
   it('calls the explainer and returns non-empty text when the pet is tracked', async () => {
     const harness = createHarness();
 
-    const plan = await harness.useCase.execute('pet-1', now);
+    const plan = await harness.useCase.execute('pet-1');
 
     expect(harness.explainer.explain).toHaveBeenCalledTimes(1);
     expect(plan.aiExplanation).toBe('Generated explanation');
@@ -128,8 +128,8 @@ describe('R15 (nutrition-ai-explainer #18): hash hit con null reintenta sobre la
       return Promise.resolve(gateCall > 1);
     });
 
-    const first = await harness.useCase.execute('pet-1', now);
-    const second = await harness.useCase.execute('pet-1', now);
+    const first = await harness.useCase.execute('pet-1');
+    const second = await harness.useCase.execute('pet-1');
 
     expect(first.aiExplanation).toBeNull();
     expect(second.id).toBe(first.id);
@@ -147,8 +147,8 @@ describe('R16 (nutrition-ai-explainer #18): hash hit con explicacion no re-llama
   it('returns the enriched row without another entitlement or provider call', async () => {
     const harness = createHarness();
 
-    const first = await harness.useCase.execute('pet-1', now);
-    const second = await harness.useCase.execute('pet-1', now);
+    const first = await harness.useCase.execute('pet-1');
+    const second = await harness.useCase.execute('pet-1');
 
     expect(first.aiExplanation).toBe('Generated explanation');
     expect(second.id).toBe(first.id);

@@ -19,9 +19,9 @@ const input = {
   targetWeightKg: null,
   ageMonths: 24,
   sterilized: true,
-  activityLevel: 'moderate',
+  activityLevel: 'medium',
   bodyCondition: 5,
-  hasChronicDisease: false,
+  kcalPer100g: 350,
   allergies: [],
   diseases: [],
 } as NutritionEngineInput;
@@ -31,8 +31,7 @@ const result = {
   merKcal: 1059,
   dailyGrams: 305,
   mealsPerDay: 2,
-  gramsPerMeal: 152.5,
-  schedule: ['07:30', '19:30'],
+  mealTimes: ['07:30', '19:30'],
   objective: 'maintenance',
   warnings: [],
 } as NutritionPlanResult;

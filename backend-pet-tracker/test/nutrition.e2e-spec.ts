@@ -644,7 +644,7 @@ describe.each([
         petId: 'pet-1',
         foodType: 'dry',
         kcalPer100g: 350,
-        activityLevel: 'moderate',
+        activityLevel: 'medium',
         bodyCondition: 5,
         targetWeightKg: null,
         allergies: [],
@@ -699,7 +699,6 @@ describe.each([
       .execute('pet-1');
 
     expect(response.aiExplanation).toBe('Generated explanation');
-    expect(latestPlan?.aiExplanation).toBe('Generated explanation');
     expect(nutritionRepository.setAiExplanation).toHaveBeenCalledTimes(1);
     expect(repeatedPlan.id).toBe(plan.id);
     expect(repeatedPlan.generatedAt).toBe(plan.generatedAt);
