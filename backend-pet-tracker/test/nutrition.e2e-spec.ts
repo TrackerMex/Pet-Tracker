@@ -18,6 +18,7 @@ import { TOKEN_SERVICE } from '@/modules/auth/domain/ports/token-service';
 import type { TokenService } from '@/modules/auth/domain/ports/token-service';
 import { GenerateNutritionPlanUseCase } from '@/modules/nutrition/application/use-cases/generate-nutrition-plan.use-case';
 import { NutritionPlan } from '@/modules/nutrition/domain/entities/nutrition-plan.entity';
+import { NUTRITION_EXPLAINER } from '@/modules/nutrition/domain/ports/nutrition-explainer';
 import { NUTRITION_REPOSITORY } from '@/modules/nutrition/domain/repositories/nutrition.repository';
 import { toNutritionPlanResponse } from '@/modules/nutrition/infrastructure/mappers/nutrition.mapper';
 import { PET_REPOSITORY } from '@/modules/pets/domain/repositories/pet.repository';
@@ -662,6 +663,7 @@ describe('R18 (nutrition-ai-explainer #18): la explicacion llega de punta a punt
         return latestPlan;
       }),
     };
+    const explain = jest.fn().mockResolvedValue('Generated explanation');
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
     })
@@ -679,6 +681,8 @@ describe('R18 (nutrition-ai-explainer #18): la explicacion llega de punta a punt
       })
       .overrideProvider(SUBSCRIPTION_REPOSITORY)
       .useValue({ isPetTracked: jest.fn().mockResolvedValue(true) })
+      .overrideProvider(NUTRITION_EXPLAINER)
+      .useValue({ explain })
       .compile();
 
     const plan = await moduleRef.get(GenerateNutritionPlanUseCase).execute('pet-1');
@@ -687,6 +691,11 @@ describe('R18 (nutrition-ai-explainer #18): la explicacion llega de punta a punt
     expect(response.aiExplanation).toBe('Generated explanation');
     expect(latestPlan?.aiExplanation).toBe('Generated explanation');
     expect(nutritionRepository.setAiExplanation).toHaveBeenCalledTimes(1);
+    expect(explain).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.any(Object),
+      { petId: 'pet-1', planId: 'plan-1' },
+    );
 
     await moduleRef.close();
   });
