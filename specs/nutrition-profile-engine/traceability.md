@@ -21,7 +21,7 @@ tags: [harness, spec]
 | R3 | `src/modules/nutrition/domain/nutrition-engine.spec.ts::R3 (nutrition-profile-engine #17): tabla de factores MER y precedencia` | rojo: `b9ab034 test(nutrition-profile-engine): cover MER factors and precedence (R3)`; verde: `ac74daa feat(nutrition-profile-engine): apply MER factor precedence (R3)` |
 | R4 | `src/modules/nutrition/domain/nutrition-engine.spec.ts::R4 (nutrition-profile-engine #17): redondeo de kcal y gramos` | rojo: `3a39b1c test(nutrition-profile-engine): pin calorie and gram rounding (R4)`; verde: `bd9fa4c feat(nutrition-profile-engine): round calories and daily grams (R4)` |
 | R5 | `src/modules/nutrition/domain/nutrition-engine.spec.ts::R5 (nutrition-profile-engine #17): comidas por dia` | rojo: `e19bd1e test(nutrition-profile-engine): cover meals by age and species (R5)`; verde: `893bc0b feat(nutrition-profile-engine): assign meals per day (R5)` |
-| R6 | `src/modules/nutrition/domain/nutrition-engine.spec.ts::R6 (nutrition-profile-engine #17): horarios por numero de comidas` | pendiente |
+| R6 | `src/modules/nutrition/domain/nutrition-engine.spec.ts::R6 (nutrition-profile-engine #17): horarios por numero de comidas` | rojo: `c593500 test(nutrition-profile-engine): pin fixed meal schedules (R6)`; verde: `7c38258 feat(nutrition-profile-engine): map meals to fixed schedules (R6)` |
 | R7 | `src/modules/nutrition/domain/nutrition-engine.spec.ts::R7 (nutrition-profile-engine #17): objective` | pendiente |
 | R8 | `src/modules/nutrition/domain/nutrition-engine.spec.ts::R8 (nutrition-profile-engine #17): warning weight_loss_plan` | pendiente |
 | R9 | `src/modules/nutrition/domain/nutrition-engine.spec.ts::R9 (nutrition-profile-engine #17): warning underweight_vet` | pendiente |
