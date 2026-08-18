@@ -6,10 +6,7 @@ describe('R26 (nutrition-profile-engine #17): sin dependencia openai ni env OPEN
   const repositoryRoot = join(backendRoot, '..');
 
   it('mantiene fuera del backend toda configuracion y codigo de IA', () => {
-    const packageJson = readFileSync(
-      join(backendRoot, 'package.json'),
-      'utf8',
-    );
+    const packageJson = readFileSync(join(backendRoot, 'package.json'), 'utf8');
     const envExample = readFileSync(
       join(repositoryRoot, '.env.example'),
       'utf8',

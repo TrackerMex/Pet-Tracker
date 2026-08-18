@@ -154,9 +154,11 @@ describe('Nutrition profile and plans (e2e)', () => {
         allergies: ['pollo'],
         diseases: ['diabetes'],
       });
-      expect(new Date((created.body as { updatedAt: string }).updatedAt).toISOString()).toBe(
-        (created.body as { updatedAt: string }).updatedAt,
-      );
+      expect(
+        new Date(
+          (created.body as { updatedAt: string }).updatedAt,
+        ).toISOString(),
+      ).toBe((created.body as { updatedAt: string }).updatedAt);
 
       const replaced = await putProfile(owner, pet.id, {
         activityLevel: 'low',
@@ -247,13 +249,10 @@ describe('Nutrition profile and plans (e2e)', () => {
       kcalPer100g: 350,
     };
 
-    it.each<Array<[string, Record<string, unknown>]>>([
+    it.each<[string, Record<string, unknown>]>([
       ['kcal 900', { ...validBody, kcalPer100g: 900 }],
       ['kcal 79', { ...validBody, kcalPer100g: 79 }],
-      [
-        'dry sin kcal',
-        { activityLevel: 'medium', foodType: 'dry' },
-      ],
+      ['dry sin kcal', { activityLevel: 'medium', foodType: 'dry' }],
       ['actividad invalida', { ...validBody, activityLevel: 'extreme' }],
       ['clave desconocida', { ...validBody, extra: true }],
     ])('rechaza %s con 400 y no escribe fila', async (label, body) => {
@@ -265,9 +264,9 @@ describe('Nutrition profile and plans (e2e)', () => {
         statusCode: 400,
         message: 'Validation failed',
       });
-      expect(Array.isArray((response.body as { errors: unknown[] }).errors)).toBe(
-        true,
-      );
+      expect(
+        Array.isArray((response.body as { errors: unknown[] }).errors),
+      ).toBe(true);
       expect(
         await db
           .select()
@@ -321,7 +320,9 @@ describe('Nutrition profile and plans (e2e)', () => {
       });
       expect(response.body).not.toHaveProperty('inputsHash');
       expect(
-        new Date((response.body as { generatedAt: string }).generatedAt).toISOString(),
+        new Date(
+          (response.body as { generatedAt: string }).generatedAt,
+        ).toISOString(),
       ).toBe((response.body as { generatedAt: string }).generatedAt);
     });
   });
@@ -427,7 +428,9 @@ describe('Nutrition profile and plans (e2e)', () => {
       await postWeight(owner, pet.id, 20).expect(201);
 
       const response = await generatePlan(owner, pet.id).expect(200);
-      expect(JSON.stringify(response.body)).not.toContain('PET_WEIGHT_REQUIRED');
+      expect(JSON.stringify(response.body)).not.toContain(
+        'PET_WEIGHT_REQUIRED',
+      );
     });
   });
 
@@ -464,7 +467,9 @@ describe('Nutrition profile and plans (e2e)', () => {
         kcalPer100g: 400,
       }).expect(200);
       const second = await generatePlan(owner, pet.id).expect(200);
-      expect(second.body.id).not.toBe(first.body.id);
+      const firstBody = first.body as { id: string };
+      const secondBody = second.body as { id: string };
+      expect(secondBody.id).not.toBe(firstBody.id);
 
       const latest = await api()
         .get(`/v1/pets/${pet.id}/nutrition-plan`)
@@ -574,22 +579,27 @@ describe('Nutrition profile and plans (e2e)', () => {
       await postWeight(owner, pet.id, 20).expect(201);
 
       const generated = await generatePlan(owner, pet.id).expect(200);
-      expect(generated.body.aiExplanation).toBeNull();
+      const generatedBody = generated.body as {
+        id: string;
+        aiExplanation: null;
+      };
+      expect(generatedBody.aiExplanation).toBeNull();
       const persisted = await db
         .select({ aiExplanation: nutritionPlans.aiExplanation })
         .from(nutritionPlans)
-        .where(eq(nutritionPlans.id, generated.body.id));
+        .where(eq(nutritionPlans.id, generatedBody.id));
       expect(persisted).toEqual([{ aiExplanation: null }]);
 
       await db
         .update(nutritionPlans)
         .set({ aiExplanation: 'must not leak while feature 17 is active' })
-        .where(eq(nutritionPlans.id, generated.body.id));
+        .where(eq(nutritionPlans.id, generatedBody.id));
       const latest = await api()
         .get(`/v1/pets/${pet.id}/nutrition-plan`)
         .set(auth(owner.token))
         .expect(200);
-      expect(latest.body.aiExplanation).toBeNull();
+      const latestBody = latest.body as { aiExplanation: null };
+      expect(latestBody.aiExplanation).toBeNull();
     });
   });
 
@@ -608,9 +618,13 @@ describe('Nutrition profile and plans (e2e)', () => {
         .get(`/v1/pets/${pet.id}/nutrition-profile`)
         .set(auth(owner.token))
         .expect(200);
-      expect(typeof response.body.kcalPer100g).toBe('number');
-      expect(typeof response.body.targetWeightKg).toBe('number');
-      expect(response.body).toMatchObject({
+      const body = response.body as {
+        kcalPer100g: unknown;
+        targetWeightKg: unknown;
+      };
+      expect(typeof body.kcalPer100g).toBe('number');
+      expect(typeof body.targetWeightKg).toBe('number');
+      expect(body).toMatchObject({
         kcalPer100g: 350,
         targetWeightKg: 18.5,
       });

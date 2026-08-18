@@ -115,6 +115,8 @@ describe('R15 (nutrition-profile-engine #17): tablas de nutricion y migracion 00
     expect(migration.sql).toContain('CREATE TABLE "nutrition_plans"');
     expect(migration.sql).not.toContain('ALTER TABLE "pets"');
     expect(migration.sql).not.toContain('ALTER TABLE "weights"');
-    expect(migration.sql).not.toMatch(/UNIQUE\s*\(\s*"pet_id"\s*,\s*"inputs_hash"/i);
+    expect(migration.sql).not.toMatch(
+      /UNIQUE\s*\(\s*"pet_id"\s*,\s*"inputs_hash"/i,
+    );
   });
 });

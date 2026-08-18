@@ -44,7 +44,7 @@ describe('R20 (nutrition-profile-engine #17): hash canonico estable e independie
     ).toBe(nutritionInputHash(input));
   });
 
-  it.each<Array<[keyof NutritionEngineInput, unknown]>>([
+  it.each<[keyof NutritionEngineInput, unknown]>([
     ['species', 'cat'],
     ['weightKg', 21],
     ['targetWeightKg', 18],

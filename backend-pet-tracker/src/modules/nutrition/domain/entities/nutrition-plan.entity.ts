@@ -18,10 +18,7 @@ export interface NutritionPlanProps {
   generatedAt: Date;
 }
 
-export type NewNutritionPlan = Omit<
-  NutritionPlanProps,
-  'id' | 'generatedAt'
->;
+export type NewNutritionPlan = Omit<NutritionPlanProps, 'id' | 'generatedAt'>;
 
 export class NutritionPlan implements NutritionPlanProps {
   readonly id: string;

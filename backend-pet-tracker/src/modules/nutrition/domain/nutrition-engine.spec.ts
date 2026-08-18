@@ -158,11 +158,9 @@ describe('R2 (nutrition-profile-engine #17): RER y peso base', () => {
 
 describe('R3 (nutrition-profile-engine #17): tabla de factores MER y precedencia', () => {
   const expectedMer = (weightKg: number, factor: number) =>
-    Math.round(
-      RER_COEFFICIENT * Math.pow(weightKg, RER_EXPONENT) * factor,
-    );
+    Math.round(RER_COEFFICIENT * Math.pow(weightKg, RER_EXPONENT) * factor);
 
-  it.each<Array<[string, Partial<NutritionEngineInput>, number]>>([
+  it.each<[string, Partial<NutritionEngineInput>, number]>([
     ['cachorro perro', { species: 'dog', ageMonths: 3 }, 3],
     ['cachorro gato', { species: 'cat', ageMonths: 3 }, 2.5],
     ['joven perro', { species: 'dog', ageMonths: 6 }, 2],
@@ -202,7 +200,7 @@ describe('R3 (nutrition-profile-engine #17): tabla de factores MER y precedencia
     expect(computePlan(input).merKcal).toBe(expectedMer(10, factor));
   });
 
-  it.each<Array<[string, Partial<NutritionEngineInput>, number]>>([
+  it.each<[string, Partial<NutritionEngineInput>, number]>([
     ['perro high', { species: 'dog', activityLevel: 'high' }, 1.8],
     ['perro low', { species: 'dog', activityLevel: 'low' }, 1.4],
     ['gato high', { species: 'cat', activityLevel: 'high' }, 1.3],
@@ -264,7 +262,7 @@ describe('R4 (nutrition-profile-engine #17): redondeo de kcal y gramos', () => {
 });
 
 describe('R5 (nutrition-profile-engine #17): comidas por dia', () => {
-  it.each<Array<[string, Partial<NutritionEngineInput>, number]>>([
+  it.each<[string, Partial<NutritionEngineInput>, number]>([
     ['cachorro', { ageMonths: 3 }, 4],
     ['joven', { ageMonths: 6 }, 3],
     ['adulto', { ageMonths: 24 }, 2],
@@ -286,7 +284,7 @@ describe('R5 (nutrition-profile-engine #17): comidas por dia', () => {
 });
 
 describe('R6 (nutrition-profile-engine #17): horarios por numero de comidas', () => {
-  it.each<Array<[number, Partial<NutritionEngineInput>, string[]]>>([
+  it.each<[number, Partial<NutritionEngineInput>, string[]]>([
     [2, { ageMonths: 24 }, ['07:30', '19:30']],
     [3, { ageMonths: 6 }, ['07:30', '14:00', '19:30']],
     [4, { ageMonths: 3 }, ['07:00', '11:00', '15:00', '19:00']],
@@ -298,15 +296,11 @@ describe('R6 (nutrition-profile-engine #17): horarios por numero de comidas', ()
 });
 
 describe('R7 (nutrition-profile-engine #17): objective', () => {
-  it.each<Array<[string, Partial<NutritionEngineInput>, string]>>([
+  it.each<[string, Partial<NutritionEngineInput>, string]>([
     ['crecimiento', { ageMonths: 6 }, 'growth'],
     ['perdida de peso', { ageMonths: 24, bodyCondition: 8 }, 'weight_loss'],
     ['mantenimiento', { ageMonths: 24, bodyCondition: 5 }, 'maintenance'],
-    [
-      'edad sobre BCS',
-      { ageMonths: 3, bodyCondition: 8 },
-      'growth',
-    ],
+    ['edad sobre BCS', { ageMonths: 3, bodyCondition: 8 }, 'growth'],
   ])('asigna %s', (_label, changes, expected) => {
     expect(computePlan({ ...BASE_INPUT, ...changes }).objective).toBe(expected);
   });
@@ -406,12 +400,12 @@ describe('R12 (nutrition-profile-engine #17): warning too_young_vet', () => {
     );
 
   it('aparece por debajo del umbral exclusivo con texto aprobado', () => {
-    expect(computePlan({ ...BASE_INPUT, ageMonths: 1 }).warnings).toContainEqual(
-      {
-        code: 'too_young_vet',
-        message: NUTRITION_WARNING_MESSAGES.too_young_vet,
-      },
-    );
+    expect(
+      computePlan({ ...BASE_INPUT, ageMonths: 1 }).warnings,
+    ).toContainEqual({
+      code: 'too_young_vet',
+      message: NUTRITION_WARNING_MESSAGES.too_young_vet,
+    });
   });
 
   it('anti-vacio: no aparece en el umbral ni en un adulto', () => {

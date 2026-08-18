@@ -8,19 +8,11 @@ import {
   nutritionProfiles,
 } from '@/db/schema/nutrition.schema';
 import {
-  NutritionActivityLevel,
-  NutritionFoodType,
   NutritionProfile,
   NutritionProfileData,
 } from '@/modules/nutrition/domain/entities/nutrition-profile.entity';
-import type {
-  NewNutritionPlan,
-} from '@/modules/nutrition/domain/entities/nutrition-plan.entity';
+import type { NewNutritionPlan } from '@/modules/nutrition/domain/entities/nutrition-plan.entity';
 import { NutritionPlan } from '@/modules/nutrition/domain/entities/nutrition-plan.entity';
-import type {
-  NutritionObjective,
-  NutritionWarning,
-} from '@/modules/nutrition/domain/nutrition-engine';
 import type { NutritionRepository } from '@/modules/nutrition/domain/repositories/nutrition.repository';
 
 type NutritionProfileRow = typeof nutritionProfiles.$inferSelect;
@@ -104,8 +96,8 @@ function toPlan(row: NutritionPlanRow): NutritionPlan {
     dailyGrams: row.dailyGrams,
     mealsPerDay: row.mealsPerDay,
     mealTimes: row.mealTimes,
-    objective: row.objective as NutritionObjective,
-    warnings: row.warnings as NutritionWarning[],
+    objective: row.objective,
+    warnings: row.warnings,
     aiExplanation: row.aiExplanation ?? null,
     inputsHash: row.inputsHash,
     generatedAt: row.generatedAt,
@@ -115,11 +107,11 @@ function toPlan(row: NutritionPlanRow): NutritionPlan {
 function toProfile(row: NutritionProfileRow): NutritionProfile {
   return new NutritionProfile({
     petId: row.petId,
-    activityLevel: row.activityLevel as NutritionActivityLevel,
+    activityLevel: row.activityLevel,
     bodyCondition: row.bodyCondition ?? null,
     targetWeightKg:
       row.targetWeightKg === null ? null : Number(row.targetWeightKg),
-    foodType: row.foodType as NutritionFoodType,
+    foodType: row.foodType,
     kcalPer100g: Number(row.kcalPer100g),
     allergies: row.allergies,
     diseases: row.diseases,
