@@ -41,7 +41,7 @@ tags: [harness, spec]
 | R23 | `test/nutrition.e2e-spec.ts::R23 (nutrition-profile-engine #17): generate sin peso responde 422 PET_WEIGHT_REQUIRED` | rojo: `0009bb9 test(nutrition-profile-engine): guard missing weight generation (R23)`; verde: `60fcf86 feat(nutrition-profile-engine): map missing weight to 422 (R23)` |
 | R24 | `test/nutrition.e2e-spec.ts::R24 (nutrition-profile-engine #17): GET del plan devuelve el ultimo o 404` | rojo: `60764e8 test(nutrition-profile-engine): require latest plan retrieval (R24)`; verde: `03ec047 feat(nutrition-profile-engine): return latest nutrition plan (R24)` |
 | R25 | `test/nutrition.e2e-spec.ts::R25 (nutrition-profile-engine #17): PetAccessGuard y ausencia de muro de pago` | rojo: `bf5ee5d test(nutrition-profile-engine): enforce free pet access policy (R25)`; verde: `ea19425 feat(nutrition-profile-engine): enforce free pet access policy (R25)` |
-| R26 | `test/nutrition.e2e-spec.ts::R26 (nutrition-profile-engine #17): aiExplanation es null` + `src/modules/nutrition/nutrition-scope.spec.ts::R26 (nutrition-profile-engine #17): sin dependencia openai ni env OPENAI_` | pendiente |
+| R26 | `test/nutrition.e2e-spec.ts::R26 (nutrition-profile-engine #17): aiExplanation es null` + `src/modules/nutrition/nutrition-scope.spec.ts::R26 (nutrition-profile-engine #17): sin dependencia openai ni env OPENAI_` | rojo: `e1f5ce4 test(nutrition-profile-engine): require null AI boundary (R26)`; verde: `7957456 feat(nutrition-profile-engine): keep AI explanation null (R26)` |
 | R27 | `test/nutrition.e2e-spec.ts::R27 (nutrition-profile-engine #17): numeric llega al cliente como number` | pendiente |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
