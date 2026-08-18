@@ -296,3 +296,18 @@ describe('R6 (nutrition-profile-engine #17): horarios por numero de comidas', ()
     expect(result.mealTimes).toHaveLength(result.mealsPerDay);
   });
 });
+
+describe('R7 (nutrition-profile-engine #17): objective', () => {
+  it.each<Array<[string, Partial<NutritionEngineInput>, string]>>([
+    ['crecimiento', { ageMonths: 6 }, 'growth'],
+    ['perdida de peso', { ageMonths: 24, bodyCondition: 8 }, 'weight_loss'],
+    ['mantenimiento', { ageMonths: 24, bodyCondition: 5 }, 'maintenance'],
+    [
+      'edad sobre BCS',
+      { ageMonths: 3, bodyCondition: 8 },
+      'growth',
+    ],
+  ])('asigna %s', (_label, changes, expected) => {
+    expect(computePlan({ ...BASE_INPUT, ...changes }).objective).toBe(expected);
+  });
+});
