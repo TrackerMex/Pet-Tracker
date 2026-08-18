@@ -3,8 +3,10 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   HttpStatus,
   Param,
+  Post,
   Put,
 } from '@nestjs/common';
 import { ZodType } from 'zod';
@@ -14,10 +16,13 @@ import {
 } from '@/modules/nutrition/application/dto/nutrition-profile.dto';
 import { UpsertNutritionProfileUseCase } from '@/modules/nutrition/application/use-cases/upsert-nutrition-profile.use-case';
 import { GetNutritionProfileUseCase } from '@/modules/nutrition/application/use-cases/get-nutrition-profile.use-case';
+import { GenerateNutritionPlanUseCase } from '@/modules/nutrition/application/use-cases/generate-nutrition-plan.use-case';
 import { mapNutritionError } from '@/modules/nutrition/infrastructure/mappers/nutrition-error.mapper';
 import {
   NutritionProfileResponse,
+  NutritionPlanResponse,
   toNutritionProfileResponse,
+  toNutritionPlanResponse,
 } from '@/modules/nutrition/infrastructure/mappers/nutrition.mapper';
 
 @Controller('pets/:petId')
@@ -25,6 +30,7 @@ export class NutritionController {
   constructor(
     private readonly upsertProfile: UpsertNutritionProfileUseCase,
     private readonly getProfile: GetNutritionProfileUseCase,
+    private readonly generatePlan: GenerateNutritionPlanUseCase,
   ) {}
 
   @Put('nutrition-profile')
@@ -45,6 +51,16 @@ export class NutritionController {
   async get(@Param('petId') petId: string): Promise<NutritionProfileResponse> {
     try {
       return toNutritionProfileResponse(await this.getProfile.execute(petId));
+    } catch (error) {
+      throw mapNutritionError(error);
+    }
+  }
+
+  @Post('nutrition-plan/generate')
+  @HttpCode(HttpStatus.OK)
+  async generate(@Param('petId') petId: string): Promise<NutritionPlanResponse> {
+    try {
+      return toNutritionPlanResponse(await this.generatePlan.execute(petId));
     } catch (error) {
       throw mapNutritionError(error);
     }

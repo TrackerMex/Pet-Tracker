@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { UpsertNutritionProfileUseCase } from '@/modules/nutrition/application/use-cases/upsert-nutrition-profile.use-case';
 import { GetNutritionProfileUseCase } from '@/modules/nutrition/application/use-cases/get-nutrition-profile.use-case';
+import { GenerateNutritionPlanUseCase } from '@/modules/nutrition/application/use-cases/generate-nutrition-plan.use-case';
 import { NUTRITION_REPOSITORY } from '@/modules/nutrition/domain/repositories/nutrition.repository';
 import { NutritionController } from '@/modules/nutrition/infrastructure/nutrition.controller';
 import { NutritionDrizzleRepository } from '@/modules/nutrition/infrastructure/repositories/nutrition.drizzle.repository';
@@ -12,6 +13,7 @@ import { PetsModule } from '@/modules/pets/pets.module';
   providers: [
     UpsertNutritionProfileUseCase,
     GetNutritionProfileUseCase,
+    GenerateNutritionPlanUseCase,
     {
       provide: NUTRITION_REPOSITORY,
       useClass: NutritionDrizzleRepository,

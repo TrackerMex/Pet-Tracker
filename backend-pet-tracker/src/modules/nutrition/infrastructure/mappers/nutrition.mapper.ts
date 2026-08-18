@@ -1,4 +1,9 @@
 import type { NutritionProfile } from '@/modules/nutrition/domain/entities/nutrition-profile.entity';
+import type { NutritionPlan } from '@/modules/nutrition/domain/entities/nutrition-plan.entity';
+import type {
+  NutritionObjective,
+  NutritionWarning,
+} from '@/modules/nutrition/domain/nutrition-engine';
 
 export interface NutritionProfileResponse {
   petId: string;
@@ -10,6 +15,20 @@ export interface NutritionProfileResponse {
   allergies: string[];
   diseases: string[];
   updatedAt: string;
+}
+
+export interface NutritionPlanResponse {
+  id: string;
+  petId: string;
+  rerKcal: number;
+  merKcal: number;
+  dailyGrams: number;
+  mealsPerDay: number;
+  mealTimes: string[];
+  objective: NutritionObjective;
+  warnings: NutritionWarning[];
+  aiExplanation: string | null;
+  generatedAt: string;
 }
 
 export function toNutritionProfileResponse(
@@ -25,5 +44,23 @@ export function toNutritionProfileResponse(
     allergies: profile.allergies,
     diseases: profile.diseases,
     updatedAt: profile.updatedAt.toISOString(),
+  };
+}
+
+export function toNutritionPlanResponse(
+  plan: NutritionPlan,
+): NutritionPlanResponse {
+  return {
+    id: plan.id,
+    petId: plan.petId,
+    rerKcal: plan.rerKcal,
+    merKcal: plan.merKcal,
+    dailyGrams: plan.dailyGrams,
+    mealsPerDay: plan.mealsPerDay,
+    mealTimes: plan.mealTimes,
+    objective: plan.objective,
+    warnings: plan.warnings,
+    aiExplanation: plan.aiExplanation,
+    generatedAt: plan.generatedAt.toISOString(),
   };
 }

@@ -1,8 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { uuidv7 } from 'uuidv7';
 import { DRIZZLE } from '@/db/drizzle.constants';
-import { nutritionProfiles } from '@/db/schema/nutrition.schema';
+import {
+  nutritionPlans,
+  nutritionProfiles,
+} from '@/db/schema/nutrition.schema';
 import {
   NutritionActivityLevel,
   NutritionFoodType,
@@ -11,11 +15,16 @@ import {
 } from '@/modules/nutrition/domain/entities/nutrition-profile.entity';
 import type {
   NewNutritionPlan,
-  NutritionPlan,
 } from '@/modules/nutrition/domain/entities/nutrition-plan.entity';
+import { NutritionPlan } from '@/modules/nutrition/domain/entities/nutrition-plan.entity';
+import type {
+  NutritionObjective,
+  NutritionWarning,
+} from '@/modules/nutrition/domain/nutrition-engine';
 import type { NutritionRepository } from '@/modules/nutrition/domain/repositories/nutrition.repository';
 
 type NutritionProfileRow = typeof nutritionProfiles.$inferSelect;
+type NutritionPlanRow = typeof nutritionPlans.$inferSelect;
 
 @Injectable()
 export class NutritionDrizzleRepository implements NutritionRepository {
@@ -71,9 +80,30 @@ export class NutritionDrizzleRepository implements NutritionRepository {
     throw new Error('Nutrition plan repository is not implemented');
   }
 
-  insertPlan(_plan: NewNutritionPlan): Promise<NutritionPlan> {
-    throw new Error('Nutrition plan repository is not implemented');
+  async insertPlan(plan: NewNutritionPlan): Promise<NutritionPlan> {
+    const [row] = await this.db
+      .insert(nutritionPlans)
+      .values({ id: uuidv7(), ...plan })
+      .returning();
+    return toPlan(row);
   }
+}
+
+function toPlan(row: NutritionPlanRow): NutritionPlan {
+  return new NutritionPlan({
+    id: row.id,
+    petId: row.petId,
+    rerKcal: row.rerKcal,
+    merKcal: row.merKcal,
+    dailyGrams: row.dailyGrams,
+    mealsPerDay: row.mealsPerDay,
+    mealTimes: row.mealTimes,
+    objective: row.objective as NutritionObjective,
+    warnings: row.warnings as NutritionWarning[],
+    aiExplanation: row.aiExplanation ?? null,
+    inputsHash: row.inputsHash,
+    generatedAt: row.generatedAt,
+  });
 }
 
 function toProfile(row: NutritionProfileRow): NutritionProfile {
