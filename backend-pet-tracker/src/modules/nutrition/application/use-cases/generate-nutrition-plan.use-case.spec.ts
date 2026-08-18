@@ -117,3 +117,28 @@ describe('R14 (nutrition-ai-explainer #18): sin entitlement no se llama a la IA'
     expect(plan.aiExplanation).toBe('Generated explanation');
   });
 });
+
+describe('R15 (nutrition-ai-explainer #18): hash hit con null reintenta sobre la misma fila', () => {
+  it('enriches the existing null plan without inserting another row', async () => {
+    const harness = createHarness();
+    let gateCall = 0;
+    harness.subscriptionRepository.isPetTracked.mockImplementation(async () => {
+      harness.calls.push('gate');
+      gateCall += 1;
+      return gateCall > 1;
+    });
+
+    const first = await harness.useCase.execute('pet-1', now);
+    const second = await harness.useCase.execute('pet-1', now);
+
+    expect(first.aiExplanation).toBeNull();
+    expect(second.id).toBe(first.id);
+    expect(second.aiExplanation).toBe('Generated explanation');
+    expect(harness.nutritionRepository.insertPlan).toHaveBeenCalledTimes(1);
+    expect(harness.explainer.explain).toHaveBeenCalledTimes(1);
+    expect(harness.nutritionRepository.setAiExplanation).toHaveBeenCalledWith(
+      first.id,
+      'Generated explanation',
+    );
+  });
+});
