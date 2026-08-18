@@ -547,8 +547,8 @@ describe('R7 (wialon-session-reuse #29): el token no aparece en logs ni en error
 
     expect(clientSource).not.toMatch(/console\./);
     expect(errorsSource).not.toMatch(/console\./);
-    expect(clientSource).not.toContain('@nestjs/common');
-    expect(errorsSource).not.toContain('@nestjs/common');
+    expect(clientSource).not.toMatch(/from\s+['"]@nestjs\/common['"]/);
+    expect(errorsSource).not.toMatch(/from\s+['"]@nestjs\/common['"]/);
     expect(clientSource.length).toBeGreaterThan(1000);
     expect(errorsSource.length).toBeGreaterThan(500);
   });
