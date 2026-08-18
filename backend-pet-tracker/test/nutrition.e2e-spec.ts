@@ -165,4 +165,56 @@ describe('Nutrition profile and plans (e2e)', () => {
       });
     });
   });
+
+  describe('R17 (nutrition-profile-engine #17): GET del perfil devuelve 200 o 404', () => {
+    it('devuelve el perfil existente con el mismo shape del PUT', async () => {
+      const owner = await seedUser('r17-existing');
+      const pet = await seedPet(owner);
+      const body = {
+        activityLevel: 'medium',
+        bodyCondition: 6,
+        targetWeightKg: 19,
+        foodType: 'mixed',
+        kcalPer100g: 240,
+        allergies: ['res'],
+        diseases: [],
+      };
+      await putProfile(owner, pet.id, body).expect(200);
+
+      const response = await api()
+        .get(`/v1/pets/${pet.id}/nutrition-profile`)
+        .set(auth(owner.token))
+        .expect(200);
+
+      expect(Object.keys(response.body as object).sort()).toEqual(
+        [
+          'petId',
+          'activityLevel',
+          'bodyCondition',
+          'targetWeightKg',
+          'foodType',
+          'kcalPer100g',
+          'allergies',
+          'diseases',
+          'updatedAt',
+        ].sort(),
+      );
+      expect(response.body).toMatchObject({ petId: pet.id, ...body });
+    });
+
+    it('devuelve 404 NUTRITION_PROFILE_NOT_FOUND sin perfil', async () => {
+      const owner = await seedUser('r17-missing');
+      const pet = await seedPet(owner);
+
+      const response = await api()
+        .get(`/v1/pets/${pet.id}/nutrition-profile`)
+        .set(auth(owner.token))
+        .expect(404);
+
+      expect(response.body).toMatchObject({
+        statusCode: 404,
+        code: 'NUTRITION_PROFILE_NOT_FOUND',
+      });
+    });
+  });
 });
