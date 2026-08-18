@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { eq } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { uuidv7 } from 'uuidv7';
 import { DRIZZLE } from '@/db/drizzle.constants';
@@ -76,8 +76,14 @@ export class NutritionDrizzleRepository implements NutritionRepository {
     return toProfile(row);
   }
 
-  findLatestPlan(_petId: string): Promise<NutritionPlan | null> {
-    throw new Error('Nutrition plan repository is not implemented');
+  async findLatestPlan(petId: string): Promise<NutritionPlan | null> {
+    const [row] = await this.db
+      .select()
+      .from(nutritionPlans)
+      .where(eq(nutritionPlans.petId, petId))
+      .orderBy(desc(nutritionPlans.generatedAt), desc(nutritionPlans.id))
+      .limit(1);
+    return row ? toPlan(row) : null;
   }
 
   async insertPlan(plan: NewNutritionPlan): Promise<NutritionPlan> {

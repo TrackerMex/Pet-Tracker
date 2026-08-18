@@ -44,13 +44,17 @@ export class GenerateNutritionPlanUseCase {
       allergies: profile.allergies,
       diseases: profile.diseases,
     };
+    const inputsHash = nutritionInputHash(input);
+    const latestPlan = await this.nutrition.findLatestPlan(petId);
+    if (latestPlan?.inputsHash === inputsHash) return latestPlan;
+
     const result = computePlan(input);
 
     return this.nutrition.insertPlan({
       petId,
       ...result,
       aiExplanation: null,
-      inputsHash: nutritionInputHash(input),
+      inputsHash,
     });
   }
 }
