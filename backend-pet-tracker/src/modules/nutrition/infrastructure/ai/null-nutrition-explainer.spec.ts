@@ -2,7 +2,7 @@ import { Logger } from '@nestjs/common';
 import type {
   NutritionEngineInput,
   NutritionPlanResult,
-} from '@/modules/nutrition/domain/nutrition.types';
+} from '@/modules/nutrition/domain/nutrition-engine';
 import { NullNutritionExplainer } from './null-nutrition-explainer';
 
 describe('R11 (nutrition-ai-explainer #18): la rama apagada devuelve null y avisa', () => {

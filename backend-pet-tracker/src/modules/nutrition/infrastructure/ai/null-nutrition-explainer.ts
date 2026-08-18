@@ -6,7 +6,7 @@ import type {
 import type {
   NutritionEngineInput,
   NutritionPlanResult,
-} from '@/modules/nutrition/domain/nutrition.types';
+} from '@/modules/nutrition/domain/nutrition-engine';
 import { NUTRITION_AI_SCOPE } from './nutrition-prompt';
 
 export class NullNutritionExplainer implements NutritionExplainer {

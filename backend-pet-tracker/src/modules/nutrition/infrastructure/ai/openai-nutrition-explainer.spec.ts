@@ -1,8 +1,10 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { Logger } from '@nestjs/common';
-import type { NutritionEngineInput } from '@/modules/nutrition/domain/nutrition.types';
-import type { NutritionPlanResult } from '@/modules/nutrition/domain/nutrition.types';
+import type {
+  NutritionEngineInput,
+  NutritionPlanResult,
+} from '@/modules/nutrition/domain/nutrition-engine';
 import {
   NUTRITION_AI_MAX_OUTPUT_TOKENS,
   NUTRITION_AI_SYSTEM_PROMPT,

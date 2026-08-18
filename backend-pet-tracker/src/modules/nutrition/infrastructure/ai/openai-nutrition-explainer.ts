@@ -5,7 +5,7 @@ import type {
 import type {
   NutritionEngineInput,
   NutritionPlanResult,
-} from '@/modules/nutrition/domain/nutrition.types';
+} from '@/modules/nutrition/domain/nutrition-engine';
 import {
   NUTRITION_AI_MAX_OUTPUT_TOKENS,
   NUTRITION_AI_SCOPE,
