@@ -356,4 +356,35 @@ describe('Nutrition profile and plans (e2e)', () => {
       expect(await planCount(pet.id)).toBe(2);
     });
   });
+
+  describe('R22 (nutrition-profile-engine #17): generate sin perfil responde 422 NUTRITION_PROFILE_REQUIRED', () => {
+    it('responde 422 sin insertar plan cuando falta el perfil', async () => {
+      const owner = await seedUser('r22-missing');
+      const pet = await seedPet(owner);
+      await postWeight(owner, pet.id, 20).expect(201);
+
+      const response = await generatePlan(owner, pet.id).expect(422);
+      expect(response.body).toMatchObject({
+        statusCode: 422,
+        code: 'NUTRITION_PROFILE_REQUIRED',
+      });
+      expect(await planCount(pet.id)).toBe(0);
+    });
+
+    it('anti-vacio: con perfil y peso nunca emite ese codigo', async () => {
+      const owner = await seedUser('r22-present');
+      const pet = await seedPet(owner);
+      await postWeight(owner, pet.id, 20).expect(201);
+      await putProfile(owner, pet.id, {
+        activityLevel: 'medium',
+        foodType: 'dry',
+        kcalPer100g: 350,
+      }).expect(200);
+
+      const response = await generatePlan(owner, pet.id).expect(200);
+      expect(JSON.stringify(response.body)).not.toContain(
+        'NUTRITION_PROFILE_REQUIRED',
+      );
+    });
+  });
 });
