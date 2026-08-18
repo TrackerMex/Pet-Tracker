@@ -5,9 +5,10 @@ import {
   Get,
   HttpCode,
   HttpStatus,
-  Param,
   Post,
   Put,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { ZodType } from 'zod';
 import {
@@ -25,8 +26,12 @@ import {
   toNutritionProfileResponse,
   toNutritionPlanResponse,
 } from '@/modules/nutrition/infrastructure/mappers/nutrition.mapper';
+import { RequirePetRole } from '@/modules/pets/infrastructure/decorators/require-pet-role.decorator';
+import { PetAccessGuard } from '@/modules/pets/infrastructure/guards/pet-access.guard';
+import type { PetAccessRequest } from '@/modules/pets/infrastructure/guards/pet-access.guard';
 
 @Controller('pets/:petId')
+@UseGuards(PetAccessGuard)
 export class NutritionController {
   constructor(
     private readonly upsertProfile: UpsertNutritionProfileUseCase,
@@ -36,8 +41,9 @@ export class NutritionController {
   ) {}
 
   @Put('nutrition-profile')
+  @RequirePetRole('owner')
   async upsert(
-    @Param('petId') petId: string,
+    @Req() request: PetAccessRequest,
     @Body() body: unknown,
   ): Promise<NutritionProfileResponse> {
     const dto = parseBody<UpsertNutritionProfileDto>(
@@ -45,14 +51,18 @@ export class NutritionController {
       body,
     );
     return toNutritionProfileResponse(
-      await this.upsertProfile.execute(petId, dto),
+      await this.upsertProfile.execute(request.petMembership.petId, dto),
     );
   }
 
   @Get('nutrition-profile')
-  async get(@Param('petId') petId: string): Promise<NutritionProfileResponse> {
+  async get(
+    @Req() request: PetAccessRequest,
+  ): Promise<NutritionProfileResponse> {
     try {
-      return toNutritionProfileResponse(await this.getProfile.execute(petId));
+      return toNutritionProfileResponse(
+        await this.getProfile.execute(request.petMembership.petId),
+      );
     } catch (error) {
       throw mapNutritionError(error);
     }
@@ -60,9 +70,14 @@ export class NutritionController {
 
   @Post('nutrition-plan/generate')
   @HttpCode(HttpStatus.OK)
-  async generate(@Param('petId') petId: string): Promise<NutritionPlanResponse> {
+  @RequirePetRole('owner')
+  async generate(
+    @Req() request: PetAccessRequest,
+  ): Promise<NutritionPlanResponse> {
     try {
-      return toNutritionPlanResponse(await this.generatePlan.execute(petId));
+      return toNutritionPlanResponse(
+        await this.generatePlan.execute(request.petMembership.petId),
+      );
     } catch (error) {
       throw mapNutritionError(error);
     }
@@ -70,10 +85,12 @@ export class NutritionController {
 
   @Get('nutrition-plan')
   async latestPlan(
-    @Param('petId') petId: string,
+    @Req() request: PetAccessRequest,
   ): Promise<NutritionPlanResponse> {
     try {
-      return toNutritionPlanResponse(await this.getPlan.execute(petId));
+      return toNutritionPlanResponse(
+        await this.getPlan.execute(request.petMembership.petId),
+      );
     } catch (error) {
       throw mapNutritionError(error);
     }
