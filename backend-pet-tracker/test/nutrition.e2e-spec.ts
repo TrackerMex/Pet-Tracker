@@ -16,6 +16,13 @@ import { pets, petUsers } from '@/db/schema/pets.schema';
 import { users } from '@/db/schema/users.schema';
 import { TOKEN_SERVICE } from '@/modules/auth/domain/ports/token-service';
 import type { TokenService } from '@/modules/auth/domain/ports/token-service';
+import { GenerateNutritionPlanUseCase } from '@/modules/nutrition/application/use-cases/generate-nutrition-plan.use-case';
+import { NutritionPlan } from '@/modules/nutrition/domain/entities/nutrition-plan.entity';
+import { NUTRITION_REPOSITORY } from '@/modules/nutrition/domain/repositories/nutrition.repository';
+import { toNutritionPlanResponse } from '@/modules/nutrition/infrastructure/mappers/nutrition.mapper';
+import { NutritionModule } from '@/modules/nutrition/nutrition.module';
+import { PET_REPOSITORY } from '@/modules/pets/domain/repositories/pet.repository';
+import { SUBSCRIPTION_REPOSITORY } from '@/modules/subscriptions/domain/repositories/subscription.repository';
 import { AppModule } from '../src/app.module';
 
 describe('Nutrition profile and plans (e2e)', () => {
@@ -626,26 +633,6 @@ describe('Nutrition profile and plans (e2e)', () => {
 
 describe('R18 (nutrition-ai-explainer #18): la explicacion llega de punta a punta', () => {
   it('returns and persists a non-empty explanation through the module flow', async () => {
-    const [
-      { Test: NestTest },
-      { NutritionModule },
-      { GenerateNutritionPlanUseCase },
-      { NutritionPlan },
-      { NUTRITION_REPOSITORY },
-      { PET_REPOSITORY },
-      { SUBSCRIPTION_REPOSITORY },
-      { toNutritionPlanResponse },
-    ] = await Promise.all([
-      import('@nestjs/testing'),
-      import('../src/modules/nutrition/nutrition.module'),
-      import('../src/modules/nutrition/application/use-cases/generate-nutrition-plan.use-case'),
-      import('../src/modules/nutrition/domain/entities/nutrition-plan.entity'),
-      import('../src/modules/nutrition/domain/repositories/nutrition.repository'),
-      import('../src/modules/pets/domain/repositories/pet.repository'),
-      import('../src/modules/subscriptions/domain/repositories/subscription.repository'),
-      import('../src/modules/nutrition/infrastructure/mappers/nutrition.mapper'),
-    ]);
-
     let latestPlan: InstanceType<typeof NutritionPlan> | null = null;
     const nutritionRepository = {
       findProfile: jest.fn().mockResolvedValue({
@@ -676,7 +663,7 @@ describe('R18 (nutrition-ai-explainer #18): la explicacion llega de punta a punt
         return latestPlan;
       }),
     };
-    const moduleRef = await NestTest.createTestingModule({
+    const moduleRef = await Test.createTestingModule({
       imports: [NutritionModule],
     })
       .overrideProvider(NUTRITION_REPOSITORY)
