@@ -430,4 +430,47 @@ describe('Nutrition profile and plans (e2e)', () => {
       expect(JSON.stringify(response.body)).not.toContain('PET_WEIGHT_REQUIRED');
     });
   });
+
+  describe('R24 (nutrition-profile-engine #17): GET del plan devuelve el ultimo o 404', () => {
+    it('responde 404 NUTRITION_PLAN_NOT_FOUND cuando no hay planes', async () => {
+      const owner = await seedUser('r24-missing');
+      const pet = await seedPet(owner);
+
+      const response = await api()
+        .get(`/v1/pets/${pet.id}/nutrition-plan`)
+        .set(auth(owner.token))
+        .expect(404);
+
+      expect(response.body).toMatchObject({
+        statusCode: 404,
+        code: 'NUTRITION_PLAN_NOT_FOUND',
+      });
+    });
+
+    it('devuelve el ultimo plan generado', async () => {
+      const owner = await seedUser('r24-latest');
+      const pet = await seedPet(owner);
+      await putProfile(owner, pet.id, {
+        activityLevel: 'medium',
+        foodType: 'dry',
+        kcalPer100g: 350,
+      }).expect(200);
+      await postWeight(owner, pet.id, 20).expect(201);
+
+      const first = await generatePlan(owner, pet.id).expect(200);
+      await putProfile(owner, pet.id, {
+        activityLevel: 'medium',
+        foodType: 'dry',
+        kcalPer100g: 400,
+      }).expect(200);
+      const second = await generatePlan(owner, pet.id).expect(200);
+      expect(second.body.id).not.toBe(first.body.id);
+
+      const latest = await api()
+        .get(`/v1/pets/${pet.id}/nutrition-plan`)
+        .set(auth(owner.token))
+        .expect(200);
+      expect(latest.body).toEqual(second.body);
+    });
+  });
 });
