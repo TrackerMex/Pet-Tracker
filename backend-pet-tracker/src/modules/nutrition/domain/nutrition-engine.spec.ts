@@ -311,3 +311,29 @@ describe('R7 (nutrition-profile-engine #17): objective', () => {
     expect(computePlan({ ...BASE_INPUT, ...changes }).objective).toBe(expected);
   });
 });
+
+describe('R8 (nutrition-profile-engine #17): warning weight_loss_plan', () => {
+  const hasWarning = (bodyCondition: number | null, ageMonths = 24) =>
+    computePlan({ ...BASE_INPUT, bodyCondition, ageMonths }).warnings.some(
+      (warning) => warning.code === 'weight_loss_plan',
+    );
+
+  it('aparece con BCS alto en adulto y crecimiento sin cambiar objective', () => {
+    expect(hasWarning(8)).toBe(true);
+    const growth = computePlan({
+      ...BASE_INPUT,
+      ageMonths: 3,
+      bodyCondition: 8,
+    });
+    expect(growth.warnings).toContainEqual({
+      code: 'weight_loss_plan',
+      message: NUTRITION_WARNING_MESSAGES.weight_loss_plan,
+    });
+    expect(growth.objective).toBe('growth');
+  });
+
+  it('anti-vacio: no aparece con BCS normal o ausente', () => {
+    expect(hasWarning(5)).toBe(false);
+    expect(hasWarning(null)).toBe(false);
+  });
+});
