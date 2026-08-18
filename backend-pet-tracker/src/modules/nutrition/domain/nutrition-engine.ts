@@ -8,6 +8,9 @@ import {
   BODY_CONDITION_OVERWEIGHT_MIN,
   GRAMS_ROUNDING_STEP,
   MEALS_ADULT,
+  MEALS_ADULT_CAT_HIGH_ACTIVITY,
+  MEALS_PUPPY,
+  MEALS_YOUNG,
   MER_FACTOR_ADULT_CAT_INTACT,
   MER_FACTOR_ADULT_CAT_STERILIZED,
   MER_FACTOR_ADULT_DOG_INTACT,
@@ -116,12 +119,20 @@ export function computePlan(input: NutritionEngineInput): NutritionPlanResult {
     Math.round(
       merKcal / (input.kcalPer100g / 100) / GRAMS_ROUNDING_STEP,
     ) * GRAMS_ROUNDING_STEP;
+  const mealsPerDay =
+    input.ageMonths < AGE_MONTHS_PUPPY_MAX
+      ? MEALS_PUPPY
+      : input.ageMonths < AGE_MONTHS_ADULT_MIN
+        ? MEALS_YOUNG
+        : input.species === 'cat' && input.activityLevel === 'high'
+          ? MEALS_ADULT_CAT_HIGH_ACTIVITY
+          : MEALS_ADULT;
 
   return {
     rerKcal,
     merKcal,
     dailyGrams,
-    mealsPerDay: MEALS_ADULT,
+    mealsPerDay,
     mealTimes: [],
     objective: 'maintenance',
     warnings: [],
