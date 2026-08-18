@@ -32,7 +32,7 @@ tags: [harness, spec]
 | R4 | `src/modules/nutrition/nutrition-scope.spec.ts::R1 ...` (aserciones (2) y (3) invertidas + guarda de clave real) | rojo: `7cadd2c test(nutrition-ai-explainer): derogate R26 of #17 (R1)`; verde: `8aab678 feat(nutrition-ai-explainer): document OpenAI configuration (R4)` |
 | R5 | `src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.spec.ts::R5 (nutrition-ai-explainer #18): las cuatro condiciones del gate` | pendiente |
 | R6 | `src/modules/nutrition/infrastructure/ai/nutrition-prompt.spec.ts::R6 (nutrition-ai-explainer #18): system prompt literal y fechado` | rojo: `d0ac8cd test(nutrition-ai-explainer): lock approved system prompt (R6)`; verde: `f15c312 feat(nutrition-ai-explainer): add versioned system prompt (R6)` |
-| R7 | `src/modules/nutrition/infrastructure/ai/nutrition-prompt.spec.ts::R7 (nutrition-ai-explainer #18): el user prompt solo lleva input y resultado` | pendiente |
+| R7 | `src/modules/nutrition/infrastructure/ai/nutrition-prompt.spec.ts::R7 (nutrition-ai-explainer #18): el user prompt solo lleva input y resultado` | rojo: `6b7e21d test(nutrition-ai-explainer): protect prompt privacy boundary (R7)`; verde: `abfbd0f feat(nutrition-ai-explainer): serialize approved prompt data (R7)` |
 | R8 | `src/modules/nutrition/infrastructure/ai/nutrition-prompt.spec.ts::R8 (nutrition-ai-explainer #18): cota de allergies y diseases` | pendiente |
 | R9 | `src/modules/nutrition/infrastructure/ai/openai-nutrition-explainer.spec.ts::R9 (nutrition-ai-explainer #18): modelo por env, timeout 15 s y maxRetries 0` | pendiente |
 | R10 | `src/modules/nutrition/infrastructure/ai/openai-nutrition-explainer.spec.ts::R10 (nutrition-ai-explainer #18): respuesta vacia o truncada se normaliza a null` | pendiente |
