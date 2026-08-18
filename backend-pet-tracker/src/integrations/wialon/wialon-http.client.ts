@@ -1,7 +1,10 @@
 import type { RawPosition } from '@/pipeline/types';
 import type { WialonClient, WialonUnit } from './wialon-client.interface';
-import { isInvalidSessionError } from './wialon.errors';
-import { WialonApiError, WialonTransportError } from './wialon.errors';
+import {
+  WialonApiError,
+  WialonTransportError,
+  isInvalidSessionError,
+} from './wialon.errors';
 
 // Parametros fijos del plan 005 §Paso 1 para messages/load_interval.
 const LOAD_INTERVAL_FLAGS = 1;
@@ -61,11 +64,8 @@ function batteryFromParams(
 }
 
 /**
- * Cliente contra la API real de Wialon (R4): login por token en cada
- * ejecucion (svc=token/login -> sid), luego el svc pedido. El factory solo lo
- * cablea con SIM_MODE=false y token real (R1); conectar de verdad contra
- * hst-api.wialon.com queda fuera de esta feature — en tests el fetch se
- * inyecta mockeado, sin red.
+ * Cliente contra la API real de Wialon:
+ * mantiene `sid` con TTL y re-intenta una vez ante errores de sesión.
  */
 export class WialonHttpClient implements WialonClient {
   private sid: string | null = null;
@@ -139,7 +139,7 @@ export class WialonHttpClient implements WialonClient {
     }
   }
 
-  /** Login por token en cada ejecucion — devuelve el session id (`eid`). */
+  /** Login por token — devuelve el session id (`eid`). */
   private async login(): Promise<string> {
     const response = await this.call<{ eid: string }>('token/login', {
       token: this.token,
