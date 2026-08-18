@@ -154,6 +154,12 @@ export function computePlan(input: NutritionEngineInput): NutritionPlanResult {
       message: NUTRITION_WARNING_MESSAGES.underweight_vet,
     });
   }
+  if (input.diseases.length > 0) {
+    warnings.unshift({
+      code: 'chronic_disease_vet',
+      message: NUTRITION_WARNING_MESSAGES.chronic_disease_vet,
+    });
+  }
 
   return {
     rerKcal,
