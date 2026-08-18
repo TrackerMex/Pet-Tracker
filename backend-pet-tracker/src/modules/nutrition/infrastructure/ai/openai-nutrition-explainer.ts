@@ -8,6 +8,7 @@ import type {
 } from '@/modules/nutrition/domain/nutrition.types';
 import {
   NUTRITION_AI_MAX_OUTPUT_TOKENS,
+  NUTRITION_AI_SCOPE,
   NUTRITION_AI_SYSTEM_PROMPT,
   NUTRITION_AI_TIMEOUT_MS,
   buildUserPrompt,
@@ -26,6 +27,8 @@ export interface OpenAiChatClient {
 }
 
 export class OpenAiNutritionExplainer implements NutritionExplainer {
+  private readonly logger = new Logger(OpenAiNutritionExplainer.name);
+
   constructor(
     private readonly model: string,
     private readonly apiKey: string,
@@ -35,7 +38,7 @@ export class OpenAiNutritionExplainer implements NutritionExplainer {
   async explain(
     input: NutritionEngineInput,
     result: NutritionPlanResult,
-    _ctx: NutritionExplainerContext,
+    ctx: NutritionExplainerContext,
   ): Promise<string | null> {
     const client = await this.getClient();
     const response = await client.create({
@@ -47,7 +50,21 @@ export class OpenAiNutritionExplainer implements NutritionExplainer {
       max_completion_tokens: NUTRITION_AI_MAX_OUTPUT_TOKENS,
     });
 
-    return response.choices[0]?.message.content ?? null;
+    const choice = response.choices[0];
+    const content = choice?.message.content?.trim();
+
+    if (!content || choice.finish_reason === 'length') {
+      this.logger.warn({
+        scope: NUTRITION_AI_SCOPE,
+        petId: ctx.petId,
+        planId: ctx.planId,
+        finishReason: choice?.finish_reason ?? null,
+        usage: response.usage ?? null,
+      });
+      return null;
+    }
+
+    return content;
   }
 
   private async getClient(): Promise<OpenAiChatClient> {
@@ -68,3 +85,4 @@ export class OpenAiNutritionExplainer implements NutritionExplainer {
     return this.client;
   }
 }
+import { Logger } from '@nestjs/common';
