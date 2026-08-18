@@ -155,9 +155,41 @@ ninguna IA, la corre el humano (`CLAUDE.md` §Excepciones).
   Usó `max_completion_tokens` (confirmado contra los tipos de `openai@7.5.0`),
   que es lo que la trampa 5 le pedía documentar.
 
+- **Ronda 1 de revisión: RECHAZADA** → `progress/review_nutrition-ai-explainer.md`
+  (491 líneas). El `reviewer` corrió `./init.sh` él mismo con `INIT_EXIT=0`, 323
+  e2e pasados, lint y typecheck verdes y Postgres publicando puerto: **la suite
+  está verde y aun así se rechaza**, porque lo que está verde no prueba lo que
+  dice probar. Cuatro defectos:
+  - **B1 (grave)** — R13, R16, R17 y R18 comparten un solo `describe.each` que
+    mockea `NUTRITION_REPOSITORY`, llama al use-case a mano y no hace ninguna
+    petición HTTP: sin base de datos y sin HTTP. `setAiExplanation` no se ejecuta
+    contra Postgres en ninguna suite, y su test unitario no asevera el argumento
+    del `where` — cambiar `eq(id, planId)` por `eq(petId, planId)` dejaría todo
+    verde. R18, que la spec define como "sin esto la feature no está
+    implementada", no observa ninguna de las tres cosas que dice observar.
+  - **B2** — `NUTRITION_AI_MAX_RETRIES` no existe: `maxRetries: 0` va a mano y el
+    test asevera `toContain('maxRetries: 0')`, la aserción **inversa** a la que
+    pide R9. El párrafo de C-2 explica por qué ese 0 es load-bearing (sin él,
+    3 × 15 s cruza el corte de 29 s y produce el 504 que la feature promete no
+    producir).
+  - **B3** — falta `message` en los tres `warn`; en el `catch` se sustituyó por
+    `errorName`, así que el mensaje del proveedor no se loguea nunca. Muerde justo
+    donde la enmienda de R10 quería morder: el diagnóstico de la prueba de humo.
+  - **B4** — `docs/verification.md` omite el paso 3 de R19 (el que prueba la
+    degradación con el cableado real) y su paso 4 deja la clave real en el `.env`.
+  Lo que sí quedó impecable: las dos enmiendas respetadas al pie de la letra, la
+  derogación de R26 de #17 aserción por aserción, y ningún camino por el que un
+  test llegue a la red.
+- **Enmienda O5 (2026-08-18)**: R10 decía "sin `trim` destructivo" y la
+  implementación recorta espacios. Recortar los extremos no es destructivo; se
+  aclara la frase de la spec y **no** se toca el código.
+- **Handoff de la ronda 2 escrito** →
+  `progress/handoff_nutrition-ai-explainer_r2.md`, con B1..B4, los menores O1/O3/O4
+  y lo decidido por el `leader` para que Codex no lo re-abra (O5 y O2).
+
 ## Siguiente
 
-Codex aplica la enmienda de `env-drift.test.mjs` y termina de dejar `init.sh`
-verde (sus e2e y lint no llegaron a correr: la corrida se detuvo antes). Después,
-`reviewer`. El cierre de #18 necesita además la prueba de humo de R19, que corre
-el humano.
+**PARADA: le toca al humano correr Codex CLI** con
+`progress/handoff_nutrition-ai-explainer_r2.md`. Cuando termine, segunda ronda de
+`reviewer`. El cierre de #18 sigue necesitando además la prueba de humo de R19,
+que corre el humano.

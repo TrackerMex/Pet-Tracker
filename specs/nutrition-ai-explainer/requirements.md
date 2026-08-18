@@ -497,7 +497,12 @@ asevera `warn.mock.calls[0][0]` con `{ petId }`). El R-id de R11 no cambia.
   `finish_reason === 'length'` THEN THE SYSTEM SHALL tratarlo como fallo,
   devolver `null` y emitir `logger.warn` (D7b: una frase cortada a la mitad en
   una tarjeta de salud se lee como bug). El texto devuelto SHALL entregarse tal
-  cual, sin `trim` destructivo más allá de descartar el caso vacío.
+  cual salvo por los espacios de los extremos: recortar con `trim()` **sí** está
+  permitido —no es destructivo y evita pintar una tarjeta con espacios colgando—;
+  lo prohibido es alterar el contenido (resumir, recortar por longitud, reescribir).
+  *(Enmienda del 2026-08-18, tras la ronda 1 de revisión: la implementación hacía
+  `trim()` y la frase original se leía como si lo prohibiera. Se aclara la frase, no
+  se cambia el código.)*
 
   **Ningún camino a `null` es silencioso.** THE SYSTEM SHALL emitir `logger.warn`
   también cuando el contenido llega `null`, vacío o solo espacios — no solo en el
