@@ -521,17 +521,17 @@ describe('R7 (wialon-session-reuse #29): el token no aparece en logs ni en error
         expect((error as Error).message).not.toContain(SECRET_TOKEN);
         expect((error as Error).stack ?? '').not.toContain(SECRET_TOKEN);
       }
+
+      expect(errorSpies[0]).toHaveBeenCalledTimes(0);
+      expect(errorSpies[1]).toHaveBeenCalledTimes(0);
+      expect(errorSpies[2]).toHaveBeenCalledTimes(0);
+      expect(errorSpies[3]).toHaveBeenCalledTimes(0);
+      expect(errorSpies[4]).toHaveBeenCalledTimes(0);
     } finally {
       for (const spy of errorSpies) {
         spy.mockRestore();
       }
     }
-
-    expect(errorSpies[0]).toHaveBeenCalledTimes(0);
-    expect(errorSpies[1]).toHaveBeenCalledTimes(0);
-    expect(errorSpies[2]).toHaveBeenCalledTimes(0);
-    expect(errorSpies[3]).toHaveBeenCalledTimes(0);
-    expect(errorSpies[4]).toHaveBeenCalledTimes(0);
     expect(failureErrors).toHaveLength(2);
   });
 
