@@ -1,5 +1,5 @@
-// Errores de dominio tipados de la integracion Wialon (R4). Regla de
-// docs/conventions.md §Manejo de errores. Nunca se
+// Errores de dominio tipados de la integracion Wialon (R4) — sin
+// @nestjs/common, regla de docs/conventions.md §Manejo de errores. Nunca se
 // deja pasar un error crudo de HTTP/fetch al llamador.
 
 /**
