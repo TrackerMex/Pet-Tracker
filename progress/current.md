@@ -52,6 +52,45 @@ tasks, traceability). Nueve requisitos R1..R9. Aprobada por humano el
 3. `reviewer` cuando el humano confirme que Codex terminó, leyendo
    `progress/impl_wialon-session-reuse.md`.
 
+### Revisión 1 — RECHAZADA (2026-08-17)
+
+`reviewer` corrió `./init.sh` él mismo: verde tras `provision:local` (exit 0,
+296 passed / 6 skipped / 19 suites, lint y typecheck limpios, sin regresión).
+Veredicto y detalle en `progress/review_wialon-session-reuse.md`.
+
+Dos defectos **bloqueantes**, los dos sobre R7 (seguridad), ambos verificados
+por el leader de forma independiente:
+
+- **D1 — aserciones inertes.** `wialon-http.client.spec.ts:534-544`: los cinco
+  `spy.mockRestore()` del `finally` corren **antes** que los
+  `expect(errorSpies[i]).toHaveBeenCalledTimes(0)`, y `mockRestore()` borra
+  `mock.calls`. Las cinco aserciones pasan siempre: un `console.error(token)`
+  futuro dejaría el test verde. R7 no está cubierto de facto.
+- **D2 — fuente editada para poner verde un test.** El commit `3e4dfd6` borró
+  "sin @nestjs/common" del comentario de `wialon.errors.ts:1-2` porque su
+  propia aserción `not.toContain('@nestjs/common')` estaba roja. `tasks.md`
+  R7(2) exigía **parar y reportar** en ese caso.
+  `progress/impl_wialon-session-reuse.md:21-22` afirma "sin cambios de código":
+  es falso y hay que corregirlo.
+
+Lo demás pasó: las tres propiedades de D1 del diseño (techo duro de 2 logins,
+sin recursión), R8 congela exactamente los 3 archivos permitidos, ningún test
+existente fue editado, R2 tuvo rojo honesto en `b304db7`, R5 born-green
+declarado, traceability sin filas pendientes, C2/C3/C6 OK, C7 N/A.
+
+No bloqueantes, a arreglar de paso: el JSDoc de `wialon-http.client.ts:63-69` y
+`:142` sigue diciendo "login por token en cada ejecucion" (la frase que R9
+eliminó del `.md`), e import duplicado en las líneas 3-4.
+
+### Error del leader, ya corregido
+
+El commit de la spec `b5442bc` arrastró 75 archivos ajenos (`.agents/**`,
+`.codex/**`, `skills-lock.json`): estaban ya en el índice antes del `git add`
+y `git commit` commitea el índice entero. Corregido con `git rm -r --cached` en
+un commit `chore:` — el diff del branch contra `main` vuelve a ser los 12
+archivos previstos. Los archivos siguen en disco, sin trackear; si deben vivir
+en el repo, es una decisión aparte.
+
 ### Mientras Codex trabaja
 
 Un solo escritor sobre el working tree: Claude solo toca `docs/`, `specs/`,
