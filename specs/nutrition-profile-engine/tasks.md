@@ -64,8 +64,8 @@ tags: [harness, spec]
 
 ## R3 — Tabla de factores MER y precedencia
 
-- [ ] (1) Escribir test que falla para R3 — `nutrition-engine.spec.ts`, un caso
-      por cada una de las 10 filas de C-2, más: cachorro `high` ≡ cachorro
+- [ ] (1) Escribir test que falla para R3 — `nutrition-engine.spec.ts`, 10 casos
+      (las 5 filas clínicas de C-2 × 2 especies), más: cachorro `high` ≡ cachorro
       `medium`, adulto en pérdida `high` ≡ adulto en pérdida `medium`, y
       `sterilized: null` ⇒ factor de entero
 - [ ] (2) Implementación mínima que lo pasa
