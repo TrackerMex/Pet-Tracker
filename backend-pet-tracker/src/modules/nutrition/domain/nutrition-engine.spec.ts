@@ -262,3 +262,25 @@ describe('R4 (nutrition-profile-engine #17): redondeo de kcal y gramos', () => {
     expect(Number.isInteger(result.dailyGrams)).toBe(true);
   });
 });
+
+describe('R5 (nutrition-profile-engine #17): comidas por dia', () => {
+  it.each<Array<[string, Partial<NutritionEngineInput>, number]>>([
+    ['cachorro', { ageMonths: 3 }, 4],
+    ['joven', { ageMonths: 6 }, 3],
+    ['adulto', { ageMonths: 24 }, 2],
+    [
+      'gato adulto high',
+      { species: 'cat', ageMonths: 24, activityLevel: 'high' },
+      3,
+    ],
+    [
+      'perro adulto high',
+      { species: 'dog', ageMonths: 24, activityLevel: 'high' },
+      2,
+    ],
+  ])('asigna las comidas de %s', (_label, changes, expected) => {
+    expect(computePlan({ ...BASE_INPUT, ...changes }).mealsPerDay).toBe(
+      expected,
+    );
+  });
+});
