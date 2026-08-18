@@ -634,6 +634,7 @@ describe('Nutrition profile and plans (e2e)', () => {
 describe.each([
   'R13 (nutrition-ai-explainer #18): setAiExplanation actualiza solo esa columna y no inserta fila',
   'R16 (nutrition-ai-explainer #18): hash hit con explicacion no re-llama',
+  'R17 (nutrition-ai-explainer #18): el mapper devuelve la explicacion persistida',
   'R18 (nutrition-ai-explainer #18): la explicacion llega de punta a punta',
 ])('%s', () => {
   it('returns and persists a non-empty explanation through the module flow', async () => {
