@@ -1,4 +1,10 @@
-import { NUTRITION_WARNING_ORDER } from './nutrition.constants';
+import {
+  AGE_MONTHS_ADULT_MIN,
+  BODY_CONDITION_OVERWEIGHT_MIN,
+  MEALS_ADULT,
+  RER_COEFFICIENT,
+  RER_EXPONENT,
+} from './nutrition.constants';
 
 export interface NutritionEngineInput {
   species: 'dog' | 'cat';
@@ -42,7 +48,25 @@ export interface NutritionPlanResult {
  * constantes clínicas nombradas de nutrition.constants.ts.
  */
 export function computePlan(input: NutritionEngineInput): NutritionPlanResult {
-  void input;
-  void NUTRITION_WARNING_ORDER;
-  throw new Error('Nutrition plan computation is not implemented');
+  const isWeightLoss =
+    input.ageMonths >= AGE_MONTHS_ADULT_MIN &&
+    input.bodyCondition !== null &&
+    input.bodyCondition >= BODY_CONDITION_OVERWEIGHT_MIN;
+  const baseWeightKg =
+    isWeightLoss && input.targetWeightKg !== null
+      ? input.targetWeightKg
+      : input.weightKg;
+  const rerKcal = Math.round(
+    RER_COEFFICIENT * Math.pow(baseWeightKg, RER_EXPONENT),
+  );
+
+  return {
+    rerKcal,
+    merKcal: rerKcal,
+    dailyGrams: rerKcal,
+    mealsPerDay: MEALS_ADULT,
+    mealTimes: [],
+    objective: 'maintenance',
+    warnings: [],
+  };
 }
