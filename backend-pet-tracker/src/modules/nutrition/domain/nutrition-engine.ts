@@ -5,6 +5,7 @@ import {
   ACTIVITY_MODIFIER_DOG_LOW,
   AGE_MONTHS_ADULT_MIN,
   AGE_MONTHS_PUPPY_MAX,
+  AGE_MONTHS_TOO_YOUNG_MAX,
   BODY_CONDITION_OVERWEIGHT_MIN,
   BODY_CONDITION_UNDERWEIGHT_MAX,
   GRAMS_ROUNDING_STEP,
@@ -164,6 +165,12 @@ export function computePlan(input: NutritionEngineInput): NutritionPlanResult {
     warnings.push({
       code: 'check_food_allergens',
       message: NUTRITION_WARNING_MESSAGES.check_food_allergens,
+    });
+  }
+  if (input.ageMonths < AGE_MONTHS_TOO_YOUNG_MAX) {
+    warnings.push({
+      code: 'too_young_vet',
+      message: NUTRITION_WARNING_MESSAGES.too_young_vet,
     });
   }
 
