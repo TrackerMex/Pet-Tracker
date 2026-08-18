@@ -236,3 +236,29 @@ describe('R3 (nutrition-profile-engine #17): tabla de factores MER y precedencia
     expect(result.merKcal).toBe(expectedMer(10, 1.8));
   });
 });
+
+describe('R4 (nutrition-profile-engine #17): redondeo de kcal y gramos', () => {
+  it('deriva gramos del MER ya redondeado y devuelve enteros', () => {
+    const result = computePlan({
+      species: 'cat',
+      weightKg: 1.2,
+      targetWeightKg: null,
+      ageMonths: 24,
+      sterilized: true,
+      activityLevel: 'medium',
+      bodyCondition: null,
+      kcalPer100g: 350,
+      allergies: [],
+      diseases: [],
+    });
+
+    expect(result).toMatchObject({
+      rerKcal: 80,
+      merKcal: 96,
+      dailyGrams: 25,
+    });
+    expect(Number.isInteger(result.rerKcal)).toBe(true);
+    expect(Number.isInteger(result.merKcal)).toBe(true);
+    expect(Number.isInteger(result.dailyGrams)).toBe(true);
+  });
+});
