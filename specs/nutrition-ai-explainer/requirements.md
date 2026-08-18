@@ -190,9 +190,11 @@ pasar por instrucción. `<input acotado>` son las **diez** claves de
 ```
 src/modules/nutrition/domain/ports/nutrition-explainer.ts
     export const NUTRITION_EXPLAINER = Symbol('NutritionExplainer');
+    export interface NutritionExplainerContext { petId: string; planId: string }
     export interface NutritionExplainer {
       explain(input: NutritionEngineInput,
-              result: NutritionPlanResult): Promise<string | null>;
+              result: NutritionPlanResult,
+              ctx: NutritionExplainerContext): Promise<string | null>;
     }
 
 src/modules/nutrition/domain/repositories/nutrition.repository.ts   (+1 método)
@@ -215,6 +217,18 @@ src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.ts
     export const OPENAI_API_KEY_PENDING = 'PENDING';
     export function createNutritionExplainer(config: ConfigService): NutritionExplainer
 ```
+
+**Enmienda del 2026-08-18 (posterior a la aprobación), sobre `ctx`.** El puerto
+lleva un tercer parámetro **solo para trazas**: R11 y R10 exigen loguear `petId` y
+`planId`, y sin él el adaptador no los conoce — la contradicción la detectó Codex
+al implementar y **paró**, que es lo correcto. `ctx` **no** contradice OV2: OV2
+prohíbe que datos identificables entren en el **prompt**, no que el adaptador los
+reciba para un `logger.warn` del servidor. La separación es verificable, no una
+promesa: `buildUserPrompt(input, result)` **no recibe `ctx`** —es una función de
+dos parámetros— y la aserción anti-fuga de R7 ya exige que el string del prompt no
+contenga ningún UUID. Loguear `petId` en un `warn` es además el patrón vivo del
+repo (`src/modules/activity/application/use-cases/aggregate-daily-activity.use-case.spec.ts:172`
+asevera `warn.mock.calls[0][0]` con `{ petId }`). El R-id de R11 no cambia.
 
 `domain/ports/` ya es convención del repo (`modules/auth/domain/ports/`,
 `modules/media/domain/ports/`, `modules/pets/domain/ports/`) y el nombre del
@@ -396,7 +410,9 @@ src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.ts
   SYSTEM SHALL producir el `JSON.stringify` de C-5 con exactamente las diez
   claves de `NutritionEngineInput` y las siete de `NutritionPlanResult`, y SHALL
   **no** incluir `foodType`, el nombre de la mascota, el `petId`, el `planId`,
-  el email del dueño ni ningún otro dato identificable. El módulo
+  el email del dueño ni ningún otro dato identificable. `buildUserPrompt` SHALL
+  seguir recibiendo **dos** parámetros (`input`, `result`): el `ctx` de C-6 con
+  `petId`/`planId` es de trazas y SHALL **no** alcanzarlo. El módulo
   `src/modules/nutrition/application/nutrition-input-hash.ts` SHALL **no**
   modificarse y los `inputs_hash` ya persistidos SHALL seguir siendo válidos.
   *Test*: `nutrition-prompt.spec.ts::R7 (nutrition-ai-explainer #18)` —
@@ -492,7 +508,9 @@ src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.ts
   `explain()` SHALL resolver a `null` — **nunca** rechazar ni propagar — y SHALL
   emitir exactamente un `logger.warn` con el objeto
   `{ scope: NUTRITION_AI_SCOPE, petId, planId, message }` donde `message` es el
-  mensaje del error. (En los caminos de R10 —respuesta recibida pero inservible—
+  mensaje del error y `petId`/`planId` salen **del tercer parámetro `ctx` del
+  puerto** (C-6), nunca del input ni del prompt: `ctx` existe solo para trazas y
+  no viaja al proveedor. (En los caminos de R10 —respuesta recibida pero inservible—
   ese mismo objeto lleva además `finishReason` y `usage`; aquí no existen porque
   no hubo respuesta.) El log SHALL **no** contener la clave de API, ni el user
   prompt completo, ni las alergias o enfermedades del usuario (precedente de
@@ -517,7 +535,7 @@ src/modules/nutrition/infrastructure/ai/nutrition-explainer.factory.ts
   1. result = computePlan(input)
   2. plan   = insertPlan({ petId, ...result, aiExplanation: null, inputsHash })
   3. si isPetTracked(petId) === false  -> devolver plan (R14)
-  4. text = await explainer.explain(input, result)
+  4. text = await explainer.explain(input, result, { petId, planId: plan.id })
   5. si text === null                  -> devolver plan
   6. devolver await setAiExplanation(plan.id, text)                       (R13)
   ```

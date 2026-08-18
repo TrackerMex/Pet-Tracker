@@ -115,14 +115,29 @@ ninguna IA, la corre el humano (`CLAUDE.md` §Excepciones).
   `health-vaccines` está fuera de alcance, y **dos prohibiciones separadas**: no
   cerrar la feature y no ejecutar la prueba de humo de R19 ni darla por cumplida.
 
+- **Bloqueo reportado por Codex (2026-08-18) y resuelto por enmienda.** Codex
+  paró al implementar: R10/R11 exigen loguear `petId` y `planId`, pero la firma
+  del puerto aprobada (`explain(input, result)`) no se los da, y leyó que
+  añadirlos chocaba con OV2. **Paró en vez de improvisar, que es exactamente lo
+  que el handoff le pedía.** Diagnóstico: la contradicción es real —se me pasó en
+  la revisión previa al gate— pero no es con OV2. OV2 prohíbe datos
+  identificables en el **prompt**, no que el adaptador los reciba para un
+  `logger.warn` del servidor.
+  **Enmienda aplicada** (fechada dentro de la propia spec, sin cambiar ningún
+  R-id): el puerto gana un tercer parámetro `ctx: { petId, planId }` **solo para
+  trazas**. La separación queda verificable y no como promesa:
+  `buildUserPrompt(input, result)` sigue siendo de dos parámetros y no recibe
+  `ctx`, y la aserción anti-fuga de R7 ya exige que el prompt no contenga ningún
+  UUID. Precedente del repo para loguear `petId` en un `warn`:
+  `aggregate-daily-activity.use-case.spec.ts:172`.
+  Alternativas descartadas: quitar `petId`/`planId` del log (un `warn` sin ids no
+  sirve para depurar "a esta mascota le falta la explicación") y loguear desde el
+  use-case (obligaría a que el adaptador devolviera `finishReason` y `usage` en un
+  tipo de retorno más rico: más código para el mismo efecto).
+
 ## Siguiente
 
-**PARADA: le toca al humano correr Codex CLI** con el bloque de
-`progress/handoff_nutrition-ai-explainer.md`. Mientras implementa, Claude no
-toca `backend-pet-tracker/`.
-
-Cuando el humano confirme que Codex terminó: leer
-`progress/impl_nutrition-ai-explainer.md` y lanzar el `reviewer`. Ojo con el
-cierre: además del veredicto aprobado, #18 necesita que el humano ejecute la
-prueba de humo de R19 con la clave real y marque su casilla. Con las dos cosas,
-#18 se marca `done` y el backlog queda en 30/30.
+**Codex sigue implementando** con la spec enmendada. Cuando el humano confirme
+que terminó: leer `progress/impl_nutrition-ai-explainer.md` y lanzar el
+`reviewer`. El cierre de #18 necesita además la prueba de humo de R19, que corre
+el humano.

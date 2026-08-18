@@ -204,6 +204,8 @@ export interface OpenAiChatClient {
 }
 
 export class OpenAiNutritionExplainer implements NutritionExplainer {
+  // explain(input, result, ctx) — ctx: { petId, planId }, SOLO para logger.warn.
+  // No entra en buildUserPrompt(input, result), que sigue siendo de dos parametros.
   constructor(
     private readonly model: string,
     private readonly apiKey: string,
