@@ -1,12 +1,11 @@
 import { readdirSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
 
-describe('R26 (nutrition-profile-engine #17): sin dependencia openai ni env OPENAI_', () => {
+describe('R1 (nutrition-ai-explainer #18): la IA esta cableada y sin literales de modelo', () => {
   const backendRoot = join(__dirname, '..', '..', '..');
   const repositoryRoot = join(backendRoot, '..');
 
   it('mantiene fuera del backend toda configuracion y codigo de IA', () => {
-    const packageJson = readFileSync(join(backendRoot, 'package.json'), 'utf8');
     const envExample = readFileSync(
       join(repositoryRoot, '.env.example'),
       'utf8',
@@ -18,11 +17,20 @@ describe('R26 (nutrition-profile-engine #17): sin dependencia openai ni env OPEN
     const productionSource = sourceFiles(join(backendRoot, 'src'))
       .map((path) => readFileSync(path, 'utf8'))
       .join('\n');
+    const openAiConfigFiles = sourceFiles(join(backendRoot, 'src'))
+      .filter((path) => readFileSync(path, 'utf8').includes('OPENAI_'))
+      .map((path) => relative(join(backendRoot, 'src'), path).replaceAll('\\', '/'));
 
-    expect(packageJson).not.toMatch(/"openai"\s*:/i);
-    expect(envExample).not.toContain('OPENAI_');
-    expect(conventions).not.toContain('OPENAI_');
-    expect(productionSource).not.toContain('OPENAI_');
+    expect(envExample).toMatch(/^OPENAI_ENABLED=false$/m);
+    expect(envExample).toMatch(/^OPENAI_API_KEY=PENDING$/m);
+    expect(envExample).toMatch(/^OPENAI_MODEL=/m);
+    expect(envExample).not.toMatch(/^OPENAI_API_KEY=sk-/m);
+    expect(conventions).toContain('`OPENAI_ENABLED`');
+    expect(conventions).toContain('`OPENAI_API_KEY`');
+    expect(conventions).toContain('`OPENAI_MODEL`');
+    expect(openAiConfigFiles).toEqual([
+      'modules/nutrition/infrastructure/ai/nutrition-explainer.factory.ts',
+    ]);
     expect(productionSource).not.toContain('gpt-');
   });
 });

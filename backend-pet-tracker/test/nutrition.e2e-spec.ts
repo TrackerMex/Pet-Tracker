@@ -567,8 +567,8 @@ describe('Nutrition profile and plans (e2e)', () => {
     });
   });
 
-  describe('R26 (nutrition-profile-engine #17): aiExplanation es null', () => {
-    it('persiste null y nunca expone otro valor en generate ni GET', async () => {
+  describe('R5 (nutrition-ai-explainer #18): IA apagada persiste aiExplanation null', () => {
+    it('devuelve null en generate y lo persiste', async () => {
       const owner = await seedUser('r26');
       const pet = await seedPet(owner);
       await putProfile(owner, pet.id, {
@@ -589,17 +589,6 @@ describe('Nutrition profile and plans (e2e)', () => {
         .from(nutritionPlans)
         .where(eq(nutritionPlans.id, generatedBody.id));
       expect(persisted).toEqual([{ aiExplanation: null }]);
-
-      await db
-        .update(nutritionPlans)
-        .set({ aiExplanation: 'must not leak while feature 17 is active' })
-        .where(eq(nutritionPlans.id, generatedBody.id));
-      const latest = await api()
-        .get(`/v1/pets/${pet.id}/nutrition-plan`)
-        .set(auth(owner.token))
-        .expect(200);
-      const latestBody = latest.body as { aiExplanation: null };
-      expect(latestBody.aiExplanation).toBeNull();
     });
   });
 
