@@ -21,6 +21,7 @@ import {
   MER_FACTOR_WEIGHT_LOSS_CAT,
   MER_FACTOR_WEIGHT_LOSS_DOG,
   MER_FACTOR_YOUNG_DOG,
+  NUTRITION_WARNING_MESSAGES,
   RER_COEFFICIENT,
   RER_EXPONENT,
 } from './nutrition.constants';
@@ -133,6 +134,16 @@ export function computePlan(input: NutritionEngineInput): NutritionPlanResult {
         : input.species === 'cat' && input.activityLevel === 'high'
           ? MEALS_ADULT_CAT_HIGH_ACTIVITY
           : MEALS_ADULT;
+  const warnings: NutritionWarning[] = [];
+  if (
+    input.bodyCondition !== null &&
+    input.bodyCondition >= BODY_CONDITION_OVERWEIGHT_MIN
+  ) {
+    warnings.push({
+      code: 'weight_loss_plan',
+      message: NUTRITION_WARNING_MESSAGES.weight_loss_plan,
+    });
+  }
 
   return {
     rerKcal,
@@ -141,6 +152,6 @@ export function computePlan(input: NutritionEngineInput): NutritionPlanResult {
     mealsPerDay,
     mealTimes: [...MEAL_TIMES_BY_COUNT[mealsPerDay]],
     objective,
-    warnings: [],
+    warnings,
   };
 }
