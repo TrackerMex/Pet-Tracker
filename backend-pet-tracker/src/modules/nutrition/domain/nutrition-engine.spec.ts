@@ -419,3 +419,33 @@ describe('R12 (nutrition-profile-engine #17): warning too_young_vet', () => {
     expect(hasWarning(24)).toBe(false);
   });
 });
+
+describe('R13 (nutrition-profile-engine #17): orden fijo y acumulacion de warnings', () => {
+  it('acumula todos los warnings aplicables en el orden clinico fijo', () => {
+    const result = computePlan({
+      ...BASE_INPUT,
+      bodyCondition: 8,
+      diseases: ['diabetes'],
+      allergies: ['pollo'],
+    });
+
+    expect(result.warnings).toEqual([
+      {
+        code: 'weight_loss_plan',
+        message: NUTRITION_WARNING_MESSAGES.weight_loss_plan,
+      },
+      {
+        code: 'chronic_disease_vet',
+        message: NUTRITION_WARNING_MESSAGES.chronic_disease_vet,
+      },
+      {
+        code: 'check_food_allergens',
+        message: NUTRITION_WARNING_MESSAGES.check_food_allergens,
+      },
+    ]);
+  });
+
+  it('devuelve un array vacio, nunca null, sin condiciones aplicables', () => {
+    expect(computePlan(BASE_INPUT).warnings).toEqual([]);
+  });
+});
