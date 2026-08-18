@@ -33,7 +33,9 @@ Default dev: fake. Env vars en la tabla de `docs/conventions.md`.
 ## API real (WialonHttpClient)
 
 Base: `WIALON_BASE_URL` (default `https://hst-api.wialon.com/wialon/ajax.html`).
-Login **por token en cada ejecución**: `svc=token/login` → `sid` (`eid`).
+Login por token **con cacheo de sesión por instancia**: `svc=token/login` →
+`sid` (`eid`). La sesión se reutiliza hasta `WIALON_SID_TTL_MS` (`4 * 60_000`,
+por debajo del límite de inactividad de 5 min de Wialon).
 
 | Llamada | Parámetros | Uso |
 |---|---|---|
@@ -46,6 +48,8 @@ Mapeo de mensajes: `pos.y→lat`, `pos.x→lng`, `pos.s→speedKmh`, `pos.c→co
 
 Errores: `{error: N}` → `WialonApiError(N)`; fallos de red/HTTP →
 `WialonTransportError`. Nunca un error crudo de fetch/SDK al llamador.
+En sesión inválida (`1` y `1011`), se limpia la sesión, se vuelve a loguear y se
+reintenta una sola vez la llamada fallida.
 **La conexión real está diferida**: el cliente se prueba contra fixtures; el
 smoke test con token real es trabajo futuro (STATUS/PR #12).
 

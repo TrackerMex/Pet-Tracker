@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-08-17
-**Features completadas**: 27/30 (`feature_list.json`)
+**Features completadas**: 28/30 (`feature_list.json`)
 **En progreso**: ninguna.
-**Pendientes**: 3, por prioridad — **P2**: #29 `wialon-session-reuse`.
-**P3**: #17 `nutrition-profile-engine`, #18 `nutrition-ai-explainer`.
+**Pendientes**: 2, ambas **P3** — #17 `nutrition-profile-engine`, #18
+`nutrition-ai-explainer`.
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
 desde 2026-08-10. Hay recursos vivos en la cuenta, aunque hoy sin coste.
@@ -726,6 +726,30 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-08-17 (4)** — Cerrada `wialon-session-reuse` (#29): el `sid` de Wialon
+  se cachea por instancia con `WIALON_SID_TTL_MS = 4 * 60_000` (por debajo de
+  los 5 min de inactividad documentados) y lo comparten `listUnits()` y
+  `getMessages()`, así que un ciclo del poller sobre N collares hace **un solo**
+  `token/login` en vez de N. Ante `{error: 1}` / `{error: 1011}` el cliente
+  re-loguea una vez y reintenta de forma transparente, con techo duro de dos
+  logins y sin recursión. `FakeWialonClient`, el puerto y el gate `SIM_MODE`
+  quedaron congelados. La primera revisión **rechazó** por dos defectos de R7
+  (aserciones de `console.*` inertes tras `mockRestore()`, y el fuente editado
+  para poner verde una aserción); la segunda **aprobó** tras verificar el
+  `reviewer` por su cuenta que la guarda muerde. `./init.sh` verde a la primera:
+  exit 0, 1045 unit + 14 infra + 296 e2e (6 skipped, 19 suites), lint y
+  typecheck limpios. Sin P1 ni P2 abiertas: solo quedan #17 y #18, ambas P3.
+
+- **2026-08-17 (3)** — Corregidos los dos bloqueantes R7 de la primera revisión
+  de `wialon-session-reuse` (#29): las cinco aserciones de `console.*` ahora
+  corren antes de `mockRestore()` y se verificaron fallando ante un
+  `console.error(this.token)` temporal; el comentario original de
+  `wialon.errors.ts` se restauró en un commit rojo y la guarda pasó después a
+  detectar solo imports reales de `@nestjs/common`. También se corrigieron el
+  JSDoc obsoleto y el import duplicado. `./init.sh` final: exit 0, 139 suites
+  unit backend, 2 infra, 11 del harness y 19 e2e pasadas (2 omitidas). Feature
+  sigue `in_progress`; próximo paso: nueva revisión.
 
 - **2026-08-17 (2)** — Ciclo SDD completo de `test-dev-resource-isolation`
   (#28), reparto Claude/Codex. Los e2e y el entorno de desarrollo dejan de

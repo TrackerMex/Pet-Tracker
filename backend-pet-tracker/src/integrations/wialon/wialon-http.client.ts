@@ -1,11 +1,21 @@
 import type { RawPosition } from '@/pipeline/types';
 import type { WialonClient, WialonUnit } from './wialon-client.interface';
-import { WialonApiError, WialonTransportError } from './wialon.errors';
+import {
+  WialonApiError,
+  WialonTransportError,
+  isInvalidSessionError,
+} from './wialon.errors';
 
 // Parametros fijos del plan 005 §Paso 1 para messages/load_interval.
 const LOAD_INTERVAL_FLAGS = 1;
 const LOAD_INTERVAL_FLAGS_MASK = 65281;
 const LOAD_INTERVAL_MAX_COUNT = 500;
+
+/**
+ * 4 minutos, por debajo de los 5 minutos de inactividad de Wialon (si no hay
+ * actividad, la sesión deja de ser válida): https://help.wialon.com/en/api/expert-articles/faq/frequently-asked-questions
+ */
+export const WIALON_SID_TTL_MS = 4 * 60_000;
 
 /** Busqueda de unidades AVL — spec estandar de core/search_items. */
 const SEARCH_UNITS_PARAMS = {
@@ -54,13 +64,13 @@ function batteryFromParams(
 }
 
 /**
- * Cliente contra la API real de Wialon (R4): login por token en cada
- * ejecucion (svc=token/login -> sid), luego el svc pedido. El factory solo lo
- * cablea con SIM_MODE=false y token real (R1); conectar de verdad contra
- * hst-api.wialon.com queda fuera de esta feature — en tests el fetch se
- * inyecta mockeado, sin red.
+ * Cliente contra la API real de Wialon:
+ * mantiene `sid` con TTL y re-intenta una vez ante errores de sesión.
  */
 export class WialonHttpClient implements WialonClient {
+  private sid: string | null = null;
+  private sidExpiresAtMs = 0;
+
   constructor(
     private readonly baseUrl: string,
     private readonly token: string,
@@ -68,12 +78,9 @@ export class WialonHttpClient implements WialonClient {
   ) {}
 
   async listUnits(): Promise<WialonUnit[]> {
-    const sid = await this.login();
-    const response = await this.call<{ items?: { id: number; nm: string }[] }>(
-      'core/search_items',
-      SEARCH_UNITS_PARAMS,
-      sid,
-    );
+    const response = await this.callWithSession<{
+      items?: { id: number; nm: string }[];
+    }>('core/search_items', SEARCH_UNITS_PARAMS);
 
     return (response.items ?? []).map((item) => ({
       unitId: String(item.id),
@@ -86,8 +93,7 @@ export class WialonHttpClient implements WialonClient {
     fromTs: number,
     toTs: number,
   ): Promise<RawPosition[]> {
-    const sid = await this.login();
-    const response = await this.call<{ messages?: WialonMessage[] }>(
+    const response = await this.callWithSession<{ messages?: WialonMessage[] }>(
       'messages/load_interval',
       {
         itemId: Number(unitId),
@@ -97,7 +103,6 @@ export class WialonHttpClient implements WialonClient {
         flagsMask: LOAD_INTERVAL_FLAGS_MASK,
         loadCount: LOAD_INTERVAL_MAX_COUNT,
       },
-      sid,
     );
 
     return (response.messages ?? [])
@@ -107,7 +112,33 @@ export class WialonHttpClient implements WialonClient {
       .map((message) => toRawPosition(message));
   }
 
-  /** Login por token en cada ejecucion — devuelve el session id (`eid`). */
+  private async session(): Promise<string> {
+    if (this.sid !== null && Date.now() < this.sidExpiresAtMs) {
+      return this.sid;
+    }
+
+    const sid = await this.login();
+    this.sid = sid;
+    this.sidExpiresAtMs = Date.now() + WIALON_SID_TTL_MS;
+    return sid;
+  }
+
+  private async callWithSession<T>(svc: string, params: unknown): Promise<T> {
+    const sid = await this.session();
+    try {
+      return await this.call<T>(svc, params, sid);
+    } catch (error) {
+      if (!isInvalidSessionError(error)) {
+        throw error;
+      }
+
+      this.sid = null;
+      this.sidExpiresAtMs = 0;
+      return await this.call<T>(svc, params, await this.session());
+    }
+  }
+
+  /** Login por token — devuelve el session id (`eid`). */
   private async login(): Promise<string> {
     const response = await this.call<{ eid: string }>('token/login', {
       token: this.token,

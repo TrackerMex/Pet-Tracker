@@ -4,6 +4,7 @@ import {
   SQSClient,
 } from '@aws-sdk/client-sqs';
 import { Logger } from '@nestjs/common';
+import { WialonHttpClient } from '@/integrations/wialon/wialon-http.client';
 import { buildResourceNames } from '@/aws/resource-names';
 import type { WialonClient } from '@/integrations/wialon/wialon-client.interface';
 import { CLAIM_WATERMARK_LOOKBACK_MINUTES } from '@/modules/devices/application/use-cases/claim-device.use-case';
@@ -14,6 +15,16 @@ import { PollerService, POSITIONS_PER_MESSAGE_MAX } from './poller.service';
 const QUEUE_URL = 'http://localhost:4566/000000000000/positions-raw';
 const NOW = new Date('2026-08-01T12:00:00.000Z');
 const NAMES = buildResourceNames('');
+const BASE_URL = 'https://wialon.test/wialon/ajax.html';
+const loadIntervalFixture: unknown = {
+  messages: [{ t: 1_700_000_000, pos: { y: 19.4326, x: -99.1332 } }],
+};
+
+interface RecordedCall {
+  svc: string;
+  params: unknown;
+  sid: string | null;
+}
 
 // Mocks como propiedades jest.Mock (no metodos de interface): evita el
 // falso positivo de @typescript-eslint/unbound-method en los expect().
@@ -70,6 +81,33 @@ function sqsStub(): SqsStub {
         ([command]) => command instanceof GetQueueUrlCommand,
       ).length,
   };
+}
+
+function fetchStub(payloads: unknown[]): {
+  fetchFn: typeof fetch;
+  calls: RecordedCall[];
+} {
+  const calls: RecordedCall[] = [];
+  let index = 0;
+
+  const fetchFn = ((_url: unknown, init?: { body?: unknown }) => {
+    const rawBody = typeof init?.body === 'string' ? init.body : '';
+    const body = new URLSearchParams(rawBody);
+    calls.push({
+      svc: body.get('svc') ?? '',
+      params: JSON.parse(body.get('params') ?? 'null'),
+      sid: body.get('sid'),
+    });
+    const payload = payloads[Math.min(index, payloads.length - 1)];
+    index += 1;
+    return Promise.resolve({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve(payload),
+    });
+  }) as unknown as typeof fetch;
+
+  return { fetchFn, calls };
 }
 
 function storeStub(assignments: ActiveAssignment[]): MockOf<IngestionStore> {
@@ -204,6 +242,48 @@ describe('R9: poller — asignaciones activas -> getMessages(unitId, watermark, 
       (command) => command instanceof SendMessageCommand,
     ) as SendMessageCommand;
     expect(sendMessage.input.QueueUrl).toBe(QUEUE_URL);
+  });
+});
+
+describe('R2 (wialon-session-reuse #29): un ciclo del poller sobre N devices hace un solo token/login', () => {
+  const LOGIN_OK = { eid: 'sid-123', user: { nm: 'test' } };
+
+  it('el ciclo reutiliza el sid cacheado por instancia', async () => {
+    const { fetchFn, calls } = fetchStub([
+      LOGIN_OK,
+      loadIntervalFixture,
+      loadIntervalFixture,
+      loadIntervalFixture,
+    ]);
+    const service = new PollerService(
+      storeStub([
+        assignment(),
+        assignment({
+          deviceId: 'device-2',
+          petId: 'pet-2',
+          unitId: '900002',
+        }),
+        assignment({
+          deviceId: 'device-3',
+          petId: 'pet-3',
+          unitId: '900003',
+        }),
+      ]),
+      new WialonHttpClient(BASE_URL, 'real-token', fetchFn),
+      sqsStub().client,
+      NAMES,
+    );
+
+    await service.runOnce(NOW);
+
+    const loginCalls = calls.filter((call) => call.svc === 'token/login');
+    const messageCalls = calls.filter(
+      (call) => call.svc === 'messages/load_interval',
+    );
+    expect(loginCalls).toHaveLength(1);
+    expect(messageCalls).toHaveLength(3);
+    expect(messageCalls.every((call) => call.sid === 'sid-123')).toBe(true);
+    expect(calls).toHaveLength(4);
   });
 });
 

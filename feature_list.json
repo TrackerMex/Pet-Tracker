@@ -506,7 +506,7 @@
   {
     "id": 29,
     "name": "wialon-session-reuse",
-    "status": "pending",
+    "status": "done",
     "priority": "P2",
     "description": "WialonHttpClient hace un token/login en CADA llamada: listUnits() y getMessages() empiezan las dos por this.login() (wialon-http.client.ts:71 y :89) y el sid resultante se descarta. El poller itera los devices asignados y llama getMessages() por cada uno, así que el coste es un login por collar por ciclo de 60 s: con un collar son ~1.440 logins al día, con 100 son ~144.000 y con 1.000 son ~1,44 millones. Wialon aplica límites a token/login, y el modo de fallo cuando se alcanzan es el peor posible: la API empieza a rechazar logins y el poller deja de traer posiciones sin que nada lo señale. Hoy no molesta porque solo hay un collar de pruebas, pero es bloqueante antes de operar flota. El arreglo obvio (cachear el sid) introduce el problema que el diseño actual evita por fuerza bruta: el sid de Wialon caduca por inactividad, así que cachear SIN manejar la expiración cambia un fallo por otro. Alcance: cachear el sid con un TTL por debajo del de Wialon (confirmar el valor contra su documentación y contra la configuración de la cuenta, no asumirlo), detectar la respuesta de sesión inválida y re-loguear una vez de forma transparente antes de propagar el error, y compartir el sid entre listUnits() y getMessages() dentro del mismo ciclo. El FakeWialonClient no tiene sesión y no debe cambiar.",
     "acceptance_criteria": [
