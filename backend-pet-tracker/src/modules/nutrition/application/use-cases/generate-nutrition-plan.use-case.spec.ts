@@ -142,3 +142,22 @@ describe('R15 (nutrition-ai-explainer #18): hash hit con null reintenta sobre la
     );
   });
 });
+
+describe('R16 (nutrition-ai-explainer #18): hash hit con explicacion no re-llama', () => {
+  it('returns the enriched row without another entitlement or provider call', async () => {
+    const harness = createHarness();
+
+    const first = await harness.useCase.execute('pet-1', now);
+    const second = await harness.useCase.execute('pet-1', now);
+
+    expect(first.aiExplanation).toBe('Generated explanation');
+    expect(second.id).toBe(first.id);
+    expect(second.aiExplanation).toBe('Generated explanation');
+    expect(harness.nutritionRepository.insertPlan).toHaveBeenCalledTimes(1);
+    expect(harness.subscriptionRepository.isPetTracked).toHaveBeenCalledTimes(1);
+    expect(harness.explainer.explain).toHaveBeenCalledTimes(1);
+    expect(harness.nutritionRepository.setAiExplanation).toHaveBeenCalledTimes(
+      1,
+    );
+  });
+});
