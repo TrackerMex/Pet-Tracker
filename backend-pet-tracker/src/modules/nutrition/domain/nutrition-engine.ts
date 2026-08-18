@@ -6,6 +6,7 @@ import {
   AGE_MONTHS_ADULT_MIN,
   AGE_MONTHS_PUPPY_MAX,
   BODY_CONDITION_OVERWEIGHT_MIN,
+  BODY_CONDITION_UNDERWEIGHT_MAX,
   GRAMS_ROUNDING_STEP,
   MEALS_ADULT,
   MEALS_ADULT_CAT_HIGH_ACTIVITY,
@@ -142,6 +143,15 @@ export function computePlan(input: NutritionEngineInput): NutritionPlanResult {
     warnings.push({
       code: 'weight_loss_plan',
       message: NUTRITION_WARNING_MESSAGES.weight_loss_plan,
+    });
+  }
+  if (
+    input.bodyCondition !== null &&
+    input.bodyCondition <= BODY_CONDITION_UNDERWEIGHT_MAX
+  ) {
+    warnings.push({
+      code: 'underweight_vet',
+      message: NUTRITION_WARNING_MESSAGES.underweight_vet,
     });
   }
 
