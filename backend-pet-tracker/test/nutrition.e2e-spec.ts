@@ -561,4 +561,35 @@ describe('Nutrition profile and plans (e2e)', () => {
       expect(body).not.toContain('Not Found');
     });
   });
+
+  describe('R26 (nutrition-profile-engine #17): aiExplanation es null', () => {
+    it('persiste null y nunca expone otro valor en generate ni GET', async () => {
+      const owner = await seedUser('r26');
+      const pet = await seedPet(owner);
+      await putProfile(owner, pet.id, {
+        activityLevel: 'medium',
+        foodType: 'dry',
+        kcalPer100g: 350,
+      }).expect(200);
+      await postWeight(owner, pet.id, 20).expect(201);
+
+      const generated = await generatePlan(owner, pet.id).expect(200);
+      expect(generated.body.aiExplanation).toBeNull();
+      const persisted = await db
+        .select({ aiExplanation: nutritionPlans.aiExplanation })
+        .from(nutritionPlans)
+        .where(eq(nutritionPlans.id, generated.body.id));
+      expect(persisted).toEqual([{ aiExplanation: null }]);
+
+      await db
+        .update(nutritionPlans)
+        .set({ aiExplanation: 'must not leak while feature 17 is active' })
+        .where(eq(nutritionPlans.id, generated.body.id));
+      const latest = await api()
+        .get(`/v1/pets/${pet.id}/nutrition-plan`)
+        .set(auth(owner.token))
+        .expect(200);
+      expect(latest.body.aiExplanation).toBeNull();
+    });
+  });
 });
