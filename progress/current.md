@@ -73,11 +73,47 @@
 - La descripción de #17 en `feature_list.json` se corrigió para que el override
   de `kcalPer100g` no siga contradiciendo a la spec.
 
+- **Revisión de la spec a petición del humano (2026-08-18)**, antes de aprobarla.
+  Aritmética de los 5 casos numéricos verificada en `node`: los cuatro anclas de
+  R14 y el caso discriminante de R4 dan exactamente los valores escritos,
+  incluido el ruido IEEE-754 (`1.2 - 0.1 = 1.0999999999999999` sigue dando 218).
+  Dos defectos encontrados y corregidos:
+  - **Contradicción bloqueante**: R1 asevera por `readFileSync` que
+    `nutrition-engine.ts` no contiene las cifras de C-1..C-10, y el paso (3) de
+    su propia tarea pedía un JSDoc con esas mismas cifras en ese archivo. El
+    refactor habría puesto rojo el test del paso (1) del mismo requisito. Las
+    cifras van ahora a `nutrition.constants.ts`; corregido en `requirements.md`
+    R1, `design.md` D1 y `tasks.md` (commit `b506a22`).
+  - **Conteo ambiguo**: R3 pedía "un caso por fila de C-2 (10 filas)" sobre una
+    tabla de 8 filas. Son 10 casos = 5 filas clínicas × 2 especies; corregido en
+    `requirements.md` y `tasks.md` (`b506a22`, `b1e0e5d`).
+  Verificado además que `pets.sterilized` es editable por `PATCH /v1/pets/:id`
+  (P2 es corregible por el dueño) y que `pets.species` tiene CHECK
+  `in ('dog','cat')` (el motor no necesita rama para otras especies). Cota de P3
+  calculada: perro 30 kg con BCS 8 y target 35 → 1007 kcal, todavía por debajo
+  de las 1436 de mantenimiento, así que aceptar el target absurdo no
+  sobrealimenta.
+- **Gate humano de la spec superado (2026-08-18)**:
+  `specs/nutrition-profile-engine/requirements.md` → `[X] Aprobado por humano`.
+  Los cuatro archivos de la spec pasan a `status: approved` y #17 pasa a
+  `in_progress` en `feature_list.json`.
+- **Handoff a Codex CLI escrito** →
+  `progress/handoff_nutrition-profile-engine.md`. Incluye los tres overrides
+  (OV1/OV2/OV3) contra las frases obsoletas de `plans/009` y de la descripción
+  de #17, seis trampas concretas (escaneo de texto de R1, migración 0013 nueva,
+  `numeric` como string, par ancla indivisible, caso sintético de R4, ruido
+  IEEE-754), la exigencia de commits test-primero por R-id con doble hash en
+  `traceability.md`, la de rojo + aserción anti-vacío en las ocho guardas, y la
+  prohibición explícita de cerrar la feature él mismo (lo hizo en #29).
+
 ## Siguiente
 
-**PARADA en el gate de aprobación de la spec.** La casilla "Aprobado por humano"
-de `specs/nutrition-profile-engine/requirements.md` sigue sin marcar — ningún
-agente se auto-aprueba la spec. Con la aprobación: handoff a Codex CLI
-(plantilla en `.claude/agents/leader.md` §Handoff a Codex CLI), exigiendo
-commits test-primero rojo→verde por R-id (C4) y la aserción anti-vacío de cada
-warning.
+**PARADA: le toca al humano correr Codex CLI** con el bloque de
+`progress/handoff_nutrition-profile-engine.md`. Mientras implementa, Claude no
+toca `backend-pet-tracker/` — un solo escritor sobre el working tree.
+
+Cuando el humano confirme que Codex terminó: leer
+`progress/impl_nutrition-profile-engine.md`, lanzar el `reviewer` y esperar su
+veredicto en `progress/review_nutrition-profile-engine.md`. Solo con veredicto
+aprobado se marca #17 `done` y se abre el PR (`env -u GITHUB_TOKEN gh pr
+create`); el merge lo hace el humano.

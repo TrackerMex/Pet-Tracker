@@ -1,6 +1,6 @@
 ---
 feature: "nutrition-profile-engine"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec]
 ---
 
@@ -663,4 +663,4 @@ la spec no cambia. Registradas aquí para que Codex no las re-abra.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [X] Aprobado por humano (fecha: 2026-08-18) ← gate obligatorio antes de implementar
