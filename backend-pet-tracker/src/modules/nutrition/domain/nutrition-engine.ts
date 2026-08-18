@@ -72,8 +72,13 @@ export function computePlan(input: NutritionEngineInput): NutritionPlanResult {
     !isGrowth &&
     input.bodyCondition !== null &&
     input.bodyCondition >= BODY_CONDITION_OVERWEIGHT_MIN;
+  const objective: NutritionObjective = isGrowth
+    ? 'growth'
+    : isWeightLoss
+      ? 'weight_loss'
+      : 'maintenance';
   const baseWeightKg =
-    isWeightLoss && input.targetWeightKg !== null
+    objective === 'weight_loss' && input.targetWeightKg !== null
       ? input.targetWeightKg
       : input.weightKg;
   const rerRaw = RER_COEFFICIENT * Math.pow(baseWeightKg, RER_EXPONENT);
@@ -135,7 +140,7 @@ export function computePlan(input: NutritionEngineInput): NutritionPlanResult {
     dailyGrams,
     mealsPerDay,
     mealTimes: [...MEAL_TIMES_BY_COUNT[mealsPerDay]],
-    objective: 'maintenance',
+    objective,
     warnings: [],
   };
 }
