@@ -8,12 +8,21 @@ import {
 import {
   computePlan,
   NutritionEngineInput,
+  NutritionPlanResult,
 } from '@/modules/nutrition/domain/nutrition-engine';
+import {
+  NUTRITION_EXPLAINER,
+  type NutritionExplainer,
+} from '@/modules/nutrition/domain/ports/nutrition-explainer';
 import { NUTRITION_REPOSITORY } from '@/modules/nutrition/domain/repositories/nutrition.repository';
 import type { NutritionRepository } from '@/modules/nutrition/domain/repositories/nutrition.repository';
 import { calculateAgeMonths } from '@/modules/pets/domain/entities/pet.entity';
 import { PET_REPOSITORY } from '@/modules/pets/domain/repositories/pet.repository';
 import type { PetRepository } from '@/modules/pets/domain/repositories/pet.repository';
+import {
+  SUBSCRIPTION_REPOSITORY,
+  type SubscriptionRepository,
+} from '@/modules/subscriptions/domain/repositories/subscription.repository';
 
 @Injectable()
 export class GenerateNutritionPlanUseCase {
@@ -21,6 +30,10 @@ export class GenerateNutritionPlanUseCase {
     @Inject(NUTRITION_REPOSITORY)
     private readonly nutrition: NutritionRepository,
     @Inject(PET_REPOSITORY) private readonly pets: PetRepository,
+    @Inject(NUTRITION_EXPLAINER)
+    private readonly explainer: NutritionExplainer,
+    @Inject(SUBSCRIPTION_REPOSITORY)
+    private readonly subscriptions: SubscriptionRepository,
   ) {}
 
   async execute(petId: string): Promise<NutritionPlan> {
@@ -46,15 +59,36 @@ export class GenerateNutritionPlanUseCase {
     };
     const inputsHash = nutritionInputHash(input);
     const latestPlan = await this.nutrition.findLatestPlan(petId);
-    if (latestPlan?.inputsHash === inputsHash) return latestPlan;
+    if (latestPlan?.inputsHash === inputsHash) {
+      if (latestPlan.aiExplanation !== null) return latestPlan;
+
+      return this.enrich(latestPlan, input, computePlan(input));
+    }
 
     const result = computePlan(input);
 
-    return this.nutrition.insertPlan({
+    const inserted = await this.nutrition.insertPlan({
       petId,
       ...result,
       aiExplanation: null,
       inputsHash,
     });
+    return this.enrich(inserted, input, result);
+  }
+
+  private async enrich(
+    plan: NutritionPlan,
+    input: NutritionEngineInput,
+    result: NutritionPlanResult,
+  ): Promise<NutritionPlan> {
+    if (!(await this.subscriptions.isPetTracked(plan.petId))) return plan;
+
+    const explanation = await this.explainer.explain(input, result, {
+      petId: plan.petId,
+      planId: plan.id,
+    });
+    if (explanation === null) return plan;
+
+    return this.nutrition.setAiExplanation(plan.id, explanation);
   }
 }

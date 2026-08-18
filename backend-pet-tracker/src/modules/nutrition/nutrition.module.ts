@@ -8,11 +8,12 @@ import { NUTRITION_REPOSITORY } from '@/modules/nutrition/domain/repositories/nu
 import { NutritionController } from '@/modules/nutrition/infrastructure/nutrition.controller';
 import { NutritionDrizzleRepository } from '@/modules/nutrition/infrastructure/repositories/nutrition.drizzle.repository';
 import { PetsModule } from '@/modules/pets/pets.module';
+import { SubscriptionsModule } from '@/modules/subscriptions/subscriptions.module';
 import { NUTRITION_EXPLAINER } from '@/modules/nutrition/domain/ports/nutrition-explainer';
 import { createNutritionExplainer } from '@/modules/nutrition/infrastructure/ai/nutrition-explainer.factory';
 
 @Module({
-  imports: [ConfigModule, PetsModule],
+  imports: [ConfigModule, PetsModule, SubscriptionsModule],
   controllers: [NutritionController],
   providers: [
     {
