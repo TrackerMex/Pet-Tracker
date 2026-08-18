@@ -4,12 +4,21 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import {
+  NutritionPlanNotFoundError,
   NutritionProfileNotFoundError,
   NutritionProfileRequiredError,
   PetWeightRequiredError,
 } from '@/modules/nutrition/domain/errors/nutrition.errors';
 
 export function mapNutritionError(error: unknown): unknown {
+  if (error instanceof NutritionPlanNotFoundError) {
+    return new NotFoundException({
+      statusCode: HttpStatus.NOT_FOUND,
+      code: 'NUTRITION_PLAN_NOT_FOUND',
+      message: 'Nutrition plan not found',
+    });
+  }
+
   if (error instanceof NutritionProfileNotFoundError) {
     return new NotFoundException({
       statusCode: HttpStatus.NOT_FOUND,

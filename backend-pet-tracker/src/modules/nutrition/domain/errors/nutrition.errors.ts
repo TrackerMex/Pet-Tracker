@@ -12,6 +12,13 @@ export class NutritionProfileRequiredError extends Error {
   }
 }
 
+export class NutritionPlanNotFoundError extends Error {
+  constructor(petId: string) {
+    super(`Nutrition plan for pet ${petId} not found`);
+    this.name = 'NutritionPlanNotFoundError';
+  }
+}
+
 export class PetWeightRequiredError extends Error {
   constructor(petId: string) {
     super(`Current weight for pet ${petId} is required`);

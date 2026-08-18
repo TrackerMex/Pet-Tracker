@@ -17,6 +17,7 @@ import {
 import { UpsertNutritionProfileUseCase } from '@/modules/nutrition/application/use-cases/upsert-nutrition-profile.use-case';
 import { GetNutritionProfileUseCase } from '@/modules/nutrition/application/use-cases/get-nutrition-profile.use-case';
 import { GenerateNutritionPlanUseCase } from '@/modules/nutrition/application/use-cases/generate-nutrition-plan.use-case';
+import { GetNutritionPlanUseCase } from '@/modules/nutrition/application/use-cases/get-nutrition-plan.use-case';
 import { mapNutritionError } from '@/modules/nutrition/infrastructure/mappers/nutrition-error.mapper';
 import {
   NutritionProfileResponse,
@@ -31,6 +32,7 @@ export class NutritionController {
     private readonly upsertProfile: UpsertNutritionProfileUseCase,
     private readonly getProfile: GetNutritionProfileUseCase,
     private readonly generatePlan: GenerateNutritionPlanUseCase,
+    private readonly getPlan: GetNutritionPlanUseCase,
   ) {}
 
   @Put('nutrition-profile')
@@ -61,6 +63,17 @@ export class NutritionController {
   async generate(@Param('petId') petId: string): Promise<NutritionPlanResponse> {
     try {
       return toNutritionPlanResponse(await this.generatePlan.execute(petId));
+    } catch (error) {
+      throw mapNutritionError(error);
+    }
+  }
+
+  @Get('nutrition-plan')
+  async latestPlan(
+    @Param('petId') petId: string,
+  ): Promise<NutritionPlanResponse> {
+    try {
+      return toNutritionPlanResponse(await this.getPlan.execute(petId));
     } catch (error) {
       throw mapNutritionError(error);
     }
