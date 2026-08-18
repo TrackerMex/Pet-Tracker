@@ -1,7 +1,21 @@
 import {
+  ACTIVITY_MODIFIER_CAT_HIGH,
+  ACTIVITY_MODIFIER_CAT_LOW,
+  ACTIVITY_MODIFIER_DOG_HIGH,
+  ACTIVITY_MODIFIER_DOG_LOW,
   AGE_MONTHS_ADULT_MIN,
+  AGE_MONTHS_PUPPY_MAX,
   BODY_CONDITION_OVERWEIGHT_MIN,
   MEALS_ADULT,
+  MER_FACTOR_ADULT_CAT_INTACT,
+  MER_FACTOR_ADULT_CAT_STERILIZED,
+  MER_FACTOR_ADULT_DOG_INTACT,
+  MER_FACTOR_ADULT_DOG_STERILIZED,
+  MER_FACTOR_GROWTH_CAT,
+  MER_FACTOR_PUPPY_DOG,
+  MER_FACTOR_WEIGHT_LOSS_CAT,
+  MER_FACTOR_WEIGHT_LOSS_DOG,
+  MER_FACTOR_YOUNG_DOG,
   RER_COEFFICIENT,
   RER_EXPONENT,
 } from './nutrition.constants';
@@ -48,22 +62,60 @@ export interface NutritionPlanResult {
  * constantes clínicas nombradas de nutrition.constants.ts.
  */
 export function computePlan(input: NutritionEngineInput): NutritionPlanResult {
+  const isGrowth = input.ageMonths < AGE_MONTHS_ADULT_MIN;
   const isWeightLoss =
-    input.ageMonths >= AGE_MONTHS_ADULT_MIN &&
+    !isGrowth &&
     input.bodyCondition !== null &&
     input.bodyCondition >= BODY_CONDITION_OVERWEIGHT_MIN;
   const baseWeightKg =
     isWeightLoss && input.targetWeightKg !== null
       ? input.targetWeightKg
       : input.weightKg;
-  const rerKcal = Math.round(
-    RER_COEFFICIENT * Math.pow(baseWeightKg, RER_EXPONENT),
-  );
+  const rerRaw = RER_COEFFICIENT * Math.pow(baseWeightKg, RER_EXPONENT);
+  const rerKcal = Math.round(rerRaw);
+
+  let factor: number;
+  if (isGrowth) {
+    factor =
+      input.species === 'dog'
+        ? input.ageMonths < AGE_MONTHS_PUPPY_MAX
+          ? MER_FACTOR_PUPPY_DOG
+          : MER_FACTOR_YOUNG_DOG
+        : MER_FACTOR_GROWTH_CAT;
+  } else if (isWeightLoss) {
+    factor =
+      input.species === 'dog'
+        ? MER_FACTOR_WEIGHT_LOSS_DOG
+        : MER_FACTOR_WEIGHT_LOSS_CAT;
+  } else {
+    factor =
+      input.species === 'dog'
+        ? input.sterilized
+          ? MER_FACTOR_ADULT_DOG_STERILIZED
+          : MER_FACTOR_ADULT_DOG_INTACT
+        : input.sterilized
+          ? MER_FACTOR_ADULT_CAT_STERILIZED
+          : MER_FACTOR_ADULT_CAT_INTACT;
+
+    if (input.activityLevel === 'high') {
+      factor +=
+        input.species === 'dog'
+          ? ACTIVITY_MODIFIER_DOG_HIGH
+          : ACTIVITY_MODIFIER_CAT_HIGH;
+    } else if (input.activityLevel === 'low') {
+      factor +=
+        input.species === 'dog'
+          ? ACTIVITY_MODIFIER_DOG_LOW
+          : ACTIVITY_MODIFIER_CAT_LOW;
+    }
+  }
+
+  const merKcal = Math.round(rerRaw * factor);
 
   return {
     rerKcal,
-    merKcal: rerKcal,
-    dailyGrams: rerKcal,
+    merKcal,
+    dailyGrams: merKcal,
     mealsPerDay: MEALS_ADULT,
     mealTimes: [],
     objective: 'maintenance',
