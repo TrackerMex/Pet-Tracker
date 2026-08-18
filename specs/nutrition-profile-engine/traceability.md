@@ -27,7 +27,7 @@ tags: [harness, spec]
 | R9 | `src/modules/nutrition/domain/nutrition-engine.spec.ts::R9 (nutrition-profile-engine #17): warning underweight_vet` | rojo: `f092130 test(nutrition-profile-engine): guard underweight warning (R9)`; verde: `c9702ab feat(nutrition-profile-engine): emit underweight warning (R9)` |
 | R10 | `src/modules/nutrition/domain/nutrition-engine.spec.ts::R10 (nutrition-profile-engine #17): warning chronic_disease_vet` | rojo: `6cea9e7 test(nutrition-profile-engine): guard chronic disease warning (R10)`; verde: `96067f8 feat(nutrition-profile-engine): emit chronic disease warning (R10)` |
 | R11 | `src/modules/nutrition/domain/nutrition-engine.spec.ts::R11 (nutrition-profile-engine #17): warning check_food_allergens` | rojo: `0080f31 test(nutrition-profile-engine): guard allergen warning (R11)`; verde: `570e54a feat(nutrition-profile-engine): emit allergen warning (R11)` |
-| R12 | `src/modules/nutrition/domain/nutrition-engine.spec.ts::R12 (nutrition-profile-engine #17): warning too_young_vet` | pendiente |
+| R12 | `src/modules/nutrition/domain/nutrition-engine.spec.ts::R12 (nutrition-profile-engine #17): warning too_young_vet` | rojo: `e254816 test(nutrition-profile-engine): guard too young warning (R12)`; verde: `d6aeb2f feat(nutrition-profile-engine): emit too young warning (R12)` |
 | R13 | `src/modules/nutrition/domain/nutrition-engine.spec.ts::R13 (nutrition-profile-engine #17): orden fijo y acumulacion de warnings` | pendiente |
 | R14 | `src/modules/nutrition/domain/nutrition-engine.spec.ts::R14 (nutrition-profile-engine #17): los cuatro casos ancla con valores exactos` | pendiente |
 | R15 | `src/db/schema/nutrition.schema.spec.ts::R15 (nutrition-profile-engine #17): tablas de nutricion y migracion 0013 nueva` | pendiente |
