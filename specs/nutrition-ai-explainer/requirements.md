@@ -1,6 +1,6 @@
 ---
 feature: "nutrition-ai-explainer"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec]
 ---
 
@@ -742,6 +742,6 @@ Codex no las re-abra.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [X] Aprobado por humano (fecha: 2026-08-18) ← gate obligatorio antes de implementar
 - [ ] Prueba de humo con clave real ejecutada por humano (R19, fecha: ____)
       ← gate de cierre; el `reviewer` **no** puede marcarla

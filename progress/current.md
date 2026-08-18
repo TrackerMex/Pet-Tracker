@@ -101,13 +101,28 @@ ninguna IA, la corre el humano (`CLAUDE.md` §Excepciones).
   - **P3** → cerrada por el `leader` sin volver a preguntar: es la misma
     consecuencia de OV3 que el humano ya confirmó esta misma sesión.
 
+- **Gate humano de la spec superado (2026-08-18)**:
+  `specs/nutrition-ai-explainer/requirements.md` → `[X] Aprobado por humano`.
+  Los cuatro archivos de la spec pasan a `status: approved` y #18 pasa a
+  `in_progress`. (La fecha venía escrita como `26-08-18`; normalizada a
+  `2026-08-18`, el formato del resto del repo.)
+- **Handoff a Codex CLI escrito** → `progress/handoff_nutrition-ai-explainer.md`.
+  Incluye los tres overrides más la corrección del tope de tokens, ocho trampas
+  concretas (la derogación que deja la suite roja a propósito, el mapper que
+  devuelve `null` a pelo, la garantía triple de no-red, `maxRetries: 0`, el
+  nombre del parámetro de tope, los cuatro caminos que deben avisar, las cotas
+  del texto libre y el centinela `PENDING`), el aviso de que el flake de R12 de
+  `health-vaccines` está fuera de alcance, y **dos prohibiciones separadas**: no
+  cerrar la feature y no ejecutar la prueba de humo de R19 ni darla por cumplida.
+
 ## Siguiente
 
-**PARADA en el gate de aprobación de la spec.** La casilla "Aprobado por humano"
-de `specs/nutrition-ai-explainer/requirements.md` sigue sin marcar. Con la
-aprobación: handoff a Codex CLI, exigiendo commits test-primero por R-id, la
-aserción anti-vacío de cada degradación y la prohibición de cerrar la feature.
+**PARADA: le toca al humano correr Codex CLI** con el bloque de
+`progress/handoff_nutrition-ai-explainer.md`. Mientras implementa, Claude no
+toca `backend-pet-tracker/`.
 
-Ojo con el cierre de #18: tiene **dos** gates humanos, no uno. Además de la
-aprobación de la spec, R19 exige la prueba de humo con la clave real, que corre
-el humano y que ni el `reviewer` ni Codex pueden marcar por él.
+Cuando el humano confirme que Codex terminó: leer
+`progress/impl_nutrition-ai-explainer.md` y lanzar el `reviewer`. Ojo con el
+cierre: además del veredicto aprobado, #18 necesita que el humano ejecute la
+prueba de humo de R19 con la clave real y marque su casilla. Con las dos cosas,
+#18 se marca `done` y el backlog queda en 30/30.

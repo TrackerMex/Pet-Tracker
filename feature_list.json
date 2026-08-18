@@ -542,7 +542,7 @@
   {
     "id": 18,
     "name": "nutrition-ai-explainer",
-    "status": "spec_ready",
+    "status": "in_progress",
     "priority": "P3",
     "description": "Plan 009 (paso 3): ai-explainer.ts — si OPENAI_ENABLED=true y hay clave: SDK openai (modelo desde env OPENAI_MODEL, jamás hardcodeado), timeout 15 s, system prompt del plan (español cálido, orientativo, máx 180 palabras); resultado → ai_explanation. Cualquier fallo/clave ausente → ai_explanation=null y 200 igualmente (la IA nunca produce 5xx). Introduce OPENAI_ENABLED, OPENAI_API_KEY, OPENAI_MODEL en .env.example y conventions. La IA solo se llama desde backend (brief §9/§19).",
     "acceptance_criteria": [
