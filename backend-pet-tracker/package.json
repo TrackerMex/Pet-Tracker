@@ -43,6 +43,7 @@
     "drizzle-orm": "^0.45.2",
     "expo-server-sdk": "^7.0.0",
     "jsonwebtoken": "^9.0.3",
+    "openai": "^7.5.0",
     "pg": "^8.22.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
