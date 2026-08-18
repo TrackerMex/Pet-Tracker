@@ -11,6 +11,7 @@ import {
   MEALS_ADULT_CAT_HIGH_ACTIVITY,
   MEALS_PUPPY,
   MEALS_YOUNG,
+  MEAL_TIMES_BY_COUNT,
   MER_FACTOR_ADULT_CAT_INTACT,
   MER_FACTOR_ADULT_CAT_STERILIZED,
   MER_FACTOR_ADULT_DOG_INTACT,
@@ -133,7 +134,7 @@ export function computePlan(input: NutritionEngineInput): NutritionPlanResult {
     merKcal,
     dailyGrams,
     mealsPerDay,
-    mealTimes: [],
+    mealTimes: [...MEAL_TIMES_BY_COUNT[mealsPerDay]],
     objective: 'maintenance',
     warnings: [],
   };
