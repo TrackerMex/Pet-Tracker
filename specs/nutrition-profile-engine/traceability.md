@@ -18,7 +18,7 @@ tags: [harness, spec]
 |---|---|---|
 | R1 | `src/modules/nutrition/domain/nutrition-engine.spec.ts::R1 (nutrition-profile-engine #17): el motor es puro y sin literales` | rojo: `f255ca6 test(nutrition-profile-engine): require pure engine constants (R1)`; verde: `e619962 feat(nutrition-profile-engine): add pure engine contract and constants (R1)` |
 | R2 | `src/modules/nutrition/domain/nutrition-engine.spec.ts::R2 (nutrition-profile-engine #17): RER y peso base` | rojo: `469340f test(nutrition-profile-engine): cover RER base weight precedence (R2)`; verde: `f093a2b feat(nutrition-profile-engine): calculate RER from clinical base weight (R2)` |
-| R3 | `src/modules/nutrition/domain/nutrition-engine.spec.ts::R3 (nutrition-profile-engine #17): tabla de factores MER y precedencia` | pendiente |
+| R3 | `src/modules/nutrition/domain/nutrition-engine.spec.ts::R3 (nutrition-profile-engine #17): tabla de factores MER y precedencia` | rojo: `b9ab034 test(nutrition-profile-engine): cover MER factors and precedence (R3)`; verde: `ac74daa feat(nutrition-profile-engine): apply MER factor precedence (R3)` |
 | R4 | `src/modules/nutrition/domain/nutrition-engine.spec.ts::R4 (nutrition-profile-engine #17): redondeo de kcal y gramos` | pendiente |
 | R5 | `src/modules/nutrition/domain/nutrition-engine.spec.ts::R5 (nutrition-profile-engine #17): comidas por dia` | pendiente |
 | R6 | `src/modules/nutrition/domain/nutrition-engine.spec.ts::R6 (nutrition-profile-engine #17): horarios por numero de comidas` | pendiente |
