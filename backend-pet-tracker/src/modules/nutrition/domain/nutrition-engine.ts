@@ -125,10 +125,9 @@ export function computePlan(input: NutritionEngineInput): NutritionPlanResult {
   }
 
   const merKcal = Math.round(rerRaw * factor);
+  const gramsRaw = merKcal / (input.kcalPer100g / 100);
   const dailyGrams =
-    Math.round(
-      merKcal / (input.kcalPer100g / 100) / GRAMS_ROUNDING_STEP,
-    ) * GRAMS_ROUNDING_STEP;
+    Math.round(gramsRaw / GRAMS_ROUNDING_STEP) * GRAMS_ROUNDING_STEP;
   const mealsPerDay =
     input.ageMonths < AGE_MONTHS_PUPPY_MAX
       ? MEALS_PUPPY
