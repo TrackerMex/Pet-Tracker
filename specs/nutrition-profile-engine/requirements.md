@@ -196,7 +196,12 @@ Reglas que fija esta fórmula, y que ningún test puede contradecir:
   `AGE_MONTHS_*`, `BODY_CONDITION_*`, `MEALS_*`, `GRAMS_ROUNDING_STEP`,
   `MEAL_TIMES_BY_COUNT`, `NUTRITION_WARNING_MESSAGES`, `NUTRITION_WARNING_ORDER`);
   `nutrition-engine.ts` SHALL no contener ningún literal numérico de la tabla MER
-  ni ninguna cadena `"HH:mm"` ni ningún texto de warning.
+  ni ninguna cadena `"HH:mm"` ni ningún texto de warning — **tampoco dentro de un
+  comentario o de un JSDoc**: la aserción de abajo lee el archivo entero como
+  texto plano y no distingue código de comentario. El JSDoc que repite las cifras
+  de C-1..C-10 vive en `nutrition.constants.ts`, junto a los valores que
+  documenta; el JSDoc de `computePlan` describe el algoritmo y **remite a esas
+  constantes por nombre**, sin transcribir ninguna cifra (ver [[design]] D1).
   *Test*: `src/modules/nutrition/domain/nutrition-engine.spec.ts` (aserción sobre
   el texto fuente del engine leído con `readFileSync`: no aparece `3.0`, `1.6`,
   `07:30`, etc., y sí `import ... from './nutrition.constants'`) — mismo espíritu
@@ -220,9 +225,12 @@ Reglas que fija esta fórmula, y que ningún test puede contradecir:
   modificador de actividad de C-2.
   IF `sterilized` no es `true` (es `false` o `null`) THEN THE SYSTEM SHALL usar el
   factor de adulto **entero**.
-  *Test*: `nutrition-engine.spec.ts` — un caso por fila de C-2 (10 filas) más los
-  dos casos negativos del modificador: cachorro `high` ≡ cachorro `medium`, y
-  adulto en pérdida `high` ≡ adulto en pérdida `medium`.
+  *Test*: `nutrition-engine.spec.ts` — **10 casos**, uno por combinación de las 5
+  filas clínicas de C-2 (cachorro, joven, adulto esterilizado, adulto entero,
+  pérdida de peso) con las 2 especies; las 3 filas de modificador de actividad no
+  cuentan como caso propio porque se prueban sobre las anteriores. Más los dos
+  casos negativos del modificador: cachorro `high` ≡ cachorro `medium`, y adulto
+  en pérdida `high` ≡ adulto en pérdida `medium`.
 
 - **R4**: WHEN `computePlan` produce `rerKcal`, `merKcal` y `dailyGrams`, THE
   SYSTEM SHALL aplicar exactamente la cadena de C-10: `merKcal` redondeado desde

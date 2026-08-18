@@ -132,8 +132,14 @@ NUTRITION_WARNING_ORDER: readonly NutritionWarningCode[]
 NUTRITION_WARNING_MESSAGES: Readonly<Record<NutritionWarningCode, string>>
 ```
 
-El JSDoc de `computePlan` debe repetir las cifras de C-1..C-10 (lo pide el plan
-009: *"documentar en JSDoc con estas mismas cifras"*).
+El plan 009 pide *"documentar en JSDoc con estas mismas cifras"*. Ese JSDoc va en
+**`nutrition.constants.ts`**, encima de cada bloque de constantes, no en
+`nutrition-engine.ts`: R1 asevera por `readFileSync` que el fuente del engine no
+contiene ningún literal de C-1..C-10, y esa lectura es texto plano — un JSDoc con
+`3.0` o `07:30` dentro del engine **rompe el test de R1**. El JSDoc de
+`computePlan` documenta el algoritmo y remite a las constantes por nombre
+(*"factor MER según `MER_FACTOR_*`, ver `nutrition.constants.ts`"*), sin
+transcribir cifras.
 
 ### D2 — Pseudocódigo normativo del motor (R2, R3, R4, R5, R6, R7, R13)
 

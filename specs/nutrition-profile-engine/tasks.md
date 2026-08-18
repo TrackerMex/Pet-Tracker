@@ -48,8 +48,11 @@ tags: [harness, spec]
       `./nutrition.constants`)
 - [ ] (2) Implementación mínima que lo pasa — `nutrition.constants.ts` con los
       nombres exactos de [[design]] D1 + esqueleto de `computePlan`
-- [ ] (3) Refactor con tests verdes — JSDoc de `computePlan` con las cifras de
-      C-1..C-10 y cabecera de pureza al estilo `src/pipeline/geofence-eval.ts`
+- [ ] (3) Refactor con tests verdes — JSDoc con las cifras de C-1..C-10 en
+      `nutrition.constants.ts` (**nunca** en `nutrition-engine.ts`: el test de (1)
+      lee su fuente como texto plano y un JSDoc con `3.0` o `07:30` lo pone rojo);
+      el JSDoc de `computePlan` remite a las constantes por nombre. Cabecera de
+      pureza en el engine al estilo `src/pipeline/geofence-eval.ts`
 
 ## R2 — RER y peso base
 
