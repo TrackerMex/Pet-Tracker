@@ -286,3 +286,13 @@ pnpm -C backend-pet-tracker run test:e2e
   tests automáticos exigidos por la disciplina TDD.
 - Si alguna verificación falla, documenta por qué en `progress/impl_<feature>.md`
   antes de reportar al leader.
+
+
+### Feature 18 — nutrition-ai-explainer
+
+> Gate humano: esta prueba llama a OpenAI y cuesta dinero. No forma parte de la suite automatizada.
+
+1. Arranca el backend con `OPENAI_ENABLED=true`, una `OPENAI_API_KEY` real y `OPENAI_MODEL=gpt-5-mini`, sin guardar la clave en archivos versionados.
+2. Usa una mascota para la que `isPetTracked(petId)` sea `true`, con peso actual y perfil nutricional válidos.
+3. Ejecuta `POST /v1/pets/:petId/nutrition-plan/generate` y comprueba `200`, `aiExplanation` no vacío y persistencia del mismo texto en el `GET` del plan.
+4. Repite el `POST` sin cambiar inputs y comprueba el mismo `id`, una sola fila de plan y ninguna segunda llamada facturable al proveedor; al terminar vuelve a `OPENAI_ENABLED=false`.
