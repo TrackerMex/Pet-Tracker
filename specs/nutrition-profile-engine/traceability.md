@@ -23,7 +23,7 @@ tags: [harness, spec]
 | R5 | `src/modules/nutrition/domain/nutrition-engine.spec.ts::R5 (nutrition-profile-engine #17): comidas por dia` | rojo: `e19bd1e test(nutrition-profile-engine): cover meals by age and species (R5)`; verde: `893bc0b feat(nutrition-profile-engine): assign meals per day (R5)` |
 | R6 | `src/modules/nutrition/domain/nutrition-engine.spec.ts::R6 (nutrition-profile-engine #17): horarios por numero de comidas` | rojo: `c593500 test(nutrition-profile-engine): pin fixed meal schedules (R6)`; verde: `7c38258 feat(nutrition-profile-engine): map meals to fixed schedules (R6)` |
 | R7 | `src/modules/nutrition/domain/nutrition-engine.spec.ts::R7 (nutrition-profile-engine #17): objective` | rojo: `b373be3 test(nutrition-profile-engine): cover objective precedence (R7)`; verde: `f27fad4 feat(nutrition-profile-engine): derive nutrition objective (R7)` |
-| R8 | `src/modules/nutrition/domain/nutrition-engine.spec.ts::R8 (nutrition-profile-engine #17): warning weight_loss_plan` | pendiente |
+| R8 | `src/modules/nutrition/domain/nutrition-engine.spec.ts::R8 (nutrition-profile-engine #17): warning weight_loss_plan` | rojo: `070c938 test(nutrition-profile-engine): guard weight loss warning (R8)`; verde: `33cb04c feat(nutrition-profile-engine): emit weight loss warning (R8)` |
 | R9 | `src/modules/nutrition/domain/nutrition-engine.spec.ts::R9 (nutrition-profile-engine #17): warning underweight_vet` | pendiente |
 | R10 | `src/modules/nutrition/domain/nutrition-engine.spec.ts::R10 (nutrition-profile-engine #17): warning chronic_disease_vet` | pendiente |
 | R11 | `src/modules/nutrition/domain/nutrition-engine.spec.ts::R11 (nutrition-profile-engine #17): warning check_food_allergens` | pendiente |
