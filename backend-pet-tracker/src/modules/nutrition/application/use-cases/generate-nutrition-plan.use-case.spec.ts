@@ -21,7 +21,7 @@ function createHarness() {
     id: 'pet-1',
     species: 'dog',
     currentWeightKg: 20,
-    birthDate: new Date('2024-08-18T12:00:00.000Z'),
+    birthDate: '2024-08-18',
     sterilized: true,
   };
   const nutritionRepository = {
