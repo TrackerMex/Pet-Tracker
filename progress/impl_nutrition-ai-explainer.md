@@ -2,9 +2,7 @@
 
 ## Estado
 
-Implementacion R1-R18 terminada. R19 queda pendiente por ser una prueba de humo humana con costo real.
-
-Bloqueo de cierre: `./init.sh` falla en `env-drift.test.mjs` R11 porque compara literalmente 21 claves de `.env.example` y R4 agrega las tres claves aprobadas, por lo que recibe 24. La spec prohibe modificar `env-drift.mjs` y `env-drift.test.mjs`; no se aplico ningun workaround.
+Implementacion R1-R18 terminada y `./init.sh` verde. R19 queda pendiente por ser una prueba de humo humana con costo real.
 
 ## Trazabilidad de implementacion
 
@@ -13,7 +11,7 @@ Bloqueo de cierre: `./init.sh` falla en `env-drift.test.mjs` R11 porque compara 
 | R1 | `7cadd2c` | `4e615b3` |
 | R2 | `7cadd2c` | `4e615b3` |
 | R3 | `3dcaf3b` | `4e615b3` |
-| R4 | `7cadd2c` | `8aab678` |
+| R4 | `7cadd2c` | `445ec07` |
 | R5 | `fd2153a` | `3240911` |
 | R6 | `d0ac8cd` | `f15c312` |
 | R7 | `6b7e21d` | `abfbd0f` |
@@ -44,13 +42,14 @@ La trazabilidad detallada, con mensajes y archivos de test, esta en `specs/nutri
 ## Verificacion
 
 - Postgres: `5432/tcp -> 0.0.0.0:5432` y `[::]:5432`.
-- Primer intento con el `bash` resuelto por PowerShell: no llego a tests porque ese entorno no tenia Node.
-- Reintento con Git Bash: build backend e infra verde.
+- La enmienda C-4/R4 autorizo el cambio unico `21` a `24` en `env-drift.test.mjs`; commit `445ec07`. La segunda asercion del `it` y `env-drift.mjs` quedaron intactos.
+- `./init.sh`: exit code 0, ejecutado con Git Bash de Windows.
+- Build backend e infraestructura: verde.
 - Backend unit: 150 suites, 1144 tests, todos verdes.
 - Infra: 2 suites, 14 tests, todos verdes.
-- `env-drift`: 27/28 verdes; falla R11 con `24 !== 21`.
-- E2e y lint del gate final no se ejecutaron porque `init.sh` se detuvo en `env-drift`.
-
-## Bloqueo que requiere decision humana
-
-Hay que enmendar la prohibicion de tocar `env-drift.test.mjs` o corregir externamente su asercion congelada de 21 claves. Hasta entonces no es posible cumplir simultaneamente R4, la prohibicion de archivos y `./init.sh` verde.
+- `env-drift`: 11 suites, 28 tests, todos verdes.
+- E2e: 20 suites y 323 tests verdes; 2 suites y 6 tests omitidos. Aparecio el log FK 23503 conocido, sin fallo de suite.
+- Lint backend e infraestructura: verde.
+- Typecheck: verde.
+- Aviso no bloqueante: `.env` local no contiene `AWS_MODE`, `SIM_HOME_LAT`, `SIM_HOME_LNG` ni `SIM_SEED`.
+- Ajustes posteriores al gate: `221c172` corrige lint y `29e53c3` alinea fixtures con los tipos de dominio.
