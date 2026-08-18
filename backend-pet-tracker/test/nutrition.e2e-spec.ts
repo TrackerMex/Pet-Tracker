@@ -10,7 +10,7 @@ import {
   nutritionPlans,
   nutritionProfiles,
 } from '@/db/schema/nutrition.schema';
-import { pets } from '@/db/schema/pets.schema';
+import { pets, petUsers } from '@/db/schema/pets.schema';
 import { users } from '@/db/schema/users.schema';
 import { TOKEN_SERVICE } from '@/modules/auth/domain/ports/token-service';
 import type { TokenService } from '@/modules/auth/domain/ports/token-service';
@@ -471,6 +471,94 @@ describe('Nutrition profile and plans (e2e)', () => {
         .set(auth(owner.token))
         .expect(200);
       expect(latest.body).toEqual(second.body);
+    });
+  });
+
+  describe('R25 (nutrition-profile-engine #17): PetAccessGuard y ausencia de muro de pago', () => {
+    it('oculta las cuatro rutas a un usuario sin membresia', async () => {
+      const owner = await seedUser('r25-owner');
+      const outsider = await seedUser('r25-outsider');
+      const pet = await seedPet(owner);
+      await putProfile(owner, pet.id, {
+        activityLevel: 'medium',
+        foodType: 'dry',
+        kcalPer100g: 350,
+      }).expect(200);
+      await postWeight(owner, pet.id, 20).expect(201);
+      await generatePlan(owner, pet.id).expect(200);
+
+      await putProfile(outsider, pet.id, {
+        activityLevel: 'low',
+        foodType: 'wet',
+        kcalPer100g: 100,
+      }).expect(404);
+      await api()
+        .get(`/v1/pets/${pet.id}/nutrition-profile`)
+        .set(auth(outsider.token))
+        .expect(404);
+      await generatePlan(outsider, pet.id).expect(404);
+      await api()
+        .get(`/v1/pets/${pet.id}/nutrition-plan`)
+        .set(auth(outsider.token))
+        .expect(404);
+    });
+
+    it('responde 404 antes que 403 para una mascota inexistente', async () => {
+      const user = await seedUser('r25-missing');
+      await api()
+        .get(`/v1/pets/${uuidv7()}/nutrition-profile`)
+        .set(auth(user.token))
+        .expect(404);
+    });
+
+    it('permite lectura al miembro y rechaza sus escrituras con 403', async () => {
+      const owner = await seedUser('r25-viewer-owner');
+      const viewer = await seedUser('r25-viewer');
+      const pet = await seedPet(owner);
+      await putProfile(owner, pet.id, {
+        activityLevel: 'medium',
+        foodType: 'dry',
+        kcalPer100g: 350,
+      }).expect(200);
+      await postWeight(owner, pet.id, 20).expect(201);
+      await generatePlan(owner, pet.id).expect(200);
+      await db.insert(petUsers).values({
+        petId: pet.id,
+        userId: viewer.id,
+        role: 'family',
+      });
+
+      await api()
+        .get(`/v1/pets/${pet.id}/nutrition-profile`)
+        .set(auth(viewer.token))
+        .expect(200);
+      await api()
+        .get(`/v1/pets/${pet.id}/nutrition-plan`)
+        .set(auth(viewer.token))
+        .expect(200);
+      await putProfile(viewer, pet.id, {
+        activityLevel: 'low',
+        foodType: 'wet',
+        kcalPer100g: 100,
+      }).expect(403);
+      await generatePlan(viewer, pet.id).expect(403);
+    });
+
+    it('anti-vacio: el owner genera sin suscripcion y sin errores de acceso', async () => {
+      const owner = await seedUser('r25-free-health');
+      const pet = await seedPet(owner);
+      await putProfile(owner, pet.id, {
+        activityLevel: 'medium',
+        foodType: 'dry',
+        kcalPer100g: 350,
+      }).expect(200);
+      await postWeight(owner, pet.id, 20).expect(201);
+
+      const response = await generatePlan(owner, pet.id).expect(200);
+      const body = JSON.stringify(response.body);
+      expect(body).not.toContain('DEVICE_SUBSCRIPTION_REQUIRED');
+      expect(body).not.toContain('Forbidden');
+      expect(body).not.toContain('Not Found');
     });
   });
 });
