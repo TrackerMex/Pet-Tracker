@@ -398,3 +398,24 @@ describe('R11 (nutrition-profile-engine #17): warning check_food_allergens', () 
     ).toBe(false);
   });
 });
+
+describe('R12 (nutrition-profile-engine #17): warning too_young_vet', () => {
+  const hasWarning = (ageMonths: number) =>
+    computePlan({ ...BASE_INPUT, ageMonths }).warnings.some(
+      (warning) => warning.code === 'too_young_vet',
+    );
+
+  it('aparece por debajo del umbral exclusivo con texto aprobado', () => {
+    expect(computePlan({ ...BASE_INPUT, ageMonths: 1 }).warnings).toContainEqual(
+      {
+        code: 'too_young_vet',
+        message: NUTRITION_WARNING_MESSAGES.too_young_vet,
+      },
+    );
+  });
+
+  it('anti-vacio: no aparece en el umbral ni en un adulto', () => {
+    expect(hasWarning(2)).toBe(false);
+    expect(hasWarning(24)).toBe(false);
+  });
+});
