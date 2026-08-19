@@ -7,11 +7,14 @@ import type {
 } from '@/modules/nutrition/domain/nutrition-engine';
 import {
   NUTRITION_AI_MAX_OUTPUT_TOKENS,
-  NUTRITION_AI_SYSTEM_PROMPT,
+  NUTRITION_AI_MAX_RETRIES,
   NUTRITION_AI_TIMEOUT_MS,
+  OpenAiNutritionExplainer,
+} from './openai-nutrition-explainer';
+import {
+  NUTRITION_AI_SYSTEM_PROMPT,
   buildUserPrompt,
 } from './nutrition-prompt';
-import { OpenAiNutritionExplainer } from './openai-nutrition-explainer';
 
 const input = {
   species: 'dog',
@@ -63,9 +66,13 @@ describe('R9 (nutrition-ai-explainer #18): modelo por env, timeout 15 s y maxRet
       'utf8',
     );
     expect(NUTRITION_AI_TIMEOUT_MS).toBe(15_000);
+    expect(NUTRITION_AI_MAX_RETRIES).toBe(0);
     expect(NUTRITION_AI_MAX_OUTPUT_TOKENS).toBe(1_200);
     expect(source).toContain('timeout: NUTRITION_AI_TIMEOUT_MS');
-    expect(source).toContain('maxRetries: 0');
+    expect(source).toContain('maxRetries: NUTRITION_AI_MAX_RETRIES');
+    expect(source).toContain(
+      'max_completion_tokens: NUTRITION_AI_MAX_OUTPUT_TOKENS',
+    );
     expect(source).not.toContain('max_tokens');
   });
 });
