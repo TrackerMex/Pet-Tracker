@@ -1,10 +1,11 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-08-18
-**Features completadas**: 29/30 (`feature_list.json`)
-**En progreso**: ninguna. #17 `nutrition-profile-engine` cerró con veredicto
-aprobado del `reviewer`; su PR está abierto a la espera del merge humano.
-**Pendientes**: 1, **P3** — #18 `nutrition-ai-explainer`.
+**Última actualización**: 2026-08-19
+**Features completadas**: 30/31 (`feature_list.json`)
+**En progreso**: #18 `nutrition-ai-explainer` (solo falta el smoke R19,
+bloqueado por crédito de OpenAI). #31 `mobile-app-scaffold` cerró hoy con
+review aprobado y smoke humano; su PR queda a la espera del merge humano.
+**Pendientes**: ninguna.
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
 desde 2026-08-10. Hay recursos vivos en la cuenta, aunque hoy sin coste.
@@ -730,6 +731,19 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-08-19** — #31 `mobile-app-scaffold` **cerrada** (30/31) — primera
+  feature móvil del monorepo. Decisión humana: la app vive en
+  `mobile-pet-tracker/` (Expo SDK 57, TypeScript + expo-router) como carpeta
+  isla con **bun** (backend sigue con pnpm, sin workspace raíz). Ciclo
+  completo en un día: explorer → spec → enmienda al layout `src/` real de la
+  plantilla 57.0.16 (destapado por un intento de instalación manual del
+  humano que además pisó un EPERM transitorio de Windows) → gate humano →
+  handoff a Codex CLI → TDD rojo→verde por requisito → review aprobado
+  (rojos de R2/R7 verificados empíricamente, `init.sh` exit 0) → smoke R13
+  del humano en Expo Go con los tres estados. Harness integrado en el mismo
+  PR: bun en `REQUIRED_TOOLS`, comandos `--cwd` en `init.config.sh`,
+  `oven-sh/setup-bun` en CI, fila nueva en `AGENTS.md` §2.
 
 - **2026-08-18** — #17 `nutrition-profile-engine` **cerrada** (29/30). Ciclo
   completo en un día: revisión de la spec antes de aprobarla, gate humano,

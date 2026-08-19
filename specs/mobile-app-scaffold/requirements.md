@@ -179,7 +179,7 @@ smoke de R13 incluye los dos caminos negativos, no solo el feliz.
   Nota: si el teléfono no alcanza la PC, revisar que el firewall de Windows
   permita node en red privada (puerto 3000) y que la WiFi no aísle clientes.
 
-  - [ ] Smoke ejecutado por el humano (fecha: ____) — los tres estados vistos
+  - [X] Smoke ejecutado por el humano (fecha: 2026-08-19) — los tres estados vistos
 
 ## Fuera de alcance
 
