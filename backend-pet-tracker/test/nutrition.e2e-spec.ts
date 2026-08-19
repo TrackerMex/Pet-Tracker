@@ -693,4 +693,63 @@ describe('Nutrition profile and plans (e2e)', () => {
       expect(explain).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe('R17 (nutrition-ai-explainer #18): el mapper devuelve la explicacion persistida', () => {
+    it('maps seeded text and preserves the null response contract', async () => {
+      const owner = await seedUser('r17-ai');
+      const seededPet = await seedPet(owner);
+      await putProfile(owner, seededPet.id, {
+        activityLevel: 'medium',
+        foodType: 'dry',
+        kcalPer100g: 350,
+      }).expect(200);
+      await postWeight(owner, seededPet.id, 20).expect(201);
+      const generated = await generatePlan(owner, seededPet.id).expect(200);
+      const generatedId = (generated.body as { id: string }).id;
+      await db
+        .update(nutritionPlans)
+        .set({ aiExplanation: 'Seeded explanation' })
+        .where(eq(nutritionPlans.id, generatedId));
+
+      const seededResponse = await api()
+        .get(`/v1/pets/${seededPet.id}/nutrition-plan`)
+        .set(auth(owner.token))
+        .expect(200);
+      expect(
+        (seededResponse.body as { aiExplanation: string }).aiExplanation,
+      ).toBe('Seeded explanation');
+
+      const nullPet = await seedPet(owner);
+      await putProfile(owner, nullPet.id, {
+        activityLevel: 'medium',
+        foodType: 'dry',
+        kcalPer100g: 350,
+      }).expect(200);
+      await postWeight(owner, nullPet.id, 20).expect(201);
+      await generatePlan(owner, nullPet.id).expect(200);
+      const nullResponse = await api()
+        .get(`/v1/pets/${nullPet.id}/nutrition-plan`)
+        .set(auth(owner.token))
+        .expect(200);
+
+      expect(
+        (nullResponse.body as { aiExplanation: null }).aiExplanation,
+      ).toBeNull();
+      expect(Object.keys(nullResponse.body as object).sort()).toEqual(
+        [
+          'id',
+          'petId',
+          'rerKcal',
+          'merKcal',
+          'dailyGrams',
+          'mealsPerDay',
+          'mealTimes',
+          'objective',
+          'warnings',
+          'aiExplanation',
+          'generatedAt',
+        ].sort(),
+      );
+    });
+  });
 });
