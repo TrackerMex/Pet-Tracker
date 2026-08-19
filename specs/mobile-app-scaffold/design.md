@@ -76,7 +76,7 @@ mobile-pet-tracker/
 
 ## Contrato de módulos (nombres exactos)
 
-`mobile-pet-tracker/api/types.ts`:
+`mobile-pet-tracker/src/api/types.ts`:
 
 ```ts
 export interface HealthResponse {
@@ -88,7 +88,7 @@ export interface HealthResponse {
 `backend-pet-tracker/src/modules/health/application/use-cases/check-health.use-case.ts`:
 200 si ok, 503 si error. No importar nada del backend.)
 
-`mobile-pet-tracker/api/health.ts`:
+`mobile-pet-tracker/src/api/health.ts`:
 
 ```ts
 export type HealthState =
@@ -110,7 +110,7 @@ llamar `fetchFn`; respuesta 200 con `postgres: 'ok'` → `ok`; cualquier otra
 respuesta HTTP (503, body inválido) → `error`; `fetchFn` rechaza →
 `unreachable`. Nunca lanza.
 
-`mobile-pet-tracker/app/index.tsx`: componente default-export; lee
+`mobile-pet-tracker/src/app/index.tsx`: componente default-export; lee
 `process.env.EXPO_PUBLIC_API_URL` (único punto de lectura), llama
 `fetchHealth` al montar; renderiza `testID="health-state"` con texto = `kind`
 + una línea legible con la URL consultada; `testID="health-retry"` reejecuta

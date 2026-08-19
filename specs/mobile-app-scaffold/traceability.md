@@ -9,12 +9,12 @@ tags: [harness, spec, mobile]
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
 | R1 | pendiente (excepción C4: scaffold generado — verificación estructural del reviewer) | pendiente |
-| R2 | pendiente (`api/__tests__/health.test.ts::R2`) | pendiente |
-| R3 | pendiente (`api/__tests__/health.test.ts::R3`) | pendiente |
-| R4 | pendiente (`api/__tests__/health.test.ts::R4`) | pendiente |
-| R5 | pendiente (`api/__tests__/health.test.ts::R5`) | pendiente |
-| R6 | pendiente (`api/__tests__/health.test.ts::R6`) | pendiente |
-| R7 | pendiente (`app/__tests__/index.test.tsx::R7`) | pendiente |
+| R2 | pendiente (`src/api/__tests__/health.test.ts::R2`) | pendiente |
+| R3 | pendiente (`src/api/__tests__/health.test.ts::R3`) | pendiente |
+| R4 | pendiente (`src/api/__tests__/health.test.ts::R4`) | pendiente |
+| R5 | pendiente (`src/api/__tests__/health.test.ts::R5`) | pendiente |
+| R6 | pendiente (`src/api/__tests__/health.test.ts::R6`) | pendiente |
+| R7 | pendiente (`src/app/__tests__/index.test.tsx::R7`) | pendiente |
 | R8 | pendiente (verificación reviewer: `.env.example` tracked, `.env` ignorado) | pendiente |
 | R9 | pendiente (verificación reviewer: `./init.sh` exit 0 + diff init.config.sh) | pendiente |
 | R10 | pendiente (verificación: CI verde del PR) | pendiente |

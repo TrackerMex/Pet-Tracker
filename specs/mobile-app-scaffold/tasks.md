@@ -16,7 +16,7 @@ tags: [harness, spec, mobile]
 ## R1 — Scaffold Expo SDK 57 (excepción C4: generado, sin TDD)
 
 - [ ] (1) `bun create expo-app mobile-pet-tracker` (plantilla default TS + expo-router)
-- [ ] (2) `bun run reset-project` dentro de la app y borrar `app-example/`
+- [ ] (2) `echo n | bun run reset-project` dentro de la app (interactivo; `n` borra el ejemplo `src/` y `scripts/`)
       (si la plantilla no trae el script: reducir `app/` a `_layout.tsx` +
       `index.tsx` a mano)
 - [ ] (3) Verificar isla: sin `package.json`/lockfile en la raíz del repo;
@@ -31,8 +31,8 @@ tags: [harness, spec, mobile]
 
 ## R2 — `healthUrl` maneja la barra final
 
-- [ ] (1) Test rojo en `api/__tests__/health.test.ts` (`describe('R2: ...')`) — commit `test(mobile): red test for healthUrl (R2)`
-- [ ] (2) Implementación mínima en `api/health.ts` — commit `feat(mobile): healthUrl builder (R2)`
+- [ ] (1) Test rojo en `src/api/__tests__/health.test.ts` (`describe('R2: ...')`) — commit `test(mobile): red test for healthUrl (R2)`
+- [ ] (2) Implementación mínima en `src/api/health.ts` — commit `feat(mobile): healthUrl builder (R2)`
 - [ ] (3) Refactor con tests verdes
 
 ## R3 — `fetchHealth` → `ok` con 200 + `postgres: 'ok'`
@@ -57,14 +57,14 @@ tags: [harness, spec, mobile]
 
 - [ ] (1) Test rojo (`describe('R6: ...')` — `baseUrl` undefined y `''`; assert de que `fetchFn` NO fue llamado)
 - [ ] (2) Implementación mínima que lo pasa
-- [ ] (3) Refactor + `grep -rn "3000" mobile-pet-tracker/app mobile-pet-tracker/api` limpio (solo `.env.example`/docs)
+- [ ] (3) Refactor + `grep -rn "3000" mobile-pet-tracker/src` limpio (solo `.env.example`/docs)
 
 ## R7 — Pantalla inicial con los 4 estados + retry
 
-- [ ] (1) Test rojo en `app/__tests__/index.test.tsx` (`describe('R7: ...')`,
+- [ ] (1) Test rojo en `src/app/__tests__/index.test.tsx` (`describe('R7: ...')`,
       `jest.mock` de `../../api/health`, un caso por `kind` + retry) —
       **verlo rojo es obligatorio** (pantalla sin cablear); commit test-primero
-- [ ] (2) Implementación mínima de `app/index.tsx` (testIDs `health-state`, `health-retry`)
+- [ ] (2) Implementación mínima de `src/app/index.tsx` (testIDs `health-state`, `health-retry`)
 - [ ] (3) Refactor con tests verdes
 
 ## R8 — `.env` / `.env.example` (config, sin TDD)

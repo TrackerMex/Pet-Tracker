@@ -47,22 +47,24 @@ smoke de R13 incluye los dos caminos negativos, no solo el feliz.
 - **R1**: WHEN el implementador genera el scaffold con
   `bun create expo-app mobile-pet-tracker` (Expo SDK 57, plantilla default)
   THE SYSTEM SHALL producir la carpeta isla `mobile-pet-tracker/` con su
-  propio `package.json` y `bun.lock`, dejar `app/` reducido a `_layout.tsx` +
-  `index.tsx` (vía el script `reset-project` de la plantilla, borrando
-  `app-example/`; si la plantilla ya no trae ese script, reducción manual
-  equivalente), y NO SHALL crear `package.json`, lockfile ni carpeta
+  propio `package.json` y `bun.lock`, dejar las rutas reducidas a
+  `src/app/_layout.tsx` + `src/app/index.tsx` (vía `echo n | bun run
+  reset-project`: el script de la plantilla es interactivo y con `n` borra el
+  código de ejemplo `src/` y `scripts/` y crea `src/app/` mínimo; verificado
+  en `expo-template-default@57.0.16`, cuyas rutas viven en `src/app/`, no en
+  `app/` top-level), y NO SHALL crear `package.json`, lockfile ni carpeta
   `node_modules` en la raíz del repo.
   *Verificación: estructural (reviewer) — excepción C4, commit de scaffold
   aislado sin código a mano.*
 
-### Cliente de health (`mobile-pet-tracker/api/`)
+### Cliente de health (`mobile-pet-tracker/src/api/`)
 
 - **R2**: WHEN se construye la URL del health check a partir de una base URL
   THE SYSTEM SHALL exponer `healthUrl(baseUrl: string): string` en
-  `mobile-pet-tracker/api/health.ts` que devuelve `<base>/health` manejando
+  `mobile-pet-tracker/src/api/health.ts` que devuelve `<base>/health` manejando
   la barra final (`http://x:3000/v1` y `http://x:3000/v1/` producen ambas
   `http://x:3000/v1/health`).
-  *Test: `mobile-pet-tracker/api/__tests__/health.test.ts` →
+  *Test: `mobile-pet-tracker/src/api/__tests__/health.test.ts` →
   `describe('R2: healthUrl', ...)`.*
 
 - **R3**: WHEN `fetchHealth(baseUrl)` recibe una respuesta HTTP 200 cuyo body
@@ -89,19 +91,19 @@ smoke de R13 incluye los dos caminos negativos, no solo el feliz.
   archivo de la app.
   *Test: mismo archivo → `describe('R6: ...')` — asserts que `fetchFn` no fue
   llamado. La ausencia de hardcode la verifica el reviewer con
-  `grep -rn "3000" mobile-pet-tracker/app mobile-pet-tracker/api` (solo debe
+  `grep -rn "3000" mobile-pet-tracker/src` (solo debe
   aparecer en `.env.example` y docs).*
 
 ### Pantalla inicial
 
 - **R7**: WHEN la app abre su ruta inicial `/`
-  (`mobile-pet-tracker/app/index.tsx`) THE SYSTEM SHALL ejecutar
+  (`mobile-pet-tracker/src/app/index.tsx`) THE SYSTEM SHALL ejecutar
   `fetchHealth(process.env.EXPO_PUBLIC_API_URL)` y renderizar el estado en un
   elemento con `testID="health-state"` cuyo texto es exactamente el `kind`
   (`ok` | `error` | `unreachable` | `missing-config`), distinguiendo
   visualmente los cuatro casos, y SHALL ofrecer un control con
   `testID="health-retry"` que reejecuta el chequeo al pulsarlo.
-  *Test: `mobile-pet-tracker/app/__tests__/index.test.tsx` →
+  *Test: `mobile-pet-tracker/src/app/__tests__/index.test.tsx` →
   `describe('R7: ...')` con `jest.mock` de `../../api/health` +
   `@testing-library/react-native`: un caso por estado + un caso de retry.
   Este test debe verse ROJO primero (doctrina de guardas).*
