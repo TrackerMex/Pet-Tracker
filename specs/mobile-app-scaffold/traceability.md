@@ -18,7 +18,7 @@ tags: [harness, spec, mobile]
 | R8 | verificación reviewer: `.env.example` tracked, `.env` ignorado | `ee29ed1 chore(mobile): scaffold expo sdk 57 app via bun create expo-app (R1)`<br>`159c2e0 chore(mobile): document API URL environment (R8)` |
 | R9 | `./init.sh` exit 0 + diff de `init.config.sh` | `fa18ae7 chore(harness): verify mobile app with bun (R9)` |
 | R10 | configuración estática verificada; CI verde a confirmar por reviewer en el PR | `d986d71 ci(harness): setup bun for mobile verification (R10)` |
-| R11 | pendiente (verificación reviewer: fila en AGENTS.md §2) | pendiente |
+| R11 | verificación reviewer: fila en `AGENTS.md` §2 | `fbfceeb docs(harness): map mobile app directory (R11)` |
 | R12 | pendiente (verificación reviewer: diff de backend-pet-tracker/ vacío) | pendiente |
 | R13 | pendiente (gate humano: casilla de smoke en requirements.md con fecha) | pendiente |
 
