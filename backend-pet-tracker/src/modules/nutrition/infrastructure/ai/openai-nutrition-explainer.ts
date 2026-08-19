@@ -7,12 +7,14 @@ import type {
   NutritionPlanResult,
 } from '@/modules/nutrition/domain/nutrition-engine';
 import {
-  NUTRITION_AI_MAX_OUTPUT_TOKENS,
   NUTRITION_AI_SCOPE,
   NUTRITION_AI_SYSTEM_PROMPT,
-  NUTRITION_AI_TIMEOUT_MS,
   buildUserPrompt,
 } from './nutrition-prompt';
+
+export const NUTRITION_AI_TIMEOUT_MS = 15_000;
+export const NUTRITION_AI_MAX_RETRIES = 0;
+export const NUTRITION_AI_MAX_OUTPUT_TOKENS = 1_200;
 
 interface OpenAiChatResponse {
   choices: Array<{
@@ -88,7 +90,7 @@ export class OpenAiNutritionExplainer implements NutritionExplainer {
     const sdk = new OpenAI({
       apiKey: this.apiKey,
       timeout: NUTRITION_AI_TIMEOUT_MS,
-      maxRetries: 0,
+      maxRetries: NUTRITION_AI_MAX_RETRIES,
     });
     this.client = {
       create: (params) => sdk.chat.completions.create(params as never),

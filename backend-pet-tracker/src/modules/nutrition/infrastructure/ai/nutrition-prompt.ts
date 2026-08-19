@@ -3,8 +3,6 @@ export const NUTRITION_AI_SYSTEM_PROMPT =
   'Eres el asistente de nutrición de Pet Tracker. Explica planes de alimentación de mascotas en español sencillo y cálido. Nunca des diagnósticos, nunca contradigas al veterinario, incluye siempre que es orientativo. Máximo 180 palabras.';
 
 export const NUTRITION_AI_SCOPE = 'nutrition-ai';
-export const NUTRITION_AI_TIMEOUT_MS = 15_000;
-export const NUTRITION_AI_MAX_OUTPUT_TOKENS = 1_200;
 export const NUTRITION_AI_MAX_LIST_ITEMS = 20;
 export const NUTRITION_AI_MAX_ITEM_CHARS = 100;
 
