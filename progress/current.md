@@ -221,14 +221,71 @@ ninguna IA, la corre el humano (`CLAUDE.md` §Excepciones).
   para abrirlo como bug; el `SELECT` sigue sin `ORDER BY`, asi que el riesgo
   latente sigue ahi, solo no se manifiesta.
 
+## Intento de la prueba de humo R19 (2026-08-18, sin cerrar)
+
+Se preparo el entorno y se corrio el generate contra el cableado real. Lo que
+paso, en orden:
+
+- Mascota de prueba `Rex18` (`01a0181f-5e2d-7cd2-beb9-b3761c405d39`) con perfil
+  (350 kcal/100 g), un peso, y collar `SIM-002` vinculado por SQL directo — el
+  flujo de claim real exige watermark de posiciones y no aporta nada a esta
+  prueba. `isPetTracked` verificado **true** con la consulta exacta del
+  repositorio.
+- **Primer null sin warn: `NODE_ENV=test` en el `.env` de la raiz.** El factory
+  (`nutrition-explainer.factory.ts:12`) corta ahi antes de mirar
+  `OPENAI_ENABLED`, la clave o el modelo, asi que el server de desarrollo
+  devolvia 200 con `aiExplanation: null` y un warn
+  `message: 'ai explanation disabled'` — el mismo que sale con la IA apagada a
+  proposito. La guarda es correcta (es R3), el `.env` estaba mal. Anotado en
+  memoria: el sintoma no distingue las dos causas, y `nest start --watch`
+  vigila `src/`, no `.env`, asi que cualquier cambio de entorno exige reinicio
+  manual.
+- **Segundo bloqueo, el definitivo: la cuenta de OpenAI no tiene cuota.** El
+  provider devuelve error de quota. El `message` del warn lo hizo visible al
+  primer intento, que es justo para lo que servia el defecto B3 de la ronda 1.
+
+Lo que este intento **si** dejo probado, aunque no cuente para R19: la
+degradacion funciona con el cableado real. Ante un fallo del proveedor la API
+responde 200 con `aiExplanation` null y un warn con diagnostico, sin 5xx. Lo
+que sigue **sin** probar es el camino feliz (pasos 1-2) y el no-recobro en hash
+hit (paso 4).
+
+## Decision humana (2026-08-18): R19 queda pendiente
+
+Se evaluaron tres salidas: recargar credito en OpenAI, cambiar el proveedor a
+`claude-haiku-4-5` (hay creditos), o dejar R19 pendiente. **El humano eligio
+dejarla pendiente.**
+
+El cambio de proveedor se descarto por ahora, no por dificultad tecnica — el
+puerto `NutritionExplainer` es agnostico y el adaptador vive entero en
+`infrastructure/ai/`, con los cuatro e2e intactos porque mockean el puerto —
+sino porque `requirements.md` nombra OpenAI 61 veces (OV1, C-2, C-6, R4, R5,
+R9, R19) y la revision aprobada valida contra esa spec. Seria una enmienda mas
+una ronda de Codex mas una revision del adaptador. Queda como opcion viva si
+mas adelante se prefiere gastar creditos de Anthropic antes que recargar
+OpenAI.
+
 ## Siguiente
 
-**PARADA: gate humano de R19.** El trabajo de Codex esta aprobado, pero **#18 no
-se cierra** hasta que el humano corra la prueba de humo con la clave real de
-OpenAI siguiendo los cuatro pasos de `docs/verification.md:291-308` y marque la
-casilla de `specs/nutrition-ai-explainer/requirements.md:785`. Esa prueba cuesta
-dinero: no la corre ninguna IA.
+**#18 se queda `in_progress`.** El trabajo de Codex esta **aprobado** por el
+`reviewer` (ronda 2, B1..B4 cerrados, B1 verificado por mutacion), pero la
+prueba de humo de R19 no se ha ejecutado y su casilla
+(`specs/nutrition-ai-explainer/requirements.md:785`) sigue vacia. Sin ella la
+feature no cierra: backend en 29/30.
 
-Cuando este marcada, cierre de #18: `status: "done"` en `feature_list.json`
-(30/30), STATUS.md, mover este archivo a `progress/history.md`, `./init.sh`, push
-y `env -u GITHUB_TOKEN gh pr create`. El merge lo hace el humano.
+Para retomar cuando haya credito (de OpenAI, o de Anthropic si se decide el
+cambio de proveedor):
+
+1. `.env` de la raiz: `NODE_ENV` fuera de `test` (poner `development`),
+   `OPENAI_ENABLED=true`, clave real. Reiniciar el server a mano.
+2. Los cuatro pasos de `docs/verification.md:291-308` sobre `Rex18`, que ya
+   tiene perfil, peso y collar. Ojo en el paso 3: repetir el generate sin
+   cambiar nada da hash hit y no llama a la IA — hay que tocar el perfil
+   (`kcalPer100g`) o borrar la fila de `nutrition_plans`.
+3. Marcar la casilla, y entonces cierre: `status: "done"` en
+   `feature_list.json` (30/30), STATUS.md, mover este archivo a
+   `progress/history.md`, `./init.sh`, push y
+   `env -u GITHUB_TOKEN gh pr create`. El merge lo hace el humano.
+
+**Higiene pendiente del humano en su `.env` local (no versionado):** devolver
+`OPENAI_API_KEY=PENDING` mientras no se use, como exige R19.
