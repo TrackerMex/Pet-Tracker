@@ -669,4 +669,28 @@ describe('Nutrition profile and plans (e2e)', () => {
       expect(persisted.generatedAt.toISOString()).toBe(body.generatedAt);
     });
   });
+
+  describe('R16 (nutrition-ai-explainer #18): hash hit con explicacion no re-llama', () => {
+    it('returns the same row and pays for one explanation only', async () => {
+      explain.mockResolvedValue('Generated explanation');
+      isPetTracked.mockResolvedValue(true);
+      const owner = await seedUser('r16-ai');
+      const pet = await seedPet(owner);
+      await putProfile(owner, pet.id, {
+        activityLevel: 'medium',
+        foodType: 'dry',
+        kcalPer100g: 350,
+      }).expect(200);
+      await postWeight(owner, pet.id, 20).expect(201);
+
+      const first = await generatePlan(owner, pet.id).expect(200);
+      const second = await generatePlan(owner, pet.id).expect(200);
+
+      expect((second.body as { id: string }).id).toBe(
+        (first.body as { id: string }).id,
+      );
+      expect(await planCount(pet.id)).toBe(1);
+      expect(explain).toHaveBeenCalledTimes(1);
+    });
+  });
 });
