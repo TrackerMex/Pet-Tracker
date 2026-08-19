@@ -10,5 +10,5 @@
 - spec aprobada por humano: si (2026-08-19)
 - plan: monorepo confirmado por el humano (Expo + bun, carpeta isla mobile-pet-tracker/, backend sigue pnpm); explorer completado (progress/explore_mobile-app-scaffold.md, decisiones D1-D9); spec_author escribe la spec; gate humano; handoff a Codex CLI
 - implementador: Codex CLI (handoff entregado: progress/handoff_mobile-app-scaffold.md)
-- estado: in_progress — esperando a que Codex implemente en su terminal
-- siguiente paso: humano confirma fin de Codex -> leer progress/impl_mobile-app-scaffold.md -> lanzar reviewer. Mientras Codex trabaja, el leader NO toca mobile-pet-tracker/ ni el resto del working tree
+- estado: implementacion de Codex APROBADA por el reviewer (progress/review_mobile-app-scaffold.md, 2026-08-19); R1-R12 verificados, init.sh exit 0
+- siguiente paso: smoke R13 del humano (Expo Go en Android fisico, los 3 estados; pasos en requirements.md R13). Con la casilla marcada: done en feature_list.json, cierre de sesion y PR
