@@ -16,7 +16,12 @@ export function createNutritionExplainer(
   const apiKey = config.get<string>('OPENAI_API_KEY')?.trim();
   const model = config.get<string>('OPENAI_MODEL')?.trim();
 
-  if (enabled !== 'true' || !apiKey || apiKey === 'PENDING' || !model) {
+  if (
+    enabled !== 'true' ||
+    !apiKey ||
+    apiKey === OPENAI_API_KEY_PENDING ||
+    !model
+  ) {
     return new NullNutritionExplainer();
   }
 
