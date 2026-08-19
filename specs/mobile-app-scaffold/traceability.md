@@ -10,7 +10,7 @@ tags: [harness, spec, mobile]
 |---|---|---|
 | R1 | verificación estructural del reviewer (excepción C4: scaffold generado) | `ee29ed1 chore(mobile): scaffold expo sdk 57 app via bun create expo-app (R1)`<br>`f22721c chore(mobile): add jest-expo test tooling (R1)` |
 | R2 | `src/api/__tests__/health.test.ts::R2: healthUrl` | `1893f1c test(mobile): add red test for healthUrl (R2)`<br>`db52ee1 feat(mobile): add health URL builder (R2)` |
-| R3 | pendiente (`src/api/__tests__/health.test.ts::R3`) | pendiente |
+| R3 | `src/api/__tests__/health.test.ts::R3: fetchHealth ok state` | `2f036c5 test(mobile): add red health success test (R3)`<br>`aa261c8 feat(mobile): return healthy backend state (R3)` |
 | R4 | pendiente (`src/api/__tests__/health.test.ts::R4`) | pendiente |
 | R5 | pendiente (`src/api/__tests__/health.test.ts::R5`) | pendiente |
 | R6 | pendiente (`src/api/__tests__/health.test.ts::R6`) | pendiente |
