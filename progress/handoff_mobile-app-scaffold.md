@@ -63,3 +63,26 @@ lo tuyo es que install/lint/typecheck/test de la app pasen dentro de init.sh).
 Al terminar: escribe el resultado en progress/impl_mobile-app-scaffold.md
 (qué commits, qué comandos corriste, estado de cada R-id) y termina. No
 reportes por chat.
+
+---
+
+## Addendum 2026-08-19 (antes de arrancar Codex): R1 parcialmente hecho a mano
+
+El humano ya creó `mobile-pet-tracker/` a mano (scaffold + `bun install` OK,
+arranque verificado con Expo Go). Estado exacto en
+`progress/impl_mobile-app-scaffold.md` §Estado inicial. Ajustes a tu plan:
+
+1. **NO ejecutes `bun create expo-app`** — la carpeta ya existe. Empiezas
+   verificándola contra R1.
+2. **El reset quedó incompleto**: borra la carpeta vacía `example/`, y corre
+   `echo n | bun run reset-project` (debe dejar `src/app/` solo con
+   `_layout.tsx` + `index.tsx` y eliminar `scripts/`). Quita también el
+   script `reset-project` de package.json (el propio script lo sugiere).
+3. **Añade `.env` al `.gitignore` de la app** en el commit de scaffold: la
+   plantilla solo ignora `.env*.local` y R8 exige `.env` ignorado. Hazlo
+   ANTES de crear cualquier `.env`.
+4. El commit de R1 (scaffold puro, excepción C4) incluye el árbol tal cual
+   deja el reset — con los `AGENTS.md`/`CLAUDE.md`/`.claude/` que trae la
+   plantilla — más el ajuste de `.gitignore` del punto 3. Nada de código a
+   mano ahí; `node_modules/` y `.expo/` quedan fuera (gitignored).
+5. Desde R2 en adelante, todo igual que arriba: TDD test-primero por requisito.
