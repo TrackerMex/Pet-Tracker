@@ -46,3 +46,16 @@ describe('R4: fetchHealth error state', () => {
     });
   });
 });
+
+describe('R5: fetchHealth unreachable state', () => {
+  it('returns the network error without throwing', async () => {
+    const fetchFn = jest
+      .fn()
+      .mockRejectedValue(new Error('network down')) as unknown as typeof fetch;
+
+    await expect(fetchHealth('http://x:3000/v1', fetchFn)).resolves.toEqual({
+      kind: 'unreachable',
+      message: 'network down',
+    });
+  });
+});
