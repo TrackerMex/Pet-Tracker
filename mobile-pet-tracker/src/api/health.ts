@@ -15,7 +15,13 @@ export async function fetchHealth(
   fetchFn: typeof fetch = fetch,
 ): Promise<HealthState> {
   const response = await fetchFn(healthUrl(baseUrl!));
-  const body = (await response.json()) as HealthResponse;
+  let body: HealthResponse;
+
+  try {
+    body = (await response.json()) as HealthResponse;
+  } catch {
+    return { kind: 'error' };
+  }
 
   return response.status === 200 && body.postgres === 'ok'
     ? { kind: 'ok' }
