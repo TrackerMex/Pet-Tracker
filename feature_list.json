@@ -559,7 +559,7 @@
   {
     "id": 31,
     "name": "mobile-app-scaffold",
-    "status": "spec_ready",
+    "status": "in_progress",
     "priority": "P1",
     "description": "Primera feature de la app movil (decision humana 2026-08-19: monorepo, Expo, bun). Scaffold de mobile-pet-tracker/ como carpeta isla (sin workspace raiz, bun.lock propio): bun create expo-app con Expo SDK 57 (plantilla default: TypeScript + expo-router), ESLint. Una pantalla que consume GET /v1/health del backend con URL desde EXPO_PUBLIC_API_URL y pinta { postgres: ok | error }. Tipos de API duplicados a mano en api/types.ts (deuda de codegen OpenAPI anotada). Integracion del harness en el MISMO PR: bun en REQUIRED_TOOLS y comandos --cwd en init.config.sh, oven-sh/setup-bun con cache de bun.lock en ci.yml. Todo cambio a backend-pet-tracker/ (p.ej. CORS) queda explicitamente fuera. Contexto y decisiones D1-D9 en progress/explore_mobile-app-scaffold.md.",
     "acceptance_criteria": [

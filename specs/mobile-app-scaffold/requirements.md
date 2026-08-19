@@ -1,6 +1,6 @@
 ---
 feature: "mobile-app-scaffold"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec, mobile]
 ---
 
@@ -196,4 +196,4 @@ smoke de R13 incluye los dos caminos negativos, no solo el feliz.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [X] Aprobado por humano (fecha: 2026-08-19) ← gate obligatorio antes de implementar
