@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import type {
   NutritionExplainer,
   NutritionExplainerContext,
@@ -61,6 +62,10 @@ export class OpenAiNutritionExplainer implements NutritionExplainer {
           scope: NUTRITION_AI_SCOPE,
           petId: ctx.petId,
           planId: ctx.planId,
+          message:
+            choice?.finish_reason === 'length'
+              ? 'ai explanation truncated'
+              : 'ai explanation empty',
           finishReason: choice?.finish_reason ?? null,
           usage: response.usage ?? null,
         });
@@ -98,4 +103,3 @@ export class OpenAiNutritionExplainer implements NutritionExplainer {
     return this.client;
   }
 }
-import { Logger } from '@nestjs/common';
