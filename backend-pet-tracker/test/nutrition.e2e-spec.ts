@@ -16,13 +16,7 @@ import { pets, petUsers } from '@/db/schema/pets.schema';
 import { users } from '@/db/schema/users.schema';
 import { TOKEN_SERVICE } from '@/modules/auth/domain/ports/token-service';
 import type { TokenService } from '@/modules/auth/domain/ports/token-service';
-import { GenerateNutritionPlanUseCase } from '@/modules/nutrition/application/use-cases/generate-nutrition-plan.use-case';
-import type { NewNutritionPlan } from '@/modules/nutrition/domain/entities/nutrition-plan.entity';
-import { NutritionPlan } from '@/modules/nutrition/domain/entities/nutrition-plan.entity';
 import { NUTRITION_EXPLAINER } from '@/modules/nutrition/domain/ports/nutrition-explainer';
-import { NUTRITION_REPOSITORY } from '@/modules/nutrition/domain/repositories/nutrition.repository';
-import { toNutritionPlanResponse } from '@/modules/nutrition/infrastructure/mappers/nutrition.mapper';
-import { PET_REPOSITORY } from '@/modules/pets/domain/repositories/pet.repository';
 import { SUBSCRIPTION_REPOSITORY } from '@/modules/subscriptions/domain/repositories/subscription.repository';
 import { AppModule } from '../src/app.module';
 
@@ -33,6 +27,8 @@ describe('Nutrition profile and plans (e2e)', () => {
   let tokens: TokenService;
   const userIds: string[] = [];
   const petIds: string[] = [];
+  const explain = jest.fn();
+  const isPetTracked = jest.fn();
 
   interface UserFixture {
     id: string;
@@ -108,12 +104,22 @@ describe('Nutrition profile and plans (e2e)', () => {
   beforeAll(async () => {
     const module = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      .overrideProvider(NUTRITION_EXPLAINER)
+      .useValue({ explain })
+      .overrideProvider(SUBSCRIPTION_REPOSITORY)
+      .useValue({ isPetTracked })
+      .compile();
     app = module.createNestApplication();
     app.setGlobalPrefix('v1');
     await app.init();
     db = app.get<NodePgDatabase>(DRIZZLE);
     tokens = app.get<TokenService>(TOKEN_SERVICE);
+  });
+
+  beforeEach(() => {
+    explain.mockReset().mockResolvedValue(null);
+    isPetTracked.mockReset().mockResolvedValue(false);
   });
 
   afterAll(async () => {
@@ -629,87 +635,38 @@ describe('Nutrition profile and plans (e2e)', () => {
       });
     });
   });
-});
 
-describe.each([
-  'R13 (nutrition-ai-explainer #18): setAiExplanation actualiza solo esa columna y no inserta fila',
-  'R16 (nutrition-ai-explainer #18): hash hit con explicacion no re-llama',
-  'R17 (nutrition-ai-explainer #18): el mapper devuelve la explicacion persistida',
-  'R18 (nutrition-ai-explainer #18): la explicacion llega de punta a punta',
-])('%s', () => {
-  it('returns and persists a non-empty explanation through the module flow', async () => {
-    let latestPlan: InstanceType<typeof NutritionPlan> | null = null;
-    const nutritionRepository = {
-      findProfile: jest.fn().mockResolvedValue({
-        petId: 'pet-1',
+  describe('R13 (nutrition-ai-explainer #18): setAiExplanation actualiza la fila existente', () => {
+    it('persists the text without inserting a row or changing generatedAt', async () => {
+      explain.mockResolvedValue('Generated explanation');
+      isPetTracked.mockResolvedValue(true);
+      const owner = await seedUser('r13-ai');
+      const pet = await seedPet(owner);
+      await putProfile(owner, pet.id, {
+        activityLevel: 'medium',
         foodType: 'dry',
         kcalPer100g: 350,
-        activityLevel: 'medium',
-        bodyCondition: 5,
-        targetWeightKg: null,
-        allergies: [],
-        diseases: [],
-        updatedAt: new Date(),
-      }),
-      findLatestPlan: jest.fn(() => Promise.resolve(latestPlan)),
-      insertPlan: jest.fn((plan: NewNutritionPlan) => {
-        latestPlan = new NutritionPlan({
-          id: 'plan-1',
-          ...plan,
-          generatedAt: new Date(),
-        });
-        return Promise.resolve(latestPlan);
-      }),
-      setAiExplanation: jest.fn((_planId: string, explanation: string) => {
-        latestPlan = new NutritionPlan({
-          ...latestPlan!,
-          aiExplanation: explanation,
-        });
-        return Promise.resolve(latestPlan);
-      }),
-    };
-    const explain = jest.fn().mockResolvedValue('Generated explanation');
-    const moduleRef = await Test.createTestingModule({
-      imports: [AppModule],
-    })
-      .overrideProvider(NUTRITION_REPOSITORY)
-      .useValue(nutritionRepository)
-      .overrideProvider(PET_REPOSITORY)
-      .useValue({
-        findById: jest.fn().mockResolvedValue({
-          id: 'pet-1',
-          species: 'dog',
-          currentWeightKg: 20,
-          birthDate: '2024-08-18',
-          sterilized: true,
-        }),
-      })
-      .overrideProvider(SUBSCRIPTION_REPOSITORY)
-      .useValue({ isPetTracked: jest.fn().mockResolvedValue(true) })
-      .overrideProvider(NUTRITION_EXPLAINER)
-      .useValue({ explain })
-      .compile();
+      }).expect(200);
+      await postWeight(owner, pet.id, 20).expect(201);
 
-    const plan = await moduleRef
-      .get(GenerateNutritionPlanUseCase)
-      .execute('pet-1');
-    const response = toNutritionPlanResponse(plan);
-    const repeatedPlan = await moduleRef
-      .get(GenerateNutritionPlanUseCase)
-      .execute('pet-1');
+      const generated = await generatePlan(owner, pet.id).expect(200);
+      const body = generated.body as {
+        id: string;
+        aiExplanation: string;
+        generatedAt: string;
+      };
+      const [persisted] = await db
+        .select({
+          aiExplanation: nutritionPlans.aiExplanation,
+          generatedAt: nutritionPlans.generatedAt,
+        })
+        .from(nutritionPlans)
+        .where(eq(nutritionPlans.id, body.id));
 
-    expect(response.aiExplanation).toBe('Generated explanation');
-    expect(nutritionRepository.setAiExplanation).toHaveBeenCalledTimes(1);
-    expect(repeatedPlan.id).toBe(plan.id);
-    expect(repeatedPlan.generatedAt).toBe(plan.generatedAt);
-    expect(nutritionRepository.insertPlan).toHaveBeenCalledTimes(1);
-    expect(explain).toHaveBeenCalledTimes(1);
-    expect(explain).toHaveBeenCalledWith(
-      expect.any(Object),
-      expect.any(Object),
-      { petId: 'pet-1', planId: 'plan-1' },
-    );
-
-    await moduleRef.close();
+      expect(await planCount(pet.id)).toBe(1);
+      expect(body.aiExplanation).toBe('Generated explanation');
+      expect(persisted.aiExplanation).toBe('Generated explanation');
+      expect(persisted.generatedAt.toISOString()).toBe(body.generatedAt);
+    });
   });
 });

@@ -1,3 +1,5 @@
+import { eq } from 'drizzle-orm';
+import { nutritionPlans } from '@/db/schema/nutrition.schema';
 import { NutritionDrizzleRepository } from './nutrition.drizzle.repository';
 
 describe('R13 (nutrition-ai-explainer #18): setAiExplanation actualiza solo esa columna y no inserta fila', () => {
@@ -34,6 +36,7 @@ describe('R13 (nutrition-ai-explainer #18): setAiExplanation actualiza solo esa 
     expect(set).toHaveBeenCalledWith({
       aiExplanation: 'Generated explanation',
     });
+    expect(where).toHaveBeenCalledWith(eq(nutritionPlans.id, 'plan-1'));
     expect(db.insert).not.toHaveBeenCalled();
     expect(plan.id).toBe('plan-1');
     expect(plan.aiExplanation).toBe('Generated explanation');
