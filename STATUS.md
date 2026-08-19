@@ -19,7 +19,11 @@ GPS (Wialon, con simulador `SIM_MODE` mientras no hay hardware), (2) salud
 (vacunas con catálogo, peso, recordatorios), (3) alimentación (motor
 calórico determinístico + explicación IA opcional). Multi-usuario con
 permisos por mascota (`pet_users`), geocercas con alertas anti-spam y push.
-La app móvil (Expo) queda fuera de este repo/backlog — solo backend.
+Desde 2026-08-19 el repo es un monorepo: la app móvil (Expo, package
+manager bun) vive en `mobile-pet-tracker/` como carpeta isla — sin workspace
+raíz, backend sigue con pnpm — y sus features entran en `feature_list.json`
+con la convención de nombre `mobile-*` (la primera es #31
+`mobile-app-scaffold`).
 
 ---
 
