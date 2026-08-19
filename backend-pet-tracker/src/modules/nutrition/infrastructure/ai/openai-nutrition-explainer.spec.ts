@@ -79,10 +79,15 @@ describe('R9 (nutrition-ai-explainer #18): modelo por env, timeout 15 s y maxRet
 
 describe('R10 (nutrition-ai-explainer #18): respuesta vacia o truncada se normaliza a null', () => {
   const degradedResponses = [
-    ['null content', null, 'stop'],
-    ['empty content', '', 'stop'],
-    ['blank content', '   ', 'stop'],
-    ['truncated content', 'Partial explanation', 'length'],
+    ['null content', null, 'stop', 'ai explanation empty'],
+    ['empty content', '', 'stop', 'ai explanation empty'],
+    ['blank content', '   ', 'stop', 'ai explanation empty'],
+    [
+      'truncated content',
+      'Partial explanation',
+      'length',
+      'ai explanation truncated',
+    ],
   ] as const;
 
   afterEach(() => {
@@ -91,7 +96,7 @@ describe('R10 (nutrition-ai-explainer #18): respuesta vacia o truncada se normal
 
   it.each(degradedResponses)(
     'returns null and warns for %s',
-    async (_case, content, finishReason) => {
+    async (_case, content, finishReason, message) => {
       const usage = { total_tokens: 20 };
       const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
       const explainer = new OpenAiNutritionExplainer('model', 'key', {
@@ -107,6 +112,7 @@ describe('R10 (nutrition-ai-explainer #18): respuesta vacia o truncada se normal
           scope: 'nutrition-ai',
           petId: ctx.petId,
           planId: ctx.planId,
+          message,
           finishReason,
           usage,
         }),
