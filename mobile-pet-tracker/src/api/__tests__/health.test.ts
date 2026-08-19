@@ -59,3 +59,14 @@ describe('R5: fetchHealth unreachable state', () => {
     });
   });
 });
+
+describe('R6: fetchHealth missing configuration state', () => {
+  it.each([undefined, ''])('skips fetch for %p', async (baseUrl) => {
+    const fetchFn = jest.fn() as unknown as typeof fetch;
+
+    await expect(fetchHealth(baseUrl, fetchFn)).resolves.toEqual({
+      kind: 'missing-config',
+    });
+    expect(fetchFn).not.toHaveBeenCalled();
+  });
+});
