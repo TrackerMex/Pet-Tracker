@@ -5,7 +5,7 @@ PROJECT_NAME="pet-tracker"
 
 # Binarios que deben existir en PATH
 # node es necesario para las verificaciones de feature_list.json en init.sh
-REQUIRED_TOOLS=("node" "pnpm")
+REQUIRED_TOOLS=("node" "pnpm" "bun")
 
 # Variables de entorno críticas, ej: ("DATABASE_URL" "JWT_SECRET")
 # .env vive en la raíz (docker-compose e init.sh lo consumen desde aquí)
@@ -20,11 +20,11 @@ REQUIRED_ENV_VARS=("DATABASE_URL")
 #   LINT_CMD="pnpm run lint"
 #   TYPECHECK_CMD="pnpm exec tsc --noEmit"
 # El backend vive en backend-pet-tracker/ — pnpm -C apunta ahí desde la raíz
-INSTALL_CMD="pnpm -C backend-pet-tracker install && pnpm -C infra install"
+INSTALL_CMD="pnpm -C backend-pet-tracker install && pnpm -C infra install && bun install --cwd mobile-pet-tracker"
 BUILD_CMD="pnpm -C backend-pet-tracker run build && pnpm -C infra run synth"
-TEST_CMD="pnpm -C backend-pet-tracker test --passWithNoTests && pnpm -C infra test --passWithNoTests && node --test env-drift.test.mjs"
-LINT_CMD="pnpm -C backend-pet-tracker run lint && pnpm -C infra run lint"
-TYPECHECK_CMD="pnpm -C backend-pet-tracker exec tsc --noEmit && pnpm -C infra exec tsc --noEmit"
+TEST_CMD="pnpm -C backend-pet-tracker test --passWithNoTests && pnpm -C infra test --passWithNoTests && node --test env-drift.test.mjs && bun run --cwd mobile-pet-tracker test"
+LINT_CMD="pnpm -C backend-pet-tracker run lint && pnpm -C infra run lint && bun run --cwd mobile-pet-tracker lint"
+TYPECHECK_CMD="pnpm -C backend-pet-tracker exec tsc --noEmit && pnpm -C infra exec tsc --noEmit && bun run --cwd mobile-pet-tracker typecheck"
 
 # Tests e2e. Viven en backend-pet-tracker/test/ como *.e2e-spec.ts con su
 # propia config (test/jest-e2e.json), así que TEST_CMD no los alcanza:
