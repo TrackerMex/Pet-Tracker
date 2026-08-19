@@ -25,7 +25,7 @@ describe('R7: health screen states and retry', () => {
   it.each(states)('renders $kind', async (state) => {
     mockFetchHealth.mockResolvedValueOnce(state);
 
-    render(<Index />);
+    await render(<Index />);
 
     await waitFor(() => {
       expect(screen.getByTestId('health-state')).toHaveTextContent(state.kind);
@@ -38,12 +38,12 @@ describe('R7: health screen states and retry', () => {
       .mockResolvedValueOnce({ kind: 'error' })
       .mockResolvedValueOnce({ kind: 'ok' });
 
-    render(<Index />);
+    await render(<Index />);
 
     await waitFor(() => {
       expect(screen.getByTestId('health-state')).toHaveTextContent('error');
     });
-    fireEvent.press(screen.getByTestId('health-retry'));
+    await fireEvent.press(screen.getByTestId('health-retry'));
 
     await waitFor(() => {
       expect(screen.getByTestId('health-state')).toHaveTextContent('ok');
