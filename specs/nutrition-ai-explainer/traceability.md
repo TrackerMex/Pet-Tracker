@@ -38,13 +38,42 @@ tags: [harness, spec]
 | R10 | `src/modules/nutrition/infrastructure/ai/openai-nutrition-explainer.spec.ts::R10 (nutrition-ai-explainer #18): respuesta vacia o truncada se normaliza a null` | rojo: `37e7a46 test(nutrition-ai-explainer): guard empty and truncated responses (R10)`; verde: `b999e73 feat(nutrition-ai-explainer): normalize provider responses (R10)` |
 | R11 | `src/modules/nutrition/infrastructure/ai/openai-nutrition-explainer.spec.ts::R11 (nutrition-ai-explainer #18): todo fallo degrada a null con warn` + `src/modules/nutrition/infrastructure/ai/null-nutrition-explainer.spec.ts::R11 (nutrition-ai-explainer #18): la rama apagada devuelve null y avisa` | rojo: `c862af4 test(nutrition-ai-explainer): contain explainer degradations (R11)`; verde: `b63e179 feat(nutrition-ai-explainer): degrade failures safely (R11)` |
 | R12 | `src/modules/nutrition/application/use-cases/generate-nutrition-plan.use-case.spec.ts::R12 (nutrition-ai-explainer #18): insert antes de la IA y update despues` | rojo: `3819590 test(nutrition-ai-explainer): use canonical pet fixture (R12)`; verde: `77e719d feat(nutrition-ai-explainer): enrich entitled plans idempotently (R12,R14,R15,R16)` |
-| R13 | `src/modules/nutrition/infrastructure/repositories/nutrition.drizzle.repository.spec.ts::R13 (nutrition-ai-explainer #18): setAiExplanation actualiza solo esa columna y no inserta fila` + `test/nutrition.e2e-spec.ts` | rojo: `736b4ab test(nutrition-ai-explainer): update explanation in place (R13)`; verde: `3306260 feat(nutrition-ai-explainer): persist explanation in place (R13)` |
+| R13 | `src/modules/nutrition/infrastructure/repositories/nutrition.drizzle.repository.spec.ts::R13 (nutrition-ai-explainer #18): setAiExplanation actualiza solo esa columna y no inserta fila` + `test/nutrition.e2e-spec.ts::R13 (nutrition-ai-explainer #18): setAiExplanation actualiza la fila existente` | rojo: `736b4ab test(nutrition-ai-explainer): update explanation in place (R13)`; verde: `3306260 feat(nutrition-ai-explainer): persist explanation in place (R13)` |
 | R14 | `src/modules/nutrition/application/use-cases/generate-nutrition-plan.use-case.spec.ts::R14 (nutrition-ai-explainer #18): sin entitlement no se llama a la IA` | rojo: `07ea2ed test(nutrition-ai-explainer): gate enrichment by entitlement (R14)`; verde: `77e719d feat(nutrition-ai-explainer): enrich entitled plans idempotently (R12,R14,R15,R16)` |
 | R15 | `src/modules/nutrition/application/use-cases/generate-nutrition-plan.use-case.spec.ts::R15 (nutrition-ai-explainer #18): hash hit con null reintenta sobre la misma fila` | rojo: `70bd75d test(nutrition-ai-explainer): retry null hash hits in place (R15)`; verde: `77e719d feat(nutrition-ai-explainer): enrich entitled plans idempotently (R12,R14,R15,R16)` |
-| R16 | `src/modules/nutrition/application/use-cases/generate-nutrition-plan.use-case.spec.ts::R16 (nutrition-ai-explainer #18): hash hit con explicacion no re-llama` + `test/nutrition.e2e-spec.ts` | rojo: `f8ab184 test(nutrition-ai-explainer): avoid paid hash hit repeats (R16)`; verde: `77e719d feat(nutrition-ai-explainer): enrich entitled plans idempotently (R12,R14,R15,R16)` |
-| R17 | `src/modules/nutrition/infrastructure/mappers/nutrition.mapper.spec.ts::R17 (nutrition-ai-explainer #18): el mapper devuelve la explicacion persistida` + `test/nutrition.e2e-spec.ts` | rojo: `20c0264 test(nutrition-ai-explainer): expose persisted explanation (R17)`; verde: `a1be974 feat(nutrition-ai-explainer): map persisted explanation (R17)` |
-| R18 | `test/nutrition.e2e-spec.ts::R18 (nutrition-ai-explainer #18): la explicacion llega de punta a punta` | rojo: `08938fc test(nutrition-ai-explainer): use complete e2e module (R18)`; verde: `a2ba619 feat(nutrition-ai-explainer): complete explanation flow (R18)` |
+| R16 | `src/modules/nutrition/application/use-cases/generate-nutrition-plan.use-case.spec.ts::R16 (nutrition-ai-explainer #18): hash hit con explicacion no re-llama` + `test/nutrition.e2e-spec.ts::R16 (nutrition-ai-explainer #18): hash hit con explicacion no re-llama` | rojo: `f8ab184 test(nutrition-ai-explainer): avoid paid hash hit repeats (R16)`; verde: `77e719d feat(nutrition-ai-explainer): enrich entitled plans idempotently (R12,R14,R15,R16)` |
+| R17 | `src/modules/nutrition/infrastructure/mappers/nutrition.mapper.spec.ts::R17 (nutrition-ai-explainer #18): el mapper devuelve la explicacion persistida` + `test/nutrition.e2e-spec.ts::R17 (nutrition-ai-explainer #18): el mapper devuelve la explicacion persistida` | rojo: `20c0264 test(nutrition-ai-explainer): expose persisted explanation (R17)`; verde: `a1be974 feat(nutrition-ai-explainer): map persisted explanation (R17)` |
+| R18 | `test/nutrition.e2e-spec.ts::R18 (nutrition-ai-explainer #18): camino feliz de punta a punta` | rojo: `08938fc test(nutrition-ai-explainer): use complete e2e module (R18)`; verde: `a2ba619 feat(nutrition-ai-explainer): complete explanation flow (R18)` |
 | R19 | `docs/verification.md` §`Feature 18 — nutrition-ai-explainer` (prueba de humo manual con clave real) | pendiente — **gate humano**, fecha: ____ |
+
+## Nota de correccion de evidencia (ronda 2)
+
+Los commits marcados originalmente como verdes para R9-R16 no dejaron sus
+tests compilables de forma aislada. Los ocho requisitos quedaron realmente
+compilables y verdes en el commit indicado:
+
+| Requisito | Primer commit realmente verde |
+|---|---|
+| R9 | `29e53c3 fix(nutrition-ai-explainer): align test fixtures with domain types` |
+| R10 | `29e53c3 fix(nutrition-ai-explainer): align test fixtures with domain types` |
+| R11 | `29e53c3 fix(nutrition-ai-explainer): align test fixtures with domain types` |
+| R12 | `29e53c3 fix(nutrition-ai-explainer): align test fixtures with domain types` |
+| R13 | `29e53c3 fix(nutrition-ai-explainer): align test fixtures with domain types` |
+| R14 | `29e53c3 fix(nutrition-ai-explainer): align test fixtures with domain types` |
+| R15 | `29e53c3 fix(nutrition-ai-explainer): align test fixtures with domain types` |
+| R16 | `29e53c3 fix(nutrition-ai-explainer): align test fixtures with domain types` |
+
+La ronda 2 anade evidencia verificable sin reescribir historia:
+
+| Requisito | Evidencia nueva |
+|---|---|
+| R9 | rojo `b6d05da`; verde `adb8993` |
+| R10 | rojo `5194c64`; verde `fbc694d` |
+| R11 | rojo `0bf623f`; verde `e79e1a6` |
+| R13 | e2e HTTP/Postgres y `where` por `id`: `98d8ab0` |
+| R16 | e2e HTTP/Postgres: `41e05e8` |
+| R17 | e2e HTTP/Postgres: `3e40953` |
+| R18 | e2e HTTP/Postgres: `82b6d2e` |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
 Convención de commit: `feat(nutrition-ai-explainer): <desc> (R1,R2)`.
