@@ -1612,3 +1612,26 @@ Deuda detectada (fuera de alcance, candidata a limpieza propia):
   2026-08-18.
 - **Estado final:** done (marcado por el `leader` con el veredicto en la mano,
   2026-08-18). PR abierto; el merge lo hace el humano.
+
+
+## Sesión 2026-08-19 — #31 mobile-app-scaffold cerrada (30/31)
+
+- feature: #31 mobile-app-scaffold
+- inicio: 2026-08-19
+- spec aprobada por humano: si (2026-08-19)
+- plan: monorepo confirmado por el humano (Expo + bun, carpeta isla mobile-pet-tracker/, backend sigue pnpm); explorer completado (progress/explore_mobile-app-scaffold.md, decisiones D1-D9); spec_author escribe la spec; gate humano; handoff a Codex CLI
+- implementador: Codex CLI (handoff entregado: progress/handoff_mobile-app-scaffold.md)
+- estado: implementacion de Codex APROBADA por el reviewer (progress/review_mobile-app-scaffold.md, 2026-08-19); R1-R12 verificados, init.sh exit 0
+- siguiente paso: smoke R13 del humano (Expo Go en Android fisico, los 3 estados; pasos en requirements.md R13). Con la casilla marcada: done en feature_list.json, cierre de sesion y PR
+
+Notas de la sesión que no están en la spec:
+
+- El intento manual del humano destapó dos derivas de la plantilla
+  `expo-template-default@57.0.16`: rutas en `src/app/` (no `app/`) y
+  `reset-project` interactivo — la spec se enmendó ANTES del gate humano.
+- El `.gitignore` de la plantilla NO cubre `.env` (solo `.env*.local`);
+  Codex lo corrigió en el commit de scaffold por orden del addendum.
+- EPERM transitorio de Windows en `bun create expo-app` (rename de app.json,
+  antivirus/watcher): reintentar tras borrar la carpeta bastó.
+- R13 (smoke humano, Expo Go en Android físico): los tres estados vistos,
+  casilla marcada 2026-08-19.

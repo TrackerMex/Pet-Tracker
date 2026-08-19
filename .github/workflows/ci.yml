@@ -22,6 +22,15 @@ jobs:
           cache: pnpm
           cache-dependency-path: backend-pet-tracker/pnpm-lock.yaml
 
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.14"
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('mobile-pet-tracker/bun.lock') }}
+
       # Misma verificacion que en local: harness + install + build + test + lint + typecheck.
       # init.sh copia .env.example -> .env si falta, asi que no necesita secrets.
       # Cuando existan tests e2e contra Postgres/LocalStack, anadir services aqui.

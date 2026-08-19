@@ -555,5 +555,26 @@
     "files_affected": [
       "backend-pet-tracker/src/modules/nutrition/"
     ]
+  },
+  {
+    "id": 31,
+    "name": "mobile-app-scaffold",
+    "status": "done",
+    "priority": "P1",
+    "description": "Primera feature de la app movil (decision humana 2026-08-19: monorepo, Expo, bun). Scaffold de mobile-pet-tracker/ como carpeta isla (sin workspace raiz, bun.lock propio): bun create expo-app con Expo SDK 57 (plantilla default: TypeScript + expo-router), ESLint. Una pantalla que consume GET /v1/health del backend con URL desde EXPO_PUBLIC_API_URL y pinta { postgres: ok | error }. Tipos de API duplicados a mano en api/types.ts (deuda de codegen OpenAPI anotada). Integracion del harness en el MISMO PR: bun en REQUIRED_TOOLS y comandos --cwd en init.config.sh, oven-sh/setup-bun con cache de bun.lock en ci.yml. Todo cambio a backend-pet-tracker/ (p.ej. CORS) queda explicitamente fuera. Contexto y decisiones D1-D9 en progress/explore_mobile-app-scaffold.md.",
+    "acceptance_criteria": [
+      "bunx expo start arranca la app sin errores en la maquina del humano (Windows 11, bun >= 1.2)",
+      "La pantalla inicial muestra el estado de GET /v1/health del backend local, distinguiendo ok de error/inalcanzable",
+      "init.sh queda verde con la app integrada: install/lint/typecheck de mobile-pet-tracker/ via bun, sin guardas silenciosas (bun en REQUIRED_TOOLS)",
+      "ci.yml instala bun (oven-sh/setup-bun) con cache sobre mobile-pet-tracker/bun.lock en el mismo PR",
+      "Los tests del scaffold nombran su R-id; la estrategia de tests (jest-expo vs logica pura) queda cerrada en la spec",
+      "Ningun archivo de backend-pet-tracker/ cambia en el PR"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/",
+      "init.config.sh",
+      ".github/workflows/ci.yml",
+      "AGENTS.md"
+    ]
   }
 ]
