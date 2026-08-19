@@ -8,7 +8,7 @@ tags: [harness, spec, mobile]
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | verificación estructural del reviewer (excepción C4: scaffold generado) | `ee29ed1 chore(mobile): scaffold expo sdk 57 app via bun create expo-app (R1)` |
+| R1 | verificación estructural del reviewer (excepción C4: scaffold generado) | `ee29ed1 chore(mobile): scaffold expo sdk 57 app via bun create expo-app (R1)`<br>`f22721c chore(mobile): add jest-expo test tooling (R1)` |
 | R2 | pendiente (`src/api/__tests__/health.test.ts::R2`) | pendiente |
 | R3 | pendiente (`src/api/__tests__/health.test.ts::R3`) | pendiente |
 | R4 | pendiente (`src/api/__tests__/health.test.ts::R4`) | pendiente |
