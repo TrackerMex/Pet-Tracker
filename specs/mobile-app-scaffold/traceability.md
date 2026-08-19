@@ -12,7 +12,7 @@ tags: [harness, spec, mobile]
 | R2 | `src/api/__tests__/health.test.ts::R2: healthUrl` | `1893f1c test(mobile): add red test for healthUrl (R2)`<br>`db52ee1 feat(mobile): add health URL builder (R2)` |
 | R3 | `src/api/__tests__/health.test.ts::R3: fetchHealth ok state` | `2f036c5 test(mobile): add red health success test (R3)`<br>`aa261c8 feat(mobile): return healthy backend state (R3)` |
 | R4 | `src/api/__tests__/health.test.ts::R4: fetchHealth error state` | `8daae39 test(mobile): add red degraded health tests (R4)`<br>`1032fac feat(mobile): return degraded backend state (R4)` |
-| R5 | pendiente (`src/api/__tests__/health.test.ts::R5`) | pendiente |
+| R5 | `src/api/__tests__/health.test.ts::R5: fetchHealth unreachable state` | `b57763b test(mobile): add red unreachable health test (R5)`<br>`04219b5 feat(mobile): return unreachable backend state (R5)` |
 | R6 | pendiente (`src/api/__tests__/health.test.ts::R6`) | pendiente |
 | R7 | pendiente (`src/app/__tests__/index.test.tsx::R7`) | pendiente |
 | R8 | pendiente (verificación reviewer: `.env.example` tracked, `.env` ignorado) | pendiente |
