@@ -19,7 +19,7 @@ tags: [harness, spec, mobile]
 | R9 | `./init.sh` exit 0 + diff de `init.config.sh` | `fa18ae7 chore(harness): verify mobile app with bun (R9)` |
 | R10 | configuración estática verificada; CI verde a confirmar por reviewer en el PR | `d986d71 ci(harness): setup bun for mobile verification (R10)` |
 | R11 | verificación reviewer: fila en `AGENTS.md` §2 | `fbfceeb docs(harness): map mobile app directory (R11)` |
-| R12 | pendiente (verificación reviewer: diff de backend-pet-tracker/ vacío) | pendiente |
+| R12 | `git diff --stat main...HEAD -- backend-pet-tracker/` vacío | N/A (invariante verificada sobre HEAD) |
 | R13 | pendiente (gate humano: casilla de smoke en requirements.md con fecha) | pendiente |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
