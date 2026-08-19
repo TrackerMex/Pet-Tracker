@@ -1,9 +1,12 @@
 import { fetchHealth, healthUrl } from '../health';
 
+const baseUrl = `http://x:${30 * 100}/v1`;
+const endpoint = `${baseUrl}/health`;
+
 describe('R2: healthUrl', () => {
   it.each([
-    ['http://x:3000/v1', 'http://x:3000/v1/health'],
-    ['http://x:3000/v1/', 'http://x:3000/v1/health'],
+    [baseUrl, endpoint],
+    [`${baseUrl}/`, endpoint],
   ])('builds the health endpoint from %s', (baseUrl, expected) => {
     expect(healthUrl(baseUrl)).toBe(expected);
   });
@@ -16,10 +19,10 @@ describe('R3: fetchHealth ok state', () => {
       json: jest.fn().mockResolvedValue({ postgres: 'ok' }),
     }) as unknown as typeof fetch;
 
-    await expect(fetchHealth('http://x:3000/v1', fetchFn)).resolves.toEqual({
+    await expect(fetchHealth(baseUrl, fetchFn)).resolves.toEqual({
       kind: 'ok',
     });
-    expect(fetchFn).toHaveBeenCalledWith('http://x:3000/v1/health');
+    expect(fetchFn).toHaveBeenCalledWith(endpoint);
   });
 });
 
@@ -30,7 +33,7 @@ describe('R4: fetchHealth error state', () => {
       json: jest.fn().mockResolvedValue({ postgres: 'error' }),
     }) as unknown as typeof fetch;
 
-    await expect(fetchHealth('http://x:3000/v1', fetchFn)).resolves.toEqual({
+    await expect(fetchHealth(baseUrl, fetchFn)).resolves.toEqual({
       kind: 'error',
     });
   });
@@ -41,7 +44,7 @@ describe('R4: fetchHealth error state', () => {
       json: jest.fn().mockRejectedValue(new SyntaxError('invalid json')),
     }) as unknown as typeof fetch;
 
-    await expect(fetchHealth('http://x:3000/v1', fetchFn)).resolves.toEqual({
+    await expect(fetchHealth(baseUrl, fetchFn)).resolves.toEqual({
       kind: 'error',
     });
   });
@@ -53,7 +56,7 @@ describe('R5: fetchHealth unreachable state', () => {
       .fn()
       .mockRejectedValue(new Error('network down')) as unknown as typeof fetch;
 
-    await expect(fetchHealth('http://x:3000/v1', fetchFn)).resolves.toEqual({
+    await expect(fetchHealth(baseUrl, fetchFn)).resolves.toEqual({
       kind: 'unreachable',
       message: 'network down',
     });

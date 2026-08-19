@@ -14,10 +14,14 @@ export async function fetchHealth(
   baseUrl: string | undefined,
   fetchFn: typeof fetch = fetch,
 ): Promise<HealthState> {
+  if (!baseUrl) {
+    return { kind: 'missing-config' };
+  }
+
   let response: Response;
 
   try {
-    response = await fetchFn(healthUrl(baseUrl!));
+    response = await fetchFn(healthUrl(baseUrl));
   } catch (error) {
     return {
       kind: 'unreachable',
