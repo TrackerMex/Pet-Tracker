@@ -78,6 +78,7 @@ export class OpenAiNutritionExplainer implements NutritionExplainer {
         scope: NUTRITION_AI_SCOPE,
         petId: ctx.petId,
         planId: ctx.planId,
+        message: error instanceof Error ? error.message : 'unknown error',
         finishReason: null,
         usage: null,
         errorName: error instanceof Error ? error.name : 'UnknownError',

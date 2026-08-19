@@ -21,7 +21,7 @@ export class NullNutritionExplainer implements NutritionExplainer {
       scope: NUTRITION_AI_SCOPE,
       petId: ctx.petId,
       planId: ctx.planId,
-      reason: 'disabled',
+      message: 'ai explanation disabled',
     });
     return Promise.resolve(null);
   }
