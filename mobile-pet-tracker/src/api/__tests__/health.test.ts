@@ -22,3 +22,27 @@ describe('R3: fetchHealth ok state', () => {
     expect(fetchFn).toHaveBeenCalledWith('http://x:3000/v1/health');
   });
 });
+
+describe('R4: fetchHealth error state', () => {
+  it('returns error for a degraded backend response', async () => {
+    const fetchFn = jest.fn().mockResolvedValue({
+      status: 503,
+      json: jest.fn().mockResolvedValue({ postgres: 'error' }),
+    }) as unknown as typeof fetch;
+
+    await expect(fetchHealth('http://x:3000/v1', fetchFn)).resolves.toEqual({
+      kind: 'error',
+    });
+  });
+
+  it('returns error for an invalid response body', async () => {
+    const fetchFn = jest.fn().mockResolvedValue({
+      status: 200,
+      json: jest.fn().mockRejectedValue(new SyntaxError('invalid json')),
+    }) as unknown as typeof fetch;
+
+    await expect(fetchHealth('http://x:3000/v1', fetchFn)).resolves.toEqual({
+      kind: 'error',
+    });
+  });
+});
