@@ -14,7 +14,17 @@ export async function fetchHealth(
   baseUrl: string | undefined,
   fetchFn: typeof fetch = fetch,
 ): Promise<HealthState> {
-  const response = await fetchFn(healthUrl(baseUrl!));
+  let response: Response;
+
+  try {
+    response = await fetchFn(healthUrl(baseUrl!));
+  } catch (error) {
+    return {
+      kind: 'unreachable',
+      message: error instanceof Error ? error.message : String(error),
+    };
+  }
+
   let body: HealthResponse;
 
   try {
