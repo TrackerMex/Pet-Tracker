@@ -752,4 +752,40 @@ describe('Nutrition profile and plans (e2e)', () => {
       );
     });
   });
+
+  describe('R18 (nutrition-ai-explainer #18): camino feliz de punta a punta', () => {
+    it('returns the non-empty explanation from POST, Postgres and GET', async () => {
+      explain.mockResolvedValue('Generated explanation');
+      isPetTracked.mockResolvedValue(true);
+      const owner = await seedUser('r18-ai');
+      const pet = await seedPet(owner);
+      await putProfile(owner, pet.id, {
+        activityLevel: 'medium',
+        foodType: 'dry',
+        kcalPer100g: 350,
+      }).expect(200);
+      await postWeight(owner, pet.id, 20).expect(201);
+
+      const generated = await generatePlan(owner, pet.id).expect(200);
+      const generatedBody = generated.body as {
+        id: string;
+        aiExplanation: string;
+      };
+      expect(generatedBody.aiExplanation).toBe('Generated explanation');
+
+      const [persisted] = await db
+        .select({ aiExplanation: nutritionPlans.aiExplanation })
+        .from(nutritionPlans)
+        .where(eq(nutritionPlans.id, generatedBody.id));
+      expect(persisted.aiExplanation).toBe('Generated explanation');
+
+      const fetched = await api()
+        .get(`/v1/pets/${pet.id}/nutrition-plan`)
+        .set(auth(owner.token))
+        .expect(200);
+      expect((fetched.body as { aiExplanation: string }).aiExplanation).toBe(
+        'Generated explanation',
+      );
+    });
+  });
 });
