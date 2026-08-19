@@ -13,7 +13,7 @@ tags: [harness, spec, mobile]
 | R3 | `src/api/__tests__/health.test.ts::R3: fetchHealth ok state` | `2f036c5 test(mobile): add red health success test (R3)`<br>`aa261c8 feat(mobile): return healthy backend state (R3)` |
 | R4 | `src/api/__tests__/health.test.ts::R4: fetchHealth error state` | `8daae39 test(mobile): add red degraded health tests (R4)`<br>`1032fac feat(mobile): return degraded backend state (R4)` |
 | R5 | `src/api/__tests__/health.test.ts::R5: fetchHealth unreachable state` | `b57763b test(mobile): add red unreachable health test (R5)`<br>`04219b5 feat(mobile): return unreachable backend state (R5)` |
-| R6 | pendiente (`src/api/__tests__/health.test.ts::R6`) | pendiente |
+| R6 | `src/api/__tests__/health.test.ts::R6: fetchHealth missing configuration state` | `be93a38 test(mobile): add red missing config tests (R6)`<br>`72f75bc feat(mobile): skip health fetch without configuration (R6)` |
 | R7 | pendiente (`src/app/__tests__/index.test.tsx::R7`) | pendiente |
 | R8 | pendiente (verificación reviewer: `.env.example` tracked, `.env` ignorado) | pendiente |
 | R9 | pendiente (verificación reviewer: `./init.sh` exit 0 + diff init.config.sh) | pendiente |
