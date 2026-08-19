@@ -16,7 +16,7 @@ tags: [harness, spec, mobile]
 | R6 | `src/api/__tests__/health.test.ts::R6: fetchHealth missing configuration state` | `be93a38 test(mobile): add red missing config tests (R6)`<br>`72f75bc feat(mobile): skip health fetch without configuration (R6)` |
 | R7 | `src/app/__tests__/index.test.tsx::R7: health screen states and retry` | `9a82d64 test(mobile): add red health screen tests (R7)`<br>`33f13ce feat(mobile): show health states with retry (R7)` |
 | R8 | verificación reviewer: `.env.example` tracked, `.env` ignorado | `ee29ed1 chore(mobile): scaffold expo sdk 57 app via bun create expo-app (R1)`<br>`159c2e0 chore(mobile): document API URL environment (R8)` |
-| R9 | pendiente (verificación reviewer: `./init.sh` exit 0 + diff init.config.sh) | pendiente |
+| R9 | `./init.sh` exit 0 + diff de `init.config.sh` | `fa18ae7 chore(harness): verify mobile app with bun (R9)` |
 | R10 | pendiente (verificación: CI verde del PR) | pendiente |
 | R11 | pendiente (verificación reviewer: fila en AGENTS.md §2) | pendiente |
 | R12 | pendiente (verificación reviewer: diff de backend-pet-tracker/ vacío) | pendiente |
