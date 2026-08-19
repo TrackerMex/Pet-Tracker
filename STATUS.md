@@ -2,9 +2,13 @@
 
 **Última actualización**: 2026-08-18
 **Features completadas**: 29/30 (`feature_list.json`)
-**En progreso**: ninguna. #17 `nutrition-profile-engine` cerró con veredicto
-aprobado del `reviewer`; su PR está abierto a la espera del merge humano.
-**Pendientes**: 1, **P3** — #18 `nutrition-ai-explainer`.
+**En progreso**: #18 `nutrition-ai-explainer` — trabajo **aprobado** por el
+`reviewer` (ronda 2), pero **bloqueada en su gate humano**: la prueba de humo
+R19 llama a OpenAI y la cuenta no tiene cuota. La casilla de
+`specs/nutrition-ai-explainer/requirements.md:785` sigue vacía. Cómo retomarla:
+`progress/history.md`, sesión 2026-08-18. Branch `feature/18-nutrition-ai-explainer`
+sin PR, a la espera de que la feature pueda cerrarse.
+**Pendientes**: 0 sin spec. El backlog de backend está agotado salvo #18.
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
 desde 2026-08-10. Hay recursos vivos en la cuenta, aunque hoy sin coste.
