@@ -292,7 +292,17 @@ pnpm -C backend-pet-tracker run test:e2e
 
 > Gate humano: esta prueba llama a OpenAI y cuesta dinero. No forma parte de la suite automatizada.
 
-1. Arranca el backend con `OPENAI_ENABLED=true`, una `OPENAI_API_KEY` real y `OPENAI_MODEL=gpt-5-mini`, sin guardar la clave en archivos versionados.
-2. Usa una mascota para la que `isPetTracked(petId)` sea `true`, con peso actual y perfil nutricional válidos.
-3. Ejecuta `POST /v1/pets/:petId/nutrition-plan/generate` y comprueba `200`, `aiExplanation` no vacío y persistencia del mismo texto en el `GET` del plan.
-4. Repite el `POST` sin cambiar inputs y comprueba el mismo `id`, una sola fila de plan y ninguna segunda llamada facturable al proveedor; al terminar vuelve a `OPENAI_ENABLED=false`.
+1. `.env` con `OPENAI_ENABLED=true`, `OPENAI_API_KEY=<clave real>`,
+   `OPENAI_MODEL=gpt-5-mini` y una mascota con collar vinculado y suscripcion
+   vigente (`isPetTracked` true).
+2. `curl POST /v1/pets/<petId>/nutrition-plan/generate` -> `200` con
+   kcal/gramos coherentes Y `aiExplanation` con texto en español (no `null`).
+3. Devolver `OPENAI_API_KEY=PENDING` y repetir -> `200`, `aiExplanation` `null`
+   y un warning en el log del servidor.
+4. Segundo generate identico con la clave real -> mismo `id` (hash hit) y la IA
+   NO se vuelve a llamar (misma explicacion, sin cargo nuevo).
+
+Si la clave real falla con `401`/`429` persistente, dejar
+`OPENAI_ENABLED=false`, reportarlo y no bloquear el cierre. Al terminar,
+devolver `OPENAI_API_KEY=PENDING` en el `.env` local para que las siguientes
+corridas de `init.sh` no facturen.
