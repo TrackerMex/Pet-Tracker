@@ -187,9 +187,48 @@ ninguna IA, la corre el humano (`CLAUDE.md` §Excepciones).
   `progress/handoff_nutrition-ai-explainer_r2.md`, con B1..B4, los menores O1/O3/O4
   y lo decidido por el `leader` para que Codex no lo re-abra (O5 y O2).
 
+- **Ronda 2 de revision: APROBADA** -> `progress/review_nutrition-ai-explainer_r2.md`
+  (446 lineas). Los cuatro defectos B1..B4 cerrados de verdad, no de nombre. El
+  `reviewer` volvio a correr `./init.sh` el mismo (`INIT_EXIT=0`, 323 e2e, 1144
+  unitarios, lint y typecheck verdes, Postgres publicando puerto) y **no aprobo
+  por verde: aprobo por mutacion**.
+  - **B1 verificado con tres mutaciones en codigo de produccion**, cada una mata
+    los R-ids que le tocan: `eq(nutritionPlans.id, planId)` -> `eq(...petId...)`
+    en el repositorio tumba R13/R16/R18 mas el unitario (en la ronda 1 esa misma
+    mutacion dejaba la suite entera verde); `aiExplanation: plan.aiExplanation`
+    -> `null` en el mapper tumba R13/R17/R18; borrar el early return de
+    `generate-nutrition-plan.use-case.ts:63` tumba **solo** R16, en la asercion
+    `expect(explain).toHaveBeenCalledTimes(1)` que sostiene el no-doble-cobro.
+  - Los cuatro e2e nuevos hacen peticiones HTTP reales y tocan Postgres;
+    `NUTRITION_REPOSITORY` ya no se sobrescribe en ninguna parte del archivo, solo
+    `NUTRITION_EXPLAINER` y `SUBSCRIPTION_REPOSITORY`. El `describe.each`
+    desaparecio: un `describe` por requisito.
+  - **Nacen verdes** (commits `test(...)` sin `feat` detras) — excepcion a C4
+    autorizada en el handoff y **validada**: cada uno tiene su verdugo
+    (R13->M1/M2, R16->M1/M3, R17->M2, R18->M1/M2).
+  - Historial rojo->verde de R9/R10/R11 comprobado commit a commit, no por el
+    mensaje: en cada commit de test la implementacion de ese commit falla de
+    verdad.
+  - **N1**: el conteo de e2e no se movio (323 -> 323) — cuatro casos borrados,
+    cuatro `describe` nuevos. El mejor argumento de esta feature contra usar el
+    numero verde como criterio.
+  - **N2** (residual, teorico): el `message` del `catch` es `error.message` del
+    proveedor. Si OpenAI devolviera un 400 que eche de vuelta un fragmento del
+    cuerpo, ese fragmento entraria al log. La clave no (va en cabecera, y el test
+    lo asevera). Mirarlo cuando el humano corra R19 y vea un 400 real.
+- **Flake de R12 de `health-vaccines`: NO se reprodujo.** Van dos corridas
+  consecutivas sin verlo (infra caliente, 33 min arriba). No hay evidencia nueva
+  para abrirlo como bug; el `SELECT` sigue sin `ORDER BY`, asi que el riesgo
+  latente sigue ahi, solo no se manifiesta.
+
 ## Siguiente
 
-**PARADA: le toca al humano correr Codex CLI** con
-`progress/handoff_nutrition-ai-explainer_r2.md`. Cuando termine, segunda ronda de
-`reviewer`. El cierre de #18 sigue necesitando además la prueba de humo de R19,
-que corre el humano.
+**PARADA: gate humano de R19.** El trabajo de Codex esta aprobado, pero **#18 no
+se cierra** hasta que el humano corra la prueba de humo con la clave real de
+OpenAI siguiendo los cuatro pasos de `docs/verification.md:291-308` y marque la
+casilla de `specs/nutrition-ai-explainer/requirements.md:785`. Esa prueba cuesta
+dinero: no la corre ninguna IA.
+
+Cuando este marcada, cierre de #18: `status: "done"` en `feature_list.json`
+(30/30), STATUS.md, mover este archivo a `progress/history.md`, `./init.sh`, push
+y `env -u GITHUB_TOKEN gh pr create`. El merge lo hace el humano.
