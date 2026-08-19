@@ -165,6 +165,7 @@ describe('R11 (nutrition-ai-explainer #18): todo fallo degrada a null con warn',
         scope: 'nutrition-ai',
         petId: ctx.petId,
         planId: ctx.planId,
+        message: 'provider failed',
       }),
     );
     const logged = JSON.stringify(warn.mock.calls);

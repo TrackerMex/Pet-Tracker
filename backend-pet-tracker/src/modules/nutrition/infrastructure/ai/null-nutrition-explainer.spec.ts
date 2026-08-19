@@ -30,6 +30,7 @@ describe('R11 (nutrition-ai-explainer #18): la rama apagada devuelve null y avis
         scope: 'nutrition-ai',
         petId: ctx.petId,
         planId: ctx.planId,
+        message: 'ai explanation disabled',
       }),
     );
     const logged = JSON.stringify(warn.mock.calls);
