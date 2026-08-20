@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Button, Chip } from 'heroui-native';
+import { Text, View } from 'react-native';
 
 import { fetchHealth, type HealthState } from '../api/health';
 
-const stateColors: Record<HealthState['kind'], string> = {
-  ok: '#15803d',
-  error: '#b91c1c',
-  unreachable: '#c2410c',
-  'missing-config': '#6d28d9',
+const stateClassNames: Record<HealthState['kind'], string> = {
+  ok: 'bg-success text-success-foreground',
+  error: 'bg-danger text-danger-foreground',
+  unreachable: 'bg-warning text-warning-foreground',
+  'missing-config': 'bg-muted text-background',
 };
 
 export default function Index() {
@@ -19,56 +20,21 @@ export default function Index() {
   }, [apiUrl]);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Backend health</Text>
-      <Text
+    <View className="flex-1 items-center justify-center gap-4 bg-background p-6">
+      <Text className="text-2xl font-semibold text-foreground">Backend health</Text>
+      <Chip
         testID="health-state"
-        style={[styles.state, { color: state ? stateColors[state.kind] : '#475569' }]}
+        className={state ? stateClassNames[state.kind] : 'bg-muted text-background'}
       >
         {state?.kind ?? 'checking'}
-      </Text>
-      <Text style={styles.url}>API: {apiUrl ?? 'not configured'}</Text>
-      <Pressable
-        accessibilityRole="button"
+      </Chip>
+      <Text className="text-muted">API: {apiUrl ?? 'not configured'}</Text>
+      <Button
         testID="health-retry"
         onPress={() => void fetchHealth(apiUrl).then(setState)}
-        style={styles.retry}
       >
-        <Text style={styles.retryText}>Retry</Text>
-      </Pressable>
+        Retry
+      </Button>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  state: {
-    fontSize: 20,
-    fontWeight: '700',
-    marginTop: 16,
-  },
-  url: {
-    color: '#475569',
-    marginTop: 8,
-  },
-  retry: {
-    backgroundColor: '#0f172a',
-    borderRadius: 8,
-    marginTop: 24,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-  },
-  retryText: {
-    color: '#ffffff',
-    fontWeight: '600',
-  },
-});

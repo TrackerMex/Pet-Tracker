@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { HeroUINativeProvider } from 'heroui-native';
 
 import { fetchHealth, type HealthState } from '../../api/health';
 import Index from '../index';
@@ -25,7 +26,7 @@ describe('R7: health screen states and retry', () => {
   it.each(states)('renders $kind', async (state) => {
     mockFetchHealth.mockResolvedValueOnce(state);
 
-    await render(<Index />);
+    await render(<Index />, { wrapper: HeroUINativeProvider });
 
     await waitFor(() => {
       expect(screen.getByTestId('health-state')).toHaveTextContent(state.kind);
@@ -38,7 +39,7 @@ describe('R7: health screen states and retry', () => {
       .mockResolvedValueOnce({ kind: 'error' })
       .mockResolvedValueOnce({ kind: 'ok' });
 
-    await render(<Index />);
+    await render(<Index />, { wrapper: HeroUINativeProvider });
 
     await waitFor(() => {
       expect(screen.getByTestId('health-state')).toHaveTextContent('error');
