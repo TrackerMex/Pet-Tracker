@@ -6,163 +6,188 @@ tags: [harness, spec, mobile]
 
 # Diseño — [[mobile-ui-foundation]]
 
-> Ver [[requirements]] para los requisitos. Toda la API citada aquí fue
-> verificada contra docs.uniwind.dev, heroui.com/deepwiki y npm el
-> 2026-08-20 — Codex no re-investiga, implementa esto.
+> Ver [[requirements]] para los requisitos. Esta spec es autosuficiente para
+> Codex CLI: rutas, símbolos y versiones exactas. Las capas de
+> `docs/architecture.md` son de backend y no aplican aquí.
+
+## Verificación de APIs (2026-08-20)
+
+Todo lo siguiente se verificó descargando los tarballs publicados en npm
+(`heroui-native@1.0.8`, `uniwind@1.11.0`, `reicon-react-native@1.0.102`) y el
+repo `heroui-inc/heroui-native-example`:
+
+- `heroui-native` exporta desde su raíz `HeroUINativeProvider` (también en
+  `heroui-native/provider`), `Button`, `Chip` y el resto de componentes.
+  Export CSS: `heroui-native/styles` (define todos los tokens `--color-*` en
+  `@theme` con variantes light/dark; trae su propio `@source ".."`).
+- `heroui-native@1.0.8` peerDependencies: `@gorhom/bottom-sheet ^5.2.9`,
+  `expo-blur >=14`, `react >=19`, `react-native >=0.81`,
+  `react-native-gesture-handler ^2.28`, `react-native-reanimated ^4.1.1`,
+  `react-native-safe-area-context ^5.6`, `react-native-screens >=4`,
+  `react-native-svg ^15.12.1`, `react-native-worklets >=0.5.1`,
+  `tailwind-merge ^3.4`, `tailwind-variants ^3.2.2`.
+- `uniwind/metro` exporta `withUniwindConfig(config, { cssEntryFile, dtsFile?, extraThemes?, polyfills?, debug?, isTV? })`.
+- `uniwind` (raíz) exporta `Uniwind` (con `setTheme('light'|'dark'|'system')`
+  — lanza si el tema no está registrado, por eso el test lo mockea con
+  `mockImplementation`) y `useUniwind(): { theme, hasAdaptiveThemes }`.
+- `uniwind/types` es un `.d.ts` que añade `className` a los componentes RN
+  (se activa con `/// <reference types="uniwind/types" />`).
+- El example app oficial importa el css de entrada **también en JS**
+  (`import '../../global.css'` en `_layout.tsx`) — de ahí el stub de `.css`
+  en jest.
+- El runtime nativo de uniwind (`src/core/native/`) solo importa APIs JS de
+  react-native (Appearance, Dimensions, StyleSheet…) — carga en jest sin
+  metro; los estilos simplemente no resuelven, suficiente para render tests.
+- `reicon-react-native` exporta iconos nombrados (`Sun`, `Moon`, `Refresh`,
+  …) con props `{ color?, size?, weight?: 'Filled'|'Outline', ... }`; peer:
+  `react-native-svg`.
+
+## Compatibilidad Expo Go (verificada 2026-08-20)
+
+La prueba de humo humana es con **Expo Go** (restricción del humano: sin
+Android Studio ni builds por ahora). Verificación paquete a paquete contra
+los tarballs npm y `mobile-pet-tracker/node_modules/expo/bundledNativeModules.json`
+(SDK 57):
+
+| Paquete | Nativo propio | Veredicto |
+|---|---|---|
+| `heroui-native@1.0.8` | ninguno (sin podspec/gradle/codegen/deps) | JS puro ✔ |
+| `uniwind@1.11.0` | ninguno en device; sus deps (`@tailwindcss/oxide`, `lightningcss`) corren dentro de metro en la PC | JS puro ✔ |
+| `reicon-react-native@1.0.102` | ninguno; dibuja con `react-native-svg` | JS puro ✔ |
+| `@gorhom/bottom-sheet@5.2.14` | ninguno (deps: `@gorhom/portal`, `invariant`) | JS puro ✔ |
+| `react-native-svg` | bundleado en Expo Go (SDK 57 → 15.15.4) | ✔ |
+| `expo-blur` | bundleado (SDK 57 → ~57.0.2) | ✔ |
+| `react-native-reanimated` 4.5.1 + `react-native-worklets` 0.10.1 | bundleados (SDK 57) | ✔ |
+| `react-native-gesture-handler` ~2.32.0 | bundleado (SDK 57) | ✔ |
+| `expo-dev-client` | bundleado como dep; **no se usa** en #32 | ✔ (ver nota) |
+
+Nota operativa: con `expo-dev-client` en `package.json`, `expo start`
+arranca por defecto en modo dev-client. El smoke usa `bunx expo start --go`
+(o la tecla `s` en el bundler) para que el QR abra en Expo Go.
 
 ## Decisiones técnicas
 
-- **D1 — uniwind como motor de estilos (no NativeWind)**: heroui-native 1.0
-  se integra con uniwind vía `@import 'heroui-native/styles'` y las docs de
-  uniwind lo listan como kit recomendado ("deep integration with Uniwind's
-  theme system"). Tailwind CSS v4 nativo (config CSS-first, sin
-  `tailwind.config.js`), sin preset de babel. Sirve a R1–R4, R6–R8. Plan B en
-  §Riesgos.
+- **D1 — Instalación de dependencias** (R1, R7). Dos comandos, en este orden,
+  desde `mobile-pet-tracker/`:
 
-- **D2 — metro.config.js exacto** (R2):
+  ```
+  bunx expo install react-native-svg expo-dev-client expo-blur
+  bun add heroui-native@1.0.8 uniwind@^1.11.0 tailwindcss@^4.3.3 tailwind-variants@^3.3.1 tailwind-merge@^3.6.0 reicon-react-native@^1.0.102 @gorhom/bottom-sheet@^5.2.14
+  ```
+
+  `expo install` alinea los paquetes con SDK 57; `heroui-native` se pinea
+  **exacto** a 1.0.8 (decisión del humano); `@gorhom/bottom-sheet` se añade
+  explícito en vez de confiar en la auto-instalación de peers de bun
+  (reproducibilidad del lockfile). Los demás peers ya están en el
+  `package.json` de #31 (reanimated 4.5.1, gesture-handler 2.32, etc.).
+
+- **D2 — Metro** (R2). `mobile-pet-tracker/metro.config.js` (archivo nuevo,
+  la app usa hoy el default implícito de Expo):
 
   ```js
   const { getDefaultConfig } = require('expo/metro-config');
   const { withUniwindConfig } = require('uniwind/metro');
 
-  const config = getDefaultConfig(__dirname);
-
-  module.exports = withUniwindConfig(config, {
+  module.exports = withUniwindConfig(getDefaultConfig(__dirname), {
     cssEntryFile: './src/theme/global.css',
     dtsFile: './src/uniwind-types.d.ts',
   });
   ```
 
-  `withUniwindConfig` debe ser el wrapper más externo; rutas relativas
-  obligatorias (regla de las docs). El directorio del `cssEntryFile`
-  (`src/theme/`) pasa a ser la raíz de escaneo de classNames — por eso
-  `global.css` lleva `@source '../';` para cubrir todo `src/` (R3).
+- **D3 — Sin babel.config.js nuevo**: uniwind trabaja en el transformer de
+  metro, no necesita plugin babel propio; jest-expo ya trae el preset babel
+  que la app usa hoy. No se crea `babel.config.js`.
 
-- **D3 — provider raíz exacto** (R5), `src/app/_layout.tsx`:
-
-  ```tsx
-  import '../theme/global.css';
-
-  import { Stack } from 'expo-router';
-  import { HeroUINativeProvider } from 'heroui-native';
-  import { GestureHandlerRootView } from 'react-native-gesture-handler';
-
-  export default function RootLayout() {
-    return (
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <HeroUINativeProvider>
-          <Stack />
-        </HeroUINativeProvider>
-      </GestureHandlerRootView>
-    );
-  }
-  ```
-
-  El css se importa en el layout raíz (regla FAQ de uniwind para Expo Router:
-  nunca en el entry `index.ts`). `style={{ flex: 1 }}` es el único
-  `style` inline permitido aquí (GestureHandlerRootView necesita ocupar la
-  pantalla antes de que exista el árbol de uniwind). Si TS exige el prop
-  `config` del provider, pasar `config={{}}`.
-
-- **D4 — sin KeyboardProvider ni bottom-sheet**: la doc de heroui-native los
-  muestra en el setup "de producción", pero `react-native-keyboard-controller`
-  no es peer requerido y no hay ningún TextField en esta feature;
-  `@gorhom/bottom-sheet` es peer **opcional** (verificado en npm). Instalar
-  infra sin consumidor es deuda gratis — se añadirán cuando #37+ los pida.
-  `expo-blur` sí se instala (peer opcional que el plan aprobado incluye
-  explícitamente, y `expo install` lo pina a SDK 57).
-
-- **D5 — estrategia jest** (R8): no existe transformer oficial de uniwind
-  para jest (verificado 2026-08-20). En jest no corre Metro, así que el
-  transform de uniwind no se aplica y `className` queda inerte — suficiente
-  para tests de estructura/testID/comportamiento, que es lo que este repo
-  exige (los estilos visuales los cubre el gate humano R12). Piezas:
-  - `transformIgnorePatterns`: copiar el patrón vigente de
-    `node_modules/jest-expo/jest-preset.js` y añadir
-    `heroui-native|uniwind|tailwind-variants|tailwind-merge|reicon-react-native`
-    (heroui-native publica ESM en `lib/module`, reicon publica ESM crudo —
-    verificado en npm/unpkg). Si el spike descubre otro paquete ESM (ej.
-    `culori`, dependencia de uniwind), se añade y se anota en el progress.
-  - `moduleNameMapper` `"\\.css$"` → `jest/css-stub.js` (`module.exports = {};`)
-    para el `import '../theme/global.css'` del layout.
-  - `jest-setup.js` con `require('react-native-reanimated').setUpTests();`
-    vía `setupFilesAfterEnv` (API oficial Reanimated 4, jest >= 28).
-  - gesture-handler `jestSetup.js` SOLO si el spike lo exige (jest-expo ya
-    mockea buena parte; no añadir setup muerto).
-
-- **D6 — paleta minimalista** (R3): neutros slate + un acento. El acento es
-  `#208AEF` — ya es el color del splash en `app.json`, así la marca queda en
-  un solo valor. Referencia visual: Dribbble del plan (minimal, para todo
-  público). Valores exactos:
+- **D4 — Tokens de tema** (R2). `mobile-pet-tracker/src/theme/global.css`
+  (archivo nuevo, contenido completo):
 
   ```css
-  @theme {
-    --color-brand: #208AEF;
-  }
+  @import 'tailwindcss';
+  @import 'uniwind';
+  @import 'heroui-native/styles';
+
+  @source '../../node_modules/heroui-native/lib';
 
   @layer theme {
     :root {
       @variant light {
-        --background: #ffffff;
-        --foreground: #0f172a;
-        --surface: #f8fafc;
-        --overlay: #ffffff;
         --accent: #208AEF;
-        --default: #e2e8f0;
-        --muted: #64748b;
-        --border: #e2e8f0;
-        --divider: #f1f5f9;
-        --link: #208AEF;
+        --accent-foreground: #ffffff;
       }
 
       @variant dark {
-        --background: #0f172a;
-        --foreground: #f8fafc;
-        --surface: #1e293b;
-        --overlay: #1e293b;
-        --accent: #4da6f5;
-        --default: #334155;
-        --muted: #94a3b8;
-        --border: #334155;
-        --divider: #1e293b;
-        --link: #4da6f5;
+        --accent: #208AEF;
+        --accent-foreground: #ffffff;
       }
     }
   }
   ```
 
-  Ambas variantes definen el mismo conjunto (regla dura de uniwind). Los
-  NOMBRES se contrastan con el css real de
-  `node_modules/heroui-native/lib` al implementar (R3): si heroui usa otros,
-  se adaptan nombres conservando valores. Ajustes estéticos finos = feedback
-  del gate humano R12, no re-diseño de la spec.
+  Paleta minimalista: solo se pisa `--accent` (azul `#208AEF`, el mismo del
+  splash en `app.json` — coherencia de marca sin inventar paleta nueva);
+  todo lo demás (background, foreground, success, warning, danger, muted,
+  radios, fuentes) hereda los defaults light/dark de `heroui-native/styles`.
+  El patrón `@layer theme { :root { @variant ... } }` es el del example app
+  oficial.
 
-- **D7 — migración health screen** (R7): mismo comportamiento, solo piel.
-  - `Pressable` retry → `Button` de heroui-native con
-    `testID="health-retry"` y el mismo `onPress`.
-  - `View`/`Text` con `className`; colores de estado vía utilidades con
-    variante dark:
+- **D5 — Tipos** (R3). `mobile-pet-tracker/src/uniwind-env.d.ts` (tracked):
 
-    ```tsx
-    const stateClasses: Record<HealthState['kind'], string> = {
-      ok: 'text-green-700 dark:text-green-400',
-      error: 'text-red-700 dark:text-red-400',
-      unreachable: 'text-orange-700 dark:text-orange-400',
-      'missing-config': 'text-violet-700 dark:text-violet-400',
-    };
-    ```
+  ```ts
+  /// <reference types="uniwind/types" />
+  ```
 
-  - Se elimina `StyleSheet.create` y el mapa `stateColors` hex.
-  - `src/api/` no se toca (R7d: sus tests quedan intactos).
-  - El icono `Refresh` de reicon puede ir dentro del Button (opcional, ya
-    verificado por el spike); si complica los asserts existentes, se omite.
+  `src/uniwind-types.d.ts` lo genera metro en runtime (`dtsFile` de D2) y se
+  añade a `mobile-pet-tracker/.gitignore`. El `include` del tsconfig actual
+  (`**/*.ts`) ya cubre ambos; `tsc --noEmit` pasa aunque el generado no
+  exista. No se toca `tsconfig.json`.
 
-- **D8 — eas.json exacto** (R9):
+- **D6 — Jest** (R1). En el bloque `jest` de
+  `mobile-pet-tracker/package.json` (hoy solo `"preset": "jest-expo"`):
+
+  ```json
+  "jest": {
+    "preset": "jest-expo",
+    "transformIgnorePatterns": [
+      "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|native-base|react-native-svg|uniwind|heroui-native|reicon-react-native|tailwind-variants|tailwind-merge|@gorhom/bottom-sheet)"
+    ],
+    "moduleNameMapper": {
+      "\\.css$": "<rootDir>/test/css-stub.js"
+    }
+  }
+  ```
+
+  El patrón es el default de jest-expo + 6 paquetes nuevos al final.
+  `mobile-pet-tracker/test/css-stub.js` (archivo nuevo):
+  `module.exports = {};` — absorbe el `import '../theme/global.css'` del
+  layout. uniwind resuelve en jest vía su export condition `react-native`
+  (TS fuente), por eso necesita el whitelist del transform.
+
+- **D7 — Migración de la pantalla** (R5). Mapeo exacto de estados a tokens
+  en `src/app/index.tsx` (reemplaza al objeto `stateColors` de hexes):
+
+  | kind | className del Chip |
+  |---|---|
+  | `ok` | `bg-success text-success-foreground` |
+  | `error` | `bg-danger text-danger-foreground` |
+  | `unreachable` | `bg-warning text-warning-foreground` |
+  | `missing-config` | `bg-muted text-background` |
+
+  Estructura de la pantalla: `View className="flex-1 items-center justify-center gap-4 bg-background p-6"`,
+  título `Text className="text-2xl font-semibold text-foreground"`,
+  `<Chip testID="health-state">` con el `kind` como texto,
+  `<Button testID="health-retry" onPress={...}>Retry</Button>`,
+  URL en `Text className="text-muted"`. Cero `StyleSheet.create`, cero hex.
+  La suite `index.test.tsx` de #31 no cambia sus asserts: `toHaveTextContent`
+  busca en el subtree del Chip y `fireEvent.press` funciona sobre el Button
+  de HeroUI (es un pressable).
+
+- **D8 — eas.json** (R7). `mobile-pet-tracker/eas.json` (archivo nuevo,
+  contenido completo):
 
   ```json
   {
     "cli": {
-      "appVersionSource": "local"
+      "version": ">= 16.0.0"
     },
     "build": {
       "development": {
@@ -174,83 +199,72 @@ tags: [harness, spec, mobile]
   }
   ```
 
-  Sin perfiles `preview`/`production` (fuera de alcance). Si la versión de
-  eas-cli del humano exige algún campo extra, lo añade el humano en su
-  terminal y se anota en el progress — Codex no ejecuta `eas`.
+  `"bun": "1.3.14"` pinea la versión en los builders de EAS a la de la
+  máquina del humano (deuda #3 de #31; mismo pin que `ci.yml`). Solo perfil
+  `development` — el resto cuando exista una feature de release.
+  **eas.json y expo-dev-client son configuración para el futuro** (#43 y dev
+  builds): en #32 no se ejecuta ninguna build y no son requisito de la
+  validación — el gate R10 corre en Expo Go.
 
-- **D9 — dts commiteado + script `generate:styles`** (R4): CI corre
-  `tsc --noEmit` sin Metro, así que el `.d.ts` generado debe vivir en git.
-  `uniwind generate-artifacts` existe exactamente para esto ("useful in CI
-  actions... before Metro or Vite starts" — docs). Regla de sincronía: mismo
-  commit que toque `global.css` regenera el dts (documentada en R10).
+- **D9 — Toggle de tema** (R6). En `index.tsx`:
 
-- **D10 — reactCompiler queda ON**: `app.json` no se toca. Si el spike o el
-  dev build revelan incompatibilidad uniwind↔reactCompiler, la primera
-  palanca es apagar `"reactCompiler": false` en `app.json` — pero eso es
-  decisión del gate humano (cambia el perf-profile de toda la app), no de
-  Codex. Anotar el síntoma en el progress y PARAR.
+  ```tsx
+  import { Uniwind, useUniwind } from 'uniwind';
+  import { Moon, Sun } from 'reicon-react-native';
+  // dentro del componente:
+  const { theme } = useUniwind();
+  // control:
+  // onPress={() => Uniwind.setTheme(theme === 'dark' ? 'light' : 'dark')}
+  // icono: theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />
+  ```
+
+  El control es un `<Button testID="theme-toggle">` de HeroUI (variante
+  discreta a criterio del implementador, p.ej. secundaria/ghost). Sin
+  persistencia del tema elegido (arranca en el del sistema): persistir es
+  scope de #43 junto con la transición.
+
+- **D10 — Spike primero** (R1, orden de [[tasks]]). La task 1 deja el
+  provider + un Button renderizando en jest **antes** de migrar la pantalla:
+  si el stack no rinde en jest o en la dev build, se descubre con la
+  pantalla de #31 intacta y el rollback es barato.
 
 ## Archivos afectados
 
-Todo en `mobile-pet-tracker/` salvo indicado. No hay capas
-domain/application/infrastructure (app Expo, ver nota de #31).
+Todos en la isla móvil salvo docs:
 
-| Archivo | Cambio |
-|---|---|
-| `package.json` | deps R1, bloque `jest` R8, script `generate:styles` R4 |
-| `bun.lock` | regenerado por bun |
-| `metro.config.js` | **nuevo** — D2 |
-| `src/theme/global.css` | **nuevo** — R3/D6 |
-| `src/uniwind-types.d.ts` | **nuevo, generado y commiteado** — R4/D9 |
-| `src/app/_layout.tsx` | provider raíz — R5/D3 |
-| `src/app/index.tsx` | migración HeroUI + className — R7/D7 |
-| `src/components/__tests__/heroui-smoke.test.tsx` | **nuevo** — spike R6 |
-| `jest/css-stub.js` | **nuevo** — R8/D5 |
-| `jest-setup.js` | **nuevo** — R8/D5 |
-| `eas.json` | **nuevo** — R9/D8 |
-| `docs/conventions.md` (raíz del repo) | sección móvil — R10 |
-| `specs/mobile-ui-foundation/*` | esta spec |
+- `mobile-pet-tracker/package.json` — deps de D1, bloque jest de D6
+- `mobile-pet-tracker/bun.lock` — regenerado por bun
+- `mobile-pet-tracker/metro.config.js` — nuevo (D2)
+- `mobile-pet-tracker/src/theme/global.css` — nuevo (D4)
+- `mobile-pet-tracker/src/uniwind-env.d.ts` — nuevo (D5)
+- `mobile-pet-tracker/.gitignore` — añade `src/uniwind-types.d.ts` (D5)
+- `mobile-pet-tracker/test/css-stub.js` — nuevo (D6)
+- `mobile-pet-tracker/src/__tests__/heroui-smoke.test.tsx` — nuevo (R1)
+- `mobile-pet-tracker/src/app/_layout.tsx` — provider + import css (R4)
+- `mobile-pet-tracker/src/app/index.tsx` — migración + toggle (R5, R6)
+- `mobile-pet-tracker/src/app/__tests__/index.test.tsx` — añade describe R6
+  (los asserts existentes de R7/#31 no se tocan)
+- `mobile-pet-tracker/eas.json` — nuevo (D8)
+- `docs/conventions.md` — sección `## Convenciones de la app móvil` (R8)
 
-Carpetas nuevas permitidas: `src/components/`, `src/theme/` (y el dir
-`jest/` del stub). Ninguna otra.
+Prohibido tocar: `backend-pet-tracker/`, `infra/`, `init.config.sh`,
+`.github/workflows/ci.yml` (R9).
 
 ## Alternativas descartadas
 
-- **NativeWind 4 como motor**: HeroUI Native 1.0 está construido contra
-  uniwind/Tailwind v4; NativeWind queda como plan B, no como default (plan
-  aprobado 2026-08-20).
-- **Motion (motion.dev)**: solo web/DOM, no soporta RN — descartado en el
-  plan; las animaciones son Reanimated 4.
-- **react-native-nitro-theme-transition ahora**: exige nitro-modules
-  (nativo) y mezclaría el riesgo del stack de estilos con el de nitro en un
-  mismo PR imposible de bisecar → feature #43. El cambio de tema queda sin
-  fade.
-- **@gorhom/bottom-sheet / KeyboardProvider ahora**: sin consumidor en esta
-  feature (D4).
-- **tailwind.config.js**: Tailwind v4 con uniwind es CSS-first; crear el
-  archivo sería config muerta.
-- **Transformer jest de CSS real (compilar Tailwind en tests)**: no existe
-  oficial; un transformer casero validaría estilos que el gate humano ya
-  cubre — coste sin señal (D5).
-- **Copiar SVGs a mano en vez de reicon**: innecesario — los imports por
-  subpath `reicon-react-native/icons/*` existen y están verificados; queda
-  como plan B si Metro se atraganta con el barrel (§Riesgos).
-
-## Riesgos y planes B (escalera — cambiar de peldaño = decisión humana)
-
-| Riesgo | Señal | Plan B |
-|---|---|---|
-| HeroUI 1.0.8 + uniwind 1.11 inmaduros sobre RN 0.86/React 19.2 | El spike R6 no se pone verde, o el dev build R12 crashea en el provider | (1) mismo HeroUI con **NativeWind 4** como motor (reescribir R2/R3/R8, misma paleta); (2) primitivas propias en `src/components/ui/` (Button/Card/Text con StyleSheet) — el roadmap #33+ referencia componentes propios, así que no se re-especifica nada aguas abajo |
-| uniwind vs `reactCompiler` experimental | Errores de compilación RC en Metro o comportamiento raro de re-render | Apagar `reactCompiler` en `app.json` (gate humano, D10) |
-| reicon: Metro empaqueta el barrel de 2674 iconos | Bundle gigante / build lenta pese a imports por subpath | Copiar ~20 SVGs propios a `src/components/icons/` y desinstalar reicon |
-| Peers de heroui exigen versión que el scaffold no tiene | `bun install` warnings o crash runtime | Ya verificado que no (npm 2026-08-20); si una patch release lo rompe, pinear la versión anterior del peer y anotar |
-| `eas build` en nube falla por bun/EAS | Error solo reproducible en la cuenta del humano | `bunx expo run:android` local es el camino primario del smoke; EAS puede esperar a #33+ |
-
-## Deuda que esta feature salda / crea
-
-- **Salda** (de #31): sección móvil en `docs/conventions.md` (R10); bun
-  pineado en `eas.json` (R9).
-- **Crea**: dts generado commiteado (deriva posible si alguien edita
-  `global.css` sin regenerar — mitigada por la regla R4/R10); Expo Go
-  inutilizable (asumida por decisión humana); paleta D6 sujeta a ajuste fino
-  visual en features siguientes.
+- **Motion (motion.dev)**: no soporta React Native — descartado por el
+  humano en el plan; las animaciones usan Reanimated 4 ya instalado.
+- **NativeWind** en lugar de uniwind: HeroUI Native 1.x está construido
+  sobre uniwind (su provider importa `Uniwind` directamente); mezclar dos
+  runtimes de Tailwind no tiene sentido.
+- **nitro-theme-transition ahora**: aislado en #43 para que un paquete
+  nativo experimental no bloquee la fundación.
+- **Dev build como camino de validación de #32**: descartada por el humano
+  (evitar Android Studio/EAS por ahora). El stack completo es JS puro o usa
+  nativos bundleados en SDK 57 (§Compatibilidad Expo Go), así que Expo Go
+  basta; la dev build queda configurada (eas.json, expo-dev-client) para
+  cuando #43 (nitro, incompatible con Expo Go) la exija.
+- **Extender `env-drift`/`init.config.sh`**: nada que extender — la
+  integración bun quedó hecha en #31.
+- **Pantalla de toggle separada o menú de settings**: YAGNI — un botón en la
+  única pantalla existente basta para probar los tokens.

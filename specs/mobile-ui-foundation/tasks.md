@@ -6,83 +6,76 @@ tags: [harness, spec, mobile]
 
 # Tareas — [[mobile-ui-foundation]]
 
-> Disciplina TDD adaptada: el spike R6 es el ciclo rojo→verde que cubre toda
-> la configuración nacida verde (ver [[requirements]] §Excepción a C4).
-> **Commits test-primero explícitos**: el commit del spike ROJO precede en el
-> historial a cualquier commit de deps/config — el reviewer rechaza si no hay
-> historial rojo→verde (C4, lección de #19). Orden obligatorio: la Tarea 1
-> completa ANTES de tocar `src/app/index.tsx`.
+> Disciplina TDD por requisito de [[requirements]]. Commits test-primero
+> explícitos: el commit del test rojo (o el diff que lo muestra) precede al
+> commit que lo pone verde — no un solo commit con todo (lección de #19,
+> CHECKPOINTS C4). Los archivos de pura configuración van bajo la excepción
+> C4 documentada en [[requirements]] y se commitean junto al spike que los
+> exige.
 
-## Tarea 1 — Spike: el stack renderiza en jest (R6, R1, R2, R3, R8)
+## R1 — Spike: deps + config jest + HeroUI Button renderiza en jest
 
-- [ ] (1) **Test rojo**: escribir
-      `src/components/__tests__/heroui-smoke.test.tsx` (`describe('R6: ...')`,
-      Button de heroui con className + onPress + reicon por subpath, asserts
-      no vacíos según R6). Correr `bun run --cwd mobile-pet-tracker test` →
-      falla ("Cannot find module 'heroui-native'"). **Commit del rojo**
-      (`test(mobile-ui-foundation): red spike for HeroUI stack (R6)`).
-- [ ] (2) **Implementación mínima**, en commits separados y este orden:
-      1. Deps R1 (comandos exactos de [[requirements]] R1) —
-         `feat(mobile-ui-foundation): add UI stack deps (R1)`.
-      2. `metro.config.js` (D2) + `src/theme/global.css` (D6) —
-         `feat(mobile-ui-foundation): uniwind metro + theme tokens (R2,R3)`.
-      3. Bloque jest + `jest/css-stub.js` + `jest-setup.js` (D5) → el spike
-         se pone VERDE — `test(mobile-ui-foundation): jest config for UI stack (R8,R6)`.
-- [ ] (3) Refactor con tests verdes (limpiar lo que el spike descubrió;
-      anotar en `progress/impl_mobile-ui-foundation.md` cualquier paquete
-      extra añadido a `transformIgnorePatterns`).
+- [ ] (1) Escribir `src/__tests__/heroui-smoke.test.tsx` (describe `R1: ...`)
+      y verlo FALLAR sin las deps/config (rojo)
+- [ ] (2) Instalar deps (D1), añadir bloque jest (D6), `test/css-stub.js`,
+      `metro.config.js` (D2), `src/theme/global.css` (D4),
+      `src/uniwind-env.d.ts` + `.gitignore` (D5) → test verde
+- [ ] (3) Refactor con tests verdes (y `typecheck` verde — cubre R3)
 
-## Tarea 2 — Tipos de className (R4)
+## R2/R3 — Config metro + css + tipos (verificación estructural)
 
-- [ ] (1) Guarda: `bun run --cwd mobile-pet-tracker typecheck` ANTES de
-      generar el dts — si ya usara `className` en código, debe fallar (rojo
-      natural); si no falla, anotar que la guarda nace verde aquí y queda
-      cubierta por R6+R7.
-- [ ] (2) Añadir script `generate:styles` a `package.json`, ejecutarlo,
-      commitear `src/uniwind-types.d.ts` generado.
-- [ ] (3) `typecheck` verde sin Metro corriendo.
+- [ ] (1) Cubiertos por el spike R1: sin `metro.config.js`/`global.css` la
+      dev build no compila; sin tipos el typecheck falla
+- [ ] (2) Verificar `bun run --cwd mobile-pet-tracker typecheck` exit 0
+- [ ] (3) Verificar `git ls-files`: `uniwind-env.d.ts` tracked,
+      `uniwind-types.d.ts` ignorado
 
-## Tarea 3 — Provider raíz (R5)
+## R4 — Provider en _layout.tsx
 
-- [ ] (1) Guarda existente: suite de #31 verde antes de tocar el layout.
-- [ ] (2) `src/app/_layout.tsx` exactamente como [[design]] §D3 (css import
-      primero, GestureHandlerRootView → HeroUINativeProvider → Stack).
-- [ ] (3) Suite completa verde de nuevo (si el provider rompe los tests de
-      `index.test.tsx`, arreglar la config de R8, no los asserts).
+- [ ] (1) Red de seguridad: suite existente verde antes de tocar
+- [ ] (2) `_layout.tsx`: import de `../theme/global.css` +
+      `GestureHandlerRootView` > `HeroUINativeProvider` > `Stack`
+- [ ] (3) Toda la suite jest verde (smoke R1 + index.test.tsx)
 
-## Tarea 4 — Migración health screen (R7)
+## R5 — Migrar pantalla health a HeroUI + className
 
-- [ ] (1) Guarda: los tests de `src/app/__tests__/index.test.tsx` son el
-      rojo→verde histórico de #31 — correrlos verdes antes de empezar
-      (refactor bajo verde, sin nuevo test rojo; excepción anotada).
-- [ ] (2) Migrar `src/app/index.tsx` según [[design]] §D7 (Button heroui con
-      `testID="health-retry"`, className + `stateClasses`, cero
-      `StyleSheet.create`), **sin tocar los asserts de los tests**.
-- [ ] (3) Suite completa + lint + typecheck verdes; grep de `StyleSheet` en
-      `index.tsx` vacío.
+- [ ] (1) La suite existente `src/app/__tests__/index.test.tsx` (R7 de #31)
+      es el test: verla verde antes, y usarla como red durante la migración
+- [ ] (2) Migrar `src/app/index.tsx` según D7 (Chip estado, Button retry,
+      tokens semánticos, cero StyleSheet/hex) conservando testIDs
+- [ ] (3) Refactor con suite verde; grep sin `StyleSheet.create` ni `#hex`
 
-## Tarea 5 — eas.json (R9)
+## R6 — Toggle de tema
 
-- [ ] (1) Sin test posible (config para una CLI que corre el humano) —
-      excepción C4 declarada en la spec.
-- [ ] (2) Crear `eas.json` exactamente como [[design]] §D8.
-- [ ] (3) `bun run --cwd mobile-pet-tracker lint` sigue verde (el archivo no
-      rompe nada).
+- [ ] (1) Añadir `describe('R6: theme toggle', ...)` a `index.test.tsx`
+      (spy sobre `Uniwind.setTheme`) y verlo ROJO
+- [ ] (2) Implementar el Button `theme-toggle` con iconos Sun/Moon (D9) →
+      verde
+- [ ] (3) Refactor con tests verdes
 
-## Tarea 6 — Documentación y cierre (R10, R11)
+## R7 — eas.json + expo-dev-client
 
-- [ ] (1) —
-- [ ] (2) Sección "Convenciones de la app móvil" en `docs/conventions.md`
-      con el contenido mínimo de R10; actualizar
-      [[traceability]] con tests y hashes reales;
-      escribir `progress/impl_mobile-ui-foundation.md`.
-- [ ] (3) Verificación de contención R11:
-      `git diff --stat main...HEAD -- backend-pet-tracker/` vacío;
-      `./init.sh` completo verde.
+- [ ] (1) N/A (config pura, excepción C4)
+- [ ] (2) Crear `eas.json` exacto de D8; `expo-dev-client` ya instalado en R1
+- [ ] (3) Validar JSON (`node -e "JSON.parse(require('fs').readFileSync('mobile-pet-tracker/eas.json'))"`)
 
-## Gate humano (R12) — NO es tarea de Codex
+## R8 — Sección móvil en docs/conventions.md
 
-- [ ] Dev build compilado (`bunx expo run:android` o EAS) e instalado en
-      Android físico.
-- [ ] Smoke R12 completo: estilos HeroUI, light↔dark, retry, `unreachable`.
-- [ ] Feedback estético de la paleta D6 (si lo hay) → follow-up, no bloquea.
+- [ ] (1) N/A (docs)
+- [ ] (2) Añadir `## Convenciones de la app móvil` tras `## Variables de entorno`
+      con el contenido mínimo de R8
+- [ ] (3) Releer contra la implementación real (que no documente lo que no es)
+
+## R9 — Contención + init.sh verde
+
+- [ ] (1) N/A
+- [ ] (2) `./init.sh` exit 0
+- [ ] (3) `git diff --stat main...HEAD -- backend-pet-tracker/ infra/ init.config.sh .github/` vacío
+
+## R10 — Gate humano: Expo Go en Android físico
+
+- [ ] Humano: backend arriba + `bunx expo start --go` desde
+      `mobile-pet-tracker/` (el `--go` es obligatorio con expo-dev-client
+      instalado), escanear QR con Expo Go y verificar pantalla health +
+      toggle según los pasos de R10. Sin builds (ni EAS ni Android Studio).
+      **No lo corre ninguna IA** (el dispositivo es del humano).
