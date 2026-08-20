@@ -24,7 +24,7 @@ tags: [harness, spec, mobile]
 
 ## R2/R3 — Config metro + css + tipos (verificación estructural)
 
-- [ ] (1) Cubiertos por el spike R1: sin `metro.config.js`/`global.css` la
+- [x] (1) Cubiertos por el spike R1: sin `metro.config.js`/`global.css` la
       dev build no compila; sin tipos el typecheck falla
 - [ ] (2) Verificar `bun run --cwd mobile-pet-tracker typecheck` exit 0
 - [ ] (3) Verificar `git ls-files`: `uniwind-env.d.ts` tracked,

@@ -9,7 +9,7 @@ tags: [harness, spec, mobile]
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
 | R1 | `mobile-pet-tracker/src/__tests__/heroui-smoke.test.tsx::R1: HeroUI Button con className renderiza en jest` | `a727f7a feat(mobile-ui-foundation): render HeroUI smoke test (R1)`; rojo: `b03fb4c` |
-| R2 | estructural — reviewer verifica `metro.config.js` y `src/theme/global.css` contra design §D2/§D4 (excepción C4); render real en gate R10 | pendiente |
+| R2 | estructural — reviewer verifica `metro.config.js` y `src/theme/global.css` contra design §D2/§D4 (excepción C4); render real en gate R10 | `0c91e7b feat(mobile-ui-foundation): configure Uniwind theme (R2)` |
 | R3 | `bun run --cwd mobile-pet-tracker typecheck` exit 0 + reviewer: `git ls-files` (uniwind-env.d.ts sí, uniwind-types.d.ts no) | pendiente |
 | R4 | estructural — reviewer verifica `src/app/_layout.tsx` (css import + GestureHandlerRootView > HeroUINativeProvider > Stack); el render del provider lo cubre el test de R1 | pendiente |
 | R5 | `mobile-pet-tracker/src/app/__tests__/index.test.tsx::R7: health screen states and retry` (suite de #31, verde sin modificar asserts) + reviewer: grep sin `StyleSheet.create` ni hex en `src/app/index.tsx` | pendiente |
