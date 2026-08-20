@@ -15,7 +15,7 @@ tags: [harness, spec, mobile]
 | R5 | `mobile-pet-tracker/src/app/__tests__/index.test.tsx::R7: health screen states and retry` (suite de #31, verde sin modificar asserts) + reviewer: grep sin `StyleSheet.create` ni hex en `src/app/index.tsx` | `200bbc6 feat(mobile-ui-foundation): migrate health screen to HeroUI (R5)` |
 | R6 | `mobile-pet-tracker/src/app/__tests__/index.test.tsx::R6: theme toggle` (spy `Uniwind.setTheme`, rojo→verde) | `a76a572 feat(mobile-ui-foundation): add light and dark toggle (R6)`; rojo: `1cd1bae` |
 | R7 | estructural — reviewer valida `mobile-pet-tracker/eas.json` (JSON.parse + campos exactos de design §D8) y `expo-dev-client` en package.json | `3ac046a feat(mobile-ui-foundation): configure development build (R7)`; dependencia: `a727f7a` |
-| R8 | estructural — reviewer verifica sección `## Convenciones de la app móvil` en `docs/conventions.md` | pendiente |
+| R8 | estructural — reviewer verifica sección `## Convenciones de la app móvil` en `docs/conventions.md` | `153c3f1 docs(mobile-ui-foundation): document mobile conventions (R8)` |
 | R9 | reviewer ejecuta `./init.sh` (exit 0) y `git diff --stat main...HEAD -- backend-pet-tracker/ infra/ init.config.sh .github/` (vacío) | pendiente |
 | R10 | gate humano — smoke en **Expo Go** sobre Android físico (`bunx expo start --go`, checkbox en requirements §R10; sin builds) | pendiente |
 

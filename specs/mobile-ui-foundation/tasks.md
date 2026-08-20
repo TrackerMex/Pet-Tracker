@@ -61,10 +61,10 @@ tags: [harness, spec, mobile]
 
 ## R8 — Sección móvil en docs/conventions.md
 
-- [ ] (1) N/A (docs)
-- [ ] (2) Añadir `## Convenciones de la app móvil` tras `## Variables de entorno`
+- [x] (1) N/A (docs)
+- [x] (2) Añadir `## Convenciones de la app móvil` tras `## Variables de entorno`
       con el contenido mínimo de R8
-- [ ] (3) Releer contra la implementación real (que no documente lo que no es)
+- [x] (3) Releer contra la implementación real (que no documente lo que no es)
 
 ## R9 — Contención + init.sh verde
 
