@@ -38,7 +38,7 @@
 | R6 | `1cd1bae` — `theme-toggle` inexistente | `a76a572` — toggle light/dark verde |
 | R7 | excepción C4 (config) | `3ac046a` — perfil EAS development |
 | R8 | documentación | `153c3f1` — convenciones móviles |
-| R9 | verificación | cierre de integración con este informe |
+| R9 | verificación | `74c9e1b` — cierre de integración con este informe |
 
 `specs/mobile-ui-foundation/traceability.md` se actualizó después de cada
 commit de requisito y conserva R10 como gate humano pendiente.
