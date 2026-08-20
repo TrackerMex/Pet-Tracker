@@ -19,4 +19,6 @@
 - Codex completo R1-R9: `./init.sh` verde, contencion R9 vacia y resultado detallado en `progress/impl_mobile-ui-foundation.md`. R10 sigue pendiente del smoke humano con `bunx expo start --go`; despues corresponde lanzar `reviewer`.
 - Codex termino R1-R9 (21 commits test-rojo→verde por requisito, pusheados hasta `b309c3c`). Reporte: `progress/impl_mobile-ui-foundation.md`.
 - Reviewer: **aprobado** (`progress/review_mobile-ui-foundation.md`) — R1-R9 verdes con verificacion independiente, init.sh exit 0.
-- Siguiente: **R10 gate humano** — smoke test en Expo Go (`bunx expo start --go` en `mobile-pet-tracker/`, QR desde Android fisico). Con R10 OK: marcar #32 `done` en feature_list.json y abrir PR con `gh pr create`.
+- **R10 aprobado por humano** (2026-08-20): pantalla health se ve bien en Expo Go desde Android fisico. Nota: status del backend salio "unreachable" — esperado, `EXPO_PUBLIC_API_URL` debe apuntar a la IP LAN del equipo que corre el backend, no a localhost; es config de entorno, no bug de la feature.
+- #32 marcada `done` en feature_list.json. PR abierto con `gh pr create`; merge lo hace el humano.
+- Siguiente feature del roadmap: #33 (ver feature_list.json).
