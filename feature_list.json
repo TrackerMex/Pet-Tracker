@@ -580,7 +580,7 @@
   {
     "id": 32,
     "name": "mobile-ui-foundation",
-    "status": "spec_ready",
+    "status": "in_progress",
     "priority": "P1",
     "description": "Fundación de UI de la app móvil (stack decidido por el humano 2026-08-20, plan en .claude/plans/): HeroUI Native 1.0.8 + uniwind (Tailwind v4) + reicon-react-native + expo-dev-client. Deps: bunx expo install react-native-svg expo-dev-client expo-blur; bun add heroui-native@1.0.8 uniwind tailwindcss tailwind-variants tailwind-merge reicon-react-native. Config: metro.config.js con wrapper uniwind, src/theme/global.css con tokens @theme light/dark (paleta minimalista), tipos de className. Provider en _layout.tsx (GestureHandlerRootView + HeroUINativeProvider). Migrar src/app/index.tsx (health) a HeroUI conservando testID. eas.json con perfil development y bun pineado (salda deuda #3 de #31). Sección 'Convenciones de la app móvil' en docs/conventions.md (deuda #1). Jest: transformIgnorePatterns + stub de .css. Task 1 = spike: provider + un Button renderizando en test y dev build ANTES de migrar la pantalla. nitro-theme-transition queda explícitamente FUERA (va en #43). Motion/motion.dev descartado (no soporta RN); animaciones con Reanimated 4 ya instalado.",
     "acceptance_criteria": [
