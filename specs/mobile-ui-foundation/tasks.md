@@ -20,14 +20,14 @@ tags: [harness, spec, mobile]
 - [x] (2) Instalar deps (D1), añadir bloque jest (D6), `test/css-stub.js`,
       `metro.config.js` (D2), `src/theme/global.css` (D4),
       `src/uniwind-env.d.ts` + `.gitignore` (D5) → test verde
-- [ ] (3) Refactor con tests verdes (y `typecheck` verde — cubre R3)
+- [x] (3) Refactor con tests verdes (y `typecheck` verde — cubre R3)
 
 ## R2/R3 — Config metro + css + tipos (verificación estructural)
 
 - [x] (1) Cubiertos por el spike R1: sin `metro.config.js`/`global.css` la
       dev build no compila; sin tipos el typecheck falla
-- [ ] (2) Verificar `bun run --cwd mobile-pet-tracker typecheck` exit 0
-- [ ] (3) Verificar `git ls-files`: `uniwind-env.d.ts` tracked,
+- [x] (2) Verificar `bun run --cwd mobile-pet-tracker typecheck` exit 0
+- [x] (3) Verificar `git ls-files`: `uniwind-env.d.ts` tracked,
       `uniwind-types.d.ts` ignorado
 
 ## R4 — Provider en _layout.tsx
