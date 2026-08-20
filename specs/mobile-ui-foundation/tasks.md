@@ -55,9 +55,9 @@ tags: [harness, spec, mobile]
 
 ## R7 — eas.json + expo-dev-client
 
-- [ ] (1) N/A (config pura, excepción C4)
-- [ ] (2) Crear `eas.json` exacto de D8; `expo-dev-client` ya instalado en R1
-- [ ] (3) Validar JSON (`node -e "JSON.parse(require('fs').readFileSync('mobile-pet-tracker/eas.json'))"`)
+- [x] (1) N/A (config pura, excepción C4)
+- [x] (2) Crear `eas.json` exacto de D8; `expo-dev-client` ya instalado en R1
+- [x] (3) Validar JSON (`node -e "JSON.parse(require('fs').readFileSync('mobile-pet-tracker/eas.json'))"`)
 
 ## R8 — Sección móvil en docs/conventions.md
 
