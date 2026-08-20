@@ -234,3 +234,21 @@ debe cargarlo con `envFilePath: ['../.env']`.
 | `REMINDERS_ENABLED` | Arranque del dispatcher local de recordatorios (`true` agenda un tick de 1 min que encola reminders vencidos en `notifications`; default `false`; con `NODE_ENV=test` nunca se agenda, R12) | en `.env.example` (con `true`, mismo criterio) — consumida desde `pet-reminders` (#16): `src/modules/reminders/infrastructure/reminders-scheduler.service.ts` vía `ConfigService` |
 | `PUSH_ENABLED` | Envío push real por Expo. Cualquier valor distinto de `'true'` (default local, sin development build de EAS): `ConsolePushSender` escribe en un log estructurado el payload que se habría enviado, con el token **redactado** (R9/R13), y no se instancia `expo-server-sdk`. Con `'true'`: `ExpoPushSender` (R11/R12). Mismo patrón que `EMAIL_ENABLED` de #3 — la rama vive solo en el `useFactory` de `NotifierModule` | en `.env.example` (con `false`) — consumida desde `alerts-center-notifier` (#13): `src/workers/notifier/notifier.module.ts` vía `ConfigService` |
 | `AWS_MODE` | Modo de construcción de los 4 clientes AWS SDK v3. Cualquier valor distinto de `aws` (incluida su ausencia) ⇒ `local`: endpoint `AWS_ENDPOINT_URL`, par estático `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`, `forcePathStyle` en S3 y `MissingAwsEndpointError` como red de seguridad. Con `aws`: sin endpoint y sin credentials explícitas, resuelve el SDK por su cadena por defecto (`~/.aws/`, `AWS_PROFILE`, sesión de `aws login` — variables que la app nunca lee); `AWS_REGION` se pasa solo si tiene valor. `runProvisioning` aborta con exit 1 en modo `aws` | en `.env.example` (con `local`) — consumida desde `aws-real-credentials` (#19): `src/aws/aws-clients.ts` vía `ConfigService` y vía `process.env` en el script standalone (misma excepción documentada que `AWS_ENDPOINT_URL`) |
+
+---
+
+## Convenciones de la app móvil
+
+La app Expo vive en `mobile-pet-tracker/` como una isla gestionada con **bun**;
+sus dependencias, scripts y lockfile se administran desde esa carpeta, sin
+mezclarlos con el workspace pnpm de backend e infraestructura.
+
+- Los componentes nuevos se estilizan solo con `className` y los tokens de
+  `src/theme/global.css`. Quedan prohibidos `StyleSheet.create` y los colores
+  hexadecimales dentro de componentes nuevos.
+- **HeroUI Native** es la base de componentes de interfaz. Los iconos salen de
+  `reicon-react-native`.
+- Las animaciones se implementan con **Reanimated 4**. Motion/motion.dev no se
+  usa porque no soporta React Native.
+- Los tests usan **jest-expo** y cada test que cubre una spec nombra su R-id,
+  igual que las suites del backend.
