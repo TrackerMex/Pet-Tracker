@@ -605,7 +605,7 @@
   {
     "id": 33,
     "name": "mobile-auth",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P1",
     "description": "Pantallas Splash, Login, Register y Forgot del diseño Figma sobre el stack de #32. Token en expo-secure-store; AuthProvider (context mínimo) con sesión; las funciones de src/api/ reciben token/fetchFn por parámetro, nunca leen storage. spec_author verifica contra backend-pet-tracker/src/modules/auth si existe forgot-password: si no existe, pantalla stub deshabilitada + feature backend al backlog. En esta spec se dispara la reevaluación de codegen OpenAPI (deuda #2 de #31); default: tipos a mano hasta consumir 3+ dominios.",
     "acceptance_criteria": [
@@ -792,6 +792,21 @@
     "files_affected": [
       "mobile-pet-tracker/package.json",
       "mobile-pet-tracker/src/theme/"
+    ]
+  },
+  {
+    "id": 44,
+    "name": "auth-forgot-password",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Backend: endpoint de recuperación de contraseña (forgot/reset) en el módulo auth. Anotada al backlog por la spec de #33 mobile-auth (2026-08-20): el backend no expone forgot-password y la pantalla móvil Forgot quedó como stub deshabilitado (specs/mobile-auth R9). Al implementarla, activar el stub móvil en una feature de seguimiento.",
+    "acceptance_criteria": [
+      "POST /v1/auth/forgot-password acepta email y responde igual exista o no la cuenta (no revela registro)",
+      "Flujo de reset con token de un solo uso y expiración (patrón análogo a verify-email)",
+      "Tests por capa nombrando R-ids"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/modules/auth/"
     ]
   }
 ]
