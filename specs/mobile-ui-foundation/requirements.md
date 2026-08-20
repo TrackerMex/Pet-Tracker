@@ -226,4 +226,4 @@ componentes de la migración, `testID="theme-toggle"` — se registran en
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [X] Aprobado por humano (fecha: 2026-08-20) ← gate obligatorio antes de implementar
