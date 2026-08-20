@@ -62,7 +62,8 @@
       "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|native-base|react-native-svg|uniwind|heroui-native|reicon-react-native|tailwind-variants|tailwind-merge|@gorhom/bottom-sheet)"
     ],
     "moduleNameMapper": {
-      "\\.css$": "<rootDir>/test/css-stub.js"
+      "\\.css$": "<rootDir>/test/css-stub.js",
+      "^reicon-react-native$": "<rootDir>/node_modules/reicon-react-native/index.js"
     },
     "setupFilesAfterEnv": [
       "<rootDir>/test/jest-setup.js"

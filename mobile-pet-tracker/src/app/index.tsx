@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Button, Chip } from 'heroui-native';
 import { Text, View } from 'react-native';
+import { Moon, Sun } from 'reicon-react-native';
+import { Uniwind, useUniwind } from 'uniwind';
 
 import { fetchHealth, type HealthState } from '../api/health';
 
@@ -14,6 +16,7 @@ const stateClassNames: Record<HealthState['kind'], string> = {
 export default function Index() {
   const apiUrl = process.env.EXPO_PUBLIC_API_URL;
   const [state, setState] = useState<HealthState>();
+  const { theme } = useUniwind();
 
   useEffect(() => {
     void fetchHealth(apiUrl).then(setState);
@@ -29,6 +32,15 @@ export default function Index() {
         {state?.kind ?? 'checking'}
       </Chip>
       <Text className="text-muted">API: {apiUrl ?? 'not configured'}</Text>
+      <Button
+        accessibilityLabel={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
+        isIconOnly
+        testID="theme-toggle"
+        variant="secondary"
+        onPress={() => Uniwind.setTheme(theme === 'dark' ? 'light' : 'dark')}
+      >
+        {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+      </Button>
       <Button
         testID="health-retry"
         onPress={() => void fetchHealth(apiUrl).then(setState)}
