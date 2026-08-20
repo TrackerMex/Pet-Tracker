@@ -39,11 +39,11 @@ tags: [harness, spec, mobile]
 
 ## R5 — Migrar pantalla health a HeroUI + className
 
-- [ ] (1) La suite existente `src/app/__tests__/index.test.tsx` (R7 de #31)
+- [x] (1) La suite existente `src/app/__tests__/index.test.tsx` (R7 de #31)
       es el test: verla verde antes, y usarla como red durante la migración
-- [ ] (2) Migrar `src/app/index.tsx` según D7 (Chip estado, Button retry,
+- [x] (2) Migrar `src/app/index.tsx` según D7 (Chip estado, Button retry,
       tokens semánticos, cero StyleSheet/hex) conservando testIDs
-- [ ] (3) Refactor con suite verde; grep sin `StyleSheet.create` ni `#hex`
+- [x] (3) Refactor con suite verde; grep sin `StyleSheet.create` ni `#hex`
 
 ## R6 — Toggle de tema
 
