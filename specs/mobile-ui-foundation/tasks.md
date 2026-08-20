@@ -47,11 +47,11 @@ tags: [harness, spec, mobile]
 
 ## R6 — Toggle de tema
 
-- [ ] (1) Añadir `describe('R6: theme toggle', ...)` a `index.test.tsx`
+- [x] (1) Añadir `describe('R6: theme toggle', ...)` a `index.test.tsx`
       (spy sobre `Uniwind.setTheme`) y verlo ROJO
-- [ ] (2) Implementar el Button `theme-toggle` con iconos Sun/Moon (D9) →
+- [x] (2) Implementar el Button `theme-toggle` con iconos Sun/Moon (D9) →
       verde
-- [ ] (3) Refactor con tests verdes
+- [x] (3) Refactor con tests verdes
 
 ## R7 — eas.json + expo-dev-client
 
