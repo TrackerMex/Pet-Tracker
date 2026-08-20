@@ -576,5 +576,222 @@
       ".github/workflows/ci.yml",
       "AGENTS.md"
     ]
+  },
+  {
+    "id": 32,
+    "name": "mobile-ui-foundation",
+    "status": "pending",
+    "priority": "P1",
+    "description": "Fundación de UI de la app móvil (stack decidido por el humano 2026-08-20, plan en .claude/plans/): HeroUI Native 1.0.8 + uniwind (Tailwind v4) + reicon-react-native + expo-dev-client. Deps: bunx expo install react-native-svg expo-dev-client expo-blur; bun add heroui-native@1.0.8 uniwind tailwindcss tailwind-variants tailwind-merge reicon-react-native. Config: metro.config.js con wrapper uniwind, src/theme/global.css con tokens @theme light/dark (paleta minimalista), tipos de className. Provider en _layout.tsx (GestureHandlerRootView + HeroUINativeProvider). Migrar src/app/index.tsx (health) a HeroUI conservando testID. eas.json con perfil development y bun pineado (salda deuda #3 de #31). Sección 'Convenciones de la app móvil' en docs/conventions.md (deuda #1). Jest: transformIgnorePatterns + stub de .css. Task 1 = spike: provider + un Button renderizando en test y dev build ANTES de migrar la pantalla. nitro-theme-transition queda explícitamente FUERA (va en #43). Motion/motion.dev descartado (no soporta RN); animaciones con Reanimated 4 ya instalado.",
+    "acceptance_criteria": [
+      "Un componente HeroUI con className renderiza en jest (R-id explícito de la config de transforms)",
+      "src/app/index.tsx migrada a componentes HeroUI + className conservando testID health-state y health-retry, tests existentes verdes",
+      "Toggle light/dark funcional con tokens de src/theme/global.css (sin fade, sin nitro)",
+      "eas.json con perfil development y versión de bun pineada",
+      "docs/conventions.md tiene la sección de convenciones móviles",
+      "init.sh verde: install/lint/typecheck/test de mobile-pet-tracker vía bun",
+      "Gate humano: dev build (EAS o expo run:android) instalado en Android físico mostrando la pantalla health con el nuevo stack"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/package.json",
+      "mobile-pet-tracker/metro.config.js",
+      "mobile-pet-tracker/eas.json",
+      "mobile-pet-tracker/src/theme/",
+      "mobile-pet-tracker/src/app/_layout.tsx",
+      "mobile-pet-tracker/src/app/index.tsx",
+      "docs/conventions.md"
+    ]
+  },
+  {
+    "id": 33,
+    "name": "mobile-auth",
+    "status": "pending",
+    "priority": "P1",
+    "description": "Pantallas Splash, Login, Register y Forgot del diseño Figma sobre el stack de #32. Token en expo-secure-store; AuthProvider (context mínimo) con sesión; las funciones de src/api/ reciben token/fetchFn por parámetro, nunca leen storage. spec_author verifica contra backend-pet-tracker/src/modules/auth si existe forgot-password: si no existe, pantalla stub deshabilitada + feature backend al backlog. En esta spec se dispara la reevaluación de codegen OpenAPI (deuda #2 de #31); default: tipos a mano hasta consumir 3+ dominios.",
+    "acceptance_criteria": [
+      "Login y Register contra POST /v1/auth/login y /v1/auth/register reales (LocalStack/local) con manejo de error por kind",
+      "Token persistido en expo-secure-store y sesión restaurada al reabrir la app",
+      "Splash respeta el diseño minimalista y navega según sesión",
+      "Tests RTL por pantalla nombrando R-ids; api/auth.ts con fetchFn inyectado cubre los kinds",
+      "Decisión OpenAPI registrada en la spec (gate humano)"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/app/(auth)/",
+      "mobile-pet-tracker/src/api/auth.ts",
+      "mobile-pet-tracker/src/providers/"
+    ]
+  },
+  {
+    "id": 34,
+    "name": "mobile-tabs-shell",
+    "status": "pending",
+    "priority": "P1",
+    "description": "Shell de navegación: layout groups (auth)/(tabs) en expo-router con guard de sesión, tab bar flotante custom (estilo Dribbble) con 5 tabs: Home, Map, Health, Food, Profile (placeholders). Iconos reicon. Safe-area correcta.",
+    "acceptance_criteria": [
+      "Sin sesión → redirect a (auth); con sesión → (tabs)",
+      "Tab bar flotante renderiza los 5 tabs con iconos reicon y estado activo",
+      "Navegación entre tabs con typedRoutes sin errores de typecheck",
+      "Tests RTL del guard y del tab bar nombrando R-ids"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/app/(tabs)/",
+      "mobile-pet-tracker/src/components/"
+    ]
+  },
+  {
+    "id": 35,
+    "name": "mobile-home-dashboard",
+    "status": "pending",
+    "priority": "P1",
+    "description": "Pantalla Home del diseño: card de mascota (foto, nombre, raza), estado del collar (online/batería desde devices), Today's Summary (sleep/activity desde activity), selector multi-mascota (SelectedPetProvider, context mínimo). SIN mini-mapa en v1 (card de última posición que enlaza al tab Map; el mini-mapa es follow-up tras #36). Si se repite boilerplate de fetch, hook useApi de ~30 líneas máximo, sin react-query.",
+    "acceptance_criteria": [
+      "Home renderiza pets reales de GET /v1/pets con selector multi-mascota funcional",
+      "Estado del collar y batería reflejan devices del backend; mascota sin device muestra estado free (app de salud)",
+      "Today's Summary consume activity y degrada con gracia sin datos",
+      "Tests RTL con fetchFn inyectado nombrando R-ids"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/app/(tabs)/index.tsx",
+      "mobile-pet-tracker/src/api/pets.ts",
+      "mobile-pet-tracker/src/api/devices.ts",
+      "mobile-pet-tracker/src/api/activity.ts",
+      "mobile-pet-tracker/src/providers/"
+    ]
+  },
+  {
+    "id": 36,
+    "name": "mobile-map-live",
+    "status": "pending",
+    "priority": "P1",
+    "description": "Tab Map fullscreen del diseño: última posición y ruta del día (positions/trips), stats (speed, distance, last update, GPS) y botón Activate Lost Mode. Decisión en spec con docs del día: expo-maps (alpha en SDK 57) vs react-native-maps (plan B maduro); ambos requieren el dev build de #32. API key de Google Maps = tarea humana previa al smoke. spec_author verifica si Lost Mode tiene endpoint en devices/alerts; si no, botón stub + feature backend al backlog. Aquí se reevalúa react-query (primer caso real de caché/polling entre Home y Map).",
+    "acceptance_criteria": [
+      "Mapa muestra última posición real del collar y ruta del día",
+      "Stats calculados de positions/trips con actualización periódica",
+      "Lost Mode: acción real si hay endpoint, stub documentado si no",
+      "Decisión expo-maps vs react-native-maps y decisión react-query registradas en la spec (gate humano)",
+      "Gate humano: smoke con collar real (unidad 401775970) o SIM_MODE en Android físico"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/app/(tabs)/map.tsx",
+      "mobile-pet-tracker/src/api/positions.ts",
+      "mobile-pet-tracker/src/api/trips.ts"
+    ]
+  },
+  {
+    "id": 37,
+    "name": "mobile-health",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Tab Health del diseño + pantalla WeightLog: vacunas (lista, próximas) y registro de peso (lista + alta + gráfica simple) contra health/vaccines y health/weights. Posible primer uso de @gorhom/bottom-sheet (peer opcional de HeroUI, JS puro) para formularios.",
+    "acceptance_criteria": [
+      "Lista de vacunas con próxima destacada, datos reales del backend",
+      "Alta y listado de pesos funcionales; gráfica degrada con <2 puntos",
+      "Tests RTL + api con fetchFn nombrando R-ids"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/app/(tabs)/health.tsx",
+      "mobile-pet-tracker/src/api/health-records.ts"
+    ]
+  },
+  {
+    "id": 38,
+    "name": "mobile-food",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Tab Food del diseño + pantalla MealSchedule: perfil nutricional y plan de comidas desde nutrition. aiExplanation nullable se renderiza con gracia (la IA puede estar apagada, #18 pending).",
+    "acceptance_criteria": [
+      "Plan nutricional real renderizado; aiExplanation null no rompe ni deja hueco feo",
+      "MealSchedule muestra horarios del plan",
+      "Tests RTL + api con fetchFn nombrando R-ids"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/app/(tabs)/food.tsx",
+      "mobile-pet-tracker/src/api/nutrition.ts"
+    ]
+  },
+  {
+    "id": 39,
+    "name": "mobile-reminders",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Pantallas Reminders y AddReminder del diseño contra reminders CRUD. Notificaciones push locales quedan explícitamente FUERA (backlog; requeriría expo-notifications).",
+    "acceptance_criteria": [
+      "Listado, alta y borrado de recordatorios contra el backend",
+      "Tests RTL + api con fetchFn nombrando R-ids"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/app/reminders/",
+      "mobile-pet-tracker/src/api/reminders.ts"
+    ]
+  },
+  {
+    "id": 40,
+    "name": "mobile-pets-profile",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Tab Profile + pantallas AddPet y Docs del diseño: perfil de usuario (users/me), CRUD de mascotas, foto vía expo-image-picker con upload a S3 presignada (media), documentos. El toggle de tema light/dark vive aquí (sin fade; el fade es #43).",
+    "acceptance_criteria": [
+      "Alta de mascota con foto subida a S3 (LocalStack) vía URL presignada",
+      "Perfil muestra users/me real; toggle de tema persiste",
+      "Docs lista media de la mascota",
+      "Tests RTL + api con fetchFn nombrando R-ids",
+      "Gate humano: upload de foto real desde el dispositivo"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/app/(tabs)/profile.tsx",
+      "mobile-pet-tracker/src/app/pets/",
+      "mobile-pet-tracker/src/api/media.ts",
+      "mobile-pet-tracker/src/api/users.ts"
+    ]
+  },
+  {
+    "id": 41,
+    "name": "mobile-geofences",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Pantalla Geofences del diseño: listado y dibujo/edición de zonas seguras sobre el mapa de #36 contra geofences CRUD. Depende de #36. UX más compleja del roadmap.",
+    "acceptance_criteria": [
+      "Crear, editar y borrar geocerca sobre el mapa con persistencia en backend",
+      "Tests de la lógica de geometría/estado nombrando R-ids",
+      "Gate humano: dibujo de zona en dispositivo real"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/app/geofences/",
+      "mobile-pet-tracker/src/api/geofences.ts"
+    ]
+  },
+  {
+    "id": 42,
+    "name": "mobile-device-pairing",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Pantallas GpsConfig y pairing 'tracker is ready' del diseño: flujo de claim de collar (devices/claim con código de activación) y estado de membresía (subscriptions; la membresía cuelga del collar, free = salud sin GPS). Si el diseño usa QR, evaluar expo-camera en la spec.",
+    "acceptance_criteria": [
+      "Flujo de claim completo con estados (código inválido, ya reclamado, éxito) por kind",
+      "Pantalla de éxito estilo diseño ('tracker is ready') tras claim",
+      "Estado free vs tracked visible según subscriptions",
+      "Tests RTL + api con fetchFn nombrando R-ids"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/app/pairing/",
+      "mobile-pet-tracker/src/api/devices.ts",
+      "mobile-pet-tracker/src/api/subscriptions.ts"
+    ]
+  },
+  {
+    "id": 43,
+    "name": "mobile-theme-transition",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Polish 100% prescindible: fade al cambiar de tema con react-native-nitro-theme-transition 1.0.0 + react-native-nitro-modules >=0.36 (código nativo, requiere el dev build de #32). Riesgo conocido: interacción con reactCompiler experimental. Si rompe el build nativo, la feature se cierra como descartada y queda el toggle sin fade de #40.",
+    "acceptance_criteria": [
+      "Cambio de tema con efecto fade en dev build sin crash",
+      "init.sh y CI siguen verdes con nitro-modules instalado",
+      "Gate humano: fade verificado en Android físico; decisión descartar/mantener registrada"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/package.json",
+      "mobile-pet-tracker/src/theme/"
+    ]
   }
 ]
