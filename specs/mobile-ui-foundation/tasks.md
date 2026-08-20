@@ -68,9 +68,9 @@ tags: [harness, spec, mobile]
 
 ## R9 — Contención + init.sh verde
 
-- [ ] (1) N/A
-- [ ] (2) `./init.sh` exit 0
-- [ ] (3) `git diff --stat main...HEAD -- backend-pet-tracker/ infra/ init.config.sh .github/` vacío
+- [x] (1) N/A
+- [x] (2) `./init.sh` exit 0
+- [x] (3) `git diff --stat main...HEAD -- backend-pet-tracker/ infra/ init.config.sh .github/` vacío
 
 ## R10 — Gate humano: Expo Go en Android físico
 

@@ -16,4 +16,5 @@
 - Spec #32 **aprobada por humano** (2026-08-20); checkbox marcado en requirements.md. Handoff a Codex entregado al humano.
 - Codex implementa R1-R9 en `feature/32-mobile-ui-foundation`; R10 (smoke Expo Go en Android fisico) lo cierra el humano. Mientras Codex trabaja, este agente no toca `mobile-pet-tracker/` ni `backend-pet-tracker/`.
 - Implementacion iniciada por Codex: 2026-08-20 21:00 UTC. Plan: spike R1 y configuracion R2-R3; provider/migracion/toggle R4-R6; EAS/docs R7-R8; cierre con contencion e `init.sh` para R9. R10 queda exclusivamente para el humano.
+- Codex completo R1-R9: `./init.sh` verde, contencion R9 vacia y resultado detallado en `progress/impl_mobile-ui-foundation.md`. R10 sigue pendiente del smoke humano con `bunx expo start --go`; despues corresponde lanzar `reviewer`.
 - Siguiente: esperar confirmacion humana de que Codex termino → lanzar `reviewer`.
