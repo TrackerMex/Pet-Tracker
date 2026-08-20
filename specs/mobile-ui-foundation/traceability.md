@@ -8,7 +8,7 @@ tags: [harness, spec, mobile]
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | `mobile-pet-tracker/src/__tests__/heroui-smoke.test.tsx::R1: HeroUI Button con className renderiza en jest` | pendiente |
+| R1 | `mobile-pet-tracker/src/__tests__/heroui-smoke.test.tsx::R1: HeroUI Button con className renderiza en jest` | `a727f7a feat(mobile-ui-foundation): render HeroUI smoke test (R1)`; rojo: `b03fb4c` |
 | R2 | estructural — reviewer verifica `metro.config.js` y `src/theme/global.css` contra design §D2/§D4 (excepción C4); render real en gate R10 | pendiente |
 | R3 | `bun run --cwd mobile-pet-tracker typecheck` exit 0 + reviewer: `git ls-files` (uniwind-env.d.ts sí, uniwind-types.d.ts no) | pendiente |
 | R4 | estructural — reviewer verifica `src/app/_layout.tsx` (css import + GestureHandlerRootView > HeroUINativeProvider > Stack); el render del provider lo cubre el test de R1 | pendiente |

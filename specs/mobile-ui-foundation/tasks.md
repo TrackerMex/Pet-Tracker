@@ -15,9 +15,9 @@ tags: [harness, spec, mobile]
 
 ## R1 — Spike: deps + config jest + HeroUI Button renderiza en jest
 
-- [ ] (1) Escribir `src/__tests__/heroui-smoke.test.tsx` (describe `R1: ...`)
+- [x] (1) Escribir `src/__tests__/heroui-smoke.test.tsx` (describe `R1: ...`)
       y verlo FALLAR sin las deps/config (rojo)
-- [ ] (2) Instalar deps (D1), añadir bloque jest (D6), `test/css-stub.js`,
+- [x] (2) Instalar deps (D1), añadir bloque jest (D6), `test/css-stub.js`,
       `metro.config.js` (D2), `src/theme/global.css` (D4),
       `src/uniwind-env.d.ts` + `.gitignore` (D5) → test verde
 - [ ] (3) Refactor con tests verdes (y `typecheck` verde — cubre R3)
