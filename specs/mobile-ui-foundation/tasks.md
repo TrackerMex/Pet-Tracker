@@ -32,10 +32,10 @@ tags: [harness, spec, mobile]
 
 ## R4 — Provider en _layout.tsx
 
-- [ ] (1) Red de seguridad: suite existente verde antes de tocar
-- [ ] (2) `_layout.tsx`: import de `../theme/global.css` +
+- [x] (1) Red de seguridad: suite existente verde antes de tocar
+- [x] (2) `_layout.tsx`: import de `../theme/global.css` +
       `GestureHandlerRootView` > `HeroUINativeProvider` > `Stack`
-- [ ] (3) Toda la suite jest verde (smoke R1 + index.test.tsx)
+- [x] (3) Toda la suite jest verde (smoke R1 + index.test.tsx)
 
 ## R5 — Migrar pantalla health a HeroUI + className
 
