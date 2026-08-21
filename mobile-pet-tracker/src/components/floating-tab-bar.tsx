@@ -1,5 +1,6 @@
 import { useThemeColor } from 'heroui-native';
 import { Pressable, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   ForkKnife,
   HeartPulse,
@@ -38,12 +39,14 @@ const TABS = [
 
 export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
   const [accent, muted] = useThemeColor(['accent', 'muted']);
+  const insets = useSafeAreaInsets();
   const activeRouteName = state.routes[state.index]?.name;
 
   return (
     <View
       testID="floating-tab-bar"
       className="absolute left-4 right-4 flex-row items-center justify-around rounded-full border border-border bg-surface px-2 py-3 shadow-lg"
+      style={{ bottom: insets.bottom + 12 }}
     >
       {TABS.map(({ name, label, Icon }) => {
         const route = state.routes.find((candidate) => candidate.name === name);
