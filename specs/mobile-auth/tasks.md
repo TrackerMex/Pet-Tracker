@@ -43,13 +43,13 @@ tags: [harness, spec, mobile]
 
 ## R5 — Splash + providers en _layout
 
-- [ ] (1) Escribir el nuevo `src/app/__tests__/index.test.tsx`
+- [x] (1) Escribir el nuevo `src/app/__tests__/index.test.tsx`
       (`describe('R5: splash navega según sesión')`, mocks de useAuth y
       expo-router según D9) y verlo ROJO
-- [ ] (2) Reescribir `src/app/index.tsx` como Splash (D5) y añadir
+- [x] (2) Reescribir `src/app/index.tsx` como Splash (D5) y añadir
       `AuthProvider` + `screenOptions={{ headerShown: false }}` en
       `src/app/_layout.tsx` → verde
-- [ ] (3) Refactor con toda la suite verde
+- [x] (3) Refactor con toda la suite verde
 
 ## R7 — Pantalla Login
 
