@@ -18,7 +18,7 @@ tags: [harness, spec, mobile]
 | R8 | `src/app/(tabs)/__tests__/map.test.tsx::R8: stats calculadas de positions y trips` | `55ca25c feat(mobile-map): calculate live tracking stats (R8)` |
 | R9 | `src/app/(tabs)/__tests__/map.test.tsx::R9: polling con foco` | `9375e10 feat(mobile-map): poll while the tab is focused (R9)` |
 | R10 | `src/app/(tabs)/__tests__/map.test.tsx::R10: lost mode es stub deshabilitado` | `cbe518c feat(mobile-map): add disabled lost mode stub (R10)` |
-| R11 | pendiente (verificación typecheck/lint) | pendiente |
+| R11 | `bun run --cwd mobile-pet-tracker typecheck` + `bun run --cwd mobile-pet-tracker lint` (exit 0, sin warnings) | `89ff665 fix(mobile-map): satisfy mobile checks (R3,R9,R11)` |
 | R12 | pendiente (verificación contención) | pendiente |
 | R13 | pendiente (smoke humano Expo Go) | pendiente |
 
