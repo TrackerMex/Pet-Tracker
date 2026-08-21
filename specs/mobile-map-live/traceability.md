@@ -17,7 +17,7 @@ tags: [harness, spec, mobile]
 | R7 | `src/app/(tabs)/__tests__/map.test.tsx::R7: ruta del día como polylines` | `3095eea feat(mobile-map): draw day routes with fallback (R7)` |
 | R8 | `src/app/(tabs)/__tests__/map.test.tsx::R8: stats calculadas de positions y trips` | `55ca25c feat(mobile-map): calculate live tracking stats (R8)` |
 | R9 | `src/app/(tabs)/__tests__/map.test.tsx::R9: polling con foco` | `9375e10 feat(mobile-map): poll while the tab is focused (R9)` |
-| R10 | pendiente | pendiente |
+| R10 | `src/app/(tabs)/__tests__/map.test.tsx::R10: lost mode es stub deshabilitado` | `cbe518c feat(mobile-map): add disabled lost mode stub (R10)` |
 | R11 | pendiente (verificación typecheck/lint) | pendiente |
 | R12 | pendiente (verificación contención) | pendiente |
 | R13 | pendiente (smoke humano Expo Go) | pendiente |
