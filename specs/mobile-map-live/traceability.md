@@ -9,7 +9,7 @@ tags: [harness, spec, mobile]
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
 | R1 | `src/api/__tests__/positions.test.ts::R1: getLastPosition mapea la respuesta por kind` | `df5050f feat(mobile-map): load last position states (R1)` |
-| R2 | pendiente | pendiente |
+| R2 | `src/api/__tests__/positions.test.ts::R2: listPositions mapea la respuesta por kind` | `251eaa0 feat(mobile-map): load position history states (R2)` |
 | R3 | pendiente | pendiente |
 | R4 | pendiente | pendiente |
 | R5 | pendiente | pendiente |
