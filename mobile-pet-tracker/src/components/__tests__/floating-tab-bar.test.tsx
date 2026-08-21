@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
+import { StyleSheet } from 'react-native';
 
 import {
   FloatingTabBar,
@@ -95,5 +96,21 @@ describe('R7: tab bar renderiza y navega', () => {
 
     expect(mockEmit).toHaveBeenCalledTimes(1);
     expect(mockNavigate).not.toHaveBeenCalled();
+  });
+});
+
+describe('R8: tab bar flota con safe area', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockEmit.mockReturnValue({ defaultPrevented: false });
+  });
+
+  it('positions the bar twelve points above the bottom inset', async () => {
+    await renderTabBar();
+
+    const style = StyleSheet.flatten(
+      screen.getByTestId('floating-tab-bar').props.style,
+    );
+    expect(style).toMatchObject({ bottom: 46 });
   });
 });
