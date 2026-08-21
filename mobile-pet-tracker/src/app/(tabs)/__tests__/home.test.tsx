@@ -150,7 +150,7 @@ describe('R6: home carga pets y selecciona', () => {
         'pet-chip-pet-1',
         'pet-chip-pet-2',
       ]);
-      expect(screen.getByTestId('pet-chip-pet-1')).toHaveAccessibilityState({
+      expect(screen.getByTestId('pet-chip-pet-1').props.accessibilityState).toEqual({
         selected: true,
       });
     });
@@ -170,7 +170,7 @@ describe('R6: home carga pets y selecciona', () => {
     await fireEvent.press(screen.getByTestId('pet-chip-pet-2'));
 
     await waitFor(() => {
-      expect(screen.getByTestId('pet-chip-pet-2')).toHaveAccessibilityState({
+      expect(screen.getByTestId('pet-chip-pet-2').props.accessibilityState).toEqual({
         selected: true,
       });
       expect(mockGetPet).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'pet-2');
