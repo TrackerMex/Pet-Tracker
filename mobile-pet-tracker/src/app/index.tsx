@@ -8,7 +8,7 @@ export default function Index() {
   const { status } = useAuth();
 
   if (status === 'authenticated') {
-    return <Redirect href="/health" />;
+    return <Redirect href="/home" />;
   }
 
   if (status === 'unauthenticated') {

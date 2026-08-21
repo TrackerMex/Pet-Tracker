@@ -108,7 +108,7 @@ export default function Register() {
 
           if (loginResult.kind === 'ok') {
             await signIn(loginResult.accessToken);
-            router.replace('/health');
+            router.replace('/home');
           } else {
             router.replace('/login');
           }
