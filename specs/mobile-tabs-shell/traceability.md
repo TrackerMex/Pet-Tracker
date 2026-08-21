@@ -8,7 +8,7 @@ tags: [harness, spec, mobile]
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | pendiente | pendiente |
+| R1 | `mobile-pet-tracker/src/app/(tabs)/__tests__/layout.test.tsx::R1: (tabs) exige sesión` | `929d6b2` test rojo → `0822ba7` feat verde |
 | R2 | pendiente | pendiente |
 | R3 | pendiente | pendiente |
 | R4 | pendiente | pendiente |
