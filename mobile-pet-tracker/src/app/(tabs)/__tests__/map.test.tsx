@@ -611,3 +611,36 @@ describe('R9: polling con foco', () => {
     expect(mockListPositions).toHaveBeenCalledTimes(callsAfterBlur.positions);
   });
 });
+
+describe('R10: lost mode es stub deshabilitado', () => {
+  it('shows the coming-soon action without enabling interaction', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({
+      kind: 'ok',
+      position: makeLastPosition(),
+    });
+    mockListPositions.mockResolvedValue({
+      kind: 'ok',
+      items: [],
+      nextCursor: null,
+    });
+    mockGetDayRoute.mockResolvedValue({
+      kind: 'ok',
+      date: '2026-08-21',
+      trips: [],
+    });
+
+    await renderMap();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('lost-mode-button')).toBeVisible();
+    });
+    expect(screen.getByTestId('lost-mode-button')).toHaveTextContent(
+      'Activate Lost Mode',
+    );
+    expect(
+      screen.getByTestId('lost-mode-button').props.accessibilityState,
+    ).toEqual(expect.objectContaining({ disabled: true }));
+    expect(screen.getByText('Coming soon')).toBeVisible();
+  });
+});
