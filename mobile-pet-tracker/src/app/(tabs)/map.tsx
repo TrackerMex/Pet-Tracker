@@ -1,4 +1,5 @@
 import { Button, Spinner } from 'heroui-native';
+import MapView, { Marker } from 'react-native-maps';
 import { useCallback, useEffect, useMemo } from 'react';
 import { Text, View } from 'react-native';
 
@@ -12,6 +13,13 @@ import { useSelectedPet } from '../../providers/selected-pet-provider';
 function isPetsError(state: PetsState): boolean {
   return ['error', 'unreachable', 'missing-config'].includes(state.kind);
 }
+
+const DEFAULT_REGION = {
+  latitude: 19.4326,
+  longitude: -99.1332,
+  latitudeDelta: 0.01,
+  longitudeDelta: 0.01,
+};
 
 export default function MapScreen() {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
@@ -58,6 +66,15 @@ export default function MapScreen() {
     (pets.data.kind === 'ok' &&
       pets.data.pets.length > 0 &&
       last.data === undefined);
+  const position = last.data?.kind === 'ok' ? last.data.position : undefined;
+  const initialRegion = position
+    ? {
+        latitude: position.lat,
+        longitude: position.lng,
+        latitudeDelta: 0.01,
+        longitudeDelta: 0.01,
+      }
+    : DEFAULT_REGION;
 
   return (
     <View testID="screen-map" className="flex-1 bg-background">
@@ -92,6 +109,37 @@ export default function MapScreen() {
             Live tracking requires a collar
           </Text>
         </View>
+      ) : null}
+
+      {last.data?.kind === 'ok' ? (
+        <>
+          <MapView
+            key={selectedPetId}
+            testID="map-view"
+            style={{ flex: 1 }}
+            initialRegion={initialRegion}
+          >
+            {position ? (
+              <Marker
+                testID="map-marker"
+                coordinate={{
+                  latitude: position.lat,
+                  longitude: position.lng,
+                }}
+              />
+            ) : null}
+          </MapView>
+          {position === null ? (
+            <View
+              style={{ position: 'absolute', top: 64, left: 16, right: 16 }}
+              className="items-center rounded-2xl bg-surface p-3"
+            >
+              <Text testID="map-empty" className="text-muted">
+                No location data yet
+              </Text>
+            </View>
+          ) : null}
+        </>
       ) : null}
     </View>
   );
