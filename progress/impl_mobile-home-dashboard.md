@@ -90,3 +90,24 @@ las otras tabs y de los guards permanecen intactos.
 Los cambios locales preexistentes en `.gitignore`, `init.sh`,
 `init.config.sh`, `.agents/`, skills y `skills-lock.json` se preservaron y no
 se incluyeron en los commits de mobile-home-dashboard.
+
+## Fixes post-smoke (2026-08-21)
+
+Reporte del humano tras smoke R13 en Android físico (Expo Go):
+
+1. **Título "Home" pegado a la barra de estado** — `home.tsx` aplicaba
+   `paddingBottom` con insets pero no `paddingTop`. Fix: `paddingTop:
+   insets.top + 12` en el `contentContainerStyle`. Test rojo `84a7762`,
+   verde `4e93518` (R6).
+2. **Flash al cambiar de mascota** — `useApi` reseteaba `data` a `undefined`
+   al cambiar la identidad de `fn` o en `refetch`, desmontando las cards un
+   instante. Fix: stale-while-revalidate mínimo en `use-api.ts` (conserva el
+   último valor resuelto y expone `isRefreshing`); el skeleton de home solo
+   aparece en la carga inicial sin data previa. Los datos de la mascota
+   anterior se muestran un instante durante el refresco (estándar y
+   aceptado en el reporte). Sin dependencias nuevas. Test rojo `f896be3`,
+   verde `028ba86` (R4,R9).
+
+Verificación: `bun run test` 132/132 verdes (18 suites), `bun run lint`
+exit 0, `bun run typecheck` exit 0. Solo se tocaron `home.tsx`,
+`use-api.ts` y sus tests.
