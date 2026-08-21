@@ -276,7 +276,7 @@ Todo código nuevo (R1–R10) sigue TDD estricto con test rojo primero.
      #32, tab bar flotante visible sin tapar contenido — scroll con
      padding inferior).
 
-  - [ ] Smoke ejecutado por el humano (fecha: ____)
+  - [X] Smoke ejecutado por el humano (fecha: 2026-08-21)
 
 ## Fuera de alcance
 
