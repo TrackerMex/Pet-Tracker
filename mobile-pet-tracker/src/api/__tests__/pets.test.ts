@@ -1,7 +1,8 @@
-import { listPets } from '../pets';
+import { getPet, listPets } from '../pets';
 
 const baseUrl = 'http://example.test/v1/';
 const petsEndpoint = 'http://example.test/v1/pets';
+const petEndpoint = 'http://example.test/v1/pets/pet-1';
 
 function response(status: number, body: unknown): Response {
   return {
@@ -81,6 +82,76 @@ describe('R1: listPets mapea la respuesta por kind', () => {
     const fetchFn = jest.fn() as unknown as typeof fetch;
 
     await expect(listPets(missingUrl, 'jwt-token', fetchFn)).resolves.toEqual({
+      kind: 'missing-config',
+    });
+    expect(fetchFn).not.toHaveBeenCalled();
+  });
+});
+
+describe('R2: getPet mapea la respuesta por kind', () => {
+  const pet = {
+    id: 'pet-1',
+    name: 'Luna',
+    breed: 'Mixed',
+    device: null,
+    photoUrl: 'http://example.test/luna.jpg',
+    nextVaccine: null,
+    lastCommunicationAt: null,
+  };
+
+  it('gets the pet detail with the bearer token', async () => {
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValue(response(200, pet)) as unknown as typeof fetch;
+
+    await expect(getPet(baseUrl, 'jwt-token', 'pet-1', fetchFn)).resolves.toEqual({
+      kind: 'ok',
+      pet,
+    });
+    expect(fetchFn).toHaveBeenCalledWith(petEndpoint, {
+      headers: { Authorization: 'Bearer jwt-token' },
+    });
+  });
+
+  it('maps an unauthorized response', async () => {
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValue(response(401, {})) as unknown as typeof fetch;
+
+    await expect(getPet(baseUrl, 'expired', 'pet-1', fetchFn)).resolves.toEqual({
+      kind: 'unauthorized',
+    });
+  });
+
+  it.each([
+    ['not found', response(404, { message: 'Not found' })],
+    ['an unexpected status', response(500, { message: 'failure' })],
+    ['invalid JSON', invalidJsonResponse(200)],
+    ['a malformed id', response(200, { ...pet, id: 7 })],
+    ['a malformed name', response(200, { ...pet, name: null })],
+  ])('maps %s to error', async (_case, backendResponse) => {
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValue(backendResponse) as unknown as typeof fetch;
+
+    await expect(getPet(baseUrl, 'jwt-token', 'pet-1', fetchFn)).resolves.toEqual({
+      kind: 'error',
+    });
+  });
+
+  it('maps a fetch rejection to unreachable', async () => {
+    const fetchFn = jest.fn().mockRejectedValue('offline') as unknown as typeof fetch;
+
+    await expect(getPet(baseUrl, 'jwt-token', 'pet-1', fetchFn)).resolves.toEqual({
+      kind: 'unreachable',
+      message: 'offline',
+    });
+  });
+
+  it.each([undefined, ''])('maps missing base URL %p without fetching', async (missingUrl) => {
+    const fetchFn = jest.fn() as unknown as typeof fetch;
+
+    await expect(getPet(missingUrl, 'jwt-token', 'pet-1', fetchFn)).resolves.toEqual({
       kind: 'missing-config',
     });
     expect(fetchFn).not.toHaveBeenCalled();
