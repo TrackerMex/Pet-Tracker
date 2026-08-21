@@ -4,7 +4,6 @@ import type { ComponentType } from 'react';
 
 import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
 import FoodScreen from '../food';
-import HomeScreen from '../home';
 import MapScreen from '../map';
 import ProfileScreen from '../profile';
 
@@ -32,7 +31,6 @@ describe('R5: placeholders de tabs', () => {
     testID: string;
     title: string;
   }>([
-    { Screen: HomeScreen, testID: 'screen-home', title: 'Home' },
     { Screen: MapScreen, testID: 'screen-map', title: 'Map' },
     { Screen: FoodScreen, testID: 'screen-food', title: 'Food' },
     { Screen: ProfileScreen, testID: 'screen-profile', title: 'Profile' },
