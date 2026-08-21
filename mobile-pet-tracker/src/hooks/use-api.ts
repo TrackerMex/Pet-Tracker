@@ -4,6 +4,7 @@ import { useAuth } from '../providers/auth-provider';
 
 export interface ApiResult<T> {
   data: T | undefined;
+  isRefreshing: boolean;
   refetch: () => void;
 }
 
@@ -38,8 +39,12 @@ export function useApi<T extends { kind: string }>(
     setTick((value) => value + 1);
   }, []);
 
-  const data =
-    resolved?.fn === fn && resolved.tick === tick ? resolved.value : undefined;
+  // Stale-while-revalidate: al cambiar fn o refetch se conserva el último
+  // valor resuelto (evita desmontar las cards) y se señala isRefreshing.
+  const isCurrent =
+    resolved !== undefined && resolved.fn === fn && resolved.tick === tick;
+  const data = fn === null ? undefined : resolved?.value;
+  const isRefreshing = fn !== null && resolved !== undefined && !isCurrent;
 
-  return { data, refetch };
+  return { data, isRefreshing, refetch };
 }
