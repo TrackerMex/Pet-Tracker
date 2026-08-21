@@ -17,7 +17,7 @@ tags: [harness, spec, mobile]
 | R7 | `mobile-pet-tracker/src/app/(tabs)/__tests__/home.test.tsx::R7: pet card muestra el perfil` | `97c9167 feat(mobile-home): render selected pet profile card (R7)` |
 | R8 | `mobile-pet-tracker/src/app/(tabs)/__tests__/home.test.tsx::R8: collar card refleja el device` | `8375941 feat(mobile-home): render collar health states (R8)` |
 | R9 | `mobile-pet-tracker/src/app/(tabs)/__tests__/home.test.tsx::R9: summary degrada con gracia` | `747938e feat(mobile-home): render graceful daily summary (R9)` |
-| R10 | `mobile-pet-tracker/src/app/(tabs)/__tests__/home.test.tsx::R10: last position enlaza al mapa` | pendiente |
+| R10 | `mobile-pet-tracker/src/app/(tabs)/__tests__/home.test.tsx::R10: last position enlaza al mapa` | `19f48d3 feat(mobile-home): link last position to map (R10)` |
 | R11 | `bun run typecheck` + `bun run lint` (exit 0) | pendiente |
 | R12 | `./init.sh` (exit 0), `bun run test` completo y diff de contención vacío + grep storage/React en `src/api/` | pendiente |
 | R13 | gate humano — smoke en **Expo Go** sobre Android físico (checkbox en requirements §R13; sin builds) | pendiente |
