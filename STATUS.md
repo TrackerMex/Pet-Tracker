@@ -1,9 +1,9 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-08-21
-**Features completadas**: 33/44 (`feature_list.json`)
-**En progreso**: ninguna. #34 `mobile-tabs-shell` cerrada; PR pendiente de merge humano.
-**Pendientes**: 11 (#18 y #35-#44).
+**Features completadas**: 34/44 (`feature_list.json`)
+**En progreso**: ninguna. #35 `mobile-home-dashboard` cerrada; PR pendiente de merge humano.
+**Pendientes**: 10 (#18 y #36-#44).
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
 desde 2026-08-10. Hay recursos vivos en la cuenta, aunque hoy sin coste.
@@ -71,6 +71,22 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Estado actual
+
+- **`mobile-home-dashboard` (#35) done** (2026-08-21): Home real — clientes
+  `src/api/pets.ts` y `activity.ts` con `fetchFn` inyectado y tipos a mano
+  (D11 ratificada: sin codegen, el backend no publica OpenAPI), hook `useApi`
+  con 401 → `signOut()` global y stale-while-revalidate, `SelectedPetProvider`,
+  pet card, collar card (estado free con `device: null` / 402 `no-tracking`),
+  Today's Summary degradando con `—` (nunca 0) y card de última posición que
+  enlaza al tab Map. Sin mini-mapa (v1) y sin react-query (se reevalúa en #36).
+  Codex R1-R12 TDD rojo→verde; `reviewer` aprobó a la primera (init.sh exit 0
+  propio, contención vacía). Dos fixes post-smoke por fallback `implementer`:
+  `paddingTop: insets.top` (título bajo la barra del sistema) y conservación
+  del data anterior en `useApi` (flash al cambiar de mascota). R13 smoke
+  humano con backend real: mascota por API, claim ACT-001, posiciones del
+  simulador llegando (`3ee6815`). Suite móvil 18 suites / 132 tests. Ver
+  `progress/impl_mobile-home-dashboard.md` y
+  `progress/review_mobile-home-dashboard.md`.
 
 - **`mobile-tabs-shell` (#34) done** (2026-08-21): shell de navegación móvil —
   layout groups `(auth)`/`(tabs)` con guard de sesión en ambos sentidos,
@@ -753,6 +769,17 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-08-21 (3)** — #35 `mobile-home-dashboard` **cerrada** (34/44). Ciclo
+  en un día: spec (fetch en dos niveles lista+detail, `useApi` ≤30 líneas,
+  estado free por 402, D11 sin codegen) → gate humano (`06f12df`) → Codex
+  R1-R12 → review aprobado a la primera → smoke R13 con backend real (el
+  humano creó mascota por API, reclamó ACT-001 y vio posiciones del
+  simulador). Dos fixes post-smoke (fallback `implementer`): safe-area top y
+  stale-while-revalidate contra el flash del selector, verificados por el
+  humano en Expo Go. Decisión humana del día: avatar fallback con `blobatar`
+  core (web wrapper descartado) anotado en #40. Siguiente: #36
+  `mobile-map-live` (P1).
 
 - **2026-08-21 (2)** — #34 `mobile-tabs-shell` **cerrada** (33/44). Ciclo
   completo en un día: spec (`Tabs` de expo-router + tab bar custom, cero deps
