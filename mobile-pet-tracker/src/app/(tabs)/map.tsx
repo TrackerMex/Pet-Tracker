@@ -1,5 +1,5 @@
 import { Button, Spinner } from 'heroui-native';
-import MapView, { Marker } from 'react-native-maps';
+import MapView, { Marker, Polyline } from 'react-native-maps';
 import { useCallback, useEffect, useMemo } from 'react';
 import { Text, View } from 'react-native';
 
@@ -12,6 +12,10 @@ import { useSelectedPet } from '../../providers/selected-pet-provider';
 
 function isPetsError(state: PetsState): boolean {
   return ['error', 'unreachable', 'missing-config'].includes(state.kind);
+}
+
+function fmtKm(meters: number | null): string {
+  return meters === null ? '—' : `${(meters / 1000).toFixed(1)} km`;
 }
 
 const DEFAULT_REGION = {
@@ -53,7 +57,7 @@ export default function MapScreen() {
   );
   const last = useApi(lastFn);
   useApi(positionsFn);
-  useApi(routeFn);
+  const route = useApi(routeFn);
 
   useEffect(() => {
     if (pets.data?.kind !== 'ok' || pets.data.pets.length === 0) return;
@@ -128,6 +132,18 @@ export default function MapScreen() {
                 }}
               />
             ) : null}
+            {route.data?.kind === 'ok'
+              ? route.data.trips.map((trip) => (
+                  <Polyline
+                    key={trip.index}
+                    testID={`map-route-${trip.index}`}
+                    coordinates={trip.path.map(({ lat, lng }) => ({
+                      latitude: lat,
+                      longitude: lng,
+                    }))}
+                  />
+                ))
+              : null}
           </MapView>
           {position === null ? (
             <View
@@ -139,6 +155,22 @@ export default function MapScreen() {
               </Text>
             </View>
           ) : null}
+          <View
+            style={{ position: 'absolute', left: 16, right: 16, bottom: 120 }}
+            className="rounded-2xl bg-surface p-3"
+          >
+            <Text className="text-xs text-muted">Distance</Text>
+            <Text testID="stat-distance" className="font-semibold text-foreground">
+              {fmtKm(
+                route.data?.kind === 'ok'
+                  ? route.data.trips.reduce(
+                      (total, trip) => total + trip.distanceM,
+                      0,
+                    )
+                  : null,
+              )}
+            </Text>
+          </View>
         </>
       ) : null}
     </View>
