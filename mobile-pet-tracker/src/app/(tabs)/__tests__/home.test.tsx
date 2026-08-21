@@ -4,6 +4,7 @@ import {
   screen,
   waitFor,
 } from '@testing-library/react-native';
+import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
 
@@ -44,6 +45,7 @@ const mockGetDailyActivity = jest.mocked(getDailyActivity);
 const mockGetPet = jest.mocked(getPet);
 const mockListPets = jest.mocked(listPets);
 const mockUseAuth = jest.mocked(useAuth);
+const mockRouter = jest.mocked(router);
 
 function makePet(overrides: Partial<PetProfile> = {}): PetProfile {
   return {
@@ -413,5 +415,74 @@ describe('R9: summary degrada con gracia', () => {
     await renderHome();
 
     await waitFor(() => expect(screen.getByTestId('summary-skeleton')).toBeVisible());
+  });
+});
+
+describe('R10: last position enlaza al mapa', () => {
+  const device = {
+    model: 'PetTrack One',
+    batteryPct: 82,
+    connectivity: 'online',
+    lastMessageAt: '2026-08-21T12:00:00.000Z',
+    esn: 'ACT-001',
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetDailyActivity.mockResolvedValue({ kind: 'no-tracking' });
+  });
+
+  it('shows the last-seen time and opens the map tab', async () => {
+    const lastCommunicationAt = '2026-08-21T12:34:00.000Z';
+    mockGetPet.mockResolvedValue({
+      kind: 'ok',
+      pet: makePet({ device, lastCommunicationAt }),
+    });
+
+    await renderHome();
+
+    await waitFor(() => expect(screen.getByTestId('last-position-card')).toBeVisible());
+    expect(screen.getByText('View on map')).toBeVisible();
+    expect(screen.getByTestId('last-position-time')).toHaveTextContent(
+      `Last seen ${new Date(lastCommunicationAt).toLocaleString()}`,
+    );
+
+    await fireEvent.press(screen.getByTestId('last-position-card'));
+    expect(mockRouter.push).toHaveBeenCalledWith('/map');
+  });
+
+  it('explains when the collar has no location yet', async () => {
+    mockGetPet.mockResolvedValue({
+      kind: 'ok',
+      pet: makePet({ device, lastCommunicationAt: null }),
+    });
+
+    await renderHome();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('last-position-time')).toHaveTextContent(
+        'No location data yet',
+      );
+    });
+  });
+
+  it('hides the position card for a pet without a collar', async () => {
+    mockGetPet.mockResolvedValue({
+      kind: 'ok',
+      pet: makePet({ device: null }),
+    });
+
+    await renderHome();
+
+    await waitFor(() => expect(screen.getByTestId('collar-status')).toHaveTextContent('Free'));
+    expect(screen.queryByTestId('last-position-card')).toBeNull();
   });
 });
