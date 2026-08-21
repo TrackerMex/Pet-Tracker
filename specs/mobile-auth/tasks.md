@@ -72,11 +72,11 @@ tags: [harness, spec, mobile]
 
 ## R9 — Pantalla Forgot (stub)
 
-- [ ] (1) `src/app/(auth)/__tests__/forgot.test.tsx`
+- [x] (1) `src/app/(auth)/__tests__/forgot.test.tsx`
       (`describe('R9: ...')`: texto visible, input no editable, botón
       deshabilitado, cero llamadas a api) y verlo ROJO
-- [ ] (2) Implementar `src/app/(auth)/forgot.tsx` (D8) → verde
-- [ ] (3) Refactor
+- [x] (2) Implementar `src/app/(auth)/forgot.tsx` (D8) → verde
+- [x] (3) Refactor
 
 ## R10 — Contención + init.sh verde
 
