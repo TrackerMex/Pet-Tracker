@@ -30,3 +30,5 @@
 - Reviewer: rechazo inicial por C6 (frontmatter `status: draft` en specs/mobile-tabs-shell/) — fix del leader en `bf16904` (solo 4 frontmatters a `approved`).
 - Re-revisión: **aprobado** R1–R10 (`progress/review_mobile-tabs-shell.md`, apéndice 2026-08-21, commit `9f3f5e8`). Resto verde desde la primera pasada: init.sh exit 0, suite móvil 13/75, typecheck/lint 0, contención vacía, C2–C7.
 - Pendiente: R11 smoke humano con Expo Go (`bunx expo start --go`, 7 pasos en requirements.md). La feature sigue `in_progress` hasta ese gate.
+- R11 aprobado verbalmente por el humano (2026-08-21) con observación: tab bar descentrada (pegada a la izquierda) en Android físico. Checkbox de R11 pendiente de su commit.
+- Fix del centrado: cambio trivial de 1 archivo → fallback al subagente `implementer` (excepción documentada de CLAUDE.md §Excepciones; no amerita handoff a Codex). Scope: floating-tab-bar.tsx, posicionamiento horizontal a style inline.
