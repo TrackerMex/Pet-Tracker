@@ -12,7 +12,7 @@ import {
   type DailyActivityState,
 } from '../../../api/activity';
 import { getPet, listPets, type PetState, type PetsState } from '../../../api/pets';
-import type { PetProfile } from '../../../api/types';
+import type { DayEntry, PetProfile } from '../../../api/types';
 import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
 import { SelectedPetProvider } from '../../../providers/selected-pet-provider';
 import HomeScreen from '../home';
@@ -71,6 +71,22 @@ function makePet(overrides: Partial<PetProfile> = {}): PetProfile {
     activitySummary: null,
     createdAt: '2026-08-20T00:00:00.000Z',
     updatedAt: '2026-08-21T00:00:00.000Z',
+    ...overrides,
+  };
+}
+
+function makeDay(overrides: Partial<DayEntry> = {}): DayEntry {
+  return {
+    date: '2026-08-21',
+    distanceM: 2350,
+    activeMinutes: 95,
+    restMinutes: 45,
+    walkCount: 2,
+    avgWalkMinutes: 48,
+    firstWalkAt: '2026-08-21T08:00:00.000Z',
+    lastWalkAt: '2026-08-21T18:00:00.000Z',
+    timeAwayMinutes: null,
+    source: 'computed',
     ...overrides,
   };
 }
@@ -307,5 +323,95 @@ describe('R8: collar card refleja el device', () => {
     await waitFor(() => expect(screen.getByTestId('collar-card')).toBeVisible());
     expect(screen.getByTestId('collar-status')).toHaveTextContent('Offline');
     expect(screen.getByTestId('collar-battery')).toHaveTextContent('—');
+  });
+});
+
+describe('R9: summary degrada con gracia', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    const pet = makePet();
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+  });
+
+  it('formats metrics from the last day in the response', async () => {
+    mockGetDailyActivity.mockResolvedValue({
+      kind: 'ok',
+      days: [makeDay({ activeMinutes: 999 }), makeDay()],
+      weekComparison: { distanceM: 5, activeMinutes: 10, walkCount: 20 },
+    });
+
+    await renderHome();
+
+    await waitFor(() => expect(screen.getByTestId('summary-card')).toBeVisible());
+    expect(screen.getByText("Today's Summary")).toBeVisible();
+    expect(screen.getByTestId('summary-activity')).toHaveTextContent('1h 35m');
+    expect(screen.getByTestId('summary-sleep')).toHaveTextContent('45m');
+    expect(screen.getByTestId('summary-distance')).toHaveTextContent('2.4 km');
+  });
+
+  it('shows dashes instead of zero for missing metrics', async () => {
+    mockGetDailyActivity.mockResolvedValue({
+      kind: 'ok',
+      days: [
+        makeDay({
+          distanceM: null,
+          activeMinutes: null,
+          restMinutes: null,
+          walkCount: null,
+          avgWalkMinutes: null,
+          firstWalkAt: null,
+          lastWalkAt: null,
+          source: 'missing',
+        }),
+      ],
+      weekComparison: { distanceM: null, activeMinutes: null, walkCount: null },
+    });
+
+    await renderHome();
+
+    await waitFor(() => expect(screen.getByTestId('summary-card')).toBeVisible());
+    expect(screen.getByTestId('summary-activity')).toHaveTextContent('—');
+    expect(screen.getByTestId('summary-sleep')).toHaveTextContent('—');
+    expect(screen.getByTestId('summary-distance')).toHaveTextContent('—');
+  });
+
+  it('explains that activity tracking requires a collar', async () => {
+    mockGetDailyActivity.mockResolvedValue({ kind: 'no-tracking' });
+
+    await renderHome();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('summary-note')).toHaveTextContent(
+        'Activity tracking requires a collar',
+      );
+    });
+  });
+
+  it('degrades an activity error without breaking the dashboard', async () => {
+    mockGetDailyActivity.mockResolvedValue({ kind: 'error' });
+
+    await renderHome();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('summary-note')).toHaveTextContent(
+        'Could not load activity',
+      );
+    });
+  });
+
+  it('shows a summary skeleton while activity is pending', async () => {
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+
+    await renderHome();
+
+    await waitFor(() => expect(screen.getByTestId('summary-skeleton')).toBeVisible());
   });
 });
