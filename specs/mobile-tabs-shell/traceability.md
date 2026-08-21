@@ -17,7 +17,7 @@ tags: [harness, spec, mobile]
 | R7 | `mobile-pet-tracker/src/components/__tests__/floating-tab-bar.test.tsx::R7: tab bar renderiza y navega` | `9f7d634` test rojo → `e306135` feat verde |
 | R8 | `mobile-pet-tracker/src/components/__tests__/floating-tab-bar.test.tsx::R8: tab bar flota con safe area` | `f30952c` test rojo → `cf99e35` feat verde |
 | R9 | `typedRoutes` activo; `.expo/types/router.d.ts` regenerado con los nuevos hrefs; `bun run --cwd mobile-pet-tracker typecheck` y `lint` (exit 0) | `c5a84d3` verificación de tipos verde |
-| R10 | pendiente (verificación del reviewer) | pendiente |
+| R10 | `./init.sh` (exit 0), suite móvil completa (13 suites/75 tests) y diff de contención vacío | `9e6af4b` verificación integral verde |
 | R11 | pendiente (checkbox humano en requirements.md) | pendiente |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
