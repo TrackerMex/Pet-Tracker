@@ -19,7 +19,7 @@ tags: [harness, spec, mobile]
 | R9 | `mobile-pet-tracker/src/app/(tabs)/__tests__/home.test.tsx::R9: summary degrada con gracia` | `747938e feat(mobile-home): render graceful daily summary (R9)` |
 | R10 | `mobile-pet-tracker/src/app/(tabs)/__tests__/home.test.tsx::R10: last position enlaza al mapa` | `19f48d3 feat(mobile-home): link last position to map (R10)` |
 | R11 | `bun run typecheck` + `bun run lint` (exit 0) | `f57323a fix(mobile-home): keep hook loading state lint-safe (R4,R11)`; ambos comandos exit 0 |
-| R12 | `./init.sh` (exit 0), `bun run test` completo y diff de contención vacío + grep storage/React en `src/api/` | pendiente |
+| R12 | `./init.sh` (exit 0), `bun run test` completo y diff de contención vacío + grep storage/React en `src/api/` | `97d67c6 test(mobile-home): verify full dashboard integration (R12)` |
 | R13 | gate humano — smoke en **Expo Go** sobre Android físico (checkbox en requirements §R13; sin builds) | pendiente |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
