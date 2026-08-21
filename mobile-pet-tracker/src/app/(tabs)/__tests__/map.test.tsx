@@ -51,7 +51,7 @@ jest.mock('../../../providers/auth-provider', () => ({
 jest.mock('expo-router', () => ({
   router: { push: jest.fn() },
   useFocusEffect: (callback: () => void | (() => void)) => {
-    const React = require('react');
+    const React = jest.requireActual<typeof import('react')>('react');
     React.useEffect(() => {
       const cleanup = callback();
       mockFocusCleanup = typeof cleanup === 'function' ? cleanup : undefined;
@@ -61,10 +61,12 @@ jest.mock('expo-router', () => ({
 }));
 
 jest.mock('react-native-maps', () => {
-  const React = require('react');
-  const { View } = require('react-native');
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>(
+    'react-native',
+  );
   const stub = (props: Record<string, unknown>) =>
-    React.createElement(View, props, props.children);
+    React.createElement(View, props, props.children as ReactNode);
   return { __esModule: true, default: stub, Marker: stub, Polyline: stub };
 });
 
@@ -578,7 +580,7 @@ describe('R9: polling con foco', () => {
   });
 
   it('polls position APIs every 15 seconds, preserves data, and cleans up', async () => {
-    const clearIntervalSpy = jest.spyOn(global, 'clearInterval');
+    const clearIntervalSpy = jest.spyOn(globalThis, 'clearInterval');
     await renderMap();
 
     await act(async () => {

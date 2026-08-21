@@ -82,7 +82,7 @@ describe('R3: getDayRoute compone lista y detalles por kind', () => {
   });
 
   it('starts every detail request before waiting for one to finish', async () => {
-    const detailResolvers: Array<(value: Response) => void> = [];
+    const detailResolvers: ((value: Response) => void)[] = [];
     const fetchFn = jest.fn((url: string) => {
       if (url === listEndpoint) {
         return Promise.resolve(

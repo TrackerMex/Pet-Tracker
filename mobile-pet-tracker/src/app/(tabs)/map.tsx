@@ -73,23 +73,27 @@ export default function MapScreen() {
   const last = useApi(lastFn);
   const positions = useApi(positionsFn);
   const route = useApi(routeFn);
+  const refetchLast = last.refetch;
+  const refetchPositions = positions.refetch;
+  const refetchRoute = route.refetch;
+  const lastKind = last.data?.kind;
 
   useFocusEffect(
     useCallback(() => {
-      if (!selectedPetId || last.data?.kind === 'no-tracking') return;
+      if (!selectedPetId || lastKind === 'no-tracking') return;
 
-      route.refetch();
+      refetchRoute();
       const intervalId = setInterval(() => {
-        last.refetch();
-        positions.refetch();
+        refetchLast();
+        refetchPositions();
       }, POLL_MS);
 
       return () => clearInterval(intervalId);
     }, [
-      last.data?.kind,
-      last.refetch,
-      positions.refetch,
-      route.refetch,
+      lastKind,
+      refetchLast,
+      refetchPositions,
+      refetchRoute,
       selectedPetId,
     ]),
   );
