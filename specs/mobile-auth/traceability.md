@@ -8,8 +8,8 @@ tags: [harness, spec, mobile]
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | `mobile-pet-tracker/src/api/__tests__/auth.test.ts::R1: login mapea la respuesta por kind` | pendiente |
-| R2 | `mobile-pet-tracker/src/api/__tests__/auth.test.ts::R2: register mapea la respuesta por kind` | pendiente |
+| R1 | `mobile-pet-tracker/src/api/__tests__/auth.test.ts::R1: login mapea la respuesta por kind` | `93c5257` test rojo → `a4b3841` feat verde |
+| R2 | `mobile-pet-tracker/src/api/__tests__/auth.test.ts::R2: register mapea la respuesta por kind` | `93c5257` test rojo → `a4b3841` feat verde |
 | R3 | `mobile-pet-tracker/src/providers/__tests__/auth-provider.test.tsx::R3: restaura la sesión desde secure store` | pendiente |
 | R4 | `mobile-pet-tracker/src/providers/__tests__/auth-provider.test.tsx::R4: signIn y signOut` + reviewer: grep `expo-secure-store` en `src/api/` vacío | pendiente |
 | R5 | `mobile-pet-tracker/src/app/__tests__/index.test.tsx::R5: splash navega según sesión` | pendiente |

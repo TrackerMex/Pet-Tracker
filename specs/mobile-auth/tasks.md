@@ -14,12 +14,12 @@ tags: [harness, spec, mobile]
 
 ## R1/R2 — src/api/auth.ts
 
-- [ ] (1) Escribir `src/api/__tests__/auth.test.ts`
+- [x] (1) Escribir `src/api/__tests__/auth.test.ts`
       (`describe('R1: ...')` + `describe('R2: ...')`, tabla de kinds de
       design §D2) y verlo ROJO
-- [ ] (2) Ampliar `src/api/types.ts` (D3) e implementar `src/api/auth.ts`
+- [x] (2) Ampliar `src/api/types.ts` (D3) e implementar `src/api/auth.ts`
       (D2) → verde
-- [ ] (3) Refactor con tests verdes (helper `apiUrl` compartido, cero
+- [x] (3) Refactor con tests verdes (helper `apiUrl` compartido, cero
       imports de storage/React en `src/api/`)
 
 ## R3/R4 — AuthProvider

@@ -13,4 +13,5 @@
 - Spec #33 **aprobada por humano** (commit `187e401`, 2026-08-20; checkbox marcado por el). Handoff a Codex entregado 2026-08-21.
 - Codex implementa R1-R10 en `feature/33-mobile-auth`; R11 (smoke Expo Go) lo cierra el humano. Mientras Codex trabaja, este agente no toca `mobile-pet-tracker/` ni `backend-pet-tracker/`.
 - Implementación iniciada por Codex: 2026-08-21 03:53 UTC. Plan: R1/R2 → R3/R4 → R6 → R5 → R7 → R8 → R9 → R10, con commits test-rojo antes de cada implementación y trazabilidad actualizada tras cada verde.
-- Siguiente: completar R1/R2 del cliente API mediante TDD.
+- R1/R2 completados por TDD: `93c5257` (test rojo) → `a4b3841` (cliente auth verde, 20 casos; lint y typecheck móviles verdes).
+- Siguiente: completar R3/R4 (SecureStore + AuthProvider) mediante TDD.
