@@ -24,3 +24,4 @@
 - R5 completado por TDD: `f49519b` (test rojo) → `b45c1a4` (placeholders Home/Map/Food/Profile verdes, 4 casos; typecheck móvil verde).
 - R6 completado por TDD: `95ecd19` (test rojo) → `9100e17` (botón HeroUI Sign out invoca `signOut`, 5 casos de screens; typecheck móvil verde).
 - R7 completado por TDD: `9f7d634` (4 tests rojos contra el stub) → `e306135` (5 tabs reicon en orden, estados filled/outline con tokens y navegación preventiva; 4 casos y typecheck móvil verdes).
+- R8 completado por TDD: `f30952c` (safe-area rojo, style ausente) → `cf99e35` (`bottom = insets.bottom + 12`; 5 casos de tab bar, lint y typecheck móviles verdes).
