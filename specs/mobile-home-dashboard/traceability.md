@@ -16,7 +16,7 @@ tags: [harness, spec, mobile]
 | R6 | `mobile-pet-tracker/src/app/(tabs)/__tests__/home.test.tsx::R6: home carga pets y selecciona` | `bfeb8a7 feat(mobile-home): load and select pets on home (R6)` |
 | R7 | `mobile-pet-tracker/src/app/(tabs)/__tests__/home.test.tsx::R7: pet card muestra el perfil` | `97c9167 feat(mobile-home): render selected pet profile card (R7)` |
 | R8 | `mobile-pet-tracker/src/app/(tabs)/__tests__/home.test.tsx::R8: collar card refleja el device` | `8375941 feat(mobile-home): render collar health states (R8)` |
-| R9 | `mobile-pet-tracker/src/app/(tabs)/__tests__/home.test.tsx::R9: summary degrada con gracia` | pendiente |
+| R9 | `mobile-pet-tracker/src/app/(tabs)/__tests__/home.test.tsx::R9: summary degrada con gracia` | `747938e feat(mobile-home): render graceful daily summary (R9)` |
 | R10 | `mobile-pet-tracker/src/app/(tabs)/__tests__/home.test.tsx::R10: last position enlaza al mapa` | pendiente |
 | R11 | `bun run typecheck` + `bun run lint` (exit 0) | pendiente |
 | R12 | `./init.sh` (exit 0), `bun run test` completo y diff de contención vacío + grep storage/React en `src/api/` | pendiente |
