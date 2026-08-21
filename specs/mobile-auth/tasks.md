@@ -24,13 +24,13 @@ tags: [harness, spec, mobile]
 
 ## R3/R4 — AuthProvider
 
-- [ ] (1) Instalar `expo-secure-store` (D1, excepción C4) y escribir
+- [x] (1) Instalar `expo-secure-store` (D1, excepción C4) y escribir
       `src/providers/__tests__/auth-provider.test.tsx`
       (`describe('R3: ...')` + `describe('R4: ...')`, mock de
       expo-secure-store) y verlo ROJO
-- [ ] (2) Implementar `src/providers/auth-provider.tsx` (contrato D4) →
+- [x] (2) Implementar `src/providers/auth-provider.tsx` (contrato D4) →
       verde
-- [ ] (3) Refactor; verificar `grep -r "expo-secure-store"
+- [x] (3) Refactor; verificar `grep -r "expo-secure-store"
       mobile-pet-tracker/src/api/` vacío
 
 ## R6 — Mudanza pantalla health (antes que R5: libera index.tsx)

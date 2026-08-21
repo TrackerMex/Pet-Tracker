@@ -10,8 +10,8 @@ tags: [harness, spec, mobile]
 |---|---|---|
 | R1 | `mobile-pet-tracker/src/api/__tests__/auth.test.ts::R1: login mapea la respuesta por kind` | `93c5257` test rojo → `a4b3841` feat verde |
 | R2 | `mobile-pet-tracker/src/api/__tests__/auth.test.ts::R2: register mapea la respuesta por kind` | `93c5257` test rojo → `a4b3841` feat verde |
-| R3 | `mobile-pet-tracker/src/providers/__tests__/auth-provider.test.tsx::R3: restaura la sesión desde secure store` | pendiente |
-| R4 | `mobile-pet-tracker/src/providers/__tests__/auth-provider.test.tsx::R4: signIn y signOut` + reviewer: grep `expo-secure-store` en `src/api/` vacío | pendiente |
+| R3 | `mobile-pet-tracker/src/providers/__tests__/auth-provider.test.tsx::R3: restaura la sesión desde secure store` | `f33103f` test rojo → `1008107` feat verde |
+| R4 | `mobile-pet-tracker/src/providers/__tests__/auth-provider.test.tsx::R4: signIn y signOut` + reviewer: grep `expo-secure-store` en `src/api/` vacío | `f33103f` test rojo → `1008107` feat verde |
 | R5 | `mobile-pet-tracker/src/app/__tests__/index.test.tsx::R5: splash navega según sesión` | pendiente |
 | R6 | `mobile-pet-tracker/src/app/__tests__/health.test.tsx` (suites de #31/#32 movidas, verde con solo imports cambiados) + reviewer: diff solo de paths | pendiente |
 | R7 | `mobile-pet-tracker/src/app/(auth)/__tests__/login.test.tsx::R7: login llama a la api y navega` | pendiente |
