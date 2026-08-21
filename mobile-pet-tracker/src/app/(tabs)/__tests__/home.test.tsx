@@ -37,7 +37,7 @@ jest.mock('expo-router', () => ({
 
 jest.mock('react-native-safe-area-context', () => ({
   ...jest.requireActual('react-native-safe-area-context'),
-  useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 24, left: 0 }),
+  useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
 }));
 
 const apiUrl = 'http://example.test/v1';
@@ -130,6 +130,16 @@ describe('R6: home carga pets y selecciona', () => {
 
     expect(screen.getByTestId('screen-home')).toBeVisible();
     expect(screen.getByTestId('home-loading')).toBeVisible();
+  });
+
+  it('pads the content below the status bar with the top safe-area inset', async () => {
+    mockListPets.mockReturnValue(pending<PetsState>());
+
+    await renderHome();
+
+    expect(screen.getByTestId('screen-home').props.contentContainerStyle).toEqual(
+      expect.objectContaining({ paddingTop: 52, paddingBottom: 120 }),
+    );
   });
 
   it('shows an error and retries the pet list', async () => {
