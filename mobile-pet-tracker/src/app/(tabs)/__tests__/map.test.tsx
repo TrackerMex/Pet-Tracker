@@ -15,7 +15,11 @@ import {
   type PositionsState,
 } from '../../../api/positions';
 import { getDayRoute, type DayRouteState } from '../../../api/trips';
-import type { LastPosition, PetProfile } from '../../../api/types';
+import type {
+  LastPosition,
+  PetProfile,
+  TripDetail,
+} from '../../../api/types';
 import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
 import {
   SelectedPetProvider,
@@ -115,6 +119,22 @@ function makeLastPosition(
     accuracy: 4.5,
     battery: 82,
     staleSeconds: 15,
+    ...overrides,
+  };
+}
+
+function makeTrip(overrides: Partial<TripDetail> = {}): TripDetail {
+  return {
+    index: 0,
+    startTs: 1787353200000,
+    endTs: 1787355000000,
+    distanceM: 800,
+    durationMin: 30,
+    pointCount: 2,
+    path: [
+      { lat: 19.4326, lng: -99.1332, ts: 1787353200000 },
+      { lat: 19.433, lng: -99.1328, ts: 1787355000000 },
+    ],
     ...overrides,
   };
 }
@@ -303,5 +323,70 @@ describe('R6: mapa y marker con la última posición', () => {
     expect(screen.getByTestId('map-empty')).toHaveTextContent(
       'No location data yet',
     );
+  });
+});
+
+describe('R7: ruta del día como polylines', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({
+      kind: 'ok',
+      position: makeLastPosition(),
+    });
+  });
+
+  it('renders one mapped polyline for every trip', async () => {
+    const first = makeTrip();
+    const second = makeTrip({
+      index: 1,
+      path: [
+        { lat: 19.44, lng: -99.12, ts: 1787360000000 },
+        { lat: 19.45, lng: -99.11, ts: 1787361800000 },
+      ],
+    });
+    mockGetDayRoute.mockResolvedValue({
+      kind: 'ok',
+      date: '2026-08-21',
+      trips: [first, second],
+    });
+
+    await renderMap();
+
+    await waitFor(() => expect(screen.getByTestId('map-route-0')).toBeVisible());
+    expect(screen.getByTestId('map-route-0').props.coordinates).toEqual([
+      { latitude: 19.4326, longitude: -99.1332 },
+      { latitude: 19.433, longitude: -99.1328 },
+    ]);
+    expect(screen.getByTestId('map-route-1').props.coordinates).toEqual([
+      { latitude: 19.44, longitude: -99.12 },
+      { latitude: 19.45, longitude: -99.11 },
+    ]);
+  });
+
+  it('renders no polyline for a valid day without trips', async () => {
+    mockGetDayRoute.mockResolvedValue({
+      kind: 'ok',
+      date: '2026-08-21',
+      trips: [],
+    });
+
+    await renderMap();
+
+    await waitFor(() => expect(screen.getByTestId('map-view')).toBeVisible());
+    expect(screen.queryAllByTestId(/^map-route-/)).toHaveLength(0);
+  });
+
+  it.each<DayRouteState>([
+    { kind: 'error' },
+    { kind: 'unreachable', message: 'network down' },
+  ])('keeps the position UI when route state is $kind', async (routeState) => {
+    mockGetDayRoute.mockResolvedValue(routeState);
+
+    await renderMap();
+
+    await waitFor(() => expect(screen.getByTestId('map-view')).toBeVisible());
+    expect(screen.getByTestId('map-marker')).toBeVisible();
+    expect(screen.queryAllByTestId(/^map-route-/)).toHaveLength(0);
+    expect(screen.getByTestId('stat-distance')).toHaveTextContent('—');
   });
 });
