@@ -105,12 +105,12 @@ describe('R8: tab bar flota con safe area', () => {
     mockEmit.mockReturnValue({ defaultPrevented: false });
   });
 
-  it('positions the bar twelve points above the bottom inset', async () => {
+  it('positions the bar twelve points above the bottom inset and inset 16 from each edge', async () => {
     await renderTabBar();
 
     const style = StyleSheet.flatten(
       screen.getByTestId('floating-tab-bar').props.style,
     );
-    expect(style).toMatchObject({ bottom: 46 });
+    expect(style).toMatchObject({ bottom: 46, left: 16, right: 16 });
   });
 });
