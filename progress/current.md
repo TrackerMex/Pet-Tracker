@@ -18,3 +18,5 @@
 - Codex completó R1–R12: 18 suites/129 tests móviles, typecheck, lint, guardas de contención y `./init.sh` verdes. R13 sigue reservado al smoke humano; #35 permanece `in_progress`.
 - Reviewer: **aprobado** R1–R12 (`progress/review_mobile-home-dashboard.md`) — init.sh exit 0 en corrida propia, 18 suites/129 tests móviles, contención vacía, traceability completa salvo R13.
 - Pendiente: R13 smoke humano en Expo Go contra backend real. #35 sigue `in_progress` hasta ese gate.
+- R13 aprobado por el humano con smoke real (mascota creada por API, collar ACT-001 reclamado, posiciones del simulador llegando); checkbox `3ee6815`. Dos observaciones de UI en el smoke.
+- Fixes post-smoke (fallback `implementer`, excepción CLAUDE.md, cambios triviales de 2 archivos): safe-area top en home (`84a7762`→`4e93518`) y stale-while-revalidate en use-api para eliminar el flash al cambiar de mascota (`f896be3`→`028ba86`); docs `64887cc`. Suite 132/132, lint/typecheck 0. Pendiente verificación visual del humano.
