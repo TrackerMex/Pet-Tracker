@@ -17,7 +17,7 @@ tags: [harness, spec, mobile]
 | R7 | `mobile-pet-tracker/src/app/(auth)/__tests__/login.test.tsx::R7: login llama a la api y navega` | `4cdb79a` test rojo → `e51e972` feat verde |
 | R8 | `mobile-pet-tracker/src/app/(auth)/__tests__/register.test.tsx::R8: register llama a la api y navega` | `3d2de99` test rojo → `765ec59` feat verde |
 | R9 | `mobile-pet-tracker/src/app/(auth)/__tests__/forgot.test.tsx::R9: forgot es un stub deshabilitado` | `3fe20ae` test rojo → `4b0c78c` feat verde |
-| R10 | reviewer ejecuta `./init.sh` (exit 0) y `git diff --stat main...HEAD -- backend-pet-tracker/ infra/ init.config.sh .github/` (vacío) | pendiente |
+| R10 | reviewer ejecuta `./init.sh` (exit 0) y `git diff --stat main...HEAD -- backend-pet-tracker/ infra/ init.config.sh .github/` (vacío) | `ef68ee4` verificación integral verde |
 | R11 | gate humano — smoke en **Expo Go** sobre Android físico (checkbox en requirements §R11; sin builds) | pendiente |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
