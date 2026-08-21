@@ -1,5 +1,6 @@
 import { render } from '@testing-library/react-native';
 import { Redirect, Tabs } from 'expo-router';
+import { isValidElement, type ReactNode } from 'react';
 
 import { FloatingTabBar } from '../../../components/floating-tab-bar';
 import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
@@ -18,7 +19,7 @@ jest.mock('../../../providers/auth-provider', () => ({
 jest.mock('expo-router', () => ({
   Redirect: jest.fn(() => null),
   Tabs: Object.assign(
-    jest.fn(({ children }: { children: React.ReactNode }) => children),
+    jest.fn(({ children }: { children: ReactNode }) => children),
     { Screen: jest.fn(() => null) },
   ),
 }));
@@ -84,6 +85,11 @@ describe('R1: (tabs) exige sesión', () => {
     const state = { index: 0, routes: [] };
     const navigation = {};
     const element = tabBar?.({ state, navigation } as never);
+
+    if (!isValidElement<{ state: typeof state; navigation: typeof navigation }>(element)) {
+      throw new Error('Expected tabBar to return a React element');
+    }
+
     expect(element?.type).toBe(FloatingTabBar);
     expect(element?.props).toEqual({ state, navigation });
   });
