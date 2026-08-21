@@ -605,7 +605,7 @@
   {
     "id": 33,
     "name": "mobile-auth",
-    "status": "in_progress",
+    "status": "done",
     "priority": "P1",
     "description": "Pantallas Splash, Login, Register y Forgot del diseño Figma sobre el stack de #32. Token en expo-secure-store; AuthProvider (context mínimo) con sesión; las funciones de src/api/ reciben token/fetchFn por parámetro, nunca leen storage. spec_author verifica contra backend-pet-tracker/src/modules/auth si existe forgot-password: si no existe, pantalla stub deshabilitada + feature backend al backlog. En esta spec se dispara la reevaluación de codegen OpenAPI (deuda #2 de #31); default: tipos a mano hasta consumir 3+ dominios.",
     "acceptance_criteria": [

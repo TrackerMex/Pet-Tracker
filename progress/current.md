@@ -23,4 +23,6 @@
 - R10 completado: suite móvil 9/9 (59 tests), `./init.sh` exit 0, contención de backend/infra/CI/init.config vacía; reporte en `progress/impl_mobile-auth.md`.
 - Codex completó R1-R10. R11 queda exclusivamente para el smoke humano con Expo Go; después corresponde lanzar `reviewer`. La feature permanece `in_progress` hasta esos gates.
 - Reviewer: **aprobado** (`progress/review_mobile-auth.md`, 2026-08-21) — R1-R10 verificados de forma independiente: init.sh exit 0, suite movil 59/59, contencion vacia, C2-C7 verdes.
-- Siguiente: **R11 gate humano** — smoke Expo Go (`bunx expo start --go`, backend arriba con `.env` y `EXPO_PUBLIC_API_URL` apuntando a la IP LAN). Con R11 OK: #33 `done` + PR.
+- **R11 aprobado por humano** (2026-08-21): todo funciona en Expo Go.
+- #33 marcada `done` en feature_list.json. PR abierto; merge lo hace el humano.
+- Siguiente feature: #34 `mobile-tabs-shell` (P1).
