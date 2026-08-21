@@ -19,7 +19,7 @@ tags: [harness, spec, mobile]
 | R9 | `src/app/(tabs)/__tests__/map.test.tsx::R9: polling con foco` | `9375e10 feat(mobile-map): poll while the tab is focused (R9)` |
 | R10 | `src/app/(tabs)/__tests__/map.test.tsx::R10: lost mode es stub deshabilitado` | `cbe518c feat(mobile-map): add disabled lost mode stub (R10)` |
 | R11 | `bun run --cwd mobile-pet-tracker typecheck` + `bun run --cwd mobile-pet-tracker lint` (exit 0, sin warnings) | `89ff665 fix(mobile-map): satisfy mobile checks (R3,R9,R11)` |
-| R12 | pendiente (verificación contención) | pendiente |
+| R12 | `./init.sh` exit 0 + suite móvil 21/193 + diff de contención y grep API vacíos | `6b00977 test(mobile-map): verify full map integration (R12)` |
 | R13 | pendiente (smoke humano Expo Go) | pendiente |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente" (R13 la
