@@ -18,6 +18,7 @@ import { getDayRoute, type DayRouteState } from '../../../api/trips';
 import type {
   LastPosition,
   PetProfile,
+  StoredPosition,
   TripDetail,
 } from '../../../api/types';
 import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
@@ -135,6 +136,24 @@ function makeTrip(overrides: Partial<TripDetail> = {}): TripDetail {
       { lat: 19.4326, lng: -99.1332, ts: 1787353200000 },
       { lat: 19.433, lng: -99.1328, ts: 1787355000000 },
     ],
+    ...overrides,
+  };
+}
+
+function makeStoredPosition(
+  overrides: Partial<StoredPosition> = {},
+): StoredPosition {
+  return {
+    ts: 1787353200000,
+    lat: 19.4326,
+    lng: -99.1332,
+    speedKmh: 4.2,
+    course: 90,
+    altitude: 2240,
+    sats: 9,
+    accuracyM: 4.5,
+    batteryPct: 82,
+    flags: [],
     ...overrides,
   };
 }
@@ -388,5 +407,144 @@ describe('R7: ruta del día como polylines', () => {
     expect(screen.getByTestId('map-marker')).toBeVisible();
     expect(screen.queryAllByTestId(/^map-route-/)).toHaveLength(0);
     expect(screen.getByTestId('stat-distance')).toHaveTextContent('—');
+  });
+});
+
+describe('R8: stats calculadas de positions y trips', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  });
+
+  it('uses the latest speed, trip total, fresh age, and live GPS', async () => {
+    mockGetLastPosition.mockResolvedValue({
+      kind: 'ok',
+      position: makeLastPosition({ staleSeconds: 15 }),
+    });
+    mockListPositions.mockResolvedValue({
+      kind: 'ok',
+      items: [
+        makeStoredPosition({ speedKmh: 99 }),
+        makeStoredPosition({ ts: 1787353260000, speedKmh: 12.34 }),
+      ],
+      nextCursor: null,
+    });
+    mockGetDayRoute.mockResolvedValue({
+      kind: 'ok',
+      date: '2026-08-21',
+      trips: [makeTrip({ distanceM: 800 }), makeTrip({ index: 1, distanceM: 1200 })],
+    });
+
+    await renderMap();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('stat-speed')).toHaveTextContent('12.3 km/h');
+    });
+    expect(screen.getByTestId('stat-distance')).toHaveTextContent('2.0 km');
+    expect(screen.getByTestId('stat-updated')).toHaveTextContent('Just now');
+    expect(screen.getByTestId('stat-gps')).toHaveTextContent('Live');
+    expect(screen.getByTestId('map-stats').props.style).toEqual(
+      expect.objectContaining({
+        position: 'absolute',
+        left: 16,
+        right: 16,
+        bottom: 120,
+      }),
+    );
+  });
+
+  it('shows stale GPS, empty metric fallbacks, and zero trip distance', async () => {
+    mockGetLastPosition.mockResolvedValue({
+      kind: 'ok',
+      position: makeLastPosition({ staleSeconds: 121 }),
+    });
+    mockListPositions.mockResolvedValue({
+      kind: 'ok',
+      items: [],
+      nextCursor: null,
+    });
+    mockGetDayRoute.mockResolvedValue({
+      kind: 'ok',
+      date: '2026-08-21',
+      trips: [],
+    });
+
+    await renderMap();
+
+    await waitFor(() => expect(screen.getByTestId('stat-gps')).toHaveTextContent('Stale'));
+    expect(screen.getByTestId('stat-speed')).toHaveTextContent('—');
+    expect(screen.getByTestId('stat-distance')).toHaveTextContent('0.0 km');
+    expect(screen.getByTestId('stat-updated')).toHaveTextContent('2m ago');
+  });
+
+  it('uses the last item even when its speed is null', async () => {
+    mockGetLastPosition.mockResolvedValue({
+      kind: 'ok',
+      position: makeLastPosition(),
+    });
+    mockListPositions.mockResolvedValue({
+      kind: 'ok',
+      items: [
+        makeStoredPosition({ speedKmh: 8 }),
+        makeStoredPosition({ speedKmh: null }),
+      ],
+      nextCursor: null,
+    });
+    mockGetDayRoute.mockResolvedValue({
+      kind: 'ok',
+      date: '2026-08-21',
+      trips: [],
+    });
+
+    await renderMap();
+
+    await waitFor(() => expect(screen.getByTestId('stat-speed')).toHaveTextContent('—'));
+  });
+
+  it.each([
+    [3599, '59m ago'],
+    [3600, '1h ago'],
+    [7500, '2h ago'],
+  ])('formats age %i seconds as %s', async (staleSeconds, expected) => {
+    mockGetLastPosition.mockResolvedValue({
+      kind: 'ok',
+      position: makeLastPosition({ staleSeconds }),
+    });
+    mockListPositions.mockResolvedValue({
+      kind: 'ok',
+      items: [],
+      nextCursor: null,
+    });
+    mockGetDayRoute.mockResolvedValue({
+      kind: 'ok',
+      date: '2026-08-21',
+      trips: [],
+    });
+
+    await renderMap();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('stat-updated')).toHaveTextContent(expected);
+    });
+  });
+
+  it('shows no signal and no age when the collar has never reported', async () => {
+    mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: null });
+    mockListPositions.mockResolvedValue({
+      kind: 'ok',
+      items: [],
+      nextCursor: null,
+    });
+    mockGetDayRoute.mockResolvedValue({
+      kind: 'ok',
+      date: '2026-08-21',
+      trips: [],
+    });
+
+    await renderMap();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('stat-gps')).toHaveTextContent('No signal');
+    });
+    expect(screen.getByTestId('stat-updated')).toHaveTextContent('—');
   });
 });
