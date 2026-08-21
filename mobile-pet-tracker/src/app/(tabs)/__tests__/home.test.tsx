@@ -241,3 +241,71 @@ describe('R7: pet card muestra el perfil', () => {
     expect(mockGetPet).toHaveBeenCalledTimes(2);
   });
 });
+
+describe('R8: collar card refleja el device', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+  });
+
+  it('shows the health-only free state without a battery row', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet({ device: null }) });
+
+    await renderHome();
+
+    await waitFor(() => expect(screen.getByTestId('collar-card')).toBeVisible());
+    expect(screen.getByTestId('collar-status')).toHaveTextContent('Free');
+    expect(screen.getByText('No collar — health only')).toBeVisible();
+    expect(screen.queryByTestId('collar-battery')).toBeNull();
+  });
+
+  it('shows an online collar and its battery percentage', async () => {
+    mockGetPet.mockResolvedValue({
+      kind: 'ok',
+      pet: makePet({
+        device: {
+          model: 'PetTrack One',
+          batteryPct: 82,
+          connectivity: 'online',
+          lastMessageAt: '2026-08-21T12:00:00.000Z',
+          esn: 'ACT-001',
+        },
+      }),
+    });
+
+    await renderHome();
+
+    await waitFor(() => expect(screen.getByTestId('collar-card')).toBeVisible());
+    expect(screen.getByTestId('collar-status')).toHaveTextContent('Online');
+    expect(screen.getByTestId('collar-battery')).toHaveTextContent('82%');
+  });
+
+  it('treats an unknown connection as offline and preserves missing battery', async () => {
+    mockGetPet.mockResolvedValue({
+      kind: 'ok',
+      pet: makePet({
+        device: {
+          model: null,
+          batteryPct: null,
+          connectivity: null,
+          lastMessageAt: null,
+          esn: null,
+        },
+      }),
+    });
+
+    await renderHome();
+
+    await waitFor(() => expect(screen.getByTestId('collar-card')).toBeVisible());
+    expect(screen.getByTestId('collar-status')).toHaveTextContent('Offline');
+    expect(screen.getByTestId('collar-battery')).toHaveTextContent('—');
+  });
+});
