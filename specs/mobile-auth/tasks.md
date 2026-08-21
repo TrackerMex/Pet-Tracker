@@ -62,13 +62,13 @@ tags: [harness, spec, mobile]
 
 ## R8 — Pantalla Register
 
-- [ ] (1) `src/app/(auth)/__tests__/register.test.tsx`
+- [x] (1) `src/app/(auth)/__tests__/register.test.tsx`
       (`describe('R8: ...')`: submit ok → login encadenado → signIn +
       replace; email-taken; validation por path; submit deshabilitado sin
       terms) y verlo ROJO
-- [ ] (2) Implementar `src/app/(auth)/register.tsx` (campos/testIDs D7) →
+- [x] (2) Implementar `src/app/(auth)/register.tsx` (campos/testIDs D7) →
       verde
-- [ ] (3) Refactor
+- [x] (3) Refactor
 
 ## R9 — Pantalla Forgot (stub)
 
