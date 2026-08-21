@@ -21,3 +21,4 @@
 - R2 completado por TDD: `c1dc47d` (test rojo) → `b3028d1` (guard inverso de `(auth)` verde, 3 casos; typecheck móvil verde).
 - R3 completado con la excepción C4 aprobada: `d3992fb` (3 asserts `/home` rojos) → `2995514` (3 hrefs `/home` verdes; 18 tests y typecheck móvil verdes). `git diff --word-diff` confirmó que no cambió nada más en esos archivos.
 - R4 completado con la excepción C4 aprobada: `0a55b28` mueve pantalla y suite Health a `(tabs)` (renames 96%/95%); solo cambian 3 imports/paths, los asserts quedan intactos; 6 tests y typecheck móvil verdes.
+- R5 completado por TDD: `f49519b` (test rojo) → `b45c1a4` (placeholders Home/Map/Food/Profile verdes, 4 casos; typecheck móvil verde).
