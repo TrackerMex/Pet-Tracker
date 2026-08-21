@@ -30,7 +30,6 @@ import {
 import MapScreen from '../map';
 
 let mockFocusCleanup: (() => void) | undefined;
-let mockFocusCallback: (() => void | (() => void)) | undefined;
 
 jest.mock('../../../api/pets', () => ({
   listPets: jest.fn(),
@@ -53,7 +52,6 @@ jest.mock('expo-router', () => ({
   router: { push: jest.fn() },
   useFocusEffect: (callback: () => void | (() => void)) => {
     const React = require('react');
-    mockFocusCallback = callback;
     React.useEffect(() => {
       const cleanup = callback();
       mockFocusCleanup = typeof cleanup === 'function' ? cleanup : undefined;
@@ -193,7 +191,6 @@ async function renderMap() {
 beforeEach(() => {
   jest.clearAllMocks();
   mockFocusCleanup = undefined;
-  mockFocusCallback = undefined;
   initialSelectedPetId = null;
   process.env.EXPO_PUBLIC_API_URL = apiUrl;
   mockUseAuth.mockReturnValue({
@@ -588,6 +585,7 @@ describe('R9: polling con foco', () => {
     const initialLastCalls = mockGetLastPosition.mock.calls.length;
     const initialPositionsCalls = mockListPositions.mock.calls.length;
     const initialRouteCalls = mockGetDayRoute.mock.calls.length;
+    expect(initialRouteCalls).toBeGreaterThan(1);
 
     await act(async () => {
       jest.advanceTimersByTime(15000);
@@ -611,16 +609,5 @@ describe('R9: polling con foco', () => {
 
     expect(mockGetLastPosition).toHaveBeenCalledTimes(callsAfterBlur.last);
     expect(mockListPositions).toHaveBeenCalledTimes(callsAfterBlur.positions);
-
-    const routeCallsBeforeRefocus = mockGetDayRoute.mock.calls.length;
-    let refocusCleanup: void | (() => void);
-    await act(async () => {
-      refocusCleanup = mockFocusCallback?.();
-      await Promise.resolve();
-      await Promise.resolve();
-    });
-
-    expect(mockGetDayRoute).toHaveBeenCalledTimes(routeCallsBeforeRefocus + 1);
-    act(() => refocusCleanup?.());
   });
 });

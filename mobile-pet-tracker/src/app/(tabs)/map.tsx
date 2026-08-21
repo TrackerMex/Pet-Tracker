@@ -1,4 +1,5 @@
 import { Button, Card, Spinner } from 'heroui-native';
+import { useFocusEffect } from 'expo-router';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import { useCallback, useEffect, useMemo } from 'react';
 import { Text, View } from 'react-native';
@@ -36,6 +37,7 @@ const DEFAULT_REGION = {
   longitudeDelta: 0.01,
 };
 const STALE_SECONDS = 120;
+const POLL_MS = 15000;
 
 export default function MapScreen() {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
@@ -71,6 +73,26 @@ export default function MapScreen() {
   const last = useApi(lastFn);
   const positions = useApi(positionsFn);
   const route = useApi(routeFn);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!selectedPetId || last.data?.kind === 'no-tracking') return;
+
+      route.refetch();
+      const intervalId = setInterval(() => {
+        last.refetch();
+        positions.refetch();
+      }, POLL_MS);
+
+      return () => clearInterval(intervalId);
+    }, [
+      last.data?.kind,
+      last.refetch,
+      positions.refetch,
+      route.refetch,
+      selectedPetId,
+    ]),
+  );
 
   useEffect(() => {
     if (pets.data?.kind !== 'ok' || pets.data.pets.length === 0) return;
