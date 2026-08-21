@@ -96,6 +96,8 @@ describe('R3: getDayRoute compone lista y detalles por kind', () => {
     const routePromise = getDayRoute(baseUrl, 'jwt-token', 'pet-1', fetchFn);
     await Promise.resolve();
     await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
 
     expect(fetchFn).toHaveBeenCalledTimes(3);
     detailResolvers[0](response(200, { trip: trips[0] }));
