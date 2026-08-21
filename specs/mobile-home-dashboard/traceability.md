@@ -15,7 +15,7 @@ tags: [harness, spec, mobile]
 | R5 | `mobile-pet-tracker/src/providers/__tests__/selected-pet-provider.test.tsx::R5: SelectedPetProvider expone la selección` + caso de montaje en `(tabs)/__tests__/layout.test.tsx` | `cb91276 feat(mobile-home): share selected pet across tabs (R5)` |
 | R6 | `mobile-pet-tracker/src/app/(tabs)/__tests__/home.test.tsx::R6: home carga pets y selecciona` | `bfeb8a7 feat(mobile-home): load and select pets on home (R6)` |
 | R7 | `mobile-pet-tracker/src/app/(tabs)/__tests__/home.test.tsx::R7: pet card muestra el perfil` | `97c9167 feat(mobile-home): render selected pet profile card (R7)` |
-| R8 | `mobile-pet-tracker/src/app/(tabs)/__tests__/home.test.tsx::R8: collar card refleja el device` | pendiente |
+| R8 | `mobile-pet-tracker/src/app/(tabs)/__tests__/home.test.tsx::R8: collar card refleja el device` | `8375941 feat(mobile-home): render collar health states (R8)` |
 | R9 | `mobile-pet-tracker/src/app/(tabs)/__tests__/home.test.tsx::R9: summary degrada con gracia` | pendiente |
 | R10 | `mobile-pet-tracker/src/app/(tabs)/__tests__/home.test.tsx::R10: last position enlaza al mapa` | pendiente |
 | R11 | `bun run typecheck` + `bun run lint` (exit 0) | pendiente |
