@@ -624,7 +624,7 @@
   {
     "id": 34,
     "name": "mobile-tabs-shell",
-    "status": "in_progress",
+    "status": "done",
     "priority": "P1",
     "description": "Shell de navegación: layout groups (auth)/(tabs) en expo-router con guard de sesión, tab bar flotante custom (estilo Dribbble) con 5 tabs: Home, Map, Health, Food, Profile (placeholders). Iconos reicon. Safe-area correcta.",
     "acceptance_criteria": [

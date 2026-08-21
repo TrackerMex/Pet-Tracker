@@ -1,10 +1,9 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-08-21
-**Features completadas**: 31/44 (`feature_list.json`)
-**En progreso**: #33 `mobile-auth`; Codex completó R1-R10 con `init.sh` verde.
-Faltan el smoke humano R11 en Expo Go y la revisión antes de marcarla `done`.
-**Pendientes**: 12 (#18 y #34-#44).
+**Features completadas**: 33/44 (`feature_list.json`)
+**En progreso**: ninguna. #34 `mobile-tabs-shell` cerrada; PR pendiente de merge humano.
+**Pendientes**: 11 (#18 y #35-#44).
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
 desde 2026-08-10. Hay recursos vivos en la cuenta, aunque hoy sin coste.
@@ -73,14 +72,29 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
-- **`mobile-auth` (#33) in_progress** (2026-08-21): Codex completó R1-R10
-  con historial TDD rojo→verde, token exclusivo en SecureStore desde
-  `AuthProvider`, cliente Login/Register puro con `fetchFn` inyectable,
-  splash por sesión, health movido a `/health` y pantallas Login/Register/
-  Forgot. La suite móvil suma 9 suites y 59 tests; `./init.sh` completo terminó
-  verde y el diff de contención no toca backend, infra, CI ni `init.config.sh`.
-  R11 queda para el smoke humano con `bunx expo start --go`; después corresponde
-  el `reviewer`. Ver `progress/impl_mobile-auth.md`.
+- **`mobile-tabs-shell` (#34) done** (2026-08-21): shell de navegación móvil —
+  layout groups `(auth)`/`(tabs)` con guard de sesión en ambos sentidos,
+  `FloatingTabBar` custom (5 tabs con iconos reicon, safe-area
+  `insets.bottom + 12`), placeholders Home/Map/Food/Profile con `Sign out`
+  (salda la deuda de logout de #33), health mudado a `(tabs)/` conservando URL
+  y destino post-login `/home` (excepción C4 documentada, 3 hrefs + 3 asserts
+  de #33). Cero dependencias nuevas, 100% Expo Go. Codex R1-R10 con TDD
+  rojo→verde; `reviewer` rechazó una vez por C6 (frontmatter `draft`, fix
+  documental del leader) y aprobó en re-revisión. Fix post-smoke: la tab bar
+  salía pegada a la izquierda en Android físico — uniwind no aplicaba
+  `left-4 right-4` en runtime; posicionamiento horizontal movido a style
+  inline (`761f2ae`→`c434ed9`, fallback `implementer` por cambio trivial).
+  R11 (smoke Expo Go) aprobado por el humano con el fix verificado
+  (`cb45907`). Suite móvil 13 suites / 75 tests. Ver
+  `progress/impl_mobile-tabs-shell.md` y `progress/review_mobile-tabs-shell.md`.
+
+- **`mobile-auth` (#33) done** (2026-08-21): cliente auth tipado a mano con
+  `fetchFn` inyectable, token exclusivo en SecureStore desde `AuthProvider`,
+  splash por sesión, pantallas Login/Register/Forgot (stub deshabilitado —
+  backend sin forgot-password, #44 al backlog), health movido a `/health`.
+  Codex R1-R10 TDD rojo→verde (59 tests), `reviewer` aprobó, R11 smoke Expo Go
+  aprobado por el humano. PR #63 mergeado. Ver `progress/impl_mobile-auth.md`
+  y `progress/review_mobile-auth.md`.
 
 - **`device-subscriptions` (#25) done** (2026-08-17): el entitlement cuelga del
   collar mediante `device_subscriptions`; un único predicado SQL alimenta
@@ -740,13 +754,22 @@ debe listar las 4 URLs de cola.
 
 ## Última sesión
 
+- **2026-08-21 (2)** — #34 `mobile-tabs-shell` **cerrada** (33/44). Ciclo
+  completo en un día: spec (`Tabs` de expo-router + tab bar custom, cero deps
+  nuevas) → gate humano (`ae852b7`) → handoff a Codex CLI → TDD rojo→verde
+  R1-R10 → review (un rechazo documental C6, frontmatter `draft`; re-revisión
+  aprobada) → smoke R11 del humano en Expo Go. Durante el smoke: sesión de
+  debugging de entorno en máquina nueva del humano (Postgres nativo de Windows
+  compitiendo por el puerto 5432 → 28P01, y volumen Docker vacío → 42P01;
+  fixes: detener servicio nativo + `drizzle-kit migrate` con `DATABASE_URL`
+  exportada a mano porque drizzle-kit no lee `../.env`) y fix post-smoke del
+  centrado de la tab bar (uniwind no aplicaba `left-4 right-4` en runtime;
+  style inline, fallback `implementer` documentado). Siguiente: #35
+  `mobile-home-dashboard` (P1).
+
 - **2026-08-21** — Implementación de #33 `mobile-auth` completada por Codex
-  para R1-R10. Se añadieron cliente auth tipado a mano, sesión persistente en
-  `expo-secure-store`, splash, Login, Register y Forgot stub; health pasó a
-  `/health`. Cada bloque nuevo conserva commit rojo antes del verde y la
-  trazabilidad registra todos los hashes. `./init.sh` exit 0; R11 no se ejecutó
-  porque es el smoke humano en Expo Go. La feature permanece `in_progress`
-  hasta smoke y review. Informe: `progress/impl_mobile-auth.md`.
+  para R1-R10, review aprobado, smoke R11 aprobado y **cerrada** (32/44);
+  PR #63 mergeado por el humano. Informe: `progress/impl_mobile-auth.md`.
 
 - **2026-08-19** — #31 `mobile-app-scaffold` **cerrada** (30/31) — primera
   feature móvil del monorepo. Decisión humana: la app vive en
