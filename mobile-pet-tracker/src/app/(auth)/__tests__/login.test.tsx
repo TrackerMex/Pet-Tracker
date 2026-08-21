@@ -61,7 +61,7 @@ describe('R7: login llama a la api y navega', () => {
       password: 'correct horse',
     });
     expect(mockSignIn).toHaveBeenCalledWith('jwt-token');
-    expect(mockRouter.replace).toHaveBeenCalledWith('/health');
+    expect(mockRouter.replace).toHaveBeenCalledWith('/home');
   });
 
   it.each<[LoginState, string]>([
