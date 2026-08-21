@@ -213,6 +213,7 @@ export default function MapScreen() {
               right: 16,
               bottom: insets.bottom + 96,
             }}
+            className="gap-2"
           >
             <Card className="p-4">
               <View className="flex-row justify-between gap-2">
@@ -254,6 +255,14 @@ export default function MapScreen() {
                 </View>
               </View>
             </Card>
+            <Button
+              testID="lost-mode-button"
+              isDisabled
+              accessibilityState={{ disabled: true }}
+            >
+              Activate Lost Mode
+            </Button>
+            <Text className="text-center text-xs text-muted">Coming soon</Text>
           </View>
         </>
       ) : null}
