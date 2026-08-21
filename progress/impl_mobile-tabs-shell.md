@@ -84,3 +84,18 @@ y 95% de la suite, con solo imports/paths modificados.
 Los cambios locales preexistentes en `.gitignore`, modos de `init.sh` y
 `init.config.sh`, `.agents/`, skills y `skills-lock.json` se preservaron y no
 se incluyeron en los commits de mobile-tabs-shell.
+
+## Fix post-smoke
+
+- Reporte humano (Android físico, Expo Go): la tab bar flotante aparecía
+  pegada a la izquierda, no centrada. Causa: las utilidades `left-4 right-4`
+  de uniwind no se aplicaban en runtime; el View absoluto colapsaba a su
+  contenido.
+- Fix mínimo en `mobile-pet-tracker/src/components/floating-tab-bar.tsx`:
+  posicionamiento horizontal movido al style inline
+  (`{ bottom: insets.bottom + 12, left: 16, right: 16 }`), quitando
+  `left-4 right-4` del className. Ningún otro archivo de app tocado.
+- TDD: `761f2ae` test rojo (assert `left: 16, right: 16` en R8) →
+  `c434ed9` fix verde.
+- Verificación: `bun run test` 13 suites / 75 tests verdes; `bun run lint`
+  y `bun run typecheck` exit 0.

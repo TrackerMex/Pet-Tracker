@@ -19,6 +19,7 @@ tags: [harness, spec, mobile]
 | R9 | `typedRoutes` activo; `.expo/types/router.d.ts` regenerado con los nuevos hrefs; `bun run --cwd mobile-pet-tracker typecheck` y `lint` (exit 0) | `c5a84d3` verificación de tipos verde |
 | R10 | `./init.sh` (exit 0), suite móvil completa (13 suites/75 tests) y diff de contención vacío | `9e6af4b` verificación integral verde |
 | R11 | pendiente (checkbox humano en requirements.md) | pendiente |
+| R8 (fix post-R11) | `mobile-pet-tracker/src/components/__tests__/floating-tab-bar.test.tsx::R8` amplía assert a `left: 16, right: 16` en style inline (uniwind `left-4/right-4` no aplicaba en Android físico) | `761f2ae` test rojo → `c434ed9` fix verde |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
 Convención de commit: `feat(mobile): <desc> (R1,R2)`.
