@@ -35,11 +35,11 @@ tags: [harness, spec, mobile]
 
 ## R6 — Mudanza pantalla health (antes que R5: libera index.tsx)
 
-- [ ] (1) Red de seguridad: suite existente verde antes de mover
-- [ ] (2) `git mv`-equivalente: `src/app/index.tsx` → `src/app/health.tsx`
+- [x] (1) Red de seguridad: suite existente verde antes de mover
+- [x] (2) `git mv`-equivalente: `src/app/index.tsx` → `src/app/health.tsx`
       y `src/app/__tests__/index.test.tsx` → `health.test.tsx`, cambiando
       SOLO imports/paths (asserts intactos)
-- [ ] (3) Suite `health.test.tsx` verde
+- [x] (3) Suite `health.test.tsx` verde
 
 ## R5 — Splash + providers en _layout
 

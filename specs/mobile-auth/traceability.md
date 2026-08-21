@@ -13,7 +13,7 @@ tags: [harness, spec, mobile]
 | R3 | `mobile-pet-tracker/src/providers/__tests__/auth-provider.test.tsx::R3: restaura la sesión desde secure store` | `f33103f` test rojo → `1008107` feat verde |
 | R4 | `mobile-pet-tracker/src/providers/__tests__/auth-provider.test.tsx::R4: signIn y signOut` + reviewer: grep `expo-secure-store` en `src/api/` vacío | `f33103f` test rojo → `1008107` feat verde |
 | R5 | `mobile-pet-tracker/src/app/__tests__/index.test.tsx::R5: splash navega según sesión` | pendiente |
-| R6 | `mobile-pet-tracker/src/app/__tests__/health.test.tsx` (suites de #31/#32 movidas, verde con solo imports cambiados) + reviewer: diff solo de paths | pendiente |
+| R6 | `mobile-pet-tracker/src/app/__tests__/health.test.tsx` (suites de #31/#32 movidas, verde con solo imports cambiados) + reviewer: diff solo de paths | `5102370` feat verde (rename 100% pantalla, 98% suite) |
 | R7 | `mobile-pet-tracker/src/app/(auth)/__tests__/login.test.tsx::R7: login llama a la api y navega` | pendiente |
 | R8 | `mobile-pet-tracker/src/app/(auth)/__tests__/register.test.tsx::R8: register llama a la api y navega` | pendiente |
 | R9 | `mobile-pet-tracker/src/app/(auth)/__tests__/forgot.test.tsx::R9: forgot es un stub deshabilitado` | pendiente |
