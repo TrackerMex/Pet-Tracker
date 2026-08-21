@@ -14,7 +14,7 @@ tags: [harness, spec, mobile]
 | R4 | `mobile-pet-tracker/src/providers/__tests__/auth-provider.test.tsx::R4: signIn y signOut` + reviewer: grep `expo-secure-store` en `src/api/` vacío | `f33103f` test rojo → `1008107` feat verde |
 | R5 | `mobile-pet-tracker/src/app/__tests__/index.test.tsx::R5: splash navega según sesión` | `26aa7f1` test rojo → `fdd96b1` feat verde |
 | R6 | `mobile-pet-tracker/src/app/__tests__/health.test.tsx` (suites de #31/#32 movidas, verde con solo imports cambiados) + reviewer: diff solo de paths | `5102370` feat verde (rename 100% pantalla, 98% suite) |
-| R7 | `mobile-pet-tracker/src/app/(auth)/__tests__/login.test.tsx::R7: login llama a la api y navega` | pendiente |
+| R7 | `mobile-pet-tracker/src/app/(auth)/__tests__/login.test.tsx::R7: login llama a la api y navega` | `4cdb79a` test rojo → `e51e972` feat verde |
 | R8 | `mobile-pet-tracker/src/app/(auth)/__tests__/register.test.tsx::R8: register llama a la api y navega` | pendiente |
 | R9 | `mobile-pet-tracker/src/app/(auth)/__tests__/forgot.test.tsx::R9: forgot es un stub deshabilitado` | pendiente |
 | R10 | reviewer ejecuta `./init.sh` (exit 0) y `git diff --stat main...HEAD -- backend-pet-tracker/ infra/ init.config.sh .github/` (vacío) | pendiente |

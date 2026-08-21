@@ -17,4 +17,5 @@
 - R3/R4 completados por TDD: `f33103f` (dependencia + test rojo) → `1008107` (AuthProvider verde, 4 casos; storage ausente de `src/api/`; lint y typecheck móviles verdes).
 - R6 completado: `5102370` (health movido a `/health`; pantalla 100% rename, suite 98% rename por el único cambio de import; 6 tests verdes antes y después).
 - R5 completado por TDD: `26aa7f1` (test rojo) → `fdd96b1` (splash por sesión + AuthProvider en layout; 3 tests, lint y typecheck móviles verdes).
-- Siguiente: implementar la pantalla Login (R7) mediante TDD.
+- R7 completado por TDD: `4cdb79a` (test rojo) → `e51e972` (Login verde, 7 casos; todos los kinds, signIn/navegación y links; lint/typecheck y grep de estilos verdes).
+- Siguiente: implementar la pantalla Register (R8) mediante TDD.

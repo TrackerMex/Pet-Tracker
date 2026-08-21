@@ -53,12 +53,12 @@ tags: [harness, spec, mobile]
 
 ## R7 — Pantalla Login
 
-- [ ] (1) `src/app/(auth)/__tests__/login.test.tsx`
+- [x] (1) `src/app/(auth)/__tests__/login.test.tsx`
       (`describe('R7: ...')`: submit ok → signIn + replace('/health');
       cada kind de error → su mensaje; links) y verlo ROJO
-- [ ] (2) Implementar `src/app/(auth)/login.tsx` (estructura/testIDs D6) →
+- [x] (2) Implementar `src/app/(auth)/login.tsx` (estructura/testIDs D6) →
       verde
-- [ ] (3) Refactor (cero StyleSheet/hex — grep del reviewer)
+- [x] (3) Refactor (cero StyleSheet/hex — grep del reviewer)
 
 ## R8 — Pantalla Register
 
