@@ -1,9 +1,18 @@
 import { Image } from 'expo-image';
+import { router } from 'expo-router';
 import { Button, Card, Skeleton, Spinner } from 'heroui-native';
 import { useCallback, useEffect, useMemo } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Battery, Map, Moon, Walk, Wifi, WifiOff } from 'reicon-react-native';
+import {
+  Battery,
+  ChevronRight,
+  Map,
+  Moon,
+  Walk,
+  Wifi,
+  WifiOff,
+} from 'reicon-react-native';
 
 import { getDailyActivity } from '../../api/activity';
 import { getPet, listPets, type PetsState } from '../../api/pets';
@@ -23,6 +32,12 @@ function fmtMinutes(minutes: number | null): string {
 
 function fmtKm(meters: number | null): string {
   return meters === null ? '—' : `${(meters / 1000).toFixed(1)} km`;
+}
+
+function fmtLastSeen(iso: string | null): string {
+  return iso === null
+    ? 'No location data yet'
+    : `Last seen ${new Date(iso).toLocaleString()}`;
 }
 
 export default function HomeScreen() {
@@ -270,6 +285,26 @@ export default function HomeScreen() {
             </View>
           ) : null}
         </Card>
+      ) : null}
+
+      {detail.data?.kind === 'ok' && detail.data.pet.device ? (
+        <Pressable
+          accessibilityRole="button"
+          testID="last-position-card"
+          className="gap-2 rounded-2xl bg-surface p-4"
+          onPress={() => router.push('/map')}
+        >
+          <View className="flex-row items-center justify-between">
+            <View className="flex-row items-center gap-2">
+              <Map size={20} />
+              <Text className="font-semibold text-foreground">View on map</Text>
+            </View>
+            <ChevronRight size={20} />
+          </View>
+          <Text testID="last-position-time" className="text-muted">
+            {fmtLastSeen(detail.data.pet.lastCommunicationAt)}
+          </Text>
+        </Pressable>
       ) : null}
     </ScrollView>
   );
