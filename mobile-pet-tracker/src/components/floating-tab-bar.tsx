@@ -45,8 +45,8 @@ export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
   return (
     <View
       testID="floating-tab-bar"
-      className="absolute left-4 right-4 flex-row items-center justify-around rounded-full border border-border bg-surface px-2 py-3 shadow-lg"
-      style={{ bottom: insets.bottom + 12 }}
+      className="absolute flex-row items-center justify-around rounded-full border border-border bg-surface px-2 py-3 shadow-lg"
+      style={{ bottom: insets.bottom + 12, left: 16, right: 16 }}
     >
       {TABS.map(({ name, label, Icon }) => {
         const route = state.routes.find((candidate) => candidate.name === name);
