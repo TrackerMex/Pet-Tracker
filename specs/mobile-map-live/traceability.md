@@ -10,7 +10,7 @@ tags: [harness, spec, mobile]
 |---|---|---|
 | R1 | `src/api/__tests__/positions.test.ts::R1: getLastPosition mapea la respuesta por kind` | `df5050f feat(mobile-map): load last position states (R1)` |
 | R2 | `src/api/__tests__/positions.test.ts::R2: listPositions mapea la respuesta por kind` | `251eaa0 feat(mobile-map): load position history states (R2)` |
-| R3 | pendiente | pendiente |
+| R3 | `src/api/__tests__/trips.test.ts::R3: getDayRoute compone lista y detalles por kind` | `43e4c37 feat(mobile-map): compose day route details (R3)` |
 | R4 | pendiente | pendiente |
 | R5 | pendiente | pendiente |
 | R6 | pendiente | pendiente |
