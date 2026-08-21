@@ -88,3 +88,44 @@ export interface WeekComparison {
   activeMinutes: number | null;
   walkCount: number | null;
 }
+
+export interface LastPosition {
+  lat: number;
+  lng: number;
+  ts: number;
+  accuracy: number | null;
+  battery: number | null;
+  staleSeconds: number;
+}
+
+export interface StoredPosition {
+  ts: number;
+  lat: number;
+  lng: number;
+  speedKmh: number | null;
+  course: number | null;
+  altitude: number | null;
+  sats: number | null;
+  accuracyM: number | null;
+  batteryPct: number | null;
+  flags: string[];
+}
+
+export interface TripPoint {
+  lat: number;
+  lng: number;
+  ts: number;
+}
+
+export interface TripSummary {
+  index: number;
+  startTs: number;
+  endTs: number;
+  distanceM: number;
+  durationMin: number;
+  pointCount: number;
+}
+
+export interface TripDetail extends TripSummary {
+  path: TripPoint[];
+}
