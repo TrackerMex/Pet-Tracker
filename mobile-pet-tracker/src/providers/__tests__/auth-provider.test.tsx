@@ -42,7 +42,7 @@ describe('R3: restaura la sesión desde secure store', () => {
       }),
     );
 
-    render(
+    await render(
       <AuthProvider>
         <AuthProbe />
       </AuthProvider>,
@@ -63,7 +63,7 @@ describe('R3: restaura la sesión desde secure store', () => {
   it('becomes unauthenticated when no token is stored', async () => {
     getItemAsync.mockResolvedValue(null);
 
-    render(
+    await render(
       <AuthProvider>
         <AuthProbe />
       </AuthProvider>,
@@ -78,7 +78,7 @@ describe('R3: restaura la sesión desde secure store', () => {
   it('falls back to unauthenticated when storage cannot be read', async () => {
     getItemAsync.mockRejectedValue(new Error('keychain unavailable'));
 
-    render(
+    await render(
       <AuthProvider>
         <AuthProbe />
       </AuthProvider>,
@@ -100,7 +100,7 @@ describe('R4: signIn y signOut', () => {
   });
 
   it('persists sign-in and deletes sign-out state', async () => {
-    render(
+    await render(
       <AuthProvider>
         <AuthProbe />
       </AuthProvider>,
@@ -110,7 +110,9 @@ describe('R4: signIn y signOut', () => {
       expect(screen.getByTestId('auth-status')).toHaveTextContent('unauthenticated');
     });
 
-    fireEvent.press(screen.getByText('Sign in'));
+    await act(async () => {
+      fireEvent.press(screen.getByText('Sign in'));
+    });
 
     await waitFor(() => {
       expect(setItemAsync).toHaveBeenCalledWith('auth_token', 'new-token');
@@ -118,7 +120,9 @@ describe('R4: signIn y signOut', () => {
       expect(screen.getByTestId('auth-token')).toHaveTextContent('new-token');
     });
 
-    fireEvent.press(screen.getByText('Sign out'));
+    await act(async () => {
+      fireEvent.press(screen.getByText('Sign out'));
+    });
 
     await waitFor(() => {
       expect(deleteItemAsync).toHaveBeenCalledWith('auth_token');
