@@ -641,7 +641,7 @@
   {
     "id": 35,
     "name": "mobile-home-dashboard",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P1",
     "description": "Pantalla Home del diseño: card de mascota (foto, nombre, raza), estado del collar (online/batería desde devices), Today's Summary (sleep/activity desde activity), selector multi-mascota (SelectedPetProvider, context mínimo). SIN mini-mapa en v1 (card de última posición que enlaza al tab Map; el mini-mapa es follow-up tras #36). Si se repite boilerplate de fetch, hook useApi de ~30 líneas máximo, sin react-query.",
     "acceptance_criteria": [
