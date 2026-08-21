@@ -1,7 +1,8 @@
-import { Button, Spinner } from 'heroui-native';
+import { Button, Card, Spinner } from 'heroui-native';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import { useCallback, useEffect, useMemo } from 'react';
 import { Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { listPets, type PetsState } from '../../api/pets';
 import { getLastPosition, listPositions } from '../../api/positions';
@@ -18,17 +19,29 @@ function fmtKm(meters: number | null): string {
   return meters === null ? '—' : `${(meters / 1000).toFixed(1)} km`;
 }
 
+function fmtSpeed(kmh: number | null | undefined): string {
+  return kmh == null ? '—' : `${kmh.toFixed(1)} km/h`;
+}
+
+function fmtAgo(seconds: number): string {
+  if (seconds < 60) return 'Just now';
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+  return `${Math.floor(seconds / 3600)}h ago`;
+}
+
 const DEFAULT_REGION = {
   latitude: 19.4326,
   longitude: -99.1332,
   latitudeDelta: 0.01,
   longitudeDelta: 0.01,
 };
+const STALE_SECONDS = 120;
 
 export default function MapScreen() {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { token } = useAuth();
   const { selectedPetId, selectPet } = useSelectedPet();
+  const insets = useSafeAreaInsets();
   const petsFn = useCallback(
     () => listPets(baseUrl, token ?? ''),
     [baseUrl, token],
@@ -56,7 +69,7 @@ export default function MapScreen() {
     [baseUrl, selectedPetId, token],
   );
   const last = useApi(lastFn);
-  useApi(positionsFn);
+  const positions = useApi(positionsFn);
   const route = useApi(routeFn);
 
   useEffect(() => {
@@ -79,6 +92,21 @@ export default function MapScreen() {
         longitudeDelta: 0.01,
       }
     : DEFAULT_REGION;
+  const latestSpeed =
+    positions.data?.kind === 'ok'
+      ? positions.data.items[positions.data.items.length - 1]?.speedKmh
+      : undefined;
+  const distanceM =
+    route.data?.kind === 'ok'
+      ? route.data.trips.reduce((total, trip) => total + trip.distanceM, 0)
+      : null;
+  const updated = position ? fmtAgo(position.staleSeconds) : '—';
+  const gps =
+    position === null
+      ? 'No signal'
+      : position && position.staleSeconds <= STALE_SECONDS
+        ? 'Live'
+        : 'Stale';
 
   return (
     <View testID="screen-map" className="flex-1 bg-background">
@@ -156,20 +184,54 @@ export default function MapScreen() {
             </View>
           ) : null}
           <View
-            style={{ position: 'absolute', left: 16, right: 16, bottom: 120 }}
-            className="rounded-2xl bg-surface p-3"
+            testID="map-stats"
+            style={{
+              position: 'absolute',
+              left: 16,
+              right: 16,
+              bottom: insets.bottom + 96,
+            }}
           >
-            <Text className="text-xs text-muted">Distance</Text>
-            <Text testID="stat-distance" className="font-semibold text-foreground">
-              {fmtKm(
-                route.data?.kind === 'ok'
-                  ? route.data.trips.reduce(
-                      (total, trip) => total + trip.distanceM,
-                      0,
-                    )
-                  : null,
-              )}
-            </Text>
+            <Card className="p-4">
+              <View className="flex-row justify-between gap-2">
+                <View className="flex-1 items-center gap-1">
+                  <Text className="text-xs text-muted">Speed</Text>
+                  <Text
+                    testID="stat-speed"
+                    className="font-semibold text-foreground"
+                  >
+                    {fmtSpeed(latestSpeed)}
+                  </Text>
+                </View>
+                <View className="flex-1 items-center gap-1">
+                  <Text className="text-xs text-muted">Distance</Text>
+                  <Text
+                    testID="stat-distance"
+                    className="font-semibold text-foreground"
+                  >
+                    {fmtKm(distanceM)}
+                  </Text>
+                </View>
+                <View className="flex-1 items-center gap-1">
+                  <Text className="text-xs text-muted">Updated</Text>
+                  <Text
+                    testID="stat-updated"
+                    className="font-semibold text-foreground"
+                  >
+                    {updated}
+                  </Text>
+                </View>
+                <View className="flex-1 items-center gap-1">
+                  <Text className="text-xs text-muted">GPS</Text>
+                  <Text
+                    testID="stat-gps"
+                    className="font-semibold text-foreground"
+                  >
+                    {gps}
+                  </Text>
+                </View>
+              </View>
+            </Card>
           </View>
         </>
       ) : null}
