@@ -15,7 +15,7 @@ import {
   type PositionsState,
 } from '../../../api/positions';
 import { getDayRoute, type DayRouteState } from '../../../api/trips';
-import type { PetProfile } from '../../../api/types';
+import type { LastPosition, PetProfile } from '../../../api/types';
 import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
 import {
   SelectedPetProvider,
@@ -101,6 +101,20 @@ function makePet(overrides: Partial<PetProfile> = {}): PetProfile {
     activitySummary: null,
     createdAt: '2026-08-20T00:00:00.000Z',
     updatedAt: '2026-08-21T00:00:00.000Z',
+    ...overrides,
+  };
+}
+
+function makeLastPosition(
+  overrides: Partial<LastPosition> = {},
+): LastPosition {
+  return {
+    lat: 19.4326,
+    lng: -99.1332,
+    ts: 1787353200000,
+    accuracy: 4.5,
+    battery: 82,
+    staleSeconds: 15,
     ...overrides,
   };
 }
@@ -240,5 +254,54 @@ describe('R5: mascota free degrada sin mapa', () => {
     expect(screen.queryByTestId('stat-speed')).toBeNull();
     expect(screen.queryByTestId('lost-mode-button')).toBeNull();
     expect(mockFocusCleanup).toBeUndefined();
+  });
+});
+
+describe('R6: mapa y marker con la última posición', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  });
+
+  it('centers a fullscreen map and marker on the last position', async () => {
+    const position = makeLastPosition({ lat: 19.45, lng: -99.12 });
+    mockGetLastPosition.mockResolvedValue({ kind: 'ok', position });
+
+    await renderMap();
+
+    await waitFor(() => expect(screen.getByTestId('map-view')).toBeVisible());
+    expect(screen.getByTestId('map-view').props).toEqual(
+      expect.objectContaining({
+        initialRegion: {
+          latitude: 19.45,
+          longitude: -99.12,
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
+        },
+        style: { flex: 1 },
+      }),
+    );
+    expect(screen.getByTestId('map-marker').props.coordinate).toEqual({
+      latitude: 19.45,
+      longitude: -99.12,
+    });
+    expect(screen.queryByTestId('map-empty')).toBeNull();
+  });
+
+  it('uses the simulator home and an empty overlay without a position', async () => {
+    mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: null });
+
+    await renderMap();
+
+    await waitFor(() => expect(screen.getByTestId('map-view')).toBeVisible());
+    expect(screen.getByTestId('map-view').props.initialRegion).toEqual({
+      latitude: 19.4326,
+      longitude: -99.1332,
+      latitudeDelta: 0.01,
+      longitudeDelta: 0.01,
+    });
+    expect(screen.queryByTestId('map-marker')).toBeNull();
+    expect(screen.getByTestId('map-empty')).toHaveTextContent(
+      'No location data yet',
+    );
   });
 });
