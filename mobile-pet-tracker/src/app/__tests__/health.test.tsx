@@ -3,7 +3,7 @@ import { HeroUINativeProvider } from 'heroui-native';
 import { Uniwind } from 'uniwind';
 
 import { fetchHealth, type HealthState } from '../../api/health';
-import Index from '../index';
+import Index from '../health';
 
 jest.mock('../../api/health', () => ({
   fetchHealth: jest.fn(),
