@@ -20,4 +20,5 @@
 - R7 completado por TDD: `4cdb79a` (test rojo) → `e51e972` (Login verde, 7 casos; todos los kinds, signIn/navegación y links; lint/typecheck y grep de estilos verdes).
 - R8 completado por TDD: `3d2de99` (test rojo) → `765ec59` (Register verde, 8 casos; DTO completo, auto-login/fallback, términos y errores por campo; lint/typecheck y grep de estilos verdes).
 - R9 completado por TDD: `3fe20ae` (test rojo) → `4b0c78c` (Forgot stub verde, 2 casos; controles deshabilitados, regreso a Login y cero red; lint/typecheck y grep verdes).
-- Siguiente: ejecutar la suite móvil completa, auditar contención y cerrar R10 con `./init.sh`.
+- R10 completado: suite móvil 9/9 (59 tests), `./init.sh` exit 0, contención de backend/infra/CI/init.config vacía; reporte en `progress/impl_mobile-auth.md`.
+- Codex completó R1-R10. R11 queda exclusivamente para el smoke humano con Expo Go; después corresponde lanzar `reviewer`. La feature permanece `in_progress` hasta esos gates.
