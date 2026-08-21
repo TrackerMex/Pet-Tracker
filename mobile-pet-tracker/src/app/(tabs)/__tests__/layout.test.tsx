@@ -4,6 +4,7 @@ import { isValidElement, type ReactNode } from 'react';
 
 import { FloatingTabBar } from '../../../components/floating-tab-bar';
 import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
+import { SelectedPetProvider } from '../../../providers/selected-pet-provider';
 import TabsLayout from '../_layout';
 
 jest.mock(
@@ -14,6 +15,10 @@ jest.mock(
 
 jest.mock('../../../providers/auth-provider', () => ({
   useAuth: jest.fn(),
+}));
+
+jest.mock('../../../providers/selected-pet-provider', () => ({
+  SelectedPetProvider: jest.fn(({ children }: { children: ReactNode }) => children),
 }));
 
 jest.mock('expo-router', () => ({
@@ -28,6 +33,7 @@ const mockUseAuth = jest.mocked(useAuth);
 const mockRedirect = jest.mocked(Redirect);
 const mockTabs = jest.mocked(Tabs);
 const mockTabsScreen = jest.mocked(Tabs.Screen);
+const mockSelectedPetProvider = jest.mocked(SelectedPetProvider);
 
 function authValue(status: AuthContextValue['status']): AuthContextValue {
   return {
@@ -92,5 +98,14 @@ describe('R1: (tabs) exige sesión', () => {
 
     expect(element?.type).toBe(FloatingTabBar);
     expect(element?.props).toEqual({ state, navigation });
+  });
+
+  it('wraps authenticated tabs in the shared selected pet provider', async () => {
+    mockUseAuth.mockReturnValue(authValue('authenticated'));
+
+    await render(<TabsLayout />);
+
+    expect(mockSelectedPetProvider).toHaveBeenCalledTimes(1);
+    expect(mockTabs).toHaveBeenCalledTimes(1);
   });
 });
