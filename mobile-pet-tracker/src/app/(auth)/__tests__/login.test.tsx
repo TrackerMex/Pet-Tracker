@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 
@@ -32,12 +32,9 @@ async function renderLogin() {
 }
 
 async function submit(email = 'alex@example.com', password = 'correct horse') {
-  fireEvent.changeText(screen.getByTestId('login-email'), email);
-  fireEvent.changeText(screen.getByTestId('login-password'), password);
-
-  await act(async () => {
-    fireEvent.press(screen.getByTestId('login-submit'));
-  });
+  await fireEvent.changeText(screen.getByTestId('login-email'), email);
+  await fireEvent.changeText(screen.getByTestId('login-password'), password);
+  await fireEvent.press(screen.getByTestId('login-submit'));
 }
 
 describe('R7: login llama a la api y navega', () => {
@@ -96,15 +93,15 @@ describe('R7: login llama a la api y navega', () => {
     await submit();
 
     const error = screen.getByTestId('login-error');
-    expect(error).toHaveTextContent('Invalid email address');
-    expect(error).toHaveTextContent('Password is too short');
+    expect(error).toHaveTextContent(/Invalid email address/);
+    expect(error).toHaveTextContent(/Password is too short/);
   });
 
   it('links to register and forgot password', async () => {
     await renderLogin();
 
-    fireEvent.press(screen.getByTestId('link-register'));
-    fireEvent.press(screen.getByTestId('link-forgot'));
+    await fireEvent.press(screen.getByTestId('link-register'));
+    await fireEvent.press(screen.getByTestId('link-forgot'));
 
     await waitFor(() => {
       expect(mockRouter.push).toHaveBeenNthCalledWith(1, '/register');
