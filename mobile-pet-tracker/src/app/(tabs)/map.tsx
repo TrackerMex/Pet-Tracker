@@ -85,6 +85,14 @@ export default function MapScreen() {
           </Text>
         </View>
       ) : null}
+
+      {last.data?.kind === 'no-tracking' ? (
+        <View className="flex-1 items-center justify-center p-6">
+          <Text testID="map-no-tracking" className="text-center text-muted">
+            Live tracking requires a collar
+          </Text>
+        </View>
+      ) : null}
     </View>
   );
 }
