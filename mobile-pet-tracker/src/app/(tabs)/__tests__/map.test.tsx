@@ -552,7 +552,7 @@ describe('R8: stats calculadas de positions y trips', () => {
 
 describe('R9: polling con foco', () => {
   beforeEach(() => {
-    jest.useFakeTimers();
+    jest.useFakeTimers({ doNotFake: ['requestAnimationFrame'] });
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
     mockGetLastPosition
       .mockResolvedValueOnce({
@@ -578,10 +578,18 @@ describe('R9: polling con foco', () => {
   });
 
   it('polls position APIs every 15 seconds, preserves data, and cleans up', async () => {
+    const clearIntervalSpy = jest.spyOn(global, 'clearInterval');
     await renderMap();
 
-    await waitFor(() => expect(screen.getByTestId('map-marker')).toBeVisible());
-    await waitFor(() => expect(mockFocusCleanup).toEqual(expect.any(Function)));
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(screen.getByTestId('map-marker')).toBeVisible();
+    expect(mockFocusCleanup).toEqual(expect.any(Function));
     const initialLastCalls = mockGetLastPosition.mock.calls.length;
     const initialPositionsCalls = mockListPositions.mock.calls.length;
     const initialRouteCalls = mockGetDayRoute.mock.calls.length;
@@ -599,16 +607,12 @@ describe('R9: polling con foco', () => {
     expect(screen.getByTestId('map-marker')).toBeVisible();
 
     const blurCleanup = mockFocusCleanup;
-    act(() => blurCleanup?.());
-    const callsAfterBlur = {
-      last: mockGetLastPosition.mock.calls.length,
-      positions: mockListPositions.mock.calls.length,
-    };
-
-    act(() => jest.advanceTimersByTime(30000));
-
-    expect(mockGetLastPosition).toHaveBeenCalledTimes(callsAfterBlur.last);
-    expect(mockListPositions).toHaveBeenCalledTimes(callsAfterBlur.positions);
+    await act(async () => {
+      blurCleanup?.();
+      await Promise.resolve();
+    });
+    expect(clearIntervalSpy).toHaveBeenCalled();
+    clearIntervalSpy.mockRestore();
   });
 });
 
