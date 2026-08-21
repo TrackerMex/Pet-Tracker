@@ -208,7 +208,9 @@ describe('R7: pet card muestra el perfil', () => {
     await renderHome();
 
     await waitFor(() => expect(screen.getByTestId('pet-card')).toBeVisible());
-    expect(screen.getByTestId('pet-card-photo').props.source).toBe(pet.photoUrl);
+    expect(screen.getByTestId('pet-card-photo').props.source).toEqual([
+      { uri: pet.photoUrl },
+    ]);
     expect(screen.getByTestId('pet-card-name')).toHaveTextContent('Luna');
     expect(screen.getByTestId('pet-card-breed')).toHaveTextContent('Mixed');
   });

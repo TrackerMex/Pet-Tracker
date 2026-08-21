@@ -1,4 +1,5 @@
-import { Button, Spinner } from 'heroui-native';
+import { Image } from 'expo-image';
+import { Button, Card, Skeleton, Spinner } from 'heroui-native';
 import { useCallback, useEffect, useMemo } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -37,7 +38,7 @@ export default function HomeScreen() {
         : null,
     [baseUrl, selectedPetId, token],
   );
-  useApi(detailFn);
+  const detail = useApi(detailFn);
   useApi(activityFn);
 
   useEffect(() => {
@@ -109,6 +110,54 @@ export default function HomeScreen() {
             })}
           </View>
         </ScrollView>
+      ) : null}
+
+      {selectedPetId && detail.data === undefined ? (
+        <Skeleton testID="pet-card-skeleton" className="h-32 w-full rounded-2xl" />
+      ) : null}
+
+      {detail.data?.kind === 'error' || detail.data?.kind === 'unreachable' ? (
+        <Card testID="pet-card-error" className="items-start gap-3 p-4">
+          <Text className="text-danger">Something went wrong</Text>
+          <Button testID="pet-card-retry" onPress={detail.refetch}>
+            Retry
+          </Button>
+        </Card>
+      ) : null}
+
+      {detail.data?.kind === 'ok' ? (
+        <Card testID="pet-card" className="p-4">
+          <View className="flex-row items-center gap-4">
+            {detail.data.pet.photoUrl ? (
+              <Image
+                testID="pet-card-photo"
+                className="size-[72px] rounded-full"
+                contentFit="cover"
+                source={detail.data.pet.photoUrl}
+              />
+            ) : (
+              <View
+                testID="pet-card-photo"
+                className="size-[72px] items-center justify-center rounded-full bg-surface"
+              >
+                <Text className="text-2xl font-semibold text-foreground">
+                  {detail.data.pet.name.charAt(0).toUpperCase()}
+                </Text>
+              </View>
+            )}
+            <View className="flex-1 gap-1">
+              <Text
+                testID="pet-card-name"
+                className="text-xl font-semibold text-foreground"
+              >
+                {detail.data.pet.name}
+              </Text>
+              <Text testID="pet-card-breed" className="text-muted">
+                {detail.data.pet.breed ?? '—'}
+              </Text>
+            </View>
+          </View>
+        </Card>
       ) : null}
     </ScrollView>
   );
