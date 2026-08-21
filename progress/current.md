@@ -18,3 +18,4 @@
 - spec_author: spec de #34 escrita → `specs/mobile-tabs-shell/` (R1–R11, cero deps nuevas); #34 pasa a `spec_ready`. Esperando gate humano en `requirements.md` §Aprobación.
 - Implementación iniciada por Codex: 2026-08-21 15:25 UTC. `git pull --ff-only` sin cambios y `./init.sh` verde (e2e omitido por LocalStack apagado). Plan: R1 → R2 → R3 → R4 → R5 → R6 → R7 → R8 → R9/R10, con commits test-rojo antes de cada verde salvo las excepciones R3/R4 documentadas y trazabilidad tras cada requisito.
 - R1 completado por TDD: `929d6b2` (test rojo) → `0822ba7` (guard de `(tabs)` verde, 3 casos; typecheck móvil verde). `FloatingTabBar` queda como stub tipado hasta R7/R8, según `tasks.md`.
+- R2 completado por TDD: `c1dc47d` (test rojo) → `b3028d1` (guard inverso de `(auth)` verde, 3 casos; typecheck móvil verde).
