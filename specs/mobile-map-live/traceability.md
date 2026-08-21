@@ -13,7 +13,7 @@ tags: [harness, spec, mobile]
 | R3 | `src/api/__tests__/trips.test.ts::R3: getDayRoute compone lista y detalles por kind` | `43e4c37 feat(mobile-map): compose day route details (R3)` |
 | R4 | `src/app/(tabs)/__tests__/map.test.tsx::R4: map resuelve la mascota seleccionada` | `a152202 feat(mobile-map): resolve selected pet states (R4)` |
 | R5 | `src/app/(tabs)/__tests__/map.test.tsx::R5: mascota free degrada sin mapa` | `60d8195 feat(mobile-map): degrade free pets without tracking (R5)` |
-| R6 | pendiente | pendiente |
+| R6 | `src/app/(tabs)/__tests__/map.test.tsx::R6: mapa y marker con la última posición` | `63815e3 feat(mobile-map): render map and last position (R6)` |
 | R7 | pendiente | pendiente |
 | R8 | pendiente | pendiente |
 | R9 | pendiente | pendiente |
