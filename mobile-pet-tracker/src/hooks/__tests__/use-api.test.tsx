@@ -1,7 +1,7 @@
 import { act, renderHook, waitFor } from '@testing-library/react-native';
 
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
-import { useApi } from '../use-api';
+import { useApi, type ApiResult } from '../use-api';
 
 jest.mock('../../providers/auth-provider', () => ({
   useAuth: jest.fn(),
@@ -63,11 +63,13 @@ describe('R4: useApi ejecuta, refetch y expulsa 401', () => {
   });
 
   it('discards an old response when fn changes identity', async () => {
-    const oldRequest = deferred<{ kind: 'ok'; value: string }>();
-    const newRequest = deferred<{ kind: 'ok'; value: string }>();
+    type RaceResult = { kind: 'ok'; value: string };
+    type RaceProps = { fn: () => Promise<RaceResult> };
+    const oldRequest = deferred<RaceResult>();
+    const newRequest = deferred<RaceResult>();
     const oldFn = jest.fn(() => oldRequest.promise);
     const newFn = jest.fn(() => newRequest.promise);
-    const { result, rerender } = await renderHook(
+    const { result, rerender } = await renderHook<ApiResult<RaceResult>, RaceProps>(
       ({ fn }) => useApi(fn),
       { initialProps: { fn: oldFn } },
     );

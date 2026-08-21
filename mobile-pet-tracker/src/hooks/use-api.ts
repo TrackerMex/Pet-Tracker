@@ -11,17 +11,20 @@ export function useApi<T extends { kind: string }>(
   fn: (() => Promise<T>) | null,
 ): ApiResult<T> {
   const { signOut } = useAuth();
-  const [data, setData] = useState<T>();
+  const [resolved, setResolved] = useState<{
+    fn: typeof fn;
+    tick: number;
+    value: T;
+  }>();
   const [tick, setTick] = useState(0);
 
   useEffect(() => {
     let active = true;
-    setData(undefined);
 
     if (fn) {
       void fn().then((result) => {
         if (!active) return;
-        setData(result);
+        setResolved({ fn, tick, value: result });
         if (result.kind === 'unauthorized') void signOut();
       });
     }
@@ -32,9 +35,11 @@ export function useApi<T extends { kind: string }>(
   }, [fn, signOut, tick]);
 
   const refetch = useCallback(() => {
-    setData(undefined);
     setTick((value) => value + 1);
   }, []);
+
+  const data =
+    resolved?.fn === fn && resolved.tick === tick ? resolved.value : undefined;
 
   return { data, refetch };
 }
