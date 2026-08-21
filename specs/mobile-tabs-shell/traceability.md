@@ -13,7 +13,7 @@ tags: [harness, spec, mobile]
 | R3 | suites existentes `index.test.tsx::R5`, `login.test.tsx::R7`, `register.test.tsx::R8` con asserts `/home` + diff limitado a 3 hrefs | `d3992fb` asserts rojos → `2995514` feat verde |
 | R4 | `mobile-pet-tracker/src/app/(tabs)/__tests__/health.test.tsx` (suite heredada, 6 casos; asserts intactos) + diff limitado a imports | `0a55b28` feat verde (renames 95%/96%) |
 | R5 | `mobile-pet-tracker/src/app/(tabs)/__tests__/screens.test.tsx::R5: placeholders de tabs` | `f49519b` test rojo → `b45c1a4` feat verde |
-| R6 | pendiente | pendiente |
+| R6 | `mobile-pet-tracker/src/app/(tabs)/__tests__/screens.test.tsx::R6: profile permite cerrar sesión` | `95ecd19` test rojo → `9100e17` feat verde |
 | R7 | pendiente | pendiente |
 | R8 | pendiente | pendiente |
 | R9 | pendiente (verificación por comando, sin test) | pendiente |
