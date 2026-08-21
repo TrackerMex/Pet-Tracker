@@ -223,3 +223,22 @@ describe('R4: map resuelve la mascota seleccionada', () => {
     expect(mockListPets).toHaveBeenCalledTimes(2);
   });
 });
+
+describe('R5: mascota free degrada sin mapa', () => {
+  it('shows the collar requirement without map, stats, lost mode, or polling', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({ kind: 'no-tracking' });
+
+    await renderMap();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('map-no-tracking')).toHaveTextContent(
+        'Live tracking requires a collar',
+      );
+    });
+    expect(screen.queryByTestId('map-view')).toBeNull();
+    expect(screen.queryByTestId('stat-speed')).toBeNull();
+    expect(screen.queryByTestId('lost-mode-button')).toBeNull();
+    expect(mockFocusCleanup).toBeUndefined();
+  });
+});
