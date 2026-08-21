@@ -178,3 +178,64 @@ describe('R6: home carga pets y selecciona', () => {
     });
   });
 });
+
+describe('R7: pet card muestra el perfil', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+  });
+
+  it('shows a skeleton while pet detail is pending', async () => {
+    mockGetPet.mockReturnValue(pending<PetState>());
+
+    await renderHome();
+
+    await waitFor(() => expect(screen.getByTestId('pet-card-skeleton')).toBeVisible());
+  });
+
+  it('shows the pet photo, name, and breed', async () => {
+    const pet = makePet({ photoUrl: 'http://example.test/luna.jpg' });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+
+    await renderHome();
+
+    await waitFor(() => expect(screen.getByTestId('pet-card')).toBeVisible());
+    expect(screen.getByTestId('pet-card-photo').props.source).toBe(pet.photoUrl);
+    expect(screen.getByTestId('pet-card-name')).toHaveTextContent('Luna');
+    expect(screen.getByTestId('pet-card-breed')).toHaveTextContent('Mixed');
+  });
+
+  it('uses the name initial and a dash when optional profile data is absent', async () => {
+    mockGetPet.mockResolvedValue({
+      kind: 'ok',
+      pet: makePet({ breed: null, photoUrl: null }),
+    });
+
+    await renderHome();
+
+    await waitFor(() => expect(screen.getByTestId('pet-card')).toBeVisible());
+    expect(screen.getByTestId('pet-card-photo')).toHaveTextContent('L');
+    expect(screen.getByTestId('pet-card-breed')).toHaveTextContent('—');
+  });
+
+  it('shows an error and retries pet detail', async () => {
+    mockGetPet
+      .mockResolvedValueOnce({ kind: 'unreachable', message: 'network down' })
+      .mockResolvedValueOnce({ kind: 'ok', pet: makePet() });
+
+    await renderHome();
+    await waitFor(() => expect(screen.getByTestId('pet-card-error')).toBeVisible());
+    await fireEvent.press(screen.getByTestId('pet-card-retry'));
+
+    await waitFor(() => expect(screen.getByTestId('pet-card-name')).toHaveTextContent('Luna'));
+    expect(mockGetPet).toHaveBeenCalledTimes(2);
+  });
+});
