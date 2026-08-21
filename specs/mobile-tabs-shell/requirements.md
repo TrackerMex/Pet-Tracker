@@ -185,7 +185,7 @@ test rojo primero.
   7. Verificar que la estética de la barra respeta el estilo flotante
      minimalista (Dribbble como referencia; el veredicto visual es humano).
 
-  - [ ] Smoke ejecutado por el humano (fecha: ____)
+  - [x] Smoke ejecutado por el humano (fecha: 2026-08-21)
 
 ## Fuera de alcance
 
