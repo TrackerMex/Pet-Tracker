@@ -34,7 +34,7 @@ describe('R4: useApi ejecuta, refetch y expulsa 401', () => {
   it('exposes undefined while loading and the result after it resolves', async () => {
     const request = deferred<{ kind: 'ok'; value: number }>();
     const fn = jest.fn(() => request.promise);
-    const { result } = renderHook(() => useApi(fn));
+    const { result } = await renderHook(() => useApi(fn));
 
     expect(result.current.data).toBeUndefined();
     expect(fn).toHaveBeenCalledTimes(1);
@@ -45,17 +45,19 @@ describe('R4: useApi ejecuta, refetch y expulsa 401', () => {
   });
 
   it('resets loading state and executes again on refetch', async () => {
+    const nextRequest = deferred<{ kind: 'ok'; value: number }>();
     const fn = jest
       .fn<Promise<{ kind: 'ok'; value: number }>, []>()
       .mockResolvedValueOnce({ kind: 'ok', value: 1 })
-      .mockResolvedValueOnce({ kind: 'ok', value: 2 });
-    const { result } = renderHook(() => useApi(fn));
+      .mockReturnValueOnce(nextRequest.promise);
+    const { result } = await renderHook(() => useApi(fn));
 
     await waitFor(() => expect(result.current.data).toEqual({ kind: 'ok', value: 1 }));
 
-    act(() => result.current.refetch());
+    await act(() => result.current.refetch());
     expect(result.current.data).toBeUndefined();
 
+    await act(async () => nextRequest.resolve({ kind: 'ok', value: 2 }));
     await waitFor(() => expect(result.current.data).toEqual({ kind: 'ok', value: 2 }));
     expect(fn).toHaveBeenCalledTimes(2);
   });
@@ -65,12 +67,12 @@ describe('R4: useApi ejecuta, refetch y expulsa 401', () => {
     const newRequest = deferred<{ kind: 'ok'; value: string }>();
     const oldFn = jest.fn(() => oldRequest.promise);
     const newFn = jest.fn(() => newRequest.promise);
-    const { result, rerender } = renderHook(
+    const { result, rerender } = await renderHook(
       ({ fn }) => useApi(fn),
       { initialProps: { fn: oldFn } },
     );
 
-    rerender({ fn: newFn });
+    await rerender({ fn: newFn });
     await act(async () => oldRequest.resolve({ kind: 'ok', value: 'old' }));
     expect(result.current.data).toBeUndefined();
 
@@ -78,8 +80,8 @@ describe('R4: useApi ejecuta, refetch y expulsa 401', () => {
     expect(result.current.data).toEqual({ kind: 'ok', value: 'new' });
   });
 
-  it('does not execute while fn is null', () => {
-    const { result } = renderHook(() => useApi(null));
+  it('does not execute while fn is null', async () => {
+    const { result } = await renderHook(() => useApi(null));
 
     expect(result.current.data).toBeUndefined();
     expect(mockSignOut).not.toHaveBeenCalled();
@@ -87,7 +89,7 @@ describe('R4: useApi ejecuta, refetch y expulsa 401', () => {
 
   it('signs out after an unauthorized result', async () => {
     const fn = jest.fn().mockResolvedValue({ kind: 'unauthorized' as const });
-    const { result } = renderHook(() => useApi(fn));
+    const { result } = await renderHook(() => useApi(fn));
 
     await waitFor(() => expect(result.current.data).toEqual({ kind: 'unauthorized' }));
     expect(mockSignOut).toHaveBeenCalledTimes(1);
