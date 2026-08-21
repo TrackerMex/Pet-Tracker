@@ -14,3 +14,5 @@
 - spec_author: spec de #35 escrita → `specs/mobile-home-dashboard/` (R1–R13); #35 paso a `spec_ready`.
 - Spec #35 **aprobada por humano** (commit `06f12df`, 2026-08-21; checkbox marcado). Frontmatter de los 4 archivos a `approved` (lección C6 de #34). #35 pasa a `in_progress`.
 - Handoff a Codex entregado 2026-08-21. Codex implementa R1–R12 en `feature/35-mobile-home-dashboard`; R13 (smoke Expo Go) lo cierra el humano. Mientras Codex trabaja, este agente no toca `mobile-pet-tracker/` ni `backend-pet-tracker/`.
+- Codex inició la implementación: `git pull --ff-only` sin cambios y baseline `./init.sh` verde. Plan: R1→R10 con commits rojo/verde/trazabilidad por requisito; luego R11/R12 y reporte `progress/impl_mobile-home-dashboard.md`.
+- Codex completó R1–R12: 18 suites/129 tests móviles, typecheck, lint, guardas de contención y `./init.sh` verdes. R13 sigue reservado al smoke humano; #35 permanece `in_progress`.
