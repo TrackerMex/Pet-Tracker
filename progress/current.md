@@ -12,3 +12,5 @@
 - #36 esta `pending` → lanzar spec_author y PARAR hasta aprobación humana de la spec.
 - Tensión conocida a resolver en la spec: expo-maps y react-native-maps requieren dev build, pero la restricción del humano es smoke SOLO con Expo Go.
 - spec_author: spec de #36 escrita en `specs/mobile-map-live/` (draft, R1–R13) y #36 → `spec_ready`. La tensión se resolvió: react-native-maps 1.27.2 SÍ corre en Expo Go (evidencia doc SDK 57 en design.md §D1); expo-maps descartado (alpha, no Go). Sin react-query (polling = setInterval+refetch en useFocusEffect, design §D2). Lost Mode sin endpoint backend → stub deshabilitado + feature #45 `pet-lost-mode` añadida al backlog. Esperando aprobación humana del gate.
+- Spec #36 **aprobada por humano** (commit `a2f48e9`, 2026-08-21; checkbox marcado). Frontmatter a `approved`. #36 pasa a `in_progress`.
+- Handoff a Codex entregado 2026-08-21. Codex implementa R1–R12 en `feature/36-mobile-map-live`; R13 (smoke Expo Go) lo cierra el humano. Mientras Codex trabaja, este agente no toca `mobile-pet-tracker/` ni `backend-pet-tracker/`.
