@@ -1,4 +1,5 @@
 import {
+  act,
   fireEvent,
   render,
   screen,
@@ -29,6 +30,7 @@ import {
 import MapScreen from '../map';
 
 let mockFocusCleanup: (() => void) | undefined;
+let mockFocusCallback: (() => void | (() => void)) | undefined;
 
 jest.mock('../../../api/pets', () => ({
   listPets: jest.fn(),
@@ -51,6 +53,7 @@ jest.mock('expo-router', () => ({
   router: { push: jest.fn() },
   useFocusEffect: (callback: () => void | (() => void)) => {
     const React = require('react');
+    mockFocusCallback = callback;
     React.useEffect(() => {
       const cleanup = callback();
       mockFocusCleanup = typeof cleanup === 'function' ? cleanup : undefined;
@@ -190,6 +193,7 @@ async function renderMap() {
 beforeEach(() => {
   jest.clearAllMocks();
   mockFocusCleanup = undefined;
+  mockFocusCallback = undefined;
   initialSelectedPetId = null;
   process.env.EXPO_PUBLIC_API_URL = apiUrl;
   mockUseAuth.mockReturnValue({
@@ -546,5 +550,77 @@ describe('R8: stats calculadas de positions y trips', () => {
       expect(screen.getByTestId('stat-gps')).toHaveTextContent('No signal');
     });
     expect(screen.getByTestId('stat-updated')).toHaveTextContent('—');
+  });
+});
+
+describe('R9: polling con foco', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition
+      .mockResolvedValueOnce({
+        kind: 'ok',
+        position: makeLastPosition(),
+      })
+      .mockReturnValue(pending<LastPositionState>());
+    mockListPositions.mockResolvedValue({
+      kind: 'ok',
+      items: [makeStoredPosition()],
+      nextCursor: null,
+    });
+    mockGetDayRoute.mockResolvedValue({
+      kind: 'ok',
+      date: '2026-08-21',
+      trips: [],
+    });
+  });
+
+  afterEach(() => {
+    mockFocusCleanup?.();
+    jest.useRealTimers();
+  });
+
+  it('polls position APIs every 15 seconds, preserves data, and cleans up', async () => {
+    await renderMap();
+
+    await waitFor(() => expect(screen.getByTestId('map-marker')).toBeVisible());
+    await waitFor(() => expect(mockFocusCleanup).toEqual(expect.any(Function)));
+    const initialLastCalls = mockGetLastPosition.mock.calls.length;
+    const initialPositionsCalls = mockListPositions.mock.calls.length;
+    const initialRouteCalls = mockGetDayRoute.mock.calls.length;
+
+    await act(async () => {
+      jest.advanceTimersByTime(15000);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(mockGetLastPosition).toHaveBeenCalledTimes(initialLastCalls + 1);
+    expect(mockListPositions).toHaveBeenCalledTimes(initialPositionsCalls + 1);
+    expect(mockGetDayRoute).toHaveBeenCalledTimes(initialRouteCalls);
+    expect(screen.getByTestId('map-marker')).toBeVisible();
+
+    const blurCleanup = mockFocusCleanup;
+    act(() => blurCleanup?.());
+    const callsAfterBlur = {
+      last: mockGetLastPosition.mock.calls.length,
+      positions: mockListPositions.mock.calls.length,
+    };
+
+    act(() => jest.advanceTimersByTime(30000));
+
+    expect(mockGetLastPosition).toHaveBeenCalledTimes(callsAfterBlur.last);
+    expect(mockListPositions).toHaveBeenCalledTimes(callsAfterBlur.positions);
+
+    const routeCallsBeforeRefocus = mockGetDayRoute.mock.calls.length;
+    let refocusCleanup: void | (() => void);
+    await act(async () => {
+      refocusCleanup = mockFocusCallback?.();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(mockGetDayRoute).toHaveBeenCalledTimes(routeCallsBeforeRefocus + 1);
+    act(() => refocusCleanup?.());
   });
 });
