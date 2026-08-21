@@ -3,6 +3,7 @@ import { Button, Card, Skeleton, Spinner } from 'heroui-native';
 import { useCallback, useEffect, useMemo } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Battery, Moon, Wifi, WifiOff } from 'reicon-react-native';
 
 import { getDailyActivity } from '../../api/activity';
 import { getPet, listPets, type PetsState } from '../../api/pets';
@@ -126,38 +127,74 @@ export default function HomeScreen() {
       ) : null}
 
       {detail.data?.kind === 'ok' ? (
-        <Card testID="pet-card" className="p-4">
-          <View className="flex-row items-center gap-4">
-            {detail.data.pet.photoUrl ? (
-              <Image
-                testID="pet-card-photo"
-                className="size-[72px] rounded-full"
-                contentFit="cover"
-                source={detail.data.pet.photoUrl}
-              />
-            ) : (
-              <View
-                testID="pet-card-photo"
-                className="size-[72px] items-center justify-center rounded-full bg-surface"
-              >
-                <Text className="text-2xl font-semibold text-foreground">
-                  {detail.data.pet.name.charAt(0).toUpperCase()}
+        <>
+          <Card testID="pet-card" className="p-4">
+            <View className="flex-row items-center gap-4">
+              {detail.data.pet.photoUrl ? (
+                <Image
+                  testID="pet-card-photo"
+                  className="size-[72px] rounded-full"
+                  contentFit="cover"
+                  source={detail.data.pet.photoUrl}
+                />
+              ) : (
+                <View
+                  testID="pet-card-photo"
+                  className="size-[72px] items-center justify-center rounded-full bg-surface"
+                >
+                  <Text className="text-2xl font-semibold text-foreground">
+                    {detail.data.pet.name.charAt(0).toUpperCase()}
+                  </Text>
+                </View>
+              )}
+              <View className="flex-1 gap-1">
+                <Text
+                  testID="pet-card-name"
+                  className="text-xl font-semibold text-foreground"
+                >
+                  {detail.data.pet.name}
+                </Text>
+                <Text testID="pet-card-breed" className="text-muted">
+                  {detail.data.pet.breed ?? '—'}
                 </Text>
               </View>
-            )}
-            <View className="flex-1 gap-1">
+            </View>
+          </Card>
+
+          <Card testID="collar-card" className="gap-3 p-4">
+            <View className="flex-row items-center gap-2">
+              {detail.data.pet.device === null ? (
+                <Moon size={20} />
+              ) : detail.data.pet.device.connectivity === 'online' ? (
+                <Wifi size={20} />
+              ) : (
+                <WifiOff size={20} />
+              )}
               <Text
-                testID="pet-card-name"
-                className="text-xl font-semibold text-foreground"
+                testID="collar-status"
+                className="text-lg font-semibold text-foreground"
               >
-                {detail.data.pet.name}
-              </Text>
-              <Text testID="pet-card-breed" className="text-muted">
-                {detail.data.pet.breed ?? '—'}
+                {detail.data.pet.device === null
+                  ? 'Free'
+                  : detail.data.pet.device.connectivity === 'online'
+                    ? 'Online'
+                    : 'Offline'}
               </Text>
             </View>
-          </View>
-        </Card>
+            {detail.data.pet.device ? (
+              <View className="flex-row items-center gap-2">
+                <Battery size={18} />
+                <Text testID="collar-battery" className="text-muted">
+                  {detail.data.pet.device.batteryPct === null
+                    ? '—'
+                    : `${detail.data.pet.device.batteryPct}%`}
+                </Text>
+              </View>
+            ) : (
+              <Text className="text-muted">No collar — health only</Text>
+            )}
+          </Card>
+        </>
       ) : null}
     </ScrollView>
   );
