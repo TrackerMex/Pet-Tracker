@@ -1,83 +1,58 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
-import { HeroUINativeProvider } from 'heroui-native';
-import { Uniwind } from 'uniwind';
+import { render, screen } from '@testing-library/react-native';
+import { Redirect } from 'expo-router';
 
-import { fetchHealth, type HealthState } from '../../api/health';
+import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import Index from '../index';
 
-jest.mock('../../api/health', () => ({
-  fetchHealth: jest.fn(),
+jest.mock('../../providers/auth-provider', () => ({
+  useAuth: jest.fn(),
 }));
 
-jest.mock('uniwind', () => ({
-  ...jest.requireActual('uniwind'),
-  useUniwind: () => ({ theme: 'light', hasAdaptiveThemes: false }),
+jest.mock('expo-router', () => ({
+  Redirect: jest.fn(() => null),
 }));
 
-const apiUrl = 'http://example.test/v1';
-const mockFetchHealth = jest.mocked(fetchHealth);
-const states: HealthState[] = [
-  { kind: 'ok' },
-  { kind: 'error' },
-  { kind: 'unreachable', message: 'network down' },
-  { kind: 'missing-config' },
-];
+const mockUseAuth = jest.mocked(useAuth);
+const mockRedirect = jest.mocked(Redirect);
 
-describe('R7: health screen states and retry', () => {
+function authValue(status: AuthContextValue['status']): AuthContextValue {
+  return {
+    status,
+    token: status === 'authenticated' ? 'jwt-token' : null,
+    signIn: jest.fn(),
+    signOut: jest.fn(),
+  };
+}
+
+describe('R5: splash navega según sesión', () => {
   beforeEach(() => {
-    mockFetchHealth.mockReset();
-    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    jest.clearAllMocks();
   });
 
-  it.each(states)('renders $kind', async (state) => {
-    mockFetchHealth.mockResolvedValueOnce(state);
+  it('shows the centered logo while the session is loading', async () => {
+    mockUseAuth.mockReturnValue(authValue('loading'));
 
-    await render(<Index />, { wrapper: HeroUINativeProvider });
+    await render(<Index />);
 
-    await waitFor(() => {
-      expect(screen.getByTestId('health-state')).toHaveTextContent(state.kind);
-    });
-    expect(mockFetchHealth).toHaveBeenCalledWith(apiUrl);
+    expect(screen.getByTestId('splash-logo')).toBeVisible();
+    expect(mockRedirect).not.toHaveBeenCalled();
   });
 
-  it('rechecks health when retry is pressed', async () => {
-    mockFetchHealth
-      .mockResolvedValueOnce({ kind: 'error' })
-      .mockResolvedValueOnce({ kind: 'ok' });
+  it('redirects an authenticated session to health', async () => {
+    mockUseAuth.mockReturnValue(authValue('authenticated'));
 
-    await render(<Index />, { wrapper: HeroUINativeProvider });
+    await render(<Index />);
 
-    await waitFor(() => {
-      expect(screen.getByTestId('health-state')).toHaveTextContent('error');
-    });
-    await fireEvent.press(screen.getByTestId('health-retry'));
-
-    await waitFor(() => {
-      expect(screen.getByTestId('health-state')).toHaveTextContent('ok');
-      expect(mockFetchHealth).toHaveBeenCalledTimes(2);
-    });
-  });
-});
-
-describe('R6: theme toggle', () => {
-  beforeEach(() => {
-    mockFetchHealth.mockReset();
-    mockFetchHealth.mockResolvedValue({ kind: 'ok' });
-    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    expect(mockRedirect.mock.calls[0]?.[0]).toEqual({ href: '/health' });
+    expect(screen.queryByTestId('splash-logo')).not.toBeOnTheScreen();
   });
 
-  afterEach(() => {
-    jest.restoreAllMocks();
-  });
+  it('redirects an unauthenticated session to login', async () => {
+    mockUseAuth.mockReturnValue(authValue('unauthenticated'));
 
-  it('switches from light to dark', async () => {
-    const setThemeSpy = jest
-      .spyOn(Uniwind, 'setTheme')
-      .mockImplementation(() => undefined);
+    await render(<Index />);
 
-    await render(<Index />, { wrapper: HeroUINativeProvider });
-    await fireEvent.press(screen.getByTestId('theme-toggle'));
-
-    expect(setThemeSpy).toHaveBeenCalledWith('dark');
+    expect(mockRedirect.mock.calls[0]?.[0]).toEqual({ href: '/login' });
+    expect(screen.queryByTestId('splash-logo')).not.toBeOnTheScreen();
   });
 });

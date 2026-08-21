@@ -1,11 +1,10 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-08-19
-**Features completadas**: 30/31 (`feature_list.json`)
-**En progreso**: #18 `nutrition-ai-explainer` (solo falta el smoke R19,
-bloqueado por crédito de OpenAI). #31 `mobile-app-scaffold` cerró hoy con
-review aprobado y smoke humano; su PR queda a la espera del merge humano.
-**Pendientes**: ninguna.
+**Última actualización**: 2026-08-21
+**Features completadas**: 31/44 (`feature_list.json`)
+**En progreso**: #33 `mobile-auth`; Codex completó R1-R10 con `init.sh` verde.
+Faltan el smoke humano R11 en Expo Go y la revisión antes de marcarla `done`.
+**Pendientes**: 12 (#18 y #34-#44).
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
 desde 2026-08-10. Hay recursos vivos en la cuenta, aunque hoy sin coste.
@@ -73,6 +72,15 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Estado actual
+
+- **`mobile-auth` (#33) in_progress** (2026-08-21): Codex completó R1-R10
+  con historial TDD rojo→verde, token exclusivo en SecureStore desde
+  `AuthProvider`, cliente Login/Register puro con `fetchFn` inyectable,
+  splash por sesión, health movido a `/health` y pantallas Login/Register/
+  Forgot. La suite móvil suma 9 suites y 59 tests; `./init.sh` completo terminó
+  verde y el diff de contención no toca backend, infra, CI ni `init.config.sh`.
+  R11 queda para el smoke humano con `bunx expo start --go`; después corresponde
+  el `reviewer`. Ver `progress/impl_mobile-auth.md`.
 
 - **`device-subscriptions` (#25) done** (2026-08-17): el entitlement cuelga del
   collar mediante `device_subscriptions`; un único predicado SQL alimenta
@@ -731,6 +739,14 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-08-21** — Implementación de #33 `mobile-auth` completada por Codex
+  para R1-R10. Se añadieron cliente auth tipado a mano, sesión persistente en
+  `expo-secure-store`, splash, Login, Register y Forgot stub; health pasó a
+  `/health`. Cada bloque nuevo conserva commit rojo antes del verde y la
+  trazabilidad registra todos los hashes. `./init.sh` exit 0; R11 no se ejecutó
+  porque es el smoke humano en Expo Go. La feature permanece `in_progress`
+  hasta smoke y review. Informe: `progress/impl_mobile-auth.md`.
 
 - **2026-08-19** — #31 `mobile-app-scaffold` **cerrada** (30/31) — primera
   feature móvil del monorepo. Decisión humana: la app vive en
