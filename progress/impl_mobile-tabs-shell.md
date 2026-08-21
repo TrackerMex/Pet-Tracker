@@ -3,8 +3,8 @@
 - Fecha: 2026-08-21
 - Branch: `feature/34-mobile-tabs-shell`
 - Alcance de Codex: R1-R10
-- Estado: R1-R9 implementados y verificados; R10 queda pendiente de la
-  verificación integral y R11 del smoke humano con Expo Go en Android físico.
+- Estado: R1-R10 implementados y verificados; R11 queda pendiente del smoke
+  humano con Expo Go en Android físico.
 
 ## Resultado
 
@@ -53,7 +53,24 @@ y 95% de la suite, con solo imports/paths modificados.
 
 ## Verificación R10
 
-Pendiente de la verificación integral final.
+- Suite móvil completa: 13 suites, 75 tests, todos verdes, tanto dentro de
+  `./init.sh` como mediante `bun run --cwd mobile-pet-tracker test -- --silent`.
+- `./init.sh`: exit 0.
+  - backend: 143 suites, 1111 tests;
+  - infra: 2 suites, 14 tests;
+  - harness env drift: 11 suites, 28 tests;
+  - móvil: 13 suites, 75 tests;
+  - build, lint y typecheck: verdes.
+- E2E: omitidos por el harness porque LocalStack no respondía en el puerto
+  4566; mobile-tabs-shell no requiere AWS y no se levantaron recursos reales.
+- Contención:
+  `git diff --stat main...HEAD -- backend-pet-tracker/ infra/ init.config.sh .github/`
+  devolvió salida vacía.
+- `package.json` y `bun.lock` móviles no tienen diff contra `main`; no se
+  añadieron dependencias.
+- `git diff --check main...HEAD` no reportó errores.
+- Greps de reviewer: sin `StyleSheet.create`, colores hex ni imports
+  `@react-navigation` en el código de producción nuevo.
 
 ## Pendiente humano
 

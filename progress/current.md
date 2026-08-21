@@ -26,3 +26,4 @@
 - R7 completado por TDD: `9f7d634` (4 tests rojos contra el stub) → `e306135` (5 tabs reicon en orden, estados filled/outline con tokens y navegación preventiva; 4 casos y typecheck móvil verdes).
 - R8 completado por TDD: `f30952c` (safe-area rojo, style ausente) → `cf99e35` (`bottom = insets.bottom + 12`; 5 casos de tab bar, lint y typecheck móviles verdes).
 - R9 verificado: `typedRoutes` sigue activo; Metro regeneró `.expo/types/router.d.ts` con `/home`, `/map`, `/health`, `/food`, `/profile` y `/login`; typecheck posterior y lint móviles terminan con exit 0. No se conectó ningún dispositivo ni se ejecutó R11.
+- R10 verificado: `./init.sh` exit 0 (backend 143/1111, infra 2/14, harness 11/28, móvil 13/75; build/lint/typecheck verdes; e2e omitido por LocalStack apagado), suite móvil directa 13/75 y diffs de áreas prohibidas/dependencias vacíos. R11 permanece como gate humano.
