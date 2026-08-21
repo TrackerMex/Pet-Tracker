@@ -9,7 +9,7 @@ tags: [harness, spec, mobile]
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
 | R1 | `mobile-pet-tracker/src/api/__tests__/pets.test.ts::R1: listPets mapea la respuesta por kind` | `baf5f64 feat(mobile-home): load pets with authenticated client (R1)` |
-| R2 | `mobile-pet-tracker/src/api/__tests__/pets.test.ts::R2: getPet mapea la respuesta por kind` | pendiente |
+| R2 | `mobile-pet-tracker/src/api/__tests__/pets.test.ts::R2: getPet mapea la respuesta por kind` | `6983a75 feat(mobile-home): load selected pet detail (R2)` |
 | R3 | `mobile-pet-tracker/src/api/__tests__/activity.test.ts::R3: getDailyActivity mapea la respuesta por kind` | pendiente |
 | R4 | `mobile-pet-tracker/src/hooks/__tests__/use-api.test.tsx::R4: useApi ejecuta, refetch y expulsa 401` | pendiente |
 | R5 | `mobile-pet-tracker/src/providers/__tests__/selected-pet-provider.test.tsx::R5: SelectedPetProvider expone la selección` + caso de montaje en `(tabs)/__tests__/layout.test.tsx` | pendiente |
