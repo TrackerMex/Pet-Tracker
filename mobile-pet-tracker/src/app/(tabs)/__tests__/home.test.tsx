@@ -419,6 +419,37 @@ describe('R9: summary degrada con gracia', () => {
     });
   });
 
+  it('keeps the previous cards mounted while a newly selected pet loads', async () => {
+    mockListPets.mockResolvedValue({
+      kind: 'ok',
+      pets: [makePet(), makePet({ id: 'pet-2', name: 'Milo' })],
+    });
+    mockGetPet.mockImplementation((_url, _token, petId) =>
+      petId === 'pet-1'
+        ? Promise.resolve<PetState>({ kind: 'ok', pet: makePet() })
+        : pending<PetState>(),
+    );
+    mockGetDailyActivity.mockImplementation((_url, _token, petId) =>
+      petId === 'pet-1'
+        ? Promise.resolve<DailyActivityState>({
+            kind: 'ok',
+            days: [makeDay()],
+            weekComparison: { distanceM: 5, activeMinutes: 10, walkCount: 20 },
+          })
+        : pending<DailyActivityState>(),
+    );
+
+    await renderHome();
+    await waitFor(() => expect(screen.getByTestId('summary-activity')).toHaveTextContent('1h 35m'));
+
+    await fireEvent.press(screen.getByTestId('pet-chip-pet-2'));
+
+    expect(screen.getByTestId('pet-card-name')).toHaveTextContent('Luna');
+    expect(screen.queryByTestId('pet-card-skeleton')).toBeNull();
+    expect(screen.getByTestId('summary-activity')).toHaveTextContent('1h 35m');
+    expect(screen.queryByTestId('summary-skeleton')).toBeNull();
+  });
+
   it('shows a summary skeleton while activity is pending', async () => {
     mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
 

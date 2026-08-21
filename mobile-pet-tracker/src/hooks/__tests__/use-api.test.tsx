@@ -44,7 +44,7 @@ describe('R4: useApi ejecuta, refetch y expulsa 401', () => {
     expect(result.current.data).toEqual({ kind: 'ok', value: 7 });
   });
 
-  it('resets loading state and executes again on refetch', async () => {
+  it('keeps the previous data and flags refreshing during refetch', async () => {
     const nextRequest = deferred<{ kind: 'ok'; value: number }>();
     const fn = jest
       .fn<Promise<{ kind: 'ok'; value: number }>, []>()
@@ -53,13 +53,40 @@ describe('R4: useApi ejecuta, refetch y expulsa 401', () => {
     const { result } = await renderHook(() => useApi(fn));
 
     await waitFor(() => expect(result.current.data).toEqual({ kind: 'ok', value: 1 }));
+    expect(result.current.isRefreshing).toBe(false);
 
     await act(() => result.current.refetch());
-    expect(result.current.data).toBeUndefined();
+    expect(result.current.data).toEqual({ kind: 'ok', value: 1 });
+    expect(result.current.isRefreshing).toBe(true);
 
     await act(async () => nextRequest.resolve({ kind: 'ok', value: 2 }));
     await waitFor(() => expect(result.current.data).toEqual({ kind: 'ok', value: 2 }));
+    expect(result.current.isRefreshing).toBe(false);
     expect(fn).toHaveBeenCalledTimes(2);
+  });
+
+  it('keeps the previous data while a new fn identity is loading', async () => {
+    type SwapResult = { kind: 'ok'; value: string };
+    type SwapProps = { fn: () => Promise<SwapResult> };
+    const newRequest = deferred<SwapResult>();
+    const oldFn = jest
+      .fn<Promise<SwapResult>, []>()
+      .mockResolvedValue({ kind: 'ok', value: 'pet-1' });
+    const newFn = jest.fn(() => newRequest.promise);
+    const { result, rerender } = await renderHook<ApiResult<SwapResult>, SwapProps>(
+      ({ fn }) => useApi(fn),
+      { initialProps: { fn: oldFn } },
+    );
+
+    await waitFor(() => expect(result.current.data).toEqual({ kind: 'ok', value: 'pet-1' }));
+
+    await rerender({ fn: newFn });
+    expect(result.current.data).toEqual({ kind: 'ok', value: 'pet-1' });
+    expect(result.current.isRefreshing).toBe(true);
+
+    await act(async () => newRequest.resolve({ kind: 'ok', value: 'pet-2' }));
+    await waitFor(() => expect(result.current.data).toEqual({ kind: 'ok', value: 'pet-2' }));
+    expect(result.current.isRefreshing).toBe(false);
   });
 
   it('discards an old response when fn changes identity', async () => {
