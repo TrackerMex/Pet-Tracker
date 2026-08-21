@@ -4,7 +4,7 @@ import { Text, View } from 'react-native';
 import { Moon, Sun } from 'reicon-react-native';
 import { Uniwind, useUniwind } from 'uniwind';
 
-import { fetchHealth, type HealthState } from '../api/health';
+import { fetchHealth, type HealthState } from '../../api/health';
 
 const stateClassNames: Record<HealthState['kind'], string> = {
   ok: 'bg-success text-success-foreground',

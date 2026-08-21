@@ -112,7 +112,7 @@ describe('R8: register llama a la api y navega', () => {
       password: 'correct horse',
     });
     expect(mockSignIn).toHaveBeenCalledWith('jwt-token');
-    expect(mockRouter.replace).toHaveBeenCalledWith('/health');
+    expect(mockRouter.replace).toHaveBeenCalledWith('/home');
   });
 
   it('falls back to login when the account exists but auto-login fails', async () => {

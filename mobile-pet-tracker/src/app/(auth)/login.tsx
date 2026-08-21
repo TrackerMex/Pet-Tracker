@@ -23,7 +23,7 @@ export default function Login() {
       switch (result.kind) {
         case 'ok':
           await signIn(result.accessToken);
-          router.replace('/health');
+          router.replace('/home');
           return;
         case 'invalid-credentials':
           setError('Invalid credentials');

@@ -2,10 +2,10 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react-nativ
 import { HeroUINativeProvider } from 'heroui-native';
 import { Uniwind } from 'uniwind';
 
-import { fetchHealth, type HealthState } from '../../api/health';
+import { fetchHealth, type HealthState } from '../../../api/health';
 import Index from '../health';
 
-jest.mock('../../api/health', () => ({
+jest.mock('../../../api/health', () => ({
   fetchHealth: jest.fn(),
 }));
 

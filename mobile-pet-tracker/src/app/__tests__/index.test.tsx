@@ -43,7 +43,7 @@ describe('R5: splash navega según sesión', () => {
 
     await render(<Index />);
 
-    expect(mockRedirect.mock.calls[0]?.[0]).toEqual({ href: '/health' });
+    expect(mockRedirect.mock.calls[0]?.[0]).toEqual({ href: '/home' });
     expect(screen.queryByTestId('splash-logo')).not.toBeOnTheScreen();
   });
 
