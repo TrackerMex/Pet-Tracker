@@ -1,52 +1,115 @@
-import { useEffect, useState } from 'react';
-import { Button, Chip } from 'heroui-native';
-import { Text, View } from 'react-native';
-import { Moon, Sun } from 'reicon-react-native';
-import { Uniwind, useUniwind } from 'uniwind';
+import { Button, Spinner } from 'heroui-native';
+import { useCallback, useEffect, useMemo } from 'react';
+import { Pressable, ScrollView, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { fetchHealth, type HealthState } from '../../api/health';
+import { listVaccines, listWeights } from '../../api/health-records';
+import { listPets, type PetsState } from '../../api/pets';
+import { useApi } from '../../hooks/use-api';
+import { useAuth } from '../../providers/auth-provider';
+import { useSelectedPet } from '../../providers/selected-pet-provider';
 
-const stateClassNames: Record<HealthState['kind'], string> = {
-  ok: 'bg-success text-success-foreground',
-  error: 'bg-danger text-danger-foreground',
-  unreachable: 'bg-warning text-warning-foreground',
-  'missing-config': 'bg-muted text-background',
-};
+function isPetsError(state: PetsState): boolean {
+  return ['error', 'unreachable', 'missing-config'].includes(state.kind);
+}
 
-export default function Index() {
-  const apiUrl = process.env.EXPO_PUBLIC_API_URL;
-  const [state, setState] = useState<HealthState>();
-  const { theme } = useUniwind();
+export default function HealthScreen() {
+  const baseUrl = process.env.EXPO_PUBLIC_API_URL;
+  const { token } = useAuth();
+  const { selectedPetId, selectPet } = useSelectedPet();
+  const insets = useSafeAreaInsets();
+  const petsFn = useCallback(
+    () => listPets(baseUrl, token ?? ''),
+    [baseUrl, token],
+  );
+  const pets = useApi(petsFn);
+  const vaccinesFn = useMemo(
+    () =>
+      selectedPetId
+        ? () => listVaccines(baseUrl, token ?? '', selectedPetId)
+        : null,
+    [baseUrl, selectedPetId, token],
+  );
+  const weightFn = useMemo(
+    () =>
+      selectedPetId
+        ? () => listWeights(baseUrl, token ?? '', selectedPetId, fetch, 1)
+        : null,
+    [baseUrl, selectedPetId, token],
+  );
+  useApi(vaccinesFn);
+  useApi(weightFn);
 
   useEffect(() => {
-    void fetchHealth(apiUrl).then(setState);
-  }, [apiUrl]);
+    if (pets.data?.kind !== 'ok' || pets.data.pets.length === 0) return;
+    const selectionExists = pets.data.pets.some(({ id }) => id === selectedPetId);
+    if (!selectionExists) selectPet(pets.data.pets[0].id);
+  }, [pets.data, selectPet, selectedPetId]);
 
   return (
-    <View className="flex-1 items-center justify-center gap-4 bg-background p-6">
-      <Text className="text-2xl font-semibold text-foreground">Backend health</Text>
-      <Chip
-        testID="health-state"
-        className={state ? stateClassNames[state.kind] : 'bg-muted text-background'}
-      >
-        {state?.kind ?? 'checking'}
-      </Chip>
-      <Text className="text-muted">API: {apiUrl ?? 'not configured'}</Text>
-      <Button
-        accessibilityLabel={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
-        isIconOnly
-        testID="theme-toggle"
-        variant="secondary"
-        onPress={() => Uniwind.setTheme(theme === 'dark' ? 'light' : 'dark')}
-      >
-        {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-      </Button>
-      <Button
-        testID="health-retry"
-        onPress={() => void fetchHealth(apiUrl).then(setState)}
-      >
-        Retry
-      </Button>
-    </View>
+    <ScrollView
+      testID="screen-health"
+      className="flex-1 bg-background"
+      contentInsetAdjustmentBehavior="automatic"
+      contentContainerStyle={{
+        padding: 24,
+        gap: 16,
+        paddingBottom: insets.bottom + 96,
+      }}
+    >
+      <Text className="text-2xl font-semibold text-foreground">Health</Text>
+
+      {pets.data === undefined ? <Spinner testID="health-loading" /> : null}
+
+      {pets.data && isPetsError(pets.data) ? (
+        <View className="items-start gap-3">
+          <Text testID="health-error" className="text-danger">
+            Something went wrong
+          </Text>
+          <Button testID="health-retry" onPress={pets.refetch}>
+            Retry
+          </Button>
+        </View>
+      ) : null}
+
+      {pets.data?.kind === 'ok' && pets.data.pets.length === 0 ? (
+        <Text testID="health-empty" className="text-muted">
+          No pets yet
+        </Text>
+      ) : null}
+
+      {pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <View className="flex-row gap-2">
+            {pets.data.pets.map((pet) => {
+              const selected = pet.id === selectedPetId;
+
+              return (
+                <Pressable
+                  key={pet.id}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected }}
+                  testID={`pet-chip-${pet.id}`}
+                  className={
+                    selected
+                      ? 'rounded-full bg-accent px-4 py-2'
+                      : 'rounded-full bg-surface px-4 py-2'
+                  }
+                  onPress={() => selectPet(pet.id)}
+                >
+                  <Text
+                    className={
+                      selected ? 'text-accent-foreground' : 'text-foreground'
+                    }
+                  >
+                    {pet.name}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </ScrollView>
+      ) : null}
+    </ScrollView>
   );
 }
