@@ -1,4 +1,4 @@
-import { listVaccines, listWeights } from '../health-records';
+import { createWeight, listVaccines, listWeights } from '../health-records';
 
 const baseUrl = 'http://example.test/v1/';
 const vaccinesEndpoint = 'http://example.test/v1/pets/pet-1/vaccines';
@@ -178,6 +178,165 @@ describe('R2: listWeights mapea la respuesta por kind', () => {
 
       await expect(
         listWeights(missingUrl, 'jwt-token', 'pet-1', fetchFn),
+      ).resolves.toEqual({ kind: 'missing-config' });
+      expect(fetchFn).not.toHaveBeenCalled();
+    },
+  );
+});
+
+describe('R3: createWeight publica y mapea por kind', () => {
+  it('posts a weight with authentication and JSON headers', async () => {
+    const weight = makeWeight({ bodyCondition: 5 });
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValue(response(201, weight)) as unknown as typeof fetch;
+
+    await expect(
+      createWeight(
+        baseUrl,
+        'jwt-token',
+        'pet-1',
+        { weightKg: 12.4, measuredAt: '2026-08-21', bodyCondition: 5 },
+        fetchFn,
+      ),
+    ).resolves.toEqual({ kind: 'ok', weight });
+    expect(fetchFn).toHaveBeenCalledWith(weightsEndpoint, {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer jwt-token',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        weightKg: 12.4,
+        measuredAt: '2026-08-21',
+        bodyCondition: 5,
+      }),
+    });
+  });
+
+  it('omits bodyCondition when it is undefined', async () => {
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValue(response(201, makeWeight())) as unknown as typeof fetch;
+
+    await createWeight(
+      baseUrl,
+      'jwt-token',
+      'pet-1',
+      { weightKg: 12.4, measuredAt: '2026-08-21' },
+      fetchFn,
+    );
+
+    const [, init] = jest.mocked(fetchFn).mock.calls[0];
+    expect(JSON.parse(String(init?.body))).toEqual({
+      weightKg: 12.4,
+      measuredAt: '2026-08-21',
+    });
+  });
+
+  it('maps validation errors from the backend', async () => {
+    const errors = [{ path: 'weightKg', message: 'Must be greater than 0' }];
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValue(response(400, { errors })) as unknown as typeof fetch;
+
+    await expect(
+      createWeight(
+        baseUrl,
+        'jwt-token',
+        'pet-1',
+        { weightKg: 0, measuredAt: '2026-08-21' },
+        fetchFn,
+      ),
+    ).resolves.toEqual({ kind: 'validation', errors });
+  });
+
+  it('uses an empty validation list when the body has no errors array', async () => {
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValue(response(400, { message: 'Validation failed' })) as unknown as typeof fetch;
+
+    await expect(
+      createWeight(
+        baseUrl,
+        'jwt-token',
+        'pet-1',
+        { weightKg: 0, measuredAt: '2026-08-21' },
+        fetchFn,
+      ),
+    ).resolves.toEqual({ kind: 'validation', errors: [] });
+  });
+
+  it.each([
+    [403, { kind: 'forbidden' }],
+    [401, { kind: 'unauthorized' }],
+    [404, { kind: 'error' }],
+    [500, { kind: 'error' }],
+  ])('maps status %i', async (status, expected) => {
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValue(response(status, {})) as unknown as typeof fetch;
+
+    await expect(
+      createWeight(
+        baseUrl,
+        'jwt-token',
+        'pet-1',
+        { weightKg: 12.4, measuredAt: '2026-08-21' },
+        fetchFn,
+      ),
+    ).resolves.toEqual(expected);
+  });
+
+  it.each([
+    ['invalid JSON', invalidJsonResponse(201)],
+    ['a null body', response(201, null)],
+    ['an array body', response(201, [makeWeight()])],
+  ])('maps %s on success to error', async (_case, backendResponse) => {
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValue(backendResponse) as unknown as typeof fetch;
+
+    await expect(
+      createWeight(
+        baseUrl,
+        'jwt-token',
+        'pet-1',
+        { weightKg: 12.4, measuredAt: '2026-08-21' },
+        fetchFn,
+      ),
+    ).resolves.toEqual({ kind: 'error' });
+  });
+
+  it('maps a fetch rejection to unreachable', async () => {
+    const fetchFn = jest
+      .fn()
+      .mockRejectedValue(new Error('network down')) as unknown as typeof fetch;
+
+    await expect(
+      createWeight(
+        baseUrl,
+        'jwt-token',
+        'pet-1',
+        { weightKg: 12.4, measuredAt: '2026-08-21' },
+        fetchFn,
+      ),
+    ).resolves.toEqual({ kind: 'unreachable', message: 'network down' });
+  });
+
+  it.each([undefined, ''])(
+    'maps missing base URL %p without fetching',
+    async (missingUrl) => {
+      const fetchFn = jest.fn() as unknown as typeof fetch;
+
+      await expect(
+        createWeight(
+          missingUrl,
+          'jwt-token',
+          'pet-1',
+          { weightKg: 12.4, measuredAt: '2026-08-21' },
+          fetchFn,
+        ),
       ).resolves.toEqual({ kind: 'missing-config' });
       expect(fetchFn).not.toHaveBeenCalled();
     },
