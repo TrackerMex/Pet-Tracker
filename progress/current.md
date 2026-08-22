@@ -15,4 +15,5 @@
 - Handoff a Codex CLI escrito en `progress/handoff_mobile-health.md`. Plan: Codex implementa R1–R12 con TDD (cliente health-records, hub Health, WeightLog + gráfica, traslado health-check a Profile). Claude no toca `mobile-pet-tracker/` mientras tanto.
 - Codex inició implementación a las 2026-08-22 17:20 UTC en `feature/37-mobile-health`; `./init.sh` base terminó con exit 0. Plan activo: ejecutar R1–R10 en orden con commits test rojo → implementación verde, luego verificar R11–R12 y documentar trazabilidad/resultados.
 - Codex completó R1–R12 con historial rojo → verde para R1–R10. `bun run typecheck`, `bun run lint`, `bun run test` (25 suites, 270 tests) y `./init.sh` terminan con exit 0; R13 sigue reservado al smoke humano. Evidencia completa en `progress/impl_mobile-health.md`.
-- Siguiente: lanzar reviewer sobre `progress/impl_mobile-health.md` y ejecutar R13 en Expo Go.
+- Reviewer: APROBADO R1–R12 (`progress/review_mobile-health.md`) — verificó él mismo typecheck/lint/test (25 suites, 270 tests), init.sh exit 0, C4 rojo→verde por R-id, contención R12 y cero deps nuevas. Sin bloqueantes.
+- Siguiente: humano ejecuta R13 (smoke Expo Go, pasos en requirements.md §R13); con R13 marcado → `done` + PR.
