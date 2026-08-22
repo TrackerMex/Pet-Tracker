@@ -12,6 +12,7 @@ import { useEffect } from 'react';
 import {
   createWeight,
   listWeights,
+  type CreateWeightState,
   type WeightsState,
 } from '../../../api/health-records';
 import type { WeightEntry } from '../../../api/types';
@@ -67,6 +68,13 @@ function makeWeight(overrides: Partial<WeightEntry> = {}): WeightEntry {
 
 function pending<T>(): Promise<T> {
   return new Promise(() => undefined);
+}
+
+function localTodayIso(): string {
+  const today = new Date();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  return `${today.getFullYear()}-${month}-${day}`;
 }
 
 function SelectionProbe() {
@@ -227,5 +235,161 @@ describe('R8: weight log monta la gráfica', () => {
     await renderWeightLog();
 
     await waitFor(() => expect(screen.getByTestId('weight-chart')).toBeVisible());
+  });
+});
+
+describe('R9: alta de peso con degradación por kind', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListWeights.mockResolvedValue({ kind: 'ok', weights: [] });
+  });
+
+  it('renders the inline form with the local date prefilled', async () => {
+    mockCreateWeight.mockReturnValue(pending<CreateWeightState>());
+
+    await renderWeightLog();
+
+    await waitFor(() => expect(screen.getByTestId('weight-input')).toBeVisible());
+    expect(screen.getByTestId('weight-input').props.keyboardType).toBe(
+      'decimal-pad',
+    );
+    expect(screen.getByTestId('weight-date-input').props.value).toBe(
+      localTodayIso(),
+    );
+    expect(screen.getByTestId('weight-bc-input').props.keyboardType).toBe(
+      'number-pad',
+    );
+  });
+
+  it('rejects an invalid weight without calling the API', async () => {
+    mockCreateWeight.mockResolvedValue({ kind: 'error' });
+
+    await renderWeightLog();
+    await waitFor(() => expect(screen.getByTestId('weight-input')).toBeVisible());
+    await fireEvent.changeText(screen.getByTestId('weight-input'), 'not-a-number');
+    await fireEvent.press(screen.getByTestId('weight-submit'));
+
+    expect(screen.getByTestId('weight-form-error')).toHaveTextContent(
+      'Enter a valid weight',
+    );
+    expect(mockCreateWeight).not.toHaveBeenCalled();
+  });
+
+  it('submits all fields, clears them, and refetches the list', async () => {
+    mockCreateWeight.mockResolvedValue({
+      kind: 'ok',
+      weight: makeWeight({ weightKg: 12.8, bodyCondition: 6 }),
+    });
+
+    await renderWeightLog();
+    await waitFor(() => expect(screen.getByTestId('weight-input')).toBeVisible());
+    await fireEvent.changeText(screen.getByTestId('weight-input'), '12.8');
+    await fireEvent.changeText(
+      screen.getByTestId('weight-date-input'),
+      '2026-08-20',
+    );
+    await fireEvent.changeText(screen.getByTestId('weight-bc-input'), '6');
+    await fireEvent.press(screen.getByTestId('weight-submit'));
+
+    await waitFor(() =>
+      expect(mockCreateWeight).toHaveBeenCalledWith(
+        apiUrl,
+        'jwt-token',
+        'pet-1',
+        { weightKg: 12.8, measuredAt: '2026-08-20', bodyCondition: 6 },
+      ),
+    );
+    await waitFor(() => expect(mockListWeights).toHaveBeenCalledTimes(2));
+    expect(screen.getByTestId('weight-input').props.value).toBe('');
+    expect(screen.getByTestId('weight-bc-input').props.value).toBe('');
+    expect(screen.getByTestId('weight-date-input').props.value).toBe(
+      localTodayIso(),
+    );
+    expect(screen.queryByTestId('weight-form-error')).toBeNull();
+  });
+
+  it('omits body condition when its field is blank', async () => {
+    mockCreateWeight.mockResolvedValue({
+      kind: 'ok',
+      weight: makeWeight({ bodyCondition: null }),
+    });
+
+    await renderWeightLog();
+    await waitFor(() => expect(screen.getByTestId('weight-input')).toBeVisible());
+    await fireEvent.changeText(screen.getByTestId('weight-input'), '12.4');
+    await fireEvent.press(screen.getByTestId('weight-submit'));
+
+    await waitFor(() =>
+      expect(mockCreateWeight).toHaveBeenCalledWith(
+        apiUrl,
+        'jwt-token',
+        'pet-1',
+        { weightKg: 12.4, measuredAt: localTodayIso() },
+      ),
+    );
+  });
+
+  it('joins backend validation messages', async () => {
+    mockCreateWeight.mockResolvedValue({
+      kind: 'validation',
+      errors: [
+        { path: 'weightKg', message: 'Weight is too high' },
+        { path: 'measuredAt', message: 'Date is in the future' },
+      ],
+    });
+
+    await renderWeightLog();
+    await waitFor(() => expect(screen.getByTestId('weight-input')).toBeVisible());
+    await fireEvent.changeText(screen.getByTestId('weight-input'), '1000');
+    await fireEvent.press(screen.getByTestId('weight-submit'));
+
+    await waitFor(() =>
+      expect(screen.getByTestId('weight-form-error').props.children).toBe(
+        'Weight is too high\nDate is in the future',
+      ),
+    );
+  });
+
+  it.each([
+    [{ kind: 'forbidden' } as const, 'Only the owner can log weights'],
+    [{ kind: 'error' } as const, 'Something went wrong'],
+    [{ kind: 'missing-config' } as const, 'Something went wrong'],
+    [
+      { kind: 'unreachable', message: 'network down' } as const,
+      'Cannot reach server',
+    ],
+  ])('maps $expected.kind to its form error', async (result, message) => {
+    mockCreateWeight.mockResolvedValue(result);
+
+    await renderWeightLog();
+    await waitFor(() => expect(screen.getByTestId('weight-input')).toBeVisible());
+    await fireEvent.changeText(screen.getByTestId('weight-input'), '12.4');
+    await fireEvent.press(screen.getByTestId('weight-submit'));
+
+    await waitFor(() =>
+      expect(screen.getByTestId('weight-form-error')).toHaveTextContent(message),
+    );
+  });
+
+  it('disables submit while the request is pending', async () => {
+    mockCreateWeight.mockReturnValue(pending<CreateWeightState>());
+
+    await renderWeightLog();
+    await waitFor(() => expect(screen.getByTestId('weight-input')).toBeVisible());
+    await fireEvent.changeText(screen.getByTestId('weight-input'), '12.4');
+    await fireEvent.press(screen.getByTestId('weight-submit'));
+
+    await waitFor(() =>
+      expect(screen.getByTestId('weight-submit').props.accessibilityState).toEqual(
+        expect.objectContaining({ disabled: true }),
+      ),
+    );
   });
 });
