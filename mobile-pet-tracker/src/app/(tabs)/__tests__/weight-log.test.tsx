@@ -201,3 +201,31 @@ describe('R7: weight log lista el historial', () => {
     expect(mockListWeights).toHaveBeenCalledTimes(2);
   });
 });
+
+describe('R8: weight log monta la gráfica', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockCreateWeight.mockReturnValue(pending());
+  });
+
+  it('passes loaded entries to the chart', async () => {
+    mockListWeights.mockResolvedValue({
+      kind: 'ok',
+      weights: [
+        makeWeight(),
+        makeWeight({ id: 'weight-2', measuredAt: '2026-07-21' }),
+      ],
+    });
+
+    await renderWeightLog();
+
+    await waitFor(() => expect(screen.getByTestId('weight-chart')).toBeVisible());
+  });
+});
