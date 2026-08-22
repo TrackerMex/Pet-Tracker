@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { render, screen } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
 
@@ -5,11 +6,13 @@ import type { WeightEntry } from '../../api/types';
 import { WeightChart } from '../weight-chart';
 
 jest.mock('react-native-svg', () => {
-  const React = require('react');
-  const { View } = require('react-native');
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>(
+    'react-native',
+  );
   const actual = jest.requireActual('react-native-svg');
   const Svg = (props: Record<string, unknown>) =>
-    React.createElement(View, props, props.children);
+    React.createElement(View, props, props.children as ReactNode);
   const Polyline = (props: Record<string, unknown>) =>
     React.createElement(View, { ...props, testID: 'weight-chart-line' });
 

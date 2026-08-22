@@ -33,13 +33,18 @@ jest.mock('../../../providers/auth-provider', () => ({
 }));
 
 jest.mock('expo-router', () => {
-  const React = require('react');
-  const { View } = require('react-native');
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>(
+    'react-native',
+  );
 
   return {
     router: { push: jest.fn(), back: jest.fn() },
-    Redirect: ({ href }: { href: string }) =>
-      React.createElement(View, { testID: 'weight-log-redirect', href }),
+    Redirect: ({ href }: { href: string }) => {
+      const props = { testID: 'weight-log-redirect', href };
+
+      return React.createElement(View, props);
+    },
   };
 });
 
