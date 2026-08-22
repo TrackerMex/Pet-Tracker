@@ -1,11 +1,15 @@
 import { Redirect, router } from 'expo-router';
-import { Button, Card, Spinner } from 'heroui-native';
-import { useMemo } from 'react';
+import { Button, Card, Input, Label, Spinner, TextField } from 'heroui-native';
+import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft } from 'reicon-react-native';
 
-import { listWeights, type WeightsState } from '../../api/health-records';
+import {
+  createWeight,
+  listWeights,
+  type WeightsState,
+} from '../../api/health-records';
 import { WeightChart } from '../../components/weight-chart';
 import { useApi } from '../../hooks/use-api';
 import { useAuth } from '../../providers/auth-provider';
@@ -16,19 +20,80 @@ function fmtVariation(variation: number | null): string {
   return variation > 0 ? `+${variation} kg` : `${variation} kg`;
 }
 
+function localTodayIso(): string {
+  const today = new Date();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  return `${today.getFullYear()}-${month}-${day}`;
+}
+
 function isWeightsError(state: WeightsState): boolean {
   return ['error', 'unreachable', 'missing-config'].includes(state.kind);
 }
 
 function WeightLogContent({ petId }: { petId: string }) {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
-  const { token } = useAuth();
+  const { signOut, token } = useAuth();
   const insets = useSafeAreaInsets();
+  const [weightText, setWeightText] = useState('');
+  const [measuredAt, setMeasuredAt] = useState(localTodayIso);
+  const [bodyConditionText, setBodyConditionText] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const weightsFn = useMemo(
     () => () => listWeights(baseUrl, token ?? '', petId),
     [baseUrl, petId, token],
   );
   const weights = useApi(weightsFn);
+
+  async function handleSubmit() {
+    const weightKg = parseFloat(weightText);
+    if (Number.isNaN(weightKg)) {
+      setFormError('Enter a valid weight');
+      return;
+    }
+
+    setSubmitting(true);
+    setFormError(null);
+
+    try {
+      const result = await createWeight(baseUrl, token ?? '', petId, {
+        weightKg,
+        measuredAt,
+        ...(bodyConditionText.trim()
+          ? { bodyCondition: Number(bodyConditionText) }
+          : {}),
+      });
+
+      switch (result.kind) {
+        case 'ok':
+          setWeightText('');
+          setMeasuredAt(localTodayIso());
+          setBodyConditionText('');
+          weights.refetch();
+          return;
+        case 'validation':
+          setFormError(result.errors.map(({ message }) => message).join('\n'));
+          return;
+        case 'forbidden':
+          setFormError('Only the owner can log weights');
+          return;
+        case 'unreachable':
+          setFormError('Cannot reach server');
+          return;
+        case 'unauthorized':
+          await signOut();
+          return;
+        case 'error':
+        case 'missing-config':
+          setFormError('Something went wrong');
+      }
+    } catch {
+      setFormError('Something went wrong');
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   return (
     <ScrollView
@@ -56,6 +121,54 @@ function WeightLogContent({ petId }: { petId: string }) {
 
       {weights.data?.kind === 'ok' ? (
         <WeightChart entries={weights.data.weights} />
+      ) : null}
+
+      {weights.data?.kind === 'ok' ? (
+        <Card className="gap-4 p-4">
+          <TextField>
+            <Label>Weight</Label>
+            <Input
+              testID="weight-input"
+              keyboardType="decimal-pad"
+              placeholder="Weight (kg)"
+              value={weightText}
+              onChangeText={setWeightText}
+            />
+          </TextField>
+          <TextField>
+            <Label>Measured at</Label>
+            <Input
+              testID="weight-date-input"
+              placeholder="YYYY-MM-DD"
+              value={measuredAt}
+              onChangeText={setMeasuredAt}
+            />
+          </TextField>
+          <TextField>
+            <Label>Body condition</Label>
+            <Input
+              testID="weight-bc-input"
+              keyboardType="number-pad"
+              placeholder="Body condition 1-9 (optional)"
+              value={bodyConditionText}
+              onChangeText={setBodyConditionText}
+            />
+          </TextField>
+
+          {formError ? (
+            <Text testID="weight-form-error" className="text-danger">
+              {formError}
+            </Text>
+          ) : null}
+
+          <Button
+            testID="weight-submit"
+            isDisabled={submitting}
+            onPress={() => void handleSubmit()}
+          >
+            Log weight
+          </Button>
+        </Card>
       ) : null}
 
       {weights.data === undefined ? (
