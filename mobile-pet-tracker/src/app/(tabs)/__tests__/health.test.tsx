@@ -5,6 +5,7 @@ import {
   waitFor,
   within,
 } from '@testing-library/react-native';
+import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
 
@@ -15,7 +16,7 @@ import {
   type WeightsState,
 } from '../../../api/health-records';
 import { listPets, type PetsState } from '../../../api/pets';
-import type { PetProfile, Vaccine } from '../../../api/types';
+import type { PetProfile, Vaccine, WeightEntry } from '../../../api/types';
 import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
 import { SelectedPetProvider } from '../../../providers/selected-pet-provider';
 import HealthScreen from '../health';
@@ -47,6 +48,7 @@ const mockListPets = jest.mocked(listPets);
 const mockListVaccines = jest.mocked(listVaccines);
 const mockListWeights = jest.mocked(listWeights);
 const mockUseAuth = jest.mocked(useAuth);
+const mockRouter = jest.mocked(router);
 
 function makePet(overrides: Partial<PetProfile> = {}): PetProfile {
   return {
@@ -90,6 +92,18 @@ function makeVaccine(overrides: Partial<Vaccine> = {}): Vaccine {
     clinic: null,
     notes: null,
     documentKey: null,
+    ...overrides,
+  };
+}
+
+function makeWeight(overrides: Partial<WeightEntry> = {}): WeightEntry {
+  return {
+    id: 'weight-1',
+    petId: 'pet-1',
+    weightKg: 12.4,
+    measuredAt: '2026-08-21',
+    bodyCondition: null,
+    variation: 0.4,
     ...overrides,
   };
 }
@@ -334,5 +348,84 @@ describe('R5: vacunas con la próxima destacada', () => {
 
     await waitFor(() => expect(screen.getByTestId('vaccines-empty')).toBeVisible());
     expect(mockListVaccines).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('R6: weight card enlaza al log', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockListVaccines.mockReturnValue(pending<VaccinesState>());
+  });
+
+  it('shows the current weight and opens the weight log', async () => {
+    mockListWeights.mockResolvedValue({
+      kind: 'ok',
+      weights: [makeWeight()],
+    });
+
+    await renderHealth();
+
+    await waitFor(() => expect(screen.getByTestId('weight-card')).toBeVisible());
+    expect(screen.getByText('Weight')).toBeVisible();
+    expect(screen.getByTestId('weight-current')).toHaveTextContent('12.4 kg');
+    expect(screen.getByTestId('weight-variation')).toHaveTextContent('+0.4 kg');
+
+    await fireEvent.press(screen.getByTestId('weight-log-link'));
+
+    expect(mockRouter.push).toHaveBeenCalledWith('/weight-log');
+  });
+
+  it.each([
+    [-0.2, '-0.2 kg'],
+    [0, '0 kg'],
+    [null, '—'],
+  ])('formats variation %p as %s', async (variation, expected) => {
+    mockListWeights.mockResolvedValue({
+      kind: 'ok',
+      weights: [makeWeight({ variation })],
+    });
+
+    await renderHealth();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('weight-variation')).toHaveTextContent(expected),
+    );
+  });
+
+  it('shows the empty state and keeps the log link', async () => {
+    mockListWeights.mockResolvedValue({ kind: 'ok', weights: [] });
+
+    await renderHealth();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('weight-card-empty')).toHaveTextContent(
+        'No weight entries yet',
+      ),
+    );
+    expect(screen.getByTestId('weight-log-link')).toBeVisible();
+  });
+
+  it.each([
+    { kind: 'error' } as const,
+    { kind: 'unreachable', message: 'network down' } as const,
+  ])('shows a $kind weight error and keeps the log link', async (state) => {
+    mockListWeights.mockResolvedValue(state);
+
+    await renderHealth();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('weight-card-error')).toHaveTextContent(
+        'Could not load weight',
+      ),
+    );
+    expect(screen.getByTestId('weight-log-link')).toBeVisible();
   });
 });
