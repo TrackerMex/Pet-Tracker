@@ -20,7 +20,7 @@ tags: [harness, spec, mobile]
 | R10 | `src/app/(tabs)/__tests__/map.test.tsx::R10: lost mode es stub deshabilitado` | `cbe518c feat(mobile-map): add disabled lost mode stub (R10)` |
 | R11 | `bun run --cwd mobile-pet-tracker typecheck` + `bun run --cwd mobile-pet-tracker lint` (exit 0, sin warnings) | `89ff665 fix(mobile-map): satisfy mobile checks (R3,R9,R11)` |
 | R12 | `./init.sh` exit 0 + suite móvil 21/193 + diff de contención y grep API vacíos | `6b00977 test(mobile-map): verify full map integration (R12)` |
-| R13 | pendiente (smoke humano Expo Go) | pendiente |
+| R13 | checkbox humano marcado en requirements.md (smoke Expo Go 2026-08-22: mascota premium ACT-002 con mapa/ruta/stats vía SIM_MODE, mascota free sin mapa; LocalStack reaprovisionado durante el smoke) | `ce75f03` Mark mobile map smoke test complete |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente" (R13 la
 cierra solo el humano marcando la casilla en [[requirements]]).

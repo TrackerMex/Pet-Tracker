@@ -661,7 +661,7 @@
   {
     "id": 36,
     "name": "mobile-map-live",
-    "status": "in_progress",
+    "status": "done",
     "priority": "P1",
     "description": "Tab Map fullscreen del diseño: última posición y ruta del día (positions/trips), stats (speed, distance, last update, GPS) y botón Activate Lost Mode. Decisión en spec con docs del día: expo-maps (alpha en SDK 57) vs react-native-maps (plan B maduro); ambos requieren el dev build de #32. API key de Google Maps = tarea humana previa al smoke. spec_author verifica si Lost Mode tiene endpoint en devices/alerts; si no, botón stub + feature backend al backlog. Aquí se reevalúa react-query (primer caso real de caché/polling entre Home y Map).",
     "acceptance_criteria": [

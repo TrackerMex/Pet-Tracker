@@ -1,9 +1,9 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-08-21
-**Features completadas**: 34/44 (`feature_list.json`)
-**En progreso**: ninguna. #35 `mobile-home-dashboard` cerrada; PR pendiente de merge humano.
-**Pendientes**: 10 (#18 y #36-#44).
+**Features completadas**: 35/45 (`feature_list.json`)
+**En progreso**: ninguna. #36 `mobile-map-live` cerrada; PR pendiente de merge humano.
+**Pendientes**: 10 (#18, #37-#45).
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
 desde 2026-08-10. Hay recursos vivos en la cuenta, aunque hoy sin coste.
@@ -71,6 +71,23 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Estado actual
+
+- **`mobile-map-live` (#36) done** (2026-08-22): tab Map fullscreen —
+  `src/api/positions.ts` (last + history) y `trips.ts` (`getDayRoute` compone
+  lista + detalles porque la lista no trae `path`), MapView/Marker/Polylines
+  con **react-native-maps 1.27.2** (única dep nueva, pin SDK 57, corre en
+  Expo Go; expo-maps descartado por alpha/no-Go), stats
+  speed/distance/lastUpdate/GPS, polling 15 s con `useFocusEffect` que para
+  sin foco (cleanup verificado por el reviewer), mascota free (402) sin mapa
+  ni polling, botón Lost Mode stub deshabilitado — backend sin endpoint,
+  **#45 `pet-lost-mode` al backlog**. Sin react-query (umbral de adopción
+  documentado en design §D2). Codex R1-R12 TDD rojo→verde; reviewer aprobó a
+  la primera (init.sh exit 0 propio, 21 suites/193 tests, contención vacía).
+  R13 smoke humano en Expo Go 2026-08-22: mascota premium (ACT-002,
+  SIM_MODE) con mapa/ruta/stats y mascota free sin mapa (`ce75f03`). API key
+  Google Maps propia = tarea humana diferida a builds (Expo Go usa la de
+  Expo). Ver `progress/impl_mobile-map-live.md` y
+  `progress/review_mobile-map-live.md`.
 
 - **`mobile-home-dashboard` (#35) done** (2026-08-21): Home real — clientes
   `src/api/pets.ts` y `activity.ts` con `fetchFn` inyectado y tipos a mano
@@ -769,6 +786,17 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-08-22** — #36 `mobile-map-live` **cerrada** (35/45). Spec con dos
+  decisiones fuertes verificadas con evidencia: react-native-maps 1.27.2
+  (bundleada en Expo Go, sin API key para el smoke) sobre expo-maps
+  (alpha, exige dev build), y sin react-query (polling 15 s sobre el
+  `useApi` de #35). Lost Mode sin endpoint backend → stub + **#45
+  `pet-lost-mode`** nueva en backlog. Codex R1-R12, review aprobado a la
+  primera, R13 smoke humano con SIM_MODE (premium con mapa, free sin mapa;
+  durante el smoke se reaprovisionó LocalStack —
+  `ResourceNotFoundException`, recursos no sobreviven reinicios del
+  contenedor). Siguiente: #37 `mobile-health` (P2).
 
 - **2026-08-21 (3)** — #35 `mobile-home-dashboard` **cerrada** (34/44). Ciclo
   en un día: spec (fetch en dos niveles lista+detail, `useApi` ≤30 líneas,
