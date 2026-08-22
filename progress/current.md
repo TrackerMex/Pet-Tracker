@@ -16,3 +16,5 @@
 - Handoff a Codex entregado 2026-08-21. Codex implementa R1–R12 en `feature/36-mobile-map-live`; R13 (smoke Expo Go) lo cierra el humano. Mientras Codex trabaja, este agente no toca `mobile-pet-tracker/` ni `backend-pet-tracker/`.
 - Codex inició la implementación: `./init.sh` verde (e2e omitidos por LocalStack apagado), branch sincronizada con origin y alcance/TDD R1→R12 confirmado. Se preservan cambios preexistentes ajenos en el working tree.
 - Codex completó R1–R12: TDD rojo/verde por R1–R10, 21 suites móviles/193 tests, typecheck/lint y `./init.sh` verdes, contención vacía. Evidencia completa en `progress/impl_mobile-map-live.md`; R13 sigue pendiente del humano.
+- Reviewer: **aprobado** R1–R12 (`progress/review_mobile-map-live.md`) — init.sh exit 0, suite móvil 21 suites/193 tests, react-native-maps 1.27.2 única dep nueva, cleanup del polling verificado, contención vacía.
+- Pendiente: R13 smoke humano en Expo Go (collar real o SIM_MODE en Android físico). #36 sigue `in_progress`.
