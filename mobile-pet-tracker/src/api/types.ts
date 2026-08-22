@@ -142,3 +142,12 @@ export interface Vaccine {
   notes: string | null;
   documentKey: string | null;
 }
+
+export interface WeightEntry {
+  id: string;
+  petId: string;
+  weightKg: number;
+  measuredAt: string;
+  bodyCondition: number | null;
+  variation: number | null;
+}
