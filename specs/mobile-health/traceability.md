@@ -18,7 +18,7 @@ tags: [harness, spec, mobile]
 | R8 | `src/components/__tests__/weight-chart.test.tsx::R8: la gráfica degrada con <2 puntos`; `src/app/(tabs)/__tests__/weight-log.test.tsx::R8: weight log monta la gráfica` | `c542020 feat(mobile-health): add weight trend chart (R8)` |
 | R9 | `src/app/(tabs)/__tests__/weight-log.test.tsx::R9: alta de peso con degradación por kind` | `6cf3874 feat(mobile-health): add inline weight creation (R9)` |
 | R10 | `src/app/(tabs)/__tests__/profile.test.tsx::R10: profile aloja health-check y theme toggle`; `src/app/(tabs)/__tests__/screens.test.tsx::R5,R6` | `00f075b feat(mobile-health): move app health controls to profile (R10)` |
-| R11 | pendiente | pendiente |
+| R11 | `bun run typecheck`; `bun run lint` | `8614c15 fix(mobile-health): satisfy mobile checks (R11)` |
 | R12 | pendiente | pendiente |
 | R13 | pendiente | pendiente |
 
