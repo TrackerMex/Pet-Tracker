@@ -13,7 +13,7 @@ tags: [harness, spec, mobile]
 | R3 | `src/api/__tests__/health-records.test.ts::R3: createWeight publica y mapea por kind` | `3b1ebab feat(mobile-health): add weight creation client (R3)` |
 | R4 | `src/app/(tabs)/__tests__/health.test.tsx::R4: health resuelve la mascota seleccionada` | `149f6d9 feat(mobile-health): resolve pets in health hub (R4)` |
 | R5 | `src/app/(tabs)/__tests__/health.test.tsx::R5: vacunas con la próxima destacada` | `6802912 feat(mobile-health): add vaccine hub section (R5)` |
-| R6 | pendiente | pendiente |
+| R6 | `src/app/(tabs)/__tests__/health.test.tsx::R6: weight card enlaza al log` | `ca1a15c feat(mobile-health): add weight hub card (R6)` |
 | R7 | pendiente | pendiente |
 | R8 | pendiente | pendiente |
 | R9 | pendiente | pendiente |
