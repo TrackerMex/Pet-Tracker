@@ -680,7 +680,7 @@
   {
     "id": 37,
     "name": "mobile-health",
-    "status": "spec_ready",
+    "status": "in_progress",
     "priority": "P2",
     "description": "Tab Health del diseño + pantalla WeightLog: vacunas (lista, próximas) y registro de peso (lista + alta + gráfica simple) contra health/vaccines y health/weights. Posible primer uso de @gorhom/bottom-sheet (peer opcional de HeroUI, JS puro) para formularios.",
     "acceptance_criteria": [

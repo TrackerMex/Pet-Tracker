@@ -11,3 +11,6 @@
 - Branch `feature/37-mobile-health` creada desde main.
 - #37 esta `pending` → lanzar spec_author y PARAR hasta aprobación humana de la spec.
 - spec_author: spec de #37 escrita en `specs/mobile-health/` (R1–R13, status draft) y #37 → `spec_ready`; gate humano pendiente en `requirements.md` §Aprobación.
+- Humano aprobó la spec (commit propio, 2026-08-22); requirements.md → `approved`, #37 → `in_progress`.
+- Handoff a Codex CLI escrito en `progress/handoff_mobile-health.md`. Plan: Codex implementa R1–R12 con TDD (cliente health-records, hub Health, WeightLog + gráfica, traslado health-check a Profile). Claude no toca `mobile-pet-tracker/` mientras tanto.
+- Siguiente: humano corre Codex; al confirmar fin, lanzar reviewer sobre `progress/impl_mobile-health.md`.
