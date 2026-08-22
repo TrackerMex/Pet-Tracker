@@ -43,7 +43,7 @@ conducta ausente; después del commit verde, el test focalizado terminó con exi
 | R9 | `1114ae1` | `6cf3874` |
 | R10 | `de12228` | `00f075b` |
 | R11 | No aplica: gate estático | `8614c15` |
-| R12 | No aplica: gate de contención | Commit de verificación R12 en el historial inmediato |
+| R12 | No aplica: gate de contención | `1ebd4a3` |
 
 R10 aplica exactamente la excepción C4 aprobada: la cobertura antigua de
 health-check y theme toggle se trasladó a `profile.test.tsx` antes de modificar

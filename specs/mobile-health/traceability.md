@@ -19,8 +19,8 @@ tags: [harness, spec, mobile]
 | R9 | `src/app/(tabs)/__tests__/weight-log.test.tsx::R9: alta de peso con degradación por kind` | `6cf3874 feat(mobile-health): add inline weight creation (R9)` |
 | R10 | `src/app/(tabs)/__tests__/profile.test.tsx::R10: profile aloja health-check y theme toggle`; `src/app/(tabs)/__tests__/screens.test.tsx::R5,R6` | `00f075b feat(mobile-health): move app health controls to profile (R10)` |
 | R11 | `bun run typecheck`; `bun run lint` | `8614c15 fix(mobile-health): satisfy mobile checks (R11)` |
-| R12 | pendiente | pendiente |
-| R13 | pendiente | pendiente |
+| R12 | `bun run test`; `./init.sh`; checks de contención de rutas, dependencias e imports | `1ebd4a3 test(mobile-health): verify full integration (R12)` |
+| R13 | `requirements.md::R13 smoke humano en Expo Go (reservado al humano)` | N/A — fuera del alcance del implementer; no ejecutado |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
 Convención de commit: `feat(mobile-health): <desc> (R1,R2)`.
