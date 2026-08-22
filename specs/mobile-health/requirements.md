@@ -381,4 +381,4 @@ Todo lo demás (R1–R9) sigue TDD estricto con test rojo primero.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [X] Aprobado por humano (fecha: 22-08-22) ← gate obligatorio antes de implementar
