@@ -14,7 +14,7 @@ import {
   type WeightsState,
 } from '../../../api/health-records';
 import { listPets, type PetsState } from '../../../api/pets';
-import type { PetProfile } from '../../../api/types';
+import type { PetProfile, Vaccine } from '../../../api/types';
 import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
 import { SelectedPetProvider } from '../../../providers/selected-pet-provider';
 import HealthScreen from '../health';
@@ -73,6 +73,22 @@ function makePet(overrides: Partial<PetProfile> = {}): PetProfile {
     activitySummary: null,
     createdAt: '2026-08-20T00:00:00.000Z',
     updatedAt: '2026-08-21T00:00:00.000Z',
+    ...overrides,
+  };
+}
+
+function makeVaccine(overrides: Partial<Vaccine> = {}): Vaccine {
+  return {
+    id: 'vaccine-1',
+    petId: 'pet-1',
+    catalogId: null,
+    name: 'Rabies',
+    appliedAt: '2026-08-01',
+    nextDoseAt: '2099-08-01',
+    vetName: null,
+    clinic: null,
+    notes: null,
+    documentKey: null,
     ...overrides,
   };
 }
@@ -199,5 +215,122 @@ describe('R4: health resuelve la mascota seleccionada', () => {
         1,
       );
     });
+  });
+});
+
+describe('R5: vacunas con la próxima destacada', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockListWeights.mockReturnValue(pending<WeightsState>());
+  });
+
+  it('shows a skeleton while vaccines are pending', async () => {
+    mockListVaccines.mockReturnValue(pending<VaccinesState>());
+
+    await renderHealth();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('vaccines-skeleton')).toBeVisible(),
+    );
+    expect(screen.getByTestId('vaccines-section')).toBeVisible();
+    expect(screen.getByText('Vaccines')).toBeVisible();
+  });
+
+  it('highlights the nearest future dose and keeps row order', async () => {
+    const vaccines = [
+      makeVaccine({
+        id: 'vaccine-2',
+        name: 'Leptospirosis',
+        appliedAt: '2026-08-20',
+        nextDoseAt: '2099-10-01',
+      }),
+      makeVaccine({ nextDoseAt: '2099-05-01' }),
+    ];
+    mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines });
+
+    await renderHealth();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('next-vaccine-card')).toBeVisible(),
+    );
+    expect(screen.getByTestId('next-vaccine-card')).toHaveTextContent('Next due');
+    expect(screen.getByTestId('next-vaccine-card')).toHaveTextContent('Rabies');
+    expect(screen.getByTestId('next-vaccine-card')).toHaveTextContent('2099-05-01');
+    expect(screen.getAllByTestId(/^vaccine-row-/).map(({ props }) => props.testID)).toEqual([
+      'vaccine-row-vaccine-2',
+      'vaccine-row-vaccine-1',
+    ]);
+  });
+
+  it('omits the next card when every dose is past or null', async () => {
+    mockListVaccines.mockResolvedValue({
+      kind: 'ok',
+      vaccines: [
+        makeVaccine({ nextDoseAt: '2000-01-01' }),
+        makeVaccine({ id: 'vaccine-2', nextDoseAt: null }),
+      ],
+    });
+
+    await renderHealth();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('vaccine-row-vaccine-1')).toBeVisible(),
+    );
+    expect(screen.queryByTestId('next-vaccine-card')).toBeNull();
+  });
+
+  it('marks an overdue next-dose date with the danger token', async () => {
+    mockListVaccines.mockResolvedValue({
+      kind: 'ok',
+      vaccines: [makeVaccine({ nextDoseAt: '2000-06-01' })],
+    });
+
+    await renderHealth();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('vaccine-row-vaccine-1')).toBeVisible(),
+    );
+    const overdueDate = screen.getByText('2000-06-01');
+    expect(overdueDate.props.className).toContain('text-danger');
+  });
+
+  it('shows the vaccines empty state', async () => {
+    mockListVaccines.mockResolvedValue({ kind: 'ok', vaccines: [] });
+
+    await renderHealth();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('vaccines-empty')).toHaveTextContent(
+        'No vaccines yet',
+      ),
+    );
+  });
+
+  it.each([
+    { kind: 'error' } as const,
+    { kind: 'unreachable', message: 'network down' } as const,
+  ])('shows and retries a $kind vaccine error', async (state) => {
+    mockListVaccines
+      .mockResolvedValueOnce(state)
+      .mockResolvedValueOnce({ kind: 'ok', vaccines: [] });
+
+    await renderHealth();
+    await waitFor(() =>
+      expect(screen.getByTestId('vaccines-error')).toHaveTextContent(
+        'Could not load vaccines',
+      ),
+    );
+    await fireEvent.press(screen.getByTestId('vaccines-retry'));
+
+    await waitFor(() => expect(screen.getByTestId('vaccines-empty')).toBeVisible());
+    expect(mockListVaccines).toHaveBeenCalledTimes(2);
   });
 });
