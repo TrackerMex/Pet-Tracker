@@ -3,6 +3,7 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
@@ -261,9 +262,10 @@ describe('R5: vacunas con la próxima destacada', () => {
     await waitFor(() =>
       expect(screen.getByTestId('next-vaccine-card')).toBeVisible(),
     );
-    expect(screen.getByTestId('next-vaccine-card')).toHaveTextContent('Next due');
-    expect(screen.getByTestId('next-vaccine-card')).toHaveTextContent('Rabies');
-    expect(screen.getByTestId('next-vaccine-card')).toHaveTextContent('2099-05-01');
+    const nextCard = within(screen.getByTestId('next-vaccine-card'));
+    expect(nextCard.getByText('Next due')).toBeVisible();
+    expect(nextCard.getByText('Rabies')).toBeVisible();
+    expect(nextCard.getByText('2099-05-01')).toBeVisible();
     expect(screen.getAllByTestId(/^vaccine-row-/).map(({ props }) => props.testID)).toEqual([
       'vaccine-row-vaccine-2',
       'vaccine-row-vaccine-1',

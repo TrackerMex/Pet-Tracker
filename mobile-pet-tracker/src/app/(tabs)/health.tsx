@@ -1,7 +1,8 @@
-import { Button, Spinner } from 'heroui-native';
+import { Button, Card, Skeleton, Spinner } from 'heroui-native';
 import { useCallback, useEffect, useMemo } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { HeartPulse } from 'reicon-react-native';
 
 import { listVaccines, listWeights } from '../../api/health-records';
 import { listPets, type PetsState } from '../../api/pets';
@@ -11,6 +12,13 @@ import { useSelectedPet } from '../../providers/selected-pet-provider';
 
 function isPetsError(state: PetsState): boolean {
   return ['error', 'unreachable', 'missing-config'].includes(state.kind);
+}
+
+function localTodayIso(): string {
+  const today = new Date();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  return `${today.getFullYear()}-${month}-${day}`;
 }
 
 export default function HealthScreen() {
@@ -37,8 +45,19 @@ export default function HealthScreen() {
         : null,
     [baseUrl, selectedPetId, token],
   );
-  useApi(vaccinesFn);
+  const vaccines = useApi(vaccinesFn);
   useApi(weightFn);
+  const today = localTodayIso();
+  const nextVaccine =
+    vaccines.data?.kind === 'ok'
+      ? [...vaccines.data.vaccines]
+          .filter(
+            ({ nextDoseAt }) => nextDoseAt !== null && nextDoseAt >= today,
+          )
+          .sort((a, b) =>
+            (a.nextDoseAt ?? '').localeCompare(b.nextDoseAt ?? ''),
+          )[0]
+      : undefined;
 
   useEffect(() => {
     if (pets.data?.kind !== 'ok' || pets.data.pets.length === 0) return;
@@ -109,6 +128,76 @@ export default function HealthScreen() {
             })}
           </View>
         </ScrollView>
+      ) : null}
+
+      {selectedPetId ? (
+        <View testID="vaccines-section" className="gap-3">
+          <View className="flex-row items-center gap-2">
+            <HeartPulse size={20} />
+            <Text className="text-lg font-semibold text-foreground">Vaccines</Text>
+          </View>
+
+          {vaccines.data === undefined || vaccines.isRefreshing ? (
+            <Skeleton
+              testID="vaccines-skeleton"
+              className="h-24 w-full rounded-2xl"
+            />
+          ) : null}
+
+          {nextVaccine ? (
+            <Card testID="next-vaccine-card" className="gap-1 p-4">
+              <Text className="text-sm text-accent">Next due</Text>
+              <Text className="font-semibold text-foreground">
+                {nextVaccine.name}
+              </Text>
+              <Text className="text-muted">{nextVaccine.nextDoseAt}</Text>
+            </Card>
+          ) : null}
+
+          {vaccines.data?.kind === 'ok' && vaccines.data.vaccines.length === 0 ? (
+            <Text testID="vaccines-empty" className="text-muted">
+              No vaccines yet
+            </Text>
+          ) : null}
+
+          {vaccines.data?.kind === 'error' ||
+          vaccines.data?.kind === 'unreachable' ? (
+            <View className="items-start gap-3">
+              <Text testID="vaccines-error" className="text-danger">
+                Could not load vaccines
+              </Text>
+              <Button testID="vaccines-retry" onPress={vaccines.refetch}>
+                Retry
+              </Button>
+            </View>
+          ) : null}
+
+          {vaccines.data?.kind === 'ok'
+            ? vaccines.data.vaccines.map((vaccine) => (
+                <Card
+                  key={vaccine.id}
+                  testID={`vaccine-row-${vaccine.id}`}
+                  className="gap-1 p-4"
+                >
+                  <Text className="font-semibold text-foreground">
+                    {vaccine.name}
+                  </Text>
+                  <Text className="text-muted">{vaccine.appliedAt}</Text>
+                  {vaccine.nextDoseAt ? (
+                    <Text
+                      className={
+                        vaccine.nextDoseAt < today
+                          ? 'text-danger'
+                          : 'text-muted'
+                      }
+                    >
+                      {vaccine.nextDoseAt}
+                    </Text>
+                  ) : null}
+                </Card>
+              ))
+            : null}
+        </View>
       ) : null}
     </ScrollView>
   );
