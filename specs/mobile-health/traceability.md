@@ -15,7 +15,7 @@ tags: [harness, spec, mobile]
 | R5 | `src/app/(tabs)/__tests__/health.test.tsx::R5: vacunas con la próxima destacada` | `6802912 feat(mobile-health): add vaccine hub section (R5)` |
 | R6 | `src/app/(tabs)/__tests__/health.test.tsx::R6: weight card enlaza al log` | `ca1a15c feat(mobile-health): add weight hub card (R6)` |
 | R7 | `src/app/(tabs)/__tests__/weight-log.test.tsx::R7: weight log lista el historial` | `dbd5141 feat(mobile-health): add weight log history (R7)` |
-| R8 | pendiente | pendiente |
+| R8 | `src/components/__tests__/weight-chart.test.tsx::R8: la gráfica degrada con <2 puntos`; `src/app/(tabs)/__tests__/weight-log.test.tsx::R8: weight log monta la gráfica` | `c542020 feat(mobile-health): add weight trend chart (R8)` |
 | R9 | pendiente | pendiente |
 | R10 | pendiente | pendiente |
 | R11 | pendiente | pendiente |
