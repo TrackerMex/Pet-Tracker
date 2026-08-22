@@ -1,8 +1,9 @@
+import { router } from 'expo-router';
 import { Button, Card, Skeleton, Spinner } from 'heroui-native';
 import { useCallback, useEffect, useMemo } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { HeartPulse } from 'reicon-react-native';
+import { ChevronRight, HeartPulse } from 'reicon-react-native';
 
 import { listVaccines, listWeights } from '../../api/health-records';
 import { listPets, type PetsState } from '../../api/pets';
@@ -19,6 +20,11 @@ function localTodayIso(): string {
   const month = String(today.getMonth() + 1).padStart(2, '0');
   const day = String(today.getDate()).padStart(2, '0');
   return `${today.getFullYear()}-${month}-${day}`;
+}
+
+function fmtVariation(variation: number | null): string {
+  if (variation === null) return '—';
+  return variation > 0 ? `+${variation} kg` : `${variation} kg`;
 }
 
 export default function HealthScreen() {
@@ -46,7 +52,7 @@ export default function HealthScreen() {
     [baseUrl, selectedPetId, token],
   );
   const vaccines = useApi(vaccinesFn);
-  useApi(weightFn);
+  const weight = useApi(weightFn);
   const today = localTodayIso();
   const nextVaccine =
     vaccines.data?.kind === 'ok'
@@ -198,6 +204,48 @@ export default function HealthScreen() {
               ))
             : null}
         </View>
+      ) : null}
+
+      {selectedPetId ? (
+        <Card testID="weight-card" className="gap-3 p-4">
+          <Text className="text-lg font-semibold text-foreground">Weight</Text>
+
+          {weight.data?.kind === 'ok' && weight.data.weights.length > 0 ? (
+            <View className="flex-row items-baseline gap-3">
+              <Text
+                testID="weight-current"
+                className="text-xl font-semibold text-foreground"
+              >
+                {weight.data.weights[0].weightKg} kg
+              </Text>
+              <Text testID="weight-variation" className="text-muted">
+                {fmtVariation(weight.data.weights[0].variation)}
+              </Text>
+            </View>
+          ) : null}
+
+          {weight.data?.kind === 'ok' && weight.data.weights.length === 0 ? (
+            <Text testID="weight-card-empty" className="text-muted">
+              No weight entries yet
+            </Text>
+          ) : null}
+
+          {weight.data?.kind === 'error' || weight.data?.kind === 'unreachable' ? (
+            <Text testID="weight-card-error" className="text-danger">
+              Could not load weight
+            </Text>
+          ) : null}
+
+          <Pressable
+            accessibilityRole="button"
+            testID="weight-log-link"
+            className="flex-row items-center justify-between rounded-xl bg-surface px-3 py-2"
+            onPress={() => router.push('/weight-log')}
+          >
+            <Text className="font-semibold text-foreground">Weight log</Text>
+            <ChevronRight size={20} />
+          </Pressable>
+        </Card>
       ) : null}
     </ScrollView>
   );
