@@ -8,7 +8,7 @@ tags: [harness, spec, mobile]
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | pendiente | pendiente |
+| R1 | `src/api/__tests__/health-records.test.ts::R1: listVaccines mapea la respuesta por kind` | `c43f2b9 feat(mobile-health): add vaccine records client (R1)` |
 | R2 | pendiente | pendiente |
 | R3 | pendiente | pendiente |
 | R4 | pendiente | pendiente |
