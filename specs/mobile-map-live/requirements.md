@@ -253,7 +253,7 @@ Todo código nuevo (R1–R9) sigue TDD estricto con test rojo primero.
   8. Botón `Activate Lost Mode` visible y deshabilitado.
   9. Salir del tab Map y observar la consola/red: el polling se detiene.
 
-  - [ ] Smoke ejecutado por el humano (fecha: ____)
+  - [X] Smoke ejecutado por el humano (fecha: 2026-08-22)
 
 ## Fuera de alcance
 
