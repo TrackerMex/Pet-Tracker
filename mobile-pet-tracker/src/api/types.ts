@@ -129,3 +129,16 @@ export interface TripSummary {
 export interface TripDetail extends TripSummary {
   path: TripPoint[];
 }
+
+export interface Vaccine {
+  id: string;
+  petId: string;
+  catalogId: string | null;
+  name: string;
+  appliedAt: string;
+  nextDoseAt: string | null;
+  vetName: string | null;
+  clinic: string | null;
+  notes: string | null;
+  documentKey: string | null;
+}
