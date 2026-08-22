@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft } from 'reicon-react-native';
 
 import { listWeights, type WeightsState } from '../../api/health-records';
+import { WeightChart } from '../../components/weight-chart';
 import { useApi } from '../../hooks/use-api';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
@@ -52,6 +53,10 @@ function WeightLogContent({ petId }: { petId: string }) {
         </Pressable>
         <Text className="text-2xl font-semibold text-foreground">Weight log</Text>
       </View>
+
+      {weights.data?.kind === 'ok' ? (
+        <WeightChart entries={weights.data.weights} />
+      ) : null}
 
       {weights.data === undefined ? (
         <Spinner testID="weight-log-loading" />

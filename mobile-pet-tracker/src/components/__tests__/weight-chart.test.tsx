@@ -30,9 +30,9 @@ function makeWeight(overrides: Partial<WeightEntry> = {}): WeightEntry {
 
 describe('R8: la gráfica degrada con <2 puntos', () => {
   it.each([
-    [],
-    [makeWeight()],
-  ])('renders the empty fallback for %i entries', async (entries) => {
+    { count: 0, entries: [] },
+    { count: 1, entries: [makeWeight()] },
+  ])('renders the empty fallback for $count entries', async ({ entries }) => {
     await render(<WeightChart entries={entries} />, {
       wrapper: HeroUINativeProvider,
     });
