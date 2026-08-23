@@ -13,3 +13,7 @@
 - #46 esta `pending` → explorer extrae el diseño y compara con la app; luego spec_author y PARAR hasta aprobación humana.
 - Explorer sin acceso a recursos MCP (limitación de subagentes): leader volcó la fuente del Make a `specs/mobile-figma-polish/design-src/` (App.tsx 1849 líneas, theme.css, fonts.css) — commit `cbde08a`. Exploración de la app actual completa en `progress/explore_mobile-figma-polish.md`.
 - spec_author: spec R1–R12 escrita (commit `3e1483d`), #46 → `spec_ready`. Gate humano pendiente en `requirements.md` §Aprobación — 5 decisiones a ratificar (acento verde, dark derivado, Inter estática, tab bar anclada, heros/gradientes fuera).
+- Ajuste pre-aprobación pedido por el humano: R4 conserva la pill flotante (solo re-tokenizada); barra anclada del Make rechazada. Consulta SF resuelta: se mantiene Inter (SF sin licencia fuera de Apple).
+- Humano aprobó la spec (commit `b30f4a5`, 2026-08-23); requirements.md → `approved`, #46 → `in_progress`.
+- Handoff a Codex CLI escrito en `progress/handoff_mobile-figma-polish.md`. Plan: Codex re-tokeniza tema (R1–R2 TDD), carga Inter (R3 TDD), re-estiliza tab bar/chart/pantallas (R4–R11 sin TDD, suite intacta). Claude no toca `mobile-pet-tracker/` mientras tanto.
+- Siguiente: humano corre Codex; al confirmar fin, lanzar reviewer sobre `progress/impl_mobile-figma-polish.md`.
