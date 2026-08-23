@@ -36,7 +36,6 @@
       --field-foreground: var(--foreground);
       --field-placeholder: var(--muted);
       --field-border: transparent;
-      --radius: 1.25rem;
       --field-radius: 0.75rem;
     }
 
@@ -62,7 +61,6 @@
       --field-foreground: var(--foreground);
       --field-placeholder: var(--muted);
       --field-border: transparent;
-      --radius: 1.25rem;
       --field-radius: 0.75rem;
     }
   }

@@ -50,9 +50,12 @@ describe('R1: global.css define los tokens light exactos del diseño', () => {
       warning: '#F59E0B',
       success: '#0F9B5A',
       focus: '#2AB87C',
-      radius: '1.25rem',
       'field-radius': '0.75rem',
     });
+  });
+
+  it('no sobreescribe --radius (base de la escala rounded-* de heroui-native)', () => {
+    expect(globalCss).not.toMatch(/--radius:/);
   });
 });
 
