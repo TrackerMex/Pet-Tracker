@@ -245,3 +245,12 @@ No cambió ningún `testID`, texto visible, flujo, navegación, API o dependenci
   infra 2 suites/14 tests, harness 11 suites/28 tests y móvil 28 suites/284
   tests. Los e2e se omitieron automáticamente porque LocalStack no respondió
   en `127.0.0.1:4566`.
+
+## R12 — smoke humano: COMPLETO
+
+Fecha: 2026-08-23. El humano ejecutó el smoke lado a lado contra el Make en
+Expo Go (Android físico), light y dark, en rondas iterativas con 3
+correcciones intermedias (radius `e370daa`, stylesheet dark `e2d3d50`,
+dark 2ª ronda `d28d406`+`b5bff10`). Confirmación final del humano en sesión:
+"R12 completo" — pantallas en alcance validadas, incluido el caso de cambio
+de tema con tabs montadas y el mapa en dark.
