@@ -181,3 +181,67 @@ Fecha: 2026-08-23
   infra 2 suites/14 tests, harness 11 suites/28 tests y móvil 27 suites/279
   tests. Los e2e se omitieron automáticamente al no responder LocalStack en
   `127.0.0.1:4566`.
+
+## Corrección post-smoke: dark mode 2
+
+Fecha: 2026-08-23
+
+### Causa raíz por bug
+
+- **Bug 1 — Profile:** `Sun` y `Moon` no recibían `color`. Reicon conserva
+  `currentColor` en el XML cuando falta esa prop y Android lo termina pintando
+  negro. Ambos glifos reciben ahora el token `foreground`; el árbol renderizado
+  en dark comprueba `#F7F8FA`.
+- **Bug 2 — iconos de tabs montadas:** la inspección de Uniwind confirmó que
+  `useCSSVariable` sí se suscribe a `Theme` y `Variables`, por lo que la causa
+  no era una ausencia literal de suscripción. Sin embargo, `useThemeColor`
+  conserva el resultado en estado y depende de que ese listener refresque la
+  prop; en el tab Health preservado por Expo Router, el smoke físico observó
+  que seguía entregando el valor anterior/no resoluble. El aspecto stale del
+  runtime nativo no es reproducible fielmente en Jest porque allí el
+  stylesheet de Uniwind está vacío. El fix elimina esa dependencia del valor
+  cacheado: `useThemeColors` se suscribe explícitamente a
+  `useUniwind().theme` y, en cada render provocado por el tema, lee de forma
+  síncrona el `--color-<token>` activo con fallback al token base y finalmente
+  a `foreground`, nunca a `invalid`. Se aplicó a Profile, Health, Home,
+  Weight log, la floating tab bar y WeightChart; además, todos los glifos que
+  aún carecían de `color` en esas pantallas reciben ahora un token semántico.
+  Un test de pantalla preservada cambia light → dark y verifica que Syringe
+  cambia `#F59E0B` → `#FBBF24`; un test unitario cubre la re-resolución del
+  helper. La confirmación visual final sigue siendo el smoke en Android.
+- **Bug 3 — Map:** Google Maps para Android no hereda el tema visual de React
+  Native. `MapView` necesita una declaración JSON explícita. Se versionó el
+  estilo nocturno del tutorial oficial de Google y se pasa como
+  `customMapStyle` únicamente cuando `useUniwind().theme === 'dark'`; en light
+  la prop queda `undefined`. Fuente:
+  https://developers.google.com/maps/documentation/android-sdk/styling
+
+No cambió ningún `testID`, texto visible, flujo, navegación, API o dependencia.
+
+### TDD y commits locales
+
+- `26c8f84 test(mobile-figma-polish): reproduce dark tab and map regressions`:
+  tests rojos previos al fix; exit 1 por el helper inexistente y luego tres
+  fallos esperados en Profile, Health y Map.
+- `d28d406 fix(mobile-figma-polish): refresh tab colors with theme`: resolver
+  reactivo y tokens explícitos para los glifos de tabs.
+- `b5bff10 fix(mobile-figma-polish): style Google map in dark mode`: estilo
+  night oficial y selección light/dark en `MapView`.
+- No se hizo push.
+
+### Comandos y exit codes
+
+- `./init.sh` al inicio: exit 0; móvil 27 suites/279 tests.
+- Tests focalizados antes de implementar: exit 1 (rojo esperado).
+- Tests focalizados de Profile, Health y `use-theme-colors`: exit 0; 3 suites,
+  31 tests. `bun run typecheck` del mismo gate: exit 0.
+- Test focalizado de Map: exit 0; 1 suite, 25 tests. `bun run typecheck` y
+  `bun run lint`: exit 0.
+- `bun run test` final desde `mobile-pet-tracker/`: exit 0; 28 suites, 284
+  tests.
+- `bun run typecheck`: exit 0.
+- `bun run lint`: exit 0.
+- `./init.sh` final: exit 0 (`Todo verde`); backend 143 suites/1111 tests,
+  infra 2 suites/14 tests, harness 11 suites/28 tests y móvil 28 suites/284
+  tests. Los e2e se omitieron automáticamente porque LocalStack no respondió
+  en `127.0.0.1:4566`.
