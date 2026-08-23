@@ -219,42 +219,50 @@ export default function MapScreen() {
             }}
             className="gap-2"
           >
-            <Card className="p-4">
-              <View className="flex-row justify-between gap-2">
-                <View className="flex-1 items-center gap-1">
-                  <Text className="text-xs text-muted">Speed</Text>
+            <Card className="rounded-[20px] border border-border bg-surface p-3 shadow-sm">
+              <View className="flex-row gap-2">
+                <View className="flex-1 items-center rounded-xl bg-default p-3">
                   <Text
                     testID="stat-speed"
-                    className="font-semibold text-foreground"
+                    className="text-base font-black text-accent"
                   >
                     {fmtSpeed(latestSpeed)}
                   </Text>
+                  <Text className="mt-1 text-[10px] font-normal text-muted">
+                    Speed
+                  </Text>
                 </View>
-                <View className="flex-1 items-center gap-1">
-                  <Text className="text-xs text-muted">Distance</Text>
+                <View className="flex-1 items-center rounded-xl bg-default p-3">
                   <Text
                     testID="stat-distance"
-                    className="font-semibold text-foreground"
+                    className="text-base font-black text-accent"
                   >
                     {fmtKm(distanceM)}
                   </Text>
+                  <Text className="mt-1 text-[10px] font-normal text-muted">
+                    Distance
+                  </Text>
                 </View>
-                <View className="flex-1 items-center gap-1">
-                  <Text className="text-xs text-muted">Updated</Text>
+                <View className="flex-1 items-center rounded-xl bg-default p-3">
                   <Text
                     testID="stat-updated"
-                    className="font-semibold text-foreground"
+                    className="text-base font-black text-muted"
                   >
                     {updated}
                   </Text>
+                  <Text className="mt-1 text-[10px] font-normal text-muted">
+                    Updated
+                  </Text>
                 </View>
-                <View className="flex-1 items-center gap-1">
-                  <Text className="text-xs text-muted">GPS</Text>
+                <View className="flex-1 items-center rounded-xl bg-default p-3">
                   <Text
                     testID="stat-gps"
-                    className="font-semibold text-foreground"
+                    className="text-base font-black text-muted"
                   >
                     {gps}
+                  </Text>
+                  <Text className="mt-1 text-[10px] font-normal text-muted">
+                    GPS
                   </Text>
                 </View>
               </View>
@@ -262,11 +270,17 @@ export default function MapScreen() {
             <Button
               testID="lost-mode-button"
               isDisabled
+              variant="danger-soft"
               accessibilityState={{ disabled: true }}
+              className="rounded-xl border border-danger/20 bg-danger-soft"
             >
-              Activate Lost Mode
+              <Button.Label className="font-bold text-danger">
+                Activate Lost Mode
+              </Button.Label>
             </Button>
-            <Text className="text-center text-xs text-muted">Coming soon</Text>
+            <Text className="text-center text-xs font-normal text-muted">
+              Coming soon
+            </Text>
           </View>
         </>
       ) : null}
