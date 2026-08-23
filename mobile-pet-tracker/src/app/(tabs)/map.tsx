@@ -4,6 +4,7 @@ import MapView, { Marker, Polyline } from 'react-native-maps';
 import { useCallback, useEffect, useMemo } from 'react';
 import { Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useUniwind } from 'uniwind';
 
 import { listPets, type PetsState } from '../../api/pets';
 import { getLastPosition, listPositions } from '../../api/positions';
@@ -11,6 +12,7 @@ import { getDayRoute } from '../../api/trips';
 import { useApi } from '../../hooks/use-api';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import mapStyleDark from '../../theme/map-style-dark.json';
 
 function isPetsError(state: PetsState): boolean {
   return ['error', 'unreachable', 'missing-config'].includes(state.kind);
@@ -44,6 +46,7 @@ export default function MapScreen() {
   const { token } = useAuth();
   const { selectedPetId, selectPet } = useSelectedPet();
   const insets = useSafeAreaInsets();
+  const { theme } = useUniwind();
   const petsFn = useCallback(
     () => listPets(baseUrl, token ?? ''),
     [baseUrl, token],
@@ -176,6 +179,7 @@ export default function MapScreen() {
             testID="map-view"
             style={{ flex: 1 }}
             initialRegion={initialRegion}
+            customMapStyle={theme === 'dark' ? mapStyleDark : undefined}
           >
             {position ? (
               <Marker
