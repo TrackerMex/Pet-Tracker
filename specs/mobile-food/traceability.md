@@ -1,0 +1,26 @@
+---
+feature: "mobile-food"
+status: draft        # draft | approved
+tags: [harness, spec, mobile]
+---
+
+# Trazabilidad — [[mobile-food]]
+
+| Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
+|---|---|---|
+| R1 | `src/api/__tests__/nutrition.test.ts::R1: getNutritionProfile mapea la respuesta por kind` | pendiente |
+| R2 | `src/api/__tests__/nutrition.test.ts::R2: getNutritionPlan mapea la respuesta por kind` | pendiente |
+| R3 | `src/api/__tests__/nutrition.test.ts::R3: generateNutritionPlan publica y mapea por kind` | pendiente |
+| R4 | `src/app/(tabs)/__tests__/food.test.tsx::R4: food resuelve la mascota seleccionada` | pendiente |
+| R5 | `src/app/(tabs)/__tests__/food.test.tsx::R5: plan del día con horarios y warnings` | pendiente |
+| R6 | `src/app/(tabs)/__tests__/food.test.tsx::R6: aiExplanation nullable con gracia` | pendiente |
+| R7 | `src/app/(tabs)/__tests__/meal-schedule.test.tsx::R7: meal schedule muestra horarios y perfil` | pendiente |
+| R8 | `src/app/(tabs)/__tests__/meal-schedule.test.tsx::R8: generar plan con degradación por kind` | pendiente |
+| R9 | `bun run typecheck`; `bun run lint` | pendiente |
+| R10 | `bun run test`; `./init.sh`; checks de contención de rutas, dependencias e imports | pendiente |
+| R11 | `requirements.md::R11 smoke humano en Expo Go (reservado al humano)` | pendiente |
+
+Regla: el reviewer no aprueba si alguna fila queda "pendiente".
+Convención de commit: `feat(mobile-food): <desc> (R1,R2)`.
+El implementer actualiza esta tabla tras cada commit; el reviewer la valida
+al aprobar (ver [[../../docs/specs|specs]] y [[../../CHECKPOINTS|CHECKPOINTS]] C5).
