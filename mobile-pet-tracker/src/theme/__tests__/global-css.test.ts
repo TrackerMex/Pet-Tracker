@@ -33,6 +33,10 @@ function parseVariables(block: string): Record<string, string> {
 }
 
 describe('R1: global.css define los tokens light exactos del diseño', () => {
+  it('incluye el código de la app en el escaneo de utilidades de Tailwind', () => {
+    expect(globalCss).toMatch(/@source\s+['"]\.\.\/['"];?/);
+  });
+
   it('mapea la paleta Figma Make a los tokens de heroui-native', () => {
     expect(parseVariables(extractVariant('light'))).toMatchObject({
       background: '#FFFFFF',
@@ -60,6 +64,23 @@ describe('R1: global.css define los tokens light exactos del diseño', () => {
 });
 
 describe('R2: global.css define la paleta dark derivada del diseño', () => {
+  it.each([
+    ['light', '#2AB87C', '#FFFFFF', '#6B7280', '#0F9B5A', '#F59E0B', '#EF4444'],
+    ['dark', '#2AB87C', '#FFFFFF', '#9CA3AF', '#34D399', '#FBBF24', '#F87171'],
+  ] as const)(
+    'materializa los colores semánticos para el resolver JS en %s',
+    (theme, accent, accentForeground, muted, success, warning, danger) => {
+      expect(parseVariables(extractVariant(theme))).toMatchObject({
+        'color-accent': accent,
+        'color-accent-foreground': accentForeground,
+        'color-muted': muted,
+        'color-success': success,
+        'color-warning': warning,
+        'color-danger': danger,
+      });
+    },
+  );
+
   it('usa neutros oscuros con el accent verde y sin copiar oklch del Make', () => {
     const darkVariant = extractVariant('dark');
 
