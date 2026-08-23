@@ -4,6 +4,14 @@
 
 @source '../../node_modules/heroui-native/lib';
 
+@theme {
+  --font-normal: 'Inter-Regular';
+  --font-medium: 'Inter-Medium';
+  --font-semibold: 'Inter-SemiBold';
+  --font-bold: 'Inter-Bold';
+  --font-black: 'Inter-Black';
+}
+
 @layer theme {
   :root {
     @variant light {
