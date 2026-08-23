@@ -55,3 +55,28 @@ describe('R1: global.css define los tokens light exactos del diseño', () => {
     });
   });
 });
+
+describe('R2: global.css define la paleta dark derivada del diseño', () => {
+  it('usa neutros oscuros con el accent verde y sin copiar oklch del Make', () => {
+    const darkVariant = extractVariant('dark');
+
+    expect(darkVariant).not.toContain('oklch(');
+    expect(parseVariables(darkVariant)).toMatchObject({
+      background: '#0D1117',
+      foreground: '#F7F8FA',
+      surface: '#161B22',
+      'surface-foreground': '#F7F8FA',
+      'surface-secondary': '#12231B',
+      default: '#1F242B',
+      muted: '#9CA3AF',
+      border: 'rgba(255,255,255,0.08)',
+      separator: 'rgba(255,255,255,0.08)',
+      accent: '#2AB87C',
+      'accent-foreground': '#FFFFFF',
+      danger: '#F87171',
+      warning: '#FBBF24',
+      success: '#34D399',
+      focus: '#2AB87C',
+    });
+  });
+});
