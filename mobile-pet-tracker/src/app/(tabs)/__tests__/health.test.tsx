@@ -8,7 +8,6 @@ import {
 import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
-import { SvgXml } from 'react-native-svg';
 
 import {
   listVaccines,
@@ -45,6 +44,20 @@ jest.mock('react-native-safe-area-context', () => ({
   ...jest.requireActual('react-native-safe-area-context'),
   useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
 }));
+
+jest.mock('reicon-react-native', () => {
+  const { View } = jest.requireActual('react-native');
+  const icon = (testID: string) =>
+    function MockIcon({ color }: { color?: string }) {
+      return <View testID={testID} style={{ color }} />;
+    };
+
+  return {
+    ChevronRight: icon('health-icon-chevron-right'),
+    HeartPulse: icon('health-icon-heart-pulse'),
+    Syringe: icon('health-icon-syringe'),
+  };
+});
 
 jest.mock(
   '../../../theme/use-theme-colors',
@@ -320,17 +333,17 @@ describe('R5: vacunas con la próxima destacada', () => {
     await waitFor(() =>
       expect(screen.getByTestId('next-vaccine-card')).toBeVisible(),
     );
-    const syringeXml = () =>
-      screen
-        .UNSAFE_getAllByType(SvgXml)
-        .find(({ props }) => props.width === 22)?.props.xml;
 
-    expect(syringeXml()).toContain('#F59E0B');
+    expect(screen.getAllByTestId('health-icon-syringe')[0]).toHaveStyle({
+      color: '#F59E0B',
+    });
 
     mockTheme = 'dark';
     await view.rerender(<HealthScreen />);
 
-    expect(syringeXml()).toContain('#FBBF24');
+    expect(screen.getAllByTestId('health-icon-syringe')[0]).toHaveStyle({
+      color: '#FBBF24',
+    });
   });
 
   it('omits the next card when every dose is past or null', async () => {

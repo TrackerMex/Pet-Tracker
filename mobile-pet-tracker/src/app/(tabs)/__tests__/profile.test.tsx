@@ -1,6 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
-import { SvgXml } from 'react-native-svg';
 import { Uniwind } from 'uniwind';
 
 import { fetchHealth, type HealthState } from '../../../api/health';
@@ -21,6 +20,19 @@ jest.mock('uniwind', () => ({
   ...jest.requireActual('uniwind'),
   useUniwind: () => ({ theme: mockTheme, hasAdaptiveThemes: false }),
 }));
+
+jest.mock('reicon-react-native', () => {
+  const { View } = jest.requireActual('react-native');
+  const icon = (testID: string) =>
+    function MockIcon({ color }: { color?: string }) {
+      return <View testID={testID} style={{ color }} />;
+    };
+
+  return {
+    Moon: icon('theme-icon-moon'),
+    Sun: icon('theme-icon-sun'),
+  };
+});
 
 jest.mock(
   '../../../theme/use-theme-colors',
@@ -114,7 +126,9 @@ describe('R10: profile aloja health-check y theme toggle', () => {
 
     await render(<ProfileScreen />, { wrapper: HeroUINativeProvider });
 
-    expect(screen.UNSAFE_getByType(SvgXml).props.xml).toContain('#F7F8FA');
+    expect(screen.getByTestId('theme-icon-sun')).toHaveStyle({
+      color: '#F7F8FA',
+    });
   });
 
   it('keeps profile title and sign-out action', async () => {

@@ -6,6 +6,7 @@ import { Uniwind, useUniwind } from 'uniwind';
 
 import { fetchHealth, type HealthState } from '../../api/health';
 import { useAuth } from '../../providers/auth-provider';
+import { useThemeColors } from '../../theme/use-theme-colors';
 
 const stateClassNames: Record<HealthState['kind'], string> = {
   ok: 'bg-success-soft text-success',
@@ -19,6 +20,7 @@ export default function ProfileScreen() {
   const { signOut } = useAuth();
   const [health, setHealth] = useState<HealthState>();
   const { theme } = useUniwind();
+  const [foreground] = useThemeColors(['foreground']);
 
   useEffect(() => {
     void fetchHealth(apiUrl).then(setHealth);
@@ -57,7 +59,11 @@ export default function ProfileScreen() {
             variant="secondary"
             onPress={() => Uniwind.setTheme(theme === 'dark' ? 'light' : 'dark')}
           >
-            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+            {theme === 'dark' ? (
+              <Sun size={20} color={foreground} />
+            ) : (
+              <Moon size={20} color={foreground} />
+            )}
           </Button>
           <Button
             testID="backend-health-retry"

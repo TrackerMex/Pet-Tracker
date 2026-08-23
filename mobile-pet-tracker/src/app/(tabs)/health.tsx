@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { Button, Card, Skeleton, Spinner, useThemeColor } from 'heroui-native';
+import { Button, Card, Skeleton, Spinner } from 'heroui-native';
 import { useCallback, useEffect, useMemo } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -10,6 +10,7 @@ import { listPets, type PetsState } from '../../api/pets';
 import { useApi } from '../../hooks/use-api';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import { useThemeColors } from '../../theme/use-theme-colors';
 
 function isPetsError(state: PetsState): boolean {
   return ['error', 'unreachable', 'missing-config'].includes(state.kind);
@@ -28,7 +29,7 @@ function fmtVariation(variation: number | null): string {
 }
 
 export default function HealthScreen() {
-  const [warning] = useThemeColor(['warning']);
+  const [warning, muted] = useThemeColors(['warning', 'muted']);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { token } = useAuth();
   const { selectedPetId, selectPet } = useSelectedPet();
@@ -142,7 +143,7 @@ export default function HealthScreen() {
       {selectedPetId ? (
         <View testID="vaccines-section" className="gap-3">
           <View className="flex-row items-center gap-2">
-            <HeartPulse size={20} />
+            <HeartPulse size={20} color={muted} />
             <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
               Vaccines
             </Text>
@@ -272,7 +273,7 @@ export default function HealthScreen() {
             onPress={() => router.push('/weight-log')}
           >
             <Text className="font-semibold text-foreground">Weight log</Text>
-            <ChevronRight size={20} />
+            <ChevronRight size={20} color={muted} />
           </Pressable>
         </Card>
       ) : null}

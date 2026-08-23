@@ -36,13 +36,13 @@ describe('R2: colores JS reaccionan al tema activo', () => {
     mockGetCSSVariable.mockClear();
   });
 
-  it('re-resuelve el token cuando una pantalla montada cambia a dark', () => {
-    const view = render(<ThemeColorProbe />);
+  it('re-resuelve el token cuando una pantalla montada cambia a dark', async () => {
+    const view = await render(<ThemeColorProbe />);
 
     expect(screen.getByTestId('theme-color-probe')).toHaveTextContent('#F59E0B');
 
     mockTheme = 'dark';
-    view.rerender(<ThemeColorProbe />);
+    await view.rerender(<ThemeColorProbe />);
 
     expect(screen.getByTestId('theme-color-probe')).toHaveTextContent('#FBBF24');
     expect(mockGetCSSVariable).toHaveBeenCalledWith('--color-warning');

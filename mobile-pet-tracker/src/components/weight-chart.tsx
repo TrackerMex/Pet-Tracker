@@ -1,4 +1,3 @@
-import { useThemeColor } from 'heroui-native';
 import { Text } from 'react-native';
 import Svg, {
   Circle,
@@ -10,9 +9,10 @@ import Svg, {
 } from 'react-native-svg';
 
 import type { WeightEntry } from '../api/types';
+import { useThemeColors } from '../theme/use-theme-colors';
 
 export function WeightChart({ entries }: { entries: WeightEntry[] }) {
-  const [accent] = useThemeColor(['accent']);
+  const [accent] = useThemeColors(['accent']);
 
   if (entries.length < 2) {
     return (

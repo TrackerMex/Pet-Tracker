@@ -6,7 +6,6 @@ import {
   Label,
   Spinner,
   TextField,
-  useThemeColor,
 } from 'heroui-native';
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
@@ -22,6 +21,7 @@ import { WeightChart } from '../../components/weight-chart';
 import { useApi } from '../../hooks/use-api';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import { useThemeColors } from '../../theme/use-theme-colors';
 
 function fmtVariation(variation: number | null): string {
   if (variation === null) return '—';
@@ -40,10 +40,11 @@ function isWeightsError(state: WeightsState): boolean {
 }
 
 function WeightLogContent({ petId }: { petId: string }) {
-  const [success, danger, muted] = useThemeColor([
+  const [success, danger, muted, foreground] = useThemeColors([
     'success',
     'danger',
     'muted',
+    'foreground',
   ]);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
@@ -127,7 +128,7 @@ function WeightLogContent({ petId }: { petId: string }) {
           className="rounded-full bg-default p-2"
           onPress={() => router.back()}
         >
-          <ArrowLeft size={20} />
+          <ArrowLeft size={20} color={foreground} />
         </Pressable>
         <Text className="text-2xl font-black text-foreground">Weight log</Text>
       </View>

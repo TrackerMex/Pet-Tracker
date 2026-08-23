@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import { Button, Card, Skeleton, Spinner, useThemeColor } from 'heroui-native';
+import { Button, Card, Skeleton, Spinner } from 'heroui-native';
 import { useCallback, useEffect, useMemo } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -19,6 +19,7 @@ import { getPet, listPets, type PetsState } from '../../api/pets';
 import { useApi } from '../../hooks/use-api';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import { useThemeColors } from '../../theme/use-theme-colors';
 
 function isPetsError(state: PetsState): boolean {
   return ['error', 'unreachable', 'missing-config'].includes(state.kind);
@@ -45,10 +46,11 @@ export default function HomeScreen() {
   const { token } = useAuth();
   const { selectedPetId, selectPet } = useSelectedPet();
   const insets = useSafeAreaInsets();
-  const [accent, success, warning] = useThemeColor([
+  const [accent, success, warning, muted] = useThemeColors([
     'accent',
     'success',
     'warning',
+    'muted',
   ]);
   const petsFn = useCallback(
     () => listPets(baseUrl, token ?? ''),
@@ -232,7 +234,7 @@ export default function HomeScreen() {
                   size={18}
                   color={
                     detail.data.pet.device.batteryPct === null
-                      ? undefined
+                      ? muted
                       : detail.data.pet.device.batteryPct > 60
                         ? success
                         : warning
@@ -292,7 +294,7 @@ export default function HomeScreen() {
           {activity.data?.kind === 'ok' ? (
             <View className="flex-row justify-between gap-3">
               <View className="flex-1 items-center gap-1 border-r border-border">
-                <Walk size={20} />
+                <Walk size={20} color={muted} />
                 <Text
                   testID="summary-activity"
                   className="text-sm font-bold text-foreground"
@@ -304,7 +306,7 @@ export default function HomeScreen() {
                 </Text>
               </View>
               <View className="flex-1 items-center gap-1 border-r border-border">
-                <Moon size={20} />
+                <Moon size={20} color={muted} />
                 <Text
                   testID="summary-sleep"
                   className="text-sm font-bold text-foreground"
@@ -314,7 +316,7 @@ export default function HomeScreen() {
                 <Text className="text-[10px] font-normal text-muted">Sleep</Text>
               </View>
               <View className="flex-1 items-center gap-1">
-                <Map size={20} />
+                <Map size={20} color={muted} />
                 <Text
                   testID="summary-distance"
                   className="text-sm font-bold text-foreground"
