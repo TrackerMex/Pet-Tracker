@@ -14,7 +14,7 @@ tags: [harness, spec]
 | R4 | `src/components/__tests__/floating-tab-bar.test.tsx::R7: tab bar renderiza y navega`; `::R8: tab bar flota con safe area` (verde, sin cambios) | `b9283f4 feat(mobile-figma-polish): retokenize floating tab labels (R4)` |
 | R5 | `src/components/__tests__/weight-chart.test.tsx::R8: la gráfica degrada con <2 puntos` (verde, sin cambios) | `0326dd6 feat(mobile-figma-polish): polish weight chart area (R5)` |
 | R6 | `src/app/(tabs)/__tests__/home.test.tsx` (22 tests R6–R10 verdes, sin cambios) | `2fd27a3 feat(mobile-figma-polish): polish home dashboard (R6)` |
-| R7 | pendiente (suite existente de map verde) | pendiente |
+| R7 | `src/app/(tabs)/__tests__/map.test.tsx` (23 tests R4–R10 verdes, sin cambios) | `7b491d3 feat(mobile-figma-polish): polish map status overlay (R7)` |
 | R8 | pendiente (suite existente de health verde) | pendiente |
 | R9 | pendiente (suite existente de weight-log verde) | pendiente |
 | R10 | pendiente (suite existente de profile verde) | pendiente |
