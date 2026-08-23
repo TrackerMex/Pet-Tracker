@@ -117,3 +117,67 @@ Verificación (en mobile-pet-tracker/):
 - `bun run test`: 27 suites / 276 tests passed — exit 0
 - `bun run typecheck`: exit 0
 - `bun run lint`: exit 0
+
+## Corrección post-smoke: dark mode
+
+Fecha: 2026-08-23
+
+### Causa raíz y reproducción
+
+- `global.css` solo declaraba como `@source` el código de heroui-native. Al
+  compilar desde `src/theme/`, Uniwind/Tailwind no escaneaba el resto de
+  `src/`; el artefacto Android anterior no contenía `bg-accent`,
+  `text-accent-foreground`, `font-black`, `text-[10px]` ni
+  `rounded-[20px]`. Esto reproduce de forma determinista el texto negro del
+  pet chip: la clase `text-accent-foreground` no llegaba al stylesheet nativo.
+- El mismo artefacto anterior sí contenía los aliases heredados
+  `--color-* -> --<token>` y un evaluador del objeto generado pudo resolverlos
+  en ambos temas. Por tanto, no había evidencia para remontar componentes ni
+  para cambiar `Uniwind.setTheme`. El negro de los SVG reportado en el Android
+  físico queda en el límite del resolver JS observado por el smoke, que Jest no
+  reproduce porque mapea los CSS a un stub vacío. Se eliminó esa indirección en
+  los colores consumidos por props: cada variant materializa sus
+  `--color-accent`, `--color-accent-foreground`, `--color-muted`,
+  `--color-success`, `--color-warning` y `--color-danger` con el mismo valor
+  aprobado del token base.
+
+### Fix
+
+- Se añadió `@source '../';` a `src/theme/global.css`, sin importar ni copiar
+  archivos de `design-src/`.
+- Se materializaron los seis aliases semánticos anteriores dentro de light y
+  dark. No cambió ningún valor de diseño, componente, `testID`, texto visible,
+  navegación, API o dependencia.
+- El bundle Android posterior incluye las seis utilidades muestreadas y el
+  evaluador del artefacto devuelve en dark `#2ab87c`, `#ffffff`, `#9ca3af`,
+  `#34d399`, `#fbbf24` y `#f87171`; ya no puede llegar `invalid` por esos
+  tokens a `reicon-react-native` ni al gradiente SVG.
+- El test R1/R2 de `global.css` cubre tanto el source de la app como la
+  materialización light/dark. La validación visual final de los SVG sigue
+  requiriendo repetir el smoke en dispositivo, porque no había emulador ni
+  dispositivo ADB disponible en esta sesión.
+
+### TDD y commits locales
+
+- `879a0d6 test(mobile-figma-polish): reproduce dark theme color regression`:
+  test focalizado rojo, exit 1 (3 fallos esperados).
+- `e2d3d50 fix(mobile-figma-polish): resolve dark theme colors`: fix CSS; test
+  focalizado verde, 6 tests, exit 0.
+- No se hizo push.
+
+### Comandos y exit codes
+
+- `./init.sh` al inicio: exit 0.
+- `bun run test -- --runInBand src/theme/__tests__/global-css.test.ts` antes
+  del fix: exit 1; después del fix: exit 0 (6/6).
+- `bunx expo export --platform android --no-bytecode --no-minify` antes y
+  después del fix: exit 0. Evaluación del config nativo generado: antes faltan
+  las utilidades de la app; después están presentes y los seis colores JS
+  dark resuelven a hex válidos.
+- `bun run typecheck`: exit 0.
+- `bun run lint`: exit 0.
+- `bun run test -- --runInBand`: exit 0; 27 suites, 279 tests.
+- `./init.sh` final: exit 0 (`Todo verde`); backend 143 suites/1111 tests,
+  infra 2 suites/14 tests, harness 11 suites/28 tests y móvil 27 suites/279
+  tests. Los e2e se omitieron automáticamente al no responder LocalStack en
+  `127.0.0.1:4566`.
