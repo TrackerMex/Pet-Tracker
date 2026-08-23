@@ -1,9 +1,9 @@
 import { router } from 'expo-router';
-import { Button, Card, Skeleton, Spinner } from 'heroui-native';
+import { Button, Card, Skeleton, Spinner, useThemeColor } from 'heroui-native';
 import { useCallback, useEffect, useMemo } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ChevronRight, HeartPulse } from 'reicon-react-native';
+import { ChevronRight, HeartPulse, Syringe } from 'reicon-react-native';
 
 import { listVaccines, listWeights } from '../../api/health-records';
 import { listPets, type PetsState } from '../../api/pets';
@@ -28,6 +28,7 @@ function fmtVariation(variation: number | null): string {
 }
 
 export default function HealthScreen() {
+  const [warning] = useThemeColor(['warning']);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { token } = useAuth();
   const { selectedPetId, selectPet } = useSelectedPet();
@@ -82,7 +83,7 @@ export default function HealthScreen() {
         paddingBottom: insets.bottom + 96,
       }}
     >
-      <Text className="text-2xl font-semibold text-foreground">Health</Text>
+      <Text className="text-2xl font-black text-foreground">Health</Text>
 
       {pets.data === undefined ? <Spinner testID="health-loading" /> : null}
 
@@ -118,13 +119,15 @@ export default function HealthScreen() {
                   className={
                     selected
                       ? 'rounded-full bg-accent px-4 py-2'
-                      : 'rounded-full bg-surface px-4 py-2'
+                      : 'rounded-full bg-default px-4 py-2'
                   }
                   onPress={() => selectPet(pet.id)}
                 >
                   <Text
                     className={
-                      selected ? 'text-accent-foreground' : 'text-foreground'
+                      selected
+                        ? 'font-semibold text-accent-foreground'
+                        : 'font-semibold text-foreground'
                     }
                   >
                     {pet.name}
@@ -140,7 +143,9 @@ export default function HealthScreen() {
         <View testID="vaccines-section" className="gap-3">
           <View className="flex-row items-center gap-2">
             <HeartPulse size={20} />
-            <Text className="text-lg font-semibold text-foreground">Vaccines</Text>
+            <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
+              Vaccines
+            </Text>
           </View>
 
           {vaccines.data === undefined || vaccines.isRefreshing ? (
@@ -151,17 +156,29 @@ export default function HealthScreen() {
           ) : null}
 
           {nextVaccine ? (
-            <Card testID="next-vaccine-card" className="gap-1 p-4">
-              <Text className="text-sm text-accent">Next due</Text>
-              <Text className="font-semibold text-foreground">
-                {nextVaccine.name}
-              </Text>
-              <Text className="text-muted">{nextVaccine.nextDoseAt}</Text>
+            <Card
+              testID="next-vaccine-card"
+              className="flex-row items-center gap-3 rounded-[20px] border border-border bg-surface p-4 shadow-sm"
+            >
+              <View className="size-11 items-center justify-center rounded-xl bg-warning-soft">
+                <Syringe size={22} color={warning} />
+              </View>
+              <View className="flex-1 gap-1">
+                <Text className="text-[10px] font-semibold text-warning">
+                  Next due
+                </Text>
+                <Text className="font-bold text-foreground">
+                  {nextVaccine.name}
+                </Text>
+                <Text className="font-normal text-muted">
+                  {nextVaccine.nextDoseAt}
+                </Text>
+              </View>
             </Card>
           ) : null}
 
           {vaccines.data?.kind === 'ok' && vaccines.data.vaccines.length === 0 ? (
-            <Text testID="vaccines-empty" className="text-muted">
+            <Text testID="vaccines-empty" className="font-normal text-muted">
               No vaccines yet
             </Text>
           ) : null}
@@ -183,18 +200,20 @@ export default function HealthScreen() {
                 <Card
                   key={vaccine.id}
                   testID={`vaccine-row-${vaccine.id}`}
-                  className="gap-1 p-4"
+                  className="gap-1 rounded-[20px] border border-border bg-surface p-4 shadow-sm"
                 >
-                  <Text className="font-semibold text-foreground">
+                  <Text className="font-bold text-foreground">
                     {vaccine.name}
                   </Text>
-                  <Text className="text-muted">{vaccine.appliedAt}</Text>
+                  <Text className="font-normal text-muted">
+                    {vaccine.appliedAt}
+                  </Text>
                   {vaccine.nextDoseAt ? (
                     <Text
                       className={
                         vaccine.nextDoseAt < today
-                          ? 'text-danger'
-                          : 'text-muted'
+                          ? 'font-normal text-danger'
+                          : 'font-normal text-muted'
                       }
                     >
                       {vaccine.nextDoseAt}
@@ -207,25 +226,35 @@ export default function HealthScreen() {
       ) : null}
 
       {selectedPetId ? (
-        <Card testID="weight-card" className="gap-3 p-4">
-          <Text className="text-lg font-semibold text-foreground">Weight</Text>
-
-          {weight.data?.kind === 'ok' && weight.data.weights.length > 0 ? (
-            <View className="flex-row items-baseline gap-3">
+        <Card
+          testID="weight-card"
+          className="gap-3 rounded-[20px] border border-border bg-surface p-4 shadow-sm"
+        >
+          <View className="flex-row items-baseline justify-between gap-3">
+            <Text className="text-sm font-bold text-foreground">Weight</Text>
+            {weight.data?.kind === 'ok' && weight.data.weights.length > 0 ? (
               <Text
                 testID="weight-current"
-                className="text-xl font-semibold text-foreground"
+                className="text-xl font-black text-accent"
               >
                 {weight.data.weights[0].weightKg} kg
               </Text>
-              <Text testID="weight-variation" className="text-muted">
+            ) : null}
+          </View>
+
+          {weight.data?.kind === 'ok' && weight.data.weights.length > 0 ? (
+            <View className="flex-row justify-end">
+              <Text
+                testID="weight-variation"
+                className="font-normal text-muted"
+              >
                 {fmtVariation(weight.data.weights[0].variation)}
               </Text>
             </View>
           ) : null}
 
           {weight.data?.kind === 'ok' && weight.data.weights.length === 0 ? (
-            <Text testID="weight-card-empty" className="text-muted">
+            <Text testID="weight-card-empty" className="font-normal text-muted">
               No weight entries yet
             </Text>
           ) : null}
@@ -239,7 +268,7 @@ export default function HealthScreen() {
           <Pressable
             accessibilityRole="button"
             testID="weight-log-link"
-            className="flex-row items-center justify-between rounded-xl bg-surface px-3 py-2"
+            className="flex-row items-center justify-between rounded-xl bg-default px-3 py-2"
             onPress={() => router.push('/weight-log')}
           >
             <Text className="font-semibold text-foreground">Weight log</Text>
