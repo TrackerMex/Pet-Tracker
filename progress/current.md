@@ -17,3 +17,5 @@
 - Humano aprobó la spec (commit `b30f4a5`, 2026-08-23); requirements.md → `approved`, #46 → `in_progress`.
 - Handoff a Codex CLI escrito en `progress/handoff_mobile-figma-polish.md`. Plan: Codex re-tokeniza tema (R1–R2 TDD), carga Inter (R3 TDD), re-estiliza tab bar/chart/pantallas (R4–R11 sin TDD, suite intacta). Claude no toca `mobile-pet-tracker/` mientras tanto.
 - Siguiente: humano corre Codex; al confirmar fin, lanzar reviewer sobre `progress/impl_mobile-figma-polish.md`.
+- Codex inicia implementación (2026-08-23 06:43 UTC) en `feature/46-mobile-figma-polish`: baseline `./init.sh` exit 0; plan R1–R3 con commits rojos previos, R4–R11 con commits atómicos y auditoría final de invariantes.
+- Codex completa R1–R11 y el gate automatizado de R12 (2026-08-23 07:04 UTC): móvil 27 suites/275 tests, typecheck y lint verdes; `./init.sh` exit 0. Auditoría confirma copy/testIDs intactos y diff de tests limitado a R1–R3. Siguiente: reviewer + smoke humano lado a lado antes de cerrar R12.
