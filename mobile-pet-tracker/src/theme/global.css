@@ -3,6 +3,7 @@
 @import 'heroui-native/styles';
 
 @source '../../node_modules/heroui-native/lib';
+@source '../';
 
 @theme {
   --font-normal: 'Inter-Regular';
@@ -31,6 +32,12 @@
       --danger: #EF4444;
       --warning: #F59E0B;
       --success: #0F9B5A;
+      --color-accent: #2AB87C;
+      --color-accent-foreground: #FFFFFF;
+      --color-muted: #6B7280;
+      --color-danger: #EF4444;
+      --color-warning: #F59E0B;
+      --color-success: #0F9B5A;
       --focus: #2AB87C;
       --field-background: var(--default);
       --field-foreground: var(--foreground);
@@ -56,6 +63,12 @@
       --danger: #F87171;
       --warning: #FBBF24;
       --success: #34D399;
+      --color-accent: #2AB87C;
+      --color-accent-foreground: #FFFFFF;
+      --color-muted: #9CA3AF;
+      --color-danger: #F87171;
+      --color-warning: #FBBF24;
+      --color-success: #34D399;
       --focus: #2AB87C;
       --field-background: var(--default);
       --field-foreground: var(--foreground);
