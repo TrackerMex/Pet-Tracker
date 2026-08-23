@@ -8,6 +8,7 @@ import {
 import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
+import { SvgXml } from 'react-native-svg';
 
 import {
   listVaccines,
@@ -20,6 +21,8 @@ import type { PetProfile, Vaccine, WeightEntry } from '../../../api/types';
 import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
 import { SelectedPetProvider } from '../../../providers/selected-pet-provider';
 import HealthScreen from '../health';
+
+let mockTheme: 'light' | 'dark' = 'light';
 
 jest.mock('../../../api/pets', () => ({
   listPets: jest.fn(),
@@ -42,6 +45,23 @@ jest.mock('react-native-safe-area-context', () => ({
   ...jest.requireActual('react-native-safe-area-context'),
   useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
 }));
+
+jest.mock(
+  '../../../theme/use-theme-colors',
+  () => ({
+    useThemeColors: (tokens: string[]) =>
+      tokens.map((token) => {
+        if (token === 'warning') {
+          return mockTheme === 'dark' ? '#FBBF24' : '#F59E0B';
+        }
+        if (token === 'muted') {
+          return mockTheme === 'dark' ? '#9CA3AF' : '#6B7280';
+        }
+        return mockTheme === 'dark' ? '#F7F8FA' : '#0D1117';
+      }),
+  }),
+  { virtual: true },
+);
 
 const apiUrl = 'http://example.test/v1';
 const mockListPets = jest.mocked(listPets);
@@ -121,8 +141,12 @@ function HealthWrapper({ children }: { children: ReactNode }) {
 }
 
 async function renderHealth() {
-  await render(<HealthScreen />, { wrapper: HealthWrapper });
+  return render(<HealthScreen />, { wrapper: HealthWrapper });
 }
+
+beforeEach(() => {
+  mockTheme = 'light';
+});
 
 describe('R4: health resuelve la mascota seleccionada', () => {
   beforeEach(() => {
@@ -284,6 +308,29 @@ describe('R5: vacunas con la próxima destacada', () => {
       'vaccine-row-vaccine-2',
       'vaccine-row-vaccine-1',
     ]);
+  });
+
+  it('re-resolves the syringe token when a mounted tab changes theme', async () => {
+    mockListVaccines.mockResolvedValue({
+      kind: 'ok',
+      vaccines: [makeVaccine()],
+    });
+    const view = await renderHealth();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('next-vaccine-card')).toBeVisible(),
+    );
+    const syringeXml = () =>
+      screen
+        .UNSAFE_getAllByType(SvgXml)
+        .find(({ props }) => props.width === 22)?.props.xml;
+
+    expect(syringeXml()).toContain('#F59E0B');
+
+    mockTheme = 'dark';
+    await view.rerender(<HealthScreen />);
+
+    expect(syringeXml()).toContain('#FBBF24');
   });
 
   it('omits the next card when every dose is past or null', async () => {

@@ -30,6 +30,7 @@ import {
 import MapScreen from '../map';
 
 let mockFocusCleanup: (() => void) | undefined;
+let mockTheme: 'light' | 'dark' = 'light';
 
 jest.mock('../../../api/pets', () => ({
   listPets: jest.fn(),
@@ -73,6 +74,11 @@ jest.mock('react-native-maps', () => {
 jest.mock('react-native-safe-area-context', () => ({
   ...jest.requireActual('react-native-safe-area-context'),
   useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
+}));
+
+jest.mock('uniwind', () => ({
+  ...jest.requireActual('uniwind'),
+  useUniwind: () => ({ theme: mockTheme, hasAdaptiveThemes: false }),
 }));
 
 const apiUrl = 'http://example.test/v1';
@@ -193,6 +199,7 @@ async function renderMap() {
 beforeEach(() => {
   jest.clearAllMocks();
   mockFocusCleanup = undefined;
+  mockTheme = 'light';
   initialSelectedPetId = null;
   process.env.EXPO_PUBLIC_API_URL = apiUrl;
   mockUseAuth.mockReturnValue({
@@ -344,6 +351,40 @@ describe('R6: mapa y marker con la última posición', () => {
     expect(screen.queryByTestId('map-marker')).toBeNull();
     expect(screen.getByTestId('map-empty')).toHaveTextContent(
       'No location data yet',
+    );
+  });
+});
+
+describe('R7 (mobile-figma-polish): mapa adapta su base al tema', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({
+      kind: 'ok',
+      position: makeLastPosition(),
+    });
+  });
+
+  it('leaves Google Maps unstyled in light mode', async () => {
+    await renderMap();
+
+    await waitFor(() => expect(screen.getByTestId('map-view')).toBeVisible());
+    expect(screen.getByTestId('map-view').props.customMapStyle).toBeUndefined();
+  });
+
+  it('passes the Google night style in dark mode', async () => {
+    mockTheme = 'dark';
+
+    await renderMap();
+
+    await waitFor(() => expect(screen.getByTestId('map-view')).toBeVisible());
+    expect(screen.getByTestId('map-view').props.customMapStyle).toEqual(
+      expect.arrayContaining([
+        {
+          featureType: 'all',
+          elementType: 'geometry',
+          stylers: [{ color: '#242f3e' }],
+        },
+      ]),
     );
   });
 });
