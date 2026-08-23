@@ -19,7 +19,7 @@ tags: [harness, spec]
 | R9 | `src/app/(tabs)/__tests__/weight-log.test.tsx` (suite verde, sin cambios) | `13bcfa0 feat(mobile-figma-polish): polish weight log (R9)` |
 | R10 | `src/app/(tabs)/__tests__/profile.test.tsx` (7 tests R10 verdes, sin cambios) | `41f25df feat(mobile-figma-polish): polish profile settings (R10)` |
 | R11 | `src/app/(auth)/__tests__/{login,register,forgot}.test.tsx` (17 tests verdes, sin cambios) | `ab5f2e7 feat(mobile-figma-polish): polish authentication forms (R11)` |
-| R12 | pendiente (suite completa + smoke humano en `progress/impl_mobile-figma-polish.md` — solo lo cierra el humano) | pendiente |
+| R12 | `bun run typecheck`, `bun run lint`, `bun run test -- --runInBand`, `./init.sh` y auditorías de contención: verdes; smoke lado a lado reservado al humano en `progress/impl_mobile-figma-polish.md` | `5fc534f docs(mobile-figma-polish): record automated verification (R12)`; smoke humano sin ejecutar |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
 Nota de esta feature: para R4–R11 la columna Test se cierra apuntando a la
