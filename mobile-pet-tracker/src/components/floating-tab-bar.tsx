@@ -1,4 +1,3 @@
-import { useThemeColor } from 'heroui-native';
 import { Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -8,6 +7,8 @@ import {
   Map,
   Profile,
 } from 'reicon-react-native';
+
+import { useThemeColors } from '../theme/use-theme-colors';
 
 interface TabRoute {
   key: string;
@@ -38,7 +39,7 @@ const TABS = [
 ] as const;
 
 export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
-  const [accent, muted] = useThemeColor(['accent', 'muted']);
+  const [accent, muted] = useThemeColors(['accent', 'muted']);
   const insets = useSafeAreaInsets();
   const activeRouteName = state.routes[state.index]?.name;
 
@@ -81,7 +82,13 @@ export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
               weight={isActive ? 'Filled' : 'Outline'}
               color={isActive ? accent : muted}
             />
-            <Text className={isActive ? 'text-xs text-accent' : 'text-xs text-muted'}>
+            <Text
+              className={
+                isActive
+                  ? 'text-[10px] font-semibold text-accent'
+                  : 'text-[10px] font-semibold text-muted'
+              }
+            >
               {label}
             </Text>
           </Pressable>

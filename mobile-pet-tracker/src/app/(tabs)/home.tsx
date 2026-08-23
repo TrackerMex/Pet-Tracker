@@ -19,6 +19,7 @@ import { getPet, listPets, type PetsState } from '../../api/pets';
 import { useApi } from '../../hooks/use-api';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import { useThemeColors } from '../../theme/use-theme-colors';
 
 function isPetsError(state: PetsState): boolean {
   return ['error', 'unreachable', 'missing-config'].includes(state.kind);
@@ -45,6 +46,12 @@ export default function HomeScreen() {
   const { token } = useAuth();
   const { selectedPetId, selectPet } = useSelectedPet();
   const insets = useSafeAreaInsets();
+  const [accent, success, warning, muted] = useThemeColors([
+    'accent',
+    'success',
+    'warning',
+    'muted',
+  ]);
   const petsFn = useCallback(
     () => listPets(baseUrl, token ?? ''),
     [baseUrl, token],
@@ -89,7 +96,7 @@ export default function HomeScreen() {
         paddingBottom: insets.bottom + 96,
       }}
     >
-      <Text className="text-2xl font-semibold text-foreground">Home</Text>
+      <Text className="text-2xl font-black text-foreground">Home</Text>
 
       {pets.data === undefined ? <Spinner testID="home-loading" /> : null}
 
@@ -125,13 +132,15 @@ export default function HomeScreen() {
                   className={
                     selected
                       ? 'rounded-full bg-accent px-4 py-2'
-                      : 'rounded-full bg-surface px-4 py-2'
+                      : 'rounded-full bg-default px-4 py-2'
                   }
                   onPress={() => selectPet(pet.id)}
                 >
                   <Text
                     className={
-                      selected ? 'text-accent-foreground' : 'text-foreground'
+                      selected
+                        ? 'font-semibold text-accent-foreground'
+                        : 'font-semibold text-foreground'
                     }
                   >
                     {pet.name}
@@ -158,7 +167,10 @@ export default function HomeScreen() {
 
       {detail.data?.kind === 'ok' ? (
         <>
-          <Card testID="pet-card" className="p-4">
+          <Card
+            testID="pet-card"
+            className="rounded-[20px] border border-border bg-surface p-4 shadow-sm"
+          >
             <View className="flex-row items-center gap-4">
               {detail.data.pet.photoUrl ? (
                 <Image
@@ -170,9 +182,9 @@ export default function HomeScreen() {
               ) : (
                 <View
                   testID="pet-card-photo"
-                  className="size-[72px] items-center justify-center rounded-full bg-surface"
+                  className="size-[72px] items-center justify-center rounded-full bg-accent-soft"
                 >
-                  <Text className="text-2xl font-semibold text-foreground">
+                  <Text className="text-2xl font-bold text-foreground">
                     {detail.data.pet.name.charAt(0).toUpperCase()}
                   </Text>
                 </View>
@@ -180,29 +192,34 @@ export default function HomeScreen() {
               <View className="flex-1 gap-1">
                 <Text
                   testID="pet-card-name"
-                  className="text-xl font-semibold text-foreground"
+                  className="text-xl font-bold text-foreground"
                 >
                   {detail.data.pet.name}
                 </Text>
-                <Text testID="pet-card-breed" className="text-muted">
+                <Text testID="pet-card-breed" className="font-normal text-muted">
                   {detail.data.pet.breed ?? '—'}
                 </Text>
               </View>
             </View>
           </Card>
 
-          <Card testID="collar-card" className="gap-3 p-4">
-            <View className="flex-row items-center gap-2">
-              {detail.data.pet.device === null ? (
-                <Moon size={20} />
-              ) : detail.data.pet.device.connectivity === 'online' ? (
-                <Wifi size={20} />
-              ) : (
-                <WifiOff size={20} />
-              )}
+          <Card
+            testID="collar-card"
+            className="gap-3 rounded-2xl bg-default p-4"
+          >
+            <View className="flex-row items-center gap-3">
+              <View className="size-9 items-center justify-center rounded-full bg-accent-soft">
+                {detail.data.pet.device === null ? (
+                  <Moon size={20} color={accent} />
+                ) : detail.data.pet.device.connectivity === 'online' ? (
+                  <Wifi size={20} color={accent} />
+                ) : (
+                  <WifiOff size={20} color={accent} />
+                )}
+              </View>
               <Text
                 testID="collar-status"
-                className="text-lg font-semibold text-foreground"
+                className="text-base font-bold text-foreground"
               >
                 {detail.data.pet.device === null
                   ? 'Free'
@@ -213,23 +230,46 @@ export default function HomeScreen() {
             </View>
             {detail.data.pet.device ? (
               <View className="flex-row items-center gap-2">
-                <Battery size={18} />
-                <Text testID="collar-battery" className="text-muted">
+                <Battery
+                  size={18}
+                  color={
+                    detail.data.pet.device.batteryPct === null
+                      ? muted
+                      : detail.data.pet.device.batteryPct > 60
+                        ? success
+                        : warning
+                  }
+                />
+                <Text
+                  testID="collar-battery"
+                  className={
+                    detail.data.pet.device.batteryPct === null
+                      ? 'font-normal text-muted'
+                      : detail.data.pet.device.batteryPct > 60
+                        ? 'font-semibold text-success'
+                        : 'font-semibold text-warning'
+                  }
+                >
                   {detail.data.pet.device.batteryPct === null
                     ? '—'
                     : `${detail.data.pet.device.batteryPct}%`}
                 </Text>
               </View>
             ) : (
-              <Text className="text-muted">No collar — health only</Text>
+              <Text className="font-normal text-muted">
+                No collar — health only
+              </Text>
             )}
           </Card>
         </>
       ) : null}
 
       {selectedPetId ? (
-        <Card testID="summary-card" className="gap-4 p-4">
-          <Text className="text-lg font-semibold text-foreground">
+        <Card
+          testID="summary-card"
+          className="gap-4 rounded-[20px] border border-border bg-surface p-4 shadow-sm"
+        >
+          <Text className="text-lg font-bold text-foreground">
             Today&apos;s Summary
           </Text>
 
@@ -238,7 +278,7 @@ export default function HomeScreen() {
           ) : null}
 
           {activity.data?.kind === 'no-tracking' ? (
-            <Text testID="summary-note" className="text-muted">
+            <Text testID="summary-note" className="font-normal text-muted">
               Activity tracking requires a collar
             </Text>
           ) : null}
@@ -246,41 +286,45 @@ export default function HomeScreen() {
           {activity.data?.kind === 'error' ||
           activity.data?.kind === 'unreachable' ||
           activity.data?.kind === 'missing-config' ? (
-            <Text testID="summary-note" className="text-muted">
+            <Text testID="summary-note" className="font-normal text-muted">
               Could not load activity
             </Text>
           ) : null}
 
           {activity.data?.kind === 'ok' ? (
             <View className="flex-row justify-between gap-3">
-              <View className="flex-1 items-center gap-1">
-                <Walk size={20} />
-                <Text className="text-xs text-muted">Activity</Text>
+              <View className="flex-1 items-center gap-1 border-r border-border">
+                <Walk size={20} color={muted} />
                 <Text
                   testID="summary-activity"
-                  className="font-semibold text-foreground"
+                  className="text-sm font-bold text-foreground"
                 >
                   {fmtMinutes(today?.activeMinutes ?? null)}
                 </Text>
+                <Text className="text-[10px] font-normal text-muted">
+                  Activity
+                </Text>
               </View>
-              <View className="flex-1 items-center gap-1">
-                <Moon size={20} />
-                <Text className="text-xs text-muted">Sleep</Text>
+              <View className="flex-1 items-center gap-1 border-r border-border">
+                <Moon size={20} color={muted} />
                 <Text
                   testID="summary-sleep"
-                  className="font-semibold text-foreground"
+                  className="text-sm font-bold text-foreground"
                 >
                   {fmtMinutes(today?.restMinutes ?? null)}
                 </Text>
+                <Text className="text-[10px] font-normal text-muted">Sleep</Text>
               </View>
               <View className="flex-1 items-center gap-1">
-                <Map size={20} />
-                <Text className="text-xs text-muted">Distance</Text>
+                <Map size={20} color={muted} />
                 <Text
                   testID="summary-distance"
-                  className="font-semibold text-foreground"
+                  className="text-sm font-bold text-foreground"
                 >
                   {fmtKm(today?.distanceM ?? null)}
+                </Text>
+                <Text className="text-[10px] font-normal text-muted">
+                  Distance
                 </Text>
               </View>
             </View>
@@ -292,17 +336,19 @@ export default function HomeScreen() {
         <Pressable
           accessibilityRole="button"
           testID="last-position-card"
-          className="gap-2 rounded-2xl bg-surface p-4"
+          className="gap-2 rounded-2xl bg-default p-4"
           onPress={() => router.push('/map')}
         >
           <View className="flex-row items-center justify-between">
             <View className="flex-row items-center gap-2">
-              <Map size={20} />
-              <Text className="font-semibold text-foreground">View on map</Text>
+              <View className="size-9 items-center justify-center rounded-full bg-accent-soft">
+                <Map size={20} color={accent} />
+              </View>
+              <Text className="font-semibold text-accent">View on map</Text>
             </View>
-            <ChevronRight size={20} />
+            <ChevronRight size={20} color={accent} />
           </View>
-          <Text testID="last-position-time" className="text-muted">
+          <Text testID="last-position-time" className="font-normal text-muted">
             {fmtLastSeen(detail.data.pet.lastCommunicationAt)}
           </Text>
         </Pressable>

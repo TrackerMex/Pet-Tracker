@@ -1,9 +1,16 @@
 import { Redirect, router } from 'expo-router';
-import { Button, Card, Input, Label, Spinner, TextField } from 'heroui-native';
+import {
+  Button,
+  Card,
+  Input,
+  Label,
+  Spinner,
+  TextField,
+} from 'heroui-native';
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ArrowLeft } from 'reicon-react-native';
+import { ArrowLeft, Minus, TrendDown, TrendUp } from 'reicon-react-native';
 
 import {
   createWeight,
@@ -14,6 +21,7 @@ import { WeightChart } from '../../components/weight-chart';
 import { useApi } from '../../hooks/use-api';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import { useThemeColors } from '../../theme/use-theme-colors';
 
 function fmtVariation(variation: number | null): string {
   if (variation === null) return '—';
@@ -32,6 +40,12 @@ function isWeightsError(state: WeightsState): boolean {
 }
 
 function WeightLogContent({ petId }: { petId: string }) {
+  const [success, danger, muted, foreground] = useThemeColors([
+    'success',
+    'danger',
+    'muted',
+    'foreground',
+  ]);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
   const insets = useSafeAreaInsets();
@@ -111,12 +125,12 @@ function WeightLogContent({ petId }: { petId: string }) {
           accessibilityRole="button"
           accessibilityLabel="Back to health"
           testID="weight-log-back"
-          className="rounded-full bg-surface p-2"
+          className="rounded-full bg-default p-2"
           onPress={() => router.back()}
         >
-          <ArrowLeft size={20} />
+          <ArrowLeft size={20} color={foreground} />
         </Pressable>
-        <Text className="text-2xl font-semibold text-foreground">Weight log</Text>
+        <Text className="text-2xl font-black text-foreground">Weight log</Text>
       </View>
 
       {weights.data?.kind === 'ok' ? (
@@ -124,11 +138,14 @@ function WeightLogContent({ petId }: { petId: string }) {
       ) : null}
 
       {weights.data?.kind === 'ok' ? (
-        <Card className="gap-4 p-4">
+        <Card className="gap-4 rounded-[20px] border border-border bg-surface p-4 shadow-sm">
           <TextField>
-            <Label>Weight</Label>
+            <Label className="text-[10px] font-semibold text-foreground">
+              Weight
+            </Label>
             <Input
               testID="weight-input"
+              className="rounded-xl bg-default"
               keyboardType="decimal-pad"
               placeholder="Weight (kg)"
               value={weightText}
@@ -136,18 +153,24 @@ function WeightLogContent({ petId }: { petId: string }) {
             />
           </TextField>
           <TextField>
-            <Label>Measured at</Label>
+            <Label className="text-[10px] font-semibold text-foreground">
+              Measured at
+            </Label>
             <Input
               testID="weight-date-input"
+              className="rounded-xl bg-default"
               placeholder="YYYY-MM-DD"
               value={measuredAt}
               onChangeText={setMeasuredAt}
             />
           </TextField>
           <TextField>
-            <Label>Body condition</Label>
+            <Label className="text-[10px] font-semibold text-foreground">
+              Body condition
+            </Label>
             <Input
               testID="weight-bc-input"
+              className="rounded-xl bg-default"
               keyboardType="number-pad"
               placeholder="Body condition 1-9 (optional)"
               value={bodyConditionText}
@@ -163,10 +186,13 @@ function WeightLogContent({ petId }: { petId: string }) {
 
           <Button
             testID="weight-submit"
+            className="rounded-xl bg-accent"
             isDisabled={submitting}
             onPress={() => void handleSubmit()}
           >
-            Log weight
+            <Button.Label className="font-bold text-accent-foreground">
+              Log weight
+            </Button.Label>
           </Button>
         </Card>
       ) : null}
@@ -193,22 +219,60 @@ function WeightLogContent({ petId }: { petId: string }) {
       ) : null}
 
       {weights.data?.kind === 'ok'
-        ? weights.data.weights.map((entry) => (
-            <Card
-              key={entry.id}
-              testID={`weight-row-${entry.id}`}
-              className="gap-1 p-4"
-            >
-              <Text className="font-semibold text-foreground">
-                {entry.weightKg} kg
-              </Text>
-              <Text className="text-muted">{entry.measuredAt}</Text>
-              <Text className="text-muted">{fmtVariation(entry.variation)}</Text>
-              {entry.bodyCondition !== null ? (
-                <Text className="text-muted">BC {entry.bodyCondition}/9</Text>
-              ) : null}
-            </Card>
-          ))
+        ? weights.data.weights.map((entry) => {
+            const tileClassName =
+              entry.variation === null || entry.variation === 0
+                ? 'bg-default'
+                : entry.variation > 0
+                  ? 'bg-danger-soft'
+                  : 'bg-success-soft';
+            const variationClassName =
+              entry.variation === null || entry.variation === 0
+                ? 'text-muted'
+                : entry.variation > 0
+                  ? 'text-danger'
+                  : 'text-success';
+
+            return (
+              <Card
+                key={entry.id}
+                testID={`weight-row-${entry.id}`}
+                className="flex-row items-center gap-3 rounded-xl border border-border bg-surface px-3.5 py-3 shadow-sm"
+              >
+                <View
+                  className={`size-8 shrink-0 items-center justify-center rounded-lg ${tileClassName}`}
+                >
+                  {entry.variation === null || entry.variation === 0 ? (
+                    <Minus size={15} color={muted} />
+                  ) : entry.variation > 0 ? (
+                    <TrendUp size={15} color={danger} />
+                  ) : (
+                    <TrendDown size={15} color={success} />
+                  )}
+                </View>
+                <View className="min-w-0 flex-1 gap-1">
+                  <View className="flex-row items-baseline gap-1.5">
+                    <Text className="font-bold text-foreground">
+                      {entry.weightKg} kg
+                    </Text>
+                    <Text
+                      className={`text-xs font-semibold ${variationClassName}`}
+                    >
+                      {fmtVariation(entry.variation)}
+                    </Text>
+                  </View>
+                  {entry.bodyCondition !== null ? (
+                    <Text className="text-xs font-normal text-muted">
+                      BC {entry.bodyCondition}/9
+                    </Text>
+                  ) : null}
+                </View>
+                <Text className="shrink-0 text-xs font-normal text-muted">
+                  {entry.measuredAt}
+                </Text>
+              </Card>
+            );
+          })
         : null}
     </ScrollView>
   );

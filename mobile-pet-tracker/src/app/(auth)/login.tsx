@@ -47,12 +47,15 @@ export default function Login() {
 
   return (
     <View className="flex-1 justify-center gap-4 bg-background p-6">
-      <Text className="text-2xl font-semibold text-foreground">Sign in</Text>
+      <Text className="text-center text-2xl font-black text-foreground">
+        Sign in
+      </Text>
 
       <TextField>
-        <Label>Email</Label>
+        <Label className="text-xs font-semibold text-foreground">Email</Label>
         <Input
           testID="login-email"
+          className="rounded-xl bg-default"
           autoCapitalize="none"
           keyboardType="email-address"
           value={email}
@@ -61,9 +64,12 @@ export default function Login() {
       </TextField>
 
       <TextField>
-        <Label>Password</Label>
+        <Label className="text-xs font-semibold text-foreground">
+          Password
+        </Label>
         <Input
           testID="login-password"
+          className="rounded-xl bg-default"
           secureTextEntry
           value={password}
           onChangeText={setPassword}
@@ -78,17 +84,32 @@ export default function Login() {
 
       <Button
         testID="login-submit"
+        className="w-full rounded-2xl bg-accent"
         isDisabled={submitting}
         onPress={() => void handleSubmit()}
       >
-        Sign in
+        <Button.Label className="font-bold text-accent-foreground">
+          Sign in
+        </Button.Label>
       </Button>
 
-      <LinkButton testID="link-register" onPress={() => router.push('/register')}>
-        Create account
+      <LinkButton
+        testID="link-register"
+        className="self-center"
+        onPress={() => router.push('/register')}
+      >
+        <LinkButton.Label className="font-semibold text-accent">
+          Create account
+        </LinkButton.Label>
       </LinkButton>
-      <LinkButton testID="link-forgot" onPress={() => router.push('/forgot')}>
-        Forgot password?
+      <LinkButton
+        testID="link-forgot"
+        className="self-center"
+        onPress={() => router.push('/forgot')}
+      >
+        <LinkButton.Label className="font-semibold text-accent">
+          Forgot password?
+        </LinkButton.Label>
       </LinkButton>
     </View>
   );
