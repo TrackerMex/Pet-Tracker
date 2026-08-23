@@ -16,7 +16,7 @@ tags: [harness, spec]
 | R6 | `src/app/(tabs)/__tests__/home.test.tsx` (22 tests R6–R10 verdes, sin cambios) | `2fd27a3 feat(mobile-figma-polish): polish home dashboard (R6)` |
 | R7 | `src/app/(tabs)/__tests__/map.test.tsx` (23 tests R4–R10 verdes, sin cambios) | `7b491d3 feat(mobile-figma-polish): polish map status overlay (R7)` |
 | R8 | `src/app/(tabs)/__tests__/health.test.tsx` (21 tests R4–R6 verdes, sin cambios) | `e912b5e feat(mobile-figma-polish): polish health hub (R8)` |
-| R9 | pendiente (suite existente de weight-log verde) | pendiente |
+| R9 | `src/app/(tabs)/__tests__/weight-log.test.tsx` (suite verde, sin cambios) | `13bcfa0 feat(mobile-figma-polish): polish weight log (R9)` |
 | R10 | pendiente (suite existente de profile verde) | pendiente |
 | R11 | pendiente (suite existente de auth verde) | pendiente |
 | R12 | pendiente (suite completa + smoke humano en `progress/impl_mobile-figma-polish.md` — solo lo cierra el humano) | pendiente |
