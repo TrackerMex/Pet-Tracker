@@ -680,7 +680,7 @@
   {
     "id": 37,
     "name": "mobile-health",
-    "status": "pending",
+    "status": "done",
     "priority": "P2",
     "description": "Tab Health del diseño + pantalla WeightLog: vacunas (lista, próximas) y registro de peso (lista + alta + gráfica simple) contra health/vaccines y health/weights. Posible primer uso de @gorhom/bottom-sheet (peer opcional de HeroUI, JS puro) para formularios.",
     "acceptance_criteria": [
@@ -824,6 +824,23 @@
     "files_affected": [
       "backend-pet-tracker/src/modules/pets/",
       "mobile-pet-tracker/src/app/(tabs)/map.tsx"
+    ]
+  },
+  {
+    "id": 46,
+    "name": "mobile-figma-polish",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Pulido visual de la app móvil contra el diseño real de Figma (https://www.figma.com/make/K3GsL0HHUCW3AaFj3osx0B/Aplicaci%C3%B3n-m%C3%B3vil--copia-?t=DC2jVyHpL6J7TLte-1 — primera vez que el link queda versionado; hasta #37 todo el estilo salió de descripciones de texto). Origen: feedback del humano en el smoke de #37 — las pantallas no respetan el diseño. Alcance: extraer del Figma tokens/espaciados/tipografía/estructura por pantalla (explorer con MCP de Figma, capturas versionadas en la spec) y ajustar las tabs existentes (Home, Map, Health, WeightLog, Profile, auth) sin cambiar comportamiento ni contratos: los tests de conducta #33-#37 deben seguir verdes.",
+    "acceptance_criteria": [
+      "Spec incluye capturas/valores extraídos del Figma real por pantalla (no descripciones de memoria)",
+      "Pantallas ajustadas a tokens del diseño; diffs solo de estilo (className/style), cero cambios de lógica o API",
+      "Suite móvil completa verde sin reescribir asserts de conducta; smoke humano en Expo Go compara lado a lado con Figma"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/app/",
+      "mobile-pet-tracker/src/components/",
+      "mobile-pet-tracker/src/theme/"
     ]
   }
 ]

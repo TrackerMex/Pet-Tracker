@@ -1749,3 +1749,13 @@ Notas de la sesión que no están en la spec:
 - Pendiente: R13 smoke humano en Expo Go (collar real o SIM_MODE en Android físico). #36 sigue `in_progress`.
 - **R13 aprobado por el humano** (checkbox `ce75f03`, 2026-08-22): premium con mapa/ruta/stats (ACT-002 + SIM_MODE), free sin mapa. Durante el smoke: LocalStack reaprovisionado (ResourceNotFoundException — los recursos no sobreviven reinicios del contenedor).
 - Cierre: #36 `done` (35/45), traceability R13 completa, STATUS.md actualizado. #45 `pet-lost-mode` quedó en backlog desde la spec. PR pendiente de abrir.
+
+## Sesion 2026-08-22/23 (2) — feature #37 mobile-health
+
+- PR #66 (#36) mergeado; branch `feature/37-mobile-health` desde main.
+- spec_author escribió spec R1–R13; humano aprobó (commit `8d1d1e5`, 2026-08-22).
+- Handoff a Codex CLI (`progress/handoff_mobile-health.md`); Codex implementó R1–R12 con TDD rojo→verde por R-id. Evidencia en `progress/impl_mobile-health.md`.
+- Reviewer: **aprobado** R1–R12 (`progress/review_mobile-health.md`) — typecheck/lint/test (25 suites, 270 tests), init.sh exit 0, contención vacía, cero deps nuevas. Menor: `fmtVariation` duplicada (va al follow-up de extracción previsto).
+- **R13 aprobado por el humano** (checkbox `8bd02d7`, 2026-08-22): smoke completo en Expo Go pasó.
+- Feedback del smoke: la UI **no respeta el diseño de Figma** — el repo nunca tuvo el link versionado (gap conocido desde mobile-auth). Alta de #46 `mobile-figma-polish` (pending, P2) con el link versionado en su descripción.
+- Cierre: #37 `done` (36/46), traceability R13 completa, STATUS.md actualizado. PR abierto para merge humano.

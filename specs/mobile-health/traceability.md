@@ -1,0 +1,28 @@
+---
+feature: "mobile-health"
+status: draft        # draft | approved
+tags: [harness, spec, mobile]
+---
+
+# Trazabilidad — [[mobile-health]]
+
+| Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
+|---|---|---|
+| R1 | `src/api/__tests__/health-records.test.ts::R1: listVaccines mapea la respuesta por kind` | `c43f2b9 feat(mobile-health): add vaccine records client (R1)` |
+| R2 | `src/api/__tests__/health-records.test.ts::R2: listWeights mapea la respuesta por kind` | `7fa0bcb feat(mobile-health): add weight records list client (R2)` |
+| R3 | `src/api/__tests__/health-records.test.ts::R3: createWeight publica y mapea por kind` | `3b1ebab feat(mobile-health): add weight creation client (R3)` |
+| R4 | `src/app/(tabs)/__tests__/health.test.tsx::R4: health resuelve la mascota seleccionada` | `149f6d9 feat(mobile-health): resolve pets in health hub (R4)` |
+| R5 | `src/app/(tabs)/__tests__/health.test.tsx::R5: vacunas con la próxima destacada` | `6802912 feat(mobile-health): add vaccine hub section (R5)` |
+| R6 | `src/app/(tabs)/__tests__/health.test.tsx::R6: weight card enlaza al log` | `ca1a15c feat(mobile-health): add weight hub card (R6)` |
+| R7 | `src/app/(tabs)/__tests__/weight-log.test.tsx::R7: weight log lista el historial` | `dbd5141 feat(mobile-health): add weight log history (R7)` |
+| R8 | `src/components/__tests__/weight-chart.test.tsx::R8: la gráfica degrada con <2 puntos`; `src/app/(tabs)/__tests__/weight-log.test.tsx::R8: weight log monta la gráfica` | `c542020 feat(mobile-health): add weight trend chart (R8)` |
+| R9 | `src/app/(tabs)/__tests__/weight-log.test.tsx::R9: alta de peso con degradación por kind` | `6cf3874 feat(mobile-health): add inline weight creation (R9)` |
+| R10 | `src/app/(tabs)/__tests__/profile.test.tsx::R10: profile aloja health-check y theme toggle`; `src/app/(tabs)/__tests__/screens.test.tsx::R5,R6` | `00f075b feat(mobile-health): move app health controls to profile (R10)` |
+| R11 | `bun run typecheck`; `bun run lint` | `8614c15 fix(mobile-health): satisfy mobile checks (R11)` |
+| R12 | `bun run test`; `./init.sh`; checks de contención de rutas, dependencias e imports | `1ebd4a3 test(mobile-health): verify full integration (R12)` |
+| R13 | `requirements.md::R13 smoke humano en Expo Go (reservado al humano)` | Ejecutado y aprobado por el humano (checkbox `8bd02d7`, 2026-08-22) |
+
+Regla: el reviewer no aprueba si alguna fila queda "pendiente".
+Convención de commit: `feat(mobile-health): <desc> (R1,R2)`.
+El implementer actualiza esta tabla tras cada commit; el reviewer la valida
+al aprobar (ver [[../../docs/specs|specs]] y [[../../CHECKPOINTS|CHECKPOINTS]] C5).
