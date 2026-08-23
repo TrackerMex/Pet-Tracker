@@ -11,7 +11,7 @@ tags: [harness, spec]
 | R1 | `src/theme/__tests__/global-css.test.ts::R1: global.css define los tokens light exactos del diseño` | rojo `9e27a80`; verde `04aef32 feat(mobile-figma-polish): map light design tokens (R1)` |
 | R2 | `src/theme/__tests__/global-css.test.ts::R2: global.css define la paleta dark derivada del diseño` | rojo `bef097f`; verde `80ba96b feat(mobile-figma-polish): derive dark design palette (R2)` |
 | R3 | `src/theme/__tests__/font-registration.test.ts::R3: el layout registra los pesos estáticos de Inter sin bloquear` | rojo `bed689e`; verde `e7a8890 feat(mobile-figma-polish): load static Inter fonts (R3)` |
-| R4 | pendiente (suite existente de tab bar verde, sin asserts nuevos — [[design]] §6) | pendiente |
+| R4 | `src/components/__tests__/floating-tab-bar.test.tsx::R7: tab bar renderiza y navega`; `::R8: tab bar flota con safe area` (verde, sin cambios) | `b9283f4 feat(mobile-figma-polish): retokenize floating tab labels (R4)` |
 | R5 | pendiente (suite existente de weight-chart/weight-log verde) | pendiente |
 | R6 | pendiente (suite existente de home verde) | pendiente |
 | R7 | pendiente (suite existente de map verde) | pendiente |
