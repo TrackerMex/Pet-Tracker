@@ -33,22 +33,22 @@
     }
 
     @variant dark {
-      --background: #FFFFFF;
-      --foreground: #0D1117;
-      --surface: #FFFFFF;
-      --surface-foreground: #0D1117;
-      --surface-secondary: #F0FBF6;
-      --surface-secondary-foreground: #0D1117;
-      --default: #F5F6F8;
-      --default-foreground: #0D1117;
-      --muted: #6B7280;
-      --border: rgba(13,17,23,0.07);
-      --separator: rgba(13,17,23,0.07);
+      --background: #0D1117;
+      --foreground: #F7F8FA;
+      --surface: #161B22;
+      --surface-foreground: #F7F8FA;
+      --surface-secondary: #12231B;
+      --surface-secondary-foreground: #F7F8FA;
+      --default: #1F242B;
+      --default-foreground: #F7F8FA;
+      --muted: #9CA3AF;
+      --border: rgba(255,255,255,0.08);
+      --separator: rgba(255,255,255,0.08);
       --accent: #2AB87C;
       --accent-foreground: #FFFFFF;
-      --danger: #EF4444;
-      --warning: #F59E0B;
-      --success: #0F9B5A;
+      --danger: #F87171;
+      --warning: #FBBF24;
+      --success: #34D399;
       --focus: #2AB87C;
       --field-background: var(--default);
       --field-foreground: var(--foreground);
