@@ -60,13 +60,14 @@ tags: [harness, spec]
 ### Componentes compartidos
 
 - **R4**: WHEN se renderiza la barra de tabs
-  (`src/components/floating-tab-bar.tsx`) THE SYSTEM SHALL mostrar el estilo
-  del `BottomNav` del diseño (`design-src/App.tsx` L753–776): barra anclada
-  al borde inferior con `border-t` color `border` y fondo `surface`, ítems
-  con icono 21–24px y label 10px `font-semibold`, ítem activo en `accent`
-  (icono con peso Filled) con indicador inferior de 16×2px `rounded-full`
-  `bg-accent`, ítems inactivos en `muted` — conservando los `testID`
-  `tab-*` y los labels actuales.
+  (`src/components/floating-tab-bar.tsx`) THE SYSTEM SHALL conservar la
+  **pill flotante actual** (forma, posición, sombras y márgenes sin cambios
+  — decisión del humano en el gate, 2026-08-23: NO se adopta la barra
+  anclada del `BottomNav` del Make) y SHALL re-tokenizarla al diseño: ítem
+  activo en el nuevo `accent` verde, ítems inactivos en `muted`, iconos con
+  tamaño/peso actuales (Filled activo / Outline inactivo), label 10px
+  `font-semibold` como el diseño — conservando los `testID` `tab-*` y los
+  labels actuales.
   *Verificación: tests existentes de tab bar verdes + smoke R12.*
 
 - **R5**: WHEN se renderiza `src/components/weight-chart.tsx` THE SYSTEM SHALL
@@ -202,5 +203,6 @@ Decisiones que el humano ratifica al aprobar (detalle y alternativas en [[design
 2. Dark derivado de la paleta light del diseño, no los oklch del Make (R2).
 3. Inter vía `.ttf` estáticos en `assets/fonts/` + `expo-font` ya instalado
    — cero deps nuevas (R3).
-4. Tab bar pasa de pill flotante a barra anclada estilo diseño (R4).
+4. Tab bar: se CONSERVA la pill flotante actual, solo re-tokenizada
+   (decisión del humano, 2026-08-23; la barra anclada del Make se rechaza) (R4).
 5. Headers hero y gradientes de botón fuera de alcance (arriba).

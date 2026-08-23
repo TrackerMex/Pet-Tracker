@@ -82,14 +82,15 @@ bold/black) a `mobile-pet-tracker/assets/fonts/`, cargarlos con
 las clases de Tailwind/uniwind para que sea el default de los `Text`.
 Funciona en Expo Go (memoria: el humano prueba solo con Expo Go).
 
-### 4. Tab bar: de pill flotante a barra anclada — sirve a R4
+### 4. Tab bar: la pill flotante se queda — sirve a R4
 
-El diseño (BottomNav, `App.tsx` L753–776) usa barra clásica con `border-t`,
-activo verde con indicador de línea. El componente actual
-(`floating-tab-bar.tsx`) es una pill flotante. Se re-estiliza el componente
-existente al patrón del diseño **manteniendo API, testIDs `tab-*`, labels e
-iconos reicon** (peso Filled/Outline como hoy). Cambio 100% contenido en ese
-archivo.
+El diseño (BottomNav, `App.tsx` L753–776) usa barra anclada clásica con
+`border-t` e indicador de línea. **El humano decidió en el gate
+(2026-08-23) conservar la pill flotante actual**: se rechaza la barra
+anclada del Make. `floating-tab-bar.tsx` solo se re-tokeniza (activo en
+`accent` verde, inactivos `muted`, label 10px semibold) **manteniendo
+forma/posición/sombras, API, testIDs `tab-*`, labels e iconos reicon**
+(peso Filled/Outline como hoy). Cambio 100% contenido en ese archivo.
 
 ### 5. Sin gradientes ni headers hero — restricción de alcance
 
