@@ -29,9 +29,9 @@ tags: [harness, spec]
 - [ ] (2) Implementación mínima que lo pasa (descargar `.ttf`, `useFonts`, familia default)
 - [ ] (3) Refactor con tests verdes
 
-## R4 — Tab bar estilo diseño
+## R4 — Tab bar: pill flotante re-tokenizada (NO barra anclada)
 
-- [ ] Aplicar estilos en `floating-tab-bar.tsx` (testIDs/labels intactos)
+- [ ] Re-tokenizar `floating-tab-bar.tsx` conservando forma/posición/sombras (testIDs/labels intactos)
 - [ ] Suite existente verde sin tocar asserts
 
 ## R5 — Weight chart con puntos y área degradada
