@@ -336,7 +336,7 @@ Todo lo demás (R1–R9) sigue TDD estricto con test rojo primero.
   10. Tab bar flotante visible sin tapar contenido (scroll con padding
       inferior) en Health y WeightLog.
 
-  - [ ] Smoke ejecutado por el humano (fecha: ____)
+  - [X] Smoke ejecutado por el humano (fecha: 2026-08-22)
 
 ## Fuera de alcance
 
