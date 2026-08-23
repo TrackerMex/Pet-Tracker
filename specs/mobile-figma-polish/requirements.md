@@ -32,8 +32,13 @@ tags: [harness, spec]
   verde del diseño), `--foreground: #0D1117`, `--muted: #6B7280`,
   `--default: #F5F6F8`, `--surface-secondary: #F0FBF6`,
   `--border: rgba(13,17,23,0.07)`, `--danger: #EF4444`,
-  `--warning: #F59E0B`, `--success: #0F9B5A`, `--radius: 1.25rem` y
-  `--field-radius: 0.75rem`.
+  `--warning: #F59E0B`, `--success: #0F9B5A` y `--field-radius: 0.75rem`;
+  THE SYSTEM SHALL NOT sobreescribir `--radius` (corrección del smoke
+  2026-08-23: en heroui-native `--radius` es la BASE de toda la escala
+  `rounded-*` — `xl=×1.5`, `2xl=×2`, `3xl=×3` sobre default 0.5rem —, no el
+  radio de card como en el shadcn del Make; con base 1.25rem todos los
+  componentes se inflaban. Los 20px de las cards salen de `rounded-[20px]`
+  literal en las pantallas).
   *Verificación: test jest que lee `src/theme/global.css` y asserta los valores
   (nombra R1).*
 

@@ -35,7 +35,7 @@ consume (visto en `node_modules/heroui-native/src/styles/theme.css`).
 | *(chart-3 / naranjas de "días")* | `#F59E0B` | `--warning` | `#F59E0B` |
 | *(verde texto de Pill "En línea")* | `#0F9B5A` | `--success` | `#0F9B5A` |
 | `--ring` | `#2AB87C` | `--focus` | `#2AB87C` |
-| `--radius` | `1.25rem` | `--radius` | `1.25rem` |
+| `--radius` | `1.25rem` | — (sin override) | default 0.5rem — en heroui `--radius` es base de escala (`xl=×1.5`, `2xl=×2`, `3xl=×3`), no radio de card; cards a 20px vía `rounded-[20px]` literal (corrección smoke 2026-08-23) |
 | — | — | `--field-radius` | `0.75rem` (evita que el derivado `radius×1.75` infle los inputs; el diseño usa `rounded-xl` ≈12px en fields) |
 
 - `#E3F9EE` (accent suave del Make) **no necesita token propio**: heroui-native

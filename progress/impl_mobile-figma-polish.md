@@ -94,3 +94,26 @@ lint ni causan fallos.
 Se preservaron y excluyeron de todos los commits los cambios locales
 preexistentes en `.gitignore`, `init.sh`, `init.config.sh`, `.agents/`, skills,
 `skills-lock.json` y los informes de review de otras features.
+
+## Corrección post-smoke: radius
+Fecha: 2026-08-23
+
+Detectado en smoke humano: `--radius: 1.25rem` copiaba la semántica shadcn del
+Make, pero en heroui-native `--radius` es la BASE de la escala `rounded-*`
+(xl=×1.5, 2xl=×2, 3xl=×3 sobre default 0.5rem) — con base 20px todo se inflaba.
+
+Cambios:
+- `mobile-pet-tracker/src/theme/global.css`: eliminada la línea
+  `--radius: 1.25rem;` de ambos variants (light y dark).
+  `--field-radius: 0.75rem` se mantiene.
+- `mobile-pet-tracker/src/theme/__tests__/global-css.test.ts`: el assert de
+  `radius: '1.25rem'` reemplazado por un assert de ausencia (R1):
+  `expect(globalCss).not.toMatch(/--radius:/)` — no matchea `--field-radius:`.
+  Resto de asserts intactos.
+
+Commit: e370daa `fix(mobile-figma-polish): drop --radius override, heroui scale base (R1)` (sin push)
+
+Verificación (en mobile-pet-tracker/):
+- `bun run test`: 27 suites / 276 tests passed — exit 0
+- `bun run typecheck`: exit 0
+- `bun run lint`: exit 0
