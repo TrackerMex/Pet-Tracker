@@ -1,10 +1,11 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-08-23
-**Features completadas**: 36/46 (`feature_list.json`)
-**En progreso**: ninguna. #37 `mobile-health` cerrada (R13 smoke aprobado); PR pendiente de merge humano.
-**Pendientes**: 10 (#18, #38-#46). Nueva #46 `mobile-figma-polish`: el smoke de #37
-reveló que la UI no respeta el Figma real (link ahora versionado en `feature_list.json` #46).
+**Features completadas**: 37/46 (`feature_list.json`)
+**En progreso**: ninguna. #46 `mobile-figma-polish` cerrada (smoke R12 aprobado
+tras 3 correcciones: radius, stylesheet dark, iconos/mapa dark); PR pendiente de merge humano.
+**Pendientes**: 9 (#18, #38-#45). Fuente del diseño Figma versionada en
+`specs/mobile-figma-polish/design-src/`.
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
 desde 2026-08-10. Hay recursos vivos en la cuenta, aunque hoy sin coste.

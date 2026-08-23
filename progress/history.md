@@ -1759,3 +1759,13 @@ Notas de la sesión que no están en la spec:
 - **R13 aprobado por el humano** (checkbox `8bd02d7`, 2026-08-22): smoke completo en Expo Go pasó.
 - Feedback del smoke: la UI **no respeta el diseño de Figma** — el repo nunca tuvo el link versionado (gap conocido desde mobile-auth). Alta de #46 `mobile-figma-polish` (pending, P2) con el link versionado en su descripción.
 - Cierre: #37 `done` (36/46), traceability R13 completa, STATUS.md actualizado. PR abierto para merge humano.
+
+## Sesion 2026-08-23 — feature #46 mobile-figma-polish
+
+- PR #67 (#37) mergeado; branch `feature/46-mobile-figma-polish` desde main.
+- Acceso al Figma Make confirmado vía MCP; subagentes no dereferencian recursos MCP → leader volcó la fuente a `specs/mobile-figma-polish/design-src/` (App.tsx 1849 líneas, theme.css, fonts.css).
+- spec_author: R1–R12; humano ajustó R4 pre-gate (pill flotante se conserva) y aprobó (`b30f4a5`). Consulta SF: se mantuvo Inter (SF sin licencia fuera de Apple).
+- Codex implementó R1–R11 (TDD solo R1–R3; commit atómico por R-id). Reviewer aprobó gate automatizado.
+- Smoke iterativo del humano con 3 correcciones: (1) radius inflado — bug de spec R1, `--radius` shadcn ≠ base de escala heroui; fix trivial vía fallback implementer `e370daa`. (2) dark roto — `@source` no escaneaba `src/`, clases de la app fuera del stylesheet; Codex `e2d3d50`. (3) iconos sin color / resolución stale en tabs montadas / mapa sin estilo dark; Codex: helper `useThemeColors` reactivo + `customMapStyle` night `d28d406`+`b5bff10`.
+- R12 completo (humano, light y dark). Reviewer final: rechazo docs (traceability sin correcciones) → corregido `0aa5ac0` → **aprobado**.
+- Cierre: #46 `done` (37/46), STATUS.md actualizado. Suite final 28 suites/284 tests. PR abierto para merge humano.

@@ -829,7 +829,7 @@
   {
     "id": 46,
     "name": "mobile-figma-polish",
-    "status": "in_progress",
+    "status": "done",
     "priority": "P2",
     "description": "Pulido visual de la app móvil contra el diseño real de Figma (https://www.figma.com/make/K3GsL0HHUCW3AaFj3osx0B/Aplicaci%C3%B3n-m%C3%B3vil--copia-?t=DC2jVyHpL6J7TLte-1 — primera vez que el link queda versionado; hasta #37 todo el estilo salió de descripciones de texto). Origen: feedback del humano en el smoke de #37 — las pantallas no respetan el diseño. Alcance: extraer del Figma tokens/espaciados/tipografía/estructura por pantalla (explorer con MCP de Figma, capturas versionadas en la spec) y ajustar las tabs existentes (Home, Map, Health, WeightLog, Profile, auth) sin cambiar comportamiento ni contratos: los tests de conducta #33-#37 deben seguir verdes.",
     "acceptance_criteria": [
