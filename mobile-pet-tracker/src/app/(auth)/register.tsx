@@ -140,12 +140,17 @@ export default function Register() {
   return (
     <ScrollView className="flex-1 bg-background" keyboardShouldPersistTaps="handled">
       <View className="gap-4 p-6">
-        <Text className="text-2xl font-semibold text-foreground">Create account</Text>
+        <Text className="text-center text-2xl font-black text-foreground">
+          Create account
+        </Text>
 
         <TextField isInvalid={Boolean(fieldErrors.firstName)}>
-          <Label>First name</Label>
+          <Label className="text-xs font-semibold text-foreground">
+            First name
+          </Label>
           <Input
             testID="register-first-name"
+            className="rounded-xl bg-default"
             value={firstName}
             onChangeText={setFirstName}
           />
@@ -155,9 +160,12 @@ export default function Register() {
         </TextField>
 
         <TextField isInvalid={Boolean(fieldErrors.lastName)}>
-          <Label>Last name</Label>
+          <Label className="text-xs font-semibold text-foreground">
+            Last name
+          </Label>
           <Input
             testID="register-last-name"
+            className="rounded-xl bg-default"
             value={lastName}
             onChangeText={setLastName}
           />
@@ -165,9 +173,10 @@ export default function Register() {
         </TextField>
 
         <TextField isInvalid={Boolean(fieldErrors.email)}>
-          <Label>Email</Label>
+          <Label className="text-xs font-semibold text-foreground">Email</Label>
           <Input
             testID="register-email"
+            className="rounded-xl bg-default"
             autoCapitalize="none"
             keyboardType="email-address"
             value={email}
@@ -177,9 +186,10 @@ export default function Register() {
         </TextField>
 
         <TextField isInvalid={Boolean(fieldErrors.phone)}>
-          <Label>Phone</Label>
+          <Label className="text-xs font-semibold text-foreground">Phone</Label>
           <Input
             testID="register-phone"
+            className="rounded-xl bg-default"
             keyboardType="phone-pad"
             value={phone}
             onChangeText={setPhone}
@@ -188,9 +198,12 @@ export default function Register() {
         </TextField>
 
         <TextField isInvalid={Boolean(fieldErrors.password)}>
-          <Label>Password</Label>
+          <Label className="text-xs font-semibold text-foreground">
+            Password
+          </Label>
           <Input
             testID="register-password"
+            className="rounded-xl bg-default"
             secureTextEntry
             value={password}
             onChangeText={setPassword}
@@ -199,9 +212,12 @@ export default function Register() {
         </TextField>
 
         <TextField isInvalid={Boolean(fieldErrors.passwordConfirmation)}>
-          <Label>Confirm password</Label>
+          <Label className="text-xs font-semibold text-foreground">
+            Confirm password
+          </Label>
           <Input
             testID="register-password-confirmation"
+            className="rounded-xl bg-default"
             secureTextEntry
             value={passwordConfirmation}
             onChangeText={setPasswordConfirmation}
@@ -212,9 +228,12 @@ export default function Register() {
         </TextField>
 
         <TextField isInvalid={Boolean(fieldErrors.country)}>
-          <Label>Country (2-letter code)</Label>
+          <Label className="text-xs font-semibold text-foreground">
+            Country (2-letter code)
+          </Label>
           <Input
             testID="register-country"
+            className="rounded-xl bg-default"
             autoCapitalize="characters"
             maxLength={2}
             value={country}
@@ -240,10 +259,13 @@ export default function Register() {
 
         <Button
           testID="register-submit"
+          className="w-full rounded-2xl bg-accent"
           isDisabled={!terms || submitting}
           onPress={() => void handleSubmit()}
         >
-          Create account
+          <Button.Label className="font-bold text-accent-foreground">
+            Create account
+          </Button.Label>
         </Button>
       </View>
     </ScrollView>
