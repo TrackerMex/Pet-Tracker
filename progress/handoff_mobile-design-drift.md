@@ -1,4 +1,4 @@
-# Handoff a Codex CLI — feature #47 mobile-design-drift
+# Handoff a Codex CLI — feature #48 mobile-design-drift
 
 Feature: mobile-design-drift, branch: feature/47-mobile-design-drift
 Working tree: /home/claude/sites/Pet-Tracker-wt-47 (git worktree — NO trabajar

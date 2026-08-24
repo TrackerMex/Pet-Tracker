@@ -1,0 +1,18 @@
+---
+feature: "reminders-api"
+status: draft        # draft | approved
+tags: [harness, spec, backend]
+---
+
+# Trazabilidad — [[reminders-api]]
+
+| Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
+|---|---|---|
+| R1 | `list-reminders.use-case.spec.ts::R1: ListRemindersUseCase delega en listByPet`; `pet-reminders.e2e-spec.ts::R1: GET lista todos los reminders de la mascota por dueAt` | `b469cf9 test(reminders-api): define reminder listing in red (R1)`; `c2fa98c feat(reminders-api): list reminders by pet (R1)` |
+| R2 | `delete-reminder.use-case.spec.ts::R2: DeleteReminderUseCase borra o lanza not-found`; `pet-reminders.e2e-spec.ts::R2 (reminders-api #47): DELETE borra solo para el owner` | `b4e1f90 test(reminders-api): define reminder deletion in red (R2)`; `5595a31 feat(reminders-api): delete reminders by pet (R2)` |
+| R3 | verificación manual documentada en `progress/impl_reminders-api.md` (lint/test/test:e2e/init.sh + contención del diff) | `8fa05bb test(reminders-api): verify regression and containment (R3)` |
+
+Regla: el reviewer no aprueba si alguna fila queda "pendiente".
+Convención de commit: `feat(reminders-api): <desc> (R1)`.
+El implementer actualiza esta tabla tras cada commit; el reviewer la valida
+al aprobar (ver [[../../docs/specs|specs]] y [[../../CHECKPOINTS|CHECKPOINTS]] C5).
