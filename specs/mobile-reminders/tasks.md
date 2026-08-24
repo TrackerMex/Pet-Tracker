@@ -29,9 +29,9 @@ tags: [harness, spec, mobile]
 
 ## R2 — createReminder (POST 201, body strict)
 
-- [ ] (1) Escribir test que falla para R2
-- [ ] (2) Implementación mínima que lo pasa
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R2
+- [x] (2) Implementación mínima que lo pasa
+- [x] (3) Refactor con tests verdes
 
 ## R3 — deleteReminder + deleteJson en http.ts
 
