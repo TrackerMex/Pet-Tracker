@@ -1,16 +1,18 @@
 import {
+  act,
   fireEvent,
   render,
   screen,
   waitFor,
+  within,
 } from '@testing-library/react-native';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
 
 import { listPets, type PetsState } from '../../api/pets';
 import { listReminders, type RemindersState } from '../../api/reminders';
-import type { PetProfile } from '../../api/types';
+import type { PetProfile, Reminder } from '../../api/types';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { SelectedPetProvider } from '../../providers/selected-pet-provider';
 import { RemindersScreen } from '.';
@@ -43,6 +45,7 @@ const mockListPets = jest.mocked(listPets);
 const mockListReminders = jest.mocked(listReminders);
 const mockUseAuth = jest.mocked(useAuth);
 const mockRouter = jest.mocked(router);
+const mockUseFocusEffect = jest.mocked(useFocusEffect);
 
 function makePet(overrides: Partial<PetProfile> = {}): PetProfile {
   return {
@@ -76,6 +79,19 @@ function makePet(overrides: Partial<PetProfile> = {}): PetProfile {
 
 function pending<T>(): Promise<T> {
   return new Promise(() => undefined);
+}
+
+function makeReminder(overrides: Partial<Reminder> = {}): Reminder {
+  return {
+    id: 'reminder-1',
+    petId: 'pet-1',
+    type: 'vaccine',
+    title: 'Rabies booster',
+    dueAt: '2026-08-27T09:00:00.000Z',
+    advanceMinutes: 10080,
+    status: 'scheduled',
+    ...overrides,
+  };
 }
 
 function RemindersWrapper({ children }: { children: ReactNode }) {
@@ -194,5 +210,107 @@ describe('R5: reminders monta con métricas y estados', () => {
         'pet-2',
       ),
     );
+  });
+});
+
+describe('R6: lista con pills, badges y refetch on focus', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-08-24T09:00:00.000Z'));
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('renders summaries and reminder rows in API order', async () => {
+    const reminders = [
+      makeReminder({
+        id: 'sent',
+        type: 'food',
+        title: 'Buy food',
+        dueAt: '2026-08-20T09:00:00.000Z',
+        status: 'sent',
+      }),
+      makeReminder({
+        id: 'cancelled',
+        type: 'appointment',
+        title: 'Vet visit',
+        dueAt: '2026-08-21T09:00:00.000Z',
+        status: 'cancelled',
+      }),
+      makeReminder({ id: 'upcoming' }),
+      makeReminder({
+        id: 'later',
+        type: 'medication',
+        title: 'Monthly medication',
+        dueAt: '2026-09-10T09:00:00.000Z',
+      }),
+    ];
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders });
+
+    await renderReminders();
+    await waitFor(() =>
+      expect(screen.getByTestId('reminder-row-upcoming')).toBeVisible(),
+    );
+
+    expect(screen.getByTestId('pill-active')).toHaveTextContent('2');
+    expect(screen.getByTestId('pill-week')).toHaveTextContent('1');
+    expect(screen.getByTestId('pill-week')).toHaveTextContent('This week');
+    expect(screen.getByTestId('pill-inactive')).toHaveTextContent('2');
+    expect(
+      screen.getAllByTestId(/^reminder-row-/).map(({ props }) => props.testID),
+    ).toEqual([
+      'reminder-row-sent',
+      'reminder-row-cancelled',
+      'reminder-row-upcoming',
+      'reminder-row-later',
+    ]);
+
+    const upcoming = within(screen.getByTestId('reminder-row-upcoming'));
+    expect(upcoming.getByText('💉')).toBeVisible();
+    expect(upcoming.getByText('Vaccine')).toBeVisible();
+    expect(upcoming.getByText('Rabies booster')).toBeVisible();
+    expect(
+      upcoming.getByText(new Date(reminders[2].dueAt).toLocaleDateString()),
+    ).toBeVisible();
+    expect(upcoming.getByText('· in 3 days')).toBeVisible();
+    expect(screen.getByTestId('reminder-upcoming-upcoming')).toHaveTextContent(
+      'Upcoming!',
+    );
+    expect(screen.queryByTestId('reminder-upcoming-later')).toBeNull();
+
+    expect(screen.getByTestId('reminder-row-sent')).toHaveStyle({ opacity: 0.5 });
+    expect(screen.getByTestId('reminder-status-sent')).toHaveTextContent('Sent');
+    expect(screen.getByTestId('reminder-row-cancelled')).toHaveStyle({
+      opacity: 0.5,
+    });
+    expect(screen.getByTestId('reminder-status-cancelled')).toHaveTextContent(
+      'Cancelled',
+    );
+  });
+
+  it('refetches when the screen recovers focus', async () => {
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [] });
+
+    await renderReminders();
+    await waitFor(() => expect(mockListReminders).toHaveBeenCalledTimes(1));
+    const focusCallback = mockUseFocusEffect.mock.calls.at(-1)?.[0];
+    expect(focusCallback).toBeDefined();
+
+    act(() => {
+      focusCallback?.();
+    });
+
+    await waitFor(() => expect(mockListReminders).toHaveBeenCalledTimes(2));
   });
 });
