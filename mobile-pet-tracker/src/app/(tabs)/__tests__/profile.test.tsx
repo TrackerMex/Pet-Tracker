@@ -14,8 +14,8 @@ jest.mock('../../../screens/profile', () => {
 });
 
 describe('R2: route Profile delgada', () => {
-  it('only delegates rendering to the screen body', () => {
-    render(<ProfileRoute />);
+  it('only delegates rendering to the screen body', async () => {
+    await render(<ProfileRoute />);
 
     expect(screen.getByTestId('profile-screen-body')).toBeVisible();
   });

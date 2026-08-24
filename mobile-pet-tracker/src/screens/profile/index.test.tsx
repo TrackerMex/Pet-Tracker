@@ -23,6 +23,41 @@ jest.mock('../../providers/auth-provider', () => ({
   useAuth: jest.fn(),
 }));
 
+jest.mock('../../components/pet-switcher', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { Pressable, Text, View } = jest.requireActual<typeof import('react-native')>(
+    'react-native',
+  );
+
+  return {
+    PetSwitcher: ({
+      pets,
+      selectedPetId,
+      onSelect,
+    }: {
+      pets: PetProfile[];
+      selectedPetId: string | null;
+      onSelect: (petId: string) => void;
+    }) =>
+      React.createElement(
+        View,
+        null,
+        pets.map((pet) =>
+          React.createElement(
+            Pressable,
+            {
+              key: pet.id,
+              testID: `pet-chip-${pet.id}`,
+              accessibilityState: { selected: selectedPetId === pet.id },
+              onPress: () => onSelect(pet.id),
+            },
+            React.createElement(Text, null, pet.name),
+          ),
+        ),
+      ),
+  };
+});
+
 jest.mock('expo-router', () => ({
   router: { push: jest.fn(), back: jest.fn() },
 }));
@@ -122,7 +157,7 @@ describe('R1: me card', () => {
       },
     });
 
-    renderProfile();
+    await renderProfile();
 
     await waitFor(() => expect(screen.getByTestId('me-card')).toBeVisible());
     expect(screen.getByText('Ada Lovelace')).toBeVisible();
@@ -137,7 +172,7 @@ describe('R1: me card', () => {
   ] as MeState[])('degrades the account card for $kind', async (state) => {
     mockGetMe.mockResolvedValue(state);
 
-    renderProfile();
+    await renderProfile();
 
     await waitFor(() =>
       expect(screen.getByTestId('me-card-state')).toHaveTextContent(
@@ -159,13 +194,13 @@ describe('R3: reminders-link y sign out', () => {
       signIn: jest.fn(),
       signOut: mockSignOut,
     } satisfies AuthContextValue);
-    mockGetMe.mockResolvedValue({ kind: 'error' });
+    mockGetMe.mockReturnValue(pending<MeState>());
     mockListPets.mockReturnValue(pending<PetsState>());
     mockGetPet.mockReturnValue(pending<PetState>());
   });
 
   it('keeps reminders as a button that opens the hidden route', async () => {
-    renderProfile();
+    await renderProfile();
 
     await waitFor(() => expect(screen.getByTestId('reminders-link')).toBeVisible());
     expect(screen.getByTestId('reminders-link').props.accessibilityRole).toBe(
@@ -177,7 +212,7 @@ describe('R3: reminders-link y sign out', () => {
   });
 
   it('keeps sign out and retires backend health UI', async () => {
-    renderProfile();
+    await renderProfile();
 
     await waitFor(() => expect(screen.getByTestId('profile-sign-out')).toBeVisible());
     fireEvent.press(screen.getByTestId('profile-sign-out'));
@@ -198,14 +233,14 @@ describe('R2: estructura Figma', () => {
       signIn: jest.fn(),
       signOut: jest.fn(),
     } satisfies AuthContextValue);
-    mockGetMe.mockResolvedValue({ kind: 'error' });
+    mockGetMe.mockReturnValue(pending<MeState>());
   });
 
-  it('uses uniform dimensions and content-sized skeletons while loading', () => {
+  it('uses uniform dimensions and content-sized skeletons while loading', async () => {
     mockListPets.mockReturnValue(pending<PetsState>());
     mockGetPet.mockReturnValue(pending<PetState>());
 
-    renderProfile();
+    await renderProfile();
 
     expect(screen.getByTestId('screen-profile').props.contentContainerStyle).toEqual({
       padding: 24,
@@ -222,11 +257,11 @@ describe('R2: estructura Figma', () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
     mockGetPet.mockResolvedValue({ kind: 'ok', pet });
 
-    renderProfile();
+    await renderProfile();
 
     await waitFor(() => expect(screen.getByTestId('pet-info-card')).toBeVisible());
     expect(screen.getByTestId('profile-pet-photo')).toBeVisible();
-    expect(screen.getByText('Luna')).toBeVisible();
+    expect(screen.getAllByText('Luna').length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText('Mixed').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByTestId('pet-chip-pet-1')).toBeVisible();
     expect(screen.getByText('female')).toBeVisible();
@@ -250,7 +285,7 @@ describe('R2: estructura Figma', () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
     mockGetPet.mockResolvedValue({ kind: 'ok', pet });
 
-    renderProfile();
+    await renderProfile();
 
     await waitFor(() => expect(screen.getByTestId('pet-info-card')).toBeVisible());
     expect(screen.getAllByText('No registrado')).toHaveLength(4);
@@ -262,7 +297,7 @@ describe('R2: estructura Figma', () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [luna, milo] });
     mockGetPet.mockResolvedValue({ kind: 'ok', pet: luna });
 
-    renderProfile();
+    await renderProfile();
     await waitFor(() => expect(screen.getByTestId('pet-chip-pet-2')).toBeVisible());
     fireEvent.press(screen.getByTestId('pet-chip-pet-2'));
 
