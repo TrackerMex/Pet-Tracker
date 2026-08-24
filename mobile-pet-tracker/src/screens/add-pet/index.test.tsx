@@ -1,13 +1,22 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
+import * as ImagePicker from 'expo-image-picker';
 
+import { requestPhotoUploadUrl, uploadPhotoToUrl } from '../../api/media';
 import { createPet } from '../../api/pets';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { AddPetScreen } from '.';
 
 jest.mock('../../api/pets', () => ({ createPet: jest.fn() }));
+jest.mock('../../api/media', () => ({
+  requestPhotoUploadUrl: jest.fn(),
+  uploadPhotoToUrl: jest.fn(),
+}));
+jest.mock('expo-image-picker', () => ({
+  launchImageLibraryAsync: jest.fn(),
+}), { virtual: true });
 jest.mock('../../providers/auth-provider', () => ({ useAuth: jest.fn() }));
 jest.mock('../../providers/selected-pet-provider', () => ({
   useSelectedPet: jest.fn(),
@@ -43,6 +52,9 @@ jest.mock('react-native-safe-area-context', () => ({
 }));
 
 const mockCreatePet = jest.mocked(createPet);
+const mockLaunchImageLibrary = jest.mocked(ImagePicker.launchImageLibraryAsync);
+const mockRequestPhotoUploadUrl = jest.mocked(requestPhotoUploadUrl);
+const mockUploadPhotoToUrl = jest.mocked(uploadPhotoToUrl);
 const mockUseAuth = jest.mocked(useAuth);
 const mockUseSelectedPet = jest.mocked(useSelectedPet);
 const mockRouter = jest.mocked(router);
@@ -182,5 +194,61 @@ describe('R6: alta de mascota', () => {
     await waitFor(() => expect(screen.getByTestId('add-pet-error')).toBeVisible());
     expect(screen.getByTestId('name-input').props.value).toBe('Luna');
     expect(screen.getByTestId('approx-age-input').props.value).toBe('12');
+  });
+});
+
+describe('R7: foto opcional tras alta', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockUseSelectedPet.mockReturnValue({ selectedPetId: null, selectPet });
+  });
+
+  it('uploads a chosen preview only after createPet succeeds', async () => {
+    const body = new Blob(['photo'], { type: 'image/jpeg' });
+    mockLaunchImageLibrary.mockResolvedValue({
+      canceled: false,
+      assets: [{ uri: 'file:///new-pet.jpg', mimeType: 'image/jpeg' } as never],
+    });
+    mockCreatePet.mockResolvedValue({
+      kind: 'ok',
+      pet: { id: 'pet-new', name: 'Nala' } as never,
+    });
+    mockRequestPhotoUploadUrl.mockResolvedValue({
+      kind: 'ok',
+      uploadUrl: 'http://localstack.test/new-pet',
+      expiresInSeconds: 600,
+    });
+    mockUploadPhotoToUrl.mockResolvedValue({ kind: 'ok' });
+    global.fetch = jest.fn().mockResolvedValue({
+      blob: jest.fn().mockResolvedValue(body),
+    }) as unknown as typeof fetch;
+    await renderAddPet();
+
+    await fireEvent.press(screen.getByTestId('add-pet-photo'));
+    await fireEvent.changeText(screen.getByTestId('name-input'), 'Nala');
+    await fireEvent.press(screen.getByTestId('age-mode-months'));
+    await fireEvent.changeText(screen.getByTestId('approx-age-input'), '8');
+    await fireEvent.press(screen.getByTestId('add-pet-submit'));
+
+    await waitFor(() => expect(mockCreatePet).toHaveBeenCalled());
+    expect(mockRequestPhotoUploadUrl).toHaveBeenCalledWith(
+      'http://example.test/v1',
+      'jwt-token',
+      'pet-new',
+      'image/jpeg',
+    );
+    expect(mockUploadPhotoToUrl).toHaveBeenCalledWith(
+      'http://localstack.test/new-pet',
+      body,
+      'image/jpeg',
+    );
+    expect(mockRouter.replace).toHaveBeenCalledWith('/profile');
   });
 });

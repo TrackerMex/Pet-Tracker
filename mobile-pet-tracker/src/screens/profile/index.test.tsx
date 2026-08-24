@@ -1,9 +1,11 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
+import * as ImagePicker from 'expo-image-picker';
 import type { ReactNode } from 'react';
 import { Uniwind } from 'uniwind';
 
+import { requestPhotoUploadUrl, uploadPhotoToUrl } from '../../api/media';
 import { getPet, listPets, type PetState, type PetsState } from '../../api/pets';
 import type { PetProfile } from '../../api/types';
 import { getMe, type MeState } from '../../api/users';
@@ -18,6 +20,15 @@ jest.mock('../../api/pets', () => ({
   getPet: jest.fn(),
   listPets: jest.fn(),
 }));
+
+jest.mock('../../api/media', () => ({
+  requestPhotoUploadUrl: jest.fn(),
+  uploadPhotoToUrl: jest.fn(),
+}));
+
+jest.mock('expo-image-picker', () => ({
+  launchImageLibraryAsync: jest.fn(),
+}), { virtual: true });
 
 jest.mock('../../api/users', () => ({
   getMe: jest.fn(),
@@ -86,6 +97,9 @@ jest.mock('react-native-safe-area-context', () => ({
 }));
 
 const apiUrl = 'http://example.test/v1';
+const mockLaunchImageLibrary = jest.mocked(ImagePicker.launchImageLibraryAsync);
+const mockRequestPhotoUploadUrl = jest.mocked(requestPhotoUploadUrl);
+const mockUploadPhotoToUrl = jest.mocked(uploadPhotoToUrl);
 const mockGetPet = jest.mocked(getPet);
 const mockListPets = jest.mocked(listPets);
 const mockGetMe = jest.mocked(getMe);
@@ -359,5 +373,86 @@ describe('R4: toggle persiste', () => {
 
     expect(mockSetTheme).toHaveBeenCalledWith('light');
     expect(mockSetStoredTheme).toHaveBeenCalledWith('light');
+  });
+});
+
+describe('R7: cambiar foto', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockGetMe.mockReturnValue(pending<MeState>());
+    const pet = makePet({ photoUrl: 'http://example.test/old.jpg' });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+  });
+
+  it('does not request a URL when the picker is cancelled', async () => {
+    mockLaunchImageLibrary.mockResolvedValue({ canceled: true, assets: null });
+    await renderProfile();
+    await waitFor(() => expect(screen.getByTestId('change-photo')).toBeVisible());
+
+    await fireEvent.press(screen.getByTestId('change-photo'));
+
+    expect(mockLaunchImageLibrary).toHaveBeenCalledTimes(1);
+    expect(mockRequestPhotoUploadUrl).not.toHaveBeenCalled();
+    expect(mockUploadPhotoToUrl).not.toHaveBeenCalled();
+  });
+
+  it('requests, uploads raw bytes, and refetches the active pet', async () => {
+    const body = new Blob(['png bytes'], { type: 'image/png' });
+    mockLaunchImageLibrary.mockResolvedValue({
+      canceled: false,
+      assets: [{ uri: 'file:///luna.png', mimeType: 'image/png' } as never],
+    });
+    mockRequestPhotoUploadUrl.mockResolvedValue({
+      kind: 'ok',
+      uploadUrl: 'http://localstack.test/upload',
+      expiresInSeconds: 600,
+    });
+    mockUploadPhotoToUrl.mockResolvedValue({ kind: 'ok' });
+    const assetFetch = jest.fn().mockResolvedValue({ blob: jest.fn().mockResolvedValue(body) });
+    global.fetch = assetFetch as unknown as typeof fetch;
+    await renderProfile();
+    await waitFor(() => expect(screen.getByTestId('change-photo')).toBeVisible());
+
+    await fireEvent.press(screen.getByTestId('change-photo'));
+
+    await waitFor(() => expect(mockRequestPhotoUploadUrl).toHaveBeenCalledWith(
+      apiUrl,
+      'jwt-token',
+      'pet-1',
+      'image/png',
+    ));
+    expect(assetFetch).toHaveBeenCalledWith('file:///luna.png');
+    expect(mockUploadPhotoToUrl).toHaveBeenCalledWith(
+      'http://localstack.test/upload',
+      body,
+      'image/png',
+    );
+    await waitFor(() => expect(mockGetPet).toHaveBeenCalledTimes(2));
+  });
+
+  it('keeps the old photo and shows an error when upload fails', async () => {
+    mockLaunchImageLibrary.mockResolvedValue({
+      canceled: false,
+      assets: [{ uri: 'file:///luna.webp', mimeType: 'image/webp' } as never],
+    });
+    mockRequestPhotoUploadUrl.mockResolvedValue({ kind: 'error' });
+    await renderProfile();
+    await waitFor(() => expect(screen.getByTestId('change-photo')).toBeVisible());
+
+    await fireEvent.press(screen.getByTestId('change-photo'));
+
+    await waitFor(() => expect(screen.getByTestId('photo-upload-error')).toBeVisible());
+    expect(screen.getByTestId('profile-pet-photo').props.source).toEqual([
+      { uri: 'http://example.test/old.jpg' },
+    ]);
+    expect(mockUploadPhotoToUrl).not.toHaveBeenCalled();
   });
 });
