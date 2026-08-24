@@ -1,4 +1,4 @@
-import { getPet, listPets } from '../pets';
+import { createPet, getPet, listPets } from '../pets';
 
 const baseUrl = 'http://example.test/v1/';
 const petsEndpoint = 'http://example.test/v1/pets';
@@ -155,5 +155,80 @@ describe('R2: getPet mapea la respuesta por kind', () => {
       kind: 'missing-config',
     });
     expect(fetchFn).not.toHaveBeenCalled();
+  });
+});
+
+describe('R6: createPet publica el contrato exacto por kind', () => {
+  const input = {
+    name: 'Luna',
+    species: 'dog' as const,
+    breed: 'Mixed',
+    approxAgeMonths: 18,
+    sex: 'female' as const,
+    size: 'medium' as const,
+    sterilized: true,
+    microchip: 'CHIP-001',
+  };
+  const pet = {
+    id: 'pet-new',
+    ...input,
+    birthDate: null,
+    ageMonths: 18,
+    currentWeightKg: null,
+    color: null,
+    photoUrl: null,
+  };
+
+  it('posts only the supplied CreatePet fields and accepts 201', async () => {
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValue(response(201, pet)) as unknown as typeof fetch;
+
+    await expect(createPet(baseUrl, 'jwt-token', input, fetchFn)).resolves.toEqual({
+      kind: 'ok',
+      pet,
+    });
+    expect(fetchFn).toHaveBeenCalledWith(petsEndpoint, {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer jwt-token',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(input),
+    });
+  });
+
+  it.each([
+    [400, { kind: 'invalid' }],
+    [401, { kind: 'unauthorized' }],
+    [403, { kind: 'forbidden' }],
+    [500, { kind: 'error' }],
+  ])('maps status %s', async (status, expected) => {
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValue(response(status, {})) as unknown as typeof fetch;
+
+    await expect(createPet(baseUrl, 'jwt-token', input, fetchFn)).resolves.toEqual(
+      expected,
+    );
+  });
+
+  it('maps malformed success, missing config, and network failures', async () => {
+    const malformedFetch = jest
+      .fn()
+      .mockResolvedValue(response(201, { name: 'Missing id' })) as unknown as typeof fetch;
+    const offlineFetch = jest
+      .fn()
+      .mockRejectedValue(new Error('offline')) as unknown as typeof fetch;
+
+    await expect(
+      createPet(baseUrl, 'jwt-token', input, malformedFetch),
+    ).resolves.toEqual({ kind: 'error' });
+    await expect(
+      createPet(undefined, 'jwt-token', input, malformedFetch),
+    ).resolves.toEqual({ kind: 'missing-config' });
+    await expect(
+      createPet(baseUrl, 'jwt-token', input, offlineFetch),
+    ).resolves.toEqual({ kind: 'unreachable', message: 'offline' });
   });
 });
