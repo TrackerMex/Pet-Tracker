@@ -32,6 +32,11 @@
   `progress/handoff_mobile-food_fix2.md`: `PetSwitcher` compartido con Avatar
   en Home, Health y Food (`b746530` rojo → `602870e` verde); 32 suites / 357
   tests móviles, typecheck y lint verdes. Falta repetir el smoke en Expo Go.
+- Ajuste humano al fix 2 completado: el selector muestra solo el Avatar y
+  conserva el nombre como `accessibilityLabel`, los `pet-chip-<id>` y la
+  selección accent (`443c2ca` rojo → `2c8123e` verde). Las 4 suites
+  focalizadas (61 tests), la suite móvil completa (32 suites / 357 tests),
+  typecheck y lint están verdes. Falta repetir el smoke en Expo Go.
 
 Notas de contexto:
 - PR #68 (feature #46) y PR #69 (review final + harness fix: quitar cap

@@ -126,6 +126,24 @@ render y el callback de selección. No se modificaron sus suites existentes.
 - R11 y la feature permanecen `in_progress` hasta repetir el smoke humano en
   Expo Go.
 
+### Ajuste humano al fix 2 — selector solo Avatar
+
+El selector compartido deja de renderizar el nombre visible de cada mascota:
+cada control muestra únicamente su `Avatar`. El nombre se conserva como
+`accessibilityLabel` del `Pressable`, junto con
+`accessibilityRole="button"`, `accessibilityState={{ selected }}` y el testID
+estable `pet-chip-<id>`. La mascota seleccionada mantiene el borde
+`border-accent` y el fondo `bg-accent-soft`.
+
+- TDD: `443c2ca` rojo (el test detectó el nombre visible) → `2c8123e` verde.
+- La suite del componente verifica foto, fallback, ausencia de nombres
+  visibles, nombres accesibles, selección accent, testIDs y callback.
+- Suites focalizadas reales con `--runTestsByPath`: 4 suites / 61 tests verdes
+  (PetSwitcher, Home, Health y Food), sin modificar tests de pantallas.
+- `bun run test -- --runInBand`: exit 0; 32 suites y 357 tests verdes.
+- `bun run typecheck`: exit 0.
+- `bun run lint`: exit 0.
+
 ## Estado del worktree
 
 Los archivos locales preexistentes no relacionados bajo `.agents/`,
