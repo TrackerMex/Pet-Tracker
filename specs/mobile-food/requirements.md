@@ -1,6 +1,6 @@
 ---
 feature: "mobile-food"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec, mobile]
 ---
 
@@ -320,20 +320,18 @@ Todo lo demás (R1–R8) sigue TDD estricto con test rojo primero.
   manual cubre v1).
 - Cambios a `backend-pet-tracker/`, `infra/`, `init.config.sh`, CI (R10).
 
-## Decisiones pendientes de humano (este gate)
+## Decisiones del gate (resueltas por humano, 2026-08-24)
 
-- **D7 — Served/Pending por hora local**: sin tracking en backend, el
-  estado de cada comida se deriva comparando `HH:MM` local. Alternativa:
-  no mostrar estado alguno (solo horarios). Si el humano la prefiere, se
-  recorta R5 antes del handoff.
-- **D9 — sin generate en Food**: el botón `Generate plan` vive solo en
-  MealSchedule; el empty de Food (`No meal plan yet`) dirige ahí vía el
-  link `Meal schedule`. Alternativa: duplicar el botón en Food.
-- Menores objetables: porción por comida = `Math.round(dailyGrams /
-  mealsPerDay)` (la suma puede no cuadrar exacta con `dailyGrams`, se
-  asume informativo); textos UI en inglés con warnings del backend en
-  español tal cual; perfil nutricional mostrado en MealSchedule y no en
-  Food.
+- **D7 — Served/Pending por hora local**: APROBADO tal como está en
+  [[design]] §D7 (badge derivado comparando `HH:MM` local). R5 se
+  mantiene íntegro.
+- **D9 — sin generate en Food**: APROBADO — el botón `Generate plan`
+  vive solo en MealSchedule; el empty de Food (`No meal plan yet`)
+  dirige ahí vía el link `Meal schedule`.
+- Menores (porción `Math.round(dailyGrams / mealsPerDay)` informativa,
+  UI en inglés con warnings del backend en español tal cual, perfil
+  nutricional en MealSchedule y no en Food): sin objeción, quedan como
+  están.
 
 ## Aprobación
 

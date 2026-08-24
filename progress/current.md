@@ -4,3 +4,22 @@
 > Al cerrar la sesion, mueve este contenido a progress/history.md y deja solo esta plantilla.
 
 ---
+
+## Feature #38 mobile-food — in_progress
+
+- Inicio: 2026-08-24
+- Branch: `feature/38-mobile-food` (creada desde main post-merge #46)
+- Spec: `specs/mobile-food/` escrita por spec_author (2026-08-23) y
+  **aprobada por humano el 2026-08-24** vía sesión interactiva: D7
+  (badge Served/Pending por hora local, R5 íntegro) y D9 (Generate plan
+  solo en MealSchedule) aprobados tal como estaban propuestos.
+- Plan: handoff a Codex CLI (implementa Tab Food + MealSchedule con TDD
+  por R-id, R1–R11) → humano confirma fin → reviewer → smoke humano con
+  Expo Go → cierre.
+- Estado: prompt de handoff entregado al humano; esperando que Codex
+  termine. Mientras tanto no se toca `mobile-pet-tracker/` desde aquí.
+
+Notas de contexto:
+- PR #68 (feature #46) y PR #69 (review final + harness fix: quitar cap
+  `--max-old-space-size=1536` que hacía OOM en CI) mergeados a main.
+- `feature/38-mobile-food` sincronizada con main (`d1aeb18`).
