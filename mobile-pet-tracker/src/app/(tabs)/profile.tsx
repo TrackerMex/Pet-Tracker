@@ -1,4 +1,4 @@
-import { router, type Href } from 'expo-router';
+import type { Href } from 'expo-router';
 import { Button, Card, Chip } from 'heroui-native';
 import { useEffect, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
@@ -15,6 +15,13 @@ const stateClassNames: Record<HealthState['kind'], string> = {
   unreachable: 'bg-danger-soft text-danger',
   'missing-config': 'bg-danger-soft text-danger',
 };
+
+function openReminders() {
+  // Keep Expo Router lazy so the generic route smoke test can render in Jest.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { router } = require('expo-router') as typeof import('expo-router');
+  router.push('/reminders' as Href);
+}
 
 export default function ProfileScreen() {
   const apiUrl = process.env.EXPO_PUBLIC_API_URL;
@@ -82,7 +89,7 @@ export default function ProfileScreen() {
         accessibilityRole="button"
         testID="reminders-link"
         className="flex-row items-center justify-between rounded-xl bg-default px-3 py-2"
-        onPress={() => router.push('/reminders' as Href)}
+        onPress={() => void openReminders()}
       >
         <Text className="font-semibold text-foreground">Reminders</Text>
         <Text className="text-lg font-semibold text-muted">›</Text>

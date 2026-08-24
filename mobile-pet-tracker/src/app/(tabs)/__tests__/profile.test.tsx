@@ -170,6 +170,8 @@ describe('R10: profile enlaza a reminders', () => {
     await fireEvent.press(screen.getByTestId('reminders-link'));
 
     expect(screen.getByText('Reminders')).toBeVisible();
-    expect(mockRouter.push).toHaveBeenCalledWith('/reminders');
+    await waitFor(() => {
+      expect(mockRouter.push).toHaveBeenCalledWith('/reminders');
+    });
   });
 });

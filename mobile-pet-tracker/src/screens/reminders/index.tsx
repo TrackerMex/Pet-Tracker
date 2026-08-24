@@ -41,13 +41,14 @@ export function RemindersScreen() {
     [baseUrl, selectedPetId, token],
   );
   const reminders = useApi(remindersFn);
+  const refetchReminders = reminders.refetch;
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
   useFocusEffect(
     useCallback(() => {
-      reminders.refetch();
-    }, [reminders.refetch]),
+      refetchReminders();
+    }, [refetchReminders]),
   );
 
   useEffect(() => {
@@ -75,7 +76,7 @@ export function RemindersScreen() {
         switch (result.kind) {
           case 'ok':
           case 'not-found':
-            reminders.refetch();
+            refetchReminders();
             return;
           case 'forbidden':
             setActionError('Only the owner can delete');
@@ -95,7 +96,7 @@ export function RemindersScreen() {
       } finally {
         setDeletingId(null);
       }
-    }, [baseUrl, reminders, selectedPetId, signOut, token],
+    }, [baseUrl, refetchReminders, selectedPetId, signOut, token],
   );
 
   const confirmDelete = useCallback(

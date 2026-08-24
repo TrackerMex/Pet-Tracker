@@ -11,7 +11,7 @@ import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
 import { Alert } from 'react-native';
 
-import { listPets, type PetsState } from '../../api/pets';
+import { listPets } from '../../api/pets';
 import {
   deleteReminder,
   listReminders,
