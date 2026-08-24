@@ -116,6 +116,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
       contentContainerStyle={{
         padding: 24,
         gap: 16,
+        paddingTop: insets.top + 12,
         paddingBottom: insets.bottom + 96,
       }}
     >
