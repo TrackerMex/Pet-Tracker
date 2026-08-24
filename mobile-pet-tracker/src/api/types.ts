@@ -182,3 +182,24 @@ export interface NutritionPlan {
   aiExplanation: string | null;
   generatedAt: string;
 }
+
+export type ReminderType =
+  | 'vaccine'
+  | 'deworming'
+  | 'medication'
+  | 'appointment'
+  | 'weight'
+  | 'food'
+  | 'custom';
+
+export type ReminderStatus = 'scheduled' | 'sent' | 'cancelled';
+
+export interface Reminder {
+  id: string;
+  petId: string;
+  type: ReminderType;
+  title: string;
+  dueAt: string;
+  advanceMinutes: number;
+  status: ReminderStatus;
+}
