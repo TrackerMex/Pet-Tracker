@@ -1,4 +1,4 @@
-import { createReminder, listReminders } from '../reminders';
+import { createReminder, deleteReminder, listReminders } from '../reminders';
 
 const baseUrl = 'http://example.test/v1/';
 const endpoint = 'http://example.test/v1/pets/pet-1/reminders';
@@ -166,6 +166,89 @@ describe('R2: createReminder publica y mapea por kind', () => {
 
     await expect(
       createReminder(undefined, 'jwt-token', 'pet-1', input, fetchFn),
+    ).resolves.toEqual({ kind: 'missing-config' });
+    expect(fetchFn).not.toHaveBeenCalled();
+  });
+});
+
+describe('R3: deleteReminder borra y mapea por kind', () => {
+  const deleteEndpoint = `${endpoint}/reminder-1`;
+
+  it('deletes without a body and does not parse the 204 response', async () => {
+    const backendResponse = response(204, undefined);
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValue(backendResponse) as unknown as typeof fetch;
+
+    await expect(
+      deleteReminder(
+        baseUrl,
+        'jwt-token',
+        'pet-1',
+        'reminder-1',
+        fetchFn,
+      ),
+    ).resolves.toEqual({ kind: 'ok' });
+    expect(fetchFn).toHaveBeenCalledWith(deleteEndpoint, {
+      method: 'DELETE',
+      headers: { Authorization: 'Bearer jwt-token' },
+    });
+    expect(fetchFn).toHaveBeenCalledWith(
+      deleteEndpoint,
+      expect.not.objectContaining({ body: expect.anything() }),
+    );
+    expect(backendResponse.json).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    [404, { kind: 'not-found' }],
+    [403, { kind: 'forbidden' }],
+    [401, { kind: 'unauthorized' }],
+    [200, { kind: 'error' }],
+    [500, { kind: 'error' }],
+  ])('maps HTTP %i', async (status, expected) => {
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValue(response(status, {})) as unknown as typeof fetch;
+
+    await expect(
+      deleteReminder(
+        baseUrl,
+        'jwt-token',
+        'pet-1',
+        'reminder-1',
+        fetchFn,
+      ),
+    ).resolves.toEqual(expected);
+  });
+
+  it('maps a fetch rejection to unreachable', async () => {
+    const fetchFn = jest
+      .fn()
+      .mockRejectedValue(new Error('network down')) as unknown as typeof fetch;
+
+    await expect(
+      deleteReminder(
+        baseUrl,
+        'jwt-token',
+        'pet-1',
+        'reminder-1',
+        fetchFn,
+      ),
+    ).resolves.toEqual({ kind: 'unreachable', message: 'network down' });
+  });
+
+  it('maps a missing base URL without fetching', async () => {
+    const fetchFn = jest.fn() as unknown as typeof fetch;
+
+    await expect(
+      deleteReminder(
+        undefined,
+        'jwt-token',
+        'pet-1',
+        'reminder-1',
+        fetchFn,
+      ),
     ).resolves.toEqual({ kind: 'missing-config' });
     expect(fetchFn).not.toHaveBeenCalled();
   });
