@@ -16,7 +16,7 @@ tags: [harness, spec, mobile]
 | R6 | `src/api/__tests__/pets.test.ts::R6: createPet publica el contrato exacto por kind`; `src/screens/add-pet/index.test.tsx::R6: alta de mascota` | `99f0636` rojo → `f44f8dc` verde |
 | R7 | `src/api/__tests__/media.test.ts::R7: media photo upload API`; `src/screens/profile/index.test.tsx::R7: cambiar foto`; `src/screens/add-pet/index.test.tsx::R7: foto opcional tras alta` | `709d706` rojo → `b37bbe4` verde |
 | R8 | `src/api/__tests__/media.test.ts::R8: listPetDocs consume el contrato de media-docs-api`; `src/screens/docs/index.test.tsx::R8: pantalla Docs`; `src/screens/profile/index.test.tsx::R8: navegación a docs` | `19e1087` rojo → `05ab786` verde (smoke real Docs bloqueado por backend #49) |
-| R9 | pendiente (comandos, no suite) | pendiente |
+| R9 | `src/__tests__/design-drift.test.ts::R9: mobile-pets-profile sin drift`; `bun run typecheck`; `bun run lint`; `bun run test` | `ffefbb8` rojo → verde verificado en este commit |
 | R10 | pendiente (smoke humano, no automatizable) | pendiente |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".

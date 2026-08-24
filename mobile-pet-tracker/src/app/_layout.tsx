@@ -34,7 +34,7 @@ export default function RootLayout() {
     };
   }, []);
 
-  if (!themeReady) return null;
+  if (!themeReady) return <></>;
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
