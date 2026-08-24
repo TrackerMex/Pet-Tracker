@@ -72,3 +72,47 @@ bookkeeping corresponde al reviewer después de R12.
 El smoke de los diez pasos en Expo Go debe ejecutarlo el humano. No se marca
 R12, la feature no pasa a `done` y la trazabilidad permanece pendiente hasta
 que ese gate se complete.
+
+## Rework R8 post-review — Expo UI DateTimePicker
+
+Decisión humana aplicada el 2026-08-24:
+
+- El test ajustado se ejecutó primero contra la implementación anterior:
+  11 fallos y 6 tests pasados. El rojo quedó aislado en
+  `8042a80 test(mobile-reminders): define Expo UI picker swap in red (R8)`.
+- `AddReminderScreen` usa ahora el drop-in
+  `@expo/ui/community/datetime-picker`; los árboles de fecha y hora están
+  envueltos en `Host` importado desde `@expo/ui`, con
+  `presentation="dialog"`, `onValueChange` y `onDismiss`.
+- Se conservan todos los testIDs y contratos accesibles de R8. El test añade
+  cobertura del `Host`, de la selección y del cierre por dismiss; el verde
+  quedó en `02f02ae fix(mobile-reminders): use Expo UI native pickers (R8)`.
+- El manifest instalado de `@expo/ui@57.0.11` no contiene
+  `@react-native-community/datetimepicker` en `dependencies` ni en
+  `peerDependencies`. `bun pm why` confirmó que era solo una dependencia
+  directa de la app. Expo validó la versión replacement mediante
+  `bunx expo install '@expo/ui@~57.0.11' --bun`; como Expo CLI no ofrece
+  subcomando uninstall, Bun retiró la dependencia directa. También se
+  eliminaron su entrada de `bun.lock` y su config plugin de `app.json`.
+- La documentación y la fila R8 se actualizaron en
+  `254dda2 docs(mobile-reminders): trace Expo UI picker rework (R8)`.
+
+Verificación final:
+
+- Test focal R8/R9: 1 suite, 17/17 tests.
+- `bun run test -- --runInBand --silent`: 36/36 suites, 424/424 tests.
+- `bun run typecheck`: exit 0.
+- `bun run lint`: exit 0, sin warnings.
+- `bunx expo export --platform android`: bundle correcto de 5.265 módulos;
+  resolvió los assets de `@expo/ui`. Junto con la marca oficial “Included in
+  Expo Go” para el drop-in de SDK 57, conserva el flujo 100% Expo Go.
+- `./init.sh`: exit 0 y mensaje `Todo verde`; e2e 20 suites y 327 tests
+  pasados (2 suites/6 tests omitidos por gate de entorno).
+- Los diffs de `backend-pet-tracker/` e `infra/` contra `origin/main` están
+  vacíos. `mobile-pet-tracker/package.json` queda sin diff de dependencias
+  contra `origin/main`; los greps de
+  `@react-native-community/datetimepicker` y `expo-notifications` bajo la app,
+  excluyendo `node_modules`, no devuelven coincidencias.
+
+R12 sigue pendiente del smoke del humano en un dispositivo físico con Expo
+Go; no se cambia el estado `in_progress` ni se ejecuta el cierre de feature.

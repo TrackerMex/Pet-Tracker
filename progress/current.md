@@ -24,3 +24,6 @@
   drop-in de `@expo/ui`, con `Host` universal, TDD rojo/verde y nueva
   verificación completa. La decisión de dependencia se toma contra el
   manifest instalado de `@expo/ui@57.0.11` y la documentación de Expo SDK 57.
+- Rework R8 completado: rojo `8042a80`, verde `02f02ae`, trazabilidad
+  `254dda2`; suite móvil 36/36 y 424/424, bundle Android Expo correcto y
+  `./init.sh` exit 0. R12 continúa reservado al smoke humano en Expo Go.
