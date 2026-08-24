@@ -154,7 +154,11 @@ describe('R4: food resuelve la mascota seleccionada', () => {
     expect(screen.getByText('Food')).toBeVisible();
     expect(screen.getByTestId('food-loading')).toBeVisible();
     expect(screen.getByTestId('screen-food').props.contentContainerStyle).toEqual(
-      expect.objectContaining({ padding: 24, paddingBottom: 120 }),
+      expect.objectContaining({
+        padding: 24,
+        paddingTop: 52,
+        paddingBottom: 120,
+      }),
     );
   });
 

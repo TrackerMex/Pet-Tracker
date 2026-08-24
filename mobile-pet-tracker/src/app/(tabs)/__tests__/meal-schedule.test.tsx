@@ -184,7 +184,13 @@ describe('R7: meal schedule muestra horarios y perfil', () => {
     expect(screen.getByTestId('meal-schedule-loading')).toBeVisible();
     expect(
       screen.getByTestId('screen-meal-schedule').props.contentContainerStyle,
-    ).toEqual(expect.objectContaining({ padding: 24, paddingBottom: 120 }));
+    ).toEqual(
+      expect.objectContaining({
+        padding: 24,
+        paddingTop: 52,
+        paddingBottom: 120,
+      }),
+    );
 
     await fireEvent.press(screen.getByTestId('meal-schedule-back'));
     expect(mockRouter.back).toHaveBeenCalledTimes(1);
