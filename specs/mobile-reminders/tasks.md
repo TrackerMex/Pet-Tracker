@@ -71,9 +71,9 @@ tags: [harness, spec, mobile]
 
 ## R9 — Guardar: validación local, POST y degradación
 
-- [ ] (1) Escribir test que falla para R9
-- [ ] (2) Implementación mínima que lo pasa
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R9
+- [x] (2) Implementación mínima que lo pasa
+- [x] (3) Refactor con tests verdes
 
 ## R10 — Rutas delgadas + link mínimo en Profile (contrato con #40)
 

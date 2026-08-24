@@ -21,7 +21,7 @@ tags: [harness, spec, mobile]
 | R6 | `src/screens/reminders/index.test.tsx::R6: lista con pills, badges y refetch on focus` | `b6621a2 test(mobile-reminders): define reminder rows in red (R6)`; `16940ae feat(mobile-reminders): render reminder summaries and rows (R6)` |
 | R7 | `src/screens/reminders/index.test.tsx::R7: borrar recordatorio con confirmación` | `70c645a test(mobile-reminders): define reminder deletion UI in red (R7)`; `c343cb8 feat(mobile-reminders): delete reminders from list (R7)` |
 | R8 | `src/screens/add-reminder/index.test.tsx::R8: formulario de alta con chips y pickers` | `cb2b566 test(mobile-reminders): define add reminder form in red (R8)`; `50ec673 feat(mobile-reminders): add reminder form and native pickers (R8)` |
-| R9 | pendiente | pendiente |
+| R9 | `src/screens/add-reminder/index.test.tsx::R9: guardar con validación y degradación por kind` | `7ff5114 test(mobile-reminders): define reminder submission in red (R9)`; `7eaed26 feat(mobile-reminders): submit reminder form (R9)` |
 | R10 | pendiente | pendiente |
 | R11 | verificación manual (typecheck/lint/tests/init.sh + greps del reviewer) | pendiente |
 | R12 | smoke humano en Expo Go (checklist en requirements) | pendiente |
