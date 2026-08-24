@@ -345,7 +345,7 @@ lanza el handoff hasta verificarlo en `feature_list.json`.
   9. Backend apagado → `Something went wrong` + Retry funcional.
   10. Tab bar flotante no tapa contenido en ambas pantallas.
 
-  - [ ] Smoke ejecutado por el humano (fecha: ____)
+  - [X] Smoke ejecutado por el humano (fecha: 2026-08-24)
 
 ## Fuera de alcance
 
