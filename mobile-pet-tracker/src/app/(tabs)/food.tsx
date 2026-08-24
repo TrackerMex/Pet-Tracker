@@ -7,6 +7,7 @@ import { ChevronRight, Clock, ForkKnife, Sparkles } from 'reicon-react-native';
 
 import { getNutritionPlan } from '../../api/nutrition';
 import { listPets, type PetsState } from '../../api/pets';
+import { PetSwitcher } from '../../components/pet-switcher';
 import { useApi } from '../../hooks/use-api';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
@@ -104,38 +105,11 @@ export default function FoodScreen() {
       ) : null}
 
       {pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <View className="flex-row gap-2">
-            {pets.data.pets.map((pet) => {
-              const selected = pet.id === selectedPetId;
-
-              return (
-                <Pressable
-                  key={pet.id}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected }}
-                  testID={`pet-chip-${pet.id}`}
-                  className={
-                    selected
-                      ? 'rounded-full bg-accent px-4 py-2'
-                      : 'rounded-full bg-default px-4 py-2'
-                  }
-                  onPress={() => selectPet(pet.id)}
-                >
-                  <Text
-                    className={
-                      selected
-                        ? 'font-semibold text-accent-foreground'
-                        : 'font-semibold text-foreground'
-                    }
-                  >
-                    {pet.name}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-        </ScrollView>
+        <PetSwitcher
+          pets={pets.data.pets}
+          selectedPetId={selectedPetId}
+          onSelect={selectPet}
+        />
       ) : null}
 
       {showPlanSkeletons ? (

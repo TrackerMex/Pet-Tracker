@@ -39,7 +39,7 @@ function makePet(overrides: Partial<PetProfile> = {}): PetProfile {
 }
 
 describe('R11: pet switcher usa Avatar para cambiar de mascota', () => {
-  it('renders photos, fallback initials, names, selection, and stable testIDs', () => {
+  it('renders photos, fallback initials, names, selection, and stable testIDs', async () => {
     const onSelect = jest.fn();
     const photoUrl = 'http://example.test/luna.jpg';
     const pets = [
@@ -47,7 +47,7 @@ describe('R11: pet switcher usa Avatar para cambiar de mascota', () => {
       makePet({ id: 'pet-2', name: 'Milo' }),
     ];
 
-    render(
+    await render(
       <HeroUINativeProvider>
         <PetSwitcher
           pets={pets}
@@ -83,7 +83,7 @@ describe('R11: pet switcher usa Avatar para cambiar de mascota', () => {
       expect.stringContaining('border-accent'),
     );
 
-    fireEvent.press(screen.getByTestId('pet-chip-pet-2'));
+    await fireEvent.press(screen.getByTestId('pet-chip-pet-2'));
 
     expect(onSelect).toHaveBeenCalledTimes(1);
     expect(onSelect).toHaveBeenCalledWith('pet-2');
