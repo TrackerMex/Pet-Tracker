@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import { Button, Card, Skeleton, Spinner } from 'heroui-native';
+import { Button, Card as HeroUICard, Skeleton, Spinner } from 'heroui-native';
 import { useCallback, useEffect, useMemo } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -16,6 +16,7 @@ import {
 
 import { getDailyActivity } from '../../api/activity';
 import { getPet, listPets, type PetsState } from '../../api/pets';
+import { Card } from '../../components/card';
 import { PetSwitcher } from '../../components/pet-switcher';
 import { useApi } from '../../hooks/use-api';
 import { useAuth } from '../../providers/auth-provider';
@@ -131,20 +132,17 @@ export default function HomeScreen() {
       ) : null}
 
       {detail.data?.kind === 'error' || detail.data?.kind === 'unreachable' ? (
-        <Card testID="pet-card-error" className="items-start gap-3 p-4">
+        <HeroUICard testID="pet-card-error" className="items-start gap-3 p-4">
           <Text className="text-danger">Something went wrong</Text>
           <Button testID="pet-card-retry" onPress={detail.refetch}>
             Retry
           </Button>
-        </Card>
+        </HeroUICard>
       ) : null}
 
       {detail.data?.kind === 'ok' ? (
         <>
-          <Card
-            testID="pet-card"
-            className="rounded-[20px] border border-border bg-surface p-4 shadow-sm"
-          >
+          <Card testID="pet-card">
             <View className="flex-row items-center gap-4">
               {detail.data.pet.photoUrl ? (
                 <Image
@@ -177,7 +175,7 @@ export default function HomeScreen() {
             </View>
           </Card>
 
-          <Card
+          <HeroUICard
             testID="collar-card"
             className="gap-3 rounded-2xl bg-default p-4"
           >
@@ -234,15 +232,12 @@ export default function HomeScreen() {
                 No collar — health only
               </Text>
             )}
-          </Card>
+          </HeroUICard>
         </>
       ) : null}
 
       {selectedPetId ? (
-        <Card
-          testID="summary-card"
-          className="gap-4 rounded-[20px] border border-border bg-surface p-4 shadow-sm"
-        >
+        <Card testID="summary-card" className="gap-4">
           <Text className="text-lg font-bold text-foreground">
             Today&apos;s Summary
           </Text>
