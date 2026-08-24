@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { CreateReminderUseCase } from '@/modules/reminders/application/use-cases/create-reminder.use-case';
+import { ListRemindersUseCase } from '@/modules/reminders/application/use-cases/list-reminders.use-case';
 import { UpdateReminderUseCase } from '@/modules/reminders/application/use-cases/update-reminder.use-case';
 import { REMINDER_REPOSITORY } from '@/modules/reminders/domain/repositories/reminder.repository';
 import {
@@ -17,6 +18,7 @@ import { PetsModule } from '@/modules/pets/pets.module';
   controllers: [PetRemindersController, RemindersController],
   providers: [
     CreateReminderUseCase,
+    ListRemindersUseCase,
     UpdateReminderUseCase,
     RemindersDispatchService,
     RemindersSchedulerService,

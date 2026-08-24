@@ -12,6 +12,7 @@ export type ReminderChanges = Partial<
 
 export interface ReminderRepository {
   create(data: NewReminder): Promise<Reminder>;
+  listByPet(petId: string): Promise<Reminder[]>;
   findById(id: string): Promise<Reminder | null>;
   reschedule(
     id: string,
