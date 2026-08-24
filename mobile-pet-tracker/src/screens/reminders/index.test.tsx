@@ -79,6 +79,30 @@ jest.mock('@expo/ui', () => {
   };
 });
 
+jest.mock('@expo/ui/community/bottom-sheet', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>(
+    'react-native',
+  );
+
+  return {
+    BottomSheet: ({
+      children,
+      index,
+      ...props
+    }: Record<string, unknown>) =>
+      typeof index === 'number' && index >= 0
+        ? React.createElement(
+            View as unknown as React.ComponentType<Record<string, unknown>>,
+            { ...props, index, testID: 'community-bottom-sheet' },
+            children as never,
+          )
+        : null,
+    BottomSheetView: ({ children, ...props }: Record<string, unknown>) =>
+      React.createElement(View, props, children as never),
+  };
+});
+
 jest.mock('expo-router', () => ({
   router: { push: jest.fn(), back: jest.fn() },
   useFocusEffect: jest.fn(),
@@ -159,24 +183,25 @@ async function renderReminders() {
 async function confirmDelete(reminderId: string) {
   await fireEvent.press(screen.getByTestId(`reminder-delete-${reminderId}`));
   const host = screen.getByTestId('reminders-delete-host');
-  const sheet = within(host).getByTestId('reminders-delete-sheet');
+  const sheet = within(host).getByTestId('community-bottom-sheet');
 
   expect(sheet.props).toEqual(
     expect.objectContaining({
-      isPresented: true,
-      onDismiss: expect.any(Function),
-      snapPoints: ['half'],
+      index: 0,
+      onClose: expect.any(Function),
+      enablePanDownToClose: true,
+      snapPoints: ['50%', '100%'],
     }),
   );
-  expect(sheet.props.isOpen).toBeUndefined();
-  expect(sheet.props.onChange).toBeUndefined();
+  expect(sheet.props.isPresented).toBeUndefined();
+  expect(within(sheet).getByTestId('reminders-delete-sheet')).toBeVisible();
   expect(screen.getByText('Delete reminder?')).toBeVisible();
   expect(screen.getByTestId('reminders-delete-reference')).toHaveTextContent(
     'Rabies booster',
   );
-  expect(screen.getByTestId('reminders-delete-confirm').props.style).toEqual(
-    expect.objectContaining({ backgroundColor: 'danger' }),
-  );
+  expect(
+    screen.getByTestId('reminders-delete-confirm').props.className,
+  ).toContain('bg-danger');
 
   await fireEvent.press(screen.getByTestId('reminders-delete-confirm'));
 }
@@ -442,9 +467,10 @@ describe('R7: borrar recordatorio con confirmación', () => {
     await fireEvent.press(screen.getByTestId('reminder-delete-reminder-1'));
 
     await fireEvent(
-      screen.getByTestId('reminders-delete-sheet'),
-      'onDismiss',
+      screen.getByTestId('community-bottom-sheet'),
+      'onClose',
     );
+    expect(screen.queryByTestId('community-bottom-sheet')).toBeNull();
     expect(screen.queryByTestId('reminders-delete-sheet')).toBeNull();
     expect(mockDeleteReminder).not.toHaveBeenCalled();
 
