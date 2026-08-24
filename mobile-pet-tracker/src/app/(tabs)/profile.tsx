@@ -1,6 +1,7 @@
+import { router, type Href } from 'expo-router';
 import { Button, Card, Chip } from 'heroui-native';
 import { useEffect, useState } from 'react';
-import { Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { Moon, Sun } from 'reicon-react-native';
 import { Uniwind, useUniwind } from 'uniwind';
 
@@ -76,6 +77,16 @@ export default function ProfileScreen() {
           </Button>
         </View>
       </Card>
+
+      <Pressable
+        accessibilityRole="button"
+        testID="reminders-link"
+        className="flex-row items-center justify-between rounded-xl bg-default px-3 py-2"
+        onPress={() => router.push('/reminders' as Href)}
+      >
+        <Text className="font-semibold text-foreground">Reminders</Text>
+        <Text className="text-lg font-semibold text-muted">›</Text>
+      </Pressable>
 
       <Button
         testID="profile-sign-out"
