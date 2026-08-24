@@ -124,6 +124,9 @@ Archivos a crear/modificar: <lista de paths>
 Reglas críticas:
   - Seguir la arquitectura documentada en docs/architecture.md
   - Seguir convenciones de docs/conventions.md
+  - Si la feature toca mobile-pet-tracker/: seguir docs/ui-guidelines.md y
+    cargar las skills del plugin expo de Codex que ese doc indica
+    (expo-overview primero; el plugin ya está instalado en Codex CLI)
   - TDD por requisito: test rojo → verde → refactor (ver specs/<feature>/tasks.md)
   - UN COMMIT POR REQUISITO como mínimo, con el test rojo antes que su
     implementación. Un único commit con todo incumple C4 de CHECKPOINTS.md
