@@ -712,7 +712,7 @@
   {
     "id": 39,
     "name": "mobile-reminders",
-    "status": "spec_ready",
+    "status": "pending",
     "priority": "P2",
     "description": "Pantallas Reminders y AddReminder del diseño contra reminders CRUD. Notificaciones push locales quedan explícitamente FUERA (backlog; requeriría expo-notifications).",
     "acceptance_criteria": [
@@ -846,7 +846,7 @@
   {
     "id": 47,
     "name": "reminders-api",
-    "status": "pending",
+    "status": "done",
     "priority": "P2",
     "description": "Backend del módulo reminders: GET /pets/:petId/reminders (listado) y DELETE /pets/:petId/reminders/:id (borrado real), por capas Clean Architecture y bajo PetAccessGuard como el resto del módulo. Bloquea el handoff de #39 (mobile-reminders).",
     "acceptance_criteria": [

@@ -1791,3 +1791,14 @@ Notas de la sesión que no están en la spec:
 - Reviewer aprobó delta post-smoke; C6 saldado con commits del humano
   (`aa368e6`, `229e460`). Suite final: 32 suites/357 tests. #38 → done.
 - Pendiente humano: merge del PR #70.
+
+## 2026-08-25 — Feature #47 reminders-api (cerrada)
+
+- Nacida del gate de #39: el humano pidió GET listado y DELETE real como
+  feature backend aparte (en vez de meterlos en la feature móvil).
+- spec_author verificó contra el módulo real (patrón vaccines); humano
+  aprobó (`e47a686`). Codex implementó R1–R3 con TDD rojo→verde por R-id
+  (9 commits): GET dueAt asc sin rol, DELETE 204 owner/403/404.
+- Reviewer aprobó: init.sh exit 0, 1114 unitarios + 327 e2e (33/33 de
+  reminders), Clean Architecture y contención verificadas.
+- Desbloquea #39 mobile-reminders (spec_ready, esperando gate humano).

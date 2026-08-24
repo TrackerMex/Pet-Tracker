@@ -13,18 +13,18 @@ tags: [harness, spec, backend]
 
 ## R1 — GET /pets/:petId/reminders (listado por capas)
 
-- [ ] (1) Escribir test que falla para R1 (list-reminders.use-case.spec.ts + casos e2e)
-- [ ] (2) Implementación mínima que lo pasa (listByPet domain+drizzle, use case, @Get, module)
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R1 (list-reminders.use-case.spec.ts + casos e2e)
+- [x] (2) Implementación mínima que lo pasa (listByPet domain+drizzle, use case, @Get, module)
+- [x] (3) Refactor con tests verdes
 
 ## R2 — DELETE /pets/:petId/reminders/:id (borrado real)
 
-- [ ] (1) Escribir test que falla para R2 (delete-reminder.use-case.spec.ts + casos e2e)
-- [ ] (2) Implementación mínima que lo pasa (deleteByPetAndId, use case, @Delete 204, module)
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R2 (delete-reminder.use-case.spec.ts + casos e2e)
+- [x] (2) Implementación mínima que lo pasa (deleteByPetAndId, use case, @Delete 204, module)
+- [x] (3) Refactor con tests verdes
 
 ## R3 — Regresión y contención
 
-- [ ] (1) Ejecutar lint, test, test:e2e y ./init.sh
-- [ ] (2) Corregir lo que falle sin tocar fuera del alcance
-- [ ] (3) Anotar resultados en progress/impl_reminders-api.md
+- [x] (1) Ejecutar lint, test, test:e2e y ./init.sh
+- [x] (2) Corregir lo que falle sin tocar fuera del alcance
+- [x] (3) Anotar resultados en progress/impl_reminders-api.md
