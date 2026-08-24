@@ -2,6 +2,7 @@ import {
   fireEvent,
   render,
   screen,
+  within,
   waitFor,
 } from '@testing-library/react-native';
 import { router } from 'expo-router';
@@ -44,7 +45,26 @@ jest.mock('expo-router', () => {
   };
 });
 
-jest.mock('@react-native-community/datetimepicker', () => {
+jest.mock('@expo/ui', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>(
+    'react-native',
+  );
+
+  return {
+    Host: (props: Record<string, unknown>) => {
+      const { children, ...hostProps } = props;
+
+      return React.createElement(
+        View,
+        { ...hostProps, testID: 'expo-ui-picker-host' },
+        children as never,
+      );
+    },
+  };
+});
+
+jest.mock('@expo/ui/community/datetime-picker', () => {
   const React = jest.requireActual<typeof import('react')>('react');
   const { View } = jest.requireActual<typeof import('react-native')>(
     'react-native',
@@ -93,8 +113,8 @@ async function pickDate(date: Date) {
   await fireEvent.press(screen.getByTestId('date-field'));
   await fireEvent(
     screen.getByTestId('date-picker'),
-    'onChange',
-    { type: 'set' },
+    'onValueChange',
+    { nativeEvent: { timestamp: date.getTime(), utcOffset: 0 } },
     date,
   );
 }
@@ -182,10 +202,18 @@ describe('R8: formulario de alta con chips y pickers', () => {
     expect(screen.queryByTestId('date-picker')).toBeNull();
     await fireEvent.press(screen.getByTestId('date-field'));
 
-    const picker = screen.getByTestId('date-picker');
+    const picker = within(
+      screen.getByTestId('expo-ui-picker-host'),
+    ).getByTestId('date-picker');
     expect(picker.props.mode).toBe('date');
+    expect(picker.props.presentation).toBe('dialog');
     expect(picker.props.minimumDate).toBeInstanceOf(Date);
-    await fireEvent(picker, 'onChange', { type: 'set' }, selectedDate);
+    await fireEvent(
+      picker,
+      'onValueChange',
+      { nativeEvent: { timestamp: selectedDate.getTime(), utcOffset: 0 } },
+      selectedDate,
+    );
 
     expect(screen.queryByTestId('date-picker')).toBeNull();
     expect(screen.getByText(selectedDate.toLocaleDateString())).toBeVisible();
@@ -197,11 +225,19 @@ describe('R8: formulario de alta con chips y pickers', () => {
     await waitFor(() => expect(screen.getByTestId('time-field')).toBeVisible());
     await fireEvent.press(screen.getByTestId('time-field'));
 
-    const picker = screen.getByTestId('time-picker');
+    const picker = within(
+      screen.getByTestId('expo-ui-picker-host'),
+    ).getByTestId('time-picker');
     expect(picker.props.mode).toBe('time');
+    expect(picker.props.presentation).toBe('dialog');
     expect((picker.props.value as Date).getHours()).toBe(9);
     expect((picker.props.value as Date).getMinutes()).toBe(0);
-    await fireEvent(picker, 'onChange', { type: 'set' }, selectedTime);
+    await fireEvent(
+      picker,
+      'onValueChange',
+      { nativeEvent: { timestamp: selectedTime.getTime(), utcOffset: 0 } },
+      selectedTime,
+    );
 
     expect(screen.queryByTestId('time-picker')).toBeNull();
     expect(
@@ -212,6 +248,22 @@ describe('R8: formulario de alta con chips y pickers', () => {
         }),
       ),
     ).toBeVisible();
+  });
+
+  it('closes the Expo UI dialog when the native picker is dismissed', async () => {
+    await renderAddReminder();
+    await waitFor(() => expect(screen.getByTestId('date-field')).toBeVisible());
+
+    await fireEvent.press(screen.getByTestId('date-field'));
+    await fireEvent(
+      within(screen.getByTestId('expo-ui-picker-host')).getByTestId(
+        'date-picker',
+      ),
+      'onDismiss',
+    );
+
+    expect(screen.queryByTestId('date-picker')).toBeNull();
+    expect(screen.getByText('Select a date')).toBeVisible();
   });
 
   it('renders alert choices and selects seven days by default', async () => {
