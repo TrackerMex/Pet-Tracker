@@ -846,7 +846,7 @@
   {
     "id": 47,
     "name": "mobile-design-drift",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P3",
     "description": "Limpieza de drift del design system móvil según progress/audit_design-drift_mobile.md: tokens --radius-card y --text-2xs en global.css, componente Card compartido (variantes surface|accent|secondary) reemplazando la receta rounded-[20px] duplicada 11x, y cumplimiento de la convención de dimensiones (conventions.md §Dimensiones) en pantallas pre-#38: insets.top+12 en health/weight-log/profile, Skeleton en vez de Spinner en health/weight-log/map, overlay de map con insets.top en vez de top:64. Sin cambios visuales intencionales más allá de safe area y skeletons.",
     "acceptance_criteria": [
