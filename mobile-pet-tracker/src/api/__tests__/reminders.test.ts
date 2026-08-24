@@ -1,4 +1,4 @@
-import { listReminders } from '../reminders';
+import { createReminder, listReminders } from '../reminders';
 
 const baseUrl = 'http://example.test/v1/';
 const endpoint = 'http://example.test/v1/pets/pet-1/reminders';
@@ -93,4 +93,80 @@ describe('R1: listReminders mapea la respuesta por kind', () => {
       expect(fetchFn).not.toHaveBeenCalled();
     },
   );
+});
+
+describe('R2: createReminder publica y mapea por kind', () => {
+  const input = {
+    type: 'vaccine' as const,
+    title: 'Rabies booster',
+    dueAt: '2026-09-01T09:00:00.000Z',
+    advanceMinutes: 10080,
+  };
+
+  it('posts exactly the four supported fields', async () => {
+    const reminder = makeReminder();
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValue(response(201, reminder)) as unknown as typeof fetch;
+
+    await expect(
+      createReminder(baseUrl, 'jwt-token', 'pet-1', input, fetchFn),
+    ).resolves.toEqual({ kind: 'ok', reminder });
+    expect(fetchFn).toHaveBeenCalledWith(endpoint, {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer jwt-token',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(input),
+    });
+  });
+
+  it.each([
+    [400, { kind: 'invalid' }],
+    [403, { kind: 'forbidden' }],
+    [401, { kind: 'unauthorized' }],
+    [200, { kind: 'error' }],
+    [500, { kind: 'error' }],
+  ])('maps HTTP %i', async (status, expected) => {
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValue(response(status, {})) as unknown as typeof fetch;
+
+    await expect(
+      createReminder(baseUrl, 'jwt-token', 'pet-1', input, fetchFn),
+    ).resolves.toEqual(expected);
+  });
+
+  it.each([
+    ['invalid JSON', invalidJsonResponse(201)],
+    ['an array success body', response(201, [])],
+  ])('maps %s to error', async (_case, backendResponse) => {
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValue(backendResponse) as unknown as typeof fetch;
+
+    await expect(
+      createReminder(baseUrl, 'jwt-token', 'pet-1', input, fetchFn),
+    ).resolves.toEqual({ kind: 'error' });
+  });
+
+  it('maps a fetch rejection to unreachable', async () => {
+    const fetchFn = jest
+      .fn()
+      .mockRejectedValue('offline') as unknown as typeof fetch;
+
+    await expect(
+      createReminder(baseUrl, 'jwt-token', 'pet-1', input, fetchFn),
+    ).resolves.toEqual({ kind: 'unreachable', message: 'offline' });
+  });
+
+  it('maps a missing base URL without fetching', async () => {
+    const fetchFn = jest.fn() as unknown as typeof fetch;
+
+    await expect(
+      createReminder(undefined, 'jwt-token', 'pet-1', input, fetchFn),
+    ).resolves.toEqual({ kind: 'missing-config' });
+    expect(fetchFn).not.toHaveBeenCalled();
+  });
 });
