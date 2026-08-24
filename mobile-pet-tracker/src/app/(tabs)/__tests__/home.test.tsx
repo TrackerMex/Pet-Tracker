@@ -419,7 +419,7 @@ describe('R9: summary degrada con gracia', () => {
     });
   });
 
-  it('keeps the previous cards mounted while a newly selected pet loads', async () => {
+  it('shows skeletons without the previous pet data while a newly selected pet loads', async () => {
     mockListPets.mockResolvedValue({
       kind: 'ok',
       pets: [makePet(), makePet({ id: 'pet-2', name: 'Milo' })],
@@ -444,10 +444,10 @@ describe('R9: summary degrada con gracia', () => {
 
     await fireEvent.press(screen.getByTestId('pet-chip-pet-2'));
 
-    expect(screen.getByTestId('pet-card-name')).toHaveTextContent('Luna');
-    expect(screen.queryByTestId('pet-card-skeleton')).toBeNull();
-    expect(screen.getByTestId('summary-activity')).toHaveTextContent('1h 35m');
-    expect(screen.queryByTestId('summary-skeleton')).toBeNull();
+    expect(screen.queryByTestId('pet-card-name')).toBeNull();
+    expect(screen.getByTestId('pet-card-skeleton')).toBeVisible();
+    expect(screen.queryByTestId('summary-activity')).toBeNull();
+    expect(screen.getByTestId('summary-skeleton')).toBeVisible();
   });
 
   it('shows a summary skeleton while activity is pending', async () => {
