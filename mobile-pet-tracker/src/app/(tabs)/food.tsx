@@ -1,12 +1,109 @@
-import { Text, View } from 'react-native';
+import { Button, Spinner } from 'heroui-native';
+import { useCallback, useEffect, useMemo } from 'react';
+import { Pressable, ScrollView, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+import { getNutritionPlan } from '../../api/nutrition';
+import { listPets, type PetsState } from '../../api/pets';
+import { useApi } from '../../hooks/use-api';
+import { useAuth } from '../../providers/auth-provider';
+import { useSelectedPet } from '../../providers/selected-pet-provider';
+
+function isPetsError(state: PetsState): boolean {
+  return ['error', 'unreachable', 'missing-config'].includes(state.kind);
+}
 
 export default function FoodScreen() {
+  const baseUrl = process.env.EXPO_PUBLIC_API_URL;
+  const { token } = useAuth();
+  const { selectedPetId, selectPet } = useSelectedPet();
+  const insets = useSafeAreaInsets();
+  const petsFn = useCallback(
+    () => listPets(baseUrl, token ?? ''),
+    [baseUrl, token],
+  );
+  const pets = useApi(petsFn);
+  const planFn = useMemo(
+    () =>
+      selectedPetId
+        ? () => getNutritionPlan(baseUrl, token ?? '', selectedPetId)
+        : null,
+    [baseUrl, selectedPetId, token],
+  );
+  useApi(planFn);
+
+  useEffect(() => {
+    if (pets.data?.kind !== 'ok' || pets.data.pets.length === 0) return;
+    const selectionExists = pets.data.pets.some(({ id }) => id === selectedPetId);
+    if (!selectionExists) selectPet(pets.data.pets[0].id);
+  }, [pets.data, selectPet, selectedPetId]);
+
   return (
-    <View
+    <ScrollView
       testID="screen-food"
-      className="flex-1 items-center justify-center bg-background"
+      className="flex-1 bg-background"
+      contentInsetAdjustmentBehavior="automatic"
+      contentContainerStyle={{
+        padding: 24,
+        gap: 16,
+        paddingBottom: insets.bottom + 96,
+      }}
     >
-      <Text className="text-lg font-semibold text-foreground">Food</Text>
-    </View>
+      <Text className="text-2xl font-black text-foreground">Food</Text>
+
+      {pets.data === undefined ? <Spinner testID="food-loading" /> : null}
+
+      {pets.data && isPetsError(pets.data) ? (
+        <View className="items-start gap-3">
+          <Text testID="food-error" className="text-danger">
+            Something went wrong
+          </Text>
+          <Button testID="food-retry" onPress={pets.refetch}>
+            Retry
+          </Button>
+        </View>
+      ) : null}
+
+      {pets.data?.kind === 'ok' && pets.data.pets.length === 0 ? (
+        <Text testID="food-empty" className="text-muted">
+          No pets yet
+        </Text>
+      ) : null}
+
+      {pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <View className="flex-row gap-2">
+            {pets.data.pets.map((pet) => {
+              const selected = pet.id === selectedPetId;
+
+              return (
+                <Pressable
+                  key={pet.id}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected }}
+                  testID={`pet-chip-${pet.id}`}
+                  className={
+                    selected
+                      ? 'rounded-full bg-accent px-4 py-2'
+                      : 'rounded-full bg-default px-4 py-2'
+                  }
+                  onPress={() => selectPet(pet.id)}
+                >
+                  <Text
+                    className={
+                      selected
+                        ? 'font-semibold text-accent-foreground'
+                        : 'font-semibold text-foreground'
+                    }
+                  >
+                    {pet.name}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </ScrollView>
+      ) : null}
+    </ScrollView>
   );
 }
