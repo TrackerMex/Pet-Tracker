@@ -1791,3 +1791,21 @@ Notas de la sesión que no están en la spec:
 - Reviewer aprobó delta post-smoke; C6 saldado con commits del humano
   (`aa368e6`, `229e460`). Suite final: 32 suites/357 tests. #38 → done.
 - Pendiente humano: merge del PR #70.
+
+## 2026-08-24 — Feature #47 mobile-design-drift (cerrada)
+
+- Origen: auditoría solo-lectura de drift (skill expo-design-system) →
+  progress/audit_design-drift_mobile.md. Feature registrada como #47.
+- Trabajo completo en git worktree Pet-Tracker-wt-47 (branch
+  feature/47-mobile-design-drift) en paralelo con la sesión de #39 sobre el
+  tree principal — primer uso real del patrón worktree de CLAUDE.md.
+- spec_author: R1-R8 EARS; humano aprobó (60296fa). Codex exec en background
+  desde la sesión leader (permiso Bash agregado por el humano tras bloqueo
+  del clasificador) implementó R1-R8 con TDD estricto, commit
+  test-rojo→verde→docs por requisito.
+- Entregado: tokens --radius-card/--text-2xs en global.css, card.tsx
+  compartido (surface|accent|secondary, sin heredar --radius heroui — bug
+  #46) adoptado en las 7 pantallas, text-2xs en tab bar y map, safe area
+  según conventions.md en health/weight-log/profile y overlay de map,
+  skeletons en vez de Spinner. Grep-clean: cero rounded-[20px]/text-[10px].
+- Reviewer aprobó (53d4dd7). #47 → done. PR abierto para merge humano.
