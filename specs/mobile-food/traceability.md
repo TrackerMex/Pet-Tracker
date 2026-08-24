@@ -8,7 +8,7 @@ tags: [harness, spec, mobile]
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | `src/api/__tests__/nutrition.test.ts::R1: getNutritionProfile mapea la respuesta por kind` | pendiente |
+| R1 | `src/api/__tests__/nutrition.test.ts::R1: getNutritionProfile mapea la respuesta por kind` | `807891a feat(mobile-food): add nutrition profile client (R1)` |
 | R2 | `src/api/__tests__/nutrition.test.ts::R2: getNutritionPlan mapea la respuesta por kind` | pendiente |
 | R3 | `src/api/__tests__/nutrition.test.ts::R3: generateNutritionPlan publica y mapea por kind` | pendiente |
 | R4 | `src/app/(tabs)/__tests__/food.test.tsx::R4: food resuelve la mascota seleccionada` | pendiente |
