@@ -1,0 +1,26 @@
+---
+feature: "mobile-pets-profile"
+status: draft        # draft | approved
+tags: [harness, spec, mobile]
+---
+
+# Trazabilidad — [[mobile-pets-profile]] (#40)
+
+| Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
+|---|---|---|
+| R1 | pendiente | pendiente |
+| R2 | pendiente | pendiente |
+| R3 | pendiente | pendiente |
+| R4 | pendiente | pendiente |
+| R5 | pendiente | pendiente |
+| R6 | pendiente | pendiente |
+| R7 | pendiente | pendiente |
+| R8 | pendiente (bloqueado por Q1) | pendiente |
+| R9 | pendiente (comandos, no suite) | pendiente |
+| R10 | pendiente (smoke humano, no automatizable) | pendiente |
+
+Regla: el reviewer no aprueba si alguna fila queda "pendiente".
+Convención de commit: `feat(mobile-pets-profile): <desc> (R1,R2)`.
+El implementer actualiza esta tabla tras cada commit; el reviewer la valida
+al aprobar (ver [[../../docs/specs|specs]] y [[../../CHECKPOINTS|CHECKPOINTS]] C5).
+R10 se traza con la fecha del smoke en [[requirements]] §Aprobación.
