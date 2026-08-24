@@ -185,3 +185,58 @@ degradación por `kind`.
 
 R12 continúa pendiente del re-smoke humano en Expo Go SDK 57; este rework no
 auto-aprueba el gate.
+
+### Tercer hallazgo smoke — crash del delete en Expo Go Android
+
+El re-smoke humano en Android físico (Expo Go, SDK 57) detectó que la app se
+cerraba al confirmar el borrado. La inspección del paquete instalado
+`@expo/ui@57.0.11` confirmó el límite incorrecto del segundo rework:
+
+- El export raíz `@expo/ui` resuelve a `src/universal/index.ts` y el screen
+  construía todo el sheet con componentes de la capa universal
+  (`BottomSheet`, `Host`, `Column`, `Button` y `Text`). En Android ese árbol
+  baja a los componentes nativos Jetpack Compose de Expo UI.
+- El manifest sí exporta `./community/bottom-sheet`. Sus types reales no
+  aceptan `isPresented` ni el snap point `'half'`: la API es compatible con
+  Gorhom y controla la apertura con `index` (`-1` cerrado, `0` primer punto),
+  cierre con `onClose`/`onDismiss`, dismiss gestual con
+  `enablePanDownToClose` y snap points numéricos o porcentuales.
+- El código del wrapper community monta su propio `Host` y aloja los children
+  React Native dentro de `RNHostView`; por ello el título, la referencia y los
+  botones volvieron a `Text`/`View` de React Native y `Button` de HeroUI. No
+  hace falta añadir `BottomSheetModalProvider` (es un no-op en 57.0.11) ni
+  otro provider. `src/app/_layout.tsx` ya envuelve toda la app en
+  `GestureHandlerRootView`.
+- Android solo habilita el estado parcial cuando recibe más de un snap point;
+  por eso la confirmación abre en el índice 0 de `['50%', '100%']`. Cancel,
+  swipe/back/scrim y Delete limpian la selección como antes; Delete sigue
+  delegando en el mismo `handleDelete`, sin alterar sus ramas de refetch o
+  error.
+
+TDD:
+
+- Rojo `1cfd679`: 8 fallos R7 esperados y 11 tests vecinos verdes. La suite
+  exigió el módulo community y su contrato observable real, mantuvo los cinco
+  testIDs `reminders-delete-*` y toda la cobertura DELETE/refetch/error/pending.
+  El cuerpo del commit documenta la excepción C4 por sustituir los asserts
+  `isPresented`/`onDismiss`/`'half'` del rework anterior.
+- Verde `a55c544`: migración a
+  `@expo/ui/community/bottom-sheet` + children RN/HeroUI; suite focal 19/19,
+  `bun run typecheck` y `bun run lint` con exit 0.
+
+Dependencias: `@gorhom/bottom-sheet@5.2.14` no se elimina ni se considera
+muerta. El wrapper community ofrece deliberadamente el contrato drop-in
+compatible con Gorhom y la dependencia directa también satisface el peer
+opcional que HeroUI Native usa en sus propios componentes BottomSheet/Select/
+Menu/Popover. En esta versión concreta `@expo/ui` implementa el wrapper con
+sheets nativos (no importa el runtime de Gorhom directamente), distinción
+confirmada leyendo su manifest y source instalados.
+
+Verificación móvil posterior: 36/36 suites y 425/425 tests; `bun run
+typecheck` y `bun run lint`, ambos exit 0; `bunx expo export --platform
+android` generó el bundle Android de 5.270 módulos y resolvió los assets de
+`@expo/ui`. `./init.sh` terminó con exit 0 y `Todo verde`: backend 145/145
+suites y 1114/1114 tests, infraestructura 2/2 y 14/14, móvil 36/36 y 425/425,
+e2e 20 suites y 327 tests pasados (2 suites/6 tests omitidos por gate), además
+de build, lint y typecheck. R12 permanece pendiente del re-smoke humano en
+Expo Go y la feature sigue `in_progress`.

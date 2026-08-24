@@ -45,3 +45,14 @@
   existente intacto. Móvil: 36/36 suites y 425/425 tests; typecheck/lint y
   bundle Android SDK 57 verdes; `./init.sh`: exit 0 y `Todo verde`. Pendiente
   únicamente: re-smoke humano R12.
+- Tercer hallazgo del smoke humano en R12: Expo Go (Android físico, SDK 57)
+  cerraba la app al confirmar el borrado por usar el árbol universal raíz de
+  `@expo/ui`. Fix completado con el export
+  `@expo/ui/community/bottom-sheet`, su API real `index`/`onClose` y children
+  RN/HeroUI alojados por `RNHostView`; no se añadieron providers porque el
+  wrapper crea su `Host`, el provider modal es no-op y el layout ya tiene
+  `GestureHandlerRootView`. Rojo `1cfd679` (8 fallos R7 esperados, 11 verdes;
+  excepción C4 documentada) y verde `a55c544` (19/19). Móvil: 36/36 suites y
+  425/425 tests; typecheck/lint, bundle Android de 5.270 módulos y `./init.sh`
+  exit 0 con `Todo verde`. Trazabilidad e informe actualizados. R12 sigue
+  pendiente del re-smoke humano; la feature permanece `in_progress`.
