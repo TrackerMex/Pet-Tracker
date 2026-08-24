@@ -69,3 +69,75 @@ Tests:       275 passed, 275 total
   Features: 36/46 completadas | 9 pendientes
 EXIT=0
 ```
+
+---
+
+# Review final post-correcciones (delta 7c2347c..2c05c4e)
+Fecha: 2026-08-23
+Veredicto: RECHAZADO — solo por trazabilidad desactualizada; el código del delta está limpio y verde
+
+## Alcance revisado
+Commits posteriores al review aprobado `7c2347c`: `e370daa` (radius, fallback
+implementer), `879a0d6`+`e2d3d50` (dark stylesheet, Codex), `26c8f84`+`d28d406`+
+`b5bff10` (dark 2ª ronda, Codex) más docs. R12 smoke humano registrado como
+COMPLETO en `progress/impl_mobile-figma-polish.md`.
+
+## Verificación independiente (ejecutada por el reviewer)
+- [x] `./init.sh`: **exit 0**, "Todo verde" (backend, infra, harness, móvil, lint, typecheck; e2e saltados por LocalStack, esperado)
+- [x] `bun run test` en mobile-pet-tracker/: exit 0 — **28 suites, 284 tests**
+- [x] `bun run typecheck`: exit 0
+- [x] `bun run lint`: exit 0
+
+## Invariantes en el delta
+- [x] Cero `testID` o copy visible cambiado: diff de pantallas/componentes leído completo — solo props `color={token}` en iconos, swap `useThemeColor`→`useThemeColors`, `customMapStyle` condicional y `@source`/`--color-*` en CSS
+- [x] Diff en `__tests__/` = solo tests nuevos + mocks de soporte; única modificación de assert existente: `radius: '1.25rem'` → assert de ausencia `--radius:` en `global-css.test.ts` (corrección sancionada de R1)
+- [x] Cero deps nuevas: `git diff main...HEAD -- package.json bun.lock` vacío
+- [x] Contención: `git diff main...HEAD -- backend-pet-tracker/ infra/ init.config.sh .github/` vacío
+- [x] `src/api/`, hooks, providers y pantallas auth intactos en el delta
+
+## TDD de las correcciones
+- [x] Dark 1: `879a0d6` (solo tests, rojo) → `e2d3d50` (fix CSS) — rojo→verde real
+- [x] Dark 2: `26c8f84` (solo tests, rojo: 4 archivos) → `d28d406` + `b5bff10` — rojo→verde real
+- [x] Radius `e370daa`: test+fix en un commit — aceptado como fallback trivial documentado (3 líneas, registrado en current.md e impl report)
+
+## Helper y map style
+- [x] `src/theme/use-theme-colors.ts`: se suscribe a `useUniwind().theme` y resuelve síncrono `--color-<token>` → `--<token>` → foreground; sin `invalid` posible; sin deps; vive en `src/theme/`, no toca `src/api/`
+- [x] `src/theme/map-style-dark.json`: versionado en `b5bff10`, JSON válido, estilo night oficial de Google; aplicado solo con `theme === 'dark'` en `map.tsx`
+
+## Consistencia specs
+- [x] `requirements.md` R1 y `design.md` corregidos (sin override `--radius`, `--field-radius: 0.75rem` se mantiene) — coincide exactamente con `global.css` actual
+- [x] `status: approved` intacto; corrección documentada como hallazgo de smoke con fecha
+
+## Motivo del rechazo (único)
+`specs/mobile-figma-polish/traceability.md` **no fue actualizado con las
+correcciones** (último commit que la toca: `96986af`, anterior al smoke):
+1. Fila R1: no traza `e370daa` (el assert de R1 cambió: ahora asserta ausencia de `--radius:`)
+2. Fila R2: no traza el ciclo `879a0d6`→`e2d3d50` ni los tests nuevos de materialización `--color-*` y `use-theme-colors.test.tsx::R2` (que sí existe y nombra R2)
+3. Fila R12: dice "smoke humano sin ejecutar" — falso: el smoke está COMPLETO según `progress/impl_mobile-figma-polish.md` §R12. Este registro embarcaría erróneo en el PR.
+
+Corrección requerida (solo docs, sin código): actualizar las tres filas y
+re-lanzar reviewer o validación puntual del archivo. Todo lo demás de este
+delta queda APROBADO tal cual.
+
+## Re-verificación tras 0aa5ac0 — VEREDICTO FINAL: APROBADO
+Fecha: 2026-08-23
+
+Único cambio desde el rechazo: `0aa5ac0 docs(mobile-figma-polish): trazar
+correcciones post-smoke y R12 completo` — solo `traceability.md` (verificado
+con `git log 2c05c4e..HEAD` y `git show --stat`; cero código tocado, así que
+los gates verdes del review anterior siguen válidos).
+
+Las 3 filas verificadas contra git log:
+- [x] R1 traza `e370daa` y el assert de ausencia de `--radius` — coincide
+- [x] R2 traza rojo `879a0d6`→verde `e2d3d50` y rojo `26c8f84`→verde
+      `d28d406`+`b5bff10`, más `use-theme-colors.test.tsx::R2` (el archivo
+      existe y su describe nombra R2) — coincide
+- [x] R12 marca smoke humano COMPLETO (2026-08-23, light y dark, 3
+      correcciones) con referencia a `progress/impl_mobile-figma-polish.md`
+      §R12 — coincide con el registro
+- [x] Ninguna fila "pendiente"
+
+Veredicto final de la feature: **APROBADO**. Gates verdes (init.sh exit 0;
+móvil 28 suites/284 tests, typecheck, lint exit 0), invariantes intactas,
+TDD rojo→verde en las correcciones Codex, contención y deps limpias, specs
+consistentes, R12 completo y trazabilidad al día.
