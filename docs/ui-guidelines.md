@@ -46,13 +46,20 @@ skill pertinente (regla ya en memoria de sesión; aquí queda oficial).
    extracción: ≥2 pantallas + rol nombrable + API menor que implementación.
    Promoción: inline → `src/screens/<x>/` → `src/components/`.
 5. **Base de componentes**: heroui-native (Button, Skeleton, TextField,
-   Avatar, Chip...). `@expo/ui` por defecto para lo que heroui no cubre:
-   BottomSheet (`isPresented`/`onDismiss`, envuelto en `Host`), DateTimePicker
-   (`@expo/ui/community/datetimepicker`), Menu, Slider, `List`+`ListItem`
-   (solo filas agrupadas cortas estilo Settings — NO es virtualizada). Listas
-   de datos de longitud desconocida: FlatList/FlashList. Prohibido:
-   @gorhom/bottom-sheet, Reanimated para sheets, Picker/SafeAreaView/WebView
-   de RN (removidos).
+   Avatar, Chip...). `@expo/ui` para lo que heroui no cubre, PERO con esta
+   distinción (aprendida por crash real en el smoke de #39, Android + Expo
+   Go): **la capa root/universal de `@expo/ui` (SwiftUI/Jetpack) crashea en
+   Expo Go Android** — como el smoke de este proyecto es siempre Expo Go, el
+   default es la capa **`@expo/ui/community/*`** (wrappers Go-compatibles):
+   `community/bottom-sheet` (montado sobre @gorhom/bottom-sheet — esa dep es
+   peer del wrapper, NO removerla), `community/datetime-picker`,
+   `community/menu`, `community/picker`, `community/slider`,
+   `community/segmented-control`. La capa root de @expo/ui queda reservada
+   para cuando el proyecto adopte dev builds. `List`+`ListItem` solo para
+   filas agrupadas cortas estilo Settings — NO es virtualizada; listas de
+   datos de longitud desconocida: FlatList/FlashList. Prohibido: importar
+   @gorhom directamente (siempre vía el wrapper community), Reanimated para
+   sheets, Picker/SafeAreaView/WebView de RN (removidos).
 6. **Dimensiones de pantalla**: conventions.md §Dimensiones — `paddingTop:
    insets.top + 12`, `padding: 24`, `gap: 16`, `paddingBottom: insets.bottom
    + 96` vía `useSafeAreaInsets` en `contentContainerStyle` (nunca en el
