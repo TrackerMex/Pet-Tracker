@@ -1,9 +1,15 @@
-import { getNutritionPlan, getNutritionProfile } from '../nutrition';
+import {
+  generateNutritionPlan,
+  getNutritionPlan,
+  getNutritionProfile,
+} from '../nutrition';
 
 const baseUrl = 'http://example.test/v1/';
 const profileEndpoint =
   'http://example.test/v1/pets/pet-1/nutrition-profile';
 const planEndpoint = 'http://example.test/v1/pets/pet-1/nutrition-plan';
+const generateEndpoint =
+  'http://example.test/v1/pets/pet-1/nutrition-plan/generate';
 
 function response(status: number, body: unknown): Response {
   return {
@@ -184,6 +190,94 @@ describe('R2: getNutritionPlan mapea la respuesta por kind', () => {
 
       await expect(
         getNutritionPlan(missingUrl, 'jwt-token', 'pet-1', fetchFn),
+      ).resolves.toEqual({ kind: 'missing-config' });
+      expect(fetchFn).not.toHaveBeenCalled();
+    },
+  );
+});
+
+describe('R3: generateNutritionPlan publica y mapea por kind', () => {
+  it('posts an empty body with authentication and JSON headers', async () => {
+    const plan = makePlan();
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValue(response(200, plan)) as unknown as typeof fetch;
+
+    await expect(
+      generateNutritionPlan(baseUrl, 'jwt-token', 'pet-1', fetchFn),
+    ).resolves.toEqual({ kind: 'ok', plan });
+    expect(fetchFn).toHaveBeenCalledWith(generateEndpoint, {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer jwt-token',
+        'Content-Type': 'application/json',
+      },
+      body: '{}',
+    });
+  });
+
+  it.each([
+    [403, {}, { kind: 'forbidden' }],
+    [401, {}, { kind: 'unauthorized' }],
+    [404, {}, { kind: 'error' }],
+    [500, {}, { kind: 'error' }],
+    [
+      422,
+      { code: 'NUTRITION_PROFILE_REQUIRED' },
+      { kind: 'unprocessable', code: 'NUTRITION_PROFILE_REQUIRED' },
+    ],
+    [
+      422,
+      { code: 'PET_WEIGHT_REQUIRED' },
+      { kind: 'unprocessable', code: 'PET_WEIGHT_REQUIRED' },
+    ],
+    [
+      422,
+      { code: 'UNKNOWN_NUTRITION_ERROR' },
+      { kind: 'unprocessable', code: null },
+    ],
+    [422, null, { kind: 'unprocessable', code: null }],
+  ])('maps status %i with body %p', async (status, body, expected) => {
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValue(response(status, body)) as unknown as typeof fetch;
+
+    await expect(
+      generateNutritionPlan(baseUrl, 'jwt-token', 'pet-1', fetchFn),
+    ).resolves.toEqual(expected);
+  });
+
+  it.each([
+    ['invalid JSON', invalidJsonResponse(200)],
+    ['a null body', response(200, null)],
+    ['an array body', response(200, [makePlan()])],
+  ])('maps %s on success to error', async (_case, backendResponse) => {
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValue(backendResponse) as unknown as typeof fetch;
+
+    await expect(
+      generateNutritionPlan(baseUrl, 'jwt-token', 'pet-1', fetchFn),
+    ).resolves.toEqual({ kind: 'error' });
+  });
+
+  it('maps a fetch rejection to unreachable', async () => {
+    const fetchFn = jest
+      .fn()
+      .mockRejectedValue(new Error('network down')) as unknown as typeof fetch;
+
+    await expect(
+      generateNutritionPlan(baseUrl, 'jwt-token', 'pet-1', fetchFn),
+    ).resolves.toEqual({ kind: 'unreachable', message: 'network down' });
+  });
+
+  it.each([undefined, ''])(
+    'maps missing base URL %p without fetching',
+    async (missingUrl) => {
+      const fetchFn = jest.fn() as unknown as typeof fetch;
+
+      await expect(
+        generateNutritionPlan(missingUrl, 'jwt-token', 'pet-1', fetchFn),
       ).resolves.toEqual({ kind: 'missing-config' });
       expect(fetchFn).not.toHaveBeenCalled();
     },
