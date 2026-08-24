@@ -11,7 +11,7 @@ tags: [harness, spec, mobile]
 | R1 | `src/api/__tests__/users.test.ts::R1: getMe mapea users/me por kind`; `src/screens/profile/index.test.tsx::R1: me card` | `cf360d0` rojo → `8d2dd19` verde |
 | R2 | `src/screens/profile/index.test.tsx::R2: estructura Figma`; `src/app/(tabs)/__tests__/profile.test.tsx::R2: route Profile delgada` | `42f2bbb` rojo → `0c0f5b0` verde |
 | R3 | `src/screens/profile/index.test.tsx::R3: reminders-link y sign out` | `ea75755` rojo → `55dd4c9` verde (excepción C4/Q2: tests de backend-health retirados) |
-| R4 | pendiente | pendiente |
+| R4 | `src/utils/theme-preference.test.ts::R4: preferencia de tema persistente`; `src/screens/profile/index.test.tsx::R4: toggle persiste`; `src/app/__tests__/layout.test.tsx::R4: RootLayout restaura el tema` | `236ddde` rojo → `a2fb2e8` verde |
 | R5 | pendiente | pendiente |
 | R6 | pendiente | pendiente |
 | R7 | pendiente | pendiente |
