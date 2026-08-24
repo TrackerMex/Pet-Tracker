@@ -20,7 +20,7 @@ tags: [harness, spec, mobile]
 | R5 | `src/screens/reminders/index.test.tsx::R5: reminders monta con métricas y estados` | `847996a test(mobile-reminders): define reminders screen states in red (R5)`; `bb40613 feat(mobile-reminders): add reminder list states (R5)` |
 | R6 | `src/screens/reminders/index.test.tsx::R6: lista con pills, badges y refetch on focus` | `b6621a2 test(mobile-reminders): define reminder rows in red (R6)`; `16940ae feat(mobile-reminders): render reminder summaries and rows (R6)` |
 | R7 | `src/screens/reminders/index.test.tsx::R7: borrar recordatorio con confirmación` | `70c645a test(mobile-reminders): define reminder deletion UI in red (R7)`; `c343cb8 feat(mobile-reminders): delete reminders from list (R7)` |
-| R8 | pendiente | pendiente |
+| R8 | `src/screens/add-reminder/index.test.tsx::R8: formulario de alta con chips y pickers` | `cb2b566 test(mobile-reminders): define add reminder form in red (R8)`; `50ec673 feat(mobile-reminders): add reminder form and native pickers (R8)` |
 | R9 | pendiente | pendiente |
 | R10 | pendiente | pendiente |
 | R11 | verificación manual (typecheck/lint/tests/init.sh + greps del reviewer) | pendiente |

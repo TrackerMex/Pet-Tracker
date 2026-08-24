@@ -65,9 +65,9 @@ tags: [harness, spec, mobile]
 
 ## R8 — AddReminderScreen: formulario, chips y pickers nativos
 
-- [ ] (1) Escribir test que falla para R8
-- [ ] (2) Implementación mínima que lo pasa
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R8
+- [x] (2) Implementación mínima que lo pasa
+- [x] (3) Refactor con tests verdes
 
 ## R9 — Guardar: validación local, POST y degradación
 
