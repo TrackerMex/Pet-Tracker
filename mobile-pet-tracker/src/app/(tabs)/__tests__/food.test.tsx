@@ -3,13 +3,15 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from '@testing-library/react-native';
+import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
 
 import { getNutritionPlan, type NutritionPlanState } from '../../../api/nutrition';
 import { listPets, type PetsState } from '../../../api/pets';
-import type { PetProfile } from '../../../api/types';
+import type { NutritionPlan, PetProfile } from '../../../api/types';
 import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
 import { SelectedPetProvider } from '../../../providers/selected-pet-provider';
 import FoodScreen from '../food';
@@ -62,6 +64,7 @@ const apiUrl = 'http://example.test/v1';
 const mockGetNutritionPlan = jest.mocked(getNutritionPlan);
 const mockListPets = jest.mocked(listPets);
 const mockUseAuth = jest.mocked(useAuth);
+const mockRouter = jest.mocked(router);
 
 function makePet(overrides: Partial<PetProfile> = {}): PetProfile {
   return {
@@ -89,6 +92,23 @@ function makePet(overrides: Partial<PetProfile> = {}): PetProfile {
     activitySummary: null,
     createdAt: '2026-08-20T00:00:00.000Z',
     updatedAt: '2026-08-21T00:00:00.000Z',
+    ...overrides,
+  };
+}
+
+function makePlan(overrides: Partial<NutritionPlan> = {}): NutritionPlan {
+  return {
+    id: 'plan-1',
+    petId: 'pet-1',
+    rerKcal: 410,
+    merKcal: 656,
+    dailyGrams: 187,
+    mealsPerDay: 2,
+    mealTimes: ['07:30', '19:30'],
+    objective: 'maintenance',
+    warnings: [],
+    aiExplanation: null,
+    generatedAt: '2026-08-23T12:00:00.000Z',
     ...overrides,
   };
 }
@@ -210,5 +230,142 @@ describe('R4: food resuelve la mascota seleccionada', () => {
         'pet-2',
       );
     });
+  });
+});
+
+describe('R5: plan del día con horarios y warnings', () => {
+  beforeEach(() => {
+    jest.useFakeTimers({ doNotFake: ['requestAnimationFrame'] });
+    jest.setSystemTime(new Date('2026-08-23T13:00:00'));
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('shows a skeleton and schedule link while the plan is pending', async () => {
+    mockGetNutritionPlan.mockReturnValue(pending<NutritionPlanState>());
+
+    await renderFood();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('food-plan-skeleton')).toBeVisible(),
+    );
+    expect(screen.getByTestId('meal-schedule-link')).toBeVisible();
+  });
+
+  it('renders kcal, grams, ordered meals, portions, and local-time badges', async () => {
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan() });
+
+    await renderFood();
+
+    await waitFor(() => expect(screen.getByTestId('food-plan-card')).toBeVisible());
+    expect(screen.getByTestId('food-plan-kcal')).toHaveTextContent(
+      '656 kcal / day',
+    );
+    expect(screen.getByTestId('food-plan-grams')).toHaveTextContent(
+      '187 g / day',
+    );
+    expect(screen.getByTestId('food-meals-section')).toBeVisible();
+    expect(screen.getByTestId('food-meals-progress')).toHaveTextContent('1/2');
+    expect(screen.getAllByTestId(/^meal-row-/).map(({ props }) => props.testID)).toEqual([
+      'meal-row-0',
+      'meal-row-1',
+    ]);
+
+    const breakfast = within(screen.getByTestId('meal-row-0'));
+    expect(breakfast.getByText('07:30')).toBeVisible();
+    expect(breakfast.getByText('94 g')).toBeVisible();
+    expect(screen.getByTestId('meal-served-0')).toHaveTextContent('Served');
+
+    const dinner = within(screen.getByTestId('meal-row-1'));
+    expect(dinner.getByText('19:30')).toBeVisible();
+    expect(dinner.getByText('94 g')).toBeVisible();
+    expect(screen.getByTestId('meal-pending-1')).toHaveTextContent('Pending');
+
+    await fireEvent.press(screen.getByTestId('meal-schedule-link'));
+    expect(mockRouter.push).toHaveBeenCalledWith('/meal-schedule');
+  });
+
+  it('derives progress for three meals and omits an empty warnings section', async () => {
+    mockGetNutritionPlan.mockResolvedValue({
+      kind: 'ok',
+      plan: makePlan({
+        dailyGrams: 300,
+        mealsPerDay: 3,
+        mealTimes: ['06:00', '12:00', '18:00'],
+      }),
+    });
+
+    await renderFood();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('food-meals-progress')).toHaveTextContent('2/3'),
+    );
+    expect(screen.getAllByTestId(/^meal-row-/)).toHaveLength(3);
+    expect(screen.queryAllByTestId(/^plan-warning-/)).toHaveLength(0);
+  });
+
+  it('lists every backend warning verbatim', async () => {
+    mockGetNutritionPlan.mockResolvedValue({
+      kind: 'ok',
+      plan: makePlan({
+        warnings: [
+          {
+            code: 'chronic_disease_vet',
+            message: 'Consulta al veterinario por enfermedad crónica.',
+          },
+          {
+            code: 'check_food_allergens',
+            message: 'Verifica los alérgenos del alimento.',
+          },
+        ],
+      }),
+    });
+
+    await renderFood();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('plan-warning-chronic_disease_vet')).toHaveTextContent(
+        'Consulta al veterinario por enfermedad crónica.',
+      ),
+    );
+    expect(
+      screen.getByTestId('plan-warning-check_food_allergens'),
+    ).toHaveTextContent('Verifica los alérgenos del alimento.');
+  });
+
+  it('shows a graceful empty plan and keeps the schedule link', async () => {
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'not-found' });
+
+    await renderFood();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('food-plan-empty')).toHaveTextContent(
+        'No meal plan yet',
+      ),
+    );
+    expect(screen.getByTestId('meal-schedule-link')).toBeVisible();
+  });
+
+  it.each([
+    { kind: 'error' } as const,
+    { kind: 'unreachable', message: 'network down' } as const,
+  ])('shows and retries a $kind plan error', async (state) => {
+    mockGetNutritionPlan
+      .mockResolvedValueOnce(state)
+      .mockResolvedValueOnce({ kind: 'ok', plan: makePlan() });
+
+    await renderFood();
+    await waitFor(() =>
+      expect(screen.getByTestId('food-plan-error')).toHaveTextContent(
+        'Could not load meal plan',
+      ),
+    );
+    await fireEvent.press(screen.getByTestId('food-plan-retry'));
+
+    await waitFor(() => expect(screen.getByTestId('food-plan-card')).toBeVisible());
+    expect(mockGetNutritionPlan).toHaveBeenCalledTimes(2);
   });
 });
