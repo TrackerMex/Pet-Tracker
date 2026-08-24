@@ -57,3 +57,40 @@ E2E:      Test Suites: 2 skipped, 20 passed  | Tests: 6 skipped, 327 passed, 333
 ✅ Typecheck sin errores
 ✅ Todo verde. Listo para trabajar.
 ```
+
+---
+
+# Review delta final: mobile-reminders (4bb47ed..de89f15)
+Fecha: 2026-08-24
+Veredicto: APROBADO
+
+Alcance: solo el delta posterior al review R1–R11. C8 no aplica (PR #73 abierto, gate pre-C8).
+
+## Verificación independiente (HEAD `de89f15`)
+- `./init.sh` exit 0, "Todo verde": backend 1114 tests, infra 14, móvil **38/38 suites y 447/447 tests** (suites de #72 incluidas), e2e 327 pasados / 6 skipped por gate
+- `mobile-pet-tracker`: `bun run typecheck` y `bun run lint` exit 0
+- `design-drift.test.ts`: 9/9 verde; grep de clases arbitrarias (`text-[..]`, `bg-[#..]`, etc.) en `src/screens/reminders/` y `src/screens/add-reminder/` → cero resultados; Card compartido y `text-2xs` adoptados
+
+## Checklist C4 — TDD rojo→verde (muestreo por checkout, 2 de 4 ciclos)
+- [x] R8 picker swap: en `8042a80` la suite exige `@expo/ui` mientras el impl aún importa `DateTimePicker` (rojo estructural verificado; en el árbol actual la suite falla por módulo removido) → en `02f02ae` 17/17 verde (ejecutado)
+- [x] R12 community sheet: en `1cfd679` 8 fallos / 11 verdes (ejecutado) → en `a55c544` 19/19 verde (ejecutado)
+- [x] Excepción C4 del pet-switch documentada en el cuerpo de `f11a32c`; el fix raíz (`19aa304`) va en el hook compartido `use-api.ts` (`isSameFn` gate), test-primero vía `6a2aa9b`
+- [x] Todos los tests del delta nombran R-ids (`R8` en add-reminder, `R5/R6/R7` en reminders, `R9` en home)
+
+## Dependencias
+- [x] `@react-native-community/datetimepicker` ausente de package.json
+- [x] `@expo/ui@~57.0.11` presente; imports en HEAD usan `@expo/ui/community/bottom-sheet` y `@expo/ui/community/datetime-picker` (no el root que crashea en Expo Go Android)
+- [x] `@gorhom/bottom-sheet` se conserva — peer de heroui/@expo/ui community, justificado en impl report; NO es dep muerta
+
+## Checklist C5/C6 — Trazabilidad y gates humanos
+- [x] traceability.md: todas las filas trazadas con tests y commits, incluidos los 3 hallazgos smoke de R12 y los reworks R7/R8
+- [x] C6 saldado: `21e1119` (humano, AlexisSM377) marca smoke R12 completo con fecha 2026-08-24 en requirements.md; spec `status: approved` con aprobación humana
+- [x] Impl report al día: hallazgos smoke, justificación de deps y sección "Adaptación post-#72" incluidas
+
+## Contención
+- [x] Delta 4bb47ed..HEAD toca solo `mobile-pet-tracker/`, `specs/`, `progress/`, `STATUS.md`, `feature_list.json`; `backend-pet-tracker/` e `infra/` intactos (lo de #72 llegó vía merge de main)
+
+## Observaciones (no bloqueantes, corrige el leader en docs)
+1. La fila R12 de `specs/mobile-reminders/traceability.md` termina con la cláusula "re-smoke humano pendiente", escrita antes de `21e1119` que lo marca completo. Fila plenamente trazada; solo la cláusula narrativa quedó desfasada — actualizarla en el cierre.
+2. Misma nota desfasada al final de la sección pre-merge de `progress/current.md` ("R12 sigue pendiente del re-smoke humano").
+3. La resolución de imports en `profile.tsx` por el leader consta en el cuerpo del merge commit, pero `current.md` no la etiqueta explícitamente como fallback según CLAUDE.md — añadir una línea.

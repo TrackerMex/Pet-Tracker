@@ -712,7 +712,7 @@
   {
     "id": 39,
     "name": "mobile-reminders",
-    "status": "in_progress",
+    "status": "done",
     "priority": "P2",
     "description": "Pantallas Reminders y AddReminder del diseño contra reminders CRUD. Notificaciones push locales quedan explícitamente FUERA (backlog; requeriría expo-notifications).",
     "acceptance_criteria": [
