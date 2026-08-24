@@ -23,6 +23,24 @@ function extractVariant(name: 'light' | 'dark'): string {
   return '';
 }
 
+function extractTheme(): string {
+  const marker = '@theme {';
+  const start = globalCss.indexOf(marker);
+
+  if (start === -1) return '';
+
+  const bodyStart = start + marker.length;
+  let depth = 1;
+
+  for (let index = bodyStart; index < globalCss.length; index += 1) {
+    if (globalCss[index] === '{') depth += 1;
+    if (globalCss[index] === '}') depth -= 1;
+    if (depth === 0) return globalCss.slice(bodyStart, index);
+  }
+
+  return '';
+}
+
 function parseVariables(block: string): Record<string, string> {
   return Object.fromEntries(
     [...block.matchAll(/--([\w-]+):\s*([^;]+);/g)].map((match) => [
@@ -31,6 +49,15 @@ function parseVariables(block: string): Record<string, string> {
     ]),
   );
 }
+
+describe('R1: tokens rounded-card y text-2xs', () => {
+  it('define sus valores exactos dentro de @theme', () => {
+    expect(parseVariables(extractTheme())).toMatchObject({
+      'radius-card': '20px',
+      'text-2xs': '10px',
+    });
+  });
+});
 
 describe('R1: global.css define los tokens light exactos del diseño', () => {
   it('incluye el código de la app en el escaneo de utilidades de Tailwind', () => {

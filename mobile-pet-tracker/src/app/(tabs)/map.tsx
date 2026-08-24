@@ -1,4 +1,4 @@
-import { Button, Card, Spinner } from 'heroui-native';
+import { Button, Skeleton } from 'heroui-native';
 import { useFocusEffect } from 'expo-router';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import { useCallback, useEffect, useMemo } from 'react';
@@ -9,6 +9,7 @@ import { useUniwind } from 'uniwind';
 import { listPets, type PetsState } from '../../api/pets';
 import { getLastPosition, listPositions } from '../../api/positions';
 import { getDayRoute } from '../../api/trips';
+import { Card } from '../../components/card';
 import { useApi } from '../../hooks/use-api';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
@@ -140,9 +141,7 @@ export default function MapScreen() {
   return (
     <View testID="screen-map" className="flex-1 bg-background">
       {isLoading ? (
-        <View className="flex-1 items-center justify-center">
-          <Spinner testID="map-loading" />
-        </View>
+        <Skeleton testID="map-loading" className="flex-1" />
       ) : null}
 
       {pets.data && isPetsError(pets.data) ? (
@@ -205,7 +204,13 @@ export default function MapScreen() {
           </MapView>
           {position === null ? (
             <View
-              style={{ position: 'absolute', top: 64, left: 16, right: 16 }}
+              testID="map-empty-overlay"
+              style={{
+                position: 'absolute',
+                top: insets.top + 12,
+                left: 16,
+                right: 16,
+              }}
               className="items-center rounded-2xl bg-surface p-3"
             >
               <Text testID="map-empty" className="text-muted">
@@ -223,7 +228,7 @@ export default function MapScreen() {
             }}
             className="gap-2"
           >
-            <Card className="rounded-[20px] border border-border bg-surface p-3 shadow-sm">
+            <Card className="p-3">
               <View className="flex-row gap-2">
                 <View className="flex-1 items-center rounded-xl bg-default p-3">
                   <Text
@@ -232,7 +237,7 @@ export default function MapScreen() {
                   >
                     {fmtSpeed(latestSpeed)}
                   </Text>
-                  <Text className="mt-1 text-[10px] font-normal text-muted">
+                  <Text className="mt-1 text-2xs font-normal text-muted">
                     Speed
                   </Text>
                 </View>
@@ -243,7 +248,7 @@ export default function MapScreen() {
                   >
                     {fmtKm(distanceM)}
                   </Text>
-                  <Text className="mt-1 text-[10px] font-normal text-muted">
+                  <Text className="mt-1 text-2xs font-normal text-muted">
                     Distance
                   </Text>
                 </View>
@@ -254,7 +259,7 @@ export default function MapScreen() {
                   >
                     {updated}
                   </Text>
-                  <Text className="mt-1 text-[10px] font-normal text-muted">
+                  <Text className="mt-1 text-2xs font-normal text-muted">
                     Updated
                   </Text>
                 </View>
@@ -265,7 +270,7 @@ export default function MapScreen() {
                   >
                     {gps}
                   </Text>
-                  <Text className="mt-1 text-[10px] font-normal text-muted">
+                  <Text className="mt-1 text-2xs font-normal text-muted">
                     GPS
                   </Text>
                 </View>

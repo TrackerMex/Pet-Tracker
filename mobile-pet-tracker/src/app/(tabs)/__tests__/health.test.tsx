@@ -188,6 +188,24 @@ describe('R4: health resuelve la mascota seleccionada', () => {
     );
   });
 
+  it('R5 (mobile-design-drift): aplica el safe area superior al contenido', async () => {
+    mockListPets.mockReturnValue(pending<PetsState>());
+
+    await renderHealth();
+
+    expect(screen.getByTestId('screen-health').props.contentContainerStyle).toEqual(
+      expect.objectContaining({ paddingTop: 52 }),
+    );
+  });
+
+  it('R8 (mobile-design-drift): reserva la altura del loading con Skeleton', async () => {
+    mockListPets.mockReturnValue(pending<PetsState>());
+
+    await renderHealth();
+
+    expect(screen.getByTestId('health-loading').props.className).toContain('h-12');
+  });
+
   it.each([
     { kind: 'error' } as const,
     { kind: 'unreachable', message: 'network down' } as const,

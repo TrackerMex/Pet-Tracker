@@ -21,6 +21,11 @@ jest.mock('uniwind', () => ({
   useUniwind: () => ({ theme: mockTheme, hasAdaptiveThemes: false }),
 }));
 
+jest.mock('react-native-safe-area-context', () => ({
+  ...jest.requireActual('react-native-safe-area-context'),
+  useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
+}));
+
 jest.mock('reicon-react-native', () => {
   const { View } = jest.requireActual('react-native');
   const icon = (testID: string) =>
@@ -140,5 +145,20 @@ describe('R10: profile aloja health-check y theme toggle', () => {
     expect(screen.getByTestId('profile-sign-out')).toBeVisible();
     await fireEvent.press(screen.getByTestId('profile-sign-out'));
     expect(mockSignOut).toHaveBeenCalledTimes(1);
+  });
+
+  it('R6 (mobile-design-drift): usa ScrollView con safe area completo', async () => {
+    mockFetchHealth.mockResolvedValue({ kind: 'ok' });
+
+    await render(<ProfileScreen />, { wrapper: HeroUINativeProvider });
+
+    const root = screen.getByTestId('screen-profile');
+    expect(root.props.className).toBe('flex-1 bg-background');
+    expect(root.props.contentContainerStyle).toEqual({
+      padding: 24,
+      gap: 16,
+      paddingTop: 52,
+      paddingBottom: 120,
+    });
   });
 });

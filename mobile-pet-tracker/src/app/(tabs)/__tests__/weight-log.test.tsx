@@ -145,6 +145,32 @@ describe('R7: weight log lista el historial', () => {
     expect(mockRouter.back).toHaveBeenCalledTimes(1);
   });
 
+  it('R5 (mobile-design-drift): aplica el safe area superior al contenido', async () => {
+    mockListWeights.mockReturnValue(pending<WeightsState>());
+
+    await renderWeightLog();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('screen-weight-log')).toBeVisible(),
+    );
+    expect(
+      screen.getByTestId('screen-weight-log').props.contentContainerStyle,
+    ).toEqual(expect.objectContaining({ paddingTop: 52 }));
+  });
+
+  it('R8 (mobile-design-drift): reserva la altura del loading con Skeleton', async () => {
+    mockListWeights.mockReturnValue(pending<WeightsState>());
+
+    await renderWeightLog();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('weight-log-loading')).toBeVisible(),
+    );
+    expect(screen.getByTestId('weight-log-loading').props.className).toContain(
+      'h-40',
+    );
+  });
+
   it('keeps API order and renders each weight detail', async () => {
     mockListWeights.mockResolvedValue({
       kind: 'ok',

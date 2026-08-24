@@ -1,10 +1,10 @@
 import { Redirect, router } from 'expo-router';
 import {
   Button,
-  Card,
+  Card as HeroUICard,
   Input,
   Label,
-  Spinner,
+  Skeleton,
   TextField,
 } from 'heroui-native';
 import { useMemo, useState } from 'react';
@@ -17,6 +17,7 @@ import {
   listWeights,
   type WeightsState,
 } from '../../api/health-records';
+import { Card } from '../../components/card';
 import { WeightChart } from '../../components/weight-chart';
 import { useApi } from '../../hooks/use-api';
 import { useAuth } from '../../providers/auth-provider';
@@ -117,6 +118,7 @@ function WeightLogContent({ petId }: { petId: string }) {
       contentContainerStyle={{
         padding: 24,
         gap: 16,
+        paddingTop: insets.top + 12,
         paddingBottom: insets.bottom + 96,
       }}
     >
@@ -138,9 +140,9 @@ function WeightLogContent({ petId }: { petId: string }) {
       ) : null}
 
       {weights.data?.kind === 'ok' ? (
-        <Card className="gap-4 rounded-[20px] border border-border bg-surface p-4 shadow-sm">
+        <Card className="gap-4">
           <TextField>
-            <Label className="text-[10px] font-semibold text-foreground">
+            <Label className="text-2xs font-semibold text-foreground">
               Weight
             </Label>
             <Input
@@ -153,7 +155,7 @@ function WeightLogContent({ petId }: { petId: string }) {
             />
           </TextField>
           <TextField>
-            <Label className="text-[10px] font-semibold text-foreground">
+            <Label className="text-2xs font-semibold text-foreground">
               Measured at
             </Label>
             <Input
@@ -165,7 +167,7 @@ function WeightLogContent({ petId }: { petId: string }) {
             />
           </TextField>
           <TextField>
-            <Label className="text-[10px] font-semibold text-foreground">
+            <Label className="text-2xs font-semibold text-foreground">
               Body condition
             </Label>
             <Input
@@ -198,7 +200,10 @@ function WeightLogContent({ petId }: { petId: string }) {
       ) : null}
 
       {weights.data === undefined ? (
-        <Spinner testID="weight-log-loading" />
+        <Skeleton
+          testID="weight-log-loading"
+          className="h-40 w-full rounded-card"
+        />
       ) : null}
 
       {weights.data && isWeightsError(weights.data) ? (
@@ -234,7 +239,7 @@ function WeightLogContent({ petId }: { petId: string }) {
                   : 'text-success';
 
             return (
-              <Card
+              <HeroUICard
                 key={entry.id}
                 testID={`weight-row-${entry.id}`}
                 className="flex-row items-center gap-3 rounded-xl border border-border bg-surface px-3.5 py-3 shadow-sm"
@@ -270,7 +275,7 @@ function WeightLogContent({ petId }: { petId: string }) {
                 <Text className="shrink-0 text-xs font-normal text-muted">
                   {entry.measuredAt}
                 </Text>
-              </Card>
+              </HeroUICard>
             );
           })
         : null}

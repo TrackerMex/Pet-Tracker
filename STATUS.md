@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-08-23
-**Features completadas**: 37/46 (`feature_list.json`)
-**En progreso**: ninguna. #46 `mobile-figma-polish` cerrada (smoke R12 aprobado
-tras 3 correcciones: radius, stylesheet dark, iconos/mapa dark); PR pendiente de merge humano.
-**Pendientes**: 9 (#18, #38-#45). Fuente del diseño Figma versionada en
+**Última actualización**: 2026-08-24
+**Features completadas**: 38/47 (`feature_list.json`)
+**En progreso**: #47 `mobile-design-drift`, implementación R1-R8 completa y
+verde; pendiente de review humano, sin PR por instrucción del handoff.
+**Pendientes**: 8 (#18, #39-#45). Fuente del diseño Figma versionada en
 `specs/mobile-figma-polish/design-src/`.
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
@@ -73,6 +73,15 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Estado actual
+
+- **`mobile-design-drift` (#47) in_progress** (2026-08-24): implementación
+  R1-R8 completa con TDD rojo→verde por requisito. Añade tokens dedicados
+  `rounded-card`/`text-2xs`, un `Card` compartido adoptado por las siete tabs,
+  safe areas uniformes y skeletons dimensionados. Greps de drift limpios;
+  suite móvil 34/34 (379 tests) y `./init.sh` verde. El smoke web no puede
+  montar la app por la incompatibilidad preexistente de `react-native-maps`
+  con Web; la comprobación visual del radio queda para el review en
+  Android/iOS. Informe: `progress/impl_mobile-design-drift.md`.
 
 - **`mobile-map-live` (#36) done** (2026-08-22): tab Map fullscreen —
   `src/api/positions.ts` (last + history) y `trips.ts` (`getDayRoute` compone
@@ -788,6 +797,13 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-08-24** — #47 `mobile-design-drift`: Codex implementó R1-R8 con
+  commits rojos antes de cada verde y trazabilidad completa. Suite móvil:
+  34 suites/379 tests; `./init.sh`: build, 143 suites backend/1111 tests,
+  2 suites infra/14 tests, harness 28 tests, 20 suites e2e/319 tests, lint y
+  typecheck verdes. Se conserva `in_progress` hasta review y no se abrió PR,
+  según el handoff.
 
 - **2026-08-22** — #36 `mobile-map-live` **cerrada** (35/45). Spec con dos
   decisiones fuertes verificadas con evidencia: react-native-maps 1.27.2
