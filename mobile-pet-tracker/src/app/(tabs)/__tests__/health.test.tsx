@@ -198,6 +198,14 @@ describe('R4: health resuelve la mascota seleccionada', () => {
     );
   });
 
+  it('R8 (mobile-design-drift): reserva la altura del loading con Skeleton', async () => {
+    mockListPets.mockReturnValue(pending<PetsState>());
+
+    await renderHealth();
+
+    expect(screen.getByTestId('health-loading').props.className).toContain('h-12');
+  });
+
   it.each([
     { kind: 'error' } as const,
     { kind: 'unreachable', message: 'network down' } as const,

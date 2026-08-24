@@ -223,6 +223,14 @@ describe('R4: map resuelve la mascota seleccionada', () => {
     expect(screen.getByTestId('map-loading')).toBeVisible();
   });
 
+  it('R8 (mobile-design-drift): reserva el mapa completo con Skeleton', async () => {
+    mockListPets.mockReturnValue(pending<PetsState>());
+
+    await renderMap();
+
+    expect(screen.getByTestId('map-loading').props.className).toContain('flex-1');
+  });
+
   it('selects the first pet and loads its first position', async () => {
     mockListPets.mockResolvedValue({
       kind: 'ok',
