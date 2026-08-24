@@ -1,4 +1,5 @@
-import DateTimePicker from '@react-native-community/datetimepicker';
+import { Host } from '@expo/ui';
+import ExpoDateTimePicker from '@expo/ui/community/datetime-picker';
 import { Redirect, router, type Href } from 'expo-router';
 import { Button } from 'heroui-native';
 import { useState } from 'react';
@@ -207,28 +208,36 @@ function AddReminderContent({ petId }: { petId: string }) {
       </View>
 
       {showDatePicker ? (
-        <DateTimePicker
-          testID="date-picker"
-          mode="date"
-          minimumDate={new Date()}
-          value={date ?? new Date()}
-          onChange={(_event, selectedDate) => {
-            if (selectedDate) setDate(selectedDate);
-            setShowDatePicker(false);
-          }}
-        />
+        <Host>
+          <ExpoDateTimePicker
+            testID="date-picker"
+            mode="date"
+            minimumDate={new Date()}
+            presentation="dialog"
+            value={date ?? new Date()}
+            onDismiss={() => setShowDatePicker(false)}
+            onValueChange={(_event, selectedDate) => {
+              setDate(selectedDate);
+              setShowDatePicker(false);
+            }}
+          />
+        </Host>
       ) : null}
 
       {showTimePicker ? (
-        <DateTimePicker
-          testID="time-picker"
-          mode="time"
-          value={time}
-          onChange={(_event, selectedTime) => {
-            if (selectedTime) setTime(selectedTime);
-            setShowTimePicker(false);
-          }}
-        />
+        <Host>
+          <ExpoDateTimePicker
+            testID="time-picker"
+            mode="time"
+            presentation="dialog"
+            value={time}
+            onDismiss={() => setShowTimePicker(false)}
+            onValueChange={(_event, selectedTime) => {
+              setTime(selectedTime);
+              setShowTimePicker(false);
+            }}
+          />
+        </Host>
       ) : null}
 
       <View className="gap-2">
