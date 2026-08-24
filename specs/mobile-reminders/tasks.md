@@ -47,9 +47,9 @@ tags: [harness, spec, mobile]
 
 ## R5 — RemindersScreen: montaje, métricas, estados de carga
 
-- [ ] (1) Escribir test que falla para R5
-- [ ] (2) Implementación mínima que lo pasa
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R5
+- [x] (2) Implementación mínima que lo pasa
+- [x] (3) Refactor con tests verdes
 
 ## R6 — Lista: pills, filas, badge Upcoming, refetch on focus
 
