@@ -1,8 +1,9 @@
-import { getNutritionProfile } from '../nutrition';
+import { getNutritionPlan, getNutritionProfile } from '../nutrition';
 
 const baseUrl = 'http://example.test/v1/';
 const profileEndpoint =
   'http://example.test/v1/pets/pet-1/nutrition-profile';
+const planEndpoint = 'http://example.test/v1/pets/pet-1/nutrition-plan';
 
 function response(status: number, body: unknown): Response {
   return {
@@ -29,6 +30,23 @@ function makeProfile(overrides: Record<string, unknown> = {}) {
     allergies: ['chicken'],
     diseases: [],
     updatedAt: '2026-08-23T12:00:00.000Z',
+    ...overrides,
+  };
+}
+
+function makePlan(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'plan-1',
+    petId: 'pet-1',
+    rerKcal: 410,
+    merKcal: 656,
+    dailyGrams: 187,
+    mealsPerDay: 2,
+    mealTimes: ['07:30', '19:30'],
+    objective: 'maintenance',
+    warnings: [],
+    aiExplanation: null,
+    generatedAt: '2026-08-23T12:00:00.000Z',
     ...overrides,
   };
 }
@@ -94,6 +112,78 @@ describe('R1: getNutritionProfile mapea la respuesta por kind', () => {
 
       await expect(
         getNutritionProfile(missingUrl, 'jwt-token', 'pet-1', fetchFn),
+      ).resolves.toEqual({ kind: 'missing-config' });
+      expect(fetchFn).not.toHaveBeenCalled();
+    },
+  );
+});
+
+describe('R2: getNutritionPlan mapea la respuesta por kind', () => {
+  it.each([
+    ['a nullable AI explanation', makePlan()],
+    [
+      'an AI explanation string',
+      makePlan({ aiExplanation: 'Split the daily amount into two meals.' }),
+    ],
+  ])('gets a plan with %s', async (_case, plan) => {
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValue(response(200, plan)) as unknown as typeof fetch;
+
+    await expect(
+      getNutritionPlan(baseUrl, 'jwt-token', 'pet-1', fetchFn),
+    ).resolves.toEqual({ kind: 'ok', plan });
+    expect(fetchFn).toHaveBeenCalledWith(planEndpoint, {
+      headers: { Authorization: 'Bearer jwt-token' },
+    });
+  });
+
+  it.each([
+    [404, { kind: 'not-found' }],
+    [401, { kind: 'unauthorized' }],
+    [403, { kind: 'error' }],
+    [500, { kind: 'error' }],
+  ])('maps status %i', async (status, expected) => {
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValue(response(status, {})) as unknown as typeof fetch;
+
+    await expect(
+      getNutritionPlan(baseUrl, 'jwt-token', 'pet-1', fetchFn),
+    ).resolves.toEqual(expected);
+  });
+
+  it.each([
+    ['invalid JSON', invalidJsonResponse(200)],
+    ['a null body', response(200, null)],
+    ['an array body', response(200, [makePlan()])],
+  ])('maps %s on success to error', async (_case, backendResponse) => {
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValue(backendResponse) as unknown as typeof fetch;
+
+    await expect(
+      getNutritionPlan(baseUrl, 'jwt-token', 'pet-1', fetchFn),
+    ).resolves.toEqual({ kind: 'error' });
+  });
+
+  it('maps a fetch rejection to unreachable', async () => {
+    const fetchFn = jest
+      .fn()
+      .mockRejectedValue('offline') as unknown as typeof fetch;
+
+    await expect(
+      getNutritionPlan(baseUrl, 'jwt-token', 'pet-1', fetchFn),
+    ).resolves.toEqual({ kind: 'unreachable', message: 'offline' });
+  });
+
+  it.each([undefined, ''])(
+    'maps missing base URL %p without fetching',
+    async (missingUrl) => {
+      const fetchFn = jest.fn() as unknown as typeof fetch;
+
+      await expect(
+        getNutritionPlan(missingUrl, 'jwt-token', 'pet-1', fetchFn),
       ).resolves.toEqual({ kind: 'missing-config' });
       expect(fetchFn).not.toHaveBeenCalled();
     },
