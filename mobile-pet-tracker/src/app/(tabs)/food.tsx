@@ -48,6 +48,13 @@ export default function FoodScreen() {
   const plan = useApi(planFn);
   const hhmm = localTimeHhmm();
   const loadedPlan = plan.data?.kind === 'ok' ? plan.data.plan : null;
+  const waitingForPetSelection =
+    selectedPetId === null &&
+    (pets.data === undefined ||
+      (pets.data.kind === 'ok' && pets.data.pets.length > 0));
+  const showPlanSkeletons =
+    waitingForPetSelection ||
+    (selectedPetId !== null && plan.data === undefined);
   const servedMeals =
     loadedPlan !== null
       ? loadedPlan.mealTimes.filter((mealTime) => mealTime <= hhmm).length
@@ -73,7 +80,11 @@ export default function FoodScreen() {
     >
       <Text className="text-2xl font-black text-foreground">Food</Text>
 
-      {pets.data === undefined ? <Spinner testID="food-loading" /> : null}
+      {pets.data === undefined ? (
+        <View className="h-10 items-center justify-center">
+          <Spinner testID="food-loading" />
+        </View>
+      ) : null}
 
       {pets.data && isPetsError(pets.data) ? (
         <View className="items-start gap-3">
@@ -127,15 +138,27 @@ export default function FoodScreen() {
         </ScrollView>
       ) : null}
 
-      {selectedPetId ? (
+      {showPlanSkeletons ? (
         <View className="gap-4">
-          {plan.data === undefined || plan.isRefreshing ? (
+          <Skeleton
+            testID="food-plan-skeleton"
+            className="h-32 w-full rounded-[20px]"
+          />
+          <Skeleton
+            testID="food-meals-skeleton"
+            className="h-56 w-full rounded-[20px]"
+          />
+          {waitingForPetSelection ? (
             <Skeleton
-              testID="food-plan-skeleton"
-              className="h-32 w-full rounded-[20px]"
+              testID="food-schedule-skeleton"
+              className="h-20 w-full rounded-[20px]"
             />
           ) : null}
+        </View>
+      ) : null}
 
+      {selectedPetId ? (
+        <View className="gap-4">
           {loadedPlan !== null ? (
             <>
               <Card

@@ -1,5 +1,5 @@
 import { Redirect, router } from 'expo-router';
-import { Button, Card, Spinner } from 'heroui-native';
+import { Button, Card, Skeleton } from 'heroui-native';
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -49,14 +49,11 @@ function MealScheduleContent({ petId }: { petId: string }) {
   const loadedPlan = plan.data?.kind === 'ok' ? plan.data.plan : null;
   const loadedProfile =
     profile.data?.kind === 'ok' ? profile.data.profile : null;
-  const loading =
-    plan.data === undefined ||
-    profile.data === undefined ||
-    plan.isRefreshing ||
-    profile.isRefreshing;
   const hasError =
     (plan.data !== undefined && isPlanError(plan.data)) ||
     (profile.data !== undefined && isProfileError(profile.data));
+  const loading =
+    !hasError && (plan.data === undefined || profile.data === undefined);
   const canGenerate = loadedPlan !== null || plan.data?.kind === 'not-found';
 
   function retryAll() {
@@ -135,18 +132,34 @@ function MealScheduleContent({ petId }: { petId: string }) {
         </Text>
       </View>
 
-      {loading ? <Spinner testID="meal-schedule-loading" /> : null}
+      <View testID={loading ? 'meal-schedule-loading' : undefined} className="gap-4">
+        {!hasError && plan.data === undefined ? (
+          <>
+            <Skeleton
+              testID="meal-schedule-summary-skeleton"
+              className="h-32 w-full rounded-[20px]"
+            />
+            <Skeleton
+              testID="meal-schedule-meals-skeleton"
+              className="h-56 w-full rounded-[20px]"
+            />
+            <Skeleton
+              testID="meal-schedule-action-skeleton"
+              className="h-12 w-full rounded-xl"
+            />
+          </>
+        ) : null}
 
-      {hasError ? (
-        <View className="items-start gap-3">
-          <Text testID="meal-schedule-error" className="text-danger">
-            Something went wrong
-          </Text>
-          <Button testID="meal-schedule-retry" onPress={retryAll}>
-            Retry
-          </Button>
-        </View>
-      ) : null}
+        {hasError ? (
+          <View className="items-start gap-3">
+            <Text testID="meal-schedule-error" className="text-danger">
+              Something went wrong
+            </Text>
+            <Button testID="meal-schedule-retry" onPress={retryAll}>
+              Retry
+            </Button>
+          </View>
+        ) : null}
 
       {!hasError && loadedPlan !== null ? (
         <>
@@ -232,41 +245,49 @@ function MealScheduleContent({ petId }: { petId: string }) {
         </View>
       ) : null}
 
-      {!hasError && loadedProfile !== null ? (
-        <Card
-          testID="nutrition-profile-section"
-          className="gap-3 rounded-[20px] border border-border bg-surface p-4 shadow-sm"
-        >
-          <Text className="font-bold text-foreground">Nutrition profile</Text>
-          <View className="flex-row flex-wrap gap-2">
-            <Text className="rounded-full bg-default px-3 py-1 text-sm font-semibold text-foreground">
-              {loadedProfile.foodType}
-            </Text>
-            <Text className="rounded-full bg-default px-3 py-1 text-sm font-semibold text-foreground">
-              {loadedProfile.kcalPer100g} kcal / 100 g
-            </Text>
-            <Text className="rounded-full bg-default px-3 py-1 text-sm font-semibold text-foreground">
-              {loadedProfile.activityLevel}
-            </Text>
-          </View>
-          {loadedProfile.allergies.length > 0 ? (
-            <Text testID="profile-allergies" className="text-sm text-muted">
-              {loadedProfile.allergies.join(', ')}
-            </Text>
-          ) : null}
-          {loadedProfile.diseases.length > 0 ? (
-            <Text testID="profile-diseases" className="text-sm text-muted">
-              {loadedProfile.diseases.join(', ')}
-            </Text>
-          ) : null}
-        </Card>
-      ) : null}
+        {!hasError && profile.data === undefined ? (
+          <Skeleton
+            testID="meal-schedule-profile-skeleton"
+            className="h-32 w-full rounded-[20px]"
+          />
+        ) : null}
 
-      {!hasError && profile.data?.kind === 'not-found' ? (
-        <Text testID="nutrition-profile-empty" className="font-normal text-muted">
-          No nutrition profile yet
-        </Text>
-      ) : null}
+        {!hasError && loadedProfile !== null ? (
+          <Card
+            testID="nutrition-profile-section"
+            className="gap-3 rounded-[20px] border border-border bg-surface p-4 shadow-sm"
+          >
+            <Text className="font-bold text-foreground">Nutrition profile</Text>
+            <View className="flex-row flex-wrap gap-2">
+              <Text className="rounded-full bg-default px-3 py-1 text-sm font-semibold text-foreground">
+                {loadedProfile.foodType}
+              </Text>
+              <Text className="rounded-full bg-default px-3 py-1 text-sm font-semibold text-foreground">
+                {loadedProfile.kcalPer100g} kcal / 100 g
+              </Text>
+              <Text className="rounded-full bg-default px-3 py-1 text-sm font-semibold text-foreground">
+                {loadedProfile.activityLevel}
+              </Text>
+            </View>
+            {loadedProfile.allergies.length > 0 ? (
+              <Text testID="profile-allergies" className="text-sm text-muted">
+                {loadedProfile.allergies.join(', ')}
+              </Text>
+            ) : null}
+            {loadedProfile.diseases.length > 0 ? (
+              <Text testID="profile-diseases" className="text-sm text-muted">
+                {loadedProfile.diseases.join(', ')}
+              </Text>
+            ) : null}
+          </Card>
+        ) : null}
+
+        {!hasError && profile.data?.kind === 'not-found' ? (
+          <Text testID="nutrition-profile-empty" className="font-normal text-muted">
+            No nutrition profile yet
+          </Text>
+        ) : null}
+      </View>
     </ScrollView>
   );
 }
