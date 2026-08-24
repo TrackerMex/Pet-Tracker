@@ -9,7 +9,7 @@ tags: [harness, spec, mobile]
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
 | R1 | `src/api/__tests__/users.test.ts::R1: getMe mapea users/me por kind`; `src/screens/profile/index.test.tsx::R1: me card` | `cf360d0` rojo → `8d2dd19` verde |
-| R2 | pendiente | pendiente |
+| R2 | `src/screens/profile/index.test.tsx::R2: estructura Figma`; `src/app/(tabs)/__tests__/profile.test.tsx::R2: route Profile delgada` | `42f2bbb` rojo → `0c0f5b0` verde |
 | R3 | `src/screens/profile/index.test.tsx::R3: reminders-link y sign out` | `ea75755` rojo → `55dd4c9` verde (excepción C4/Q2: tests de backend-health retirados) |
 | R4 | pendiente | pendiente |
 | R5 | pendiente | pendiente |
