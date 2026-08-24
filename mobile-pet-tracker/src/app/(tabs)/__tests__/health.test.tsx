@@ -188,6 +188,16 @@ describe('R4: health resuelve la mascota seleccionada', () => {
     );
   });
 
+  it('R5 (mobile-design-drift): aplica el safe area superior al contenido', async () => {
+    mockListPets.mockReturnValue(pending<PetsState>());
+
+    await renderHealth();
+
+    expect(screen.getByTestId('screen-health').props.contentContainerStyle).toEqual(
+      expect.objectContaining({ paddingTop: 52 }),
+    );
+  });
+
   it.each([
     { kind: 'error' } as const,
     { kind: 'unreachable', message: 'network down' } as const,
