@@ -15,3 +15,8 @@
   dep nueva justificada: @react-native-community/datetimepicker (bundled
   Expo Go SDK 57).
 - Plan: handoff a Codex → reviewer → smoke humano Expo Go → cierre.
+- Implementación R1–R10 y verificación R11 terminadas por Codex con TDD por
+  requisito. Suite móvil: 36/36 y 423/423; `./init.sh`: exit 0.
+- Informe: `progress/impl_mobile-reminders.md`.
+- Siguiente paso: reviewer; después, smoke humano R12 en Expo Go. La feature
+  permanece `in_progress` y no se ejecutó el cierre de sesión.

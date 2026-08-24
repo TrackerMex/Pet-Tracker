@@ -18,7 +18,7 @@ tags: [harness, spec, mobile]
 
 ## Paso 0 — Dependencia del picker (sin R-id, previo a R8)
 
-- [ ] `bunx expo install @react-native-community/datetimepicker` desde
+- [x] `bunx expo install @react-native-community/datetimepicker` desde
       `mobile-pet-tracker/` (única dep nueva permitida, [[design]] §D6)
 
 ## R1 — listReminders en src/api/reminders.ts
@@ -83,9 +83,9 @@ tags: [harness, spec, mobile]
 
 ## R11 — Typecheck, lint, contención de diff
 
-- [ ] (1) Ejecutar typecheck/lint/tests móvil + init.sh
-- [ ] (2) Corregir lo que falle (backend sin diff; package.json solo el picker)
-- [ ] (3) Anotar resultados en progress/impl_mobile-reminders.md
+- [x] (1) Ejecutar typecheck/lint/tests móvil + init.sh
+- [x] (2) Corregir lo que falle (backend sin diff; package.json solo el picker)
+- [x] (3) Anotar resultados en progress/impl_mobile-reminders.md
 
 ## R12 — Smoke humano en Expo Go
 
