@@ -1,11 +1,18 @@
 import { Host } from '@expo/ui';
 import ExpoDateTimePicker from '@expo/ui/community/datetime-picker';
 import { router, type Href } from 'expo-router';
+import * as ImagePicker from 'expo-image-picker';
 import { Button } from 'heroui-native';
 import { useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import {
+  requestPhotoUploadUrl,
+  resolvePhotoContentType,
+  type PhotoContentType,
+  uploadPhotoToUrl,
+} from '../../api/media';
 import { createPet, type CreatePetInput } from '../../api/pets';
 import { PetAvatar } from '../../components/pet-avatar';
 import { useAuth } from '../../providers/auth-provider';
@@ -79,8 +86,55 @@ export function AddPetScreen() {
   const [birthDate, setBirthDate] = useState<Date | null>(null);
   const [approxAgeMonths, setApproxAgeMonths] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [photoAsset, setPhotoAsset] = useState<{
+    uri: string;
+    contentType: PhotoContentType;
+  } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+
+  async function handlePickPhoto() {
+    setPhotoError(null);
+    const picked = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      quality: 0.8,
+    });
+    if (picked.canceled || !picked.assets[0]) return;
+
+    const asset = picked.assets[0];
+    const contentType = resolvePhotoContentType(asset.mimeType, asset.uri);
+    if (!contentType) {
+      setPhotoError('Choose a JPEG, PNG, or WebP image');
+      return;
+    }
+    setPhotoAsset({ uri: asset.uri, contentType });
+  }
+
+  async function uploadSelectedPhoto(petId: string): Promise<boolean> {
+    if (!photoAsset) return true;
+
+    const requested = await requestPhotoUploadUrl(
+      baseUrl,
+      token ?? '',
+      petId,
+      photoAsset.contentType,
+    );
+    if (requested.kind === 'unauthorized') {
+      await signOut();
+      return false;
+    }
+    if (requested.kind !== 'ok') return false;
+
+    const assetResponse = await fetch(photoAsset.uri);
+    const body = await assetResponse.blob();
+    const uploaded = await uploadPhotoToUrl(
+      requested.uploadUrl,
+      body,
+      photoAsset.contentType,
+    );
+    return uploaded.kind === 'ok';
+  }
 
   async function handleSubmit() {
     const trimmedName = name.trim();
@@ -125,6 +179,10 @@ export function AddPetScreen() {
       switch (result.kind) {
         case 'ok':
           selectPet(result.pet.id);
+          if (!(await uploadSelectedPhoto(result.pet.id))) {
+            setPhotoError('Pet created, but the photo could not be uploaded');
+            return;
+          }
           router.replace('/profile' as Href);
           return;
         case 'unauthorized':
@@ -178,11 +236,27 @@ export function AddPetScreen() {
       <View className="items-center gap-2">
         <PetAvatar
           name={name.trim() || 'Pet'}
-          photoUrl={null}
+          photoUrl={photoAsset?.uri ?? null}
           size={104}
           testID="pet-avatar"
         />
         <Text className="font-semibold text-muted">Avatar preview</Text>
+        <Button
+          testID="add-pet-photo"
+          className="rounded-xl bg-accent-soft"
+          variant="secondary"
+          isDisabled={submitting}
+          onPress={() => void handlePickPhoto()}
+        >
+          <Button.Label className="font-bold text-accent">
+            Choose photo
+          </Button.Label>
+        </Button>
+        {photoError ? (
+          <Text testID="photo-upload-error" className="text-danger">
+            {photoError}
+          </Text>
+        ) : null}
       </View>
 
       <Text className="text-lg font-bold text-foreground">Datos básicos</Text>

@@ -22,6 +22,7 @@ jest.mock('../../api/pets', () => ({
 }));
 
 jest.mock('../../api/media', () => ({
+  ...jest.requireActual('../../api/media'),
   requestPhotoUploadUrl: jest.fn(),
   uploadPhotoToUrl: jest.fn(),
 }));
@@ -417,7 +418,7 @@ describe('R7: cambiar foto', () => {
     });
     mockUploadPhotoToUrl.mockResolvedValue({ kind: 'ok' });
     const assetFetch = jest.fn().mockResolvedValue({ blob: jest.fn().mockResolvedValue(body) });
-    global.fetch = assetFetch as unknown as typeof fetch;
+    globalThis.fetch = assetFetch as unknown as typeof fetch;
     await renderProfile();
     await waitFor(() => expect(screen.getByTestId('change-photo')).toBeVisible());
 

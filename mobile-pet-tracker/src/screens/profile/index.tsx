@@ -1,10 +1,16 @@
 import { router, type Href } from 'expo-router';
+import * as ImagePicker from 'expo-image-picker';
 import { Button, Skeleton } from 'heroui-native';
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Uniwind, useUniwind } from 'uniwind';
 
+import {
+  requestPhotoUploadUrl,
+  resolvePhotoContentType,
+  uploadPhotoToUrl,
+} from '../../api/media';
 import { getPet, listPets } from '../../api/pets';
 import type { PetProfile } from '../../api/types';
 import { getMe } from '../../api/users';
@@ -77,6 +83,8 @@ export function ProfileScreen() {
   const { selectedPetId, selectPet } = useSelectedPet();
   const { theme } = useUniwind();
   const insets = useSafeAreaInsets();
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const [photoError, setPhotoError] = useState<string | null>(null);
   const meFn = useCallback(
     () => getMe(baseUrl, token ?? ''),
     [baseUrl, token],
@@ -106,6 +114,60 @@ export function ProfileScreen() {
 
   const pet = detail.data?.kind === 'ok' ? detail.data.pet : null;
   const petLoading = pets.data === undefined || (selectedPetId !== null && detail.data === undefined);
+
+  async function handleChangePhoto() {
+    if (!pet) return;
+
+    setPhotoError(null);
+    const picked = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      quality: 0.8,
+    });
+    if (picked.canceled || !picked.assets[0]) return;
+
+    const asset = picked.assets[0];
+    const contentType = resolvePhotoContentType(asset.mimeType, asset.uri);
+    if (!contentType) {
+      setPhotoError('Choose a JPEG, PNG, or WebP image');
+      return;
+    }
+
+    setPhotoUploading(true);
+    try {
+      const requested = await requestPhotoUploadUrl(
+        baseUrl,
+        token ?? '',
+        pet.id,
+        contentType,
+      );
+      if (requested.kind === 'unauthorized') {
+        await signOut();
+        return;
+      }
+      if (requested.kind !== 'ok') {
+        setPhotoError('Could not upload photo');
+        return;
+      }
+
+      const assetResponse = await fetch(asset.uri);
+      const body = await assetResponse.blob();
+      const uploaded = await uploadPhotoToUrl(
+        requested.uploadUrl,
+        body,
+        contentType,
+      );
+      if (uploaded.kind !== 'ok') {
+        setPhotoError('Could not upload photo');
+        return;
+      }
+
+      detail.refetch();
+    } catch {
+      setPhotoError('Could not upload photo');
+    } finally {
+      setPhotoUploading(false);
+    }
+  }
 
   return (
     <ScrollView
@@ -177,11 +239,18 @@ export function ProfileScreen() {
             testID="change-photo"
             className="rounded-xl bg-accent-soft"
             variant="secondary"
+            isDisabled={photoUploading}
+            onPress={() => void handleChangePhoto()}
           >
             <Button.Label className="font-bold text-accent">
               Change photo
             </Button.Label>
           </Button>
+          {photoError ? (
+            <Text testID="photo-upload-error" className="text-danger">
+              {photoError}
+            </Text>
+          ) : null}
 
           <Card testID="pet-info-card" className="gap-0">
             <Text className="pb-2 text-lg font-bold text-foreground">

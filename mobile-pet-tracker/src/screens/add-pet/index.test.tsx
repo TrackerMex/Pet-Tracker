@@ -11,6 +11,7 @@ import { AddPetScreen } from '.';
 
 jest.mock('../../api/pets', () => ({ createPet: jest.fn() }));
 jest.mock('../../api/media', () => ({
+  ...jest.requireActual('../../api/media'),
   requestPhotoUploadUrl: jest.fn(),
   uploadPhotoToUrl: jest.fn(),
 }));
@@ -226,7 +227,7 @@ describe('R7: foto opcional tras alta', () => {
       expiresInSeconds: 600,
     });
     mockUploadPhotoToUrl.mockResolvedValue({ kind: 'ok' });
-    global.fetch = jest.fn().mockResolvedValue({
+    globalThis.fetch = jest.fn().mockResolvedValue({
       blob: jest.fn().mockResolvedValue(body),
     }) as unknown as typeof fetch;
     await renderAddPet();
