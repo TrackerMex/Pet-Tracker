@@ -15,7 +15,7 @@ tags: [harness, spec, mobile]
 | R5 | `src/app/(tabs)/__tests__/food.test.tsx::R5: plan del día con horarios y warnings` | `4498939 feat(mobile-food): render daily meal plan (R5)` |
 | R6 | `src/app/(tabs)/__tests__/food.test.tsx::R6: aiExplanation nullable con gracia` | `a456c01 feat(mobile-food): render optional AI recommendation (R6)` |
 | R7 | `src/app/(tabs)/__tests__/meal-schedule.test.tsx::R7: meal schedule muestra horarios y perfil` | `fc8a951 feat(mobile-food): add meal schedule details (R7)` |
-| R8 | `src/app/(tabs)/__tests__/meal-schedule.test.tsx::R8: generar plan con degradación por kind` | pendiente |
+| R8 | `src/app/(tabs)/__tests__/meal-schedule.test.tsx::R8: generar plan con degradación por kind` | `e92e3b5 feat(mobile-food): add plan generation flow (R8)` |
 | R9 | `bun run typecheck`; `bun run lint` | pendiente |
 | R10 | `bun run test`; `./init.sh`; checks de contención de rutas, dependencias e imports | pendiente |
 | R11 | `requirements.md::R11 smoke humano en Expo Go (reservado al humano)` | pendiente |
