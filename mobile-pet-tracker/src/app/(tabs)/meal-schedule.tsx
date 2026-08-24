@@ -1,11 +1,12 @@
 import { Redirect, router } from 'expo-router';
 import { Button, Card, Spinner } from 'heroui-native';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft, Clock, ForkKnife } from 'reicon-react-native';
 
 import {
+  generateNutritionPlan,
   getNutritionPlan,
   getNutritionProfile,
   type NutritionPlanState,
@@ -32,8 +33,10 @@ function MealScheduleContent({ petId }: { petId: string }) {
     'accent-foreground',
   ]);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
-  const { token } = useAuth();
+  const { signOut, token } = useAuth();
   const insets = useSafeAreaInsets();
+  const [submitting, setSubmitting] = useState(false);
+  const [generateError, setGenerateError] = useState<string | null>(null);
   const planFn = useMemo(
     () => () => getNutritionPlan(baseUrl, token ?? '', petId),
     [baseUrl, petId, token],
@@ -55,10 +58,55 @@ function MealScheduleContent({ petId }: { petId: string }) {
   const hasError =
     (plan.data !== undefined && isPlanError(plan.data)) ||
     (profile.data !== undefined && isProfileError(profile.data));
+  const canGenerate = loadedPlan !== null || plan.data?.kind === 'not-found';
 
   function retryAll() {
     plan.refetch();
     profile.refetch();
+  }
+
+  async function handleGenerate() {
+    setSubmitting(true);
+    setGenerateError(null);
+
+    try {
+      const result = await generateNutritionPlan(
+        baseUrl,
+        token ?? '',
+        petId,
+      );
+
+      switch (result.kind) {
+        case 'ok':
+          plan.refetch();
+          return;
+        case 'forbidden':
+          setGenerateError('Only the owner can generate the plan');
+          return;
+        case 'unprocessable':
+          if (result.code === 'NUTRITION_PROFILE_REQUIRED') {
+            setGenerateError('Create a nutrition profile first');
+          } else if (result.code === 'PET_WEIGHT_REQUIRED') {
+            setGenerateError('Register a weight first');
+          } else {
+            setGenerateError('Something went wrong');
+          }
+          return;
+        case 'unreachable':
+          setGenerateError('Cannot reach server');
+          return;
+        case 'unauthorized':
+          await signOut();
+          return;
+        case 'error':
+        case 'missing-config':
+          setGenerateError('Something went wrong');
+      }
+    } catch {
+      setGenerateError('Something went wrong');
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -162,6 +210,26 @@ function MealScheduleContent({ petId }: { petId: string }) {
         <Text testID="meal-schedule-empty" className="font-normal text-muted">
           No meal plan yet
         </Text>
+      ) : null}
+
+      {!hasError && canGenerate ? (
+        <View className="gap-2">
+          {generateError ? (
+            <Text testID="generate-plan-error" className="text-danger">
+              {generateError}
+            </Text>
+          ) : null}
+          <Button
+            testID="generate-plan-button"
+            className="rounded-xl bg-accent"
+            isDisabled={submitting}
+            onPress={() => void handleGenerate()}
+          >
+            <Button.Label className="font-bold text-accent-foreground">
+              Generate plan
+            </Button.Label>
+          </Button>
+        </View>
       ) : null}
 
       {!hasError && loadedProfile !== null ? (
