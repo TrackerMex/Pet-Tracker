@@ -3,7 +3,7 @@ import { Button, Card, Skeleton, Spinner } from 'heroui-native';
 import { useCallback, useEffect, useMemo } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ChevronRight, Clock, ForkKnife } from 'reicon-react-native';
+import { ChevronRight, Clock, ForkKnife, Sparkles } from 'reicon-react-native';
 
 import { getNutritionPlan } from '../../api/nutrition';
 import { listPets, type PetsState } from '../../api/pets';
@@ -241,6 +241,23 @@ export default function FoodScreen() {
                     </Card>
                   ))}
                 </View>
+              ) : null}
+
+              {loadedPlan.aiExplanation !== null ? (
+                <Card
+                  testID="food-ai-card"
+                  className="gap-3 rounded-[20px] border border-border bg-surface-secondary p-4"
+                >
+                  <View className="flex-row items-center gap-2">
+                    <Sparkles size={18} color={accent} />
+                    <Text className="font-bold text-foreground">
+                      AI recommendation
+                    </Text>
+                  </View>
+                  <Text className="text-sm font-normal leading-5 text-muted">
+                    {loadedPlan.aiExplanation}
+                  </Text>
+                </Card>
               ) : null}
             </>
           ) : null}
