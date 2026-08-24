@@ -14,7 +14,7 @@ tags: [harness, spec, mobile]
 | R4 | `src/utils/theme-preference.test.ts::R4: preferencia de tema persistente`; `src/screens/profile/index.test.tsx::R4: toggle persiste`; `src/app/__tests__/layout.test.tsx::R4: RootLayout restaura el tema` | `236ddde` rojo → `a2fb2e8` verde |
 | R5 | `src/components/__tests__/pet-avatar.test.tsx::R5: PetAvatar blobatar determinista`; `src/app/(tabs)/__tests__/home.test.tsx::R5: Home usa el fallback blobatar compartido` | `90ad564` rojo → `a410eba` verde |
 | R6 | `src/api/__tests__/pets.test.ts::R6: createPet publica el contrato exacto por kind`; `src/screens/add-pet/index.test.tsx::R6: alta de mascota` | `99f0636` rojo → `f44f8dc` verde |
-| R7 | pendiente | pendiente |
+| R7 | `src/api/__tests__/media.test.ts::R7: media photo upload API`; `src/screens/profile/index.test.tsx::R7: cambiar foto`; `src/screens/add-pet/index.test.tsx::R7: foto opcional tras alta` | `709d706` rojo → `b37bbe4` verde |
 | R8 | pendiente (bloqueado por Q1) | pendiente |
 | R9 | pendiente (comandos, no suite) | pendiente |
 | R10 | pendiente (smoke humano, no automatizable) | pendiente |
