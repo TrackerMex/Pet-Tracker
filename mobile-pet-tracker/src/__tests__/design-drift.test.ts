@@ -1,5 +1,22 @@
-import { readdirSync, readFileSync } from 'fs';
-import { join } from 'path';
+interface DirectoryEntry {
+  name: string;
+  isDirectory: () => boolean;
+}
+
+declare function require(moduleName: 'fs'): {
+  readdirSync: (
+    path: string,
+    options: { withFileTypes: true },
+  ) => DirectoryEntry[];
+  readFileSync: (path: string, encoding: 'utf8') => string;
+};
+
+declare function require(moduleName: 'path'): {
+  join: (...paths: string[]) => string;
+};
+
+const { readdirSync, readFileSync } = require('fs');
+const { join } = require('path');
 
 const sourceRoot = join(process.cwd(), 'src');
 
