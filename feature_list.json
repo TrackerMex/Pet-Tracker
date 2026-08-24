@@ -842,5 +842,25 @@
       "mobile-pet-tracker/src/components/",
       "mobile-pet-tracker/src/theme/"
     ]
+  },
+  {
+    "id": 47,
+    "name": "mobile-design-drift",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Limpieza de drift del design system móvil según progress/audit_design-drift_mobile.md: tokens --radius-card y --text-2xs en global.css, componente Card compartido (variantes surface|accent|secondary) reemplazando la receta rounded-[20px] duplicada 11x, y cumplimiento de la convención de dimensiones (conventions.md §Dimensiones) en pantallas pre-#38: insets.top+12 en health/weight-log/profile, Skeleton en vez de Spinner en health/weight-log/map, overlay de map con insets.top en vez de top:64. Sin cambios visuales intencionales más allá de safe area y skeletons.",
+    "acceptance_criteria": [
+      "global.css define --radius-card: 20px y --text-2xs: 10px; cero clases rounded-[20px] y text-[10px] en src/ (grep limpio)",
+      "src/components/card.tsx con variantes surface|accent|secondary usado por las 7 pantallas de tabs; radius verificado visualmente (no heredar --radius shadcn, bug #46)",
+      "health, weight-log y profile con contentContainerStyle segun conventions.md (paddingTop insets.top+12, padding 24, gap 16, paddingBottom insets.bottom+96); overlay de map usa insets.top",
+      "Estados de carga de health/weight-log/map con Skeleton dimensionado, sin Spinner suelto",
+      "Tests RTL existentes verdes; nuevos tests nombran R-ids"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/theme/global.css",
+      "mobile-pet-tracker/src/components/card.tsx",
+      "mobile-pet-tracker/src/app/(tabs)/",
+      "mobile-pet-tracker/src/components/floating-tab-bar.tsx"
+    ]
   }
 ]
