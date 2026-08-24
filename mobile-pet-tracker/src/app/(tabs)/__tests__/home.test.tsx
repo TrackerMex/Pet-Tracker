@@ -3,6 +3,7 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
@@ -267,6 +268,34 @@ describe('R7: pet card muestra el perfil', () => {
 
     await waitFor(() => expect(screen.getByTestId('pet-card-name')).toHaveTextContent('Luna'));
     expect(mockGetPet).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('R5: Home usa el fallback blobatar compartido', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    const pet = makePet({ photoUrl: null });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+  });
+
+  it('renders the generated SVG under the existing pet-card-photo contract', async () => {
+    await renderHome();
+
+    await waitFor(() => expect(screen.getByTestId('pet-card')).toBeVisible());
+    const avatar = screen.getByTestId('pet-card-photo');
+    expect(avatar.props.xml).toContain('<svg');
+    expect(within(screen.getByTestId('pet-card')).getByTestId('pet-card-photo')).toBe(
+      avatar,
+    );
   });
 });
 
