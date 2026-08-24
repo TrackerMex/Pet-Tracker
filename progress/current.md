@@ -56,3 +56,7 @@
   425/425 tests; typecheck/lint, bundle Android de 5.270 módulos y `./init.sh`
   exit 0 con `Todo verde`. Trazabilidad e informe actualizados. R12 sigue
   pendiente del re-smoke humano; la feature permanece `in_progress`.
+- Merge de `origin/main` con #72: la UI nueva de #39 quedó adaptada a la
+  guardia `design-drift` (`text-2xs` y `Card` compartido), sin tocar conducta
+  ni testIDs. Móvil: 38/38 suites y 447/447 tests; typecheck/lint e `init.sh`
+  completos con exit 0. La adaptación se integra en el propio merge commit.

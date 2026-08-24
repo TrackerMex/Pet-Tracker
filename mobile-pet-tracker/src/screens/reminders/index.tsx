@@ -15,6 +15,7 @@ import {
   type RemindersState,
 } from '../../api/reminders';
 import type { Reminder } from '../../api/types';
+import { Card } from '../../components/card';
 import { PetSwitcher } from '../../components/pet-switcher';
 import { useApi } from '../../hooks/use-api';
 import { useAuth } from '../../providers/auth-provider';
@@ -250,10 +251,10 @@ export function RemindersScreen() {
               const inactive = reminder.status !== 'scheduled';
 
               return (
-                <View
+                <Card
                   key={reminder.id}
                   testID={`reminder-row-${reminder.id}`}
-                  className={`min-h-20 flex-row items-center gap-3 rounded-2xl border border-border bg-surface p-4 shadow-sm${inactive ? ' opacity-50' : ''}`}
+                  className={`min-h-20 flex-row items-center gap-3${inactive ? ' opacity-50' : ''}`}
                 >
                   <View className="size-11 items-center justify-center rounded-xl bg-accent-soft">
                     <Text className="text-xl">{meta.emoji}</Text>
@@ -266,7 +267,7 @@ export function RemindersScreen() {
                       {!inactive && days >= 0 && days <= 10 ? (
                         <Text
                           testID={`reminder-upcoming-${reminder.id}`}
-                          className="rounded-full bg-warning-soft px-2 py-0.5 text-[10px] font-bold text-warning"
+                          className="rounded-full bg-warning-soft px-2 py-0.5 text-2xs font-bold text-warning"
                         >
                           Upcoming!
                         </Text>
@@ -305,7 +306,7 @@ export function RemindersScreen() {
                       Delete
                     </Button.Label>
                   </Button>
-                </View>
+                </Card>
               );
             })}
           </View>

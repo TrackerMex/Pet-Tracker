@@ -223,6 +223,14 @@ describe('R4: map resuelve la mascota seleccionada', () => {
     expect(screen.getByTestId('map-loading')).toBeVisible();
   });
 
+  it('R8 (mobile-design-drift): reserva el mapa completo con Skeleton', async () => {
+    mockListPets.mockReturnValue(pending<PetsState>());
+
+    await renderMap();
+
+    expect(screen.getByTestId('map-loading').props.className).toContain('flex-1');
+  });
+
   it('selects the first pet and loads its first position', async () => {
     mockListPets.mockResolvedValue({
       kind: 'ok',
@@ -351,6 +359,19 @@ describe('R6: mapa y marker con la última posición', () => {
     expect(screen.queryByTestId('map-marker')).toBeNull();
     expect(screen.getByTestId('map-empty')).toHaveTextContent(
       'No location data yet',
+    );
+  });
+
+  it('R7 (mobile-design-drift): posiciona el overlay bajo el safe area', async () => {
+    mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: null });
+
+    await renderMap();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('map-empty-overlay')).toBeVisible(),
+    );
+    expect(screen.getByTestId('map-empty-overlay').props.style).toEqual(
+      expect.objectContaining({ top: 52 }),
     );
   });
 });

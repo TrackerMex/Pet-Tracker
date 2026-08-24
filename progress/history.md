@@ -1802,3 +1802,23 @@ Notas de la sesión que no están en la spec:
 - Reviewer aprobó: init.sh exit 0, 1114 unitarios + 327 e2e (33/33 de
   reminders), Clean Architecture y contención verificadas.
 - Desbloquea #39 mobile-reminders (spec_ready, esperando gate humano).
+
+## 2026-08-24 — Feature #48 mobile-design-drift (cerrada; nació como #47, renumerada por colisión de ID con reminders-api)
+
+- Origen: auditoría solo-lectura de drift (skill expo-design-system) →
+  progress/audit_design-drift_mobile.md. Feature registrada como #48.
+- Trabajo completo en git worktree Pet-Tracker-wt-47 (branch
+  feature/47-mobile-design-drift) en paralelo con la sesión de #39 sobre el
+  tree principal — primer uso real del patrón worktree de CLAUDE.md.
+- spec_author: R1-R8 EARS; humano aprobó (60296fa). Codex exec en background
+  desde la sesión leader (permiso Bash agregado por el humano tras bloqueo
+  del clasificador) implementó R1-R8 con TDD estricto, commit
+  test-rojo→verde→docs por requisito.
+- Entregado: tokens --radius-card/--text-2xs en global.css, card.tsx
+  compartido (surface|accent|secondary, sin heredar --radius heroui — bug
+  #46) adoptado en las 7 pantallas, text-2xs en tab bar y map, safe area
+  según conventions.md en health/weight-log/profile y overlay de map,
+  skeletons en vez de Spinner. Grep-clean: cero rounded-[20px]/text-[10px].
+- Reviewer aprobó (53d4dd7). #48 → done. PR #72 abierto para merge humano
+  (branch conserva el nombre feature/47-mobile-design-drift previo a la
+  renumeración).

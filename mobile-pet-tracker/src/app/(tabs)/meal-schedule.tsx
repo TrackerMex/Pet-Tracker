@@ -1,5 +1,5 @@
 import { Redirect, router } from 'expo-router';
-import { Button, Card, Skeleton } from 'heroui-native';
+import { Button, Skeleton } from 'heroui-native';
 import { useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -12,6 +12,7 @@ import {
   type NutritionPlanState,
   type NutritionProfileState,
 } from '../../api/nutrition';
+import { Card } from '../../components/card';
 import { useApi } from '../../hooks/use-api';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
@@ -137,11 +138,11 @@ function MealScheduleContent({ petId }: { petId: string }) {
           <>
             <Skeleton
               testID="meal-schedule-summary-skeleton"
-              className="h-32 w-full rounded-[20px]"
+              className="h-32 w-full rounded-card"
             />
             <Skeleton
               testID="meal-schedule-meals-skeleton"
-              className="h-56 w-full rounded-[20px]"
+              className="h-56 w-full rounded-card"
             />
             <Skeleton
               testID="meal-schedule-action-skeleton"
@@ -165,7 +166,8 @@ function MealScheduleContent({ petId }: { petId: string }) {
         <>
           <Card
             testID="meal-schedule-summary"
-            className="gap-4 rounded-[20px] bg-accent p-5 shadow-sm"
+            variant="accent"
+            className="gap-4"
           >
             <View className="flex-row items-center justify-between gap-4">
               <View className="flex-1 gap-1">
@@ -201,7 +203,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
                 <Card
                   key={`${mealTime}-${index}`}
                   testID={`meal-time-row-${index}`}
-                  className="flex-row items-center gap-3 rounded-[20px] border border-border bg-surface p-4 shadow-sm"
+                  className="flex-row items-center gap-3"
                 >
                   <View className="size-10 items-center justify-center rounded-xl bg-default">
                     <Clock size={18} color={accent} />
@@ -248,14 +250,14 @@ function MealScheduleContent({ petId }: { petId: string }) {
         {!hasError && profile.data === undefined ? (
           <Skeleton
             testID="meal-schedule-profile-skeleton"
-            className="h-32 w-full rounded-[20px]"
+            className="h-32 w-full rounded-card"
           />
         ) : null}
 
         {!hasError && loadedProfile !== null ? (
           <Card
             testID="nutrition-profile-section"
-            className="gap-3 rounded-[20px] border border-border bg-surface p-4 shadow-sm"
+            className="gap-3"
           >
             <Text className="font-bold text-foreground">Nutrition profile</Text>
             <View className="flex-row flex-wrap gap-2">

@@ -1,11 +1,13 @@
 import type { Href } from 'expo-router';
-import { Button, Card, Chip } from 'heroui-native';
+import { Button, Chip } from 'heroui-native';
 import { useEffect, useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Moon, Sun } from 'reicon-react-native';
 import { Uniwind, useUniwind } from 'uniwind';
 
 import { fetchHealth, type HealthState } from '../../api/health';
+import { Card } from '../../components/card';
 import { useAuth } from '../../providers/auth-provider';
 import { useThemeColors } from '../../theme/use-theme-colors';
 
@@ -29,16 +31,27 @@ export default function ProfileScreen() {
   const [health, setHealth] = useState<HealthState>();
   const { theme } = useUniwind();
   const [foreground] = useThemeColors(['foreground']);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     void fetchHealth(apiUrl).then(setHealth);
   }, [apiUrl]);
 
   return (
-    <View testID="screen-profile" className="flex-1 gap-4 bg-background p-6">
+    <ScrollView
+      testID="screen-profile"
+      className="flex-1 bg-background"
+      contentInsetAdjustmentBehavior="automatic"
+      contentContainerStyle={{
+        padding: 24,
+        gap: 16,
+        paddingTop: insets.top + 12,
+        paddingBottom: insets.bottom + 96,
+      }}
+    >
       <Text className="text-2xl font-black text-foreground">Profile</Text>
 
-      <Card className="overflow-hidden rounded-[20px] border border-border bg-surface p-4 shadow-sm">
+      <Card className="overflow-hidden">
         <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
           App
         </Text>
@@ -105,6 +118,6 @@ export default function ProfileScreen() {
       >
         <Button.Label className="font-bold text-danger">Sign out</Button.Label>
       </Button>
-    </View>
+    </ScrollView>
   );
 }

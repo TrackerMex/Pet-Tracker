@@ -240,3 +240,31 @@ suites y 1114/1114 tests, infraestructura 2/2 y 14/14, móvil 36/36 y 425/425,
 e2e 20 suites y 327 tests pasados (2 suites/6 tests omitidos por gate), además
 de build, lint y typecheck. R12 permanece pendiente del re-smoke humano en
 Expo Go y la feature sigue `in_progress`.
+
+## Adaptación post-#72 — design drift
+
+Durante el merge de `origin/main`, ya con #72 integrado, la nueva guardia
+`src/__tests__/design-drift.test.ts` detectó el único literal prohibido que
+quedaba en producción de #39: `text-[10px]` en el badge `Upcoming!` de
+Reminders. Se sustituyó por el token equivalente `text-2xs`.
+
+La fila de recordatorio también duplicaba a mano la superficie base
+(`border`, `bg-surface`, `p-4`, `shadow-sm`), por lo que pasó al `Card`
+compartido de #72. Conserva el mismo árbol de contenido, estado de opacidad,
+conducta y todos sus testIDs. Chips, campos, skeletons y pills no representan
+cards y quedaron intactos.
+
+Esta adaptación forma parte de la resolución del propio merge: es necesaria
+para que el código nuevo de #39 cumpla las convenciones que entraron desde
+#72, así que se incluirá en el merge commit en lugar de crear un commit
+posterior separado.
+
+Verificación post-adaptación:
+
+- Guardia `design-drift` + suite de Reminders: 2/2 suites y 28/28 tests.
+- Suite móvil completa: 38/38 suites y 447/447 tests.
+- `bun run typecheck` y `bun run lint`: exit 0.
+- `./init.sh`: exit 0 y `Todo verde`; backend 145/145 suites y 1114/1114
+  tests, infraestructura 2/2 y 14/14, móvil 38/38 y 447/447, e2e 20 suites y
+  327 tests pasados (2 suites y 6 tests omitidos por gate), además de build,
+  lint y typecheck.

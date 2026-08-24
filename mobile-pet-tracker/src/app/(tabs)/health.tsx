@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { Button, Card, Skeleton, Spinner } from 'heroui-native';
+import { Button, Skeleton } from 'heroui-native';
 import { useCallback, useEffect, useMemo } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -7,6 +7,7 @@ import { ChevronRight, HeartPulse, Syringe } from 'reicon-react-native';
 
 import { listVaccines, listWeights } from '../../api/health-records';
 import { listPets, type PetsState } from '../../api/pets';
+import { Card } from '../../components/card';
 import { PetSwitcher } from '../../components/pet-switcher';
 import { useApi } from '../../hooks/use-api';
 import { useAuth } from '../../providers/auth-provider';
@@ -82,12 +83,15 @@ export default function HealthScreen() {
       contentContainerStyle={{
         padding: 24,
         gap: 16,
+        paddingTop: insets.top + 12,
         paddingBottom: insets.bottom + 96,
       }}
     >
       <Text className="text-2xl font-black text-foreground">Health</Text>
 
-      {pets.data === undefined ? <Spinner testID="health-loading" /> : null}
+      {pets.data === undefined ? (
+        <Skeleton testID="health-loading" className="h-12 w-full rounded-card" />
+      ) : null}
 
       {pets.data && isPetsError(pets.data) ? (
         <View className="items-start gap-3">
@@ -133,13 +137,13 @@ export default function HealthScreen() {
           {nextVaccine ? (
             <Card
               testID="next-vaccine-card"
-              className="flex-row items-center gap-3 rounded-[20px] border border-border bg-surface p-4 shadow-sm"
+              className="flex-row items-center gap-3"
             >
               <View className="size-11 items-center justify-center rounded-xl bg-warning-soft">
                 <Syringe size={22} color={warning} />
               </View>
               <View className="flex-1 gap-1">
-                <Text className="text-[10px] font-semibold text-warning">
+                <Text className="text-2xs font-semibold text-warning">
                   Next due
                 </Text>
                 <Text className="font-bold text-foreground">
@@ -175,7 +179,7 @@ export default function HealthScreen() {
                 <Card
                   key={vaccine.id}
                   testID={`vaccine-row-${vaccine.id}`}
-                  className="gap-1 rounded-[20px] border border-border bg-surface p-4 shadow-sm"
+                  className="gap-1"
                 >
                   <Text className="font-bold text-foreground">
                     {vaccine.name}
@@ -203,7 +207,7 @@ export default function HealthScreen() {
       {selectedPetId ? (
         <Card
           testID="weight-card"
-          className="gap-3 rounded-[20px] border border-border bg-surface p-4 shadow-sm"
+          className="gap-3"
         >
           <View className="flex-row items-baseline justify-between gap-3">
             <Text className="text-sm font-bold text-foreground">Weight</Text>
