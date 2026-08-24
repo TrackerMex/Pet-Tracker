@@ -1,4 +1,21 @@
-import { postJson, readJson } from './http';
+import { getJson, postJson, readJson } from './http';
+
+export interface PetDocument {
+  id: string;
+  type: string;
+  name: string;
+  date: string;
+  vet?: string | null;
+}
+
+export type PetDocsState =
+  | { kind: 'ok'; docs: PetDocument[] }
+  | { kind: 'not-found' }
+  | { kind: 'forbidden' }
+  | { kind: 'unauthorized' }
+  | { kind: 'error' }
+  | { kind: 'unreachable'; message: string }
+  | { kind: 'missing-config' };
 
 export type PhotoContentType = 'image/jpeg' | 'image/png' | 'image/webp';
 
@@ -22,6 +39,17 @@ const PHOTO_CONTENT_TYPES = new Set<PhotoContentType>([
   'image/png',
   'image/webp',
 ]);
+
+function isPetDocument(value: unknown): value is PetDocument {
+  if (typeof value !== 'object' || value === null) return false;
+  const document = value as Record<string, unknown>;
+  return (
+    typeof document.id === 'string' &&
+    typeof document.type === 'string' &&
+    typeof document.name === 'string' &&
+    typeof document.date === 'string'
+  );
+}
 
 export function resolvePhotoContentType(
   mimeType: string | null | undefined,
@@ -106,4 +134,30 @@ export async function uploadPhotoToUrl(
       message: error instanceof Error ? error.message : String(error),
     };
   }
+}
+
+export async function listPetDocs(
+  baseUrl: string | undefined,
+  token: string,
+  petId: string,
+  fetchFn: typeof fetch = fetch,
+): Promise<PetDocsState> {
+  if (!baseUrl) {
+    return { kind: 'missing-config' };
+  }
+
+  const result = await getJson(baseUrl, `/pets/${petId}/media`, token, fetchFn);
+  if (result.kind === 'unreachable') {
+    return result;
+  }
+
+  if (result.response.status === 401) return { kind: 'unauthorized' };
+  if (result.response.status === 403) return { kind: 'forbidden' };
+  if (result.response.status === 404) return { kind: 'not-found' };
+  if (result.response.status !== 200) return { kind: 'error' };
+
+  const body = await readJson(result.response);
+  return Array.isArray(body) && body.every(isPetDocument)
+    ? { kind: 'ok', docs: body }
+    : { kind: 'error' };
 }
