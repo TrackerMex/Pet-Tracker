@@ -116,3 +116,65 @@ Tests:       356 passed, 356 total
 ✅ Todo verde. Listo para trabajar.
 [exited with code 0]
 ```
+
+---
+
+# Review delta post-smoke: mobile-food (614914a..229e460)
+Fecha: 2026-08-24
+Veredicto: APROBADO
+
+Alcance: solo el delta posterior al review R1-R10 (614914a). Cubre las
+correcciones del smoke humano R11 (handoffs fix1/fix2 + ajuste avatar-only),
+la convencion de dimensiones en docs/conventions.md (0728fcc) y los 2
+commits del humano (aa368e6 aprobacion, 229e460 smoke).
+
+## Checklist C4 — TDD (4 ciclos verificados con checkout real)
+- [x] Safe area: 8011711 (solo tests, exit 1 verificado) -> 9caafca verde
+- [x] Skeletons: 43389aa (solo tests, exit 1 verificado) -> 8f77e76 verde
+- [x] PetSwitcher Avatar: b746530 (solo test nuevo, exit 1 verificado) -> 602870e verde
+- [x] Avatar-only: 443c2ca (solo tests, exit 1 verificado) -> 2c8123e verde
+- [x] Cada commit rojo toca UNICAMENTE archivos de test (git show --stat)
+- [x] Tests nombran R-ids (R4/R5/R7 en pantallas; R11 en pet-switcher.test.tsx)
+
+## Checklist C5 — Trazabilidad
+- [x] specs/mobile-food/traceability.md con seccion "Correcciones del smoke R11":
+      4 filas fix con commit rojo y verde; filas R4/R5/R7 amplian sus commits
+- [x] Sin filas "pendiente"
+- [x] progress/impl_mobile-food.md SR11 documenta hallazgos, fixes y verificacion
+
+## Checklist C6 — Spec aprobada
+- [x] requirements.md: "Aprobado por humano (fecha: 2026-08-24)" marcado en
+      aa368e6, autor AlexisSM377 <al222111377@gmail.com> (verificado con git log)
+- [x] Smoke R11: "[X] Smoke ejecutado por el humano (2026-08-24)" en 229e460,
+      mismo autor humano
+
+## Checklist C7 — Sin codigo huerfano
+- [x] Chips de texto duplicados eliminados de home.tsx, health.tsx y food.tsx
+      al extraer src/components/pet-switcher.tsx (fix2)
+- [x] Tests de las 3 pantallas intactos (testIDs pet-chip-* conservados)
+
+## Invariantes del delta
+- [x] Cero dependencias nuevas (package.json no aparece en el diff)
+- [x] Sin tocar _layout.tsx, floating-tab-bar.tsx, backend-pet-tracker/,
+      infra/, src/api/ (git diff --name-only verificado)
+- [x] testID pet-chip-<id>, accessibilityRole="button",
+      accessibilityState={{selected}} conservados en PetSwitcher
+- [x] accessibilityLabel={pet.name} presente (nombre accesible en avatar-only)
+- [x] home.tsx/health.tsx tocados SOLO donde el handoff fix2 lo autoriza
+      (reemplazo del bloque duplicado por <PetSwitcher>)
+- [x] Colores via tokens (border-accent, bg-accent-soft), nada hardcodeado
+
+## Verificacion independiente
+- ./init.sh: exit 0 (e2e saltados por LocalStack en 4566 = esperado)
+- mobile-pet-tracker: bun run test -> 32 suites / 357 tests verdes;
+  bun run typecheck -> exit 0; bun run lint -> exit 0
+- Los 4 commits rojos fallan de verdad (checkout + run por suite, exit 1
+  en cada uno); branch restaurada a feature/38-mobile-food
+
+## Observaciones
+- Menor, no bloqueante: los docs internos fechan el smoke el 2026-08-25 y el
+  humano marco 2026-08-24 en requirements.md; el registro valido es el commit
+  del humano.
+
+Veredicto delta: APROBADO. Con C6 cerrado por el humano, la feature #38
+queda lista para status done y cierre de PR por parte del leader.

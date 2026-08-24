@@ -696,7 +696,7 @@
   {
     "id": 38,
     "name": "mobile-food",
-    "status": "in_progress",
+    "status": "done",
     "priority": "P2",
     "description": "Tab Food del diseño + pantalla MealSchedule: perfil nutricional y plan de comidas desde nutrition. aiExplanation nullable se renderiza con gracia (la IA puede estar apagada, #18 pending).",
     "acceptance_criteria": [
