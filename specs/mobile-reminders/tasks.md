@@ -53,9 +53,9 @@ tags: [harness, spec, mobile]
 
 ## R6 — Lista: pills, filas, badge Upcoming, refetch on focus
 
-- [ ] (1) Escribir test que falla para R6
-- [ ] (2) Implementación mínima que lo pasa
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R6
+- [x] (2) Implementación mínima que lo pasa
+- [x] (3) Refactor con tests verdes
 
 ## R7 — Borrado con confirmación y degradación por kind
 
