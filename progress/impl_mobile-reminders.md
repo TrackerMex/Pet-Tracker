@@ -148,3 +148,40 @@ hook.
 
 R12 no se marca completado: el humano debe repetir el smoke, en especial el
 paso 8, sobre este fix antes del cierre de la feature.
+
+### Segundo hallazgo smoke — UX de confirmación de borrado
+
+El humano pidió sustituir el `Alert.alert` de confirmación por el
+`BottomSheet` universal de `@expo/ui`, manteniendo intacto el DELETE y su
+degradación por `kind`.
+
+- Rojo `a6f3a56`: la suite R7 dejó de espiar `Alert.alert` y pasó a exigir el
+  contrato observable del sheet (`Host`, `isPresented`, `onDismiss`,
+  `snapPoints={['half']}`), la referencia al reminder, la acción Delete con
+  color `danger` y Cancel/dismiss sin DELETE. La corrida contra la
+  implementación anterior dio 8 fallos esperados y conservó 11 tests verdes.
+- Excepción C4: se retiraron los asserts del array interno de botones de
+  `Alert.alert` porque esa interfaz quedó sustituida por pedido humano. El
+  cuerpo del commit rojo documenta la excepción; la suite conserva las
+  aserciones previas de DELETE, refetch en `ok`/`not-found`, mensajes por
+  error y deshabilitado por fila, ahora detrás del sheet observable.
+- Verde `21e769d`: `RemindersScreen` importa `BottomSheet`, `Host`, `Column`,
+  `Text` y `Button` desde la raíz de `@expo/ui`; usa exclusivamente
+  `isPresented`/`onDismiss` y `snapPoints={['half']}` (sin props de gorhom),
+  con testIDs nuevos `reminders-delete-host`, `reminders-delete-sheet`,
+  `reminders-delete-reference`, `reminders-delete-confirm` y
+  `reminders-delete-cancel`. Delete cierra el sheet y delega en el
+  `handleDelete` existente; Cancel y el dismiss nativo solo limpian la
+  selección.
+- Verificación final: suite focal 19/19; `bun run test -- --runInBand
+  --silent`, 36/36 suites y 425/425 tests; `bun run typecheck` y
+  `bun run lint`, ambos con exit 0. `bunx expo export --platform android`
+  generó correctamente el bundle de 5.265 módulos y resolvió los assets de
+  `@expo/ui`, comprobación de empaquetado para Expo Go SDK 57.
+- `./init.sh`: exit 0 y mensaje `Todo verde`; incluyó backend 145/145 suites
+  y 1114/1114 tests, infraestructura 2/2 y 14/14, móvil 36/36 y 425/425,
+  e2e 20 suites y 327 tests pasados (2 suites/6 tests omitidos por gate),
+  además de build, lint y typecheck.
+
+R12 continúa pendiente del re-smoke humano en Expo Go SDK 57; este rework no
+auto-aprueba el gate.

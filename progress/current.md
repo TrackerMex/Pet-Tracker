@@ -37,3 +37,11 @@
   la excepción C4 en el cuerpo del commit. Móvil: 36/36 suites y 424/424 tests;
   typecheck y lint: exit 0; `./init.sh`: exit 0 y mensaje `Todo verde`.
   Pendiente únicamente: re-smoke humano R12 sobre el fix.
+- Segundo hallazgo del smoke humano en R12: reemplazar la confirmación de
+  borrado `Alert.alert` por el BottomSheet universal de `@expo/ui`. Rojo
+  `a6f3a56` (8 fallos esperados, 11 verdes; excepción C4 por retirar asserts
+  obsoletos de Alert documentada en el commit) y verde `21e769d` (19/19), con
+  `Host`, `isPresented`/`onDismiss`, snap point `half` y el flujo DELETE/refetch
+  existente intacto. Móvil: 36/36 suites y 425/425 tests; typecheck/lint y
+  bundle Android SDK 57 verdes; `./init.sh`: exit 0 y `Todo verde`. Pendiente
+  únicamente: re-smoke humano R12.
