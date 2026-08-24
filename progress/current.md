@@ -23,6 +23,11 @@
   (anunciado para 2026-08-25): smoke R11 con Expo Go + su commit marcando
   "Aprobado por humano" en `specs/mobile-food/requirements.md` (C6).
   Con eso: done, cierre de sesión y merge del PR #70 (borrador).
+- Correcciones smoke R11 en curso: aplicando el handoff
+  `progress/handoff_mobile-food_fix1.md` con TDD para safe area superior y
+  skeletons de carga en Food/MealSchedule. Ambos ciclos rojo→verde están
+  implementados y trazados; suite móvil, typecheck y lint verdes. La repetición
+  del smoke en Expo Go queda pendiente.
 
 Notas de contexto:
 - PR #68 (feature #46) y PR #69 (review final + harness fix: quitar cap

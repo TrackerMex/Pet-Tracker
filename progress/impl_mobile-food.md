@@ -75,6 +75,30 @@ una suite existente fue quitar el import y la fila de Food de
 - La feature permanece `in_progress`; no se marca `done` antes del smoke y la
   revisión final.
 
+## R11 — Correcciones del smoke (2026-08-25)
+
+El primer smoke humano en Expo Go detectó dos defectos visuales:
+
+- El título de Food y la cabecera de MealSchedule quedaban pegados a la status
+  bar. Ambas pantallas aplican ahora el mismo `paddingTop: insets.top + 12` de
+  Home (`8011711` rojo → `9caafca` verde; R4/R7).
+- Food mostraba un spinner suelto y el contenido saltaba al resolverse los
+  datos; MealSchedule tenía el mismo patrón. Food conserva `food-loading`
+  dentro de una altura estable y reserva skeletons para plan, comidas y enlace.
+  MealSchedule usa skeletons dimensionados para resumen, comidas, acción y
+  perfil, y no sustituye contenido ya cargado durante un refresh (`43389aa`
+  rojo → `8f77e76` verde; R4/R5/R7).
+
+No se cambió ningún testID existente ni se añadieron dependencias. El smoke
+humano queda pendiente de repetirse en Expo Go después de estas correcciones;
+R11 y la feature permanecen `in_progress` hasta esa validación.
+
+### Verificación post-fix
+
+- `bun run test`: exit 0; 31 suites y 356 tests verdes.
+- `bun run typecheck`: exit 0.
+- `bun run lint`: exit 0.
+
 ## Estado del worktree
 
 Los archivos locales preexistentes no relacionados bajo `.agents/`,
