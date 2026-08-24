@@ -727,7 +727,7 @@
   {
     "id": 40,
     "name": "mobile-pets-profile",
-    "status": "spec_ready",
+    "status": "in_progress",
     "priority": "P2",
     "description": "Tab Profile + pantallas AddPet y Docs del diseño: perfil de usuario (users/me), CRUD de mascotas, foto vía expo-image-picker con upload a S3 presignada (media), documentos. El toggle de tema light/dark vive aquí (sin fade; el fade es #43). AVATAR FALLBACK (decisión humana 2026-08-21): cuando la mascota no tiene foto, avatar determinista con la librería blobatar (solo el paquete core `bun add blobatar` — @blobatar/react es web-only por DOM/dangerouslySetInnerHTML, validado contra el tarball 2.4.0). blobatar(name) devuelve SVG string que se pinta con SvgXml de react-native-svg (ya instalado en #32); las animaciones motion.css del paquete son web-only y quedan fuera. Aplica también como fallback en el pet card de Home (#35) si esa card quedó sin fallback propio.",
     "acceptance_criteria": [

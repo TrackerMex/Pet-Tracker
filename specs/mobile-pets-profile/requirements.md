@@ -1,6 +1,6 @@
 ---
 feature: "mobile-pets-profile"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec, mobile]
 ---
 
