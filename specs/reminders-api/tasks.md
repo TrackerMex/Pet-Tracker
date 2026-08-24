@@ -19,9 +19,9 @@ tags: [harness, spec, backend]
 
 ## R2 — DELETE /pets/:petId/reminders/:id (borrado real)
 
-- [ ] (1) Escribir test que falla para R2 (delete-reminder.use-case.spec.ts + casos e2e)
-- [ ] (2) Implementación mínima que lo pasa (deleteByPetAndId, use case, @Delete 204, module)
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R2 (delete-reminder.use-case.spec.ts + casos e2e)
+- [x] (2) Implementación mínima que lo pasa (deleteByPetAndId, use case, @Delete 204, module)
+- [x] (3) Refactor con tests verdes
 
 ## R3 — Regresión y contención
 
