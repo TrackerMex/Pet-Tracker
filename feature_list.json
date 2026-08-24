@@ -842,5 +842,21 @@
       "mobile-pet-tracker/src/components/",
       "mobile-pet-tracker/src/theme/"
     ]
+  },
+  {
+    "id": 47,
+    "name": "reminders-api",
+    "status": "done",
+    "priority": "P2",
+    "description": "Backend del módulo reminders: GET /pets/:petId/reminders (listado) y DELETE /pets/:petId/reminders/:id (borrado real), por capas Clean Architecture y bajo PetAccessGuard como el resto del módulo. Bloquea el handoff de #39 (mobile-reminders).",
+    "acceptance_criteria": [
+      "GET listado ordenado por dueAt asc con todos los status, 404 para no-miembros",
+      "DELETE 204 solo owner, 404 si no existe/no es de la mascota, 403 para caregiver/viewer",
+      "Tests unit + e2e nombrando R-ids; POST/PATCH existentes intactos"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/modules/reminders/",
+      "backend-pet-tracker/test/pet-reminders.e2e-spec.ts"
+    ]
   }
 ]

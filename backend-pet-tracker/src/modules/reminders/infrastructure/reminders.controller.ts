@@ -2,6 +2,9 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
+  Get,
+  HttpCode,
   HttpStatus,
   NotFoundException,
   Param,
@@ -20,6 +23,8 @@ import {
 } from '@/modules/reminders/application/dto/reminder.dto';
 import type { UpdateReminderDto } from '@/modules/reminders/application/dto/reminder.dto';
 import { CreateReminderUseCase } from '@/modules/reminders/application/use-cases/create-reminder.use-case';
+import { DeleteReminderUseCase } from '@/modules/reminders/application/use-cases/delete-reminder.use-case';
+import { ListRemindersUseCase } from '@/modules/reminders/application/use-cases/list-reminders.use-case';
 import { UpdateReminderUseCase } from '@/modules/reminders/application/use-cases/update-reminder.use-case';
 import {
   ReminderResponse,
@@ -33,7 +38,11 @@ import type { PetAccessRequest } from '@/modules/pets/infrastructure/guards/pet-
 @Controller('pets/:petId/reminders')
 @UseGuards(PetAccessGuard)
 export class PetRemindersController {
-  constructor(private readonly createReminder: CreateReminderUseCase) {}
+  constructor(
+    private readonly createReminder: CreateReminderUseCase,
+    private readonly listReminders: ListRemindersUseCase,
+    private readonly deleteReminder: DeleteReminderUseCase,
+  ) {}
 
   @Post()
   @RequirePetRole('owner')
@@ -49,6 +58,29 @@ export class PetRemindersController {
         request.user.id,
       ),
     );
+  }
+
+  @Get()
+  async list(@Req() request: PetAccessRequest): Promise<ReminderResponse[]> {
+    return (await this.listReminders.execute(request.petMembership.petId)).map(
+      toReminderResponse,
+    );
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @RequirePetRole('owner')
+  async remove(
+    @Req() request: PetAccessRequest,
+    @Param('id') id: string,
+  ): Promise<void> {
+    if (!UUID_PATTERN.test(id)) throw new NotFoundException();
+
+    try {
+      await this.deleteReminder.execute(request.petMembership.petId, id);
+    } catch (error) {
+      throw mapReminderError(error);
+    }
   }
 }
 
