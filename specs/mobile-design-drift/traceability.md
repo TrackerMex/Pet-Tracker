@@ -9,7 +9,7 @@ tags: [harness, spec]
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
 | R1 | `src/theme/__tests__/global-css.test.ts::R1: tokens rounded-card y text-2xs` | `3e38258 feat(mobile-design-drift): add shared design tokens (R1)` |
-| R2 | pendiente | pendiente |
+| R2 | `src/components/__tests__/card.test.tsx::R2: Card comparte recetas y comportamiento accesible` | `b64fdf9 feat(mobile-design-drift): add shared card component (R2)` |
 | R3 | pendiente | pendiente |
 | R4 | pendiente | pendiente |
 | R5 | pendiente | pendiente |
