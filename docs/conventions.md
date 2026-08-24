@@ -252,3 +252,11 @@ mezclarlos con el workspace pnpm de backend e infraestructura.
   usa porque no soporta React Native.
 - Los tests usan **jest-expo** y cada test que cubre una spec nombra su R-id,
   igual que las suites del backend.
+- **Dimensiones de pantalla uniformes** (pedido del humano en el smoke de
+  #38, 2026-08-25): toda pantalla nueva usa las mismas métricas de layout
+  que `home.tsx` — `contentContainerStyle` con `paddingTop: insets.top + 12`,
+  `padding: 24`, `gap: 16` y `paddingBottom: insets.bottom + 96`
+  (`useSafeAreaInsets`). Los estados de carga usan `Skeleton` dimensionados
+  como el contenido final, nunca un spinner suelto que haga saltar el
+  layout. El selector de mascota es siempre el componente compartido
+  `src/components/pet-switcher.tsx`.

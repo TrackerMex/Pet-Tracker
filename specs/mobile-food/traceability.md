@@ -1,0 +1,35 @@
+---
+feature: "mobile-food"
+status: draft        # draft | approved
+tags: [harness, spec, mobile]
+---
+
+# Trazabilidad — [[mobile-food]]
+
+| Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
+|---|---|---|
+| R1 | `src/api/__tests__/nutrition.test.ts::R1: getNutritionProfile mapea la respuesta por kind` | `807891a feat(mobile-food): add nutrition profile client (R1)` |
+| R2 | `src/api/__tests__/nutrition.test.ts::R2: getNutritionPlan mapea la respuesta por kind` | `96b8526 feat(mobile-food): add nutrition plan client (R2)` |
+| R3 | `src/api/__tests__/nutrition.test.ts::R3: generateNutritionPlan publica y mapea por kind` | `695ad9a feat(mobile-food): add plan generation client (R3)` |
+| R4 | `src/app/(tabs)/__tests__/food.test.tsx::R4: food resuelve la mascota seleccionada` | `95bc9f7 feat(mobile-food): resolve pets in food hub (R4)`<br>`9caafca fix(mobile-food): respect top safe area (R4,R7)`<br>`8f77e76 fix(mobile-food): stabilize loading layouts (R4,R5,R7)` |
+| R5 | `src/app/(tabs)/__tests__/food.test.tsx::R5: plan del día con horarios y warnings` | `4498939 feat(mobile-food): render daily meal plan (R5)`<br>`8f77e76 fix(mobile-food): stabilize loading layouts (R4,R5,R7)` |
+| R6 | `src/app/(tabs)/__tests__/food.test.tsx::R6: aiExplanation nullable con gracia` | `a456c01 feat(mobile-food): render optional AI recommendation (R6)` |
+| R7 | `src/app/(tabs)/__tests__/meal-schedule.test.tsx::R7: meal schedule muestra horarios y perfil` | `fc8a951 feat(mobile-food): add meal schedule details (R7)`<br>`9caafca fix(mobile-food): respect top safe area (R4,R7)`<br>`8f77e76 fix(mobile-food): stabilize loading layouts (R4,R5,R7)` |
+| R8 | `src/app/(tabs)/__tests__/meal-schedule.test.tsx::R8: generar plan con degradación por kind` | `e92e3b5 feat(mobile-food): add plan generation flow (R8)` |
+| R9 | `bun run typecheck`; `bun run lint` | `1bd1753 fix(mobile-food): satisfy mobile quality gates (R9)` |
+| R10 | `bun run test`; `./init.sh`; checks de contención de rutas, dependencias e imports | `19e7ef2 test(mobile-food): verify full integration (R10)` |
+| R11 | `requirements.md::R11 smoke humano en Expo Go (reservado al humano)` | N/A — fuera del alcance del implementer; no ejecutado |
+
+Regla: el reviewer no aprueba si alguna fila queda "pendiente".
+Convención de commit: `feat(mobile-food): <desc> (R1,R2)`.
+El implementer actualiza esta tabla tras cada commit; el reviewer la valida
+al aprobar (ver [[../../docs/specs|specs]] y [[../../CHECKPOINTS|CHECKPOINTS]] C5).
+
+## Correcciones del smoke R11 (2026-08-25)
+
+| Fix | Requisitos | Rojo | Verde |
+|---|---|---|---|
+| Safe area superior en Food y MealSchedule | R4, R7 | `8011711 test(mobile-food): define safe area fix in red (R4,R7)` | `9caafca fix(mobile-food): respect top safe area (R4,R7)` |
+| Skeletons dimensionados sin salto de layout | R4, R5, R7 | `43389aa test(mobile-food): define stable loading skeletons in red (R5,R7)` | `8f77e76 fix(mobile-food): stabilize loading layouts (R4,R5,R7)` |
+| Selector compartido con Avatar en Home, Health y Food | R11 (hallazgo smoke) | `b746530 test(mobile-food): define avatar pet switcher in red (R11)` | `602870e fix(mobile-food): share avatar pet switcher (R11)` |
+| Ajuste humano: selector solo Avatar con nombre accesible | R11 (hallazgo smoke) | `443c2ca test(mobile-food): define avatar-only switcher in red (R11)` | `2c8123e fix(mobile-food): show avatar-only pet switcher (R11)` |
