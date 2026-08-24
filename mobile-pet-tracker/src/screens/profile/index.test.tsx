@@ -2,13 +2,17 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react-nativ
 import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
+import { Uniwind } from 'uniwind';
 
 import { getPet, listPets, type PetState, type PetsState } from '../../api/pets';
 import type { PetProfile } from '../../api/types';
 import { getMe, type MeState } from '../../api/users';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { SelectedPetProvider } from '../../providers/selected-pet-provider';
+import { setStoredTheme } from '../../utils/theme-preference';
 import { ProfileScreen } from '.';
+
+let mockTheme: 'light' | 'dark' = 'light';
 
 jest.mock('../../api/pets', () => ({
   getPet: jest.fn(),
@@ -21,6 +25,15 @@ jest.mock('../../api/users', () => ({
 
 jest.mock('../../providers/auth-provider', () => ({
   useAuth: jest.fn(),
+}));
+
+jest.mock('../../utils/theme-preference', () => ({
+  setStoredTheme: jest.fn(),
+}));
+
+jest.mock('uniwind', () => ({
+  Uniwind: { setTheme: jest.fn() },
+  useUniwind: () => ({ theme: mockTheme, hasAdaptiveThemes: false }),
 }));
 
 jest.mock('../../components/pet-switcher', () => {
@@ -74,6 +87,8 @@ const mockGetMe = jest.mocked(getMe);
 const mockUseAuth = jest.mocked(useAuth);
 const mockRouter = jest.mocked(router);
 const mockSignOut = jest.fn<Promise<void>, []>();
+const mockSetStoredTheme = jest.mocked(setStoredTheme);
+const mockSetTheme = jest.mocked(Uniwind.setTheme);
 
 function pending<T>(): Promise<T> {
   return new Promise(() => undefined);
@@ -304,5 +319,40 @@ describe('R2: estructura Figma', () => {
     await waitFor(() =>
       expect(mockGetPet).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'pet-2'),
     );
+  });
+});
+
+describe('R4: toggle persiste', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockTheme = 'light';
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockGetMe.mockReturnValue(pending<MeState>());
+    mockListPets.mockReturnValue(pending<PetsState>());
+    mockGetPet.mockReturnValue(pending<PetState>());
+    mockSetStoredTheme.mockResolvedValue();
+  });
+
+  it('switches light to dark and persists it', async () => {
+    await renderProfile();
+    fireEvent.press(screen.getByTestId('theme-toggle'));
+
+    expect(mockSetTheme).toHaveBeenCalledWith('dark');
+    expect(mockSetStoredTheme).toHaveBeenCalledWith('dark');
+  });
+
+  it('switches dark to light and persists it', async () => {
+    mockTheme = 'dark';
+    await renderProfile();
+    fireEvent.press(screen.getByTestId('theme-toggle'));
+
+    expect(mockSetTheme).toHaveBeenCalledWith('light');
+    expect(mockSetStoredTheme).toHaveBeenCalledWith('light');
   });
 });
