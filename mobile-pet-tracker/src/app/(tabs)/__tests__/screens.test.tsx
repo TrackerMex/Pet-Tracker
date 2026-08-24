@@ -9,6 +9,11 @@ jest.mock('../../../providers/auth-provider', () => ({
   useAuth: jest.fn(),
 }));
 
+jest.mock('react-native-safe-area-context', () => ({
+  ...jest.requireActual('react-native-safe-area-context'),
+  useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
+}));
+
 const mockUseAuth = jest.mocked(useAuth);
 const mockSignOut = jest.fn<Promise<void>, []>();
 
