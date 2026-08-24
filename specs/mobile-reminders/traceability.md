@@ -13,7 +13,7 @@ tags: [harness, spec, mobile]
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | pendiente | pendiente |
+| R1 | `src/api/__tests__/reminders.test.ts::R1: listReminders mapea la respuesta por kind` | `377cdef test(mobile-reminders): define reminder listing in red (R1)`; `8e6ae26 feat(mobile-reminders): list reminders by pet (R1)` |
 | R2 | pendiente | pendiente |
 | R3 | pendiente | pendiente |
 | R4 | pendiente | pendiente |

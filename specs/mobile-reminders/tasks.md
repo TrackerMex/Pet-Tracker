@@ -23,9 +23,9 @@ tags: [harness, spec, mobile]
 
 ## R1 — listReminders en src/api/reminders.ts
 
-- [ ] (1) Escribir test que falla para R1
-- [ ] (2) Implementación mínima que lo pasa
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R1
+- [x] (2) Implementación mínima que lo pasa
+- [x] (3) Refactor con tests verdes
 
 ## R2 — createReminder (POST 201, body strict)
 
