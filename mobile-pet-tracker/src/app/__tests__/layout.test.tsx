@@ -1,4 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react-native';
+import type { ReactNode } from 'react';
 import { Uniwind } from 'uniwind';
 
 import { getStoredTheme } from '../../utils/theme-preference';
@@ -26,15 +27,15 @@ jest.mock('expo-router', () => {
 });
 
 jest.mock('heroui-native', () => ({
-  HeroUINativeProvider: ({ children }: { children: React.ReactNode }) => children,
+  HeroUINativeProvider: ({ children }: { children: ReactNode }) => children,
 }));
 
 jest.mock('react-native-gesture-handler', () => ({
-  GestureHandlerRootView: ({ children }: { children: React.ReactNode }) => children,
+  GestureHandlerRootView: ({ children }: { children: ReactNode }) => children,
 }));
 
 jest.mock('../../providers/auth-provider', () => ({
-  AuthProvider: ({ children }: { children: React.ReactNode }) => children,
+  AuthProvider: ({ children }: { children: ReactNode }) => children,
 }));
 
 const mockGetStoredTheme = jest.mocked(getStoredTheme);

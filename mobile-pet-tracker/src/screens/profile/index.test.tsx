@@ -31,10 +31,15 @@ jest.mock('../../utils/theme-preference', () => ({
   setStoredTheme: jest.fn(),
 }));
 
-jest.mock('uniwind', () => ({
-  Uniwind: { setTheme: jest.fn() },
-  useUniwind: () => ({ theme: mockTheme, hasAdaptiveThemes: false }),
-}));
+jest.mock('uniwind', () => {
+  const actual = jest.requireActual<typeof import('uniwind')>('uniwind');
+
+  return {
+    ...actual,
+    Uniwind: { ...actual.Uniwind, setTheme: jest.fn() },
+    useUniwind: () => ({ theme: mockTheme, hasAdaptiveThemes: false }),
+  };
+});
 
 jest.mock('../../components/pet-switcher', () => {
   const React = jest.requireActual<typeof import('react')>('react');

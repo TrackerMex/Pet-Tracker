@@ -4,6 +4,7 @@ import { Button, Skeleton } from 'heroui-native';
 import { useCallback, useEffect, useMemo } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Uniwind, useUniwind } from 'uniwind';
 
 import { getPet, listPets } from '../../api/pets';
 import type { PetProfile } from '../../api/types';
@@ -13,6 +14,7 @@ import { PetSwitcher } from '../../components/pet-switcher';
 import { useApi } from '../../hooks/use-api';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import { setStoredTheme } from '../../utils/theme-preference';
 
 function InfoRow({ label, value }: { label: string; value: string | null }) {
   return (
@@ -82,6 +84,7 @@ export function ProfileScreen() {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
   const { selectedPetId, selectPet } = useSelectedPet();
+  const { theme } = useUniwind();
   const insets = useSafeAreaInsets();
   const meFn = useCallback(
     () => getMe(baseUrl, token ?? ''),
@@ -248,6 +251,20 @@ export function ProfileScreen() {
             Account unavailable
           </Text>
         ) : null}
+        <Button
+          testID="theme-toggle"
+          className="mt-2 rounded-xl bg-default"
+          variant="secondary"
+          onPress={() => {
+            const nextTheme = theme === 'dark' ? 'light' : 'dark';
+            Uniwind.setTheme(nextTheme);
+            void setStoredTheme(nextTheme);
+          }}
+        >
+          <Button.Label className="font-semibold text-foreground">
+            {theme === 'dark' ? 'Use light theme' : 'Use dark theme'}
+          </Button.Label>
+        </Button>
       </Card>
 
       <Button
