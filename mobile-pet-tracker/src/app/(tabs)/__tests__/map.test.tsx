@@ -353,6 +353,19 @@ describe('R6: mapa y marker con la última posición', () => {
       'No location data yet',
     );
   });
+
+  it('R7 (mobile-design-drift): posiciona el overlay bajo el safe area', async () => {
+    mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: null });
+
+    await renderMap();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('map-empty-overlay')).toBeVisible(),
+    );
+    expect(screen.getByTestId('map-empty-overlay').props.style).toEqual(
+      expect.objectContaining({ top: 52 }),
+    );
+  });
 });
 
 describe('R7 (mobile-figma-polish): mapa adapta su base al tema', () => {
