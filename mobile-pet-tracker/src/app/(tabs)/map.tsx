@@ -1,4 +1,4 @@
-import { Button, Card, Spinner } from 'heroui-native';
+import { Button, Spinner } from 'heroui-native';
 import { useFocusEffect } from 'expo-router';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import { useCallback, useEffect, useMemo } from 'react';
@@ -9,6 +9,7 @@ import { useUniwind } from 'uniwind';
 import { listPets, type PetsState } from '../../api/pets';
 import { getLastPosition, listPositions } from '../../api/positions';
 import { getDayRoute } from '../../api/trips';
+import { Card } from '../../components/card';
 import { useApi } from '../../hooks/use-api';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
@@ -223,7 +224,7 @@ export default function MapScreen() {
             }}
             className="gap-2"
           >
-            <Card className="rounded-[20px] border border-border bg-surface p-3 shadow-sm">
+            <Card className="p-3">
               <View className="flex-row gap-2">
                 <View className="flex-1 items-center rounded-xl bg-default p-3">
                   <Text
