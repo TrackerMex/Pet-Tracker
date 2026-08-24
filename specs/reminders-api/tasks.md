@@ -25,6 +25,6 @@ tags: [harness, spec, backend]
 
 ## R3 — Regresión y contención
 
-- [ ] (1) Ejecutar lint, test, test:e2e y ./init.sh
-- [ ] (2) Corregir lo que falle sin tocar fuera del alcance
-- [ ] (3) Anotar resultados en progress/impl_reminders-api.md
+- [x] (1) Ejecutar lint, test, test:e2e y ./init.sh
+- [x] (2) Corregir lo que falle sin tocar fuera del alcance
+- [x] (3) Anotar resultados en progress/impl_reminders-api.md
