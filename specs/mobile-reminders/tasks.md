@@ -13,13 +13,16 @@ tags: [harness, spec, mobile]
 > **Gate previo: #47 (reminders-api) debe estar `done` en
 > `feature_list.json` antes del handoff de esta feature a Codex** — el
 > cliente móvil consume GET y DELETE que hoy no existen. Orden
-> recomendado: instalar el picker (paso 0) → R1–R4 (clientes y utils) →
+> recomendado: validar el picker (paso 0) → R1–R4 (clientes y utils) →
 > R5–R9 (pantallas) → R10 (navegación) → R11 → R12 (humano).
 
-## Paso 0 — Dependencia del picker (sin R-id, previo a R8)
+## Paso 0 — Dependencia del picker (sin R-id, revisado tras R8)
 
-- [x] `bunx expo install @react-native-community/datetimepicker` desde
-      `mobile-pet-tracker/` (única dep nueva permitida, [[design]] §D6)
+- [x] Instalación inicial de `@react-native-community/datetimepicker`
+      (supersedida por decisión humana tras el review).
+- [x] Validar `@expo/ui ~57.0.11` con `bunx expo` y confirmar que su manifest
+      no exige el paquete community como peer ([[design]] §D6).
+- [x] Retirar la dependencia directa, su lock y su config plugin.
 
 ## R1 — listReminders en src/api/reminders.ts
 
@@ -68,6 +71,8 @@ tags: [harness, spec, mobile]
 - [x] (1) Escribir test que falla para R8
 - [x] (2) Implementación mínima que lo pasa
 - [x] (3) Refactor con tests verdes
+- [x] (4) Rework post-review: nuevo rojo `8042a80` para `Host`,
+      `onValueChange` y `onDismiss`; verde `02f02ae` con el drop-in Expo UI.
 
 ## R9 — Guardar: validación local, POST y degradación
 
@@ -84,7 +89,7 @@ tags: [harness, spec, mobile]
 ## R11 — Typecheck, lint, contención de diff
 
 - [x] (1) Ejecutar typecheck/lint/tests móvil + init.sh
-- [x] (2) Corregir lo que falle (backend sin diff; package.json solo el picker)
+- [x] (2) Corregir lo que falle (backend sin diff; cero dependencias nuevas)
 - [x] (3) Anotar resultados en progress/impl_mobile-reminders.md
 
 ## R12 — Smoke humano en Expo Go

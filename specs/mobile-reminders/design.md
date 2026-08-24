@@ -90,20 +90,24 @@ tags: [harness, spec, mobile]
   5 categorías del diseño (incl. "Baño") no casan 1:1 con el enum y no se
   inventan tipos nuevos. Colores por token de tema, no los hex del diseño.
 
-- **D6 — Picker nativo de fecha/hora (decisión del gate, excepción a
-  "cero deps")**: `@react-native-community/datetimepicker` v9.1.0 —
-  **incluida en Expo Go para SDK 57** (verificada en
-  `mobile-pet-tracker/node_modules/expo/bundledNativeModules.json`), por
-  lo que el smoke sigue siendo 100% Expo Go sin dev build. Instalación:
-  `bunx expo install @react-native-community/datetimepicker` (nunca `bun
-  add` directo — versión alineada al SDK). Uso: en Android el componente
-  se monta condicionalmente y se muestra como diálogo nativo; dos campos
-  `Pressable` (fecha y hora) abren cada picker (`mode="date"` con
-  `minimumDate`, `mode="time"`); `onChange` guarda el `Date` y desmonta el
-  picker. En tests se mockea el módulo con un componente que renderiza un
-  `View` con el `testID` y expone `props.onChange` para dispararlo
-  (patrón estándar de RTL para este paquete). La validación local de R9 se
-  mantiene: `minimumDate` no garantiza hora futura. Sirve a R8/R9.
+- **D6 — Picker nativo de fecha/hora (rework decidido por el humano tras el
+  review)**: drop-in `@expo/ui/community/datetime-picker` de
+  `@expo/ui ~57.0.11`, ya instalado y **incluido en Expo Go SDK 57**. Usa
+  SwiftUI en iOS y Jetpack Compose/Material 3 en Android; cada árbol
+  condicional queda envuelto en `Host` importado desde la raíz `@expo/ui`.
+  El manifest instalado de `@expo/ui@57.0.11` no declara
+  `@react-native-community/datetimepicker` como dependencia ni peer, así
+  que se eliminan la dependencia directa, su entrada de lock y su config
+  plugin. Expo valida la versión existente con
+  `bunx expo install '@expo/ui@~57.0.11' --bun`; la CLI no expone un
+  subcomando uninstall y Bun retira la dependencia directa. En Android el
+  componente se monta condicionalmente con `presentation="dialog"`; dos
+  campos `Pressable` (fecha y hora) abren cada picker (`mode="date"` con
+  `minimumDate`, `mode="time"`). `onValueChange` guarda el `Date` y
+  desmonta el picker; `onDismiss` lo desmonta sin cambiar el valor. Los
+  tests mockean `Host` y el drop-in, conservan `date-picker`/`time-picker`
+  y disparan ambos callbacks. La validación local de R9 se mantiene:
+  `minimumDate` no garantiza hora futura. Sirve a R8/R9.
 
 - **D7 — Estructura Expo oficial (primera feature)**: route files delgados
   `src/app/(tabs)/reminders.tsx` y `src/app/(tabs)/add-reminder.tsx`
@@ -146,8 +150,8 @@ tags: [harness, spec, mobile]
 
 Todo dentro de `mobile-pet-tracker/` (cero backend — #47 aparte):
 
-- `package.json` / lockfile — única dep nueva:
-  `@react-native-community/datetimepicker` vía `bunx expo install` (D6).
+- `package.json` / lockfile / `app.json` — retiran la dependencia community
+  y su config plugin; `@expo/ui ~57.0.11` ya estaba instalado (D6).
 - `src/api/http.ts` — añade `deleteJson` (R3).
 - `src/api/types.ts` — añade `Reminder`, `ReminderType`, `ReminderStatus`.
 - `src/api/reminders.ts` — nuevo cliente (R1–R3).
@@ -173,10 +177,11 @@ Todo dentro de `mobile-pet-tracker/` (cero backend — #47 aparte):
 - **Entrada por Health**: el gate eligió Profile; además #40 reescribirá
   Profile y el contrato del link queda documentado (D10).
 - **TextInput `DD/MM/AAAA` para la fecha**: era el default "cero deps"; el
-  gate pidió picker nativo. `@react-native-community/datetimepicker` es la
-  única opción bundled en Expo Go (el `DateTimePicker` de `@expo/ui`
-  requiere SwiftUI/Compose hosts con más superficie y el diseño no lo
-  pide; `expo-date-picker` no existe como módulo bundled).
+  gate pidió picker nativo.
+- **`@react-native-community/datetimepicker` directo**: fue la elección
+  inicial del gate y quedó reemplazada tras el review por el drop-in de
+  `@expo/ui`, ya disponible en Expo Go y sin peer hacia el paquete community.
+  `expo-date-picker` no existe como módulo bundled.
 - **expo-notifications / notificaciones locales**: fuera por decisión del
   humano en `feature_list.json` #39 (requeriría dev build). Backlog.
 - **react-query**: umbral de #36 no cruzado (D3).

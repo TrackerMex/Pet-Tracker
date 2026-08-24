@@ -28,7 +28,7 @@ antes del handoff de #39 a Codex.** Esta spec consume sus dos endpoints:
 `DELETE /pets/:petId/reminders/:id` (borrado real, 204). El leader no
 lanza el handoff hasta verificarlo en `feature_list.json`.
 
-## Contexto fijo (no reabrir — decisiones del gate humano, 2026-08-24)
+## Contexto fijo (gate humano y rework R8, 2026-08-24)
 
 - **Gate resuelto**: (1) el GET de listado y (2) el DELETE real viven en
   #47, no aquí; (3) la entrada a Reminders es por el tab **Profile**;
@@ -50,14 +50,14 @@ lanza el handoff hasta verificarlo en `feature_list.json`.
   GET → 200 array orden `dueAt` asc (todos los status); DELETE → 204 sin
   body, solo owner (403 caregiver/viewer, 404 inexistente/no-miembro).
   El PATCH de cancelación NO se usa en esta feature.
-- **Única dependencia nueva permitida:
-  `@react-native-community/datetimepicker`** — excepción justificada a
-  "cero deps" decidida en el gate ([[design]] §D6): está incluida en Expo
-  Go (verificado en `expo/bundledNativeModules.json` del proyecto, v9.1.0
-  para SDK 57) y se instala con `bunx expo install
-  @react-native-community/datetimepicker` desde `mobile-pet-tracker/`.
-  Ninguna otra dependencia. **`expo-notifications` NO se instala**:
-  notificaciones locales fuera de alcance (backlog).
+- **Cero dependencias nuevas tras el rework R8**: el picker usa el drop-in
+  `@expo/ui/community/datetime-picker` de `@expo/ui ~57.0.11`, ya instalado
+  y disponible en Expo Go SDK 57 ([[design]] §D6). Cada árbol del picker se
+  envuelve en `Host` importado desde la raíz `@expo/ui`. El manifest de
+  `@expo/ui@57.0.11` no declara
+  `@react-native-community/datetimepicker` como dependencia ni peer, por lo
+  que esa dependencia directa y su config plugin se eliminan. **`expo-notifications`
+  NO se instala**: notificaciones locales fuera de alcance (backlog).
 - Decisión de #33 (vigente): funciones de `src/api/` reciben
   `token`/`fetchFn` por parámetro, nunca importan React ni storage. Tipos
   a mano en `src/api/types.ts`.
@@ -230,10 +230,11 @@ lanza el handoff hasta verificarlo en `feature_list.json`.
   - `TextInput` título (`testID="title-input"`, `maxLength={120}`);
   - campo fecha: `Pressable` `testID="date-field"` que muestra la fecha
     elegida (`toLocaleDateString()`) o `Select a date`, y al pulsarse abre
-    un `DateTimePicker` de `@react-native-community/datetimepicker`
-    (`testID="date-picker"`, `mode="date"`,
-    `minimumDate={new Date()}`) — visible solo mientras se elige; al
-    recibir `onChange` con fecha SHALL guardarla y cerrar el picker
+    un `DateTimePicker` de `@expo/ui/community/datetime-picker`, envuelto en
+    `Host` importado desde `@expo/ui` (`testID="date-picker"`, `mode="date"`,
+    `presentation="dialog"`, `minimumDate={new Date()}`) — visible solo
+    mientras se elige; al recibir `onValueChange` con fecha SHALL guardarla
+    y cerrar el picker, y `onDismiss` SHALL cerrarlo sin cambiar la fecha
     ([[design]] §D6);
   - campo hora: ídem con `testID="time-field"` /
     `testID="time-picker"` (`mode="time"`), valor inicial 09:00;
@@ -245,10 +246,11 @@ lanza el handoff hasta verificarlo en `feature_list.json`.
   `<Redirect href="/reminders" />` (patrón weight-log #37).
   *Test: `mobile-pet-tracker/src/screens/add-reminder/index.test.tsx` →
   `describe('R8: formulario de alta con chips y pickers', ...)` mockeando
-  `../../api/reminders`, `../../providers/auth-provider`, `expo-router` y
-  `@react-native-community/datetimepicker` (mock component que expone
-  `onChange` — patrón en [[design]] §D6); asserts: picker no visible al
-  montar, visible tras pulsar el campo, fecha reflejada tras `onChange`.
+  `../../api/reminders`, `../../providers/auth-provider`, `expo-router`,
+  `@expo/ui` (`Host`) y `@expo/ui/community/datetime-picker` (mock component
+  que expone `onValueChange`/`onDismiss` — patrón en [[design]] §D6);
+  asserts: picker no visible al montar, visible tras pulsar el campo, dentro
+  de `Host`, fecha reflejada tras `onValueChange` y cierre tras `onDismiss`.
   ROJO primero.*
 
 - **R9**: WHEN se pulsa `Save reminder` THE SYSTEM SHALL validar en local:
@@ -307,17 +309,17 @@ lanza el handoff hasta verificarlo en `feature_list.json`.
   `bun run test` SHALL quedar verde con las suites de #33–#38 y #46
   intactas (único diff sobre tests existentes: la extensión de
   `profile.test.tsx` de R10); AND `./init.sh` SHALL salir con exit 0; AND
-  el diff de `mobile-pet-tracker/package.json` SHALL contener
-  **exactamente una** dependencia nueva
-  (`@react-native-community/datetimepicker`, instalada con `bunx expo
-  install`) y ninguna otra; AND `backend-pet-tracker/` SHALL quedar sin
-  diff en esta branch (el backend es #47); AND `expo-notifications` NO
-  SHALL aparecer ni en `package.json` ni en el código.
+  el diff de `mobile-pet-tracker/package.json` SHALL contener **cero
+  dependencias nuevas**; AND `@react-native-community/datetimepicker` NO
+  SHALL aparecer en `package.json`, `bun.lock` ni `app.json`; AND
+  `backend-pet-tracker/` SHALL quedar sin diff en esta branch (el backend es
+  #47); AND `expo-notifications` NO SHALL aparecer ni en `package.json` ni
+  en el código.
   *Verificación: implementer lo anota en
   `progress/impl_mobile-reminders.md`; reviewer re-ejecuta y corre
   `git diff --stat main...HEAD -- backend-pet-tracker/` (vacío),
-  `git diff main...HEAD -- mobile-pet-tracker/package.json` (solo la
-  línea del picker) y
+  `git diff main...HEAD -- mobile-pet-tracker/package.json` (sin
+  dependencias nuevas) y
   `grep -rn "expo-notifications" mobile-pet-tracker/` (vacío, excluyendo
   node_modules).*
 
