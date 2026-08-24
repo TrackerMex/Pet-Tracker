@@ -76,3 +76,19 @@ final completo pasó sin reintento.
   `docs/conventions.md` y los patrones Expo ya versionados en el repositorio.
 - Los archivos no trackeados preexistentes bajo `.agents/`, `.claude/skills/`
   y `skills-lock.json` se preservaron y no forman parte de los commits.
+
+## Corrección post-review fix 1
+
+- Resuelto el bloqueante C7: se retiraron el módulo huérfano
+  `src/api/health.ts` y su suite `src/api/__tests__/health.test.ts` como
+  continuación de la excepción C4/Q2. `src/api/health-records.ts` y sus
+  consumidores no se tocaron.
+- La fila R3 de trazabilidad documenta la retirada completa de UI, módulo y
+  suite de backend-health. La fila R9 justifica que el cambio previo en
+  `src/app/(tabs)/__tests__/screens.test.tsx` fue solo scaffolding de
+  mocks/provider y preservó las aserciones de #33.
+- `bun run test`: exit 0, 45 suites / 509 tests / 1 snapshot verdes.
+- `bun run typecheck`: exit 0.
+- `bun run lint`: exit 0.
+- `./init.sh`: exit 0, `✅ Todo verde`; backend e2e con 20 suites / 327
+  tests verdes (2 suites y 6 tests omitidos), lint y typecheck verdes.

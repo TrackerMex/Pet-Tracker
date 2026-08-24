@@ -28,3 +28,7 @@
   quedaron verdes. Reporte: `progress/impl_mobile-pets-profile.md`.
 - Siguiente gate: reviewer. R10 queda reservado al humano en Expo Go; el
   smoke real de Docs sigue esperando `media-docs-api` (#49).
+- Corrección post-review fix 1 completada (2026-08-24): retirados el módulo
+  y la suite backend-health huérfanos; trazabilidad R3/R9 actualizada.
+  `bun run test` (45 suites/509 tests), typecheck, lint y `./init.sh` final
+  quedaron verdes. El fix queda listo para una nueva revisión.
