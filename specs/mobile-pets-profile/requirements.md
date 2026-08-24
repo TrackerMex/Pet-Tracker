@@ -95,8 +95,11 @@ presignada de LA foto de perfil. Ver R8 y Pregunta abierta Q1.
   `specs/mobile-reminders/requirements.md` R10 y design §D10), y (b) el
   botón `testID="profile-sign-out"` que llama `signOut()` de
   `useAuth`. El check de backend health (`backend-health-state`/
-  `backend-health-retry`) NO aparece en el diseño Figma — su destino es
-  decisión del gate (Q2); el default propuesto es eliminarlo.
+  `backend-health-retry`) se ELIMINA (decisión Q2 del gate, 2026-08-24):
+  no aparece en el Figma y el estado degradado de cada card ya delata un
+  backend caído. Sus tests en
+  `src/app/(tabs)/__tests__/profile.test.tsx` se retiran (excepción C4
+  documentada en el commit).
   *Test: `mobile-pet-tracker/src/screens/profile/index.test.tsx`
   (`describe('R3: reminders-link y sign out', ...)` con mock de
   `expo-router` assert `router.push('/reminders')`). ROJO primero.*
@@ -193,20 +196,15 @@ presignada de LA foto de perfil. Ver R8 y Pregunta abierta Q1.
   mascota según el `DocsScreen` del diseño (header con nombre de la mascota,
   lista de items con tipo/nombre/fecha), con `Skeleton` dimensionado, estado
   vacío (`testID="docs-empty"`) y degradación por kind; el origen de datos
-  depende de la decisión Q1 del gate:
-  - **Opción A (propuesta)**: nueva feature backend `media-docs-api`
-    (`GET /v1/pets/:petId/media` + upload de documentos; patrón #47
-    reminders-api, decisión del gate de #39: backend aparte, nunca mezclado
-    en la feature móvil). #40 implementa la pantalla contra ese contrato con
-    `listPetDocs` en `src/api/media.ts` y fetchFn fake en tests; el smoke
-    real de Docs queda bloqueado hasta que esa feature exista.
-  - **Opción B**: Docs v1 lista las vacunas del endpoint YA existente
-    `GET /pets/:petId/vaccines` (los "documentos" del Figma son registros
-    médicos) y la media genérica queda para una feature futura.
+  es la nueva feature backend **`media-docs-api` (#49)**
+  (`GET /v1/pets/:petId/media` + upload de documentos; patrón #47
+  reminders-api — decisión Q1 del gate, 2026-08-24). #40 implementa la
+  pantalla contra ese contrato con `listPetDocs` en `src/api/media.ts` y
+  fetchFn fake en tests; **el smoke real de Docs queda bloqueado hasta que
+  #49 esté `done`** (el resto del smoke R10 no depende de #49).
   *Test: `mobile-pet-tracker/src/screens/docs/index.test.tsx` (nuevo) +
   `describe('R8: navegación a docs', ...)` en
-  `src/screens/profile/index.test.tsx`. ROJO primero. La redacción final de
-  este requisito se cierra con Q1 ANTES del handoff a Codex.*
+  `src/screens/profile/index.test.tsx`. ROJO primero.*
 
 ### Tipado y contención
 
@@ -239,33 +237,29 @@ presignada de LA foto de perfil. Ver R8 y Pregunta abierta Q1.
 - AWS real: S3 es **LocalStack** en dev; nada de `cdk deploy` ni cuentas
   reales (el smoke R10 es local).
 - Editar/eliminar mascota (PATCH/DELETE existen en backend pero el Figma no
-  trae pantalla; ver Q3).
+  trae pantalla; decisión Q3: feature posterior).
 - Filas Figma "Geocercas configuradas" y "Configuración del Dispositivo
   GPS" del Profile: las pantallas destino no existen en la app móvil aún;
-  las filas no se renderizan en esta feature (ver Q4).
-- Upload/preview de documentos médicos genéricos (PDF, etc.) — depende de
-  Q1; como mínimo queda para la feature backend propuesta.
+  las filas no se renderizan en esta feature (decisión Q4).
+- Upload/preview de documentos médicos genéricos (PDF, etc.) — backend de
+  la feature #49 `media-docs-api` (decisión Q1); #40 solo la pantalla.
 - Edición del perfil de usuario (`PATCH /me`) — Profile solo muestra.
 - Migración en frío de otras pantallas pre-#39 al patrón screens/ (solo se
   migra `profile.tsx`, que esta feature toca de fondo).
 
-## Preguntas abiertas para el gate humano
+## Decisiones del gate (respondidas por el humano, 2026-08-24)
 
-- **Q1 (Docs, bloquea R8)**: ¿Opción A — crear feature backend
-  `media-docs-api` aparte (recomendada, patrón #47) — u Opción B — Docs v1
-  lee las vacunas existentes y la media genérica se pospone? La redacción
-  final de R8 se fija con esta respuesta antes del handoff.
-- **Q2 (backend health)**: el Figma no muestra el check de backend health en
-  Profile. Propuesta default: **eliminarlo** (el estado degradado de cada
-  card ya delata un backend caído). Alternativa: conservarlo en una sección
-  "Developer" colapsada al final de Profile. ¿Cuál?
-- **Q3 (alcance CRUD)**: ¿confirmas dejar editar/eliminar mascota fuera de
-  #40 (sin pantalla en el diseño), como feature posterior?
-- **Q4 (filas Figma sin destino)**: ¿confirmas omitir las filas Geocercas y
-  Config GPS del Profile hasta que existan esas pantallas?
+- **Q1 (Docs)**: feature backend `media-docs-api` aparte (#49, `pending` en
+  `feature_list.json`). R8 redactado en firme contra ese contrato; smoke de
+  Docs bloqueado hasta #49 `done`.
+- **Q2 (backend health)**: **eliminarlo** de Profile (R3 en firme).
+- **Q3 (CRUD)**: editar/eliminar mascota queda FUERA de #40, feature
+  posterior.
+- **Q4 (filas Figma sin destino)**: Geocercas y Config GPS NO se renderizan
+  hasta que existan sus pantallas.
 
 ## Aprobación
 
 - [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
-- [ ] Q1–Q4 respondidas y R8 redactado en firme
+- [X] Q1–Q4 respondidas y R8 redactado en firme (2026-08-24)
 - [ ] Smoke R10 ejecutado por el humano (fecha: ____) ← gate antes de `done`
