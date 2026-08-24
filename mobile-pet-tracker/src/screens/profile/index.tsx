@@ -1,4 +1,3 @@
-import { Image } from 'expo-image';
 import { router, type Href } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
 import { useCallback, useEffect, useMemo } from 'react';
@@ -10,6 +9,7 @@ import { getPet, listPets } from '../../api/pets';
 import type { PetProfile } from '../../api/types';
 import { getMe } from '../../api/users';
 import { Card } from '../../components/card';
+import { PetAvatar } from '../../components/pet-avatar';
 import { PetSwitcher } from '../../components/pet-switcher';
 import { useApi } from '../../hooks/use-api';
 import { useAuth } from '../../providers/auth-provider';
@@ -30,23 +30,14 @@ function InfoRow({ label, value }: { label: string; value: string | null }) {
 function PetHero({ pet }: { pet: PetProfile }) {
   return (
     <View className="h-56 overflow-hidden rounded-card bg-default">
-      {pet.photoUrl ? (
-        <Image
+      <View className="h-full w-full items-center justify-center bg-accent-soft">
+        <PetAvatar
+          name={pet.name}
+          photoUrl={pet.photoUrl}
+          size={224}
           testID="profile-pet-photo"
-          className="h-full w-full"
-          contentFit="cover"
-          source={pet.photoUrl}
         />
-      ) : (
-        <View
-          testID="profile-pet-photo"
-          className="h-full w-full items-center justify-center bg-accent-soft"
-        >
-          <Text className="text-5xl font-black text-foreground">
-            {pet.name.charAt(0).toUpperCase()}
-          </Text>
-        </View>
-      )}
+      </View>
       <View className="absolute inset-x-0 bottom-0 gap-1 bg-surface/90 p-4">
         <Text className="text-2xl font-black text-foreground">{pet.name}</Text>
         {pet.breed ? (

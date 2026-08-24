@@ -5,6 +5,7 @@
   "dependencies": {
     "@expo/ui": "~57.0.11",
     "@gorhom/bottom-sheet": "^5.2.14",
+    "blobatar": "^2.5.0",
     "expo": "~57.0.14",
     "expo-blur": "~57.0.2",
     "expo-constants": "~57.0.12",
@@ -61,10 +62,11 @@
   "jest": {
     "preset": "jest-expo",
     "transformIgnorePatterns": [
-      "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|native-base|react-native-svg|uniwind|heroui-native|reicon-react-native|tailwind-variants|tailwind-merge|@gorhom/bottom-sheet)"
+      "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|native-base|react-native-svg|uniwind|heroui-native|reicon-react-native|tailwind-variants|tailwind-merge|@gorhom/bottom-sheet|blobatar)"
     ],
     "moduleNameMapper": {
       "\\.css$": "<rootDir>/test/css-stub.js",
+      "^blobatar$": "<rootDir>/test/blobatar-bridge.js",
       "^reicon-react-native$": "<rootDir>/node_modules/reicon-react-native/index.js"
     },
     "setupFilesAfterEnv": [

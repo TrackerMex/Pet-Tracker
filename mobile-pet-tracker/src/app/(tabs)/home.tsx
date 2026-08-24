@@ -1,4 +1,3 @@
-import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { Button, Card as HeroUICard, Skeleton, Spinner } from 'heroui-native';
 import { useCallback, useEffect, useMemo } from 'react';
@@ -17,6 +16,7 @@ import {
 import { getDailyActivity } from '../../api/activity';
 import { getPet, listPets, type PetsState } from '../../api/pets';
 import { Card } from '../../components/card';
+import { PetAvatar } from '../../components/pet-avatar';
 import { PetSwitcher } from '../../components/pet-switcher';
 import { useApi } from '../../hooks/use-api';
 import { useAuth } from '../../providers/auth-provider';
@@ -144,23 +144,12 @@ export default function HomeScreen() {
         <>
           <Card testID="pet-card">
             <View className="flex-row items-center gap-4">
-              {detail.data.pet.photoUrl ? (
-                <Image
-                  testID="pet-card-photo"
-                  className="size-[72px] rounded-full"
-                  contentFit="cover"
-                  source={detail.data.pet.photoUrl}
-                />
-              ) : (
-                <View
-                  testID="pet-card-photo"
-                  className="size-[72px] items-center justify-center rounded-full bg-accent-soft"
-                >
-                  <Text className="text-2xl font-bold text-foreground">
-                    {detail.data.pet.name.charAt(0).toUpperCase()}
-                  </Text>
-                </View>
-              )}
+              <PetAvatar
+                name={detail.data.pet.name}
+                photoUrl={detail.data.pet.photoUrl}
+                size={72}
+                testID="pet-card-photo"
+              />
               <View className="flex-1 gap-1">
                 <Text
                   testID="pet-card-name"

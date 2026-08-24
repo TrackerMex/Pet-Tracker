@@ -1,37 +1,35 @@
-import { render, screen } from '@testing-library/react-native';
+import { cleanup, render } from '@testing-library/react-native';
 import { blobatar } from 'blobatar';
 
 import { PetAvatar } from '../pet-avatar';
 
 describe('R5: PetAvatar blobatar determinista', () => {
+  afterEach(() => cleanup());
+
   it('produces the same SVG for the same pet name', async () => {
+    const view = await render(
+      <PetAvatar name="Luna" photoUrl={null} size={72} testID="pet-avatar" />,
+    );
+    const svg = view.getByTestId('pet-avatar').props.xml;
+
+    expect(svg).toBe(blobatar('Luna'));
     expect(blobatar('Luna')).toBe(blobatar('Luna'));
-
-    const first = await render(
-      <PetAvatar name="Luna" photoUrl={null} size={72} testID="pet-avatar" />,
-    );
-    const firstXml = first.getByTestId('pet-avatar').props.xml;
-    first.unmount();
-    const second = await render(
-      <PetAvatar name="Luna" photoUrl={null} size={72} testID="pet-avatar" />,
-    );
-
-    expect(second.getByTestId('pet-avatar').props.xml).toBe(firstXml);
-    expect(firstXml).toMatchSnapshot();
+    expect(svg).toMatchSnapshot();
   });
 
   it('renders an SVG fallback when the pet has no photo', async () => {
-    await render(
+    const view = await render(
       <PetAvatar name="Milo" photoUrl={null} size={64} testID="pet-avatar" />,
     );
 
-    expect(screen.getByTestId('pet-avatar').props.xml).toContain('<svg');
-    expect(screen.getByTestId('pet-avatar').props.width).toBe(64);
-    expect(screen.getByTestId('pet-avatar').props.height).toBe(64);
+    expect(view.getByTestId('pet-avatar').props.xml).toContain('<svg');
+    expect(view.getByTestId('pet-avatar').props.xml).toBe(blobatar('Milo'));
+    expect(view.getByTestId('pet-avatar').props.width).toBe(64);
+    expect(view.getByTestId('pet-avatar').props.height).toBe(64);
   });
 
   it('lets the real photo win over the generated avatar', async () => {
-    await render(
+    const view = await render(
       <PetAvatar
         name="Luna"
         photoUrl="http://example.test/luna.jpg"
@@ -40,9 +38,9 @@ describe('R5: PetAvatar blobatar determinista', () => {
       />,
     );
 
-    expect(screen.getByTestId('pet-avatar').props.source).toEqual([
+    expect(view.getByTestId('pet-avatar').props.source).toEqual([
       { uri: 'http://example.test/luna.jpg' },
     ]);
-    expect(screen.getByTestId('pet-avatar').props.xml).toBeUndefined();
+    expect(view.getByTestId('pet-avatar').props.xml).toBeUndefined();
   });
 });

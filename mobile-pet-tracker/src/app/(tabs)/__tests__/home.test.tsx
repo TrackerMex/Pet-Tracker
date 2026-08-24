@@ -244,7 +244,7 @@ describe('R7: pet card muestra el perfil', () => {
     expect(screen.getByTestId('pet-card-breed')).toHaveTextContent('Mixed');
   });
 
-  it('uses the name initial and a dash when optional profile data is absent', async () => {
+  it('uses a deterministic avatar and a dash when optional profile data is absent', async () => {
     mockGetPet.mockResolvedValue({
       kind: 'ok',
       pet: makePet({ breed: null, photoUrl: null }),
@@ -253,7 +253,7 @@ describe('R7: pet card muestra el perfil', () => {
     await renderHome();
 
     await waitFor(() => expect(screen.getByTestId('pet-card')).toBeVisible());
-    expect(screen.getByTestId('pet-card-photo')).toHaveTextContent('L');
+    expect(screen.getByTestId('pet-card-photo').props.xml).toContain('<svg');
     expect(screen.getByTestId('pet-card-breed')).toHaveTextContent('—');
   });
 
