@@ -10,8 +10,10 @@ import { HeroUINativeProvider } from 'heroui-native';
 import { useEffect } from 'react';
 
 import {
+  generateNutritionPlan,
   getNutritionPlan,
   getNutritionProfile,
+  type GeneratePlanState,
   type NutritionPlanState,
   type NutritionProfileState,
 } from '../../../api/nutrition';
@@ -24,6 +26,7 @@ import {
 import MealScheduleScreen from '../meal-schedule';
 
 jest.mock('../../../api/nutrition', () => ({
+  generateNutritionPlan: jest.fn(),
   getNutritionPlan: jest.fn(),
   getNutritionProfile: jest.fn(),
 }));
@@ -76,6 +79,7 @@ jest.mock(
 );
 
 const apiUrl = 'http://example.test/v1';
+const mockGenerateNutritionPlan = jest.mocked(generateNutritionPlan);
 const mockGetNutritionPlan = jest.mocked(getNutritionPlan);
 const mockGetNutritionProfile = jest.mocked(getNutritionProfile);
 const mockUseAuth = jest.mocked(useAuth);
@@ -142,6 +146,9 @@ async function renderMealSchedule(selected = true) {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockGenerateNutritionPlan.mockReset();
+  mockGetNutritionPlan.mockReset();
+  mockGetNutritionProfile.mockReset();
   process.env.EXPO_PUBLIC_API_URL = apiUrl;
   mockUseAuth.mockReturnValue({
     status: 'authenticated',
@@ -280,5 +287,121 @@ describe('R7: meal schedule muestra horarios y perfil', () => {
     );
     expect(mockGetNutritionPlan).toHaveBeenCalledTimes(2);
     expect(mockGetNutritionProfile).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('R8: generar plan con degradación por kind', () => {
+  beforeEach(() => {
+    mockGetNutritionProfile.mockResolvedValue({ kind: 'not-found' });
+  });
+
+  it.each([
+    { kind: 'not-found' } as const,
+    { kind: 'ok', plan: makePlan() } as const,
+  ])('shows the generate button with a $kind plan', async (state) => {
+    mockGetNutritionPlan.mockResolvedValue(state);
+
+    await renderMealSchedule();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('generate-plan-button')).toBeVisible(),
+    );
+    expect(screen.getByText('Generate plan')).toBeVisible();
+  });
+
+  it.each<{
+    result: GeneratePlanState;
+    message: string;
+  }>([
+    {
+      result: { kind: 'forbidden' },
+      message: 'Only the owner can generate the plan',
+    },
+    {
+      result: {
+        kind: 'unprocessable',
+        code: 'NUTRITION_PROFILE_REQUIRED',
+      },
+      message: 'Create a nutrition profile first',
+    },
+    {
+      result: { kind: 'unprocessable', code: 'PET_WEIGHT_REQUIRED' },
+      message: 'Register a weight first',
+    },
+    {
+      result: { kind: 'unprocessable', code: null },
+      message: 'Something went wrong',
+    },
+    { result: { kind: 'error' }, message: 'Something went wrong' },
+    { result: { kind: 'missing-config' }, message: 'Something went wrong' },
+    {
+      result: { kind: 'unreachable', message: 'network down' },
+      message: 'Cannot reach server',
+    },
+  ])('maps $result.kind to "$message"', async ({ result, message }) => {
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'not-found' });
+    mockGenerateNutritionPlan.mockResolvedValue(result);
+
+    await renderMealSchedule();
+    await waitFor(() =>
+      expect(screen.getByTestId('generate-plan-button')).toBeVisible(),
+    );
+    await fireEvent.press(screen.getByTestId('generate-plan-button'));
+
+    await waitFor(() =>
+      expect(screen.getByTestId('generate-plan-error')).toHaveTextContent(
+        message,
+      ),
+    );
+    expect(mockGenerateNutritionPlan).toHaveBeenCalledWith(
+      apiUrl,
+      'jwt-token',
+      'pet-1',
+    );
+  });
+
+  it('clears a prior error and refetches the generated plan on success', async () => {
+    const generatedPlan = makePlan({ dailyGrams: 200 });
+    mockGetNutritionPlan
+      .mockResolvedValueOnce({ kind: 'not-found' })
+      .mockResolvedValueOnce({ kind: 'ok', plan: generatedPlan });
+    mockGenerateNutritionPlan
+      .mockResolvedValueOnce({ kind: 'forbidden' })
+      .mockResolvedValueOnce({ kind: 'ok', plan: generatedPlan });
+
+    await renderMealSchedule();
+    await waitFor(() =>
+      expect(screen.getByTestId('generate-plan-button')).toBeVisible(),
+    );
+    await fireEvent.press(screen.getByTestId('generate-plan-button'));
+    await waitFor(() =>
+      expect(screen.getByTestId('generate-plan-error')).toBeVisible(),
+    );
+
+    await fireEvent.press(screen.getByTestId('generate-plan-button'));
+
+    await waitFor(() =>
+      expect(screen.getByTestId('meal-schedule-summary')).toBeVisible(),
+    );
+    expect(screen.queryByTestId('generate-plan-error')).toBeNull();
+    expect(mockGetNutritionPlan).toHaveBeenCalledTimes(2);
+    expect(mockGenerateNutritionPlan).toHaveBeenCalledTimes(2);
+  });
+
+  it('disables the generate button while the request is pending', async () => {
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'not-found' });
+    mockGenerateNutritionPlan.mockReturnValue(pending<GeneratePlanState>());
+
+    await renderMealSchedule();
+    await waitFor(() =>
+      expect(screen.getByTestId('generate-plan-button')).toBeVisible(),
+    );
+    await fireEvent.press(screen.getByTestId('generate-plan-button'));
+
+    await waitFor(() =>
+      expect(
+        screen.getByTestId('generate-plan-button').props.accessibilityState,
+      ).toEqual(expect.objectContaining({ disabled: true })),
+    );
   });
 });
