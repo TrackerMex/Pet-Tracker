@@ -41,9 +41,9 @@ tags: [harness, spec, mobile]
 
 ## R4 — combineDateAndTime / daysUntil en src/utils/reminder-dates.ts
 
-- [ ] (1) Escribir test que falla para R4
-- [ ] (2) Implementación mínima que lo pasa
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R4
+- [x] (2) Implementación mínima que lo pasa
+- [x] (3) Refactor con tests verdes
 
 ## R5 — RemindersScreen: montaje, métricas, estados de carga
 
