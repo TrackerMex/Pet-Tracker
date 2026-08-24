@@ -1,4 +1,4 @@
-import { router, type Href } from 'expo-router';
+import { router, type Href, useFocusEffect } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
 import { useCallback, useEffect, useMemo } from 'react';
 import { ScrollView, Text, View } from 'react-native';
@@ -10,6 +10,8 @@ import { PetSwitcher } from '../../components/pet-switcher';
 import { useApi } from '../../hooks/use-api';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import { daysUntil } from '../../utils/reminder-dates';
+import { REMINDER_TYPE_META } from '../../utils/reminder-meta';
 
 function isRemindersError(state: RemindersState): boolean {
   return ['error', 'unreachable', 'missing-config', 'not-found'].includes(
@@ -35,6 +37,12 @@ export function RemindersScreen() {
     [baseUrl, selectedPetId, token],
   );
   const reminders = useApi(remindersFn);
+
+  useFocusEffect(
+    useCallback(() => {
+      reminders.refetch();
+    }, [reminders.refetch]),
+  );
 
   useEffect(() => {
     if (pets.data?.kind !== 'ok' || pets.data.pets.length === 0) return;
@@ -105,6 +113,116 @@ export function RemindersScreen() {
         <Text testID="reminders-empty" className="font-normal text-muted">
           No reminders yet
         </Text>
+      ) : null}
+
+      {reminders.data?.kind === 'ok' &&
+      reminders.data.reminders.length > 0 ? (
+        <>
+          <View className="flex-row gap-3">
+            <View
+              testID="pill-active"
+              className="flex-1 items-center gap-1 rounded-2xl bg-accent-soft p-3"
+            >
+              <Text className="text-lg font-black text-foreground">
+                {
+                  reminders.data.reminders.filter(
+                    ({ status }) => status === 'scheduled',
+                  ).length
+                }
+              </Text>
+              <Text className="text-xs font-normal text-muted">Active</Text>
+            </View>
+            <View
+              testID="pill-week"
+              className="flex-1 items-center gap-1 rounded-2xl bg-default p-3"
+            >
+              <Text className="text-lg font-black text-foreground">
+                {
+                  reminders.data.reminders.filter((reminder) => {
+                    const days = daysUntil(
+                      new Date(),
+                      new Date(reminder.dueAt),
+                    );
+                    return (
+                      reminder.status === 'scheduled' &&
+                      days >= 0 &&
+                      days <= 7
+                    );
+                  }).length
+                }
+              </Text>
+              <Text className="text-xs font-normal text-muted">This week</Text>
+            </View>
+            <View
+              testID="pill-inactive"
+              className="flex-1 items-center gap-1 rounded-2xl bg-default p-3"
+            >
+              <Text className="text-lg font-black text-foreground">
+                {
+                  reminders.data.reminders.filter(
+                    ({ status }) => status !== 'scheduled',
+                  ).length
+                }
+              </Text>
+              <Text className="text-xs font-normal text-muted">Inactive</Text>
+            </View>
+          </View>
+
+          <View className="gap-3">
+            {reminders.data.reminders.map((reminder) => {
+              const meta = REMINDER_TYPE_META[reminder.type];
+              const days = daysUntil(new Date(), new Date(reminder.dueAt));
+              const inactive = reminder.status !== 'scheduled';
+
+              return (
+                <View
+                  key={reminder.id}
+                  testID={`reminder-row-${reminder.id}`}
+                  className={`min-h-20 flex-row items-center gap-3 rounded-2xl border border-border bg-surface p-4 shadow-sm${inactive ? ' opacity-50' : ''}`}
+                >
+                  <View className="size-11 items-center justify-center rounded-xl bg-accent-soft">
+                    <Text className="text-xl">{meta.emoji}</Text>
+                  </View>
+                  <View className="min-w-0 flex-1 gap-1">
+                    <View className="flex-row items-center gap-2">
+                      <Text className="text-xs font-semibold text-muted">
+                        {meta.label}
+                      </Text>
+                      {!inactive && days >= 0 && days <= 10 ? (
+                        <Text
+                          testID={`reminder-upcoming-${reminder.id}`}
+                          className="rounded-full bg-warning-soft px-2 py-0.5 text-[10px] font-bold text-warning"
+                        >
+                          Upcoming!
+                        </Text>
+                      ) : null}
+                    </View>
+                    <Text className="font-bold text-foreground">
+                      {reminder.title}
+                    </Text>
+                    <View className="flex-row items-center gap-1">
+                      <Text className="text-xs font-normal text-muted">
+                        {new Date(reminder.dueAt).toLocaleDateString()}
+                      </Text>
+                      {inactive ? (
+                        <Text
+                          testID={`reminder-status-${reminder.id}`}
+                          className="text-xs font-semibold text-muted"
+                        >
+                          {reminder.status === 'sent' ? 'Sent' : 'Cancelled'}
+                        </Text>
+                      ) : (
+                        <Text className="text-xs font-normal text-muted">
+                          {`· in ${days} days`}
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+                </View>
+              );
+            })}
+          </View>
+        </>
       ) : null}
     </ScrollView>
   );

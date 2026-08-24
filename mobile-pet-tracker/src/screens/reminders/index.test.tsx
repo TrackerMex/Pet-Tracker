@@ -263,10 +263,14 @@ describe('R6: lista con pills, badges y refetch on focus', () => {
       expect(screen.getByTestId('reminder-row-upcoming')).toBeVisible(),
     );
 
-    expect(screen.getByTestId('pill-active')).toHaveTextContent('2');
-    expect(screen.getByTestId('pill-week')).toHaveTextContent('1');
-    expect(screen.getByTestId('pill-week')).toHaveTextContent('This week');
-    expect(screen.getByTestId('pill-inactive')).toHaveTextContent('2');
+    expect(within(screen.getByTestId('pill-active')).getByText('2')).toBeVisible();
+    expect(within(screen.getByTestId('pill-week')).getByText('1')).toBeVisible();
+    expect(
+      within(screen.getByTestId('pill-week')).getByText('This week'),
+    ).toBeVisible();
+    expect(
+      within(screen.getByTestId('pill-inactive')).getByText('2'),
+    ).toBeVisible();
     expect(
       screen.getAllByTestId(/^reminder-row-/).map(({ props }) => props.testID),
     ).toEqual([
@@ -289,11 +293,13 @@ describe('R6: lista con pills, badges y refetch on focus', () => {
     );
     expect(screen.queryByTestId('reminder-upcoming-later')).toBeNull();
 
-    expect(screen.getByTestId('reminder-row-sent')).toHaveStyle({ opacity: 0.5 });
+    expect(screen.getByTestId('reminder-row-sent').props.className).toContain(
+      'opacity-50',
+    );
     expect(screen.getByTestId('reminder-status-sent')).toHaveTextContent('Sent');
-    expect(screen.getByTestId('reminder-row-cancelled')).toHaveStyle({
-      opacity: 0.5,
-    });
+    expect(
+      screen.getByTestId('reminder-row-cancelled').props.className,
+    ).toContain('opacity-50');
     expect(screen.getByTestId('reminder-status-cancelled')).toHaveTextContent(
       'Cancelled',
     );
@@ -307,8 +313,9 @@ describe('R6: lista con pills, badges y refetch on focus', () => {
     const focusCallback = mockUseFocusEffect.mock.calls.at(-1)?.[0];
     expect(focusCallback).toBeDefined();
 
-    act(() => {
+    await act(async () => {
       focusCallback?.();
+      await Promise.resolve();
     });
 
     await waitFor(() => expect(mockListReminders).toHaveBeenCalledTimes(2));
