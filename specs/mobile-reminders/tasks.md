@@ -59,9 +59,9 @@ tags: [harness, spec, mobile]
 
 ## R7 — Borrado con confirmación y degradación por kind
 
-- [ ] (1) Escribir test que falla para R7
-- [ ] (2) Implementación mínima que lo pasa
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R7
+- [x] (2) Implementación mínima que lo pasa
+- [x] (3) Refactor con tests verdes
 
 ## R8 — AddReminderScreen: formulario, chips y pickers nativos
 
