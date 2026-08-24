@@ -252,6 +252,19 @@ mezclarlos con el workspace pnpm de backend e infraestructura.
   usa porque no soporta React Native.
 - Los tests usan **jest-expo** y cada test que cubre una spec nombra su R-id,
   igual que las suites del backend.
+- **Estructura Expo oficial** (pedido del humano, 2026-08-25; skill
+  `expo:expo-project-structure`): desde la feature #39 toda pantalla nueva
+  sigue el patrón *route file delgado + screen body*:
+  - `src/app/…/<ruta>.tsx` contiene SOLO la ruta: lee params y renderiza
+    `<X />` desde `src/screens/<nombre>/index.tsx`.
+  - El cuerpo vive en `src/screens/<nombre>/` (kebab-case); sus
+    sub-componentes privados se colocan en esa misma carpeta, NO en
+    `src/components/` (ahí solo lo reutilizado entre pantallas).
+  - Helpers sueltos nuevos van en `src/utils/` con su test colocado al
+    lado (`format-date.ts` + `format-date.test.ts`); los tests de screens
+    nuevas se colocan junto al screen body.
+  - Las pantallas anteriores a #39 NO se migran en frío: se mueven a este
+    patrón solo cuando una feature las toque de fondo.
 - **Dimensiones de pantalla uniformes** (pedido del humano en el smoke de
   #38, 2026-08-25): toda pantalla nueva usa las mismas métricas de layout
   que `home.tsx` — `contentContainerStyle` con `paddingTop: insets.top + 12`,

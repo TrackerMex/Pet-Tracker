@@ -39,12 +39,12 @@ export function useApi<T extends { kind: string }>(
     setTick((value) => value + 1);
   }, []);
 
-  // Stale-while-revalidate: al cambiar fn o refetch se conserva el último
-  // valor resuelto (evita desmontar las cards) y se señala isRefreshing.
-  const isCurrent =
-    resolved !== undefined && resolved.fn === fn && resolved.tick === tick;
-  const data = fn === null ? undefined : resolved?.value;
-  const isRefreshing = fn !== null && resolved !== undefined && !isCurrent;
+  // Stale-while-revalidate solo aplica al refetch del mismo recurso. Un fn
+  // distinto debe cargar sin exponer datos resueltos para el recurso anterior.
+  const isSameFn = resolved !== undefined && resolved.fn === fn;
+  const isCurrent = isSameFn && resolved.tick === tick;
+  const data = fn !== null && isSameFn ? resolved.value : undefined;
+  const isRefreshing = fn !== null && isSameFn && !isCurrent;
 
   return { data, isRefreshing, refetch };
 }

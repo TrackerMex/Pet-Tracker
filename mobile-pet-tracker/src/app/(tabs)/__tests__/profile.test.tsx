@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import { Uniwind } from 'uniwind';
 
@@ -14,6 +15,10 @@ jest.mock('../../../api/health', () => ({
 
 jest.mock('../../../providers/auth-provider', () => ({
   useAuth: jest.fn(),
+}));
+
+jest.mock('expo-router', () => ({
+  router: { push: jest.fn(), back: jest.fn() },
 }));
 
 jest.mock('uniwind', () => ({
@@ -55,6 +60,7 @@ const apiUrl = 'http://example.test/v1';
 const mockFetchHealth = jest.mocked(fetchHealth);
 const mockUseAuth = jest.mocked(useAuth);
 const mockSignOut = jest.fn<Promise<void>, []>();
+const mockRouter = jest.mocked(router);
 const states: HealthState[] = [
   { kind: 'ok' },
   { kind: 'error' },
@@ -159,6 +165,33 @@ describe('R10: profile aloja health-check y theme toggle', () => {
       gap: 16,
       paddingTop: 52,
       paddingBottom: 120,
+    });
+  });
+});
+
+describe('R10: profile enlaza a reminders', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockTheme = 'light';
+    mockSignOut.mockResolvedValue();
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: mockSignOut,
+    } satisfies AuthContextValue);
+    mockFetchHealth.mockResolvedValue({ kind: 'ok' });
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+  });
+
+  it('opens the hidden reminders route', async () => {
+    await render(<ProfileScreen />, { wrapper: HeroUINativeProvider });
+
+    await fireEvent.press(screen.getByTestId('reminders-link'));
+
+    expect(screen.getByText('Reminders')).toBeVisible();
+    await waitFor(() => {
+      expect(mockRouter.push).toHaveBeenCalledWith('/reminders');
     });
   });
 });
