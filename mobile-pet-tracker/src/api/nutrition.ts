@@ -1,4 +1,4 @@
-import { getJson, readJson } from './http';
+import { getJson, postJson, readJson } from './http';
 import type { NutritionPlan, NutritionProfile } from './types';
 
 export type NutritionProfileState =
@@ -12,6 +12,15 @@ export type NutritionProfileState =
 export type NutritionPlanState =
   | { kind: 'ok'; plan: NutritionPlan }
   | { kind: 'not-found' }
+  | { kind: 'unauthorized' }
+  | { kind: 'error' }
+  | { kind: 'unreachable'; message: string }
+  | { kind: 'missing-config' };
+
+export type GeneratePlanState =
+  | { kind: 'ok'; plan: NutritionPlan }
+  | { kind: 'forbidden' }
+  | { kind: 'unprocessable'; code: string | null }
   | { kind: 'unauthorized' }
   | { kind: 'error' }
   | { kind: 'unreachable'; message: string }
@@ -81,6 +90,55 @@ export async function getNutritionPlan(
 
   if (result.response.status === 404) {
     return { kind: 'not-found' };
+  }
+
+  if (result.response.status === 401) {
+    return { kind: 'unauthorized' };
+  }
+
+  if (result.response.status !== 200) {
+    return { kind: 'error' };
+  }
+
+  const body = await readJson(result.response);
+  return isObjectBody(body)
+    ? { kind: 'ok', plan: body as unknown as NutritionPlan }
+    : { kind: 'error' };
+}
+
+export async function generateNutritionPlan(
+  baseUrl: string | undefined,
+  token: string,
+  petId: string,
+  fetchFn: typeof fetch = fetch,
+): Promise<GeneratePlanState> {
+  if (!baseUrl) {
+    return { kind: 'missing-config' };
+  }
+
+  const result = await postJson(
+    baseUrl,
+    `/pets/${petId}/nutrition-plan/generate`,
+    token,
+    {},
+    fetchFn,
+  );
+  if (result.kind === 'unreachable') {
+    return result;
+  }
+
+  if (result.response.status === 403) {
+    return { kind: 'forbidden' };
+  }
+
+  if (result.response.status === 422) {
+    const body = await readJson(result.response);
+    const value = isObjectBody(body) ? body.code : undefined;
+    const code =
+      value === 'NUTRITION_PROFILE_REQUIRED' || value === 'PET_WEIGHT_REQUIRED'
+        ? value
+        : null;
+    return { kind: 'unprocessable', code };
   }
 
   if (result.response.status === 401) {
