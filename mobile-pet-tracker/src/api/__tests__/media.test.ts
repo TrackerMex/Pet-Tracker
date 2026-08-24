@@ -1,4 +1,5 @@
 import {
+  listPetDocs,
   requestPhotoUploadUrl,
   uploadPhotoToUrl,
 } from '../media';
@@ -110,5 +111,64 @@ describe('R7: media photo upload API', () => {
     await expect(
       uploadPhotoToUrl('http://upload.test', body, 'image/jpeg', offline),
     ).resolves.toEqual({ kind: 'unreachable', message: 'network down' });
+  });
+});
+
+describe('R8: listPetDocs consume el contrato de media-docs-api', () => {
+  const docs = [
+    {
+      id: 'doc-1',
+      type: 'Vacunación',
+      name: 'Antirrábica',
+      date: '2026-07-12',
+    },
+  ];
+
+  it('gets the ordered media list with the bearer token', async () => {
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValue(response(200, docs)) as unknown as typeof fetch;
+
+    await expect(
+      listPetDocs(baseUrl, 'jwt-token', 'pet-1', fetchFn),
+    ).resolves.toEqual({ kind: 'ok', docs });
+    expect(fetchFn).toHaveBeenCalledWith(
+      'http://example.test/v1/pets/pet-1/media',
+      { headers: { Authorization: 'Bearer jwt-token' } },
+    );
+  });
+
+  it.each([
+    [401, { kind: 'unauthorized' }],
+    [403, { kind: 'forbidden' }],
+    [404, { kind: 'not-found' }],
+    [500, { kind: 'error' }],
+  ])('maps docs status %s', async (status, expected) => {
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValue(response(status, {})) as unknown as typeof fetch;
+
+    await expect(
+      listPetDocs(baseUrl, 'jwt-token', 'pet-1', fetchFn),
+    ).resolves.toEqual(expected);
+  });
+
+  it('rejects malformed collections and maps missing config or network', async () => {
+    const malformed = jest
+      .fn()
+      .mockResolvedValue(response(200, [{ id: 'doc-1', name: null }])) as unknown as typeof fetch;
+    const offline = jest
+      .fn()
+      .mockRejectedValue(new Error('offline')) as unknown as typeof fetch;
+
+    await expect(
+      listPetDocs(baseUrl, 'jwt-token', 'pet-1', malformed),
+    ).resolves.toEqual({ kind: 'error' });
+    await expect(
+      listPetDocs(undefined, 'jwt-token', 'pet-1', malformed),
+    ).resolves.toEqual({ kind: 'missing-config' });
+    await expect(
+      listPetDocs(baseUrl, 'jwt-token', 'pet-1', offline),
+    ).resolves.toEqual({ kind: 'unreachable', message: 'offline' });
   });
 });

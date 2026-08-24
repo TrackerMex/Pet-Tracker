@@ -457,3 +457,29 @@ describe('R7: cambiar foto', () => {
     expect(mockUploadPhotoToUrl).not.toHaveBeenCalled();
   });
 });
+
+describe('R8: navegación a docs', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockGetMe.mockReturnValue(pending<MeState>());
+    const pet = makePet();
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+  });
+
+  it('opens the active pet document route', async () => {
+    await renderProfile();
+    await waitFor(() => expect(screen.getByTestId('documents-link')).toBeVisible());
+
+    fireEvent.press(screen.getByTestId('documents-link'));
+
+    expect(mockRouter.push).toHaveBeenCalledWith('/pets/pet-1/docs');
+  });
+});
