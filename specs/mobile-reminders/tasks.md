@@ -35,9 +35,9 @@ tags: [harness, spec, mobile]
 
 ## R3 — deleteReminder + deleteJson en http.ts
 
-- [ ] (1) Escribir test que falla para R3
-- [ ] (2) Implementación mínima que lo pasa
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R3
+- [x] (2) Implementación mínima que lo pasa
+- [x] (3) Refactor con tests verdes
 
 ## R4 — combineDateAndTime / daysUntil en src/utils/reminder-dates.ts
 
