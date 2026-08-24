@@ -9,7 +9,6 @@ import {
 import { router, useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
-import { Alert } from 'react-native';
 
 import { listPets } from '../../api/pets';
 import {
@@ -35,6 +34,50 @@ jest.mock('../../api/reminders', () => ({
 jest.mock('../../providers/auth-provider', () => ({
   useAuth: jest.fn(),
 }));
+
+jest.mock('../../theme/use-theme-colors', () => ({
+  useThemeColors: (tokens: string[]) => tokens,
+}));
+
+jest.mock('@expo/ui', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const {
+    Pressable,
+    Text,
+    View,
+  } = jest.requireActual<typeof import('react-native')>('react-native');
+
+  return {
+    BottomSheet: ({
+      children,
+      isPresented,
+      ...props
+    }: Record<string, unknown>) =>
+      isPresented
+        ? React.createElement(
+            View as unknown as React.ComponentType<Record<string, unknown>>,
+            { ...props, isPresented },
+            children as never,
+          )
+        : null,
+    Button: ({
+      children,
+      label,
+      ...props
+    }: Record<string, unknown>) =>
+      React.createElement(
+        Pressable,
+        props,
+        (children as never) ?? React.createElement(Text, null, label as string),
+      ),
+    Column: ({ children, ...props }: Record<string, unknown>) =>
+      React.createElement(View, props, children as never),
+    Host: ({ children, ...props }: Record<string, unknown>) =>
+      React.createElement(View, props, children as never),
+    Text: ({ children, ...props }: Record<string, unknown>) =>
+      React.createElement(Text, props, children as never),
+  };
+});
 
 jest.mock('expo-router', () => ({
   router: { push: jest.fn(), back: jest.fn() },
@@ -115,14 +158,27 @@ async function renderReminders() {
 
 async function confirmDelete(reminderId: string) {
   await fireEvent.press(screen.getByTestId(`reminder-delete-${reminderId}`));
-  expect(Alert.alert).toHaveBeenCalled();
-  const buttons = jest.mocked(Alert.alert).mock.calls.at(-1)?.[2];
-  const confirm = buttons?.find(({ text }) => text === 'Delete');
-  expect(confirm).toBeDefined();
-  await act(async () => {
-    confirm?.onPress?.();
-    await Promise.resolve();
-  });
+  const host = screen.getByTestId('reminders-delete-host');
+  const sheet = within(host).getByTestId('reminders-delete-sheet');
+
+  expect(sheet.props).toEqual(
+    expect.objectContaining({
+      isPresented: true,
+      onDismiss: expect.any(Function),
+      snapPoints: ['half'],
+    }),
+  );
+  expect(sheet.props.isOpen).toBeUndefined();
+  expect(sheet.props.onChange).toBeUndefined();
+  expect(screen.getByText('Delete reminder?')).toBeVisible();
+  expect(screen.getByTestId('reminders-delete-reference')).toHaveTextContent(
+    'Rabies booster',
+  );
+  expect(screen.getByTestId('reminders-delete-confirm').props.style).toEqual(
+    expect.objectContaining({ backgroundColor: 'danger' }),
+  );
+
+  await fireEvent.press(screen.getByTestId('reminders-delete-confirm'));
 }
 
 describe('R5: reminders monta con métricas y estados', () => {
@@ -352,11 +408,6 @@ describe('R7: borrar recordatorio con confirmación', () => {
       signOut: jest.fn(),
     } satisfies AuthContextValue);
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
-    jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
-  });
-
-  afterEach(() => {
-    jest.restoreAllMocks();
   });
 
   it('shows a delete action for reminders in every status', async () => {
@@ -376,6 +427,32 @@ describe('R7: borrar recordatorio con confirmación', () => {
     );
     expect(screen.getByTestId('reminder-delete-sent')).toBeVisible();
     expect(screen.getByTestId('reminder-delete-cancelled')).toBeVisible();
+  });
+
+  it('closes the confirmation sheet on cancel and native dismiss', async () => {
+    mockListReminders.mockResolvedValue({
+      kind: 'ok',
+      reminders: [makeReminder()],
+    });
+
+    await renderReminders();
+    await waitFor(() =>
+      expect(screen.getByTestId('reminder-delete-reminder-1')).toBeVisible(),
+    );
+    await fireEvent.press(screen.getByTestId('reminder-delete-reminder-1'));
+
+    await fireEvent(
+      screen.getByTestId('reminders-delete-sheet'),
+      'onDismiss',
+    );
+    expect(screen.queryByTestId('reminders-delete-sheet')).toBeNull();
+    expect(mockDeleteReminder).not.toHaveBeenCalled();
+
+    await fireEvent.press(screen.getByTestId('reminder-delete-reminder-1'));
+    await fireEvent.press(screen.getByTestId('reminders-delete-cancel'));
+
+    expect(screen.queryByTestId('reminders-delete-sheet')).toBeNull();
+    expect(mockDeleteReminder).not.toHaveBeenCalled();
   });
 
   it.each([
