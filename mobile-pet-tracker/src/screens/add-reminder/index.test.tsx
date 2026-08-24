@@ -8,7 +8,11 @@ import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import { useEffect } from 'react';
 
-import { createReminder } from '../../api/reminders';
+import {
+  createReminder,
+  type CreateReminderState,
+} from '../../api/reminders';
+import type { Reminder } from '../../api/types';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import {
   SelectedPetProvider,
@@ -83,6 +87,29 @@ async function renderAddReminder(selected = true) {
       </SelectedPetProvider>
     </HeroUINativeProvider>,
   );
+}
+
+async function pickDate(date: Date) {
+  await fireEvent.press(screen.getByTestId('date-field'));
+  await fireEvent(
+    screen.getByTestId('date-picker'),
+    'onChange',
+    { type: 'set' },
+    date,
+  );
+}
+
+function makeReminder(overrides: Partial<Reminder> = {}): Reminder {
+  return {
+    id: 'reminder-1',
+    petId: 'pet-1',
+    type: 'vaccine',
+    title: 'Annual vaccine',
+    dueAt: '2026-08-25T09:00:00.000Z',
+    advanceMinutes: 10080,
+    status: 'scheduled',
+    ...overrides,
+  };
 }
 
 describe('R8: formulario de alta con chips y pickers', () => {
@@ -202,5 +229,143 @@ describe('R8: formulario de alta con chips y pickers', () => {
       screen.getByTestId('advance-chip-1440').props.accessibilityState,
     ).toEqual({ selected: true });
     expect(screen.getByTestId('add-reminder-submit')).toBeVisible();
+  });
+});
+
+describe('R9: guardar con validación y degradación por kind', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date(2026, 7, 24, 10, 0));
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('requires a non-blank title without calling the API', async () => {
+    mockCreateReminder.mockResolvedValue({ kind: 'error' });
+    await renderAddReminder();
+    await waitFor(() => expect(screen.getByTestId('title-input')).toBeVisible());
+
+    await fireEvent.changeText(screen.getByTestId('title-input'), '   ');
+    await fireEvent.press(screen.getByTestId('add-reminder-submit'));
+
+    expect(screen.getByTestId('add-reminder-error')).toHaveTextContent(
+      'Title is required',
+    );
+    expect(mockCreateReminder).not.toHaveBeenCalled();
+  });
+
+  it('requires a selected date without calling the API', async () => {
+    mockCreateReminder.mockResolvedValue({ kind: 'error' });
+    await renderAddReminder();
+    await waitFor(() => expect(screen.getByTestId('title-input')).toBeVisible());
+
+    await fireEvent.changeText(screen.getByTestId('title-input'), 'Rabies');
+    await fireEvent.press(screen.getByTestId('add-reminder-submit'));
+
+    expect(screen.getByTestId('add-reminder-error')).toHaveTextContent(
+      'Pick a date',
+    );
+    expect(mockCreateReminder).not.toHaveBeenCalled();
+  });
+
+  it('rejects a combined date-time that is not in the future', async () => {
+    mockCreateReminder.mockResolvedValue({ kind: 'error' });
+    await renderAddReminder();
+    await waitFor(() => expect(screen.getByTestId('title-input')).toBeVisible());
+
+    await fireEvent.changeText(screen.getByTestId('title-input'), 'Rabies');
+    await pickDate(new Date(2026, 7, 24, 12, 0));
+    await fireEvent.press(screen.getByTestId('add-reminder-submit'));
+
+    expect(screen.getByTestId('add-reminder-error')).toHaveTextContent(
+      'Date must be in the future',
+    );
+    expect(mockCreateReminder).not.toHaveBeenCalled();
+  });
+
+  it('posts the exact trimmed input and navigates back on success', async () => {
+    mockCreateReminder.mockResolvedValue({
+      kind: 'ok',
+      reminder: makeReminder({
+        type: 'appointment',
+        advanceMinutes: 1440,
+      }),
+    });
+    await renderAddReminder();
+    await waitFor(() => expect(screen.getByTestId('title-input')).toBeVisible());
+
+    await fireEvent.press(screen.getByTestId('type-chip-appointment'));
+    await fireEvent.changeText(
+      screen.getByTestId('title-input'),
+      '  Annual vaccine  ',
+    );
+    await pickDate(new Date(2026, 7, 25, 12, 0));
+    await fireEvent.press(screen.getByTestId('advance-chip-1440'));
+    await fireEvent.press(screen.getByTestId('add-reminder-submit'));
+
+    await waitFor(() =>
+      expect(mockCreateReminder).toHaveBeenCalledWith(
+        'http://example.test/v1',
+        'jwt-token',
+        'pet-1',
+        {
+          type: 'appointment',
+          title: 'Annual vaccine',
+          dueAt: new Date(2026, 7, 25, 9, 0).toISOString(),
+          advanceMinutes: 1440,
+        },
+      ),
+    );
+    expect(mockRouter.back).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    [{ kind: 'forbidden' }, 'Only the owner can create reminders'],
+    [{ kind: 'invalid' }, 'Date must be in the future'],
+    [{ kind: 'unreachable', message: 'offline' }, 'Cannot reach server'],
+    [{ kind: 'error' }, 'Something went wrong'],
+    [{ kind: 'missing-config' }, 'Something went wrong'],
+  ] as [CreateReminderState, string][])(
+    'shows the form error for $state.kind',
+    async (createState, message) => {
+      mockCreateReminder.mockResolvedValue(createState);
+      await renderAddReminder();
+      await waitFor(() => expect(screen.getByTestId('title-input')).toBeVisible());
+
+      await fireEvent.changeText(screen.getByTestId('title-input'), 'Rabies');
+      await pickDate(new Date(2026, 7, 25, 12, 0));
+      await fireEvent.press(screen.getByTestId('add-reminder-submit'));
+
+      await waitFor(() =>
+        expect(screen.getByTestId('add-reminder-error')).toHaveTextContent(
+          message,
+        ),
+      );
+      expect(mockRouter.back).not.toHaveBeenCalled();
+    },
+  );
+
+  it('disables submit while the request is pending', async () => {
+    mockCreateReminder.mockReturnValue(pending<CreateReminderState>());
+    await renderAddReminder();
+    await waitFor(() => expect(screen.getByTestId('title-input')).toBeVisible());
+
+    await fireEvent.changeText(screen.getByTestId('title-input'), 'Rabies');
+    await pickDate(new Date(2026, 7, 25, 12, 0));
+    await fireEvent.press(screen.getByTestId('add-reminder-submit'));
+
+    expect(
+      screen.getByTestId('add-reminder-submit').props.accessibilityState,
+    ).toEqual(expect.objectContaining({ disabled: true }));
   });
 });
