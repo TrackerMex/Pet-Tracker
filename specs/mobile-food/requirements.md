@@ -297,7 +297,7 @@ Todo lo demás (R1–R8) sigue TDD estricto con test rojo primero.
   9. Tab bar flotante visible sin tapar contenido (scroll con padding
      inferior) en Food y MealSchedule.
 
-  - [ ] Smoke ejecutado por el humano (fecha: ____)
+  - [X] Smoke ejecutado por el humano (fecha: 2026-08-24)
 
 ## Fuera de alcance
 
