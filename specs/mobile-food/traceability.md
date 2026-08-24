@@ -17,8 +17,8 @@ tags: [harness, spec, mobile]
 | R7 | `src/app/(tabs)/__tests__/meal-schedule.test.tsx::R7: meal schedule muestra horarios y perfil` | `fc8a951 feat(mobile-food): add meal schedule details (R7)` |
 | R8 | `src/app/(tabs)/__tests__/meal-schedule.test.tsx::R8: generar plan con degradación por kind` | `e92e3b5 feat(mobile-food): add plan generation flow (R8)` |
 | R9 | `bun run typecheck`; `bun run lint` | `1bd1753 fix(mobile-food): satisfy mobile quality gates (R9)` |
-| R10 | `bun run test`; `./init.sh`; checks de contención de rutas, dependencias e imports | pendiente |
-| R11 | `requirements.md::R11 smoke humano en Expo Go (reservado al humano)` | pendiente |
+| R10 | `bun run test`; `./init.sh`; checks de contención de rutas, dependencias e imports | `19e7ef2 test(mobile-food): verify full integration (R10)` |
+| R11 | `requirements.md::R11 smoke humano en Expo Go (reservado al humano)` | N/A — fuera del alcance del implementer; no ejecutado |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
 Convención de commit: `feat(mobile-food): <desc> (R1,R2)`.
