@@ -65,7 +65,7 @@ describe('R4: useApi ejecuta, refetch y expulsa 401', () => {
     expect(fn).toHaveBeenCalledTimes(2);
   });
 
-  it('keeps the previous data while a new fn identity is loading', async () => {
+  it('clears previous data while a new fn identity is loading', async () => {
     type SwapResult = { kind: 'ok'; value: string };
     type SwapProps = { fn: () => Promise<SwapResult> };
     const newRequest = deferred<SwapResult>();
@@ -81,8 +81,8 @@ describe('R4: useApi ejecuta, refetch y expulsa 401', () => {
     await waitFor(() => expect(result.current.data).toEqual({ kind: 'ok', value: 'pet-1' }));
 
     await rerender({ fn: newFn });
-    expect(result.current.data).toEqual({ kind: 'ok', value: 'pet-1' });
-    expect(result.current.isRefreshing).toBe(true);
+    expect(result.current.data).toBeUndefined();
+    expect(result.current.isRefreshing).toBe(false);
 
     await act(async () => newRequest.resolve({ kind: 'ok', value: 'pet-2' }));
     await waitFor(() => expect(result.current.data).toEqual({ kind: 'ok', value: 'pet-2' }));

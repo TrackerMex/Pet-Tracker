@@ -1,6 +1,7 @@
+import type { Href } from 'expo-router';
 import { Button, Chip } from 'heroui-native';
 import { useEffect, useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Moon, Sun } from 'reicon-react-native';
 import { Uniwind, useUniwind } from 'uniwind';
@@ -16,6 +17,13 @@ const stateClassNames: Record<HealthState['kind'], string> = {
   unreachable: 'bg-danger-soft text-danger',
   'missing-config': 'bg-danger-soft text-danger',
 };
+
+function openReminders() {
+  // Keep Expo Router lazy so the generic route smoke test can render in Jest.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { router } = require('expo-router') as typeof import('expo-router');
+  router.push('/reminders' as Href);
+}
 
 export default function ProfileScreen() {
   const apiUrl = process.env.EXPO_PUBLIC_API_URL;
@@ -89,6 +97,16 @@ export default function ProfileScreen() {
           </Button>
         </View>
       </Card>
+
+      <Pressable
+        accessibilityRole="button"
+        testID="reminders-link"
+        className="flex-row items-center justify-between rounded-xl bg-default px-3 py-2"
+        onPress={() => void openReminders()}
+      >
+        <Text className="font-semibold text-foreground">Reminders</Text>
+        <Text className="text-lg font-semibold text-muted">›</Text>
+      </Pressable>
 
       <Button
         testID="profile-sign-out"

@@ -1822,3 +1822,24 @@ Notas de la sesión que no están en la spec:
 - Reviewer aprobó (53d4dd7). #48 → done. PR #72 abierto para merge humano
   (branch conserva el nombre feature/47-mobile-design-drift previo a la
   renumeración).
+
+## 2026-08-25 — Feature #39 mobile-reminders (cerrada)
+
+- Primera feature bajo estructura Expo oficial (src/screens/) y las
+  convenciones de dimensiones. Spec rehecha tras gate humano: backend
+  aparte (#47 reminders-api), entrada por Profile, picker nativo.
+- Codex implementó R1–R11 (33 commits TDD); reviewer aprobó. Reworks
+  post-review: swap picker a @expo/ui (gate cruzado con sesión paralela),
+  fix raíz stale-data en use-api al cambiar de pet (hallazgo smoke,
+  diagnóstico de la sesión Frontend app), BottomSheet de borrado (Alert →
+  @expo/ui) con fix de crash: el root de @expo/ui no corre en Expo Go
+  Android; se migró a @expo/ui/community/bottom-sheet.
+- Merge de #72 (design-drift) con adaptación: Card compartido y text-2xs
+  en las pantallas nuevas; conflicto de imports en profile.tsx resuelto
+  por el leader (fallback trivial documentado).
+- Smoke humano R12 completo en 4 iteraciones (`21e1119`); delta review
+  final aprobado. Suite: 38 suites/447 tests. #39 → done.
+- Lecciones: @expo/ui root exige dev build (community/* para Expo Go);
+  @gorhom/bottom-sheet es peer de heroui/@expo/ui community, no removible.
+- Pendiente humano: merge del PR de #39 (post #72; #73 de la otra sesión
+  sigue abierto y no conflicta).
