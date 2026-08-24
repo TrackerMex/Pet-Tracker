@@ -1,7 +1,7 @@
 import { Redirect, router } from 'expo-router';
 import {
   Button,
-  Card,
+  Card as HeroUICard,
   Input,
   Label,
   Spinner,
@@ -17,6 +17,7 @@ import {
   listWeights,
   type WeightsState,
 } from '../../api/health-records';
+import { Card } from '../../components/card';
 import { WeightChart } from '../../components/weight-chart';
 import { useApi } from '../../hooks/use-api';
 import { useAuth } from '../../providers/auth-provider';
@@ -138,7 +139,7 @@ function WeightLogContent({ petId }: { petId: string }) {
       ) : null}
 
       {weights.data?.kind === 'ok' ? (
-        <Card className="gap-4 rounded-[20px] border border-border bg-surface p-4 shadow-sm">
+        <Card className="gap-4">
           <TextField>
             <Label className="text-[10px] font-semibold text-foreground">
               Weight
@@ -234,7 +235,7 @@ function WeightLogContent({ petId }: { petId: string }) {
                   : 'text-success';
 
             return (
-              <Card
+              <HeroUICard
                 key={entry.id}
                 testID={`weight-row-${entry.id}`}
                 className="flex-row items-center gap-3 rounded-xl border border-border bg-surface px-3.5 py-3 shadow-sm"
@@ -270,7 +271,7 @@ function WeightLogContent({ petId }: { petId: string }) {
                 <Text className="shrink-0 text-xs font-normal text-muted">
                   {entry.measuredAt}
                 </Text>
-              </Card>
+              </HeroUICard>
             );
           })
         : null}
