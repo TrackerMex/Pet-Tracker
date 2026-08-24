@@ -16,8 +16,10 @@
 - Plan: handoff a Codex CLI (implementa Tab Food + MealSchedule con TDD
   por R-id, R1–R11) → humano confirma fin → reviewer → smoke humano con
   Expo Go → cierre.
-- Estado: prompt de handoff entregado al humano; esperando que Codex
-  termine. Mientras tanto no se toca `mobile-pet-tracker/` desde aquí.
+- Estado: R1–R10 implementados, verificados y trazados. Suite móvil completa:
+  31 suites / 356 tests; typecheck y lint verdes; `./init.sh` exit 0 (e2e
+  omitidos porque LocalStack no respondía en 4566). R11 queda reservado al
+  smoke humano en Expo Go; después corresponde reviewer y cierre.
 
 Notas de contexto:
 - PR #68 (feature #46) y PR #69 (review final + harness fix: quitar cap

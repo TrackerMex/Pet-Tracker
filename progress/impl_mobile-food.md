@@ -3,8 +3,8 @@
 - Fecha: 2026-08-24
 - Branch: `feature/38-mobile-food`
 - Alcance de Codex: R1–R10
-- Estado: R1–R9 implementados y verificados; R10 en verificación final y
-  R11 reservado al smoke humano con Expo Go en Android físico.
+- Estado: R1–R10 implementados y verificados; R11 queda reservado al smoke
+  humano con Expo Go en Android físico.
 
 ## Resultado
 
@@ -45,7 +45,28 @@ una suite existente fue quitar el import y la fila de Food de
 
 ## Verificación R10
 
-En curso: suite móvil completa, `./init.sh` y comprobaciones de contención.
+- `bun run test`: exit 0; 31 suites y 356 tests verdes.
+- `./init.sh`: exit 0.
+  - backend: 143 suites, 1111 tests;
+  - infraestructura: 2 suites, 14 tests;
+  - harness env drift: 11 suites, 28 tests;
+  - móvil: 31 suites, 356 tests;
+  - build, lint y typecheck: verdes.
+- E2E: omitidos por el harness porque LocalStack no respondía en el puerto
+  4566; mobile-food no requiere AWS y no se levantaron recursos reales.
+- Contención contra `origin/main`: diff vacío en `backend-pet-tracker/`,
+  `infra/`, `init.config.sh` y `.github/workflows/ci.yml`. La rama local
+  `main` estaba seis commits detrás de `origin/main`; el cambio que mostraba
+  en `init.config.sh` pertenece al PR #69 ya integrado, no a esta feature.
+- `package.json` y `bun.lock` móviles no tienen diff contra `origin/main`; no
+  se añadieron dependencias.
+- El grep de `expo-secure-store` e imports de React bajo `src/api/` no devolvió
+  resultados. Los guards de `StyleSheet.create` y colores hex tampoco
+  devolvieron resultados en las dos pantallas nuevas.
+- `Generate plan` aparece únicamente en `meal-schedule.tsx`; el diff de
+  `screens.test.tsx` contiene solo la eliminación del import y la fila Food
+  permitida por la excepción C4.
+- `git diff --check origin/main...HEAD`: sin errores.
 
 ## Pendiente humano
 
