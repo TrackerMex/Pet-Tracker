@@ -1,12 +1,13 @@
 import { router, type Href } from 'expo-router';
-import { Button, Card, Skeleton, Spinner } from 'heroui-native';
+import { Button, Card as HeroUICard, Skeleton, Spinner } from 'heroui-native';
 import { useCallback, useEffect, useMemo } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronRight, Clock, ForkKnife, Sparkles } from 'reicon-react-native';
 
 import { getNutritionPlan } from '../../api/nutrition';
 import { listPets, type PetsState } from '../../api/pets';
+import { Card } from '../../components/card';
 import { PetSwitcher } from '../../components/pet-switcher';
 import { useApi } from '../../hooks/use-api';
 import { useAuth } from '../../providers/auth-provider';
@@ -116,16 +117,16 @@ export default function FoodScreen() {
         <View className="gap-4">
           <Skeleton
             testID="food-plan-skeleton"
-            className="h-32 w-full rounded-[20px]"
+            className="h-32 w-full rounded-card"
           />
           <Skeleton
             testID="food-meals-skeleton"
-            className="h-56 w-full rounded-[20px]"
+            className="h-56 w-full rounded-card"
           />
           {waitingForPetSelection ? (
             <Skeleton
               testID="food-schedule-skeleton"
-              className="h-20 w-full rounded-[20px]"
+              className="h-20 w-full rounded-card"
             />
           ) : null}
         </View>
@@ -137,7 +138,8 @@ export default function FoodScreen() {
             <>
               <Card
                 testID="food-plan-card"
-                className="gap-4 rounded-[20px] bg-accent p-5 shadow-sm"
+                variant="accent"
+                className="gap-4"
               >
                 <View className="flex-row items-center justify-between gap-4">
                   <View className="flex-1 gap-1">
@@ -165,7 +167,7 @@ export default function FoodScreen() {
 
               <Card
                 testID="food-meals-section"
-                className="gap-3 rounded-[20px] border border-border bg-surface p-4 shadow-sm"
+                className="gap-3"
               >
                 <View className="flex-row items-center justify-between gap-3">
                   <Text className="font-bold text-foreground">Meals today</Text>
@@ -226,7 +228,7 @@ export default function FoodScreen() {
               {loadedPlan.warnings.length > 0 ? (
                 <View className="gap-2">
                   {loadedPlan.warnings.map((warning) => (
-                    <Card
+                    <HeroUICard
                       key={warning.code}
                       className="rounded-2xl border border-border bg-default p-4"
                     >
@@ -236,7 +238,7 @@ export default function FoodScreen() {
                       >
                         {warning.message}
                       </Text>
-                    </Card>
+                    </HeroUICard>
                   ))}
                 </View>
               ) : null}
@@ -244,7 +246,8 @@ export default function FoodScreen() {
               {loadedPlan.aiExplanation !== null ? (
                 <Card
                   testID="food-ai-card"
-                  className="gap-3 rounded-[20px] border border-border bg-surface-secondary p-4"
+                  variant="secondary"
+                  className="gap-3"
                 >
                   <View className="flex-row items-center gap-2">
                     <Sparkles size={18} color={accent} />
@@ -279,10 +282,9 @@ export default function FoodScreen() {
             </View>
           ) : null}
 
-          <Pressable
-            accessibilityRole="button"
+          <Card
             testID="meal-schedule-link"
-            className="flex-row items-center justify-between rounded-[20px] border border-border bg-surface p-4 shadow-sm"
+            className="flex-row items-center justify-between"
             onPress={() => router.push('/meal-schedule' as Href)}
           >
             <View className="gap-1">
@@ -292,7 +294,7 @@ export default function FoodScreen() {
               </Text>
             </View>
             <ChevronRight size={20} color={foreground} />
-          </Pressable>
+          </Card>
         </View>
       ) : null}
     </ScrollView>
