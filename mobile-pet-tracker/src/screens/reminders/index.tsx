@@ -1,11 +1,15 @@
 import { router, type Href, useFocusEffect } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
-import { useCallback, useEffect, useMemo } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Alert, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { listPets } from '../../api/pets';
-import { listReminders, type RemindersState } from '../../api/reminders';
+import {
+  deleteReminder,
+  listReminders,
+  type RemindersState,
+} from '../../api/reminders';
 import { PetSwitcher } from '../../components/pet-switcher';
 import { useApi } from '../../hooks/use-api';
 import { useAuth } from '../../providers/auth-provider';
@@ -21,7 +25,7 @@ function isRemindersError(state: RemindersState): boolean {
 
 export function RemindersScreen() {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
-  const { token } = useAuth();
+  const { signOut, token } = useAuth();
   const { selectedPetId, selectPet } = useSelectedPet();
   const insets = useSafeAreaInsets();
   const petsFn = useCallback(
@@ -37,6 +41,8 @@ export function RemindersScreen() {
     [baseUrl, selectedPetId, token],
   );
   const reminders = useApi(remindersFn);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -51,6 +57,62 @@ export function RemindersScreen() {
     );
     if (!selectionExists) selectPet(pets.data.pets[0].id);
   }, [pets.data, selectPet, selectedPetId]);
+
+  const handleDelete = useCallback(
+    async (reminderId: string) => {
+      if (!selectedPetId) return;
+      setDeletingId(reminderId);
+      setActionError(null);
+
+      try {
+        const result = await deleteReminder(
+          baseUrl,
+          token ?? '',
+          selectedPetId,
+          reminderId,
+        );
+
+        switch (result.kind) {
+          case 'ok':
+          case 'not-found':
+            reminders.refetch();
+            return;
+          case 'forbidden':
+            setActionError('Only the owner can delete');
+            return;
+          case 'unreachable':
+            setActionError('Cannot reach server');
+            return;
+          case 'unauthorized':
+            await signOut();
+            return;
+          case 'error':
+          case 'missing-config':
+            setActionError('Something went wrong');
+        }
+      } catch {
+        setActionError('Something went wrong');
+      } finally {
+        setDeletingId(null);
+      }
+    }, [baseUrl, reminders, selectedPetId, signOut, token],
+  );
+
+  const confirmDelete = useCallback(
+    (reminderId: string) => {
+      Alert.alert('Delete reminder?', 'This action cannot be undone.', [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            void handleDelete(reminderId);
+          },
+        },
+      ]);
+    },
+    [handleDelete],
+  );
 
   return (
     <ScrollView
@@ -112,6 +174,12 @@ export function RemindersScreen() {
       reminders.data.reminders.length === 0 ? (
         <Text testID="reminders-empty" className="font-normal text-muted">
           No reminders yet
+        </Text>
+      ) : null}
+
+      {actionError ? (
+        <Text testID="reminders-action-error" className="text-danger">
+          {actionError}
         </Text>
       ) : null}
 
@@ -218,6 +286,18 @@ export function RemindersScreen() {
                       )}
                     </View>
                   </View>
+                  <Button
+                    testID={`reminder-delete-${reminder.id}`}
+                    className="rounded-xl bg-danger-soft"
+                    isDisabled={deletingId === reminder.id}
+                    size="sm"
+                    variant="danger-soft"
+                    onPress={() => confirmDelete(reminder.id)}
+                  >
+                    <Button.Label className="font-semibold text-danger">
+                      Delete
+                    </Button.Label>
+                  </Button>
                 </View>
               );
             })}
