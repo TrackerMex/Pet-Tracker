@@ -31,3 +31,4 @@ al aprobar (ver [[../../docs/specs|specs]] y [[../../CHECKPOINTS|CHECKPOINTS]] C
 |---|---|---|---|
 | Safe area superior en Food y MealSchedule | R4, R7 | `8011711 test(mobile-food): define safe area fix in red (R4,R7)` | `9caafca fix(mobile-food): respect top safe area (R4,R7)` |
 | Skeletons dimensionados sin salto de layout | R4, R5, R7 | `43389aa test(mobile-food): define stable loading skeletons in red (R5,R7)` | `8f77e76 fix(mobile-food): stabilize loading layouts (R4,R5,R7)` |
+| Selector compartido con Avatar en Home, Health y Food | R11 (hallazgo smoke) | `b746530 test(mobile-food): define avatar pet switcher in red (R11)` | `602870e fix(mobile-food): share avatar pet switcher (R11)` |

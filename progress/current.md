@@ -28,6 +28,10 @@
   skeletons de carga en Food/MealSchedule. Ambos ciclos rojo→verde están
   implementados y trazados; suite móvil, typecheck y lint verdes. La repetición
   del smoke en Expo Go queda pendiente.
+- Fix 2 del smoke R11 aplicado según
+  `progress/handoff_mobile-food_fix2.md`: `PetSwitcher` compartido con Avatar
+  en Home, Health y Food (`b746530` rojo → `602870e` verde); 32 suites / 357
+  tests móviles, typecheck y lint verdes. Falta repetir el smoke en Expo Go.
 
 Notas de contexto:
 - PR #68 (feature #46) y PR #69 (review final + harness fix: quitar cap

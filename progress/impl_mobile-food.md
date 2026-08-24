@@ -99,6 +99,33 @@ R11 y la feature permanecen `in_progress` hasta esa validación.
 - `bun run typecheck`: exit 0.
 - `bun run lint`: exit 0.
 
+### Fix 2 — selector de pets con Avatar
+
+El segundo hallazgo del smoke fue que Home, Health y Food repetían chips de
+solo texto para cambiar de mascota. Se extrajo `src/components/pet-switcher.tsx`:
+una fila horizontal scrolleable que usa `Avatar` de HeroUI Native, muestra
+`photoUrl` cuando existe, usa la inicial del nombre como fallback y conserva el
+nombre al lado. La selección se distingue con `border-accent` y
+`bg-accent-soft`, sin colores hardcodeados.
+
+El componente conserva sin cambios `pet-chip-<id>`,
+`accessibilityRole="button"` y `accessibilityState={{ selected }}`. Home,
+Health y Food mantienen su auto-selección del primer pet y delegan solo el
+render y el callback de selección. No se modificaron sus suites existentes.
+
+- TDD: `b746530` rojo (`PetSwitcher` aún inexistente) → `602870e` verde.
+- Suite nueva:
+  `src/components/__tests__/pet-switcher.test.tsx::R11: pet switcher usa Avatar para cambiar de mascota`.
+- Suites focalizadas: 4 suites / 61 tests verdes (componente, Home, Health y
+  Food).
+- `bun run test`: exit 0; 32 suites y 357 tests verdes.
+- `bun run typecheck`: exit 0.
+- `bun run lint`: exit 0.
+- Cero dependencias nuevas y cero cambios en `_layout.tsx`,
+  `floating-tab-bar.tsx`, `backend-pet-tracker/`, `infra/` o `src/api/`.
+- R11 y la feature permanecen `in_progress` hasta repetir el smoke humano en
+  Expo Go.
+
 ## Estado del worktree
 
 Los archivos locales preexistentes no relacionados bajo `.agents/`,
