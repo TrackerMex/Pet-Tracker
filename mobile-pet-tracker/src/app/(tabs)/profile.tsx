@@ -1,10 +1,11 @@
-import { Button, Card, Chip } from 'heroui-native';
+import { Button, Chip } from 'heroui-native';
 import { useEffect, useState } from 'react';
 import { Text, View } from 'react-native';
 import { Moon, Sun } from 'reicon-react-native';
 import { Uniwind, useUniwind } from 'uniwind';
 
 import { fetchHealth, type HealthState } from '../../api/health';
+import { Card } from '../../components/card';
 import { useAuth } from '../../providers/auth-provider';
 import { useThemeColors } from '../../theme/use-theme-colors';
 
@@ -30,7 +31,7 @@ export default function ProfileScreen() {
     <View testID="screen-profile" className="flex-1 gap-4 bg-background p-6">
       <Text className="text-2xl font-black text-foreground">Profile</Text>
 
-      <Card className="overflow-hidden rounded-[20px] border border-border bg-surface p-4 shadow-sm">
+      <Card className="overflow-hidden">
         <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
           App
         </Text>
