@@ -27,3 +27,13 @@
 - Rework R8 completado: rojo `8042a80`, verde `02f02ae`, trazabilidad
   `254dda2`; suite móvil 36/36 y 424/424, bundle Android Expo correcto y
   `./init.sh` exit 0. R12 continúa reservado al smoke humano en Expo Go.
+- Rework pre-R12 iniciado por hallazgo del smoke humano: al cambiar de mascota,
+  `useApi` expone el valor resuelto para el `fn` anterior. Plan: regresión TDD
+  en el hook → fix raíz que distingue cambio de `fn` de refetch por `tick` →
+  trazabilidad/progreso R12 → suite móvil completa y `./init.sh`.
+- Fix raíz completado: rojo `6a2aa9b` (1 fallo, 5 tests verdes), verde
+  `19aa304` (6/6), sin cambio de API pública ni de pantallas. La suite completa
+  destapó una única expectativa antigua en Home; se corrigió en `f11a32c` con
+  la excepción C4 en el cuerpo del commit. Móvil: 36/36 suites y 424/424 tests;
+  typecheck y lint: exit 0; `./init.sh`: exit 0 y mensaje `Todo verde`.
+  Pendiente únicamente: re-smoke humano R12 sobre el fix.

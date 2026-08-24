@@ -116,3 +116,35 @@ Verificación final:
 
 R12 sigue pendiente del smoke del humano en un dispositivo físico con Expo
 Go; no se cambia el estado `in_progress` ni se ejecuta el cierre de feature.
+
+## R12 — hallazgo del smoke humano y rework pre-cierre
+
+El smoke humano de 2026-08-24 llegó al paso 8 y detectó que, al cambiar de
+mascota, `Reminders` mantenía visibles los recordatorios de la mascota anterior
+mientras cargaba la nueva selección. La causa estaba en el hook compartido
+`src/hooks/use-api.ts`: el stale-while-revalidate devolvía `resolved.value` sin
+comprobar que `resolved.fn` correspondiera al `fn` actual. Por tanto, el defecto
+también estaba latente en Home, Food, Health y cualquier otro consumidor del
+hook.
+
+- Rojo `6a2aa9b`: el test del hook cambió el contrato del swap de `fn` y falló
+  1/6 porque recibió todavía `{ kind: 'ok', value: 'pet-1' }`. El test vecino
+  siguió cubriendo que un `refetch()` por `tick` con el mismo `fn` conserva el
+  valor stale y marca `isRefreshing`.
+- Verde `19aa304`: `data` e `isRefreshing` solo reutilizan `resolved` cuando
+  `resolved.fn === fn`. Un `fn` nuevo obtiene `data: undefined` hasta resolver,
+  por lo que las pantallas muestran sus Skeletons. No cambió la API pública del
+  hook ni código de pantallas.
+- La primera suite completa tras el fix encontró una única aserción histórica
+  en Home que exigía ver las cards de Luna después de seleccionar Milo. Se
+  corrigió para exigir Skeletons y ausencia de datos de Luna en `f11a32c`; el
+  cuerpo del commit documenta la excepción C4 solicitada.
+- Verificación móvil posterior: test focal del hook 6/6, Home 22/22, suite
+  completa 36/36 y 424/424, `bun run typecheck` exit 0 y `bun run lint` exit 0.
+- `./init.sh` final: exit 0 y mensaje `Todo verde`; incluyó backend 145/145
+  suites y 1114/1114 tests, infra 2/2 y 14/14, móvil 36/36 y 424/424, y e2e
+  20 suites y 327 tests pasados (2 suites/6 tests omitidos por gate), además de
+  build, lint y typecheck.
+
+R12 no se marca completado: el humano debe repetir el smoke, en especial el
+paso 8, sobre este fix antes del cierre de la feature.

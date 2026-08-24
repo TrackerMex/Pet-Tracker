@@ -24,7 +24,7 @@ tags: [harness, spec, mobile]
 | R9 | `src/screens/add-reminder/index.test.tsx::R9: guardar con validación y degradación por kind` | `7ff5114 test(mobile-reminders): define reminder submission in red (R9)`; `7eaed26 feat(mobile-reminders): submit reminder form (R9)` |
 | R10 | `src/app/(tabs)/__tests__/profile.test.tsx::R10: profile enlaza a reminders` | `43d3e5f test(mobile-reminders): define profile reminder link in red (R10)`; `716d604 feat(mobile-reminders): expose reminder routes from profile (R10)` |
 | R11 | verificación manual (typecheck/lint/tests/init.sh + greps de contención) | `6f0cc05 fix(mobile-reminders): preserve mobile regression suite (R10,R11)`; `4d29fe4 test(mobile-reminders): verify regression and containment (R11)` |
-| R12 | smoke humano en Expo Go (checklist en requirements) | pendiente |
+| R12 | Smoke humano en Expo Go: el paso 8 detectó que `Reminders` mostraba datos de la mascota anterior; regresión compartida en `src/hooks/__tests__/use-api.test.tsx::R4: useApi ejecuta, refetch y expulsa 401` y expectativa histórica corregida en `src/app/(tabs)/__tests__/home.test.tsx::R9: summary degrada con gracia` | `6a2aa9b test(mobile-reminders): reproduce stale pet data on fn swap (R12)`; `19aa304 fix(mobile-reminders): clear stale data when api fn changes (R12)`; excepción C4 documentada en `f11a32c test(home): expect skeletons during pet switch (R9)`; re-smoke humano pendiente |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
 Convención de commit: `feat(mobile-reminders): <desc> (R1,R2)`.
