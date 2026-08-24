@@ -1,6 +1,7 @@
-import { Skeleton } from 'heroui-native';
+import { router, type Href } from 'expo-router';
+import { Button, Skeleton } from 'heroui-native';
 import { useCallback } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { getMe } from '../../api/users';
@@ -10,7 +11,7 @@ import { useAuth } from '../../providers/auth-provider';
 
 export function ProfileScreen() {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
-  const { token } = useAuth();
+  const { signOut, token } = useAuth();
   const insets = useSafeAreaInsets();
   const meFn = useCallback(
     () => getMe(baseUrl, token ?? ''),
@@ -53,6 +54,25 @@ export function ProfileScreen() {
           </Text>
         ) : null}
       </Card>
+
+      <Pressable
+        accessibilityRole="button"
+        testID="reminders-link"
+        className="flex-row items-center justify-between rounded-xl bg-default px-3 py-2"
+        onPress={() => router.push('/reminders' as Href)}
+      >
+        <Text className="font-semibold text-foreground">Reminders</Text>
+        <Text className="text-lg font-semibold text-muted">›</Text>
+      </Pressable>
+
+      <Button
+        testID="profile-sign-out"
+        className="rounded-xl bg-danger-soft"
+        variant="danger-soft"
+        onPress={() => void signOut()}
+      >
+        <Button.Label className="font-bold text-danger">Sign out</Button.Label>
+      </Button>
     </ScrollView>
   );
 }
