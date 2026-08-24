@@ -77,9 +77,9 @@ tags: [harness, spec, mobile]
 
 ## R10 — Rutas delgadas + link mínimo en Profile (contrato con #40)
 
-- [ ] (1) Escribir test que falla para R10 (describe nuevo en profile.test.tsx)
-- [ ] (2) Implementación mínima que lo pasa (route files + Pressable en placeholder)
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R10 (describe nuevo en profile.test.tsx)
+- [x] (2) Implementación mínima que lo pasa (route files + Pressable en placeholder)
+- [x] (3) Refactor con tests verdes
 
 ## R11 — Typecheck, lint, contención de diff
 
