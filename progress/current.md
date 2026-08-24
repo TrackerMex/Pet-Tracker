@@ -9,3 +9,6 @@
   mismo mecanismo que #38. Handoff: progress/handoff_mobile-design-drift.md
 - nota: sesion paralela trabaja #39 en el working tree principal; este
   worktree es el unico que toca mobile-pet-tracker/ para #47
+- estado: implementacion R1-R8 completa y verificada; trazabilidad sin filas
+  pendientes; informe en progress/impl_mobile-design-drift.md; queda
+  in_progress a la espera del reviewer humano y sin PR por el handoff
