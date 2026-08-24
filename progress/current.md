@@ -17,3 +17,8 @@
 - Reporte de Codex esperado en `progress/impl_mobile-pets-profile.md`.
 - Gates pendientes: reviewer tras implementación → smoke humano R10
   (Expo Go, foto real desde dispositivo, LocalStack).
+- Implementación iniciada por Codex (2026-08-24 22:43 UTC): ciclos TDD
+  separados R1→R9; cada requisito tendrá commit rojo, commit verde y
+  actualización de trazabilidad con hashes reales. El baseline móvil quedó
+  verde; `init.sh` mostró una inestabilidad de orden en el e2e de vacunas que
+  pasó al reejecutar la suite aislada (15/15).
