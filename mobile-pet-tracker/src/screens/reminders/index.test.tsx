@@ -35,50 +35,6 @@ jest.mock('../../providers/auth-provider', () => ({
   useAuth: jest.fn(),
 }));
 
-jest.mock('../../theme/use-theme-colors', () => ({
-  useThemeColors: (tokens: string[]) => tokens,
-}));
-
-jest.mock('@expo/ui', () => {
-  const React = jest.requireActual<typeof import('react')>('react');
-  const {
-    Pressable,
-    Text,
-    View,
-  } = jest.requireActual<typeof import('react-native')>('react-native');
-
-  return {
-    BottomSheet: ({
-      children,
-      isPresented,
-      ...props
-    }: Record<string, unknown>) =>
-      isPresented
-        ? React.createElement(
-            View as unknown as React.ComponentType<Record<string, unknown>>,
-            { ...props, isPresented },
-            children as never,
-          )
-        : null,
-    Button: ({
-      children,
-      label,
-      ...props
-    }: Record<string, unknown>) =>
-      React.createElement(
-        Pressable,
-        props,
-        (children as never) ?? React.createElement(Text, null, label as string),
-      ),
-    Column: ({ children, ...props }: Record<string, unknown>) =>
-      React.createElement(View, props, children as never),
-    Host: ({ children, ...props }: Record<string, unknown>) =>
-      React.createElement(View, props, children as never),
-    Text: ({ children, ...props }: Record<string, unknown>) =>
-      React.createElement(Text, props, children as never),
-  };
-});
-
 jest.mock('@expo/ui/community/bottom-sheet', () => {
   const React = jest.requireActual<typeof import('react')>('react');
   const { View } = jest.requireActual<typeof import('react-native')>(

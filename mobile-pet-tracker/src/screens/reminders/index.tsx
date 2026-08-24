@@ -1,10 +1,7 @@
 import {
   BottomSheet,
-  Button as ExpoButton,
-  Column,
-  Host,
-  Text as ExpoText,
-} from '@expo/ui';
+  BottomSheetView,
+} from '@expo/ui/community/bottom-sheet';
 import { router, type Href, useFocusEffect } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -22,7 +19,6 @@ import { PetSwitcher } from '../../components/pet-switcher';
 import { useApi } from '../../hooks/use-api';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
-import { useThemeColors } from '../../theme/use-theme-colors';
 import { daysUntil } from '../../utils/reminder-dates';
 import { REMINDER_TYPE_META } from '../../utils/reminder-meta';
 
@@ -37,12 +33,6 @@ export function RemindersScreen() {
   const { signOut, token } = useAuth();
   const { selectedPetId, selectPet } = useSelectedPet();
   const insets = useSafeAreaInsets();
-  const [danger, accentForeground, foreground, muted] = useThemeColors([
-    'danger',
-    'accent-foreground',
-    'foreground',
-    'muted',
-  ]);
   const petsFn = useCallback(
     () => listPets(baseUrl, token ?? ''),
     [baseUrl, token],
@@ -322,70 +312,54 @@ export function RemindersScreen() {
         </>
       ) : null}
 
-      <Host
-        testID="reminders-delete-host"
-        pointerEvents="box-none"
-        style={{ position: 'absolute' }}
-      >
+      <View testID="reminders-delete-host">
         <BottomSheet
-          testID="reminders-delete-sheet"
-          isPresented={deleteCandidate !== null}
-          onDismiss={dismissDeleteSheet}
-          snapPoints={['half']}
+          index={deleteCandidate === null ? -1 : 0}
+          enablePanDownToClose
+          onClose={dismissDeleteSheet}
+          snapPoints={['50%', '100%']}
         >
-          <Column alignment="start" spacing={12} style={{ width: '100%' }}>
-            <ExpoText
-              textStyle={{
-                color: foreground,
-                fontSize: 22,
-                fontWeight: '700',
-              }}
+          <BottomSheetView>
+            <View
+              testID="reminders-delete-sheet"
+              className="gap-3 bg-surface px-6 pb-8 pt-4"
             >
-              Delete reminder?
-            </ExpoText>
-            <ExpoText
-              testID="reminders-delete-reference"
-              textStyle={{
-                color: foreground,
-                fontSize: 17,
-                fontWeight: '600',
-              }}
-            >
-              {deleteCandidate?.title ?? ''}
-            </ExpoText>
-            <ExpoText textStyle={{ color: muted, fontSize: 15 }}>
-              This action cannot be undone.
-            </ExpoText>
-            <Column spacing={8} style={{ width: '100%' }}>
-              <ExpoButton
-                testID="reminders-delete-confirm"
-                onPress={deleteSelectedReminder}
-                style={{
-                  width: '100%',
-                  backgroundColor: danger,
-                  borderRadius: 12,
-                }}
+              <Text className="text-xl font-bold text-foreground">
+                Delete reminder?
+              </Text>
+              <Text
+                testID="reminders-delete-reference"
+                className="text-base font-semibold text-foreground"
               >
-                <ExpoText
-                  textStyle={{
-                    color: accentForeground,
-                    fontWeight: '700',
-                  }}
+                {deleteCandidate?.title ?? ''}
+              </Text>
+              <Text className="text-sm font-normal text-muted">
+                This action cannot be undone.
+              </Text>
+              <View className="gap-2 pt-2">
+                <Button
+                  testID="reminders-delete-confirm"
+                  className="w-full rounded-xl bg-danger"
+                  variant="danger"
+                  onPress={deleteSelectedReminder}
                 >
-                  Delete
-                </ExpoText>
-              </ExpoButton>
-              <ExpoButton
-                testID="reminders-delete-cancel"
-                label="Cancel"
-                onPress={dismissDeleteSheet}
-                style={{ width: '100%', borderRadius: 12 }}
-                variant="outlined"
-              />
-            </Column>
-          </Column>
+                  <Button.Label className="font-bold text-accent-foreground">
+                    Delete
+                  </Button.Label>
+                </Button>
+                <Button
+                  testID="reminders-delete-cancel"
+                  className="w-full rounded-xl"
+                  variant="outline"
+                  onPress={dismissDeleteSheet}
+                >
+                  <Button.Label className="font-semibold">Cancel</Button.Label>
+                </Button>
+              </View>
+            </View>
+          </BottomSheetView>
         </BottomSheet>
-      </Host>
+      </View>
     </ScrollView>
   );
 }
