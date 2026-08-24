@@ -62,3 +62,11 @@ describe('R3: Card compartido elimina rounded arbitrario', () => {
     expect(contents).toContain("from '../../components/card'");
   });
 });
+
+describe('R4: token text-2xs elimina tamaño arbitrario', () => {
+  it('no deja text-[10px] en código de producción', () => {
+    const textArbitrary = ['text-', '[10px]'].join('');
+
+    expect(filesContaining(textArbitrary)).toEqual([]);
+  });
+});
