@@ -13,9 +13,9 @@ tags: [harness, spec, backend]
 
 ## R1 — GET /pets/:petId/reminders (listado por capas)
 
-- [ ] (1) Escribir test que falla para R1 (list-reminders.use-case.spec.ts + casos e2e)
-- [ ] (2) Implementación mínima que lo pasa (listByPet domain+drizzle, use case, @Get, module)
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R1 (list-reminders.use-case.spec.ts + casos e2e)
+- [x] (2) Implementación mínima que lo pasa (listByPet domain+drizzle, use case, @Get, module)
+- [x] (3) Refactor con tests verdes
 
 ## R2 — DELETE /pets/:petId/reminders/:id (borrado real)
 
