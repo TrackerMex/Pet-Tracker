@@ -11,7 +11,7 @@ tags: [harness, spec, mobile]
 | R1 | `src/api/__tests__/nutrition.test.ts::R1: getNutritionProfile mapea la respuesta por kind` | `807891a feat(mobile-food): add nutrition profile client (R1)` |
 | R2 | `src/api/__tests__/nutrition.test.ts::R2: getNutritionPlan mapea la respuesta por kind` | `96b8526 feat(mobile-food): add nutrition plan client (R2)` |
 | R3 | `src/api/__tests__/nutrition.test.ts::R3: generateNutritionPlan publica y mapea por kind` | `695ad9a feat(mobile-food): add plan generation client (R3)` |
-| R4 | `src/app/(tabs)/__tests__/food.test.tsx::R4: food resuelve la mascota seleccionada` | pendiente |
+| R4 | `src/app/(tabs)/__tests__/food.test.tsx::R4: food resuelve la mascota seleccionada` | `95bc9f7 feat(mobile-food): resolve pets in food hub (R4)` |
 | R5 | `src/app/(tabs)/__tests__/food.test.tsx::R5: plan del día con horarios y warnings` | pendiente |
 | R6 | `src/app/(tabs)/__tests__/food.test.tsx::R6: aiExplanation nullable con gracia` | pendiente |
 | R7 | `src/app/(tabs)/__tests__/meal-schedule.test.tsx::R7: meal schedule muestra horarios y perfil` | pendiente |
