@@ -151,3 +151,34 @@ export interface WeightEntry {
   bodyCondition: number | null;
   variation: number | null;
 }
+
+export interface NutritionProfile {
+  petId: string;
+  activityLevel: string;
+  bodyCondition: number | null;
+  targetWeightKg: number | null;
+  foodType: string;
+  kcalPer100g: number;
+  allergies: string[];
+  diseases: string[];
+  updatedAt: string;
+}
+
+export interface NutritionWarning {
+  code: string;
+  message: string;
+}
+
+export interface NutritionPlan {
+  id: string;
+  petId: string;
+  rerKcal: number;
+  merKcal: number;
+  dailyGrams: number;
+  mealsPerDay: number;
+  mealTimes: string[];
+  objective: string;
+  warnings: NutritionWarning[];
+  aiExplanation: string | null;
+  generatedAt: string;
+}
