@@ -9,9 +9,15 @@ import {
 import { router, useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
+import { Alert } from 'react-native';
 
 import { listPets, type PetsState } from '../../api/pets';
-import { listReminders, type RemindersState } from '../../api/reminders';
+import {
+  deleteReminder,
+  listReminders,
+  type DeleteReminderState,
+  type RemindersState,
+} from '../../api/reminders';
 import type { PetProfile, Reminder } from '../../api/types';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { SelectedPetProvider } from '../../providers/selected-pet-provider';
@@ -43,6 +49,7 @@ jest.mock('react-native-safe-area-context', () => ({
 const apiUrl = 'http://example.test/v1';
 const mockListPets = jest.mocked(listPets);
 const mockListReminders = jest.mocked(listReminders);
+const mockDeleteReminder = jest.mocked(deleteReminder);
 const mockUseAuth = jest.mocked(useAuth);
 const mockRouter = jest.mocked(router);
 const mockUseFocusEffect = jest.mocked(useFocusEffect);
@@ -104,6 +111,18 @@ function RemindersWrapper({ children }: { children: ReactNode }) {
 
 async function renderReminders() {
   return render(<RemindersScreen />, { wrapper: RemindersWrapper });
+}
+
+async function confirmDelete(reminderId: string) {
+  await fireEvent.press(screen.getByTestId(`reminder-delete-${reminderId}`));
+  expect(Alert.alert).toHaveBeenCalled();
+  const buttons = jest.mocked(Alert.alert).mock.calls.at(-1)?.[2];
+  const confirm = buttons?.find(({ text }) => text === 'Delete');
+  expect(confirm).toBeDefined();
+  await act(async () => {
+    confirm?.onPress?.();
+    await Promise.resolve();
+  });
 }
 
 describe('R5: reminders monta con métricas y estados', () => {
@@ -319,5 +338,121 @@ describe('R6: lista con pills, badges y refetch on focus', () => {
     });
 
     await waitFor(() => expect(mockListReminders).toHaveBeenCalledTimes(2));
+  });
+});
+
+describe('R7: borrar recordatorio con confirmación', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('shows a delete action for reminders in every status', async () => {
+    mockListReminders.mockResolvedValue({
+      kind: 'ok',
+      reminders: [
+        makeReminder({ id: 'scheduled' }),
+        makeReminder({ id: 'sent', status: 'sent' }),
+        makeReminder({ id: 'cancelled', status: 'cancelled' }),
+      ],
+    });
+
+    await renderReminders();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('reminder-delete-scheduled')).toBeVisible(),
+    );
+    expect(screen.getByTestId('reminder-delete-sent')).toBeVisible();
+    expect(screen.getByTestId('reminder-delete-cancelled')).toBeVisible();
+  });
+
+  it.each([
+    { kind: 'ok' } as const,
+    { kind: 'not-found' } as const,
+  ])('refetches and removes the row after $kind', async (deleteState) => {
+    mockListReminders
+      .mockResolvedValueOnce({
+        kind: 'ok',
+        reminders: [makeReminder()],
+      })
+      .mockResolvedValueOnce({ kind: 'ok', reminders: [] });
+    mockDeleteReminder.mockResolvedValue(deleteState);
+
+    await renderReminders();
+    await waitFor(() =>
+      expect(screen.getByTestId('reminder-delete-reminder-1')).toBeVisible(),
+    );
+    await confirmDelete('reminder-1');
+
+    expect(mockDeleteReminder).toHaveBeenCalledWith(
+      apiUrl,
+      'jwt-token',
+      'pet-1',
+      'reminder-1',
+    );
+    await waitFor(() => expect(screen.queryByTestId('reminder-row-reminder-1')).toBeNull());
+    expect(mockListReminders).toHaveBeenCalledTimes(2);
+  });
+
+  it.each([
+    [{ kind: 'forbidden' }, 'Only the owner can delete'],
+    [{ kind: 'unreachable', message: 'offline' }, 'Cannot reach server'],
+    [{ kind: 'error' }, 'Something went wrong'],
+    [{ kind: 'missing-config' }, 'Something went wrong'],
+  ] as [DeleteReminderState, string][]) (
+    'shows the action error for $state.kind',
+    async (deleteState, message) => {
+      mockListReminders.mockResolvedValue({
+        kind: 'ok',
+        reminders: [makeReminder()],
+      });
+      mockDeleteReminder.mockResolvedValue(deleteState);
+
+      await renderReminders();
+      await waitFor(() =>
+        expect(screen.getByTestId('reminder-delete-reminder-1')).toBeVisible(),
+      );
+      await confirmDelete('reminder-1');
+
+      await waitFor(() =>
+        expect(screen.getByTestId('reminders-action-error')).toHaveTextContent(
+          message,
+        ),
+      );
+      expect(mockListReminders).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  it('disables only the row being deleted while the request is pending', async () => {
+    mockListReminders.mockResolvedValue({
+      kind: 'ok',
+      reminders: [makeReminder(), makeReminder({ id: 'reminder-2' })],
+    });
+    mockDeleteReminder.mockReturnValue(pending<DeleteReminderState>());
+
+    await renderReminders();
+    await waitFor(() =>
+      expect(screen.getByTestId('reminder-delete-reminder-1')).toBeVisible(),
+    );
+    await confirmDelete('reminder-1');
+
+    expect(
+      screen.getByTestId('reminder-delete-reminder-1').props.accessibilityState,
+    ).toEqual(expect.objectContaining({ disabled: true }));
+    expect(
+      screen.getByTestId('reminder-delete-reminder-2').props.accessibilityState,
+    ).toEqual(expect.objectContaining({ disabled: false }));
   });
 });
