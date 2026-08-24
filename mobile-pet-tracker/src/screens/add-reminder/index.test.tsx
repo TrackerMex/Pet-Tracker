@@ -32,8 +32,11 @@ jest.mock('expo-router', () => {
 
   return {
     router: { push: jest.fn(), back: jest.fn() },
-    Redirect: ({ href }: { href: string }) =>
-      React.createElement(View, { testID: 'add-reminder-redirect', href }),
+    Redirect: ({ href }: { href: string }) => {
+      const props = { testID: 'add-reminder-redirect', href };
+
+      return React.createElement(View, props);
+    },
   };
 });
 
