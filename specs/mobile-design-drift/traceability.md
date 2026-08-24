@@ -8,7 +8,7 @@ tags: [harness, spec]
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | pendiente | pendiente |
+| R1 | `src/theme/__tests__/global-css.test.ts::R1: tokens rounded-card y text-2xs` | `3e38258 feat(mobile-design-drift): add shared design tokens (R1)` |
 | R2 | pendiente | pendiente |
 | R3 | pendiente | pendiente |
 | R4 | pendiente | pendiente |
