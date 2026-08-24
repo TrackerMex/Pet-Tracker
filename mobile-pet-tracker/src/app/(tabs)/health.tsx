@@ -83,6 +83,7 @@ export default function HealthScreen() {
       contentContainerStyle={{
         padding: 24,
         gap: 16,
+        paddingTop: insets.top + 12,
         paddingBottom: insets.bottom + 96,
       }}
     >
