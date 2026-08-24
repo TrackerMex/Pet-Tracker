@@ -39,7 +39,7 @@ function makePet(overrides: Partial<PetProfile> = {}): PetProfile {
 }
 
 describe('R11: pet switcher usa Avatar para cambiar de mascota', () => {
-  it('renders photos, fallback initials, names, selection, and stable testIDs', async () => {
+  it('renders avatar-only controls with accessible names, selection, and stable testIDs', async () => {
     const onSelect = jest.fn();
     const photoUrl = 'http://example.test/luna.jpg';
     const pets = [
@@ -66,8 +66,16 @@ describe('R11: pet switcher usa Avatar para cambiar de mascota', () => {
     });
     expect(screen.queryByTestId('pet-avatar-image-pet-2')).toBeNull();
     expect(screen.getByTestId('pet-avatar-fallback-pet-2')).toHaveTextContent('M');
-    expect(screen.getByText('Luna')).toBeVisible();
-    expect(screen.getByText('Milo')).toBeVisible();
+    expect(screen.queryByText('Luna')).toBeNull();
+    expect(screen.queryByText('Milo')).toBeNull();
+    expect(screen.getByTestId('pet-chip-pet-1')).toHaveProp(
+      'accessibilityLabel',
+      'Luna',
+    );
+    expect(screen.getByTestId('pet-chip-pet-2')).toHaveProp(
+      'accessibilityLabel',
+      'Milo',
+    );
     expect(screen.getByTestId('pet-chip-pet-1')).toHaveProp(
       'accessibilityRole',
       'button',
