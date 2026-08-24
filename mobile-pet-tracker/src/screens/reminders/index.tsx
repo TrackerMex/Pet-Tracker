@@ -1,7 +1,14 @@
+import {
+  BottomSheet,
+  Button as ExpoButton,
+  Column,
+  Host,
+  Text as ExpoText,
+} from '@expo/ui';
 import { router, type Href, useFocusEffect } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { listPets } from '../../api/pets';
@@ -10,10 +17,12 @@ import {
   listReminders,
   type RemindersState,
 } from '../../api/reminders';
+import type { Reminder } from '../../api/types';
 import { PetSwitcher } from '../../components/pet-switcher';
 import { useApi } from '../../hooks/use-api';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import { useThemeColors } from '../../theme/use-theme-colors';
 import { daysUntil } from '../../utils/reminder-dates';
 import { REMINDER_TYPE_META } from '../../utils/reminder-meta';
 
@@ -28,6 +37,12 @@ export function RemindersScreen() {
   const { signOut, token } = useAuth();
   const { selectedPetId, selectPet } = useSelectedPet();
   const insets = useSafeAreaInsets();
+  const [danger, accentForeground, foreground, muted] = useThemeColors([
+    'danger',
+    'accent-foreground',
+    'foreground',
+    'muted',
+  ]);
   const petsFn = useCallback(
     () => listPets(baseUrl, token ?? ''),
     [baseUrl, token],
@@ -43,6 +58,7 @@ export function RemindersScreen() {
   const reminders = useApi(remindersFn);
   const refetchReminders = reminders.refetch;
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteCandidate, setDeleteCandidate] = useState<Reminder | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
   useFocusEffect(
@@ -99,21 +115,21 @@ export function RemindersScreen() {
     }, [baseUrl, refetchReminders, selectedPetId, signOut, token],
   );
 
-  const confirmDelete = useCallback(
-    (reminderId: string) => {
-      Alert.alert('Delete reminder?', 'This action cannot be undone.', [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => {
-            void handleDelete(reminderId);
-          },
-        },
-      ]);
-    },
-    [handleDelete],
-  );
+  const confirmDelete = useCallback((reminder: Reminder) => {
+    setActionError(null);
+    setDeleteCandidate(reminder);
+  }, []);
+
+  const dismissDeleteSheet = useCallback(() => {
+    setDeleteCandidate(null);
+  }, []);
+
+  const deleteSelectedReminder = useCallback(() => {
+    if (!deleteCandidate) return;
+    const reminderId = deleteCandidate.id;
+    setDeleteCandidate(null);
+    void handleDelete(reminderId);
+  }, [deleteCandidate, handleDelete]);
 
   return (
     <ScrollView
@@ -293,7 +309,7 @@ export function RemindersScreen() {
                     isDisabled={deletingId === reminder.id}
                     size="sm"
                     variant="danger-soft"
-                    onPress={() => confirmDelete(reminder.id)}
+                    onPress={() => confirmDelete(reminder)}
                   >
                     <Button.Label className="font-semibold text-danger">
                       Delete
@@ -305,6 +321,71 @@ export function RemindersScreen() {
           </View>
         </>
       ) : null}
+
+      <Host
+        testID="reminders-delete-host"
+        pointerEvents="box-none"
+        style={{ position: 'absolute' }}
+      >
+        <BottomSheet
+          testID="reminders-delete-sheet"
+          isPresented={deleteCandidate !== null}
+          onDismiss={dismissDeleteSheet}
+          snapPoints={['half']}
+        >
+          <Column alignment="start" spacing={12} style={{ width: '100%' }}>
+            <ExpoText
+              textStyle={{
+                color: foreground,
+                fontSize: 22,
+                fontWeight: '700',
+              }}
+            >
+              Delete reminder?
+            </ExpoText>
+            <ExpoText
+              testID="reminders-delete-reference"
+              textStyle={{
+                color: foreground,
+                fontSize: 17,
+                fontWeight: '600',
+              }}
+            >
+              {deleteCandidate?.title ?? ''}
+            </ExpoText>
+            <ExpoText textStyle={{ color: muted, fontSize: 15 }}>
+              This action cannot be undone.
+            </ExpoText>
+            <Column spacing={8} style={{ width: '100%' }}>
+              <ExpoButton
+                testID="reminders-delete-confirm"
+                onPress={deleteSelectedReminder}
+                style={{
+                  width: '100%',
+                  backgroundColor: danger,
+                  borderRadius: 12,
+                }}
+              >
+                <ExpoText
+                  textStyle={{
+                    color: accentForeground,
+                    fontWeight: '700',
+                  }}
+                >
+                  Delete
+                </ExpoText>
+              </ExpoButton>
+              <ExpoButton
+                testID="reminders-delete-cancel"
+                label="Cancel"
+                onPress={dismissDeleteSheet}
+                style={{ width: '100%', borderRadius: 12 }}
+                variant="outlined"
+              />
+            </Column>
+          </Column>
+        </BottomSheet>
+      </Host>
     </ScrollView>
   );
 }
