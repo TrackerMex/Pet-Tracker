@@ -34,6 +34,14 @@ export class ReminderDrizzleRepository implements ReminderRepository {
     return rows.map(toDomain);
   }
 
+  async deleteByPetAndId(petId: string, id: string): Promise<boolean> {
+    const rows = await this.db
+      .delete(reminders)
+      .where(and(eq(reminders.id, id), eq(reminders.petId, petId)))
+      .returning({ id: reminders.id });
+    return rows.length === 1;
+  }
+
   async findById(id: string): Promise<Reminder | null> {
     const [row] = await this.db
       .select()
