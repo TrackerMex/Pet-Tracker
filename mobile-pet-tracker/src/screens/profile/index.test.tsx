@@ -1,4 +1,5 @@
-import { render, screen, waitFor } from '@testing-library/react-native';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 
 import { getMe, type MeState } from '../../api/users';
@@ -13,6 +14,10 @@ jest.mock('../../providers/auth-provider', () => ({
   useAuth: jest.fn(),
 }));
 
+jest.mock('expo-router', () => ({
+  router: { push: jest.fn(), back: jest.fn() },
+}));
+
 jest.mock('react-native-safe-area-context', () => ({
   ...jest.requireActual('react-native-safe-area-context'),
   useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
@@ -21,6 +26,8 @@ jest.mock('react-native-safe-area-context', () => ({
 const apiUrl = 'http://example.test/v1';
 const mockGetMe = jest.mocked(getMe);
 const mockUseAuth = jest.mocked(useAuth);
+const mockRouter = jest.mocked(router);
+const mockSignOut = jest.fn<Promise<void>, []>();
 
 function renderProfile() {
   return render(<ProfileScreen />, { wrapper: HeroUINativeProvider });
@@ -77,5 +84,43 @@ describe('R1: me card', () => {
       ),
     );
     expect(screen.getByTestId('screen-profile')).toBeVisible();
+  });
+});
+
+describe('R3: reminders-link y sign out', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockSignOut.mockResolvedValue();
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: mockSignOut,
+    } satisfies AuthContextValue);
+    mockGetMe.mockResolvedValue({ kind: 'error' });
+  });
+
+  it('keeps reminders as a button that opens the hidden route', async () => {
+    renderProfile();
+
+    await waitFor(() => expect(screen.getByTestId('reminders-link')).toBeVisible());
+    expect(screen.getByTestId('reminders-link').props.accessibilityRole).toBe(
+      'button',
+    );
+    fireEvent.press(screen.getByTestId('reminders-link'));
+
+    expect(mockRouter.push).toHaveBeenCalledWith('/reminders');
+  });
+
+  it('keeps sign out and retires backend health UI', async () => {
+    renderProfile();
+
+    await waitFor(() => expect(screen.getByTestId('profile-sign-out')).toBeVisible());
+    fireEvent.press(screen.getByTestId('profile-sign-out'));
+
+    expect(mockSignOut).toHaveBeenCalledTimes(1);
+    expect(screen.queryByTestId('backend-health-state')).toBeNull();
+    expect(screen.queryByTestId('backend-health-retry')).toBeNull();
   });
 });
