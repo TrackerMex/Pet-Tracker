@@ -5,8 +5,11 @@ import { useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { createReminder } from '../../api/reminders';
 import type { ReminderType } from '../../api/types';
+import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import { combineDateAndTime } from '../../utils/reminder-dates';
 import { REMINDER_TYPE_META } from '../../utils/reminder-meta';
 
 const ADVANCE_OPTIONS = [
@@ -27,7 +30,9 @@ function initialTime(): Date {
   return time;
 }
 
-function AddReminderContent() {
+function AddReminderContent({ petId }: { petId: string }) {
+  const baseUrl = process.env.EXPO_PUBLIC_API_URL;
+  const { signOut, token } = useAuth();
   const insets = useSafeAreaInsets();
   const [type, setType] = useState<ReminderType>('vaccine');
   const [title, setTitle] = useState('');
@@ -36,6 +41,63 @@ function AddReminderContent() {
   const [advanceMinutes, setAdvanceMinutes] = useState(10080);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+
+  async function handleSubmit() {
+    const trimmedTitle = title.trim();
+    if (!trimmedTitle) {
+      setFormError('Title is required');
+      return;
+    }
+    if (!date) {
+      setFormError('Pick a date');
+      return;
+    }
+
+    const dueAt = combineDateAndTime(date, time);
+    if (dueAt.getTime() <= Date.now()) {
+      setFormError('Date must be in the future');
+      return;
+    }
+
+    setSubmitting(true);
+    setFormError(null);
+
+    try {
+      const result = await createReminder(baseUrl, token ?? '', petId, {
+        type,
+        title: trimmedTitle,
+        dueAt: dueAt.toISOString(),
+        advanceMinutes,
+      });
+
+      switch (result.kind) {
+        case 'ok':
+          router.back();
+          return;
+        case 'forbidden':
+          setFormError('Only the owner can create reminders');
+          return;
+        case 'invalid':
+          setFormError('Date must be in the future');
+          return;
+        case 'unreachable':
+          setFormError('Cannot reach server');
+          return;
+        case 'unauthorized':
+          await signOut();
+          return;
+        case 'error':
+        case 'missing-config':
+          setFormError('Something went wrong');
+      }
+    } catch {
+      setFormError('Something went wrong');
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   return (
     <ScrollView
@@ -202,12 +264,19 @@ function AddReminderContent() {
       <Button
         testID="add-reminder-submit"
         className="rounded-xl bg-accent"
-        onPress={() => undefined}
+        isDisabled={submitting}
+        onPress={() => void handleSubmit()}
       >
         <Button.Label className="font-bold text-accent-foreground">
           Save reminder
         </Button.Label>
       </Button>
+
+      {formError ? (
+        <Text testID="add-reminder-error" className="text-danger">
+          {formError}
+        </Text>
+      ) : null}
     </ScrollView>
   );
 }
@@ -219,5 +288,5 @@ export function AddReminderScreen() {
     return <Redirect href={'/reminders' as Href} />;
   }
 
-  return <AddReminderContent />;
+  return <AddReminderContent petId={selectedPetId} />;
 }
