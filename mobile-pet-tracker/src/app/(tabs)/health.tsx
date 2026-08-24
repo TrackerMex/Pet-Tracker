@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { Button, Skeleton, Spinner } from 'heroui-native';
+import { Button, Skeleton } from 'heroui-native';
 import { useCallback, useEffect, useMemo } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -89,7 +89,9 @@ export default function HealthScreen() {
     >
       <Text className="text-2xl font-black text-foreground">Health</Text>
 
-      {pets.data === undefined ? <Spinner testID="health-loading" /> : null}
+      {pets.data === undefined ? (
+        <Skeleton testID="health-loading" className="h-12 w-full rounded-card" />
+      ) : null}
 
       {pets.data && isPetsError(pets.data) ? (
         <View className="items-start gap-3">

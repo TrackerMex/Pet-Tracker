@@ -4,7 +4,7 @@ import {
   Card as HeroUICard,
   Input,
   Label,
-  Spinner,
+  Skeleton,
   TextField,
 } from 'heroui-native';
 import { useMemo, useState } from 'react';
@@ -200,7 +200,10 @@ function WeightLogContent({ petId }: { petId: string }) {
       ) : null}
 
       {weights.data === undefined ? (
-        <Spinner testID="weight-log-loading" />
+        <Skeleton
+          testID="weight-log-loading"
+          className="h-40 w-full rounded-card"
+        />
       ) : null}
 
       {weights.data && isWeightsError(weights.data) ? (

@@ -1,4 +1,4 @@
-import { Button, Spinner } from 'heroui-native';
+import { Button, Skeleton } from 'heroui-native';
 import { useFocusEffect } from 'expo-router';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import { useCallback, useEffect, useMemo } from 'react';
@@ -141,9 +141,7 @@ export default function MapScreen() {
   return (
     <View testID="screen-map" className="flex-1 bg-background">
       {isLoading ? (
-        <View className="flex-1 items-center justify-center">
-          <Spinner testID="map-loading" />
-        </View>
+        <Skeleton testID="map-loading" className="flex-1" />
       ) : null}
 
       {pets.data && isPetsError(pets.data) ? (
