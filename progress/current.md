@@ -18,8 +18,11 @@
   Expo Go → cierre.
 - Estado: R1–R10 implementados, verificados y trazados. Suite móvil completa:
   31 suites / 356 tests; typecheck y lint verdes; `./init.sh` exit 0 (e2e
-  omitidos porque LocalStack no respondía en 4566). R11 queda reservado al
-  smoke humano en Expo Go; después corresponde reviewer y cierre.
+  omitidos porque LocalStack no respondía en 4566). Reviewer APROBADO
+  (2026-08-24, `progress/review_mobile-food.md`). Esperando al humano
+  (anunciado para 2026-08-25): smoke R11 con Expo Go + su commit marcando
+  "Aprobado por humano" en `specs/mobile-food/requirements.md` (C6).
+  Con eso: done, cierre de sesión y merge del PR #70 (borrador).
 
 Notas de contexto:
 - PR #68 (feature #46) y PR #69 (review final + harness fix: quitar cap
