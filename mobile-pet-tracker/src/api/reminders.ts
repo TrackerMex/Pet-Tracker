@@ -1,4 +1,4 @@
-import { getJson, postJson, readJson } from './http';
+import { deleteJson, getJson, postJson, readJson } from './http';
 import type { Reminder, ReminderType } from './types';
 
 export type RemindersState =
@@ -19,6 +19,15 @@ export interface CreateReminderInput {
 export type CreateReminderState =
   | { kind: 'ok'; reminder: Reminder }
   | { kind: 'invalid' }
+  | { kind: 'forbidden' }
+  | { kind: 'unauthorized' }
+  | { kind: 'error' }
+  | { kind: 'unreachable'; message: string }
+  | { kind: 'missing-config' };
+
+export type DeleteReminderState =
+  | { kind: 'ok' }
+  | { kind: 'not-found' }
   | { kind: 'forbidden' }
   | { kind: 'unauthorized' }
   | { kind: 'error' }
@@ -108,4 +117,40 @@ export async function createReminder(
     !Array.isArray(responseBody)
     ? { kind: 'ok', reminder: responseBody as Reminder }
     : { kind: 'error' };
+}
+
+export async function deleteReminder(
+  baseUrl: string | undefined,
+  token: string,
+  petId: string,
+  reminderId: string,
+  fetchFn: typeof fetch = fetch,
+): Promise<DeleteReminderState> {
+  if (!baseUrl) {
+    return { kind: 'missing-config' };
+  }
+
+  const result = await deleteJson(
+    baseUrl,
+    `/pets/${petId}/reminders/${reminderId}`,
+    token,
+    fetchFn,
+  );
+  if (result.kind === 'unreachable') {
+    return result;
+  }
+
+  if (result.response.status === 204) {
+    return { kind: 'ok' };
+  }
+  if (result.response.status === 404) {
+    return { kind: 'not-found' };
+  }
+  if (result.response.status === 403) {
+    return { kind: 'forbidden' };
+  }
+  if (result.response.status === 401) {
+    return { kind: 'unauthorized' };
+  }
+  return { kind: 'error' };
 }
