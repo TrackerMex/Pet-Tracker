@@ -153,6 +153,18 @@ describe('R4: food resuelve la mascota seleccionada', () => {
     expect(screen.getByTestId('screen-food')).toBeVisible();
     expect(screen.getByText('Food')).toBeVisible();
     expect(screen.getByTestId('food-loading')).toBeVisible();
+    expect(screen.getByTestId('food-plan-skeleton')).toHaveProp(
+      'className',
+      expect.stringContaining('h-32'),
+    );
+    expect(screen.getByTestId('food-meals-skeleton')).toHaveProp(
+      'className',
+      expect.stringContaining('h-56'),
+    );
+    expect(screen.getByTestId('food-schedule-skeleton')).toHaveProp(
+      'className',
+      expect.stringContaining('h-20'),
+    );
     expect(screen.getByTestId('screen-food').props.contentContainerStyle).toEqual(
       expect.objectContaining({
         padding: 24,
@@ -256,6 +268,11 @@ describe('R5: plan del día con horarios y warnings', () => {
     await waitFor(() =>
       expect(screen.getByTestId('food-plan-skeleton')).toBeVisible(),
     );
+    expect(screen.getByTestId('food-meals-skeleton')).toHaveProp(
+      'className',
+      expect.stringContaining('h-56'),
+    );
+    expect(screen.queryByTestId('food-schedule-skeleton')).toBeNull();
     expect(screen.getByTestId('meal-schedule-link')).toBeVisible();
   });
 

@@ -182,6 +182,22 @@ describe('R7: meal schedule muestra horarios y perfil', () => {
     );
     expect(screen.getByText('Meal schedule')).toBeVisible();
     expect(screen.getByTestId('meal-schedule-loading')).toBeVisible();
+    expect(screen.getByTestId('meal-schedule-summary-skeleton')).toHaveProp(
+      'className',
+      expect.stringContaining('h-32'),
+    );
+    expect(screen.getByTestId('meal-schedule-meals-skeleton')).toHaveProp(
+      'className',
+      expect.stringContaining('h-56'),
+    );
+    expect(screen.getByTestId('meal-schedule-action-skeleton')).toHaveProp(
+      'className',
+      expect.stringContaining('h-12'),
+    );
+    expect(screen.getByTestId('meal-schedule-profile-skeleton')).toHaveProp(
+      'className',
+      expect.stringContaining('h-32'),
+    );
     expect(
       screen.getByTestId('screen-meal-schedule').props.contentContainerStyle,
     ).toEqual(
