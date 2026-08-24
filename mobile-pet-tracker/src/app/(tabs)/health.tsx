@@ -140,7 +140,7 @@ export default function HealthScreen() {
                 <Syringe size={22} color={warning} />
               </View>
               <View className="flex-1 gap-1">
-                <Text className="text-[10px] font-semibold text-warning">
+                <Text className="text-2xs font-semibold text-warning">
                   Next due
                 </Text>
                 <Text className="font-bold text-foreground">

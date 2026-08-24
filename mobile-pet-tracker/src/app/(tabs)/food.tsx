@@ -214,8 +214,8 @@ export default function FoodScreen() {
                         }
                         className={
                           served
-                            ? 'rounded-full bg-surface px-2 py-1 text-[10px] font-bold text-accent'
-                            : 'rounded-full bg-surface px-2 py-1 text-[10px] font-bold text-muted'
+                            ? 'rounded-full bg-surface px-2 py-1 text-2xs font-bold text-accent'
+                            : 'rounded-full bg-surface px-2 py-1 text-2xs font-bold text-muted'
                         }
                       >
                         {served ? 'Served' : 'Pending'}

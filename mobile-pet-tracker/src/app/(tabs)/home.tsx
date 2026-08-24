@@ -270,7 +270,7 @@ export default function HomeScreen() {
                 >
                   {fmtMinutes(today?.activeMinutes ?? null)}
                 </Text>
-                <Text className="text-[10px] font-normal text-muted">
+                <Text className="text-2xs font-normal text-muted">
                   Activity
                 </Text>
               </View>
@@ -282,7 +282,7 @@ export default function HomeScreen() {
                 >
                   {fmtMinutes(today?.restMinutes ?? null)}
                 </Text>
-                <Text className="text-[10px] font-normal text-muted">Sleep</Text>
+                <Text className="text-2xs font-normal text-muted">Sleep</Text>
               </View>
               <View className="flex-1 items-center gap-1">
                 <Map size={20} color={muted} />
@@ -292,7 +292,7 @@ export default function HomeScreen() {
                 >
                   {fmtKm(today?.distanceM ?? null)}
                 </Text>
-                <Text className="text-[10px] font-normal text-muted">
+                <Text className="text-2xs font-normal text-muted">
                   Distance
                 </Text>
               </View>

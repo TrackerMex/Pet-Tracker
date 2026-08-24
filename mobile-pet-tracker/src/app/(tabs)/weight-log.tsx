@@ -141,7 +141,7 @@ function WeightLogContent({ petId }: { petId: string }) {
       {weights.data?.kind === 'ok' ? (
         <Card className="gap-4">
           <TextField>
-            <Label className="text-[10px] font-semibold text-foreground">
+            <Label className="text-2xs font-semibold text-foreground">
               Weight
             </Label>
             <Input
@@ -154,7 +154,7 @@ function WeightLogContent({ petId }: { petId: string }) {
             />
           </TextField>
           <TextField>
-            <Label className="text-[10px] font-semibold text-foreground">
+            <Label className="text-2xs font-semibold text-foreground">
               Measured at
             </Label>
             <Input
@@ -166,7 +166,7 @@ function WeightLogContent({ petId }: { petId: string }) {
             />
           </TextField>
           <TextField>
-            <Label className="text-[10px] font-semibold text-foreground">
+            <Label className="text-2xs font-semibold text-foreground">
               Body condition
             </Label>
             <Input

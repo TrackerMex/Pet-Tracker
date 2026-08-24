@@ -233,7 +233,7 @@ export default function MapScreen() {
                   >
                     {fmtSpeed(latestSpeed)}
                   </Text>
-                  <Text className="mt-1 text-[10px] font-normal text-muted">
+                  <Text className="mt-1 text-2xs font-normal text-muted">
                     Speed
                   </Text>
                 </View>
@@ -244,7 +244,7 @@ export default function MapScreen() {
                   >
                     {fmtKm(distanceM)}
                   </Text>
-                  <Text className="mt-1 text-[10px] font-normal text-muted">
+                  <Text className="mt-1 text-2xs font-normal text-muted">
                     Distance
                   </Text>
                 </View>
@@ -255,7 +255,7 @@ export default function MapScreen() {
                   >
                     {updated}
                   </Text>
-                  <Text className="mt-1 text-[10px] font-normal text-muted">
+                  <Text className="mt-1 text-2xs font-normal text-muted">
                     Updated
                   </Text>
                 </View>
@@ -266,7 +266,7 @@ export default function MapScreen() {
                   >
                     {gps}
                   </Text>
-                  <Text className="mt-1 text-[10px] font-normal text-muted">
+                  <Text className="mt-1 text-2xs font-normal text-muted">
                     GPS
                   </Text>
                 </View>

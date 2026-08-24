@@ -85,8 +85,8 @@ export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
             <Text
               className={
                 isActive
-                  ? 'text-[10px] font-semibold text-accent'
-                  : 'text-[10px] font-semibold text-muted'
+                  ? 'text-2xs font-semibold text-accent'
+                  : 'text-2xs font-semibold text-muted'
               }
             >
               {label}
