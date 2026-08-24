@@ -1,5 +1,5 @@
 import { Avatar } from 'heroui-native';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 
 import type { PetProfile } from '../api/types';
 
@@ -23,13 +23,14 @@ export function PetSwitcher({
           return (
             <Pressable
               key={pet.id}
+              accessibilityLabel={pet.name}
               accessibilityRole="button"
               accessibilityState={{ selected }}
               testID={`pet-chip-${pet.id}`}
               className={
                 selected
-                  ? 'flex-row items-center gap-2 rounded-full border-2 border-accent bg-accent-soft px-3 py-2'
-                  : 'flex-row items-center gap-2 rounded-full border-2 border-transparent bg-default px-3 py-2'
+                  ? 'items-center justify-center rounded-full border-2 border-accent bg-accent-soft p-1'
+                  : 'items-center justify-center rounded-full border-2 border-transparent bg-default p-1'
               }
               onPress={() => onSelect(pet.id)}
             >
@@ -44,7 +45,6 @@ export function PetSwitcher({
                   {pet.name.charAt(0).toUpperCase()}
                 </Avatar.Fallback>
               </Avatar>
-              <Text className="font-semibold text-foreground">{pet.name}</Text>
             </Pressable>
           );
         })}
