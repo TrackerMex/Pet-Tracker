@@ -80,6 +80,32 @@ describe('Pet reminders (e2e)', () => {
     return pet;
   }
 
+  async function seedReminder(
+    petId: string,
+    createdBy: string,
+    values: {
+      dueAt: Date;
+      status?: 'scheduled' | 'sent' | 'cancelled';
+      title?: string;
+    },
+  ) {
+    const id = uuidv7();
+    await db.insert(reminders).values({
+      id,
+      petId,
+      type: 'custom',
+      title: values.title ?? `Reminder-${id}`,
+      dueAt: values.dueAt,
+      advanceMinutes: 60,
+      channel: 'push',
+      status: values.status ?? 'scheduled',
+      scheduleName: `reminder-${id}`,
+      enqueuedAt: null,
+      createdBy,
+    });
+    return id;
+  }
+
   beforeAll(async () => {
     const module = await Test.createTestingModule({
       imports: [AppModule],
@@ -112,6 +138,78 @@ describe('Pet reminders (e2e)', () => {
       await db.delete(users).where(inArray(users.id, userIds));
     }
     await app.close();
+  });
+
+  describe('R1: GET lista todos los reminders de la mascota por dueAt', () => {
+    it('responde todos los status ordenados por dueAt ascendente', async () => {
+      const owner = await seedUser('api-r1-order-owner');
+      const pet = await seedPet(owner);
+      const latestId = await seedReminder(pet.id, owner.id, {
+        dueAt: new Date('2031-03-03T10:00:00.000Z'),
+        status: 'cancelled',
+        title: 'Último',
+      });
+      const earliestId = await seedReminder(pet.id, owner.id, {
+        dueAt: new Date('2031-01-01T10:00:00.000Z'),
+        status: 'sent',
+        title: 'Primero',
+      });
+      const middleId = await seedReminder(pet.id, owner.id, {
+        dueAt: new Date('2031-02-02T10:00:00.000Z'),
+        status: 'scheduled',
+        title: 'Segundo',
+      });
+
+      const response = await api()
+        .get(`/v1/pets/${pet.id}/reminders`)
+        .set(auth(owner.token))
+        .expect(200);
+
+      expect(response.body).toEqual([
+        expect.objectContaining({ id: earliestId, status: 'sent' }),
+        expect.objectContaining({ id: middleId, status: 'scheduled' }),
+        expect.objectContaining({ id: latestId, status: 'cancelled' }),
+      ]);
+    });
+
+    it('responde [] cuando la mascota no tiene reminders', async () => {
+      const owner = await seedUser('api-r1-empty-owner');
+      const pet = await seedPet(owner);
+
+      await api()
+        .get(`/v1/pets/${pet.id}/reminders`)
+        .set(auth(owner.token))
+        .expect(200, []);
+    });
+
+    it('permite cualquier rol activo y oculta la mascota a un no-miembro', async () => {
+      const owner = await seedUser('api-r1-access-owner');
+      const family = await seedUser('api-r1-access-family');
+      const outsider = await seedUser('api-r1-access-outsider');
+      const pet = await seedPet(owner);
+      const reminderId = await seedReminder(pet.id, owner.id, {
+        dueAt: new Date('2031-01-01T10:00:00.000Z'),
+      });
+      await db.insert(petUsers).values({
+        petId: pet.id,
+        userId: family.id,
+        role: 'family',
+        status: 'active',
+      });
+
+      const allowed = await api()
+        .get(`/v1/pets/${pet.id}/reminders`)
+        .set(auth(family.token))
+        .expect(200);
+      expect(allowed.body).toEqual([
+        expect.objectContaining({ id: reminderId, petId: pet.id }),
+      ]);
+
+      await api()
+        .get(`/v1/pets/${pet.id}/reminders`)
+        .set(auth(outsider.token))
+        .expect(404);
+    });
   });
 
   describe('R2: POST crea reminder programado con shape exacto', () => {
