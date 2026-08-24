@@ -22,3 +22,9 @@
   actualización de trazabilidad con hashes reales. El baseline móvil quedó
   verde; `init.sh` mostró una inestabilidad de orden en el e2e de vacunas que
   pasó al reejecutar la suite aislada (15/15).
+- Implementación automatizable R1–R9 completada por Codex (2026-08-24 23:15
+  UTC), con pares de commits rojo→verde y trazabilidad real por R-id.
+  `bun run test` (46 suites/517 tests), typecheck, lint y `./init.sh` final
+  quedaron verdes. Reporte: `progress/impl_mobile-pets-profile.md`.
+- Siguiente gate: reviewer. R10 queda reservado al humano en Expo Go; el
+  smoke real de Docs sigue esperando `media-docs-api` (#49).

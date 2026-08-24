@@ -1,10 +1,11 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-08-24
-**Features completadas**: 38/47 (`feature_list.json`)
-**En progreso**: #47 `mobile-design-drift`, implementación R1-R8 completa y
-verde; pendiente de review humano, sin PR por instrucción del handoff.
-**Pendientes**: 8 (#18, #39-#45). Fuente del diseño Figma versionada en
+**Features completadas**: 41/49 (`feature_list.json`)
+**En progreso**: #40 `mobile-pets-profile`, implementación automatizable
+R1-R9 completa y verde; pendientes reviewer y smoke humano R10, sin push por
+instrucción del handoff.
+**Pendientes**: 7 (#18, #41-#45, #49). Fuente del diseño Figma versionada en
 `specs/mobile-figma-polish/design-src/`.
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
@@ -74,14 +75,20 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
-- **`mobile-design-drift` (#47) in_progress** (2026-08-24): implementación
+- **`mobile-pets-profile` (#40) in_progress** (2026-08-24): implementación
+  R1-R9 completa con TDD rojo→verde por requisito: Profile real, persistencia
+  de tema, avatar blobatar compartido, alta de mascota, foto presignada y Docs
+  contra el contrato futuro de #49. Suite móvil 46/46 (517 tests), typecheck,
+  lint y `./init.sh` verdes. Solo se añadieron `blobatar` core y
+  `expo-image-picker`; `@gorhom/bottom-sheet` quedó intacto. Pendientes:
+  reviewer y smoke humano R10; el smoke real de Docs espera a #49. Informe:
+  `progress/impl_mobile-pets-profile.md`.
+
+- **`mobile-design-drift` (#48) done** (2026-08-24): implementación
   R1-R8 completa con TDD rojo→verde por requisito. Añade tokens dedicados
   `rounded-card`/`text-2xs`, un `Card` compartido adoptado por las siete tabs,
-  safe areas uniformes y skeletons dimensionados. Greps de drift limpios;
-  suite móvil 34/34 (379 tests) y `./init.sh` verde. El smoke web no puede
-  montar la app por la incompatibilidad preexistente de `react-native-maps`
-  con Web; la comprobación visual del radio queda para el review en
-  Android/iOS. Informe: `progress/impl_mobile-design-drift.md`.
+  safe areas uniformes y skeletons dimensionados. Informe:
+  `progress/impl_mobile-design-drift.md`.
 
 - **`mobile-map-live` (#36) done** (2026-08-22): tab Map fullscreen —
   `src/api/positions.ts` (last + history) y `trips.ts` (`getDayRoute` compone
