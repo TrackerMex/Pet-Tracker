@@ -15,7 +15,7 @@ tags: [harness, spec]
 | R5 | `src/app/(tabs)/__tests__/health.test.tsx::R5 (mobile-design-drift): aplica el safe area superior al contenido`; `src/app/(tabs)/__tests__/weight-log.test.tsx::R5 (mobile-design-drift): aplica el safe area superior al contenido` | `3af19b8 fix(mobile-design-drift): apply top safe areas (R5)` |
 | R6 | `src/app/(tabs)/__tests__/profile.test.tsx::R6 (mobile-design-drift): usa ScrollView con safe area completo`; `src/app/(tabs)/__tests__/screens.test.tsx` | `daadeaf fix(mobile-design-drift): make profile safe-area aware (R6)` |
 | R7 | `src/app/(tabs)/__tests__/map.test.tsx::R7 (mobile-design-drift): posiciona el overlay bajo el safe area` | `25da57e fix(mobile-design-drift): offset map overlay by safe area (R7)` |
-| R8 | pendiente | pendiente |
+| R8 | `src/app/(tabs)/__tests__/health.test.tsx::R8 (mobile-design-drift): reserva la altura del loading con Skeleton`; `src/app/(tabs)/__tests__/weight-log.test.tsx::R8 (mobile-design-drift): reserva la altura del loading con Skeleton`; `src/app/(tabs)/__tests__/map.test.tsx::R8 (mobile-design-drift): reserva el mapa completo con Skeleton` | `ebc1b15 fix(mobile-design-drift): reserve loading layout with skeletons (R8)` |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
 Convención de commit: `feat(<scope>): <desc> (R1,R2)`.
