@@ -369,3 +369,38 @@ describe('R5: plan del día con horarios y warnings', () => {
     expect(mockGetNutritionPlan).toHaveBeenCalledTimes(2);
   });
 });
+
+describe('R6: aiExplanation nullable con gracia', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  });
+
+  it('omits the AI card without leaving a gap when the explanation is null', async () => {
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan() });
+
+    await renderFood();
+
+    await waitFor(() => expect(screen.getByTestId('food-plan-card')).toBeVisible());
+    expect(screen.queryByTestId('food-ai-card')).toBeNull();
+    expect(screen.getByTestId('food-meals-section')).toBeVisible();
+    expect(screen.getByTestId('meal-schedule-link')).toBeVisible();
+  });
+
+  it('shows the AI recommendation only when the explanation is present', async () => {
+    mockGetNutritionPlan.mockResolvedValue({
+      kind: 'ok',
+      plan: makePlan({
+        aiExplanation: 'Split the daily amount into two balanced meals.',
+      }),
+    });
+
+    await renderFood();
+
+    await waitFor(() => expect(screen.getByTestId('food-ai-card')).toBeVisible());
+    const aiCard = within(screen.getByTestId('food-ai-card'));
+    expect(aiCard.getByText('AI recommendation')).toBeVisible();
+    expect(
+      aiCard.getByText('Split the daily amount into two balanced meals.'),
+    ).toBeVisible();
+  });
+});
