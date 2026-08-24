@@ -206,7 +206,13 @@ export default function MapScreen() {
           </MapView>
           {position === null ? (
             <View
-              style={{ position: 'absolute', top: 64, left: 16, right: 16 }}
+              testID="map-empty-overlay"
+              style={{
+                position: 'absolute',
+                top: insets.top + 12,
+                left: 16,
+                right: 16,
+              }}
               className="items-center rounded-2xl bg-surface p-3"
             >
               <Text testID="map-empty" className="text-muted">
