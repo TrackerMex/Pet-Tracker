@@ -6,79 +6,78 @@ tags: [harness, spec, mobile]
 
 # Requisitos — [[mobile-reminders]]
 
-> Notación EARS. Cada requisito tiene id único R<n>, inmutable una vez aprobado.
-> Ver [[design]] para las decisiones técnicas (D1–D11). R1 toca backend y SÍ
-> respeta las capas de `docs/architecture.md`; el resto es app móvil, donde
-> aplican kebab-case, tests que nombran su R-id y las convenciones de
+> Notación EARS. Cada requisito tiene id único R<n>, inmutable una vez
+> aprobado. Ver [[design]] (D1–D11). Feature 100% móvil: aplican
 > `docs/conventions.md` §Convenciones de la app móvil — **incluidas las dos
 > nuevas**: Estructura Expo oficial (route file delgado + screen body en
-> `src/screens/`) y Dimensiones de pantalla uniformes (métricas de `home.tsx`,
-> Skeleton dimensionado, `PetSwitcher` compartido). #39 es la PRIMERA feature
-> bajo esa estructura: los paths de esta spec son normativos.
-> Contratos del backend verificados contra el código real el 2026-08-24
-> ([[design]] §D2/§D3, `reminders.controller.ts`, `reminder.dto.ts`,
-> `reminder.mapper.ts`).
+> `src/screens/`) y Dimensiones de pantalla uniformes (métricas de
+> `home.tsx`, Skeleton dimensionado, `PetSwitcher` compartido). #39 es la
+> PRIMERA feature bajo esa estructura: los paths de esta spec son
+> normativos.
+> Contratos del backend = los de **#47 (reminders-api)**, verificados
+> contra `specs/reminders-api/design.md` §D3 y el código existente del
+> módulo (`reminder.dto.ts`, `reminder.mapper.ts`) el 2026-08-24.
 > Diseño de referencia: `specs/mobile-figma-polish/design-src/App.tsx` —
 > `RemindersScreen` líneas 905–971, `AddReminderScreen` líneas 976–1107.
 
-## Contexto fijo (no reabrir)
+## Dependencia dura
 
+**#47 (reminders-api) debe estar `done` (aprobada por reviewer y mergeada)
+antes del handoff de #39 a Codex.** Esta spec consume sus dos endpoints:
+`GET /pets/:petId/reminders` (listado) y
+`DELETE /pets/:petId/reminders/:id` (borrado real, 204). El leader no
+lanza el handoff hasta verificarlo en `feature_list.json`.
+
+## Contexto fijo (no reabrir — decisiones del gate humano, 2026-08-24)
+
+- **Gate resuelto**: (1) el GET de listado y (2) el DELETE real viven en
+  #47, no aquí; (3) la entrada a Reminders es por el tab **Profile**;
+  (4) fecha/hora con **picker nativo**, no TextInput; (5) los 7 tipos del
+  backend como chips quedan como estaban.
 - Base: estado tras #38 — tabs reales; `SelectedPetProvider` en
   `src/app/(tabs)/_layout.tsx`; `useApi` con stale-while-revalidate (401 →
   `signOut()`); clientes `fetchFn`/`kind` en `src/api/` (`http.ts` con
-  `getJson`/`postJson`/`readJson`/`apiUrl` — **no existe `patchJson`, lo
-  añade R4**). Rutas ocultas fuera de la tab bar por el array `TABS` de
+  `getJson`/`postJson`/`readJson`/`apiUrl` — **no existe `deleteJson`, lo
+  añade R3**). Rutas ocultas fuera de la tab bar por el array `TABS` de
   `floating-tab-bar.tsx` (mismo mecanismo que `weight-log`/`meal-schedule`)
   — **cero cambios** en `_layout.tsx` y `floating-tab-bar.tsx`.
-- El backend de reminders HOY solo expone `POST /pets/:petId/reminders`
-  (rol owner, 201) y `PATCH /reminders/:id` (editar/cancelar). **No hay GET
-  de listado ni DELETE**: R1 añade el GET mínimo; el "borrado" del criterio
-  de aceptación es la cancelación existente ([[design]] §D3). No se añade
-  DELETE.
-- `CreateReminderSchema` es `strictObject`: solo `type`, `title` (trim,
-  1–120), `dueAt` (ISO con offset, **futuro**), `advanceMinutes` (int
-  0–10080, opcional, default backend 60). Tipos:
+- Contratos backend (POST existente + #47): `CreateReminderSchema` es
+  `strictObject`: solo `type`, `title` (trim, 1–120), `dueAt` (ISO con
+  offset, **futuro**), `advanceMinutes` (int 0–10080, opcional). Tipos:
   `vaccine | deworming | medication | appointment | weight | food | custom`;
   status `scheduled | sent | cancelled`. `ReminderResponse` =
-  `{ id, petId, type, title, dueAt, advanceMinutes, status }`.
-- **Cero dependencias nuevas** en `mobile-pet-tracker/` ([[design]] §D6:
-  fecha/hora por `TextInput`, sin datetimepicker; confirmación con
-  `Alert.alert` de react-native). **`expo-notifications` NO se instala**:
+  `{ id, petId, type, title, dueAt, advanceMinutes, status }`. POST → 201;
+  GET → 200 array orden `dueAt` asc (todos los status); DELETE → 204 sin
+  body, solo owner (403 caregiver/viewer, 404 inexistente/no-miembro).
+  El PATCH de cancelación NO se usa en esta feature.
+- **Única dependencia nueva permitida:
+  `@react-native-community/datetimepicker`** — excepción justificada a
+  "cero deps" decidida en el gate ([[design]] §D6): está incluida en Expo
+  Go (verificado en `expo/bundledNativeModules.json` del proyecto, v9.1.0
+  para SDK 57) y se instala con `bunx expo install
+  @react-native-community/datetimepicker` desde `mobile-pet-tracker/`.
+  Ninguna otra dependencia. **`expo-notifications` NO se instala**:
   notificaciones locales fuera de alcance (backlog).
-- Decisión de #33 (vigente): funciones de `src/api/` reciben `token`/`fetchFn`
-  por parámetro, nunca importan React ni storage. Tipos a mano en
-  `src/api/types.ts`.
+- Decisión de #33 (vigente): funciones de `src/api/` reciben
+  `token`/`fetchFn` por parámetro, nunca importan React ni storage. Tipos
+  a mano en `src/api/types.ts`.
 - UI en inglés (decisión de #38 vigente); el diseño está en español, los
   literales de esta spec son los normativos.
 - Lección de #34 (vigente): offsets numéricos por `style` inline; el resto
-  `className` + tokens (cero hex, cero `StyleSheet.create`). Sin imagen hero
-  ni gradientes del diseño (misma línea que #38 D9).
+  `className` + tokens (cero hex, cero `StyleSheet.create`). Sin imagen
+  hero ni gradientes del diseño (misma línea que #38 D9).
+- `profile.tsx` es placeholder y **#40 lo reescribe**: el link a Reminders
+  se añade de forma mínima (R10) y #40 DEBE conservarlo (testID
+  `reminders-link` + `router.push('/reminders')`) — anotado también en
+  [[design]] §D10.
 - Smoke humano 100% **Expo Go** (`bunx expo start --go`), SDK 57, Android
-  físico. Nada nativo nuevo.
+  físico. Nada nativo nuevo fuera del picker bundled.
 
 ## Requisitos funcionales
 
-### Backend — listado de reminders (única adición, R1)
+### Cliente API (`src/api/reminders.ts`, nuevo)
 
-- **R1**: WHEN un usuario con membresía activa sobre la mascota hace
-  `GET /v1/pets/:petId/reminders` THE SYSTEM SHALL responder 200 con
-  `ReminderResponse[]` (vía `toReminderResponse`) de TODOS los reminders de
-  la mascota (todo status), ordenados por `dueAt` ascendente; IF el usuario
-  no es miembro activo THEN el `PetAccessGuard` existente responde 404 (sin
-  `@RequirePetRole`: cualquier rol lee, como los GET de nutrition). Capas:
-  `listByPet(petId)` en `ReminderRepository` (domain) +
-  `ReminderDrizzleRepository` (infra, `orderBy(asc(reminders.dueAt))`),
-  `ListRemindersUseCase` (application), método `@Get()` en
-  `PetRemindersController` (infra). Firmas exactas en [[design]] §D2.
-  *Tests: `backend-pet-tracker/src/modules/reminders/application/use-cases/list-reminders.use-case.spec.ts`
-  (nuevo) → `describe('R1: ListRemindersUseCase delega en listByPet', ...)`;
-  y `backend-pet-tracker/test/pet-reminders.e2e-spec.ts` (extender) →
-  casos `R1:` de 200 con orden asc, lista vacía `[]`, y 404 de no-miembro.
-  ROJO primero.*
-
-### Cliente API móvil (`src/api/reminders.ts`, nuevo)
-
-- **R2**: WHEN se llama `listReminders(baseUrl, token, petId, fetchFn)` de
+- **R1**: WHEN se llama `listReminders(baseUrl, token, petId, fetchFn)` de
   `mobile-pet-tracker/src/api/reminders.ts` THE SYSTEM SHALL hacer
   `GET ${baseUrl}/pets/${petId}/reminders` vía `getJson` de `http.ts` y
   devolver un `RemindersState`:
@@ -90,11 +89,11 @@ tags: [harness, spec, mobile]
   - `fetchFn` lanza → `{ kind: 'unreachable', message }`;
   - `baseUrl` undefined → `{ kind: 'missing-config' }` sin llamar `fetchFn`.
   *Test: `mobile-pet-tracker/src/api/__tests__/reminders.test.ts` (nuevo)
-  → `describe('R2: listReminders mapea la respuesta por kind', ...)` con
+  → `describe('R1: listReminders mapea la respuesta por kind', ...)` con
   `fetchFn` stub por caso, asserts de URL exacta y header Bearer. ROJO
   primero.*
 
-- **R3**: WHEN se llama
+- **R2**: WHEN se llama
   `createReminder(baseUrl, token, petId, input, fetchFn)` del mismo archivo
   (`input: CreateReminderInput = { type, title, dueAt, advanceMinutes }`,
   §D4) THE SYSTEM SHALL hacer `POST ${baseUrl}/pets/${petId}/reminders` vía
@@ -107,48 +106,47 @@ tags: [harness, spec, mobile]
   - otro status / body no objeto → `{ kind: 'error' }`;
   - `fetchFn` lanza → `{ kind: 'unreachable', message }`;
   - `baseUrl` undefined → `{ kind: 'missing-config' }`.
-  *Test: mismo archivo → `describe('R3: createReminder publica y mapea por
+  *Test: mismo archivo → `describe('R2: createReminder publica y mapea por
   kind', ...)` con asserts de method POST, body JSON exacto y status 201.
   ROJO primero.*
 
-- **R4**: WHEN se llama `cancelReminder(baseUrl, token, reminderId, fetchFn)`
-  del mismo archivo THE SYSTEM SHALL hacer
-  `PATCH ${baseUrl}/reminders/${reminderId}` con body
-  `{ "status": "cancelled" }` vía **`patchJson` nuevo en `src/api/http.ts`**
-  (misma firma y manejo que `postJson`, method `PATCH`) y devolver un
-  `CancelReminderState`:
-  - HTTP 200 con body objeto → `{ kind: 'ok', reminder }`;
+- **R3**: WHEN se llama
+  `deleteReminder(baseUrl, token, petId, reminderId, fetchFn)` del mismo
+  archivo THE SYSTEM SHALL hacer
+  `DELETE ${baseUrl}/pets/${petId}/reminders/${reminderId}` vía
+  **`deleteJson` nuevo en `src/api/http.ts`** (misma firma y manejo que
+  `getJson`, method `DELETE`, sin body) y devolver un
+  `DeleteReminderState`:
+  - HTTP 204 → `{ kind: 'ok' }` (sin leer body);
   - HTTP 404 → `{ kind: 'not-found' }`;
   - HTTP 403 → `{ kind: 'forbidden' }`;
-  - HTTP 409 (`ReminderNotEditableError`: ya sent/cancelled) →
-    `{ kind: 'conflict' }`;
   - HTTP 401 → `{ kind: 'unauthorized' }`;
-  - otro status / body no objeto → `{ kind: 'error' }`;
+  - otro status → `{ kind: 'error' }`;
   - `fetchFn` lanza → `{ kind: 'unreachable', message }`;
   - `baseUrl` undefined → `{ kind: 'missing-config' }`.
   AND ningún archivo bajo `src/api/` SHALL importar React ni
   `expo-secure-store` (regla #33; reviewer grep).
-  *Test: mismo archivo → `describe('R4: cancelReminder parchea y mapea por
-  kind', ...)` con asserts de method PATCH y body exacto (cubre `patchJson`;
-  no hay suite propia de http.ts). ROJO primero.*
+  *Test: mismo archivo → `describe('R3: deleteReminder borra y mapea por
+  kind', ...)` con asserts de method DELETE, URL exacta y ausencia de body
+  (cubre `deleteJson`; no hay suite propia de http.ts). ROJO primero.*
 
 ### Utilidades de fecha (`src/utils/reminder-dates.ts`, nuevo)
 
-- **R5**: WHEN se llama `parseDueAt(dateText, timeText)` de
-  `mobile-pet-tracker/src/utils/reminder-dates.ts` THE SYSTEM SHALL parsear
-  `dateText` `DD/MM/AAAA` y `timeText` `HH:MM` a un `Date` local y devolver
-  `null` si el formato no casa o la fecha no existe (verificación
-  round-trip: el `Date` construido debe reproducir día/mes/año/hora/minuto);
-  AND WHEN se llama `daysUntil(from, to)` THE SYSTEM SHALL devolver
-  `Math.ceil((to - from) / 86_400_000)` (entero, puede ser negativo).
-  *Test: `mobile-pet-tracker/src/utils/reminder-dates.test.ts` (colocado al
-  lado, convención nueva) → `describe('R5: reminder-dates parsea y cuenta
-  días', ...)` con casos: fecha válida, `31/02/2026` → null, formato malo →
-  null, daysUntil 0/positivo/negativo con fechas fijas. ROJO primero.*
+- **R4**: WHEN se llama `combineDateAndTime(date, time)` de
+  `mobile-pet-tracker/src/utils/reminder-dates.ts` (ambos `Date`, salidos
+  de los pickers de R8) THE SYSTEM SHALL devolver un `Date` local con
+  año/mes/día de `date` y hora/minuto de `time` (segundos y ms a 0); AND
+  WHEN se llama `daysUntil(from, to)` THE SYSTEM SHALL devolver
+  `Math.ceil((to.getTime() - from.getTime()) / 86_400_000)` (entero, puede
+  ser negativo).
+  *Test: `mobile-pet-tracker/src/utils/reminder-dates.test.ts` (colocado
+  al lado, convención nueva) → `describe('R4: reminder-dates combina y
+  cuenta días', ...)` con fechas fijas: combinación correcta, daysUntil
+  0/positivo/negativo. ROJO primero.*
 
 ### Pantalla Reminders (`src/screens/reminders/index.tsx`, nueva)
 
-- **R6**: WHEN Reminders monta con sesión activa THE SYSTEM SHALL renderizar
+- **R5**: WHEN Reminders monta con sesión activa THE SYSTEM SHALL renderizar
   `RemindersScreen` (export de `src/screens/reminders/index.tsx`) dentro de
   un `ScrollView` `testID="screen-reminders"` con las métricas uniformes
   (`contentContainerStyle`: `paddingTop: insets.top + 12`, `padding: 24`,
@@ -168,13 +166,13 @@ tags: [harness, spec, mobile]
     THEN SHALL mostrar `Something went wrong` (`testID="reminders-error"`)
     con `Button` `Retry` (`testID="reminders-retry"`) que llama `refetch`.
   *Test: `mobile-pet-tracker/src/screens/reminders/index.test.tsx` (colocado
-  junto al screen body, convención nueva) → `describe('R6: reminders monta
+  junto al screen body, convención nueva) → `describe('R5: reminders monta
   con métricas y estados', ...)` mockeando `../../api/pets`,
   `../../api/reminders`, `../../providers/auth-provider` y `expo-router`;
   `SelectedPetProvider` real como wrapper (patrón #37/#38); assert del
   `contentContainerStyle` exacto. ROJO primero.*
 
-- **R7**: WHEN `listReminders` resuelve `ok` con elementos THE SYSTEM SHALL
+- **R6**: WHEN `listReminders` resuelve `ok` con elementos THE SYSTEM SHALL
   mostrar (fecha "ahora" = reloj del dispositivo, tests con fake timers):
   - las tres pills resumen (diseño l.931–942): `testID="pill-active"` =
     nº con status `scheduled`, `testID="pill-week"` = nº `scheduled` con
@@ -194,33 +192,34 @@ tags: [harness, spec, mobile]
   - AND la pantalla SHALL refetchear la lista al recuperar el foco
     (`useFocusEffect` de expo-router, [[design]] §D9) para que el alta de
     AddReminder aparezca al volver.
-  *Test: mismo archivo → `describe('R7: lista con pills, badges y refetch
+  *Test: mismo archivo → `describe('R6: lista con pills, badges y refetch
   on focus', ...)` con `jest.useFakeTimers` + `setSystemTime` y fixtures:
   scheduled próximo (badge), scheduled lejano (sin badge), sent y
   cancelled (opacidad + status). ROJO primero.*
 
-- **R8**: WHILE una fila tiene status `scheduled` THE SYSTEM SHALL mostrar
-  su botón de cancelación (`testID="reminder-cancel-<id>"`); WHEN se pulsa
-  THE SYSTEM SHALL pedir confirmación con `Alert.alert` de react-native
-  ([[design]] §D10) y, al confirmar, llamar `cancelReminder`:
-  - `ok` o `conflict` (otra sesión ya lo canceló) → refetch de la lista;
-  - `forbidden` → mostrar `Only the owner can cancel`
+- **R7**: WHILE una fila existe (cualquier status — el DELETE de #47 borra
+  cualquier reminder) THE SYSTEM SHALL mostrar su botón de borrado
+  (`testID="reminder-delete-<id>"`); WHEN se pulsa THE SYSTEM SHALL pedir
+  confirmación con `Alert.alert` de react-native ([[design]] §D10 — el
+  borrado es irreversible) y, al confirmar, llamar
+  `deleteReminder(baseUrl, token, petId, id)`:
+  - `ok` → refetch de la lista (la fila desaparece);
+  - `not-found` (otra sesión ya lo borró) → refetch de la lista;
+  - `forbidden` → mostrar `Only the owner can delete`
     (`testID="reminders-action-error"`);
-  - `not-found | error | missing-config` → `Something went wrong`
-    (mismo testID); `unreachable` → `Cannot reach server` (mismo testID);
-  - WHILE el PATCH vuela el botón de esa fila SHALL estar deshabilitado.
-  Las filas `sent`/`cancelled` NO muestran el botón (no hay reactivación,
-  [[design]] §D3).
-  *Test: mismo archivo → `describe('R8: cancelar recordatorio con
+  - `error | missing-config` → `Something went wrong` (mismo testID);
+  - `unreachable` → `Cannot reach server` (mismo testID);
+  - WHILE el DELETE vuela el botón de esa fila SHALL estar deshabilitado.
+  *Test: mismo archivo → `describe('R7: borrar recordatorio con
   confirmación', ...)` con spy de `Alert.alert` (invocando el botón
-  confirmatorio del spy), `cancelReminder` mockeado por kind y assert de
-  nuevo `listReminders` tras `ok`. ROJO primero.*
+  confirmatorio del spy), `deleteReminder` mockeado por kind y assert de
+  nuevo `listReminders` tras `ok` y `not-found`. ROJO primero.*
 
 ### Pantalla AddReminder (`src/screens/add-reminder/index.tsx`, nueva)
 
-- **R9**: WHEN AddReminder monta THE SYSTEM SHALL renderizar
+- **R8**: WHEN AddReminder monta THE SYSTEM SHALL renderizar
   `AddReminderScreen` (export de `src/screens/add-reminder/index.tsx`) con
-  `testID="screen-add-reminder"`, las mismas métricas uniformes de R6,
+  `testID="screen-add-reminder"`, las mismas métricas uniformes de R5,
   título `Add reminder`, botón `testID="add-reminder-back"` que llama
   `router.back()`, y el formulario (diseño l.1022–1096, campos no
   persistibles fuera de alcance):
@@ -229,9 +228,15 @@ tags: [harness, spec, mobile]
     seleccionado con `accessibilityState={{ selected: true }}`, default
     `vaccine`;
   - `TextInput` título (`testID="title-input"`, `maxLength={120}`);
-  - `TextInput` fecha (`testID="date-input"`, placeholder `DD/MM/AAAA`) y
-    hora (`testID="time-input"`, placeholder `HH:MM`, valor inicial
-    `09:00`) — texto plano, sin picker ([[design]] §D6);
+  - campo fecha: `Pressable` `testID="date-field"` que muestra la fecha
+    elegida (`toLocaleDateString()`) o `Select a date`, y al pulsarse abre
+    un `DateTimePicker` de `@react-native-community/datetimepicker`
+    (`testID="date-picker"`, `mode="date"`,
+    `minimumDate={new Date()}`) — visible solo mientras se elige; al
+    recibir `onChange` con fecha SHALL guardarla y cerrar el picker
+    ([[design]] §D6);
+  - campo hora: ídem con `testID="time-field"` /
+    `testID="time-picker"` (`mode="time"`), valor inicial 09:00;
   - chips de alerta (`testID="advance-chip-<minutes>"`): `Same day` → 0,
     `1 day before` → 1440, `3 days before` → 4320, `7 days before` → 10080;
     default 10080 (diseño l.986);
@@ -239,19 +244,23 @@ tags: [harness, spec, mobile]
   IF `selectedPetId === null` THEN SHALL renderizar
   `<Redirect href="/reminders" />` (patrón weight-log #37).
   *Test: `mobile-pet-tracker/src/screens/add-reminder/index.test.tsx` →
-  `describe('R9: formulario de alta con chips y campos', ...)` mockeando
-  `../../api/reminders`, `../../providers/auth-provider` y `expo-router`;
-  `SelectedPetProvider` real con selección inicial. ROJO primero.*
+  `describe('R8: formulario de alta con chips y pickers', ...)` mockeando
+  `../../api/reminders`, `../../providers/auth-provider`, `expo-router` y
+  `@react-native-community/datetimepicker` (mock component que expone
+  `onChange` — patrón en [[design]] §D6); asserts: picker no visible al
+  montar, visible tras pulsar el campo, fecha reflejada tras `onChange`.
+  ROJO primero.*
 
-- **R10**: WHEN se pulsa `Save reminder` THE SYSTEM SHALL validar en local:
-  IF `title.trim()` vacío THEN `Title is required`; ELSE IF
-  `parseDueAt(date, time)` es `null` THEN `Enter a valid date (DD/MM/AAAA)`;
-  ELSE IF el `Date` no es futuro THEN `Date must be in the future` — todos
-  en `testID="add-reminder-error"` sin llamar la API. IF la validación pasa
-  THEN SHALL llamar `createReminder` con
-  `{ type, title: title.trim(), dueAt: parsed.toISOString(), advanceMinutes }`
-  y, según `kind`:
-  - `ok` → `router.back()` (Reminders refetchea por foco, R7);
+- **R9**: WHEN se pulsa `Save reminder` THE SYSTEM SHALL validar en local:
+  IF `title.trim()` vacío THEN `Title is required`; ELSE IF no hay fecha
+  elegida THEN `Pick a date`; ELSE IF
+  `combineDateAndTime(fecha, hora)` no es futuro THEN
+  `Date must be in the future` — todos en `testID="add-reminder-error"`
+  sin llamar la API. IF la validación pasa THEN SHALL llamar
+  `createReminder` con `{ type, title: title.trim(), dueAt:
+  combineDateAndTime(fecha, hora).toISOString(), advanceMinutes }` y,
+  según `kind`:
+  - `ok` → `router.back()` (Reminders refetchea por foco, R6);
   - `forbidden` → `Only the owner can create reminders`;
   - `invalid` → `Date must be in the future` (única causa realista de 400
     tras validar local: carrera con el reloj);
@@ -259,14 +268,14 @@ tags: [harness, spec, mobile]
   - `unreachable` → `Cannot reach server`;
   (todos en `testID="add-reminder-error"`); AND WHILE el POST vuela el
   botón SHALL estar deshabilitado.
-  *Test: mismo archivo → `describe('R10: guardar con validación y
+  *Test: mismo archivo → `describe('R9: guardar con validación y
   degradación por kind', ...)` con fake timers para el caso futuro/pasado,
   assert del body exacto enviado y de `router.back()` en ok. ROJO
   primero.*
 
-### Navegación y estructura (rutas delgadas, R11)
+### Navegación y estructura (rutas delgadas, R10)
 
-- **R11**: WHEN el usuario navega THE SYSTEM SHALL exponer las rutas
+- **R10**: WHEN el usuario navega THE SYSTEM SHALL exponer las rutas
   ocultas `/reminders` y `/add-reminder` con **route files delgados**
   (convención nueva): `src/app/(tabs)/reminders.tsx` exporta default un
   componente que solo renderiza `<RemindersScreen />` importado de
@@ -274,52 +283,62 @@ tags: [harness, spec, mobile]
   `<AddReminderScreen />` de `../../screens/add-reminder` — sin lógica, sin
   estado, sin estilos (reviewer verifica por diff que cada route file queda
   en <10 líneas); ambas quedan fuera de la tab bar sin tocar
-  `floating-tab-bar.tsx` ni `_layout.tsx`. AND la pantalla Health
-  (`src/app/(tabs)/health.tsx`) SHALL mostrar el `Pressable`
-  `testID="reminders-link"` (texto `Reminders`, mismo patrón visual que
-  `weight-log-link`) que llama `router.push('/reminders')`.
-  *Test: `mobile-pet-tracker/src/app/(tabs)/__tests__/health.test.tsx`
-  (extender, test-primero: las suites existentes NO se modifican, solo se
-  añade) → `describe('R11: health enlaza a reminders', ...)` con assert de
-  `router.push('/reminders')`. Los route files quedan cubiertos por el
-  smoke R13 y el diff del reviewer. ROJO primero.*
+  `floating-tab-bar.tsx` ni `_layout.tsx`. AND el tab Profile
+  (`src/app/(tabs)/profile.tsx`, hoy placeholder) SHALL mostrar el
+  `Pressable` `testID="reminders-link"` (texto `Reminders`, mismo patrón
+  visual que `weight-log-link` de health) que llama
+  `router.push('/reminders')` — **cambio mínimo sobre el placeholder**:
+  se añade el Pressable sin tocar nada más (`screen-profile`, health
+  check, theme toggle y sign out intactos, sus tests actuales siguen
+  verdes sin modificación). NOTA para #40 (reescritura de Profile): la
+  pantalla nueva DEBE conservar `reminders-link` y su navegación; queda
+  anotado aquí y en [[design]] §D10 para la spec de #40.
+  *Test: `mobile-pet-tracker/src/app/(tabs)/__tests__/profile.test.tsx`
+  (extender, test-primero: solo se añade un describe nuevo) →
+  `describe('R10: profile enlaza a reminders', ...)` mockeando
+  `expo-router` con assert de `router.push('/reminders')`. Los route
+  files quedan cubiertos por el smoke R12 y el diff del reviewer. ROJO
+  primero.*
 
 ### Tipado y contención
 
-- **R12**: WHEN se ejecuta `bun run typecheck` y `bun run lint` en
+- **R11**: WHEN se ejecuta `bun run typecheck` y `bun run lint` en
   `mobile-pet-tracker/` THE SYSTEM SHALL salir con exit 0; AND
   `bun run test` SHALL quedar verde con las suites de #33–#38 y #46
   intactas (único diff sobre tests existentes: la extensión de
-  `health.test.tsx` de R11); AND `pnpm -C backend-pet-tracker run test`
-  y `./init.sh` SHALL salir con exit 0; AND el diff de backend SHALL
-  tocar SOLO `backend-pet-tracker/src/modules/reminders/` y
-  `backend-pet-tracker/test/pet-reminders.e2e-spec.ts`; AND
-  `mobile-pet-tracker/package.json` SHALL quedar sin diff (cero deps
-  nuevas; `expo-notifications` no aparece en el código).
+  `profile.test.tsx` de R10); AND `./init.sh` SHALL salir con exit 0; AND
+  el diff de `mobile-pet-tracker/package.json` SHALL contener
+  **exactamente una** dependencia nueva
+  (`@react-native-community/datetimepicker`, instalada con `bunx expo
+  install`) y ninguna otra; AND `backend-pet-tracker/` SHALL quedar sin
+  diff en esta branch (el backend es #47); AND `expo-notifications` NO
+  SHALL aparecer ni en `package.json` ni en el código.
   *Verificación: implementer lo anota en
   `progress/impl_mobile-reminders.md`; reviewer re-ejecuta y corre
-  `git diff --stat main...HEAD -- backend-pet-tracker/ | grep -v "modules/reminders\|pet-reminders.e2e"`
-  (vacío), `git diff main...HEAD -- mobile-pet-tracker/package.json`
-  (vacío) y `grep -rn "expo-notifications" mobile-pet-tracker/src/`
-  (vacío).*
+  `git diff --stat main...HEAD -- backend-pet-tracker/` (vacío),
+  `git diff main...HEAD -- mobile-pet-tracker/package.json` (solo la
+  línea del picker) y
+  `grep -rn "expo-notifications" mobile-pet-tracker/` (vacío, excluyendo
+  node_modules).*
 
 ### Prueba de humo del humano
 
-- **R13**: WHEN el humano ejecuta la prueba de humo **en Expo Go** THE
-  SYSTEM SHALL mostrar el flujo completo contra el backend local
-  (misma WiFi, `.env` con IP LAN, `docker compose up -d` +
+- **R12**: WHEN el humano ejecuta la prueba de humo **en Expo Go** THE
+  SYSTEM SHALL mostrar el flujo completo contra el backend local con #47
+  mergeado (misma WiFi, `.env` con IP LAN, `docker compose up -d` +
   `pnpm -C backend-pet-tracker run start:dev`):
   1. `bunx expo start --go` desde `mobile-pet-tracker/` y escanear el QR.
-  2. Login → tab Health → link `Reminders` → pantalla vacía
+  2. Login → tab Profile → link `Reminders` → pantalla vacía
      (`No reminders yet`), sin salto de layout (skeleton dimensionado).
-  3. `New` → Add reminder: elegir tipo, título, fecha futura → `Save` →
-     vuelve a la lista y el reminder aparece sin refrescar a mano.
-  4. Fecha pasada o título vacío → error de formulario sin llamada de red.
+  3. `New` → Add reminder: elegir tipo y título; el campo fecha abre el
+     picker NATIVO de fecha y el de hora el de hora (Expo Go, sin crash) →
+     `Save` → vuelve a la lista y el reminder aparece sin refrescar a mano.
+  4. Título vacío o sin fecha → error de formulario sin llamada de red.
   5. Reminder con `dueAt` a pocos días → badge `Upcoming!` y pill
      `This week` coherentes.
-  6. Cancelar un reminder → confirmación → pasa a `Cancelled` con
-     opacidad reducida y sin botón de cancelar.
-  7. Con cuenta no-owner: crear y cancelar degradan con mensaje, sin crash.
+  6. Borrar un reminder → confirmación → la fila desaparece y el GET
+     posterior ya no lo trae (borrado real).
+  7. Con cuenta no-owner: crear y borrar degradan con mensaje, sin crash.
   8. Cambiar de mascota en el `PetSwitcher` → la lista se recarga.
   9. Backend apagado → `Something went wrong` + Retry funcional.
   10. Tab bar flotante no tapa contenido en ambas pantallas.
@@ -328,36 +347,20 @@ tags: [harness, spec, mobile]
 
 ## Fuera de alcance
 
+- **Backend**: GET listado y DELETE viven en #47 (`specs/reminders-api/`);
+  esta feature no toca `backend-pet-tracker/`.
 - **Notificaciones push/locales en el dispositivo** (explícito en
   `feature_list.json` #39): requeriría `expo-notifications` y dev build;
   backlog. El backend ya agenda/despacha por su lado (`channel: 'push'`);
   esta feature no lo toca.
-- **Editar/reprogramar** un reminder (el PATCH de edición existe pero la UI
-  v1 solo cancela). Feature futura si el humano la pide.
-- **Reactivar** un reminder cancelado y **hard delete** (no existen en
-  backend; el toggle del diseño degrada a cancelación unidireccional §D3).
+- **Editar/reprogramar** un reminder (el PATCH de edición existe pero la
+  UI v1 solo lista/crea/borra). **Cancelar** (PATCH `cancelled`) tampoco:
+  el gate eligió borrado real.
 - Campos del diseño sin respaldo en backend: veterinario, clínica, teléfono
   de emergencia, notas y repetición (l.1049–1096) — el schema strict los
   rechazaría.
-- Resumen `Esta semana` como filtro interactivo (las pills son informativas).
+- Resumen `This week` como filtro interactivo (las pills son informativas).
 - Imagen hero de la mascota y gradientes del diseño (línea #38 D9).
-- Cambios en backend fuera del GET de listado de R1 (nada de DELETE, nada
-  en scheduler/dispatch).
-
-## Decisiones para el gate humano
-
-1. **Alcance backend en #39**: `feature_list.json` solo listaba archivos
-   móviles, pero sin `GET /pets/:petId/reminders` el listado es imposible.
-   R1 lo añade mínimo y por capas. ¿OK dentro de esta feature?
-2. **Borrado = cancelación**: no hay DELETE en backend; el criterio
-   "borrado" se cumple con `PATCH {status:'cancelled'}`, unidireccional y
-   con confirmación `Alert.alert`. ¿OK?
-3. **Entrada por Health** (`reminders-link`, patrón weight-log). La
-   alternativa era Profile. ¿OK?
-4. **Fecha/hora por TextInput** (`DD/MM/AAAA` + `HH:MM`): cero deps nuevas
-   y compatible Expo Go; sin picker nativo en v1. ¿OK?
-5. Los 7 tipos del backend se exponen tal cual como chips (el diseño
-   muestra 5 categorías propias que no casan 1:1). ¿OK?
 
 ## Aprobación
 

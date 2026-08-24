@@ -6,6 +6,11 @@ tags: [harness, spec, mobile]
 
 # Trazabilidad — [[mobile-reminders]]
 
+> Renumerada el 2026-08-24 tras el gate humano (el antiguo R1 de GET
+> backend se movió a #47 `specs/reminders-api/`; borrado por DELETE;
+> entrada por Profile; picker nativo). La spec estaba en draft: la
+> renumeración es válida (los R-id son inmutables solo tras aprobación).
+
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
 | R1 | pendiente | pendiente |
@@ -18,9 +23,8 @@ tags: [harness, spec, mobile]
 | R8 | pendiente | pendiente |
 | R9 | pendiente | pendiente |
 | R10 | pendiente | pendiente |
-| R11 | pendiente | pendiente |
-| R12 | verificación manual (typecheck/lint/tests/init.sh + greps del reviewer) | pendiente |
-| R13 | smoke humano en Expo Go (checklist en requirements) | pendiente |
+| R11 | verificación manual (typecheck/lint/tests/init.sh + greps del reviewer) | pendiente |
+| R12 | smoke humano en Expo Go (checklist en requirements) | pendiente |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
 Convención de commit: `feat(mobile-reminders): <desc> (R1,R2)`.
