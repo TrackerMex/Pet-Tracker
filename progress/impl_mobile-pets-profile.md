@@ -128,3 +128,22 @@ final completo pasó sin reintento.
   `bun run typecheck` y `bun run lint` terminaron con exit 0.
 - El smoke humano R10 queda pendiente de repetirse en Expo Go; este fix no lo
   marca como completado. La parte Docs sigue bloqueada por #49.
+
+## R10 — corrección de smoke 4 (2026-08-25)
+
+- Hallazgo del smoke humano: fix3 no surtía efecto porque AddPet volvía con
+  `router.replace('/profile')`; sobre el navegador de tabs esa acción no
+  producía el ciclo de foco que dispara el `useFocusEffect` de Profile.
+- Corrección: el éxito de AddPet, tanto sin foto como después de subirla,
+  vuelve con `router.back()`, igual que AddReminder. Profile no ejecuta el
+  auto-select sobre datos stale mientras `pets.isRefreshing`, por lo que no
+  pisa el id de la mascota recién creada antes de que termine el refetch.
+- TDD: `d3c00cd` demuestra los tres rojos (navegación sin/con foto y carrera
+  de selección) → `9bf01bc` aplica los dos cambios puntuales y estabiliza la
+  espera observable del preview en el test de foto.
+- No se tocaron hooks API, layouts, tabs, floating tab bar, capa API, backend
+  ni infraestructura; no se añadieron dependencias.
+- Gates móviles: `bun run test --runInBand` (45 suites / 513 tests / 1
+  snapshot), `bun run typecheck` y `bun run lint` terminaron con exit 0.
+- El smoke humano R10 queda pendiente de repetirse en Expo Go; este fix no lo
+  marca como completado. La parte Docs sigue bloqueada por #49.

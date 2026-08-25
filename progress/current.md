@@ -41,3 +41,9 @@
   alta/foto quede stale al volver de AddPet. Ciclo TDD `a8cbd7e` rojo →
   `c3ce9b9` verde; smoke humano pendiente de repetirse. Gates móviles verdes:
   45 suites/512 tests, typecheck y lint. Health/Food no se tocaron.
+- Fix de smoke R10 #4 implementado (2026-08-25): AddPet vuelve a Profile con
+  `router.back()` para activar el refetch al foco, y el auto-select no pisa la
+  mascota nueva mientras la lista revalida. Ciclo TDD `d3c00cd` rojo →
+  `9bf01bc` verde; smoke humano pendiente de repetirse. Gates móviles verdes:
+  45 suites/513 tests, typecheck y lint. Sin cambios fuera de las dos
+  pantallas, sus tests y la trazabilidad/progreso.
