@@ -147,14 +147,14 @@ export default function HomeScreen() {
               {detail.data.pet.photoUrl ? (
                 <Image
                   testID="pet-card-photo"
-                  className="size-[72px] rounded-full"
+                  className="size-18 rounded-full"
                   contentFit="cover"
                   source={detail.data.pet.photoUrl}
                 />
               ) : (
                 <View
                   testID="pet-card-photo"
-                  className="size-[72px] items-center justify-center rounded-full bg-accent-soft"
+                  className="size-18 items-center justify-center rounded-full bg-accent-soft"
                 >
                   <Text className="text-2xl font-bold text-foreground">
                     {detail.data.pet.name.charAt(0).toUpperCase()}
