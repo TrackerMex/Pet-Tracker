@@ -183,3 +183,132 @@ lo ya previsto por la spec: R10 (smoke humano en Expo Go) sigue "pendiente"
 por diseño y se cierra en §Aprobación de `requirements.md` antes de marcar
 la feature como done; el smoke real de Docs sigue bloqueado por el backend
 de #49.
+
+---
+
+## Delta review final (fix2–fix6)
+
+Fecha: 2026-08-25. Alcance: `58d7a6e..f89e805` (15 commits), aplicados por
+Codex según `progress/handoff_mobile-pets-profile_fix2.md` … `_fix6.md`.
+Verificación independiente del reviewer; no se aceptó el reporte del
+implementer como evidencia.
+
+Veredicto del delta: **RECHAZADO** (un bloqueante; todo lo demás verde).
+
+### C4 — TDD del delta (verde)
+
+Cinco pares rojo→verde reales, verificados con `git show --stat`:
+
+- fix2: `644a00c` rojo (solo `layout.test.tsx`; en ese commit las rutas aún
+  vivían en `src/app/pets/` → los imports `../pets/add` fallaban) →
+  `5bae7b0` verde (rutas movidas a `(tabs)/pets/`, guardia design-drift R9
+  actualizada a las rutas nuevas; la aserción R10 del rojo sobrevive).
+- fix3: `a8cbd7e` rojo (solo tests home/profile) → `c3ce9b9` verde
+  (`useFocusEffect` + `refetchPets` en `home.tsx` y `profile/index.tsx`).
+- fix4: `d3c00cd` rojo (solo tests add-pet/profile) → `9bf01bc` verde
+  (`router.back()` en éxito de AddPet, línea 186; guard `isRefreshing` en
+  Profile).
+- fix5: `6ef7c26` rojo (solo tests home/health/food) → `76f7990` verde
+  (guard replicado en las tres pantallas).
+- fix6: `48bcf80` rojo (solo `use-pet-selection.test.tsx`; el hook
+  `use-pet-selection.ts` NO existía en ese commit — `git ls-tree` lo
+  confirma → import fallaba) → `1541d7c` verde (hook creado, 4 efectos
+  duplicados eliminados; los cambios en tests son solo `useIsFocused: true`
+  en mocks de expo-router, aserciones intactas).
+
+Cada par tiene su commit docs de trazabilidad (`f1d70c9`, `288fdbb`,
+`4e3b042`, `b98868d`, `f89e805`). Formato de commit conforme.
+
+### C5 — Trazabilidad (verde con salvedad administrativa)
+
+- Filas R2/R6/R8/R10 actualizadas con los cinco pares y sus hallazgos de
+  smoke; los tests referenciados existen y nombran su R-id (verificado).
+- Salvedad (no imputable al implementer): la fila R10 dice "gate humano
+  pendiente" y `requirements.md` §Aprobación tiene la casilla del smoke
+  R10 sin marcar (`fecha: ____`). El leader reporta el smoke aprobado el
+  2026-08-25, pero el artefacto en disco no lo registra: antes de `done`,
+  el humano/leader debe marcar la casilla con fecha y cerrar la fila R10.
+
+### Hook compartido `use-pet-selection` (fix6)
+
+- `mobile-pet-tracker/src/hooks/use-pet-selection.ts`: tres guards en el
+  orden del handoff (`useIsFocused` de expo-router → `pets.isRefreshing` →
+  lista `ok` no vacía) y auto-select solo si la selección no existe.
+- Los 4 consumidores objetivo lo usan (`home.tsx:63`, `health.tsx:45`,
+  `food.tsx:44`, `profile/index.tsx:106`) y su efecto inline desapareció.
+- `use-pet-selection.test.tsx`: 4 tests que cubren desenfocada+stale,
+  enfocada+isRefreshing, selección ausente y selección presente — exactamente
+  lo pedido.
+
+### Alcance y dependencias (verde)
+
+- Diff `58d7a6e..HEAD` sobre `use-api.ts`, `floating-tab-bar.tsx`,
+  `backend-pet-tracker/`, `infra/`, `src/providers/`, `src/api/` y
+  `(tabs)/_layout.tsx`: **0 líneas**.
+- `package.json` / lockfile: **sin cambios** — cero dependencias nuevas.
+- C2 verde: solo #40 `in_progress`; `progress/current.md` describe la sesión.
+
+### Verificación independiente (ejecutada por el reviewer)
+
+- `bun run test` (mobile-pet-tracker): **exit 0** — 46 suites, 520 tests,
+  1 snapshot.
+- `bun run typecheck`: **exit 0**.
+- `bun run lint`: **exit 0**.
+- `./init.sh` (raíz): **exit 0** — "✅ Todo verde. Listo para trabajar."
+
+### Bloqueante: el fix raíz de fix6 está incompleto — quedan 2 copias sin guard
+
+El criterio de verificación "grep `selectionExists` fuera del hook = 0"
+**falla: devuelve 2 hits**:
+
+- `mobile-pet-tracker/src/app/(tabs)/map.tsx:105-109`
+- `mobile-pet-tracker/src/screens/reminders/index.tsx:61-68`
+
+Ambos conservan el efecto de auto-select SIN guard de foco y SIN guard de
+`isRefreshing` (el diagnóstico de los handoffs fix5/fix6 contó "4 sitios";
+en el árbol hay 6 — Codex cumplió su alcance literal, el hueco viene del
+diagnóstico). No es cosmético: **Map reproduce exactamente el bug del smoke
+fix6** — es una pantalla de tabs que queda montada desenfocada, su
+`useFocusEffect` (línea 85) refetchea last/positions/route pero NUNCA la
+lista de pets, así que su `pets.data` queda stale. Reproducción latente:
+visitar Map → volver a Home → alta de pet → seleccionarlo → Map (montada,
+desenfocada, lista stale sin el id nuevo) re-renderiza por el cambio de
+contexto y pisa la selección global a `pets[0]`. El smoke de hoy pasó
+presumiblemente porque Map no estaba montada durante la prueba.
+Reminders es el mismo patrón con menor exposición (montada desenfocada solo
+mientras add-reminder está encima).
+
+Corrección para el implementer (pequeña y mecánica, mismo patrón que fix6):
+reemplazar el efecto inline de `map.tsx` y `reminders/index.tsx` por
+`usePetSelection(pets)`, con su rojo previo (par de tests análogos al caso
+"desenfocada con lista stale" en las suites de map y reminders), fila R10 de
+trazabilidad y gates verdes. Tras ese fix, `grep selectionExists src/` debe
+devolver solo el hook.
+
+### Output de ./init.sh (delta final, cola)
+
+```
+→ Lint...
+> backend-pet-tracker@0.0.1 lint  (eslint)
+> pet-tracker-infra@0.0.1 lint    (eslint)
+$ expo lint
+✅ Lint sin errores
+
+→ Typecheck...
+$ tsc --noEmit
+✅ Typecheck sin errores
+
+══════════════════════════════════════════
+✅ Todo verde. Listo para trabajar.
+INIT_EXIT=0
+```
+
+### Veredicto final del delta
+
+**RECHAZADO.** Un único bloqueante: el hook compartido de fix6 no cubre las
+6 copias del efecto de auto-select — `map.tsx` y `reminders/index.tsx`
+conservan la versión sin guards y Map puede reproducir el mismo pisado de
+selección que motivó fix4–fix6. Todo lo demás del delta (TDD, trazabilidad,
+alcance, dependencias, gates) está verde; con ese fix aplicado (y la casilla
+del smoke R10 marcada por el humano en `requirements.md`), la feature queda
+lista para `done`.
