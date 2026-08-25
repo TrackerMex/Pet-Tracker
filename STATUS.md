@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-08-24
-**Features completadas**: 38/47 (`feature_list.json`)
-**En progreso**: #47 `mobile-design-drift`, implementación R1-R8 completa y
-verde; pendiente de review humano, sin PR por instrucción del handoff.
-**Pendientes**: 8 (#18, #39-#45). Fuente del diseño Figma versionada en
+**Última actualización**: 2026-08-25
+**Features completadas**: 41/49 (`feature_list.json`)
+**En progreso**: #50 `mobile-tab-glass`, implementación R1-R7 completa y
+verde; pendiente de review independiente, sin PR por instrucción del handoff.
+**Pendientes**: 7 (#18, #40-#45). Fuente del diseño Figma versionada en
 `specs/mobile-figma-polish/design-src/`.
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
@@ -74,14 +74,21 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
-- **`mobile-design-drift` (#47) in_progress** (2026-08-24): implementación
+- **`mobile-tab-glass` (#50) in_progress** (2026-08-25): barra flotante con
+  Liquid Glass en iOS compatible y fallback BlurView temático, indicador pill
+  con spring interruptible y reduced motion del sistema, y crossfade de
+  escenas. Codex implementó R1–R6 con commits test-rojo→verde separados y
+  conservó la regresión R7; trazabilidad completa y C8 grep-clean. Suite móvil
+  39/39 (458 tests) y `./init.sh` exit 0. Pendiente de review independiente;
+  no se abrió PR. Informe: `progress/impl_mobile-tab-glass.md`.
+
+- **`mobile-design-drift` (#48) done** (2026-08-24): implementación
   R1-R8 completa con TDD rojo→verde por requisito. Añade tokens dedicados
   `rounded-card`/`text-2xs`, un `Card` compartido adoptado por las siete tabs,
   safe areas uniformes y skeletons dimensionados. Greps de drift limpios;
-  suite móvil 34/34 (379 tests) y `./init.sh` verde. El smoke web no puede
-  montar la app por la incompatibilidad preexistente de `react-native-maps`
-  con Web; la comprobación visual del radio queda para el review en
-  Android/iOS. Informe: `progress/impl_mobile-design-drift.md`.
+  suite móvil 34/34 (379 tests) y `./init.sh` verde. El reviewer aprobó la
+  implementación (`53d4dd7`) y el cambio se integró mediante el PR #72.
+  Informe: `progress/impl_mobile-design-drift.md`.
 
 - **`mobile-map-live` (#36) done** (2026-08-22): tab Map fullscreen —
   `src/api/positions.ts` (last + history) y `trips.ts` (`getDayRoute` compone
@@ -797,6 +804,13 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-08-25** — #50 `mobile-tab-glass`: Codex implementó R1–R7 con TDD
+  estricto (test rojo commiteado antes de cada implementación R1–R6), cerró
+  trazabilidad y añadió un guard C8 genérico. `./init.sh` terminó verde:
+  backend 145/1114, infra 2/14, móvil 39/458, e2e 20 suites/327 tests,
+  build/lint/typecheck sin errores. La feature permanece `in_progress` hasta
+  review; no se abrió PR por instrucción del humano.
 
 - **2026-08-24** — #47 `mobile-design-drift`: Codex implementó R1-R8 con
   commits rojos antes de cada verde y trazabilidad completa. Suite móvil:

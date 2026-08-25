@@ -64,4 +64,4 @@ tags: [harness, spec]
 - [x] Grep-clean C8: cero hex fuera de `src/theme/`, cero clases `[...]`,
       cero `StyleSheet.create`, cero shadow/elevation legacy
 - [x] Actualizar [[traceability]] tras cada commit
-- [ ] `progress/impl_mobile-tab-glass.md` con el reporte
+- [x] `progress/impl_mobile-tab-glass.md` con el reporte

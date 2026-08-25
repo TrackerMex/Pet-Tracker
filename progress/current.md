@@ -8,5 +8,6 @@
 - Feature: #50 `mobile-tab-glass`
 - Inicio: 2026-08-25 17:37 UTC
 - Branch/worktree: `feature/50-mobile-tab-glass` en `/home/claude/sites/Pet-Tracker-wt-ui`
-- Estado: implementación TDD en curso; spec aprobada en `specs/mobile-tab-glass/`.
-- Plan: implementar R1–R6 con commit rojo previo por requisito, conservar R7, verificar C8 y cerrar con `./init.sh` verde.
+- Estado: implementación R1–R7 completa y verificada; pendiente de review independiente.
+- Cierre implementer: 2026-08-25 17:59 UTC. Trazabilidad completa, reporte en
+  `progress/impl_mobile-tab-glass.md` y `./init.sh` verde. No se abrió PR.
