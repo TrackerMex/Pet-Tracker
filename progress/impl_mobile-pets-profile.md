@@ -196,3 +196,26 @@ final completo pasó sin reintento.
   final terminó con exit 0 y `✅ Todo verde`.
 - El smoke humano R10 queda pendiente de repetirse en Expo Go; este fix no lo
   marca como completado. La parte Docs sigue bloqueada por #49.
+
+## R10 — corrección post-review 7 (2026-08-25)
+
+- Hallazgo del reviewer: Map y Reminders conservaban dos copias del efecto de
+  auto-selección fuera de `usePetSelection`; ninguna aplicaba las guardas de
+  foco y revalidación, y Map mantenía una lista stale al quedar desenfocada.
+- TDD: `f07d720` añade una guardia estructural que recorre el código de
+  producción en `src/` y falla si `selectionExists` aparece fuera del hook.
+  El rojo identificó exactamente `app/(tabs)/map.tsx` y
+  `screens/reminders/index.tsx`; `ac3d090` migra ambas al hook y deja la
+  guardia verde.
+- La migración elimina los dos `useEffect` duplicados y sus imports muertos.
+  Los mocks de `expo-router` de Map y Reminders exponen `useIsFocused: true`;
+  las aserciones y contratos de sus suites no cambian.
+- No se tocaron `use-api.ts`, providers, layouts, floating tab bar, capa API,
+  backend ni infraestructura; no se añadieron dependencias.
+- Verificación dirigida: hook + Reminders (2 suites / 24 tests) y Map
+  (1 suite / 27 tests) terminaron verdes.
+- Gates móviles: `bun run test` (46 suites / 521 tests / 1 snapshot),
+  `bun run typecheck` y `bun run lint` terminaron con exit 0. `./init.sh`
+  final terminó con exit 0 y `✅ Todo verde`.
+- El smoke humano R10 queda pendiente de repetirse en Expo Go; este fix no lo
+  marca como completado. La parte Docs sigue bloqueada por #49.

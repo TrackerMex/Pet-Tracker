@@ -59,3 +59,8 @@
   TDD `48bcf80` rojo → `1541d7c` verde; smoke humano pendiente de repetirse.
   Gates móviles verdes: 46 suites/520 tests, typecheck y lint; `./init.sh`
   final verde.
+- Fix post-review R10 #7 implementado (2026-08-25): Map y Reminders consumen
+  `usePetSelection` y una guardia estructural impide nuevas copias del efecto
+  manual fuera del hook. Ciclo TDD `f07d720` rojo → `ac3d090` verde; smoke
+  humano pendiente de repetirse. Gates móviles verdes: 46 suites/521 tests,
+  typecheck y lint; `./init.sh` final verde.
