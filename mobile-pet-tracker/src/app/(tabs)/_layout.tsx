@@ -18,7 +18,7 @@ export default function TabsLayout() {
   return (
     <SelectedPetProvider>
       <Tabs
-        screenOptions={{ headerShown: false }}
+        screenOptions={{ headerShown: false, animation: 'fade' }}
         tabBar={(props) => (
           <FloatingTabBar state={props.state} navigation={props.navigation} />
         )}

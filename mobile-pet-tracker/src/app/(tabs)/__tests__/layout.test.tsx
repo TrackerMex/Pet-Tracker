@@ -10,7 +10,6 @@ import TabsLayout from '../_layout';
 jest.mock(
   '../../../components/floating-tab-bar',
   () => ({ FloatingTabBar: jest.fn(() => null) }),
-  { virtual: true },
 );
 
 jest.mock('../../../providers/auth-provider', () => ({
@@ -76,6 +75,7 @@ describe('R1: (tabs) exige sesión', () => {
     expect(mockTabs).toHaveBeenCalledTimes(1);
     expect(mockTabs.mock.calls[0]?.[0].screenOptions).toEqual({
       headerShown: false,
+      animation: 'fade',
     });
     expect(mockTabsScreen.mock.calls.map(([props]) => props.name)).toEqual([
       'home',
