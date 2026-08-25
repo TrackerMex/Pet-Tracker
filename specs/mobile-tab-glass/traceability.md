@@ -14,7 +14,7 @@ tags: [harness, spec]
 | R4 | `src/components/__tests__/floating-tab-bar.test.tsx::R4: pill se desliza con TAB_INDICATOR_SPRING y retarget-ea en vuelo` | `b0aa293 test(mobile-tab-glass): cover interruptible indicator spring (R4)` → `9f0cb15 feat(mobile-tab-glass): animate interruptible tab indicator (R4)` |
 | R5 | `src/components/__tests__/floating-tab-bar.test.tsx::R5: TAB_INDICATOR_SPRING respeta reduced motion del sistema` | `806989b test(mobile-tab-glass): cover reduced motion spring config (R5)` → `f00d207 feat(mobile-tab-glass): respect system reduced motion (R5)` |
 | R6 | `src/app/__tests__/tabs-layout.test.tsx::R6: Tabs declara animation fade en screenOptions` | `757dcec test(mobile-tab-glass): cover tab content fade (R6)` → `3da2d36 feat(mobile-tab-glass): fade tab content transitions (R6)` |
-| R7 | suite existente `src/components/__tests__/floating-tab-bar.test.tsx` (describes "R7: tab bar renderiza y navega" y "R8: tab bar flota con safe area" de la spec original, sin modificar) | pendiente |
+| R7 | suite existente `src/components/__tests__/floating-tab-bar.test.tsx` (describes "R7: tab bar renderiza y navega" y "R8: tab bar flota con safe area" de la spec original, sin relajar aserciones) | suite original `9f7d634` → `e306135` (R7) y `f30952c` → `cf99e35` (R8); regresión completa estabilizada en `ce9d2b0 test(mobile-tab-glass): stabilize tab layout regression (R7)` |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
 Convención de commit: `feat(mobile-tab-glass): <desc> (R1,R2)`.

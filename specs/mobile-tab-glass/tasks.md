@@ -55,13 +55,13 @@ tags: [harness, spec]
 > `floating-tab-bar.test.tsx` (describes "R7"/"R8" de la spec original), que
 > debe seguir verde en cada paso de R1–R5 sin relajar aserciones.
 
-- [ ] (1) Confirmar suite existente verde antes de tocar el componente
-- [ ] (2) Mantenerla verde durante toda la implementación
-- [ ] (3) Refactor final con `npm test` + `npm run typecheck` + `npm run lint` verdes
+- [x] (1) Confirmar suite existente verde antes de tocar el componente
+- [x] (2) Mantenerla verde durante toda la implementación
+- [x] (3) Refactor final con `npm test` + `npm run typecheck` + `npm run lint` verdes
 
 ## Cierre
 
-- [ ] Grep-clean C8: cero hex fuera de `src/theme/`, cero clases `[...]`,
+- [x] Grep-clean C8: cero hex fuera de `src/theme/`, cero clases `[...]`,
       cero `StyleSheet.create`, cero shadow/elevation legacy
-- [ ] Actualizar [[traceability]] tras cada commit
+- [x] Actualizar [[traceability]] tras cada commit
 - [ ] `progress/impl_mobile-tab-glass.md` con el reporte
