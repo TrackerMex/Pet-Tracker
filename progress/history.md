@@ -1843,3 +1843,29 @@ Notas de la sesión que no están en la spec:
   @gorhom/bottom-sheet es peer de heroui/@expo/ui community, no removible.
 - Pendiente humano: merge del PR de #39 (post #72; #73 de la otra sesión
   sigue abierto y no conflicta).
+
+## 2026-08-25 — Feature #40 mobile-pets-profile (cerrada)
+
+- Spec R1–R10 aprobada (commit humano 49b85d6); gate Q1–Q4: Docs contra
+  backend aparte #49 media-docs-api (pending), backend health eliminado,
+  edit/delete de mascota fuera, filas Geocercas/GPS omitidas.
+- Implementación Codex CLI: Profile reescrito (screens/ + route delgado),
+  users/me, AddPet, foto presignada (expo-image-picker), Docs contra
+  contrato #49, blobatar determinista, tema persistente. TDD 9 pares
+  rojo→verde + 6 ciclos de fix.
+- Fixes de smoke: rutas pets/* dentro de (tabs) (provider), router.back()
+  tras alta, y saga de selección pisada → fix raíz: hook compartido
+  use-pet-selection con guard useIsFocused + isRefreshing (las tabs
+  montadas/desenfocadas con lista stale reseteaban la selección global).
+- Review: rechazo C7 (health.ts huérfano) → fix; rechazo delta (2 copias
+  del efecto en map/reminders) → fix7 migración total al hook + guardia
+  estructural; veredicto final aprobado (solo defecto documental de
+  hashes pre-rebase, corregido por leader).
+- Smoke R10 humano completo 2026-08-25 (fde2648). Suite: 46 suites/521
+  tests. #40 → done.
+- Lecciones: REPLACE sobre Tabs no dispara blur/focus (usar back());
+  useEffect corre en tabs desenfocadas — todo auto-select global debe
+  gatearse con useIsFocused; el rebase sobre commits del humano invalida
+  hashes citados en trazabilidad (citarlos post-rebase).
+- Pendiente humano: merge del PR de #40. Docs smoke real bloqueado hasta
+  #49 media-docs-api.

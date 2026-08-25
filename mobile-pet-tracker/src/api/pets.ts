@@ -1,4 +1,4 @@
-import { getJson, readJson } from './http';
+import { getJson, postJson, readJson } from './http';
 import type { PetProfile } from './types';
 
 export type PetsState =
@@ -10,6 +10,28 @@ export type PetsState =
 
 export type PetState =
   | { kind: 'ok'; pet: PetProfile }
+  | { kind: 'unauthorized' }
+  | { kind: 'error' }
+  | { kind: 'unreachable'; message: string }
+  | { kind: 'missing-config' };
+
+export interface CreatePetInput {
+  name: string;
+  species: 'dog' | 'cat';
+  breed?: string;
+  birthDate?: string;
+  approxAgeMonths?: number;
+  sex?: 'male' | 'female';
+  size?: 'small' | 'medium' | 'large';
+  color?: string;
+  sterilized?: boolean;
+  microchip?: string;
+}
+
+export type CreatePetState =
+  | { kind: 'ok'; pet: PetProfile }
+  | { kind: 'invalid' }
+  | { kind: 'forbidden' }
   | { kind: 'unauthorized' }
   | { kind: 'error' }
   | { kind: 'unreachable'; message: string }
@@ -72,6 +94,38 @@ export async function getPet(
   }
 
   if (result.response.status !== 200) {
+    return { kind: 'error' };
+  }
+
+  const body = await readJson(result.response);
+  return isPetProfile(body) ? { kind: 'ok', pet: body } : { kind: 'error' };
+}
+
+export async function createPet(
+  baseUrl: string | undefined,
+  token: string,
+  input: CreatePetInput,
+  fetchFn: typeof fetch = fetch,
+): Promise<CreatePetState> {
+  if (!baseUrl) {
+    return { kind: 'missing-config' };
+  }
+
+  const result = await postJson(baseUrl, '/pets', token, input, fetchFn);
+  if (result.kind === 'unreachable') {
+    return result;
+  }
+
+  if (result.response.status === 400) {
+    return { kind: 'invalid' };
+  }
+  if (result.response.status === 401) {
+    return { kind: 'unauthorized' };
+  }
+  if (result.response.status === 403) {
+    return { kind: 'forbidden' };
+  }
+  if (result.response.status !== 201) {
     return { kind: 'error' };
   }
 

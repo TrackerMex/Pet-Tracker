@@ -19,6 +19,7 @@ const { readdirSync, readFileSync } = require('fs');
 const { join } = require('path');
 
 const sourceRoot = join(process.cwd(), 'src');
+const projectRoot = process.cwd();
 
 function sourceFiles(directory: string): string[] {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
@@ -67,7 +68,9 @@ describe('R3: Card compartido elimina rounded arbitrario', () => {
     'map',
   ])('%s importa el Card compartido', (screen) => {
     const contents = readFileSync(
-      join(sourceRoot, 'app', '(tabs)', `${screen}.tsx`),
+      screen === 'profile'
+        ? join(sourceRoot, 'screens', 'profile', 'index.tsx')
+        : join(sourceRoot, 'app', '(tabs)', `${screen}.tsx`),
       'utf8',
     );
 
@@ -80,5 +83,75 @@ describe('R4: token text-2xs elimina tamaño arbitrario', () => {
     const textArbitrary = ['text-', '[10px]'].join('');
 
     expect(filesContaining(textArbitrary)).toEqual([]);
+  });
+});
+
+describe('R9: mobile-pets-profile sin drift', () => {
+  const featureFiles = [
+    'api/media.ts',
+    'api/users.ts',
+    'components/pet-avatar.tsx',
+    'screens/add-pet/index.tsx',
+    'screens/docs/index.tsx',
+    'screens/profile/index.tsx',
+    'utils/theme-preference.ts',
+  ];
+
+  it('keeps arbitrary text, hex colors, and StyleSheet out of feature sources', () => {
+    const violations = featureFiles.flatMap((relativePath) => {
+      const contents = readFileSync(join(sourceRoot, relativePath), 'utf8');
+      return /text-\[10px\]|#[\da-f]{3,8}\b|StyleSheet/i.test(contents)
+        ? [relativePath]
+        : [];
+    });
+
+    expect(violations).toEqual([]);
+  });
+
+  it('keeps the three Expo Router entrypoints thin', () => {
+    const routes = [
+      'app/(tabs)/profile.tsx',
+      'app/(tabs)/pets/add.tsx',
+      'app/(tabs)/pets/[petId]/docs.tsx',
+    ];
+
+    const routeLengths = routes.map((relativePath) => ({
+      relativePath,
+      lines: readFileSync(join(sourceRoot, relativePath), 'utf8')
+        .trim()
+        .split('\n').length,
+    }));
+
+    expect(routeLengths).toEqual(
+      routes.map((relativePath) => ({
+        relativePath,
+        lines: expect.any(Number),
+      })),
+    );
+    routeLengths.forEach(({ lines }) => expect(lines).toBeLessThan(10));
+  });
+
+  it('contains dependencies to the two approved additions', () => {
+    const packageJson = JSON.parse(
+      readFileSync(join(projectRoot, 'package.json'), 'utf8'),
+    ) as { dependencies: Record<string, string> };
+
+    expect(packageJson.dependencies.blobatar).toBe('^2.5.0');
+    expect(packageJson.dependencies['expo-image-picker']).toBe('~57.0.13');
+    expect(packageJson.dependencies['@blobatar/react']).toBeUndefined();
+    expect(packageJson.dependencies['@gorhom/bottom-sheet']).toBe('^5.2.14');
+  });
+
+  it('has an implementation trace instead of a pending R9 row', () => {
+    const traceability = readFileSync(
+      join(projectRoot, '..', 'specs', 'mobile-pets-profile', 'traceability.md'),
+      'utf8',
+    );
+    const r9Row = traceability
+      .split('\n')
+      .find((line) => line.startsWith('| R9 |'));
+
+    expect(r9Row).toBeDefined();
+    expect(r9Row).not.toContain('pendiente');
   });
 });

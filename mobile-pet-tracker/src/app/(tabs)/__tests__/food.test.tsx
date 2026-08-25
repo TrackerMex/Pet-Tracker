@@ -12,8 +12,11 @@ import type { ReactNode } from 'react';
 import { getNutritionPlan, type NutritionPlanState } from '../../../api/nutrition';
 import { listPets, type PetsState } from '../../../api/pets';
 import type { NutritionPlan, PetProfile } from '../../../api/types';
+import * as apiHooks from '../../../hooks/use-api';
+import type { ApiResult } from '../../../hooks/use-api';
 import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
 import { SelectedPetProvider } from '../../../providers/selected-pet-provider';
+import * as selectedPetHooks from '../../../providers/selected-pet-provider';
 import FoodScreen from '../food';
 
 jest.mock('../../../api/pets', () => ({
@@ -30,6 +33,7 @@ jest.mock('../../../providers/auth-provider', () => ({
 
 jest.mock('expo-router', () => ({
   router: { push: jest.fn(), back: jest.fn() },
+  useIsFocused: jest.fn(() => true),
 }));
 
 jest.mock('react-native-safe-area-context', () => ({
@@ -423,5 +427,51 @@ describe('R6: aiExplanation nullable con gracia', () => {
     expect(
       aiCard.getByText('Split the daily amount into two balanced meals.'),
     ).toBeVisible();
+  });
+});
+
+describe('R10: preserva la mascota durante el refetch', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('does not replace a new selection while the stale pet list refreshes', async () => {
+    const existingPet = makePet();
+    const createdPet = makePet({ id: 'pet-new', name: 'Nala' });
+    const selectPet = jest.fn();
+    let petsResult: ApiResult<PetsState> = {
+      data: { kind: 'ok', pets: [existingPet] },
+      isRefreshing: true,
+      refetch: jest.fn(),
+    };
+    const emptyResult: ApiResult<{ kind: string }> = {
+      data: undefined,
+      isRefreshing: false,
+      refetch: jest.fn(),
+    };
+    let hookCall = 0;
+    jest.spyOn(selectedPetHooks, 'useSelectedPet').mockReturnValue({
+      selectedPetId: createdPet.id,
+      selectPet,
+    });
+    jest.spyOn(apiHooks, 'useApi').mockImplementation(
+      <T extends { kind: string }>(): ApiResult<T> => {
+        const result = hookCall++ % 2 === 0 ? petsResult : emptyResult;
+        return result as ApiResult<T>;
+      },
+    );
+
+    const view = await renderFood();
+
+    expect(selectPet).not.toHaveBeenCalled();
+
+    petsResult = {
+      data: { kind: 'ok', pets: [existingPet, createdPet] },
+      isRefreshing: false,
+      refetch: jest.fn(),
+    };
+    await view.rerender(<FoodScreen />);
+
+    expect(selectPet).not.toHaveBeenCalled();
   });
 });

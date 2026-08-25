@@ -51,6 +51,7 @@ jest.mock('../../../providers/auth-provider', () => ({
 
 jest.mock('expo-router', () => ({
   router: { push: jest.fn() },
+  useIsFocused: () => true,
   useFocusEffect: (callback: () => void | (() => void)) => {
     const React = jest.requireActual<typeof import('react')>('react');
     React.useEffect(() => {

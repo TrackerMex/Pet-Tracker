@@ -1,10 +1,12 @@
 import {
+  act,
   fireEvent,
   render,
   screen,
   waitFor,
+  within,
 } from '@testing-library/react-native';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
 
@@ -14,8 +16,11 @@ import {
 } from '../../../api/activity';
 import { getPet, listPets, type PetState, type PetsState } from '../../../api/pets';
 import type { DayEntry, PetProfile } from '../../../api/types';
+import * as apiHooks from '../../../hooks/use-api';
+import type { ApiResult } from '../../../hooks/use-api';
 import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
 import { SelectedPetProvider } from '../../../providers/selected-pet-provider';
+import * as selectedPetHooks from '../../../providers/selected-pet-provider';
 import HomeScreen from '../home';
 
 jest.mock('../../../api/pets', () => ({
@@ -33,6 +38,8 @@ jest.mock('../../../providers/auth-provider', () => ({
 
 jest.mock('expo-router', () => ({
   router: { push: jest.fn() },
+  useFocusEffect: jest.fn(),
+  useIsFocused: jest.fn(() => true),
 }));
 
 jest.mock('react-native-safe-area-context', () => ({
@@ -46,6 +53,7 @@ const mockGetPet = jest.mocked(getPet);
 const mockListPets = jest.mocked(listPets);
 const mockUseAuth = jest.mocked(useAuth);
 const mockRouter = jest.mocked(router);
+const mockUseFocusEffect = jest.mocked(useFocusEffect);
 
 function makePet(overrides: Partial<PetProfile> = {}): PetProfile {
   return {
@@ -243,7 +251,7 @@ describe('R7: pet card muestra el perfil', () => {
     expect(screen.getByTestId('pet-card-breed')).toHaveTextContent('Mixed');
   });
 
-  it('uses the name initial and a dash when optional profile data is absent', async () => {
+  it('uses a deterministic avatar and a dash when optional profile data is absent', async () => {
     mockGetPet.mockResolvedValue({
       kind: 'ok',
       pet: makePet({ breed: null, photoUrl: null }),
@@ -252,7 +260,7 @@ describe('R7: pet card muestra el perfil', () => {
     await renderHome();
 
     await waitFor(() => expect(screen.getByTestId('pet-card')).toBeVisible());
-    expect(screen.getByTestId('pet-card-photo')).toHaveTextContent('L');
+    expect(screen.getByTestId('pet-card-photo').props.xml).toContain('<svg');
     expect(screen.getByTestId('pet-card-breed')).toHaveTextContent('—');
   });
 
@@ -267,6 +275,34 @@ describe('R7: pet card muestra el perfil', () => {
 
     await waitFor(() => expect(screen.getByTestId('pet-card-name')).toHaveTextContent('Luna'));
     expect(mockGetPet).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('R5: Home usa el fallback blobatar compartido', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    const pet = makePet({ photoUrl: null });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+  });
+
+  it('renders the generated SVG under the existing pet-card-photo contract', async () => {
+    await renderHome();
+
+    await waitFor(() => expect(screen.getByTestId('pet-card')).toBeVisible());
+    const avatar = screen.getByTestId('pet-card-photo');
+    expect(avatar.props.xml).toContain('<svg');
+    expect(within(screen.getByTestId('pet-card')).getByTestId('pet-card-photo')).toBe(
+      avatar,
+    );
   });
 });
 
@@ -525,5 +561,85 @@ describe('R10: last position enlaza al mapa', () => {
 
     await waitFor(() => expect(screen.getByTestId('collar-status')).toHaveTextContent('Free'));
     expect(screen.queryByTestId('last-position-card')).toBeNull();
+  });
+});
+
+describe('R10: refetch al foco', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    const pet = makePet();
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+  });
+
+  it('refetches the pet list and active pet when Home recovers focus', async () => {
+    renderHome();
+    await waitFor(() => expect(mockGetPet).toHaveBeenCalledTimes(1));
+    const focusCallback = mockUseFocusEffect.mock.calls.at(-1)?.[0];
+    expect(focusCallback).toBeDefined();
+
+    await act(async () => {
+      focusCallback?.();
+      await Promise.resolve();
+    });
+
+    await waitFor(() => {
+      expect(mockListPets).toHaveBeenCalledTimes(2);
+      expect(mockGetPet).toHaveBeenCalledTimes(2);
+    });
+  });
+});
+
+describe('R10: preserva la mascota durante el refetch', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('does not replace a new selection while the stale pet list refreshes', async () => {
+    const existingPet = makePet();
+    const createdPet = makePet({ id: 'pet-new', name: 'Nala' });
+    const selectPet = jest.fn();
+    let petsResult: ApiResult<PetsState> = {
+      data: { kind: 'ok', pets: [existingPet] },
+      isRefreshing: true,
+      refetch: jest.fn(),
+    };
+    const emptyResult: ApiResult<{ kind: string }> = {
+      data: undefined,
+      isRefreshing: false,
+      refetch: jest.fn(),
+    };
+    let hookCall = 0;
+    jest.spyOn(selectedPetHooks, 'useSelectedPet').mockReturnValue({
+      selectedPetId: createdPet.id,
+      selectPet,
+    });
+    jest.spyOn(apiHooks, 'useApi').mockImplementation(
+      <T extends { kind: string }>(): ApiResult<T> => {
+        const result = hookCall++ % 3 === 0 ? petsResult : emptyResult;
+        return result as ApiResult<T>;
+      },
+    );
+
+    const view = await render(<HomeScreen />, { wrapper: HomeWrapper });
+
+    expect(selectPet).not.toHaveBeenCalled();
+
+    petsResult = {
+      data: { kind: 'ok', pets: [existingPet, createdPet] },
+      isRefreshing: false,
+      refetch: jest.fn(),
+    };
+    await view.rerender(<HomeScreen />);
+
+    expect(selectPet).not.toHaveBeenCalled();
   });
 });
