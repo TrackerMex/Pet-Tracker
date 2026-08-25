@@ -884,7 +884,7 @@
     "name": "mobile-tab-glass",
     "description": "Tab bar flotante con material glass (GlassView de expo-glass-effect en iOS 26, BlurView de expo-blur como fallback) e indicador pill que se desliza con spring entre tabs; transicion suave del contenido al cambiar de tab. Deps nuevas: expo-glass-effect, expo-blur.",
     "priority": "medium",
-    "status": "pending",
+    "status": "spec_ready",
     "files_affected": [
       "mobile-pet-tracker/src/components/floating-tab-bar.tsx",
       "mobile-pet-tracker/src/app/(tabs)/_layout.tsx",
