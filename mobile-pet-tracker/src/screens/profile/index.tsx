@@ -1,4 +1,4 @@
-import { router, type Href } from 'expo-router';
+import { router, type Href, useFocusEffect } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Button, Skeleton } from 'heroui-native';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -103,6 +103,15 @@ export function ProfileScreen() {
   const me = useApi(meFn);
   const pets = useApi(petsFn);
   const detail = useApi(detailFn);
+  const refetchPets = pets.refetch;
+  const refetchDetail = detail.refetch;
+
+  useFocusEffect(
+    useCallback(() => {
+      refetchPets();
+      refetchDetail();
+    }, [refetchDetail, refetchPets]),
+  );
 
   useEffect(() => {
     if (pets.data?.kind !== 'ok' || pets.data.pets.length === 0) return;

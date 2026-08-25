@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { Button, Card as HeroUICard, Skeleton, Spinner } from 'heroui-native';
 import { useCallback, useEffect, useMemo } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
@@ -75,10 +75,19 @@ export default function HomeScreen() {
   );
   const detail = useApi(detailFn);
   const activity = useApi(activityFn);
+  const refetchPets = pets.refetch;
+  const refetchDetail = detail.refetch;
   const today =
     activity.data?.kind === 'ok'
       ? activity.data.days[activity.data.days.length - 1]
       : undefined;
+
+  useFocusEffect(
+    useCallback(() => {
+      refetchPets();
+      refetchDetail();
+    }, [refetchDetail, refetchPets]),
+  );
 
   useEffect(() => {
     if (pets.data?.kind !== 'ok' || pets.data.pets.length === 0) return;
