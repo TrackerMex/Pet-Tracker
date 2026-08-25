@@ -1,6 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { inArray } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import request from 'supertest';
 import { App } from 'supertest/types';
@@ -117,6 +117,17 @@ describe('Pet documents API (e2e)', () => {
     return api().get(`/v1/pets/${petId}/media`).set(auth(user.token));
   }
 
+  function createDocument(
+    user: UserFixture,
+    petId: string,
+    body: Record<string, unknown>,
+  ) {
+    return api()
+      .post(`/v1/pets/${petId}/media`)
+      .set(auth(user.token))
+      .send(body);
+  }
+
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
@@ -228,6 +239,155 @@ describe('Pet documents API (e2e)', () => {
       await listDocuments(outsider, pet.id).expect(404);
       await listDocuments(owner, uuidv7()).expect(404);
       await listDocuments(owner, 'not-a-uuid').expect(404);
+    });
+  });
+
+  describe('R2: POST owner emite URL, persiste y audita; rechazos no escriben', () => {
+    const validBody = () => ({
+      type: 'Radiografía',
+      name: 'Estudio de cadera',
+      date: '2026-08-25',
+      vet: 'Dr. López',
+    });
+
+    it('responde 201/600s, persiste antes del PUT, aparece en GET y audita pet.document_add', async () => {
+      const owner = await seedUser('r2-owner');
+      const pet = await seedPet(owner);
+
+      const response = await createDocument(owner, pet.id, validBody()).expect(
+        201,
+      );
+      const body = response.body as {
+        document: DocumentResponse;
+        uploadUrl: string;
+        expiresInSeconds: number;
+      };
+
+      expect(Object.keys(body).sort()).toEqual(
+        ['document', 'uploadUrl', 'expiresInSeconds'].sort(),
+      );
+      expect(Object.keys(body.document).sort()).toEqual(
+        ['id', 'type', 'name', 'date', 'vet', 'key'].sort(),
+      );
+      expect(typeof body.document.id).toBe('string');
+      expect(body.document).toEqual({
+        id: body.document.id,
+        ...validBody(),
+        key: `pets/${pet.id}/docs/${body.document.id}`,
+      });
+      expect(body.uploadUrl).toEqual(
+        expect.stringContaining('X-Amz-Signature'),
+      );
+      expect(body.expiresInSeconds).toBe(600);
+
+      const [stored] = await db
+        .select()
+        .from(petDocuments)
+        .where(eq(petDocuments.id, body.document.id));
+      expect(stored).toMatchObject({
+        ...body.document,
+        petId: pet.id,
+        createdBy: owner.id,
+      });
+
+      const listed = await listDocuments(owner, pet.id).expect(200);
+      expect(listed.body).toEqual([body.document]);
+
+      const entries = await db
+        .select()
+        .from(auditLog)
+        .where(
+          and(
+            eq(auditLog.action, 'pet.document_add'),
+            eq(auditLog.entityId, pet.id),
+          ),
+        );
+      expect(entries).toHaveLength(1);
+      expect(entries[0]).toMatchObject({
+        userId: owner.id,
+        action: 'pet.document_add',
+        entity: 'pet',
+        entityId: pet.id,
+        meta: { key: body.document.key },
+      });
+    });
+
+    it('responde 400 para body inválido sin fila ni auditoría', async () => {
+      const owner = await seedUser('r2-invalid-owner');
+      const pet = await seedPet(owner);
+
+      await createDocument(owner, pet.id, {}).expect(400);
+      await createDocument(owner, pet.id, {
+        ...validBody(),
+        type: '   ',
+      }).expect(400);
+      await createDocument(owner, pet.id, {
+        ...validBody(),
+        date: '2026-02-30',
+      }).expect(400);
+
+      expect(
+        await db
+          .select()
+          .from(petDocuments)
+          .where(eq(petDocuments.petId, pet.id)),
+      ).toEqual([]);
+      expect(
+        await db
+          .select()
+          .from(auditLog)
+          .where(
+            and(
+              eq(auditLog.action, 'pet.document_add'),
+              eq(auditLog.entityId, pet.id),
+            ),
+          ),
+      ).toEqual([]);
+    });
+
+    it('responde 403 a caregiver (family) y viewer (vet) sin persistir', async () => {
+      const owner = await seedUser('r2-roles-owner');
+      const caregiver = await seedUser('r2-caregiver');
+      const viewer = await seedUser('r2-viewer');
+      const pet = await seedPet(owner);
+      await seedMembership(pet.id, caregiver.id, 'family');
+      await seedMembership(pet.id, viewer.id, 'vet');
+
+      await createDocument(caregiver, pet.id, validBody()).expect(403);
+      await createDocument(viewer, pet.id, validBody()).expect(403);
+
+      expect(
+        await db
+          .select()
+          .from(petDocuments)
+          .where(eq(petDocuments.petId, pet.id)),
+      ).toEqual([]);
+    });
+
+    it('responde 404 a no-miembro sin persistir ni auditar', async () => {
+      const owner = await seedUser('r2-hidden-owner');
+      const outsider = await seedUser('r2-hidden-outsider');
+      const pet = await seedPet(owner);
+
+      await createDocument(outsider, pet.id, validBody()).expect(404);
+
+      expect(
+        await db
+          .select()
+          .from(petDocuments)
+          .where(eq(petDocuments.petId, pet.id)),
+      ).toEqual([]);
+      expect(
+        await db
+          .select()
+          .from(auditLog)
+          .where(
+            and(
+              eq(auditLog.action, 'pet.document_add'),
+              eq(auditLog.entityId, pet.id),
+            ),
+          ),
+      ).toEqual([]);
     });
   });
 });
