@@ -1,7 +1,6 @@
-import { Image } from 'expo-image';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { Button, Card as HeroUICard, Skeleton, Spinner } from 'heroui-native';
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -17,8 +16,10 @@ import {
 import { getDailyActivity } from '../../api/activity';
 import { getPet, listPets, type PetsState } from '../../api/pets';
 import { Card } from '../../components/card';
+import { PetAvatar } from '../../components/pet-avatar';
 import { PetSwitcher } from '../../components/pet-switcher';
 import { useApi } from '../../hooks/use-api';
+import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { useThemeColors } from '../../theme/use-theme-colors';
@@ -59,6 +60,7 @@ export default function HomeScreen() {
     [baseUrl, token],
   );
   const pets = useApi(petsFn);
+  usePetSelection(pets);
   const detailFn = useMemo(
     () =>
       selectedPetId
@@ -75,16 +77,19 @@ export default function HomeScreen() {
   );
   const detail = useApi(detailFn);
   const activity = useApi(activityFn);
+  const refetchPets = pets.refetch;
+  const refetchDetail = detail.refetch;
   const today =
     activity.data?.kind === 'ok'
       ? activity.data.days[activity.data.days.length - 1]
       : undefined;
 
-  useEffect(() => {
-    if (pets.data?.kind !== 'ok' || pets.data.pets.length === 0) return;
-    const selectionExists = pets.data.pets.some(({ id }) => id === selectedPetId);
-    if (!selectionExists) selectPet(pets.data.pets[0].id);
-  }, [pets.data, selectPet, selectedPetId]);
+  useFocusEffect(
+    useCallback(() => {
+      refetchPets();
+      refetchDetail();
+    }, [refetchDetail, refetchPets]),
+  );
 
   return (
     <ScrollView
@@ -144,23 +149,12 @@ export default function HomeScreen() {
         <>
           <Card testID="pet-card">
             <View className="flex-row items-center gap-4">
-              {detail.data.pet.photoUrl ? (
-                <Image
-                  testID="pet-card-photo"
-                  className="size-18 rounded-full"
-                  contentFit="cover"
-                  source={detail.data.pet.photoUrl}
-                />
-              ) : (
-                <View
-                  testID="pet-card-photo"
-                  className="size-18 items-center justify-center rounded-full bg-accent-soft"
-                >
-                  <Text className="text-2xl font-bold text-foreground">
-                    {detail.data.pet.name.charAt(0).toUpperCase()}
-                  </Text>
-                </View>
-              )}
+              <PetAvatar
+                name={detail.data.pet.name}
+                photoUrl={detail.data.pet.photoUrl}
+                size={72}
+                testID="pet-card-photo"
+              />
               <View className="flex-1 gap-1">
                 <Text
                   testID="pet-card-name"

@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-08-25
-**Features completadas**: 41/49 (`feature_list.json`)
-**En progreso**: #50 `mobile-tab-glass`, implementación R1-R7 completa y
-verde; pendiente de review independiente, sin PR por instrucción del handoff.
-**Pendientes**: 7 (#18, #40-#45). Fuente del diseño Figma versionada en
+**Features completadas**: 43/50 (`feature_list.json`)
+**En progreso**: ninguna
+
+**Pendientes**: 7 (#18, #41, #42, #43, #44, #45, #49). Fuente del diseño Figma versionada en
 `specs/mobile-figma-polish/design-src/`.
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
@@ -73,6 +73,14 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Estado actual
+
+- **`mobile-pets-profile` (#40) done** (2026-08-25): Profile reescrito según
+  Figma (screens/ + route delgado), users/me real, AddPet, foto vía URL
+  presignada, Docs contra contrato #49, blobatar determinista, tema
+  persistente. Saga de selección resuelta con hook compartido
+  `use-pet-selection` (guard useIsFocused+isRefreshing). Review final
+  aprobado; smoke humano R10 completo (fde2648). Docs smoke real bloqueado
+  hasta #49 `media-docs-api`. PR pendiente de merge.
 
 - **`mobile-tab-glass` (#50) in_progress** (2026-08-25): barra flotante con
   Liquid Glass en iOS compatible y fallback BlurView temático, indicador pill
