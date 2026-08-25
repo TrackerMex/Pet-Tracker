@@ -4,7 +4,7 @@ import {
 } from '@expo/ui/community/bottom-sheet';
 import { router, type Href, useFocusEffect } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -18,6 +18,7 @@ import type { Reminder } from '../../api/types';
 import { Card } from '../../components/card';
 import { PetSwitcher } from '../../components/pet-switcher';
 import { useApi } from '../../hooks/use-api';
+import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { daysUntil } from '../../utils/reminder-dates';
@@ -39,6 +40,7 @@ export function RemindersScreen() {
     [baseUrl, token],
   );
   const pets = useApi(petsFn);
+  usePetSelection(pets);
   const remindersFn = useMemo(
     () =>
       selectedPetId
@@ -57,14 +59,6 @@ export function RemindersScreen() {
       refetchReminders();
     }, [refetchReminders]),
   );
-
-  useEffect(() => {
-    if (pets.data?.kind !== 'ok' || pets.data.pets.length === 0) return;
-    const selectionExists = pets.data.pets.some(
-      ({ id }) => id === selectedPetId,
-    );
-    if (!selectionExists) selectPet(pets.data.pets[0].id);
-  }, [pets.data, selectPet, selectedPetId]);
 
   const handleDelete = useCallback(
     async (reminderId: string) => {

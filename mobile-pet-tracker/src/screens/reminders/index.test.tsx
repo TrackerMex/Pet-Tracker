@@ -62,6 +62,7 @@ jest.mock('@expo/ui/community/bottom-sheet', () => {
 jest.mock('expo-router', () => ({
   router: { push: jest.fn(), back: jest.fn() },
   useFocusEffect: jest.fn(),
+  useIsFocused: () => true,
 }));
 
 jest.mock('react-native-safe-area-context', () => ({

@@ -1,7 +1,7 @@
 import { Button, Skeleton } from 'heroui-native';
 import { useFocusEffect } from 'expo-router';
 import MapView, { Marker, Polyline } from 'react-native-maps';
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUniwind } from 'uniwind';
@@ -11,6 +11,7 @@ import { getLastPosition, listPositions } from '../../api/positions';
 import { getDayRoute } from '../../api/trips';
 import { Card } from '../../components/card';
 import { useApi } from '../../hooks/use-api';
+import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import mapStyleDark from '../../theme/map-style-dark.json';
@@ -45,7 +46,7 @@ const POLL_MS = 15000;
 export default function MapScreen() {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { token } = useAuth();
-  const { selectedPetId, selectPet } = useSelectedPet();
+  const { selectedPetId } = useSelectedPet();
   const insets = useSafeAreaInsets();
   const { theme } = useUniwind();
   const petsFn = useCallback(
@@ -53,6 +54,7 @@ export default function MapScreen() {
     [baseUrl, token],
   );
   const pets = useApi(petsFn);
+  usePetSelection(pets);
   const lastFn = useMemo(
     () =>
       selectedPetId
@@ -101,12 +103,6 @@ export default function MapScreen() {
       selectedPetId,
     ]),
   );
-
-  useEffect(() => {
-    if (pets.data?.kind !== 'ok' || pets.data.pets.length === 0) return;
-    const selectionExists = pets.data.pets.some(({ id }) => id === selectedPetId);
-    if (!selectionExists) selectPet(pets.data.pets[0].id);
-  }, [pets.data, selectPet, selectedPetId]);
 
   const isLoading =
     pets.data === undefined ||
