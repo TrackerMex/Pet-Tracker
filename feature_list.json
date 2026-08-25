@@ -782,7 +782,7 @@
   {
     "id": 43,
     "name": "mobile-theme-transition",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P3",
     "description": "Polish 100% prescindible: fade al cambiar de tema con react-native-nitro-theme-transition 1.0.0 + react-native-nitro-modules >=0.36 (código nativo, requiere el dev build de #32). Riesgo conocido: interacción con reactCompiler experimental. Si rompe el build nativo, la feature se cierra como descartada y queda el toggle sin fade de #40.",
     "acceptance_criteria": [
@@ -908,5 +908,21 @@
       "mobile-pet-tracker/package.json"
     ],
     "acceptance_criteria": "Definidos en specs/mobile-tab-glass/requirements.md (EARS) tras gate humano; todo corre en Expo Go SDK 57 (Android ve fallback blur, liquid glass real solo iOS 26); cumple docs/ui-guidelines.md (C8)."
+  },
+  {
+    "id": 51,
+    "name": "media-bucket-aws-mode",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Con AWS_MODE=aws, mediaBucket resuelve a pet-tracker-media-local (resolveResourceSuffix devuelve '' y BUCKET_MEDIA conserva el sufijo -local; src/aws/resource-names.ts:46 + constants.ts:42), pero el bucket real creado por el stack CDK PetTrackerDev (#20) es pet-tracker-media-dev-<accountId> (infra/lib/pet-tracker-dev-stack.ts:92-94). Todas las URLs prefirmadas de media (foto de perfil #6 y documentos #49) apuntan en modo aws a un bucket inexistente. El smoke real de #19-#21 cubrió ingest (SQS/DynamoDB/EventBridge), no media. Resolver el nombre real del bucket en modo aws (candidato: env MEDIA_BUCKET_NAME leída por ConfigService, con guard que aborte si falta en modo aws) sin tocar el modo local.",
+    "acceptance_criteria": [
+      "En AWS_MODE=aws el S3 adapter firma contra el bucket real del stack CDK; si la configuración del nombre falta, el arranque aborta con error explícito (patrón UnexpectedAwsEndpointError)",
+      "AWS_MODE=local sigue usando pet-tracker-media-local sin cambios (suites existentes verdes)",
+      "Tests unit + e2e nombrando R-ids, rojo antes que verde (C4)",
+      "Smoke real de media (POST photo-upload-url + PUT + GET contra la cuenta real) lo corre el humano, patrón docs/verification.md"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/aws/"
+    ]
   }
 ]
