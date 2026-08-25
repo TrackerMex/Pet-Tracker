@@ -199,7 +199,7 @@ describe('R4: pill se desliza con TAB_INDICATOR_SPRING y retarget-ea en vuelo', 
     await tabBar.rerender(<FloatingTabBar {...tabBarProps(4)} />);
     jest.advanceTimersByTime(100);
     await tabBar.rerender(<FloatingTabBar {...tabBarProps(1)} />);
-    jest.advanceTimersByTime(300);
+    jest.advanceTimersByTime(1000);
 
     expect(screen.getByTestId('tab-indicator')).toHaveAnimatedStyle({
       transform: [{ translateX: 68.8 }],

@@ -1,6 +1,6 @@
 import { BlurView } from 'expo-blur';
 import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   type LayoutChangeEvent,
   Pressable,
@@ -10,6 +10,7 @@ import {
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
+  withSpring,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -51,6 +52,11 @@ const TABS = [
   { name: 'profile', label: 'Profile', Icon: Profile },
 ] as const;
 
+export const TAB_INDICATOR_SPRING = {
+  duration: 250,
+  dampingRatio: 1,
+} as const;
+
 export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
   const [accent, muted, tabPill] = useThemeColors([
     'accent',
@@ -61,12 +67,27 @@ export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
   const { theme } = useUniwind();
   const [containerWidth, setContainerWidth] = useState(0);
   const translateX = useSharedValue(0);
+  const lastPositionedIndex = useRef(state.index);
   const activeRouteName = state.routes[state.index]?.name;
   const hasLiquidGlass = isLiquidGlassAvailable();
   const tabWidth = (containerWidth - 16) / TABS.length;
   const indicatorAnimatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: translateX.get() }],
   }));
+
+  useEffect(() => {
+    if (
+      containerWidth <= 0 ||
+      lastPositionedIndex.current === state.index
+    ) {
+      return;
+    }
+
+    lastPositionedIndex.current = state.index;
+    translateX.set(
+      withSpring(state.index * tabWidth, TAB_INDICATOR_SPRING),
+    );
+  }, [containerWidth, state.index, tabWidth, translateX]);
 
   function handleLayout(event: LayoutChangeEvent) {
     const { width } = event.nativeEvent.layout;
@@ -78,6 +99,7 @@ export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
 
     const nextTabWidth = (width - 16) / TABS.length;
     translateX.set(state.index * nextTabWidth);
+    lastPositionedIndex.current = state.index;
     setContainerWidth(width);
   }
 
