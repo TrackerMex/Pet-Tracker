@@ -4,6 +4,7 @@ import { StyleSheet } from 'react-native';
 
 import {
   FloatingTabBar,
+  TAB_INDICATOR_SPRING,
   type FloatingTabBarProps,
 } from '../floating-tab-bar';
 
@@ -65,7 +66,7 @@ function tabBarProps(index = 0): FloatingTabBarProps {
 }
 
 async function renderTabBar(index = 0) {
-  await render(<FloatingTabBar {...tabBarProps(index)} />, {
+  return render(<FloatingTabBar {...tabBarProps(index)} />, {
     wrapper: HeroUINativeProvider,
   });
 }
@@ -161,6 +162,47 @@ describe('R3: pill dimensionado y posicionado tras layout (y ausente antes)', ()
     });
     expect(indicator).toHaveAnimatedStyle({
       transform: [{ translateX: 137.6 }],
+    });
+  });
+});
+
+describe('R4: pill se desliza con TAB_INDICATOR_SPRING y retarget-ea en vuelo', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.clearAllMocks();
+    mockEmit.mockReturnValue({ defaultPrevented: false });
+    mockIsLiquidGlassAvailable.mockReturnValue(false);
+    mockTheme = 'light';
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('expone la duración y amortiguación fijadas', () => {
+    expect(TAB_INDICATOR_SPRING).toMatchObject({
+      duration: 250,
+      dampingRatio: 1,
+    });
+  });
+
+  it('retarget-ea un cambio nuevo mientras el primer desplazamiento sigue en vuelo', async () => {
+    const tabBar = await renderTabBar(0);
+
+    await fireEvent(screen.getByTestId('floating-tab-bar'), 'layout', {
+      nativeEvent: {
+        layout: { width: 360, height: 64, x: 0, y: 0 },
+      },
+    });
+    jest.advanceTimersByTime(300);
+
+    await tabBar.rerender(<FloatingTabBar {...tabBarProps(4)} />);
+    jest.advanceTimersByTime(100);
+    await tabBar.rerender(<FloatingTabBar {...tabBarProps(1)} />);
+    jest.advanceTimersByTime(300);
+
+    expect(screen.getByTestId('tab-indicator')).toHaveAnimatedStyle({
+      transform: [{ translateX: 68.8 }],
     });
   });
 });
