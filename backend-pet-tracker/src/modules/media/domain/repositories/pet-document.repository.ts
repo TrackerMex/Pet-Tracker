@@ -3,5 +3,6 @@ import type { PetDocument } from '@/modules/media/domain/entities/pet-document.e
 export const PET_DOCUMENT_REPOSITORY = Symbol('PetDocumentRepository');
 
 export interface PetDocumentRepository {
+  create(document: PetDocument): Promise<void>;
   listByPet(petId: string): Promise<PetDocument[]>;
 }

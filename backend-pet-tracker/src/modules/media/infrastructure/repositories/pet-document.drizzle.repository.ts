@@ -12,6 +12,10 @@ type PetDocumentRow = typeof petDocuments.$inferSelect;
 export class PetDocumentDrizzleRepository implements PetDocumentRepository {
   constructor(@Inject(DRIZZLE) private readonly db: NodePgDatabase) {}
 
+  async create(document: PetDocument): Promise<void> {
+    await this.db.insert(petDocuments).values(document);
+  }
+
   async listByPet(petId: string): Promise<PetDocument[]> {
     const rows = await this.db
       .select()
