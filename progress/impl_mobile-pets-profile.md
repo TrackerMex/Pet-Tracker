@@ -110,3 +110,21 @@ final completo pasó sin reintento.
   `bun run typecheck` y `bun run lint` terminaron con exit 0.
 - El smoke humano R10 queda pendiente de repetirse en Expo Go; este fix no lo
   marca como completado. La parte Docs sigue bloqueada por #49.
+
+## R10 — corrección de smoke 3 (2026-08-25)
+
+- Hallazgo del smoke humano: tras crear una mascota y volver con
+  `router.replace('/profile')`, Profile conservaba la lista montada y no
+  mostraba el alta hasta recargar la app completa.
+- Corrección: Profile revalida `listPets` y el detalle activo al recuperar
+  foco mediante el mismo `useFocusEffect` de Reminders. Home tampoco
+  refetcheaba al foco, por lo que aplica el mismo patrón para que la mascota
+  y su foto nuevas aparezcan sin reiniciar la app.
+- Health y Food no se tocaron; tampoco `use-api.ts`, rutas, layouts, backend,
+  infraestructura ni la capa API.
+- TDD: `a8cbd7e` demuestra el rojo en Profile y Home → `c3ce9b9` registra
+  el refetch estable y el scaffolding del mock compartido de Expo Router.
+- Gates móviles: `bun run test` (45 suites / 512 tests / 1 snapshot),
+  `bun run typecheck` y `bun run lint` terminaron con exit 0.
+- El smoke humano R10 queda pendiente de repetirse en Expo Go; este fix no lo
+  marca como completado. La parte Docs sigue bloqueada por #49.

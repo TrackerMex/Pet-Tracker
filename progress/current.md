@@ -36,3 +36,8 @@
   `SelectedPetProvider`; las rutas AddPet y Docs ahora viven bajo `(tabs)`.
   Ciclo TDD `644a00c` rojo → `5bae7b0` verde; smoke humano pendiente de
   repetirse. Gates móviles verdes: 45 suites/510 tests, typecheck y lint.
+- Fix de smoke R10 #3 implementado (2026-08-25): Profile y Home revalidan la
+  lista de mascotas y el detalle activo al recuperar foco, evitando que el
+  alta/foto quede stale al volver de AddPet. Ciclo TDD `a8cbd7e` rojo →
+  `c3ce9b9` verde; smoke humano pendiente de repetirse. Gates móviles verdes:
+  45 suites/512 tests, typecheck y lint. Health/Food no se tocaron.
