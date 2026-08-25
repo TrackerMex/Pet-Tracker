@@ -45,9 +45,9 @@ tags: [harness, spec]
 
 ## R6 — animation 'fade' en el layout de Tabs
 
-- [ ] (1) Escribir test que falla para R6 (`tabs-layout.test.tsx` nuevo, mocks de [[design]])
-- [ ] (2) Implementación mínima que lo pasa (una línea en `_layout.tsx`)
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R6 (`tabs-layout.test.tsx` nuevo, mocks de [[design]])
+- [x] (2) Implementación mínima que lo pasa (una línea en `_layout.tsx`)
+- [x] (3) Refactor con tests verdes
 
 ## R7 — Comportamiento existente conservado (regresión)
 
