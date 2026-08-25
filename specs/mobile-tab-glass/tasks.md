@@ -27,9 +27,9 @@ tags: [harness, spec]
 
 ## R3 — Pill dimensionado y posicionado tras layout
 
-- [ ] (1) Escribir test que falla para R3 (fireEvent layout 360 → ancho 68.8, translateX index×68.8; sin layout no hay pill)
-- [ ] (2) Implementación mínima que lo pasa
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R3 (fireEvent layout 360 → ancho 68.8, translateX index×68.8; sin layout no hay pill)
+- [x] (2) Implementación mínima que lo pasa
+- [x] (3) Refactor con tests verdes
 
 ## R4 — Spring interruptible al cambiar de tab
 
