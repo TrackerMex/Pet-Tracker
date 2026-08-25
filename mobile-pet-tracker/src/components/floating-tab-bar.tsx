@@ -1,6 +1,16 @@
 import { BlurView } from 'expo-blur';
 import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
-import { Pressable, Text, View } from 'react-native';
+import { useState } from 'react';
+import {
+  type LayoutChangeEvent,
+  Pressable,
+  Text,
+  View,
+} from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+} from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   ForkKnife,
@@ -42,17 +52,41 @@ const TABS = [
 ] as const;
 
 export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
-  const [accent, muted] = useThemeColors(['accent', 'muted']);
+  const [accent, muted, tabPill] = useThemeColors([
+    'accent',
+    'muted',
+    'tab-pill',
+  ]);
   const insets = useSafeAreaInsets();
   const { theme } = useUniwind();
+  const [containerWidth, setContainerWidth] = useState(0);
+  const translateX = useSharedValue(0);
   const activeRouteName = state.routes[state.index]?.name;
   const hasLiquidGlass = isLiquidGlassAvailable();
+  const tabWidth = (containerWidth - 16) / TABS.length;
+  const indicatorAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: translateX.get() }],
+  }));
+
+  function handleLayout(event: LayoutChangeEvent) {
+    const { width } = event.nativeEvent.layout;
+
+    if (width <= 0) {
+      setContainerWidth(0);
+      return;
+    }
+
+    const nextTabWidth = (width - 16) / TABS.length;
+    translateX.set(state.index * nextTabWidth);
+    setContainerWidth(width);
+  }
 
   return (
     <View
       testID="floating-tab-bar"
       className="absolute overflow-hidden rounded-full border border-border shadow-lg"
       style={{ bottom: insets.bottom + 12, left: 16, right: 16 }}
+      onLayout={handleLayout}
     >
       {hasLiquidGlass ? (
         <GlassView
@@ -74,6 +108,23 @@ export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
           />
         </BlurView>
       )}
+      {containerWidth > 0 ? (
+        <Animated.View
+          testID="tab-indicator"
+          style={[
+            {
+              position: 'absolute',
+              width: tabWidth,
+              left: 8,
+              top: 6,
+              bottom: 6,
+              borderRadius: 999,
+              backgroundColor: tabPill,
+            },
+            indicatorAnimatedStyle,
+          ]}
+        />
+      ) : null}
       <View className="flex-row items-center justify-around px-2 py-3">
         {TABS.map(({ name, label, Icon }) => {
           const route = state.routes.find(

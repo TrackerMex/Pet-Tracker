@@ -125,10 +125,15 @@ describe('R2: fallback BlurView con tint por tema, blurMethod y overlay translú
 
 describe('R3: pill dimensionado y posicionado tras layout (y ausente antes)', () => {
   beforeEach(() => {
+    jest.useFakeTimers();
     jest.clearAllMocks();
     mockEmit.mockReturnValue({ defaultPrevented: false });
     mockIsLiquidGlassAvailable.mockReturnValue(false);
     mockTheme = 'light';
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
   });
 
   it('espera un ancho válido y usa la geometría exacta para el tab activo', async () => {
@@ -136,11 +141,12 @@ describe('R3: pill dimensionado y posicionado tras layout (y ausente antes)', ()
 
     expect(screen.queryByTestId('tab-indicator')).not.toBeOnTheScreen();
 
-    fireEvent(screen.getByTestId('floating-tab-bar'), 'layout', {
+    await fireEvent(screen.getByTestId('floating-tab-bar'), 'layout', {
       nativeEvent: {
         layout: { width: 360, height: 64, x: 0, y: 0 },
       },
     });
+    jest.advanceTimersByTime(300);
 
     const indicator = screen.getByTestId('tab-indicator');
     const style = StyleSheet.flatten(indicator.props.style);
