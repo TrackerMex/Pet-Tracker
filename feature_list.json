@@ -882,7 +882,7 @@
   {
     "id": 49,
     "name": "media-docs-api",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P2",
     "description": "Backend de documentos de mascota (decisión Q1 del gate de #40, 2026-08-24, patrón #47 reminders-api): GET /v1/pets/:petId/media (listado de documentos: tipo, nombre, fecha, key) y upload de documentos genéricos vía URL presignada a S3 (LocalStack en dev). Extiende el módulo media existente (hoy solo emite la presigned URL de la foto de perfil). La pantalla Docs de #40 consume este contrato; su smoke queda bloqueado hasta que esta feature esté done.",
     "acceptance_criteria": [
