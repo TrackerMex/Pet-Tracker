@@ -7,6 +7,27 @@ import {
   type FloatingTabBarProps,
 } from '../floating-tab-bar';
 
+const mockIsLiquidGlassAvailable = jest.fn<boolean, []>(() => false);
+
+jest.mock('expo-glass-effect', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual('react-native');
+  return {
+    GlassView: (props: Record<string, unknown>) =>
+      React.createElement(View, props),
+    isLiquidGlassAvailable: () => mockIsLiquidGlassAvailable(),
+  };
+});
+
+jest.mock('expo-blur', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual('react-native');
+  return {
+    BlurView: (props: Record<string, unknown>) =>
+      React.createElement(View, props),
+  };
+});
+
 jest.mock('react-native-safe-area-context', () => ({
   ...jest.requireActual('react-native-safe-area-context'),
   useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 34, left: 0 }),
@@ -40,10 +61,30 @@ async function renderTabBar(index = 0) {
   });
 }
 
+describe('R1: usa GlassView cuando liquid glass está disponible (y nunca junto a BlurView)', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockEmit.mockReturnValue({ defaultPrevented: false });
+    mockIsLiquidGlassAvailable.mockReturnValue(true);
+  });
+
+  it('monta únicamente el backdrop liquid glass regular sin tintColor', async () => {
+    await renderTabBar();
+
+    expect(screen.getByTestId('tab-bar-glass')).toHaveProp(
+      'glassEffectStyle',
+      'regular',
+    );
+    expect(screen.getByTestId('tab-bar-glass')).not.toHaveProp('tintColor');
+    expect(screen.queryByTestId('tab-bar-blur')).not.toBeOnTheScreen();
+  });
+});
+
 describe('R7: tab bar renderiza y navega', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockEmit.mockReturnValue({ defaultPrevented: false });
+    mockIsLiquidGlassAvailable.mockReturnValue(false);
   });
 
   it('renders the five labeled tabs in the required order', async () => {
@@ -103,6 +144,7 @@ describe('R8: tab bar flota con safe area', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockEmit.mockReturnValue({ defaultPrevented: false });
+    mockIsLiquidGlassAvailable.mockReturnValue(false);
   });
 
   it('positions the bar twelve points above the bottom inset and inset 16 from each edge', async () => {
