@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
 import { StyleSheet } from 'react-native';
+import { ReduceMotion } from 'react-native-reanimated';
 
 import {
   FloatingTabBar,
@@ -204,6 +205,12 @@ describe('R4: pill se desliza con TAB_INDICATOR_SPRING y retarget-ea en vuelo', 
     expect(screen.getByTestId('tab-indicator')).toHaveAnimatedStyle({
       transform: [{ translateX: 68.8 }],
     });
+  });
+});
+
+describe('R5: TAB_INDICATOR_SPRING respeta reduced motion del sistema', () => {
+  it('delega la preferencia de movimiento al ajuste del sistema', () => {
+    expect(TAB_INDICATOR_SPRING.reduceMotion).toBe(ReduceMotion.System);
   });
 });
 
