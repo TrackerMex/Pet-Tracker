@@ -10,7 +10,6 @@ import TabsLayout from '../_layout';
 jest.mock(
   '../../../components/floating-tab-bar',
   () => ({ FloatingTabBar: jest.fn(() => null) }),
-  { virtual: true },
 );
 
 jest.mock('../../../providers/auth-provider', () => ({
