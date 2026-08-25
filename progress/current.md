@@ -13,18 +13,22 @@ válidas en disco. Este archivo consolida las dos — no borrar ninguna entrada.
 ### Feature #49 `media-docs-api` (sesión A)
 
 - Branch: `feature/49-media-docs-api` (desde main c9c8acd)
-- Estado: spec aprobada por humano (casilla en 338c035; frontmatter
-  `approved` corregido por leader en 9e84b17). #49 → `in_progress`.
-  Handoff a Codex CLI entregado; esperando que el humano confirme fin de
-  implementación para lanzar reviewer. Mientras Codex corre, esta sesión
-  no toca `backend-pet-tracker/`.
+- Estado: **done**. Spec aprobada (338c035), implementación Codex CLI
+  (11 commits test-primero hasta efe585e), review APROBADO
+  (`progress/review_media-docs-api.md`, C2–C7). PR abierto — pendiente
+  solo merge del humano; con el merge se desbloquea el smoke Docs de #40.
 - Feature #51 `media-bucket-aws-mode` registrada (a41e43a): bucket real
   en AWS_MODE=aws, detectada durante el gate de #49.
 
 ### Feature #43 `mobile-theme-transition` (sesión B, esta)
 
-- Estado: spec completa en `specs/mobile-theme-transition/` (18:53 UTC,
-  spec_author); #43 → `spec_ready`. Pendiente: gate humano.
+- Estado: spec completa; #43 → `spec_ready`. Branch
+  `feature/43-mobile-theme-transition` (998d8ab, desde main c9c8acd) pushed
+  con la spec — se creó vía worktree temporal para no tocar el checkout de
+  #49 mientras Codex implementa. La copia untracked de
+  `specs/mobile-theme-transition/` en este working tree se retiró (vive en
+  la branch). Pendiente: gate humano (casilla en requirements.md con commit
+  del humano en esa branch).
 - La spec deja al gate la decisión de verificación: nitro-theme-transition
   es código nativo y no corre en Expo Go (smoke del humano) — opciones
   (a) dev build vía EAS cloud, (b) descartar y conservar toggle sin fade de #40.
