@@ -1,3 +1,4 @@
+import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { and, eq, inArray } from 'drizzle-orm';
@@ -5,6 +6,8 @@ import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { uuidv7 } from 'uuidv7';
+import { AWS_RESOURCE_NAMES, S3_CLIENT } from '@/aws/aws.constants';
+import type { AwsResourceNames } from '@/aws/resource-names';
 import { DRIZZLE } from '@/db/drizzle.constants';
 import { auditLog } from '@/db/schema/audit-log.schema';
 import { petDocuments } from '@/db/schema/media.schema';
@@ -19,6 +22,8 @@ describe('Pet documents API (e2e)', () => {
   let app: INestApplication<App>;
   let db: NodePgDatabase;
   let tokens: TokenService;
+  let s3: S3Client;
+  let resourceNames: AwsResourceNames;
   const userIds: string[] = [];
   const petIds: string[] = [];
 
@@ -138,6 +143,8 @@ describe('Pet documents API (e2e)', () => {
     await app.init();
     db = app.get<NodePgDatabase>(DRIZZLE);
     tokens = app.get<TokenService>(TOKEN_SERVICE);
+    s3 = app.get<S3Client>(S3_CLIENT);
+    resourceNames = app.get<AwsResourceNames>(AWS_RESOURCE_NAMES);
   });
 
   afterAll(async () => {
@@ -388,6 +395,48 @@ describe('Pet documents API (e2e)', () => {
             ),
           ),
       ).toEqual([]);
+    });
+  });
+
+  describe('R3: flujo end-to-end POST → PUT → GET contra LocalStack', () => {
+    it('sube bytes sin Authorization, conserva el documento y permite leer el objeto por key', async () => {
+      const owner = await seedUser('r3-owner');
+      const pet = await seedPet(owner);
+      const fixtureBytes = Buffer.from(
+        `media-document-e2e-${runId}-${Math.random()}`,
+        'utf-8',
+      );
+
+      const created = await createDocument(owner, pet.id, {
+        type: 'Laboratorio',
+        name: 'Resultados sanguíneos',
+        date: '2026-08-25',
+      }).expect(201);
+      const createdBody = created.body as {
+        document: DocumentResponse;
+        uploadUrl: string;
+      };
+
+      const putResponse = await fetch(createdBody.uploadUrl, {
+        method: 'PUT',
+        body: fixtureBytes,
+      });
+      expect(putResponse.status).toBeGreaterThanOrEqual(200);
+      expect(putResponse.status).toBeLessThan(300);
+
+      const listed = await listDocuments(owner, pet.id).expect(200);
+      expect(listed.body).toEqual([createdBody.document]);
+
+      const storedObject = await s3.send(
+        new GetObjectCommand({
+          Bucket: resourceNames.mediaBucket,
+          Key: createdBody.document.key,
+        }),
+      );
+      const storedBytes = Buffer.from(
+        (await storedObject.Body?.transformToByteArray()) ?? [],
+      );
+      expect(storedBytes.equals(fixtureBytes)).toBe(true);
     });
   });
 });
