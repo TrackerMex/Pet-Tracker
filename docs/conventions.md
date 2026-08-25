@@ -243,6 +243,12 @@ La app Expo vive en `mobile-pet-tracker/` como una isla gestionada con **bun**;
 sus dependencias, scripts y lockfile se administran desde esa carpeta, sin
 mezclarlos con el workspace pnpm de backend e infraestructura.
 
+> **Carta de UI**: las decisiones de diseño visual, tokens, componentes
+> compartidos, `@expo/ui` y animación viven en `docs/ui-guidelines.md`
+> (desde PR #73; gate C8 de `CHECKPOINTS.md`). Esta sección fija estructura
+> y proceso; ante solape, cada regla vive en un solo sitio: layout y
+> estructura aquí, visual y motion en la carta.
+
 - Los componentes nuevos se estilizan solo con `className` y los tokens de
   `src/theme/global.css`. Quedan prohibidos `StyleSheet.create` y los colores
   hexadecimales dentro de componentes nuevos.
