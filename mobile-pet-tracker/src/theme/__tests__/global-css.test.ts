@@ -131,3 +131,20 @@ describe('R2: global.css define la paleta dark derivada del diseño', () => {
     });
   });
 });
+
+describe('R2: tokens glass-surface y tab-pill en light y dark', () => {
+  it.each([
+    ['light', 'rgba(255,255,255,0.60)', 'rgba(42,184,124,0.14)'],
+    ['dark', 'rgba(22,27,34,0.60)', 'rgba(42,184,124,0.22)'],
+  ] as const)(
+    'define los pares visual e imperativo exactos en %s',
+    (theme, glassSurface, tabPill) => {
+      expect(parseVariables(extractVariant(theme))).toMatchObject({
+        'glass-surface': glassSurface,
+        'color-glass-surface': glassSurface,
+        'tab-pill': tabPill,
+        'color-tab-pill': tabPill,
+      });
+    },
+  );
+});

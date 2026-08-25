@@ -8,6 +8,15 @@ import {
 } from '../floating-tab-bar';
 
 const mockIsLiquidGlassAvailable = jest.fn<boolean, []>(() => false);
+let mockTheme: 'light' | 'dark' = 'light';
+
+jest.mock('uniwind', () => {
+  const actual = jest.requireActual<typeof import('uniwind')>('uniwind');
+  return {
+    ...actual,
+    useUniwind: () => ({ theme: mockTheme }),
+  };
+});
 
 jest.mock('expo-glass-effect', () => {
   const React = jest.requireActual<typeof import('react')>('react');
@@ -66,6 +75,7 @@ describe('R1: usa GlassView cuando liquid glass está disponible (y nunca junto 
     jest.clearAllMocks();
     mockEmit.mockReturnValue({ defaultPrevented: false });
     mockIsLiquidGlassAvailable.mockReturnValue(true);
+    mockTheme = 'light';
   });
 
   it('monta únicamente el backdrop liquid glass regular sin tintColor', async () => {
@@ -80,11 +90,44 @@ describe('R1: usa GlassView cuando liquid glass está disponible (y nunca junto 
   });
 });
 
+describe('R2: fallback BlurView con tint por tema, blurMethod y overlay translúcido', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockEmit.mockReturnValue({ defaultPrevented: false });
+    mockIsLiquidGlassAvailable.mockReturnValue(false);
+    mockTheme = 'light';
+  });
+
+  it('usa el fallback light con intensidad y método exactos', async () => {
+    await renderTabBar();
+
+    expect(screen.getByTestId('tab-bar-blur')).toHaveProp('intensity', 80);
+    expect(screen.getByTestId('tab-bar-blur')).toHaveProp(
+      'blurMethod',
+      'dimezisBlurViewSdk31Plus',
+    );
+    expect(screen.getByTestId('tab-bar-blur')).toHaveProp('tint', 'light');
+    expect(screen.getByTestId('tab-bar-overlay')).toHaveClass(
+      'bg-glass-surface',
+    );
+    expect(screen.queryByTestId('tab-bar-glass')).not.toBeOnTheScreen();
+  });
+
+  it('sincroniza el tint del fallback con el tema dark de la app', async () => {
+    mockTheme = 'dark';
+
+    await renderTabBar();
+
+    expect(screen.getByTestId('tab-bar-blur')).toHaveProp('tint', 'dark');
+  });
+});
+
 describe('R7: tab bar renderiza y navega', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockEmit.mockReturnValue({ defaultPrevented: false });
     mockIsLiquidGlassAvailable.mockReturnValue(false);
+    mockTheme = 'light';
   });
 
   it('renders the five labeled tabs in the required order', async () => {
@@ -145,6 +188,7 @@ describe('R8: tab bar flota con safe area', () => {
     jest.clearAllMocks();
     mockEmit.mockReturnValue({ defaultPrevented: false });
     mockIsLiquidGlassAvailable.mockReturnValue(false);
+    mockTheme = 'light';
   });
 
   it('positions the bar twelve points above the bottom inset and inset 16 from each edge', async () => {
