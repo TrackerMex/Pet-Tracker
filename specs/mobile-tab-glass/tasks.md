@@ -21,9 +21,9 @@ tags: [harness, spec]
 
 ## R2 — Fallback BlurView + overlay translúcido + tokens glass
 
-- [ ] (1) Escribir test que falla para R2 (props exactos del BlurView, overlay, tokens en global-css.test.ts)
-- [ ] (2) Implementación mínima que lo pasa (tokens en global.css incluidos)
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R2 (props exactos del BlurView, overlay, tokens en global-css.test.ts)
+- [x] (2) Implementación mínima que lo pasa (tokens en global.css incluidos)
+- [x] (3) Refactor con tests verdes
 
 ## R3 — Pill dimensionado y posicionado tras layout
 
