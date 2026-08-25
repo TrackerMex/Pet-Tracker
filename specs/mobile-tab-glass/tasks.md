@@ -15,9 +15,9 @@ tags: [harness, spec]
 
 ## R1 — GlassView cuando liquid glass está disponible
 
-- [ ] (1) Escribir test que falla para R1 (mocks de [[design]]; branch true/false)
-- [ ] (2) Implementación mínima que lo pasa
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R1 (mocks de [[design]]; branch true/false)
+- [x] (2) Implementación mínima que lo pasa
+- [x] (3) Refactor con tests verdes
 
 ## R2 — Fallback BlurView + overlay translúcido + tokens glass
 
