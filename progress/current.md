@@ -47,3 +47,9 @@
   `9bf01bc` verde; smoke humano pendiente de repetirse. Gates móviles verdes:
   45 suites/513 tests, typecheck y lint. Sin cambios fuera de las dos
   pantallas, sus tests y la trazabilidad/progreso.
+- Fix de smoke R10 #5 implementado (2026-08-25): Home, Health y Food ya no
+  pisan la selección global con el primer pet mientras la lista stale se
+  revalida. Ciclo TDD `6ef7c26` rojo → `76f7990` verde; smoke humano pendiente
+  de repetirse. Gates móviles verdes: 45 suites/516 tests, typecheck y lint;
+  `./init.sh` final verde. El auto-select cuadruplicado queda anotado como
+  candidato futuro a `use-pet-selection`, sin implementarlo en este fix.

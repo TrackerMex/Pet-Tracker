@@ -147,3 +147,25 @@ final completo pasó sin reintento.
   snapshot), `bun run typecheck` y `bun run lint` terminaron con exit 0.
 - El smoke humano R10 queda pendiente de repetirse en Expo Go; este fix no lo
   marca como completado. La parte Docs sigue bloqueada por #49.
+
+## R10 — corrección de smoke 5 (2026-08-25)
+
+- Hallazgo del smoke humano: al entrar en Home tras el alta, la lista stale
+  todavía no contenía la mascota nueva y el auto-select reemplazaba su id por
+  el primer pet. La misma carrera estaba duplicada en Home, Health y Food.
+- Corrección: las tres pantallas omiten el auto-select mientras
+  `pets.isRefreshing`, replicando exactamente el guard existente de Profile,
+  y observan `pets.isRefreshing` en las dependencias del efecto.
+- TDD: `6ef7c26` demuestra los tres rojos con una selección ausente de la
+  lista stale durante el refetch → `76f7990` conserva la selección hasta que
+  la lista resuelta incluye el id nuevo.
+- Nota futura, sin implementar en este fix: el efecto de auto-select queda
+  cuadruplicado entre Profile, Home, Health y Food; si otra feature vuelve a
+  tocarlo, es candidato a un hook compartido `use-pet-selection`.
+- No se tocaron `use-api.ts`, providers, layouts, floating tab bar, capa API,
+  backend ni infraestructura; no se añadieron dependencias.
+- Gates móviles: `bun run test` (45 suites / 516 tests / 1 snapshot),
+  `bun run typecheck` y `bun run lint` terminaron con exit 0. `./init.sh`
+  final terminó con exit 0 y `✅ Todo verde`.
+- El smoke humano R10 queda pendiente de repetirse en Expo Go; este fix no lo
+  marca como completado. La parte Docs sigue bloqueada por #49.
