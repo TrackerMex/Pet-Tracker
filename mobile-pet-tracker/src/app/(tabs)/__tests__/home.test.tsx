@@ -16,8 +16,11 @@ import {
 } from '../../../api/activity';
 import { getPet, listPets, type PetState, type PetsState } from '../../../api/pets';
 import type { DayEntry, PetProfile } from '../../../api/types';
+import * as apiHooks from '../../../hooks/use-api';
+import type { ApiResult } from '../../../hooks/use-api';
 import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
 import { SelectedPetProvider } from '../../../providers/selected-pet-provider';
+import * as selectedPetHooks from '../../../providers/selected-pet-provider';
 import HomeScreen from '../home';
 
 jest.mock('../../../api/pets', () => ({
@@ -591,5 +594,51 @@ describe('R10: refetch al foco', () => {
       expect(mockListPets).toHaveBeenCalledTimes(2);
       expect(mockGetPet).toHaveBeenCalledTimes(2);
     });
+  });
+});
+
+describe('R10: preserva la mascota durante el refetch', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('does not replace a new selection while the stale pet list refreshes', async () => {
+    const existingPet = makePet();
+    const createdPet = makePet({ id: 'pet-new', name: 'Nala' });
+    const selectPet = jest.fn();
+    let petsResult: ApiResult<PetsState> = {
+      data: { kind: 'ok', pets: [existingPet] },
+      isRefreshing: true,
+      refetch: jest.fn(),
+    };
+    const emptyResult: ApiResult<{ kind: string }> = {
+      data: undefined,
+      isRefreshing: false,
+      refetch: jest.fn(),
+    };
+    let hookCall = 0;
+    jest.spyOn(selectedPetHooks, 'useSelectedPet').mockReturnValue({
+      selectedPetId: createdPet.id,
+      selectPet,
+    });
+    jest.spyOn(apiHooks, 'useApi').mockImplementation(
+      <T extends { kind: string }>(): ApiResult<T> => {
+        const result = hookCall++ % 3 === 0 ? petsResult : emptyResult;
+        return result as ApiResult<T>;
+      },
+    );
+
+    const view = await renderHome();
+
+    expect(selectPet).not.toHaveBeenCalled();
+
+    petsResult = {
+      data: { kind: 'ok', pets: [existingPet, createdPet] },
+      isRefreshing: false,
+      refetch: jest.fn(),
+    };
+    await view.rerender(<HomeScreen />);
+
+    expect(selectPet).not.toHaveBeenCalled();
   });
 });
