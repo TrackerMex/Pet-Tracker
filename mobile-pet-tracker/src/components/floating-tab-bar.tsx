@@ -8,6 +8,7 @@ import {
   View,
 } from 'react-native';
 import Animated, {
+  ReduceMotion,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
@@ -55,6 +56,7 @@ const TABS = [
 export const TAB_INDICATOR_SPRING = {
   duration: 250,
   dampingRatio: 1,
+  reduceMotion: ReduceMotion.System,
 } as const;
 
 export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
