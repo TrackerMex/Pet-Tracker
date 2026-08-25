@@ -1,11 +1,12 @@
 import {
+  act,
   fireEvent,
   render,
   screen,
   waitFor,
   within,
 } from '@testing-library/react-native';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
 
@@ -34,6 +35,7 @@ jest.mock('../../../providers/auth-provider', () => ({
 
 jest.mock('expo-router', () => ({
   router: { push: jest.fn() },
+  useFocusEffect: jest.fn(),
 }));
 
 jest.mock('react-native-safe-area-context', () => ({
@@ -47,6 +49,7 @@ const mockGetPet = jest.mocked(getPet);
 const mockListPets = jest.mocked(listPets);
 const mockUseAuth = jest.mocked(useAuth);
 const mockRouter = jest.mocked(router);
+const mockUseFocusEffect = jest.mocked(useFocusEffect);
 
 function makePet(overrides: Partial<PetProfile> = {}): PetProfile {
   return {
@@ -554,5 +557,39 @@ describe('R10: last position enlaza al mapa', () => {
 
     await waitFor(() => expect(screen.getByTestId('collar-status')).toHaveTextContent('Free'));
     expect(screen.queryByTestId('last-position-card')).toBeNull();
+  });
+});
+
+describe('R10: refetch al foco', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    const pet = makePet();
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+  });
+
+  it('refetches the pet list and active pet when Home recovers focus', async () => {
+    renderHome();
+    await waitFor(() => expect(mockGetPet).toHaveBeenCalledTimes(1));
+    const focusCallback = mockUseFocusEffect.mock.calls.at(-1)?.[0];
+    expect(focusCallback).toBeDefined();
+
+    await act(async () => {
+      focusCallback?.();
+      await Promise.resolve();
+    });
+
+    await waitFor(() => {
+      expect(mockListPets).toHaveBeenCalledTimes(2);
+      expect(mockGetPet).toHaveBeenCalledTimes(2);
+    });
   });
 });

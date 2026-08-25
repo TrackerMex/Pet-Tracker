@@ -1,5 +1,11 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
-import { router } from 'expo-router';
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react-native';
+import { router, useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import * as ImagePicker from 'expo-image-picker';
 import type { ReactNode } from 'react';
@@ -90,6 +96,7 @@ jest.mock('../../components/pet-switcher', () => {
 
 jest.mock('expo-router', () => ({
   router: { push: jest.fn(), back: jest.fn() },
+  useFocusEffect: jest.fn(),
 }));
 
 jest.mock('react-native-safe-area-context', () => ({
@@ -106,6 +113,7 @@ const mockListPets = jest.mocked(listPets);
 const mockGetMe = jest.mocked(getMe);
 const mockUseAuth = jest.mocked(useAuth);
 const mockRouter = jest.mocked(router);
+const mockUseFocusEffect = jest.mocked(useFocusEffect);
 const mockSignOut = jest.fn<Promise<void>, []>();
 const mockSetStoredTheme = jest.mocked(setStoredTheme);
 const mockSetTheme = jest.mocked(Uniwind.setTheme);
@@ -481,5 +489,39 @@ describe('R8: navegación a docs', () => {
     fireEvent.press(screen.getByTestId('documents-link'));
 
     expect(mockRouter.push).toHaveBeenCalledWith('/pets/pet-1/docs');
+  });
+});
+
+describe('R10: refetch al foco', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockGetMe.mockReturnValue(pending<MeState>());
+    const pet = makePet();
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+  });
+
+  it('refetches the pet list and active pet when Profile recovers focus', async () => {
+    renderProfile();
+    await waitFor(() => expect(mockGetPet).toHaveBeenCalledTimes(1));
+    const focusCallback = mockUseFocusEffect.mock.calls.at(-1)?.[0];
+    expect(focusCallback).toBeDefined();
+
+    await act(async () => {
+      focusCallback?.();
+      await Promise.resolve();
+    });
+
+    await waitFor(() => {
+      expect(mockListPets).toHaveBeenCalledTimes(2);
+      expect(mockGetPet).toHaveBeenCalledTimes(2);
+    });
   });
 });
