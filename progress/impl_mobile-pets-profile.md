@@ -169,3 +169,30 @@ final completo pasó sin reintento.
   final terminó con exit 0 y `✅ Todo verde`.
 - El smoke humano R10 queda pendiente de repetirse en Expo Go; este fix no lo
   marca como completado. La parte Docs sigue bloqueada por #49.
+
+## R10 — corrección de smoke 6 (2026-08-25)
+
+- Hallazgo del smoke humano: al seleccionar la mascota recién creada, Health
+  y Food podían seguir montadas pero desenfocadas con listas stale; sus
+  auto-selects observaban el cambio global y restauraban el primer pet.
+- Corrección: el auto-select cuadruplicado se extrajo a
+  `src/hooks/use-pet-selection.ts`. El hook comprueba, en orden, que la
+  pantalla esté enfocada con `useIsFocused`, que la lista no esté
+  revalidando y que contenga datos `ok` no vacíos; solo entonces selecciona
+  el primer pet si el id activo ya no existe.
+- Home, Health, Food y Profile consumen el hook compartido sin cambios de UI.
+  Las pantallas desenfocadas ya no tienen autoridad para modificar la
+  selección global.
+- TDD: `48bcf80` demuestra cuatro rojos colocados (desenfocada con lista
+  stale, enfocada revalidando, selección ausente y selección presente) →
+  `1541d7c` implementa el hook y elimina los cuatro efectos duplicados.
+- Se añadió `useIsFocused: true` únicamente a los mocks de `expo-router` de
+  las cuatro suites directas y al scaffolding heredado `screens.test.tsx`,
+  que también renderiza Profile; sus aserciones no cambiaron.
+- No se tocaron `use-api.ts`, providers, layouts, floating tab bar, capa API,
+  backend ni infraestructura; no se añadieron dependencias.
+- Gates móviles: `bun run test` (46 suites / 520 tests / 1 snapshot),
+  `bun run typecheck` y `bun run lint` terminaron con exit 0. `./init.sh`
+  final terminó con exit 0 y `✅ Todo verde`.
+- El smoke humano R10 queda pendiente de repetirse en Expo Go; este fix no lo
+  marca como completado. La parte Docs sigue bloqueada por #49.

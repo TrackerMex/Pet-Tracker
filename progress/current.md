@@ -53,3 +53,9 @@
   de repetirse. Gates móviles verdes: 45 suites/516 tests, typecheck y lint;
   `./init.sh` final verde. El auto-select cuadruplicado queda anotado como
   candidato futuro a `use-pet-selection`, sin implementarlo en este fix.
+- Fix de smoke R10 #6 implementado (2026-08-25): el auto-select compartido
+  ahora exige que la pantalla esté enfocada antes de validar la lista, por lo
+  que tabs desenfocadas con datos stale ya no pisan la mascota nueva. Ciclo
+  TDD `48bcf80` rojo → `1541d7c` verde; smoke humano pendiente de repetirse.
+  Gates móviles verdes: 46 suites/520 tests, typecheck y lint; `./init.sh`
+  final verde.
