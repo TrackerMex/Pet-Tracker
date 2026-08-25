@@ -1,6 +1,6 @@
 ---
 feature: "media-docs-api"
-status: draft        # draft | approved
+status: approved
 tags: [harness, spec, backend]
 ---
 
