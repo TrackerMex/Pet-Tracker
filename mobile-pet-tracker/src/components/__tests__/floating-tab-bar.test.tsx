@@ -123,6 +123,42 @@ describe('R2: fallback BlurView con tint por tema, blurMethod y overlay translú
   });
 });
 
+describe('R3: pill dimensionado y posicionado tras layout (y ausente antes)', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockEmit.mockReturnValue({ defaultPrevented: false });
+    mockIsLiquidGlassAvailable.mockReturnValue(false);
+    mockTheme = 'light';
+  });
+
+  it('espera un ancho válido y usa la geometría exacta para el tab activo', async () => {
+    await renderTabBar(2);
+
+    expect(screen.queryByTestId('tab-indicator')).not.toBeOnTheScreen();
+
+    fireEvent(screen.getByTestId('floating-tab-bar'), 'layout', {
+      nativeEvent: {
+        layout: { width: 360, height: 64, x: 0, y: 0 },
+      },
+    });
+
+    const indicator = screen.getByTestId('tab-indicator');
+    const style = StyleSheet.flatten(indicator.props.style);
+
+    expect(style).toMatchObject({
+      width: 68.8,
+      left: 8,
+      top: 6,
+      bottom: 6,
+      borderRadius: 999,
+      backgroundColor: expect.any(String),
+    });
+    expect(indicator).toHaveAnimatedStyle({
+      transform: [{ translateX: 137.6 }],
+    });
+  });
+});
+
 describe('R7: tab bar renderiza y navega', () => {
   beforeEach(() => {
     jest.clearAllMocks();
