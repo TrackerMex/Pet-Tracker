@@ -1,6 +1,6 @@
 ---
 feature: "mobile-tab-glass"
-status: draft        # draft | approved
+status: approved
 tags: [harness, spec]
 ---
 
