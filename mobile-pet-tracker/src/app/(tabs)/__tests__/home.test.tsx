@@ -628,7 +628,7 @@ describe('R10: preserva la mascota durante el refetch', () => {
       },
     );
 
-    const view = await renderHome();
+    const view = await render(<HomeScreen />, { wrapper: HomeWrapper });
 
     expect(selectPet).not.toHaveBeenCalled();
 
