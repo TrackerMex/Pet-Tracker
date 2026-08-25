@@ -23,7 +23,11 @@ de la aplicación.**
    acceptance_criteria, files_affected si ya están listados).
 2. Lee `docs/architecture.md` — cualquier requisito debe ser implementable
    respetando las capas domain/application/infrastructure.
-3. Si la feature es ambigua, pide (o revisa) un `progress/explore_<feature>.md`
+3. Si la feature toca `mobile-pet-tracker/`, lee `docs/ui-guidelines.md`:
+   los criterios de aceptación deben incluir el grep-clean, las dimensiones
+   de pantalla y los componentes compartidos que ese doc fija, y las
+   decisiones de UI de la spec no pueden contradecirlo.
+4. Si la feature es ambigua, pide (o revisa) un `progress/explore_<feature>.md`
    antes de comprometerte a una redacción de requisitos.
 
 ---

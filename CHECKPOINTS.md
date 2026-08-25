@@ -74,6 +74,24 @@
 
 ---
 
+## C8 — UI móvil conforme a la carta de UI
+
+> Aplica solo a features que tocan `mobile-pet-tracker/`. Referencia:
+> `docs/ui-guidelines.md`.
+
+- [ ] Grep-clean: cero hex fuera de `src/theme/`, cero clases arbitrarias
+      `[...]`, cero `StyleSheet.create`, cero shadow/elevation legacy
+- [ ] Dimensiones de pantalla según conventions.md §Dimensiones (safe areas
+      top y bottom vía `useSafeAreaInsets`)
+- [ ] Estados de carga con Skeleton dimensionado, no Spinner suelto
+- [ ] Componentes compartidos reutilizados (card, pet-switcher) — no
+      recetas duplicadas ni forks locales
+- [ ] Elementos tappables con feedback pressed y touch target ≥ 44pt
+- [ ] Animaciones nuevas: Reanimated UI thread, interrumpibles, corren en
+      Expo Go, sin `Color`/var CSS dentro de estilos animados
+
+---
+
 **Cómo usar este archivo:**
 El agente `reviewer` recorre cada checkbox relevante a la feature trabajada,
-marca `[x]` o `[ ]`, y rechaza el cierre si queda alguno vacío en C1–C7.
+marca `[x]` o `[ ]`, y rechaza el cierre si queda alguno vacío en C1–C8 (C8 solo si la feature toca la app móvil).

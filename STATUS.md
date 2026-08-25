@@ -1,11 +1,10 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-08-24
-**Features completadas**: 41/49 (`feature_list.json`)
-**En progreso**: #40 `mobile-pets-profile`, implementación automatizable
-R1-R9 completa y verde; pendientes reviewer y smoke humano R10, sin push por
-instrucción del handoff.
-**Pendientes**: 7 (#18, #41-#45, #49). Fuente del diseño Figma versionada en
+**Última actualización**: 2026-08-25
+**Features completadas**: 43/50 (`feature_list.json`)
+**En progreso**: ninguna
+
+**Pendientes**: 7 (#18, #41, #42, #43, #44, #45, #49). Fuente del diseño Figma versionada en
 `specs/mobile-figma-polish/design-src/`.
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
@@ -75,20 +74,29 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
-- **`mobile-pets-profile` (#40) in_progress** (2026-08-24): implementación
-  R1-R9 completa con TDD rojo→verde por requisito: Profile real, persistencia
-  de tema, avatar blobatar compartido, alta de mascota, foto presignada y Docs
-  contra el contrato futuro de #49. Suite móvil 46/46 (517 tests), typecheck,
-  lint y `./init.sh` verdes. Solo se añadieron `blobatar` core y
-  `expo-image-picker`; `@gorhom/bottom-sheet` quedó intacto. Pendientes:
-  reviewer y smoke humano R10; el smoke real de Docs espera a #49. Informe:
-  `progress/impl_mobile-pets-profile.md`.
+- **`mobile-pets-profile` (#40) done** (2026-08-25): Profile reescrito según
+  Figma (screens/ + route delgado), users/me real, AddPet, foto vía URL
+  presignada, Docs contra contrato #49, blobatar determinista, tema
+  persistente. Saga de selección resuelta con hook compartido
+  `use-pet-selection` (guard useIsFocused+isRefreshing). Review final
+  aprobado; smoke humano R10 completo (fde2648). Docs smoke real bloqueado
+  hasta #49 `media-docs-api`. PR pendiente de merge.
+
+- **`mobile-tab-glass` (#50) in_progress** (2026-08-25): barra flotante con
+  Liquid Glass en iOS compatible y fallback BlurView temático, indicador pill
+  con spring interruptible y reduced motion del sistema, y crossfade de
+  escenas. Codex implementó R1–R6 con commits test-rojo→verde separados y
+  conservó la regresión R7; trazabilidad completa y C8 grep-clean. Suite móvil
+  39/39 (458 tests) y `./init.sh` exit 0. Pendiente de review independiente;
+  no se abrió PR. Informe: `progress/impl_mobile-tab-glass.md`.
 
 - **`mobile-design-drift` (#48) done** (2026-08-24): implementación
   R1-R8 completa con TDD rojo→verde por requisito. Añade tokens dedicados
   `rounded-card`/`text-2xs`, un `Card` compartido adoptado por las siete tabs,
-  safe areas uniformes y skeletons dimensionados. Informe:
-  `progress/impl_mobile-design-drift.md`.
+  safe areas uniformes y skeletons dimensionados. Greps de drift limpios;
+  suite móvil 34/34 (379 tests) y `./init.sh` verde. El reviewer aprobó la
+  implementación (`53d4dd7`) y el cambio se integró mediante el PR #72.
+  Informe: `progress/impl_mobile-design-drift.md`.
 
 - **`mobile-map-live` (#36) done** (2026-08-22): tab Map fullscreen —
   `src/api/positions.ts` (last + history) y `trips.ts` (`getDayRoute` compone
@@ -804,6 +812,13 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-08-25** — #50 `mobile-tab-glass`: Codex implementó R1–R7 con TDD
+  estricto (test rojo commiteado antes de cada implementación R1–R6), cerró
+  trazabilidad y añadió un guard C8 genérico. `./init.sh` terminó verde:
+  backend 145/1114, infra 2/14, móvil 39/458, e2e 20 suites/327 tests,
+  build/lint/typecheck sin errores. La feature permanece `in_progress` hasta
+  review; no se abrió PR por instrucción del humano.
 
 - **2026-08-24** — #47 `mobile-design-drift`: Codex implementó R1-R8 con
   commits rojos antes de cada verde y trazabilidad completa. Suite móvil:

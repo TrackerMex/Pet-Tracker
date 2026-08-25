@@ -39,6 +39,18 @@ function filesContaining(value: string): string[] {
     .map((path) => path.slice(sourceRoot.length + 1));
 }
 
+function filesMatching(pattern: RegExp): string[] {
+  return sourceFiles(sourceRoot)
+    .filter((path) => pattern.test(readFileSync(path, 'utf8')))
+    .map((path) => path.slice(sourceRoot.length + 1));
+}
+
+describe('C8: la UI no usa clases arbitrarias', () => {
+  it('no deja ninguna clase Tailwind con valores entre corchetes', () => {
+    expect(filesMatching(/[A-Za-z0-9_-]+-\[[^\]]+\]/)).toEqual([]);
+  });
+});
+
 describe('R3: Card compartido elimina rounded arbitrario', () => {
   it('no deja rounded-[20px] en código de producción', () => {
     const roundedArbitrary = ['rounded-', '[20px]'].join('');

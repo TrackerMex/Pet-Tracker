@@ -92,6 +92,15 @@ El contenido no viaja por chat — vive en disco y queda versionado.
 - Cambios en `docs/`, `progress/`, `specs/`, `feature_list.json` → puedes editarlos tú mismo
 - Correcciones en archivos del harness (este archivo, AGENTS.md, etc.) → puedes editarlos tú
 
+## UI móvil
+
+Todo trabajo sobre `mobile-pet-tracker/` (specs, handoffs, reviews) se rige
+por `docs/ui-guidelines.md`. Carga la skill `expo:expo-overview` al empezar
+tarea móvil y las específicas que la carta indica; instruye lo mismo a
+subagentes. Codex CLI tiene el mismo contenido vía su plugin `expo`
+(`codex plugin add expo@openai-curated`, ya instalado) — el handoff debe
+pedirle cargarlas.
+
 ## graphify
 
 This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.

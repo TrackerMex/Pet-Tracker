@@ -894,5 +894,19 @@
     "files_affected": [
       "backend-pet-tracker/src/modules/media/"
     ]
+  },
+  {
+    "id": 50,
+    "name": "mobile-tab-glass",
+    "description": "Tab bar flotante con material glass (GlassView de expo-glass-effect en iOS 26, BlurView de expo-blur como fallback) e indicador pill que se desliza con spring entre tabs; transicion suave del contenido al cambiar de tab. Deps nuevas: expo-glass-effect, expo-blur.",
+    "priority": "medium",
+    "status": "done",
+    "files_affected": [
+      "mobile-pet-tracker/src/components/floating-tab-bar.tsx",
+      "mobile-pet-tracker/src/app/(tabs)/_layout.tsx",
+      "mobile-pet-tracker/src/theme/global.css",
+      "mobile-pet-tracker/package.json"
+    ],
+    "acceptance_criteria": "Definidos en specs/mobile-tab-glass/requirements.md (EARS) tras gate humano; todo corre en Expo Go SDK 57 (Android ve fallback blur, liquid glass real solo iOS 26); cumple docs/ui-guidelines.md (C8)."
   }
 ]

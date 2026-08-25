@@ -41,6 +41,7 @@ duplica.
 | `docs/architecture.md` | Arquitectura (Clean Architecture) del proyecto, qué significa "buen código" | Antes de implementar |
 | `docs/data-model.md` | Decisión de engine (Postgres) + modelo de datos starter, ERD y DDL de referencia | Antes de escribir specs o tocar persistencia |
 | `docs/conventions.md` | Convenciones de estilo del proyecto (naming, errores, DTOs, tests, commits) | Antes de escribir código |
+| `docs/ui-guidelines.md` | Carta de UI móvil: tokens, componentes compartidos, @expo/ui, animación, grep-clean | Antes de cualquier trabajo en `mobile-pet-tracker/` |
 | `docs/verification.md` | Cómo verificar que una feature funciona correctamente + disciplina TDD | Antes de declarar done |
 | `docs/specs.md` | El proceso SDD completo: estados, gates, cuándo se escribe cada spec | Antes de escribir o aprobar una spec |
 | `docs/obsidian.md` | Cómo usar este proyecto como vault de Obsidian | Si usas Obsidian para navegar el proyecto |
