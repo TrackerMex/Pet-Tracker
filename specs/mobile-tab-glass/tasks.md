@@ -33,9 +33,9 @@ tags: [harness, spec]
 
 ## R4 — Spring interruptible al cambiar de tab
 
-- [ ] (1) Escribir test que falla para R4 (rerender con nuevo index → toHaveAnimatedStyle destino; retarget en vuelo; TAB_INDICATOR_SPRING duration 250 / dampingRatio 1)
-- [ ] (2) Implementación mínima que lo pasa
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R4 (rerender con nuevo index → toHaveAnimatedStyle destino; retarget en vuelo; TAB_INDICATOR_SPRING duration 250 / dampingRatio 1)
+- [x] (2) Implementación mínima que lo pasa
+- [x] (3) Refactor con tests verdes
 
 ## R5 — Reduced motion en la config del spring
 
