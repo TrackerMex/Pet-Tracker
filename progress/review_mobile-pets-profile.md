@@ -194,6 +194,8 @@ Verificación independiente del reviewer; no se aceptó el reporte del
 implementer como evidencia.
 
 Veredicto del delta: **RECHAZADO** (un bloqueante; todo lo demás verde).
+El bloqueante de código quedó resuelto en fix7 — veredicto definitivo en
+§Delta review fix7, al final de esta sección.
 
 ### C4 — TDD del delta (verde)
 
@@ -312,3 +314,98 @@ selección que motivó fix4–fix6. Todo lo demás del delta (TDD, trazabilidad,
 alcance, dependencias, gates) está verde; con ese fix aplicado (y la casilla
 del smoke R10 marcada por el humano en `requirements.md`), la feature queda
 lista para `done`.
+
+---
+
+## Delta review fix7 (definitivo)
+
+Fecha: 2026-08-25. Alcance: `f89e805..HEAD` — `fde2648` (commit humano) +
+`af0d79c` rojo → `288a2fb` verde → `0d3643a` docs. Verificación
+independiente del reviewer.
+
+### Código de fix7 (verde — bloqueante anterior resuelto)
+
+- [x] **Rojo real**: `af0d79c` es test-only (+48 líneas en
+  `use-pet-selection.test.tsx`): guardia estructural que recorre el código
+  de producción de `src/` (excluye `__tests__/` y `*.test.*`) y falla si
+  `selectionExists` aparece fuera del hook. En ese commit `map.tsx` y
+  `reminders/index.tsx` aún lo contenían → rojo por construcción. La
+  guardia además fija a futuro el criterio de esta review.
+- [x] **Verde quirúrgico**: `288a2fb` migra `map.tsx` y
+  `reminders/index.tsx` a `usePetSelection(pets)`, elimina los dos
+  `useEffect` inline y sus imports muertos (`useEffect`, `selectPet`);
+  los únicos cambios en tests son `useIsFocused: () => true` en los mocks
+  de expo-router de ambas suites — aserciones y contratos intactos.
+- [x] **grep `selectionExists` en `src/` (producción, tests aparte): solo
+  `src/hooks/use-pet-selection.ts`** — el criterio de la review fix2–fix6
+  se cumple y queda vigilado por test.
+- [x] Alcance: diff `f89e805..HEAD` = 5 archivos de código/tests + docs;
+  archivos prohibidos (`use-api.ts`, `floating-tab-bar.tsx`,
+  `backend-pet-tracker/`, `infra/`, `src/providers/`, `src/api/`,
+  `(tabs)/_layout.tsx`): **0 líneas**. `package.json`/lockfile: sin
+  cambios — cero dependencias nuevas.
+- [x] **Gate humano cerrado en disco**: `fde2648` (autor AlexisSM377, el
+  mismo humano que aprobó la spec en `49b85d6`) marca en
+  `requirements.md` §Aprobación: "[X] Smoke R10 ejecutado por el humano
+  (fecha: 2026-08-25)".
+
+### Verificación independiente (ejecutada por el reviewer)
+
+- `bun run test` (mobile-pet-tracker): **exit 0** — 46 suites, 521 tests,
+  1 snapshot.
+- `bun run typecheck`: **exit 0**. `bun run lint`: **exit 0**.
+- `./init.sh` (raíz): **exit 0** — "✅ Todo verde. Listo para trabajar."
+
+### Bloqueante (C5): la trazabilidad de fix7 cita hashes huérfanos y un gate ya cerrado como pendiente
+
+La branch se rebaseó sobre `fde2648` y el par de fix7 cambió de hash
+(`f07d720`/`ac3d090` → `af0d79c`/`288a2fb`), pero los docs se escribieron
+antes del rebase y no se enmendaron:
+
+1. `specs/mobile-pets-profile/traceability.md`, fila R10: registra
+   "`f07d720` rojo → `ac3d090` verde". Ambos commits existen solo como
+   objetos colgantes — `git merge-base --is-ancestor` confirma que NO son
+   alcanzables desde la branch: no llegarán al remoto y desaparecerán con
+   el GC. La trazabilidad debe citar los hashes reales: **`af0d79c` rojo →
+   `288a2fb` verde**. (Los hashes de R1–R9 y fix2–fix6 no se rehashearon y
+   siguen válidos — verificado.)
+2. La misma fila mantiene "smoke humano pendiente de repetirse" y "gate
+   humano pendiente", contradiciendo `requirements.md` §Aprobación, que
+   `fde2648` ya dejó marcado (2026-08-25). Con el gate cerrado, la fila no
+   puede quedar "pendiente" — regla dura de esta review.
+   `progress/impl_mobile-pets-profile.md` §corrección 7 repite ambos
+   defectos (hashes viejos y "pendiente").
+
+Corrección: dos ediciones de una línea en `traceability.md` (hashes reales
+y cierre del gate con referencia a `fde2648`/2026-08-25) y el mismo ajuste
+de hashes en `impl_mobile-pets-profile.md`. Son archivos de
+`specs/`/`progress/`: el leader puede corregirlos él mismo (CLAUDE.md
+§Cuándo NO aplica) sin otro ciclo de Codex.
+
+### Veredicto definitivo
+
+**RECHAZADO** — solo por el defecto documental C5 anterior. El código de
+fix7 resuelve por completo el bloqueante de la review fix2–fix6 (las 6
+copias del auto-select viven ahora en `usePetSelection`, con guardia
+estructural que lo impone), el gate humano R10 está cerrado en
+`requirements.md` y todos los gates automáticos están verdes. Con la
+trazabilidad corregida a los hashes reales y la fila R10 cerrada, este
+reviewer no necesita otra pasada: la feature queda lista para `done`.
+
+### Output de ./init.sh (fix7, cola)
+
+```
+→ Lint...
+> backend-pet-tracker@0.0.1 lint  (eslint)
+> pet-tracker-infra@0.0.1 lint    (eslint)
+$ expo lint
+✅ Lint sin errores
+
+→ Typecheck...
+$ tsc --noEmit
+✅ Typecheck sin errores
+
+══════════════════════════════════════════
+✅ Todo verde. Listo para trabajar.
+INIT_EXIT=0
+```

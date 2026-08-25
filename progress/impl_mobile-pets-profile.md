@@ -4,7 +4,7 @@ Fecha: 2026-08-24
 
 Branch: `feature/40-mobile-pets-profile`
 
-Estado: implementación automatizable R1–R9 completa; reviewer y R10 humano pendientes.
+Estado: R1–R9 completos y aprobados por reviewer (delta final); smoke R10 completado por el humano el 2026-08-25 (`fde2648`).
 
 ## Resultado
 
@@ -202,10 +202,10 @@ final completo pasó sin reintento.
 - Hallazgo del reviewer: Map y Reminders conservaban dos copias del efecto de
   auto-selección fuera de `usePetSelection`; ninguna aplicaba las guardas de
   foco y revalidación, y Map mantenía una lista stale al quedar desenfocada.
-- TDD: `f07d720` añade una guardia estructural que recorre el código de
+- TDD: `af0d79c` (pre-rebase `f07d720`) añade una guardia estructural que recorre el código de
   producción en `src/` y falla si `selectionExists` aparece fuera del hook.
   El rojo identificó exactamente `app/(tabs)/map.tsx` y
-  `screens/reminders/index.tsx`; `ac3d090` migra ambas al hook y deja la
+  `screens/reminders/index.tsx`; `288a2fb` (pre-rebase `ac3d090`) migra ambas al hook y deja la
   guardia verde.
 - La migración elimina los dos `useEffect` duplicados y sus imports muertos.
   Los mocks de `expo-router` de Map y Reminders exponen `useIsFocused: true`;
