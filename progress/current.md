@@ -32,3 +32,7 @@
   y la suite backend-health huérfanos; trazabilidad R3/R9 actualizada.
   `bun run test` (45 suites/509 tests), typecheck, lint y `./init.sh` final
   quedaron verdes. El fix queda listo para una nueva revisión.
+- Fix de smoke R10 implementado (2026-08-25): AddPet crasheaba fuera de
+  `SelectedPetProvider`; las rutas AddPet y Docs ahora viven bajo `(tabs)`.
+  Ciclo TDD `644a00c` rojo → `5bae7b0` verde; smoke humano pendiente de
+  repetirse. Gates móviles verdes: 45 suites/510 tests, typecheck y lint.

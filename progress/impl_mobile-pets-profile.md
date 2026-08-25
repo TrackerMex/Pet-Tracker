@@ -92,3 +92,21 @@ final completo pasó sin reintento.
 - `bun run lint`: exit 0.
 - `./init.sh`: exit 0, `✅ Todo verde`; backend e2e con 20 suites / 327
   tests verdes (2 suites y 6 tests omitidos), lint y typecheck verdes.
+
+## R10 — corrección de smoke 2 (2026-08-25)
+
+- Hallazgo del smoke humano: abrir AddPet crasheaba con
+  `useSelectedPet must be used within a SelectedPetProvider` porque
+  `/pets/add` salía del layout `(tabs)`, único lugar que monta el provider.
+- Corrección: `pets/add.tsx` y `pets/[petId]/docs.tsx` se movieron bajo
+  `src/app/(tabs)/pets/`; `(tabs)` no forma parte de la URL, por lo que se
+  conservan `/pets/add` y `/pets/[petId]/docs` sin cambiar ningún
+  `router.push`.
+- TDD: `644a00c` demuestra el rojo con una guarda estructural en el test del
+  layout; `5bae7b0` mueve las rutas y actualiza la guardia R9 de entrypoints.
+- `DocsScreen` no consume `useSelectedPet`, pero su route queda dentro del
+  mismo layout autenticado y cubierta por la misma regresión estructural.
+- Gates móviles: `bun run test` (45 suites / 510 tests / 1 snapshot),
+  `bun run typecheck` y `bun run lint` terminaron con exit 0.
+- El smoke humano R10 queda pendiente de repetirse en Expo Go; este fix no lo
+  marca como completado. La parte Docs sigue bloqueada por #49.
