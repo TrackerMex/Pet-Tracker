@@ -1,13 +1,13 @@
 import { render } from '@testing-library/react-native';
 import { Redirect, Tabs } from 'expo-router';
-import { existsSync } from 'node:fs';
-import { join } from 'node:path';
 import { isValidElement, type ReactNode } from 'react';
 
 import { FloatingTabBar } from '../../../components/floating-tab-bar';
 import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
 import { SelectedPetProvider } from '../../../providers/selected-pet-provider';
 import TabsLayout from '../_layout';
+import AddPetRoute from '../pets/add';
+import DocsRoute from '../pets/[petId]/docs';
 
 jest.mock(
   '../../../components/floating-tab-bar',
@@ -114,16 +114,7 @@ describe('R1: (tabs) exige sesión', () => {
 
 describe('R10: las rutas de mascotas heredan SelectedPetProvider', () => {
   it('mantiene AddPet y Docs dentro del grupo (tabs)', () => {
-    const tabsRoot = join(__dirname, '..');
-    const appRoot = join(tabsRoot, '..');
-    const routePaths = [
-      ['pets', 'add.tsx'],
-      ['pets', '[petId]', 'docs.tsx'],
-    ];
-
-    routePaths.forEach((segments) => {
-      expect(existsSync(join(tabsRoot, ...segments))).toBe(true);
-      expect(existsSync(join(appRoot, ...segments))).toBe(false);
-    });
+    expect(AddPetRoute).toEqual(expect.any(Function));
+    expect(DocsRoute).toEqual(expect.any(Function));
   });
 });

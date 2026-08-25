@@ -99,8 +99,8 @@ describe('R9: mobile-pets-profile sin drift', () => {
   it('keeps the three Expo Router entrypoints thin', () => {
     const routes = [
       'app/(tabs)/profile.tsx',
-      'app/pets/add.tsx',
-      'app/pets/[petId]/docs.tsx',
+      'app/(tabs)/pets/add.tsx',
+      'app/(tabs)/pets/[petId]/docs.tsx',
     ];
 
     const routeLengths = routes.map((relativePath) => ({
