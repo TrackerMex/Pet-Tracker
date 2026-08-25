@@ -39,6 +39,7 @@ jest.mock('../../../providers/auth-provider', () => ({
 jest.mock('expo-router', () => ({
   router: { push: jest.fn() },
   useFocusEffect: jest.fn(),
+  useIsFocused: jest.fn(() => true),
 }));
 
 jest.mock('react-native-safe-area-context', () => ({

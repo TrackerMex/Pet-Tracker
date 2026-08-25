@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronRight, HeartPulse, Syringe } from 'reicon-react-native';
@@ -10,6 +10,7 @@ import { listPets, type PetsState } from '../../api/pets';
 import { Card } from '../../components/card';
 import { PetSwitcher } from '../../components/pet-switcher';
 import { useApi } from '../../hooks/use-api';
+import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { useThemeColors } from '../../theme/use-theme-colors';
@@ -41,6 +42,7 @@ export default function HealthScreen() {
     [baseUrl, token],
   );
   const pets = useApi(petsFn);
+  usePetSelection(pets);
   const vaccinesFn = useMemo(
     () =>
       selectedPetId
@@ -68,13 +70,6 @@ export default function HealthScreen() {
             (a.nextDoseAt ?? '').localeCompare(b.nextDoseAt ?? ''),
           )[0]
       : undefined;
-
-  useEffect(() => {
-    if (pets.isRefreshing) return;
-    if (pets.data?.kind !== 'ok' || pets.data.pets.length === 0) return;
-    const selectionExists = pets.data.pets.some(({ id }) => id === selectedPetId);
-    if (!selectionExists) selectPet(pets.data.pets[0].id);
-  }, [pets.data, pets.isRefreshing, selectPet, selectedPetId]);
 
   return (
     <ScrollView

@@ -1,6 +1,6 @@
 import { router, type Href } from 'expo-router';
 import { Button, Card as HeroUICard, Skeleton, Spinner } from 'heroui-native';
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronRight, Clock, ForkKnife, Sparkles } from 'reicon-react-native';
@@ -10,6 +10,7 @@ import { listPets, type PetsState } from '../../api/pets';
 import { Card } from '../../components/card';
 import { PetSwitcher } from '../../components/pet-switcher';
 import { useApi } from '../../hooks/use-api';
+import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { useThemeColors } from '../../theme/use-theme-colors';
@@ -40,6 +41,7 @@ export default function FoodScreen() {
     [baseUrl, token],
   );
   const pets = useApi(petsFn);
+  usePetSelection(pets);
   const planFn = useMemo(
     () =>
       selectedPetId
@@ -61,13 +63,6 @@ export default function FoodScreen() {
     loadedPlan !== null
       ? loadedPlan.mealTimes.filter((mealTime) => mealTime <= hhmm).length
       : 0;
-
-  useEffect(() => {
-    if (pets.isRefreshing) return;
-    if (pets.data?.kind !== 'ok' || pets.data.pets.length === 0) return;
-    const selectionExists = pets.data.pets.some(({ id }) => id === selectedPetId);
-    if (!selectionExists) selectPet(pets.data.pets[0].id);
-  }, [pets.data, pets.isRefreshing, selectPet, selectedPetId]);
 
   return (
     <ScrollView

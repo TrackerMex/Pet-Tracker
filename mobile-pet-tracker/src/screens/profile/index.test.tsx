@@ -101,6 +101,7 @@ jest.mock('../../components/pet-switcher', () => {
 jest.mock('expo-router', () => ({
   router: { push: jest.fn(), back: jest.fn() },
   useFocusEffect: jest.fn(),
+  useIsFocused: jest.fn(() => true),
 }));
 
 jest.mock('react-native-safe-area-context', () => ({

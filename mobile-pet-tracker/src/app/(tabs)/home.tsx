@@ -1,6 +1,6 @@
 import { router, useFocusEffect } from 'expo-router';
 import { Button, Card as HeroUICard, Skeleton, Spinner } from 'heroui-native';
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -19,6 +19,7 @@ import { Card } from '../../components/card';
 import { PetAvatar } from '../../components/pet-avatar';
 import { PetSwitcher } from '../../components/pet-switcher';
 import { useApi } from '../../hooks/use-api';
+import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { useThemeColors } from '../../theme/use-theme-colors';
@@ -59,6 +60,7 @@ export default function HomeScreen() {
     [baseUrl, token],
   );
   const pets = useApi(petsFn);
+  usePetSelection(pets);
   const detailFn = useMemo(
     () =>
       selectedPetId
@@ -88,13 +90,6 @@ export default function HomeScreen() {
       refetchDetail();
     }, [refetchDetail, refetchPets]),
   );
-
-  useEffect(() => {
-    if (pets.isRefreshing) return;
-    if (pets.data?.kind !== 'ok' || pets.data.pets.length === 0) return;
-    const selectionExists = pets.data.pets.some(({ id }) => id === selectedPetId);
-    if (!selectionExists) selectPet(pets.data.pets[0].id);
-  }, [pets.data, pets.isRefreshing, selectPet, selectedPetId]);
 
   return (
     <ScrollView
