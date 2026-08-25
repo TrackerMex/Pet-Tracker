@@ -234,6 +234,11 @@ describe('R7: foto opcional tras alta', () => {
     await renderAddPet();
 
     await fireEvent.press(screen.getByTestId('add-pet-photo'));
+    await waitFor(() =>
+      expect(screen.getByTestId('pet-avatar').props.photoUrl).toBe(
+        'file:///new-pet.jpg',
+      ),
+    );
     await fireEvent.changeText(screen.getByTestId('name-input'), 'Nala');
     await fireEvent.press(screen.getByTestId('age-mode-months'));
     await fireEvent.changeText(screen.getByTestId('approx-age-input'), '8');

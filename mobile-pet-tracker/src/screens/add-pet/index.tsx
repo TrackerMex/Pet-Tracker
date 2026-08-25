@@ -1,6 +1,6 @@
 import { Host } from '@expo/ui';
 import ExpoDateTimePicker from '@expo/ui/community/datetime-picker';
-import { router, type Href } from 'expo-router';
+import { router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Button } from 'heroui-native';
 import { useState } from 'react';
@@ -183,7 +183,7 @@ export function AddPetScreen() {
             setPhotoError('Pet created, but the photo could not be uploaded');
             return;
           }
-          router.replace('/profile' as Href);
+          router.back();
           return;
         case 'unauthorized':
           await signOut();

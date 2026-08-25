@@ -114,12 +114,13 @@ export function ProfileScreen() {
   );
 
   useEffect(() => {
+    if (pets.isRefreshing) return;
     if (pets.data?.kind !== 'ok' || pets.data.pets.length === 0) return;
     const selectionExists = pets.data.pets.some(
       ({ id }) => id === selectedPetId,
     );
     if (!selectionExists) selectPet(pets.data.pets[0].id);
-  }, [pets.data, selectPet, selectedPetId]);
+  }, [pets.data, pets.isRefreshing, selectPet, selectedPetId]);
 
   const pet = detail.data?.kind === 'ok' ? detail.data.pet : null;
   const petLoading = pets.data === undefined || (selectedPetId !== null && detail.data === undefined);

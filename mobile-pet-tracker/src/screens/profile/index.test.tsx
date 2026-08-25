@@ -8,7 +8,7 @@ import {
 import { router, useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import * as ImagePicker from 'expo-image-picker';
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { Text } from 'react-native';
 import { Uniwind } from 'uniwind';
 
@@ -165,7 +165,13 @@ function makePet(overrides: Partial<PetProfile> = {}): PetProfile {
 
 function SelectionProbe() {
   const { selectedPetId, selectPet } = useSelectedPet();
-  selectPetFromTest = selectPet;
+  useEffect(() => {
+    selectPetFromTest = selectPet;
+
+    return () => {
+      selectPetFromTest = undefined;
+    };
+  }, [selectPet]);
 
   return <Text testID="selected-pet-id">{selectedPetId ?? 'none'}</Text>;
 }
