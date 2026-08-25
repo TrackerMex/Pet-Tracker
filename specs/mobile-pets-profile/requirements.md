@@ -262,4 +262,4 @@ presignada de LA foto de perfil. Ver R8 y Pregunta abierta Q1.
 
 - [X] Aprobado por humano (fecha: 2026-08-24) ← gate obligatorio antes de implementar
 - [X] Q1–Q4 respondidas y R8 redactado en firme (2026-08-24)
-- [ ] Smoke R10 ejecutado por el humano (fecha: ____) ← gate antes de `done`
+- [X] Smoke R10 ejecutado por el humano (fecha: 2026-08-25) ← gate antes de `done`
