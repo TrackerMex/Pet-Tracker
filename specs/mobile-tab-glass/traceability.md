@@ -12,7 +12,7 @@ tags: [harness, spec]
 | R2 | `src/components/__tests__/floating-tab-bar.test.tsx::R2: fallback BlurView con tint por tema, blurMethod y overlay translúcido` + `src/theme/__tests__/global-css.test.ts::R2: tokens glass-surface y tab-pill en light y dark` | `5ebd84f test(mobile-tab-glass): cover blur fallback and tokens (R2)` → `b75e8bf feat(mobile-tab-glass): add themed blur fallback (R2)` |
 | R3 | `src/components/__tests__/floating-tab-bar.test.tsx::R3: pill dimensionado y posicionado tras layout (y ausente antes)` | `bbe4052 test(mobile-tab-glass): cover tab indicator geometry (R3)` → `409c02d feat(mobile-tab-glass): position tab indicator after layout (R3)` |
 | R4 | `src/components/__tests__/floating-tab-bar.test.tsx::R4: pill se desliza con TAB_INDICATOR_SPRING y retarget-ea en vuelo` | `b0aa293 test(mobile-tab-glass): cover interruptible indicator spring (R4)` → `9f0cb15 feat(mobile-tab-glass): animate interruptible tab indicator (R4)` |
-| R5 | `src/components/__tests__/floating-tab-bar.test.tsx::R5: TAB_INDICATOR_SPRING respeta reduced motion del sistema` | pendiente |
+| R5 | `src/components/__tests__/floating-tab-bar.test.tsx::R5: TAB_INDICATOR_SPRING respeta reduced motion del sistema` | `806989b test(mobile-tab-glass): cover reduced motion spring config (R5)` → `f00d207 feat(mobile-tab-glass): respect system reduced motion (R5)` |
 | R6 | `src/app/__tests__/tabs-layout.test.tsx::R6: Tabs declara animation fade en screenOptions` | pendiente |
 | R7 | suite existente `src/components/__tests__/floating-tab-bar.test.tsx` (describes "R7: tab bar renderiza y navega" y "R8: tab bar flota con safe area" de la spec original, sin modificar) | pendiente |
 

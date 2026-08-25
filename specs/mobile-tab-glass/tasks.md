@@ -39,9 +39,9 @@ tags: [harness, spec]
 
 ## R5 — Reduced motion en la config del spring
 
-- [ ] (1) Escribir test que falla para R5 (`TAB_INDICATOR_SPRING.reduceMotion === ReduceMotion.System`)
-- [ ] (2) Implementación mínima que lo pasa
-- [ ] (3) Refactor con tests verdes
+- [x] (1) Escribir test que falla para R5 (`TAB_INDICATOR_SPRING.reduceMotion === ReduceMotion.System`)
+- [x] (2) Implementación mínima que lo pasa
+- [x] (3) Refactor con tests verdes
 
 ## R6 — animation 'fade' en el layout de Tabs
 
