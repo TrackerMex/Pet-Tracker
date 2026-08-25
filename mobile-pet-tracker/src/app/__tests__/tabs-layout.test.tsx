@@ -29,10 +29,6 @@ jest.mock('../../providers/selected-pet-provider', () => ({
   SelectedPetProvider: ({ children }: { children: ReactNode }) => children,
 }));
 
-jest.mock('../../components/floating-tab-bar', () => ({
-  FloatingTabBar: () => null,
-}));
-
 describe('R6: Tabs declara animation fade en screenOptions', () => {
   beforeEach(() => {
     jest.clearAllMocks();

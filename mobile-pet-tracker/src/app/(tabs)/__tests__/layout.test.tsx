@@ -76,6 +76,7 @@ describe('R1: (tabs) exige sesión', () => {
     expect(mockTabs).toHaveBeenCalledTimes(1);
     expect(mockTabs.mock.calls[0]?.[0].screenOptions).toEqual({
       headerShown: false,
+      animation: 'fade',
     });
     expect(mockTabsScreen.mock.calls.map(([props]) => props.name)).toEqual([
       'home',
