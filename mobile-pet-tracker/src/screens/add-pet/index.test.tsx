@@ -124,7 +124,8 @@ describe('R6: alta de mascota', () => {
       { name: 'Nala', species: 'dog', birthDate: '2024-04-09' },
     ));
     expect(selectPet).toHaveBeenCalledWith('pet-new');
-    expect(mockRouter.replace).toHaveBeenCalledWith('/profile');
+    expect(mockRouter.back).toHaveBeenCalledTimes(1);
+    expect(mockRouter.replace).not.toHaveBeenCalled();
   });
 
   it('posts selected fields, numeric months, and omits blank optionals', async () => {
@@ -250,6 +251,7 @@ describe('R7: foto opcional tras alta', () => {
       body,
       'image/jpeg',
     );
-    expect(mockRouter.replace).toHaveBeenCalledWith('/profile');
+    expect(mockRouter.back).toHaveBeenCalledTimes(1);
+    expect(mockRouter.replace).not.toHaveBeenCalled();
   });
 });

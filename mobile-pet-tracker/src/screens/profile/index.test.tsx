@@ -9,6 +9,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import * as ImagePicker from 'expo-image-picker';
 import type { ReactNode } from 'react';
+import { Text } from 'react-native';
 import { Uniwind } from 'uniwind';
 
 import { requestPhotoUploadUrl, uploadPhotoToUrl } from '../../api/media';
@@ -16,7 +17,10 @@ import { getPet, listPets, type PetState, type PetsState } from '../../api/pets'
 import type { PetProfile } from '../../api/types';
 import { getMe, type MeState } from '../../api/users';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
-import { SelectedPetProvider } from '../../providers/selected-pet-provider';
+import {
+  SelectedPetProvider,
+  useSelectedPet,
+} from '../../providers/selected-pet-provider';
 import { setStoredTheme } from '../../utils/theme-preference';
 import { ProfileScreen } from '.';
 
@@ -117,6 +121,7 @@ const mockUseFocusEffect = jest.mocked(useFocusEffect);
 const mockSignOut = jest.fn<Promise<void>, []>();
 const mockSetStoredTheme = jest.mocked(setStoredTheme);
 const mockSetTheme = jest.mocked(Uniwind.setTheme);
+let selectPetFromTest: ((petId: string) => void) | undefined;
 
 function pending<T>(): Promise<T> {
   return new Promise(() => undefined);
@@ -158,10 +163,20 @@ function makePet(overrides: Partial<PetProfile> = {}): PetProfile {
   };
 }
 
+function SelectionProbe() {
+  const { selectedPetId, selectPet } = useSelectedPet();
+  selectPetFromTest = selectPet;
+
+  return <Text testID="selected-pet-id">{selectedPetId ?? 'none'}</Text>;
+}
+
 function ProfileWrapper({ children }: { children: ReactNode }) {
   return (
     <HeroUINativeProvider>
-      <SelectedPetProvider>{children}</SelectedPetProvider>
+      <SelectedPetProvider>
+        <SelectionProbe />
+        {children}
+      </SelectedPetProvider>
     </HeroUINativeProvider>
   );
 }
@@ -523,5 +538,50 @@ describe('R10: refetch al foco', () => {
       expect(mockListPets).toHaveBeenCalledTimes(2);
       expect(mockGetPet).toHaveBeenCalledTimes(2);
     });
+  });
+
+  it('preserves the newly selected pet while the stale list revalidates', async () => {
+    const existingPet = makePet();
+    const createdPet = makePet({ id: 'pet-new', name: 'Nala' });
+    let resolveRevalidatedPets!: (state: PetsState) => void;
+    const revalidatedPets = new Promise<PetsState>((resolve) => {
+      resolveRevalidatedPets = resolve;
+    });
+    mockListPets
+      .mockResolvedValueOnce({ kind: 'ok', pets: [existingPet] })
+      .mockReturnValueOnce(revalidatedPets);
+    mockGetPet.mockImplementation(async (_baseUrl, _token, petId) => ({
+      kind: 'ok',
+      pet: petId === createdPet.id ? createdPet : existingPet,
+    }));
+    renderProfile();
+    await waitFor(() =>
+      expect(screen.getByTestId('selected-pet-id')).toHaveTextContent(
+        existingPet.id,
+      ),
+    );
+    const focusCallback = mockUseFocusEffect.mock.calls.at(-1)?.[0];
+    expect(focusCallback).toBeDefined();
+
+    await act(async () => {
+      selectPetFromTest?.(createdPet.id);
+      focusCallback?.();
+      await Promise.resolve();
+    });
+
+    expect(screen.getByTestId('selected-pet-id')).toHaveTextContent(
+      createdPet.id,
+    );
+
+    await act(async () => {
+      resolveRevalidatedPets({ kind: 'ok', pets: [existingPet, createdPet] });
+      await revalidatedPets;
+    });
+
+    await waitFor(() =>
+      expect(screen.getByTestId('selected-pet-id')).toHaveTextContent(
+        createdPet.id,
+      ),
+    );
   });
 });
