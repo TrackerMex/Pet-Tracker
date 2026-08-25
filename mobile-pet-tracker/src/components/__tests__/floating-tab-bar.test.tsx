@@ -107,8 +107,9 @@ describe('R2: fallback BlurView con tint por tema, blurMethod y overlay translú
       'dimezisBlurViewSdk31Plus',
     );
     expect(screen.getByTestId('tab-bar-blur')).toHaveProp('tint', 'light');
-    expect(screen.getByTestId('tab-bar-overlay')).toHaveClass(
-      'bg-glass-surface',
+    expect(screen.getByTestId('tab-bar-overlay')).toHaveProp(
+      'className',
+      expect.stringContaining('bg-glass-surface'),
     );
     expect(screen.queryByTestId('tab-bar-glass')).not.toBeOnTheScreen();
   });
