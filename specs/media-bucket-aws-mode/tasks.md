@@ -32,11 +32,11 @@ tags: [harness, spec, backend]
 
 ## R3 — Modo aws rechaza el nombre del bucket local
 
-- [ ] (1) Escribir test que falla para R3 (§R3:
+- [x] (1) Escribir test que falla para R3 (§R3:
       `'pet-tracker-media-local'` y `'pet-tracker-media-local-test'`
       lanzan `LocalMediaBucketNameError`; un nombre real no lanza)
-- [ ] (2) Implementación mínima que lo pasa ([[design]] §D3)
-- [ ] (3) Refactor con tests verdes
+- [x] (2) Implementación mínima que lo pasa ([[design]] §D3)
+- [x] (3) Refactor con tests verdes
 
 ## R4 — Modo local intacto + regresión + contención
 
