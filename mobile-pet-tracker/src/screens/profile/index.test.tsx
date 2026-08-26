@@ -12,6 +12,8 @@ import { useEffect, type ReactNode } from 'react';
 import { Text } from 'react-native';
 import { Uniwind } from 'uniwind';
 
+import { withThemeTransition } from 'react-native-nitro-theme-transition';
+
 import { requestPhotoUploadUrl, uploadPhotoToUrl } from '../../api/media';
 import { getPet, listPets, type PetState, type PetsState } from '../../api/pets';
 import type { PetProfile } from '../../api/types';
@@ -25,6 +27,13 @@ import { setStoredTheme } from '../../utils/theme-preference';
 import { ProfileScreen } from '.';
 
 let mockTheme: 'light' | 'dark' = 'light';
+
+jest.mock('react-native-nitro-theme-transition', () => ({
+  withThemeTransition: jest.fn((apply: () => void) => {
+    apply();
+  }),
+  isThemeTransitionAvailable: jest.fn(() => false),
+}));
 
 jest.mock('../../api/pets', () => ({
   getPet: jest.fn(),
@@ -404,6 +413,15 @@ describe('R4: toggle persiste', () => {
 
     expect(mockSetTheme).toHaveBeenCalledWith('light');
     expect(mockSetStoredTheme).toHaveBeenCalledWith('light');
+  });
+
+  it('R2: el toggle dispara el fade vía withThemeTransition', async () => {
+    await renderProfile();
+    fireEvent.press(screen.getByTestId('theme-toggle'));
+
+    expect(jest.mocked(withThemeTransition)).toHaveBeenCalledTimes(1);
+    expect(mockSetTheme).toHaveBeenCalledWith('dark');
+    expect(mockSetStoredTheme).toHaveBeenCalledWith('dark');
   });
 });
 
