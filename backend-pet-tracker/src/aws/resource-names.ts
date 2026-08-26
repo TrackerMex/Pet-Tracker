@@ -59,16 +59,30 @@ export function resolveResourceSuffix(
 export function resolveResourceNamesFromEnv(
   env: NodeJS.ProcessEnv,
 ): AwsResourceNames {
-  return buildResourceNames(resolveResourceSuffix(env.AWS_MODE, env.NODE_ENV));
+  const names = buildResourceNames(
+    resolveResourceSuffix(env.AWS_MODE, env.NODE_ENV),
+  );
+
+  if (resolveAwsMode(env.AWS_MODE) !== 'aws') return names;
+
+  return {
+    ...names,
+    mediaBucket: (env.MEDIA_BUCKET_NAME ?? '').trim(),
+  };
 }
 
 export function resolveResourceNamesFromConfigService(
   config: ConfigService,
 ): AwsResourceNames {
-  return buildResourceNames(
-    resolveResourceSuffix(
-      config.get<string>('AWS_MODE'),
-      config.get<string>('NODE_ENV'),
-    ),
+  const rawMode = config.get<string>('AWS_MODE');
+  const names = buildResourceNames(
+    resolveResourceSuffix(rawMode, config.get<string>('NODE_ENV')),
   );
+
+  if (resolveAwsMode(rawMode) !== 'aws') return names;
+
+  return {
+    ...names,
+    mediaBucket: (config.get<string>('MEDIA_BUCKET_NAME') ?? '').trim(),
+  };
 }

@@ -66,9 +66,9 @@ describe('R1: modo aws resuelve mediaBucket desde MEDIA_BUCKET_NAME', () => {
       .useValue(config)
       .compile();
 
-    expect(moduleRef.get<AwsResourceNames>(AWS_RESOURCE_NAMES).mediaBucket).toBe(
-      REAL_MEDIA_BUCKET,
-    );
+    expect(
+      moduleRef.get<AwsResourceNames>(AWS_RESOURCE_NAMES).mediaBucket,
+    ).toBe(REAL_MEDIA_BUCKET);
 
     await moduleRef.close();
   });
