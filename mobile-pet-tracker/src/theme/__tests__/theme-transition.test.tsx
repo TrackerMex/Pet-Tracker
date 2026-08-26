@@ -1,7 +1,11 @@
 import { renderHook } from '@testing-library/react-native';
-import { withThemeTransition } from 'react-native-nitro-theme-transition';
+import {
+  isThemeTransitionAvailable,
+  withThemeTransition,
+} from 'react-native-nitro-theme-transition';
 import { Uniwind } from 'uniwind';
 
+import { setStoredTheme } from '../../utils/theme-preference';
 import { THEME_FADE, useThemeTransition } from '../theme-transition';
 
 const mockUseReducedMotion = jest.fn<boolean, []>(() => false);
@@ -34,7 +38,9 @@ jest.mock('../../utils/theme-preference', () => ({
 }));
 
 const mockWithThemeTransition = jest.mocked(withThemeTransition);
+const mockIsAvailable = jest.mocked(isThemeTransitionAvailable);
 const mockSetTheme = jest.mocked(Uniwind.setTheme);
+const mockSetStoredTheme = jest.mocked(setStoredTheme);
 
 describe('R5: THEME_FADE options', () => {
   it('exports the exact fade shape from the UI charter', () => {
@@ -82,5 +88,33 @@ describe('R3: reduced motion salta la animación', () => {
     expect(mockSetTheme).toHaveBeenCalledTimes(1);
     expect(mockSetTheme).toHaveBeenCalledWith('light');
     expect(mockWithThemeTransition).not.toHaveBeenCalled();
+  });
+});
+
+describe('R4: degradación sin módulo nativo', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockUseReducedMotion.mockReturnValue(false);
+  });
+
+  it('aplica el tema exactamente una vez, persiste y no consulta availability', async () => {
+    const { result } = await renderHook(() => useThemeTransition());
+
+    expect(() => result.current('dark')).not.toThrow();
+
+    expect(mockSetTheme).toHaveBeenCalledTimes(1);
+    expect(mockSetTheme).toHaveBeenCalledWith('dark');
+    expect(mockSetStoredTheme).toHaveBeenCalledTimes(1);
+    expect(mockSetStoredTheme).toHaveBeenCalledWith('dark');
+    expect(mockIsAvailable).not.toHaveBeenCalled();
+  });
+
+  it('persiste también en el camino reduced motion', async () => {
+    mockUseReducedMotion.mockReturnValue(true);
+    const { result } = await renderHook(() => useThemeTransition());
+
+    result.current('light');
+
+    expect(mockSetStoredTheme).toHaveBeenCalledWith('light');
   });
 });
