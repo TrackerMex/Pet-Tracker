@@ -72,7 +72,7 @@ Los nombres exactos de las suites y todos los pares están en
 ## Contención y modo local
 
 - El grep literal de R4 sobre `git diff --stat main...HEAD` solo conserva la
-  línea resumen `11 files changed, ...`; no es una ruta fuera del allowlist.
+  línea resumen `13 files changed, ...`; no es una ruta fuera del allowlist.
   El equivalente sin abreviación, `git diff --name-only main...HEAD` con el
   mismo allowlist, produjo salida vacía.
 - Desde el inicio de implementación (`61c1c66`) cambiaron únicamente:
