@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-08-25
-**Features completadas**: 43/50 (`feature_list.json`)
-**En progreso**: ninguna
+**Última actualización**: 2026-08-26
+**Features completadas**: 45/51 (`feature_list.json`)
+**En progreso**: #51 media-bucket-aws-mode (review aprobado; pendiente smoke R5 humano y merge PR #81 — en main figura `spec_ready`, el `in_progress` real viaja en su branch)
 
-**Pendientes**: 7 (#18, #41, #42, #43, #44, #45, #49). Fuente del diseño Figma versionada en
+**Pendientes**: 5 (#18, #41, #42, #44, #45) + #51 en curso. Fuente del diseño Figma versionada en
 `specs/mobile-figma-polish/design-src/`.
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
