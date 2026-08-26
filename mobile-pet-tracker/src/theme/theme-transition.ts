@@ -2,7 +2,10 @@ import { withThemeTransition } from 'react-native-nitro-theme-transition';
 import { useReducedMotion } from 'react-native-reanimated';
 import { Uniwind } from 'uniwind';
 
-import type { ThemePreference } from '../utils/theme-preference';
+import {
+  setStoredTheme,
+  type ThemePreference,
+} from '../utils/theme-preference';
 
 export const THEME_FADE = {
   kind: 'fade',
@@ -23,5 +26,6 @@ export function useThemeTransition(): (next: ThemePreference) => void {
     } else {
       withThemeTransition(apply, THEME_FADE);
     }
+    void setStoredTheme(next);
   };
 }
