@@ -782,7 +782,7 @@
   {
     "id": 43,
     "name": "mobile-theme-transition",
-    "status": "spec_ready",
+    "status": "in_progress",
     "priority": "P3",
     "description": "Polish 100% prescindible: fade al cambiar de tema con react-native-nitro-theme-transition 1.0.0 + react-native-nitro-modules >=0.36 (código nativo, requiere el dev build de #32). Riesgo conocido: interacción con reactCompiler experimental. Si rompe el build nativo, la feature se cierra como descartada y queda el toggle sin fade de #40.",
     "acceptance_criteria": [
