@@ -45,7 +45,7 @@ tags: [harness, spec, backend]
       variable y con/sin `NODE_ENV=test`)
 - [x] (2) Implementación mínima que lo pasa (normalmente ya verde tras
       R1–R3 si el override solo aplica en modo aws — confirmar)
-- [ ] (3) Refactor con tests verdes + `.env.example` bloque comentado
+- [x] (3) Refactor con tests verdes + `.env.example` bloque comentado
       ([[design]] §D6) + `lint`/`test`/`test:e2e`/`./init.sh` exit 0 +
       verificación de contención del diff (comando grep en
       [[requirements]] R4) anotada en

@@ -243,7 +243,9 @@ describe('R4: modo local ignora MEDIA_BUCKET_NAME', () => {
     });
 
     expect(() =>
-      resolveResourceNamesFromConfigService({ get } as unknown as ConfigService),
+      resolveResourceNamesFromConfigService({
+        get,
+      } as unknown as ConfigService),
     ).not.toThrow();
     expect(get).not.toHaveBeenCalledWith('MEDIA_BUCKET_NAME');
   });

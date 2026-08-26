@@ -40,3 +40,18 @@ válidas en disco. Este archivo consolida las dos — no borrar ninguna entrada.
   previas en este archivo fueron parciales, no falsas.
 - Regla "un solo escritor sobre el working tree" (CLAUDE.md) violada: cerrar
   una de las dos sesiones antes de seguir, o usar `git worktree`.
+
+---
+
+## Feature #51 `media-bucket-aws-mode` (2026-08-26)
+
+- Branch: `feature/51-media-bucket-aws-mode`.
+- Inicio: 2026-08-26 19:46 UTC.
+- Estado: implementación automática completa; smoke AWS real R5 y review
+  humana pendientes, por lo que la feature permanece `in_progress`.
+- Baseline: `./init.sh` exit 0 antes de modificar código.
+- Plan: cerrar R1–R4 con TDD rojo→verde y trazabilidad por requisito;
+  dejar R5 como suite gated sin red local y documentar el smoke que ejecutará
+  el humano; verificar contención, escribir el informe y hacer push.
+- Resultado: R1–R4 verdes, R5 gated/documentado, `./init.sh` final exit 0.
+  Informe: `progress/impl_media-bucket-aws-mode.md`.
