@@ -13,14 +13,14 @@ tags: [harness, spec, backend]
 
 ## R1 — Modo aws resuelve `mediaBucket` desde `MEDIA_BUCKET_NAME`
 
-- [ ] (1) Escribir test que falla para R1
+- [x] (1) Escribir test que falla para R1
       (`src/aws/media-bucket-aws-mode.spec.ts` §R1: FromEnv,
       FromConfigService y provider `AWS_RESOURCE_NAMES`; ajustar los dos
       `it` de `resource-names.spec.ts` §R3 al contrato nuevo — quedan
       rojos también)
-- [ ] (2) Implementación mínima que lo pasa (override en los dos
+- [x] (2) Implementación mínima que lo pasa (override en los dos
       resolvers de `resource-names.ts`, [[design]] §D1)
-- [ ] (3) Refactor con tests verdes
+- [x] (3) Refactor con tests verdes
 
 ## R2 — Modo aws sin `MEDIA_BUCKET_NAME` aborta el arranque
 
