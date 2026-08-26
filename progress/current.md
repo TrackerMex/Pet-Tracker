@@ -5,9 +5,34 @@
 
 ---
 
-- Feature: #50 `mobile-tab-glass`
-- Inicio: 2026-08-25 17:37 UTC
-- Branch/worktree: `feature/50-mobile-tab-glass` en `/home/claude/sites/Pet-Tracker-wt-ui`
-- Estado: implementación R1–R7 completa y verificada; pendiente de review independiente.
-- Cierre implementer: 2026-08-25 17:59 UTC. Trazabilidad completa, reporte en
-  `progress/impl_mobile-tab-glass.md` y `./init.sh` verde. No se abrió PR.
+## Sesión 2026-08-26 (leader = sesión Backend)
+
+### Feature #43 `mobile-theme-transition` — in_progress (implementa sesión "Frontend app")
+
+- Gate humano cerrado (commit 3cd9947 en `feature/43-mobile-theme-transition`):
+  spec aprobada 2026-08-26; decisión de verificación = correr la app en
+  Android local (flujo Android Studio vigente desde 2026-08-25), sustituye
+  al camino EAS cloud de la spec.
+- Por indicación del humano, la implementación la ejecuta la sesión Claude
+  "Frontend app" (no Codex CLI), en worktree/checkout propio. Handoff
+  enviado por mensaje entre sesiones; a Frontend le tocan R1–R5, R6 lo
+  cierra el humano en Android. Resultado esperado en
+  `progress/impl_mobile-theme-transition.md` en la branch.
+- Pendiente al terminar: lanzar `reviewer`.
+
+### Feature #51 `media-bucket-aws-mode` — spec en preparación (implementará Codex CLI)
+
+- P2, detectada en el gate de #49: en AWS_MODE=aws mediaBucket resuelve a
+  `pet-tracker-media-local` (bucket inexistente); el real del stack CDK es
+  `pet-tracker-media-dev-<accountId>`.
+- Spec EARS escrita (R1–R5, commit 5f38a87) en branch
+  `feature/51-media-bucket-aws-mode`; #51 → spec_ready. Pendiente: gate humano
+  (aprobación por commit), luego handoff a Codex CLI.
+
+### Contexto
+
+- PR #78 (#49 media-docs-api) mergeado por el humano → main c3ec70c.
+  Cierre archivado en `progress/history.md`.
+- Dos features en vuelo por decisión del humano (excepción a §6.3 de
+  AGENTS.md): #43 con Frontend (mobile) y #51 con Codex (backend) — árboles
+  de trabajo separados, sin solape de archivos.

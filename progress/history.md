@@ -1869,3 +1869,30 @@ Notas de la sesión que no están en la spec:
   hashes citados en trazabilidad (citarlos post-rebase).
 - Pendiente humano: merge del PR de #40. Docs smoke real bloqueado hasta
   #49 media-docs-api.
+
+## 2026-08-25 — Feature #50 mobile-tab-glass (cerrada)
+
+- Sesión 17:37–17:59 UTC en worktree `Pet-Tracker-wt-ui`, branch
+  `feature/50-mobile-tab-glass`. Implementación R1–R7 con TDD (7 pares
+  rojo→verde + par C8), tokens glass en `global.css`, pill animado con
+  shared value.
+- Review APROBADO (`progress/review_mobile-tab-glass.md`, HEAD 703fa18)
+  con 1 condición: frontmatter de la spec seguía `status: draft` pese a
+  casilla humana marcada → corregido (`status: approved`).
+- PR #75 mergeado por humano; #50 → done en `feature_list.json`.
+- Lección: el commit humano de aprobación puede marcar solo la casilla —
+  verificar también el frontmatter antes del handoff.
+
+## 2026-08-26 — Feature #49 media-docs-api (cerrada)
+
+- Spec aprobada (338c035), implementación Codex CLI (11 commits
+  test-primero hasta efe585e), review APROBADO
+  (`progress/review_media-docs-api.md`, C2–C7). PR #78 mergeado por el
+  humano (c3ec70c); #49 done. Desbloquea el smoke Docs de #40.
+- Durante el gate se detectó y registró #51 `media-bucket-aws-mode`
+  (P2, a41e43a): en AWS_MODE=aws mediaBucket resuelve a un bucket
+  inexistente.
+- Incidente 2026-08-25: dos sesiones colisionaron sobre el working tree
+  (spec de #49 y spec de #43 escritas en paralelo). Ambas specs válidas;
+  regla "un solo escritor" reforzada — sesiones paralelas via worktree o
+  checkout propio.
