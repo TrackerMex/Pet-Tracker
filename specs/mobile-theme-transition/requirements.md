@@ -92,6 +92,8 @@ El fade NO puede verificarse en Expo Go (código nativo). El humano debe marcar
 **una** opción al aprobar esta spec; sin opción marcada la spec no está
 aprobada y la feature no pasa a `in_progress`:
 
+Ya estamos corriendo la app en android, de aqui en adelante se va utilzar correr en android para verificar el fade en la app real.
+
 - [ ] **(a) Dev build vía EAS cloud** (sin Android Studio local, compatible
   con la decisión 2026-08-20). Pasos, todos ejecutados por el humano desde
   `mobile-pet-tracker/` en la branch de la feature (con las deps nitro ya
@@ -109,7 +111,7 @@ aprobada y la feature no pasa a `in_progress`:
 - [ ] **(b) Descartar la feature** sin implementar (o tras fallo de build):
   queda el toggle sin fade de #40, salida ya prevista en la descripción de
   #43. Se registra la decisión abajo y en `feature_list.json` y no se toca
-  código.
+  código. 
 
 Registro de la decisión final (rellena el humano al cerrar el gate):
 
@@ -140,5 +142,5 @@ Si el build EAS de development **falla con las deps nitro y pasa sin ellas**
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [X] Aprobado por humano (fecha: 2026-08-26) ← gate obligatorio antes de implementar
       (incluye marcar UNA opción en §Decisión del gate humano)
