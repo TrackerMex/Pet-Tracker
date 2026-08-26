@@ -53,6 +53,31 @@ Fix `d603f19` rojo → `4962ea8` verde:
   consultar `isThemeTransitionAvailable`; reduced motion ni resuelve el módulo.
 - `./init.sh` completo verde otra vez (móvil 539/539, EXIT=0).
 
+### Segundo hallazgo (mismo día): LogBox ERROR pese al try/catch
+
+El humano reportó que el ERROR seguía apareciendo al pulsar el toggle, ahora
+con stack en el propio `require` del fix. Causa: fuera del arranque, Metro
+**guarda** el require (`guardedLoadModule` con `ErrorUtils.reportFatalError`)
+— el throw del factory del paquete se reporta a LogBox aunque el caller lo
+capture. Capturar no basta; hay que **no evaluar el paquete** cuando el módulo
+nativo no está.
+
+Fix `7e5f15a` rojo → `6299aef` verde:
+- `src/theme/nitro-availability.ts` NUEVO: `hasNitroModules()` sonda
+  `TurboModuleRegistry.get('NitroModules')` (devuelve null sin lanzar; el que
+  lanza es `getEnforcing`) envuelto en try/catch para web/jest.
+- `theme-transition.ts`: la sonda decide antes del require; sin módulo nativo
+  → cambio instantáneo + persistencia, el paquete nitro jamás se evalúa.
+  En dev build la sonda es truthy y el fade queda intacto.
+- Test nuevo en `theme-transition.test.tsx` (R4): con sonda false, el mock del
+  paquete NO se invoca y el cambio es directo. Suites de Profile mockean la
+  sonda a true (assertan el camino fade); `theme-transition.degraded.test.tsx`
+  usa la sonda real (false en jest) y cubre el camino Expo Go de verdad.
+- Nota R4: la sonda no es `isThemeTransitionAvailable()` del paquete (eso
+  seguiría evaluándolo y la spec lo prohíbe para condicionar el cambio); el
+  cambio de tema ocurre igual con sonda true o false.
+- `./init.sh` completo verde (móvil 540/540, EXIT=0).
+
 ## Notas para el reviewer
 
 - Flake preexistente observado 1 vez bajo carga (primer `./init.sh`, suite completa en paralelo): 3 casos de `R7: cambiar foto` en `index.test.tsx` fallaron por timing de `waitFor`; en re-runs (suite sola y completa) pasan. No tocado: es de #40, no de #43.
