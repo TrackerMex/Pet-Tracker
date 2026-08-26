@@ -25,8 +25,8 @@
 - P2, detectada en el gate de #49: en AWS_MODE=aws mediaBucket resuelve a
   `pet-tracker-media-local` (bucket inexistente); el real del stack CDK es
   `pet-tracker-media-dev-<accountId>`.
-- `spec_author` lanzado para escribir la spec EARS en branch
-  `feature/51-media-bucket-aws-mode`. Tras spec_ready: gate humano
+- Spec EARS escrita (R1–R5, commit 5f38a87) en branch
+  `feature/51-media-bucket-aws-mode`; #51 → spec_ready. Pendiente: gate humano
   (aprobación por commit), luego handoff a Codex CLI.
 
 ### Contexto
