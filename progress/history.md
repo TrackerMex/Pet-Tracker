@@ -1869,3 +1869,16 @@ Notas de la sesión que no están en la spec:
   hashes citados en trazabilidad (citarlos post-rebase).
 - Pendiente humano: merge del PR de #40. Docs smoke real bloqueado hasta
   #49 media-docs-api.
+
+## 2026-08-25 — Feature #50 mobile-tab-glass (cerrada)
+
+- Sesión 17:37–17:59 UTC en worktree `Pet-Tracker-wt-ui`, branch
+  `feature/50-mobile-tab-glass`. Implementación R1–R7 con TDD (7 pares
+  rojo→verde + par C8), tokens glass en `global.css`, pill animado con
+  shared value.
+- Review APROBADO (`progress/review_mobile-tab-glass.md`, HEAD 703fa18)
+  con 1 condición: frontmatter de la spec seguía `status: draft` pese a
+  casilla humana marcada → corregido (`status: approved`).
+- PR #75 mergeado por humano; #50 → done en `feature_list.json`.
+- Lección: el commit humano de aprobación puede marcar solo la casilla —
+  verificar también el frontmatter antes del handoff.
