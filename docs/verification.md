@@ -276,6 +276,104 @@ pnpm -C backend-pet-tracker run test:e2e
 # Esperado: los tres recuentos idénticos a los del paso 2.
 ```
 
+### Feature 51 — media-bucket-aws-mode
+
+Este smoke crea tráfico S3 y un objeto temporal en la cuenta AWS real. Solo lo
+ejecuta el humano. Antes de empezar, usa una sesión válida de `aws login` y
+comenta en el `.env` raíz las tres variables de LocalStack:
+`AWS_ENDPOINT_URL`, `AWS_ACCESS_KEY_ID` y `AWS_SECRET_ACCESS_KEY`. Si alguna
+sigue activa, las guardas abortan antes de llamar a AWS.
+
+Obtén y revisa el nombre del bucket desplegado por `PetTrackerDev`:
+
+```bash
+aws s3 ls | grep pet-tracker-media
+export MEDIA_BUCKET_NAME="pet-tracker-media-dev-<accountId>"
+test "$MEDIA_BUCKET_NAME" != "pet-tracker-media-local"
+```
+
+Sustituye `<accountId>` por el valor de la salida; no copies literalmente el
+placeholder. El nombre debe empezar por `pet-tracker-media-dev-` y nunca por
+`pet-tracker-media-local`.
+
+#### 1. Round-trip gated a nivel adapter
+
+Desde la raíz del repositorio:
+
+```bash
+AWS_MODE=aws MEDIA_BUCKET_NAME="$MEDIA_BUCKET_NAME" \
+  pnpm -C backend-pet-tracker run test:e2e -- \
+  --runInBand test/aws-real-media.e2e-spec.ts
+```
+
+Resultado esperado: una suite con dos tests verdes y **cero `skipped`**. La
+suite construye `PhotoStorageS3Adapter` con la configuración real, firma un
+PUT, sube bytes, firma un GET, compara los bytes y borra el objeto
+`smoke/<timestamp>-<uuid>.bin` con `DeleteObject` al cerrar. Si aparece
+`skipped`, `AWS_MODE=aws` no llegó al proceso. No aceptes un verde omitido.
+
+#### 2. Flujo HTTP de la aplicación
+
+Usa un owner y una mascota existentes en el Postgres local. Arranca el backend
+en modo AWS con los workers desactivados para no generar tráfico ajeno al
+smoke:
+
+```bash
+AWS_MODE=aws MEDIA_BUCKET_NAME="$MEDIA_BUCKET_NAME" \
+POLLER_ENABLED=false ACTIVITY_AGGREGATOR_ENABLED=false \
+ALERTS_ENGINE_ENABLED=false NOTIFIER_ENABLED=false REMINDERS_ENABLED=false \
+  pnpm -C backend-pet-tracker run start
+```
+
+En otra terminal, define los datos de prueba y obtiene el token. `PHOTO_FILE`
+debe apuntar a una imagen JPEG pequeña y `PET_ID` a una mascota cuyo owner sea
+el usuario del login:
+
+```bash
+API_BASE=http://localhost:3000/v1
+LOGIN_EMAIL='owner@example.com'
+LOGIN_PASSWORD='<password>'
+PET_ID='<pet-uuid>'
+PHOTO_FILE='/ruta/a/smoke.jpg'
+
+LOGIN_BODY="$(jq -n \
+  --arg email "$LOGIN_EMAIL" \
+  --arg password "$LOGIN_PASSWORD" \
+  '{email: $email, password: $password}')"
+
+AUTH_TOKEN="$(curl --fail --silent --show-error \
+  -H 'Content-Type: application/json' \
+  -d "$LOGIN_BODY" \
+  "$API_BASE/auth/login" | jq -er '.access_token')"
+
+UPLOAD_URL="$(curl --fail --silent --show-error \
+  -X POST \
+  -H "Authorization: Bearer $AUTH_TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{"contentType":"image/jpeg"}' \
+  "$API_BASE/pets/$PET_ID/photo-upload-url" | jq -er '.uploadUrl')"
+
+curl --fail --silent --show-error \
+  -X PUT -H 'Content-Type: image/jpeg' \
+  --data-binary "@$PHOTO_FILE" "$UPLOAD_URL"
+
+PHOTO_URL="$(curl --fail --silent --show-error \
+  -H "Authorization: Bearer $AUTH_TOKEN" \
+  "$API_BASE/pets/$PET_ID" | jq -er '.photoUrl')"
+
+DOWNLOADED_FILE="$(mktemp)"
+curl --fail --silent --show-error "$PHOTO_URL" --output "$DOWNLOADED_FILE"
+cmp "$PHOTO_FILE" "$DOWNLOADED_FILE"
+rm "$DOWNLOADED_FILE"
+```
+
+El `cmp` debe salir sin diferencias. Al terminar, detén el backend, vuelve a
+`AWS_MODE=local`, restaura las tres variables de LocalStack en `.env`, elimina
+la variable exportada con `unset MEDIA_BUCKET_NAME` y registra el resultado
+en `progress/impl_media-bucket-aws-mode.md`. Solo el humano marca la casilla
+R5 en `specs/media-bucket-aws-mode/requirements.md`; hasta entonces la feature
+permanece `in_progress`.
+
 ---
 
 ## Notas para el implementer
