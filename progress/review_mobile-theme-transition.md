@@ -1,6 +1,6 @@
 # review: mobile-theme-transition (feature #43)
-Fecha: 2026-08-26 (UTC)
-Veredicto: **APROBADO** (con condiciones pendientes del humano/leader, ver §Condiciones)
+Fecha: 2026-08-26 (UTC) — re-reviews de los fixes post-review: mismo día, ver §Re-review (fix 1) y §Re-review fix 2
+Veredicto: **APROBADO** (sostenido tras fix 1 de import R4 y fix 2 de sonda nitro; condiciones pendientes del humano/leader, ver §Condiciones)
 
 Revisión independiente sobre worktree detached propio en
 `origin/feature/43-mobile-theme-transition` (HEAD `5763e23`), sin tocar el
@@ -109,6 +109,111 @@ route) son correctas y menores.
    implementadora; escalado — mismo patrón que #50.
 3. **Estado en `feature_list.json`**: #43 sigue `spec_ready` en la branch;
    el leader registra la transición (y `done` solo tras cerrar R6).
+
+## Re-review fix post-review (HEAD `68c82c0`)
+
+Contexto: tras la aprobación inicial, el humano reportó crash en Expo Go — el
+import top-level de `react-native-nitro-modules` lanza sin módulo nativo
+(R4 violado en runtime real; los mocks de jest lo enmascaraban). Alcance de
+este re-review: solo los 3 commits del fix + sostener/retirar el veredicto.
+Worktree detached propio recreado en `origin/feature/43-mobile-theme-transition`.
+
+- [x] **C4 test-primero, verificado empíricamente (no solo por orden de
+      commits)**: en `d603f19` (solo añade
+      `src/theme/__tests__/theme-transition.degraded.test.tsx`) corrí la suite
+      → **FALLA con el crash real**: cadena
+      `NativeNitroModules.getEnforcing → react-native-nitro-modules →
+      react-native-nitro-theme-transition → theme-transition.ts` (el mismo
+      crash de Expo Go). En `4962ea8` (solo toca `theme-transition.ts`) la
+      suite pasa. `68c82c0` es docs.
+- [x] **El test rojo NO mockea el paquete nitro**: `jest.mock` solo de
+      `uniwind` y `theme-preference` (lado app). El paquete real se evalúa —
+      es exactamente lo que antes se enmascaraba. Sin enmascaramiento.
+- [x] **El require perezoso cubre R4**: el import top-level se eliminó;
+      `getWithThemeTransition()` resuelve el módulo en el press con try/catch
+      cacheado → sin nativo cae a `apply()` instantáneo + `setStoredTheme`,
+      sin lanzar y sin consultar `isThemeTransitionAvailable`. Importar
+      `theme-transition.ts` ya no evalúa el paquete (el type usa
+      `typeof import(...)`, solo tipos).
+- [x] **R1–R3 no degradados**: suite completa `src/theme/__tests__/` en el
+      commit del fix: 5 suites / 19 tests verdes. R1 sigue asertando
+      `withThemeTransition(apply, THEME_FADE)` cuando el módulo resuelve
+      (en device con nativo el require tiene éxito → fade intacto); el camino
+      reduced motion ni siquiera resuelve el módulo (R3).
+- [x] **`./init.sh` corrido por el reviewer en `68c82c0`: EXIT=0, todo
+      verde** — backend 1114/1114, infra 14/14, **mobile 539/539 (49
+      suites)** incl. `PASS theme-transition.degraded.test.tsx`, e2e 327
+      passed/6 skipped, lint y typecheck sin errores.
+- [x] Convención de commits: `feat(mobile-theme): ... (R4)` × 2 +
+      `docs(mobile-theme)`. Trazabilidad: fila R4 actualizada con la nueva
+      suite y `d603f19` rojo → `4962ea8` verde.
+
+Observación para el gate humano (no bloquea): el smoke Expo Go de R4 (toggle
+instantáneo sin crash) cobra prioridad — es el escenario que crasheaba; el
+reporte del implementador ya lo recoge.
+
+**Veredicto del re-review: APROBADO — el veredicto anterior se sostiene.**
+Las condiciones de §Condiciones siguen vigentes sin cambios (R6 gate humano,
+frontmatter `status: approved`, estado en `feature_list.json`).
+
+## Re-review fix 2 — sonda nitro (HEAD `248d17c`)
+
+Contexto: 2º hallazgo del humano en Expo Go — el LogBox ERROR persistía pese
+al try/catch del fix 1: fuera del arranque, Metro guarda el require con
+`ErrorUtils.reportFatalError` y reporta el throw aunque el caller lo capture.
+Contrato nuevo: sin módulo nativo, el paquete nitro no se evalúa en absoluto.
+Alcance: commits `7e5f15a` (rojo) → `6299aef` (verde) → `248d17c` (docs).
+Worktree detached propio recreado en el nuevo HEAD.
+
+- [x] **C4 rojo→verde, verificado empíricamente**: en `7e5f15a` corrí la
+      suite del hook → exactamente el test nuevo falla
+      (`✕ sin módulo nativo ni evalúa el paquete: cambio directo`, 1 failed /
+      5 passed); en `6299aef` las 5 suites de `src/theme/__tests__/` pasan
+      (20/20).
+- [x] **El test rojo no se autoconfirma**: el test nuevo mockea la sonda para
+      probar la lógica de decisión (probe consultado ANTES del require), y el
+      contrato real "el paquete jamás se evalúa" lo vigila la suite
+      `theme-transition.degraded.test.tsx`, que sigue SIN mockear los paquetes
+      nitro ni la sonda (verificado por grep): si el gate fallara, esa suite
+      crashearía con el `getEnforcing` real. Pasa.
+- [x] **Sonda correcta**: `src/theme/nitro-availability.ts` importa solo
+      `react-native`; `hasNitroModules()` usa
+      `TurboModuleRegistry.get('NitroModules')` (devuelve null sin lanzar,
+      con try/catch de respaldo). `getWithThemeTransition()` retorna null
+      ANTES del require cuando la sonda es false.
+- [x] **Cero imports estáticos del paquete nitro en el camino de Expo Go**:
+      grep de `src/` fuera de tests — solo el `typeof import(...)` (type-only,
+      borrado en runtime) y el `require` gateado por la sonda. Ningún import
+      top-level de `react-native-nitro-theme-transition` ni
+      `react-native-nitro-modules`.
+- [x] **R1 intacto**: con sonda truthy (mock default `true` en la suite del
+      hook) el fade sigue invocándose vía `withThemeTransition(apply,
+      THEME_FADE)` — aserciones de R1 sin cambios, verdes.
+- [x] **R3/R4 intactos**: reduced motion ni consulta la sonda (apply directo);
+      camino degradado aplica + persiste; `void setStoredTheme(next)`
+      incondicional en todo camino. `screens.test.tsx`/`index.test.tsx`
+      mockean la sonda a `true` manteniendo sus aserciones previas.
+- [x] **`./init.sh` corrido por el reviewer en `248d17c`**: primer intento
+      EXIT=1 por 6 fallos e2e **ambientales** — cross-talk de colas
+      LocalStack compartidas con la sesión activa de #51 (mensaje ajeno con
+      petId/token de otra corrida recibido por el notifier; backend/infra
+      bit-idénticos a los dos estados ya verificados verdes: diff vacío
+      `5763e23..248d17c` y `68c82c0..248d17c`; cada suite afectada verde en
+      aislamiento). Segundo intento: **EXIT=0, todo verde** — backend
+      1114/1114, infra 14/14, **mobile 540/540 (49 suites)** (confirma el
+      540/540 de Frontend), e2e 327 passed / 6 skipped, lint y typecheck sin
+      errores (también corridos aparte: mobile, backend e infra).
+- [x] Convención de commits y trazabilidad: fila R4 actualizada con
+      `7e5f15a` rojo → `6299aef` verde y el test nuevo; reporte del
+      implementador con §fix de sonda.
+
+Observación (no bloquea, para el gate humano): el smoke Expo Go debe
+confirmar además que el LogBox ERROR ya no aparece (era el síntoma del 2º
+hallazgo — el fix 1 ya evitaba el crash, este elimina el reporte a LogBox).
+
+**Veredicto fix 2: APROBADO — el veredicto general se sostiene.** Condiciones
+de §Condiciones sin cambios (R6 gate humano, frontmatter `status: approved`,
+estado en `feature_list.json`).
 
 ## Output de ./init.sh (run 2, resumen final)
 ```
