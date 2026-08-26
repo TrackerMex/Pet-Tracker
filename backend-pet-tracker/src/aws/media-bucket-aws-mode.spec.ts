@@ -4,6 +4,7 @@ import { AWS_RESOURCE_NAMES } from './aws.constants';
 import { AwsModule } from './aws.module';
 import {
   AwsResourceNames,
+  LocalMediaBucketNameError,
   MissingMediaBucketNameError,
   resolveResourceNamesFromConfigService,
   resolveResourceNamesFromEnv,
@@ -123,5 +124,61 @@ describe('R2: modo aws sin MEDIA_BUCKET_NAME aborta', () => {
         .useValue(config)
         .compile(),
     ).rejects.toThrow(MissingMediaBucketNameError);
+  });
+});
+
+describe('R3: modo aws rechaza el nombre del bucket local', () => {
+  it.each(['pet-tracker-media-local', '  pet-tracker-media-local-test  '])(
+    'rechaza %p desde process.env',
+    (mediaBucketName) => {
+      expect(() =>
+        resolveResourceNamesFromEnv({
+          AWS_MODE: 'aws',
+          MEDIA_BUCKET_NAME: mediaBucketName,
+        }),
+      ).toThrow(LocalMediaBucketNameError);
+    },
+  );
+
+  it.each(['pet-tracker-media-local', '  pet-tracker-media-local-test  '])(
+    'rechaza %p desde ConfigService',
+    (mediaBucketName) => {
+      const config = buildConfigService({
+        AWS_MODE: 'aws',
+        MEDIA_BUCKET_NAME: mediaBucketName,
+      });
+
+      expect(() => resolveResourceNamesFromConfigService(config)).toThrow(
+        LocalMediaBucketNameError,
+      );
+    },
+  );
+
+  it('acepta un nombre real desde ambos resolvers', () => {
+    expect(() =>
+      resolveResourceNamesFromEnv({
+        AWS_MODE: 'aws',
+        MEDIA_BUCKET_NAME: REAL_MEDIA_BUCKET,
+      }),
+    ).not.toThrow();
+    expect(() =>
+      resolveResourceNamesFromConfigService(
+        buildConfigService({
+          AWS_MODE: 'aws',
+          MEDIA_BUCKET_NAME: REAL_MEDIA_BUCKET,
+        }),
+      ),
+    ).not.toThrow();
+  });
+
+  it('explica el riesgo del namespace global de S3', () => {
+    const error = new LocalMediaBucketNameError();
+
+    expect(error.name).toBe('LocalMediaBucketNameError');
+    expect(error.message).toContain('AWS_MODE=aws');
+    expect(error.message).toContain('MEDIA_BUCKET_NAME');
+    expect(error.message).toContain('pet-tracker-media-local');
+    expect(error.message).toContain('namespace global');
+    expect(error.message).toContain('bucket ajeno');
   });
 });
