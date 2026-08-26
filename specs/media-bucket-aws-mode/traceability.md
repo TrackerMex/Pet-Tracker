@@ -9,7 +9,7 @@ tags: [harness, spec, backend]
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
 | R1 | `src/aws/media-bucket-aws-mode.spec.ts::R1: modo aws resuelve mediaBucket desde MEDIA_BUCKET_NAME`; `src/aws/resource-names.spec.ts::R3: AWS_MODE=aws fuerza sufijo vacio` (dos casos autorizados FromEnv/FromConfigService) | `64af37a test(media-bucket-aws-mode): define AWS bucket override in red (R1)` → `b3db47e feat(media-bucket-aws-mode): resolve AWS media bucket override (R1)` |
-| R2 | pendiente | pendiente |
+| R2 | `src/aws/media-bucket-aws-mode.spec.ts::R2: modo aws sin MEDIA_BUCKET_NAME aborta` | `452efc2 test(media-bucket-aws-mode): define missing bucket guard in red (R2)` → `8b801f2 feat(media-bucket-aws-mode): abort without AWS bucket name (R2)` |
 | R3 | pendiente | pendiente |
 | R4 | pendiente | pendiente |
 | R5 | pendiente (skip local verificable por IA; round-trip real solo humano) | pendiente |

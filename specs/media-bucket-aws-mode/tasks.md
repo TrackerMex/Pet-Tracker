@@ -24,11 +24,11 @@ tags: [harness, spec, backend]
 
 ## R2 — Modo aws sin `MEDIA_BUCKET_NAME` aborta el arranque
 
-- [ ] (1) Escribir test que falla para R2 (§R2: ausente/vacía/espacios
+- [x] (1) Escribir test que falla para R2 (§R2: ausente/vacía/espacios
       lanza `MissingMediaBucketNameError` en ambos resolvers y en
       `compile()` del módulo)
-- [ ] (2) Implementación mínima que lo pasa (clase + guard, [[design]] §D2)
-- [ ] (3) Refactor con tests verdes
+- [x] (2) Implementación mínima que lo pasa (clase + guard, [[design]] §D2)
+- [x] (3) Refactor con tests verdes
 
 ## R3 — Modo aws rechaza el nombre del bucket local
 
