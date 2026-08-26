@@ -40,10 +40,10 @@ tags: [harness, spec, backend]
 
 ## R4 — Modo local intacto + regresión + contención
 
-- [ ] (1) Escribir test que falla para R4 (§R4: `MEDIA_BUCKET_NAME`
+- [x] (1) Escribir test que falla para R4 (§R4: `MEDIA_BUCKET_NAME`
       definida en modo local se ignora sin lanzar; casos con/sin
       variable y con/sin `NODE_ENV=test`)
-- [ ] (2) Implementación mínima que lo pasa (normalmente ya verde tras
+- [x] (2) Implementación mínima que lo pasa (normalmente ya verde tras
       R1–R3 si el override solo aplica en modo aws — confirmar)
 - [ ] (3) Refactor con tests verdes + `.env.example` bloque comentado
       ([[design]] §D6) + `lint`/`test`/`test:e2e`/`./init.sh` exit 0 +

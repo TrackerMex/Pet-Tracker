@@ -11,7 +11,7 @@ tags: [harness, spec, backend]
 | R1 | `src/aws/media-bucket-aws-mode.spec.ts::R1: modo aws resuelve mediaBucket desde MEDIA_BUCKET_NAME`; `src/aws/resource-names.spec.ts::R3: AWS_MODE=aws fuerza sufijo vacio` (dos casos autorizados FromEnv/FromConfigService) | `64af37a test(media-bucket-aws-mode): define AWS bucket override in red (R1)` → `b3db47e feat(media-bucket-aws-mode): resolve AWS media bucket override (R1)` |
 | R2 | `src/aws/media-bucket-aws-mode.spec.ts::R2: modo aws sin MEDIA_BUCKET_NAME aborta` | `452efc2 test(media-bucket-aws-mode): define missing bucket guard in red (R2)` → `8b801f2 feat(media-bucket-aws-mode): abort without AWS bucket name (R2)` |
 | R3 | `src/aws/media-bucket-aws-mode.spec.ts::R3: modo aws rechaza el nombre del bucket local` | `bfb6be3 test(media-bucket-aws-mode): define local bucket rejection in red (R3)` → `62f5171 feat(media-bucket-aws-mode): reject local bucket names in AWS (R3)` |
-| R4 | pendiente | pendiente |
+| R4 | `src/aws/media-bucket-aws-mode.spec.ts::R4: modo local ignora MEDIA_BUCKET_NAME` (resolvers + `.env.example` comentada); `node env-drift.mjs` (cero salida) | `a86844e test(media-bucket-aws-mode): define local containment in red (R4)` → `f577adc docs(media-bucket-aws-mode): document AWS bucket without local drift (R4)`; verificación completa pendiente del cierre |
 | R5 | pendiente (skip local verificable por IA; round-trip real solo humano) | pendiente |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente" — para R5 la
