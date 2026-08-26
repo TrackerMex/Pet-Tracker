@@ -1,7 +1,7 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-08-25
-**Features completadas**: 43/50 (`feature_list.json`)
+**Features completadas**: 45/51 (`feature_list.json`)
 **En progreso**: ninguna
 
 **Pendientes**: 7 (#18, #41, #42, #43, #44, #45, #49). Fuente del diseño Figma versionada en
