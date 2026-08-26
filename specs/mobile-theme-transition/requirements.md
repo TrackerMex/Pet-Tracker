@@ -115,9 +115,9 @@ Ya estamos corriendo la app en android, de aqui en adelante se va utilzar correr
 
 Registro de la decisión final (rellena el humano al cerrar el gate):
 
-- Fecha: ____
-- Resultado: mantener / descartar — ____
-- Evidencia (build id de EAS, dispositivo, observaciones): ____
+- Fecha: 2026-08-26
+- Resultado: mantener / descartar — mantener
+- Evidencia (build id de EAS, dispositivo, observaciones): dispositivo android note que las animaciones no se hace como lo muestra en el prototipo de la libreria
 
 ## Criterio de salida — riesgo reactCompiler / build nativo roto
 
