@@ -35,6 +35,10 @@ jest.mock('react-native-nitro-theme-transition', () => ({
   isThemeTransitionAvailable: jest.fn(() => false),
 }));
 
+jest.mock('../../theme/nitro-availability', () => ({
+  hasNitroModules: () => true,
+}));
+
 jest.mock('../../api/pets', () => ({
   getPet: jest.fn(),
   listPets: jest.fn(),

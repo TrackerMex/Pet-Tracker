@@ -5,6 +5,7 @@ import {
   setStoredTheme,
   type ThemePreference,
 } from '../utils/theme-preference';
+import { hasNitroModules } from './nitro-availability';
 
 export const THEME_FADE = {
   kind: 'fade',
@@ -15,13 +16,18 @@ export const THEME_FADE = {
 type WithThemeTransition =
   typeof import('react-native-nitro-theme-transition').withThemeTransition;
 
-// El import top-level de react-native-nitro-modules lanza cuando el módulo
-// nativo no existe (Expo Go, web, jest): la garantía "applyTheme runs exactly
-// once in every path" de la librería empieza en withThemeTransition, no en su
-// import. Require perezoso con fallback a cambio instantáneo (R4).
+// El import de react-native-nitro-modules lanza cuando el módulo nativo no
+// existe (Expo Go, web, jest): la garantía "applyTheme runs exactly once in
+// every path" de la librería empieza en withThemeTransition, no en su import.
+// Y capturar aquí no basta: fuera del arranque Metro guarda el require y
+// reporta el throw a LogBox igualmente — por eso la sonda hasNitroModules
+// decide ANTES de evaluar el paquete (R4).
 let nativeTransition: WithThemeTransition | null | undefined;
 
 function getWithThemeTransition(): WithThemeTransition | null {
+  if (!hasNitroModules()) {
+    return null;
+  }
   if (nativeTransition === undefined) {
     try {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
