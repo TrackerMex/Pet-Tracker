@@ -4,6 +4,7 @@ import { AWS_RESOURCE_NAMES } from './aws.constants';
 import { AwsModule } from './aws.module';
 import {
   AwsResourceNames,
+  MissingMediaBucketNameError,
   resolveResourceNamesFromConfigService,
   resolveResourceNamesFromEnv,
 } from './resource-names';
@@ -71,5 +72,56 @@ describe('R1: modo aws resuelve mediaBucket desde MEDIA_BUCKET_NAME', () => {
     ).toBe(REAL_MEDIA_BUCKET);
 
     await moduleRef.close();
+  });
+});
+
+describe('R2: modo aws sin MEDIA_BUCKET_NAME aborta', () => {
+  it.each([undefined, '', '  '])(
+    'rechaza %p desde process.env',
+    (mediaBucketName) => {
+      expect(() =>
+        resolveResourceNamesFromEnv({
+          AWS_MODE: 'aws',
+          MEDIA_BUCKET_NAME: mediaBucketName,
+        }),
+      ).toThrow(MissingMediaBucketNameError);
+    },
+  );
+
+  it.each([undefined, '', '  '])(
+    'rechaza %p desde ConfigService',
+    (mediaBucketName) => {
+      const config = buildConfigService({
+        AWS_MODE: 'aws',
+        MEDIA_BUCKET_NAME: mediaBucketName,
+      });
+
+      expect(() => resolveResourceNamesFromConfigService(config)).toThrow(
+        MissingMediaBucketNameError,
+      );
+    },
+  );
+
+  it('explica cómo obtener el bucket real y por qué aborta', () => {
+    const error = new MissingMediaBucketNameError();
+
+    expect(error.name).toBe('MissingMediaBucketNameError');
+    expect(error.message).toContain('AWS_MODE=aws');
+    expect(error.message).toContain('MEDIA_BUCKET_NAME');
+    expect(error.message).toContain('pet-tracker-media-dev-<accountId>');
+    expect(error.message).toContain('aws s3 ls | grep pet-tracker-media');
+    expect(error.message).toContain('pet-tracker-media-local');
+    expect(error.message).toContain('docs/verification.md');
+  });
+
+  it('aborta el bootstrap del provider AWS_RESOURCE_NAMES', async () => {
+    const config = buildConfigService({ AWS_MODE: 'aws' });
+
+    await expect(
+      Test.createTestingModule({ imports: [AwsModule] })
+        .overrideProvider(ConfigService)
+        .useValue(config)
+        .compile(),
+    ).rejects.toThrow(MissingMediaBucketNameError);
   });
 });
