@@ -53,11 +53,11 @@ tags: [harness, spec, backend]
 
 ## R5 — Smoke real de media (gated, cierre humano)
 
-- [ ] (1) Escribir la suite gated `test/aws-real-media.e2e-spec.ts`
+- [x] (1) Escribir la suite gated `test/aws-real-media.e2e-spec.ts`
       ([[design]] §D7) y verificar que en modo local aparece **skipped**
       (ese es el "rojo" verificable por IA: la suite existe, está gated
       y no toca red)
-- [ ] (2) Escribir `docs/verification.md` §`Feature 51 —
+- [x] (2) Escribir `docs/verification.md` §`Feature 51 —
       media-bucket-aws-mode`: prerrequisitos (los de Features 19/21 +
       `MEDIA_BUCKET_NAME` obtenida con `aws s3 ls | grep
       pet-tracker-media`), comando de la suite gated y pasos curl del
