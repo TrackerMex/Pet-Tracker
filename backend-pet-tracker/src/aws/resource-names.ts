@@ -33,6 +33,26 @@ export interface AwsResourceNames {
   eventBus: string;
 }
 
+export class MissingMediaBucketNameError extends Error {
+  constructor() {
+    super(
+      'AWS_MODE=aws requiere MEDIA_BUCKET_NAME con el nombre real del ' +
+        'bucket del stack PetTrackerDev (pet-tracker-media-dev-<accountId>). ' +
+        'Obtenlo con `aws s3 ls | grep pet-tracker-media`. Se aborta antes ' +
+        'de firmar URLs de media porque, sin esta configuración, apuntarían ' +
+        'a pet-tracker-media-local, que no existe en AWS real (ver ' +
+        'docs/verification.md, feature 51).',
+    );
+    this.name = 'MissingMediaBucketNameError';
+  }
+}
+
+function resolveAwsMediaBucketName(rawName: string | undefined): string {
+  const name = (rawName ?? '').trim();
+  if (name === '') throw new MissingMediaBucketNameError();
+  return name;
+}
+
 export function buildResourceNames(suffix: string): AwsResourceNames {
   return {
     positionsRaw: resourceName(QUEUE_POSITIONS_RAW, suffix),
@@ -59,30 +79,39 @@ export function resolveResourceSuffix(
 export function resolveResourceNamesFromEnv(
   env: NodeJS.ProcessEnv,
 ): AwsResourceNames {
-  const names = buildResourceNames(
-    resolveResourceSuffix(env.AWS_MODE, env.NODE_ENV),
-  );
+  const rawMode = env.AWS_MODE;
 
-  if (resolveAwsMode(env.AWS_MODE) !== 'aws') return names;
+  if (resolveAwsMode(rawMode) === 'aws') {
+    const mediaBucket = resolveAwsMediaBucketName(env.MEDIA_BUCKET_NAME);
 
-  return {
-    ...names,
-    mediaBucket: (env.MEDIA_BUCKET_NAME ?? '').trim(),
-  };
+    return {
+      ...buildResourceNames(resolveResourceSuffix(rawMode, env.NODE_ENV)),
+      mediaBucket,
+    };
+  }
+
+  return buildResourceNames(resolveResourceSuffix(rawMode, env.NODE_ENV));
 }
 
 export function resolveResourceNamesFromConfigService(
   config: ConfigService,
 ): AwsResourceNames {
   const rawMode = config.get<string>('AWS_MODE');
-  const names = buildResourceNames(
+
+  if (resolveAwsMode(rawMode) === 'aws') {
+    const mediaBucket = resolveAwsMediaBucketName(
+      config.get<string>('MEDIA_BUCKET_NAME'),
+    );
+
+    return {
+      ...buildResourceNames(
+        resolveResourceSuffix(rawMode, config.get<string>('NODE_ENV')),
+      ),
+      mediaBucket,
+    };
+  }
+
+  return buildResourceNames(
     resolveResourceSuffix(rawMode, config.get<string>('NODE_ENV')),
   );
-
-  if (resolveAwsMode(rawMode) !== 'aws') return names;
-
-  return {
-    ...names,
-    mediaBucket: (config.get<string>('MEDIA_BUCKET_NAME') ?? '').trim(),
-  };
 }
