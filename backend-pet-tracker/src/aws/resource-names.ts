@@ -47,9 +47,28 @@ export class MissingMediaBucketNameError extends Error {
   }
 }
 
+export class LocalMediaBucketNameError extends Error {
+  constructor() {
+    super(
+      'MEDIA_BUCKET_NAME no puede ser pet-tracker-media-local ni empezar ' +
+        'por pet-tracker-media-local- cuando AWS_MODE=aws. S3 usa un ' +
+        'namespace global: firmar contra ese nombre apuntaría a un bucket ' +
+        'inexistente o a un bucket ajeno. Configura el nombre real del ' +
+        'stack PetTrackerDev (ver docs/verification.md, feature 51).',
+    );
+    this.name = 'LocalMediaBucketNameError';
+  }
+}
+
 function resolveAwsMediaBucketName(rawName: string | undefined): string {
   const name = (rawName ?? '').trim();
   if (name === '') throw new MissingMediaBucketNameError();
+  if (
+    name === 'pet-tracker-media-local' ||
+    name.startsWith('pet-tracker-media-local-')
+  ) {
+    throw new LocalMediaBucketNameError();
+  }
   return name;
 }
 
