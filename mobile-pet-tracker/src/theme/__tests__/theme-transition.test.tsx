@@ -4,6 +4,15 @@ import { Uniwind } from 'uniwind';
 
 import { THEME_FADE, useThemeTransition } from '../theme-transition';
 
+const mockUseReducedMotion = jest.fn<boolean, []>(() => false);
+
+jest.mock('react-native-reanimated', () => ({
+  ...jest.requireActual<typeof import('react-native-reanimated')>(
+    'react-native-reanimated',
+  ),
+  useReducedMotion: () => mockUseReducedMotion(),
+}));
+
 jest.mock('react-native-nitro-theme-transition', () => ({
   withThemeTransition: jest.fn((apply: () => void) => {
     apply();
@@ -40,6 +49,7 @@ describe('R5: THEME_FADE options', () => {
 describe('R1: fade nativo en el toggle', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockUseReducedMotion.mockReturnValue(false);
   });
 
   it('invoca withThemeTransition con callback síncrono y THEME_FADE', async () => {
@@ -55,5 +65,22 @@ describe('R1: fade nativo en el toggle', () => {
     apply();
     expect(mockSetTheme).toHaveBeenCalledTimes(1);
     expect(mockSetTheme).toHaveBeenCalledWith('dark');
+  });
+});
+
+describe('R3: reduced motion salta la animación', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockUseReducedMotion.mockReturnValue(true);
+  });
+
+  it('aplica el tema directo sin invocar withThemeTransition', async () => {
+    const { result } = await renderHook(() => useThemeTransition());
+
+    result.current('light');
+
+    expect(mockSetTheme).toHaveBeenCalledTimes(1);
+    expect(mockSetTheme).toHaveBeenCalledWith('light');
+    expect(mockWithThemeTransition).not.toHaveBeenCalled();
   });
 });
