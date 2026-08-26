@@ -1,6 +1,6 @@
 ---
 feature: "media-bucket-aws-mode"
-status: draft        # draft | approved
+status: approved        # draft | approved
 tags: [harness, spec, backend]
 ---
 
