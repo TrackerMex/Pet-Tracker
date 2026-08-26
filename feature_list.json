@@ -912,7 +912,7 @@
   {
     "id": 51,
     "name": "media-bucket-aws-mode",
-    "status": "pending",
+    "status": "in_progress",
     "priority": "P2",
     "description": "Con AWS_MODE=aws, mediaBucket resuelve a pet-tracker-media-local (resolveResourceSuffix devuelve '' y BUCKET_MEDIA conserva el sufijo -local; src/aws/resource-names.ts:46 + constants.ts:42), pero el bucket real creado por el stack CDK PetTrackerDev (#20) es pet-tracker-media-dev-<accountId> (infra/lib/pet-tracker-dev-stack.ts:92-94). Todas las URLs prefirmadas de media (foto de perfil #6 y documentos #49) apuntan en modo aws a un bucket inexistente. El smoke real de #19-#21 cubrió ingest (SQS/DynamoDB/EventBridge), no media. Resolver el nombre real del bucket en modo aws (candidato: env MEDIA_BUCKET_NAME leída por ConfigService, con guard que aborte si falta en modo aws) sin tocar el modo local.",
     "acceptance_criteria": [
