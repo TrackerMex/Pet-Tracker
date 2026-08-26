@@ -36,6 +36,23 @@ Trazabilidad completa en `specs/mobile-theme-transition/traceability.md` (fila R
 1. **`renderHook` de RNTL 14 es async** — el design no lo menciona; el test rojo de R1 se corrigió a `await renderHook(...)` en el commit verde `3b915a2`. Sin cambio de contrato.
 2. **`screens.test.tsx` también monta el ProfileScreen real** — el design (§Estado del repo) afirmaba que solo `index.test.tsx` monta el screen real, pero el smoke de rutas `src/app/(tabs)/__tests__/screens.test.tsx` lo importa vía la route y el import top-level de `react-native-nitro-modules` lanza en jest. Fix: mismo mock degradado, cero aserciones tocadas (`0735838`).
 
+## Fix post-review — crash de import en Expo Go (2026-08-26)
+
+El humano reportó crash al abrir la app en Expo Go: el import top-level de
+`react-native-nitro-modules` lanza `Failed to get NitroModules` cuando el
+módulo nativo no existe. La garantía de degradación del README ("applyTheme
+runs exactly once in every path") empieza en `withThemeTransition`, **no en el
+import del paquete** — el design lo asumía cubierto y R4 quedaba violado en
+runtime real (jest lo enmascaraba porque las 3 suites mockean el paquete).
+
+Fix `d603f19` rojo → `4962ea8` verde:
+- Test nuevo `theme-transition.degraded.test.tsx` SIN mock del paquete nitro —
+  reproduce el crash exacto (suite no cargaba) y fija el contrato R4 real.
+- `theme-transition.ts`: require perezoso cacheado con try/catch en el press;
+  sin módulo nativo cae a cambio instantáneo + persistencia. Sigue sin
+  consultar `isThemeTransitionAvailable`; reduced motion ni resuelve el módulo.
+- `./init.sh` completo verde otra vez (móvil 539/539, EXIT=0).
+
 ## Notas para el reviewer
 
 - Flake preexistente observado 1 vez bajo carga (primer `./init.sh`, suite completa en paralelo): 3 casos de `R7: cambiar foto` en `index.test.tsx` fallaron por timing de `waitFor`; en re-runs (suite sola y completa) pasan. No tocado: es de #40, no de #43.
