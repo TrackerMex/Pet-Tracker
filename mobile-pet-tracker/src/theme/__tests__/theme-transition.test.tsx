@@ -9,6 +9,11 @@ import { setStoredTheme } from '../../utils/theme-preference';
 import { THEME_FADE, useThemeTransition } from '../theme-transition';
 
 const mockUseReducedMotion = jest.fn<boolean, []>(() => false);
+const mockHasNitroModules = jest.fn<boolean, []>(() => true);
+
+jest.mock('../nitro-availability', () => ({
+  hasNitroModules: () => mockHasNitroModules(),
+}));
 
 jest.mock('react-native-reanimated', () => ({
   ...jest.requireActual<typeof import('react-native-reanimated')>(
@@ -95,6 +100,19 @@ describe('R4: degradación sin módulo nativo', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockUseReducedMotion.mockReturnValue(false);
+    mockHasNitroModules.mockReturnValue(true);
+  });
+
+  it('sin módulo nativo ni evalúa el paquete: cambio directo', async () => {
+    mockHasNitroModules.mockReturnValue(false);
+    const { result } = await renderHook(() => useThemeTransition());
+
+    result.current('dark');
+
+    expect(mockWithThemeTransition).not.toHaveBeenCalled();
+    expect(mockSetTheme).toHaveBeenCalledTimes(1);
+    expect(mockSetTheme).toHaveBeenCalledWith('dark');
+    expect(mockSetStoredTheme).toHaveBeenCalledWith('dark');
   });
 
   it('aplica el tema exactamente una vez, persiste y no consulta availability', async () => {
