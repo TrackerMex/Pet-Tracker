@@ -38,7 +38,7 @@ No se creó, modificó ni consultó ningún recurso de la cuenta AWS real.
 | R1 | `64af37a` — los 5 casos recibían `pet-tracker-media-local` | `b3db47e` — override en ambos resolvers y provider, 21/21 verdes |
 | R2 | `452efc2` — 8 fallos: no había clase, throw ni aborto de `compile()` | `8b801f2` — error tipado y guard previo a construir nombres, 32/32 verdes |
 | R3 | `bfb6be3` — 5 fallos: los nombres locales eran aceptados | `62f5171` — rechazo exacto/prefijo y mensaje de seguridad, 41/41 verdes |
-| R4 | `a86844e` — 26 casos locales verdes y 1 fallo real por faltar el bloque comentado de env | `f577adc` — bloque comentado, 51/51 suites AWS dirigidas y cero deriva; verificación completa de cierre debajo |
+| R4 | `a86844e` — 26 casos locales verdes y 1 fallo real por faltar el bloque comentado de env | `f577adc` — bloque comentado, 51/51 suites AWS dirigidas y cero deriva; `8d77350` — regresión y contención completas |
 | R5 | `d458f36` — gate verificable de la spec: 1 suite / 2 tests skipped en local, sin red | `d05581c` — procedimiento adapter + curl documentado; ejecución real reservada al humano |
 
 Los nombres exactos de las suites y todos los pares están en
