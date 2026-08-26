@@ -42,8 +42,8 @@ describe('R1: fade nativo en el toggle', () => {
     jest.clearAllMocks();
   });
 
-  it('invoca withThemeTransition con callback síncrono y THEME_FADE', () => {
-    const { result } = renderHook(() => useThemeTransition());
+  it('invoca withThemeTransition con callback síncrono y THEME_FADE', async () => {
+    const { result } = await renderHook(() => useThemeTransition());
 
     result.current('dark');
 
