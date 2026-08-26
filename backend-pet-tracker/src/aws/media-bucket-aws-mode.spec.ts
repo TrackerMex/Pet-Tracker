@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { ConfigService } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
 import { AWS_RESOURCE_NAMES } from './aws.constants';
@@ -180,5 +182,81 @@ describe('R3: modo aws rechaza el nombre del bucket local', () => {
     expect(error.message).toContain('pet-tracker-media-local');
     expect(error.message).toContain('namespace global');
     expect(error.message).toContain('bucket ajeno');
+  });
+});
+
+describe('R4: modo local ignora MEDIA_BUCKET_NAME', () => {
+  const cases = [
+    {
+      label: 'sin variable ni NODE_ENV',
+      values: { AWS_MODE: 'local' },
+      expectedBucket: 'pet-tracker-media-local',
+    },
+    {
+      label: 'con variable y sin NODE_ENV',
+      values: {
+        AWS_MODE: 'development',
+        MEDIA_BUCKET_NAME: REAL_MEDIA_BUCKET,
+      },
+      expectedBucket: 'pet-tracker-media-local',
+    },
+    {
+      label: 'sin variable y con NODE_ENV=test',
+      values: { AWS_MODE: 'local', NODE_ENV: 'test' },
+      expectedBucket: 'pet-tracker-media-local-test',
+    },
+    {
+      label: 'con variable y con NODE_ENV=test',
+      values: {
+        NODE_ENV: 'test',
+        MEDIA_BUCKET_NAME: REAL_MEDIA_BUCKET,
+      },
+      expectedBucket: 'pet-tracker-media-local-test',
+    },
+  ];
+
+  it.each(cases)(
+    'resuelve el bucket local desde process.env: $label',
+    ({ values, expectedBucket }) => {
+      expect(resolveResourceNamesFromEnv(values).mediaBucket).toBe(
+        expectedBucket,
+      );
+    },
+  );
+
+  it.each(cases)(
+    'resuelve el bucket local desde ConfigService: $label',
+    ({ values, expectedBucket }) => {
+      expect(
+        resolveResourceNamesFromConfigService(buildConfigService(values))
+          .mediaBucket,
+      ).toBe(expectedBucket);
+    },
+  );
+
+  it('no consulta MEDIA_BUCKET_NAME mediante ConfigService en modo local', () => {
+    const get = jest.fn((key: string) => {
+      if (key === 'MEDIA_BUCKET_NAME') {
+        throw new Error('MEDIA_BUCKET_NAME no debe leerse en modo local');
+      }
+      return key === 'AWS_MODE' ? 'local' : undefined;
+    });
+
+    expect(() =>
+      resolveResourceNamesFromConfigService({ get } as unknown as ConfigService),
+    ).not.toThrow();
+    expect(get).not.toHaveBeenCalledWith('MEDIA_BUCKET_NAME');
+  });
+
+  it('documenta el override de AWS como ejemplo comentado sin crear deriva', () => {
+    const envExample = readFileSync(
+      join(__dirname, '..', '..', '..', '.env.example'),
+      'utf8',
+    );
+
+    expect(envExample).toContain(
+      '# MEDIA_BUCKET_NAME=pet-tracker-media-dev-<accountId>',
+    );
+    expect(envExample).not.toMatch(/^MEDIA_BUCKET_NAME=/mu);
   });
 });
