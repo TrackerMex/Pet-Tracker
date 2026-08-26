@@ -5,38 +5,34 @@
 
 ---
 
-## Dos sesiones colisionaron sobre este working tree (2026-08-25)
+## Sesión 2026-08-26 (leader = sesión Backend)
 
-Dos sesiones de Claude escribieron en paralelo; ambas specs existen y son
-válidas en disco. Este archivo consolida las dos — no borrar ninguna entrada.
+### Feature #43 `mobile-theme-transition` — in_progress (implementa sesión "Frontend app")
 
-### Feature #49 `media-docs-api` (sesión A)
+- Gate humano cerrado (commit 3cd9947 en `feature/43-mobile-theme-transition`):
+  spec aprobada 2026-08-26; decisión de verificación = correr la app en
+  Android local (flujo Android Studio vigente desde 2026-08-25), sustituye
+  al camino EAS cloud de la spec.
+- Por indicación del humano, la implementación la ejecuta la sesión Claude
+  "Frontend app" (no Codex CLI), en worktree/checkout propio. Handoff
+  enviado por mensaje entre sesiones; a Frontend le tocan R1–R5, R6 lo
+  cierra el humano en Android. Resultado esperado en
+  `progress/impl_mobile-theme-transition.md` en la branch.
+- Pendiente al terminar: lanzar `reviewer`.
 
-- Branch: `feature/49-media-docs-api` (desde main c9c8acd)
-- Estado: **done**. Spec aprobada (338c035), implementación Codex CLI
-  (11 commits test-primero hasta efe585e), review APROBADO
-  (`progress/review_media-docs-api.md`, C2–C7). PR abierto — pendiente
-  solo merge del humano; con el merge se desbloquea el smoke Docs de #40.
-- Feature #51 `media-bucket-aws-mode` registrada (a41e43a): bucket real
-  en AWS_MODE=aws, detectada durante el gate de #49.
+### Feature #51 `media-bucket-aws-mode` — spec en preparación (implementará Codex CLI)
 
-### Feature #43 `mobile-theme-transition` (sesión B, esta)
+- P2, detectada en el gate de #49: en AWS_MODE=aws mediaBucket resuelve a
+  `pet-tracker-media-local` (bucket inexistente); el real del stack CDK es
+  `pet-tracker-media-dev-<accountId>`.
+- Spec EARS escrita (R1–R5, commit 5f38a87) en branch
+  `feature/51-media-bucket-aws-mode`; #51 → spec_ready. Pendiente: gate humano
+  (aprobación por commit), luego handoff a Codex CLI.
 
-- Estado: spec completa; #43 → `spec_ready`. Branch
-  `feature/43-mobile-theme-transition` (998d8ab, desde main c9c8acd) pushed
-  con la spec — se creó vía worktree temporal para no tocar el checkout de
-  #49 mientras Codex implementa. La copia untracked de
-  `specs/mobile-theme-transition/` en este working tree se retiró (vive en
-  la branch). Pendiente: gate humano (casilla en requirements.md con commit
-  del humano en esa branch).
-- La spec deja al gate la decisión de verificación: nitro-theme-transition
-  es código nativo y no corre en Expo Go (smoke del humano) — opciones
-  (a) dev build vía EAS cloud, (b) descartar y conservar toggle sin fade de #40.
+### Contexto
 
-### Nota de conflicto
-
-- A las ~18:45 esta sesión vio `specs/media-docs-api/` vacío y lo anotó como
-  spec no escrita; la sesión A la escribió a las 18:46. Ambas anotaciones
-  previas en este archivo fueron parciales, no falsas.
-- Regla "un solo escritor sobre el working tree" (CLAUDE.md) violada: cerrar
-  una de las dos sesiones antes de seguir, o usar `git worktree`.
+- PR #78 (#49 media-docs-api) mergeado por el humano → main c3ec70c.
+  Cierre archivado en `progress/history.md`.
+- Dos features en vuelo por decisión del humano (excepción a §6.3 de
+  AGENTS.md): #43 con Frontend (mobile) y #51 con Codex (backend) — árboles
+  de trabajo separados, sin solape de archivos.

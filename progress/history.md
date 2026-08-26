@@ -1882,3 +1882,17 @@ Notas de la sesión que no están en la spec:
 - PR #75 mergeado por humano; #50 → done en `feature_list.json`.
 - Lección: el commit humano de aprobación puede marcar solo la casilla —
   verificar también el frontmatter antes del handoff.
+
+## 2026-08-26 — Feature #49 media-docs-api (cerrada)
+
+- Spec aprobada (338c035), implementación Codex CLI (11 commits
+  test-primero hasta efe585e), review APROBADO
+  (`progress/review_media-docs-api.md`, C2–C7). PR #78 mergeado por el
+  humano (c3ec70c); #49 done. Desbloquea el smoke Docs de #40.
+- Durante el gate se detectó y registró #51 `media-bucket-aws-mode`
+  (P2, a41e43a): en AWS_MODE=aws mediaBucket resuelve a un bucket
+  inexistente.
+- Incidente 2026-08-25: dos sesiones colisionaron sobre el working tree
+  (spec de #49 y spec de #43 escritas en paralelo). Ambas specs válidas;
+  regla "un solo escritor" reforzada — sesiones paralelas via worktree o
+  checkout propio.
