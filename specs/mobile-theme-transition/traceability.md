@@ -8,12 +8,12 @@ tags: [harness, spec]
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | pendiente (previsto: `src/theme/__tests__/theme-transition.test.tsx`) | pendiente |
-| R2 | pendiente (previsto: `src/screens/profile/index.test.tsx`) | pendiente |
-| R3 | pendiente (previsto: `src/theme/__tests__/theme-transition.test.tsx`) | pendiente |
-| R4 | pendiente (previsto: `src/theme/__tests__/theme-transition.test.tsx` + smoke humano Expo Go) | pendiente |
-| R5 | pendiente (previsto: `./init.sh` verde con deps nitro) | pendiente |
-| R6 | **verificación humana, sin test** — dev build EAS en Android físico + decisión registrada en [[requirements]] §Decisión del gate humano | pendiente (la cierra el humano) |
+| R1 | `src/theme/__tests__/theme-transition.test.tsx::R1: fade nativo en el toggle` | `a92ea6b` rojo → `3b915a2` verde (renderHook de RNTL 14 es async; await corregido en el verde) |
+| R2 | `src/screens/profile/index.test.tsx::R2: el toggle dispara el fade vía withThemeTransition` (dentro del describe `R4: toggle persiste` de #40); aserciones existentes de #40 intactas (19/19); smoke de rutas `src/app/(tabs)/__tests__/screens.test.tsx` con mock degradado | `78286d4` rojo → `6f3ec62` verde; `0735838` mock degradado en smoke de rutas (screens.test.tsx monta el ProfileScreen real vía la route — el design solo preveía index.test.tsx) |
+| R3 | `src/theme/__tests__/theme-transition.test.tsx::R3: reduced motion salta la animación` | `96d53ca` rojo → `95f3e28` verde |
+| R4 | `src/theme/__tests__/theme-transition.test.tsx::R4: degradación sin módulo nativo` (2 casos: camino fade y camino reduced motion) + smoke humano Expo Go pendiente del gate | `4113e8f` rojo → `eccf899` verde |
+| R5 | `src/theme/__tests__/theme-transition.test.tsx::R5: THEME_FADE options` + `./init.sh` completo verde con deps nitro (2026-08-26: 538/538 jest móvil, e2e 327 passed/6 skipped, lint, typecheck) | `478766b` rojo → `d08b7b9` verde |
+| R6 | **verificación humana, sin test** — dev build en Android + decisión registrada en [[requirements]] §Decisión del gate humano | pendiente (la cierra el humano) |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente". R6 solo puede
 cerrarla el humano (fade en dev build + decisión mantener/descartar); si la
