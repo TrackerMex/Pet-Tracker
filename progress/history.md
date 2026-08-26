@@ -1896,3 +1896,19 @@ Notas de la sesión que no están en la spec:
   (spec de #49 y spec de #43 escritas en paralelo). Ambas specs válidas;
   regla "un solo escritor" reforzada — sesiones paralelas via worktree o
   checkout propio.
+
+## 2026-08-26 — Feature #43 mobile-theme-transition (cerrada)
+
+- Implementó la sesión Claude "Frontend app" (excepción a Codex, orden del
+  humano), TDD R1–R5. Review APROBADO + 2 re-reviews por fixes post-review
+  hallados por el humano en Expo Go: (1) import top-level de nitro-modules
+  lanzaba sin módulo nativo (require perezoso, 4962ea8); (2) Metro reporta
+  el throw vía ErrorUtils aunque se capture (sonda hasNitroModules() con
+  TurboModuleRegistry.get antes de evaluar el paquete, 6299aef).
+- R6 cerrado por humano (434e104): MANTENER; observación registrada — la
+  animación no luce como el prototipo de la librería (posible polish futuro).
+- PR #80 mergeado; #43 done vía PR #82 (junto a sync de STATUS.md).
+- Lecciones: (a) jest con mocks enmascara fallos de evaluación de módulos
+  nativos — dejar un test sin mock del paquete vigilando la no-evaluación;
+  (b) el frontmatter de la spec vuelve a quedarse en draft tras el gate
+  (2ª vez, ver #50) — verificarlo al cerrar el gate, no en el review.
