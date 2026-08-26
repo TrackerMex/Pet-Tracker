@@ -4,7 +4,7 @@ import { Button, Skeleton } from 'heroui-native';
 import { useCallback, useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Uniwind, useUniwind } from 'uniwind';
+import { useUniwind } from 'uniwind';
 
 import {
   requestPhotoUploadUrl,
@@ -21,7 +21,7 @@ import { useApi } from '../../hooks/use-api';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
-import { setStoredTheme } from '../../utils/theme-preference';
+import { useThemeTransition } from '../../theme/theme-transition';
 
 function InfoRow({ label, value }: { label: string; value: string | null }) {
   return (
@@ -83,6 +83,7 @@ export function ProfileScreen() {
   const { signOut, token } = useAuth();
   const { selectedPetId, selectPet } = useSelectedPet();
   const { theme } = useUniwind();
+  const switchTheme = useThemeTransition();
   const insets = useSafeAreaInsets();
   const [photoUploading, setPhotoUploading] = useState(false);
   const [photoError, setPhotoError] = useState<string | null>(null);
@@ -318,11 +319,7 @@ export function ProfileScreen() {
           testID="theme-toggle"
           className="mt-2 rounded-xl bg-default"
           variant="secondary"
-          onPress={() => {
-            const nextTheme = theme === 'dark' ? 'light' : 'dark';
-            Uniwind.setTheme(nextTheme);
-            void setStoredTheme(nextTheme);
-          }}
+          onPress={() => switchTheme(theme === 'dark' ? 'light' : 'dark')}
         >
           <Button.Label className="font-semibold text-foreground">
             {theme === 'dark' ? 'Use light theme' : 'Use dark theme'}
