@@ -99,22 +99,31 @@ describe('R3: AWS_MODE=aws fuerza sufijo vacio', () => {
 
   it('resuelve nombres desnudos desde process.env', () => {
     expect(
-      resolveResourceNamesFromEnv({ AWS_MODE: 'aws', NODE_ENV: 'test' }),
-    ).toEqual(developmentNames);
+      resolveResourceNamesFromEnv({
+        AWS_MODE: 'aws',
+        NODE_ENV: 'test',
+        MEDIA_BUCKET_NAME: 'pet-tracker-media-dev-123456789012',
+      }),
+    ).toEqual({
+      ...developmentNames,
+      mediaBucket: 'pet-tracker-media-dev-123456789012',
+    });
   });
 
   it('resuelve nombres desnudos desde ConfigService', () => {
     const values: Record<string, string> = {
       AWS_MODE: 'aws',
       NODE_ENV: 'test',
+      MEDIA_BUCKET_NAME: 'pet-tracker-media-dev-123456789012',
     };
     const config = {
       get: (key: string) => values[key],
     } as ConfigService;
 
-    expect(resolveResourceNamesFromConfigService(config)).toEqual(
-      developmentNames,
-    );
+    expect(resolveResourceNamesFromConfigService(config)).toEqual({
+      ...developmentNames,
+      mediaBucket: 'pet-tracker-media-dev-123456789012',
+    });
   });
 });
 

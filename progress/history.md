@@ -1912,3 +1912,18 @@ Notas de la sesión que no están en la spec:
   nativos — dejar un test sin mock del paquete vigilando la no-evaluación;
   (b) el frontmatter de la spec vuelve a quedarse en draft tras el gate
   (2ª vez, ver #50) — verificarlo al cerrar el gate, no en el review.
+
+## 2026-08-27 — Feature #51 media-bucket-aws-mode (cerrada)
+
+- Implementación Codex CLI (TDD R1–R5, 61c1c66..926d7c6), review APROBADO
+  condicionado (aa2fa2b). Smoke real R5 ejecutado por el humano el
+  2026-08-27 (casilla 2971bff, fechada 2026-08-26 por error menor de
+  registro): suite gated 2/2 verdes contra el bucket real, flujo HTTP
+  completo con SMOKE OK (bytes idénticos), y foto visible en la app móvil
+  contra S3 real.
+- Incidencias del smoke (Windows): `export`/continuaciones `\` no existen
+  en PowerShell (bloques bash → Git Bash); jq no instalado; sesión de
+  `aws login` caduca (~30 min) — renovar y reiniciar backend si la prueba
+  se alarga.
+- Cierre vía PR #81 (#51 → done en la propia branch tras resolver
+  conflictos con main).
