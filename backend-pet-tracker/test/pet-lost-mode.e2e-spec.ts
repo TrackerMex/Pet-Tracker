@@ -26,6 +26,32 @@ function profileBody(response: Response): PetProfileBody {
 
 describe('Pet lost mode (e2e)', () => {
   const runId = Date.now();
+  const profileKeys = [
+    'id',
+    'name',
+    'species',
+    'breed',
+    'sex',
+    'birthDate',
+    'approxAgeMonths',
+    'ageMonths',
+    'currentWeightKg',
+    'size',
+    'color',
+    'sterilized',
+    'microchip',
+    'photoUrl',
+    'lostMode',
+    'lastPosition',
+    'lastCommunicationAt',
+    'myRole',
+    'device',
+    'nextVaccine',
+    'nextReminder',
+    'activitySummary',
+    'createdAt',
+    'updatedAt',
+  ].sort();
   let app: INestApplication<App>;
   let db: NodePgDatabase;
   let tokens: TokenService;
@@ -314,6 +340,61 @@ describe('Pet lost mode (e2e)', () => {
         .from(pets)
         .where(eq(pets.id, patchPet.id));
       expect(rows[0].lostMode).toBe(false);
+    });
+  });
+
+  describe('R4: el perfil refleja lost mode en detalle y lista', () => {
+    it('shows each toggle to another active role without changing profile keys', async () => {
+      const owner = await seedUser('r4-owner');
+      const family = await seedUser('r4-family');
+      const pet = await seedPet(owner);
+      await seedMembership(pet.id, family.id, 'family');
+
+      await api()
+        .post(`/v1/pets/${pet.id}/lost-mode`)
+        .set(auth(owner.token))
+        .send({ enabled: true })
+        .expect(200);
+
+      const enabledDetail = await api()
+        .get(`/v1/pets/${pet.id}`)
+        .set(auth(family.token))
+        .expect(200);
+      expect(Object.keys(enabledDetail.body as object).sort()).toEqual(
+        profileKeys,
+      );
+      expect(profileBody(enabledDetail)).toEqual(
+        expect.objectContaining({ lostMode: true, myRole: 'family' }),
+      );
+
+      const enabledList = await api()
+        .get('/v1/pets')
+        .set(auth(family.token))
+        .expect(200);
+      const enabledItems = enabledList.body as PetProfileBody[];
+      expect(enabledItems).toHaveLength(1);
+      expect(Object.keys(enabledItems[0] as object).sort()).toEqual(profileKeys);
+      expect(enabledItems[0]).toEqual(
+        expect.objectContaining({ id: pet.id, lostMode: true, myRole: 'family' }),
+      );
+
+      await api()
+        .post(`/v1/pets/${pet.id}/lost-mode`)
+        .set(auth(owner.token))
+        .send({ enabled: false })
+        .expect(200);
+
+      const disabledDetail = await api()
+        .get(`/v1/pets/${pet.id}`)
+        .set(auth(family.token))
+        .expect(200);
+      expect(profileBody(disabledDetail).lostMode).toBe(false);
+
+      const disabledList = await api()
+        .get('/v1/pets')
+        .set(auth(family.token))
+        .expect(200);
+      expect((disabledList.body as PetProfileBody[])[0].lostMode).toBe(false);
     });
   });
 });
