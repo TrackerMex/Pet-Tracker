@@ -8,7 +8,12 @@ import {
 import { HeroUINativeProvider } from 'heroui-native';
 import { useEffect, type ReactNode } from 'react';
 
-import { listPets, type PetsState } from '../../../api/pets';
+import {
+  listPets,
+  setLostMode,
+  type PetsState,
+  type SetLostModeState,
+} from '../../../api/pets';
 import {
   getLastPosition,
   listPositions,
@@ -34,6 +39,7 @@ let mockTheme: 'light' | 'dark' = 'light';
 
 jest.mock('../../../api/pets', () => ({
   listPets: jest.fn(),
+  setLostMode: jest.fn(),
 }));
 
 jest.mock('../../../api/positions', () => ({
@@ -86,6 +92,7 @@ const apiUrl = 'http://example.test/v1';
 const mockGetDayRoute = jest.mocked(getDayRoute);
 const mockGetLastPosition = jest.mocked(getLastPosition);
 const mockListPets = jest.mocked(listPets);
+const mockSetLostMode = jest.mocked(setLostMode);
 const mockListPositions = jest.mocked(listPositions);
 const mockUseAuth = jest.mocked(useAuth);
 let initialSelectedPetId: string | null = null;
@@ -681,9 +688,8 @@ describe('R9: polling con foco', () => {
   });
 });
 
-describe('R10: lost mode es stub deshabilitado', () => {
-  it('shows the coming-soon action without enabling interaction', async () => {
-    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+describe('R6: owner toglea lost mode contra el endpoint', () => {
+  beforeEach(() => {
     mockGetLastPosition.mockResolvedValue({
       kind: 'ok',
       position: makeLastPosition(),
@@ -698,18 +704,74 @@ describe('R10: lost mode es stub deshabilitado', () => {
       date: '2026-08-21',
       trips: [],
     });
+  });
+
+  it.each([
+    [false, 'Activate Lost Mode'],
+    [true, 'Deactivate Lost Mode'],
+  ])('shows the owner action for lostMode=%s', async (lostMode, label) => {
+    mockListPets.mockResolvedValue({
+      kind: 'ok',
+      pets: [makePet({ lostMode })],
+    });
 
     await renderMap();
 
     await waitFor(() => {
       expect(screen.getByTestId('lost-mode-button')).toBeVisible();
     });
-    expect(screen.getByTestId('lost-mode-button')).toHaveTextContent(
-      'Activate Lost Mode',
+    expect(screen.getByTestId('lost-mode-button')).toHaveTextContent(label);
+    expect(
+      screen.getByTestId('lost-mode-button').props.accessibilityState,
+    ).toEqual(expect.objectContaining({ disabled: false }));
+    expect(screen.queryByText('Coming soon')).toBeNull();
+  });
+
+  it('posts the inverse, disables in flight, and refetches the new label', async () => {
+    mockListPets
+      .mockResolvedValueOnce({ kind: 'ok', pets: [makePet()] })
+      .mockResolvedValue({
+        kind: 'ok',
+        pets: [makePet({ lostMode: true })],
+      });
+    let resolveToggle!: (state: SetLostModeState) => void;
+    mockSetLostMode.mockReturnValue(
+      new Promise<SetLostModeState>((resolve) => {
+        resolveToggle = resolve;
+      }),
     );
+
+    await renderMap();
+    await waitFor(() =>
+      expect(screen.getByTestId('lost-mode-button')).toHaveTextContent(
+        'Activate Lost Mode',
+      ),
+    );
+
+    fireEvent.press(screen.getByTestId('lost-mode-button'));
+
+    await waitFor(() => {
+      expect(mockSetLostMode).toHaveBeenCalledWith(
+        apiUrl,
+        'jwt-token',
+        'pet-1',
+        true,
+      );
+    });
     expect(
       screen.getByTestId('lost-mode-button').props.accessibilityState,
     ).toEqual(expect.objectContaining({ disabled: true }));
-    expect(screen.getByText('Coming soon')).toBeVisible();
+
+    await act(async () => {
+      resolveToggle({ kind: 'ok', pet: makePet({ lostMode: true }) });
+      await Promise.resolve();
+    });
+
+    await waitFor(() =>
+      expect(screen.getByTestId('lost-mode-button')).toHaveTextContent(
+        'Deactivate Lost Mode',
+      ),
+    );
+    expect(mockListPets.mock.calls.length).toBeGreaterThanOrEqual(2);
   });
 });
