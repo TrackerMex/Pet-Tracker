@@ -25,6 +25,10 @@ import {
   UpdatePetDto,
   UpdatePetSchema,
 } from '@/modules/pets/application/dto/update-pet.dto';
+import {
+  SetLostModeDto,
+  SetLostModeSchema,
+} from '@/modules/pets/application/dto/set-lost-mode.dto';
 import { CreatePetUseCase } from '@/modules/pets/application/use-cases/create-pet.use-case';
 import { DeletePetUseCase } from '@/modules/pets/application/use-cases/delete-pet.use-case';
 import { GetPetUseCase } from '@/modules/pets/application/use-cases/get-pet.use-case';
@@ -128,13 +132,14 @@ export class PetsController {
   @RequirePetRole('owner')
   async updateLostMode(
     @Req() request: PetAccessRequest,
-    @Body() body: { enabled: boolean },
+    @Body() body: unknown,
   ): Promise<PetProfileResponse> {
+    const dto = parseBody<SetLostModeDto>(SetLostModeSchema, body);
     const { petId, role } = request.petMembership;
 
     try {
       return toPetProfileResponse(
-        await this.setLostMode.execute(petId, request.user.id, body.enabled),
+        await this.setLostMode.execute(petId, request.user.id, dto.enabled),
         role,
       );
     } catch (error) {
