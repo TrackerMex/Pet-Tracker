@@ -61,7 +61,7 @@ export interface PetProfile {
   lostMode: boolean;
   lastPosition: unknown;
   lastCommunicationAt: string | null;
-  myRole: 'owner' | 'caregiver' | 'viewer';
+  myRole: 'owner' | 'family' | 'walker' | 'vet';
   device: DeviceStatus | null;
   nextVaccine: unknown;
   nextReminder: unknown;

@@ -1,12 +1,12 @@
 import { Button, Skeleton } from 'heroui-native';
 import { useFocusEffect } from 'expo-router';
 import MapView, { Marker, Polyline } from 'react-native-maps';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUniwind } from 'uniwind';
 
-import { listPets, type PetsState } from '../../api/pets';
+import { listPets, setLostMode, type PetsState } from '../../api/pets';
 import { getLastPosition, listPositions } from '../../api/positions';
 import { getDayRoute } from '../../api/trips';
 import { Card } from '../../components/card';
@@ -55,6 +55,7 @@ export default function MapScreen() {
   );
   const pets = useApi(petsFn);
   usePetSelection(pets);
+  const [lostModeBusy, setLostModeBusy] = useState(false);
   const lastFn = useMemo(
     () =>
       selectedPetId
@@ -83,6 +84,28 @@ export default function MapScreen() {
   const refetchPositions = positions.refetch;
   const refetchRoute = route.refetch;
   const lastKind = last.data?.kind;
+  const selectedPet =
+    pets.data?.kind === 'ok'
+      ? pets.data.pets.find(({ id }) => id === selectedPetId)
+      : undefined;
+  const canSetLostMode = selectedPet?.myRole === 'owner';
+  const refetchPets = pets.refetch;
+  const handleLostMode = useCallback(async () => {
+    if (!selectedPet || selectedPet.myRole !== 'owner' || lostModeBusy) return;
+
+    setLostModeBusy(true);
+    try {
+      const result = await setLostMode(
+        baseUrl,
+        token ?? '',
+        selectedPet.id,
+        !selectedPet.lostMode,
+      );
+      if (result.kind === 'ok') refetchPets();
+    } finally {
+      setLostModeBusy(false);
+    }
+  }, [baseUrl, lostModeBusy, refetchPets, selectedPet, token]);
 
   useFocusEffect(
     useCallback(() => {
@@ -274,18 +297,20 @@ export default function MapScreen() {
             </Card>
             <Button
               testID="lost-mode-button"
-              isDisabled
+              isDisabled={!canSetLostMode || lostModeBusy}
+              onPress={handleLostMode}
               variant="danger-soft"
-              accessibilityState={{ disabled: true }}
+              accessibilityState={{
+                disabled: !canSetLostMode || lostModeBusy,
+              }}
               className="rounded-xl border border-danger/20 bg-danger-soft"
             >
               <Button.Label className="font-bold text-danger">
-                Activate Lost Mode
+                {selectedPet?.lostMode
+                  ? 'Deactivate Lost Mode'
+                  : 'Activate Lost Mode'}
               </Button.Label>
             </Button>
-            <Text className="text-center text-xs font-normal text-muted">
-              Coming soon
-            </Text>
           </View>
         </>
       ) : null}
