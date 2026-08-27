@@ -36,7 +36,7 @@ status: implementation_complete_human_smoke_pending
 | R1 | `b9a4ac7` | `aeed8dc` |
 | R2 | `739c582` | `b8e0cd7` |
 | R3 | `8a19603` | `e3c64a7` |
-| R4 | `bda3b38` | `d0299ce` |
+| R4 | `bda3b38` | `aeed8dc` (implementación de R1; `d0299ce` es commit vacío de verificación) |
 | R5 | `566633a` | `e79f234` |
 | R6 | `81fc2df` | `322c48d` |
 | R7 | `f8f17f7` | `75835d8` |
