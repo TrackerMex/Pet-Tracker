@@ -193,4 +193,4 @@ tags: [harness, spec, backend]
 ## Aprobación
 
 - [X] Aprobado por humano (fecha: 2026-08-26) ← gate obligatorio antes de implementar
-- [ ] R5 smoke real ejecutado por humano (fecha: ____) ← gate obligatorio antes de `done`
+- [X] R5 smoke real ejecutado por humano (fecha: 2026-08-26) ← gate obligatorio antes de `done`
