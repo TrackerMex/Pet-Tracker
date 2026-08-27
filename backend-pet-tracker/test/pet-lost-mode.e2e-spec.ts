@@ -248,4 +248,72 @@ describe('Pet lost mode (e2e)', () => {
         .expect(401);
     });
   });
+
+  describe('R3: body invalido es 400 y PATCH no toca lostMode', () => {
+    it('rejects every non-boolean enabled without persistence or audit', async () => {
+      const owner = await seedUser('r3-invalid-owner');
+      const pet = await seedPet(owner);
+
+      for (const body of [
+        {},
+        { enabled: 'true' },
+        { enabled: null },
+        { enabled: 1 },
+      ]) {
+        const response = await api()
+          .post(`/v1/pets/${pet.id}/lost-mode`)
+          .set(auth(owner.token))
+          .send(body)
+          .expect(400);
+        expect(response.body).toEqual(
+          expect.objectContaining({
+            statusCode: 400,
+            message: 'Validation failed',
+          }),
+        );
+      }
+
+      const rows = await db
+        .select()
+        .from(pets)
+        .where(eq(pets.id, pet.id));
+      expect(rows[0].lostMode).toBe(false);
+      const audits = await db
+        .select()
+        .from(auditLog)
+        .where(
+          and(
+            eq(auditLog.action, 'pet.lost_mode'),
+            eq(auditLog.entityId, pet.id),
+          ),
+        );
+      expect(audits).toHaveLength(0);
+    });
+
+    it('strips extra POST keys and leaves PATCH lostMode read-only', async () => {
+      const owner = await seedUser('r3-strip-owner');
+      const postPet = await seedPet(owner);
+
+      const toggled = await api()
+        .post(`/v1/pets/${postPet.id}/lost-mode`)
+        .set(auth(owner.token))
+        .send({ enabled: true, ignored: 'value' })
+        .expect(200);
+      expect(profileBody(toggled).lostMode).toBe(true);
+
+      const patchPet = await seedPet(owner);
+      const patched = await api()
+        .patch(`/v1/pets/${patchPet.id}`)
+        .set(auth(owner.token))
+        .send({ lostMode: true })
+        .expect(200);
+      expect(profileBody(patched).lostMode).toBe(false);
+
+      const rows = await db
+        .select()
+        .from(pets)
+        .where(eq(pets.id, patchPet.id));
+      expect(rows[0].lostMode).toBe(false);
+    });
+  });
 });
