@@ -220,5 +220,5 @@ tags: [harness, spec, backend, mobile]
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [X] Aprobado por humano (fecha: 2026-08-26) ← gate obligatorio antes de implementar
 - [ ] R9 smoke en Expo Go ejecutado por humano (fecha: ____) ← gate obligatorio antes de `done`
