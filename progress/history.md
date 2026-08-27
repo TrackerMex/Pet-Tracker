@@ -1882,3 +1882,48 @@ Notas de la sesión que no están en la spec:
 - PR #75 mergeado por humano; #50 → done en `feature_list.json`.
 - Lección: el commit humano de aprobación puede marcar solo la casilla —
   verificar también el frontmatter antes del handoff.
+
+## 2026-08-26 — Feature #49 media-docs-api (cerrada)
+
+- Spec aprobada (338c035), implementación Codex CLI (11 commits
+  test-primero hasta efe585e), review APROBADO
+  (`progress/review_media-docs-api.md`, C2–C7). PR #78 mergeado por el
+  humano (c3ec70c); #49 done. Desbloquea el smoke Docs de #40.
+- Durante el gate se detectó y registró #51 `media-bucket-aws-mode`
+  (P2, a41e43a): en AWS_MODE=aws mediaBucket resuelve a un bucket
+  inexistente.
+- Incidente 2026-08-25: dos sesiones colisionaron sobre el working tree
+  (spec de #49 y spec de #43 escritas en paralelo). Ambas specs válidas;
+  regla "un solo escritor" reforzada — sesiones paralelas via worktree o
+  checkout propio.
+
+## 2026-08-26 — Feature #43 mobile-theme-transition (cerrada)
+
+- Implementó la sesión Claude "Frontend app" (excepción a Codex, orden del
+  humano), TDD R1–R5. Review APROBADO + 2 re-reviews por fixes post-review
+  hallados por el humano en Expo Go: (1) import top-level de nitro-modules
+  lanzaba sin módulo nativo (require perezoso, 4962ea8); (2) Metro reporta
+  el throw vía ErrorUtils aunque se capture (sonda hasNitroModules() con
+  TurboModuleRegistry.get antes de evaluar el paquete, 6299aef).
+- R6 cerrado por humano (434e104): MANTENER; observación registrada — la
+  animación no luce como el prototipo de la librería (posible polish futuro).
+- PR #80 mergeado; #43 done vía PR #82 (junto a sync de STATUS.md).
+- Lecciones: (a) jest con mocks enmascara fallos de evaluación de módulos
+  nativos — dejar un test sin mock del paquete vigilando la no-evaluación;
+  (b) el frontmatter de la spec vuelve a quedarse en draft tras el gate
+  (2ª vez, ver #50) — verificarlo al cerrar el gate, no en el review.
+
+## 2026-08-27 — Feature #51 media-bucket-aws-mode (cerrada)
+
+- Implementación Codex CLI (TDD R1–R5, 61c1c66..926d7c6), review APROBADO
+  condicionado (aa2fa2b). Smoke real R5 ejecutado por el humano el
+  2026-08-27 (casilla 2971bff, fechada 2026-08-26 por error menor de
+  registro): suite gated 2/2 verdes contra el bucket real, flujo HTTP
+  completo con SMOKE OK (bytes idénticos), y foto visible en la app móvil
+  contra S3 real.
+- Incidencias del smoke (Windows): `export`/continuaciones `\` no existen
+  en PowerShell (bloques bash → Git Bash); jq no instalado; sesión de
+  `aws login` caduca (~30 min) — renovar y reiniciar backend si la prueba
+  se alarga.
+- Cierre vía PR #81 (#51 → done en la propia branch tras resolver
+  conflictos con main).

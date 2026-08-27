@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-08-25
-**Features completadas**: 43/50 (`feature_list.json`)
+**Última actualización**: 2026-08-27
+**Features completadas**: 46/51 (`feature_list.json`)
 **En progreso**: ninguna
 
-**Pendientes**: 7 (#18, #41, #42, #43, #44, #45, #49). Fuente del diseño Figma versionada en
+**Pendientes**: 5 (#18, #41, #42, #44, #45). Fuente del diseño Figma versionada en
 `specs/mobile-figma-polish/design-src/`.
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
