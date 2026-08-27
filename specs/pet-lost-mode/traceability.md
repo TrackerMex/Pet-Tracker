@@ -12,7 +12,7 @@ tags: [harness, spec, backend, mobile]
 | R2 | `test/pet-lost-mode.e2e-spec.ts::R2: solo el owner puede togglear lost mode` | `b8e0cd7 feat(pet-lost-mode): restrict toggles to owners (R2)` |
 | R3 | `src/modules/pets/application/dto/set-lost-mode.dto.spec.ts::R3: SetLostModeSchema valida enabled`; `test/pet-lost-mode.e2e-spec.ts::R3: body invalido es 400 y PATCH no toca lostMode` | `e3c64a7 feat(pet-lost-mode): validate dedicated toggle input (R3)` |
 | R4 | `test/pet-lost-mode.e2e-spec.ts::R4: el perfil refleja lost mode en detalle y lista` | `d0299ce test(pet-lost-mode): verify profile visibility (R4)` |
-| R5 | pendiente | pendiente |
+| R5 | `src/api/__tests__/pets.test.ts::R5: setLostMode contra el endpoint real` | `e79f234 feat(pet-lost-mode): add mobile toggle client (R5)` |
 | R6 | pendiente | pendiente |
 | R7 | pendiente | pendiente |
 | R8 | pendiente (verificación de comandos, sin test propio) | pendiente |
