@@ -5,34 +5,20 @@
 
 ---
 
-## Sesión 2026-08-26 (leader = sesión Backend)
+## Sesión 2026-08-26 (leader = sesión Backend) — en espera del humano
 
-### Feature #43 `mobile-theme-transition` — in_progress (implementa sesión "Frontend app")
+### Feature #51 `media-bucket-aws-mode` — in_progress (solo gates humanos)
 
-- Gate humano cerrado (commit 3cd9947 en `feature/43-mobile-theme-transition`):
-  spec aprobada 2026-08-26; decisión de verificación = correr la app en
-  Android local (flujo Android Studio vigente desde 2026-08-25), sustituye
-  al camino EAS cloud de la spec.
-- Por indicación del humano, la implementación la ejecuta la sesión Claude
-  "Frontend app" (no Codex CLI), en worktree/checkout propio. Handoff
-  enviado por mensaje entre sesiones; a Frontend le tocan R1–R5, R6 lo
-  cierra el humano en Android. Resultado esperado en
-  `progress/impl_mobile-theme-transition.md` en la branch.
-- Pendiente al terminar: lanzar `reviewer`.
+- Implementación Codex CLI completa (TDD R1–R5, 61c1c66..926d7c6) y review
+  APROBADO condicionado (`progress/review_media-bucket-aws-mode.md`, aa2fa2b).
+- PR #81 abierto. Pendiente SOLO humano: smoke real R5 de media
+  (`docs/verification.md` §Feature 51 — MEDIA_BUCKET_NAME, POST
+  photo-upload-url + PUT + GET contra la cuenta real), registrar en
+  `progress/impl_media-bucket-aws-mode.md` + segunda casilla de
+  requirements.md, y merge. Tras el merge: #51 → done y cierre de sesión.
+- El humano indicó (2026-08-26) que lo revisará con calma más tarde.
 
-### Feature #51 `media-bucket-aws-mode` — spec en preparación (implementará Codex CLI)
+### Cerradas hoy
 
-- P2, detectada en el gate de #49: en AWS_MODE=aws mediaBucket resuelve a
-  `pet-tracker-media-local` (bucket inexistente); el real del stack CDK es
-  `pet-tracker-media-dev-<accountId>`.
-- Spec EARS escrita (R1–R5, commit 5f38a87) en branch
-  `feature/51-media-bucket-aws-mode`; #51 → spec_ready. Pendiente: gate humano
-  (aprobación por commit), luego handoff a Codex CLI.
-
-### Contexto
-
-- PR #78 (#49 media-docs-api) mergeado por el humano → main c3ec70c.
-  Cierre archivado en `progress/history.md`.
-- Dos features en vuelo por decisión del humano (excepción a §6.3 de
-  AGENTS.md): #43 con Frontend (mobile) y #51 con Codex (backend) — árboles
-  de trabajo separados, sin solape de archivos.
+- #43 mobile-theme-transition (PRs #80/#82) y #49 media-docs-api (PR #78) —
+  detalle en progress/history.md.
