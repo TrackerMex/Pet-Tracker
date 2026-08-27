@@ -11,7 +11,7 @@ tags: [harness, spec, backend, mobile]
 | R1 | `src/modules/pets/application/use-cases/set-lost-mode.use-case.spec.ts::R1: set lost mode persiste y audita`; `test/pet-lost-mode.e2e-spec.ts::R1: owner activa y desactiva lost mode` | `aeed8dc feat(pet-lost-mode): persist and audit owner toggles (R1)` |
 | R2 | `test/pet-lost-mode.e2e-spec.ts::R2: solo el owner puede togglear lost mode` | `b8e0cd7 feat(pet-lost-mode): restrict toggles to owners (R2)` |
 | R3 | `src/modules/pets/application/dto/set-lost-mode.dto.spec.ts::R3: SetLostModeSchema valida enabled`; `test/pet-lost-mode.e2e-spec.ts::R3: body invalido es 400 y PATCH no toca lostMode` | `e3c64a7 feat(pet-lost-mode): validate dedicated toggle input (R3)` |
-| R4 | pendiente | pendiente |
+| R4 | `test/pet-lost-mode.e2e-spec.ts::R4: el perfil refleja lost mode en detalle y lista` | `d0299ce test(pet-lost-mode): verify profile visibility (R4)` |
 | R5 | pendiente | pendiente |
 | R6 | pendiente | pendiente |
 | R7 | pendiente | pendiente |
