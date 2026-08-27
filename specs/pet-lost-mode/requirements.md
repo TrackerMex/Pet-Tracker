@@ -186,7 +186,7 @@ tags: [harness, spec, backend, mobile]
 - **R9**: WHEN el humano ejecuta la prueba de humo **en el dev build de Android** contra
   el backend local (misma WiFi, `.env` con IP LAN, `docker compose up -d`
   + `pnpm -C backend-pet-tracker run start:dev`;
-  `bunx expo start --go` desde `mobile-pet-tracker/`):
+  `bunx expo start --dev-client` desde `mobile-pet-tracker/`):
   1. Login con cuenta owner → tab Map con posición → botón habilitado
      `Activate Lost Mode`.
   2. Pulsar → el label pasa a `Deactivate Lost Mode`;
