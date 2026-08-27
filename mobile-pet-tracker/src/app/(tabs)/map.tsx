@@ -56,6 +56,7 @@ export default function MapScreen() {
   const pets = useApi(petsFn);
   usePetSelection(pets);
   const [lostModeBusy, setLostModeBusy] = useState(false);
+  const [lostModeFailed, setLostModeFailed] = useState(false);
   const lastFn = useMemo(
     () =>
       selectedPetId
@@ -93,6 +94,7 @@ export default function MapScreen() {
   const handleLostMode = useCallback(async () => {
     if (!selectedPet || selectedPet.myRole !== 'owner' || lostModeBusy) return;
 
+    setLostModeFailed(false);
     setLostModeBusy(true);
     try {
       const result = await setLostMode(
@@ -101,7 +103,11 @@ export default function MapScreen() {
         selectedPet.id,
         !selectedPet.lostMode,
       );
-      if (result.kind === 'ok') refetchPets();
+      if (result.kind === 'ok') {
+        refetchPets();
+      } else {
+        setLostModeFailed(true);
+      }
     } finally {
       setLostModeBusy(false);
     }
@@ -311,6 +317,15 @@ export default function MapScreen() {
                   : 'Activate Lost Mode'}
               </Button.Label>
             </Button>
+            {lostModeFailed ? (
+              <Text
+                selectable
+                testID="lost-mode-error"
+                className="text-center text-xs font-normal text-danger"
+              >
+                Could not update Lost Mode
+              </Text>
+            ) : null}
           </View>
         </>
       ) : null}
