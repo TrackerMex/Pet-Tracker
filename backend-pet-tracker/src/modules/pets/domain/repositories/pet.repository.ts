@@ -74,4 +74,6 @@ export interface PetFieldChanges {
   microchip?: string;
   /** pet-photos-s3 (#6) R1: clave S3 generada al pedir la URL de subida. */
   photoKey?: string;
+  /** pet-lost-mode (#45) R1: solo lo escribe el endpoint dedicado. */
+  lostMode?: boolean;
 }

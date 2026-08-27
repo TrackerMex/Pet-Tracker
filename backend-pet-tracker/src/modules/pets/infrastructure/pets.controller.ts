@@ -29,6 +29,7 @@ import { CreatePetUseCase } from '@/modules/pets/application/use-cases/create-pe
 import { DeletePetUseCase } from '@/modules/pets/application/use-cases/delete-pet.use-case';
 import { GetPetUseCase } from '@/modules/pets/application/use-cases/get-pet.use-case';
 import { ListPetsUseCase } from '@/modules/pets/application/use-cases/list-pets.use-case';
+import { SetLostModeUseCase } from '@/modules/pets/application/use-cases/set-lost-mode.use-case';
 import { UpdatePetUseCase } from '@/modules/pets/application/use-cases/update-pet.use-case';
 import { RequirePetRole } from './decorators/require-pet-role.decorator';
 import { PetAccessGuard } from './guards/pet-access.guard';
@@ -46,6 +47,7 @@ export class PetsController {
     private readonly getPet: GetPetUseCase,
     private readonly updatePet: UpdatePetUseCase,
     private readonly deletePet: DeletePetUseCase,
+    private readonly setLostMode: SetLostModeUseCase,
   ) {}
 
   @Post()
@@ -113,6 +115,25 @@ export class PetsController {
     try {
       return toPetProfileResponse(
         await this.updatePet.execute(petId, request.user.id, dto),
+        role,
+      );
+    } catch (error) {
+      throw mapPetError(error);
+    }
+  }
+
+  @Post(':petId/lost-mode')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(PetAccessGuard)
+  async updateLostMode(
+    @Req() request: PetAccessRequest,
+    @Body() body: { enabled: boolean },
+  ): Promise<PetProfileResponse> {
+    const { petId, role } = request.petMembership;
+
+    try {
+      return toPetProfileResponse(
+        await this.setLostMode.execute(petId, request.user.id, body.enabled),
         role,
       );
     } catch (error) {
