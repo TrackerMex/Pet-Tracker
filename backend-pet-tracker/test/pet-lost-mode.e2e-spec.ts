@@ -179,4 +179,73 @@ describe('Pet lost mode (e2e)', () => {
       );
     });
   });
+
+  describe('R2: solo el owner puede togglear lost mode', () => {
+    it('returns 403 to every active non-owner without persisting or auditing', async () => {
+      const owner = await seedUser('r2-owner');
+      const family = await seedUser('r2-family');
+      const walker = await seedUser('r2-walker');
+      const vet = await seedUser('r2-vet');
+      const pet = await seedPet(owner);
+      await seedMembership(pet.id, family.id, 'family');
+      await seedMembership(pet.id, walker.id, 'walker');
+      await seedMembership(pet.id, vet.id, 'vet');
+
+      for (const member of [family, walker, vet]) {
+        await api()
+          .post(`/v1/pets/${pet.id}/lost-mode`)
+          .set(auth(member.token))
+          .send({ enabled: true })
+          .expect(403);
+      }
+
+      const rows = await db
+        .select()
+        .from(pets)
+        .where(eq(pets.id, pet.id));
+      expect(rows[0].lostMode).toBe(false);
+      const audits = await db
+        .select()
+        .from(auditLog)
+        .where(
+          and(
+            eq(auditLog.action, 'pet.lost_mode'),
+            eq(auditLog.entityId, pet.id),
+          ),
+        );
+      expect(audits).toHaveLength(0);
+    });
+
+    it('returns 404 to outsiders, missing pets, and malformed pet ids', async () => {
+      const owner = await seedUser('r2-hidden-owner');
+      const outsider = await seedUser('r2-outsider');
+      const pet = await seedPet(owner);
+
+      await api()
+        .post(`/v1/pets/${pet.id}/lost-mode`)
+        .set(auth(outsider.token))
+        .send({ enabled: true })
+        .expect(404);
+      await api()
+        .post(`/v1/pets/${uuidv7()}/lost-mode`)
+        .set(auth(owner.token))
+        .send({ enabled: true })
+        .expect(404);
+      await api()
+        .post('/v1/pets/not-a-uuid/lost-mode')
+        .set(auth(owner.token))
+        .send({ enabled: true })
+        .expect(404);
+    });
+
+    it('returns 401 without a bearer token', async () => {
+      const owner = await seedUser('r2-unauthenticated-owner');
+      const pet = await seedPet(owner);
+
+      await api()
+        .post(`/v1/pets/${pet.id}/lost-mode`)
+        .send({ enabled: true })
+        .expect(401);
+    });
+  });
 });
