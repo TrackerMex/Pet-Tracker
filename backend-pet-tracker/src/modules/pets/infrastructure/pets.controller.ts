@@ -125,6 +125,7 @@ export class PetsController {
   @Post(':petId/lost-mode')
   @HttpCode(HttpStatus.OK)
   @UseGuards(PetAccessGuard)
+  @RequirePetRole('owner')
   async updateLostMode(
     @Req() request: PetAccessRequest,
     @Body() body: { enabled: boolean },
