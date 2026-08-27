@@ -15,11 +15,7 @@ export class SetLostModeUseCase {
     private readonly auditLogger: AuditLogger,
   ) {}
 
-  async execute(
-    petId: string,
-    userId: string,
-    enabled: boolean,
-  ): Promise<Pet> {
+  async execute(petId: string, userId: string, enabled: boolean): Promise<Pet> {
     const updated = await this.pets.update(petId, { lostMode: enabled });
 
     await this.auditLogger.record({

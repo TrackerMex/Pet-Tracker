@@ -160,9 +160,9 @@ describe('Pet lost mode (e2e)', () => {
           myRole: 'owner',
         }),
       );
-      expect(new Date(profileBody(enabled).updatedAt).getTime()).toBeGreaterThan(
-        oldUpdatedAt.getTime(),
-      );
+      expect(
+        new Date(profileBody(enabled).updatedAt).getTime(),
+      ).toBeGreaterThan(oldUpdatedAt.getTime());
 
       await api()
         .post(`/v1/pets/${pet.id}/lost-mode`)
@@ -180,10 +180,7 @@ describe('Pet lost mode (e2e)', () => {
         .expect(200);
       expect(profileBody(disabled).lostMode).toBe(false);
 
-      const rows = await db
-        .select()
-        .from(pets)
-        .where(eq(pets.id, pet.id));
+      const rows = await db.select().from(pets).where(eq(pets.id, pet.id));
       expect(rows[0].lostMode).toBe(false);
 
       const audits = await db
@@ -225,10 +222,7 @@ describe('Pet lost mode (e2e)', () => {
           .expect(403);
       }
 
-      const rows = await db
-        .select()
-        .from(pets)
-        .where(eq(pets.id, pet.id));
+      const rows = await db.select().from(pets).where(eq(pets.id, pet.id));
       expect(rows[0].lostMode).toBe(false);
       const audits = await db
         .select()
@@ -299,10 +293,7 @@ describe('Pet lost mode (e2e)', () => {
         );
       }
 
-      const rows = await db
-        .select()
-        .from(pets)
-        .where(eq(pets.id, pet.id));
+      const rows = await db.select().from(pets).where(eq(pets.id, pet.id));
       expect(rows[0].lostMode).toBe(false);
       const audits = await db
         .select()
@@ -335,10 +326,7 @@ describe('Pet lost mode (e2e)', () => {
         .expect(200);
       expect(profileBody(patched).lostMode).toBe(false);
 
-      const rows = await db
-        .select()
-        .from(pets)
-        .where(eq(pets.id, patchPet.id));
+      const rows = await db.select().from(pets).where(eq(pets.id, patchPet.id));
       expect(rows[0].lostMode).toBe(false);
     });
   });
@@ -373,9 +361,15 @@ describe('Pet lost mode (e2e)', () => {
         .expect(200);
       const enabledItems = enabledList.body as PetProfileBody[];
       expect(enabledItems).toHaveLength(1);
-      expect(Object.keys(enabledItems[0] as object).sort()).toEqual(profileKeys);
+      expect(Object.keys(enabledItems[0] as object).sort()).toEqual(
+        profileKeys,
+      );
       expect(enabledItems[0]).toEqual(
-        expect.objectContaining({ id: pet.id, lostMode: true, myRole: 'family' }),
+        expect.objectContaining({
+          id: pet.id,
+          lostMode: true,
+          myRole: 'family',
+        }),
       );
 
       await api()

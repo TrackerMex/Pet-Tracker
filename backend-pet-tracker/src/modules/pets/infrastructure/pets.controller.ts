@@ -51,7 +51,7 @@ export class PetsController {
     private readonly getPet: GetPetUseCase,
     private readonly updatePet: UpdatePetUseCase,
     private readonly deletePet: DeletePetUseCase,
-    private readonly setLostMode: SetLostModeUseCase,
+    private readonly setLostMode?: SetLostModeUseCase,
   ) {}
 
   @Post()
@@ -136,6 +136,10 @@ export class PetsController {
   ): Promise<PetProfileResponse> {
     const dto = parseBody<SetLostModeDto>(SetLostModeSchema, body);
     const { petId, role } = request.petMembership;
+
+    if (!this.setLostMode) {
+      throw new Error('SetLostModeUseCase is not configured');
+    }
 
     try {
       return toPetProfileResponse(
