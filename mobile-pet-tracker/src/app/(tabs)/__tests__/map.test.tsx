@@ -775,3 +775,87 @@ describe('R6: owner toglea lost mode contra el endpoint', () => {
     expect(mockListPets.mock.calls.length).toBeGreaterThanOrEqual(2);
   });
 });
+
+describe('R7: no-owner deshabilitado y error visible', () => {
+  beforeEach(() => {
+    mockGetLastPosition.mockResolvedValue({
+      kind: 'ok',
+      position: makeLastPosition(),
+    });
+    mockListPositions.mockResolvedValue({
+      kind: 'ok',
+      items: [],
+      nextCursor: null,
+    });
+    mockGetDayRoute.mockResolvedValue({
+      kind: 'ok',
+      date: '2026-08-21',
+      trips: [],
+    });
+  });
+
+  it('keeps the family action visible and disabled without calling the API', async () => {
+    mockListPets.mockResolvedValue({
+      kind: 'ok',
+      pets: [makePet({ myRole: 'family' })],
+    });
+
+    await renderMap();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('lost-mode-button')).toBeVisible();
+    });
+    expect(
+      screen.getByTestId('lost-mode-button').props.accessibilityState,
+    ).toEqual(expect.objectContaining({ disabled: true }));
+    expect(screen.queryByText('Coming soon')).toBeNull();
+
+    fireEvent.press(screen.getByTestId('lost-mode-button'));
+
+    expect(mockSetLostMode).not.toHaveBeenCalled();
+  });
+
+  it('shows a failure, re-enables, and clears the error on retry', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    let resolveRetry!: (state: SetLostModeState) => void;
+    mockSetLostMode
+      .mockResolvedValueOnce({ kind: 'forbidden' })
+      .mockReturnValueOnce(
+        new Promise<SetLostModeState>((resolve) => {
+          resolveRetry = resolve;
+        }),
+      );
+
+    await renderMap();
+    await waitFor(() =>
+      expect(screen.getByTestId('lost-mode-button')).toBeVisible(),
+    );
+
+    fireEvent.press(screen.getByTestId('lost-mode-button'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('lost-mode-error')).toHaveTextContent(
+        'Could not update Lost Mode',
+      );
+    });
+    expect(screen.getByTestId('lost-mode-error').props.selectable).toBe(true);
+    expect(screen.getByTestId('lost-mode-error').props.className).toContain(
+      'text-danger',
+    );
+    expect(
+      screen.getByTestId('lost-mode-button').props.accessibilityState,
+    ).toEqual(expect.objectContaining({ disabled: false }));
+
+    fireEvent.press(screen.getByTestId('lost-mode-button'));
+
+    await waitFor(() => {
+      expect(screen.queryByTestId('lost-mode-error')).toBeNull();
+    });
+    expect(mockSetLostMode).toHaveBeenCalledTimes(2);
+
+    await act(async () => {
+      resolveRetry({ kind: 'ok', pet: makePet({ lostMode: true }) });
+      await Promise.resolve();
+    });
+  });
+});
