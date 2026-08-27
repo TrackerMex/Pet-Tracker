@@ -8,7 +8,7 @@ tags: [harness, spec, backend, mobile]
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | pendiente | pendiente |
+| R1 | `src/modules/pets/application/use-cases/set-lost-mode.use-case.spec.ts::R1: set lost mode persiste y audita`; `test/pet-lost-mode.e2e-spec.ts::R1: owner activa y desactiva lost mode` | `aeed8dc feat(pet-lost-mode): persist and audit owner toggles (R1)` |
 | R2 | pendiente | pendiente |
 | R3 | pendiente | pendiente |
 | R4 | pendiente | pendiente |
