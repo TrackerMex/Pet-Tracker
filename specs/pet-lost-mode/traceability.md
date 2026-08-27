@@ -13,7 +13,7 @@ tags: [harness, spec, backend, mobile]
 | R3 | `src/modules/pets/application/dto/set-lost-mode.dto.spec.ts::R3: SetLostModeSchema valida enabled`; `test/pet-lost-mode.e2e-spec.ts::R3: body invalido es 400 y PATCH no toca lostMode` | `e3c64a7 feat(pet-lost-mode): validate dedicated toggle input (R3)` |
 | R4 | `test/pet-lost-mode.e2e-spec.ts::R4: el perfil refleja lost mode en detalle y lista` | `d0299ce test(pet-lost-mode): verify profile visibility (R4)` |
 | R5 | `src/api/__tests__/pets.test.ts::R5: setLostMode contra el endpoint real` | `e79f234 feat(pet-lost-mode): add mobile toggle client (R5)` |
-| R6 | pendiente | pendiente |
+| R6 | `src/app/(tabs)/__tests__/map.test.tsx::R6: owner toglea lost mode contra el endpoint` | `322c48d feat(pet-lost-mode): activate owner map toggle (R6)` |
 | R7 | pendiente | pendiente |
 | R8 | pendiente (verificación de comandos, sin test propio) | pendiente |
 | R9 | pendiente (smoke humano — registra el humano) | pendiente |
