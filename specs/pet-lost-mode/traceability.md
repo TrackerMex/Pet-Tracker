@@ -15,7 +15,7 @@ tags: [harness, spec, backend, mobile]
 | R5 | `src/api/__tests__/pets.test.ts::R5: setLostMode contra el endpoint real` | `e79f234 feat(pet-lost-mode): add mobile toggle client (R5)` |
 | R6 | `src/app/(tabs)/__tests__/map.test.tsx::R6: owner toglea lost mode contra el endpoint` | `322c48d feat(pet-lost-mode): activate owner map toggle (R6)` |
 | R7 | `src/app/(tabs)/__tests__/map.test.tsx::R7: no-owner deshabilitado y error visible` | `75835d8 feat(pet-lost-mode): handle non-owner and errors (R7)` |
-| R8 | pendiente (verificación de comandos, sin test propio) | pendiente |
+| R8 | `progress/impl_pet-lost-mode.md::Verificación R8` — typecheck/lint/test móvil; lint/test/e2e backend; `./init.sh`; allowlist y grep C8 | `21445b3 fix(pet-lost-mode): preserve controller compatibility (R8)` |
 | R9 | pendiente (smoke humano — registra el humano) | pendiente |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente" — para R8

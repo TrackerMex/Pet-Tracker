@@ -23,3 +23,14 @@
   pasaron aisladas y una tercera corrida completa de `./init.sh` quedó verde.
 - Pendiente humano: R9 smoke en Android; la feature permanecerá
   `in_progress` hasta ese gate.
+- Implementación Codex terminada: R1–R8 están implementados y trazados con
+  pares TDD rojo→verde. El informe completo queda en
+  `progress/impl_pet-lost-mode.md`.
+- Verificación final: backend 152 suites / 1162 tests, e2e 22 suites / 343
+  tests, móvil 49 suites / 556 tests; lint, typecheck y `./init.sh` exit 0.
+- Contención: allowlist R8 sin rutas inesperadas y grep C8 con cero hex fuera
+  de theme, clases arbitrarias o estilos legacy.
+- Se neutralizó el commit concurrente de skills `a95dab8` con `d2c217b` para
+  mantenerlo fuera del PR; sus archivos locales se preservaron sin trackear.
+- Siguiente paso: push/PR y smoke humano R9. No se marca la feature `done` ni
+  se cierra esta sesión hasta registrar ese resultado.
