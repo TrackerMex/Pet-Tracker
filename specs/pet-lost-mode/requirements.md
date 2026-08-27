@@ -1,6 +1,6 @@
 ---
 feature: "pet-lost-mode"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec, backend, mobile]
 ---
 
@@ -183,7 +183,7 @@ tags: [harness, spec, backend, mobile]
 
 ### Prueba de humo del humano
 
-- **R9**: WHEN el humano ejecuta la prueba de humo **en Expo Go** contra
+- **R9**: WHEN el humano ejecuta la prueba de humo **en el dev build de Android** contra
   el backend local (misma WiFi, `.env` con IP LAN, `docker compose up -d`
   + `pnpm -C backend-pet-tracker run start:dev`;
   `bunx expo start --go` desde `mobile-pet-tracker/`):
@@ -221,4 +221,4 @@ tags: [harness, spec, backend, mobile]
 ## Aprobación
 
 - [X] Aprobado por humano (fecha: 2026-08-26) ← gate obligatorio antes de implementar
-- [ ] R9 smoke en Expo Go ejecutado por humano (fecha: ____) ← gate obligatorio antes de `done`
+- [ ] R9 smoke en el dev build de Android ejecutado por humano (fecha: ____) ← gate obligatorio antes de `done`

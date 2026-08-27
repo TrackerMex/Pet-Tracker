@@ -813,7 +813,7 @@
   {
     "id": 45,
     "name": "pet-lost-mode",
-    "status": "spec_ready",
+    "status": "in_progress",
     "priority": "P3",
     "description": "Backend: endpoint para activar/desactivar Lost Mode de una mascota (p.ej. POST /v1/pets/:petId/lost-mode) sobre la columna pets.lost_mode ya existente + reglas de producto (quién puede, efectos en alerts/positions). Anotada al backlog por la spec de #36 mobile-map-live (2026-08-21): el botón Activate Lost Mode del tab Map quedó como stub deshabilitado (specs/mobile-map-live R10). Al implementarla, activar el stub móvil.",
     "acceptance_criteria": [
