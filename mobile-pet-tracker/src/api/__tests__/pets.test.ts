@@ -1,8 +1,9 @@
-import { createPet, getPet, listPets } from '../pets';
+import { createPet, getPet, listPets, setLostMode } from '../pets';
 
 const baseUrl = 'http://example.test/v1/';
 const petsEndpoint = 'http://example.test/v1/pets';
 const petEndpoint = 'http://example.test/v1/pets/pet-1';
+const lostModeEndpoint = 'http://example.test/v1/pets/pet-1/lost-mode';
 
 function response(status: number, body: unknown): Response {
   return {
@@ -231,4 +232,83 @@ describe('R6: createPet publica el contrato exacto por kind', () => {
       createPet(baseUrl, 'jwt-token', input, offlineFetch),
     ).resolves.toEqual({ kind: 'unreachable', message: 'offline' });
   });
+});
+
+describe('R5: setLostMode contra el endpoint real', () => {
+  const pet = {
+    id: 'pet-1',
+    name: 'Luna',
+    lostMode: true,
+    myRole: 'owner',
+  };
+
+  it('posts the requested boolean and accepts a valid 200 profile', async () => {
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValue(response(200, pet)) as unknown as typeof fetch;
+
+    await expect(
+      setLostMode(baseUrl, 'jwt-token', 'pet-1', true, fetchFn),
+    ).resolves.toEqual({ kind: 'ok', pet });
+    expect(fetchFn).toHaveBeenCalledWith(lostModeEndpoint, {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer jwt-token',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ enabled: true }),
+    });
+  });
+
+  it.each([
+    [401, { kind: 'unauthorized' }],
+    [403, { kind: 'forbidden' }],
+    [400, { kind: 'error' }],
+    [404, { kind: 'error' }],
+    [500, { kind: 'error' }],
+  ])('maps status %s', async (status, expected) => {
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValue(response(status, {})) as unknown as typeof fetch;
+
+    await expect(
+      setLostMode(baseUrl, 'jwt-token', 'pet-1', false, fetchFn),
+    ).resolves.toEqual(expected);
+  });
+
+  it.each([
+    ['invalid JSON', invalidJsonResponse(200)],
+    ['a malformed id', response(200, { ...pet, id: 7 })],
+    ['a malformed name', response(200, { ...pet, name: null })],
+  ])('maps %s to error', async (_case, backendResponse) => {
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValue(backendResponse) as unknown as typeof fetch;
+
+    await expect(
+      setLostMode(baseUrl, 'jwt-token', 'pet-1', true, fetchFn),
+    ).resolves.toEqual({ kind: 'error' });
+  });
+
+  it('maps a fetch rejection to unreachable', async () => {
+    const fetchFn = jest
+      .fn()
+      .mockRejectedValue(new Error('network down')) as unknown as typeof fetch;
+
+    await expect(
+      setLostMode(baseUrl, 'jwt-token', 'pet-1', true, fetchFn),
+    ).resolves.toEqual({ kind: 'unreachable', message: 'network down' });
+  });
+
+  it.each([undefined, ''])(
+    'maps missing base URL %p without fetching',
+    async (missingUrl) => {
+      const fetchFn = jest.fn() as unknown as typeof fetch;
+
+      await expect(
+        setLostMode(missingUrl, 'jwt-token', 'pet-1', true, fetchFn),
+      ).resolves.toEqual({ kind: 'missing-config' });
+      expect(fetchFn).not.toHaveBeenCalled();
+    },
+  );
 });
