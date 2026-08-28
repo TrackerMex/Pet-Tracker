@@ -798,7 +798,7 @@
   {
     "id": 44,
     "name": "auth-forgot-password",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P3",
     "description": "Backend: endpoint de recuperación de contraseña (forgot/reset) en el módulo auth. Anotada al backlog por la spec de #33 mobile-auth (2026-08-20): el backend no expone forgot-password y la pantalla móvil Forgot quedó como stub deshabilitado (specs/mobile-auth R9). Al implementarla, activar el stub móvil en una feature de seguimiento.",
     "acceptance_criteria": [
