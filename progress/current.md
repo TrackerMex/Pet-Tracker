@@ -5,6 +5,19 @@
 
 ---
 
+## Sesión 2026-08-28 04:21 UTC (Codex — implementación #52)
+
+### Feature #52 `android-maps-api-key` — in_progress
+
+- Branch `feature/52-android-maps-api-key` sincronizada con `origin`; spec
+  aprobada (R1–R6) y gate humano verificado.
+- Baseline: `./init.sh` exit 0 antes de editar (build, tests, e2e, lint y
+  typecheck verdes).
+- Plan: implementar R1, R2 y R3 con commits rojo → verde separados; documentar
+  R4; ejecutar y registrar R5; dejar R6 preparado para el smoke humano.
+- Contención: no tocar `app.json`, `eas.json`, `package.json`, `bun.lock`,
+  `src/**`, `backend-pet-tracker/**` ni carpetas nativas generadas.
+
 ## Sesión 2026-08-27/28 (leader = sesión Backend)
 
 ### Feature #45 `pet-lost-mode` — in_progress, bloqueada por #52
