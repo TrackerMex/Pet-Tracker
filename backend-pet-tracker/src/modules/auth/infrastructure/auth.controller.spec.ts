@@ -525,3 +525,38 @@ describe('R7: POST /v1/auth/reset-password con token expirado responde 410', () 
     expect(error.getStatus()).toBe(410);
   });
 });
+
+describe('R8: POST /v1/auth/reset-password con payload invalido responde 400', () => {
+  const validResetBody = {
+    token: VERIFICATION_TOKEN,
+    password: 'NewPassword1!',
+    passwordConfirmation: 'NewPassword1!',
+  };
+
+  it.each([
+    ['token ausente', { ...validResetBody, token: undefined }],
+    ['token vacio', { ...validResetBody, token: '   ' }],
+    ['token mayor a 256', { ...validResetBody, token: 'x'.repeat(257) }],
+    ['password corto', { ...validResetBody, password: 'short' }],
+    [
+      'password mayor a 128',
+      {
+        ...validResetBody,
+        password: 'x'.repeat(129),
+        passwordConfirmation: 'x'.repeat(129),
+      },
+    ],
+    [
+      'confirmacion distinta',
+      { ...validResetBody, passwordConfirmation: 'DifferentPassword1!' },
+    ],
+  ])('rechaza %s antes de invocar el caso de uso', async (_case, body) => {
+    const { controller, execute } = buildResetPasswordDouble();
+
+    const error = await captureHttpError(controller.resetPassword(body));
+
+    expect(error).toBeInstanceOf(BadRequestException);
+    expect(error.getStatus()).toBe(400);
+    expect(execute).not.toHaveBeenCalled();
+  });
+});
