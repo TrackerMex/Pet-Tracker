@@ -24,12 +24,20 @@ interface ResetPasswordBody {
   reset: true;
 }
 
+interface LoginBody {
+  access_token: string;
+}
+
 function forgotPasswordBody(response: Response): ForgotPasswordBody {
   return response.body as ForgotPasswordBody;
 }
 
 function resetPasswordBody(response: Response): ResetPasswordBody {
   return response.body as ResetPasswordBody;
+}
+
+function loginBody(response: Response): LoginBody {
+  return response.body as LoginBody;
 }
 
 describe('Auth forgot password (e2e)', () => {
@@ -183,6 +191,35 @@ describe('Auth forgot password (e2e)', () => {
           eq(passwordResetTokens.tokenHash, hashVerificationToken(token)),
         );
       expect(storedToken.usedAt).toBeInstanceOf(Date);
+    });
+  });
+
+  describe('R9: tras el reset el login viejo falla y el nuevo funciona', () => {
+    it('verifica el hash nuevo con el mismo adaptador usado por login', async () => {
+      const user = await seedUser('r9');
+      const token = await requestResetToken(user.email);
+      const newPassword = 'RoundTripPassword1!';
+
+      await api()
+        .post('/v1/auth/reset-password')
+        .send({
+          token,
+          password: newPassword,
+          passwordConfirmation: newPassword,
+        })
+        .expect(200);
+
+      await api()
+        .post('/v1/auth/login')
+        .send({ email: user.email, password: user.password })
+        .expect(401);
+      const newLogin = await api()
+        .post('/v1/auth/login')
+        .send({ email: user.email, password: newPassword })
+        .expect(200);
+
+      expect(typeof loginBody(newLogin).access_token).toBe('string');
+      expect(loginBody(newLogin).access_token.length).toBeGreaterThan(0);
     });
   });
 });
