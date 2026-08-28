@@ -43,6 +43,9 @@
 - R6 completado por TDD: `1e62765` (rojo: faltaba error de dominio) →
   `ff042c0` (verde: inexistente/usado indistinguibles, 400 y cero escrituras).
   Unit/controller 31/31; e2e de aislamiento R13 1/1; ESLint verde.
+- R7 completado por TDD: `ac3af27` (rojo: expirado/límite se consumían) →
+  `e1bc6cf` (verde: error tipado antes de argon2 y mapeo 410).
+  Unit/controller 34/34 y ESLint verde.
 
 ## Sesión 2026-08-28 (leader = sesión Backend)
 
