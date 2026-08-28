@@ -31,6 +31,9 @@
 - R3 completado por TDD: `080817e` (rojo: cuatro payloads inválidos
   aceptados) → `9d1f7e7` (verde: Zod/parseBody antes del use case).
   Controller 25/25 y ESLint focalizado verde.
+- R4 completado por TDD: `25abbdd` (rojo: ambos tokens seguían vivos) →
+  `721c580` (verde: invalidación por usuario antes del insert). Unit 3/3,
+  e2e 2/2 y ESLint focalizado verdes.
 
 ## Sesión 2026-08-28 (leader = sesión Backend)
 
