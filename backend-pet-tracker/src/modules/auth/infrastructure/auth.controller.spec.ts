@@ -419,3 +419,24 @@ describe('R2: POST /v1/auth/forgot-password responde igual exista o no la cuenta
     expect(missingResponse).toEqual(existingResponse);
   });
 });
+
+describe('R3: POST /v1/auth/forgot-password con payload invalido responde 400', () => {
+  it.each([
+    ['email ausente', {}],
+    ['email no string', { email: 42 }],
+    ['formato invalido', { email: 'no-es-email' }],
+    ['mas de 320 caracteres', { email: `${'a'.repeat(310)}@example.com` }],
+  ])('rechaza %s con detalle por campo antes del caso de uso', async (_case, body) => {
+    const { controller, execute } = buildForgotPasswordDouble();
+
+    const error = await captureHttpError(controller.forgotPassword(body));
+
+    expect(error).toBeInstanceOf(BadRequestException);
+    expect(error.getStatus()).toBe(400);
+    const response = error.getResponse() as {
+      errors: { path: string; message: string }[];
+    };
+    expect(response.errors.map((issue) => issue.path)).toContain('email');
+    expect(execute).not.toHaveBeenCalled();
+  });
+});
