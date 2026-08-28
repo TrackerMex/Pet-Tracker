@@ -46,6 +46,9 @@
 - R7 completado por TDD: `ac3af27` (rojo: expirado/límite se consumían) →
   `e1bc6cf` (verde: error tipado antes de argon2 y mapeo 410).
   Unit/controller 34/34 y ESLint verde.
+- R8 completado por TDD: `56054ce` (rojo: seis payloads inválidos aceptados)
+  → `2142d49` (verde: ResetPasswordSchema/parseBody antes del use case).
+  Controller 35/35 y ESLint verde.
 
 ## Sesión 2026-08-28 (leader = sesión Backend)
 
