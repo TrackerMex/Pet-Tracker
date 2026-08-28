@@ -1927,3 +1927,61 @@ Notas de la sesión que no están en la spec:
   se alarga.
 - Cierre vía PR #81 (#51 → done en la propia branch tras resolver
   conflictos con main).
+
+## 2026-08-28 — Feature #52 android-maps-api-key (cerrada)
+
+- Implementación Codex CLI (TDD R1–R5), review APROBADO condicionado al
+  smoke humano. PR #87 mergeado; casilla R6 firmada por el humano en PR #88
+  (se mergeó #87 antes de marcarla, corregido con un PR de una línea).
+- El humano creó la clave restringida (package `com.trackermex.pettracker` +
+  SHA-1 del debug keystore) y regeneró el dev build. Resultado: meta-data en
+  el manifest (`grep` = 1), Map monta sin crash, vista nativa creada
+  (watermark visible) y logcat sin `API key not found`, `addViewAt`,
+  `Authorization failure` ni `API_KEY_ANDROID_APP_BLOCKED`. Google acepta la
+  clave.
+- **R6 acotado a la clave el 2026-08-28** (4f47897): la redacción original
+  exigía tiles y marker, que no renderizan por un defecto independiente que
+  el crash por clave ausente venía tapando. Ese defecto es #54
+  `android-map-never-ready`; sin la acotación, #52 quedaba rehén de un fallo
+  ajeno a su diff.
+- Incidencias del smoke (Windows): el `.env` acabó en la raíz del repo en
+  vez de en `mobile-pet-tracker/` — Expo solo carga el del directorio del
+  proyecto, así que `app.config.ts` no veía la clave y el `grep` daba 0.
+  Antes de eso, LocalStack vacío (tabla de posiciones y cola `positions-raw`
+  ausentes) hasta correr `provision:local`, y `AWS_MODE` sin declarar en el
+  `.env`.
+- Lecciones: (a) un requisito de smoke redactado sobre el efecto visible
+  ("renderiza tiles") ata la feature a toda la pila que hay debajo — mejor
+  redactarlo sobre lo que el diff controla ("la meta-data llega al manifest
+  y el SDK no rechaza la clave"); (b) el watermark de Google Maps es señal
+  diagnóstica: lo dibuja el delegate de play-services-maps, que no existe
+  hasta que corre `onCreate`; (c) diagnosticar a distancia sobre síntomas
+  reportados llevó a dos hipótesis erróneas (ciclo de vida, `customMapStyle`)
+  antes de que el explorer las tumbara con lectura del paquete — pedir la
+  evidencia que discrimina, no la que confirma.
+
+## 2026-08-28 — Feature #45 pet-lost-mode (cerrada)
+
+- Implementación Codex CLI (TDD R1–R8), review APROBADO con una única
+  condición documental, ya resuelta (5793f64: la fila R4 de trazabilidad
+  citaba `d0299ce`, que es un commit vacío).
+- Smoke R9 en el dev build de Android el 2026-08-28, casilla firmada por el
+  humano (`1d31d18`): toggle activa y desactiva, el label sigue el estado,
+  el perfil refleja `lostMode` y con el backend apagado sale
+  `Could not update Lost Mode` quedando el botón usable al reintentar.
+- **Paso 5 del smoke no ejecutado** (usuario `family` con el botón
+  deshabilitado): no hay uno seedeado en local. La spec lo redacta
+  condicional y R7 lo cubre en `map.test.tsx`, así que no bloqueó el gate;
+  queda registrado como no ejecutado, no como verificado.
+- El tab Map no pinta tiles ni marker en ese entorno por #54
+  `android-map-never-ready`, ajeno a este diff: el botón vive en la tarjeta
+  superpuesta, que sí se renderiza. Por eso R9 se pudo cerrar aunque el mapa
+  siga roto.
+- `lost_mode` queda como flag expuesto **sin efectos automáticos** (decisión
+  de producto §D1): no dispara alertas ni cambia el polling. Los efectos son
+  feature futura.
+- Lecciones: (a) el reporte de handoff de Codex arrastraba
+  `expo start --go` cuando Expo Go ya no era el runtime de smoke — al cambiar
+  una decisión de entorno hay que barrer specs **y** reportes; (b) un paso de
+  smoke condicional ("si hay usuario family seedeado") se cierra anotando que
+  no se ejecutó, nunca dándolo por bueno.

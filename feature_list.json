@@ -924,5 +924,57 @@
     "files_affected": [
       "backend-pet-tracker/src/aws/"
     ]
+  },
+  {
+    "id": 52,
+    "name": "android-maps-api-key",
+    "status": "done",
+    "priority": "P1",
+    "description": "El tab Map crashea en el dev build de Android: 'API key not found. Check that <meta-data android:name=\"com.google.android.geo.API_KEY\"...' (IllegalStateException al montar MapView de react-native-maps 1.27.2). app.json no declara android.config.googleMaps.apiKey y map.tsx no fija provider, asi que en Android usa Google Maps y exige clave propia. En Expo Go no se veia porque Expo Go trae su propia clave embebida; al pasar a dev build (2026-08-25) el hueco quedo expuesto. Detectado el 2026-08-27 durante el gate R9 de #45 pet-lost-mode, que queda bloqueado porque su boton Lost Mode vive en ese tab. Requiere clave de Maps SDK for Android creada por el humano (cuenta Google + billing), restringida por package com.trackermex.pettracker + SHA-1 del keystore, inyectada sin commitear el secreto (app.config con process.env / secret de EAS) y un dev build nuevo.",
+    "acceptance_criteria": [
+      "El tab Map renderiza el mapa en el dev build de Android sin IllegalStateException",
+      "La clave no queda commiteada en el repo: se inyecta por variable de entorno o secret de EAS, con .env.example documentando el nombre",
+      "docs/verification.md documenta como regenerar el dev build tras cambiar la clave",
+      "Gate humano: crear la clave en Google Cloud y correr el dev build (no delegable a IA: cuenta y billing reales)"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/app.json",
+      "mobile-pet-tracker/.env.example",
+      "docs/verification.md"
+    ]
+  },
+  {
+    "id": 53,
+    "name": "mobile-jest-mock-hygiene",
+    "status": "pending",
+    "priority": "P3",
+    "description": "La suite movil src/screens/add-pet/index.test.tsx falla de forma intermitente: la config de jest movil no declara clearMocks/resetMocks/restoreMocks y mockLaunchImageLibrary.mockResolvedValue(...) se fija en un unico punto (index.test.tsx:217) en vez de en un beforeEach; si el orden de ejecucion cambia, el mock de expo-image-picker devuelve undefined. Detectado el 2026-08-28: Codex lo sufrio implementando #52 y el reviewer confirmo que es preexistente (src/ byte-identico a main, 5 corridas dirigidas verdes, no reproduce en init.sh limpio).",
+    "acceptance_criteria": [
+      "El mock de expo-image-picker se reinicializa por test (beforeEach o resetMocks en la config de jest movil)",
+      "La suite add-pet pasa en 10 corridas seguidas sin flake",
+      "Ninguna otra suite movil se rompe por el cambio de configuracion de mocks"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/add-pet/index.test.tsx",
+      "mobile-pet-tracker/jest.config.js"
+    ]
+  },
+  {
+    "id": 54,
+    "name": "android-map-never-ready",
+    "status": "pending",
+    "priority": "P1",
+    "description": "En el dev build de Android el tab Map solo muestra el watermark 'Google': sin tiles, sin marker y sin polyline, igual en tema claro y en oscuro (el tema quedo descartado como variable). La tarjeta de stats si se renderiza, pero es un hermano absoluto FUERA del MapView, asi que solo prueba que la rama last.data?.kind === 'ok' de src/app/(tabs)/map.tsx se evaluo, no que el mapa este vivo. Cadena verificada linea a linea por el explorer (progress/explore_android-map-never-ready.md): los hijos solo se renderizan si state.isReady (MapView.tsx:1225), que arranca en false (:806) y solo pasa a true con el OnMapReadyEvent que el nativo despacha en MapView.java:535, dentro de onMapReady(GoogleMap) (:470), que a su vez depende de que getMapAsync (encolado en el constructor, :260) entregue el mapa tras onCreate/onStart/onResume; esos eventos vienen del unico observer de ciclo de vida del paquete (:206-254), enganchado en :390-397 si 'context.getCurrentActivity() instanceof LifecycleOwner'. La forma de la cadena es correcta y no hay camino alternativo (ni el MapViewManager de fabric ni el interop la arrancan). PERO el disparador que se sospechaba —getCurrentActivity() null— queda REFUTADO por el propio watermark: el logo lo dibuja el delegate de play-services-maps, que no existe hasta que corre onCreate, asi que si se ve el watermark el observer si se engancho. Quedan dos familias vivas: H1, ciclo de vida a medias (ON_CREATE/ON_START si, ON_RESUME no: mapa creado pero superficie GL nunca arrancada); H2, el mapa esta listo y el fallo es de render o composicion de la superficie del renderer LATEST bajo Fabric, en cuyo caso parchear el ciclo de vida no arregla nada. Discriminador de una linea, reversible, que decide el diseno entero: pasar onMapReady={() => console.log('[map] ready')} al MapView y mirar adb logcat -s ReactNativeJS; dispara = H2, no dispara = H1. Sondas gratis del mismo viaje: googleRenderer='LEGACY' y liteMode, ambos props ya soportados. Evidencia descartada por el explorer, no reutilizar en la spec: 'MapsInitializer aparece en logcat' NO prueba que la vista se construya con ciclo de vida (sale siempre al crear el primer MapView, fabric/MapViewManager.java:262-269), y 'rotar no lo arregla' es nulo porque app.json:6 fija orientation portrait y la Activity no se recrea. Los 'Could not find generated setter' son el fallback por reflexion de ViewManagerPropertyUpdater.kt:138, ruido. Descartado ademas: clave de Maps (meta-data en el manifest, grep=1, sin Authorization failure), version (1.27.2 es la de bundledNativeModules de SDK 57; el explorer verifico que ninguna release note hasta 1.29.0 toca el ciclo de vida), provider (PROVIDER_GOOGLE en MapView.tsx:1227 es solo iOS), customMapStyle y backend (GET /positions/last responde 200). Vias de fix, en orden de coste: prop (googleRenderer LEGACY) < bun patch de una linea en attachLifecycleObserver usando findViewTreeLifecycleOwner como fallback < migrar a expo-maps ~57.0.1, que ademas es alpha declarado, no corre en Expo Go (choca con docs/ui-guidelines.md:95) y obliga a wrapper nuevo, conversion delta->zoom, reescritura de app.config.ts y ~9 aserciones de map.test.tsx. Ojo: la herramienta de parcheo aqui es 'bun patch' + patchedDependencies; no hay patch-package ni existe 'expo patch'. Detectado el 2026-08-28 durante el gate R6 de #52, con RN 0.86.2 y arquitectura nueva.",
+    "acceptance_criteria": [
+      "R1 del spec debe ser el discriminador en dispositivo (onMapReady + logcat, mas googleRenderer LEGACY y liteMode): el fix no se elige antes de saber si es H1 o H2",
+      "El tab Map renderiza tiles, el marker de la ultima posicion y la polyline del dia en el dev build de Android",
+      "En tema oscuro el mapa se ve oscuro sobre un mapa que si pinta; la spec decide explicitamente si src/theme/map-style-dark.json sobrevive al mecanismo elegido",
+      "Test que fija el contrato JS del fix (el prop o la config elegida) nombrando su R-id, rojo antes que verde (C4), documentando que NO cubre el render nativo: con react-native-maps mockeado los tests de este tab pasan hoy con el bug presente",
+      "Gate humano: smoke en dev build de Android en ambos temas, con confirmacion explicita de tiles + marker + polyline (no basta 'monta sin crash y hay watermark', que es el estado defectuoso). No delegable a IA: requiere dispositivo real"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/app/(tabs)/map.tsx",
+      "mobile-pet-tracker/package.json"
+    ]
   }
 ]

@@ -5,32 +5,51 @@
 
 ---
 
-## Sesión 2026-08-27 (implementer = Codex)
+## Sesión 2026-08-28 (leader = sesión Backend)
 
-### Feature #45 `pet-lost-mode` — in_progress
+### Features #52 `android-maps-api-key` y #45 `pet-lost-mode` — done
 
-- Inicio de implementación: 2026-08-27 18:17 UTC, tras confirmar el gate
-  humano de `requirements.md` y ejecutar `./init.sh` con exit 0.
-- Alcance: endpoint owner-only y auditoría R1–R4; cliente y toggle del tab Map
-  R5–R7; verificación/contención R8. `lost_mode` sigue siendo solo un flag,
-  sin efectos automáticos en alerts ni positions.
-- Plan TDD: por cada requisito, commit rojo antes de la implementación verde
-  y commit posterior de trazabilidad. Única edición a tests existentes fuera
-  de nuevos describes: sustituir el describe R10 del stub en `map.test.tsx`.
-- Baseline: dos flakes preexistentes aparecieron en corridas separadas
-  (`health-vaccines.e2e-spec.ts` por orden de auditoría y
-  `src/screens/add-pet/index.test.tsx` por mock de ImagePicker); ambas suites
-  pasaron aisladas y una tercera corrida completa de `./init.sh` quedó verde.
-- Pendiente humano: R9 smoke en Android; la feature permanecerá
-  `in_progress` hasta ese gate.
-- Implementación Codex terminada: R1–R8 están implementados y trazados con
-  pares TDD rojo→verde. El informe completo queda en
-  `progress/impl_pet-lost-mode.md`.
-- Verificación final: backend 152 suites / 1162 tests, e2e 22 suites / 343
-  tests, móvil 49 suites / 556 tests; lint, typecheck y `./init.sh` exit 0.
-- Contención: allowlist R8 sin rutas inesperadas y grep C8 con cero hex fuera
-  de theme, clases arbitrarias o estilos legacy.
-- Se neutralizó el commit concurrente de skills `a95dab8` con `d2c217b` para
-  mantenerlo fuera del PR; sus archivos locales se preservaron sin trackear.
-- Siguiente paso: push/PR y smoke humano R9. No se marca la feature `done` ni
-  se cierra esta sesión hasta registrar ese resultado.
+Cerradas. Detalle en `progress/history.md`.
+
+### Feature #54 `android-map-never-ready` — pending, P1
+
+- El tab Map solo pinta el watermark "Google": sin tiles, sin marker y sin
+  polyline, igual en tema claro y oscuro. Detectado durante el gate R6 de
+  #52.
+- `explorer` ejecutado → `progress/explore_android-map-never-ready.md`.
+  Verificó la cadena `isReady`/`onMapReady`/ciclo de vida línea a línea y
+  **refutó** el disparador que se sospechaba (`getCurrentActivity()` null):
+  el watermark lo dibuja el delegate de play-services-maps, que no existe
+  hasta que corre `onCreate`.
+- Dos hipótesis vivas, con fixes distintos: **H1** ciclo de vida a medias
+  (sin `ON_RESUME`) vs **H2** fallo de render/composición con el mapa ya
+  listo.
+- **Bloqueada por el discriminador**, que corre el humano en dispositivo:
+  `onMapReady={() => console.log('[map] ready')}` en `map.tsx` +
+  `adb logcat -s ReactNativeJS`; dispara = H2, no dispara = H1. Sondas del
+  mismo viaje: `googleRenderer="LEGACY"` y `liteMode`. Son props JS: basta
+  Fast Refresh, sin rebuild.
+- Con el resultado se lanza `spec_author` con la causa decidida. No escribir
+  el fix antes: elegir entre parche (`bun patch`, una línea sobre
+  `attachLifecycleObserver`) y migrar a `expo-maps` (alpha, no corre en Expo
+  Go, wrapper nuevo y ~9 aserciones reescritas) depende de esa respuesta.
+
+### Feature #53 `mobile-jest-mock-hygiene` — pending, P3
+
+Flake de `add-pet` por mocks sin reinicializar. Sin trabajo en curso.
+
+### Verificación manual pendiente (no bloqueante)
+
+- **R9 paso 5 de #45**: usuario `family` viendo el botón Lost Mode
+  deshabilitado. No ejecutado por no haber uno seedeado en local; la spec lo
+  redacta condicional y R7 lo cubre en `map.test.tsx`. Queda anotado en
+  `progress/impl_pet-lost-mode.md` como pendiente de verificación manual.
+
+### Deuda del harness detectada
+
+- `docs/ui-guidelines.md:95` sigue exigiendo que todo corra en Expo Go SDK
+  57; el smoke real es dev build de Android desde el 2026-08-25. Bloquea la
+  vía `expo-maps` de #54 y merece su propia entrada de backlog.
+- Commit local `5f74fc6` sin pushear (otra sesión Claude, hace obligatoria
+  la skill `appllama-app-design-skill` en `docs/ui-guidelines.md`): decidir
+  si se mueve a su propia branch + PR o se descarta.
