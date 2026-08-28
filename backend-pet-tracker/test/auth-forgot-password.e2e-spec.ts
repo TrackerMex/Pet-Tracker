@@ -9,6 +9,8 @@ import { auditLog } from '@/db/schema/audit-log.schema';
 import { passwordResetTokens } from '@/db/schema/password-reset-tokens.schema';
 import { users } from '@/db/schema/users.schema';
 import { DRIZZLE } from '@/db/drizzle.constants';
+import { EMAIL_VERIFICATION_SENDER } from '@/modules/auth/domain/ports/email-verification-sender';
+import type { EmailVerificationMessage } from '@/modules/auth/domain/ports/email-verification-sender';
 import { PASSWORD_HASHER } from '@/modules/auth/domain/ports/password-hasher';
 import type { PasswordHasher } from '@/modules/auth/domain/ports/password-hasher';
 import { PASSWORD_RESET_SENDER } from '@/modules/auth/domain/ports/password-reset-sender';
@@ -28,6 +30,11 @@ interface LoginBody {
   access_token: string;
 }
 
+interface RegisterBody {
+  id: string;
+  email: string;
+}
+
 function forgotPasswordBody(response: Response): ForgotPasswordBody {
   return response.body as ForgotPasswordBody;
 }
@@ -40,10 +47,15 @@ function loginBody(response: Response): LoginBody {
   return response.body as LoginBody;
 }
 
+function registerBody(response: Response): RegisterBody {
+  return response.body as RegisterBody;
+}
+
 describe('Auth forgot password (e2e)', () => {
   const runId = Date.now();
   const userIds: string[] = [];
   const sentMessages: PasswordResetMessage[] = [];
+  const verificationMessages: EmailVerificationMessage[] = [];
   let app: INestApplication<App>;
   let db: NodePgDatabase;
   let passwordHasher: PasswordHasher;
@@ -91,6 +103,13 @@ describe('Auth forgot password (e2e)', () => {
       .useValue({
         send: (message: PasswordResetMessage) => {
           sentMessages.push(message);
+          return Promise.resolve();
+        },
+      })
+      .overrideProvider(EMAIL_VERIFICATION_SENDER)
+      .useValue({
+        send: (message: EmailVerificationMessage) => {
+          verificationMessages.push(message);
           return Promise.resolve();
         },
       })
@@ -220,6 +239,60 @@ describe('Auth forgot password (e2e)', () => {
 
       expect(typeof loginBody(newLogin).access_token).toBe('string');
       expect(loginBody(newLogin).access_token.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('R13: el flujo de verify-email sigue intacto tras anadir el reset', () => {
+    it('mantiene separados los tokens y permite completar ambos flujos', async () => {
+      const email = `forgot-r13-${runId}@example.com`;
+      const registration = await api()
+        .post('/v1/auth/register')
+        .send({
+          firstName: 'E2e',
+          lastName: 'R13',
+          email,
+          phone: '+525512345678',
+          password: 'OldPassword1!',
+          passwordConfirmation: 'OldPassword1!',
+          country: 'MX',
+          timezone: 'UTC',
+          termsAccepted: true,
+        })
+        .expect(201);
+      userIds.push(registerBody(registration).id);
+      const verificationToken = verificationMessages.find(
+        (message) => message.email === email,
+      )?.token;
+      if (!verificationToken) {
+        throw new Error(`No verification token captured for ${email}`);
+      }
+      const resetToken = await requestResetToken(email);
+
+      await api()
+        .post('/v1/auth/reset-password')
+        .send({
+          token: verificationToken,
+          password: 'WrongFlowPassword1!',
+          passwordConfirmation: 'WrongFlowPassword1!',
+        })
+        .expect(400);
+      await api()
+        .post('/v1/auth/verify-email')
+        .send({ token: resetToken })
+        .expect(400);
+
+      await api()
+        .post('/v1/auth/verify-email')
+        .send({ token: verificationToken })
+        .expect(200);
+      await api()
+        .post('/v1/auth/reset-password')
+        .send({
+          token: resetToken,
+          password: 'RightFlowPassword1!',
+          passwordConfirmation: 'RightFlowPassword1!',
+        })
+        .expect(200);
     });
   });
 });
