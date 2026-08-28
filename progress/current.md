@@ -21,6 +21,8 @@
   './app.config'`, antes de crear la configuración dinámica.
 - R1 verde: la suite dirigida pasa (1/1); `bun run --cwd mobile-pet-tracker
   typecheck` y `lint` salen 0.
+- R2 rojo confirmado: los tres casos (ausente, vacía, espacios) detectan que
+  la implementación R1 todavía añade `react-native-maps` con clave vacía.
 
 ## Sesión 2026-08-27/28 (leader = sesión Backend)
 

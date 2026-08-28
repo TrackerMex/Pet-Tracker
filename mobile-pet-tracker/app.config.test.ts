@@ -32,3 +32,50 @@ describe('R1: la config resuelta inyecta la clave de Android desde el entorno', 
     expect(resolved.plugins).toEqual([...appJson.expo.plugins, mapsPlugin]);
   });
 });
+
+describe('R2: sin la variable no se declara el plugin y se avisa sin lanzar', () => {
+  const originalApiKey = process.env.GOOGLE_MAPS_API_KEY_ANDROID;
+  let warnSpy: jest.SpiedFunction<typeof console.warn>;
+
+  beforeEach(() => {
+    warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+  });
+
+  afterEach(() => {
+    warnSpy.mockRestore();
+
+    if (originalApiKey === undefined) {
+      delete process.env.GOOGLE_MAPS_API_KEY_ANDROID;
+      return;
+    }
+
+    process.env.GOOGLE_MAPS_API_KEY_ANDROID = originalApiKey;
+  });
+
+  it.each([
+    ['ausente', undefined],
+    ['vacía', ''],
+    ['solo espacios', '   '],
+  ])('acepta una variable %s y devuelve la config base', (_case, apiKey) => {
+    if (apiKey === undefined) {
+      delete process.env.GOOGLE_MAPS_API_KEY_ANDROID;
+    } else {
+      process.env.GOOGLE_MAPS_API_KEY_ANDROID = apiKey;
+    }
+
+    let resolved: ReturnType<typeof resolveConfig> | undefined;
+
+    expect(() => {
+      resolved = resolveConfig({ config: appJson.expo } as ConfigContext);
+    }).not.toThrow();
+    expect(resolved?.plugins).toEqual(appJson.expo.plugins);
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+
+    const warning = warnSpy.mock.calls[0]?.[0];
+
+    expect(warning).toEqual(
+      expect.stringContaining('GOOGLE_MAPS_API_KEY_ANDROID'),
+    );
+    expect(warning).toEqual(expect.stringContaining('docs/verification.md'));
+  });
+});

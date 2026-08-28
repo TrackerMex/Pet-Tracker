@@ -33,7 +33,7 @@ tags: [harness, spec, mobile]
 
 ## R2 — Sin la variable: aviso explícito, sin plugin y sin lanzar
 
-- [ ] (1) Escribir test que falla para R2 (mismo archivo): ausente / `''` /
+- [x] (1) Escribir test que falla para R2 (mismo archivo): ausente / `''` /
       `'   '` → `plugins` igual al de `app.json`, `not.toThrow()`, un solo
       `console.warn` con los substrings `GOOGLE_MAPS_API_KEY_ANDROID` y
       `docs/verification.md`. Restaurar `process.env` entre casos.
