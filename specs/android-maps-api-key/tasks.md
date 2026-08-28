@@ -26,9 +26,9 @@ tags: [harness, spec, mobile]
       'test-key' }]` al final de `plugins`, la conservación de las claves
       de `app.json` (§R1 lista a/b) y el `trim`. Rojo por módulo
       inexistente.
-- [ ] (2) Implementación mínima que lo pasa: `mobile-pet-tracker/app.config.ts`
+- [x] (2) Implementación mínima que lo pasa: `mobile-pet-tracker/app.config.ts`
       ([[design]] §D1, §D2 — ojo con las dos trampas de tipos de D2).
-- [ ] (3) Refactor con tests verdes + `bun run typecheck` y `bun run lint`
+- [x] (3) Refactor con tests verdes + `bun run typecheck` y `bun run lint`
       verdes (el archivo nuevo entra en ambos).
 
 ## R2 — Sin la variable: aviso explícito, sin plugin y sin lanzar
