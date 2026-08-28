@@ -61,7 +61,9 @@ describe('R10: con EMAIL_ENABLED=true avisa de que no hay proveedor real cablead
   });
 
   it('emite el warning y conserva el log estructurado', async () => {
-    const log = jest.spyOn(Logger.prototype, 'log').mockImplementation(() => {});
+    const log = jest
+      .spyOn(Logger.prototype, 'log')
+      .mockImplementation(() => {});
     const warn = jest
       .spyOn(Logger.prototype, 'warn')
       .mockImplementation(() => {});

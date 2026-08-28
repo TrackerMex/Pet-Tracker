@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   PasswordResetMessage,
@@ -7,11 +7,31 @@ import {
 
 @Injectable()
 export class ConsolePasswordResetSender implements PasswordResetSender {
-  constructor(private readonly _config: ConfigService) {}
+  private readonly logger = new Logger(ConsolePasswordResetSender.name);
+
+  constructor(private readonly config: ConfigService) {}
 
   send(message: PasswordResetMessage): Promise<void> {
-    // R10 anadira la entrega por log estructurado y el aviso del gate.
-    void message;
+    if (this.isEmailEnabled()) {
+      this.logger.warn(
+        'EMAIL_ENABLED=true but no real email provider is wired yet; the password reset token is only written to the log',
+      );
+    }
+
+    this.logger.log(
+      JSON.stringify({
+        event: 'auth.password_reset.issued',
+        userId: message.userId,
+        email: message.email,
+        token: message.token,
+        expiresAt: message.expiresAt.toISOString(),
+      }),
+    );
+
     return Promise.resolve();
+  }
+
+  private isEmailEnabled(): boolean {
+    return this.config.get<string>('EMAIL_ENABLED') === 'true';
   }
 }
