@@ -96,7 +96,7 @@ describe('R12: password_reset_tokens espeja el patron de email_verification_toke
 
     expect(sql).toContain('CREATE TABLE "password_reset_tokens"');
     expect(sql).toContain(
-      '"token_hash" char(64) NOT NULL CONSTRAINT "password_reset_tokens_tokenHash_unique" UNIQUE',
+      'CONSTRAINT "password_reset_tokens_token_hash_unique" UNIQUE("token_hash")',
     );
     expect(sql).toContain(
       'REFERENCES "public"."users"("id") ON DELETE cascade',
