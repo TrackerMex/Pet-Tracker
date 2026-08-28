@@ -10,7 +10,10 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { ZodType } from 'zod';
-import { ForgotPasswordDto } from '@/modules/auth/application/dto/forgot-password.dto';
+import {
+  ForgotPasswordDto,
+  ForgotPasswordSchema,
+} from '@/modules/auth/application/dto/forgot-password.dto';
 import {
   RegisterUserSchema,
   RegisterUserDto,
@@ -123,8 +126,9 @@ export class AuthController {
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
   async forgotPassword(@Body() body: unknown): Promise<ForgotPasswordResponse> {
-    // R3 anadira el parseo Zod en el borde HTTP.
-    await this.requestPasswordReset.execute(body as ForgotPasswordDto);
+    const dto = parseBody<ForgotPasswordDto>(ForgotPasswordSchema, body);
+
+    await this.requestPasswordReset.execute(dto);
 
     return { requested: true };
   }
