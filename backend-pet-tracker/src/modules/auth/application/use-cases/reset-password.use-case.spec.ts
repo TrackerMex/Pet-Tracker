@@ -124,21 +124,24 @@ describe('R6: un token inexistente o ya consumido no cambia ningun password', ()
   it.each([
     ['inexistente', null],
     ['ya usado', buildToken({ usedAt: new Date('2026-08-28T20:30:00.000Z') })],
-  ])('trata el token %s como invalido sin ninguna escritura', async (_case, token) => {
-    const {
-      useCase,
-      hash,
-      updatePasswordHash,
-      invalidateAllForUser,
-      record,
-    } = buildScenario(token);
+  ])(
+    'trata el token %s como invalido sin ninguna escritura',
+    async (_case, token) => {
+      const {
+        useCase,
+        hash,
+        updatePasswordHash,
+        invalidateAllForUser,
+        record,
+      } = buildScenario(token);
 
-    await expect(useCase.execute(validDto)).rejects.toBeInstanceOf(
-      InvalidPasswordResetTokenError,
-    );
-    expect(hash).not.toHaveBeenCalled();
-    expect(updatePasswordHash).not.toHaveBeenCalled();
-    expect(invalidateAllForUser).not.toHaveBeenCalled();
-    expect(record).not.toHaveBeenCalled();
-  });
+      await expect(useCase.execute(validDto)).rejects.toBeInstanceOf(
+        InvalidPasswordResetTokenError,
+      );
+      expect(hash).not.toHaveBeenCalled();
+      expect(updatePasswordHash).not.toHaveBeenCalled();
+      expect(invalidateAllForUser).not.toHaveBeenCalled();
+      expect(record).not.toHaveBeenCalled();
+    },
+  );
 });

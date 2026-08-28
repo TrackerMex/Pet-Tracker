@@ -36,6 +36,7 @@ import {
   InvalidVerificationTokenError,
   VerificationTokenExpiredError,
 } from '@/modules/auth/domain/errors/email-verification.errors';
+import { InvalidPasswordResetTokenError } from '@/modules/auth/domain/errors/password-reset.errors';
 import {
   EmailAlreadyRegisteredError,
   InvalidCredentialsError,
@@ -145,9 +146,16 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async resetPassword(@Body() body: unknown): Promise<ResetPasswordResponse> {
     // R8 anadira el parseo Zod en el borde HTTP.
-    await this.resetPasswordUseCase.execute(body as ResetPasswordDto);
+    try {
+      await this.resetPasswordUseCase.execute(body as ResetPasswordDto);
 
-    return { reset: true };
+      return { reset: true };
+    } catch (error) {
+      if (error instanceof InvalidPasswordResetTokenError) {
+        throw new BadRequestException('Invalid password reset token');
+      }
+      throw error;
+    }
   }
 }
 

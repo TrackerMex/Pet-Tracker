@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { AUDIT_LOGGER } from '@/audit/audit-log.repository';
 import type { AuditLogger } from '@/audit/audit-log.repository';
+import { InvalidPasswordResetTokenError } from '@/modules/auth/domain/errors/password-reset.errors';
 import { PASSWORD_HASHER } from '@/modules/auth/domain/ports/password-hasher';
 import type { PasswordHasher } from '@/modules/auth/domain/ports/password-hasher';
 import { PASSWORD_RESET_TOKEN_REPOSITORY } from '@/modules/auth/domain/repositories/password-reset-token.repository';
@@ -28,9 +29,8 @@ export class ResetPasswordUseCase {
       hashVerificationToken(dto.token),
     );
 
-    // R6 sustituira este error generico por el error de dominio tipado.
     if (token === null || token.isUsed()) {
-      throw new Error('Invalid password reset token');
+      throw new InvalidPasswordResetTokenError();
     }
 
     const changedAt = new Date();
