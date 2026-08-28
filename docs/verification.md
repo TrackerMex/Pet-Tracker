@@ -374,6 +374,86 @@ en `progress/impl_media-bucket-aws-mode.md`. Solo el humano marca la casilla
 R5 en `specs/media-bucket-aws-mode/requirements.md`; hasta entonces la feature
 permanece `in_progress`.
 
+### Feature 52 — android-maps-api-key
+
+Este procedimiento prepara una clave restringida de Maps SDK for Android y
+regenera el dev build que la incorpora. La clave real nunca se pega en el
+repositorio ni en los reportes de progreso.
+
+1. Haz un prebuild inicial sin clave para generar `android/` y
+   `android/app/debug.keystore`. La config avisa por consola, pero no aborta:
+
+   ```bash
+   cd mobile-pet-tracker && npx expo prebuild --clean --platform android
+   ```
+
+2. Obtén la SHA-1 del keystore de debug desde el proyecto Android generado:
+
+   ```bash
+   cd mobile-pet-tracker/android && ./gradlew signingReport
+   ```
+
+   En Windows usa `gradlew.bat signingReport`. Como alternativa, desde
+   `mobile-pet-tracker/android` ejecuta:
+
+   ```bash
+   keytool -J-Duser.language=en -list -v -keystore app/debug.keystore -alias androiddebugkey -storepass android -keypass android
+   ```
+
+   El flag `-J-Duser.language=en` es obligatorio: con locale español,
+   `keytool` puede terminar con `MissingFormatArgumentException`.
+
+3. En Google Cloud, con billing activo, habilita **Maps SDK for Android** y
+   crea una clave de API. Restringe la aplicación Android al package
+   `com.trackermex.pettracker` más la SHA-1 del paso 2, y restringe la clave
+   por API para permitir únicamente Maps SDK for Android.
+
+4. Inyecta la clave localmente sin commitearla. Desde
+   `mobile-pet-tracker/`, si todavía no existe `.env`, ejecuta:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+   Después edita ese archivo y define
+   `GOOGLE_MAPS_API_KEY_ANDROID=<clave>`.
+
+5. Regenera e instala el dev build. Este paso es obligatorio después de crear
+   o rotar la clave, porque la meta-data se escribe en `AndroidManifest.xml`
+   durante el prebuild:
+
+   ```bash
+   npx expo prebuild --clean --platform android
+   grep -c "com.google.android.geo.API_KEY" android/app/src/main/AndroidManifest.xml
+   bunx expo run:android
+   ```
+
+   El `grep` debe imprimir `1`; no pegues el valor del manifest en ningún
+   reporte. Si después de `--clean` el `signingReport` devuelve otra SHA-1,
+   actualiza la restricción de la clave en Google Cloud antes de reintentar.
+
+6. Ejecuta el smoke R6 de
+   `specs/android-maps-api-key/requirements.md`: con el backend local arriba,
+   inicia sesión y abre el tab **Map**; confirma que monta sin crash, renderiza
+   tiles de Google, marker y polyline cuando haya posiciones. Revisa
+   `adb logcat`: no deben aparecer `IllegalStateException: API key not found`
+   ni `addViewAt: failed to insert view`. Si el mapa queda gris y aparecen
+   `Authorization failure` o `API_KEY_ANDROID_APP_BLOCKED`, repite los pasos
+   2–3 porque no coinciden package y SHA-1. Cambia a tema oscuro y confirma que
+   sigue renderizando con `customMapStyle`; después ejecuta el smoke R9 de
+   `specs/pet-lost-mode/requirements.md`. Registra el resultado, sin la clave,
+   en `progress/impl_android-maps-api-key.md`.
+
+Para un futuro EAS Build, crea la variable por separado:
+
+```bash
+eas env:create --name GOOGLE_MAPS_API_KEY_ANDROID --visibility secret --environment development
+```
+
+Además exige añadir `"environment": "development"` al perfil `development`
+de `eas.json`. Este plumbing de EAS queda **documentado, no implementado ni
+verificado** en esta feature.
+
 ---
 
 ## Notas para el implementer

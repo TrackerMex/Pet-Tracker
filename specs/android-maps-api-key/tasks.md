@@ -52,16 +52,16 @@ tags: [harness, spec, mobile]
 
 ## R4 — `docs/verification.md` §Feature 52
 
-- [ ] (1) No hay test posible (documentación): el "rojo" verificable es la
+- [x] (1) No hay test posible (documentación): el "rojo" verificable es la
       ausencia de la sección — `grep -n "Feature 52" docs/verification.md`
       vacío antes de escribirla.
-- [ ] (2) Escribir `### Feature 52 — android-maps-api-key` tras la sección
+- [x] (2) Escribir `### Feature 52 — android-maps-api-key` tras la sección
       de Feature 51, con los seis pasos literales de [[requirements]] R4
       (prebuild inicial → SHA-1 con `gradlew signingReport` / `keytool
       -J-Duser.language=en` → clave restringida en Google Cloud → `.env`
       → prebuild + `grep` del manifest + `run:android` → smoke R6) y la
       nota de EAS Build de [[design]] §D6.
-- [ ] (3) Releer con el `grep` del paso anterior: la sección aparece y
+- [x] (3) Releer con el `grep` del paso anterior: la sección aparece y
       ningún comando quedó parafraseado.
 
 ## R5 — Regresión y contención

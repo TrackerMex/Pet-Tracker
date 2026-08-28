@@ -30,6 +30,9 @@
 - R3 verde: suite dirigida 5/5; `.env.example` contiene solo el nombre vacío,
   la variable no usa `EXPO_PUBLIC_` y `git check-ignore` confirma que el `.env`
   móvil real está ignorado.
+- R4: `rg -n "Feature 52" docs/verification.md` confirmó primero la ausencia
+  (exit 1); después se añadieron y releyeron los seis pasos literales y la
+  nota de EAS documentada, no implementada.
 
 ## Sesión 2026-08-27/28 (leader = sesión Backend)
 
