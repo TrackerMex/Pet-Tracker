@@ -34,6 +34,12 @@
 - R4 completado por TDD: `25abbdd` (rojo: ambos tokens seguían vivos) →
   `721c580` (verde: invalidación por usuario antes del insert). Unit 3/3,
   e2e 2/2 y ESLint focalizado verdes.
+- R5/R9 completados por TDD: rojos `e36de77` (reset 404) y `106349c`
+  (round-trip 404) → `e531f63` (verde: argon2id, update de credencial,
+  consumo total y login viejo 401/nuevo 200). Unit/controller/module 29/29,
+  e2e focalizado 4/4, typecheck y ESLint verdes.
+- R13 rojo registrado antes del cableado: `0e67341`; queda pendiente de los
+  errores tipados de R6 y de la verificación final de contención.
 
 ## Sesión 2026-08-28 (leader = sesión Backend)
 

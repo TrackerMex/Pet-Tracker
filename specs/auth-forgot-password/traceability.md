@@ -15,11 +15,11 @@ Rutas de test relativas a `backend-pet-tracker/` (`src/…` para unitarios,
 | R2 | `src/modules/auth/application/use-cases/request-password-reset.use-case.spec.ts::R2: la solicitud con email inexistente no emite token ni revela la ausencia de cuenta`; `src/modules/auth/infrastructure/auth.controller.spec.ts::R2: POST /v1/auth/forgot-password responde igual exista o no la cuenta`; `test/auth-forgot-password.e2e-spec.ts::R2: forgot-password responde identico para cuenta existente e inexistente` | `97e2c4b` rojo → `bfa3f8c feat(auth-forgot-password): return uniform response for unknown email (R2)` |
 | R3 | `src/modules/auth/infrastructure/auth.controller.spec.ts::R3: POST /v1/auth/forgot-password con payload invalido responde 400` | `080817e` rojo → `9d1f7e7 feat(auth-forgot-password): validate forgot request payload (R3)` |
 | R4 | `src/modules/auth/application/use-cases/request-password-reset.use-case.spec.ts::R4: una nueva solicitud invalida los tokens de reset anteriores del usuario`; `test/auth-forgot-password.e2e-spec.ts::R4: el token anterior deja de servir cuando se pide uno nuevo` | `25abbdd` rojo → `721c580 feat(auth-forgot-password): invalidate prior reset tokens before issue (R4)` |
-| R5 | pendiente | pendiente |
+| R5 | `src/modules/auth/application/use-cases/reset-password.use-case.spec.ts::R5: el token vigente cambia el password y consume todos los tokens del usuario`; `src/modules/auth/infrastructure/auth.controller.spec.ts::R5: POST /v1/auth/reset-password con token valido responde 200`; `test/auth-forgot-password.e2e-spec.ts::R5: el reset persiste un password_hash nuevo y consume el token` | `e36de77` rojo → `e531f63 feat(auth-forgot-password): reset password and verify login round-trip (R5,R9)` |
 | R6 | pendiente | pendiente |
 | R7 | pendiente | pendiente |
 | R8 | pendiente | pendiente |
-| R9 | pendiente | pendiente |
+| R9 | `test/auth-forgot-password.e2e-spec.ts::R9: tras el reset el login viejo falla y el nuevo funciona` | `106349c` rojo → `e531f63 feat(auth-forgot-password): reset password and verify login round-trip (R5,R9)` |
 | R10 | pendiente | pendiente |
 | R11 | pendiente | pendiente |
 | R12 | `src/db/schema/password-reset-tokens.schema.spec.ts::R12: password_reset_tokens espeja el patron de email_verification_tokens` | `64230ee` rojo → `9cd8473 feat(auth-forgot-password): add reset token table and migration (R12)` |
