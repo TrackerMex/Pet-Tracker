@@ -25,6 +25,8 @@
   la implementación R1 todavía añade `react-native-maps` con clave vacía.
 - R2 verde: suite dirigida 4/4; sin clave se conserva la lista base de plugins,
   se emite un aviso y no se lanza. Typecheck y lint móviles salen 0.
+- R3 rojo confirmado: la suite dirigida sale 1 porque `.env.example` todavía
+  no contiene `GOOGLE_MAPS_API_KEY_ANDROID=`.
 
 ## Sesión 2026-08-27/28 (leader = sesión Backend)
 

@@ -42,7 +42,7 @@ tags: [harness, spec, mobile]
 
 ## R3 — La clave viaja por entorno, nunca por el repo
 
-- [ ] (1) Escribir test que falla para R3 (mismo archivo): lee
+- [x] (1) Escribir test que falla para R3 (mismo archivo): lee
       `.env.example` y assertea `/^GOOGLE_MAPS_API_KEY_ANDROID=\s*$/m`,
       ausencia de `EXPO_PUBLIC_GOOGLE` y ausencia de `/AIza[0-9A-Za-z_-]{10,}/`.
 - [ ] (2) Implementación mínima que lo pasa: línea + comentario en

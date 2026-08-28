@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import type { ConfigContext } from 'expo/config';
 
 import resolveConfig from './app.config';
@@ -77,5 +80,15 @@ describe('R2: sin la variable no se declara el plugin y se avisa sin lanzar', ()
       expect.stringContaining('GOOGLE_MAPS_API_KEY_ANDROID'),
     );
     expect(warning).toEqual(expect.stringContaining('docs/verification.md'));
+  });
+});
+
+describe('R3: la clave viaja por entorno, nunca por el repo', () => {
+  it('documenta solo el nombre privado de la variable, sin credenciales', () => {
+    const envExample = readFileSync(join(__dirname, '.env.example'), 'utf8');
+
+    expect(envExample).toMatch(/^GOOGLE_MAPS_API_KEY_ANDROID=\s*$/m);
+    expect(envExample).not.toContain('EXPO_PUBLIC_GOOGLE');
+    expect(envExample).not.toMatch(/AIza[0-9A-Za-z_-]{10,}/);
   });
 });
