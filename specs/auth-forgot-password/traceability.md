@@ -13,7 +13,7 @@ Rutas de test relativas a `backend-pet-tracker/` (`src/…` para unitarios,
 |---|---|---|
 | R1 | `src/modules/auth/application/use-cases/request-password-reset.use-case.spec.ts::R1: la solicitud con cuenta existente emite un token hasheado con expiracion de una hora`; `src/modules/auth/infrastructure/auth.controller.spec.ts::R1: POST /v1/auth/forgot-password responde 200 con requested true` | `a40ceb2` rojo → `b3e0aaf feat(auth-forgot-password): issue hashed reset token for existing account (R1)` |
 | R2 | `src/modules/auth/application/use-cases/request-password-reset.use-case.spec.ts::R2: la solicitud con email inexistente no emite token ni revela la ausencia de cuenta`; `src/modules/auth/infrastructure/auth.controller.spec.ts::R2: POST /v1/auth/forgot-password responde igual exista o no la cuenta`; `test/auth-forgot-password.e2e-spec.ts::R2: forgot-password responde identico para cuenta existente e inexistente` | `97e2c4b` rojo → `bfa3f8c feat(auth-forgot-password): return uniform response for unknown email (R2)` |
-| R3 | pendiente | pendiente |
+| R3 | `src/modules/auth/infrastructure/auth.controller.spec.ts::R3: POST /v1/auth/forgot-password con payload invalido responde 400` | `080817e` rojo → `9d1f7e7 feat(auth-forgot-password): validate forgot request payload (R3)` |
 | R4 | pendiente | pendiente |
 | R5 | pendiente | pendiente |
 | R6 | pendiente | pendiente |

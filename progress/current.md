@@ -28,6 +28,9 @@
   Suites focalizadas 23/23, ESLint y typecheck verdes.
 - R2 completado por TDD: `97e2c4b` (rojo: email inexistente devolvía 500) →
   `bfa3f8c` (verde: retorno silencioso). Unit/controller 23/23 y e2e 1/1.
+- R3 completado por TDD: `080817e` (rojo: cuatro payloads inválidos
+  aceptados) → `9d1f7e7` (verde: Zod/parseBody antes del use case).
+  Controller 25/25 y ESLint focalizado verde.
 
 ## Sesión 2026-08-28 (leader = sesión Backend)
 
