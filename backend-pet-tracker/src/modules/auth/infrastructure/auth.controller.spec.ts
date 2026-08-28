@@ -560,3 +560,15 @@ describe('R8: POST /v1/auth/reset-password con payload invalido responde 400', (
     expect(execute).not.toHaveBeenCalled();
   });
 });
+
+describe('R10: la respuesta de forgot-password nunca incluye el token', () => {
+  it('devuelve exclusivamente requested true', async () => {
+    const { controller } = buildForgotPasswordDouble();
+
+    const body = await controller.forgotPassword({ email: 'ada@example.com' });
+
+    expect(Object.keys(body)).toEqual(['requested']);
+    expect(body).toEqual({ requested: true });
+    expect(JSON.stringify(body).toLowerCase()).not.toContain('token');
+  });
+});

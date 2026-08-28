@@ -240,6 +240,22 @@ describe('Auth forgot password (e2e)', () => {
     });
   });
 
+  describe('R10: la base guarda el SHA-256 del token, nunca el valor en claro', () => {
+    it('persiste exactamente 64 caracteres hex y ningun secreto usable', async () => {
+      const user = await seedUser('r10');
+      const token = await requestResetToken(user.email);
+      const rows = await db
+        .select()
+        .from(passwordResetTokens)
+        .where(eq(passwordResetTokens.userId, user.id));
+
+      expect(rows).toHaveLength(1);
+      expect(rows[0].tokenHash).toBe(hashVerificationToken(token));
+      expect(rows[0].tokenHash).toMatch(/^[a-f0-9]{64}$/);
+      expect(JSON.stringify(rows)).not.toContain(token);
+    });
+  });
+
   describe('R13: el flujo de verify-email sigue intacto tras anadir el reset', () => {
     it('mantiene separados los tokens y permite completar ambos flujos', async () => {
       const email = `forgot-r13-${runId}@example.com`;
