@@ -8,7 +8,7 @@ tags: [harness, spec, mobile]
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | `app.config.test.ts::R1: la config resuelta inyecta la clave de Android desde el entorno` | pendiente |
+| R1 | `app.config.test.ts::R1: la config resuelta inyecta la clave de Android desde el entorno` | `4396b75 test(android-maps-api-key): define config injection in red (R1)` → `28906d4 feat(android-maps-api-key): inject Android Maps plugin (R1)` |
 | R2 | `app.config.test.ts::R2: sin la variable no se declara el plugin y se avisa sin lanzar` | pendiente |
 | R3 | `app.config.test.ts::R3: la clave viaja por entorno, nunca por el repo` | pendiente |
 | R4 | sin test (documentación) — `docs/verification.md::Feature 52 — android-maps-api-key`, verificada por el reviewer | pendiente |
