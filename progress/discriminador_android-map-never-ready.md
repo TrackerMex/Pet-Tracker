@@ -103,11 +103,36 @@ En liteMode el mapa se dibuja como imagen estática en vez de superficie GL
 
 ## Resultado (rellena el humano)
 
-- Fecha:
-- Paso 1, `[map] ready` en logcat: sí / no → si
-- Paso 2, `googleRenderer="LEGACY"`: pinta / no pinta → no pinta
-- Paso 3, `liteMode`: pinta / no pinta → si pinta
-- Conclusión: H1 / H2
+- Fecha: 2026-08-28
+- Paso 1, `[map] ready` en logcat: **sí**
+- Paso 2, `googleRenderer="LEGACY"`: **no pinta**
+- Paso 3, `liteMode`: **sí pinta**
+- Conclusión: **H2**
 - `map.tsx` revertido: sí
 
-Con esto se lanza `spec_author` sobre #54 con la causa ya decidida.
+## Qué significa este resultado
+
+Los tres datos apuntan al mismo sitio y **descartan H1 por completo**:
+
+- `[map] ready` dispara ⇒ el ciclo de vida corre entero, `getMapAsync`
+  entrega el mapa, `onMapReady` (`MapView.java:470`) se ejecuta y en JS
+  `state.isReady` pasa a `true`. **Parchear `attachLifecycleObserver` no
+  arreglaría nada**: la vía (a) del informe del explorer queda descartada.
+- Que `isReady` sea `true` y aun así no haya marker significa que el
+  `Marker` **sí** se renderiza en el árbol de React y aun así no se ve.
+- `liteMode` pinta y los dos renderers (LATEST y LEGACY) no ⇒ no es la
+  elección de renderer. Lo que falla es la **superficie GL**: en liteMode el
+  mapa es un bitmap estático dentro de la jerarquía de vistas normal, y ahí
+  se ve; en modo normal el mapa vive en una `SurfaceView` propia, y esa no
+  se está componiendo. El watermark encaja: lo dibuja la vista contenedora,
+  no la superficie GL.
+
+Diagnóstico: **la `SurfaceView` del mapa no se compone en la jerarquía de
+Fabric** (RN 0.86.2, arquitectura nueva). No es la clave, no es el ciclo de
+vida, no es el renderer, no es el estilo y no es el backend.
+
+Verificado además en el paquete: `react-native-maps@1.27.2` **no expone**
+`androidLayerType`, `zOrderOnTop` ni una opción de `TextureView` (`grep` sobre
+`src/MapView.tsx`, `src/specs/` y `android/src/main/java/com/rnmaps/` sin
+resultados). No hay prop de escape: el fix pasa por parche nativo o por
+cambiar de librería. Eso lo decide la spec de #54.
