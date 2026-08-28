@@ -20,6 +20,9 @@
 - El primer gate arrancó en esta rama, pero otro checkout compartido dejó el
   worktree momentáneamente en #54; se restauró #44 antes de leer o editar
   código. Los archivos no versionados ajenos ya presentes se preservan.
+- R12 completado por TDD: `64230ee` (rojo: faltaba migración) → `9cd8473`
+  (verde: schema + migración 0015 + catálogo). Migración aplicada en
+  Postgres local; tabla e índice confirmados; suite focalizada 7/7.
 
 ## Sesión 2026-08-28 (leader = sesión Backend)
 
