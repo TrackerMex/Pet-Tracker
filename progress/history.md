@@ -1927,3 +1927,35 @@ Notas de la sesión que no están en la spec:
   se alarga.
 - Cierre vía PR #81 (#51 → done en la propia branch tras resolver
   conflictos con main).
+
+## 2026-08-28 — Feature #52 android-maps-api-key (cerrada)
+
+- Implementación Codex CLI (TDD R1–R5), review APROBADO condicionado al
+  smoke humano. PR #87 mergeado; casilla R6 firmada por el humano en PR #88
+  (se mergeó #87 antes de marcarla, corregido con un PR de una línea).
+- El humano creó la clave restringida (package `com.trackermex.pettracker` +
+  SHA-1 del debug keystore) y regeneró el dev build. Resultado: meta-data en
+  el manifest (`grep` = 1), Map monta sin crash, vista nativa creada
+  (watermark visible) y logcat sin `API key not found`, `addViewAt`,
+  `Authorization failure` ni `API_KEY_ANDROID_APP_BLOCKED`. Google acepta la
+  clave.
+- **R6 acotado a la clave el 2026-08-28** (4f47897): la redacción original
+  exigía tiles y marker, que no renderizan por un defecto independiente que
+  el crash por clave ausente venía tapando. Ese defecto es #54
+  `android-map-never-ready`; sin la acotación, #52 quedaba rehén de un fallo
+  ajeno a su diff.
+- Incidencias del smoke (Windows): el `.env` acabó en la raíz del repo en
+  vez de en `mobile-pet-tracker/` — Expo solo carga el del directorio del
+  proyecto, así que `app.config.ts` no veía la clave y el `grep` daba 0.
+  Antes de eso, LocalStack vacío (tabla de posiciones y cola `positions-raw`
+  ausentes) hasta correr `provision:local`, y `AWS_MODE` sin declarar en el
+  `.env`.
+- Lecciones: (a) un requisito de smoke redactado sobre el efecto visible
+  ("renderiza tiles") ata la feature a toda la pila que hay debajo — mejor
+  redactarlo sobre lo que el diff controla ("la meta-data llega al manifest
+  y el SDK no rechaza la clave"); (b) el watermark de Google Maps es señal
+  diagnóstica: lo dibuja el delegate de play-services-maps, que no existe
+  hasta que corre `onCreate`; (c) diagnosticar a distancia sobre síntomas
+  reportados llevó a dos hipótesis erróneas (ciclo de vida, `customMapStyle`)
+  antes de que el explorer las tumbara con lectura del paquete — pedir la
+  evidencia que discrimina, no la que confirma.

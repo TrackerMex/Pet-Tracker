@@ -928,7 +928,7 @@
   {
     "id": 52,
     "name": "android-maps-api-key",
-    "status": "in_progress",
+    "status": "done",
     "priority": "P1",
     "description": "El tab Map crashea en el dev build de Android: 'API key not found. Check that <meta-data android:name=\"com.google.android.geo.API_KEY\"...' (IllegalStateException al montar MapView de react-native-maps 1.27.2). app.json no declara android.config.googleMaps.apiKey y map.tsx no fija provider, asi que en Android usa Google Maps y exige clave propia. En Expo Go no se veia porque Expo Go trae su propia clave embebida; al pasar a dev build (2026-08-25) el hueco quedo expuesto. Detectado el 2026-08-27 durante el gate R9 de #45 pet-lost-mode, que queda bloqueado porque su boton Lost Mode vive en ese tab. Requiere clave de Maps SDK for Android creada por el humano (cuenta Google + billing), restringida por package com.trackermex.pettracker + SHA-1 del keystore, inyectada sin commitear el secreto (app.config con process.env / secret de EAS) y un dev build nuevo.",
     "acceptance_criteria": [
