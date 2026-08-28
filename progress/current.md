@@ -5,6 +5,22 @@
 
 ---
 
+## Feature #44 `auth-forgot-password` — in_progress, P3
+
+- Implementación iniciada por Codex: 2026-08-28 22:47 UTC, en
+  `feature/44-auth-forgot-password`, con spec aprobada por humano.
+- Gate inicial `./init.sh`: exit 0 (backend 152 suites/1162 tests; infra 2/14;
+  mobile 50/561; e2e backend 22 suites/343 tests; lint y typecheck verdes).
+- Plan TDD: R12 (schema/migración) → R1–R4 (solicitud uniforme) → R5–R8
+  (reset) → R10/R11 (log/auditoría) → R9/R13 (e2e y contención). Cada R-id
+  tendrá commit rojo previo a su implementación y trazabilidad inmediata.
+- Contención fijada por R13: backend auth/db + tests y docs/harness de la
+  allowlist; no se toca mobile, infra, variables de entorno ni el flujo
+  `verify-email` existente.
+- El primer gate arrancó en esta rama, pero otro checkout compartido dejó el
+  worktree momentáneamente en #54; se restauró #44 antes de leer o editar
+  código. Los archivos no versionados ajenos ya presentes se preservan.
+
 ## Sesión 2026-08-28 (leader = sesión Backend)
 
 ### Features #52 `android-maps-api-key` y #45 `pet-lost-mode` — done
