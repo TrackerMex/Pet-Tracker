@@ -7,6 +7,7 @@ import { CreatePetUseCase } from './application/use-cases/create-pet.use-case';
 import { DeletePetUseCase } from './application/use-cases/delete-pet.use-case';
 import { GetPetUseCase } from './application/use-cases/get-pet.use-case';
 import { ListPetsUseCase } from './application/use-cases/list-pets.use-case';
+import { SetLostModeUseCase } from './application/use-cases/set-lost-mode.use-case';
 import { UpdatePetUseCase } from './application/use-cases/update-pet.use-case';
 import { PetAccessGuard } from './infrastructure/guards/pet-access.guard';
 import { PetsController } from './infrastructure/pets.controller';
@@ -27,6 +28,7 @@ import { PetDrizzleRepository } from './infrastructure/repositories/pet.drizzle.
     ListPetsUseCase,
     GetPetUseCase,
     UpdatePetUseCase,
+    SetLostModeUseCase,
     DeletePetUseCase,
     PetAccessGuard,
     {

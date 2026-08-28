@@ -7,18 +7,9 @@
 
 ## Sesión 2026-08-28 (leader = sesión Backend)
 
-### Feature #52 `android-maps-api-key` — done
+### Features #52 `android-maps-api-key` y #45 `pet-lost-mode` — done
 
-Cerrada. Detalle en `progress/history.md`.
-
-### Feature #45 `pet-lost-mode` — in_progress, desbloqueada
-
-- Review APROBADO, PR #84 abierto. En `main` figura `pending`; el
-  `in_progress` real viaja en su branch.
-- Gate R9 (smoke en dev build de Android) **ya no está bloqueado**: el tab
-  Map monta sin crash y el botón Lost Mode vive en la tarjeta superpuesta,
-  que sí se renderiza. No depende de que el mapa pinte tiles (#54).
-- Pendiente: que el humano corra R9, marque la casilla y mergee #84.
+Cerradas. Detalle en `progress/history.md`.
 
 ### Feature #54 `android-map-never-ready` — pending, P1
 
@@ -46,6 +37,13 @@ Cerrada. Detalle en `progress/history.md`.
 ### Feature #53 `mobile-jest-mock-hygiene` — pending, P3
 
 Flake de `add-pet` por mocks sin reinicializar. Sin trabajo en curso.
+
+### Verificación manual pendiente (no bloqueante)
+
+- **R9 paso 5 de #45**: usuario `family` viendo el botón Lost Mode
+  deshabilitado. No ejecutado por no haber uno seedeado en local; la spec lo
+  redacta condicional y R7 lo cubre en `map.test.tsx`. Queda anotado en
+  `progress/impl_pet-lost-mode.md` como pendiente de verificación manual.
 
 ### Deuda del harness detectada
 

@@ -37,6 +37,14 @@ export type CreatePetState =
   | { kind: 'unreachable'; message: string }
   | { kind: 'missing-config' };
 
+export type SetLostModeState =
+  | { kind: 'ok'; pet: PetProfile }
+  | { kind: 'forbidden' }
+  | { kind: 'unauthorized' }
+  | { kind: 'error' }
+  | { kind: 'unreachable'; message: string }
+  | { kind: 'missing-config' };
+
 function isPetProfile(value: unknown): value is PetProfile {
   return (
     typeof value === 'object' &&
@@ -126,6 +134,42 @@ export async function createPet(
     return { kind: 'forbidden' };
   }
   if (result.response.status !== 201) {
+    return { kind: 'error' };
+  }
+
+  const body = await readJson(result.response);
+  return isPetProfile(body) ? { kind: 'ok', pet: body } : { kind: 'error' };
+}
+
+export async function setLostMode(
+  baseUrl: string | undefined,
+  token: string,
+  petId: string,
+  enabled: boolean,
+  fetchFn: typeof fetch = fetch,
+): Promise<SetLostModeState> {
+  if (!baseUrl) {
+    return { kind: 'missing-config' };
+  }
+
+  const result = await postJson(
+    baseUrl,
+    `/pets/${petId}/lost-mode`,
+    token,
+    { enabled },
+    fetchFn,
+  );
+  if (result.kind === 'unreachable') {
+    return result;
+  }
+
+  if (result.response.status === 401) {
+    return { kind: 'unauthorized' };
+  }
+  if (result.response.status === 403) {
+    return { kind: 'forbidden' };
+  }
+  if (result.response.status !== 200) {
     return { kind: 'error' };
   }
 

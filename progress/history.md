@@ -1959,3 +1959,29 @@ Notas de la sesión que no están en la spec:
   reportados llevó a dos hipótesis erróneas (ciclo de vida, `customMapStyle`)
   antes de que el explorer las tumbara con lectura del paquete — pedir la
   evidencia que discrimina, no la que confirma.
+
+## 2026-08-28 — Feature #45 pet-lost-mode (cerrada)
+
+- Implementación Codex CLI (TDD R1–R8), review APROBADO con una única
+  condición documental, ya resuelta (5793f64: la fila R4 de trazabilidad
+  citaba `d0299ce`, que es un commit vacío).
+- Smoke R9 en el dev build de Android el 2026-08-28, casilla firmada por el
+  humano (`1d31d18`): toggle activa y desactiva, el label sigue el estado,
+  el perfil refleja `lostMode` y con el backend apagado sale
+  `Could not update Lost Mode` quedando el botón usable al reintentar.
+- **Paso 5 del smoke no ejecutado** (usuario `family` con el botón
+  deshabilitado): no hay uno seedeado en local. La spec lo redacta
+  condicional y R7 lo cubre en `map.test.tsx`, así que no bloqueó el gate;
+  queda registrado como no ejecutado, no como verificado.
+- El tab Map no pinta tiles ni marker en ese entorno por #54
+  `android-map-never-ready`, ajeno a este diff: el botón vive en la tarjeta
+  superpuesta, que sí se renderiza. Por eso R9 se pudo cerrar aunque el mapa
+  siga roto.
+- `lost_mode` queda como flag expuesto **sin efectos automáticos** (decisión
+  de producto §D1): no dispara alertas ni cambia el polling. Los efectos son
+  feature futura.
+- Lecciones: (a) el reporte de handoff de Codex arrastraba
+  `expo start --go` cuando Expo Go ya no era el runtime de smoke — al cambiar
+  una decisión de entorno hay que barrer specs **y** reportes; (b) un paso de
+  smoke condicional ("si hay usuario family seedeado") se cierra anotando que
+  no se ejecutó, nunca dándolo por bueno.
