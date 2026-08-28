@@ -33,6 +33,8 @@
 - R4: `rg -n "Feature 52" docs/verification.md` confirmó primero la ausencia
   (exit 1); después se añadieron y releyeron los seis pasos literales y la
   nota de EAS documentada, no implementada.
+- R6: guion humano preparado en `progress/impl_android-maps-api-key.md`; el
+  resultado permanece pendiente y la feature no se marcará `done`.
 
 ## Sesión 2026-08-27/28 (leader = sesión Backend)
 

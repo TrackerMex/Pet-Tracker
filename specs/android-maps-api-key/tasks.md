@@ -66,7 +66,7 @@ tags: [harness, spec, mobile]
 
 ## R5 — Regresión y contención
 
-- [ ] (1) No hay test propio: el "rojo" es la lista de comandos por
+- [x] (1) No hay test propio: el "rojo" es la lista de comandos por
       ejecutar, anotada en `progress/impl_android-maps-api-key.md`.
 - [ ] (2) Ejecutar y registrar salida: `bun run --cwd mobile-pet-tracker
       typecheck`, `lint`, `test`, y `./init.sh` desde la raíz — los cuatro
@@ -79,7 +79,7 @@ tags: [harness, spec, mobile]
 
 ## R6 — Smoke en el dev build de Android (cierre humano)
 
-- [ ] (1) Preparar: dejar en `progress/impl_android-maps-api-key.md` el
+- [x] (1) Preparar: dejar en `progress/impl_android-maps-api-key.md` el
       guion de R6 listo para que el humano lo siga (comandos copiables,
       qué mirar en `adb logcat`, qué hacer si el mapa sale gris).
 - [ ] (2) **HUMANO**: crear la clave en Google Cloud restringida por
