@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-08-28
-**Features completadas**: 47/54 (`feature_list.json`)
-**En progreso**: #45 pet-lost-mode (review aprobado, PR #84; gate R9 **desbloqueado** desde el cierre de #52 — en main figura `pending`, el `in_progress` real viaja en su branch)
+**Features completadas**: 48/54 (`feature_list.json`)
+**En progreso**: ninguna
 
-**Pendientes**: 6 (#18, #41, #42, #44, #53, #54). #45 con PR #84 abierto, a la espera del smoke R9. #54 `android-map-never-ready` es P1: el tab Map solo pinta el watermark de Google, sin tiles ni marker, y su R1 es un discriminador en dispositivo antes de elegir fix (`progress/explore_android-map-never-ready.md`). Fuente del diseño Figma versionada en
+**Pendientes**: 6 (#18, #41, #42, #44, #53, #54). #54 `android-map-never-ready` es P1 y la siguiente candidata: el tab Map solo pinta el watermark de Google, sin tiles ni marker, y su R1 es un discriminador en dispositivo antes de elegir fix (`progress/explore_android-map-never-ready.md`). Fuente del diseño Figma versionada en
 `specs/mobile-figma-polish/design-src/`.
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
