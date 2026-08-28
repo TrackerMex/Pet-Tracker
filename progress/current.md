@@ -23,6 +23,9 @@
 - R12 completado por TDD: `64230ee` (rojo: faltaba migración) → `9cd8473`
   (verde: schema + migración 0015 + catálogo). Migración aplicada en
   Postgres local; tabla e índice confirmados; suite focalizada 7/7.
+- R1 completado por TDD: `a40ceb2` (rojo: use case/handler ausentes) →
+  `b3e0aaf` (verde: token SHA-256, TTL 1 h, sender y respuesta 200).
+  Suites focalizadas 23/23, ESLint y typecheck verdes.
 
 ## Sesión 2026-08-28 (leader = sesión Backend)
 
