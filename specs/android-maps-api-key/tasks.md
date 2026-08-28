@@ -68,10 +68,10 @@ tags: [harness, spec, mobile]
 
 - [x] (1) No hay test propio: el "rojo" es la lista de comandos por
       ejecutar, anotada en `progress/impl_android-maps-api-key.md`.
-- [ ] (2) Ejecutar y registrar salida: `bun run --cwd mobile-pet-tracker
+- [x] (2) Ejecutar y registrar salida: `bun run --cwd mobile-pet-tracker
       typecheck`, `lint`, `test`, y `./init.sh` desde la raíz — los cuatro
       exit 0, sin tests previos modificados.
-- [ ] (3) Verificar contención con `git diff --stat main...HEAD` contra la
+- [x] (3) Verificar contención con `git diff --stat main...HEAD` contra la
       allowlist de [[requirements]] R5 (y confirmar que `app.json`,
       `eas.json`, `package.json`, `bun.lock`, `src/**` y
       `backend-pet-tracker/**` no aparecen); anotar el resultado en

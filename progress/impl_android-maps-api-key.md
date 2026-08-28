@@ -2,8 +2,7 @@
 
 Fecha: 2026-08-28  
 Branch: `feature/52-android-maps-api-key`  
-Estado: R1–R4 implementados; R5 pendiente de verificación final; R6 reservado
-al humano.
+Estado: R1–R5 implementados y verificados; R6 reservado al humano.
 
 ## Resultado de implementación
 
@@ -33,14 +32,33 @@ al humano.
 
 Comandos que deben salir con exit 0 antes del handoff:
 
-- [ ] `bun run --cwd mobile-pet-tracker typecheck`
-- [ ] `bun run --cwd mobile-pet-tracker lint`
-- [ ] `bun run --cwd mobile-pet-tracker test`
-- [ ] `./init.sh`
-- [ ] Diff contra `origin/main` limitado a la allowlist de R5.
-- [ ] Grep-clean C8 sin regresión.
+- [x] `bun run --cwd mobile-pet-tracker typecheck` — exit 0.
+- [x] `bun run --cwd mobile-pet-tracker lint` — exit 0.
+- [x] `bun run --cwd mobile-pet-tracker test` — exit 0: 50 suites,
+  545 tests y 1 snapshot.
+- [x] `./init.sh` — exit 0 a las 04:38 UTC: build verde; backend unitario
+  150 suites/1153 tests; infraestructura 2 suites/14 tests; móvil 50
+  suites/545 tests; e2e 21 suites y 336 tests pasados (3 suites/8 tests gated
+  omitidos); lint y typecheck verdes.
+- [x] `git diff --stat main...HEAD` y `git diff --name-only 60aefe0..HEAD`
+  quedan limitados a config/test/env móvil, `docs/`, `specs/` y `progress/`.
+  El diff de paths prohibidos (`app.json`, `eas.json`, `package.json`,
+  `bun.lock`, `src/**`, `backend-pet-tracker/**`) está vacío.
+- [x] Grep-clean C8 sin regresión: 0 hex fuera de `src/theme/`, 0 clases
+  arbitrarias, 0 `StyleSheet.create`/shadow/elevation legacy; suite
+  `design-drift` 14/14.
+- [x] Seguridad/config: 0 patrones `AIza…` versionados; `.env.example` no
+  contiene `EXPO_PUBLIC_GOOGLE`; el campo muerto
+  `android.config.googleMaps.apiKey` no aparece en la app.
+- [x] Resolución integrada: `expo config --json` con `test-key` conserva
+  package/name/slug y deja la tupla `react-native-maps` al final; sin la
+  variable sale 0 y no contiene esa entrada.
 
-Resultados: pendientes de la corrida final.
+Nota de estabilidad: la primera corrida final de `./init.sh` encontró un flake
+preexistente en `src/screens/add-pet/index.test.tsx` (el mock del image picker
+devolvió `undefined`). La suite había pasado en la corrida móvil inmediatamente
+anterior, se reprodujo de forma dirigida en verde (7/7) sin cambios y la segunda
+corrida completa de `./init.sh` terminó con exit 0.
 
 ## Guion para el smoke R6 — humano
 
@@ -109,4 +127,3 @@ La clave real no se copia en este documento. Consulta también
 - `adb logcat` limpio de los crashes: pendiente
 - Smoke R9 de `pet-lost-mode`: pendiente
 - Resultado final: **PENDIENTE — no marcar #52 `done` todavía**
-

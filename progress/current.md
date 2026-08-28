@@ -39,6 +39,10 @@
   test R3 no estaban incluidos por `types: ["jest"]`. Se añadió una referencia
   de tipos local (sin dependencias ni cambios de tsconfig) y typecheck volvió a
   salir 0; falta repetir la matriz completa.
+- R5 final: typecheck/lint/test móvil salen 0 (50 suites, 545 tests);
+  `./init.sh` sale 0; allowlist, secretos, resolución `expo config` y grep-clean
+  C8 verificados. La primera corrida de init tropezó con un flake preexistente
+  de `add-pet`; su suite dirigida pasó 7/7 y la repetición completa quedó verde.
 
 ## Sesión 2026-08-27/28 (leader = sesión Backend)
 
