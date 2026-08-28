@@ -49,6 +49,9 @@
 - R8 completado por TDD: `56054ce` (rojo: seis payloads inválidos aceptados)
   → `2142d49` (verde: ResetPasswordSchema/parseBody antes del use case).
   Controller 35/35 y ESLint verde.
+- R10 completado por TDD: `f699540` (rojo: sender sin salida) → `44fecd5`
+  (verde: log estructurado + warning con EMAIL_ENABLED=true). Unit/controller
+  39/39, e2e 1/1 y ESLint verde; token ausente de HTTP/base en claro.
 
 ## Sesión 2026-08-28 (leader = sesión Backend)
 
