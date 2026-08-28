@@ -16,7 +16,7 @@ tags: [harness, spec, backend, mobile]
 | R6 | `src/app/(tabs)/__tests__/map.test.tsx::R6: owner toglea lost mode contra el endpoint` | `322c48d feat(pet-lost-mode): activate owner map toggle (R6)` |
 | R7 | `src/app/(tabs)/__tests__/map.test.tsx::R7: no-owner deshabilitado y error visible` | `75835d8 feat(pet-lost-mode): handle non-owner and errors (R7)` |
 | R8 | `progress/impl_pet-lost-mode.md::Verificación R8` — typecheck/lint/test móvil; lint/test/e2e backend; `./init.sh`; allowlist y grep C8 | `21445b3 fix(pet-lost-mode): preserve controller compatibility (R8)` |
-| R9 | pendiente (smoke humano — registra el humano) | pendiente |
+| R9 | smoke humano corrido el 2026-08-28 en el dev build de Android; resultado en `progress/impl_pet-lost-mode.md::Resultado del smoke R9` — puntos 1–4 OK (toggle, label, `lostMode` en el perfil, error visible con el backend apagado y reintento usable); el punto 5 (usuario `family`) queda **no ejecutado** por no haber uno seedeado, condicional en la spec y cubierto por `map.test.tsx::R7` | `1d31d18 Mark Android R9 smoke test complete` (casilla firmada por el humano) |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente" — para R8
 la fila registra los comandos ejecutados y para R9 el smoke lo registra el

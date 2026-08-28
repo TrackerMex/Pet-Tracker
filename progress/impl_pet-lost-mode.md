@@ -90,18 +90,35 @@ en los gates finales.
 
 ## Handoff humano R9
 
-R9 no fue ejecutado ni cerrado por Codex. La feature permanece `in_progress`.
-El humano debe probar en Android contra el backend local:
+R9 no fue ejecutado ni cerrado por Codex. El humano lo probó en el dev build
+de Android contra el backend local:
 
 1. Levantar `docker compose up -d` y
    `pnpm -C backend-pet-tracker run start:dev`.
-2. Configurar la IP LAN en el `.env` móvil y ejecutar `bunx expo start --go`
-   desde `mobile-pet-tracker/`.
+2. Configurar la IP LAN en el `.env` móvil y ejecutar
+   `bunx expo start --dev-client` desde `mobile-pet-tracker/`. (El reporte
+   original decía `--go`; Expo Go dejó de ser el runtime de smoke el
+   2026-08-25.)
 3. Login owner → Map con posición → `Activate Lost Mode` habilitado.
 4. Pulsar y confirmar `Deactivate Lost Mode` y `lostMode: true` en perfil/GET;
    pulsar otra vez y confirmar el retorno a `false`.
 5. Apagar backend, pulsar y confirmar el error visible y el reintento usable.
 6. Si existe usuario `family`, confirmar botón visible y deshabilitado.
 
-El humano registra aquí el resultado de ese smoke, actualiza la fila R9 de
-trazabilidad y solo entonces la feature puede pasar a `done`.
+### Resultado del smoke R9
+
+- Fecha: 2026-08-28. Casilla firmada por el humano en `1d31d18`.
+- Pasos 1–4 (equivalentes a los puntos 1–4 de R9 en [[requirements]]):
+  **OK**. El toggle activa y desactiva, el label sigue el estado, el perfil
+  refleja `lostMode`, y con el backend apagado aparece `Could not update Lost
+  Mode` quedando el botón usable al reintentar.
+- Paso 5 (usuario `family` con el botón deshabilitado): **NO EJECUTADO** — no
+  hay usuario `family` seedeado en el entorno local. La spec lo redacta
+  condicional ("si hay usuario `family` seedeado"), así que no bloquea el
+  gate, y R7 sí tiene cobertura automática en
+  `src/app/(tabs)/__tests__/map.test.tsx`
+  (`describe('R7: no-owner deshabilitado y error visible')`). Queda anotado
+  como pendiente de verificación manual, no como verificado.
+- Contexto del entorno: el tab Map no pinta tiles ni marker por el defecto
+  **#54 `android-map-never-ready`**, ajeno a esta feature. El botón vive en
+  la tarjeta superpuesta, que sí se renderiza, así que R9 no depende de él.
