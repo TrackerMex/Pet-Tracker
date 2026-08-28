@@ -1,5 +1,6 @@
 import { AuditLogEntry, AuditLogger } from '@/audit/audit-log.repository';
 import { PasswordResetToken } from '@/modules/auth/domain/entities/password-reset-token.entity';
+import { InvalidPasswordResetTokenError } from '@/modules/auth/domain/errors/password-reset.errors';
 import { PasswordHasher } from '@/modules/auth/domain/ports/password-hasher';
 import {
   NewPasswordResetToken,
@@ -116,5 +117,28 @@ describe('R5: el token vigente cambia el password y consume todos los tokens del
     expect(updatePasswordHash.mock.invocationCallOrder[0]).toBeLessThan(
       invalidateAllForUser.mock.invocationCallOrder[0],
     );
+  });
+});
+
+describe('R6: un token inexistente o ya consumido no cambia ningun password', () => {
+  it.each([
+    ['inexistente', null],
+    ['ya usado', buildToken({ usedAt: new Date('2026-08-28T20:30:00.000Z') })],
+  ])('trata el token %s como invalido sin ninguna escritura', async (_case, token) => {
+    const {
+      useCase,
+      hash,
+      updatePasswordHash,
+      invalidateAllForUser,
+      record,
+    } = buildScenario(token);
+
+    await expect(useCase.execute(validDto)).rejects.toBeInstanceOf(
+      InvalidPasswordResetTokenError,
+    );
+    expect(hash).not.toHaveBeenCalled();
+    expect(updatePasswordHash).not.toHaveBeenCalled();
+    expect(invalidateAllForUser).not.toHaveBeenCalled();
+    expect(record).not.toHaveBeenCalled();
   });
 });

@@ -16,6 +16,7 @@ import {
   InvalidVerificationTokenError,
   VerificationTokenExpiredError,
 } from '@/modules/auth/domain/errors/email-verification.errors';
+import { InvalidPasswordResetTokenError } from '@/modules/auth/domain/errors/password-reset.errors';
 import {
   EmailAlreadyRegisteredError,
   InvalidCredentialsError,
@@ -478,5 +479,24 @@ describe('R5: POST /v1/auth/reset-password con token valido responde 200', () =>
     expect(execute).toHaveBeenCalledWith(body);
     expect(response).toEqual({ reset: true });
     expect(httpCodeOf('resetPassword')).toBe(200);
+  });
+});
+
+describe('R6: POST /v1/auth/reset-password con token invalido o usado responde 400', () => {
+  it.each(['inexistente', 'usado'])('mapea el token %s al mismo 400', async () => {
+    const { controller } = buildResetPasswordDouble(() =>
+      Promise.reject(new InvalidPasswordResetTokenError()),
+    );
+
+    const error = await captureHttpError(
+      controller.resetPassword({
+        token: VERIFICATION_TOKEN,
+        password: 'NewPassword1!',
+        passwordConfirmation: 'NewPassword1!',
+      }),
+    );
+
+    expect(error).toBeInstanceOf(BadRequestException);
+    expect(error.getStatus()).toBe(400);
   });
 });
