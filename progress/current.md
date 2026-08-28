@@ -26,6 +26,8 @@
 - R1 completado por TDD: `a40ceb2` (rojo: use case/handler ausentes) →
   `b3e0aaf` (verde: token SHA-256, TTL 1 h, sender y respuesta 200).
   Suites focalizadas 23/23, ESLint y typecheck verdes.
+- R2 completado por TDD: `97e2c4b` (rojo: email inexistente devolvía 500) →
+  `bfa3f8c` (verde: retorno silencioso). Unit/controller 23/23 y e2e 1/1.
 
 ## Sesión 2026-08-28 (leader = sesión Backend)
 

@@ -12,7 +12,7 @@ Rutas de test relativas a `backend-pet-tracker/` (`src/…` para unitarios,
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
 | R1 | `src/modules/auth/application/use-cases/request-password-reset.use-case.spec.ts::R1: la solicitud con cuenta existente emite un token hasheado con expiracion de una hora`; `src/modules/auth/infrastructure/auth.controller.spec.ts::R1: POST /v1/auth/forgot-password responde 200 con requested true` | `a40ceb2` rojo → `b3e0aaf feat(auth-forgot-password): issue hashed reset token for existing account (R1)` |
-| R2 | pendiente | pendiente |
+| R2 | `src/modules/auth/application/use-cases/request-password-reset.use-case.spec.ts::R2: la solicitud con email inexistente no emite token ni revela la ausencia de cuenta`; `src/modules/auth/infrastructure/auth.controller.spec.ts::R2: POST /v1/auth/forgot-password responde igual exista o no la cuenta`; `test/auth-forgot-password.e2e-spec.ts::R2: forgot-password responde identico para cuenta existente e inexistente` | `97e2c4b` rojo → `bfa3f8c feat(auth-forgot-password): return uniform response for unknown email (R2)` |
 | R3 | pendiente | pendiente |
 | R4 | pendiente | pendiente |
 | R5 | pendiente | pendiente |
