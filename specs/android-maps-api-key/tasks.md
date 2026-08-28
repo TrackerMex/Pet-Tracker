@@ -45,10 +45,10 @@ tags: [harness, spec, mobile]
 - [x] (1) Escribir test que falla para R3 (mismo archivo): lee
       `.env.example` y assertea `/^GOOGLE_MAPS_API_KEY_ANDROID=\s*$/m`,
       ausencia de `EXPO_PUBLIC_GOOGLE` y ausencia de `/AIza[0-9A-Za-z_-]{10,}/`.
-- [ ] (2) Implementación mínima que lo pasa: línea + comentario en
+- [x] (2) Implementación mínima que lo pasa: línea + comentario en
       `mobile-pet-tracker/.env.example` (D3). Verificar —sin modificarlo—
       que `mobile-pet-tracker/.gitignore` ya ignora `.env`.
-- [ ] (3) Refactor con tests verdes.
+- [x] (3) Refactor con tests verdes.
 
 ## R4 — `docs/verification.md` §Feature 52
 

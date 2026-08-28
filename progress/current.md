@@ -27,6 +27,9 @@
   se emite un aviso y no se lanza. Typecheck y lint móviles salen 0.
 - R3 rojo confirmado: la suite dirigida sale 1 porque `.env.example` todavía
   no contiene `GOOGLE_MAPS_API_KEY_ANDROID=`.
+- R3 verde: suite dirigida 5/5; `.env.example` contiene solo el nombre vacío,
+  la variable no usa `EXPO_PUBLIC_` y `git check-ignore` confirma que el `.env`
+  móvil real está ignorado.
 
 ## Sesión 2026-08-27/28 (leader = sesión Backend)
 
