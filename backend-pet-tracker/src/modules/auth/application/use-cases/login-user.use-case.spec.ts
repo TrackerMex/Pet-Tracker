@@ -42,6 +42,7 @@ function buildUseCase(overrides?: {
     existsByEmail: jest.fn(),
     create: jest.fn(),
     markEmailVerified: jest.fn(),
+    updatePasswordHash: jest.fn(),
     findByEmail,
     findById: jest.fn(),
     updateProfile: jest.fn(),

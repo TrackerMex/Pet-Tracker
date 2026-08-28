@@ -4,6 +4,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { LoginUserUseCase } from './application/use-cases/login-user.use-case';
 import { RegisterUserUseCase } from './application/use-cases/register-user.use-case';
 import { RequestPasswordResetUseCase } from './application/use-cases/request-password-reset.use-case';
+import { ResetPasswordUseCase } from './application/use-cases/reset-password.use-case';
 import { VerifyEmailUseCase } from './application/use-cases/verify-email.use-case';
 import { EMAIL_VERIFICATION_SENDER } from './domain/ports/email-verification-sender';
 import { PASSWORD_HASHER } from './domain/ports/password-hasher';
@@ -30,6 +31,7 @@ import { JwtTokenService } from './infrastructure/security/jwt-token-service';
     VerifyEmailUseCase,
     LoginUserUseCase,
     RequestPasswordResetUseCase,
+    ResetPasswordUseCase,
     {
       provide: USER_REPOSITORY,
       useClass: UserDrizzleRepository,

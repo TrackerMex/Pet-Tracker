@@ -18,6 +18,7 @@ import {
   RegisterUserSchema,
   RegisterUserDto,
 } from '@/modules/auth/application/dto/register-user.dto';
+import { ResetPasswordDto } from '@/modules/auth/application/dto/reset-password.dto';
 import {
   LoginUserDto,
   LoginUserSchema,
@@ -29,6 +30,7 @@ import {
 import { LoginUserUseCase } from '@/modules/auth/application/use-cases/login-user.use-case';
 import { RegisterUserUseCase } from '@/modules/auth/application/use-cases/register-user.use-case';
 import { RequestPasswordResetUseCase } from '@/modules/auth/application/use-cases/request-password-reset.use-case';
+import { ResetPasswordUseCase } from '@/modules/auth/application/use-cases/reset-password.use-case';
 import { VerifyEmailUseCase } from '@/modules/auth/application/use-cases/verify-email.use-case';
 import {
   InvalidVerificationTokenError,
@@ -54,6 +56,10 @@ export interface ForgotPasswordResponse {
   requested: true;
 }
 
+export interface ResetPasswordResponse {
+  reset: true;
+}
+
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -61,6 +67,7 @@ export class AuthController {
     private readonly verifyEmailUseCase: VerifyEmailUseCase,
     private readonly loginUser: LoginUserUseCase,
     private readonly requestPasswordReset: RequestPasswordResetUseCase,
+    private readonly resetPasswordUseCase: ResetPasswordUseCase,
   ) {}
 
   @Public()
@@ -131,6 +138,16 @@ export class AuthController {
     await this.requestPasswordReset.execute(dto);
 
     return { requested: true };
+  }
+
+  @Public()
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  async resetPassword(@Body() body: unknown): Promise<ResetPasswordResponse> {
+    // R8 anadira el parseo Zod en el borde HTTP.
+    await this.resetPasswordUseCase.execute(body as ResetPasswordDto);
+
+    return { reset: true };
   }
 }
 

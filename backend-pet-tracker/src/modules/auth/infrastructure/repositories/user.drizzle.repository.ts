@@ -43,6 +43,17 @@ export class UserDrizzleRepository implements UserRepository {
       .where(eq(users.id, userId));
   }
 
+  async updatePasswordHash(
+    userId: string,
+    passwordHash: string,
+    changedAt: Date,
+  ): Promise<void> {
+    await this.db
+      .update(users)
+      .set({ passwordHash, updatedAt: changedAt })
+      .where(eq(users.id, userId));
+  }
+
   async findByEmail(email: string): Promise<User | null> {
     const rows = await this.db
       .select()

@@ -206,9 +206,7 @@ describe('Auth forgot password (e2e)', () => {
       const [storedToken] = await db
         .select()
         .from(passwordResetTokens)
-        .where(
-          eq(passwordResetTokens.tokenHash, hashVerificationToken(token)),
-        );
+        .where(eq(passwordResetTokens.tokenHash, hashVerificationToken(token)));
       expect(storedToken.usedAt).toBeInstanceOf(Date);
     });
   });

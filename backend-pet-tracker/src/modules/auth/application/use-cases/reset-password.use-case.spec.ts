@@ -31,10 +31,9 @@ function buildToken(
 }
 
 function buildScenario(storedToken: PasswordResetToken | null = buildToken()) {
-  const findByTokenHash = jest.fn<
-    Promise<PasswordResetToken | null>,
-    [string]
-  >(() => Promise.resolve(storedToken));
+  const findByTokenHash = jest.fn<Promise<PasswordResetToken | null>, [string]>(
+    () => Promise.resolve(storedToken),
+  );
   const invalidateAllForUser = jest.fn<Promise<void>, [string, Date]>(() =>
     Promise.resolve(),
   );
@@ -44,10 +43,9 @@ function buildScenario(storedToken: PasswordResetToken | null = buildToken()) {
     invalidateAllForUser,
   } as unknown as PasswordResetTokenRepository;
 
-  const updatePasswordHash = jest.fn<
-    Promise<void>,
-    [string, string, Date]
-  >(() => Promise.resolve());
+  const updatePasswordHash = jest.fn<Promise<void>, [string, string, Date]>(
+    () => Promise.resolve(),
+  );
   const users = { updatePasswordHash } as unknown as UserRepository;
 
   const hash = jest.fn<Promise<string>, [string]>(() =>
