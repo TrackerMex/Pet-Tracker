@@ -2,7 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { eq, inArray } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import request from 'supertest';
+import request, { Response } from 'supertest';
 import { App } from 'supertest/types';
 import { uuidv7 } from 'uuidv7';
 import { auditLog } from '@/db/schema/audit-log.schema';
@@ -15,6 +15,14 @@ import { PASSWORD_RESET_SENDER } from '@/modules/auth/domain/ports/password-rese
 import type { PasswordResetMessage } from '@/modules/auth/domain/ports/password-reset-sender';
 import { hashVerificationToken } from '@/modules/auth/application/verification-token';
 import { AppModule } from '../src/app.module';
+
+interface ForgotPasswordBody {
+  requested: true;
+}
+
+function forgotPasswordBody(response: Response): ForgotPasswordBody {
+  return response.body as ForgotPasswordBody;
+}
 
 describe('Auth forgot password (e2e)', () => {
   const runId = Date.now();
@@ -47,10 +55,7 @@ describe('Auth forgot password (e2e)', () => {
   }
 
   async function requestResetToken(email: string): Promise<string> {
-    await api()
-      .post('/v1/auth/forgot-password')
-      .send({ email })
-      .expect(200);
+    await api().post('/v1/auth/forgot-password').send({ email }).expect(200);
 
     const message = [...sentMessages]
       .reverse()
@@ -102,13 +107,13 @@ describe('Auth forgot password (e2e)', () => {
 
       expect({
         status: missingResponse.status,
-        body: missingResponse.body,
+        body: forgotPasswordBody(missingResponse),
       }).toEqual({
         status: existingResponse.status,
-        body: existingResponse.body,
+        body: forgotPasswordBody(existingResponse),
       });
       expect(existingResponse.status).toBe(200);
-      expect(existingResponse.body).toEqual({ requested: true });
+      expect(forgotPasswordBody(existingResponse)).toEqual({ requested: true });
     });
   });
 

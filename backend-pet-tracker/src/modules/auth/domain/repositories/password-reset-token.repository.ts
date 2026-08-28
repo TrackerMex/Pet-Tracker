@@ -11,4 +11,6 @@ export interface NewPasswordResetToken {
 
 export interface PasswordResetTokenRepository {
   create(token: NewPasswordResetToken): Promise<void>;
+  /** Marca como usados todos los tokens vivos del usuario (R4, R5). */
+  invalidateAllForUser(userId: string, invalidatedAt: Date): Promise<void>;
 }

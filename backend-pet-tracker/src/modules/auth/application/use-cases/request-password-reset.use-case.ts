@@ -36,6 +36,8 @@ export class RequestPasswordResetUseCase {
     }
 
     const issuedAt = new Date();
+    await this.resetTokens.invalidateAllForUser(user.id, issuedAt);
+
     const token = generateVerificationToken();
     const expiresAt = new Date(
       issuedAt.getTime() + PASSWORD_RESET_TOKEN_TTL_MS,

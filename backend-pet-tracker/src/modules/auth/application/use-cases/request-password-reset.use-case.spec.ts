@@ -117,14 +117,8 @@ describe('R1: la solicitud con cuenta existente emite un token hasheado con expi
 
 describe('R2: la solicitud con email inexistente no emite token ni revela la ausencia de cuenta', () => {
   it('termina en silencio sin persistir, enviar ni auditar', async () => {
-    const {
-      useCase,
-      findByEmail,
-      create,
-      invalidateAllForUser,
-      send,
-      record,
-    } = buildScenario(null);
+    const { useCase, findByEmail, create, invalidateAllForUser, send, record } =
+      buildScenario(null);
 
     await expect(
       useCase.execute({ email: '  UNKNOWN@Example.COM ' }),
