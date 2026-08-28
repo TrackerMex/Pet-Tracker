@@ -1,7 +1,9 @@
 # Implementación — Feature 52 `android-maps-api-key`
 
-Fecha: 2026-08-28  
-Branch: `feature/52-android-maps-api-key`  
+Fecha: 2026-08-28
+
+Branch: `feature/52-android-maps-api-key`
+
 Estado: R1–R5 implementados y verificados; R6 reservado al humano.
 
 ## Resultado de implementación
