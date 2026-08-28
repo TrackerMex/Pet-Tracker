@@ -5,57 +5,6 @@
 
 ---
 
-## Feature #44 `auth-forgot-password` — in_progress, P3
-
-- Implementación iniciada por Codex: 2026-08-28 22:47 UTC, en
-  `feature/44-auth-forgot-password`, con spec aprobada por humano.
-- Gate inicial `./init.sh`: exit 0 (backend 152 suites/1162 tests; infra 2/14;
-  mobile 50/561; e2e backend 22 suites/343 tests; lint y typecheck verdes).
-- Plan TDD: R12 (schema/migración) → R1–R4 (solicitud uniforme) → R5–R8
-  (reset) → R10/R11 (log/auditoría) → R9/R13 (e2e y contención). Cada R-id
-  tendrá commit rojo previo a su implementación y trazabilidad inmediata.
-- Contención fijada por R13: backend auth/db + tests y docs/harness de la
-  allowlist; no se toca mobile, infra, variables de entorno ni el flujo
-  `verify-email` existente.
-- El primer gate arrancó en esta rama, pero otro checkout compartido dejó el
-  worktree momentáneamente en #54; se restauró #44 antes de leer o editar
-  código. Los archivos no versionados ajenos ya presentes se preservan.
-- R12 completado por TDD: `64230ee` (rojo: faltaba migración) → `9cd8473`
-  (verde: schema + migración 0015 + catálogo). Migración aplicada en
-  Postgres local; tabla e índice confirmados; suite focalizada 7/7.
-- R1 completado por TDD: `a40ceb2` (rojo: use case/handler ausentes) →
-  `b3e0aaf` (verde: token SHA-256, TTL 1 h, sender y respuesta 200).
-  Suites focalizadas 23/23, ESLint y typecheck verdes.
-- R2 completado por TDD: `97e2c4b` (rojo: email inexistente devolvía 500) →
-  `bfa3f8c` (verde: retorno silencioso). Unit/controller 23/23 y e2e 1/1.
-- R3 completado por TDD: `080817e` (rojo: cuatro payloads inválidos
-  aceptados) → `9d1f7e7` (verde: Zod/parseBody antes del use case).
-  Controller 25/25 y ESLint focalizado verde.
-- R4 completado por TDD: `25abbdd` (rojo: ambos tokens seguían vivos) →
-  `721c580` (verde: invalidación por usuario antes del insert). Unit 3/3,
-  e2e 2/2 y ESLint focalizado verdes.
-- R5/R9 completados por TDD: rojos `e36de77` (reset 404) y `106349c`
-  (round-trip 404) → `e531f63` (verde: argon2id, update de credencial,
-  consumo total y login viejo 401/nuevo 200). Unit/controller/module 29/29,
-  e2e focalizado 4/4, typecheck y ESLint verdes.
-- R13 rojo registrado antes del cableado: `0e67341`; su e2e ya queda verde
-  tras R6 y falta la verificación final de regresión/contención.
-- R6 completado por TDD: `1e62765` (rojo: faltaba error de dominio) →
-  `ff042c0` (verde: inexistente/usado indistinguibles, 400 y cero escrituras).
-  Unit/controller 31/31; e2e de aislamiento R13 1/1; ESLint verde.
-- R7 completado por TDD: `ac3af27` (rojo: expirado/límite se consumían) →
-  `e1bc6cf` (verde: error tipado antes de argon2 y mapeo 410).
-  Unit/controller 34/34 y ESLint verde.
-- R8 completado por TDD: `56054ce` (rojo: seis payloads inválidos aceptados)
-  → `2142d49` (verde: ResetPasswordSchema/parseBody antes del use case).
-  Controller 35/35 y ESLint verde.
-- R10 completado por TDD: `f699540` (rojo: sender sin salida) → `44fecd5`
-  (verde: log estructurado + warning con EMAIL_ENABLED=true). Unit/controller
-  39/39, e2e 1/1 y ESLint verde; token ausente de HTTP/base en claro.
-- R11 completado por TDD: `4e05906` (rojo: cero auditorías) → `4324e31`
-  (verde: requested solo con usuario y reset solo tras éxito). Use cases
-  11/11 y ESLint verde.
-
 ## Sesión 2026-08-28 (leader = sesión Backend)
 
 ### Features #52 `android-maps-api-key` y #45 `pet-lost-mode` — done

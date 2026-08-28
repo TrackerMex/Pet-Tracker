@@ -132,6 +132,7 @@ modificó ninguno de esos módulos.
 ```text
 $ ./init.sh
 exit 0
+harness: sesión limpia; 49/54 features completadas, 5 pendientes
 build: OK
 backend: 156 suites, 1198 tests passed
 infra: 2 suites, 14 tests passed
