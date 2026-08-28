@@ -104,10 +104,10 @@ En liteMode el mapa se dibuja como imagen estática en vez de superficie GL
 ## Resultado (rellena el humano)
 
 - Fecha:
-- Paso 1, `[map] ready` en logcat: sí / no →
-- Paso 2, `googleRenderer="LEGACY"`: pinta / no pinta →
-- Paso 3, `liteMode`: pinta / no pinta →
+- Paso 1, `[map] ready` en logcat: sí / no → si
+- Paso 2, `googleRenderer="LEGACY"`: pinta / no pinta → no pinta
+- Paso 3, `liteMode`: pinta / no pinta → si pinta
 - Conclusión: H1 / H2
-- `map.tsx` revertido: sí / no
+- `map.tsx` revertido: sí
 
 Con esto se lanza `spec_author` sobre #54 con la causa ya decidida.
