@@ -182,3 +182,29 @@ describe('R7: un token expirado no cambia el password', () => {
     },
   );
 });
+
+describe('R11: el reset exitoso audita user.password_reset', () => {
+  beforeEach(() => {
+    jest.useFakeTimers().setSystemTime(RESET_AT);
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('registra la accion sobre el usuario despues de consumir sus tokens', async () => {
+    const { useCase, invalidateAllForUser, record } = buildScenario();
+
+    await useCase.execute(validDto);
+
+    expect(record).toHaveBeenCalledWith({
+      userId: USER_ID,
+      action: 'user.password_reset',
+      entity: 'user',
+      entityId: USER_ID,
+    });
+    expect(invalidateAllForUser.mock.invocationCallOrder[0]).toBeLessThan(
+      record.mock.invocationCallOrder[0],
+    );
+  });
+});

@@ -153,3 +153,29 @@ describe('R4: una nueva solicitud invalida los tokens de reset anteriores del us
     );
   });
 });
+
+describe('R11: la solicitud con cuenta existente audita user.password_reset_requested y la inexistente no audita nada', () => {
+  it('registra usuario, accion y entidad solo despues de emitir', async () => {
+    const { useCase, send, record } = buildScenario();
+
+    await useCase.execute({ email: 'ada@example.com' });
+
+    expect(record).toHaveBeenCalledWith({
+      userId: USER_ID,
+      action: 'user.password_reset_requested',
+      entity: 'user',
+      entityId: USER_ID,
+    });
+    expect(send.mock.invocationCallOrder[0]).toBeLessThan(
+      record.mock.invocationCallOrder[0],
+    );
+  });
+
+  it('no audita un email sin entidad asociada', async () => {
+    const { useCase, record } = buildScenario(null);
+
+    await useCase.execute({ email: 'missing@example.com' });
+
+    expect(record).not.toHaveBeenCalled();
+  });
+});
