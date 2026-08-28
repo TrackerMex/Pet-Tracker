@@ -21,7 +21,9 @@ function readMigration0015(): string {
 
 describe('R12: password_reset_tokens espeja el patron de email_verification_tokens', () => {
   const config = getTableConfig(passwordResetTokens);
-  const columns = new Map(config.columns.map((column) => [column.name, column]));
+  const columns = new Map(
+    config.columns.map((column) => [column.name, column]),
+  );
 
   it('declara exactamente las seis columnas del contrato', () => {
     expect(config.name).toBe('password_reset_tokens');
@@ -101,8 +103,6 @@ describe('R12: password_reset_tokens espeja el patron de email_verification_toke
     expect(sql).toContain(
       'REFERENCES "public"."users"("id") ON DELETE cascade',
     );
-    expect(sql).toContain(
-      'CREATE INDEX "password_reset_tokens_user_id_idx"',
-    );
+    expect(sql).toContain('CREATE INDEX "password_reset_tokens_user_id_idx"');
   });
 });
