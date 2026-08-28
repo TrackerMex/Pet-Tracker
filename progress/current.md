@@ -17,6 +17,8 @@
   R4; ejecutar y registrar R5; dejar R6 preparado para el smoke humano.
 - Contención: no tocar `app.json`, `eas.json`, `package.json`, `bun.lock`,
   `src/**`, `backend-pet-tracker/**` ni carpetas nativas generadas.
+- R1 rojo confirmado: la suite dirigida sale 1 por `Cannot find module
+  './app.config'`, antes de crear la configuración dinámica.
 
 ## Sesión 2026-08-27/28 (leader = sesión Backend)
 

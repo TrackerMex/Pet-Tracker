@@ -18,7 +18,7 @@ tags: [harness, spec, mobile]
 
 ## R1 — La config resuelta inyecta la clave desde el entorno
 
-- [ ] (1) Escribir test que falla para R1: `mobile-pet-tracker/app.config.test.ts`
+- [x] (1) Escribir test que falla para R1: `mobile-pet-tracker/app.config.test.ts`
       (NUEVO) → `describe('R1: la config resuelta inyecta la clave de
       Android desde el entorno', ...)`. Importa el default export de
       `./app.config` y `./app.json`, invoca con `{ config: appJson.expo }`
