@@ -35,6 +35,10 @@
   nota de EAS documentada, no implementada.
 - R6: guion humano preparado en `progress/impl_android-maps-api-key.md`; el
   resultado permanece pendiente y la feature no se marcará `done`.
+- R5 primera corrida: lint salió 0; typecheck detectó que los helpers Node del
+  test R3 no estaban incluidos por `types: ["jest"]`. Se añadió una referencia
+  de tipos local (sin dependencias ni cambios de tsconfig) y typecheck volvió a
+  salir 0; falta repetir la matriz completa.
 
 ## Sesión 2026-08-27/28 (leader = sesión Backend)
 
