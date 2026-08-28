@@ -23,6 +23,8 @@
   typecheck` y `lint` salen 0.
 - R2 rojo confirmado: los tres casos (ausente, vacía, espacios) detectan que
   la implementación R1 todavía añade `react-native-maps` con clave vacía.
+- R2 verde: suite dirigida 4/4; sin clave se conserva la lista base de plugins,
+  se emite un aviso y no se lanza. Typecheck y lint móviles salen 0.
 
 ## Sesión 2026-08-27/28 (leader = sesión Backend)
 

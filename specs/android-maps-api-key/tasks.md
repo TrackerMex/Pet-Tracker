@@ -37,8 +37,8 @@ tags: [harness, spec, mobile]
       `'   '` → `plugins` igual al de `app.json`, `not.toThrow()`, un solo
       `console.warn` con los substrings `GOOGLE_MAPS_API_KEY_ANDROID` y
       `docs/verification.md`. Restaurar `process.env` entre casos.
-- [ ] (2) Implementación mínima que lo pasa ([[design]] §D4).
-- [ ] (3) Refactor con tests verdes.
+- [x] (2) Implementación mínima que lo pasa ([[design]] §D4).
+- [x] (3) Refactor con tests verdes.
 
 ## R3 — La clave viaja por entorno, nunca por el repo
 
