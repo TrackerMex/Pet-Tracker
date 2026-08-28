@@ -462,6 +462,6 @@ devuelve `200 { verified: true }`.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
-- [ ] DA1 y DA2 revisadas: se acepta cerrar la feature con entrega por log
-      estructurado (fecha: ____)
+- [X] Aprobado por humano (fecha: 2026-08-28) ← gate obligatorio antes de implementar
+- [X] DA1 y DA2 revisadas: se acepta cerrar la feature con entrega por log
+      estructurado (fecha: 2026-08-28)
