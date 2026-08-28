@@ -31,9 +31,8 @@ export class RequestPasswordResetUseCase {
   async execute(dto: ForgotPasswordDto): Promise<void> {
     const user = await this.users.findByEmail(normalizeEmail(dto.email));
 
-    // R2 convertira este camino en un retorno silencioso.
     if (user === null) {
-      throw new Error('Password reset account not found');
+      return;
     }
 
     const issuedAt = new Date();
