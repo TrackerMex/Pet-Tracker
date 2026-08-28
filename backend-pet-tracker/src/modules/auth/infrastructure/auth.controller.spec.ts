@@ -8,6 +8,7 @@ import {
 import { GoneException } from '@nestjs/common';
 import { LoginUserUseCase } from '@/modules/auth/application/use-cases/login-user.use-case';
 import { RegisterUserUseCase } from '@/modules/auth/application/use-cases/register-user.use-case';
+import { RequestPasswordResetUseCase } from '@/modules/auth/application/use-cases/request-password-reset.use-case';
 import { VerifyEmailUseCase } from '@/modules/auth/application/use-cases/verify-email.use-case';
 import { User } from '@/modules/auth/domain/entities/user.entity';
 import {
@@ -61,6 +62,7 @@ function buildRegisterUserDouble(
     { execute } as unknown as RegisterUserUseCase,
     { execute: jest.fn() } as unknown as VerifyEmailUseCase,
     { execute: jest.fn() } as unknown as LoginUserUseCase,
+    { execute: jest.fn() } as unknown as RequestPasswordResetUseCase,
   );
 
   return { controller, execute };
@@ -74,6 +76,7 @@ function buildVerifyEmailDouble(
     { execute: jest.fn() } as unknown as RegisterUserUseCase,
     { execute } as unknown as VerifyEmailUseCase,
     { execute: jest.fn() } as unknown as LoginUserUseCase,
+    { execute: jest.fn() } as unknown as RequestPasswordResetUseCase,
   );
 
   return { controller, execute };
@@ -88,6 +91,21 @@ function buildLoginDouble(
     { execute: jest.fn() } as unknown as RegisterUserUseCase,
     { execute: jest.fn() } as unknown as VerifyEmailUseCase,
     { execute } as unknown as LoginUserUseCase,
+    { execute: jest.fn() } as unknown as RequestPasswordResetUseCase,
+  );
+
+  return { controller, execute };
+}
+
+function buildForgotPasswordDouble(
+  behaviour: () => Promise<void> = () => Promise.resolve(),
+) {
+  const execute = jest.fn(behaviour);
+  const controller = new AuthController(
+    { execute: jest.fn() } as unknown as RegisterUserUseCase,
+    { execute: jest.fn() } as unknown as VerifyEmailUseCase,
+    { execute: jest.fn() } as unknown as LoginUserUseCase,
+    { execute } as unknown as RequestPasswordResetUseCase,
   );
 
   return { controller, execute };
@@ -365,5 +383,17 @@ describe('R15 (auth-login-me): la respuesta de login nunca expone password_hash'
     const body = await controller.login(validLoginBody);
 
     expect(Object.keys(body)).toEqual(['access_token']);
+  });
+});
+
+describe('R1: POST /v1/auth/forgot-password responde 200 con requested true', () => {
+  it('invoca el caso de uso y fija exactamente el contrato de exito', async () => {
+    const { controller, execute } = buildForgotPasswordDouble();
+
+    const body = await controller.forgotPassword({ email: 'ada@example.com' });
+
+    expect(execute).toHaveBeenCalledWith({ email: 'ada@example.com' });
+    expect(body).toEqual({ requested: true });
+    expect(httpCodeOf('forgotPassword')).toBe(200);
   });
 });
