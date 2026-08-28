@@ -20,9 +20,38 @@ fija las decisiones ya tomadas en ESTE repo.
 | Sheets, pickers, menus, toggles | `expo-ui` |
 | Animaciones, gestos, haptics | `expo-animation` (en Claude: `animate-expo`) |
 | Tailwind/uniwind | `expo-tailwind-setup` |
+| Diseñar/mejorar una pantalla o flujo completo | `appllama-app-design-skill` (obligatoria, ver abajo) |
 
 Subagentes y handoffs a Codex deben instruir explícitamente la carga de la
 skill pertinente (regla ya en memoria de sesión; aquí queda oficial).
+
+### `appllama-app-design-skill`: cuándo y con qué límites
+
+Instalada en `.agents/skills/` (universal: Claude Code y Codex CLI la ven).
+Se carga en **toda** tarea de UI móvil — pantalla nueva, rediseño, flujo,
+onboarding, estados vacíos, jerarquía visual, semántica de navegación
+(push vs replace, sheet vs modal, puertas de un solo sentido). Aporta el
+listón de "se siente nativa" y la disciplina anti-slop.
+
+Tres límites, no negociables:
+
+1. **La carta gana siempre sobre la skill.** La skill asume colores
+   semánticos nativos (`Color.ios.label`) y su propio sistema de estilos;
+   este repo usa Tailwind v4 + uniwind + heroui-native con tokens en
+   `global.css` (§Decisiones fijas 1-3). De la skill se toma el **patrón**
+   (esqueleto, jerarquía, motion, navegación), nunca el sistema de estilos.
+   Cualquier sugerencia suya que meta hex, `StyleSheet.create` o clases
+   arbitrarias se descarta: rompe el grep-clean.
+2. **Su "simulator loop" no aplica tal cual.** Pide iOS Simulator en macOS
+   (`xcrun simctl io recordVideo`); aquí la verificación es la prueba de
+   humo que corre el humano en Android (dev build o Expo Go según la
+   feature). El checklist de la skill sirve como guion de esa prueba, no
+   como comando a ejecutar.
+3. **`appllama-usage` no se instala.** Depende del MCP de pago
+   `mcp.appllama.io`. Si algún día se contrata, la fase "estudiar 20-30
+   pantallas reales antes de diseñar" pasa a estar disponible; hasta
+   entonces esa fase se sustituye por el diseño de Figma del proyecto y las
+   decisiones fijas de abajo.
 
 ## Decisiones fijas de este repo (no re-litigar)
 
