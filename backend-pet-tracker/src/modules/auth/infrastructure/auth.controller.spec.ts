@@ -9,6 +9,7 @@ import { GoneException } from '@nestjs/common';
 import { LoginUserUseCase } from '@/modules/auth/application/use-cases/login-user.use-case';
 import { RegisterUserUseCase } from '@/modules/auth/application/use-cases/register-user.use-case';
 import { RequestPasswordResetUseCase } from '@/modules/auth/application/use-cases/request-password-reset.use-case';
+import { ResetPasswordUseCase } from '@/modules/auth/application/use-cases/reset-password.use-case';
 import { VerifyEmailUseCase } from '@/modules/auth/application/use-cases/verify-email.use-case';
 import { User } from '@/modules/auth/domain/entities/user.entity';
 import {
@@ -63,6 +64,7 @@ function buildRegisterUserDouble(
     { execute: jest.fn() } as unknown as VerifyEmailUseCase,
     { execute: jest.fn() } as unknown as LoginUserUseCase,
     { execute: jest.fn() } as unknown as RequestPasswordResetUseCase,
+    { execute: jest.fn() } as unknown as ResetPasswordUseCase,
   );
 
   return { controller, execute };
@@ -77,6 +79,7 @@ function buildVerifyEmailDouble(
     { execute } as unknown as VerifyEmailUseCase,
     { execute: jest.fn() } as unknown as LoginUserUseCase,
     { execute: jest.fn() } as unknown as RequestPasswordResetUseCase,
+    { execute: jest.fn() } as unknown as ResetPasswordUseCase,
   );
 
   return { controller, execute };
@@ -92,6 +95,7 @@ function buildLoginDouble(
     { execute: jest.fn() } as unknown as VerifyEmailUseCase,
     { execute } as unknown as LoginUserUseCase,
     { execute: jest.fn() } as unknown as RequestPasswordResetUseCase,
+    { execute: jest.fn() } as unknown as ResetPasswordUseCase,
   );
 
   return { controller, execute };
@@ -106,6 +110,22 @@ function buildForgotPasswordDouble(
     { execute: jest.fn() } as unknown as VerifyEmailUseCase,
     { execute: jest.fn() } as unknown as LoginUserUseCase,
     { execute } as unknown as RequestPasswordResetUseCase,
+    { execute: jest.fn() } as unknown as ResetPasswordUseCase,
+  );
+
+  return { controller, execute };
+}
+
+function buildResetPasswordDouble(
+  behaviour: () => Promise<void> = () => Promise.resolve(),
+) {
+  const execute = jest.fn(behaviour);
+  const controller = new AuthController(
+    { execute: jest.fn() } as unknown as RegisterUserUseCase,
+    { execute: jest.fn() } as unknown as VerifyEmailUseCase,
+    { execute: jest.fn() } as unknown as LoginUserUseCase,
+    { execute: jest.fn() } as unknown as RequestPasswordResetUseCase,
+    { execute } as unknown as ResetPasswordUseCase,
   );
 
   return { controller, execute };
@@ -442,4 +462,21 @@ describe('R3: POST /v1/auth/forgot-password con payload invalido responde 400', 
       expect(execute).not.toHaveBeenCalled();
     },
   );
+});
+
+describe('R5: POST /v1/auth/reset-password con token valido responde 200', () => {
+  it('invoca el caso de uso y fija exactamente el contrato de exito', async () => {
+    const { controller, execute } = buildResetPasswordDouble();
+    const body = {
+      token: VERIFICATION_TOKEN,
+      password: 'NewPassword1!',
+      passwordConfirmation: 'NewPassword1!',
+    };
+
+    const response = await controller.resetPassword(body);
+
+    expect(execute).toHaveBeenCalledWith(body);
+    expect(response).toEqual({ reset: true });
+    expect(httpCodeOf('resetPassword')).toBe(200);
+  });
 });

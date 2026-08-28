@@ -20,8 +20,16 @@ interface ForgotPasswordBody {
   requested: true;
 }
 
+interface ResetPasswordBody {
+  reset: true;
+}
+
 function forgotPasswordBody(response: Response): ForgotPasswordBody {
   return response.body as ForgotPasswordBody;
+}
+
+function resetPasswordBody(response: Response): ResetPasswordBody {
+  return response.body as ResetPasswordBody;
 }
 
 describe('Auth forgot password (e2e)', () => {
@@ -137,6 +145,44 @@ describe('Auth forgot password (e2e)', () => {
 
       expect(firstRow?.usedAt).toBeInstanceOf(Date);
       expect(secondRow?.usedAt).toBeNull();
+    });
+  });
+
+  describe('R5: el reset persiste un password_hash nuevo y consume el token', () => {
+    it('reemplaza el hash y marca usado el token presentado', async () => {
+      const user = await seedUser('r5');
+      const token = await requestResetToken(user.email);
+      const [before] = await db
+        .select({ passwordHash: users.passwordHash })
+        .from(users)
+        .where(eq(users.id, user.id));
+
+      const response = await api()
+        .post('/v1/auth/reset-password')
+        .send({
+          token,
+          password: 'NewPassword1!',
+          passwordConfirmation: 'NewPassword1!',
+        })
+        .expect(200);
+
+      expect(resetPasswordBody(response)).toEqual({ reset: true });
+      const [after] = await db
+        .select({ passwordHash: users.passwordHash })
+        .from(users)
+        .where(eq(users.id, user.id));
+      expect(after.passwordHash).not.toBe(before.passwordHash);
+      await expect(
+        passwordHasher.verify('NewPassword1!', after.passwordHash),
+      ).resolves.toBe(true);
+
+      const [storedToken] = await db
+        .select()
+        .from(passwordResetTokens)
+        .where(
+          eq(passwordResetTokens.tokenHash, hashVerificationToken(token)),
+        );
+      expect(storedToken.usedAt).toBeInstanceOf(Date);
     });
   });
 });
