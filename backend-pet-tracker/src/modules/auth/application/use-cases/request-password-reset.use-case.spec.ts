@@ -105,11 +105,12 @@ describe('R1: la solicitud con cuenta existente emite un token hasheado con expi
     });
     expect(stored.tokenHash).toMatch(/^[a-f0-9]{64}$/);
     expect(stored.tokenHash).not.toBe(delivered.token);
-    expect(delivered).toEqual({
+    expect(delivered).toMatchObject({
       userId: USER_ID,
       email: 'ada@example.com',
-      token: expect.any(String),
       expiresAt: stored.expiresAt,
     });
+    expect(typeof delivered.token).toBe('string');
+    expect(delivered.token).toHaveLength(43);
   });
 });

@@ -10,6 +10,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { ZodType } from 'zod';
+import { ForgotPasswordDto } from '@/modules/auth/application/dto/forgot-password.dto';
 import {
   RegisterUserSchema,
   RegisterUserDto,
@@ -24,6 +25,7 @@ import {
 } from '@/modules/auth/application/dto/verify-email.dto';
 import { LoginUserUseCase } from '@/modules/auth/application/use-cases/login-user.use-case';
 import { RegisterUserUseCase } from '@/modules/auth/application/use-cases/register-user.use-case';
+import { RequestPasswordResetUseCase } from '@/modules/auth/application/use-cases/request-password-reset.use-case';
 import { VerifyEmailUseCase } from '@/modules/auth/application/use-cases/verify-email.use-case';
 import {
   InvalidVerificationTokenError,
@@ -45,12 +47,17 @@ export interface LoginResponse {
   access_token: string;
 }
 
+export interface ForgotPasswordResponse {
+  requested: true;
+}
+
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly registerUser: RegisterUserUseCase,
     private readonly verifyEmailUseCase: VerifyEmailUseCase,
     private readonly loginUser: LoginUserUseCase,
+    private readonly requestPasswordReset: RequestPasswordResetUseCase,
   ) {}
 
   @Public()
@@ -110,6 +117,16 @@ export class AuthController {
       }
       throw error;
     }
+  }
+
+  @Public()
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  async forgotPassword(@Body() body: unknown): Promise<ForgotPasswordResponse> {
+    // R3 anadira el parseo Zod en el borde HTTP.
+    await this.requestPasswordReset.execute(body as ForgotPasswordDto);
+
+    return { requested: true };
   }
 }
 
