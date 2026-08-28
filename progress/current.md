@@ -52,6 +52,9 @@
 - R10 completado por TDD: `f699540` (rojo: sender sin salida) → `44fecd5`
   (verde: log estructurado + warning con EMAIL_ENABLED=true). Unit/controller
   39/39, e2e 1/1 y ESLint verde; token ausente de HTTP/base en claro.
+- R11 completado por TDD: `4e05906` (rojo: cero auditorías) → `4324e31`
+  (verde: requested solo con usuario y reset solo tras éxito). Use cases
+  11/11 y ESLint verde.
 
 ## Sesión 2026-08-28 (leader = sesión Backend)
 
