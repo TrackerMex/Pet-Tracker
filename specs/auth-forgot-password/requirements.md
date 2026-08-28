@@ -383,7 +383,7 @@ devuelve `200 { verified: true }`.
   `progress/impl_auth-forgot-password.md`; el reviewer la re-ejecuta con
   ```bash
   git diff --name-only main...HEAD | grep -vE \
-    'password-reset|password_reset|auth\.controller|auth\.module|user\.repository|user\.drizzle\.repository|verification-token\.ts|register-user\.use-case\.spec|login-user\.use-case\.spec|users/application/use-cases/(get|update)-profile\.use-case\.spec|db/schema/index\.ts|db/migrations|auth-forgot-password|docs/data-model\.md|docs/verification\.md|^specs/|^progress/|feature_list\.json|STATUS\.md'
+    'forgot-password|password-reset|reset-password|password_reset|auth\.controller|auth\.module|user\.repository|user\.drizzle\.repository|verification-token\.ts|register-user\.use-case\.spec|login-user\.use-case\.spec|users/application/use-cases/(get|update)-profile\.use-case\.spec|db/schema/index\.ts|db/migrations|auth-forgot-password|docs/data-model\.md|docs/verification\.md|^specs/|^progress/|feature_list\.json|STATUS\.md'
   ```
   que debe salir **vacío**.
 

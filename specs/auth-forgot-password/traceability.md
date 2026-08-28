@@ -23,7 +23,7 @@ Rutas de test relativas a `backend-pet-tracker/` (`src/…` para unitarios,
 | R10 | `src/modules/auth/infrastructure/email/console-password-reset-sender.spec.ts::R10: con EMAIL_ENABLED=false el token de reset se loguea en vez de enviarse`; `src/modules/auth/infrastructure/email/console-password-reset-sender.spec.ts::R10: con EMAIL_ENABLED=true avisa de que no hay proveedor real cableado`; `src/modules/auth/infrastructure/auth.controller.spec.ts::R10: la respuesta de forgot-password nunca incluye el token`; `test/auth-forgot-password.e2e-spec.ts::R10: la base guarda el SHA-256 del token, nunca el valor en claro` | `f699540` rojo → `44fecd5 feat(auth-forgot-password): deliver reset token through structured log (R10)` |
 | R11 | `src/modules/auth/application/use-cases/request-password-reset.use-case.spec.ts::R11: la solicitud con cuenta existente audita user.password_reset_requested y la inexistente no audita nada`; `src/modules/auth/application/use-cases/reset-password.use-case.spec.ts::R11: el reset exitoso audita user.password_reset` | `4e05906` rojo → `4324e31 feat(auth-forgot-password): audit reset request and completion (R11)` |
 | R12 | `src/db/schema/password-reset-tokens.schema.spec.ts::R12: password_reset_tokens espeja el patron de email_verification_tokens` | `64230ee` rojo → `9cd8473 feat(auth-forgot-password): add reset token table and migration (R12)` |
-| R13 | pendiente | pendiente |
+| R13 | `test/auth-forgot-password.e2e-spec.ts::R13: el flujo de verify-email sigue intacto tras anadir el reset` | `0e67341` rojo → `562b8a5 test(auth-forgot-password): verify e2e isolation and containment (R13)` |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
 Convención de commit: `feat(<scope>): <desc> (R1,R2)`.

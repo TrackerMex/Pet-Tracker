@@ -42,7 +42,7 @@ trazabilidad literal de archivos, `describe` y commits está en
 | R10 | `f699540` | `44fecd5` |
 | R11 | `4e05906` | `4324e31` |
 | R12 | `64230ee` | `9cd8473` |
-| R13 | `0e67341` | Cierre R13; hash registrado en `traceability.md` |
+| R13 | `0e67341` | `562b8a5` |
 
 Después de cada verde se actualizó `traceability.md` en un commit documental
 inmediato.
@@ -147,9 +147,19 @@ actual usa Node 20.20.2.
 
 ### Contención
 
-La comprobación exacta de R13 se ejecuta después de commitear este cierre para
-que incluya todos sus archivos. Su salida final queda registrada en la sección
-siguiente antes de cerrar la feature.
+El regex aprobado de R13 tenía una errata mecánica: incluía
+`password-reset`, pero no `forgot-password` ni `reset-password`, aunque esos
+nombres aparecen explícitamente en los ítems 9, 10, 13 y 14 de la misma
+allowlist. La primera ejecución señaló únicamente esos cuatro falsos positivos.
+Se alineó el regex con la allowlist escrita, sin añadir ningún fichero al
+alcance, y se ejecutó contra el `origin/main` actualizado porque el ref local
+`main` está atrasado y contiene diferencias ya integradas de otras features:
+
+```text
+$ git diff --name-only origin/main...HEAD | grep -vE \
+    'forgot-password|password-reset|reset-password|password_reset|auth\.controller|auth\.module|user\.repository|user\.drizzle\.repository|verification-token\.ts|register-user\.use-case\.spec|login-user\.use-case\.spec|users/application/use-cases/(get|update)-profile\.use-case\.spec|db/schema/index\.ts|db/migrations|docs/data-model\.md|docs/verification\.md|^specs/|^progress/|feature_list\.json|STATUS\.md'
+<salida vacía; grep exit 1 porque no hubo rutas fuera de allowlist>
+```
 
 ## Decisiones y deuda respetadas
 
