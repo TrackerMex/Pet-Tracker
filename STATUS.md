@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-08-27
-**Features completadas**: 46/51 (`feature_list.json`)
-**En progreso**: ninguna
+**Features completadas**: 46/52 (`feature_list.json`)
+**En progreso**: #45 pet-lost-mode (review aprobado, PR #84; gate R9 bloqueado por #52 — en main figura `pending`, el `in_progress` real viaja en su branch)
 
-**Pendientes**: 5 (#18, #41, #42, #44, #45). Fuente del diseño Figma versionada en
+**Pendientes**: 5 (#18, #41, #42, #44, #52). #45 con PR #84 abierto, bloqueado por #52. Fuente del diseño Figma versionada en
 `specs/mobile-figma-polish/design-src/`.
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
