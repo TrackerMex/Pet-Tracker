@@ -46,7 +46,11 @@ export class ResetPasswordUseCase {
     await this.users.updatePasswordHash(token.userId, passwordHash, changedAt);
     await this.resetTokens.invalidateAllForUser(token.userId, changedAt);
 
-    // R11 registrara aqui la auditoria del reset exitoso.
-    void this.auditLogger;
+    await this.auditLogger.record({
+      userId: token.userId,
+      action: 'user.password_reset',
+      entity: 'user',
+      entityId: token.userId,
+    });
   }
 }

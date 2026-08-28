@@ -56,7 +56,11 @@ export class RequestPasswordResetUseCase {
       expiresAt,
     });
 
-    // R11 usara el puerto ya inyectado para registrar la solicitud.
-    void this.auditLogger;
+    await this.auditLogger.record({
+      userId: user.id,
+      action: 'user.password_reset_requested',
+      entity: 'user',
+      entityId: user.id,
+    });
   }
 }
