@@ -397,3 +397,25 @@ describe('R1: POST /v1/auth/forgot-password responde 200 con requested true', ()
     expect(httpCodeOf('forgotPassword')).toBe(200);
   });
 });
+
+describe('R2: POST /v1/auth/forgot-password responde igual exista o no la cuenta', () => {
+  it('produce respuestas estructuralmente identicas en ambos caminos', async () => {
+    const existing = buildForgotPasswordDouble();
+    const missing = buildForgotPasswordDouble();
+
+    const existingResponse = {
+      status: httpCodeOf('forgotPassword'),
+      body: await existing.controller.forgotPassword({
+        email: 'ada@example.com',
+      }),
+    };
+    const missingResponse = {
+      status: httpCodeOf('forgotPassword'),
+      body: await missing.controller.forgotPassword({
+        email: 'missing@example.com',
+      }),
+    };
+
+    expect(missingResponse).toEqual(existingResponse);
+  });
+});

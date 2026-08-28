@@ -114,3 +114,26 @@ describe('R1: la solicitud con cuenta existente emite un token hasheado con expi
     expect(delivered.token).toHaveLength(43);
   });
 });
+
+describe('R2: la solicitud con email inexistente no emite token ni revela la ausencia de cuenta', () => {
+  it('termina en silencio sin persistir, enviar ni auditar', async () => {
+    const {
+      useCase,
+      findByEmail,
+      create,
+      invalidateAllForUser,
+      send,
+      record,
+    } = buildScenario(null);
+
+    await expect(
+      useCase.execute({ email: '  UNKNOWN@Example.COM ' }),
+    ).resolves.toBeUndefined();
+
+    expect(findByEmail).toHaveBeenCalledWith('unknown@example.com');
+    expect(invalidateAllForUser).not.toHaveBeenCalled();
+    expect(create).not.toHaveBeenCalled();
+    expect(send).not.toHaveBeenCalled();
+    expect(record).not.toHaveBeenCalled();
+  });
+});
