@@ -259,5 +259,5 @@ tags: [harness, spec, mobile]
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [X] Aprobado por humano (fecha: 2026-08-27) ← gate obligatorio antes de implementar
 - [ ] R6 smoke en el dev build de Android ejecutado por humano (fecha: ____) ← gate obligatorio antes de `done`
