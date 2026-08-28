@@ -942,5 +942,21 @@
       "mobile-pet-tracker/.env.example",
       "docs/verification.md"
     ]
+  },
+  {
+    "id": 53,
+    "name": "mobile-jest-mock-hygiene",
+    "status": "pending",
+    "priority": "P3",
+    "description": "La suite movil src/screens/add-pet/index.test.tsx falla de forma intermitente: la config de jest movil no declara clearMocks/resetMocks/restoreMocks y mockLaunchImageLibrary.mockResolvedValue(...) se fija en un unico punto (index.test.tsx:217) en vez de en un beforeEach; si el orden de ejecucion cambia, el mock de expo-image-picker devuelve undefined. Detectado el 2026-08-28: Codex lo sufrio implementando #52 y el reviewer confirmo que es preexistente (src/ byte-identico a main, 5 corridas dirigidas verdes, no reproduce en init.sh limpio).",
+    "acceptance_criteria": [
+      "El mock de expo-image-picker se reinicializa por test (beforeEach o resetMocks en la config de jest movil)",
+      "La suite add-pet pasa en 10 corridas seguidas sin flake",
+      "Ninguna otra suite movil se rompe por el cambio de configuracion de mocks"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/add-pet/index.test.tsx",
+      "mobile-pet-tracker/jest.config.js"
+    ]
   }
 ]
