@@ -38,8 +38,11 @@
   (round-trip 404) → `e531f63` (verde: argon2id, update de credencial,
   consumo total y login viejo 401/nuevo 200). Unit/controller/module 29/29,
   e2e focalizado 4/4, typecheck y ESLint verdes.
-- R13 rojo registrado antes del cableado: `0e67341`; queda pendiente de los
-  errores tipados de R6 y de la verificación final de contención.
+- R13 rojo registrado antes del cableado: `0e67341`; su e2e ya queda verde
+  tras R6 y falta la verificación final de regresión/contención.
+- R6 completado por TDD: `1e62765` (rojo: faltaba error de dominio) →
+  `ff042c0` (verde: inexistente/usado indistinguibles, 400 y cero escrituras).
+  Unit/controller 31/31; e2e de aislamiento R13 1/1; ESLint verde.
 
 ## Sesión 2026-08-28 (leader = sesión Backend)
 
