@@ -18,7 +18,10 @@ import {
   RegisterUserSchema,
   RegisterUserDto,
 } from '@/modules/auth/application/dto/register-user.dto';
-import { ResetPasswordDto } from '@/modules/auth/application/dto/reset-password.dto';
+import {
+  ResetPasswordDto,
+  ResetPasswordSchema,
+} from '@/modules/auth/application/dto/reset-password.dto';
 import {
   LoginUserDto,
   LoginUserSchema,
@@ -148,9 +151,10 @@ export class AuthController {
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
   async resetPassword(@Body() body: unknown): Promise<ResetPasswordResponse> {
-    // R8 anadira el parseo Zod en el borde HTTP.
+    const dto = parseBody<ResetPasswordDto>(ResetPasswordSchema, body);
+
     try {
-      await this.resetPasswordUseCase.execute(body as ResetPasswordDto);
+      await this.resetPasswordUseCase.execute(dto);
 
       return { reset: true };
     } catch (error) {
