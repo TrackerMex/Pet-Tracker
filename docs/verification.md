@@ -434,15 +434,19 @@ repositorio ni en los reportes de progreso.
 
 6. Ejecuta el smoke R6 de
    `specs/android-maps-api-key/requirements.md`: con el backend local arriba,
-   inicia sesión y abre el tab **Map**; confirma que monta sin crash, renderiza
-   tiles de Google, marker y polyline cuando haya posiciones. Revisa
-   `adb logcat`: no deben aparecer `IllegalStateException: API key not found`
-   ni `addViewAt: failed to insert view`. Si el mapa queda gris y aparecen
-   `Authorization failure` o `API_KEY_ANDROID_APP_BLOCKED`, repite los pasos
-   2–3 porque no coinciden package y SHA-1. Cambia a tema oscuro y confirma que
-   sigue renderizando con `customMapStyle`; después ejecuta el smoke R9 de
+   inicia sesión y abre el tab **Map**; confirma que monta sin crash y que la
+   vista nativa del mapa existe — el watermark "Google" es visible. Revisa
+   `adb logcat`: no deben aparecer `IllegalStateException: API key not found`,
+   `addViewAt: failed to insert view`, `Authorization failure` ni
+   `API_KEY_ANDROID_APP_BLOCKED`; si salen los dos últimos, repite los pasos
+   2–3 porque no coinciden package y SHA-1. Después ejecuta el smoke R9 de
    `specs/pet-lost-mode/requirements.md`. Registra el resultado, sin la clave,
    en `progress/impl_android-maps-api-key.md`.
+
+   Que el mapa pinte tiles, marker y polyline **no** forma parte de R6 desde
+   la acotación del 2026-08-28: con la clave aceptada por el SDK, el
+   `GoogleMap` no alcanza `onMapReady` y la vista se queda en el watermark.
+   Es un defecto independiente, rastreado en #54 `android-map-never-ready`.
 
 Para un futuro EAS Build, crea la variable por separado:
 

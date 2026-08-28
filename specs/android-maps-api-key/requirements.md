@@ -209,18 +209,26 @@ tags: [harness, spec, mobile]
   con `npx expo prebuild --clean --platform android` + `bunx expo run:android`:
   1. `grep -c "com.google.android.geo.API_KEY" android/app/src/main/AndroidManifest.xml`
      imprime `1`.
-  2. Login → tab **Map**: la pantalla monta sin crash y el mapa **renderiza
-     tiles de Google** (no un cuadro gris), con el marker de la mascota y
-     la polyline del día si hay posiciones.
-  3. `adb logcat` no muestra `IllegalStateException: API key not found` ni
-     `addViewAt: failed to insert view`. Si el mapa sale gris y logcat dice
-     `Authorization failure` / `API_KEY_ANDROID_APP_BLOCKED`, la clave
-     existe pero la restricción package + SHA-1 no coincide: repetir R4
-     pasos 2–3.
-  4. Cambiar a tema oscuro: el mapa sigue renderizando con
-     `customMapStyle` (`src/theme/map-style-dark.json`), sin regresión.
-  5. Desbloqueo: correr acto seguido el smoke R9 de
-     `specs/pet-lost-mode/requirements.md`, que vive en este mismo tab.
+  2. Login → tab **Map**: la pantalla monta **sin crash** y la vista nativa
+     del mapa se crea — el watermark "Google" es visible, que es lo que
+     dibuja la propia vista de Google Maps.
+  3. `adb logcat` no muestra `IllegalStateException: API key not found`,
+     ni `addViewAt: failed to insert view`, ni `Authorization failure` /
+     `API_KEY_ANDROID_APP_BLOCKED`. Si aparece alguno de estos dos últimos,
+     la clave existe pero la restricción package + SHA-1 no coincide:
+     repetir R4 pasos 2–3.
+  4. Desbloqueo: correr acto seguido el smoke R9 de
+     `specs/pet-lost-mode/requirements.md`, cuyo botón vive en la tarjeta
+     superpuesta de este mismo tab y no depende de los tiles.
+
+  **Acotación de alcance (2026-08-28)**: R6 verifica la clave, no el render
+  del mapa. Que el tab pinte tiles, marker y polyline **no** es criterio de
+  esta feature: con la clave ya aceptada por el SDK, el mapa sigue mostrando
+  solo el watermark porque el `GoogleMap` nunca llega a `onMapReady`. Ese
+  fallo es independiente, precede a esta feature (lo tapaba el crash por
+  clave ausente) y se rastrea en **#54 `android-map-never-ready`**. Redactada
+  la R6 original con "renderiza tiles de Google", quedaría bloqueada por un
+  defecto ajeno a su diff.
 
   **Este requisito SOLO lo cierra el humano** (crear la clave cuesta dinero
   y exige cuenta Google con billing; el dev build corre en su máquina).
@@ -246,6 +254,10 @@ tags: [harness, spec, mobile]
 - **Migrar a `expo-maps`**: sustituir `react-native-maps` es una feature
   propia; además también exige clave de Android, así que no evita este
   trabajo.
+- **Que el mapa pinte tiles, marker y polyline**: con la clave aceptada por
+  el SDK, el `GoogleMap` nunca alcanza `onMapReady`, así que la vista se
+  queda en el watermark. Defecto independiente de este diff, rastreado en
+  **#54 `android-map-never-ready`** (ver acotación en R6).
 - **Crear, restringir, rotar o pagar la clave**, y cualquier configuración
   en la consola de Google Cloud: gate humano (R6).
 - **Commitear `android/`** o editar `AndroidManifest.xml` a mano.

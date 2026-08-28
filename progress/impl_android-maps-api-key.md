@@ -106,26 +106,36 @@ La clave real no se copia en este documento. Consulta también
    `--clean`, actualiza antes la restricción de Google Cloud.
 5. Con `docker compose up -d`, el backend local ejecutándose y
    `EXPO_PUBLIC_API_URL` apuntando a la IP LAN, inicia sesión y abre **Map**.
-   Verifica tiles de Google, marker y polyline cuando haya posiciones; cambia
-   a tema oscuro y confirma que sigue renderizando con `customMapStyle`.
+   La pantalla debe montar sin crash y la vista nativa del mapa debe existir:
+   el watermark "Google" es visible. El render de tiles, marker y polyline
+   **no** es criterio de esta feature — ver la acotación de R6 en
+   [[requirements]] y la feature #54 `android-map-never-ready`.
 6. Revisa el log después de montar el mapa:
 
    ```bash
    adb logcat -d | grep -E "API key not found|addViewAt: failed to insert view|Authorization failure|API_KEY_ANDROID_APP_BLOCKED"
    ```
 
-   No deben aparecer `API key not found` ni `addViewAt`. Si aparecen
-   `Authorization failure` o `API_KEY_ANDROID_APP_BLOCKED` y el mapa queda
-   gris, repite la obtención de SHA-1 y la restricción de package del paso 2.
+   No debe aparecer ninguna de las cuatro. `API key not found` o `addViewAt`
+   significan que la meta-data no llegó al manifest; `Authorization failure` o
+   `API_KEY_ANDROID_APP_BLOCKED`, que la clave existe pero la restricción
+   package + SHA-1 no coincide (repite el paso 2).
 7. Ejecuta acto seguido el smoke R9 de
-   `specs/pet-lost-mode/requirements.md`.
+   `specs/pet-lost-mode/requirements.md`. Su botón vive en la tarjeta
+   superpuesta del tab Map, que sí se renderiza, así que no depende de #54.
 
-### Resultado del smoke R6 (rellena el humano)
+### Resultado del smoke R6
 
-- Fecha: pendiente
-- `grep` de meta-data: pendiente (esperado: `1`)
-- Map monta y renderiza tiles: pendiente
-- Marker/polyline y tema oscuro: pendiente
-- `adb logcat` limpio de los crashes: pendiente
-- Smoke R9 de `pet-lost-mode`: pendiente
-- Resultado final: **PENDIENTE — no marcar #52 `done` todavía**
+- Fecha: 2026-08-28
+- `grep` de meta-data: **1** (tras corregir la ubicación del `.env`, que
+  estaba en la raíz del repo en vez de en `mobile-pet-tracker/`)
+- Map monta sin crash y la vista nativa existe: **sí** — watermark "Google"
+  visible
+- `adb logcat` limpio de las cuatro cadenas: **sí** — el SDK inicializa
+  (`MapsInitializer` + versión del renderer de Play services) y no hay
+  `Authorization failure`, así que Google acepta la clave
+- Tiles, marker y polyline: **no renderizan** — fuera del alcance de R6 tras
+  la acotación del 2026-08-28; rastreado en #54 `android-map-never-ready`
+- Smoke R9 de `pet-lost-mode`: pendiente (desbloqueado, no depende de #54)
+- Resultado final: **pendiente de que el humano marque la casilla de
+  §Aprobación en `specs/android-maps-api-key/requirements.md`**
