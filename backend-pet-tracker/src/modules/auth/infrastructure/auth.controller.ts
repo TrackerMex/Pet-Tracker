@@ -36,7 +36,10 @@ import {
   InvalidVerificationTokenError,
   VerificationTokenExpiredError,
 } from '@/modules/auth/domain/errors/email-verification.errors';
-import { InvalidPasswordResetTokenError } from '@/modules/auth/domain/errors/password-reset.errors';
+import {
+  InvalidPasswordResetTokenError,
+  PasswordResetTokenExpiredError,
+} from '@/modules/auth/domain/errors/password-reset.errors';
 import {
   EmailAlreadyRegisteredError,
   InvalidCredentialsError,
@@ -151,6 +154,9 @@ export class AuthController {
 
       return { reset: true };
     } catch (error) {
+      if (error instanceof PasswordResetTokenExpiredError) {
+        throw new GoneException('Password reset token expired');
+      }
       if (error instanceof InvalidPasswordResetTokenError) {
         throw new BadRequestException('Invalid password reset token');
       }

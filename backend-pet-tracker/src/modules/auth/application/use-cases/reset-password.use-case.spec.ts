@@ -161,21 +161,24 @@ describe('R7: un token expirado no cambia el password', () => {
   it.each([
     ['anterior a now', new Date(RESET_AT.getTime() - 1)],
     ['exactamente igual a now', RESET_AT],
-  ])('rechaza expires_at %s sin consumir ni modificar', async (_case, expiresAt) => {
-    const {
-      useCase,
-      hash,
-      updatePasswordHash,
-      invalidateAllForUser,
-      record,
-    } = buildScenario(buildToken({ expiresAt }));
+  ])(
+    'rechaza expires_at %s sin consumir ni modificar',
+    async (_case, expiresAt) => {
+      const {
+        useCase,
+        hash,
+        updatePasswordHash,
+        invalidateAllForUser,
+        record,
+      } = buildScenario(buildToken({ expiresAt }));
 
-    await expect(useCase.execute(validDto)).rejects.toBeInstanceOf(
-      PasswordResetTokenExpiredError,
-    );
-    expect(hash).not.toHaveBeenCalled();
-    expect(updatePasswordHash).not.toHaveBeenCalled();
-    expect(invalidateAllForUser).not.toHaveBeenCalled();
-    expect(record).not.toHaveBeenCalled();
-  });
+      await expect(useCase.execute(validDto)).rejects.toBeInstanceOf(
+        PasswordResetTokenExpiredError,
+      );
+      expect(hash).not.toHaveBeenCalled();
+      expect(updatePasswordHash).not.toHaveBeenCalled();
+      expect(invalidateAllForUser).not.toHaveBeenCalled();
+      expect(record).not.toHaveBeenCalled();
+    },
+  );
 });

@@ -1,7 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { AUDIT_LOGGER } from '@/audit/audit-log.repository';
 import type { AuditLogger } from '@/audit/audit-log.repository';
-import { InvalidPasswordResetTokenError } from '@/modules/auth/domain/errors/password-reset.errors';
+import {
+  InvalidPasswordResetTokenError,
+  PasswordResetTokenExpiredError,
+} from '@/modules/auth/domain/errors/password-reset.errors';
 import { PASSWORD_HASHER } from '@/modules/auth/domain/ports/password-hasher';
 import type { PasswordHasher } from '@/modules/auth/domain/ports/password-hasher';
 import { PASSWORD_RESET_TOKEN_REPOSITORY } from '@/modules/auth/domain/repositories/password-reset-token.repository';
@@ -34,6 +37,10 @@ export class ResetPasswordUseCase {
     }
 
     const changedAt = new Date();
+    if (token.isExpired(changedAt)) {
+      throw new PasswordResetTokenExpiredError();
+    }
+
     const passwordHash = await this.passwordHasher.hash(dto.password);
 
     await this.users.updatePasswordHash(token.userId, passwordHash, changedAt);
