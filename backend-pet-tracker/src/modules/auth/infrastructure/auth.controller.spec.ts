@@ -16,7 +16,10 @@ import {
   InvalidVerificationTokenError,
   VerificationTokenExpiredError,
 } from '@/modules/auth/domain/errors/email-verification.errors';
-import { InvalidPasswordResetTokenError } from '@/modules/auth/domain/errors/password-reset.errors';
+import {
+  InvalidPasswordResetTokenError,
+  PasswordResetTokenExpiredError,
+} from '@/modules/auth/domain/errors/password-reset.errors';
 import {
   EmailAlreadyRegisteredError,
   InvalidCredentialsError,
@@ -502,4 +505,23 @@ describe('R6: POST /v1/auth/reset-password con token invalido o usado responde 4
       expect(error.getStatus()).toBe(400);
     },
   );
+});
+
+describe('R7: POST /v1/auth/reset-password con token expirado responde 410', () => {
+  it('mapea PasswordResetTokenExpiredError a GoneException', async () => {
+    const { controller } = buildResetPasswordDouble(() =>
+      Promise.reject(new PasswordResetTokenExpiredError()),
+    );
+
+    const error = await captureHttpError(
+      controller.resetPassword({
+        token: VERIFICATION_TOKEN,
+        password: 'NewPassword1!',
+        passwordConfirmation: 'NewPassword1!',
+      }),
+    );
+
+    expect(error).toBeInstanceOf(GoneException);
+    expect(error.getStatus()).toBe(410);
+  });
 });

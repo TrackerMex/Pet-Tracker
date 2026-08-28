@@ -1,6 +1,9 @@
 import { AuditLogEntry, AuditLogger } from '@/audit/audit-log.repository';
 import { PasswordResetToken } from '@/modules/auth/domain/entities/password-reset-token.entity';
-import { InvalidPasswordResetTokenError } from '@/modules/auth/domain/errors/password-reset.errors';
+import {
+  InvalidPasswordResetTokenError,
+  PasswordResetTokenExpiredError,
+} from '@/modules/auth/domain/errors/password-reset.errors';
 import { PasswordHasher } from '@/modules/auth/domain/ports/password-hasher';
 import {
   NewPasswordResetToken,
@@ -144,4 +147,35 @@ describe('R6: un token inexistente o ya consumido no cambia ningun password', ()
       expect(record).not.toHaveBeenCalled();
     },
   );
+});
+
+describe('R7: un token expirado no cambia el password', () => {
+  beforeEach(() => {
+    jest.useFakeTimers().setSystemTime(RESET_AT);
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it.each([
+    ['anterior a now', new Date(RESET_AT.getTime() - 1)],
+    ['exactamente igual a now', RESET_AT],
+  ])('rechaza expires_at %s sin consumir ni modificar', async (_case, expiresAt) => {
+    const {
+      useCase,
+      hash,
+      updatePasswordHash,
+      invalidateAllForUser,
+      record,
+    } = buildScenario(buildToken({ expiresAt }));
+
+    await expect(useCase.execute(validDto)).rejects.toBeInstanceOf(
+      PasswordResetTokenExpiredError,
+    );
+    expect(hash).not.toHaveBeenCalled();
+    expect(updatePasswordHash).not.toHaveBeenCalled();
+    expect(invalidateAllForUser).not.toHaveBeenCalled();
+    expect(record).not.toHaveBeenCalled();
+  });
 });
