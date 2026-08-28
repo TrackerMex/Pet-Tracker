@@ -137,3 +137,25 @@ describe('R2: la solicitud con email inexistente no emite token ni revela la aus
     expect(record).not.toHaveBeenCalled();
   });
 });
+
+describe('R4: una nueva solicitud invalida los tokens de reset anteriores del usuario', () => {
+  beforeEach(() => {
+    jest.useFakeTimers().setSystemTime(ISSUED_AT);
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('invalida todos los tokens vivos antes de insertar el nuevo', async () => {
+    const { useCase, invalidateAllForUser, create } = buildScenario();
+
+    await useCase.execute({ email: 'ada@example.com' });
+
+    expect(invalidateAllForUser).toHaveBeenCalledWith(USER_ID, ISSUED_AT);
+    expect(create).toHaveBeenCalledTimes(1);
+    expect(invalidateAllForUser.mock.invocationCallOrder[0]).toBeLessThan(
+      create.mock.invocationCallOrder[0],
+    );
+  });
+});
