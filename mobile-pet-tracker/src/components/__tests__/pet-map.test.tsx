@@ -28,8 +28,8 @@ jest.mock('expo-maps', () => ({
 }));
 
 describe('R1: PetMap renderiza la vista de expo-maps con el contrato del tab Map', () => {
-  it('usa GoogleMaps.View a pantalla completa con el testID estable', () => {
-    render(
+  it('usa GoogleMaps.View a pantalla completa con el testID estable', async () => {
+    await render(
       <PetMap
         center={{ latitude: 19.4326, longitude: -99.1332 }}
         marker={null}

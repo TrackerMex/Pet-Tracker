@@ -1,20 +1,18 @@
 import { Button, Skeleton } from 'heroui-native';
 import { useFocusEffect } from 'expo-router';
-import MapView, { Marker, Polyline } from 'react-native-maps';
 import { useCallback, useMemo, useState } from 'react';
 import { Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useUniwind } from 'uniwind';
 
 import { listPets, setLostMode, type PetsState } from '../../api/pets';
 import { getLastPosition, listPositions } from '../../api/positions';
 import { getDayRoute } from '../../api/trips';
 import { Card } from '../../components/card';
+import { PetMap } from '../../components/pet-map';
 import { useApi } from '../../hooks/use-api';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
-import mapStyleDark from '../../theme/map-style-dark.json';
 
 function isPetsError(state: PetsState): boolean {
   return ['error', 'unreachable', 'missing-config'].includes(state.kind);
@@ -48,7 +46,6 @@ export default function MapScreen() {
   const { token } = useAuth();
   const { selectedPetId } = useSelectedPet();
   const insets = useSafeAreaInsets();
-  const { theme } = useUniwind();
   const petsFn = useCallback(
     () => listPets(baseUrl, token ?? ''),
     [baseUrl, token],
@@ -198,35 +195,16 @@ export default function MapScreen() {
 
       {last.data?.kind === 'ok' ? (
         <>
-          <MapView
+          <PetMap
             key={selectedPetId}
-            testID="map-view"
-            style={{ flex: 1 }}
-            initialRegion={initialRegion}
-            customMapStyle={theme === 'dark' ? mapStyleDark : undefined}
-          >
-            {position ? (
-              <Marker
-                testID="map-marker"
-                coordinate={{
-                  latitude: position.lat,
-                  longitude: position.lng,
-                }}
-              />
-            ) : null}
-            {route.data?.kind === 'ok'
-              ? route.data.trips.map((trip) => (
-                  <Polyline
-                    key={trip.index}
-                    testID={`map-route-${trip.index}`}
-                    coordinates={trip.path.map(({ lat, lng }) => ({
-                      latitude: lat,
-                      longitude: lng,
-                    }))}
-                  />
-                ))
-              : null}
-          </MapView>
+            center={{
+              latitude: initialRegion.latitude,
+              longitude: initialRegion.longitude,
+            }}
+            marker={null}
+            polylines={[]}
+            colorScheme="light"
+          />
           {position === null ? (
             <View
               testID="map-empty-overlay"
