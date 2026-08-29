@@ -49,7 +49,7 @@ Comandos:
 | R-id | Commit rojo | Resultado rojo | Commit verde | Resultado verde |
 |---|---|---|---|---|
 | R1 | `a574f44` | exit 1: `Cannot find module '../pet-map'` | `e99ec43` | test dirigido: 1 suite / 1 test verde; `bun run typecheck`: exit 0 |
-| R2 | pendiente | pendiente | pendiente | pendiente |
+| R2 | `1036737` | exit 1: `MAP_ZOOM` esperado 16, recibido `undefined`; R1 seguía verde | `b2080a8` | test dirigido: 1 suite / 2 tests verdes; `bun run typecheck`: exit 0 |
 | R3 | pendiente | pendiente | pendiente | pendiente |
 | R4 | pendiente | pendiente | pendiente | pendiente |
 | R5 | pendiente | pendiente | pendiente | pendiente |
