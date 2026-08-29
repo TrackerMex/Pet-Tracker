@@ -71,24 +71,27 @@ Tres límites, no negociables:
 4. **Componentes compartidos** (`src/components/`): `card.tsx`
    (surface|accent|secondary — usa `--radius-card`, NUNCA heredar `--radius`
    de heroui/shadcn, bug #46), `pet-switcher.tsx` (selector de mascota,
-   siempre este), `floating-tab-bar.tsx`, `weight-chart.tsx`. Regla de
+   siempre este), `floating-tab-bar.tsx`, `weight-chart.tsx`, `pet-map.tsx`
+   (adapta el contrato del tab Map a la API nativa de `expo-maps`). Regla de
    extracción: ≥2 pantallas + rol nombrable + API menor que implementación.
    Promoción: inline → `src/screens/<x>/` → `src/components/`.
 5. **Base de componentes**: heroui-native (Button, Skeleton, TextField,
    Avatar, Chip...). `@expo/ui` para lo que heroui no cubre, PERO con esta
    distinción (aprendida por crash real en el smoke de #39, Android + Expo
    Go): **la capa root/universal de `@expo/ui` (SwiftUI/Jetpack) crashea en
-   Expo Go Android** — como el smoke de este proyecto es siempre Expo Go, el
-   default es la capa **`@expo/ui/community/*`** (wrappers Go-compatibles):
+   Expo Go Android**. El default se mantiene en la capa
+   **`@expo/ui/community/*`** porque sus wrappers funcionan tanto en Expo Go
+   como en dev builds:
    `community/bottom-sheet` (montado sobre @gorhom/bottom-sheet — esa dep es
    peer del wrapper, NO removerla), `community/datetime-picker`,
    `community/menu`, `community/picker`, `community/slider`,
-   `community/segmented-control`. La capa root de @expo/ui queda reservada
-   para cuando el proyecto adopte dev builds. `List`+`ListItem` solo para
-   filas agrupadas cortas estilo Settings — NO es virtualizada; listas de
-   datos de longitud desconocida: FlatList/FlashList. Prohibido: importar
-   @gorhom directamente (siempre vía el wrapper community), Reanimated para
-   sheets, Picker/SafeAreaView/WebView de RN (removidos).
+   `community/segmented-control`. Adoptar la capa root de `@expo/ui`, aunque
+   el smoke use dev build desde #54, requiere una feature separada; esta
+   decisión no se cambia de paso. `List`+`ListItem` solo para filas agrupadas
+   cortas estilo Settings — NO es virtualizada; listas de datos de longitud
+   desconocida: FlatList/FlashList. Prohibido: importar @gorhom directamente
+   (siempre vía el wrapper community), Reanimated para sheets,
+   Picker/SafeAreaView/WebView de RN (removidos).
 6. **Dimensiones de pantalla**: conventions.md §Dimensiones — `paddingTop:
    insets.top + 12`, `padding: 24`, `gap: 16`, `paddingBottom: insets.bottom
    + 96` vía `useSafeAreaInsets` en `contentContainerStyle` (nunca en el
@@ -102,8 +105,9 @@ Tres límites, no negociables:
    Rutas con extensión de plataforma jamás dentro de `src/app/`.
 9. **Tema**: light/dark vía uniwind; colores para código imperativo (mapas,
    iconos) SIEMPRE vía `useThemeColors` de `src/theme/use-theme-colors.ts`
-   (reactivo; bug de resolución stale ya visto en #46). Mapa dark:
-   `customMapStyle` con `src/theme/map-style-dark.json`.
+   (reactivo; bug de resolución stale ya visto en #46). El mapa traduce la
+   preferencia guardada a `colorScheme` de `expo-maps` mediante
+   `src/components/pet-map.tsx`.
 
 ## Animación (decisiones por defecto)
 
@@ -121,8 +125,8 @@ Tres límites, no negociables:
   guard equivalente).
 - expo-haptics NO está instalado; toda propuesta que lo requiera lo declara
   como dependencia nueva en su spec.
-- Todo debe correr en Expo Go SDK 57 (runtime de smoke del humano) — nada
-  que exija dev build.
+- El runtime de smoke del humano es el dev build de Android desde 2026-08-27;
+  `expo-maps` no está disponible en Expo Go.
 - Backlog priorizado con valores exactos: `progress/audit_animations_mobile.md`.
 
 ## Micro-reglas de pulido (de expo-native-ui, adoptadas)
