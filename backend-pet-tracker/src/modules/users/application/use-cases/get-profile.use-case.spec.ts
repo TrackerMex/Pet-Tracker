@@ -27,6 +27,7 @@ function buildUseCase(findById: jest.Mock) {
     existsByEmail: jest.fn(),
     create: jest.fn(),
     markEmailVerified: jest.fn(),
+    updatePasswordHash: jest.fn(),
     findByEmail: jest.fn(),
     findById,
     updateProfile: jest.fn(),

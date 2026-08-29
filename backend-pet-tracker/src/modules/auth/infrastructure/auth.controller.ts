@@ -11,9 +11,17 @@ import {
 } from '@nestjs/common';
 import { ZodType } from 'zod';
 import {
+  ForgotPasswordDto,
+  ForgotPasswordSchema,
+} from '@/modules/auth/application/dto/forgot-password.dto';
+import {
   RegisterUserSchema,
   RegisterUserDto,
 } from '@/modules/auth/application/dto/register-user.dto';
+import {
+  ResetPasswordDto,
+  ResetPasswordSchema,
+} from '@/modules/auth/application/dto/reset-password.dto';
 import {
   LoginUserDto,
   LoginUserSchema,
@@ -24,11 +32,17 @@ import {
 } from '@/modules/auth/application/dto/verify-email.dto';
 import { LoginUserUseCase } from '@/modules/auth/application/use-cases/login-user.use-case';
 import { RegisterUserUseCase } from '@/modules/auth/application/use-cases/register-user.use-case';
+import { RequestPasswordResetUseCase } from '@/modules/auth/application/use-cases/request-password-reset.use-case';
+import { ResetPasswordUseCase } from '@/modules/auth/application/use-cases/reset-password.use-case';
 import { VerifyEmailUseCase } from '@/modules/auth/application/use-cases/verify-email.use-case';
 import {
   InvalidVerificationTokenError,
   VerificationTokenExpiredError,
 } from '@/modules/auth/domain/errors/email-verification.errors';
+import {
+  InvalidPasswordResetTokenError,
+  PasswordResetTokenExpiredError,
+} from '@/modules/auth/domain/errors/password-reset.errors';
 import {
   EmailAlreadyRegisteredError,
   InvalidCredentialsError,
@@ -45,12 +59,22 @@ export interface LoginResponse {
   access_token: string;
 }
 
+export interface ForgotPasswordResponse {
+  requested: true;
+}
+
+export interface ResetPasswordResponse {
+  reset: true;
+}
+
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly registerUser: RegisterUserUseCase,
     private readonly verifyEmailUseCase: VerifyEmailUseCase,
     private readonly loginUser: LoginUserUseCase,
+    private readonly requestPasswordReset: RequestPasswordResetUseCase,
+    private readonly resetPasswordUseCase: ResetPasswordUseCase,
   ) {}
 
   @Public()
@@ -107,6 +131,38 @@ export class AuthController {
         // Mismo mensaje generico para email inexistente y password
         // incorrecto (R2): no revela si el email existe.
         throw new UnauthorizedException('Invalid credentials');
+      }
+      throw error;
+    }
+  }
+
+  @Public()
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  async forgotPassword(@Body() body: unknown): Promise<ForgotPasswordResponse> {
+    const dto = parseBody<ForgotPasswordDto>(ForgotPasswordSchema, body);
+
+    await this.requestPasswordReset.execute(dto);
+
+    return { requested: true };
+  }
+
+  @Public()
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  async resetPassword(@Body() body: unknown): Promise<ResetPasswordResponse> {
+    const dto = parseBody<ResetPasswordDto>(ResetPasswordSchema, body);
+
+    try {
+      await this.resetPasswordUseCase.execute(dto);
+
+      return { reset: true };
+    } catch (error) {
+      if (error instanceof PasswordResetTokenExpiredError) {
+        throw new GoneException('Password reset token expired');
+      }
+      if (error instanceof InvalidPasswordResetTokenError) {
+        throw new BadRequestException('Invalid password reset token');
       }
       throw error;
     }

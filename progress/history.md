@@ -1985,3 +1985,26 @@ Notas de la sesión que no están en la spec:
   una decisión de entorno hay que barrer specs **y** reportes; (b) un paso de
   smoke condicional ("si hay usuario family seedeado") se cierra anotando que
   no se ejecutó, nunca dándolo por bueno.
+
+## 2026-08-28 — Feature #44 auth-forgot-password (cerrada)
+
+- **Feature:** recuperación de contraseña backend mediante
+  `POST /v1/auth/forgot-password` y `POST /v1/auth/reset-password`, con
+  respuesta uniforme, token SHA-256 de un solo uso/TTL una hora, invalidación
+  de tokens hermanos, Argon2, auditoría y entrega por log estructurado.
+- **Spec:** [[specs/auth-forgot-password/requirements|spec]] aprobada por
+  humano; R1–R13 implementados sin reabrir DA1/DA2 ni el backlog excluido.
+- **Acciones:** TDD por requisito con commit rojo anterior a cada verde;
+  migración 0015 aplicada al Postgres local; trazabilidad actualizada después
+  de cada verde; guía manual e informe de implementación añadidos.
+- **Resultado:** `./init.sh` exit 0 — backend 156 suites/1198 tests, infra
+  2/14, móvil 50/561, backend e2e 23 suites/349 tests (8 omitidos), build,
+  lint y typecheck verdes. Contención R13 limpia contra `origin/main`; ningún
+  cambio mobile/infra/env y ningún deploy AWS.
+- **Commits:** rojos `64230ee`, `a40ceb2`, `97e2c4b`, `080817e`, `25abbdd`,
+  `e36de77`, `106349c`, `0e67341`, `1e62765`, `ac3af27`, `56054ce`,
+  `f699540`, `4e05906`; verdes `9cd8473`, `b3e0aaf`, `bfa3f8c`, `9d1f7e7`,
+  `721c580`, `e531f63`, `ff042c0`, `e1bc6cf`, `2142d49`, `44fecd5`,
+  `4324e31`, `562b8a5`; trazabilidad en commits documentales inmediatos.
+- **Estado final:** `done`. Informe:
+  `progress/impl_auth-forgot-password.md`.

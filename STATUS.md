@@ -74,6 +74,15 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
+- **`auth-forgot-password` (#44) done** (2026-08-28): endpoints públicos de
+  solicitud/reset con respuesta uniforme, token opaco SHA-256 de un solo uso
+  y TTL de una hora, invalidación de hermanos, Argon2, auditoría y entrega por
+  log estructurado detrás del puerto `PasswordResetSender`. Implementación
+  R1–R13 con commit rojo anterior a cada verde y trazabilidad completa. Gate
+  final: backend 156 suites/1198 tests, infra 2/14, móvil 50/561 y e2e backend
+  23 suites/349 tests; lint/typecheck verdes. Sin cambios mobile/infra/env ni
+  deploy AWS. Informe: `progress/impl_auth-forgot-password.md`.
+
 - **`mobile-pets-profile` (#40) done** (2026-08-25): Profile reescrito según
   Figma (screens/ + route delgado), users/me real, AddPet, foto vía URL
   presignada, Docs contra contrato #49, blobatar determinista, tema
@@ -812,6 +821,14 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-08-28** — #44 `auth-forgot-password` **cerrada** (49/54). Codex
+  implementó R1–R13 con TDD estricto por requisito, migración 0015, entrega
+  local por evento `auth.password_reset.issued`, aislamiento de verify-email
+  y login viejo 401/nuevo 200. `./init.sh` terminó verde (backend 156/1198,
+  infra 2/14, móvil 50/561, e2e 23 suites/349 tests). No se tocó mobile,
+  infraestructura, variables de entorno ni proveedores externos; no hubo
+  deploy AWS. Informe: `progress/impl_auth-forgot-password.md`.
 
 - **2026-08-25** — #50 `mobile-tab-glass`: Codex implementó R1–R7 con TDD
   estricto (test rojo commiteado antes de cada implementación R1–R6), cerró

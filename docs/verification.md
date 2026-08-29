@@ -276,6 +276,65 @@ pnpm -C backend-pet-tracker run test:e2e
 # Esperado: los tres recuentos idénticos a los del paso 2.
 ```
 
+### Feature 44 — auth-forgot-password
+
+Usa una cuenta local ya registrada y verificada cuyo password anterior
+conozcas. Levanta Postgres y LocalStack, y arranca el backend guardando su
+salida para poder recuperar el token del log estructurado:
+
+```bash
+docker compose up -d
+pnpm -C backend-pet-tracker run start:dev 2>&1 | tee /tmp/pet-tracker-auth-forgot.log
+```
+
+En otra terminal, solicita el reset. La respuesta debe ser siempre
+`{"requested":true}` y no debe contener el token:
+
+```bash
+export API_BASE='http://localhost:3000/v1'
+export EMAIL='usuario-verificado@example.com'
+export OLD_PASSWORD='<password-anterior>'
+export NEW_PASSWORD='<password-nuevo-de-8-a-128-caracteres>'
+
+curl --fail --silent --show-error \
+  -H 'Content-Type: application/json' \
+  -d "{\"email\":\"$EMAIL\"}" \
+  "$API_BASE/auth/forgot-password"
+```
+
+Localiza el último evento del email solicitado y copia únicamente el campo
+`token` de su JSON a `RESET_TOKEN`. El evento esperado es
+`auth.password_reset.issued`; el token aparece en claro solo en este log local
+y la base de datos guarda su SHA-256:
+
+```bash
+rg 'auth\.password_reset\.issued' /tmp/pet-tracker-auth-forgot.log | tail -1
+export RESET_TOKEN='<token-del-evento>'
+```
+
+Consume el token y comprueba el round-trip de login. El reset debe devolver
+`{"reset":true}`, el password anterior debe dar `401` y el nuevo `200`:
+
+```bash
+curl --fail --silent --show-error \
+  -H 'Content-Type: application/json' \
+  -d "{\"token\":\"$RESET_TOKEN\",\"password\":\"$NEW_PASSWORD\",\"passwordConfirmation\":\"$NEW_PASSWORD\"}" \
+  "$API_BASE/auth/reset-password"
+
+curl --silent --output /tmp/login-old.json --write-out '%{http_code}\n' \
+  -H 'Content-Type: application/json' \
+  -d "{\"email\":\"$EMAIL\",\"password\":\"$OLD_PASSWORD\"}" \
+  "$API_BASE/auth/login"
+
+curl --silent --output /tmp/login-new.json --write-out '%{http_code}\n' \
+  -H 'Content-Type: application/json' \
+  -d "{\"email\":\"$EMAIL\",\"password\":\"$NEW_PASSWORD\"}" \
+  "$API_BASE/auth/login"
+
+rm -f /tmp/login-old.json /tmp/login-new.json /tmp/pet-tracker-auth-forgot.log
+unset API_BASE EMAIL OLD_PASSWORD NEW_PASSWORD RESET_TOKEN
+```
+
 ### Feature 51 — media-bucket-aws-mode
 
 Este smoke crea tráfico S3 y un objeto temporal en la cuenta AWS real. Solo lo

@@ -9,6 +9,12 @@ const TOKEN_BYTES = 32;
  */
 export const VERIFICATION_TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
 
+/**
+ * Vigencia del token de reset: 1 h. Mas corta porque concede control de la
+ * cuenta, no solo la confirmacion de una direccion.
+ */
+export const PASSWORD_RESET_TOKEN_TTL_MS = 60 * 60 * 1000;
+
 /** Token opaco de 256 bits en base64url; solo viaja al usuario. */
 export function generateVerificationToken(): string {
   return randomBytes(TOKEN_BYTES).toString('base64url');

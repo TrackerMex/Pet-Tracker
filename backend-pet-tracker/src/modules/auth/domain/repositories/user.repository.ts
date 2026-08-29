@@ -31,6 +31,12 @@ export interface UserRepository {
   existsByEmail(email: string): Promise<boolean>;
   create(user: NewUser): Promise<User>;
   markEmailVerified(userId: string, verifiedAt: Date): Promise<void>;
+  /** auth-forgot-password R5: unico camino para reemplazar la credencial. */
+  updatePasswordHash(
+    userId: string,
+    passwordHash: string,
+    changedAt: Date,
+  ): Promise<void>;
   /** auth-login-me R1: necesita el password_hash real para verificar. */
   findByEmail(email: string): Promise<User | null>;
   /** auth-login-me R9. */
