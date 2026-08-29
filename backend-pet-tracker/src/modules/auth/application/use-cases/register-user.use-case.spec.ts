@@ -61,6 +61,7 @@ function buildScenario(options: { emailExists?: boolean } = {}) {
     existsByEmail,
     create,
     markEmailVerified,
+    updatePasswordHash: jest.fn(),
     // Metodos de UserRepository que no participan del registro (auth-login-me
     // R1, R9, R10): mocks vacios, este use case nunca los llama.
     findByEmail: jest.fn(),

@@ -6,6 +6,8 @@ import { AUDIT_LOGGER } from '@/audit/audit-log.repository';
 import { DRIZZLE } from '@/db/drizzle.constants';
 import { LoginUserUseCase } from './application/use-cases/login-user.use-case';
 import { RegisterUserUseCase } from './application/use-cases/register-user.use-case';
+import { RequestPasswordResetUseCase } from './application/use-cases/request-password-reset.use-case';
+import { ResetPasswordUseCase } from './application/use-cases/reset-password.use-case';
 import { VerifyEmailUseCase } from './application/use-cases/verify-email.use-case';
 import { AuthModule } from './auth.module';
 import { AuthController } from './infrastructure/auth.controller';
@@ -34,7 +36,7 @@ describe('AuthModule: la inyeccion de dependencias resuelve todos los tokens', (
     process.env.JWT_SECRET = previousJwtSecret;
   });
 
-  it('instancia el controller y los tres casos de uso', async () => {
+  it('instancia el controller y los cinco casos de uso', async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [FakeSharedInfrastructureModule, AuthModule],
     }).compile();
@@ -47,6 +49,12 @@ describe('AuthModule: la inyeccion de dependencias resuelve todos los tokens', (
       VerifyEmailUseCase,
     );
     expect(moduleRef.get(LoginUserUseCase)).toBeInstanceOf(LoginUserUseCase);
+    expect(moduleRef.get(RequestPasswordResetUseCase)).toBeInstanceOf(
+      RequestPasswordResetUseCase,
+    );
+    expect(moduleRef.get(ResetPasswordUseCase)).toBeInstanceOf(
+      ResetPasswordUseCase,
+    );
 
     await moduleRef.close();
   });

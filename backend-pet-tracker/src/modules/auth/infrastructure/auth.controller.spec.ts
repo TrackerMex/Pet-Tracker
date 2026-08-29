@@ -8,12 +8,18 @@ import {
 import { GoneException } from '@nestjs/common';
 import { LoginUserUseCase } from '@/modules/auth/application/use-cases/login-user.use-case';
 import { RegisterUserUseCase } from '@/modules/auth/application/use-cases/register-user.use-case';
+import { RequestPasswordResetUseCase } from '@/modules/auth/application/use-cases/request-password-reset.use-case';
+import { ResetPasswordUseCase } from '@/modules/auth/application/use-cases/reset-password.use-case';
 import { VerifyEmailUseCase } from '@/modules/auth/application/use-cases/verify-email.use-case';
 import { User } from '@/modules/auth/domain/entities/user.entity';
 import {
   InvalidVerificationTokenError,
   VerificationTokenExpiredError,
 } from '@/modules/auth/domain/errors/email-verification.errors';
+import {
+  InvalidPasswordResetTokenError,
+  PasswordResetTokenExpiredError,
+} from '@/modules/auth/domain/errors/password-reset.errors';
 import {
   EmailAlreadyRegisteredError,
   InvalidCredentialsError,
@@ -61,6 +67,8 @@ function buildRegisterUserDouble(
     { execute } as unknown as RegisterUserUseCase,
     { execute: jest.fn() } as unknown as VerifyEmailUseCase,
     { execute: jest.fn() } as unknown as LoginUserUseCase,
+    { execute: jest.fn() } as unknown as RequestPasswordResetUseCase,
+    { execute: jest.fn() } as unknown as ResetPasswordUseCase,
   );
 
   return { controller, execute };
@@ -74,6 +82,8 @@ function buildVerifyEmailDouble(
     { execute: jest.fn() } as unknown as RegisterUserUseCase,
     { execute } as unknown as VerifyEmailUseCase,
     { execute: jest.fn() } as unknown as LoginUserUseCase,
+    { execute: jest.fn() } as unknown as RequestPasswordResetUseCase,
+    { execute: jest.fn() } as unknown as ResetPasswordUseCase,
   );
 
   return { controller, execute };
@@ -88,6 +98,38 @@ function buildLoginDouble(
     { execute: jest.fn() } as unknown as RegisterUserUseCase,
     { execute: jest.fn() } as unknown as VerifyEmailUseCase,
     { execute } as unknown as LoginUserUseCase,
+    { execute: jest.fn() } as unknown as RequestPasswordResetUseCase,
+    { execute: jest.fn() } as unknown as ResetPasswordUseCase,
+  );
+
+  return { controller, execute };
+}
+
+function buildForgotPasswordDouble(
+  behaviour: () => Promise<void> = () => Promise.resolve(),
+) {
+  const execute = jest.fn(behaviour);
+  const controller = new AuthController(
+    { execute: jest.fn() } as unknown as RegisterUserUseCase,
+    { execute: jest.fn() } as unknown as VerifyEmailUseCase,
+    { execute: jest.fn() } as unknown as LoginUserUseCase,
+    { execute } as unknown as RequestPasswordResetUseCase,
+    { execute: jest.fn() } as unknown as ResetPasswordUseCase,
+  );
+
+  return { controller, execute };
+}
+
+function buildResetPasswordDouble(
+  behaviour: () => Promise<void> = () => Promise.resolve(),
+) {
+  const execute = jest.fn(behaviour);
+  const controller = new AuthController(
+    { execute: jest.fn() } as unknown as RegisterUserUseCase,
+    { execute: jest.fn() } as unknown as VerifyEmailUseCase,
+    { execute: jest.fn() } as unknown as LoginUserUseCase,
+    { execute: jest.fn() } as unknown as RequestPasswordResetUseCase,
+    { execute } as unknown as ResetPasswordUseCase,
   );
 
   return { controller, execute };
@@ -365,5 +407,168 @@ describe('R15 (auth-login-me): la respuesta de login nunca expone password_hash'
     const body = await controller.login(validLoginBody);
 
     expect(Object.keys(body)).toEqual(['access_token']);
+  });
+});
+
+describe('R1: POST /v1/auth/forgot-password responde 200 con requested true', () => {
+  it('invoca el caso de uso y fija exactamente el contrato de exito', async () => {
+    const { controller, execute } = buildForgotPasswordDouble();
+
+    const body = await controller.forgotPassword({ email: 'ada@example.com' });
+
+    expect(execute).toHaveBeenCalledWith({ email: 'ada@example.com' });
+    expect(body).toEqual({ requested: true });
+    expect(httpCodeOf('forgotPassword')).toBe(200);
+  });
+});
+
+describe('R2: POST /v1/auth/forgot-password responde igual exista o no la cuenta', () => {
+  it('produce respuestas estructuralmente identicas en ambos caminos', async () => {
+    const existing = buildForgotPasswordDouble();
+    const missing = buildForgotPasswordDouble();
+
+    const existingResponse = {
+      status: httpCodeOf('forgotPassword'),
+      body: await existing.controller.forgotPassword({
+        email: 'ada@example.com',
+      }),
+    };
+    const missingResponse = {
+      status: httpCodeOf('forgotPassword'),
+      body: await missing.controller.forgotPassword({
+        email: 'missing@example.com',
+      }),
+    };
+
+    expect(missingResponse).toEqual(existingResponse);
+  });
+});
+
+describe('R3: POST /v1/auth/forgot-password con payload invalido responde 400', () => {
+  it.each([
+    ['email ausente', {}],
+    ['email no string', { email: 42 }],
+    ['formato invalido', { email: 'no-es-email' }],
+    ['mas de 320 caracteres', { email: `${'a'.repeat(310)}@example.com` }],
+  ])(
+    'rechaza %s con detalle por campo antes del caso de uso',
+    async (_case, body) => {
+      const { controller, execute } = buildForgotPasswordDouble();
+
+      const error = await captureHttpError(controller.forgotPassword(body));
+
+      expect(error).toBeInstanceOf(BadRequestException);
+      expect(error.getStatus()).toBe(400);
+      const response = error.getResponse() as {
+        errors: { path: string; message: string }[];
+      };
+      expect(response.errors.map((issue) => issue.path)).toContain('email');
+      expect(execute).not.toHaveBeenCalled();
+    },
+  );
+});
+
+describe('R5: POST /v1/auth/reset-password con token valido responde 200', () => {
+  it('invoca el caso de uso y fija exactamente el contrato de exito', async () => {
+    const { controller, execute } = buildResetPasswordDouble();
+    const body = {
+      token: VERIFICATION_TOKEN,
+      password: 'NewPassword1!',
+      passwordConfirmation: 'NewPassword1!',
+    };
+
+    const response = await controller.resetPassword(body);
+
+    expect(execute).toHaveBeenCalledWith(body);
+    expect(response).toEqual({ reset: true });
+    expect(httpCodeOf('resetPassword')).toBe(200);
+  });
+});
+
+describe('R6: POST /v1/auth/reset-password con token invalido o usado responde 400', () => {
+  it.each(['inexistente', 'usado'])(
+    'mapea el token %s al mismo 400',
+    async () => {
+      const { controller } = buildResetPasswordDouble(() =>
+        Promise.reject(new InvalidPasswordResetTokenError()),
+      );
+
+      const error = await captureHttpError(
+        controller.resetPassword({
+          token: VERIFICATION_TOKEN,
+          password: 'NewPassword1!',
+          passwordConfirmation: 'NewPassword1!',
+        }),
+      );
+
+      expect(error).toBeInstanceOf(BadRequestException);
+      expect(error.getStatus()).toBe(400);
+    },
+  );
+});
+
+describe('R7: POST /v1/auth/reset-password con token expirado responde 410', () => {
+  it('mapea PasswordResetTokenExpiredError a GoneException', async () => {
+    const { controller } = buildResetPasswordDouble(() =>
+      Promise.reject(new PasswordResetTokenExpiredError()),
+    );
+
+    const error = await captureHttpError(
+      controller.resetPassword({
+        token: VERIFICATION_TOKEN,
+        password: 'NewPassword1!',
+        passwordConfirmation: 'NewPassword1!',
+      }),
+    );
+
+    expect(error).toBeInstanceOf(GoneException);
+    expect(error.getStatus()).toBe(410);
+  });
+});
+
+describe('R8: POST /v1/auth/reset-password con payload invalido responde 400', () => {
+  const validResetBody = {
+    token: VERIFICATION_TOKEN,
+    password: 'NewPassword1!',
+    passwordConfirmation: 'NewPassword1!',
+  };
+
+  it.each([
+    ['token ausente', { ...validResetBody, token: undefined }],
+    ['token vacio', { ...validResetBody, token: '   ' }],
+    ['token mayor a 256', { ...validResetBody, token: 'x'.repeat(257) }],
+    ['password corto', { ...validResetBody, password: 'short' }],
+    [
+      'password mayor a 128',
+      {
+        ...validResetBody,
+        password: 'x'.repeat(129),
+        passwordConfirmation: 'x'.repeat(129),
+      },
+    ],
+    [
+      'confirmacion distinta',
+      { ...validResetBody, passwordConfirmation: 'DifferentPassword1!' },
+    ],
+  ])('rechaza %s antes de invocar el caso de uso', async (_case, body) => {
+    const { controller, execute } = buildResetPasswordDouble();
+
+    const error = await captureHttpError(controller.resetPassword(body));
+
+    expect(error).toBeInstanceOf(BadRequestException);
+    expect(error.getStatus()).toBe(400);
+    expect(execute).not.toHaveBeenCalled();
+  });
+});
+
+describe('R10: la respuesta de forgot-password nunca incluye el token', () => {
+  it('devuelve exclusivamente requested true', async () => {
+    const { controller } = buildForgotPasswordDouble();
+
+    const body = await controller.forgotPassword({ email: 'ada@example.com' });
+
+    expect(Object.keys(body)).toEqual(['requested']);
+    expect(body).toEqual({ requested: true });
+    expect(JSON.stringify(body).toLowerCase()).not.toContain('token');
   });
 });
