@@ -409,28 +409,20 @@ describe('R7 (mobile-figma-polish): mapa adapta su base al tema', () => {
     });
   });
 
-  it('leaves Google Maps unstyled in light mode', async () => {
+  it('R4 (android-map-never-ready): pasa LIGHT en tema claro', async () => {
     await renderMap();
 
     await waitFor(() => expect(screen.getByTestId('map-view')).toBeVisible());
-    expect(screen.getByTestId('map-view').props.customMapStyle).toBeUndefined();
+    expect(screen.getByTestId('map-view').props.colorScheme).toBe('LIGHT');
   });
 
-  it('passes the Google night style in dark mode', async () => {
+  it('R4 (android-map-never-ready): pasa DARK en tema oscuro', async () => {
     mockTheme = 'dark';
 
     await renderMap();
 
     await waitFor(() => expect(screen.getByTestId('map-view')).toBeVisible());
-    expect(screen.getByTestId('map-view').props.customMapStyle).toEqual(
-      expect.arrayContaining([
-        {
-          featureType: 'all',
-          elementType: 'geometry',
-          stylers: [{ color: '#242f3e' }],
-        },
-      ]),
-    );
+    expect(screen.getByTestId('map-view').props.colorScheme).toBe('DARK');
   });
 });
 

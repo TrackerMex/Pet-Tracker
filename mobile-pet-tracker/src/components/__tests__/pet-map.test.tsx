@@ -140,3 +140,23 @@ describe('R3: marker y polylines llegan a la vista como arrays', () => {
     ]);
   });
 });
+
+describe('R4: el tema decide el colorScheme del mapa', () => {
+  const center = { latitude: 19.4326, longitude: -99.1332 };
+
+  it.each([
+    ['dark', 'DARK'],
+    ['light', 'LIGHT'],
+  ] as const)('mapea %s al valor nativo %s', async (colorScheme, expected) => {
+    await render(
+      <PetMap
+        center={center}
+        marker={null}
+        polylines={[]}
+        colorScheme={colorScheme}
+      />,
+    );
+
+    expect(screen.getByTestId('map-view').props.colorScheme).toBe(expected);
+  });
+});
