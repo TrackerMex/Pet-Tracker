@@ -976,5 +976,44 @@
       "mobile-pet-tracker/src/app/(tabs)/map.tsx",
       "mobile-pet-tracker/package.json"
     ]
+  },
+  {
+    "id": 55,
+    "name": "auth-email-delivery",
+    "status": "spec_ready",
+    "priority": "P2",
+    "description": "Cierra DA1 de #44 auth-forgot-password: hoy el token de reset y el de verificacion de registro se entregan por log estructurado, asi que ningun usuario real puede completar ninguno de los dos flujos. El seam ya existe y es limpio: dos puertos de dominio, PasswordResetSender (backend-pet-tracker/src/modules/auth/domain/ports/password-reset-sender.ts, token PASSWORD_RESET_SENDER) y EmailVerificationSender (mismo directorio), cada uno con un solo metodo send() y un adaptador de consola cableado en auth.module.ts. La feature aniade un emisor real por Resend detras de esos dos puertos sin tocar domain ni application. Infra confirmada por el humano el 2026-08-29: dominio propio en Hostinger con panel DNS y hosting web incluido. Decisiones de riesgo que la spec tiene que cerrar por escrito, no heredar: (1) SPF, el dominio ya tiene correo de Hostinger y por tanto ya tiene un v=spf1; solo puede existir UNO en la raiz, dos dan permerror y degradan tambien el buzon existente, asi que la spec decide entre fusionar el include o enviar desde un subdominio dedicado, que es lo recomendado porque aisla la reputacion; los MX no se tocan porque Resend solo envia. (2) El envio dentro del request rompe la garantia de respuesta indistinguible de R1/R2 de #44: hoy request-password-reset.use-case.ts:52 hace await resetSender.send() en linea, asi que con una llamada HTTP saliente una cuenta existente tarda cientos de ms mas que una inexistente (enumeracion por timing) y, peor, si Resend falla el await lanza y el endpoint responde 500 SOLO para cuentas que existen, que es un oraculo exacto con una sola peticion; el fallo tiene que quedar contenido en el adaptador y el envio fuera del camino del request (el repo ya tiene SQS y patron de consumer). (3) Rate limiting: el endpoint es publico y hoy no tiene ninguno; con entrega real un bucle bombardea el buzon de una persona real, quema cuota y hunde la reputacion del dominio por rebotes y quejas. (4) El adaptador de consola escribe el token en claro en el log, que esta bien mientras ES el mecanismo de entrega pero pasa a ser una credencial en texto plano en CloudWatch en cuanto Resend entregue. (5) RESEND_API_KEY nunca al repo: .env local gitignoreado, .env.example solo el nombre, y en la stack desplegada por Secrets Manager con {{resolve:secretsmanager:...}} (ojo al coste por secreto y mes). EMAIL_ENABLED ya existe pero hoy solo cambia un warn, no selecciona adaptador. La API de Resend es un POST /emails, asi que un adaptador con fetch evita la dependencia del SDK salvo que se quieran sus webhooks de rebote. No delegable a IA: crear el dominio en Resend, poner los registros DNS y cualquier envio real.",
+    "acceptance_criteria": [
+      "Un emisor real por Resend implementa los DOS puertos existentes (PasswordResetSender y EmailVerificationSender) sin modificar domain ni application: si solo se cablea el de reset, el alta de usuarios sigue entregando su token por log",
+      "La seleccion de adaptador (consola vs Resend) es explicita y por entorno; los tests unitarios y e2e NUNCA llaman a la API real",
+      "Un fallo del proveedor no cambia el codigo de respuesta ni el tiempo de respuesta de POST /v1/auth/forgot-password: test que prueba que con el emisor lanzando, la respuesta sigue siendo 200 {requested:true}, identica a la de una cuenta inexistente",
+      "Rate limiting en los endpoints publicos de auth que disparan correo, con test que lo prueba",
+      "Con el emisor real activo, ningun log escribe el token en claro; test que lo fija",
+      "RESEND_API_KEY ausente del repo y del bundle: .env.example solo con el nombre vacio y grep limpio",
+      "Gate humano: envio real a una direccion propia, con el dominio verificado en Resend, confirmando que el correo llega y que el token que trae completa el reset. No delegable a IA"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/modules/auth/infrastructure/email/",
+      "backend-pet-tracker/src/modules/auth/auth.module.ts",
+      "backend-pet-tracker/.env.example",
+      "docs/conventions.md"
+    ]
+  },
+  {
+    "id": 56,
+    "name": "auth-reset-deep-link",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Cierra DA2 de #44 auth-forgot-password: el enlace y la pantalla que el correo de reset necesita. Depende de #55 auth-email-delivery, que fija el dominio emisor y la forma de la URL; no se especifica antes que ella. Estado actual: mobile-pet-tracker/app.json declara scheme mobilepettracker y existe src/app/(auth)/forgot.tsx como stub, pero NO existe ninguna ruta que reciba el token, y no hay frontend web. Un mobilepettracker:// pelado no lo enlazan la mayoria de clientes de correo y no funciona si la app no esta instalada, asi que la via razonable son App Links https sobre el dominio propio, con /.well-known/assetlinks.json servido por el hosting web de Hostinger (confirmado disponible por el humano el 2026-08-29) y una pagina minima de reset como fallback para quien no tenga la app. Propiedad de seguridad que hay que conservar: el token viaja en la URL y algunos clientes de correo hacen prefetch de los enlaces, asi que el token NO puede consumirse en un GET; el diseno de #44 ya lo cumple porque solo se consume en POST /v1/auth/reset-password, y esta feature no puede romperlo.",
+    "acceptance_criteria": [
+      "El enlace del correo abre la app en la pantalla de reset con el token, y degrada a una pagina web usable si la app no esta instalada",
+      "Ninguna peticion GET consume el token: abrir el enlace dos veces sigue permitiendo completar el reset una vez",
+      "Ruta nueva en la app movil que recibe el token y completa el flujo contra POST /v1/auth/reset-password, con tests que nombran su R-id",
+      "Gate humano: smoke en dev build de Android abriendo el enlace real desde el correo. No delegable a IA"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/app/(auth)/",
+      "mobile-pet-tracker/app.json"
+    ]
   }
 ]
