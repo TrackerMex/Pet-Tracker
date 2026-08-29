@@ -3,6 +3,7 @@ import { useFocusEffect } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import { Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useUniwind } from 'uniwind';
 
 import { listPets, setLostMode, type PetsState } from '../../api/pets';
 import { getLastPosition, listPositions } from '../../api/positions';
@@ -44,6 +45,7 @@ export default function MapScreen() {
   const { token } = useAuth();
   const { selectedPetId } = useSelectedPet();
   const insets = useSafeAreaInsets();
+  const { theme } = useUniwind();
   const petsFn = useCallback(
     () => listPets(baseUrl, token ?? ''),
     [baseUrl, token],
@@ -209,7 +211,7 @@ export default function MapScreen() {
             center={center}
             marker={marker}
             polylines={polylines}
-            colorScheme="light"
+            colorScheme={theme === 'dark' ? 'dark' : 'light'}
           />
           {position === null ? (
             <View

@@ -29,6 +29,10 @@ export function PetMap(props: PetMapProps) {
       ...polyline,
       color: polylineColor,
     })),
+    colorScheme:
+      props.colorScheme === 'dark'
+        ? GoogleMaps.MapColorScheme.DARK
+        : GoogleMaps.MapColorScheme.LIGHT,
   };
 
   return <GoogleMaps.View {...mapViewProps} />;
