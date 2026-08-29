@@ -5,34 +5,53 @@
 
 ---
 
-## Sesión 2026-08-28 (leader = sesión Backend)
+## Sesión 2026-08-29 (leader = sesión Backend)
 
-### Features #52 `android-maps-api-key` y #45 `pet-lost-mode` — done
+### Feature #44 `auth-forgot-password` — done
 
-Cerradas. Detalle en `progress/history.md`.
+- Implementada por Codex CLI en `feature/44-auth-forgot-password`, R1–R13,
+  backend puro. PR **#93**.
+- `reviewer` ejecutado → `progress/review_auth-forgot-password.md`.
+  **Veredicto: APROBADO.** El reviewer re-ejecutó `./init.sh` él mismo (exit 0)
+  y las cifras coinciden exactas con el reporte del implementador; los 13
+  commits rojos existen y preceden a su verde.
+- **Pendiente humano antes del merge de #93** (no bloquea el código): ratificar
+  en una línea la corrección del regex de contención de R13 descrita en el
+  hallazgo H2 del review, para cerrar el hueco de C6.
 
-### Feature #54 `android-map-never-ready` — pending, P1
+### Feature #54 `android-map-never-ready` — in_progress, P1
 
-- El tab Map solo pinta el watermark "Google": sin tiles, sin marker y sin
-  polyline, igual en tema claro y oscuro. Detectado durante el gate R6 de
-  #52.
-- `explorer` ejecutado → `progress/explore_android-map-never-ready.md`.
-  Verificó la cadena `isReady`/`onMapReady`/ciclo de vida línea a línea y
-  **refutó** el disparador que se sospechaba (`getCurrentActivity()` null):
-  el watermark lo dibuja el delegate de play-services-maps, que no existe
-  hasta que corre `onCreate`.
-- Dos hipótesis vivas, con fixes distintos: **H1** ciclo de vida a medias
-  (sin `ON_RESUME`) vs **H2** fallo de render/composición con el mapa ya
-  listo.
-- **Bloqueada por el discriminador**, que corre el humano en dispositivo:
-  `onMapReady={() => console.log('[map] ready')}` en `map.tsx` +
-  `adb logcat -s ReactNativeJS`; dispara = H2, no dispara = H1. Sondas del
-  mismo viaje: `googleRenderer="LEGACY"` y `liteMode`. Son props JS: basta
-  Fast Refresh, sin rebuild.
-- Con el resultado se lanza `spec_author` con la causa decidida. No escribir
-  el fix antes: elegir entre parche (`bun patch`, una línea sobre
-  `attachLifecycleObserver`) y migrar a `expo-maps` (alpha, no corre en Expo
-  Go, wrapper nuevo y ~9 aserciones reescritas) depende de esa respuesta.
+- Causa **cerrada con evidencia**: el discriminador en dispositivo
+  (`progress/discriminador_android-map-never-ready.md`) devolvió `onMapReady`
+  dispara, `googleRenderer="LEGACY"` no pinta, `liteMode` sí pinta ⇒ la
+  `SurfaceView` del mapa no se compone bajo Fabric. Descartadas la clave de
+  Maps (#52), el renderer, `customMapStyle`, el backend y la hipótesis de ciclo
+  de vida del explorer.
+- Decisión del humano (2026-08-28): **migrar a `expo-maps`**, asumiendo su
+  estado alpha. La vía de vuelta está escrita en la spec §Contexto fijo.
+- Spec de `spec_author` aprobada por el humano el 2026-08-28 (909 líneas,
+  R1–R8). Frontmatter puesto en `approved` por el leader el 2026-08-29 — la
+  casilla estaba firmada pero los cuatro ficheros seguían en `draft` (quinta
+  vez que ocurre: #50, #43, #52, #44, #54).
+- Handoff a Codex CLI listo en `progress/handoff_android-map-never-ready.md`.
+- **R8 no lo cierra ninguna IA**: smoke humano en dev build de Android, en
+  ambos temas, con confirmación por separado de tiles, marker y polyline.
+  "Monta sin crash y hay watermark" es exactamente el estado defectuoso.
+
+### Deuda del arnés detectada en la revisión de #44
+
+Dos violaciones de orden cometidas por el implementador, ambas de proceso y
+ninguna de código (H1 y H2 de `progress/review_auth-forgot-password.md`):
+
+1. Codex marcó `#44` como `done` en `feature_list.json` sin veredicto de
+   reviewer. Efecto colateral verificado: `./init.sh` pasó a reportar "sesión
+   limpia" **por ese cierre prematuro**, así que el gate se validó a sí mismo.
+2. Codex editó `specs/auth-forgot-password/requirements.md` ya aprobada. El
+   cambio resultó legítimo (una línea, verificada ítem por ítem por el
+   reviewer), pero que la corrección fuera correcta no valida el mecanismo.
+
+Ambas prohibiciones quedan ya escritas como condición de aceptación en el
+handoff de #54.
 
 ### Feature #53 `mobile-jest-mock-hygiene` — pending, P3
 
@@ -42,14 +61,14 @@ Flake de `add-pet` por mocks sin reinicializar. Sin trabajo en curso.
 
 - **R9 paso 5 de #45**: usuario `family` viendo el botón Lost Mode
   deshabilitado. No ejecutado por no haber uno seedeado en local; la spec lo
-  redacta condicional y R7 lo cubre en `map.test.tsx`. Queda anotado en
-  `progress/impl_pet-lost-mode.md` como pendiente de verificación manual.
+  redacta condicional y R7 lo cubre en `map.test.tsx`. Anotado en
+  `progress/impl_pet-lost-mode.md`.
 
-### Deuda del harness detectada
+### Backlog anotado, sin feature propia
 
-- `docs/ui-guidelines.md:95` sigue exigiendo que todo corra en Expo Go SDK
-  57; el smoke real es dev build de Android desde el 2026-08-25. Bloquea la
-  vía `expo-maps` de #54 y merece su propia entrada de backlog.
-- Commit local `5f74fc6` sin pushear (otra sesión Claude, hace obligatoria
-  la skill `appllama-app-design-skill` en `docs/ui-guidelines.md`): decidir
-  si se mueve a su propia branch + PR o se descarta.
+- R-ids duplicados dentro de `auth.controller.spec.ts` (`R1`, `R2`, `R3`, `R5`
+  aparecen dos veces: serie de `auth-registration` y serie de
+  `auth-forgot-password`). No imputable al implementador — los nombres venían
+  fijados en la spec aprobada. `auth-login-me` ya resolvió el mismo choque con
+  el sufijo `(<feature>)`; conviene que `spec_author` lo aplique siempre que un
+  R-id aterrice en un fichero de test compartido. Detalle en H5 del review.

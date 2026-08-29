@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-08-28
-**Features completadas**: 48/54 (`feature_list.json`)
-**En progreso**: ninguna
+**Última actualización**: 2026-08-29
+**Features completadas**: 49/54 (`feature_list.json`)
+**En progreso**: #54 `android-map-never-ready` (spec aprobada 2026-08-28, en manos de Codex CLI)
 
-**Pendientes**: 6 (#18, #41, #42, #44, #53, #54). #54 `android-map-never-ready` es P1 y la siguiente candidata: el tab Map solo pinta el watermark de Google, sin tiles ni marker, y su R1 es un discriminador en dispositivo antes de elegir fix (`progress/explore_android-map-never-ready.md`). Fuente del diseño Figma versionada en
+**Pendientes**: 4 (#18, #41, #42, #53). #54 migra el tab Map de `react-native-maps` a `expo-maps`: el discriminador en dispositivo (`progress/discriminador_android-map-never-ready.md`) probó que el mapa solo pinta el watermark porque su `SurfaceView` no se compone bajo Fabric, no por la clave ni por el ciclo de vida. Su R8 es un smoke humano en dev build de Android que exige tiles + marker + polyline en ambos temas. Fuente del diseño Figma versionada en
 `specs/mobile-figma-polish/design-src/`.
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
