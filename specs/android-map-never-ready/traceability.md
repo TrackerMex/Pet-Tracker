@@ -8,7 +8,7 @@ tags: [harness, spec, mobile]
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | `src/components/__tests__/pet-map.test.tsx::R1: PetMap renderiza la vista de expo-maps con el contrato del tab Map` | pendiente |
+| R1 | `src/components/__tests__/pet-map.test.tsx::R1: PetMap renderiza la vista de expo-maps con el contrato del tab Map` | `a574f44 test(map): define expo maps wrapper in red (R1)` → `e99ec43 feat(map): add shared Expo Maps wrapper (R1)` |
 | R2 | `src/components/__tests__/pet-map.test.tsx::R2: la cámara se fija con MAP_ZOOM en vez de deltas` | pendiente |
 | R3 | `src/components/__tests__/pet-map.test.tsx::R3: marker y polylines llegan a la vista como arrays` + `src/app/(tabs)/__tests__/map.test.tsx::R6: mapa y marker con la última posición::R3 (android-map-never-ready): …` y `::R7: ruta del día como polylines::R3 (android-map-never-ready): …` | pendiente |
 | R4 | `src/components/__tests__/pet-map.test.tsx::R4: el tema decide el colorScheme del mapa` + `src/app/(tabs)/__tests__/map.test.tsx::R7 (mobile-figma-polish): mapa adapta su base al tema::R4 (android-map-never-ready): …` | pendiente |

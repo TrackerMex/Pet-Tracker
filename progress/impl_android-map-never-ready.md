@@ -48,7 +48,7 @@ Comandos:
 
 | R-id | Commit rojo | Resultado rojo | Commit verde | Resultado verde |
 |---|---|---|---|---|
-| R1 | pendiente | pendiente | pendiente | pendiente |
+| R1 | `a574f44` | exit 1: `Cannot find module '../pet-map'` | `e99ec43` | test dirigido: 1 suite / 1 test verde; `bun run typecheck`: exit 0 |
 | R2 | pendiente | pendiente | pendiente | pendiente |
 | R3 | pendiente | pendiente | pendiente | pendiente |
 | R4 | pendiente | pendiente | pendiente | pendiente |
