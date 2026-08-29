@@ -448,6 +448,6 @@ C8 — por eso R6 es requisito, no cortesía.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [X] Aprobado por humano (fecha: 2026-08-28) ← gate obligatorio antes de implementar
 - [ ] R8 smoke en dev build de Android, en ambos temas, con tiles + marker +
       polyline confirmados (fecha: ____) ← gate obligatorio antes de `done`
