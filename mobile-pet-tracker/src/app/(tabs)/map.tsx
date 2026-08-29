@@ -140,6 +140,19 @@ export default function MapScreen() {
         longitude: position.lng,
       }
     : DEFAULT_CENTER;
+  const marker = position
+    ? { latitude: position.lat, longitude: position.lng }
+    : null;
+  const polylines =
+    route.data?.kind === 'ok'
+      ? route.data.trips.map((trip) => ({
+          id: `trip-${trip.index}`,
+          coordinates: trip.path.map(({ lat, lng }) => ({
+            latitude: lat,
+            longitude: lng,
+          })),
+        }))
+      : [];
   const latestSpeed =
     positions.data?.kind === 'ok'
       ? positions.data.items[positions.data.items.length - 1]?.speedKmh
@@ -194,8 +207,8 @@ export default function MapScreen() {
           <PetMap
             key={selectedPetId}
             center={center}
-            marker={null}
-            polylines={[]}
+            marker={marker}
+            polylines={polylines}
             colorScheme="light"
           />
           {position === null ? (
