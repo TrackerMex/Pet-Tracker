@@ -3,8 +3,8 @@
 ## Estado
 
 - Feature #54 en implementación sobre `feature/54-android-map-never-ready`.
-- R1–R5: implementados con TDD y trazabilidad actualizada.
-- R6–R7: pendientes de documentación/verificación.
+- R1–R6: implementados y con trazabilidad actualizada.
+- R7: pendiente de verificación final.
 - R8: pendiente de smoke humano en dev build de Android; no lo cierra esta sesión.
 
 ## R0 — instalación y contraste de la API real
@@ -54,7 +54,7 @@ Comandos:
 | R3 | `07e8beb` | wrapper exit 1: `markers`/`polylines` recibidos como `undefined`; tab mostró los fallos equivalentes en props (la corrida completa se interrumpió con 130 tras el fallo heredado de `map-marker` en polling, adaptado en el propio commit rojo) | `52518da` | wrapper: 1 suite / 5 tests verdes; tab filtrado: 7 tests verdes (6 R3 + polling); `bun run typecheck`: exit 0 |
 | R4 | `1af4623` | wrapper y tab: exit 1; `colorScheme` esperado `DARK`/`LIGHT`, recibido `undefined`; R1–R3 seguían verdes | `dbdfa27` | wrapper: 7/7 tests; tab: 31/31 tests; `bun run typecheck`: exit 0 |
 | R5 | `73331f3` | `app.config.test.ts`: exit 1; esperaba `android.config.googleMaps.apiKey` sin plugin y recibió el plugin legado de `react-native-maps`; los 4 tests heredados R2/R3 siguieron verdes | `085d57f` | `app.config.test.ts`: 5/5 tests verdes; `bun run typecheck`: exit 0 |
-| R6 | N/A (documentación) | checklist contractual sin aplicar | pendiente | pendiente |
+| R6 | N/A (documentación) | checklist contractual de seis puntos sin aplicar | `02a4f2c` | seis puntos aplicados; grep en `docs/` sin menciones vivas a `customMapStyle`, `map-style-dark.json` ni "todo debe correr en Expo Go" |
 | R7 | N/A (verificación) | allowlist/checks sin ejecutar | pendiente | pendiente |
 
 ## Resultado del smoke R8
