@@ -32,11 +32,9 @@ function fmtAgo(seconds: number): string {
   return `${Math.floor(seconds / 3600)}h ago`;
 }
 
-const DEFAULT_REGION = {
+const DEFAULT_CENTER = {
   latitude: 19.4326,
   longitude: -99.1332,
-  latitudeDelta: 0.01,
-  longitudeDelta: 0.01,
 };
 const STALE_SECONDS = 120;
 const POLL_MS = 15000;
@@ -136,14 +134,12 @@ export default function MapScreen() {
       pets.data.pets.length > 0 &&
       last.data === undefined);
   const position = last.data?.kind === 'ok' ? last.data.position : undefined;
-  const initialRegion = position
+  const center = position
     ? {
         latitude: position.lat,
         longitude: position.lng,
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01,
       }
-    : DEFAULT_REGION;
+    : DEFAULT_CENTER;
   const latestSpeed =
     positions.data?.kind === 'ok'
       ? positions.data.items[positions.data.items.length - 1]?.speedKmh
@@ -197,10 +193,7 @@ export default function MapScreen() {
         <>
           <PetMap
             key={selectedPetId}
-            center={{
-              latitude: initialRegion.latitude,
-              longitude: initialRegion.longitude,
-            }}
+            center={center}
             marker={null}
             polylines={[]}
             colorScheme="light"

@@ -9,12 +9,16 @@ export type PetMapProps = {
   colorScheme: 'light' | 'dark';
 };
 
-export function PetMap(props: PetMapProps) {
-  void props;
+export const MAP_ZOOM = 16;
 
+export function PetMap(props: PetMapProps) {
   const mapViewProps = {
     testID: 'map-view',
     style: { flex: 1 },
+    cameraPosition: {
+      coordinates: props.center,
+      zoom: MAP_ZOOM,
+    },
   };
 
   return <GoogleMaps.View {...mapViewProps} />;
