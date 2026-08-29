@@ -50,7 +50,7 @@ Comandos:
 |---|---|---|---|---|
 | R1 | `a574f44` | exit 1: `Cannot find module '../pet-map'` | `e99ec43` | test dirigido: 1 suite / 1 test verde; `bun run typecheck`: exit 0 |
 | R2 | `1036737` | exit 1: `MAP_ZOOM` esperado 16, recibido `undefined`; R1 seguía verde | `b2080a8` | test dirigido: 1 suite / 2 tests verdes; `bun run typecheck`: exit 0 |
-| R3 | pendiente | pendiente | pendiente | pendiente |
+| R3 | `07e8beb` | wrapper exit 1: `markers`/`polylines` recibidos como `undefined`; tab mostró los fallos equivalentes en props (la corrida completa se interrumpió con 130 tras el fallo heredado de `map-marker` en polling, adaptado en el propio commit rojo) | `52518da` | wrapper: 1 suite / 5 tests verdes; tab filtrado: 7 tests verdes (6 R3 + polling); `bun run typecheck`: exit 0 |
 | R4 | pendiente | pendiente | pendiente | pendiente |
 | R5 | pendiente | pendiente | pendiente | pendiente |
 | R6 | N/A (documentación) | checklist contractual sin aplicar | pendiente | pendiente |
