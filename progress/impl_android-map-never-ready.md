@@ -3,7 +3,8 @@
 ## Estado
 
 - Feature #54 en implementación sobre `feature/54-android-map-never-ready`.
-- R1–R7: pendientes de implementación/verificación.
+- R1–R5: implementados con TDD y trazabilidad actualizada.
+- R6–R7: pendientes de documentación/verificación.
 - R8: pendiente de smoke humano en dev build de Android; no lo cierra esta sesión.
 
 ## R0 — instalación y contraste de la API real
@@ -52,7 +53,7 @@ Comandos:
 | R2 | `1036737` | exit 1: `MAP_ZOOM` esperado 16, recibido `undefined`; R1 seguía verde | `b2080a8` | test dirigido: 1 suite / 2 tests verdes; `bun run typecheck`: exit 0 |
 | R3 | `07e8beb` | wrapper exit 1: `markers`/`polylines` recibidos como `undefined`; tab mostró los fallos equivalentes en props (la corrida completa se interrumpió con 130 tras el fallo heredado de `map-marker` en polling, adaptado en el propio commit rojo) | `52518da` | wrapper: 1 suite / 5 tests verdes; tab filtrado: 7 tests verdes (6 R3 + polling); `bun run typecheck`: exit 0 |
 | R4 | `1af4623` | wrapper y tab: exit 1; `colorScheme` esperado `DARK`/`LIGHT`, recibido `undefined`; R1–R3 seguían verdes | `dbdfa27` | wrapper: 7/7 tests; tab: 31/31 tests; `bun run typecheck`: exit 0 |
-| R5 | pendiente | pendiente | pendiente | pendiente |
+| R5 | `73331f3` | `app.config.test.ts`: exit 1; esperaba `android.config.googleMaps.apiKey` sin plugin y recibió el plugin legado de `react-native-maps`; los 4 tests heredados R2/R3 siguieron verdes | `085d57f` | `app.config.test.ts`: 5/5 tests verdes; `bun run typecheck`: exit 0 |
 | R6 | N/A (documentación) | checklist contractual sin aplicar | pendiente | pendiente |
 | R7 | N/A (verificación) | allowlist/checks sin ejecutar | pendiente | pendiente |
 
