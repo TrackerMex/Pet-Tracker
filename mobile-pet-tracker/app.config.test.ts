@@ -20,21 +20,16 @@ describe('R1: la config resuelta inyecta la clave de Android desde el entorno', 
     process.env.GOOGLE_MAPS_API_KEY_ANDROID = originalApiKey;
   });
 
-  it('conserva app.json y añade al final el plugin con la clave recortada', () => {
+  it('R5 (android-map-never-ready): fija android.config.googleMaps.apiKey y no declara plugin de mapas', () => {
     process.env.GOOGLE_MAPS_API_KEY_ANDROID = '  test-key  ';
 
     const resolved = resolveConfig({
       config: appJson.expo,
     } as ConfigContext);
-    const { plugins: _plugins, ...staticConfig } = appJson.expo;
-    const mapsPlugin = [
-      'react-native-maps',
-      { androidGoogleMapsApiKey: 'test-key' },
-    ];
 
-    expect(resolved).toMatchObject(staticConfig);
-    expect(resolved.plugins).toContainEqual(mapsPlugin);
-    expect(resolved.plugins).toEqual([...appJson.expo.plugins, mapsPlugin]);
+    expect(resolved).toMatchObject(appJson.expo);
+    expect(resolved.android?.config?.googleMaps?.apiKey).toBe('test-key');
+    expect(resolved.plugins).toEqual(appJson.expo.plugins);
   });
 });
 
