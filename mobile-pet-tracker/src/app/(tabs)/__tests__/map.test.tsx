@@ -68,14 +68,24 @@ jest.mock('expo-router', () => ({
   },
 }));
 
-jest.mock('react-native-maps', () => {
+jest.mock('expo-maps', () => {
   const React = jest.requireActual<typeof import('react')>('react');
   const { View } = jest.requireActual<typeof import('react-native')>(
     'react-native',
   );
   const stub = (props: Record<string, unknown>) =>
     React.createElement(View, props, props.children as ReactNode);
-  return { __esModule: true, default: stub, Marker: stub, Polyline: stub };
+  return {
+    __esModule: true,
+    GoogleMaps: {
+      View: stub,
+      MapColorScheme: {
+        DARK: 'DARK',
+        LIGHT: 'LIGHT',
+        FOLLOW_SYSTEM: 'FOLLOW_SYSTEM',
+      },
+    },
+  };
 });
 
 jest.mock('react-native-safe-area-context', () => ({
@@ -327,7 +337,7 @@ describe('R6: mapa y marker con la última posición', () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
   });
 
-  it('centers a fullscreen map and marker on the last position', async () => {
+  it('R3 (android-map-never-ready): centra el mapa y pasa la última posición como marker', async () => {
     const position = makeLastPosition({ lat: 19.45, lng: -99.12 });
     mockGetLastPosition.mockResolvedValue({ kind: 'ok', position });
 
@@ -336,34 +346,40 @@ describe('R6: mapa y marker con la última posición', () => {
     await waitFor(() => expect(screen.getByTestId('map-view')).toBeVisible());
     expect(screen.getByTestId('map-view').props).toEqual(
       expect.objectContaining({
-        initialRegion: {
-          latitude: 19.45,
-          longitude: -99.12,
-          latitudeDelta: 0.01,
-          longitudeDelta: 0.01,
+        cameraPosition: {
+          coordinates: { latitude: 19.45, longitude: -99.12 },
+          zoom: 16,
         },
+        markers: [
+          {
+            id: 'last-position',
+            coordinates: { latitude: 19.45, longitude: -99.12 },
+          },
+        ],
+        polylines: [],
         style: { flex: 1 },
       }),
     );
-    expect(screen.getByTestId('map-marker').props.coordinate).toEqual({
-      latitude: 19.45,
-      longitude: -99.12,
-    });
+    expect(screen.queryByTestId('map-marker')).toBeNull();
     expect(screen.queryByTestId('map-empty')).toBeNull();
   });
 
-  it('uses the simulator home and an empty overlay without a position', async () => {
+  it('R3 (android-map-never-ready): usa el centro por defecto y ningún marker sin posición', async () => {
     mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: null });
 
     await renderMap();
 
     await waitFor(() => expect(screen.getByTestId('map-view')).toBeVisible());
-    expect(screen.getByTestId('map-view').props.initialRegion).toEqual({
-      latitude: 19.4326,
-      longitude: -99.1332,
-      latitudeDelta: 0.01,
-      longitudeDelta: 0.01,
-    });
+    expect(screen.getByTestId('map-view').props).toEqual(
+      expect.objectContaining({
+        cameraPosition: {
+          coordinates: { latitude: 19.4326, longitude: -99.1332 },
+          zoom: 16,
+        },
+        markers: [],
+        polylines: [],
+      }),
+    );
     expect(screen.queryByTestId('map-marker')).toBeNull();
     expect(screen.getByTestId('map-empty')).toHaveTextContent(
       'No location data yet',
@@ -427,7 +443,7 @@ describe('R7: ruta del día como polylines', () => {
     });
   });
 
-  it('renders one mapped polyline for every trip', async () => {
+  it('R3 (android-map-never-ready): pasa una polyline mapeada por cada viaje', async () => {
     const first = makeTrip();
     const second = makeTrip({
       index: 1,
@@ -444,18 +460,29 @@ describe('R7: ruta del día como polylines', () => {
 
     await renderMap();
 
-    await waitFor(() => expect(screen.getByTestId('map-route-0')).toBeVisible());
-    expect(screen.getByTestId('map-route-0').props.coordinates).toEqual([
-      { latitude: 19.4326, longitude: -99.1332 },
-      { latitude: 19.433, longitude: -99.1328 },
+    await waitFor(() => expect(screen.getByTestId('map-view')).toBeVisible());
+    expect(screen.getByTestId('map-view').props.polylines).toEqual([
+      {
+        id: 'trip-0',
+        coordinates: [
+          { latitude: 19.4326, longitude: -99.1332 },
+          { latitude: 19.433, longitude: -99.1328 },
+        ],
+        color: expect.any(String),
+      },
+      {
+        id: 'trip-1',
+        coordinates: [
+          { latitude: 19.44, longitude: -99.12 },
+          { latitude: 19.45, longitude: -99.11 },
+        ],
+        color: expect.any(String),
+      },
     ]);
-    expect(screen.getByTestId('map-route-1').props.coordinates).toEqual([
-      { latitude: 19.44, longitude: -99.12 },
-      { latitude: 19.45, longitude: -99.11 },
-    ]);
+    expect(screen.queryAllByTestId(/^map-route-/)).toHaveLength(0);
   });
 
-  it('renders no polyline for a valid day without trips', async () => {
+  it('R3 (android-map-never-ready): pasa un array vacío para un día sin viajes', async () => {
     mockGetDayRoute.mockResolvedValue({
       kind: 'ok',
       date: '2026-08-21',
@@ -465,22 +492,35 @@ describe('R7: ruta del día como polylines', () => {
     await renderMap();
 
     await waitFor(() => expect(screen.getByTestId('map-view')).toBeVisible());
+    expect(screen.getByTestId('map-view').props.polylines).toEqual([]);
     expect(screen.queryAllByTestId(/^map-route-/)).toHaveLength(0);
   });
 
   it.each<DayRouteState>([
     { kind: 'error' },
     { kind: 'unreachable', message: 'network down' },
-  ])('keeps the position UI when route state is $kind', async (routeState) => {
-    mockGetDayRoute.mockResolvedValue(routeState);
+  ])(
+    'R3 (android-map-never-ready): conserva marker y stats con ruta $kind',
+    async (routeState) => {
+      mockGetDayRoute.mockResolvedValue(routeState);
 
-    await renderMap();
+      await renderMap();
 
-    await waitFor(() => expect(screen.getByTestId('map-view')).toBeVisible());
-    expect(screen.getByTestId('map-marker')).toBeVisible();
-    expect(screen.queryAllByTestId(/^map-route-/)).toHaveLength(0);
-    expect(screen.getByTestId('stat-distance')).toHaveTextContent('—');
-  });
+      await waitFor(() =>
+        expect(screen.getByTestId('map-view')).toBeVisible(),
+      );
+      expect(screen.getByTestId('map-view').props.markers).toEqual([
+        {
+          id: 'last-position',
+          coordinates: { latitude: 19.4326, longitude: -99.1332 },
+        },
+      ]);
+      expect(screen.getByTestId('map-view').props.polylines).toEqual([]);
+      expect(screen.queryByTestId('map-marker')).toBeNull();
+      expect(screen.queryAllByTestId(/^map-route-/)).toHaveLength(0);
+      expect(screen.getByTestId('stat-distance')).toHaveTextContent('—');
+    },
+  );
 });
 
 describe('R8: stats calculadas de positions y trips', () => {
@@ -660,7 +700,12 @@ describe('R9: polling con foco', () => {
       await Promise.resolve();
     });
 
-    expect(screen.getByTestId('map-marker')).toBeVisible();
+    expect(screen.getByTestId('map-view').props.markers).toEqual([
+      {
+        id: 'last-position',
+        coordinates: { latitude: 19.4326, longitude: -99.1332 },
+      },
+    ]);
     expect(mockFocusCleanup).toEqual(expect.any(Function));
     const initialLastCalls = mockGetLastPosition.mock.calls.length;
     const initialPositionsCalls = mockListPositions.mock.calls.length;
@@ -676,7 +721,12 @@ describe('R9: polling con foco', () => {
     expect(mockGetLastPosition).toHaveBeenCalledTimes(initialLastCalls + 1);
     expect(mockListPositions).toHaveBeenCalledTimes(initialPositionsCalls + 1);
     expect(mockGetDayRoute).toHaveBeenCalledTimes(initialRouteCalls);
-    expect(screen.getByTestId('map-marker')).toBeVisible();
+    expect(screen.getByTestId('map-view').props.markers).toEqual([
+      {
+        id: 'last-position',
+        coordinates: { latitude: 19.4326, longitude: -99.1332 },
+      },
+    ]);
 
     const blurCleanup = mockFocusCleanup;
     await act(async () => {

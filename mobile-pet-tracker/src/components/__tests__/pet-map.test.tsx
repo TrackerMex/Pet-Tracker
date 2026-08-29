@@ -27,6 +27,10 @@ jest.mock('expo-maps', () => ({
   },
 }));
 
+jest.mock('../../theme/use-theme-colors', () => ({
+  useThemeColors: () => ['accent-color'],
+}));
+
 beforeEach(() => {
   mockGoogleMapsView.mockClear();
 });
@@ -67,5 +71,72 @@ describe('R2: la cámara se fija con MAP_ZOOM en vez de deltas', () => {
     expect(mapProps).not.toHaveProperty('initialRegion');
     expect(mapProps).not.toHaveProperty('latitudeDelta');
     expect(mapProps).not.toHaveProperty('longitudeDelta');
+  });
+});
+
+describe('R3: marker y polylines llegan a la vista como arrays', () => {
+  const center = { latitude: 19.4326, longitude: -99.1332 };
+
+  it('convierte marker null en un array vacío', async () => {
+    await render(
+      <PetMap
+        center={center}
+        marker={null}
+        polylines={[]}
+        colorScheme="light"
+      />,
+    );
+
+    expect(screen.getByTestId('map-view').props.markers).toEqual([]);
+  });
+
+  it('identifica la última posición como un único marker', async () => {
+    const marker = { latitude: 19.45, longitude: -99.12 };
+
+    await render(
+      <PetMap
+        center={center}
+        marker={marker}
+        polylines={[]}
+        colorScheme="light"
+      />,
+    );
+
+    expect(screen.getByTestId('map-view').props.markers).toEqual([
+      { id: 'last-position', coordinates: marker },
+    ]);
+  });
+
+  it('conserva orden, id y coordenadas de todas las polylines', async () => {
+    const polylines = [
+      {
+        id: 'trip-0',
+        coordinates: [
+          { latitude: 19.4326, longitude: -99.1332 },
+          { latitude: 19.433, longitude: -99.1328 },
+        ],
+      },
+      {
+        id: 'trip-1',
+        coordinates: [
+          { latitude: 19.44, longitude: -99.12 },
+          { latitude: 19.45, longitude: -99.11 },
+        ],
+      },
+    ];
+
+    await render(
+      <PetMap
+        center={center}
+        marker={null}
+        polylines={polylines}
+        colorScheme="light"
+      />,
+    );
+
+    expect(screen.getByTestId('map-view').props.polylines).toEqual([
+      { ...polylines[0], color: expect.any(String) },
+      { ...polylines[1], color: expect.any(String) },
+    ]);
   });
 });
