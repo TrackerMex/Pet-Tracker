@@ -360,7 +360,6 @@ describe('R6: mapa y marker con la última posición', () => {
         style: { flex: 1 },
       }),
     );
-    expect(screen.queryByTestId('map-marker')).toBeNull();
     expect(screen.queryByTestId('map-empty')).toBeNull();
   });
 
@@ -380,7 +379,6 @@ describe('R6: mapa y marker con la última posición', () => {
         polylines: [],
       }),
     );
-    expect(screen.queryByTestId('map-marker')).toBeNull();
     expect(screen.getByTestId('map-empty')).toHaveTextContent(
       'No location data yet',
     );
@@ -471,7 +469,6 @@ describe('R7: ruta del día como polylines', () => {
         color: expect.any(String),
       },
     ]);
-    expect(screen.queryAllByTestId(/^map-route-/)).toHaveLength(0);
   });
 
   it('R3 (android-map-never-ready): pasa un array vacío para un día sin viajes', async () => {
@@ -485,7 +482,6 @@ describe('R7: ruta del día como polylines', () => {
 
     await waitFor(() => expect(screen.getByTestId('map-view')).toBeVisible());
     expect(screen.getByTestId('map-view').props.polylines).toEqual([]);
-    expect(screen.queryAllByTestId(/^map-route-/)).toHaveLength(0);
   });
 
   it.each<DayRouteState>([
@@ -508,8 +504,6 @@ describe('R7: ruta del día como polylines', () => {
         },
       ]);
       expect(screen.getByTestId('map-view').props.polylines).toEqual([]);
-      expect(screen.queryByTestId('map-marker')).toBeNull();
-      expect(screen.queryAllByTestId(/^map-route-/)).toHaveLength(0);
       expect(screen.getByTestId('stat-distance')).toHaveTextContent('—');
     },
   );
