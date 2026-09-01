@@ -33,6 +33,7 @@ export function PetMap(props: PetMapProps) {
       props.colorScheme === 'dark'
         ? GoogleMaps.MapColorScheme.DARK
         : GoogleMaps.MapColorScheme.LIGHT,
+    uiSettings: { zoomControlsEnabled: false },
   };
 
   return <GoogleMaps.View {...mapViewProps} />;
