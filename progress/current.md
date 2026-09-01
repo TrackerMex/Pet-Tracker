@@ -149,3 +149,15 @@ Flake de `add-pet` por mocks sin reinicializar. Sin trabajo en curso.
   `progress/handoff_localstack-presigned-url-lan-host.md`. Codex commitea sin
   push; leader pushea tras veredicto del reviewer. R6 = smoke humano en
   dispositivo físico, cierra la feature.
+
+### #57 — implementación y review (2026-09-01)
+
+- Codex CLI implementó R1–R5 con TDD: rojos `f3fa40a` (R1-R3) y `2e2dca0`
+  (R4) antes del verde `9f100a0` (producción, solo `aws-clients.ts`), docs en
+  `b2cff5b`, evidencia en `364fbf9`.
+- `reviewer` **APROBADO** → `progress/review_localstack-presigned-url-lan-host.md`.
+  Re-ejecutó `./init.sh` (exit 0), reprodujo el rojo en worktree y validó por
+  mutación que los tests muerden (quitó el override y se pusieron rojos).
+- **Pendiente para `done`**: gate humano R6 — smoke en dispositivo físico
+  (runbook en `docs/verification.md` §Feature 57) + segunda casilla de
+  §Aprobación en requirements.md.
