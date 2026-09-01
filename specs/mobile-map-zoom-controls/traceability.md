@@ -9,7 +9,7 @@ tags: [harness, spec, mobile]
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
 | R1 | `src/components/__tests__/pet-map.test.tsx::R1 (mobile-map-zoom-controls): el wrapper oculta los controles nativos de zoom` | `e052b07 test(map): require hidden zoom controls (R1)` → `bf14baf fix(map): hide native zoom controls (R1)` |
-| R2 | sin test propio — `progress/impl_mobile-map-zoom-controls.md::Verificación R2` (typecheck / lint / test móvil, `./init.sh`, allowlist de `git diff --stat`, grep-clean C8) + `docs/verification.md::### Feature 55 — mobile-map-zoom-controls` | pendiente |
+| R2 | sin test propio — `progress/impl_mobile-map-zoom-controls.md::Verificación R2` (typecheck / lint / test móvil, `./init.sh`, allowlist de `git diff --stat`, grep-clean C8) + `docs/verification.md::### Feature 55 — mobile-map-zoom-controls` | `6963758 docs(map): document zoom controls smoke (R2)`; verificación automatizada registrada en el reporte del implementer |
 | R3 | sin test — smoke humano en dev build de Android: controles `+` / `−` ausentes **y** pinch-to-zoom acercando y alejando, registrado en `progress/impl_mobile-map-zoom-controls.md::Resultado del smoke R3` y con la casilla marcada en [[requirements]] §Aprobación | pendiente |
 
 Rutas relativas a `mobile-pet-tracker/` salvo las que empiezan por `docs/`,
