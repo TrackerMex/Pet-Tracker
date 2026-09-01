@@ -142,24 +142,59 @@ Solo si el paso 2 dio H4. Instala el **mismo** dev build en un segundo Android
 - **Tampoco pinta** → defecto de plataforma (RN 0.86.2 + Fabric + `SurfaceView`).
   El fix sale de `expo-maps`/`maps-compose` hacia arriba, no de esta app.
 
-## Resultado (rellena el humano)
+## Resultado
 
-- Fecha:
-- Paso 1, "Desactivar superposiciones HW":
-- Paso 2, ruta `mapdebug` desnuda:
-- Paso 2, `[mapdebug] loaded` en logcat:
-- Paso 3, segundo dispositivo:
-- Conclusión (H3 / H4):
-- Archivos temporales borrados:
+Fecha de ejecución: 2026-08-31 / 2026-09-01. **Conclusión: H3.**
 
-## Qué significa cada conclusión
+La ruta `mapdebug` por deep link no llegó a ejecutarse: el dev client entrega el
+intent pero no navega (`Activity not started, intent has been delivered to
+currently running top-most instance`). Se sustituyó por cortes directos sobre
+`src/app/(tabs)/map.tsx`, todos con Fast Refresh y sin recompilar.
 
-- **H3** → el fix es de la app, cabe en #54 y no toca `expo-maps`.
-- **H4** → #54 no se cierra escribiendo pantalla: hay que decidir entre parche
-  nativo (`zOrderOnTop`, `TextureView`), reportar aguas arriba, o aceptar la
-  limitación y cerrar R8 en otro dispositivo. `expo-maps@57.0.2` no da salida
-  por props: `MapOptionsRecord` solo expone `mapId`
-  (`node_modules/expo-maps/android/src/main/java/expo/modules/maps/Records.kt:347`).
+| Corte | Resultado |
+|---|---|
+| "Desactivar superposiciones HW" | sin cambio |
+| `animation: 'fade'` fuera del navegador de tabs | sin cambio |
+| `FloatingTabBar` comentado (quita `BlurView` y `GlassView`) | sin cambio |
+| Apps de terceros con Google Maps (Uber, DiDi) en el mismo teléfono | **pintan** |
+| Proyecto `betomoedano/expo-maps-example` en el mismo teléfono | **pinta** |
+| `map.tsx` reducido a solo `<GoogleMaps.View>` | **pinta** |
+| `map.tsx` original con `className="flex-1"` en vez de `flex-1 bg-background` | **pinta** |
+
+## Causa raíz
+
+El contenedor de la pantalla (`src/app/(tabs)/map.tsx:175`) declara un fondo
+opaco:
+
+```tsx
+<View testID="screen-map" className="flex-1 bg-background">
+```
+
+Un `SurfaceView` no se dibuja dentro de la ventana: la perfora y se compone por
+detrás. Un ancestro que pinta un fondo opaco sobre esa región tapa el hueco, así
+que se ve el fondo del tema en lugar del mapa. Los controles de zoom siguen
+visibles porque son vistas normales dibujadas encima.
+
+Eso explica cada observación acumulada desde agosto:
+
+- El síntoma sobrevivió al cambio de `react-native-maps` a `expo-maps`: ambas
+  librerías montan un `SurfaceView` y el contenedor era el mismo.
+- `liteMode` pintaba: dibuja un bitmap dentro de la jerarquía normal, sin hueco.
+- `onMapReady` / `onMapLoaded` disparaban: el mapa siempre cargó bien.
+- Nunca hubo errores en `logcat`: no falla nada, solo queda tapado.
+- El watermark "Google" se veía en la era `react-native-maps`: lo dibuja la
+  vista contenedora, no la superficie.
+
+Descartados por el camino, con evidencia: dispositivo (Uber y DiDi pintan),
+proyecto de Google Cloud y clave (el ejemplo pinta), `expo-maps` como librería,
+`BlurView` del tab bar, la animación `fade` de los tabs y la composición a nivel
+de sistema.
+
+## Fix
+
+Handoff acotado en `progress/handoff_android-map-never-ready_fix1.md`. No toca
+`expo-maps` ni la spec R1–R7: el fondo baja del contenedor a cada estado que sí
+lo necesita.
 
 ## Bug aparte detectado en el mismo logcat
 
