@@ -1015,7 +1015,7 @@
   {
     "id": 57,
     "name": "localstack-presigned-url-lan-host",
-    "status": "in_progress",
+    "status": "done",
     "priority": "P2",
     "description": "Las URLs prefirmadas de S3 salen con host localhost, asi que las fotos de mascota nunca cargan en un telefono fisico: en el dispositivo localhost es el propio telefono, no la maquina de desarrollo. Sintoma en adb logcat durante el smoke de #54 el 2026-09-01: 'E ExpoImage: java.net.ConnectException(Failed to connect to localhost/127.0.0.1:4566)'. Causa: backend-pet-tracker/src/aws/aws-clients.ts:103-107 construye el S3Client con endpoint = AWS_ENDPOINT_URL, que en desarrollo vale http://localhost:4566 (LocalStack), y photo-storage.s3.adapter.ts:30 y :38 firman con getSignedUrl del s3-request-presigner, que hereda ese host. Detalle que condiciona el fix: la firma SigV4 cubre el header Host, asi que NO se puede reescribir el host despues de firmar sin invalidar la firma; hay que firmar ya con el host que el telefono pueda resolver. La app movil ya resuelve el mismo problema para su propia API con EXPO_PUBLIC_API_URL apuntando a la IP LAN (docs/verification.md, seccion Feature 54), asi que el patron existe en el repo y esta feature lo extiende al presigner. Ojo con no romper el guard de aws-clients.ts: en modo aws el endpoint debe seguir vacio (assertNoEndpoint, :55) para que el SDK use el endpoint real de AWS y las URLs firmadas salgan con el dominio de S3; el cambio solo afecta al modo local con LocalStack. Afecta a cualquier consumidor de las URLs firmadas desde un dispositivo real, no solo a las fotos de mascota. No tiene relacion con el mapa.",
     "acceptance_criteria": [
