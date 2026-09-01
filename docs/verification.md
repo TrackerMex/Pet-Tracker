@@ -592,6 +592,61 @@ la casilla R3 en la spec. La suite Jest de `PetMap` usa una vista mockeada:
 solo prueba que `uiSettings` llega a `GoogleMaps.View`; no prueba que los
 botones desaparezcan ni que el gesto funcione en el dispositivo.
 
+### Feature 57 — localstack-presigned-url-lan-host
+
+Este smoke es el gate humano R6. Requiere LocalStack y el backend local
+arriba, un dispositivo Android físico en la misma LAN y el dev build con
+`EXPO_PUBLIC_API_URL` apuntando a la IP LAN de la máquina de desarrollo.
+
+En el `.env` raíz define el endpoint con esa misma IP y reinicia el backend
+para que `ConfigService` vuelva a leerlo:
+
+```bash
+AWS_PRESIGN_ENDPOINT_URL=http://<IP LAN>:4566
+docker compose up -d localstack
+pnpm -C backend-pet-tracker run start:dev
+```
+
+Sustituye `<IP LAN>` por el valor real; no copies literalmente el placeholder.
+Después confirma y registra **por separado** estos cuatro resultados:
+
+1. Pide una URL de foto mediante la API (un `uploadUrl` o el `photoUrl` del
+   perfil) y comprueba que su host es `<IP LAN>:4566`, nunca `localhost:4566`.
+2. Con una URL GET prefirmada vigente, desde la máquina de desarrollo ejecuta:
+
+   ```bash
+   curl -fsS "<url firmada>" -o /dev/null
+   ```
+
+   Debe salir con exit 0: LocalStack responde en la interfaz LAN y la firma
+   sigue siendo válida con ese header `Host`.
+3. En el dispositivo físico, sube una foto de mascota desde la app y confirma
+   que se muestra después. Este paso prueba por separado la URL PUT y la GET.
+4. Limpia logcat antes del flujo y revisa después que ExpoImage no intentó
+   conectar con el loopback del teléfono:
+
+   ```bash
+   adb logcat -c
+   # Repetir en la app la subida y carga de la foto.
+   adb logcat -d | rg 'ConnectException.*(localhost|127\.0\.0\.1):4566'
+   ```
+
+   El último `rg` debe salir sin coincidencias (exit 1 esperado).
+
+Si la firma lleva el host LAN pero `curl` o el teléfono no conectan, confirma
+que `docker-compose.yml` publica `4566:4566` — Docker lo expone en `0.0.0.0` —
+y que el firewall de Windows permite entrada TCP al puerto 4566, igual que ya
+debe permitirla al 3000 de la API. Al cambiar de red puede cambiar la IP LAN:
+actualiza tanto `AWS_PRESIGN_ENDPOINT_URL` en el `.env` raíz como
+`EXPO_PUBLIC_API_URL` en `mobile-pet-tracker/.env`, y reinicia backend y Metro.
+Para un emulador Android se puede usar `http://10.0.2.2:4566`; eso no sustituye
+el smoke obligatorio en dispositivo físico.
+
+Registra el resultado en
+`progress/impl_localstack-presigned-url-lan-host.md` y solo entonces marca la
+casilla R6 en la spec. R4 verde prueba la firma en memoria, pero no cierra este
+gate de red/dispositivo.
+
 ---
 
 ## Notas para el implementer
