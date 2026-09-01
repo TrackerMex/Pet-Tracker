@@ -160,3 +160,21 @@ describe('R4: el tema decide el colorScheme del mapa', () => {
     expect(screen.getByTestId('map-view').props.colorScheme).toBe(expected);
   });
 });
+
+describe('R1 (mobile-map-zoom-controls): el wrapper oculta los controles nativos de zoom', () => {
+  it('pasa solo zoomControlsEnabled y no contentPadding', async () => {
+    await render(
+      <PetMap
+        center={{ latitude: 19.4326, longitude: -99.1332 }}
+        marker={null}
+        polylines={[]}
+        colorScheme="light"
+      />,
+    );
+
+    const mapProps = screen.getByTestId('map-view').props;
+
+    expect(mapProps.uiSettings).toEqual({ zoomControlsEnabled: false });
+    expect(mapProps).not.toHaveProperty('contentPadding');
+  });
+});
