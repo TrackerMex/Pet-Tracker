@@ -138,7 +138,15 @@ ningún estilo.
 
 ## Resultado del smoke R3
 
-**Pendiente del humano.** Debe confirmar por separado en el dev build de
-Android: controles `+` / `−` ausentes, pinch acercando, pinch inverso alejando
-y no-regresión de tiles, marker, polyline, `map-stats` y Lost Mode. Ninguna
-suite automatizada de este reporte cierra R3.
+**Ejecutado y aprobado por el humano el 2026-09-01**, en el dev build de
+Android ya instalado (Fast Refresh, sin `prebuild` ni `run:android`, por ser un
+cambio solo JS). Registrado por el propio humano en el commit
+`aa1da88 Mark Android map zoom smoke test complete`, que marca la segunda
+casilla de `specs/mobile-map-zoom-controls/requirements.md` §Aprobación con el
+texto del gate: controles `+` / `−` ausentes **y** pinch-to-zoom funcionando.
+
+Ninguna suite automatizada de este reporte cierra R3: `expo-maps` está mockeado
+y el verde de R1 solo prueba que la prop viaja. Este gate era la única
+verificación posible.
+
+Anotado por el leader al recoger el commit del humano.
