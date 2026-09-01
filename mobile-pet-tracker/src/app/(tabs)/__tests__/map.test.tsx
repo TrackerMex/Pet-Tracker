@@ -337,6 +337,20 @@ describe('R6: mapa y marker con la última posición', () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
   });
 
+  it('R8 (android-map-never-ready): el contenedor del mapa no declara fondo opaco', async () => {
+    mockGetLastPosition.mockResolvedValue({
+      kind: 'ok',
+      position: makeLastPosition(),
+    });
+
+    await renderMap();
+
+    await waitFor(() => expect(screen.getByTestId('map-view')).toBeVisible());
+    expect(screen.getByTestId('screen-map').props.className).not.toContain(
+      'bg-',
+    );
+  });
+
   it('R3 (android-map-never-ready): centra el mapa y pasa la última posición como marker', async () => {
     const position = makeLastPosition({ lat: 19.45, lng: -99.12 });
     mockGetLastPosition.mockResolvedValue({ kind: 'ok', position });
