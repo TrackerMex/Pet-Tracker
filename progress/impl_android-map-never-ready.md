@@ -145,3 +145,41 @@ watermark sin tiles no satisface R8. El runbook literal está en
 `docs/verification.md` §Feature 54 y exige confirmación separada de tiles,
 marker y polyline en temas claro y oscuro, además de stats y Lost Mode.
 Ningún resultado de Jest anterior demuestra que la superficie nativa pinte.
+
+## Handoff fix 1 — fondo opaco sobre la vista nativa (2026-09-01)
+
+La evidencia de `progress/discriminador2_android-map-never-ready.md` aisló el
+defecto en `src/app/(tabs)/map.tsx`: `screen-map` pintaba `bg-background`
+sobre la región perforada por la `SurfaceView`. El fix quita el fondo del
+ancestro que envuelve `PetMap` y lo conserva en cada estado sin mapa: carga,
+error, lista sin mascotas y mascota sin collar. No se tocaron `pet-map.tsx`,
+`app.config.ts`, dependencias ni la spec aprobada.
+
+### Ciclo TDD R8
+
+| Fase | Commit | Resultado dirigido |
+|---|---|---|
+| Rojo | `74f50f7 test(map): reject opaque map ancestor (R8)` | exit 1: el nuevo test `R8 (android-map-never-ready): el contenedor del mapa no declara fondo opaco` recibió `className="flex-1 bg-background"`; los 31 tests previos del tab Map pasaron. |
+| Verde | `38168cf fix(map): expose native map surface (R8)` | exit 0: 1/1 suite y 32/32 tests del tab Map pasaron. |
+| Documentación | `8a2c1b5 docs(map): document opaque ancestor constraint (R8)` | `docs/ui-guidelines.md` prohíbe fondos opacos en ancestros de mapas nativos; la fila R8 de traceability registra el ciclo y mantiene el smoke humano pendiente. |
+
+### Verificación del handoff
+
+| Comando | Exit code | Resultado |
+|---|---:|---|
+| `./init.sh` antes de tocar código | 0 | Baseline completo verde. |
+| `bun run test -- 'src/app/\(tabs\)/__tests__/map.test.tsx' --runInBand` antes del fix | 1 esperado | Rojo exclusivo del nuevo contrato R8; 31/31 tests heredados verdes. |
+| Mismo comando después del fix | 0 | 32/32 tests verdes. |
+| `bun run typecheck` | 0 | `tsc --noEmit` sin errores. |
+| `bun run lint` | 0 | `expo lint` sin errores. |
+| `bun run test -- --runInBand --silent` (primera corrida completa) | 1 | 50/51 suites y 568/569 tests verdes; falló solo `src/screens/add-pet/index.test.tsx` por el mock de ImagePicker que devolvió `undefined`, flake preexistente #53. La suite Map pasó. |
+| `bun run test -- src/screens/add-pet/index.test.tsx --runInBand --silent` | 0 | Reproducción dirigida tras el fallo: 1/1 suite y 7/7 tests verdes, sin cambios. |
+| `bun run test -- --runInBand --silent` (repetición) | 0 | 51/51 suites, 569/569 tests y 1/1 snapshot verdes. |
+| `./init.sh` (primera corrida final) | 1 | Build, backend, infra y Map verdes; falló únicamente el mismo flake #53 durante la suite móvil. |
+| Suite dirigida de `add-pet` tras el fallo de `init.sh` | 0 | 1/1 suite y 7/7 tests verdes otra vez, sin cambios. |
+| `./init.sh` (repetición final) | 0 | `Todo verde`: backend 156 suites / 1198 tests; infra 2 / 14; móvil 51 / 569; e2e 23 suites y 349 tests pasados, con 3 suites y 8 tests saltados por gates existentes; lint y typecheck verdes. |
+
+`feature_list.json` conserva #54 como `in_progress`. El smoke humano R8 sigue
+pendiente: debe confirmar por separado tiles, marker y polyline en temas claro
+y oscuro, además de stats y Lost Mode. La prueba Jest fija únicamente que el
+ancestro del mapa no vuelva a declarar `bg-*`.
