@@ -19,7 +19,7 @@
   en una línea la corrección del regex de contención de R13 descrita en el
   hallazgo H2 del review, para cerrar el hueco de C6.
 
-### Feature #54 `android-map-never-ready` — in_progress, P1
+### Feature #54 `android-map-never-ready` — **done** (2026-09-01)
 
 - Causa **cerrada con evidencia**: el discriminador en dispositivo
   (`progress/discriminador_android-map-never-ready.md`) devolvió `onMapReady`
@@ -34,12 +34,21 @@
   casilla estaba firmada pero los cuatro ficheros seguían en `draft` (quinta
   vez que ocurre: #50, #43, #52, #44, #54).
 - Handoff a Codex CLI listo en `progress/handoff_android-map-never-ready.md`.
+- **Causa raíz real, encontrada el 2026-09-01**: `src/app/(tabs)/map.tsx:175`
+  declaraba `bg-background` en el contenedor que envuelve `PetMap`. Un
+  `SurfaceView` se compone *por detrás* de la ventana; un ancestro con fondo
+  opaco tapa el hueco sin producir ningún error. Evidencia y siete hipótesis
+  descartadas en `progress/discriminador2_android-map-never-ready.md`.
+  Explica por qué la migración a `expo-maps` no arregló nada: ambas librerías
+  montan un `SurfaceView` y el contenedor nunca cambió.
 - Handoff fix 1 ejecutado el 2026-09-01 con TDD: test rojo `74f50f7` → fix
-  verde `38168cf`; verificación automática completa verde y smoke humano R8
-  pendiente.
-- **R8 no lo cierra ninguna IA**: smoke humano en dev build de Android, en
-  ambos temas, con confirmación por separado de tiles, marker y polyline.
-  "Monta sin crash y hay watermark" es exactamente el estado defectuoso.
+  verde `38168cf`. `reviewer` **aprobado** en
+  `progress/review_android-map-never-ready_fix1.md`: reprodujo el rojo por su
+  cuenta en un worktree y `./init.sh` salió 0 (móvil 568 → 569 tests).
+- **Smoke humano R8 aprobado** el 2026-09-01 (`81707dd`), con tiles, marker y
+  polyline confirmados en ambos temas. Con eso el leader marca #54 `done`.
+- Regla nueva que deja esta feature: `docs/ui-guidelines.md` §10 — ningún
+  ancestro de una vista nativa de mapa declara fondo opaco.
 
 ### Feature #55 `mobile-map-zoom-controls` — spec_ready, P3
 
@@ -73,6 +82,22 @@ ninguna de código (H1 y H2 de `progress/review_auth-forgot-password.md`):
 
 Ambas prohibiciones quedan ya escritas como condición de aceptación en el
 handoff de #54.
+
+### Feature #56 `mobile-map-last-position-error-state` — pending, P2
+
+`map.tsx` no tiene rama para `last.data.kind === 'error'` ni `'unauthorized'`:
+un 500 de `GET /pets/:id/positions/last` con mascotas cargadas deja la pantalla
+vacía, sin mensaje ni reintento. Preexistente, invisible hasta el fix del
+ancestro opaco. Detectado por el `reviewer` (observación 1 del review del fix 1),
+no por un reporte de usuario.
+
+### Feature #57 `localstack-presigned-url-lan-host` — pending, P2
+
+Las URLs prefirmadas de S3 salen con host `localhost`, así que las fotos de
+mascota no cargan en teléfono físico
+(`ConnectException: Failed to connect to localhost/127.0.0.1:4566` en logcat
+durante el smoke de #54). La firma SigV4 cubre el header `Host`, así que hay
+que firmar ya con un host de la LAN, no reescribirlo después.
 
 ### Feature #53 `mobile-jest-mock-hygiene` — pending, P3
 

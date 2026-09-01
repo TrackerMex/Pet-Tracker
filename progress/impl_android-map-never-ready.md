@@ -140,11 +140,18 @@ no trackeados preexistentes bajo `.claude/skills/`, que esta sesión no tocó.
 
 ## Resultado del smoke R8
 
-Pendiente de ejecución por el humano en un dispositivo Android real. Un
-watermark sin tiles no satisface R8. El runbook literal está en
-`docs/verification.md` §Feature 54 y exige confirmación separada de tiles,
-marker y polyline en temas claro y oscuro, además de stats y Lost Mode.
-Ningún resultado de Jest anterior demuestra que la superficie nativa pinte.
+**Ejecutado y aprobado por el humano el 2026-09-01**, en dispositivo Android
+real, tras el fix 1 del ancestro opaco. Registrado por el propio humano en el
+commit `81707dd Record Android map smoke test approval`, que marca la segunda
+casilla de `specs/android-map-never-ready/requirements.md` §Aprobación con el
+texto del gate: tiles + marker + polyline confirmados, en ambos temas.
+
+El runbook está en `docs/verification.md` §Feature 54. Ningún resultado de Jest
+demuestra que la superficie nativa pinte: este gate era la única verificación
+posible del defecto, y es el que cierra R8.
+
+Anotado por el leader al recoger el commit del humano; el texto anterior de
+esta sección ("pendiente de ejecución") quedó obsoleto con él.
 
 ## Handoff fix 1 — fondo opaco sobre la vista nativa (2026-09-01)
 
