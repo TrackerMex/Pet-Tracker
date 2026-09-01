@@ -2222,6 +2222,6 @@ Flake de `add-pet` por mocks sin reinicializar. Sin trabajo en curso.
   vía host LAN, sin ConnectException; segunda casilla de §Aprobación firmada.
 - Merge de `origin/main` (PR #95, #55 done) en la branch; conflicto en
   `docs/verification.md` resuelto conservando las secciones Feature 55 y 57.
-- **Estado final:** `done` (51+2=53/57). PR **#96** abierto, pendiente de
+- **Estado final:** `done` (52/57). PR **#96** abierto, pendiente de
   merge por el humano: https://github.com/TrackerMex/Pet-Tracker/pull/96
 
