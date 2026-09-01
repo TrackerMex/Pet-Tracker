@@ -34,6 +34,8 @@
   casilla estaba firmada pero los cuatro ficheros seguían en `draft` (quinta
   vez que ocurre: #50, #43, #52, #44, #54).
 - Handoff a Codex CLI listo en `progress/handoff_android-map-never-ready.md`.
+- Handoff fix 1 ejecutado el 2026-09-01 con TDD: test rojo `74f50f7` → fix
+  verde `38168cf`; pendiente verificación completa y smoke humano R8.
 - **R8 no lo cierra ninguna IA**: smoke humano en dev build de Android, en
   ambos temas, con confirmación por separado de tiles, marker y polyline.
   "Monta sin crash y hay watermark" es exactamente el estado defectuoso.

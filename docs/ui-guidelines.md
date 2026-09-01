@@ -108,6 +108,10 @@ Tres límites, no negociables:
    (reactivo; bug de resolución stale ya visto en #46). El mapa traduce la
    preferencia guardada a `colorScheme` de `expo-maps` mediante
    `src/components/pet-map.tsx`.
+10. **Composición de mapas nativos**: ningún ancestro de una vista nativa de
+    mapa puede declarar fondo opaco (`bg-*`). El mapa se compone por detrás de
+    la ventana y un fondo encima lo tapa sin producir ningún error. Los estados
+    sin mapa declaran su fondo cada uno.
 
 ## Animación (decisiones por defecto)
 
