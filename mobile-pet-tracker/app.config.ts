@@ -1,12 +1,7 @@
 import type { ConfigContext, ExpoConfig } from 'expo/config';
 
-type GoogleMapsPlugin = [
-  string,
-  { androidGoogleMapsApiKey: string },
-];
-
 export default ({ config }: ConfigContext): ExpoConfig => {
-  const androidGoogleMapsApiKey =
+  const googleMapsApiKey =
     process.env.GOOGLE_MAPS_API_KEY_ANDROID?.trim() ?? '';
   const resolvedConfig: ExpoConfig = {
     ...config,
@@ -14,21 +9,25 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     slug: config.slug ?? 'mobile-pet-tracker',
   };
 
-  if (!androidGoogleMapsApiKey) {
+  if (!googleMapsApiKey) {
     console.warn(
-      'GOOGLE_MAPS_API_KEY_ANDROID no está definida; el build de Android quedará sin com.google.android.geo.API_KEY y el tab Map crasheará al montar MapView. Consulta docs/verification.md §Feature 52 — android-maps-api-key.',
+      'GOOGLE_MAPS_API_KEY_ANDROID no está definida; el build de Android quedará sin com.google.android.geo.API_KEY y GoogleMaps.View no podrá cargar el mapa. Consulta docs/verification.md §Feature 52 — android-maps-api-key.',
     );
 
     return resolvedConfig;
   }
 
-  const googleMapsPlugin: GoogleMapsPlugin = [
-    'react-native-maps',
-    { androidGoogleMapsApiKey },
-  ];
-
   return {
     ...resolvedConfig,
-    plugins: [...(resolvedConfig.plugins ?? []), googleMapsPlugin],
+    android: {
+      ...resolvedConfig.android,
+      config: {
+        ...resolvedConfig.android?.config,
+        googleMaps: {
+          ...resolvedConfig.android?.config?.googleMaps,
+          apiKey: googleMapsApiKey,
+        },
+      },
+    },
   };
 };

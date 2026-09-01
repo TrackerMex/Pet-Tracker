@@ -439,6 +439,11 @@ Este procedimiento prepara una clave restringida de Maps SDK for Android y
 regenera el dev build que la incorpora. La clave real nunca se pega en el
 repositorio ni en los reportes de progreso.
 
+Desde #54, `app.config.ts` transporta la clave mediante
+`android.config.googleMaps.apiKey`. El prebuild sigue generando la misma
+meta-data `com.google.android.geo.API_KEY`, por lo que su `grep` y el resto de
+este runbook no cambian.
+
 1. Haz un prebuild inicial sin clave para generar `android/` y
    `android/app/debug.keystore`. La config avisa por consola, pero no aborta:
 
@@ -503,9 +508,10 @@ repositorio ni en los reportes de progreso.
    en `progress/impl_android-maps-api-key.md`.
 
    Que el mapa pinte tiles, marker y polyline **no** forma parte de R6 desde
-   la acotación del 2026-08-28: con la clave aceptada por el SDK, el
-   `GoogleMap` no alcanza `onMapReady` y la vista se queda en el watermark.
-   Es un defecto independiente, rastreado en #54 `android-map-never-ready`.
+   la acotación del 2026-08-28. El discriminador de #54 confirmó que
+   `onMapReady` sí dispara y aisló un defecto independiente de composición
+   de la superficie nativa bajo Fabric, rastreado en
+   `android-map-never-ready`.
 
 Para un futuro EAS Build, crea la variable por separado:
 
@@ -516,6 +522,51 @@ eas env:create --name GOOGLE_MAPS_API_KEY_ANDROID --visibility secret --environm
 Además exige añadir `"environment": "development"` al perfil `development`
 de `eas.json`. Este plumbing de EAS queda **documentado, no implementado ni
 verificado** en esta feature.
+
+### Feature 54 — android-map-never-ready
+
+Este smoke es el gate humano R8. Requiere un dispositivo Android real, el
+backend local arriba y `mobile-pet-tracker/.env` con
+`GOOGLE_MAPS_API_KEY_ANDROID` y `EXPO_PUBLIC_API_URL` apuntando a la IP LAN.
+Regenera e instala el dev build porque `expo-maps` no está disponible en Expo
+Go:
+
+```bash
+cd mobile-pet-tracker
+npx expo prebuild --clean --platform android
+grep -c "com.google.android.geo.API_KEY" android/app/src/main/AndroidManifest.xml
+bunx expo run:android
+```
+
+El `grep` debe imprimir `1`; no copies el valor del manifest a ningún
+reporte.
+
+Si ya tienes el dev build de esta branch instalado y solo revalidas el fix del
+ancestro opaco (fix 1, commits `74f50f7`–`4468da9`), sáltate el bloque anterior:
+ese cambio es solo JS y basta `bunx expo start --dev-client` con Fast Refresh.
+El `prebuild` completo solo hace falta si cambian dependencias nativas o la
+clave de Maps.
+
+Después verifica y registra, sin incluir la clave:
+
+1. Inicia sesión y abre el tab **Map** con una mascota premium que tenga
+   última posición y al menos un viaje del día.
+2. En **tema claro**, confirma por separado:
+   - **tiles**: se ven calles y etiquetas, no solo el watermark "Google";
+   - **marker**: se ve el pin de la última posición;
+   - **polyline**: se ve la traza del día.
+3. Desde **Profile**, cambia a **tema oscuro**, vuelve a Map y confirma que el
+   mapa se ve oscuro y que siguen visibles tiles, marker y polyline.
+4. Comprueba en `adb logcat` que no haya `Authorization failure`,
+   `API_KEY_ANDROID_APP_BLOCKED` ni excepciones de `expo-maps`.
+5. Confirma que la tarjeta de stats y el botón **Lost Mode** siguen
+   funcionando encima del mapa.
+
+"Monta sin crash y hay watermark" **no cierra R8**: ese es el estado
+defectuoso. Se necesita confirmación explícita de tiles, marker y polyline en
+ambos temas. Si el encuadre necesita ajuste, cambia solo `MAP_ZOOM` (R2).
+Registra el resultado humano en `progress/impl_android-map-never-ready.md`;
+ninguna suite Jest ni este implementer pueden cerrar R8.
 
 ---
 
