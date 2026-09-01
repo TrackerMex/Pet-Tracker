@@ -976,5 +976,22 @@
       "mobile-pet-tracker/src/app/(tabs)/map.tsx",
       "mobile-pet-tracker/package.json"
     ]
+  },
+  {
+    "id": 55,
+    "name": "mobile-map-zoom-controls",
+    "status": "spec_ready",
+    "priority": "P3",
+    "description": "Los controles nativos de zoom (+ / -) que GoogleMaps.View dibuja en la esquina inferior derecha quedan debajo del FloatingTabBar y de la tarjeta map-stats, que son overlays absolutos anclados al fondo de src/app/(tabs)/map.tsx (tab bar en insets.bottom + 12, stats en insets.bottom + 96). Detectado el 2026-09-01 durante el smoke R8 de #54, una vez que el mapa por fin pinta tiles: el defecto estaba tapado mientras la pantalla salia en blanco. Decision tomada con el humano: quitar los controles, no reubicarlos. expo-maps@57.0.2 ofrece las dos salidas en GoogleMapsViewProps y las dos estan verificadas contra los tipos instalados: uiSettings.zoomControlsEnabled (GoogleMaps.types.d.ts:218) los oculta, y contentPadding (GoogleMaps.types.d.ts:373, cableado a maps-compose en android/src/main/java/expo/modules/maps/GoogleMapsView.kt:115) marca el borde inferior como obstruido y hace que el SDK reacomode controles y logo de Google. Se descarta contentPadding porque obliga a mantener a mano un numero sincronizado con el alto de dos overlays que pueden cambiar, justo el acoplamiento que el reviewer senalo en progress/review_android-map-never-ready_fix1.md. Ocultar los controles no quita capacidad: el pinch-to-zoom es gesto independiente y sigue activo (uiSettings.zoomGesturesEnabled por defecto true), y es lo que hacen Uber, DiDi y la propia app de Google Maps en telefono. El cambio vive en el wrapper src/components/pet-map.tsx, no en la pantalla: map.tsx no conoce props de expo-maps y no debe empezar a conocerlos (docs/ui-guidelines.md, separacion route/pantalla/wrapper).",
+    "acceptance_criteria": [
+      "PetMap pasa uiSettings con zoomControlsEnabled en false a GoogleMaps.View; el prop sale del wrapper src/components/pet-map.tsx, no de src/app/(tabs)/map.tsx",
+      "Test que fija el contrato nombrando su R-id, rojo antes que verde (C4), asserteando sobre las props que recibe el GoogleMaps.View mockeado como ya hace la suite del wrapper",
+      "El pinch-to-zoom no se toca: no se pasa zoomGesturesEnabled y el gesto sigue funcionando",
+      "Ningun cambio en la geometria ni en los overlays de map.tsx: el fix no mueve el FloatingTabBar ni la tarjeta map-stats",
+      "Gate humano: smoke en dev build de Android confirmando que los controles + / - ya no aparecen y que el pinch-to-zoom sigue acercando y alejando el mapa. No delegable a IA: requiere dispositivo real"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/components/pet-map.tsx"
+    ]
   }
 ]

@@ -41,6 +41,24 @@
   ambos temas, con confirmación por separado de tiles, marker y polyline.
   "Monta sin crash y hay watermark" es exactamente el estado defectuoso.
 
+### Feature #55 `mobile-map-zoom-controls` — spec_ready, P3
+
+- Spec escrita por `spec_author` el 2026-09-01 en
+  `specs/mobile-map-zoom-controls/` (R1–R3, 4 ficheros en `draft`).
+  **Pendiente del gate humano**: casilla sin marcar en
+  `requirements.md` §Aprobación.
+- Alcance: `PetMap` pasa `uiSettings={{ zoomControlsEnabled: false }}` a
+  `GoogleMaps.View`. Un archivo de producción (`src/components/pet-map.tsx`),
+  su test y una sección nueva en `docs/verification.md`. `map.tsx` no se toca.
+- Decisión ya tomada por el humano en la entrada #55: se **quitan** los
+  controles, no se reubican; `contentPadding` descartado por acoplar el
+  wrapper al alto de dos overlays. El pinch-to-zoom no se toca.
+- R3 es un smoke humano en dev build de Android (controles `+` / `−` ausentes
+  **y** pinch acercando/alejando). **Solo JS**: Fast Refresh sobre el dev build
+  ya instalado, sin `prebuild` ni `run:android`.
+- Depende de #54: `src/components/pet-map.tsx` no existe en `main`. La branch
+  sale de `feature/54-android-map-never-ready`.
+
 ### Deuda del arnés detectada en la revisión de #44
 
 Dos violaciones de orden cometidas por el implementador, ambas de proceso y
