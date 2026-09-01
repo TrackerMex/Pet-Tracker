@@ -539,7 +539,15 @@ bunx expo run:android
 ```
 
 El `grep` debe imprimir `1`; no copies el valor del manifest a ningún
-reporte. Después verifica y registra, sin incluir la clave:
+reporte.
+
+Si ya tienes el dev build de esta branch instalado y solo revalidas el fix del
+ancestro opaco (fix 1, commits `74f50f7`–`4468da9`), sáltate el bloque anterior:
+ese cambio es solo JS y basta `bunx expo start --dev-client` con Fast Refresh.
+El `prebuild` completo solo hace falta si cambian dependencias nativas o la
+clave de Maps.
+
+Después verifica y registra, sin incluir la clave:
 
 1. Inicia sesión y abre el tab **Map** con una mascota premium que tenga
    última posición y al menos un viaje del día.
