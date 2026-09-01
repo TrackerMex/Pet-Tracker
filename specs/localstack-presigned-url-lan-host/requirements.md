@@ -265,7 +265,7 @@ así que en modo `aws` no existe vía de fuga que hubiera que guardar.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [X] Aprobado por humano (fecha: 2026-09-01) ← gate obligatorio antes de implementar
 - [ ] R6 smoke en dispositivo físico: foto de mascota carga con
       `AWS_PRESIGN_ENDPOINT_URL` puesta y logcat sin `ConnectException`
       (fecha: ____) ← gate obligatorio antes de `done`
