@@ -568,6 +568,30 @@ ambos temas. Si el encuadre necesita ajuste, cambia solo `MAP_ZOOM` (R2).
 Registra el resultado humano en `progress/impl_android-map-never-ready.md`;
 ninguna suite Jest ni este implementer pueden cerrar R8.
 
+### Feature 55 — mobile-map-zoom-controls
+
+Este smoke es el gate humano R3. Requiere el dev build de Android de #54 ya
+instalado, el backend local arriba y una mascota premium con última posición y
+al menos un viaje del día. El cambio es solo JS: no ejecutes `prebuild` ni
+`run:android`; basta Fast Refresh sobre el dev build existente:
+
+```bash
+cd mobile-pet-tracker
+bunx expo start --dev-client
+```
+
+Abre el tab **Map** y confirma por separado:
+
+1. La esquina inferior derecha no muestra los controles nativos `+` / `−`.
+2. El pinch con dos dedos acerca el mapa y el pinch inverso lo aleja.
+3. Siguen visibles tiles, marker y polyline; la tarjeta `map-stats` y el botón
+   **Lost Mode** siguen funcionando encima del mapa.
+
+Registra el resultado en `progress/impl_mobile-map-zoom-controls.md` y marca
+la casilla R3 en la spec. La suite Jest de `PetMap` usa una vista mockeada:
+solo prueba que `uiSettings` llega a `GoogleMaps.View`; no prueba que los
+botones desaparezcan ni que el gesto funcione en el dispositivo.
+
 ### Feature 57 — localstack-presigned-url-lan-host
 
 Este smoke es el gate humano R6. Requiere LocalStack y el backend local

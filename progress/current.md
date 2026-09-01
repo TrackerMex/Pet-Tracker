@@ -50,12 +50,34 @@
 - Regla nueva que deja esta feature: `docs/ui-guidelines.md` §10 — ningún
   ancestro de una vista nativa de mapa declara fondo opaco.
 
-### Feature #55 `mobile-map-zoom-controls` — spec_ready, P3
+### Feature #55 `mobile-map-zoom-controls` — **done** (2026-09-01)
 
+- **Branch: `feature/mobile-map-zoom-controls`**, sacada de `main` por el
+  humano. `main` está **protegida**: ninguna aprobación de spec ni ningún
+  cambio se commitea ahí, siempre en branch. `tasks.md` §Rama quedó obsoleto
+  (dice `feature/55-…` sacada de la branch de #54, que ya está mergeada); el
+  handoff lo corrige por escrito en vez de editar una spec aprobada.
 - Spec escrita por `spec_author` el 2026-09-01 en
-  `specs/mobile-map-zoom-controls/` (R1–R3, 4 ficheros en `draft`).
-  **Pendiente del gate humano**: casilla sin marcar en
-  `requirements.md` §Aprobación.
+  `specs/mobile-map-zoom-controls/` (R1–R3). **Aprobada por el humano** el
+  2026-09-01 (`6f6c647`). Frontmatter de los 4 ficheros pasado de `draft` a
+  `approved` por el leader — sexta vez que la casilla se firma con los
+  ficheros en `draft` (#50, #43, #52, #44, #54, #55): merece automatizarse.
+- Handoff a Codex ejecutado el 2026-09-01 con TDD: rojo `e052b07` → verde
+  `bf14baf`, más dos commits de documentación. `reviewer` **aprobado** en
+  `progress/review_mobile-map-zoom-controls.md`: no se limitó a comprobar que
+  el test usa `toEqual`, sino que añadió `zoomGesturesEnabled: true` a mano y
+  confirmó que el test se pone rojo. `./init.sh` exit 0, móvil 569 → 570.
+- **Smoke humano R3 aprobado** el 2026-09-01 (`aa1da88`): controles `+` / `−`
+  ausentes y pinch-to-zoom funcionando. Con eso el leader marca #55 `done`.
+- **Aprendizaje de flujo**: Codex commiteó en el VPS y el handoff decía "no
+  pushees" — plantilla pensada para cuando implementador y humano comparten
+  working tree. Aquí no lo comparten, así que el humano no veía nada en su
+  clon. A partir de ahora el leader pushea tras el veredicto del reviewer.
+- Desviación declarada por Codex: su plugin `expo` es la v1.0.2 y **no
+  contiene** `expo:expo-overview`; cargó `expo:building-native-ui`. Riesgo
+  bajo aquí (la autoridad fueron los tipos instalados de `expo-maps` y el diff
+  es un booleano), pero conviene actualizar el plugin antes de un handoff
+  móvil grande.
 - Alcance: `PetMap` pasa `uiSettings={{ zoomControlsEnabled: false }}` a
   `GoogleMaps.View`. Un archivo de producción (`src/components/pet-map.tsx`),
   su test y una sección nueva en `docs/verification.md`. `map.tsx` no se toca.
@@ -65,8 +87,27 @@
 - R3 es un smoke humano en dev build de Android (controles `+` / `−` ausentes
   **y** pinch acercando/alejando). **Solo JS**: Fast Refresh sobre el dev build
   ya instalado, sin `prebuild` ni `run:android`.
-- Depende de #54: `src/components/pet-map.tsx` no existe en `main`. La branch
-  sale de `feature/54-android-map-never-ready`.
+- Dependía de #54 (`src/components/pet-map.tsx` lo crea esa feature); resuelto:
+  #54 se mergeó en `main` con el PR **#94**.
+
+### Choque de IDs entre sesiones — pendiente de resolver
+
+`origin/feature/55-auth-email-delivery` (sesión Backend) salió de `38faa37`,
+antes del merge del PR #94, y registró su propio **#55 `auth-email-delivery`**
+y **#56 `auth-reset-deep-link`**. En `main` esos ids ya son
+`mobile-map-zoom-controls` y `mobile-map-last-position-error-state`. Esa branch
+tiene 56 features; `main` tiene 57.
+
+Lo barato es renumerar la de auth (**#55 → #58**, **#56 → #59**), porque la
+otra mitad ya está en `main`: son las dos entradas de su `feature_list.json`
+más 7 menciones de texto (4 en `design.md`, 3 en `requirements.md`);
+`tasks.md` y `traceability.md` no citan el número, y el directorio de la spec
+va por nombre. Lo hace **la sesión que lleva esa branch**, y rebasa sobre
+`main` después.
+
+Causa de fondo, que va a repetirse: dos sesiones asignando ids contra el mismo
+`feature_list.json` en ramas paralelas chocan siempre. O registra features una
+sola sesión, o cada una reserva un rango.
 
 ### Deuda del arnés detectada en la revisión de #44
 
@@ -98,6 +139,15 @@ mascota no cargan en teléfono físico
 (`ConnectException: Failed to connect to localhost/127.0.0.1:4566` en logcat
 durante el smoke de #54). La firma SigV4 cubre el header `Host`, así que hay
 que firmar ya con un host de la LAN, no reescribirlo después.
+
+### Flake nuevo sin registrar — `health-vaccines` e2e
+
+`backend-pet-tracker/test/health-vaccines.e2e-spec.ts` → `R12: auditoria de
+mutaciones` (línea 470) falló una vez a Codex y pasó al repetir: Postgres
+devolvió las tres acciones de auditoría en otro orden. Es una aserción que
+depende del orden de un `SELECT` sin `ORDER BY` determinista. **No** es el
+flake de `add-pet` (#53). Anotado por el reviewer de #55 (observación 3),
+pendiente de decidir si se registra como feature propia.
 
 ### Feature #53 `mobile-jest-mock-hygiene` — pending, P3
 

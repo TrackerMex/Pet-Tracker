@@ -1,6 +1,6 @@
 ---
 feature: "mobile-map-zoom-controls"
-status: draft     # draft | approved
+status: approved  # draft | approved
 tags: [harness, spec, mobile]
 ---
 
@@ -219,6 +219,6 @@ el smoke de R3 necesita el dev build con `expo-maps` de #54 instalado.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
-- [ ] R3 smoke en dev build de Android: controles `+` / `−` ausentes **y**
-      pinch-to-zoom funcionando (fecha: ____) ← gate obligatorio antes de `done`
+- [X] Aprobado por humano (fecha: 2026-09-01) ← gate obligatorio antes de implementar
+- [X] R3 smoke en dev build de Android: controles `+` / `−` ausentes **y**
+      pinch-to-zoom funcionando (fecha: 2026-09-01) ← gate obligatorio antes de `done`
