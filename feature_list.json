@@ -993,5 +993,44 @@
     "files_affected": [
       "mobile-pet-tracker/src/components/pet-map.tsx"
     ]
+  },
+  {
+    "id": 56,
+    "name": "mobile-map-last-position-error-state",
+    "status": "pending",
+    "priority": "P2",
+    "description": "src/app/(tabs)/map.tsx no tiene rama para last.data.kind === 'error' ni para 'unauthorized'. LastPositionState declara seis kinds en src/api/positions.ts:4 (ok, no-tracking, unauthorized, error, unreachable, missing-config) y la pantalla solo renderiza cuatro ramas: isLoading, error de pets, pets ok con cero mascotas, last no-tracking, y last ok. Si pets resuelve ok con al menos una mascota y getLastPosition devuelve error (un 500 de GET /pets/:id/positions/last), ninguna rama renderiza: la pantalla queda vacia, sin mensaje y sin boton de reintentar. Los kinds unreachable y missing-config si quedan cubiertos de rebote porque pets comparte esos kinds y su rama de error si pinta; error y unauthorized de last no, porque pets puede haber resuelto ok mientras last falla. El agujero es preexistente pero estaba invisible: hasta el fix del ancestro opaco (#54 fix 1, commit 38168cf) la pantalla se veia en blanco de todos modos. Ahora que el contenedor ya no declara bg-background, el vacio se pinta sobre el fondo del contenedor de escena de React Navigation, que usa DefaultTheme claro porque la app no envuelve nada en ThemeProvider, asi que el usuario ve blanco incluso en tema oscuro. Detectado el 2026-09-01 por el reviewer durante la revision del fix 1 de #54 (observacion 1 de progress/review_android-map-never-ready_fix1.md), no por un reporte de usuario. La rama de error de pets (map.tsx, testIDs map-error y map-retry) ya establece el patron a seguir: mensaje mas boton Retry que llama al refetch correspondiente.",
+    "acceptance_criteria": [
+      "Cuando getLastPosition devuelve kind 'error' con pets resuelto en ok y al menos una mascota, la pantalla renderiza un mensaje de error y un boton de reintentar que llama al refetch de last, siguiendo el patron de la rama de error de pets ya existente",
+      "El kind 'unauthorized' de last queda decidido explicitamente en la spec: o comparte la rama de error o se enruta al flujo de sesion expirada que ya use el resto de la app; no se deja sin cubrir por omision",
+      "La spec deja por escrito que las cinco ramas de map.tsx son mutuamente excluyentes y cubren todos los kinds de LastPositionState, para que anadir un kind nuevo al tipo obligue a decidir su rama",
+      "Test por cada R-id que nombre su id, rojo antes que verde (C4), asserteando sobre los testIDs nuevos con el patron ya usado en src/app/(tabs)/__tests__/map.test.tsx",
+      "Los estados sin mapa siguen declarando su propio bg-background y ningun ancestro de PetMap gana fondo opaco (docs/ui-guidelines.md seccion 10, regla que cerro #54): la rama nueva pinta fondo, el contenedor screen-map no"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/app/(tabs)/map.tsx",
+      "mobile-pet-tracker/src/app/(tabs)/__tests__/map.test.tsx"
+    ]
+  },
+  {
+    "id": 57,
+    "name": "localstack-presigned-url-lan-host",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Las URLs prefirmadas de S3 salen con host localhost, asi que las fotos de mascota nunca cargan en un telefono fisico: en el dispositivo localhost es el propio telefono, no la maquina de desarrollo. Sintoma en adb logcat durante el smoke de #54 el 2026-09-01: 'E ExpoImage: java.net.ConnectException(Failed to connect to localhost/127.0.0.1:4566)'. Causa: backend-pet-tracker/src/aws/aws-clients.ts:103-107 construye el S3Client con endpoint = AWS_ENDPOINT_URL, que en desarrollo vale http://localhost:4566 (LocalStack), y photo-storage.s3.adapter.ts:30 y :38 firman con getSignedUrl del s3-request-presigner, que hereda ese host. Detalle que condiciona el fix: la firma SigV4 cubre el header Host, asi que NO se puede reescribir el host despues de firmar sin invalidar la firma; hay que firmar ya con el host que el telefono pueda resolver. La app movil ya resuelve el mismo problema para su propia API con EXPO_PUBLIC_API_URL apuntando a la IP LAN (docs/verification.md, seccion Feature 54), asi que el patron existe en el repo y esta feature lo extiende al presigner. Ojo con no romper el guard de aws-clients.ts: en modo aws el endpoint debe seguir vacio (assertNoEndpoint, :55) para que el SDK use el endpoint real de AWS y las URLs firmadas salgan con el dominio de S3; el cambio solo afecta al modo local con LocalStack. Afecta a cualquier consumidor de las URLs firmadas desde un dispositivo real, no solo a las fotos de mascota. No tiene relacion con el mapa.",
+    "acceptance_criteria": [
+      "Con el backend en modo local y un dispositivo fisico en la misma LAN, la URL prefirmada que devuelve la API tiene un host que el telefono resuelve y la foto carga, sin ConnectException en adb logcat",
+      "La firma se genera ya con el host correcto: la spec deja por escrito que reescribir el host despues de firmar invalida SigV4 y por que",
+      "El modo aws no cambia: el guard assertNoEndpoint de backend-pet-tracker/src/aws/aws-clients.ts sigue exigiendo endpoint vacio y las URLs firmadas contra AWS real siguen saliendo con el dominio de S3",
+      "La configuracion queda documentada en el .env de ejemplo y en docs/verification.md, incluyendo que el valor depende de la IP LAN de cada maquina, como ya ocurre con EXPO_PUBLIC_API_URL",
+      "Test por cada R-id que nombre su id, rojo antes que verde (C4), sobre el adaptador de storage y el factory de clientes; el spec del adaptador ya existe en photo-storage.s3.adapter.spec.ts",
+      "Gate humano: verificacion en dispositivo fisico de que la foto de una mascota carga. No delegable a IA: requiere dispositivo real y LocalStack corriendo"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/aws/aws-clients.ts",
+      "backend-pet-tracker/src/modules/media/infrastructure/photo-storage.s3.adapter.ts",
+      "docs/verification.md",
+      ".env.example"
+    ]
   }
 ]
