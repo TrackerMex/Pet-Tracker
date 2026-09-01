@@ -118,3 +118,22 @@ Flake de `add-pet` por mocks sin reinicializar. Sin trabajo en curso.
   fijados en la spec aprobada. `auth-login-me` ya resolvió el mismo choque con
   el sufijo `(<feature>)`; conviene que `spec_author` lo aplique siempre que un
   R-id aterrice en un fichero de test compartido. Detalle en H5 del review.
+
+## Sesión 2026-09-01 (leader) — #57 spec
+
+### Feature #57 `localstack-presigned-url-lan-host` — spec_ready
+
+- `./init.sh` verde al arrancar (51/57 done). Sin sesión abierta en esta rama.
+- Branch `feature/57-localstack-presigned-url-lan-host` creada desde
+  `origin/main` (e8c5511). `main` protegida: aprobación en branch, como #55.
+- Spec escrita por `spec_author` en `specs/localstack-presigned-url-lan-host/`
+  (R1–R6, frontmatter `draft`). `feature_list.json` id 57: `pending` →
+  `spec_ready`.
+- Diseño clave: variable nueva `AWS_PRESIGN_ENDPOINT_URL` (solo modo local,
+  solo `S3Client`; campo opcional `presignEndpoint` en `AwsRuntimeConfig`).
+  SigV4 firma el header `Host` ⇒ se firma ya con host LAN, nunca se reescribe.
+  Modo `aws` intacto (`assertNoEndpoint`, R3). R4 en archivo de test propio
+  (el spec compartido del adaptador mockea el presigner; R4 necesita el real).
+- **Gate humano pendiente**: firmar casilla §Aprobación de `requirements.md`
+  con commit propio en esta branch. R6 = smoke en dispositivo físico
+  (foto carga, sin ConnectException), no delegable a IA.
