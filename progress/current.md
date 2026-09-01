@@ -137,3 +137,15 @@ Flake de `add-pet` por mocks sin reinicializar. Sin trabajo en curso.
 - **Gate humano pendiente**: firmar casilla §Aprobación de `requirements.md`
   con commit propio en esta branch. R6 = smoke en dispositivo físico
   (foto carga, sin ConnectException), no delegable a IA.
+
+### #57 — aprobación recogida y handoff (2026-09-01)
+
+- feature: localstack-presigned-url-lan-host — `in_progress`
+- inicio: 2026-09-01 (tras aprobación humana `fe38957`)
+- Frontmatter de los 4 ficheros de la spec pasado a `approved` por el leader
+  (séptima vez que la casilla se firma con los ficheros en `draft`).
+- plan: Codex CLI implementa R1–R5 con TDD (2 commits de test rojos → 1 commit
+  de producción en `aws-clients.ts` → docs). Handoff en
+  `progress/handoff_localstack-presigned-url-lan-host.md`. Codex commitea sin
+  push; leader pushea tras veredicto del reviewer. R6 = smoke humano en
+  dispositivo físico, cierra la feature.
