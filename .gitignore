@@ -27,3 +27,4 @@ graphify-out/
 ./.mcp.json
 mpc.json
 docker-compose.override.yml
+.claude/skills/
