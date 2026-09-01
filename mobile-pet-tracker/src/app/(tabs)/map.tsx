@@ -172,13 +172,13 @@ export default function MapScreen() {
         : 'Stale';
 
   return (
-    <View testID="screen-map" className="flex-1 bg-background">
+    <View testID="screen-map" className="flex-1">
       {isLoading ? (
-        <Skeleton testID="map-loading" className="flex-1" />
+        <Skeleton testID="map-loading" className="flex-1 bg-background" />
       ) : null}
 
       {pets.data && isPetsError(pets.data) ? (
-        <View className="flex-1 items-center justify-center gap-3 p-6">
+        <View className="flex-1 items-center justify-center gap-3 p-6 bg-background">
           <Text testID="map-error" className="text-danger">
             Something went wrong
           </Text>
@@ -189,7 +189,7 @@ export default function MapScreen() {
       ) : null}
 
       {pets.data?.kind === 'ok' && pets.data.pets.length === 0 ? (
-        <View className="flex-1 items-center justify-center p-6">
+        <View className="flex-1 items-center justify-center p-6 bg-background">
           <Text testID="map-no-pets" className="text-muted">
             No pets yet
           </Text>
@@ -197,7 +197,7 @@ export default function MapScreen() {
       ) : null}
 
       {last.data?.kind === 'no-tracking' ? (
-        <View className="flex-1 items-center justify-center p-6">
+        <View className="flex-1 items-center justify-center p-6 bg-background">
           <Text testID="map-no-tracking" className="text-center text-muted">
             Live tracking requires a collar
           </Text>
