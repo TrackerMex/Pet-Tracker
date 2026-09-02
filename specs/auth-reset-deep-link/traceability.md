@@ -20,7 +20,7 @@ Rutas de test relativas a la raíz del repo salvo indicación: backend en
 | R6 | pendiente | pendiente |
 | R7 | pendiente | pendiente |
 | R8 | pendiente | pendiente |
-| R9 | pendiente | pendiente |
+| R9 | `src/__tests__/hosting-artifacts.test.ts::R9: assetlinks.json delega el dominio en el paquete Android de la app` | rojo `837ad2f` (`test(auth-reset-deep-link): add asset links test (R9)`); verde `9ba7e93` (`feat(auth-reset-deep-link): add Android asset links (R9)`) |
 | R10 | pendiente | pendiente |
 | R11 | pendiente | pendiente |
 | R12 | pendiente | pendiente |

@@ -264,7 +264,7 @@ Las dos ediciones mecánicas de la Adenda 1 fueron incluidas en el mismo commit
 verde y no cambiaron ningún otro contenido de esos ficheros. El typecheck y
 las suites unitarias/e2e heredadas de #58 quedan verdes.
 
-### R9 — rojo
+### R9 — rojo (`837ad2f`)
 
 ```text
 $ cd mobile-pet-tracker && bun run test --runInBand src/__tests__/hosting-artifacts.test.ts
@@ -283,3 +283,22 @@ Ran all test suites matching /src\\/__tests__\\/hosting-artifacts.test.ts/i.
 error: script "test" exited with code 1
 exit 1
 ```
+
+### R9 — verde (`9ba7e93`)
+
+```text
+$ cd mobile-pet-tracker && bun run test --runInBand src/__tests__/hosting-artifacts.test.ts
+PASS src/__tests__/hosting-artifacts.test.ts
+  R9: assetlinks.json delega el dominio en el paquete Android de la app
+    ✓ publica un unico statement para el package y fingerprint esperados
+
+Test Suites: 1 passed, 1 total
+Tests:       1 passed, 1 total
+Snapshots:   0 total
+Time:        1.338 s, estimated 2 s
+exit 0
+```
+
+`assetlinks.json` contiene un único statement para
+`com.trackermex.pettracker` y conserva el placeholder humano del fingerprint.
+El README mapea los dos destinos de Hostinger sin incluir ningún dominio real.
