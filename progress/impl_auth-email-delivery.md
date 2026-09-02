@@ -316,7 +316,7 @@ backend-pet-tracker/src\modules\auth\auth.module.ts:77:        config.get<string
 exit 0
 ```
 
-### R4 — rojo
+### R4 — rojo (`fa1a447`)
 
 ```text
 $ pnpm -C backend-pet-tracker exec jest src/modules/auth/auth.module.spec.ts --runInBand
@@ -354,3 +354,15 @@ exit 1
 Jest imprimió además el objeto completo de cada módulo resuelto; se omite esa
 serialización interna de Nest por longitud. La causa y los dos casos quedan
 preservados literalmente arriba.
+
+### R4 — verde (`c233035`)
+
+```text
+$ pnpm -C backend-pet-tracker exec jest src/modules/auth/auth.module.spec.ts src/modules/auth/infrastructure/email/resend-client.spec.ts src/modules/auth/infrastructure/email/resend-password-reset-sender.spec.ts src/modules/auth/infrastructure/email/resend-email-verification-sender.spec.ts --runInBand
+Test Suites: 4 passed, 4 total
+Tests:       12 passed, 12 total
+Snapshots:   0 total
+Time:        3.707 s, estimated 5 s
+Ran all test suites matching src/modules/auth/auth.module.spec.ts|src/modules/auth/infrastructure/email/resend-client.spec.ts|src/modules/auth/infrastructure/email/resend-password-reset-sender.spec.ts|src/modules/auth/infrastructure/email/resend-email-verification-sender.spec.ts.
+exit 0
+```
