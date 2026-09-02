@@ -267,3 +267,26 @@ Time:        1.952 s, estimated 2 s
 Ran all test suites matching src/modules/auth/infrastructure/email/resend-password-reset-sender.spec.ts|src/modules/auth/infrastructure/email/resend-email-verification-sender.spec.ts|src/modules/auth/infrastructure/email/resend-client.spec.ts.
 exit 0
 ```
+
+### R3 — rojo
+
+```text
+$ pnpm -C backend-pet-tracker exec jest src/modules/auth/auth.module.spec.ts --runInBand
+FAIL src/modules/auth/auth.module.spec.ts (14.027 s)
+  ● R3 (auth-email-delivery): EMAIL_ENABLED selecciona los adaptadores Resend para los dos puertos › resuelve los dos puertos con Resend solo para el valor literal true
+
+    Expected constructor: ResendPasswordResetSender
+    Received constructor: ConsolePasswordResetSender
+
+      105 |     }).compile();
+      106 |
+    > 107 |     expect(enabledModule.get(PASSWORD_RESET_SENDER)).toBeInstanceOf(
+          |                                                      ^
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 2 passed, 3 total
+Snapshots:   0 total
+Time:        14.526 s
+Ran all test suites matching src/modules/auth/auth.module.spec.ts.
+exit 1
+```
