@@ -469,3 +469,38 @@ Ran all test suites matching /src\\/screens\\/reset-password\\/index.test.tsx/i.
 error: script "test" exited with code 1
 exit 1
 ```
+
+Primer intento de verde de R5 (producción aún sin commit):
+
+```text
+$ cd mobile-pet-tracker && bun run test --runInBand src/screens/reset-password/index.test.tsx
+FAIL src/screens/reset-password/index.test.tsx
+  R5: la ruta /reset-password recibe el token del deep link
+    ✕ 4 tests
+
+  ● TypeError: (0 , _expoRouter.useLocalSearchParams) is not a function
+
+Test Suites: 1 failed, 1 total
+Tests:       4 failed, 4 total
+Snapshots:   0 total
+Time:        3.582 s
+exit 1
+```
+
+La causa fue el factory hoisted del mock, que capturaba un `jest.fn` declarado
+fuera antes de inicializarse. Se corrigió al patrón existente del repo:
+exports creados dentro de `jest.mock` y referencias obtenidas con
+`jest.mocked(...)`. No se cambió el comportamiento exigido por R5.
+
+La suite pasó tras ese ajuste (4/4), pero el primer typecheck aún quedó rojo:
+
+```text
+$ cd mobile-pet-tracker && bun run typecheck
+$ tsc --noEmit
+src/screens/reset-password/index.test.tsx(22,46): error TS2322: Type
+'string | undefined' is not assignable to type 'string | string[]'.
+exit 2
+```
+
+El mock representaba la ausencia como `{ token: undefined }`; se cambió a
+`{}`, la forma real de Expo Router cuando el query param no existe.

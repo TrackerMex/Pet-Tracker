@@ -1,10 +1,8 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
+import { router, useLocalSearchParams } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 
 import ResetPasswordRoute from '../../app/reset-password';
-
-const mockRouterPush = jest.fn();
-const mockUseLocalSearchParams = jest.fn();
 
 jest.mock('../../api/auth', () => ({
   resetPassword: jest.fn(),
@@ -12,13 +10,16 @@ jest.mock('../../api/auth', () => ({
 
 jest.mock('expo-router', () => ({
   router: {
-    push: mockRouterPush,
+    push: jest.fn(),
   },
-  useLocalSearchParams: mockUseLocalSearchParams,
+  useLocalSearchParams: jest.fn(),
 }));
 
+const mockRouter = jest.mocked(router);
+const mockUseLocalSearchParams = jest.mocked(useLocalSearchParams);
+
 async function renderRoute(token?: string) {
-  mockUseLocalSearchParams.mockReturnValue({ token });
+  mockUseLocalSearchParams.mockReturnValue(token === undefined ? {} : { token });
   await render(<ResetPasswordRoute />, { wrapper: HeroUINativeProvider });
 }
 
@@ -47,7 +48,7 @@ describe('R5: la ruta /reset-password recibe el token del deep link', () => {
       expect(screen.queryByTestId('reset-password')).toBeNull();
 
       await fireEvent.press(screen.getByTestId('link-login'));
-      expect(mockRouterPush).toHaveBeenCalledWith('/login');
+      expect(mockRouter.push).toHaveBeenCalledWith('/login');
     },
   );
 });
