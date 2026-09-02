@@ -22,7 +22,7 @@ Rutas de test relativas a `backend-pet-tracker/` (`src/…` para unitarios,
 | R9 | `src/modules/auth/infrastructure/guards/email-rate-limit.guard.spec.ts::R9: la undecima alta desde la misma IP en una hora responde 429` | rojo `27cbacd` (`test(auth-email-delivery): add IP test (R9)`); verde `f8f8097` (`feat(auth-email-delivery): limit signup (R9)`) |
 | R10 | `src/modules/auth/infrastructure/auth.controller.spec.ts::R10 (auth-email-delivery): el 429 del rate limit no revela si la cuenta existe` | rojo `185dee4` (`test(auth-email-delivery): add privacy test (R10)`); verde `7bd3d48` (`fix(auth-email-delivery): hide rate state (R10)`) |
 | R11 | `src/modules/auth/infrastructure/email/resend-client.spec.ts::R11: RESEND_API_KEY vive solo en el entorno, nunca en el repo` | rojo `d8f39f7` (`test(auth-email-delivery): add env test (R11)`); verde `71a3be0` (`docs(auth-email-delivery): secure env (R11)`) |
-| R12 | `test/auth-email-delivery.e2e-spec.ts::R12: con EMAIL_ENABLED por defecto los flujos de #44 siguen intactos` | pendiente |
+| R12 | `test/auth-email-delivery.e2e-spec.ts::R12: con EMAIL_ENABLED por defecto los flujos de #44 siguen intactos` | prueba/verde anticipada `2391041` (`test(auth-email-delivery): cover fallback (R12)`); cierre documental `872ea17` (`docs(auth-email-delivery): add gates (R12)`) |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
 Convención de commit: `feat(<scope>): <desc> (R1,R2)`.
