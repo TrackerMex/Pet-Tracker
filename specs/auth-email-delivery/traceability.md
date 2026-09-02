@@ -41,7 +41,7 @@ reescriben. El sufijo `(auth-email-delivery)` de R3, R4, R6 y R10 es
 
 | Gate | Qué confirma el humano | Estado |
 |---|---|---|
-| G1 | Subdominio dado de alta en Resend, registros MX/SPF/DKIM copiados al panel de Hostinger, dominio verificado, raíz sin tocar | pendiente |
-| G2 | `RESEND_API_KEY` creada y puesta solo en el `.env` de la raíz | pendiente |
-| G3 | Envío real: reset completado con el token del correo **y** verificación de email completada con el suyo | pendiente |
-| G4 | El buzón humano de Hostinger sigue enviando y recibiendo tras el cambio de DNS | pendiente |
+| G1 | Subdominio dado de alta en Resend, registros MX/SPF/DKIM copiados al panel de Hostinger, dominio verificado, raíz sin tocar | confirmado 2026-09-02 (`d7931d5`) |
+| G2 | `RESEND_API_KEY` creada y puesta solo en el `.env` de la raíz | confirmado 2026-09-02 (`d7931d5`) |
+| G3 | Envío real: reset completado con el token del correo **y** verificación de email completada con el suyo | confirmado 2026-09-02 (`d7931d5`) |
+| G4 | El buzón humano de Hostinger sigue enviando y recibiendo tras el cambio de DNS | confirmado 2026-09-02 (`d7931d5`) |

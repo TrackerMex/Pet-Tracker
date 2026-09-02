@@ -32,3 +32,19 @@
 - Aprendizaje repetido: Codex esta vez trabaja en su PROPIO clon — el
   "no pushees" del handoff dejó al leader ciego hasta que el humano pusheó.
   Próximo handoff: pedir push explícito al terminar cada tramo.
+
+### #58 — review y cierre (2026-09-02)
+
+- Codex completó R6 (mecanismo autorizado) y R8–R12 en su clon; push
+  autorizado por el humano al origin verificado. Escaneo de secretos limpio.
+- Gates G1–G4 confirmados por el humano (`d7931d5`).
+- `reviewer` **APROBADO** → `progress/review_auth-email-delivery.md`: rojos
+  R5/R8 reproducidos en worktree, mutaciones R6/R7/R8/R9 mordieron, cero
+  secretos, contención limpia (única excepción autorizada:
+  `env-drift.test.mjs` 21→23).
+- Incidente durante el review: algo externo hizo `git checkout main` a mitad
+  de su primer `./init.sh`; el reviewer restauró la branch y reejecutó todo
+  en verde. Regla de un-solo-escritor: mientras un reviewer corre, nadie toca
+  el working tree del VPS.
+- Filas G1–G4 de `traceability.md` pasadas a confirmado (`d7931d5`).
+- Estado final: `done` (54/59). PR pendiente de crear/mergear.
