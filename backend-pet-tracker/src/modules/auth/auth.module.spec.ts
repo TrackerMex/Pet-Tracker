@@ -108,6 +108,7 @@ describe('R3 (auth-email-delivery): EMAIL_ENABLED selecciona los adaptadores Res
       JWT_SECRET: 'test-jwt-secret',
       RESEND_API_KEY: 'api-key-for-r3',
       RESEND_FROM: 'sender@example.com',
+      RESET_LINK_HOST: 'reset.example.test',
     });
 
     expect(enabledModule.get(PASSWORD_RESET_SENDER)).toBeInstanceOf(

@@ -4,14 +4,25 @@ import {
   PasswordResetSender,
 } from '@/modules/auth/domain/ports/password-reset-sender';
 import { buildPasswordResetUrl } from './password-reset-link';
-import { PASSWORD_RESET_SUBJECT, ResendClient } from './resend-client';
+import {
+  MissingResendConfigError,
+  PASSWORD_RESET_SUBJECT,
+  ResendClient,
+} from './resend-client';
 
 @Injectable()
 export class ResendPasswordResetSender implements PasswordResetSender {
+  private readonly resetLinkHost: string;
+
   constructor(
     private readonly client: ResendClient,
-    private readonly resetLinkHost = '',
-  ) {}
+    resetLinkHost: string,
+  ) {
+    this.resetLinkHost = resetLinkHost.trim();
+    if (!this.resetLinkHost) {
+      throw new MissingResendConfigError(['RESET_LINK_HOST']);
+    }
+  }
 
   send(message: PasswordResetMessage): Promise<void> {
     return this.client.deliver({
