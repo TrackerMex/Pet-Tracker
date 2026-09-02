@@ -6,7 +6,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUniwind } from 'uniwind';
 
 import { listPets, setLostMode, type PetsState } from '../../api/pets';
-import { getLastPosition, listPositions } from '../../api/positions';
+import {
+  getLastPosition,
+  listPositions,
+  type LastPositionState,
+} from '../../api/positions';
 import { getDayRoute } from '../../api/trips';
 import { Card } from '../../components/card';
 import { PetMap } from '../../components/pet-map';
@@ -16,7 +20,28 @@ import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 
 function isPetsError(state: PetsState): boolean {
-  return ['error', 'unreachable', 'missing-config'].includes(state.kind);
+  switch (state.kind) {
+    case 'ok':
+      return false;
+    case 'unauthorized':
+    case 'error':
+    case 'unreachable':
+    case 'missing-config':
+      return true;
+  }
+}
+
+function isLastError(state: LastPositionState): boolean {
+  switch (state.kind) {
+    case 'ok':
+    case 'no-tracking':
+      return false;
+    case 'error':
+    case 'unauthorized':
+    case 'unreachable':
+    case 'missing-config':
+      return true;
+  }
 }
 
 function fmtKm(meters: number | null): string {
@@ -130,11 +155,9 @@ export default function MapScreen() {
     ]),
   );
 
+  const petsReady = pets.data?.kind === 'ok' && pets.data.pets.length > 0;
   const isLoading =
-    pets.data === undefined ||
-    (pets.data.kind === 'ok' &&
-      pets.data.pets.length > 0 &&
-      last.data === undefined);
+    pets.data === undefined || (petsReady && last.data === undefined);
   const position = last.data?.kind === 'ok' ? last.data.position : undefined;
   const center = position
     ? {
@@ -196,7 +219,7 @@ export default function MapScreen() {
         </View>
       ) : null}
 
-      {last.data?.kind === 'no-tracking' ? (
+      {petsReady && last.data?.kind === 'no-tracking' ? (
         <View className="flex-1 items-center justify-center p-6 bg-background">
           <Text testID="map-no-tracking" className="text-center text-muted">
             Live tracking requires a collar
@@ -204,7 +227,21 @@ export default function MapScreen() {
         </View>
       ) : null}
 
-      {last.data?.kind === 'ok' ? (
+      {petsReady && last.data && isLastError(last.data) ? (
+        <View
+          testID="map-last-error-state"
+          className="flex-1 items-center justify-center gap-3 p-6 bg-background"
+        >
+          <Text selectable testID="map-last-error" className="text-danger">
+            Something went wrong
+          </Text>
+          <Button testID="map-last-retry" onPress={refetchLast}>
+            Retry
+          </Button>
+        </View>
+      ) : null}
+
+      {petsReady && last.data?.kind === 'ok' ? (
         <>
           <PetMap
             key={selectedPetId}
