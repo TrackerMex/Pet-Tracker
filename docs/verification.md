@@ -647,7 +647,7 @@ Registra el resultado en
 casilla R6 en la spec. R4 verde prueba la firma en memoria, pero no cierra este
 gate de red/dispositivo.
 
-### Feature 55 — auth-email-delivery
+### Feature 58 — auth-email-delivery
 
 Esta verificación modifica servicios externos, DNS de producción y envía
 correo real. La ejecuta exclusivamente una persona; el implementer y el
