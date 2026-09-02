@@ -366,3 +366,36 @@ Time:        3.707 s, estimated 5 s
 Ran all test suites matching src/modules/auth/auth.module.spec.ts|src/modules/auth/infrastructure/email/resend-client.spec.ts|src/modules/auth/infrastructure/email/resend-password-reset-sender.spec.ts|src/modules/auth/infrastructure/email/resend-email-verification-sender.spec.ts.
 exit 0
 ```
+
+## Bloqueo de spec en R6
+
+La implementación se detuvo antes de escribir el test rojo de R6 porque sus
+instrucciones son incompatibles entre sí:
+
+- `requirements.md:273-276` exige que el e2e sobreescriba
+  `PASSWORD_RESET_SENDER` con un doble cuyo propio `send()` lanza.
+- `tasks.md:99-103` afirma que R5 ya cubre el comportamiento y prohíbe
+  arreglarlo en el caso de uso o el controller.
+- `design.md:134-138` fija que la contención vive dentro del adaptador Resend
+  y que el `await this.resetSender.send(...)` de application queda intacto.
+- `requirements.md:422-426` y `design.md:331-333` prohíben tocar
+  `src/modules/auth/application/` y presentan esa ausencia de cambios como
+  criterio arquitectónico.
+
+Al sobreescribir el token de DI con un objeto cuyo `send()` lanza, Nest evita
+por completo `ResendPasswordResetSender` y `ResendClient`; por tanto, ninguna
+implementación de R5 puede capturar esa excepción. El `await` heredado de
+application la propaga y el endpoint responde 500. Hacer pasar literalmente
+esa prueba requiere un `try/catch` en application o controller, justo las dos
+rutas que R6 y R12 prohíben.
+
+La corrección coherente con D5 es que el e2e inyecte
+`ResendPasswordResetSender` con un `ResendClient` cuyo doble de `fetch`
+rechaza. Así falla el proveedor dentro del adaptador, R5 lo contiene y el
+endpoint conserva `200 { requested: true }` sin cambiar application ni
+controller. El test unitario debe representar la misma frontera.
+
+De acuerdo con el handoff, no se editó la spec ni se inventó un workaround.
+El leader debe corregir R6 en `requirements.md` y `tasks.md`, o bien ampliar
+explícitamente la allowlist y cambiar la decisión D5 si realmente quiere
+contener cualquier implementación defectuosa del puerto.
