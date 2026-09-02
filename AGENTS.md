@@ -51,6 +51,7 @@ duplica.
 | `env-drift.mjs` | Diff de claves entre `.env` y `.env.example` que usa `init.sh` §2 (#23) | Si `init.sh` avisa de claves faltantes |
 | `init.config.sh` | Comandos de build/test/lint específicos de este proyecto | Antes de correr `init.sh` por primera vez |
 | `mobile-pet-tracker/` | App móvil Expo SDK 57 (Expo Router + TypeScript + bun) | Para implementar o verificar el cliente móvil |
+| `hosting/` | Artefactos estáticos de App Links y fallback web de reset | Para revisar o desplegar `assetlinks.json` y la página de `/reset-password` |
 | `docker-compose.yml` | Infra local: Postgres + LocalStack (`docker compose up -d`) | Antes de trabajar features con persistencia o AWS |
 | `.github/workflows/ci.yml` | CI: ejecuta `init.sh` en cada PR y push a main | Si CI falla en un PR |
 | ver `docs/architecture.md` | Dónde vive el código de la aplicación y cómo se organiza | Para implementar |
