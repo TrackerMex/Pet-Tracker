@@ -439,6 +439,11 @@ Este procedimiento prepara una clave restringida de Maps SDK for Android y
 regenera el dev build que la incorpora. La clave real nunca se pega en el
 repositorio ni en los reportes de progreso.
 
+Desde #54, `app.config.ts` transporta la clave mediante
+`android.config.googleMaps.apiKey`. El prebuild sigue generando la misma
+meta-data `com.google.android.geo.API_KEY`, por lo que su `grep` y el resto de
+este runbook no cambian.
+
 1. Haz un prebuild inicial sin clave para generar `android/` y
    `android/app/debug.keystore`. La config avisa por consola, pero no aborta:
 
@@ -503,9 +508,10 @@ repositorio ni en los reportes de progreso.
    en `progress/impl_android-maps-api-key.md`.
 
    Que el mapa pinte tiles, marker y polyline **no** forma parte de R6 desde
-   la acotación del 2026-08-28: con la clave aceptada por el SDK, el
-   `GoogleMap` no alcanza `onMapReady` y la vista se queda en el watermark.
-   Es un defecto independiente, rastreado en #54 `android-map-never-ready`.
+   la acotación del 2026-08-28. El discriminador de #54 confirmó que
+   `onMapReady` sí dispara y aisló un defecto independiente de composición
+   de la superficie nativa bajo Fabric, rastreado en
+   `android-map-never-ready`.
 
 Para un futuro EAS Build, crea la variable por separado:
 
@@ -516,6 +522,130 @@ eas env:create --name GOOGLE_MAPS_API_KEY_ANDROID --visibility secret --environm
 Además exige añadir `"environment": "development"` al perfil `development`
 de `eas.json`. Este plumbing de EAS queda **documentado, no implementado ni
 verificado** en esta feature.
+
+### Feature 54 — android-map-never-ready
+
+Este smoke es el gate humano R8. Requiere un dispositivo Android real, el
+backend local arriba y `mobile-pet-tracker/.env` con
+`GOOGLE_MAPS_API_KEY_ANDROID` y `EXPO_PUBLIC_API_URL` apuntando a la IP LAN.
+Regenera e instala el dev build porque `expo-maps` no está disponible en Expo
+Go:
+
+```bash
+cd mobile-pet-tracker
+npx expo prebuild --clean --platform android
+grep -c "com.google.android.geo.API_KEY" android/app/src/main/AndroidManifest.xml
+bunx expo run:android
+```
+
+El `grep` debe imprimir `1`; no copies el valor del manifest a ningún
+reporte.
+
+Si ya tienes el dev build de esta branch instalado y solo revalidas el fix del
+ancestro opaco (fix 1, commits `74f50f7`–`4468da9`), sáltate el bloque anterior:
+ese cambio es solo JS y basta `bunx expo start --dev-client` con Fast Refresh.
+El `prebuild` completo solo hace falta si cambian dependencias nativas o la
+clave de Maps.
+
+Después verifica y registra, sin incluir la clave:
+
+1. Inicia sesión y abre el tab **Map** con una mascota premium que tenga
+   última posición y al menos un viaje del día.
+2. En **tema claro**, confirma por separado:
+   - **tiles**: se ven calles y etiquetas, no solo el watermark "Google";
+   - **marker**: se ve el pin de la última posición;
+   - **polyline**: se ve la traza del día.
+3. Desde **Profile**, cambia a **tema oscuro**, vuelve a Map y confirma que el
+   mapa se ve oscuro y que siguen visibles tiles, marker y polyline.
+4. Comprueba en `adb logcat` que no haya `Authorization failure`,
+   `API_KEY_ANDROID_APP_BLOCKED` ni excepciones de `expo-maps`.
+5. Confirma que la tarjeta de stats y el botón **Lost Mode** siguen
+   funcionando encima del mapa.
+
+"Monta sin crash y hay watermark" **no cierra R8**: ese es el estado
+defectuoso. Se necesita confirmación explícita de tiles, marker y polyline en
+ambos temas. Si el encuadre necesita ajuste, cambia solo `MAP_ZOOM` (R2).
+Registra el resultado humano en `progress/impl_android-map-never-ready.md`;
+ninguna suite Jest ni este implementer pueden cerrar R8.
+
+### Feature 55 — mobile-map-zoom-controls
+
+Este smoke es el gate humano R3. Requiere el dev build de Android de #54 ya
+instalado, el backend local arriba y una mascota premium con última posición y
+al menos un viaje del día. El cambio es solo JS: no ejecutes `prebuild` ni
+`run:android`; basta Fast Refresh sobre el dev build existente:
+
+```bash
+cd mobile-pet-tracker
+bunx expo start --dev-client
+```
+
+Abre el tab **Map** y confirma por separado:
+
+1. La esquina inferior derecha no muestra los controles nativos `+` / `−`.
+2. El pinch con dos dedos acerca el mapa y el pinch inverso lo aleja.
+3. Siguen visibles tiles, marker y polyline; la tarjeta `map-stats` y el botón
+   **Lost Mode** siguen funcionando encima del mapa.
+
+Registra el resultado en `progress/impl_mobile-map-zoom-controls.md` y marca
+la casilla R3 en la spec. La suite Jest de `PetMap` usa una vista mockeada:
+solo prueba que `uiSettings` llega a `GoogleMaps.View`; no prueba que los
+botones desaparezcan ni que el gesto funcione en el dispositivo.
+
+### Feature 57 — localstack-presigned-url-lan-host
+
+Este smoke es el gate humano R6. Requiere LocalStack y el backend local
+arriba, un dispositivo Android físico en la misma LAN y el dev build con
+`EXPO_PUBLIC_API_URL` apuntando a la IP LAN de la máquina de desarrollo.
+
+En el `.env` raíz define el endpoint con esa misma IP y reinicia el backend
+para que `ConfigService` vuelva a leerlo:
+
+```bash
+AWS_PRESIGN_ENDPOINT_URL=http://<IP LAN>:4566
+docker compose up -d localstack
+pnpm -C backend-pet-tracker run start:dev
+```
+
+Sustituye `<IP LAN>` por el valor real; no copies literalmente el placeholder.
+Después confirma y registra **por separado** estos cuatro resultados:
+
+1. Pide una URL de foto mediante la API (un `uploadUrl` o el `photoUrl` del
+   perfil) y comprueba que su host es `<IP LAN>:4566`, nunca `localhost:4566`.
+2. Con una URL GET prefirmada vigente, desde la máquina de desarrollo ejecuta:
+
+   ```bash
+   curl -fsS "<url firmada>" -o /dev/null
+   ```
+
+   Debe salir con exit 0: LocalStack responde en la interfaz LAN y la firma
+   sigue siendo válida con ese header `Host`.
+3. En el dispositivo físico, sube una foto de mascota desde la app y confirma
+   que se muestra después. Este paso prueba por separado la URL PUT y la GET.
+4. Limpia logcat antes del flujo y revisa después que ExpoImage no intentó
+   conectar con el loopback del teléfono:
+
+   ```bash
+   adb logcat -c
+   # Repetir en la app la subida y carga de la foto.
+   adb logcat -d | rg 'ConnectException.*(localhost|127\.0\.0\.1):4566'
+   ```
+
+   El último `rg` debe salir sin coincidencias (exit 1 esperado).
+
+Si la firma lleva el host LAN pero `curl` o el teléfono no conectan, confirma
+que `docker-compose.yml` publica `4566:4566` — Docker lo expone en `0.0.0.0` —
+y que el firewall de Windows permite entrada TCP al puerto 4566, igual que ya
+debe permitirla al 3000 de la API. Al cambiar de red puede cambiar la IP LAN:
+actualiza tanto `AWS_PRESIGN_ENDPOINT_URL` en el `.env` raíz como
+`EXPO_PUBLIC_API_URL` en `mobile-pet-tracker/.env`, y reinicia backend y Metro.
+Para un emulador Android se puede usar `http://10.0.2.2:4566`; eso no sustituye
+el smoke obligatorio en dispositivo físico.
+
+Registra el resultado en
+`progress/impl_localstack-presigned-url-lan-host.md` y solo entonces marca la
+casilla R6 en la spec. R4 verde prueba la firma en memoria, pero no cierra este
+gate de red/dispositivo.
 
 ---
 

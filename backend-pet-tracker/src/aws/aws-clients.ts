@@ -9,6 +9,13 @@ export type AwsMode = 'local' | 'aws';
 export interface AwsRuntimeConfig {
   mode: AwsMode;
   endpoint: string;
+  /**
+   * Solo modo local (#57): endpoint con el que se FIRMAN las URLs
+   * prefirmadas de S3, con un host que el cliente de la URL resuelva
+   * (IP LAN de la máquina, o 10.0.2.2 desde el emulador Android).
+   * Ausente => se firma con `endpoint` (localhost), comportamiento previo.
+   */
+  presignEndpoint?: string;
   region: string;
   accessKeyId: string;
   secretAccessKey: string;
@@ -101,10 +108,14 @@ export function resolveAwsConfigFromConfigService(
 ): AwsRuntimeConfig {
   const mode = resolveAwsMode(config.get<string>('AWS_MODE'));
   const endpoint = config.get<string>('AWS_ENDPOINT_URL') ?? '';
+  const presignEndpoint = (
+    config.get<string>('AWS_PRESIGN_ENDPOINT_URL') ?? ''
+  ).trim();
 
   return {
     mode,
     endpoint: mode === 'aws' ? assertNoEndpoint(endpoint) : endpoint,
+    ...(mode === 'local' && presignEndpoint !== '' ? { presignEndpoint } : {}),
     region: config.get<string>('AWS_REGION') ?? '',
     accessKeyId: config.get<string>('AWS_ACCESS_KEY_ID') ?? '',
     secretAccessKey: config.get<string>('AWS_SECRET_ACCESS_KEY') ?? '',
@@ -150,7 +161,14 @@ export function createS3Client(config: AwsRuntimeConfig): S3Client {
     ...resolveAwsClientOptions(config),
     // LocalStack no resuelve bien el estilo virtual-hosted (bucket.localhost);
     // path-style (localhost/bucket) es lo que LocalStack community espera.
-    ...(config.mode === 'local' ? { forcePathStyle: true } : {}),
+    ...(config.mode === 'local'
+      ? {
+          forcePathStyle: true,
+          ...(config.presignEndpoint
+            ? { endpoint: config.presignEndpoint }
+            : {}),
+        }
+      : {}),
   });
 }
 

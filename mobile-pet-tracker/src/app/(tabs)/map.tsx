@@ -1,23 +1,47 @@
 import { Button, Skeleton } from 'heroui-native';
 import { useFocusEffect } from 'expo-router';
-import MapView, { Marker, Polyline } from 'react-native-maps';
 import { useCallback, useMemo, useState } from 'react';
 import { Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUniwind } from 'uniwind';
 
 import { listPets, setLostMode, type PetsState } from '../../api/pets';
-import { getLastPosition, listPositions } from '../../api/positions';
+import {
+  getLastPosition,
+  listPositions,
+  type LastPositionState,
+} from '../../api/positions';
 import { getDayRoute } from '../../api/trips';
 import { Card } from '../../components/card';
+import { PetMap } from '../../components/pet-map';
 import { useApi } from '../../hooks/use-api';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
-import mapStyleDark from '../../theme/map-style-dark.json';
 
 function isPetsError(state: PetsState): boolean {
-  return ['error', 'unreachable', 'missing-config'].includes(state.kind);
+  switch (state.kind) {
+    case 'ok':
+      return false;
+    case 'unauthorized':
+    case 'error':
+    case 'unreachable':
+    case 'missing-config':
+      return true;
+  }
+}
+
+function isLastError(state: LastPositionState): boolean {
+  switch (state.kind) {
+    case 'ok':
+    case 'no-tracking':
+      return false;
+    case 'error':
+    case 'unauthorized':
+    case 'unreachable':
+    case 'missing-config':
+      return true;
+  }
 }
 
 function fmtKm(meters: number | null): string {
@@ -34,11 +58,9 @@ function fmtAgo(seconds: number): string {
   return `${Math.floor(seconds / 3600)}h ago`;
 }
 
-const DEFAULT_REGION = {
+const DEFAULT_CENTER = {
   latitude: 19.4326,
   longitude: -99.1332,
-  latitudeDelta: 0.01,
-  longitudeDelta: 0.01,
 };
 const STALE_SECONDS = 120;
 const POLL_MS = 15000;
@@ -133,20 +155,29 @@ export default function MapScreen() {
     ]),
   );
 
+  const petsReady = pets.data?.kind === 'ok' && pets.data.pets.length > 0;
   const isLoading =
-    pets.data === undefined ||
-    (pets.data.kind === 'ok' &&
-      pets.data.pets.length > 0 &&
-      last.data === undefined);
+    pets.data === undefined || (petsReady && last.data === undefined);
   const position = last.data?.kind === 'ok' ? last.data.position : undefined;
-  const initialRegion = position
+  const center = position
     ? {
         latitude: position.lat,
         longitude: position.lng,
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01,
       }
-    : DEFAULT_REGION;
+    : DEFAULT_CENTER;
+  const marker = position
+    ? { latitude: position.lat, longitude: position.lng }
+    : null;
+  const polylines =
+    route.data?.kind === 'ok'
+      ? route.data.trips.map((trip) => ({
+          id: `trip-${trip.index}`,
+          coordinates: trip.path.map(({ lat, lng }) => ({
+            latitude: lat,
+            longitude: lng,
+          })),
+        }))
+      : [];
   const latestSpeed =
     positions.data?.kind === 'ok'
       ? positions.data.items[positions.data.items.length - 1]?.speedKmh
@@ -164,13 +195,13 @@ export default function MapScreen() {
         : 'Stale';
 
   return (
-    <View testID="screen-map" className="flex-1 bg-background">
+    <View testID="screen-map" className="flex-1">
       {isLoading ? (
-        <Skeleton testID="map-loading" className="flex-1" />
+        <Skeleton testID="map-loading" className="flex-1 bg-background" />
       ) : null}
 
       {pets.data && isPetsError(pets.data) ? (
-        <View className="flex-1 items-center justify-center gap-3 p-6">
+        <View className="flex-1 items-center justify-center gap-3 p-6 bg-background">
           <Text testID="map-error" className="text-danger">
             Something went wrong
           </Text>
@@ -181,52 +212,44 @@ export default function MapScreen() {
       ) : null}
 
       {pets.data?.kind === 'ok' && pets.data.pets.length === 0 ? (
-        <View className="flex-1 items-center justify-center p-6">
+        <View className="flex-1 items-center justify-center p-6 bg-background">
           <Text testID="map-no-pets" className="text-muted">
             No pets yet
           </Text>
         </View>
       ) : null}
 
-      {last.data?.kind === 'no-tracking' ? (
-        <View className="flex-1 items-center justify-center p-6">
+      {petsReady && last.data?.kind === 'no-tracking' ? (
+        <View className="flex-1 items-center justify-center p-6 bg-background">
           <Text testID="map-no-tracking" className="text-center text-muted">
             Live tracking requires a collar
           </Text>
         </View>
       ) : null}
 
-      {last.data?.kind === 'ok' ? (
+      {petsReady && last.data && isLastError(last.data) ? (
+        <View
+          testID="map-last-error-state"
+          className="flex-1 items-center justify-center gap-3 p-6 bg-background"
+        >
+          <Text selectable testID="map-last-error" className="text-danger">
+            Something went wrong
+          </Text>
+          <Button testID="map-last-retry" onPress={refetchLast}>
+            Retry
+          </Button>
+        </View>
+      ) : null}
+
+      {petsReady && last.data?.kind === 'ok' ? (
         <>
-          <MapView
+          <PetMap
             key={selectedPetId}
-            testID="map-view"
-            style={{ flex: 1 }}
-            initialRegion={initialRegion}
-            customMapStyle={theme === 'dark' ? mapStyleDark : undefined}
-          >
-            {position ? (
-              <Marker
-                testID="map-marker"
-                coordinate={{
-                  latitude: position.lat,
-                  longitude: position.lng,
-                }}
-              />
-            ) : null}
-            {route.data?.kind === 'ok'
-              ? route.data.trips.map((trip) => (
-                  <Polyline
-                    key={trip.index}
-                    testID={`map-route-${trip.index}`}
-                    coordinates={trip.path.map(({ lat, lng }) => ({
-                      latitude: lat,
-                      longitude: lng,
-                    }))}
-                  />
-                ))
-              : null}
-          </MapView>
+            center={center}
+            marker={marker}
+            polylines={polylines}
+            colorScheme={theme === 'dark' ? 'dark' : 'light'}
+          />
           {position === null ? (
             <View
               testID="map-empty-overlay"

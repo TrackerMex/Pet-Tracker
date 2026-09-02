@@ -184,7 +184,7 @@ implementa en esta feature** — no hay dónde inyectarlo. Ver §Fuera de alcanc
   (constante exportada `PASSWORD_RESET_SUBJECT`) y `text`, donde `text`
   contiene `message.token` en claro y `message.expiresAt` en ISO 8601; AND
   SHALL no incluir ningún campo `html` ni ninguna URL ([[design]] §D8: el
-  enlace es la feature #56).
+  enlace es la feature #59).
   *Tests (ROJO primero):*
   - `src/modules/auth/infrastructure/email/resend-password-reset-sender.spec.ts`
     → `describe('R1: el emisor de reset publica el token en POST https://api.resend.com/emails', ...)`
@@ -440,11 +440,11 @@ implementa en esta feature** — no hay dónde inyectarlo. Ver §Fuera de alcanc
 ## Fuera de alcance
 
 - **El enlace del correo, la plantilla HTML y la pantalla de reset en la
-  app.** Es la feature **#56 `auth-reset-deep-link`**, ya registrada como
+  app.** Es la feature **#59 `auth-reset-deep-link`**, ya registrada como
   `pending` y dependiente de esta. Esta spec **no fija la forma de la URL**
   porque el emisor no la necesita: el correo lleva el token pelado, que es
   exactamente lo que `docs/verification.md` hace copiar hoy a mano. Cuando
-  #56 aterrice, el único cambio es el `text` (o `html`) de los dos
+  #59 aterrice, el único cambio es el `text` (o `html`) de los dos
   adaptadores.
 - **Webhooks de rebote y de quejas de Resend** (`email.bounced`,
   `email.complained`). Requieren un endpoint público, verificación de firma

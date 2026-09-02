@@ -195,15 +195,15 @@ crédito.
 Consecuencia dura: `backend-pet-tracker/package.json` y `pnpm-lock.yaml`
 **no aparecen en el diff** (R12).
 
-### D8 — Correo de texto plano con el token pelado, sin URL (frontera con #56)
+### D8 — Correo de texto plano con el token pelado, sin URL (frontera con #59)
 
 El `text` del correo lleva el token en claro y su caducidad, sin enlace y sin
 `html`. Es exactamente lo que `docs/verification.md` hace copiar hoy a mano
 desde el log, solo que ahora llega al buzón.
 
 **Esta spec no fija la forma de ninguna URL** porque el emisor no la necesita:
-la fija #56 `auth-reset-deep-link`, que además tiene que conservar la
-propiedad de que ningún `GET` consume el token. Cuando #56 aterrice, el cambio
+la fija #59 `auth-reset-deep-link`, que además tiene que conservar la
+propiedad de que ningún `GET` consume el token. Cuando #59 aterrice, el cambio
 es el cuerpo del correo en dos ficheros; el transporte, la selección de
 adaptador y el rate limiting no se tocan.
 
@@ -365,5 +365,5 @@ Lista cerrada y exhaustiva en [[requirements]] R12.
 - **Reintentos con backoff dentro del adaptador**: sin durabilidad, un
   reintento en memoria solo alarga la vida del token en RAM y puede entregar el
   correo después de que el token haya expirado.
-- **Plantilla HTML y enlace en el correo**: es la feature #56, que depende de
+- **Plantilla HTML y enlace en el correo**: es la feature #59, que depende de
   esta (D8).
