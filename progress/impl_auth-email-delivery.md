@@ -399,3 +399,96 @@ De acuerdo con el handoff, no se editó la spec ni se inventó un workaround.
 El leader debe corregir R6 en `requirements.md` y `tasks.md`, o bien ampliar
 explícitamente la allowlist y cambiar la decisión D5 si realmente quiere
 contener cualquier implementación defectuosa del puerto.
+
+## Corrección autorizada y cierre de R6
+
+El commit del leader `465eee3` autoriza que los dos tests de R6 usen
+`ResendPasswordResetSender` real con un `ResendClient` cuyo doble de
+`fetch` rechaza. La corrección sustituye únicamente el mecanismo
+contradictorio del doble; la spec aprobada no se editó. Application y
+controller permanecen intactos.
+
+El test unitario quedó verde al introducirse porque la contención ya existe en
+el verde de R5 (`536040f`), situación prevista expresamente por
+`tasks.md` R6(2). No se fabricó un rojo artificial ni hubo implementación
+adicional de producción para R6.
+
+### R6 — unitario verde por R5 (`38a5e33`)
+
+```text
+$ pnpm -C backend-pet-tracker exec jest src/modules/auth/infrastructure/auth.controller.spec.ts --runInBand
+Test Suites: 1 passed, 1 total
+Tests:       37 passed, 37 total
+Snapshots:   0 total
+Time:        8.504 s, estimated 13 s
+Ran all test suites matching src/modules/auth/infrastructure/auth.controller.spec.ts.
+exit 0
+```
+
+### R6 — precondición e2e local
+
+La primera ejecución no alcanzó el fallo simulado de Resend: el volumen local
+de Postgres era anterior a #44 y no tenía la tabla
+`password_reset_tokens`. Se conserva la salida para distinguir este fallo de
+entorno de un rojo funcional:
+
+```text
+$ pnpm -C backend-pet-tracker exec jest --config test/jest-e2e.json test/auth-email-delivery.e2e-spec.ts --runInBand
+FAIL test/auth-email-delivery.e2e-spec.ts (26.602 s)
+  ● Auth email delivery (e2e) › R6: con el emisor lanzando, forgot-password sigue devolviendo 200 requested true › iguala status y body entre cuenta existente y cuenta inexistente
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 3
+    + Received  + 2
+
+      Object {
+        "body": Object {
+    -     "message": "Internal server error",
+    -     "statusCode": 500,
+    +     "requested": true,
+        },
+    -   "status": 500,
+    +   "status": 200,
+      }
+
+  ● Test suite failed to run
+
+    Failed query: delete from "password_reset_tokens" where "password_reset_tokens"."user_id" in ($1)
+    [cause]: error: relation "password_reset_tokens" does not exist
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 1 total
+Snapshots:   0 total
+Time:        27.012 s
+Ran all test suites matching test/auth-email-delivery.e2e-spec.ts.
+exit 1
+```
+
+Se aplicó al Postgres local, sin editar `src/db/`, la migración ya
+versionada de #44:
+
+```text
+$ Get-Content -Raw backend-pet-tracker/src/db/migrations/0015_auth_password_reset_tokens.sql | docker compose exec -T postgres psql -v ON_ERROR_STOP=1 -U pet_tracker -d pet_tracker
+CREATE TABLE
+ALTER TABLE
+CREATE INDEX
+exit 0
+```
+
+### R6 — e2e verde por R5 (`38a5e33`)
+
+```text
+$ pnpm -C backend-pet-tracker exec jest --config test/jest-e2e.json test/auth-email-delivery.e2e-spec.ts --runInBand
+Test Suites: 1 passed, 1 total
+Tests:       1 passed, 1 total
+Snapshots:   0 total
+Time:        6.285 s, estimated 27 s
+Ran all test suites matching test/auth-email-delivery.e2e-spec.ts.
+exit 0
+```
+
+El e2e sobreescribe `PASSWORD_RESET_SENDER` con una instancia real de
+`ResendPasswordResetSender`; solo `fetch` es un doble rechazado. La
+respuesta de la cuenta existente se compara estructuralmente contra la de la
+cuenta inexistente. No hubo red real.
