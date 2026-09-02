@@ -3,11 +3,21 @@ import { Button, Input, Label, LinkButton, TextField } from 'heroui-native';
 import { useState } from 'react';
 import { Text, View } from 'react-native';
 
+import { resetPassword } from '../../api/auth';
+
 export function ResetPasswordScreen() {
   const { token } = useLocalSearchParams<{ token?: string }>();
   const [password, setPassword] = useState('');
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
   const normalizedToken = token?.trim() ?? '';
+
+  async function handleSubmit() {
+    await resetPassword(process.env.EXPO_PUBLIC_API_URL, {
+      token: normalizedToken,
+      password,
+      passwordConfirmation,
+    });
+  }
 
   if (!normalizedToken) {
     return (
@@ -70,6 +80,7 @@ export function ResetPasswordScreen() {
       <Button
         testID="reset-submit"
         className="w-full rounded-2xl bg-accent"
+        onPress={() => void handleSubmit()}
       >
         <Button.Label className="font-bold text-accent-foreground">
           Update password
