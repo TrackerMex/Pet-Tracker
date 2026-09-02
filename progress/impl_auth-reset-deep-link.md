@@ -448,7 +448,7 @@ unión discriminada completa. Los `400` con `errors[]` se distinguen de los
 tokens inválidos/usados; `410`, fallos de transporte y statuses inesperados
 mantienen estados separados.
 
-### R5 — rojo
+### R5 — rojo (`0ad7139`)
 
 ```text
 $ cd mobile-pet-tracker && bun run test --runInBand src/screens/reset-password/index.test.tsx
@@ -504,3 +504,24 @@ exit 2
 
 El mock representaba la ausencia como `{ token: undefined }`; se cambió a
 `{}`, la forma real de Expo Router cuando el query param no existe.
+
+### R5 — verde (`56ea5d6`)
+
+```text
+$ cd mobile-pet-tracker && bun run test --runInBand src/screens/reset-password/index.test.tsx
+PASS src/screens/reset-password/index.test.tsx
+Test Suites: 1 passed, 1 total
+Tests:       4 passed, 4 total
+Snapshots:   0 total
+Time:        3.388 s, estimated 5 s
+exit 0
+
+$ cd mobile-pet-tracker && bun run typecheck
+$ tsc --noEmit
+exit 0
+```
+
+La ruta raíz `/reset-password` delega en `ResetPasswordScreen`, conserva el
+token recibido por Expo Router y muestra un estado local seguro cuando falta.
+El montaje no contiene todavía ninguna llamada de red; esa propiedad se fija
+explícitamente en R6.
