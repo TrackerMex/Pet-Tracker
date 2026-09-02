@@ -182,7 +182,7 @@ exit 0
 
 La corrida conjunta posterior de R1 y R5 pasó 2 suites y 4 tests.
 
-### R2 — rojo
+### R2 — rojo (`26ce596`)
 
 ```text
 $ pnpm -C backend-pet-tracker exec jest src/modules/auth/infrastructure/email/resend-email-verification-sender.spec.ts --runInBand
@@ -208,4 +208,16 @@ Snapshots:   0 total
 Time:        1.905 s
 Ran all test suites matching src/modules/auth/infrastructure/email/resend-email-verification-sender.spec.ts.
 exit 1
+```
+
+### R2 — verde (`fc5aa18`)
+
+```text
+$ pnpm -C backend-pet-tracker exec jest src/modules/auth/infrastructure/email/resend-email-verification-sender.spec.ts --runInBand
+Test Suites: 1 passed, 1 total
+Tests:       1 passed, 1 total
+Snapshots:   0 total
+Time:        8.341 s
+Ran all test suites matching src/modules/auth/infrastructure/email/resend-email-verification-sender.spec.ts.
+exit 0
 ```

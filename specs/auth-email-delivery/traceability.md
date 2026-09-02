@@ -12,7 +12,7 @@ Rutas de test relativas a `backend-pet-tracker/` (`src/…` para unitarios,
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
 | R1 | `src/modules/auth/infrastructure/email/resend-password-reset-sender.spec.ts::R1: el emisor de reset publica el token en POST https://api.resend.com/emails` | rojo `3be8e9c` (`feat(auth-email-delivery): add reset test (R1)`); verde `9b77bb4` (`feat(auth-email-delivery): send reset email (R1)`) |
-| R2 | `src/modules/auth/infrastructure/email/resend-email-verification-sender.spec.ts::R2: el emisor de verificacion publica su token en POST https://api.resend.com/emails` | pendiente |
+| R2 | `src/modules/auth/infrastructure/email/resend-email-verification-sender.spec.ts::R2: el emisor de verificacion publica su token en POST https://api.resend.com/emails` | rojo `26ce596` (`feat(auth-email-delivery): add verify test (R2)`); verde `fc5aa18` (`feat(auth-email-delivery): send verification (R2)`) |
 | R3 | `src/modules/auth/auth.module.spec.ts::R3 (auth-email-delivery): EMAIL_ENABLED selecciona los adaptadores Resend para los dos puertos` | pendiente |
 | R4 | `src/modules/auth/auth.module.spec.ts::R4 (auth-email-delivery): EMAIL_ENABLED=true sin RESEND_API_KEY aborta el arranque` | pendiente |
 | R5 | `src/modules/auth/infrastructure/email/resend-client.spec.ts::R5: deliver resuelve antes que la respuesta del proveedor y contiene cualquier fallo` | rojo `b8ac577` (`feat(auth-email-delivery): add delivery test (R5)`); verde `536040f` (`feat(auth-email-delivery): contain delivery (R5)`) |
