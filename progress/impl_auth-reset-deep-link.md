@@ -676,3 +676,25 @@ Para reanudar hace falta una decisión escrita del leader: autorizar R11 como
 excepción de caracterización (commit de test directamente verde, sin cambio
 runtime), o indicar el comportamiento ausente y permitido que debe producir
 un rojo real. R12 no se ha iniciado.
+
+## Reanudación de R11 por autorización humana
+
+El humano autorizó explícitamente en la conversación tratar R11 como prueba
+de caracterización. Se restauró el mismo e2e, sin cambios runtime ni fallos
+artificiales, y quedó commiteado directamente verde en `1b4bce7`:
+
+```text
+$ pnpm -C backend-pet-tracker run test:e2e -- --runInBand test/auth-reset-deep-link.e2e-spec.ts
+PASS test/auth-reset-deep-link.e2e-spec.ts
+Test Suites: 1 passed, 1 total
+Tests:       1 passed, 1 total
+Snapshots:   0 total
+Time:        2.469 s
+exit 0
+
+$ pnpm -C backend-pet-tracker exec tsc --noEmit
+exit 0
+```
+
+Los tres GET respondieron 404 sin consumir el token; el POST posterior fue
+200 y el segundo canje del mismo token fue rechazado con 400.

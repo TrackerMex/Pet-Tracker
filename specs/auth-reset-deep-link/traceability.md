@@ -22,7 +22,7 @@ Rutas de test relativas a la raíz del repo salvo indicación: backend en
 | R8 | `src/screens/reset-password/index.test.tsx::R8: el submit completa el reset y mapea los errores` | rojo `99215cf` (`test(auth-reset-deep-link): add reset submit state tests (R8)`); verde `c1ace87` (`feat(auth-reset-deep-link): handle reset submit states (R8)`) |
 | R9 | `src/__tests__/hosting-artifacts.test.ts::R9: assetlinks.json delega el dominio en el paquete Android de la app` | rojo `837ad2f` (`test(auth-reset-deep-link): add asset links test (R9)`); verde `9ba7e93` (`feat(auth-reset-deep-link): add Android asset links (R9)`) |
 | R10 | `src/__tests__/hosting-artifacts.test.ts::R10: la pagina fallback no consume el token y ofrece abrir la app` | rojo `0039189` (`test(auth-reset-deep-link): add static fallback test (R10)`); verde `243fcc6` (`feat(auth-reset-deep-link): add static reset fallback (R10)`) |
-| R11 | pendiente | pendiente |
+| R11 | `test/auth-reset-deep-link.e2e-spec.ts::R11: ningun GET consume el token; solo POST reset-password lo canjea una vez` | caracterización autorizada, verde directo `1b4bce7` (`test(auth-reset-deep-link): characterize POST-only token use (R11)`); sin cambio runtime |
 | R12 | pendiente | pendiente |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
