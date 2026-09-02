@@ -347,7 +347,7 @@ La página autocontenida procesa el query exclusivamente con
 con `encodeURIComponent`. No contiene solicitudes, formularios remotos ni
 recursos externos; también ofrece un estado local seguro si falta el token.
 
-### R4 — rojo
+### R4 — rojo (`805bf65`)
 
 ```text
 $ cd mobile-pet-tracker && bun run test --runInBand app.config.test.ts
@@ -373,3 +373,25 @@ Ran all test suites matching /app.config.test.ts/i.
 error: script "test" exited with code 1
 exit 1
 ```
+
+### R4 — verde (`5877535`)
+
+```text
+$ cd mobile-pet-tracker && bun run test --runInBand app.config.test.ts
+PASS ./app.config.test.ts
+Test Suites: 1 passed, 1 total
+Tests:       9 passed, 9 total
+Snapshots:   0 total
+Time:        1.807 s, estimated 2 s
+exit 0
+
+$ cd mobile-pet-tracker && bun run typecheck
+$ tsc --noEmit
+exit 0
+```
+
+La config recorta el host e inyecta exactamente un intent filter verificado
+sin modificar `app.json`. Las ramas de Maps y App Links son independientes;
+si faltan ambas variables sus mensajes se agrupan en una única llamada a
+`console.warn`, conservando el contrato previo de una advertencia y el nuevo
+contrato de R4.
