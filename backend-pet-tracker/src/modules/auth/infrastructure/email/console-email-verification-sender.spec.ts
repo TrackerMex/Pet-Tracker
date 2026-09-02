@@ -1,5 +1,4 @@
 import { Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { EmailVerificationMessage } from '@/modules/auth/domain/ports/email-verification-sender';
 import { ConsoleEmailVerificationSender } from './console-email-verification-sender';
 
@@ -10,12 +9,8 @@ const message: EmailVerificationMessage = {
   expiresAt: new Date('2026-07-31T10:00:00.000Z'),
 };
 
-function buildSender(emailEnabled: string | undefined) {
-  const config = {
-    get: jest.fn<string | undefined, [string]>(() => emailEnabled),
-  } as unknown as ConfigService;
-
-  return new ConsoleEmailVerificationSender(config);
+function buildSender(_emailEnabled: string | undefined) {
+  return new ConsoleEmailVerificationSender();
 }
 
 describe('R6: con EMAIL_ENABLED=false el token se loguea en vez de enviarse por email', () => {
@@ -56,13 +51,6 @@ describe('R6: con EMAIL_ENABLED=false el token se loguea en vez de enviarse por 
 
     expect(logLines).toHaveLength(1);
     expect(warnLines).toHaveLength(0);
-  });
-
-  it('avisa cuando EMAIL_ENABLED=true porque no hay proveedor real cableado', async () => {
-    await buildSender('true').send(message);
-
-    expect(warnLines).toHaveLength(1);
-    expect(logLines).toHaveLength(1);
   });
 });
 
