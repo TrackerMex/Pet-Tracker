@@ -1365,3 +1365,14 @@ El `git diff --stat main...HEAD` previo a este cierre documental fue:
 
 Cierre automático completo. G1–G4 permanecen pendientes y los ejecuta el
 humano: dominio Resend, DNS, API key en el entorno y envío E2E real.
+
+## Gates humanos G1–G4 — confirmados (2026-09-02)
+
+- G1: subdominio verificado en Resend; MX y SPF de la raíz intactos. ✅
+- G2: EMAIL_ENABLED, RESEND_API_KEY y RESEND_FROM solo en el .env raíz
+  (gitignoreado); `git status --short -- .env` vacío. ✅
+- G3-reset: forgot-password → 200 {"requested":true} → correo en inbox →
+  reset-password → 200 {"reset":true}. ✅
+- G3-verificación: register → 201 → correo en inbox → verify-email →
+  200 {"verified":true}. ✅
+- G4: round-trip completo del buzón de Hostinger (envío y respuesta). ✅
