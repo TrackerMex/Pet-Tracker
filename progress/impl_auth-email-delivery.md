@@ -3,9 +3,9 @@
 - Fecha: 2026-09-02
 - Branch: `feature/58-auth-email-delivery`
 - Alcance: R1–R12, backend puro
-- Resultado: R1–R12 implementados y sus suites verdes; el cierre queda
-  bloqueado porque `env-drift.test.mjs` conserva el inventario anterior de
-  21 claves y está fuera de la contención aprobada.
+- Resultado: R1–R12 y el cierre automático completos; `./init.sh` verde
+  tras la ampliación de contención autorizada por el leader. G1–G4 quedan
+  pendientes y son gates humanos.
 
 ## Bloqueo inicial de la spec
 
@@ -1180,3 +1180,188 @@ No se modificaron por #58 `domain/`, `application/`, `src/db/`,
 `test/auth-forgot-password.e2e-spec.ts`, `package.json`, `pnpm-lock.yaml`,
 `feature_list.json` ni `progress/current.md`. G1–G4 siguen pendientes y
 son gates humanos.
+
+## Cierre reanudado por autorización del leader
+
+Tras documentar el bloqueo, el leader autorizó explícitamente:
+
+1. ampliar la contención a `env-drift.test.mjs` para actualizar el inventario
+   de 21 a 23 claves;
+2. subir la branch a `https://github.com/TrackerMex/Pet-Tracker.git` aunque
+   el entorno no pudiera verificar su visibilidad.
+
+El rojo del harness quedó versionado antes de la corrección en `e7eef32`.
+
+### Harness verde (`6564994`)
+
+Se cambió exclusivamente la expectativa del número de claves, de 21 a 23.
+La protección que prohíbe nombres `DRIFT*`/`ENV_DRIFT*` quedó intacta.
+
+```text
+$ node --test env-drift.test.mjs
+ℹ tests 28
+ℹ suites 11
+ℹ pass 28
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 998.1311
+exit 0
+```
+
+### Primer `init.sh` tras desbloquear el harness — rojo de lint
+
+Build, backend, infra, harness, mobile y e2e pasaron. El gate alcanzó lint
+y encontró nueve errores estáticos, todos en tests de #58:
+
+```text
+$ ./init.sh
+build: OK
+backend: 162 suites, 1226 tests passed
+infra: 2 suites, 14 tests passed
+harness: 28 tests passed
+mobile: 51 suites, 578 tests passed, 1 snapshot
+e2e: 24 suites, 352 tests passed; 3 suites y 8 tests skipped
+
+auth.controller.spec.ts: 2 @typescript-eslint/unbound-method
+console-email-verification-sender.spec.ts: 1 @typescript-eslint/no-unused-vars
+console-password-reset-sender.spec.ts: 1 @typescript-eslint/no-unused-vars
+resend-email-verification-sender.spec.ts: 1 @typescript-eslint/no-base-to-string
+resend-email-verification-sender.spec.ts: 1 @typescript-eslint/no-unsafe-assignment
+resend-password-reset-sender.spec.ts: 1 @typescript-eslint/no-base-to-string
+resend-password-reset-sender.spec.ts: 1 @typescript-eslint/no-unsafe-assignment
+email-rate-limit.guard.spec.ts: 1 @typescript-eslint/unbound-method
+
+✖ 9 problems (9 errors, 0 warnings)
+ELIFECYCLE Command failed with exit code 1.
+exit 1
+```
+
+### Refactor de lint verde (`a7fd400`)
+
+Se conservaron las mismas aserciones y comportamiento: los handlers se
+obtienen sin separar métodos sin bind, los bodies Resend se estrechan desde
+`unknown` después de comprobar que son texto y los parámetros heredados de
+los emisores de consola se consumen explícitamente.
+
+```text
+$ pnpm -C backend-pet-tracker run lint
+> eslint "{src,apps,libs,test}/**/*.ts" --fix
+exit 0
+```
+
+```text
+$ pnpm -C backend-pet-tracker exec tsc --noEmit
+<sin salida>
+exit 0
+```
+
+```text
+$ pnpm -C backend-pet-tracker exec jest src/modules/auth/infrastructure/auth.controller.spec.ts src/modules/auth/infrastructure/email/console-email-verification-sender.spec.ts src/modules/auth/infrastructure/email/console-password-reset-sender.spec.ts src/modules/auth/infrastructure/email/resend-email-verification-sender.spec.ts src/modules/auth/infrastructure/email/resend-password-reset-sender.spec.ts src/modules/auth/infrastructure/guards/email-rate-limit.guard.spec.ts --runInBand
+Test Suites: 6 passed, 6 total
+Tests:       52 passed, 52 total
+Snapshots:   0 total
+Time:        4.651 s, estimated 7 s
+exit 0
+```
+
+### `init.sh` final — verde
+
+La consola móvil generó más de 128 000 tokens de warnings preexistentes de
+Uniwind/HeroUI y el transporte truncó ese bloque; estos son los cierres
+literales de cada fase de la corrida final:
+
+```text
+$ ./init.sh
+✅ Build exitoso
+
+Test Suites: 162 passed, 162 total
+Tests:       1226 passed, 1226 total
+Snapshots:   0 total
+Time:        19.22 s, estimated 28 s
+
+Test Suites: 2 passed, 2 total
+Tests:       14 passed, 14 total
+Snapshots:   0 total
+Time:        27.084 s, estimated 31 s
+
+ℹ tests 28
+ℹ suites 11
+ℹ pass 28
+ℹ fail 0
+
+Test Suites: 51 passed, 51 total
+Tests:       578 passed, 578 total
+Snapshots:   1 passed, 1 total
+Time:        58.37 s, estimated 165 s
+
+Test Suites: 3 skipped, 24 passed, 24 of 27 total
+Tests:       8 skipped, 352 passed, 360 total
+Snapshots:   0 total
+Time:        107.202 s, estimated 120 s
+
+✅ Tests e2e pasados
+✅ Lint sin errores
+✅ Typecheck sin errores
+✅ Todo verde. Listo para trabajar.
+
+Features: 53/59 completadas | 5 pendientes
+exit 0
+```
+
+Persisten únicamente las advertencias informativas ya conocidas: diez
+claves ausentes del `.env` humano y `STATUS.md` con 51/57 frente a 53/59.
+No se editaron esos ficheros.
+
+### Contención con excepción autorizada
+
+El filtro literal contra `main` devuelve ahora solo el fichero autorizado
+por el leader:
+
+```text
+$ git diff --name-only main...HEAD | grep -vE 'infrastructure/email/|infrastructure/guards/email-rate-limit|auth\.module|auth\.controller|auth-email-delivery|^\.env\.example$|docs/conventions\.md|docs/verification\.md|^specs/|^progress/|feature_list\.json|STATUS\.md'
+env-drift.test.mjs
+exit 0
+```
+
+Al añadir esa única excepción autorizada al filtro, la salida queda vacía.
+No apareció ninguna otra ruta fuera de alcance.
+
+El `git diff --stat main...HEAD` previo a este cierre documental fue:
+
+```text
+ .env.example                                       |    8 +-
+ .../src/modules/auth/auth.module.spec.ts           |   82 ++
+ .../src/modules/auth/auth.module.ts                |   39 +-
+ .../auth/infrastructure/auth.controller.spec.ts    |  173 +++
+ .../modules/auth/infrastructure/auth.controller.ts |    4 +
+ .../console-email-verification-sender.spec.ts      |   17 +-
+ .../email/console-email-verification-sender.ts     |   13 -
+ .../email/console-password-reset-sender.spec.ts    |   33 +-
+ .../email/console-password-reset-sender.ts         |   13 -
+ .../infrastructure/email/resend-client.spec.ts     |  112 ++
+ .../auth/infrastructure/email/resend-client.ts     |  150 +++
+ .../email/resend-email-verification-sender.spec.ts |  131 +++
+ .../email/resend-email-verification-sender.ts      |   27 +
+ .../email/resend-password-reset-sender.spec.ts     |  131 +++
+ .../email/resend-password-reset-sender.ts          |   27 +
+ .../guards/email-rate-limit.guard.spec.ts          |  119 ++
+ .../guards/email-rate-limit.guard.ts               |  110 ++
+ .../test/auth-email-delivery.e2e-spec.ts           |  279 +++++
+ docs/conventions.md                                |    4 +-
+ docs/verification.md                               |   59 +
+ env-drift.test.mjs                                 |    2 +-
+ feature_list.json                                  |   39 +
+ progress/current.md                                |   28 +
+ progress/handoff_auth-email-delivery.md            |   86 ++
+ progress/impl_auth-email-delivery.md               | 1182 ++++++++++++++++++++
+ specs/auth-email-delivery/design.md                |  369 ++++++
+ specs/auth-email-delivery/requirements.md          |  545 +++++++++
+ specs/auth-email-delivery/tasks.md                 |  197 ++++
+ specs/auth-email-delivery/traceability.md          |   47 +
+ 29 files changed, 3947 insertions(+), 79 deletions(-)
+```
+
+Cierre automático completo. G1–G4 permanecen pendientes y los ejecuta el
+humano: dominio Resend, DNS, API key en el entorno y envío E2E real.
