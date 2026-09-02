@@ -909,3 +909,155 @@ describe('R7: no-owner deshabilitado y error visible', () => {
     });
   });
 });
+
+describe('R1 (mobile-map-last-position-error-state): rama de error de last', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  });
+
+  it('muestra mensaje y Retry cuando last devuelve error', async () => {
+    mockGetLastPosition.mockResolvedValue({ kind: 'error' });
+
+    await renderMap();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('map-last-error')).toHaveTextContent(
+        'Something went wrong',
+      );
+    });
+    expect(screen.getByTestId('map-last-error').props.selectable).toBe(true);
+    expect(screen.getByTestId('map-last-retry')).toHaveTextContent('Retry');
+    expect(screen.queryByTestId('map-view')).toBeNull();
+    expect(screen.queryByTestId('map-error')).toBeNull();
+  });
+
+  it('Retry llama al refetch de last y recupera el mapa', async () => {
+    mockGetLastPosition
+      .mockResolvedValueOnce({ kind: 'error' })
+      .mockResolvedValue({
+        kind: 'ok',
+        position: makeLastPosition(),
+      });
+
+    await renderMap();
+    await waitFor(() => {
+      expect(screen.getByTestId('map-last-retry')).toBeVisible();
+    });
+
+    fireEvent.press(screen.getByTestId('map-last-retry'));
+
+    await waitFor(() => expect(screen.getByTestId('map-view')).toBeVisible());
+    expect(mockGetLastPosition.mock.calls.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('la rama pinta bg-background y screen-map sigue sin fondo', async () => {
+    mockGetLastPosition.mockResolvedValue({ kind: 'error' });
+
+    await renderMap();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('map-last-error-state')).toBeVisible();
+    });
+    expect(
+      screen.getByTestId('map-last-error-state').props.className,
+    ).toContain('bg-background');
+    expect(screen.getByTestId('screen-map').props.className).not.toContain(
+      'bg-',
+    );
+  });
+});
+
+describe('R2 (mobile-map-last-position-error-state): unauthorized de last', () => {
+  it('comparte la rama de error y dispara el signOut de sesión expirada', async () => {
+    const signOut = jest.fn();
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut,
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({ kind: 'unauthorized' });
+
+    await renderMap();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('map-last-error')).toBeVisible();
+    });
+    expect(signOut).toHaveBeenCalled();
+  });
+});
+
+describe('R3 (mobile-map-last-position-error-state): cobertura total y exclusión mutua', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  });
+
+  it.each<LastPositionState>([
+    { kind: 'unreachable', message: 'network down' },
+    { kind: 'missing-config' },
+  ])(
+    'muestra la rama de error y reintenta con $kind',
+    async (firstState) => {
+      mockGetLastPosition.mockResolvedValueOnce(firstState).mockResolvedValue({
+        kind: 'ok',
+        position: makeLastPosition(),
+      });
+
+      await renderMap();
+      await waitFor(() => {
+        expect(screen.getByTestId('map-last-retry')).toBeVisible();
+      });
+
+      fireEvent.press(screen.getByTestId('map-last-retry'));
+
+      await waitFor(() =>
+        expect(screen.getByTestId('map-view')).toBeVisible(),
+      );
+      expect(mockGetLastPosition.mock.calls.length).toBeGreaterThanOrEqual(2);
+    },
+  );
+
+  it('solo la rama de error de pets renderiza cuando pets cae con last resuelto', async () => {
+    mockListPets
+      .mockResolvedValueOnce({ kind: 'ok', pets: [makePet()] })
+      .mockResolvedValue({ kind: 'unreachable', message: 'network down' });
+    mockGetLastPosition.mockResolvedValue({
+      kind: 'ok',
+      position: makeLastPosition(),
+    });
+    mockSetLostMode.mockResolvedValue({
+      kind: 'ok',
+      pet: makePet({ lostMode: true }),
+    });
+
+    await renderMap();
+    await waitFor(() => expect(screen.getByTestId('map-view')).toBeVisible());
+
+    fireEvent.press(screen.getByTestId('lost-mode-button'));
+
+    await waitFor(() => expect(screen.getByTestId('map-error')).toBeVisible());
+    expect(screen.queryByTestId('map-view')).toBeNull();
+    expect(screen.queryByTestId('map-last-error')).toBeNull();
+  });
+});
+
+describe('R4 (mobile-map-last-position-error-state): unauthorized de pets', () => {
+  it('renderiza la rama de error de pets y dispara signOut', async () => {
+    const signOut = jest.fn();
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut,
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'unauthorized' });
+
+    await renderMap();
+
+    await waitFor(() => expect(screen.getByTestId('map-error')).toBeVisible());
+    expect(screen.getByTestId('map-retry')).toBeVisible();
+    expect(signOut).toHaveBeenCalled();
+    expect(mockGetLastPosition).not.toHaveBeenCalled();
+  });
+});
