@@ -997,7 +997,7 @@
   {
     "id": 56,
     "name": "mobile-map-last-position-error-state",
-    "status": "spec_ready",
+    "status": "in_progress",
     "priority": "P2",
     "description": "src/app/(tabs)/map.tsx no tiene rama para last.data.kind === 'error' ni para 'unauthorized'. LastPositionState declara seis kinds en src/api/positions.ts:4 (ok, no-tracking, unauthorized, error, unreachable, missing-config) y la pantalla solo renderiza cuatro ramas: isLoading, error de pets, pets ok con cero mascotas, last no-tracking, y last ok. Si pets resuelve ok con al menos una mascota y getLastPosition devuelve error (un 500 de GET /pets/:id/positions/last), ninguna rama renderiza: la pantalla queda vacia, sin mensaje y sin boton de reintentar. Los kinds unreachable y missing-config si quedan cubiertos de rebote porque pets comparte esos kinds y su rama de error si pinta; error y unauthorized de last no, porque pets puede haber resuelto ok mientras last falla. El agujero es preexistente pero estaba invisible: hasta el fix del ancestro opaco (#54 fix 1, commit 38168cf) la pantalla se veia en blanco de todos modos. Ahora que el contenedor ya no declara bg-background, el vacio se pinta sobre el fondo del contenedor de escena de React Navigation, que usa DefaultTheme claro porque la app no envuelve nada en ThemeProvider, asi que el usuario ve blanco incluso en tema oscuro. Detectado el 2026-09-01 por el reviewer durante la revision del fix 1 de #54 (observacion 1 de progress/review_android-map-never-ready_fix1.md), no por un reporte de usuario. La rama de error de pets (map.tsx, testIDs map-error y map-retry) ya establece el patron a seguir: mensaje mas boton Retry que llama al refetch correspondiente.",
     "acceptance_criteria": [

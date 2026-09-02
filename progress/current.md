@@ -22,3 +22,15 @@
   dev build de Android con Fast Refresh.
 - **Gate humano pendiente**: casilla §Aprobación de requirements.md con
   commit propio en esta branch.
+
+### #56 — aprobación recogida y handoff (2026-09-02)
+
+- feature: mobile-map-last-position-error-state — `in_progress`
+- inicio: 2026-09-02 (tras aprobación humana `7b0c5e5`)
+- Frontmatter de los 4 ficheros pasado a `approved` por el leader (octava vez
+  que la casilla se firma con los ficheros en `draft`).
+- plan: Codex CLI implementa R1–R5 con TDD (1 commit de tests rojos → 1 de
+  producción en `map.tsx` → trazabilidad). Handoff en
+  `progress/handoff_mobile-map-last-position-error-state.md`. Sin push de
+  Codex; leader pushea tras el veredicto del reviewer. Sin smoke humano
+  obligatorio (solo-JS).
