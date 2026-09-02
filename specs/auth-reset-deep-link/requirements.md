@@ -1,6 +1,6 @@
 ---
 feature: "auth-reset-deep-link"
-status: spec_ready   # draft | spec_ready | approved
+status: approved   # draft | spec_ready | approved
 tags: [harness, spec, backend, mobile, security]
 ---
 
