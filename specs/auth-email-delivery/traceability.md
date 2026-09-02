@@ -21,7 +21,7 @@ Rutas de test relativas a `backend-pet-tracker/` (`src/…` para unitarios,
 | R8 | `src/modules/auth/infrastructure/guards/email-rate-limit.guard.spec.ts::R8: el cuarto forgot-password del mismo email en una hora responde 429`; `test/auth-email-delivery.e2e-spec.ts::R8: forgot-password devuelve 429 tras agotar el cupo del email` | rojo `f63909b` (`test(auth-email-delivery): add rate test (R8)`); verde `7b534f9` (`feat(auth-email-delivery): limit reset (R8)`) |
 | R9 | `src/modules/auth/infrastructure/guards/email-rate-limit.guard.spec.ts::R9: la undecima alta desde la misma IP en una hora responde 429` | rojo `27cbacd` (`test(auth-email-delivery): add IP test (R9)`); verde `f8f8097` (`feat(auth-email-delivery): limit signup (R9)`) |
 | R10 | `src/modules/auth/infrastructure/auth.controller.spec.ts::R10 (auth-email-delivery): el 429 del rate limit no revela si la cuenta existe` | rojo `185dee4` (`test(auth-email-delivery): add privacy test (R10)`); verde `7bd3d48` (`fix(auth-email-delivery): hide rate state (R10)`) |
-| R11 | `src/modules/auth/infrastructure/email/resend-client.spec.ts::R11: RESEND_API_KEY vive solo en el entorno, nunca en el repo` | pendiente |
+| R11 | `src/modules/auth/infrastructure/email/resend-client.spec.ts::R11: RESEND_API_KEY vive solo en el entorno, nunca en el repo` | rojo `d8f39f7` (`test(auth-email-delivery): add env test (R11)`); verde `71a3be0` (`docs(auth-email-delivery): secure env (R11)`) |
 | R12 | `test/auth-email-delivery.e2e-spec.ts::R12: con EMAIL_ENABLED por defecto los flujos de #44 siguen intactos` | pendiente |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
