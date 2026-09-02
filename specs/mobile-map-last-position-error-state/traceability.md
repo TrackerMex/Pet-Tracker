@@ -8,11 +8,11 @@ tags: [harness, spec, mobile]
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | pendiente — `src/app/(tabs)/__tests__/map.test.tsx::R1 (mobile-map-last-position-error-state): rama de error de last` (3 its: mensaje+Retry, refetch recupera el mapa, pin `bg-background`/§10) | pendiente |
-| R2 | pendiente — `map.test.tsx::R2 (mobile-map-last-position-error-state): unauthorized de last` | pendiente |
-| R3 | pendiente — (a) sin test de runtime: switch exhaustivo sin `default` con retorno `: boolean` en `map.tsx` + `bun run typecheck` verde, lo valida el reviewer leyendo el código; (b) `map.test.tsx::R3 (…): it.each unreachable/missing-config`; (c) `map.test.tsx::R3 (…): exclusión mutua con pets caído` | pendiente |
-| R4 | pendiente — `map.test.tsx::R4 (mobile-map-last-position-error-state): unauthorized de pets` | pendiente |
-| R5 | pendiente — sin test propio: comandos y `git diff --stat` contra la allowlist registrados en `progress/impl_mobile-map-last-position-error-state.md` | pendiente |
+| R1 | `src/app/(tabs)/__tests__/map.test.tsx::R1 (mobile-map-last-position-error-state): rama de error de last::muestra mensaje y Retry cuando last devuelve error`; `::Retry llama al refetch de last y recupera el mapa`; `::la rama pinta bg-background y screen-map sigue sin fondo` | `83a1602 test(map): red coverage for last position error kinds (R1-R4)` → `dbde188 fix(map): render error branch for last position kinds (R1-R4)` |
+| R2 | `src/app/(tabs)/__tests__/map.test.tsx::R2 (mobile-map-last-position-error-state): unauthorized de last::comparte la rama de error y dispara el signOut de sesión expirada` | `83a1602 test(map): red coverage for last position error kinds (R1-R4)` → `dbde188 fix(map): render error branch for last position kinds (R1-R4)` |
+| R3 | (a) sin test de runtime: `src/app/(tabs)/map.tsx::isLastError` e `::isPetsError`, switches exhaustivos sin `default`, retorno `: boolean` + `bun run typecheck` verde; (b) `src/app/(tabs)/__tests__/map.test.tsx::R3 (mobile-map-last-position-error-state): cobertura total y exclusión mutua::muestra la rama de error y reintenta con unreachable`; `::muestra la rama de error y reintenta con missing-config`; (c) `::solo la rama de error de pets renderiza cuando pets cae con last resuelto` | `83a1602 test(map): red coverage for last position error kinds (R1-R4)` → `dbde188 fix(map): render error branch for last position kinds (R1-R4)` |
+| R4 | `src/app/(tabs)/__tests__/map.test.tsx::R4 (mobile-map-last-position-error-state): unauthorized de pets::renderiza la rama de error de pets y dispara signOut` | `83a1602 test(map): red coverage for last position error kinds (R1-R4)` → `dbde188 fix(map): render error branch for last position kinds (R1-R4)` |
+| R5 | sin test propio: `progress/impl_mobile-map-last-position-error-state.md::Verificación R5` registra test dirigido, typecheck, lint, `./init.sh`, grep-clean, allowlist y `git diff --stat main...HEAD` | `83a1602 test(map): red coverage for last position error kinds (R1-R4)` → `dbde188 fix(map): render error branch for last position kinds (R1-R4)`; cierre documental en `docs(map): traceability y verificación (R5)` |
 
 Rutas relativas a `mobile-pet-tracker/` salvo las que empiezan por `specs/`
 o `progress/`.
