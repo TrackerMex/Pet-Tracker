@@ -33,7 +33,7 @@ export class ResendClient {
         scope: RESEND_SCOPE,
         event: delivery.event,
         userId: delivery.userId,
-        message: this.errorMessage(error),
+        message: this.sanitize(this.errorMessage(error), delivery),
       });
     });
 
@@ -61,14 +61,26 @@ export class ResendClient {
       signal: AbortSignal.timeout(RESEND_TIMEOUT_MS),
     });
 
-    if (response.ok) return;
+    if (response.ok) {
+      const payload = await this.responsePayload(response);
+      this.logger.log({
+        scope: RESEND_SCOPE,
+        event: delivery.event,
+        userId: delivery.userId,
+        id: this.responseId(payload),
+      });
+      return;
+    }
 
     this.logger.error({
       scope: RESEND_SCOPE,
       event: delivery.event,
       userId: delivery.userId,
       status: response.status,
-      message: await this.providerMessage(response),
+      message: this.sanitize(
+        await this.providerMessage(response),
+        delivery,
+      ),
     });
   }
 
@@ -90,7 +102,39 @@ export class ResendClient {
     return `Resend request failed with status ${response.status}`;
   }
 
+  private async responsePayload(response: Response): Promise<unknown> {
+    try {
+      return await response.json();
+    } catch {
+      return undefined;
+    }
+  }
+
+  private responseId(payload: unknown): string | undefined {
+    if (
+      typeof payload === 'object' &&
+      payload !== null &&
+      'id' in payload &&
+      typeof payload.id === 'string'
+    ) {
+      return payload.id;
+    }
+    return undefined;
+  }
+
   private errorMessage(error: unknown): string {
     return error instanceof Error ? error.message : 'Unknown Resend failure';
+  }
+
+  private sanitize(message: string, delivery: ResendDelivery): string {
+    const token = delivery.text.split(/\r?\n\r?\n/)[1]?.trim();
+    const secrets = [this.apiKey, delivery.text, token]
+      .filter((value): value is string => Boolean(value))
+      .sort((left, right) => right.length - left.length);
+
+    return secrets.reduce(
+      (safe, secret) => safe.replaceAll(secret, '[REDACTED]'),
+      message,
+    );
   }
 }
