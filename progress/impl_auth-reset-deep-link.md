@@ -87,3 +87,33 @@ codifica el token. El correo mantiene el token pelado como segundo párrafo,
 añade la URL en uno posterior y continúa limitado a texto plano. En el describe
 R1 de #58 solo se eliminó el assert que prohibía `http`; las demás ediciones de
 ese fichero pasan el nuevo argumento del constructor.
+
+### R2 — rojo
+
+```text
+$ pnpm -C backend-pet-tracker exec jest src/modules/auth/infrastructure/email/console-password-reset-sender.spec.ts --runInBand
+FAIL src/modules/auth/infrastructure/email/console-password-reset-sender.spec.ts
+  ● R2 (auth-reset-deep-link): con RESET_LINK_HOST el log incluye resetUrl
+    › conserva los cinco campos existentes y agrega la URL normalizada
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 0
+
+      Object {
+        "email": "ada@example.com",
+        "event": "auth.password_reset.issued",
+        "expiresAt": "2026-08-28T21:00:00.000Z",
+    -   "resetUrl": "https://reset.example.test/reset-password?token=kQ8s0Zr4Vv1nT7yQ2bXpL9dW3fH6jM0aC5eR8uY1oI4",
+        "token": "kQ8s0Zr4Vv1nT7yQ2bXpL9dW3fH6jM0aC5eR8uY1oI4",
+        "userId": "0198a1f0-3d5c-7f21-b0a1-6f1c9e2d4b77",
+      }
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 5 passed, 6 total
+Snapshots:   0 total
+Time:        0.947 s, estimated 1 s
+Ran all test suites matching src/modules/auth/infrastructure/email/console-password-reset-sender.spec.ts.
+exit 1
+```
