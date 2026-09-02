@@ -698,3 +698,29 @@ exit 0
 
 Los tres GET respondieron 404 sin consumir el token; el POST posterior fue
 200 y el segundo canje del mismo token fue rechazado con 400.
+
+### R12 — rojo
+
+```text
+$ cd mobile-pet-tracker && bun run test --runInBand src/__tests__/hosting-artifacts.test.ts
+FAIL src/__tests__/hosting-artifacts.test.ts
+  R9: assetlinks.json delega el dominio en el paquete Android de la app
+    ✓ 1 test
+  R10: la pagina fallback no consume el token y ofrece abrir la app
+    ✓ 1 test
+  R12: la configuracion y los gates manuales quedan documentados
+    ✕ declara RESET_LINK_HOST vacio ... en .env.example
+    ✕ declara RESET_LINK_HOST vacio ... en mobile-pet-tracker/.env.example
+    ✕ incluye RESET_LINK_HOST en la tabla de variables
+    ✕ documenta G1-G4 y el comando keytool en la seccion Feature 59
+    ✕ anade hosting al mapa de navegacion del repositorio
+
+Test Suites: 1 failed, 1 total
+Tests:       5 failed, 2 passed, 7 total
+Snapshots:   0 total
+Time:        2.167 s
+exit 1
+```
+
+El rojo cubre los cinco artefactos de cierre pendientes: los dos ejemplos de
+entorno, la tabla de variables, la guía de gates humanos y el mapa del repo.
