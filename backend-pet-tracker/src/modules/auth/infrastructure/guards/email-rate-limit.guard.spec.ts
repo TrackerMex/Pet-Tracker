@@ -7,10 +7,11 @@ import {
 } from './email-rate-limit.guard';
 
 function handlerNamed(name: 'forgotPassword' | 'register'): () => void {
-  return {
-    forgotPassword() {},
-    register() {},
-  }[name];
+  const handlers = {
+    forgotPassword: () => undefined,
+    register: () => undefined,
+  };
+  return handlers[name];
 }
 
 function contextFor(

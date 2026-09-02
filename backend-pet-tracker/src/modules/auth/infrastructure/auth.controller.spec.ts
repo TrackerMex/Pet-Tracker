@@ -626,12 +626,22 @@ describe('R10: la respuesta de forgot-password nunca incluye el token', () => {
 });
 
 describe('R10 (auth-email-delivery): el 429 del rate limit no revela si la cuenta existe', () => {
+  function controllerHandler(methodName: keyof AuthController): () => void {
+    const handler: unknown = Reflect.get(AuthController.prototype, methodName);
+
+    if (typeof handler !== 'function') {
+      throw new Error(`AuthController.${methodName} no es un handler`);
+    }
+
+    return handler as () => void;
+  }
+
   function guardContext(
     methodName: keyof AuthController,
     body: unknown,
   ): ExecutionContext {
     return {
-      getHandler: () => AuthController.prototype[methodName],
+      getHandler: () => controllerHandler(methodName),
       switchToHttp: () =>
         ({
           getRequest: () => ({ body, ip: '203.0.113.30' }),
@@ -642,7 +652,7 @@ describe('R10 (auth-email-delivery): el 429 del rate limit no revela si la cuent
   function guardsOf(methodName: keyof AuthController): unknown[] {
     const metadata: unknown = Reflect.getMetadata(
       '__guards__',
-      AuthController.prototype[methodName],
+      controllerHandler(methodName),
     );
 
     return Array.isArray(metadata) ? metadata : [];

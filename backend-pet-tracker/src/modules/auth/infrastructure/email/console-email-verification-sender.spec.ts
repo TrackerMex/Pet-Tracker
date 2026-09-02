@@ -10,6 +10,7 @@ const message: EmailVerificationMessage = {
 };
 
 function buildSender(_emailEnabled: string | undefined) {
+  void _emailEnabled;
   return new ConsoleEmailVerificationSender();
 }
 

@@ -56,16 +56,19 @@ describe('R2: el emisor de verificacion publica su token en POST https://api.res
       },
     });
 
-    const body = JSON.parse(String(request.init?.body)) as Record<
-      string,
-      unknown
-    >;
-    expect(body).toEqual({
-      from,
-      to: message.email,
-      subject: EMAIL_VERIFICATION_SUBJECT,
-      text: expect.any(String),
-    });
+    const rawBody = request.init?.body;
+    expect(typeof rawBody).toBe('string');
+    if (typeof rawBody !== 'string') {
+      throw new Error('Resend request body no es texto');
+    }
+
+    const parsedBody: unknown = JSON.parse(rawBody);
+    const body = parsedBody as Record<string, unknown>;
+    expect(Object.keys(body).sort()).toEqual(['from', 'subject', 'text', 'to']);
+    expect(body.from).toBe(from);
+    expect(body.to).toBe(message.email);
+    expect(body.subject).toBe(EMAIL_VERIFICATION_SUBJECT);
+    expect(typeof body.text).toBe('string');
     expect(body.text).toEqual(expect.stringContaining(message.token));
     expect(body.text).toEqual(
       expect.stringContaining(message.expiresAt.toISOString()),
