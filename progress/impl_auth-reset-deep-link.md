@@ -346,3 +346,30 @@ La página autocontenida procesa el query exclusivamente con
 `URLSearchParams`, muestra el token como texto copiable y construye el scheme
 con `encodeURIComponent`. No contiene solicitudes, formularios remotos ni
 recursos externos; también ofrece un estado local seguro si falta el token.
+
+### R4 — rojo
+
+```text
+$ cd mobile-pet-tracker && bun run test --runInBand app.config.test.ts
+FAIL ./app.config.test.ts
+  R4 (auth-reset-deep-link): RESET_LINK_HOST declara el intent filter de App Links
+    ✕ preserva app.json e inyecta un unico filtro https verificado
+  R4 (auth-reset-deep-link): sin RESET_LINK_HOST avisa y no declara intent filters
+    ✕ acepta un host ausente sin lanzar
+    ✕ acepta un host vacío sin lanzar
+    ✕ acepta un host solo espacios sin lanzar
+
+  ● Expected: [{"action":"VIEW","autoVerify":true,"category":["BROWSABLE","DEFAULT"],"data":[{"host":"reset.example.test","pathPrefix":"/reset-password","scheme":"https"}]}]
+    Received: undefined
+
+  ● Los tres casos sin host esperaban 1 llamada a console.warn
+    Received number of calls: 0
+
+Test Suites: 1 failed, 1 total
+Tests:       4 failed, 5 passed, 9 total
+Snapshots:   0 total
+Time:        1.628 s
+Ran all test suites matching /app.config.test.ts/i.
+error: script "test" exited with code 1
+exit 1
+```
