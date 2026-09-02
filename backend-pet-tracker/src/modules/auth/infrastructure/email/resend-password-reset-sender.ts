@@ -3,11 +3,15 @@ import {
   PasswordResetMessage,
   PasswordResetSender,
 } from '@/modules/auth/domain/ports/password-reset-sender';
+import { buildPasswordResetUrl } from './password-reset-link';
 import { PASSWORD_RESET_SUBJECT, ResendClient } from './resend-client';
 
 @Injectable()
 export class ResendPasswordResetSender implements PasswordResetSender {
-  constructor(private readonly client: ResendClient) {}
+  constructor(
+    private readonly client: ResendClient,
+    private readonly resetLinkHost = '',
+  ) {}
 
   send(message: PasswordResetMessage): Promise<void> {
     return this.client.deliver({
@@ -19,6 +23,10 @@ export class ResendPasswordResetSender implements PasswordResetSender {
         'Tu código para restablecer la contraseña de Pet Tracker es:',
         '',
         message.token,
+        '',
+        'O toca este enlace en tu teléfono para abrir la app y restablecerla:',
+        '',
+        buildPasswordResetUrl(this.resetLinkHost, message.token),
         '',
         `Caduca el ${message.expiresAt.toISOString()}. Si no has pedido este cambio, ignora este correo.`,
       ].join('\n'),

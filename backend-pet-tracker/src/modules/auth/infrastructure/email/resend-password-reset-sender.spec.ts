@@ -41,7 +41,7 @@ describe('R1: el emisor de reset publica el token en POST https://api.resend.com
       expiresAt: new Date('2026-09-02T18:30:00.000Z'),
     };
     const client = new ResendClient(apiKey, from, successfulFetch(calls));
-    const sender = new ResendPasswordResetSender(client);
+    const sender = new ResendPasswordResetSender(client, 'reset.example.test');
 
     await sender.send(message);
     await client.whenIdle();
@@ -75,7 +75,6 @@ describe('R1: el emisor de reset publica el token en POST https://api.resend.com
       expect.stringContaining(message.expiresAt.toISOString()),
     );
     expect(body).not.toHaveProperty('html');
-    expect(body.text).not.toEqual(expect.stringContaining('http'));
   });
 });
 
@@ -145,7 +144,10 @@ describe('R7: el emisor de reset no escribe el token ni la API key en ningun log
       successfulFetch([]),
     );
 
-    await new ResendPasswordResetSender(successClient).send(message);
+    await new ResendPasswordResetSender(
+      successClient,
+      'reset.example.test',
+    ).send(message);
     await successClient.whenIdle();
 
     expect(log).toHaveBeenCalledWith({
@@ -162,7 +164,10 @@ describe('R7: el emisor de reset no escribe el token ni la API key en ningun log
         new Error(`provider echoed ${message.token} and ${apiKey}`),
       ),
     );
-    await new ResendPasswordResetSender(failureClient).send(message);
+    await new ResendPasswordResetSender(
+      failureClient,
+      'reset.example.test',
+    ).send(message);
     await failureClient.whenIdle();
 
     const serializedLogs = JSON.stringify([
