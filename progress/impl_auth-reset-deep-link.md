@@ -137,7 +137,7 @@ El adaptador de consola acepta el host opcional y añade `resetUrl` mediante el
 mismo compositor de R1. Con `undefined`, `null` o cadena vacía conserva
 exactamente los cinco campos de #44 y no emite advertencias.
 
-### R3 — rojo
+### R3 — rojo (`d433535`)
 
 ```text
 $ pnpm -C backend-pet-tracker exec jest src/modules/auth/auth.module.spec.ts --runInBand
@@ -229,3 +229,37 @@ debe aprobar una de estas correcciones de spec:
    (corrección mínima recomendada), o
 2. redefinir R3 para permitir explícitamente un modo de compatibilidad del
    constructor cuando se omite el segundo argumento.
+
+## Reanudación tras la Adenda 1
+
+El leader confirmó el bloqueo y autorizó por escrito la opción 1 en la
+Adenda 1 de `progress/handoff_auth-reset-deep-link.md`: pasar exclusivamente
+`'reset.test'` como segundo argumento en las dos construcciones heredadas. La
+opción de compatibilidad quedó rechazada. No se editó la spec.
+
+### R3 — verde (`0a96192`)
+
+```text
+$ pnpm -C backend-pet-tracker exec jest src/modules/auth/auth.module.spec.ts src/modules/auth/infrastructure/auth.controller.spec.ts src/modules/auth/infrastructure/email/password-reset-link.spec.ts src/modules/auth/infrastructure/email/resend-password-reset-sender.spec.ts src/modules/auth/infrastructure/email/resend-email-verification-sender.spec.ts src/modules/auth/infrastructure/email/resend-client.spec.ts src/modules/auth/infrastructure/email/console-password-reset-sender.spec.ts src/modules/auth/infrastructure/email/console-email-verification-sender.spec.ts src/modules/auth/infrastructure/guards/email-rate-limit.guard.spec.ts --runInBand
+Test Suites: 9 passed, 9 total
+Tests:       70 passed, 70 total
+Snapshots:   0 total
+Time:        2.931 s, estimated 3 s
+exit 0
+
+$ pnpm -C backend-pet-tracker exec tsc --noEmit
+exit 0
+
+$ pnpm -C backend-pet-tracker run test:e2e -- --runInBand test/auth-email-delivery.e2e-spec.ts
+Test Suites: 1 passed, 1 total
+Tests:       3 passed, 3 total
+Snapshots:   0 total
+Time:        2.502 s, estimated 3 s
+exit 0
+```
+
+El constructor implementa el fail-fast literal para host ausente, vacío o de
+solo espacios. El factory pasa `''` al adaptador Resend y `null` al de consola.
+Las dos ediciones mecánicas de la Adenda 1 fueron incluidas en el mismo commit
+verde y no cambiaron ningún otro contenido de esos ficheros. El typecheck y
+las suites unitarias/e2e heredadas de #58 quedan verdes.
