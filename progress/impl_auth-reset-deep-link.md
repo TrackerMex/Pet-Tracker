@@ -136,3 +136,32 @@ exit 0
 El adaptador de consola acepta el host opcional y añade `resetUrl` mediante el
 mismo compositor de R1. Con `undefined`, `null` o cadena vacía conserva
 exactamente los cinco campos de #44 y no emite advertencias.
+
+### R3 — rojo
+
+```text
+$ pnpm -C backend-pet-tracker exec jest src/modules/auth/auth.module.spec.ts --runInBand
+FAIL src/modules/auth/auth.module.spec.ts
+  ● R3 (auth-reset-deep-link): EMAIL_ENABLED=true sin RESET_LINK_HOST aborta el arranque
+    › rechaza la compilacion cuando la variable esta ausente
+
+    expect(received).rejects.toThrow()
+    Received promise resolved instead of rejected
+
+  ● R3 (auth-reset-deep-link): EMAIL_ENABLED=true sin RESET_LINK_HOST aborta el arranque
+    › rechaza la compilacion cuando la variable esta vacia
+
+    expect(received).rejects.toThrow()
+    Received promise resolved instead of rejected
+
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 5 passed, 7 total
+Snapshots:   0 total
+Time:        1.537 s, estimated 2 s
+Ran all test suites matching src/modules/auth/auth.module.spec.ts.
+exit 1
+```
+
+Jest imprimió además la serialización interna completa de los dos módulos de
+Nest resueltos; se omite por longitud. En ambos casos la causa observable fue
+la misma: la compilación resolvió cuando debía rechazar la configuración.

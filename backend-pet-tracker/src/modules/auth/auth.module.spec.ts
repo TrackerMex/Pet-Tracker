@@ -154,3 +154,23 @@ describe('R4 (auth-email-delivery): EMAIL_ENABLED=true sin RESEND_API_KEY aborta
     await expect(compilation).rejects.toThrow(MissingResendConfigError);
   });
 });
+
+describe('R3 (auth-reset-deep-link): EMAIL_ENABLED=true sin RESET_LINK_HOST aborta el arranque', () => {
+  it.each([
+    ['ausente', undefined],
+    ['vacia', ''],
+  ])('rechaza la compilacion cuando la variable esta %s', async (_, host) => {
+    const compilation = compileAuthModule({
+      EMAIL_ENABLED: 'true',
+      JWT_SECRET: 'test-jwt-secret',
+      RESEND_API_KEY: 'api-key-for-reset-link-r3',
+      RESEND_FROM: 'sender@example.com',
+      RESET_LINK_HOST: host,
+    });
+
+    await expect(compilation).rejects.toThrow(MissingResendConfigError);
+    await expect(compilation).rejects.toThrow(
+      'Missing Resend configuration: RESET_LINK_HOST',
+    );
+  });
+});
