@@ -181,3 +181,31 @@ exit 0
 ```
 
 La corrida conjunta posterior de R1 y R5 pasó 2 suites y 4 tests.
+
+### R2 — rojo
+
+```text
+$ pnpm -C backend-pet-tracker exec jest src/modules/auth/infrastructure/email/resend-email-verification-sender.spec.ts --runInBand
+FAIL src/modules/auth/infrastructure/email/resend-email-verification-sender.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module './resend-email-verification-sender' from 'modules/auth/infrastructure/email/resend-email-verification-sender.spec.ts'
+
+    However, Jest was able to find:
+    \t'./resend-email-verification-sender.spec.ts'
+
+       5 |   ResendClient,
+       6 | } from './resend-client';
+    >  7 | import { ResendEmailVerificationSender } from './resend-email-verification-sender';
+         | ^
+
+      at Resolver._throwModNotFoundError (../node_modules/.pnpm/jest-resolve@30.4.1/node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (modules/auth/infrastructure/email/resend-email-verification-sender.spec.ts:7:1)
+
+Test Suites: 1 failed, 1 total
+Tests:       0 total
+Snapshots:   0 total
+Time:        1.905 s
+Ran all test suites matching src/modules/auth/infrastructure/email/resend-email-verification-sender.spec.ts.
+exit 1
+```
