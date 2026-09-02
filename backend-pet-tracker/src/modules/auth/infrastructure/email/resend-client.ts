@@ -6,6 +6,8 @@ export const RESEND_SCOPE = 'auth-email-delivery';
 
 export const PASSWORD_RESET_SUBJECT =
   'Restablece tu contraseña de Pet Tracker';
+export const EMAIL_VERIFICATION_SUBJECT =
+  'Verifica tu email de Pet Tracker';
 
 export interface ResendDelivery {
   event: string;
