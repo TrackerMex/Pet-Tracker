@@ -25,7 +25,7 @@ function successfulFetch(calls: CapturedRequest[]): typeof fetch {
 }
 
 function rejectingFetch(error: Error): typeof fetch {
-  return (() => Promise.reject(error)) as unknown as typeof fetch;
+  return () => Promise.reject(error);
 }
 
 describe('R1: el emisor de reset publica el token en POST https://api.resend.com/emails', () => {

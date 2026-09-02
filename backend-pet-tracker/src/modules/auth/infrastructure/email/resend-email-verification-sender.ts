@@ -6,9 +6,7 @@ import {
 import { EMAIL_VERIFICATION_SUBJECT, ResendClient } from './resend-client';
 
 @Injectable()
-export class ResendEmailVerificationSender
-  implements EmailVerificationSender
-{
+export class ResendEmailVerificationSender implements EmailVerificationSender {
   constructor(private readonly client: ResendClient) {}
 
   send(message: EmailVerificationMessage): Promise<void> {

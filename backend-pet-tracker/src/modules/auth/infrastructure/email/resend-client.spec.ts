@@ -12,7 +12,7 @@ const delivery: ResendDelivery = {
 };
 
 function fetchThatRejects(error: Error): typeof fetch {
-  return (() => Promise.reject(error)) as unknown as typeof fetch;
+  return () => Promise.reject(error);
 }
 
 function fetchWithResponse(

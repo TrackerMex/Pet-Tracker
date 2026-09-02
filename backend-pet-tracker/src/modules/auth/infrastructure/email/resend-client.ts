@@ -4,10 +4,8 @@ export const RESEND_ENDPOINT = 'https://api.resend.com/emails';
 export const RESEND_TIMEOUT_MS = 10_000;
 export const RESEND_SCOPE = 'auth-email-delivery';
 
-export const PASSWORD_RESET_SUBJECT =
-  'Restablece tu contraseña de Pet Tracker';
-export const EMAIL_VERIFICATION_SUBJECT =
-  'Verifica tu email de Pet Tracker';
+export const PASSWORD_RESET_SUBJECT = 'Restablece tu contraseña de Pet Tracker';
+export const EMAIL_VERIFICATION_SUBJECT = 'Verifica tu email de Pet Tracker';
 
 export class MissingResendConfigError extends Error {
   constructor(missingKeys: string[]) {
@@ -92,10 +90,7 @@ export class ResendClient {
       event: delivery.event,
       userId: delivery.userId,
       status: response.status,
-      message: this.sanitize(
-        await this.providerMessage(response),
-        delivery,
-      ),
+      message: this.sanitize(await this.providerMessage(response), delivery),
     });
   }
 

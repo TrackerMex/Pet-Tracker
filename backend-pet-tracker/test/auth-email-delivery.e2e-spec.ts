@@ -39,7 +39,7 @@ describe('Auth email delivery (e2e)', () => {
     const client = new ResendClient(
       'api-key-for-r6',
       'sender@example.com',
-      fetchDouble as unknown as typeof fetch,
+      fetchDouble,
     );
     let app: INestApplication<App>;
     let db: NodePgDatabase;

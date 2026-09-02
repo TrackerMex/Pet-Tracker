@@ -465,7 +465,7 @@ describe('R6 (auth-email-delivery): forgot-password responde 200 identico aunque
     const client = new ResendClient(
       'api-key-for-r6',
       'sender@example.com',
-      fetchDouble as unknown as typeof fetch,
+      fetchDouble,
     );
     const sender = new ResendPasswordResetSender(client);
     const existing = buildForgotPasswordDouble(async () => {
