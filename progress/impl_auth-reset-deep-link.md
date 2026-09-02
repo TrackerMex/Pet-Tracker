@@ -165,3 +165,67 @@ exit 1
 Jest imprimió además la serialización interna completa de los dos módulos de
 Nest resueltos; se omite por longitud. En ambos casos la causa observable fue
 la misma: la compilación resolvió cuando debía rechazar la configuración.
+
+## Bloqueo de spec en R3
+
+Se intentó la implementación literal de R3 dentro de la allowlist:
+
+1. `ResendPasswordResetSender(client, resetLinkHost)` valida el host en su
+   constructor y lanza `MissingResendConfigError(['RESET_LINK_HOST'])` si está
+   vacío.
+2. El factory de `PASSWORD_RESET_SENDER` pasa `config.get<string>(
+   'RESET_LINK_HOST') ?? ''` a Resend y `... ?? null` a consola.
+3. El describe R3 de #58 recibe `RESET_LINK_HOST` en su doble de config, la
+   única edición compartida que la spec autoriza para ese requisito.
+
+La suite objetivo quedó verde:
+
+```text
+$ pnpm -C backend-pet-tracker exec jest src/modules/auth/auth.module.spec.ts src/modules/auth/infrastructure/email/password-reset-link.spec.ts src/modules/auth/infrastructure/email/resend-password-reset-sender.spec.ts src/modules/auth/infrastructure/email/console-password-reset-sender.spec.ts --runInBand
+Test Suites: 4 passed, 4 total
+Tests:       18 passed, 18 total
+Snapshots:   0 total
+Time:        1.835 s, estimated 3 s
+exit 0
+```
+
+Sin embargo, el typecheck obligatorio de R12 descubrió dos consumidores
+preexistentes que llaman al constructor con un solo argumento:
+
+```text
+$ pnpm -C backend-pet-tracker exec tsc --noEmit
+src/modules/auth/infrastructure/auth.controller.spec.ts(470,20): error TS2554: Expected 2 arguments, but got 1.
+test/auth-email-delivery.e2e-spec.ts(56,19): error TS2554: Expected 2 arguments, but got 1.
+exit 2
+```
+
+El segundo caso contradice además el §Contexto fijo de `requirements.md`, que
+afirma que `test/auth-email-delivery.e2e-spec.ts` «no se ve afectado»: ese e2e
+reemplaza `PASSWORD_RESET_SENDER` con
+`new ResendPasswordResetSender(client)`, por lo que sí queda afectado. El
+unitario de `auth.controller.spec.ts` hace la misma construcción.
+
+R12 no incluye ninguno de esos dos ficheros en la allowlist y prohíbe tocar
+nada más de #58 fuera de las excepciones enumeradas. No existe una
+implementación que cumpla simultáneamente estas tres condiciones:
+
+- el constructor aborta si `resetLinkHost` está ausente o vacío (R3);
+- las dos llamadas existentes sin host siguen compilando y ejecutándose;
+- esos dos ficheros no se editan (R12).
+
+Dar un default, tolerar `undefined` solo cuando se omite el argumento o saltar
+la URL en ese camino haría que una construcción de Resend sin
+`RESET_LINK_HOST` no fallara, contradiciendo el fail-fast explícito de R3 y
+D3. Validar en el factory en vez del constructor contradice también el origen
+del error fijado por R3.
+
+De acuerdo con la orden del handoff, se retiró por completo el intento de
+implementación verde no commiteado, no se editó ningún documento de `specs/`
+y se detuvo el trabajo en el commit rojo de R3. Para desbloquear, el humano
+debe aprobar una de estas correcciones de spec:
+
+1. ampliar la allowlist para pasar un host de prueba en
+   `auth.controller.spec.ts` y `test/auth-email-delivery.e2e-spec.ts`
+   (corrección mínima recomendada), o
+2. redefinir R3 para permitir explícitamente un modo de compatibilidad del
+   constructor cuando se omite el segundo argumento.
