@@ -263,3 +263,23 @@ solo espacios. El factory pasa `''` al adaptador Resend y `null` al de consola.
 Las dos ediciones mecánicas de la Adenda 1 fueron incluidas en el mismo commit
 verde y no cambiaron ningún otro contenido de esos ficheros. El typecheck y
 las suites unitarias/e2e heredadas de #58 quedan verdes.
+
+### R9 — rojo
+
+```text
+$ cd mobile-pet-tracker && bun run test --runInBand src/__tests__/hosting-artifacts.test.ts
+FAIL src/__tests__/hosting-artifacts.test.ts
+  R9: assetlinks.json delega el dominio en el paquete Android de la app
+    ✕ publica un unico statement para el package y fingerprint esperados
+
+  ● ENOENT: no such file or directory, open
+    '/home/claude/sites/Pet-Tracker/hosting/.well-known/assetlinks.json'
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 1 total
+Snapshots:   0 total
+Time:        1.878 s
+Ran all test suites matching /src\\/__tests__\\/hosting-artifacts.test.ts/i.
+error: script "test" exited with code 1
+exit 1
+```
