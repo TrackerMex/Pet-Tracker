@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import {
   BadRequestException,
   ConflictException,
+  ExecutionContext,
   HttpException,
   Logger,
   UnauthorizedException,
@@ -26,6 +27,10 @@ import {
   InvalidCredentialsError,
 } from '@/modules/auth/domain/errors/user.errors';
 import { ResendClient } from './email/resend-client';
+import {
+  FORGOT_PASSWORD_MAX_PER_EMAIL,
+  EmailRateLimitGuard,
+} from './guards/email-rate-limit.guard';
 import { ResendPasswordResetSender } from './email/resend-password-reset-sender';
 import { AuthController } from './auth.controller';
 
@@ -617,5 +622,116 @@ describe('R10: la respuesta de forgot-password nunca incluye el token', () => {
     expect(Object.keys(body)).toEqual(['requested']);
     expect(body).toEqual({ requested: true });
     expect(JSON.stringify(body).toLowerCase()).not.toContain('token');
+  });
+});
+
+describe('R10 (auth-email-delivery): el 429 del rate limit no revela si la cuenta existe', () => {
+  function guardContext(
+    methodName: keyof AuthController,
+    body: unknown,
+  ): ExecutionContext {
+    return {
+      getHandler: () => AuthController.prototype[methodName],
+      switchToHttp: () =>
+        ({
+          getRequest: () => ({ body, ip: '203.0.113.30' }),
+        }) as ReturnType<ExecutionContext['switchToHttp']>,
+    } as unknown as ExecutionContext;
+  }
+
+  function guardsOf(methodName: keyof AuthController): unknown[] {
+    const metadata: unknown = Reflect.getMetadata(
+      '__guards__',
+      AuthController.prototype[methodName],
+    );
+
+    return Array.isArray(metadata) ? metadata : [];
+  }
+
+  async function forgotResponse(
+    guard: EmailRateLimitGuard,
+    controller: AuthController,
+    email: string,
+  ): Promise<{ status: unknown; body: unknown }> {
+    try {
+      guard.canActivate(guardContext('forgotPassword', { email }));
+      return {
+        status: httpCodeOf('forgotPassword'),
+        body: await controller.forgotPassword({ email }),
+      };
+    } catch (error) {
+      expect(error).toBeInstanceOf(HttpException);
+      const httpError = error as HttpException;
+      return {
+        status: httpError.getStatus(),
+        body: httpError.getResponse(),
+      };
+    }
+  }
+
+  it('aplica el guard solo a register y forgotPassword', () => {
+    expect(guardsOf('register')).toContain(EmailRateLimitGuard);
+    expect(guardsOf('forgotPassword')).toContain(EmailRateLimitGuard);
+    expect(guardsOf('login')).not.toContain(EmailRateLimitGuard);
+    expect(guardsOf('verifyEmail')).not.toContain(EmailRateLimitGuard);
+    expect(guardsOf('resetPassword')).not.toContain(EmailRateLimitGuard);
+  });
+
+  it('iguala el 200 dentro del cupo y el 429 al agotarlo', async () => {
+    const guard = new EmailRateLimitGuard();
+    const existing = buildForgotPasswordDouble();
+    const missing = buildForgotPasswordDouble();
+    const existingEmail = 'registered-r10@example.com';
+    const missingEmail = 'missing-r10@example.com';
+
+    const existingWithinQuota = await forgotResponse(
+      guard,
+      existing.controller,
+      existingEmail,
+    );
+    const missingWithinQuota = await forgotResponse(
+      guard,
+      missing.controller,
+      missingEmail,
+    );
+
+    expect(missingWithinQuota).toEqual(existingWithinQuota);
+    expect(existingWithinQuota).toEqual({
+      status: 200,
+      body: { requested: true },
+    });
+
+    for (let attempt = 1; attempt < FORGOT_PASSWORD_MAX_PER_EMAIL; attempt++) {
+      await forgotResponse(guard, existing.controller, existingEmail);
+      await forgotResponse(guard, missing.controller, missingEmail);
+    }
+
+    const existingBlocked = await forgotResponse(
+      guard,
+      existing.controller,
+      existingEmail,
+    );
+    const missingBlocked = await forgotResponse(
+      guard,
+      missing.controller,
+      missingEmail,
+    );
+
+    expect(missingBlocked).toEqual(existingBlocked);
+    expect(existingBlocked.status).toBe(429);
+    expect(existing.execute).toHaveBeenCalledTimes(3);
+    expect(missing.execute).toHaveBeenCalledTimes(3);
+  });
+
+  it('deja pasar sin contar cualquier body sin email string', () => {
+    for (const body of [{}, { email: 42 }]) {
+      const guard = new EmailRateLimitGuard();
+
+      for (let attempt = 0; attempt < 5; attempt++) {
+        expect(guard.canActivate(guardContext('forgotPassword', body))).toBe(
+          true,
+        );
+      }
+    }
   });
 });

@@ -624,3 +624,31 @@ exit 0
 Se añadió únicamente la rama `register:${request.ip}` del guard y
 `@UseGuards(EmailRateLimitGuard)` sobre `register`. El guard sigue siendo
 un provider normal, no global.
+
+### R10 — rojo
+
+```text
+$ pnpm -C backend-pet-tracker exec jest src/modules/auth/infrastructure/auth.controller.spec.ts --runInBand
+FAIL src/modules/auth/infrastructure/auth.controller.spec.ts
+  ● R10 (auth-email-delivery): el 429 del rate limit no revela si la cuenta existe › deja pasar sin contar cualquier body sin email string
+
+    HttpException: Too Many Requests
+
+      69 |
+      70 |     if (current.count >= maximum) {
+    > 71 |       throw new HttpException(
+         |             ^
+      72 |         {
+      73 |           statusCode: HttpStatus.TOO_MANY_REQUESTS,
+      74 |           message: 'Too Many Requests',
+
+      at EmailRateLimitGuard.consume (modules/auth/infrastructure/guards/email-rate-limit.guard.ts:71:13)
+      at EmailRateLimitGuard.canActivate (modules/auth/infrastructure/auth.controller.spec.ts:731:22)
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 39 passed, 40 total
+Snapshots:   0 total
+Time:        2.489 s, estimated 7 s
+Ran all test suites matching src/modules/auth/infrastructure/auth.controller.spec.ts.
+exit 1
+```
