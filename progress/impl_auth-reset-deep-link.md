@@ -302,3 +302,25 @@ exit 0
 `assetlinks.json` contiene un único statement para
 `com.trackermex.pettracker` y conserva el placeholder humano del fingerprint.
 El README mapea los dos destinos de Hostinger sin incluir ningún dominio real.
+
+### R10 — rojo
+
+```text
+$ cd mobile-pet-tracker && bun run test --runInBand src/__tests__/hosting-artifacts.test.ts
+FAIL src/__tests__/hosting-artifacts.test.ts
+  R9: assetlinks.json delega el dominio en el paquete Android de la app
+    ✓ publica un unico statement para el package y fingerprint esperados
+  R10: la pagina fallback no consume el token y ofrece abrir la app
+    ✕ solo procesa el query local y no contiene primitivas ni recursos de red
+
+  ● ENOENT: no such file or directory, open
+    '/home/claude/sites/Pet-Tracker/hosting/reset-password/index.html'
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 1 passed, 2 total
+Snapshots:   0 total
+Time:        2.025 s
+Ran all test suites matching /src\\/__tests__\\/hosting-artifacts.test.ts/i.
+error: script "test" exited with code 1
+exit 1
+```
