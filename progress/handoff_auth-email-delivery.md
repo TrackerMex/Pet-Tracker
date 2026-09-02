@@ -62,3 +62,25 @@ hace el humano y el reviewer no aprueba sin ellos por escrito.
    `progress/` (p. ej. en `progress/impl_auth-email-delivery.md`).
 3. Con G1–G4 escritos → lanzar `reviewer` (su veredicto exige esa evidencia).
 4. Veredicto aprobado → push + `gh pr create`; el humano mergea.
+
+## Corrección R6 autorizada por el leader (2026-09-02)
+
+Codex detectó una contradicción interna en la spec y paró (correcto; detalle
+en `progress/impl_auth-email-delivery.md` §Bloqueo de spec en R6):
+`requirements.md:275` pide que el e2e de R6 sobreescriba `PASSWORD_RESET_SENDER`
+con un doble cuyo `send()` lanza, pero eso deja fuera al adaptador Resend
+donde D5 coloca la contención de R5 (`send()` nunca rechaza); el `await` de
+application propaga y el endpoint devuelve 500. Hacer pasar ese test exigiría
+un try/catch en application o controller — prohibido por R6/R12 y D5.
+
+**Autorización**: el test de R6 (e2e y su espejo unitario) se construye en la
+frontera coherente con D5 — se inyecta el `ResendPasswordResetSender` REAL
+con un `ResendClient` cuyo doble de `fetch` rechaza; el fallo del proveedor
+ocurre dentro del adaptador, R5 lo contiene y el endpoint conserva
+`200 { requested: true }` sin tocar `src/modules/auth/application/` ni el
+controller. La intención de R6 (el fallo del proveedor no cambia ni el código
+ni la forma de la respuesta) queda intacta; solo cambia el mecanismo del
+doble. La comparación estructural contra el caso "cuenta inexistente"
+(requirements.md:270-272) se mantiene tal cual. La spec aprobada NO se edita;
+esta corrección vale como fuente de verdad para R6 y el reviewer la validará
+contra este apartado.

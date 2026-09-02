@@ -20,3 +20,15 @@
   G1–G4 (Resend, DNS, envío real) los ejecuta el humano DESPUÉS de la
   implementación y ANTES del reviewer — el reviewer no aprueba sin G1–G4
   por escrito en progress/.
+
+### #58 — bloqueo R6 y corrección autorizada (2026-09-02)
+
+- Codex completó R1–R5 y R7 (TDD por requisito, rojo→verde por R-id) y paró
+  en R6: contradicción interna de la spec (doble de DI vs contención en el
+  adaptador de D5). Análisis en `progress/impl_auth-email-delivery.md`.
+- Leader autorizó por escrito en el handoff el mecanismo coherente: doble de
+  `fetch` dentro de `ResendClient`, adaptador real, application intacta.
+  Spec aprobada sin editar (precedente #56).
+- Aprendizaje repetido: Codex esta vez trabaja en su PROPIO clon — el
+  "no pushees" del handoff dejó al leader ciego hasta que el humano pusheó.
+  Próximo handoff: pedir push explícito al terminar cada tramo.
