@@ -822,3 +822,21 @@ exit 1 (git grep: ninguna coincidencia)
 ```
 
 No se añadió ningún valor real ni se leyó el `.env` local.
+
+### R12 — test de regresión verde al introducirse
+
+```text
+$ pnpm -C backend-pet-tracker exec jest --config test/jest-e2e.json test/auth-email-delivery.e2e-spec.ts --runInBand
+Test Suites: 1 passed, 1 total
+Tests:       3 passed, 3 total
+Snapshots:   0 total
+Time:        7.598 s
+Ran all test suites matching test/auth-email-delivery.e2e-spec.ts.
+exit 0
+```
+
+El e2e nuevo usa los adaptadores de consola reales con
+`EMAIL_ENABLED=false`, extrae de sus logs los tokens de verificación y reset,
+y completa ambos consumos con el guard activo. Pasó sin cambio adicional de
+producción porque R1–R11 ya componían el comportamiento requerido. Se conserva
+como red de regresión; no se fabricó un fallo artificial.
