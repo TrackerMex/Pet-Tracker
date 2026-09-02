@@ -6,6 +6,7 @@ import {
   RESEND_SCOPE,
   ResendClient,
 } from './resend-client';
+import { buildPasswordResetUrl } from './password-reset-link';
 import { ResendPasswordResetSender } from './resend-password-reset-sender';
 
 interface CapturedRequest {
@@ -75,6 +76,50 @@ describe('R1: el emisor de reset publica el token en POST https://api.resend.com
     );
     expect(body).not.toHaveProperty('html');
     expect(body.text).not.toEqual(expect.stringContaining('http'));
+  });
+});
+
+describe('R1 (auth-reset-deep-link): el correo de reset incluye la URL del enlace ademas del token', () => {
+  it('mantiene el token como segundo parrafo y agrega la URL sin html', async () => {
+    const calls: CapturedRequest[] = [];
+    const resetLinkHost = 'reset.example.test';
+    const message: PasswordResetMessage = {
+      userId: '0198a1f0-3d5c-7f21-b0a1-6f1c9e2d4b77',
+      email: 'ada@example.com',
+      token: 'reset/token+for-r1',
+      expiresAt: new Date('2026-09-02T18:30:00.000Z'),
+    };
+    const client = new ResendClient(
+      'api-key-for-deep-link-r1',
+      'sender@example.com',
+      successfulFetch(calls),
+    );
+    const sender = new ResendPasswordResetSender(client, resetLinkHost);
+
+    await sender.send(message);
+    await client.whenIdle();
+
+    const rawBody = calls[0]?.init?.body;
+    expect(typeof rawBody).toBe('string');
+    if (typeof rawBody !== 'string') {
+      throw new Error('Resend request body no es texto');
+    }
+
+    const body = JSON.parse(rawBody) as Record<string, unknown>;
+    expect(body.subject).toBe(PASSWORD_RESET_SUBJECT);
+    expect(body).not.toHaveProperty('html');
+    expect(typeof body.text).toBe('string');
+    if (typeof body.text !== 'string') {
+      throw new Error('Resend text no es texto');
+    }
+
+    const paragraphs = body.text.split(/\r?\n\r?\n/);
+    expect(paragraphs[1]).toBe(message.token);
+    expect(paragraphs.slice(2).join('\n\n')).toEqual(
+      expect.stringContaining(
+        buildPasswordResetUrl(resetLinkHost, message.token),
+      ),
+    );
   });
 });
 
