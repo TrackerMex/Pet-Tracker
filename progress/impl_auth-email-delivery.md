@@ -110,3 +110,55 @@ La implementación mínima compone el correo de reset y delega el `POST` a
 `ResendClient`. En este punto `deliver()` todavía espera al proveedor y no
 contiene sus fallos; ese comportamiento se conserva intencionalmente hasta el
 rojo de R5.
+
+### R5 — rojo
+
+```text
+$ pnpm -C backend-pet-tracker exec jest src/modules/auth/infrastructure/email/resend-client.spec.ts --runInBand
+FAIL src/modules/auth/infrastructure/email/resend-client.spec.ts
+  ● R5: deliver resuelve antes que la respuesta del proveedor y contiene cualquier fallo › resuelve deliver mientras fetch sigue pendiente
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "deliver-resolved"
+    Received: "next-tick"
+
+      54 |     ]);
+      55 |
+    > 56 |     expect(winner).toBe('deliver-resolved');
+         |                    ^
+      57 |   });
+
+  ● R5: deliver resuelve antes que la respuesta del proveedor y contiene cualquier fallo › contiene un rechazo de fetch y registra el fallo
+
+    expect(received).resolves.toBeUndefined()
+
+    Received promise rejected instead of resolved
+    Rejected to value: [Error: network down]
+
+      65 |     );
+      66 |
+    > 67 |     await expect(client.deliver(delivery)).resolves.toBeUndefined();
+         |           ^
+      68 |     await client.whenIdle();
+
+  ● R5: deliver resuelve antes que la respuesta del proveedor y contiene cualquier fallo › contiene un 403 y registra status y mensaje del proveedor
+
+    expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+    Expected: {"event": "auth.password_reset.issued", "message": "domain is not verified", "scope": undefined, "status": 403, "userId": "0198a1f0-3d5c-7f21-b0a1-6f1c9e2d4b77"}
+
+    Number of calls: 0
+
+      87 |     await client.whenIdle();
+      88 |
+    > 89 |     expect(error).toHaveBeenCalledWith({
+         |                   ^
+
+Test Suites: 1 failed, 1 total
+Tests:       3 failed, 3 total
+Snapshots:   0 total
+Time:        7.085 s
+Ran all test suites matching src/modules/auth/infrastructure/email/resend-client.spec.ts.
+exit 1
+```
