@@ -2,6 +2,7 @@ import type {
   FieldError,
   LoginRequest,
   RegisterRequest,
+  ResetPasswordRequest,
   UserResponse,
 } from './types';
 
@@ -16,6 +17,15 @@ export type LoginState =
 export type RegisterState =
   | { kind: 'ok'; user: UserResponse }
   | { kind: 'email-taken' }
+  | { kind: 'validation'; errors: FieldError[] }
+  | { kind: 'error' }
+  | { kind: 'unreachable'; message: string }
+  | { kind: 'missing-config' };
+
+export type ResetPasswordState =
+  | { kind: 'ok' }
+  | { kind: 'invalid-token' }
+  | { kind: 'expired' }
   | { kind: 'validation'; errors: FieldError[] }
   | { kind: 'error' }
   | { kind: 'unreachable'; message: string }
@@ -168,6 +178,45 @@ export async function register(
     if (errors) {
       return { kind: 'validation', errors };
     }
+  }
+
+  return { kind: 'error' };
+}
+
+export async function resetPassword(
+  baseUrl: string | undefined,
+  body: ResetPasswordRequest,
+  fetchFn: typeof fetch = fetch,
+): Promise<ResetPasswordState> {
+  if (!baseUrl) {
+    return { kind: 'missing-config' };
+  }
+
+  const result = await postJson(
+    baseUrl,
+    '/auth/reset-password',
+    body,
+    fetchFn,
+  );
+  if (result.kind === 'unreachable') {
+    return result;
+  }
+
+  if (result.response.status === 200) {
+    return { kind: 'ok' };
+  }
+
+  if (result.response.status === 410) {
+    return { kind: 'expired' };
+  }
+
+  if (result.response.status === 400) {
+    const responseBody = await readJson(result.response);
+    const errors = validationErrors(responseBody);
+
+    return errors
+      ? { kind: 'validation', errors }
+      : { kind: 'invalid-token' };
   }
 
   return { kind: 'error' };
