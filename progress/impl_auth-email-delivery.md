@@ -3,8 +3,9 @@
 - Fecha: 2026-09-02
 - Branch: `feature/58-auth-email-delivery`
 - Alcance: R1–R12, backend puro
-- Resultado: implementación en curso; el bloqueo inicial de aprobación quedó
-  corregido por el leader en `b647a60`.
+- Resultado: R1–R12 implementados y sus suites verdes; el cierre queda
+  bloqueado porque `env-drift.test.mjs` conserva el inventario anterior de
+  21 claves y está fuera de la contención aprobada.
 
 ## Bloqueo inicial de la spec
 
@@ -840,3 +841,342 @@ El e2e nuevo usa los adaptadores de consola reales con
 y completa ambos consumos con el guard activo. Pasó sin cambio adicional de
 producción porque R1–R11 ya componían el comportamiento requerido. Se conserva
 como red de regresión; no se fabricó un fallo artificial.
+
+## Cierre R12 — intentos e2e de entorno
+
+### Primera corrida completa (rojo de entorno)
+
+```text
+$ pnpm -C backend-pet-tracker run test:e2e
+FAIL test/device-subscriptions.e2e-spec.ts
+  Expected getMessages: 1 llamada
+  Received: 2 llamadas
+FAIL test/alerts-center-notifier.e2e-spec.ts
+  InvalidClientTokenId: The security token included in the request is invalid.
+FAIL test/resource-isolation.e2e-spec.ts
+  MissingAwsEndpointError: AWS_ENDPOINT_URL no está definida (o está vacía).
+FAIL test/localstack-provisioning.e2e-spec.ts
+  MissingAwsEndpointError: AWS_ENDPOINT_URL no está definida (o está vacía).
+[otras suites AWS fallaron por la misma configuración; la salida de herramienta
+se truncó tras 56.281 tokens]
+
+Test Suites: 11 failed, 3 skipped, 13 passed, 24 of 27 total
+Tests:       138 failed, 8 skipped, 214 passed, 360 total
+Snapshots:   0 total
+Time:        79.769 s, estimated 92 s
+Ran all test suites.
+ELIFECYCLE Command failed with exit code 1.
+exit 1
+```
+
+El `.env` humano carece de varias claves locales, advertencia que ya daba el
+baseline. Se provisionó LocalStack de forma idempotente con
+`AWS_MODE=local`, endpoint local y credenciales dummy inyectadas solo al
+proceso:
+
+```text
+$ pnpm -C backend-pet-tracker run provision:local
+> backend-pet-tracker@0.0.1 provision:local
+> ts-node -r tsconfig-paths/register scripts/provision-local.ts
+◇ injected env (14) from ..\.env
+exit 0
+```
+
+### Segunda corrida completa (rojo de esquema local)
+
+```text
+$ pnpm -C backend-pet-tracker run test:e2e
+FAIL test/media.e2e-spec.ts
+  R8 GetPublicAccessBlock: Exceeded timeout of 5000 ms
+  R8 GetBucketPolicy: Exceeded timeout of 5000 ms
+  R9 GET directo de photoUrl: Exceeded timeout of 5000 ms
+FAIL test/media-docs.e2e-spec.ts
+  error: relation "pet_documents" does not exist
+
+Test Suites: 2 failed, 3 skipped, 22 passed, 24 of 27 total
+Tests:       11 failed, 8 skipped, 341 passed, 360 total
+Snapshots:   0 total
+Time:        118.776 s
+Ran all test suites.
+ELIFECYCLE Command failed with exit code 1.
+exit 1
+```
+
+Esta corrida ya usó LocalStack con credenciales dummy. El fallo restante de
+Postgres es una precondición del volumen: faltaba la migración 0014 ya
+versionada; los tres timeouts S3 ocurrieron mientras LocalStack calentaba. No
+se cambió código de media, AWS, DB ni infraestructura.
+
+### Tercera corrida completa (rojo de latencia/configuración S3)
+
+```text
+$ pnpm -C backend-pet-tracker run test:e2e
+FAIL test/media.e2e-spec.ts
+  R8 GetPublicAccessBlock: Exceeded timeout of 5000 ms
+  R8 GetBucketPolicy: Exceeded timeout of 5000 ms
+  R9 GET directo de photoUrl: Exceeded timeout of 5000 ms
+FAIL test/media-docs.e2e-spec.ts
+  R3 POST → PUT → GET: Exceeded timeout of 5000 ms
+
+Test Suites: 2 failed, 3 skipped, 22 passed, 24 of 27 total
+Tests:       4 failed, 8 skipped, 348 passed, 360 total
+Snapshots:   0 total
+Time:        139.566 s
+Ran all test suites.
+ELIFECYCLE Command failed with exit code 1.
+exit 1
+```
+
+El contenedor seguía `healthy` (0,56 % CPU, 466 MiB) y el `.env` humano
+tenía `AWS_PRESIGN_ENDPOINT_URL` presente. Para no leer ni modificar ese
+valor específico de la máquina, la siguiente prueba inyecta
+`http://localhost:4566` solo al proceso e2e local.
+
+### Verificación aislada de media — verde
+
+Con `AWS_PRESIGN_ENDPOINT_URL=http://localhost:4566` inyectado solo al
+proceso, las dos suites que habían agotado su timeout pasaron:
+
+```text
+$ pnpm -C backend-pet-tracker exec jest --config test/jest-e2e.json test/media.e2e-spec.ts test/media-docs.e2e-spec.ts --runInBand
+Test Suites: 2 passed, 2 total
+Tests:       21 passed, 21 total
+Snapshots:   0 total
+exit 0
+```
+
+### Cuarta corrida completa — verde
+
+Se repitió la suite completa con `AWS_MODE=local`, los endpoints de
+LocalStack y credenciales dummy inyectados solo al proceso. No se leyó ni
+modificó ningún secreto local:
+
+```text
+$ pnpm -C backend-pet-tracker run test:e2e
+Test Suites: 3 skipped, 24 passed, 24 of 27 total
+Tests:       8 skipped, 352 passed, 360 total
+Snapshots:   0 total
+Time:        112.963 s
+Ran all test suites.
+exit 0
+```
+
+La suite imprimió un error de FK esperado por una prueba negativa; Jest
+terminó verde. Las migraciones 0014 y 0015 ya versionadas se aplicaron
+únicamente al volumen local para restablecer las precondiciones e2e; no se
+editó `src/db/` ni ningún fichero de migración.
+
+## Verificación final sobre el HEAD formateado
+
+```text
+$ docker compose up -d
+Container pet-tracker-localstack  Running
+Container pet-tracker-postgres  Running
+exit 0
+```
+
+```text
+$ pnpm -C backend-pet-tracker run lint
+> backend-pet-tracker@0.0.1 lint C:\dev\pet-tracker\backend-pet-tracker
+> eslint "{src,apps,libs,test}/**/*.ts" --fix
+exit 0
+```
+
+El autofix produjo solo ajustes mecánicos en los ficheros permitidos; se
+aislaron en `4fa7e62` (`style(auth-email-delivery): apply lint`). Una
+segunda corrida no produjo diff adicional.
+
+```text
+$ pnpm -C backend-pet-tracker exec tsc --noEmit
+<sin salida>
+exit 0
+```
+
+```text
+$ pnpm --filter backend-pet-tracker test
+> backend-pet-tracker@0.0.1 test C:\dev\pet-tracker\backend-pet-tracker
+> jest
+
+Test Suites: 162 passed, 162 total
+Tests:       1226 passed, 1226 total
+Snapshots:   0 total
+Time:        22.754 s, estimated 24 s
+Ran all test suites.
+exit 0
+```
+
+Durante esa suite aparecieron únicamente logs esperados de pruebas
+negativas (mensajes inválidos, servicios simulados no disponibles y
+entregas Resend con dobles); el resultado fue verde.
+
+```text
+$ pnpm -C backend-pet-tracker exec jest --config test/jest-e2e.json test/auth-email-delivery.e2e-spec.ts --runInBand
+Test Suites: 1 passed, 1 total
+Tests:       3 passed, 3 total
+Snapshots:   0 total
+Time:        8.115 s
+Ran all test suites matching test/auth-email-delivery.e2e-spec.ts.
+exit 0
+```
+
+## Bloqueo de cierre en `init.sh`
+
+`./init.sh` completó build, las 162 suites/1226 tests del backend y las 2
+suites/14 tests de infra. Se detuvo en el harness raíz porque el test
+preexistente de #23 fija literalmente 21 claves en `.env.example`, mientras
+R11 de esta spec obliga a añadir `RESEND_API_KEY` y `RESEND_FROM`, por lo
+que ahora hay 23:
+
+```text
+$ ./init.sh
+[WARN] .env no contiene 10 claves declaradas en .env.example
+[WARN] STATUS.md declara 51/57; el inventario actual es 53/59
+build: OK
+backend: 162 suites, 1226 tests passed
+infra: 2 suites, 14 tests passed
+
+R11 (init-env-drift-warning #23): documentacion y cero variables nuevas
+  ✖ no añade variables de entorno
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+23 !== 21
+
+    at env-drift.test.mjs:269:12
+
+tests 28
+pass 27
+fail 1
+exit 1
+```
+
+La reproducción aislada bajo el mismo Git Bash de `init.sh` confirma el
+único fallo:
+
+```text
+$ node --test env-drift.test.mjs
+ℹ tests 28
+ℹ suites 11
+ℹ pass 27
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+
+test at env-drift.test.mjs:265:3
+✖ no añade variables de entorno
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+  23 !== 21
+
+      at TestContext.<anonymous> (file:///C:/dev/pet-tracker/env-drift.test.mjs:269:12)
+exit 1
+```
+
+`env-drift.test.mjs` está fuera de la lista literal de ficheros de R1–R12.
+Actualizar su expectativa de 21 a 23 sería el cambio mínimo y correcto,
+pero ampliaría la contención aprobada. Conforme a la instrucción de parar
+ante un error de spec, no se editó el harness; el cierre queda bloqueado
+hasta que el leader autorice expresamente ese fichero o corrija la spec.
+
+## Contención final
+
+La comprobación pedida contra `main` sale vacía después de filtrar la
+allowlist de R12:
+
+```text
+$ git diff --name-only main...HEAD | grep -vE 'infrastructure/email/|infrastructure/guards/email-rate-limit|auth\.module|auth\.controller|auth-email-delivery|^\.env\.example$|docs/conventions\.md|docs/verification\.md|^specs/|^progress/|feature_list\.json|STATUS\.md'
+<sin salida>
+exit 1 (grep: ninguna coincidencia fuera de alcance)
+```
+
+El `git diff --stat main...HEAD` previo a este commit documental fue:
+
+```text
+ .env.example                                       |   8 +-
+ .../src/modules/auth/auth.module.spec.ts           |  82 ++
+ .../src/modules/auth/auth.module.ts                |  39 +-
+ .../auth/infrastructure/auth.controller.spec.ts    | 163 ++++
+ .../modules/auth/infrastructure/auth.controller.ts |   4 +
+ .../console-email-verification-sender.spec.ts      |  16 +-
+ .../email/console-email-verification-sender.ts     |  13 -
+ .../email/console-password-reset-sender.spec.ts    |  32 +-
+ .../email/console-password-reset-sender.ts         |  13 -
+ .../infrastructure/email/resend-client.spec.ts     | 112 +++
+ .../auth/infrastructure/email/resend-client.ts     | 150 ++++
+ .../email/resend-email-verification-sender.spec.ts | 128 ++++
+ .../email/resend-email-verification-sender.ts      |  27 +
+ .../email/resend-password-reset-sender.spec.ts     | 128 ++++
+ .../email/resend-password-reset-sender.ts          |  27 +
+ .../guards/email-rate-limit.guard.spec.ts          | 118 +++
+ .../guards/email-rate-limit.guard.ts               | 110 +++
+ .../test/auth-email-delivery.e2e-spec.ts           | 279 +++++++
+ docs/conventions.md                                |   4 +-
+ docs/verification.md                               |  59 ++
+ feature_list.json                                  |  39 +
+ progress/current.md                                |  28 +
+ progress/handoff_auth-email-delivery.md            |  86 +++
+ progress/impl_auth-email-delivery.md               | 842 +++++++++++++++++++++
+ specs/auth-email-delivery/design.md                | 369 +++++++++
+ specs/auth-email-delivery/requirements.md          | 545 +++++++++++++
+ specs/auth-email-delivery/tasks.md                 | 197 +++++
+ specs/auth-email-delivery/traceability.md          |  47 ++
+ 28 files changed, 3587 insertions(+), 78 deletions(-)
+```
+
+La comprobación literal de la spec contra
+`origin/feature/44-auth-forgot-password` no puede salir vacía en el estado
+actual del repositorio: ese ref es `e03ad016`, `main` es `e09cf083` y su
+merge-base con HEAD es el propio `e03ad016`. Por tanto lista cambios de #44
+y de features posteriores que ya están en `main`, incluidos DB, media y
+mobile; no son cambios introducidos por #58. La salida literal fue:
+
+```text
+.gitignore
+backend-pet-tracker/src/aws/aws-clients.ts
+backend-pet-tracker/src/aws/presign-endpoint.spec.ts
+backend-pet-tracker/src/db/migrations/0015_auth_password_reset_tokens.sql
+backend-pet-tracker/src/db/migrations/meta/0015_snapshot.json
+backend-pet-tracker/src/db/migrations/meta/_journal.json
+backend-pet-tracker/src/db/schema/index.ts
+backend-pet-tracker/src/db/schema/password-reset-tokens.schema.spec.ts
+backend-pet-tracker/src/db/schema/password-reset-tokens.schema.ts
+backend-pet-tracker/src/modules/auth/application/dto/forgot-password.dto.ts
+backend-pet-tracker/src/modules/auth/application/dto/reset-password.dto.ts
+backend-pet-tracker/src/modules/auth/application/use-cases/login-user.use-case.spec.ts
+backend-pet-tracker/src/modules/auth/application/use-cases/register-user.use-case.spec.ts
+backend-pet-tracker/src/modules/auth/application/use-cases/request-password-reset.use-case.spec.ts
+backend-pet-tracker/src/modules/auth/application/use-cases/request-password-reset.use-case.ts
+backend-pet-tracker/src/modules/auth/application/use-cases/reset-password.use-case.spec.ts
+backend-pet-tracker/src/modules/auth/application/use-cases/reset-password.use-case.ts
+backend-pet-tracker/src/modules/auth/application/verification-token.ts
+backend-pet-tracker/src/modules/auth/domain/entities/password-reset-token.entity.ts
+backend-pet-tracker/src/modules/auth/domain/errors/password-reset.errors.ts
+backend-pet-tracker/src/modules/auth/domain/ports/password-reset-sender.ts
+backend-pet-tracker/src/modules/auth/domain/repositories/password-reset-token.repository.ts
+backend-pet-tracker/src/modules/auth/domain/repositories/user.repository.ts
+backend-pet-tracker/src/modules/auth/infrastructure/repositories/password-reset-token.drizzle.repository.ts
+backend-pet-tracker/src/modules/auth/infrastructure/repositories/user.drizzle.repository.ts
+backend-pet-tracker/src/modules/media/infrastructure/photo-storage.presign-host.spec.ts
+backend-pet-tracker/src/modules/users/application/use-cases/get-profile.use-case.spec.ts
+backend-pet-tracker/src/modules/users/application/use-cases/update-profile.use-case.spec.ts
+backend-pet-tracker/test/auth-forgot-password.e2e-spec.ts
+docs/data-model.md
+docs/ui-guidelines.md
+mobile-pet-tracker/app.config.test.ts
+mobile-pet-tracker/app.config.ts
+mobile-pet-tracker/bun.lock
+mobile-pet-tracker/package.json
+mobile-pet-tracker/src/app/(tabs)/__tests__/map.test.tsx
+mobile-pet-tracker/src/app/(tabs)/map.tsx
+mobile-pet-tracker/src/components/__tests__/pet-map.test.tsx
+mobile-pet-tracker/src/components/pet-map.tsx
+mobile-pet-tracker/src/theme/map-style-dark.json
+exit 0
+```
+
+No se modificaron por #58 `domain/`, `application/`, `src/db/`,
+`src/workers/`, `infra/`, `mobile-pet-tracker/`, `main.ts`,
+`test/auth-forgot-password.e2e-spec.ts`, `package.json`, `pnpm-lock.yaml`,
+`feature_list.json` ni `progress/current.md`. G1–G4 siguen pendientes y
+son gates humanos.
