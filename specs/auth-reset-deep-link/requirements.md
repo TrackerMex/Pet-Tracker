@@ -407,5 +407,5 @@ desde el correo.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
-- [ ] Decisión D5 (página estática sin API) revisada y aceptada por el humano
+- [X] Aprobado por humano (fecha: 2026-09-02) ← gate obligatorio antes de implementar
+- [X] Decisión D5 (página estática sin API) revisada y aceptada por el humano
