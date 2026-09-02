@@ -396,7 +396,7 @@ si faltan ambas variables sus mensajes se agrupan en una única llamada a
 `console.warn`, conservando el contrato previo de una advertencia y el nuevo
 contrato de R4.
 
-### R7 — rojo
+### R7 — rojo (`e729bf4`)
 
 ```text
 $ cd mobile-pet-tracker && bun run test --runInBand src/api/__tests__/auth.test.ts
@@ -426,3 +426,24 @@ Ran all test suites matching /src\\/api\\/__tests__\\/auth.test.ts/i.
 error: script "test" exited with code 1
 exit 1
 ```
+
+### R7 — verde (`6139108`)
+
+```text
+$ cd mobile-pet-tracker && bun run test --runInBand src/api/__tests__/auth.test.ts
+PASS src/api/__tests__/auth.test.ts
+Test Suites: 1 passed, 1 total
+Tests:       29 passed, 29 total
+Snapshots:   0 total
+Time:        1.672 s, estimated 2 s
+exit 0
+
+$ cd mobile-pet-tracker && bun run typecheck
+$ tsc --noEmit
+exit 0
+```
+
+`resetPassword` reutiliza `postJson`, no hace red sin base URL y devuelve la
+unión discriminada completa. Los `400` con `errors[]` se distinguen de los
+tokens inválidos/usados; `410`, fallos de transporte y statuses inesperados
+mantienen estados separados.

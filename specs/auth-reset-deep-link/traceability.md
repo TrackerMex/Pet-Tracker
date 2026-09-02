@@ -18,7 +18,7 @@ Rutas de test relativas a la raíz del repo salvo indicación: backend en
 | R4 | `app.config.test.ts::R4 (auth-reset-deep-link): RESET_LINK_HOST declara el intent filter de App Links`; `app.config.test.ts::R4 (auth-reset-deep-link): sin RESET_LINK_HOST avisa y no declara intent filters` | rojo `805bf65` (`test(auth-reset-deep-link): add App Links config tests (R4)`); verde `5877535` (`feat(auth-reset-deep-link): configure Android App Links (R4)`) |
 | R5 | pendiente | pendiente |
 | R6 | pendiente | pendiente |
-| R7 | pendiente | pendiente |
+| R7 | `src/api/__tests__/auth.test.ts::R7 (auth-reset-deep-link): resetPassword mapea la respuesta por kind` | rojo `e729bf4` (`test(auth-reset-deep-link): add reset API mapping tests (R7)`); verde `6139108` (`feat(auth-reset-deep-link): add reset password API client (R7)`) |
 | R8 | pendiente | pendiente |
 | R9 | `src/__tests__/hosting-artifacts.test.ts::R9: assetlinks.json delega el dominio en el paquete Android de la app` | rojo `837ad2f` (`test(auth-reset-deep-link): add asset links test (R9)`); verde `9ba7e93` (`feat(auth-reset-deep-link): add Android asset links (R9)`) |
 | R10 | `src/__tests__/hosting-artifacts.test.ts::R10: la pagina fallback no consume el token y ofrece abrir la app` | rojo `0039189` (`test(auth-reset-deep-link): add static fallback test (R10)`); verde `243fcc6` (`feat(auth-reset-deep-link): add static reset fallback (R10)`) |
