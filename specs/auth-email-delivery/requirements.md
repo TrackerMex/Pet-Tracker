@@ -541,5 +541,5 @@ escrito en `progress/`.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
-- [ ] DA1 (subdominio emisor) y DA2 (plan de Resend) cerradas (fecha: ____)
+- [X] Aprobado por humano (fecha: 2026-09-02) ← gate obligatorio antes de implementar
+- [X] DA1 (subdominio emisor) y DA2 (plan de Resend) cerradas (fecha: 2026-09-02)
