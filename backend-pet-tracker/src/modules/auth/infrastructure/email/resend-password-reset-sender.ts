@@ -1,0 +1,27 @@
+import { Injectable } from '@nestjs/common';
+import {
+  PasswordResetMessage,
+  PasswordResetSender,
+} from '@/modules/auth/domain/ports/password-reset-sender';
+import { PASSWORD_RESET_SUBJECT, ResendClient } from './resend-client';
+
+@Injectable()
+export class ResendPasswordResetSender implements PasswordResetSender {
+  constructor(private readonly client: ResendClient) {}
+
+  send(message: PasswordResetMessage): Promise<void> {
+    return this.client.deliver({
+      event: 'auth.password_reset.issued',
+      userId: message.userId,
+      to: message.email,
+      subject: PASSWORD_RESET_SUBJECT,
+      text: [
+        'Tu código para restablecer la contraseña de Pet Tracker es:',
+        '',
+        message.token,
+        '',
+        `Caduca el ${message.expiresAt.toISOString()}. Si no has pedido este cambio, ignora este correo.`,
+      ].join('\n'),
+    });
+  }
+}
