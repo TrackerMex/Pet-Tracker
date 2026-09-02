@@ -14,6 +14,7 @@ import type { PasswordHasher } from '@/modules/auth/domain/ports/password-hasher
 import { PASSWORD_RESET_SENDER } from '@/modules/auth/domain/ports/password-reset-sender';
 import { ResendClient } from '@/modules/auth/infrastructure/email/resend-client';
 import { ResendPasswordResetSender } from '@/modules/auth/infrastructure/email/resend-password-reset-sender';
+import { RequestPasswordResetUseCase } from '@/modules/auth/application/use-cases/request-password-reset.use-case';
 import { AppModule } from '../src/app.module';
 
 interface ForgotPasswordBody {
@@ -106,5 +107,44 @@ describe('Auth email delivery (e2e)', () => {
       expect(existingResponse.body).toEqual({ requested: true });
       expect(fetchDouble).toHaveBeenCalledTimes(1);
     });
+  });
+});
+
+describe('R8: forgot-password devuelve 429 tras agotar el cupo del email', () => {
+  const runId = Date.now();
+  const execute = jest.fn(() => Promise.resolve());
+  let app: INestApplication<App>;
+
+  const api = () => request(app.getHttpServer());
+
+  beforeAll(async () => {
+    const module = await Test.createTestingModule({
+      imports: [AppModule],
+    })
+      .overrideProvider(RequestPasswordResetUseCase)
+      .useValue({ execute })
+      .compile();
+
+    app = module.createNestApplication();
+    app.setGlobalPrefix('v1');
+    await app.init();
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it('bloquea el cuarto intento antes de ejecutar el caso de uso', async () => {
+    const email = `delivery-r8-${runId}@example.com`;
+
+    for (let attempt = 0; attempt < 3; attempt++) {
+      await api().post('/v1/auth/forgot-password').send({ email }).expect(200);
+    }
+
+    await api()
+      .post('/v1/auth/forgot-password')
+      .send({ email: email.toUpperCase() })
+      .expect(429);
+    expect(execute).toHaveBeenCalledTimes(3);
   });
 });

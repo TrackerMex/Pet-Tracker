@@ -492,3 +492,64 @@ El e2e sobreescribe `PASSWORD_RESET_SENDER` con una instancia real de
 `ResendPasswordResetSender`; solo `fetch` es un doble rechazado. La
 respuesta de la cuenta existente se compara estructuralmente contra la de la
 cuenta inexistente. No hubo red real.
+
+### R8 — rojo unitario
+
+```text
+$ pnpm -C backend-pet-tracker exec jest src/modules/auth/infrastructure/guards/email-rate-limit.guard.spec.ts --runInBand
+FAIL src/modules/auth/infrastructure/guards/email-rate-limit.guard.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module './email-rate-limit.guard' from 'modules/auth/infrastructure/guards/email-rate-limit.guard.spec.ts'
+
+      1 | import { ExecutionContext, HttpException, HttpStatus } from '@nestjs/common';
+    > 2 | import {
+        | ^
+      3 |   EMAIL_RATE_LIMIT_WINDOW_MS,
+      4 |   FORGOT_PASSWORD_MAX_PER_EMAIL,
+      5 |   EmailRateLimitGuard,
+
+      at Resolver._throwModNotFoundError (../node_modules/.pnpm/jest-resolve@30.4.1/node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (modules/auth/infrastructure/guards/email-rate-limit.guard.spec.ts:2:1)
+
+Test Suites: 1 failed, 1 total
+Tests:       0 total
+Snapshots:   0 total
+Time:        2.936 s
+Ran all test suites matching src/modules/auth/infrastructure/guards/email-rate-limit.guard.spec.ts.
+exit 1
+```
+
+### R8 — rojo e2e
+
+```text
+$ pnpm -C backend-pet-tracker exec jest --config test/jest-e2e.json test/auth-email-delivery.e2e-spec.ts --runInBand
+FAIL test/auth-email-delivery.e2e-spec.ts (6.415 s)
+  ● R8: forgot-password devuelve 429 tras agotar el cupo del email › bloquea el cuarto intento antes de ejecutar el caso de uso
+
+    expected 429 "Too Many Requests", got 200 "OK"
+
+      145 |       .post('/v1/auth/forgot-password')
+      146 |       .send({ email: email.toUpperCase() })
+    > 147 |       .expect(429);
+          |        ^
+      148 |     expect(execute).toHaveBeenCalledTimes(3);
+      149 |   });
+      150 | });
+
+      at Object.<anonymous> (auth-email-delivery.e2e-spec.ts:147:8)
+      ----
+      at Test._assertStatus (../node_modules/.pnpm/supertest@7.2.2/node_modules/supertest/lib/test.js:309:14)
+      at ../node_modules/.pnpm/supertest@7.2.2/node_modules/supertest/lib/test.js:365:13
+      at Test._assertFunction (../node_modules/.pnpm/supertest@7.2.2/node_modules/supertest/lib/test.js:342:13)
+      at Test.assert (../node_modules/.pnpm/supertest@7.2.2/node_modules/supertest/lib/test.js:195:23)
+      at localAssert (../node_modules/.pnpm/supertest@7.2.2/node_modules/supertest/lib/test.js:138:14)
+      at Server.<anonymous> (../node_modules/.pnpm/supertest@7.2.2/node_modules/supertest/lib/test.js:152:11)
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 1 passed, 2 total
+Snapshots:   0 total
+Time:        6.917 s
+Ran all test suites matching test/auth-email-delivery.e2e-spec.ts.
+exit 1
+```
