@@ -43,3 +43,14 @@
 - Leader verificó la forma escapada (`'src/app/\(tabs\)/...'` → 32 verdes) y
   la autorizó por escrito en el handoff. Spec aprobada intacta (precedente
   #55: el handoff corrige, la spec no se reabre).
+
+### #56 — implementación y review (2026-09-02)
+
+- Codex CLI implementó R1–R5 con TDD: rojo `83a1602` (8 fallos nuevos, 32
+  previos verdes, cero producción) → verde `dbde188` (solo `map.tsx`, D3–D5)
+  → trazabilidad `1a44a53`.
+- `reviewer` **APROBADO** → `progress/review_mobile-map-last-position-error-state.md`.
+  Rojo reproducido en worktree, 40/40 + typecheck + lint + `./init.sh`
+  re-ejecutados, allowlist exacta, tres mutaciones mordieron (unauthorized,
+  `petsReady`, kind ficticio → TS2366).
+- Sin gate humano obligatorio (solo-JS): con el veredicto, #56 pasa a `done`.
