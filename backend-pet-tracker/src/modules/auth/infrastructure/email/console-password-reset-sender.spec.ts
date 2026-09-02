@@ -1,5 +1,4 @@
 import { Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { PasswordResetMessage } from '@/modules/auth/domain/ports/password-reset-sender';
 import { ConsolePasswordResetSender } from './console-password-reset-sender';
 
@@ -10,12 +9,9 @@ const message: PasswordResetMessage = {
   expiresAt: new Date('2026-08-28T21:00:00.000Z'),
 };
 
-function buildSender(emailEnabled: string | undefined) {
-  const config = {
-    get: jest.fn<string | undefined, [string]>(() => emailEnabled),
-  } as unknown as ConfigService;
-
-  return new ConsolePasswordResetSender(config);
+function buildSender(_emailEnabled: string | undefined) {
+  void _emailEnabled;
+  return new ConsolePasswordResetSender();
 }
 
 describe('R10: con EMAIL_ENABLED=false el token de reset se loguea en vez de enviarse', () => {
@@ -53,27 +49,4 @@ describe('R10: con EMAIL_ENABLED=false el token de reset se loguea en vez de env
       expect(warnLines).toHaveLength(0);
     },
   );
-});
-
-describe('R10: con EMAIL_ENABLED=true avisa de que no hay proveedor real cableado', () => {
-  afterEach(() => {
-    jest.restoreAllMocks();
-  });
-
-  it('emite el warning y conserva el log estructurado', async () => {
-    const log = jest
-      .spyOn(Logger.prototype, 'log')
-      .mockImplementation(() => {});
-    const warn = jest
-      .spyOn(Logger.prototype, 'warn')
-      .mockImplementation(() => {});
-
-    await buildSender('true').send(message);
-
-    expect(warn).toHaveBeenCalledTimes(1);
-    expect(String(warn.mock.calls[0][0])).toContain(
-      'no real email provider is wired',
-    );
-    expect(log).toHaveBeenCalledTimes(1);
-  });
 });

@@ -1,14 +1,20 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { LoginUserUseCase } from './application/use-cases/login-user.use-case';
 import { RegisterUserUseCase } from './application/use-cases/register-user.use-case';
 import { RequestPasswordResetUseCase } from './application/use-cases/request-password-reset.use-case';
 import { ResetPasswordUseCase } from './application/use-cases/reset-password.use-case';
 import { VerifyEmailUseCase } from './application/use-cases/verify-email.use-case';
-import { EMAIL_VERIFICATION_SENDER } from './domain/ports/email-verification-sender';
+import {
+  EMAIL_VERIFICATION_SENDER,
+  type EmailVerificationSender,
+} from './domain/ports/email-verification-sender';
 import { PASSWORD_HASHER } from './domain/ports/password-hasher';
-import { PASSWORD_RESET_SENDER } from './domain/ports/password-reset-sender';
+import {
+  PASSWORD_RESET_SENDER,
+  type PasswordResetSender,
+} from './domain/ports/password-reset-sender';
 import { TOKEN_SERVICE } from './domain/ports/token-service';
 import { EMAIL_VERIFICATION_TOKEN_REPOSITORY } from './domain/repositories/email-verification-token.repository';
 import { PASSWORD_RESET_TOKEN_REPOSITORY } from './domain/repositories/password-reset-token.repository';
@@ -16,7 +22,11 @@ import { USER_REPOSITORY } from './domain/repositories/user.repository';
 import { AuthController } from './infrastructure/auth.controller';
 import { ConsoleEmailVerificationSender } from './infrastructure/email/console-email-verification-sender';
 import { ConsolePasswordResetSender } from './infrastructure/email/console-password-reset-sender';
+import { ResendClient } from './infrastructure/email/resend-client';
+import { ResendEmailVerificationSender } from './infrastructure/email/resend-email-verification-sender';
+import { ResendPasswordResetSender } from './infrastructure/email/resend-password-reset-sender';
 import { AuthGuard } from './infrastructure/guards/auth.guard';
+import { EmailRateLimitGuard } from './infrastructure/guards/email-rate-limit.guard';
 import { EmailVerificationTokenDrizzleRepository } from './infrastructure/repositories/email-verification-token.drizzle.repository';
 import { PasswordResetTokenDrizzleRepository } from './infrastructure/repositories/password-reset-token.drizzle.repository';
 import { UserDrizzleRepository } from './infrastructure/repositories/user.drizzle.repository';
@@ -32,6 +42,7 @@ import { JwtTokenService } from './infrastructure/security/jwt-token-service';
     LoginUserUseCase,
     RequestPasswordResetUseCase,
     ResetPasswordUseCase,
+    EmailRateLimitGuard,
     {
       provide: USER_REPOSITORY,
       useClass: UserDrizzleRepository,
@@ -50,11 +61,29 @@ import { JwtTokenService } from './infrastructure/security/jwt-token-service';
     },
     {
       provide: EMAIL_VERIFICATION_SENDER,
-      useClass: ConsoleEmailVerificationSender,
+      inject: [ConfigService],
+      useFactory: (config: ConfigService): EmailVerificationSender =>
+        config.get<string>('EMAIL_ENABLED') === 'true'
+          ? new ResendEmailVerificationSender(
+              new ResendClient(
+                config.get<string>('RESEND_API_KEY') ?? '',
+                config.get<string>('RESEND_FROM') ?? '',
+              ),
+            )
+          : new ConsoleEmailVerificationSender(),
     },
     {
       provide: PASSWORD_RESET_SENDER,
-      useClass: ConsolePasswordResetSender,
+      inject: [ConfigService],
+      useFactory: (config: ConfigService): PasswordResetSender =>
+        config.get<string>('EMAIL_ENABLED') === 'true'
+          ? new ResendPasswordResetSender(
+              new ResendClient(
+                config.get<string>('RESEND_API_KEY') ?? '',
+                config.get<string>('RESEND_FROM') ?? '',
+              ),
+            )
+          : new ConsolePasswordResetSender(),
     },
     {
       provide: TOKEN_SERVICE,

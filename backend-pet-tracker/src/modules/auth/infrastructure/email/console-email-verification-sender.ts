@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import {
   EmailVerificationMessage,
   EmailVerificationSender,
@@ -14,15 +13,7 @@ import {
 export class ConsoleEmailVerificationSender implements EmailVerificationSender {
   private readonly logger = new Logger(ConsoleEmailVerificationSender.name);
 
-  constructor(private readonly config: ConfigService) {}
-
   send(message: EmailVerificationMessage): Promise<void> {
-    if (this.isEmailEnabled()) {
-      this.logger.warn(
-        'EMAIL_ENABLED=true but no real email provider is wired yet; the verification token is only written to the log',
-      );
-    }
-
     this.logger.log(
       JSON.stringify({
         event: 'auth.email_verification.issued',
@@ -34,9 +25,5 @@ export class ConsoleEmailVerificationSender implements EmailVerificationSender {
     );
 
     return Promise.resolve();
-  }
-
-  private isEmailEnabled(): boolean {
-    return this.config.get<string>('EMAIL_ENABLED') === 'true';
   }
 }

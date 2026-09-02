@@ -266,7 +266,7 @@ describe('R11 (init-env-drift-warning #23): documentacion y cero variables nueva
     const exampleText = readFileSync(new URL('./.env.example', import.meta.url), 'utf8');
     const keys = parseEnvKeys(exampleText);
 
-    assert.equal(keys.length, 21);
+    assert.equal(keys.length, 23);
     assert.equal(keys.some((key) => key.startsWith('DRIFT') || key.startsWith('ENV_DRIFT')), false);
   });
 });
