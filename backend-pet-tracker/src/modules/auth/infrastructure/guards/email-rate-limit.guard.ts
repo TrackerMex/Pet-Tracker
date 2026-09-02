@@ -33,17 +33,17 @@ export class EmailRateLimitGuard implements CanActivate {
     this.pruneExpired(now);
 
     const request = context.switchToHttp().getRequest<EmailRequest>();
+    const email = request.body?.email;
+    if (typeof email !== 'string') {
+      return true;
+    }
+
     let key: string;
     let maximum: number;
 
     switch (context.getHandler().name) {
       case 'forgotPassword': {
-        const rawEmail = request.body?.email;
-        const email =
-          typeof rawEmail === 'string'
-            ? normalizeEmail(rawEmail)
-            : String(rawEmail);
-        key = `forgot:${email}`;
+        key = `forgot:${normalizeEmail(email)}`;
         maximum = FORGOT_PASSWORD_MAX_PER_EMAIL;
         break;
       }

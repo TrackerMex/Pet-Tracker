@@ -652,3 +652,51 @@ Time:        2.489 s, estimated 7 s
 Ran all test suites matching src/modules/auth/infrastructure/auth.controller.spec.ts.
 exit 1
 ```
+
+### R10 — primer intento de verde (rojo)
+
+```text
+$ pnpm -C backend-pet-tracker exec jest src/modules/auth/infrastructure/auth.controller.spec.ts src/modules/auth/infrastructure/guards/email-rate-limit.guard.spec.ts --runInBand
+FAIL src/modules/auth/infrastructure/auth.controller.spec.ts
+  ● R10 (auth-email-delivery): el 429 del rate limit no revela si la cuenta existe › iguala el 200 dentro del cupo y el 429 al agotarlo
+
+    expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+    Expected number of calls: 3
+    Received number of calls: 2
+
+      720 |     expect(missingBlocked).toEqual(existingBlocked);
+      721 |     expect(existingBlocked.status).toBe(429);
+    > 722 |     expect(existing.execute).toHaveBeenCalledTimes(3);
+          |                              ^
+      723 |     expect(missing.execute).toHaveBeenCalledTimes(3);
+
+      at Object.<anonymous> (modules/auth/infrastructure/auth.controller.spec.ts:722:30)
+
+Test Suites: 1 failed, 1 passed, 2 total
+Tests:       1 failed, 42 passed, 43 total
+Snapshots:   0 total
+Time:        2.611 s, estimated 4 s
+Ran all test suites matching src/modules/auth/infrastructure/auth.controller.spec.ts|src/modules/auth/infrastructure/guards/email-rate-limit.guard.spec.ts.
+exit 1
+```
+
+La salida señaló que el primer parche había omitido la asignación de
+`forgot:${normalizeEmail(email)}`; ambas cuentas compartían por error la
+clave `undefined`. No se commiteó ese estado.
+
+### R10 — verde
+
+```text
+$ pnpm -C backend-pet-tracker exec jest src/modules/auth/infrastructure/auth.controller.spec.ts src/modules/auth/infrastructure/guards/email-rate-limit.guard.spec.ts --runInBand
+Test Suites: 2 passed, 2 total
+Tests:       43 passed, 43 total
+Snapshots:   0 total
+Time:        2.491 s, estimated 3 s
+Ran all test suites matching src/modules/auth/infrastructure/auth.controller.spec.ts|src/modules/auth/infrastructure/guards/email-rate-limit.guard.spec.ts.
+exit 0
+```
+
+El guard retorna antes de consumir cuota cuando `body.email` no es string.
+Para bodies válidos, el 429 depende únicamente de la clave normalizada y del
+contador en memoria; no consulta repositorios ni distingue cuentas.
