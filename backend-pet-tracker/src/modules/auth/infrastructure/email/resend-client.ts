@@ -9,6 +9,13 @@ export const PASSWORD_RESET_SUBJECT =
 export const EMAIL_VERIFICATION_SUBJECT =
   'Verifica tu email de Pet Tracker';
 
+export class MissingResendConfigError extends Error {
+  constructor(missingKeys: string[]) {
+    super(`Missing Resend configuration: ${missingKeys.join(', ')}`);
+    this.name = 'MissingResendConfigError';
+  }
+}
+
 export interface ResendDelivery {
   event: string;
   userId: string;
@@ -25,7 +32,15 @@ export class ResendClient {
     private readonly apiKey: string,
     private readonly from: string,
     private readonly fetchImpl: typeof fetch = fetch,
-  ) {}
+  ) {
+    const missingKeys = [
+      ...(apiKey.trim() ? [] : ['RESEND_API_KEY']),
+      ...(from.trim() ? [] : ['RESEND_FROM']),
+    ];
+    if (missingKeys.length > 0) {
+      throw new MissingResendConfigError(missingKeys);
+    }
+  }
 
   deliver(delivery: ResendDelivery): Promise<void> {
     const attempt = this.request(delivery).catch((error: unknown) => {
