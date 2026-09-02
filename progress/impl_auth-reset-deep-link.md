@@ -43,7 +43,7 @@ equivalentes `building-native-ui`, `native-data-fetching` y
 
 ## Historial TDD
 
-### R1 — rojo
+### R1 — rojo (`030076c`)
 
 ```text
 $ pnpm -C backend-pet-tracker exec jest src/modules/auth/infrastructure/email/password-reset-link.spec.ts src/modules/auth/infrastructure/email/resend-password-reset-sender.spec.ts --runInBand
@@ -66,3 +66,24 @@ Time:        0.93 s, estimated 1 s
 Ran all test suites matching src/modules/auth/infrastructure/email/password-reset-link.spec.ts|src/modules/auth/infrastructure/email/resend-password-reset-sender.spec.ts.
 exit 1
 ```
+
+### R1 — verde (`e0dfff8`)
+
+```text
+$ pnpm -C backend-pet-tracker exec jest src/modules/auth/infrastructure/email/password-reset-link.spec.ts src/modules/auth/infrastructure/email/resend-password-reset-sender.spec.ts --runInBand
+Test Suites: 2 passed, 2 total
+Tests:       5 passed, 5 total
+Snapshots:   0 total
+Time:        0.991 s
+Ran all test suites matching src/modules/auth/infrastructure/email/password-reset-link.spec.ts|src/modules/auth/infrastructure/email/resend-password-reset-sender.spec.ts.
+exit 0
+
+$ pnpm -C backend-pet-tracker exec tsc --noEmit
+exit 0
+```
+
+El helper nuevo conserva el path fijo, elimina slash finales del host y
+codifica el token. El correo mantiene el token pelado como segundo párrafo,
+añade la URL en uno posterior y continúa limitado a texto plano. En el describe
+R1 de #58 solo se eliminó el assert que prohibía `http`; las demás ediciones de
+ese fichero pasan el nuevo argumento del constructor.
