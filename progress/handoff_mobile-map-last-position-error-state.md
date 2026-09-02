@@ -24,7 +24,13 @@ Feature de UI MÓVIL:
     rama nueva pinta su propio bg-background, el contenedor screen-map no.
 
 Isla bun: test/typecheck/lint se corren DESDE mobile-pet-tracker/ con bun.
-Suite objetivo: bun run test -- 'src/app/(tabs)/__tests__/map.test.tsx' --runInBand
+Suite objetivo (CORREGIDO 2026-09-02, autorizado por el leader — la spec trae
+el comando sin escapar y Jest interpreta (tabs) como grupo regex; verificado
+por el leader: la forma escapada encuentra la suite, 32 tests verdes):
+  bun run test -- 'src/app/\(tabs\)/__tests__/map.test.tsx' --runInBand
+Usa esta forma escapada en TODOS los sitios donde tasks.md o requirements.md
+citen el comando; el error queda registrado en el reporte de impl y NO se
+edita la spec aprobada.
 
 Archivos a modificar (los ÚNICOS):
   - mobile-pet-tracker/src/app/(tabs)/__tests__/map.test.tsx   (SOLO adiciones)

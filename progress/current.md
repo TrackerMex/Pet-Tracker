@@ -34,3 +34,12 @@
   `progress/handoff_mobile-map-last-position-error-state.md`. Sin push de
   Codex; leader pushea tras el veredicto del reviewer. Sin smoke humano
   obligatorio (solo-JS).
+
+### #56 — corrección del handoff (2026-09-02)
+
+- Codex paró antes del TDD (correcto): el comando de test de la spec sale
+  `No tests found` — Jest interpreta `(tabs)` como grupo regex. Noveno caso a
+  favor de que `spec_author` verifique comandos ejecutándolos.
+- Leader verificó la forma escapada (`'src/app/\(tabs\)/...'` → 32 verdes) y
+  la autorizó por escrito en el handoff. Spec aprobada intacta (precedente
+  #55: el handoff corrige, la spec no se reabre).
