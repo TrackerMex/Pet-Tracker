@@ -395,3 +395,34 @@ sin modificar `app.json`. Las ramas de Maps y App Links son independientes;
 si faltan ambas variables sus mensajes se agrupan en una única llamada a
 `console.warn`, conservando el contrato previo de una advertencia y el nuevo
 contrato de R4.
+
+### R7 — rojo
+
+```text
+$ cd mobile-pet-tracker && bun run test --runInBand src/api/__tests__/auth.test.ts
+FAIL src/api/__tests__/auth.test.ts
+  R1: login mapea la respuesta por kind
+    ✓ 10 tests
+  R2: register mapea la respuesta por kind
+    ✓ 10 tests
+  R7 (auth-reset-deep-link): resetPassword mapea la respuesta por kind
+    ✕ hace POST con el payload completo y mapea 200 a ok
+    ✕ mapea 410 a expired
+    ✕ mapea un 400 con errors de zod a validation
+    ✕ mapea un 400 sin errors a invalid-token
+    ✕ mapea un rechazo de fetch a unreachable
+    ✕ mapea base URL ausente undefined sin hacer fetch
+    ✕ mapea base URL ausente "" sin hacer fetch
+    ✕ mapea status inesperado a error
+    ✕ mapea status de éxito inesperado a error
+
+  ● TypeError: (0 , _auth.resetPassword) is not a function
+
+Test Suites: 1 failed, 1 total
+Tests:       9 failed, 20 passed, 29 total
+Snapshots:   0 total
+Time:        1.983 s
+Ran all test suites matching /src\\/api\\/__tests__\\/auth.test.ts/i.
+error: script "test" exited with code 1
+exit 1
+```
