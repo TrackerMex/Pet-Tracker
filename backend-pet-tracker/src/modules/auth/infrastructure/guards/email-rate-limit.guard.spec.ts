@@ -2,6 +2,7 @@ import { ExecutionContext, HttpException, HttpStatus } from '@nestjs/common';
 import {
   EMAIL_RATE_LIMIT_WINDOW_MS,
   FORGOT_PASSWORD_MAX_PER_EMAIL,
+  REGISTER_MAX_PER_IP,
   EmailRateLimitGuard,
 } from './email-rate-limit.guard';
 
@@ -85,5 +86,33 @@ describe('R8: el cuarto forgot-password del mismo email en una hora responde 429
     jest.advanceTimersByTime(EMAIL_RATE_LIMIT_WINDOW_MS + 1);
 
     expect(guard.canActivate(context)).toBe(true);
+  });
+});
+
+describe('R9: la undecima alta desde la misma IP en una hora responde 429', () => {
+  it('limita por IP aunque cada peticion use un email diferente', () => {
+    const guard = new EmailRateLimitGuard();
+    const ip = '203.0.113.20';
+
+    for (let attempt = 0; attempt < REGISTER_MAX_PER_IP; attempt++) {
+      expect(
+        guard.canActivate(
+          contextFor(
+            'register',
+            { email: `person-${attempt}@example.com` },
+            ip,
+          ),
+        ),
+      ).toBe(true);
+    }
+
+    const error = captureHttpException(() =>
+      guard.canActivate(
+        contextFor('register', { email: 'last@example.com' }, ip),
+      ),
+    );
+
+    expect(REGISTER_MAX_PER_IP).toBe(10);
+    expect(error.getStatus()).toBe(HttpStatus.TOO_MANY_REQUESTS);
   });
 });

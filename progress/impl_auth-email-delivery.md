@@ -580,3 +580,31 @@ La implementación usa una ventana fija por email normalizado, poda entradas
 vencidas, conserva como máximo `MAX_TRACKED_KEYS` y aplica el guard solo a
 `forgotPassword`. La rama de `register` queda fuera de este verde y se
 añade en R9.
+
+### R9 — rojo
+
+```text
+$ pnpm -C backend-pet-tracker exec jest src/modules/auth/infrastructure/guards/email-rate-limit.guard.spec.ts --runInBand
+FAIL src/modules/auth/infrastructure/guards/email-rate-limit.guard.spec.ts
+  ● R9: la undecima alta desde la misma IP en una hora responde 429 › limita por IP aunque cada peticion use un email diferente
+
+    Expected HttpException
+
+      36 |   }
+      37 |
+    > 38 |   throw new Error('Expected HttpException');
+         |         ^
+      39 | }
+      40 |
+      41 | describe('R8: el cuarto forgot-password del mismo email en una hora responde 429', () => {
+
+      at captureHttpException (modules/auth/infrastructure/guards/email-rate-limit.guard.spec.ts:38:9)
+      at Object.<anonymous> (modules/auth/infrastructure/guards/email-rate-limit.guard.spec.ts:109:19)
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 2 passed, 3 total
+Snapshots:   0 total
+Time:        1.936 s, estimated 2 s
+Ran all test suites matching src/modules/auth/infrastructure/guards/email-rate-limit.guard.spec.ts.
+exit 1
+```
