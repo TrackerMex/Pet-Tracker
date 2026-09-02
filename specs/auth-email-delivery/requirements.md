@@ -15,7 +15,7 @@ tags: [harness, spec, backend, security]
 > (§Decisiones abiertas). Feature de **backend puro** (NestJS + pnpm). No toca
 > `mobile-pet-tracker/` — C8 de `CHECKPOINTS.md` no aplica.
 >
-> Rama: `feature/55-auth-email-delivery`, creada desde
+> Rama: `feature/58-auth-email-delivery`, creada desde
 > `origin/feature/44-auth-forgot-password` (PR #93, aprobada por el reviewer,
 > **aún sin mergear a `main`**). Los diffs de contención de R12 se calculan
 > contra `origin/feature/44-auth-forgot-password`, **no** contra `origin/main`.
