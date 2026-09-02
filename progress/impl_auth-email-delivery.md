@@ -67,7 +67,7 @@ envió correo. G1–G4 permanecen pendientes y fuera del alcance del implementer
 
 ## Historial TDD
 
-### R1 — rojo
+### R1 — rojo (`3be8e9c`)
 
 ```text
 $ pnpm -C backend-pet-tracker exec jest src/modules/auth/infrastructure/email/resend-password-reset-sender.spec.ts --runInBand
@@ -93,3 +93,20 @@ Time:        1.134 s
 Ran all test suites matching src/modules/auth/infrastructure/email/resend-password-reset-sender.spec.ts.
 exit 1
 ```
+
+### R1 — verde (`9b77bb4`)
+
+```text
+$ pnpm -C backend-pet-tracker exec jest src/modules/auth/infrastructure/email/resend-password-reset-sender.spec.ts --runInBand
+Test Suites: 1 passed, 1 total
+Tests:       1 passed, 1 total
+Snapshots:   0 total
+Time:        8.013 s
+Ran all test suites matching src/modules/auth/infrastructure/email/resend-password-reset-sender.spec.ts.
+exit 0
+```
+
+La implementación mínima compone el correo de reset y delega el `POST` a
+`ResendClient`. En este punto `deliver()` todavía espera al proveedor y no
+contiene sus fallos; ese comportamiento se conserva intencionalmente hasta el
+rojo de R5.
