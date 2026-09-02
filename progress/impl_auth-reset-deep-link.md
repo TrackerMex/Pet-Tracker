@@ -615,3 +615,24 @@ El botón queda deshabilitado durante la petición. El éxito retira el
 formulario y ofrece volver al login; cada variante de error conserva el
 formulario, muestra el copy literal en un `Text` seleccionable y permite
 reintentar.
+
+### Cierre del tramo R4–R8
+
+```text
+$ cd mobile-pet-tracker && bun run test --runInBand app.config.test.ts src/api/__tests__/auth.test.ts src/screens/reset-password/index.test.tsx
+PASS src/screens/reset-password/index.test.tsx
+PASS ./app.config.test.ts
+PASS src/api/__tests__/auth.test.ts
+Test Suites: 3 passed, 3 total
+Tests:       52 passed, 52 total
+Snapshots:   0 total
+Time:        4.351 s, estimated 7 s
+exit 0
+
+$ cd mobile-pet-tracker && bun run typecheck
+$ tsc --noEmit
+exit 0
+```
+
+Los mensajes de consola de HeroUI/Uniwind observados en la suite de pantalla
+son ruido conocido del entorno Jest del repositorio; no representan fallos.
