@@ -111,7 +111,7 @@ La implementación mínima compone el correo de reset y delega el `POST` a
 contiene sus fallos; ese comportamiento se conserva intencionalmente hasta el
 rojo de R5.
 
-### R5 — rojo
+### R5 — rojo (`b8ac577`)
 
 ```text
 $ pnpm -C backend-pet-tracker exec jest src/modules/auth/infrastructure/email/resend-client.spec.ts --runInBand
@@ -162,3 +162,22 @@ Time:        7.085 s
 Ran all test suites matching src/modules/auth/infrastructure/email/resend-client.spec.ts.
 exit 1
 ```
+
+Durante el primer intento de verde, dos casos pasaron y el `Promise.race`
+del primero reveló que el competidor ya estaba resuelto. Se cambió a una
+microtarea posterior y se enmendó únicamente el commit rojo; la producción
+permaneció fuera de ese commit.
+
+### R5 — verde (`536040f`)
+
+```text
+$ pnpm -C backend-pet-tracker exec jest src/modules/auth/infrastructure/email/resend-client.spec.ts --runInBand
+Test Suites: 1 passed, 1 total
+Tests:       3 passed, 3 total
+Snapshots:   0 total
+Time:        1.757 s, estimated 5 s
+Ran all test suites matching src/modules/auth/infrastructure/email/resend-client.spec.ts.
+exit 0
+```
+
+La corrida conjunta posterior de R1 y R5 pasó 2 suites y 4 tests.
