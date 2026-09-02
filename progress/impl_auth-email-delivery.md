@@ -268,7 +268,7 @@ Ran all test suites matching src/modules/auth/infrastructure/email/resend-passwo
 exit 0
 ```
 
-### R3 — rojo
+### R3 — rojo (`8c6cd06`)
 
 ```text
 $ pnpm -C backend-pet-tracker exec jest src/modules/auth/auth.module.spec.ts --runInBand
@@ -289,4 +289,29 @@ Snapshots:   0 total
 Time:        14.526 s
 Ran all test suites matching src/modules/auth/auth.module.spec.ts.
 exit 1
+```
+
+### R3 — verde (`96b97c5`)
+
+```text
+$ pnpm -C backend-pet-tracker exec jest src/modules/auth/auth.module.spec.ts src/modules/auth/infrastructure/email/console-password-reset-sender.spec.ts src/modules/auth/infrastructure/email/console-email-verification-sender.spec.ts --runInBand
+Test Suites: 3 passed, 3 total
+Tests:       8 passed, 8 total
+Snapshots:   0 total
+Time:        13.352 s, estimated 17 s
+Ran all test suites matching src/modules/auth/auth.module.spec.ts|src/modules/auth/infrastructure/email/console-password-reset-sender.spec.ts|src/modules/auth/infrastructure/email/console-email-verification-sender.spec.ts.
+exit 0
+```
+
+La comprobación literal `grep -rn "EMAIL_ENABLED" backend-pet-tracker/src/`
+no puede producir dos aciertos: cuenta los specs obligatorios y un comentario
+preexistente de `domain/ports/email-verification-sender.ts`, ruta prohibida
+por R12. Sin editar la spec ni domain, la comprobación de lecturas ejecutables
+sí devuelve exactamente dos líneas, ambas en `auth.module.ts`:
+
+```text
+$ rg -n "config\.get<string>\('EMAIL_ENABLED'\)" backend-pet-tracker/src --glob '!*.spec.ts'
+backend-pet-tracker/src\modules\auth\auth.module.ts:64:        config.get<string>('EMAIL_ENABLED') === 'true'
+backend-pet-tracker/src\modules\auth\auth.module.ts:77:        config.get<string>('EMAIL_ENABLED') === 'true'
+exit 0
 ```
