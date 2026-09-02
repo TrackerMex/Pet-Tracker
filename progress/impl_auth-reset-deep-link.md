@@ -525,3 +525,26 @@ La ruta raíz `/reset-password` delega en `ResetPasswordScreen`, conserva el
 token recibido por Expo Router y muestra un estado local seguro cuando falta.
 El montaje no contiene todavía ninguna llamada de red; esa propiedad se fija
 explícitamente en R6.
+
+### R6 — rojo
+
+```text
+$ cd mobile-pet-tracker && bun run test --runInBand src/screens/reset-password/index.test.tsx
+FAIL src/screens/reset-password/index.test.tsx
+  R6: abrir la pantalla no dispara ninguna peticion
+    ✓ no llama a resetPassword al montar la pantalla
+    ✕ hace exactamente una llamada despues del submit
+
+  ● expect(jest.fn()).toHaveBeenCalledTimes(expected)
+    Expected number of calls: 1
+    Received number of calls: 0
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 5 passed, 6 total
+Snapshots:   0 total
+Time:        4.413 s
+exit 1
+```
+
+El montaje permanece sin red, pero el botón todavía no tiene handler: la
+única prueba roja es la llamada intencional posterior al submit.
