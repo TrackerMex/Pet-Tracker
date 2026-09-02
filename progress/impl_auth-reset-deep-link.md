@@ -568,7 +568,7 @@ exit 0
 No hay efectos ni loaders de red: montar la ruta deja el mock intacto y el
 único camino que invoca `resetPassword` es el handler de `reset-submit`.
 
-### R8 — rojo
+### R8 — rojo (`99215cf`)
 
 ```text
 $ cd mobile-pet-tracker && bun run test --runInBand src/screens/reset-password/index.test.tsx
@@ -594,3 +594,24 @@ exit 1
 R5 y R6 permanecen verdes (6/6). El rojo demuestra que la pantalla todavía
 ignora el resultado de la API y no representa ni el estado en vuelo ni sus
 resultados.
+
+### R8 — verde (`c1ace87`)
+
+```text
+$ cd mobile-pet-tracker && bun run test --runInBand src/screens/reset-password/index.test.tsx
+PASS src/screens/reset-password/index.test.tsx
+Test Suites: 1 passed, 1 total
+Tests:       14 passed, 14 total
+Snapshots:   0 total
+Time:        3.901 s, estimated 12 s
+exit 0
+
+$ cd mobile-pet-tracker && bun run typecheck
+$ tsc --noEmit
+exit 0
+```
+
+El botón queda deshabilitado durante la petición. El éxito retira el
+formulario y ofrece volver al login; cada variante de error conserva el
+formulario, muestra el copy literal en un `Text` seleccionable y permite
+reintentar.
