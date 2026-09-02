@@ -636,3 +636,43 @@ exit 0
 
 Los mensajes de consola de HeroUI/Uniwind observados en la suite de pantalla
 son ruido conocido del entorno Jest del repositorio; no representan fallos.
+
+## Bloqueo de spec en R11
+
+Se escribió en el working tree el e2e literal pedido por R11, reutilizando la
+captura de `PasswordResetMessage` de
+`test/auth-forgot-password.e2e-spec.ts`: crea un usuario, solicita el token,
+hace tres `GET /v1/auth/reset-password?token=...`, después un primer `POST` y
+un segundo `POST`. Sin ningún cambio de producción, su primera ejecución fue
+verde:
+
+```text
+$ pnpm -C backend-pet-tracker run test:e2e -- --runInBand test/auth-reset-deep-link.e2e-spec.ts
+PASS test/auth-reset-deep-link.e2e-spec.ts
+Test Suites: 1 passed, 1 total
+Tests:       1 passed, 1 total
+Snapshots:   0 total
+Time:        1.93 s
+exit 0
+```
+
+El resultado confirma la propiedad de seguridad: los tres GET respondieron
+404, el primer POST respondió 200 y el segundo 400. Confirma también la
+contradicción entre dos mandatos de la spec:
+
+- la regla C4 del handoff exige para **cada** R-id un commit de test rojo y
+  una salida roja anterior a la implementación;
+- `tasks.md` R11(2) dice que la implementación «debería estar verde ya» y D11
+  prohíbe tocar `auth.controller.ts`; el endpoint POST heredado de #44 ya
+  cumple R11 íntegramente.
+
+No existe un rojo de comportamiento honesto que implementar dentro de la
+allowlist. Forzar uno exigiría una aserción deliberadamente falsa, un test
+incompleto o romper temporalmente el endpoint existente; cualquiera de esas
+opciones falsearía el historial TDD. Se retiró el e2e no commiteado y se
+detuvo el trabajo, como ordena el §Contexto fijo ante un error de spec.
+
+Para reanudar hace falta una decisión escrita del leader: autorizar R11 como
+excepción de caracterización (commit de test directamente verde, sin cambio
+runtime), o indicar el comportamiento ausente y permitido que debe producir
+un rojo real. R12 no se ha iniciado.
