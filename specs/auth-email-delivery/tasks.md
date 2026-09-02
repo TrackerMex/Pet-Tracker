@@ -12,7 +12,7 @@ tags: [harness, spec, backend, security]
 > que quedar en el historial antes que su verde. Formato de commit:
 > `feat(auth-email-delivery): <desc> (R<n>)`.
 >
-> Rama: `feature/55-auth-email-delivery`. **Nada de `main`.**
+> Rama: `feature/58-auth-email-delivery`. **Nada de `main`.**
 >
 > Orden recomendado: R5 → R1 → R2 → R7 → R3 → R4 → R6 → R8 → R9 → R10 → R11
 > → R12. El transporte (R5) va primero porque los dos adaptadores se apoyan
