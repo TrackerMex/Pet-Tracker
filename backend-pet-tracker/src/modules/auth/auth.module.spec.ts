@@ -15,6 +15,7 @@ import { AuthModule } from './auth.module';
 import { AuthController } from './infrastructure/auth.controller';
 import { ConsoleEmailVerificationSender } from './infrastructure/email/console-email-verification-sender';
 import { ConsolePasswordResetSender } from './infrastructure/email/console-password-reset-sender';
+import { MissingResendConfigError } from './infrastructure/email/resend-client';
 import { ResendEmailVerificationSender } from './infrastructure/email/resend-email-verification-sender';
 import { ResendPasswordResetSender } from './infrastructure/email/resend-password-reset-sender';
 import { AuthGuard } from './infrastructure/guards/auth.guard';
@@ -134,3 +135,46 @@ function restoreEnv(name: string, value: string | undefined): void {
     process.env[name] = value;
   }
 }
+
+describe('R4 (auth-email-delivery): EMAIL_ENABLED=true sin RESEND_API_KEY aborta el arranque', () => {
+  const previousEnv = {
+    emailEnabled: process.env.EMAIL_ENABLED,
+    jwtSecret: process.env.JWT_SECRET,
+    resendApiKey: process.env.RESEND_API_KEY,
+    resendFrom: process.env.RESEND_FROM,
+  };
+
+  beforeEach(() => {
+    process.env.EMAIL_ENABLED = 'true';
+    process.env.JWT_SECRET = 'test-jwt-secret';
+  });
+
+  afterEach(() => {
+    restoreEnv('EMAIL_ENABLED', previousEnv.emailEnabled);
+    restoreEnv('JWT_SECRET', previousEnv.jwtSecret);
+    restoreEnv('RESEND_API_KEY', previousEnv.resendApiKey);
+    restoreEnv('RESEND_FROM', previousEnv.resendFrom);
+  });
+
+  it('rechaza la compilacion cuando falta RESEND_API_KEY', async () => {
+    delete process.env.RESEND_API_KEY;
+    process.env.RESEND_FROM = 'sender@example.com';
+
+    const compilation = Test.createTestingModule({
+      imports: [FakeSharedInfrastructureModule, AuthModule],
+    }).compile();
+
+    await expect(compilation).rejects.toThrow(MissingResendConfigError);
+  });
+
+  it('rechaza la compilacion cuando falta RESEND_FROM', async () => {
+    process.env.RESEND_API_KEY = 'api-key-for-r4';
+    delete process.env.RESEND_FROM;
+
+    const compilation = Test.createTestingModule({
+      imports: [FakeSharedInfrastructureModule, AuthModule],
+    }).compile();
+
+    await expect(compilation).rejects.toThrow(MissingResendConfigError);
+  });
+});

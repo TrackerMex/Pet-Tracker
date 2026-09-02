@@ -315,3 +315,42 @@ backend-pet-tracker/src\modules\auth\auth.module.ts:64:        config.get<string
 backend-pet-tracker/src\modules\auth\auth.module.ts:77:        config.get<string>('EMAIL_ENABLED') === 'true'
 exit 0
 ```
+
+### R4 — rojo
+
+```text
+$ pnpm -C backend-pet-tracker exec jest src/modules/auth/auth.module.spec.ts --runInBand
+FAIL src/modules/auth/auth.module.spec.ts
+  ● R4 (auth-email-delivery): EMAIL_ENABLED=true sin RESEND_API_KEY aborta el arranque › rechaza la compilacion cuando falta RESEND_API_KEY
+
+    expect(received).rejects.toThrow()
+
+    Received promise resolved instead of rejected
+
+      165 |     }).compile();
+      166 |
+    > 167 |     await expect(compilation).rejects.toThrow(MissingResendConfigError);
+          |           ^
+
+  ● R4 (auth-email-delivery): EMAIL_ENABLED=true sin RESEND_API_KEY aborta el arranque › rechaza la compilacion cuando falta RESEND_FROM
+
+    expect(received).rejects.toThrow()
+
+    Received promise resolved instead of rejected
+
+      176 |     }).compile();
+      177 |
+    > 178 |     await expect(compilation).rejects.toThrow(MissingResendConfigError);
+          |           ^
+
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 3 passed, 5 total
+Snapshots:   0 total
+Time:        4.554 s, estimated 12 s
+Ran all test suites matching src/modules/auth/auth.module.spec.ts.
+exit 1
+```
+
+Jest imprimió además el objeto completo de cada módulo resuelto; se omite esa
+serialización interna de Nest por longitud. La causa y los dos casos quedan
+preservados literalmente arriba.
