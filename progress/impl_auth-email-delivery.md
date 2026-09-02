@@ -2,15 +2,15 @@
 
 - Fecha: 2026-09-02
 - Branch: `feature/58-auth-email-delivery`
-- Alcance previsto: R1–R12, backend puro
-- Resultado: **bloqueada antes de implementación por inconsistencia en el gate
-  de aprobación de la spec**.
+- Alcance: R1–R12, backend puro
+- Resultado: implementación en curso; el bloqueo inicial de aprobación quedó
+  corregido por el leader en `b647a60`.
 
-## Bloqueo
+## Bloqueo inicial de la spec
 
-El handoff y la casilla de aprobación humana afirman que la spec está
-aprobada, pero los cuatro documentos de la spec conservan `status: draft` en
-su frontmatter:
+El primer handoff y la casilla de aprobación humana afirmaban que la spec
+estaba aprobada, pero los cuatro documentos conservaban `status: draft` en su
+frontmatter:
 
 ```text
 specs/auth-email-delivery/requirements.md:3:status: draft
@@ -20,20 +20,25 @@ specs/auth-email-delivery/traceability.md:3:status: draft
 ```
 
 El commit de handoff `8110530` (`docs(auth): approve #58 spec and hand off to
-Codex CLI`) no modificó ninguno de esos cuatro archivos; su diff contiene
+Codex CLI`) no modificó ninguno de esos cuatro archivos; su diff contenía
 únicamente `feature_list.json`, `progress/current.md` y
 `progress/handoff_auth-email-delivery.md`.
 
-Esto contradice tanto `progress/current.md` (que dice que el frontmatter de
-los cuatro ficheros pasó a `approved`) como el prompt del handoff (que declara
-`requirements.md` con `status: approved`). De acuerdo con la regla explícita
-del handoff —si la spec tiene un error, parar, reportarlo aquí y no editar la
-spec— no se auto-corrigió ningún documento de `specs/` y no se inició TDD.
+De acuerdo con la regla explícita del handoff, no se auto-corrigió ningún
+documento de `specs/` y no se inició TDD durante ese primer intento. El bloqueo
+quedó registrado en el commit local que, tras el rebase, es `d81b303`.
+
+## Reanudación
+
+El leader corrigió los cuatro frontmatters en `b647a60`. Tras
+`git pull --rebase`, se verificó que `requirements.md`, `design.md`, `tasks.md`
+y `traceability.md` contienen `status: approved`; el gate quedó satisfecho y
+se reanudó TDD.
 
 ## Verificación previa
 
-Antes de detectar el bloqueo se sincronizó la branch y se ejecutó el gate
-inicial obligatorio:
+Antes del bloqueo inicial se sincronizó la branch y se ejecutó el gate
+obligatorio:
 
 ```text
 $ git checkout feature/58-auth-email-delivery
@@ -57,19 +62,34 @@ e2e: omitidos porque el puerto 5432 no estaba disponible
 en el `.env` local y `STATUS.md` con conteo 51/57 frente a 53/59. Ninguna se
 modificó.
 
-## Cambios y estado TDD
+No se ejecutó red real, no se creó cuenta de Resend, no se tocó DNS y no se
+envió correo. G1–G4 permanecen pendientes y fuera del alcance del implementer.
 
-- No se modificó código de backend.
-- No se tocó `mobile-pet-tracker/`, `infra/`, `src/db/` ni `src/workers/`.
-- No se tocó `feature_list.json` ni `progress/current.md`.
-- No se ejecutó red real, no se creó cuenta de Resend, no se tocó DNS y no se
-  envió correo.
-- No existen commits rojo/verde porque el gate bloquea el inicio de R1.
-- G1–G4 permanecen pendientes y fuera del alcance del implementer.
+## Historial TDD
 
-## Acción requerida
+### R1 — rojo
 
-El leader o el humano que aprobó la spec debe corregir el frontmatter de los
-cuatro documentos a `status: approved` en un commit previo y volver a entregar
-la branch. Después puede reanudarse la implementación R1–R12 con el historial
-rojo→verde exigido.
+```text
+$ pnpm -C backend-pet-tracker exec jest src/modules/auth/infrastructure/email/resend-password-reset-sender.spec.ts --runInBand
+FAIL src/modules/auth/infrastructure/email/resend-password-reset-sender.spec.ts
+  ● Test suite failed to run
+
+    Cannot find module './resend-client' from 'modules/auth/infrastructure/email/resend-password-reset-sender.spec.ts'
+
+      1 | import { PasswordResetMessage } from '@/modules/auth/domain/ports/password-reset-sender';
+    > 2 | import {
+        | ^
+      3 |   PASSWORD_RESET_SUBJECT,
+      4 |   RESEND_ENDPOINT,
+      5 |   ResendClient,
+
+      at Resolver._throwModNotFoundError (../node_modules/.pnpm/jest-resolve@30.4.1/node_modules/jest-resolve/build/index.js:895:11)
+      at Object.<anonymous> (modules/auth/infrastructure/email/resend-password-reset-sender.spec.ts:2:1)
+
+Test Suites: 1 failed, 1 total
+Tests:       0 total
+Snapshots:   0 total
+Time:        1.134 s
+Ran all test suites matching src/modules/auth/infrastructure/email/resend-password-reset-sender.spec.ts.
+exit 1
+```
