@@ -1058,7 +1058,7 @@
   {
     "id": 59,
     "name": "auth-reset-deep-link",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P2",
     "description": "Cierra DA2 de #44 auth-forgot-password: el enlace y la pantalla que el correo de reset necesita. Depende de #58 auth-email-delivery, que fija el dominio emisor y la forma de la URL; no se especifica antes que ella. Estado actual: mobile-pet-tracker/app.json declara scheme mobilepettracker y existe src/app/(auth)/forgot.tsx como stub, pero NO existe ninguna ruta que reciba el token, y no hay frontend web. Un mobilepettracker:// pelado no lo enlazan la mayoria de clientes de correo y no funciona si la app no esta instalada, asi que la via razonable son App Links https sobre el dominio propio, con /.well-known/assetlinks.json servido por el hosting web de Hostinger (confirmado disponible por el humano el 2026-08-29) y una pagina minima de reset como fallback para quien no tenga la app. Propiedad de seguridad que hay que conservar: el token viaja en la URL y algunos clientes de correo hacen prefetch de los enlaces, asi que el token NO puede consumirse en un GET; el diseno de #44 ya lo cumple porque solo se consume en POST /v1/auth/reset-password, y esta feature no puede romperlo.",
     "acceptance_criteria": [
