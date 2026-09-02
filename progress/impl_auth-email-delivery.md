@@ -608,3 +608,19 @@ Time:        1.936 s, estimated 2 s
 Ran all test suites matching src/modules/auth/infrastructure/guards/email-rate-limit.guard.spec.ts.
 exit 1
 ```
+
+### R9 — verde
+
+```text
+$ pnpm -C backend-pet-tracker exec jest src/modules/auth/infrastructure/guards/email-rate-limit.guard.spec.ts --runInBand
+Test Suites: 1 passed, 1 total
+Tests:       3 passed, 3 total
+Snapshots:   0 total
+Time:        1.721 s, estimated 2 s
+Ran all test suites matching src/modules/auth/infrastructure/guards/email-rate-limit.guard.spec.ts.
+exit 0
+```
+
+Se añadió únicamente la rama `register:${request.ip}` del guard y
+`@UseGuards(EmailRateLimitGuard)` sobre `register`. El guard sigue siendo
+un provider normal, no global.

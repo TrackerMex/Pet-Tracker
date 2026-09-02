@@ -81,6 +81,7 @@ export class AuthController {
 
   @Public()
   @Post('register')
+  @UseGuards(EmailRateLimitGuard)
   @HttpCode(HttpStatus.CREATED)
   async register(@Body() body: unknown): Promise<UserResponse> {
     const dto = parseBody<RegisterUserDto>(RegisterUserSchema, body);
