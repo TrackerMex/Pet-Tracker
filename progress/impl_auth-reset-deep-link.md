@@ -699,7 +699,7 @@ exit 0
 Los tres GET respondieron 404 sin consumir el token; el POST posterior fue
 200 y el segundo canje del mismo token fue rechazado con 400.
 
-### R12 — rojo
+### R12 — rojo (`9ea6437`)
 
 ```text
 $ cd mobile-pet-tracker && bun run test --runInBand src/__tests__/hosting-artifacts.test.ts
@@ -724,3 +724,24 @@ exit 1
 
 El rojo cubre los cinco artefactos de cierre pendientes: los dos ejemplos de
 entorno, la tabla de variables, la guía de gates humanos y el mapa del repo.
+
+### R12 — verde dirigido (`c3b5451`)
+
+```text
+$ cd mobile-pet-tracker && bun run test --runInBand src/__tests__/hosting-artifacts.test.ts
+PASS src/__tests__/hosting-artifacts.test.ts
+Test Suites: 1 passed, 1 total
+Tests:       7 passed, 7 total
+Snapshots:   0 total
+Time:        2.349 s
+exit 0
+
+$ cd mobile-pet-tracker && bun run typecheck
+$ tsc --noEmit
+exit 0
+```
+
+`RESET_LINK_HOST` queda vacía y explicada en los dos ejemplos, documentada en
+la tabla de variables y sin dominio real. `docs/verification.md` contiene los
+pasos humanos G1–G4 y `AGENTS.md` incorpora el nuevo directorio `hosting/`.
+Falta ejecutar debajo la matriz completa de regresión y contención de R12.
