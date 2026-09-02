@@ -1,9 +1,7 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { Logger } from '@nestjs/common';
-import {
-  RESEND_SCOPE,
-  ResendClient,
-  ResendDelivery,
-} from './resend-client';
+import { RESEND_SCOPE, ResendClient, ResendDelivery } from './resend-client';
 
 const delivery: ResendDelivery = {
   event: 'auth.password_reset.issued',
@@ -44,7 +42,11 @@ describe('R5: deliver resuelve antes que la respuesta del proveedor y contiene c
       markFetchStarted();
       return pendingResponse;
     }) as unknown as typeof fetch;
-    const client = new ResendClient('api-key-for-r5', 'sender@example.com', fetchImpl);
+    const client = new ResendClient(
+      'api-key-for-r5',
+      'sender@example.com',
+      fetchImpl,
+    );
 
     const deliveryResult = client.deliver(delivery);
     await fetchStarted;
@@ -93,5 +95,18 @@ describe('R5: deliver resuelve antes que la respuesta del proveedor y contiene c
       status: 403,
       message: 'domain is not verified',
     });
+  });
+});
+
+describe('R11: RESEND_API_KEY vive solo en el entorno, nunca en el repo', () => {
+  it('declara la clave y el remitente como valores vacios en .env.example', () => {
+    const envExample = readFileSync(
+      resolve(process.cwd(), '../.env.example'),
+      'utf8',
+    );
+    const lines = envExample.split(/\r?\n/);
+
+    expect(lines).toContain('RESEND_API_KEY=');
+    expect(lines).toContain('RESEND_FROM=');
   });
 });

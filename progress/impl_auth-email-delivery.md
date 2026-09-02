@@ -700,3 +700,33 @@ exit 0
 El guard retorna antes de consumir cuota cuando `body.email` no es string.
 Para bodies válidos, el 429 depende únicamente de la clave normalizada y del
 contador en memoria; no consulta repositorios ni distingue cuentas.
+
+### R11 — rojo
+
+```text
+$ pnpm -C backend-pet-tracker exec jest src/modules/auth/infrastructure/email/resend-client.spec.ts --runInBand
+FAIL src/modules/auth/infrastructure/email/resend-client.spec.ts
+  ● R11: RESEND_API_KEY vive solo en el entorno, nunca en el repo › declara la clave y el remitente como valores vacios en .env.example
+
+    expect(received).toContain(expected) // indexOf
+
+    Expected value: "RESEND_API_KEY="
+    Received array: ["# Copia este archivo a .env (init.sh lo hace solo si falta).", "# Valores de desarrollo local — nunca pongas credenciales reales aquí.", "", "# Postgres (docker-compose.yml)", "DATABASE_URL=postgresql://pet_tracker:pet_tracker@localhost:5432/pet_tracker", "", "# Backend HTTP", "PORT=3000", "", "# Verificación de email en el registro. En local no hay SES: con false, el", …]
+
+      107 |     const lines = envExample.split(/\r?\n/);
+      108 |
+    > 109 |     expect(lines).toContain('RESEND_API_KEY=');
+          |                   ^
+      110 |     expect(lines).toContain('RESEND_FROM=');
+      111 |   });
+      112 | });
+
+      at Object.<anonymous> (modules/auth/infrastructure/email/resend-client.spec.ts:109:19)
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 3 passed, 4 total
+Snapshots:   0 total
+Time:        1.488 s
+Ran all test suites matching src/modules/auth/infrastructure/email/resend-client.spec.ts.
+exit 1
+```
