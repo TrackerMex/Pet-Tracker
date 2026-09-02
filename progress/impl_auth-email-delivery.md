@@ -730,3 +730,95 @@ Time:        1.488 s
 Ran all test suites matching src/modules/auth/infrastructure/email/resend-client.spec.ts.
 exit 1
 ```
+
+### R11 — comprobación adicional inicial (rojo)
+
+```text
+$ git grep -nE "re_[A-Za-z0-9]{8,}|process\.env\.RESEND" -- backend-pet-tracker infra docs specs
+backend-pet-tracker/src/modules/auth/auth.module.spec.ts:87:    resendApiKey: process.env.RESEND_API_KEY,
+backend-pet-tracker/src/modules/auth/auth.module.spec.ts:88:    resendFrom: process.env.RESEND_FROM,
+backend-pet-tracker/src/modules/auth/auth.module.spec.ts:101:    process.env.RESEND_API_KEY = 'api-key-for-r3';
+backend-pet-tracker/src/modules/auth/auth.module.spec.ts:102:    process.env.RESEND_FROM = 'sender@example.com';
+backend-pet-tracker/src/modules/auth/auth.module.spec.ts:143:    resendApiKey: process.env.RESEND_API_KEY,
+backend-pet-tracker/src/modules/auth/auth.module.spec.ts:144:    resendFrom: process.env.RESEND_FROM,
+backend-pet-tracker/src/modules/auth/auth.module.spec.ts:160:    delete process.env.RESEND_API_KEY;
+backend-pet-tracker/src/modules/auth/auth.module.spec.ts:161:    process.env.RESEND_FROM = 'sender@example.com';
+backend-pet-tracker/src/modules/auth/auth.module.spec.ts:171:    process.env.RESEND_API_KEY = 'api-key-for-r4';
+backend-pet-tracker/src/modules/auth/auth.module.spec.ts:172:    delete process.env.RESEND_FROM;
+specs/auth-email-delivery/requirements.md:356:  literal de clave ni `process.env.RESEND`.
+specs/nutrition-profile-engine/design.md:27:  `progress/explore_nutrition-profile-engine.md` §5: D1, D2, D4, D5, D6, D7, D8,
+specs/nutrition-profile-engine/requirements.md:14:> mitad no-IA del paso 3), `progress/explore_nutrition-profile-engine.md`.
+exit 0
+```
+
+Los accesos de `auth.module.spec.ts` son propios de esta feature y se
+sustituyen por un doble de `ConfigService`. Las tres coincidencias bajo
+`specs/` no son secretos: una es la propia prohibición textual de R11 y dos
+son el substring `re_nutrition` dentro de `explore_nutrition...`. La spec
+es inmutable, de modo que el comando literal que incluye `specs` no puede
+quedar vacío; se conserva el hallazgo y se verificará además el alcance
+ejecutable/documental sin `specs`.
+
+### R11 — primer intento de verde (rojo)
+
+```text
+$ pnpm -C backend-pet-tracker exec jest src/modules/auth/infrastructure/email/resend-client.spec.ts src/modules/auth/auth.module.spec.ts --runInBand
+FAIL src/modules/auth/auth.module.spec.ts
+  ● R3 (auth-email-delivery): EMAIL_ENABLED selecciona los adaptadores Resend para los dos puertos › resuelve los dos puertos con Resend solo para el valor literal true
+
+    TypeError: configService.getOrThrow is not a function
+
+      24 |
+      25 |   constructor(configService: ConfigService) {
+    > 26 |     this.secret = configService.getOrThrow<string>('JWT_SECRET');
+         |                                 ^
+      27 |   }
+
+      at new JwtTokenService (modules/auth/infrastructure/security/jwt-token-service.ts:26:33)
+      at Object.<anonymous> (modules/auth/auth.module.spec.ts:99:27)
+
+Test Suites: 1 failed, 1 passed, 2 total
+Tests:       1 failed, 8 passed, 9 total
+Snapshots:   0 total
+Time:        3.966 s, estimated 4 s
+Ran all test suites matching src/modules/auth/infrastructure/email/resend-client.spec.ts|src/modules/auth/auth.module.spec.ts.
+exit 1
+```
+
+### R11 — verde
+
+```text
+$ pnpm -C backend-pet-tracker exec jest src/modules/auth/infrastructure/email/resend-client.spec.ts src/modules/auth/auth.module.spec.ts --runInBand
+Test Suites: 2 passed, 2 total
+Tests:       9 passed, 9 total
+Snapshots:   0 total
+Time:        3.493 s, estimated 4 s
+Ran all test suites matching src/modules/auth/infrastructure/email/resend-client.spec.ts|src/modules/auth/auth.module.spec.ts.
+exit 0
+```
+
+`.env.example` declara `RESEND_API_KEY=` y `RESEND_FROM=` exactamente
+vacías. `docs/conventions.md` documenta ambas y actualiza
+`EMAIL_ENABLED`. Los specs de composición R3/R4 usan un doble de
+`ConfigService`, sin acceso directo a variables RESEND.
+
+Comando literal de la spec tras el verde:
+
+```text
+$ git grep -nE "re_[A-Za-z0-9]{8,}|process\.env\.RESEND" -- backend-pet-tracker infra docs specs
+specs/auth-email-delivery/requirements.md:356:  literal de clave ni `process.env.RESEND`.
+specs/nutrition-profile-engine/design.md:27:  `progress/explore_nutrition-profile-engine.md` §5: D1, D2, D4, D5, D6, D7, D8,
+specs/nutrition-profile-engine/requirements.md:14:> mitad no-IA del paso 3), `progress/explore_nutrition-profile-engine.md`.
+exit 0
+```
+
+Comprobación equivalente sobre código, tests, infraestructura y documentación
+editable, sin las auto-coincidencias de las specs:
+
+```text
+$ git grep -nE "re_[A-Za-z0-9]{8,}|process\.env\.RESEND" -- backend-pet-tracker/src backend-pet-tracker/test infra docs
+<sin salida>
+exit 1 (git grep: ninguna coincidencia)
+```
+
+No se añadió ningún valor real ni se leyó el `.env` local.

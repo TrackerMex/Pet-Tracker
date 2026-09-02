@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 import { Global, Module } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { Test } from '@nestjs/testing';
 import { AUDIT_LOGGER } from '@/audit/audit-log.repository';
@@ -31,6 +32,26 @@ import { AuthGuard } from './infrastructure/guards/auth.guard';
   exports: [DRIZZLE, AUDIT_LOGGER],
 })
 class FakeSharedInfrastructureModule {}
+
+type AuthTestConfig = Record<string, string | undefined>;
+
+function compileAuthModule(config: AuthTestConfig) {
+  return Test.createTestingModule({
+    imports: [FakeSharedInfrastructureModule, AuthModule],
+  })
+    .overrideProvider(ConfigService)
+    .useValue({
+      get: (key: string): string | undefined => config[key],
+      getOrThrow: (key: string): string => {
+        const value = config[key];
+        if (value === undefined) {
+          throw new Error(`Missing test config: ${key}`);
+        }
+        return value;
+      },
+    })
+    .compile();
+}
 
 describe('AuthModule: la inyeccion de dependencias resuelve todos los tokens', () => {
   const previousJwtSecret = process.env.JWT_SECRET;
@@ -81,29 +102,13 @@ describe('AuthModule: la inyeccion de dependencias resuelve todos los tokens', (
 });
 
 describe('R3 (auth-email-delivery): EMAIL_ENABLED selecciona los adaptadores Resend para los dos puertos', () => {
-  const previousEnv = {
-    emailEnabled: process.env.EMAIL_ENABLED,
-    jwtSecret: process.env.JWT_SECRET,
-    resendApiKey: process.env.RESEND_API_KEY,
-    resendFrom: process.env.RESEND_FROM,
-  };
-
-  afterAll(() => {
-    restoreEnv('EMAIL_ENABLED', previousEnv.emailEnabled);
-    restoreEnv('JWT_SECRET', previousEnv.jwtSecret);
-    restoreEnv('RESEND_API_KEY', previousEnv.resendApiKey);
-    restoreEnv('RESEND_FROM', previousEnv.resendFrom);
-  });
-
   it('resuelve los dos puertos con Resend solo para el valor literal true', async () => {
-    process.env.JWT_SECRET = 'test-jwt-secret';
-    process.env.EMAIL_ENABLED = 'true';
-    process.env.RESEND_API_KEY = 'api-key-for-r3';
-    process.env.RESEND_FROM = 'sender@example.com';
-
-    const enabledModule = await Test.createTestingModule({
-      imports: [FakeSharedInfrastructureModule, AuthModule],
-    }).compile();
+    const enabledModule = await compileAuthModule({
+      EMAIL_ENABLED: 'true',
+      JWT_SECRET: 'test-jwt-secret',
+      RESEND_API_KEY: 'api-key-for-r3',
+      RESEND_FROM: 'sender@example.com',
+    });
 
     expect(enabledModule.get(PASSWORD_RESET_SENDER)).toBeInstanceOf(
       ResendPasswordResetSender,
@@ -113,10 +118,10 @@ describe('R3 (auth-email-delivery): EMAIL_ENABLED selecciona los adaptadores Res
     );
     await enabledModule.close();
 
-    process.env.EMAIL_ENABLED = 'false';
-    const disabledModule = await Test.createTestingModule({
-      imports: [FakeSharedInfrastructureModule, AuthModule],
-    }).compile();
+    const disabledModule = await compileAuthModule({
+      EMAIL_ENABLED: 'false',
+      JWT_SECRET: 'test-jwt-secret',
+    });
 
     expect(disabledModule.get(PASSWORD_RESET_SENDER)).toBeInstanceOf(
       ConsolePasswordResetSender,
@@ -128,52 +133,23 @@ describe('R3 (auth-email-delivery): EMAIL_ENABLED selecciona los adaptadores Res
   });
 });
 
-function restoreEnv(name: string, value: string | undefined): void {
-  if (value === undefined) {
-    delete process.env[name];
-  } else {
-    process.env[name] = value;
-  }
-}
-
 describe('R4 (auth-email-delivery): EMAIL_ENABLED=true sin RESEND_API_KEY aborta el arranque', () => {
-  const previousEnv = {
-    emailEnabled: process.env.EMAIL_ENABLED,
-    jwtSecret: process.env.JWT_SECRET,
-    resendApiKey: process.env.RESEND_API_KEY,
-    resendFrom: process.env.RESEND_FROM,
-  };
-
-  beforeEach(() => {
-    process.env.EMAIL_ENABLED = 'true';
-    process.env.JWT_SECRET = 'test-jwt-secret';
-  });
-
-  afterEach(() => {
-    restoreEnv('EMAIL_ENABLED', previousEnv.emailEnabled);
-    restoreEnv('JWT_SECRET', previousEnv.jwtSecret);
-    restoreEnv('RESEND_API_KEY', previousEnv.resendApiKey);
-    restoreEnv('RESEND_FROM', previousEnv.resendFrom);
-  });
-
   it('rechaza la compilacion cuando falta RESEND_API_KEY', async () => {
-    delete process.env.RESEND_API_KEY;
-    process.env.RESEND_FROM = 'sender@example.com';
-
-    const compilation = Test.createTestingModule({
-      imports: [FakeSharedInfrastructureModule, AuthModule],
-    }).compile();
+    const compilation = compileAuthModule({
+      EMAIL_ENABLED: 'true',
+      JWT_SECRET: 'test-jwt-secret',
+      RESEND_FROM: 'sender@example.com',
+    });
 
     await expect(compilation).rejects.toThrow(MissingResendConfigError);
   });
 
   it('rechaza la compilacion cuando falta RESEND_FROM', async () => {
-    process.env.RESEND_API_KEY = 'api-key-for-r4';
-    delete process.env.RESEND_FROM;
-
-    const compilation = Test.createTestingModule({
-      imports: [FakeSharedInfrastructureModule, AuthModule],
-    }).compile();
+    const compilation = compileAuthModule({
+      EMAIL_ENABLED: 'true',
+      JWT_SECRET: 'test-jwt-secret',
+      RESEND_API_KEY: 'api-key-for-r4',
+    });
 
     await expect(compilation).rejects.toThrow(MissingResendConfigError);
   });
