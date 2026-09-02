@@ -745,3 +745,102 @@ exit 0
 la tabla de variables y sin dominio real. `docs/verification.md` contiene los
 pasos humanos G1–G4 y `AGENTS.md` incorpora el nuevo directorio `hosting/`.
 Falta ejecutar debajo la matriz completa de regresión y contención de R12.
+
+### Matriz de regresión R12 antes de `init.sh`
+
+```text
+$ pnpm -C backend-pet-tracker run lint
+exit 0
+
+$ pnpm -C backend-pet-tracker exec tsc --noEmit
+exit 0
+
+$ pnpm -C backend-pet-tracker test
+Test Suites: 163 passed, 163 total
+Tests:       1235 passed, 1235 total
+Snapshots:   0 total
+Time:        10.994 s
+exit 0
+
+$ pnpm -C backend-pet-tracker run test:e2e
+Test Suites: 3 skipped, 25 passed, 25 of 28 total
+Tests:       8 skipped, 353 passed, 361 total
+Snapshots:   0 total
+Time:        91.08 s
+exit 0
+
+$ cd mobile-pet-tracker && bun run lint
+$ expo lint
+exit 0
+
+$ cd mobile-pet-tracker && bun run typecheck
+$ tsc --noEmit
+exit 0
+
+$ cd mobile-pet-tracker && bun run test
+Test Suites: 53 passed, 53 total
+Tests:       612 passed, 612 total
+Snapshots:   1 passed, 1 total
+Time:        25.517 s
+exit 0
+
+$ cd mobile-pet-tracker && bun run test --runInBand app.config.test.ts src/__tests__/hosting-artifacts.test.ts
+Test Suites: 2 passed, 2 total
+Tests:       16 passed, 16 total
+Snapshots:   0 total
+Time:        1.985 s
+exit 0
+```
+
+Un primer intento de añadir `--runInBand` a `pnpm ... test` mediante un `--`
+lo pasó a Jest como patrón y devolvió «No tests found». Se corrigió ejecutando
+el comando literal de R12, sin flags, que produjo los 163/163 verdes de
+arriba; no hubo cambio de código.
+
+El grep literal publicado antes de la Adenda 1 devuelve exclusivamente los
+dos ficheros que esa adenda añadió a la allowlist:
+
+```text
+backend-pet-tracker/src/modules/auth/infrastructure/auth.controller.spec.ts
+backend-pet-tracker/test/auth-email-delivery.e2e-spec.ts
+```
+
+Al incorporar esos dos paths a la expresión, el grep de contención efectivo
+sale vacío (exit 0 del assert de salida vacía). Su diff contiene exactamente
+las dos sustituciones autorizadas de constructor por
+`new ResendPasswordResetSender(client, 'reset.test')`. El grep-clean sobre la
+ruta y pantalla nuevas también queda vacío para hex, clases arbitrarias,
+`StyleSheet.create`, sombras legacy y `elevation`.
+
+## Bloqueo de spec en el cierre R12
+
+`./init.sh` completó instalación y build, y volvió a dejar verdes backend
+(163 suites/1235 tests) e infra (2 suites/14 tests). Después falló en el test
+del harness de env drift:
+
+```text
+$ ./init.sh
+...
+# Subtest: R11 (init-env-drift-warning #23): documentacion y cero variables nuevas
+not ok 3 - no añade variables de entorno
+error: Expected values to be strictly equal:
+  24 !== 23
+# tests 28
+# pass 27
+# fail 1
+exit 1
+```
+
+La causa es mecánica y necesaria: R12/D3 exige añadir `RESET_LINK_HOST=` a la
+raíz y dice expresamente que `env-drift.mjs` debe avisar al humano cuando
+falte; por ello `parseEnvKeys(.env.example)` pasa de 23 a 24. El assert fijo
+de `env-drift.test.mjs:269` sigue esperando 23. Ese fichero no aparece en la
+allowlist cerrada de R12, de modo que no se ha editado.
+
+Existe un precedente literal: el commit de #58 `6564994` cambió únicamente
+ese mismo contador de 21 a 23 al añadir las variables de email. Para cerrar
+R12 hace falta autorizar otra edición mecánica en `env-drift.test.mjs`:
+`assert.equal(keys.length, 23)` → `assert.equal(keys.length, 24)`, y ampliar
+la allowlist/grep de contención con ese fichero. No se propone ningún otro
+cambio. El `.env` real, `feature_list.json` y `progress/current.md` siguen sin
+tocarse por este implementer.
