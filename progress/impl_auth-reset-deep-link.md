@@ -567,3 +567,30 @@ exit 0
 
 No hay efectos ni loaders de red: montar la ruta deja el mock intacto y el
 único camino que invoca `resetPassword` es el handler de `reset-submit`.
+
+### R8 — rojo
+
+```text
+$ cd mobile-pet-tracker && bun run test --runInBand src/screens/reset-password/index.test.tsx
+FAIL src/screens/reset-password/index.test.tsx
+  R8: el submit completa el reset y mapea los errores
+    ✕ retira el formulario y permite volver al login tras el exito
+    ✕ muestra el mensaje esperado para $kind y permite reintentar (5 casos)
+    ✕ une por salto de linea todos los mensajes de validacion
+    ✕ deshabilita el boton mientras la peticion esta en vuelo
+
+  ● Unable to find an element with testID: reset-success
+  ● Unable to find an element with testID: reset-error
+  ● expect(instance).toBeDisabled()
+    Received instance is not disabled
+
+Test Suites: 1 failed, 1 total
+Tests:       8 failed, 6 passed, 14 total
+Snapshots:   0 total
+Time:        11.587 s
+exit 1
+```
+
+R5 y R6 permanecen verdes (6/6). El rojo demuestra que la pantalla todavía
+ignora el resultado de la API y no representa ni el estado en vuelo ni sus
+resultados.
