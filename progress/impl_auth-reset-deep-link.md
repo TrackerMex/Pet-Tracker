@@ -88,7 +88,7 @@ añade la URL en uno posterior y continúa limitado a texto plano. En el describ
 R1 de #58 solo se eliminó el assert que prohibía `http`; las demás ediciones de
 ese fichero pasan el nuevo argumento del constructor.
 
-### R2 — rojo
+### R2 — rojo (`4b816e7`)
 
 ```text
 $ pnpm -C backend-pet-tracker exec jest src/modules/auth/infrastructure/email/console-password-reset-sender.spec.ts --runInBand
@@ -117,3 +117,22 @@ Time:        0.947 s, estimated 1 s
 Ran all test suites matching src/modules/auth/infrastructure/email/console-password-reset-sender.spec.ts.
 exit 1
 ```
+
+### R2 — verde (`ada573c`)
+
+```text
+$ pnpm -C backend-pet-tracker exec jest src/modules/auth/infrastructure/email/console-password-reset-sender.spec.ts --runInBand
+Test Suites: 1 passed, 1 total
+Tests:       6 passed, 6 total
+Snapshots:   0 total
+Time:        0.874 s, estimated 1 s
+Ran all test suites matching src/modules/auth/infrastructure/email/console-password-reset-sender.spec.ts.
+exit 0
+
+$ pnpm -C backend-pet-tracker exec tsc --noEmit
+exit 0
+```
+
+El adaptador de consola acepta el host opcional y añade `resetUrl` mediante el
+mismo compositor de R1. Con `undefined`, `null` o cadena vacía conserva
+exactamente los cinco campos de #44 y no emite advertencias.

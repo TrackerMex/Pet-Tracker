@@ -13,7 +13,7 @@ Rutas de test relativas a la raíz del repo salvo indicación: backend en
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
 | R1 | `src/modules/auth/infrastructure/email/password-reset-link.spec.ts::R1: buildPasswordResetUrl compone https://<host>/reset-password?token=<token>`; `src/modules/auth/infrastructure/email/resend-password-reset-sender.spec.ts::R1 (auth-reset-deep-link): el correo de reset incluye la URL del enlace ademas del token` | rojo `030076c` (`test(auth-reset-deep-link): add reset link tests (R1)`); verde `e0dfff8` (`feat(auth-reset-deep-link): add reset URL to email (R1)`) |
-| R2 | pendiente | pendiente |
+| R2 | `src/modules/auth/infrastructure/email/console-password-reset-sender.spec.ts::R2 (auth-reset-deep-link): con RESET_LINK_HOST el log incluye resetUrl`; `src/modules/auth/infrastructure/email/console-password-reset-sender.spec.ts::R2 (auth-reset-deep-link): sin RESET_LINK_HOST el log queda como en #44` | rojo `4b816e7` (`test(auth-reset-deep-link): add console reset URL tests (R2)`); verde `ada573c` (`feat(auth-reset-deep-link): log console reset URL (R2)`) |
 | R3 | pendiente | pendiente |
 | R4 | pendiente | pendiente |
 | R5 | pendiente | pendiente |
