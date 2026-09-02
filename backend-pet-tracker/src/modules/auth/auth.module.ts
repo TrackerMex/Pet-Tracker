@@ -26,6 +26,7 @@ import { ResendClient } from './infrastructure/email/resend-client';
 import { ResendEmailVerificationSender } from './infrastructure/email/resend-email-verification-sender';
 import { ResendPasswordResetSender } from './infrastructure/email/resend-password-reset-sender';
 import { AuthGuard } from './infrastructure/guards/auth.guard';
+import { EmailRateLimitGuard } from './infrastructure/guards/email-rate-limit.guard';
 import { EmailVerificationTokenDrizzleRepository } from './infrastructure/repositories/email-verification-token.drizzle.repository';
 import { PasswordResetTokenDrizzleRepository } from './infrastructure/repositories/password-reset-token.drizzle.repository';
 import { UserDrizzleRepository } from './infrastructure/repositories/user.drizzle.repository';
@@ -41,6 +42,7 @@ import { JwtTokenService } from './infrastructure/security/jwt-token-service';
     LoginUserUseCase,
     RequestPasswordResetUseCase,
     ResetPasswordUseCase,
+    EmailRateLimitGuard,
     {
       provide: USER_REPOSITORY,
       useClass: UserDrizzleRepository,

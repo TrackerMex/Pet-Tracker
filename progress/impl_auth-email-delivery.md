@@ -553,3 +553,30 @@ Time:        6.917 s
 Ran all test suites matching test/auth-email-delivery.e2e-spec.ts.
 exit 1
 ```
+
+### R8 — verde
+
+```text
+$ pnpm -C backend-pet-tracker exec jest src/modules/auth/infrastructure/guards/email-rate-limit.guard.spec.ts --runInBand
+Test Suites: 1 passed, 1 total
+Tests:       2 passed, 2 total
+Snapshots:   0 total
+Time:        1.904 s
+Ran all test suites matching src/modules/auth/infrastructure/guards/email-rate-limit.guard.spec.ts.
+exit 0
+```
+
+```text
+$ pnpm -C backend-pet-tracker exec jest --config test/jest-e2e.json test/auth-email-delivery.e2e-spec.ts --runInBand
+Test Suites: 1 passed, 1 total
+Tests:       2 passed, 2 total
+Snapshots:   0 total
+Time:        4.841 s, estimated 7 s
+Ran all test suites matching test/auth-email-delivery.e2e-spec.ts.
+exit 0
+```
+
+La implementación usa una ventana fija por email normalizado, poda entradas
+vencidas, conserva como máximo `MAX_TRACKED_KEYS` y aplica el guard solo a
+`forgotPassword`. La rama de `register` queda fuera de este verde y se
+añade en R9.

@@ -8,6 +8,7 @@ import {
   HttpStatus,
   Post,
   UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
 import { ZodType } from 'zod';
 import {
@@ -48,6 +49,7 @@ import {
   InvalidCredentialsError,
 } from '@/modules/auth/domain/errors/user.errors';
 import { Public } from './decorators/public.decorator';
+import { EmailRateLimitGuard } from './guards/email-rate-limit.guard';
 import { toUserResponse, UserResponse } from './mappers/user-response.mapper';
 
 export interface VerifyEmailResponse {
@@ -138,6 +140,7 @@ export class AuthController {
 
   @Public()
   @Post('forgot-password')
+  @UseGuards(EmailRateLimitGuard)
   @HttpCode(HttpStatus.OK)
   async forgotPassword(@Body() body: unknown): Promise<ForgotPasswordResponse> {
     const dto = parseBody<ForgotPasswordDto>(ForgotPasswordSchema, body);
