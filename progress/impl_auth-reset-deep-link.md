@@ -303,7 +303,7 @@ exit 0
 `com.trackermex.pettracker` y conserva el placeholder humano del fingerprint.
 El README mapea los dos destinos de Hostinger sin incluir ningún dominio real.
 
-### R10 — rojo
+### R10 — rojo (`0039189`)
 
 ```text
 $ cd mobile-pet-tracker && bun run test --runInBand src/__tests__/hosting-artifacts.test.ts
@@ -324,3 +324,25 @@ Ran all test suites matching /src\\/__tests__\\/hosting-artifacts.test.ts/i.
 error: script "test" exited with code 1
 exit 1
 ```
+
+### R10 — verde (`243fcc6`)
+
+```text
+$ cd mobile-pet-tracker && bun run test --runInBand src/__tests__/hosting-artifacts.test.ts
+PASS src/__tests__/hosting-artifacts.test.ts
+  R9: assetlinks.json delega el dominio en el paquete Android de la app
+    ✓ publica un unico statement para el package y fingerprint esperados
+  R10: la pagina fallback no consume el token y ofrece abrir la app
+    ✓ solo procesa el query local y no contiene primitivas ni recursos de red
+
+Test Suites: 1 passed, 1 total
+Tests:       2 passed, 2 total
+Snapshots:   0 total
+Time:        1.419 s, estimated 2 s
+exit 0
+```
+
+La página autocontenida procesa el query exclusivamente con
+`URLSearchParams`, muestra el token como texto copiable y construye el scheme
+con `encodeURIComponent`. No contiene solicitudes, formularios remotos ni
+recursos externos; también ofrece un estado local seguro si falta el token.
