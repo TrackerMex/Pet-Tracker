@@ -647,6 +647,65 @@ Registra el resultado en
 casilla R6 en la spec. R4 verde prueba la firma en memoria, pero no cierra este
 gate de red/dispositivo.
 
+### Feature 55 — auth-email-delivery
+
+Esta verificación modifica servicios externos, DNS de producción y envía
+correo real. La ejecuta exclusivamente una persona; el implementer y el
+reviewer automático no crean cuentas, claves ni registros. Usa valores propios
+en los placeholders y no copies claves, dominios privados ni tokens al
+repositorio o al reporte.
+
+1. **G1 — verificar un subdominio dedicado en Resend.**
+
+   - Crea la cuenta de Resend y añade como dominio un subdominio dedicado
+     elegido por el humano, nunca el dominio raíz.
+   - Copia literalmente desde Resend al panel DNS de Hostinger los tres
+     registros mostrados: MX y TXT SPF bajo `send.<subdominio>`, y TXT DKIM
+     bajo `resend._domainkey.<subdominio>`.
+   - No crees, borres ni edites el MX ni el TXT `v=spf1` de la raíz.
+   - Espera hasta que Resend marque el subdominio como verificado y registra
+     solo el resultado, sin copiar valores DKIM al reporte.
+
+2. **G2 — guardar la API key solo en el entorno.**
+
+   - Crea en Resend una clave con el alcance mínimo necesario para enviar.
+   - En el `.env` gitignoreado de la raíz configura
+     `EMAIL_ENABLED=true`, `RESEND_API_KEY=<clave creada en Resend>` y
+     `RESEND_FROM="Pet Tracker <no-reply@<subdominio>>"`.
+   - No pongas el valor real en `.env.example`, documentación, terminal
+     compartida ni commits. `git status --short -- .env` no debe mostrar el
+     fichero.
+
+3. **G3 — completar los dos envíos reales de extremo a extremo.**
+
+   - Levanta la infraestructura y el backend con
+     `docker compose up -d` y
+     `pnpm -C backend-pet-tracker run start:dev`.
+   - Con una dirección propia ya registrada, ejecuta
+     `POST /v1/auth/forgot-password`; debe responder exactamente
+     `200 {"requested":true}`. Confirma que el correo llega a inbox, no a
+     spam, y usa su token una sola vez en
+     `POST /v1/auth/reset-password` hasta obtener
+     `200 {"reset":true}`.
+   - Registra otra dirección propia mediante `POST /v1/auth/register`.
+     Confirma que el correo de verificación llega a inbox y usa su token una
+     sola vez en `POST /v1/auth/verify-email` hasta obtener
+     `200 {"verified":true}`.
+   - No copies direcciones, tokens ni cuerpos de correo al reporte; anota solo
+     status HTTP, recepción en inbox y resultado del consumo.
+
+4. **G4 — comprobar que el buzón de Hostinger sigue vivo.**
+
+   - Después del cambio DNS, envía un correo desde el buzón humano existente
+     de Hostinger a otra cuenta controlada y confirma su recepción.
+   - Responde desde esa segunda cuenta y confirma que el buzón de Hostinger
+     recibe la respuesta. Este round-trip demuestra que G1 no degradó el
+     correo de la raíz.
+
+El humano registra G1, G2, G3-reset, G3-verificación y G4 como confirmados, con
+fecha, en `progress/impl_auth-email-delivery.md`, sin secretos ni tokens. El
+reviewer no aprueba la feature mientras cualquiera de ellos siga pendiente.
+
 ---
 
 ## Notas para el implementer
