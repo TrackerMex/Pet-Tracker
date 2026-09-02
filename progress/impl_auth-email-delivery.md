@@ -222,7 +222,7 @@ Ran all test suites matching src/modules/auth/infrastructure/email/resend-email-
 exit 0
 ```
 
-### R7 — rojo
+### R7 — rojo (`a16f041`)
 
 ```text
 $ pnpm -C backend-pet-tracker exec jest src/modules/auth/infrastructure/email/resend-password-reset-sender.spec.ts src/modules/auth/infrastructure/email/resend-email-verification-sender.spec.ts --runInBand
@@ -254,4 +254,16 @@ Snapshots:   0 total
 Time:        1.997 s, estimated 8 s
 Ran all test suites matching src/modules/auth/infrastructure/email/resend-password-reset-sender.spec.ts|src/modules/auth/infrastructure/email/resend-email-verification-sender.spec.ts.
 exit 1
+```
+
+### R7 — verde (`59a99c5`)
+
+```text
+$ pnpm -C backend-pet-tracker exec jest src/modules/auth/infrastructure/email/resend-password-reset-sender.spec.ts src/modules/auth/infrastructure/email/resend-email-verification-sender.spec.ts src/modules/auth/infrastructure/email/resend-client.spec.ts --runInBand
+Test Suites: 3 passed, 3 total
+Tests:       7 passed, 7 total
+Snapshots:   0 total
+Time:        1.952 s, estimated 2 s
+Ran all test suites matching src/modules/auth/infrastructure/email/resend-password-reset-sender.spec.ts|src/modules/auth/infrastructure/email/resend-email-verification-sender.spec.ts|src/modules/auth/infrastructure/email/resend-client.spec.ts.
+exit 0
 ```
