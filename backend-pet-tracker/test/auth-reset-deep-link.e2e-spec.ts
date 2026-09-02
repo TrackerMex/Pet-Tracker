@@ -73,16 +73,15 @@ describe('R11: ningun GET consume el token; solo POST reset-password lo canjea u
     });
 
     await api().post('/v1/auth/forgot-password').send({ email }).expect(200);
-    const token = sentMessages.find((message) => message.email === email)?.token;
+    const token = sentMessages.find(
+      (message) => message.email === email,
+    )?.token;
     if (!token) {
       throw new Error(`No reset token captured for ${email}`);
     }
 
     for (let opening = 0; opening < 3; opening += 1) {
-      await api()
-        .get('/v1/auth/reset-password')
-        .query({ token })
-        .expect(404);
+      await api().get('/v1/auth/reset-password').query({ token }).expect(404);
     }
 
     const resetBody = {
