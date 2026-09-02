@@ -526,7 +526,7 @@ token recibido por Expo Router y muestra un estado local seguro cuando falta.
 El montaje no contiene todavía ninguna llamada de red; esa propiedad se fija
 explícitamente en R6.
 
-### R6 — rojo
+### R6 — rojo (`158e256`)
 
 ```text
 $ cd mobile-pet-tracker && bun run test --runInBand src/screens/reset-password/index.test.tsx
@@ -548,3 +548,22 @@ exit 1
 
 El montaje permanece sin red, pero el botón todavía no tiene handler: la
 única prueba roja es la llamada intencional posterior al submit.
+
+### R6 — verde (`b93c938`)
+
+```text
+$ cd mobile-pet-tracker && bun run test --runInBand src/screens/reset-password/index.test.tsx
+PASS src/screens/reset-password/index.test.tsx
+Test Suites: 1 passed, 1 total
+Tests:       6 passed, 6 total
+Snapshots:   0 total
+Time:        3.141 s, estimated 5 s
+exit 0
+
+$ cd mobile-pet-tracker && bun run typecheck
+$ tsc --noEmit
+exit 0
+```
+
+No hay efectos ni loaders de red: montar la ruta deja el mock intacto y el
+único camino que invoca `resetPassword` es el handler de `reset-submit`.
