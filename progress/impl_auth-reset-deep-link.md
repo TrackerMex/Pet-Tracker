@@ -447,3 +447,25 @@ exit 0
 unión discriminada completa. Los `400` con `errors[]` se distinguen de los
 tokens inválidos/usados; `410`, fallos de transporte y statuses inesperados
 mantienen estados separados.
+
+### R5 — rojo
+
+```text
+$ cd mobile-pet-tracker && bun run test --runInBand src/screens/reset-password/index.test.tsx
+FAIL src/screens/reset-password/index.test.tsx
+  ● Test suite failed to run
+
+    Cannot find module '../../app/reset-password' from
+    'src/screens/reset-password/index.test.tsx'
+
+      4 | import ResetPasswordRoute from '../../app/reset-password';
+        | ^
+
+Test Suites: 1 failed, 1 total
+Tests:       0 total
+Snapshots:   0 total
+Time:        2.723 s
+Ran all test suites matching /src\\/screens\\/reset-password\\/index.test.tsx/i.
+error: script "test" exited with code 1
+exit 1
+```
