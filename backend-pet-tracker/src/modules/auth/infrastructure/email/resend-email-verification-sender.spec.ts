@@ -1,7 +1,9 @@
+import { Logger } from '@nestjs/common';
 import { EmailVerificationMessage } from '@/modules/auth/domain/ports/email-verification-sender';
 import {
   EMAIL_VERIFICATION_SUBJECT,
   RESEND_ENDPOINT,
+  RESEND_SCOPE,
   ResendClient,
 } from './resend-client';
 import { ResendEmailVerificationSender } from './resend-email-verification-sender';
@@ -20,6 +22,10 @@ function successfulFetch(calls: CapturedRequest[]): typeof fetch {
       json: () => Promise.resolve({ id: 'email-r2' }),
     });
   }) as unknown as typeof fetch;
+}
+
+function rejectingFetch(error: Error): typeof fetch {
+  return (() => Promise.reject(error)) as unknown as typeof fetch;
 }
 
 describe('R2: el emisor de verificacion publica su token en POST https://api.resend.com/emails', () => {
@@ -66,5 +72,57 @@ describe('R2: el emisor de verificacion publica su token en POST https://api.res
     );
     expect(body).not.toHaveProperty('html');
     expect(body.text).not.toEqual(expect.stringContaining('http'));
+  });
+});
+
+describe('R7: el emisor de verificacion no escribe el token ni la API key en ningun log', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('registra solo metadatos seguros tanto en exito como en fallo', async () => {
+    const log = jest.spyOn(Logger.prototype, 'log').mockImplementation();
+    const warn = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    const error = jest.spyOn(Logger.prototype, 'error').mockImplementation();
+    const apiKey = 'secret-api-key-r7-verification';
+    const message: EmailVerificationMessage = {
+      userId: '0198a1f0-3d5c-7f21-b0a1-6f1c9e2d4b77',
+      email: 'ada@example.com',
+      token: 'secret-verification-token-r7',
+      expiresAt: new Date('2026-09-02T18:30:00.000Z'),
+    };
+    const successClient = new ResendClient(
+      apiKey,
+      'sender@example.com',
+      successfulFetch([]),
+    );
+
+    await new ResendEmailVerificationSender(successClient).send(message);
+    await successClient.whenIdle();
+
+    expect(log).toHaveBeenCalledWith({
+      scope: RESEND_SCOPE,
+      event: 'auth.email_verification.issued',
+      userId: message.userId,
+      id: 'email-r2',
+    });
+
+    const failureClient = new ResendClient(
+      apiKey,
+      'sender@example.com',
+      rejectingFetch(
+        new Error(`provider echoed ${message.token} and ${apiKey}`),
+      ),
+    );
+    await new ResendEmailVerificationSender(failureClient).send(message);
+    await failureClient.whenIdle();
+
+    const serializedLogs = JSON.stringify([
+      ...log.mock.calls,
+      ...warn.mock.calls,
+      ...error.mock.calls,
+    ]);
+    expect(serializedLogs).not.toContain(message.token);
+    expect(serializedLogs).not.toContain(apiKey);
   });
 });

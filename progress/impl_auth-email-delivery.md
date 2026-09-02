@@ -221,3 +221,37 @@ Time:        8.341 s
 Ran all test suites matching src/modules/auth/infrastructure/email/resend-email-verification-sender.spec.ts.
 exit 0
 ```
+
+### R7 — rojo
+
+```text
+$ pnpm -C backend-pet-tracker exec jest src/modules/auth/infrastructure/email/resend-password-reset-sender.spec.ts src/modules/auth/infrastructure/email/resend-email-verification-sender.spec.ts --runInBand
+FAIL src/modules/auth/infrastructure/email/resend-email-verification-sender.spec.ts
+  ● R7: el emisor de verificacion no escribe el token ni la API key en ningun log › registra solo metadatos seguros tanto en exito como en fallo
+
+    Expected: {"event": "auth.email_verification.issued", "id": "email-r2", "scope": "auth-email-delivery", "userId": "0198a1f0-3d5c-7f21-b0a1-6f1c9e2d4b77"}
+    Number of calls: 0
+
+      101 |     await successClient.whenIdle();
+      102 |
+    > 103 |     expect(log).toHaveBeenCalledWith({
+          |                 ^
+
+FAIL src/modules/auth/infrastructure/email/resend-password-reset-sender.spec.ts
+  ● R7: el emisor de reset no escribe el token ni la API key en ningun log › registra solo metadatos seguros tanto en exito como en fallo
+
+    Expected: {"event": "auth.password_reset.issued", "id": "email-r1", "scope": "auth-email-delivery", "userId": "0198a1f0-3d5c-7f21-b0a1-6f1c9e2d4b77"}
+    Number of calls: 0
+
+      101 |     await successClient.whenIdle();
+      102 |
+    > 103 |     expect(log).toHaveBeenCalledWith({
+          |                 ^
+
+Test Suites: 2 failed, 2 total
+Tests:       2 failed, 2 passed, 4 total
+Snapshots:   0 total
+Time:        1.997 s, estimated 8 s
+Ran all test suites matching src/modules/auth/infrastructure/email/resend-password-reset-sender.spec.ts|src/modules/auth/infrastructure/email/resend-email-verification-sender.spec.ts.
+exit 1
+```
