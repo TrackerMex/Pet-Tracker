@@ -33,7 +33,7 @@
       --surface-secondary-foreground: #0D1117;
       --default: #F5F6F8;
       --default-foreground: #0D1117;
-      --muted: #6B7280;
+      --muted: #667085;
       --border: rgba(13,17,23,0.07);
       --separator: rgba(13,17,23,0.07);
       --accent: #178255;
@@ -46,7 +46,7 @@
       --color-accent: #178255;
       --color-accent-strong: #107148;
       --color-accent-foreground: #FFFFFF;
-      --color-muted: #6B7280;
+      --color-muted: #667085;
       --color-glass-surface: rgba(255,255,255,0.60);
       --color-tab-pill: rgba(23,130,85,0.14);
       --color-danger: #EF4444;

@@ -72,7 +72,7 @@ describe('R1: global.css define los tokens light exactos del diseño', () => {
       'surface-foreground': '#0D1117',
       'surface-secondary': '#F0FBF6',
       default: '#F5F6F8',
-      muted: '#6B7280',
+      muted: '#667085',
       border: 'rgba(13,17,23,0.07)',
       separator: 'rgba(13,17,23,0.07)',
       accent: '#178255',
@@ -92,7 +92,7 @@ describe('R1: global.css define los tokens light exactos del diseño', () => {
 
 describe('R2: global.css define la paleta dark derivada del diseño', () => {
   it.each([
-    ['light', '#178255', '#FFFFFF', '#6B7280', '#0F9B5A', '#F59E0B', '#EF4444'],
+    ['light', '#178255', '#FFFFFF', '#667085', '#0F9B5A', '#F59E0B', '#EF4444'],
     ['dark', '#178255', '#FFFFFF', '#9CA3AF', '#34D399', '#FBBF24', '#F87171'],
   ] as const)(
     'materializa los colores semánticos para el resolver JS en %s',
