@@ -764,7 +764,7 @@
   {
     "id": 42,
     "name": "mobile-device-pairing",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P3",
     "description": "Pantallas GpsConfig y pairing 'tracker is ready' del diseño: flujo de claim de collar (devices/claim con código de activación) y estado de membresía (subscriptions; la membresía cuelga del collar, free = salud sin GPS). Si el diseño usa QR, evaluar expo-camera en la spec.",
     "acceptance_criteria": [
