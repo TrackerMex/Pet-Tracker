@@ -1,10 +1,12 @@
 import { router, useFocusEffect } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
-import { useCallback } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { useCallback, useState } from 'react';
+import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { claimDevice } from '../../api/devices';
 import { listPets, type PetsState } from '../../api/pets';
+import { Card } from '../../components/card';
 import { PetSwitcher } from '../../components/pet-switcher';
 import { useApi } from '../../hooks/use-api';
 import { usePetSelection } from '../../hooks/use-pet-selection';
@@ -27,12 +29,30 @@ export function PairingScreen() {
   const pets = useApi(petsFn);
   usePetSelection(pets);
   const refetchPets = pets.refetch;
+  const [code, setCode] = useState('');
+  const [claiming, setClaiming] = useState(false);
+  const selectedPet =
+    pets.data?.kind === 'ok'
+      ? pets.data.pets.find(({ id }) => id === selectedPetId)
+      : undefined;
 
   useFocusEffect(
     useCallback(() => {
       refetchPets();
     }, [refetchPets]),
   );
+
+  async function handleClaim() {
+    const activationCode = code.trim();
+    if (!selectedPetId || !activationCode || claiming) return;
+
+    setClaiming(true);
+    await claimDevice(baseUrl, token ?? '', {
+      petId: selectedPetId,
+      activationCode,
+    });
+    setClaiming(false);
+  }
 
   return (
     <ScrollView
@@ -96,6 +116,54 @@ export function PairingScreen() {
           selectedPetId={selectedPetId}
           onSelect={selectPet}
         />
+      ) : null}
+
+      {selectedPet?.device === null ? (
+        <View className="gap-4">
+          <Text className="text-2xl font-black text-foreground">
+            Pair collar
+          </Text>
+
+          <Card variant="secondary">
+            <Text
+              testID="pairing-plan-free"
+              className="text-sm font-normal text-foreground"
+              selectable
+            >
+              Free plan — health only. Pair a collar with an active plan to see
+              the map.
+            </Text>
+          </Card>
+
+          <View className="gap-2">
+            <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
+              Activation code
+            </Text>
+            <TextInput
+              testID="activation-code-input"
+              className="min-h-12 rounded-xl border border-border bg-default px-4 py-3 text-foreground"
+              autoCapitalize="characters"
+              autoCorrect={false}
+              maxLength={64}
+              value={code}
+              onChangeText={setCode}
+            />
+            <Text className="text-sm font-normal text-muted">
+              Printed on the collar box
+            </Text>
+          </View>
+
+          <Button
+            testID="pairing-submit"
+            className="min-h-11 w-full rounded-xl bg-accent"
+            isDisabled={code.trim() === '' || claiming}
+            onPress={() => void handleClaim()}
+          >
+            <Button.Label className="font-bold text-accent-foreground">
+              Pair collar
+            </Button.Label>
+          </Button>
+        </View>
       ) : null}
     </ScrollView>
   );
