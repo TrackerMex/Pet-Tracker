@@ -53,12 +53,63 @@ desde #46, y esa es la fuente de verdad que se uso.
   campo y el action sheet nativo del confirm destructivo. Listados al final de
   `progress/audit_ui_polish.md`.
 
+### Reversion de la decision de contraste (misma tarde)
+
+El humano leyo la spec en draft y eligio la via contraria a la primera:
+**se oscurece `--accent` y la etiqueta se queda blanca**, en vez de conservar
+`#2AB87C` y oscurecer la etiqueta. `--accent-contrast` quedo descartado.
+La spec se rehizo entera con esa decision.
+
+Valores finales, recalculados por el leader con la formula sRGB:
+
+| Token | Light | Dark | Ratio |
+|---|---|---|---|
+| `--accent` (relleno) | `#178255` | `#178255` | 4,816:1 con blanco |
+| `--accent-foreground` | `#FFFFFF` | `#FFFFFF` | sin tocar |
+| `--accent-strong` (tinta) | `#107148` | `#2AB87C` | el verde original vuelve en dark |
+
+El relleno NO se parte por tema; lo que se parte es la tinta, porque sobre
+`#161B22` el relleno daria 3,240:1. `--success` no se toca: la distancia
+DeltaE00 pasa de 9,16 a 9,24 y nunca comparten rol. Hue conservado: 154,77
+grados contra los 154,65 del `#2AB87C` del Figma.
+
+**Desviacion declarada de #46 R1**: los rellenos de la app dejan de coincidir
+1:1 con el Make. Va escrita en la spec y propuesta para `docs/ui-guidelines.md`.
+
+AC1 y AC10 de #61 se reescribieron: su redaccion anterior exigia justo lo
+contrario, que ningun relleno cambiara de color.
+
+### Gate humano: cerrado
+
+Firmado en `cdc8b82` ("Approve mobile UI legibility polish spec"). La firma
+cayo sobre el texto **previo** a la reversion, pero el humano habia pedido esa
+via por chat antes de firmar; el frontmatter esta en `approved` (`29f94aa`).
+Tres cosas quedaron fijadas despues de su firma y se le reportaron: el hex
+`#178255`, la tinta partida por tema, y que ahora hay **10 literales de color
+en 9 lineas** de `global-css.test.ts` que tocar (antes eran 2).
+
+### Drift de rama, resuelto
+
+La sesion `Backend` commiteo la aprobacion de #53 (`5ced66b`) sobre esta rama
+en vez de la suya: el working tree es uno solo y el HEAD estaba aqui. Lo
+rehizo como `041d5b8` desde un worktree propio y #53 ya esta mergeada en main
+(PR #100, `f84c926`). Rebase sobre `origin/main` con `--skip` del commit
+huerfano: la rama quedo limpia, solo con los 9 commits de #61.
+
+Acuerdo con esa sesion: ella trabaja **solo en worktrees**
+(`/home/claude/sites/Pet-Tracker-wt-42` para #42), `/home/claude/sites/Pet-Tracker`
+es de esta sesion mientras duren #61 y #62. Codex NO corre en el VPS: corre en
+la terminal Windows del humano contra su clon.
+
+**Aviso de secuenciacion**: #42 `mobile-device-pairing` va a tocar
+`src/screens/profile/` y #61 tambien (R9, la regresion de #46 R10). Los merges
+hay que ordenarlos.
+
 ### Siguiente paso
 
-`spec_author` esta escribiendo `specs/mobile-ui-legibility-polish/`. Al
-terminar, **la sesion para**: la spec necesita el gate humano (aprobacion por
-commit en la rama, `status: draft` → `approved`) antes de cualquier handoff a
-Codex CLI. La implementacion NO la escribe Claude.
+Preparar el prompt de handoff a Codex CLI para #61 y darselo al humano. La
+implementacion NO la escribe Claude. Cuando Codex termine y el humano lo
+confirme, lanzar `reviewer`.
 
 ### Aviso de numeracion
 
