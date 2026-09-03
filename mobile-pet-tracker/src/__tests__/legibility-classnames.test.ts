@@ -1,4 +1,13 @@
+interface DirectoryEntry {
+  name: string;
+  isDirectory: () => boolean;
+}
+
 declare function require(moduleName: 'fs'): {
+  readdirSync: (
+    path: string,
+    options: { withFileTypes: true },
+  ) => DirectoryEntry[];
   readFileSync: (path: string, encoding: 'utf8') => string;
 };
 
@@ -6,10 +15,31 @@ declare function require(moduleName: 'path'): {
   join: (...paths: string[]) => string;
 };
 
-const { readFileSync } = require('fs');
+const { readdirSync, readFileSync } = require('fs');
 const { join } = require('path');
 
 const sourceRoot = join(process.cwd(), 'src');
+
+/** Fuentes de producción de `src/`: sin `__tests__/` y sin tests colocados. */
+function sourceFiles(directory: string = sourceRoot): string[] {
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const path = join(directory, entry.name);
+
+    if (entry.isDirectory()) {
+      return entry.name === '__tests__' ? [] : sourceFiles(path);
+    }
+
+    return /\.tsx?$/.test(entry.name) && !/\.test\.tsx?$/.test(entry.name)
+      ? [path]
+      : [];
+  });
+}
+
+function filesMatching(pattern: RegExp): string[] {
+  return sourceFiles()
+    .filter((path) => pattern.test(readFileSync(path, 'utf8')))
+    .map((path) => path.slice(sourceRoot.length + 1));
+}
 
 function readSource(relativePath: string): string {
   return readFileSync(join(sourceRoot, relativePath), 'utf8');
@@ -82,4 +112,39 @@ describe('#61 R3: ningún texto sobre bg-accent se compone con opacidad', () => 
       );
     },
   );
+});
+
+describe('#61 R4: el acento como tinta usa accent-strong', () => {
+  const inkSites: [string, number][] = [
+    [join('components', 'floating-tab-bar.tsx'), 1],
+    [join('app', '(auth)', 'login.tsx'), 2],
+    [join('app', '(auth)', 'forgot.tsx'), 1],
+    [join('screens', 'reset-password', 'index.tsx'), 2],
+    [join('app', '(tabs)', 'home.tsx'), 1],
+    [join('app', '(tabs)', 'health.tsx'), 1],
+    [join('app', '(tabs)', 'food.tsx'), 1],
+    [join('app', '(tabs)', 'map.tsx'), 2],
+    [join('screens', 'profile', 'index.tsx'), 1],
+    [join('screens', 'add-pet', 'index.tsx'), 1],
+  ];
+
+  it.each(inkSites)('%s pinta con text-accent-strong (%i)', (path, sites) => {
+    expect(readSource(path).match(/text-accent-strong\b/g)).toHaveLength(sites);
+  });
+
+  it('suma las trece ocurrencias que enumera la spec', () => {
+    expect(
+      inkSites.reduce((total, [, sites]) => total + sites, 0),
+    ).toBe(13);
+  });
+
+  it('no deja ningún text-accent suelto en las fuentes', () => {
+    expect(filesMatching(/text-accent(?![-\w])/)).toEqual([]);
+  });
+
+  it('no deja ninguna llamada a useThemeColors pidiendo accent', () => {
+    const requestsAccent = /useThemeColors\(\s*\[[^\]]*'accent'[^\]]*\]/;
+
+    expect(filesMatching(requestsAccent)).toEqual([]);
+  });
 });

@@ -221,3 +221,56 @@ describe('#61 R2: el relleno de acento pasa AA con etiqueta blanca', () => {
     expect(contrast(accent, '#161B22')).toBeGreaterThanOrEqual(3);
   });
 });
+
+/**
+ * Superficies compuestas: heroui deriva los `*-soft` con
+ * `color-mix(in oklab, var(--X) 15%, transparent)` y `--tab-pill` es el acento
+ * al 14 % / 22 %, así que su hex resultante no se lee de global.css. Los
+ * valores son los de specs/mobile-ui-legibility-polish/design.md §5.4.
+ */
+const composedSurfaces = {
+  light: { accentSoft: '#DCECE6', tabPill: '#DFEEE7', warningSoft: '#FEF0DA' },
+  dark: { accentSoft: '#0E2220', tabPill: '#0F2A25', warningSoft: '#383422' },
+} as const;
+
+describe('#61 R4: token accent-strong con AA como tinta en los dos temas', () => {
+  it('registra el espejo --color-accent-strong para las utilidades text-*', () => {
+    expect(globalCss).toMatch(
+      /@theme inline\s*{[^}]*--color-accent-strong:\s*var\(--accent-strong\);/,
+    );
+  });
+
+  it.each([
+    ['light', '#107148'],
+    ['dark', '#2AB87C'],
+  ] as const)('parte la tinta del relleno en %s', (theme, accentStrong) => {
+    expect(parseVariables(extractVariant(theme))).toMatchObject({
+      'accent-strong': accentStrong,
+      'color-accent-strong': accentStrong,
+    });
+  });
+
+  it.each([
+    ['light', '#107148', '#FFFFFF', '#F5F6F8', '#F0FBF6'],
+    ['dark', '#2AB87C', '#161B22', '#1F242B', '#12231B'],
+  ] as const)(
+    'pasa AA sobre las cinco superficies de %s',
+    (theme, accentStrong, surface, background, surfaceSecondary) => {
+      const { accentSoft, tabPill } = composedSurfaces[theme];
+
+      [surface, background, surfaceSecondary, accentSoft, tabPill].forEach(
+        (target) => {
+          expect(contrast(accentStrong, target)).toBeGreaterThanOrEqual(4.5);
+        },
+      );
+    },
+  );
+
+  it('no degrada el tema oscuro: la tinta sigue siendo el verde de hoy', () => {
+    expect(parseVariables(extractVariant('dark'))['accent-strong']).toBe(
+      '#2AB87C',
+    );
+    expect(contrast('#2AB87C', '#161B22')).toBeCloseTo(6.792, 3);
+    expect(contrast('#2AB87C', '#1F242B')).toBeCloseTo(6.128, 3);
+  });
+});
