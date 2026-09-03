@@ -9,7 +9,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
 
-import { claimDevice } from '../../api/devices';
+import { claimDevice, type ClaimDeviceState } from '../../api/devices';
 import { listPets, type PetsState } from '../../api/pets';
 import type { PetProfile } from '../../api/types';
 import PairingRoute from '../../app/(tabs)/pairing';
@@ -277,5 +277,110 @@ describe('R5: sin collar muestra el formulario de vinculación y publica el clai
     await waitFor(() =>
       expect(screen.getByTestId('pairing-submit')).not.toBeDisabled(),
     );
+  });
+
+  it('disables submit while the claim request is in flight', async () => {
+    let resolveClaim!: (state: ClaimDeviceState) => void;
+    mockClaimDevice.mockReturnValue(
+      new Promise((resolve) => {
+        resolveClaim = resolve;
+      }),
+    );
+    await renderPairing();
+    await fireEvent.changeText(
+      await screen.findByTestId('activation-code-input'),
+      'ACT-001',
+    );
+
+    await fireEvent.press(screen.getByTestId('pairing-submit'));
+
+    await waitFor(() =>
+      expect(screen.getByTestId('pairing-submit')).toBeDisabled(),
+    );
+    await act(async () => {
+      resolveClaim({ kind: 'error' });
+    });
+    await waitFor(() =>
+      expect(screen.getByTestId('pairing-submit')).not.toBeDisabled(),
+    );
+  });
+});
+
+describe('R6: el claim mapea cada kind a su mensaje y permite reintentar', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  });
+
+  it.each<[ClaimDeviceState, string]>([
+    [
+      { kind: 'not-found' },
+      'Invalid activation code. Check the code printed on the box.',
+    ],
+    [
+      { kind: 'invalid' },
+      'Invalid activation code. Check the code printed on the box.',
+    ],
+    [
+      { kind: 'already-claimed' },
+      'This collar is already paired to another pet.',
+    ],
+    [
+      { kind: 'pet-has-device' },
+      'This pet already has a collar. Unpair it first.',
+    ],
+    [
+      { kind: 'subscription-required' },
+      'This collar has no active plan. Contact support to activate it.',
+    ],
+    [{ kind: 'forbidden' }, 'Only the owner can pair a collar.'],
+    [{ kind: 'unreachable', message: 'offline' }, 'Cannot reach server'],
+    [{ kind: 'error' }, 'Something went wrong'],
+    [{ kind: 'missing-config' }, 'Something went wrong'],
+  ])('shows the exact message for $kind and allows retry', async (state, message) => {
+    mockClaimDevice.mockResolvedValue(state);
+    await renderPairing();
+    await fireEvent.changeText(
+      await screen.findByTestId('activation-code-input'),
+      'ACT-001',
+    );
+
+    await fireEvent.press(screen.getByTestId('pairing-submit'));
+
+    const error = await screen.findByTestId('pairing-error');
+    expect(error).toHaveTextContent(message);
+    expect(error.props.selectable).toBe(true);
+    expect(screen.getByTestId('pairing-submit')).not.toBeDisabled();
+
+    await fireEvent.press(screen.getByTestId('pairing-submit'));
+    await waitFor(() => expect(mockClaimDevice).toHaveBeenCalledTimes(2));
+  });
+
+  it('signs out for unauthorized without showing an error message', async () => {
+    const signOut = jest.fn().mockResolvedValue(undefined);
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut,
+    } satisfies AuthContextValue);
+    mockClaimDevice.mockResolvedValue({ kind: 'unauthorized' });
+    await renderPairing();
+    await fireEvent.changeText(
+      await screen.findByTestId('activation-code-input'),
+      'ACT-001',
+    );
+
+    await fireEvent.press(screen.getByTestId('pairing-submit'));
+
+    await waitFor(() => expect(signOut).toHaveBeenCalledTimes(1));
+    expect(screen.queryByTestId('pairing-error')).toBeNull();
   });
 });
