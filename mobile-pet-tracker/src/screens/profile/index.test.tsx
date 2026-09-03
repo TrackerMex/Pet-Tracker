@@ -614,3 +614,41 @@ describe('R10: refetch al foco', () => {
     );
   });
 });
+
+describe('R10 (mobile-device-pairing): el perfil enlaza a /pairing', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockGetMe.mockReturnValue(pending<MeState>());
+    const pet = makePet();
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+  });
+
+  it('shows the GPS configuration row and opens pairing', async () => {
+    await renderProfile();
+
+    const link = await screen.findByTestId('pairing-link');
+    expect(
+      screen.getByText('Configuración del Dispositivo GPS'),
+    ).toBeVisible();
+    expect(link.props.accessibilityRole).toBe('button');
+    await fireEvent.press(link);
+
+    expect(mockRouter.push).toHaveBeenCalledWith('/pairing');
+  });
+
+  it('does not show the row before a pet is loaded', async () => {
+    mockGetPet.mockReturnValue(pending<PetState>());
+
+    await renderProfile();
+
+    expect(screen.queryByTestId('pairing-link')).toBeNull();
+  });
+});
