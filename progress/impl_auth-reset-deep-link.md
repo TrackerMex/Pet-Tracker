@@ -899,3 +899,10 @@ Quedan pendientes exclusivamente los gates humanos G1–G4 documentados en
 en Hostinger, configuración del host real fuera del repositorio y smoke en
 dispositivo. No se generó build Android, no se resolvió DNS y no se desplegó
 nada durante esta implementación.
+
+## Resultados G1-G4
+
+G1 pude obtener el obtener y publicar el fingerprint ✅
+G2 pude obtener el enlace de restablecimiento y verificarlo ✅
+G3 configuró el deep link en el host y pude verificarlo ✅
+G4 pude verificar el deep link en el host ✅
