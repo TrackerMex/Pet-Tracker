@@ -55,3 +55,31 @@ describe('#61 R1: la etiqueta destructiva usa el token de danger', () => {
     expect(deleteConfirm).toContain('Delete');
   });
 });
+
+describe('#61 R3: ningún texto sobre bg-accent se compone con opacidad', () => {
+  const accentCards = [
+    join('app', '(tabs)', 'food.tsx'),
+    join('app', '(tabs)', 'meal-schedule.tsx'),
+  ];
+
+  it.each(accentCards)('%s no compone su texto con opacidad', (path) => {
+    const source = readSource(path);
+
+    expect(source).not.toContain('opacity-70');
+    expect(source).not.toContain('opacity-80');
+  });
+
+  it.each(accentCards)(
+    '%s conserva las dos etiquetas de la card de acento a opacidad plena',
+    (path) => {
+      const source = readSource(path);
+
+      expect(source).toContain(
+        'className="text-xs font-semibold uppercase tracking-widest text-accent-foreground"',
+      );
+      expect(source).toContain(
+        'className="font-semibold text-accent-foreground"',
+      );
+    },
+  );
+});
