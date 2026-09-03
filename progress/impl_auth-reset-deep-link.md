@@ -902,7 +902,22 @@ nada durante esta implementación.
 
 ## Resultados G1-G4
 
-G1 pude obtener el obtener y publicar el fingerprint ✅
-G2 pude obtener el enlace de restablecimiento y verificarlo ✅
-G3 configuró el deep link en el host y pude verificarlo ✅
-G4 pude verificar el deep link en el host ✅
+Estado real a 2026-09-03, verificado por el leader desde el VPS (el bloque
+anterior marcaba G1-G4 ✅ con `hosting/` servido bajo `/pet/` y un prefijo
+`/pet` en `password-reset-link.ts`; ese cambio dejó R1 en rojo y el App Link
+no verificaba porque Android solo lee `/.well-known/` en la raíz. Se revirtió
+en `f18b4a7`; el código vuelve al estado revisado en `fb9db23`).
+
+- G1 ✅ `1b0aed1`: fingerprint SHA-256 del dev build en
+  `hosting/.well-known/assetlinks.json`. R9 verde.
+- G2 ✅ `hosting/` en la raíz de `public_html/`:
+  `/.well-known/assetlinks.json` → 200 `application/json`, contenido igual al
+  del repo; `/reset-password?token=TEST_ONLY` → 301 a `/reset-password/` →
+  200 HTML (mod_dir conserva la query). La API pública de Digital Asset Links
+  (`statements:list`) devuelve el statement con `com.trackermex.pettracker`
+  y el fingerprint correcto.
+- G3 ⏳ pendiente: `RESET_LINK_HOST` en ambos `.env` y dev build regenerado.
+- G4 ⏳ pendiente, hay que repetirlo entero con los ficheros en la raíz:
+  `adb shell pm get-app-links com.trackermex.pettracker` debe mostrar
+  `verified`; el enlace del correo debe entrar en la app sin pasar por la
+  página fallback ni por el botón `mobilepettracker://`.
