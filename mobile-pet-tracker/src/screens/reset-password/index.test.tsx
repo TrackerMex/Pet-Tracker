@@ -22,6 +22,11 @@ jest.mock('expo-router', () => ({
   useLocalSearchParams: jest.fn(),
 }));
 
+jest.mock('react-native-safe-area-context', () => ({
+  ...jest.requireActual('react-native-safe-area-context'),
+  useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
+}));
+
 const mockRouter = jest.mocked(router);
 const mockUseLocalSearchParams = jest.mocked(useLocalSearchParams);
 const mockResetPassword = jest.mocked(resetPassword);
@@ -204,5 +209,49 @@ describe('R8: el submit completa el reset y mapea los errores', () => {
     await waitFor(() => {
       expect(screen.getByTestId('reset-submit')).not.toBeDisabled();
     });
+  });
+});
+
+describe('#61 R8: las tres ramas de reset tienen contenedor de scroll', () => {
+  const metrics = {
+    flexGrow: 1,
+    justifyContent: 'center',
+    padding: 24,
+    gap: 16,
+    paddingTop: 52,
+    paddingBottom: 48,
+  };
+
+  it('la rama sin token centra también en horizontal', async () => {
+    await renderRoute();
+
+    const screenRoot = screen.getByTestId('screen-reset-password');
+
+    expect(screenRoot.props.contentContainerStyle).toEqual({
+      ...metrics,
+      alignItems: 'center',
+    });
+    expect(screenRoot.props.contentInsetAdjustmentBehavior).toBe('automatic');
+  });
+
+  it('la rama de éxito centra también en horizontal', async () => {
+    mockResetPassword.mockResolvedValue({ kind: 'ok' });
+    await renderRoute('token-123');
+    await submitReset();
+
+    await waitFor(() => expect(screen.getByTestId('reset-success')).toBeVisible());
+
+    expect(
+      screen.getByTestId('screen-reset-password').props.contentContainerStyle,
+    ).toEqual({ ...metrics, alignItems: 'center' });
+  });
+
+  it('la rama del formulario no centra en horizontal', async () => {
+    await renderRoute('token-123');
+
+    const screenRoot = screen.getByTestId('screen-reset-password');
+
+    expect(screenRoot.props.contentContainerStyle).toEqual(metrics);
+    expect(screenRoot.props.keyboardShouldPersistTaps).toBe('handled');
   });
 });
