@@ -1,8 +1,10 @@
-import { login, register } from '../auth';
+import { login, register, resetPassword } from '../auth';
 
 const baseUrl = 'http://example.test/v1/';
 const loginEndpoint = 'http://example.test/v1/auth/login';
 const registerEndpoint = 'http://example.test/v1/auth/register';
+const resetPasswordEndpoint =
+  'http://example.test/v1/auth/reset-password';
 
 function response(status: number, body: unknown): Response {
   return {
@@ -175,5 +177,96 @@ describe('R2: register mapea la respuesta por kind', () => {
       kind: 'missing-config',
     });
     expect(fetchFn).not.toHaveBeenCalled();
+  });
+});
+
+describe('R7 (auth-reset-deep-link): resetPassword mapea la respuesta por kind', () => {
+  const body = {
+    token: 'reset-token-r7',
+    password: 'new correct horse',
+    passwordConfirmation: 'new correct horse',
+  };
+
+  it('hace POST con el payload completo y mapea 200 a ok', async () => {
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValue(response(200, { reset: true })) as unknown as typeof fetch;
+
+    await expect(resetPassword(baseUrl, body, fetchFn)).resolves.toEqual({
+      kind: 'ok',
+    });
+    expect(fetchFn).toHaveBeenCalledWith(resetPasswordEndpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+  });
+
+  it('mapea 410 a expired', async () => {
+    const fetchFn = jest.fn().mockResolvedValue(response(410, {})) as unknown as typeof fetch;
+
+    await expect(resetPassword(baseUrl, body, fetchFn)).resolves.toEqual({
+      kind: 'expired',
+    });
+  });
+
+  it('mapea un 400 con errors de zod a validation', async () => {
+    const errors = [
+      { path: 'password', message: 'Password must contain 8 characters' },
+    ];
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValue(response(400, { errors })) as unknown as typeof fetch;
+
+    await expect(resetPassword(baseUrl, body, fetchFn)).resolves.toEqual({
+      kind: 'validation',
+      errors,
+    });
+  });
+
+  it('mapea un 400 sin errors a invalid-token', async () => {
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValue(response(400, { message: 'Invalid reset token' })) as unknown as typeof fetch;
+
+    await expect(resetPassword(baseUrl, body, fetchFn)).resolves.toEqual({
+      kind: 'invalid-token',
+    });
+  });
+
+  it('mapea un rechazo de fetch a unreachable', async () => {
+    const fetchFn = jest
+      .fn()
+      .mockRejectedValue(new Error('network down')) as unknown as typeof fetch;
+
+    await expect(resetPassword(baseUrl, body, fetchFn)).resolves.toEqual({
+      kind: 'unreachable',
+      message: 'network down',
+    });
+  });
+
+  it.each([undefined, ''])(
+    'mapea base URL ausente %p sin hacer fetch',
+    async (missingUrl) => {
+      const fetchFn = jest.fn() as unknown as typeof fetch;
+
+      await expect(resetPassword(missingUrl, body, fetchFn)).resolves.toEqual({
+        kind: 'missing-config',
+      });
+      expect(fetchFn).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each([
+    ['status inesperado', response(500, { message: 'failure' })],
+    ['status de éxito inesperado', response(201, { reset: true })],
+  ])('mapea %s a error', async (_case, backendResponse) => {
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValue(backendResponse) as unknown as typeof fetch;
+
+    await expect(resetPassword(baseUrl, body, fetchFn)).resolves.toEqual({
+      kind: 'error',
+    });
   });
 });

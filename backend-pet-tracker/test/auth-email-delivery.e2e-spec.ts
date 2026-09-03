@@ -53,7 +53,7 @@ describe('Auth email delivery (e2e)', () => {
         imports: [AppModule],
       })
         .overrideProvider(PASSWORD_RESET_SENDER)
-        .useValue(new ResendPasswordResetSender(client))
+        .useValue(new ResendPasswordResetSender(client, 'reset.test'))
         .compile();
 
       app = module.createNestApplication();

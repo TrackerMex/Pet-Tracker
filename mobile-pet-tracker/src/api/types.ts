@@ -12,6 +12,12 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface ResetPasswordRequest {
+  token: string;
+  password: string;
+  passwordConfirmation: string;
+}
+
 export interface RegisterRequest {
   firstName: string;
   lastName: string;

@@ -706,6 +706,80 @@ El humano registra G1, G2, G3-reset, G3-verificación y G4 como confirmados, con
 fecha, en `progress/impl_auth-email-delivery.md`, sin secretos ni tokens. El
 reviewer no aprueba la feature mientras cualquiera de ellos siga pendiente.
 
+### Feature 59 — auth-reset-deep-link
+
+Estos cuatro gates los ejecuta una persona, en orden. Requieren el dev build
+de Android; Expo Go no puede validar App Links. Sustituye los placeholders
+solo en los entornos indicados y nunca copies el dominio real, fingerprints,
+direcciones de correo, contraseñas ni tokens al reporte.
+
+1. **G1 — obtener y publicar el fingerprint SHA-256 del dev build.**
+
+   El dev build local (`npx expo run:android`) se firma con el keystore que
+   genera el prebuild en `mobile-pet-tracker/android/app/debug.keystore`, no
+   con `~/.android/debug.keystore` de Android Studio. Desde
+   `mobile-pet-tracker/android` ejecuta:
+
+   ```bash
+   keytool -list -v -J-Duser.language=en -keystore app/debug.keystore -alias androiddebugkey -storepass android -keypass android
+   ```
+
+   En Windows usa `app\debug.keystore` (PowerShell y cmd no expanden `~`
+   para programas externos). El flag `-J-Duser.language=en` evita el
+   `MissingFormatArgumentException` con locale español. Alternativa:
+   `gradlew signingReport` (`gradlew.bat` en Windows) y lee la variante
+   `debug`.
+
+   Copia el valor `SHA256` completo, no el `SHA1`, y sustituye
+   `REPLACE_WITH_DEV_BUILD_SHA256` en
+   `hosting/.well-known/assetlinks.json`. Debe conservar los 32 pares
+   hexadecimales separados por `:` y el fichero debe seguir conteniendo un
+   único statement para `com.trackermex.pettracker`.
+
+2. **G2 — subir los artefactos estáticos a Hostinger.**
+
+   Sube el contenido de `hosting/` tal cual a `public_html/`, incluida la
+   carpeta oculta `.well-known`. Con el host real sustituido localmente en los
+   comandos, confirma:
+
+   ```bash
+   curl -fsSI https://<RESET_LINK_HOST>/.well-known/assetlinks.json
+   curl -fsS 'https://<RESET_LINK_HOST>/reset-password?token=TEST_ONLY'
+   ```
+
+   La primera ruta debe responder 200 con `Content-Type: application/json` y
+   la segunda debe servir la página fallback. Su carga no debe efectuar
+   ninguna petición adicional ni consumir el token de prueba.
+
+3. **G3 — configurar el mismo host en backend y móvil.**
+
+   Define `RESET_LINK_HOST=<host real>` tanto en el `.env` gitignoreado de la
+   raíz como en `mobile-pet-tracker/.env`. Usa solo el host pelado: sin
+   `https://`, path ni slash final. Reinicia el backend para recargar
+   `ConfigService` y regenera el dev build de Android para que el intent
+   filter quede escrito en la aplicación. Ninguno de los dos `.env` se
+   commitea.
+
+4. **G4 — smoke completo y de un solo uso.**
+
+   - Con el backend levantado y una cuenta propia, ejecuta un
+     `POST /v1/auth/forgot-password`; debe responder 200 y el correo debe
+     llegar con el enlace HTTPS.
+   - Abre el enlace dos veces antes de enviar el formulario. Las dos aperturas
+     deben entrar en `/reset-password` del dev build con el token intacto; no
+     debe existir petición de reset durante el montaje.
+   - Completa el formulario una vez y confirma el 200. Reabre el mismo enlace
+     e intenta repetirlo: el segundo `POST /v1/auth/reset-password` debe
+     responder 400.
+   - Confirma que el login con la contraseña anterior responde 401 y con la
+     nueva responde 200.
+   - En un dispositivo o perfil sin la app instalada, abre el enlace y
+     confirma que aparece la página fallback de Hostinger.
+
+Registra únicamente los resultados y status en
+`progress/impl_auth-reset-deep-link.md`. G1–G4 siguen pendientes hasta esa
+confirmación humana; las suites automáticas no los sustituyen.
+
 ---
 
 ## Notas para el implementer

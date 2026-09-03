@@ -82,8 +82,11 @@ import { JwtTokenService } from './infrastructure/security/jwt-token-service';
                 config.get<string>('RESEND_API_KEY') ?? '',
                 config.get<string>('RESEND_FROM') ?? '',
               ),
+              config.get<string>('RESET_LINK_HOST') ?? '',
             )
-          : new ConsolePasswordResetSender(),
+          : new ConsolePasswordResetSender(
+              config.get<string>('RESET_LINK_HOST') ?? null,
+            ),
     },
     {
       provide: TOKEN_SERVICE,

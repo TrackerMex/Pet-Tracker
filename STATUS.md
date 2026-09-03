@@ -1,11 +1,10 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-08-29
-**Features completadas**: 51/57 (`feature_list.json`)
-**En progreso**: #54 `android-map-never-ready` (spec aprobada 2026-08-28, en manos de Codex CLI)
+**Última actualización**: 2026-09-03
+**Features completadas**: 55/59 (`feature_list.json`)
+**En progreso**: ninguna
 
-**Pendientes**: 4 (#18, #41, #42, #53). #54 migra el tab Map de `react-native-maps` a `expo-maps`: el discriminador en dispositivo (`progress/discriminador_android-map-never-ready.md`) probó que el mapa solo pinta el watermark porque su `SurfaceView` no se compone bajo Fabric, no por la clave ni por el ciclo de vida. Su R8 es un smoke humano en dev build de Android que exige tiles + marker + polyline en ambos temas. Fuente del diseño Figma versionada en
-`specs/mobile-figma-polish/design-src/`.
+**Pendientes**: 4 (#18, #41, #42, #53). #59 `auth-reset-deep-link` cerró el flujo de reset de contraseña de punta a punta: App Links `https://` verificados sobre el dominio propio (`hosting/.well-known/assetlinks.json` + página fallback en Hostinger) y ruta móvil `/reset-password`. PR pendiente de merge por el humano.
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
 desde 2026-08-10. Hay recursos vivos en la cuenta, aunque hoy sin coste.
@@ -73,6 +72,16 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Estado actual
+
+- **`auth-reset-deep-link` (#59) done** (2026-09-03): el correo de reset
+  lleva `https://<RESET_LINK_HOST>/reset-password?token=…`; Android la abre
+  como App Link verificado (intent filter `autoVerify` + `assetlinks.json`
+  con el fingerprint del dev build) y quien no tiene la app ve la página
+  fallback estática con botón `mobilepettracker://`. Ningún GET consume el
+  token. Codex implementó R1–R12 test-primero, `reviewer` aprobó
+  (`fb9db23`), gates humanos G1–G4 confirmados 2026-09-03 tras corregir un
+  desvío (`hosting/` subido bajo `/pet/`, revertido en `f18b4a7`). Informe:
+  `progress/impl_auth-reset-deep-link.md`.
 
 - **`auth-forgot-password` (#44) done** (2026-08-28): endpoints públicos de
   solicitud/reset con respuesta uniforme, token opaco SHA-256 de un solo uso
@@ -821,6 +830,16 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-09-03** — #59 `auth-reset-deep-link` **cerrada** (55/59). Gates
+  humanos G1–G4: fingerprint del dev build en `assetlinks.json`, `hosting/`
+  servido en la raíz del dominio (200 + statement válido en la API de Digital
+  Asset Links), `RESET_LINK_HOST` fuera del repo y smoke en dev build de
+  Android con App Link verificado. Incidente: el humano subió `hosting/` a
+  `/pet/` y parcheó la URL del backend; R1 quedó en rojo y el App Link no
+  verificaba. Revertido, ficheros movidos a la raíz, G3–G4 repetidos. Docs
+  G1 corregidos: el keystore del dev build es `android/app/debug.keystore`.
+  Sigue: PR de la branch para merge humano.
 
 - **2026-08-28** — #44 `auth-forgot-password` **cerrada** (49/54). Codex
   implementó R1–R13 con TDD estricto por requisito, migración 0015, entrega

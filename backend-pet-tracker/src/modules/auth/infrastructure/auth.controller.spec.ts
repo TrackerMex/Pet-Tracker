@@ -467,7 +467,7 @@ describe('R6 (auth-email-delivery): forgot-password responde 200 identico aunque
       'sender@example.com',
       fetchDouble,
     );
-    const sender = new ResendPasswordResetSender(client);
+    const sender = new ResendPasswordResetSender(client, 'reset.test');
     const existing = buildForgotPasswordDouble(async () => {
       await sender.send({
         userId: CREATED_USER_ID,

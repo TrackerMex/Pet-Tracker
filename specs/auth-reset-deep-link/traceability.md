@@ -1,0 +1,48 @@
+---
+feature: "auth-reset-deep-link"
+status: approved   # draft | spec_ready | approved
+tags: [harness, spec, backend, mobile, security]
+---
+
+# Trazabilidad — [[auth-reset-deep-link]]
+
+Rutas de test relativas a la raíz del repo salvo indicación: backend en
+`backend-pet-tracker/` (`src/…` unitarios, `test/…` e2e), móvil en
+`mobile-pet-tracker/`.
+
+| Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
+|---|---|---|
+| R1 | `src/modules/auth/infrastructure/email/password-reset-link.spec.ts::R1: buildPasswordResetUrl compone https://<host>/reset-password?token=<token>`; `src/modules/auth/infrastructure/email/resend-password-reset-sender.spec.ts::R1 (auth-reset-deep-link): el correo de reset incluye la URL del enlace ademas del token` | rojo `030076c` (`test(auth-reset-deep-link): add reset link tests (R1)`); verde `e0dfff8` (`feat(auth-reset-deep-link): add reset URL to email (R1)`) |
+| R2 | `src/modules/auth/infrastructure/email/console-password-reset-sender.spec.ts::R2 (auth-reset-deep-link): con RESET_LINK_HOST el log incluye resetUrl`; `src/modules/auth/infrastructure/email/console-password-reset-sender.spec.ts::R2 (auth-reset-deep-link): sin RESET_LINK_HOST el log queda como en #44` | rojo `4b816e7` (`test(auth-reset-deep-link): add console reset URL tests (R2)`); verde `ada573c` (`feat(auth-reset-deep-link): log console reset URL (R2)`) |
+| R3 | `src/modules/auth/auth.module.spec.ts::R3 (auth-reset-deep-link): EMAIL_ENABLED=true sin RESET_LINK_HOST aborta el arranque` | rojo `d433535` (`test(auth-reset-deep-link): add reset host config tests (R3)`); verde `0a96192` (`feat(auth-reset-deep-link): enforce reset host config (R3)`) |
+| R4 | `app.config.test.ts::R4 (auth-reset-deep-link): RESET_LINK_HOST declara el intent filter de App Links`; `app.config.test.ts::R4 (auth-reset-deep-link): sin RESET_LINK_HOST avisa y no declara intent filters` | rojo `805bf65` (`test(auth-reset-deep-link): add App Links config tests (R4)`); verde `5877535` (`feat(auth-reset-deep-link): configure Android App Links (R4)`) |
+| R5 | `src/screens/reset-password/index.test.tsx::R5: la ruta /reset-password recibe el token del deep link` | rojo `0ad7139` (`test(auth-reset-deep-link): add reset route tests (R5)`); verde `56ea5d6` (`feat(auth-reset-deep-link): add reset password route (R5)`) |
+| R6 | `src/screens/reset-password/index.test.tsx::R6: abrir la pantalla no dispara ninguna peticion` | rojo `158e256` (`test(auth-reset-deep-link): pin submit-only network call (R6)`); verde `b93c938` (`feat(auth-reset-deep-link): submit reset explicitly (R6)`) |
+| R7 | `src/api/__tests__/auth.test.ts::R7 (auth-reset-deep-link): resetPassword mapea la respuesta por kind` | rojo `e729bf4` (`test(auth-reset-deep-link): add reset API mapping tests (R7)`); verde `6139108` (`feat(auth-reset-deep-link): add reset password API client (R7)`) |
+| R8 | `src/screens/reset-password/index.test.tsx::R8: el submit completa el reset y mapea los errores` | rojo `99215cf` (`test(auth-reset-deep-link): add reset submit state tests (R8)`); verde `c1ace87` (`feat(auth-reset-deep-link): handle reset submit states (R8)`) |
+| R9 | `src/__tests__/hosting-artifacts.test.ts::R9: assetlinks.json delega el dominio en el paquete Android de la app` | rojo `837ad2f` (`test(auth-reset-deep-link): add asset links test (R9)`); verde `9ba7e93` (`feat(auth-reset-deep-link): add Android asset links (R9)`) |
+| R10 | `src/__tests__/hosting-artifacts.test.ts::R10: la pagina fallback no consume el token y ofrece abrir la app` | rojo `0039189` (`test(auth-reset-deep-link): add static fallback test (R10)`); verde `243fcc6` (`feat(auth-reset-deep-link): add static reset fallback (R10)`) |
+| R11 | `test/auth-reset-deep-link.e2e-spec.ts::R11: ningun GET consume el token; solo POST reset-password lo canjea una vez` | caracterización autorizada, verde directo `1b4bce7` (`test(auth-reset-deep-link): characterize POST-only token use (R11)`); sin cambio runtime |
+| R12 | `src/__tests__/hosting-artifacts.test.ts::R12: la configuracion y los gates manuales quedan documentados`; matriz completa de comandos y greps de R12 en `progress/impl_auth-reset-deep-link.md` | rojo `9ea6437` (`test(auth-reset-deep-link): require closure documentation (R12)`); verde `c3b5451` (`docs(auth-reset-deep-link): document host and human gates (R12)`); ajuste de harness autorizado `08150eb` (`test(harness): accept reset link host env key (R12)`); `./init.sh` exit 0 |
+
+Regla: el reviewer no aprueba si alguna fila queda "pendiente".
+Convención de commit: `feat(<scope>): <desc> (R1,R2)`.
+El implementer actualiza esta tabla tras cada commit; el reviewer la valida
+al aprobar (ver [[../../docs/specs|specs]] y [[../../CHECKPOINTS|CHECKPOINTS]] C5).
+
+Los nombres exactos de cada `describe` están fijados en [[requirements]]:
+al rellenar una fila se copian literalmente, no se reescriben. El sufijo
+`(auth-reset-deep-link)` es **obligatorio** en los R-ids que aterrizan en
+ficheros de test compartidos con otras features
+(`resend-password-reset-sender.spec.ts`, `console-password-reset-sender.spec.ts`,
+`auth.module.spec.ts`, `app.config.test.ts`, `src/api/__tests__/auth.test.ts`) —
+hallazgo H5 de `progress/review_auth-forgot-password.md`.
+
+## Gates humanos (no son filas de esta tabla, pero bloquean el cierre)
+
+| Gate | Qué confirma el humano | Estado |
+|---|---|---|
+| G1 | Fingerprint SHA-256 del certificado de firma del **dev build de Android** obtenido (`keytool`, pasos en `docs/verification.md` §Feature 59) y sustituido en `hosting/.well-known/assetlinks.json` en lugar de `REPLACE_WITH_DEV_BUILD_SHA256` | hecho 2026-09-03 (`1b0aed1`) |
+| G2 | Contenido de `hosting/` subido tal cual al hosting web de Hostinger: `https://<RESET_LINK_HOST>/.well-known/assetlinks.json` responde 200 con `Content-Type: application/json` y `https://<RESET_LINK_HOST>/reset-password` sirve la página fallback | hecho 2026-09-03 (curl 200 + DAL API, `impl_*.md` §Resultados) |
+| G3 | `RESET_LINK_HOST` puesta con el host real en el `.env` de la raíz y en `mobile-pet-tracker/.env` (solo ahí; el dominio no entra al repo) | hecho 2026-09-03 (humano) |
+| G4 | Smoke en **dev build de Android** (nunca Expo Go): `curl POST /v1/auth/forgot-password` con el correo real → el correo llega con el enlace → **abrir el enlace dos veces** → la app abre en `/reset-password` con el token → completar el reset una vez (200) → reintentar con el mismo enlace falla (400) → login con la contraseña vieja 401 y con la nueva 200 → en un dispositivo/perfil sin la app, el mismo enlace muestra la página fallback de Hostinger. No delegable a IA | hecho 2026-09-03 (humano: App Link verificado, abre directo en la app; ver `impl_*.md` §Resultados) |
