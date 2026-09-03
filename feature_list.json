@@ -946,7 +946,7 @@
   {
     "id": 53,
     "name": "mobile-jest-mock-hygiene",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P3",
     "description": "La suite movil src/screens/add-pet/index.test.tsx falla de forma intermitente: la config de jest movil no declara clearMocks/resetMocks/restoreMocks y mockLaunchImageLibrary.mockResolvedValue(...) se fija en un unico punto (index.test.tsx:217) en vez de en un beforeEach; si el orden de ejecucion cambia, el mock de expo-image-picker devuelve undefined. Detectado el 2026-08-28: Codex lo sufrio implementando #52 y el reviewer confirmo que es preexistente (src/ byte-identico a main, 5 corridas dirigidas verdes, no reproduce en init.sh limpio).",
     "acceptance_criteria": [
@@ -1070,6 +1070,27 @@
     "files_affected": [
       "mobile-pet-tracker/src/app/(auth)/",
       "mobile-pet-tracker/app.json"
+    ]
+  },
+  {
+    "id": 60,
+    "name": "mobile-ios-support",
+    "status": "pending",
+    "priority": "P3",
+    "description": "La app movil solo se ha compilado para Android; iOS compila pero no funciona: src/components/pet-map.tsx usa GoogleMaps.View de expo-maps, que solo existe en Android (iOS requiere AppleMaps.View, Apple Maps sin API key, iOS 17+); app.json no declara ios.bundleIdentifier ni textos de permiso en infoPlist (foto, camara, ubicacion); y #59 configuro App Links solo en Android, asi que en iOS el enlace de reset abre Safari y depende del boton mobilepettracker:// de la pagina fallback (Universal Links exigen ios.associatedDomains applinks:<RESET_LINK_HOST> y hosting/.well-known/apple-app-site-association con <TEAM_ID>.<bundleId>). El codigo no tiene ninguna rama Platform.OS; el resto de dependencias nativas (@expo/ui, expo-glass-effect, expo-symbols, react-native-nitro-theme-transition, uniwind) tienen implementacion iOS. Windows no compila iOS: el build sale de EAS Build (eas.json ya tiene perfil development) o de un Mac con Xcode; simulador sin cuenta de pago, iPhone fisico exige Apple Developer Program (decision de costo del humano). Detectado el 2026-09-03 al cerrar #59.",
+    "acceptance_criteria": [
+      "El tab Map renderiza tiles, marker y polyline en iOS con AppleMaps.View y sigue igual en Android con GoogleMaps.View, con test que nombra su R-id",
+      "app.json declara ios.bundleIdentifier igual al package Android y los textos de permiso de infoPlist que exigen expo-image-picker y expo-maps",
+      "El enlace de reset de #59 abre la app en iOS como Universal Link (associatedDomains + apple-app-site-association en hosting/), con fallback web intacto",
+      "Perfil EAS para dev build de iOS documentado en docs/verification.md; gate humano: smoke en simulador iOS (o dispositivo si el humano decide pagar Apple Developer)"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/components/pet-map.tsx",
+      "mobile-pet-tracker/app.json",
+      "mobile-pet-tracker/app.config.ts",
+      "mobile-pet-tracker/eas.json",
+      "hosting/.well-known/",
+      "docs/verification.md"
     ]
   }
 ]
