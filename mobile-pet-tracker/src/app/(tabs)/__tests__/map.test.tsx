@@ -4,6 +4,7 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
 import { useEffect, type ReactNode } from 'react';
@@ -1082,6 +1083,57 @@ describe('#61 R11: el overlay de stats reparte los cuatro tiles en 2x2 sin envol
       expect(screen.getByTestId(testID).props.numberOfLines).toBe(1);
     },
   );
+
+  /**
+   * Fila `flex-row gap-2` que contiene el tile de ese valor. Subir por el árbol
+   * es la única forma de afirmar la maqueta: aplanar el overlay a una sola fila
+   * de cuatro deja los cuatro `numberOfLines` intactos y no rompería nada más.
+   */
+  function statRow(testID: string): ReturnType<typeof screen.getByTestId> {
+    let node: ReturnType<typeof screen.getByTestId> | null =
+      screen.getByTestId(testID);
+
+    while (node && node.props.className !== 'flex-row gap-2') {
+      node = node.parent;
+    }
+
+    if (!node) {
+      throw new Error(`${testID} no cuelga de ninguna fila flex-row gap-2`);
+    }
+
+    return node;
+  }
+
+  /**
+   * Los `stat-*` de esa fila, en orden de lectura. Se reduce a cadenas a
+   * propósito: un `ReactTestInstance` tiene `parent` circular y jest revienta
+   * el worker al serializar el diff si el assert falla.
+   */
+  function statsIn(row: ReturnType<typeof screen.getByTestId>): string[] {
+    return within(row)
+      .queryAllByTestId(/^stat-/)
+      .map((node) => String(node.props.testID));
+  }
+
+  it('reparte los tiles en dos filas de dos y no en una fila de cuatro', async () => {
+    mockGetLastPosition.mockResolvedValue({
+      kind: 'ok',
+      position: makeLastPosition({ staleSeconds: 15 }),
+    });
+
+    await renderMap();
+
+    await waitFor(() => expect(screen.getByTestId('stat-speed')).toBeVisible());
+
+    expect(statsIn(statRow('stat-speed'))).toEqual([
+      'stat-speed',
+      'stat-distance',
+    ]);
+    expect(statsIn(statRow('stat-updated'))).toEqual([
+      'stat-updated',
+      'stat-gps',
+    ]);
+  });
 
   it('conserva los cuatro tiles, su orden de lectura y el overlay absoluto', async () => {
     mockGetLastPosition.mockResolvedValue({
