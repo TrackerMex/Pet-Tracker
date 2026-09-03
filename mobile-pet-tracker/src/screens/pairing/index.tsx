@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { claimDevice } from '../../api/devices';
 import { listPets, type PetsState } from '../../api/pets';
+import type { DeviceStatus } from '../../api/types';
 import { Card } from '../../components/card';
 import { PetSwitcher } from '../../components/pet-switcher';
 import { useApi } from '../../hooks/use-api';
@@ -32,6 +33,8 @@ export function PairingScreen() {
   const [code, setCode] = useState('');
   const [claiming, setClaiming] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [phase, setPhase] = useState<'idle' | 'ready'>('idle');
+  const [readyDevice, setReadyDevice] = useState<DeviceStatus | null>(null);
   const selectedPet =
     pets.data?.kind === 'ok'
       ? pets.data.pets.find(({ id }) => id === selectedPetId)
@@ -57,6 +60,9 @@ export function PairingScreen() {
 
       switch (result.kind) {
         case 'ok':
+          setReadyDevice(result.device);
+          setPhase('ready');
+          pets.refetch();
           break;
         case 'not-found':
         case 'invalid':
@@ -94,6 +100,16 @@ export function PairingScreen() {
     } finally {
       setClaiming(false);
     }
+  }
+
+  function leaveReady(destination: 'map' | 'back') {
+    setPhase('idle');
+    setReadyDevice(null);
+    if (destination === 'map') {
+      router.push('/map');
+      return;
+    }
+    router.back();
   }
 
   return (
@@ -166,7 +182,66 @@ export function PairingScreen() {
         </Text>
       ) : null}
 
-      {selectedPet?.device === null ? (
+      {phase === 'ready' && readyDevice && selectedPet ? (
+        <View testID="pairing-ready" className="items-center gap-4">
+          <View className="size-16 items-center justify-center rounded-full bg-accent-soft">
+            <Text className="text-3xl font-black text-success">✓</Text>
+          </View>
+          <View className="items-center gap-2">
+            <Text className="text-2xl font-black text-foreground">
+              Tracker is ready
+            </Text>
+            <Text className="text-center font-normal text-muted" selectable>
+              {selectedPet.name}&apos;s collar is paired. GPS tracking is on.
+            </Text>
+          </View>
+
+          <Card>
+            <View className="gap-4">
+              <View className="flex-row items-center justify-between gap-4">
+                <Text className="font-normal text-muted">Model</Text>
+                <Text
+                  testID="ready-model"
+                  className="font-semibold text-foreground"
+                  selectable
+                >
+                  {readyDevice.model ?? '—'}
+                </Text>
+              </View>
+              <View className="flex-row items-center justify-between gap-4">
+                <Text className="font-normal text-muted">ESN</Text>
+                <Text
+                  testID="ready-esn"
+                  className="font-semibold text-foreground"
+                  selectable
+                >
+                  {readyDevice.esn ?? '—'}
+                </Text>
+              </View>
+            </View>
+          </Card>
+
+          <Button
+            testID="ready-map"
+            className="min-h-11 w-full rounded-xl bg-accent"
+            onPress={() => leaveReady('map')}
+          >
+            <Button.Label className="font-bold text-accent-foreground">
+              View on map
+            </Button.Label>
+          </Button>
+          <Pressable
+            accessibilityRole="button"
+            testID="ready-done"
+            className="min-h-11 w-full items-center justify-center rounded-xl"
+            onPress={() => leaveReady('back')}
+          >
+            <Text className="font-bold text-foreground">Done</Text>
+          </Pressable>
+        </View>
+      ) : null}
+
+      {phase === 'idle' && selectedPet?.device === null ? (
         <View className="gap-4">
           <Text className="text-2xl font-black text-foreground">
             Pair collar
