@@ -2342,3 +2342,19 @@ Flake de `add-pet` por mocks sin reinicializar. Sin trabajo en curso.
 - G3–G4 repetidos por el humano con los ficheros en la raíz: App Link
   verificado, abre directo en la app.
 - Estado final: `done` (55/59). PR pendiente de merge.
+
+### #53 — mobile-jest-mock-hygiene (2026-09-03)
+
+- `spec_author` documentó por qué no activar `clearMocks`/`resetMocks`/
+  `restoreMocks` en la config móvil (`resetMocks` vacía las implementaciones
+  de `jest.fn(impl)` de 11 suites) y fijó un `beforeEach` de archivo en
+  `add-pet/index.test.tsx`. Humano aprobó en `acafd69`.
+- Codex CLI: R1 rojo `79caf8c` → verde `43183c4`; R2 10/10 corridas; R3
+  `init.sh` exit 0 con config jest intacta. `reviewer` **APROBADO**
+  (`progress/review_mobile-jest-mock-hygiene.md`).
+- Alta de #60 `mobile-ios-support` (pending) en la misma branch.
+- Incidente: otra sesión de Claude commiteó sobre esta branch en el tree
+  principal del VPS y la renombró a `feature/61-mobile-ui-legibility-polish`;
+  el leader migró a un worktree (`Pet-Tracker-wt-53`). Regla: un worktree
+  por sesión activa.
+- Estado final: `done` (56/60). PR pendiente de crear/mergear.

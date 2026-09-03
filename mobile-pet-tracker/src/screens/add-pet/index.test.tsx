@@ -73,6 +73,11 @@ async function renderAddPet() {
   );
 }
 
+beforeEach(() => {
+  mockLaunchImageLibrary.mockReset();
+  mockLaunchImageLibrary.mockResolvedValue({ canceled: true, assets: null });
+});
+
 describe('R6: alta de mascota', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -258,5 +263,15 @@ describe('R7: foto opcional tras alta', () => {
     );
     expect(mockRouter.back).toHaveBeenCalledTimes(1);
     expect(mockRouter.replace).not.toHaveBeenCalled();
+  });
+});
+
+describe('R1 (mobile-jest-mock-hygiene): el mock del picker se reinicializa por test', () => {
+  it('uses a canceled default without inheriting another test', async () => {
+    await expect(mockLaunchImageLibrary()).resolves.toEqual({
+      canceled: true,
+      assets: null,
+    });
+    expect(mockLaunchImageLibrary).toHaveBeenCalledTimes(1);
   });
 });

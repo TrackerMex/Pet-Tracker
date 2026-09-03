@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-09-03
-**Features completadas**: 55/59 (`feature_list.json`)
+**Features completadas**: 56/60 (`feature_list.json`)
 **En progreso**: ninguna
 
-**Pendientes**: 4 (#18, #41, #42, #53). #59 `auth-reset-deep-link` cerró el flujo de reset de contraseña de punta a punta: App Links `https://` verificados sobre el dominio propio (`hosting/.well-known/assetlinks.json` + página fallback en Hostinger) y ruta móvil `/reset-password`. PR pendiente de merge por el humano.
+**Pendientes**: 4 (#18, #41, #42, #60). #53 `mobile-jest-mock-hygiene` cerró el flake de la suite `add-pet`: un `beforeEach` de archivo reinicializa el mock de `expo-image-picker`; sin flags globales de jest (`resetMocks` rompería 11 suites). #60 `mobile-ios-support` registrada: la app compila en iOS pero el mapa usa `GoogleMaps.View` (solo Android), faltan `bundleIdentifier`/`infoPlist` y Universal Links del reset. PR de #53 pendiente de merge por el humano.
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
 desde 2026-08-10. Hay recursos vivos en la cuenta, aunque hoy sin coste.
@@ -72,6 +72,16 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Estado actual
+
+- **`mobile-jest-mock-hygiene` (#53) done** (2026-09-03): la suite
+  `src/screens/add-pet/index.test.tsx` fallaba de forma intermitente porque
+  `mockLaunchImageLibrary.mockResolvedValue(...)` se fijaba en un único test y
+  fugaba al resto según el orden. Fix: un `beforeEach` de nivel de archivo con
+  `mockReset()` + resultado cancelado por defecto; ningún flag global
+  (`clearMocks`/`resetMocks`/`restoreMocks`), porque `resetMocks` borraría las
+  implementaciones de `jest.fn(impl)` en 11 suites. Codex R1–R3 test-primero,
+  10/10 corridas verdes, `reviewer` aprobó, `init.sh` móvil 53/613. Informe:
+  `progress/impl_mobile-jest-mock-hygiene.md`.
 
 - **`auth-reset-deep-link` (#59) done** (2026-09-03): el correo de reset
   lleva `https://<RESET_LINK_HOST>/reset-password?token=…`; Android la abre
@@ -830,6 +840,15 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-09-03** — #53 `mobile-jest-mock-hygiene` **cerrada** (56/60). Spec
+  con evidencia de por qué no usar flags globales de jest; Codex añadió el
+  `beforeEach` de archivo (rojo `79caf8c` → verde `43183c4`), 10/10 corridas
+  verdes, `init.sh` exit 0 (móvil 53 suites / 613 tests). También se dio de
+  alta #60 `mobile-ios-support` tras auditar qué falta para iOS. Incidente:
+  otra sesión de Claude renombró la branch en el working tree principal del
+  VPS; el leader terminó la feature en el worktree `Pet-Tracker-wt-53`. Sigue:
+  PR para merge humano; luego #42 o #41 (o #60 si se prioriza iOS).
 
 - **2026-09-03** — #59 `auth-reset-deep-link` **cerrada** (55/59). Gates
   humanos G1–G4: fingerprint del dev build en `assetlinks.json`, `hosting/`
