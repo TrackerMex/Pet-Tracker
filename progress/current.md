@@ -105,11 +105,24 @@ la terminal Windows del humano contra su clon.
 `src/screens/profile/` y #61 tambien (R9, la regresion de #46 R10). Los merges
 hay que ordenarlos.
 
+### Implementador: fallback al subagente `implementer` (decision del humano)
+
+`CLAUDE.md` §Implementacion pone a Codex CLI como implementador por defecto y
+solo permite el subagente `implementer` como fallback, declarandolo aqui. El
+humano lo pidio explicitamente el 2026-09-03: *"todo lo que vamos a trabajar
+con el frontend lo hace Claude"*. El handoff a Codex queda escrito en
+`progress/handoff_mobile-ui-legibility-polish.md` por si se retoma esa via.
+
+Coste asumido y advertido al humano: el motivo de usar Codex es que **quien
+implementa no revisa**. Con `implementer` y `reviewer` siendo los dos Claude,
+la review pierde independencia. El humano decidio seguir igualmente. El gate
+de smoke en dispositivo real sigue siendo suyo y no cambia.
+
 ### Siguiente paso
 
-Preparar el prompt de handoff a Codex CLI para #61 y darselo al humano. La
-implementacion NO la escribe Claude. Cuando Codex termine y el humano lo
-confirme, lanzar `reviewer`.
+`implementer` escribe R1-R12 test-primero y reporta en
+`progress/impl_mobile-ui-legibility-polish.md`. Luego `reviewer`. El PR lo abre
+el leader tras el veredicto; el merge lo hace el humano.
 
 ### Aviso de numeracion
 
