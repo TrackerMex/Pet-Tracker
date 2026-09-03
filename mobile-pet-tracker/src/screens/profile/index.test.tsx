@@ -25,6 +25,7 @@ import {
 } from '../../providers/selected-pet-provider';
 import { setStoredTheme } from '../../utils/theme-preference';
 import { ProfileScreen } from '.';
+import { TOUCH_SLOP } from '../../theme/touch-target';
 
 let mockTheme: 'light' | 'dark' = 'light';
 
@@ -643,4 +644,33 @@ describe('#61 R9: la etiqueta de sección de pet-info-card vuelve a #46 R10', ()
       'pb-2 text-xs font-semibold uppercase tracking-widest text-muted',
     );
   });
+});
+
+describe('#61 R10: los controles táctiles declaran TOUCH_SLOP', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockGetMe.mockReturnValue(pending<MeState>());
+  });
+
+  it.each(['documents-link', 'reminders-link'])(
+    '%s llega a 44 pt sin crecer a la vista',
+    async (testID) => {
+      const pet = makePet();
+      mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+      mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+
+      await renderProfile();
+
+      await waitFor(() => expect(screen.getByTestId(testID)).toBeVisible());
+
+      expect(screen.getByTestId(testID).props.hitSlop).toEqual(TOUCH_SLOP);
+    },
+  );
 });

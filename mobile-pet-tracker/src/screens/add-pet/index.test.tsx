@@ -8,6 +8,7 @@ import { createPet } from '../../api/pets';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { AddPetScreen } from '.';
+import { TOUCH_SLOP } from '../../theme/touch-target';
 
 jest.mock('../../api/pets', () => ({ createPet: jest.fn() }));
 jest.mock('../../api/media', () => ({
@@ -273,5 +274,35 @@ describe('R1 (mobile-jest-mock-hygiene): el mock del picker se reinicializa por 
       assets: null,
     });
     expect(mockLaunchImageLibrary).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('#61 R10: los controles táctiles declaran TOUCH_SLOP', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet });
+    mockCreatePet.mockReturnValue(pending());
+  });
+
+  it.each([
+    'add-pet-back',
+    'species-dog',
+    'sex-female',
+    'size-small',
+    'sterilized-true',
+    'age-mode-date',
+  ])('%s llega a 44 pt sin crecer a la vista', async (testID) => {
+    await renderAddPet();
+
+    await waitFor(() => expect(screen.getByTestId(testID)).toBeVisible());
+
+    expect(screen.getByTestId(testID).props.hitSlop).toEqual(TOUCH_SLOP);
   });
 });

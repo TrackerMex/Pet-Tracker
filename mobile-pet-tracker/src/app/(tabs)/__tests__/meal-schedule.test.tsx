@@ -24,6 +24,7 @@ import {
   useSelectedPet,
 } from '../../../providers/selected-pet-provider';
 import MealScheduleScreen from '../meal-schedule';
+import { TOUCH_SLOP } from '../../../theme/touch-target';
 
 jest.mock('../../../api/nutrition', () => ({
   generateNutritionPlan: jest.fn(),
@@ -424,6 +425,23 @@ describe('R8: generar plan con degradación por kind', () => {
       expect(
         screen.getByTestId('generate-plan-button').props.accessibilityState,
       ).toEqual(expect.objectContaining({ disabled: true })),
+    );
+  });
+});
+
+describe('#61 R10: los controles táctiles declaran TOUCH_SLOP', () => {
+  it('el botón de volver llega a 44 pt sin crecer a la vista', async () => {
+    mockGetNutritionPlan.mockReturnValue(pending<NutritionPlanState>());
+    mockGetNutritionProfile.mockReturnValue(pending<NutritionProfileState>());
+
+    await renderMealSchedule();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('meal-schedule-back')).toBeVisible(),
+    );
+
+    expect(screen.getByTestId('meal-schedule-back').props.hitSlop).toEqual(
+      TOUCH_SLOP,
     );
   });
 });
