@@ -1,7 +1,8 @@
-import { claimDevice } from '../devices';
+import { claimDevice, releaseDevice } from '../devices';
 
 const baseUrl = 'http://example.test/v1/';
 const claimEndpoint = 'http://example.test/v1/devices/claim';
+const releaseEndpoint = 'http://example.test/v1/pets/pet-1/device';
 
 function response(status: number, body: unknown): Response {
   return {
@@ -118,6 +119,61 @@ describe('R1: claimDevice publica el claim y mapea la respuesta por kind', () =>
 
       await expect(
         claimDevice(missingUrl, 'jwt-token', input, fetchFn),
+      ).resolves.toEqual({ kind: 'missing-config' });
+      expect(fetchFn).not.toHaveBeenCalled();
+    },
+  );
+});
+
+describe('R2: releaseDevice libera el collar y mapea por kind', () => {
+  it('deletes the selected pet device with the bearer token and accepts 204', async () => {
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValue(response(204, undefined)) as unknown as typeof fetch;
+
+    await expect(
+      releaseDevice(baseUrl, 'jwt-token', 'pet-1', fetchFn),
+    ).resolves.toEqual({ kind: 'ok' });
+    expect(fetchFn).toHaveBeenCalledTimes(1);
+    expect(fetchFn).toHaveBeenCalledWith(releaseEndpoint, {
+      method: 'DELETE',
+      headers: { Authorization: 'Bearer jwt-token' },
+    });
+  });
+
+  it.each([
+    [404, { code: 'DEVICE_NOT_ASSIGNED' }, { kind: 'not-assigned' }],
+    [404, {}, { kind: 'not-assigned' }],
+    [403, {}, { kind: 'forbidden' }],
+    [401, {}, { kind: 'unauthorized' }],
+    [500, {}, { kind: 'error' }],
+  ])('maps status %s with body %p', async (status, body, expected) => {
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValue(response(status, body)) as unknown as typeof fetch;
+
+    await expect(
+      releaseDevice(baseUrl, 'jwt-token', 'pet-1', fetchFn),
+    ).resolves.toEqual(expected);
+  });
+
+  it('maps a fetch rejection to unreachable', async () => {
+    const fetchFn = jest
+      .fn()
+      .mockRejectedValue(new Error('network down')) as unknown as typeof fetch;
+
+    await expect(
+      releaseDevice(baseUrl, 'jwt-token', 'pet-1', fetchFn),
+    ).resolves.toEqual({ kind: 'unreachable', message: 'network down' });
+  });
+
+  it.each([undefined, ''])(
+    'maps missing base URL %p without fetching',
+    async (missingUrl) => {
+      const fetchFn = jest.fn() as unknown as typeof fetch;
+
+      await expect(
+        releaseDevice(missingUrl, 'jwt-token', 'pet-1', fetchFn),
       ).resolves.toEqual({ kind: 'missing-config' });
       expect(fetchFn).not.toHaveBeenCalled();
     },
