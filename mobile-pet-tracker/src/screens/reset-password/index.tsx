@@ -1,12 +1,14 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { Button, Input, Label, LinkButton, TextField } from 'heroui-native';
 import { useState } from 'react';
-import { Text, View } from 'react-native';
+import { ScrollView, Text } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { resetPassword } from '../../api/auth';
 
 export function ResetPasswordScreen() {
   const { token } = useLocalSearchParams<{ token?: string }>();
+  const insets = useSafeAreaInsets();
   const [password, setPassword] = useState('');
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -56,7 +58,21 @@ export function ResetPasswordScreen() {
 
   if (!normalizedToken) {
     return (
-      <View className="flex-1 items-center justify-center gap-4 bg-background p-6">
+      <ScrollView
+        testID="screen-reset-password"
+        className="flex-1 bg-background"
+        keyboardShouldPersistTaps="handled"
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={{
+          flexGrow: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: 24,
+          gap: 16,
+          paddingTop: insets.top + 12,
+          paddingBottom: insets.bottom + 24,
+        }}
+      >
         <Text className="text-center text-2xl font-black text-foreground">
           Reset password
         </Text>
@@ -72,13 +88,27 @@ export function ResetPasswordScreen() {
             Back to sign in
           </LinkButton.Label>
         </LinkButton>
-      </View>
+      </ScrollView>
     );
   }
 
   if (succeeded) {
     return (
-      <View className="flex-1 items-center justify-center gap-4 bg-background p-6">
+      <ScrollView
+        testID="screen-reset-password"
+        className="flex-1 bg-background"
+        keyboardShouldPersistTaps="handled"
+        contentInsetAdjustmentBehavior="automatic"
+        contentContainerStyle={{
+          flexGrow: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: 24,
+          gap: 16,
+          paddingTop: insets.top + 12,
+          paddingBottom: insets.bottom + 24,
+        }}
+      >
         <Text className="text-center text-2xl font-black text-foreground">
           Reset password
         </Text>
@@ -98,12 +128,25 @@ export function ResetPasswordScreen() {
             Back to sign in
           </LinkButton.Label>
         </LinkButton>
-      </View>
+      </ScrollView>
     );
   }
 
   return (
-    <View className="flex-1 justify-center gap-4 bg-background p-6">
+    <ScrollView
+      testID="screen-reset-password"
+      className="flex-1 bg-background"
+      keyboardShouldPersistTaps="handled"
+      contentInsetAdjustmentBehavior="automatic"
+      contentContainerStyle={{
+        flexGrow: 1,
+        justifyContent: 'center',
+        padding: 24,
+        gap: 16,
+        paddingTop: insets.top + 12,
+        paddingBottom: insets.bottom + 24,
+      }}
+    >
       <Text className="text-center text-2xl font-black text-foreground">
         Reset password
       </Text>
@@ -154,6 +197,6 @@ export function ResetPasswordScreen() {
           Update password
         </Button.Label>
       </Button>
-    </View>
+    </ScrollView>
   );
 }
