@@ -148,3 +148,76 @@ describe('R2: tokens glass-surface y tab-pill en light y dark', () => {
     },
   );
 });
+
+/**
+ * Contraste WCAG 2.1 sobre luminancia relativa sRGB. Fórmula y método en
+ * specs/mobile-ui-legibility-polish/design.md §1; el ancla de verificación
+ * (#FFFFFF sobre #2AB87C = 2,547:1) se afirma en el primer describe de #61.
+ */
+function channel(value: number): number {
+  const ratio = value / 255;
+
+  return ratio <= 0.04045 ? ratio / 12.92 : ((ratio + 0.055) / 1.055) ** 2.4;
+}
+
+function luminance(hex: string): number {
+  const value = Number.parseInt(hex.slice(1), 16);
+
+  return (
+    0.2126 * channel((value >> 16) & 255) +
+    0.7152 * channel((value >> 8) & 255) +
+    0.0722 * channel(value & 255)
+  );
+}
+
+function contrast(first: string, second: string): number {
+  const [lighter, darker] = [luminance(first), luminance(second)].sort(
+    (left, right) => right - left,
+  );
+
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+describe('#61 R2: el relleno de acento pasa AA con etiqueta blanca', () => {
+  const accent = '#178255';
+
+  it('reproduce el ancla de contraste verificada a mano', () => {
+    expect(contrast('#FFFFFF', '#2AB87C')).toBeCloseTo(2.547, 3);
+  });
+
+  it.each(['light', 'dark'] as const)(
+    'oscurece acento y foco sin tocar la etiqueta blanca en %s',
+    (theme) => {
+      expect(parseVariables(extractVariant(theme))).toMatchObject({
+        accent,
+        'color-accent': accent,
+        focus: accent,
+        'accent-foreground': '#FFFFFF',
+        'color-accent-foreground': '#FFFFFF',
+      });
+    },
+  );
+
+  it.each([
+    ['light', 'rgba(23,130,85,0.14)'],
+    ['dark', 'rgba(23,130,85,0.22)'],
+  ] as const)(
+    'arrastra --tab-pill al valor del acento nuevo en %s',
+    (theme, tabPill) => {
+      expect(parseVariables(extractVariant(theme))).toMatchObject({
+        'tab-pill': tabPill,
+        'color-tab-pill': tabPill,
+      });
+    },
+  );
+
+  it('deja la etiqueta blanca sobre el relleno por encima de AA', () => {
+    expect(contrast('#FFFFFF', accent)).toBeGreaterThanOrEqual(4.5);
+    expect(contrast('#FFFFFF', accent)).toBeCloseTo(4.816, 3);
+  });
+
+  it('conserva el relleno visible sobre el fondo de página en dark', () => {
+    expect(contrast(accent, '#0D1117')).toBeGreaterThanOrEqual(3);
+    expect(contrast(accent, '#161B22')).toBeGreaterThanOrEqual(3);
+  });
+});
