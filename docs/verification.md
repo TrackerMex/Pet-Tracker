@@ -276,6 +276,52 @@ pnpm -C backend-pet-tracker run test:e2e
 # Esperado: los tres recuentos idénticos a los del paso 2.
 ```
 
+### Feature 42 — mobile-device-pairing
+
+Prerrequisitos: `docker compose up -d`, `.env` raíz con `SIM_MODE=true`
+(default) y `POLLER_ENABLED=true`; backend arriba; dev build de Android
+instalado con `EXPO_PUBLIC_API_URL` apuntando a la IP LAN
+(`docs/verification.md` §Feature 52/54 para regenerar el build). Un
+usuario con **dos mascotas** (A y B) sin collar.
+
+```bash
+cd backend-pet-tracker
+pnpm run seed:devices            # SIM-001..003 / ACT-001..003, suscripción grandfathered activa
+```
+
+1. **Código inválido**: Home → collar card `Pair a collar` (o Perfil →
+   `Configuración del Dispositivo GPS`) → mascota A → `ACT-999` → `Pair
+   collar` → mensaje `Invalid activation code…`; el botón vuelve a estar
+   habilitado.
+2. **Éxito**: `ACT-001` → vista `Tracker is ready` con `Model sim-collar`
+   y `ESN SIM-001` → `View on map` → el tab Map muestra posiciones del
+   simulador en ≤ 2 min de cron.
+3. **Ya reclamado**: mascota B → `ACT-001` → `This collar is already paired
+   to another pet.`
+4. **Tracked**: volver a `/pairing` con A → vista `GPS device` con pill
+   `GPS tracking active`.
+5. **Free**: en otra terminal
+   `pnpm run subscription:set -- --unit-id 900001 --status canceled`
+   → salir y volver a `/pairing` (refetch en foco) → bloque `Free plan —
+   health only…`; el tab Map muestra `Live tracking requires a collar`.
+   Reactivar: `pnpm run subscription:set -- --unit-id 900001 --status active`
+   → pill `GPS tracking active` y posiciones de nuevo **sin re-claim**
+   (R5/R6 de #25).
+6. **Sin plan al reclamar (402)**:
+   `pnpm run subscription:set -- --unit-id 900003 --status canceled` →
+   mascota B → `ACT-003` → `This collar has no active plan…`.
+7. **Unpair**: mascota A → `Unpair collar` → diálogo nativo → `Cancel` no
+   hace nada; `Unpair` → vuelve al formulario; Home muestra `Free`; nuevo
+   claim de `ACT-001` en B → `Tracker is ready` (el collar quedó
+   `available`).
+8. **Solo owner** (opcional si hay segunda cuenta con rol `family` sobre A):
+   claim → `Only the owner can pair a collar.`
+
+Collar real (opcional): con `WIALON_TOKEN` real y `SIM_MODE=false`,
+`pnpm run provision:device -- --unit-id <wialon_unit_id>` imprime el
+`activation_code`; repetir el paso 2 con él. Registrar solo resultados y
+status en `progress/impl_mobile-device-pairing.md`.
+
 ### Feature 44 — auth-forgot-password
 
 Usa una cuenta local ya registrada y verificada cuyo password anterior
