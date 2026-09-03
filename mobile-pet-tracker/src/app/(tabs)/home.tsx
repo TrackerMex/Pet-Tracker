@@ -213,7 +213,7 @@ export default function HomeScreen() {
                       ? 'font-normal text-muted'
                       : detail.data.pet.device.batteryPct > 60
                         ? 'font-semibold text-success'
-                        : 'font-semibold text-warning'
+                        : 'font-semibold text-warning-strong'
                   }
                 >
                   {detail.data.pet.device.batteryPct === null

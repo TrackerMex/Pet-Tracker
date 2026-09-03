@@ -261,7 +261,7 @@ export function RemindersScreen() {
                       {!inactive && days >= 0 && days <= 10 ? (
                         <Text
                           testID={`reminder-upcoming-${reminder.id}`}
-                          className="rounded-full bg-warning-soft px-2 py-0.5 text-2xs font-bold text-warning"
+                          className="rounded-full bg-warning-soft px-2 py-0.5 text-2xs font-bold text-warning-strong"
                         >
                           Upcoming!
                         </Text>
