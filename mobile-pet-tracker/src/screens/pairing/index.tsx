@@ -1,10 +1,17 @@
 import { router, useFocusEffect } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
 import { useCallback, useMemo, useState } from 'react';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import {
+  Alert,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { claimDevice } from '../../api/devices';
+import { claimDevice, releaseDevice } from '../../api/devices';
 import { listPets, type PetsState } from '../../api/pets';
 import { getPetTracking, type PetTrackingState } from '../../api/subscriptions';
 import type { DeviceStatus } from '../../api/types';
@@ -60,6 +67,7 @@ export function PairingScreen() {
   const refetchPets = pets.refetch;
   const [code, setCode] = useState('');
   const [claiming, setClaiming] = useState(false);
+  const [releasing, setReleasing] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [phase, setPhase] = useState<'idle' | 'ready'>('idle');
   const [readyDevice, setReadyDevice] = useState<DeviceStatus | null>(null);
@@ -153,6 +161,60 @@ export function PairingScreen() {
       return;
     }
     router.back();
+  }
+
+  async function handleRelease() {
+    if (!selectedPetId || releasing) return;
+
+    setActionError(null);
+    setReleasing(true);
+    try {
+      const result = await releaseDevice(
+        baseUrl,
+        token ?? '',
+        selectedPetId,
+      );
+
+      switch (result.kind) {
+        case 'ok':
+        case 'not-assigned':
+          pets.refetch();
+          break;
+        case 'forbidden':
+          setActionError('Only the owner can unpair the collar.');
+          break;
+        case 'unauthorized':
+          await signOut();
+          break;
+        case 'unreachable':
+          setActionError('Cannot reach server');
+          break;
+        case 'error':
+        case 'missing-config':
+          setActionError('Something went wrong');
+          break;
+      }
+    } catch {
+      setActionError('Something went wrong');
+    } finally {
+      setReleasing(false);
+    }
+  }
+
+  function confirmRelease() {
+    setActionError(null);
+    Alert.alert(
+      'Unpair collar?',
+      'Location history stays, but live tracking stops until you pair a collar again.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Unpair',
+          style: 'destructive',
+          onPress: () => void handleRelease(),
+        },
+      ],
+    );
   }
 
   return (
@@ -409,6 +471,17 @@ export function PairingScreen() {
               Plan status unavailable
             </Text>
           ) : null}
+
+          <Button
+            testID="device-unpair"
+            className="min-h-11 w-full rounded-xl bg-danger"
+            isDisabled={releasing}
+            onPress={confirmRelease}
+          >
+            <Button.Label className="font-bold text-accent-foreground">
+              Unpair collar
+            </Button.Label>
+          </Button>
         </View>
       ) : null}
     </ScrollView>
