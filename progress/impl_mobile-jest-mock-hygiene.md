@@ -40,6 +40,8 @@
   Tests:       8 passed, 8 total
   ```
 
+- Commit verde: `43183c4` —
+  `fix(mobile-jest-mock-hygiene): reset picker mock before each test (R1)`.
 - Refactor: sin refactor; la implementación definida en D1/D4 ya es mínima.
 
 ## R2 — estabilidad en 10 corridas
@@ -74,6 +76,9 @@ Tests:       8 passed, 8 total
 Tests:       8 passed, 8 total
 ```
 
+Commit de evidencia: `e72612f` —
+`test(mobile-jest-mock-hygiene): record 10 green runs (R2)`.
+
 ## R3 — suite completa y configuración Jest intacta
 
 - `git diff origin/main -- mobile-pet-tracker/package.json mobile-pet-tracker/test/`:
@@ -86,6 +91,9 @@ Tests:       8 passed, 8 total
   Test Suites: 53 passed, 53 total
   Tests:       613 passed, 613 total
   ```
+
+- Commit de evidencia: `c5a9ee2` —
+  `test(mobile-jest-mock-hygiene): record full-suite verification (R2,R3)`.
 
 ## Resultado
 
