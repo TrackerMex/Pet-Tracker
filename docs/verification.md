@@ -715,12 +715,20 @@ direcciones de correo, contraseñas ni tokens al reporte.
 
 1. **G1 — obtener y publicar el fingerprint SHA-256 del dev build.**
 
-   Identifica el certificado que firma el dev build instalado. Para el
-   keystore debug local, ejecuta:
+   El dev build local (`npx expo run:android`) se firma con el keystore que
+   genera el prebuild en `mobile-pet-tracker/android/app/debug.keystore`, no
+   con `~/.android/debug.keystore` de Android Studio. Desde
+   `mobile-pet-tracker/android` ejecuta:
 
    ```bash
-   keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android
+   keytool -J-Duser.language=en -list -v -keystore app/debug.keystore -alias androiddebugkey -storepass android -keypass android
    ```
+
+   En Windows usa `app\debug.keystore` (PowerShell y cmd no expanden `~`
+   para programas externos). El flag `-J-Duser.language=en` evita el
+   `MissingFormatArgumentException` con locale español. Alternativa:
+   `gradlew signingReport` (`gradlew.bat` en Windows) y lee la variante
+   `debug`.
 
    Copia el valor `SHA256` completo, no el `SHA1`, y sustituye
    `REPLACE_WITH_DEV_BUILD_SHA256` en

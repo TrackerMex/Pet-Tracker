@@ -253,8 +253,8 @@ que en #58 lo fue el DNS. `AGENTS.md` gana una fila en su tabla-mapa
 (disciplina de `docs-readme-sync`; no existe `README.md` raíz).
 
 El fingerprint SHA-256 del certificado de firma del dev build lo aporta el
-humano (G1): `keytool -list -v -keystore ~/.android/debug.keystore` para el
-debug keystore del dev build local (los comandos exactos van en
+humano (G1): `keytool -list -v -keystore app/debug.keystore` desde
+`mobile-pet-tracker/android`, el keystore del dev build local (los comandos exactos van en
 `docs/verification.md` §Feature 59). Hasta entonces el fichero lleva el
 placeholder `REPLACE_WITH_DEV_BUILD_SHA256`, y el test de R9 acepta
 placeholder o fingerprint bien formado — el repo nunca queda en rojo por un
