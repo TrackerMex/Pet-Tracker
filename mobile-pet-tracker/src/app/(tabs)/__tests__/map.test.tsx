@@ -1061,3 +1061,52 @@ describe('R4 (mobile-map-last-position-error-state): unauthorized de pets', () =
     expect(mockGetLastPosition).not.toHaveBeenCalled();
   });
 });
+
+describe('#61 R11: el overlay de stats reparte los cuatro tiles en 2x2 sin envolver', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  });
+
+  it.each(['stat-speed', 'stat-distance', 'stat-updated', 'stat-gps'])(
+    '%s se queda en una sola línea',
+    async (testID) => {
+      mockGetLastPosition.mockResolvedValue({
+        kind: 'ok',
+        position: makeLastPosition({ staleSeconds: 15 }),
+      });
+
+      await renderMap();
+
+      await waitFor(() => expect(screen.getByTestId(testID)).toBeVisible());
+
+      expect(screen.getByTestId(testID).props.numberOfLines).toBe(1);
+    },
+  );
+
+  it('conserva los cuatro tiles, su orden de lectura y el overlay absoluto', async () => {
+    mockGetLastPosition.mockResolvedValue({
+      kind: 'ok',
+      position: makeLastPosition({ staleSeconds: 15 }),
+    });
+
+    await renderMap();
+
+    await waitFor(() => expect(screen.getByTestId('stat-speed')).toBeVisible());
+
+    expect(screen.getByTestId('stat-distance')).toBeVisible();
+    expect(screen.getByTestId('stat-updated')).toBeVisible();
+    expect(screen.getByTestId('stat-gps')).toBeVisible();
+    expect(screen.getByText('Speed')).toBeVisible();
+    expect(screen.getByText('Distance')).toBeVisible();
+    expect(screen.getByText('Updated')).toBeVisible();
+    expect(screen.getByText('GPS')).toBeVisible();
+    expect(screen.getByTestId('map-stats').props.style).toEqual(
+      expect.objectContaining({
+        position: 'absolute',
+        left: 16,
+        right: 16,
+        bottom: 120,
+      }),
+    );
+  });
+});
