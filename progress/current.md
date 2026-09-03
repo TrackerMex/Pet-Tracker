@@ -118,11 +118,56 @@ implementa no revisa**. Con `implementer` y `reviewer` siendo los dos Claude,
 la review pierde independencia. El humano decidio seguir igualmente. El gate
 de smoke en dispositivo real sigue siendo suyo y no cambia.
 
-### Siguiente paso
+### Implementacion y review: cerradas
 
-`implementer` escribe R1-R12 test-primero y reporta en
-`progress/impl_mobile-ui-legibility-polish.md`. Luego `reviewer`. El PR lo abre
-el leader tras el veredicto; el merge lo hace el humano.
+`implementer` escribio R1-R12 test-primero. El `reviewer` **rechazo la primera
+vuelta** con tres bloqueos y **aprobo la segunda**, supeditado a la firma
+humana. Veredicto en `progress/review_mobile-ui-legibility-polish.md`.
+
+Los tres bloqueos y como cerraron:
+
+- **B1 — R11 sin test que lo defendiera.** El reviewer aplano el overlay del
+  mapa de 2x2 a una fila y los 45 tests de `map.test.tsx` siguieron verdes: el
+  test solo miraba `numberOfLines`, no la estructura. `292b20d` anadio el
+  assert que si discrimina; el reviewer rehizo la mutacion y ahora se pone
+  rojo. Cerrado.
+- **B2 — C6, la firma de la spec.** La aprobacion humana (`cdc8b82`) cayo sobre
+  el texto ANTERIOR a la reversion de la decision de color; el leader volvio a
+  poner `approved` por su cuenta despues de rehacer la spec. Hallazgo legitimo:
+  en el repo no queda commit humano sobre el texto vigente. **Sigue abierto**,
+  es del humano.
+- **B3 — flaky en `add-pet`.** El reporte lo declaraba preexistente con n=1 y
+  el reviewer no lo replico (1/9 en HEAD, 0/12 en main). Segunda vuelta: ambos
+  lo reprodujeron en `origin/main` (3 fallos en 38 corridas sumadas) y se
+  diagnostico la causa. **No es higiene de mocks, por eso #53 no lo curo**:
+  `add-pet-photo` es un `Button` de heroui, no un `Pressable`, y su `onPress`
+  no se despacha dentro del `fireEvent.press`, asi que el picker acaba
+  llamandose dentro del test siguiente contra un mock reinicializado.
+  Preexistente. Va como deuda a #62.
+
+Verificado por el reviewer, no heredado: `./init.sh` exit 0 entero, 54 suites
+y **692 tests** verdes (base 613/53), y los 12 `.test.tsx` preexistentes a `-0`
+lineas. La unica excepcion al invariante son las 9 lineas de
+`global-css.test.ts` que `design.md` §6 declara.
+
+### PR abierto
+
+https://github.com/TrackerMex/Pet-Tracker/pull/101 — 50 commits, 45 archivos.
+El merge lo hace el humano.
+
+### Siguiente paso: dos gates humanos, ninguno delegable
+
+1. **Firmar la spec vigente** (B2 / C6): re-marcar §Aprobacion de
+   `specs/mobile-ui-legibility-polish/requirements.md` y sus cuatro puntos, con
+   commit propio en la rama.
+2. **Smoke en dev build de Android** (AC10), lado a lado con el Figma, en tema
+   claro Y oscuro. Guion de 9 puntos en `tasks.md` §Cierre. El acento se ve
+   distinto al Make **a proposito** (DeltaE00 17,44); la tinta en dark no
+   cambio ni un pixel, asi que si algo se ve distinto en oscuro que no sea un
+   relleno, es un bug.
+
+Hasta que los dos cierren, #61 NO se marca `done`. Luego queda #62
+`mobile-ui-consistency-polish`, todavia `pending` y sin spec.
 
 ### Aviso de numeracion
 
