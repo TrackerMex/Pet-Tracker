@@ -1,0 +1,52 @@
+# Implementación — #53 `mobile-jest-mock-hygiene`
+
+- Fecha: 2026-09-03
+- Branch: `feature/53-mobile-jest-mock-hygiene`
+- HEAD inicial: `041d5b8259901e6134ec63bb33d1fc393f5fb644`
+- Alcance: un único archivo de código,
+  `mobile-pet-tracker/src/screens/add-pet/index.test.tsx`
+
+## Preparación
+
+- `expo-overview` no estaba en el caché local del plugin Expo 1.0.2; se cargó
+  completa desde el repositorio oficial actual de Expo. Su routing no asigna
+  una skill específica adicional a esta tarea de higiene Jest sin cambios de
+  UI.
+- Se confirmó Expo SDK `~57.0.14`, Jest `~29.7.0`, `jest-expo ^57.0.4` y
+  `expo-image-picker ~57.0.13`, y se consultó la documentación versionada de
+  Expo SDK 57 antes de modificar código.
+- `./init.sh` inicial: exit 0 después de sincronizar el `.env` local ignorado
+  con las credenciales del entorno compartido. Etapa móvil de línea base:
+  `Test Suites: 53 passed, 53 total` y `Tests: 612 passed, 612 total`.
+
+## R1 — reinicialización del mock del picker
+
+- Rojo: `bun run test -- src/screens/add-pet/index.test.tsx` terminó con exit
+  1 antes del `beforeEach`. Evidencia:
+
+  ```text
+  Tests:       1 failed, 7 passed, 8 total
+  Received: canceled: false, uri: "file:///new-pet.jpg"
+  ```
+
+  El test nuevo heredó el asset configurado por el test anterior, como exige
+  el caso rojo de D5.
+- Verde: pendiente.
+- Refactor: sin refactor previsto; la implementación definida en D1/D4 es
+  mínima.
+
+## R2 — estabilidad en 10 corridas
+
+Línea base previa a R1:
+
+```text
+Tests:       7 passed, 7 total
+```
+
+Corridas posteriores a R1: pendientes.
+
+## R3 — suite completa y configuración Jest intacta
+
+- `git diff origin/main -- mobile-pet-tracker/package.json mobile-pet-tracker/test/`:
+  vacío antes de implementar.
+- `./init.sh` final: pendiente.

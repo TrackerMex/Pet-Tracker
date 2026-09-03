@@ -260,3 +260,13 @@ describe('R7: foto opcional tras alta', () => {
     expect(mockRouter.replace).not.toHaveBeenCalled();
   });
 });
+
+describe('R1 (mobile-jest-mock-hygiene): el mock del picker se reinicializa por test', () => {
+  it('uses a canceled default without inheriting another test', async () => {
+    await expect(mockLaunchImageLibrary()).resolves.toEqual({
+      canceled: true,
+      assets: null,
+    });
+    expect(mockLaunchImageLibrary).toHaveBeenCalledTimes(1);
+  });
+});
