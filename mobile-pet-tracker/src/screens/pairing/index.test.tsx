@@ -81,6 +81,19 @@ function makePet(overrides: Partial<PetProfile> = {}): PetProfile {
   };
 }
 
+function makeDevice(
+  overrides: Partial<NonNullable<PetProfile['device']>> = {},
+): NonNullable<PetProfile['device']> {
+  return {
+    model: 'TrailTag Pro',
+    batteryPct: 82,
+    connectivity: 'LTE',
+    lastMessageAt: '2026-09-03T10:00:00.000Z',
+    esn: 'ESN-4242',
+    ...overrides,
+  };
+}
+
 function pending<T>(): Promise<T> {
   return new Promise(() => undefined);
 }
@@ -382,5 +395,74 @@ describe('R6: el claim mapea cada kind a su mensaje y permite reintentar', () =>
 
     await waitFor(() => expect(signOut).toHaveBeenCalledTimes(1));
     expect(screen.queryByTestId('pairing-error')).toBeNull();
+  });
+});
+
+describe('R7: tras el 201 muestra "Tracker is ready" con el collar y sus CTAs', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  });
+
+  async function renderReady(
+    device = makeDevice(),
+  ): Promise<ReturnType<typeof renderPairing>> {
+    mockClaimDevice.mockResolvedValue({ kind: 'ok', device });
+    const result = await renderPairing();
+    await fireEvent.changeText(
+      await screen.findByTestId('activation-code-input'),
+      'ACT-READY',
+    );
+    await fireEvent.press(screen.getByTestId('pairing-submit'));
+    await screen.findByTestId('pairing-ready');
+    return result;
+  }
+
+  it('shows the success copy, device values, and refreshes pets', async () => {
+    await renderReady();
+
+    expect(screen.getByText('Tracker is ready')).toBeVisible();
+    expect(
+      screen.getByText("Luna's collar is paired. GPS tracking is on."),
+    ).toBeVisible();
+    expect(screen.getByTestId('ready-model')).toHaveTextContent('TrailTag Pro');
+    expect(screen.getByTestId('ready-esn')).toHaveTextContent('ESN-4242');
+    expect(screen.queryByTestId('activation-code-input')).toBeNull();
+    expect(screen.queryByTestId('pairing-submit')).toBeNull();
+    await waitFor(() => expect(mockListPets).toHaveBeenCalledTimes(2));
+  });
+
+  it('uses em-dash fallbacks for nullable device identifiers', async () => {
+    await renderReady(makeDevice({ model: null, esn: null }));
+
+    expect(screen.getByTestId('ready-model')).toHaveTextContent('—');
+    expect(screen.getByTestId('ready-esn')).toHaveTextContent('—');
+  });
+
+  it('resets ready and opens the map from the primary CTA', async () => {
+    await renderReady();
+
+    await fireEvent.press(screen.getByTestId('ready-map'));
+
+    expect(mockRouter.push).toHaveBeenCalledWith('/map');
+    expect(screen.queryByTestId('pairing-ready')).toBeNull();
+    expect(screen.getByTestId('activation-code-input')).toBeVisible();
+  });
+
+  it('resets ready and goes back from Done', async () => {
+    await renderReady();
+
+    await fireEvent.press(screen.getByTestId('ready-done'));
+
+    expect(mockRouter.back).toHaveBeenCalledTimes(1);
+    expect(screen.queryByTestId('pairing-ready')).toBeNull();
+    expect(screen.getByTestId('activation-code-input')).toBeVisible();
   });
 });
