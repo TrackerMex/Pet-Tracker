@@ -247,24 +247,14 @@ feature (4,941 light / 6,501 dark), pero eso es un sitio nuevo: **candidato
 limpio para #62**, junto con el barrido de `useThemeColor` de heroui que la
 auditoría no hizo.
 
-**2. Hay un test flaky en la suite, y es preexistente — no lo trae #61.**
+**2. El flaky de `add-pet`: causa diagnosticada y atribución cerrada. Ver §B3.**
 
-`src/screens/add-pet/index.test.tsx` ›
-`R7: foto opcional tras alta › uploads a chosen preview only after createPet succeeds`
-falla de forma intermitente (unas 2 de cada 20 ejecuciones de la suite completa,
-nunca en ejecución aislada: 12/12 verdes). El síntoma es
-`TypeError: Cannot read properties of undefined (reading 'canceled')` en
-`add-pet/index.tsx:105` — `mockLaunchImageLibrary` devuelve `undefined`, o sea
-higiene de mocks, no color ni layout.
-
-**Reproducido en `origin/main` en un worktree limpio, a la primera ejecución.**
-La feature no lo introduce ni lo agrava: al primer indicio se paró y se verificó
-contra la base antes de seguir, en vez de reescribir el test. Hay ya un
-`describe('R1 (mobile-jest-mock-hygiene): el mock del picker se reinicializa por
-test')` en ese mismo archivo, así que el área tiene historia. **No entra en
-#61**: tocarlo sería editar un `.test.tsx` preexistente sin requisito que lo
-pida, justo lo que el invariante prohíbe. Vale como hallazgo para #62 o para una
-feature de higiene propia.
+La versión anterior de este reporte decía *"Reproducido en `origin/main` en un
+worktree limpio, a la primera ejecución"*. **Esa frase estaba mal calibrada** y
+el reviewer hizo bien en no firmarla: era cierta pero con n=1, y él no la
+replicó en 12 ejecuciones. Una reproducción única no sostiene un "es
+preexistente". Corregida abajo con la evidencia que sí lo sostiene, y con la
+causa, que es lo que faltaba.
 
 **3. Lo que el gate humano tiene que mirar y ningún test puede.** El guion de 9
 puntos está en `tasks.md` §Cierre. Los dos que más piden ojo:
@@ -293,3 +283,199 @@ anotado como higiene para #62), y los hallazgos 8-12, 14-18, 20 y 22-26.
   §Criterios obsoletos. `acceptance_criteria` es contrato del humano y no se
   editó.
 - **PR**: no abierto, por instrucción explícita. La feature no se marca `done`.
+
+---
+
+# Segunda vuelta — cierre de los bloqueos del reviewer
+
+Veredicto de partida: `progress/review_mobile-ui-legibility-polish.md`,
+**RECHAZADO** con tres bloqueos. B2 (la firma humana de la spec) es del leader y
+del humano y **no se ha tocado**. Aquí van B1 y B3.
+
+El reviewer dio por buenos y verificados el color, las safe areas y los touch
+targets, y recalculó los ratios él mismo. **Nada de eso se ha rehecho.**
+
+## B1 — R11 ya tiene un test que defiende la maqueta 2×2
+
+Commit: `292b20d`, `test(mobile-ui-legibility): R11 el test defiende también la
+maqueta 2x2`. Único cambio de código de esta vuelta, y solo toca un archivo de
+test.
+
+El reviewer tenía razón: el `describe('#61 R11')` solo discriminaba
+`numberOfLines`. La cláusula principal —los cuatro tiles en **dos filas de
+dos**, que es lo que lleva el ancho útil de 53,5 pt a 139— no tenía nada que la
+sujetara, así que era revertible sin poner nada en rojo.
+
+El assert nuevo sube por el árbol renderizado desde cada `stat-*` hasta su fila
+`flex-row gap-2` y compara los `stat-*` que esa fila contiene, en orden de
+lectura:
+
+```
+expect(statsIn(statRow('stat-speed'))).toEqual(['stat-speed', 'stat-distance']);
+expect(statsIn(statRow('stat-updated'))).toEqual(['stat-updated', 'stat-gps']);
+```
+
+**Verificado con la misma mutación del reviewer, por mí, antes de commitear**:
+los cuatro tiles devueltos a una sola fila de cuatro, `numberOfLines={1}`
+intacto en los cuatro, `tsc --noEmit` limpio (`grep -c 'flex-row gap-2'` = 1,
+`grep -c 'numberOfLines={1}'` = 4).
+
+```
+BAJO LA MUTACIÓN
+  ● #61 R11: … › reparte los tiles en dos filas de dos y no en una fila de cuatro
+    expect(received).toEqual(expected)
+      Array [
+        "stat-speed",
+        "stat-distance",
+    +   "stat-updated",
+    +   "stat-gps",
+      ]
+
+MUTACIÓN REVERTIDA
+  Test Suites: 16 passed, 16 total
+  Tests:       195 passed, 195 total
+```
+
+Un detalle que costó una iteración y que conviene dejar escrito: la primera
+versión del assert comparaba instancias (`expect(firstRow).not.toBe(secondRow)`
+y `queryByTestId(...)` contra `null`). Falla igual, pero al fallar **mata al
+worker de jest**:
+
+```
+TypeError: Converting circular structure to JSON
+    --> property 'children' -> index 0 -> property 'parent' closes the circle
+    at reportSuccess (jest-worker/build/workers/processChild.js:82:11)
+  ● Test suite failed to run
+    Jest worker encountered 4 child process exceptions, exceeding retry limit
+```
+
+Un `ReactTestInstance` tiene `parent` circular y jest no puede serializar el
+diff para mandarlo al proceso padre. Por eso el assert final se reduce a
+**arrays de cadenas**: mismo poder de detección, diff legible. Queda comentado
+en el propio helper para que nadie lo "mejore" de vuelta.
+
+## B3 — el flaky de `add-pet`: reproducido en `origin/main` **y** con la causa encontrada
+
+El reviewer pedía una de dos. **Están las dos.**
+
+### 1. Reproducción en `origin/main`, con el comando exacto
+
+Worktree limpio sobre `origin/main` en **`f84c926`** — el mismo SHA que usó el
+reviewer, que es el merge del PR #100 (#53 `mobile-jest-mock-hygiene`) — con
+`node_modules` enlazado al del repo principal, o sea el mismo que usamos los
+dos. El árbol no contiene **ni una línea** de #61 (`grep -c '#61'` = 0, y la
+suite corre **613** tests, el conteo de la base, no los 692 de HEAD).
+
+```bash
+git worktree add <scratch>/base origin/main
+ln -s <repo>/mobile-pet-tracker/node_modules <scratch>/base/mobile-pet-tracker/node_modules
+cd <scratch>/base/mobile-pet-tracker
+for i in $(seq 1 13); do bun run test > <scratch>/main$i.log 2>&1; done
+```
+
+| Rama | SHA | Ejecuciones | Fallos |
+|---|---|---|---|
+| `origin/main` (tanda 1) | `f84c926` | 13 | **1** (run 13) |
+| `origin/main` (tanda 2, instrumentada) | `f84c926` | 12 | **1** (run 12) |
+| `origin/main` (mi observación de la primera vuelta) | `f84c926` | 1 | 1 |
+| `origin/main` (**tanda del reviewer**) | `f84c926` | 12 | 0 |
+
+Pooled sobre la base: **3 fallos en 38 ejecuciones ≈ 8 %**, que es del mismo
+orden que lo observado en HEAD y explica sin misterio que 12 ejecuciones del
+reviewer salieran limpias (a 8 %, la probabilidad de no verlo en 12 es del 36 %).
+
+El fallo en `origin/main` es **el mismo, no uno parecido**: mismo test, misma
+línea, mismo par de síntomas.
+
+```
+FAIL src/screens/add-pet/index.test.tsx
+  ● R7: foto opcional tras alta › uploads a chosen preview only after createPet succeeds
+    TypeError: Cannot read properties of undefined (reading 'canceled')
+    > 103 |     if (picked.canceled || !picked.assets[0]) return;
+  ● R7: foto opcional tras alta › uploads a chosen preview only after createPet succeeds
+    Expected: "file:///new-pet.jpg"   Received: null
+    > 242 |     await waitFor(() =>
+Tests: 1 failed, 612 passed, 613 total
+```
+
+(`index.tsx:103` en la base es `:105` en HEAD: los dos los desplaza el `import`
+de `TOUCH_SLOP` que añadió R10. Mismo `if`.)
+
+### 2. La causa, que es lo que de verdad faltaba
+
+No es higiene de mocks, y por eso #53 no lo curó. **Es un press que no se
+despacha de forma síncrona.**
+
+Instrumenté el archivo **en el worktree de la base** (no en la rama) para
+registrar quién llama al picker y cuándo respecto al final de cada test, y
+cacé el fallo en la ejecución 12. El orden de los eventos es concluyente:
+
+```
+[[ANTES-PRESS]]
+[[TRAS-PRESS]] llamadas = 0        ← el press retornó SIN llamar al picker
+[[FIN]]    R7: foto opcional tras alta uploads a chosen preview …
+[[PICKER]] durante: R1 (mobile-jest-mock-hygiene): … uses a canceled default …
+[[FIN]]    R1 (mobile-jest-mock-hygiene): …
+TypeError: Cannot read properties of undefined (reading 'canceled')
+```
+
+En una ejecución sana esa misma traza da `[[PICKER-R7]] durante: R7 …` y
+`[[TRAS-PRESS]] llamadas = 1`.
+
+La cadena causal completa:
+
+1. `add-pet-photo` **no es un `Pressable` de React Native**: es un `Button` de
+   **heroui-native** (`add-pet/index.tsx:247-252`). Su `onPress` no se invoca
+   de forma síncrona dentro del `fireEvent.press` — pasa por el press feedback
+   de heroui.
+2. Bajo la suite completa en paralelo, ese despacho **se sale del test**:
+   `await fireEvent.press(...)` retorna con `mock.calls.length === 0`.
+3. Como `handlePickPhoto` no ha corrido, `photoAsset` sigue en `null`, el
+   `waitFor` agota su presupuesto y falla → **síntoma 2** (`Received: null`).
+4. El handler corre **después**, ya dentro del test siguiente, contra un mock
+   que un `beforeEach` posterior reinicializó (o contra el teardown del
+   archivo): `launchImageLibraryAsync()` devuelve `undefined` y revienta en
+   `picked.canceled` → **síntoma 1**, la `TypeError`.
+
+Descarté antes la hipótesis obvia —que el presupuesto de 1000 ms de `waitFor`
+(`@testing-library/react-native/dist/config.js:15`, `asyncUtilTimeout: 1000`)
+se quedara corto— con un experimento en el worktree: forzando
+`waitFor(..., { timeout: 1 })` el test **sigue pasando** en aislamiento, porque
+en el camino sano el estado ya está puesto en la primera comprobación. El
+timeout no es la causa; es la víctima.
+
+### Veredicto de B3
+
+- **No lo introduce #61.** Reproducido dos veces en `f84c926`, un árbol sin una
+  sola línea de la feature.
+- **No lo agrava #61.** Los 4 tests que #61 añade a ese archivo
+  (`describe('#61 R10')`) son `render` + `getByTestId` sobre `Pressable`s
+  planos; ninguno toca el picker, ninguno pulsa `add-pet-photo` (en todo el
+  archivo hay **un solo** `fireEvent.press` sobre él, el de la línea 242, que es
+  de la base) y todos corren **después** del test que falla.
+- **No se arregla aquí.** El arreglo es de una línea en un `.test.tsx`
+  preexistente —esperar al picker antes de aserverar el preview, p. ej.
+  `await waitFor(() => expect(mockLaunchImageLibrary).toHaveBeenCalled())`
+  justo tras el press— y el invariante duro de #61 prohíbe tocar un test
+  preexistente sin un requisito que lo pida. **Deuda para #62**, ahora con
+  causa y con arreglo propuesto en vez de con una nota al pie.
+
+## Estado de la suite tras esta vuelta
+
+```
+Test Suites: 54 passed, 54 total
+Tests:       692 passed, 692 total
+Snapshots:   1 passed, 1 total
+```
+
+691 → **692**: el test de estructura de R11. `tsc --noEmit` limpio.
+
+## Lo que sigue sin ser mío
+
+- **B2**: la firma humana sobre el `requirements.md` vigente. Es una casilla y un
+  commit del humano; no lo he tocado.
+- **AC10**: el smoke en dev build de Android.
+- Los dos cosméticos que apunta el reviewer en C5 (el `status: draft` del
+  frontmatter de `traceability.md` y la §"Criterios obsoletos", que quedó
+  desfasada porque `d8cee0b` ya pegó las redacciones en `feature_list.json`)
+  son de ficheros del leader.
