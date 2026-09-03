@@ -285,7 +285,7 @@ del corte de 18,66 px bold.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [X] Aprobado por humano (fecha: 2026-09-03) ← gate obligatorio antes de implementar
 
 El humano debe firmar además, explícitamente, los dos puntos que esta spec
 resuelve por escrito y que no puede cerrar sola (detalle en [[design]]):
