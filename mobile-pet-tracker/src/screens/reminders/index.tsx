@@ -338,7 +338,7 @@ export function RemindersScreen() {
                   variant="danger"
                   onPress={deleteSelectedReminder}
                 >
-                  <Button.Label className="font-bold text-accent-foreground">
+                  <Button.Label className="font-bold text-danger-foreground">
                     Delete
                   </Button.Label>
                 </Button>
