@@ -614,3 +614,33 @@ describe('R10: refetch al foco', () => {
     );
   });
 });
+
+describe('#61 R9: la etiqueta de sección de pet-info-card vuelve a #46 R10', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockGetMe.mockReturnValue(pending<MeState>());
+  });
+
+  it('usa el mismo tratamiento de etiqueta de sección que me-card', async () => {
+    const pet = makePet();
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+
+    await renderProfile();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('pet-info-card')).toBeVisible(),
+    );
+
+    expect(screen.getByText('Información').props.className).toBe(
+      'pb-2 text-xs font-semibold uppercase tracking-widest text-muted',
+    );
+  });
+});
