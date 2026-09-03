@@ -171,13 +171,13 @@ function MealScheduleContent({ petId }: { petId: string }) {
           >
             <View className="flex-row items-center justify-between gap-4">
               <View className="flex-1 gap-1">
-                <Text className="text-xs font-semibold uppercase tracking-widest text-accent-foreground opacity-70">
+                <Text className="text-xs font-semibold uppercase tracking-widest text-accent-foreground">
                   Daily target
                 </Text>
                 <Text className="text-3xl font-black text-accent-foreground">
                   {loadedPlan.merKcal} kcal
                 </Text>
-                <Text className="font-semibold text-accent-foreground opacity-80">
+                <Text className="font-semibold text-accent-foreground">
                   {loadedPlan.dailyGrams} g / day
                 </Text>
               </View>
