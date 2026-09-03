@@ -1,4 +1,4 @@
-import { postJson, readJson } from './http';
+import { deleteJson, postJson, readJson } from './http';
 import type { DeviceStatus } from './types';
 
 export interface ClaimDeviceInput {
@@ -76,6 +76,51 @@ export async function claimDevice(
     if (response.status === 409 && code === 'PET_ALREADY_HAS_DEVICE') {
       return { kind: 'pet-has-device' };
     }
+  }
+
+  return { kind: 'error' };
+}
+
+export type ReleaseDeviceState =
+  | { kind: 'ok' }
+  | { kind: 'not-assigned' }
+  | { kind: 'forbidden' }
+  | { kind: 'unauthorized' }
+  | { kind: 'error' }
+  | { kind: 'unreachable'; message: string }
+  | { kind: 'missing-config' };
+
+export async function releaseDevice(
+  baseUrl: string | undefined,
+  token: string,
+  petId: string,
+  fetchFn: typeof fetch = fetch,
+): Promise<ReleaseDeviceState> {
+  if (!baseUrl) {
+    return { kind: 'missing-config' };
+  }
+
+  const result = await deleteJson(
+    baseUrl,
+    `/pets/${petId}/device`,
+    token,
+    fetchFn,
+  );
+  if (result.kind === 'unreachable') {
+    return result;
+  }
+
+  if (result.response.status === 204) {
+    return { kind: 'ok' };
+  }
+  if (result.response.status === 404) {
+    return { kind: 'not-assigned' };
+  }
+  if (result.response.status === 403) {
+    return { kind: 'forbidden' };
+  }
+  if (result.response.status === 401) {
+    return { kind: 'unauthorized' };
   }
 
   return { kind: 'error' };
