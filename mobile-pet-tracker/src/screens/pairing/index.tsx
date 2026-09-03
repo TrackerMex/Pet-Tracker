@@ -75,12 +75,13 @@ export function PairingScreen() {
     pets.data?.kind === 'ok'
       ? pets.data.pets.find(({ id }) => id === selectedPetId)
       : undefined;
+  const hasSelectedDevice = selectedPet?.device != null;
   const trackingFn = useMemo(
     () =>
-      phase === 'idle' && selectedPetId && selectedPet?.device
+      phase === 'idle' && selectedPetId && hasSelectedDevice
         ? () => getPetTracking(baseUrl, token ?? '', selectedPetId)
         : null,
-    [baseUrl, phase, selectedPet?.device, selectedPetId, token],
+    [baseUrl, hasSelectedDevice, phase, selectedPetId, token],
   );
   const tracking = useApi(trackingFn);
   const refetchTracking = tracking.refetch;
