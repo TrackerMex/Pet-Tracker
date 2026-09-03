@@ -257,7 +257,7 @@ export function ProfileScreen() {
           ) : null}
 
           <Card testID="pet-info-card" className="gap-0">
-            <Text className="pb-2 text-lg font-bold text-foreground">
+            <Text className="pb-2 text-xs font-semibold uppercase tracking-widest text-muted">
               Información
             </Text>
             <InfoRow label="Raza" value={pet.breed} />
