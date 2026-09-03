@@ -1,9 +1,9 @@
 # Implementación — Feature #59 `auth-reset-deep-link`
 
-- Fecha: 2026-09-02
+- Fecha: 2026-09-02–2026-09-03
 - Branch: `feature/59-auth-reset-deep-link`
 - Alcance: R1–R12, backend + móvil + hosting estático
-- Resultado: en progreso; gates humanos G1–G4 fuera del alcance del implementer
+- Resultado: R1–R12 automáticos completados; gates humanos G1–G4 fuera del alcance del implementer
 
 ## Verificación previa
 
@@ -797,19 +797,21 @@ lo pasó a Jest como patrón y devolvió «No tests found». Se corrigió ejecut
 el comando literal de R12, sin flags, que produjo los 163/163 verdes de
 arriba; no hubo cambio de código.
 
-El grep literal publicado antes de la Adenda 1 devuelve exclusivamente los
-dos ficheros que esa adenda añadió a la allowlist:
+El grep literal publicado antes de las autorizaciones humanas devuelve
+exclusivamente los tres ficheros que estas añadieron a la allowlist:
 
 ```text
 backend-pet-tracker/src/modules/auth/infrastructure/auth.controller.spec.ts
 backend-pet-tracker/test/auth-email-delivery.e2e-spec.ts
+env-drift.test.mjs
 ```
 
-Al incorporar esos dos paths a la expresión, el grep de contención efectivo
-sale vacío (exit 0 del assert de salida vacía). Su diff contiene exactamente
-las dos sustituciones autorizadas de constructor por
-`new ResendPasswordResetSender(client, 'reset.test')`. El grep-clean sobre la
-ruta y pantalla nuevas también queda vacío para hex, clases arbitrarias,
+Al incorporar esos tres paths a la expresión, el grep de contención efectivo
+sale vacío (exit 0 del assert de salida vacía). Los dos primeros diffs
+contienen exactamente las sustituciones autorizadas de constructor por
+`new ResendPasswordResetSender(client, 'reset.test')`; el tercero contiene
+exclusivamente el contador `23` → `24` autorizado. El grep-clean sobre la ruta
+y pantalla nuevas también queda vacío para hex, clases arbitrarias,
 `StyleSheet.create`, sombras legacy y `elevation`.
 
 ## Bloqueo de spec en el cierre R12
@@ -844,3 +846,56 @@ R12 hace falta autorizar otra edición mecánica en `env-drift.test.mjs`:
 la allowlist/grep de contención con ese fichero. No se propone ningún otro
 cambio. El `.env` real, `feature_list.json` y `progress/current.md` siguen sin
 tocarse por este implementer.
+
+## Reanudación del cierre R12 por autorización humana
+
+El humano autorizó explícitamente en la conversación la edición mecánica del
+harness. Se cambió únicamente `assert.equal(keys.length, 23)` por
+`assert.equal(keys.length, 24)` en `env-drift.test.mjs`, commit `08150eb`.
+No cambió el comportamiento de `env-drift.mjs` ni ningún otro fichero en ese
+commit.
+
+```text
+$ node --test env-drift.test.mjs
+# tests 28
+# suites 11
+# pass 28
+# fail 0
+exit 0
+```
+
+### Cierre completo de R12
+
+```text
+$ ./init.sh
+build: OK
+backend unit: 163 suites, 1235 tests passed
+infra: 2 suites, 14 tests passed
+harness env-drift: 28 tests passed
+mobile: 53 suites, 612 tests passed, 1 snapshot
+backend e2e: 25 suites, 353 tests passed; 3 suites y 8 tests AWS reales omitidos
+lint: OK
+typecheck: OK
+exit 0
+```
+
+La ejecución mostró únicamente avisos no bloqueantes ya conocidos: el `.env`
+local no contiene `RESEND_API_KEY`, `RESEND_FROM` ni `RESET_LINK_HOST`,
+`STATUS.md` conserva un conteo anterior, Node 20 avisa del futuro mínimo de
+AWS SDK y Jest imprime mensajes de desarrollo de HeroUI/Uniwind. No se editó
+el `.env`, `STATUS.md`, `feature_list.json` ni `progress/current.md`.
+
+La verificación final de contención devuelve vacío después de incorporar las
+tres excepciones autorizadas. También devuelven vacío los greps del código
+móvil nuevo para hex, clases arbitrarias, `StyleSheet.create`, sombras legacy
+y `elevation`, y el grep de APIs de red sobre
+`hosting/reset-password/index.html`. Por tanto, abrir o prefetchear el enlace
+no consume el token: los GET permanecen en 404, la app no llama a la API al
+montarse y la página fallback no realiza red; solo el POST explícito puede
+canjearlo una vez.
+
+Quedan pendientes exclusivamente los gates humanos G1–G4 documentados en
+`docs/verification.md`: fingerprint del dev build Android, despliegue estático
+en Hostinger, configuración del host real fuera del repositorio y smoke en
+dispositivo. No se generó build Android, no se resolvió DNS y no se desplegó
+nada durante esta implementación.
