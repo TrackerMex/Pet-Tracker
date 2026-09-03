@@ -75,12 +75,12 @@ describe('R1: global.css define los tokens light exactos del diseño', () => {
       muted: '#6B7280',
       border: 'rgba(13,17,23,0.07)',
       separator: 'rgba(13,17,23,0.07)',
-      accent: '#2AB87C',
+      accent: '#178255',
       'accent-foreground': '#FFFFFF',
       danger: '#EF4444',
       warning: '#F59E0B',
       success: '#0F9B5A',
-      focus: '#2AB87C',
+      focus: '#178255',
       'field-radius': '0.75rem',
     });
   });
@@ -92,8 +92,8 @@ describe('R1: global.css define los tokens light exactos del diseño', () => {
 
 describe('R2: global.css define la paleta dark derivada del diseño', () => {
   it.each([
-    ['light', '#2AB87C', '#FFFFFF', '#6B7280', '#0F9B5A', '#F59E0B', '#EF4444'],
-    ['dark', '#2AB87C', '#FFFFFF', '#9CA3AF', '#34D399', '#FBBF24', '#F87171'],
+    ['light', '#178255', '#FFFFFF', '#6B7280', '#0F9B5A', '#F59E0B', '#EF4444'],
+    ['dark', '#178255', '#FFFFFF', '#9CA3AF', '#34D399', '#FBBF24', '#F87171'],
   ] as const)(
     'materializa los colores semánticos para el resolver JS en %s',
     (theme, accent, accentForeground, muted, success, warning, danger) => {
@@ -122,20 +122,20 @@ describe('R2: global.css define la paleta dark derivada del diseño', () => {
       muted: '#9CA3AF',
       border: 'rgba(255,255,255,0.08)',
       separator: 'rgba(255,255,255,0.08)',
-      accent: '#2AB87C',
+      accent: '#178255',
       'accent-foreground': '#FFFFFF',
       danger: '#F87171',
       warning: '#FBBF24',
       success: '#34D399',
-      focus: '#2AB87C',
+      focus: '#178255',
     });
   });
 });
 
 describe('R2: tokens glass-surface y tab-pill en light y dark', () => {
   it.each([
-    ['light', 'rgba(255,255,255,0.60)', 'rgba(42,184,124,0.14)'],
-    ['dark', 'rgba(22,27,34,0.60)', 'rgba(42,184,124,0.22)'],
+    ['light', 'rgba(255,255,255,0.60)', 'rgba(23,130,85,0.14)'],
+    ['dark', 'rgba(22,27,34,0.60)', 'rgba(23,130,85,0.22)'],
   ] as const)(
     'define los pares visual e imperativo exactos en %s',
     (theme, glassSurface, tabPill) => {
