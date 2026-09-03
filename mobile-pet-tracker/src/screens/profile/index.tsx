@@ -22,6 +22,7 @@ import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { useThemeTransition } from '../../theme/theme-transition';
+import { TOUCH_SLOP } from '../../theme/touch-target';
 
 function InfoRow({ label, value }: { label: string; value: string | null }) {
   return (
@@ -276,6 +277,7 @@ export function ProfileScreen() {
           <Pressable
             accessibilityRole="button"
             testID="documents-link"
+            hitSlop={TOUCH_SLOP}
             className="flex-row items-center justify-between rounded-xl bg-default px-3 py-2"
             onPress={() => router.push(`/pets/${pet.id}/docs` as Href)}
           >
@@ -288,6 +290,7 @@ export function ProfileScreen() {
       <Pressable
         accessibilityRole="button"
         testID="reminders-link"
+        hitSlop={TOUCH_SLOP}
         className="flex-row items-center justify-between rounded-xl bg-default px-3 py-2"
         onPress={() => router.push('/reminders' as Href)}
       >

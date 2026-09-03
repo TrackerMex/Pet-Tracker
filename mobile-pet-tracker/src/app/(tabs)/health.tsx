@@ -14,6 +14,7 @@ import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { useThemeColors } from '../../theme/use-theme-colors';
+import { TOUCH_SLOP } from '../../theme/touch-target';
 
 function isPetsError(state: PetsState): boolean {
   return ['error', 'unreachable', 'missing-config'].includes(state.kind);
@@ -243,6 +244,7 @@ export default function HealthScreen() {
           <Pressable
             accessibilityRole="button"
             testID="weight-log-link"
+            hitSlop={TOUCH_SLOP}
             className="flex-row items-center justify-between rounded-xl bg-default px-3 py-2"
             onPress={() => router.push('/weight-log')}
           >

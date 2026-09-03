@@ -17,6 +17,7 @@ import { useApi } from '../../hooks/use-api';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { useThemeColors } from '../../theme/use-theme-colors';
+import { TOUCH_SLOP } from '../../theme/touch-target';
 
 function isPlanError(state: NutritionPlanState): boolean {
   return ['error', 'unreachable', 'missing-config'].includes(state.kind);
@@ -123,6 +124,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
           accessibilityRole="button"
           accessibilityLabel="Back to food"
           testID="meal-schedule-back"
+          hitSlop={TOUCH_SLOP}
           className="rounded-full bg-default p-2"
           onPress={() => router.back()}
         >
