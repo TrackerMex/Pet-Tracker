@@ -1,6 +1,6 @@
 ---
 feature: "mobile-device-pairing"
-status: draft   # draft | spec_ready | approved
+status: approved   # draft | spec_ready | approved
 tags: [harness, spec, mobile]
 ---
 
