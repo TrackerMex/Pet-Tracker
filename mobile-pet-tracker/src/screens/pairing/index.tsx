@@ -1,11 +1,12 @@
 import { router, useFocusEffect } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { claimDevice } from '../../api/devices';
 import { listPets, type PetsState } from '../../api/pets';
+import { getPetTracking, type PetTrackingState } from '../../api/subscriptions';
 import type { DeviceStatus } from '../../api/types';
 import { Card } from '../../components/card';
 import { PetSwitcher } from '../../components/pet-switcher';
@@ -16,6 +17,33 @@ import { useSelectedPet } from '../../providers/selected-pet-provider';
 
 function isPetsError(state: PetsState): boolean {
   return ['error', 'unreachable', 'missing-config'].includes(state.kind);
+}
+
+function isTrackingError(state: PetTrackingState): boolean {
+  return ['error', 'unreachable', 'missing-config'].includes(state.kind);
+}
+
+function DeviceRow({
+  label,
+  testID,
+  value,
+}: {
+  label: string;
+  testID: string;
+  value: string;
+}) {
+  return (
+    <View className="flex-row items-start justify-between gap-4">
+      <Text className="font-normal text-muted">{label}</Text>
+      <Text
+        testID={testID}
+        className="shrink text-right font-semibold text-foreground"
+        selectable
+      >
+        {value}
+      </Text>
+    </View>
+  );
 }
 
 export function PairingScreen() {
@@ -39,11 +67,26 @@ export function PairingScreen() {
     pets.data?.kind === 'ok'
       ? pets.data.pets.find(({ id }) => id === selectedPetId)
       : undefined;
+  const trackingFn = useMemo(
+    () =>
+      phase === 'idle' && selectedPetId && selectedPet?.device
+        ? () => getPetTracking(baseUrl, token ?? '', selectedPetId)
+        : null,
+    [baseUrl, phase, selectedPet?.device, selectedPetId, token],
+  );
+  const tracking = useApi(trackingFn);
+  const refetchTracking = tracking.refetch;
 
   useFocusEffect(
     useCallback(() => {
       refetchPets();
     }, [refetchPets]),
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      refetchTracking();
+    }, [refetchTracking]),
   );
 
   async function handleClaim() {
@@ -196,7 +239,7 @@ export function PairingScreen() {
             </Text>
           </View>
 
-          <Card>
+          <Card className="w-full">
             <View className="gap-4">
               <View className="flex-row items-center justify-between gap-4">
                 <Text className="font-normal text-muted">Model</Text>
@@ -286,6 +329,86 @@ export function PairingScreen() {
               Pair collar
             </Button.Label>
           </Button>
+        </View>
+      ) : null}
+
+      {phase === 'idle' && selectedPet?.device ? (
+        <View className="gap-4">
+          <Text className="text-2xl font-black text-foreground">
+            GPS device
+          </Text>
+
+          <Card testID="device-status-card">
+            <View className="gap-4">
+              <DeviceRow
+                label="Model"
+                testID="device-model"
+                value={selectedPet.device.model ?? '—'}
+              />
+              <DeviceRow
+                label="Battery"
+                testID="device-battery"
+                value={
+                  selectedPet.device.batteryPct === null
+                    ? '—'
+                    : `${selectedPet.device.batteryPct}%`
+                }
+              />
+              <DeviceRow
+                label="Connection"
+                testID="device-connectivity"
+                value={selectedPet.device.connectivity ?? '—'}
+              />
+              <DeviceRow
+                label="Last message"
+                testID="device-last-message"
+                value={
+                  selectedPet.device.lastMessageAt
+                    ? new Date(
+                        selectedPet.device.lastMessageAt,
+                      ).toLocaleString()
+                    : 'No messages yet'
+                }
+              />
+              <DeviceRow
+                label="ESN"
+                testID="device-esn"
+                value={selectedPet.device.esn ?? '—'}
+              />
+            </View>
+          </Card>
+
+          {tracking.data === undefined ? (
+            <Skeleton
+              testID="plan-skeleton"
+              className="h-8 w-44 rounded-full"
+            />
+          ) : null}
+
+          {tracking.data?.kind === 'ok' && tracking.data.tracked ? (
+            <View
+              testID="plan-tracked"
+              className="self-start rounded-full bg-accent-soft px-3 py-2"
+            >
+              <Text className="font-semibold text-success">
+                GPS tracking active
+              </Text>
+            </View>
+          ) : null}
+
+          {tracking.data?.kind === 'ok' && !tracking.data.tracked ? (
+            <Card testID="plan-free" variant="secondary">
+              <Text className="font-normal text-foreground" selectable>
+                Free plan — health only. This collar has no active plan.
+              </Text>
+            </Card>
+          ) : null}
+
+          {tracking.data && isTrackingError(tracking.data) ? (
+            <Text testID="plan-unknown" className="text-muted" selectable>
+              Plan status unavailable
+            </Text>
+          ) : null}
         </View>
       ) : null}
     </ScrollView>
