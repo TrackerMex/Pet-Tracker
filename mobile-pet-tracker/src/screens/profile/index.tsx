@@ -246,7 +246,7 @@ export function ProfileScreen() {
             isDisabled={photoUploading}
             onPress={() => void handleChangePhoto()}
           >
-            <Button.Label className="font-bold text-accent">
+            <Button.Label className="font-bold text-accent-strong">
               Change photo
             </Button.Label>
           </Button>

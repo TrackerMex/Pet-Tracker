@@ -47,7 +47,7 @@ export default function Forgot() {
       </Button>
 
       <LinkButton testID="link-login" onPress={() => router.push('/login')}>
-        <LinkButton.Label className="font-semibold text-accent">
+        <LinkButton.Label className="font-semibold text-accent-strong">
           Back to sign in
         </LinkButton.Label>
       </LinkButton>

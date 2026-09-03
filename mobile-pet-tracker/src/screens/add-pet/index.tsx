@@ -248,7 +248,7 @@ export function AddPetScreen() {
           isDisabled={submitting}
           onPress={() => void handlePickPhoto()}
         >
-          <Button.Label className="font-bold text-accent">
+          <Button.Label className="font-bold text-accent-strong">
             Choose photo
           </Button.Label>
         </Button>

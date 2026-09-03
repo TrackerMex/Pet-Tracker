@@ -98,7 +98,7 @@ export default function Login() {
         className="self-center"
         onPress={() => router.push('/register')}
       >
-        <LinkButton.Label className="font-semibold text-accent">
+        <LinkButton.Label className="font-semibold text-accent-strong">
           Create account
         </LinkButton.Label>
       </LinkButton>
@@ -107,7 +107,7 @@ export default function Login() {
         className="self-center"
         onPress={() => router.push('/forgot')}
       >
-        <LinkButton.Label className="font-semibold text-accent">
+        <LinkButton.Label className="font-semibold text-accent-strong">
           Forgot password?
         </LinkButton.Label>
       </LinkButton>

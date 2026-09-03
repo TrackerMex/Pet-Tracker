@@ -68,7 +68,7 @@ export function ResetPasswordScreen() {
           This reset link is incomplete. Open the link from your email again.
         </Text>
         <LinkButton testID="link-login" onPress={() => router.push('/login')}>
-          <LinkButton.Label className="font-semibold text-accent">
+          <LinkButton.Label className="font-semibold text-accent-strong">
             Back to sign in
           </LinkButton.Label>
         </LinkButton>
@@ -94,7 +94,7 @@ export function ResetPasswordScreen() {
           className="self-center"
           onPress={() => router.push('/login')}
         >
-          <LinkButton.Label className="font-semibold text-accent">
+          <LinkButton.Label className="font-semibold text-accent-strong">
             Back to sign in
           </LinkButton.Label>
         </LinkButton>

@@ -29,7 +29,7 @@ function isProfileError(state: NutritionProfileState): boolean {
 function MealScheduleContent({ petId }: { petId: string }) {
   const [foreground, accent, accentForeground] = useThemeColors([
     'foreground',
-    'accent',
+    'accent-strong',
     'accent-foreground',
   ]);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;

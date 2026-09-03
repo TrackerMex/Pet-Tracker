@@ -281,7 +281,7 @@ export default function MapScreen() {
                 <View className="flex-1 items-center rounded-xl bg-default p-3">
                   <Text
                     testID="stat-speed"
-                    className="text-base font-black text-accent"
+                    className="text-base font-black text-accent-strong"
                   >
                     {fmtSpeed(latestSpeed)}
                   </Text>
@@ -292,7 +292,7 @@ export default function MapScreen() {
                 <View className="flex-1 items-center rounded-xl bg-default p-3">
                   <Text
                     testID="stat-distance"
-                    className="text-base font-black text-accent"
+                    className="text-base font-black text-accent-strong"
                   >
                     {fmtKm(distanceM)}
                   </Text>

@@ -210,7 +210,7 @@ export default function HealthScreen() {
             {weight.data?.kind === 'ok' && weight.data.weights.length > 0 ? (
               <Text
                 testID="weight-current"
-                className="text-xl font-black text-accent"
+                className="text-xl font-black text-accent-strong"
               >
                 {weight.data.weights[0].weightKg} kg
               </Text>
