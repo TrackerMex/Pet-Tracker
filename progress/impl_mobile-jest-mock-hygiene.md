@@ -50,7 +50,29 @@ Línea base previa a R1:
 Tests:       7 passed, 7 total
 ```
 
-Corridas posteriores a R1: pendientes.
+Comando literal de D6 ejecutado desde `mobile-pet-tracker/`:
+
+```bash
+for i in $(seq 1 10); do
+  bun run test -- src/screens/add-pet/index.test.tsx 2>&1 | grep -E '^Tests:' \
+    || { echo "FLAKE en corrida $i"; break; }
+done
+```
+
+Resultado: exit 0, 10/10 corridas verdes.
+
+```text
+Tests:       8 passed, 8 total
+Tests:       8 passed, 8 total
+Tests:       8 passed, 8 total
+Tests:       8 passed, 8 total
+Tests:       8 passed, 8 total
+Tests:       8 passed, 8 total
+Tests:       8 passed, 8 total
+Tests:       8 passed, 8 total
+Tests:       8 passed, 8 total
+Tests:       8 passed, 8 total
+```
 
 ## R3 — suite completa y configuración Jest intacta
 
