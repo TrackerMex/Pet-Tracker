@@ -19,7 +19,7 @@ function isPetsError(state: PetsState): boolean {
 
 export function PairingScreen() {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
-  const { token } = useAuth();
+  const { signOut, token } = useAuth();
   const { selectedPetId, selectPet } = useSelectedPet();
   const insets = useSafeAreaInsets();
   const petsFn = useCallback(
@@ -31,6 +31,7 @@ export function PairingScreen() {
   const refetchPets = pets.refetch;
   const [code, setCode] = useState('');
   const [claiming, setClaiming] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
   const selectedPet =
     pets.data?.kind === 'ok'
       ? pets.data.pets.find(({ id }) => id === selectedPetId)
@@ -46,12 +47,53 @@ export function PairingScreen() {
     const activationCode = code.trim();
     if (!selectedPetId || !activationCode || claiming) return;
 
+    setActionError(null);
     setClaiming(true);
-    await claimDevice(baseUrl, token ?? '', {
-      petId: selectedPetId,
-      activationCode,
-    });
-    setClaiming(false);
+    try {
+      const result = await claimDevice(baseUrl, token ?? '', {
+        petId: selectedPetId,
+        activationCode,
+      });
+
+      switch (result.kind) {
+        case 'ok':
+          break;
+        case 'not-found':
+        case 'invalid':
+          setActionError(
+            'Invalid activation code. Check the code printed on the box.',
+          );
+          break;
+        case 'already-claimed':
+          setActionError('This collar is already paired to another pet.');
+          break;
+        case 'pet-has-device':
+          setActionError('This pet already has a collar. Unpair it first.');
+          break;
+        case 'subscription-required':
+          setActionError(
+            'This collar has no active plan. Contact support to activate it.',
+          );
+          break;
+        case 'forbidden':
+          setActionError('Only the owner can pair a collar.');
+          break;
+        case 'unauthorized':
+          await signOut();
+          break;
+        case 'unreachable':
+          setActionError('Cannot reach server');
+          break;
+        case 'error':
+        case 'missing-config':
+          setActionError('Something went wrong');
+          break;
+      }
+    } catch {
+      setActionError('Something went wrong');
+    } finally {
+      setClaiming(false);
+    }
   }
 
   return (
@@ -116,6 +158,12 @@ export function PairingScreen() {
           selectedPetId={selectedPetId}
           onSelect={selectPet}
         />
+      ) : null}
+
+      {actionError ? (
+        <Text testID="pairing-error" className="text-danger" selectable>
+          {actionError}
+        </Text>
       ) : null}
 
       {selectedPet?.device === null ? (
