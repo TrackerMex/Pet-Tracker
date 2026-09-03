@@ -277,50 +277,58 @@ export default function MapScreen() {
             className="gap-2"
           >
             <Card className="p-3">
-              <View className="flex-row gap-2">
-                <View className="flex-1 items-center rounded-xl bg-default p-3">
-                  <Text
-                    testID="stat-speed"
-                    className="text-base font-black text-accent-strong"
-                  >
-                    {fmtSpeed(latestSpeed)}
-                  </Text>
-                  <Text className="mt-1 text-2xs font-normal text-muted">
-                    Speed
-                  </Text>
+              <View className="gap-2">
+                <View className="flex-row gap-2">
+                  <View className="flex-1 items-center rounded-xl bg-default p-3">
+                    <Text
+                      testID="stat-speed"
+                      className="text-base font-black text-accent-strong"
+                      numberOfLines={1}
+                    >
+                      {fmtSpeed(latestSpeed)}
+                    </Text>
+                    <Text className="mt-1 text-2xs font-normal text-muted">
+                      Speed
+                    </Text>
+                  </View>
+                  <View className="flex-1 items-center rounded-xl bg-default p-3">
+                    <Text
+                      testID="stat-distance"
+                      className="text-base font-black text-accent-strong"
+                      numberOfLines={1}
+                    >
+                      {fmtKm(distanceM)}
+                    </Text>
+                    <Text className="mt-1 text-2xs font-normal text-muted">
+                      Distance
+                    </Text>
+                  </View>
                 </View>
-                <View className="flex-1 items-center rounded-xl bg-default p-3">
-                  <Text
-                    testID="stat-distance"
-                    className="text-base font-black text-accent-strong"
-                  >
-                    {fmtKm(distanceM)}
-                  </Text>
-                  <Text className="mt-1 text-2xs font-normal text-muted">
-                    Distance
-                  </Text>
-                </View>
-                <View className="flex-1 items-center rounded-xl bg-default p-3">
-                  <Text
-                    testID="stat-updated"
-                    className="text-base font-black text-muted"
-                  >
-                    {updated}
-                  </Text>
-                  <Text className="mt-1 text-2xs font-normal text-muted">
-                    Updated
-                  </Text>
-                </View>
-                <View className="flex-1 items-center rounded-xl bg-default p-3">
-                  <Text
-                    testID="stat-gps"
-                    className="text-base font-black text-muted"
-                  >
-                    {gps}
-                  </Text>
-                  <Text className="mt-1 text-2xs font-normal text-muted">
-                    GPS
-                  </Text>
+                <View className="flex-row gap-2">
+                  <View className="flex-1 items-center rounded-xl bg-default p-3">
+                    <Text
+                      testID="stat-updated"
+                      className="text-base font-black text-muted"
+                      numberOfLines={1}
+                    >
+                      {updated}
+                    </Text>
+                    <Text className="mt-1 text-2xs font-normal text-muted">
+                      Updated
+                    </Text>
+                  </View>
+                  <View className="flex-1 items-center rounded-xl bg-default p-3">
+                    <Text
+                      testID="stat-gps"
+                      className="text-base font-black text-muted"
+                      numberOfLines={1}
+                    >
+                      {gps}
+                    </Text>
+                    <Text className="mt-1 text-2xs font-normal text-muted">
+                      GPS
+                    </Text>
+                  </View>
                 </View>
               </View>
             </Card>
