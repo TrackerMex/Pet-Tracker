@@ -317,3 +317,27 @@ describe('#61 R5: token warning-strong con AA sobre surface y warning-soft', () 
     },
   );
 });
+
+describe('#61 R6: muted light pasa AA sobre bg-default sin tocar dark', () => {
+  it('sube el gris de texto claro hasta cruzar el umbral', () => {
+    expect(parseVariables(extractVariant('light'))).toMatchObject({
+      muted: '#667085',
+      'color-muted': '#667085',
+    });
+    expect(contrast('#667085', '#F5F6F8')).toBeGreaterThanOrEqual(4.5);
+    expect(contrast('#667085', '#F5F6F8')).toBeCloseTo(4.601, 3);
+  });
+
+  it('pasa AA también sobre surface y surface-secondary', () => {
+    expect(contrast('#667085', '#FFFFFF')).toBeGreaterThanOrEqual(4.5);
+    expect(contrast('#667085', '#F0FBF6')).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it('no toca el gris del tema oscuro, que ya pasaba', () => {
+    expect(parseVariables(extractVariant('dark'))).toMatchObject({
+      muted: '#9CA3AF',
+      'color-muted': '#9CA3AF',
+    });
+    expect(contrast('#9CA3AF', '#1F242B')).toBeGreaterThanOrEqual(4.5);
+  });
+});
