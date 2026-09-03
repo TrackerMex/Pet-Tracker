@@ -9,7 +9,7 @@ tags: [harness, spec, mobile]
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
 | R1 | `src/screens/add-pet/index.test.tsx::R1 (mobile-jest-mock-hygiene): el mock del picker se reinicializa por test` | `79caf8c` `test(mobile-jest-mock-hygiene): red picker mock leaks across tests (R1)` (rojo) → `43183c4` `fix(mobile-jest-mock-hygiene): reset picker mock before each test (R1)` (verde) |
-| R2 | pendiente | pendiente |
+| R2 | sin test propio — `progress/impl_mobile-jest-mock-hygiene.md::§R2`; bucle D6, 10/10, `Tests: 8 passed, 8 total` | `e72612f` `test(mobile-jest-mock-hygiene): record 10 green runs (R2)` |
 | R3 | pendiente | pendiente |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".

@@ -77,5 +77,19 @@ Tests:       8 passed, 8 total
 ## R3 — suite completa y configuración Jest intacta
 
 - `git diff origin/main -- mobile-pet-tracker/package.json mobile-pet-tracker/test/`:
-  vacío antes de implementar.
-- `./init.sh` final: pendiente.
+  vacío antes y después de implementar (exit 0, sin stdout).
+- `mobile-pet-tracker/jest.config.js`: no existe.
+- `./init.sh` final desde la raíz: exit 0; build, tests, e2e, lint y
+  typecheck verdes. Líneas de la etapa móvil:
+
+  ```text
+  Test Suites: 53 passed, 53 total
+  Tests:       613 passed, 613 total
+  ```
+
+## Resultado
+
+- R1: test rojo genuino y corrección mínima en commits separados; 8/8 verde.
+- R2: 10/10 corridas dirigidas verdes.
+- R3: `./init.sh` exit 0 y configuración Jest intacta.
+- No se creó ningún recurso AWS ni se ejecutó `cdk deploy`.
