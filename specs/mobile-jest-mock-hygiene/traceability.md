@@ -8,7 +8,7 @@ tags: [harness, spec, mobile]
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | pendiente | pendiente |
+| R1 | `src/screens/add-pet/index.test.tsx::R1 (mobile-jest-mock-hygiene): el mock del picker se reinicializa por test` | `79caf8c` `test(mobile-jest-mock-hygiene): red picker mock leaks across tests (R1)` (rojo) → verde pendiente |
 | R2 | pendiente | pendiente |
 | R3 | pendiente | pendiente |
 

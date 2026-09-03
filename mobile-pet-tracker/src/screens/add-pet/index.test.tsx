@@ -73,6 +73,11 @@ async function renderAddPet() {
   );
 }
 
+beforeEach(() => {
+  mockLaunchImageLibrary.mockReset();
+  mockLaunchImageLibrary.mockResolvedValue({ canceled: true, assets: null });
+});
+
 describe('R6: alta de mascota', () => {
   beforeEach(() => {
     jest.clearAllMocks();

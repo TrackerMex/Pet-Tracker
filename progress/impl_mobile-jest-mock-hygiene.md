@@ -31,9 +31,16 @@
 
   El test nuevo heredó el asset configurado por el test anterior, como exige
   el caso rojo de D5.
-- Verde: pendiente.
-- Refactor: sin refactor previsto; la implementación definida en D1/D4 es
-  mínima.
+- Commit rojo: `79caf8c` —
+  `test(mobile-jest-mock-hygiene): red picker mock leaks across tests (R1)`.
+- Verde: tras añadir el único `beforeEach` de archivo con `mockReset()` y el
+  resultado cancelado por defecto, el mismo comando terminó con exit 0:
+
+  ```text
+  Tests:       8 passed, 8 total
+  ```
+
+- Refactor: sin refactor; la implementación definida en D1/D4 ya es mínima.
 
 ## R2 — estabilidad en 10 corridas
 
