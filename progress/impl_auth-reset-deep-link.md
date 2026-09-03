@@ -916,8 +916,10 @@ en `f18b4a7`; el código vuelve al estado revisado en `fb9db23`).
   200 HTML (mod_dir conserva la query). La API pública de Digital Asset Links
   (`statements:list`) devuelve el statement con `com.trackermex.pettracker`
   y el fingerprint correcto.
-- G3 ⏳ pendiente: `RESET_LINK_HOST` en ambos `.env` y dev build regenerado.
-- G4 ⏳ pendiente, hay que repetirlo entero con los ficheros en la raíz:
-  `adb shell pm get-app-links com.trackermex.pettracker` debe mostrar
-  `verified`; el enlace del correo debe entrar en la app sin pasar por la
-  página fallback ni por el botón `mobilepettracker://`.
+- G3 ✅ 2026-09-03 (humano): `RESET_LINK_HOST` en ambos `.env`, backend
+  reiniciado y dev build regenerado con el intent filter.
+- G4 ✅ 2026-09-03 (humano): repetido con `hosting/` en la raíz. El enlace
+  del correo abre directo en la app (App Link verificado, sin página
+  fallback); doble apertura, reset 200, reintento 400, login viejo 401 y
+  nuevo 200 según traceability. Nada del dominio, correos ni tokens se
+  copia aquí.

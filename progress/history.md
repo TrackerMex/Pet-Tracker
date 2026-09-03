@@ -2326,3 +2326,19 @@ Flake de `add-pet` por mocks sin reinicializar. Sin trabajo en curso.
   el working tree del VPS.
 - Filas G1–G4 de `traceability.md` pasadas a confirmado (`d7931d5`).
 - Estado final: `done` (54/59). PR pendiente de crear/mergear.
+
+### #59 — gates G1–G4 y cierre (2026-09-03)
+
+- G1: el humano obtuvo el fingerprint y lo commiteó (`1b0aed1`). Docs G1
+  corregidos: keystore del dev build es `mobile-pet-tracker/android/app/debug.keystore`,
+  no `~/.android/`; `-J-Duser.language=en` obligatorio con locale español.
+- Desvío: `hosting/` se subió a `public_html/pet/` (el docroot aloja otro
+  sitio) y el humano antepuso `/pet` en `password-reset-link.ts`. R1 en rojo,
+  `pathPrefix` sin match y `assetlinks.json` fuera de `/.well-known/` raíz:
+  el smoke pasó por el botón `mobilepettracker://`, no por App Link.
+  Revertido en `f18b4a7`; el código queda idéntico al aprobado en `fb9db23`.
+- G2 verificado desde el VPS: 200 `application/json` en la raíz, fallback
+  301→200, statement válido en `digitalassetlinks.googleapis.com`.
+- G3–G4 repetidos por el humano con los ficheros en la raíz: App Link
+  verificado, abre directo en la app.
+- Estado final: `done` (55/59). PR pendiente de merge.

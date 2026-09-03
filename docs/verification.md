@@ -721,7 +721,7 @@ direcciones de correo, contraseñas ni tokens al reporte.
    `mobile-pet-tracker/android` ejecuta:
 
    ```bash
-   keytool -J-Duser.language=en -list -v -keystore app/debug.keystore -alias androiddebugkey -storepass android -keypass android
+   keytool -list -v -J-Duser.language=en -keystore app/debug.keystore -alias androiddebugkey -storepass android -keypass android
    ```
 
    En Windows usa `app\debug.keystore` (PowerShell y cmd no expanden `~`
