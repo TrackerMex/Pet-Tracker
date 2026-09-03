@@ -11,6 +11,10 @@ import type { ReactNode } from 'react';
 
 import { claimDevice, type ClaimDeviceState } from '../../api/devices';
 import { listPets, type PetsState } from '../../api/pets';
+import {
+  getPetTracking,
+  type PetTrackingState,
+} from '../../api/subscriptions';
 import type { PetProfile } from '../../api/types';
 import PairingRoute from '../../app/(tabs)/pairing';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
@@ -46,6 +50,7 @@ jest.mock('react-native-safe-area-context', () => ({
 
 const apiUrl = 'http://example.test/v1';
 const mockClaimDevice = jest.mocked(claimDevice);
+const mockGetPetTracking = jest.mocked(getPetTracking);
 const mockListPets = jest.mocked(listPets);
 const mockUseAuth = jest.mocked(useAuth);
 const mockRouter = jest.mocked(router);
@@ -464,5 +469,148 @@ describe('R7: tras el 201 muestra "Tracker is ready" con el collar y sus CTAs', 
     expect(mockRouter.back).toHaveBeenCalledTimes(1);
     expect(screen.queryByTestId('pairing-ready')).toBeNull();
     expect(screen.getByTestId('activation-code-input')).toBeVisible();
+  });
+});
+
+describe('R8: con collar muestra el estado del dispositivo y el plan tracked/free según subscriptions', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({
+      kind: 'ok',
+      pets: [makePet({ device: makeDevice() })],
+    });
+    mockGetPetTracking.mockResolvedValue({ kind: 'ok', tracked: true });
+  });
+
+  it('shows all five device rows with their values', async () => {
+    await renderPairing();
+
+    expect(await screen.findByText('GPS device')).toBeVisible();
+    expect(screen.getByTestId('device-status-card')).toBeVisible();
+    expect(screen.getByTestId('device-model')).toHaveTextContent('TrailTag Pro');
+    expect(screen.getByTestId('device-battery')).toHaveTextContent('82%');
+    expect(screen.getByTestId('device-connectivity')).toHaveTextContent('LTE');
+    expect(screen.getByTestId('device-last-message')).toHaveTextContent(
+      new Date('2026-09-03T10:00:00.000Z').toLocaleString(),
+    );
+    expect(screen.getByTestId('device-esn')).toHaveTextContent('ESN-4242');
+    expect(mockGetPetTracking).toHaveBeenCalledWith(
+      apiUrl,
+      'jwt-token',
+      'pet-1',
+    );
+  });
+
+  it('uses the specified fallbacks for nullable device values', async () => {
+    mockListPets.mockResolvedValue({
+      kind: 'ok',
+      pets: [
+        makePet({
+          device: makeDevice({
+            model: null,
+            batteryPct: null,
+            connectivity: null,
+            lastMessageAt: null,
+            esn: null,
+          }),
+        }),
+      ],
+    });
+
+    await renderPairing();
+
+    expect(await screen.findByTestId('device-model')).toHaveTextContent('—');
+    expect(screen.getByTestId('device-battery')).toHaveTextContent('—');
+    expect(screen.getByTestId('device-connectivity')).toHaveTextContent('—');
+    expect(screen.getByTestId('device-last-message')).toHaveTextContent(
+      'No messages yet',
+    );
+    expect(screen.getByTestId('device-esn')).toHaveTextContent('—');
+  });
+
+  it('shows a dimensioned skeleton while the plan probe is pending', async () => {
+    mockGetPetTracking.mockReturnValue(pending<PetTrackingState>());
+
+    await renderPairing();
+
+    expect(await screen.findByTestId('device-status-card')).toBeVisible();
+    expect(screen.getByTestId('plan-skeleton')).toBeVisible();
+  });
+
+  it('shows the tracked pill for an active GPS plan', async () => {
+    await renderPairing();
+
+    expect(await screen.findByTestId('plan-tracked')).toHaveTextContent(
+      'GPS tracking active',
+    );
+  });
+
+  it('shows the exact free-plan note when tracking is not active', async () => {
+    mockGetPetTracking.mockResolvedValue({ kind: 'ok', tracked: false });
+
+    await renderPairing();
+
+    expect(await screen.findByTestId('plan-free')).toHaveTextContent(
+      'Free plan — health only. This collar has no active plan.',
+    );
+  });
+
+  it.each<PetTrackingState>([
+    { kind: 'error' },
+    { kind: 'unreachable', message: 'offline' },
+    { kind: 'missing-config' },
+  ])('shows unavailable for a $kind plan result', async (state) => {
+    mockGetPetTracking.mockResolvedValue(state);
+
+    await renderPairing();
+
+    expect(await screen.findByTestId('plan-unknown')).toHaveTextContent(
+      'Plan status unavailable',
+    );
+  });
+
+  it('refetches the plan probe on focus', async () => {
+    await renderPairing();
+    await screen.findByTestId('plan-tracked');
+    const trackingFocusCallback = mockUseFocusEffect.mock.calls[1]?.[0];
+    expect(trackingFocusCallback).toBeDefined();
+
+    await act(async () => {
+      trackingFocusCallback?.();
+      await Promise.resolve();
+    });
+
+    await waitFor(() => expect(mockGetPetTracking).toHaveBeenCalledTimes(2));
+  });
+
+  it('does not probe tracking while the selected pet has no device', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+
+    await renderPairing();
+
+    expect(await screen.findByTestId('activation-code-input')).toBeVisible();
+    expect(mockGetPetTracking).not.toHaveBeenCalled();
+  });
+
+  it('does not probe tracking during the ready phase', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockClaimDevice.mockResolvedValue({ kind: 'ok', device: makeDevice() });
+    await renderPairing();
+    await fireEvent.changeText(
+      await screen.findByTestId('activation-code-input'),
+      'ACT-READY',
+    );
+
+    await fireEvent.press(screen.getByTestId('pairing-submit'));
+
+    expect(await screen.findByTestId('pairing-ready')).toBeVisible();
+    expect(mockGetPetTracking).not.toHaveBeenCalled();
   });
 });
