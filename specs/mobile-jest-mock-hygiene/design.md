@@ -1,6 +1,6 @@
 ---
 feature: "mobile-jest-mock-hygiene"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec, mobile]
 ---
 
