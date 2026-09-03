@@ -148,3 +148,25 @@ describe('#61 R4: el acento como tinta usa accent-strong', () => {
     expect(filesMatching(requestsAccent)).toEqual([]);
   });
 });
+
+describe('#61 R5: text-warning deja de usarse como color de texto', () => {
+  const warningSites = [
+    join('app', '(tabs)', 'health.tsx'),
+    join('app', '(tabs)', 'home.tsx'),
+    join('screens', 'reminders', 'index.tsx'),
+  ];
+
+  it.each(warningSites)('%s pinta su texto con text-warning-strong', (path) => {
+    expect(readSource(path)).toContain('text-warning-strong');
+  });
+
+  it('no deja ningún text-warning suelto en las fuentes', () => {
+    expect(filesMatching(/text-warning(?![-\w])/)).toEqual([]);
+  });
+
+  it('conserva el ámbar puro como relleno de badge', () => {
+    expect(readSource(join('screens', 'reminders', 'index.tsx'))).toContain(
+      'bg-warning-soft',
+    );
+  });
+});

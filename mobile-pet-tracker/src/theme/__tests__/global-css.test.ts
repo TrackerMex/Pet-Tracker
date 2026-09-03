@@ -274,3 +274,46 @@ describe('#61 R4: token accent-strong con AA como tinta en los dos temas', () =>
     expect(contrast('#2AB87C', '#1F242B')).toBeCloseTo(6.128, 3);
   });
 });
+
+describe('#61 R5: token warning-strong con AA sobre surface y warning-soft', () => {
+  it('registra el espejo --color-warning-strong para las utilidades text-*', () => {
+    expect(globalCss).toMatch(
+      /@theme inline\s*{[^}]*--color-warning-strong:\s*var\(--warning-strong\);/,
+    );
+  });
+
+  it.each([
+    ['light', '#92610A'],
+    ['dark', '#FBBF24'],
+  ] as const)('define la variante AA del ámbar en %s', (theme, strong) => {
+    expect(parseVariables(extractVariant(theme))).toMatchObject({
+      'warning-strong': strong,
+    });
+  });
+
+  it.each([
+    ['light', '#92610A', '#FFFFFF'],
+    ['dark', '#FBBF24', '#161B22'],
+  ] as const)(
+    'pasa AA sobre bg-surface y bg-warning-soft en %s',
+    (theme, strong, surface) => {
+      expect(contrast(strong, surface)).toBeGreaterThanOrEqual(4.5);
+      expect(
+        contrast(strong, composedSurfaces[theme].warningSoft),
+      ).toBeGreaterThanOrEqual(4.5);
+    },
+  );
+
+  it.each([
+    ['light', '#F59E0B'],
+    ['dark', '#FBBF24'],
+  ] as const)(
+    'conserva el ámbar puro de iconos y rellenos en %s',
+    (theme, warning) => {
+      expect(parseVariables(extractVariant(theme))).toMatchObject({
+        warning,
+        'color-warning': warning,
+      });
+    },
+  );
+});
