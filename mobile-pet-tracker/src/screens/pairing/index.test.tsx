@@ -9,6 +9,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
 
+import { claimDevice } from '../../api/devices';
 import { listPets, type PetsState } from '../../api/pets';
 import type { PetProfile } from '../../api/types';
 import PairingRoute from '../../app/(tabs)/pairing';
@@ -44,6 +45,7 @@ jest.mock('react-native-safe-area-context', () => ({
 }));
 
 const apiUrl = 'http://example.test/v1';
+const mockClaimDevice = jest.mocked(claimDevice);
 const mockListPets = jest.mocked(listPets);
 const mockUseAuth = jest.mocked(useAuth);
 const mockRouter = jest.mocked(router);
@@ -199,5 +201,81 @@ describe('R4: /pairing monta dentro de (tabs) con selector de mascota y estados 
     });
 
     await waitFor(() => expect(mockListPets).toHaveBeenCalledTimes(2));
+  });
+});
+
+describe('R5: sin collar muestra el formulario de vinculación y publica el claim solo al enviar', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockClaimDevice.mockResolvedValue({ kind: 'error' });
+  });
+
+  it('shows the exact free-plan note and constrained activation-code field', async () => {
+    await renderPairing();
+
+    expect(await screen.findAllByText('Pair collar')).toHaveLength(2);
+    expect(screen.getByTestId('pairing-plan-free')).toHaveTextContent(
+      'Free plan — health only. Pair a collar with an active plan to see the map.',
+    );
+    expect(screen.getByText('Activation code')).toBeVisible();
+    expect(screen.getByText('Printed on the collar box')).toBeVisible();
+    expect(screen.getByTestId('activation-code-input').props).toEqual(
+      expect.objectContaining({
+        autoCapitalize: 'characters',
+        autoCorrect: false,
+        maxLength: 64,
+      }),
+    );
+    expect(screen.getByTestId('pairing-submit')).toBeDisabled();
+    expect(mockClaimDevice).not.toHaveBeenCalled();
+  });
+
+  it('keeps submit disabled for a whitespace-only code', async () => {
+    await renderPairing();
+
+    await fireEvent.changeText(
+      await screen.findByTestId('activation-code-input'),
+      '   ',
+    );
+
+    expect(screen.getByTestId('pairing-submit')).toBeDisabled();
+    expect(mockClaimDevice).not.toHaveBeenCalled();
+  });
+
+  it('submits the trimmed code exactly once for the selected pet', async () => {
+    mockListPets.mockResolvedValue({
+      kind: 'ok',
+      pets: [makePet(), makePet({ id: 'pet-2', name: 'Milo' })],
+    });
+    await renderPairing();
+    await waitFor(() =>
+      expect(
+        screen.getByTestId('pet-chip-pet-1').props.accessibilityState,
+      ).toEqual({ selected: true }),
+    );
+    await fireEvent.press(screen.getByTestId('pet-chip-pet-2'));
+    await fireEvent.changeText(
+      screen.getByTestId('activation-code-input'),
+      '  ACT-002  ',
+    );
+
+    await fireEvent.press(screen.getByTestId('pairing-submit'));
+
+    await waitFor(() => expect(mockClaimDevice).toHaveBeenCalledTimes(1));
+    expect(mockClaimDevice).toHaveBeenCalledWith(apiUrl, 'jwt-token', {
+      petId: 'pet-2',
+      activationCode: 'ACT-002',
+    });
+    await waitFor(() =>
+      expect(screen.getByTestId('pairing-submit')).not.toBeDisabled(),
+    );
   });
 });
