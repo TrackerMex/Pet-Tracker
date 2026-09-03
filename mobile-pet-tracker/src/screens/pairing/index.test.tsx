@@ -8,8 +8,14 @@ import {
 import { router, useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
+import { Alert } from 'react-native';
 
-import { claimDevice, type ClaimDeviceState } from '../../api/devices';
+import {
+  claimDevice,
+  type ClaimDeviceState,
+  releaseDevice,
+  type ReleaseDeviceState,
+} from '../../api/devices';
 import { listPets, type PetsState } from '../../api/pets';
 import {
   getPetTracking,
@@ -52,6 +58,7 @@ const apiUrl = 'http://example.test/v1';
 const mockClaimDevice = jest.mocked(claimDevice);
 const mockGetPetTracking = jest.mocked(getPetTracking);
 const mockListPets = jest.mocked(listPets);
+const mockReleaseDevice = jest.mocked(releaseDevice);
 const mockUseAuth = jest.mocked(useAuth);
 const mockRouter = jest.mocked(router);
 const mockUseFocusEffect = jest.mocked(useFocusEffect);
@@ -612,5 +619,152 @@ describe('R8: con collar muestra el estado del dispositivo y el plan tracked/fre
 
     expect(await screen.findByTestId('pairing-ready')).toBeVisible();
     expect(mockGetPetTracking).not.toHaveBeenCalled();
+  });
+});
+
+describe('R9: desvincular pide confirmación nativa, libera el collar y vuelve al formulario', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({
+      kind: 'ok',
+      pets: [makePet({ device: makeDevice() })],
+    });
+    mockGetPetTracking.mockResolvedValue({ kind: 'ok', tracked: true });
+    mockReleaseDevice.mockResolvedValue({ kind: 'error' });
+    jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  function getAlertButton(label: string) {
+    return jest
+      .mocked(Alert.alert)
+      .mock.calls[0]?.[2]?.find(({ text }) => text === label);
+  }
+
+  async function openUnpairAlert() {
+    await renderPairing();
+    await screen.findByTestId('device-status-card');
+    await fireEvent.press(screen.getByTestId('device-unpair'));
+  }
+
+  it('opens the exact native confirmation and Cancel does not release', async () => {
+    await openUnpairAlert();
+
+    expect(Alert.alert).toHaveBeenCalledWith(
+      'Unpair collar?',
+      'Location history stays, but live tracking stops until you pair a collar again.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Unpair',
+          style: 'destructive',
+          onPress: expect.any(Function),
+        },
+      ],
+    );
+    getAlertButton('Cancel')?.onPress?.();
+    expect(mockReleaseDevice).not.toHaveBeenCalled();
+  });
+
+  it.each<ReleaseDeviceState>([{ kind: 'ok' }, { kind: 'not-assigned' }])(
+    'refreshes pets and returns to the form after $kind',
+    async (state) => {
+      mockReleaseDevice.mockResolvedValue(state);
+      mockListPets
+        .mockResolvedValueOnce({
+          kind: 'ok',
+          pets: [makePet({ device: makeDevice() })],
+        })
+        .mockResolvedValueOnce({ kind: 'ok', pets: [makePet()] });
+      await openUnpairAlert();
+
+      await act(async () => {
+        getAlertButton('Unpair')?.onPress?.();
+        await Promise.resolve();
+      });
+
+      expect(mockReleaseDevice).toHaveBeenCalledTimes(1);
+      expect(mockReleaseDevice).toHaveBeenCalledWith(
+        apiUrl,
+        'jwt-token',
+        'pet-1',
+      );
+      expect(await screen.findByTestId('activation-code-input')).toBeVisible();
+      expect(mockListPets).toHaveBeenCalledTimes(2);
+    },
+  );
+
+  it.each<[ReleaseDeviceState, string]>([
+    [{ kind: 'forbidden' }, 'Only the owner can unpair the collar.'],
+    [{ kind: 'unreachable', message: 'offline' }, 'Cannot reach server'],
+    [{ kind: 'error' }, 'Something went wrong'],
+    [{ kind: 'missing-config' }, 'Something went wrong'],
+  ])('shows the exact error for $kind', async (state, message) => {
+    mockReleaseDevice.mockResolvedValue(state);
+    await openUnpairAlert();
+
+    await act(async () => {
+      getAlertButton('Unpair')?.onPress?.();
+      await Promise.resolve();
+    });
+
+    const error = await screen.findByTestId('pairing-error');
+    expect(error).toHaveTextContent(message);
+    expect(error.props.selectable).toBe(true);
+  });
+
+  it('signs out for unauthorized without showing a local error', async () => {
+    const signOut = jest.fn().mockResolvedValue(undefined);
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut,
+    } satisfies AuthContextValue);
+    mockReleaseDevice.mockResolvedValue({ kind: 'unauthorized' });
+    await openUnpairAlert();
+
+    await act(async () => {
+      getAlertButton('Unpair')?.onPress?.();
+      await Promise.resolve();
+    });
+
+    await waitFor(() => expect(signOut).toHaveBeenCalledTimes(1));
+    expect(screen.queryByTestId('pairing-error')).toBeNull();
+  });
+
+  it('disables unpair while the release request is in flight', async () => {
+    let resolveRelease!: (state: ReleaseDeviceState) => void;
+    mockReleaseDevice.mockReturnValue(
+      new Promise((resolve) => {
+        resolveRelease = resolve;
+      }),
+    );
+    await openUnpairAlert();
+
+    await act(async () => {
+      getAlertButton('Unpair')?.onPress?.();
+      await Promise.resolve();
+    });
+
+    await waitFor(() =>
+      expect(screen.getByTestId('device-unpair')).toBeDisabled(),
+    );
+    await act(async () => {
+      resolveRelease({ kind: 'error' });
+    });
+    await waitFor(() =>
+      expect(screen.getByTestId('device-unpair')).not.toBeDisabled(),
+    );
   });
 });
