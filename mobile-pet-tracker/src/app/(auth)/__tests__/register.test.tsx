@@ -25,6 +25,11 @@ jest.mock('expo-router', () => ({
   },
 }));
 
+jest.mock('react-native-safe-area-context', () => ({
+  ...jest.requireActual('react-native-safe-area-context'),
+  useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
+}));
+
 const apiUrl = 'http://example.test/v1';
 const mockLogin = jest.mocked(login);
 const mockRegister = jest.mocked(registerApi);
@@ -185,5 +190,37 @@ describe('R8: register llama a la api y navega', () => {
     await submit();
 
     expect(screen.getByTestId('register-error')).toHaveTextContent(message);
+  });
+});
+
+describe('#61 R7: register usa las métricas de pantalla uniformes', () => {
+  it('aplica el padding del contentContainerStyle con los safe-area insets', async () => {
+    await renderRegister();
+
+    expect(
+      screen.getByTestId('screen-register').props.contentContainerStyle,
+    ).toEqual({
+      padding: 24,
+      gap: 16,
+      paddingTop: 52,
+      paddingBottom: 120,
+    });
+  });
+
+  it('declara el ajuste automático de inset del contenedor de scroll', async () => {
+    await renderRegister();
+
+    expect(
+      screen.getByTestId('screen-register').props
+        .contentInsetAdjustmentBehavior,
+    ).toBe('automatic');
+  });
+
+  it('conserva los campos del formulario como hijos directos del scroll', async () => {
+    await renderRegister();
+
+    expect(screen.getByTestId('register-first-name')).toBeVisible();
+    expect(screen.getByTestId('register-submit')).toBeVisible();
+    expect(screen.getAllByText('Create account')).toHaveLength(2);
   });
 });
