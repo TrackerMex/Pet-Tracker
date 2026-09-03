@@ -303,26 +303,16 @@ export function PairingScreen() {
 
           <Card className="w-full">
             <View className="gap-4">
-              <View className="flex-row items-center justify-between gap-4">
-                <Text className="font-normal text-muted">Model</Text>
-                <Text
-                  testID="ready-model"
-                  className="font-semibold text-foreground"
-                  selectable
-                >
-                  {readyDevice.model ?? '—'}
-                </Text>
-              </View>
-              <View className="flex-row items-center justify-between gap-4">
-                <Text className="font-normal text-muted">ESN</Text>
-                <Text
-                  testID="ready-esn"
-                  className="font-semibold text-foreground"
-                  selectable
-                >
-                  {readyDevice.esn ?? '—'}
-                </Text>
-              </View>
+              <DeviceRow
+                label="Model"
+                testID="ready-model"
+                value={readyDevice.model ?? '—'}
+              />
+              <DeviceRow
+                label="ESN"
+                testID="ready-esn"
+                value={readyDevice.esn ?? '—'}
+              />
             </View>
           </Card>
 
