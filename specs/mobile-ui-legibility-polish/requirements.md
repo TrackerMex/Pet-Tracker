@@ -19,6 +19,13 @@ Feature #61. Primer lote del pulido derivado de `progress/audit_ui_polish.md`
 6, 7, 13, 19 y 21 de esa auditoría. Los hallazgos 8-12, 14-18, 20 y 22-26 son
 de la feature #62 y **no entran aquí ni "de paso"**.
 
+> **Decisión de contraste revisada el 2026-09-03**, después de que el humano
+> leyera esta spec en draft. La primera vía (relleno `#2AB87C` intacto +
+> etiqueta en verde muy oscuro) cambiaba el aspecto de los 17 CTA y quedó
+> **descartada**. La vía vigente, textual: *"oscurece el acento, quiero la
+> letra blanca"*. El token `--accent-contrast` ya no existe en ninguna parte de
+> esta spec.
+
 ---
 
 ## Invariante duro de la feature (aplica a TODOS los R-ids)
@@ -31,52 +38,44 @@ de la feature #62 y **no entran aquí ni "de paso"**.
   ningún handler cambia de forma o de momento de ejecución.
 - **Ningún `testID` se renombra ni se elimina.** Los tests de conducta de
   #33-#37 se anclan a ellos. *Añadir* un `testID` nuevo sí está permitido y
-  tres requisitos lo hacen explícitamente (R7, R8): quedan enumerados en
-  [[design]] §testIDs añadidos.
+  dos requisitos lo hacen explícitamente (R7, R8): quedan enumerados en
+  [[design]] §5.
 - **Ningún texto visible cambia.** Ni una cadena, ni mayúsculas/minúsculas, ni
-  puntuación, ni idioma. `uppercase` y `tracking-widest` son transformaciones
-  de estilo, no cambios de texto.
-- **Los diffs son solo de `className`, de props de estilo/render
-  (`contentContainerStyle`, `hitSlop`, `numberOfLines`), y de estructura
-  visual de contenedores** (envolver en un `ScrollView`, partir una fila en
-  dos filas). Nada más.
+  puntuación, ni idioma.
+- **Los diffs son solo de valores de token, `className`, props de
+  estilo/render (`contentContainerStyle`, `hitSlop`, `numberOfLines`), el
+  argumento de `useThemeColors`, y estructura visual de contenedores**
+  (envolver en un `ScrollView`, partir una fila en dos filas). Nada más.
 - **Grep-clean de #46 y #72 intacto**: cero hex fuera de
   `mobile-pet-tracker/src/theme/`, cero clases arbitrarias `[...]`, cero
   `StyleSheet.create`, cero `shadow*`/`elevation` legacy. Verificado por
   `src/__tests__/design-drift.test.ts`, que ya está verde y debe seguirlo.
 - **Tokens solo en `mobile-pet-tracker/src/theme/global.css`.** De
-  `appllama-app-design-skill` se toma el patrón (jerarquía, anti-slop, ley de
-  contraste), **nunca** su sistema de estilos: prohibidos `Color.ios.*`,
-  `StyleSheet.create`, hex sueltos y clases arbitrarias.
-- **`--accent` conserva `#2AB87C` exacto** (valor Figma aprobado en #46 R1) en
-  light y en dark. **Ningún relleno cambia de color** en esta feature: los
-  únicos tokens de color que cambian de valor son `--muted`/`--color-muted` en
-  el variant **light** (R6); todo lo demás son tokens **nuevos** que solo se
-  usan como color de texto.
+  `appllama-app-design-skill` se toma el patrón, **nunca** su sistema de
+  estilos: prohibidos `Color.ios.*`, `StyleSheet.create`, hex sueltos y clases
+  arbitrarias.
+- **`--accent-foreground` conserva `#FFFFFF`** en los dos temas. La etiqueta
+  sobre el acento se queda blanca; lo que se mueve es el relleno.
 - **`--radius-card: 20px` (#72 R1) no se reabre.** El hallazgo 18 del audit
-  queda fuera; ver [[design]] §Hallazgo 18.
-- **El tema oscuro no se degrada.** Ningún requisito puede bajar un par de
-  contraste de dark por debajo del que tiene hoy (6,15:1 a 10,36:1 medidos en
-  el audit).
+  queda fuera; ver [[design]] §9.
+- **El tema oscuro no se degrada como tinta.** El acento usado como texto,
+  icono o trazo conserva en dark exactamente el `#2AB87C` de hoy, con sus
+  ratios actuales (6,13:1 a 6,79:1). Lo que sí cambia en dark es el **relleno**,
+  que es justo el par que hoy falla (2,547:1).
 
 Umbral de contraste usado en toda la feature: **WCAG 2.1 AA para texto normal,
 ≥ 4,5:1**, con la fórmula de luminancia relativa sRGB de la spec
 (`L = 0,2126·R + 0,7152·G + 0,0722·B` sobre canales linealizados;
 `ratio = (L_claro + 0,05) / (L_oscuro + 0,05)`). El umbral de 3,0:1 de "texto
-grande" **no** aplica: el `Button.Label` de heroui es 16 px bold, por debajo
-del corte de 18,66 px bold.
+grande" **no** aplica a texto: el `Button.Label` de heroui es 16 px bold, por
+debajo del corte de 18,66 px bold. Sí se usa 3,0:1 como umbral de **componente
+no textual** (bordes, iconos, trazos de gráfica), que es el que fija WCAG 1.4.11.
 
 ---
 
 ## Requisitos funcionales
 
 ### Bloque A — Contraste de color (hallazgos 21, 1, 3, 2, 19)
-
-> R1 va **primero por dependencia declarada**: el hallazgo 21 pinta hoy la
-> etiqueta de un botón destructivo con el token del acento
-> (`text-accent-foreground` sobre `bg-danger`) y solo pasa desapercibido
-> porque ambos foregrounds valen `#FFFFFF`. Debe quedar corregido **antes** de
-> que se toque nada del acento. Ver [[design]] §Orden de implementación.
 
 - **R1**: WHEN se renderiza el botón de confirmación destructiva del bottom
   sheet de recordatorios (`mobile-pet-tracker/src/screens/reminders/index.tsx`,
@@ -89,64 +88,67 @@ del corte de 18,66 px bold.
     `describe('#61 R1: la etiqueta destructiva usa el token de danger')`
 
 - **R2**: WHEN Tailwind compila `mobile-pet-tracker/src/theme/global.css` THE
-  SYSTEM SHALL exponer un token `--accent-contrast` con el valor **`#0B402A`**
-  en los variants `light` **y** `dark`, registrado como utilidad
-  `text-accent-contrast`, tal que la relación de contraste entre
-  `#0B402A` y `--accent` (`#2AB87C`) sea **≥ 4,5:1** (valor calculado:
-  **4,630:1**) en ambos temas, y THE SYSTEM SHALL conservar `--accent`,
-  `--color-accent`, `--accent-foreground` y `--color-accent-foreground` con
-  sus valores actuales exactos (`#2AB87C` y `#FFFFFF`) en ambos variants.
+  SYSTEM SHALL definir `--accent` y `--color-accent` con el valor **`#178255`**
+  en los variants `light` **y** `dark` (hoy `#2AB87C` en ambos), tal que la
+  relación de contraste entre `#FFFFFF` y `#178255` sea **≥ 4,5:1** (valor
+  calculado: **4,816:1**) en los dos temas; AND THE SYSTEM SHALL arrastrar el
+  mismo cambio a los dos tokens que hoy repiten literalmente el valor del
+  acento — `--focus` a `#178255` en ambos variants, y
+  `--tab-pill`/`--color-tab-pill` a `rgba(23,130,85,0.14)` en `light` y
+  `rgba(23,130,85,0.22)` en `dark`; AND THE SYSTEM SHALL conservar
+  `--accent-foreground` y `--color-accent-foreground` con el valor `#FFFFFF`
+  en ambos variants.
   - Test: `mobile-pet-tracker/src/theme/__tests__/global-css.test.ts` ::
-    `describe('#61 R2: token accent-contrast con AA sobre el relleno de acento')`
+    `describe('#61 R2: el relleno de acento pasa AA con etiqueta blanca')`
 
 - **R3**: WHEN se renderiza texto sobre una superficie de relleno de acento
-  (`bg-accent`) THE SYSTEM SHALL resolver su color con `text-accent-contrast`
-  en las **17** ocurrencias enumeradas en [[design]] §Sitios R3 (10 etiquetas
-  de `Button` con `bg-accent` y 7 nodos de texto dentro de las 2 `Card`
-  `variant="accent"`), y THE SYSTEM SHALL eliminar las utilidades
-  `opacity-70` y `opacity-80` de las 4 ocurrencias que las llevan, de modo que
-  ningún texto sobre `bg-accent` quede por debajo de 4,5:1 por composición de
-  opacidad (con `opacity-70` el color efectivo cae a 2,811:1 y con
-  `opacity-80` a 3,324:1; cálculo en [[design]]).
+  (`bg-accent`, es decir los 10 `Button` con esa clase y las 2 `Card`
+  `variant="accent"`) THE SYSTEM SHALL mantener `text-accent-foreground` como
+  su color, AND SHALL eliminar las utilidades `opacity-70` y `opacity-80` de
+  las **4** ocurrencias enumeradas en [[design]] §4 R3, porque la composición
+  de opacidad deja el color efectivo en 3,202:1 y 3,686:1 sobre `#178255`,
+  por debajo del umbral de 4,5:1 que R2 acaba de conseguir.
   - Test: `mobile-pet-tracker/src/__tests__/legibility-classnames.test.ts` ::
-    `describe('#61 R3: todo texto sobre bg-accent usa text-accent-contrast sin opacidad')`
+    `describe('#61 R3: ningún texto sobre bg-accent se compone con opacidad')`
 
 - **R4**: WHEN Tailwind compila `global.css` THE SYSTEM SHALL exponer un token
-  `--accent-strong` con el valor **`#167A50`** en el variant `light` y
-  **`#2AB87C`** en el variant `dark`, registrado como utilidad
-  `text-accent-strong`; AND WHEN se renderiza texto o enlace de color acento
-  sobre una superficie neutra THE SYSTEM SHALL resolver su color con
-  `text-accent-strong` en las **12** ocurrencias enumeradas en [[design]]
-  §Sitios R4, tal que el contraste sea ≥ 4,5:1 sobre `bg-surface`
-  (5,338:1), `bg-default` (4,937:1), `bg-surface-secondary` (5,042:1) y
-  `bg-accent-soft` (4,646:1) en light, y ≥ 4,5:1 sobre las mismas superficies
-  en dark (6,792 / 6,128 / 6,432 / 5,962:1).
+  `--accent-strong` (más su espejo `--color-accent-strong` para el resolver JS)
+  con el valor **`#107148`** en el variant `light` y **`#2AB87C`** en el
+  variant `dark`, registrado como utilidad `text-accent-strong`; AND WHEN el
+  acento se usa como **tinta** — texto, enlace, icono, borde de foco de
+  gráfica o trazo — sobre cualquier superficie que no sea `bg-accent`, THE
+  SYSTEM SHALL resolverlo con `text-accent-strong` en las **13** ocurrencias de
+  `className` y con `useThemeColors(['accent-strong'])` en las **6**
+  ocurrencias imperativas enumeradas en [[design]] §4 R4, tal que el contraste
+  sea ≥ 4,5:1 sobre `bg-surface` (light 6,039 / dark 6,792), `bg-default`
+  (5,584 / 6,128), `bg-surface-secondary` (5,703 / 6,432) y `bg-accent-soft`
+  (4,941 / 6,501), y ≥ 3,0:1 en los usos no textuales; AND THE SYSTEM SHALL
+  dejar **cero** llamadas a `useThemeColors` que pidan `'accent'` en
+  `mobile-pet-tracker/src/`.
   - Test: `mobile-pet-tracker/src/theme/__tests__/global-css.test.ts` ::
-    `describe('#61 R4: token accent-strong con AA sobre superficies neutras')`
+    `describe('#61 R4: token accent-strong con AA como tinta en los dos temas')`
     (token y ratios) y
     `mobile-pet-tracker/src/__tests__/legibility-classnames.test.ts` ::
-    `describe('#61 R4: los enlaces y valores de acento usan text-accent-strong')`
-    (sitios)
+    `describe('#61 R4: el acento como tinta usa accent-strong')` (sitios)
 
 - **R5**: WHEN Tailwind compila `global.css` THE SYSTEM SHALL exponer un token
   `--warning-strong` con el valor **`#92610A`** en el variant `light` y
   **`#FBBF24`** en el variant `dark`, registrado como utilidad
   `text-warning-strong`; AND WHEN se renderiza **texto** de estado de aviso
   THE SYSTEM SHALL resolver su color con `text-warning-strong` en las **3**
-  ocurrencias enumeradas en [[design]] §Sitios R5, tal que el contraste sea
-  ≥ 4,5:1 sobre `bg-surface` (5,335:1) y sobre `bg-warning-soft` (4,748:1) en
-  light y ≥ 4,5:1 sobre las mismas en dark (10,362 / 7,477:1); AND THE SYSTEM
-  SHALL conservar `--warning` y `--color-warning` con sus valores actuales
-  (`#F59E0B` light, `#FBBF24` dark) y seguir usando el ámbar puro para
-  iconos y rellenos (`color={warning}` de `useThemeColors`, `bg-warning-soft`),
-  que no cambian.
+  ocurrencias enumeradas en [[design]] §4 R5, tal que el contraste sea ≥ 4,5:1
+  sobre `bg-surface` (5,335:1) y sobre `bg-warning-soft` (4,748:1) en light y
+  ≥ 4,5:1 sobre las mismas en dark (10,362 / 7,477:1); AND THE SYSTEM SHALL
+  conservar `--warning` y `--color-warning` con sus valores actuales
+  (`#F59E0B` light, `#FBBF24` dark) y seguir usando el ámbar puro para iconos
+  y rellenos (`color={warning}` de `useThemeColors`, `bg-warning-soft`), que
+  no cambian.
   - Test: `mobile-pet-tracker/src/theme/__tests__/global-css.test.ts` ::
     `describe('#61 R5: token warning-strong con AA sobre surface y warning-soft')`
     (token y ratios) y
     `mobile-pet-tracker/src/__tests__/legibility-classnames.test.ts` ::
     `describe('#61 R5: text-warning deja de usarse como color de texto')`
-    (sitios; incluye la aserción de que `text-warning` no aparece como color
-    de texto en ningún `.tsx` de producción)
+    (sitios)
 
 - **R6**: WHEN Tailwind compila `global.css` THE SYSTEM SHALL definir
   `--muted` y `--color-muted` con el valor **`#667085`** en el variant `light`
@@ -207,7 +209,7 @@ del corte de 18,66 px bold.
     `describe('#61 R9: la etiqueta de sección de pet-info-card vuelve a #46 R10')`
 
 - **R10**: WHEN se renderiza cualquiera de los 13 controles táctiles
-  enumerados en [[design]] §Sitios R10 (3 filas de enlace, 5 recetas de chip,
+  enumerados en [[design]] §4 R10 (3 filas de enlace, 5 recetas de chip,
   5 botones de volver) THE SYSTEM SHALL declarar en su `Pressable` la prop
   `hitSlop={TOUCH_SLOP}`, donde `TOUCH_SLOP` es la constante compartida
   `{ top: 6, bottom: 6, left: 6, right: 6 }` exportada desde
@@ -247,8 +249,8 @@ del corte de 18,66 px bold.
   preexistente salvo por bloques `describe('#61 R…')` **añadidos**; el único
   archivo de test preexistente modificado en su contenido previo SHALL ser
   `mobile-pet-tracker/src/theme/__tests__/global-css.test.ts`, y solo en los
-  dos literales `#6B7280` del variant light (excepción declarada en
-  [[design]] §Excepciones al invariante).
+  **10 literales de color** de las 9 líneas enumeradas en [[design]] §6
+  (excepción declarada E1).
   - Verificación: `bun test` + `git diff origin/main...HEAD --stat` ejecutados
     por el `reviewer` (no es un test de jest; es un gate mecánico de revisión).
 
@@ -257,22 +259,29 @@ del corte de 18,66 px bold.
 ## Fuera de alcance
 
 - **Los hallazgos 8-12, 14-18, 20 y 22-26 del audit.** Son la feature #62
-  (`mobile-ui-consistency-polish`). No se tocan aquí ni "de paso", aunque un
-  archivo de esta feature los tenga a la vista.
+  (`mobile-ui-consistency-polish`). No se tocan aquí ni "de paso".
 - **El hallazgo 18** (`--radius-card` 20 px vs 16 px). Decisión humana del
   2026-09-03: no se reabre. Queda como punto a comparar en el próximo smoke,
   al mismo tamaño físico.
-- **Oscurecer `--accent`**: descartado por el humano el 2026-09-03. El relleno
-  conserva `#2AB87C` exacto.
-- **`floating-tab-bar.tsx:191`** (`text-accent` de la pestaña activa sobre
-  `bg-tab-pill`). No es ninguno de los hallazgos en alcance; el audit declaró
-  el componente limpio de punta a punta. Justificación de la exclusión en
-  [[design]].
+- **Un token de texto sobre acento (`--accent-contrast`)**: descartado por el
+  humano el 2026-09-03 tras leer esta spec en draft. No queda ni como token
+  muerto ni como alternativa comentada; solo como línea de historial en
+  [[design]] §10.
+- **`--surface-secondary` (`#F0FBF6` / `#12231B`)**: es un verde muy pálido de
+  superficie, no una repetición del valor del acento, y ninguna etiqueta de
+  esta feature falla sobre él. No se mueve.
+- **`--success` (`#0F9B5A`)**: `text-success` da 3,586:1 sobre `bg-surface` y
+  3,316:1 sobre `bg-default` en light. Es un fallo AA **preexistente** que
+  ningún hallazgo de la auditoría recoge. No entra aquí; queda anotado en
+  [[design]] §3 como candidato para la próxima auditoría.
+- **Elevar a AA la etiqueta de la pestaña activa de `floating-tab-bar` sobre
+  `bg-tab-pill`**: R4 la migra al token de tinta y con eso pasa de 2,4:1 a
+  5,038:1 en light y 5,983:1 en dark, así que cumple AA por efecto colateral;
+  pero el componente no es ninguno de los diez hallazgos y no se rediseña.
 - **`pet-switcher.tsx:32-33`**, listado por el hallazgo 13. Medido durante la
   redacción de esta spec: el chip mide **52 pt** (Avatar `sm` = 40 pt + `p-1`
-  = 8 pt + `border-2` = 4 pt), ya por encima de 44 pt. No necesita arreglo;
-  la evidencia del audit es incorrecta en ese punto. Justificación en
-  [[design]].
+  = 8 pt + `border-2` = 4 pt), ya por encima de 44 pt. La evidencia del audit
+  es incorrecta en ese punto.
 - Migrar los `TextInput` crudos a `TextField` de heroui, sustituir los emoji
   de iconografía, unificar el idioma de la UI, cabeceras nativas para las
   pantallas de detalle, errores inline por campo y action sheet nativo para el
@@ -287,18 +296,31 @@ del corte de 18,66 px bold.
 
 - [X] Aprobado por humano (fecha: 2026-09-03) ← gate obligatorio antes de implementar
 
-El humano debe firmar además, explícitamente, los dos puntos que esta spec
+El humano debe firmar además, explícitamente, los cuatro puntos que esta spec
 resuelve por escrito y que no puede cerrar sola (detalle en [[design]]):
 
-1. **El valor `#0B402A` para `--accent-contrast`** y su consecuencia visible:
-   las etiquetas de los 10 botones primarios y los 7 textos de las 2 cards de
-   acento pasan de **blanco a verde muy oscuro**. El relleno sigue siendo
-   `#2AB87C` exacto, pero el CTA cambia de aspecto.
-2. **La excepción al invariante**: R6 obliga a editar dos literales de
-   `src/theme/__tests__/global-css.test.ts` (asserts de valor de token de #46
-   R1/R2, no asserts de conducta).
+1. **`--accent: #178255`** y su consecuencia declarada: los rellenos de la app
+   dejan de coincidir 1:1 con el Figma Make. Es una **desviación explícita de
+   #46 R1**, argumentada en [[design]] §2 D1, y R2 la deja escrita también en
+   `docs/ui-guidelines.md` con el texto propuesto en [[design]] §7.
+2. **El token se mantiene único por tema para el relleno** (`#178255` en light
+   y dark) y se **parte** para la tinta (`--accent-strong`: `#107148` light,
+   `#2AB87C` dark). Los dos números que lo justifican están en [[design]] §2 D2.
+3. **La convivencia con `--success`**: la distancia perceptual ΔE00 entre el
+   acento y `--success` pasa de 9,16 (hoy) a **9,24**, es decir no empeora.
+   Argumento y medidas en [[design]] §3.
+4. **La excepción al invariante**: R2/R6 obligan a editar **10 literales de
+   color en 9 líneas** de `src/theme/__tests__/global-css.test.ts` (asserts de
+   valor de token de #46 R1/R2, no asserts de conducta). Lista exacta en
+   [[design]] §6.
 
-Gate humano de cierre (criterio de aceptación 10 de `feature_list.json`, **no
-delegable a IA**): smoke en **dev build de Android**, comparando lado a lado
-con el Figma, en tema **claro Y oscuro**, confirmando que ningún relleno
-cambió de color y que las etiquetas se leen.
+Además, dos criterios de aceptación de #61 en `feature_list.json` quedaron
+**obsoletos** al revertirse la decisión y siguen diciendo lo contrario de lo
+que la `description` ya recoge; la redacción sustitutiva está propuesta en
+[[traceability]] §Criterios obsoletos, para que el humano la pegue.
+
+Gate humano de cierre (criterio de aceptación 10, **no delegable a IA**):
+smoke en **dev build de Android**, comparando lado a lado con el Figma, en
+tema **claro Y oscuro**, confirmando que el acento se ve más oscuro que el
+Make **a propósito**, que las etiquetas blancas se leen sobre él, y que el
+verde de tinta (links, iconos, gráfica) sigue vivo en dark.

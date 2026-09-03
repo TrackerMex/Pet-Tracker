@@ -8,7 +8,7 @@ tags: [harness, spec]
 
 > Disciplina TDD. Cada tarea corresponde a un requisito de [[requirements]] y
 > tiene siempre los mismos 3 sub-items, en este orden. Los sitios exactos,
-> valores hex y clases están en [[design]] §4 y §3 — esta lista no los repite.
+> valores hex y clases están en [[design]] §4 y §5 — esta lista no los repite.
 
 ## Reglas de commit (C4 de [[../../CHECKPOINTS|CHECKPOINTS]]) — NO negociables
 
@@ -24,11 +24,12 @@ incumplió C4. Aquí no se repite:
    `refactor(mobile-ui-legibility): R<n> <qué se limpia>`
 
 Un commit que mezcle test rojo e implementación es un incumplimiento de C4 y el
-`reviewer` lo rechaza aunque la suite esté verde. Cada commit corre
-`bun test` en `mobile-pet-tracker/` antes de existir.
+`reviewer` lo rechaza aunque la suite esté verde. Cada commit corre `bun test`
+en `mobile-pet-tracker/` antes de existir.
 
-Orden obligatorio: **R1 primero** (dependencia declarada del hallazgo 21, ver
-[[design]] §D2 y §9), luego R2→R3, luego el resto.
+Orden obligatorio: **R1 → R2 → R3 → R4 → resto** ([[design]] §11). R2 es donde
+la app cambia de aspecto; va en commits propios para que el `git bisect` del
+smoke sea limpio.
 
 Skills a cargar antes de escribir código (carta §Skills):
 `appllama-app-design-skill`, `expo:expo-overview` → `expo:expo-native-ui` y
@@ -38,57 +39,73 @@ de estilos.
 Branch: `feature/61-mobile-ui-legibility-polish` (ya creada). No se commitea a
 `main`. Nada bajo `backend-pet-tracker/` ni `infra/` se toca.
 
+Regla mecánica que resuelve el 90 % de las dudas de R2/R4: **si el acento es el
+fondo, es `--accent`; si el acento es lo que se dibuja encima de otra cosa, es
+`--accent-strong`.**
+
 ---
 
 ## R1 — La etiqueta destructiva de reminders usa el token de danger
 
 - [ ] (1) Escribir test que falla para R1
       (`src/__tests__/legibility-classnames.test.ts`, `describe('#61 R1: …')`:
-      `reminders/index.tsx` no contiene `text-accent-foreground` en el
-      `Button.Label` de `reminders-delete-confirm` y sí `text-danger-foreground`)
+      el `Button.Label` de `reminders-delete-confirm` en
+      `reminders/index.tsx` no contiene `text-accent-foreground` y sí
+      `text-danger-foreground`)
 - [ ] (2) Implementación mínima que lo pasa
 - [ ] (3) Refactor con tests verdes
 
-## R2 — Token `--accent-contrast: #0B402A` con AA sobre el relleno de acento
+## R2 — `--accent: #178255`: el relleno pasa AA con etiqueta blanca
 
 - [ ] (1) Escribir test que falla para R2
-      (`src/theme/__tests__/global-css.test.ts`, `describe('#61 R2: …')`: el
-      token existe con `#0B402A` en light y dark, la utilidad está registrada,
-      el ratio contra `#2AB87C` es ≥ 4,5 con la fórmula sRGB, y `--accent`,
-      `--color-accent`, `--accent-foreground`, `--color-accent-foreground`
-      conservan sus valores)
-- [ ] (2) Implementación mínima que lo pasa
+      (`src/theme/__tests__/global-css.test.ts`, `describe('#61 R2: …')`:
+      `--accent`/`--color-accent` valen `#178255` en light y dark, `--focus`
+      también, `--tab-pill`/`--color-tab-pill` valen `rgba(23,130,85,0.14)` y
+      `rgba(23,130,85,0.22)`, `--accent-foreground` sigue en `#FFFFFF`, y el
+      ratio `#FFFFFF` / `#178255` calculado con la fórmula sRGB es ≥ 4,5)
+- [ ] (2) Implementación mínima que lo pasa. **Incluye tres cosas más**:
+      - la parte de la excepción declarada **E1** que corresponde a R2:
+        8 literales en `global-css.test.ts` (líneas 78, 83, 95, 96, 125, 130,
+        137, 138 — tabla completa en [[design]] §6)
+      - la línea **11** de `docs/ui-guidelines.md` con el texto de [[design]] §7
+      - **nada más**: los `className` con `bg-accent`, `bg-accent-soft` y
+        `border-accent` no se tocan; el token hace el trabajo
 - [ ] (3) Refactor con tests verdes
 
-## R3 — Todo texto sobre `bg-accent` usa `text-accent-contrast`, sin opacidad
+## R3 — Ningún texto sobre `bg-accent` se compone con opacidad
 
 - [ ] (1) Escribir test que falla para R3
       (`src/__tests__/legibility-classnames.test.ts`, `describe('#61 R3: …')`:
-      cero ocurrencias de `text-accent-foreground` en `src/`, 17 de
-      `text-accent-contrast` en los archivos enumerados, y cero `opacity-70` /
-      `opacity-80` en `food.tsx` y `meal-schedule.tsx`)
-- [ ] (2) Implementación mínima que lo pasa
+      cero ocurrencias de `opacity-70` y `opacity-80` en `food.tsx` y
+      `meal-schedule.tsx`, y las cuatro etiquetas siguen llevando
+      `text-accent-foreground`)
+- [ ] (2) Implementación mínima que lo pasa (4 `className`; los otros tres
+      nodos de las cards de acento ya están a opacidad plena y no se tocan)
 - [ ] (3) Refactor con tests verdes
 
-## R4 — Token `--accent-strong` y los 12 enlaces/valores de acento
+## R4 — `--accent-strong`: el acento como tinta, resuelto por tema
 
 - [ ] (1) Escribir test que falla para R4
-      (`global-css.test.ts`, `describe('#61 R4: …')`: `#167A50` light /
-      `#2AB87C` dark y los cuatro ratios de light y los tres de dark;
-      `legibility-classnames.test.ts`, `describe('#61 R4: …')`: los 12 sitios
-      usan `text-accent-strong` y `floating-tab-bar.tsx` conserva `text-accent`)
-- [ ] (2) Implementación mínima que lo pasa
+      (`global-css.test.ts`, `describe('#61 R4: …')`: `--accent-strong` y
+      `--color-accent-strong` valen `#107148` en light y `#2AB87C` en dark, y
+      los ratios de las cinco superficies de cada tema de la tabla de
+      [[design]] §5.4 son ≥ 4,5;
+      `legibility-classnames.test.ts`, `describe('#61 R4: …')`: los 13 sitios
+      de `className` usan `text-accent-strong`, cero `text-accent` queda en
+      `src/**/*.tsx`, y **cero** llamadas a `useThemeColors` piden `'accent'`)
+- [ ] (2) Implementación mínima que lo pasa (2 tokens + `@theme inline`, 13
+      `className`, 6 `useThemeColors`)
 - [ ] (3) Refactor con tests verdes
 
-## R5 — Token `--warning-strong` y el fin de `text-warning` como color de texto
+## R5 — `--warning-strong` y el fin de `text-warning` como color de texto
 
 - [ ] (1) Escribir test que falla para R5
       (`global-css.test.ts`, `describe('#61 R5: …')`: `#92610A` light /
       `#FBBF24` dark y sus ratios sobre `bg-surface` y `bg-warning-soft`
-      compuesto; `legibility-classnames.test.ts`, `describe('#61 R5: …')`: cero
-      ocurrencias de `text-warning` como color de texto en `src/**/*.tsx` y
-      `--warning`/`--color-warning` intactos)
-- [ ] (2) Implementación mínima que lo pasa
+      compuesto; `legibility-classnames.test.ts`, `describe('#61 R5: …')`:
+      cero ocurrencias de `text-warning` como color de texto en
+      `src/**/*.tsx` y `--warning`/`--color-warning` intactos)
+- [ ] (2) Implementación mínima que lo pasa (1 token + 3 `className`)
 - [ ] (3) Refactor con tests verdes
 
 ## R6 — `--muted` light pasa AA sobre `bg-default` sin tocar dark
@@ -97,10 +114,8 @@ Branch: `feature/61-mobile-ui-legibility-polish` (ya creada). No se commitea a
       (`global-css.test.ts`, `describe('#61 R6: …')`: `--muted` y
       `--color-muted` valen `#667085` en light, siguen valiendo `#9CA3AF` en
       dark, y el ratio sobre `#F5F6F8` es ≥ 4,5)
-- [ ] (2) Implementación mínima que lo pasa. **Incluye la excepción declarada
-      E1** de [[design]] §6: sustituir los dos literales `'#6B7280'` de
-      `global-css.test.ts` (líneas 75 y 95, asserts de #46 R1/R2) por
-      `'#667085'`. Nada más de ese archivo se reescribe
+- [ ] (2) Implementación mínima que lo pasa. **Incluye la parte de E1 que
+      corresponde a R6**: 2 literales en `global-css.test.ts` (líneas 75 y 95)
 - [ ] (3) Refactor con tests verdes
 
 ## R7 — Register con las métricas de pantalla uniformes
@@ -146,7 +161,7 @@ Branch: `feature/61-mobile-ui-legibility-polish` (ya creada). No se commitea a
       `{ top: 6, bottom: 6, left: 6, right: 6 }`)
 - [ ] (2) Implementación mínima que lo pasa (crear
       `src/theme/touch-target.ts` y añadir la prop en los 13 `Pressable`;
-      **no** tocar `pet-switcher.tsx`, ver [[design]] §D4)
+      **no** tocar `pet-switcher.tsx`, ver [[design]] §D5)
 - [ ] (3) Refactor con tests verdes
 
 ## R11 — Overlay de stats del mapa en 2×2 sin envolver
@@ -165,12 +180,14 @@ Branch: `feature/61-mobile-ui-legibility-polish` (ya creada). No se commitea a
       archivos bajo `backend-pet-tracker/` e `infra/`; ningún `*.test.tsx`
       preexistente con asserts reescritos (solo bloques `describe('#61 R…')`
       añadidos); el único test preexistente con contenido previo modificado es
-      `src/theme/__tests__/global-css.test.ts`, y solo en dos literales
+      `src/theme/__tests__/global-css.test.ts`, y solo en los **10 literales de
+      color de 9 líneas** de la tabla E1 ([[design]] §6)
 - [ ] (3) Rehacer los conteos anti-slop del audit sobre `src/`: cero hex fuera
       de `src/theme/`, cero clases arbitrarias `[...]`, cero `StyleSheet.create`,
-      cero `shadow*`/`elevation` legacy, cero `text-accent-foreground`, cero
-      `text-warning` como color de texto. Dejarlos en
-      `progress/impl_mobile-ui-legibility-polish.md`
+      cero `shadow*`/`elevation` legacy, cero `text-accent` (queda solo
+      `text-accent-strong` y `text-accent-foreground`), cero `text-warning`
+      como color de texto, cero `useThemeColors` pidiendo `'accent'`.
+      Dejarlos en `progress/impl_mobile-ui-legibility-polish.md`
 
 ---
 
@@ -182,9 +199,20 @@ Branch: `feature/61-mobile-ui-legibility-polish` (ya creada). No se commitea a
 - [ ] `gh pr create` desde `feature/61-mobile-ui-legibility-polish`. El humano
       mergea; ninguna IA mergea a `main`
 - [ ] **Gate humano, no delegable**: smoke en **dev build de Android**, lado a
-      lado con el Figma, en tema **claro Y oscuro**, confirmando que ningún
-      relleno cambió de color y que las etiquetas se leen. Guion de la prueba:
-      los 10 botones primarios, las 2 cards de acento (Food y Meal schedule),
-      los enlaces de acento de Login/Forgot/Reset/Home/Profile, el badge
-      "Upcoming!" de Reminders, el "Next due" de Health, el overlay del mapa
-      con datos reales, y los 13 controles del R10 tocados con el pulgar
+      lado con el Figma, en tema **claro Y oscuro**. Guion:
+      1. Los 10 botones primarios: el verde es visiblemente más oscuro que el
+         del Make **a propósito**, y la etiqueta blanca se lee.
+      2. Las 2 cards de acento (Food, Meal schedule): las tres líneas de texto
+         se leen; la de arriba y la de abajo ya no van "apagadas".
+      3. Los enlaces de acento (Login, Forgot, Reset, Home "View on map",
+         Profile "Change photo", Add pet "Choose photo") y el valor de peso de
+         Health: verdes y legibles en los dos temas.
+      4. La pestaña activa de la barra flotante: píldora e icono del mismo
+         verde, etiqueta legible.
+      5. La gráfica de peso y la ruta del mapa: el trazo sigue vivo en dark.
+      6. El badge "Upcoming!" de Reminders y el "Next due" de Health: ámbar
+         legible, y el icono de jeringa sigue siendo ámbar puro.
+      7. El overlay del mapa con datos reales: 2×2, ningún valor cortado.
+      8. Los 13 controles del R10, tocados con el pulgar.
+      9. Un chip de estado `success` y un botón de acento en la misma pantalla
+         (Home): que se distingan sin esfuerzo.
