@@ -597,6 +597,40 @@ describe('R8: con collar muestra el estado del dispositivo y el plan tracked/fre
     await waitFor(() => expect(mockGetPetTracking).toHaveBeenCalledTimes(2));
   });
 
+  it('does not duplicate the plan probe when focused pets also refresh', async () => {
+    mockListPets
+      .mockResolvedValueOnce({
+        kind: 'ok',
+        pets: [makePet({ device: makeDevice() })],
+      })
+      .mockResolvedValueOnce({
+        kind: 'ok',
+        pets: [
+          makePet({
+            device: makeDevice({ model: 'TrailTag Pro refreshed' }),
+          }),
+        ],
+      });
+    await renderPairing();
+    await screen.findByTestId('plan-tracked');
+    const petsFocusCallback = mockUseFocusEffect.mock.calls[0]?.[0];
+    const trackingFocusCallback = mockUseFocusEffect.mock.calls[1]?.[0];
+
+    await act(async () => {
+      petsFocusCallback?.();
+      trackingFocusCallback?.();
+      await Promise.resolve();
+    });
+
+    await waitFor(() =>
+      expect(screen.getByTestId('device-model')).toHaveTextContent(
+        'TrailTag Pro refreshed',
+      ),
+    );
+    expect(mockListPets).toHaveBeenCalledTimes(2);
+    expect(mockGetPetTracking).toHaveBeenCalledTimes(2);
+  });
+
   it('does not probe tracking while the selected pet has no device', async () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
 
