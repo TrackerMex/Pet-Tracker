@@ -155,7 +155,7 @@ export function RemindersScreen() {
             <Skeleton
               key={index}
               testID={`reminder-row-skeleton-${index + 1}`}
-              className="h-20 w-full rounded-2xl"
+              className="h-20 w-full rounded-card"
             />
           ))}
         </View>

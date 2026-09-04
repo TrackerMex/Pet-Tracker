@@ -133,7 +133,7 @@ export default function HomeScreen() {
       ) : null}
 
       {selectedPetId && detail.data === undefined ? (
-        <Skeleton testID="pet-card-skeleton" className="h-32 w-full rounded-2xl" />
+        <Skeleton testID="pet-card-skeleton" className="h-32 w-full rounded-card" />
       ) : null}
 
       {detail.data?.kind === 'error' || detail.data?.kind === 'unreachable' ? (

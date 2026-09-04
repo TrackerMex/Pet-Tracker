@@ -127,7 +127,7 @@ export default function HealthScreen() {
           {vaccines.data === undefined || vaccines.isRefreshing ? (
             <Skeleton
               testID="vaccines-skeleton"
-              className="h-24 w-full rounded-2xl"
+              className="h-24 w-full rounded-card"
             />
           ) : null}
 
