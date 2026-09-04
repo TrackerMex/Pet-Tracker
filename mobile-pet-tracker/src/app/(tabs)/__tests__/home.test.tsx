@@ -745,3 +745,30 @@ describe('#62 R3: collar-card y last-position-card usan el Card compartido', () 
     expect(mockRouter.push).toHaveBeenCalledWith('/map');
   });
 });
+
+describe('#62 R5: el título de card usa un único tratamiento', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
+    mockGetDailyActivity.mockResolvedValue({
+      kind: 'ok',
+      days: [makeDay()],
+    });
+  });
+
+  it('aplica la receta canónica a Today\'s Summary', async () => {
+    await renderHome();
+
+    expect((await screen.findByText("Today's Summary")).props.className).toBe(
+      'text-base font-bold text-foreground',
+    );
+  });
+});

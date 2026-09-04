@@ -445,3 +445,19 @@ describe('#61 R10: los controles táctiles declaran TOUCH_SLOP', () => {
     );
   });
 });
+
+describe('#62 R5: el título de card usa un único tratamiento', () => {
+  it('aplica la receta canónica a Nutrition profile', async () => {
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan() });
+    mockGetNutritionProfile.mockResolvedValue({
+      kind: 'ok',
+      profile: makeProfile(),
+    });
+
+    await renderMealSchedule();
+
+    expect(
+      (await screen.findByText('Nutrition profile')).props.className,
+    ).toBe('text-base font-bold text-foreground');
+  });
+});

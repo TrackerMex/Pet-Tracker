@@ -506,3 +506,26 @@ describe('#62 R3: los avisos de plan usan el Card compartido', () => {
     expect(screen.queryAllByTestId(/^plan-warning-/)).toHaveLength(1);
   });
 });
+
+describe('#62 R5: el título de card usa un único tratamiento', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetNutritionPlan.mockResolvedValue({
+      kind: 'ok',
+      plan: makePlan({
+        aiExplanation: 'Split the daily amount into two balanced meals.',
+      }),
+    });
+  });
+
+  it.each(['Meals today', 'AI recommendation', 'Meal schedule'])(
+    'aplica la receta canónica a %s',
+    async (title) => {
+      await renderFood();
+
+      expect((await screen.findByText(title)).props.className).toBe(
+        'text-base font-bold text-foreground',
+      );
+    },
+  );
+});
