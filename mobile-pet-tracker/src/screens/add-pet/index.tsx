@@ -79,7 +79,7 @@ export function AddPetScreen() {
   const { signOut, token } = useAuth();
   const { selectPet } = useSelectedPet();
   const insets = useSafeAreaInsets();
-  const [foreground] = useThemeColors(['foreground']);
+  const [foreground, muted] = useThemeColors(['foreground', 'muted']);
   const [species, setSpecies] = useState<Species>('dog');
   const [name, setName] = useState('');
   const [breed, setBreed] = useState('');
@@ -296,9 +296,10 @@ export function AddPetScreen() {
         <FieldLabel>Name</FieldLabel>
         <TextInput
           testID="name-input"
-          className="rounded-xl border border-border bg-default px-4 py-3 text-foreground"
+          className="rounded-xl bg-default px-4 py-3 text-foreground"
           maxLength={120}
           placeholder="Pet name"
+          placeholderTextColor={muted}
           value={name}
           onChangeText={setName}
         />
@@ -308,9 +309,10 @@ export function AddPetScreen() {
         <FieldLabel>Breed</FieldLabel>
         <TextInput
           testID="breed-input"
-          className="rounded-xl border border-border bg-default px-4 py-3 text-foreground"
+          className="rounded-xl bg-default px-4 py-3 text-foreground"
           maxLength={120}
           placeholder="Optional"
+          placeholderTextColor={muted}
           value={breed}
           onChangeText={setBreed}
         />
@@ -373,10 +375,11 @@ export function AddPetScreen() {
         ) : (
           <TextInput
             testID="approx-age-input"
-            className="rounded-xl border border-border bg-default px-4 py-3 text-foreground"
+            className="rounded-xl bg-default px-4 py-3 text-foreground"
             inputMode="numeric"
             maxLength={3}
             placeholder="Months"
+            placeholderTextColor={muted}
             value={approxAgeMonths}
             onChangeText={setApproxAgeMonths}
           />
@@ -412,9 +415,10 @@ export function AddPetScreen() {
         <FieldLabel>Microchip</FieldLabel>
         <TextInput
           testID="microchip-input"
-          className="rounded-xl border border-border bg-default px-4 py-3 text-foreground"
+          className="rounded-xl bg-default px-4 py-3 text-foreground"
           maxLength={32}
           placeholder="Optional"
+          placeholderTextColor={muted}
           value={microchip}
           onChangeText={setMicrochip}
         />

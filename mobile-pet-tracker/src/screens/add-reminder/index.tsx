@@ -38,7 +38,7 @@ function AddReminderContent({ petId }: { petId: string }) {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
   const insets = useSafeAreaInsets();
-  const [foreground] = useThemeColors(['foreground']);
+  const [foreground, muted] = useThemeColors(['foreground', 'muted']);
   const [type, setType] = useState<ReminderType>('vaccine');
   const [title, setTitle] = useState('');
   const [date, setDate] = useState<Date | null>(null);
@@ -169,9 +169,10 @@ function AddReminderContent({ petId }: { petId: string }) {
         </Text>
         <TextInput
           testID="title-input"
-          className="rounded-xl border border-border bg-default px-4 py-3 text-foreground"
+          className="rounded-xl bg-default px-4 py-3 text-foreground"
           maxLength={120}
           placeholder="Reminder title"
+          placeholderTextColor={muted}
           value={title}
           onChangeText={setTitle}
         />

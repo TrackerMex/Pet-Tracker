@@ -363,7 +363,7 @@ export function PairingScreen() {
             </Text>
             <TextInput
               testID="activation-code-input"
-              className="min-h-12 rounded-xl border border-border bg-default px-4 py-3 text-foreground"
+              className="min-h-12 rounded-xl bg-default px-4 py-3 text-foreground"
               autoCapitalize="characters"
               autoCorrect={false}
               maxLength={64}
