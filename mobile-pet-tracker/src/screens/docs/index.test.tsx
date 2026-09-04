@@ -174,3 +174,36 @@ describe('#61 R10: los controles táctiles declaran TOUCH_SLOP', () => {
     expect(screen.getByTestId('docs-back').props.hitSlop).toEqual(TOUCH_SLOP);
   });
 });
+
+describe('#62 R10: el tipo de documento se lee como badge', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
+    mockListPetDocs.mockResolvedValue({
+      kind: 'ok',
+      docs: [
+        {
+          id: 'doc-1',
+          type: 'Vacunación',
+          name: 'Antirrábica',
+          date: '2026-07-12',
+        },
+      ],
+    });
+  });
+
+  it('aplica la receta monocroma al tipo sin cambiar su texto', async () => {
+    await renderDocs();
+
+    expect((await screen.findByText('Vacunación')).props.className).toBe(
+      'self-start rounded-full bg-default px-2 py-0.5 text-2xs font-bold text-muted',
+    );
+  });
+});
