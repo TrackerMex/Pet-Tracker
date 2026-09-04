@@ -237,3 +237,21 @@ describe('#62 R12: los TextInput crudos comparten una sola receta', () => {
     ).toEqual([]);
   });
 });
+
+describe('#62 R13: el color imperativo sale siempre de useThemeColors del repo', () => {
+  it('elimina useThemeColor de heroui en producción', () => {
+    expect(filesMatching(/\buseThemeColor\b/)).toEqual([]);
+  });
+
+  it('resuelve el Lock de Forgot con accent-strong', () => {
+    const forgot = readSource(join('app', '(auth)', 'forgot.tsx'));
+
+    expect(forgot).toContain(
+      "import { useThemeColors } from '../../theme/use-theme-colors';",
+    );
+    expect(forgot).toContain(
+      "const [accentStrong] = useThemeColors(['accent-strong']);",
+    );
+    expect(forgot).toContain('<Lock size={28} color={accentStrong} />');
+  });
+});
