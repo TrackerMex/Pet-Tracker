@@ -306,3 +306,34 @@ describe('#61 R10: los controles táctiles declaran TOUCH_SLOP', () => {
     expect(screen.getByTestId(testID).props.hitSlop).toEqual(TOUCH_SLOP);
   });
 });
+
+describe('#62 R11: los chips de especie usan la receta única de chip', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet });
+    mockCreatePet.mockReturnValue(pending());
+  });
+
+  it.each([
+    ['species-dog', 'Dog'],
+    ['species-cat', 'Cat'],
+  ])('%s coincide con los demás chips del formulario', async (testID, label) => {
+    await renderAddPet();
+
+    const chip = screen.getByTestId(testID);
+
+    expect(chip.props.className).toContain('px-3 py-2');
+    expect(chip.props.className).not.toContain('px-4');
+    expect(within(chip).getByText(label).props.className).toBe(
+      'text-sm font-semibold text-foreground',
+    );
+    expect(chip.props.hitSlop).toEqual(TOUCH_SLOP);
+  });
+});
