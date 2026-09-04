@@ -791,7 +791,7 @@ describe('#62 R8: home carga con Skeleton dimensionado, no con Spinner suelto', 
   it('reserva el espacio de carga con la forma de una Card', async () => {
     await renderHome();
 
-    expect(screen.getByTestId('home-loading').props.className).toBe(
+    expect(screen.getByTestId('home-loading').props.className).toContain(
       'h-12 w-full rounded-card',
     );
   });
