@@ -255,3 +255,66 @@ describe('#62 R13: el color imperativo sale siempre de useThemeColors del repo',
     expect(forgot).toContain('<Lock size={28} color={accentStrong} />');
   });
 });
+
+describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () => {
+  const directUses = [
+    [join('app', '(auth)', 'forgot.tsx'), 1],
+    [join('app', '(tabs)', 'home.tsx'), 1],
+    [join('app', '(tabs)', 'health.tsx'), 2],
+    [join('app', '(tabs)', 'food.tsx'), 2],
+    [join('app', '(tabs)', 'map.tsx'), 4],
+    [join('app', '(tabs)', 'meal-schedule.tsx'), 1],
+    [join('app', '(tabs)', 'weight-log.tsx'), 1],
+    [join('screens', 'docs', 'index.tsx'), 1],
+    [join('screens', 'profile', 'index.tsx'), 4],
+    [join('screens', 'reminders', 'index.tsx'), 4],
+    [join('screens', 'add-pet', 'index.tsx'), 5],
+    [join('screens', 'add-reminder', 'index.tsx'), 3],
+    [join('screens', 'pairing', 'index.tsx'), 2],
+  ] as const;
+
+  it('declara las dos constantes nativas compartidas', () => {
+    const nativeStyles = readSource(join('theme', 'native-styles.ts'));
+
+    expect(nativeStyles).toContain(
+      "export const CONTINUOUS_CORNER = { borderCurve: 'continuous' } as const;",
+    );
+    expect(nativeStyles).toContain(
+      "export const TABULAR_NUMS = { fontVariant: ['tabular-nums'] } as const;",
+    );
+  });
+
+  it.each(directUses)('%s importa y aplica sus %i esquinas', (path, count) => {
+    const source = readSource(path);
+    const uses = [...source.matchAll(/style=\{CONTINUOUS_CORNER\}/g)];
+
+    expect(source).toMatch(
+      /import \{ CONTINUOUS_CORNER \} from ['"].*theme\/native-styles['"];/,
+    );
+    expect(uses).toHaveLength(count);
+
+    for (const use of uses) {
+      const openingTag = source.slice(
+        source.lastIndexOf('<', use.index),
+        use.index,
+      );
+
+      expect(openingTag).not.toContain('rounded-full');
+    }
+  });
+
+  it('fusiona la esquina una vez y la entrega a las dos ramas de Card', () => {
+    const card = readSource(join('components', 'card.tsx'));
+
+    expect(card).toContain(
+      "import { CONTINUOUS_CORNER } from '../theme/native-styles';",
+    );
+    expect(card).toContain(
+      'StyleSheet.flatten([CONTINUOUS_CORNER, style])',
+    );
+    expect(card.match(/style=\{mergedStyle\}/g)).toHaveLength(2);
+    expect(
+      directUses.reduce((total, [, count]) => total + count, 2),
+    ).toBe(33);
+  });
+});
