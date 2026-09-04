@@ -280,7 +280,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
       "export const CONTINUOUS_CORNER = { borderCurve: 'continuous' } as const;",
     );
     expect(nativeStyles).toContain(
-      "export const TABULAR_NUMS = { fontVariant: ['tabular-nums'] } as const;",
+      "export const TABULAR_NUMS = {\n  fontVariant: ['tabular-nums'] as ['tabular-nums'],\n} as const;",
     );
   });
 
