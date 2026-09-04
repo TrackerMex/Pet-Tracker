@@ -467,7 +467,14 @@ describe('#62 R9: la gráfica de peso vive dentro de una card', () => {
     mockCreateWeight.mockReturnValue(pending());
     mockListWeights.mockResolvedValue({
       kind: 'ok',
-      weights: [makeWeight()],
+      weights: [
+        makeWeight(),
+        makeWeight({
+          id: 'weight-2',
+          weightKg: 12,
+          measuredAt: '2026-07-21',
+        }),
+      ],
     });
   });
 
