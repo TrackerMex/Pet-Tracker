@@ -453,3 +453,30 @@ describe('#61 R10: los controles táctiles declaran TOUCH_SLOP', () => {
     );
   });
 });
+
+describe('#62 R9: la gráfica de peso vive dentro de una card', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockCreateWeight.mockReturnValue(pending());
+    mockListWeights.mockResolvedValue({
+      kind: 'ok',
+      weights: [makeWeight()],
+    });
+  });
+
+  it('envuelve weight-chart con la superficie compartida', async () => {
+    await renderWeightLog();
+
+    const card = await screen.findByTestId('weight-chart-card');
+
+    expect(card.props.className).toContain('rounded-card');
+    expect(within(card).getByTestId('weight-chart')).toBeVisible();
+  });
+});
