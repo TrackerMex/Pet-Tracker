@@ -189,7 +189,7 @@ export function ResetPasswordScreen() {
 
       <Button
         testID="reset-submit"
-        className="w-full rounded-2xl bg-accent"
+        className="w-full rounded-xl bg-accent"
         isDisabled={submitting}
         onPress={() => void handleSubmit()}
       >

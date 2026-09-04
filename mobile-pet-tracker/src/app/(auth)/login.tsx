@@ -99,7 +99,7 @@ export default function Login() {
 
       <Button
         testID="login-submit"
-        className="w-full rounded-2xl bg-accent"
+        className="w-full rounded-xl bg-accent"
         isDisabled={submitting}
         onPress={() => void handleSubmit()}
       >

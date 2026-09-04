@@ -54,7 +54,7 @@ export default function Forgot() {
 
       <Button
         testID="forgot-submit"
-        className="w-full rounded-2xl bg-accent"
+        className="w-full rounded-xl bg-accent"
         isDisabled
       >
         <Button.Label className="font-bold text-accent-foreground">

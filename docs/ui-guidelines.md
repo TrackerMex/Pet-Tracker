@@ -125,6 +125,28 @@ Tres límites, no negociables:
     recupera el `#2AB87C` original porque sobre fondo oscuro un verde oscuro
     es ilegible. Regla mecánica: **fondo ⇒ `--accent`; encima de otra cosa ⇒
     `--accent-strong`.**
+12. **Escala de radios** (feature #62, 2026-09-04). Tres radios, uno por rol,
+    y ninguno más:
+    - **Superficie de card** → `rounded-card` (token `--radius-card`, 20 px).
+      Se obtiene usando `src/components/card.tsx`, no repitiendo la clase.
+    - **Control, tile, input, botón y píldora de dato** → `rounded-xl`
+      (12 px), que es el mismo valor que `--field-radius: 0.75rem`, de modo
+      que botón e input comparten esquina dentro de un formulario.
+    - **Cápsula** (chip, avatar, píldora de pestaña, botón circular de
+      volver) → `rounded-full`.
+
+    `rounded-2xl`, `rounded-lg`, `rounded-md` y `rounded-sm` quedan
+    **prohibidos en `mobile-pet-tracker/src/`**: no son un cuarto rol, son
+    drift. El grep que lo verifica vive en
+    `src/__tests__/consistency-classnames.test.ts`.
+
+    Dos corolarios mecánicos: todo `Skeleton` lleva el radio del contenido
+    que sustituye (card ⇒ `rounded-card`, control ⇒ `rounded-xl`), y toda
+    esquina no-cápsula **que el repo dibuja por su cuenta** (`View`,
+    `Pressable`, `TextInput`, el `Card` compartido) declara
+    `style={CONTINUOUS_CORNER}` de `src/theme/native-styles.ts` — los
+    componentes de heroui-native ya lo traen de fábrica y no se envuelven
+    para añadírselo.
 
 ## Animación (decisiones por defecto)
 
