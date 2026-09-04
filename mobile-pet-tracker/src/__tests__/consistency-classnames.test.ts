@@ -1,0 +1,105 @@
+interface DirectoryEntry {
+  name: string;
+  isDirectory: () => boolean;
+}
+
+declare function require(moduleName: 'fs'): {
+  readdirSync: (
+    path: string,
+    options: { withFileTypes: true },
+  ) => DirectoryEntry[];
+  readFileSync: (path: string, encoding: 'utf8') => string;
+};
+
+declare function require(moduleName: 'path'): {
+  join: (...paths: string[]) => string;
+};
+
+const { readdirSync, readFileSync } = require('fs');
+const { join } = require('path');
+
+const sourceRoot = join(process.cwd(), 'src');
+
+/** Fuentes de producción de `src/`: sin `__tests__/` y sin tests colocados. */
+function sourceFiles(directory: string = sourceRoot): string[] {
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const path = join(directory, entry.name);
+
+    if (entry.isDirectory()) {
+      return entry.name === '__tests__' ? [] : sourceFiles(path);
+    }
+
+    return /\.tsx?$/.test(entry.name) && !/\.test\.tsx?$/.test(entry.name)
+      ? [path]
+      : [];
+  });
+}
+
+function filesMatching(pattern: RegExp): string[] {
+  return sourceFiles()
+    .filter((path) => pattern.test(readFileSync(path, 'utf8')))
+    .map((path) => path.slice(sourceRoot.length + 1));
+}
+
+function readSource(relativePath: string): string {
+  return readFileSync(join(sourceRoot, relativePath), 'utf8');
+}
+
+/** Bloque JSX que abre en el `testID` dado y cierra en `closingTag`. */
+function elementWithTestId(
+  source: string,
+  testId: string,
+  closingTag: string,
+): string {
+  const start = source.indexOf(`testID="${testId}"`);
+
+  expect(start).toBeGreaterThan(-1);
+
+  const end = source.indexOf(closingTag, start);
+
+  expect(end).toBeGreaterThan(start);
+
+  return source.slice(start, end);
+}
+
+describe('#62 R1: la escala de radios está declarada y el botón primario tiene un solo radio', () => {
+  const primaryButtons = [
+    [join('app', '(auth)', 'login.tsx'), 'login-submit'],
+    [join('app', '(auth)', 'forgot.tsx'), 'forgot-submit'],
+    [join('app', '(auth)', 'register.tsx'), 'register-submit'],
+    [join('screens', 'reset-password', 'index.tsx'), 'reset-submit'],
+  ] as const;
+
+  it('declara en la carta los tres radios y prohíbe el drift', () => {
+    const guidelines = readFileSync(
+      join(process.cwd(), '..', 'docs', 'ui-guidelines.md'),
+      'utf8',
+    );
+
+    expect(guidelines).toContain('12. **Escala de radios** (feature #62');
+    expect(guidelines).toContain('**Superficie de card** → `rounded-card`');
+    expect(guidelines).toContain(
+      '**Control, tile, input, botón y píldora de dato** → `rounded-xl`',
+    );
+    expect(guidelines).toContain('**Cápsula** (chip, avatar');
+    expect(guidelines).toContain(
+      '`rounded-2xl`, `rounded-lg`, `rounded-md` y `rounded-sm` quedan',
+    );
+  });
+
+  it.each(primaryButtons)('%s aplica rounded-xl a %s', (path, testId) => {
+    const button = elementWithTestId(readSource(path), testId, '</Button>');
+
+    expect(button).toContain('rounded-xl bg-accent');
+    expect(button).not.toContain('rounded-2xl');
+  });
+
+  it('deja los doce botones primarios sólidos en un único radio', () => {
+    const primaryRadius = sourceFiles().flatMap((path) =>
+      readFileSync(path, 'utf8').match(/rounded-xl bg-accent(?=[\s'"`])/g) ?? [],
+    );
+
+    expect(primaryRadius).toHaveLength(12);
+    expect(filesMatching(/rounded-2xl bg-accent(?=[\s'"`])/)).toEqual([]);
+  });
+});
