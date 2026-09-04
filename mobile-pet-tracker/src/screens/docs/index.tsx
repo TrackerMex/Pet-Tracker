@@ -20,7 +20,7 @@ function DocumentRow({ document }: { document: PetDocument }) {
         <Text className="text-lg">📄</Text>
       </View>
       <View className="flex-1 gap-1">
-        <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
+        <Text className="self-start rounded-full bg-default px-2 py-0.5 text-2xs font-bold text-muted">
           {document.type}
         </Text>
         <Text className="font-bold text-foreground">{document.name}</Text>
