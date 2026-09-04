@@ -375,27 +375,27 @@ esos valores se re-litiga.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [X] Aprobado por humano (fecha: 2026-09-04) ← gate obligatorio antes de implementar
 
 El humano debe firmar además, explícitamente, los **cinco** puntos que esta
 spec resuelve por escrito y que no puede cerrar sola (detalle en [[design]]):
 
-- [ ] 1 — **Título de card: `text-base font-bold text-foreground`**, 6 sitios.
+- [X] 1 — **Título de card: `text-base font-bold text-foreground`**, 6 sitios.
       Gana sobre el `text-sm` literal del Make por la advertencia de escala del
       audit (`PhoneFrame` 260 × 530 ⇒ 1,5×) y porque ya es el valor efectivo de
       4 de los 6. [[design]] §2 D1.
-- [ ] 2 — **Botón primario sólido: `rounded-xl` (12 px)**, y la escala de
+- [X] 2 — **Botón primario sólido: `rounded-xl` (12 px)**, y la escala de
       radios como regla escrita en `docs/ui-guidelines.md` con el texto de
       [[design]] §7. Gana `rounded-xl` porque coincide con
       `--field-radius: 0.75rem`, así que botón e input comparten esquina dentro
       de un formulario, y porque cambia 4 `className` en vez de 8.
       [[design]] §2 D2 y D3.
-- [ ] 3 — **Las 4 superficies pasan al `Card` compartido sin variant nuevo**.
+- [X] 3 — **Las 4 superficies pasan al `Card` compartido sin variant nuevo**.
       Consecuencia asumida y declarada: `collar-card`, `last-position-card` y
       los avisos de plan ganan `border border-border` + `shadow-sm`, y
       `map-empty-overlay` gana borde y sombra. Es el aspecto de card del resto
       de la app, que es justo el objetivo de la feature. [[design]] §2 D4.
-- [ ] 4 — **El placeholder se arregla con `placeholderTextColor`, no migrando
+- [X] 4 — **El placeholder se arregla con `placeholderTextColor`, no migrando
       a `TextField`**: el resultado obligatorio (ningún placeholder ilegible en
       dark, fijado por test) se cumple igual, sin cambiar el árbol de
       componentes ni el manejo de foco. [[design]] §2 D5.
@@ -404,7 +404,7 @@ spec resuelve por escrito y que no puede cerrar sola (detalle en [[design]]):
       igualarse a los de heroui, porque `--field-border` vale `transparent` en
       los dos temas. Si el borde se quiere de vuelta, se cambia el token en la
       carta y se aplica a los 11 campos, no solo a estos 6.
-- [ ] 5 — **`borderCurve: 'continuous'` en 33 sitios con beneficio visible
+- [X] 5 — **`borderCurve: 'continuous'` en 33 sitios con beneficio visible
       cero en el runtime de smoke**: `borderCurve` es no-op en Android y el
       smoke corre en dev build de Android desde 2026-08-27. Se cumple la carta
       y se gana en iOS (feature #60). Es el único requisito de esta spec cuyo
