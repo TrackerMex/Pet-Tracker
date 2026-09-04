@@ -9,6 +9,7 @@ import { getPet } from '../../api/pets';
 import { Card } from '../../components/card';
 import { useApi } from '../../hooks/use-api';
 import { useAuth } from '../../providers/auth-provider';
+import { TOUCH_SLOP } from '../../theme/touch-target';
 
 function DocumentRow({ document }: { document: PetDocument }) {
   return (
@@ -60,6 +61,7 @@ export function DocsScreen({ petId }: { petId: string }) {
           accessibilityLabel="Back to profile"
           accessibilityRole="button"
           testID="docs-back"
+          hitSlop={TOUCH_SLOP}
           className="size-10 items-center justify-center rounded-full bg-default"
           onPress={() => router.back()}
         >

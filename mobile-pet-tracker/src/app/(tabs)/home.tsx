@@ -50,7 +50,7 @@ export default function HomeScreen() {
   const { selectedPetId, selectPet } = useSelectedPet();
   const insets = useSafeAreaInsets();
   const [accent, success, warning, muted] = useThemeColors([
-    'accent',
+    'accent-strong',
     'success',
     'warning',
     'muted',
@@ -213,7 +213,7 @@ export default function HomeScreen() {
                       ? 'font-normal text-muted'
                       : detail.data.pet.device.batteryPct > 60
                         ? 'font-semibold text-success'
-                        : 'font-semibold text-warning'
+                        : 'font-semibold text-warning-strong'
                   }
                 >
                   {detail.data.pet.device.batteryPct === null
@@ -307,7 +307,7 @@ export default function HomeScreen() {
               <View className="size-9 items-center justify-center rounded-full bg-accent-soft">
                 <Map size={20} color={accent} />
               </View>
-              <Text className="font-semibold text-accent">View on map</Text>
+              <Text className="font-semibold text-accent-strong">View on map</Text>
             </View>
             <ChevronRight size={20} color={accent} />
           </View>

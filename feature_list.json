@@ -1092,5 +1092,77 @@
       "hosting/.well-known/",
       "docs/verification.md"
     ]
+  },
+  {
+    "id": 61,
+    "name": "mobile-ui-legibility-polish",
+    "status": "done",
+    "priority": "P2",
+    "description": "Primer lote del pulido de UI movil derivado de progress/audit_ui_polish.md (auditoria del 2026-09-03 contra specs/mobile-figma-polish/design-src/App.tsx, el export del Figma Make ya versionado en el repo). Cubre los hallazgos que afectan a legibilidad y usabilidad real, no a gusto visual: contraste, safe areas, objetivos tactiles y una regresion confirmada. Los hallazgos de consistencia visual van en #62, que es su gemela y no depende de esta salvo por el token nuevo del hallazgo 1. Invariante global heredado de #46: cero cambios de conducta, logica, navegacion o API; ningun testID se renombra ni elimina y ningun texto visible cambia (los tests de #33-#37 se anclan a ambos); los diffs son solo de className, estilo y estructura visual de contenedores. Decisiones que el humano ya cerro el 2026-09-03 y la spec NO puede re-litigar: (1) Contraste: DECISION REVISADA el 2026-09-03 despues de leer la spec en draft. El humano vio que la primera via (relleno #2AB87C intacto + etiqueta en verde muy oscuro) cambiaba el aspecto de los 17 CTA y eligio la contraria: **se oscurece --accent y la etiqueta se queda blanca**. Queda descartada la via del token de texto sobre acento (--accent-contrast). Consecuencia asumida y declarada: --accent deja de valer el #2AB87C que #46 R1 tomo del Figma, asi que los rellenos de la app dejan de coincidir 1:1 con el Make y el smoke lado a lado lo va a notar; esa desviacion se documenta en la spec y en docs/ui-guidelines.md en vez de esconderse. El nuevo valor debe conservar el hue del verde original (154 grados) y dar >=4,5:1 con blanco; hay que decidir tambien si cambia en dark, y si el nuevo verde se acerca demasiado a --success (#0F9B5A) como para confundirlos. (2) --radius-card: 20px de #72 R1 NO se reabre en esta feature: los 20px ya pasaron el smoke lado a lado con el Figma; el hallazgo 18 del audit queda anotado como punto a comparar en el proximo smoke, al mismo tamano fisico. Contexto que la spec tiene que respetar: los contrastes del audit estan calculados, no estimados, y el blanco sobre #2AB87C da 2,546:1 verificado dos veces (AA pide 4,5:1 para texto normal; el Button.Label de heroui es 16px bold, por debajo del corte de texto grande de 18,66px bold, asi que el umbral de 3,0:1 no aplica). El tema oscuro pasa AA entero (6,15:1 a 10,36:1): todos los fallos de contraste son exclusivos del tema claro. El hallazgo 21 es arrastre directo de la decision 1: el boton destructivo del bottom sheet de reminders lleva text-accent-foreground sobre bg-danger, que hoy no se ve porque ambos foregrounds valen #FFFFFF, pero se pintaria de verde en cuanto se toque el token del acento. La carta docs/ui-guidelines.md gana siempre sobre appllama-app-design-skill: de la skill se toma el patron, nunca su sistema de estilos; los tokens viven solo en src/theme/global.css y el grep-clean de #46 y #72 (cero hex, cero clases arbitrarias, cero StyleSheet.create, cero sombras legacy) debe seguir intacto.",
+    "acceptance_criteria": [
+      "El relleno de acento se oscurece a #178255 conservando el hue del Figma (154,7 grados), de modo que la etiqueta blanca da >=4,5:1 encima en los dos temas; --accent-foreground sigue siendo #FFFFFF y el acento usado como tinta pasa a --accent-strong, que en dark recupera el #2AB87C original. La desviacion respecto al #2AB87C que fijo #46 R1 queda escrita en docs/ui-guidelines.md",
+      "text-accent como color de enlace sobre bg-surface y sobre bg-default pasa AA, y text-warning deja de usarse como color de texto sobre esas superficies (hallazgos 2 y 3 del audit); el ambar puro queda reservado a iconos y rellenos como hace el diseno",
+      "text-muted sobre bg-default pasa AA en tema claro (hoy 4,47:1, falla por 0,03), sin cambiar su valor en tema oscuro donde ya pasa",
+      "Register usa contentInsetAdjustmentBehavior y padding en contentContainerStyle con useSafeAreaInsets como las otras once pantallas con scroll, y Login, Forgot y Reset password ganan contenedor de scroll: con el teclado abierto en Android se alcanza todo el contenido y en un telefono corto nada se recorta",
+      "El label de seccion de pet-info-card vuelve al tratamiento que fijo #46 R10 (uppercase tracking-widest text-muted text-xs font-semibold): la pantalla Profile deja de tener dos estilos para el mismo rol",
+      "Los objetivos tactiles de las tres recetas del hallazgo 13 (filas de enlace, chips y botones de volver) llegan a 44pt sin cambiar el tamano visible del control ni su testID",
+      "El overlay de stats del mapa deja de envolver texto: los cuatro tiles siguen siendo cuatro y ningun valor se corta ni salta de linea con los textos mas largos que hoy renderiza",
+      "El boton destructivo del bottom sheet de reminders resuelve su etiqueta con el token de danger, no con el del acento",
+      "Suite movil completa verde sin reescribir ningun assert de conducta; git diff no toca ningun archivo de backend-pet-tracker/ ni ningun .test.tsx salvo tests nuevos que nombren su R-id",
+      "Gate humano: smoke en dev build de Android comparando lado a lado con el Figma, en tema claro Y oscuro, confirmando que el acento se ve mas oscuro que el Make a proposito, que las etiquetas blancas se leen encima y que el verde de tinta sigue vivo en dark. No delegable a IA"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/theme/global.css",
+      "mobile-pet-tracker/src/app/(auth)/",
+      "mobile-pet-tracker/src/app/(tabs)/map.tsx",
+      "mobile-pet-tracker/src/app/(tabs)/health.tsx",
+      "mobile-pet-tracker/src/screens/profile/index.tsx",
+      "mobile-pet-tracker/src/screens/reminders/index.tsx",
+      "mobile-pet-tracker/src/screens/reset-password/index.tsx"
+    ]
+  },
+  {
+    "id": 62,
+    "name": "mobile-ui-consistency-polish",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Segundo lote del pulido de UI movil derivado de progress/audit_ui_polish.md (auditoria del 2026-09-03). Cubre los hallazgos de consistencia visual: el mismo rol renderizado de varias formas distintas a lo largo de la app. Hallazgos del audit que entran: 8 (skeletons rounded-2xl sustituyendo contenido rounded-card, cambian de forma al resolverse), 9 (el titulo de card tiene cuatro tratamientos distintos para un mismo rol), 10 (dos radios para el boton primario solido: rounded-2xl en el grupo auth, rounded-xl en el resto), 11 (last:border-b-0 es variante muerta, uniwind no implementa selectores de posicion entre hermanos, asi que la ultima fila de la card conserva su separador colgando), 12 (cinco glifos tipograficos haciendo de iconografia contra iconos reales de reicon-react-native en las mismas acciones), 14 (borderCurve continuous no aparece ni una vez pese a estar adoptado por la carta), 15 (fontVariant tabular-nums no aparece nunca; el caso que se nota es el overlay del mapa, que se refresca cada 15s y hace bailar los digitos), 16 (dos implementaciones del mismo control: TextInput crudo con receta a mano contra TextField+Input de heroui; ampliado el 2026-09-04 tras el smoke del humano en dev build: esos TextInput crudos no pasan placeholderTextColor, asi que React Native pinta el placeholder con su gris oscuro fijo, que NO mira el tema. Con tema oscuro el placeholder 'Reminder title' de add-reminder/index.tsx:167 sale casi negro sobre fondo oscuro e ilegible. Es defecto de legibilidad, no solo de consistencia, y es preexistente: #61 solo anadio hitSlop a esa pantalla. Afecta a los 8 TextInput crudos de add-pet y add-reminder; el TextField de heroui que usan las otras cinco pantallas con formulario si tokeniza el placeholder, asi que migrarlos lo arregla de rebote), 17 (Spinner suelto sin contenedor dimensionado en home: al resolver salta todo lo de abajo), 20 (WeightChart desnudo sobre el fondo, sin la card que le da el diseno), 22 (cuatro superficies con receta de card a mano en vez del Card compartido, tres radios distintos en un mismo scroll), 23 (tres radios en un mismo bloque visual en reminders), 24 (el tipo de documento como micro-label gris cuando el diseno lo trata como badge de color), 25 (dos tamanos para el mismo chip dentro de add-pet), 26 (Forgot resuelve colores con useThemeColor de heroui en vez de useThemeColors del repo, prohibido por la carta). Mismo invariante que #46 y #61: cero cambios de conducta, logica, navegacion o API; ningun testID ni texto visible cambia. Depende de #61 solo en que esta oscurece --accent (decision del humano del 2026-09-03: relleno mas oscuro, etiqueta blanca), asi que #62 debe partir del valor ya cambiado. El hallazgo 18 (si --radius-card debe ser 16px en vez de 20px) NO entra: el humano decidio el 2026-09-03 no reabrirlo y compararlo en el proximo smoke al mismo tamano fisico. Lo que el audit dejo fuera de alcance por exigir cambio de conducta (sustituir los 8 emoji de iconografia, unificar el idioma de la UI, cabecera nativa para las pantallas de detalle, errores inline por campo, action sheet nativo para el confirm destructivo) sigue fuera y no entra aqui.",
+    "acceptance_criteria": [
+      "El titulo de card usa un unico tratamiento en toda la app, declarado por escrito en la spec, y el boton primario solido un unico radio; la escala de radios queda declarada como regla en docs/ui-guidelines.md, no solo como token suelto",
+      "Cada skeleton tiene la forma del contenido que sustituye: mismo radio, y en home el Spinner deja de mover lo que tiene debajo al resolverse",
+      "Las cuatro superficies con receta de card a mano pasan a usar el Card compartido de src/components/card.tsx, sin anadir un variant nuevo salvo que la spec justifique por que ninguno de los tres existentes sirve",
+      "Ningun placeholder queda ilegible en tema oscuro: los TextInput crudos de add-pet y add-reminder resuelven el color del placeholder desde el tema, y un test lo fija",
+      "Cero glifos tipograficos haciendo de iconografia y cero usos de useThemeColor de heroui en src/; los conteos del audit se rehacen y quedan en el reporte del reviewer",
+      "borderCurve continuous en toda esquina redondeada no-capsula y tabular-nums en todo contador, empezando por el overlay del mapa",
+      "Suite movil completa verde sin reescribir ningun assert de conducta; el grep-clean de #46 y #72 sigue intacto",
+      "Gate humano: smoke en dev build de Android comparando lado a lado con el Figma en los dos temas. No delegable a IA"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/components/",
+      "mobile-pet-tracker/src/app/(tabs)/",
+      "mobile-pet-tracker/src/screens/",
+      "mobile-pet-tracker/src/theme/global.css",
+      "docs/ui-guidelines.md"
+    ]
+  },
+  {
+    "id": 63,
+    "name": "mobile-detail-screens-state-reset",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Los formularios de las pantallas de detalle conservan lo que el usuario escribio la vez anterior. Reportado por el humano el 2026-09-04 durante el smoke de #61: crear un recordatorio, volver, y entrar de nuevo a crear otro deja el formulario con el registro anterior en vez de en blanco. Causa: add-reminder vive en mobile-pet-tracker/src/app/(tabs)/add-reminder.tsx, asi que Expo Router la trata como RUTA DE TAB. Al guardar, el use-case llama a router.back() (src/screens/add-reminder/index.tsx:79), que cambia de tab pero NO desmonta el componente: los nueve useState de :39-47 (type, title, date, time, advanceMinutes, los dos flags de picker, submitting y formError) conservan su valor, y al reentrar la pantalla se pinta con ellos. No es un bug de la llamada a la API ni del cache de TanStack Query: el registro se crea bien, lo que sobrevive es estado local de React. Preexistente, no lo introdujo #61 (que en esa pantalla solo anadio hitSlop a tres controles). El mismo patron afecta en principio a las otras pantallas de detalle que viven bajo (tabs): add-pet, weight-log, meal-schedule y docs; hay que comprobar una por una cuales tienen estado que sobreviva de forma visible, no asumirlo. La via de fondo ya esta identificada en progress/audit_ui_polish.md, seccion Fuera de alcance: sacar las pantallas de detalle del Tabs a un Stack, que ademas les daria cabecera nativa y arreglaria el teleport sin transicion que anoto progress/audit_animations_mobile.md (M3). La spec tiene que decidir explicitamente entre esa via estructural y un reset local mas barato, y decir por que; el reset local es menos codigo pero deja el teleport y la cabecera a mano sin arreglar, y hay que verificar que no rompe el caso legitimo de volver a una pantalla a medio llenar.",
+    "acceptance_criteria": [
+      "Crear un recordatorio, volver y entrar de nuevo a crear otro presenta el formulario en blanco, con los mismos valores por defecto que la primera vez (incluido el tipo 'vaccine' y la hora inicial)",
+      "La spec decide por escrito entre sacar las pantallas de detalle a un Stack o resetear el estado local, con el motivo; si elige el reset local, deja anotado que el teleport sin transicion y la cabecera a mano siguen abiertos",
+      "Las otras cuatro pantallas de detalle bajo (tabs) (add-pet, weight-log, meal-schedule, docs) se revisan una por una: la spec dice cuales tenian el mismo defecto y cuales no, con evidencia, en vez de asumirlo",
+      "Ningun caso legitimo de estado que deba sobrevivir se rompe: la spec nombra cuales son, si los hay",
+      "Test por cada R-id que nombre su id, rojo antes que verde (C4), que falle si el formulario vuelve a conservar el valor anterior",
+      "Gate humano: smoke en dev build de Android repitiendo el flujo que lo destapo, crear dos recordatorios seguidos. No delegable a IA"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/app/(tabs)/",
+      "mobile-pet-tracker/src/screens/add-reminder/index.tsx",
+      "mobile-pet-tracker/src/screens/add-pet/index.tsx"
+    ]
   }
 ]

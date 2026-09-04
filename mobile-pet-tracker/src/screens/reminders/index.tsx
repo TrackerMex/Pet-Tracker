@@ -261,7 +261,7 @@ export function RemindersScreen() {
                       {!inactive && days >= 0 && days <= 10 ? (
                         <Text
                           testID={`reminder-upcoming-${reminder.id}`}
-                          className="rounded-full bg-warning-soft px-2 py-0.5 text-2xs font-bold text-warning"
+                          className="rounded-full bg-warning-soft px-2 py-0.5 text-2xs font-bold text-warning-strong"
                         >
                           Upcoming!
                         </Text>
@@ -338,7 +338,7 @@ export function RemindersScreen() {
                   variant="danger"
                   onPress={deleteSelectedReminder}
                 >
-                  <Button.Label className="font-bold text-accent-foreground">
+                  <Button.Label className="font-bold text-danger-foreground">
                     Delete
                   </Button.Label>
                 </Button>

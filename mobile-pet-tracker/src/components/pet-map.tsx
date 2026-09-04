@@ -14,7 +14,7 @@ export type PetMapProps = {
 export const MAP_ZOOM = 16;
 
 export function PetMap(props: PetMapProps) {
-  const [polylineColor] = useThemeColors(['accent']);
+  const [polylineColor] = useThemeColors(['accent-strong']);
   const mapViewProps = {
     testID: 'map-view',
     style: { flex: 1 },

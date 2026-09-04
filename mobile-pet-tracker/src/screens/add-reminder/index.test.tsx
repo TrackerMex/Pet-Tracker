@@ -20,6 +20,7 @@ import {
   useSelectedPet,
 } from '../../providers/selected-pet-provider';
 import { AddReminderScreen } from '.';
+import { TOUCH_SLOP } from '../../theme/touch-target';
 
 jest.mock('../../api/reminders', () => ({
   createReminder: jest.fn(),
@@ -420,4 +421,29 @@ describe('R9: guardar con validación y degradación por kind', () => {
       screen.getByTestId('add-reminder-submit').props.accessibilityState,
     ).toEqual(expect.objectContaining({ disabled: true }));
   });
+});
+
+describe('#61 R10: los controles táctiles declaran TOUCH_SLOP', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockCreateReminder.mockReturnValue(pending());
+  });
+
+  it.each(['add-reminder-back', 'type-chip-vaccine', 'advance-chip-1440'])(
+    '%s llega a 44 pt sin crecer a la vista',
+    async (testID) => {
+      await renderAddReminder();
+
+      await waitFor(() => expect(screen.getByTestId(testID)).toBeVisible());
+
+      expect(screen.getByTestId(testID).props.hitSlop).toEqual(TOUCH_SLOP);
+    },
+  );
 });

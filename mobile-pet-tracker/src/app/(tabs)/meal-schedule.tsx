@@ -17,6 +17,7 @@ import { useApi } from '../../hooks/use-api';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { useThemeColors } from '../../theme/use-theme-colors';
+import { TOUCH_SLOP } from '../../theme/touch-target';
 
 function isPlanError(state: NutritionPlanState): boolean {
   return ['error', 'unreachable', 'missing-config'].includes(state.kind);
@@ -29,7 +30,7 @@ function isProfileError(state: NutritionProfileState): boolean {
 function MealScheduleContent({ petId }: { petId: string }) {
   const [foreground, accent, accentForeground] = useThemeColors([
     'foreground',
-    'accent',
+    'accent-strong',
     'accent-foreground',
   ]);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
@@ -123,6 +124,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
           accessibilityRole="button"
           accessibilityLabel="Back to food"
           testID="meal-schedule-back"
+          hitSlop={TOUCH_SLOP}
           className="rounded-full bg-default p-2"
           onPress={() => router.back()}
         >
@@ -171,13 +173,13 @@ function MealScheduleContent({ petId }: { petId: string }) {
           >
             <View className="flex-row items-center justify-between gap-4">
               <View className="flex-1 gap-1">
-                <Text className="text-xs font-semibold uppercase tracking-widest text-accent-foreground opacity-70">
+                <Text className="text-xs font-semibold uppercase tracking-widest text-accent-foreground">
                   Daily target
                 </Text>
                 <Text className="text-3xl font-black text-accent-foreground">
                   {loadedPlan.merKcal} kcal
                 </Text>
-                <Text className="font-semibold text-accent-foreground opacity-80">
+                <Text className="font-semibold text-accent-foreground">
                   {loadedPlan.dailyGrams} g / day
                 </Text>
               </View>

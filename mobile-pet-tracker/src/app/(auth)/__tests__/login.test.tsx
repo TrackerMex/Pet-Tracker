@@ -21,6 +21,11 @@ jest.mock('expo-router', () => ({
   },
 }));
 
+jest.mock('react-native-safe-area-context', () => ({
+  ...jest.requireActual('react-native-safe-area-context'),
+  useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
+}));
+
 const apiUrl = 'http://example.test/v1';
 const mockLogin = jest.mocked(login);
 const mockUseAuth = jest.mocked(useAuth);
@@ -107,5 +112,32 @@ describe('R7: login llama a la api y navega', () => {
       expect(mockRouter.push).toHaveBeenNthCalledWith(1, '/register');
       expect(mockRouter.push).toHaveBeenNthCalledWith(2, '/forgot');
     });
+  });
+});
+
+describe('#61 R8: login tiene contenedor de scroll con safe areas', () => {
+  it('centra el contenido dentro de un ScrollView con los insets aplicados', async () => {
+    await renderLogin();
+
+    const screenRoot = screen.getByTestId('screen-login');
+
+    expect(screenRoot.props.contentContainerStyle).toEqual({
+      flexGrow: 1,
+      justifyContent: 'center',
+      padding: 24,
+      gap: 16,
+      paddingTop: 52,
+      paddingBottom: 48,
+    });
+    expect(screenRoot.props.keyboardShouldPersistTaps).toBe('handled');
+    expect(screenRoot.props.contentInsetAdjustmentBehavior).toBe('automatic');
+  });
+
+  it('no centra horizontalmente, que no lo hacía el View de hoy', async () => {
+    await renderLogin();
+
+    expect(
+      screen.getByTestId('screen-login').props.contentContainerStyle,
+    ).not.toHaveProperty('alignItems');
   });
 });

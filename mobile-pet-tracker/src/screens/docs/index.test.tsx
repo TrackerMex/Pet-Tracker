@@ -7,6 +7,7 @@ import { getPet, type PetState } from '../../api/pets';
 import type { PetProfile } from '../../api/types';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { DocsScreen } from '.';
+import { TOUCH_SLOP } from '../../theme/touch-target';
 
 jest.mock('../../api/media', () => ({ listPetDocs: jest.fn() }));
 jest.mock('../../api/pets', () => ({ getPet: jest.fn() }));
@@ -147,5 +148,29 @@ describe('R8: pantalla Docs', () => {
     fireEvent.press(screen.getByTestId('docs-back'));
 
     expect(mockRouter.back).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('#61 R10: los controles táctiles declaran TOUCH_SLOP', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+  });
+
+  it('el botón de volver llega a 44 pt sin crecer a la vista', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
+    mockListPetDocs.mockResolvedValue({ kind: 'ok', docs: [] });
+
+    await renderDocs();
+
+    await waitFor(() => expect(screen.getByTestId('docs-back')).toBeVisible());
+
+    expect(screen.getByTestId('docs-back').props.hitSlop).toEqual(TOUCH_SLOP);
   });
 });

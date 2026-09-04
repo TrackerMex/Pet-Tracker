@@ -1,12 +1,14 @@
 import { router } from 'expo-router';
 import { Button, Input, Label, LinkButton, TextField } from 'heroui-native';
 import { useState } from 'react';
-import { Text, View } from 'react-native';
+import { ScrollView, Text } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { login } from '../../api/auth';
 import { useAuth } from '../../providers/auth-provider';
 
 export default function Login() {
+  const insets = useSafeAreaInsets();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -46,7 +48,20 @@ export default function Login() {
   }
 
   return (
-    <View className="flex-1 justify-center gap-4 bg-background p-6">
+    <ScrollView
+      testID="screen-login"
+      className="flex-1 bg-background"
+      keyboardShouldPersistTaps="handled"
+      contentInsetAdjustmentBehavior="automatic"
+      contentContainerStyle={{
+        flexGrow: 1,
+        justifyContent: 'center',
+        padding: 24,
+        gap: 16,
+        paddingTop: insets.top + 12,
+        paddingBottom: insets.bottom + 24,
+      }}
+    >
       <Text className="text-center text-2xl font-black text-foreground">
         Sign in
       </Text>
@@ -98,7 +113,7 @@ export default function Login() {
         className="self-center"
         onPress={() => router.push('/register')}
       >
-        <LinkButton.Label className="font-semibold text-accent">
+        <LinkButton.Label className="font-semibold text-accent-strong">
           Create account
         </LinkButton.Label>
       </LinkButton>
@@ -107,10 +122,10 @@ export default function Login() {
         className="self-center"
         onPress={() => router.push('/forgot')}
       >
-        <LinkButton.Label className="font-semibold text-accent">
+        <LinkButton.Label className="font-semibold text-accent-strong">
           Forgot password?
         </LinkButton.Label>
       </LinkButton>
-    </View>
+    </ScrollView>
   );
 }

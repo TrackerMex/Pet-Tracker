@@ -61,7 +61,7 @@ export const TAB_INDICATOR_SPRING = {
 
 export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
   const [accent, muted, tabPill] = useThemeColors([
-    'accent',
+    'accent-strong',
     'muted',
     'tab-pill',
   ]);
@@ -188,7 +188,7 @@ export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
               <Text
                 className={
                   isActive
-                    ? 'text-2xs font-semibold text-accent'
+                    ? 'text-2xs font-semibold text-accent-strong'
                     : 'text-2xs font-semibold text-muted'
                 }
               >

@@ -17,6 +17,7 @@ import { createPet, type CreatePetInput } from '../../api/pets';
 import { PetAvatar } from '../../components/pet-avatar';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import { TOUCH_SLOP } from '../../theme/touch-target';
 
 type Species = CreatePetInput['species'];
 type Sex = NonNullable<CreatePetInput['sex']>;
@@ -50,6 +51,7 @@ function OptionalChip<T extends string | boolean>({
       accessibilityRole="button"
       accessibilityState={{ selected }}
       testID={testID}
+      hitSlop={TOUCH_SLOP}
       className={
         selected
           ? 'rounded-full border border-accent bg-accent-soft px-3 py-2'
@@ -225,6 +227,7 @@ export function AddPetScreen() {
           accessibilityLabel="Back to profile"
           accessibilityRole="button"
           testID="add-pet-back"
+          hitSlop={TOUCH_SLOP}
           className="size-10 items-center justify-center rounded-full bg-default"
           onPress={() => router.back()}
         >
@@ -248,7 +251,7 @@ export function AddPetScreen() {
           isDisabled={submitting}
           onPress={() => void handlePickPhoto()}
         >
-          <Button.Label className="font-bold text-accent">
+          <Button.Label className="font-bold text-accent-strong">
             Choose photo
           </Button.Label>
         </Button>
@@ -270,6 +273,7 @@ export function AddPetScreen() {
               accessibilityRole="button"
               accessibilityState={{ selected: species === value }}
               testID={`species-${value}`}
+              hitSlop={TOUCH_SLOP}
               className={
                 species === value
                   ? 'rounded-full border border-accent bg-accent-soft px-4 py-2'
@@ -340,6 +344,7 @@ export function AddPetScreen() {
               accessibilityRole="button"
               accessibilityState={{ selected: ageMode === value }}
               testID={`age-mode-${value === 'birthDate' ? 'date' : value}`}
+              hitSlop={TOUCH_SLOP}
               className={
                 ageMode === value
                   ? 'rounded-full border border-accent bg-accent-soft px-3 py-2'
