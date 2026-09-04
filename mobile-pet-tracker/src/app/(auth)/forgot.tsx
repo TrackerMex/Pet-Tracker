@@ -1,18 +1,13 @@
 import { router } from 'expo-router';
-import {
-  Button,
-  Input,
-  Label,
-  LinkButton,
-  TextField,
-  useThemeColor,
-} from 'heroui-native';
+import { Button, Input, Label, LinkButton, TextField } from 'heroui-native';
 import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Lock } from 'reicon-react-native';
 
+import { useThemeColors } from '../../theme/use-theme-colors';
+
 export default function Forgot() {
-  const [accent] = useThemeColor(['accent']);
+  const [accentStrong] = useThemeColors(['accent-strong']);
   const insets = useSafeAreaInsets();
 
   return (
@@ -32,7 +27,7 @@ export default function Forgot() {
       }}
     >
       <View className="size-16 items-center justify-center rounded-xl bg-accent-soft">
-        <Lock size={28} color={accent} />
+        <Lock size={28} color={accentStrong} />
       </View>
       <Text className="text-center text-2xl font-black text-foreground">
         Forgot password
