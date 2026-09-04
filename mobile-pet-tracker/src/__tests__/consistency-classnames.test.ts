@@ -205,3 +205,35 @@ describe('#62 R7: ningún glifo tipográfico hace de icono', () => {
     ).toHaveLength(3);
   });
 });
+
+describe('#62 R12: los TextInput crudos comparten una sola receta', () => {
+  const textInputs = sourceFiles().flatMap((path) =>
+    [...readFileSync(path, 'utf8').matchAll(/<TextInput\b[\s\S]*?\/>/g)].map(
+      ([source]) => ({ path: path.slice(sourceRoot.length + 1), source }),
+    ),
+  );
+
+  it('da color temático a los cinco placeholders', () => {
+    const withPlaceholder = textInputs.filter(({ source }) =>
+      /\bplaceholder=/.test(source),
+    );
+
+    expect(textInputs).toHaveLength(6);
+    expect(withPlaceholder).toHaveLength(5);
+    expect(
+      withPlaceholder
+        .filter(
+          ({ source }) => !/\bplaceholderTextColor=\{muted\}/.test(source),
+        )
+        .map(({ path }) => path),
+    ).toEqual([]);
+  });
+
+  it('elimina el borde duplicado de los seis campos', () => {
+    expect(
+      textInputs
+        .filter(({ source }) => /\bborder border-border\b/.test(source))
+        .map(({ path }) => path),
+    ).toEqual([]);
+  });
+});

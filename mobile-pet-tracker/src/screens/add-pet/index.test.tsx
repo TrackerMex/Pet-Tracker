@@ -337,3 +337,45 @@ describe('#62 R11: los chips de especie usan la receta única de chip', () => {
     expect(chip.props.hitSlop).toEqual(TOUCH_SLOP);
   });
 });
+
+describe('#62 R12: el placeholder del formulario sale del tema', () => {
+  const muted = '#667085';
+  const themeColors = jest.requireActual<
+    typeof import('../../theme/use-theme-colors')
+  >('../../theme/use-theme-colors');
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.spyOn(themeColors, 'useThemeColors').mockImplementation(
+      ((tokens: readonly string[]) =>
+        tokens.map((token) => (token === 'muted' ? muted : '#0D1117'))) as typeof themeColors.useThemeColors,
+    );
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet });
+    mockCreatePet.mockReturnValue(pending());
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('usa muted en los cuatro TextInput con placeholder', async () => {
+    await renderAddPet();
+
+    for (const testID of ['name-input', 'breed-input', 'microchip-input']) {
+      expect(screen.getByTestId(testID).props.placeholderTextColor).toBe(muted);
+    }
+
+    await fireEvent.press(screen.getByTestId('age-mode-months'));
+
+    expect(screen.getByTestId('approx-age-input').props.placeholderTextColor).toBe(
+      muted,
+    );
+  });
+});
