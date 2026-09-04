@@ -7,14 +7,30 @@ import {
   TextField,
   useThemeColor,
 } from 'heroui-native';
-import { Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Lock } from 'reicon-react-native';
 
 export default function Forgot() {
   const [accent] = useThemeColor(['accent']);
+  const insets = useSafeAreaInsets();
 
   return (
-    <View className="flex-1 items-center justify-center gap-4 bg-background p-6">
+    <ScrollView
+      testID="screen-forgot"
+      className="flex-1 bg-background"
+      keyboardShouldPersistTaps="handled"
+      contentInsetAdjustmentBehavior="automatic"
+      contentContainerStyle={{
+        flexGrow: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 24,
+        gap: 16,
+        paddingTop: insets.top + 12,
+        paddingBottom: insets.bottom + 24,
+      }}
+    >
       <View className="size-16 items-center justify-center rounded-2xl bg-accent-soft">
         <Lock size={28} color={accent} />
       </View>
@@ -47,10 +63,10 @@ export default function Forgot() {
       </Button>
 
       <LinkButton testID="link-login" onPress={() => router.push('/login')}>
-        <LinkButton.Label className="font-semibold text-accent">
+        <LinkButton.Label className="font-semibold text-accent-strong">
           Back to sign in
         </LinkButton.Label>
       </LinkButton>
-    </View>
+    </ScrollView>
   );
 }

@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-09-04
-**Features completadas**: 57/60 (`feature_list.json`)
+**Features completadas**: 58/63 (`feature_list.json`)
 **En progreso**: ninguna
 
-**Pendientes**: 3 (#18, #41, #60). #42 `mobile-device-pairing` cerró el claim de collar desde la app (código de activación, `Tracker is ready`, estado tracked/free derivado del 402 de `positions/last`, unpair nativo) y se validó con un collar real en Wialon. En paralelo, otra sesión lleva #61/#62 (pulido de UI móvil) en su branch. PR de #42 pendiente de merge por el humano.
+**Pendientes**: 5 (#18, #41, #60, #62, #63). #42 `mobile-device-pairing` cerró el claim de collar desde la app (código de activación, `Tracker is ready`, estado tracked/free derivado del 402 de `positions/last`, unpair nativo) y se validó con un collar real en Wialon. #61 `mobile-ui-legibility-polish` (otra sesión, PR #101) ya está mergeada; su smoke registró #63 `mobile-detail-screens-state-reset` (P2: las rutas bajo `(tabs)` no se desmontan y conservan estado de formulario; afecta también a `/pairing`) y amplió #62. PR #102 de #42 pendiente de merge por el humano.
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
 desde 2026-08-10. Hay recursos vivos en la cuenta, aunque hoy sin coste.

@@ -112,6 +112,19 @@ Tres límites, no negociables:
     mapa puede declarar fondo opaco (`bg-*`). El mapa se compone por detrás de
     la ventana y un fondo encima lo tapa sin producir ningún error. Los estados
     sin mapa declaran su fondo cada uno.
+11. **Desviación declarada del Figma en el acento** (feature #61,
+    2026-09-03). `--accent` vale **`#178255`**, no el `#2AB87C` que #46 R1
+    tomó del Make. El verde del diseño da 2,55:1 con etiqueta blanca encima y
+    no hay forma de pasar AA conservándolo: o se oscurece el relleno o se
+    oscurece la letra, y el humano eligió lo primero para que el CTA siga
+    siendo verde con letra blanca. Se conserva el hue (154,7°, el mismo del
+    Make) y se baja la luminancia hasta **4,82:1** con blanco. Consecuencia
+    asumida: los rellenos ya **no** coinciden 1:1 con el Make y el smoke lado
+    a lado lo verá; es esperado, no un defecto. El acento como **tinta**
+    (texto, enlaces, iconos, trazos) es `--accent-strong`, que en dark
+    recupera el `#2AB87C` original porque sobre fondo oscuro un verde oscuro
+    es ilegible. Regla mecánica: **fondo ⇒ `--accent`; encima de otra cosa ⇒
+    `--accent-strong`.**
 
 ## Animación (decisiones por defecto)
 

@@ -12,6 +12,7 @@ import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { combineDateAndTime } from '../../utils/reminder-dates';
 import { REMINDER_TYPE_META } from '../../utils/reminder-meta';
+import { TOUCH_SLOP } from '../../theme/touch-target';
 
 const ADVANCE_OPTIONS = [
   { minutes: 0, label: 'Same day' },
@@ -117,6 +118,7 @@ function AddReminderContent({ petId }: { petId: string }) {
           accessibilityLabel="Back to reminders"
           accessibilityRole="button"
           testID="add-reminder-back"
+          hitSlop={TOUCH_SLOP}
           className="size-10 items-center justify-center rounded-full bg-default"
           onPress={() => router.back()}
         >
@@ -141,6 +143,7 @@ function AddReminderContent({ petId }: { petId: string }) {
                 accessibilityRole="button"
                 accessibilityState={{ selected }}
                 testID={`type-chip-${reminderType}`}
+                hitSlop={TOUCH_SLOP}
                 className={
                   selected
                     ? 'rounded-full border border-accent bg-accent-soft px-3 py-2'
@@ -254,6 +257,7 @@ function AddReminderContent({ petId }: { petId: string }) {
                 accessibilityRole="button"
                 accessibilityState={{ selected }}
                 testID={`advance-chip-${option.minutes}`}
+                hitSlop={TOUCH_SLOP}
                 className={
                   selected
                     ? 'rounded-full border border-accent bg-accent-soft px-3 py-2'

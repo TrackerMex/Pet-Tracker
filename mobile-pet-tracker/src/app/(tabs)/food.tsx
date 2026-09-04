@@ -29,7 +29,7 @@ function localTimeHhmm(): string {
 export default function FoodScreen() {
   const [muted, accent, foreground] = useThemeColors([
     'muted',
-    'accent',
+    'accent-strong',
     'foreground',
   ]);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
@@ -139,7 +139,7 @@ export default function FoodScreen() {
               >
                 <View className="flex-row items-center justify-between gap-4">
                   <View className="flex-1 gap-1">
-                    <Text className="text-xs font-semibold uppercase tracking-widest text-accent-foreground opacity-70">
+                    <Text className="text-xs font-semibold uppercase tracking-widest text-accent-foreground">
                       Daily target
                     </Text>
                     <Text
@@ -150,7 +150,7 @@ export default function FoodScreen() {
                     </Text>
                     <Text
                       testID="food-plan-grams"
-                      className="font-semibold text-accent-foreground opacity-80"
+                      className="font-semibold text-accent-foreground"
                     >
                       {loadedPlan.dailyGrams} g / day
                     </Text>
@@ -210,7 +210,7 @@ export default function FoodScreen() {
                         }
                         className={
                           served
-                            ? 'rounded-full bg-surface px-2 py-1 text-2xs font-bold text-accent'
+                            ? 'rounded-full bg-surface px-2 py-1 text-2xs font-bold text-accent-strong'
                             : 'rounded-full bg-surface px-2 py-1 text-2xs font-bold text-muted'
                         }
                       >

@@ -14,6 +14,7 @@ import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { useThemeColors } from '../../theme/use-theme-colors';
+import { TOUCH_SLOP } from '../../theme/touch-target';
 
 function isPetsError(state: PetsState): boolean {
   return ['error', 'unreachable', 'missing-config'].includes(state.kind);
@@ -139,7 +140,7 @@ export default function HealthScreen() {
                 <Syringe size={22} color={warning} />
               </View>
               <View className="flex-1 gap-1">
-                <Text className="text-2xs font-semibold text-warning">
+                <Text className="text-2xs font-semibold text-warning-strong">
                   Next due
                 </Text>
                 <Text className="font-bold text-foreground">
@@ -210,7 +211,7 @@ export default function HealthScreen() {
             {weight.data?.kind === 'ok' && weight.data.weights.length > 0 ? (
               <Text
                 testID="weight-current"
-                className="text-xl font-black text-accent"
+                className="text-xl font-black text-accent-strong"
               >
                 {weight.data.weights[0].weightKg} kg
               </Text>
@@ -243,6 +244,7 @@ export default function HealthScreen() {
           <Pressable
             accessibilityRole="button"
             testID="weight-log-link"
+            hitSlop={TOUCH_SLOP}
             className="flex-row items-center justify-between rounded-xl bg-default px-3 py-2"
             onPress={() => router.push('/weight-log')}
           >

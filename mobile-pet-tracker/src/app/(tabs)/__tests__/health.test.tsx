@@ -23,6 +23,7 @@ import { useAuth, type AuthContextValue } from '../../../providers/auth-provider
 import { SelectedPetProvider } from '../../../providers/selected-pet-provider';
 import * as selectedPetHooks from '../../../providers/selected-pet-provider';
 import HealthScreen from '../health';
+import { TOUCH_SLOP } from '../../../theme/touch-target';
 
 let mockTheme: 'light' | 'dark' = 'light';
 
@@ -555,5 +556,34 @@ describe('R10: preserva la mascota durante el refetch', () => {
     await view.rerender(<HealthScreen />);
 
     expect(selectPet).not.toHaveBeenCalled();
+  });
+});
+
+describe('#61 R10: los controles táctiles declaran TOUCH_SLOP', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockListVaccines.mockReturnValue(pending<VaccinesState>());
+  });
+
+  it('la fila de enlace al weight log llega a 44 pt sin crecer a la vista', async () => {
+    mockListWeights.mockResolvedValue({ kind: 'ok', weights: [makeWeight()] });
+
+    await renderHealth();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('weight-log-link')).toBeVisible(),
+    );
+
+    expect(screen.getByTestId('weight-log-link').props.hitSlop).toEqual(
+      TOUCH_SLOP,
+    );
   });
 });

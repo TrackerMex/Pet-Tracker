@@ -22,6 +22,7 @@ import {
   useSelectedPet,
 } from '../../../providers/selected-pet-provider';
 import WeightLogScreen from '../weight-log';
+import { TOUCH_SLOP } from '../../../theme/touch-target';
 
 jest.mock('../../../api/health-records', () => ({
   createWeight: jest.fn(),
@@ -421,6 +422,34 @@ describe('R9: alta de peso con degradación por kind', () => {
       expect(screen.getByTestId('weight-submit').props.accessibilityState).toEqual(
         expect.objectContaining({ disabled: true }),
       ),
+    );
+  });
+});
+
+describe('#61 R10: los controles táctiles declaran TOUCH_SLOP', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockCreateWeight.mockReturnValue(pending());
+  });
+
+  it('el botón de volver llega a 44 pt sin crecer a la vista', async () => {
+    mockListWeights.mockReturnValue(pending<WeightsState>());
+
+    await renderWeightLog();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('weight-log-back')).toBeVisible(),
+    );
+
+    expect(screen.getByTestId('weight-log-back').props.hitSlop).toEqual(
+      TOUCH_SLOP,
     );
   });
 });

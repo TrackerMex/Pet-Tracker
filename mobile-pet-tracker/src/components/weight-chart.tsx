@@ -12,7 +12,7 @@ import type { WeightEntry } from '../api/types';
 import { useThemeColors } from '../theme/use-theme-colors';
 
 export function WeightChart({ entries }: { entries: WeightEntry[] }) {
-  const [accent] = useThemeColors(['accent']);
+  const [accent] = useThemeColors(['accent-strong']);
 
   if (entries.length < 2) {
     return (

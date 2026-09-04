@@ -16,6 +16,11 @@ jest.mock('expo-router', () => ({
   },
 }));
 
+jest.mock('react-native-safe-area-context', () => ({
+  ...jest.requireActual('react-native-safe-area-context'),
+  useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
+}));
+
 const mockLogin = jest.mocked(login);
 const mockRegister = jest.mocked(register);
 const mockRouter = jest.mocked(router);
@@ -46,5 +51,25 @@ describe('R9: forgot es un stub deshabilitado', () => {
     expect(mockRouter.push).toHaveBeenCalledWith('/login');
     expect(mockLogin).not.toHaveBeenCalled();
     expect(mockRegister).not.toHaveBeenCalled();
+  });
+});
+
+describe('#61 R8: forgot tiene contenedor de scroll con safe areas', () => {
+  it('conserva el centrado de hoy dentro de un ScrollView con insets', async () => {
+    await render(<Forgot />, { wrapper: HeroUINativeProvider });
+
+    const screenRoot = screen.getByTestId('screen-forgot');
+
+    expect(screenRoot.props.contentContainerStyle).toEqual({
+      flexGrow: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 24,
+      gap: 16,
+      paddingTop: 52,
+      paddingBottom: 48,
+    });
+    expect(screenRoot.props.keyboardShouldPersistTaps).toBe('handled');
+    expect(screenRoot.props.contentInsetAdjustmentBehavior).toBe('automatic');
   });
 });
