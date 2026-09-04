@@ -279,12 +279,12 @@ export function AddPetScreen() {
               hitSlop={TOUCH_SLOP}
               className={
                 species === value
-                  ? 'rounded-full border border-accent bg-accent-soft px-4 py-2'
-                  : 'rounded-full border border-border bg-default px-4 py-2'
+                  ? 'rounded-full border border-accent bg-accent-soft px-3 py-2'
+                  : 'rounded-full border border-border bg-default px-3 py-2'
               }
               onPress={() => setSpecies(value)}
             >
-              <Text className="font-semibold text-foreground">
+              <Text className="text-sm font-semibold text-foreground">
                 {value === 'dog' ? 'Dog' : 'Cat'}
               </Text>
             </Pressable>
