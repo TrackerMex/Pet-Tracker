@@ -284,6 +284,18 @@ export function ProfileScreen() {
             <Text className="font-semibold text-foreground">Documentos</Text>
             <Text className="text-lg font-semibold text-muted">›</Text>
           </Pressable>
+
+          <Pressable
+            accessibilityRole="button"
+            testID="pairing-link"
+            className="flex-row items-center justify-between rounded-xl bg-default px-3 py-2"
+            onPress={() => router.push('/pairing' as Href)}
+          >
+            <Text className="font-semibold text-foreground">
+              Configuración del Dispositivo GPS
+            </Text>
+            <Text className="text-lg font-semibold text-muted">›</Text>
+          </Pressable>
         </>
       ) : null}
 

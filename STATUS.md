@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-09-03
-**Features completadas**: 56/60 (`feature_list.json`)
+**Última actualización**: 2026-09-04
+**Features completadas**: 58/63 (`feature_list.json`)
 **En progreso**: ninguna
 
-**Pendientes**: 4 (#18, #41, #42, #60). #53 `mobile-jest-mock-hygiene` cerró el flake de la suite `add-pet`: un `beforeEach` de archivo reinicializa el mock de `expo-image-picker`; sin flags globales de jest (`resetMocks` rompería 11 suites). #60 `mobile-ios-support` registrada: la app compila en iOS pero el mapa usa `GoogleMaps.View` (solo Android), faltan `bundleIdentifier`/`infoPlist` y Universal Links del reset. PR de #53 pendiente de merge por el humano.
+**Pendientes**: 5 (#18, #41, #60, #62, #63). #42 `mobile-device-pairing` cerró el claim de collar desde la app (código de activación, `Tracker is ready`, estado tracked/free derivado del 402 de `positions/last`, unpair nativo) y se validó con un collar real en Wialon. #61 `mobile-ui-legibility-polish` (otra sesión, PR #101) ya está mergeada; su smoke registró #63 `mobile-detail-screens-state-reset` (P2: las rutas bajo `(tabs)` no se desmontan y conservan estado de formulario; afecta también a `/pairing`) y amplió #62. PR #102 de #42 pendiente de merge por el humano.
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
 desde 2026-08-10. Hay recursos vivos en la cuenta, aunque hoy sin coste.
@@ -72,6 +72,17 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Estado actual
+
+- **`mobile-device-pairing` (#42) done** (2026-09-04): ruta `/pairing` en
+  tabs con una pantalla de tres vistas (formulario de claim, `Tracker is
+  ready`, estado del dispositivo con plan tracked/free), clientes
+  `src/api/devices.ts` (claim/release mapeados por kind) y
+  `src/api/subscriptions.ts` (tracked/free derivado del 402 de
+  `GET /pets/:id/positions/last`; no hay endpoint de subscriptions, deuda
+  anotada), enlaces desde Home y Perfil, unpair con `Alert.alert` nativo.
+  Sin QR (el Figma no lo trae). Codex R1–R11 en 27 commits test→feat,
+  `reviewer` aprobó, G1 con collar real en Wialon (claim, mapa con posición
+  real). Informe: `progress/impl_mobile-device-pairing.md`.
 
 - **`mobile-jest-mock-hygiene` (#53) done** (2026-09-03): la suite
   `src/screens/add-pet/index.test.tsx` fallaba de forma intermitente porque
@@ -840,6 +851,16 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-09-04** — #42 `mobile-device-pairing` **cerrada** (57/60). Spec con
+  contratos copiados del backend (D1) y dos decisiones cerradas: tracked/free
+  por la sonda del 402 (D2) y sin QR (D3). Codex implementó R1–R11 con pares
+  test→feat; `reviewer` aprobó (`init.sh` móvil 56 suites). G1 por el humano
+  con collar real: `provision:device` exige `SIM_MODE=false` + token real y
+  el claim devuelve 402 hasta `subscription:set --status active`. Deudas:
+  endpoint propio de subscription, Node 22 en VPS/CI (aviso del AWS SDK),
+  filas de `DeviceRow` sin separador. Sigue: PR para merge humano; luego #41
+  geofences o #60 iOS.
 
 - **2026-09-03** — #53 `mobile-jest-mock-hygiene` **cerrada** (56/60). Spec
   con evidencia de por qué no usar flags globales de jest; Codex añadió el

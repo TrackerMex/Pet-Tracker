@@ -155,3 +155,30 @@ describe('R9: mobile-pets-profile sin drift', () => {
     expect(r9Row).not.toContain('pendiente');
   });
 });
+
+describe('R11 (mobile-device-pairing): pairing usa el Card compartido y las dimensiones uniformes', () => {
+  const pairingSource = readFileSync(
+    join(sourceRoot, 'screens', 'pairing', 'index.tsx'),
+    'utf8',
+  );
+
+  it('imports the shared Card and PetSwitcher', () => {
+    expect(pairingSource).toContain("from '../../components/card'");
+    expect(pairingSource).toContain("from '../../components/pet-switcher'");
+  });
+
+  it.each([
+    'padding: 24',
+    'gap: 16',
+    'insets.top + 12',
+    'insets.bottom + 96',
+  ])('keeps the uniform screen metric %s', (metric) => {
+    expect(pairingSource).toContain(metric);
+  });
+
+  it('keeps pairing free of forbidden styling escapes', () => {
+    expect(pairingSource).not.toMatch(
+      /#[\da-f]{3,8}\b|[A-Za-z0-9_-]+-\[[^\]]+\]|StyleSheet\.create|shadowColor|shadowOffset|shadowOpacity|shadowRadius|\belevation\s*:/i,
+    );
+  });
+});

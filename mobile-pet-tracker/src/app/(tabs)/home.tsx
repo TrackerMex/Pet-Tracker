@@ -226,6 +226,18 @@ export default function HomeScreen() {
                 No collar — health only
               </Text>
             )}
+            {detail.data.pet.device === null ? (
+              <Pressable
+                accessibilityRole="button"
+                testID="collar-pair-link"
+                className="min-h-11 items-center justify-center rounded-xl bg-accent-soft px-4"
+                onPress={() => router.push('/pairing')}
+              >
+                <Text className="font-bold text-foreground">
+                  Pair a collar
+                </Text>
+              </Pressable>
+            ) : null}
           </HeroUICard>
         </>
       ) : null}

@@ -374,6 +374,57 @@ describe('R8: collar card refleja el device', () => {
   });
 });
 
+describe('R10 (mobile-device-pairing): la collar card sin collar enlaza a /pairing', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+  });
+
+  it('shows the pair action for a pet without a collar and opens pairing', async () => {
+    mockGetPet.mockResolvedValue({
+      kind: 'ok',
+      pet: makePet({ device: null }),
+    });
+
+    await renderHome();
+
+    const link = await screen.findByTestId('collar-pair-link');
+    expect(link).toHaveTextContent('Pair a collar');
+    expect(link.props.accessibilityRole).toBe('button');
+    await fireEvent.press(link);
+
+    expect(mockRouter.push).toHaveBeenCalledWith('/pairing');
+  });
+
+  it('does not show the pair action when the pet has a collar', async () => {
+    mockGetPet.mockResolvedValue({
+      kind: 'ok',
+      pet: makePet({
+        device: {
+          model: 'PetTrack One',
+          batteryPct: 82,
+          connectivity: 'online',
+          lastMessageAt: '2026-08-21T12:00:00.000Z',
+          esn: 'ACT-001',
+        },
+      }),
+    });
+
+    await renderHome();
+
+    await screen.findByTestId('collar-card');
+    expect(screen.queryByTestId('collar-pair-link')).toBeNull();
+  });
+});
+
 describe('R9: summary degrada con gracia', () => {
   beforeEach(() => {
     jest.clearAllMocks();
