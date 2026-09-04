@@ -172,3 +172,36 @@ describe('#62 R6: la última fila de pet-info-card no cuelga su separador', () =
     expect(filesMatching(/\b(?:last|first|odd|even):/)).toEqual([]);
   });
 });
+
+describe('#62 R7: ningún glifo tipográfico hace de icono', () => {
+  const backScreens = [
+    join('screens', 'docs', 'index.tsx'),
+    join('screens', 'add-pet', 'index.tsx'),
+    join('screens', 'add-reminder', 'index.tsx'),
+    join('screens', 'pairing', 'index.tsx'),
+  ];
+
+  it('elimina las siete flechas tipográficas de producción', () => {
+    expect(filesMatching(/[←›]/)).toEqual([]);
+  });
+
+  it.each(backScreens)('%s usa ArrowLeft de reicon', (path) => {
+    const source = readSource(path);
+
+    expect(source).toContain(
+      "import { ArrowLeft } from 'reicon-react-native';",
+    );
+    expect(source).toContain('<ArrowLeft size={20} color={foreground} />');
+  });
+
+  it('profile usa tres ChevronRight de reicon', () => {
+    const profile = readSource(join('screens', 'profile', 'index.tsx'));
+
+    expect(profile).toContain(
+      "import { ChevronRight } from 'reicon-react-native';",
+    );
+    expect(
+      profile.match(/<ChevronRight size=\{20\} color=\{muted\} \/>/g),
+    ).toHaveLength(3);
+  });
+});
