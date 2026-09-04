@@ -169,9 +169,9 @@ export default function HomeScreen() {
             </View>
           </Card>
 
-          <HeroUICard
+          <Card
             testID="collar-card"
-            className="gap-3 rounded-2xl bg-default p-4"
+            className="gap-3 bg-default"
           >
             <View className="flex-row items-center gap-3">
               <View className="size-9 items-center justify-center rounded-full bg-accent-soft">
@@ -238,7 +238,7 @@ export default function HomeScreen() {
                 </Text>
               </Pressable>
             ) : null}
-          </HeroUICard>
+          </Card>
         </>
       ) : null}
 
@@ -308,10 +308,9 @@ export default function HomeScreen() {
       ) : null}
 
       {detail.data?.kind === 'ok' && detail.data.pet.device ? (
-        <Pressable
-          accessibilityRole="button"
+        <Card
           testID="last-position-card"
-          className="gap-2 rounded-2xl bg-default p-4"
+          className="gap-2 bg-default"
           onPress={() => router.push('/map')}
         >
           <View className="flex-row items-center justify-between">
@@ -326,7 +325,7 @@ export default function HomeScreen() {
           <Text testID="last-position-time" className="font-normal text-muted">
             {fmtLastSeen(detail.data.pet.lastCommunicationAt)}
           </Text>
-        </Pressable>
+        </Card>
       ) : null}
     </ScrollView>
   );

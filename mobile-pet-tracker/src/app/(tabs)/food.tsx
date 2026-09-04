@@ -1,5 +1,5 @@
 import { router, type Href } from 'expo-router';
-import { Button, Card as HeroUICard, Skeleton, Spinner } from 'heroui-native';
+import { Button, Skeleton, Spinner } from 'heroui-native';
 import { useCallback, useMemo } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -224,9 +224,10 @@ export default function FoodScreen() {
               {loadedPlan.warnings.length > 0 ? (
                 <View className="gap-2">
                   {loadedPlan.warnings.map((warning) => (
-                    <HeroUICard
+                    <Card
                       key={warning.code}
-                      className="rounded-2xl border border-border bg-default p-4"
+                      testID={`warning-card-${warning.code}`}
+                      className="bg-default"
                     >
                       <Text
                         testID={`plan-warning-${warning.code}`}
@@ -234,7 +235,7 @@ export default function FoodScreen() {
                       >
                         {warning.message}
                       </Text>
-                    </HeroUICard>
+                    </Card>
                   ))}
                 </View>
               ) : null}

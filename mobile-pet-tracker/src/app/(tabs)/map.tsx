@@ -251,7 +251,7 @@ export default function MapScreen() {
             colorScheme={theme === 'dark' ? 'dark' : 'light'}
           />
           {position === null ? (
-            <View
+            <Card
               testID="map-empty-overlay"
               style={{
                 position: 'absolute',
@@ -259,12 +259,12 @@ export default function MapScreen() {
                 left: 16,
                 right: 16,
               }}
-              className="items-center rounded-2xl bg-surface p-3"
+              className="items-center p-3"
             >
               <Text testID="map-empty" className="text-muted">
                 No location data yet
               </Text>
-            </View>
+            </Card>
           ) : null}
           <View
             testID="map-stats"
