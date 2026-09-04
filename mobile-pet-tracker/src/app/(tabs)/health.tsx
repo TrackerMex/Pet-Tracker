@@ -13,6 +13,7 @@ import { useApi } from '../../hooks/use-api';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 
@@ -136,7 +137,10 @@ export default function HealthScreen() {
               testID="next-vaccine-card"
               className="flex-row items-center gap-3"
             >
-              <View className="size-11 items-center justify-center rounded-xl bg-warning-soft">
+              <View
+                className="size-11 items-center justify-center rounded-xl bg-warning-soft"
+                style={CONTINUOUS_CORNER}
+              >
                 <Syringe size={22} color={warning} />
               </View>
               <View className="flex-1 gap-1">
@@ -246,6 +250,7 @@ export default function HealthScreen() {
             testID="weight-log-link"
             hitSlop={TOUCH_SLOP}
             className="flex-row items-center justify-between rounded-xl bg-default px-3 py-2"
+            style={CONTINUOUS_CORNER}
             onPress={() => router.push('/weight-log')}
           >
             <Text className="font-semibold text-foreground">Weight log</Text>

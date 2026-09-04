@@ -18,6 +18,7 @@ import { createPet, type CreatePetInput } from '../../api/pets';
 import { PetAvatar } from '../../components/pet-avatar';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 import { useThemeColors } from '../../theme/use-theme-colors';
 
@@ -297,6 +298,7 @@ export function AddPetScreen() {
         <TextInput
           testID="name-input"
           className="rounded-xl bg-default px-4 py-3 text-foreground"
+          style={CONTINUOUS_CORNER}
           maxLength={120}
           placeholder="Pet name"
           placeholderTextColor={muted}
@@ -310,6 +312,7 @@ export function AddPetScreen() {
         <TextInput
           testID="breed-input"
           className="rounded-xl bg-default px-4 py-3 text-foreground"
+          style={CONTINUOUS_CORNER}
           maxLength={120}
           placeholder="Optional"
           placeholderTextColor={muted}
@@ -366,6 +369,7 @@ export function AddPetScreen() {
             accessibilityRole="button"
             testID="birth-date-field"
             className="rounded-xl border border-border bg-default px-4 py-3"
+            style={CONTINUOUS_CORNER}
             onPress={() => setShowDatePicker(true)}
           >
             <Text className={birthDate ? 'text-foreground' : 'text-muted'}>
@@ -376,6 +380,7 @@ export function AddPetScreen() {
           <TextInput
             testID="approx-age-input"
             className="rounded-xl bg-default px-4 py-3 text-foreground"
+            style={CONTINUOUS_CORNER}
             inputMode="numeric"
             maxLength={3}
             placeholder="Months"
@@ -416,6 +421,7 @@ export function AddPetScreen() {
         <TextInput
           testID="microchip-input"
           className="rounded-xl bg-default px-4 py-3 text-foreground"
+          style={CONTINUOUS_CORNER}
           maxLength={32}
           placeholder="Optional"
           placeholderTextColor={muted}

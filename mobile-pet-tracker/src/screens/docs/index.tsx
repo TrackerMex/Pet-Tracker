@@ -10,13 +10,17 @@ import { getPet } from '../../api/pets';
 import { Card } from '../../components/card';
 import { useApi } from '../../hooks/use-api';
 import { useAuth } from '../../providers/auth-provider';
+import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 import { useThemeColors } from '../../theme/use-theme-colors';
 
 function DocumentRow({ document }: { document: PetDocument }) {
   return (
     <Card testID={`doc-${document.id}`} className="flex-row items-center gap-3">
-      <View className="size-10 items-center justify-center rounded-xl bg-accent-soft">
+      <View
+        className="size-10 items-center justify-center rounded-xl bg-accent-soft"
+        style={CONTINUOUS_CORNER}
+      >
         <Text className="text-lg">📄</Text>
       </View>
       <View className="flex-1 gap-1">

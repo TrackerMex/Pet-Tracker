@@ -22,6 +22,7 @@ import { useApi } from '../../hooks/use-api';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { useThemeTransition } from '../../theme/theme-transition';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 import { useThemeColors } from '../../theme/use-theme-colors';
@@ -53,7 +54,10 @@ function InfoRow({
 
 function PetHero({ pet }: { pet: PetProfile }) {
   return (
-    <View className="h-56 overflow-hidden rounded-card bg-default">
+    <View
+      className="h-56 overflow-hidden rounded-card bg-default"
+      style={CONTINUOUS_CORNER}
+    >
       <View className="h-full w-full items-center justify-center bg-accent-soft">
         <PetAvatar
           name={pet.name}
@@ -297,6 +301,7 @@ export function ProfileScreen() {
             testID="documents-link"
             hitSlop={TOUCH_SLOP}
             className="flex-row items-center justify-between rounded-xl bg-default px-3 py-2"
+            style={CONTINUOUS_CORNER}
             onPress={() => router.push(`/pets/${pet.id}/docs` as Href)}
           >
             <Text className="font-semibold text-foreground">Documentos</Text>
@@ -307,6 +312,7 @@ export function ProfileScreen() {
             accessibilityRole="button"
             testID="pairing-link"
             className="flex-row items-center justify-between rounded-xl bg-default px-3 py-2"
+            style={CONTINUOUS_CORNER}
             onPress={() => router.push('/pairing' as Href)}
           >
             <Text className="font-semibold text-foreground">
@@ -322,6 +328,7 @@ export function ProfileScreen() {
         testID="reminders-link"
         hitSlop={TOUCH_SLOP}
         className="flex-row items-center justify-between rounded-xl bg-default px-3 py-2"
+        style={CONTINUOUS_CORNER}
         onPress={() => router.push('/reminders' as Href)}
       >
         <Text className="font-semibold text-foreground">Reminders</Text>

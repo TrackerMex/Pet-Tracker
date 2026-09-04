@@ -21,6 +21,7 @@ import { useApi } from '../../hooks/use-api';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { daysUntil } from '../../utils/reminder-dates';
 import { REMINDER_TYPE_META } from '../../utils/reminder-meta';
 
@@ -192,6 +193,7 @@ export function RemindersScreen() {
             <View
               testID="pill-active"
               className="flex-1 items-center gap-1 rounded-xl bg-accent-soft p-3"
+              style={CONTINUOUS_CORNER}
             >
               <Text className="text-lg font-black text-foreground">
                 {
@@ -205,6 +207,7 @@ export function RemindersScreen() {
             <View
               testID="pill-week"
               className="flex-1 items-center gap-1 rounded-xl bg-default p-3"
+              style={CONTINUOUS_CORNER}
             >
               <Text className="text-lg font-black text-foreground">
                 {
@@ -226,6 +229,7 @@ export function RemindersScreen() {
             <View
               testID="pill-inactive"
               className="flex-1 items-center gap-1 rounded-xl bg-default p-3"
+              style={CONTINUOUS_CORNER}
             >
               <Text className="text-lg font-black text-foreground">
                 {
@@ -250,7 +254,10 @@ export function RemindersScreen() {
                   testID={`reminder-row-${reminder.id}`}
                   className={`min-h-20 flex-row items-center gap-3${inactive ? ' opacity-50' : ''}`}
                 >
-                  <View className="size-11 items-center justify-center rounded-xl bg-accent-soft">
+                  <View
+                    className="size-11 items-center justify-center rounded-xl bg-accent-soft"
+                    style={CONTINUOUS_CORNER}
+                  >
                     <Text className="text-xl">{meta.emoji}</Text>
                   </View>
                   <View className="min-w-0 flex-1 gap-1">

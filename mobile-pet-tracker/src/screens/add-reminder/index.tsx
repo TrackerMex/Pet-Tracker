@@ -13,6 +13,7 @@ import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { combineDateAndTime } from '../../utils/reminder-dates';
 import { REMINDER_TYPE_META } from '../../utils/reminder-meta';
+import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 import { useThemeColors } from '../../theme/use-theme-colors';
 
@@ -170,6 +171,7 @@ function AddReminderContent({ petId }: { petId: string }) {
         <TextInput
           testID="title-input"
           className="rounded-xl bg-default px-4 py-3 text-foreground"
+          style={CONTINUOUS_CORNER}
           maxLength={120}
           placeholder="Reminder title"
           placeholderTextColor={muted}
@@ -187,6 +189,7 @@ function AddReminderContent({ petId }: { petId: string }) {
             accessibilityRole="button"
             testID="date-field"
             className="rounded-xl border border-border bg-default px-4 py-3"
+            style={CONTINUOUS_CORNER}
             onPress={() => setShowDatePicker(true)}
           >
             <Text className={date ? 'text-foreground' : 'text-muted'}>
@@ -202,6 +205,7 @@ function AddReminderContent({ petId }: { petId: string }) {
             accessibilityRole="button"
             testID="time-field"
             className="rounded-xl border border-border bg-default px-4 py-3"
+            style={CONTINUOUS_CORNER}
             onPress={() => setShowTimePicker(true)}
           >
             <Text className="text-foreground">

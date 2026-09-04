@@ -22,6 +22,7 @@ import { useApi } from '../../hooks/use-api';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 
 function isPetsError(state: PetsState): boolean {
@@ -229,11 +230,12 @@ export default function HomeScreen() {
               </Text>
             )}
             {detail.data.pet.device === null ? (
-              <Pressable
-                accessibilityRole="button"
-                testID="collar-pair-link"
-                className="min-h-11 items-center justify-center rounded-xl bg-accent-soft px-4"
-                onPress={() => router.push('/pairing')}
+                  <Pressable
+                    accessibilityRole="button"
+                    testID="collar-pair-link"
+                    className="min-h-11 items-center justify-center rounded-xl bg-accent-soft px-4"
+                    style={CONTINUOUS_CORNER}
+                    onPress={() => router.push('/pairing')}
               >
                 <Text className="font-bold text-foreground">
                   Pair a collar

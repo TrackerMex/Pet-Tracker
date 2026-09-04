@@ -22,6 +22,7 @@ import { WeightChart } from '../../components/weight-chart';
 import { useApi } from '../../hooks/use-api';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 
@@ -250,6 +251,7 @@ function WeightLogContent({ petId }: { petId: string }) {
               >
                 <View
                   className={`size-8 shrink-0 items-center justify-center rounded-xl ${tileClassName}`}
+                  style={CONTINUOUS_CORNER}
                 >
                   {entry.variation === null || entry.variation === 0 ? (
                     <Minus size={15} color={muted} />

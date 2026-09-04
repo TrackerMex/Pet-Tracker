@@ -4,6 +4,7 @@ import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Lock } from 'reicon-react-native';
 
+import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 
 export default function Forgot() {
@@ -26,7 +27,10 @@ export default function Forgot() {
         paddingBottom: insets.bottom + 24,
       }}
     >
-      <View className="size-16 items-center justify-center rounded-xl bg-accent-soft">
+      <View
+        className="size-16 items-center justify-center rounded-xl bg-accent-soft"
+        style={CONTINUOUS_CORNER}
+      >
         <Lock size={28} color={accentStrong} />
       </View>
       <Text className="text-center text-2xl font-black text-foreground">

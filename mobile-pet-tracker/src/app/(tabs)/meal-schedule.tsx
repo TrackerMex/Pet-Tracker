@@ -16,6 +16,7 @@ import { Card } from '../../components/card';
 import { useApi } from '../../hooks/use-api';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 
@@ -207,7 +208,10 @@ function MealScheduleContent({ petId }: { petId: string }) {
                   testID={`meal-time-row-${index}`}
                   className="flex-row items-center gap-3"
                 >
-                  <View className="size-10 items-center justify-center rounded-xl bg-default">
+                  <View
+                    className="size-10 items-center justify-center rounded-xl bg-default"
+                    style={CONTINUOUS_CORNER}
+                  >
                     <Clock size={18} color={accent} />
                   </View>
                   <Text className="flex-1 font-bold text-foreground">

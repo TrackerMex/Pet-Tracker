@@ -22,6 +22,7 @@ import { useApi } from '../../hooks/use-api';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 
 function isPetsError(state: PetsState): boolean {
@@ -333,6 +334,7 @@ export function PairingScreen() {
             accessibilityRole="button"
             testID="ready-done"
             className="min-h-11 w-full items-center justify-center rounded-xl"
+            style={CONTINUOUS_CORNER}
             onPress={() => leaveReady('back')}
           >
             <Text className="font-bold text-foreground">Done</Text>
@@ -364,6 +366,7 @@ export function PairingScreen() {
             <TextInput
               testID="activation-code-input"
               className="min-h-12 rounded-xl bg-default px-4 py-3 text-foreground"
+              style={CONTINUOUS_CORNER}
               autoCapitalize="characters"
               autoCorrect={false}
               maxLength={64}

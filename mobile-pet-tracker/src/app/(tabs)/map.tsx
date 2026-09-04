@@ -18,6 +18,7 @@ import { useApi } from '../../hooks/use-api';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 
 function isPetsError(state: PetsState): boolean {
   switch (state.kind) {
@@ -279,7 +280,10 @@ export default function MapScreen() {
             <Card className="p-3">
               <View className="gap-2">
                 <View className="flex-row gap-2">
-                  <View className="flex-1 items-center rounded-xl bg-default p-3">
+                  <View
+                    className="flex-1 items-center rounded-xl bg-default p-3"
+                    style={CONTINUOUS_CORNER}
+                  >
                     <Text
                       testID="stat-speed"
                       className="text-base font-black text-accent-strong"
@@ -291,7 +295,10 @@ export default function MapScreen() {
                       Speed
                     </Text>
                   </View>
-                  <View className="flex-1 items-center rounded-xl bg-default p-3">
+                  <View
+                    className="flex-1 items-center rounded-xl bg-default p-3"
+                    style={CONTINUOUS_CORNER}
+                  >
                     <Text
                       testID="stat-distance"
                       className="text-base font-black text-accent-strong"
@@ -305,7 +312,10 @@ export default function MapScreen() {
                   </View>
                 </View>
                 <View className="flex-row gap-2">
-                  <View className="flex-1 items-center rounded-xl bg-default p-3">
+                  <View
+                    className="flex-1 items-center rounded-xl bg-default p-3"
+                    style={CONTINUOUS_CORNER}
+                  >
                     <Text
                       testID="stat-updated"
                       className="text-base font-black text-muted"
@@ -317,7 +327,10 @@ export default function MapScreen() {
                       Updated
                     </Text>
                   </View>
-                  <View className="flex-1 items-center rounded-xl bg-default p-3">
+                  <View
+                    className="flex-1 items-center rounded-xl bg-default p-3"
+                    style={CONTINUOUS_CORNER}
+                  >
                     <Text
                       testID="stat-gps"
                       className="text-base font-black text-muted"

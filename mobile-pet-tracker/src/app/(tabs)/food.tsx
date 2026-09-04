@@ -13,6 +13,7 @@ import { useApi } from '../../hooks/use-api';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 
 function isPetsError(state: PetsState): boolean {
@@ -155,7 +156,10 @@ export default function FoodScreen() {
                       {loadedPlan.dailyGrams} g / day
                     </Text>
                   </View>
-                  <View className="size-14 items-center justify-center rounded-xl bg-surface-secondary">
+                  <View
+                    className="size-14 items-center justify-center rounded-xl bg-surface-secondary"
+                    style={CONTINUOUS_CORNER}
+                  >
                     <ForkKnife size={26} color={accent} />
                   </View>
                 </View>
@@ -187,6 +191,7 @@ export default function FoodScreen() {
                     <View
                       key={`${mealTime}-${index}`}
                       testID={`meal-row-${index}`}
+                      style={CONTINUOUS_CORNER}
                       className={
                         served
                           ? 'flex-row items-center gap-3 rounded-xl bg-surface-secondary p-3'
