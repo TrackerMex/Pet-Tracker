@@ -103,3 +103,35 @@ describe('#62 R1: la escala de radios está declarada y el botón primario tiene
     expect(filesMatching(/rounded-2xl bg-accent(?=[\s'"`])/)).toEqual([]);
   });
 });
+
+describe('#62 R2: cada skeleton tiene la forma del contenido que sustituye', () => {
+  it.each([
+    [
+      join('app', '(tabs)', 'home.tsx'),
+      'pet-card-skeleton',
+      'h-32 w-full rounded-card',
+    ],
+    [
+      join('app', '(tabs)', 'health.tsx'),
+      'vaccines-skeleton',
+      'h-24 w-full rounded-card',
+    ],
+  ])('%s conserva dimensión y usa el radio de Card', (path, testId, classes) => {
+    const skeleton = elementWithTestId(
+      readSource(path),
+      testId,
+      '/>',
+    );
+
+    expect(skeleton).toContain(`className="${classes}"`);
+  });
+
+  it('da al skeleton repetido de reminders la forma de sus filas Card', () => {
+    const reminders = readSource(join('screens', 'reminders', 'index.tsx'));
+
+    expect(reminders).toContain(
+      'testID={`reminder-row-skeleton-${index + 1}`}',
+    );
+    expect(reminders).toContain('className="h-20 w-full rounded-card"');
+  });
+});
