@@ -21,7 +21,7 @@ Rutas de test relativas a `mobile-pet-tracker/`.
 | R9 | `src/screens/pairing/index.test.tsx::R9: desvincular pide confirmación nativa, libera el collar y vuelve al formulario` | `332c778 test(mobile-device-pairing): cover native unpair flow (R9)` → `767b056 feat(mobile-device-pairing): add native unpair flow (R9)` |
 | R10 | `src/screens/profile/index.test.tsx::R10 (mobile-device-pairing): el perfil enlaza a /pairing`; `src/app/(tabs)/__tests__/home.test.tsx::R10 (mobile-device-pairing): la collar card sin collar enlaza a /pairing` | `417f1a3 test(mobile-device-pairing): cover pairing entry points (R10)` → `44deb23 feat(mobile-device-pairing): add pairing entry points (R10)` |
 | R11 | `src/__tests__/design-drift.test.ts::R11 (mobile-device-pairing): pairing usa el Card compartido y las dimensiones uniformes` | `cb82c1b test(mobile-device-pairing): guard pairing design conventions (R11)` → `8f1779b feat(mobile-device-pairing): consolidate pairing status rows (R11)` |
-| G1 (gate humano) | smoke en dev build de Android según [[design]] §D11 — lo registra el humano en `progress/impl_mobile-device-pairing.md` con fecha | pendiente (humano) |
+| G1 (gate humano) | smoke en dev build de Android según [[design]] §D11 — lo registra el humano en `progress/impl_mobile-device-pairing.md` con fecha | hecho 2026-09-04 (humano, `f310352`; collar real en Wialon) |
 
 Regla: el reviewer no aprueba si alguna fila R1–R11 queda "pendiente"; la
 fila G1 la cierra el humano y el leader espera a esa confirmación antes de

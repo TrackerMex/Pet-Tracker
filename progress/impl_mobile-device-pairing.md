@@ -117,6 +117,13 @@ Hasta que el humano registre ese resultado aquí con fecha, la feature se
 mantiene `in_progress`; no se marca `done` ni se cierra G1 en
 `traceability.md`.
 
+**Resultado G1 — 2026-09-04, registrado por el humano (`f310352`), leader
+anota fecha y contexto:** smoke en dev build de Android con un **collar real
+en Wialon** (`SIM_MODE=false`, unidad aprovisionada con `provision:device` y
+plan activado con `subscription:set --status active`; sin plan el claim
+devolvió el 402 esperado). Claim exitoso → `Tracker is ready`; el tab Map
+muestra la posición real del collar. Palabras del humano:
+
 Las pruebas salieron exitosas.
 Para validar tambien realice las pruebas en un dispositivo fisico collar real.
 El mapa muestra la ubicación del collar en el mapa de la app.

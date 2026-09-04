@@ -2358,3 +2358,23 @@ Flake de `add-pet` por mocks sin reinicializar. Sin trabajo en curso.
   el leader migró a un worktree (`Pet-Tracker-wt-53`). Regla: un worktree
   por sesión activa.
 - Estado final: `done` (56/60). PR pendiente de crear/mergear.
+
+### #42 — mobile-device-pairing (2026-09-03 → 2026-09-04)
+
+- `spec_author` copió los contratos reales de `devices`/`subscriptions` (D1);
+  sin endpoint de subscriptions, tracked/free se deriva del 402 de
+  `positions/last` (D2, deuda: endpoint propio); el Figma Make no tiene
+  frame de pairing ni QR (D3, sin `expo-camera`). Humano aprobó en `6d32094`.
+- Codex CLI: 27 commits, pares test→feat R1–R11 más fix de sondas duplicadas
+  (R8) y guion D11 en `docs/verification.md`. Contención limpia.
+- `reviewer` **APROBADO** (`progress/review_mobile-device-pairing.md`):
+  `init.sh` móvil 56/… verde; no bloqueantes: aviso Node 22 del AWS SDK,
+  `DeviceRow` sin separadores.
+- G1 (humano, `f310352`): collar real en Wialon. Aprendizajes:
+  `provision:device` lee `../.env` relativo a `backend-pet-tracker/` y exige
+  `SIM_MODE=false` exacto + token real; el claim da 402 hasta
+  `subscription:set --unit-id <id> --status active`.
+- Coordinación con la sesión de #61 (tree principal): worktree
+  `Pet-Tracker-wt-42`; único solape `src/screens/profile/index.tsx` en
+  líneas distintas.
+- Estado final: `done` (57/60). PR pendiente de crear/mergear.
