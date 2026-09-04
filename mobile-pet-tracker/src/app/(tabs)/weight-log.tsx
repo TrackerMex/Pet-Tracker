@@ -138,7 +138,9 @@ function WeightLogContent({ petId }: { petId: string }) {
       </View>
 
       {weights.data?.kind === 'ok' ? (
-        <WeightChart entries={weights.data.weights} />
+        <Card testID="weight-chart-card">
+          <WeightChart entries={weights.data.weights} />
+        </Card>
       ) : null}
 
       {weights.data?.kind === 'ok' ? (
