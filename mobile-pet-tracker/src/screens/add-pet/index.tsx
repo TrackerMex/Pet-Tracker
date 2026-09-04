@@ -6,6 +6,7 @@ import { Button } from 'heroui-native';
 import { useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ArrowLeft } from 'reicon-react-native';
 
 import {
   requestPhotoUploadUrl,
@@ -18,6 +19,7 @@ import { PetAvatar } from '../../components/pet-avatar';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { TOUCH_SLOP } from '../../theme/touch-target';
+import { useThemeColors } from '../../theme/use-theme-colors';
 
 type Species = CreatePetInput['species'];
 type Sex = NonNullable<CreatePetInput['sex']>;
@@ -77,6 +79,7 @@ export function AddPetScreen() {
   const { signOut, token } = useAuth();
   const { selectPet } = useSelectedPet();
   const insets = useSafeAreaInsets();
+  const [foreground] = useThemeColors(['foreground']);
   const [species, setSpecies] = useState<Species>('dog');
   const [name, setName] = useState('');
   const [breed, setBreed] = useState('');
@@ -231,7 +234,7 @@ export function AddPetScreen() {
           className="size-10 items-center justify-center rounded-full bg-default"
           onPress={() => router.back()}
         >
-          <Text className="text-lg font-bold text-foreground">←</Text>
+          <ArrowLeft size={20} color={foreground} />
         </Pressable>
         <Text className="text-2xl font-black text-foreground">Add pet</Text>
       </View>

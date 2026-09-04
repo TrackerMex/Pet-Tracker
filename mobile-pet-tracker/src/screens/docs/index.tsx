@@ -3,6 +3,7 @@ import { Button, Skeleton } from 'heroui-native';
 import { useCallback } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ArrowLeft } from 'reicon-react-native';
 
 import { listPetDocs, type PetDocument } from '../../api/media';
 import { getPet } from '../../api/pets';
@@ -10,6 +11,7 @@ import { Card } from '../../components/card';
 import { useApi } from '../../hooks/use-api';
 import { useAuth } from '../../providers/auth-provider';
 import { TOUCH_SLOP } from '../../theme/touch-target';
+import { useThemeColors } from '../../theme/use-theme-colors';
 
 function DocumentRow({ document }: { document: PetDocument }) {
   return (
@@ -32,6 +34,7 @@ export function DocsScreen({ petId }: { petId: string }) {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { token } = useAuth();
   const insets = useSafeAreaInsets();
+  const [foreground] = useThemeColors(['foreground']);
   const petFn = useCallback(
     () => getPet(baseUrl, token ?? '', petId),
     [baseUrl, petId, token],
@@ -65,7 +68,7 @@ export function DocsScreen({ petId }: { petId: string }) {
           className="size-10 items-center justify-center rounded-full bg-default"
           onPress={() => router.back()}
         >
-          <Text className="text-lg font-bold text-foreground">←</Text>
+          <ArrowLeft size={20} color={foreground} />
         </Pressable>
         <View className="flex-1 gap-1">
           <Text className="text-xs font-semibold uppercase tracking-widest text-muted">

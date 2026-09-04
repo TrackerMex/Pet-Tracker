@@ -4,6 +4,7 @@ import { Button, Skeleton } from 'heroui-native';
 import { useCallback, useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ChevronRight } from 'reicon-react-native';
 import { useUniwind } from 'uniwind';
 
 import {
@@ -23,6 +24,7 @@ import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { useThemeTransition } from '../../theme/theme-transition';
 import { TOUCH_SLOP } from '../../theme/touch-target';
+import { useThemeColors } from '../../theme/use-theme-colors';
 
 function InfoRow({
   isLast = false,
@@ -100,6 +102,7 @@ export function ProfileScreen() {
   const { theme } = useUniwind();
   const switchTheme = useThemeTransition();
   const insets = useSafeAreaInsets();
+  const [muted] = useThemeColors(['muted']);
   const [photoUploading, setPhotoUploading] = useState(false);
   const [photoError, setPhotoError] = useState<string | null>(null);
   const meFn = useCallback(
@@ -297,7 +300,7 @@ export function ProfileScreen() {
             onPress={() => router.push(`/pets/${pet.id}/docs` as Href)}
           >
             <Text className="font-semibold text-foreground">Documentos</Text>
-            <Text className="text-lg font-semibold text-muted">›</Text>
+            <ChevronRight size={20} color={muted} />
           </Pressable>
 
           <Pressable
@@ -309,7 +312,7 @@ export function ProfileScreen() {
             <Text className="font-semibold text-foreground">
               Configuración del Dispositivo GPS
             </Text>
-            <Text className="text-lg font-semibold text-muted">›</Text>
+            <ChevronRight size={20} color={muted} />
           </Pressable>
         </>
       ) : null}
@@ -322,7 +325,7 @@ export function ProfileScreen() {
         onPress={() => router.push('/reminders' as Href)}
       >
         <Text className="font-semibold text-foreground">Reminders</Text>
-        <Text className="text-lg font-semibold text-muted">›</Text>
+        <ChevronRight size={20} color={muted} />
       </Pressable>
 
       <Card testID="me-card" className="gap-2">

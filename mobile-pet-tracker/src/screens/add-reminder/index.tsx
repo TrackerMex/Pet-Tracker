@@ -5,6 +5,7 @@ import { Button } from 'heroui-native';
 import { useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ArrowLeft } from 'reicon-react-native';
 
 import { createReminder } from '../../api/reminders';
 import type { ReminderType } from '../../api/types';
@@ -13,6 +14,7 @@ import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { combineDateAndTime } from '../../utils/reminder-dates';
 import { REMINDER_TYPE_META } from '../../utils/reminder-meta';
 import { TOUCH_SLOP } from '../../theme/touch-target';
+import { useThemeColors } from '../../theme/use-theme-colors';
 
 const ADVANCE_OPTIONS = [
   { minutes: 0, label: 'Same day' },
@@ -36,6 +38,7 @@ function AddReminderContent({ petId }: { petId: string }) {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
   const insets = useSafeAreaInsets();
+  const [foreground] = useThemeColors(['foreground']);
   const [type, setType] = useState<ReminderType>('vaccine');
   const [title, setTitle] = useState('');
   const [date, setDate] = useState<Date | null>(null);
@@ -122,7 +125,7 @@ function AddReminderContent({ petId }: { petId: string }) {
           className="size-10 items-center justify-center rounded-full bg-default"
           onPress={() => router.back()}
         >
-          <Text className="text-lg font-bold text-foreground">←</Text>
+          <ArrowLeft size={20} color={foreground} />
         </Pressable>
         <Text className="text-2xl font-black text-foreground">
           Add reminder

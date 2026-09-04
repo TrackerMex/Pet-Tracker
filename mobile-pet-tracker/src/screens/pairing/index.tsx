@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ArrowLeft } from 'reicon-react-native';
 
 import { claimDevice, releaseDevice } from '../../api/devices';
 import { listPets, type PetsState } from '../../api/pets';
@@ -21,6 +22,7 @@ import { useApi } from '../../hooks/use-api';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import { useThemeColors } from '../../theme/use-theme-colors';
 
 function isPetsError(state: PetsState): boolean {
   return ['error', 'unreachable', 'missing-config'].includes(state.kind);
@@ -58,6 +60,7 @@ export function PairingScreen() {
   const { signOut, token } = useAuth();
   const { selectedPetId, selectPet } = useSelectedPet();
   const insets = useSafeAreaInsets();
+  const [foreground] = useThemeColors(['foreground']);
   const petsFn = useCallback(
     () => listPets(baseUrl, token ?? ''),
     [baseUrl, token],
@@ -237,7 +240,7 @@ export function PairingScreen() {
         className="size-11 items-center justify-center rounded-full bg-default"
         onPress={() => router.back()}
       >
-        <Text className="text-lg font-bold text-foreground">←</Text>
+        <ArrowLeft size={20} color={foreground} />
       </Pressable>
 
       {pets.data === undefined ? (
