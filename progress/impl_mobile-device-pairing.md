@@ -116,3 +116,7 @@ inválido, claim exitoso, collar ya reclamado, tracked/free, 402, unpair y owner
 Hasta que el humano registre ese resultado aquí con fecha, la feature se
 mantiene `in_progress`; no se marca `done` ni se cierra G1 en
 `traceability.md`.
+
+Las pruebas salieron exitosas.
+Para validar tambien realice las pruebas en un dispositivo fisico collar real.
+El mapa muestra la ubicación del collar en el mapa de la app.
