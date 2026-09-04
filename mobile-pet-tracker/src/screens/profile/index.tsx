@@ -24,9 +24,23 @@ import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { useThemeTransition } from '../../theme/theme-transition';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 
-function InfoRow({ label, value }: { label: string; value: string | null }) {
+function InfoRow({
+  isLast = false,
+  label,
+  value,
+}: {
+  isLast?: boolean;
+  label: string;
+  value: string | null;
+}) {
   return (
-    <View className="flex-row items-center justify-between gap-4 border-b border-separator py-3 last:border-b-0">
+    <View
+      className={
+        isLast
+          ? 'flex-row items-center justify-between gap-4 py-3'
+          : 'flex-row items-center justify-between gap-4 border-b border-separator py-3'
+      }
+    >
       <Text className="text-sm font-normal text-muted">{label}</Text>
       <Text className="flex-1 text-right text-sm font-semibold text-foreground">
         {value ?? 'No registrado'}
@@ -265,6 +279,7 @@ export function ProfileScreen() {
             <InfoRow label="Microchip" value={pet.microchip} />
             <InfoRow label="Dispositivo GPS" value={pet.device?.model ?? null} />
             <InfoRow
+              isLast
               label="Última señal"
               value={
                 pet.lastCommunicationAt
