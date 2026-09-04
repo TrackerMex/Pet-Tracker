@@ -332,11 +332,11 @@ propuso. No queda nada que pegar.
 
 Marca esta casilla y las cuatro de los puntos, con tu commit, para cerrar C6:
 
-- [ ] Firmo el `requirements.md` **vigente** (fecha: ____)
-- [ ] 1 — `--accent: #178255`, con su desviación declarada de #46 R1
-- [ ] 2 — relleno único por tema, tinta partida (`--accent-strong`)
-- [ ] 3 — la convivencia con `--success` (ΔE00 9,16 → 9,24)
-- [ ] 4 — la excepción de 10 literales en 9 líneas de `global-css.test.ts`
+- [X] Firmo el `requirements.md` **vigente** (fecha: ____)
+- [X] 1 — `--accent: #178255`, con su desviación declarada de #46 R1
+- [X] 2 — relleno único por tema, tinta partida (`--accent-strong`)
+- [X] 3 — la convivencia con `--success` (ΔE00 9,16 → 9,24)
+- [X] 4 — la excepción de 10 literales en 9 líneas de `global-css.test.ts`
 
 Gate humano de cierre (criterio de aceptación 10, **no delegable a IA**):
 smoke en **dev build de Android**, comparando lado a lado con el Figma, en
