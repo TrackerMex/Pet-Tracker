@@ -179,6 +179,48 @@ Tres límites, no negociables:
   componente heroui que ya lo trae); touch target ≥ 44pt.
 - Títulos de pantalla: header del stack cuando exista, no Text suelto.
 
+## Dirección de arte
+
+> Añadida el 2026-09-04 tras `progress/explore_design-gap-vs-make.md`. Hasta
+> aquí esta carta era un sistema de estilos —tokens, radios, componentes— y no
+> decía nada sobre qué debe *parecer* ni qué debe *responder* una pantalla. El
+> brief del producto sí lo dice, y las specs no lo estaban leyendo.
+
+**1. Paleta pastel categórica.** El brief pide un producto "amigable, lúdico,
+con colores pastel". Cuando una pantalla distingue **categorías** —tipos de
+recordatorio, tipos de documento, destinos de acceso rápido— cada categoría
+lleva su propio fondo pastel, no el mismo `accent-soft` para todas. Esos
+fondos son **tokens de `global.css`**, nunca hex sueltos ni clases arbitrarias:
+la regla de §Decisiones fijas 3 no tiene excepción por ser "un color de
+adorno". Los valores del Make son de tema claro y no traen equivalente
+oscuro: el dark se diseña, no se copia, y cada par texto/superficie se
+verifica AA con contraste **calculado**, como fijó #61.
+
+**2. Fotografía y su respaldo.** Las cabeceras fotográficas asumen que la
+mascota tiene foto. Cuando no la tiene, el respaldo es **degradado con la
+inicial** —el patrón que ya usa `pet-avatar`—, decidido por el humano el
+2026-09-04. Ni ilustración por especie ni foto obligatoria en el alta. Y sea
+cual sea la imagen, **el texto que va encima pasa AA**: eso lo garantiza el
+degradado de la cabecera, no la suerte de la foto.
+
+**3. Las siete preguntas de la Home.** El brief fija qué debe responder la
+pantalla principal: ¿está segura?, ¿dónde está?, ¿el collar está conectado?,
+¿tiene batería?, ¿tiene algún recordatorio pendiente?, ¿cómo fue su actividad
+hoy?, ¿hay alguna alerta? Toda spec que toque la Home **declara cuáles de las
+siete responde y cuáles no**, y por qué. No es decoración: es el criterio de
+aceptación de la pantalla.
+
+**4. Nada de jerga del proveedor.** El brief lo prohíbe explícitamente: los
+términos técnicos de Wialon no se muestran al usuario final. Si un dato solo
+se puede explicar con vocabulario de la integración, se traduce o no se
+enseña.
+
+**5. Fidelidad no es pérdida de información.** El diseño oculta datos que la
+app ya sirve (la rejilla del mapa, el perfil nutricional, los avisos de plan)
+y no dibuja estados que existen de verdad, como el 402 de "sin suscripción".
+Parecerse al diseño **no** autoriza a borrar un dato útil: la spec que se
+encuentre con uno o lo conserva, o escribe por qué se va.
+
 ## Checklist de autocrítica (cierra toda pantalla nueva o modificada)
 
 Screenshot mental (o real en smoke) contra: jerarquía (lo importante

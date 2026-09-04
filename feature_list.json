@@ -1166,5 +1166,158 @@
       "mobile-pet-tracker/src/screens/add-pet/index.tsx",
       "mobile-pet-tracker/src/screens/pairing/index.tsx"
     ]
+  },
+  {
+    "id": 64,
+    "name": "mobile-pastel-category-palette",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Habilitador del Bloque 0 del rediseno derivado de progress/explore_design-gap-vs-make.md (2026-09-04). El brief del producto pide direccion de arte 'amigable, ludica, colores pastel' y el diseno del Make usa una paleta pastel CATEGORICA en todas partes (azul #EEF4FF, ambar #FFF7ED, rosa #FFF0F3, violeta #F5F3FF, verde #F0FBF6). La app hoy pinta TODAS las categorias -los 7 tipos de recordatorio y todos los tipos de documento- con el mismo bg-accent-soft, asi que ninguna seccion categorica del diseno se puede portar sin inventar clases arbitrarias, lo que rompe el grep-clean de #46 y #72 que la carta declara en §Decisiones fijas 3. Esta feature anade los tokens a mobile-pet-tracker/src/theme/global.css (light y dark) y los aplica donde hoy hay un solo tono. Va PRIMERO porque bloquea a mobile-home-quick-actions (#71) y a las secciones categoricas de los bloques siguientes. Cada par token/superficie debe verificar contraste AA con el mismo metodo calculado, no estimado, que fijo #61: los valores del Make son de tema claro y no traen equivalente oscuro, asi que el dark hay que disenarlo, no copiarlo. El acento vale #178255 desde #61 y no se re-litiga.",
+    "acceptance_criteria": [
+      "global.css declara la paleta pastel categorica como tokens en los dos temas, con un token por rol categorico, no un hex por sitio de uso",
+      "Cada combinacion de texto o icono sobre su superficie pastel pasa AA (>=4,5:1 texto normal), con el contraste calculado y escrito en la spec, en tema claro Y oscuro",
+      "Los 7 tipos de recordatorio y los tipos de documento dejan de compartir bg-accent-soft y resuelven su color por categoria",
+      "El grep-clean sigue intacto: cero hex fuera de src/theme/, cero clases arbitrarias, cero StyleSheet.create, cero sombras legacy",
+      "Suite movil completa verde sin reescribir ningun assert de conducta",
+      "Gate humano: smoke en dev build de Android en los dos temas, comprobando que las categorias se distinguen y que ninguna queda ilegible. No delegable a IA"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/theme/global.css",
+      "mobile-pet-tracker/src/utils/reminder-meta.ts",
+      "mobile-pet-tracker/src/screens/docs/",
+      "docs/ui-guidelines.md"
+    ]
+  },
+  {
+    "id": 65,
+    "name": "mobile-ui-language",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Habilitador del Bloque 0. Cierra la decision A del informe progress/explore_design-gap-vs-make.md: el humano decidio el 2026-09-04 que la UI va ENTERA EN ESPANOL, como el diseno y como el brief. El estado de partida no es 'app en ingles' sino app MEZCLADA, que es peor: el informe conto 214 cadenas visibles y 166 puntos de test anclados a texto. No hay libreria de i18n instalada y esta feature NO la instala salvo que la spec justifique por que hace falta; el objetivo es unificar el idioma, no montar infraestructura de traduccion. Dos consecuencias que la spec tiene que declarar y que el humano ya conoce: (1) el ingles esta ratificado en 6 specs ya aprobadas, asi que enmendarlas pasa por el gate humano y la spec tiene que decir cuales y como; (2) los mensajes de validacion que devuelve el backend son ingleses y quedan FUERA de esta feature -es trabajo de backend y de otra sesion-, asi que la spec debe dejar anotado que tras esta feature seguira habiendo texto ingles llegando por API. Va antes que cualquier pantalla nueva porque toda pantalla nueva escribe texto: hacerlo despues obliga a tocarlo dos veces.",
+    "acceptance_criteria": [
+      "Cero cadenas visibles en ingles en mobile-pet-tracker/src/, verificado con un conteo mecanico que la spec define y el reviewer rehace",
+      "Los 166 puntos de test anclados a texto se actualizan al espanol; ningun assert de CONDUCTA se debilita ni se elimina para lograrlo",
+      "Ningun testID se renombra ni elimina: los tests que puedan anclarse a testID en vez de a texto lo hacen, y la spec dice cuales",
+      "La spec enumera las 6 specs aprobadas que ratificaban el ingles y propone la enmienda de cada una; el humano las firma",
+      "La spec deja anotado que los mensajes de validacion del backend siguen en ingles y que eso es feature aparte",
+      "Suite movil completa verde",
+      "Gate humano: smoke en dev build de Android recorriendo las pantallas y confirmando que no queda texto en ingles. No delegable a IA"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/",
+      "specs/"
+    ]
+  },
+  {
+    "id": 66,
+    "name": "pets-list-response-enrichment",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Habilitador del Bloque 0, y la UNICA de este lote que es de BACKEND: hay que coordinarla con la sesion que lleva backend-pet-tracker/, no la implementa la sesion de UI movil. GET /v1/pets devuelve hoy photoUrl en null, asi que ninguna mascota tiene foto en ningun listado. Eso bloquea de raiz el selector de mascotas del hero de la Home, la cabecera fotografica compartida (#67) y la foto del perfil: sin esto, cualquier carrusel con foto obliga a una llamada por mascota (N+1). Decision de coste que la spec tiene que cerrar por escrito, porque no es gratis: firmar N URLs prefirmadas de S3 en cada listado cuesta; hay que decidir si se firma siempre, solo bajo un parametro tipo ?include=photo, o si se cachea la URL firmada y con que caducidad. Decidir tambien si el mismo enriquecimiento aplica al campo device. Detalle relacionado que el informe encontro y que NO entra aqui: el pestillo 'online' de la ingesta esta roto (ingestion.drizzle.store.ts:97) y no existe umbral definido de cuantos segundos de silencio desconectan a una mascota; eso es la decision G y es feature aparte, pero bloquea la pildora 'En linea' del hero.",
+    "acceptance_criteria": [
+      "GET /v1/pets devuelve photoUrl utilizable para las mascotas que tienen foto, sin obligar a una llamada por mascota",
+      "La spec decide y justifica por escrito la politica de firmado (siempre / bajo parametro / cacheada y con que caducidad) y su coste",
+      "La spec dice si device se enriquece tambien, con el motivo",
+      "Tests por R-id en backend-pet-tracker/ y contrato actualizado en el cliente movil sin romper a los consumidores actuales",
+      "Coordinada con la sesion de backend: la UI movil no la implementa"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/modules/pets/",
+      "mobile-pet-tracker/src/api/types.ts"
+    ]
+  },
+  {
+    "id": 67,
+    "name": "mobile-pet-hero-header",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Primera del Bloque 1. Componente compartido de cabecera fotografica, la pieza que mas separa la app del diseno: el Make abre la Home con un hero de 340 px con la foto de la mascota a sangre y un degradado a blanco (App.tsx:334-365), sobre el que van la pildora de estado, el nombre en 3xl y el dato destacado; la app tiene en su lugar una pet-card con la foto dentro de una tarjeta. Se construye una vez y se aplica primero a Home y a Profile; las pantallas de detalle son feature aparte. Decision B cerrada por el humano el 2026-09-04: cuando la mascota NO tiene foto, el hero se pinta como DEGRADADO CON LA INICIAL, que es el patron que ya usa pet-avatar en el repo -cero assets nuevos, cero decisiones de arte, funciona siempre-. Quedan descartadas la ilustracion por especie (habria que producirla; los 26 assets del export son fotos de relleno generadas y capturas, no arte reutilizable) y la foto obligatoria en el alta. Rompe a proposito el invariante de #46/#61/#62: esto ES cambio de estructura de pantalla. Depende de #66 para que el listado traiga la foto. La pildora 'En linea' del diseno NO entra: depende del pestillo roto de conectividad y del umbral que nadie ha definido (decision G).",
+    "acceptance_criteria": [
+      "Existe un componente compartido de hero en mobile-pet-tracker/src/components/ que recibe la mascota y el dato destacado, usado por Home y por Profile sin duplicar receta",
+      "Sin foto, el hero pinta degradado con la inicial y sigue siendo legible: el texto encima pasa AA en los dos temas, con el contraste calculado en la spec",
+      "Con foto, el degradado a fondo garantiza que el texto encima pasa AA sea cual sea la imagen",
+      "La spec declara que sustituye a pet-card y que testID desaparecen, cuales, y que test de conducta se ancla en su lugar; ninguno se pierde sin sustituto",
+      "La pildora 'En linea' queda fuera y la spec dice por que",
+      "Suite movil completa verde; grep-clean intacto",
+      "Gate humano: smoke en dev build de Android, con y sin foto, en los dos temas. No delegable a IA"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/components/",
+      "mobile-pet-tracker/src/app/(tabs)/home.tsx",
+      "mobile-pet-tracker/src/screens/profile/index.tsx"
+    ]
+  },
+  {
+    "id": 68,
+    "name": "mobile-home-weekly-activity",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Bloque 1. La grafica de barras de 7 dias que el Make pone en la Home (App.tsx:413-428) y que la app no dibuja. Es la mejor relacion valor/coste de todo el informe porque LOS DATOS YA SE ESTAN DESCARGANDO Y SE TIRAN: GET /v1/pets/:petId/activity/daily devuelve una entrada por dia sin huecos y el caso de uso ya usa por defecto un rango de 7 dias terminando hoy en la zona horaria del dueno; el cliente llama sin parametros (src/api/activity.ts:26-31) y la Home descarta seis de las siete entradas quedandose con la ultima (home.tsx:86-89). Tres avisos del informe que la spec DEBE recoger, o la grafica mentira: (1) un dia pasado sin datos vuelve con source 'missing' y todas las metricas en null, no en cero -es deliberado, un cero significaria descanso confirmado-, asi que hace falta un render de 'sin dato' distinto de una barra de altura 0; (2) el array es cronologico terminando hoy, NO lunes a domingo, asi que la letra del eje se deriva de la fecha y nunca del indice; (3) weekComparison ya trae la variacion contra los 7 dias previos, asi que las flechas de tendencia salen gratis aunque el Make no las dibuje. Reutiliza el patron de src/components/weight-chart.tsx en vez de anadir libreria de graficas.",
+    "acceptance_criteria": [
+      "La Home dibuja los 7 dias que ya descarga, sin anadir ninguna llamada nueva a la API",
+      "Un dia con source 'missing' se pinta como 'sin dato' y NO como barra de altura cero; un test lo fija",
+      "La etiqueta de cada barra se deriva de su fecha, no del indice del array; un test con un rango que cruce fin de semana lo fija",
+      "Sin libreria de graficas nueva: reutiliza el patron de weight-chart.tsx",
+      "Los digitos de la grafica usan tabular-nums y sus esquinas no-capsula borderCurve continuous, como fijo #62",
+      "Suite movil completa verde; grep-clean intacto",
+      "Gate humano: smoke en dev build de Android en los dos temas, con una mascota con dias sin dato. No delegable a IA"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/app/(tabs)/home.tsx",
+      "mobile-pet-tracker/src/components/"
+    ]
+  },
+  {
+    "id": 69,
+    "name": "mobile-home-stats-strip",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Bloque 1. El Make monta sobre el hero de la Home una tira de 4 celdas separadas por divisores -Peso, Activo, Paseos, Distancia- (App.tsx:366-384); la app tiene un summary-card con 3 -actividad, sueno, distancia- y no muestra paseos. Los datos de la cuarta celda YA se sirven: walkCount viene en cada entrada de activity/daily y currentWeightKg en el perfil, asi que no hay backend nuevo. La spec tiene que decidir por escrito que pasa con 'sueno', que la app muestra hoy (restMinutes) y el diseno no: el informe lo marca como caso de la decision E -el Make oculta datos reales que la app ya ensena-, y el humano ya fijo el criterio general de no perder informacion util solo por fidelidad, asi que la spec debe conservarlo o justificar donde se va. Depende de #67 porque la tira se monta sobre el hero.",
+    "acceptance_criteria": [
+      "La Home muestra las cuatro celdas del diseno, incluida Paseos, sin anadir llamadas nuevas a la API",
+      "La spec decide por escrito que pasa con el dato de sueno que hoy se muestra y el diseno no dibuja",
+      "Los valores usan tabular-nums, como fijo #62 R15",
+      "Suite movil completa verde; grep-clean intacto",
+      "Gate humano: smoke en dev build de Android en los dos temas. No delegable a IA"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/app/(tabs)/home.tsx"
+    ]
+  },
+  {
+    "id": 70,
+    "name": "mobile-home-reminders-section",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Bloque 1. Seccion 'Recordatorios' en la Home (App.tsx:429-451): proxima vacuna con los dias que faltan y acceso a la lista completa. El dato existe y hoy no se usa: PetProfileResponse ya rellena nextVaccine de verdad con la forma { id, name, nextDoseAt }, y daysLeft es aritmetica de cliente. Cuidado con lo que el mismo contrato NO da: nextReminder y activitySummary siguen hardcodeados a null como placeholders reservados en el mapper del perfil, asi que la barra de progreso de comidas que el Make dibuja en esa misma seccion NO se puede construir aqui -es la feature de backend pet-profile-summary-slots y queda fuera-. La spec tiene que decir explicitamente que mitad de la seccion del diseno entra y cual no, en vez de inventar el dato que falta. Anade navegacion a la lista de recordatorios, asi que rompe el invariante de #46/#61/#62.",
+    "acceptance_criteria": [
+      "La Home muestra la proxima vacuna con los dias restantes calculados en cliente a partir de nextDoseAt",
+      "El acceso a la lista completa navega a la pantalla de recordatorios existente, sin ruta nueva",
+      "La barra de progreso de comidas del diseno queda FUERA y la spec dice por que: nextReminder y activitySummary son null en el contrato",
+      "Sin vacuna proxima, la seccion tiene un estado vacio disenado, no un hueco",
+      "Suite movil completa verde; grep-clean intacto",
+      "Gate humano: smoke en dev build de Android con y sin vacuna proxima. No delegable a IA"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/app/(tabs)/home.tsx"
+    ]
+  },
+  {
+    "id": 71,
+    "name": "mobile-home-quick-actions",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Bloque 1. La rejilla 'Accesos rapidos' de la Home: 4 tiles con fondo pastel que llevan a Mapa, Actividad, Vacunas y Comidas (App.tsx:396-412). No necesita ningun dato: es navegacion pura. DEPENDE DE #64: sin los tokens de la paleta pastel categorica, los cuatro fondos se implementarian con clases arbitrarias y romperian el grep-clean que la carta declara en §Decisiones fijas 3. La spec tiene que resolver dos cosas que el mock no dice: a que ruta real lleva cada tile -el Make tiene pantallas que la app no tiene, asi que si algun destino no existe, ese tile no se dibuja en vez de navegar a una ruta rota- y si los cuatro destinos deben ser los del diseno o los cuatro que mas se usan. Anade navegacion, asi que rompe el invariante de #46/#61/#62.",
+    "acceptance_criteria": [
+      "Los tiles llevan a rutas que existen; la spec enumera destino por destino y omite el tile de cualquier destino que no exista todavia",
+      "Los fondos salen de los tokens de #64: cero clases arbitrarias, cero hex fuera de src/theme/",
+      "Cada tile tiene area tactil >=44pt, como fijo #61 R10",
+      "Suite movil completa verde; grep-clean intacto",
+      "Gate humano: smoke en dev build de Android en los dos temas, pulsando los cuatro. No delegable a IA"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/app/(tabs)/home.tsx",
+      "mobile-pet-tracker/src/theme/global.css"
+    ]
   }
 ]
