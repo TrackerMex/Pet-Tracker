@@ -22,7 +22,10 @@ import { WeightChart } from '../../components/weight-chart';
 import { useApi } from '../../hooks/use-api';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
-import { CONTINUOUS_CORNER } from '../../theme/native-styles';
+import {
+  CONTINUOUS_CORNER,
+  TABULAR_NUMS,
+} from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 
@@ -263,11 +266,15 @@ function WeightLogContent({ petId }: { petId: string }) {
                 </View>
                 <View className="min-w-0 flex-1 gap-1">
                   <View className="flex-row items-baseline gap-1.5">
-                    <Text className="font-bold text-foreground">
+                    <Text
+                      className="font-bold text-foreground"
+                      style={TABULAR_NUMS}
+                    >
                       {entry.weightKg} kg
                     </Text>
                     <Text
                       className={`text-xs font-semibold ${variationClassName}`}
+                      style={TABULAR_NUMS}
                     >
                       {fmtVariation(entry.variation)}
                     </Text>

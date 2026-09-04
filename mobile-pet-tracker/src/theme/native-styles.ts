@@ -9,4 +9,6 @@
 export const CONTINUOUS_CORNER = { borderCurve: 'continuous' } as const;
 
 /** Cifras de ancho fijo: los dígitos dejan de bailar al refrescarse. */
-export const TABULAR_NUMS = { fontVariant: ['tabular-nums'] } as const;
+export const TABULAR_NUMS = {
+  fontVariant: ['tabular-nums'] as ['tabular-nums'],
+} as const;

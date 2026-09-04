@@ -21,7 +21,10 @@ import { useApi } from '../../hooks/use-api';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
-import { CONTINUOUS_CORNER } from '../../theme/native-styles';
+import {
+  CONTINUOUS_CORNER,
+  TABULAR_NUMS,
+} from '../../theme/native-styles';
 import { daysUntil } from '../../utils/reminder-dates';
 import { REMINDER_TYPE_META } from '../../utils/reminder-meta';
 
@@ -195,7 +198,10 @@ export function RemindersScreen() {
               className="flex-1 items-center gap-1 rounded-xl bg-accent-soft p-3"
               style={CONTINUOUS_CORNER}
             >
-              <Text className="text-lg font-black text-foreground">
+              <Text
+                className="text-lg font-black text-foreground"
+                style={TABULAR_NUMS}
+              >
                 {
                   reminders.data.reminders.filter(
                     ({ status }) => status === 'scheduled',
@@ -209,7 +215,10 @@ export function RemindersScreen() {
               className="flex-1 items-center gap-1 rounded-xl bg-default p-3"
               style={CONTINUOUS_CORNER}
             >
-              <Text className="text-lg font-black text-foreground">
+              <Text
+                className="text-lg font-black text-foreground"
+                style={TABULAR_NUMS}
+              >
                 {
                   reminders.data.reminders.filter((reminder) => {
                     const days = daysUntil(
@@ -231,7 +240,10 @@ export function RemindersScreen() {
               className="flex-1 items-center gap-1 rounded-xl bg-default p-3"
               style={CONTINUOUS_CORNER}
             >
-              <Text className="text-lg font-black text-foreground">
+              <Text
+                className="text-lg font-black text-foreground"
+                style={TABULAR_NUMS}
+              >
                 {
                   reminders.data.reminders.filter(
                     ({ status }) => status !== 'scheduled',

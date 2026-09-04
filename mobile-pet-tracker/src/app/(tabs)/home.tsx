@@ -22,7 +22,10 @@ import { useApi } from '../../hooks/use-api';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
-import { CONTINUOUS_CORNER } from '../../theme/native-styles';
+import {
+  CONTINUOUS_CORNER,
+  TABULAR_NUMS,
+} from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 
 function isPetsError(state: PetsState): boolean {
@@ -211,6 +214,7 @@ export default function HomeScreen() {
                 />
                 <Text
                   testID="collar-battery"
+                  style={TABULAR_NUMS}
                   className={
                     detail.data.pet.device.batteryPct === null
                       ? 'font-normal text-muted'
@@ -277,6 +281,7 @@ export default function HomeScreen() {
                 <Text
                   testID="summary-activity"
                   className="text-sm font-bold text-foreground"
+                  style={TABULAR_NUMS}
                 >
                   {fmtMinutes(today?.activeMinutes ?? null)}
                 </Text>
@@ -289,6 +294,7 @@ export default function HomeScreen() {
                 <Text
                   testID="summary-sleep"
                   className="text-sm font-bold text-foreground"
+                  style={TABULAR_NUMS}
                 >
                   {fmtMinutes(today?.restMinutes ?? null)}
                 </Text>
@@ -299,6 +305,7 @@ export default function HomeScreen() {
                 <Text
                   testID="summary-distance"
                   className="text-sm font-bold text-foreground"
+                  style={TABULAR_NUMS}
                 >
                   {fmtKm(today?.distanceM ?? null)}
                 </Text>

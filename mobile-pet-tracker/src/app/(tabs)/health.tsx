@@ -13,7 +13,10 @@ import { useApi } from '../../hooks/use-api';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
-import { CONTINUOUS_CORNER } from '../../theme/native-styles';
+import {
+  CONTINUOUS_CORNER,
+  TABULAR_NUMS,
+} from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 
@@ -216,6 +219,7 @@ export default function HealthScreen() {
               <Text
                 testID="weight-current"
                 className="text-xl font-black text-accent-strong"
+                style={TABULAR_NUMS}
               >
                 {weight.data.weights[0].weightKg} kg
               </Text>
@@ -227,6 +231,7 @@ export default function HealthScreen() {
               <Text
                 testID="weight-variation"
                 className="font-normal text-muted"
+                style={TABULAR_NUMS}
               >
                 {fmtVariation(weight.data.weights[0].variation)}
               </Text>

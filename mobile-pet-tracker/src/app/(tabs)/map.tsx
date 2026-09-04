@@ -18,7 +18,10 @@ import { useApi } from '../../hooks/use-api';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
-import { CONTINUOUS_CORNER } from '../../theme/native-styles';
+import {
+  CONTINUOUS_CORNER,
+  TABULAR_NUMS,
+} from '../../theme/native-styles';
 
 function isPetsError(state: PetsState): boolean {
   switch (state.kind) {
@@ -288,6 +291,7 @@ export default function MapScreen() {
                       testID="stat-speed"
                       className="text-base font-black text-accent-strong"
                       numberOfLines={1}
+                      style={TABULAR_NUMS}
                     >
                       {fmtSpeed(latestSpeed)}
                     </Text>
@@ -303,6 +307,7 @@ export default function MapScreen() {
                       testID="stat-distance"
                       className="text-base font-black text-accent-strong"
                       numberOfLines={1}
+                      style={TABULAR_NUMS}
                     >
                       {fmtKm(distanceM)}
                     </Text>
@@ -320,6 +325,7 @@ export default function MapScreen() {
                       testID="stat-updated"
                       className="text-base font-black text-muted"
                       numberOfLines={1}
+                      style={TABULAR_NUMS}
                     >
                       {updated}
                     </Text>
