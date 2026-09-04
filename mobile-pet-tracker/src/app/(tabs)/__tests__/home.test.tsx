@@ -761,6 +761,7 @@ describe('#62 R5: el título de card usa un único tratamiento', () => {
     mockGetDailyActivity.mockResolvedValue({
       kind: 'ok',
       days: [makeDay()],
+      weekComparison: { distanceM: 5, activeMinutes: 10, walkCount: 20 },
     });
   });
 
