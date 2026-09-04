@@ -289,7 +289,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
     const uses = [...source.matchAll(/style=\{CONTINUOUS_CORNER\}/g)];
 
     expect(source).toMatch(
-      /import \{ CONTINUOUS_CORNER \} from ['"].*theme\/native-styles['"];/,
+      /import \{[^}]*\bCONTINUOUS_CORNER\b[^}]*\} from ['"].*theme\/native-styles['"];/,
     );
     expect(uses).toHaveLength(count);
 
@@ -316,5 +316,28 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
     expect(
       directUses.reduce((total, [, count]) => total + count, 2),
     ).toBe(33);
+  });
+});
+
+describe('#62 R15: todo contador usa cifras tabulares', () => {
+  const counters = [
+    [join('app', '(tabs)', 'map.tsx'), 3],
+    [join('app', '(tabs)', 'home.tsx'), 4],
+    [join('app', '(tabs)', 'health.tsx'), 2],
+    [join('app', '(tabs)', 'weight-log.tsx'), 2],
+    [join('screens', 'reminders', 'index.tsx'), 3],
+  ] as const;
+
+  it.each(counters)('%s aplica TABULAR_NUMS a sus %i valores', (path, count) => {
+    const source = readSource(path);
+
+    expect(source).toMatch(
+      /import \{[^}]*\bTABULAR_NUMS\b[^}]*\} from ['"].*theme\/native-styles['"];/,
+    );
+    expect(source.match(/style=\{TABULAR_NUMS\}/g)).toHaveLength(count);
+  });
+
+  it('mantiene el inventario cerrado en catorce contadores', () => {
+    expect(counters.reduce((total, [, count]) => total + count, 0)).toBe(14);
   });
 });

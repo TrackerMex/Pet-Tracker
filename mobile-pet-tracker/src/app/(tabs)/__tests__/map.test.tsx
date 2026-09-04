@@ -1189,3 +1189,26 @@ describe('#62 R3: el overlay vacío del mapa usa el Card compartido', () => {
     expect(Array.isArray(overlay.props.style)).toBe(false);
   });
 });
+
+describe('#62 R15: el overlay del mapa usa cifras tabulares', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({
+      kind: 'ok',
+      position: makeLastPosition({ staleSeconds: 15 }),
+    });
+  });
+
+  it('estabiliza los valores numéricos sin tratar GPS como contador', async () => {
+    await renderMap();
+
+    const speed = await screen.findByTestId('stat-speed');
+
+    expect(speed.props.style).toEqual(
+      expect.objectContaining({ fontVariant: ['tabular-nums'] }),
+    );
+    expect(screen.getByTestId('stat-gps').props.style).not.toEqual(
+      expect.objectContaining({ fontVariant: ['tabular-nums'] }),
+    );
+  });
+});
