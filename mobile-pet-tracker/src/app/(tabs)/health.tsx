@@ -207,7 +207,7 @@ export default function HealthScreen() {
           className="gap-3"
         >
           <View className="flex-row items-baseline justify-between gap-3">
-            <Text className="text-sm font-bold text-foreground">Weight</Text>
+            <Text className="text-base font-bold text-foreground">Weight</Text>
             {weight.data?.kind === 'ok' && weight.data.weights.length > 0 ? (
               <Text
                 testID="weight-current"

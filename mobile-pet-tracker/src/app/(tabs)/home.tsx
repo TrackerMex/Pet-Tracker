@@ -244,7 +244,7 @@ export default function HomeScreen() {
 
       {selectedPetId ? (
         <Card testID="summary-card" className="gap-4">
-          <Text className="text-lg font-bold text-foreground">
+          <Text className="text-base font-bold text-foreground">
             Today&apos;s Summary
           </Text>
 

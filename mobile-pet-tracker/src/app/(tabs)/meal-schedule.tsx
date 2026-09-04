@@ -261,7 +261,9 @@ function MealScheduleContent({ petId }: { petId: string }) {
             testID="nutrition-profile-section"
             className="gap-3"
           >
-            <Text className="font-bold text-foreground">Nutrition profile</Text>
+            <Text className="text-base font-bold text-foreground">
+              Nutrition profile
+            </Text>
             <View className="flex-row flex-wrap gap-2">
               <Text className="rounded-full bg-default px-3 py-1 text-sm font-semibold text-foreground">
                 {loadedProfile.foodType}
