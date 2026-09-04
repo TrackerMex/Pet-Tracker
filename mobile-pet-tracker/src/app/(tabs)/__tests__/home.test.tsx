@@ -694,3 +694,54 @@ describe('R10: preserva la mascota durante el refetch', () => {
     expect(selectPet).not.toHaveBeenCalled();
   });
 });
+
+describe('#62 R3: collar-card y last-position-card usan el Card compartido', () => {
+  const device = {
+    model: 'PetTrack One',
+    batteryPct: 82,
+    connectivity: 'online' as const,
+    lastMessageAt: '2026-08-21T12:00:00.000Z',
+    esn: 'ACT-001',
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetPet.mockResolvedValue({
+      kind: 'ok',
+      pet: makePet({ device }),
+    });
+    mockGetDailyActivity.mockResolvedValue({ kind: 'no-tracking' });
+  });
+
+  it.each(['collar-card', 'last-position-card'])(
+    '%s hereda radio, borde y sombra de Card',
+    async (testId) => {
+      await renderHome();
+
+      const card = await screen.findByTestId(testId);
+
+      expect(card.props.className).toContain('rounded-card');
+      expect(card.props.className).toContain('border');
+      expect(card.props.className).toContain('shadow-sm');
+      expect(card.props.className).toContain('bg-default');
+    },
+  );
+
+  it('conserva el contrato interactivo de last-position-card', async () => {
+    await renderHome();
+
+    const card = await screen.findByTestId('last-position-card');
+
+    expect(card.props.accessibilityRole).toBe('button');
+    fireEvent.press(card);
+    expect(mockRouter.push).toHaveBeenCalledWith('/map');
+  });
+});

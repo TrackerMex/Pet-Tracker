@@ -475,3 +475,34 @@ describe('R10: preserva la mascota durante el refetch', () => {
     expect(selectPet).not.toHaveBeenCalled();
   });
 });
+
+describe('#62 R3: los avisos de plan usan el Card compartido', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetNutritionPlan.mockResolvedValue({
+      kind: 'ok',
+      plan: makePlan({
+        warnings: [
+          {
+            code: 'chronic_disease_vet',
+            message: 'Consulta al veterinario por enfermedad crónica.',
+          },
+        ],
+      }),
+    });
+  });
+
+  it('hereda radio, borde y sombra sin capturar el testID del texto', async () => {
+    await renderFood();
+
+    const card = await screen.findByTestId(
+      'warning-card-chronic_disease_vet',
+    );
+
+    expect(card.props.className).toContain('rounded-card');
+    expect(card.props.className).toContain('border');
+    expect(card.props.className).toContain('shadow-sm');
+    expect(card.props.className).toContain('bg-default');
+    expect(screen.queryAllByTestId(/^plan-warning-/)).toHaveLength(1);
+  });
+});
