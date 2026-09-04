@@ -247,7 +247,7 @@ function WeightLogContent({ petId }: { petId: string }) {
                 className="flex-row items-center gap-3 rounded-xl border border-border bg-surface px-3.5 py-3 shadow-sm"
               >
                 <View
-                  className={`size-8 shrink-0 items-center justify-center rounded-lg ${tileClassName}`}
+                  className={`size-8 shrink-0 items-center justify-center rounded-xl ${tileClassName}`}
                 >
                   {entry.variation === null || entry.variation === 0 ? (
                     <Minus size={15} color={muted} />

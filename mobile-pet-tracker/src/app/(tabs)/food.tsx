@@ -155,7 +155,7 @@ export default function FoodScreen() {
                       {loadedPlan.dailyGrams} g / day
                     </Text>
                   </View>
-                  <View className="size-14 items-center justify-center rounded-2xl bg-surface-secondary">
+                  <View className="size-14 items-center justify-center rounded-xl bg-surface-secondary">
                     <ForkKnife size={26} color={accent} />
                   </View>
                 </View>

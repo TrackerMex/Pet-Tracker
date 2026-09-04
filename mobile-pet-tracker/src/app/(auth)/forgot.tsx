@@ -31,7 +31,7 @@ export default function Forgot() {
         paddingBottom: insets.bottom + 24,
       }}
     >
-      <View className="size-16 items-center justify-center rounded-2xl bg-accent-soft">
+      <View className="size-16 items-center justify-center rounded-xl bg-accent-soft">
         <Lock size={28} color={accent} />
       </View>
       <Text className="text-center text-2xl font-black text-foreground">
