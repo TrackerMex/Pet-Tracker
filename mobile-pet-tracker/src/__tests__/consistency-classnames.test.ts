@@ -135,3 +135,34 @@ describe('#62 R2: cada skeleton tiene la forma del contenido que sustituye', () 
     expect(reminders).toContain('className="h-20 w-full rounded-card"');
   });
 });
+
+describe('#62 R4: la app solo usa los radios de la escala declarada', () => {
+  it.each(['rounded-2xl', 'rounded-lg', 'rounded-md', 'rounded-sm'])(
+    'no deja la clase fuera de escala %s en producción',
+    (className) => {
+      expect(filesMatching(new RegExp(`\\b${className}\\b`))).toEqual([]);
+    },
+  );
+
+  it('lleva las tres píldoras de resumen de reminders a rounded-xl', () => {
+    const reminders = readSource(join('screens', 'reminders', 'index.tsx'));
+
+    for (const testId of ['pill-active', 'pill-week', 'pill-inactive']) {
+      const pill = elementWithTestId(reminders, testId, '</View>');
+
+      expect(pill).toContain('rounded-xl');
+    }
+  });
+
+  it('lleva los tres tiles restantes a rounded-xl', () => {
+    expect(readSource(join('app', '(tabs)', 'food.tsx'))).toContain(
+      'size-14 items-center justify-center rounded-xl bg-surface-secondary',
+    );
+    expect(readSource(join('app', '(auth)', 'forgot.tsx'))).toContain(
+      'size-16 items-center justify-center rounded-xl bg-accent-soft',
+    );
+    expect(readSource(join('app', '(tabs)', 'weight-log.tsx'))).toContain(
+      'size-8 shrink-0 items-center justify-center rounded-xl ${tileClassName}',
+    );
+  });
+});
