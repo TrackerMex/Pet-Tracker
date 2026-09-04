@@ -166,3 +166,9 @@ describe('#62 R4: la app solo usa los radios de la escala declarada', () => {
     );
   });
 });
+
+describe('#62 R6: la última fila de pet-info-card no cuelga su separador', () => {
+  it('no deja variantes de posición que uniwind no implementa', () => {
+    expect(filesMatching(/\b(?:last|first|odd|even):/)).toEqual([]);
+  });
+});
