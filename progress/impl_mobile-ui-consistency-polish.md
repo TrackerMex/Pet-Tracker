@@ -43,7 +43,7 @@ posterior y separado. Los commits de trazabilidad también están separados.
 | R13 | Cero usos de `useThemeColor` de HeroUI | `22d2851` | `35a1978` | `35343ae` | — |
 | R14 | 33 esquinas no-cápsula continuas | `20cc490` | `617d700` | `809f291` | — |
 | R15 | 14 valores con cifras tabulares; GPS excluido | `fe78420` | `30d3285` | `35f8f18` | `07780bc`, contrato compatible con `TextStyle` |
-| R16 | Gate mecánico completo | —, la spec excluye un test Jest | `43f3f92` | `ac4537f` | Evidencia en `progress/review_mobile-ui-consistency-polish.md` |
+| R16 | Gate mecánico completo | —, la spec excluye un test Jest | `43f3f92` | `ac4537f` | Evidencia en `progress/gate_r16_mobile-ui-consistency-polish.md` |
 
 Desde el primer rojo hasta el cierre de R16 hay **51 commits**: 15 rojos, 15
 implementaciones mínimas, 15 cierres de trazabilidad, 4 ajustes aislados y 2
@@ -127,7 +127,7 @@ Jest, typecheck, lint, diff de alcance y conteos anti-slop.
 ## Conteos de R16
 
 El detalle reproducible está en
-`progress/review_mobile-ui-consistency-polish.md`. Resumen:
+`progress/gate_r16_mobile-ui-consistency-polish.md`. Resumen:
 
 | Comprobación | Resultado |
 |---|---:|
