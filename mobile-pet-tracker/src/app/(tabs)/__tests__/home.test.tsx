@@ -772,3 +772,27 @@ describe('#62 R5: el título de card usa un único tratamiento', () => {
     );
   });
 });
+
+describe('#62 R8: home carga con Skeleton dimensionado, no con Spinner suelto', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockReturnValue(pending<PetsState>());
+    mockGetPet.mockReturnValue(pending<PetState>());
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+  });
+
+  it('reserva el espacio de carga con la forma de una Card', async () => {
+    await renderHome();
+
+    expect(screen.getByTestId('home-loading').props.className).toBe(
+      'h-12 w-full rounded-card',
+    );
+  });
+});
