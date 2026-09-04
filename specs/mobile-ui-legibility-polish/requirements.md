@@ -296,6 +296,14 @@ no textual** (bordes, iconos, trazos de gráfica), que es el que fija WCAG 1.4.1
 
 - [X] Aprobado por humano (fecha: 2026-09-03) ← gate obligatorio antes de implementar
 
+> **Nota de auditoría (2026-09-04).** La casilla de arriba se marcó en el commit
+> `cdc8b82`, sobre el texto **anterior** a la reversión de la decisión de color:
+> aquel R2 exigía conservar `#2AB87C` y añadir un token de texto oscuro. El
+> humano había pedido por chat la vía contraria, la spec se rehizo con ella
+> (`d8cee0b`) y el **leader** volvió a poner `approved` por su cuenta
+> (`29f94aa`). El `reviewer` lo levantó como bloqueo B2 de C6: en el repo no
+> quedaba commit humano sobre el texto vigente. Por eso la firma de abajo.
+
 El humano debe firmar además, explícitamente, los cuatro puntos que esta spec
 resuelve por escrito y que no puede cerrar sola (detalle en [[design]]):
 
@@ -314,10 +322,21 @@ resuelve por escrito y que no puede cerrar sola (detalle en [[design]]):
    valor de token de #46 R1/R2, no asserts de conducta). Lista exacta en
    [[design]] §6.
 
-Además, dos criterios de aceptación de #61 en `feature_list.json` quedaron
-**obsoletos** al revertirse la decisión y siguen diciendo lo contrario de lo
-que la `description` ya recoge; la redacción sustitutiva está propuesta en
-[[traceability]] §Criterios obsoletos, para que el humano la pegue.
+Los dos criterios de aceptación de #61 que quedaron **obsoletos** al revertirse
+la decisión (AC1 y AC10, que exigían justo lo contrario: que ningún relleno
+cambiara de color) **ya fueron reescritos** en `feature_list.json` por el leader
+el 2026-09-03, con la redacción que [[traceability]] §Criterios obsoletos
+propuso. No queda nada que pegar.
+
+### Firma sobre el texto vigente (bloqueo B2 del reviewer)
+
+Marca esta casilla y las cuatro de los puntos, con tu commit, para cerrar C6:
+
+- [ ] Firmo el `requirements.md` **vigente** (fecha: ____)
+- [ ] 1 — `--accent: #178255`, con su desviación declarada de #46 R1
+- [ ] 2 — relleno único por tema, tinta partida (`--accent-strong`)
+- [ ] 3 — la convivencia con `--success` (ΔE00 9,16 → 9,24)
+- [ ] 4 — la excepción de 10 literales en 9 líneas de `global-css.test.ts`
 
 Gate humano de cierre (criterio de aceptación 10, **no delegable a IA**):
 smoke en **dev build de Android**, comparando lado a lado con el Figma, en
