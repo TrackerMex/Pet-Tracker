@@ -1,5 +1,5 @@
 import { router, useFocusEffect } from 'expo-router';
-import { Button, Card as HeroUICard, Skeleton, Spinner } from 'heroui-native';
+import { Button, Card as HeroUICard, Skeleton } from 'heroui-native';
 import { useCallback, useMemo } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -105,7 +105,9 @@ export default function HomeScreen() {
     >
       <Text className="text-2xl font-black text-foreground">Home</Text>
 
-      {pets.data === undefined ? <Spinner testID="home-loading" /> : null}
+      {pets.data === undefined ? (
+        <Skeleton testID="home-loading" className="h-12 w-full rounded-card" />
+      ) : null}
 
       {pets.data && isPetsError(pets.data) ? (
         <View className="items-start gap-3">
