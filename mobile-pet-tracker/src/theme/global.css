@@ -52,6 +52,16 @@
       --color-danger: #EF4444;
       --color-warning: #F59E0B;
       --color-success: #0F9B5A;
+      --color-category-blue: #EFF6FF;
+      --color-category-blue-strong: #0768E0;
+      --color-category-amber: #FFF7ED;
+      --color-category-amber-strong: #A55E07;
+      --color-category-green: #F0FBF6;
+      --color-category-green-strong: #107148;
+      --color-category-violet: #F5F3FF;
+      --color-category-violet-strong: #7549F7;
+      --color-category-rose: #FFF0F3;
+      --color-category-rose-strong: #D80B34;
       --focus: #178255;
       --field-background: var(--default);
       --field-foreground: var(--foreground);
