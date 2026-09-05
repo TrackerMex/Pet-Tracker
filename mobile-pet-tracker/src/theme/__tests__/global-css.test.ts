@@ -341,3 +341,24 @@ describe('#61 R6: muted light pasa AA sobre bg-default sin tocar dark', () => {
     expect(contrast('#9CA3AF', '#1F242B')).toBeGreaterThanOrEqual(4.5);
   });
 });
+
+describe('#64 R1: global.css declara la paleta pastel categórica en tema claro', () => {
+  it('declara los diez tokens exactos y reusa la familia verde existente', () => {
+    const light = parseVariables(extractVariant('light'));
+
+    expect(light).toMatchObject({
+      'color-category-blue': '#EFF6FF',
+      'color-category-blue-strong': '#0768E0',
+      'color-category-amber': '#FFF7ED',
+      'color-category-amber-strong': '#A55E07',
+      'color-category-green': '#F0FBF6',
+      'color-category-green-strong': '#107148',
+      'color-category-violet': '#F5F3FF',
+      'color-category-violet-strong': '#7549F7',
+      'color-category-rose': '#FFF0F3',
+      'color-category-rose-strong': '#D80B34',
+    });
+    expect(light['color-category-green']).toBe(light['surface-secondary']);
+    expect(light['color-category-green-strong']).toBe(light['accent-strong']);
+  });
+});
