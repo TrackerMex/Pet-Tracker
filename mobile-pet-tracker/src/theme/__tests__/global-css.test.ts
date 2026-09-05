@@ -362,3 +362,36 @@ describe('#64 R1: global.css declara la paleta pastel categórica en tema claro'
     expect(light['color-category-green-strong']).toBe(light['accent-strong']);
   });
 });
+
+describe('#64 R2: el tema oscuro de la paleta se diseña a la profundidad de surface-secondary', () => {
+  it('declara los diez tokens exactos y alinea la luminancia de las superficies', () => {
+    const dark = parseVariables(extractVariant('dark'));
+
+    expect(dark).toMatchObject({
+      'color-category-blue': '#0B203A',
+      'color-category-blue-strong': '#4A8DDF',
+      'color-category-amber': '#271E14',
+      'color-category-amber-strong': '#C17B22',
+      'color-category-green': '#12231B',
+      'color-category-green-strong': '#2AB87C',
+      'color-category-violet': '#221C33',
+      'color-category-violet-strong': '#9579E7',
+      'color-category-rose': '#39131A',
+      'color-category-rose-strong': '#E35E78',
+    });
+
+    for (const surface of [
+      '#0B203A',
+      '#271E14',
+      '#12231B',
+      '#221C33',
+      '#39131A',
+    ]) {
+      expect(luminance(surface)).toBeCloseTo(luminance('#12231B'), 4);
+      expect(luminance(surface)).toBeCloseTo(0.0141, 4);
+    }
+
+    expect(dark['color-category-green']).toBe(dark['surface-secondary']);
+    expect(dark['color-category-green-strong']).toBe(dark['accent-strong']);
+  });
+});
