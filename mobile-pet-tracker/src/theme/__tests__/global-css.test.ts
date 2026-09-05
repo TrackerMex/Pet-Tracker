@@ -507,3 +507,101 @@ describe('#64 R3: cada tinta categórica pasa AA sobre su superficie en los dos 
     },
   );
 });
+
+describe('#64 R4: ninguna categoría se confunde con otra ni con un token de estado', () => {
+  const themes = ['light', 'dark'] as const;
+  const slots = ['blue', 'amber', 'green', 'violet', 'rose', 'neutral'] as const;
+  const expectedSurfaceMinima = { light: 3.7, dark: 9.3 } as const;
+  const expectedStateSurfaceMinima = {
+    light: { blue: 9.4, amber: 4.9, green: 3.5, violet: 10.2, rose: 4.6, neutral: 8.5 },
+    dark: { blue: 16.1, amber: 8.9, green: 3.6, violet: 10.2, rose: 9.8, neutral: 9.6 },
+  } as const;
+
+  function categoryColors(theme: 'light' | 'dark') {
+    const variables = parseVariables(extractVariant(theme));
+
+    return Object.fromEntries(
+      slots.map((slot) => [
+        slot,
+        slot === 'neutral'
+          ? { surface: variables.default, ink: variables.muted }
+          : {
+              surface: variables[`color-category-${slot}`],
+              ink: variables[`color-category-${slot}-strong`],
+            },
+      ]),
+    ) as Record<(typeof slots)[number], { surface: string; ink: string }>;
+  }
+
+  function composite(foreground: string, background: string): string {
+    const channels = [1, 3, 5].map((offset) =>
+      Math.round(
+        Number.parseInt(foreground.slice(offset, offset + 2), 16) * 0.15 +
+          Number.parseInt(background.slice(offset, offset + 2), 16) * 0.85,
+      ),
+    );
+
+    return `#${channels.map((value) => value.toString(16).padStart(2, '0')).join('')}`;
+  }
+
+  it.each(themes)('separa las quince parejas de superficies en %s', (theme) => {
+    const palette = categoryColors(theme);
+    const distances = slots.flatMap((slot, index) =>
+      slots.slice(index + 1).map((other) =>
+        deltaE00(palette[slot].surface, palette[other].surface),
+      ),
+    );
+
+    expect(distances).toHaveLength(15);
+    distances.forEach((distance) => expect(distance).toBeGreaterThanOrEqual(2.3));
+    expect(Math.min(...distances)).toBeCloseTo(expectedSurfaceMinima[theme], 1);
+  });
+
+  it.each(themes)('separa superficies y tintas de los tokens de estado en %s', (theme) => {
+    const variables = parseVariables(extractVariant(theme));
+    const palette = categoryColors(theme);
+    const stateSurfaces = [
+      composedSurfaces[theme].accentSoft,
+      composedSurfaces[theme].tabPill,
+      composedSurfaces[theme].warningSoft,
+      composite(variables.danger, variables.surface),
+      composite(variables.success, variables.surface),
+    ];
+    const solidStateTokens = [
+      'accent',
+      'accent-strong',
+      'success',
+      'warning',
+      'warning-strong',
+      'danger',
+    ] as const;
+
+    for (const slot of slots) {
+      const colors = [palette[slot].surface, palette[slot].ink];
+      const stateSurfaceDistances = colors.flatMap((color) =>
+        stateSurfaces.map((stateSurface) => deltaE00(color, stateSurface)),
+      );
+
+      stateSurfaceDistances.forEach((distance) =>
+        expect(distance).toBeGreaterThanOrEqual(2.3),
+      );
+      expect(Math.min(...stateSurfaceDistances)).toBeCloseTo(
+        expectedStateSurfaceMinima[theme][slot],
+        1,
+      );
+
+      for (const color of colors) {
+        for (const token of solidStateTokens) {
+          if (slot === 'green' && color === palette.green.ink && token === 'accent-strong') {
+            continue;
+          }
+
+          expect(deltaE00(color, variables[token])).toBeGreaterThanOrEqual(2.3);
+        }
+      }
+    }
+
+    expect(deltaE00(palette.green.surface, variables['surface-secondary'])).toBe(0);
+    expect(deltaE00(palette.green.ink, variables['accent-strong'])).toBe(0);
+  });
+});
