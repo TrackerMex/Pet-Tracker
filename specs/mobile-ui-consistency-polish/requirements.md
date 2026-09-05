@@ -420,3 +420,30 @@ no cambian de forma al resolverse en Home, Health y Reminders; (c) el título de
 card se ve igual en Home, Health, Food y Meal schedule; (d) la última fila de
 "Información" en Profile ya no cuelga su separador; y (e) las flechas de volver
 y los chevrons se ven iguales en todas las pantallas.
+
+### Firma del gate de cierre (AC8)
+
+Marca estas casillas **con tu propio commit** cuando hayas corrido el smoke.
+Es la misma mecánica que la firma de la spec: ninguna IA las marca. El guion
+completo de 14 puntos está en [[tasks]] §Cierre; estas cinco son las que se
+consideran de riesgo.
+
+- [X] Smoke corrido en **dev build de Android**, en tema claro **Y** oscuro
+      (fecha: 2026-09-05)
+- [X] (a) El placeholder "Reminder title" **se lee** en tema oscuro. Era el
+      defecto que originó R12.
+- [X] (b) Los skeletons **no cambian de forma** al resolverse, en Home, Health
+      y Reminders.
+- [X] (c) Los seis campos de texto crudos de Add pet, Add reminder y Pairing
+      se ven **sin borde**, igual que los de heroui. Es la segunda mitad de
+      R12 y el cambio visible que no estaba en el audit.
+- [X] (d) Las cuatro superficies migradas al `Card` compartido —`collar-card`,
+      "View on map", los avisos de plan y el overlay del mapa— **ganan borde y
+      sombra** a propósito, y se ven como cards del resto de la app.
+- [X] (e) Las flechas de volver y los chevrons se ven iguales en todas las
+      pantallas, y la última fila de "Información" en Profile ya no cuelga su
+      separador.
+
+Si algo falla, **no marques nada**: dilo y se abre un handoff de corrección.
+`borderCurve` (R14) **no se puede ver** en este smoke: es no-op en Android.
+No lo busques.

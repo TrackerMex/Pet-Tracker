@@ -2589,3 +2589,36 @@ ninguna IA mergea a `main`.
   `Pet-Tracker-wt-42`; único solape `src/screens/profile/index.tsx` en
   líneas distintas.
 - Estado final: `done` (57/60). PR pendiente de crear/mergear.
+
+### #62 — mobile-ui-consistency-polish (2026-09-04 → 2026-09-05)
+
+- Segundo lote del pulido de `progress/audit_ui_polish.md`: hallazgos 8-12,
+  14-17, 20 y 22-26. El 18 fuera por decisión humana; `global.css` sin tocar.
+- `spec_author` corrigió al audit con evidencia: los glifos son 7 y no 5 (#42
+  añadió `pairing` y un tercer `›`), los `TextInput` con placeholder 5 y no 8
+  (tres eran `Pressable` pseudo-campo), los contadores 14 y no 13, los botones
+  de acento 12 y no 9. El `leader` verificó esas cuentas antes del gate.
+- El `leader` subió al checklist de firma una consecuencia que la spec dejaba
+  enterrada: la segunda mitad de R12 quita el borde a los 6 campos crudos, que
+  es cambio visible y no solo del placeholder. Humano firmó en `ade9a2f`.
+- Codex CLI: 51 commits rojo→verde, uno por requisito. Ningún commit mezcla
+  test con implementación.
+- `reviewer` **APROBADO** (`progress/review_mobile-ui-consistency-polish.md`,
+  sobre `8bc32ce`). Rehízo los 25 conteos por su cuenta, reconstruyó cinco
+  ciclos con `git checkout` para comprobar que el rojo fallaba de verdad, y
+  diffeó los `testID` entre main y HEAD: 269 → 271, ninguno eliminado ni
+  renombrado, y los dos nuevos son los que `design.md` §6 autoriza.
+- Dos correcciones del reviewer al implementer, ambas reales: Codex omitió
+  `./init.sh` al cierre alegando que `BUILD_CMD` corría CDK, y `cdk synth` no
+  crea recursos AWS — lo corrió el reviewer y salió verde; y la spec pedía
+  literalmente `bun test`, que invoca el runner nativo de Bun y no la suite
+  del proyecto (lo correcto es `bun run test`). Corregir esa redacción en la
+  próxima spec móvil.
+- Codex escribió su evidencia de R16 en `progress/review_<feature>.md`, que es
+  el archivo del `reviewer`; el `leader` lo renombró a `gate_r16_<feature>.md`
+  para que la revisión saliera independiente.
+- AC8 (humano, `f2e752a`): smoke en dev build de Android, dos temas, las seis
+  casillas firmadas. Drift verificado entre el veredicto y el cierre: cero
+  cambios de código, solo `docs/`, `specs/` y `progress/`.
+- Estado final: `done`. PR pendiente de mergear; ninguna IA mergea a main.
+
