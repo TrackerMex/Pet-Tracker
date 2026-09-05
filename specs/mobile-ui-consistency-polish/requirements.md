@@ -428,19 +428,19 @@ Es la misma mecánica que la firma de la spec: ninguna IA las marca. El guion
 completo de 14 puntos está en [[tasks]] §Cierre; estas cinco son las que se
 consideran de riesgo.
 
-- [ ] Smoke corrido en **dev build de Android**, en tema claro **Y** oscuro
-      (fecha: ____)
-- [ ] (a) El placeholder "Reminder title" **se lee** en tema oscuro. Era el
+- [X] Smoke corrido en **dev build de Android**, en tema claro **Y** oscuro
+      (fecha: 2026-09-05)
+- [X] (a) El placeholder "Reminder title" **se lee** en tema oscuro. Era el
       defecto que originó R12.
-- [ ] (b) Los skeletons **no cambian de forma** al resolverse, en Home, Health
+- [X] (b) Los skeletons **no cambian de forma** al resolverse, en Home, Health
       y Reminders.
-- [ ] (c) Los seis campos de texto crudos de Add pet, Add reminder y Pairing
+- [X] (c) Los seis campos de texto crudos de Add pet, Add reminder y Pairing
       se ven **sin borde**, igual que los de heroui. Es la segunda mitad de
       R12 y el cambio visible que no estaba en el audit.
-- [ ] (d) Las cuatro superficies migradas al `Card` compartido —`collar-card`,
+- [X] (d) Las cuatro superficies migradas al `Card` compartido —`collar-card`,
       "View on map", los avisos de plan y el overlay del mapa— **ganan borde y
       sombra** a propósito, y se ven como cards del resto de la app.
-- [ ] (e) Las flechas de volver y los chevrons se ven iguales en todas las
+- [X] (e) Las flechas de volver y los chevrons se ven iguales en todas las
       pantallas, y la última fila de "Información" en Profile ya no cuelga su
       separador.
 
