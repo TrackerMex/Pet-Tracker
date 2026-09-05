@@ -8,7 +8,7 @@ tags: [harness, spec]
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | `src/theme/__tests__/global-css.test.ts::#64 R1: global.css declara la paleta pastel categórica en tema claro` | pendiente |
+| R1 | `src/theme/__tests__/global-css.test.ts::#64 R1: global.css declara la paleta pastel categórica en tema claro` | `435a4e0` — `feat(mobile-pastel-palette): R1 declara la paleta clara` (rojo `a89c8ee`) |
 | R2 | `src/theme/__tests__/global-css.test.ts::#64 R2: el tema oscuro de la paleta se diseña a la profundidad de surface-secondary` | pendiente |
 | R3 | `src/theme/__tests__/global-css.test.ts::#64 R3: cada tinta categórica pasa AA sobre su superficie en los dos temas` | pendiente |
 | R4 | `src/theme/__tests__/global-css.test.ts::#64 R4: ninguna categoría se confunde con otra ni con un token de estado` | pendiente |
@@ -32,5 +32,5 @@ al aprobar (ver [[../../docs/specs|specs]] y [[../../CHECKPOINTS|CHECKPOINTS]] C
 
 | Gate | Estado |
 |---|---|
-| Aprobación de la spec, incluidas las tres decisiones firmadas en [[requirements]] §Aprobación | pendiente |
+| Aprobación de la spec, incluidas las tres decisiones firmadas en [[requirements]] §Aprobación | aprobado por humano el 2026-09-05 |
 | Smoke en dev build de Android, temas claro y oscuro, pantallas Reminders y Documentos | pendiente |
