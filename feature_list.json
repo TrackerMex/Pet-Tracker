@@ -1217,7 +1217,7 @@
   {
     "id": 66,
     "name": "pets-list-response-enrichment",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P2",
     "description": "Habilitador del Bloque 0, y la UNICA de este lote que es de BACKEND: hay que coordinarla con la sesion que lleva backend-pet-tracker/, no la implementa la sesion de UI movil. GET /v1/pets devuelve hoy photoUrl en null, asi que ninguna mascota tiene foto en ningun listado. Eso bloquea de raiz el selector de mascotas del hero de la Home, la cabecera fotografica compartida (#67) y la foto del perfil: sin esto, cualquier carrusel con foto obliga a una llamada por mascota (N+1). Decision de coste que la spec tiene que cerrar por escrito, porque no es gratis: firmar N URLs prefirmadas de S3 en cada listado cuesta; hay que decidir si se firma siempre, solo bajo un parametro tipo ?include=photo, o si se cachea la URL firmada y con que caducidad. Decidir tambien si el mismo enriquecimiento aplica al campo device. Detalle relacionado que el informe encontro y que NO entra aqui: el pestillo 'online' de la ingesta esta roto (ingestion.drizzle.store.ts:97) y no existe umbral definido de cuantos segundos de silencio desconectan a una mascota; eso es la decision G y es feature aparte, pero bloquea la pildora 'En linea' del hero.",
     "acceptance_criteria": [
