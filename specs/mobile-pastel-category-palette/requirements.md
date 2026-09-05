@@ -237,15 +237,15 @@ El gate humano de smoke es quien decide si eso basta en pantalla real.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [X] Aprobado por humano (fecha: 2026-09-05) ← gate obligatorio antes de implementar
 
 Al firmar, el humano aprueba también:
 
-- [ ] La **enmienda a #62 R10** declarada en R8 (el badge del tipo de documento
+- [X] La **enmienda a #62 R10** declarada en R8 (el badge del tipo de documento
       deja de ser monocromo y toma el hue de su categoría).
-- [ ] Que `weight` y `custom` **comparten** el hueco `neutral` (§Fuera de
+- [X] Que `weight` y `custom` **comparten** el hueco `neutral` (§Fuera de
       alcance 6), en vez de inventar un sexto hue que el diseño no tiene.
-- [ ] Que la familia verde **reusa** los valores de `surface-secondary` /
+- [X] Que la familia verde **reusa** los valores de `surface-secondary` /
       `accent-strong` en vez de declarar un segundo verde (R1, R2).
 
 ## Gate humano posterior a la implementación (no delegable a IA)
