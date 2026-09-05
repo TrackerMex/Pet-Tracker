@@ -271,7 +271,7 @@ export default function Register() {
 
       <Button
         testID="register-submit"
-        className="w-full rounded-2xl bg-accent"
+        className="w-full rounded-xl bg-accent"
         isDisabled={!terms || submitting}
         onPress={() => void handleSubmit()}
       >

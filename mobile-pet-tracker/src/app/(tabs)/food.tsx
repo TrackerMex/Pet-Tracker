@@ -1,5 +1,5 @@
 import { router, type Href } from 'expo-router';
-import { Button, Card as HeroUICard, Skeleton, Spinner } from 'heroui-native';
+import { Button, Skeleton, Spinner } from 'heroui-native';
 import { useCallback, useMemo } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -13,6 +13,7 @@ import { useApi } from '../../hooks/use-api';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 
 function isPetsError(state: PetsState): boolean {
@@ -155,7 +156,10 @@ export default function FoodScreen() {
                       {loadedPlan.dailyGrams} g / day
                     </Text>
                   </View>
-                  <View className="size-14 items-center justify-center rounded-2xl bg-surface-secondary">
+                  <View
+                    className="size-14 items-center justify-center rounded-xl bg-surface-secondary"
+                    style={CONTINUOUS_CORNER}
+                  >
                     <ForkKnife size={26} color={accent} />
                   </View>
                 </View>
@@ -166,7 +170,9 @@ export default function FoodScreen() {
                 className="gap-3"
               >
                 <View className="flex-row items-center justify-between gap-3">
-                  <Text className="font-bold text-foreground">Meals today</Text>
+                  <Text className="text-base font-bold text-foreground">
+                    Meals today
+                  </Text>
                   <Text
                     testID="food-meals-progress"
                     className="text-xs font-semibold text-muted"
@@ -185,6 +191,7 @@ export default function FoodScreen() {
                     <View
                       key={`${mealTime}-${index}`}
                       testID={`meal-row-${index}`}
+                      style={CONTINUOUS_CORNER}
                       className={
                         served
                           ? 'flex-row items-center gap-3 rounded-xl bg-surface-secondary p-3'
@@ -224,9 +231,10 @@ export default function FoodScreen() {
               {loadedPlan.warnings.length > 0 ? (
                 <View className="gap-2">
                   {loadedPlan.warnings.map((warning) => (
-                    <HeroUICard
+                    <Card
                       key={warning.code}
-                      className="rounded-2xl border border-border bg-default p-4"
+                      testID={`warning-card-${warning.code}`}
+                      className="bg-default"
                     >
                       <Text
                         testID={`plan-warning-${warning.code}`}
@@ -234,7 +242,7 @@ export default function FoodScreen() {
                       >
                         {warning.message}
                       </Text>
-                    </HeroUICard>
+                    </Card>
                   ))}
                 </View>
               ) : null}
@@ -247,7 +255,7 @@ export default function FoodScreen() {
                 >
                   <View className="flex-row items-center gap-2">
                     <Sparkles size={18} color={accent} />
-                    <Text className="font-bold text-foreground">
+                    <Text className="text-base font-bold text-foreground">
                       AI recommendation
                     </Text>
                   </View>
@@ -284,7 +292,9 @@ export default function FoodScreen() {
             onPress={() => router.push('/meal-schedule' as Href)}
           >
             <View className="gap-1">
-              <Text className="font-bold text-foreground">Meal schedule</Text>
+              <Text className="text-base font-bold text-foreground">
+                Meal schedule
+              </Text>
               <Text className="text-xs font-normal text-muted">
                 View nutrition profile and times
               </Text>

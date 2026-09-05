@@ -5,6 +5,7 @@ import { Button } from 'heroui-native';
 import { useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ArrowLeft } from 'reicon-react-native';
 
 import { createReminder } from '../../api/reminders';
 import type { ReminderType } from '../../api/types';
@@ -12,7 +13,9 @@ import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { combineDateAndTime } from '../../utils/reminder-dates';
 import { REMINDER_TYPE_META } from '../../utils/reminder-meta';
+import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { TOUCH_SLOP } from '../../theme/touch-target';
+import { useThemeColors } from '../../theme/use-theme-colors';
 
 const ADVANCE_OPTIONS = [
   { minutes: 0, label: 'Same day' },
@@ -36,6 +39,7 @@ function AddReminderContent({ petId }: { petId: string }) {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
   const insets = useSafeAreaInsets();
+  const [foreground, muted] = useThemeColors(['foreground', 'muted']);
   const [type, setType] = useState<ReminderType>('vaccine');
   const [title, setTitle] = useState('');
   const [date, setDate] = useState<Date | null>(null);
@@ -122,7 +126,7 @@ function AddReminderContent({ petId }: { petId: string }) {
           className="size-10 items-center justify-center rounded-full bg-default"
           onPress={() => router.back()}
         >
-          <Text className="text-lg font-bold text-foreground">←</Text>
+          <ArrowLeft size={20} color={foreground} />
         </Pressable>
         <Text className="text-2xl font-black text-foreground">
           Add reminder
@@ -166,9 +170,11 @@ function AddReminderContent({ petId }: { petId: string }) {
         </Text>
         <TextInput
           testID="title-input"
-          className="rounded-xl border border-border bg-default px-4 py-3 text-foreground"
+          className="rounded-xl bg-default px-4 py-3 text-foreground"
+          style={CONTINUOUS_CORNER}
           maxLength={120}
           placeholder="Reminder title"
+          placeholderTextColor={muted}
           value={title}
           onChangeText={setTitle}
         />
@@ -183,6 +189,7 @@ function AddReminderContent({ petId }: { petId: string }) {
             accessibilityRole="button"
             testID="date-field"
             className="rounded-xl border border-border bg-default px-4 py-3"
+            style={CONTINUOUS_CORNER}
             onPress={() => setShowDatePicker(true)}
           >
             <Text className={date ? 'text-foreground' : 'text-muted'}>
@@ -198,6 +205,7 @@ function AddReminderContent({ petId }: { petId: string }) {
             accessibilityRole="button"
             testID="time-field"
             className="rounded-xl border border-border bg-default px-4 py-3"
+            style={CONTINUOUS_CORNER}
             onPress={() => setShowTimePicker(true)}
           >
             <Text className="text-foreground">

@@ -21,6 +21,10 @@ import { useApi } from '../../hooks/use-api';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import {
+  CONTINUOUS_CORNER,
+  TABULAR_NUMS,
+} from '../../theme/native-styles';
 import { daysUntil } from '../../utils/reminder-dates';
 import { REMINDER_TYPE_META } from '../../utils/reminder-meta';
 
@@ -155,7 +159,7 @@ export function RemindersScreen() {
             <Skeleton
               key={index}
               testID={`reminder-row-skeleton-${index + 1}`}
-              className="h-20 w-full rounded-2xl"
+              className="h-20 w-full rounded-card"
             />
           ))}
         </View>
@@ -191,9 +195,13 @@ export function RemindersScreen() {
           <View className="flex-row gap-3">
             <View
               testID="pill-active"
-              className="flex-1 items-center gap-1 rounded-2xl bg-accent-soft p-3"
+              className="flex-1 items-center gap-1 rounded-xl bg-accent-soft p-3"
+              style={CONTINUOUS_CORNER}
             >
-              <Text className="text-lg font-black text-foreground">
+              <Text
+                className="text-lg font-black text-foreground"
+                style={TABULAR_NUMS}
+              >
                 {
                   reminders.data.reminders.filter(
                     ({ status }) => status === 'scheduled',
@@ -204,9 +212,13 @@ export function RemindersScreen() {
             </View>
             <View
               testID="pill-week"
-              className="flex-1 items-center gap-1 rounded-2xl bg-default p-3"
+              className="flex-1 items-center gap-1 rounded-xl bg-default p-3"
+              style={CONTINUOUS_CORNER}
             >
-              <Text className="text-lg font-black text-foreground">
+              <Text
+                className="text-lg font-black text-foreground"
+                style={TABULAR_NUMS}
+              >
                 {
                   reminders.data.reminders.filter((reminder) => {
                     const days = daysUntil(
@@ -225,9 +237,13 @@ export function RemindersScreen() {
             </View>
             <View
               testID="pill-inactive"
-              className="flex-1 items-center gap-1 rounded-2xl bg-default p-3"
+              className="flex-1 items-center gap-1 rounded-xl bg-default p-3"
+              style={CONTINUOUS_CORNER}
             >
-              <Text className="text-lg font-black text-foreground">
+              <Text
+                className="text-lg font-black text-foreground"
+                style={TABULAR_NUMS}
+              >
                 {
                   reminders.data.reminders.filter(
                     ({ status }) => status !== 'scheduled',
@@ -250,7 +266,10 @@ export function RemindersScreen() {
                   testID={`reminder-row-${reminder.id}`}
                   className={`min-h-20 flex-row items-center gap-3${inactive ? ' opacity-50' : ''}`}
                 >
-                  <View className="size-11 items-center justify-center rounded-xl bg-accent-soft">
+                  <View
+                    className="size-11 items-center justify-center rounded-xl bg-accent-soft"
+                    style={CONTINUOUS_CORNER}
+                  >
                     <Text className="text-xl">{meta.emoji}</Text>
                   </View>
                   <View className="min-w-0 flex-1 gap-1">

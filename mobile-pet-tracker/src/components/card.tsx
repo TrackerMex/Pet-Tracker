@@ -1,5 +1,7 @@
-import { Pressable, View, type ViewProps } from 'react-native';
+import { Pressable, StyleSheet, View, type ViewProps } from 'react-native';
 import { twMerge } from 'tailwind-merge';
+
+import { CONTINUOUS_CORNER } from '../theme/native-styles';
 
 const variantClassNames = {
   surface: 'rounded-card border border-border bg-surface p-4 shadow-sm',
@@ -20,9 +22,11 @@ export function Card({
   variant = 'surface',
   onPress,
   className,
+  style,
   ...rest
 }: CardProps) {
   const mergedClassName = twMerge(variantClassNames[variant], className);
+  const mergedStyle = StyleSheet.flatten([CONTINUOUS_CORNER, style]);
 
   if (onPress) {
     return (
@@ -30,10 +34,11 @@ export function Card({
         {...rest}
         accessibilityRole="button"
         className={mergedClassName}
+        style={mergedStyle}
         onPress={onPress}
       />
     );
   }
 
-  return <View {...rest} className={mergedClassName} />;
+  return <View {...rest} className={mergedClassName} style={mergedStyle} />;
 }

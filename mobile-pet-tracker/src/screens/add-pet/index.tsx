@@ -6,6 +6,7 @@ import { Button } from 'heroui-native';
 import { useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ArrowLeft } from 'reicon-react-native';
 
 import {
   requestPhotoUploadUrl,
@@ -17,7 +18,9 @@ import { createPet, type CreatePetInput } from '../../api/pets';
 import { PetAvatar } from '../../components/pet-avatar';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { TOUCH_SLOP } from '../../theme/touch-target';
+import { useThemeColors } from '../../theme/use-theme-colors';
 
 type Species = CreatePetInput['species'];
 type Sex = NonNullable<CreatePetInput['sex']>;
@@ -77,6 +80,7 @@ export function AddPetScreen() {
   const { signOut, token } = useAuth();
   const { selectPet } = useSelectedPet();
   const insets = useSafeAreaInsets();
+  const [foreground, muted] = useThemeColors(['foreground', 'muted']);
   const [species, setSpecies] = useState<Species>('dog');
   const [name, setName] = useState('');
   const [breed, setBreed] = useState('');
@@ -231,7 +235,7 @@ export function AddPetScreen() {
           className="size-10 items-center justify-center rounded-full bg-default"
           onPress={() => router.back()}
         >
-          <Text className="text-lg font-bold text-foreground">←</Text>
+          <ArrowLeft size={20} color={foreground} />
         </Pressable>
         <Text className="text-2xl font-black text-foreground">Add pet</Text>
       </View>
@@ -276,12 +280,12 @@ export function AddPetScreen() {
               hitSlop={TOUCH_SLOP}
               className={
                 species === value
-                  ? 'rounded-full border border-accent bg-accent-soft px-4 py-2'
-                  : 'rounded-full border border-border bg-default px-4 py-2'
+                  ? 'rounded-full border border-accent bg-accent-soft px-3 py-2'
+                  : 'rounded-full border border-border bg-default px-3 py-2'
               }
               onPress={() => setSpecies(value)}
             >
-              <Text className="font-semibold text-foreground">
+              <Text className="text-sm font-semibold text-foreground">
                 {value === 'dog' ? 'Dog' : 'Cat'}
               </Text>
             </Pressable>
@@ -293,9 +297,11 @@ export function AddPetScreen() {
         <FieldLabel>Name</FieldLabel>
         <TextInput
           testID="name-input"
-          className="rounded-xl border border-border bg-default px-4 py-3 text-foreground"
+          className="rounded-xl bg-default px-4 py-3 text-foreground"
+          style={CONTINUOUS_CORNER}
           maxLength={120}
           placeholder="Pet name"
+          placeholderTextColor={muted}
           value={name}
           onChangeText={setName}
         />
@@ -305,9 +311,11 @@ export function AddPetScreen() {
         <FieldLabel>Breed</FieldLabel>
         <TextInput
           testID="breed-input"
-          className="rounded-xl border border-border bg-default px-4 py-3 text-foreground"
+          className="rounded-xl bg-default px-4 py-3 text-foreground"
+          style={CONTINUOUS_CORNER}
           maxLength={120}
           placeholder="Optional"
+          placeholderTextColor={muted}
           value={breed}
           onChangeText={setBreed}
         />
@@ -361,6 +369,7 @@ export function AddPetScreen() {
             accessibilityRole="button"
             testID="birth-date-field"
             className="rounded-xl border border-border bg-default px-4 py-3"
+            style={CONTINUOUS_CORNER}
             onPress={() => setShowDatePicker(true)}
           >
             <Text className={birthDate ? 'text-foreground' : 'text-muted'}>
@@ -370,10 +379,12 @@ export function AddPetScreen() {
         ) : (
           <TextInput
             testID="approx-age-input"
-            className="rounded-xl border border-border bg-default px-4 py-3 text-foreground"
+            className="rounded-xl bg-default px-4 py-3 text-foreground"
+            style={CONTINUOUS_CORNER}
             inputMode="numeric"
             maxLength={3}
             placeholder="Months"
+            placeholderTextColor={muted}
             value={approxAgeMonths}
             onChangeText={setApproxAgeMonths}
           />
@@ -409,9 +420,11 @@ export function AddPetScreen() {
         <FieldLabel>Microchip</FieldLabel>
         <TextInput
           testID="microchip-input"
-          className="rounded-xl border border-border bg-default px-4 py-3 text-foreground"
+          className="rounded-xl bg-default px-4 py-3 text-foreground"
+          style={CONTINUOUS_CORNER}
           maxLength={32}
           placeholder="Optional"
+          placeholderTextColor={muted}
           value={microchip}
           onChangeText={setMicrochip}
         />

@@ -13,6 +13,10 @@ import { useApi } from '../../hooks/use-api';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import {
+  CONTINUOUS_CORNER,
+  TABULAR_NUMS,
+} from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 
@@ -127,7 +131,7 @@ export default function HealthScreen() {
           {vaccines.data === undefined || vaccines.isRefreshing ? (
             <Skeleton
               testID="vaccines-skeleton"
-              className="h-24 w-full rounded-2xl"
+              className="h-24 w-full rounded-card"
             />
           ) : null}
 
@@ -136,7 +140,10 @@ export default function HealthScreen() {
               testID="next-vaccine-card"
               className="flex-row items-center gap-3"
             >
-              <View className="size-11 items-center justify-center rounded-xl bg-warning-soft">
+              <View
+                className="size-11 items-center justify-center rounded-xl bg-warning-soft"
+                style={CONTINUOUS_CORNER}
+              >
                 <Syringe size={22} color={warning} />
               </View>
               <View className="flex-1 gap-1">
@@ -207,11 +214,12 @@ export default function HealthScreen() {
           className="gap-3"
         >
           <View className="flex-row items-baseline justify-between gap-3">
-            <Text className="text-sm font-bold text-foreground">Weight</Text>
+            <Text className="text-base font-bold text-foreground">Weight</Text>
             {weight.data?.kind === 'ok' && weight.data.weights.length > 0 ? (
               <Text
                 testID="weight-current"
                 className="text-xl font-black text-accent-strong"
+                style={TABULAR_NUMS}
               >
                 {weight.data.weights[0].weightKg} kg
               </Text>
@@ -223,6 +231,7 @@ export default function HealthScreen() {
               <Text
                 testID="weight-variation"
                 className="font-normal text-muted"
+                style={TABULAR_NUMS}
               >
                 {fmtVariation(weight.data.weights[0].variation)}
               </Text>
@@ -246,6 +255,7 @@ export default function HealthScreen() {
             testID="weight-log-link"
             hitSlop={TOUCH_SLOP}
             className="flex-row items-center justify-between rounded-xl bg-default px-3 py-2"
+            style={CONTINUOUS_CORNER}
             onPress={() => router.push('/weight-log')}
           >
             <Text className="font-semibold text-foreground">Weight log</Text>

@@ -587,3 +587,30 @@ describe('#61 R10: los controles táctiles declaran TOUCH_SLOP', () => {
     );
   });
 });
+
+describe('#62 R5: el título de card usa un único tratamiento', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockListVaccines.mockReturnValue(pending<VaccinesState>());
+    mockListWeights.mockResolvedValue({
+      kind: 'ok',
+      weights: [makeWeight()],
+    });
+  });
+
+  it('aplica la receta canónica a Weight', async () => {
+    await renderHealth();
+
+    expect((await screen.findByText('Weight')).props.className).toBe(
+      'text-base font-bold text-foreground',
+    );
+  });
+});

@@ -4,6 +4,7 @@ import { Button, Skeleton } from 'heroui-native';
 import { useCallback, useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ChevronRight } from 'reicon-react-native';
 import { useUniwind } from 'uniwind';
 
 import {
@@ -21,12 +22,28 @@ import { useApi } from '../../hooks/use-api';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { useThemeTransition } from '../../theme/theme-transition';
 import { TOUCH_SLOP } from '../../theme/touch-target';
+import { useThemeColors } from '../../theme/use-theme-colors';
 
-function InfoRow({ label, value }: { label: string; value: string | null }) {
+function InfoRow({
+  isLast = false,
+  label,
+  value,
+}: {
+  isLast?: boolean;
+  label: string;
+  value: string | null;
+}) {
   return (
-    <View className="flex-row items-center justify-between gap-4 border-b border-separator py-3 last:border-b-0">
+    <View
+      className={
+        isLast
+          ? 'flex-row items-center justify-between gap-4 py-3'
+          : 'flex-row items-center justify-between gap-4 border-b border-separator py-3'
+      }
+    >
       <Text className="text-sm font-normal text-muted">{label}</Text>
       <Text className="flex-1 text-right text-sm font-semibold text-foreground">
         {value ?? 'No registrado'}
@@ -37,7 +54,10 @@ function InfoRow({ label, value }: { label: string; value: string | null }) {
 
 function PetHero({ pet }: { pet: PetProfile }) {
   return (
-    <View className="h-56 overflow-hidden rounded-card bg-default">
+    <View
+      className="h-56 overflow-hidden rounded-card bg-default"
+      style={CONTINUOUS_CORNER}
+    >
       <View className="h-full w-full items-center justify-center bg-accent-soft">
         <PetAvatar
           name={pet.name}
@@ -86,6 +106,7 @@ export function ProfileScreen() {
   const { theme } = useUniwind();
   const switchTheme = useThemeTransition();
   const insets = useSafeAreaInsets();
+  const [muted] = useThemeColors(['muted']);
   const [photoUploading, setPhotoUploading] = useState(false);
   const [photoError, setPhotoError] = useState<string | null>(null);
   const meFn = useCallback(
@@ -265,6 +286,7 @@ export function ProfileScreen() {
             <InfoRow label="Microchip" value={pet.microchip} />
             <InfoRow label="Dispositivo GPS" value={pet.device?.model ?? null} />
             <InfoRow
+              isLast
               label="Última señal"
               value={
                 pet.lastCommunicationAt
@@ -279,22 +301,24 @@ export function ProfileScreen() {
             testID="documents-link"
             hitSlop={TOUCH_SLOP}
             className="flex-row items-center justify-between rounded-xl bg-default px-3 py-2"
+            style={CONTINUOUS_CORNER}
             onPress={() => router.push(`/pets/${pet.id}/docs` as Href)}
           >
             <Text className="font-semibold text-foreground">Documentos</Text>
-            <Text className="text-lg font-semibold text-muted">›</Text>
+            <ChevronRight size={20} color={muted} />
           </Pressable>
 
           <Pressable
             accessibilityRole="button"
             testID="pairing-link"
             className="flex-row items-center justify-between rounded-xl bg-default px-3 py-2"
+            style={CONTINUOUS_CORNER}
             onPress={() => router.push('/pairing' as Href)}
           >
             <Text className="font-semibold text-foreground">
               Configuración del Dispositivo GPS
             </Text>
-            <Text className="text-lg font-semibold text-muted">›</Text>
+            <ChevronRight size={20} color={muted} />
           </Pressable>
         </>
       ) : null}
@@ -304,10 +328,11 @@ export function ProfileScreen() {
         testID="reminders-link"
         hitSlop={TOUCH_SLOP}
         className="flex-row items-center justify-between rounded-xl bg-default px-3 py-2"
+        style={CONTINUOUS_CORNER}
         onPress={() => router.push('/reminders' as Href)}
       >
         <Text className="font-semibold text-foreground">Reminders</Text>
-        <Text className="text-lg font-semibold text-muted">›</Text>
+        <ChevronRight size={20} color={muted} />
       </Pressable>
 
       <Card testID="me-card" className="gap-2">

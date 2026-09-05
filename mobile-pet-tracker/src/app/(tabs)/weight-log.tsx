@@ -22,6 +22,10 @@ import { WeightChart } from '../../components/weight-chart';
 import { useApi } from '../../hooks/use-api';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import {
+  CONTINUOUS_CORNER,
+  TABULAR_NUMS,
+} from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 
@@ -138,7 +142,9 @@ function WeightLogContent({ petId }: { petId: string }) {
       </View>
 
       {weights.data?.kind === 'ok' ? (
-        <WeightChart entries={weights.data.weights} />
+        <Card testID="weight-chart-card">
+          <WeightChart entries={weights.data.weights} />
+        </Card>
       ) : null}
 
       {weights.data?.kind === 'ok' ? (
@@ -247,7 +253,8 @@ function WeightLogContent({ petId }: { petId: string }) {
                 className="flex-row items-center gap-3 rounded-xl border border-border bg-surface px-3.5 py-3 shadow-sm"
               >
                 <View
-                  className={`size-8 shrink-0 items-center justify-center rounded-lg ${tileClassName}`}
+                  className={`size-8 shrink-0 items-center justify-center rounded-xl ${tileClassName}`}
+                  style={CONTINUOUS_CORNER}
                 >
                   {entry.variation === null || entry.variation === 0 ? (
                     <Minus size={15} color={muted} />
@@ -259,11 +266,15 @@ function WeightLogContent({ petId }: { petId: string }) {
                 </View>
                 <View className="min-w-0 flex-1 gap-1">
                   <View className="flex-row items-baseline gap-1.5">
-                    <Text className="font-bold text-foreground">
+                    <Text
+                      className="font-bold text-foreground"
+                      style={TABULAR_NUMS}
+                    >
                       {entry.weightKg} kg
                     </Text>
                     <Text
                       className={`text-xs font-semibold ${variationClassName}`}
+                      style={TABULAR_NUMS}
                     >
                       {fmtVariation(entry.variation)}
                     </Text>

@@ -1,5 +1,5 @@
 import { router, useFocusEffect } from 'expo-router';
-import { Button, Card as HeroUICard, Skeleton, Spinner } from 'heroui-native';
+import { Button, Card as HeroUICard, Skeleton } from 'heroui-native';
 import { useCallback, useMemo } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -22,6 +22,10 @@ import { useApi } from '../../hooks/use-api';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import {
+  CONTINUOUS_CORNER,
+  TABULAR_NUMS,
+} from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 
 function isPetsError(state: PetsState): boolean {
@@ -105,7 +109,9 @@ export default function HomeScreen() {
     >
       <Text className="text-2xl font-black text-foreground">Home</Text>
 
-      {pets.data === undefined ? <Spinner testID="home-loading" /> : null}
+      {pets.data === undefined ? (
+        <Skeleton testID="home-loading" className="h-12 w-full rounded-card" />
+      ) : null}
 
       {pets.data && isPetsError(pets.data) ? (
         <View className="items-start gap-3">
@@ -133,7 +139,7 @@ export default function HomeScreen() {
       ) : null}
 
       {selectedPetId && detail.data === undefined ? (
-        <Skeleton testID="pet-card-skeleton" className="h-32 w-full rounded-2xl" />
+        <Skeleton testID="pet-card-skeleton" className="h-32 w-full rounded-card" />
       ) : null}
 
       {detail.data?.kind === 'error' || detail.data?.kind === 'unreachable' ? (
@@ -169,9 +175,9 @@ export default function HomeScreen() {
             </View>
           </Card>
 
-          <HeroUICard
+          <Card
             testID="collar-card"
-            className="gap-3 rounded-2xl bg-default p-4"
+            className="gap-3 bg-default"
           >
             <View className="flex-row items-center gap-3">
               <View className="size-9 items-center justify-center rounded-full bg-accent-soft">
@@ -208,6 +214,7 @@ export default function HomeScreen() {
                 />
                 <Text
                   testID="collar-battery"
+                  style={TABULAR_NUMS}
                   className={
                     detail.data.pet.device.batteryPct === null
                       ? 'font-normal text-muted'
@@ -227,24 +234,25 @@ export default function HomeScreen() {
               </Text>
             )}
             {detail.data.pet.device === null ? (
-              <Pressable
-                accessibilityRole="button"
-                testID="collar-pair-link"
-                className="min-h-11 items-center justify-center rounded-xl bg-accent-soft px-4"
-                onPress={() => router.push('/pairing')}
+                  <Pressable
+                    accessibilityRole="button"
+                    testID="collar-pair-link"
+                    className="min-h-11 items-center justify-center rounded-xl bg-accent-soft px-4"
+                    style={CONTINUOUS_CORNER}
+                    onPress={() => router.push('/pairing')}
               >
                 <Text className="font-bold text-foreground">
                   Pair a collar
                 </Text>
               </Pressable>
             ) : null}
-          </HeroUICard>
+          </Card>
         </>
       ) : null}
 
       {selectedPetId ? (
         <Card testID="summary-card" className="gap-4">
-          <Text className="text-lg font-bold text-foreground">
+          <Text className="text-base font-bold text-foreground">
             Today&apos;s Summary
           </Text>
 
@@ -273,6 +281,7 @@ export default function HomeScreen() {
                 <Text
                   testID="summary-activity"
                   className="text-sm font-bold text-foreground"
+                  style={TABULAR_NUMS}
                 >
                   {fmtMinutes(today?.activeMinutes ?? null)}
                 </Text>
@@ -285,6 +294,7 @@ export default function HomeScreen() {
                 <Text
                   testID="summary-sleep"
                   className="text-sm font-bold text-foreground"
+                  style={TABULAR_NUMS}
                 >
                   {fmtMinutes(today?.restMinutes ?? null)}
                 </Text>
@@ -295,6 +305,7 @@ export default function HomeScreen() {
                 <Text
                   testID="summary-distance"
                   className="text-sm font-bold text-foreground"
+                  style={TABULAR_NUMS}
                 >
                   {fmtKm(today?.distanceM ?? null)}
                 </Text>
@@ -308,10 +319,9 @@ export default function HomeScreen() {
       ) : null}
 
       {detail.data?.kind === 'ok' && detail.data.pet.device ? (
-        <Pressable
-          accessibilityRole="button"
+        <Card
           testID="last-position-card"
-          className="gap-2 rounded-2xl bg-default p-4"
+          className="gap-2 bg-default"
           onPress={() => router.push('/map')}
         >
           <View className="flex-row items-center justify-between">
@@ -326,7 +336,7 @@ export default function HomeScreen() {
           <Text testID="last-position-time" className="font-normal text-muted">
             {fmtLastSeen(detail.data.pet.lastCommunicationAt)}
           </Text>
-        </Pressable>
+        </Card>
       ) : null}
     </ScrollView>
   );

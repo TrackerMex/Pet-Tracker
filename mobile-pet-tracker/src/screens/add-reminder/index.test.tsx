@@ -447,3 +447,38 @@ describe('#61 R10: los controles táctiles declaran TOUCH_SLOP', () => {
     },
   );
 });
+
+describe('#62 R12: el placeholder del formulario sale del tema', () => {
+  const muted = '#667085';
+  const themeColors = jest.requireActual<
+    typeof import('../../theme/use-theme-colors')
+  >('../../theme/use-theme-colors');
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.spyOn(themeColors, 'useThemeColors').mockImplementation(
+      ((tokens: readonly string[]) =>
+        tokens.map((token) => (token === 'muted' ? muted : '#0D1117'))) as typeof themeColors.useThemeColors,
+    );
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockCreateReminder.mockReturnValue(pending());
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('usa muted en title-input', async () => {
+    await renderAddReminder();
+
+    expect(
+      (await screen.findByTestId('title-input')).props.placeholderTextColor,
+    ).toBe(muted);
+  });
+});

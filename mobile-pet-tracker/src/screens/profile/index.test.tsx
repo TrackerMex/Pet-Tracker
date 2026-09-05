@@ -712,3 +712,30 @@ describe('#61 R10: los controles táctiles declaran TOUCH_SLOP', () => {
     },
   );
 });
+
+describe('#62 R6: la última fila de pet-info-card no cuelga su separador', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockGetMe.mockReturnValue(pending<MeState>());
+    const pet = makePet();
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+  });
+
+  it('conserva el separador en Raza y lo omite en Última señal', async () => {
+    await renderProfile();
+
+    const breedRow = (await screen.findByText('Raza')).parent;
+    const lastSignalRow = screen.getByText('Última señal').parent;
+
+    expect(breedRow?.props.className).toContain('border-b border-separator');
+    expect(lastSignalRow?.props.className).not.toContain('border-b');
+  });
+});

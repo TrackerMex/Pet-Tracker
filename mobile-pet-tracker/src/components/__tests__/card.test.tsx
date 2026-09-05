@@ -50,3 +50,23 @@ describe('R2: Card comparte recetas y comportamiento accesible', () => {
     expect(onPress).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('#62 R14: el Card compartido fusiona borderCurve con el style del llamador', () => {
+  it('entrega un objeto plano con esquina continua', async () => {
+    await render(<Card testID="card" />);
+
+    const style = screen.getByTestId('card').props.style;
+
+    expect(Array.isArray(style)).toBe(false);
+    expect(style).toEqual({ borderCurve: 'continuous' });
+  });
+
+  it('conserva el style del llamador en el objeto plano', async () => {
+    await render(<Card testID="card" style={{ top: 52 }} />);
+
+    expect(screen.getByTestId('card').props.style).toEqual({
+      borderCurve: 'continuous',
+      top: 52,
+    });
+  });
+});

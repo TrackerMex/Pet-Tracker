@@ -1,18 +1,14 @@
 import { router } from 'expo-router';
-import {
-  Button,
-  Input,
-  Label,
-  LinkButton,
-  TextField,
-  useThemeColor,
-} from 'heroui-native';
+import { Button, Input, Label, LinkButton, TextField } from 'heroui-native';
 import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Lock } from 'reicon-react-native';
 
+import { CONTINUOUS_CORNER } from '../../theme/native-styles';
+import { useThemeColors } from '../../theme/use-theme-colors';
+
 export default function Forgot() {
-  const [accent] = useThemeColor(['accent']);
+  const [accentStrong] = useThemeColors(['accent-strong']);
   const insets = useSafeAreaInsets();
 
   return (
@@ -31,8 +27,11 @@ export default function Forgot() {
         paddingBottom: insets.bottom + 24,
       }}
     >
-      <View className="size-16 items-center justify-center rounded-2xl bg-accent-soft">
-        <Lock size={28} color={accent} />
+      <View
+        className="size-16 items-center justify-center rounded-xl bg-accent-soft"
+        style={CONTINUOUS_CORNER}
+      >
+        <Lock size={28} color={accentStrong} />
       </View>
       <Text className="text-center text-2xl font-black text-foreground">
         Forgot password
@@ -54,7 +53,7 @@ export default function Forgot() {
 
       <Button
         testID="forgot-submit"
-        className="w-full rounded-2xl bg-accent"
+        className="w-full rounded-xl bg-accent"
         isDisabled
       >
         <Button.Label className="font-bold text-accent-foreground">

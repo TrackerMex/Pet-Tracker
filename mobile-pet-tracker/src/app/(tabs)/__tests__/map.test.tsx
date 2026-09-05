@@ -1162,3 +1162,53 @@ describe('#61 R11: el overlay de stats reparte los cuatro tiles en 2x2 sin envol
     );
   });
 });
+
+describe('#62 R3: el overlay vacío del mapa usa el Card compartido', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: null });
+  });
+
+  it('hereda la receta de Card y conserva su style absoluto como objeto', async () => {
+    await renderMap();
+
+    const overlay = await screen.findByTestId('map-empty-overlay');
+
+    expect(overlay.props.className).toContain('rounded-card');
+    expect(overlay.props.className).toContain('border');
+    expect(overlay.props.className).toContain('shadow-sm');
+    expect(overlay.props.className).toContain('bg-surface');
+    expect(overlay.props.style).toEqual(
+      expect.objectContaining({
+        position: 'absolute',
+        top: 52,
+        left: 16,
+        right: 16,
+      }),
+    );
+    expect(Array.isArray(overlay.props.style)).toBe(false);
+  });
+});
+
+describe('#62 R15: el overlay del mapa usa cifras tabulares', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({
+      kind: 'ok',
+      position: makeLastPosition({ staleSeconds: 15 }),
+    });
+  });
+
+  it('estabiliza los valores numéricos sin tratar GPS como contador', async () => {
+    await renderMap();
+
+    const speed = await screen.findByTestId('stat-speed');
+
+    expect(speed.props.style).toEqual(
+      expect.objectContaining({ fontVariant: ['tabular-nums'] }),
+    );
+    expect(screen.getByTestId('stat-gps').props.style).not.toEqual(
+      expect.objectContaining({ fontVariant: ['tabular-nums'] }),
+    );
+  });
+});

@@ -18,6 +18,10 @@ import { useApi } from '../../hooks/use-api';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import {
+  CONTINUOUS_CORNER,
+  TABULAR_NUMS,
+} from '../../theme/native-styles';
 
 function isPetsError(state: PetsState): boolean {
   switch (state.kind) {
@@ -251,7 +255,7 @@ export default function MapScreen() {
             colorScheme={theme === 'dark' ? 'dark' : 'light'}
           />
           {position === null ? (
-            <View
+            <Card
               testID="map-empty-overlay"
               style={{
                 position: 'absolute',
@@ -259,12 +263,12 @@ export default function MapScreen() {
                 left: 16,
                 right: 16,
               }}
-              className="items-center rounded-2xl bg-surface p-3"
+              className="items-center p-3"
             >
               <Text testID="map-empty" className="text-muted">
                 No location data yet
               </Text>
-            </View>
+            </Card>
           ) : null}
           <View
             testID="map-stats"
@@ -279,11 +283,15 @@ export default function MapScreen() {
             <Card className="p-3">
               <View className="gap-2">
                 <View className="flex-row gap-2">
-                  <View className="flex-1 items-center rounded-xl bg-default p-3">
+                  <View
+                    className="flex-1 items-center rounded-xl bg-default p-3"
+                    style={CONTINUOUS_CORNER}
+                  >
                     <Text
                       testID="stat-speed"
                       className="text-base font-black text-accent-strong"
                       numberOfLines={1}
+                      style={TABULAR_NUMS}
                     >
                       {fmtSpeed(latestSpeed)}
                     </Text>
@@ -291,11 +299,15 @@ export default function MapScreen() {
                       Speed
                     </Text>
                   </View>
-                  <View className="flex-1 items-center rounded-xl bg-default p-3">
+                  <View
+                    className="flex-1 items-center rounded-xl bg-default p-3"
+                    style={CONTINUOUS_CORNER}
+                  >
                     <Text
                       testID="stat-distance"
                       className="text-base font-black text-accent-strong"
                       numberOfLines={1}
+                      style={TABULAR_NUMS}
                     >
                       {fmtKm(distanceM)}
                     </Text>
@@ -305,11 +317,15 @@ export default function MapScreen() {
                   </View>
                 </View>
                 <View className="flex-row gap-2">
-                  <View className="flex-1 items-center rounded-xl bg-default p-3">
+                  <View
+                    className="flex-1 items-center rounded-xl bg-default p-3"
+                    style={CONTINUOUS_CORNER}
+                  >
                     <Text
                       testID="stat-updated"
                       className="text-base font-black text-muted"
                       numberOfLines={1}
+                      style={TABULAR_NUMS}
                     >
                       {updated}
                     </Text>
@@ -317,7 +333,10 @@ export default function MapScreen() {
                       Updated
                     </Text>
                   </View>
-                  <View className="flex-1 items-center rounded-xl bg-default p-3">
+                  <View
+                    className="flex-1 items-center rounded-xl bg-default p-3"
+                    style={CONTINUOUS_CORNER}
+                  >
                     <Text
                       testID="stat-gps"
                       className="text-base font-black text-muted"
