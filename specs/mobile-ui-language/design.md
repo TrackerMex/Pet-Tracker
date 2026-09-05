@@ -116,6 +116,13 @@ españolas o de fixture.
 
 ## 2. La tabla de traducción (normativa)
 
+> **Vista para revisión humana en [[copy-review]]**: las mismas 309 filas sin
+> la columna `Ausencia` y numeradas, para leerlas de corrido. Esa hoja **no es
+> normativa**; esta sí. Si el humano cambia una redacción allí, el `leader` la
+> propaga aquí **antes** del handoff a Codex, y esta tabla sigue siendo la
+> única fuente del literal.
+
+
 ### 2.0 Decisiones de traducción
 
 - **D1 — Sin i18n, literales inline.** No se instala `i18next`, `react-intl`,
