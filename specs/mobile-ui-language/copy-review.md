@@ -1,6 +1,6 @@
 ---
 feature: "mobile-ui-language"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec, revision-humana]
 ---
 
