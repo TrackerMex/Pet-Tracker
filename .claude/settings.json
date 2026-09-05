@@ -21,7 +21,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "C:/Users/alex/AppData/Local/Programs/Python/Python314/Scripts/graphify.EXE hook-guard search"
+            "command": "graphify hook-guard search"
           }
         ]
       },
@@ -30,7 +30,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "C:/Users/alex/AppData/Local/Programs/Python/Python314/Scripts/graphify.EXE hook-guard read"
+            "command": "graphify hook-guard read"
           }
         ]
       },
