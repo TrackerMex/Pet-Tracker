@@ -395,3 +395,20 @@ describe('#64 R2: el tema oscuro de la paleta se diseña a la profundidad de sur
     expect(dark['color-category-green-strong']).toBe(dark['accent-strong']);
   });
 });
+
+describe('#64 R3: cada tinta categórica pasa AA sobre su superficie en los dos temas', () => {
+  it('reproduce el ancla de contraste usada por #61', () => {
+    expect(contrast('#FFFFFF', '#2AB87C')).toBeCloseTo(2.547, 3);
+  });
+
+  it.each(categoryContrastCases())(
+    '$theme $slot conserva el ratio diseñado',
+    ({ theme, surfaceToken, inkToken, expected }) => {
+      const variables = parseVariables(extractVariant(theme));
+      const ratio = contrast(variables[inkToken], variables[surfaceToken]);
+
+      expect(ratio).toBeGreaterThanOrEqual(4.5);
+      expect(ratio).toBeCloseTo(expected, 3);
+    },
+  );
+});
