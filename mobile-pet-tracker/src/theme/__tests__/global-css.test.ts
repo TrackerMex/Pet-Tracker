@@ -397,6 +397,101 @@ describe('#64 R2: el tema oscuro de la paleta se diseña a la profundidad de sur
 });
 
 describe('#64 R3: cada tinta categórica pasa AA sobre su superficie en los dos temas', () => {
+  function categoryContrastCases(): {
+    theme: 'light' | 'dark';
+    slot: string;
+    surfaceToken: string;
+    inkToken: string;
+    expected: number;
+  }[] {
+    return [
+      {
+        theme: 'light',
+        slot: 'blue',
+        surfaceToken: 'color-category-blue',
+        inkToken: 'color-category-blue-strong',
+        expected: 4.746,
+      },
+      {
+        theme: 'light',
+        slot: 'amber',
+        surfaceToken: 'color-category-amber',
+        inkToken: 'color-category-amber-strong',
+        expected: 4.705,
+      },
+      {
+        theme: 'light',
+        slot: 'green',
+        surfaceToken: 'color-category-green',
+        inkToken: 'color-category-green-strong',
+        expected: 5.703,
+      },
+      {
+        theme: 'light',
+        slot: 'violet',
+        surfaceToken: 'color-category-violet',
+        inkToken: 'color-category-violet-strong',
+        expected: 4.725,
+      },
+      {
+        theme: 'light',
+        slot: 'rose',
+        surfaceToken: 'color-category-rose',
+        inkToken: 'color-category-rose-strong',
+        expected: 4.732,
+      },
+      {
+        theme: 'light',
+        slot: 'neutral',
+        surfaceToken: 'default',
+        inkToken: 'muted',
+        expected: 4.601,
+      },
+      {
+        theme: 'dark',
+        slot: 'blue',
+        surfaceToken: 'color-category-blue',
+        inkToken: 'color-category-blue-strong',
+        expected: 4.810,
+      },
+      {
+        theme: 'dark',
+        slot: 'amber',
+        surfaceToken: 'color-category-amber',
+        inkToken: 'color-category-amber-strong',
+        expected: 4.776,
+      },
+      {
+        theme: 'dark',
+        slot: 'green',
+        surfaceToken: 'color-category-green',
+        inkToken: 'color-category-green-strong',
+        expected: 6.432,
+      },
+      {
+        theme: 'dark',
+        slot: 'violet',
+        surfaceToken: 'color-category-violet',
+        inkToken: 'color-category-violet-strong',
+        expected: 4.811,
+      },
+      {
+        theme: 'dark',
+        slot: 'rose',
+        surfaceToken: 'color-category-rose',
+        inkToken: 'color-category-rose-strong',
+        expected: 4.788,
+      },
+      {
+        theme: 'dark',
+        slot: 'neutral',
+        surfaceToken: 'default',
+        inkToken: 'muted',
+        expected: 6.148,
+      },
+    ];
+  }
+
   it('reproduce el ancla de contraste usada por #61', () => {
     expect(contrast('#FFFFFF', '#2AB87C')).toBeCloseTo(2.547, 3);
   });
