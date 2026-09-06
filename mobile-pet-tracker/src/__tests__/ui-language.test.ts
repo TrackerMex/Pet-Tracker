@@ -1,3 +1,5 @@
+import * as ts from 'typescript';
+
 import { en, es, type TranslationKey } from '../i18n/catalog';
 import {
   ALL_USES,
@@ -273,27 +275,44 @@ const FIXED_COPY = [
   ...FIXED_KEYS.map((key) => ({ key, language: 'es', value: es[key] })),
 ];
 
-// Cadenas entrecomilladas completas y nodos de texto JSX completos.
-// La comparación posterior es de igualdad, no de subcadena: por eso el
-// escaneo no necesita lista de excepciones (design.md §4.1).
-const WHOLE_LITERAL =
-  /'((?:[^'\\\n]|\\.)*)'|"((?:[^"\\\n]|\\.)*)"|`((?:[^`\\$]|\\.)*)`|>([^<>{}]+)</g;
-
+// Cadenas completas y nodos de texto JSX completos, extraídos del AST de
+// TypeScript (`typescript` ya es devDependency; no se añade ninguna).
+//
+// Fue un lexer a regex hasta el 2026-09-06, y tenía regiones ciegas: la
+// alternativa de plantilla excluía `$`, así que ninguna plantilla con `${…}`
+// casaba, el motor tomaba la backtick de cierre como de apertura y se tragaba
+// todo hasta la siguiente — ~52 KB ciegos en 10 de las 19 pantallas, con falso
+// verde demostrado. El AST no tiene esa clase de fallo: no hay que emparejar
+// delimitadores a mano.
+//
+// La comparación posterior es de igualdad, no de subcadena: por eso el escaneo
+// no necesita lista de excepciones (design.md §4.1). Las plantillas CON
+// interpolación no pueden ser iguales a un valor fijo, y sus 11 entradas con
+// parámetro las cubre R18(a).
 function wholeLiterals(source: string): Set<string> {
   const literals = new Set<string>();
-  WHOLE_LITERAL.lastIndex = 0;
-  let match = WHOLE_LITERAL.exec(source);
+  const tree = ts.createSourceFile(
+    'scan.tsx',
+    source,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TSX,
+  );
 
-  while (match !== null) {
-    const raw = match[1] ?? match[2] ?? match[3] ?? match[4];
-
-    if (raw !== undefined) {
-      const value = norm(raw.replace(/\\(['"`])/g, '$1'));
+  const visit = (node: ts.Node) => {
+    if (
+      ts.isStringLiteral(node) ||
+      ts.isNoSubstitutionTemplateLiteral(node) ||
+      ts.isJsxText(node)
+    ) {
+      const value = norm(node.text);
       if (value) literals.add(value);
     }
 
-    match = WHOLE_LITERAL.exec(source);
-  }
+    ts.forEachChild(node, visit);
+  };
+
+  visit(tree);
 
   return literals;
 }
