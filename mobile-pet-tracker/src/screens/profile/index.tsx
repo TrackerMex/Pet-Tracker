@@ -41,6 +41,8 @@ function InfoRow({
   label: string;
   value: string | null;
 }) {
+  const t = useTranslate();
+
   return (
     <View
       className={
@@ -51,7 +53,7 @@ function InfoRow({
     >
       <Text className="text-sm font-normal text-muted">{label}</Text>
       <Text className="flex-1 text-right text-sm font-semibold text-foreground">
-        {value ?? 'No registrado'}
+        {value ?? t('profile.notRegistered')}
       </Text>
     </View>
   );
@@ -82,14 +84,17 @@ function PetHero({ pet }: { pet: PetProfile }) {
 }
 
 function PetPills({ pet }: { pet: PetProfile }) {
+  const t = useTranslate();
   const pills = [
     pet.sex,
     pet.sterilized === null
       ? null
       : pet.sterilized
-        ? 'Sterilized'
-        : 'Not sterilized',
-    Number.isFinite(pet.ageMonths) ? `${pet.ageMonths} months` : null,
+        ? t('profile.sterilized')
+        : t('profile.notSterilized'),
+    Number.isFinite(pet.ageMonths)
+      ? t('profile.ageMonths', { months: pet.ageMonths })
+      : null,
     pet.currentWeightKg === null ? null : `${pet.currentWeightKg} kg`,
   ].filter((value): value is string => value !== null);
 
@@ -162,7 +167,7 @@ export function ProfileScreen() {
     const asset = picked.assets[0];
     const contentType = resolvePhotoContentType(asset.mimeType, asset.uri);
     if (!contentType) {
-      setPhotoError('Choose a JPEG, PNG, or WebP image');
+      setPhotoError(t('profile.errorPhotoFormat'));
       return;
     }
 
@@ -179,7 +184,7 @@ export function ProfileScreen() {
         return;
       }
       if (requested.kind !== 'ok') {
-        setPhotoError('Could not upload photo');
+        setPhotoError(t('profile.couldNotUploadPhoto'));
         return;
       }
 
@@ -191,13 +196,13 @@ export function ProfileScreen() {
         contentType,
       );
       if (uploaded.kind !== 'ok') {
-        setPhotoError('Could not upload photo');
+        setPhotoError(t('profile.couldNotUploadPhoto'));
         return;
       }
 
       detail.refetch();
     } catch {
-      setPhotoError('Could not upload photo');
+      setPhotoError(t('profile.couldNotUploadPhoto'));
     } finally {
       setPhotoUploading(false);
     }
@@ -226,7 +231,7 @@ export function ProfileScreen() {
           onPress={() => router.push('/pets/add' as Href)}
         >
           <Button.Label className="font-bold text-accent-foreground">
-            Add pet
+            {t('profile.addPet')}
           </Button.Label>
         </Button>
       </View>
@@ -241,13 +246,13 @@ export function ProfileScreen() {
 
       {pets.data?.kind === 'ok' && pets.data.pets.length === 0 ? (
         <Text testID="profile-pets-empty" className="font-normal text-muted">
-          No pets yet
+          {t('common.noPetsYet')}
         </Text>
       ) : null}
 
       {pets.data && ['error', 'unreachable', 'missing-config'].includes(pets.data.kind) ? (
         <Text testID="profile-pets-error" className="font-normal text-danger">
-          Could not load pets
+          {t('profile.couldNotLoadPets')}
         </Text>
       ) : null}
 
@@ -260,9 +265,9 @@ export function ProfileScreen() {
 
       {detail.data && ['error', 'unreachable', 'missing-config'].includes(detail.data.kind) ? (
         <Card testID="profile-pet-error" className="items-start gap-3">
-          <Text className="text-danger">Could not load pet profile</Text>
+          <Text className="text-danger">{t('profile.couldNotLoadPet')}</Text>
           <Button testID="profile-pet-retry" onPress={detail.refetch}>
-            <Button.Label>Retry</Button.Label>
+            <Button.Label>{t('common.retry')}</Button.Label>
           </Button>
         </Card>
       ) : null}
@@ -279,7 +284,7 @@ export function ProfileScreen() {
             onPress={() => void handleChangePhoto()}
           >
             <Button.Label className="font-bold text-accent-strong">
-              Change photo
+              {t('profile.changePhoto')}
             </Button.Label>
           </Button>
           {photoError ? (
@@ -290,14 +295,17 @@ export function ProfileScreen() {
 
           <Card testID="pet-info-card" className="gap-0">
             <Text className="pb-2 text-xs font-semibold uppercase tracking-widest text-muted">
-              Información
+              {t('profile.information')}
             </Text>
-            <InfoRow label="Raza" value={pet.breed} />
-            <InfoRow label="Microchip" value={pet.microchip} />
-            <InfoRow label="Dispositivo GPS" value={pet.device?.model ?? null} />
+            <InfoRow label={t('profile.breed')} value={pet.breed} />
+            <InfoRow label={t('profile.microchip')} value={pet.microchip} />
+            <InfoRow
+              label={t('profile.gpsDevice')}
+              value={pet.device?.model ?? null}
+            />
             <InfoRow
               isLast
-              label="Última señal"
+              label={t('profile.lastSignal')}
               value={
                 pet.lastCommunicationAt
                   ? new Date(pet.lastCommunicationAt).toLocaleString(locale)
@@ -314,7 +322,9 @@ export function ProfileScreen() {
             style={CONTINUOUS_CORNER}
             onPress={() => router.push(`/pets/${pet.id}/docs` as Href)}
           >
-            <Text className="font-semibold text-foreground">Documentos</Text>
+            <Text className="font-semibold text-foreground">
+              {t('profile.documents')}
+            </Text>
             <ChevronRight size={20} color={muted} />
           </Pressable>
 
@@ -326,7 +336,7 @@ export function ProfileScreen() {
             onPress={() => router.push('/pairing' as Href)}
           >
             <Text className="font-semibold text-foreground">
-              Configuración del Dispositivo GPS
+              {t('profile.gpsSettings')}
             </Text>
             <ChevronRight size={20} color={muted} />
           </Pressable>
@@ -341,13 +351,15 @@ export function ProfileScreen() {
         style={CONTINUOUS_CORNER}
         onPress={() => router.push('/reminders' as Href)}
       >
-        <Text className="font-semibold text-foreground">Reminders</Text>
+        <Text className="font-semibold text-foreground">
+          {t('profile.reminders')}
+        </Text>
         <ChevronRight size={20} color={muted} />
       </Pressable>
 
       <Card testID="me-card" className="gap-2">
         <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
-          Account
+          {t('profile.account')}
         </Text>
         {me.data === undefined ? (
           <Skeleton testID="me-card-skeleton" className="h-12 w-full rounded-xl" />
@@ -362,7 +374,7 @@ export function ProfileScreen() {
         ) : null}
         {me.data && me.data.kind !== 'ok' && me.data.kind !== 'unauthorized' ? (
           <Text testID="me-card-state" className="font-normal text-muted">
-            Account unavailable
+            {t('profile.accountUnavailable')}
           </Text>
         ) : null}
         <Button
@@ -372,7 +384,9 @@ export function ProfileScreen() {
           onPress={() => switchTheme(theme === 'dark' ? 'light' : 'dark')}
         >
           <Button.Label className="font-semibold text-foreground">
-            {theme === 'dark' ? 'Use light theme' : 'Use dark theme'}
+            {theme === 'dark'
+              ? t('profile.useLightTheme')
+              : t('profile.useDarkTheme')}
           </Button.Label>
         </Button>
         <Button
@@ -396,7 +410,9 @@ export function ProfileScreen() {
         variant="danger-soft"
         onPress={() => void signOut()}
       >
-        <Button.Label className="font-bold text-danger">Sign out</Button.Label>
+        <Button.Label className="font-bold text-danger">
+          {t('profile.signOut')}
+        </Button.Label>
       </Button>
     </ScrollView>
   );

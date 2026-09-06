@@ -80,6 +80,7 @@ La firma y el procedimiento quedaron registrados en `requirements.md` y
 | R4 | `fc77f22` | `45fd835` |
 | R5 | `b593f0f` | `8bf82b0` |
 | R6 | `eff8e4c` | `a1a5bee` |
+| R7 | `9b3d904` | por registrar |
 
 ## Copy o layout no previstos
 

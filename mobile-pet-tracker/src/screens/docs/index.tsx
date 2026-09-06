@@ -10,6 +10,7 @@ import { getPet } from '../../api/pets';
 import { Card } from '../../components/card';
 import { useApi } from '../../hooks/use-api';
 import { useAuth } from '../../providers/auth-provider';
+import { useTranslate } from '../../providers/language-provider';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 import { useThemeColors } from '../../theme/use-theme-colors';
@@ -45,6 +46,7 @@ function DocumentRow({ document }: { document: PetDocument }) {
 export function DocsScreen({ petId }: { petId: string }) {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { token } = useAuth();
+  const t = useTranslate();
   const insets = useSafeAreaInsets();
   const [foreground] = useThemeColors(['foreground']);
   const petFn = useCallback(
@@ -73,7 +75,7 @@ export function DocsScreen({ petId }: { petId: string }) {
     >
       <View className="flex-row items-center gap-3">
         <Pressable
-          accessibilityLabel="Back to profile"
+          accessibilityLabel={t('docs.backToProfile')}
           accessibilityRole="button"
           testID="docs-back"
           hitSlop={TOUCH_SLOP}
@@ -84,13 +86,13 @@ export function DocsScreen({ petId }: { petId: string }) {
         </Pressable>
         <View className="flex-1 gap-1">
           <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
-            Documentos de
+            {t('docs.documentsOf')}
           </Text>
           {pet.data === undefined ? (
             <Skeleton testID="docs-header-skeleton" className="h-8 w-36 rounded-xl" />
           ) : (
             <Text className="text-2xl font-black text-foreground">
-              {petName ?? 'Pet'}
+              {petName ?? t('docs.pet')}
             </Text>
           )}
         </View>
@@ -106,9 +108,11 @@ export function DocsScreen({ petId }: { petId: string }) {
 
       {docs.data?.kind === 'ok' && docs.data.docs.length === 0 ? (
         <Card testID="docs-empty" className="items-center gap-2 py-8">
-          <Text className="text-lg font-bold text-foreground">No documents yet</Text>
+          <Text className="text-lg font-bold text-foreground">
+            {t('docs.noDocumentsYet')}
+          </Text>
           <Text className="text-center font-normal text-muted">
-            Medical documents will appear here.
+            {t('docs.emptyBody')}
           </Text>
         </Card>
       ) : null}
@@ -121,9 +125,11 @@ export function DocsScreen({ petId }: { petId: string }) {
 
       {docs.data && docs.data.kind !== 'ok' ? (
         <Card testID="docs-error" className="items-start gap-3">
-          <Text className="font-normal text-danger">Could not load documents</Text>
+          <Text className="font-normal text-danger">
+            {t('docs.couldNotLoadDocuments')}
+          </Text>
           <Button testID="docs-retry" onPress={docs.refetch}>
-            <Button.Label>Retry</Button.Label>
+            <Button.Label>{t('common.retry')}</Button.Label>
           </Button>
         </Card>
       ) : null}
