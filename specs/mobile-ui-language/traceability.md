@@ -12,7 +12,7 @@ tags: [harness, spec]
 | R2 | barra de pestañas, 5 | `mobile-pet-tracker/src/__tests__/ui-language.test.ts::#65 R2: la barra de pestañas resuelve su copy por clave` | rojo: `d6cb58a`; verde: `fd04a3e feat(mobile-ui-language): localize tab bar copy (R2)` |
 | R3 | Home, 20 | `mobile-pet-tracker/src/__tests__/ui-language.test.ts::#65 R3: Home resuelve su copy por clave` | rojo: `51bc7ed`; verde: `40f9f6e feat(mobile-ui-language): localize Home copy (R3)` |
 | R4 | Map, 19 | `mobile-pet-tracker/src/__tests__/ui-language.test.ts::#65 R4: Map resuelve su copy por clave` | rojo: `fc77f22`; verde: `45fd835 feat(mobile-ui-language): localize Map copy (R4)` |
-| R5 | Health + peso, 32 | `mobile-pet-tracker/src/__tests__/ui-language.test.ts::#65 R5: Health resuelve su copy por clave` | rojo: `b593f0f`; verde: por registrar |
+| R5 | Health + peso, 32 | `mobile-pet-tracker/src/__tests__/ui-language.test.ts::#65 R5: Health resuelve su copy por clave` | rojo: `b593f0f`; verde: `8bf82b0 feat(mobile-ui-language): localize Health copy (R5)` |
 | R6 | Food + horario, 35 | pendiente | pendiente |
 | R7 | Profile + docs, 35 | pendiente | pendiente |
 | R8 | Recordatorios, 50 | pendiente | pendiente |
