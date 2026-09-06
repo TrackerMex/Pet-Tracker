@@ -213,6 +213,12 @@ El `.env` vive en la **raíz del repo** (docker-compose e `init.sh` lo leen
 desde ahí). Como la app corre en `backend-pet-tracker/`, el `ConfigModule`
 debe cargarlo con `envFilePath: ['../.env']`.
 
+Las migraciones se aplican con `pnpm db:migrate` desde `backend-pet-tracker/`
+(y se generan con `pnpm db:generate`). drizzle-kit corre fuera de Nest, así
+que `drizzle.config.ts` carga el `.env` raíz vía dotenv (excepción
+documentada, la misma que `scripts/provision-local.ts`) y aborta con mensaje
+claro si `DATABASE_URL` falta o está vacía — no hace falta exportarla a mano.
+
 | Variable | Para qué | Estado |
 |---|---|---|
 | `DATABASE_URL` | Connection string de Postgres (Docker local) | en `.env.example` — la app la consume desde la primera feature con persistencia |
