@@ -24,7 +24,7 @@ tags: [harness, spec]
 | R14 | interruptor en Profile | `mobile-pet-tracker/src/screens/profile/index.test.tsx::#65 R14: Profile cambia el idioma y repinta sin reiniciar` | rojo: `c77fcab`; verde: `8d97da2 feat(mobile-ui-language): add live Profile language toggle (R14)` |
 | R15 | locale de fechas | `mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx::#65 R15: el locale de fechas y números sigue al idioma elegido`; `mobile-pet-tracker/src/screens/reminders/index.test.tsx::#65 R15: la fecha del recordatorio se formatea con el locale del idioma` | rojo: `103353b`; verde: `71015b1 feat(mobile-ui-language): bind date locales to language (R15)` |
 | R16 | español por defecto | `mobile-pet-tracker/src/app/__tests__/layout.test.tsx::#65 R16: sin preferencia guardada la app arranca en español` | rojo: `5f4e718`; verde: `81a12fd feat(mobile-ui-language): restore startup language (R16)` |
-| R17 | 6 `testID` de localización | pendiente | pendiente |
+| R17 | 6 `testID` de localización | `mobile-pet-tracker/src/app/(tabs)/__tests__/food.test.tsx::#65 R17: los títulos de card se localizan por testID y su copy sigue asertada` | rojo: `b682f20`; verde: `877e30e feat(mobile-ui-language): locate card titles by testID (R17)` |
 | R18 | cero copy suelta (320 sitios) | pendiente | pendiente |
 | R19 | 9 enmiendas | pendiente | pendiente |
 | R20 | carta de UI | pendiente | pendiente |
