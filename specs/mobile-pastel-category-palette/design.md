@@ -262,12 +262,12 @@ estado compuestas (`accent-soft`, `tab-pill`, `warning-soft`, `danger-soft`,
 
 | Hueco | mín. claro | contra | mín. oscuro | contra |
 |---|---|---|---|---|
-| `blue` | 9,4 | `accent-soft` | 16,1 | `accent-soft` |
+| `blue` | 9,4 | `accent-soft` | **16,7** | **`danger-soft`** |
 | `amber` | **4,9** | `warning-soft` | 8,9 | `warning-soft` |
 | `green` | **3,5** | `tab-pill` | **3,6** | `accent-soft` |
 | `violet` | 10,2 | `danger-soft` | 10,2 | `danger-soft` |
 | `rose` | **4,6** | `danger-soft` | 9,8 | `danger-soft` |
-| `neutral` | 8,5 | `tab-pill` | 9,6 | `accent-soft` |
+| `neutral` | 8,5 | `tab-pill` | **10,6** | `accent-soft` |
 
 Y las tintas contra las tintas de estado:
 
@@ -279,6 +279,26 @@ Y las tintas contra las tintas de estado:
 | tinta `green` contra `--success` | 15,4 | 7,2 |
 | tinta `blue` contra `--muted` | 16,1 | 18,8 |
 | tinta `violet` contra `--muted` | 18,9 | 17,9 |
+
+> **Enmienda del 2026-09-06, pendiente de firma humana.** Codex CLI paró en el
+> commit rojo de R4 —como el handoff le ordenaba— porque la celda oscura de
+> `blue` no le cuadraba. Tenía razón, y al recalcular la tabla entera aparecen
+> **dos** celdas mal, no una:
+>
+> - `blue` oscuro: decía **16,1 contra `accent-soft`**; el mínimo real es
+>   **16,7 contra `danger-soft`**. Estaban mal el número **y** el par.
+> - `neutral` oscuro: decía **9,6**; el real es **10,6**. El par sí era
+>   `accent-soft`.
+>
+> Las otras diez celdas y las seis de tinta se reprodujeron exactas. Tres
+> implementaciones independientes coinciden: la de Codex, Culori 4.0.2, y la
+> del `leader` al verificarlo. El aparato quedó validado porque las tres
+> derivan `danger-soft` oscuro a `#38282E` por el mismo camino.
+>
+> **Ningún requisito cambia y ningún valor de token se toca.** R4 exige
+> ΔE00 ≥ 2,3 y los dos valores corregidos —16,7 y 10,6— lo superan de sobra,
+> igual que los que decían. El mínimo absoluto de la paleta sigue siendo 3,5.
+> Es un error de documentación en esta tabla, no un fallo de diseño.
 
 **Mínimo absoluto de toda la paleta: 3,5** (verde categórico contra `--tab-pill`
 en claro), 1,5× el umbral. No es accidente: es la consecuencia directa de la

@@ -253,3 +253,16 @@ Al firmar, el humano aprueba también:
 - [ ] Smoke en **dev build de Android** (no Expo Go), en tema claro **y**
       oscuro, sobre las pantallas Reminders y Documentos, comprobando que las
       categorías se distinguen entre sí y que ninguna queda ilegible.
+
+### Firma de la enmienda del 2026-09-06 (§3.3 de [[design]])
+
+Codex paró en R4 por una discrepancia numérica, que era real. Al recalcular la
+tabla entera aparecieron **dos** celdas mal en `design.md` §3.3, ambas
+corregidas allí con su nota. **Ningún requisito cambia, ningún valor de token
+se toca, y R4 se sigue cumpliendo con holgura**: exige ΔE00 ≥ 2,3 y los valores
+corregidos son 16,7 y 10,6.
+
+- [ ] Firmo la corrección de las dos celdas de `design.md` §3.3
+      (`blue` oscuro: 16,1 `accent-soft` → **16,7 `danger-soft`**;
+      `neutral` oscuro: 9,6 → **10,6**), sabiendo que no altera ningún
+      requisito ni ningún token (fecha: ____)
