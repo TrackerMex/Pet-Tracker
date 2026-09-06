@@ -45,6 +45,34 @@ function readSource(relativePath: string): string {
   return readFileSync(join(sourceRoot, relativePath), 'utf8');
 }
 
+function categoryClassInventory(): {
+  files: string[];
+  interpolatedFiles: string[];
+  classes: string[];
+} {
+  const palettePath = join('utils', 'category-palette.ts');
+  const interpolatedFiles = sourceFiles()
+    .filter((path) => {
+      const executableSource = readFileSync(path, 'utf8')
+        .replace(/\/\*[\s\S]*?\*\//g, '')
+        .replace(/\/\/.*$/gm, '');
+
+      return /(?:bg|text)-category-\$\{/.test(executableSource);
+    })
+    .map((path) => path.slice(sourceRoot.length + 1));
+  const classes = [
+    ...readSource(palettePath).matchAll(
+      /['"]((?:bg|text)-category-[^'"]+)['"]/g,
+    ),
+  ].map(([, className]) => className);
+
+  return {
+    files: filesMatching(/bg-category-|text-category-/),
+    interpolatedFiles,
+    classes,
+  };
+}
+
 /** Bloque JSX que abre en el `testID` dado y cierra en `closingTag`. */
 function elementWithTestId(
   source: string,
