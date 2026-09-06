@@ -10,10 +10,10 @@ tags: [harness, spec]
 
 | Requisito | Test (archivo::nombre) | Archivo implementado | Commit (hash + mensaje) |
 |---|---|---|---|
-| R1 | pendiente — `backend-pet-tracker/src/modules/pets/application/use-cases/list-pets.use-case.spec.ts::R1 (pets-list-response-enrichment #66): el listado resuelve photoUrl por mascota con foto y deja null sin foto` | `backend-pet-tracker/src/modules/pets/application/use-cases/list-pets.use-case.ts` | pendiente |
+| R1 | `backend-pet-tracker/src/modules/pets/application/use-cases/list-pets.use-case.spec.ts::R1 (pets-list-response-enrichment #66): el listado resuelve photoUrl por mascota con foto y deja null sin foto` | `backend-pet-tracker/src/modules/pets/application/use-cases/list-pets.use-case.ts` | `56a58a1 test(pets-list-response-enrichment): listado resuelve photoUrl por mascota con foto (R1)` → `9722580 feat(pets-list-response-enrichment): ListPetsUseCase resuelve photoUrl via PET_PHOTO_URL_RESOLVER (R1,R4)` |
 | R2 | pendiente — `backend-pet-tracker/src/modules/pets/infrastructure/pets.controller.spec.ts::R2 (pets-list-response-enrichment #66): GET /v1/pets serializa el photoUrl de cada item sin alterar el contrato` | `backend-pet-tracker/src/modules/pets/infrastructure/pets.controller.ts` | pendiente |
 | R3 | pendiente — `backend-pet-tracker/test/pets.e2e-spec.ts::R3 (pets-list-response-enrichment #66): GET /v1/pets devuelve photoUrl prefirmada para la mascota con photo_key` | `backend-pet-tracker/src/modules/pets/infrastructure/pets.controller.ts` (+ use case de R1) | pendiente |
-| R4 | pendiente — `backend-pet-tracker/src/modules/pets/application/use-cases/list-pets.use-case.spec.ts::R4 (pets-list-response-enrichment #66): sin N+1 — una consulta al repositorio y sin puertos de device ni vacuna` | `backend-pet-tracker/src/modules/pets/application/use-cases/list-pets.use-case.ts` | pendiente |
+| R4 | `backend-pet-tracker/src/modules/pets/application/use-cases/list-pets.use-case.spec.ts::R4 (pets-list-response-enrichment #66): sin N+1 — una consulta al repositorio y sin puertos de device ni vacuna` | `backend-pet-tracker/src/modules/pets/application/use-cases/list-pets.use-case.ts` | `f147e27 test(pets-list-response-enrichment): listado sin N+1 ni puertos de device/vacuna (R4)` → `9722580 feat(pets-list-response-enrichment): ListPetsUseCase resuelve photoUrl via PET_PHOTO_URL_RESOLVER (R1,R4)` |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
 Convención de commit: `feat(pets-list-response-enrichment): <desc> (R1,R4)`,
