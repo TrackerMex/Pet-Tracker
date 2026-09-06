@@ -67,7 +67,9 @@ La firma y el procedimiento quedaron registrados en `requirements.md` y
 
 ## R-ids y commits
 
-Ningún R-id cerrado; ningún commit creado.
+| R-id | Rojo | Verde |
+|---|---|---|
+| R12 | `ac158f6` | `20397ad` |
 
 ## Copy o layout no previstos
 
