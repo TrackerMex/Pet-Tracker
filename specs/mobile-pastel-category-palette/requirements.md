@@ -250,7 +250,7 @@ Al firmar, el humano aprueba también:
 
 ## Gate humano posterior a la implementación (no delegable a IA)
 
-- [ ] Smoke en **dev build de Android** (no Expo Go), en tema claro **y**
+- [X] Smoke en **dev build de Android** (no Expo Go), en tema claro **y**
       oscuro, sobre las pantallas Reminders y Documentos, comprobando que las
       categorías se distinguen entre sí y que ninguna queda ilegible.
 
