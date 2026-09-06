@@ -5,21 +5,72 @@
 
 ---
 
-## Rediseno contra el diseno del Make (desde 2026-09-04)
+## 2026-09-05 — Fix de deriva de migraciones + script `db:migrate`
 
-- **Origen**: el humano reporto que la Home no se parece al diseno. `explorer` mapeo la brecha en `progress/explore_design-gap-vs-make.md`: ningun hallazgo cabe dentro del invariante de #46/#61/#62, que es justo lo que impedia construirlos.
-- **Decisiones cerradas por el humano el 2026-09-04**: alcance Bloque 0 + Bloque 1; UI entera en espanol; sin foto, degradado con la inicial.
-- **Registrado**: features #64-#71 en `feature_list.json` y la seccion §Direccion de arte en `docs/ui-guidelines.md`.
-- **Branch**: `chore/design-gap-backlog`, con `feature/62-mobile-ui-consistency-polish` ya mergeada dentro (#62 cerrada el 2026-09-05, PR #105 pendiente de mergear por el humano).
-- **Specs escritas, las dos en `draft` esperando gate humano**: `specs/mobile-pastel-category-palette/` (#64) y `specs/mobile-ui-language/` (#65).
-- **Orden impuesto**: #64 enmienda un test que introduce #62, asi que el PR #105 tiene que mergear antes. #65 va antes que cualquier pantalla nueva, para no escribir el texto dos veces.
-- **#66 `pets-list-response-enrichment` es de BACKEND**: la coordina la otra sesion, no esta.
-- **Gates humanos abiertos**: aprobacion de #64 (3 firmas extra) y de #65 (3 firmas: spec, redaccion de las 213 cadenas en `specs/mobile-ui-language/copy-review.md`, y 9 enmiendas a specs aprobadas).
+**Disparador**: `GET` de documentos de mascota fallaba en local con
+`error: relation "pet_documents" does not exist` (Postgres 42P01) desde
+`PetDocumentDrizzleRepository.listByPet`.
+
+**Diagnostico**: no era un bug de codigo. La BD local iba tres migraciones por
+detras del repo. `drizzle.__drizzle_migrations` tenia 13 filas (hasta 0012) y
+faltaban:
+
+- `0013_wet_may_parker` — sus tablas (`nutrition_plans`, `nutrition_profiles`)
+  **si existian** en la BD, pero sin fila en el journal. Esa inconsistencia era
+  la causa de fondo: cualquiera que corriese `migrate` reventaba con
+  "relation already exists" en 0013 y abandonaba, dejando 0014 y 0015 sin
+  aplicar indefinidamente.
+- `0014_late_lord_tyger` — `pet_documents` (la del error).
+- `0015_auth_password_reset_tokens` — `password_reset_tokens`.
+
+**Acciones sobre la BD local** (no destructivas, solo `CREATE TABLE`):
+
+1. Baseline de 0013: `INSERT` de su fila en `drizzle.__drizzle_migrations`
+   (hash `6b0f0ff6...`, `created_at` 1787066723656) tras verificar columna a
+   columna que las dos tablas de nutricion en la BD coinciden con el `.sql`.
+2. `DATABASE_URL=... pnpm exec drizzle-kit migrate` → aplico 0014 y 0015.
+3. Verificado: `pet_documents` existe con PK, `pet_documents_pet_id_idx` y las
+   dos FKs (`pet_id` → `pets` ON DELETE CASCADE, `created_by` → `users`).
+   16/16 migraciones registradas.
+
+**Cambio en el repo**: `backend-pet-tracker/package.json` gana una linea:
+
+```json
+"db:migrate": "drizzle-kit migrate",
+```
+
+No existia script para aplicar migraciones — solo `db:generate` — y se aplicaban
+a mano (`specs/device-subscriptions/design.md:28` ya lo documentaba como deuda).
+Esa ausencia es lo que dejaba la BD derivar.
+
+**Excepcion de rol usada**: el cambio lo hizo el subagente `implementer`, no
+Codex CLI, acogiendose a `CLAUDE.md` §Excepciones (fallback para cambios
+triviales de una linea). Sin spec y sin TDD: es una entrada en `scripts`, no
+logica de aplicacion. Reporte en `progress/impl_db-migrate-script.md`.
+
+**Pendiente / decisiones abiertas**:
+
+- **Sin commitear**. El working tree esta en `feature/64-mobile-pastel-category-palette`,
+  que no tiene nada que ver con esto. El cambio deberia ir en su propia branch.
+- `drizzle.config.ts` no carga `dotenv`, asi que `pnpm run db:migrate` a secas
+  falla con una conexion vacia poco obvia: hay que pasar `DATABASE_URL` en el
+  entorno. Anadir `dotenv/config` apuntando a `../.env` seria su propia tarea,
+  no colada aqui.
+- Los hashes en `drizzle.__drizzle_migrations` de 0003-0008 y 0012 **no**
+  coinciden con los `.sql` actuales (CRLF o edicion post-aplicacion). No rompe
+  nada — el migrator compara por timestamp, no por hash — pero significa que
+  esos archivos cambiaron despues de aplicarse. Sin investigar.
+
+## Backend: fix `drizzle.config.ts` no carga `.env` (sesion backend, 2026-09-06)
+
+- **Origen**: el humano lo pidio via la sesion Frontend tras perder una tarde con `relation "pet_documents" does not exist` (detalle en `progress/impl_db-migrate-script.md`). `pnpm db:migrate` (PR #107) falla en maquina limpia porque drizzle-kit no carga `.env`.
+- **Decision**: fix suelto sin id de feature, branch `fix/drizzle-config-dotenv` desde `origin/main`. Fallback al subagente `implementer` (CLAUDE.md §Excepciones, cambio trivial: cargar dotenv del `.env` raiz como `provision-local.ts`, abortar si `DATABASE_URL` falta, un spec y un parrafo en `docs/conventions.md`). Reporte en `progress/impl_drizzle-config-dotenv.md`; `reviewer` antes del PR.
+- **Cerrado**: PR #109 mergeado el 2026-09-06.
 
 ## Backend: #66 `pets-list-response-enrichment` (sesion backend, desde 2026-09-05)
 
 - **Reparto**: la sesion Frontend lleva todo `mobile-pet-tracker/`; esta sesion lleva `backend-pet-tracker/`. #66 la pidio Frontend por mensaje entre sesiones el 2026-09-05 porque bloquea el Bloque 1.
-- **Branch**: `feature/66-pets-list-response-enrichment`, basada en `chore/design-gap-backlog` porque la entrada 66 de `feature_list.json` solo existe ahi. El PR de #66 se abre cuando `chore/design-gap-backlog` este en `main`, o con base en esa branch si tarda.
-- **Estado**: `spec_author` escribiendo `specs/pets-list-response-enrichment/`. Gate humano pendiente: firma de la spec y confirmacion de la politica de firmado de URLs (decision de costo, la cierra el humano).
-- **init.sh**: verde en la segunda pasada (786 tests movil, 1235 backend). En la primera fallo 1 test movil que no volvio a fallar: flaky, sin identificar cual.
-- **Harness**: graphify instalado en el VPS y hooks portables en PR #104 (mergeado). Cada worktree necesita su `graphify update .`.
+- **Branch**: `feature/66-pets-list-response-enrichment` (nacio de `chore/design-gap-backlog`, ya en `main`; sincronizada con `main` el 2026-09-06).
+- **Spec aprobada**: el humano firmo con `36d89f7` (fecha 2026-09-05) y confirmo OD-1 firmar siempre, OD-2 TTL 3600 s compartido, OD-3 `device` fuera, OD-4 leida. Frontmatter a `approved`.
+- **Siguiente**: handoff a Codex CLI (prompt en `progress/handoff_pets-list-response-enrichment.md`); `reviewer` cuando el humano confirme que Codex termino.
+- **Entorno**: `init.sh` de dos worktrees a la vez colisiona en el Postgres compartido (e2e rojos falsos); `pgrep -f 'bash ./init.sh'` antes de lanzarlo. Cada worktree necesita su `graphify update .`.

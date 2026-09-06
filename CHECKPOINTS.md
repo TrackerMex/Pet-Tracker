@@ -43,7 +43,22 @@
       equivalente en el framework de test del stack)
 - [ ] El historial de commits de la feature muestra el patrón test-primero
       (test rojo → implementación → verde → refactor), no todo en un commit
+- [ ] **Si algún requisito es de verificación** —solo *asevera una propiedad* de
+      artefactos que otro requisito anterior ya dejó en el árbol— la spec lo
+      declaró **por escrito antes del handoff** y eligió una de las dos vías, y
+      el historial la respeta:
+      **(a)** su test se escribe **antes** que la implementación que verifica, y
+      entonces su rojo es real; o
+      **(b)** se declara requisito de verificación y su cierre se prueba por
+      **mutación**: romper a propósito el valor y ver el test rojo **por su
+      aserción**, con la evidencia en el reporte del `reviewer`
+- [ ] **Ningún commit rojo falla por un `ReferenceError`** de un helper de test
+      que aún no existe. Eso no es rojo legítimo: no demuestra que el candado
+      esté vivo, solo que el símbolo falta
 
+> Los dos puntos anteriores salieron de #64 (2026-09-06), donde el orden que la
+> propia spec fijó hacía imposible el rojo de R3, R4 y R9, y hubo que cerrarlos
+> con una excepción firmada por el humano más prueba de mutación.
 ---
 
 ## C5 — Trazabilidad: R → test → commit

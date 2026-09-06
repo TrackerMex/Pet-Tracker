@@ -1,6 +1,6 @@
 ---
 feature: "mobile-ui-language"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec]
 ---
 
@@ -515,7 +515,7 @@ renumerar [[copy-review]], que ya está en manos del humano.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [X] Aprobado por humano (fecha: 2026-09-05) ← gate obligatorio antes de implementar
 
 > El gate cubre, en el mismo acto:
 > **(a)** la **redacción española** de las 241 entradas traducidas — es copy de producto y

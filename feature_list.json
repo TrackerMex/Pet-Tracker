@@ -1170,7 +1170,7 @@
   {
     "id": 64,
     "name": "mobile-pastel-category-palette",
-    "status": "pending",
+    "status": "done",
     "priority": "P2",
     "description": "Habilitador del Bloque 0 del rediseno derivado de progress/explore_design-gap-vs-make.md (2026-09-04). El brief del producto pide direccion de arte 'amigable, ludica, colores pastel' y el diseno del Make usa una paleta pastel CATEGORICA en todas partes (azul #EEF4FF, ambar #FFF7ED, rosa #FFF0F3, violeta #F5F3FF, verde #F0FBF6). La app hoy pinta TODAS las categorias -los 7 tipos de recordatorio y todos los tipos de documento- con el mismo bg-accent-soft, asi que ninguna seccion categorica del diseno se puede portar sin inventar clases arbitrarias, lo que rompe el grep-clean de #46 y #72 que la carta declara en §Decisiones fijas 3. Esta feature anade los tokens a mobile-pet-tracker/src/theme/global.css (light y dark) y los aplica donde hoy hay un solo tono. Va PRIMERO porque bloquea a mobile-home-quick-actions (#71) y a las secciones categoricas de los bloques siguientes. Cada par token/superficie debe verificar contraste AA con el mismo metodo calculado, no estimado, que fijo #61: los valores del Make son de tema claro y no traen equivalente oscuro, asi que el dark hay que disenarlo, no copiarlo. El acento vale #178255 desde #61 y no se re-litiga.",
     "acceptance_criteria": [
@@ -1191,7 +1191,7 @@
   {
     "id": 65,
     "name": "mobile-ui-language",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P2",
     "description": "Habilitador del Bloque 0. Cierra la decision A del informe progress/explore_design-gap-vs-make.md y su ampliacion del 2026-09-05. El humano decidio primero que la UI va entera en espanol, y despues, al preguntar cuanto costaria un selector de idioma en ajustes, que la feature se convierte en CATALOGO DE DOS IDIOMAS mas INTERRUPTOR, con espanol por defecto. El motivo del cambio esta medido, no es preferencia: sustituir 309 literales ingleses por literales espanoles en el sitio y anadir el interruptor despues obliga a tocar los mismos 309 sitios y las 178 anclas de test DOS VECES; metido dentro es el mismo numero de ediciones y solo cambia el texto con el que se sustituye. El estado de partida no es 'app en ingles' sino app MEZCLADA: 213 cadenas inglesas distintas en 309 ocurrencias y 19 archivos, y 178 puntos de test anclados a copy en 19 ficheros, todo recontado por la spec contra el fuente. NO se instala libreria de i18n: 213 claves por 2 idiomas es un objeto TypeScript y un contexto, y el repo ya tiene el patron en src/theme/use-theme-colors.ts. Tampoco se instala expo-localization: el idioma es eleccion explicita del usuario, no deteccion del idioma del telefono, y eso queda anotado como decision aparte. La persistencia copia el patron de src/utils/theme-preference.ts (expo-secure-store, best-effort con try/catch, 20 lineas) y el interruptor vive en Profile al lado del theme-toggle de src/screens/profile/index.tsx:359, porque no existe pantalla de ajustes y crearla no entra aqui. Dos consecuencias que la spec tiene que declarar: el ingles esta ratificado en 9 specs aprobadas -no 6- y enmendarlas pasa por el gate humano; y los mensajes de validacion que devuelve el backend siguen en ingles en los dos idiomas, porque son de backend-pet-tracker/ y de otra sesion. Va antes que cualquier pantalla nueva porque toda pantalla nueva escribe texto.",
     "acceptance_criteria": [
@@ -1324,6 +1324,23 @@
     "files_affected": [
       "mobile-pet-tracker/src/app/(tabs)/home.tsx",
       "mobile-pet-tracker/src/theme/global.css"
+    ]
+  },
+  {
+    "id": 72,
+    "name": "mobile-add-pet-photo-test-flake",
+    "status": "pending",
+    "priority": "P3",
+    "description": "El test de seleccion de foto de add-pet falla de forma intermitente: 'consume su mock' y una ejecucion aislada lo pone rojo mientras la siguiente pasa. Detectado por Codex CLI durante #64 y clasificado por el reviewer como PREEXISTENTE, no introducido por esa feature. Volvio a morder el 2026-09-06 durante el cierre de #64: una pasada de ./init.sh dio 1 failed de 891 y las tres siguientes dieron 891/891 sin tocar una linea. Un test que falla una de cada cuatro veces no es ruido: es un gate que miente en las dos direcciones, y ya ha costado dos ejecuciones completas de init.sh. La spec tiene que encontrar la causa real -lo mas probable es un mock de expo-image-picker que se define con mockResolvedValueOnce y se agota si el test corre en un orden distinto, o estado compartido entre tests del mismo fichero que sobrevive porque falta un reset- y no limitarse a reintentar ni a subir el timeout. Reproducirlo de forma fiable es parte del trabajo: correr el fichero aislado y en distintos ordenes con --runInBand y con seed de aleatorizacion hasta dar con el disparador.",
+    "acceptance_criteria": [
+      "La spec identifica la causa raiz con evidencia, no una hipotesis: que mock o que estado sobrevive entre tests y por que",
+      "El test deja de depender del orden: se demuestra corriendo el fichero aislado y dentro de la suite completa, en ambos ordenes, un numero de veces que la spec fija",
+      "No se arregla reintentando, subiendo el timeout ni marcando el test como skip",
+      "Si el mismo patron afecta a otros ficheros de test, la spec los enumera",
+      "Suite movil completa verde en tres ejecuciones consecutivas de ./init.sh"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/add-pet/index.test.tsx"
     ]
   }
 ]
