@@ -209,3 +209,46 @@ describe('#65 R19: las 9 specs aprobadas llevan su enmienda de idioma', () => {
     }
   });
 });
+
+// El punto 6 canónico vive en design.md §6.3, misma política que R19.
+function canonicalArtDirectionRule(): string {
+  const design = readFileSync(
+    join(REPOSITORY_ROOT, 'specs', 'mobile-ui-language', 'design.md'),
+    'utf8',
+  );
+  const fence =
+    '```markdown\n**6. Idioma: catálogo de dos idiomas, español por defecto.**';
+  const start = design.indexOf(fence);
+
+  expect(start).toBeGreaterThan(-1);
+
+  const body = design.slice(start + '```markdown\n'.length);
+
+  return body.slice(0, body.indexOf('\n```'));
+}
+
+describe('#65 R20: la carta de UI fija el catálogo y el español por defecto', () => {
+  it('inserta el punto 6 literal de §6.3 en §Dirección de arte', () => {
+    const charter = readFileSync(
+      join(REPOSITORY_ROOT, 'docs', 'ui-guidelines.md'),
+      'utf8',
+    );
+
+    expect(charter).toContain(canonicalArtDirectionRule());
+  });
+
+  it('lo coloca tras el punto 5 y antes del checklist de autocrítica', () => {
+    const charter = readFileSync(
+      join(REPOSITORY_ROOT, 'docs', 'ui-guidelines.md'),
+      'utf8',
+    );
+
+    const fifth = charter.indexOf('**5. Fidelidad no es pérdida de información.**');
+    const sixth = charter.indexOf('**6. Idioma: catálogo de dos idiomas, español por defecto.**');
+    const checklist = charter.indexOf('## Checklist de autocrítica');
+
+    expect(fifth).toBeGreaterThan(-1);
+    expect(sixth).toBeGreaterThan(fifth);
+    expect(checklist).toBeGreaterThan(sixth);
+  });
+});
