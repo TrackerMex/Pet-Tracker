@@ -34,7 +34,15 @@ export const R1_AUTH: UseRow[] = [
   { file: 'src/app/(auth)/register.tsx', key: 'register.createAccount' },
 ];
 
-export const ALL_USES: UseRow[] = [...R1_AUTH];
+export const R2_TABS: UseRow[] = [
+  { file: 'src/components/floating-tab-bar.tsx', key: 'tabs.home' },
+  { file: 'src/components/floating-tab-bar.tsx', key: 'tabs.map' },
+  { file: 'src/components/floating-tab-bar.tsx', key: 'tabs.health' },
+  { file: 'src/components/floating-tab-bar.tsx', key: 'tabs.food' },
+  { file: 'src/components/floating-tab-bar.tsx', key: 'tabs.profile' },
+];
+
+export const ALL_USES: UseRow[] = [...R1_AUTH, ...R2_TABS];
 
 describe('#65: la tabla de uso de copy está disponible al runner', () => {
   it('expone al menos el primer lote normativo', () => {
