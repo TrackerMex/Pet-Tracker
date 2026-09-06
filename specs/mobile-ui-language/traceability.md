@@ -23,7 +23,7 @@ tags: [harness, spec]
 | R13 | persistencia best-effort | `mobile-pet-tracker/src/utils/language-preference.test.ts::#65 R13: la preferencia de idioma persiste y es best-effort` | rojo: `e237589`; verde: `ff15b5b feat(mobile-ui-language): persist language preference (R13)` |
 | R14 | interruptor en Profile | pendiente | pendiente |
 | R15 | locale de fechas | pendiente | pendiente |
-| R16 | español por defecto | pendiente | pendiente |
+| R16 | español por defecto | `mobile-pet-tracker/src/app/__tests__/layout.test.tsx::#65 R16: sin preferencia guardada la app arranca en español` | rojo: `5f4e718`; verde: por registrar |
 | R17 | 6 `testID` de localización | pendiente | pendiente |
 | R18 | cero copy suelta (320 sitios) | pendiente | pendiente |
 | R19 | 9 enmiendas | pendiente | pendiente |
