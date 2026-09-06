@@ -9,7 +9,9 @@ declare function require(moduleName: 'path'): {
 const { readFileSync } = require('fs');
 const { join } = require('path');
 
+import { en, es, type TranslationKey } from '../i18n/catalog';
 import {
+  ALL_USES,
   R1_AUTH,
   R2_TABS,
   R3_HOME,
@@ -80,8 +82,8 @@ describe('#65 R3: Home resuelve su copy por clave', () => {
 });
 
 describe('#65 R4: Map resuelve su copy por clave', () => {
-  it('resuelve las 19 ocurrencias normativas', () => {
-    expect(R4_MAP).toHaveLength(19);
+  it('resuelve las 20 ocurrencias normativas', () => {
+    expect(R4_MAP).toHaveLength(20);
     checkUses(R4_MAP);
   });
 });
@@ -115,15 +117,15 @@ describe('#65 R8: Recordatorios resuelve su copy por clave', () => {
 });
 
 describe('#65 R9: el alta de mascota resuelve su copy por clave', () => {
-  it('resuelve las 40 ocurrencias normativas', () => {
-    expect(R9_ADD_PET).toHaveLength(40);
+  it('resuelve las 42 ocurrencias normativas', () => {
+    expect(R9_ADD_PET).toHaveLength(42);
     checkUses(R9_ADD_PET);
   });
 });
 
 describe('#65 R10: el emparejado del collar resuelve su copy por clave', () => {
-  it('resuelve las 40 ocurrencias normativas', () => {
-    expect(R10_PAIRING).toHaveLength(40);
+  it('resuelve las 42 ocurrencias normativas', () => {
+    expect(R10_PAIRING).toHaveLength(42);
     checkUses(R10_PAIRING);
   });
 });
@@ -250,5 +252,72 @@ describe('#65 R20: la carta de UI fija el catálogo y el español por defecto', 
     expect(fifth).toBeGreaterThan(-1);
     expect(sixth).toBeGreaterThan(fifth);
     expect(checklist).toBeGreaterThan(sixth);
+  });
+});
+
+const norm = (value: string) => value.replace(/\s+/g, ' ').trim();
+
+const SCREEN_FILES = ALL_USES.map((use) => use.file).filter(
+  (file, index, all) => all.indexOf(file) === index,
+);
+
+// Enmienda (3): el escaneo recorre el catálogo tal como está. Las 11 entradas
+// con parámetro quedan cubiertas por (a), porque su plantilla desaparece del
+// fuente por completo.
+const FIXED_KEYS = (Object.keys(en) as TranslationKey[]).filter(
+  (key) => !en[key].includes('{{'),
+);
+
+const FIXED_COPY = [
+  ...FIXED_KEYS.map((key) => ({ key, language: 'en', value: en[key] })),
+  ...FIXED_KEYS.map((key) => ({ key, language: 'es', value: es[key] })),
+];
+
+// Cadenas entrecomilladas completas y nodos de texto JSX completos.
+// La comparación posterior es de igualdad, no de subcadena: por eso el
+// escaneo no necesita lista de excepciones (design.md §4.1).
+const WHOLE_LITERAL =
+  /'((?:[^'\\\n]|\\.)*)'|"((?:[^"\\\n]|\\.)*)"|`((?:[^`\\$]|\\.)*)`|>([^<>{}]+)</g;
+
+function wholeLiterals(source: string): Set<string> {
+  const literals = new Set<string>();
+  WHOLE_LITERAL.lastIndex = 0;
+  let match = WHOLE_LITERAL.exec(source);
+
+  while (match !== null) {
+    const raw = match[1] ?? match[2] ?? match[3] ?? match[4];
+
+    if (raw !== undefined) {
+      const value = norm(raw.replace(/\\(['"`])/g, '$1'));
+      if (value) literals.add(value);
+    }
+
+    match = WHOLE_LITERAL.exec(source);
+  }
+
+  return literals;
+}
+
+describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () => {
+  it('mantiene el catálogo consistente entre los dos idiomas', () => {
+    expect(Object.keys(es)).toHaveLength(Object.keys(en).length);
+    expect(Object.keys(es).sort()).toEqual(Object.keys(en).sort());
+  });
+
+  it('resuelve cada ocurrencia de la tabla contra la clave exacta', () => {
+    checkUses(ALL_USES);
+  });
+
+  it('no deja ningún valor fijo del catálogo como literal entero en las pantallas', () => {
+    expect(SCREEN_FILES).toHaveLength(19);
+
+    for (const file of SCREEN_FILES) {
+      const literals = wholeLiterals(readFileSync(join(SOURCE_ROOT, file), 'utf8'));
+      const looseCopy = FIXED_COPY.filter((entry) =>
+        literals.has(norm(entry.value)),
+      ).map((entry) => `${entry.language}:${entry.key} = ${entry.value}`);
+
+      expect({ file, looseCopy }).toEqual({ file, looseCopy: [] });
+    }
   });
 });

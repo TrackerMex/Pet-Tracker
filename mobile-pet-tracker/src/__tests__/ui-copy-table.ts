@@ -85,6 +85,7 @@ export const R4_MAP: UseRow[] = [
   { file: 'src/app/(tabs)/map.tsx', key: 'map.deactivateLostMode' },
   { file: 'src/app/(tabs)/map.tsx', key: 'map.activateLostMode' },
   { file: 'src/app/(tabs)/map.tsx', key: 'map.couldNotUpdateLostMode' },
+  { file: 'src/app/(tabs)/map.tsx', key: 'map.gps' },
 ];
 
 export const R5_HEALTH: UseRow[] = [
@@ -292,6 +293,8 @@ export const R9_ADD_PET: UseRow[] = [
   { file: 'src/screens/add-pet/index.tsx', key: 'addPet.yes' },
   { file: 'src/screens/add-pet/index.tsx', key: 'addPet.optional' },
   { file: 'src/screens/add-pet/index.tsx', key: 'addPet.savePet' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.no' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.microchip' },
 ];
 
 export const R10_PAIRING: UseRow[] = [
@@ -335,6 +338,8 @@ export const R10_PAIRING: UseRow[] = [
   { file: 'src/screens/pairing/index.tsx', key: 'pairing.freePlanNoActivePlan' },
   { file: 'src/screens/pairing/index.tsx', key: 'pairing.planStatusUnavailable' },
   { file: 'src/screens/pairing/index.tsx', key: 'pairing.unpairCollar' },
+  { file: 'src/screens/pairing/index.tsx', key: 'pairing.esn' },
+  { file: 'src/screens/pairing/index.tsx', key: 'pairing.esn' },
 ];
 
 export const R11_RESET: UseRow[] = [
@@ -372,5 +377,18 @@ export const ALL_USES: UseRow[] = [
 describe('#65: la tabla de uso de copy está disponible al runner', () => {
   it('expone al menos el primer lote normativo', () => {
     expect(ALL_USES.length).toBeGreaterThan(0);
+  });
+
+  // Enmienda (3): el candado es la consistencia interna, no una constante
+  // escrita a mano — es la tercera vez que una cifra congelada envejece.
+  it('cuadra ALL_USES con la suma de los once bloques', () => {
+    const blocks = [
+      R1_AUTH, R2_TABS, R3_HOME, R4_MAP, R5_HEALTH, R6_FOOD,
+      R7_PROFILE, R8_REMINDERS, R9_ADD_PET, R10_PAIRING, R11_RESET,
+    ];
+
+    expect(ALL_USES).toHaveLength(
+      blocks.reduce((total, block) => total + block.length, 0),
+    );
   });
 });
