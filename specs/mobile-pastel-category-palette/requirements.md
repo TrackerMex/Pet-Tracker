@@ -295,9 +295,9 @@ vivo"**, y eso sí se probó, por mutación y en copias aisladas:
 Los tres candados están vivos. Lo que falta es el **registro** de que lo
 estaban antes de cerrarse.
 
-- [ ] Firmo la excepción: **R3, R4 y R9 son requisitos de verificación** cuyo
+- [X] Firmo la excepción: **R3, R4 y R9 son requisitos de verificación** cuyo
       commit rojo es de ausencia-de-helper, y su cierre queda probado por la
       prueba de mutación de `progress/review_mobile-pastel-category-palette.md`
       en vez de por su historial rojo→verde. Entiendo que C4 no se cumple en su
       forma literal para esos tres, y que la regla general para no repetirlo
-      quedó escrita en `CHECKPOINTS.md` §C4 (fecha: ____)
+      quedó escrita en `CHECKPOINTS.md` §C4 (fecha: 2026-09-05)
