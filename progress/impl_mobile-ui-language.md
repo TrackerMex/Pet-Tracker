@@ -400,3 +400,187 @@ checklist de autocrítica. El test fija el texto **y su posición**.
    del reporte de Codex. La tabla del delta está arriba.
 5. Quedan pendientes los **dos gates humanos** de `tasks.md` §Cierre: el smoke
    en dev build de Android y la firma de las 9 enmiendas.
+
+---
+
+# Tramo 3 — R18 cerrado con la enmienda (3), opción (B)
+
+Fecha: 2026-09-06
+Branch: `feature/65-mobile-ui-language`, desde `cb0b53b`
+
+## Firma verificada antes de tocar nada
+
+`cb0b53b`, autor `AlexisSM377 <al222111377@gmail.com>`, 2026-09-06, **toca solo
+`specs/mobile-ui-language/requirements.md`** (4 inserciones, 4 borrados). Marca
+**(B)** y la casilla de consistencia interna; deja **(A) sin marcar**. Sin
+código colado en el commit de firma.
+
+## Rojo → verde
+
+| R-id | Rojo | Verde |
+|---|---|---|
+| R18 | `f82d975` | `24fa49a` |
+
+Trazabilidad en `26b16b5`. **`traceability.md` no tiene ninguna fila pendiente**:
+los 20 requisitos están trazados.
+
+### El rojo, y que es honesto
+
+El rojo añade las **4 claves** al catálogo y sus filas a la tabla de uso, y
+**deja los 5 sitios sin migrar**. Las dos mitades de R18 fallan **por su
+aserción**, nombrando fichero y cadena. Ninguna es `ReferenceError`.
+
+Mitad (a), resolución por clave:
+
+```
+● #65 R18: los sitios resuelven por clave y no queda copy suelta › resuelve
+  cada ocurrencia de la tabla contra la clave exacta
+
+      Object {
+        "file": "src/app/(tabs)/map.tsx",
+        "key": "map.gps",
+    -   "uses": 1,
+    +   "uses": 0,
+      }
+```
+
+Mitad (b), escaneo de copy suelta:
+
+```
+● #65 R18: los sitios resuelven por clave y no queda copy suelta › no deja
+  ningún valor fijo del catálogo como literal entero en las pantallas
+
+      Object {
+        "file": "src/app/(tabs)/map.tsx",
+    -   "looseCopy": Array [],
+    +   "looseCopy": Array [
+    +     "en:map.gps = GPS",
+    +     "es:map.gps = GPS",
+    +   ],
+      }
+```
+
+El verde migra los 5 sitios:
+
+| Fichero | Sitio | Queda |
+|---|---|---|
+| `screens/add-pet/index.tsx` | `label="No"` | `label={t('addPet.no')}` |
+| `screens/add-pet/index.tsx` | `<FieldLabel>Microchip</FieldLabel>` | `{t('addPet.microchip')}` |
+| `screens/pairing/index.tsx` | `label="ESN"` (`ready-esn`) | `label={t('pairing.esn')}` |
+| `screens/pairing/index.tsx` | `label="ESN"` (`device-esn`) | `label={t('pairing.esn')}` |
+| `app/(tabs)/map.tsx` | `<Text>GPS</Text>` | `{t('map.gps')}` |
+
+Los `testID` no se tocan. `📄` y `✓` quedan fuera, como ordena la enmienda.
+
+## El candado, ahora por consistencia interna
+
+Como se firmó, la comprobación vinculante deja de ser una constante:
+
+- `ui-copy-table.ts` — `ALL_USES` debe medir la **suma de los once bloques**
+  `R1_…R11_`, calculada de los bloques mismos.
+- `ui-language.test.ts` R18 — `Object.keys(es)` y `Object.keys(en)` deben
+  coincidir en cardinalidad **y en el conjunto de claves**; el escaneo recorre
+  `ALL_USES` y el catálogo tal como están.
+- El `describe` de R18 **pierde el total**: `'#65 R18: los sitios resuelven por
+  clave y no queda copy suelta'`.
+
+Ningún total escrito a mano queda dentro del candado de R18.
+
+## Una desviación de las cifras estimadas, y por qué
+
+La enmienda estimaba `ALL_USES` **324** y R10 **41**. Los reales son **325** y
+**42**.
+
+`pairing.esn` se usa en **dos** sitios (`:319` y `:436`) y la enmienda anotó
+«una sola fila en la tabla de uso». Pero la tabla lleva **una fila por
+ocurrencia** —es la convención que ya existía, no una que yo introduzca:
+`login.signIn` tiene 2 filas y `common.somethingWentWrong` tiene 31—, y
+`checkUses` **cuenta ocurrencias por (fichero, clave)**: con una sola fila
+esperaría 1 uso y encontraría 2, y R18 quedaría rojo para siempre.
+
+Se resolvió a favor de la convención, no del número, porque **la propia
+enmienda degradó esas cifras a descripción**: «las cifras de arriba quedan en la
+spec como lo que valían el 2026-09-06, **no como el candado**». Todo lo demás
+cuadra exacto con lo firmado:
+
+| Magnitud | Firmado | Real |
+|---|---:|---:|
+| catálogo | 259 | **259** |
+| valores de cadena fija R18(b) | 248 | **248** (259 − 11 con parámetro) |
+| R4 | 20 | **20** |
+| R9 | 42 | **42** |
+| R10 | 41 | **42** |
+| `ALL_USES` | 324 | **325** |
+
+**Es exactamente el fallo de especie que la enmienda buscaba enterrar**, y la
+comprobación de consistencia interna lo absorbió sin drama: no hay ninguna
+constante que corregir, solo esta nota.
+
+## Evidencia de mutación de R18 (C4(b))
+
+Sobre el R18 ya commiteado en verde:
+
+1. Literal reintroducido en pantalla migrada:
+   `src/app/(auth)/login.tsx:68`, `{t('login.signIn')}` → `Iniciar sesión`.
+2. Rojo **por su aserción**, nombrando el fichero:
+
+```
+● #65 R18: los sitios resuelven por clave y no queda copy suelta › no deja
+  ningún valor fijo del catálogo como literal entero en las pantallas
+
+      Object {
+        "file": "src/app/(auth)/login.tsx",
+    -   "looseCopy": Array [],
+    +   "looseCopy": Array [
+    +     "es:login.signIn = Iniciar sesión",
+    +   ],
+      }
+```
+
+3. Mutación revertida, suite verde (63 suites / 931 tests).
+
+## Copy o decisiones no previstas
+
+- **Ninguna.** Rehice el barrido por la vía del `leader` —texto visible en los
+  19 ficheros, resuelva o no por `t(`— **después** de migrar: **cero literales
+  de copy restantes**. Los únicos aciertos del barrido son nombres de prop en
+  su propia línea (`secureTextEntry`, `selectable`, `isLast`, `selectedPetId`)
+  y sintaxis de genéricos de TypeScript, que un regex de nodo JSX confunde con
+  texto. No hay nada más que enmendar.
+- **`language-provider.test.tsx` (R12)**: su aserción fijaba el catálogo en
+  **255**. Pasa a **259**, que es literalmente la cifra que la enmienda firma.
+  No le cambié la forma del candado —sigue con `toHaveLength` más la paridad
+  `es`↔`en`— porque la enmienda acotó el cambio a consistencia interna a
+  `ui-copy-table.ts` y al test de R18. Si el `leader` quiere también ahí la
+  forma nueva, es una línea.
+- Cero dependencias nuevas, cero cambios de layout o `className`.
+
+## Verificación
+
+- `./init.sh`: **exit code 0 a la primera**, sin flake esta vez. Build, 163 + 2
+  + 63 suites, e2e (`353 passed`), lint y typecheck verdes.
+- `bun run test` (móvil): **63 suites / 931 tests**.
+- `bun run typecheck`: limpio.
+- `bun run lint`: **0 errores y 0 warnings**. De paso subí los dos `import` por
+  encima de los `require` shim en `ui-language.test.ts`: el warning
+  `import/first` era preexistente (tramo 2) y mi import lo duplicaba. Los
+  `require` siguen ejecutándose antes de su primer uso.
+- C8: cero `StyleSheet.create`, cero clases arbitrarias, cero hex fuera de
+  `src/theme/` en código de pantalla.
+- Alcance: sin tocar `backend-pet-tracker/`, `infra/`, `hosting/`, `app.json`,
+  `package.json` ni `src/theme/`.
+
+## Notas para el reviewer
+
+1. **R18 cerrado**; `traceability.md` sin filas pendientes, los 20 requisitos
+   con rojo y verde.
+2. La única divergencia con la enmienda son **`ALL_USES` 325 y R10 42** (no
+   324/41), por la convención de una fila por ocurrencia. Justificada arriba;
+   si se prefiere el 324, habría que romper `checkUses`, que es peor negocio.
+3. **Nada firmado por un humano se ha marcado.** Las 9 casillas de R19 siguen
+   vacías, `feature_list.json` sin tocar, sin PR, sin merge.
+4. Siguen pendientes los **dos gates humanos** de `tasks.md` §Cierre: smoke en
+   dev build de Android y firma de las 9 enmiendas de R19.
+5. `progress/impl_mobile-ui-language.R18.patch.txt` queda **obsoleto**: era el
+   test cuando R18 estaba bloqueado. El vigente está en el árbol. Se puede
+   borrar en el cierre.
