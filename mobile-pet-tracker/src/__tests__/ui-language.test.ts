@@ -28,11 +28,16 @@ function checkUses(uses: UseRow[]) {
   for (const [id, expected] of expectedCounts) {
     const [file, key] = id.split('\0');
     const source = readFileSync(join(SOURCE_ROOT, file), 'utf8');
-    const calls = source.match(
+    const directCalls = source.match(
       new RegExp(`\\bt\\(\\s*['"]${escapeRegExp(key)}['"]`, 'g'),
     );
+    const keyedConstants = source.match(
+      new RegExp(`\\blabelKey:\\s*['"]${escapeRegExp(key)}['"]`, 'g'),
+    );
+    const resolvedUses =
+      (directCalls?.length ?? 0) + (keyedConstants?.length ?? 0);
 
-    expect({ file, key, uses: calls?.length ?? 0 }).toEqual({
+    expect({ file, key, uses: resolvedUses }).toEqual({
       file,
       key,
       uses: expected,
