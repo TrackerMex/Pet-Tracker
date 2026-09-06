@@ -562,7 +562,7 @@ trazabilidad) no cambia. Los otros 19 requisitos mantienen su rojo→verde real.
 
 - [X] Firmo que **R18 es requisito de verificación** y se cierra por prueba de
       mutación en vez de por commit rojo, con la evidencia de los tres puntos
-      de arriba en el reporte del `reviewer` (fecha: 2026-09-06)
+      de arriba en el reporte del `reviewer` (fecha: 2026-09-05)
 
 ### Enmienda del 2026-09-06 (2) — el recuento de R17 es 265, no 244
 
