@@ -164,7 +164,7 @@ describe('R8: formulario de alta con chips y pickers', () => {
     await waitFor(() =>
       expect(screen.getByTestId('screen-add-reminder')).toBeVisible(),
     );
-    expect(screen.getByText('Add reminder')).toBeVisible();
+    expect(screen.getByText('Agregar recordatorio')).toBeVisible();
     expect(
       screen.getByTestId('screen-add-reminder').props.contentContainerStyle,
     ).toEqual({
@@ -187,8 +187,8 @@ describe('R8: formulario de alta con chips y pickers', () => {
     expect(screen.getByTestId('type-chip-vaccine').props.accessibilityState).toEqual({
       selected: true,
     });
-    expect(screen.getByText('💉 Vaccine')).toBeVisible();
-    expect(screen.getByText('📌 Other')).toBeVisible();
+    expect(screen.getByText('💉 Vacuna')).toBeVisible();
+    expect(screen.getByText('📌 Otro')).toBeVisible();
     expect(screen.getByTestId('title-input').props.maxLength).toBe(120);
 
     await fireEvent.press(screen.getByTestId('type-chip-custom'));
@@ -202,7 +202,7 @@ describe('R8: formulario de alta con chips y pickers', () => {
     await renderAddReminder();
     await waitFor(() => expect(screen.getByTestId('date-field')).toBeVisible());
 
-    expect(screen.getByText('Select a date')).toBeVisible();
+    expect(screen.getByText('Elige una fecha')).toBeVisible();
     expect(screen.queryByTestId('date-picker')).toBeNull();
     await fireEvent.press(screen.getByTestId('date-field'));
 
@@ -269,7 +269,7 @@ describe('R8: formulario de alta con chips y pickers', () => {
     );
 
     expect(screen.queryByTestId('date-picker')).toBeNull();
-    expect(screen.getByText('Select a date')).toBeVisible();
+    expect(screen.getByText('Elige una fecha')).toBeVisible();
   });
 
   it('renders alert choices and selects seven days by default', async () => {
@@ -317,7 +317,7 @@ describe('R9: guardar con validación y degradación por kind', () => {
     await fireEvent.press(screen.getByTestId('add-reminder-submit'));
 
     expect(screen.getByTestId('add-reminder-error')).toHaveTextContent(
-      'Title is required',
+      'El título es obligatorio',
     );
     expect(mockCreateReminder).not.toHaveBeenCalled();
   });
@@ -331,7 +331,7 @@ describe('R9: guardar con validación y degradación por kind', () => {
     await fireEvent.press(screen.getByTestId('add-reminder-submit'));
 
     expect(screen.getByTestId('add-reminder-error')).toHaveTextContent(
-      'Pick a date',
+      'Elige una fecha',
     );
     expect(mockCreateReminder).not.toHaveBeenCalled();
   });
@@ -346,7 +346,7 @@ describe('R9: guardar con validación y degradación por kind', () => {
     await fireEvent.press(screen.getByTestId('add-reminder-submit'));
 
     expect(screen.getByTestId('add-reminder-error')).toHaveTextContent(
-      'Date must be in the future',
+      'La fecha debe ser futura',
     );
     expect(mockCreateReminder).not.toHaveBeenCalled();
   });
@@ -388,11 +388,11 @@ describe('R9: guardar con validación y degradación por kind', () => {
   });
 
   it.each([
-    [{ kind: 'forbidden' }, 'Only the owner can create reminders'],
-    [{ kind: 'invalid' }, 'Date must be in the future'],
-    [{ kind: 'unreachable', message: 'offline' }, 'Cannot reach server'],
-    [{ kind: 'error' }, 'Something went wrong'],
-    [{ kind: 'missing-config' }, 'Something went wrong'],
+    [{ kind: 'forbidden' }, 'Solo el dueño puede crear recordatorios'],
+    [{ kind: 'invalid' }, 'La fecha debe ser futura'],
+    [{ kind: 'unreachable', message: 'offline' }, 'No se pudo conectar con el servidor'],
+    [{ kind: 'error' }, 'Algo salió mal'],
+    [{ kind: 'missing-config' }, 'Algo salió mal'],
   ] as [CreateReminderState, string][])(
     'shows the form error for $state.kind',
     async (createState, message) => {

@@ -10,7 +10,10 @@ import { ArrowLeft } from 'reicon-react-native';
 import { createReminder } from '../../api/reminders';
 import type { ReminderType } from '../../api/types';
 import { useAuth } from '../../providers/auth-provider';
-import { useLocale } from '../../providers/language-provider';
+import {
+  useLocale,
+  useTranslate,
+} from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { combineDateAndTime } from '../../utils/reminder-dates';
 import { REMINDER_TYPE_META } from '../../utils/reminder-meta';
@@ -19,15 +22,15 @@ import { TOUCH_SLOP } from '../../theme/touch-target';
 import { useThemeColors } from '../../theme/use-theme-colors';
 
 const ADVANCE_OPTIONS = [
-  { minutes: 0, label: 'Same day' },
-  { minutes: 1440, label: '1 day before' },
-  { minutes: 4320, label: '3 days before' },
-  { minutes: 10080, label: '7 days before' },
+  { minutes: 0, labelKey: 'addReminder.advanceSameDay' },
+  { minutes: 1440, labelKey: 'addReminder.advance1Day' },
+  { minutes: 4320, labelKey: 'addReminder.advance3Days' },
+  { minutes: 10080, labelKey: 'addReminder.advance7Days' },
 ] as const;
 
 const REMINDER_TYPES = Object.entries(REMINDER_TYPE_META) as [
   ReminderType,
-  { label: string; emoji: string },
+  (typeof REMINDER_TYPE_META)[ReminderType],
 ][];
 
 function initialTime(): Date {
@@ -40,6 +43,7 @@ function AddReminderContent({ petId }: { petId: string }) {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
   const locale = useLocale();
+  const t = useTranslate();
   const insets = useSafeAreaInsets();
   const [foreground, muted] = useThemeColors(['foreground', 'muted']);
   const [type, setType] = useState<ReminderType>('vaccine');
@@ -55,17 +59,17 @@ function AddReminderContent({ petId }: { petId: string }) {
   async function handleSubmit() {
     const trimmedTitle = title.trim();
     if (!trimmedTitle) {
-      setFormError('Title is required');
+      setFormError(t('addReminder.titleIsRequired'));
       return;
     }
     if (!date) {
-      setFormError('Pick a date');
+      setFormError(t('addReminder.pickDate'));
       return;
     }
 
     const dueAt = combineDateAndTime(date, time);
     if (dueAt.getTime() <= Date.now()) {
-      setFormError('Date must be in the future');
+      setFormError(t('addReminder.dateMustBeFuture'));
       return;
     }
 
@@ -85,23 +89,23 @@ function AddReminderContent({ petId }: { petId: string }) {
           router.back();
           return;
         case 'forbidden':
-          setFormError('Only the owner can create reminders');
+          setFormError(t('addReminder.errorForbidden'));
           return;
         case 'invalid':
-          setFormError('Date must be in the future');
+          setFormError(t('addReminder.dateMustBeFuture'));
           return;
         case 'unreachable':
-          setFormError('Cannot reach server');
+          setFormError(t('common.cannotReachServer'));
           return;
         case 'unauthorized':
           await signOut();
           return;
         case 'error':
         case 'missing-config':
-          setFormError('Something went wrong');
+          setFormError(t('common.somethingWentWrong'));
       }
     } catch {
-      setFormError('Something went wrong');
+      setFormError(t('common.somethingWentWrong'));
     } finally {
       setSubmitting(false);
     }
@@ -121,7 +125,7 @@ function AddReminderContent({ petId }: { petId: string }) {
     >
       <View className="flex-row items-center gap-3">
         <Pressable
-          accessibilityLabel="Back to reminders"
+          accessibilityLabel={t('addReminder.backToReminders')}
           accessibilityRole="button"
           testID="add-reminder-back"
           hitSlop={TOUCH_SLOP}
@@ -131,13 +135,13 @@ function AddReminderContent({ petId }: { petId: string }) {
           <ArrowLeft size={20} color={foreground} />
         </Pressable>
         <Text className="text-2xl font-black text-foreground">
-          Add reminder
+          {t('addReminder.addReminder')}
         </Text>
       </View>
 
       <View className="gap-2">
         <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
-          Type
+          {t('addReminder.type')}
         </Text>
         <View className="flex-row flex-wrap gap-2">
           {REMINDER_TYPES.map(([reminderType, meta]) => {
@@ -158,7 +162,7 @@ function AddReminderContent({ petId }: { petId: string }) {
                 onPress={() => setType(reminderType)}
               >
                 <Text className="text-sm font-semibold text-foreground">
-                  {`${meta.emoji} ${meta.label}`}
+                  {`${meta.emoji} ${t(meta.labelKey)}`}
                 </Text>
               </Pressable>
             );
@@ -168,14 +172,14 @@ function AddReminderContent({ petId }: { petId: string }) {
 
       <View className="gap-2">
         <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
-          Title
+          {t('addReminder.title')}
         </Text>
         <TextInput
           testID="title-input"
           className="rounded-xl bg-default px-4 py-3 text-foreground"
           style={CONTINUOUS_CORNER}
           maxLength={120}
-          placeholder="Reminder title"
+          placeholder={t('addReminder.reminderTitle')}
           placeholderTextColor={muted}
           value={title}
           onChangeText={setTitle}
@@ -185,7 +189,7 @@ function AddReminderContent({ petId }: { petId: string }) {
       <View className="flex-row gap-3">
         <View className="flex-1 gap-2">
           <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
-            Date
+            {t('addReminder.date')}
           </Text>
           <Pressable
             accessibilityRole="button"
@@ -195,13 +199,15 @@ function AddReminderContent({ petId }: { petId: string }) {
             onPress={() => setShowDatePicker(true)}
           >
             <Text className={date ? 'text-foreground' : 'text-muted'}>
-              {date ? date.toLocaleDateString(locale) : 'Select a date'}
+              {date
+                ? date.toLocaleDateString(locale)
+                : t('addReminder.selectDate')}
             </Text>
           </Pressable>
         </View>
         <View className="flex-1 gap-2">
           <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
-            Time
+            {t('addReminder.time')}
           </Text>
           <Pressable
             accessibilityRole="button"
@@ -255,7 +261,7 @@ function AddReminderContent({ petId }: { petId: string }) {
 
       <View className="gap-2">
         <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
-          Alert
+          {t('addReminder.alert')}
         </Text>
         <View className="flex-row flex-wrap gap-2">
           {ADVANCE_OPTIONS.map((option) => {
@@ -276,7 +282,7 @@ function AddReminderContent({ petId }: { petId: string }) {
                 onPress={() => setAdvanceMinutes(option.minutes)}
               >
                 <Text className="text-sm font-semibold text-foreground">
-                  {option.label}
+                  {t(option.labelKey)}
                 </Text>
               </Pressable>
             );
@@ -291,7 +297,7 @@ function AddReminderContent({ petId }: { petId: string }) {
         onPress={() => void handleSubmit()}
       >
         <Button.Label className="font-bold text-accent-foreground">
-          Save reminder
+          {t('addReminder.saveReminder')}
         </Button.Label>
       </Button>
 

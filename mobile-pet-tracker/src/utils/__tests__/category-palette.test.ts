@@ -4,13 +4,41 @@ import { REMINDER_TYPE_META } from '../reminder-meta';
 describe('#64 R5: cada tipo de recordatorio resuelve un único hueco de la paleta', () => {
   it('conserva label y emoji mientras asigna los siete huecos exactos', () => {
     expect(REMINDER_TYPE_META).toEqual({
-      vaccine: { label: 'Vaccine', emoji: '💉', category: 'blue' },
-      deworming: { label: 'Deworming', emoji: '🪱', category: 'violet' },
-      medication: { label: 'Medication', emoji: '💊', category: 'amber' },
-      appointment: { label: 'Appointment', emoji: '🩺', category: 'green' },
-      weight: { label: 'Weight', emoji: '⚖️', category: 'neutral' },
-      food: { label: 'Food', emoji: '🍖', category: 'rose' },
-      custom: { label: 'Other', emoji: '📌', category: 'neutral' },
+      vaccine: {
+        labelKey: 'reminderType.vaccine',
+        emoji: '💉',
+        category: 'blue',
+      },
+      deworming: {
+        labelKey: 'reminderType.deworming',
+        emoji: '🪱',
+        category: 'violet',
+      },
+      medication: {
+        labelKey: 'reminderType.medication',
+        emoji: '💊',
+        category: 'amber',
+      },
+      appointment: {
+        labelKey: 'reminderType.appointment',
+        emoji: '🩺',
+        category: 'green',
+      },
+      weight: {
+        labelKey: 'reminderType.weight',
+        emoji: '⚖️',
+        category: 'neutral',
+      },
+      food: {
+        labelKey: 'reminderType.food',
+        emoji: '🍖',
+        category: 'rose',
+      },
+      custom: {
+        labelKey: 'reminderType.other',
+        emoji: '📌',
+        category: 'neutral',
+      },
     });
   });
 

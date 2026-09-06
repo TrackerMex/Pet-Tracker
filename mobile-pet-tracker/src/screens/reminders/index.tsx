@@ -20,7 +20,10 @@ import { PetSwitcher } from '../../components/pet-switcher';
 import { useApi } from '../../hooks/use-api';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
-import { useLocale } from '../../providers/language-provider';
+import {
+  useLocale,
+  useTranslate,
+} from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import {
   CONTINUOUS_CORNER,
@@ -40,6 +43,7 @@ export function RemindersScreen() {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
   const locale = useLocale();
+  const t = useTranslate();
   const { selectedPetId, selectPet } = useSelectedPet();
   const insets = useSafeAreaInsets();
   const petsFn = useCallback(
@@ -87,24 +91,24 @@ export function RemindersScreen() {
             refetchReminders();
             return;
           case 'forbidden':
-            setActionError('Only the owner can delete');
+            setActionError(t('reminders.errorForbidden'));
             return;
           case 'unreachable':
-            setActionError('Cannot reach server');
+            setActionError(t('common.cannotReachServer'));
             return;
           case 'unauthorized':
             await signOut();
             return;
           case 'error':
           case 'missing-config':
-            setActionError('Something went wrong');
+            setActionError(t('common.somethingWentWrong'));
         }
       } catch {
-        setActionError('Something went wrong');
+        setActionError(t('common.somethingWentWrong'));
       } finally {
         setDeletingId(null);
       }
-    }, [baseUrl, refetchReminders, selectedPetId, signOut, token],
+    }, [baseUrl, refetchReminders, selectedPetId, signOut, t, token],
   );
 
   const confirmDelete = useCallback((reminder: Reminder) => {
@@ -136,14 +140,16 @@ export function RemindersScreen() {
       }}
     >
       <View className="flex-row items-center justify-between gap-3">
-        <Text className="text-2xl font-black text-foreground">Reminders</Text>
+        <Text className="text-2xl font-black text-foreground">
+          {t('reminders.reminders')}
+        </Text>
         <Button
           testID="reminders-add-link"
           className="rounded-xl bg-accent"
           onPress={() => router.push('/add-reminder' as Href)}
         >
           <Button.Label className="font-bold text-accent-foreground">
-            New
+            {t('reminders.new')}
           </Button.Label>
         </Button>
       </View>
@@ -171,10 +177,10 @@ export function RemindersScreen() {
       {reminders.data && isRemindersError(reminders.data) ? (
         <View className="items-start gap-3">
           <Text testID="reminders-error" className="text-danger">
-            Something went wrong
+            {t('common.somethingWentWrong')}
           </Text>
           <Button testID="reminders-retry" onPress={reminders.refetch}>
-            <Button.Label>Retry</Button.Label>
+            <Button.Label>{t('common.retry')}</Button.Label>
           </Button>
         </View>
       ) : null}
@@ -182,7 +188,7 @@ export function RemindersScreen() {
       {reminders.data?.kind === 'ok' &&
       reminders.data.reminders.length === 0 ? (
         <Text testID="reminders-empty" className="font-normal text-muted">
-          No reminders yet
+          {t('reminders.noRemindersYet')}
         </Text>
       ) : null}
 
@@ -211,7 +217,9 @@ export function RemindersScreen() {
                   ).length
                 }
               </Text>
-              <Text className="text-xs font-normal text-muted">Active</Text>
+              <Text className="text-xs font-normal text-muted">
+                {t('reminders.active')}
+              </Text>
             </View>
             <View
               testID="pill-week"
@@ -236,7 +244,9 @@ export function RemindersScreen() {
                   }).length
                 }
               </Text>
-              <Text className="text-xs font-normal text-muted">This week</Text>
+              <Text className="text-xs font-normal text-muted">
+                {t('reminders.thisWeek')}
+              </Text>
             </View>
             <View
               testID="pill-inactive"
@@ -253,7 +263,9 @@ export function RemindersScreen() {
                   ).length
                 }
               </Text>
-              <Text className="text-xs font-normal text-muted">Inactive</Text>
+              <Text className="text-xs font-normal text-muted">
+                {t('reminders.inactive')}
+              </Text>
             </View>
           </View>
 
@@ -278,14 +290,14 @@ export function RemindersScreen() {
                   <View className="min-w-0 flex-1 gap-1">
                     <View className="flex-row items-center gap-2">
                       <Text className="text-xs font-semibold text-muted">
-                        {meta.label}
+                        {t(meta.labelKey)}
                       </Text>
                       {!inactive && days >= 0 && days <= 10 ? (
                         <Text
                           testID={`reminder-upcoming-${reminder.id}`}
                           className="rounded-full bg-warning-soft px-2 py-0.5 text-2xs font-bold text-warning-strong"
                         >
-                          Upcoming!
+                          {t('reminders.upcoming')}
                         </Text>
                       ) : null}
                     </View>
@@ -301,11 +313,13 @@ export function RemindersScreen() {
                           testID={`reminder-status-${reminder.id}`}
                           className="text-xs font-semibold text-muted"
                         >
-                          {reminder.status === 'sent' ? 'Sent' : 'Cancelled'}
+                          {reminder.status === 'sent'
+                            ? t('reminders.sent')
+                            : t('reminders.cancelled')}
                         </Text>
                       ) : (
                         <Text className="text-xs font-normal text-muted">
-                          {`· in ${days} days`}
+                          {t('reminders.dueInDays', { days })}
                         </Text>
                       )}
                     </View>
@@ -319,7 +333,7 @@ export function RemindersScreen() {
                     onPress={() => confirmDelete(reminder)}
                   >
                     <Button.Label className="font-semibold text-danger">
-                      Delete
+                      {t('reminders.delete')}
                     </Button.Label>
                   </Button>
                 </Card>
@@ -342,7 +356,7 @@ export function RemindersScreen() {
               className="gap-3 bg-surface px-6 pb-8 pt-4"
             >
               <Text className="text-xl font-bold text-foreground">
-                Delete reminder?
+                {t('reminders.deleteReminder')}
               </Text>
               <Text
                 testID="reminders-delete-reference"
@@ -351,7 +365,7 @@ export function RemindersScreen() {
                 {deleteCandidate?.title ?? ''}
               </Text>
               <Text className="text-sm font-normal text-muted">
-                This action cannot be undone.
+                {t('reminders.deleteSheetBody')}
               </Text>
               <View className="gap-2 pt-2">
                 <Button
@@ -361,7 +375,7 @@ export function RemindersScreen() {
                   onPress={deleteSelectedReminder}
                 >
                   <Button.Label className="font-bold text-danger-foreground">
-                    Delete
+                    {t('reminders.delete')}
                   </Button.Label>
                 </Button>
                 <Button
@@ -370,7 +384,9 @@ export function RemindersScreen() {
                   variant="outline"
                   onPress={dismissDeleteSheet}
                 >
-                  <Button.Label className="font-semibold">Cancel</Button.Label>
+                  <Button.Label className="font-semibold">
+                    {t('reminders.cancel')}
+                  </Button.Label>
                 </Button>
               </View>
             </View>
