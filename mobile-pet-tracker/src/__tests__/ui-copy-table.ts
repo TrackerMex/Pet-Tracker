@@ -160,6 +160,44 @@ export const R6_FOOD: UseRow[] = [
   { file: 'src/app/(tabs)/meal-schedule.tsx', key: 'mealSchedule.noNutritionProfileYet' },
 ];
 
+export const R7_PROFILE: UseRow[] = [
+  { file: 'src/screens/profile/index.tsx', key: 'profile.notRegistered' },
+  { file: 'src/screens/profile/index.tsx', key: 'profile.sterilized' },
+  { file: 'src/screens/profile/index.tsx', key: 'profile.notSterilized' },
+  { file: 'src/screens/profile/index.tsx', key: 'profile.ageMonths' },
+  { file: 'src/screens/profile/index.tsx', key: 'profile.errorPhotoFormat' },
+  { file: 'src/screens/profile/index.tsx', key: 'profile.couldNotUploadPhoto' },
+  { file: 'src/screens/profile/index.tsx', key: 'profile.couldNotUploadPhoto' },
+  { file: 'src/screens/profile/index.tsx', key: 'profile.couldNotUploadPhoto' },
+  { file: 'src/screens/profile/index.tsx', key: 'profile.profile' },
+  { file: 'src/screens/profile/index.tsx', key: 'profile.addPet' },
+  { file: 'src/screens/profile/index.tsx', key: 'common.noPetsYet' },
+  { file: 'src/screens/profile/index.tsx', key: 'profile.couldNotLoadPets' },
+  { file: 'src/screens/profile/index.tsx', key: 'profile.couldNotLoadPet' },
+  { file: 'src/screens/profile/index.tsx', key: 'common.retry' },
+  { file: 'src/screens/profile/index.tsx', key: 'profile.changePhoto' },
+  { file: 'src/screens/profile/index.tsx', key: 'profile.information' },
+  { file: 'src/screens/profile/index.tsx', key: 'profile.breed' },
+  { file: 'src/screens/profile/index.tsx', key: 'profile.microchip' },
+  { file: 'src/screens/profile/index.tsx', key: 'profile.gpsDevice' },
+  { file: 'src/screens/profile/index.tsx', key: 'profile.lastSignal' },
+  { file: 'src/screens/profile/index.tsx', key: 'profile.documents' },
+  { file: 'src/screens/profile/index.tsx', key: 'profile.gpsSettings' },
+  { file: 'src/screens/profile/index.tsx', key: 'profile.reminders' },
+  { file: 'src/screens/profile/index.tsx', key: 'profile.account' },
+  { file: 'src/screens/profile/index.tsx', key: 'profile.accountUnavailable' },
+  { file: 'src/screens/profile/index.tsx', key: 'profile.useDarkTheme' },
+  { file: 'src/screens/profile/index.tsx', key: 'profile.useLightTheme' },
+  { file: 'src/screens/profile/index.tsx', key: 'profile.signOut' },
+  { file: 'src/screens/docs/index.tsx', key: 'docs.backToProfile' },
+  { file: 'src/screens/docs/index.tsx', key: 'docs.documentsOf' },
+  { file: 'src/screens/docs/index.tsx', key: 'docs.pet' },
+  { file: 'src/screens/docs/index.tsx', key: 'docs.noDocumentsYet' },
+  { file: 'src/screens/docs/index.tsx', key: 'docs.emptyBody' },
+  { file: 'src/screens/docs/index.tsx', key: 'docs.couldNotLoadDocuments' },
+  { file: 'src/screens/docs/index.tsx', key: 'common.retry' },
+];
+
 export const ALL_USES: UseRow[] = [
   ...R1_AUTH,
   ...R2_TABS,
@@ -167,6 +205,7 @@ export const ALL_USES: UseRow[] = [
   ...R4_MAP,
   ...R5_HEALTH,
   ...R6_FOOD,
+  ...R7_PROFILE,
 ];
 
 describe('#65: la tabla de uso de copy está disponible al runner', () => {

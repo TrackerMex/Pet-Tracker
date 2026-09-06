@@ -16,6 +16,7 @@ import {
   R4_MAP,
   R5_HEALTH,
   R6_FOOD,
+  R7_PROFILE,
   type UseRow,
 } from './ui-copy-table';
 
@@ -92,5 +93,12 @@ describe('#65 R6: Food resuelve su copy por clave', () => {
   it('resuelve las 35 ocurrencias normativas', () => {
     expect(R6_FOOD).toHaveLength(35);
     checkUses(R6_FOOD);
+  });
+});
+
+describe('#65 R7: Profile resuelve su copy por clave', () => {
+  it('resuelve las 35 ocurrencias normativas', () => {
+    expect(R7_PROFILE).toHaveLength(35);
+    checkUses(R7_PROFILE);
   });
 });
