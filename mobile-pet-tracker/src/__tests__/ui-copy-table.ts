@@ -42,7 +42,30 @@ export const R2_TABS: UseRow[] = [
   { file: 'src/components/floating-tab-bar.tsx', key: 'tabs.profile' },
 ];
 
-export const ALL_USES: UseRow[] = [...R1_AUTH, ...R2_TABS];
+export const R3_HOME: UseRow[] = [
+  { file: 'src/app/(tabs)/home.tsx', key: 'home.noLocationDataYet' },
+  { file: 'src/app/(tabs)/home.tsx', key: 'home.lastSeen' },
+  { file: 'src/app/(tabs)/home.tsx', key: 'home.home' },
+  { file: 'src/app/(tabs)/home.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/app/(tabs)/home.tsx', key: 'common.retry' },
+  { file: 'src/app/(tabs)/home.tsx', key: 'common.noPetsYet' },
+  { file: 'src/app/(tabs)/home.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/app/(tabs)/home.tsx', key: 'common.retry' },
+  { file: 'src/app/(tabs)/home.tsx', key: 'home.free' },
+  { file: 'src/app/(tabs)/home.tsx', key: 'home.online' },
+  { file: 'src/app/(tabs)/home.tsx', key: 'home.offline' },
+  { file: 'src/app/(tabs)/home.tsx', key: 'home.noCollar' },
+  { file: 'src/app/(tabs)/home.tsx', key: 'home.pairCollar' },
+  { file: 'src/app/(tabs)/home.tsx', key: 'home.summaryTitle' },
+  { file: 'src/app/(tabs)/home.tsx', key: 'home.activityNeedsCollar' },
+  { file: 'src/app/(tabs)/home.tsx', key: 'home.couldNotLoadActivity' },
+  { file: 'src/app/(tabs)/home.tsx', key: 'home.activity' },
+  { file: 'src/app/(tabs)/home.tsx', key: 'home.sleep' },
+  { file: 'src/app/(tabs)/home.tsx', key: 'home.distance' },
+  { file: 'src/app/(tabs)/home.tsx', key: 'home.viewOnMap' },
+];
+
+export const ALL_USES: UseRow[] = [...R1_AUTH, ...R2_TABS, ...R3_HOME];
 
 describe('#65: la tabla de uso de copy está disponible al runner', () => {
   it('expone al menos el primer lote normativo', () => {

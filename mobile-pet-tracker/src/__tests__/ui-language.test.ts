@@ -9,7 +9,7 @@ declare function require(moduleName: 'path'): {
 const { readFileSync } = require('fs');
 const { join } = require('path');
 
-import { R1_AUTH, R2_TABS, type UseRow } from './ui-copy-table';
+import { R1_AUTH, R2_TABS, R3_HOME, type UseRow } from './ui-copy-table';
 
 const SOURCE_ROOT = process.cwd();
 
@@ -56,5 +56,12 @@ describe('#65 R2: la barra de pestañas resuelve su copy por clave', () => {
   it('resuelve las 5 ocurrencias normativas', () => {
     expect(R2_TABS).toHaveLength(5);
     checkUses(R2_TABS);
+  });
+});
+
+describe('#65 R3: Home resuelve su copy por clave', () => {
+  it('resuelve las 20 ocurrencias normativas', () => {
+    expect(R3_HOME).toHaveLength(20);
+    checkUses(R3_HOME);
   });
 });
