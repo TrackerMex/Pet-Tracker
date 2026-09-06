@@ -8,8 +8,8 @@ import {
 import { router, useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import * as ImagePicker from 'expo-image-picker';
-import { useEffect, type ReactNode } from 'react';
-import { Text } from 'react-native';
+import { useEffect, useState, type ReactNode } from 'react';
+import { Text, TextInput } from 'react-native';
 import { Uniwind } from 'uniwind';
 
 import { withThemeTransition } from 'react-native-nitro-theme-transition';
@@ -19,11 +19,13 @@ import { getPet, listPets, type PetState, type PetsState } from '../../api/pets'
 import type { PetProfile } from '../../api/types';
 import { getMe, type MeState } from '../../api/users';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
+import { LanguageProvider } from '../../providers/language-provider';
 import {
   SelectedPetProvider,
   useSelectedPet,
 } from '../../providers/selected-pet-provider';
 import { setStoredTheme } from '../../utils/theme-preference';
+import { setStoredLanguage } from '../../utils/language-preference';
 import { ProfileScreen } from '.';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 
@@ -65,6 +67,10 @@ jest.mock('../../providers/auth-provider', () => ({
 
 jest.mock('../../utils/theme-preference', () => ({
   setStoredTheme: jest.fn(),
+}));
+
+jest.mock('../../utils/language-preference', () => ({
+  setStoredLanguage: jest.fn(),
 }));
 
 jest.mock('uniwind', () => {
@@ -134,6 +140,7 @@ const mockUseAuth = jest.mocked(useAuth);
 const mockRouter = jest.mocked(router);
 const mockUseFocusEffect = jest.mocked(useFocusEffect);
 const mockSignOut = jest.fn<Promise<void>, []>();
+const mockSetStoredLanguage = jest.mocked(setStoredLanguage);
 const mockSetStoredTheme = jest.mocked(setStoredTheme);
 const mockSetTheme = jest.mocked(Uniwind.setTheme);
 let selectPetFromTest: ((petId: string) => void) | undefined;
@@ -191,13 +198,28 @@ function SelectionProbe() {
   return <Text testID="selected-pet-id">{selectedPetId ?? 'none'}</Text>;
 }
 
+function LocalInputProbe() {
+  const [value, setValue] = useState('');
+
+  return (
+    <TextInput
+      testID="language-state-probe"
+      value={value}
+      onChangeText={setValue}
+    />
+  );
+}
+
 function ProfileWrapper({ children }: { children: ReactNode }) {
   return (
     <HeroUINativeProvider>
-      <SelectedPetProvider>
-        <SelectionProbe />
-        {children}
-      </SelectedPetProvider>
+      <LanguageProvider initial="es">
+        <SelectedPetProvider>
+          <SelectionProbe />
+          <LocalInputProbe />
+          {children}
+        </SelectedPetProvider>
+      </LanguageProvider>
     </HeroUINativeProvider>
   );
 }
@@ -427,6 +449,50 @@ describe('R4: toggle persiste', () => {
     expect(jest.mocked(withThemeTransition)).toHaveBeenCalledTimes(1);
     expect(mockSetTheme).toHaveBeenCalledWith('dark');
     expect(mockSetStoredTheme).toHaveBeenCalledWith('dark');
+  });
+});
+
+describe('#65 R14: Profile cambia el idioma y repinta sin reiniciar', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockTheme = 'light';
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockGetMe.mockReturnValue(pending<MeState>());
+    mockListPets.mockReturnValue(pending<PetsState>());
+    mockGetPet.mockReturnValue(pending<PetState>());
+    mockSetStoredLanguage.mockResolvedValue();
+  });
+
+  it('shows the opposite endonym and changes the live Profile copy', async () => {
+    await renderProfile();
+
+    expect(screen.getByText('Perfil')).toBeVisible();
+    expect(screen.getByText('English')).toBeVisible();
+    expect(screen.getByTestId('theme-toggle')).toBeVisible();
+
+    fireEvent.press(screen.getByTestId('language-toggle'));
+
+    expect(screen.getByText('Profile')).toBeVisible();
+    expect(screen.getByText('Español')).toBeVisible();
+    expect(mockSetStoredLanguage).toHaveBeenCalledWith('en');
+  });
+
+  it('preserves local input state across the language repaint', async () => {
+    await renderProfile();
+    fireEvent.changeText(screen.getByTestId('language-state-probe'), 'PET-123');
+
+    fireEvent.press(screen.getByTestId('language-toggle'));
+
+    expect(screen.getByTestId('language-state-probe')).toHaveProp(
+      'value',
+      'PET-123',
+    );
   });
 });
 
