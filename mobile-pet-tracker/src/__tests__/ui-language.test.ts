@@ -1,14 +1,3 @@
-declare function require(moduleName: 'fs'): {
-  readFileSync: (path: string, encoding: 'utf8') => string;
-};
-
-declare function require(moduleName: 'path'): {
-  join: (...paths: string[]) => string;
-};
-
-const { readFileSync } = require('fs');
-const { join } = require('path');
-
 import { en, es, type TranslationKey } from '../i18n/catalog';
 import {
   ALL_USES,
@@ -25,6 +14,17 @@ import {
   R11_RESET,
   type UseRow,
 } from './ui-copy-table';
+
+declare function require(moduleName: 'fs'): {
+  readFileSync: (path: string, encoding: 'utf8') => string;
+};
+
+declare function require(moduleName: 'path'): {
+  join: (...paths: string[]) => string;
+};
+
+const { readFileSync } = require('fs');
+const { join } = require('path');
 
 const SOURCE_ROOT = process.cwd();
 
