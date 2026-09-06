@@ -23,7 +23,7 @@
 
 - **Branch**: `feature/67-mobile-pet-hero-header`, creada sobre main en 303fc19. Worktree principal `/home/claude/sites/Pet-Tracker`.
 - **Estado**: `spec_author` escribiendo `specs/mobile-pet-hero-header/`. Al terminar, la spec **para** en el gate humano: nadie implementa sin aprobacion firmada en branch.
-- **Baseline**: `./init.sh` corriendo sobre la branch recien creada para confirmar que main sale verde del merge de #66.
+- **Baseline verde** medido en `ffd045a` (2026-09-06): `./init.sh` exit 0. Movil 932/932 en 63 suites, backend 1243/1243 en 163, infra 14/14, e2e 354 pasados con 8 saltados de 28 suites; lint y typecheck limpios. El flaky de #72 no mordio en esta pasada. Este es el numero contra el que el reviewer mide el **delta** de #67, no una constante que copiar dentro de la spec.
 - **Dos decisiones del humano del 2026-09-06**, ya volcadas a `feature_list.json` #67:
   1. Sin foto el hero pinta el **blobatar a sangre**, no la inicial. El enunciado original de la decision B decia "degradado con la inicial, que es el patron que ya usa pet-avatar" y esa premisa era falsa: `pet-avatar.tsx` pinta `blobatar(name)` con `SvgXml`, y la R5 aprobada de #40 ya habia matado el fallback de inicial el 2026-08-21. Se conserva blobatar y la R5 de #40 queda **sin enmendar**.
   2. El selector de mascota **no vive dentro del hero**: el hero expone un slot, Home monta dentro el `pet-switcher.tsx` existente y Profile lo usa sin slot.
