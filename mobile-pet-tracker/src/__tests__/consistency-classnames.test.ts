@@ -45,34 +45,6 @@ function readSource(relativePath: string): string {
   return readFileSync(join(sourceRoot, relativePath), 'utf8');
 }
 
-function categoryClassInventory(): {
-  files: string[];
-  interpolatedFiles: string[];
-  classes: string[];
-} {
-  const palettePath = join('utils', 'category-palette.ts');
-  const interpolatedFiles = sourceFiles()
-    .filter((path) => {
-      const executableSource = readFileSync(path, 'utf8')
-        .replace(/\/\*[\s\S]*?\*\//g, '')
-        .replace(/\/\/.*$/gm, '');
-
-      return /(?:bg|text)-category-\$\{/.test(executableSource);
-    })
-    .map((path) => path.slice(sourceRoot.length + 1));
-  const classes = [
-    ...readSource(palettePath).matchAll(
-      /['"]((?:bg|text)-category-[^'"]+)['"]/g,
-    ),
-  ].map(([, className]) => className);
-
-  return {
-    files: filesMatching(/bg-category-|text-category-/),
-    interpolatedFiles,
-    classes,
-  };
-}
-
 /** Bloque JSX que abre en el `testID` dado y cierra en `closingTag`. */
 function elementWithTestId(
   source: string,
@@ -371,6 +343,34 @@ describe('#62 R15: todo contador usa cifras tabulares', () => {
 });
 
 describe('#64 R9: el color categórico solo se nombra en el módulo de paleta', () => {
+  function categoryClassInventory(): {
+    files: string[];
+    interpolatedFiles: string[];
+    classes: string[];
+  } {
+    const palettePath = join('utils', 'category-palette.ts');
+    const interpolatedFiles = sourceFiles()
+      .filter((path) => {
+        const executableSource = readFileSync(path, 'utf8')
+          .replace(/\/\*[\s\S]*?\*\//g, '')
+          .replace(/\/\/.*$/gm, '');
+
+        return /(?:bg|text)-category-\$\{/.test(executableSource);
+      })
+      .map((path) => path.slice(sourceRoot.length + 1));
+    const classes = [
+      ...readSource(palettePath).matchAll(
+        /['"]((?:bg|text)-category-[^'"]+)['"]/g,
+      ),
+    ].map(([, className]) => className);
+
+    return {
+      files: filesMatching(/bg-category-|text-category-/),
+      interpolatedFiles,
+      classes,
+    };
+  }
+
   it('centraliza las diez clases completas y prohíbe interpolarlas', () => {
     const inventory = categoryClassInventory();
 
