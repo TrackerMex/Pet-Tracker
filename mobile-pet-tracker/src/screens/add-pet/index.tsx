@@ -17,6 +17,7 @@ import {
 import { createPet, type CreatePetInput } from '../../api/pets';
 import { PetAvatar } from '../../components/pet-avatar';
 import { useAuth } from '../../providers/auth-provider';
+import { useLocale } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { TOUCH_SLOP } from '../../theme/touch-target';
@@ -78,6 +79,7 @@ function FieldLabel({ children }: { children: string }) {
 export function AddPetScreen() {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
+  const locale = useLocale();
   const { selectPet } = useSelectedPet();
   const insets = useSafeAreaInsets();
   const [foreground, muted] = useThemeColors(['foreground', 'muted']);
@@ -373,7 +375,9 @@ export function AddPetScreen() {
             onPress={() => setShowDatePicker(true)}
           >
             <Text className={birthDate ? 'text-foreground' : 'text-muted'}>
-              {birthDate ? birthDate.toLocaleDateString() : 'Select a birth date'}
+              {birthDate
+                ? birthDate.toLocaleDateString(locale)
+                : 'Select a birth date'}
             </Text>
           </Pressable>
         ) : (

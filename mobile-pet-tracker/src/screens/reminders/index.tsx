@@ -20,6 +20,7 @@ import { PetSwitcher } from '../../components/pet-switcher';
 import { useApi } from '../../hooks/use-api';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
+import { useLocale } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import {
   CONTINUOUS_CORNER,
@@ -38,6 +39,7 @@ function isRemindersError(state: RemindersState): boolean {
 export function RemindersScreen() {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
+  const locale = useLocale();
   const { selectedPetId, selectPet } = useSelectedPet();
   const insets = useSafeAreaInsets();
   const petsFn = useCallback(
@@ -292,7 +294,7 @@ export function RemindersScreen() {
                     </Text>
                     <View className="flex-row items-center gap-1">
                       <Text className="text-xs font-normal text-muted">
-                        {new Date(reminder.dueAt).toLocaleDateString()}
+                        {new Date(reminder.dueAt).toLocaleDateString(locale)}
                       </Text>
                       {inactive ? (
                         <Text

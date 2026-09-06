@@ -345,7 +345,9 @@ describe('R6: lista con pills, badges y refetch on focus', () => {
     expect(upcoming.getByText('Vaccine')).toBeVisible();
     expect(upcoming.getByText('Rabies booster')).toBeVisible();
     expect(
-      upcoming.getByText(new Date(reminders[2].dueAt).toLocaleDateString()),
+      upcoming.getByText(
+        new Date(reminders[2].dueAt).toLocaleDateString('es-MX'),
+      ),
     ).toBeVisible();
     expect(upcoming.getByText('· in 3 days')).toBeVisible();
     expect(screen.getByTestId('reminder-upcoming-upcoming')).toHaveTextContent(

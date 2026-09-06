@@ -19,6 +19,7 @@ import type { DayEntry, PetProfile } from '../../../api/types';
 import * as apiHooks from '../../../hooks/use-api';
 import type { ApiResult } from '../../../hooks/use-api';
 import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
+import { LanguageProvider } from '../../../providers/language-provider';
 import { SelectedPetProvider } from '../../../providers/selected-pet-provider';
 import * as selectedPetHooks from '../../../providers/selected-pet-provider';
 import HomeScreen from '../home';
@@ -108,7 +109,9 @@ function pending<T>(): Promise<T> {
 function HomeWrapper({ children }: { children: ReactNode }) {
   return (
     <HeroUINativeProvider>
-      <SelectedPetProvider>{children}</SelectedPetProvider>
+      <LanguageProvider initial="es">
+        <SelectedPetProvider>{children}</SelectedPetProvider>
+      </LanguageProvider>
     </HeroUINativeProvider>
   );
 }
@@ -580,7 +583,7 @@ describe('R10: last position enlaza al mapa', () => {
     await waitFor(() => expect(screen.getByTestId('last-position-card')).toBeVisible());
     expect(screen.getByText('View on map')).toBeVisible();
     expect(screen.getByTestId('last-position-time')).toHaveTextContent(
-      `Last seen ${new Date(lastCommunicationAt).toLocaleString()}`,
+      `Last seen ${new Date(lastCommunicationAt).toLocaleString('es-MX')}`,
     );
 
     await fireEvent.press(screen.getByTestId('last-position-card'));

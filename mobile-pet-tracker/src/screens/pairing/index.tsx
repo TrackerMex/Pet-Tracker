@@ -21,6 +21,7 @@ import { PetSwitcher } from '../../components/pet-switcher';
 import { useApi } from '../../hooks/use-api';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
+import { useLocale } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
@@ -59,6 +60,7 @@ function DeviceRow({
 export function PairingScreen() {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
+  const locale = useLocale();
   const { selectedPetId, selectPet } = useSelectedPet();
   const insets = useSafeAreaInsets();
   const [foreground] = useThemeColors(['foreground']);
@@ -423,9 +425,9 @@ export function PairingScreen() {
                 testID="device-last-message"
                 value={
                   selectedPet.device.lastMessageAt
-                    ? new Date(
+                      ? new Date(
                         selectedPet.device.lastMessageAt,
-                      ).toLocaleString()
+                      ).toLocaleString(locale)
                     : 'No messages yet'
                 }
               />

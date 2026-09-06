@@ -15,6 +15,7 @@ import {
 } from '../../api/reminders';
 import type { Reminder } from '../../api/types';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
+import { LanguageProvider } from '../../providers/language-provider';
 import {
   SelectedPetProvider,
   useSelectedPet,
@@ -102,10 +103,12 @@ function SelectionProbe() {
 async function renderAddReminder(selected = true) {
   return render(
     <HeroUINativeProvider>
-      <SelectedPetProvider>
-        {selected ? <SelectionProbe /> : null}
-        <AddReminderScreen />
-      </SelectedPetProvider>
+      <LanguageProvider initial="es">
+        <SelectedPetProvider>
+          {selected ? <SelectionProbe /> : null}
+          <AddReminderScreen />
+        </SelectedPetProvider>
+      </LanguageProvider>
     </HeroUINativeProvider>,
   );
 }
@@ -217,7 +220,9 @@ describe('R8: formulario de alta con chips y pickers', () => {
     );
 
     expect(screen.queryByTestId('date-picker')).toBeNull();
-    expect(screen.getByText(selectedDate.toLocaleDateString())).toBeVisible();
+    expect(
+      screen.getByText(selectedDate.toLocaleDateString('es-MX')),
+    ).toBeVisible();
   });
 
   it('opens the time picker with 09:00 and reflects a new time', async () => {
@@ -243,7 +248,7 @@ describe('R8: formulario de alta con chips y pickers', () => {
     expect(screen.queryByTestId('time-picker')).toBeNull();
     expect(
       screen.getByText(
-        selectedTime.toLocaleTimeString([], {
+        selectedTime.toLocaleTimeString('es-MX', {
           hour: '2-digit',
           minute: '2-digit',
         }),

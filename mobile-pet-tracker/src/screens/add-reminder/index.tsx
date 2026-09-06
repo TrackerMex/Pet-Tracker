@@ -10,6 +10,7 @@ import { ArrowLeft } from 'reicon-react-native';
 import { createReminder } from '../../api/reminders';
 import type { ReminderType } from '../../api/types';
 import { useAuth } from '../../providers/auth-provider';
+import { useLocale } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { combineDateAndTime } from '../../utils/reminder-dates';
 import { REMINDER_TYPE_META } from '../../utils/reminder-meta';
@@ -38,6 +39,7 @@ function initialTime(): Date {
 function AddReminderContent({ petId }: { petId: string }) {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
+  const locale = useLocale();
   const insets = useSafeAreaInsets();
   const [foreground, muted] = useThemeColors(['foreground', 'muted']);
   const [type, setType] = useState<ReminderType>('vaccine');
@@ -193,7 +195,7 @@ function AddReminderContent({ petId }: { petId: string }) {
             onPress={() => setShowDatePicker(true)}
           >
             <Text className={date ? 'text-foreground' : 'text-muted'}>
-              {date ? date.toLocaleDateString() : 'Select a date'}
+              {date ? date.toLocaleDateString(locale) : 'Select a date'}
             </Text>
           </Pressable>
         </View>
@@ -209,7 +211,7 @@ function AddReminderContent({ petId }: { petId: string }) {
             onPress={() => setShowTimePicker(true)}
           >
             <Text className="text-foreground">
-              {time.toLocaleTimeString([], {
+              {time.toLocaleTimeString(locale, {
                 hour: '2-digit',
                 minute: '2-digit',
               })}

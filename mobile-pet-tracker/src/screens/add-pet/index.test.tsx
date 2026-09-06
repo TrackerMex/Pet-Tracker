@@ -6,6 +6,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { requestPhotoUploadUrl, uploadPhotoToUrl } from '../../api/media';
 import { createPet } from '../../api/pets';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
+import { LanguageProvider } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { AddPetScreen } from '.';
 import { TOUCH_SLOP } from '../../theme/touch-target';
@@ -69,7 +70,9 @@ function pending<T>(): Promise<T> {
 async function renderAddPet() {
   return render(
     <HeroUINativeProvider>
-      <AddPetScreen />
+      <LanguageProvider initial="es">
+        <AddPetScreen />
+      </LanguageProvider>
     </HeroUINativeProvider>,
   );
 }

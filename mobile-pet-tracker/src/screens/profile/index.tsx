@@ -23,6 +23,7 @@ import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import {
   useLanguage,
+  useLocale,
   useTranslate,
 } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
@@ -107,6 +108,7 @@ export function ProfileScreen() {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
   const { language, setLanguage } = useLanguage();
+  const locale = useLocale();
   const t = useTranslate();
   const { selectedPetId, selectPet } = useSelectedPet();
   const { theme } = useUniwind();
@@ -298,7 +300,7 @@ export function ProfileScreen() {
               label="Última señal"
               value={
                 pet.lastCommunicationAt
-                  ? new Date(pet.lastCommunicationAt).toLocaleString()
+                  ? new Date(pet.lastCommunicationAt).toLocaleString(locale)
                   : null
               }
             />

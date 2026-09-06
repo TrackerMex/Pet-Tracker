@@ -24,6 +24,7 @@ import {
 import type { PetProfile } from '../../api/types';
 import PairingRoute from '../../app/(tabs)/pairing';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
+import { LanguageProvider } from '../../providers/language-provider';
 import { SelectedPetProvider } from '../../providers/selected-pet-provider';
 
 jest.mock('../../api/devices', () => ({
@@ -113,7 +114,9 @@ function pending<T>(): Promise<T> {
 function PairingWrapper({ children }: { children: ReactNode }) {
   return (
     <HeroUINativeProvider>
-      <SelectedPetProvider>{children}</SelectedPetProvider>
+      <LanguageProvider initial="es">
+        <SelectedPetProvider>{children}</SelectedPetProvider>
+      </LanguageProvider>
     </HeroUINativeProvider>
   );
 }
@@ -505,7 +508,7 @@ describe('R8: con collar muestra el estado del dispositivo y el plan tracked/fre
     expect(screen.getByTestId('device-battery')).toHaveTextContent('82%');
     expect(screen.getByTestId('device-connectivity')).toHaveTextContent('LTE');
     expect(screen.getByTestId('device-last-message')).toHaveTextContent(
-      new Date('2026-09-03T10:00:00.000Z').toLocaleString(),
+      new Date('2026-09-03T10:00:00.000Z').toLocaleString('es-MX'),
     );
     expect(screen.getByTestId('device-esn')).toHaveTextContent('ESN-4242');
     expect(mockGetPetTracking).toHaveBeenCalledWith(

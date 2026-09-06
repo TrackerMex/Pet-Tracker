@@ -21,6 +21,7 @@ import { PetSwitcher } from '../../components/pet-switcher';
 import { useApi } from '../../hooks/use-api';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
+import { useLocale } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import {
   CONTINUOUS_CORNER,
@@ -42,15 +43,16 @@ function fmtKm(meters: number | null): string {
   return meters === null ? '—' : `${(meters / 1000).toFixed(1)} km`;
 }
 
-function fmtLastSeen(iso: string | null): string {
+function fmtLastSeen(iso: string | null, locale: string): string {
   return iso === null
     ? 'No location data yet'
-    : `Last seen ${new Date(iso).toLocaleString()}`;
+    : `Last seen ${new Date(iso).toLocaleString(locale)}`;
 }
 
 export default function HomeScreen() {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { token } = useAuth();
+  const locale = useLocale();
   const { selectedPetId, selectPet } = useSelectedPet();
   const insets = useSafeAreaInsets();
   const [accent, success, warning, muted] = useThemeColors([
@@ -334,7 +336,7 @@ export default function HomeScreen() {
             <ChevronRight size={20} color={accent} />
           </View>
           <Text testID="last-position-time" className="font-normal text-muted">
-            {fmtLastSeen(detail.data.pet.lastCommunicationAt)}
+            {fmtLastSeen(detail.data.pet.lastCommunicationAt, locale)}
           </Text>
         </Card>
       ) : null}
