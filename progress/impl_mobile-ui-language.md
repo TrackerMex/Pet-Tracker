@@ -6,10 +6,9 @@ Worktree: `/home/claude/sites/Pet-Tracker-wt-ui`
 
 ## Estado
 
-Implementación no iniciada. La revisión previa obligatoria encontró un bloqueo
-de proceso en R18 contra `CHECKPOINTS.md` C4. No se modificó ningún archivo de
-`mobile-pet-tracker/`, backend ni infraestructura y no se creó ningún commit de
-la feature en esta sesión.
+Implementación reanudada tras resolver el bloqueo de proceso en R18 contra
+`CHECKPOINTS.md` C4. Antes de la aprobación no se modificó ningún archivo de
+`mobile-pet-tracker/`, backend ni infraestructura.
 
 ## Gate previo
 
@@ -59,6 +58,13 @@ El humano debe aprobar por escrito una de estas dos vías en la spec:
 
 La primera vía conserva el orden y el alcance ya aprobados.
 
+## Resolución del bloqueo
+
+El humano aprobó explícitamente el 2026-09-06 la primera vía: R18 queda
+declarado requisito de verificación C4(b) y se probará por mutación temporal.
+La firma y el procedimiento quedaron registrados en `requirements.md` y
+`tasks.md` antes de reanudar la implementación.
+
 ## R-ids y commits
 
 Ningún R-id cerrado; ningún commit creado.
@@ -72,4 +78,3 @@ No evaluados: la implementación no comenzó. No se inventó ninguna cadena.
 - `bun run test`: cubierto por el baseline de `./init.sh`; 59 suites / 891
   tests móviles verdes antes de cualquier cambio.
 - `./init.sh`: exit code 0 en la repetición completa de baseline.
-

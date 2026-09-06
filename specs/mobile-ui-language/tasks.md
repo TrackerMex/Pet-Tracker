@@ -281,9 +281,17 @@ R1–R11 reparten las 320 ocurrencias 29/5/20/19/32/35/35/50/40/40/15.
 
 ## R18 — Cero copy suelta en las pantallas
 
-- [ ] (1) Test rojo: `describe('#65 R18: los 320 sitios resuelven por clave y
-      no queda copy suelta')` con `ALL_USES` (320) y el escaneo de literales
-      enteros de [[design]] §4.1 sobre los 19 archivos.
+> **Requisito de verificación, vía C4(b), aprobado por el humano el
+> 2026-09-06.** En el orden obligatorio nace verde tras R1-R11. Su candado se
+> demuestra por mutación según la enmienda firmada al final de
+> [[requirements]]; no se fabrica un commit rojo.
+
+- [ ] (1) Test de verificación:
+      `describe('#65 R18: los 320 sitios resuelven por clave y no queda copy
+      suelta')` con `ALL_USES` (320) y el escaneo de literales enteros de
+      [[design]] §4.1 sobre los 19 archivos. Reintroducir temporalmente un
+      literal conocido y comprobar que falla por su aserción nombrando el
+      archivo; revertir la mutación y registrar la evidencia en el reporte.
 - [ ] (2) Implementación: cerrar lo que el escaneo destape. Si aparece una
       cadena que no está en la tabla, **parar** y anotarlo en
       `progress/impl_mobile-ui-language.md`.
