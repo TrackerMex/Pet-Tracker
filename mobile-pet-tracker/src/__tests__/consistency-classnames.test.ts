@@ -341,3 +341,38 @@ describe('#62 R15: todo contador usa cifras tabulares', () => {
     expect(counters.reduce((total, [, count]) => total + count, 0)).toBe(14);
   });
 });
+
+describe('#64 R9: el color categórico solo se nombra en el módulo de paleta', () => {
+  it('centraliza las diez clases completas y prohíbe interpolarlas', () => {
+    const inventory = categoryClassInventory();
+
+    expect(inventory.files).toEqual([join('utils', 'category-palette.ts')]);
+    expect(inventory.interpolatedFiles).toEqual([]);
+    expect(inventory.classes).toEqual([
+      'bg-category-blue',
+      'text-category-blue-strong',
+      'bg-category-amber',
+      'text-category-amber-strong',
+      'bg-category-green',
+      'text-category-green-strong',
+      'bg-category-violet',
+      'text-category-violet-strong',
+      'bg-category-rose',
+      'text-category-rose-strong',
+    ]);
+  });
+
+  it('conserva los diecisiete usos de bg-accent-soft que sí son acento', () => {
+    const accentSoftCount = sourceFiles().reduce(
+      (total, path) =>
+        total + (readFileSync(path, 'utf8').match(/bg-accent-soft/g) ?? []).length,
+      0,
+    );
+    const reminders = readSource(join('screens', 'reminders', 'index.tsx'));
+    const docs = readSource(join('screens', 'docs', 'index.tsx'));
+
+    expect(accentSoftCount).toBe(17);
+    expect(reminders.match(/bg-accent-soft/g)).toHaveLength(1);
+    expect(docs.match(/bg-accent-soft/g)).toBeNull();
+  });
+});
