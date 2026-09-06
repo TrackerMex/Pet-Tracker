@@ -337,6 +337,24 @@ export const R10_PAIRING: UseRow[] = [
   { file: 'src/screens/pairing/index.tsx', key: 'pairing.unpairCollar' },
 ];
 
+export const R11_RESET: UseRow[] = [
+  { file: 'src/screens/reset-password/index.tsx', key: 'resetPassword.errorInvalidToken' },
+  { file: 'src/screens/reset-password/index.tsx', key: 'resetPassword.errorExpiredToken' },
+  { file: 'src/screens/reset-password/index.tsx', key: 'common.cannotReachServer' },
+  { file: 'src/screens/reset-password/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/reset-password/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/reset-password/index.tsx', key: 'resetPassword.resetPassword' },
+  { file: 'src/screens/reset-password/index.tsx', key: 'resetPassword.errorMissingToken' },
+  { file: 'src/screens/reset-password/index.tsx', key: 'resetPassword.backToSignIn' },
+  { file: 'src/screens/reset-password/index.tsx', key: 'resetPassword.resetPassword' },
+  { file: 'src/screens/reset-password/index.tsx', key: 'resetPassword.passwordUpdated' },
+  { file: 'src/screens/reset-password/index.tsx', key: 'resetPassword.backToSignIn' },
+  { file: 'src/screens/reset-password/index.tsx', key: 'resetPassword.resetPassword' },
+  { file: 'src/screens/reset-password/index.tsx', key: 'resetPassword.newPassword' },
+  { file: 'src/screens/reset-password/index.tsx', key: 'resetPassword.confirmNewPassword' },
+  { file: 'src/screens/reset-password/index.tsx', key: 'resetPassword.updatePassword' },
+];
+
 export const ALL_USES: UseRow[] = [
   ...R1_AUTH,
   ...R2_TABS,
@@ -348,6 +366,7 @@ export const ALL_USES: UseRow[] = [
   ...R8_REMINDERS,
   ...R9_ADD_PET,
   ...R10_PAIRING,
+  ...R11_RESET,
 ];
 
 describe('#65: la tabla de uso de copy está disponible al runner', () => {

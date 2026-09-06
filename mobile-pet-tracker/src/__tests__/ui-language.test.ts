@@ -20,6 +20,7 @@ import {
   R8_REMINDERS,
   R9_ADD_PET,
   R10_PAIRING,
+  R11_RESET,
   type UseRow,
 } from './ui-copy-table';
 
@@ -124,5 +125,12 @@ describe('#65 R10: el emparejado del collar resuelve su copy por clave', () => {
   it('resuelve las 40 ocurrencias normativas', () => {
     expect(R10_PAIRING).toHaveLength(40);
     checkUses(R10_PAIRING);
+  });
+});
+
+describe('#65 R11: restablecer contraseña resuelve su copy por clave', () => {
+  it('resuelve las 15 ocurrencias normativas', () => {
+    expect(R11_RESET).toHaveLength(15);
+    checkUses(R11_RESET);
   });
 });
