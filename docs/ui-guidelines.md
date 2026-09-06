@@ -196,6 +196,22 @@ adorno". Los valores del Make son de tema claro y no traen equivalente
 oscuro: el dark se diseña, no se copia, y cada par texto/superficie se
 verifica AA con contraste **calculado**, como fijó #61.
 
+Los seis huecos, cerrados (feature #64, 2026-09-04). Toda sección categórica
+consume estos tokens; ninguna inventa un hex ni una clase arbitraria:
+
+| Hueco | Superficie | Tinta | Tipos que lo ocupan |
+|---|---|---|---|
+| azul | `bg-category-blue` | `text-category-blue-strong` | recordatorio `vaccine`; documento de vacunación |
+| ámbar | `bg-category-amber` | `text-category-amber-strong` | recordatorio `medication`; documento de desparasitación |
+| verde | `bg-category-green` | `text-category-green-strong` | recordatorio `appointment`; documento de consulta |
+| violeta | `bg-category-violet` | `text-category-violet-strong` | recordatorio `deworming`; documento de análisis |
+| rosa | `bg-category-rose` | `text-category-rose-strong` | recordatorio `food` |
+| neutral | `bg-default` | `text-muted` | recordatorio `weight` y `custom`; cualquier tipo de documento desconocido |
+
+El reparto vive en `src/utils/category-palette.ts` y es el **único** sitio donde
+se escriben esos nombres de clase. El color nunca es el único portador de la
+categoría: la superficie siempre acompaña a un emoji y a un texto.
+
 **2. Fotografía y su respaldo.** Las cabeceras fotográficas asumen que la
 mascota tiene foto. Cuando no la tiene, el respaldo es **degradado con la
 inicial** —el patrón que ya usa `pet-avatar`—, decidido por el humano el
