@@ -134,3 +134,74 @@ describe('#65 R11: restablecer contraseña resuelve su copy por clave', () => {
     checkUses(R11_RESET);
   });
 });
+
+const REPOSITORY_ROOT = join(SOURCE_ROOT, '..');
+
+// Las 9 specs que ratificaron el inglés, con el marcador de la edición (a) de
+// design.md §6.2 que cada una debe llevar en su línea de ratificación.
+const AMENDED_SPECS: { file: string; feature: string; marker: string }[] = [
+  { file: 'specs/mobile-auth/requirements.md', feature: 'mobile-auth', marker: '(ver §Enmienda #65)' },
+  { file: 'specs/mobile-home-dashboard/requirements.md', feature: 'mobile-home-dashboard', marker: '(ver §Enmienda #65)' },
+  { file: 'specs/mobile-map-live/requirements.md', feature: 'mobile-map-live', marker: '(ver §Enmienda #65)' },
+  { file: 'specs/mobile-health/requirements.md', feature: 'mobile-health', marker: '(ver §Enmienda #65)' },
+  { file: 'specs/mobile-food/design.md', feature: 'mobile-food', marker: '(ver §Enmienda #65)' },
+  { file: 'specs/mobile-food/requirements.md', feature: 'mobile-food', marker: '(ver §Enmienda #65)' },
+  { file: 'specs/mobile-reminders/requirements.md', feature: 'mobile-reminders', marker: '(ver §Enmienda #65)' },
+  { file: 'specs/auth-reset-deep-link/design.md', feature: 'auth-reset-deep-link', marker: '(ver §Enmienda #65)' },
+  {
+    file: 'specs/mobile-device-pairing/design.md',
+    feature: 'mobile-device-pairing',
+    marker: '### D7 — Copy: strings exactos, ahora en dos idiomas (enmendado por #65)',
+  },
+];
+
+// El bloque canónico vive en design.md §6.2: se lee de ahí en vez de
+// duplicarlo, para que la spec siga siendo la única fuente del literal.
+function canonicalAmendment(feature: string): string {
+  const design = readFileSync(
+    join(REPOSITORY_ROOT, 'specs', 'mobile-ui-language', 'design.md'),
+    'utf8',
+  );
+  const fence = '```markdown\n## Enmienda #65 — idioma de la UI';
+  const start = design.indexOf(fence);
+
+  expect(start).toBeGreaterThan(-1);
+
+  const body = design.slice(start + '```markdown\n'.length);
+
+  return body.slice(0, body.indexOf('\n```')).replace('<FEATURE>', feature);
+}
+
+describe('#65 R19: las 9 specs aprobadas llevan su enmienda de idioma', () => {
+  it('inserta el bloque literal de §6.2 en las 9 specs y marca su línea de ratificación', () => {
+    expect(AMENDED_SPECS).toHaveLength(9);
+
+    for (const { file, feature, marker } of AMENDED_SPECS) {
+      const source = readFileSync(join(REPOSITORY_ROOT, file), 'utf8');
+
+      expect({ file, hasAmendment: source.includes(canonicalAmendment(feature)) }).toEqual({
+        file,
+        hasAmendment: true,
+      });
+      expect({ file, hasMarker: source.includes(marker) }).toEqual({
+        file,
+        hasMarker: true,
+      });
+    }
+  });
+
+  it('deja la casilla de firma de las 9 enmiendas sin marcar', () => {
+    for (const { file } of AMENDED_SPECS) {
+      const source = readFileSync(join(REPOSITORY_ROOT, file), 'utf8');
+
+      expect({ file, unsigned: source.includes('- [ ] Enmienda aprobada por humano') }).toEqual({
+        file,
+        unsigned: true,
+      });
+      expect({
+        file,
+        signed: /- \[[xX]\] Enmienda aprobada por humano/.test(source),
+      }).toEqual({ file, signed: false });
+    }
+  });
+});
