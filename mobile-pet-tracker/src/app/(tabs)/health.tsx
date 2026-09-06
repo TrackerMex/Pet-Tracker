@@ -12,6 +12,7 @@ import { PetSwitcher } from '../../components/pet-switcher';
 import { useApi } from '../../hooks/use-api';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
+import { useTranslate } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import {
   CONTINUOUS_CORNER,
@@ -40,6 +41,7 @@ export default function HealthScreen() {
   const [warning, muted] = useThemeColors(['warning', 'muted']);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { token } = useAuth();
+  const t = useTranslate();
   const { selectedPetId, selectPet } = useSelectedPet();
   const insets = useSafeAreaInsets();
   const petsFn = useCallback(
@@ -88,7 +90,9 @@ export default function HealthScreen() {
         paddingBottom: insets.bottom + 96,
       }}
     >
-      <Text className="text-2xl font-black text-foreground">Health</Text>
+      <Text className="text-2xl font-black text-foreground">
+        {t('health.health')}
+      </Text>
 
       {pets.data === undefined ? (
         <Skeleton testID="health-loading" className="h-12 w-full rounded-card" />
@@ -97,17 +101,17 @@ export default function HealthScreen() {
       {pets.data && isPetsError(pets.data) ? (
         <View className="items-start gap-3">
           <Text testID="health-error" className="text-danger">
-            Something went wrong
+            {t('common.somethingWentWrong')}
           </Text>
           <Button testID="health-retry" onPress={pets.refetch}>
-            Retry
+            {t('common.retry')}
           </Button>
         </View>
       ) : null}
 
       {pets.data?.kind === 'ok' && pets.data.pets.length === 0 ? (
         <Text testID="health-empty" className="text-muted">
-          No pets yet
+          {t('common.noPetsYet')}
         </Text>
       ) : null}
 
@@ -124,7 +128,7 @@ export default function HealthScreen() {
           <View className="flex-row items-center gap-2">
             <HeartPulse size={20} color={muted} />
             <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
-              Vaccines
+              {t('health.vaccines')}
             </Text>
           </View>
 
@@ -148,7 +152,7 @@ export default function HealthScreen() {
               </View>
               <View className="flex-1 gap-1">
                 <Text className="text-2xs font-semibold text-warning-strong">
-                  Next due
+                  {t('health.nextDue')}
                 </Text>
                 <Text className="font-bold text-foreground">
                   {nextVaccine.name}
@@ -162,7 +166,7 @@ export default function HealthScreen() {
 
           {vaccines.data?.kind === 'ok' && vaccines.data.vaccines.length === 0 ? (
             <Text testID="vaccines-empty" className="font-normal text-muted">
-              No vaccines yet
+              {t('health.noVaccinesYet')}
             </Text>
           ) : null}
 
@@ -170,10 +174,10 @@ export default function HealthScreen() {
           vaccines.data?.kind === 'unreachable' ? (
             <View className="items-start gap-3">
               <Text testID="vaccines-error" className="text-danger">
-                Could not load vaccines
+                {t('health.couldNotLoadVaccines')}
               </Text>
               <Button testID="vaccines-retry" onPress={vaccines.refetch}>
-                Retry
+                {t('common.retry')}
               </Button>
             </View>
           ) : null}
@@ -214,7 +218,9 @@ export default function HealthScreen() {
           className="gap-3"
         >
           <View className="flex-row items-baseline justify-between gap-3">
-            <Text className="text-base font-bold text-foreground">Weight</Text>
+            <Text className="text-base font-bold text-foreground">
+              {t('health.weight')}
+            </Text>
             {weight.data?.kind === 'ok' && weight.data.weights.length > 0 ? (
               <Text
                 testID="weight-current"
@@ -240,13 +246,13 @@ export default function HealthScreen() {
 
           {weight.data?.kind === 'ok' && weight.data.weights.length === 0 ? (
             <Text testID="weight-card-empty" className="font-normal text-muted">
-              No weight entries yet
+              {t('health.noWeightEntriesYet')}
             </Text>
           ) : null}
 
           {weight.data?.kind === 'error' || weight.data?.kind === 'unreachable' ? (
             <Text testID="weight-card-error" className="text-danger">
-              Could not load weight
+              {t('health.couldNotLoadWeight')}
             </Text>
           ) : null}
 
@@ -258,7 +264,9 @@ export default function HealthScreen() {
             style={CONTINUOUS_CORNER}
             onPress={() => router.push('/weight-log')}
           >
-            <Text className="font-semibold text-foreground">Weight log</Text>
+            <Text className="font-semibold text-foreground">
+              {t('health.weightLog')}
+            </Text>
             <ChevronRight size={20} color={muted} />
           </Pressable>
         </Card>

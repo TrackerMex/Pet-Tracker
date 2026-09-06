@@ -21,6 +21,7 @@ import { Card } from '../../components/card';
 import { WeightChart } from '../../components/weight-chart';
 import { useApi } from '../../hooks/use-api';
 import { useAuth } from '../../providers/auth-provider';
+import { useTranslate } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import {
   CONTINUOUS_CORNER,
@@ -54,6 +55,7 @@ function WeightLogContent({ petId }: { petId: string }) {
   ]);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
+  const t = useTranslate();
   const insets = useSafeAreaInsets();
   const [weightText, setWeightText] = useState('');
   const [measuredAt, setMeasuredAt] = useState(localTodayIso);
@@ -69,7 +71,7 @@ function WeightLogContent({ petId }: { petId: string }) {
   async function handleSubmit() {
     const weightKg = parseFloat(weightText);
     if (Number.isNaN(weightKg)) {
-      setFormError('Enter a valid weight');
+      setFormError(t('weightLog.enterValidWeight'));
       return;
     }
 
@@ -96,20 +98,20 @@ function WeightLogContent({ petId }: { petId: string }) {
           setFormError(result.errors.map(({ message }) => message).join('\n'));
           return;
         case 'forbidden':
-          setFormError('Only the owner can log weights');
+          setFormError(t('weightLog.errorForbidden'));
           return;
         case 'unreachable':
-          setFormError('Cannot reach server');
+          setFormError(t('common.cannotReachServer'));
           return;
         case 'unauthorized':
           await signOut();
           return;
         case 'error':
         case 'missing-config':
-          setFormError('Something went wrong');
+          setFormError(t('common.somethingWentWrong'));
       }
     } catch {
-      setFormError('Something went wrong');
+      setFormError(t('common.somethingWentWrong'));
     } finally {
       setSubmitting(false);
     }
@@ -130,7 +132,7 @@ function WeightLogContent({ petId }: { petId: string }) {
       <View className="flex-row items-center gap-3">
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Back to health"
+          accessibilityLabel={t('weightLog.backToHealth')}
           testID="weight-log-back"
           hitSlop={TOUCH_SLOP}
           className="rounded-full bg-default p-2"
@@ -138,7 +140,9 @@ function WeightLogContent({ petId }: { petId: string }) {
         >
           <ArrowLeft size={20} color={foreground} />
         </Pressable>
-        <Text className="text-2xl font-black text-foreground">Weight log</Text>
+        <Text className="text-2xl font-black text-foreground">
+          {t('weightLog.weightLog')}
+        </Text>
       </View>
 
       {weights.data?.kind === 'ok' ? (
@@ -151,38 +155,38 @@ function WeightLogContent({ petId }: { petId: string }) {
         <Card className="gap-4">
           <TextField>
             <Label className="text-2xs font-semibold text-foreground">
-              Weight
+              {t('weightLog.weight')}
             </Label>
             <Input
               testID="weight-input"
               className="rounded-xl bg-default"
               keyboardType="decimal-pad"
-              placeholder="Weight (kg)"
+              placeholder={t('weightLog.weightKg')}
               value={weightText}
               onChangeText={setWeightText}
             />
           </TextField>
           <TextField>
             <Label className="text-2xs font-semibold text-foreground">
-              Measured at
+              {t('weightLog.measuredAt')}
             </Label>
             <Input
               testID="weight-date-input"
               className="rounded-xl bg-default"
-              placeholder="YYYY-MM-DD"
+              placeholder={t('weightLog.yyyyMmDd')}
               value={measuredAt}
               onChangeText={setMeasuredAt}
             />
           </TextField>
           <TextField>
             <Label className="text-2xs font-semibold text-foreground">
-              Body condition
+              {t('weightLog.bodyCondition')}
             </Label>
             <Input
               testID="weight-bc-input"
               className="rounded-xl bg-default"
               keyboardType="number-pad"
-              placeholder="Body condition 1-9 (optional)"
+              placeholder={t('weightLog.bodyConditionPlaceholder')}
               value={bodyConditionText}
               onChangeText={setBodyConditionText}
             />
@@ -201,7 +205,7 @@ function WeightLogContent({ petId }: { petId: string }) {
             onPress={() => void handleSubmit()}
           >
             <Button.Label className="font-bold text-accent-foreground">
-              Log weight
+              {t('weightLog.logWeight')}
             </Button.Label>
           </Button>
         </Card>
@@ -217,17 +221,17 @@ function WeightLogContent({ petId }: { petId: string }) {
       {weights.data && isWeightsError(weights.data) ? (
         <View className="items-start gap-3">
           <Text testID="weight-log-error" className="text-danger">
-            Something went wrong
+            {t('common.somethingWentWrong')}
           </Text>
           <Button testID="weight-log-retry" onPress={weights.refetch}>
-            Retry
+            {t('common.retry')}
           </Button>
         </View>
       ) : null}
 
       {weights.data?.kind === 'ok' && weights.data.weights.length === 0 ? (
         <Text testID="weight-log-empty" className="text-muted">
-          No weight entries yet
+          {t('weightLog.noWeightEntriesYet')}
         </Text>
       ) : null}
 
@@ -281,7 +285,9 @@ function WeightLogContent({ petId }: { petId: string }) {
                   </View>
                   {entry.bodyCondition !== null ? (
                     <Text className="text-xs font-normal text-muted">
-                      BC {entry.bodyCondition}/9
+                      {t('weightLog.bodyConditionValue', {
+                        value: entry.bodyCondition,
+                      })}
                     </Text>
                   ) : null}
                 </View>

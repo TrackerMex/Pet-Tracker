@@ -9,15 +9,17 @@ import Svg, {
 } from 'react-native-svg';
 
 import type { WeightEntry } from '../api/types';
+import { useTranslate } from '../providers/language-provider';
 import { useThemeColors } from '../theme/use-theme-colors';
 
 export function WeightChart({ entries }: { entries: WeightEntry[] }) {
   const [accent] = useThemeColors(['accent-strong']);
+  const t = useTranslate();
 
   if (entries.length < 2) {
     return (
       <Text testID="weight-chart-empty" className="text-muted">
-        Not enough data yet
+        {t('weightChart.notEnoughDataYet')}
       </Text>
     );
   }
