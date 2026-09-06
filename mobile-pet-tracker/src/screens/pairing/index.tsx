@@ -316,7 +316,7 @@ export function PairingScreen() {
                 value={readyDevice.model ?? '—'}
               />
               <DeviceRow
-                label="ESN"
+                label={t('pairing.esn')}
                 testID="ready-esn"
                 value={readyDevice.esn ?? '—'}
               />
@@ -433,7 +433,7 @@ export function PairingScreen() {
                 }
               />
               <DeviceRow
-                label="ESN"
+                label={t('pairing.esn')}
                 testID="device-esn"
                 value={selectedPet.device.esn ?? '—'}
               />

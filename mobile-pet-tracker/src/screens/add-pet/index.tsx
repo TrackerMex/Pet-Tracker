@@ -428,12 +428,12 @@ export function AddPetScreen() {
         <FieldLabel>{t('addPet.sterilized')}</FieldLabel>
         <View className="flex-row gap-2">
           <OptionalChip current={sterilized} label={t('addPet.yes')} testID="sterilized-true" value={true} onSelect={setSterilized} />
-          <OptionalChip current={sterilized} label="No" testID="sterilized-false" value={false} onSelect={setSterilized} />
+          <OptionalChip current={sterilized} label={t('addPet.no')} testID="sterilized-false" value={false} onSelect={setSterilized} />
         </View>
       </View>
 
       <View className="gap-2">
-        <FieldLabel>Microchip</FieldLabel>
+        <FieldLabel>{t('addPet.microchip')}</FieldLabel>
         <TextInput
           testID="microchip-input"
           className="rounded-xl bg-default px-4 py-3 text-foreground"
