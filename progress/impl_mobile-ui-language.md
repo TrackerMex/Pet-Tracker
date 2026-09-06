@@ -421,7 +421,7 @@ código colado en el commit de firma.
 |---|---|---|
 | R18 | `f82d975` | `24fa49a` |
 
-Trazabilidad en `26b16b5`. **`traceability.md` no tiene ninguna fila pendiente**:
+Trazabilidad en `1ebb968`. **`traceability.md` no tiene ninguna fila pendiente**:
 los 20 requisitos están trazados.
 
 ### El rojo, y que es honesto
