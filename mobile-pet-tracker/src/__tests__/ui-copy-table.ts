@@ -65,7 +65,34 @@ export const R3_HOME: UseRow[] = [
   { file: 'src/app/(tabs)/home.tsx', key: 'home.viewOnMap' },
 ];
 
-export const ALL_USES: UseRow[] = [...R1_AUTH, ...R2_TABS, ...R3_HOME];
+export const R4_MAP: UseRow[] = [
+  { file: 'src/app/(tabs)/map.tsx', key: 'map.justNow' },
+  { file: 'src/app/(tabs)/map.tsx', key: 'map.agoMinutes' },
+  { file: 'src/app/(tabs)/map.tsx', key: 'map.agoHours' },
+  { file: 'src/app/(tabs)/map.tsx', key: 'map.noSignal' },
+  { file: 'src/app/(tabs)/map.tsx', key: 'map.live' },
+  { file: 'src/app/(tabs)/map.tsx', key: 'map.stale' },
+  { file: 'src/app/(tabs)/map.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/app/(tabs)/map.tsx', key: 'common.retry' },
+  { file: 'src/app/(tabs)/map.tsx', key: 'common.noPetsYet' },
+  { file: 'src/app/(tabs)/map.tsx', key: 'map.trackingNeedsCollar' },
+  { file: 'src/app/(tabs)/map.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/app/(tabs)/map.tsx', key: 'common.retry' },
+  { file: 'src/app/(tabs)/map.tsx', key: 'map.noLocationDataYet' },
+  { file: 'src/app/(tabs)/map.tsx', key: 'map.speed' },
+  { file: 'src/app/(tabs)/map.tsx', key: 'map.distance' },
+  { file: 'src/app/(tabs)/map.tsx', key: 'map.updated' },
+  { file: 'src/app/(tabs)/map.tsx', key: 'map.deactivateLostMode' },
+  { file: 'src/app/(tabs)/map.tsx', key: 'map.activateLostMode' },
+  { file: 'src/app/(tabs)/map.tsx', key: 'map.couldNotUpdateLostMode' },
+];
+
+export const ALL_USES: UseRow[] = [
+  ...R1_AUTH,
+  ...R2_TABS,
+  ...R3_HOME,
+  ...R4_MAP,
+];
 
 describe('#65: la tabla de uso de copy está disponible al runner', () => {
   it('expone al menos el primer lote normativo', () => {
