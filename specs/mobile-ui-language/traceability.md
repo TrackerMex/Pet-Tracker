@@ -19,7 +19,7 @@ tags: [harness, spec]
 | R9 | Alta de mascota, 40 | pendiente | pendiente |
 | R10 | Emparejado, 40 | pendiente | pendiente |
 | R11 | Reset password, 15 | pendiente | pendiente |
-| R12 | catálogo + `t` | pendiente | pendiente |
+| R12 | catálogo + `t` | `mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx::#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y parámetros` | rojo: `ac158f6`; verde: por registrar |
 | R13 | persistencia best-effort | pendiente | pendiente |
 | R14 | interruptor en Profile | pendiente | pendiente |
 | R15 | locale de fechas | pendiente | pendiente |
