@@ -70,11 +70,11 @@ export class PetsController {
   async list(
     @CurrentUser() user: CurrentUserPayload,
   ): Promise<PetProfileResponse[]> {
-    const memberships = await this.listPets.execute(user.id);
+    const items = await this.listPets.execute(user.id);
     const now = new Date();
 
-    return memberships.map(({ pet, role }) =>
-      toPetProfileResponse(pet, role, now),
+    return items.map(({ pet, role, photoUrl }) =>
+      toPetProfileResponse(pet, role, now, null, photoUrl),
     );
   }
 
