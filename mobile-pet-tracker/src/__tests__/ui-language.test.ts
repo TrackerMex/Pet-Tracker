@@ -17,6 +17,7 @@ import {
   R5_HEALTH,
   R6_FOOD,
   R7_PROFILE,
+  R8_REMINDERS,
   type UseRow,
 } from './ui-copy-table';
 
@@ -100,5 +101,12 @@ describe('#65 R7: Profile resuelve su copy por clave', () => {
   it('resuelve las 35 ocurrencias normativas', () => {
     expect(R7_PROFILE).toHaveLength(35);
     checkUses(R7_PROFILE);
+  });
+});
+
+describe('#65 R8: Recordatorios resuelve su copy por clave', () => {
+  it('resuelve las 50 ocurrencias normativas', () => {
+    expect(R8_REMINDERS).toHaveLength(50);
+    checkUses(R8_REMINDERS);
   });
 });
