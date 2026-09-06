@@ -178,6 +178,112 @@ function contrast(first: string, second: string): number {
   return (lighter + 0.05) / (darker + 0.05);
 }
 
+/**
+ * Distancia perceptual CIEDE2000 sobre CIE-Lab D65. Fórmula, umbral y método
+ * en specs/mobile-pastel-category-palette/design.md §1.
+ */
+function deltaE00(first: string, second: string): number {
+  const degrees = (radians: number) => (radians * 180) / Math.PI;
+  const radians = (angle: number) => (angle * Math.PI) / 180;
+  const hue = (a: number, b: number) => {
+    const angle = degrees(Math.atan2(b, a));
+    return angle >= 0 ? angle : angle + 360;
+  };
+  const lab = (hex: string) => {
+    const value = Number.parseInt(hex.slice(1), 16);
+    const red = channel((value >> 16) & 255);
+    const green = channel((value >> 8) & 255);
+    const blue = channel(value & 255);
+    const xyz = [
+      (0.4124564 * red + 0.3575761 * green + 0.1804375 * blue) / 0.95047,
+      0.2126729 * red + 0.7151522 * green + 0.072175 * blue,
+      (0.0193339 * red + 0.119192 * green + 0.9503041 * blue) / 1.08883,
+    ].map((component) =>
+      component > 216 / 24389
+        ? Math.cbrt(component)
+        : (841 / 108) * component + 4 / 29,
+    );
+
+    return {
+      l: 116 * xyz[1] - 16,
+      a: 500 * (xyz[0] - xyz[1]),
+      b: 200 * (xyz[1] - xyz[2]),
+    };
+  };
+
+  const left = lab(first);
+  const right = lab(second);
+  const chromaLeft = Math.hypot(left.a, left.b);
+  const chromaRight = Math.hypot(right.a, right.b);
+  const meanChroma = (chromaLeft + chromaRight) / 2;
+  const meanChromaPower = meanChroma ** 7;
+  const compensation =
+    0.5 * (1 - Math.sqrt(meanChromaPower / (meanChromaPower + 25 ** 7)));
+  const adjustedALeft = (1 + compensation) * left.a;
+  const adjustedARight = (1 + compensation) * right.a;
+  const adjustedChromaLeft = Math.hypot(adjustedALeft, left.b);
+  const adjustedChromaRight = Math.hypot(adjustedARight, right.b);
+  const adjustedHueLeft = hue(adjustedALeft, left.b);
+  const adjustedHueRight = hue(adjustedARight, right.b);
+  const deltaLightness = right.l - left.l;
+  const deltaChroma = adjustedChromaRight - adjustedChromaLeft;
+  const rawHueDelta = adjustedHueRight - adjustedHueLeft;
+  const hueDelta =
+    adjustedChromaLeft * adjustedChromaRight === 0
+      ? 0
+      : Math.abs(rawHueDelta) <= 180
+        ? rawHueDelta
+        : rawHueDelta > 180
+          ? rawHueDelta - 360
+          : rawHueDelta + 360;
+  const deltaHue =
+    2 *
+    Math.sqrt(adjustedChromaLeft * adjustedChromaRight) *
+    Math.sin(radians(hueDelta / 2));
+  const meanLightness = (left.l + right.l) / 2;
+  const adjustedMeanChroma = (adjustedChromaLeft + adjustedChromaRight) / 2;
+  const adjustedMeanHue =
+    adjustedChromaLeft * adjustedChromaRight === 0
+      ? adjustedHueLeft + adjustedHueRight
+      : Math.abs(rawHueDelta) <= 180
+        ? (adjustedHueLeft + adjustedHueRight) / 2
+        : adjustedHueLeft + adjustedHueRight < 360
+          ? (adjustedHueLeft + adjustedHueRight + 360) / 2
+          : (adjustedHueLeft + adjustedHueRight - 360) / 2;
+  const hueWeight =
+    1 -
+    0.17 * Math.cos(radians(adjustedMeanHue - 30)) +
+    0.24 * Math.cos(radians(2 * adjustedMeanHue)) +
+    0.32 * Math.cos(radians(3 * adjustedMeanHue + 6)) -
+    0.2 * Math.cos(radians(4 * adjustedMeanHue - 63));
+  const rotationAngle =
+    30 * Math.exp(-(((adjustedMeanHue - 275) / 25) ** 2));
+  const adjustedMeanChromaPower = adjustedMeanChroma ** 7;
+  const rotationCompensation =
+    2 *
+    Math.sqrt(
+      adjustedMeanChromaPower / (adjustedMeanChromaPower + 25 ** 7),
+    );
+  const lightnessWeight =
+    1 +
+    (0.015 * (meanLightness - 50) ** 2) /
+      Math.sqrt(20 + (meanLightness - 50) ** 2);
+  const chromaWeight = 1 + 0.045 * adjustedMeanChroma;
+  const hueScale = 1 + 0.015 * adjustedMeanChroma * hueWeight;
+  const rotation =
+    -Math.sin(radians(2 * rotationAngle)) * rotationCompensation;
+  const lightnessTerm = deltaLightness / lightnessWeight;
+  const chromaTerm = deltaChroma / chromaWeight;
+  const hueTerm = deltaHue / hueScale;
+
+  return Math.sqrt(
+    lightnessTerm ** 2 +
+      chromaTerm ** 2 +
+      hueTerm ** 2 +
+      rotation * chromaTerm * hueTerm,
+  );
+}
+
 describe('#61 R2: el relleno de acento pasa AA con etiqueta blanca', () => {
   const accent = '#178255';
 
