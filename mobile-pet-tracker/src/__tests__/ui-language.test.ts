@@ -14,6 +14,7 @@ import {
   R2_TABS,
   R3_HOME,
   R4_MAP,
+  R5_HEALTH,
   type UseRow,
 } from './ui-copy-table';
 
@@ -76,5 +77,12 @@ describe('#65 R4: Map resuelve su copy por clave', () => {
   it('resuelve las 19 ocurrencias normativas', () => {
     expect(R4_MAP).toHaveLength(19);
     checkUses(R4_MAP);
+  });
+});
+
+describe('#65 R5: Health resuelve su copy por clave', () => {
+  it('resuelve las 32 ocurrencias normativas', () => {
+    expect(R5_HEALTH).toHaveLength(32);
+    checkUses(R5_HEALTH);
   });
 });

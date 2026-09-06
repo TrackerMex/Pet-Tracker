@@ -87,11 +87,47 @@ export const R4_MAP: UseRow[] = [
   { file: 'src/app/(tabs)/map.tsx', key: 'map.couldNotUpdateLostMode' },
 ];
 
+export const R5_HEALTH: UseRow[] = [
+  { file: 'src/app/(tabs)/health.tsx', key: 'health.health' },
+  { file: 'src/app/(tabs)/health.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/app/(tabs)/health.tsx', key: 'common.retry' },
+  { file: 'src/app/(tabs)/health.tsx', key: 'common.noPetsYet' },
+  { file: 'src/app/(tabs)/health.tsx', key: 'health.vaccines' },
+  { file: 'src/app/(tabs)/health.tsx', key: 'health.nextDue' },
+  { file: 'src/app/(tabs)/health.tsx', key: 'health.noVaccinesYet' },
+  { file: 'src/app/(tabs)/health.tsx', key: 'health.couldNotLoadVaccines' },
+  { file: 'src/app/(tabs)/health.tsx', key: 'common.retry' },
+  { file: 'src/app/(tabs)/health.tsx', key: 'health.weight' },
+  { file: 'src/app/(tabs)/health.tsx', key: 'health.noWeightEntriesYet' },
+  { file: 'src/app/(tabs)/health.tsx', key: 'health.couldNotLoadWeight' },
+  { file: 'src/app/(tabs)/health.tsx', key: 'health.weightLog' },
+  { file: 'src/app/(tabs)/weight-log.tsx', key: 'weightLog.enterValidWeight' },
+  { file: 'src/app/(tabs)/weight-log.tsx', key: 'weightLog.errorForbidden' },
+  { file: 'src/app/(tabs)/weight-log.tsx', key: 'common.cannotReachServer' },
+  { file: 'src/app/(tabs)/weight-log.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/app/(tabs)/weight-log.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/app/(tabs)/weight-log.tsx', key: 'weightLog.backToHealth' },
+  { file: 'src/app/(tabs)/weight-log.tsx', key: 'weightLog.weightLog' },
+  { file: 'src/app/(tabs)/weight-log.tsx', key: 'weightLog.weight' },
+  { file: 'src/app/(tabs)/weight-log.tsx', key: 'weightLog.weightKg' },
+  { file: 'src/app/(tabs)/weight-log.tsx', key: 'weightLog.measuredAt' },
+  { file: 'src/app/(tabs)/weight-log.tsx', key: 'weightLog.yyyyMmDd' },
+  { file: 'src/app/(tabs)/weight-log.tsx', key: 'weightLog.bodyCondition' },
+  { file: 'src/app/(tabs)/weight-log.tsx', key: 'weightLog.bodyConditionPlaceholder' },
+  { file: 'src/app/(tabs)/weight-log.tsx', key: 'weightLog.logWeight' },
+  { file: 'src/app/(tabs)/weight-log.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/app/(tabs)/weight-log.tsx', key: 'common.retry' },
+  { file: 'src/app/(tabs)/weight-log.tsx', key: 'weightLog.noWeightEntriesYet' },
+  { file: 'src/app/(tabs)/weight-log.tsx', key: 'weightLog.bodyConditionValue' },
+  { file: 'src/components/weight-chart.tsx', key: 'weightChart.notEnoughDataYet' },
+];
+
 export const ALL_USES: UseRow[] = [
   ...R1_AUTH,
   ...R2_TABS,
   ...R3_HOME,
   ...R4_MAP,
+  ...R5_HEALTH,
 ];
 
 describe('#65: la tabla de uso de copy está disponible al runner', () => {
