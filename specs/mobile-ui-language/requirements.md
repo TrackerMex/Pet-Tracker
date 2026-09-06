@@ -664,11 +664,11 @@ Dos opciones. **Marca una sola.**
       como literales sin clave, y ningún test los vigila.
       (fecha: ______)
 
-- [ ] **(B) Cerrar la familia entera** *(recomendada por el `leader`)* — las
+- [X] **(B) Cerrar la familia entera** *(recomendada por el `leader`)* — las
       cuatro claves. Catálogo **255 → 259**, `ALL_USES` **320 → 324**,
       R4 **19 → 20**, R9 **40 → 42**, R10 **40 → 41**, valores de cadena fija
       de R18(b) **244 → 248**.
-      (fecha: ______)
+      (fecha: 2026-09-06)
 
 **Por qué el `leader` recomienda (B)**: (A) desbloquea pero deja tres literales
 de copy que nada vigila, y la regla 6 que R20 acaba de escribir en
@@ -696,5 +696,5 @@ no de constante:
 Las cifras de arriba quedan en la spec como **lo que valían el 2026-09-06**, no
 como el candado. El nombre del `describe` de R18 pierde el `320`.
 
-- [ ] Firmo también el cambio a comprobación por consistencia interna
-      (fecha: ______)
+- [X] Firmo también el cambio a comprobación por consistencia interna
+      (fecha: 2026-09-06)
