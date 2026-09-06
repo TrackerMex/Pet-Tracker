@@ -405,7 +405,7 @@ renumerar [[copy-review]], que ya está en manos del humano.
   - Test: `mobile-pet-tracker/src/app/(tabs)/__tests__/food.test.tsx` ::
     `describe('#65 R17: los títulos de card se localizan por testID y su copy sigue asertada')`
   - Verificación mecánica que rehace el reviewer, desde `mobile-pet-tracker/`:
-    `grep -rEoh "(get|query|find)(All)?By(Text|PlaceholderText|LabelText|DisplayValue)\(|toHaveTextContent\(" src --include='*.test.ts*' | wc -l` → **244** (era 246: −4 migradas, +2 nuevas)
+    `grep -rEoh "(get|query|find)(All)?By(Text|PlaceholderText|LabelText|DisplayValue)\(|toHaveTextContent\(" src --include='*.test.ts*' | wc -l` → **265** (enmienda del 2026-09-06 al final: el invariante es el **delta −2** sobre el padre de R17, no la cifra absoluta)
     y `grep -rEoh "By(TestId|testId)\(" src --include='*.test.ts*' | wc -l` → **≥800**
 
 - **R18**: WHEN se ejecuta la suite móvil THE SYSTEM SHALL comprobar
@@ -528,3 +528,239 @@ renumerar [[copy-review]], que ya está en manos del humano.
 > redacción nueva ([[design]] §2.0 D6);
 > **(c)** las **9 enmiendas** a specs aprobadas de [[design]] §6.1.
 > Sin las tres firmas la implementación no arranca.
+
+### Enmienda del 2026-09-06 — R18 es requisito de verificación (C4 b)
+
+Codex CLI **paró antes de escribir la primera línea**, como el handoff le
+ordenaba, y el bloqueo es real: en el orden aprobado (`R1-R11 → R17 → R18`),
+una implementación correcta hace que el test de R18 **nazca verde**. R18 solo
+comprueba mecánicamente propiedades que R1-R11 ya dejaron en el árbol. La spec
+no declaraba la vía, y `CHECKPOINTS.md` §C4 —escrito tras el mismo problema en
+#64— exige que se elija **por escrito antes del handoff**.
+
+R17 **no** entra en esta enmienda: sus seis `testID` no existen todavía, así
+que su rojo es legítimo y no necesita excepción.
+
+**Se elige la vía (b) de C4: R18 se declara requisito de verificación y su
+cierre se prueba por mutación.** Descartada la vía (a) —escribir el candado de
+R18 antes de las migraciones que verifica— por una razón que Codex no llegó a
+articular y que pesa más que conservar el orden: el test de R18 se quedaría
+**rojo a propósito durante los ~30 commits** de R1-R11, y eso destruye la
+señal de "cada commit deja la suite verde", que es lo que hace útil correr los
+tests antes de cada commit. Cambiar un candado por otro no es un buen negocio.
+
+Evidencia que el `reviewer` exigirá para dar R18 por cerrado:
+
+1. Reintroducir **un literal de copy conocido** en una pantalla ya migrada,
+   nombrando cuál y dónde.
+2. Observar que `describe('#65 R18…')` se pone rojo **por su aserción** —no por
+   un `ReferenceError`— y que el mensaje **nombra el archivo** contaminado.
+3. Revertir la mutación y dejar la suite verde.
+
+El commit rojo de R18 deja de ser obligatorio; el resto de su ciclo (verde y
+trazabilidad) no cambia. Los otros 19 requisitos mantienen su rojo→verde real.
+
+- [X] Firmo que **R18 es requisito de verificación** y se cierra por prueba de
+      mutación en vez de por commit rojo, con la evidencia de los tres puntos
+      de arriba en el reporte del `reviewer` (fecha: 2026-09-05)
+
+### Enmienda del 2026-09-06 (2) — el recuento de R17 es 265, no 244
+
+Codex CLI paró en el paso (3) de R17, como `tasks.md` le ordenaba: el comando
+normativo daba **265** y la spec pedía **244**. Paró bien. La cifra de la spec
+estaba **caduca, no equivocada**: se calculó correctamente contra `a44925f`, y
+el árbol se movió por debajo dos veces, las dos de forma legítima.
+
+Recuento independiente del `leader` con el comando normativo, vía
+`git archive` (sin tocar el árbol de trabajo):
+
+| Commit | `*ByText(`/`toHaveTextContent(` | `ByTestId(` | Qué es |
+|---|---:|---:|---|
+| `a44925f` | 246 | 796 | base sobre la que se escribió la spec |
+| `f90facb` | 258 | 801 | firma de la enmienda (1); **#64 ya dentro** |
+| `9825316` | 267 | — | padre de R17, con R1-R16 cerrados |
+| árbol de R17 en verde | **265** | **823** | lo que Codex tiene sin commitear |
+
+De dónde sale cada salto, verificado archivo a archivo:
+
+- **+12 (246 → 258)**: los metió **#64** al mergear, en `screens/docs/index.test.tsx`
+  (6 → 12) y `screens/reminders/index.test.tsx` (18 → 24). Ninguno es de #65.
+- **+9 (258 → 267)**: los meten los **tests obligatorios de esta misma spec**:
+  `providers/__tests__/language-provider.test.tsx` 0 → 5 (R12) y
+  `screens/profile/index.test.tsx` 19 → 23 (R14).
+- **−2 (267 → 265)**: es **exactamente** el neto que R17 prescribe, y cae solo
+  en los cuatro archivos previstos: `food.test.tsx` 19 → 20,
+  `health.test.tsx` 16 → 15, `home.test.tsx` 27 → 26,
+  `meal-schedule.test.tsx` 18 → 17. Ningún otro archivo de test cambia su
+  recuento y **ninguno desaparece**.
+
+Nada se debilitó. La cifra absoluta protegió mal un invariante que sí se
+cumple, porque una constante calculada contra un commit envejece en cuanto
+otra feature mergea. **El invariante de R17 es el delta, no el absoluto.**
+
+Lo que rehace el `reviewer`, en este orden:
+
+1. `git archive` del **padre** de R17 y del **verde** de R17, y el comando
+   normativo sobre los dos: la diferencia debe ser **−2 exactos**. Esta es la
+   comprobación que decide, y no caduca aunque mergee otra feature.
+2. Sobre el verde de R17, el absoluto: **265** y `ByTestId(` **≥ 800** (823).
+3. Que ningún archivo de test desapareció ni perdió aserciones fuera de los
+   cuatro de la tabla de [[design]] §4.3.
+
+- [X] Firmo que el esperado mecánico de R17 pasa de **244** a **265**, y que
+      lo que se comprueba es el **delta −2** entre el padre y el verde de R17
+      (fecha: 2026-09-06)
+
+### Enmienda del 2026-09-06 (3) — copy sin clave que el inventario no vio
+
+El `implementer` paró en R18 y paró bien: su escaneo destapó **copy visible que
+el catálogo aprobado no contiene**. No es un fallo del test ni del código
+migrado — es un hueco de mi inventario, y cerrarlo mueve cifras firmadas.
+
+**Causa raíz, y por qué no es un descuido suelto**: el inventario de las 255
+entradas barrió los literales **ingleses pendientes de traducir**. Toda copy
+que se escribe **igual en español y en inglés** era invisible a ese barrido.
+Por eso los huecos no aparecen dispersos al azar: son exactamente las palabras
+que no cambian entre idiomas.
+
+Al descubrirlo, el `leader` rehizo el barrido por la otra vía —literales de
+texto visible en los 19 ficheros de pantalla, resuelvan o no por `t(`— y salen
+**cinco sitios**, no los dos que encontró el test:
+
+| Fichero | Línea | Literal | Lo ve R18 | Por qué se coló |
+|---|---:|---|---|---|
+| `screens/add-pet/index.tsx` | 431 | `label="No"` | **no** | hermana de `t('addPet.yes')`, que sí tiene clave |
+| `screens/add-pet/index.tsx` | 436 | `<FieldLabel>Microchip</FieldLabel>` | **sí** | choca con el valor de `profile.microchip` |
+| `screens/pairing/index.tsx` | 319 | `label="ESN"` | no | acrónimo, igual en los dos idiomas |
+| `screens/pairing/index.tsx` | 436 | `label="ESN"` | no | segunda ocurrencia, misma clave |
+| `app/(tabs)/map.tsx` | 354 | `<Text>GPS</Text>` | no | acrónimo, igual en los dos idiomas |
+
+Solo el de la línea 436 de `add-pet` pone R18 en rojo, porque es el único que
+**coincide con un valor que ya está en el catálogo**. Los otros cuatro son
+invisibles a R18 por construcción: no están en el catálogo, así que no hay
+valor con el que colisionar. Dejarlos fuera no rompe ningún test — los deja
+sin gestionar, que es como llegaron hasta aquí.
+
+Descartados por no ser copy: `📄` (`screens/docs/index.tsx:31`) y `✓`
+(`screens/pairing/index.tsx:300`). Son glifos, no texto traducible.
+
+**Las cuatro claves nuevas tienen el mismo valor en los dos idiomas**, que es
+justo lo que las hizo invisibles. No hay redacción que decidir:
+
+| Clave | `es` | `en` | Sitios |
+|---|---|---|---|
+| `addPet.no` | `No` | `No` | 1 |
+| `addPet.microchip` | `Microchip` | `Microchip` | 1 |
+| `pairing.esn` | `ESN` | `ESN` | 2 (una fila en la tabla de uso) |
+| `map.gps` | `GPS` | `GPS` | 1 |
+
+#### Qué se firma
+
+Dos opciones. **Marca una sola.**
+
+- [ ] **(A) Mínimo para desbloquear** — solo `addPet.no` y `addPet.microchip`.
+      Catálogo **255 → 257**, `ALL_USES` **320 → 322**, R9 **40 → 42**,
+      valores de cadena fija de R18(b) **244 → 246**. `ESN` y `GPS` se quedan
+      como literales sin clave, y ningún test los vigila.
+      (fecha: ______)
+
+- [X] **(B) Cerrar la familia entera** *(recomendada por el `leader`)* — las
+      cuatro claves. Catálogo **255 → 259**, `ALL_USES` **320 → 324**,
+      R4 **19 → 20**, R9 **40 → 42**, R10 **40 → 41**, valores de cadena fija
+      de R18(b) **244 → 248**.
+      (fecha: 2026-09-06)
+
+**Por qué el `leader` recomienda (B)**: (A) desbloquea pero deja tres literales
+de copy que nada vigila, y la regla 6 que R20 acaba de escribir en
+`docs/ui-guidelines.md` dice que el catálogo es la **única fuente de copy**.
+Además el rediseño ya tiene en cola cambiar el vocabulario a `Collar GPS`, así
+que esa cadena se va a tocar. La diferencia entre las dos opciones son **dos
+claves y tres sitios**; el coste de volver por ellas más tarde es otra ronda de
+enmienda y firma como esta.
+
+#### Y para que no haya una cuarta ronda
+
+Es la **tercera** vez en dos features que una constante numérica congelada en
+una spec aprobada para el trabajo: el R4 de #64, el 244 de R17 y ahora el 320
+de R18. La cifra nunca estuvo mal cuando se escribió; envejeció.
+
+Así que, además de las claves, se firma esto: en `ui-copy-table.ts` y en el
+test de R18, **la comprobación vinculante pasa a ser de consistencia interna**,
+no de constante:
+
+- `ALL_USES.length` debe ser igual a la **suma de los once bloques** `R1_…R11_`;
+- `Object.keys(es).length` debe ser igual a `Object.keys(en).length`;
+- el escaneo recorre `ALL_USES` y el catálogo **tal como están**, sin comparar
+  contra ningún número escrito a mano.
+
+Las cifras de arriba quedan en la spec como **lo que valían el 2026-09-06**, no
+como el candado. El nombre del `describe` de R18 pierde el `320`.
+
+- [X] Firmo también el cambio a comprobación por consistencia interna
+      (fecha: 2026-09-06)
+
+---
+
+## Gate de cierre — lo que solo puede firmar un humano
+
+El `reviewer` aprobó los 20 requisitos el 2026-09-06 (veredicto y re-revisión en
+`progress/review_mobile-ui-language.md`). Faltan **dos firmas humanas** antes de
+que la feature pase a `done`. Ningún agente puede cerrarlas.
+
+### (1) Prueba de humo en **dev build de Android**
+
+No en Expo Go: esta feature toca `expo-secure-store`, que ahí no se comporta
+igual. Recorrido mínimo, en este orden:
+
+1. **Instalación limpia** (o borrando los datos de la app): arranca **en
+   español**, sin haber elegido nada. *(R16)*
+2. **Perfil → interruptor de idioma → English**: la pantalla **se repinta al
+   momento**, sin reiniciar. Mira el título, la etiqueta de pestaña, un botón,
+   un estado vacío y un `placeholder`. *(R14)*
+3. **Cierra la app del todo y reábrela**: sigue en **English**. *(R13)*
+4. **Vuelve a español** y repite el cierre y la reapertura: sigue en español.
+5. **Recorre las 11 pantallas migradas** —Home, Mapa, Salud, Comida, Horario de
+   comidas, Recordatorios, Perfil, Documentos, Alta de mascota, Emparejado del
+   collar, Restablecer contraseña— y confirma que **no queda ni un texto en
+   inglés** con el idioma en español. *(R1-R11)*
+6. **Fechas y horas en español**: en Recordatorios y en Salud, que el formato
+   sea el de `es-MX` y no el de `en-US`. Cambia a inglés y confirma que
+   cambian. *(R15)*
+7. **Los cuatro sitios que se descubrieron tarde**: `No` en esterilizado y
+   `Microchip` en el alta de mascota, `ESN` en el emparejado y `GPS` en el
+   mapa. Se escriben igual en los dos idiomas: lo que se comprueba es que
+   **están y se ven bien**, no que cambien. *(enmienda (3))*
+
+**Lo que NO es un fallo de esta feature**: los mensajes de validación que
+manda el backend siguen llegando **en inglés en los dos idiomas** (`Invalid
+email address`, `First name is required`…). Está declarado en §Fuera de alcance
+1 y es de `backend-pet-tracker/`, que esta feature no abre.
+
+- [X] Humo pasado en dev build de Android (fecha: 2026-09-06)
+
+### (2) Firma de las 9 enmiendas de R19
+
+#65 cambia el idioma por defecto de 9 specs ya aprobadas, así que cada una lleva
+un bloque de enmienda con **su propia casilla sin marcar**. La enmienda **no
+dice que el inglés desaparezca**: dice que el literal inglés que esa spec fijó
+sigue siendo normativo como columna `en` del catálogo, y que el idioma por
+defecto pasa a ser español.
+
+| # | Fichero | Línea de la casilla |
+|---|---|---:|
+| 1 | `specs/mobile-auth/requirements.md` | 274 |
+| 2 | `specs/mobile-home-dashboard/requirements.md` | 339 |
+| 3 | `specs/mobile-map-live/requirements.md` | 313 |
+| 4 | `specs/mobile-health/requirements.md` | 406 |
+| 5 | `specs/mobile-food/design.md` | 273 |
+| 6 | `specs/mobile-food/requirements.md` | 360 |
+| 7 | `specs/mobile-reminders/requirements.md` | 392 |
+| 8 | `specs/auth-reset-deep-link/design.md` | 347 |
+| 9 | `specs/mobile-device-pairing/design.md` | 444 |
+
+La más fuerte es la 9: `mobile-device-pairing` no dijo «en inglés», **enumeró
+los 18 strings exactos**. Su enmienda deja claro que esos 18 siguen siendo
+palabra por palabra lo que ve quien elija inglés.
+
+El test de R19 **vigila que estas 9 casillas sigan vacías** hasta que las
+marques tú: si un agente marcase una, la suite se pone roja.

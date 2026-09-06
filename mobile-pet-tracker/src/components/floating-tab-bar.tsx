@@ -23,6 +23,7 @@ import {
 } from 'reicon-react-native';
 import { useUniwind } from 'uniwind';
 
+import { useTranslate } from '../providers/language-provider';
 import { useThemeColors } from '../theme/use-theme-colors';
 
 interface TabRoute {
@@ -46,11 +47,11 @@ export interface FloatingTabBarProps {
 }
 
 const TABS = [
-  { name: 'home', label: 'Home', Icon: Home },
-  { name: 'map', label: 'Map', Icon: Map },
-  { name: 'health', label: 'Health', Icon: HeartPulse },
-  { name: 'food', label: 'Food', Icon: ForkKnife },
-  { name: 'profile', label: 'Profile', Icon: Profile },
+  { name: 'home', labelKey: 'tabs.home', Icon: Home },
+  { name: 'map', labelKey: 'tabs.map', Icon: Map },
+  { name: 'health', labelKey: 'tabs.health', Icon: HeartPulse },
+  { name: 'food', labelKey: 'tabs.food', Icon: ForkKnife },
+  { name: 'profile', labelKey: 'tabs.profile', Icon: Profile },
 ] as const;
 
 export const TAB_INDICATOR_SPRING = {
@@ -60,6 +61,7 @@ export const TAB_INDICATOR_SPRING = {
 } as const;
 
 export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
+  const t = useTranslate();
   const [accent, muted, tabPill] = useThemeColors([
     'accent-strong',
     'muted',
@@ -150,7 +152,7 @@ export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
         />
       ) : null}
       <View className="flex-row items-center justify-around px-2 py-3">
-        {TABS.map(({ name, label, Icon }) => {
+        {TABS.map(({ name, labelKey, Icon }) => {
           const route = state.routes.find(
             (candidate) => candidate.name === name,
           );
@@ -192,7 +194,7 @@ export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
                     : 'text-2xs font-semibold text-muted'
                 }
               >
-                {label}
+                {t(labelKey)}
               </Text>
             </Pressable>
           );

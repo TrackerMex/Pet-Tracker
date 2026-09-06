@@ -1,8 +1,10 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
+import type { ReactNode } from 'react';
 
 import { login, register } from '../../../api/auth';
+import { LanguageProvider } from '../../../providers/language-provider';
 import Forgot from '../forgot';
 
 jest.mock('../../../api/auth', () => ({
@@ -25,15 +27,27 @@ const mockLogin = jest.mocked(login);
 const mockRegister = jest.mocked(register);
 const mockRouter = jest.mocked(router);
 
+function AuthScreenWrapper({ children }: { children: ReactNode }) {
+  return (
+    <HeroUINativeProvider>
+      <LanguageProvider initial="es">{children}</LanguageProvider>
+    </HeroUINativeProvider>
+  );
+}
+
 describe('R9: forgot es un stub deshabilitado', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   it('renders disabled controls and never calls auth APIs', async () => {
-    await render(<Forgot />, { wrapper: HeroUINativeProvider });
+    await render(<Forgot />, { wrapper: AuthScreenWrapper });
 
-    expect(screen.getByText('Password recovery coming soon')).toBeVisible();
+    expect(
+      screen.getByText(
+        'La recuperación de contraseña estará disponible pronto',
+      ),
+    ).toBeVisible();
     expect(screen.getByTestId('forgot-email')).toHaveProp('editable', false);
     expect(screen.getByTestId('forgot-submit')).toBeDisabled();
 
@@ -44,7 +58,7 @@ describe('R9: forgot es un stub deshabilitado', () => {
   });
 
   it('links back to login without a network request', async () => {
-    await render(<Forgot />, { wrapper: HeroUINativeProvider });
+    await render(<Forgot />, { wrapper: AuthScreenWrapper });
 
     await fireEvent.press(screen.getByTestId('link-login'));
 
@@ -56,7 +70,7 @@ describe('R9: forgot es un stub deshabilitado', () => {
 
 describe('#61 R8: forgot tiene contenedor de scroll con safe areas', () => {
   it('conserva el centrado de hoy dentro de un ScrollView con insets', async () => {
-    await render(<Forgot />, { wrapper: HeroUINativeProvider });
+    await render(<Forgot />, { wrapper: AuthScreenWrapper });
 
     const screenRoot = screen.getByTestId('screen-forgot');
 

@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
+import type { ReactNode } from 'react';
 
 import {
   login,
@@ -8,6 +9,7 @@ import {
   type RegisterState,
 } from '../../../api/auth';
 import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
+import { LanguageProvider } from '../../../providers/language-provider';
 import Register from '../register';
 
 jest.mock('../../../api/auth', () => ({
@@ -48,8 +50,16 @@ const user = {
   createdAt: '2026-08-21T00:00:00.000Z',
 };
 
+function AuthScreenWrapper({ children }: { children: ReactNode }) {
+  return (
+    <HeroUINativeProvider>
+      <LanguageProvider initial="es">{children}</LanguageProvider>
+    </HeroUINativeProvider>
+  );
+}
+
 async function renderRegister() {
-  await render(<Register />, { wrapper: HeroUINativeProvider });
+  await render(<Register />, { wrapper: AuthScreenWrapper });
 }
 
 async function fillForm({ acceptTerms = true }: { acceptTerms?: boolean } = {}) {
@@ -149,7 +159,7 @@ describe('R8: register llama a la api y navega', () => {
     await submit();
 
     expect(screen.getByTestId('register-error')).toHaveTextContent(
-      'Email already registered',
+      'Ese correo ya está registrado',
     );
   });
 
@@ -179,9 +189,12 @@ describe('R8: register llama a la api y navega', () => {
   });
 
   it.each<[RegisterState, string]>([
-    [{ kind: 'unreachable', message: 'network down' }, 'Cannot reach server'],
-    [{ kind: 'error' }, 'Something went wrong'],
-    [{ kind: 'missing-config' }, 'Something went wrong'],
+    [
+      { kind: 'unreachable', message: 'network down' },
+      'No se pudo conectar con el servidor',
+    ],
+    [{ kind: 'error' }, 'Algo salió mal'],
+    [{ kind: 'missing-config' }, 'Algo salió mal'],
   ])('shows the expected general message for $kind', async (state, message) => {
     mockRegister.mockResolvedValue(state);
     await renderRegister();
@@ -221,6 +234,6 @@ describe('#61 R7: register usa las métricas de pantalla uniformes', () => {
 
     expect(screen.getByTestId('register-first-name')).toBeVisible();
     expect(screen.getByTestId('register-submit')).toBeVisible();
-    expect(screen.getAllByText('Create account')).toHaveLength(2);
+    expect(screen.getAllByText('Crear cuenta')).toHaveLength(2);
   });
 });

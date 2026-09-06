@@ -19,6 +19,7 @@ import {
 } from '../../api/reminders';
 import type { PetProfile, Reminder } from '../../api/types';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
+import { LanguageProvider } from '../../providers/language-provider';
 import { SelectedPetProvider } from '../../providers/selected-pet-provider';
 import { RemindersScreen } from '.';
 
@@ -128,7 +129,9 @@ function makeReminder(overrides: Partial<Reminder> = {}): Reminder {
 function RemindersWrapper({ children }: { children: ReactNode }) {
   return (
     <HeroUINativeProvider>
-      <SelectedPetProvider>{children}</SelectedPetProvider>
+      <LanguageProvider initial="es">
+        <SelectedPetProvider>{children}</SelectedPetProvider>
+      </LanguageProvider>
     </HeroUINativeProvider>
   );
 }
@@ -152,7 +155,7 @@ async function confirmDelete(reminderId: string) {
   );
   expect(sheet.props.isPresented).toBeUndefined();
   expect(within(sheet).getByTestId('reminders-delete-sheet')).toBeVisible();
-  expect(screen.getByText('Delete reminder?')).toBeVisible();
+  expect(screen.getByText('¿Eliminar recordatorio?')).toBeVisible();
   expect(screen.getByTestId('reminders-delete-reference')).toHaveTextContent(
     'Rabies booster',
   );
@@ -182,7 +185,7 @@ describe('R5: reminders monta con métricas y estados', () => {
     await renderReminders();
 
     expect(screen.getByTestId('screen-reminders')).toBeVisible();
-    expect(screen.getByText('Reminders')).toBeVisible();
+    expect(screen.getByText('Recordatorios')).toBeVisible();
     expect(
       screen.getByTestId('screen-reminders').props.contentContainerStyle,
     ).toEqual({
@@ -222,7 +225,7 @@ describe('R5: reminders monta con métricas y estados', () => {
 
     await waitFor(() =>
       expect(screen.getByTestId('reminders-empty')).toHaveTextContent(
-        'No reminders yet',
+        'Aún no hay recordatorios',
       ),
     );
   });
@@ -240,7 +243,7 @@ describe('R5: reminders monta con métricas y estados', () => {
     await renderReminders();
     await waitFor(() =>
       expect(screen.getByTestId('reminders-error')).toHaveTextContent(
-        'Something went wrong',
+        'Algo salió mal',
       ),
     );
     await fireEvent.press(screen.getByTestId('reminders-retry'));
@@ -323,7 +326,7 @@ describe('R6: lista con pills, badges y refetch on focus', () => {
     expect(within(screen.getByTestId('pill-active')).getByText('2')).toBeVisible();
     expect(within(screen.getByTestId('pill-week')).getByText('1')).toBeVisible();
     expect(
-      within(screen.getByTestId('pill-week')).getByText('This week'),
+      within(screen.getByTestId('pill-week')).getByText('Esta semana'),
     ).toBeVisible();
     expect(
       within(screen.getByTestId('pill-inactive')).getByText('2'),
@@ -339,26 +342,30 @@ describe('R6: lista con pills, badges y refetch on focus', () => {
 
     const upcoming = within(screen.getByTestId('reminder-row-upcoming'));
     expect(upcoming.getByText('💉')).toBeVisible();
-    expect(upcoming.getByText('Vaccine')).toBeVisible();
+    expect(upcoming.getByText('Vacuna')).toBeVisible();
     expect(upcoming.getByText('Rabies booster')).toBeVisible();
     expect(
-      upcoming.getByText(new Date(reminders[2].dueAt).toLocaleDateString()),
+      upcoming.getByText(
+        new Date(reminders[2].dueAt).toLocaleDateString('es-MX'),
+      ),
     ).toBeVisible();
-    expect(upcoming.getByText('· in 3 days')).toBeVisible();
+    expect(upcoming.getByText('· en 3 días')).toBeVisible();
     expect(screen.getByTestId('reminder-upcoming-upcoming')).toHaveTextContent(
-      'Upcoming!',
+      '¡Próximo!',
     );
     expect(screen.queryByTestId('reminder-upcoming-later')).toBeNull();
 
     expect(screen.getByTestId('reminder-row-sent').props.className).toContain(
       'opacity-50',
     );
-    expect(screen.getByTestId('reminder-status-sent')).toHaveTextContent('Sent');
+    expect(screen.getByTestId('reminder-status-sent')).toHaveTextContent(
+      'Enviado',
+    );
     expect(
       screen.getByTestId('reminder-row-cancelled').props.className,
     ).toContain('opacity-50');
     expect(screen.getByTestId('reminder-status-cancelled')).toHaveTextContent(
-      'Cancelled',
+      'Cancelado',
     );
   });
 
@@ -376,6 +383,39 @@ describe('R6: lista con pills, badges y refetch on focus', () => {
     });
 
     await waitFor(() => expect(mockListReminders).toHaveBeenCalledTimes(2));
+  });
+});
+
+describe('#65 R15: la fecha del recordatorio se formatea con el locale del idioma', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockListReminders.mockResolvedValue({
+      kind: 'ok',
+      reminders: [makeReminder()],
+    });
+  });
+
+  it('passes es-MX explicitly to the date formatter', async () => {
+    const formatDate = jest.spyOn(Date.prototype, 'toLocaleDateString');
+
+    try {
+      await renderReminders();
+      await waitFor(() =>
+        expect(screen.getByTestId('reminder-row-reminder-1')).toBeVisible(),
+      );
+
+      expect(formatDate).toHaveBeenCalledWith('es-MX');
+    } finally {
+      formatDate.mockRestore();
+    }
   });
 });
 
@@ -467,10 +507,10 @@ describe('R7: borrar recordatorio con confirmación', () => {
   });
 
   it.each([
-    [{ kind: 'forbidden' }, 'Only the owner can delete'],
-    [{ kind: 'unreachable', message: 'offline' }, 'Cannot reach server'],
-    [{ kind: 'error' }, 'Something went wrong'],
-    [{ kind: 'missing-config' }, 'Something went wrong'],
+    [{ kind: 'forbidden' }, 'Solo el dueño puede eliminar'],
+    [{ kind: 'unreachable', message: 'offline' }, 'No se pudo conectar con el servidor'],
+    [{ kind: 'error' }, 'Algo salió mal'],
+    [{ kind: 'missing-config' }, 'Algo salió mal'],
   ] as [DeleteReminderState, string][]) (
     'shows the action error for $state.kind',
     async (deleteState, message) => {
@@ -560,8 +600,8 @@ describe('#64 R7: la fila de recordatorio pinta el icono con el color de su tipo
     expect(vaccineTile?.props.className).not.toContain('bg-accent-soft');
     expect(medicationTile?.props.className).not.toContain('bg-accent-soft');
     expect(vaccineRow.getByText('💉')).toBeVisible();
-    expect(vaccineRow.getByText('Vaccine')).toBeVisible();
+    expect(vaccineRow.getByText('Vacuna')).toBeVisible();
     expect(medicationRow.getByText('💊')).toBeVisible();
-    expect(medicationRow.getByText('Medication')).toBeVisible();
+    expect(medicationRow.getByText('Medicamento')).toBeVisible();
   });
 });

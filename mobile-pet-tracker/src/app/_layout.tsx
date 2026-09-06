@@ -7,11 +7,16 @@ import { useEffect, useState } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Uniwind } from 'uniwind';
 
+import { DEFAULT_LANGUAGE, type Language } from '../i18n/catalog';
 import { AuthProvider } from '../providers/auth-provider';
+import { LanguageProvider } from '../providers/language-provider';
+import { getStoredLanguage } from '../utils/language-preference';
 import { getStoredTheme } from '../utils/theme-preference';
 
 export default function RootLayout() {
   const [themeReady, setThemeReady] = useState(false);
+  const [initialLanguage, setInitialLanguage] =
+    useState<Language>(DEFAULT_LANGUAGE);
   useFonts({
     'Inter-Regular': require('../../assets/fonts/Inter-Regular.ttf'),
     'Inter-Medium': require('../../assets/fonts/Inter-Medium.ttf'),
@@ -23,11 +28,14 @@ export default function RootLayout() {
   useEffect(() => {
     let mounted = true;
 
-    void getStoredTheme().then((theme) => {
-      if (!mounted) return;
-      if (theme) Uniwind.setTheme(theme);
-      setThemeReady(true);
-    });
+    void Promise.all([getStoredTheme(), getStoredLanguage()]).then(
+      ([theme, language]) => {
+        if (!mounted) return;
+        if (theme) Uniwind.setTheme(theme);
+        if (language) setInitialLanguage(language);
+        setThemeReady(true);
+      },
+    );
 
     return () => {
       mounted = false;
@@ -39,9 +47,11 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <HeroUINativeProvider>
-        <AuthProvider>
-          <Stack screenOptions={{ headerShown: false }} />
-        </AuthProvider>
+        <LanguageProvider initial={initialLanguage}>
+          <AuthProvider>
+            <Stack screenOptions={{ headerShown: false }} />
+          </AuthProvider>
+        </LanguageProvider>
       </HeroUINativeProvider>
     </GestureHandlerRootView>
   );

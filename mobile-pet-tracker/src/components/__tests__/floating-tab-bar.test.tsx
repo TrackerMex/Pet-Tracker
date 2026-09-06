@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
+import type { ReactNode } from 'react';
 import { StyleSheet } from 'react-native';
 import { ReduceMotion } from 'react-native-reanimated';
 
@@ -8,6 +9,7 @@ import {
   TAB_INDICATOR_SPRING,
   type FloatingTabBarProps,
 } from '../floating-tab-bar';
+import { LanguageProvider } from '../../providers/language-provider';
 
 const mockIsLiquidGlassAvailable = jest.fn<boolean, []>(() => false);
 let mockTheme: 'light' | 'dark' = 'light';
@@ -68,8 +70,16 @@ function tabBarProps(index = 0): FloatingTabBarProps {
 
 async function renderTabBar(index = 0) {
   return render(<FloatingTabBar {...tabBarProps(index)} />, {
-    wrapper: HeroUINativeProvider,
+    wrapper: TabBarWrapper,
   });
+}
+
+function TabBarWrapper({ children }: { children: ReactNode }) {
+  return (
+    <HeroUINativeProvider>
+      <LanguageProvider initial="es">{children}</LanguageProvider>
+    </HeroUINativeProvider>
+  );
 }
 
 describe('R1: usa GlassView cuando liquid glass está disponible (y nunca junto a BlurView)', () => {
@@ -232,7 +242,7 @@ describe('R7: tab bar renderiza y navega', () => {
       'tab-food',
       'tab-profile',
     ]);
-    for (const label of ['Home', 'Map', 'Health', 'Food', 'Profile']) {
+    for (const label of ['Inicio', 'Mapa', 'Salud', 'Nutrición', 'Perfil']) {
       expect(screen.getByText(label)).toBeVisible();
     }
     expect(screen.getByTestId('tab-home')).toHaveProp('accessibilityState', {

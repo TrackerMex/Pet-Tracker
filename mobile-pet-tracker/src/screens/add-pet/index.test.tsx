@@ -6,6 +6,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { requestPhotoUploadUrl, uploadPhotoToUrl } from '../../api/media';
 import { createPet } from '../../api/pets';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
+import { LanguageProvider } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { AddPetScreen } from '.';
 import { TOUCH_SLOP } from '../../theme/touch-target';
@@ -69,7 +70,9 @@ function pending<T>(): Promise<T> {
 async function renderAddPet() {
   return render(
     <HeroUINativeProvider>
-      <AddPetScreen />
+      <LanguageProvider initial="es">
+        <AddPetScreen />
+      </LanguageProvider>
     </HeroUINativeProvider>,
   );
 }
@@ -107,7 +110,7 @@ describe('R6: alta de mascota', () => {
     expect(screen.getByTestId('size-large')).toBeVisible();
     expect(screen.getByTestId('sterilized-true')).toBeVisible();
     expect(screen.getByTestId('microchip-input')).toBeVisible();
-    expect(screen.getByTestId('pet-avatar').props.name).toBe('Pet');
+    expect(screen.getByTestId('pet-avatar').props.name).toBe('Mascota');
   });
 
   it('uses Host + community DateTimePicker and keeps exactly birthDate', async () => {
@@ -172,7 +175,9 @@ describe('R6: alta de mascota', () => {
     await fireEvent.changeText(screen.getByTestId('name-input'), 'Luna');
     await fireEvent.press(screen.getByTestId('add-pet-submit'));
 
-    expect(screen.getByTestId('add-pet-error')).toHaveTextContent('Choose a birth date');
+    expect(screen.getByTestId('add-pet-error')).toHaveTextContent(
+      'Elige una fecha de nacimiento',
+    );
     expect(mockCreatePet).not.toHaveBeenCalled();
   });
 
@@ -322,8 +327,8 @@ describe('#62 R11: los chips de especie usan la receta única de chip', () => {
   });
 
   it.each([
-    ['species-dog', 'Dog'],
-    ['species-cat', 'Cat'],
+    ['species-dog', 'Perro'],
+    ['species-cat', 'Gato'],
   ])('%s coincide con los demás chips del formulario', async (testID, label) => {
     await renderAddPet();
 

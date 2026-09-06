@@ -237,6 +237,37 @@ y no dibuja estados que existen de verdad, como el 402 de "sin suscripción".
 Parecerse al diseño **no** autoriza a borrar un dato útil: la spec que se
 encuentre con uno o lo conserva, o escribe por qué se va.
 
+**6. Idioma: catálogo de dos idiomas, español por defecto.** Decidido por el
+humano el 2026-09-04 (español) y el 2026-09-05 (catálogo + interruptor), y
+ejecutado por la feature #65. **Ninguna pantalla escribe texto**: todo lo que
+ve el usuario —títulos, etiquetas, placeholders, `accessibilityLabel`,
+mensajes de error, botones de `Alert`— se resuelve con `t('<ámbito>.<clave>')`
+contra `mobile-pet-tracker/src/i18n/catalog.ts`. Toda spec que introduzca copy
+nueva **añade su clave en los dos idiomas** en el mismo gate y la registra en
+la tabla de `specs/mobile-ui-language/design.md` §2; una clave que exista en un
+idioma y no en el otro no compila. Donde el diseño del Make da la palabra en
+español se usa **la del diseño**. **No hay librería de i18n y no se instala
+una**, ni `expo-localization`: el idioma es elección explícita del usuario en
+Profile, no detección del idioma del teléfono. Las fechas y las horas siguen al
+idioma elegido (`es-MX` / `en-US`), no al locale del sistema.
+
+Tres corolarios que nadie debe confundir con lo anterior:
+
+- **El idioma del código no cambia.** Nombres de variables, funciones, tipos,
+  ficheros, `testID`, rutas y **las claves del catálogo** siguen en inglés, y
+  los mensajes de commit también (`docs/conventions.md` §Commits).
+- **El backend sigue devolviendo validaciones en inglés, en los dos idiomas.**
+  Se ve en `login-error`, `register-*-error`, `weight-form-error` y
+  `reset-error`, porque son mensajes de Zod de `backend-pet-tracker/`.
+  Traducirlos es una feature de backend. Al revés, las advertencias
+  nutricionales del backend ya llegan en español y se muestran tal cual — y en
+  inglés también, porque tampoco se traducen.
+- **Los valores de enum que la API devuelve se pintan crudos**: `pet.sex`,
+  `device.connectivity`, `document.type`, `foodType`, `activityLevel`. Siguen
+  en inglés en los dos idiomas, y `connectivity` además enseña jerga del
+  proveedor, contra el punto 4 de esta misma sección. Mapearlos es cambio de
+  conducta y va a feature propia.
+
 ## Checklist de autocrítica (cierra toda pantalla nueva o modificada)
 
 Screenshot mental (o real en smoke) contra: jerarquía (lo importante

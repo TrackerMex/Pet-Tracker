@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { login } from '../../api/auth';
 import { useAuth } from '../../providers/auth-provider';
+import { useTranslate } from '../../providers/language-provider';
 
 export default function Login() {
   const insets = useSafeAreaInsets();
@@ -14,6 +15,7 @@ export default function Login() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { signIn } = useAuth();
+  const t = useTranslate();
 
   async function handleSubmit() {
     setSubmitting(true);
@@ -28,20 +30,20 @@ export default function Login() {
           router.replace('/home');
           return;
         case 'invalid-credentials':
-          setError('Invalid credentials');
+          setError(t('login.invalidCredentials'));
           return;
         case 'unreachable':
-          setError('Cannot reach server');
+          setError(t('common.cannotReachServer'));
           return;
         case 'validation':
           setError(result.errors.map(({ message }) => message).join('\n'));
           return;
         case 'error':
         case 'missing-config':
-          setError('Something went wrong');
+          setError(t('common.somethingWentWrong'));
       }
     } catch {
-      setError('Something went wrong');
+      setError(t('common.somethingWentWrong'));
     } finally {
       setSubmitting(false);
     }
@@ -63,11 +65,13 @@ export default function Login() {
       }}
     >
       <Text className="text-center text-2xl font-black text-foreground">
-        Sign in
+        {t('login.signIn')}
       </Text>
 
       <TextField>
-        <Label className="text-xs font-semibold text-foreground">Email</Label>
+        <Label className="text-xs font-semibold text-foreground">
+          {t('login.email')}
+        </Label>
         <Input
           testID="login-email"
           className="rounded-xl bg-default"
@@ -80,7 +84,7 @@ export default function Login() {
 
       <TextField>
         <Label className="text-xs font-semibold text-foreground">
-          Password
+          {t('login.password')}
         </Label>
         <Input
           testID="login-password"
@@ -104,7 +108,7 @@ export default function Login() {
         onPress={() => void handleSubmit()}
       >
         <Button.Label className="font-bold text-accent-foreground">
-          Sign in
+          {t('login.signIn')}
         </Button.Label>
       </Button>
 
@@ -114,7 +118,7 @@ export default function Login() {
         onPress={() => router.push('/register')}
       >
         <LinkButton.Label className="font-semibold text-accent-strong">
-          Create account
+          {t('login.createAccount')}
         </LinkButton.Label>
       </LinkButton>
       <LinkButton
@@ -123,7 +127,7 @@ export default function Login() {
         onPress={() => router.push('/forgot')}
       >
         <LinkButton.Label className="font-semibold text-accent-strong">
-          Forgot password?
+          {t('login.forgotPassword')}
         </LinkButton.Label>
       </LinkButton>
     </ScrollView>

@@ -82,7 +82,7 @@ describe('#61 R1: la etiqueta destructiva usa el token de danger', () => {
   it('conserva variant, testID y texto del botón', () => {
     expect(deleteConfirm).toContain('variant="danger"');
     expect(deleteConfirm).toContain('bg-danger');
-    expect(deleteConfirm).toContain('Delete');
+    expect(deleteConfirm).toContain("t('reminders.delete')");
   });
 });
 

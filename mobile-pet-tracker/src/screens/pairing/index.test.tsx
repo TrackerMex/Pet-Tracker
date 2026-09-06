@@ -24,6 +24,7 @@ import {
 import type { PetProfile } from '../../api/types';
 import PairingRoute from '../../app/(tabs)/pairing';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
+import { LanguageProvider } from '../../providers/language-provider';
 import { SelectedPetProvider } from '../../providers/selected-pet-provider';
 
 jest.mock('../../api/devices', () => ({
@@ -113,7 +114,9 @@ function pending<T>(): Promise<T> {
 function PairingWrapper({ children }: { children: ReactNode }) {
   return (
     <HeroUINativeProvider>
-      <SelectedPetProvider>{children}</SelectedPetProvider>
+      <LanguageProvider initial="es">
+        <SelectedPetProvider>{children}</SelectedPetProvider>
+      </LanguageProvider>
     </HeroUINativeProvider>
   );
 }
@@ -173,12 +176,12 @@ describe('R4: /pairing monta dentro de (tabs) con selector de mascota y estados 
     await renderPairing();
 
     expect(await screen.findByTestId('pairing-error-pets')).toHaveTextContent(
-      'Something went wrong',
+      'Algo salió mal',
     );
     await fireEvent.press(screen.getByTestId('pairing-retry'));
 
     expect(await screen.findByTestId('pairing-no-pets')).toHaveTextContent(
-      'Add a pet first',
+      'Primero añade una mascota',
     );
     expect(mockListPets).toHaveBeenCalledTimes(2);
   });
@@ -189,7 +192,7 @@ describe('R4: /pairing monta dentro de (tabs) con selector de mascota y estados 
     await renderPairing();
 
     expect(await screen.findByTestId('pairing-no-pets')).toHaveTextContent(
-      'Add a pet first',
+      'Primero añade una mascota',
     );
   });
 
@@ -246,12 +249,12 @@ describe('R5: sin collar muestra el formulario de vinculación y publica el clai
   it('shows the exact free-plan note and constrained activation-code field', async () => {
     await renderPairing();
 
-    expect(await screen.findAllByText('Pair collar')).toHaveLength(2);
+    expect(await screen.findAllByText('Vincular collar')).toHaveLength(2);
     expect(screen.getByTestId('pairing-plan-free')).toHaveTextContent(
-      'Free plan — health only. Pair a collar with an active plan to see the map.',
+      'Plan gratuito — solo salud. Vincula un collar con plan activo para ver el mapa.',
     );
-    expect(screen.getByText('Activation code')).toBeVisible();
-    expect(screen.getByText('Printed on the collar box')).toBeVisible();
+    expect(screen.getByText('Código de activación')).toBeVisible();
+    expect(screen.getByText('Impreso en la caja del collar')).toBeVisible();
     expect(screen.getByTestId('activation-code-input').props).toEqual(
       expect.objectContaining({
         autoCapitalize: 'characters',
@@ -347,28 +350,28 @@ describe('R6: el claim mapea cada kind a su mensaje y permite reintentar', () =>
   it.each<[ClaimDeviceState, string]>([
     [
       { kind: 'not-found' },
-      'Invalid activation code. Check the code printed on the box.',
+      'Código de activación no válido. Revisa el código impreso en la caja.',
     ],
     [
       { kind: 'invalid' },
-      'Invalid activation code. Check the code printed on the box.',
+      'Código de activación no válido. Revisa el código impreso en la caja.',
     ],
     [
       { kind: 'already-claimed' },
-      'This collar is already paired to another pet.',
+      'Este collar ya está vinculado a otra mascota.',
     ],
     [
       { kind: 'pet-has-device' },
-      'This pet already has a collar. Unpair it first.',
+      'Esta mascota ya tiene un collar. Desvincúlalo primero.',
     ],
     [
       { kind: 'subscription-required' },
-      'This collar has no active plan. Contact support to activate it.',
+      'Este collar no tiene un plan activo. Contacta con soporte para activarlo.',
     ],
-    [{ kind: 'forbidden' }, 'Only the owner can pair a collar.'],
-    [{ kind: 'unreachable', message: 'offline' }, 'Cannot reach server'],
-    [{ kind: 'error' }, 'Something went wrong'],
-    [{ kind: 'missing-config' }, 'Something went wrong'],
+    [{ kind: 'forbidden' }, 'Solo el dueño puede vincular un collar.'],
+    [{ kind: 'unreachable', message: 'offline' }, 'No se pudo conectar con el servidor'],
+    [{ kind: 'error' }, 'Algo salió mal'],
+    [{ kind: 'missing-config' }, 'Algo salió mal'],
   ])('shows the exact message for $kind and allows retry', async (state, message) => {
     mockClaimDevice.mockResolvedValue(state);
     await renderPairing();
@@ -410,7 +413,7 @@ describe('R6: el claim mapea cada kind a su mensaje y permite reintentar', () =>
   });
 });
 
-describe('R7: tras el 201 muestra "Tracker is ready" con el collar y sus CTAs', () => {
+describe('R7: tras el 201 muestra "El collar está listo" con el collar y sus CTAs', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     process.env.EXPO_PUBLIC_API_URL = apiUrl;
@@ -440,9 +443,11 @@ describe('R7: tras el 201 muestra "Tracker is ready" con el collar y sus CTAs', 
   it('shows the success copy, device values, and refreshes pets', async () => {
     await renderReady();
 
-    expect(screen.getByText('Tracker is ready')).toBeVisible();
+    expect(screen.getByText('El collar está listo')).toBeVisible();
     expect(
-      screen.getByText("Luna's collar is paired. GPS tracking is on."),
+      screen.getByText(
+        'El collar de Luna está vinculado. El rastreo GPS está activo.',
+      ),
     ).toBeVisible();
     expect(screen.getByTestId('ready-model')).toHaveTextContent('TrailTag Pro');
     expect(screen.getByTestId('ready-esn')).toHaveTextContent('ESN-4242');
@@ -499,13 +504,13 @@ describe('R8: con collar muestra el estado del dispositivo y el plan tracked/fre
   it('shows all five device rows with their values', async () => {
     await renderPairing();
 
-    expect(await screen.findByText('GPS device')).toBeVisible();
+    expect(await screen.findByText('Dispositivo GPS')).toBeVisible();
     expect(screen.getByTestId('device-status-card')).toBeVisible();
     expect(screen.getByTestId('device-model')).toHaveTextContent('TrailTag Pro');
     expect(screen.getByTestId('device-battery')).toHaveTextContent('82%');
     expect(screen.getByTestId('device-connectivity')).toHaveTextContent('LTE');
     expect(screen.getByTestId('device-last-message')).toHaveTextContent(
-      new Date('2026-09-03T10:00:00.000Z').toLocaleString(),
+      new Date('2026-09-03T10:00:00.000Z').toLocaleString('es-MX'),
     );
     expect(screen.getByTestId('device-esn')).toHaveTextContent('ESN-4242');
     expect(mockGetPetTracking).toHaveBeenCalledWith(
@@ -537,7 +542,7 @@ describe('R8: con collar muestra el estado del dispositivo y el plan tracked/fre
     expect(screen.getByTestId('device-battery')).toHaveTextContent('—');
     expect(screen.getByTestId('device-connectivity')).toHaveTextContent('—');
     expect(screen.getByTestId('device-last-message')).toHaveTextContent(
-      'No messages yet',
+      'Sin mensajes todavía',
     );
     expect(screen.getByTestId('device-esn')).toHaveTextContent('—');
   });
@@ -555,7 +560,7 @@ describe('R8: con collar muestra el estado del dispositivo y el plan tracked/fre
     await renderPairing();
 
     expect(await screen.findByTestId('plan-tracked')).toHaveTextContent(
-      'GPS tracking active',
+      'Rastreo GPS activo',
     );
   });
 
@@ -565,7 +570,7 @@ describe('R8: con collar muestra el estado del dispositivo y el plan tracked/fre
     await renderPairing();
 
     expect(await screen.findByTestId('plan-free')).toHaveTextContent(
-      'Free plan — health only. This collar has no active plan.',
+      'Plan gratuito — solo salud. Este collar no tiene plan activo.',
     );
   });
 
@@ -579,7 +584,7 @@ describe('R8: con collar muestra el estado del dispositivo y el plan tracked/fre
     await renderPairing();
 
     expect(await screen.findByTestId('plan-unknown')).toHaveTextContent(
-      'Plan status unavailable',
+      'Estado del plan no disponible',
     );
   });
 
@@ -695,18 +700,18 @@ describe('R9: desvincular pide confirmación nativa, libera el collar y vuelve a
     await openUnpairAlert();
 
     expect(Alert.alert).toHaveBeenCalledWith(
-      'Unpair collar?',
-      'Location history stays, but live tracking stops until you pair a collar again.',
+      '¿Desvincular collar?',
+      'El historial de ubicaciones se conserva, pero el rastreo en vivo se detiene hasta que vincules otro collar.',
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: 'Cancelar', style: 'cancel' },
         {
-          text: 'Unpair',
+          text: 'Desvincular',
           style: 'destructive',
           onPress: expect.any(Function),
         },
       ],
     );
-    getAlertButton('Cancel')?.onPress?.();
+    getAlertButton('Cancelar')?.onPress?.();
     expect(mockReleaseDevice).not.toHaveBeenCalled();
   });
 
@@ -723,7 +728,7 @@ describe('R9: desvincular pide confirmación nativa, libera el collar y vuelve a
       await openUnpairAlert();
 
       await act(async () => {
-        getAlertButton('Unpair')?.onPress?.();
+        getAlertButton('Desvincular')?.onPress?.();
         await Promise.resolve();
       });
 
@@ -739,16 +744,16 @@ describe('R9: desvincular pide confirmación nativa, libera el collar y vuelve a
   );
 
   it.each<[ReleaseDeviceState, string]>([
-    [{ kind: 'forbidden' }, 'Only the owner can unpair the collar.'],
-    [{ kind: 'unreachable', message: 'offline' }, 'Cannot reach server'],
-    [{ kind: 'error' }, 'Something went wrong'],
-    [{ kind: 'missing-config' }, 'Something went wrong'],
+    [{ kind: 'forbidden' }, 'Solo el dueño puede desvincular el collar.'],
+    [{ kind: 'unreachable', message: 'offline' }, 'No se pudo conectar con el servidor'],
+    [{ kind: 'error' }, 'Algo salió mal'],
+    [{ kind: 'missing-config' }, 'Algo salió mal'],
   ])('shows the exact error for $kind', async (state, message) => {
     mockReleaseDevice.mockResolvedValue(state);
     await openUnpairAlert();
 
     await act(async () => {
-      getAlertButton('Unpair')?.onPress?.();
+      getAlertButton('Desvincular')?.onPress?.();
       await Promise.resolve();
     });
 
@@ -769,7 +774,7 @@ describe('R9: desvincular pide confirmación nativa, libera el collar y vuelve a
     await openUnpairAlert();
 
     await act(async () => {
-      getAlertButton('Unpair')?.onPress?.();
+      getAlertButton('Desvincular')?.onPress?.();
       await Promise.resolve();
     });
 
@@ -787,7 +792,7 @@ describe('R9: desvincular pide confirmación nativa, libera el collar y vuelve a
     await openUnpairAlert();
 
     await act(async () => {
-      getAlertButton('Unpair')?.onPress?.();
+      getAlertButton('Desvincular')?.onPress?.();
       await Promise.resolve();
     });
 

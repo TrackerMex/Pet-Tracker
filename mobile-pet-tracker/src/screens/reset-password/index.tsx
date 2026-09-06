@@ -5,10 +5,12 @@ import { ScrollView, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { resetPassword } from '../../api/auth';
+import { useTranslate } from '../../providers/language-provider';
 
 export function ResetPasswordScreen() {
   const { token } = useLocalSearchParams<{ token?: string }>();
   const insets = useSafeAreaInsets();
+  const t = useTranslate();
   const [password, setPassword] = useState('');
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -32,25 +34,23 @@ export function ResetPasswordScreen() {
           setSucceeded(true);
           return;
         case 'invalid-token':
-          setError(
-            'Reset link is invalid or already used. Request a new one.',
-          );
+          setError(t('resetPassword.errorInvalidToken'));
           return;
         case 'expired':
-          setError('Reset link expired. Request a new one.');
+          setError(t('resetPassword.errorExpiredToken'));
           return;
         case 'validation':
           setError(result.errors.map(({ message }) => message).join('\n'));
           return;
         case 'unreachable':
-          setError('Cannot reach server');
+          setError(t('common.cannotReachServer'));
           return;
         case 'error':
         case 'missing-config':
-          setError('Something went wrong');
+          setError(t('common.somethingWentWrong'));
       }
     } catch {
-      setError('Something went wrong');
+      setError(t('common.somethingWentWrong'));
     } finally {
       setSubmitting(false);
     }
@@ -74,18 +74,18 @@ export function ResetPasswordScreen() {
         }}
       >
         <Text className="text-center text-2xl font-black text-foreground">
-          Reset password
+          {t('resetPassword.resetPassword')}
         </Text>
         <Text
           testID="reset-missing-token"
           className="text-center text-danger"
           selectable
         >
-          This reset link is incomplete. Open the link from your email again.
+          {t('resetPassword.errorMissingToken')}
         </Text>
         <LinkButton testID="link-login" onPress={() => router.push('/login')}>
           <LinkButton.Label className="font-semibold text-accent-strong">
-            Back to sign in
+            {t('resetPassword.backToSignIn')}
           </LinkButton.Label>
         </LinkButton>
       </ScrollView>
@@ -110,14 +110,14 @@ export function ResetPasswordScreen() {
         }}
       >
         <Text className="text-center text-2xl font-black text-foreground">
-          Reset password
+          {t('resetPassword.resetPassword')}
         </Text>
         <Text
           testID="reset-success"
           className="text-center text-foreground"
           selectable
         >
-          Password updated
+          {t('resetPassword.passwordUpdated')}
         </Text>
         <LinkButton
           testID="link-login"
@@ -125,7 +125,7 @@ export function ResetPasswordScreen() {
           onPress={() => router.push('/login')}
         >
           <LinkButton.Label className="font-semibold text-accent-strong">
-            Back to sign in
+            {t('resetPassword.backToSignIn')}
           </LinkButton.Label>
         </LinkButton>
       </ScrollView>
@@ -148,12 +148,12 @@ export function ResetPasswordScreen() {
       }}
     >
       <Text className="text-center text-2xl font-black text-foreground">
-        Reset password
+        {t('resetPassword.resetPassword')}
       </Text>
 
       <TextField>
         <Label className="text-xs font-semibold text-foreground">
-          New password
+          {t('resetPassword.newPassword')}
         </Label>
         <Input
           testID="reset-password"
@@ -168,7 +168,7 @@ export function ResetPasswordScreen() {
 
       <TextField>
         <Label className="text-xs font-semibold text-foreground">
-          Confirm new password
+          {t('resetPassword.confirmNewPassword')}
         </Label>
         <Input
           testID="reset-password-confirm"
@@ -194,7 +194,7 @@ export function ResetPasswordScreen() {
         onPress={() => void handleSubmit()}
       >
         <Button.Label className="font-bold text-accent-foreground">
-          Update password
+          {t('resetPassword.updatePassword')}
         </Button.Label>
       </Button>
     </ScrollView>

@@ -15,6 +15,7 @@ import type { NutritionPlan, PetProfile } from '../../../api/types';
 import * as apiHooks from '../../../hooks/use-api';
 import type { ApiResult } from '../../../hooks/use-api';
 import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
+import { LanguageProvider } from '../../../providers/language-provider';
 import { SelectedPetProvider } from '../../../providers/selected-pet-provider';
 import * as selectedPetHooks from '../../../providers/selected-pet-provider';
 import FoodScreen from '../food';
@@ -124,7 +125,9 @@ function pending<T>(): Promise<T> {
 function FoodWrapper({ children }: { children: ReactNode }) {
   return (
     <HeroUINativeProvider>
-      <SelectedPetProvider>{children}</SelectedPetProvider>
+      <LanguageProvider initial="es">
+        <SelectedPetProvider>{children}</SelectedPetProvider>
+      </LanguageProvider>
     </HeroUINativeProvider>
   );
 }
@@ -155,7 +158,7 @@ describe('R4: food resuelve la mascota seleccionada', () => {
     await renderFood();
 
     expect(screen.getByTestId('screen-food')).toBeVisible();
-    expect(screen.getByText('Food')).toBeVisible();
+    expect(screen.getByText('Nutrición')).toBeVisible();
     expect(screen.getByTestId('food-loading')).toBeVisible();
     expect(screen.getByTestId('food-plan-skeleton')).toHaveProp(
       'className',
@@ -201,7 +204,9 @@ describe('R4: food resuelve la mascota seleccionada', () => {
     await renderFood();
 
     await waitFor(() =>
-      expect(screen.getByTestId('food-empty')).toHaveTextContent('No pets yet'),
+      expect(screen.getByTestId('food-empty')).toHaveTextContent(
+        'Aún no tienes mascotas',
+      ),
     );
   });
 
@@ -287,10 +292,10 @@ describe('R5: plan del día con horarios y warnings', () => {
 
     await waitFor(() => expect(screen.getByTestId('food-plan-card')).toBeVisible());
     expect(screen.getByTestId('food-plan-kcal')).toHaveTextContent(
-      '656 kcal / day',
+      '656 kcal / día',
     );
     expect(screen.getByTestId('food-plan-grams')).toHaveTextContent(
-      '187 g / day',
+      '187 g / día',
     );
     expect(screen.getByTestId('food-meals-section')).toBeVisible();
     expect(screen.getByTestId('food-meals-progress')).toHaveTextContent('1/2');
@@ -302,12 +307,12 @@ describe('R5: plan del día con horarios y warnings', () => {
     const breakfast = within(screen.getByTestId('meal-row-0'));
     expect(breakfast.getByText('07:30')).toBeVisible();
     expect(breakfast.getByText('94 g')).toBeVisible();
-    expect(screen.getByTestId('meal-served-0')).toHaveTextContent('Served');
+    expect(screen.getByTestId('meal-served-0')).toHaveTextContent('Servido');
 
     const dinner = within(screen.getByTestId('meal-row-1'));
     expect(dinner.getByText('19:30')).toBeVisible();
     expect(dinner.getByText('94 g')).toBeVisible();
-    expect(screen.getByTestId('meal-pending-1')).toHaveTextContent('Pending');
+    expect(screen.getByTestId('meal-pending-1')).toHaveTextContent('Pendiente');
 
     await fireEvent.press(screen.getByTestId('meal-schedule-link'));
     expect(mockRouter.push).toHaveBeenCalledWith('/meal-schedule');
@@ -368,7 +373,7 @@ describe('R5: plan del día con horarios y warnings', () => {
 
     await waitFor(() =>
       expect(screen.getByTestId('food-plan-empty')).toHaveTextContent(
-        'No meal plan yet',
+        'Aún no hay plan de alimentación',
       ),
     );
     expect(screen.getByTestId('meal-schedule-link')).toBeVisible();
@@ -385,7 +390,7 @@ describe('R5: plan del día con horarios y warnings', () => {
     await renderFood();
     await waitFor(() =>
       expect(screen.getByTestId('food-plan-error')).toHaveTextContent(
-        'Could not load meal plan',
+        'No se pudo cargar el plan de alimentación',
       ),
     );
     await fireEvent.press(screen.getByTestId('food-plan-retry'));
@@ -423,7 +428,7 @@ describe('R6: aiExplanation nullable con gracia', () => {
 
     await waitFor(() => expect(screen.getByTestId('food-ai-card')).toBeVisible());
     const aiCard = within(screen.getByTestId('food-ai-card'));
-    expect(aiCard.getByText('AI recommendation')).toBeVisible();
+    expect(aiCard.getByText('Recomendación IA')).toBeVisible();
     expect(
       aiCard.getByText('Split the daily amount into two balanced meals.'),
     ).toBeVisible();
@@ -518,14 +523,40 @@ describe('#62 R5: el título de card usa un único tratamiento', () => {
     });
   });
 
-  it.each(['Meals today', 'AI recommendation', 'Meal schedule'])(
-    'aplica la receta canónica a %s',
-    async (title) => {
+  it.each([
+    'food-meals-title',
+    'food-ai-title',
+    'meal-schedule-link-title',
+  ])(
+    'aplica la receta canónica al título %s',
+    async (testID) => {
       await renderFood();
 
-      expect((await screen.findByText(title)).props.className).toBe(
+      expect((await screen.findByTestId(testID)).props.className).toBe(
         'text-base font-bold text-foreground',
       );
     },
   );
+});
+
+describe('#65 R17: los títulos de card se localizan por testID y su copy sigue asertada', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetNutritionPlan.mockResolvedValue({
+      kind: 'ok',
+      plan: makePlan({
+        aiExplanation: 'Split the daily amount into two balanced meals.',
+      }),
+    });
+  });
+
+  it('expone los tres títulos de Food sin perder sus dos aserciones de copy', async () => {
+    await renderFood();
+
+    expect(screen.getByText('Comidas hoy')).toBeVisible();
+    expect(screen.getByText('Horario de comidas')).toBeVisible();
+    expect(await screen.findByTestId('food-meals-title')).toBeVisible();
+    expect(screen.getByTestId('food-ai-title')).toBeVisible();
+    expect(screen.getByTestId('meal-schedule-link-title')).toBeVisible();
+  });
 });
