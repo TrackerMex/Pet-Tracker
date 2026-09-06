@@ -10,6 +10,7 @@ import { HeroUINativeProvider } from 'heroui-native';
 
 import { resetPassword, type ResetPasswordState } from '../../api/auth';
 import ResetPasswordRoute from '../../app/reset-password';
+import { LanguageProvider } from '../../providers/language-provider';
 
 jest.mock('../../api/auth', () => ({
   resetPassword: jest.fn(),
@@ -33,7 +34,12 @@ const mockResetPassword = jest.mocked(resetPassword);
 
 async function renderRoute(token?: string) {
   mockUseLocalSearchParams.mockReturnValue(token === undefined ? {} : { token });
-  await render(<ResetPasswordRoute />, { wrapper: HeroUINativeProvider });
+  await render(
+    <LanguageProvider initial="es">
+      <ResetPasswordRoute />
+    </LanguageProvider>,
+    { wrapper: HeroUINativeProvider },
+  );
 }
 
 async function submitReset(
@@ -68,7 +74,7 @@ describe('R5: la ruta /reset-password recibe el token del deep link', () => {
       await renderRoute(token);
 
       expect(screen.getByTestId('reset-missing-token')).toHaveTextContent(
-        'This reset link is incomplete. Open the link from your email again.',
+        'Este enlace está incompleto. Ábrelo de nuevo desde tu correo.',
       );
       expect(screen.queryByTestId('reset-password')).toBeNull();
 
@@ -133,7 +139,7 @@ describe('R8: el submit completa el reset y mapea los errores', () => {
     await submitReset();
 
     expect(await screen.findByTestId('reset-success')).toHaveTextContent(
-      'Password updated',
+      'Contraseña actualizada',
     );
     expect(screen.queryByTestId('reset-password')).toBeNull();
 
@@ -144,12 +150,15 @@ describe('R8: el submit completa el reset y mapea los errores', () => {
   it.each<[ResetPasswordState, string]>([
     [
       { kind: 'invalid-token' },
-      'Reset link is invalid or already used. Request a new one.',
+      'El enlace no es válido o ya se usó. Solicita uno nuevo.',
     ],
-    [{ kind: 'expired' }, 'Reset link expired. Request a new one.'],
-    [{ kind: 'unreachable', message: 'network down' }, 'Cannot reach server'],
-    [{ kind: 'error' }, 'Something went wrong'],
-    [{ kind: 'missing-config' }, 'Something went wrong'],
+    [{ kind: 'expired' }, 'El enlace caducó. Solicita uno nuevo.'],
+    [
+      { kind: 'unreachable', message: 'network down' },
+      'No se pudo conectar con el servidor',
+    ],
+    [{ kind: 'error' }, 'Algo salió mal'],
+    [{ kind: 'missing-config' }, 'Algo salió mal'],
   ])(
     'muestra el mensaje esperado para $kind y permite reintentar',
     async (state, message) => {
