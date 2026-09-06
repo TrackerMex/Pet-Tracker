@@ -43,20 +43,22 @@
       equivalente en el framework de test del stack)
 - [ ] El historial de commits de la feature muestra el patrón test-primero
       (test rojo → implementación → verde → refactor), no todo en un commit
-- [ ] **Requisitos de verificación**: si un requisito solo *asevera una
-      propiedad* de artefactos que otro requisito anterior ya dejó en el árbol
-      (contraste de unos tokens ya escritos, distancia entre unos valores ya
-      declarados, inventario de unos usos ya migrados), su aserción **no puede
-      estar roja** en esa posición del orden, y su "rojo" acaba siendo un
-      `ReferenceError` del helper que aún no existe. Eso **no** es rojo
-      legítimo. Dos salidas, y la spec elige una **por escrito antes** del
-      handoff: (a) el test de verificación se escribe **antes** que la
-      implementación que verifica, y entonces el rojo es real; o (b) se declara
-      el requisito como de verificación y su cierre se prueba con **mutación**
-      —romper a propósito el valor y ver el test rojo por su aserción—, que es
-      lo que C4 protege de verdad. Detectado en #64 (2026-09-06), donde el
-      orden obligatorio de la propia spec hacía imposible el rojo de R3, R4 y R9
+- [ ] **Si algún requisito es de verificación** —solo *asevera una propiedad* de
+      artefactos que otro requisito anterior ya dejó en el árbol— la spec lo
+      declaró **por escrito antes del handoff** y eligió una de las dos vías, y
+      el historial la respeta:
+      **(a)** su test se escribe **antes** que la implementación que verifica, y
+      entonces su rojo es real; o
+      **(b)** se declara requisito de verificación y su cierre se prueba por
+      **mutación**: romper a propósito el valor y ver el test rojo **por su
+      aserción**, con la evidencia en el reporte del `reviewer`
+- [ ] **Ningún commit rojo falla por un `ReferenceError`** de un helper de test
+      que aún no existe. Eso no es rojo legítimo: no demuestra que el candado
+      esté vivo, solo que el símbolo falta
 
+> Los dos puntos anteriores salieron de #64 (2026-09-06), donde el orden que la
+> propia spec fijó hacía imposible el rojo de R3, R4 y R9, y hubo que cerrarlos
+> con una excepción firmada por el humano más prueba de mutación.
 ---
 
 ## C5 — Trazabilidad: R → test → commit

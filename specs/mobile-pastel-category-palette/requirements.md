@@ -275,8 +275,8 @@ aserción, y sus verdes no añaden ni una línea de producción.
 
 **La causa es de secuencia, y es un defecto de esta spec, no de Codex.** R3, R4
 y R9 son requisitos de *verificación*: aseveran una propiedad de artefactos que
-R1/R2 y R7/R8 ya habían dejado en el árbol. En el orden obligatorio que fijó
-[[design]] §10, su aserción **no puede estar roja**, porque los valores ya son
+R1/R2 y R7/R8 ya habían dejado en el árbol. En el orden obligatorio que fija
+[[tasks]], su aserción **no puede estar roja**, porque los valores ya son
 correctos cuando el test llega. El rojo legítimo habría exigido escribir el test
 de R3 y R4 **antes** de la implementación de R1/R2, y el de R9 antes de R7/R8.
 
