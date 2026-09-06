@@ -319,8 +319,8 @@ inicial a foto — sin tocar una línea de UI.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
-- [ ] OD-1 política de firmado: "siempre" confirmado / otra: ____
-- [ ] OD-2 caducidad 3600 s compartida con el detalle: confirmada / otra: ____
-- [ ] OD-3 `device` fuera del listado: confirmado / entra (feature aparte): ____
-- [ ] OD-4 leída (no requiere acción) / se pide firma redondeada como R5: ____
+- [X] Aprobado por humano (fecha: 2026-09-05) ← gate obligatorio antes de implementar
+- [X] OD-1 política de firmado: "siempre" confirmado / otra: ____
+- [X] OD-2 caducidad 3600 s compartida con el detalle: confirmada / otra: ____
+- [X] OD-3 `device` fuera del listado: confirmado / entra (feature aparte): ____
+- [X] OD-4 leída (no requiere acción) / se pide firma redondeada como R5: ____
