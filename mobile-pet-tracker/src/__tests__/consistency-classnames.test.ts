@@ -404,3 +404,40 @@ describe('#64 R9: el color categórico solo se nombra en el módulo de paleta', 
     expect(docs.match(/bg-accent-soft/g)).toBeNull();
   });
 });
+
+describe('#64 R10: la carta declara la paleta categórica y su tabla de huecos', () => {
+  it('fija los seis huecos y el único módulo que escribe sus clases', () => {
+    const guidelines = readFileSync(
+      join(process.cwd(), '..', 'docs', 'ui-guidelines.md'),
+      'utf8',
+    );
+
+    expect(guidelines).toContain(
+      '| Hueco | Superficie | Tinta | Tipos que lo ocupan |',
+    );
+    expect(guidelines).toContain(
+      '| azul | `bg-category-blue` | `text-category-blue-strong` | recordatorio `vaccine`; documento de vacunación |',
+    );
+    expect(guidelines).toContain(
+      '| ámbar | `bg-category-amber` | `text-category-amber-strong` | recordatorio `medication`; documento de desparasitación |',
+    );
+    expect(guidelines).toContain(
+      '| verde | `bg-category-green` | `text-category-green-strong` | recordatorio `appointment`; documento de consulta |',
+    );
+    expect(guidelines).toContain(
+      '| violeta | `bg-category-violet` | `text-category-violet-strong` | recordatorio `deworming`; documento de análisis |',
+    );
+    expect(guidelines).toContain(
+      '| rosa | `bg-category-rose` | `text-category-rose-strong` | recordatorio `food` |',
+    );
+    expect(guidelines).toContain(
+      '| neutral | `bg-default` | `text-muted` | recordatorio `weight` y `custom`; cualquier tipo de documento desconocido |',
+    );
+    expect(guidelines).toContain(
+      'El reparto vive en `src/utils/category-palette.ts` y es el **único** sitio donde',
+    );
+    expect(guidelines).toContain(
+      'se escriben esos nombres de clase. El color nunca es el único portador de la',
+    );
+  });
+});
