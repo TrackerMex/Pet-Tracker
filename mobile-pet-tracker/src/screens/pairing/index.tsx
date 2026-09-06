@@ -21,7 +21,10 @@ import { PetSwitcher } from '../../components/pet-switcher';
 import { useApi } from '../../hooks/use-api';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
-import { useLocale } from '../../providers/language-provider';
+import {
+  useLocale,
+  useTranslate,
+} from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
@@ -61,6 +64,7 @@ export function PairingScreen() {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
   const locale = useLocale();
+  const t = useTranslate();
   const { selectedPetId, selectPet } = useSelectedPet();
   const insets = useSafeAreaInsets();
   const [foreground] = useThemeColors(['foreground']);
@@ -124,37 +128,33 @@ export function PairingScreen() {
           break;
         case 'not-found':
         case 'invalid':
-          setActionError(
-            'Invalid activation code. Check the code printed on the box.',
-          );
+          setActionError(t('pairing.errorInvalidCode'));
           break;
         case 'already-claimed':
-          setActionError('This collar is already paired to another pet.');
+          setActionError(t('pairing.errorAlreadyClaimed'));
           break;
         case 'pet-has-device':
-          setActionError('This pet already has a collar. Unpair it first.');
+          setActionError(t('pairing.errorPetHasDevice'));
           break;
         case 'subscription-required':
-          setActionError(
-            'This collar has no active plan. Contact support to activate it.',
-          );
+          setActionError(t('pairing.errorNoSubscription'));
           break;
         case 'forbidden':
-          setActionError('Only the owner can pair a collar.');
+          setActionError(t('pairing.errorForbiddenClaim'));
           break;
         case 'unauthorized':
           await signOut();
           break;
         case 'unreachable':
-          setActionError('Cannot reach server');
+          setActionError(t('common.cannotReachServer'));
           break;
         case 'error':
         case 'missing-config':
-          setActionError('Something went wrong');
+          setActionError(t('common.somethingWentWrong'));
           break;
       }
     } catch {
-      setActionError('Something went wrong');
+      setActionError(t('common.somethingWentWrong'));
     } finally {
       setClaiming(false);
     }
@@ -188,21 +188,21 @@ export function PairingScreen() {
           pets.refetch();
           break;
         case 'forbidden':
-          setActionError('Only the owner can unpair the collar.');
+          setActionError(t('pairing.errorForbiddenRelease'));
           break;
         case 'unauthorized':
           await signOut();
           break;
         case 'unreachable':
-          setActionError('Cannot reach server');
+          setActionError(t('common.cannotReachServer'));
           break;
         case 'error':
         case 'missing-config':
-          setActionError('Something went wrong');
+          setActionError(t('common.somethingWentWrong'));
           break;
       }
     } catch {
-      setActionError('Something went wrong');
+      setActionError(t('common.somethingWentWrong'));
     } finally {
       setReleasing(false);
     }
@@ -211,12 +211,12 @@ export function PairingScreen() {
   function confirmRelease() {
     setActionError(null);
     Alert.alert(
-      'Unpair collar?',
-      'Location history stays, but live tracking stops until you pair a collar again.',
+      t('pairing.unpairAlertTitle'),
+      t('pairing.unpairAlertBody'),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('pairing.cancel'), style: 'cancel' },
         {
-          text: 'Unpair',
+          text: t('pairing.unpair'),
           style: 'destructive',
           onPress: () => void handleRelease(),
         },
@@ -237,7 +237,7 @@ export function PairingScreen() {
       }}
     >
       <Pressable
-        accessibilityLabel="Back"
+        accessibilityLabel={t('pairing.back')}
         accessibilityRole="button"
         testID="pairing-back"
         className="size-11 items-center justify-center rounded-full bg-default"
@@ -266,17 +266,17 @@ export function PairingScreen() {
       {pets.data && isPetsError(pets.data) ? (
         <View className="items-start gap-3">
           <Text testID="pairing-error-pets" className="text-danger" selectable>
-            Something went wrong
+            {t('common.somethingWentWrong')}
           </Text>
           <Button testID="pairing-retry" onPress={pets.refetch}>
-            <Button.Label>Retry</Button.Label>
+            <Button.Label>{t('common.retry')}</Button.Label>
           </Button>
         </View>
       ) : null}
 
       {pets.data?.kind === 'ok' && pets.data.pets.length === 0 ? (
         <Text testID="pairing-no-pets" className="font-normal text-muted">
-          Add a pet first
+          {t('pairing.addPetFirst')}
         </Text>
       ) : null}
 
@@ -301,17 +301,17 @@ export function PairingScreen() {
           </View>
           <View className="items-center gap-2">
             <Text className="text-2xl font-black text-foreground">
-              Tracker is ready
+              {t('pairing.trackerIsReady')}
             </Text>
             <Text className="text-center font-normal text-muted" selectable>
-              {selectedPet.name}&apos;s collar is paired. GPS tracking is on.
+              {t('pairing.readySubtitle', { petName: selectedPet.name })}
             </Text>
           </View>
 
           <Card className="w-full">
             <View className="gap-4">
               <DeviceRow
-                label="Model"
+                label={t('pairing.model')}
                 testID="ready-model"
                 value={readyDevice.model ?? '—'}
               />
@@ -329,7 +329,7 @@ export function PairingScreen() {
             onPress={() => leaveReady('map')}
           >
             <Button.Label className="font-bold text-accent-foreground">
-              View on map
+              {t('pairing.viewOnMap')}
             </Button.Label>
           </Button>
           <Pressable
@@ -339,7 +339,9 @@ export function PairingScreen() {
             style={CONTINUOUS_CORNER}
             onPress={() => leaveReady('back')}
           >
-            <Text className="font-bold text-foreground">Done</Text>
+            <Text className="font-bold text-foreground">
+              {t('pairing.done')}
+            </Text>
           </Pressable>
         </View>
       ) : null}
@@ -347,7 +349,7 @@ export function PairingScreen() {
       {phase === 'idle' && selectedPet?.device === null ? (
         <View className="gap-4">
           <Text className="text-2xl font-black text-foreground">
-            Pair collar
+            {t('pairing.pairCollar')}
           </Text>
 
           <Card variant="secondary">
@@ -356,14 +358,13 @@ export function PairingScreen() {
               className="text-sm font-normal text-foreground"
               selectable
             >
-              Free plan — health only. Pair a collar with an active plan to see
-              the map.
+              {t('pairing.freePlanPairPrompt')}
             </Text>
           </Card>
 
           <View className="gap-2">
             <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
-              Activation code
+              {t('pairing.activationCode')}
             </Text>
             <TextInput
               testID="activation-code-input"
@@ -376,7 +377,7 @@ export function PairingScreen() {
               onChangeText={setCode}
             />
             <Text className="text-sm font-normal text-muted">
-              Printed on the collar box
+              {t('pairing.printedOnCollarBox')}
             </Text>
           </View>
 
@@ -387,7 +388,7 @@ export function PairingScreen() {
             onPress={() => void handleClaim()}
           >
             <Button.Label className="font-bold text-accent-foreground">
-              Pair collar
+              {t('pairing.pairCollar')}
             </Button.Label>
           </Button>
         </View>
@@ -396,18 +397,18 @@ export function PairingScreen() {
       {phase === 'idle' && selectedPet?.device ? (
         <View className="gap-4">
           <Text className="text-2xl font-black text-foreground">
-            GPS device
+            {t('pairing.gpsDevice')}
           </Text>
 
           <Card testID="device-status-card">
             <View className="gap-4">
               <DeviceRow
-                label="Model"
+                label={t('pairing.model')}
                 testID="device-model"
                 value={selectedPet.device.model ?? '—'}
               />
               <DeviceRow
-                label="Battery"
+                label={t('pairing.battery')}
                 testID="device-battery"
                 value={
                   selectedPet.device.batteryPct === null
@@ -416,19 +417,19 @@ export function PairingScreen() {
                 }
               />
               <DeviceRow
-                label="Connection"
+                label={t('pairing.connection')}
                 testID="device-connectivity"
                 value={selectedPet.device.connectivity ?? '—'}
               />
               <DeviceRow
-                label="Last message"
+                label={t('pairing.lastMessage')}
                 testID="device-last-message"
                 value={
                   selectedPet.device.lastMessageAt
-                      ? new Date(
+                    ? new Date(
                         selectedPet.device.lastMessageAt,
                       ).toLocaleString(locale)
-                    : 'No messages yet'
+                    : t('pairing.noMessagesYet')
                 }
               />
               <DeviceRow
@@ -452,7 +453,7 @@ export function PairingScreen() {
               className="self-start rounded-full bg-accent-soft px-3 py-2"
             >
               <Text className="font-semibold text-success">
-                GPS tracking active
+                {t('pairing.gpsTrackingActive')}
               </Text>
             </View>
           ) : null}
@@ -460,14 +461,14 @@ export function PairingScreen() {
           {tracking.data?.kind === 'ok' && !tracking.data.tracked ? (
             <Card testID="plan-free" variant="secondary">
               <Text className="font-normal text-foreground" selectable>
-                Free plan — health only. This collar has no active plan.
+                {t('pairing.freePlanNoActivePlan')}
               </Text>
             </Card>
           ) : null}
 
           {tracking.data && isTrackingError(tracking.data) ? (
             <Text testID="plan-unknown" className="text-muted" selectable>
-              Plan status unavailable
+              {t('pairing.planStatusUnavailable')}
             </Text>
           ) : null}
 
@@ -478,7 +479,7 @@ export function PairingScreen() {
             onPress={confirmRelease}
           >
             <Button.Label className="font-bold text-accent-foreground">
-              Unpair collar
+              {t('pairing.unpairCollar')}
             </Button.Label>
           </Button>
         </View>
