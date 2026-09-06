@@ -2728,3 +2728,76 @@ logica de aplicacion. Reporte en `progress/impl_db-migrate-script.md`.
 - Queda abierto: `drizzle.config.ts` no carga el `.env`, asi que `pnpm db:migrate`
   sigue necesitando exportar `DATABASE_URL` a mano. Pasado a la sesion Backend.
 
+## 2026-09-06 — #65 `mobile-ui-language` (cerrada)
+
+La app movil pasa a **espanol por defecto** con catalogo bilingue de 259 claves
+e interruptor en Perfil. 20 requisitos, 325 sitios de copy resueltos por clave,
+cero dependencias nuevas, cero cambios de layout. El ingles no desaparece: sigue
+siendo la columna `en` del catalogo, y las 9 specs que lo ratificaron llevan su
+enmienda firmada por el humano.
+
+**Implementacion repartida.** Codex CLI hizo R1-R16 y el rojo de R17 y agoto su
+cuota (vuelve el martes). El subagente `implementer` cerro R17-R20 bajo
+`CLAUDE.md` §Excepciones, con el coste declarado: `implementer` y `reviewer`
+salen del mismo modelo, asi que en ese tramo se pierde "quien implementa no
+revisa" en su version fuerte. Lo que quedo en pie: el `reviewer` corrio
+`init.sh` el mismo y reconstruyo los 20 ciclos rojo-verde desde git.
+
+**Tres enmiendas, las tres por parar antes de escribir codigo:**
+
+1. **R18 requisito de verificacion** (firma `5f59a58`). En el orden aprobado
+   nacia verde por construccion: solo comprueba propiedades que R1-R11 ya
+   dejaron en el arbol. Se eligio la via C4(b) —prueba por mutacion— y no la de
+   adelantar el candado, porque eso lo habria dejado rojo a proposito durante
+   ~30 commits, destruyendo la senal de "cada commit deja la suite verde".
+2. **Recuento de R17, 244 a 265** (firma `2283806`). La cifra estaba **caduca,
+   no equivocada**: correcta contra `a44925f`, pero #64 mergeo (+12) y los tests
+   obligatorios de la propia spec anadieron 9. El invariante pasa a ser el
+   **delta -2** entre el padre y el verde de R17.
+3. **Copy sin clave que el inventario no vio** (firma `cb0b53b`). Causa raiz: el
+   inventario barrio **literales ingleses por traducir**, asi que toda copy que
+   se escribe igual en los dos idiomas era invisible. Cuatro claves nuevas
+   (`addPet.no`, `addPet.microchip`, `pairing.esn`, `map.gps`). La misma
+   enmienda cambio el candado de **constante congelada a consistencia interna**,
+   por ser la tercera vez en dos features que un numero escrito a mano paraba el
+   trabajo.
+
+**El rechazo del `reviewer`, que fue lo mejor de la feature.** El escaner de
+R18(b) tenia **regiones ciegas en 11 de las 19 pantallas**: una plantilla con
+`${...}` no casaba porque la clase de caracteres excluia `$`, el motor tomaba la
+comilla invertida de cierre como de apertura y se tragaba hasta **6326 bytes
+seguidos**. Lo demostro plantando `'Resumen de hoy'` en `home.tsx:59`: la suite
+se quedo **verde**. El arreglo movio el escaneo al **AST de TypeScript**
+(`typescript` ya era devDependency) y destapo **364 literales** que nunca se
+habian mirado — ninguno con copy suelta. La migracion estaba bien; el candado no.
+
+Leccion: la prueba de mutacion original era **autentica y a la vez inutil**,
+porque se planto en un sitio comodo (`login.tsx:68`, zona visible). Una mutacion
+que pasa demuestra que el candado funciona **en ese punto**, no en el fichero.
+
+**Un defecto de diseno propio, al final.** R19 se escribio como «THE SYSTEM
+SHALL dejar la casilla sin marcar», que obliga a lo que **entrega la
+implementacion**; el test lo midio como invariante permanente, asi que la firma
+del humano ponia la suite en rojo. R19 exigia 9 casillas firmables y prohibia
+que se firmaran. Se arreglo el test —comprueba que la linea de firma existe,
+marcada o no— sin tocar la spec; el `reviewer` audito ese juicio y lo confirmo.
+El guardian contra la auto-aprobacion nunca fue ese test: es que el `leader`
+verifica autoria y ficheros de cada commit de firma, que es lo que destapo el
+`f90facb` (un commit de agente que replico una firma humana en vez de hacer
+`pull`).
+
+**Gates humanos**: humo en dev build de Android (`7167ac9`) y las 9 enmiendas
+(`00151e6` + `2ffc5ee`). Al firmar, el humano marco por error el `Smoke
+ejecutado por el humano` de `mobile-auth` (gate de #33) en vez de la enmienda;
+lo corrigio y decidio dejar tambien esa casilla marcada por haber corrido esa
+prueba.
+
+**Deuda anotada, no bloqueante**: `canonicalAmendment()` no comprueba que
+`indexOf(SIGNATURE_LINE)` encuentre algo, asi que si §6.2 perdiera su linea de
+firma el `slice` truncaria en silencio; y `language-provider.test.tsx:40` sigue
+con un `259` escrito a mano. Ambas, una linea en la proxima feature que toque
+esos ficheros.
+
+PR #110. Informes: `progress/impl_mobile-ui-language.md`,
+`progress/review_mobile-ui-language.md`.
+

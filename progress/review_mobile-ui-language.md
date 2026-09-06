@@ -592,3 +592,206 @@ Deuda anotada, no bloqueante: el `259` escrito a mano en
 consistencia interna en la primera feature que añada una clave nueva.
 
 Working tree al terminar la re-revisión: **limpio**, HEAD en `159ebf1`.
+
+---
+---
+
+# Validación final — 2026-09-06, HEAD `2ffc5ee`
+
+Alcance: **solo el arreglo del test de R19** (`bc57919`) y la verificación de
+las firmas humanas. La aprobación de los 20 requisitos sigue en pie.
+
+## Veredicto: **APROBADO**
+
+El arreglo no afloja R19, el candado sigue vivo por las dos vías, las 9
+enmiendas están firmadas por el humano y `./init.sh` —que corrí yo— da
+**exit 0**.
+
+---
+
+## 1. El juicio que pediste que auditara: ¿defecto de test o enmienda de spec?
+
+**Coincido contigo: es defecto del test, y no necesitaba gate humano.**
+
+R19 dice «AND THE SYSTEM SHALL **dejar** la casilla de firma de cada enmienda
+**sin marcar**: la firma es del humano». En EARS, `THE SYSTEM` es lo que se
+construye, así que la obligación recae sobre **lo que entrega la
+implementación**, no sobre un invariante perpetuo del repositorio. Y la
+coletilla —«la firma es del humano»— dice el propósito en voz alta: la casilla
+se deja vacía **para que el humano la firme**.
+
+Medirlo como invariante permanente convertía el requisito en una contradicción:
+exigía 9 casillas firmables y prohibía que se firmaran. **El texto del
+requisito no se ha tocado**; lo que se ha corregido es un test que medía algo
+que el requisito no dice. Eso es un arreglo de test, no una enmienda, y no pasa
+por el gate.
+
+Lo confirma el propio historial: el rojo llegó **por la firma del humano**, no
+por un cambio de código.
+
+## 2. ¿Afloja R19?
+
+No. Lo que sigue bajo llave tras el arreglo:
+
+- El bloque de enmienda se compara **byte a byte** con el literal de
+  `design.md` §6.2 vía `includes(canonicalAmendment(feature))`, en las 9 specs.
+- El marcador de la edición (a), `(ver §Enmienda #65)`, se sigue asertando.
+- La **línea de firma debe existir** en las 9, con su texto exacto.
+- **Sin lista de excepciones y sin casos por fichero**: el bucle recorre las 9
+  igual que antes.
+
+Lo único que deja de asertarse es **el estado** de la casilla. Y eso nunca fue
+trabajo de R19: un test solo puede ver *que* está marcada, nunca *quién* la
+marcó, así que como guardia de gobernanza siempre fue débil — y en cuanto el
+humano firma legítimamente, muere de todas formas. Quién marca cada casilla lo
+comprueba la **autoría de git** y este review, que es lo que acabo de hacer en
+§4. Es un cambio de guardia, no una pérdida.
+
+## 3. El corte antes de la firma — lo más delicado, verificado
+
+`canonicalAmendment()` ahora devuelve `block.slice(0, block.indexOf(SIGNATURE_LINE)).trimEnd()`.
+
+Medido sobre el bloque real de §6.2: **1290 caracteres**, la línea de firma
+empieza en el **1242**. Lo que el corte descarta es, literalmente y en su
+totalidad:
+
+```
+- [ ] Enmienda aprobada por humano (fecha: ____)
+```
+
+**Cero contenido normativo perdido.** Siguen dentro del byte a byte los cuatro
+bullets: «Qué cambia», «Qué NO cambia» (el literal inglés sigue normativo como
+columna `en`), «Fuente única del literal y de la clave» y «Los mensajes de
+validación del backend siguen en inglés en los dos idiomas». 1242 de 1290
+caracteres se siguen comparando.
+
+Y lo comprobé además **por mutación**, no solo por inspección — ver (b2) abajo.
+
+## 4. El candado sigue vivo — mutación por las dos vías
+
+Sobre una copia de HEAD extraída con `git archive`. Baseline: 2/2 verdes.
+
+| # | Mutación | Resultado |
+|---|---|---|
+| (a) | Borrar la línea de firma de `mobile-map-live` | **rojo**, `hasSignatureLine: true → false`, nombrando `specs/mobile-map-live/requirements.md` |
+| (b1) | Alterar texto normativo del medio del bloque en `mobile-health` (`manda la tabla` → `manda la spec`) | **rojo**, `hasAmendment: true → false`, nombrando el fichero |
+| (b2) | Alterar el **último bullet, el pegado al corte**, en `mobile-food` (`en inglés` → `en portugués`) | **rojo**, `hasAmendment: true → false`, nombrando el fichero |
+
+(b2) es la que decide: si el corte se hubiera comido contenido normativo, esa
+mutación habría pasado en silencio. Da rojo. **El corte es exacto.**
+
+Las tres fallan **por su aserción**, ninguna por `ReferenceError`, y las tres
+**nombran el fichero**.
+
+## 5. El rojo `bc57919^` = `00151e6`
+
+Falla **por su aserción** (`toEqual`), sin `ReferenceError`, nombrando
+`specs/mobile-home-dashboard/requirements.md`:
+
+```
+● #65 R19 › deja la casilla de firma de las 9 enmiendas sin marcar
+    -   "unsigned": true,
+    +   "unsigned": false,
+● #65 R19 › inserta el bloque literal de §6.2 en las 9 specs …
+        "file": "specs/mobile-home-dashboard/requirements.md",
+```
+
+**Las DOS mitades estaban rojas**, no solo la de la casilla. Esto valida
+independientemente la razón por la que el `implementer` tocó la segunda
+aserción pese a tu indicación: el bloque de §6.2 **termina en la línea de la
+firma**, así que firmar rompía también el `includes` byte a byte. No era
+iniciativa suya: sin ese cambio el rojo no se podía cerrar. **Hizo bien.**
+
+## 6. ¿Alguna otra aserción daba por vacías las casillas?
+
+No. Barrí toda la suite móvil, el harness y el backend buscando
+`aprobada por humano`, `unsigned`, `- [ ]`, `[xX]`, `Aprobado por humano` y
+`Smoke ejecutado`: los únicos aciertos con aserción están en
+`ui-language.test.ts`, dentro del bloque de R19 ya arreglado. **Ninguna otra
+prueba dependía del estado de una casilla.**
+
+## 7. Firmas humanas — verificadas una a una
+
+| Commit | Autor | Ficheros | Qué marca |
+|---|---|---|---|
+| `7167ac9` | `AlexisSM377 <al222111377@gmail.com>` | solo `specs/mobile-ui-language/requirements.md` | humo de #65 en dev build de Android (2026-09-06) |
+| `00151e6` | `AlexisSM377` | solo 9 ficheros de `specs/` | 8 de las 9 enmiendas **+ la casilla equivocada** de `mobile-auth:218` |
+| `2ffc5ee` | `AlexisSM377` | solo `specs/mobile-auth/requirements.md` | la enmienda que faltaba, `mobile-auth:274` |
+
+**Las 9 enmiendas están firmadas**, las 9 con fecha 2026-09-06. Verificado
+fichero a fichero.
+
+**Casilla `mobile-auth:218`** (`Smoke ejecutado por el humano`, gate de #33):
+está marcada, y **la marcó el humano** en `00151e6` — no un agente. Como me
+indicas que es decisión consciente suya, lo dejo **anotado, no como hallazgo
+pendiente**. Solo dejo constancia de que su veracidad descansa en la palabra
+del humano, que es exactamente donde el harness la pone.
+
+**Fuera de esas casillas, ningún agente marcó ninguna.** Recorrí los commits
+nuevos buscando toda casilla marcada añadida —**incluidas las indentadas**, que
+es como está la 218 y que un patrón descuidado se salta—: **todas** son de
+`AlexisSM377`. Cero de agente.
+
+## 8. Un apunte, no bloqueante: un falso verde latente en el corte
+
+`canonicalAmendment()` no comprueba que `indexOf(SIGNATURE_LINE)` encuentre
+algo. Si algún día §6.2 dejara de llevar su línea de firma, `indexOf` devuelve
+`-1`, `slice(0, -1)` **trunca un carácter en silencio** y el `includes` sigue
+pasando porque compara un prefijo. Lo verifiqué por mutación: quitando la firma
+del bloque canónico de `design.md`, el test **pasa 2/2 sin quejarse**.
+
+No lo cuento como defecto y no bloquea: hoy el índice es correcto (1242), la
+degradación sería de **un solo carácter** de 1242, y requiere una edición de la
+spec que pasaría por review. Pero es la misma especie que ya nos costó dos
+rondas, y el arreglo es una línea, en el estilo que el propio fichero ya usa
+dos veces:
+
+```ts
+const idx = block.indexOf(SIGNATURE_LINE);
+expect(idx).toBeGreaterThan(-1);
+```
+
+Recomiendo meterlo en la próxima feature que toque el fichero, no reabrir #65
+por esto.
+
+## 9. `./init.sh` — lo corrí yo
+
+`pgrep` antes: libre. **Exit 0, sin flake, cero `❌` y cero `✕`** en 11 080
+líneas.
+
+```
+✅ Build exitoso
+  Test Suites: 163 passed, 163 total     (backend)
+  Tests:       1235 passed, 1235 total
+  Test Suites: 2 passed, 2 total         (harness)
+  Tests:       14 passed, 14 total
+  Test Suites: 63 passed, 63 total       (móvil)
+  Tests:       932 passed, 932 total
+✅ Tests pasados
+  Test Suites: 3 skipped, 25 passed, 25 of 28 total   (e2e)
+  Tests:       8 skipped, 353 passed, 361 total
+✅ Tests e2e pasados
+✅ Lint sin errores
+✅ Typecheck sin errores
+✅ Todo verde. Listo para trabajar.
+```
+
+---
+
+## Estado de #65 al cerrar esta validación
+
+Los 20 requisitos aprobados, `traceability.md` sin filas pendientes, `init.sh`
+verde, **los dos gates humanos firmados** (humo en dev build de Android en
+`7167ac9`; las 9 enmiendas en `00151e6` + `2ffc5ee`).
+
+Por mi parte **no queda nada pendiente en #65**. Marcar `done` en
+`feature_list.json`, abrir el PR y mergear son tuyos y del humano, no míos.
+
+Deuda anotada que no bloquea, para la siguiente feature que toque estos
+ficheros:
+
+1. El `259` escrito a mano en `language-provider.test.tsx:40`.
+2. El guard de `indexOf` del §8 de arriba.
+3. El comentario impreciso sobre las plantillas interpoladas (re-revisión §2).
+
+Working tree al terminar: **limpio**, HEAD en `2ffc5ee`.
