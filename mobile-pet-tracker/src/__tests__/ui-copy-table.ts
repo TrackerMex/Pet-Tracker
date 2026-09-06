@@ -294,6 +294,49 @@ export const R9_ADD_PET: UseRow[] = [
   { file: 'src/screens/add-pet/index.tsx', key: 'addPet.savePet' },
 ];
 
+export const R10_PAIRING: UseRow[] = [
+  { file: 'src/screens/pairing/index.tsx', key: 'pairing.errorInvalidCode' },
+  { file: 'src/screens/pairing/index.tsx', key: 'pairing.errorAlreadyClaimed' },
+  { file: 'src/screens/pairing/index.tsx', key: 'pairing.errorPetHasDevice' },
+  { file: 'src/screens/pairing/index.tsx', key: 'pairing.errorNoSubscription' },
+  { file: 'src/screens/pairing/index.tsx', key: 'pairing.errorForbiddenClaim' },
+  { file: 'src/screens/pairing/index.tsx', key: 'common.cannotReachServer' },
+  { file: 'src/screens/pairing/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/pairing/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/pairing/index.tsx', key: 'pairing.errorForbiddenRelease' },
+  { file: 'src/screens/pairing/index.tsx', key: 'common.cannotReachServer' },
+  { file: 'src/screens/pairing/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/pairing/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/pairing/index.tsx', key: 'pairing.unpairAlertTitle' },
+  { file: 'src/screens/pairing/index.tsx', key: 'pairing.unpairAlertBody' },
+  { file: 'src/screens/pairing/index.tsx', key: 'pairing.cancel' },
+  { file: 'src/screens/pairing/index.tsx', key: 'pairing.unpair' },
+  { file: 'src/screens/pairing/index.tsx', key: 'pairing.back' },
+  { file: 'src/screens/pairing/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/pairing/index.tsx', key: 'common.retry' },
+  { file: 'src/screens/pairing/index.tsx', key: 'pairing.addPetFirst' },
+  { file: 'src/screens/pairing/index.tsx', key: 'pairing.trackerIsReady' },
+  { file: 'src/screens/pairing/index.tsx', key: 'pairing.readySubtitle' },
+  { file: 'src/screens/pairing/index.tsx', key: 'pairing.model' },
+  { file: 'src/screens/pairing/index.tsx', key: 'pairing.viewOnMap' },
+  { file: 'src/screens/pairing/index.tsx', key: 'pairing.done' },
+  { file: 'src/screens/pairing/index.tsx', key: 'pairing.pairCollar' },
+  { file: 'src/screens/pairing/index.tsx', key: 'pairing.freePlanPairPrompt' },
+  { file: 'src/screens/pairing/index.tsx', key: 'pairing.activationCode' },
+  { file: 'src/screens/pairing/index.tsx', key: 'pairing.printedOnCollarBox' },
+  { file: 'src/screens/pairing/index.tsx', key: 'pairing.pairCollar' },
+  { file: 'src/screens/pairing/index.tsx', key: 'pairing.gpsDevice' },
+  { file: 'src/screens/pairing/index.tsx', key: 'pairing.model' },
+  { file: 'src/screens/pairing/index.tsx', key: 'pairing.battery' },
+  { file: 'src/screens/pairing/index.tsx', key: 'pairing.connection' },
+  { file: 'src/screens/pairing/index.tsx', key: 'pairing.lastMessage' },
+  { file: 'src/screens/pairing/index.tsx', key: 'pairing.noMessagesYet' },
+  { file: 'src/screens/pairing/index.tsx', key: 'pairing.gpsTrackingActive' },
+  { file: 'src/screens/pairing/index.tsx', key: 'pairing.freePlanNoActivePlan' },
+  { file: 'src/screens/pairing/index.tsx', key: 'pairing.planStatusUnavailable' },
+  { file: 'src/screens/pairing/index.tsx', key: 'pairing.unpairCollar' },
+];
+
 export const ALL_USES: UseRow[] = [
   ...R1_AUTH,
   ...R2_TABS,
@@ -304,6 +347,7 @@ export const ALL_USES: UseRow[] = [
   ...R7_PROFILE,
   ...R8_REMINDERS,
   ...R9_ADD_PET,
+  ...R10_PAIRING,
 ];
 
 describe('#65: la tabla de uso de copy está disponible al runner', () => {

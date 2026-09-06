@@ -19,6 +19,7 @@ import {
   R7_PROFILE,
   R8_REMINDERS,
   R9_ADD_PET,
+  R10_PAIRING,
   type UseRow,
 } from './ui-copy-table';
 
@@ -116,5 +117,12 @@ describe('#65 R9: el alta de mascota resuelve su copy por clave', () => {
   it('resuelve las 40 ocurrencias normativas', () => {
     expect(R9_ADD_PET).toHaveLength(40);
     checkUses(R9_ADD_PET);
+  });
+});
+
+describe('#65 R10: el emparejado del collar resuelve su copy por clave', () => {
+  it('resuelve las 40 ocurrencias normativas', () => {
+    expect(R10_PAIRING).toHaveLength(40);
+    checkUses(R10_PAIRING);
   });
 });
