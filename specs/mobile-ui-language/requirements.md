@@ -736,7 +736,7 @@ manda el backend siguen llegando **en inglés en los dos idiomas** (`Invalid
 email address`, `First name is required`…). Está declarado en §Fuera de alcance
 1 y es de `backend-pet-tracker/`, que esta feature no abre.
 
-- [ ] Humo pasado en dev build de Android (fecha: ______)
+- [X] Humo pasado en dev build de Android (fecha: 2026-09-06)
 
 ### (2) Firma de las 9 enmiendas de R19
 
