@@ -654,10 +654,7 @@ describe('Pets CRUD (e2e)', () => {
         name: `Enrichment-R3b-${RUN_ID}`,
       });
       const photoKey = `pets/${petA.id}/e2e-photo-${RUN_ID}`;
-      await db
-        .update(pets)
-        .set({ photoKey })
-        .where(eq(pets.id, petA.id));
+      await db.update(pets).set({ photoKey }).where(eq(pets.id, petA.id));
 
       const listResponse = await api()
         .get('/v1/pets')
