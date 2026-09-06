@@ -262,7 +262,7 @@ corregidas allí con su nota. **Ningún requisito cambia, ningún valor de token
 se toca, y R4 se sigue cumpliendo con holgura**: exige ΔE00 ≥ 2,3 y los valores
 corregidos son 16,7 y 10,6.
 
-- [ ] Firmo la corrección de las dos celdas de `design.md` §3.3
+- [X] Firmo la corrección de las dos celdas de `design.md` §3.3
       (`blue` oscuro: 16,1 `accent-soft` → **16,7 `danger-soft`**;
       `neutral` oscuro: 9,6 → **10,6**), sabiendo que no altera ningún
-      requisito ni ningún token (fecha: ____)
+      requisito ni ningún token (fecha: 2026-09-05)
