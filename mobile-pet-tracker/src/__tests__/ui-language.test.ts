@@ -183,7 +183,11 @@ describe('#65 R19: las 9 specs aprobadas llevan su enmienda de idioma', () => {
         file,
         hasAmendment: true,
       });
-      expect({ file, hasMarker: source.includes(marker) }).toEqual({
+      // El marcador se inserta en prosa que el markdown reparte en varias
+      // líneas: se compara con los espacios colapsados, no byte a byte.
+      const flowed = source.replace(/\s+/g, ' ');
+
+      expect({ file, hasMarker: flowed.includes(marker.replace(/\s+/g, ' ')) }).toEqual({
         file,
         hasMarker: true,
       });
