@@ -16,7 +16,7 @@ tags: [harness, spec]
 | R6 | Food + horario, 35 | `mobile-pet-tracker/src/__tests__/ui-language.test.ts::#65 R6: Food resuelve su copy por clave` | rojo: `eff8e4c`; verde: `a1a5bee feat(mobile-ui-language): localize Food copy (R6)` |
 | R7 | Profile + docs, 35 | `mobile-pet-tracker/src/__tests__/ui-language.test.ts::#65 R7: Profile resuelve su copy por clave` | rojo: `9b3d904`; verde: `5665e0e feat(mobile-ui-language): localize Profile copy (R7)` |
 | R8 | Recordatorios, 50 | `mobile-pet-tracker/src/__tests__/ui-language.test.ts::#65 R8: Recordatorios resuelve su copy por clave` | rojo: `81a171e`; verde: `f86d1cd feat(mobile-ui-language): localize Reminders copy (R8)` |
-| R9 | Alta de mascota, 40 | `mobile-pet-tracker/src/__tests__/ui-language.test.ts::#65 R9: el alta de mascota resuelve su copy por clave` | rojo: `d5aa4f3`; verde: por registrar |
+| R9 | Alta de mascota, 40 | `mobile-pet-tracker/src/__tests__/ui-language.test.ts::#65 R9: el alta de mascota resuelve su copy por clave` | rojo: `d5aa4f3`; verde: `c383345 feat(mobile-ui-language): localize Add pet copy (R9)` |
 | R10 | Emparejado, 40 | pendiente | pendiente |
 | R11 | Reset password, 15 | pendiente | pendiente |
 | R12 | catálogo + `t` | `mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx::#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y parámetros` | rojo: `ac158f6`; verde: `20397ad feat(mobile-ui-language): add bilingual catalog and translator (R12)` |
