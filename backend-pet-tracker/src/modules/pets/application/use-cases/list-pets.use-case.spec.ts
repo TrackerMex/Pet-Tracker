@@ -50,20 +50,34 @@ describe('R7: ListPetsUseCase devuelve solo las membresias activas del usuario',
       },
     ];
     const findAllByMember = jest.fn().mockResolvedValue(memberships);
-    const useCase = new ListPetsUseCase({
-      findAllByMember,
-    } as unknown as PetRepository);
+    const resolver: PetPhotoUrlResolver = {
+      resolveDownloadUrl: jest.fn(),
+    };
+    const useCase = new ListPetsUseCase(
+      {
+        findAllByMember,
+      } as unknown as PetRepository,
+      resolver,
+    );
 
     const result = await useCase.execute(USER_ID);
 
     expect(findAllByMember).toHaveBeenCalledWith(USER_ID);
-    expect(result).toEqual(memberships);
+    expect(result).toEqual(
+      memberships.map((membership) => ({ ...membership, photoUrl: null })),
+    );
   });
 
   it('devuelve array vacio para un usuario sin membresias (nunca error)', async () => {
-    const useCase = new ListPetsUseCase({
-      findAllByMember: jest.fn().mockResolvedValue([]),
-    } as unknown as PetRepository);
+    const resolver: PetPhotoUrlResolver = {
+      resolveDownloadUrl: jest.fn(),
+    };
+    const useCase = new ListPetsUseCase(
+      {
+        findAllByMember: jest.fn().mockResolvedValue([]),
+      } as unknown as PetRepository,
+      resolver,
+    );
 
     await expect(useCase.execute(USER_ID)).resolves.toEqual([]);
   });
@@ -81,11 +95,7 @@ describe('R1 (pets-list-response-enrichment #66): el listado resuelve photoUrl p
         role: 'owner',
       },
       {
-        pet: buildPet(
-          '0198b2c3-4d5e-7a01-b234-56789abcdef1',
-          'B',
-          null,
-        ),
+        pet: buildPet('0198b2c3-4d5e-7a01-b234-56789abcdef1', 'B', null),
         role: 'family',
       },
       {
@@ -113,11 +123,7 @@ describe('R1 (pets-list-response-enrichment #66): el listado resuelve photoUrl p
       null,
       'https://signed.example/pets/c/photo-2',
     ]);
-    expect(result.map((item) => item.role)).toEqual([
-      'owner',
-      'family',
-      'vet',
-    ]);
+    expect(result.map((item) => item.role)).toEqual(['owner', 'family', 'vet']);
     expect(resolveDownloadUrl).toHaveBeenCalledTimes(2);
     expect(resolveDownloadUrl).toHaveBeenNthCalledWith(
       1,
@@ -156,11 +162,7 @@ describe('R4 (pets-list-response-enrichment #66): sin N+1 — una consulta al re
         role: 'owner',
       },
       {
-        pet: buildPet(
-          '0198b2c3-4d5e-7a01-b234-56789abcdef1',
-          'B',
-          null,
-        ),
+        pet: buildPet('0198b2c3-4d5e-7a01-b234-56789abcdef1', 'B', null),
         role: 'family',
       },
       {
