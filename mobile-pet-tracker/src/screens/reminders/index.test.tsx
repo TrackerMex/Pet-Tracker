@@ -19,6 +19,7 @@ import {
 } from '../../api/reminders';
 import type { PetProfile, Reminder } from '../../api/types';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
+import { LanguageProvider } from '../../providers/language-provider';
 import { SelectedPetProvider } from '../../providers/selected-pet-provider';
 import { RemindersScreen } from '.';
 
@@ -128,7 +129,9 @@ function makeReminder(overrides: Partial<Reminder> = {}): Reminder {
 function RemindersWrapper({ children }: { children: ReactNode }) {
   return (
     <HeroUINativeProvider>
-      <SelectedPetProvider>{children}</SelectedPetProvider>
+      <LanguageProvider initial="es">
+        <SelectedPetProvider>{children}</SelectedPetProvider>
+      </LanguageProvider>
     </HeroUINativeProvider>
   );
 }
@@ -376,6 +379,39 @@ describe('R6: lista con pills, badges y refetch on focus', () => {
     });
 
     await waitFor(() => expect(mockListReminders).toHaveBeenCalledTimes(2));
+  });
+});
+
+describe('#65 R15: la fecha del recordatorio se formatea con el locale del idioma', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockListReminders.mockResolvedValue({
+      kind: 'ok',
+      reminders: [makeReminder()],
+    });
+  });
+
+  it('passes es-MX explicitly to the date formatter', async () => {
+    const formatDate = jest.spyOn(Date.prototype, 'toLocaleDateString');
+
+    try {
+      await renderReminders();
+      await waitFor(() =>
+        expect(screen.getByTestId('reminder-row-reminder-1')).toBeVisible(),
+      );
+
+      expect(formatDate).toHaveBeenCalledWith('es-MX');
+    } finally {
+      formatDate.mockRestore();
+    }
   });
 });
 

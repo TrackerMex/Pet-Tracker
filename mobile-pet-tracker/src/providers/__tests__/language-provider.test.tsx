@@ -5,6 +5,7 @@ import { en, es } from '../../i18n/catalog';
 import {
   LanguageProvider,
   useLanguage,
+  useLocale,
   useTranslate,
 } from '../language-provider';
 
@@ -25,6 +26,10 @@ function TranslationProbe() {
       <Text testID="missing-param">{t('home.lastSeen')}</Text>
     </>
   );
+}
+
+function LocaleProbe() {
+  return <Text testID="locale">{useLocale()}</Text>;
 }
 
 describe('#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y parámetros', () => {
@@ -56,5 +61,20 @@ describe('#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y par�
     expect(screen.getByTestId('missing-param')).toHaveTextContent(
       'Última señal {{date}}',
     );
+  });
+});
+
+describe('#65 R15: el locale de fechas y números sigue al idioma elegido', () => {
+  it.each([
+    ['es', 'es-MX'],
+    ['en', 'en-US'],
+  ] as const)('maps %s to %s', async (language, locale) => {
+    await render(
+      <LanguageProvider initial={language}>
+        <LocaleProbe />
+      </LanguageProvider>,
+    );
+
+    expect(screen.getByTestId('locale')).toHaveTextContent(locale);
   });
 });
