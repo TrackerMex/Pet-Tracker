@@ -560,6 +560,6 @@ Evidencia que el `reviewer` exigirá para dar R18 por cerrado:
 El commit rojo de R18 deja de ser obligatorio; el resto de su ciclo (verde y
 trazabilidad) no cambia. Los otros 19 requisitos mantienen su rojo→verde real.
 
-- [ ] Firmo que **R18 es requisito de verificación** y se cierra por prueba de
+- [X] Firmo que **R18 es requisito de verificación** y se cierra por prueba de
       mutación en vez de por commit rojo, con la evidencia de los tres puntos
-      de arriba en el reporte del `reviewer` (fecha: ____)
+      de arriba en el reporte del `reviewer` (fecha: 2026-09-05)
