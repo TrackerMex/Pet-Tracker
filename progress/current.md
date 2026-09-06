@@ -60,3 +60,9 @@ logica de aplicacion. Reporte en `progress/impl_db-migrate-script.md`.
   coinciden con los `.sql` actuales (CRLF o edicion post-aplicacion). No rompe
   nada — el migrator compara por timestamp, no por hash — pero significa que
   esos archivos cambiaron despues de aplicarse. Sin investigar.
+
+## Backend: fix `drizzle.config.ts` no carga `.env` (sesion backend, 2026-09-06)
+
+- **Origen**: el humano lo pidio via la sesion Frontend tras perder una tarde con `relation "pet_documents" does not exist` (detalle en `progress/impl_db-migrate-script.md`). `pnpm db:migrate` (PR #107) falla en maquina limpia porque drizzle-kit no carga `.env`.
+- **Decision**: fix suelto sin id de feature, branch `fix/drizzle-config-dotenv` desde `origin/main`. Fallback al subagente `implementer` (CLAUDE.md §Excepciones, cambio trivial: cargar dotenv del `.env` raiz como `provision-local.ts`, abortar si `DATABASE_URL` falta, un spec y un parrafo en `docs/conventions.md`). Reporte en `progress/impl_drizzle-config-dotenv.md`; `reviewer` antes del PR.
+- **#66**: spec_ready en `feature/66-pets-list-response-enrichment`, esperando firma del humano (OD-1..OD-4).
