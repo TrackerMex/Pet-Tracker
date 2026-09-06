@@ -215,7 +215,7 @@ sigue TDD estricto con test rojo primero.
   7. Verificar que el conjunto respeta el diseño minimalista (tokens de
      #32; Figma como referencia si el humano lo tiene a mano).
 
-  - [ ] Smoke ejecutado por el humano (fecha: ____)
+  - [X] Smoke ejecutado por el humano (fecha: 2026-09-06)
 
 ## Fuera de alcance
 

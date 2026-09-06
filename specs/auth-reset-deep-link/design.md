@@ -344,4 +344,4 @@ y su ampliación). Esta spec ratificó el inglés en su día; esa parte queda
   idiomas** y esta enmienda no los toca
   (`specs/mobile-ui-language/requirements.md` §Fuera de alcance 1).
 
-- [ ] Enmienda aprobada por humano (fecha: ____)
+- [X] Enmienda aprobada por humano (fecha: 2026-09-06)
