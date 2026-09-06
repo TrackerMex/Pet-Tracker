@@ -122,12 +122,51 @@ export const R5_HEALTH: UseRow[] = [
   { file: 'src/components/weight-chart.tsx', key: 'weightChart.notEnoughDataYet' },
 ];
 
+export const R6_FOOD: UseRow[] = [
+  { file: 'src/app/(tabs)/food.tsx', key: 'food.food' },
+  { file: 'src/app/(tabs)/food.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/app/(tabs)/food.tsx', key: 'common.retry' },
+  { file: 'src/app/(tabs)/food.tsx', key: 'common.noPetsYet' },
+  { file: 'src/app/(tabs)/food.tsx', key: 'food.dailyTarget' },
+  { file: 'src/app/(tabs)/food.tsx', key: 'food.dailyKcal' },
+  { file: 'src/app/(tabs)/food.tsx', key: 'food.dailyGrams' },
+  { file: 'src/app/(tabs)/food.tsx', key: 'food.mealsToday' },
+  { file: 'src/app/(tabs)/food.tsx', key: 'food.pending' },
+  { file: 'src/app/(tabs)/food.tsx', key: 'food.served' },
+  { file: 'src/app/(tabs)/food.tsx', key: 'food.aiRecommendation' },
+  { file: 'src/app/(tabs)/food.tsx', key: 'food.noMealPlanYet' },
+  { file: 'src/app/(tabs)/food.tsx', key: 'food.couldNotLoadPlan' },
+  { file: 'src/app/(tabs)/food.tsx', key: 'common.retry' },
+  { file: 'src/app/(tabs)/food.tsx', key: 'food.mealSchedule' },
+  { file: 'src/app/(tabs)/food.tsx', key: 'food.mealScheduleLinkSubtitle' },
+  { file: 'src/app/(tabs)/meal-schedule.tsx', key: 'mealSchedule.errorForbidden' },
+  { file: 'src/app/(tabs)/meal-schedule.tsx', key: 'mealSchedule.errorProfileRequired' },
+  { file: 'src/app/(tabs)/meal-schedule.tsx', key: 'mealSchedule.registerWeightFirst' },
+  { file: 'src/app/(tabs)/meal-schedule.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/app/(tabs)/meal-schedule.tsx', key: 'common.cannotReachServer' },
+  { file: 'src/app/(tabs)/meal-schedule.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/app/(tabs)/meal-schedule.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/app/(tabs)/meal-schedule.tsx', key: 'mealSchedule.backToFood' },
+  { file: 'src/app/(tabs)/meal-schedule.tsx', key: 'mealSchedule.mealSchedule' },
+  { file: 'src/app/(tabs)/meal-schedule.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/app/(tabs)/meal-schedule.tsx', key: 'common.retry' },
+  { file: 'src/app/(tabs)/meal-schedule.tsx', key: 'mealSchedule.dailyTarget' },
+  { file: 'src/app/(tabs)/meal-schedule.tsx', key: 'mealSchedule.dailyGrams' },
+  { file: 'src/app/(tabs)/meal-schedule.tsx', key: 'mealSchedule.mealsPerDay' },
+  { file: 'src/app/(tabs)/meal-schedule.tsx', key: 'mealSchedule.timesAndPortions' },
+  { file: 'src/app/(tabs)/meal-schedule.tsx', key: 'mealSchedule.noMealPlanYet' },
+  { file: 'src/app/(tabs)/meal-schedule.tsx', key: 'mealSchedule.generatePlan' },
+  { file: 'src/app/(tabs)/meal-schedule.tsx', key: 'mealSchedule.nutritionProfile' },
+  { file: 'src/app/(tabs)/meal-schedule.tsx', key: 'mealSchedule.noNutritionProfileYet' },
+];
+
 export const ALL_USES: UseRow[] = [
   ...R1_AUTH,
   ...R2_TABS,
   ...R3_HOME,
   ...R4_MAP,
   ...R5_HEALTH,
+  ...R6_FOOD,
 ];
 
 describe('#65: la tabla de uso de copy está disponible al runner', () => {
