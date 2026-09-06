@@ -16,7 +16,7 @@ tags: [harness, spec]
 | R6 | `src/utils/__tests__/category-palette.test.ts::#64 R6: el tipo de documento resuelve su hueco y cae en neutral si es desconocido` | `dc9675a` — `feat(mobile-pastel-palette): R6 resuelve categorías documentales` (rojo `625e522`) |
 | R7 | `src/screens/reminders/index.test.tsx::#64 R7: la fila de recordatorio pinta el icono con el color de su tipo` | `2319d4e` — `feat(mobile-pastel-palette): R7 pinta recordatorios por tipo` (rojo `9f4bd02`) |
 | R8 | `src/screens/docs/index.test.tsx::#64 R8: la fila de documento pinta icono y badge con el color de su tipo` | `33ce3af` — `feat(mobile-pastel-palette): R8 pinta documentos por tipo` (rojo `d30ecad`) |
-| R9 | `src/__tests__/consistency-classnames.test.ts::#64 R9: el color categórico solo se nombra en el módulo de paleta` | pendiente |
+| R9 | `src/__tests__/consistency-classnames.test.ts::#64 R9: el color categórico solo se nombra en el módulo de paleta` | `3e42193` — `feat(mobile-pastel-palette): R9 verifica el inventario categórico` (rojo `f41678b`) |
 | R10 | `src/__tests__/consistency-classnames.test.ts::#64 R10: la carta declara la paleta categórica y su tabla de huecos` | pendiente |
 
 Rutas relativas a `mobile-pet-tracker/`.
