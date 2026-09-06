@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-09-06
-**Features completadas**: 61/72 (`feature_list.json`)
+**Features completadas**: 62/72 (`feature_list.json`)
 **En progreso**: ninguna
 
-**Pendientes**: 11 (#18, #41, #60, #63, #66-#72). El rediseño contra el diseño del Make abrió el bloque #64-#71: #64 `mobile-pastel-category-palette` y #65 `mobile-ui-language` están cerradas; #66 `pets-list-response-enrichment` la lleva la sesión Backend y **bloquea** la cabecera y las fotos de #67. #72 registra un flake de un test de `add-pet` sin causa confirmada. PR #110 (#65) pendiente de merge por el humano.
+**Pendientes**: 10 (#18, #41, #60, #63, #67-#72). El rediseño contra el diseño del Make abrió el bloque #64-#71: #64 `mobile-pastel-category-palette` y #65 `mobile-ui-language` están cerradas; #66 `pets-list-response-enrichment` está cerrada (reviewer aprobado 2026-09-06, PR pendiente de merge por el humano) y desbloquea la cabecera y las fotos de #67. #72 registra un flake de un test de `add-pet` sin causa confirmada. PR #110 (#65) pendiente de merge por el humano.
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
 desde 2026-08-10. Hay recursos vivos en la cuenta, aunque hoy sin coste.
