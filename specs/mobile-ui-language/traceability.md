@@ -21,7 +21,7 @@ tags: [harness, spec]
 | R11 | Reset password, 15 | pendiente | pendiente |
 | R12 | catálogo + `t` | `mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx::#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y parámetros` | rojo: `ac158f6`; verde: `20397ad feat(mobile-ui-language): add bilingual catalog and translator (R12)` |
 | R13 | persistencia best-effort | `mobile-pet-tracker/src/utils/language-preference.test.ts::#65 R13: la preferencia de idioma persiste y es best-effort` | rojo: `e237589`; verde: `ff15b5b feat(mobile-ui-language): persist language preference (R13)` |
-| R14 | interruptor en Profile | pendiente | pendiente |
+| R14 | interruptor en Profile | `mobile-pet-tracker/src/screens/profile/index.test.tsx::#65 R14: Profile cambia el idioma y repinta sin reiniciar` | rojo: `c77fcab`; verde: por registrar |
 | R15 | locale de fechas | pendiente | pendiente |
 | R16 | español por defecto | `mobile-pet-tracker/src/app/__tests__/layout.test.tsx::#65 R16: sin preferencia guardada la app arranca en español` | rojo: `5f4e718`; verde: `81a12fd feat(mobile-ui-language): restore startup language (R16)` |
 | R17 | 6 `testID` de localización | pendiente | pendiente |

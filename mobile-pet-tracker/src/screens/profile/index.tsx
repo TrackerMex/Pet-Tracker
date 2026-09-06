@@ -21,6 +21,10 @@ import { PetSwitcher } from '../../components/pet-switcher';
 import { useApi } from '../../hooks/use-api';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
+import {
+  useLanguage,
+  useTranslate,
+} from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { useThemeTransition } from '../../theme/theme-transition';
@@ -102,6 +106,8 @@ function PetPills({ pet }: { pet: PetProfile }) {
 export function ProfileScreen() {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
+  const { language, setLanguage } = useLanguage();
+  const t = useTranslate();
   const { selectedPetId, selectPet } = useSelectedPet();
   const { theme } = useUniwind();
   const switchTheme = useThemeTransition();
@@ -208,7 +214,9 @@ export function ProfileScreen() {
       }}
     >
       <View className="flex-row items-center justify-between gap-3">
-        <Text className="text-2xl font-black text-foreground">Profile</Text>
+        <Text className="text-2xl font-black text-foreground">
+          {t('profile.profile')}
+        </Text>
         <Button
           testID="profile-add-pet"
           className="rounded-xl bg-accent"
@@ -363,6 +371,19 @@ export function ProfileScreen() {
         >
           <Button.Label className="font-semibold text-foreground">
             {theme === 'dark' ? 'Use light theme' : 'Use dark theme'}
+          </Button.Label>
+        </Button>
+        <Button
+          testID="language-toggle"
+          accessibilityLabel={t('profile.changeLanguage')}
+          className="mt-2 rounded-xl bg-default"
+          variant="secondary"
+          onPress={() => setLanguage(language === 'es' ? 'en' : 'es')}
+        >
+          <Button.Label className="font-semibold text-foreground">
+            {language === 'es'
+              ? t('profile.languageEnglish')
+              : t('profile.languageSpanish')}
           </Button.Label>
         </Button>
       </Card>

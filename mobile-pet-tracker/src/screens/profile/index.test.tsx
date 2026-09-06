@@ -476,22 +476,37 @@ describe('#65 R14: Profile cambia el idioma y repinta sin reiniciar', () => {
     expect(screen.getByText('English')).toBeVisible();
     expect(screen.getByTestId('theme-toggle')).toBeVisible();
 
-    fireEvent.press(screen.getByTestId('language-toggle'));
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('language-toggle'));
+      await Promise.resolve();
+    });
 
-    expect(screen.getByText('Profile')).toBeVisible();
+    await waitFor(() => expect(screen.getByText('Profile')).toBeVisible());
     expect(screen.getByText('Español')).toBeVisible();
     expect(mockSetStoredLanguage).toHaveBeenCalledWith('en');
   });
 
   it('preserves local input state across the language repaint', async () => {
     await renderProfile();
-    fireEvent.changeText(screen.getByTestId('language-state-probe'), 'PET-123');
-
-    fireEvent.press(screen.getByTestId('language-toggle'));
-
+    await fireEvent.changeText(
+      screen.getByTestId('language-state-probe'),
+      'PET-123',
+    );
     expect(screen.getByTestId('language-state-probe')).toHaveProp(
       'value',
       'PET-123',
+    );
+
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('language-toggle'));
+      await Promise.resolve();
+    });
+
+    await waitFor(() =>
+      expect(screen.getByTestId('language-state-probe')).toHaveProp(
+        'value',
+        'PET-123',
+      ),
     );
   });
 });
