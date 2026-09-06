@@ -5,58 +5,12 @@
 
 ---
 
-## 2026-09-05 — Fix de deriva de migraciones + script `db:migrate`
+## Rediseno contra el diseno del Make (desde 2026-09-04)
 
-**Disparador**: `GET` de documentos de mascota fallaba en local con
-`error: relation "pet_documents" does not exist` (Postgres 42P01) desde
-`PetDocumentDrizzleRepository.listByPet`.
-
-**Diagnostico**: no era un bug de codigo. La BD local iba tres migraciones por
-detras del repo. `drizzle.__drizzle_migrations` tenia 13 filas (hasta 0012) y
-faltaban:
-
-- `0013_wet_may_parker` — sus tablas (`nutrition_plans`, `nutrition_profiles`)
-  **si existian** en la BD, pero sin fila en el journal. Esa inconsistencia era
-  la causa de fondo: cualquiera que corriese `migrate` reventaba con
-  "relation already exists" en 0013 y abandonaba, dejando 0014 y 0015 sin
-  aplicar indefinidamente.
-- `0014_late_lord_tyger` — `pet_documents` (la del error).
-- `0015_auth_password_reset_tokens` — `password_reset_tokens`.
-
-**Acciones sobre la BD local** (no destructivas, solo `CREATE TABLE`):
-
-1. Baseline de 0013: `INSERT` de su fila en `drizzle.__drizzle_migrations`
-   (hash `6b0f0ff6...`, `created_at` 1787066723656) tras verificar columna a
-   columna que las dos tablas de nutricion en la BD coinciden con el `.sql`.
-2. `DATABASE_URL=... pnpm exec drizzle-kit migrate` → aplico 0014 y 0015.
-3. Verificado: `pet_documents` existe con PK, `pet_documents_pet_id_idx` y las
-   dos FKs (`pet_id` → `pets` ON DELETE CASCADE, `created_by` → `users`).
-   16/16 migraciones registradas.
-
-**Cambio en el repo**: `backend-pet-tracker/package.json` gana una linea:
-
-```json
-"db:migrate": "drizzle-kit migrate",
-```
-
-No existia script para aplicar migraciones — solo `db:generate` — y se aplicaban
-a mano (`specs/device-subscriptions/design.md:28` ya lo documentaba como deuda).
-Esa ausencia es lo que dejaba la BD derivar.
-
-**Excepcion de rol usada**: el cambio lo hizo el subagente `implementer`, no
-Codex CLI, acogiendose a `CLAUDE.md` §Excepciones (fallback para cambios
-triviales de una linea). Sin spec y sin TDD: es una entrada en `scripts`, no
-logica de aplicacion. Reporte en `progress/impl_db-migrate-script.md`.
-
-**Pendiente / decisiones abiertas**:
-
-- **Sin commitear**. El working tree esta en `feature/64-mobile-pastel-category-palette`,
-  que no tiene nada que ver con esto. El cambio deberia ir en su propia branch.
-- `drizzle.config.ts` no carga `dotenv`, asi que `pnpm run db:migrate` a secas
-  falla con una conexion vacia poco obvia: hay que pasar `DATABASE_URL` en el
-  entorno. Anadir `dotenv/config` apuntando a `../.env` seria su propia tarea,
-  no colada aqui.
-- Los hashes en `drizzle.__drizzle_migrations` de 0003-0008 y 0012 **no**
-  coinciden con los `.sql` actuales (CRLF o edicion post-aplicacion). No rompe
-  nada — el migrator compara por timestamp, no por hash — pero significa que
-  esos archivos cambiaron despues de aplicarse. Sin investigar.
+- **Origen y mapa**: `progress/explore_design-gap-vs-make.md`. Alcance cerrado por el humano: Bloque 0 + Bloque 1, features #64-#71.
+- **feature en curso: #65 mobile-ui-language** (`in_progress`), branch `feature/65-mobile-ui-language` desde `origin/main` (aa8b395, con #64 y la firma de #65 ya dentro).
+- **Implementa Codex CLI**; handoff en `progress/handoff_mobile-ui-language.md`. Orden obligatorio de `tasks.md`, que **no** es el orden de los ids: infraestructura R12-R13-R16-R14-R15 primero, luego las 11 pantallas R1-R11, y al final R17-R20.
+- **Mientras Codex implementa, esta sesion no toca `mobile-pet-tracker/` NI cambia de rama en este worktree.** En #64 el leader cambio de rama a mitad y Codex tuvo que recuperarse por reflog.
+- **#64 paleta pastel: `done`**, mergeada en main (PR #106).
+- **#66 listado con foto**: de la sesion Backend, `spec_ready`, esperando firma humana. Desbloquea #67 el hero fotografico.
+- **Deuda registrada**: #72 el test flaky de seleccion de foto de add-pet. Y en la lane del Backend, el `.env` que `drizzle.config.ts` no carga.
