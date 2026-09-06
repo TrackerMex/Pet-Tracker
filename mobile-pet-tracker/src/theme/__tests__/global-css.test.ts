@@ -513,8 +513,22 @@ describe('#64 R4: ninguna categoría se confunde con otra ni con un token de est
   const slots = ['blue', 'amber', 'green', 'violet', 'rose', 'neutral'] as const;
   const expectedSurfaceMinima = { light: 3.7, dark: 9.3 } as const;
   const expectedStateSurfaceMinima = {
-    light: { blue: 9.4, amber: 4.9, green: 3.5, violet: 10.2, rose: 4.6, neutral: 8.5 },
-    dark: { blue: 16.1, amber: 8.9, green: 3.6, violet: 10.2, rose: 9.8, neutral: 9.6 },
+    light: {
+      blue: 9.4,
+      amber: 4.9,
+      green: 3.5,
+      violet: 10.2,
+      rose: 4.6,
+      neutral: 8.5,
+    },
+    dark: {
+      blue: 16.7,
+      amber: 8.9,
+      green: 3.6,
+      violet: 10.2,
+      rose: 9.8,
+      neutral: 10.6,
+    },
   } as const;
 
   function categoryColors(theme: 'light' | 'dark') {
