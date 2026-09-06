@@ -14,6 +14,7 @@ import {
   LOCALES,
   type TranslationKey,
 } from '../i18n/catalog';
+import { setStoredLanguage } from '../utils/language-preference';
 
 interface LanguageContextValue {
   language: Language;
@@ -33,7 +34,10 @@ export function LanguageProvider({
 }) {
   const [language, setLanguageState] = useState<Language>(initial);
   const setLanguage = useCallback(
-    (nextLanguage: Language) => setLanguageState(nextLanguage),
+    (nextLanguage: Language) => {
+      setLanguageState(nextLanguage);
+      void setStoredLanguage(nextLanguage);
+    },
     [],
   );
   const value = useMemo(
