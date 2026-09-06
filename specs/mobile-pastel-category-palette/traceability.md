@@ -13,7 +13,7 @@ tags: [harness, spec]
 | R3 | `src/theme/__tests__/global-css.test.ts::#64 R3: cada tinta categórica pasa AA sobre su superficie en los dos temas` | `20bd366` — `feat(mobile-pastel-palette): R3 verifica contraste AA` (rojo `3521773`) |
 | R4 | `src/theme/__tests__/global-css.test.ts::#64 R4: ninguna categoría se confunde con otra ni con un token de estado` | `2e0315e` — `feat(mobile-pastel-palette): R4 verifica separación perceptual` (rojos `395d13a`, ajustado a la enmienda firmada en `feac447`) |
 | R5 | `src/utils/__tests__/category-palette.test.ts::#64 R5: cada tipo de recordatorio resuelve un único hueco de la paleta` | `c7a2223` — `feat(mobile-pastel-palette): R5 asigna huecos a recordatorios` (rojo `c5e01ab`) |
-| R6 | `src/utils/__tests__/category-palette.test.ts::#64 R6: el tipo de documento resuelve su hueco y cae en neutral si es desconocido` | pendiente |
+| R6 | `src/utils/__tests__/category-palette.test.ts::#64 R6: el tipo de documento resuelve su hueco y cae en neutral si es desconocido` | `dc9675a` — `feat(mobile-pastel-palette): R6 resuelve categorías documentales` (rojo `625e522`) |
 | R7 | `src/screens/reminders/index.test.tsx::#64 R7: la fila de recordatorio pinta el icono con el color de su tipo` | pendiente |
 | R8 | `src/screens/docs/index.test.tsx::#64 R8: la fila de documento pinta icono y badge con el color de su tipo` | pendiente |
 | R9 | `src/__tests__/consistency-classnames.test.ts::#64 R9: el color categórico solo se nombra en el módulo de paleta` | pendiente |
