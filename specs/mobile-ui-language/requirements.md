@@ -607,6 +607,6 @@ Lo que rehace el `reviewer`, en este orden:
 3. Que ningún archivo de test desapareció ni perdió aserciones fuera de los
    cuatro de la tabla de [[design]] §4.3.
 
-- [ ] Firmo que el esperado mecánico de R17 pasa de **244** a **265**, y que
+- [X] Firmo que el esperado mecánico de R17 pasa de **244** a **265**, y que
       lo que se comprueba es el **delta −2** entre el padre y el verde de R17
-      (fecha: ______)
+      (fecha: 2026-09-06)
