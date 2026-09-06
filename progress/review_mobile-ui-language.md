@@ -394,3 +394,201 @@ El typecheck pasó sin necesidad de borrar
 `mobile-pet-tracker/.expo/types/router.d.ts`.
 
 Working tree al terminar la revisión: **limpio**, HEAD sigue en `50451ca`.
+
+---
+---
+
+# Re-revisión — 2026-09-06, HEAD `159ebf1`
+
+Alcance: **solo el arreglo de R18(b)**. El resto del veredicto de arriba sigue
+en pie y no se rehizo.
+
+## Veredicto: **APROBADO**
+
+El falso verde que motivó el rechazo está cerrado y verificado por mí en el
+sitio exacto donde lo encontré. `./init.sh` lo corrí yo: **exit 0**.
+
+---
+
+## 1. La mutación A, replicada en `home.tsx:59`
+
+Mismo literal, misma línea, la posición exacta del falso verde. Hecho sobre una
+copia extraída con `git archive`, no en el working tree.
+
+`const STRAY_COPY = 'Resumen de hoy';` insertado en la línea 59 de
+`src/app/(tabs)/home.tsx` — dentro de lo que era región ciega:
+
+```
+● #65 R18: … › no deja ningún valor fijo del catálogo como literal entero en las pantallas
+      Object {
+        "file": "src/app/(tabs)/home.tsx",
+    -   "looseCopy": Array [],
+    +   "looseCopy": Array [
+    +     "es:home.summaryTitle = Resumen de hoy",
+      > 356 |       expect({ file, looseCopy }).toEqual({ file, looseCopy: [] });
+```
+
+**Rojo por su aserción, nombrando fichero y cadena.** Antes esto pasaba 20/20. ✅
+
+## 2. Búsqueda de puntos ciegos nuevos del escáner AST
+
+Sondeé la función `wholeLiterals` **real** (no una copia) con 13 fixtures
+adversarios, incluidos todos los que pediste:
+
+| Caso | Resultado |
+|---|---|
+| Apóstrofo tipográfico en nodo JSX (`Today’s Summary`) | ve |
+| Apóstrofo ASCII en nodo JSX (`Today's Summary`) | ve |
+| Literal **después** de un apóstrofo en JSX | ve (no ciega aguas abajo) |
+| Literal **después** de una plantilla con `${…}` | ve (no ciega aguas abajo) |
+| Plantilla anidada | ve |
+| `JsxExpression` con cadena dentro | ve |
+| Cadena en atributo (`label="No"`) | ve |
+| Cadena con comilla escapada | ve |
+| Nodo JSX multilínea | ve |
+| Cadena tras JSX con llaves | ve |
+| `` `Peso ${w}` `` (TemplateHead) | **no ve** |
+| `` `${a} Resumen de hoy ${b}` `` (TemplateMiddle) | **no ve** |
+| `` `${a} Horario de comidas` `` (TemplateTail) | **no ve** |
+
+**Encontré un hueco residual y NO lo cuento como rechazo.** Razones, en orden
+de peso:
+
+1. **Está fuera de lo que R18(b) define.** El requisito enumera dos formas:
+   «una cadena entrecomillada cuyo contenido normalizado sea igual al valor, o
+   un nodo de texto JSX cuyo contenido normalizado lo sea». Un trozo de
+   plantilla interpolada **no es ninguna de las dos**: la cadena entrecomillada
+   es la plantilla entera, que con `${…}` nunca puede ser igual a un valor fijo.
+   El escáner cubre exactamente lo que R18(b) delimita.
+2. **No es regresión, y es estrictamente más pequeño.** El regex viejo tampoco
+   veía esos trozos (no casaba ninguna plantilla con `${…}`) **y además** cegaba
+   ~52 KB aguas abajo. El nuevo solo no ve el trozo, y **no ciega nada
+   detrás** — lo comprobé explícitamente en las dos filas «literal después de».
+3. **Hoy está vacío.** Escaneé las 19 pantallas incluyendo
+   `TemplateHead/Middle/Tail`: **cero copy suelta**.
+
+Anoto una imprecisión menor, sin efecto en el código pero sí en quien lo lea
+mañana: el comentario dice «las plantillas CON interpolación no pueden ser
+iguales a un valor fijo». Es cierto de la plantilla **entera** y falso de sus
+**trozos**. La conclusión del código es correcta por la razón (1), no por la
+que el comentario da. Una línea de comentario, cuando se toque el fichero.
+
+**Comprobación extra que no pediste**: forzar `ScriptKind.TSX` sobre las 19
+pantallas (hay `.ts` además de `.tsx`) podría dar árboles parciales y cegar en
+silencio. Verifiqué `parseDiagnostics` de las 19: **ninguno**. Sugerencia
+barata para el futuro, no bloqueante: aseverar `parseDiagnostics.length === 0`
+dentro del escaneo, y así un fichero que deje de parsear no puede pasar
+inadvertido.
+
+## 3. ¿Se aflojó algo?
+
+No. El diff completo de `ui-language.test.ts` entre `50451ca` (mi rechazo) y
+HEAD es quirúrgico: **se sustituye el extractor y se añade un test de
+regresión**, nada más.
+
+- `FIXED_KEYS`, `FIXED_COPY`, `SCREEN_FILES`, `checkUses` y el bucle de copy
+  suelta: **intactos**.
+- **Sigue sin lista de excepciones** y sin ningún filtro que silencie hallazgos.
+- La comparación sigue siendo de **igualdad**, no de subcadena.
+- Único fichero del móvil tocado: `ui-language.test.ts`. `package.json` y
+  `bun.lock` **byte a byte idénticos**; `typescript ~6.0.3` ya era
+  `devDependency`. Cero dependencias nuevas.
+
+Un escáner que viera más y perdonara más sería peor que el roto — no es el caso:
+ve **364 literales más** y no perdona ninguno.
+
+## 4. El rojo `2895e9d`
+
+Falla **por su aserción** (`toEqual` con `arrayContaining`), **no** por
+`ReferenceError`. Y su salida es la mejor prueba del defecto: la región
+engullida aparece como **un solo literal falso**.
+
+```
+● #65 R18: … › extrae los literales que siguen a una plantilla con interpolación
+    Expected: ArrayContaining ["Resumen de hoy", "Horario de comidas"]
+    Received: ["; const stray = 'Resumen de hoy'; const label =", "Horario de comidas"]
+```
+
+## 5. Reproducción independiente de lo que el reporte afirma
+
+| Afirmación del tramo 4 | Mi medida |
+|---|---|
+| 364 literales que el regex no veía, en 11 de 19 pantallas | **364 en 11 de 19** ✅ |
+| Cero copy suelta con esos 364 a la vista | **cero** ✅ |
+| Cero apóstrofos en texto JSX hoy («es suerte, no una propiedad») | **ninguno** ✅ |
+| `typescript` ya era devDependency, `package.json` intacto | ✅ |
+
+Mi 10-de-19 y su 11-de-19 no se contradicen: yo medí **bytes** engullidos por
+un match desbocado, él **literales distintos** ganados. `meal-schedule` y
+`docs` aportan pocos y quedaban bajo mi umbral.
+
+## 6. La desviación de tu indicación — **hizo bien**
+
+Pediste el arreglo mínimo del regex (`` [^`\\$] `` → `` [^`\\] ``) y se fue al
+AST. Lo juzgo a favor suyo:
+
+- El arreglo de un carácter pone verde **este** rojo y deja **viva la clase**.
+  El siguiente descuadre está a un apóstrofo de distancia, y el catálogo tiene
+  **dos valores con apóstrofo** (`Today's Summary` y el de `pairing`). Que hoy
+  no haya ninguno en texto JSX lo verifiqué: es cierto, y es suerte.
+- Emparejar delimitadores de un lenguaje real a mano es la causa raíz; el AST
+  no empareja nada.
+- Coste real cero: sin dependencia nueva, y el resultado es **más corto** que el
+  lexer que sustituye.
+
+Es el arreglo de la causa, no del síntoma. Endosado.
+
+## 7. Forma
+
+- **`ec07835` no tocó mi informe.** Entró como **fichero nuevo, 396 líneas
+  añadidas y 0 borradas**, y ningún commit posterior lo ha modificado
+  (`git log ec07835..HEAD -- progress/review_mobile-ui-language.md` vacío).
+  Íntegro. Como `progress/` se versiona en este harness, **se queda dentro**.
+- **Fuera de mi informe no hay ni una casilla de gate marcada por un agente.**
+  Recorrí los commits nuevos buscando `+- [X]`: el único acierto es **prosa**
+  dentro de `impl_mobile-ui-language.md`, no una casilla. Las **9 casillas de
+  R19 siguen sin marcar** y no hay ninguna marcada en `specs/`.
+- Los 20 `- [x]` de este fichero son mi checklist de review, no gates humanos.
+
+## 8. `./init.sh` — lo corrí yo
+
+Comprobé `pgrep` antes. Mi primer intento **no llegó a lanzarse** (el guard
+saltó porque había otro vivo); lo relancé y esperé. **Exit 0, sin flake.**
+
+```
+✅ Build exitoso
+  Test Suites: 163 passed, 163 total     (backend)
+  Tests:       1235 passed, 1235 total
+  Test Suites: 2 passed, 2 total         (harness)
+  Tests:       14 passed, 14 total
+  Test Suites: 63 passed, 63 total       (móvil)
+  Tests:       932 passed, 932 total     ← +1, el test de regresión
+✅ Tests pasados
+  Test Suites: 3 skipped, 25 passed, 25 of 28 total   (e2e)
+  Tests:       8 skipped, 353 passed, 361 total
+✅ Tests e2e pasados
+✅ Lint sin errores
+✅ Typecheck sin errores
+✅ Todo verde. Listo para trabajar.
+```
+
+Cero `❌` y cero `✕` en las 11 080 líneas. Otro `init.sh` (PID 2665903, sobre
+`/dev/pts/3`) arrancó a las 18:30, **después** de que el mío terminara a las
+18:25:48: no hubo solape ni contención sobre el Postgres compartido.
+
+---
+
+## Lo que sigue abierto (sin cambios respecto al veredicto anterior)
+
+R18(b) queda cerrado, pero **#65 todavía no puede pasar a `done`**. Faltan los
+dos gates humanos de `tasks.md` §Cierre, y ninguno es delegable:
+
+1. **Smoke en dev build de Android**, las 18 pantallas, cambiando de idioma en
+   los dos sentidos.
+2. **Firma de las 9 enmiendas** de `design.md` §6.1.
+
+Deuda anotada, no bloqueante: el `259` escrito a mano en
+`src/providers/__tests__/language-provider.test.tsx:40`, a convertir en
+consistencia interna en la primera feature que añada una clave nueva.
+
+Working tree al terminar la re-revisión: **limpio**, HEAD en `159ebf1`.

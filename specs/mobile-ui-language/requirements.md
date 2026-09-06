@@ -698,3 +698,69 @@ como el candado. El nombre del `describe` de R18 pierde el `320`.
 
 - [X] Firmo también el cambio a comprobación por consistencia interna
       (fecha: 2026-09-06)
+
+---
+
+## Gate de cierre — lo que solo puede firmar un humano
+
+El `reviewer` aprobó los 20 requisitos el 2026-09-06 (veredicto y re-revisión en
+`progress/review_mobile-ui-language.md`). Faltan **dos firmas humanas** antes de
+que la feature pase a `done`. Ningún agente puede cerrarlas.
+
+### (1) Prueba de humo en **dev build de Android**
+
+No en Expo Go: esta feature toca `expo-secure-store`, que ahí no se comporta
+igual. Recorrido mínimo, en este orden:
+
+1. **Instalación limpia** (o borrando los datos de la app): arranca **en
+   español**, sin haber elegido nada. *(R16)*
+2. **Perfil → interruptor de idioma → English**: la pantalla **se repinta al
+   momento**, sin reiniciar. Mira el título, la etiqueta de pestaña, un botón,
+   un estado vacío y un `placeholder`. *(R14)*
+3. **Cierra la app del todo y reábrela**: sigue en **English**. *(R13)*
+4. **Vuelve a español** y repite el cierre y la reapertura: sigue en español.
+5. **Recorre las 11 pantallas migradas** —Home, Mapa, Salud, Comida, Horario de
+   comidas, Recordatorios, Perfil, Documentos, Alta de mascota, Emparejado del
+   collar, Restablecer contraseña— y confirma que **no queda ni un texto en
+   inglés** con el idioma en español. *(R1-R11)*
+6. **Fechas y horas en español**: en Recordatorios y en Salud, que el formato
+   sea el de `es-MX` y no el de `en-US`. Cambia a inglés y confirma que
+   cambian. *(R15)*
+7. **Los cuatro sitios que se descubrieron tarde**: `No` en esterilizado y
+   `Microchip` en el alta de mascota, `ESN` en el emparejado y `GPS` en el
+   mapa. Se escriben igual en los dos idiomas: lo que se comprueba es que
+   **están y se ven bien**, no que cambien. *(enmienda (3))*
+
+**Lo que NO es un fallo de esta feature**: los mensajes de validación que
+manda el backend siguen llegando **en inglés en los dos idiomas** (`Invalid
+email address`, `First name is required`…). Está declarado en §Fuera de alcance
+1 y es de `backend-pet-tracker/`, que esta feature no abre.
+
+- [ ] Humo pasado en dev build de Android (fecha: ______)
+
+### (2) Firma de las 9 enmiendas de R19
+
+#65 cambia el idioma por defecto de 9 specs ya aprobadas, así que cada una lleva
+un bloque de enmienda con **su propia casilla sin marcar**. La enmienda **no
+dice que el inglés desaparezca**: dice que el literal inglés que esa spec fijó
+sigue siendo normativo como columna `en` del catálogo, y que el idioma por
+defecto pasa a ser español.
+
+| # | Fichero | Línea de la casilla |
+|---|---|---:|
+| 1 | `specs/mobile-auth/requirements.md` | 274 |
+| 2 | `specs/mobile-home-dashboard/requirements.md` | 339 |
+| 3 | `specs/mobile-map-live/requirements.md` | 313 |
+| 4 | `specs/mobile-health/requirements.md` | 406 |
+| 5 | `specs/mobile-food/design.md` | 273 |
+| 6 | `specs/mobile-food/requirements.md` | 360 |
+| 7 | `specs/mobile-reminders/requirements.md` | 392 |
+| 8 | `specs/auth-reset-deep-link/design.md` | 347 |
+| 9 | `specs/mobile-device-pairing/design.md` | 444 |
+
+La más fuerte es la 9: `mobile-device-pairing` no dijo «en inglés», **enumeró
+los 18 strings exactos**. Su enmienda deja claro que esos 18 siguen siendo
+palabra por palabra lo que ve quien elija inglés.
+
+El test de R19 **vigila que estas 9 casillas sigan vacías** hasta que las
+marques tú: si un agente marcase una, la suite se pone roja.
