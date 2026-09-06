@@ -603,7 +603,7 @@ no.
 |---|---|---|
 | escáner sin regiones ciegas | `2895e9d` | `2f6a2b5` |
 
-Trazabilidad en `0f4e6ef`. R18 conserva su fila y su `describe`; no se mueve
+Trazabilidad en `ce81fb2`. R18 conserva su fila y su `describe`; no se mueve
 ninguna cifra ni ningún requisito, así que **no vuelve al gate humano**.
 
 ## El defecto, reproducido antes de tocar nada
