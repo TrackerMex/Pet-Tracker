@@ -17,7 +17,7 @@ tags: [harness, spec]
 | R7 | Profile + docs, 35 | `mobile-pet-tracker/src/__tests__/ui-language.test.ts::#65 R7: Profile resuelve su copy por clave` | rojo: `9b3d904`; verde: `5665e0e feat(mobile-ui-language): localize Profile copy (R7)` |
 | R8 | Recordatorios, 50 | `mobile-pet-tracker/src/__tests__/ui-language.test.ts::#65 R8: Recordatorios resuelve su copy por clave` | rojo: `81a171e`; verde: `f86d1cd feat(mobile-ui-language): localize Reminders copy (R8)` |
 | R9 | Alta de mascota, 40 | `mobile-pet-tracker/src/__tests__/ui-language.test.ts::#65 R9: el alta de mascota resuelve su copy por clave` | rojo: `d5aa4f3`; verde: `c383345 feat(mobile-ui-language): localize Add pet copy (R9)` |
-| R10 | Emparejado, 40 | `mobile-pet-tracker/src/__tests__/ui-language.test.ts::#65 R10: el emparejado del collar resuelve su copy por clave` | rojo: `11b3a5b`; verde: por registrar |
+| R10 | Emparejado, 40 | `mobile-pet-tracker/src/__tests__/ui-language.test.ts::#65 R10: el emparejado del collar resuelve su copy por clave` | rojo: `11b3a5b`; verde: `793390b feat(mobile-ui-language): localize Pairing copy (R10)` |
 | R11 | Reset password, 15 | pendiente | pendiente |
 | R12 | catálogo + `t` | `mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx::#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y parámetros` | rojo: `ac158f6`; verde: `20397ad feat(mobile-ui-language): add bilingual catalog and translator (R12)` |
 | R13 | persistencia best-effort | `mobile-pet-tracker/src/utils/language-preference.test.ts::#65 R13: la preferencia de idioma persiste y es best-effort` | rojo: `e237589`; verde: `ff15b5b feat(mobile-ui-language): persist language preference (R13)` |
