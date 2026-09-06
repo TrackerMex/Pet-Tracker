@@ -178,6 +178,112 @@ function contrast(first: string, second: string): number {
   return (lighter + 0.05) / (darker + 0.05);
 }
 
+/**
+ * Distancia perceptual CIEDE2000 sobre CIE-Lab D65. Fórmula, umbral y método
+ * en specs/mobile-pastel-category-palette/design.md §1.
+ */
+function deltaE00(first: string, second: string): number {
+  const degrees = (radians: number) => (radians * 180) / Math.PI;
+  const radians = (angle: number) => (angle * Math.PI) / 180;
+  const hue = (a: number, b: number) => {
+    const angle = degrees(Math.atan2(b, a));
+    return angle >= 0 ? angle : angle + 360;
+  };
+  const lab = (hex: string) => {
+    const value = Number.parseInt(hex.slice(1), 16);
+    const red = channel((value >> 16) & 255);
+    const green = channel((value >> 8) & 255);
+    const blue = channel(value & 255);
+    const xyz = [
+      (0.4124564 * red + 0.3575761 * green + 0.1804375 * blue) / 0.95047,
+      0.2126729 * red + 0.7151522 * green + 0.072175 * blue,
+      (0.0193339 * red + 0.119192 * green + 0.9503041 * blue) / 1.08883,
+    ].map((component) =>
+      component > 216 / 24389
+        ? Math.cbrt(component)
+        : (841 / 108) * component + 4 / 29,
+    );
+
+    return {
+      l: 116 * xyz[1] - 16,
+      a: 500 * (xyz[0] - xyz[1]),
+      b: 200 * (xyz[1] - xyz[2]),
+    };
+  };
+
+  const left = lab(first);
+  const right = lab(second);
+  const chromaLeft = Math.hypot(left.a, left.b);
+  const chromaRight = Math.hypot(right.a, right.b);
+  const meanChroma = (chromaLeft + chromaRight) / 2;
+  const meanChromaPower = meanChroma ** 7;
+  const compensation =
+    0.5 * (1 - Math.sqrt(meanChromaPower / (meanChromaPower + 25 ** 7)));
+  const adjustedALeft = (1 + compensation) * left.a;
+  const adjustedARight = (1 + compensation) * right.a;
+  const adjustedChromaLeft = Math.hypot(adjustedALeft, left.b);
+  const adjustedChromaRight = Math.hypot(adjustedARight, right.b);
+  const adjustedHueLeft = hue(adjustedALeft, left.b);
+  const adjustedHueRight = hue(adjustedARight, right.b);
+  const deltaLightness = right.l - left.l;
+  const deltaChroma = adjustedChromaRight - adjustedChromaLeft;
+  const rawHueDelta = adjustedHueRight - adjustedHueLeft;
+  const hueDelta =
+    adjustedChromaLeft * adjustedChromaRight === 0
+      ? 0
+      : Math.abs(rawHueDelta) <= 180
+        ? rawHueDelta
+        : rawHueDelta > 180
+          ? rawHueDelta - 360
+          : rawHueDelta + 360;
+  const deltaHue =
+    2 *
+    Math.sqrt(adjustedChromaLeft * adjustedChromaRight) *
+    Math.sin(radians(hueDelta / 2));
+  const meanLightness = (left.l + right.l) / 2;
+  const adjustedMeanChroma = (adjustedChromaLeft + adjustedChromaRight) / 2;
+  const adjustedMeanHue =
+    adjustedChromaLeft * adjustedChromaRight === 0
+      ? adjustedHueLeft + adjustedHueRight
+      : Math.abs(rawHueDelta) <= 180
+        ? (adjustedHueLeft + adjustedHueRight) / 2
+        : adjustedHueLeft + adjustedHueRight < 360
+          ? (adjustedHueLeft + adjustedHueRight + 360) / 2
+          : (adjustedHueLeft + adjustedHueRight - 360) / 2;
+  const hueWeight =
+    1 -
+    0.17 * Math.cos(radians(adjustedMeanHue - 30)) +
+    0.24 * Math.cos(radians(2 * adjustedMeanHue)) +
+    0.32 * Math.cos(radians(3 * adjustedMeanHue + 6)) -
+    0.2 * Math.cos(radians(4 * adjustedMeanHue - 63));
+  const rotationAngle =
+    30 * Math.exp(-(((adjustedMeanHue - 275) / 25) ** 2));
+  const adjustedMeanChromaPower = adjustedMeanChroma ** 7;
+  const rotationCompensation =
+    2 *
+    Math.sqrt(
+      adjustedMeanChromaPower / (adjustedMeanChromaPower + 25 ** 7),
+    );
+  const lightnessWeight =
+    1 +
+    (0.015 * (meanLightness - 50) ** 2) /
+      Math.sqrt(20 + (meanLightness - 50) ** 2);
+  const chromaWeight = 1 + 0.045 * adjustedMeanChroma;
+  const hueScale = 1 + 0.015 * adjustedMeanChroma * hueWeight;
+  const rotation =
+    -Math.sin(radians(2 * rotationAngle)) * rotationCompensation;
+  const lightnessTerm = deltaLightness / lightnessWeight;
+  const chromaTerm = deltaChroma / chromaWeight;
+  const hueTerm = deltaHue / hueScale;
+
+  return Math.sqrt(
+    lightnessTerm ** 2 +
+      chromaTerm ** 2 +
+      hueTerm ** 2 +
+      rotation * chromaTerm * hueTerm,
+  );
+}
+
 describe('#61 R2: el relleno de acento pasa AA con etiqueta blanca', () => {
   const accent = '#178255';
 
@@ -339,5 +445,283 @@ describe('#61 R6: muted light pasa AA sobre bg-default sin tocar dark', () => {
       'color-muted': '#9CA3AF',
     });
     expect(contrast('#9CA3AF', '#1F242B')).toBeGreaterThanOrEqual(4.5);
+  });
+});
+
+describe('#64 R1: global.css declara la paleta pastel categórica en tema claro', () => {
+  it('declara los diez tokens exactos y reusa la familia verde existente', () => {
+    const light = parseVariables(extractVariant('light'));
+
+    expect(light).toMatchObject({
+      'color-category-blue': '#EFF6FF',
+      'color-category-blue-strong': '#0768E0',
+      'color-category-amber': '#FFF7ED',
+      'color-category-amber-strong': '#A55E07',
+      'color-category-green': '#F0FBF6',
+      'color-category-green-strong': '#107148',
+      'color-category-violet': '#F5F3FF',
+      'color-category-violet-strong': '#7549F7',
+      'color-category-rose': '#FFF0F3',
+      'color-category-rose-strong': '#D80B34',
+    });
+    expect(light['color-category-green']).toBe(light['surface-secondary']);
+    expect(light['color-category-green-strong']).toBe(light['accent-strong']);
+  });
+});
+
+describe('#64 R2: el tema oscuro de la paleta se diseña a la profundidad de surface-secondary', () => {
+  it('declara los diez tokens exactos y alinea la luminancia de las superficies', () => {
+    const dark = parseVariables(extractVariant('dark'));
+
+    expect(dark).toMatchObject({
+      'color-category-blue': '#0B203A',
+      'color-category-blue-strong': '#4A8DDF',
+      'color-category-amber': '#271E14',
+      'color-category-amber-strong': '#C17B22',
+      'color-category-green': '#12231B',
+      'color-category-green-strong': '#2AB87C',
+      'color-category-violet': '#221C33',
+      'color-category-violet-strong': '#9579E7',
+      'color-category-rose': '#39131A',
+      'color-category-rose-strong': '#E35E78',
+    });
+
+    for (const surface of [
+      '#0B203A',
+      '#271E14',
+      '#12231B',
+      '#221C33',
+      '#39131A',
+    ]) {
+      expect(luminance(surface)).toBeCloseTo(luminance('#12231B'), 4);
+      expect(luminance(surface)).toBeCloseTo(0.0141, 4);
+    }
+
+    expect(dark['color-category-green']).toBe(dark['surface-secondary']);
+    expect(dark['color-category-green-strong']).toBe(dark['accent-strong']);
+  });
+});
+
+describe('#64 R3: cada tinta categórica pasa AA sobre su superficie en los dos temas', () => {
+  function categoryContrastCases(): {
+    theme: 'light' | 'dark';
+    slot: string;
+    surfaceToken: string;
+    inkToken: string;
+    expected: number;
+  }[] {
+    return [
+      {
+        theme: 'light',
+        slot: 'blue',
+        surfaceToken: 'color-category-blue',
+        inkToken: 'color-category-blue-strong',
+        expected: 4.746,
+      },
+      {
+        theme: 'light',
+        slot: 'amber',
+        surfaceToken: 'color-category-amber',
+        inkToken: 'color-category-amber-strong',
+        expected: 4.705,
+      },
+      {
+        theme: 'light',
+        slot: 'green',
+        surfaceToken: 'color-category-green',
+        inkToken: 'color-category-green-strong',
+        expected: 5.703,
+      },
+      {
+        theme: 'light',
+        slot: 'violet',
+        surfaceToken: 'color-category-violet',
+        inkToken: 'color-category-violet-strong',
+        expected: 4.725,
+      },
+      {
+        theme: 'light',
+        slot: 'rose',
+        surfaceToken: 'color-category-rose',
+        inkToken: 'color-category-rose-strong',
+        expected: 4.732,
+      },
+      {
+        theme: 'light',
+        slot: 'neutral',
+        surfaceToken: 'default',
+        inkToken: 'muted',
+        expected: 4.601,
+      },
+      {
+        theme: 'dark',
+        slot: 'blue',
+        surfaceToken: 'color-category-blue',
+        inkToken: 'color-category-blue-strong',
+        expected: 4.810,
+      },
+      {
+        theme: 'dark',
+        slot: 'amber',
+        surfaceToken: 'color-category-amber',
+        inkToken: 'color-category-amber-strong',
+        expected: 4.776,
+      },
+      {
+        theme: 'dark',
+        slot: 'green',
+        surfaceToken: 'color-category-green',
+        inkToken: 'color-category-green-strong',
+        expected: 6.432,
+      },
+      {
+        theme: 'dark',
+        slot: 'violet',
+        surfaceToken: 'color-category-violet',
+        inkToken: 'color-category-violet-strong',
+        expected: 4.811,
+      },
+      {
+        theme: 'dark',
+        slot: 'rose',
+        surfaceToken: 'color-category-rose',
+        inkToken: 'color-category-rose-strong',
+        expected: 4.788,
+      },
+      {
+        theme: 'dark',
+        slot: 'neutral',
+        surfaceToken: 'default',
+        inkToken: 'muted',
+        expected: 6.148,
+      },
+    ];
+  }
+
+  it('reproduce el ancla de contraste usada por #61', () => {
+    expect(contrast('#FFFFFF', '#2AB87C')).toBeCloseTo(2.547, 3);
+  });
+
+  it.each(categoryContrastCases())(
+    '$theme $slot conserva el ratio diseñado',
+    ({ theme, surfaceToken, inkToken, expected }) => {
+      const variables = parseVariables(extractVariant(theme));
+      const ratio = contrast(variables[inkToken], variables[surfaceToken]);
+
+      expect(ratio).toBeGreaterThanOrEqual(4.5);
+      expect(ratio).toBeCloseTo(expected, 3);
+    },
+  );
+});
+
+describe('#64 R4: ninguna categoría se confunde con otra ni con un token de estado', () => {
+  const themes = ['light', 'dark'] as const;
+  const slots = ['blue', 'amber', 'green', 'violet', 'rose', 'neutral'] as const;
+  const expectedSurfaceMinima = { light: 3.7, dark: 9.3 } as const;
+  const expectedStateSurfaceMinima = {
+    light: {
+      blue: 9.4,
+      amber: 4.9,
+      green: 3.5,
+      violet: 10.2,
+      rose: 4.6,
+      neutral: 8.5,
+    },
+    dark: {
+      blue: 16.7,
+      amber: 8.9,
+      green: 3.6,
+      violet: 10.2,
+      rose: 9.8,
+      neutral: 10.6,
+    },
+  } as const;
+
+  function categoryColors(theme: 'light' | 'dark') {
+    const variables = parseVariables(extractVariant(theme));
+
+    return Object.fromEntries(
+      slots.map((slot) => [
+        slot,
+        slot === 'neutral'
+          ? { surface: variables.default, ink: variables.muted }
+          : {
+              surface: variables[`color-category-${slot}`],
+              ink: variables[`color-category-${slot}-strong`],
+            },
+      ]),
+    ) as Record<(typeof slots)[number], { surface: string; ink: string }>;
+  }
+
+  function composite(foreground: string, background: string): string {
+    const channels = [1, 3, 5].map((offset) =>
+      Math.round(
+        Number.parseInt(foreground.slice(offset, offset + 2), 16) * 0.15 +
+          Number.parseInt(background.slice(offset, offset + 2), 16) * 0.85,
+      ),
+    );
+
+    return `#${channels.map((value) => value.toString(16).padStart(2, '0')).join('')}`;
+  }
+
+  it.each(themes)('separa las quince parejas de superficies en %s', (theme) => {
+    const palette = categoryColors(theme);
+    const distances = slots.flatMap((slot, index) =>
+      slots.slice(index + 1).map((other) =>
+        deltaE00(palette[slot].surface, palette[other].surface),
+      ),
+    );
+
+    expect(distances).toHaveLength(15);
+    distances.forEach((distance) => expect(distance).toBeGreaterThanOrEqual(2.3));
+    expect(Math.min(...distances)).toBeCloseTo(expectedSurfaceMinima[theme], 1);
+  });
+
+  it.each(themes)('separa superficies y tintas de los tokens de estado en %s', (theme) => {
+    const variables = parseVariables(extractVariant(theme));
+    const palette = categoryColors(theme);
+    const stateSurfaces = [
+      composedSurfaces[theme].accentSoft,
+      composedSurfaces[theme].tabPill,
+      composedSurfaces[theme].warningSoft,
+      composite(variables.danger, variables.surface),
+      composite(variables.success, variables.surface),
+    ];
+    const solidStateTokens = [
+      'accent',
+      'accent-strong',
+      'success',
+      'warning',
+      'warning-strong',
+      'danger',
+    ] as const;
+
+    for (const slot of slots) {
+      const colors = [palette[slot].surface, palette[slot].ink];
+      const stateSurfaceDistances = colors.flatMap((color) =>
+        stateSurfaces.map((stateSurface) => deltaE00(color, stateSurface)),
+      );
+
+      stateSurfaceDistances.forEach((distance) =>
+        expect(distance).toBeGreaterThanOrEqual(2.3),
+      );
+      expect(Math.min(...stateSurfaceDistances)).toBeCloseTo(
+        expectedStateSurfaceMinima[theme][slot],
+        1,
+      );
+
+      for (const color of colors) {
+        for (const token of solidStateTokens) {
+          if (slot === 'green' && color === palette.green.ink && token === 'accent-strong') {
+            continue;
+          }
+
+          expect(deltaE00(color, variables[token])).toBeGreaterThanOrEqual(2.3);
+        }
+      }
+    }
+
+    expect(deltaE00(palette.green.surface, variables['surface-secondary'])).toBe(0);
+    expect(deltaE00(palette.green.ink, variables['accent-strong'])).toBe(0);
   });
 });

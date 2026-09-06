@@ -25,6 +25,7 @@ import {
   CONTINUOUS_CORNER,
   TABULAR_NUMS,
 } from '../../theme/native-styles';
+import { CATEGORY_SLOTS } from '../../utils/category-palette';
 import { daysUntil } from '../../utils/reminder-dates';
 import { REMINDER_TYPE_META } from '../../utils/reminder-meta';
 
@@ -267,7 +268,7 @@ export function RemindersScreen() {
                   className={`min-h-20 flex-row items-center gap-3${inactive ? ' opacity-50' : ''}`}
                 >
                   <View
-                    className="size-11 items-center justify-center rounded-xl bg-accent-soft"
+                    className={`size-11 items-center justify-center rounded-xl ${CATEGORY_SLOTS[meta.category].surface}`}
                     style={CONTINUOUS_CORNER}
                   >
                     <Text className="text-xl">{meta.emoji}</Text>
