@@ -19,6 +19,7 @@ import {
 } from '../../../api/nutrition';
 import type { NutritionPlan, NutritionProfile } from '../../../api/types';
 import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
+import { LanguageProvider } from '../../../providers/language-provider';
 import {
   SelectedPetProvider,
   useSelectedPet,
@@ -137,10 +138,12 @@ function SelectionProbe() {
 async function renderMealSchedule(selected = true) {
   await render(
     <HeroUINativeProvider>
-      <SelectedPetProvider>
-        {selected ? <SelectionProbe /> : null}
-        <MealScheduleScreen />
-      </SelectedPetProvider>
+      <LanguageProvider initial="es">
+        <SelectedPetProvider>
+          {selected ? <SelectionProbe /> : null}
+          <MealScheduleScreen />
+        </SelectedPetProvider>
+      </LanguageProvider>
     </HeroUINativeProvider>,
   );
 }
@@ -181,7 +184,7 @@ describe('R7: meal schedule muestra horarios y perfil', () => {
     await waitFor(() =>
       expect(screen.getByTestId('screen-meal-schedule')).toBeVisible(),
     );
-    expect(screen.getByText('Meal schedule')).toBeVisible();
+    expect(screen.getByText('Horario de comidas')).toBeVisible();
     expect(screen.getByTestId('meal-schedule-loading')).toBeVisible();
     expect(screen.getByTestId('meal-schedule-summary-skeleton')).toHaveProp(
       'className',
@@ -227,8 +230,8 @@ describe('R7: meal schedule muestra horarios y perfil', () => {
     );
     const summary = within(screen.getByTestId('meal-schedule-summary'));
     expect(summary.getByText('656 kcal')).toBeVisible();
-    expect(summary.getByText('2 meals / day')).toBeVisible();
-    expect(summary.getByText('187 g / day')).toBeVisible();
+    expect(summary.getByText('2 comidas / día')).toBeVisible();
+    expect(summary.getByText('187 g / día')).toBeVisible();
     expect(
       screen.getAllByTestId(/^meal-time-row-/).map(({ props }) => props.testID),
     ).toEqual(['meal-time-row-0', 'meal-time-row-1']);
@@ -237,7 +240,7 @@ describe('R7: meal schedule muestra horarios y perfil', () => {
     expect(firstMeal.getByText('94 g')).toBeVisible();
 
     const profile = within(screen.getByTestId('nutrition-profile-section'));
-    expect(profile.getByText('Nutrition profile')).toBeVisible();
+    expect(profile.getByText('Perfil nutricional')).toBeVisible();
     expect(profile.getByText('dry')).toBeVisible();
     expect(profile.getByText('350 kcal / 100 g')).toBeVisible();
     expect(profile.getByText('medium')).toBeVisible();
@@ -261,11 +264,11 @@ describe('R7: meal schedule muestra horarios y perfil', () => {
 
     await waitFor(() =>
       expect(screen.getByTestId('meal-schedule-empty')).toHaveTextContent(
-        'No meal plan yet',
+        'Aún no hay plan de alimentación',
       ),
     );
     expect(screen.getByTestId('nutrition-profile-empty')).toHaveTextContent(
-      'No nutrition profile yet',
+      'Aún no hay perfil nutricional',
     );
   });
 
@@ -300,7 +303,7 @@ describe('R7: meal schedule muestra horarios y perfil', () => {
     await renderMealSchedule();
     await waitFor(() =>
       expect(screen.getByTestId('meal-schedule-error')).toHaveTextContent(
-        'Something went wrong',
+        'Algo salió mal',
       ),
     );
     await fireEvent.press(screen.getByTestId('meal-schedule-retry'));
@@ -329,7 +332,7 @@ describe('R8: generar plan con degradación por kind', () => {
     await waitFor(() =>
       expect(screen.getByTestId('generate-plan-button')).toBeVisible(),
     );
-    expect(screen.getByText('Generate plan')).toBeVisible();
+    expect(screen.getByText('Generar plan')).toBeVisible();
   });
 
   it.each<{
@@ -338,28 +341,28 @@ describe('R8: generar plan con degradación por kind', () => {
   }>([
     {
       result: { kind: 'forbidden' },
-      message: 'Only the owner can generate the plan',
+      message: 'Solo el dueño puede generar el plan',
     },
     {
       result: {
         kind: 'unprocessable',
         code: 'NUTRITION_PROFILE_REQUIRED',
       },
-      message: 'Create a nutrition profile first',
+      message: 'Primero crea un perfil nutricional',
     },
     {
       result: { kind: 'unprocessable', code: 'PET_WEIGHT_REQUIRED' },
-      message: 'Register a weight first',
+      message: 'Primero registra un peso',
     },
     {
       result: { kind: 'unprocessable', code: null },
-      message: 'Something went wrong',
+      message: 'Algo salió mal',
     },
-    { result: { kind: 'error' }, message: 'Something went wrong' },
-    { result: { kind: 'missing-config' }, message: 'Something went wrong' },
+    { result: { kind: 'error' }, message: 'Algo salió mal' },
+    { result: { kind: 'missing-config' }, message: 'Algo salió mal' },
     {
       result: { kind: 'unreachable', message: 'network down' },
-      message: 'Cannot reach server',
+      message: 'No se pudo conectar con el servidor',
     },
   ])('maps $result.kind to "$message"', async ({ result, message }) => {
     mockGetNutritionPlan.mockResolvedValue({ kind: 'not-found' });
@@ -457,7 +460,7 @@ describe('#62 R5: el título de card usa un único tratamiento', () => {
     await renderMealSchedule();
 
     expect(
-      (await screen.findByText('Nutrition profile')).props.className,
+      (await screen.findByText('Perfil nutricional')).props.className,
     ).toBe('text-base font-bold text-foreground');
   });
 });

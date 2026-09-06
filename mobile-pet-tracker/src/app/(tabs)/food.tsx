@@ -12,6 +12,7 @@ import { PetSwitcher } from '../../components/pet-switcher';
 import { useApi } from '../../hooks/use-api';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
+import { useTranslate } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
@@ -35,6 +36,7 @@ export default function FoodScreen() {
   ]);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { token } = useAuth();
+  const t = useTranslate();
   const { selectedPetId, selectPet } = useSelectedPet();
   const insets = useSafeAreaInsets();
   const petsFn = useCallback(
@@ -77,7 +79,9 @@ export default function FoodScreen() {
         paddingBottom: insets.bottom + 96,
       }}
     >
-      <Text className="text-2xl font-black text-foreground">Food</Text>
+      <Text className="text-2xl font-black text-foreground">
+        {t('food.food')}
+      </Text>
 
       {pets.data === undefined ? (
         <View className="h-10 items-center justify-center">
@@ -88,17 +92,17 @@ export default function FoodScreen() {
       {pets.data && isPetsError(pets.data) ? (
         <View className="items-start gap-3">
           <Text testID="food-error" className="text-danger">
-            Something went wrong
+            {t('common.somethingWentWrong')}
           </Text>
           <Button testID="food-retry" onPress={pets.refetch}>
-            Retry
+            {t('common.retry')}
           </Button>
         </View>
       ) : null}
 
       {pets.data?.kind === 'ok' && pets.data.pets.length === 0 ? (
         <Text testID="food-empty" className="text-muted">
-          No pets yet
+          {t('common.noPetsYet')}
         </Text>
       ) : null}
 
@@ -141,19 +145,21 @@ export default function FoodScreen() {
                 <View className="flex-row items-center justify-between gap-4">
                   <View className="flex-1 gap-1">
                     <Text className="text-xs font-semibold uppercase tracking-widest text-accent-foreground">
-                      Daily target
+                      {t('food.dailyTarget')}
                     </Text>
                     <Text
                       testID="food-plan-kcal"
                       className="text-3xl font-black text-accent-foreground"
                     >
-                      {loadedPlan.merKcal} kcal / day
+                      {t('food.dailyKcal', { kcal: loadedPlan.merKcal })}
                     </Text>
                     <Text
                       testID="food-plan-grams"
                       className="font-semibold text-accent-foreground"
                     >
-                      {loadedPlan.dailyGrams} g / day
+                      {t('food.dailyGrams', {
+                        grams: loadedPlan.dailyGrams,
+                      })}
                     </Text>
                   </View>
                   <View
@@ -171,7 +177,7 @@ export default function FoodScreen() {
               >
                 <View className="flex-row items-center justify-between gap-3">
                   <Text className="text-base font-bold text-foreground">
-                    Meals today
+                    {t('food.mealsToday')}
                   </Text>
                   <Text
                     testID="food-meals-progress"
@@ -221,7 +227,7 @@ export default function FoodScreen() {
                             : 'rounded-full bg-surface px-2 py-1 text-2xs font-bold text-muted'
                         }
                       >
-                        {served ? 'Served' : 'Pending'}
+                        {served ? t('food.served') : t('food.pending')}
                       </Text>
                     </View>
                   );
@@ -256,7 +262,7 @@ export default function FoodScreen() {
                   <View className="flex-row items-center gap-2">
                     <Sparkles size={18} color={accent} />
                     <Text className="text-base font-bold text-foreground">
-                      AI recommendation
+                      {t('food.aiRecommendation')}
                     </Text>
                   </View>
                   <Text className="text-sm font-normal leading-5 text-muted">
@@ -269,7 +275,7 @@ export default function FoodScreen() {
 
           {plan.data?.kind === 'not-found' ? (
             <Text testID="food-plan-empty" className="font-normal text-muted">
-              No meal plan yet
+              {t('food.noMealPlanYet')}
             </Text>
           ) : null}
 
@@ -278,10 +284,10 @@ export default function FoodScreen() {
           plan.data?.kind === 'missing-config' ? (
             <View className="items-start gap-3">
               <Text testID="food-plan-error" className="text-danger">
-                Could not load meal plan
+                {t('food.couldNotLoadPlan')}
               </Text>
               <Button testID="food-plan-retry" onPress={plan.refetch}>
-                Retry
+                {t('common.retry')}
               </Button>
             </View>
           ) : null}
@@ -293,10 +299,10 @@ export default function FoodScreen() {
           >
             <View className="gap-1">
               <Text className="text-base font-bold text-foreground">
-                Meal schedule
+                {t('food.mealSchedule')}
               </Text>
               <Text className="text-xs font-normal text-muted">
-                View nutrition profile and times
+                {t('food.mealScheduleLinkSubtitle')}
               </Text>
             </View>
             <ChevronRight size={20} color={foreground} />
