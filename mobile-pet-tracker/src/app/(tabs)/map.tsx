@@ -17,6 +17,7 @@ import { PetMap } from '../../components/pet-map';
 import { useApi } from '../../hooks/use-api';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
+import { useTranslate } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import {
   CONTINUOUS_CORNER,
@@ -56,10 +57,15 @@ function fmtSpeed(kmh: number | null | undefined): string {
   return kmh == null ? '—' : `${kmh.toFixed(1)} km/h`;
 }
 
-function fmtAgo(seconds: number): string {
-  if (seconds < 60) return 'Just now';
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-  return `${Math.floor(seconds / 3600)}h ago`;
+function fmtAgo(
+  seconds: number,
+  t: ReturnType<typeof useTranslate>,
+): string {
+  if (seconds < 60) return t('map.justNow');
+  if (seconds < 3600) {
+    return t('map.agoMinutes', { minutes: Math.floor(seconds / 60) });
+  }
+  return t('map.agoHours', { hours: Math.floor(seconds / 3600) });
 }
 
 const DEFAULT_CENTER = {
@@ -72,6 +78,7 @@ const POLL_MS = 15000;
 export default function MapScreen() {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { token } = useAuth();
+  const t = useTranslate();
   const { selectedPetId } = useSelectedPet();
   const insets = useSafeAreaInsets();
   const { theme } = useUniwind();
@@ -190,13 +197,13 @@ export default function MapScreen() {
     route.data?.kind === 'ok'
       ? route.data.trips.reduce((total, trip) => total + trip.distanceM, 0)
       : null;
-  const updated = position ? fmtAgo(position.staleSeconds) : '—';
+  const updated = position ? fmtAgo(position.staleSeconds, t) : '—';
   const gps =
     position === null
-      ? 'No signal'
+      ? t('map.noSignal')
       : position && position.staleSeconds <= STALE_SECONDS
-        ? 'Live'
-        : 'Stale';
+        ? t('map.live')
+        : t('map.stale');
 
   return (
     <View testID="screen-map" className="flex-1">
@@ -207,10 +214,10 @@ export default function MapScreen() {
       {pets.data && isPetsError(pets.data) ? (
         <View className="flex-1 items-center justify-center gap-3 p-6 bg-background">
           <Text testID="map-error" className="text-danger">
-            Something went wrong
+            {t('common.somethingWentWrong')}
           </Text>
           <Button testID="map-retry" onPress={pets.refetch}>
-            Retry
+            {t('common.retry')}
           </Button>
         </View>
       ) : null}
@@ -218,7 +225,7 @@ export default function MapScreen() {
       {pets.data?.kind === 'ok' && pets.data.pets.length === 0 ? (
         <View className="flex-1 items-center justify-center p-6 bg-background">
           <Text testID="map-no-pets" className="text-muted">
-            No pets yet
+            {t('common.noPetsYet')}
           </Text>
         </View>
       ) : null}
@@ -226,7 +233,7 @@ export default function MapScreen() {
       {petsReady && last.data?.kind === 'no-tracking' ? (
         <View className="flex-1 items-center justify-center p-6 bg-background">
           <Text testID="map-no-tracking" className="text-center text-muted">
-            Live tracking requires a collar
+            {t('map.trackingNeedsCollar')}
           </Text>
         </View>
       ) : null}
@@ -237,10 +244,10 @@ export default function MapScreen() {
           className="flex-1 items-center justify-center gap-3 p-6 bg-background"
         >
           <Text selectable testID="map-last-error" className="text-danger">
-            Something went wrong
+            {t('common.somethingWentWrong')}
           </Text>
           <Button testID="map-last-retry" onPress={refetchLast}>
-            Retry
+            {t('common.retry')}
           </Button>
         </View>
       ) : null}
@@ -266,7 +273,7 @@ export default function MapScreen() {
               className="items-center p-3"
             >
               <Text testID="map-empty" className="text-muted">
-                No location data yet
+                {t('map.noLocationDataYet')}
               </Text>
             </Card>
           ) : null}
@@ -296,7 +303,7 @@ export default function MapScreen() {
                       {fmtSpeed(latestSpeed)}
                     </Text>
                     <Text className="mt-1 text-2xs font-normal text-muted">
-                      Speed
+                      {t('map.speed')}
                     </Text>
                   </View>
                   <View
@@ -312,7 +319,7 @@ export default function MapScreen() {
                       {fmtKm(distanceM)}
                     </Text>
                     <Text className="mt-1 text-2xs font-normal text-muted">
-                      Distance
+                      {t('map.distance')}
                     </Text>
                   </View>
                 </View>
@@ -330,7 +337,7 @@ export default function MapScreen() {
                       {updated}
                     </Text>
                     <Text className="mt-1 text-2xs font-normal text-muted">
-                      Updated
+                      {t('map.updated')}
                     </Text>
                   </View>
                   <View
@@ -363,8 +370,8 @@ export default function MapScreen() {
             >
               <Button.Label className="font-bold text-danger">
                 {selectedPet?.lostMode
-                  ? 'Deactivate Lost Mode'
-                  : 'Activate Lost Mode'}
+                  ? t('map.deactivateLostMode')
+                  : t('map.activateLostMode')}
               </Button.Label>
             </Button>
             {lostModeFailed ? (
@@ -373,7 +380,7 @@ export default function MapScreen() {
                 testID="lost-mode-error"
                 className="text-center text-xs font-normal text-danger"
               >
-                Could not update Lost Mode
+                {t('map.couldNotUpdateLostMode')}
               </Text>
             ) : null}
           </View>

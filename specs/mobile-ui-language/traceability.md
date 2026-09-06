@@ -11,7 +11,7 @@ tags: [harness, spec]
 | R1 | `(auth)`, 29 ocurrencias | `mobile-pet-tracker/src/__tests__/ui-language.test.ts::#65 R1: el grupo (auth) resuelve su copy por clave` | rojo: `8c67895`; verde: `0dcf6bf feat(mobile-ui-language): localize auth copy (R1)` |
 | R2 | barra de pestañas, 5 | `mobile-pet-tracker/src/__tests__/ui-language.test.ts::#65 R2: la barra de pestañas resuelve su copy por clave` | rojo: `d6cb58a`; verde: `fd04a3e feat(mobile-ui-language): localize tab bar copy (R2)` |
 | R3 | Home, 20 | `mobile-pet-tracker/src/__tests__/ui-language.test.ts::#65 R3: Home resuelve su copy por clave` | rojo: `51bc7ed`; verde: `40f9f6e feat(mobile-ui-language): localize Home copy (R3)` |
-| R4 | Map, 19 | pendiente | pendiente |
+| R4 | Map, 19 | `mobile-pet-tracker/src/__tests__/ui-language.test.ts::#65 R4: Map resuelve su copy por clave` | rojo: `fc77f22`; verde: por registrar |
 | R5 | Health + peso, 32 | pendiente | pendiente |
 | R6 | Food + horario, 35 | pendiente | pendiente |
 | R7 | Profile + docs, 35 | pendiente | pendiente |
