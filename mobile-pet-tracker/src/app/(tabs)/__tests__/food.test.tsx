@@ -534,3 +534,25 @@ describe('#62 R5: el título de card usa un único tratamiento', () => {
     },
   );
 });
+
+describe('#65 R17: los títulos de card se localizan por testID y su copy sigue asertada', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetNutritionPlan.mockResolvedValue({
+      kind: 'ok',
+      plan: makePlan({
+        aiExplanation: 'Split the daily amount into two balanced meals.',
+      }),
+    });
+  });
+
+  it('expone los tres títulos de Food sin perder sus dos aserciones de copy', async () => {
+    await renderFood();
+
+    expect(screen.getByText('Comidas hoy')).toBeVisible();
+    expect(screen.getByText('Horario de comidas')).toBeVisible();
+    expect(await screen.findByTestId('food-meals-title')).toBeVisible();
+    expect(screen.getByTestId('food-ai-title')).toBeVisible();
+    expect(screen.getByTestId('meal-schedule-link-title')).toBeVisible();
+  });
+});
