@@ -1,6 +1,6 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-09-04
+**Última actualización**: 2026-09-05
 **Features completadas**: 58/63 (`feature_list.json`)
 **En progreso**: ninguna
 
@@ -36,6 +36,20 @@ docker compose up -d   # Postgres + LocalStack (solo si la sesión toca DB/AWS)
 
 `init.sh` copia `.env.example` → `.env` si falta. Docker no arranca solo:
 levántalo manualmente cuando la feature lo necesite.
+
+Con Postgres arriba, **aplica las migraciones pendientes**:
+
+```powershell
+$env:DATABASE_URL = (Select-String -Path .env -Pattern '^DATABASE_URL=').Line.Split('=',2)[1]
+pnpm -C backend-pet-tracker run db:migrate
+```
+
+`init.sh` **no** las aplica y `drizzle.config.ts` no carga `dotenv`, así que
+la variable hay que pasarla a mano (esa es la única excepción aceptada a R6:
+drizzle-kit corre como CLI fuera del runtime de NestJS). Sin este paso la BD
+deriva en silencio y las tablas nuevas fallan en runtime con
+`relation "..." does not exist` (42P01) — pasó el 2026-09-05 con
+`pet_documents`.
 
 Desde `init-env-drift-warning` (#23), `init.sh` compara además las **claves**
 de `.env` contra las de `.env.example` y avisa de las que faltan, destacando
@@ -515,10 +529,11 @@ debe listar las 4 URLs de cola.
   main** (2026-08-01, merge `eff7361`); init.sh verde en main
   post-merge. Ver `progress/impl_devices-claim.md` y
   `progress/review_devices-claim.md`.
-- Deuda menor detectada en #3 (sigue abierta, reviewer de #7 la
-  re-señaló como NB): no existe script `db:migrate` en `package.json`
-  (solo `db:generate`), aplicar migraciones exige hoy
-  `exec drizzle-kit migrate` a mano. Candidato a tarea propia.
+- ~~Deuda menor detectada en #3 (reviewer de #7 la re-señaló como NB): no
+  existe script `db:migrate`.~~ **Cerrada el 2026-09-05**:
+  `backend-pet-tracker/package.json` ya expone `"db:migrate":
+  "drizzle-kit migrate"`. Sigue haciendo falta pasar `DATABASE_URL` en el
+  entorno (`drizzle.config.ts` no carga `dotenv`) — ver **Cómo arrancar**.
 - **`wialon-ingestion-pipeline` (#8) done**: cadena GPS completa en local —
   `src/integrations/wialon/` (puerto `WialonClient` + factory por
   ConfigService: `FakeWialonClient` determinista con `SIM_SEED`/mulberry32
@@ -851,6 +866,27 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-09-05** — **Fix de deriva de migraciones** (fuera de feature, sin
+  spec). `GET` de documentos de mascota reventaba en local con
+  `relation "pet_documents" does not exist` (42P01) desde
+  `PetDocumentDrizzleRepository.listByPet`. No era bug de código: la BD local
+  iba tres migraciones por detrás. `drizzle.__drizzle_migrations` tenía 13
+  filas (hasta 0012) y faltaban 0013, 0014 (`pet_documents`) y 0015
+  (`password_reset_tokens`). La causa de fondo era 0013: sus tablas
+  (`nutrition_plans`, `nutrition_profiles`) **sí existían** pero sin fila en
+  el journal, así que cualquier `migrate` moría con "already exists" y nadie
+  llegaba a 0014/0015. Arreglo: baseline de 0013 (verificadas antes columna a
+  columna contra su `.sql`) + `drizzle-kit migrate` → 16/16 aplicadas,
+  `pet_documents` con PK, índice y las dos FKs. Se cerró además la deuda que
+  lo permitía: `package.json` gana `"db:migrate": "drizzle-kit migrate"`
+  (una línea, por el subagente `implementer` bajo la excepción de
+  `CLAUDE.md` §Excepciones; reporte en `progress/impl_db-migrate-script.md`).
+  **Sin commitear**: el working tree está en la branch de #64. Abierto: los
+  hashes de 0003-0008 y 0012 en la BD no coinciden con los `.sql` actuales
+  (CRLF o edición post-aplicación); no rompe nada porque el migrator compara
+  por timestamp, sin investigar. Deuda nueva: `drizzle.config.ts` sin
+  `dotenv`, `pnpm run db:migrate` a secas falla con conexión vacía.
 
 - **2026-09-04** — #42 `mobile-device-pairing` **cerrada** (57/60). Spec con
   contratos copiados del backend (D1) y dos decisiones cerradas: tracked/free
