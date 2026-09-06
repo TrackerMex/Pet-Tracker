@@ -737,7 +737,7 @@ suite verde.
    `2f6a2b5` — o más simple: planta el literal en `home.tsx:59` y comprueba que
    ahora es rojo.
 3. `progress/review_mobile-ui-language.md` llegó sin versionar y **queda
-   commiteado** en `84c58a7`, con `progress/` entero. Lo arrastró un `git add
+   commiteado** en `ec07835`, con `progress/` entero. Lo arrastró un `git add
    progress/` mío; lo dejo dentro porque el harness versiona `progress/` y el
    veredicto es parte del expediente de la feature, pero es tu artefacto y no
    he tocado una sola línea. Si lo prefieres fuera, sale con un `git rm
