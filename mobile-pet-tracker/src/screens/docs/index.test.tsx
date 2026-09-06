@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 
@@ -203,7 +209,60 @@ describe('#62 R10: el tipo de documento se lee como badge', () => {
     await renderDocs();
 
     expect((await screen.findByText('Vacunación')).props.className).toBe(
-      'self-start rounded-full bg-default px-2 py-0.5 text-2xs font-bold text-muted',
+      'self-start rounded-full px-2 py-0.5 text-2xs font-bold bg-category-blue text-category-blue-strong',
     );
+  });
+});
+
+describe('#64 R8: la fila de documento pinta icono y badge con el color de su tipo', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
+    mockListPetDocs.mockResolvedValue({
+      kind: 'ok',
+      docs: [
+        {
+          id: 'vaccine',
+          type: 'Vacunación',
+          name: 'Antirrábica',
+          date: '2026-07-12',
+        },
+        {
+          id: 'unknown',
+          type: 'Radiografía',
+          name: 'Cadera',
+          date: '2026-06-03',
+        },
+      ],
+    });
+  });
+
+  it('aplica el hueco conocido y conserva neutral para texto libre', async () => {
+    await renderDocs();
+
+    const vaccineRow = within(await screen.findByTestId('doc-vaccine'));
+    const unknownRow = within(screen.getByTestId('doc-unknown'));
+    const vaccineTile = vaccineRow.getByText('📄').parent;
+    const unknownTile = unknownRow.getByText('📄').parent;
+
+    expect(vaccineTile?.props.className).toContain('bg-category-blue');
+    expect(vaccineTile?.props.className).not.toContain('bg-accent-soft');
+    expect(vaccineRow.getByText('Vacunación').props.className).toBe(
+      'self-start rounded-full px-2 py-0.5 text-2xs font-bold bg-category-blue text-category-blue-strong',
+    );
+    expect(unknownTile?.props.className).toContain('bg-default');
+    expect(unknownTile?.props.className).not.toContain('bg-accent-soft');
+    expect(unknownRow.getByText('Radiografía').props.className).toBe(
+      'self-start rounded-full px-2 py-0.5 text-2xs font-bold bg-default text-muted',
+    );
+    expect(vaccineRow.getByText('📄')).toBeVisible();
+    expect(unknownRow.getByText('📄')).toBeVisible();
   });
 });
