@@ -643,4 +643,48 @@ describe('Pets CRUD (e2e)', () => {
       expect(listBody(list).some((item) => item.id === pet.id)).toBe(false);
     });
   });
+
+  describe('R3 (pets-list-response-enrichment #66): GET /v1/pets devuelve photoUrl prefirmada para la mascota con photo_key', () => {
+    it('firma la misma clave que el detalle y deja null en la mascota sin foto', async () => {
+      const owner = await seedUser('enrichment-r3-owner');
+      const petA = await createPetViaApi(owner, {
+        name: `Enrichment-R3a-${RUN_ID}`,
+      });
+      const petB = await createPetViaApi(owner, {
+        name: `Enrichment-R3b-${RUN_ID}`,
+      });
+      const photoKey = `pets/${petA.id}/e2e-photo-${RUN_ID}`;
+      await db.update(pets).set({ photoKey }).where(eq(pets.id, petA.id));
+
+      const listResponse = await api()
+        .get('/v1/pets')
+        .set('Authorization', `Bearer ${owner.token}`)
+        .expect(200);
+
+      const items = listBody(listResponse);
+      const withPhoto = items.find((item) => item.id === petA.id);
+      const withoutPhoto = items.find((item) => item.id === petB.id);
+      expect(withPhoto).toBeDefined();
+      expect(withoutPhoto).toBeDefined();
+      expect(typeof withPhoto?.photoUrl).toBe('string');
+      expect(withoutPhoto?.photoUrl).toBeNull();
+      expect(Object.keys(withPhoto ?? {}).sort()).toEqual(PROFILE_KEYS);
+      expect(Object.keys(withoutPhoto ?? {}).sort()).toEqual(PROFILE_KEYS);
+
+      const listPhotoUrl = new URL(withPhoto?.photoUrl ?? '');
+      expect(listPhotoUrl.searchParams.get('X-Amz-Signature')).toBeTruthy();
+      expect(listPhotoUrl.searchParams.get('X-Amz-Expires')).toBe('3600');
+      expect(listPhotoUrl.pathname.endsWith(`/${photoKey}`)).toBe(true);
+
+      const detailResponse = await api()
+        .get(`/v1/pets/${petA.id}`)
+        .set('Authorization', `Bearer ${owner.token}`)
+        .expect(200);
+      const detailPhotoUrl = profileBody(detailResponse).photoUrl;
+      expect(typeof detailPhotoUrl).toBe('string');
+      expect(new URL(detailPhotoUrl ?? '').pathname).toBe(
+        listPhotoUrl.pathname,
+      );
+    });
+  });
 });
