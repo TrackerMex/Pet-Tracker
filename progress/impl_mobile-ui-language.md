@@ -736,5 +736,10 @@ suite verde.
 2. Si quieres rehacer la medida de cobertura, el script está en el commit
    `2f6a2b5` — o más simple: planta el literal en `home.tsx:59` y comprueba que
    ahora es rojo.
-3. `progress/review_mobile-ui-language.md` sigue **sin versionar** (untracked).
-   Lo dejo como está: es tu artefacto, no mío.
+3. `progress/review_mobile-ui-language.md` llegó sin versionar y **queda
+   commiteado** en `84c58a7`, con `progress/` entero. Lo arrastró un `git add
+   progress/` mío; lo dejo dentro porque el harness versiona `progress/` y el
+   veredicto es parte del expediente de la feature, pero es tu artefacto y no
+   he tocado una sola línea. Si lo prefieres fuera, sale con un `git rm
+   --cached`. Sus `- [x]` son tu checklist de review, no casillas de gate
+   humano: fuera de ese fichero no hay ni una marcada.
