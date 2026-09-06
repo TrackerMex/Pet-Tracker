@@ -1,6 +1,6 @@
 ---
 feature: "mobile-pastel-category-palette"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec]
 ---
 
@@ -250,6 +250,54 @@ Al firmar, el humano aprueba también:
 
 ## Gate humano posterior a la implementación (no delegable a IA)
 
-- [ ] Smoke en **dev build de Android** (no Expo Go), en tema claro **y**
+- [X] Smoke en **dev build de Android** (no Expo Go), en tema claro **y**
       oscuro, sobre las pantallas Reminders y Documentos, comprobando que las
       categorías se distinguen entre sí y que ninguna queda ilegible.
+
+### Firma de la enmienda del 2026-09-06 (§3.3 de [[design]])
+
+Codex paró en R4 por una discrepancia numérica, que era real. Al recalcular la
+tabla entera aparecieron **dos** celdas mal en `design.md` §3.3, ambas
+corregidas allí con su nota. **Ningún requisito cambia, ningún valor de token
+se toca, y R4 se sigue cumpliendo con holgura**: exige ΔE00 ≥ 2,3 y los valores
+corregidos son 16,7 y 10,6.
+
+- [X] Firmo la corrección de las dos celdas de `design.md` §3.3
+      (`blue` oscuro: 16,1 `accent-soft` → **16,7 `danger-soft`**;
+      `neutral` oscuro: 9,6 → **10,6**), sabiendo que no altera ningún
+      requisito ni ningún token (fecha: 2026-09-05)
+
+### Firma de la excepción de C4 del 2026-09-06 (R3, R4 y R9)
+
+El `reviewer` rechazó la feature porque los commits rojos de R3, R4 y R9 fallan
+con un `ReferenceError` del helper de test que aún no existía, no por su
+aserción, y sus verdes no añaden ni una línea de producción.
+
+**La causa es de secuencia, y es un defecto de esta spec, no de Codex.** R3, R4
+y R9 son requisitos de *verificación*: aseveran una propiedad de artefactos que
+R1/R2 y R7/R8 ya habían dejado en el árbol. En el orden obligatorio que fija
+[[tasks]], su aserción **no puede estar roja**, porque los valores ya son
+correctos cuando el test llega. El rojo legítimo habría exigido escribir el test
+de R3 y R4 **antes** de la implementación de R1/R2, y el de R9 antes de R7/R8.
+
+**Rebase no es salida**: la branch lleva dentro los commits de firma humana, y
+reescribir la historia los borraría.
+
+Lo que C4 protege de verdad no es "hubo un commit rojo" sino **"el candado está
+vivo"**, y eso sí se probó, por mutación y en copias aisladas:
+
+| Requisito | Mutación aplicada | Resultado |
+|---|---|---|
+| **R3** | tinta azul clara → `#60A5FA`, la del Make que [[design]] §3.0 descarta | rojo por la aserción de contraste: recibido **2,336**, que coincide con el valor publicado |
+| **R4** | superficie violeta oscura → idéntica a la azul (ΔE00 = 0) | rojo en sus **dos** aserciones de separación |
+| **R9** | (a) `bg-category-blue` escrito a mano en `docs/index.tsx`; (b) un uso categórico devuelto a `bg-accent-soft` | rojo **nombrando el archivo**, como exige la cláusula EARS; y rojo por el inventario, 18 en vez de 17 |
+
+Los tres candados están vivos. Lo que falta es el **registro** de que lo
+estaban antes de cerrarse.
+
+- [X] Firmo la excepción: **R3, R4 y R9 son requisitos de verificación** cuyo
+      commit rojo es de ausencia-de-helper, y su cierre queda probado por la
+      prueba de mutación de `progress/review_mobile-pastel-category-palette.md`
+      en vez de por su historial rojo→verde. Entiendo que C4 no se cumple en su
+      forma literal para esos tres, y que la regla general para no repetirlo
+      quedó escrita en `CHECKPOINTS.md` §C4 (fecha: 2026-09-05)
