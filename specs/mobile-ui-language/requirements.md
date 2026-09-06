@@ -528,3 +528,38 @@ renumerar [[copy-review]], que ya está en manos del humano.
 > redacción nueva ([[design]] §2.0 D6);
 > **(c)** las **9 enmiendas** a specs aprobadas de [[design]] §6.1.
 > Sin las tres firmas la implementación no arranca.
+
+### Enmienda del 2026-09-06 — R18 es requisito de verificación (C4 b)
+
+Codex CLI **paró antes de escribir la primera línea**, como el handoff le
+ordenaba, y el bloqueo es real: en el orden aprobado (`R1-R11 → R17 → R18`),
+una implementación correcta hace que el test de R18 **nazca verde**. R18 solo
+comprueba mecánicamente propiedades que R1-R11 ya dejaron en el árbol. La spec
+no declaraba la vía, y `CHECKPOINTS.md` §C4 —escrito tras el mismo problema en
+#64— exige que se elija **por escrito antes del handoff**.
+
+R17 **no** entra en esta enmienda: sus seis `testID` no existen todavía, así
+que su rojo es legítimo y no necesita excepción.
+
+**Se elige la vía (b) de C4: R18 se declara requisito de verificación y su
+cierre se prueba por mutación.** Descartada la vía (a) —escribir el candado de
+R18 antes de las migraciones que verifica— por una razón que Codex no llegó a
+articular y que pesa más que conservar el orden: el test de R18 se quedaría
+**rojo a propósito durante los ~30 commits** de R1-R11, y eso destruye la
+señal de "cada commit deja la suite verde", que es lo que hace útil correr los
+tests antes de cada commit. Cambiar un candado por otro no es un buen negocio.
+
+Evidencia que el `reviewer` exigirá para dar R18 por cerrado:
+
+1. Reintroducir **un literal de copy conocido** en una pantalla ya migrada,
+   nombrando cuál y dónde.
+2. Observar que `describe('#65 R18…')` se pone rojo **por su aserción** —no por
+   un `ReferenceError`— y que el mensaje **nombra el archivo** contaminado.
+3. Revertir la mutación y dejar la suite verde.
+
+El commit rojo de R18 deja de ser obligatorio; el resto de su ciclo (verde y
+trazabilidad) no cambia. Los otros 19 requisitos mantienen su rojo→verde real.
+
+- [ ] Firmo que **R18 es requisito de verificación** y se cierra por prueba de
+      mutación en vez de por commit rojo, con la evidencia de los tres puntos
+      de arriba en el reporte del `reviewer` (fecha: ____)
