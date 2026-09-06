@@ -584,3 +584,157 @@ Sobre el R18 ya commiteado en verde:
 5. `progress/impl_mobile-ui-language.R18.patch.txt` queda **obsoleto**: era el
    test cuando R18 estaba bloqueado. El vigente está en el árbol. Se puede
    borrar en el cierre.
+
+---
+
+# Tramo 4 — el escáner de R18(b) deja de tener regiones ciegas
+
+Fecha: 2026-09-06
+Branch: `feature/65-mobile-ui-language`
+
+Cierra el único defecto bloqueante del veredicto
+`progress/review_mobile-ui-language.md`. **El defecto era mío**, y el reviewer
+tiene razón entera: la migración de copy estaba bien, el candado que la vigila
+no.
+
+## Rojo → verde
+
+| Qué | Rojo | Verde |
+|---|---|---|
+| escáner sin regiones ciegas | `2895e9d` | `2f6a2b5` |
+
+Trazabilidad en `0f4e6ef`. R18 conserva su fila y su `describe`; no se mueve
+ninguna cifra ni ningún requisito, así que **no vuelve al gate humano**.
+
+## El defecto, reproducido antes de tocar nada
+
+Reproduje el falso verde del reviewer tal cual, sobre el árbol de HEAD:
+planté `const STRAY_COPY = 'Resumen de hoy';` en `src/app/(tabs)/home.tsx:59`
+—valor `es` de `home.summaryTitle`, dentro de la región ciega— y la suite
+**pasó 20/20**. Confirmado y revertido antes de escribir el arreglo.
+
+La causa es la que el reviewer señala: en `WHOLE_LITERAL`, la alternativa de
+plantilla excluía `$` de su clase de caracteres, así que **ninguna plantilla
+con `${…}` podía casar**; el motor seguía, tomaba la backtick **de cierre**
+como si fuera de apertura y se tragaba todo hasta la siguiente.
+
+## El rojo lo enseña sin ambigüedad
+
+El test de regresión opera sobre `wholeLiterals` directamente, con un fixture
+de dos plantillas con `${…}` y copy entre medias. Con el escáner roto:
+
+```
+● #65 R18: … › extrae los literales que siguen a una plantilla con interpolación
+
+    Expected: ArrayContaining ["Resumen de hoy", "Horario de comidas"]
+    Received: ["; const stray = 'Resumen de hoy'; const label =", "Horario de comidas"]
+```
+
+La región engullida aparece literalmente como **un solo literal falso**. Es la
+firma exacta del descuadre.
+
+## El arreglo: AST, no un regex mejor
+
+`wholeLiterals` pasa a recoger `StringLiteral`,
+`NoSubstitutionTemplateLiteral` y `JsxText` de un `ts.createSourceFile`.
+
+**Por qué no el arreglo mínimo de un carácter** (`[^`\\$]` → `[^`\\]`), que el
+`leader` proponía y que también habría puesto verde este rojo: porque deja
+viva la clase de fallo, no solo esta instancia. Emparejar delimitadores de un
+lenguaje real a mano se descuadra por más sitios — el más cercano, un
+apóstrofo dentro de un nodo de texto JSX (`Today's Summary` es un valor del
+propio catálogo), que abriría una cadena y cegaría desde ahí. Hoy hay **cero**
+apóstrofos en texto JSX de las 19 pantallas, pero eso es suerte, no una
+propiedad. El AST no tiene esa clase de fallo porque no empareja nada.
+
+Cumple las tres condiciones que el `leader` puso: **ninguna dependencia
+nueva** (`typescript` ~6.0.3 ya es `devDependency`, y el `package.json` sigue
+sin tocarse), no analiza las plantillas —solo las **consume** como nodos— y es
+más corto que el lexer que sustituye.
+
+### Cuánto tapaba, medido
+
+Comparando el escáner viejo con el nuevo sobre las 19 pantallas, por literales
+distintos extraídos:
+
+| Fichero | regex | AST | no veía |
+|---|---:|---:|---:|
+| `screens/profile/index.tsx` | 64 | 129 | **67** |
+| `app/(tabs)/weight-log.tsx` | 26 | 86 | **65** |
+| `app/(tabs)/food.tsx` | 54 | 104 | **56** |
+| `app/(tabs)/home.tsx` | 66 | 107 | **45** |
+| `app/(tabs)/health.tsx` | 52 | 84 | **36** |
+| `screens/reminders/index.tsx` | 81 | 104 | 34 |
+| `screens/add-pet/index.tsx` | 114 | 131 | 29 |
+| `screens/add-reminder/index.tsx` | 65 | 83 | 22 |
+| `app/(tabs)/map.tsx` | 81 | 83 | 5 |
+| `app/(tabs)/meal-schedule.tsx` | 98 | 99 | 3 |
+| `screens/docs/index.tsx` | 55 | 52 | 2 |
+
+**364 literales que el regex nunca vio, en 11 de las 19 pantallas.** (El
+reviewer contó 10 midiendo bytes ciegos; contando literales distintos salen 11
+— `meal-schedule` y `docs` aportan poco y se le quedaron por debajo del
+umbral.) Donde el AST extrae *menos* que el regex —`login` 47→46, `pairing`
+146→142— es porque el regex fabricaba basura: regiones engullidas y trozos de
+`a > b` leídos como texto JSX.
+
+## Mutación endurecida, y así se queda
+
+Como pide el `leader`, la prueba de mutación de C4(b) pasa a hacerse **en una
+región que antes estaba ciega**, no en un sitio cómodo. Esto **aprieta** el
+requisito firmado, no lo afloja, así que no necesita gate nuevo.
+
+Mismo sitio del falso verde, `home.tsx:59`, ahora con el escáner arreglado:
+
+```
+● #65 R18: … › no deja ningún valor fijo del catálogo como literal entero en las pantallas
+
+      Object {
+        "file": "src/app/(tabs)/home.tsx",
+    -   "looseCopy": Array [],
+    +   "looseCopy": Array [
+    +     "es:home.summaryTitle = Resumen de hoy",
+    +   ],
+      }
+```
+
+Falla **por su aserción**, nombrando fichero y cadena. Mutación revertida y
+suite verde.
+
+> **Regla para quien siga**: la mutación de R18 se planta **después de la
+> primera plantilla con `${…}` del fichero**. Una mutación en la cabecera de un
+> fichero no vale como evidencia — es exactamente lo que ocultó este defecto
+> durante dos tramos.
+
+## Copy o decisiones no previstas
+
+- **Ninguna.** El escáner nuevo, con 364 literales más a la vista, sigue sin
+  encontrar copy suelta en las 19 pantallas: coincide con el barrido AST
+  independiente del reviewer. La migración estaba bien; solo estaba mal
+  vigilada.
+- Borrado `progress/impl_mobile-ui-language.R18.patch.txt`, obsoleto desde que
+  R18 entró.
+- **No toqué** lo que el veredicto excluye: la desviación 325/42 se queda, el
+  `259` de `language-provider.test.tsx:40` se queda como deuda anotada, y el
+  test tautológico de `ALL_USES` se queda donde está.
+
+## Verificación
+
+- `./init.sh`: **exit code 0**, sin flake. Build, 163 + 2 + 63 suites, e2e
+  (`353 passed`), lint y typecheck verdes.
+- `bun run test` (móvil): **63 suites / 932 tests** (+1, el de regresión).
+- `bun run typecheck` y `bun run lint`: limpios, **0 warnings**.
+- Alcance: solo `ui-language.test.ts`, `traceability.md` y este reporte. Sin
+  tocar `backend-pet-tracker/`, `infra/`, `hosting/`, `app.json`,
+  `package.json` ni `src/theme/`. Ninguna casilla humana marcada,
+  `feature_list.json` intacto, sin PR ni merge.
+
+## Notas para el reviewer
+
+1. El fixture del test de regresión vive **dentro del test**, no en un fichero
+   aparte: prueba `wholeLiterals` como unidad, sin tocar el árbol.
+2. Si quieres rehacer la medida de cobertura, el script está en el commit
+   `2f6a2b5` — o más simple: planta el literal en `home.tsx:59` y comprueba que
+   ahora es rojo.
+3. `progress/review_mobile-ui-language.md` sigue **sin versionar** (untracked).
+   Lo dejo como está: es tu artefacto, no mío.
