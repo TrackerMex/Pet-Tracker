@@ -21,6 +21,10 @@ import { PetSwitcher } from '../../components/pet-switcher';
 import { useApi } from '../../hooks/use-api';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
+import {
+  useLocale,
+  useTranslate,
+} from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import {
   CONTINUOUS_CORNER,
@@ -42,15 +46,21 @@ function fmtKm(meters: number | null): string {
   return meters === null ? '—' : `${(meters / 1000).toFixed(1)} km`;
 }
 
-function fmtLastSeen(iso: string | null): string {
+function fmtLastSeen(
+  iso: string | null,
+  locale: string,
+  t: ReturnType<typeof useTranslate>,
+): string {
   return iso === null
-    ? 'No location data yet'
-    : `Last seen ${new Date(iso).toLocaleString()}`;
+    ? t('home.noLocationDataYet')
+    : t('home.lastSeen', { date: new Date(iso).toLocaleString(locale) });
 }
 
 export default function HomeScreen() {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { token } = useAuth();
+  const locale = useLocale();
+  const t = useTranslate();
   const { selectedPetId, selectPet } = useSelectedPet();
   const insets = useSafeAreaInsets();
   const [accent, success, warning, muted] = useThemeColors([
@@ -107,7 +117,9 @@ export default function HomeScreen() {
         paddingBottom: insets.bottom + 96,
       }}
     >
-      <Text className="text-2xl font-black text-foreground">Home</Text>
+      <Text className="text-2xl font-black text-foreground">
+        {t('home.home')}
+      </Text>
 
       {pets.data === undefined ? (
         <Skeleton testID="home-loading" className="h-12 w-full rounded-card" />
@@ -116,17 +128,17 @@ export default function HomeScreen() {
       {pets.data && isPetsError(pets.data) ? (
         <View className="items-start gap-3">
           <Text testID="home-error" className="text-danger">
-            Something went wrong
+            {t('common.somethingWentWrong')}
           </Text>
           <Button testID="home-retry" onPress={pets.refetch}>
-            Retry
+            {t('common.retry')}
           </Button>
         </View>
       ) : null}
 
       {pets.data?.kind === 'ok' && pets.data.pets.length === 0 ? (
         <Text testID="home-empty" className="text-muted">
-          No pets yet
+          {t('common.noPetsYet')}
         </Text>
       ) : null}
 
@@ -144,9 +156,11 @@ export default function HomeScreen() {
 
       {detail.data?.kind === 'error' || detail.data?.kind === 'unreachable' ? (
         <HeroUICard testID="pet-card-error" className="items-start gap-3 p-4">
-          <Text className="text-danger">Something went wrong</Text>
+          <Text className="text-danger">
+            {t('common.somethingWentWrong')}
+          </Text>
           <Button testID="pet-card-retry" onPress={detail.refetch}>
-            Retry
+            {t('common.retry')}
           </Button>
         </HeroUICard>
       ) : null}
@@ -194,10 +208,10 @@ export default function HomeScreen() {
                 className="text-base font-bold text-foreground"
               >
                 {detail.data.pet.device === null
-                  ? 'Free'
+                  ? t('home.free')
                   : detail.data.pet.device.connectivity === 'online'
-                    ? 'Online'
-                    : 'Offline'}
+                    ? t('home.online')
+                    : t('home.offline')}
               </Text>
             </View>
             {detail.data.pet.device ? (
@@ -230,7 +244,7 @@ export default function HomeScreen() {
               </View>
             ) : (
               <Text className="font-normal text-muted">
-                No collar — health only
+                {t('home.noCollar')}
               </Text>
             )}
             {detail.data.pet.device === null ? (
@@ -242,7 +256,7 @@ export default function HomeScreen() {
                     onPress={() => router.push('/pairing')}
               >
                 <Text className="font-bold text-foreground">
-                  Pair a collar
+                  {t('home.pairCollar')}
                 </Text>
               </Pressable>
             ) : null}
@@ -252,8 +266,11 @@ export default function HomeScreen() {
 
       {selectedPetId ? (
         <Card testID="summary-card" className="gap-4">
-          <Text className="text-base font-bold text-foreground">
-            Today&apos;s Summary
+          <Text
+            testID="summary-card-title"
+            className="text-base font-bold text-foreground"
+          >
+            {t('home.summaryTitle')}
           </Text>
 
           {activity.data === undefined ? (
@@ -262,7 +279,7 @@ export default function HomeScreen() {
 
           {activity.data?.kind === 'no-tracking' ? (
             <Text testID="summary-note" className="font-normal text-muted">
-              Activity tracking requires a collar
+              {t('home.activityNeedsCollar')}
             </Text>
           ) : null}
 
@@ -270,7 +287,7 @@ export default function HomeScreen() {
           activity.data?.kind === 'unreachable' ||
           activity.data?.kind === 'missing-config' ? (
             <Text testID="summary-note" className="font-normal text-muted">
-              Could not load activity
+              {t('home.couldNotLoadActivity')}
             </Text>
           ) : null}
 
@@ -286,7 +303,7 @@ export default function HomeScreen() {
                   {fmtMinutes(today?.activeMinutes ?? null)}
                 </Text>
                 <Text className="text-2xs font-normal text-muted">
-                  Activity
+                  {t('home.activity')}
                 </Text>
               </View>
               <View className="flex-1 items-center gap-1 border-r border-border">
@@ -298,7 +315,9 @@ export default function HomeScreen() {
                 >
                   {fmtMinutes(today?.restMinutes ?? null)}
                 </Text>
-                <Text className="text-2xs font-normal text-muted">Sleep</Text>
+                <Text className="text-2xs font-normal text-muted">
+                  {t('home.sleep')}
+                </Text>
               </View>
               <View className="flex-1 items-center gap-1">
                 <Map size={20} color={muted} />
@@ -310,7 +329,7 @@ export default function HomeScreen() {
                   {fmtKm(today?.distanceM ?? null)}
                 </Text>
                 <Text className="text-2xs font-normal text-muted">
-                  Distance
+                  {t('home.distance')}
                 </Text>
               </View>
             </View>
@@ -329,12 +348,14 @@ export default function HomeScreen() {
               <View className="size-9 items-center justify-center rounded-full bg-accent-soft">
                 <Map size={20} color={accent} />
               </View>
-              <Text className="font-semibold text-accent-strong">View on map</Text>
+              <Text className="font-semibold text-accent-strong">
+                {t('home.viewOnMap')}
+              </Text>
             </View>
             <ChevronRight size={20} color={accent} />
           </View>
           <Text testID="last-position-time" className="font-normal text-muted">
-            {fmtLastSeen(detail.data.pet.lastCommunicationAt)}
+            {fmtLastSeen(detail.data.pet.lastCommunicationAt, locale, t)}
           </Text>
         </Card>
       ) : null}

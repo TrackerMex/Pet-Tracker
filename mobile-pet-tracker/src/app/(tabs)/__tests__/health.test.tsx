@@ -20,6 +20,7 @@ import type { PetProfile, Vaccine, WeightEntry } from '../../../api/types';
 import * as apiHooks from '../../../hooks/use-api';
 import type { ApiResult } from '../../../hooks/use-api';
 import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
+import { LanguageProvider } from '../../../providers/language-provider';
 import { SelectedPetProvider } from '../../../providers/selected-pet-provider';
 import * as selectedPetHooks from '../../../providers/selected-pet-provider';
 import HealthScreen from '../health';
@@ -153,7 +154,9 @@ function pending<T>(): Promise<T> {
 function HealthWrapper({ children }: { children: ReactNode }) {
   return (
     <HeroUINativeProvider>
-      <SelectedPetProvider>{children}</SelectedPetProvider>
+      <LanguageProvider initial="es">
+        <SelectedPetProvider>{children}</SelectedPetProvider>
+      </LanguageProvider>
     </HeroUINativeProvider>
   );
 }
@@ -186,7 +189,7 @@ describe('R4: health resuelve la mascota seleccionada', () => {
     await renderHealth();
 
     expect(screen.getByTestId('screen-health')).toBeVisible();
-    expect(screen.getByText('Health')).toBeVisible();
+    expect(screen.getByText('Salud')).toBeVisible();
     expect(screen.getByTestId('health-loading')).toBeVisible();
     expect(screen.getByTestId('screen-health').props.contentContainerStyle).toEqual(
       expect.objectContaining({ padding: 24, paddingBottom: 120 }),
@@ -235,7 +238,9 @@ describe('R4: health resuelve la mascota seleccionada', () => {
     await renderHealth();
 
     await waitFor(() =>
-      expect(screen.getByTestId('health-empty')).toHaveTextContent('No pets yet'),
+      expect(screen.getByTestId('health-empty')).toHaveTextContent(
+        'Aún no tienes mascotas',
+      ),
     );
   });
 
@@ -316,7 +321,7 @@ describe('R5: vacunas con la próxima destacada', () => {
       expect(screen.getByTestId('vaccines-skeleton')).toBeVisible(),
     );
     expect(screen.getByTestId('vaccines-section')).toBeVisible();
-    expect(screen.getByText('Vaccines')).toBeVisible();
+    expect(screen.getByText('Vacunas')).toBeVisible();
   });
 
   it('highlights the nearest future dose and keeps row order', async () => {
@@ -337,7 +342,7 @@ describe('R5: vacunas con la próxima destacada', () => {
       expect(screen.getByTestId('next-vaccine-card')).toBeVisible(),
     );
     const nextCard = within(screen.getByTestId('next-vaccine-card'));
-    expect(nextCard.getByText('Next due')).toBeVisible();
+    expect(nextCard.getByText('Próxima dosis')).toBeVisible();
     expect(nextCard.getByText('Rabies')).toBeVisible();
     expect(nextCard.getByText('2099-05-01')).toBeVisible();
     expect(screen.getAllByTestId(/^vaccine-row-/).map(({ props }) => props.testID)).toEqual([
@@ -408,7 +413,7 @@ describe('R5: vacunas con la próxima destacada', () => {
 
     await waitFor(() =>
       expect(screen.getByTestId('vaccines-empty')).toHaveTextContent(
-        'No vaccines yet',
+        'Aún no hay vacunas',
       ),
     );
   });
@@ -424,7 +429,7 @@ describe('R5: vacunas con la próxima destacada', () => {
     await renderHealth();
     await waitFor(() =>
       expect(screen.getByTestId('vaccines-error')).toHaveTextContent(
-        'Could not load vaccines',
+        'No se pudieron cargar las vacunas',
       ),
     );
     await fireEvent.press(screen.getByTestId('vaccines-retry'));
@@ -457,7 +462,7 @@ describe('R6: weight card enlaza al log', () => {
     await renderHealth();
 
     await waitFor(() => expect(screen.getByTestId('weight-card')).toBeVisible());
-    expect(screen.getByText('Weight')).toBeVisible();
+    expect(screen.getByText('Peso')).toBeVisible();
     expect(screen.getByTestId('weight-current')).toHaveTextContent('12.4 kg');
     expect(screen.getByTestId('weight-variation')).toHaveTextContent('+0.4 kg');
 
@@ -490,7 +495,7 @@ describe('R6: weight card enlaza al log', () => {
 
     await waitFor(() =>
       expect(screen.getByTestId('weight-card-empty')).toHaveTextContent(
-        'No weight entries yet',
+        'Aún no hay registros de peso',
       ),
     );
     expect(screen.getByTestId('weight-log-link')).toBeVisible();
@@ -506,7 +511,7 @@ describe('R6: weight card enlaza al log', () => {
 
     await waitFor(() =>
       expect(screen.getByTestId('weight-card-error')).toHaveTextContent(
-        'Could not load weight',
+        'No se pudo cargar el peso',
       ),
     );
     expect(screen.getByTestId('weight-log-link')).toBeVisible();
@@ -606,10 +611,10 @@ describe('#62 R5: el título de card usa un único tratamiento', () => {
     });
   });
 
-  it('aplica la receta canónica a Weight', async () => {
+  it('aplica la receta canónica a Peso', async () => {
     await renderHealth();
 
-    expect((await screen.findByText('Weight')).props.className).toBe(
+    expect((await screen.findByTestId('weight-card-title')).props.className).toBe(
       'text-base font-bold text-foreground',
     );
   });

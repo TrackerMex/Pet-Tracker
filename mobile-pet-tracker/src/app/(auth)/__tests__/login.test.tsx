@@ -1,9 +1,11 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
+import type { ReactNode } from 'react';
 
 import { login, type LoginState } from '../../../api/auth';
 import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
+import { LanguageProvider } from '../../../providers/language-provider';
 import Login from '../login';
 
 jest.mock('../../../api/auth', () => ({
@@ -32,8 +34,16 @@ const mockUseAuth = jest.mocked(useAuth);
 const mockSignIn = jest.fn<Promise<void>, [string]>();
 const mockRouter = jest.mocked(router);
 
+function AuthScreenWrapper({ children }: { children: ReactNode }) {
+  return (
+    <HeroUINativeProvider>
+      <LanguageProvider initial="es">{children}</LanguageProvider>
+    </HeroUINativeProvider>
+  );
+}
+
 async function renderLogin() {
-  await render(<Login />, { wrapper: HeroUINativeProvider });
+  await render(<Login />, { wrapper: AuthScreenWrapper });
 }
 
 async function submit(email = 'alex@example.com', password = 'correct horse') {
@@ -70,10 +80,13 @@ describe('R7: login llama a la api y navega', () => {
   });
 
   it.each<[LoginState, string]>([
-    [{ kind: 'invalid-credentials' }, 'Invalid credentials'],
-    [{ kind: 'unreachable', message: 'network down' }, 'Cannot reach server'],
-    [{ kind: 'error' }, 'Something went wrong'],
-    [{ kind: 'missing-config' }, 'Something went wrong'],
+    [{ kind: 'invalid-credentials' }, 'Credenciales inválidas'],
+    [
+      { kind: 'unreachable', message: 'network down' },
+      'No se pudo conectar con el servidor',
+    ],
+    [{ kind: 'error' }, 'Algo salió mal'],
+    [{ kind: 'missing-config' }, 'Algo salió mal'],
   ])('shows the expected message for $kind', async (state, message) => {
     mockLogin.mockResolvedValue(state);
     await renderLogin();

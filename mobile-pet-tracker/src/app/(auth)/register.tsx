@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { login, register } from '../../api/auth';
 import type { FieldError as ApiFieldError } from '../../api/types';
 import { useAuth } from '../../providers/auth-provider';
+import { useTranslate } from '../../providers/language-provider';
 
 type RegisterField =
   | 'firstName'
@@ -82,6 +83,7 @@ export default function Register() {
   const [fieldErrors, setFieldErrors] = useState<RegisterFieldErrors>({});
   const [generalError, setGeneralError] = useState<string | null>(null);
   const { signIn } = useAuth();
+  const t = useTranslate();
 
   async function handleSubmit() {
     setSubmitting(true);
@@ -117,7 +119,7 @@ export default function Register() {
           return;
         }
         case 'email-taken':
-          setGeneralError('Email already registered');
+          setGeneralError(t('register.emailAlreadyRegistered'));
           return;
         case 'validation': {
           const validation = mapValidationErrors(result.errors);
@@ -126,14 +128,14 @@ export default function Register() {
           return;
         }
         case 'unreachable':
-          setGeneralError('Cannot reach server');
+          setGeneralError(t('common.cannotReachServer'));
           return;
         case 'error':
         case 'missing-config':
-          setGeneralError('Something went wrong');
+          setGeneralError(t('common.somethingWentWrong'));
       }
     } catch {
-      setGeneralError('Something went wrong');
+      setGeneralError(t('common.somethingWentWrong'));
     } finally {
       setSubmitting(false);
     }
@@ -153,12 +155,12 @@ export default function Register() {
       }}
     >
       <Text className="text-center text-2xl font-black text-foreground">
-        Create account
+        {t('register.createAccount')}
       </Text>
 
       <TextField isInvalid={Boolean(fieldErrors.firstName)}>
         <Label className="text-xs font-semibold text-foreground">
-          First name
+          {t('register.firstName')}
         </Label>
         <Input
           testID="register-first-name"
@@ -173,7 +175,7 @@ export default function Register() {
 
       <TextField isInvalid={Boolean(fieldErrors.lastName)}>
         <Label className="text-xs font-semibold text-foreground">
-          Last name
+          {t('register.lastName')}
         </Label>
         <Input
           testID="register-last-name"
@@ -185,7 +187,9 @@ export default function Register() {
       </TextField>
 
       <TextField isInvalid={Boolean(fieldErrors.email)}>
-        <Label className="text-xs font-semibold text-foreground">Email</Label>
+        <Label className="text-xs font-semibold text-foreground">
+          {t('register.email')}
+        </Label>
         <Input
           testID="register-email"
           className="rounded-xl bg-default"
@@ -198,7 +202,9 @@ export default function Register() {
       </TextField>
 
       <TextField isInvalid={Boolean(fieldErrors.phone)}>
-        <Label className="text-xs font-semibold text-foreground">Phone</Label>
+        <Label className="text-xs font-semibold text-foreground">
+          {t('register.phone')}
+        </Label>
         <Input
           testID="register-phone"
           className="rounded-xl bg-default"
@@ -211,7 +217,7 @@ export default function Register() {
 
       <TextField isInvalid={Boolean(fieldErrors.password)}>
         <Label className="text-xs font-semibold text-foreground">
-          Password
+          {t('register.password')}
         </Label>
         <Input
           testID="register-password"
@@ -225,7 +231,7 @@ export default function Register() {
 
       <TextField isInvalid={Boolean(fieldErrors.passwordConfirmation)}>
         <Label className="text-xs font-semibold text-foreground">
-          Confirm password
+          {t('register.confirmPassword')}
         </Label>
         <Input
           testID="register-password-confirmation"
@@ -241,7 +247,7 @@ export default function Register() {
 
       <TextField isInvalid={Boolean(fieldErrors.country)}>
         <Label className="text-xs font-semibold text-foreground">
-          Country (2-letter code)
+          {t('register.country')}
         </Label>
         <Input
           testID="register-country"
@@ -260,7 +266,7 @@ export default function Register() {
           isSelected={terms}
           onSelectedChange={setTerms}
         />
-        <Text className="text-foreground">I accept the terms</Text>
+        <Text className="text-foreground">{t('register.iAcceptTerms')}</Text>
       </View>
 
       {generalError ? (
@@ -276,7 +282,7 @@ export default function Register() {
         onPress={() => void handleSubmit()}
       >
         <Button.Label className="font-bold text-accent-foreground">
-          Create account
+          {t('register.createAccount')}
         </Button.Label>
       </Button>
     </ScrollView>

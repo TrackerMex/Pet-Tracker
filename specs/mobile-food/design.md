@@ -194,8 +194,11 @@ Controller: `backend-pet-tracker/src/modules/nutrition/infrastructure/nutrition.
   `jest.setSystemTime(new Date('2026-08-23T13:00:00'))` (13:00 local:
   con `['07:30','19:30']` → 1/2 servidas) para asserts deterministas.
 
-- **D8 — Idiomas.** Textos de UI en inglés (consistencia con
-  Home/Map/Health). Los `warnings[].message` del backend llegan en
+- **D8 — Idiomas.** ~~Textos de UI en inglés (consistencia con
+  Home/Map/Health).~~ **Enmendado por #65: los textos de UI viven en el
+  catálogo de dos idiomas; el inglés de esta spec es la columna `en` y el
+  español por defecto es la `es` (ver §Enmienda #65).** Los
+  `warnings[].message` del backend llegan en
   español y se muestran tal cual (mensajes clínicos persistidos; no se
   traducen ni se truncan).
 
@@ -243,3 +246,28 @@ Controller: `backend-pet-tracker/src/modules/nutrition/infrastructure/nutrition.
 - **Persistir "servido" localmente (AsyncStorage)**: estado fantasma que
   divergiría del backend real cuando exista tracking; la derivación por
   hora es honesta y sin estado.
+
+## Enmienda #65 — idioma de la UI
+
+El 2026-09-04 el humano decidió que la UI móvil va en español, y el 2026-09-05
+que la feature sea un **catálogo de dos idiomas con interruptor en Profile y
+español por defecto** (`progress/explore_design-gap-vs-make.md` §4, decisión A
+y su ampliación). Esta spec ratificó el inglés en su día; esa parte queda
+**enmendada**.
+
+- **Qué cambia**: el literal de UI que esta spec fija deja de estar escrito en
+  la pantalla y pasa a resolverse por clave contra el catálogo. El idioma por
+  defecto es el español.
+- **Qué NO cambia**: **el literal inglés de esta spec sigue siendo normativo**
+  como columna `en` de su clave — un usuario que elija inglés lo sigue viendo
+  palabra por palabra. Y no cambia ningún requisito `R<n>`, ningún `testID`,
+  ninguna conducta, ningún contrato de API ni ninguna decisión visual. La
+  trazabilidad `R-id ↔ test` de `mobile-food` sigue siendo válida.
+- **Fuente única del literal y de la clave**:
+  `specs/mobile-ui-language/design.md` §2. Si esta spec y esa tabla discrepan,
+  **manda la tabla**.
+- **Los mensajes de validación del backend siguen en inglés en los dos
+  idiomas** y esta enmienda no los toca
+  (`specs/mobile-ui-language/requirements.md` §Fuera de alcance 1).
+
+- [X] Enmienda aprobada por humano (fecha: 2026-09-06)

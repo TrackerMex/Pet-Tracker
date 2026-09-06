@@ -179,8 +179,9 @@ Montarse con token **no** dispara nada (R6). Estados de la pantalla:
 UI: mismos patrones visuales que `login.tsx` (`flex-1 justify-center gap-4
 bg-background p-6`, tokens, sin hex, sin clases arbitrarias, sin
 `StyleSheet.create`). No hay componentes nuevos que extraer (pantalla única,
-regla de extracción de la carta no aplica). Copy de la app en inglés, como
-el resto de pantallas.
+regla de extracción de la carta no aplica). ~~Copy de la app en inglés,
+como el resto de pantallas.~~ **Copy de la app en el catálogo de dos
+idiomas desde #65, español por defecto (ver §Enmienda #65).**
 
 ### D8 — `resetPassword` en `src/api/auth.ts`, unión discriminada como `login`
 
@@ -319,3 +320,28 @@ cuerpo de dos adaptadores.
   alcance).
 - **iOS Universal Links**: sin build ni credenciales iOS, y el smoke del
   repo es Android; feature propia cuando toque (§Fuera de alcance).
+
+## Enmienda #65 — idioma de la UI
+
+El 2026-09-04 el humano decidió que la UI móvil va en español, y el 2026-09-05
+que la feature sea un **catálogo de dos idiomas con interruptor en Profile y
+español por defecto** (`progress/explore_design-gap-vs-make.md` §4, decisión A
+y su ampliación). Esta spec ratificó el inglés en su día; esa parte queda
+**enmendada**.
+
+- **Qué cambia**: el literal de UI que esta spec fija deja de estar escrito en
+  la pantalla y pasa a resolverse por clave contra el catálogo. El idioma por
+  defecto es el español.
+- **Qué NO cambia**: **el literal inglés de esta spec sigue siendo normativo**
+  como columna `en` de su clave — un usuario que elija inglés lo sigue viendo
+  palabra por palabra. Y no cambia ningún requisito `R<n>`, ningún `testID`,
+  ninguna conducta, ningún contrato de API ni ninguna decisión visual. La
+  trazabilidad `R-id ↔ test` de `auth-reset-deep-link` sigue siendo válida.
+- **Fuente única del literal y de la clave**:
+  `specs/mobile-ui-language/design.md` §2. Si esta spec y esa tabla discrepan,
+  **manda la tabla**.
+- **Los mensajes de validación del backend siguen en inglés en los dos
+  idiomas** y esta enmienda no los toca
+  (`specs/mobile-ui-language/requirements.md` §Fuera de alcance 1).
+
+- [X] Enmienda aprobada por humano (fecha: 2026-09-06)

@@ -276,14 +276,22 @@ R1–R11 reparten las 320 ocurrencias 29/5/20/19/32/35/35/50/40/40/15.
       `findByTestId`, con la aserción de `className` **idéntica byte a byte**;
       actualizar el título de `food.test.tsx:522`.
 - [ ] (3) Refactor con tests verdes + comprobar los dos recuentos de
-      [[requirements]] R17: `*ByText(`/`toHaveTextContent(` = **244** y
-      `ByTestId(` ≥ **800**. Si el primero no cuadra, algo se debilitó: parar.
+      [[requirements]] R17: `*ByText(`/`toHaveTextContent(` = **265** y
+      `ByTestId(` ≥ **800**. Si el primero no cuadra, algo se debilitó: parar. El invariante que decide es el **delta −2** entre el padre y el verde de R17, no la cifra absoluta (enmienda (2) al final de [[requirements]]).
 
 ## R18 — Cero copy suelta en las pantallas
 
-- [ ] (1) Test rojo: `describe('#65 R18: los 320 sitios resuelven por clave y
-      no queda copy suelta')` con `ALL_USES` (320) y el escaneo de literales
-      enteros de [[design]] §4.1 sobre los 19 archivos.
+> **Requisito de verificación, vía C4(b), aprobado por el humano el
+> 2026-09-06.** En el orden obligatorio nace verde tras R1-R11. Su candado se
+> demuestra por mutación según la enmienda firmada al final de
+> [[requirements]]; no se fabrica un commit rojo.
+
+- [ ] (1) Test de verificación:
+      `describe('#65 R18: los 320 sitios resuelven por clave y no queda copy
+      suelta')` con `ALL_USES` (320) y el escaneo de literales enteros de
+      [[design]] §4.1 sobre los 19 archivos. Reintroducir temporalmente un
+      literal conocido y comprobar que falla por su aserción nombrando el
+      archivo; revertir la mutación y registrar la evidencia en el reporte.
 - [ ] (2) Implementación: cerrar lo que el escaneo destape. Si aparece una
       cadena que no está en la tabla, **parar** y anotarlo en
       `progress/impl_mobile-ui-language.md`.

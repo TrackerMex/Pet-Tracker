@@ -2666,3 +2666,138 @@ ninguna IA mergea a `main`.
   como feature propia.
 - Estado final: `done`. PR pendiente de mergear; ninguna IA mergea a main.
 
+### Fix de deriva de migraciones + script `db:migrate` (2026-09-05, humano)
+
+**Disparador**: `GET` de documentos de mascota fallaba en local con
+`error: relation "pet_documents" does not exist` (Postgres 42P01) desde
+`PetDocumentDrizzleRepository.listByPet`.
+
+**Diagnostico**: no era un bug de codigo. La BD local iba tres migraciones por
+detras del repo. `drizzle.__drizzle_migrations` tenia 13 filas (hasta 0012) y
+faltaban:
+
+- `0013_wet_may_parker` — sus tablas (`nutrition_plans`, `nutrition_profiles`)
+  **si existian** en la BD, pero sin fila en el journal. Esa inconsistencia era
+  la causa de fondo: cualquiera que corriese `migrate` reventaba con
+  "relation already exists" en 0013 y abandonaba, dejando 0014 y 0015 sin
+  aplicar indefinidamente.
+- `0014_late_lord_tyger` — `pet_documents` (la del error).
+- `0015_auth_password_reset_tokens` — `password_reset_tokens`.
+
+**Acciones sobre la BD local** (no destructivas, solo `CREATE TABLE`):
+
+1. Baseline de 0013: `INSERT` de su fila en `drizzle.__drizzle_migrations`
+   (hash `6b0f0ff6...`, `created_at` 1787066723656) tras verificar columna a
+   columna que las dos tablas de nutricion en la BD coinciden con el `.sql`.
+2. `DATABASE_URL=... pnpm exec drizzle-kit migrate` → aplico 0014 y 0015.
+3. Verificado: `pet_documents` existe con PK, `pet_documents_pet_id_idx` y las
+   dos FKs (`pet_id` → `pets` ON DELETE CASCADE, `created_by` → `users`).
+   16/16 migraciones registradas.
+
+**Cambio en el repo**: `backend-pet-tracker/package.json` gana una linea:
+
+```json
+"db:migrate": "drizzle-kit migrate",
+```
+
+No existia script para aplicar migraciones — solo `db:generate` — y se aplicaban
+a mano (`specs/device-subscriptions/design.md:28` ya lo documentaba como deuda).
+Esa ausencia es lo que dejaba la BD derivar.
+
+**Excepcion de rol usada**: el cambio lo hizo el subagente `implementer`, no
+Codex CLI, acogiendose a `CLAUDE.md` §Excepciones (fallback para cambios
+triviales de una linea). Sin spec y sin TDD: es una entrada en `scripts`, no
+logica de aplicacion. Reporte en `progress/impl_db-migrate-script.md`.
+
+**Pendiente / decisiones abiertas**:
+
+- **Sin commitear**. El working tree esta en `feature/64-mobile-pastel-category-palette`,
+  que no tiene nada que ver con esto. El cambio deberia ir en su propia branch.
+- `drizzle.config.ts` no carga `dotenv`, asi que `pnpm run db:migrate` a secas
+  falla con una conexion vacia poco obvia: hay que pasar `DATABASE_URL` en el
+  entorno. Anadir `dotenv/config` apuntando a `../.env` seria su propia tarea,
+  no colada aqui.
+- Los hashes en `drizzle.__drizzle_migrations` de 0003-0008 y 0012 **no**
+  coinciden con los `.sql` actuales (CRLF o edicion post-aplicacion). No rompe
+  nada — el migrator compara por timestamp, no por hash — pero significa que
+  esos archivos cambiaron despues de aplicarse. Sin investigar.
+
+- Cerrado por el humano en `2eb4934` (PR #107). El `leader` habia diagnosticado
+  mal la causa —apunto a dos Postgres en el 5432— y la evidencia real del
+  journal de `drizzle` la encontro el humano.
+- Queda abierto: `drizzle.config.ts` no carga el `.env`, asi que `pnpm db:migrate`
+  sigue necesitando exportar `DATABASE_URL` a mano. Pasado a la sesion Backend.
+
+## 2026-09-06 — #65 `mobile-ui-language` (cerrada)
+
+La app movil pasa a **espanol por defecto** con catalogo bilingue de 259 claves
+e interruptor en Perfil. 20 requisitos, 325 sitios de copy resueltos por clave,
+cero dependencias nuevas, cero cambios de layout. El ingles no desaparece: sigue
+siendo la columna `en` del catalogo, y las 9 specs que lo ratificaron llevan su
+enmienda firmada por el humano.
+
+**Implementacion repartida.** Codex CLI hizo R1-R16 y el rojo de R17 y agoto su
+cuota (vuelve el martes). El subagente `implementer` cerro R17-R20 bajo
+`CLAUDE.md` §Excepciones, con el coste declarado: `implementer` y `reviewer`
+salen del mismo modelo, asi que en ese tramo se pierde "quien implementa no
+revisa" en su version fuerte. Lo que quedo en pie: el `reviewer` corrio
+`init.sh` el mismo y reconstruyo los 20 ciclos rojo-verde desde git.
+
+**Tres enmiendas, las tres por parar antes de escribir codigo:**
+
+1. **R18 requisito de verificacion** (firma `5f59a58`). En el orden aprobado
+   nacia verde por construccion: solo comprueba propiedades que R1-R11 ya
+   dejaron en el arbol. Se eligio la via C4(b) —prueba por mutacion— y no la de
+   adelantar el candado, porque eso lo habria dejado rojo a proposito durante
+   ~30 commits, destruyendo la senal de "cada commit deja la suite verde".
+2. **Recuento de R17, 244 a 265** (firma `2283806`). La cifra estaba **caduca,
+   no equivocada**: correcta contra `a44925f`, pero #64 mergeo (+12) y los tests
+   obligatorios de la propia spec anadieron 9. El invariante pasa a ser el
+   **delta -2** entre el padre y el verde de R17.
+3. **Copy sin clave que el inventario no vio** (firma `cb0b53b`). Causa raiz: el
+   inventario barrio **literales ingleses por traducir**, asi que toda copy que
+   se escribe igual en los dos idiomas era invisible. Cuatro claves nuevas
+   (`addPet.no`, `addPet.microchip`, `pairing.esn`, `map.gps`). La misma
+   enmienda cambio el candado de **constante congelada a consistencia interna**,
+   por ser la tercera vez en dos features que un numero escrito a mano paraba el
+   trabajo.
+
+**El rechazo del `reviewer`, que fue lo mejor de la feature.** El escaner de
+R18(b) tenia **regiones ciegas en 11 de las 19 pantallas**: una plantilla con
+`${...}` no casaba porque la clase de caracteres excluia `$`, el motor tomaba la
+comilla invertida de cierre como de apertura y se tragaba hasta **6326 bytes
+seguidos**. Lo demostro plantando `'Resumen de hoy'` en `home.tsx:59`: la suite
+se quedo **verde**. El arreglo movio el escaneo al **AST de TypeScript**
+(`typescript` ya era devDependency) y destapo **364 literales** que nunca se
+habian mirado — ninguno con copy suelta. La migracion estaba bien; el candado no.
+
+Leccion: la prueba de mutacion original era **autentica y a la vez inutil**,
+porque se planto en un sitio comodo (`login.tsx:68`, zona visible). Una mutacion
+que pasa demuestra que el candado funciona **en ese punto**, no en el fichero.
+
+**Un defecto de diseno propio, al final.** R19 se escribio como «THE SYSTEM
+SHALL dejar la casilla sin marcar», que obliga a lo que **entrega la
+implementacion**; el test lo midio como invariante permanente, asi que la firma
+del humano ponia la suite en rojo. R19 exigia 9 casillas firmables y prohibia
+que se firmaran. Se arreglo el test —comprueba que la linea de firma existe,
+marcada o no— sin tocar la spec; el `reviewer` audito ese juicio y lo confirmo.
+El guardian contra la auto-aprobacion nunca fue ese test: es que el `leader`
+verifica autoria y ficheros de cada commit de firma, que es lo que destapo el
+`f90facb` (un commit de agente que replico una firma humana en vez de hacer
+`pull`).
+
+**Gates humanos**: humo en dev build de Android (`7167ac9`) y las 9 enmiendas
+(`00151e6` + `2ffc5ee`). Al firmar, el humano marco por error el `Smoke
+ejecutado por el humano` de `mobile-auth` (gate de #33) en vez de la enmienda;
+lo corrigio y decidio dejar tambien esa casilla marcada por haber corrido esa
+prueba.
+
+**Deuda anotada, no bloqueante**: `canonicalAmendment()` no comprueba que
+`indexOf(SIGNATURE_LINE)` encuentre algo, asi que si §6.2 perdiera su linea de
+firma el `slice` truncaria en silencio; y `language-provider.test.tsx:40` sigue
+con un `259` escrito a mano. Ambas, una linea en la proxima feature que toque
+esos ficheros.
+
+PR #110. Informes: `progress/impl_mobile-ui-language.md`,
+`progress/review_mobile-ui-language.md`.
+

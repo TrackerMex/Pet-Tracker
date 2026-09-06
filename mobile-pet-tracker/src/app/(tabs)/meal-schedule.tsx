@@ -15,6 +15,7 @@ import {
 import { Card } from '../../components/card';
 import { useApi } from '../../hooks/use-api';
 import { useAuth } from '../../providers/auth-provider';
+import { useTranslate } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
@@ -36,6 +37,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
   ]);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
+  const t = useTranslate();
   const insets = useSafeAreaInsets();
   const [submitting, setSubmitting] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
@@ -80,29 +82,29 @@ function MealScheduleContent({ petId }: { petId: string }) {
           plan.refetch();
           return;
         case 'forbidden':
-          setGenerateError('Only the owner can generate the plan');
+          setGenerateError(t('mealSchedule.errorForbidden'));
           return;
         case 'unprocessable':
           if (result.code === 'NUTRITION_PROFILE_REQUIRED') {
-            setGenerateError('Create a nutrition profile first');
+            setGenerateError(t('mealSchedule.errorProfileRequired'));
           } else if (result.code === 'PET_WEIGHT_REQUIRED') {
-            setGenerateError('Register a weight first');
+            setGenerateError(t('mealSchedule.registerWeightFirst'));
           } else {
-            setGenerateError('Something went wrong');
+            setGenerateError(t('common.somethingWentWrong'));
           }
           return;
         case 'unreachable':
-          setGenerateError('Cannot reach server');
+          setGenerateError(t('common.cannotReachServer'));
           return;
         case 'unauthorized':
           await signOut();
           return;
         case 'error':
         case 'missing-config':
-          setGenerateError('Something went wrong');
+          setGenerateError(t('common.somethingWentWrong'));
       }
     } catch {
-      setGenerateError('Something went wrong');
+      setGenerateError(t('common.somethingWentWrong'));
     } finally {
       setSubmitting(false);
     }
@@ -123,7 +125,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
       <View className="flex-row items-center gap-3">
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Back to food"
+          accessibilityLabel={t('mealSchedule.backToFood')}
           testID="meal-schedule-back"
           hitSlop={TOUCH_SLOP}
           className="rounded-full bg-default p-2"
@@ -132,7 +134,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
           <ArrowLeft size={20} color={foreground} />
         </Pressable>
         <Text className="text-2xl font-black text-foreground">
-          Meal schedule
+          {t('mealSchedule.mealSchedule')}
         </Text>
       </View>
 
@@ -157,10 +159,10 @@ function MealScheduleContent({ petId }: { petId: string }) {
         {hasError ? (
           <View className="items-start gap-3">
             <Text testID="meal-schedule-error" className="text-danger">
-              Something went wrong
+              {t('common.somethingWentWrong')}
             </Text>
             <Button testID="meal-schedule-retry" onPress={retryAll}>
-              Retry
+              {t('common.retry')}
             </Button>
           </View>
         ) : null}
@@ -175,19 +177,23 @@ function MealScheduleContent({ petId }: { petId: string }) {
             <View className="flex-row items-center justify-between gap-4">
               <View className="flex-1 gap-1">
                 <Text className="text-xs font-semibold uppercase tracking-widest text-accent-foreground">
-                  Daily target
+                  {t('mealSchedule.dailyTarget')}
                 </Text>
                 <Text className="text-3xl font-black text-accent-foreground">
                   {loadedPlan.merKcal} kcal
                 </Text>
                 <Text className="font-semibold text-accent-foreground">
-                  {loadedPlan.dailyGrams} g / day
+                  {t('mealSchedule.dailyGrams', {
+                    grams: loadedPlan.dailyGrams,
+                  })}
                 </Text>
               </View>
               <View className="items-end gap-1">
                 <ForkKnife size={24} color={accentForeground} />
                 <Text className="font-bold text-accent-foreground">
-                  {loadedPlan.mealsPerDay} meals / day
+                  {t('mealSchedule.mealsPerDay', {
+                    meals: loadedPlan.mealsPerDay,
+                  })}
                 </Text>
               </View>
             </View>
@@ -195,7 +201,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
 
           <View className="gap-3">
             <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
-              Times and portions
+              {t('mealSchedule.timesAndPortions')}
             </Text>
             {loadedPlan.mealTimes.map((mealTime, index) => {
               const portionGrams = Math.round(
@@ -229,7 +235,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
 
       {!hasError && plan.data?.kind === 'not-found' ? (
         <Text testID="meal-schedule-empty" className="font-normal text-muted">
-          No meal plan yet
+          {t('mealSchedule.noMealPlanYet')}
         </Text>
       ) : null}
 
@@ -247,7 +253,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
             onPress={() => void handleGenerate()}
           >
             <Button.Label className="font-bold text-accent-foreground">
-              Generate plan
+              {t('mealSchedule.generatePlan')}
             </Button.Label>
           </Button>
         </View>
@@ -265,8 +271,11 @@ function MealScheduleContent({ petId }: { petId: string }) {
             testID="nutrition-profile-section"
             className="gap-3"
           >
-            <Text className="text-base font-bold text-foreground">
-              Nutrition profile
+            <Text
+              testID="nutrition-profile-title"
+              className="text-base font-bold text-foreground"
+            >
+              {t('mealSchedule.nutritionProfile')}
             </Text>
             <View className="flex-row flex-wrap gap-2">
               <Text className="rounded-full bg-default px-3 py-1 text-sm font-semibold text-foreground">
@@ -294,7 +303,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
 
         {!hasError && profile.data?.kind === 'not-found' ? (
           <Text testID="nutrition-profile-empty" className="font-normal text-muted">
-            No nutrition profile yet
+            {t('mealSchedule.noNutritionProfileYet')}
           </Text>
         ) : null}
       </View>

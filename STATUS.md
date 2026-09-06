@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-09-05
-**Features completadas**: 58/63 (`feature_list.json`)
+**Última actualización**: 2026-09-06
+**Features completadas**: 61/72 (`feature_list.json`)
 **En progreso**: ninguna
 
-**Pendientes**: 5 (#18, #41, #60, #62, #63). #42 `mobile-device-pairing` cerró el claim de collar desde la app (código de activación, `Tracker is ready`, estado tracked/free derivado del 402 de `positions/last`, unpair nativo) y se validó con un collar real en Wialon. #61 `mobile-ui-legibility-polish` (otra sesión, PR #101) ya está mergeada; su smoke registró #63 `mobile-detail-screens-state-reset` (P2: las rutas bajo `(tabs)` no se desmontan y conservan estado de formulario; afecta también a `/pairing`) y amplió #62. PR #102 de #42 pendiente de merge por el humano.
+**Pendientes**: 11 (#18, #41, #60, #63, #66-#72). El rediseño contra el diseño del Make abrió el bloque #64-#71: #64 `mobile-pastel-category-palette` y #65 `mobile-ui-language` están cerradas; #66 `pets-list-response-enrichment` la lleva la sesión Backend y **bloquea** la cabecera y las fotos de #67. #72 registra un flake de un test de `add-pet` sin causa confirmada. PR #110 (#65) pendiente de merge por el humano.
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
 desde 2026-08-10. Hay recursos vivos en la cuenta, aunque hoy sin coste.
@@ -86,6 +86,20 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Estado actual
+
+- **`mobile-ui-language` (#65) done** (2026-09-06): la app habla **español por
+  defecto**, con catálogo bilingüe de **259 claves** en `src/i18n/catalog.ts`,
+  `language-provider` con `t()`, persistencia best-effort en `expo-secure-store`
+  (`language-preference.ts`, copiando el patrón de `theme-preference`) e
+  interruptor en Perfil que repinta al momento. **325 sitios** de copy resueltos
+  por clave en 19 ficheros de pantalla, cero literales sueltos, cero
+  dependencias nuevas y cero cambios de layout (160 valores distintos de
+  `className` en la base y 160 en HEAD). El inglés no se pierde: cada literal
+  que fijaron las 9 specs anteriores sigue siendo normativo como columna `en`,
+  y las 9 llevan su enmienda firmada. Implementación repartida: **Codex CLI**
+  hizo R1-R16 y el rojo de R17 antes de agotar cuota; el subagente
+  `implementer` cerró R17-R20 bajo `CLAUDE.md` §Excepciones. Informes en
+  `progress/impl_mobile-ui-language.md` y `progress/review_mobile-ui-language.md`.
 
 - **`mobile-device-pairing` (#42) done** (2026-09-04): ruta `/pairing` en
   tabs con una pantalla de tres vistas (formulario de claim, `Tracker is
@@ -866,6 +880,32 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-09-06** — **#65 `mobile-ui-language` cerrada** tras tres enmiendas
+  firmadas y **un rechazo del `reviewer` que valió la pena**. El candado de
+  R18 —el que garantiza que no queda copy suelta— tenía **regiones ciegas en 11
+  de las 19 pantallas**: una plantilla con `${…}` descuadraba el lexer de
+  expresiones regulares, que tomaba la comilla invertida de cierre como de
+  apertura y se tragaba hasta **6326 bytes seguidos**. El `reviewer` lo demostró
+  plantando un literal de copy que dejó la suite **en verde**. El arreglo mueve
+  el escaneo al **AST de TypeScript** (ya era `devDependency`), con test de
+  regresión y la mutación replantada en la posición exacta del falso verde:
+  salieron a la luz **364 literales** que el escáner nunca había visto, y no
+  había copy suelta en ninguno — la migración estaba bien, solo mal vigilada.
+  Las tres enmiendas nacieron de **paradas antes de escribir código**, no de
+  arreglos a posteriori: R18 declarado requisito de verificación porque nacía
+  verde por construcción; el recuento de R17 (244 → 265) por caduco, no por
+  equivocado; y cuatro claves de copy que el inventario no vio porque barrió
+  **literales ingleses por traducir** y esas palabras se escriben igual en los
+  dos idiomas. Esa tercera enmienda cambió además el candado de **constante
+  congelada a consistencia interna**, porque era la tercera vez en dos features
+  que un número escrito a mano paraba el trabajo. Y un último defecto de diseño
+  propio: el test de R19 medía «la casilla sigue vacía» en vez de «la
+  implementación la entrega vacía», así que **la firma del humano ponía la suite
+  en rojo**; arreglado sin tocar la spec. Deuda menor anotada por el `reviewer`:
+  `canonicalAmendment()` no comprueba que `indexOf(SIGNATURE_LINE)` encuentre
+  algo, así que si §6.2 perdiera su línea de firma el `slice` truncaría en
+  silencio — una línea en la próxima feature que toque el fichero. PR #110.
 
 - **2026-09-05** — **Fix de deriva de migraciones** (fuera de feature, sin
   spec). `GET` de documentos de mascota reventaba en local con

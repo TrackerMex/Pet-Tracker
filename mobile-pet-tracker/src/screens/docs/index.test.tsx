@@ -12,6 +12,7 @@ import { listPetDocs, type PetDocsState } from '../../api/media';
 import { getPet, type PetState } from '../../api/pets';
 import type { PetProfile } from '../../api/types';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
+import { LanguageProvider } from '../../providers/language-provider';
 import { DocsScreen } from '.';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 
@@ -66,7 +67,9 @@ function makePet(): PetProfile {
 async function renderDocs() {
   return render(
     <HeroUINativeProvider>
-      <DocsScreen petId="pet-1" />
+      <LanguageProvider initial="es">
+        <DocsScreen petId="pet-1" />
+      </LanguageProvider>
     </HeroUINativeProvider>,
   );
 }

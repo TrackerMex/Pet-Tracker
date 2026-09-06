@@ -19,6 +19,7 @@ import type { DayEntry, PetProfile } from '../../../api/types';
 import * as apiHooks from '../../../hooks/use-api';
 import type { ApiResult } from '../../../hooks/use-api';
 import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
+import { LanguageProvider } from '../../../providers/language-provider';
 import { SelectedPetProvider } from '../../../providers/selected-pet-provider';
 import * as selectedPetHooks from '../../../providers/selected-pet-provider';
 import HomeScreen from '../home';
@@ -108,7 +109,9 @@ function pending<T>(): Promise<T> {
 function HomeWrapper({ children }: { children: ReactNode }) {
   return (
     <HeroUINativeProvider>
-      <SelectedPetProvider>{children}</SelectedPetProvider>
+      <LanguageProvider initial="es">
+        <SelectedPetProvider>{children}</SelectedPetProvider>
+      </LanguageProvider>
     </HeroUINativeProvider>
   );
 }
@@ -169,7 +172,11 @@ describe('R6: home carga pets y selecciona', () => {
 
     await renderHome();
 
-    await waitFor(() => expect(screen.getByTestId('home-empty')).toHaveTextContent('No pets yet'));
+    await waitFor(() =>
+      expect(screen.getByTestId('home-empty')).toHaveTextContent(
+        'Aún no tienes mascotas',
+      ),
+    );
   });
 
   it('keeps API order and selects the first pet by default', async () => {
@@ -326,8 +333,8 @@ describe('R8: collar card refleja el device', () => {
     await renderHome();
 
     await waitFor(() => expect(screen.getByTestId('collar-card')).toBeVisible());
-    expect(screen.getByTestId('collar-status')).toHaveTextContent('Free');
-    expect(screen.getByText('No collar — health only')).toBeVisible();
+    expect(screen.getByTestId('collar-status')).toHaveTextContent('Sin collar');
+    expect(screen.getByText('Sin collar — solo salud')).toBeVisible();
     expect(screen.queryByTestId('collar-battery')).toBeNull();
   });
 
@@ -348,7 +355,7 @@ describe('R8: collar card refleja el device', () => {
     await renderHome();
 
     await waitFor(() => expect(screen.getByTestId('collar-card')).toBeVisible());
-    expect(screen.getByTestId('collar-status')).toHaveTextContent('Online');
+    expect(screen.getByTestId('collar-status')).toHaveTextContent('En línea');
     expect(screen.getByTestId('collar-battery')).toHaveTextContent('82%');
   });
 
@@ -369,7 +376,7 @@ describe('R8: collar card refleja el device', () => {
     await renderHome();
 
     await waitFor(() => expect(screen.getByTestId('collar-card')).toBeVisible());
-    expect(screen.getByTestId('collar-status')).toHaveTextContent('Offline');
+    expect(screen.getByTestId('collar-status')).toHaveTextContent('Sin conexión');
     expect(screen.getByTestId('collar-battery')).toHaveTextContent('—');
   });
 });
@@ -397,7 +404,7 @@ describe('R10 (mobile-device-pairing): la collar card sin collar enlaza a /pairi
     await renderHome();
 
     const link = await screen.findByTestId('collar-pair-link');
-    expect(link).toHaveTextContent('Pair a collar');
+    expect(link).toHaveTextContent('Vincular collar');
     expect(link.props.accessibilityRole).toBe('button');
     await fireEvent.press(link);
 
@@ -450,7 +457,7 @@ describe('R9: summary degrada con gracia', () => {
     await renderHome();
 
     await waitFor(() => expect(screen.getByTestId('summary-card')).toBeVisible());
-    expect(screen.getByText("Today's Summary")).toBeVisible();
+    expect(screen.getByText('Resumen de hoy')).toBeVisible();
     expect(screen.getByTestId('summary-activity')).toHaveTextContent('1h 35m');
     expect(screen.getByTestId('summary-sleep')).toHaveTextContent('45m');
     expect(screen.getByTestId('summary-distance')).toHaveTextContent('2.4 km');
@@ -489,7 +496,7 @@ describe('R9: summary degrada con gracia', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('summary-note')).toHaveTextContent(
-        'Activity tracking requires a collar',
+        'La actividad requiere un collar',
       );
     });
   });
@@ -501,7 +508,7 @@ describe('R9: summary degrada con gracia', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('summary-note')).toHaveTextContent(
-        'Could not load activity',
+        'No se pudo cargar la actividad',
       );
     });
   });
@@ -578,9 +585,9 @@ describe('R10: last position enlaza al mapa', () => {
     await renderHome();
 
     await waitFor(() => expect(screen.getByTestId('last-position-card')).toBeVisible());
-    expect(screen.getByText('View on map')).toBeVisible();
+    expect(screen.getByText('Ver en el mapa')).toBeVisible();
     expect(screen.getByTestId('last-position-time')).toHaveTextContent(
-      `Last seen ${new Date(lastCommunicationAt).toLocaleString()}`,
+      `Última señal ${new Date(lastCommunicationAt).toLocaleString('es-MX')}`,
     );
 
     await fireEvent.press(screen.getByTestId('last-position-card'));
@@ -597,7 +604,7 @@ describe('R10: last position enlaza al mapa', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('last-position-time')).toHaveTextContent(
-        'No location data yet',
+        'Sin datos de ubicación todavía',
       );
     });
   });
@@ -610,7 +617,11 @@ describe('R10: last position enlaza al mapa', () => {
 
     await renderHome();
 
-    await waitFor(() => expect(screen.getByTestId('collar-status')).toHaveTextContent('Free'));
+    await waitFor(() =>
+      expect(screen.getByTestId('collar-status')).toHaveTextContent(
+        'Sin collar',
+      ),
+    );
     expect(screen.queryByTestId('last-position-card')).toBeNull();
   });
 });
@@ -768,7 +779,7 @@ describe('#62 R5: el título de card usa un único tratamiento', () => {
   it('aplica la receta canónica a Today\'s Summary', async () => {
     await renderHome();
 
-    expect((await screen.findByText("Today's Summary")).props.className).toBe(
+    expect((await screen.findByTestId('summary-card-title')).props.className).toBe(
       'text-base font-bold text-foreground',
     );
   });

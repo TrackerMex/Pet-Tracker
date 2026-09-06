@@ -29,6 +29,7 @@ import type {
   TripDetail,
 } from '../../../api/types';
 import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
+import { LanguageProvider } from '../../../providers/language-provider';
 import {
   SelectedPetProvider,
   useSelectedPet,
@@ -203,10 +204,12 @@ function SelectedPetSeed() {
 function MapWrapper({ children }: { children: ReactNode }) {
   return (
     <HeroUINativeProvider>
-      <SelectedPetProvider>
-        <SelectedPetSeed />
-        {children}
-      </SelectedPetProvider>
+      <LanguageProvider initial="es">
+        <SelectedPetProvider>
+          <SelectedPetSeed />
+          {children}
+        </SelectedPetProvider>
+      </LanguageProvider>
     </HeroUINativeProvider>
   );
 }
@@ -289,7 +292,9 @@ describe('R4: map resuelve la mascota seleccionada', () => {
     await renderMap();
 
     await waitFor(() => {
-      expect(screen.getByTestId('map-no-pets')).toHaveTextContent('No pets yet');
+      expect(screen.getByTestId('map-no-pets')).toHaveTextContent(
+        'Aún no tienes mascotas',
+      );
     });
     expect(screen.queryByTestId('map-view')).toBeNull();
     expect(mockGetLastPosition).not.toHaveBeenCalled();
@@ -323,7 +328,7 @@ describe('R5: mascota free degrada sin mapa', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('map-no-tracking')).toHaveTextContent(
-        'Live tracking requires a collar',
+        'El rastreo en vivo requiere un collar',
       );
     });
     expect(screen.queryByTestId('map-view')).toBeNull();
@@ -395,7 +400,7 @@ describe('R6: mapa y marker con la última posición', () => {
       }),
     );
     expect(screen.getByTestId('map-empty')).toHaveTextContent(
-      'No location data yet',
+      'Sin datos de ubicación todavía',
     );
   });
 
@@ -554,8 +559,8 @@ describe('R8: stats calculadas de positions y trips', () => {
       expect(screen.getByTestId('stat-speed')).toHaveTextContent('12.3 km/h');
     });
     expect(screen.getByTestId('stat-distance')).toHaveTextContent('2.0 km');
-    expect(screen.getByTestId('stat-updated')).toHaveTextContent('Just now');
-    expect(screen.getByTestId('stat-gps')).toHaveTextContent('Live');
+    expect(screen.getByTestId('stat-updated')).toHaveTextContent('Justo ahora');
+    expect(screen.getByTestId('stat-gps')).toHaveTextContent('En vivo');
     expect(screen.getByTestId('map-stats').props.style).toEqual(
       expect.objectContaining({
         position: 'absolute',
@@ -584,10 +589,14 @@ describe('R8: stats calculadas de positions y trips', () => {
 
     await renderMap();
 
-    await waitFor(() => expect(screen.getByTestId('stat-gps')).toHaveTextContent('Stale'));
+    await waitFor(() =>
+      expect(screen.getByTestId('stat-gps')).toHaveTextContent(
+        'Desactualizado',
+      ),
+    );
     expect(screen.getByTestId('stat-speed')).toHaveTextContent('—');
     expect(screen.getByTestId('stat-distance')).toHaveTextContent('0.0 km');
-    expect(screen.getByTestId('stat-updated')).toHaveTextContent('2m ago');
+    expect(screen.getByTestId('stat-updated')).toHaveTextContent('hace 2 min');
   });
 
   it('uses the last item even when its speed is null', async () => {
@@ -615,9 +624,9 @@ describe('R8: stats calculadas de positions y trips', () => {
   });
 
   it.each([
-    [3599, '59m ago'],
-    [3600, '1h ago'],
-    [7500, '2h ago'],
+    [3599, 'hace 59 min'],
+    [3600, 'hace 1 h'],
+    [7500, 'hace 2 h'],
   ])('formats age %i seconds as %s', async (staleSeconds, expected) => {
     mockGetLastPosition.mockResolvedValue({
       kind: 'ok',
@@ -657,7 +666,7 @@ describe('R8: stats calculadas de positions y trips', () => {
     await renderMap();
 
     await waitFor(() => {
-      expect(screen.getByTestId('stat-gps')).toHaveTextContent('No signal');
+      expect(screen.getByTestId('stat-gps')).toHaveTextContent('Sin señal');
     });
     expect(screen.getByTestId('stat-updated')).toHaveTextContent('—');
   });
@@ -758,8 +767,8 @@ describe('R6: owner toglea lost mode contra el endpoint', () => {
   });
 
   it.each([
-    [false, 'Activate Lost Mode'],
-    [true, 'Deactivate Lost Mode'],
+    [false, 'Activar modo perdido'],
+    [true, 'Desactivar modo perdido'],
   ])('shows the owner action for lostMode=%s', async (lostMode, label) => {
     mockListPets.mockResolvedValue({
       kind: 'ok',
@@ -795,7 +804,7 @@ describe('R6: owner toglea lost mode contra el endpoint', () => {
     await renderMap();
     await waitFor(() =>
       expect(screen.getByTestId('lost-mode-button')).toHaveTextContent(
-        'Activate Lost Mode',
+        'Activar modo perdido',
       ),
     );
 
@@ -820,7 +829,7 @@ describe('R6: owner toglea lost mode contra el endpoint', () => {
 
     await waitFor(() =>
       expect(screen.getByTestId('lost-mode-button')).toHaveTextContent(
-        'Deactivate Lost Mode',
+        'Desactivar modo perdido',
       ),
     );
     expect(mockListPets.mock.calls.length).toBeGreaterThanOrEqual(2);
@@ -886,7 +895,7 @@ describe('R7: no-owner deshabilitado y error visible', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('lost-mode-error')).toHaveTextContent(
-        'Could not update Lost Mode',
+        'No se pudo cambiar el modo perdido',
       );
     });
     expect(screen.getByTestId('lost-mode-error').props.selectable).toBe(true);
@@ -916,23 +925,23 @@ describe('R1 (mobile-map-last-position-error-state): rama de error de last', () 
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
   });
 
-  it('muestra mensaje y Retry cuando last devuelve error', async () => {
+  it('muestra mensaje y Reintentar cuando last devuelve error', async () => {
     mockGetLastPosition.mockResolvedValue({ kind: 'error' });
 
     await renderMap();
 
     await waitFor(() => {
       expect(screen.getByTestId('map-last-error')).toHaveTextContent(
-        'Something went wrong',
+        'Algo salió mal',
       );
     });
     expect(screen.getByTestId('map-last-error').props.selectable).toBe(true);
-    expect(screen.getByTestId('map-last-retry')).toHaveTextContent('Retry');
+    expect(screen.getByTestId('map-last-retry')).toHaveTextContent('Reintentar');
     expect(screen.queryByTestId('map-view')).toBeNull();
     expect(screen.queryByTestId('map-error')).toBeNull();
   });
 
-  it('Retry llama al refetch de last y recupera el mapa', async () => {
+  it('Reintentar llama al refetch de last y recupera el mapa', async () => {
     mockGetLastPosition
       .mockResolvedValueOnce({ kind: 'error' })
       .mockResolvedValue({
@@ -1148,9 +1157,9 @@ describe('#61 R11: el overlay de stats reparte los cuatro tiles en 2x2 sin envol
     expect(screen.getByTestId('stat-distance')).toBeVisible();
     expect(screen.getByTestId('stat-updated')).toBeVisible();
     expect(screen.getByTestId('stat-gps')).toBeVisible();
-    expect(screen.getByText('Speed')).toBeVisible();
-    expect(screen.getByText('Distance')).toBeVisible();
-    expect(screen.getByText('Updated')).toBeVisible();
+    expect(screen.getByText('Velocidad')).toBeVisible();
+    expect(screen.getByText('Distancia')).toBeVisible();
+    expect(screen.getByText('Actualizado')).toBeVisible();
     expect(screen.getByText('GPS')).toBeVisible();
     expect(screen.getByTestId('map-stats').props.style).toEqual(
       expect.objectContaining({

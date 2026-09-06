@@ -17,6 +17,7 @@ import {
 } from '../../../api/health-records';
 import type { WeightEntry } from '../../../api/types';
 import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
+import { LanguageProvider } from '../../../providers/language-provider';
 import {
   SelectedPetProvider,
   useSelectedPet,
@@ -96,10 +97,12 @@ function SelectionProbe() {
 async function renderWeightLog(selected = true) {
   await render(
     <HeroUINativeProvider>
-      <SelectedPetProvider>
-        {selected ? <SelectionProbe /> : null}
-        <WeightLogScreen />
-      </SelectedPetProvider>
+      <LanguageProvider initial="es">
+        <SelectedPetProvider>
+          {selected ? <SelectionProbe /> : null}
+          <WeightLogScreen />
+        </SelectedPetProvider>
+      </LanguageProvider>
     </HeroUINativeProvider>,
   );
 }
@@ -135,7 +138,7 @@ describe('R7: weight log lista el historial', () => {
     await waitFor(() =>
       expect(screen.getByTestId('screen-weight-log')).toBeVisible(),
     );
-    expect(screen.getByText('Weight log')).toBeVisible();
+    expect(screen.getByText('Registro de peso')).toBeVisible();
     expect(screen.getByTestId('weight-log-loading')).toBeVisible();
     expect(
       screen.getByTestId('screen-weight-log').props.contentContainerStyle,
@@ -200,10 +203,10 @@ describe('R7: weight log lista el historial', () => {
     expect(newest.getByText('12.4 kg')).toBeVisible();
     expect(newest.getByText('2026-08-21')).toBeVisible();
     expect(newest.getByText('+0.4 kg')).toBeVisible();
-    expect(newest.getByText('BC 5/9')).toBeVisible();
+    expect(newest.getByText('CC 5/9')).toBeVisible();
     const oldest = within(screen.getByTestId('weight-row-weight-2'));
     expect(oldest.getByText('—')).toBeVisible();
-    expect(oldest.queryByText(/^BC /)).toBeNull();
+    expect(oldest.queryByText(/^CC /)).toBeNull();
     expect(mockListWeights).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'pet-1');
   });
 
@@ -214,7 +217,7 @@ describe('R7: weight log lista el historial', () => {
 
     await waitFor(() =>
       expect(screen.getByTestId('weight-log-empty')).toHaveTextContent(
-        'No weight entries yet',
+        'Aún no hay registros de peso',
       ),
     );
   });
@@ -231,7 +234,7 @@ describe('R7: weight log lista el historial', () => {
     await renderWeightLog();
     await waitFor(() =>
       expect(screen.getByTestId('weight-log-error')).toHaveTextContent(
-        'Something went wrong',
+        'Algo salió mal',
       ),
     );
 
@@ -309,7 +312,7 @@ describe('R9: alta de peso con degradación por kind', () => {
     await fireEvent.press(screen.getByTestId('weight-submit'));
 
     expect(screen.getByTestId('weight-form-error')).toHaveTextContent(
-      'Enter a valid weight',
+      'Introduce un peso válido',
     );
     expect(mockCreateWeight).not.toHaveBeenCalled();
   });
@@ -390,12 +393,12 @@ describe('R9: alta de peso con degradación por kind', () => {
   });
 
   it.each([
-    [{ kind: 'forbidden' } as const, 'Only the owner can log weights'],
-    [{ kind: 'error' } as const, 'Something went wrong'],
-    [{ kind: 'missing-config' } as const, 'Something went wrong'],
+    [{ kind: 'forbidden' } as const, 'Solo el dueño puede registrar pesos'],
+    [{ kind: 'error' } as const, 'Algo salió mal'],
+    [{ kind: 'missing-config' } as const, 'Algo salió mal'],
     [
       { kind: 'unreachable', message: 'network down' } as const,
-      'Cannot reach server',
+      'No se pudo conectar con el servidor',
     ],
   ])('maps $expected.kind to its form error', async (result, message) => {
     mockCreateWeight.mockResolvedValue(result);

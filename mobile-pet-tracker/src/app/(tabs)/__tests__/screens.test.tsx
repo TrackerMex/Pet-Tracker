@@ -5,6 +5,7 @@ import type { ComponentType, ReactNode } from 'react';
 import { getPet, listPets } from '../../../api/pets';
 import { getMe } from '../../../api/users';
 import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
+import { LanguageProvider } from '../../../providers/language-provider';
 import { SelectedPetProvider } from '../../../providers/selected-pet-provider';
 import ProfileScreen from '../profile';
 
@@ -49,7 +50,9 @@ function pending<T>(): Promise<T> {
 function ProfileWrapper({ children }: { children: ReactNode }) {
   return (
     <HeroUINativeProvider>
-      <SelectedPetProvider>{children}</SelectedPetProvider>
+      <LanguageProvider initial="es">
+        <SelectedPetProvider>{children}</SelectedPetProvider>
+      </LanguageProvider>
     </HeroUINativeProvider>
   );
 }
@@ -74,7 +77,7 @@ describe('R5: placeholders de tabs', () => {
     testID: string;
     title: string;
   }>([
-    { Screen: ProfileScreen, testID: 'screen-profile', title: 'Profile' },
+    { Screen: ProfileScreen, testID: 'screen-profile', title: 'Perfil' },
   ])('renders the $title placeholder', async ({ Screen, testID, title }) => {
     await render(<Screen />, { wrapper: ProfileWrapper });
 

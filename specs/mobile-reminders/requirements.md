@@ -61,8 +61,10 @@ lanza el handoff hasta verificarlo en `feature_list.json`.
 - Decisión de #33 (vigente): funciones de `src/api/` reciben
   `token`/`fetchFn` por parámetro, nunca importan React ni storage. Tipos
   a mano en `src/api/types.ts`.
-- UI en inglés (decisión de #38 vigente); el diseño está en español, los
-  literales de esta spec son los normativos.
+- ~~UI en inglés (decisión de #38 vigente)~~ **UI en catálogo de dos
+  idiomas desde #65, español por defecto (ver §Enmienda #65)**; los
+  literales de esta spec pasan a ser la columna `en` de su clave; el
+  diseño está en español, los literales de esta spec son los normativos.
 - Lección de #34 (vigente): offsets numéricos por `style` inline; el resto
   `className` + tokens (cero hex, cero `StyleSheet.create`). Sin imagen
   hero ni gradientes del diseño (misma línea que #38 D9).
@@ -363,6 +365,31 @@ lanza el handoff hasta verificarlo en `feature_list.json`.
   rechazaría.
 - Resumen `This week` como filtro interactivo (las pills son informativas).
 - Imagen hero de la mascota y gradientes del diseño (línea #38 D9).
+
+## Enmienda #65 — idioma de la UI
+
+El 2026-09-04 el humano decidió que la UI móvil va en español, y el 2026-09-05
+que la feature sea un **catálogo de dos idiomas con interruptor en Profile y
+español por defecto** (`progress/explore_design-gap-vs-make.md` §4, decisión A
+y su ampliación). Esta spec ratificó el inglés en su día; esa parte queda
+**enmendada**.
+
+- **Qué cambia**: el literal de UI que esta spec fija deja de estar escrito en
+  la pantalla y pasa a resolverse por clave contra el catálogo. El idioma por
+  defecto es el español.
+- **Qué NO cambia**: **el literal inglés de esta spec sigue siendo normativo**
+  como columna `en` de su clave — un usuario que elija inglés lo sigue viendo
+  palabra por palabra. Y no cambia ningún requisito `R<n>`, ningún `testID`,
+  ninguna conducta, ningún contrato de API ni ninguna decisión visual. La
+  trazabilidad `R-id ↔ test` de `mobile-reminders` sigue siendo válida.
+- **Fuente única del literal y de la clave**:
+  `specs/mobile-ui-language/design.md` §2. Si esta spec y esa tabla discrepan,
+  **manda la tabla**.
+- **Los mensajes de validación del backend siguen en inglés en los dos
+  idiomas** y esta enmienda no los toca
+  (`specs/mobile-ui-language/requirements.md` §Fuera de alcance 1).
+
+- [X] Enmienda aprobada por humano (fecha: 2026-09-06)
 
 ## Aprobación
 

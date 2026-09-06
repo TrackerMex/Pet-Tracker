@@ -282,8 +282,35 @@ Todo código nuevo (R1–R9) sigue TDD estricto con test rojo primero.
   reajusta antes del handoff.
 - Menores objetables: `POLL_MS = 15000`, umbral `Stale` a 120 s, speed
   desde la ventana de 60 min de `/positions` (vacía ⇒ `—`), región default
-  CDMX, textos en inglés, botón Lost Mode con `Coming soon`, y el alta de
+  CDMX, ~~textos en inglés~~ textos en los dos idiomas desde #65, español
+  por defecto (ver §Enmienda #65), botón Lost Mode con `Coming soon`, y el
+  alta de
   la feature backend #45 en `feature_list.json`.
+
+## Enmienda #65 — idioma de la UI
+
+El 2026-09-04 el humano decidió que la UI móvil va en español, y el 2026-09-05
+que la feature sea un **catálogo de dos idiomas con interruptor en Profile y
+español por defecto** (`progress/explore_design-gap-vs-make.md` §4, decisión A
+y su ampliación). Esta spec ratificó el inglés en su día; esa parte queda
+**enmendada**.
+
+- **Qué cambia**: el literal de UI que esta spec fija deja de estar escrito en
+  la pantalla y pasa a resolverse por clave contra el catálogo. El idioma por
+  defecto es el español.
+- **Qué NO cambia**: **el literal inglés de esta spec sigue siendo normativo**
+  como columna `en` de su clave — un usuario que elija inglés lo sigue viendo
+  palabra por palabra. Y no cambia ningún requisito `R<n>`, ningún `testID`,
+  ninguna conducta, ningún contrato de API ni ninguna decisión visual. La
+  trazabilidad `R-id ↔ test` de `mobile-map-live` sigue siendo válida.
+- **Fuente única del literal y de la clave**:
+  `specs/mobile-ui-language/design.md` §2. Si esta spec y esa tabla discrepan,
+  **manda la tabla**.
+- **Los mensajes de validación del backend siguen en inglés en los dos
+  idiomas** y esta enmienda no los toca
+  (`specs/mobile-ui-language/requirements.md` §Fuera de alcance 1).
+
+- [X] Enmienda aprobada por humano (fecha: 2026-09-06)
 
 ## Aprobación
 
