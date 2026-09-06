@@ -15,3 +15,35 @@
 - **#64 paleta pastel: `done`**, mergeada en main (PR #106).
 - **#66 listado con foto**: de la sesion Backend, `spec_ready`, esperando firma humana. Desbloquea #67 el hero fotografico.
 - **Deuda registrada**: #72 el test flaky de seleccion de foto de add-pet. Y en la lane del Backend, el `.env` que `drizzle.config.ts` no carga.
+
+## 2026-09-06 — #65: Codex agota limites; implementador pasa al subagente
+
+**Hecho**: Codex CLI se quedo sin cuota a mitad de #65 y no vuelve hasta el
+martes. El humano decide seguir en Claude Code.
+
+**Excepcion de rol usada**: `CLAUDE.md` §Excepciones, primer supuesto —
+"Codex CLI no esta disponible". A partir de R17(3) la implementacion de #65 la
+escribe el subagente `implementer`, no Codex. Queda declarado aqui como manda
+la regla.
+
+**Coste, dicho sin adornos**: se pierde la propiedad "quien implementa no
+revisa" en su version fuerte, porque `implementer` y `reviewer` salen del mismo
+modelo. Lo que queda en pie: el `reviewer` corre `init.sh` el mismo, reconstruye
+los rojo→verde con `git archive` y no se fia del reporte. Es una garantia mas
+debil que la de dos modelos distintos, no una garantia nula. Lo que Codex ya
+dejo escrito (R1-R16 y el rojo de R17) conserva la revision cruzada.
+
+**Estado de #65 al pasar el testigo**:
+
+- R1-R16 cerrados con rojo→verde real, 16 pares de commits en la branch.
+- R17: rojo en `b682f20`; el verde esta **en el arbol de trabajo sin commitear**.
+- R18-R20: sin empezar. R18 es requisito de verificacion por C4(b), firmado.
+- Recuento de R17: la spec pedia 244 y el arbol da 265. La cifra estaba caduca,
+  no equivocada — enmienda (2) al final de `specs/mobile-ui-language/requirements.md`
+  con la traza commit a commit. **Pendiente de firma humana.**
+
+**Leccion que se repite**: es la segunda vez (tras el R4 de #64) que un numero
+absoluto calculado contra un commit concreto envejece antes de que se
+implemente y para el trabajo. En la proxima spec que necesite un recuento
+mecanico, expresarlo como **delta contra un commit nombrado**, no como
+constante.

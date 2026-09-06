@@ -276,8 +276,8 @@ R1–R11 reparten las 320 ocurrencias 29/5/20/19/32/35/35/50/40/40/15.
       `findByTestId`, con la aserción de `className` **idéntica byte a byte**;
       actualizar el título de `food.test.tsx:522`.
 - [ ] (3) Refactor con tests verdes + comprobar los dos recuentos de
-      [[requirements]] R17: `*ByText(`/`toHaveTextContent(` = **244** y
-      `ByTestId(` ≥ **800**. Si el primero no cuadra, algo se debilitó: parar.
+      [[requirements]] R17: `*ByText(`/`toHaveTextContent(` = **265** y
+      `ByTestId(` ≥ **800**. Si el primero no cuadra, algo se debilitó: parar. El invariante que decide es el **delta −2** entre el padre y el verde de R17, no la cifra absoluta (enmienda (2) al final de [[requirements]]).
 
 ## R18 — Cero copy suelta en las pantallas
 

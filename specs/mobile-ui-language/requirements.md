@@ -405,7 +405,7 @@ renumerar [[copy-review]], que ya está en manos del humano.
   - Test: `mobile-pet-tracker/src/app/(tabs)/__tests__/food.test.tsx` ::
     `describe('#65 R17: los títulos de card se localizan por testID y su copy sigue asertada')`
   - Verificación mecánica que rehace el reviewer, desde `mobile-pet-tracker/`:
-    `grep -rEoh "(get|query|find)(All)?By(Text|PlaceholderText|LabelText|DisplayValue)\(|toHaveTextContent\(" src --include='*.test.ts*' | wc -l` → **244** (era 246: −4 migradas, +2 nuevas)
+    `grep -rEoh "(get|query|find)(All)?By(Text|PlaceholderText|LabelText|DisplayValue)\(|toHaveTextContent\(" src --include='*.test.ts*' | wc -l` → **265** (enmienda del 2026-09-06 al final: el invariante es el **delta −2** sobre el padre de R17, no la cifra absoluta)
     y `grep -rEoh "By(TestId|testId)\(" src --include='*.test.ts*' | wc -l` → **≥800**
 
 - **R18**: WHEN se ejecuta la suite móvil THE SYSTEM SHALL comprobar
@@ -563,3 +563,50 @@ trazabilidad) no cambia. Los otros 19 requisitos mantienen su rojo→verde real.
 - [X] Firmo que **R18 es requisito de verificación** y se cierra por prueba de
       mutación en vez de por commit rojo, con la evidencia de los tres puntos
       de arriba en el reporte del `reviewer` (fecha: 2026-09-06)
+
+### Enmienda del 2026-09-06 (2) — el recuento de R17 es 265, no 244
+
+Codex CLI paró en el paso (3) de R17, como `tasks.md` le ordenaba: el comando
+normativo daba **265** y la spec pedía **244**. Paró bien. La cifra de la spec
+estaba **caduca, no equivocada**: se calculó correctamente contra `a44925f`, y
+el árbol se movió por debajo dos veces, las dos de forma legítima.
+
+Recuento independiente del `leader` con el comando normativo, vía
+`git archive` (sin tocar el árbol de trabajo):
+
+| Commit | `*ByText(`/`toHaveTextContent(` | `ByTestId(` | Qué es |
+|---|---:|---:|---|
+| `a44925f` | 246 | 796 | base sobre la que se escribió la spec |
+| `f90facb` | 258 | 801 | firma de la enmienda (1); **#64 ya dentro** |
+| `9825316` | 267 | — | padre de R17, con R1-R16 cerrados |
+| árbol de R17 en verde | **265** | **823** | lo que Codex tiene sin commitear |
+
+De dónde sale cada salto, verificado archivo a archivo:
+
+- **+12 (246 → 258)**: los metió **#64** al mergear, en `screens/docs/index.test.tsx`
+  (6 → 12) y `screens/reminders/index.test.tsx` (18 → 24). Ninguno es de #65.
+- **+9 (258 → 267)**: los meten los **tests obligatorios de esta misma spec**:
+  `providers/__tests__/language-provider.test.tsx` 0 → 5 (R12) y
+  `screens/profile/index.test.tsx` 19 → 23 (R14).
+- **−2 (267 → 265)**: es **exactamente** el neto que R17 prescribe, y cae solo
+  en los cuatro archivos previstos: `food.test.tsx` 19 → 20,
+  `health.test.tsx` 16 → 15, `home.test.tsx` 27 → 26,
+  `meal-schedule.test.tsx` 18 → 17. Ningún otro archivo de test cambia su
+  recuento y **ninguno desaparece**.
+
+Nada se debilitó. La cifra absoluta protegió mal un invariante que sí se
+cumple, porque una constante calculada contra un commit envejece en cuanto
+otra feature mergea. **El invariante de R17 es el delta, no el absoluto.**
+
+Lo que rehace el `reviewer`, en este orden:
+
+1. `git archive` del **padre** de R17 y del **verde** de R17, y el comando
+   normativo sobre los dos: la diferencia debe ser **−2 exactos**. Esta es la
+   comprobación que decide, y no caduca aunque mergee otra feature.
+2. Sobre el verde de R17, el absoluto: **265** y `ByTestId(` **≥ 800** (823).
+3. Que ningún archivo de test desapareció ni perdió aserciones fuera de los
+   cuatro de la tabla de [[design]] §4.3.
+
+- [ ] Firmo que el esperado mecánico de R17 pasa de **244** a **265**, y que
+      lo que se comprueba es el **delta −2** entre el padre y el verde de R17
+      (fecha: ______)
