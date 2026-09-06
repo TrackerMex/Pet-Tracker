@@ -141,6 +141,8 @@ describe('#65 R11: restablecer contraseña resuelve su copy por clave', () => {
 
 const REPOSITORY_ROOT = join(SOURCE_ROOT, '..');
 
+const SIGNATURE_LINE = '- [ ] Enmienda aprobada por humano';
+
 // Las 9 specs que ratificaron el inglés, con el marcador de la edición (a) de
 // design.md §6.2 que cada una debe llevar en su línea de ratificación.
 const AMENDED_SPECS: { file: string; feature: string; marker: string }[] = [
@@ -172,8 +174,12 @@ function canonicalAmendment(feature: string): string {
   expect(start).toBeGreaterThan(-1);
 
   const body = design.slice(start + '```markdown\n'.length);
+  const block = body.slice(0, body.indexOf('\n```')).replace('<FEATURE>', feature);
 
-  return body.slice(0, body.indexOf('\n```')).replace('<FEATURE>', feature);
+  // La línea de firma la marca el humano y por eso NO forma parte del bloque
+  // que entrega el agente: se comprueba aparte, marcada o no. Incluirla aquí
+  // ataba el candado a que el humano no hubiera firmado todavía.
+  return block.slice(0, block.indexOf(SIGNATURE_LINE)).trimEnd();
 }
 
 describe('#65 R19: las 9 specs aprobadas llevan su enmienda de idioma', () => {
@@ -198,18 +204,19 @@ describe('#65 R19: las 9 specs aprobadas llevan su enmienda de idioma', () => {
     }
   });
 
-  it('deja la casilla de firma de las 9 enmiendas sin marcar', () => {
+  // R19 exige que la implementación DEJE la casilla sin marcar al entregar, no
+  // que siga sin marcar para siempre. Medir lo segundo hacía el requisito
+  // imposible: pedía 9 casillas firmables y prohibía que se firmaran. Que esté
+  // firmada o no es del humano y lo registra git; aquí solo se comprueba que
+  // el bloque llega completo, con su línea de firma.
+  it('deja en las 9 enmiendas su línea de firma, marcada o no', () => {
     for (const { file } of AMENDED_SPECS) {
       const source = readFileSync(join(REPOSITORY_ROOT, file), 'utf8');
 
-      expect({ file, unsigned: source.includes('- [ ] Enmienda aprobada por humano') }).toEqual({
-        file,
-        unsigned: true,
-      });
       expect({
         file,
-        signed: /- \[[xX]\] Enmienda aprobada por humano/.test(source),
-      }).toEqual({ file, signed: false });
+        hasSignatureLine: new RegExp(`- \\[[ xX]\\] ${SIGNATURE_LINE.slice(6)}`).test(source),
+      }).toEqual({ file, hasSignatureLine: true });
     }
   });
 });
