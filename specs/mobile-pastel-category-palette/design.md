@@ -216,10 +216,10 @@ Regla de derivación del oscuro, en dos pasos:
 |---|---|---|---|---|---|---|
 | `blue` | `#0B203A` | 0,0141 | `#4A8DDF` | **4,810** ✔ | 4,583 ✔ | 5,080 ✔ |
 | `amber` | `#271E14` | 0,0141 | `#C17B22` | **4,776** ✔ | 4,551 ✔ | 5,044 ✔ |
-| `green` | `#12231B` | 0,0141 | `#2AB87C` | **6,432** ✔ | 6,128 ✔ | 6,813 ✔ |
+| `green` | `#12231B` | 0,0141 | `#2AB87C` | **6,432** ✔ | 6,128 ✔ | 6,792 ✔ |
 | `violet` | `#221C33` | 0,0141 | `#9579E7` | **4,811** ✔ | 4,583 ✔ | 5,080 ✔ |
 | `rose` | `#39131A` | 0,0141 | `#E35E78` | **4,788** ✔ | 4,562 ✔ | 5,056 ✔ |
-| `neutral` | `#1F242B` (`--default`) | 0,0173 | `#9CA3AF` (`--muted`) | **6,148** ✔ | — | 6,792 ✔ |
+| `neutral` | `#1F242B` (`--default`) | 0,0173 | `#9CA3AF` (`--muted`) | **6,148** ✔ | — | 6,813 ✔ |
 
 Las cinco superficies oscuras comparten L = 0,0141 **por construcción**: es la
 propiedad que hace que las cinco categorías pesen lo mismo sobre la card, y es
