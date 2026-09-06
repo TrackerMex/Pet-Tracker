@@ -251,6 +251,49 @@ export const R8_REMINDERS: UseRow[] = [
   { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.saveReminder' },
 ];
 
+export const R9_ADD_PET: UseRow[] = [
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.errorPhotoFormat' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.nameIsRequired' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.chooseBirthDate' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.errorAgeRange' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.errorPhotoAfterCreate' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.checkPetDetails' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.youCannotCreatePet' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'common.cannotReachServer' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.backToProfile' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.addPet' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.pet' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.avatarPreview' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.choosePhoto' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.basicDetails' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.species' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.cat' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.dog' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.name' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.petName' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.breed' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.optional' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.sex' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.female' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.male' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.size' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.small' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.medium' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.large' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.medicalDetails' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.age' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.birthDate' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.approxMonths' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.selectBirthDate' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.months' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.sterilized' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.yes' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.optional' },
+  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.savePet' },
+];
+
 export const ALL_USES: UseRow[] = [
   ...R1_AUTH,
   ...R2_TABS,
@@ -260,6 +303,7 @@ export const ALL_USES: UseRow[] = [
   ...R6_FOOD,
   ...R7_PROFILE,
   ...R8_REMINDERS,
+  ...R9_ADD_PET,
 ];
 
 describe('#65: la tabla de uso de copy está disponible al runner', () => {

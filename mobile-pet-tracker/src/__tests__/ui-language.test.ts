@@ -18,6 +18,7 @@ import {
   R6_FOOD,
   R7_PROFILE,
   R8_REMINDERS,
+  R9_ADD_PET,
   type UseRow,
 } from './ui-copy-table';
 
@@ -108,5 +109,12 @@ describe('#65 R8: Recordatorios resuelve su copy por clave', () => {
   it('resuelve las 50 ocurrencias normativas', () => {
     expect(R8_REMINDERS).toHaveLength(50);
     checkUses(R8_REMINDERS);
+  });
+});
+
+describe('#65 R9: el alta de mascota resuelve su copy por clave', () => {
+  it('resuelve las 40 ocurrencias normativas', () => {
+    expect(R9_ADD_PET).toHaveLength(40);
+    checkUses(R9_ADD_PET);
   });
 });
