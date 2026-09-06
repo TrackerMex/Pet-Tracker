@@ -743,3 +743,121 @@ suite verde.
    he tocado una sola línea. Si lo prefieres fuera, sale con un `git rm
    --cached`. Sus `- [x]` son tu checklist de review, no casillas de gate
    humano: fuera de ese fichero no hay ni una marcada.
+
+---
+
+# Tramo 5 — el candado de R19 medía la firma del humano, no la entrega
+
+Fecha: 2026-09-06
+Branch: `feature/65-mobile-ui-language`, desde `00151e6`
+
+Arreglo: `bc57919`. **Rojo honesto sin fabricar nada**: el test estaba rojo con
+el árbol tal cual, en cuanto el humano firmó.
+
+## El defecto
+
+R19 dice que la implementación **SHALL dejar la casilla sin marcar** al
+entregar: es una restricción sobre **lo que hace el agente**. El test la
+implementó como **invariante permanente**, exigiendo que la casilla vacía
+estuviera presente *y* que no existiera ninguna marcada.
+
+Las dos mitades de R19 quedaban así en contradicción: pedía 9 casillas
+**firmables** y prohibía que llegaran a estar **firmadas**. El primer humano
+que firma pone el test en rojo. El defecto es del test; la firma es correcta y
+**la spec no se toca**.
+
+### Estaban rojas las dos aserciones, no una
+
+El `leader` señaló la de la firma. La de bloque literal caía por la **misma
+causa**: `canonicalAmendment()` devolvía el bloque de [[design]] §6.2 **entero**,
+y ese bloque **termina en la línea de la casilla**. Al firmar, el
+`source.includes(block)` deja de casar byte a byte.
+
+Por eso el arreglo toca las dos, aunque el encargo decía no tocar la segunda:
+no es un cambio de criterio, es que la línea de firma estaba **dentro** del
+literal que esa aserción compara. Ahora:
+
+- `canonicalAmendment()` corta el bloque **justo antes** de la línea de firma.
+  Todo lo que entrega el agente —los cuatro párrafos, «qué cambia», «qué NO
+  cambia», la fuente única, los mensajes del backend— se sigue comparando
+  **literal y byte a byte**. No se ha aflojado nada de eso.
+- La línea de firma se comprueba aparte, y solo que **existe**: `- [ ]` **o**
+  `- [X]`. Sin lista de excepciones y sin caso especial por fichero.
+
+### Que el candado no quedó vacío
+
+Comprobado por mutación sobre `mobile-map-live/requirements.md`, revertidas las
+dos:
+
+| Mutación | Resultado |
+|---|---|
+| borrar la línea de firma | `hasSignatureLine: true → false` |
+| cambiar `**manda la tabla**` por `**manda otra cosa**` dentro del bloque | `hasAmendment: true → false` |
+
+## Por qué esto no afloja la defensa contra la auto-aprobación
+
+Queda escrito porque alguien va a preguntarlo al leer el diff.
+
+**El guardián nunca fue este test.** Un test unitario no puede distinguir a un
+humano de un agente: lee un fichero del árbol, y un agente que quisiera
+auto-aprobarse escribiría `- [X]` igual de fácil que `- [ ]`. Lo que de verdad
+protege el gate es que **el `leader` verifica autoría y ficheros tocados de
+cada commit de firma** — es exactamente lo que destapó `f90facb`, y lo que se
+volvió a hacer con `cb0b53b` y con `00151e6`. Eso vive en git, que un agente
+no puede falsificar sin que se vea.
+
+Lo que el test sí aporta, y conserva: que el bloque de enmienda **llega
+completo y con su línea de firma** a las 9 specs, que es lo único de R19 que
+depende de la implementación.
+
+## ⚠️ Hallazgo: la firma es de 8 de 9, no de 9
+
+**No lo he tocado — es casilla humana — pero el `leader` tiene que verlo antes
+de dar #65 por cerrada.**
+
+En `00151e6` el humano marcó 8 casillas de enmienda. En
+`specs/mobile-auth/requirements.md` marcó **otra casilla**:
+
+| Fichero | Línea | Casilla | Estado |
+|---|---:|---|---|
+| `specs/mobile-auth/requirements.md` | 218 | `Smoke ejecutado por el humano` | **[X] marcada en `00151e6`** |
+| `specs/mobile-auth/requirements.md` | 274 | `Enmienda aprobada por humano` | **[ ] SIN MARCAR** |
+
+Las otras 8 specs tienen su enmienda firmada. Cinco de ellas **también** tienen
+casilla de `Smoke`, y en esas cinco el humano **no** la tocó — solo firmó la
+enmienda. O sea: el patrón es correcto en 8 de 9 y en `mobile-auth` se marcó la
+casilla de arriba en vez de la de abajo. Parece un resbalón de fichero, no una
+decisión.
+
+Dos consecuencias, ninguna que yo pueda resolver:
+
+1. El gate de cierre de `tasks.md` («firma de las 9 enmiendas») **está al 8/9**.
+2. En `mobile-auth` ha quedado marcada una casilla de **otra feature** (su
+   propio smoke de #33), que #65 no tenía por qué tocar. Si fue un resbalón,
+   conviene revertirla en el mismo acto que se firme la enmienda.
+
+**El test nuevo pasa igual con 8 o con 9 firmas**, y eso es correcto por
+diseño: contar firmas no es su trabajo. Por eso lo escribo aquí — si el candado
+siguiera siendo el viejo, este resbalón se habría confundido con el fallo del
+test y se habría «arreglado» marcando la novena casilla, que es justo lo que un
+agente no debe hacer.
+
+## Verificación
+
+- `./init.sh`: **exit code 0**, sin flake. Build, 163 + 2 + 63 suites, e2e
+  (`353 passed`), lint y typecheck verdes.
+- `bun run test` (móvil): **63 suites / 932 tests**, con las 8 firmas puestas.
+  **Ninguna otra aserción de la suite daba por hecho que las casillas estaban
+  vacías**: la única que lo hacía era la de R19, y era la rota.
+- `bun run typecheck` y `bun run lint`: limpios, 0 warnings.
+- Alcance: **solo** `ui-language.test.ts` y este reporte. Ni una spec tocada, ni
+  una casilla marcada, `feature_list.json` intacto, sin PR ni merge.
+
+## Notas para el reviewer
+
+1. `traceability.md` **no cambia**: R19 conserva su `describe`, su fichero de
+   test y sus commits rojo/verde. Solo cambia el cuerpo de una aserción, y el
+   arreglo va como `fix(...)` aparte.
+2. El único punto vivo de #65 es el **8/9 de arriba**. El resto de gates
+   humanos está cubierto: el smoke de `mobile-ui-language` lo firmó el humano
+   en `7167ac9`.
