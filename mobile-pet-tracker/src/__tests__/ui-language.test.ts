@@ -299,6 +299,23 @@ function wholeLiterals(source: string): Set<string> {
 }
 
 describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () => {
+  // Regresión del falso verde que destapó el reviewer el 2026-09-06: una
+  // plantilla con `${…}` descuadraba el lexer y cegaba el resto del fichero.
+  it('extrae los literales que siguen a una plantilla con interpolación', () => {
+    const fixture = [
+      'const km = `${(meters / 1000).toFixed(1)} km`;',
+      "const stray = 'Resumen de hoy';",
+      'const label = `${count} items`;',
+      '<Text>Horario de comidas</Text>',
+    ].join('\n');
+
+    const literals = wholeLiterals(fixture);
+
+    expect([...literals]).toEqual(
+      expect.arrayContaining(['Resumen de hoy', 'Horario de comidas']),
+    );
+  });
+
   it('mantiene el catálogo consistente entre los dos idiomas', () => {
     expect(Object.keys(es)).toHaveLength(Object.keys(en).length);
     expect(Object.keys(es).sort()).toEqual(Object.keys(en).sort());
