@@ -4,12 +4,14 @@ import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Lock } from 'reicon-react-native';
 
+import { useTranslate } from '../../providers/language-provider';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 
 export default function Forgot() {
   const [accentStrong] = useThemeColors(['accent-strong']);
   const insets = useSafeAreaInsets();
+  const t = useTranslate();
 
   return (
     <ScrollView
@@ -34,14 +36,16 @@ export default function Forgot() {
         <Lock size={28} color={accentStrong} />
       </View>
       <Text className="text-center text-2xl font-black text-foreground">
-        Forgot password
+        {t('forgot.forgotPassword')}
       </Text>
       <Text className="text-center font-normal text-muted">
-        Password recovery coming soon
+        {t('forgot.comingSoon')}
       </Text>
 
       <TextField className="w-full" isDisabled>
-        <Label className="text-xs font-semibold text-foreground">Email</Label>
+        <Label className="text-xs font-semibold text-foreground">
+          {t('forgot.email')}
+        </Label>
         <Input
           testID="forgot-email"
           className="rounded-xl bg-default"
@@ -57,13 +61,13 @@ export default function Forgot() {
         isDisabled
       >
         <Button.Label className="font-bold text-accent-foreground">
-          Send recovery link
+          {t('forgot.sendRecoveryLink')}
         </Button.Label>
       </Button>
 
       <LinkButton testID="link-login" onPress={() => router.push('/login')}>
         <LinkButton.Label className="font-semibold text-accent-strong">
-          Back to sign in
+          {t('forgot.backToSignIn')}
         </LinkButton.Label>
       </LinkButton>
     </ScrollView>
