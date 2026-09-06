@@ -2622,3 +2622,47 @@ ninguna IA mergea a `main`.
   cambios de código, solo `docs/`, `specs/` y `progress/`.
 - Estado final: `done`. PR pendiente de mergear; ninguna IA mergea a main.
 
+### #64 — mobile-pastel-category-palette (2026-09-05 → 2026-09-06)
+
+- Primera del Bloque 0 del rediseño contra el diseño del Make. Diez tokens
+  pastel categóricos en los dos temas; el oscuro se diseñó, no se copió.
+- **Codex paró a mitad, en el commit rojo de R4, y tenía razón**: la tabla
+  CIEDE2000 de `design.md` §3.3 daba 16,1 donde el valor real era 17,1. Al
+  recalcular la tabla entera aparecieron **dos** celdas mal, no una: `blue`
+  oscuro (mal el número **y** el par: 16,7 contra `danger-soft`) y `neutral`
+  oscuro (10,6). Enmienda firmada por el humano en `56b201f`.
+- **El `reviewer` rechazó por C4**: los rojos de R4 y R9 fallaban por un
+  `ReferenceError` del helper de test, no por su aserción, y sus verdes no
+  añadían una línea de producción. El `leader` encontró que **R3 tenía el mismo
+  defecto** y no salía en el reporte porque el handoff solo señalaba dos.
+- **Causa raíz: de secuencia, y defecto de la spec.** R3, R4 y R9 son
+  requisitos de *verificación* sobre artefactos que R1/R2 y R7/R8 ya habían
+  dejado en el árbol: en ese orden su aserción no puede estar roja. Rebase
+  descartado (la branch lleva dentro los commits de firma humana).
+- Se resolvió preguntando lo que C4 protege de verdad —¿el candado está
+  vivo?— con **prueba de mutación**: los tres vivos, y R9 falla nombrando el
+  archivo como exige su cláusula EARS. Excepción firmada en `2ffc8fb`.
+- **Regla general escrita en `CHECKPOINTS.md` §C4** para no repetirlo: un
+  requisito de verificación o se escribe antes de lo que verifica, o se declara
+  como tal y se prueba por mutación; y ningún commit rojo vale si falla por un
+  `ReferenceError`.
+- Dos errores del `leader`, anotados para no repetirlos: (1) cambió de rama en
+  el worktree mientras Codex implementaba, rompiendo la regla de un solo
+  escritor que él mismo había impuesto — Codex lo detectó por reflog y se
+  recuperó; (2) al corregir el desliz de `design.md` §3.1 aplicó la corrección
+  a la fila correcta y dejó mal la otra, dejando las dos mal durante un commit.
+- El `reviewer` le encontró al `leader` dos defectos de forma en el texto de
+  `CHECKPOINTS.md` (prosa colgando de una casilla) y una referencia colgada a
+  `design.md` §10, que no existe en esta spec. Corregidos.
+- **Gate humano AC (`bd1c488`)**: smoke en dev build de Android, dos temas,
+  Reminders y Documentos. Lo bloqueó de paso un fallo de entorno ajeno a la
+  feature: `relation "pet_documents" does not exist` en la máquina Windows del
+  humano, por **dos Postgres escuchando en el 5432** — el nativo y el del
+  contenedor —, así que `drizzle-kit migrate` aplicaba en uno y la app leía del
+  otro. No hubo cambio de código: la migración `0014` estaba en el repo desde
+  #49.
+- **Deuda registrada**: el test de selección de foto de `add-pet` es flaky
+  (preexistente); mordió una pasada de `./init.sh` durante el cierre. Queda
+  como feature propia.
+- Estado final: `done`. PR pendiente de mergear; ninguna IA mergea a main.
+

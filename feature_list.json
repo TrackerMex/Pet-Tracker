@@ -1170,7 +1170,7 @@
   {
     "id": 64,
     "name": "mobile-pastel-category-palette",
-    "status": "in_progress",
+    "status": "done",
     "priority": "P2",
     "description": "Habilitador del Bloque 0 del rediseno derivado de progress/explore_design-gap-vs-make.md (2026-09-04). El brief del producto pide direccion de arte 'amigable, ludica, colores pastel' y el diseno del Make usa una paleta pastel CATEGORICA en todas partes (azul #EEF4FF, ambar #FFF7ED, rosa #FFF0F3, violeta #F5F3FF, verde #F0FBF6). La app hoy pinta TODAS las categorias -los 7 tipos de recordatorio y todos los tipos de documento- con el mismo bg-accent-soft, asi que ninguna seccion categorica del diseno se puede portar sin inventar clases arbitrarias, lo que rompe el grep-clean de #46 y #72 que la carta declara en §Decisiones fijas 3. Esta feature anade los tokens a mobile-pet-tracker/src/theme/global.css (light y dark) y los aplica donde hoy hay un solo tono. Va PRIMERO porque bloquea a mobile-home-quick-actions (#71) y a las secciones categoricas de los bloques siguientes. Cada par token/superficie debe verificar contraste AA con el mismo metodo calculado, no estimado, que fijo #61: los valores del Make son de tema claro y no traen equivalente oscuro, asi que el dark hay que disenarlo, no copiarlo. El acento vale #178255 desde #61 y no se re-litiga.",
     "acceptance_criteria": [
@@ -1324,6 +1324,23 @@
     "files_affected": [
       "mobile-pet-tracker/src/app/(tabs)/home.tsx",
       "mobile-pet-tracker/src/theme/global.css"
+    ]
+  },
+  {
+    "id": 72,
+    "name": "mobile-add-pet-photo-test-flake",
+    "status": "pending",
+    "priority": "P3",
+    "description": "El test de seleccion de foto de add-pet falla de forma intermitente: 'consume su mock' y una ejecucion aislada lo pone rojo mientras la siguiente pasa. Detectado por Codex CLI durante #64 y clasificado por el reviewer como PREEXISTENTE, no introducido por esa feature. Volvio a morder el 2026-09-06 durante el cierre de #64: una pasada de ./init.sh dio 1 failed de 891 y las tres siguientes dieron 891/891 sin tocar una linea. Un test que falla una de cada cuatro veces no es ruido: es un gate que miente en las dos direcciones, y ya ha costado dos ejecuciones completas de init.sh. La spec tiene que encontrar la causa real -lo mas probable es un mock de expo-image-picker que se define con mockResolvedValueOnce y se agota si el test corre en un orden distinto, o estado compartido entre tests del mismo fichero que sobrevive porque falta un reset- y no limitarse a reintentar ni a subir el timeout. Reproducirlo de forma fiable es parte del trabajo: correr el fichero aislado y en distintos ordenes con --runInBand y con seed de aleatorizacion hasta dar con el disparador.",
+    "acceptance_criteria": [
+      "La spec identifica la causa raiz con evidencia, no una hipotesis: que mock o que estado sobrevive entre tests y por que",
+      "El test deja de depender del orden: se demuestra corriendo el fichero aislado y dentro de la suite completa, en ambos ordenes, un numero de veces que la spec fija",
+      "No se arregla reintentando, subiendo el timeout ni marcando el test como skip",
+      "Si el mismo patron afecta a otros ficheros de test, la spec los enumera",
+      "Suite movil completa verde en tres ejecuciones consecutivas de ./init.sh"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/add-pet/index.test.tsx"
     ]
   }
 ]

@@ -5,7 +5,15 @@ Branch revisada: `feature/64-mobile-pastel-category-palette` (worktree `/home/cl
 HEAD revisado: `9da7ce2` (== `origin/feature/64-mobile-pastel-category-palette`, sin drift)
 Base de comparación: `4ca0ce5` (punto de corte con `chore/design-gap-backlog`)
 
-**Veredicto: RECHAZADO** — C4 no se puede marcar para **R3**, **R4** y **R9**:
+> ## ⚠️ Este veredicto quedó superado — ver **§Veredicto final** al pie
+>
+> El rechazo de abajo es **histórico y se conserva a propósito**: el registro de
+> que hubo un rechazo, por qué, y qué evidencia lo levantó es justo lo que hace
+> útil la excepción firmada. El veredicto vigente es el de la última sección del
+> archivo: **APROBADO** el 2026-09-06, tras la firma humana de la excepción de C4
+> en `2ffc8fb`. Nada de lo escrito debajo se ha borrado ni reescrito.
+
+**Veredicto (2026-09-06, primera pasada): RECHAZADO** — C4 no se puede marcar para **R3**, **R4** y **R9**:
 sus commits rojos fallan por un símbolo de test inexistente, no por la aserción.
 Todo lo demás está limpio y verificado de forma independiente.
 
@@ -550,3 +558,190 @@ firma del humano `4ca0ce5` y `56b201f`; reescribir la historia los destruiría.
 | R3 | `3521773` — `ReferenceError`, `Tests: 0 total` | **vivo** |
 | R4 | `feac447` — `ReferenceError: deltaE00` | **vivo** |
 | R9 | `f41678b` — `ReferenceError: categoryClassInventory` | **vivo** |
+
+---
+
+# Veredicto final — 2026-09-06
+
+**Estado revisado**: `2ffc8fb` (== `origin/feature/64-mobile-pastel-category-palette`).
+**Veredicto: APROBADO**, con el gate humano de smoke todavía abierto.
+
+Nada de lo anterior se ha borrado. El rechazo de la primera pasada y la prueba
+de mutación que lo acompañó siguen íntegros arriba, y son la evidencia sobre la
+que se apoya la excepción que el humano firmó.
+
+## Qué levantó el rechazo
+
+El único bloqueante era C4 para R3, R4 y R9. **El humano lo cerró firmando la
+excepción**, no ignorándola:
+
+- `2ffc8fb`, **AlexisSM377 <al222111377@gmail.com>** — commit del humano, no de
+  un agente. Toca **solo** `requirements.md`, **2 líneas**: la casilla
+  `[ ]` → `[X]` y la fecha. Verificado con `git show`.
+- Lo firmado, en `requirements.md` §Firma de la excepción de C4 del 2026-09-06:
+  R3, R4 y R9 quedan declarados **requisitos de verificación** cuyo commit rojo
+  es de ausencia-de-helper, y su cierre se prueba con la prueba de mutación de
+  este reporte en vez de con historial rojo→verde. El texto reconoce
+  explícitamente que "C4 no se cumple en su forma literal para esos tres".
+- La tabla de mutación que la spec transcribe reproduce **exactamente** lo que
+  este review midió: R3 rojo con 2,336 recibido; R4 rojo en sus dos aserciones
+  de separación; R9 rojo nombrando el archivo y rojo por el inventario 18≠17.
+
+Con eso, **C4 queda cerrado por excepción firmada más evidencia de mutación**,
+que es lo que el propio checkpoint protege. Ningún otro checkbox estaba vacío.
+
+## Los tres encargos de esta pasada
+
+### 1. `./init.sh` entero sobre el HEAD actual — verde
+
+Re-ejecutado por este review sobre `2ffc8fb`, sin omitir fases, `cdk synth`
+incluido. **Exit code 0.** Working tree limpio antes y después.
+
+```
+✅ node / pnpm / bun disponibles
+✅ .env encontrado, DATABASE_URL definida
+⚠️  .env desactualizado: faltan RESEND_API_KEY, RESEND_FROM, RESET_LINK_HOST
+✅ Dependencias instaladas
+✅ Archivos del harness presentes
+⚠️  Feature en progreso: mobile-pastel-category-palette
+⚠️  STATUS.md desactualizado (58/63 declarado vs 59/71 real)
+✅ Build exitoso  (incluye pnpm -C infra run synth → cdk synth --quiet)
+   backend:  Test Suites: 163 passed, 163 total
+   infra:    Test Suites:   2 passed,   2 total
+   harness:  TAP entorno, verde
+   mobile:   Test Suites:  59 passed,  59 total
+✅ Tests pasados
+   e2e:      Test Suites: 3 skipped, 25 passed, 25 of 28 total
+✅ Tests e2e pasados
+✅ Lint sin errores
+✅ Typecheck sin errores
+══════════════════════════════════════════
+✅ Todo verde. Listo para trabajar.
+```
+
+Los dos avisos son estado previo de la branch, no los introduce #64. El de
+`STATUS.md` le toca al `leader` al cerrar sesión.
+
+### 2. Drift desde el commit revisado — cero código
+
+`git diff 9da7ce2 HEAD --stat`:
+
+```
+ CHECKPOINTS.md                                     |  13 +
+ progress/review_mobile-pastel-category-palette.md  | 552 +++++++++++++++++++++
+ specs/mobile-pastel-category-palette/design.md     |   2 +-
+ specs/mobile-pastel-category-palette/requirements.md |  35 ++
+ 4 files changed, 601 insertions(+), 1 deletion(-)
+```
+
+**Cero archivos bajo `mobile-pet-tracker/`, `backend-pet-tracker/` o `infra/`.**
+Filtrado explícito por prefijo: ninguna coincidencia. El código auditado en la
+primera pasada es byte a byte el que se va a mergear.
+
+Los tres commits nuevos, uno a uno: `5efeee6` (excepción + regla en CHECKPOINTS +
+primer intento de corrección de §3.1 + este reporte, commiteado verbatim en sus
+552 líneas), `2c87da4` (corrige la fila correcta de §3.1), `2ffc8fb` (firma
+humana). R1–R10 siguen intactos: el diff de `requirements.md` es puramente
+aditivo al final del archivo.
+
+### 3. El desliz de `design.md` §3.1 — corregido, y las dos filas verificadas
+
+Se recalculó la tabla oscura entera de §3.1, seis filas por tres columnas, con
+el mismo aparato independiente de la primera pasada. **Las dieciséis celdas
+coinciden ahora**, incluidas las dos que el `leader` avisó:
+
+| Fila | Tinta | Sobre su superficie | Sobre `--default` | Sobre `--surface` |
+|---|---|---|---|---|
+| `blue` | `#4A8DDF` | 4,810 ✔ | 4,583 ✔ | 5,080 ✔ |
+| `amber` | `#C17B22` | 4,776 ✔ | 4,551 ✔ | 5,044 ✔ |
+| `green` | `#2AB87C` | 6,432 ✔ | 6,128 ✔ | **6,792** ✔ |
+| `violet` | `#9579E7` | 4,811 ✔ | 4,583 ✔ | 5,080 ✔ |
+| `rose` | `#E35E78` | 4,788 ✔ | 4,562 ✔ | 5,056 ✔ |
+| `neutral` | `#9CA3AF` | 6,148 ✔ | — | **6,813** ✔ |
+
+Verde `#2AB87C` sobre `--surface` `#161B22` da **6,792**; neutral `#9CA3AF` sobre
+`--surface` da **6,813**. Es exactamente lo que el `leader` pidió comprobar, y
+confirma que `5efeee6` había tocado la fila equivocada y que `2c87da4` lo
+arregla. La fila `neutral` conserva correctamente el `—` en la columna
+`--default`, porque `--default` **es** su propia superficie.
+
+## Revisión del texto nuevo de `CHECKPOINTS.md` §C4
+
+Encargo explícito del `leader`, porque lo escribió él y no lo había revisado
+nadie.
+
+**La sustancia es correcta y completa.** Define bien qué es un requisito de
+verificación (asevera una propiedad de artefactos que un requisito anterior ya
+dejó en el árbol), nombra el síntoma exacto (`ReferenceError` del helper que aún
+no existe), declara sin ambigüedad que **eso no es rojo legítimo**, y da las dos
+salidas con la exigencia clave: **la spec elige una por escrito antes del
+handoff**. Ese "antes del handoff" es el detalle que hace que la regla sirva —
+es la spec, y no el implementador, quien fija el orden de los requisitos, así que
+es ahí donde el defecto se previene. Coincide punto por punto con lo que este
+review encontró.
+
+**Un defecto de forma, no bloqueante.** El bloque entra como un `- [ ]` más de
+la lista de C4, pero está redactado como **prosa normativa**, no como condición
+marcable. El pie del propio archivo dice que el reviewer "recorre cada checkbox
+relevante, marca `[x]` o `[ ]`, y rechaza el cierre si queda alguno vacío": sobre
+un párrafo que explica una taxonomía y ofrece dos opciones, no hay nada que
+marcar sin interpretarlo. Sugerencia concreta: dejar el párrafo como nota
+explicativa **debajo** de la lista y subir a checkbox una condición binaria, del
+tipo
+
+> - [ ] Ningún requisito de verificación cerró con un rojo de ausencia-de-helper:
+>       o su test se escribió antes que la implementación que verifica, o la spec
+>       lo declara como requisito de verificación y su cierre se prueba por mutación
+
+Así el siguiente reviewer sabe qué está marcando. Es un cambio en el arnés, no
+en #64, y no condiciona esta aprobación.
+
+## Observaciones que quedan abiertas (ninguna bloquea)
+
+1. **`CHECKPOINTS.md` §C4**: la regla nueva es correcta pero está redactada como
+   prosa bajo un checkbox. Reformular como condición marcable (propuesta arriba).
+2. **`requirements.md` §Firma de la excepción** cita `[[design]] §10` como el
+   sitio donde vive el orden obligatorio. **`design.md` no tiene §10** — termina
+   en §8; el orden por requisito vive en `tasks.md`. Referencia colgada. No
+   afecta a lo que el humano firmó: la sustancia de la excepción es independiente
+   del puntero. Corregir cuando se toque la spec, sin re-firma.
+3. **Desfase cosmético de fechas**: el título dice "del 2026-09-06" y la casilla
+   firma "(fecha: 2026-09-05)". Mismo desfase que ya tenía la enmienda anterior
+   de §3.3. Inocuo.
+4. **Formato de commit** (de la primera pasada, sigue en pie): los commits llevan
+   el R-id encabezando la descripción y en español, no `(R<n>)` al final y en
+   inglés como fijan `docs/conventions.md` §Commits y la `traceability.md` de
+   esta feature. El R-id está presente e inequívoco en los 36 commits. Decidir si
+   se alinea la convención o el documento.
+5. **`STATUS.md` desactualizado** (58/63 declarado vs 59/71 real). Cierre de
+   sesión del `leader`, no de esta feature.
+
+## Checklist final
+
+- [x] **C2** — una sola feature `in_progress`; `progress/current.md` describe la sesión
+- [x] **C3** — N/A: UI pura, cero archivos bajo `backend-pet-tracker/` o `infra/`
+- [x] **C4** — R1–R10 tienen test que los nombra. El patrón rojo→verde real se
+      cumple en R1, R2, R5, R6, R7, R8 y R10; para **R3, R4 y R9** queda cerrado
+      por **excepción firmada por el humano en `2ffc8fb`** más la prueba de
+      mutación de este reporte, que demuestra los tres candados vivos
+- [x] **C5** — `traceability.md` sin ninguna fila "pendiente" en R1–R10; cada
+      requisito con su test y su commit. (Formato de commit: observación 4)
+- [x] **C6** — spec `approved`, casilla humana marcada con fecha, y las **tres**
+      firmas humanas en commits propios del humano: `4ca0ce5` (spec),
+      `56b201f` (enmienda §3.3), `2ffc8fb` (excepción C4). Ningún requisito
+      modificado tras la aprobación
+- [x] **C7** — N/A: no reemplaza ningún componente ni módulo; no queda código ni
+      test huérfano
+- [x] **C8** — grep-clean rehecho a mano: cero hex fuera de `src/theme/`, cero
+      clases arbitrarias, cero `StyleSheet.create`, cero shadow/elevation legacy;
+      clases categóricas solo en `utils/category-palette.ts`
+
+## Lo que este review NO cierra
+
+- [ ] **Smoke humano en dev build de Android** (no Expo Go), temas claro y
+      oscuro, pantallas Reminders y Documentos. **No delegable a IA, y este
+      review no lo marca.**
+- La feature **sigue `in_progress`**. Este reviewer no la pasa a `done`: eso le
+  toca al `leader` cuando el humano cierre el smoke.
+
+**APROBADO.**
