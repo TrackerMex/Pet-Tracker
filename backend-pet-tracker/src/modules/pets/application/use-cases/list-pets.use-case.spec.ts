@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import * as path from 'node:path';
 import { Pet } from '@/modules/pets/domain/entities/pet.entity';
 import { PetPhotoUrlResolver } from '@/modules/pets/domain/ports/pet-photo-url-resolver';
 import {
@@ -139,5 +141,61 @@ describe('R1 (pets-list-response-enrichment #66): el listado resuelve photoUrl p
 
     await expect(useCase.execute(USER_ID)).resolves.toEqual([]);
     expect(resolveDownloadUrl).not.toHaveBeenCalled();
+  });
+});
+
+describe('R4 (pets-list-response-enrichment #66): sin N+1 — una consulta al repositorio y sin puertos de device ni vacuna', () => {
+  it('consulta las membresias una sola vez y devuelve solo pet, role y photoUrl', async () => {
+    const memberships: PetWithRole[] = [
+      {
+        pet: buildPet(
+          '0198b2c3-4d5e-7a01-b234-56789abcdef0',
+          'A',
+          'pets/a/photo-1',
+        ),
+        role: 'owner',
+      },
+      {
+        pet: buildPet(
+          '0198b2c3-4d5e-7a01-b234-56789abcdef1',
+          'B',
+          null,
+        ),
+        role: 'family',
+      },
+      {
+        pet: buildPet(
+          '0198b2c3-4d5e-7a01-b234-56789abcdef2',
+          'C',
+          'pets/c/photo-2',
+        ),
+        role: 'vet',
+      },
+    ];
+    const findAllByMember = jest.fn().mockResolvedValue(memberships);
+    const repo = { findAllByMember } as unknown as PetRepository;
+    const resolver: PetPhotoUrlResolver = {
+      resolveDownloadUrl: jest.fn().mockResolvedValue('https://signed.example'),
+    };
+    const useCase = new ListPetsUseCase(repo, resolver);
+
+    const result = await useCase.execute(USER_ID);
+
+    expect(findAllByMember).toHaveBeenCalledTimes(1);
+    for (const item of result) {
+      expect(Object.keys(item).sort()).toEqual(['pet', 'photoUrl', 'role']);
+    }
+  });
+
+  it('depende del resolver de fotos, nunca de readers de device o vacuna', () => {
+    const source = readFileSync(
+      path.join(__dirname, 'list-pets.use-case.ts'),
+      'utf-8',
+    );
+
+    expect(source).toContain('PET_PHOTO_URL_RESOLVER');
+    expect(source).not.toContain('PET_DEVICE_READER');
+    expect(source).not.toContain('PET_VACCINE_READER');
+    expect(source.length).toBeGreaterThan(500);
   });
 });
