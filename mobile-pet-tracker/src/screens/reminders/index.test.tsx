@@ -516,3 +516,52 @@ describe('R7: borrar recordatorio con confirmación', () => {
     ).toEqual(expect.objectContaining({ disabled: false }));
   });
 });
+
+describe('#64 R7: la fila de recordatorio pinta el icono con el color de su tipo', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  });
+
+  it('mantiene emoji y etiqueta junto a superficies distintas', async () => {
+    mockListReminders.mockResolvedValue({
+      kind: 'ok',
+      reminders: [
+        makeReminder({ id: 'vaccine', type: 'vaccine' }),
+        makeReminder({
+          id: 'medication',
+          type: 'medication',
+          title: 'Monthly medication',
+        }),
+      ],
+    });
+
+    await renderReminders();
+    await waitFor(() =>
+      expect(screen.getByTestId('reminder-row-vaccine')).toBeVisible(),
+    );
+
+    const vaccineRow = within(screen.getByTestId('reminder-row-vaccine'));
+    const medicationRow = within(
+      screen.getByTestId('reminder-row-medication'),
+    );
+    const vaccineTile = vaccineRow.getByText('💉').parent;
+    const medicationTile = medicationRow.getByText('💊').parent;
+
+    expect(vaccineTile?.props.className).toContain('bg-category-blue');
+    expect(medicationTile?.props.className).toContain('bg-category-amber');
+    expect(vaccineTile?.props.className).not.toContain('bg-accent-soft');
+    expect(medicationTile?.props.className).not.toContain('bg-accent-soft');
+    expect(vaccineRow.getByText('💉')).toBeVisible();
+    expect(vaccineRow.getByText('Vaccine')).toBeVisible();
+    expect(medicationRow.getByText('💊')).toBeVisible();
+    expect(medicationRow.getByText('Medication')).toBeVisible();
+  });
+});
