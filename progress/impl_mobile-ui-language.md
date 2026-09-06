@@ -70,6 +70,7 @@ La firma y el procedimiento quedaron registrados en `requirements.md` y
 | R-id | Rojo | Verde |
 |---|---|---|
 | R12 | `ac158f6` | `20397ad` |
+| R13 | `e237589` | `ff15b5b` |
 
 ## Copy o layout no previstos
 
