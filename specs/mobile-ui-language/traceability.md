@@ -14,7 +14,7 @@ tags: [harness, spec]
 | R4 | Map, 19 | `mobile-pet-tracker/src/__tests__/ui-language.test.ts::#65 R4: Map resuelve su copy por clave` | rojo: `fc77f22`; verde: `45fd835 feat(mobile-ui-language): localize Map copy (R4)` |
 | R5 | Health + peso, 32 | `mobile-pet-tracker/src/__tests__/ui-language.test.ts::#65 R5: Health resuelve su copy por clave` | rojo: `b593f0f`; verde: `8bf82b0 feat(mobile-ui-language): localize Health copy (R5)` |
 | R6 | Food + horario, 35 | `mobile-pet-tracker/src/__tests__/ui-language.test.ts::#65 R6: Food resuelve su copy por clave` | rojo: `eff8e4c`; verde: `a1a5bee feat(mobile-ui-language): localize Food copy (R6)` |
-| R7 | Profile + docs, 35 | `mobile-pet-tracker/src/__tests__/ui-language.test.ts::#65 R7: Profile resuelve su copy por clave` | rojo: `9b3d904`; verde: por registrar |
+| R7 | Profile + docs, 35 | `mobile-pet-tracker/src/__tests__/ui-language.test.ts::#65 R7: Profile resuelve su copy por clave` | rojo: `9b3d904`; verde: `5665e0e feat(mobile-ui-language): localize Profile copy (R7)` |
 | R8 | Recordatorios, 50 | pendiente | pendiente |
 | R9 | Alta de mascota, 40 | pendiente | pendiente |
 | R10 | Emparejado, 40 | pendiente | pendiente |
