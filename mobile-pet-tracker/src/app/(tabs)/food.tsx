@@ -176,7 +176,10 @@ export default function FoodScreen() {
                 className="gap-3"
               >
                 <View className="flex-row items-center justify-between gap-3">
-                  <Text className="text-base font-bold text-foreground">
+                  <Text
+                    testID="food-meals-title"
+                    className="text-base font-bold text-foreground"
+                  >
                     {t('food.mealsToday')}
                   </Text>
                   <Text
@@ -261,7 +264,10 @@ export default function FoodScreen() {
                 >
                   <View className="flex-row items-center gap-2">
                     <Sparkles size={18} color={accent} />
-                    <Text className="text-base font-bold text-foreground">
+                    <Text
+                      testID="food-ai-title"
+                      className="text-base font-bold text-foreground"
+                    >
                       {t('food.aiRecommendation')}
                     </Text>
                   </View>
@@ -298,7 +304,10 @@ export default function FoodScreen() {
             onPress={() => router.push('/meal-schedule' as Href)}
           >
             <View className="gap-1">
-              <Text className="text-base font-bold text-foreground">
+              <Text
+                testID="meal-schedule-link-title"
+                className="text-base font-bold text-foreground"
+              >
                 {t('food.mealSchedule')}
               </Text>
               <Text className="text-xs font-normal text-muted">

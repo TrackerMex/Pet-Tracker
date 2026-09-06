@@ -523,12 +523,16 @@ describe('#62 R5: el título de card usa un único tratamiento', () => {
     });
   });
 
-  it.each(['Comidas hoy', 'Recomendación IA', 'Horario de comidas'])(
-    'aplica la receta canónica a %s',
-    async (title) => {
+  it.each([
+    'food-meals-title',
+    'food-ai-title',
+    'meal-schedule-link-title',
+  ])(
+    'aplica la receta canónica al título %s',
+    async (testID) => {
       await renderFood();
 
-      expect((await screen.findByText(title)).props.className).toBe(
+      expect((await screen.findByTestId(testID)).props.className).toBe(
         'text-base font-bold text-foreground',
       );
     },

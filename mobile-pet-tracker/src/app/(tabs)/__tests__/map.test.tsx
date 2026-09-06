@@ -925,7 +925,7 @@ describe('R1 (mobile-map-last-position-error-state): rama de error de last', () 
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
   });
 
-  it('muestra mensaje y Retry cuando last devuelve error', async () => {
+  it('muestra mensaje y Reintentar cuando last devuelve error', async () => {
     mockGetLastPosition.mockResolvedValue({ kind: 'error' });
 
     await renderMap();
@@ -941,7 +941,7 @@ describe('R1 (mobile-map-last-position-error-state): rama de error de last', () 
     expect(screen.queryByTestId('map-error')).toBeNull();
   });
 
-  it('Retry llama al refetch de last y recupera el mapa', async () => {
+  it('Reintentar llama al refetch de last y recupera el mapa', async () => {
     mockGetLastPosition
       .mockResolvedValueOnce({ kind: 'error' })
       .mockResolvedValue({

@@ -779,7 +779,7 @@ describe('#62 R5: el título de card usa un único tratamiento', () => {
   it('aplica la receta canónica a Today\'s Summary', async () => {
     await renderHome();
 
-    expect((await screen.findByText('Resumen de hoy')).props.className).toBe(
+    expect((await screen.findByTestId('summary-card-title')).props.className).toBe(
       'text-base font-bold text-foreground',
     );
   });

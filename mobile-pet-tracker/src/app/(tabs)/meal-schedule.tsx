@@ -271,7 +271,10 @@ function MealScheduleContent({ petId }: { petId: string }) {
             testID="nutrition-profile-section"
             className="gap-3"
           >
-            <Text className="text-base font-bold text-foreground">
+            <Text
+              testID="nutrition-profile-title"
+              className="text-base font-bold text-foreground"
+            >
               {t('mealSchedule.nutritionProfile')}
             </Text>
             <View className="flex-row flex-wrap gap-2">

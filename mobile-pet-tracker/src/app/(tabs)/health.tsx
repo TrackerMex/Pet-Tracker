@@ -218,7 +218,10 @@ export default function HealthScreen() {
           className="gap-3"
         >
           <View className="flex-row items-baseline justify-between gap-3">
-            <Text className="text-base font-bold text-foreground">
+            <Text
+              testID="weight-card-title"
+              className="text-base font-bold text-foreground"
+            >
               {t('health.weight')}
             </Text>
             {weight.data?.kind === 'ok' && weight.data.weights.length > 0 ? (

@@ -266,7 +266,10 @@ export default function HomeScreen() {
 
       {selectedPetId ? (
         <Card testID="summary-card" className="gap-4">
-          <Text className="text-base font-bold text-foreground">
+          <Text
+            testID="summary-card-title"
+            className="text-base font-bold text-foreground"
+          >
             {t('home.summaryTitle')}
           </Text>
 

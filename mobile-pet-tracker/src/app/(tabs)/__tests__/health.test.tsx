@@ -611,10 +611,10 @@ describe('#62 R5: el título de card usa un único tratamiento', () => {
     });
   });
 
-  it('aplica la receta canónica a Weight', async () => {
+  it('aplica la receta canónica a Peso', async () => {
     await renderHealth();
 
-    expect((await screen.findByText('Peso')).props.className).toBe(
+    expect((await screen.findByTestId('weight-card-title')).props.className).toBe(
       'text-base font-bold text-foreground',
     );
   });
