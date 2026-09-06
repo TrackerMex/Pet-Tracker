@@ -610,3 +610,91 @@ Lo que rehace el `reviewer`, en este orden:
 - [X] Firmo que el esperado mecánico de R17 pasa de **244** a **265**, y que
       lo que se comprueba es el **delta −2** entre el padre y el verde de R17
       (fecha: 2026-09-06)
+
+### Enmienda del 2026-09-06 (3) — copy sin clave que el inventario no vio
+
+El `implementer` paró en R18 y paró bien: su escaneo destapó **copy visible que
+el catálogo aprobado no contiene**. No es un fallo del test ni del código
+migrado — es un hueco de mi inventario, y cerrarlo mueve cifras firmadas.
+
+**Causa raíz, y por qué no es un descuido suelto**: el inventario de las 255
+entradas barrió los literales **ingleses pendientes de traducir**. Toda copy
+que se escribe **igual en español y en inglés** era invisible a ese barrido.
+Por eso los huecos no aparecen dispersos al azar: son exactamente las palabras
+que no cambian entre idiomas.
+
+Al descubrirlo, el `leader` rehizo el barrido por la otra vía —literales de
+texto visible en los 19 ficheros de pantalla, resuelvan o no por `t(`— y salen
+**cinco sitios**, no los dos que encontró el test:
+
+| Fichero | Línea | Literal | Lo ve R18 | Por qué se coló |
+|---|---:|---|---|---|
+| `screens/add-pet/index.tsx` | 431 | `label="No"` | **no** | hermana de `t('addPet.yes')`, que sí tiene clave |
+| `screens/add-pet/index.tsx` | 436 | `<FieldLabel>Microchip</FieldLabel>` | **sí** | choca con el valor de `profile.microchip` |
+| `screens/pairing/index.tsx` | 319 | `label="ESN"` | no | acrónimo, igual en los dos idiomas |
+| `screens/pairing/index.tsx` | 436 | `label="ESN"` | no | segunda ocurrencia, misma clave |
+| `app/(tabs)/map.tsx` | 354 | `<Text>GPS</Text>` | no | acrónimo, igual en los dos idiomas |
+
+Solo el de la línea 436 de `add-pet` pone R18 en rojo, porque es el único que
+**coincide con un valor que ya está en el catálogo**. Los otros cuatro son
+invisibles a R18 por construcción: no están en el catálogo, así que no hay
+valor con el que colisionar. Dejarlos fuera no rompe ningún test — los deja
+sin gestionar, que es como llegaron hasta aquí.
+
+Descartados por no ser copy: `📄` (`screens/docs/index.tsx:31`) y `✓`
+(`screens/pairing/index.tsx:300`). Son glifos, no texto traducible.
+
+**Las cuatro claves nuevas tienen el mismo valor en los dos idiomas**, que es
+justo lo que las hizo invisibles. No hay redacción que decidir:
+
+| Clave | `es` | `en` | Sitios |
+|---|---|---|---|
+| `addPet.no` | `No` | `No` | 1 |
+| `addPet.microchip` | `Microchip` | `Microchip` | 1 |
+| `pairing.esn` | `ESN` | `ESN` | 2 (una fila en la tabla de uso) |
+| `map.gps` | `GPS` | `GPS` | 1 |
+
+#### Qué se firma
+
+Dos opciones. **Marca una sola.**
+
+- [ ] **(A) Mínimo para desbloquear** — solo `addPet.no` y `addPet.microchip`.
+      Catálogo **255 → 257**, `ALL_USES` **320 → 322**, R9 **40 → 42**,
+      valores de cadena fija de R18(b) **244 → 246**. `ESN` y `GPS` se quedan
+      como literales sin clave, y ningún test los vigila.
+      (fecha: ______)
+
+- [ ] **(B) Cerrar la familia entera** *(recomendada por el `leader`)* — las
+      cuatro claves. Catálogo **255 → 259**, `ALL_USES` **320 → 324**,
+      R4 **19 → 20**, R9 **40 → 42**, R10 **40 → 41**, valores de cadena fija
+      de R18(b) **244 → 248**.
+      (fecha: ______)
+
+**Por qué el `leader` recomienda (B)**: (A) desbloquea pero deja tres literales
+de copy que nada vigila, y la regla 6 que R20 acaba de escribir en
+`docs/ui-guidelines.md` dice que el catálogo es la **única fuente de copy**.
+Además el rediseño ya tiene en cola cambiar el vocabulario a `Collar GPS`, así
+que esa cadena se va a tocar. La diferencia entre las dos opciones son **dos
+claves y tres sitios**; el coste de volver por ellas más tarde es otra ronda de
+enmienda y firma como esta.
+
+#### Y para que no haya una cuarta ronda
+
+Es la **tercera** vez en dos features que una constante numérica congelada en
+una spec aprobada para el trabajo: el R4 de #64, el 244 de R17 y ahora el 320
+de R18. La cifra nunca estuvo mal cuando se escribió; envejeció.
+
+Así que, además de las claves, se firma esto: en `ui-copy-table.ts` y en el
+test de R18, **la comprobación vinculante pasa a ser de consistencia interna**,
+no de constante:
+
+- `ALL_USES.length` debe ser igual a la **suma de los once bloques** `R1_…R11_`;
+- `Object.keys(es).length` debe ser igual a `Object.keys(en).length`;
+- el escaneo recorre `ALL_USES` y el catálogo **tal como están**, sin comparar
+  contra ningún número escrito a mano.
+
+Las cifras de arriba quedan en la spec como **lo que valían el 2026-09-06**, no
+como el candado. El nombre del `describe` de R18 pierde el `320`.
+
+- [ ] Firmo también el cambio a comprobación por consistencia interna
+      (fecha: ______)
