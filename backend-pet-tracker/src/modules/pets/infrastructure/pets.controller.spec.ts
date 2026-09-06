@@ -127,6 +127,74 @@ describe('R7: GET /v1/pets lista las mascotas del usuario con myRole', () => {
   });
 });
 
+describe('R2 (pets-list-response-enrichment #66): GET /v1/pets serializa el photoUrl de cada item sin alterar el contrato', () => {
+  it('conserva el photoUrl resuelto y el rol de cada item', async () => {
+    const { controller, listExecute } = buildController();
+    listExecute.mockResolvedValue([
+      {
+        pet: buildPet(),
+        role: 'owner',
+        photoUrl: 'https://signed.example/a',
+      },
+      { pet: buildPet(), role: 'family', photoUrl: null },
+    ]);
+
+    const response = await controller.list(USER);
+
+    expect(response[0].photoUrl).toBe('https://signed.example/a');
+    expect(response[1].photoUrl).toBeNull();
+    expect(response[0].myRole).toBe('owner');
+    expect(response[1].myRole).toBe('family');
+  });
+
+  it('mantiene exactamente las 24 claves y los placeholders no enriquecidos en null', async () => {
+    const { controller, listExecute } = buildController();
+    listExecute.mockResolvedValue([
+      {
+        pet: buildPet(),
+        role: 'owner',
+        photoUrl: 'https://signed.example/a',
+      },
+      { pet: buildPet(), role: 'family', photoUrl: null },
+    ]);
+
+    const response = await controller.list(USER);
+
+    expect(Object.keys(response[0]).sort()).toEqual(
+      [
+        'id',
+        'name',
+        'species',
+        'breed',
+        'sex',
+        'birthDate',
+        'approxAgeMonths',
+        'ageMonths',
+        'currentWeightKg',
+        'size',
+        'color',
+        'sterilized',
+        'microchip',
+        'photoUrl',
+        'lostMode',
+        'lastPosition',
+        'lastCommunicationAt',
+        'myRole',
+        'device',
+        'nextVaccine',
+        'nextReminder',
+        'activitySummary',
+        'createdAt',
+        'updatedAt',
+      ].sort(),
+    );
+    expect(response[0].device).toBeNull();
+    expect(response[0].nextVaccine).toBeNull();
+    expect(response[0].nextReminder).toBeNull();
+    expect(response[0].activitySummary).toBeNull();
+  });
+});
+
 describe('R8: GET /v1/pets/:petId responde el perfil con el rol de la membresia', () => {
   it('usa el petId y el rol adjuntados por PetAccessGuard', async () => {
     const { controller, getExecute } = buildController();
