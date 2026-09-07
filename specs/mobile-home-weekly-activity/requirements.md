@@ -394,7 +394,7 @@ lo habilita de paso.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [X] Aprobado por humano (fecha: 2026-09-07) ← gate obligatorio antes de implementar
 
 Al aprobar, el humano ratifica además:
 
