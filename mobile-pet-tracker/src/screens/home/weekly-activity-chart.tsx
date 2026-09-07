@@ -1,10 +1,15 @@
 import type { JSX } from 'react';
 import { Pressable, Text, View } from 'react-native';
-import { BarChart } from 'react-native-chart-kit/v2';
+import {
+  BarChart,
+  type BarChartRenderBarProps,
+} from 'react-native-chart-kit/v2';
+import { Rect } from 'react-native-svg';
 
 import type { DayEntry, WeekComparison } from '../../api/types';
 import { Card } from '../../components/card';
 import { useLocale } from '../../providers/language-provider';
+import { fmtMinutes } from './format';
 
 // react-native-chart-kit 7.0.4 geometry contract (re-derive on upgrade):
 // base padding: 18, 14, 12, 10; label gap: 8; text width factor: 0.56;
@@ -18,6 +23,7 @@ export const CHART_AXIS_LABEL_SIZE = 10;
 export const Y_LABEL_CHARS = 4;
 export const BAR_ENTRY_DURATION_MS = 250;
 export const BAR_ENTRY_STAGGER_MS = 40;
+export const BAR_MIN_HEIGHT = 3;
 
 export type WeeklyMetric = 'activeMinutes' | 'distanceM' | 'walkCount';
 
@@ -30,6 +36,32 @@ export const WEEKLY_METRICS: readonly WeeklyMetric[] = [
 export interface WeeklyActivityChartProps {
   days: DayEntry[];
   weekComparison: WeekComparison;
+}
+
+interface ChartDatum {
+  date: string;
+  value: number | null;
+  day: DayEntry;
+}
+
+function ActivityBar({
+  bar,
+  fill,
+}: BarChartRenderBarProps<ChartDatum>): JSX.Element {
+  const height = Math.max(bar.height, BAR_MIN_HEIGHT);
+
+  return (
+    <Rect
+      key={bar.key}
+      testID={`weekly-activity-bar-${bar.raw?.date}`}
+      x={bar.x}
+      y={bar.baselineY - height}
+      width={bar.width}
+      height={height}
+      rx={Math.min(bar.width, height) / 2}
+      fill={fill}
+    />
+  );
 }
 
 export function weekdayLabel(
@@ -50,7 +82,8 @@ export function WeeklyActivityChart(
   const locale = useLocale();
   const chartData = days.map((day) => ({
     date: day.date,
-    value: day.activeMinutes,
+    value: day.source === 'missing' ? null : day.activeMinutes,
+    day,
   }));
 
   void weekComparison;
@@ -64,6 +97,9 @@ export function WeeklyActivityChart(
         width={295}
         height={CHART_PAD_TOP + CHART_PLOT_HEIGHT + CHART_PAD_BOTTOM}
         showXAxisLabels={false}
+        renderBar={(barProps) => (
+          <ActivityBar key={barProps.bar.key} {...barProps} />
+        )}
         testID="weekly-activity-bar-chart"
       />
       <View
@@ -83,10 +119,25 @@ export function WeeklyActivityChart(
           >
             <Text
               testID="weekly-activity-day-label"
-              className="text-xs text-muted"
+              className="text-2xs font-semibold text-muted"
             >
               {weekdayLabel(day.date, locale, 'short')}
             </Text>
+            {day.source === 'missing' ? (
+              <Text
+                testID={`weekly-activity-missing-${day.date}`}
+                className="text-2xs font-normal text-muted"
+              >
+                —
+              </Text>
+            ) : (
+              <Text
+                testID={`weekly-activity-value-${day.date}`}
+                className="text-2xs font-semibold text-foreground"
+              >
+                {fmtMinutes(day.activeMinutes)}
+              </Text>
+            )}
           </Pressable>
         ))}
       </View>
