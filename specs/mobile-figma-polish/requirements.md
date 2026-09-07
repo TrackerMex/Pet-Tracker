@@ -184,10 +184,16 @@ Elementos del diseño **excluidos por decisión** (detalle en [[design]]):
   mayor y el overlay pide gradientes; las pantallas conservan su estructura
   de header actual re-tokenizada. Si el humano quiere fidelidad total de los
   heros, es una feature aparte — decisión visible para el gate.
+  **Resuelto por #67 (A2)**: esa feature aparte existe y es
+  `mobile-pet-hero-header`. El punto sale de §Fuera de alcance por enmienda,
+  sin reabrir ningún requisito de #46.
 - **Gradientes** (botones `linear-gradient(135deg,#1DA868,#2AB87C)` y
   overlays): requerirían `expo-linear-gradient` (dep nueva, prohibido) o SVG
   ad-hoc. Se sustituyen por sólido `accent`. Excepción: el gradiente del área
   del weight-chart (R5) sí va, porque `react-native-svg` ya lo soporta.
+  **Enmendado por #67 (A5)**: la premisa era incompleta. En RN 0.86.2 hay una
+  tercera vía nativa, `experimental_backgroundImage`, que no añade
+  dependencia. `expo-linear-gradient` sigue prohibido.
 - **Copy**: ningún texto visible cambia. Todo el copy del Make (es-ES:
   "Iniciar sesión", "pasos hoy", "Zona Segura"…) queda fuera; la app conserva
   su copy actual porque los tests de #33–#37 se anclan a él.
@@ -211,3 +217,16 @@ Decisiones que el humano ratifica al aprobar (detalle y alternativas en [[design
 4. Tab bar: se CONSERVA la pill flotante actual, solo re-tokenizada
    (decisión del humano, 2026-08-23; la barra anclada del Make se rechaza) (R4).
 5. Headers hero y gradientes de botón fuera de alcance (arriba).
+
+## Enmienda #67 — cabecera fotográfica compartida
+
+`mobile-pet-hero-header` (#67) modifica una decisión que esta spec dejó
+aprobada. La spec de origen es `specs/mobile-pet-hero-header/`; el detalle de
+la enmienda está en su `requirements.md` §R10.
+
+- Spec enmendada: `mobile-figma-polish`
+- Qué cambia: `enmiendas A2 y A5 de la tabla de #67 §R10`
+- Qué NO cambia: ningún otro requisito de esta spec, ni su estado de
+  aprobación, ni los tests que ya la cubren.
+
+- [ ] Enmienda aprobada por humano

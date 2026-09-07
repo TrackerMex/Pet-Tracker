@@ -290,3 +290,23 @@ mezclarlos con el workspace pnpm de backend e infraestructura.
   como el contenido final, nunca un spinner suelto que haga saltar el
   layout. El selector de mascota es siempre el componente compartido
   `src/components/pet-switcher.tsx`.
+  **Excepción nombrada (enmienda A9 de #67, 2026-09-07)**: si el primer hijo
+  del scroll es una **cabecera a sangre**, el `contentContainerStyle` conserva
+  `gap: 16` y `paddingBottom: insets.bottom + 96`, el `padding: 24` baja a un
+  envoltorio interior como `paddingHorizontal: 24`, y el
+  `paddingTop: insets.top + 12` lo asume la cabecera vía su slot. Las ramas de
+  estado que se pintan sin cabecera llevan su propio envoltorio con ese
+  `paddingTop`.
+
+## Enmienda #67 — cabecera fotográfica compartida
+
+`mobile-pet-hero-header` (#67) modifica una decisión que esta spec dejó
+aprobada. La spec de origen es `specs/mobile-pet-hero-header/`; el detalle de
+la enmienda está en su `requirements.md` §R10.
+
+- Spec enmendada: `docs/conventions.md`
+- Qué cambia: `enmienda A9 de la tabla de #67 §R10`
+- Qué NO cambia: ningún otro requisito de esta spec, ni su estado de
+  aprobación, ni los tests que ya la cubren.
+
+- [ ] Enmienda aprobada por humano

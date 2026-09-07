@@ -92,16 +92,23 @@ anclada del Make. `floating-tab-bar.tsx` solo se re-tokeniza (activo en
 forma/posición/sombras, API, testIDs `tab-*`, labels e iconos reicon**
 (peso Filled/Outline como hoy). Cambio 100% contenido en ese archivo.
 
-### 5. Sin gradientes ni headers hero — restricción de alcance
+### 5. Sin gradientes ni headers hero — restricción de alcance (§5 enmendada por #67)
 
 - Gradientes de botón del Make → sólido `bg-accent`. `expo-linear-gradient`
   no está instalado y no se añade.
 - Única excepción: el degradado del área del weight-chart (R5), que
   `react-native-svg` (instalado) resuelve con `<LinearGradient>` dentro del
   propio SVG.
+- **Enmendado por #67 (A4)**: la prohibición de `expo-linear-gradient` se
+  mantiene íntegra. Se añade una **segunda** excepción: la propiedad de estilo
+  `experimental_backgroundImage` de React Native 0.86, que no es dependencia
+  nueva (ver `specs/mobile-pet-hero-header/design.md` §2).
 - Headers hero (foto 280–340px con overlay): fuera de #46 (ver
   [[requirements]] §Fuera de alcance). Las pantallas conservan su estructura
   de encabezado actual con los nuevos tokens.
+- **Enmendado por #67 (A1)**: la cabecera fotográfica compartida entra en
+  `mobile-pet-hero-header`; Home y Profile dejan de conservar su encabezado
+  actual.
 
 ### 6. Verificación de una feature de puro estilo — sirve a R12
 
@@ -150,4 +157,18 @@ Todo en `mobile-pet-tracker/` (capa presentación; domain/application intactas):
   cualquier ajuste visual futuro; el gate visual es el smoke humano.
 - **Rehacer las pantallas con la estructura hero del Make**: excede "pulido
   visual", multiplica el riesgo sobre los tests de conducta y pide gradientes;
-  va como feature aparte si el humano la quiere.
+  va como feature aparte si el humano la quiere. **Enmendado por #67 (A6)**:
+  esa feature aparte es #67 `mobile-pet-hero-header`, y está ejecutada.
+
+## Enmienda #67 — cabecera fotográfica compartida
+
+`mobile-pet-hero-header` (#67) modifica una decisión que esta spec dejó
+aprobada. La spec de origen es `specs/mobile-pet-hero-header/`; el detalle de
+la enmienda está en su `requirements.md` §R10.
+
+- Spec enmendada: `mobile-figma-polish`
+- Qué cambia: `enmiendas A1, A3, A4 y A6 de la tabla de #67 §R10`
+- Qué NO cambia: ningún otro requisito de esta spec, ni su estado de
+  aprobación, ni los tests que ya la cubren.
+
+- [ ] Enmienda aprobada por humano

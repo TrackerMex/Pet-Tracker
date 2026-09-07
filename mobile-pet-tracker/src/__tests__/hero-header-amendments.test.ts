@@ -34,25 +34,25 @@ const AMENDED_DOCS: {
     file: 'specs/mobile-figma-polish/requirements.md',
     feature: 'mobile-figma-polish',
     change: 'enmiendas A2 y A5 de la tabla de #67 §R10',
-    marker: '**Resuelto por #67**',
+    marker: '**Resuelto por #67 (A2)**',
   },
   {
     file: 'specs/mobile-pets-profile/requirements.md',
     feature: 'mobile-pets-profile',
     change: 'enmienda A7 de la tabla de #67 §R10',
-    marker: '**Enmendado por #67**',
+    marker: '**Enmendado por #67 (A7)**',
   },
   {
     file: 'docs/ui-guidelines.md',
     feature: 'docs/ui-guidelines.md',
     change: 'enmiendas A8 y A9 de la tabla de #67 §R10',
-    marker: 'el respaldo es el **blobatar**',
+    marker: '**Enmendado por #67 (A8) — corrección de un hecho falso.**',
   },
   {
     file: 'docs/conventions.md',
     feature: 'docs/conventions.md',
     change: 'enmienda A9 de la tabla de #67 §R10',
-    marker: 'cabecera a sangre',
+    marker: '**Excepción nombrada (enmienda A9 de #67, 2026-09-07)**',
   },
 ];
 
