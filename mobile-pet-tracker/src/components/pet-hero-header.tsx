@@ -1,3 +1,4 @@
+import { Skeleton } from 'heroui-native';
 import type { ReactNode } from 'react';
 import { Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -73,7 +74,13 @@ export function PetHeroHeader({
             size={{ width: '100%', height: PET_HERO_MEDIA_HEIGHT }}
             testID="pet-hero-media"
           />
-        ) : null}
+        ) : (
+          <Skeleton
+            testID="pet-hero-skeleton"
+            className="w-full"
+            style={{ height: PET_HERO_MEDIA_HEIGHT }}
+          />
+        )}
 
         {/*
           La parada transparente se escribe con el propio color de fondo y alfa
@@ -105,15 +112,24 @@ export function PetHeroHeader({
         testID="pet-hero-caption"
         className="gap-1 bg-background px-6 pb-4 pt-1"
       >
-        <Text
-          testID="pet-hero-name"
-          className="text-3xl font-black text-foreground"
-        >
-          {pet?.name}
-        </Text>
-        <Text testID="pet-hero-breed" className="font-normal text-muted">
-          {pet?.breed ?? '—'}
-        </Text>
+        {pet ? (
+          <>
+            <Text
+              testID="pet-hero-name"
+              className="text-3xl font-black text-foreground"
+            >
+              {pet.name}
+            </Text>
+            <Text testID="pet-hero-breed" className="font-normal text-muted">
+              {pet.breed ?? '—'}
+            </Text>
+          </>
+        ) : (
+          <>
+            <Skeleton className="h-9 w-40 rounded-xl" />
+            <Skeleton className="h-6 w-24 rounded-xl" />
+          </>
+        )}
       </View>
     </View>
   );
