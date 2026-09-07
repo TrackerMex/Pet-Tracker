@@ -33,11 +33,12 @@ function LocaleProbe() {
 }
 
 describe('#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y parámetros', () => {
-  it('mantiene 259 claves exactas y los mismos marcadores en ambos idiomas', () => {
+  // 259 en `303fc19` + 1 de `home.walks` (#67 R7b).
+  it('mantiene 260 claves exactas y los mismos marcadores en ambos idiomas', () => {
     const englishKeys = Object.keys(en).sort();
     const spanishKeys = Object.keys(es).sort();
 
-    expect(englishKeys).toHaveLength(259);
+    expect(englishKeys).toHaveLength(260);
     expect(spanishKeys).toEqual(englishKeys);
     for (const key of englishKeys) {
       expect(markerNames(es[key as keyof typeof es])).toEqual(
