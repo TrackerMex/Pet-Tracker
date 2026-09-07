@@ -78,8 +78,9 @@ describe('#65 R2: la barra de pestañas resuelve su copy por clave', () => {
 
 describe('#65 R3: Home resuelve su copy por clave', () => {
   // 20 en `303fc19` + 1 de `home.walks` (#67 R7b, delta declarado en su R9b).
-  it('resuelve las 21 ocurrencias normativas', () => {
-    expect(R3_HOME).toHaveLength(21);
+  // #68 añade el delta medido de weekly-activity-chart, sin recontar la base.
+  it('resuelve las ocurrencias normativas y el delta de actividad semanal', () => {
+    expect(R3_HOME).toHaveLength(21 + 15);
     checkUses(R3_HOME);
   });
 });
@@ -127,8 +128,8 @@ describe('#65 R9: el alta de mascota resuelve su copy por clave', () => {
 });
 
 describe('#65 R10: el emparejado del collar resuelve su copy por clave', () => {
-  it('resuelve las 42 ocurrencias normativas', () => {
-    expect(R10_PAIRING).toHaveLength(42);
+  it('resuelve las ocurrencias normativas y el delta de conectividad', () => {
+    expect(R10_PAIRING).toHaveLength(42 + 2);
     checkUses(R10_PAIRING);
   });
 });
@@ -353,7 +354,7 @@ describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () =>
   });
 
   it('no deja ningún valor fijo del catálogo como literal entero en las pantallas', () => {
-    expect(SCREEN_FILES).toHaveLength(19);
+    expect(SCREEN_FILES).toHaveLength(19 + 2);
 
     for (const file of SCREEN_FILES) {
       const literals = wholeLiterals(readFileSync(join(SOURCE_ROOT, file), 'utf8'));

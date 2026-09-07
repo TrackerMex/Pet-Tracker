@@ -64,6 +64,21 @@ export const R3_HOME: UseRow[] = [
   { file: 'src/screens/home/index.tsx', key: 'home.distance' },
   { file: 'src/screens/home/index.tsx', key: 'home.viewOnMap' },
   { file: 'src/screens/home/index.tsx', key: 'home.walks' },
+  { file: 'src/screens/home/weekly-activity-chart.tsx', key: 'weeklyActivity.dayLabelMissing' },
+  { file: 'src/screens/home/weekly-activity-chart.tsx', key: 'weeklyActivity.dayLabelDistance' },
+  { file: 'src/screens/home/weekly-activity-chart.tsx', key: 'weeklyActivity.dayLabelWalks' },
+  { file: 'src/screens/home/weekly-activity-chart.tsx', key: 'weeklyActivity.dayLabelActiveMinutes' },
+  { file: 'src/screens/home/weekly-activity-chart.tsx', key: 'weeklyActivity.metricActiveMinutes' },
+  { file: 'src/screens/home/weekly-activity-chart.tsx', key: 'weeklyActivity.metricDistance' },
+  { file: 'src/screens/home/weekly-activity-chart.tsx', key: 'weeklyActivity.metricWalks' },
+  { file: 'src/screens/home/weekly-activity-chart.tsx', key: 'weeklyActivity.title' },
+  { file: 'src/screens/home/weekly-activity-chart.tsx', key: 'weeklyActivity.lastSevenDays' },
+  { file: 'src/screens/home/weekly-activity-chart.tsx', key: 'weeklyActivity.average' },
+  { file: 'src/screens/home/weekly-activity-chart.tsx', key: 'weeklyActivity.trend' },
+  { file: 'src/screens/home/weekly-activity-chart.tsx', key: 'weeklyActivity.chartSummary' },
+  { file: 'src/screens/home/weekly-activity-chart.tsx', key: 'weeklyActivity.noDataForDay' },
+  { file: 'src/screens/home/weekly-activity-chart.tsx', key: 'home.sleep' },
+  { file: 'src/screens/home/weekly-activity-chart.tsx', key: 'weeklyActivity.noDataYet' },
 ];
 
 export const R4_MAP: UseRow[] = [
@@ -341,6 +356,8 @@ export const R10_PAIRING: UseRow[] = [
   { file: 'src/screens/pairing/index.tsx', key: 'pairing.unpairCollar' },
   { file: 'src/screens/pairing/index.tsx', key: 'pairing.esn' },
   { file: 'src/screens/pairing/index.tsx', key: 'pairing.esn' },
+  { file: 'src/utils/device-connectivity.ts', key: 'deviceConnectivity.online' },
+  { file: 'src/utils/device-connectivity.ts', key: 'deviceConnectivity.unknown' },
 ];
 
 export const R11_RESET: UseRow[] = [
