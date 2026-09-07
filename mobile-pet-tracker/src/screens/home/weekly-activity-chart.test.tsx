@@ -356,3 +356,43 @@ describe('R2: WeeklyActivityChart recibe los días y no habla con la red', () =>
     expect(source).not.toContain('expo-router');
   });
 });
+
+describe('R3: la letra del eje sale de la fecha, no del índice', () => {
+  it('usa el día real de cada fecha en los dos idiomas', async () => {
+    const days = makeWeek('2026-09-02', [15, 20, 25, 30, 35, 40, 45]);
+    const expectedIds = days.map(
+      ({ date }) => `weekly-activity-day-${date}`,
+    );
+
+    const spanish = await renderChart(days, NO_COMPARISON, 'es');
+    const spanishColumns = spanish.queryAllByTestId(/^weekly-activity-day-/);
+
+    expect(spanishColumns.map(({ props }) => props.testID)).toEqual(expectedIds);
+    expect(
+      spanishColumns.map((column) =>
+        within(column).getByTestId('weekly-activity-day-label').props.children,
+      ),
+    ).toEqual(['mié', 'jue', 'vie', 'sáb', 'dom', 'lun', 'mar']);
+    expect(
+      (latestBarChartProps().data as Array<{ date: string }>).map(
+        ({ date }) => date,
+      ),
+    ).toEqual(days.map(({ date }) => date));
+    expect(latestBarChartProps()).toEqual(
+      expect.objectContaining({
+        xKey: 'date',
+        showXAxisLabels: false,
+      }),
+    );
+
+    await spanish.unmount();
+    const english = await renderChart(days, NO_COMPARISON, 'en');
+    const englishColumns = english.queryAllByTestId(/^weekly-activity-day-/);
+
+    expect(
+      englishColumns.map((column) =>
+        within(column).getByTestId('weekly-activity-day-label').props.children,
+      ),
+    ).toEqual(['Wed', 'Thu', 'Fri', 'Sat', 'Sun', 'Mon', 'Tue']);
+  });
+});
