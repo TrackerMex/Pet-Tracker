@@ -1257,21 +1257,31 @@
   {
     "id": 68,
     "name": "mobile-home-weekly-activity",
-    "status": "spec_ready",
+    "status": "pending",
     "priority": "P2",
-    "description": "Bloque 1. La grafica de barras de 7 dias que el Make pone en la Home (App.tsx:413-428) y que la app no dibuja. Es la mejor relacion valor/coste de todo el informe porque LOS DATOS YA SE ESTAN DESCARGANDO Y SE TIRAN: GET /v1/pets/:petId/activity/daily devuelve una entrada por dia sin huecos y el caso de uso ya usa por defecto un rango de 7 dias terminando hoy en la zona horaria del dueno; el cliente llama sin parametros (src/api/activity.ts:26-31) y la Home descarta seis de las siete entradas quedandose con la ultima (home.tsx:86-89). Tres avisos del informe que la spec DEBE recoger, o la grafica mentira: (1) un dia pasado sin datos vuelve con source 'missing' y todas las metricas en null, no en cero -es deliberado, un cero significaria descanso confirmado-, asi que hace falta un render de 'sin dato' distinto de una barra de altura 0; (2) el array es cronologico terminando hoy, NO lunes a domingo, asi que la letra del eje se deriva de la fecha y nunca del indice; (3) weekComparison ya trae la variacion contra los 7 dias previos, asi que las flechas de tendencia salen gratis aunque el Make no las dibuje. Reutiliza el patron de src/components/weight-chart.tsx en vez de anadir libreria de graficas.",
+    "description": "Bloque 1. La grafica de barras de 7 dias que el Make pone en la Home (design-src/App.tsx:411-424) y que la app no dibuja. LOS DATOS YA SE DESCARGAN Y SE TIRAN: GET /v1/pets/:petId/activity/daily devuelve una entrada por dia sin huecos con un rango por defecto de 7 dias terminando hoy en la zona horaria del dueno, el cliente llama sin parametros y la Home descarta seis de las siete entradas (home.tsx:100-103). ALCANCE AMPLIADO POR EL HUMANO EL 2026-09-07: entra todo lo que la primera spec habia dejado fuera salvo lo que es otra feature. Entran el selector de metrica (minutos activos / distancia / paseos), el detalle por dia al tocar una barra con tooltip, el eje Y, la rejilla, la linea de media, la navegacion a /trips, la animacion de entrada de las barras, la migracion de la Home a src/screens/home/ segun la convencion de #39, y la traduccion de los enum crudos de la API (device.connectivity se pinta hoy en bruto en src/screens/pairing/index.tsx:421-422, un 'LTE' a pelo). NO entran: la tira de 4 celdas (es #69), los accesos rapidos (son #71) y la pildora 'En linea' (es #73, depende de un pestillo roto en backend). Con este alcance la libreria de graficas SI se paga: se usa react-native-chart-kit, designada por el humano, y obligatoriamente por su subpath v2 ('react-native-chart-kit/v2'), porque la API v1 tipa data como number[] sin null y perderia en silencio la distincion entre un dia sin dato y un dia de cero. Tres avisos que la spec DEBE recoger o la grafica mentira: (1) un dia pasado sin datos vuelve con source 'missing' y las metricas en null, no en cero -un cero significa descanso confirmado-, y el discriminante es source y NUNCA null, porque los dias medidos devuelven ceros (emptyActivity en pipeline/activity.ts:83-91) y hoy null equivale a missing solo por coincidencia; (2) el array es cronologico terminando hoy, NO lunes a domingo, asi que la letra del eje se deriva de la fecha y nunca del indice; (3) weekComparison trae delta porcentual de la media diaria a un decimal y solo para distanceM, activeMinutes y walkCount -restMinutes no tiene comparacion-.",
     "acceptance_criteria": [
       "La Home dibuja los 7 dias que ya descarga, sin anadir ninguna llamada nueva a la API",
-      "Un dia con source 'missing' se pinta como 'sin dato' y NO como barra de altura cero; un test lo fija",
-      "La etiqueta de cada barra se deriva de su fecha, no del indice del array; un test con un rango que cruce fin de semana lo fija",
-      "Sin libreria de graficas nueva: reutiliza el patron de weight-chart.tsx",
-      "Los digitos de la grafica usan tabular-nums y sus esquinas no-capsula borderCurve continuous, como fijo #62",
-      "Suite movil completa verde; grep-clean intacto",
-      "Gate humano: smoke en dev build de Android en los dos temas, con una mascota con dias sin dato. No delegable a IA"
+      "Un dia con source 'missing' se pinta como 'sin dato' y NO como barra de altura cero; el discriminante es source y no null, y un test con source 'stored' y metrica null lo fija",
+      "La etiqueta de cada barra se deriva de su fecha, no del indice del array; un test con un rango que no empieza en lunes lo fija",
+      "El selector de metrica alterna entre minutos activos, distancia y paseos sin refetch",
+      "Tocar una barra abre el detalle del dia con tooltip; la navegacion a /trips usa la ruta existente, sin ruta nueva",
+      "La grafica dibuja eje Y, rejilla y linea de media",
+      "Las barras animan al entrar y respetan prefers-reduced-motion",
+      "La Home vive en src/screens/home/ con route delgado, segun la convencion de #39",
+      "Los enum crudos de la API se traducen via catalogo: src/screens/pairing/index.tsx deja de pintar 'LTE' a pelo",
+      "Se usa react-native-chart-kit por su subpath v2; los colores salen de los tokens y no de literales en el chartConfig: grep-clean intacto, cero hex fuera de src/theme/",
+      "La accesibilidad anuncia las siete columnas por separado, no un unico resumen",
+      "Los digitos usan tabular-nums y las esquinas no-capsula borderCurve continuous, como fijo #62",
+      "Suite movil completa verde; deltas medidos contra el commit base, nunca cifras absolutas",
+      "Gate humano: smoke en dev build de Android en los dos temas, con una mascota con dias sin dato y con dias de cero minutos. No delegable a IA"
     ],
     "files_affected": [
       "mobile-pet-tracker/src/app/(tabs)/home.tsx",
-      "mobile-pet-tracker/src/components/"
+      "mobile-pet-tracker/src/screens/home/",
+      "mobile-pet-tracker/src/components/",
+      "mobile-pet-tracker/src/screens/pairing/index.tsx",
+      "mobile-pet-tracker/package.json"
     ]
   },
   {
@@ -1342,6 +1352,24 @@
     ],
     "files_affected": [
       "mobile-pet-tracker/src/screens/add-pet/index.test.tsx"
+    ]
+  },
+  {
+    "id": 73,
+    "name": "pet-online-pill",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Sale del alcance de #68 el 2026-09-07 por decision del humano, y arrastra la decision G que #67 ya habia dejado abierta. La pildora 'En linea' del Make no se puede pintar hoy por dos razones independientes, y ninguna es de UI: el pestillo de conectividad del backend esta roto (backend-pet-tracker/src/.../ingestion.drizzle.store.ts:97) y el umbral de silencio a partir del cual una mascota deja de considerarse en linea nunca se definio. Pintarla con el dato tal como llega hoy seria pintar un estado incorrecto: la pildora mentiria. Es la unica de la lista de fuera-de-alcance de #68 que no se puede resolver solo en movil. Emparejada con esto va la decision de si 'en linea' se deriva del ultimo ping o del pestillo, que es lo que fija el umbral.",
+    "acceptance_criteria": [
+      "El pestillo de conectividad de ingestion.drizzle.store.ts queda arreglado y con test que lo cubre",
+      "El umbral de silencio queda definido por escrito en la spec, con su unidad y su justificacion, no elegido en la implementacion",
+      "La pildora refleja el estado real y tiene estado explicito para 'desconocido', que no es lo mismo que 'desconectado'",
+      "Suite backend y movil verdes",
+      "Gate humano: smoke en dev build de Android con una mascota en linea y otra en silencio. No delegable a IA"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/modules/ingestion/",
+      "mobile-pet-tracker/src/app/(tabs)/home.tsx"
     ]
   }
 ]
