@@ -7,6 +7,10 @@ export const DEVICE_CONNECTIVITY_META: Record<
   online: { labelKey: 'deviceConnectivity.online' },
 };
 
+const UNKNOWN_CONNECTIVITY_META: { labelKey: TranslationKey } = {
+  labelKey: 'deviceConnectivity.unknown',
+};
+
 export function connectivityLabelKey(
   value: string | null,
 ): TranslationKey | null {
@@ -14,6 +18,6 @@ export function connectivityLabelKey(
 
   return (
     DEVICE_CONNECTIVITY_META[value]?.labelKey ??
-    'deviceConnectivity.unknown'
+    UNKNOWN_CONNECTIVITY_META.labelKey
   );
 }

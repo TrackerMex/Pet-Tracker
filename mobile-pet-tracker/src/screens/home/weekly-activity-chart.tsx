@@ -365,7 +365,9 @@ export function WeeklyActivityChart(
             className="text-xs text-muted"
             style={TABULAR_NUMS}
           >
-            {formatMetricValue(selectedMetric, average)}
+            {t('weeklyActivity.average', {
+              value: formatMetricValue(selectedMetric, average),
+            })}
           </Text>
         ) : null}
       </View>

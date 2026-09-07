@@ -299,6 +299,26 @@ total sin repetir es 252 + 3 del interruptor = **255**.
 | 332 | `home.viewOnMap` | `View on map` | `Ver en el mapa` |
 | — | `home.walks` | `Walks` | `Paseos` | ← añadida por #67 (R7b)
 
+**`mobile-pet-tracker/src/screens/home/weekly-activity-chart.tsx`** — claves
+añadidas por #68, registradas como delta sobre la tabla existente
+
+| Línea | Clave | `en` | `es` |
+|---|---|---|---|
+| — | `weeklyActivity.title` | `Weekly activity` | `Actividad semanal` |
+| — | `weeklyActivity.lastSevenDays` | `last 7 days` | `últimos 7 días` |
+| — | `weeklyActivity.noDataYet` | `No activity recorded yet` | `Aún no hay actividad registrada` |
+| — | `weeklyActivity.noDataForDay` | `No data for this day` | `Sin datos de este día` |
+| — | `weeklyActivity.metricActiveMinutes` | `Active minutes` | `Minutos activos` |
+| — | `weeklyActivity.metricDistance` | `Distance` | `Distancia recorrida` |
+| — | `weeklyActivity.metricWalks` | `Walks` | `Paseos` |
+| — | `weeklyActivity.dayLabelActiveMinutes` **(param)** | `{{day}}: {{value}} active minutes` | `{{day}}: {{value}} minutos activos` |
+| — | `weeklyActivity.dayLabelDistance` **(param)** | `{{day}}: {{value}} travelled` | `{{day}}: {{value}} de recorrido` |
+| — | `weeklyActivity.dayLabelWalks` **(param)** | `{{day}}: {{value}} walks` | `{{day}}: {{value}} paseos` |
+| — | `weeklyActivity.dayLabelMissing` **(param)** | `{{day}}: no data` | `{{day}}: sin datos` |
+| — | `weeklyActivity.chartSummary` **(param)** | `Chart of {{metric}} over the last 7 days` | `Gráfica de {{metric}} de los últimos 7 días` |
+| — | `weeklyActivity.average` **(param)** | `Average {{value}}` | `Media {{value}}` |
+| — | `weeklyActivity.trend` **(param)** | `{{percent}}% vs. previous week` | `{{percent}} % frente a la semana previa` |
+
 
 ### §2.4 — R4 — Map (19 ocurrencias, 17 claves)
 
@@ -635,6 +655,14 @@ total sin repetir es 252 + 3 del interruptor = **255**.
 | 461 | `pairing.freePlanNoActivePlan` | `Free plan — health only. This collar has no active plan.` | `Plan gratuito — solo salud. Este collar no tiene plan activo.` |
 | 468 | `pairing.planStatusUnavailable` | `Plan status unavailable` | `Estado del plan no disponible` |
 | 479 | `pairing.unpairCollar` | `Unpair collar` | `Desvincular collar` |
+
+**`mobile-pet-tracker/src/utils/device-connectivity.ts`** — claves añadidas por
+#68, registradas como delta sobre la tabla existente
+
+| Línea | Clave | `en` | `es` |
+|---|---|---|---|
+| — | `deviceConnectivity.online` | `Online` | `En línea` |
+| — | `deviceConnectivity.unknown` | `Unknown` | `Desconocida` |
 
 
 ### §2.11 — R11 — Restablecer contraseña (15 ocurrencias, 11 claves)

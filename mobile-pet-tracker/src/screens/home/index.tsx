@@ -56,6 +56,7 @@ export function HomeScreen() {
   const { token } = useAuth();
   const locale = useLocale();
   const t = useTranslate();
+  const viewOnMapLabel = t('home.viewOnMap');
   const { selectedPetId, selectPet } = useSelectedPet();
   const [activitySelection, setActivitySelection] = useState<{
     day: DayEntry;
@@ -378,7 +379,7 @@ export function HomeScreen() {
                 onPress={() => router.push('/map')}
               >
                 <Button.Label className="font-bold text-accent-foreground">
-                  {t('home.viewOnMap')}
+                  {viewOnMapLabel}
                 </Button.Label>
               </Button>
             ) : null}
@@ -397,7 +398,7 @@ export function HomeScreen() {
                   <Map size={20} color={accent} />
                 </View>
                 <Text className="font-semibold text-accent-strong">
-                  {t('home.viewOnMap')}
+                  {viewOnMapLabel}
                 </Text>
               </View>
               <ChevronRight size={20} color={accent} />

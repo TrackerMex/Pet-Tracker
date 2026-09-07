@@ -578,6 +578,9 @@ describe('R7: la gráfica dibuja eje Y, rejilla y línea de media', () => {
     expect(
       result.getByTestId('weekly-activity-average-label').props.style,
     ).toEqual(TABULAR_NUMS);
+    expect(
+      result.getByTestId('weekly-activity-average-label'),
+    ).toHaveTextContent('Media 20m');
   });
 
   it('promedia solo los días medidos y se calla sin un valor positivo', async () => {
