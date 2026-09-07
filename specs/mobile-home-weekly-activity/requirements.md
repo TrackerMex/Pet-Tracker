@@ -737,7 +737,7 @@ spec (mismo procedimiento que las enmiendas A8/A9 de #67).
   ni los tests que la cubren. En particular, la condición
   `connectivity === 'online'` de la Home no es "pintar el enum": es lógica de
   estado, y sigue donde está hasta que **#73** la revise.
-- [ ] Enmienda aprobada por humano
+- [X] Enmienda aprobada por humano
 
 ---
 
@@ -783,7 +783,7 @@ lo habilita de paso.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [X] Aprobado por humano (fecha: 2026-09-07) ← gate obligatorio antes de implementar
 
 > La firma de `a1fa09e` **no vale para esta spec**: cubría un alcance estrecho
 > que esta reescritura sustituye. Hace falta una firma nueva.
