@@ -20,6 +20,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { Line, Rect } from 'react-native-svg';
+import { TrendDown, TrendUp } from 'reicon-react-native';
 
 import type { DayEntry, WeekComparison } from '../../api/types';
 import { Card } from '../../components/card';
@@ -195,6 +196,15 @@ function dayAccessibilityLabel(
   });
 }
 
+function formatTrendPercent(value: number, locale: string): string {
+  const formatted = new Intl.NumberFormat(locale, {
+    signDisplay: 'exceptZero',
+    maximumFractionDigits: 1,
+  }).format(value);
+
+  return locale.startsWith('es') ? formatted.replace('.', ',') : formatted;
+}
+
 export function weekdayLabel(
   date: string,
   locale: string,
@@ -248,6 +258,7 @@ export function WeeklyActivityChart(
     ({ day, value }) =>
       day.source !== 'missing' && typeof value === 'number' && value > 0,
   );
+  const trend = weekComparison[selectedMetric];
   const handleChartLayout = (event: LayoutChangeEvent) => {
     setChartWidth(event.nativeEvent.layout.width);
   };
@@ -266,6 +277,36 @@ export function WeeklyActivityChart(
         tintColor={accentStrong}
         onChange={handleMetricChange}
       />
+      {trend !== null ? (
+        <View
+          testID="weekly-activity-trend"
+          className="flex-row items-center gap-1 text-muted"
+        >
+          {trend > 0 ? (
+            <TrendUp
+              testID="weekly-activity-trend-up"
+              size={16}
+              color={muted}
+            />
+          ) : null}
+          {trend < 0 ? (
+            <TrendDown
+              testID="weekly-activity-trend-down"
+              size={16}
+              color={muted}
+            />
+          ) : null}
+          <Text
+            testID="weekly-activity-trend-label"
+            className="text-xs text-muted"
+            style={TABULAR_NUMS}
+          >
+            {t('weeklyActivity.trend', {
+              percent: formatTrendPercent(trend, locale),
+            })}
+          </Text>
+        </View>
+      ) : null}
       {average !== null ? (
         <Text
           testID="weekly-activity-average-label"

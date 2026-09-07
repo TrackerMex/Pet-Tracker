@@ -158,7 +158,7 @@ jest.mock('reicon-react-native', () => {
       return React.createElement(View, {
         ...mockProps,
         testID,
-        style: { color },
+        accessibilityHint: color,
       });
     };
 
@@ -848,8 +848,8 @@ describe('R12: la tendencia sigue a la métrica y se calla sin base', () => {
     expect(trend.props.className).toContain('text-muted');
     expect(trend.props.className).not.toContain('text-success');
     expect(trend.props.className).not.toContain('text-danger');
-    expect(result.getByTestId('weekly-activity-trend-up').props.style).toEqual(
-      expect.objectContaining({ color: 'resolved-muted' }),
-    );
+    expect(
+      result.getByTestId('weekly-activity-trend-up').props.accessibilityHint,
+    ).toBe('resolved-muted');
   });
 });
