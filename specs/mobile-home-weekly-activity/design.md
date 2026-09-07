@@ -9,12 +9,12 @@ tags: [harness, spec]
 > Decisiones técnicas de alto nivel. Los requisitos verificables viven en
 > [[requirements]]; el orden de trabajo, en [[tasks]].
 >
-> **Todo lo de §1 se ha comprobado contra el árbol en `4a5f6dd`**, no contra
-> `progress/explore_design-gap-vs-make.md`. Un informe de exploración es una
-> hipótesis fechada: el del 2026-09-04 metió cuatro premisas falsas en #67 y
-> cada una se propagó a tres sitios. Además `main` avanzó cuatro features desde
-> que se escribió, así que **ningún número de línea del informe se ha dado por
-> bueno**: todos están rederivados.
+> **Todo lo de §1 se ha comprobado contra el árbol en `4a5f6dd`** y contra el
+> **tarball** de `react-native-chart-kit@7.0.4` (`npm pack`, `.d.ts` y `.js`
+> leídos), no contra documentación ni contra `progress/`. Un informe de
+> exploración es una hipótesis fechada: el del 2026-09-04 metió cuatro premisas
+> falsas en #67 y cada una se propagó a tres sitios. Aquí han vuelto a salir
+> cuatro falsas (§2), tres de ellas en el encargo mismo.
 
 ---
 
@@ -25,27 +25,19 @@ tags: [harness, spec]
 `backend-pet-tracker/src/modules/activity/application/use-cases/get-daily-activity.use-case.ts:84-98`
 recorre `listDays(fromDay, toDay)` y empuja una entrada por cada día del rango:
 la fila almacenada si existe, el cómputo al vuelo si el día es hoy, y
-`missingEntry(day)` en cualquier otro caso. No hay rama que salte un día.
+`missingEntry(day)` (`:97`) en cualquier otro caso. No hay rama que salte un día.
+El rango por defecto sale de `ACTIVITY_DEFAULT_RANGE_DAYS = 7` y la zona horaria
+es la del **dueño**, no la del dispositivo ni la del servidor.
 
-El rango por defecto está en `:73-78`: `timeZone` sale de
-`this.store.findOwnerTimezone(input.petId)`, `today = localDayOf(now.getTime(),
-timeZone)`, `toDay = input.to ?? today` y
-`fromDay = input.from ?? shiftDay(toDay, -(ACTIVITY_DEFAULT_RANGE_DAYS - 1))`,
-con `ACTIVITY_DEFAULT_RANGE_DAYS = 7` en
-`backend-pet-tracker/src/modules/activity/activity.constants.ts:13`. Es la tz
-del **dueño**, no la del dispositivo ni la del servidor.
-
-### P2 — El cliente llama sin parámetros — **CIERTA, y la línea sigue vigente**
+### P2 — El cliente llama sin parámetros — **CIERTA**
 
 `mobile-pet-tracker/src/api/activity.ts:26-31`:
 `getJson(baseUrl, `/pets/${petId}/activity/daily`, token, fetchFn)`. Sin query
-string, sin `from`, sin `to`. La única referencia de línea del enunciado que ha
-sobrevivido intacta a los cuatro merges.
+string, sin `from`, sin `to`.
 
-### P3 — La Home descarta seis de siete — **CIERTA EN EL HECHO, LÍNEA CADUCADA**
+### P3 — La Home descarta seis de siete — **CIERTA**
 
-El enunciado dice `home.tsx:86-89`. **Hoy es `home.tsx:100-103`**, porque #67
-reescribió el fichero:
+`mobile-pet-tracker/src/app/(tabs)/home.tsx:100-103`:
 
 ```
 100  const today =
@@ -54,395 +46,430 @@ reescribió el fichero:
 103      : undefined;
 ```
 
-Y hay un segundo desplazamiento que el enunciado no podía saber: en `303fc19`
-ese `today` alimentaba solo al `summary-card`; **hoy alimenta también al hero**
-(`home.tsx:133-137`, el `highlight` con `fmtCount(today.walkCount)` que fijó
-#67 R7) además de las tres celdas del resumen (`:311`, `:324`, `:337`). Así que
-"se queda con la última" ya tiene tres consumidores, no uno.
+Ese `today` tiene hoy **tres** consumidores: el hero (`:133-137`, el `highlight`
+con `fmtCount(today.walkCount)` que fijó #67 R7) y las tres celdas de
+`summary-card` (`:311`, `:324`, `:337`). **No se toca.** La gráfica consume
+`activity.data.days` entero en paralelo.
 
-Consecuencia para #68: **no se toca**. La derivación de `today` se queda tal
-cual y la gráfica consume `activity.data.days` entero en paralelo. Quitar
-`today` rompería el hero de #67 y las tres celdas que #69 va a heredar.
-
-### P4 — Día pasado sin datos: `source: 'missing'` con todo `null` — **CIERTA, con un matiz que cambia el requisito**
-
-Comprobado en el **mapper del backend**, no solo en el tipo del cliente, como
-pedía el encargo:
+### P4 — El discriminante es `source`, y `null` coincide con `missing` **por casualidad** — **CIERTA**
 
 - `get-daily-activity.use-case.ts:194-207` — `missingEntry(day)` construye la
   entrada con las **nueve** métricas a `null` y `source: 'missing'`.
-- `get-daily-activity.use-case.ts:95-96` — el comentario que lo declara: *"un
-  dia pasado sin fila es `missing` con metricas null, nunca ceros — un cero
-  significa 'reposo confirmado' y mentiria"*.
-- Tipo de dominio: `daily-activity.entity.ts:42-58` (`DayEntrySource` y las diez
-  claves de `DayEntry`).
-- Tipo del cliente: `mobile-pet-tracker/src/api/types.ts:79-90`, idéntico.
+- `get-daily-activity.use-case.ts:95-96` — el comentario que lo declara: *"un dia
+  pasado sin fila es `missing` con metricas null, nunca ceros — un cero significa
+  'reposo confirmado' y mentiria"*.
+- **La implicación no es reversible**: `emptyActivity()`
+  (`backend-pet-tracker/src/pipeline/activity.ts:83-93`) devuelve **ceros**
+  cuando no hay posiciones, y `DailyActivityRow.activeMinutes` no es nula. Es
+  decir: hoy `métrica === null` ⟺ `source === 'missing'`, y una implementación
+  que ramifique por el `null` pasaría todos los tests siendo semánticamente
+  falsa.
 
-**El matiz**: la implicación **no** es reversible. Un día `stored` nunca trae
-`null` en `activeMinutes` —`DailyActivityRow.activeMinutes` es `number` no nulo,
-`daily-activity.entity.ts:10`— y un día `computed` tampoco: cuando no hay
-posiciones, `computeDailyActivity` devuelve ceros
-(`backend-pet-tracker/src/pipeline/activity.ts:84-87`). Es decir: hoy
-`activeMinutes === null` ⟺ `source === 'missing'`, y una implementación que
-ramifique por el `null` pasaría todos los tests siendo semánticamente falsa.
-Por eso [[requirements]] R3 obliga a ramificar por `source` y R10c planta la
-mutación que lo comprueba.
+Por eso [[requirements]] R5 obliga a ramificar por `source` y R20b planta la
+mutación 3 que lo comprueba.
 
 ### P5 — Cronológico terminando hoy, no lunes a domingo — **CIERTA**
 
-`backend-pet-tracker/src/pipeline/local-day.ts:108-116`:
+`backend-pet-tracker/src/pipeline/local-day.ts` recorre `for (let day = fromDay;
+day <= toDay; day = shiftDay(day, 1))`. Ascendente desde `fromDay`, y `toDay` es
+hoy cuando el cliente no manda `to`. La semana **no** empieza en lunes: empieza
+el día que toque seis días antes de hoy. De ahí R3 y R4.
 
-```ts
-for (let day = fromDay; day <= toDay; day = shiftDay(day, 1)) days.push(day);
-```
-
-Ascendente desde `fromDay`, y `toDay` es hoy cuando el cliente no manda `to`
-(P1). La semana **no** empieza en lunes: empieza el día que toque seis días
-antes de hoy. De ahí R4.
-
-### P6 — `weekComparison` trae la variación — **CIERTA, con forma más estrecha**
+### P6 — `weekComparison`: delta porcentual de la media diaria, tres métricas — **CIERTA**
 
 `backend-pet-tracker/src/modules/activity/domain/week-comparison.ts`:
 
 - `:12-16` — `WeekComparison` tiene **tres** campos: `distanceM`,
   `activeMinutes`, `walkCount`, todos `number | null`. **No hay `restMinutes`.**
-- `:24-51` — `compareWeek` devuelve, por métrica, el **delta porcentual a un
-  decimal de la media diaria** del rango contra la de la base
-  (`Math.round(ratio * 1000) / 10`), y `null` si alguna ventana no tiene
-  muestras o la media base es 0.
-- `get-daily-activity.use-case.ts:144-157` — la base son los 7 días naturales
-  inmediatamente anteriores a `from` (`ACTIVITY_BASELINE_DAYS = 7`), leídos
-  solo de filas almacenadas; y `samplesOfRange` (`:209-217`) **excluye los días
-  `missing`** del rango antes de promediar.
+- `:24-51` — `compareWeek` devuelve el **delta porcentual a un decimal de la
+  media diaria** (`Math.round(ratio * 1000) / 10`), y `null` si alguna ventana no
+  tiene muestras o la media base es 0 (`:39-46`).
+- El cliente ya lo tipa (`mobile-pet-tracker/src/api/types.ts:92-96`) y
+  `getDailyActivity` ya lo devuelve (`src/api/activity.ts:5`). La Home no lo lee
+  en ningún sitio.
 
-El cliente ya lo tipa (`mobile-pet-tracker/src/api/types.ts:92-96`) y
-`getDailyActivity` ya lo devuelve en su estado `ok`
-(`src/api/activity.ts:5, 56`). **La Home no lo lee en ningún sitio**: cero
-referencias a `weekComparison` en `home.tsx`. Así que sí, la tendencia sale
-gratis — pero solo para las tres métricas que existen, y como porcentaje, no
-como diferencia.
+Esto es lo que fija el alcance del selector (D2): **tres métricas, ni una más.**
 
-### P7 — `weight-chart.tsx` existe y su patrón sirve — **CIERTA, con matiz sobre qué es "el patrón"**
+### P7 — `react-native-chart-kit@7.0.4`: dos APIs, y solo una modela el hueco — **CIERTA**
 
-`mobile-pet-tracker/src/components/weight-chart.tsx:1-68` existe y está
-declarado componente compartido en la carta §Decisiones fijas 4. Pero dibuja
-con **`react-native-svg`** (`Svg`, `Polyline`, `Polygon`, `Circle`, `Defs`,
-`LinearGradient`), que está instalado (`package.json`,
-`react-native-svg@15.15.4`) y **no** es una librería de gráficas.
+Verificado desempaquetando el tarball. `package.json` → `exports` expone
+exactamente `.`, `./v2` y `./package.json`.
 
-Lo reutilizable, punto por punto:
+| | v1 (raíz) | v2 (`/v2`) |
+|---|---|---|
+| Forma de los datos | `Dataset.data: number[]` (`dist/shared/types.d.ts:3-5`) | `data: TData[]` + `xKey`/`yKey`, con `ChartYValue = number \| null` |
+| Día sin dato | **imposible**: entraría como `0` | `null`, y `buildGroupedBars` no emite rect (`dist/v2/core/geometry/barRects.js:76-82`) |
+| Colores | `(opacity) => string` y `ChartConfig.backgroundGradientFrom` | **cadenas planas** en `theme` y `series[].color` |
+| Accesibilidad | — | `getBarChartDataTable` / `getBarChartAccessibilitySummary` |
 
-| De `weight-chart.tsx` | ¿Se reutiliza? |
-|---|---|
-| No añadir librería de gráficas | **Sí**, es el criterio entero |
-| `useThemeColors(['accent-strong'])` para el color de la marca (`:16`) | **Sí** (D5) |
-| Vacío resuelto con un `Text` con `testID` propio (`:19-25`) | **Sí** (R7) |
-| Copy resuelta dentro con `useTranslate()` (`:12,17,22`) + registro en `ui-copy-table.ts:124` | **Sí** (R9) |
-| Componente puro de sus props, sin `useApi` ni `fetch` | **Sí** (R1) |
-| El SVG | **No** (D7) |
+`normalizeNumberValue` (`dist/v2/core/data/normalizeValues.js`) devuelve `null`
+para `null` **sin warning**, y warnea `missing-value` para `undefined`: pasar
+`null` es el camino declarado, pasar `undefined` es un accidente.
+
+### P8 — El enum crudo, dónde se pinta y qué valores tiene — **CIERTA**
+
+`src/screens/pairing/index.tsx:421-422` pinta `selectedPet.device.connectivity`
+sin traducir; su test lo fija en `src/screens/pairing/index.test.tsx:511`
+(fixture `'LTE'` en `:103`) y el caso `null → '—'` en `:531,:543`. El tipo es
+`connectivity: string | null` (`src/api/types.ts:47`) —**no una unión cerrada**—
+y el único valor que el backend escribe es `'online'`
+(`backend-pet-tracker/src/workers/ingestion.drizzle.store.ts:97`, columna
+`varchar(20)` nullable). La Home lo usa como **condición**, no lo pinta
+(`home.tsx:208,220`).
+
+### P9 — Los candados que esta feature mueve — **CIERTOS, y con una sorpresa**
+
+- `consistency-classnames.test.ts:269-331` (#62 R14) y `:333-355` (#62 R15) y
+  `legibility-classnames.test.ts:117-138` (#61 R4) son inventarios **por ruta de
+  fichero**: migrar la Home (R15) los mueve aunque no cambie ni una cifra.
+- `design-drift.test.ts:112-133` fija que los **tres** entrypoints de Expo Router
+  migrados tienen menos de 10 líneas. `app/(tabs)/home.tsx` pasa a ser el cuarto.
+- **La sorpresa**: no existe ningún candado global de "cero hex fuera de
+  `src/theme/`". El único que persigue hexadecimales es
+  `design-drift.test.ts:101`, y está acotado a la lista nominal de ocho ficheros
+  de #40 (`R9`). El grep-clean de la carta se cumplía **por revisión**, no por
+  test, en todo fichero nuevo. Por eso R18 añade su propio bloque en vez de
+  confiar en un candado que no cubre lo que esta feature escribe.
+- `legibility-classnames.test.ts:145` prohíbe **cualquier**
+  `useThemeColors([… 'accent' …])` en fuentes de producción: el `tintColor` del
+  selector y el color de la barra tienen que pedir `'accent-strong'`.
+- `ui-language.test.ts:37-60` (`checkUses`) cuenta `t('clave')` **y**
+  `labelKey: 'clave'`: la segunda forma es la que permite que un catálogo de
+  enum viva en `src/utils/` (precedente literal: `src/utils/reminder-meta.ts`,
+  registrado en `ui-copy-table.ts:225-231`).
 
 ---
 
-## 2. Correcciones propuestas
+## 2. Correcciones — premisas del encargo que salieron falsas
 
-Ninguna toca una spec aprobada, así que **no hay enmiendas que firmar** más allá
-de la aprobación de esta spec. Todas son al enunciado de #68 en
-`feature_list.json`; el leader las enruta, esta spec no edita el fichero.
-C1–C4 son de fondo —cambian lo que hay que implementar— y C5 es una imprecisión
-de cita que se corrige de paso.
+Ninguna corrección de aquí toca una spec aprobada; la única enmienda que sí la
+toca es **E1** y vive en [[requirements]] §Enmiendas.
 
-| # | Dice el enunciado | Debe decir | Origen del error |
+| # | Dice el encargo (o el enunciado) | Lo que hay en el árbol / en el paquete | Consecuencia |
 |---|---|---|---|
-| C1 | *"la Home descarta seis de las siete entradas quedandose con la ultima (`home.tsx:86-89`)"* | `home.tsx:100-103`, y ese `today` alimenta hoy **tres** consumidores (hero de #67 incluido), no solo el resumen | #67 reescribió `home.tsx`; el enunciado se escribió contra `303fc19` |
-| C2 | *"`weekComparison` ya trae la variacion contra los 7 dias previos"* | delta **porcentual de la media diaria a un decimal**, solo para `distanceM`, `activeMinutes` y `walkCount`; **`restMinutes` no tiene comparación**; `null` si no hay base | el informe no bajó a `week-comparison.ts` |
-| C3 | *"un dia pasado sin datos vuelve con source 'missing' y todas las metricas en null"* | cierto, **y además** ningún día medido vuelve con `null`, así que el discriminante correcto es `source` y no `null` — la equivalencia actual es una coincidencia, no un contrato | el informe miró el tipo, no el mapper ni `computeDailyActivity` |
-| C4 | *"Reutiliza el patron de `weight-chart.tsx` en vez de anadir libreria de graficas"* | el patrón reutilizable es "sin librería de gráficas + color por `useThemeColors` + copy por catálogo"; **no** "con `react-native-svg`", que ahí está por la polilínea | ambigüedad de "patrón" |
-| C5 | *"la grafica de barras de 7 dias que el Make pone en la Home (`App.tsx:413-428`)"* | el bloque completo es `design-src/App.tsx:411-424`; `:413` es el título y `:428` cae ya dentro de la tarjeta de recordatorios | imprecisión menor, no caducidad: ese fichero no ha cambiado |
+| **C1** | *"Los colores de chart-kit entran por config (`Dataset.color?: (opacity) => string`, `ChartConfig.backgroundGradientFrom?: string`), y eso choca de frente con el grep-clean"* | Eso es la **v1**. `BarChartProps` de la **v2** no declara `chartConfig` en absoluto (`dist/v2/react-native/charts/bar/types.d.ts`); los colores son `string` planos en `theme` (`CartesianChartTheme`: `background`, `plotBackground`, `grid`, `axis`, `text`, `mutedText`, `series: string[]`, `tooltip`) y en `series[].color` | **El choque no existe.** Los valores de `useThemeColors` son cadenas ya resueltas y entran tal cual. Cero hex, cero excepciones al candado. La restricción se resuelve por construcción (D7) |
+| **C2** | *"navegación a `/trips` por la ruta que ya existe (nada de ruta nueva)"* | **No existe ninguna ruta `/trips`.** El árbol de `src/app/` tiene `(tabs)/{home,map,food,health,profile,pairing,reminders,weight-log,meal-schedule,add-reminder}`, `(tabs)/pets/add`, `(tabs)/pets/[petId]/docs`, `(auth)/{login,register,forgot}`, `index` y `reset-password`. `trips` es solo un **módulo de API** (`src/api/trips.ts`), consumido por `map.tsx:14,110`. Y `getDayRoute` (`src/api/trips.ts:24-39`) pide `GET /pets/:petId/trips` **sin día**: solo sabe el día en curso | El detalle de día ofrece **`/map` y solo para hoy** (D3). Para cualquier otro día no hay acción, porque llevaría a los paseos de hoy: sería una mentira. Es el criterio que el repo ya fijó en #71 |
+| **C3** | *"`getBarChartAccessibilitySummary` devuelve una cadena para el gráfico entero"* | Cierto, **y además esa cadena es inglés fijo**: `"Bar chart with N bars. Highest value is X at Y. Lowest value is …"`, con `"No value"` para los huecos (`dist/v2/react-native/charts/bar/accessibility.js`). Solo `formatXLabel`/`formatYLabel` son nuestros; el armazón no | **No se usa.** El gráfico recibe un `accessibilityLabel` propio por catálogo, y las siete columnas viven fuera (D5, R9). Usarlo metería inglés en una UI que la carta obliga a resolver por catálogo en dos idiomas |
+| **C4** | *"`emptyActivity()` en `pipeline/activity.ts:83-91`"* | La función va de `:83` a `:93`; los ceros están en `:85-89` y `firstWalkAt`/`lastWalkAt` a `null` en `:90-91` | Cita corregida. El fondo del hallazgo es idéntico y sigue en pie |
+
+Corrección adicional, menor, que no cambia nada de lo que hay que implementar: el
+test de la pantalla de emparejado está en `src/screens/pairing/index.test.tsx`,
+**no** en un directorio `__tests__/`.
 
 ---
 
 ## 3. Decisiones técnicas
 
-### D1 — La barra pinta `activeMinutes`. Y solo eso
+### D1 — Qué hace la librería y qué nos toca a nosotros
 
-Tres razones, en orden de peso:
+Es la decisión que ordena todas las demás, y sale de leer el paquete, no de
+confiar en él:
 
-1. La tarjeta se llama *Actividad semanal* (`design-src/App.tsx:413`). Minutos
-   activos **es** la actividad; los paseos son su recuento y la distancia su
-   consecuencia.
-2. **La tendencia solo es gratis para tres métricas** (P6). Si la barra pintara
-   `restMinutes`, `weekComparison` no la cubre y D4 se cae. Esto elimina el
-   descanso como candidato por razón técnica, no estética.
-3. Las otras dos candidatas ya están pintadas en la Home: `walkCount` es el
-   dato destacado del hero desde #67 R7 (`home.tsx:133-137`) y `distanceM` es
-   la tercera celda del resumen (`home.tsx:337`). Repetirlas en la gráfica sería
-   decir lo mismo dos veces en la misma pantalla.
-
-**Qué pasa con las otras cinco métricas del día** (`distanceM`, `restMinutes`,
-`walkCount`, `avgWalkMinutes`, `timeAwayMinutes`): **nada, y esa es la
-decisión**. No se pierde ninguna —la carta §Dirección de arte 5 lo prohíbe—
-porque #68 no borra nada: `summary-card` sigue mostrando actividad, descanso y
-distancia de hoy, y el hero sigue mostrando los paseos. Las que hoy no se
-muestran (`avgWalkMinutes`, `timeAwayMinutes`) tampoco se mostraban antes; siguen
-llegando en el payload y una feature futura las tiene a mano sin pedir nada. Lo
-que **no** se hace es un selector de métrica: es interacción nueva sin diseño,
-convierte un componente puro en uno con estado, y ninguna de las siete preguntas
-de la Home la pide.
-
-### D2 — Un día `missing` no dibuja barra: dibuja un guion
-
-Un cero significa **descanso confirmado** y es información real; una barra de
-altura 0 es invisible, así que ni siquiera el cero se puede pintar "a escala".
-El reparto:
-
-| Caso | Qué se pinta | `testID` | Portador no cromático |
-|---|---|---|---|
-| `source !== 'missing'`, `activeMinutes > 0` | cápsula de acento, altura proporcional | `weekly-activity-bar-<fecha>` | altura |
-| `source !== 'missing'`, `activeMinutes === 0` | cápsula de acento de `WEEKLY_BAR_MIN_HEIGHT` (6 px) | `weekly-activity-bar-<fecha>` | **hay** barra |
-| `source === 'missing'` | glifo `'—'` en `text-2xs text-muted`, sin barra | `weekly-activity-missing-<fecha>` | **no hay** barra |
-
-Los tres portadores son independientes del color: **presencia o ausencia de
-barra**, `testID` distinto, y `accessibilityLabel` distinto (R5). Quien mire la
-pantalla en escala de grises, quien lea el árbol de tests y quien use TalkBack
-distinguen los tres casos sin depender del verde.
-
-El `'—'` **no** es copy y no entra al catálogo: es el mismo símbolo que ya usan
-`home.tsx:39,44,48` y `pet-hero-header.tsx:126` para "sin dato", y el candado
-de #65 R18 solo persigue valores del catálogo aparecidos como literal entero.
-
-Descartado el borde discontinuo (`borderStyle: 'dashed'`) como marca de "sin
-dato": sobre una esquina redondeada, Android lo renderiza de forma inconsistente
-y sería un fallo que solo se ve en el smoke.
-
-### D3 — La letra del eje: de la fecha, con `short`, y parseada por componentes
-
-**De dónde sale**: de `day.date`, nunca del índice. El propio `testID` de la
-columna es la fecha (`weekly-activity-day-2026-09-06`), así que una
-implementación por índice ni siquiera puede fingir.
-
-**Cómo se convierte**: `weekdayLabel` descompone `'YYYY-MM-DD'` en tres números
-y construye `new Date(year, month - 1, day)`. **Nunca `new Date(cadena)`.**
-Medido, no supuesto:
-
-```
-TZ=America/Mexico_City
-new Date('2026-09-06').toLocaleDateString('es-MX',{weekday:'short'})  → 'sáb'   ✗
-new Date(2026, 8, 6).toLocaleDateString('es-MX',{weekday:'short'})    → 'dom'   ✓
-```
-
-Un día entero de desfase, y **invisible en un runner en UTC**: por eso el `it`
-de R4 fuerza `process.env.TZ` a una zona de offset negativo antes de llamar. Es
-la lección de `prueba-de-mutacion-en-zona-ciega` aplicada por adelantado: el
-candado se planta donde el bug puede esconderse, no donde ya se ve.
-
-**Qué locale**: el de `useLocale()`
-(`src/providers/language-provider.tsx:82-85` → `LOCALES` de
-`src/i18n/catalog.ts:529`, `es-MX` / `en-US`). Nunca el del sistema: la carta
-§Dirección de arte 6 lo cierra —"las fechas y las horas siguen al idioma
-elegido, no al locale del sistema"— y el repo ya lo hace así en cinco sitios
-(`home.tsx:60`, `add-pet/index.tsx:391`, `add-reminder/index.tsx:203,220`,
-`reminders/index.tsx:309`, `profile/index.tsx:287`), incluido uno con opciones
-(`add-reminder/index.tsx:220`), así que `Intl` con opciones ya está probado en
-dispositivo y no estrena riesgo.
-
-**Qué formato**: `weekday: 'short'` para la etiqueta visible, `'long'` para la
-etiqueta accesible. `'narrow'` queda **descartado por ambiguo en los dos
-idiomas**, medido:
-
-| Locale | `narrow`, 2026-09-02…08 | `short`, 2026-09-02…08 |
-|---|---|---|
-| `es-MX` | `M J V S D L M` — dos `M` | `mié jue vie sáb dom lun mar` |
-| `en-US` | `W T F S S M T` — dos `T`, dos `S` | `Wed Thu Fri Sat Sun Mon Tue` |
-
-Con un eje fijo lunes-a-domingo la posición desambiguaría; con un eje
-cronológico que termina hoy (P5), **no**. Y `short` cabe: siete columnas en el
-ancho interior de la tarjeta (pantalla de 375 px − 48 de `paddingHorizontal` −
-32 del `p-4` del `Card` = 295 px) dan ~42 px por columna para tres o cuatro
-caracteres a 10 px.
-
-**Desviación declarada respecto al Make**: el Make escribe `L M X J V S D`
-(`design-src/App.tsx:43-44`), con la `X` de miércoles. `Intl` no produce `X` en
-ningún locale, así que copiarlo exige una tabla de siete letras escrita a mano
-— que además **solo existe en español**, y el catálogo obliga a las dos lenguas
-(carta §Dirección de arte 6), con lo que serían catorce entradas mantenidas a
-mano para reemplazar una llamada de una línea. Se declara la desviación y se
-usa `short`.
-
-### D4 — La tendencia entra: una sola fila, sin color semántico
-
-**Entra**, aunque el Make no la dibuje, por tres motivos: el dato ya está
-descargado y tipado (P6), responde a la pregunta que la Home hace peor —*¿cómo
-fue su actividad?* mirando solo hoy— y cuesta seis líneas. Es la misma economía
-que hace valiosa a #68 entera.
-
-Cómo, exactamente:
-
-- **Una sola** fila (`weekly-activity-trend`), la de `weekComparison.activeMinutes`,
-  que es la métrica que pinta la barra (D1). Las otras dos comparaciones no se
-  dibujan: la tarjeta habla de una métrica.
-- Icono **real** de `reicon-react-native` (`TrendUp` / `TrendDown`, ambos
-  existen en `node_modules/reicon-react-native/index.d.ts`), nunca un glifo
-  tipográfico: #62 R7 lo prohíbe y tiene test.
-- **Sin color semántico.** Ni `success` al subir ni `danger` al bajar. Una
-  semana con menos actividad no es un error: puede ser una mascota
-  convaleciente, un dueño de viaje o mal tiempo. La app no editorializa sobre
-  eso, y el rojo en una tarjeta de la Home alarma. El signo (`+` / `−`, vía
-  `signDisplay: 'exceptZero'`) es el portador de dirección; el color es
-  `text-muted` en toda la fila.
-- `null` ⇒ **la fila no existe**. Sin hueco, sin "—", sin texto de relleno. Una
-  mascota nueva no tiene semana previa y no debe ver un cero falso.
-- `TABULAR_NUMS` en el `Text` del porcentaje (#62 R15): es un número que se
-  recompara en cada refresco, exactamente el supuesto del requisito.
-
-### D5 — El color de la barra es `accent-strong`, resuelto con `useThemeColors`
-
-Precedente literal: `weight-chart.tsx:16` resuelve el color de su marca con
-`useThemeColors(['accent-strong'])`. Una barra es una marca de datos igual que
-un trazo, no una superficie: nada se pinta encima de ella. Se copia el
-precedente y no se re-litiga la regla mecánica de la carta §11 ("fondo ⇒
-`--accent`; encima de otra cosa ⇒ `--accent-strong`"), que está escrita para
-superficies que llevan texto.
-
-Contraste **calculado**, no estimado (método de #61), contra `--surface` en los
-dos temas. Una barra es un objeto gráfico: el listón aplicable es 3:1 (WCAG
-1.4.11), y las dos opciones lo pasan — pero una lo pasa raspando:
-
-| Color de barra | Claro (`#FFFFFF`) | Oscuro (`#161B22`) |
-|---|---|---|
-| `accent-strong` (`#107148` / `#2AB87C`) | **6,04:1** | **6,79:1** |
-| `accent` (`#178255` en los dos temas) | 4,82:1 | **3,59:1** |
-
-La etiqueta del eje en `text-muted` (`#667085` / `#9CA3AF`) da **4,97:1** y
-**6,81:1**: pasa AA de texto normal (4,5:1) en los dos temas, que es el listón
-correcto porque 10 px no es texto grande.
-
-Consecuencia de #61 asumida y ya declarada: en tema claro la barra es
-`#107148`, no el `#2AB87C` del Make. El smoke lado a lado lo verá; es esperado.
-
-Efecto secundario buscado: al no usar la clase `text-accent-strong`, el candado
-de #61 R4 (`legibility-classnames.test.ts:117-138`, inventario cerrado de 13) no
-se mueve.
-
-### D6 — Las barras son cápsulas, y eso mantiene un candado quieto
-
-El Make usa `radius=[5, 5, 0, 0]` (`design-src/App.tsx:419`): 5 px arriba,
-esquina viva abajo. **5 px es un cuarto radio** y #62 fijó tres roles y ninguno
-más (carta §Decisiones fijas 12), con test que lo persigue
-(`consistency-classnames.test.ts:149-178`). De los tres, el que le corresponde a
-una barra estrecha es la **cápsula**: `rounded-full`.
-
-Consecuencia mecánica, no estética: una cápsula está **explícitamente excluida**
-de #62 R14, y el `Card` compartido ya fusiona `CONTINUOUS_CORNER` por su cuenta
-(`card.tsx:29`). Así que #68 añade **cero** `style={CONTINUOUS_CORNER}` y el
-inventario cerrado de 33 (`consistency-classnames.test.ts:325-330`) **no se
-toca**. Elegir la cápsula es a la vez lo correcto por la carta y lo que menos
-mueve.
-
-Desviación declarada respecto al Make: el fondo de las barras queda redondeado
-en lugar de vivo. En una barra de 24 px de ancho apoyada en la línea de base, la
-diferencia es de unos pocos píxeles.
-
-### D7 — Se dibuja con `View`, no con SVG
-
-`react-native-svg` está instalado, así que usarlo no añadiría dependencia. Aun
-así no se usa, por tres razones concretas:
-
-1. **Accesibilidad.** R5 exige una etiqueta por columna. `accessibilityLabel`
-   sobre un `View` es la ruta soportada en las dos plataformas; sobre nodos de
-   `react-native-svg` el soporte en Android es parcial y depende de la versión.
-   Una gráfica muda es exactamente lo que el encargo prohíbe.
-2. **Radio.** `rounded-full` (D6) es una clase de uniwind sobre un `View`. Un
-   `<Rect>` de SVG necesitaría `rx`/`ry` a mano, que es un radio escrito en
-   números — justo lo que la escala de #62 existe para evitar.
-3. **Menos código.** Siete `View` con `height` y `flex-1` frente a un `viewBox`,
-   un escalado manual y un `preserveAspectRatio`. Una barra es un rectángulo;
-   el layout de React Native ya sabe dibujar rectángulos.
-
-`weight-chart.tsx` usa SVG porque una polilínea no se puede componer con
-`View`. No es el caso aquí.
-
-### D8 — Dónde se monta, y el hueco que se le deja a #69
-
-Orden del Make: hero (`:334-365`) → tira de 4 celdas (`:366-384`) → … → gráfica
-semanal (`:411-424`).
-
-Orden de la Home hoy, tras #67: hero a sangre (primer hijo del `ScrollView`,
-`home.tsx:129-145`) → `home-content` (`:186`) con `collar-card` → `summary-card`
-(`:276`) → `last-position-card` (`:350`).
-
-**#68 inserta la tarjeta dentro de `home-content`, inmediatamente después de
-`summary-card` y antes de `last-position-card`.** No toca el hero, ni
-`collar-card`, ni `summary-card`, ni el `contentContainerStyle` (la excepción A9
-de #67 sigue igual: `gap` y `paddingBottom` arriba, `paddingHorizontal: 24` en
-`home-content`).
-
-Por qué ahí y no bajo el hero: **#69** va a montar la tira de 4 celdas
-—Peso/Activo/Paseos/Distancia— sustituyendo o reubicando a `summary-card`, que
-es su antecesor de 3 celdas. Anclando la gráfica *detrás de `summary-card`*, el
-día que #69 lo suba bajo el hero la gráfica lo sigue sin que nadie reescriba
-#68. Si en cambio #68 se metiera entre el hero y `summary-card`, #69 tendría que
-saltarla o moverla. El hueco de #69 queda abierto por construcción.
-
-Aviso para #69, que esta spec no puede imponer pero sí dejar escrito: los
-mensajes de "actividad no disponible" y "requiere collar" viven hoy dentro de
-`summary-card` (`home.tsx:288-299`) y #68 se apoya en ellos para no duplicarlos
-(D9). Quien sustituya `summary-card` hereda el deber de conservarlos (carta
-§Dirección de arte 5).
-
-### D9 — Estados: skeleton al cargar, silencio al fallar
-
-`activity` tiene seis estados (`src/api/activity.ts:4-10`). El reparto:
-
-| Estado | Gráfica |
+| Requisito | ¿Lo da chart-kit v2? |
 |---|---|
-| `undefined` (cargando) | `Skeleton` `w-full rounded-card` con la altura del contenido final |
-| `ok` | la tarjeta |
-| `no-tracking`, `error`, `unreachable`, `missing-config` | **nada** |
+| Barras, escalado, banda | **Sí** |
+| Eje Y con ticks y rejilla horizontal | **Sí** (`showYAxisLabels`, `showHorizontalGridLines`, `yTickCount`) |
+| Distinguir hueco de cero en el modelo | **Sí** (`null` no emite rect) |
+| Selección por toque, con `dataIndex`, `value` y `position` | **Sí** (`interaction: {mode:'tap', onSelect}`) |
+| Altura mínima para un cero | **No** — un rect de altura 0 es invisible. Lo ponemos en `renderBar` (D4) |
+| Marca visible de "sin dato" | **No** — no hay rect que dibujar. Va en la fila de columnas (D5) |
+| Línea de media | **No** — las líneas de referencia existen para `LineChart`, no para `BarChart` |
+| Animación de entrada | **No** — solo anima la **selección** y la posición del tooltip |
+| Anuncio por columna | **No, e imposible desde dentro** (D5) |
+| Texto accesible traducido | **No** — su resumen es inglés fijo (C3) |
 
-No se duplica el mensaje de error: `summary-card` ya lo pinta
-(`home.tsx:288-299`) y dos "No se pudo cargar la actividad" seguidos en la misma
-pantalla es ruido, no robustez. El `rounded-card` del skeleton es corolario
-mecánico de #62 (carta §Decisiones fijas 12: el skeleton lleva el radio del
-contenido que sustituye), y la altura va por `style` para no estrenar una clase
-arbitraria.
+Conclusión: la librería aporta la **geometría y los ejes**, que es exactamente lo
+caro y lo que la primera spec no podía pagar con siete `View`. Todo lo demás lo
+seguimos poniendo nosotros. El reparto no es un defecto de la librería: es lo que
+hay que escribir en la spec para que Codex no descubra a mitad de camino que
+`showAverageLine` no existe.
 
-### D10 — Dónde vive el componente, y por qué la Home no se migra
+### D2 — Tres métricas, y son exactamente las tres que tienen tendencia
 
-**`mobile-pet-tracker/src/components/weekly-activity-chart.tsx`.**
+El selector ofrece `activeMinutes`, `distanceM` y `walkCount` —**las tres que
+`weekComparison` cubre** (P6)—, en ese orden. No es una lista de gusto: si
+entrara `restMinutes`, su pestaña se quedaría **sin fila de tendencia**, porque
+el backend no la compara, y tendríamos una cuarta pestaña que se comporta
+distinto que las otras tres sin que el usuario sepa por qué.
 
-La regla de extracción de la carta §Decisiones fijas 4 pide "≥2 pantallas + rol
-nombrable + API menor que implementación", y esto es **una** pantalla. El
-desempate es el precedente literal: `weight-chart.tsx` vive en
-`src/components/`, lo consume una sola ruta (`weight-log.tsx`) y la carta lo
-lista como componente compartido. Es exactamente el mismo caso —una gráfica de
-una ruta no migrada a `src/screens/`—, la ruta que da el enunciado
-(`files_affected`), y lo que permite probar el componente aislado del `useApi`
-de la Home.
+`restMinutes` **no se pierde** (carta §Dirección de arte 5): sigue en la celda
+"Sueño" de `summary-card` y aparece en el panel de detalle de día (R8), junto a
+las otras tres. Lo que no tiene es barra propia.
 
-**La Home no se migra a `src/screens/home/`.** `docs/conventions.md` §Estructura
-dice que las pantallas anteriores a #39 se migran "solo cuando una feature las
-toque de fondo"; #68 le añade seis líneas, y #67 —que la reescribió entera hace
-un commit— tampoco la migró. Hacerlo aquí sería mezclar una migración de
-estructura con una feature de datos.
+Las tres métricas viajan **en el mismo payload**: cambiar de pestaña es leer otra
+clave del mismo array. De ahí el "sin refetch" de R6, que se prueba contando
+llamadas a `getDailyActivity`.
 
-El helper `weekdayLabel` se **exporta desde el propio componente** en vez de
-vivir en `src/utils/`: tiene un solo consumidor, su test necesita el mismo
-fichero de tests que el resto de R4, y `src/utils/` es para helpers con más de
-un consumidor (`reminder-dates.ts`, `category-palette.ts`, `theme-preference.ts`).
+### D3 — El detalle de día, el tooltip y la única navegación honesta
+
+Al tocar una columna o una barra:
+
+1. **Tooltip propio**, no el de la librería. `BarChartSelectEvent` trae
+   `position: {x, y}`, así que anclarlo es aritmética nuestra sobre el ancho
+   medido. Se hace así por dos razones: su texto tiene que salir del catálogo en
+   los dos idiomas (carta §Dirección de arte 6) y su superficie tiene que llevar
+   tokens y `CONTINUOUS_CORNER` como cualquier otra del repo. El tooltip de fábrica
+   compone su texto a partir de `seriesLabel`/`formattedValue` y se estiliza con
+   su propio bloque de config: dos sistemas de estilo en la misma tarjeta.
+2. **Panel de detalle** bajo la gráfica, con el día largo y las **cuatro**
+   métricas del día. Es el sitio donde `restMinutes` y `avgWalkMinutes` dejan de
+   ser datos que se tiran.
+3. **Navegación**: `router.push('/map')`, y **solo cuando el día seleccionado es
+   hoy**. Motivo en C2: `/trips` no existe y `/map` solo sabe pintar el día en
+   curso. Dibujar el enlace para un martes anterior llevaría a los paseos de hoy.
+   El repo ya tiene el criterio escrito para este caso exacto, en el enunciado de
+   **#71**: *"omite el tile de cualquier destino que no exista todavía"*.
+
+La navegación la decide **la pantalla**, no el componente: el componente expone
+`onSelectDay` y no importa `expo-router`. Así se puede probar aislado y así la
+regla de capas de `docs/architecture.md` no se dobla.
+
+### D4 — El cero se dibuja, el hueco no, y el discriminante sigue siendo `source`
+
+| Caso | Qué se manda al `BarChart` | Qué se ve | Portador no cromático |
+|---|---|---|---|
+| medido, valor > 0 | el número | barra proporcional | altura |
+| medido, valor = 0 | `0` | barra de `BAR_MIN_HEIGHT = 3` px, aplicada en `renderBar` | **hay** barra + el valor `0` bajo la columna |
+| `source === 'missing'` | **`null`** | ninguna barra; `'—'` en la columna | **no** hay barra + glifo distinto + `testID` distinto |
+
+`renderBar` recibe `{bar, fill, radius, selected, strokeColor, strokeOpacity,
+strokeWidth, theme}` y su retorno **sustituye** al `<Rect>` por defecto
+(`dist/v2/react-native/charts/bar/BarChartSurface.js:58-72`), así que el mínimo
+se aplica ahí: `h = Math.max(bar.height, BAR_MIN_HEIGHT)`,
+`y = bar.baselineY - h`. Es el mismo sitio donde vive la animación (D8) y el
+radio de cápsula (`rx = Math.min(bar.width, h) / 2`).
+
+Los tres portadores son independientes del color: presencia o ausencia de barra,
+`testID` distinto y `accessibilityLabel` distinto. Quien mire en escala de
+grises, quien lea el árbol de tests y quien use TalkBack distinguen los tres
+casos sin depender del verde.
+
+Descartado el borde discontinuo como marca de "sin dato": sobre esquina
+redondeada, Android renderiza `borderStyle: 'dashed'` de forma inconsistente y
+sería un fallo que solo aparece en el smoke.
+
+### D5 — Las siete columnas viven **fuera** del gráfico, y no es una preferencia
+
+`BarChart` renderiza su raíz como
+
+```jsx
+<View accessible accessibilityRole="image" accessibilityLabel={…} style={{width, height}} testID={…}>
+```
+
+(`dist/v2/react-native/charts/bar/BarChart.js:182`). Un `accessible` en un
+contenedor **colapsa en un solo nodo** todo lo que cuelga de él, en iOS y en
+Android. No hay prop para desactivarlo y no hay hueco de render que escape: el
+`renderBar` devuelve nodos SVG **dentro** de ese `View`. Por lo tanto **ninguna
+implementación puede anunciar siete columnas desde dentro del gráfico**, use la
+API que use.
+
+De ahí la forma de la tarjeta: bajo el gráfico va una **fila de siete columnas
+táctiles**, cada una `accessible`, con su `accessibilityLabel` traducido, su
+`testID` por fecha, su etiqueta de día, su valor (o su `'—'`), y ≥44 pt de alto
+(#61 R10). Esa fila hace **cuatro** trabajos a la vez y por eso vale la pena:
+
+1. es el eje X (por eso `showXAxisLabels={false}`, para no duplicar la letra);
+2. es la marca de "sin dato" (D4);
+3. es el objetivo táctil del detalle (D3) — mucho mejor que una barra de 20 px;
+4. es la accesibilidad por columna (R9).
+
+El `accessibilityLabel` del gráfico se mantiene, pero traducido y escrito por
+nosotros: un lector de pantalla que caiga sobre el SVG oye *"Gráfica de minutos
+activos de los últimos 7 días"*, y el detalle lo da la fila de abajo.
+
+### D6 — La alineación entre las columnas y las barras: por qué se puede calcular
+
+Es la parte incómoda de la decisión y hay que dejarla escrita, porque el
+implementer no la va a poder deducir del `.d.ts`.
+
+La caja de dibujo del `BarChart` es **determinista** y sale de tres sitios del
+paquete:
+
+- `dist/v2/react-native/charts/bar/model.js:91-111` — padding base
+  `{ top: 18, right: 14, bottom: 12, left: 10 }`, `leftLabels = yLabelSizes`,
+  `bottomLabels = [max(xLabelSizes)]`, `gap = 8`.
+- `dist/v2/core/layout/autoPadding.js` —
+  `padding.left += leftLabelWidth > 0 ? leftLabelWidth + gap : 0`, e igual por
+  abajo con la **altura**.
+- `dist/v2/react-native/charts/bar/modelUtils.js:2-8` —
+  `measureBarChartText(text, {fontSize}) = { width: text.length * fontSize * 0.56, height: 14 }`.
+
+De ahí, con `CHART_AXIS_LABEL_SIZE = 10` y **etiquetas de eje Y de longitud fija
+`Y_LABEL_CHARS = 4`**:
+
+```
+CHART_PAD_LEFT   = 10 + (4 × 10 × 0.56) + 8 = 40.4
+CHART_PAD_RIGHT  = 14
+CHART_PAD_TOP    = 18
+CHART_PAD_BOTTOM = 12 + 14 + 8 = 34        (la altura medida es 14 siempre)
+```
+
+`CHART_PAD_BOTTOM` vale 34 aunque `showXAxisLabels` sea `false`, porque el
+padding se calcula antes de decidir si se pintan: `measureBarChartText` devuelve
+`height: 14` para cualquier texto. Es espacio que se paga y se declara.
+
+La longitud fija se consigue con `padStart`: `formatYLabel` devuelve siempre
+cuatro caracteres. Con `textAnchor="end"` —que es como la librería pinta esas
+etiquetas— los espacios de relleno quedan a la izquierda del número y no mueven
+nada visible.
+
+Y la alineación sale de la escala de banda
+(`dist/v2/core/scales/band.js:1-18`, con `paddingInner: 0.12` y
+`paddingOuter: 0.08` fijados en `model.js:119-120`):
+
+```
+step      = W / (7 − 0.12 + 2×0.08) = W / 7.04
+centro_i  = plot.x + step × (0.08 + i + 0.44) = plot.x + step × (i + 0.52)
+```
+
+Y siete columnas `flex: 1` dentro de una fila con
+`paddingLeft: CHART_PAD_LEFT` y `paddingRight: CHART_PAD_RIGHT`:
+
+```
+centro_i  = plot.x + W × (i + 0.5) / 7 = plot.x + step × (1.00571·i + 0.50286)
+```
+
+La diferencia es `step × (0.017143 − 0.005714·i)`: máxima en los extremos y
+**acotada por `0.0172 × step`**. En una pantalla de 375 px la tarjeta deja
+`375 − 48 (padding de pantalla) − 32 (p-4 del Card) = 295` px, el área de dibujo
+mide `295 − 40.4 − 14 = 240,6` px, `step ≈ 34,2` px y el desvío máximo es
+**0,59 px**. Sub-píxel: alineado.
+
+**El precio, declarado**: cinco constantes internas de la librería
+—`{18,14,12,10}`, `gap 8`, `0.56`, `height 14`, `{0.12, 0.08}`— de las que no hay
+API pública. Por eso R1 pinea la versión a `7.0.4` **exacta** y R1b pone un test
+que se pone rojo si alguien la sube. Una versión nueva obliga a re-derivar estos
+cuatro números; no a rehacer la feature.
+
+Alternativas descartadas y por qué, para que nadie las reabra: leer la geometría
+desde `renderBar` obliga a escribir estado durante el render y no da nada para
+los días sin barra; importar `calculateAutoPadding` desde `core` es un deep
+import que el `exports` del paquete prohíbe; y dejar la fila sin alinear pone
+cada etiqueta a más de media columna de su barra.
+
+### D7 — Los tokens llegan al gráfico como cadenas, y el grep-clean no se entera
+
+Contra lo que temía el encargo (C1), en la v2 no hay `chartConfig` ni funciones
+de opacidad. El gráfico recibe:
+
+```tsx
+const [accentStrong, muted, border, foreground, surface] = useThemeColors([
+  'accent-strong', 'muted', 'border', 'foreground', 'surface',
+]);
+
+<BarChart
+  theme={{
+    series: [accentStrong],
+    grid: border,
+    axis: border,
+    text: foreground,
+    mutedText: muted,
+    background: surface,
+    plotBackground: surface,
+    typography: { axisLabelSize: CHART_AXIS_LABEL_SIZE },
+  }}
+  …
+/>
+```
+
+Cero hexadecimales, cero clases arbitrarias, cero `StyleSheet.create`. Los
+`preset` de fábrica de la librería **no se usan**: traen su propia paleta
+hexadecimal y serían un segundo sistema de color, justo lo que prohíbe la carta
+§Decisiones fijas 1.
+
+Dos precauciones que el candado ya vigila y conviene no pisar:
+`useThemeColors(['accent'])` está **prohibido** en cualquier fuente
+(`legibility-classnames.test.ts:145`), así que tanto la barra como el `tintColor`
+del selector piden `'accent-strong'`; y `text-accent-strong` como **clase** no se
+usa en ningún sitio nuevo, para no mover el inventario cerrado de #61 R4.
+
+El contraste ya está calculado por #61 y no se re-litiga: `accent-strong`
+(`#107148` claro / `#2AB87C` oscuro) da **6,04:1** y **6,79:1** contra
+`--surface`, muy por encima del 3:1 que WCAG 1.4.11 pide a un objeto gráfico; y
+`muted` (`#667085` / `#9CA3AF`) da **4,97:1** y **6,81:1**, que es AA de texto
+normal, el listón correcto para 10 px.
+
+### D8 — La animación de entrada vive en `renderBar`, y muere con `reduced motion`
+
+La librería solo anima la selección. La entrada la ponemos nosotros en el único
+sitio donde tenemos el rect: `renderBar` devuelve un componente propio que
+mantiene un `useSharedValue(0)`, lo lleva a `1` con
+`withDelay(dataIndex × BAR_ENTRY_STAGGER_MS, withTiming(1, {duration: BAR_ENTRY_DURATION_MS}))`
+y proyecta `y`/`height` con `useAnimatedProps` sobre
+`Animated.createAnimatedComponent(Rect)` de `react-native-svg`. UI thread, sin
+tocar el JS thread, como pide la carta §Animación.
+
+`useReducedMotion()` de `react-native-reanimated` —el mismo que ya usa
+`src/theme/theme-transition.ts:46`— cortocircuita el valor a `1`: la barra sale
+en su geometría final desde el primer frame, sin retardo y sin opacidad. No es un
+`if` cosmético: es lo que hace que R10 sea verificable con un mock del hook.
+
+Duraciones de la carta: 250 ms para una transición, y un escalonado de 40 ms que
+en siete barras suma 240 ms — la última empieza justo cuando la primera acaba.
+Ninguna de las dos se repite en otro sitio, así que **no** se promueven a tokens
+`--motion-*` todavía.
+
+### D9 — La tendencia entra, sigue a la métrica, y no editorializa
+
+El dato ya está descargado y tipado (P6) y responde a la pregunta que la Home
+hace peor. Entra con estas cuatro reglas:
+
+- **Una sola** fila, la de la métrica seleccionada. La tarjeta habla de una
+  métrica cada vez; tres flechas pedirían tres gráficas.
+- Icono **real** de `reicon-react-native` (`TrendUp` / `TrendDown`), nunca un
+  glifo tipográfico: #62 R7 lo prohíbe y tiene test.
+- **Sin color semántico.** Ni `success` al subir ni `danger` al bajar. Una semana
+  con menos actividad no es un error —puede ser una mascota convaleciente, un
+  dueño de viaje o mal tiempo— y el rojo en una tarjeta de la Home alarma. El
+  signo (`+`/`−`, vía `signDisplay: 'exceptZero'`) es el portador de dirección;
+  el color es `text-muted` en toda la fila.
+- `null` ⇒ **la fila no existe**. Sin hueco, sin `—`, sin texto de relleno. Una
+  mascota nueva no tiene semana previa y no debe ver un cero falso.
+
+### D10 — Dónde vive todo, y por qué la Home **sí** se migra ahora
+
+`docs/conventions.md` §Estructura dice que las pantallas anteriores a #39 se
+migran "solo cuando una feature las toque de fondo". La versión estrecha de esta
+spec añadía seis líneas y por eso no migraba. **Esta versión ya no**: mete una
+tarjeta con estado, un selector, un panel de detalle, un tooltip y una
+navegación condicionada. Eso es tocarla de fondo, y el humano lo pidió
+explícitamente.
+
+Reparto final, con el patrón de `src/screens/pairing/`:
+
+| Fichero | Qué es |
+|---|---|
+| `src/app/(tabs)/home.tsx` | route delgado, <10 líneas, `export default function HomeRoute()` |
+| `src/screens/home/index.tsx` | el cuerpo, `export function HomeScreen()` |
+| `src/screens/home/index.test.tsx` | el test de pantalla, movido y colocado al lado |
+| `src/screens/home/weekly-activity-chart.tsx` | la tarjeta entera: gráfica, selector, columnas, tooltip, detalle |
+| `src/screens/home/weekly-activity-chart.test.tsx` | su test |
+| `src/screens/home/format.ts` | `fmtMinutes`, `fmtKm`, `fmtCount`, sacados de `home.tsx` |
+
+La gráfica **no** va a `src/components/`: la regla de extracción de la carta
+§Decisiones fijas 4 pide "≥2 pantallas", y esto es una. La convención de #39 dice
+literalmente que los sub-componentes privados de una pantalla van en su carpeta,
+"NO en `src/components/`". `weight-chart.tsx` está en `src/components/` porque su
+pantalla nunca se migró; la Home sí se migra, así que aquí no hay excusa.
+
+El catálogo de conectividad, en cambio, **sí** va a `src/utils/`
+(`device-connectivity.ts`): tiene un consumidor hoy y otros mañana —la píldora de
+#73 es el primero—, y el precedente exacto es `src/utils/reminder-meta.ts`, que
+`checkUses` ya sabe leer por su forma `labelKey:`.
 
 ### D11 — Las siete preguntas de la Home
 
-Declaración obligatoria de la carta §Dirección de arte 3 para toda spec que
-toque la Home:
+Declaración obligatoria de la carta §Dirección de arte 3 para toda spec que toque
+la Home:
 
 | Pregunta del brief | ¿La responde #68? |
 |---|---|
 | ¿Está segura? | **No.** Sigue sin responderse; depende de geocercas y alertas |
 | ¿Dónde está? | **No.** La responde `last-position-card`, intacta |
-| ¿El collar está conectado? | **No.** La responde `collar-card`, intacta |
+| ¿El collar está conectado? | **No.** La responde `collar-card`, intacta. #68 traduce la etiqueta en **emparejado**, no cambia el estado de la Home; eso es #73 |
 | ¿Tiene batería? | **No.** La responde `collar-card`, intacta |
 | ¿Tiene recordatorio pendiente? | **No.** Sigue sin responderse en la Home |
-| **¿Cómo fue su actividad hoy?** | **Sí, y la ensancha**: de "hoy" a "los siete días", con la tendencia contra la semana previa |
+| **¿Cómo fue su actividad hoy?** | **Sí, y la ensancha mucho**: de "hoy" a "los siete días", en tres métricas, con la media, la tendencia y el detalle por día |
 | ¿Hay alguna alerta? | **No.** Sigue sin responderse, como declaró #67 |
 
 #68 mejora una de las siete y no degrada ninguna.
@@ -452,33 +479,49 @@ toque la Home:
 ## 4. Archivos afectados por capa
 
 `mobile-pet-tracker/` es la única raíz tocada. **Cero ficheros de
-`backend-pet-tracker/`**, cero infraestructura, cero configuración de Expo, cero
-dependencias nuevas.
+`backend-pet-tracker/`**, cero infraestructura, cero configuración de Expo más
+allá de la dependencia.
 
-**Presentación — componente nuevo**
-- `src/components/weekly-activity-chart.tsx` — **nuevo**. `WeeklyActivityChart`,
-  `WEEKLY_CHART_HEIGHT`, `WEEKLY_BAR_MIN_HEIGHT`, `weekdayLabel`.
-- `src/components/__tests__/weekly-activity-chart.test.tsx` — **nuevo**.
+**Presentación — pantalla migrada (R15)**
+- `src/app/(tabs)/home.tsx` — **reescrito** a route delgado (<10 líneas).
+- `src/screens/home/index.tsx` — **nuevo** (cuerpo movido de `home.tsx`), con el
+  montaje de la tarjeta y la navegación condicionada de R8.
+- `src/screens/home/index.test.tsx` — **movido** desde
+  `src/app/(tabs)/__tests__/home.test.tsx`, con un `describe` nuevo.
+- `src/screens/home/format.ts` — **nuevo**: `fmtMinutes`, `fmtKm`, `fmtCount`.
 
-**Presentación — pantalla**
-- `src/app/(tabs)/home.tsx` — **editado**: un `import`, y el bloque de montaje
-  entre `summary-card` y `last-position-card` (R8, R8b). Nada más.
-- `src/app/(tabs)/__tests__/home.test.tsx` — **editado**: un `describe` nuevo.
+**Presentación — componente de la feature**
+- `src/screens/home/weekly-activity-chart.tsx` — **nuevo**.
+- `src/screens/home/weekly-activity-chart.test.tsx` — **nuevo**.
 
-**Contenido**
-- `src/i18n/catalog.ts` — **editado**: seis claves en `en` y seis en `es`.
-- `src/__tests__/ui-copy-table.ts` — **editado**: seis filas en `R3_HOME`.
-- `src/__tests__/ui-language.test.ts` — **editado**: dos `toHaveLength` (+6 y +1).
+**Contenido y catálogo**
+- `src/i18n/catalog.ts` — **editado**: dieciséis claves en `en` y dieciséis en `es`.
+- `src/utils/device-connectivity.ts` — **nuevo**: `DEVICE_CONNECTIVITY_META`,
+  `connectivityLabelKey`.
+- `src/utils/device-connectivity.test.ts` — **nuevo**.
+- `src/screens/pairing/index.tsx` — **editado**: solo `:421-422`.
+- `src/screens/pairing/index.test.tsx` — **editado**: solo el `it` de `:511`.
 - `specs/mobile-ui-language/design.md` §2 — **editado**: registro de las claves.
 
 **Candados**
-- `src/__tests__/consistency-classnames.test.ts` — **editado**: una fila en
-  `#62 R15` y su inventario (+1). `#62 R14` **no se toca**.
+- `src/__tests__/ui-copy-table.ts` — filas nuevas y rutas reubicadas (R19).
+- `src/__tests__/ui-language.test.ts` — tres `toHaveLength` por delta (R19).
+- `src/__tests__/consistency-classnames.test.ts` — dos filas nuevas, dos filas
+  reubicadas, dos totales por delta (R19).
+- `src/__tests__/legibility-classnames.test.ts` — una fila **reubicada**, cifra
+  sin cambio (R19).
+- `src/__tests__/design-drift.test.ts` — cuarto entrypoint delgado, assert de
+  dependencia, y el bloque nuevo de R18.
+
+**Configuración**
+- `package.json` — `react-native-chart-kit: "7.0.4"` y dos entradas en
+  `jest.transformIgnorePatterns`.
 
 **Sin tocar, y es deliberado**: `src/api/*` (el contrato ya sirve),
 `src/theme/global.css` (no hace falta ningún token nuevo),
-`src/components/pet-hero-header.tsx`, `src/components/card.tsx`,
-`src/components/weight-chart.tsx`, `src/hooks/use-api.ts`.
+`src/components/card.tsx`, `src/components/weight-chart.tsx`,
+`src/components/pet-hero-header.tsx`, `src/hooks/use-api.ts`,
+`src/app/(tabs)/map.tsx`.
 
 ---
 
@@ -486,21 +529,32 @@ dependencias nuevas.
 
 | Alternativa | Por qué no |
 |---|---|
-| Añadir `victory-native`, `gifted-charts` o similar | Criterio de aceptación explícito del enunciado. Siete rectángulos no justifican una dependencia con su propio ciclo de vida |
-| Dibujar con `react-native-svg` como `weight-chart.tsx` | D7: rompe la accesibilidad por barra en Android, obliga a un radio escrito en números y es más código que siete `View` |
-| Pedir el rango a la API con `?from=&to=` para forzar lunes-a-domingo | Sería **una llamada distinta** a la que ya se hace y cambia el contrato de la Home. El enunciado prohíbe llamadas nuevas, y el eje cronológico terminando hoy es más útil: la última barra es siempre hoy |
-| Barra de `restMinutes` o de `distanceM` | D1. `restMinutes` además dejaría a la tendencia sin dato (P6) |
-| Selector de métrica tocando la tarjeta | Interacción sin diseño, estado nuevo en un componente puro, y ninguna pregunta de la Home la pide |
-| Tabla de siete letras `L M X J V S D` en el catálogo | D3: catorce entradas a mano en dos idiomas, y la `X` solo existe en español, para sustituir una llamada de una línea |
-| `weekday: 'narrow'` | D3: ambiguo en los dos idiomas y el eje no es lunes-a-domingo, así que la posición no desambigua |
-| Día `missing` con borde discontinuo | Android renderiza mal `borderStyle: 'dashed'` sobre esquina redondeada; sería un fallo que solo aparece en el smoke |
+| Importar `react-native-chart-kit` por la raíz (v1) | `Dataset.data: number[]` sin `null`: un día sin dato entraría como 0 y la gráfica mentiría. R1 lo prohíbe con candado |
+| Deep import a `react-native-chart-kit/dist/v2/core/...` para reusar `calculateAutoPadding` | El `exports` del paquete solo publica `.`, `./v2` y `./package.json`: el import ni resuelve ni es legal |
+| `victory-native` | Peer `@shopify/react-native-skia`: módulo nativo, obliga a reconstruir el dev build de Android en cada máquina |
+| `react-native-gifted-charts` | Peers `expo-linear-gradient` y `react-native-linear-gradient`: reabriría el veto nominal de #46, ratificado en la enmienda A4 de #67 |
+| Seguir sin librería, con siete `View` | Era lo correcto para el alcance estrecho. Con eje Y, rejilla, tooltip y selección, escribir a mano la escala de banda y los ticks es más código y más frágil que pinear una versión |
+| Usar el tooltip de fábrica de la librería | Su texto se compone dentro y su estilo va por su propio bloque de config: dos sistemas de estilo y copy fuera del catálogo (D3) |
+| Usar `getBarChartAccessibilitySummary` | Inglés fijo, contra la carta §Dirección de arte 6 (C3) |
+| Anunciar las columnas desde dentro del gráfico | Imposible: su raíz es `accessible` y colapsa el subárbol (D5) |
+| Dejar la fila de columnas sin alinear | El desvío sería el canalón entero del eje Y (~40 px), más de media columna |
+| Alinear leyendo la geometría en `renderBar` | Obliga a escribir estado durante el render y no da nada para los días sin barra |
+| Navegar a `/trips` | **No existe** (C2) |
+| Añadir un día a `getDayRoute` para navegar al mapa de un día pasado | Es una llamada nueva a la API: fuera de alcance por criterio de aceptación |
+| Ofrecer el enlace al mapa para cualquier día | Llevaría a los paseos de hoy: un enlace que miente |
+| `restMinutes` como cuarta métrica del selector | Sin `weekComparison`, su pestaña se quedaría sin tendencia (D2) |
+| Animar la tarjeta entera con `entering` en vez de las barras | El encargo pide que animen **las barras**; y una tarjeta que aparece de golpe compite con el hero de #67 |
+| Tres tendencias a la vez | La tarjeta habla de una métrica cada vez |
+| Tendencia en `success` / `danger` | D9: una semana menos activa no es un error y el rojo alarma |
 | Día `missing` con barra gris de altura fija | Una barra gris sigue siendo una barra: a distancia se lee como "poca actividad", que es justo la mentira que P4 quiere evitar |
-| Tendencia en `success` / `danger` | D4: una semana menos activa no es un error y el rojo alarma |
-| Tres tendencias (distancia, minutos, paseos) | La tarjeta habla de una métrica; tres flechas piden tres barras |
-| Gráfica dentro de `summary-card` | Es territorio de #69 y #68 no lo toca (D8) |
-| Gráfica entre el hero y `summary-card` | Cerraría el hueco donde #69 monta su tira (D8) |
-| Migrar la Home a `src/screens/home/` | D10: seis líneas no son "tocarla de fondo", y #67 la reescribió sin migrarla |
-| Animar el crecimiento de las barras al montar | No pedido, y compite con el hero recién estrenado. Va al backlog de `progress/audit_animations_mobile.md` |
+| Día `missing` con borde discontinuo | Android renderiza mal `borderStyle: 'dashed'` sobre esquina redondeada: fallo que solo aparece en el smoke |
+| `weekday: 'narrow'` para el eje | Ambiguo en los dos idiomas (`M J V S D L M` en español, `S M T W T F S` en inglés) y el eje no es lunes-a-domingo, así que la posición no desambigua |
+| Tabla de siete letras `L M X J V S D` del Make | Catorce entradas a mano en dos idiomas, y la `X` solo existe en español, para sustituir una llamada de una línea |
+| La gráfica en `src/components/` | Una sola pantalla, y la convención de #39 manda los sub-componentes privados a `src/screens/<x>/` (D10) |
+| No migrar la Home | El humano lo pidió, y con este alcance ya es "tocarla de fondo" según la propia convención |
+| Traducir los cinco enum crudos de una vez | La enmienda E1 se mantiene estrecha a propósito: `connectivity` es el que la carta señala como jerga del proveedor, y los otros cuatro no bloquean nada |
+| Un `Record` exhaustivo de valores de `connectivity` | El tipo es `string`, no una unión: inventar `'LTE' \| '3G' \| …` sería construir sobre una premisa que el árbol no sostiene |
+| Reutilizar `home.online` para la etiqueta de emparejado | Cruza ámbitos del catálogo; `deviceConnectivity.*` deja el mapa listo para que #73 lo consuma |
 
 ---
 
@@ -508,9 +562,13 @@ dependencias nuevas.
 
 | Riesgo | Cierre |
 |---|---|
-| El desfase de zona horaria pasa desapercibido porque el runner del VPS está en UTC | El `it` de R4 fuerza `process.env.TZ` a offset negativo; verificado en Node 20 que el cambio en caliente sí surte efecto. Es además la mutación 2 de R10c |
-| Ramificar por `activeMinutes === null` en vez de por `source` pasa los tests | Mutación 3 de R10c, y R3 lo escribe como obligación explícita |
-| `Intl` con `weekday` no soportado en Hermes | Ya se usa en producción con opciones en `add-reminder/index.tsx:220`; el smoke en dev build lo confirma en las dos lenguas |
-| Se rompe el candado de copy de #65 al no registrar el fichero nuevo | R9 fija las seis filas y R10b los dos `toHaveLength` como **delta**, no como cifra |
-| Alguien "arregla" el `#62 R14` de 33 sin necesidad | R10b lo declara **sin cambio** y explica por qué (cápsulas + `Card`) |
+| La suite no arranca porque el paquete es ESM y `jest-expo` no lo transforma | R1 obliga a añadir `react-native-chart-kit` y `paths-js` a `transformIgnorePatterns`, con test que lo lee del `package.json`. Es el primer rojo de [[tasks]] |
+| Una subida de versión mueve las constantes de layout y descoloca la fila de columnas | R1b pinea `7.0.4` exacta y falla si cambia; D6 enumera las cinco constantes acopladas para que re-derivarlas sea mecánico |
+| El desfase de zona horaria pasa desapercibido porque el runner del VPS está en UTC | El `it` de R4 fuerza `process.env.TZ` a offset negativo; es la mutación 2 de R20b |
+| Ramificar por `valor === null` en vez de por `source` pasa los tests | Mutación 3 de R20b, y R5 lo escribe como obligación explícita |
+| El anuncio por columna se "resuelve" poniendo el `accessibilityLabel` en el gráfico | D5 lo declara imposible con la línea del fuente que lo demuestra; R9 exige siete y prohíbe el del contenedor |
+| Reanimated sobre nodos SVG se comporta distinto en el runner que en dispositivo | El contrato del test es la rama de `reduced motion` (determinista) más los argumentos de `withDelay`/`withTiming`; el movimiento real lo verifica el smoke en dev build |
+| La migración de la Home mueve candados y alguien "arregla" un total | R19 separa **reubicación de ruta** (cifra intacta) de **delta real**, y ordena parar y reportar si un total se mueve por otra causa |
+| Se rompe el candado de copy de #65 al no registrar los ficheros nuevos | R17 fija las dieciséis claves y R19 los tres `toHaveLength` como **delta** |
+| El smoke ve barras de color distinto al Make | Consecuencia asumida y ya declarada de #61: en tema claro la barra es `#107148`, no el `#2AB87C` del Make. Es esperado, no un defecto |
 | Aparece un dato que exige una llamada nueva a la API | [[requirements]] §Fuera de alcance: **la feature se para y se reporta**. No se añade la llamada |
