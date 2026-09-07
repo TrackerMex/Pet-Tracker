@@ -1,9 +1,17 @@
-import { cleanup, render, screen } from '@testing-library/react-native';
+import {
+  cleanup,
+  render,
+  screen,
+  within,
+} from '@testing-library/react-native';
 import { blobatar } from 'blobatar';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
+import { Text } from 'react-native';
+import { Uniwind } from 'uniwind';
 
 import type { PetProfile } from '../../api/types';
+import { useThemeColors } from '../../theme/use-theme-colors';
 import {
   PET_HERO_FADE_HEIGHT,
   PET_HERO_MEDIA_HEIGHT,
@@ -60,6 +68,38 @@ function makePet(overrides: Partial<PetProfile> = {}): PetProfile {
     updatedAt: '2026-08-21T00:00:00.000Z',
     ...overrides,
   };
+}
+
+/** Bloque de un `@variant` de global.css, con emparejado de llaves. */
+function extractVariant(name: 'light' | 'dark'): string {
+  const globalCss = readFileSync(
+    join(SOURCE_ROOT, 'theme', 'global.css'),
+    'utf8',
+  );
+  const marker = `@variant ${name} {`;
+  const start = globalCss.indexOf(marker);
+  const bodyStart = start + marker.length;
+  let depth = 1;
+
+  for (let index = bodyStart; index < globalCss.length; index += 1) {
+    if (globalCss[index] === '{') depth += 1;
+    if (globalCss[index] === '}') depth -= 1;
+    if (depth === 0) return globalCss.slice(bodyStart, index);
+  }
+
+  return '';
+}
+
+function backgroundToken(variant: 'light' | 'dark'): string {
+  return (
+    extractVariant(variant).match(/--background:\s*([^;]+);/)?.[1].trim() ?? ''
+  );
+}
+
+function BackgroundProbe() {
+  const [background] = useThemeColors(['background']);
+
+  return <Text testID="background-probe">{background}</Text>;
 }
 
 function HeroWrapper({ children }: { children: ReactNode }) {
@@ -142,5 +182,100 @@ describe('R2: el hero pinta foto a sangre o blobatar', () => {
     const media = screen.getByTestId('pet-hero-media');
 
     expect(media.props.height).toBe(PET_HERO_MEDIA_HEIGHT);
+  });
+});
+
+describe('R3: el texto del hero va sobre fondo opaco', () => {
+  afterEach(() => cleanup());
+
+  it('la banda inferior declara bg-background sin opacidad', async () => {
+    await renderHero(<PetHeroHeader pet={makePet()} variant="bleed" />);
+
+    const caption = screen.getByTestId('pet-hero-caption').props.className;
+
+    expect(caption).toContain('bg-background');
+    expect(caption).not.toMatch(/bg-background\/\d/);
+  });
+
+  it('la banda del slot declara bg-background sin opacidad', async () => {
+    await renderHero(
+      <PetHeroHeader pet={makePet()} variant="bleed">
+        <Text testID="slot-child">selector</Text>
+      </PetHeroHeader>,
+    );
+
+    const slot = screen.getByTestId('pet-hero-slot').props.className;
+
+    expect(slot).toContain('bg-background');
+    expect(slot).not.toMatch(/bg-background\/\d/);
+    expect(screen.getByTestId('slot-child')).toBeVisible();
+  });
+
+  it('funde la imagen hacia el fondo opaco por arriba y por abajo', async () => {
+    await renderHero(
+      <PetHeroHeader pet={makePet()} variant="bleed">
+        <Text testID="slot-child">selector</Text>
+      </PetHeroHeader>,
+    );
+
+    const bottom = screen.getByTestId('pet-hero-fade-bottom').props.style;
+    const top = screen.getByTestId('pet-hero-fade-top').props.style;
+
+    expect(bottom.experimental_backgroundImage).toMatch(
+      /^linear-gradient\(to bottom, #[0-9A-Fa-f]{6}00 0%, #[0-9A-Fa-f]{6} 100%\)$/,
+    );
+    expect(top.experimental_backgroundImage).toMatch(
+      /^linear-gradient\(to bottom, #[0-9A-Fa-f]{6} 0%, #[0-9A-Fa-f]{6}00 100%\)$/,
+    );
+    expect(bottom.height).toBe(PET_HERO_FADE_HEIGHT);
+    expect(top.height).toBe(PET_HERO_FADE_HEIGHT);
+  });
+
+  it('usa el nombre prefijado de la propiedad, que es el único que existe en RN 0.86', () => {
+    const source = readSource('components', 'pet-hero-header.tsx');
+
+    expect(source).toContain('experimental_backgroundImage');
+    expect(source).not.toMatch(/(?<!experimental_)backgroundImage/);
+  });
+
+  // Candado de forma del token: la parada transparente del degradado se
+  // concatena como `${background}00`, así que el token debe seguir siendo un
+  // hex de 6 dígitos en los dos temas o la cadena deja de ser válida.
+  it.each(['light', 'dark'] as const)(
+    'resuelve el token background como hex de 6 dígitos en tema %s',
+    async (variant) => {
+      const token = backgroundToken(variant);
+
+      expect(token).toMatch(/^#[0-9A-Fa-f]{6}$/);
+
+      const spy = jest
+        .spyOn(Uniwind, 'getCSSVariable')
+        .mockImplementation((name: string) =>
+          name === '--color-background' || name === '--background'
+            ? token
+            : undefined,
+        );
+      const view = await render(<BackgroundProbe />);
+
+      expect(view.getByTestId('background-probe').props.children).toMatch(
+        /^#[0-9A-Fa-f]{6}$/,
+      );
+      spy.mockRestore();
+    },
+  );
+
+  it('no renderiza texto sobre la capa de medios', async () => {
+    const pet = makePet({ photoUrl: 'http://example.test/luna.jpg' });
+
+    await renderHero(<PetHeroHeader pet={pet} variant="bleed" />);
+
+    expect(
+      within(screen.getByTestId('pet-hero-media')).queryAllByText(/\S/),
+    ).toEqual([]);
+    expect(
+      within(screen.getByTestId('pet-hero-caption')).getByTestId(
+        'pet-hero-name',
+      ),
+    ).toBeVisible();
   });
 });
