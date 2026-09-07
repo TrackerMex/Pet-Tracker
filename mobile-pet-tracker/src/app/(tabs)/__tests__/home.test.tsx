@@ -940,3 +940,63 @@ describe('R8: el error del detalle deja el selector alcanzable', () => {
     );
   });
 });
+
+describe('R7: el hero pinta los paseos de hoy', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    const pet = makePet();
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+  });
+
+  it('pinta el recuento del día y su etiqueta traducida', async () => {
+    mockGetDailyActivity.mockResolvedValue({
+      kind: 'ok',
+      days: [makeDay({ walkCount: 9 }), makeDay({ walkCount: 3 })],
+      weekComparison: { distanceM: 5, activeMinutes: 10, walkCount: 20 },
+    });
+
+    await renderHome();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('pet-hero-highlight-value')).toHaveTextContent(
+        '3',
+      ),
+    );
+    expect(screen.getByTestId('pet-hero-highlight-label')).toHaveTextContent(
+      'Paseos',
+    );
+  });
+
+  it('pinta un guion largo cuando no hay recuento', async () => {
+    mockGetDailyActivity.mockResolvedValue({
+      kind: 'ok',
+      days: [makeDay({ walkCount: null })],
+      weekComparison: { distanceM: null, activeMinutes: null, walkCount: null },
+    });
+
+    await renderHome();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('pet-hero-highlight-value')).toHaveTextContent(
+        '—',
+      ),
+    );
+  });
+
+  it('no pinta dato destacado mientras la actividad no ha resuelto', async () => {
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+
+    await renderHome();
+
+    await waitFor(() => expect(screen.getByTestId('pet-hero')).toBeVisible());
+    expect(screen.queryByTestId('pet-hero-highlight-value')).toBeNull();
+  });
+});
