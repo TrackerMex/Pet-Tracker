@@ -16,8 +16,8 @@ queda verde, nunca al final.
 | R1 | `src/components/__tests__/pet-hero-header.test.tsx`::`R1: PetHeroHeader es el único hero compartido` | rojo `4c3f958` → verde `c467df7` |
 | R2 | `src/components/__tests__/pet-avatar.test.tsx`::`R2: PetAvatar acepta tamaño rectangular, cacheKey y degrada al fallar la foto` **y** `src/components/__tests__/pet-hero-header.test.tsx`::`R2: el hero pinta foto a sangre o blobatar` | rojo `4985341` → verde `dafce41` |
 | R2b | `src/components/__tests__/pet-avatar.test.tsx`::`R2: PetAvatar acepta tamaño rectangular, cacheKey y degrada al fallar la foto` → `it('vuelve al blobatar cuando la foto no carga')` | rojo `4985341` → verde `dafce41` |
-| R3 | `src/components/__tests__/pet-hero-header.test.tsx`::`R3: el texto del hero va sobre fondo opaco` (4 `it`: banda inferior opaca, slot opaco, forma de las dos cadenas de degradado, forma hex del token `background` en los dos temas) | pendiente |
-| R3b | mismo `describe` que R3 → `it('no renderiza texto sobre la capa de medios')`: `pet-hero-media` no tiene descendientes `Text` | pendiente |
+| R3 | `src/components/__tests__/pet-hero-header.test.tsx`::`R3: el texto del hero va sobre fondo opaco` (4 `it`: banda inferior opaca, slot opaco, forma de las dos cadenas de degradado, forma hex del token `background` en los dos temas) | rojo `559b5e0` → verde `2dd81ed` |
+| R3b | mismo `describe` que R3 → `it('no renderiza texto sobre la capa de medios')`: `pet-hero-media` no tiene descendientes `Text` | rojo `559b5e0` → verde `2dd81ed` |
 | R4 | `src/components/__tests__/pet-hero-header.test.tsx`::`R4: el slot superior respeta la safe area` | pendiente |
 | R5 | `src/app/(tabs)/__tests__/home.test.tsx`::`R5: Home usa el hero compartido` | pendiente |
 | R5b | mismo `describe` que R5 → `it('conserva gap y paddingBottom y saca el padding horizontal a un envoltorio')` | pendiente |
