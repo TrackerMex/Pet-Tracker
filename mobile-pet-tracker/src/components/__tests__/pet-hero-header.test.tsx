@@ -3,7 +3,11 @@ import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
 
 import type { PetProfile } from '../../api/types';
-import { PetHeroHeader } from '../pet-hero-header';
+import {
+  PET_HERO_FADE_HEIGHT,
+  PET_HERO_MEDIA_HEIGHT,
+  PetHeroHeader,
+} from '../pet-hero-header';
 
 declare function require(moduleName: 'fs'): {
   readFileSync: (path: string, encoding: 'utf8') => string;
@@ -88,11 +92,9 @@ describe('R1: PetHeroHeader es el único hero compartido', () => {
     );
   });
 
-  it('exporta las dos constantes de dimensión del hero', async () => {
-    const hero = await import('../pet-hero-header');
-
-    expect(hero.PET_HERO_MEDIA_HEIGHT).toBe(260);
-    expect(hero.PET_HERO_FADE_HEIGHT).toBe(64);
+  it('exporta las dos constantes de dimensión del hero', () => {
+    expect(PET_HERO_MEDIA_HEIGHT).toBe(260);
+    expect(PET_HERO_FADE_HEIGHT).toBe(64);
   });
 
   it('no importa el selector de mascota ni la capa de API', () => {
