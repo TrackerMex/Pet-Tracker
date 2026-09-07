@@ -145,6 +145,29 @@ jest.mock('../../theme/use-theme-colors', () => ({
     mockTokens.map((token) => `resolved-${token}`),
 }));
 
+jest.mock('reicon-react-native', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>(
+    'react-native',
+  );
+  const mockIcon = (testID: string) =>
+    function MockIcon({
+      color,
+      ...mockProps
+    }: Record<string, unknown> & { color?: string }) {
+      return React.createElement(View, {
+        ...mockProps,
+        testID,
+        style: { color },
+      });
+    };
+
+  return {
+    TrendUp: mockIcon('weekly-activity-trend-up'),
+    TrendDown: mockIcon('weekly-activity-trend-down'),
+  };
+});
+
 jest.mock('react-native-svg', () => {
   const React = jest.requireActual<typeof import('react')>('react');
   const actual = jest.requireActual<typeof import('react-native-svg')>(
@@ -747,5 +770,86 @@ describe('R10: las barras entran animadas y respetan reduced motion', () => {
 
     expect(source).toContain('Animated.createAnimatedComponent(Rect)');
     expect(source).toContain('useAnimatedProps');
+  });
+});
+
+describe('R12: la tendencia sigue a la métrica y se calla sin base', () => {
+  it('muestra el alza localizada con TrendUp', async () => {
+    const result = await renderChart([makeDay()], {
+      ...NO_COMPARISON,
+      activeMinutes: 12.5,
+    });
+
+    expect(result.getByTestId('weekly-activity-trend')).toHaveTextContent(
+      '+12,5 % frente a la semana previa',
+    );
+    expect(result.getByTestId('weekly-activity-trend-up')).toBeOnTheScreen();
+    expect(result.queryByTestId('weekly-activity-trend-down')).toBeNull();
+  });
+
+  it('muestra la bajada localizada con TrendDown', async () => {
+    const result = await renderChart([makeDay()], {
+      ...NO_COMPARISON,
+      activeMinutes: -8.3,
+    });
+
+    expect(result.getByTestId('weekly-activity-trend')).toHaveTextContent(
+      '-8,3 % frente a la semana previa',
+    );
+    expect(result.getByTestId('weekly-activity-trend-down')).toBeOnTheScreen();
+    expect(result.queryByTestId('weekly-activity-trend-up')).toBeNull();
+  });
+
+  it('mantiene la fila sin icono cuando el delta es cero', async () => {
+    const result = await renderChart([makeDay()], {
+      ...NO_COMPARISON,
+      activeMinutes: 0,
+    });
+
+    expect(result.getByTestId('weekly-activity-trend')).toBeOnTheScreen();
+    expect(result.queryByTestId('weekly-activity-trend-up')).toBeNull();
+    expect(result.queryByTestId('weekly-activity-trend-down')).toBeNull();
+  });
+
+  it('no reserva una fila cuando no existe comparación', async () => {
+    const result = await renderChart([makeDay()], NO_COMPARISON);
+
+    expect(result.queryByTestId('weekly-activity-trend')).toBeNull();
+  });
+
+  it('cambia la tendencia al delta de la métrica seleccionada', async () => {
+    const result = await renderChart([makeDay()], {
+      activeMinutes: 12.5,
+      distanceM: -8.3,
+      walkCount: 0,
+    });
+
+    await act(() =>
+      result.getByTestId('weekly-activity-metric').props.onChange({
+        nativeEvent: { selectedSegmentIndex: 1, value: 'Distancia recorrida' },
+      }),
+    );
+
+    expect(result.getByTestId('weekly-activity-trend')).toHaveTextContent(
+      '-8,3 % frente a la semana previa',
+    );
+    expect(result.getByTestId('weekly-activity-trend-down')).toBeOnTheScreen();
+  });
+
+  it('usa cifras tabulares y color neutro, nunca semántico', async () => {
+    const result = await renderChart([makeDay()], {
+      ...NO_COMPARISON,
+      activeMinutes: 12.5,
+    });
+    const trend = result.getByTestId('weekly-activity-trend');
+    const trendText = result.getByTestId('weekly-activity-trend-label');
+
+    expect(trendText.props.style).toEqual(TABULAR_NUMS);
+    expect(trend.props.className).toContain('text-muted');
+    expect(trend.props.className).not.toContain('text-success');
+    expect(trend.props.className).not.toContain('text-danger');
+    expect(result.getByTestId('weekly-activity-trend-up').props.style).toEqual(
+      expect.objectContaining({ color: 'resolved-muted' }),
+    );
   });
 });
