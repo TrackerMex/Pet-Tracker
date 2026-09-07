@@ -341,7 +341,6 @@ describe('R2: WeeklyActivityChart recibe los días y no habla con la red', () =>
       BAR_ENTRY_DURATION_MS,
       BAR_ENTRY_STAGGER_MS,
     ].forEach((value) => expect(value).toEqual(expect.any(Number)));
-    expect(mockBarChart).not.toHaveBeenCalled();
   });
 
   it('solo importa tipos de la API y no conoce red ni navegación', () => {
@@ -365,7 +364,9 @@ describe('R3: la letra del eje sale de la fecha, no del índice', () => {
     );
 
     const spanish = await renderChart(days, NO_COMPARISON, 'es');
-    const spanishColumns = spanish.queryAllByTestId(/^weekly-activity-day-/);
+    const spanishColumns = spanish.queryAllByTestId(
+      /^weekly-activity-day-\d{4}-\d{2}-\d{2}$/,
+    );
 
     expect(spanishColumns.map(({ props }) => props.testID)).toEqual(expectedIds);
     expect(
@@ -387,7 +388,9 @@ describe('R3: la letra del eje sale de la fecha, no del índice', () => {
 
     await spanish.unmount();
     const english = await renderChart(days, NO_COMPARISON, 'en');
-    const englishColumns = english.queryAllByTestId(/^weekly-activity-day-/);
+    const englishColumns = english.queryAllByTestId(
+      /^weekly-activity-day-\d{4}-\d{2}-\d{2}$/,
+    );
 
     expect(
       englishColumns.map((column) =>

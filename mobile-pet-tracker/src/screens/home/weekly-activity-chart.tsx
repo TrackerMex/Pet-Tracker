@@ -1,8 +1,10 @@
 import type { JSX } from 'react';
+import { Pressable, Text, View } from 'react-native';
 import { BarChart } from 'react-native-chart-kit/v2';
 
 import type { DayEntry, WeekComparison } from '../../api/types';
 import { Card } from '../../components/card';
+import { useLocale } from '../../providers/language-provider';
 
 // react-native-chart-kit 7.0.4 geometry contract (re-derive on upgrade):
 // base padding: 18, 14, 12, 10; label gap: 8; text width factor: 0.56;
@@ -35,15 +37,55 @@ export function weekdayLabel(
   locale: string,
   style: 'short' | 'long',
 ): string {
-  void locale;
-  void style;
-  return date;
+  return new Date(date).toLocaleDateString(locale, { weekday: style });
 }
 
 export function WeeklyActivityChart(
-  props: WeeklyActivityChartProps,
+  { days, weekComparison }: WeeklyActivityChartProps,
 ): JSX.Element {
-  void BarChart;
-  void props;
-  return <Card testID="weekly-activity-card" />;
+  const locale = useLocale();
+  const chartData = days.map((day) => ({
+    date: day.date,
+    value: day.activeMinutes,
+  }));
+
+  void weekComparison;
+
+  return (
+    <Card testID="weekly-activity-card" className="gap-2">
+      <BarChart
+        data={chartData}
+        xKey="date"
+        yKey="value"
+        width={295}
+        height={CHART_PAD_TOP + CHART_PLOT_HEIGHT + CHART_PAD_BOTTOM}
+        showXAxisLabels={false}
+        testID="weekly-activity-bar-chart"
+      />
+      <View
+        testID="weekly-activity-day-row"
+        className="flex-row"
+        style={{
+          paddingLeft: CHART_PAD_LEFT,
+          paddingRight: CHART_PAD_RIGHT,
+        }}
+      >
+        {days.map((day) => (
+          <Pressable
+            key={day.date}
+            testID={`weekly-activity-day-${day.date}`}
+            className="min-h-11 flex-1 items-center justify-end"
+            onPress={() => undefined}
+          >
+            <Text
+              testID="weekly-activity-day-label"
+              className="text-xs text-muted"
+            >
+              {weekdayLabel(day.date, locale, 'short')}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+    </Card>
+  );
 }
