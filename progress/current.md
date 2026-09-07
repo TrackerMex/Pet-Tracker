@@ -18,6 +18,7 @@
 
 ## #68 mobile-home-weekly-activity — sesion UI (desde 2026-09-07)
 
+- **Implementacion iniciada por Codex CLI a las 21:27 UTC.** Rama y arbol limpios confirmados; `.expo/types/router.d.ts` no existia; no habia otro `init.sh`; baseline `./init.sh` exit 0 (build, 163 suites backend, 65 suites moviles, 25 suites e2e, lint y typecheck). Leidas completas la spec aprobada, la carta, convenciones, arquitectura y checkpoints. Consultada documentacion oficial fijada a Expo 57 para `@expo/ui/community/segmented-control`, Reanimated, SVG y Router. Orden activo: R1 -> R1b -> R15 -> resto de `tasks.md`, con commits rojo/verde separados y trazabilidad incremental.
 - **Branch**: `feature/68-mobile-home-weekly-activity`, creada sobre main en `4a5f6dd`. Worktree principal `/home/claude/sites/Pet-Tracker`.
 - **Spec APROBADA el 2026-09-07.** El humano firmo en `3812900` las **dos** casillas -la spec y la enmienda E1- en su propio commit sobre la branch: un fichero, dos lineas, sin codigo colado. El leader paso el frontmatter de los cuatro ficheros a `approved` y #68 a `in_progress`.
 - **Handoff a Codex CLI escrito**: `progress/handoff_mobile-home-weekly-activity.md`. El humano lo corre en su terminal. Mientras Codex trabaja el leader **no toca `mobile-pet-tracker/`**: solo `docs/`, `specs/`, `progress/` y `feature_list.json`.
