@@ -28,6 +28,7 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-native": "0.86.2",
+    "react-native-chart-kit": "7.0.4",
     "react-native-gesture-handler": "~2.32.0",
     "react-native-nitro-modules": "0.37.0",
     "react-native-nitro-theme-transition": "1.0.0",
@@ -65,7 +66,7 @@
   "jest": {
     "preset": "jest-expo",
     "transformIgnorePatterns": [
-      "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|native-base|react-native-svg|uniwind|heroui-native|reicon-react-native|tailwind-variants|tailwind-merge|@gorhom/bottom-sheet|blobatar|react-native-nitro-theme-transition|react-native-nitro-modules)"
+      "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|native-base|react-native-svg|react-native-chart-kit|paths-js|uniwind|heroui-native|reicon-react-native|tailwind-variants|tailwind-merge|@gorhom/bottom-sheet|blobatar|react-native-nitro-theme-transition|react-native-nitro-modules)"
     ],
     "moduleNameMapper": {
       "\\.css$": "<rootDir>/test/css-stub.js",
