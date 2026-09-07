@@ -35,6 +35,8 @@ import { useThemeColors } from '../../theme/use-theme-colors';
 import { fmtCount, fmtKm, fmtMinutes } from './format';
 import { WeeklyActivityChart } from './weekly-activity-chart';
 
+const WEEKLY_ACTIVITY_SKELETON_HEIGHT = 408;
+
 function isPetsError(state: PetsState): boolean {
   return ['error', 'unreachable', 'missing-config'].includes(state.kind);
 }
@@ -347,6 +349,14 @@ export function HomeScreen() {
               </View>
             ) : null}
           </Card>
+        ) : null}
+
+        {selectedPetId && activity.data === undefined ? (
+          <Skeleton
+            testID="weekly-activity-skeleton"
+            className="w-full rounded-card"
+            style={{ height: WEEKLY_ACTIVITY_SKELETON_HEIGHT }}
+          />
         ) : null}
 
         {activity.data?.kind === 'ok' ? (
