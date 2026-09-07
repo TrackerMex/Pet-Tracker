@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-09-06
-**Features completadas**: 62/72 (`feature_list.json`)
+**Última actualización**: 2026-09-07
+**Features completadas**: 63/72 (`feature_list.json`)
 **En progreso**: ninguna
 
-**Pendientes**: 10 (#18, #41, #60, #63, #67-#72). El rediseño contra el diseño del Make abrió el bloque #64-#71: #64 `mobile-pastel-category-palette` y #65 `mobile-ui-language` están cerradas; #66 `pets-list-response-enrichment` está cerrada (reviewer aprobado 2026-09-06, PR pendiente de merge por el humano) y desbloquea la cabecera y las fotos de #67. #72 registra un flake de un test de `add-pet` sin causa confirmada. PR #110 (#65) pendiente de merge por el humano.
+**Pendientes**: 9 (#18, #41, #60, #63, #68-#72). El rediseño contra el diseño del Make abrió el bloque #64-#71: #64 `mobile-pastel-category-palette`, #65 `mobile-ui-language` y #66 `pets-list-response-enrichment` están cerradas y mergeadas (PR #106, #110 y #111). #67 `mobile-pet-hero-header` está cerrada con los dos gates humanos firmados; **PR #112 pendiente de merge por el humano**. Quedan del bloque #68 actividad semanal, #69 tira de estadísticas -ya desbloqueada por el hero-, #70 recordatorios y #71 accesos rápidos, ninguna especificada todavía. #72 registra un flake de un test de `add-pet` sin causa confirmada.
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
 desde 2026-08-10. Hay recursos vivos en la cuenta, aunque hoy sin coste.
@@ -86,6 +86,40 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Estado actual
+
+- **`mobile-pet-hero-header` (#67) done** (2026-09-07): Home y Profile abren con
+  una **cabecera fotográfica compartida**, `src/components/pet-hero-header.tsx`,
+  que sustituye a la pet-card de Home y al hero local de Profile. El componente
+  expone un **slot** superior: Home monta dentro el `pet-switcher` que ya
+  existía y Profile lo usa sin slot, así que la receta no se duplica. Sin foto
+  pinta el **blobatar** a sangre reusando `pet-avatar.tsx`. **Cuatro premisas
+  del encargo salieron falsas** y la spec las corrigió contra el árbol:
+  `backgroundImage` a secas no existe en RN 0.86.2 -solo
+  `experimental_backgroundImage`- y las clases de gradiente de Tailwind no
+  resuelven bajo uniwind, así que va por el prop `style` **sin dependencia
+  nueva**; el velo del Make deja el texto blanco en **1,98:1** sobre foto casi
+  blanca, así que el texto va sobre banda opaca (18,93:1 y 4,98:1 en claro,
+  17,81:1 y 7,45:1 en oscuro), **desviación declarada** al estilo de la de
+  `--accent` de #61; "pasos hoy" no existe en el contrato -cero ocurrencias de
+  `steps`, `activitySummary` siempre `null`- y el dato destacado pasa a
+  **paseos** (`walkCount`), que Home ya descargaba sin pintar; y Home lee
+  `photoUrl` del detalle, no del listado, así que lo que #66 desbloqueó en Home
+  fue el `pet-switcher`. **36 commits test-primero**, un `test(...)` rojo
+  nombrando el R-id antes de cada `feat(...)`. Suite móvil **975 en 65 suites**
+  contra las 932 en 63 del baseline `303fc19`; backend, infra y e2e sin cambio;
+  grep-clean intacto. Implementó el subagente `implementer` -Codex sin cuota-,
+  con la revisión cruzada más débil asumida por escrito. El reviewer replantó
+  las tres mutaciones de R9 y rechazó un candado muerto (O2): un `it` buscaba
+  la cadena `- [X] Enmienda #67`, inexistente en cualquier estado, y no podía
+  fallar nunca; se borró en `fd04356`. **R10 enmendó cinco documentos
+  aprobados** -las dos specs de `mobile-figma-polish`, la de
+  `mobile-pets-profile`, `docs/ui-guidelines.md` y `docs/conventions.md`-
+  revocando la restricción "sin gradientes ni headers hero" de #46 y corrigiendo
+  una premisa falsa que venía propagándose desde
+  `progress/explore_design-gap-vs-make.md:657-662`: que `pet-avatar` degradaba a
+  una inicial, cuando pinta `blobatar` desde la R5 de #40. Las cinco firmas del
+  humano están en `4449f31`, y el smoke en dev build de Android con foto y sin
+  foto en los dos temas quedó confirmado el 2026-09-07.
 
 - **`mobile-ui-language` (#65) done** (2026-09-06): la app habla **español por
   defecto**, con catálogo bilingüe de **259 claves** en `src/i18n/catalog.ts`,

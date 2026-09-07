@@ -98,6 +98,12 @@ Tres límites, no negociables:
    ScrollView mismo). Overlays absolutos usan `insets.top + 12`, jamás
    top fijo. `contentInsetAdjustmentBehavior="automatic"` NO sustituye el
    paddingTop (no-op en Android).
+   **Excepción nombrada, enmienda A9 de #67**: si el primer hijo del scroll es
+   una **cabecera a sangre**, el `contentContainerStyle` conserva `gap` y
+   `paddingBottom`, el padding horizontal de 24 baja a un envoltorio interior,
+   y el `paddingTop: insets.top + 12` lo asume la cabecera vía su slot. Las
+   ramas de estado sin cabecera llevan su propio envoltorio con ese
+   `paddingTop`.
 7. **Estados de carga**: Skeleton de heroui dimensionado como el contenido
    final. Prohibido Spinner suelto que salte el layout.
 8. **Estructura**: route delgado en `src/app/` + pantalla en `src/screens/`
@@ -213,11 +219,21 @@ se escriben esos nombres de clase. El color nunca es el único portador de la
 categoría: la superficie siempre acompaña a un emoji y a un texto.
 
 **2. Fotografía y su respaldo.** Las cabeceras fotográficas asumen que la
-mascota tiene foto. Cuando no la tiene, el respaldo es **degradado con la
-inicial** —el patrón que ya usa `pet-avatar`—, decidido por el humano el
-2026-09-04. Ni ilustración por especie ni foto obligatoria en el alta. Y sea
-cual sea la imagen, **el texto que va encima pasa AA**: eso lo garantiza el
-degradado de la cabecera, no la suerte de la foto.
+mascota tiene foto. Cuando no la tiene, el respaldo es el **blobatar**
+determinista de la mascota, que es lo que `pet-avatar` pinta de verdad. Ni
+ilustración por especie ni foto obligatoria en el alta. Y sea cual sea la
+imagen, **el texto que va encima pasa AA**.
+
+> **Enmendado por #67 (A8) — corrección de un hecho falso.** Hasta el
+> 2026-09-06 este punto decía *"el respaldo es degradado con la inicial —el
+> patrón que ya usa `pet-avatar`—, decidido por el humano el 2026-09-04"*.
+> Era falso de origen: `src/components/pet-avatar.tsx` pinta `blobatar(name)`
+> con `SvgXml` y nunca una inicial, y la R5 aprobada de #40 (2026-08-21)
+> sustituyó explícitamente el fallback de inicial por el blobatar. El error
+> venía de `progress/explore_design-gap-vs-make.md` y se propagó también al
+> enunciado de #67 en `feature_list.json`. Y la garantía de AA no la da el
+> degradado: la da la **banda opaca** bajo el texto (#67 R3), porque ningún
+> velo sobre una foto arbitraria llega a 4,5:1.
 
 **3. Las siete preguntas de la Home.** El brief fija qué debe responder la
 pantalla principal: ¿está segura?, ¿dónde está?, ¿el collar está conectado?,
@@ -275,3 +291,16 @@ primero), proximidad (relacionado más cerca), repetición (esquinas/sombras/
 acentos iguales = tokens), alineación (bordes comparten ejes). Si una
 pantalla falla el mismo check dos veces, el fix va al theme o a un
 componente — no a la pantalla.
+
+## Enmienda #67 — cabecera fotográfica compartida
+
+`mobile-pet-hero-header` (#67) modifica una decisión que esta spec dejó
+aprobada. La spec de origen es `specs/mobile-pet-hero-header/`; el detalle de
+la enmienda está en su `requirements.md` §R10.
+
+- Spec enmendada: `docs/ui-guidelines.md`
+- Qué cambia: `enmiendas A8 y A9 de la tabla de #67 §R10`
+- Qué NO cambia: ningún otro requisito de esta spec, ni su estado de
+  aprobación, ni los tests que ya la cubren.
+
+- [X] Enmienda aprobada por humano

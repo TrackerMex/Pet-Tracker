@@ -16,7 +16,7 @@ import {
 import { getDailyActivity } from '../../api/activity';
 import { getPet, listPets, type PetsState } from '../../api/pets';
 import { Card } from '../../components/card';
-import { PetAvatar } from '../../components/pet-avatar';
+import { PetHeroHeader } from '../../components/pet-hero-header';
 import { PetSwitcher } from '../../components/pet-switcher';
 import { useApi } from '../../hooks/use-api';
 import { usePetSelection } from '../../hooks/use-pet-selection';
@@ -44,6 +44,10 @@ function fmtMinutes(minutes: number | null): string {
 
 function fmtKm(meters: number | null): string {
   return meters === null ? '—' : `${(meters / 1000).toFixed(1)} km`;
+}
+
+function fmtCount(count: number | null): string {
+  return count === null ? '—' : String(count);
 }
 
 function fmtLastSeen(
@@ -97,6 +101,8 @@ export default function HomeScreen() {
     activity.data?.kind === 'ok'
       ? activity.data.days[activity.data.days.length - 1]
       : undefined;
+  const petList = pets.data?.kind === 'ok' ? pets.data.pets : [];
+  const hasPets = petList.length > 0;
 
   useFocusEffect(
     useCallback(() => {
@@ -111,254 +117,257 @@ export default function HomeScreen() {
       className="flex-1 bg-background"
       contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={{
-        padding: 24,
         gap: 16,
-        paddingTop: insets.top + 12,
         paddingBottom: insets.bottom + 96,
       }}
     >
-      <Text className="text-2xl font-black text-foreground">
-        {t('home.home')}
-      </Text>
-
-      {pets.data === undefined ? (
-        <Skeleton testID="home-loading" className="h-12 w-full rounded-card" />
+      {/*
+        El hero va a sangre, así que el `padding: 24` y el
+        `paddingTop: insets.top + 12` de §Dimensiones bajan a envoltorios de
+        dentro (excepción A9). El paddingTop lo asume el slot del hero.
+      */}
+      {hasPets ? (
+        <PetHeroHeader
+          pet={detail.data?.kind === 'ok' ? detail.data.pet : null}
+          variant="bleed"
+          highlight={
+            today
+              ? { value: fmtCount(today.walkCount), label: t('home.walks') }
+              : undefined
+          }
+        >
+          <PetSwitcher
+            pets={petList}
+            selectedPetId={selectedPetId}
+            onSelect={selectPet}
+          />
+        </PetHeroHeader>
       ) : null}
 
-      {pets.data && isPetsError(pets.data) ? (
-        <View className="items-start gap-3">
-          <Text testID="home-error" className="text-danger">
-            {t('common.somethingWentWrong')}
+      {hasPets ? null : (
+        <View
+          testID="home-states"
+          style={{
+            paddingHorizontal: 24,
+            paddingTop: insets.top + 12,
+            gap: 16,
+          }}
+        >
+          <Text className="text-2xl font-black text-foreground">
+            {t('home.home')}
           </Text>
-          <Button testID="home-retry" onPress={pets.refetch}>
-            {t('common.retry')}
-          </Button>
+
+          {pets.data === undefined ? (
+            <Skeleton
+              testID="home-loading"
+              className="h-12 w-full rounded-card"
+            />
+          ) : null}
+
+          {pets.data && isPetsError(pets.data) ? (
+            <View className="items-start gap-3">
+              <Text testID="home-error" className="text-danger">
+                {t('common.somethingWentWrong')}
+              </Text>
+              <Button testID="home-retry" onPress={pets.refetch}>
+                {t('common.retry')}
+              </Button>
+            </View>
+          ) : null}
+
+          {pets.data?.kind === 'ok' && pets.data.pets.length === 0 ? (
+            <Text testID="home-empty" className="text-muted">
+              {t('common.noPetsYet')}
+            </Text>
+          ) : null}
         </View>
-      ) : null}
+      )}
 
-      {pets.data?.kind === 'ok' && pets.data.pets.length === 0 ? (
-        <Text testID="home-empty" className="text-muted">
-          {t('common.noPetsYet')}
-        </Text>
-      ) : null}
+      <View testID="home-content" style={{ paddingHorizontal: 24, gap: 16 }}>
+        {detail.data?.kind === 'error' || detail.data?.kind === 'unreachable' ? (
+          <HeroUICard testID="pet-hero-error" className="items-start gap-3 p-4">
+            <Text className="text-danger">
+              {t('common.somethingWentWrong')}
+            </Text>
+            <Button testID="pet-hero-retry" onPress={detail.refetch}>
+              {t('common.retry')}
+            </Button>
+          </HeroUICard>
+        ) : null}
 
-      {pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? (
-        <PetSwitcher
-          pets={pets.data.pets}
-          selectedPetId={selectedPetId}
-          onSelect={selectPet}
-        />
-      ) : null}
-
-      {selectedPetId && detail.data === undefined ? (
-        <Skeleton testID="pet-card-skeleton" className="h-32 w-full rounded-card" />
-      ) : null}
-
-      {detail.data?.kind === 'error' || detail.data?.kind === 'unreachable' ? (
-        <HeroUICard testID="pet-card-error" className="items-start gap-3 p-4">
-          <Text className="text-danger">
-            {t('common.somethingWentWrong')}
-          </Text>
-          <Button testID="pet-card-retry" onPress={detail.refetch}>
-            {t('common.retry')}
-          </Button>
-        </HeroUICard>
-      ) : null}
-
-      {detail.data?.kind === 'ok' ? (
-        <>
-          <Card testID="pet-card">
-            <View className="flex-row items-center gap-4">
-              <PetAvatar
-                name={detail.data.pet.name}
-                photoUrl={detail.data.pet.photoUrl}
-                size={72}
-                testID="pet-card-photo"
-              />
-              <View className="flex-1 gap-1">
+        {detail.data?.kind === 'ok' ? (
+          <>
+            <Card
+              testID="collar-card"
+              className="gap-3 bg-default"
+            >
+              <View className="flex-row items-center gap-3">
+                <View className="size-9 items-center justify-center rounded-full bg-accent-soft">
+                  {detail.data.pet.device === null ? (
+                    <Moon size={20} color={accent} />
+                  ) : detail.data.pet.device.connectivity === 'online' ? (
+                    <Wifi size={20} color={accent} />
+                  ) : (
+                    <WifiOff size={20} color={accent} />
+                  )}
+                </View>
                 <Text
-                  testID="pet-card-name"
-                  className="text-xl font-bold text-foreground"
+                  testID="collar-status"
+                  className="text-base font-bold text-foreground"
                 >
-                  {detail.data.pet.name}
-                </Text>
-                <Text testID="pet-card-breed" className="font-normal text-muted">
-                  {detail.data.pet.breed ?? '—'}
+                  {detail.data.pet.device === null
+                    ? t('home.free')
+                    : detail.data.pet.device.connectivity === 'online'
+                      ? t('home.online')
+                      : t('home.offline')}
                 </Text>
               </View>
-            </View>
-          </Card>
+              {detail.data.pet.device ? (
+                <View className="flex-row items-center gap-2">
+                  <Battery
+                    size={18}
+                    color={
+                      detail.data.pet.device.batteryPct === null
+                        ? muted
+                        : detail.data.pet.device.batteryPct > 60
+                          ? success
+                          : warning
+                    }
+                  />
+                  <Text
+                    testID="collar-battery"
+                    style={TABULAR_NUMS}
+                    className={
+                      detail.data.pet.device.batteryPct === null
+                        ? 'font-normal text-muted'
+                        : detail.data.pet.device.batteryPct > 60
+                          ? 'font-semibold text-success'
+                          : 'font-semibold text-warning-strong'
+                    }
+                  >
+                    {detail.data.pet.device.batteryPct === null
+                      ? '—'
+                      : `${detail.data.pet.device.batteryPct}%`}
+                  </Text>
+                </View>
+              ) : (
+                <Text className="font-normal text-muted">
+                  {t('home.noCollar')}
+                </Text>
+              )}
+              {detail.data.pet.device === null ? (
+                    <Pressable
+                      accessibilityRole="button"
+                      testID="collar-pair-link"
+                      className="min-h-11 items-center justify-center rounded-xl bg-accent-soft px-4"
+                      style={CONTINUOUS_CORNER}
+                      onPress={() => router.push('/pairing')}
+                >
+                  <Text className="font-bold text-foreground">
+                    {t('home.pairCollar')}
+                  </Text>
+                </Pressable>
+              ) : null}
+            </Card>
+          </>
+        ) : null}
 
-          <Card
-            testID="collar-card"
-            className="gap-3 bg-default"
-          >
-            <View className="flex-row items-center gap-3">
-              <View className="size-9 items-center justify-center rounded-full bg-accent-soft">
-                {detail.data.pet.device === null ? (
-                  <Moon size={20} color={accent} />
-                ) : detail.data.pet.device.connectivity === 'online' ? (
-                  <Wifi size={20} color={accent} />
-                ) : (
-                  <WifiOff size={20} color={accent} />
-                )}
-              </View>
-              <Text
-                testID="collar-status"
-                className="text-base font-bold text-foreground"
-              >
-                {detail.data.pet.device === null
-                  ? t('home.free')
-                  : detail.data.pet.device.connectivity === 'online'
-                    ? t('home.online')
-                    : t('home.offline')}
+        {selectedPetId ? (
+          <Card testID="summary-card" className="gap-4">
+            <Text
+              testID="summary-card-title"
+              className="text-base font-bold text-foreground"
+            >
+              {t('home.summaryTitle')}
+            </Text>
+
+            {activity.data === undefined ? (
+              <Skeleton testID="summary-skeleton" className="h-16 w-full rounded-xl" />
+            ) : null}
+
+            {activity.data?.kind === 'no-tracking' ? (
+              <Text testID="summary-note" className="font-normal text-muted">
+                {t('home.activityNeedsCollar')}
               </Text>
-            </View>
-            {detail.data.pet.device ? (
-              <View className="flex-row items-center gap-2">
-                <Battery
-                  size={18}
-                  color={
-                    detail.data.pet.device.batteryPct === null
-                      ? muted
-                      : detail.data.pet.device.batteryPct > 60
-                        ? success
-                        : warning
-                  }
-                />
-                <Text
-                  testID="collar-battery"
-                  style={TABULAR_NUMS}
-                  className={
-                    detail.data.pet.device.batteryPct === null
-                      ? 'font-normal text-muted'
-                      : detail.data.pet.device.batteryPct > 60
-                        ? 'font-semibold text-success'
-                        : 'font-semibold text-warning-strong'
-                  }
-                >
-                  {detail.data.pet.device.batteryPct === null
-                    ? '—'
-                    : `${detail.data.pet.device.batteryPct}%`}
-                </Text>
-              </View>
-            ) : (
-              <Text className="font-normal text-muted">
-                {t('home.noCollar')}
+            ) : null}
+
+            {activity.data?.kind === 'error' ||
+            activity.data?.kind === 'unreachable' ||
+            activity.data?.kind === 'missing-config' ? (
+              <Text testID="summary-note" className="font-normal text-muted">
+                {t('home.couldNotLoadActivity')}
               </Text>
-            )}
-            {detail.data.pet.device === null ? (
-                  <Pressable
-                    accessibilityRole="button"
-                    testID="collar-pair-link"
-                    className="min-h-11 items-center justify-center rounded-xl bg-accent-soft px-4"
-                    style={CONTINUOUS_CORNER}
-                    onPress={() => router.push('/pairing')}
-              >
-                <Text className="font-bold text-foreground">
-                  {t('home.pairCollar')}
-                </Text>
-              </Pressable>
+            ) : null}
+
+            {activity.data?.kind === 'ok' ? (
+              <View className="flex-row justify-between gap-3">
+                <View className="flex-1 items-center gap-1 border-r border-border">
+                  <Walk size={20} color={muted} />
+                  <Text
+                    testID="summary-activity"
+                    className="text-sm font-bold text-foreground"
+                    style={TABULAR_NUMS}
+                  >
+                    {fmtMinutes(today?.activeMinutes ?? null)}
+                  </Text>
+                  <Text className="text-2xs font-normal text-muted">
+                    {t('home.activity')}
+                  </Text>
+                </View>
+                <View className="flex-1 items-center gap-1 border-r border-border">
+                  <Moon size={20} color={muted} />
+                  <Text
+                    testID="summary-sleep"
+                    className="text-sm font-bold text-foreground"
+                    style={TABULAR_NUMS}
+                  >
+                    {fmtMinutes(today?.restMinutes ?? null)}
+                  </Text>
+                  <Text className="text-2xs font-normal text-muted">
+                    {t('home.sleep')}
+                  </Text>
+                </View>
+                <View className="flex-1 items-center gap-1">
+                  <Map size={20} color={muted} />
+                  <Text
+                    testID="summary-distance"
+                    className="text-sm font-bold text-foreground"
+                    style={TABULAR_NUMS}
+                  >
+                    {fmtKm(today?.distanceM ?? null)}
+                  </Text>
+                  <Text className="text-2xs font-normal text-muted">
+                    {t('home.distance')}
+                  </Text>
+                </View>
+              </View>
             ) : null}
           </Card>
-        </>
-      ) : null}
+        ) : null}
 
-      {selectedPetId ? (
-        <Card testID="summary-card" className="gap-4">
-          <Text
-            testID="summary-card-title"
-            className="text-base font-bold text-foreground"
+        {detail.data?.kind === 'ok' && detail.data.pet.device ? (
+          <Card
+            testID="last-position-card"
+            className="gap-2 bg-default"
+            onPress={() => router.push('/map')}
           >
-            {t('home.summaryTitle')}
-          </Text>
-
-          {activity.data === undefined ? (
-            <Skeleton testID="summary-skeleton" className="h-16 w-full rounded-xl" />
-          ) : null}
-
-          {activity.data?.kind === 'no-tracking' ? (
-            <Text testID="summary-note" className="font-normal text-muted">
-              {t('home.activityNeedsCollar')}
-            </Text>
-          ) : null}
-
-          {activity.data?.kind === 'error' ||
-          activity.data?.kind === 'unreachable' ||
-          activity.data?.kind === 'missing-config' ? (
-            <Text testID="summary-note" className="font-normal text-muted">
-              {t('home.couldNotLoadActivity')}
-            </Text>
-          ) : null}
-
-          {activity.data?.kind === 'ok' ? (
-            <View className="flex-row justify-between gap-3">
-              <View className="flex-1 items-center gap-1 border-r border-border">
-                <Walk size={20} color={muted} />
-                <Text
-                  testID="summary-activity"
-                  className="text-sm font-bold text-foreground"
-                  style={TABULAR_NUMS}
-                >
-                  {fmtMinutes(today?.activeMinutes ?? null)}
-                </Text>
-                <Text className="text-2xs font-normal text-muted">
-                  {t('home.activity')}
+            <View className="flex-row items-center justify-between">
+              <View className="flex-row items-center gap-2">
+                <View className="size-9 items-center justify-center rounded-full bg-accent-soft">
+                  <Map size={20} color={accent} />
+                </View>
+                <Text className="font-semibold text-accent-strong">
+                  {t('home.viewOnMap')}
                 </Text>
               </View>
-              <View className="flex-1 items-center gap-1 border-r border-border">
-                <Moon size={20} color={muted} />
-                <Text
-                  testID="summary-sleep"
-                  className="text-sm font-bold text-foreground"
-                  style={TABULAR_NUMS}
-                >
-                  {fmtMinutes(today?.restMinutes ?? null)}
-                </Text>
-                <Text className="text-2xs font-normal text-muted">
-                  {t('home.sleep')}
-                </Text>
-              </View>
-              <View className="flex-1 items-center gap-1">
-                <Map size={20} color={muted} />
-                <Text
-                  testID="summary-distance"
-                  className="text-sm font-bold text-foreground"
-                  style={TABULAR_NUMS}
-                >
-                  {fmtKm(today?.distanceM ?? null)}
-                </Text>
-                <Text className="text-2xs font-normal text-muted">
-                  {t('home.distance')}
-                </Text>
-              </View>
+              <ChevronRight size={20} color={accent} />
             </View>
-          ) : null}
-        </Card>
-      ) : null}
-
-      {detail.data?.kind === 'ok' && detail.data.pet.device ? (
-        <Card
-          testID="last-position-card"
-          className="gap-2 bg-default"
-          onPress={() => router.push('/map')}
-        >
-          <View className="flex-row items-center justify-between">
-            <View className="flex-row items-center gap-2">
-              <View className="size-9 items-center justify-center rounded-full bg-accent-soft">
-                <Map size={20} color={accent} />
-              </View>
-              <Text className="font-semibold text-accent-strong">
-                {t('home.viewOnMap')}
-              </Text>
-            </View>
-            <ChevronRight size={20} color={accent} />
-          </View>
-          <Text testID="last-position-time" className="font-normal text-muted">
-            {fmtLastSeen(detail.data.pet.lastCommunicationAt, locale, t)}
-          </Text>
-        </Card>
-      ) : null}
+            <Text testID="last-position-time" className="font-normal text-muted">
+              {fmtLastSeen(detail.data.pet.lastCommunicationAt, locale, t)}
+            </Text>
+          </Card>
+        ) : null}
+      </View>
     </ScrollView>
   );
 }

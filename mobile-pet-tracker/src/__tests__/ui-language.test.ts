@@ -77,8 +77,9 @@ describe('#65 R2: la barra de pestañas resuelve su copy por clave', () => {
 });
 
 describe('#65 R3: Home resuelve su copy por clave', () => {
-  it('resuelve las 20 ocurrencias normativas', () => {
-    expect(R3_HOME).toHaveLength(20);
+  // 20 en `303fc19` + 1 de `home.walks` (#67 R7b, delta declarado en su R9b).
+  it('resuelve las 21 ocurrencias normativas', () => {
+    expect(R3_HOME).toHaveLength(21);
     checkUses(R3_HOME);
   });
 });

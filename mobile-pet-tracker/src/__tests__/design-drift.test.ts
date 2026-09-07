@@ -91,6 +91,7 @@ describe('R9: mobile-pets-profile sin drift', () => {
     'api/media.ts',
     'api/users.ts',
     'components/pet-avatar.tsx',
+    'components/pet-hero-header.tsx',
     'screens/add-pet/index.tsx',
     'screens/docs/index.tsx',
     'screens/profile/index.tsx',

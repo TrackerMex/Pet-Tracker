@@ -63,6 +63,7 @@ export const R3_HOME: UseRow[] = [
   { file: 'src/app/(tabs)/home.tsx', key: 'home.sleep' },
   { file: 'src/app/(tabs)/home.tsx', key: 'home.distance' },
   { file: 'src/app/(tabs)/home.tsx', key: 'home.viewOnMap' },
+  { file: 'src/app/(tabs)/home.tsx', key: 'home.walks' },
 ];
 
 export const R4_MAP: UseRow[] = [

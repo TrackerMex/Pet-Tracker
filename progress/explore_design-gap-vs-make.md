@@ -662,6 +662,18 @@ inicial sobre `accent-soft` cuando `photoUrl` es `null`
 vacío. Antes de portar cualquier hero hay que decidir el *fallback*: ilustración
 por especie, degradado con la inicial, o pedir foto obligatoria en el alta.
 
+> **Corrección (2026-09-06, feature #67).** El párrafo de arriba se equivoca en
+> un hecho y el error se propagó: `PetAvatar` **nunca** ha degradado a una
+> inicial sobre `accent-soft`. `src/components/pet-avatar.tsx:29-36` pinta
+> `blobatar(name)` con `SvgXml`, decidido en la R5 de #40
+> (`specs/mobile-pets-profile/requirements.md:121-133`, 2026-08-21), que
+> sustituyó explícitamente el fallback de inicial por blobatar. De aquí la
+> premisa falsa pasó al enunciado de #67 en `feature_list.json` y a
+> `docs/ui-guidelines.md:215-217`. Puesto ante el choque el 2026-09-06, el
+> humano ratificó el blobatar: el hero sin foto lo pinta a sangre y la R5 de
+> #40 no se enmienda. La corrección de la carta va por la enmienda A8 de
+> `specs/mobile-pet-hero-header/`.
+
 ---
 
 ## 6. El brief de 418 líneas vs `docs/ui-guidelines.md`

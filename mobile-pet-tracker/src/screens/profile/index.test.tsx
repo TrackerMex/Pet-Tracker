@@ -4,6 +4,7 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from '@testing-library/react-native';
 import { router, useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
@@ -361,7 +362,7 @@ describe('R2: estructura Figma', () => {
     await renderProfile();
 
     await waitFor(() => expect(screen.getByTestId('pet-info-card')).toBeVisible());
-    expect(screen.getByTestId('profile-pet-photo')).toBeVisible();
+    expect(screen.getByTestId('pet-hero-media')).toBeVisible();
     expect(screen.getAllByText('Luna').length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText('Mixed').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByTestId('pet-chip-pet-1')).toBeVisible();
@@ -585,8 +586,8 @@ describe('R7: cambiar foto', () => {
     await fireEvent.press(screen.getByTestId('change-photo'));
 
     await waitFor(() => expect(screen.getByTestId('photo-upload-error')).toBeVisible());
-    expect(screen.getByTestId('profile-pet-photo').props.source).toEqual([
-      { uri: 'http://example.test/old.jpg' },
+    expect(screen.getByTestId('pet-hero-media').props.source).toEqual([
+      { uri: 'http://example.test/old.jpg', cacheKey: 'pet-1' },
     ]);
     expect(mockUploadPhotoToUrl).not.toHaveBeenCalled();
   });
@@ -818,5 +819,74 @@ describe('#62 R6: la última fila de pet-info-card no cuelga su separador', () =
 
     expect(breedRow?.props.className).toContain('border-b border-separator');
     expect(lastSignalRow?.props.className).not.toContain('border-b');
+  });
+});
+
+describe('R6: Profile usa el hero compartido', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockGetMe.mockReturnValue(pending<MeState>());
+  });
+
+  it('monta el hero en variante card con la foto de la mascota', async () => {
+    const pet = makePet({ photoUrl: 'http://example.test/luna.jpg' });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+
+    renderProfile();
+
+    await waitFor(() => expect(screen.getByTestId('pet-hero')).toBeVisible());
+    expect(screen.getByTestId('pet-hero').props.className).toContain(
+      'rounded-card',
+    );
+    expect(screen.getByTestId('pet-hero-media').props.source).toEqual([
+      { uri: pet.photoUrl, cacheKey: pet.id },
+    ]);
+    expect(screen.queryByTestId('profile-pet-photo')).toBeNull();
+  });
+
+  it('no pasa slot: la zona superior del hero no existe en Profile', async () => {
+    const pet = makePet();
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+
+    renderProfile();
+
+    await waitFor(() => expect(screen.getByTestId('pet-hero')).toBeVisible());
+    expect(screen.queryByTestId('pet-hero-slot')).toBeNull();
+    expect(screen.queryByTestId('pet-hero-fade-top')).toBeNull();
+    expect(screen.getByTestId('pet-chip-pet-1')).toBeVisible();
+  });
+
+  it('no pinta dato destacado', async () => {
+    const pet = makePet();
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+
+    renderProfile();
+
+    await waitFor(() => expect(screen.getByTestId('pet-hero')).toBeVisible());
+    expect(screen.queryByTestId('pet-hero-highlight-value')).toBeNull();
+    expect(screen.queryByTestId('pet-hero-highlight-label')).toBeNull();
+  });
+
+  it('deja change-photo debajo del hero, nunca encima de la foto', async () => {
+    const pet = makePet();
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+
+    renderProfile();
+
+    await waitFor(() => expect(screen.getByTestId('change-photo')).toBeVisible());
+    expect(
+      within(screen.getByTestId('pet-hero')).queryByTestId('change-photo'),
+    ).toBeNull();
   });
 });

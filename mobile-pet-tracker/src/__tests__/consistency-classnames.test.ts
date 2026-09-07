@@ -107,11 +107,6 @@ describe('#62 R1: la escala de radios está declarada y el botón primario tiene
 describe('#62 R2: cada skeleton tiene la forma del contenido que sustituye', () => {
   it.each([
     [
-      join('app', '(tabs)', 'home.tsx'),
-      'pet-card-skeleton',
-      'h-32 w-full rounded-card',
-    ],
-    [
       join('app', '(tabs)', 'health.tsx'),
       'vaccines-skeleton',
       'h-24 w-full rounded-card',
@@ -124,6 +119,21 @@ describe('#62 R2: cada skeleton tiene la forma del contenido que sustituye', () 
     );
 
     expect(skeleton).toContain(`className="${classes}"`);
+  });
+
+  // Enmienda #67: el skeleton de Home se muda al hero compartido. Reserva el
+  // alto de la fotografía por `style` —260 no tiene utilidad de Tailwind y la
+  // clase arbitraria está prohibida— y no lleva radio, porque va a sangre.
+  it('el skeleton del hero reserva el alto de la foto y no lleva radio', () => {
+    const skeleton = elementWithTestId(
+      readSource(join('components', 'pet-hero-header.tsx')),
+      'pet-hero-skeleton',
+      '/>',
+    );
+
+    expect(skeleton).toContain('className="w-full"');
+    expect(skeleton).toContain('style={{ height: PET_HERO_MEDIA_HEIGHT }}');
+    expect(skeleton).not.toContain('rounded-');
   });
 
   it('da al skeleton repetido de reminders la forma de sus filas Card', () => {
@@ -259,6 +269,7 @@ describe('#62 R13: el color imperativo sale siempre de useThemeColors del repo',
 describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () => {
   const directUses = [
     [join('app', '(auth)', 'forgot.tsx'), 1],
+    [join('components', 'pet-hero-header.tsx'), 1],
     [join('app', '(tabs)', 'home.tsx'), 1],
     [join('app', '(tabs)', 'health.tsx'), 2],
     [join('app', '(tabs)', 'food.tsx'), 2],
@@ -266,7 +277,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
     [join('app', '(tabs)', 'meal-schedule.tsx'), 1],
     [join('app', '(tabs)', 'weight-log.tsx'), 1],
     [join('screens', 'docs', 'index.tsx'), 1],
-    [join('screens', 'profile', 'index.tsx'), 4],
+    [join('screens', 'profile', 'index.tsx'), 3],
     [join('screens', 'reminders', 'index.tsx'), 4],
     [join('screens', 'add-pet', 'index.tsx'), 5],
     [join('screens', 'add-reminder', 'index.tsx'), 3],
@@ -390,7 +401,8 @@ describe('#64 R9: el color categórico solo se nombra en el módulo de paleta', 
     ]);
   });
 
-  it('conserva los diecisiete usos de bg-accent-soft que sí son acento', () => {
+  // 17 en `303fc19` − 1 el que vivía en el `PetHero` local de Profile (#67 R6).
+  it('conserva los dieciséis usos de bg-accent-soft que sí son acento', () => {
     const accentSoftCount = sourceFiles().reduce(
       (total, path) =>
         total + (readFileSync(path, 'utf8').match(/bg-accent-soft/g) ?? []).length,
@@ -399,7 +411,7 @@ describe('#64 R9: el color categórico solo se nombra en el módulo de paleta', 
     const reminders = readSource(join('screens', 'reminders', 'index.tsx'));
     const docs = readSource(join('screens', 'docs', 'index.tsx'));
 
-    expect(accentSoftCount).toBe(17);
+    expect(accentSoftCount).toBe(16);
     expect(reminders.match(/bg-accent-soft/g)).toHaveLength(1);
     expect(docs.match(/bg-accent-soft/g)).toBeNull();
   });

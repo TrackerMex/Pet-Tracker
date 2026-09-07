@@ -133,6 +133,11 @@ presignada de LA foto de perfil. Ver R8 y Pregunta abierta Q1.
   mismo `testID="pet-card-photo"`); IF la mascota tiene `photoUrl` THEN la
   foto manda y el blobatar no se genera. Mismo nombre → mismo SVG
   (determinismo observable).
+  **Enmendado por #67 (A7)**: la decisión de blobatar **no se toca**. Sólo
+  cambian el anfitrión y el nombre del ancla: el pet card de Home desaparece y
+  el blobatar pasa a la cabecera compartida bajo `testID="pet-hero-media"`.
+  `src/components/pet-avatar.tsx` sigue siendo el único sitio donde vive el
+  render.
   *Tests: `mobile-pet-tracker/src/components/__tests__/pet-avatar.test.tsx`
   (nuevo: determinismo `blobatar('Luna') === blobatar('Luna')` vía snapshot
   del prop `xml`, foto-manda, fallback) y extensión de
@@ -263,3 +268,16 @@ presignada de LA foto de perfil. Ver R8 y Pregunta abierta Q1.
 - [X] Aprobado por humano (fecha: 2026-08-24) ← gate obligatorio antes de implementar
 - [X] Q1–Q4 respondidas y R8 redactado en firme (2026-08-24)
 - [X] Smoke R10 ejecutado por el humano (fecha: 2026-08-25) ← gate antes de `done`
+
+## Enmienda #67 — cabecera fotográfica compartida
+
+`mobile-pet-hero-header` (#67) modifica una decisión que esta spec dejó
+aprobada. La spec de origen es `specs/mobile-pet-hero-header/`; el detalle de
+la enmienda está en su `requirements.md` §R10.
+
+- Spec enmendada: `mobile-pets-profile`
+- Qué cambia: `enmienda A7 de la tabla de #67 §R10`
+- Qué NO cambia: ningún otro requisito de esta spec, ni su estado de
+  aprobación, ni los tests que ya la cubren.
+
+- [X] Enmienda aprobada por humano
