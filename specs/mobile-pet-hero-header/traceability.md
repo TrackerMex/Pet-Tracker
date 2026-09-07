@@ -14,8 +14,8 @@ queda verde, nunca al final.
 | Requisito | Test (archivo::nombre) — prescrito por la spec | Commit (hash + mensaje) |
 |---|---|---|
 | R1 | `src/components/__tests__/pet-hero-header.test.tsx`::`R1: PetHeroHeader es el único hero compartido` | rojo `4c3f958` → verde `c467df7` |
-| R2 | `src/components/__tests__/pet-avatar.test.tsx`::`R2: PetAvatar acepta tamaño rectangular, cacheKey y degrada al fallar la foto` **y** `src/components/__tests__/pet-hero-header.test.tsx`::`R2: el hero pinta foto a sangre o blobatar` | pendiente |
-| R2b | `src/components/__tests__/pet-avatar.test.tsx`::`R2: PetAvatar acepta tamaño rectangular, cacheKey y degrada al fallar la foto` → `it('vuelve al blobatar cuando la foto no carga')` | pendiente |
+| R2 | `src/components/__tests__/pet-avatar.test.tsx`::`R2: PetAvatar acepta tamaño rectangular, cacheKey y degrada al fallar la foto` **y** `src/components/__tests__/pet-hero-header.test.tsx`::`R2: el hero pinta foto a sangre o blobatar` | rojo `4985341` → verde `dafce41` |
+| R2b | `src/components/__tests__/pet-avatar.test.tsx`::`R2: PetAvatar acepta tamaño rectangular, cacheKey y degrada al fallar la foto` → `it('vuelve al blobatar cuando la foto no carga')` | rojo `4985341` → verde `dafce41` |
 | R3 | `src/components/__tests__/pet-hero-header.test.tsx`::`R3: el texto del hero va sobre fondo opaco` (4 `it`: banda inferior opaca, slot opaco, forma de las dos cadenas de degradado, forma hex del token `background` en los dos temas) | pendiente |
 | R3b | mismo `describe` que R3 → `it('no renderiza texto sobre la capa de medios')`: `pet-hero-media` no tiene descendientes `Text` | pendiente |
 | R4 | `src/components/__tests__/pet-hero-header.test.tsx`::`R4: el slot superior respeta la safe area` | pendiente |
