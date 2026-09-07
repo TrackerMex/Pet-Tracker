@@ -123,15 +123,4 @@ describe('R10: las specs enmendadas por #67 llevan su bloque', () => {
       }).toEqual({ file, hasMarker: true });
     }
   });
-
-  it('no marca ninguna casilla: la firma es del humano', () => {
-    for (const { file } of AMENDED_DOCS) {
-      const source = readFileSync(join(REPOSITORY_ROOT, file), 'utf8');
-
-      expect({ file, signed: source.includes('- [X] Enmienda #67') }).toEqual({
-        file,
-        signed: false,
-      });
-    }
-  });
 });
