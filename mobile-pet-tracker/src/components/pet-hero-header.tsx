@@ -3,6 +3,7 @@ import { Text, View } from 'react-native';
 
 import type { PetProfile } from '../api/types';
 import { CONTINUOUS_CORNER } from '../theme/native-styles';
+import { useThemeColors } from '../theme/use-theme-colors';
 import { PetAvatar } from './pet-avatar';
 
 /**
@@ -34,7 +35,13 @@ export interface PetHeroHeaderProps {
   children?: ReactNode;
 }
 
-export function PetHeroHeader({ pet, variant = 'card' }: PetHeroHeaderProps) {
+export function PetHeroHeader({
+  pet,
+  variant = 'card',
+  children,
+}: PetHeroHeaderProps) {
+  const [background] = useThemeColors(['background']);
+
   return (
     <View
       testID="pet-hero"
@@ -45,6 +52,12 @@ export function PetHeroHeader({ pet, variant = 'card' }: PetHeroHeaderProps) {
       }
       style={CONTINUOUS_CORNER}
     >
+      {children ? (
+        <View testID="pet-hero-slot" className="bg-background px-6 pb-3">
+          {children}
+        </View>
+      ) : null}
+
       <View style={{ height: PET_HERO_MEDIA_HEIGHT }}>
         {pet ? (
           <PetAvatar
@@ -55,9 +68,35 @@ export function PetHeroHeader({ pet, variant = 'card' }: PetHeroHeaderProps) {
             testID="pet-hero-media"
           />
         ) : null}
+
+        {/*
+          La parada transparente se escribe con el propio color de fondo y alfa
+          0, nunca con `transparent`: `transparent` es negro con alfa cero y
+          ensucia de gris el tramo intermedio. Y el prefijo `experimental_` es
+          el único nombre que existe en RN 0.86.
+        */}
+        <View
+          testID="pet-hero-fade-top"
+          className="absolute inset-x-0 top-0"
+          style={{
+            height: PET_HERO_FADE_HEIGHT,
+            experimental_backgroundImage: `linear-gradient(to bottom, ${background} 0%, ${background}00 100%)`,
+          }}
+        />
+        <View
+          testID="pet-hero-fade-bottom"
+          className="absolute inset-x-0 bottom-0"
+          style={{
+            height: PET_HERO_FADE_HEIGHT,
+            experimental_backgroundImage: `linear-gradient(to bottom, ${background}00 0%, ${background} 100%)`,
+          }}
+        />
       </View>
 
-      <View testID="pet-hero-caption" className="gap-1 px-6 pb-4 pt-1">
+      <View
+        testID="pet-hero-caption"
+        className="gap-1 bg-background px-6 pb-4 pt-1"
+      >
         <Text
           testID="pet-hero-name"
           className="text-3xl font-black text-foreground"
