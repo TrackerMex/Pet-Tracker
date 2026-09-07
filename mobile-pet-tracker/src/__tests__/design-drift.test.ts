@@ -184,3 +184,49 @@ describe('R11 (mobile-device-pairing): pairing usa el Card compartido y las dime
     );
   });
 });
+
+describe('#68 R18: la actividad semanal no mete drift de estilo', () => {
+  const featureFiles = [
+    'app/(tabs)/home.tsx',
+    'i18n/catalog.ts',
+    'screens/home/format.ts',
+    'screens/home/index.test.tsx',
+    'screens/home/index.tsx',
+    'screens/home/weekly-activity-chart.test.tsx',
+    'screens/home/weekly-activity-chart.tsx',
+    'screens/pairing/index.test.tsx',
+    'screens/pairing/index.tsx',
+    'utils/device-connectivity.test.ts',
+    'utils/device-connectivity.ts',
+  ];
+
+  it('keeps arbitrary text, hex colors, and StyleSheet out of feature sources', () => {
+    const violations = featureFiles.flatMap((relativePath) => {
+      const contents = readFileSync(join(sourceRoot, relativePath), 'utf8');
+      return /text-\[10px\]|#[\da-f]{3,8}\b|StyleSheet/i.test(contents)
+        ? [relativePath]
+        : [];
+    });
+
+    expect(violations).toEqual([]);
+  });
+
+  it('keeps the resolved token theme and rejects chart presets', () => {
+    const chartSource = readFileSync(
+      join(sourceRoot, 'screens', 'home', 'weekly-activity-chart.tsx'),
+      'utf8',
+    );
+
+    expect(chartSource).toContain('series: [accentStrong]');
+    expect(chartSource).toContain('grid: border');
+    expect(chartSource).toContain('axis: border');
+    expect(chartSource).toContain('text: foreground');
+    expect(chartSource).toContain('mutedText: muted');
+    expect(chartSource).toContain('background: surface');
+    expect(chartSource).toContain('plotBackground: surface');
+    expect(chartSource).toContain(
+      'typography: { axisLabelSize: CHART_AXIS_LABEL_SIZE }',
+    );
+    expect(chartSource).not.toMatch(/\bpreset=/);
+  });
+});
