@@ -11,6 +11,7 @@ import { BarChart } from 'react-native-chart-kit/v2';
 
 import type { DayEntry, WeekComparison } from '../../api/types';
 import { LanguageProvider } from '../../providers/language-provider';
+import { TABULAR_NUMS } from '../../theme/native-styles';
 import {
   BAR_MIN_HEIGHT,
   BAR_ENTRY_DURATION_MS,
@@ -504,6 +505,62 @@ describe('R5: un día sin dato no es una barra de altura cero', () => {
     ).toBeOnTheScreen();
     expect(
       result.queryByTestId('weekly-activity-missing-2026-09-07'),
+    ).toBeNull();
+  });
+});
+
+describe('R7: la gráfica dibuja eje Y, rejilla y línea de media', () => {
+  it('configura cuatro ticks con etiquetas de cuatro caracteres', async () => {
+    await renderChart(makeWeek('2026-09-02', [10, 20, 30, 40, 50, 60, 70]));
+    const props = latestBarChartProps();
+    const formatYLabel = props.formatYLabel as (value: number) => string;
+
+    expect(props).toEqual(
+      expect.objectContaining({
+        showYAxisLabels: true,
+        showHorizontalGridLines: true,
+        yTickCount: 4,
+      }),
+    );
+    expect(
+      [0, 45, 1440, 12.3].map((value) => formatYLabel(value)),
+    ).toEqual(['   0', '  45', '1440', '12.3']);
+    expect(
+      (props.theme as { typography: { axisLabelSize: number } }).typography
+        .axisLabelSize,
+    ).toBe(CHART_AXIS_LABEL_SIZE);
+  });
+
+  it('dibuja la media discontinua y rotula cifras tabulares', async () => {
+    const result = await renderChart(
+      makeWeek('2026-09-02', [10, 20, 30, null, null, null, null]),
+    );
+
+    expect(result.getByTestId('weekly-activity-average').props).toEqual(
+      expect.objectContaining({ strokeDasharray: '4 4' }),
+    );
+    expect(
+      result.getByTestId('weekly-activity-average-label').props.style,
+    ).toEqual(TABULAR_NUMS);
+  });
+
+  it('promedia solo los días medidos y se calla sin un valor positivo', async () => {
+    const measured = await renderChart(
+      makeWeek('2026-09-02', [10, 20, 30, null, null, null, null]),
+    );
+
+    expect(measured.getByTestId('weekly-activity-average').props).toEqual(
+      expect.objectContaining({ y1: 80, y2: 80 }),
+    );
+
+    await measured.unmount();
+    const noPositive = await renderChart(
+      makeWeek('2026-09-02', [0, 0, null, null, null, null, null]),
+    );
+
+    expect(noPositive.queryByTestId('weekly-activity-average')).toBeNull();
+    expect(
+      noPositive.queryByTestId('weekly-activity-average-label'),
     ).toBeNull();
   });
 });
