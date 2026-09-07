@@ -13,27 +13,27 @@ import type { ReactNode } from 'react';
 import {
   getDailyActivity,
   type DailyActivityState,
-} from '../../../api/activity';
-import { getPet, listPets, type PetState, type PetsState } from '../../../api/pets';
-import type { DayEntry, PetProfile } from '../../../api/types';
-import * as apiHooks from '../../../hooks/use-api';
-import type { ApiResult } from '../../../hooks/use-api';
-import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
-import { LanguageProvider } from '../../../providers/language-provider';
-import { SelectedPetProvider } from '../../../providers/selected-pet-provider';
-import * as selectedPetHooks from '../../../providers/selected-pet-provider';
-import HomeScreen from '../home';
+} from '../../api/activity';
+import { getPet, listPets, type PetState, type PetsState } from '../../api/pets';
+import type { DayEntry, PetProfile } from '../../api/types';
+import * as apiHooks from '../../hooks/use-api';
+import type { ApiResult } from '../../hooks/use-api';
+import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
+import { LanguageProvider } from '../../providers/language-provider';
+import { SelectedPetProvider } from '../../providers/selected-pet-provider';
+import * as selectedPetHooks from '../../providers/selected-pet-provider';
+import { HomeScreen } from './index';
 
-jest.mock('../../../api/pets', () => ({
+jest.mock('../../api/pets', () => ({
   getPet: jest.fn(),
   listPets: jest.fn(),
 }));
 
-jest.mock('../../../api/activity', () => ({
+jest.mock('../../api/activity', () => ({
   getDailyActivity: jest.fn(),
 }));
 
-jest.mock('../../../providers/auth-provider', () => ({
+jest.mock('../../providers/auth-provider', () => ({
   useAuth: jest.fn(),
 }));
 

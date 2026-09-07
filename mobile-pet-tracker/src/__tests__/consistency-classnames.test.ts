@@ -270,7 +270,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
   const directUses = [
     [join('app', '(auth)', 'forgot.tsx'), 1],
     [join('components', 'pet-hero-header.tsx'), 1],
-    [join('app', '(tabs)', 'home.tsx'), 1],
+    [join('screens', 'home', 'index.tsx'), 1],
     [join('app', '(tabs)', 'health.tsx'), 2],
     [join('app', '(tabs)', 'food.tsx'), 2],
     [join('app', '(tabs)', 'map.tsx'), 4],
@@ -333,7 +333,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
 describe('#62 R15: todo contador usa cifras tabulares', () => {
   const counters = [
     [join('app', '(tabs)', 'map.tsx'), 3],
-    [join('app', '(tabs)', 'home.tsx'), 4],
+    [join('screens', 'home', 'index.tsx'), 4],
     [join('app', '(tabs)', 'health.tsx'), 2],
     [join('app', '(tabs)', 'weight-log.tsx'), 2],
     [join('screens', 'reminders', 'index.tsx'), 3],
