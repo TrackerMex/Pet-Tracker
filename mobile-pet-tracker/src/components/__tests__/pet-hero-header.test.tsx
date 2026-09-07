@@ -248,13 +248,15 @@ describe('R3: el texto del hero va sobre fondo opaco', () => {
 
       expect(token).toMatch(/^#[0-9A-Fa-f]{6}$/);
 
-      const spy = jest
-        .spyOn(Uniwind, 'getCSSVariable')
-        .mockImplementation((name: string) =>
-          name === '--color-background' || name === '--background'
-            ? token
-            : undefined,
-        );
+      const resolve = (name: string) =>
+        name === '--color-background' || name === '--background'
+          ? token
+          : undefined;
+      const spy = jest.spyOn(Uniwind, 'getCSSVariable');
+
+      spy.mockImplementation(
+        resolve as unknown as typeof Uniwind.getCSSVariable,
+      );
       const view = await render(<BackgroundProbe />);
 
       expect(view.getByTestId('background-probe').props.children).toMatch(
