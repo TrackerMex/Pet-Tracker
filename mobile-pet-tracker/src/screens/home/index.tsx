@@ -1,6 +1,6 @@
 import { router, useFocusEffect } from 'expo-router';
 import { Button, Card as HeroUICard, Skeleton } from 'heroui-native';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -15,6 +15,7 @@ import {
 
 import { getDailyActivity } from '../../api/activity';
 import { getPet, listPets, type PetsState } from '../../api/pets';
+import type { DayEntry } from '../../api/types';
 import { Card } from '../../components/card';
 import { PetHeroHeader } from '../../components/pet-hero-header';
 import { PetSwitcher } from '../../components/pet-switcher';
@@ -32,6 +33,7 @@ import {
 } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { fmtCount, fmtKm, fmtMinutes } from './format';
+import { WeeklyActivityChart } from './weekly-activity-chart';
 
 function isPetsError(state: PetsState): boolean {
   return ['error', 'unreachable', 'missing-config'].includes(state.kind);
@@ -53,6 +55,10 @@ export function HomeScreen() {
   const locale = useLocale();
   const t = useTranslate();
   const { selectedPetId, selectPet } = useSelectedPet();
+  const [activitySelection, setActivitySelection] = useState<{
+    day: DayEntry;
+    petId: string;
+  } | null>(null);
   const insets = useSafeAreaInsets();
   const [accent, success, warning, muted] = useThemeColors([
     'accent-strong',
@@ -90,6 +96,17 @@ export function HomeScreen() {
       : undefined;
   const petList = pets.data?.kind === 'ok' ? pets.data.pets : [];
   const hasPets = petList.length > 0;
+  const latestActivityDay =
+    activity.data?.kind === 'ok'
+      ? activity.data.days[activity.data.days.length - 1]
+      : undefined;
+  const selectedActivityDay =
+    activitySelection?.petId === selectedPetId
+      ? activitySelection.day
+      : null;
+  const selectedToday =
+    selectedActivityDay !== null &&
+    selectedActivityDay.date === latestActivityDay?.date;
 
   useFocusEffect(
     useCallback(() => {
@@ -330,6 +347,32 @@ export function HomeScreen() {
               </View>
             ) : null}
           </Card>
+        ) : null}
+
+        {activity.data?.kind === 'ok' ? (
+          <>
+            <WeeklyActivityChart
+              key={selectedPetId}
+              days={activity.data.days}
+              weekComparison={activity.data.weekComparison}
+              onSelectDay={(day) => {
+                if (selectedPetId) {
+                  setActivitySelection({ day, petId: selectedPetId });
+                }
+              }}
+            />
+            {selectedToday ? (
+              <Button
+                testID="weekly-activity-day-map"
+                className="min-h-11 w-full rounded-xl bg-accent"
+                onPress={() => router.push('/map')}
+              >
+                <Button.Label className="font-bold text-accent-foreground">
+                  {t('home.viewOnMap')}
+                </Button.Label>
+              </Button>
+            ) : null}
+          </>
         ) : null}
 
         {detail.data?.kind === 'ok' && detail.data.pet.device ? (

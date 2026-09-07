@@ -12,6 +12,7 @@ import {
 import {
   BarChart,
   type BarChartRenderBarProps,
+  type BarChartSelectEvent,
 } from 'react-native-chart-kit/v2';
 import Animated, {
   useAnimatedProps,
@@ -29,7 +30,10 @@ import {
   useLocale,
   useTranslate,
 } from '../../providers/language-provider';
-import { TABULAR_NUMS } from '../../theme/native-styles';
+import {
+  CONTINUOUS_CORNER,
+  TABULAR_NUMS,
+} from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { fmtCount, fmtKm, fmtMinutes } from './format';
 
@@ -47,6 +51,8 @@ export const BAR_ENTRY_DURATION_MS = 250;
 export const BAR_ENTRY_STAGGER_MS = 40;
 export const BAR_MIN_HEIGHT = 3;
 
+const TOOLTIP_WIDTH = 120;
+
 const CHART_HEIGHT =
   CHART_PAD_TOP + CHART_PLOT_HEIGHT + CHART_PAD_BOTTOM;
 
@@ -61,12 +67,18 @@ export const WEEKLY_METRICS: readonly WeeklyMetric[] = [
 export interface WeeklyActivityChartProps {
   days: DayEntry[];
   weekComparison: WeekComparison;
+  onSelectDay?: (day: DayEntry) => void;
 }
 
 interface ChartDatum {
   date: string;
   value: number | null;
   day: DayEntry;
+}
+
+interface DaySelection {
+  dataIndex: number;
+  tooltipX: number;
 }
 
 const AnimatedRect = Animated.createAnimatedComponent(Rect);
@@ -206,6 +218,29 @@ function formatTrendPercent(value: number, locale: string): string {
   return locale.startsWith('es') ? formatted.replace('.', ',') : formatted;
 }
 
+function DetailMetric({
+  label,
+  testID,
+  value,
+}: {
+  label: string;
+  testID: string;
+  value: string;
+}): JSX.Element {
+  return (
+    <View className="flex-1 gap-1">
+      <Text className="text-2xs text-muted">{label}</Text>
+      <Text
+        testID={testID}
+        className="text-sm font-semibold text-foreground"
+        style={TABULAR_NUMS}
+      >
+        {value}
+      </Text>
+    </View>
+  );
+}
+
 export function weekdayLabel(
   date: string,
   locale: string,
@@ -219,12 +254,13 @@ export function weekdayLabel(
 }
 
 export function WeeklyActivityChart(
-  { days, weekComparison }: WeeklyActivityChartProps,
+  { days, weekComparison, onSelectDay }: WeeklyActivityChartProps,
 ): JSX.Element {
   const locale = useLocale();
   const t = useTranslate();
   const [chartWidth, setChartWidth] = useState(0);
   const [selectedMetricIndex, setSelectedMetricIndex] = useState(0);
+  const [selection, setSelection] = useState<DaySelection | null>(null);
   const selectedMetric =
     WEEKLY_METRICS[selectedMetricIndex] ?? WEEKLY_METRICS[0];
   const metricLabels = [
@@ -261,11 +297,52 @@ export function WeeklyActivityChart(
   );
   const hasMeasuredDay = days.some((day) => day.source !== 'missing');
   const trend = weekComparison[selectedMetric];
+  const selectedDay =
+    selection === null ? undefined : days[selection.dataIndex];
+  const selectedDatum =
+    selection === null ? undefined : chartData[selection.dataIndex];
+  const tooltipLeft =
+    selection === null
+      ? 0
+      : Math.max(
+          0,
+          Math.min(
+            selection.tooltipX - TOOLTIP_WIDTH / 2,
+            Math.max(0, chartWidth - TOOLTIP_WIDTH),
+          ),
+        );
+  const selectedBar =
+    selection !== null && typeof selectedDatum?.value === 'number'
+      ? { dataIndex: selection.dataIndex, seriesKey: 'value' }
+      : undefined;
   const handleChartLayout = (event: LayoutChangeEvent) => {
     setChartWidth(event.nativeEvent.layout.width);
   };
   const handleMetricChange = (event: NativeSegmentedControlChangeEvent) => {
     setSelectedMetricIndex(event.nativeEvent.selectedSegmentIndex);
+  };
+  const selectDay = (dataIndex: number, tooltipX: number) => {
+    const day = days[dataIndex];
+
+    if (day === undefined) return;
+
+    setSelection({ dataIndex, tooltipX });
+    onSelectDay?.(day);
+  };
+  const handleBarSelect = (event: BarChartSelectEvent<ChartDatum>) => {
+    selectDay(event.dataIndex, event.position.x);
+  };
+  const handleColumnPress = (dataIndex: number) => {
+    const plotWidth = Math.max(
+      0,
+      chartWidth - CHART_PAD_LEFT - CHART_PAD_RIGHT,
+    );
+    const columnWidth = days.length === 0 ? 0 : plotWidth / days.length;
+
+    selectDay(
+      dataIndex,
+      CHART_PAD_LEFT + columnWidth * (dataIndex + 0.5),
+    );
   };
 
   return (
@@ -348,6 +425,8 @@ export function WeeklyActivityChart(
             showHorizontalGridLines
             yTickCount={4}
             formatYLabel={formatAxisLabel}
+            interaction={{ mode: 'tap', onSelect: handleBarSelect }}
+            selectedBar={selectedBar}
             accessibilityLabel={t('weeklyActivity.chartSummary', {
               metric: selectedMetricLabel.toLocaleLowerCase(locale),
             })}
@@ -374,6 +453,32 @@ export function WeeklyActivityChart(
             testID="weekly-activity-bar-chart"
           />
         ) : null}
+            {selectedDay ? (
+              <View
+                pointerEvents="none"
+                testID="weekly-activity-tooltip"
+                className="absolute top-1 z-10 rounded-xl border border-border bg-surface p-2"
+                style={[
+                  CONTINUOUS_CORNER,
+                  { left: tooltipLeft, width: TOOLTIP_WIDTH },
+                ]}
+              >
+                <Text className="text-2xs font-semibold text-foreground">
+                  {weekdayLabel(selectedDay.date, locale, 'long')}
+                </Text>
+                <Text
+                  className="text-xs font-bold text-foreground"
+                  style={TABULAR_NUMS}
+                >
+                  {selectedDay.source === 'missing'
+                    ? '—'
+                    : formatMetricValue(
+                        selectedMetric,
+                        metricValue(selectedDay, selectedMetric),
+                      )}
+                </Text>
+              </View>
+            ) : null}
           </View>
           <View
         testID="weekly-activity-day-row"
@@ -383,11 +488,15 @@ export function WeeklyActivityChart(
           paddingRight: CHART_PAD_RIGHT,
         }}
       >
-        {days.map((day) => (
+        {days.map((day, dataIndex) => (
           <Pressable
             key={day.date}
             testID={`weekly-activity-day-${day.date}`}
-            className="min-h-11 flex-1 items-center justify-end"
+            className={
+              selection?.dataIndex === dataIndex
+                ? 'min-h-11 flex-1 items-center justify-end border-t-2 border-accent-strong'
+                : 'min-h-11 flex-1 items-center justify-end'
+            }
             accessible
             accessibilityRole="button"
             accessibilityLabel={dayAccessibilityLabel(
@@ -396,7 +505,10 @@ export function WeeklyActivityChart(
               locale,
               t,
             )}
-            onPress={() => undefined}
+            accessibilityState={{
+              selected: selection?.dataIndex === dataIndex,
+            }}
+            onPress={() => handleColumnPress(dataIndex)}
           >
             <Text
               testID="weekly-activity-day-label"
@@ -425,6 +537,49 @@ export function WeeklyActivityChart(
           </Pressable>
         ))}
           </View>
+          {selectedDay ? (
+            <View
+              testID="weekly-activity-detail"
+              className="gap-3 rounded-xl border border-border bg-surface-secondary p-3"
+              style={CONTINUOUS_CORNER}
+            >
+              <Text className="font-bold text-foreground">
+                {weekdayLabel(selectedDay.date, locale, 'long')}
+              </Text>
+              {selectedDay.source === 'missing' ? (
+                <Text className="text-sm text-muted">
+                  {t('weeklyActivity.noDataForDay')}
+                </Text>
+              ) : (
+                <View className="gap-3">
+                  <View className="flex-row gap-3">
+                    <DetailMetric
+                      label={metricLabels[0]}
+                      testID="weekly-activity-detail-active-minutes"
+                      value={fmtMinutes(selectedDay.activeMinutes)}
+                    />
+                    <DetailMetric
+                      label={metricLabels[1]}
+                      testID="weekly-activity-detail-distance"
+                      value={fmtKm(selectedDay.distanceM)}
+                    />
+                  </View>
+                  <View className="flex-row gap-3">
+                    <DetailMetric
+                      label={metricLabels[2]}
+                      testID="weekly-activity-detail-walks"
+                      value={fmtCount(selectedDay.walkCount)}
+                    />
+                    <DetailMetric
+                      label={t('home.sleep')}
+                      testID="weekly-activity-detail-rest"
+                      value={fmtMinutes(selectedDay.restMinutes)}
+                    />
+                  </View>
+                </View>
+              )}
+            </View>
+          ) : null}
         </>
       ) : (
         <Text

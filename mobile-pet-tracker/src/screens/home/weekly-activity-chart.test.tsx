@@ -2,7 +2,6 @@ import {
   act,
   fireEvent,
   render,
-  screen,
   within,
 } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
@@ -62,8 +61,8 @@ jest.mock('react-native-chart-kit/v2', () => {
 
   return {
     BarChart: jest.fn((props: Record<string, unknown>) => {
-      const data = props.data as Array<Record<string, unknown>>;
-      const series = props.series as Array<{ yKey: string }> | undefined;
+      const data = props.data as Record<string, unknown>[];
+      const series = props.series as { yKey: string }[] | undefined;
       const yKey = (props.yKey as string | undefined) ?? series?.[0]?.yKey;
       const renderBar = props.renderBar as
         | ((mockBarProps: Record<string, unknown>) =>
@@ -222,7 +221,7 @@ function makeDay(overrides: Partial<DayEntry> = {}): DayEntry {
   };
 }
 
-function makeWeek(from: string, minutes: Array<number | null>): DayEntry[] {
+function makeWeek(from: string, minutes: (number | null)[]): DayEntry[] {
   const [year, month, day] = from.split('-').map(Number);
 
   return minutes.map((activeMinutes, index) => {
@@ -432,7 +431,7 @@ describe('R3: la letra del eje sale de la fecha, no del índice', () => {
       ),
     ).toEqual(['mié', 'jue', 'vie', 'sáb', 'dom', 'lun', 'mar']);
     expect(
-      (latestBarChartProps().data as Array<{ date: string }>).map(
+      (latestBarChartProps().data as { date: string }[]).map(
         ({ date }) => date,
       ),
     ).toEqual(days.map(({ date }) => date));
@@ -676,7 +675,7 @@ describe('R6: el selector cambia de métrica sin volver a pedir nada', () => {
 
     expect(selector.props.selectedIndex).toBe(1);
     expect(
-      (latestBarChartProps().data as Array<{ value: number | null }>).map(
+      (latestBarChartProps().data as { value: number | null }[]).map(
         ({ value }) => value,
       ),
     ).toEqual(days.map(({ distanceM }) => distanceM));
@@ -921,9 +920,15 @@ describe('R8: tocar un día abre su detalle', () => {
     );
 
     expect(result.getByTestId('weekly-activity-tooltip')).toBeOnTheScreen();
-    expect(result.getByTestId('weekly-activity-detail')).toHaveTextContent(
-      'miércoles',
-    );
+    expect(
+      result.getByTestId('weekly-activity-day-2026-09-02').props
+        .accessibilityState,
+    ).toEqual({ selected: true });
+    expect(
+      within(result.getByTestId('weekly-activity-detail')).getByText(
+        'miércoles',
+      ),
+    ).toBeOnTheScreen();
     expect(
       result.getByTestId('weekly-activity-detail-active-minutes'),
     ).toHaveTextContent('45m');
@@ -966,9 +971,11 @@ describe('R8: tocar un día abre su detalle', () => {
       result.getByTestId('weekly-activity-day-2026-09-02'),
     );
 
-    expect(result.getByTestId('weekly-activity-detail')).toHaveTextContent(
-      'Sin datos de este día',
-    );
+    expect(
+      within(result.getByTestId('weekly-activity-detail')).getByText(
+        'Sin datos de este día',
+      ),
+    ).toBeOnTheScreen();
     expect(
       result.queryByTestId('weekly-activity-detail-active-minutes'),
     ).toBeNull();
@@ -996,9 +1003,9 @@ describe('R8: tocar un día abre su detalle', () => {
     );
     expect(rightStyle.left).toBeGreaterThanOrEqual(0);
     expect(rightStyle.left + rightStyle.width).toBeLessThanOrEqual(295);
-    expect(result.getByTestId('weekly-activity-detail')).toHaveTextContent(
-      'jueves',
-    );
+    expect(
+      within(result.getByTestId('weekly-activity-detail')).getByText('jueves'),
+    ).toBeOnTheScreen();
 
     await act(() =>
       interaction.onSelect({
