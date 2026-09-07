@@ -45,4 +45,18 @@ describe('R1: la gráfica entra por el subpath v2 y por ningún otro', () => {
     expect(source).not.toContain("from 'react-native-chart-kit'");
     expect(source).not.toContain('react-native-chart-kit/dist');
   });
+
+  it('pinea 7.0.4 porque la geometría del eje depende de sus constantes', () => {
+    const packageJson = JSON.parse(
+      readFileSync(join(projectRoot, 'package.json'), 'utf8'),
+    ) as { dependencies: Record<string, string> };
+    const source = readFileSync(chartSourcePath, 'utf8');
+
+    expect(packageJson.dependencies['react-native-chart-kit']).toBe('7.0.4');
+    expect(source).toContain('base padding: 18, 14, 12, 10');
+    expect(source).toContain('label gap: 8');
+    expect(source).toContain('text width factor: 0.56');
+    expect(source).toContain('measured label height: 14');
+    expect(source).toContain('band padding: 0.12, 0.08');
+  });
 });

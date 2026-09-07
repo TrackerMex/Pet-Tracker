@@ -17,7 +17,7 @@ Dos abreviaturas para no repetir rutas largas:
 
 | Requisito | Test (archivo::nombre) — prescrito por la spec | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | `CHART`::`R1: la gráfica entra por el subpath v2 y por ningún otro` (2 `it`: `package.json` con la versión exacta y las dos entradas nuevas de `transformIgnorePatterns`; el fuente con `from 'react-native-chart-kit/v2'` y sin el import de raíz ni `dist/`) | rojo `90cde79` `feat(mobile-home-weekly-activity): test chart dependency contract (R1)`; verde por completar |
+| R1 | `CHART`::`R1: la gráfica entra por el subpath v2 y por ningún otro` (2 `it`: `package.json` con la versión exacta y las dos entradas nuevas de `transformIgnorePatterns`; el fuente con `from 'react-native-chart-kit/v2'` y sin el import de raíz ni `dist/`) | rojo `90cde79` `feat(mobile-home-weekly-activity): test chart dependency contract (R1)`; verde `d96b664` `feat(mobile-home-weekly-activity): add pinned chart dependency (R1)` |
 | R1b | mismo `describe` que R1 → `it('pinea 7.0.4 porque la geometría del eje depende de sus constantes')` | pendiente |
 | R2 | `CHART`::`R2: WeeklyActivityChart recibe los días y no habla con la red` | pendiente |
 | R3 | `CHART`::`R3: la letra del eje sale de la fecha, no del índice` → `it('usa el día real de cada fecha en los dos idiomas')`, rango `2026-09-02 … 2026-09-08` | pendiente |
