@@ -24,7 +24,7 @@ queda verde, nunca al final.
 | R6 | `src/screens/profile/index.test.tsx`::`R6: Profile usa el hero compartido` | pendiente |
 | R7 | `src/app/(tabs)/__tests__/home.test.tsx`::`R7: el hero pinta los paseos de hoy` **y** `src/screens/profile/index.test.tsx`::`R6: Profile usa el hero compartido` → `it('no pinta dato destacado')` | pendiente |
 | R7b | `src/__tests__/ui-language.test.ts` (candado de catálogo ya existente: una clave sin traducción en algún idioma no compila) + `src/__tests__/ui-copy-table.ts` fila nueva de `R3_HOME` | pendiente |
-| R8 | `src/components/__tests__/pet-hero-header.test.tsx`::`R8: el hero sin mascota es un skeleton dimensionado` | pendiente |
+| R8 | `src/components/__tests__/pet-hero-header.test.tsx`::`R8: el hero sin mascota es un skeleton dimensionado` | rojo `fba8736` → verde `63a4799` |
 | R8b | `src/app/(tabs)/__tests__/home.test.tsx`::`R8: el error del detalle deja el selector alcanzable` | pendiente |
 | R9 | Requisito de **verificación** (C4 vía (b)): suite móvil completa verde + **prueba de mutación** con las tres mutaciones de [[tasks]] R9 (1) plantadas en `src/components/pet-hero-header.tsx`, con la evidencia en `progress/review_mobile-pet-hero-header.md` | pendiente |
 | R9b | Los deltas contra `303fc19` de la tabla de [[requirements]] R9b, verificados por el reviewer rehaciendo cada grep | pendiente |
