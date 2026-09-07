@@ -1,7 +1,7 @@
 import SegmentedControl, {
   type NativeSegmentedControlChangeEvent,
 } from '@expo/ui/community/segmented-control';
-import { useState, type JSX } from 'react';
+import { useEffect, useState, type JSX } from 'react';
 import {
   Pressable,
   Text,
@@ -12,6 +12,13 @@ import {
   BarChart,
   type BarChartRenderBarProps,
 } from 'react-native-chart-kit/v2';
+import Animated, {
+  useAnimatedProps,
+  useReducedMotion,
+  useSharedValue,
+  withDelay,
+  withTiming,
+} from 'react-native-reanimated';
 import { Line, Rect } from 'react-native-svg';
 
 import type { DayEntry, WeekComparison } from '../../api/types';
@@ -60,6 +67,8 @@ interface ChartDatum {
   day: DayEntry;
 }
 
+const AnimatedRect = Animated.createAnimatedComponent(Rect);
+
 function ActivityBar({
   bar,
   fill,
@@ -73,11 +82,30 @@ function ActivityBar({
   chartWidth: number;
   drawAverage: boolean;
 }): JSX.Element {
+  const reduceMotion = useReducedMotion();
   const height = Math.max(bar.height, BAR_MIN_HEIGHT);
+  const progress = useSharedValue(reduceMotion ? 1 : 0);
   const averageY =
     average === null || bar.value === 0
       ? null
       : bar.baselineY - average * (bar.height / bar.value);
+  const animatedProps = useAnimatedProps(() => ({
+    y: bar.baselineY - height * progress.value,
+    height: height * progress.value,
+  }));
+
+  useEffect(() => {
+    if (reduceMotion) {
+      progress.value = 1;
+      return;
+    }
+
+    progress.value = 0;
+    progress.value = withDelay(
+      bar.dataIndex * BAR_ENTRY_STAGGER_MS,
+      withTiming(1, { duration: BAR_ENTRY_DURATION_MS }),
+    );
+  }, [bar.dataIndex, bar.value, height, progress, reduceMotion]);
 
   return (
     <>
@@ -92,16 +120,28 @@ function ActivityBar({
           strokeDasharray="4 4"
         />
       ) : null}
-      <Rect
-        key={bar.key}
-        testID={`weekly-activity-bar-${bar.raw?.date}`}
-        x={bar.x}
-        y={bar.baselineY - height}
-        width={bar.width}
-        height={height}
-        rx={Math.min(bar.width, height) / 2}
-        fill={fill}
-      />
+      {reduceMotion ? (
+        <Rect
+          key={bar.key}
+          testID={`weekly-activity-bar-${bar.raw?.date}`}
+          x={bar.x}
+          y={bar.baselineY - height}
+          width={bar.width}
+          height={height}
+          rx={Math.min(bar.width, height) / 2}
+          fill={fill}
+        />
+      ) : (
+        <AnimatedRect
+          key={bar.key}
+          testID={`weekly-activity-bar-${bar.raw?.date}`}
+          animatedProps={animatedProps}
+          x={bar.x}
+          width={bar.width}
+          rx={Math.min(bar.width, height) / 2}
+          fill={fill}
+        />
+      )}
     </>
   );
 }
