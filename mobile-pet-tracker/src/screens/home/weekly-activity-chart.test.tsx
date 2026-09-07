@@ -853,3 +853,45 @@ describe('R12: la tendencia sigue a la métrica y se calla sin base', () => {
     ).toBe('resolved-muted');
   });
 });
+
+describe('R13: la semana entera sin dato se resuelve con un mensaje', () => {
+  it('sustituye siete huecos por un único mensaje y conserva la cabecera', async () => {
+    const result = await renderChart(
+      makeWeek('2026-09-02', [null, null, null, null, null, null, null]),
+    );
+
+    expect(result.getByTestId('weekly-activity-header')).toHaveTextContent(
+      'Actividad semanal',
+    );
+    expect(result.getByTestId('weekly-activity-empty')).toHaveTextContent(
+      'Aún no hay actividad registrada',
+    );
+    expect(result.queryByTestId('weekly-activity-metric')).toBeNull();
+    expect(
+      result.queryAllByTestId(/^weekly-activity-day-\d{4}-\d{2}-\d{2}$/),
+    ).toHaveLength(0);
+  });
+
+  it('trata un array vacío como el mismo estado vacío', async () => {
+    const result = await renderChart([]);
+
+    expect(result.getByTestId('weekly-activity-header')).toBeOnTheScreen();
+    expect(result.getByTestId('weekly-activity-empty')).toHaveTextContent(
+      'Aún no hay actividad registrada',
+    );
+    expect(result.queryByTestId('weekly-activity-metric')).toBeNull();
+  });
+
+  it('mantiene las siete columnas si al menos un día está medido', async () => {
+    const result = await renderChart(
+      makeWeek('2026-09-02', [null, null, null, 0, null, null, null]),
+    );
+
+    expect(result.getByTestId('weekly-activity-header')).toBeOnTheScreen();
+    expect(result.queryByTestId('weekly-activity-empty')).toBeNull();
+    expect(result.getByTestId('weekly-activity-metric')).toBeOnTheScreen();
+    expect(
+      result.queryAllByTestId(/^weekly-activity-day-\d{4}-\d{2}-\d{2}$/),
+    ).toHaveLength(7);
+  });
+});
