@@ -569,3 +569,39 @@ describe('R7: la gráfica dibuja eje Y, rejilla y línea de media', () => {
     ).toBeNull();
   });
 });
+
+describe('R11: la gráfica se dimensiona por onLayout, no por porcentaje', () => {
+  it('reserva la altura y no monta el gráfico antes de medir', async () => {
+    const result = await renderChartWithProps(
+      {
+        days: makeWeek('2026-09-02', [10, 20, 30, 40, 50, 60, 70]),
+        weekComparison: NO_COMPARISON,
+      },
+      'es',
+      false,
+    );
+
+    expect(
+      result.getByTestId('weekly-activity-chart-layout').props.style,
+    ).toEqual(
+      expect.objectContaining({
+        height: CHART_PAD_TOP + CHART_PLOT_HEIGHT + CHART_PAD_BOTTOM,
+      }),
+    );
+    expect(mockBarChart).not.toHaveBeenCalled();
+  });
+
+  it('pasa ancho y alto numéricos después de medir 295 px', async () => {
+    await renderChart(
+      makeWeek('2026-09-02', [10, 20, 30, 40, 50, 60, 70]),
+    );
+    const props = latestBarChartProps();
+
+    expect(props.width).toBe(295);
+    expect(typeof props.width).toBe('number');
+    expect(props.height).toBe(
+      CHART_PAD_TOP + CHART_PLOT_HEIGHT + CHART_PAD_BOTTOM,
+    );
+    expect(typeof props.height).toBe('number');
+  });
+});
