@@ -16,7 +16,7 @@ import { getPet, listPets } from '../../api/pets';
 import type { PetProfile } from '../../api/types';
 import { getMe } from '../../api/users';
 import { Card } from '../../components/card';
-import { PetAvatar } from '../../components/pet-avatar';
+import { PetHeroHeader } from '../../components/pet-hero-header';
 import { PetSwitcher } from '../../components/pet-switcher';
 import { useApi } from '../../hooks/use-api';
 import { usePetSelection } from '../../hooks/use-pet-selection';
@@ -55,30 +55,6 @@ function InfoRow({
       <Text className="flex-1 text-right text-sm font-semibold text-foreground">
         {value ?? t('profile.notRegistered')}
       </Text>
-    </View>
-  );
-}
-
-function PetHero({ pet }: { pet: PetProfile }) {
-  return (
-    <View
-      className="h-56 overflow-hidden rounded-card bg-default"
-      style={CONTINUOUS_CORNER}
-    >
-      <View className="h-full w-full items-center justify-center bg-accent-soft">
-        <PetAvatar
-          name={pet.name}
-          photoUrl={pet.photoUrl}
-          size={224}
-          testID="profile-pet-photo"
-        />
-      </View>
-      <View className="absolute inset-x-0 bottom-0 gap-1 bg-surface/90 p-4">
-        <Text className="text-2xl font-black text-foreground">{pet.name}</Text>
-        {pet.breed ? (
-          <Text className="font-semibold text-muted">{pet.breed}</Text>
-        ) : null}
-      </View>
     </View>
   );
 }
@@ -258,7 +234,7 @@ export function ProfileScreen() {
 
       {petLoading ? (
         <>
-          <Skeleton testID="profile-hero-skeleton" className="h-56 w-full rounded-card" />
+          <Skeleton testID="profile-hero-skeleton" className="h-80 w-full rounded-card" />
           <Skeleton testID="pet-info-skeleton" className="h-52 w-full rounded-card" />
         </>
       ) : null}
@@ -274,7 +250,7 @@ export function ProfileScreen() {
 
       {pet ? (
         <>
-          <PetHero pet={pet} />
+          <PetHeroHeader pet={pet} variant="card" />
           <PetPills pet={pet} />
           <Button
             testID="change-photo"
