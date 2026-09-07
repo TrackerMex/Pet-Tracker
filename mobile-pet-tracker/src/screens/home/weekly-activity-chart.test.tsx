@@ -7,6 +7,7 @@ import {
 } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
+import { StyleSheet } from 'react-native';
 import { BarChart } from 'react-native-chart-kit/v2';
 import { withDelay, withTiming } from 'react-native-reanimated';
 
@@ -132,11 +133,16 @@ jest.mock('@expo/ui/community/segmented-control', () => {
   const { View } = jest.requireActual<typeof import('react-native')>(
     'react-native',
   );
+  const MockSegmentedControl = ({
+    children,
+    ...props
+  }: Record<string, unknown>) =>
+    React.createElement(View, props, children as never);
 
   return {
     __esModule: true,
-    default: ({ children, ...props }: Record<string, unknown>) =>
-      React.createElement(View, props, children as never),
+    default: MockSegmentedControl,
+    SegmentedControl: MockSegmentedControl,
   };
 });
 
@@ -896,5 +902,115 @@ describe('R13: la semana entera sin dato se resuelve con un mensaje', () => {
     expect(
       result.queryAllByTestId(/^weekly-activity-day-\d{4}-\d{2}-\d{2}$/),
     ).toHaveLength(7);
+  });
+});
+
+describe('R8: tocar un día abre su detalle', () => {
+  it('abre tooltip y panel con las cuatro métricas y propaga la DayEntry completa', async () => {
+    const day = makeDay({ date: '2026-09-02' });
+    const onSelectDay = jest.fn();
+    const props = {
+      days: [day],
+      weekComparison: NO_COMPARISON,
+      onSelectDay,
+    };
+    const result = await renderChartWithProps(props);
+
+    await fireEvent.press(
+      result.getByTestId('weekly-activity-day-2026-09-02'),
+    );
+
+    expect(result.getByTestId('weekly-activity-tooltip')).toBeOnTheScreen();
+    expect(result.getByTestId('weekly-activity-detail')).toHaveTextContent(
+      'miércoles',
+    );
+    expect(
+      result.getByTestId('weekly-activity-detail-active-minutes'),
+    ).toHaveTextContent('45m');
+    expect(
+      result.getByTestId('weekly-activity-detail-distance'),
+    ).toHaveTextContent('2.4 km');
+    expect(
+      result.getByTestId('weekly-activity-detail-walks'),
+    ).toHaveTextContent('2');
+    expect(
+      result.getByTestId('weekly-activity-detail-rest'),
+    ).toHaveTextContent('12h 0m');
+
+    [
+      'weekly-activity-detail-active-minutes',
+      'weekly-activity-detail-distance',
+      'weekly-activity-detail-walks',
+      'weekly-activity-detail-rest',
+    ].forEach((testID) => {
+      expect(result.getByTestId(testID).props.style).toEqual(TABULAR_NUMS);
+    });
+    expect(onSelectDay).toHaveBeenCalledWith(day);
+  });
+
+  it('explica un día missing en vez de inventarle métricas', async () => {
+    const missing = makeDay({
+      date: '2026-09-02',
+      source: 'missing',
+      activeMinutes: null,
+      distanceM: null,
+      walkCount: null,
+      restMinutes: null,
+    });
+    const result = await renderChart([
+      missing,
+      makeDay({ date: '2026-09-03' }),
+    ]);
+
+    await fireEvent.press(
+      result.getByTestId('weekly-activity-day-2026-09-02'),
+    );
+
+    expect(result.getByTestId('weekly-activity-detail')).toHaveTextContent(
+      'Sin datos de este día',
+    );
+    expect(
+      result.queryByTestId('weekly-activity-detail-active-minutes'),
+    ).toBeNull();
+  });
+
+  it('usa la x de la barra y recorta el tooltip a ambos bordes', async () => {
+    const days = makeWeek('2026-09-02', [15, 20]);
+    const result = await renderChart(days);
+    const interaction = latestBarChartProps().interaction as {
+      mode: string;
+      onSelect: (event: Record<string, unknown>) => void;
+    };
+
+    expect(interaction.mode).toBe('tap');
+
+    await act(() =>
+      interaction.onSelect({
+        dataIndex: 1,
+        position: { x: 500, y: 50 },
+      }),
+    );
+
+    const rightStyle = StyleSheet.flatten(
+      result.getByTestId('weekly-activity-tooltip').props.style,
+    );
+    expect(rightStyle.left).toBeGreaterThanOrEqual(0);
+    expect(rightStyle.left + rightStyle.width).toBeLessThanOrEqual(295);
+    expect(result.getByTestId('weekly-activity-detail')).toHaveTextContent(
+      'jueves',
+    );
+
+    await act(() =>
+      interaction.onSelect({
+        dataIndex: 0,
+        position: { x: -20, y: 50 },
+      }),
+    );
+
+    expect(
+      StyleSheet.flatten(
+        result.getByTestId('weekly-activity-tooltip').props.style,
+      ).left,
+    ).toBe(0);
   });
 });

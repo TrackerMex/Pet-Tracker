@@ -1000,3 +1000,58 @@ describe('R7: el hero pinta los paseos de hoy', () => {
     expect(screen.queryByTestId('pet-hero-highlight-value')).toBeNull();
   });
 });
+
+describe('R8: el mapa solo se ofrece para hoy', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    const pet = makePet();
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+  });
+
+  it('ofrece el mapa solo para el día de hoy', async () => {
+    const days = [
+      makeDay({ date: '2026-09-01' }),
+      makeDay({ date: '2026-09-02' }),
+    ];
+    mockGetDailyActivity.mockResolvedValue({
+      kind: 'ok',
+      days,
+      weekComparison: { distanceM: null, activeMinutes: null, walkCount: null },
+    });
+
+    await renderHome();
+    await waitFor(() =>
+      expect(
+        screen.getByTestId('weekly-activity-day-2026-09-01'),
+      ).toBeVisible(),
+    );
+
+    await fireEvent.press(
+      screen.getByTestId('weekly-activity-day-2026-09-01'),
+    );
+    expect(screen.queryByTestId('weekly-activity-day-map')).toBeNull();
+
+    await fireEvent.press(
+      screen.getByTestId('weekly-activity-day-2026-09-02'),
+    );
+    expect(screen.getByTestId('weekly-activity-day-map')).toHaveTextContent(
+      'Ver en el mapa',
+    );
+
+    await fireEvent.press(screen.getByTestId('weekly-activity-day-map'));
+    expect(mockRouter.push).toHaveBeenCalledWith('/map');
+
+    await fireEvent.press(
+      screen.getByTestId('weekly-activity-day-2026-09-01'),
+    );
+    expect(screen.queryByTestId('weekly-activity-day-map')).toBeNull();
+  });
+});
