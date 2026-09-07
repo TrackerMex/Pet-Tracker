@@ -22,7 +22,8 @@
 ## #67 mobile-pet-hero-header — sesion UI (desde 2026-09-06)
 
 - **Branch**: `feature/67-mobile-pet-hero-header`, creada sobre main en 303fc19. Worktree principal `/home/claude/sites/Pet-Tracker`.
-- **Estado**: spec entregada en `specs/mobile-pet-hero-header/` (`status: spec_ready`, 1461 lineas en cuatro ficheros). **Parada en el gate humano**: nadie implementa sin aprobacion firmada en branch.
+- **Estado**: spec **aprobada** el 2026-09-07. El humano firmo la casilla de §Aprobacion en su propio commit `8cf28e5` sobre la branch; el leader recogio ese commit y paso el frontmatter de los cuatro ficheros a `approved`. Implementacion en marcha.
+- **Implementador: el subagente `implementer`**, no Codex CLI, por la excepcion de `CLAUDE.md` §Excepciones: Codex sigue sin cuota (la nota del 2026-09-06 decia "hasta el martes" y hoy es lunes). Se asume por escrito que la revision cruzada es mas debil de lo normal, porque quien implementa y quien revisa salen del mismo modelo.
 - **Lo que el humano tiene que firmar**: (a) la spec, y (b) las **nueve enmiendas A1-A9** de R10, que tocan `specs/mobile-figma-polish/`, `specs/mobile-pets-profile/`, `docs/ui-guidelines.md` y `docs/conventions.md`. El bloque de enmienda es literal y su linea de firma se entrega sin marcar; el test de R10 lo lee de `design.md` §9, no de una copia.
 - **Cuatro hallazgos de la spec que corrigen premisas del encargo**, todos verificados contra el arbol y no de memoria:
   1. `backgroundImage` a secas **no existe** en RN 0.86.2: solo `experimental_backgroundImage` (`StyleSheetTypes.d.ts:520`). Y `bg-linear-to-b` no resuelve — el parser de gradientes de uniwind espera paradas literales y `--tw-gradient` no aparece en el paquete. Va por el prop `style`.
