@@ -7,8 +7,8 @@ import { PetAvatar } from './pet-avatar';
 
 /**
  * Alto visible de la fotografía. Valor de un solo uso y de un solo fichero: la
- * carta pide token a partir de la segunda repetición, y `h-[260px]` está
- * prohibido. Se exporta para los tests, no para otros componentes.
+ * carta pide token a partir de la segunda repetición, y una clase arbitraria de
+ * altura está prohibida. Se exporta para los tests, no para otros componentes.
  */
 export const PET_HERO_MEDIA_HEIGHT = 260;
 
