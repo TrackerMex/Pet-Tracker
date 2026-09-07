@@ -28,6 +28,7 @@ import {
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
+import { connectivityLabelKey } from '../../utils/device-connectivity';
 
 function isPetsError(state: PetsState): boolean {
   return ['error', 'unreachable', 'missing-config'].includes(state.kind);
@@ -86,6 +87,9 @@ export function PairingScreen() {
       ? pets.data.pets.find(({ id }) => id === selectedPetId)
       : undefined;
   const hasSelectedDevice = selectedPet?.device != null;
+  const connectivityKey = connectivityLabelKey(
+    selectedPet?.device?.connectivity ?? null,
+  );
   const trackingFn = useMemo(
     () =>
       phase === 'idle' && selectedPetId && hasSelectedDevice
@@ -419,7 +423,7 @@ export function PairingScreen() {
               <DeviceRow
                 label={t('pairing.connection')}
                 testID="device-connectivity"
-                value={selectedPet.device.connectivity ?? '—'}
+                value={connectivityKey === null ? '—' : t(connectivityKey)}
               />
               <DeviceRow
                 label={t('pairing.lastMessage')}
