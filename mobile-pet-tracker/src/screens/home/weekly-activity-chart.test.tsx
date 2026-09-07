@@ -12,6 +12,7 @@ import { BarChart } from 'react-native-chart-kit/v2';
 import type { DayEntry, WeekComparison } from '../../api/types';
 import { LanguageProvider } from '../../providers/language-provider';
 import {
+  BAR_MIN_HEIGHT,
   BAR_ENTRY_DURATION_MS,
   BAR_ENTRY_STAGGER_MS,
   CHART_AXIS_LABEL_SIZE,
@@ -134,6 +135,24 @@ jest.mock('@expo/ui/community/segmented-control', () => {
     __esModule: true,
     default: ({ children, ...props }: Record<string, unknown>) =>
       React.createElement(View, props, children as never),
+  };
+});
+
+jest.mock('react-native-svg', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const actual = jest.requireActual<typeof import('react-native-svg')>(
+    'react-native-svg',
+  );
+  const { View } = jest.requireActual<typeof import('react-native')>(
+    'react-native',
+  );
+
+  return {
+    ...actual,
+    Rect: (mockProps: Record<string, unknown>) =>
+      React.createElement(View, mockProps),
+    Line: (mockProps: Record<string, unknown>) =>
+      React.createElement(View, mockProps),
   };
 });
 
@@ -412,5 +431,79 @@ describe('R3: la letra del eje sale de la fecha, no del índice', () => {
     } finally {
       process.env.TZ = previousTimezone;
     }
+  });
+});
+
+describe('R5: un día sin dato no es una barra de altura cero', () => {
+  it('separa el guion del día ausente y el valor cero medido', async () => {
+    const missing = makeDay({
+      date: '2026-09-06',
+      source: 'missing',
+      activeMinutes: null,
+    });
+    const resting = makeDay({
+      date: '2026-09-07',
+      source: 'stored',
+      activeMinutes: 0,
+    });
+    const result = await renderChart([missing, resting]);
+
+    expect(
+      result.getByTestId('weekly-activity-missing-2026-09-06'),
+    ).toHaveTextContent('—');
+    expect(
+      result.queryByTestId('weekly-activity-value-2026-09-06'),
+    ).toBeNull();
+    expect(
+      result.getByTestId('weekly-activity-value-2026-09-07'),
+    ).toHaveTextContent('0m');
+    expect(
+      result.queryByTestId('weekly-activity-missing-2026-09-07'),
+    ).toBeNull();
+    expect(result.getByTestId('weekly-activity-bar-2026-09-07').props).toEqual(
+      expect.objectContaining({
+        height: BAR_MIN_HEIGHT,
+        y: 100 - BAR_MIN_HEIGHT,
+      }),
+    );
+  });
+
+  it('pasa null al gráfico para missing y conserva cero para stored', async () => {
+    const days = [
+      makeDay({
+        date: '2026-09-06',
+        source: 'missing',
+        activeMinutes: null,
+      }),
+      makeDay({
+        date: '2026-09-07',
+        source: 'stored',
+        activeMinutes: 0,
+      }),
+    ];
+
+    await renderChart(days);
+
+    expect(latestBarChartProps().data).toEqual([
+      expect.objectContaining({ date: '2026-09-06', value: null }),
+      expect.objectContaining({ date: '2026-09-07', value: 0 }),
+    ]);
+  });
+
+  it('usa source aunque una métrica stored sea null', async () => {
+    const result = await renderChart([
+      makeDay({
+        date: '2026-09-07',
+        source: 'stored',
+        activeMinutes: null,
+      }),
+    ]);
+
+    expect(
+      result.getByTestId('weekly-activity-value-2026-09-07'),
+    ).toBeOnTheScreen();
+    expect(
+      result.queryByTestId('weekly-activity-missing-2026-09-07'),
+    ).toBeNull();
   });
 });
