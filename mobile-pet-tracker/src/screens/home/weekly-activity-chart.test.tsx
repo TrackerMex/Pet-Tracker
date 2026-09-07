@@ -711,6 +711,7 @@ describe('R9: cada columna se anuncia por separado', () => {
         source: 'missing',
         activeMinutes: null,
       }),
+      makeDay({ date: '2026-09-07', activeMinutes: 0 }),
     ]);
 
     expect(
@@ -860,9 +861,11 @@ describe('R13: la semana entera sin dato se resuelve con un mensaje', () => {
       makeWeek('2026-09-02', [null, null, null, null, null, null, null]),
     );
 
-    expect(result.getByTestId('weekly-activity-header')).toHaveTextContent(
-      'Actividad semanal',
-    );
+    expect(
+      within(result.getByTestId('weekly-activity-header')).getByText(
+        'Actividad semanal',
+      ),
+    ).toBeOnTheScreen();
     expect(result.getByTestId('weekly-activity-empty')).toHaveTextContent(
       'Aún no hay actividad registrada',
     );

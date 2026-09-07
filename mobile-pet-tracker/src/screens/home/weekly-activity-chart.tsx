@@ -1,4 +1,5 @@
-import SegmentedControl, {
+import {
+  SegmentedControl,
   type NativeSegmentedControlChangeEvent,
 } from '@expo/ui/community/segmented-control';
 import { useEffect, useState, type JSX } from 'react';
@@ -258,6 +259,7 @@ export function WeeklyActivityChart(
     ({ day, value }) =>
       day.source !== 'missing' && typeof value === 'number' && value > 0,
   );
+  const hasMeasuredDay = days.some((day) => day.source !== 'missing');
   const trend = weekComparison[selectedMetric];
   const handleChartLayout = (event: LayoutChangeEvent) => {
     setChartWidth(event.nativeEvent.layout.width);
@@ -266,57 +268,70 @@ export function WeeklyActivityChart(
     setSelectedMetricIndex(event.nativeEvent.selectedSegmentIndex);
   };
 
-  void weekComparison;
-
   return (
     <Card testID="weekly-activity-card" className="gap-2">
-      <SegmentedControl
-        testID="weekly-activity-metric"
-        values={metricLabels}
-        selectedIndex={selectedMetricIndex}
-        tintColor={accentStrong}
-        onChange={handleMetricChange}
-      />
-      {trend !== null ? (
-        <View
-          testID="weekly-activity-trend"
-          className="flex-row items-center gap-1 text-muted"
-        >
-          {trend > 0 ? (
-            <TrendUp
-              testID="weekly-activity-trend-up"
-              size={16}
-              color={muted}
-            />
-          ) : null}
-          {trend < 0 ? (
-            <TrendDown
-              testID="weekly-activity-trend-down"
-              size={16}
-              color={muted}
-            />
-          ) : null}
+      <View
+        testID="weekly-activity-header"
+        className="flex-row items-start justify-between gap-3"
+      >
+        <View>
+          <Text className="text-base font-bold text-foreground">
+            {t('weeklyActivity.title')}
+          </Text>
+          <Text className="text-2xs text-muted">
+            {t('weeklyActivity.lastSevenDays')}
+          </Text>
+        </View>
+        {average !== null ? (
           <Text
-            testID="weekly-activity-trend-label"
+            testID="weekly-activity-average-label"
             className="text-xs text-muted"
             style={TABULAR_NUMS}
           >
-            {t('weeklyActivity.trend', {
-              percent: formatTrendPercent(trend, locale),
-            })}
+            {formatMetricValue(selectedMetric, average)}
           </Text>
-        </View>
-      ) : null}
-      {average !== null ? (
-        <Text
-          testID="weekly-activity-average-label"
-          className="self-end text-xs text-muted"
-          style={TABULAR_NUMS}
-        >
-          {formatMetricValue(selectedMetric, average)}
-        </Text>
-      ) : null}
-      <View
+        ) : null}
+      </View>
+      {hasMeasuredDay ? (
+        <>
+          <SegmentedControl
+            testID="weekly-activity-metric"
+            values={metricLabels}
+            selectedIndex={selectedMetricIndex}
+            tintColor={accentStrong}
+            onChange={handleMetricChange}
+          />
+          {trend !== null ? (
+            <View
+              testID="weekly-activity-trend"
+              className="flex-row items-center gap-1 text-muted"
+            >
+              {trend > 0 ? (
+                <TrendUp
+                  testID="weekly-activity-trend-up"
+                  size={16}
+                  color={muted}
+                />
+              ) : null}
+              {trend < 0 ? (
+                <TrendDown
+                  testID="weekly-activity-trend-down"
+                  size={16}
+                  color={muted}
+                />
+              ) : null}
+              <Text
+                testID="weekly-activity-trend-label"
+                className="text-xs text-muted"
+                style={TABULAR_NUMS}
+              >
+                {t('weeklyActivity.trend', {
+                  percent: formatTrendPercent(trend, locale),
+                })}
+              </Text>
+            </View>
+          ) : null}
+          <View
         testID="weekly-activity-chart-layout"
         style={{ height: CHART_HEIGHT }}
         onLayout={handleChartLayout}
@@ -359,8 +374,8 @@ export function WeeklyActivityChart(
             testID="weekly-activity-bar-chart"
           />
         ) : null}
-      </View>
-      <View
+          </View>
+          <View
         testID="weekly-activity-day-row"
         className="flex-row"
         style={{
@@ -409,7 +424,16 @@ export function WeeklyActivityChart(
             )}
           </Pressable>
         ))}
-      </View>
+          </View>
+        </>
+      ) : (
+        <Text
+          testID="weekly-activity-empty"
+          className="py-6 text-center text-sm text-muted"
+        >
+          {t('weeklyActivity.noDataYet')}
+        </Text>
+      )}
     </Card>
   );
 }
