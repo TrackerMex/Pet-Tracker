@@ -398,4 +398,19 @@ describe('R3: la letra del eje sale de la fecha, no del índice', () => {
       ),
     ).toEqual(['Wed', 'Thu', 'Fri', 'Sat', 'Sun', 'Mon', 'Tue']);
   });
+
+  it('no se desplaza un día en una zona horaria negativa', () => {
+    const previousTimezone = process.env.TZ;
+
+    try {
+      process.env.TZ = 'America/Mexico_City';
+
+      expect(weekdayLabel('2026-09-06', 'es-MX', 'short')).toBe('dom');
+      expect(readFileSync(chartSourcePath, 'utf8')).not.toContain(
+        'new Date(date)',
+      );
+    } finally {
+      process.env.TZ = previousTimezone;
+    }
+  });
 });
