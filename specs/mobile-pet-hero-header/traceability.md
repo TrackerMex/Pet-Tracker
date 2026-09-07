@@ -26,9 +26,9 @@ queda verde, nunca al final.
 | R7b | `src/__tests__/ui-language.test.ts` (candado de catálogo ya existente: una clave sin traducción en algún idioma no compila) + `src/__tests__/ui-copy-table.ts` fila nueva de `R3_HOME` | verde `0ed208c` (candado de catálogo preexistente) |
 | R8 | `src/components/__tests__/pet-hero-header.test.tsx`::`R8: el hero sin mascota es un skeleton dimensionado` | rojo `fba8736` → verde `63a4799` |
 | R8b | `src/app/(tabs)/__tests__/home.test.tsx`::`R8: el error del detalle deja el selector alcanzable` | rojo `0918704` → verde `560fe57` |
-| R9 | Requisito de **verificación** (C4 vía (b)): suite móvil completa verde + **prueba de mutación** con las tres mutaciones de [[tasks]] R9 (1) plantadas en `src/components/pet-hero-header.tsx`, con la evidencia en `progress/review_mobile-pet-hero-header.md` | pendiente |
-| R9b | Los deltas contra `303fc19` de la tabla de [[requirements]] R9b, verificados por el reviewer rehaciendo cada grep | pendiente |
-| R10 | `src/__tests__/hero-header-amendments.test.ts`::`R10: las specs enmendadas por #67 llevan su bloque` | pendiente |
+| R9 | Requisito de **verificación** (C4 vía (b)): suite móvil completa verde + **prueba de mutación** con las tres mutaciones de [[tasks]] R9 (1) plantadas en `src/components/pet-hero-header.tsx`, con la evidencia en `progress/impl_mobile-pet-hero-header.md` §prueba de mutación | mutaciones sobre `7fecffe`; candados en `b85b21d` y `7fecffe` |
+| R9b | Los deltas contra `303fc19` de la tabla de [[requirements]] R9b, verificados por el reviewer rehaciendo cada grep | `7fecffe` (deltas medidos contra `303fc19`, greps en el informe) |
+| R10 | `src/__tests__/hero-header-amendments.test.ts`::`R10: las specs enmendadas por #67 llevan su bloque` | rojo `591ec19` → verde `2bf868d` |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente" en la columna
 Commit.
