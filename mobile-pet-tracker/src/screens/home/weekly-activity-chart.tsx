@@ -123,6 +123,38 @@ function formatMetricValue(
   return fmtMinutes(value);
 }
 
+function dayAccessibilityLabel(
+  day: DayEntry,
+  metric: WeeklyMetric,
+  locale: string,
+  t: ReturnType<typeof useTranslate>,
+): string {
+  const dayName = weekdayLabel(day.date, locale, 'long');
+
+  if (day.source === 'missing') {
+    return t('weeklyActivity.dayLabelMissing', { day: dayName });
+  }
+
+  const value = metricValue(day, metric);
+
+  if (metric === 'distanceM') {
+    return t('weeklyActivity.dayLabelDistance', {
+      day: dayName,
+      value: fmtKm(value),
+    });
+  }
+  if (metric === 'walkCount') {
+    return t('weeklyActivity.dayLabelWalks', {
+      day: dayName,
+      value: fmtCount(value),
+    });
+  }
+  return t('weeklyActivity.dayLabelActiveMinutes', {
+    day: dayName,
+    value: value ?? '—',
+  });
+}
+
 export function weekdayLabel(
   date: string,
   locale: string,
@@ -144,6 +176,13 @@ export function WeeklyActivityChart(
   const [selectedMetricIndex, setSelectedMetricIndex] = useState(0);
   const selectedMetric =
     WEEKLY_METRICS[selectedMetricIndex] ?? WEEKLY_METRICS[0];
+  const metricLabels = [
+    t('weeklyActivity.metricActiveMinutes'),
+    t('weeklyActivity.metricDistance'),
+    t('weeklyActivity.metricWalks'),
+  ];
+  const selectedMetricLabel =
+    metricLabels[selectedMetricIndex] ?? metricLabels[0];
   const [accentStrong, muted, border, foreground, surface] = useThemeColors([
     'accent-strong',
     'muted',
@@ -182,11 +221,7 @@ export function WeeklyActivityChart(
     <Card testID="weekly-activity-card" className="gap-2">
       <SegmentedControl
         testID="weekly-activity-metric"
-        values={[
-          t('weeklyActivity.metricActiveMinutes'),
-          t('weeklyActivity.metricDistance'),
-          t('weeklyActivity.metricWalks'),
-        ]}
+        values={metricLabels}
         selectedIndex={selectedMetricIndex}
         tintColor={accentStrong}
         onChange={handleMetricChange}
@@ -217,6 +252,9 @@ export function WeeklyActivityChart(
             showHorizontalGridLines
             yTickCount={4}
             formatYLabel={formatAxisLabel}
+            accessibilityLabel={t('weeklyActivity.chartSummary', {
+              metric: selectedMetricLabel.toLocaleLowerCase(locale),
+            })}
             theme={{
               series: [accentStrong],
               grid: border,
@@ -254,6 +292,14 @@ export function WeeklyActivityChart(
             key={day.date}
             testID={`weekly-activity-day-${day.date}`}
             className="min-h-11 flex-1 items-center justify-end"
+            accessible
+            accessibilityRole="button"
+            accessibilityLabel={dayAccessibilityLabel(
+              day,
+              selectedMetric,
+              locale,
+              t,
+            )}
             onPress={() => undefined}
           >
             <Text
