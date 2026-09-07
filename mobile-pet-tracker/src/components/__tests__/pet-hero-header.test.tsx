@@ -279,3 +279,34 @@ describe('R3: el texto del hero va sobre fondo opaco', () => {
     ).toBeVisible();
   });
 });
+
+describe('R4: el slot superior respeta la safe area', () => {
+  afterEach(() => cleanup());
+
+  it('baja el slot con insets.top + 12, nunca con un valor fijo', async () => {
+    await renderHero(
+      <PetHeroHeader pet={makePet()} variant="bleed">
+        <Text testID="slot-child">selector</Text>
+      </PetHeroHeader>,
+    );
+
+    expect(screen.getByTestId('pet-hero-slot').props.style).toMatchObject({
+      paddingTop: 52,
+    });
+  });
+
+  it('lee la safe area del hook, no de una constante del fichero', () => {
+    const source = readSource('components', 'pet-hero-header.tsx');
+
+    expect(source).toContain('useSafeAreaInsets');
+    expect(source).toContain('insets.top + 12');
+  });
+
+  it('no gasta alto de foto cuando no hay slot', async () => {
+    await renderHero(<PetHeroHeader pet={makePet()} variant="card" />);
+
+    expect(screen.queryByTestId('pet-hero-slot')).toBeNull();
+    expect(screen.queryByTestId('pet-hero-fade-top')).toBeNull();
+    expect(screen.getByTestId('pet-hero-fade-bottom')).toBeVisible();
+  });
+});
