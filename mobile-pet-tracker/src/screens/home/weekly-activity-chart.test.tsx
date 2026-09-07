@@ -114,7 +114,7 @@ jest.mock('react-native-chart-kit/v2', () => {
       return React.createElement(
         View,
         {
-          accessibilityLabel: props.accessibilityLabel,
+          accessibilityLabel: props.accessibilityLabel as string | undefined,
           testID: (props.testID as string | undefined) ??
             'weekly-activity-bar-chart',
         },
