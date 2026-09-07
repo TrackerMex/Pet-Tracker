@@ -37,7 +37,11 @@ export function weekdayLabel(
   locale: string,
   style: 'short' | 'long',
 ): string {
-  return new Date(date).toLocaleDateString(locale, { weekday: style });
+  const [year, month, day] = date.split('-').map(Number);
+
+  return new Date(year, month - 1, day).toLocaleDateString(locale, {
+    weekday: style,
+  });
 }
 
 export function WeeklyActivityChart(
