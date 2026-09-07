@@ -9,7 +9,6 @@ import {
 import { router, useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
-import { StyleSheet } from 'react-native';
 
 import {
   getDailyActivity,
@@ -1181,8 +1180,10 @@ describe('R14: la Home monta la actividad semanal sin pedir nada nuevo', () => {
 
     expect(skeleton.props.className).toContain('w-full');
     expect(skeleton.props.className).toContain('rounded-card');
-    expect(StyleSheet.flatten(skeleton.props.style)).toEqual(
-      expect.objectContaining({ height: expect.any(Number) }),
+    expect(skeleton.props.style).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ height: expect.any(Number) }),
+      ]),
     );
 
     await loading.unmount();

@@ -6,7 +6,6 @@ import {
 } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
-import { StyleSheet } from 'react-native';
 import { BarChart } from 'react-native-chart-kit/v2';
 import { withDelay, withTiming } from 'react-native-reanimated';
 
@@ -316,6 +315,18 @@ function latestBarChartProps(): Record<string, unknown> {
 
   expect(call).toBeDefined();
   return call?.[0] as Record<string, unknown>;
+}
+
+function mergeObjectStyles(style: unknown): Record<string, number> {
+  const entries = Array.isArray(style) ? style : [style];
+
+  return entries.reduce<Record<string, number>>(
+    (merged, entry) =>
+      typeof entry === 'object' && entry !== null
+        ? { ...merged, ...entry }
+        : merged,
+    {},
+  );
 }
 
 const mockBarChart = jest.mocked(BarChart);
@@ -1001,7 +1012,7 @@ describe('R8: tocar un día abre su detalle', () => {
       }),
     );
 
-    const rightStyle = StyleSheet.flatten(
+    const rightStyle = mergeObjectStyles(
       result.getByTestId('weekly-activity-tooltip').props.style,
     );
     expect(rightStyle.left).toBeGreaterThanOrEqual(0);
@@ -1018,7 +1029,7 @@ describe('R8: tocar un día abre su detalle', () => {
     );
 
     expect(
-      StyleSheet.flatten(
+      mergeObjectStyles(
         result.getByTestId('weekly-activity-tooltip').props.style,
       ).left,
     ).toBe(0);
