@@ -7,7 +7,7 @@ import {
 import { blobatar } from 'blobatar';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
-import { Text } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 import { Uniwind } from 'uniwind';
 
 import type { PetProfile } from '../../api/types';
@@ -308,5 +308,48 @@ describe('R4: el slot superior respeta la safe area', () => {
     expect(screen.queryByTestId('pet-hero-slot')).toBeNull();
     expect(screen.queryByTestId('pet-hero-fade-top')).toBeNull();
     expect(screen.getByTestId('pet-hero-fade-bottom')).toBeVisible();
+  });
+});
+
+describe('R8: el hero sin mascota es un skeleton dimensionado', () => {
+  afterEach(() => cleanup());
+
+  it('reserva el alto exacto de la zona de medios', async () => {
+    await renderHero(<PetHeroHeader pet={null} variant="bleed" />);
+
+    const skeleton = screen.getByTestId('pet-hero-skeleton');
+
+    expect(StyleSheet.flatten(skeleton.props.style)).toMatchObject({
+      height: PET_HERO_MEDIA_HEIGHT,
+    });
+    expect(screen.queryByTestId('pet-hero-media')).toBeNull();
+  });
+
+  it('sigue montando el slot mientras el detalle carga', async () => {
+    await renderHero(
+      <PetHeroHeader pet={null} variant="bleed">
+        <Text testID="slot-child">selector</Text>
+      </PetHeroHeader>,
+    );
+
+    expect(screen.getByTestId('pet-hero-slot')).toBeVisible();
+    expect(screen.getByTestId('slot-child')).toBeVisible();
+    expect(screen.getByTestId('pet-hero-skeleton')).toBeVisible();
+  });
+
+  it('reserva también las dos líneas de la banda inferior', async () => {
+    await renderHero(<PetHeroHeader pet={null} variant="bleed" />);
+
+    const caption = screen.getByTestId('pet-hero-caption');
+
+    expect(within(caption).queryByTestId('pet-hero-name')).toBeNull();
+    expect(within(caption).queryAllByText(/\S/)).toEqual([]);
+  });
+
+  it('no degrada a un Spinner suelto', () => {
+    const source = readSource('components', 'pet-hero-header.tsx');
+
+    expect(source).toContain("import { Skeleton } from 'heroui-native';");
+    expect(source).not.toContain('Spinner');
   });
 });
