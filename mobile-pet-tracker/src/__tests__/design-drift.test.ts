@@ -231,3 +231,31 @@ describe('#68 R18: la actividad semanal no mete drift de estilo', () => {
     expect(chartSource).not.toMatch(/\bpreset=/);
   });
 });
+
+describe('#68 E1: la carta retira connectivity de los enum crudos', () => {
+  const charter = readFileSync(
+    join(projectRoot, '..', 'docs', 'ui-guidelines.md'),
+    'utf8',
+  );
+  const start = charter.indexOf(
+    '- **Los valores de enum que la API devuelve se pintan crudos**:',
+  );
+  const end = charter.indexOf('\n\n## Checklist de autocrítica', start);
+  const corollary = charter.slice(start, end);
+  const rawEnumList = corollary.slice(0, corollary.indexOf('. Siguen'));
+
+  it('conserva crudos solo los cuatro ámbitos aún pendientes', () => {
+    expect(rawEnumList).toContain('`pet.sex`');
+    expect(rawEnumList).toContain('`document.type`');
+    expect(rawEnumList).toContain('`foodType`');
+    expect(rawEnumList).toContain('`activityLevel`');
+    expect(rawEnumList).not.toContain('`device.connectivity`');
+  });
+
+  it('registra que connectivity se resuelve por catálogo desde R16', () => {
+    expect(corollary).toContain(
+      '`device.connectivity` dejó de pintarse crudo en la feature #68 (R16)',
+    );
+    expect(corollary).toContain('`src/utils/device-connectivity.ts`');
+  });
+});
