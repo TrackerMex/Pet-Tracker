@@ -133,7 +133,7 @@ describe('R9: mobile-pets-profile sin drift', () => {
     routeLengths.forEach(({ lines }) => expect(lines).toBeLessThan(10));
   });
 
-  it('contains dependencies to the two approved additions', () => {
+  it('contains the approved dependencies', () => {
     const packageJson = JSON.parse(
       readFileSync(join(projectRoot, 'package.json'), 'utf8'),
     ) as { dependencies: Record<string, string> };
@@ -142,6 +142,7 @@ describe('R9: mobile-pets-profile sin drift', () => {
     expect(packageJson.dependencies['expo-image-picker']).toBe('~57.0.13');
     expect(packageJson.dependencies['@blobatar/react']).toBeUndefined();
     expect(packageJson.dependencies['@gorhom/bottom-sheet']).toBe('^5.2.14');
+    expect(packageJson.dependencies['react-native-chart-kit']).toBe('7.0.4');
   });
 
   it('has an implementation trace instead of a pending R9 row', () => {
