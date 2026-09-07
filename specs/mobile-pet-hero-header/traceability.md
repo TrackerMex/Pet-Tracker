@@ -21,7 +21,7 @@ queda verde, nunca al final.
 | R4 | `src/components/__tests__/pet-hero-header.test.tsx`::`R4: el slot superior respeta la safe area` | rojo `42f7c1c` → verde `f0ceb21` |
 | R5 | `src/app/(tabs)/__tests__/home.test.tsx`::`R5: Home usa el hero compartido` | rojo `0918704` → verde `560fe57` |
 | R5b | mismo `describe` que R5 → `it('conserva gap y paddingBottom y saca el padding horizontal a un envoltorio')` | rojo `0918704` → verde `560fe57` |
-| R6 | `src/screens/profile/index.test.tsx`::`R6: Profile usa el hero compartido` | pendiente |
+| R6 | `src/screens/profile/index.test.tsx`::`R6: Profile usa el hero compartido` | rojo `3240995` → verde `87477fe` |
 | R7 | `src/app/(tabs)/__tests__/home.test.tsx`::`R7: el hero pinta los paseos de hoy` **y** `src/screens/profile/index.test.tsx`::`R6: Profile usa el hero compartido` → `it('no pinta dato destacado')` | pendiente |
 | R7b | `src/__tests__/ui-language.test.ts` (candado de catálogo ya existente: una clave sin traducción en algún idioma no compila) + `src/__tests__/ui-copy-table.ts` fila nueva de `R3_HOME` | pendiente |
 | R8 | `src/components/__tests__/pet-hero-header.test.tsx`::`R8: el hero sin mascota es un skeleton dimensionado` | rojo `fba8736` → verde `63a4799` |
