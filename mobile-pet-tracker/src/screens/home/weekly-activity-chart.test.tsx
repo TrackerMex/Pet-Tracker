@@ -8,6 +8,7 @@ import {
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
 import { BarChart } from 'react-native-chart-kit/v2';
+import { withDelay, withTiming } from 'react-native-reanimated';
 
 import type { DayEntry, WeekComparison } from '../../api/types';
 import { LanguageProvider } from '../../providers/language-provider';
@@ -290,6 +291,8 @@ function latestBarChartProps(): Record<string, unknown> {
 }
 
 const mockBarChart = jest.mocked(BarChart);
+const mockWithDelay = jest.mocked(withDelay);
+const mockWithTiming = jest.mocked(withTiming);
 
 beforeEach(() => {
   void act;
@@ -705,5 +708,44 @@ describe('R9: cada columna se anuncia por separado', () => {
     expect(readFileSync(chartSourcePath, 'utf8')).not.toContain(
       'getBarChartAccessibilitySummary',
     );
+  });
+});
+
+describe('R10: las barras entran animadas y respetan reduced motion', () => {
+  it('sale en la geometría final sin timing cuando se reduce el movimiento', async () => {
+    mockUseReducedMotion.mockReturnValue(true);
+    const result = await renderChart([
+      makeDay({ date: '2026-09-05', activeMinutes: 45 }),
+    ]);
+
+    expect(result.getByTestId('weekly-activity-bar-2026-09-05').props).toEqual(
+      expect.objectContaining({ height: 45, y: 55 }),
+    );
+    expect(mockWithTiming).not.toHaveBeenCalled();
+    expect(mockWithDelay).not.toHaveBeenCalled();
+  });
+
+  it('escalona por índice y usa la duración de entrada acordada', async () => {
+    mockUseReducedMotion.mockReturnValue(false);
+    await renderChart([
+      makeDay({
+        date: '2026-09-04',
+        source: 'missing',
+        activeMinutes: null,
+      }),
+      makeDay({ date: '2026-09-05', activeMinutes: 45 }),
+    ]);
+
+    expect(mockWithTiming).toHaveBeenCalledWith(1, {
+      duration: BAR_ENTRY_DURATION_MS,
+    });
+    expect(mockWithDelay).toHaveBeenCalledWith(
+      BAR_ENTRY_STAGGER_MS,
+      expect.anything(),
+    );
+    const source = readFileSync(chartSourcePath, 'utf8');
+
+    expect(source).toContain('Animated.createAnimatedComponent(Rect)');
+    expect(source).toContain('useAnimatedProps');
   });
 });
