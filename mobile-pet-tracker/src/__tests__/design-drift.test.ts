@@ -109,8 +109,9 @@ describe('R9: mobile-pets-profile sin drift', () => {
     expect(violations).toEqual([]);
   });
 
-  it('keeps the three Expo Router entrypoints thin', () => {
+  it('keeps the four Expo Router entrypoints thin', () => {
     const routes = [
+      'app/(tabs)/home.tsx',
       'app/(tabs)/profile.tsx',
       'app/(tabs)/pets/add.tsx',
       'app/(tabs)/pets/[petId]/docs.tsx',
