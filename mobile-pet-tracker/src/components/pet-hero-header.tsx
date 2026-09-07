@@ -3,6 +3,7 @@ import { Text, View } from 'react-native';
 
 import type { PetProfile } from '../api/types';
 import { CONTINUOUS_CORNER } from '../theme/native-styles';
+import { PetAvatar } from './pet-avatar';
 
 /**
  * Alto visible de la fotografía. Valor de un solo uso y de un solo fichero: la
@@ -44,6 +45,18 @@ export function PetHeroHeader({ pet, variant = 'card' }: PetHeroHeaderProps) {
       }
       style={CONTINUOUS_CORNER}
     >
+      <View style={{ height: PET_HERO_MEDIA_HEIGHT }}>
+        {pet ? (
+          <PetAvatar
+            name={pet.name}
+            photoUrl={pet.photoUrl}
+            cacheKey={pet.id}
+            size={{ width: '100%', height: PET_HERO_MEDIA_HEIGHT }}
+            testID="pet-hero-media"
+          />
+        ) : null}
+      </View>
+
       <View testID="pet-hero-caption" className="gap-1 px-6 pb-4 pt-1">
         <Text
           testID="pet-hero-name"
