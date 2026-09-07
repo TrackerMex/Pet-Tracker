@@ -86,8 +86,8 @@ describe('R2: PetAvatar acepta tamaño rectangular, cacheKey y degrada al fallar
     expect(avatar.props.preserveAspectRatio).toBeUndefined();
   });
 
-  it('pasa cacheKey dentro de source y lo omite cuando no se da', async () => {
-    const withKey = await render(
+  it('pasa cacheKey dentro de source', async () => {
+    const view = await render(
       <PetAvatar
         name="Luna"
         photoUrl="http://example.test/luna.jpg"
@@ -97,13 +97,13 @@ describe('R2: PetAvatar acepta tamaño rectangular, cacheKey y degrada al fallar
       />,
     );
 
-    expect(withKey.getByTestId('pet-avatar').props.source).toEqual([
+    expect(view.getByTestId('pet-avatar').props.source).toEqual([
       { uri: 'http://example.test/luna.jpg', cacheKey: 'pet-1' },
     ]);
+  });
 
-    cleanup();
-
-    const withoutKey = await render(
+  it('deja source intacto cuando no se pasa cacheKey', async () => {
+    const view = await render(
       <PetAvatar
         name="Luna"
         photoUrl="http://example.test/luna.jpg"
@@ -112,7 +112,7 @@ describe('R2: PetAvatar acepta tamaño rectangular, cacheKey y degrada al fallar
       />,
     );
 
-    expect(withoutKey.getByTestId('pet-avatar').props.source).toEqual([
+    expect(view.getByTestId('pet-avatar').props.source).toEqual([
       { uri: 'http://example.test/luna.jpg' },
     ]);
   });
@@ -131,7 +131,7 @@ describe('R2: PetAvatar acepta tamaño rectangular, cacheKey y degrada al fallar
 
     await act(async () => {
       fireEvent(view.getByTestId('pet-avatar'), 'error', {
-        error: 'signature expired',
+        nativeEvent: { error: 'signature expired' },
       });
     });
 
