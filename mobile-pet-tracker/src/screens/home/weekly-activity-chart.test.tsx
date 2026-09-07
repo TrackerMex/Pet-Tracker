@@ -653,3 +653,57 @@ describe('R6: el selector cambia de métrica sin volver a pedir nada', () => {
     ).toHaveTextContent('1.0 km');
   });
 });
+
+describe('R9: cada columna se anuncia por separado', () => {
+  it('anuncia el día medido en español e inglés con un botón de 44 pt', async () => {
+    const day = makeDay({ date: '2026-09-05', activeMinutes: 45 });
+    const spanish = await renderChart([day], NO_COMPARISON, 'es');
+    const spanishColumn = spanish.getByTestId(
+      'weekly-activity-day-2026-09-05',
+    );
+
+    expect(spanishColumn.props.accessible).toBe(true);
+    expect(spanishColumn.props.accessibilityRole).toBe('button');
+    expect(spanishColumn.props.accessibilityLabel).toBe(
+      'sábado: 45 minutos activos',
+    );
+    expect(spanishColumn.props.className).toContain('min-h-11');
+
+    await spanish.unmount();
+    const english = await renderChart([day], NO_COMPARISON, 'en');
+
+    expect(
+      english.getByTestId('weekly-activity-day-2026-09-05').props
+        .accessibilityLabel,
+    ).toBe('Saturday: 45 active minutes');
+  });
+
+  it('anuncia los huecos sin colapsar las siete columnas', async () => {
+    const result = await renderChart([
+      makeDay({
+        date: '2026-09-06',
+        source: 'missing',
+        activeMinutes: null,
+      }),
+    ]);
+
+    expect(
+      result.getByTestId('weekly-activity-day-2026-09-06').props
+        .accessibilityLabel,
+    ).toBe('domingo: sin datos');
+    expect(
+      result.getByTestId('weekly-activity-day-row').props.accessibilityLabel,
+    ).toBeUndefined();
+  });
+
+  it('da al gráfico un resumen propio traducido y no usa el inglés de la librería', async () => {
+    await renderChart([makeDay({ date: '2026-09-05' })]);
+
+    expect(latestBarChartProps().accessibilityLabel).toBe(
+      'Gráfica de minutos activos de los últimos 7 días',
+    );
+    expect(readFileSync(chartSourcePath, 'utf8')).not.toContain(
+      'getBarChartAccessibilitySummary',
+    );
+  });
+});
