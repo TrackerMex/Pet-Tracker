@@ -1,4 +1,5 @@
 import { cleanup, render, screen } from '@testing-library/react-native';
+import { blobatar } from 'blobatar';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
 
@@ -108,5 +109,38 @@ describe('R1: PetHeroHeader es el único hero compartido', () => {
     expect(source).not.toMatch(/from '\.\/pet-switcher'/);
     expect(source).not.toMatch(/from '\.\.\/api\/(?!types')/);
     expect(source).toContain("import type { PetProfile } from '../api/types';");
+  });
+});
+
+describe('R2: el hero pinta foto a sangre o blobatar', () => {
+  afterEach(() => cleanup());
+
+  it('pinta la foto de la mascota con la clave de caché estable', async () => {
+    const pet = makePet({ photoUrl: 'http://example.test/luna.jpg' });
+
+    await renderHero(<PetHeroHeader pet={pet} variant="bleed" />);
+
+    expect(screen.getByTestId('pet-hero-media').props.source).toEqual([
+      { uri: pet.photoUrl, cacheKey: pet.id },
+    ]);
+  });
+
+  it('pinta el blobatar determinista cuando no hay foto', async () => {
+    const pet = makePet({ photoUrl: null });
+
+    await renderHero(<PetHeroHeader pet={pet} variant="bleed" />);
+
+    const media = screen.getByTestId('pet-hero-media');
+
+    expect(media.props.xml).toContain('<svg');
+    expect(media.props.xml).toBe(blobatar(pet.name));
+  });
+
+  it('reserva el alto de la zona de medios en las dos ramas', async () => {
+    await renderHero(<PetHeroHeader pet={makePet()} variant="bleed" />);
+
+    const media = screen.getByTestId('pet-hero-media');
+
+    expect(media.props.height).toBe(PET_HERO_MEDIA_HEIGHT);
   });
 });

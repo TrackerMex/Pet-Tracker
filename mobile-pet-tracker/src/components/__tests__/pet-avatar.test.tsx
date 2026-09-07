@@ -1,5 +1,11 @@
-import { cleanup, render } from '@testing-library/react-native';
+import {
+  act,
+  cleanup,
+  fireEvent,
+  render,
+} from '@testing-library/react-native';
 import { blobatar } from 'blobatar';
+import { StyleSheet } from 'react-native';
 
 import { PetAvatar } from '../pet-avatar';
 
@@ -42,5 +48,94 @@ describe('R5: PetAvatar blobatar determinista', () => {
       { uri: 'http://example.test/luna.jpg' },
     ]);
     expect(view.getByTestId('pet-avatar').props.xml).toBeUndefined();
+  });
+});
+
+describe('R2: PetAvatar acepta tamaño rectangular, cacheKey y degrada al fallar la foto', () => {
+  afterEach(() => cleanup());
+
+  it('pinta la foto sin radio cuando el tamaño es un rectángulo', async () => {
+    const view = await render(
+      <PetAvatar
+        name="Luna"
+        photoUrl="http://example.test/luna.jpg"
+        size={{ width: 300, height: 260 }}
+        testID="pet-avatar"
+      />,
+    );
+    const style = StyleSheet.flatten(view.getByTestId('pet-avatar').props.style);
+
+    expect(style).toMatchObject({ width: 300, height: 260 });
+    expect(style.borderRadius).toBeUndefined();
+  });
+
+  it('escala el blobatar al rectángulo sin recortarlo', async () => {
+    const view = await render(
+      <PetAvatar
+        name="Luna"
+        photoUrl={null}
+        size={{ width: 300, height: 260 }}
+        testID="pet-avatar"
+      />,
+    );
+    const avatar = view.getByTestId('pet-avatar');
+
+    expect(avatar.props.xml).toBe(blobatar('Luna'));
+    expect(avatar.props.width).toBe(300);
+    expect(avatar.props.height).toBe(260);
+    expect(avatar.props.preserveAspectRatio).toBeUndefined();
+  });
+
+  it('pasa cacheKey dentro de source y lo omite cuando no se da', async () => {
+    const withKey = await render(
+      <PetAvatar
+        name="Luna"
+        photoUrl="http://example.test/luna.jpg"
+        size={72}
+        cacheKey="pet-1"
+        testID="pet-avatar"
+      />,
+    );
+
+    expect(withKey.getByTestId('pet-avatar').props.source).toEqual([
+      { uri: 'http://example.test/luna.jpg', cacheKey: 'pet-1' },
+    ]);
+
+    cleanup();
+
+    const withoutKey = await render(
+      <PetAvatar
+        name="Luna"
+        photoUrl="http://example.test/luna.jpg"
+        size={72}
+        testID="pet-avatar"
+      />,
+    );
+
+    expect(withoutKey.getByTestId('pet-avatar').props.source).toEqual([
+      { uri: 'http://example.test/luna.jpg' },
+    ]);
+  });
+
+  it('vuelve al blobatar cuando la foto no carga', async () => {
+    const view = await render(
+      <PetAvatar
+        name="Luna"
+        photoUrl="http://example.test/expired.jpg"
+        size={{ width: 300, height: 260 }}
+        testID="pet-avatar"
+      />,
+    );
+
+    expect(view.getByTestId('pet-avatar').props.xml).toBeUndefined();
+
+    await act(async () => {
+      fireEvent(view.getByTestId('pet-avatar'), 'error', {
+        error: 'signature expired',
+      });
+    });
+
+    expect(view.getByTestId('pet-avatar').props.xml).toContain('<svg');
+    expect(view.getByTestId('pet-avatar').props.xml).toBe(blobatar('Luna'));
   });
 });
