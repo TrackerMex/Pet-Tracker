@@ -148,9 +148,15 @@ describe('R6: home carga pets y selecciona', () => {
 
     await renderHome();
 
-    expect(screen.getByTestId('screen-home').props.contentContainerStyle).toEqual(
-      expect.objectContaining({ paddingTop: 52, paddingBottom: 120 }),
-    );
+    expect(screen.getByTestId('screen-home').props.contentContainerStyle).toEqual({
+      gap: 16,
+      paddingBottom: 120,
+    });
+    expect(screen.getByTestId('home-states').props.style).toEqual({
+      paddingHorizontal: 24,
+      paddingTop: 52,
+      gap: 16,
+    });
   });
 
   it('shows an error and retries the pet list', async () => {
@@ -222,7 +228,7 @@ describe('R6: home carga pets y selecciona', () => {
   });
 });
 
-describe('R7: pet card muestra el perfil', () => {
+describe('R7: el hero muestra el perfil (antes pet card)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     process.env.EXPO_PUBLIC_API_URL = apiUrl;
@@ -241,7 +247,7 @@ describe('R7: pet card muestra el perfil', () => {
 
     await renderHome();
 
-    await waitFor(() => expect(screen.getByTestId('pet-card-skeleton')).toBeVisible());
+    await waitFor(() => expect(screen.getByTestId('pet-hero-skeleton')).toBeVisible());
   });
 
   it('shows the pet photo, name, and breed', async () => {
@@ -250,12 +256,12 @@ describe('R7: pet card muestra el perfil', () => {
 
     await renderHome();
 
-    await waitFor(() => expect(screen.getByTestId('pet-card')).toBeVisible());
-    expect(screen.getByTestId('pet-card-photo').props.source).toEqual([
-      { uri: pet.photoUrl },
+    await waitFor(() => expect(screen.getByTestId('pet-hero')).toBeVisible());
+    expect(screen.getByTestId('pet-hero-media').props.source).toEqual([
+      { uri: pet.photoUrl, cacheKey: pet.id },
     ]);
-    expect(screen.getByTestId('pet-card-name')).toHaveTextContent('Luna');
-    expect(screen.getByTestId('pet-card-breed')).toHaveTextContent('Mixed');
+    expect(screen.getByTestId('pet-hero-name')).toHaveTextContent('Luna');
+    expect(screen.getByTestId('pet-hero-breed')).toHaveTextContent('Mixed');
   });
 
   it('uses a deterministic avatar and a dash when optional profile data is absent', async () => {
@@ -266,9 +272,9 @@ describe('R7: pet card muestra el perfil', () => {
 
     await renderHome();
 
-    await waitFor(() => expect(screen.getByTestId('pet-card')).toBeVisible());
-    expect(screen.getByTestId('pet-card-photo').props.xml).toContain('<svg');
-    expect(screen.getByTestId('pet-card-breed')).toHaveTextContent('—');
+    await waitFor(() => expect(screen.getByTestId('pet-hero')).toBeVisible());
+    expect(screen.getByTestId('pet-hero-media').props.xml).toContain('<svg');
+    expect(screen.getByTestId('pet-hero-breed')).toHaveTextContent('—');
   });
 
   it('shows an error and retries pet detail', async () => {
@@ -277,15 +283,15 @@ describe('R7: pet card muestra el perfil', () => {
       .mockResolvedValueOnce({ kind: 'ok', pet: makePet() });
 
     await renderHome();
-    await waitFor(() => expect(screen.getByTestId('pet-card-error')).toBeVisible());
-    await fireEvent.press(screen.getByTestId('pet-card-retry'));
+    await waitFor(() => expect(screen.getByTestId('pet-hero-error')).toBeVisible());
+    await fireEvent.press(screen.getByTestId('pet-hero-retry'));
 
-    await waitFor(() => expect(screen.getByTestId('pet-card-name')).toHaveTextContent('Luna'));
+    await waitFor(() => expect(screen.getByTestId('pet-hero-name')).toHaveTextContent('Luna'));
     expect(mockGetPet).toHaveBeenCalledTimes(2);
   });
 });
 
-describe('R5: Home usa el fallback blobatar compartido', () => {
+describe('R5 (#40): Home usa el fallback blobatar compartido', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     process.env.EXPO_PUBLIC_API_URL = apiUrl;
@@ -301,13 +307,13 @@ describe('R5: Home usa el fallback blobatar compartido', () => {
     mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
   });
 
-  it('renders the generated SVG under the existing pet-card-photo contract', async () => {
+  it('renders the generated SVG under the pet-hero-media contract', async () => {
     await renderHome();
 
-    await waitFor(() => expect(screen.getByTestId('pet-card')).toBeVisible());
-    const avatar = screen.getByTestId('pet-card-photo');
+    await waitFor(() => expect(screen.getByTestId('pet-hero')).toBeVisible());
+    const avatar = screen.getByTestId('pet-hero-media');
     expect(avatar.props.xml).toContain('<svg');
-    expect(within(screen.getByTestId('pet-card')).getByTestId('pet-card-photo')).toBe(
+    expect(within(screen.getByTestId('pet-hero')).getByTestId('pet-hero-media')).toBe(
       avatar,
     );
   });
@@ -538,8 +544,8 @@ describe('R9: summary degrada con gracia', () => {
 
     await fireEvent.press(screen.getByTestId('pet-chip-pet-2'));
 
-    expect(screen.queryByTestId('pet-card-name')).toBeNull();
-    expect(screen.getByTestId('pet-card-skeleton')).toBeVisible();
+    expect(screen.queryByTestId('pet-hero-name')).toBeNull();
+    expect(screen.getByTestId('pet-hero-skeleton')).toBeVisible();
     expect(screen.queryByTestId('summary-activity')).toBeNull();
     expect(screen.getByTestId('summary-skeleton')).toBeVisible();
   });
@@ -805,6 +811,132 @@ describe('#62 R8: home carga con Skeleton dimensionado, no con Spinner suelto', 
 
     expect(screen.getByTestId('home-loading').props.className).toContain(
       'h-12 w-full rounded-card',
+    );
+  });
+});
+
+describe('R5: Home usa el hero compartido', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+  });
+
+  it('monta el hero con el selector dentro y sin rastro de la pet card', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
+
+    await renderHome();
+
+    await waitFor(() => expect(screen.getByTestId('pet-hero')).toBeVisible());
+    const hero = screen.getByTestId('pet-hero');
+    expect(within(hero).getByTestId('pet-hero-media')).toBeVisible();
+    expect(within(hero).getByTestId('pet-hero-slot')).toBeVisible();
+    expect(within(hero).getByTestId('pet-chip-pet-1')).toBeVisible();
+    expect(screen.queryByTestId('pet-card')).toBeNull();
+    expect(screen.queryByTestId('pet-card-photo')).toBeNull();
+    expect(screen.queryByTestId('pet-card-name')).toBeNull();
+    expect(screen.queryByTestId('pet-card-breed')).toBeNull();
+    expect(screen.queryByTestId('pet-card-skeleton')).toBeNull();
+    expect(screen.queryByTestId('pet-card-error')).toBeNull();
+    expect(screen.queryByTestId('pet-card-retry')).toBeNull();
+  });
+
+  it('conserva gap y paddingBottom y saca el padding horizontal a un envoltorio', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
+
+    await renderHome();
+
+    await waitFor(() => expect(screen.getByTestId('pet-hero')).toBeVisible());
+    expect(screen.getByTestId('screen-home').props.contentContainerStyle).toEqual({
+      gap: 16,
+      paddingBottom: 120,
+    });
+    expect(screen.getByTestId('home-content').props.style).toEqual({
+      paddingHorizontal: 24,
+      gap: 16,
+    });
+    expect(
+      within(screen.getByTestId('home-content')).getByTestId('collar-card'),
+    ).toBeVisible();
+  });
+
+  it('conserva intactos los testID que la spec no sustituye', async () => {
+    mockGetPet.mockResolvedValue({
+      kind: 'ok',
+      pet: makePet({
+        device: {
+          model: 'PetTrack One',
+          batteryPct: 82,
+          connectivity: 'online',
+          lastMessageAt: '2026-08-21T12:00:00.000Z',
+          esn: 'ACT-001',
+        },
+      }),
+    });
+
+    await renderHome();
+
+    await waitFor(() => expect(screen.getByTestId('collar-card')).toBeVisible());
+    for (const testId of [
+      'screen-home',
+      'collar-status',
+      'collar-battery',
+      'summary-card',
+      'last-position-card',
+      'pet-avatar-fallback-pet-1',
+    ]) {
+      expect(screen.getByTestId(testId)).toBeVisible();
+    }
+  });
+});
+
+describe('R8: el error del detalle deja el selector alcanzable', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({
+      kind: 'ok',
+      pets: [makePet(), makePet({ id: 'pet-2', name: 'Milo' })],
+    });
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+  });
+
+  it('mantiene el hero y los chips montados cuando el detalle falla', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'unreachable', message: 'down' });
+
+    await renderHome();
+
+    await waitFor(() => expect(screen.getByTestId('pet-hero-error')).toBeVisible());
+    expect(screen.getByTestId('pet-hero')).toBeVisible();
+    expect(screen.getByTestId('pet-hero-retry')).toBeVisible();
+    expect(screen.getByTestId('pet-chip-pet-1')).toBeVisible();
+    expect(screen.getByTestId('pet-chip-pet-2')).toBeVisible();
+    expect(screen.getByTestId('pet-hero-skeleton')).toBeVisible();
+  });
+
+  it('deja cambiar de mascota sin salir de la pantalla', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'unreachable', message: 'down' });
+
+    await renderHome();
+    await waitFor(() => expect(screen.getByTestId('pet-hero-error')).toBeVisible());
+
+    await fireEvent.press(screen.getByTestId('pet-chip-pet-2'));
+
+    await waitFor(() =>
+      expect(mockGetPet).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'pet-2'),
     );
   });
 });
