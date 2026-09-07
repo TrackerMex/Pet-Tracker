@@ -139,6 +139,11 @@ jest.mock('@expo/ui/community/segmented-control', () => {
   };
 });
 
+jest.mock('../../theme/use-theme-colors', () => ({
+  useThemeColors: (mockTokens: readonly string[]) =>
+    mockTokens.map((token) => `resolved-${token}`),
+}));
+
 jest.mock('react-native-svg', () => {
   const React = jest.requireActual<typeof import('react')>('react');
   const actual = jest.requireActual<typeof import('react-native-svg')>(

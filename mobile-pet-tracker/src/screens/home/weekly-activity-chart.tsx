@@ -4,11 +4,13 @@ import {
   BarChart,
   type BarChartRenderBarProps,
 } from 'react-native-chart-kit/v2';
-import { Rect } from 'react-native-svg';
+import { Line, Rect } from 'react-native-svg';
 
 import type { DayEntry, WeekComparison } from '../../api/types';
 import { Card } from '../../components/card';
 import { useLocale } from '../../providers/language-provider';
+import { TABULAR_NUMS } from '../../theme/native-styles';
+import { useThemeColors } from '../../theme/use-theme-colors';
 import { fmtMinutes } from './format';
 
 // react-native-chart-kit 7.0.4 geometry contract (re-derive on upgrade):
@@ -47,21 +49,51 @@ interface ChartDatum {
 function ActivityBar({
   bar,
   fill,
-}: BarChartRenderBarProps<ChartDatum>): JSX.Element {
+  average,
+  averageColor,
+  chartWidth,
+  drawAverage,
+}: BarChartRenderBarProps<ChartDatum> & {
+  average: number | null;
+  averageColor: string;
+  chartWidth: number;
+  drawAverage: boolean;
+}): JSX.Element {
   const height = Math.max(bar.height, BAR_MIN_HEIGHT);
+  const averageY =
+    average === null || bar.value === 0
+      ? null
+      : bar.baselineY - average * (bar.height / bar.value);
 
   return (
-    <Rect
-      key={bar.key}
-      testID={`weekly-activity-bar-${bar.raw?.date}`}
-      x={bar.x}
-      y={bar.baselineY - height}
-      width={bar.width}
-      height={height}
-      rx={Math.min(bar.width, height) / 2}
-      fill={fill}
-    />
+    <>
+      {drawAverage && averageY !== null ? (
+        <Line
+          testID="weekly-activity-average"
+          x1={CHART_PAD_LEFT}
+          x2={chartWidth - CHART_PAD_RIGHT}
+          y1={averageY}
+          y2={averageY}
+          stroke={averageColor}
+          strokeDasharray="4 4"
+        />
+      ) : null}
+      <Rect
+        key={bar.key}
+        testID={`weekly-activity-bar-${bar.raw?.date}`}
+        x={bar.x}
+        y={bar.baselineY - height}
+        width={bar.width}
+        height={height}
+        rx={Math.min(bar.width, height) / 2}
+        fill={fill}
+      />
+    </>
   );
+}
+
+function formatAxisLabel(value: number): string {
+  return String(value).slice(0, Y_LABEL_CHARS).padStart(Y_LABEL_CHARS, ' ');
 }
 
 export function weekdayLabel(
@@ -80,16 +112,44 @@ export function WeeklyActivityChart(
   { days, weekComparison }: WeeklyActivityChartProps,
 ): JSX.Element {
   const locale = useLocale();
+  const [accentStrong, muted, border, foreground, surface] = useThemeColors([
+    'accent-strong',
+    'muted',
+    'border',
+    'foreground',
+    'surface',
+  ]);
   const chartData = days.map((day) => ({
     date: day.date,
     value: day.source === 'missing' ? null : day.activeMinutes,
     day,
   }));
+  const measuredValues = chartData.flatMap(({ day, value }) =>
+    day.source !== 'missing' && typeof value === 'number' ? [value] : [],
+  );
+  const hasPositiveValue = measuredValues.some((value) => value > 0);
+  const average = hasPositiveValue
+    ? measuredValues.reduce((sum, value) => sum + value, 0) /
+      measuredValues.length
+    : null;
+  const averageAnchorIndex = chartData.findIndex(
+    ({ day, value }) =>
+      day.source !== 'missing' && typeof value === 'number' && value > 0,
+  );
 
   void weekComparison;
 
   return (
     <Card testID="weekly-activity-card" className="gap-2">
+      {average !== null ? (
+        <Text
+          testID="weekly-activity-average-label"
+          className="self-end text-xs text-muted"
+          style={TABULAR_NUMS}
+        >
+          {fmtMinutes(average)}
+        </Text>
+      ) : null}
       <BarChart
         data={chartData}
         xKey="date"
@@ -97,8 +157,29 @@ export function WeeklyActivityChart(
         width={295}
         height={CHART_PAD_TOP + CHART_PLOT_HEIGHT + CHART_PAD_BOTTOM}
         showXAxisLabels={false}
+        showYAxisLabels
+        showHorizontalGridLines
+        yTickCount={4}
+        formatYLabel={formatAxisLabel}
+        theme={{
+          series: [accentStrong],
+          grid: border,
+          axis: border,
+          text: foreground,
+          mutedText: muted,
+          background: surface,
+          plotBackground: surface,
+          typography: { axisLabelSize: CHART_AXIS_LABEL_SIZE },
+        }}
         renderBar={(barProps) => (
-          <ActivityBar key={barProps.bar.key} {...barProps} />
+          <ActivityBar
+            key={barProps.bar.key}
+            {...barProps}
+            average={average}
+            averageColor={muted}
+            chartWidth={295}
+            drawAverage={barProps.bar.dataIndex === averageAnchorIndex}
+          />
         )}
         testID="weekly-activity-bar-chart"
       />
