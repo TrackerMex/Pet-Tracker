@@ -1,3 +1,6 @@
+import SegmentedControl, {
+  type NativeSegmentedControlChangeEvent,
+} from '@expo/ui/community/segmented-control';
 import { useState, type JSX } from 'react';
 import {
   Pressable,
@@ -13,10 +16,13 @@ import { Line, Rect } from 'react-native-svg';
 
 import type { DayEntry, WeekComparison } from '../../api/types';
 import { Card } from '../../components/card';
-import { useLocale } from '../../providers/language-provider';
+import {
+  useLocale,
+  useTranslate,
+} from '../../providers/language-provider';
 import { TABULAR_NUMS } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
-import { fmtMinutes } from './format';
+import { fmtCount, fmtKm, fmtMinutes } from './format';
 
 // react-native-chart-kit 7.0.4 geometry contract (re-derive on upgrade):
 // base padding: 18, 14, 12, 10; label gap: 8; text width factor: 0.56;
@@ -104,6 +110,19 @@ function formatAxisLabel(value: number): string {
   return String(value).slice(0, Y_LABEL_CHARS).padStart(Y_LABEL_CHARS, ' ');
 }
 
+function metricValue(day: DayEntry, metric: WeeklyMetric): number | null {
+  return day[metric];
+}
+
+function formatMetricValue(
+  metric: WeeklyMetric,
+  value: number | null,
+): string {
+  if (metric === 'distanceM') return fmtKm(value);
+  if (metric === 'walkCount') return fmtCount(value);
+  return fmtMinutes(value);
+}
+
 export function weekdayLabel(
   date: string,
   locale: string,
@@ -120,7 +139,11 @@ export function WeeklyActivityChart(
   { days, weekComparison }: WeeklyActivityChartProps,
 ): JSX.Element {
   const locale = useLocale();
+  const t = useTranslate();
   const [chartWidth, setChartWidth] = useState(0);
+  const [selectedMetricIndex, setSelectedMetricIndex] = useState(0);
+  const selectedMetric =
+    WEEKLY_METRICS[selectedMetricIndex] ?? WEEKLY_METRICS[0];
   const [accentStrong, muted, border, foreground, surface] = useThemeColors([
     'accent-strong',
     'muted',
@@ -130,7 +153,8 @@ export function WeeklyActivityChart(
   ]);
   const chartData = days.map((day) => ({
     date: day.date,
-    value: day.source === 'missing' ? null : day.activeMinutes,
+    value:
+      day.source === 'missing' ? null : metricValue(day, selectedMetric),
     day,
   }));
   const measuredValues = chartData.flatMap(({ day, value }) =>
@@ -148,18 +172,32 @@ export function WeeklyActivityChart(
   const handleChartLayout = (event: LayoutChangeEvent) => {
     setChartWidth(event.nativeEvent.layout.width);
   };
+  const handleMetricChange = (event: NativeSegmentedControlChangeEvent) => {
+    setSelectedMetricIndex(event.nativeEvent.selectedSegmentIndex);
+  };
 
   void weekComparison;
 
   return (
     <Card testID="weekly-activity-card" className="gap-2">
+      <SegmentedControl
+        testID="weekly-activity-metric"
+        values={[
+          t('weeklyActivity.metricActiveMinutes'),
+          t('weeklyActivity.metricDistance'),
+          t('weeklyActivity.metricWalks'),
+        ]}
+        selectedIndex={selectedMetricIndex}
+        tintColor={accentStrong}
+        onChange={handleMetricChange}
+      />
       {average !== null ? (
         <Text
           testID="weekly-activity-average-label"
           className="self-end text-xs text-muted"
           style={TABULAR_NUMS}
         >
-          {fmtMinutes(average)}
+          {formatMetricValue(selectedMetric, average)}
         </Text>
       ) : null}
       <View
@@ -236,7 +274,10 @@ export function WeeklyActivityChart(
                 testID={`weekly-activity-value-${day.date}`}
                 className="text-2xs font-semibold text-foreground"
               >
-                {fmtMinutes(day.activeMinutes)}
+                {formatMetricValue(
+                  selectedMetric,
+                  metricValue(day, selectedMetric),
+                )}
               </Text>
             )}
           </Pressable>
