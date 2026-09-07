@@ -280,4 +280,4 @@ la enmienda está en su `requirements.md` §R10.
 - Qué NO cambia: ningún otro requisito de esta spec, ni su estado de
   aprobación, ni los tests que ya la cubren.
 
-- [ ] Enmienda aprobada por humano
+- [X] Enmienda aprobada por humano
