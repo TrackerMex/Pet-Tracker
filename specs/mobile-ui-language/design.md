@@ -297,6 +297,7 @@ total sin repetir es 252 + 3 del interruptor = **255**.
 | 301 | `home.sleep` | `Sleep` | `Descanso` |
 | 313 | `home.distance` | `Distance` | `Distancia` |
 | 332 | `home.viewOnMap` | `View on map` | `Ver en el mapa` |
+| — | `home.walks` | `Walks` | `Paseos` | ← añadida por #67 (R7b)
 
 
 ### §2.4 — R4 — Map (19 ocurrencias, 17 claves)

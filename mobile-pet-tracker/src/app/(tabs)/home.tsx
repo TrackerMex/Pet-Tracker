@@ -46,6 +46,10 @@ function fmtKm(meters: number | null): string {
   return meters === null ? '—' : `${(meters / 1000).toFixed(1)} km`;
 }
 
+function fmtCount(count: number | null): string {
+  return count === null ? '—' : String(count);
+}
+
 function fmtLastSeen(
   iso: string | null,
   locale: string,
@@ -126,6 +130,11 @@ export default function HomeScreen() {
         <PetHeroHeader
           pet={detail.data?.kind === 'ok' ? detail.data.pet : null}
           variant="bleed"
+          highlight={
+            today
+              ? { value: fmtCount(today.walkCount), label: t('home.walks') }
+              : undefined
+          }
         >
           <PetSwitcher
             pets={petList}

@@ -4,7 +4,7 @@ import { Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { PetProfile } from '../api/types';
-import { CONTINUOUS_CORNER } from '../theme/native-styles';
+import { CONTINUOUS_CORNER, TABULAR_NUMS } from '../theme/native-styles';
 import { useThemeColors } from '../theme/use-theme-colors';
 import { PetAvatar } from './pet-avatar';
 
@@ -40,6 +40,7 @@ export interface PetHeroHeaderProps {
 export function PetHeroHeader({
   pet,
   variant = 'card',
+  highlight,
   children,
 }: PetHeroHeaderProps) {
   const insets = useSafeAreaInsets();
@@ -110,26 +111,46 @@ export function PetHeroHeader({
 
       <View
         testID="pet-hero-caption"
-        className="gap-1 bg-background px-6 pb-4 pt-1"
+        className="flex-row items-end justify-between gap-4 bg-background px-6 pb-4 pt-1"
       >
-        {pet ? (
-          <>
+        <View className="flex-1 gap-1">
+          {pet ? (
+            <>
+              <Text
+                testID="pet-hero-name"
+                className="text-3xl font-black text-foreground"
+              >
+                {pet.name}
+              </Text>
+              <Text testID="pet-hero-breed" className="font-normal text-muted">
+                {pet.breed ?? '—'}
+              </Text>
+            </>
+          ) : (
+            <>
+              <Skeleton className="h-9 w-40 rounded-xl" />
+              <Skeleton className="h-6 w-24 rounded-xl" />
+            </>
+          )}
+        </View>
+
+        {highlight ? (
+          <View className="items-end gap-1">
             <Text
-              testID="pet-hero-name"
+              testID="pet-hero-highlight-value"
               className="text-3xl font-black text-foreground"
+              style={TABULAR_NUMS}
             >
-              {pet.name}
+              {highlight.value}
             </Text>
-            <Text testID="pet-hero-breed" className="font-normal text-muted">
-              {pet.breed ?? '—'}
+            <Text
+              testID="pet-hero-highlight-label"
+              className="text-xs font-medium text-muted"
+            >
+              {highlight.label}
             </Text>
-          </>
-        ) : (
-          <>
-            <Skeleton className="h-9 w-40 rounded-xl" />
-            <Skeleton className="h-6 w-24 rounded-xl" />
-          </>
-        )}
+          </View>
+        ) : null}
       </View>
     </View>
   );
