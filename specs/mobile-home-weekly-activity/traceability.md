@@ -28,7 +28,7 @@ Dos abreviaturas para no repetir rutas largas:
 | R8 | `CHART`::`R8: tocar un día abre su detalle` (tooltip, panel, día `missing`, `onSelectDay`) + `HOME`::`it('ofrece el mapa solo para el día de hoy')` | pendiente |
 | R9 | `CHART`::`R9: cada columna se anuncia por separado` (7 etiquetas en los dos idiomas, contenedor sin etiqueta, `accessibilityLabel` traducido en el gráfico y ausencia de `getBarChartAccessibilitySummary`) | pendiente |
 | R10 | `CHART`::`R10: las barras entran animadas y respetan reduced motion` (2 `it`, con `useReducedMotion` mockeado como en `src/theme/__tests__/theme-transition.test.tsx`) | pendiente |
-| R11 | `CHART`::`R11: la gráfica se dimensiona por onLayout, no por porcentaje` (2 `it`: sin `onLayout` no monta; con 295 px pasa `width`/`height` numéricos) | pendiente |
+| R11 | `CHART`::`R11: la gráfica se dimensiona por onLayout, no por porcentaje` (2 `it`: sin `onLayout` no monta; con 295 px pasa `width`/`height` numéricos) | rojo `9417c87` `feat(mobile-home-weekly-activity): test measured chart dimensions (R11)`; verde por completar |
 | R12 | `CHART`::`R12: la tendencia sigue a la métrica y se calla sin base` (6 `it`: `+12,5`/`TrendUp`, `-8,3`/`TrendDown`, `0` sin icono, `null` sin fila, cambio de métrica, y `TABULAR_NUMS` sin color semántico) | pendiente |
 | R13 | `CHART`::`R13: la semana entera sin dato se resuelve con un mensaje` (3 `it`) | pendiente |
 | R14 | `HOME`::`R14: la Home monta la actividad semanal sin pedir nada nuevo` (3 `it`: la tarjeta con los siete días; el orden `summary-card` → `weekly-activity-card` → `last-position-card`; el recuento de llamadas a `getDailyActivity` sin cambio) | pendiente |

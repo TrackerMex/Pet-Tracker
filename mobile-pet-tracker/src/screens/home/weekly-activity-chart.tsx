@@ -1,5 +1,10 @@
-import type { JSX } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { useState, type JSX } from 'react';
+import {
+  Pressable,
+  Text,
+  View,
+  type LayoutChangeEvent,
+} from 'react-native';
 import {
   BarChart,
   type BarChartRenderBarProps,
@@ -26,6 +31,9 @@ export const Y_LABEL_CHARS = 4;
 export const BAR_ENTRY_DURATION_MS = 250;
 export const BAR_ENTRY_STAGGER_MS = 40;
 export const BAR_MIN_HEIGHT = 3;
+
+const CHART_HEIGHT =
+  CHART_PAD_TOP + CHART_PLOT_HEIGHT + CHART_PAD_BOTTOM;
 
 export type WeeklyMetric = 'activeMinutes' | 'distanceM' | 'walkCount';
 
@@ -112,6 +120,7 @@ export function WeeklyActivityChart(
   { days, weekComparison }: WeeklyActivityChartProps,
 ): JSX.Element {
   const locale = useLocale();
+  const [chartWidth, setChartWidth] = useState(0);
   const [accentStrong, muted, border, foreground, surface] = useThemeColors([
     'accent-strong',
     'muted',
@@ -136,6 +145,9 @@ export function WeeklyActivityChart(
     ({ day, value }) =>
       day.source !== 'missing' && typeof value === 'number' && value > 0,
   );
+  const handleChartLayout = (event: LayoutChangeEvent) => {
+    setChartWidth(event.nativeEvent.layout.width);
+  };
 
   void weekComparison;
 
@@ -150,39 +162,47 @@ export function WeeklyActivityChart(
           {fmtMinutes(average)}
         </Text>
       ) : null}
-      <BarChart
-        data={chartData}
-        xKey="date"
-        yKey="value"
-        width={295}
-        height={CHART_PAD_TOP + CHART_PLOT_HEIGHT + CHART_PAD_BOTTOM}
-        showXAxisLabels={false}
-        showYAxisLabels
-        showHorizontalGridLines
-        yTickCount={4}
-        formatYLabel={formatAxisLabel}
-        theme={{
-          series: [accentStrong],
-          grid: border,
-          axis: border,
-          text: foreground,
-          mutedText: muted,
-          background: surface,
-          plotBackground: surface,
-          typography: { axisLabelSize: CHART_AXIS_LABEL_SIZE },
-        }}
-        renderBar={(barProps) => (
-          <ActivityBar
-            key={barProps.bar.key}
-            {...barProps}
-            average={average}
-            averageColor={muted}
-            chartWidth={295}
-            drawAverage={barProps.bar.dataIndex === averageAnchorIndex}
+      <View
+        testID="weekly-activity-chart-layout"
+        style={{ height: CHART_HEIGHT }}
+        onLayout={handleChartLayout}
+      >
+        {chartWidth > 0 ? (
+          <BarChart
+            data={chartData}
+            xKey="date"
+            yKey="value"
+            width={chartWidth}
+            height={CHART_HEIGHT}
+            showXAxisLabels={false}
+            showYAxisLabels
+            showHorizontalGridLines
+            yTickCount={4}
+            formatYLabel={formatAxisLabel}
+            theme={{
+              series: [accentStrong],
+              grid: border,
+              axis: border,
+              text: foreground,
+              mutedText: muted,
+              background: surface,
+              plotBackground: surface,
+              typography: { axisLabelSize: CHART_AXIS_LABEL_SIZE },
+            }}
+            renderBar={(barProps) => (
+              <ActivityBar
+                key={barProps.bar.key}
+                {...barProps}
+                average={average}
+                averageColor={muted}
+                chartWidth={chartWidth}
+                drawAverage={barProps.bar.dataIndex === averageAnchorIndex}
+              />
+            )}
+            testID="weekly-activity-bar-chart"
           />
-        )}
-        testID="weekly-activity-bar-chart"
-      />
+        ) : null}
+      </View>
       <View
         testID="weekly-activity-day-row"
         className="flex-row"
