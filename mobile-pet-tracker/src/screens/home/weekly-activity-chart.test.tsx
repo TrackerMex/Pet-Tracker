@@ -605,3 +605,51 @@ describe('R11: la gráfica se dimensiona por onLayout, no por porcentaje', () =>
     expect(typeof props.height).toBe('number');
   });
 });
+
+describe('R6: el selector cambia de métrica sin volver a pedir nada', () => {
+  it('ofrece las tres etiquetas de catálogo en el orden acordado', async () => {
+    const result = await renderChart(
+      makeWeek('2026-09-02', [10, 20, 30, 40, 50, 60, 70]),
+    );
+    const selector = result.getByTestId('weekly-activity-metric');
+
+    expect(selector.props).toEqual(
+      expect.objectContaining({
+        values: ['Minutos activos', 'Distancia recorrida', 'Paseos'],
+        selectedIndex: 0,
+        tintColor: 'resolved-accent-strong',
+      }),
+    );
+    expect(readFileSync(chartSourcePath, 'utf8')).toContain(
+      "from '@expo/ui/community/segmented-control'",
+    );
+    expect(readFileSync(chartSourcePath, 'utf8')).not.toContain(
+      "useThemeColors(['accent'])",
+    );
+  });
+
+  it('lee el índice del evento y repinta distancia con los mismos datos', async () => {
+    const days = makeWeek('2026-09-02', [10, 20, 30, 40, 50, 60, 70]);
+    const result = await renderChart(days);
+    const selector = result.getByTestId('weekly-activity-metric');
+
+    await act(() =>
+      selector.props.onChange({
+        nativeEvent: {
+          selectedSegmentIndex: 1,
+          value: 'un texto que no debe decidir la métrica',
+        },
+      }),
+    );
+
+    expect(selector.props.selectedIndex).toBe(1);
+    expect(
+      (latestBarChartProps().data as Array<{ value: number | null }>).map(
+        ({ value }) => value,
+      ),
+    ).toEqual(days.map(({ distanceM }) => distanceM));
+    expect(
+      result.getByTestId('weekly-activity-value-2026-09-02'),
+    ).toHaveTextContent('1.0 km');
+  });
+});
