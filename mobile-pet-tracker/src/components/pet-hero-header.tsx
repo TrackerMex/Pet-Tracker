@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { PetProfile } from '../api/types';
 import { CONTINUOUS_CORNER } from '../theme/native-styles';
@@ -40,6 +41,7 @@ export function PetHeroHeader({
   variant = 'card',
   children,
 }: PetHeroHeaderProps) {
+  const insets = useSafeAreaInsets();
   const [background] = useThemeColors(['background']);
 
   return (
@@ -53,7 +55,11 @@ export function PetHeroHeader({
       style={CONTINUOUS_CORNER}
     >
       {children ? (
-        <View testID="pet-hero-slot" className="bg-background px-6 pb-3">
+        <View
+          testID="pet-hero-slot"
+          className="bg-background px-6 pb-3"
+          style={{ paddingTop: insets.top + 12 }}
+        >
           {children}
         </View>
       ) : null}
@@ -75,14 +81,16 @@ export function PetHeroHeader({
           ensucia de gris el tramo intermedio. Y el prefijo `experimental_` es
           el único nombre que existe en RN 0.86.
         */}
-        <View
-          testID="pet-hero-fade-top"
-          className="absolute inset-x-0 top-0"
-          style={{
-            height: PET_HERO_FADE_HEIGHT,
-            experimental_backgroundImage: `linear-gradient(to bottom, ${background} 0%, ${background}00 100%)`,
-          }}
-        />
+        {children ? (
+          <View
+            testID="pet-hero-fade-top"
+            className="absolute inset-x-0 top-0"
+            style={{
+              height: PET_HERO_FADE_HEIGHT,
+              experimental_backgroundImage: `linear-gradient(to bottom, ${background} 0%, ${background}00 100%)`,
+            }}
+          />
+        ) : null}
         <View
           testID="pet-hero-fade-bottom"
           className="absolute inset-x-0 bottom-0"
