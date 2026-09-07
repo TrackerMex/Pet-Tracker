@@ -1257,7 +1257,7 @@
   {
     "id": 68,
     "name": "mobile-home-weekly-activity",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P2",
     "description": "Bloque 1. La grafica de barras de 7 dias que el Make pone en la Home (App.tsx:413-428) y que la app no dibuja. Es la mejor relacion valor/coste de todo el informe porque LOS DATOS YA SE ESTAN DESCARGANDO Y SE TIRAN: GET /v1/pets/:petId/activity/daily devuelve una entrada por dia sin huecos y el caso de uso ya usa por defecto un rango de 7 dias terminando hoy en la zona horaria del dueno; el cliente llama sin parametros (src/api/activity.ts:26-31) y la Home descarta seis de las siete entradas quedandose con la ultima (home.tsx:86-89). Tres avisos del informe que la spec DEBE recoger, o la grafica mentira: (1) un dia pasado sin datos vuelve con source 'missing' y todas las metricas en null, no en cero -es deliberado, un cero significaria descanso confirmado-, asi que hace falta un render de 'sin dato' distinto de una barra de altura 0; (2) el array es cronologico terminando hoy, NO lunes a domingo, asi que la letra del eje se deriva de la fecha y nunca del indice; (3) weekComparison ya trae la variacion contra los 7 dias previos, asi que las flechas de tendencia salen gratis aunque el Make no las dibuje. Reutiliza el patron de src/components/weight-chart.tsx en vez de anadir libreria de graficas.",
     "acceptance_criteria": [
