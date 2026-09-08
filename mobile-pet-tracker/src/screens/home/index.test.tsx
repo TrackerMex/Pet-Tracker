@@ -1292,4 +1292,15 @@ describe('#69 R1: la tira de hoy tiene cuatro celdas con tres divisores', () => 
     expect(within(sleepValue.parent!).getByText('Descanso')).toBeVisible();
     expect(screen.queryByTestId('weekly-activity-detail')).toBeNull();
   });
+
+  it('no repite los paseos dentro de la tira', async () => {
+    await renderHome();
+
+    const summary = await screen.findByTestId('summary-card');
+    expect(screen.queryByTestId('summary-walks')).toBeNull();
+    expect(within(summary).queryByText('Paseos')).toBeNull();
+    expect(screen.getByTestId('pet-hero-highlight-value')).toHaveTextContent(
+      '2',
+    );
+  });
 });
