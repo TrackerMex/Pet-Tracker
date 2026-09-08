@@ -468,15 +468,21 @@ describe('R3: la letra del eje sale de la fecha, no del índice', () => {
 
   it('no se desplaza un día en una zona horaria negativa', () => {
     const previousTimezone = process.env.TZ;
+    const RealDate = Date;
+    const dateConstructor = jest
+      .spyOn(global, 'Date')
+      .mockImplementation(
+        (value: string | number | Date, ...dateParts: number[]) =>
+          Reflect.construct(RealDate, [value, ...dateParts]) as Date,
+      );
 
     try {
       process.env.TZ = 'America/Mexico_City';
 
       expect(weekdayLabel('2026-09-06', 'es-MX', 'short')).toBe('dom');
-      expect(readFileSync(chartSourcePath, 'utf8')).not.toContain(
-        'new Date(date)',
-      );
+      expect(dateConstructor.mock.calls).toEqual([[2026, 8, 6]]);
     } finally {
+      dateConstructor.mockRestore();
       process.env.TZ = previousTimezone;
     }
   });
