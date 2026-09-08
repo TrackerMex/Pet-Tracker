@@ -1428,4 +1428,16 @@ describe('#69 R1: la tira de hoy tiene cuatro celdas con tres divisores', () => 
       }
     }
   });
+
+  it('#69 R8: no añade ninguna llamada a la API', async () => {
+    const existingScenarioCallCount = { detail: 1, activity: 1 };
+
+    await renderHome();
+    await screen.findByTestId('summary-card');
+
+    expect({
+      detail: mockGetPet.mock.calls.length,
+      activity: mockGetDailyActivity.mock.calls.length,
+    }).toEqual(existingScenarioCallCount);
+  });
 });
