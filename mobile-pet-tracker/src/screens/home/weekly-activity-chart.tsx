@@ -1,7 +1,3 @@
-import {
-  SegmentedControl,
-  type NativeSegmentedControlChangeEvent,
-} from '@expo/ui/community/segmented-control';
 import { useEffect, useState, type JSX } from 'react';
 import {
   Pressable,
@@ -22,8 +18,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { Line, Rect } from 'react-native-svg';
-import { TrendDown, TrendUp } from 'reicon-react-native';
-import { useUniwind } from 'uniwind';
+import { Check, TrendDown, TrendUp } from 'reicon-react-native';
 
 import type { DayEntry, WeekComparison } from '../../api/types';
 import { Card } from '../../components/card';
@@ -53,6 +48,8 @@ export const BAR_ENTRY_STAGGER_MS = 40;
 export const BAR_MIN_HEIGHT = 3;
 
 const TOOLTIP_WIDTH = 120;
+const METRIC_LABEL_MIN_FONT_SCALE = 0.85;
+const METRIC_LABEL_MAX_FONT_SIZE_MULTIPLIER = 1.2;
 
 const CHART_HEIGHT =
   CHART_PAD_TOP + CHART_PLOT_HEIGHT + CHART_PAD_BOTTOM;
@@ -242,6 +239,78 @@ function DetailMetric({
   );
 }
 
+function MetricSelector({
+  accentForeground,
+  labels,
+  selectedIndex,
+  onSelect,
+}: {
+  accentForeground: string;
+  labels: readonly string[];
+  selectedIndex: number;
+  onSelect: (index: number) => void;
+}): JSX.Element {
+  return (
+    <View
+      testID="weekly-activity-metric"
+      className="flex-row gap-1"
+    >
+      {WEEKLY_METRICS.map((metric, index) => {
+        const label = labels[index] ?? '';
+        const selected = selectedIndex === index;
+
+        return (
+          <Pressable
+            key={metric}
+            testID={`weekly-activity-metric-${metric}`}
+            accessible
+            accessibilityLabel={label}
+            accessibilityRole="radio"
+            accessibilityState={{ selected }}
+            className={
+              selected
+                ? 'h-11 shrink flex-row items-center justify-center gap-0.5 rounded-xl border border-accent bg-accent px-0.5'
+                : 'h-11 shrink flex-row items-center justify-center gap-0.5 rounded-xl border border-transparent bg-default px-0.5'
+            }
+            style={({ pressed }) => [
+              CONTINUOUS_CORNER,
+              {
+                flexBasis: 0,
+                flexGrow: label.length,
+                opacity: pressed ? 0.8 : 1,
+              },
+            ]}
+            onPress={() => onSelect(index)}
+          >
+            {selected ? (
+              <Check
+                testID="weekly-activity-metric-selected"
+                accessible={false}
+                size={12}
+                color={accentForeground}
+              />
+            ) : null}
+            <Text
+              testID={`weekly-activity-metric-label-${metric}`}
+              className={
+                selected
+                  ? 'shrink text-xs font-semibold text-accent-foreground'
+                  : 'shrink text-xs font-semibold text-foreground'
+              }
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={METRIC_LABEL_MIN_FONT_SCALE}
+              maxFontSizeMultiplier={METRIC_LABEL_MAX_FONT_SIZE_MULTIPLIER}
+            >
+              {label}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
 export function weekdayLabel(
   date: string,
   locale: string,
@@ -259,7 +328,6 @@ export function WeeklyActivityChart(
 ): JSX.Element {
   const locale = useLocale();
   const t = useTranslate();
-  const { theme } = useUniwind();
   const [chartWidth, setChartWidth] = useState(0);
   const [selectedMetricIndex, setSelectedMetricIndex] = useState(0);
   const [selection, setSelection] = useState<DaySelection | null>(null);
@@ -272,8 +340,16 @@ export function WeeklyActivityChart(
   ];
   const selectedMetricLabel =
     metricLabels[selectedMetricIndex] ?? metricLabels[0];
-  const [accentStrong, muted, border, foreground, surface] = useThemeColors([
+  const [
+    accentStrong,
+    accentForeground,
+    muted,
+    border,
+    foreground,
+    surface,
+  ] = useThemeColors([
     'accent-strong',
+    'accent-foreground',
     'muted',
     'border',
     'foreground',
@@ -319,9 +395,6 @@ export function WeeklyActivityChart(
       : undefined;
   const handleChartLayout = (event: LayoutChangeEvent) => {
     setChartWidth(event.nativeEvent.layout.width);
-  };
-  const handleMetricChange = (event: NativeSegmentedControlChangeEvent) => {
-    setSelectedMetricIndex(event.nativeEvent.selectedSegmentIndex);
   };
   const selectDay = (dataIndex: number, tooltipX: number) => {
     const day = days[dataIndex];
@@ -375,13 +448,11 @@ export function WeeklyActivityChart(
       </View>
       {hasMeasuredDay ? (
         <>
-          <SegmentedControl
-            testID="weekly-activity-metric"
-            values={metricLabels}
+          <MetricSelector
+            labels={metricLabels}
             selectedIndex={selectedMetricIndex}
-            tintColor={accentStrong}
-            appearance={theme === 'dark' ? 'dark' : 'light'}
-            onChange={handleMetricChange}
+            accentForeground={accentForeground}
+            onSelect={setSelectedMetricIndex}
           />
           {trend !== null ? (
             <View
