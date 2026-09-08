@@ -1,4 +1,4 @@
-import { useEffect, useState, type JSX } from 'react';
+import { useEffect, useRef, useState, type JSX } from 'react';
 import {
   Pressable,
   Text,
@@ -11,10 +11,13 @@ import {
   type BarChartSelectEvent,
 } from 'react-native-chart-kit/v2';
 import Animated, {
+  ReduceMotion,
   useAnimatedProps,
+  useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
   withDelay,
+  withSpring,
   withTiming,
 } from 'react-native-reanimated';
 import { Line, Rect } from 'react-native-svg';
@@ -46,6 +49,11 @@ export const Y_LABEL_CHARS = 4;
 export const BAR_ENTRY_DURATION_MS = 250;
 export const BAR_ENTRY_STAGGER_MS = 40;
 export const BAR_MIN_HEIGHT = 3;
+const METRIC_TAB_SPRING = {
+  duration: BAR_ENTRY_DURATION_MS,
+  dampingRatio: 1,
+  reduceMotion: ReduceMotion.System,
+} as const;
 
 const TOOLTIP_WIDTH = 120;
 const METRIC_LABEL_MIN_FONT_SCALE = 0.85;
@@ -80,6 +88,7 @@ interface DaySelection {
 }
 
 const AnimatedRect = Animated.createAnimatedComponent(Rect);
+const AnimatedView = Animated.createAnimatedComponent(View);
 
 function ActivityBar({
   bar,
@@ -240,21 +249,86 @@ function DetailMetric({
 }
 
 function MetricSelector({
-  accentForeground,
+  accentStrong,
   labels,
   selectedIndex,
   onSelect,
 }: {
-  accentForeground: string;
+  accentStrong: string;
   labels: readonly string[];
   selectedIndex: number;
   onSelect: (index: number) => void;
 }): JSX.Element {
+  const [layouts, setLayouts] = useState<
+    Partial<Record<WeeklyMetric, { x: number; width: number }>>
+  >({});
+  const indicatorX = useSharedValue(0);
+  const indicatorWidth = useSharedValue(0);
+  const selectedMetric =
+    WEEKLY_METRICS[selectedIndex] ?? WEEKLY_METRICS[0];
+  const selectedLayout = layouts[selectedMetric];
+  const selectedX = selectedLayout?.x;
+  const selectedWidth = selectedLayout?.width;
+  const lastPositionedMetric = useRef(selectedMetric);
+  const indicatorAnimatedStyle = useAnimatedStyle(() => ({
+    width: indicatorWidth.get(),
+    transform: [{ translateX: indicatorX.get() }],
+  }));
+
+  useEffect(() => {
+    if (selectedX === undefined || selectedWidth === undefined) return;
+
+    if (
+      lastPositionedMetric.current === selectedMetric ||
+      indicatorWidth.get() <= 0
+    ) {
+      indicatorX.set(selectedX);
+      indicatorWidth.set(selectedWidth);
+      lastPositionedMetric.current = selectedMetric;
+      return;
+    }
+
+    lastPositionedMetric.current = selectedMetric;
+    indicatorX.set(withSpring(selectedX, METRIC_TAB_SPRING));
+    indicatorWidth.set(withSpring(selectedWidth, METRIC_TAB_SPRING));
+  }, [
+    indicatorWidth,
+    indicatorX,
+    selectedMetric,
+    selectedWidth,
+    selectedX,
+  ]);
+
+  const handleTabLayout = (
+    metric: WeeklyMetric,
+    event: LayoutChangeEvent,
+  ) => {
+    const { x, width } = event.nativeEvent.layout;
+
+    if (width <= 0) return;
+
+    setLayouts((current) => {
+      const previous = current[metric];
+
+      if (previous?.x === x && previous.width === width) return current;
+
+      return { ...current, [metric]: { x, width } };
+    });
+  };
+
   return (
     <View
       testID="weekly-activity-metric"
-      className="flex-row gap-1"
+      className="relative flex-row gap-1 overflow-hidden rounded-full border border-border bg-default p-1"
     >
+      {selectedLayout ? (
+        <AnimatedView
+          testID="weekly-activity-metric-indicator"
+          pointerEvents="none"
+          className="absolute bottom-1 top-1 rounded-full bg-tab-pill"
+          style={indicatorAnimatedStyle}
+        />
+      ) : null}
       {WEEKLY_METRICS.map((metric, index) => {
         const label = labels[index] ?? '';
         const selected = selectedIndex === index;
@@ -267,19 +341,15 @@ function MetricSelector({
             accessibilityLabel={label}
             accessibilityRole="radio"
             accessibilityState={{ selected }}
-            className={
-              selected
-                ? 'h-11 shrink flex-row items-center justify-center gap-0.5 rounded-xl border border-accent bg-accent px-0.5'
-                : 'h-11 shrink flex-row items-center justify-center gap-0.5 rounded-xl border border-transparent bg-default px-0.5'
-            }
+            className="z-10 h-11 shrink flex-row items-center justify-center gap-0.5 px-0.5"
             style={({ pressed }) => [
-              CONTINUOUS_CORNER,
               {
                 flexBasis: 0,
                 flexGrow: label.length,
                 opacity: pressed ? 0.8 : 1,
               },
             ]}
+            onLayout={(event) => handleTabLayout(metric, event)}
             onPress={() => onSelect(index)}
           >
             {selected ? (
@@ -287,14 +357,14 @@ function MetricSelector({
                 testID="weekly-activity-metric-selected"
                 accessible={false}
                 size={12}
-                color={accentForeground}
+                color={accentStrong}
               />
             ) : null}
             <Text
               testID={`weekly-activity-metric-label-${metric}`}
               className={
                 selected
-                  ? 'shrink text-xs font-semibold text-accent-foreground'
+                  ? 'shrink text-xs font-semibold text-accent-strong'
                   : 'shrink text-xs font-semibold text-foreground'
               }
               numberOfLines={1}
@@ -340,16 +410,8 @@ export function WeeklyActivityChart(
   ];
   const selectedMetricLabel =
     metricLabels[selectedMetricIndex] ?? metricLabels[0];
-  const [
-    accentStrong,
-    accentForeground,
-    muted,
-    border,
-    foreground,
-    surface,
-  ] = useThemeColors([
+  const [accentStrong, muted, border, foreground, surface] = useThemeColors([
     'accent-strong',
-    'accent-foreground',
     'muted',
     'border',
     'foreground',
@@ -451,7 +513,7 @@ export function WeeklyActivityChart(
           <MetricSelector
             labels={metricLabels}
             selectedIndex={selectedMetricIndex}
-            accentForeground={accentForeground}
+            accentStrong={accentStrong}
             onSelect={setSelectedMetricIndex}
           />
           {trend !== null ? (
