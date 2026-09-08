@@ -1474,3 +1474,47 @@ describe('#69 R1: la tira de hoy tiene cuatro celdas con tres divisores', () => 
     }).toEqual(existingScenarioCallCount);
   });
 });
+
+describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    const pet = makePet();
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+    mockGetDailyActivity.mockResolvedValue({
+      kind: 'ok',
+      days: [makeDay()],
+      weekComparison: { distanceM: 5, activeMinutes: 10, walkCount: 20 },
+    });
+  });
+
+  it('dibuja el rótulo y los tres tiles en orden', async () => {
+    await renderHome();
+
+    const quickActions = await screen.findByTestId('quick-actions');
+    const title = within(quickActions).getByTestId('quick-actions-title');
+    const tileTestIds = within(quickActions)
+      .getAllByTestId(
+        /^quick-action-(?:weight|reminder|documents)$/,
+      )
+      .map(({ props }) => props.testID);
+
+    expect(title).toHaveTextContent('Accesos rápidos');
+    expect(title.props.className).toBe(
+      'text-xs font-semibold uppercase tracking-widest text-muted',
+    );
+    expect(tileTestIds).toEqual([
+      'quick-action-weight',
+      'quick-action-reminder',
+      'quick-action-documents',
+    ]);
+    expect(screen.queryByTestId('quick-action-map')).toBeNull();
+  });
+});
