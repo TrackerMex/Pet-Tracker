@@ -470,6 +470,9 @@ describe('R9: summary degrada con gracia', () => {
   });
 
   it('shows dashes instead of zero for missing metrics', async () => {
+    const pet = makePet({ currentWeightKg: null });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
     mockGetDailyActivity.mockResolvedValue({
       kind: 'ok',
       days: [
@@ -490,9 +493,32 @@ describe('R9: summary degrada con gracia', () => {
     await renderHome();
 
     await waitFor(() => expect(screen.getByTestId('summary-card')).toBeVisible());
+    expect(screen.getByTestId('summary-weight')).toHaveTextContent('—');
     expect(screen.getByTestId('summary-activity')).toHaveTextContent('—');
     expect(screen.getByTestId('summary-sleep')).toHaveTextContent('—');
     expect(screen.getByTestId('summary-distance')).toHaveTextContent('—');
+  });
+
+  it('#69 R7: degrada el peso a un guion cuando el perfil no resuelve', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'unreachable', message: 'network down' });
+    mockGetDailyActivity.mockResolvedValue({
+      kind: 'ok',
+      days: [makeDay()],
+      weekComparison: { distanceM: 5, activeMinutes: 10, walkCount: 20 },
+    });
+
+    await renderHome();
+
+    await waitFor(() => expect(screen.getByTestId('summary-card')).toBeVisible());
+    for (const testId of [
+      'summary-weight',
+      'summary-activity',
+      'summary-sleep',
+      'summary-distance',
+    ]) {
+      expect(screen.getByTestId(testId)).toBeVisible();
+    }
+    expect(screen.getByTestId('summary-weight')).toHaveTextContent('—');
   });
 
   it('explains that activity tracking requires a collar', async () => {
