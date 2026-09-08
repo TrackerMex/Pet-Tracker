@@ -299,6 +299,10 @@ total sin repetir es 252 + 3 del interruptor = **255**.
 | — | `home.weight` | `Weight` | `Peso` | ← añadida por #69 (R11)
 | 332 | `home.viewOnMap` | `View on map` | `Ver en el mapa` |
 | — | `home.walks` | `Walks` | `Paseos` | ← añadida por #67 (R7b)
+| — | `home.quickActions` | `Quick actions` | `Accesos rápidos` | ← añadida por #71 (R11)
+| — | `home.quickActionWeight` | `Weight` | `Peso` | ← añadida por #71 (R11)
+| — | `home.quickActionReminder` | `Reminder` | `Recordatorio` | ← añadida por #71 (R11)
+| — | `home.quickActionDocuments` | `Documents` | `Documentos` | ← añadida por #71 (R11)
 
 **`mobile-pet-tracker/src/screens/home/weekly-activity-chart.tsx`** — claves
 añadidas por #68, registradas como delta sobre la tabla existente
