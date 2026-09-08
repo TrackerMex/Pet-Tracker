@@ -401,7 +401,11 @@ export function HomeScreen() {
         ) : null}
 
         {selectedPetId ? (
-          <View testID="quick-actions" className="gap-3">
+          <View
+            testID="quick-actions"
+            className="gap-3"
+            style={{ backgroundColor: '#fff' }}
+          >
             <Text
               testID="quick-actions-title"
               className="text-xs font-semibold uppercase tracking-widest text-muted"
