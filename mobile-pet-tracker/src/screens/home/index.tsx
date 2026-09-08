@@ -233,7 +233,7 @@ export function HomeScreen() {
             {activity.data?.kind === 'ok' ? (
               <View className="flex-row">
                 <View className="flex-1 items-center gap-1 border-r border-border">
-                  <Weight size={19} color={muted} />
+                  <Weight size={20} color={muted} />
                   <Text
                     testID="summary-weight"
                     className="text-sm font-bold text-foreground"
