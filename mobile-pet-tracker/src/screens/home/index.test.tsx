@@ -9,6 +9,7 @@ import {
 import { router, useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
+import { Pressable } from 'react-native';
 
 import {
   getDailyActivity,
@@ -1399,5 +1400,26 @@ describe('#69 R1: la tira de hoy tiene cuatro celdas con tres divisores', () => 
     for (const emoji of ['⚖️', '⚡', '🦮', '📍']) {
       expect(source).not.toContain(emoji);
     }
+  });
+
+  it('#69 R12: deja que cada celda se anuncie por separado', async () => {
+    await renderHome();
+
+    const summary = await screen.findByTestId('summary-card');
+    const values = [
+      screen.getByTestId('summary-weight'),
+      screen.getByTestId('summary-activity'),
+      screen.getByTestId('summary-sleep'),
+      screen.getByTestId('summary-distance'),
+    ];
+    const row = values[0].parent?.parent;
+
+    expect(row?.props.accessible).toBeUndefined();
+    expect(row?.props.accessibilityLabel).toBeUndefined();
+    expect(values).toHaveLength(4);
+    for (const value of values) {
+      expect(value).toBeVisible();
+    }
+    expect(within(summary).UNSAFE_queryAllByType(Pressable)).toHaveLength(0);
   });
 });
