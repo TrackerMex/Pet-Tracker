@@ -1707,4 +1707,26 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
       expect(within(tile).getByTestId(iconTestID).props.size).toBe(24);
     }
   });
+
+  it('anuncia los tres tiles como botones independientes', async () => {
+    await renderHome();
+
+    const quickActions = await screen.findByTestId('quick-actions');
+    const weightTile = within(quickActions).getByTestId('quick-action-weight');
+    const tileRow = weightTile.parent;
+
+    for (const testID of [
+      'quick-action-weight',
+      'quick-action-reminder',
+      'quick-action-documents',
+    ]) {
+      expect(within(quickActions).getByTestId(testID).props.accessibilityRole).toBe(
+        'button',
+      );
+    }
+    for (const group of [quickActions, tileRow]) {
+      expect(group?.props.accessible).toBeUndefined();
+      expect(group?.props.accessibilityLabel).toBeUndefined();
+    }
+  });
 });
