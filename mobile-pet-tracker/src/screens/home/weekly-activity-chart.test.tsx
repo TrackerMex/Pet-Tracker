@@ -43,6 +43,12 @@ const { existsSync, readFileSync } = require('fs');
 const { join } = require('path');
 
 const mockUseReducedMotion = jest.fn<boolean, []>(() => true);
+let mockTheme: 'light' | 'dark' = 'light';
+
+jest.mock('uniwind', () => ({
+  ...jest.requireActual('uniwind'),
+  useUniwind: () => ({ theme: mockTheme, hasAdaptiveThemes: false }),
+}));
 
 jest.mock('react-native-reanimated', () => ({
   ...jest.requireActual<typeof import('react-native-reanimated')>(
@@ -425,6 +431,7 @@ beforeEach(() => {
   void latestBarChartProps;
   jest.clearAllMocks();
   mockUseReducedMotion.mockReturnValue(true);
+  mockTheme = 'light';
 });
 
 describe('R1: la gráfica entra por el subpath v2 y por ningún otro', () => {
@@ -827,7 +834,7 @@ describe('R6: el selector cambia de métrica sin volver a pedir nada', () => {
 
     expect(selector.props).toEqual(
       expect.objectContaining({
-        values: ['Minutos activos', 'Distancia recorrida', 'Paseos'],
+        values: ['Minutos activos', 'Distancia', 'Paseos'],
         selectedIndex: 0,
         tintColor: 'resolved-accent-strong',
       }),
@@ -863,6 +870,26 @@ describe('R6: el selector cambia de métrica sin volver a pedir nada', () => {
     expect(
       result.getByTestId('weekly-activity-value-2026-09-02'),
     ).toHaveTextContent('1.0 km');
+  });
+});
+
+describe('R9: el selector sigue el tema de la app', () => {
+  it('fuerza appearance dark y light sin depender del tema del sistema', async () => {
+    const days = makeWeek('2026-09-02', [10, 20, 30, 40, 50, 60, 70]);
+    mockTheme = 'dark';
+    const dark = await renderChart(days);
+
+    expect(dark.getByTestId('weekly-activity-metric').props.appearance).toBe(
+      'dark',
+    );
+
+    await dark.unmount();
+    mockTheme = 'light';
+    const light = await renderChart(days);
+
+    expect(light.getByTestId('weekly-activity-metric').props.appearance).toBe(
+      'light',
+    );
   });
 });
 
