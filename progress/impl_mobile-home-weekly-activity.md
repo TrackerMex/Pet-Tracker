@@ -326,3 +326,72 @@ este punto y debe incorporarse aquí antes de cerrar el gate.
 - `./init.sh` post-cambio: exit 0; build, 163 suites/1243 tests de backend, 2 suites/14 tests de infra, 67 suites/1024 tests móviles, 25 suites/354 tests e2e ejecutados, lint y typecheck en verde. Permanecen solo los avisos preexistentes de `.env`, `STATUS.md` y la futura versión mínima de Node del AWS SDK.
 - `graphify update .`: completó la extracción sin cambios versionados; conservó el aviso conocido por `tree_sitter_sql` opcional ausente.
 - Auditoría de alcance: cero cambios en `backend-pet-tracker/` e `infra/`; #68 permanece `in_progress`, sin PR ni merge.
+
+### Sustitución autorizada tras la medición humana
+
+El humano completó la medición pendiente en el dev build Android: “Minutos
+activos” seguía saltando de línea y, en tema claro, el texto y el check negros
+del segmento seleccionado perdían legibilidad sobre el verde. Se respetó el
+punto de parada del encargo y el humano autorizó expresamente sustituir solo el
+selector nativo.
+
+La causa confirmada coincide con la documentación fijada a Expo 57: el wrapper
+de `SegmentedControl` no ofrece `fontStyle` ni `activeFontStyle`, y
+`tintColor` en Android únicamente cambia el contenedor activo. Se sustituyó por
+un grupo privado de tres `Pressable` dentro del mismo fichero de la feature:
+
+- cada opción tiene rol `radio`, `accessibilityLabel` de catálogo y
+  `accessibilityState.selected`;
+- la altura táctil queda fija en `h-11`, cada etiqueta lleva
+  `numberOfLines={1}` y `adjustsFontSizeToFit`, y el espacio se reparte según
+  la longitud del copy para que “Minutos activos” conserve su significado;
+- el seleccionado combina `bg-accent` con `text-accent-foreground`; su icono
+  `Check` consume el mismo token mediante `useThemeColors`, mientras los no
+  seleccionados usan `bg-default` y `text-foreground`;
+- el estado sigue siendo local, se decide por el índice de `WEEKLY_METRICS` y
+  no se añadió ninguna llamada ni dependencia. La carta impide añadir
+  `expo-haptics` sin spec, por lo que el control usa feedback visual de presión
+  y no amplía dependencias.
+
+Commits test-primero:
+
+- rojo `e486e4d` — `fix(mobile-home-weekly-activity): guard accessible metric selector (R6,R9)`: 2 suites dirigidas, 5 fallos esperados y 75 tests verdes; todos los fallos fueron la ausencia de las nuevas opciones en producción;
+- verde `8003451` — `fix(mobile-home-weekly-activity): replace unreadable metric selector (R6,R9)`.
+
+Evidencia de los candados nuevos, con cada mutación plantada y restaurada por
+separado:
+
+| Mutación | Resultado dirigido |
+|---|---|
+| `numberOfLines={1}` pasa a `2` | exit 1 en R6: la comprobación de una sola línea recibió `false` |
+| la etiqueta activa usa `text-foreground` | exit 1 en R9: faltó `text-accent-foreground` |
+| el check usa color negro fijo | exit 1 en R9: recibió `black` donde el tema oscuro exigía `dark-accent-foreground` |
+
+El primer pase de candados detectó que el contenedor exterior añadía una
+aplicación directa al inventario de esquinas continuas de #62. No se cambió su
+cifra: se eliminó esa superficie redundante y las tres opciones conservan
+`CONTINUOUS_CORNER` desde su `Pressable`. Después quedaron verdes las 7 suites
+dirigidas (205/205 tests), incluidos consistencia, legibilidad, drift e idioma,
+además de lint y typecheck.
+
+La primera suite móvil completa reprodujo el flaky ya registrado como #72 en
+la selección de foto de Add Pet: 66 suites pasaron y solo esa falló. El fichero
+pasó aislado 17/17 inmediatamente; una repetición completa limpia terminó
+67/67 suites y 1024/1024 tests. No se tocó Add Pet.
+
+El resultado posterior a `8003451` aún necesita el mismo re-smoke humano en el
+Android estrecho, con tema claro y oscuro, para confirmar píxeles y TalkBack; el
+entorno de Codex sigue sin Android SDK, `adb`, emulador ni dispositivo. La
+feature permanece `in_progress`.
+
+Gate automatizado final de esta sustitución:
+
+- `./init.sh`: exit 0; build verde, backend 163/163 suites y 1243/1243 tests,
+  infraestructura 2/2 suites y 14/14 tests, móvil 67/67 suites y 1024/1024
+  tests, e2e 25 suites ejecutadas y 354 tests aprobados, lint y typecheck;
+- `graphify update .`: exit 0, con el aviso conocido por
+  `tree_sitter_sql` opcional ausente y sin cambios versionados;
+- auditoría de alcance: solo se modificaron los ficheros de Home ya incluidos
+  en `design.md` §4, más la trazabilidad y los dos informes obligatorios. Cero
+  ficheros de backend o infraestructura; no se marcó la feature `done`, no se
+  abrió PR y no se hizo merge.
