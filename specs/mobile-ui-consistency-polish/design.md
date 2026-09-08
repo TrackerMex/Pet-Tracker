@@ -410,7 +410,7 @@ El caso urgente es el overlay del mapa, que se repinta cada 15 s
 > un componente de heroui-native, no se toca; si la dibuja un `View`,
 > `Pressable`, `TextInput` o el `Card` del repo, es del repo y se toca.**
 
-### R1 — Botón primario sólido (12 sitios, cambian 4)
+### R1 — Botón primario sólido (13 sitios, cambian 4)
 
 `className` que contiene exactamente `bg-accent` (no `bg-accent-soft`):
 
@@ -428,6 +428,7 @@ El caso urgente es el overlay del mapa, que se repinta cada 15 s
 | `src/screens/reminders/index.tsx` | 135 | `rounded-xl bg-accent` | **sin cambio** |
 | `src/screens/pairing/index.tsx` | 322 | `min-h-11 w-full rounded-xl bg-accent` | **sin cambio** |
 | `src/screens/pairing/index.tsx` | 377 | `min-h-11 w-full rounded-xl bg-accent` | **sin cambio** |
+| `src/screens/home/index.tsx` | 378 | `min-h-11 w-full rounded-xl bg-accent` | **sin cambio** |
 
 Más el texto de §7 en `docs/ui-guidelines.md`.
 

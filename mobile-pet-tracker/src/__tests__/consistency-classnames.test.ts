@@ -94,12 +94,12 @@ describe('#62 R1: la escala de radios está declarada y el botón primario tiene
     expect(button).not.toContain('rounded-2xl');
   });
 
-  it('deja los doce botones primarios sólidos en un único radio', () => {
+  it('deja los trece botones primarios sólidos en un único radio', () => {
     const primaryRadius = sourceFiles().flatMap((path) =>
       readFileSync(path, 'utf8').match(/rounded-xl bg-accent(?=[\s'"`])/g) ?? [],
     );
 
-    expect(primaryRadius).toHaveLength(12);
+    expect(primaryRadius).toHaveLength(13);
     expect(filesMatching(/rounded-2xl bg-accent(?=[\s'"`])/)).toEqual([]);
   });
 });

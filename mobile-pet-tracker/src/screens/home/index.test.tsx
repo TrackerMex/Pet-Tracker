@@ -1045,7 +1045,10 @@ describe('R8: el mapa solo se ofrece para hoy', () => {
     const mapButton = screen.getByTestId('weekly-activity-day-map');
 
     expect(mapButton).toHaveTextContent('Ver en el mapa');
-    expect(mapButton.props.className).toContain('bg-default');
+    expect(mapButton.props.className).toContain('rounded-xl bg-accent');
+    expect(
+      within(mapButton).getByText('Ver en el mapa').props.className,
+    ).toContain('text-accent-foreground');
 
     await fireEvent.press(mapButton);
     expect(mockRouter.push).toHaveBeenCalledWith('/map');
