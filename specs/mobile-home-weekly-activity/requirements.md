@@ -774,7 +774,7 @@ esa autorización, que es como el resto de decisiones de #68.
   que se abandona es un control nativo concreto por ilegible, no la regla de
   capas.
 
-- [ ] Enmienda aprobada por humano
+- [X] Enmienda aprobada por humano
 
 ### E2 — `specs/mobile-ui-consistency-polish/` R1: el inventario de botones primarios pasa de 12 a 13
 
