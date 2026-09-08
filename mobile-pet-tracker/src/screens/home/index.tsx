@@ -52,14 +52,14 @@ const QUICK_ACTIONS = [
   {
     testID: 'quick-action-reminder',
     Icon: CalendarPlus,
-    labelKey: 'home.quickActionDocuments',
+    labelKey: 'home.quickActionReminder',
     slot: 'amber',
     href: (_petId: string) => '/add-reminder',
   },
   {
     testID: 'quick-action-documents',
     Icon: FileText,
-    labelKey: 'home.quickActionReminder',
+    labelKey: 'home.quickActionDocuments',
     slot: 'blue',
     href: (petId: string) => `/pets/${petId}/docs`,
   },
