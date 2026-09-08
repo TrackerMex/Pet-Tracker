@@ -1549,7 +1549,7 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
       'quick-action-reminder',
       'quick-action-documents',
     ]) {
-      fireEvent.press(screen.getByTestId(testID));
+      await fireEvent.press(screen.getByTestId(testID));
     }
 
     expect(mockRouter.push).toHaveBeenCalledTimes(3);
@@ -1640,7 +1640,7 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
       expect(tileQueries.getByTestId(iconTestID)).toBeVisible();
       expect(tileQueries.getByText(label)).toBeVisible();
       expect(tile.props.className).toContain(surface);
-      fireEvent.press(tile);
+      await fireEvent.press(tile);
       expect(mockRouter.push).toHaveBeenLastCalledWith(href);
     }
 
