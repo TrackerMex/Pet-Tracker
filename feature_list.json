@@ -1446,5 +1446,57 @@
       "mobile-pet-tracker/src/screens/home/index.tsx",
       "mobile-pet-tracker/src/screens/home/index.test.tsx"
     ]
+  },
+  {
+    "id": 78,
+    "name": "mobile-alerts-center",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Centro de alertas en la app y campana en el hero de Home. Registrada el 2026-09-08 al revisar como se manejan las notificaciones: el backend esta completo desde #12/#13 (alert_events, notifier, GET /v1/alerts?status=open|acked|closed&cursor= y POST /v1/alerts/:id/ack en alerts.controller.ts:34-66, respuesta {id,petId,petName,type,status,geofenceId,payload,openedAt,ackedAt,closedAt}) pero no existe src/api/alerts.ts ni ninguna ruta bajo src/app/ que lo consuma: el centro de alertas entero esta sin cliente (progress/explore_design-gap-vs-make.md:441). La spec de #67 dejo la campana del Make fuera con este nombre exacto como destino (specs/mobile-pet-hero-header/requirements.md:497-502): un boton que no navega a ninguna parte es peor que su ausencia. Alcance: (1) src/api/alerts.ts con listado paginado por cursor y ack, mismo patron que activity.ts incluido el 402 como kind 'no-tracking' porque las lecturas de alerts estan tras el gate de suscripcion del dispositivo; (2) ruta nueva src/app/(tabs)/alerts.tsx + src/screens/alerts/ con el patron route delgado de docs/conventions.md, igual que reminders.tsx, no es pestana; (3) campana en el hero de Home con punto rojo cuando existe al menos una alerta status=open; el ack es el 'leido'. Decisiones que la spec cierra por escrito: el punto rojo es derivable de la lista pero el NUMERO exacto no, ListAlertsQuerySchema es strictObject sin limit y ?limit= responde 400 (explore :442), asi que la campana lleva punto y no contador salvo que se abra una feature backend para GET /v1/alerts/count; alert_events_type_check solo admite geofence_exit y battery_low, los recordatorios los despacha el scheduler y nunca entran en /alerts (explore :443), la spec decide si el centro muestra solo alertas (recomendado, sin fusionar fuentes en cliente); /v1/alerts devuelve todas mis mascotas, la spec decide si filtra por la mascota seleccionada o lista con petName. No depende de #79: sin push el usuario ve las alertas al abrir la app, que ya es el 90% del valor. Todo el copy via t() segun docs/ui-guidelines.md.",
+    "acceptance_criteria": [
+      "La campana del hero de Home pinta el punto rojo cuando GET /v1/alerts?status=open devuelve al menos un item y lo quita cuando no hay ninguno",
+      "Tocar la campana navega a la ruta de alertas; la ruta existe bajo src/app/(tabs)/ y NO aparece como pestana",
+      "El listado muestra las alertas open primero con petName, tipo traducido (geofence_exit, battery_low), y openedAt relativo; las acked/closed quedan distinguibles",
+      "Ack de una alerta open -> POST /v1/alerts/:id/ack, el item pasa a acked sin recargar la pantalla y el punto rojo se actualiza",
+      "Paginacion por nextCursor: al llegar al final carga la siguiente pagina; sin nextCursor no pide mas",
+      "402 en /v1/alerts (mascota sin suscripcion) -> estado vacio con texto, sin crash y sin campana rota; el patron es el kind 'no-tracking' de src/api/activity.ts",
+      "Estado vacio y estado de error con copy via t(), cero literales en ingles en pantalla ni en tests",
+      "Tests unitarios de src/api/alerts.ts y de la pantalla; suite movil completa verde; ninguna cifra de candado se mueve sin declararlo como delta",
+      "Gate humano: smoke en dev build de Android con una alerta open real (salida de geocerca con collar o fila insertada a mano en alert_events). No delegable a IA"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/api/alerts.ts",
+      "mobile-pet-tracker/src/app/(tabs)/alerts.tsx",
+      "mobile-pet-tracker/src/screens/alerts/index.tsx",
+      "mobile-pet-tracker/src/screens/alerts/index.test.tsx",
+      "mobile-pet-tracker/src/screens/home/index.tsx",
+      "mobile-pet-tracker/src/i18n/catalog.ts"
+    ]
+  },
+  {
+    "id": 79,
+    "name": "mobile-push-registration",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Registro del push token de Expo desde la app y recepcion de notificaciones. Registrada el 2026-09-08: el backend ya envia push desde #13 (notifier -> expo-server-sdk tras el puerto PushSender, gate PUSH_ENABLED, tokens DeviceNotRegistered se borran) y expone POST/DELETE /v1/me/push-tokens con body {expoToken, platform: 'ios'|'android'} validado por /^Expo(nent)?PushToken\\[[^\\]]+\\]$/ (specs/alerts-center-notifier R3-R6), pero la app nunca registra ningun token: la tabla push_tokens esta vacia en produccion y ningun push llega a nadie. #39 dejo expo-notifications explicitamente fuera (specs/mobile-reminders/requirements.md:356) y esta es la feature de backlog que ahi se prometia. Alcance: (1) instalar expo-notifications y su config plugin en app.json, dependencia declarada en la spec que es lo que la autoriza; (2) hook src/hooks/use-push-registration.ts: tras signIn pide permiso (Android 13+ es permiso de runtime POST_NOTIFICATIONS, crear canal de notificacion por defecto), obtiene el token con getExpoPushTokenAsync({projectId}) y hace POST /v1/me/push-tokens; el upsert de R3 es idempotente asi que se re-registra en cada arranque con sesion sin coste; (3) en signOut de src/providers/auth-provider.tsx hace DELETE /v1/me/push-tokens con ese token ANTES de borrar la sesion, para que un telefono compartido no reciba alertas del usuario anterior; (4) src/api/push-tokens.ts; (5) handler de tap (addNotificationResponseReceivedListener + getLastNotificationResponseAsync para arranque en frio) que navega a la ruta de alertas si #78 ya existe y a Home si no; setNotificationHandler para mostrar banner en primer plano. Decisiones que la spec cierra: getExpoPushTokenAsync exige un projectId de EAS y app.json no tiene extra.eas.projectId, asi que hay una tarea humana previa (eas init, gratis, requiere cuenta Expo) y la spec dice de donde lee el id (Constants.expoConfig.extra.eas.projectId); Expo Go no soporta push desde SDK 53, guard con Device.isDevice y ejecutar solo en dev build; permiso denegado -> no registrar, no insistir, sin pantalla de ajustes en esta feature; si el usuario tiene varios dispositivos cada uno registra el suyo, el backend ya notifica a todas las filas del user. Para que el smoke sea real el backend local necesita PUSH_ENABLED=true (.env.example:98) y Expo necesita credenciales FCM V1 subidas al proyecto EAS (eas credentials, cuenta Firebase gratuita): son cuentas y claves, tarea humana no delegable. No depende de #78, pero sin #78 el tap solo abre Home; orden recomendado #78 y luego esta.",
+    "acceptance_criteria": [
+      "Con sesion iniciada en dev build de Android aparece exactamente 1 fila en push_tokens para ese usuario con expoToken con formato ExpoPushToken[...] y platform 'android'; reiniciar la app no crea una segunda fila",
+      "signOut hace DELETE /v1/me/push-tokens con el token del dispositivo antes de borrar la sesion; tras cerrar sesion la fila ya no existe",
+      "Permiso de notificaciones denegado -> ningun POST a /v1/me/push-tokens, ningun crash, ningun dialogo repetido en arranques siguientes",
+      "Fuera de dev build (Expo Go, Device.isDevice false) el hook no llama a expo-notifications ni a la API",
+      "Fallo de red en el registro no bloquea el login: el usuario entra igual y se reintenta en el siguiente arranque",
+      "Tap sobre una notificacion con la app cerrada y con la app en segundo plano abre la app y navega a la ruta de alertas (o Home si #78 no existe), verificado con getLastNotificationResponseAsync",
+      "Tests unitarios del hook y de src/api/push-tokens.ts con expo-notifications mockeado en jest; suite movil completa verde; typecheck verde con el config plugin anadido",
+      "Tareas humanas previas documentadas en la spec: eas init con projectId en app.json y credenciales FCM V1 en EAS; sin ellas el smoke no se ejecuta",
+      "Gate humano: smoke en dev build de Android con PUSH_ENABLED=true en el backend local, salida de geocerca simulada segun specs/alerts-center-notifier y notificacion recibida en el telefono. No delegable a IA"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/app.json",
+      "mobile-pet-tracker/package.json",
+      "mobile-pet-tracker/src/api/push-tokens.ts",
+      "mobile-pet-tracker/src/hooks/use-push-registration.ts",
+      "mobile-pet-tracker/src/providers/auth-provider.tsx",
+      "mobile-pet-tracker/src/app/_layout.tsx"
+    ]
   }
 ]
