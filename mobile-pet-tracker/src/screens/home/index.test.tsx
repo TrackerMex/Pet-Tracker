@@ -95,10 +95,12 @@ jest.mock('reicon-react-native', () => {
 
   return {
     ...actual,
-    Weight: mockIcon('summary-icon-weight'),
-    Walk: mockIcon('summary-icon-activity'),
-    Moon: mockIcon('summary-icon-sleep'),
-    Map: mockIcon('summary-icon-distance'),
+    Weight: mockIcon('icon-weight'),
+    Walk: mockIcon('icon-walk'),
+    Moon: mockIcon('icon-moon'),
+    Map: mockIcon('icon-map'),
+    CalendarPlus: mockIcon('icon-calendar-plus'),
+    FileText: mockIcon('icon-file-text'),
   };
 });
 
@@ -1359,10 +1361,10 @@ describe('#69 R1: la tira de hoy tiene cuatro celdas con tres divisores', () => 
 
     await screen.findByTestId('summary-card');
     const cells = [
-      ['summary-weight', '12.4 kg', 'summary-icon-weight', 'Peso'],
-      ['summary-activity', '1h 35m', 'summary-icon-activity', 'Actividad'],
-      ['summary-sleep', '45m', 'summary-icon-sleep', 'Descanso'],
-      ['summary-distance', '2.4 km', 'summary-icon-distance', 'Distancia'],
+      ['summary-weight', '12.4 kg', 'icon-weight', 'Peso'],
+      ['summary-activity', '1h 35m', 'icon-walk', 'Actividad'],
+      ['summary-sleep', '45m', 'icon-moon', 'Descanso'],
+      ['summary-distance', '2.4 km', 'icon-map', 'Distancia'],
     ] as const;
 
     for (const [testID, expectedValue, iconTestID, label] of cells) {
@@ -1579,11 +1581,7 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
     }
   });
 
-  it('no dibuja ningún tile a una pestaña ni a un destino inexistente', async () => {
-    await renderHome();
-
-    const weightTile = await screen.findByTestId('quick-action-weight');
-    const tileRow = weightTile.parent;
+  it('no dibuja ningún tile a una pestaña ni a un destino inexistente', () => {
     const source = readFileSync(
       join(process.cwd(), 'src/screens/home/index.tsx'),
       'utf8',
@@ -1592,9 +1590,8 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
     const end = source.indexOf('] as const;', start);
     const quickActions = source.slice(start, end);
 
-    expect(
-      tileRow?.children.filter((child) => typeof child !== 'string'),
-    ).toHaveLength(3);
+    expect(quickActions.match(/testID: 'quick-action-/g)).toHaveLength(3);
+    expect(source).toContain('{QUICK_ACTIONS.map(');
     for (const forbiddenDestination of [
       '/map',
       '/health',
