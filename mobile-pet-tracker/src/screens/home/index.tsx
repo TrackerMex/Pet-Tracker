@@ -46,7 +46,7 @@ const QUICK_ACTIONS = [
     testID: 'quick-action-weight',
     Icon: Weight,
     labelKey: 'home.quickActionWeight',
-    slot: 'violet',
+    slot: 'amber',
     href: (_petId: string) => '/weight-log',
   },
   {
