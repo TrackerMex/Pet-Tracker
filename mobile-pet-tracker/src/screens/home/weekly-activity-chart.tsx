@@ -23,6 +23,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Line, Rect } from 'react-native-svg';
 import { TrendDown, TrendUp } from 'reicon-react-native';
+import { useUniwind } from 'uniwind';
 
 import type { DayEntry, WeekComparison } from '../../api/types';
 import { Card } from '../../components/card';
@@ -258,6 +259,7 @@ export function WeeklyActivityChart(
 ): JSX.Element {
   const locale = useLocale();
   const t = useTranslate();
+  const { theme } = useUniwind();
   const [chartWidth, setChartWidth] = useState(0);
   const [selectedMetricIndex, setSelectedMetricIndex] = useState(0);
   const [selection, setSelection] = useState<DaySelection | null>(null);
@@ -378,6 +380,7 @@ export function WeeklyActivityChart(
             values={metricLabels}
             selectedIndex={selectedMetricIndex}
             tintColor={accentStrong}
+            appearance={theme === 'dark' ? 'dark' : 'light'}
             onChange={handleMetricChange}
           />
           {trend !== null ? (

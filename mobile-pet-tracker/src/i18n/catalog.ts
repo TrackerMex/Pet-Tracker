@@ -327,7 +327,7 @@ export const es: Record<TranslationKey, string> = {
   'home.distance': 'Distancia',
   'home.viewOnMap': 'Ver en el mapa',
   'weeklyActivity.metricActiveMinutes': 'Minutos activos',
-  'weeklyActivity.metricDistance': 'Distancia recorrida',
+  'weeklyActivity.metricDistance': 'Distancia',
   'weeklyActivity.metricWalks': 'Paseos',
   'weeklyActivity.dayLabelActiveMinutes': '{{day}}: {{value}} minutos activos',
   'weeklyActivity.dayLabelDistance': '{{day}}: {{value}} de recorrido',
