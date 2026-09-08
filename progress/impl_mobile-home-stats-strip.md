@@ -135,14 +135,15 @@ declarado como candado adicional de #69.
 - Grep de producción: cero hex fuera de `src/theme/`, clases arbitrarias,
   `StyleSheet.create`, shadow/elevation legacy o radios fuera de
   `rounded-card`, `rounded-xl` y `rounded-full`.
-- `env -u FORCE_COLOR ./init.sh`: exit 0 y `Todo verde`.
+- Corrida final posterior al refuerzo, `env -u FORCE_COLOR ./init.sh`: exit 0
+  y `Todo verde`.
   - backend: 163 suites, 1243 tests;
   - infra: 2 suites, 14 tests;
   - harness: 11 suites, 28 tests;
   - móvil: 68 suites, 1041 tests;
   - e2e: 25 suites pasadas y 3 saltadas; 354 tests pasados y 8 saltados;
   - build, lint y typecheck: verdes.
-- `graphify update .`: exit 0; 10874 nodos, 16870 aristas y 687 comunidades.
+- `graphify update .`: exit 0; 10908 nodos, 16900 aristas y 694 comunidades.
   Actualizó `graphify-out` sin cambio versionado. El aviso por la dependencia
   SQL opcional `tree_sitter_sql` no impidió actualizar el grafo de código.
 - Los avisos existentes de tres claves ausentes en `.env`, `STATUS.md`
