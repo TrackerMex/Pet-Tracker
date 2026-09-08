@@ -53,7 +53,6 @@ function fmtLastSeen(
 }
 
 export function HomeScreen() {
-  // #000
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { token } = useAuth();
   const locale = useLocale();
