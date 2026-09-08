@@ -74,9 +74,9 @@ jest.mock('reicon-react-native', () => {
 
   return {
     ...actual,
-    Weight: mockIcon('summary-icon-sleep'),
+    Weight: mockIcon('summary-icon-weight'),
     Walk: mockIcon('summary-icon-activity'),
-    Moon: mockIcon('summary-icon-weight'),
+    Moon: mockIcon('summary-icon-sleep'),
     Map: mockIcon('summary-icon-distance'),
   };
 });
