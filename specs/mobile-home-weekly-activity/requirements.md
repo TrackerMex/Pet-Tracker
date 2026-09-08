@@ -767,7 +767,7 @@ Marca **una sola** de las dos:
 - [ ] **(a) Se queda en `secondary` con `bg-default`.** El inventario de #62
       sigue cerrado en doce y no se toca ninguna spec más. Es lo que está
       implementado hoy, así que aprobar esto no cuesta un solo commit de código.
-- [ ] **(b) Vuelve a acción acentuada** (`bg-accent` + `text-accent-foreground`).
+- [X] **(b) Vuelve a acción acentuada** (`bg-accent` + `text-accent-foreground`).
       Entonces el inventario de #62 R1 pasa a trece y **hace falta una enmienda
       firmada a `specs/mobile-figma-polish/`** además de esta casilla, porque
       ese total es un candado aprobado. Añade trabajo: un commit de código, otro
