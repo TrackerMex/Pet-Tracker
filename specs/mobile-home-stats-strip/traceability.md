@@ -17,7 +17,7 @@ Dos abreviaturas para no repetir rutas largas:
 
 | Requisito | Test (archivo::nombre) — prescrito por la spec | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | `STRIP` (3 `it`: los cuatro `testID` en el orden del árbol; **3** `border-r border-border` en la fila; la fila sin `gap-3` ni `justify-between`) | pendiente |
+| R1 | `STRIP` (3 `it`: los cuatro `testID` en el orden del árbol; **3** `border-r border-border` en la fila; la fila sin `gap-3` ni `justify-between`) | `1a8a3e9` test rojo → `5f0b334` `feat(mobile-home-stats-strip): add weight cell to today strip (R1)` (verde) |
 | R2 | `src/screens/home/format.test.ts`::`describe('#69 R2: fmtKg')` (3 `it`: `null → '—'`, `12 → '12 kg'`, `12.4 → '12.4 kg'`) + `STRIP`::`it('degrada el peso a un guion cuando el perfil no resuelve')`, con `mockGetPet` en `{ kind: 'unreachable' }` y la fila de cuatro intacta | `822fd80` test red → `a776939` `feat(mobile-home-stats-strip): add weight formatter (R2)` (formatter verde; el caso de perfil se completa en R7) |
 | R3 | `STRIP`::`it('asigna cada valor a su celda y a ninguna otra')`, con la fixture de cuatro valores **distintos entre sí** (`'12.4 kg'`, `'1h 35m'`, `'45m'`, `'2.4 km'`). **Es el único candado que mata las mutaciones 1-4 de R15b**; si alguna de las cuatro deja la suite verde, este `it` está mal escrito y se arregla antes de seguir | pendiente |
 | R4 | `STRIP`::`it('conserva el descanso como celda siempre visible')`, que exige `summary-sleep` visible y etiquetado `Descanso` **sin tocar ninguna barra de la gráfica** — la diferencia con `weekly-activity-detail-rest`, que solo existe tras un toque | pendiente |
