@@ -483,6 +483,35 @@ ficheros.
 
 ---
 
+## Decisiones de implementación
+
+### D1 — el candado de longitud de catálogo entra al alcance con delta +1
+
+**Codex paró aquí, y paró bien.** R14 y [[design]] §5 **no enumeran**
+`src/providers/__tests__/language-provider.test.tsx`, que en su línea 41 cierra
+la longitud del catálogo con `expect(englishKeys).toHaveLength(260 + 16)`.
+`home.weight`, que R11 aprueba, lo sube a 277. Codex no tocó el candado ni
+ninguna spec aprobada: se detuvo y lo reportó, que es exactamente lo que el
+handoff le exigía.
+
+- **No es una decisión de producto**: es la consecuencia mecánica de un
+  requisito que esta spec ya aprueba. R11 añade **una** clave en los dos
+  idiomas; un candado que cuenta claves tiene que moverse en **+1** o ponerse
+  rojo. No hay alternativa que no sea no añadir la clave.
+- **Qué se autoriza, y solo esto**: cambiar `260 + 16` por `260 + 16 + 1` en
+  `language-provider.test.tsx:41`, conservando la base histórica **visible como
+  suma** y sin tocar ninguna otra línea de ese fichero. `src/providers/` se
+  suma a los ficheros de candado de [[design]] §5 para esta feature.
+- **Qué NO se autoriza**: reescribir la base como un `277` plano —perdería la
+  trazabilidad de qué feature aportó qué—, debilitar el `toEqual` que compara
+  los dos idiomas, ni tocar nada más de `src/providers/`.
+- **Es la segunda vez que este candado se omite**: en #68 pasó igual, con un
+  delta de +16. Queda como apunte para el `spec_author`: la lista de candados
+  de catálogo debe incluir `language-provider.test.tsx` siempre que la feature
+  añada claves.
+
+- [ ] Aprobado por humano
+
 ## Fuera de alcance
 
 Todo lo de esta lista queda **explícitamente fuera** y ninguna decisión de aquí
