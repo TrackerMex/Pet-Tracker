@@ -8,6 +8,7 @@ import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
 import { BarChart } from 'react-native-chart-kit/v2';
 import { withDelay, withTiming } from 'react-native-reanimated';
+import * as ts from 'typescript';
 
 import type { DayEntry, WeekComparison } from '../../api/types';
 import { LanguageProvider } from '../../providers/language-provider';
@@ -329,6 +330,89 @@ function mergeObjectStyles(style: unknown): Record<string, number> {
   );
 }
 
+function findVariableInitializer(
+  sourceFile: ts.SourceFile,
+  variableName: string,
+): ts.Expression {
+  let initializer: ts.Expression | undefined;
+
+  const visit = (node: ts.Node) => {
+    if (
+      ts.isVariableDeclaration(node) &&
+      ts.isIdentifier(node.name) &&
+      node.name.text === variableName
+    ) {
+      initializer = node.initializer;
+      return;
+    }
+
+    ts.forEachChild(node, visit);
+  };
+
+  visit(sourceFile);
+  expect(initializer).toBeDefined();
+  return initializer as ts.Expression;
+}
+
+function findNoDataCondition(sourceFile: ts.SourceFile): ts.Expression {
+  let condition: ts.Expression | undefined;
+
+  const visit = (node: ts.Node) => {
+    if (
+      ts.isCallExpression(node) &&
+      node.arguments.some(
+        (argument) =>
+          ts.isStringLiteral(argument) &&
+          argument.text === 'weeklyActivity.noDataForDay',
+      )
+    ) {
+      let ancestor: ts.Node | undefined = node.parent;
+
+      while (ancestor && !ts.isConditionalExpression(ancestor)) {
+        ancestor = ancestor.parent;
+      }
+
+      if (ancestor) condition = ancestor.condition;
+      return;
+    }
+
+    ts.forEachChild(node, visit);
+  };
+
+  visit(sourceFile);
+  expect(condition).toBeDefined();
+  return condition as ts.Expression;
+}
+
+function hasMissingSourceDiscriminant(node: ts.Node): boolean {
+  let found = false;
+
+  const isSource = (candidate: ts.Expression) =>
+    ts.isPropertyAccessExpression(candidate) &&
+    candidate.name.text === 'source';
+  const isMissing = (candidate: ts.Expression) =>
+    ts.isStringLiteral(candidate) && candidate.text === 'missing';
+  const visit = (candidate: ts.Node) => {
+    if (
+      ts.isBinaryExpression(candidate) &&
+      [
+        ts.SyntaxKind.EqualsEqualsEqualsToken,
+        ts.SyntaxKind.ExclamationEqualsEqualsToken,
+      ].includes(candidate.operatorToken.kind) &&
+      ((isSource(candidate.left) && isMissing(candidate.right)) ||
+        (isMissing(candidate.left) && isSource(candidate.right)))
+    ) {
+      found = true;
+      return;
+    }
+
+    ts.forEachChild(candidate, visit);
+  };
+
+  visit(node);
+  return found;
+}
+
 const mockBarChart = jest.mocked(BarChart);
 const mockWithDelay = jest.mocked(withDelay);
 const mockWithTiming = jest.mocked(withTiming);
@@ -545,12 +629,25 @@ describe('R5: un día sin dato no es una barra de altura cero', () => {
   });
 
   it('usa source aunque una métrica stored sea null', async () => {
+    const missingWithMetric = makeDay({
+      date: '2026-09-06',
+      source: 'missing',
+      activeMinutes: 90,
+    });
+    const storedWithNullMetric = makeDay({
+      date: '2026-09-07',
+      source: 'stored',
+      activeMinutes: null,
+    });
+    const measured = makeDay({
+      date: '2026-09-08',
+      source: 'stored',
+      activeMinutes: 30,
+    });
     const result = await renderChart([
-      makeDay({
-        date: '2026-09-07',
-        source: 'stored',
-        activeMinutes: null,
-      }),
+      missingWithMetric,
+      storedWithNullMetric,
+      measured,
     ]);
 
     expect(
@@ -559,6 +656,70 @@ describe('R5: un día sin dato no es una barra de altura cero', () => {
     expect(
       result.queryByTestId('weekly-activity-missing-2026-09-07'),
     ).toBeNull();
+    expect(latestBarChartProps().data).toEqual([
+      expect.objectContaining({
+        date: '2026-09-06',
+        value: null,
+        day: missingWithMetric,
+      }),
+      expect.objectContaining({
+        date: '2026-09-07',
+        value: null,
+        day: storedWithNullMetric,
+      }),
+      expect.objectContaining({
+        date: '2026-09-08',
+        value: 30,
+        day: measured,
+      }),
+    ]);
+    expect(
+      result.getByTestId('weekly-activity-average-label'),
+    ).toHaveTextContent('Media 30m');
+    expect(result.getByTestId('weekly-activity-average')).toBeTruthy();
+
+    await fireEvent.press(
+      result.getByTestId('weekly-activity-day-2026-09-07'),
+    );
+
+    const detail = result.getByTestId('weekly-activity-detail');
+
+    expect(
+      result.getByTestId('weekly-activity-detail-active-minutes'),
+    ).toHaveTextContent('—');
+    expect(
+      result.getByTestId('weekly-activity-detail-distance'),
+    ).toHaveTextContent('2.4 km');
+    expect(within(detail).queryByText('Sin datos de este día')).toBeNull();
+
+    const chartSource = readFileSync(chartSourcePath, 'utf8');
+    const sourceFile = ts.createSourceFile(
+      chartSourcePath,
+      chartSource,
+      ts.ScriptTarget.Latest,
+      true,
+      ts.ScriptKind.TSX,
+    );
+
+    expect({
+      chartData: hasMissingSourceDiscriminant(
+        findVariableInitializer(sourceFile, 'chartData'),
+      ),
+      measuredValues: hasMissingSourceDiscriminant(
+        findVariableInitializer(sourceFile, 'measuredValues'),
+      ),
+      averageAnchorIndex: hasMissingSourceDiscriminant(
+        findVariableInitializer(sourceFile, 'averageAnchorIndex'),
+      ),
+      detailPanel: hasMissingSourceDiscriminant(
+        findNoDataCondition(sourceFile),
+      ),
+    }).toEqual({
+      chartData: true,
+      measuredValues: true,
+      averageAnchorIndex: true,
+      detailPanel: true,
+    });
   });
 });
 
