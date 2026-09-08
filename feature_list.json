@@ -1405,5 +1405,21 @@
     "files_affected": [
       "init.sh"
     ]
+  },
+  {
+    "id": 76,
+    "name": "e2e-audit-log-order-assert",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Encontrado al medir el baseline de #69 el 2026-09-08: init.sh salio rojo en main (9358cc7) por backend-pet-tracker/test/health-vaccines.e2e-spec.ts:497, y la misma suite corrida aislada paso 15/15. No es flakiness misteriosa, es un test mal escrito: la consulta db.select().from(auditLog).where(and(eq(entity,'vaccine'), eq(entityId,id))) NO lleva orderBy, asi que Postgres puede devolver las filas en cualquier orden, y el test asserta toEqual(['vaccine.create','vaccine.update','vaccine.delete']) -un array ordenado- y ademas indexa rows[1].meta dando por hecho que el update es el segundo. Con la suite entera y el Postgres bajo carga el orden fisico cambia y el assert cae. Sin ORDER BY el orden de un SELECT no esta definido: el test ha estado pasando por suerte. Merece revisar si hay mas asserts sobre consultas sin ordenar en el resto de los e2e, porque el patron seguramente esta copiado.",
+    "acceptance_criteria": [
+      "La consulta del audit log ordena explicitamente por la columna que da el orden cronologico real, no por el orden fisico",
+      "El assert deja de depender del indice: o se ordena de verdad, o se compara como conjunto",
+      "Se barre el resto de los e2e buscando el mismo patron -assert ordenado sobre select sin orderBy- y se reporta lo que aparezca",
+      "La suite e2e completa pasa varias veces seguidas, no una"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/test/health-vaccines.e2e-spec.ts"
+    ]
   }
 ]
