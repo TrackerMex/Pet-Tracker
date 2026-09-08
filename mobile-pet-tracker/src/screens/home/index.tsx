@@ -349,7 +349,7 @@ export function HomeScreen() {
                     {fmtMinutes(today?.restMinutes ?? null)}
                   </Text>
                   <Text className="text-2xs font-normal text-muted">
-                    {t('home.walks')}
+                    {t('home.sleep')}
                   </Text>
                 </View>
                 <View className="flex-1 items-center gap-1">
