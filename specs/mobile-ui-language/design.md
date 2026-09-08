@@ -296,6 +296,7 @@ total sin repetir es 252 + 3 del interruptor = **255**.
 | 289 | `home.activity` | `Activity` | `Actividad` |
 | 301 | `home.sleep` | `Sleep` | `Descanso` |
 | 313 | `home.distance` | `Distance` | `Distancia` |
+| — | `home.weight` | `Weight` | `Peso` | ← añadida por #69 (R11)
 | 332 | `home.viewOnMap` | `View on map` | `Ver en el mapa` |
 | — | `home.walks` | `Walks` | `Paseos` | ← añadida por #67 (R7b)
 

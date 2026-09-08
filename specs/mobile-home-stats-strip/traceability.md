@@ -1,0 +1,51 @@
+---
+feature: "mobile-home-stats-strip"
+status: approved       # draft | spec_ready | approved
+tags: [harness, spec]
+---
+
+# Trazabilidad — [[mobile-home-stats-strip]]
+
+Rutas relativas a `mobile-pet-tracker/`. La columna **Test** la **prescribe la
+spec** (no la improvisa el implementer): es el contrato de qué prueba cada R-id.
+La columna **Commit** la rellena el implementer en cuanto ese requisito queda
+verde, nunca al final.
+
+Dos abreviaturas para no repetir rutas largas:
+`HOME` = `src/screens/home/index.test.tsx`;
+`STRIP` = `HOME`::`describe('#69 R1: la tira de hoy tiene cuatro celdas con tres divisores')`.
+
+| Requisito | Test (archivo::nombre) — prescrito por la spec | Commit (hash + mensaje) |
+|---|---|---|
+| R1 | `STRIP` (3 `it`: los cuatro `testID` en el orden del árbol; **3** `border-r border-border` en la fila; la fila sin `gap-3` ni `justify-between`) + el `it` compartido con R3, que liga el icono y la etiqueta correctos al nodo de cada celda | `1a8a3e9` test rojo → `5f0b334` `feat(mobile-home-stats-strip): add weight cell to today strip (R1)` (verde); refuerzo tras review: `18454a4` rojo con `Weight`/`Moon` cruzados en el doble → `6e31b6a` `fix(mobile-home-stats-strip): bind cell icons and labels (R1,R3)` (verde) |
+| R2 | `src/screens/home/format.test.ts`::`describe('#69 R2: fmtKg')` (3 `it`: `null → '—'`, `12 → '12 kg'`, `12.4 → '12.4 kg'`) + `STRIP`::`it('degrada el peso a un guion cuando el perfil no resuelve')`, con `mockGetPet` en `{ kind: 'unreachable' }` y la fila de cuatro intacta | `822fd80` test red → `a776939` `feat(mobile-home-stats-strip): add weight formatter (R2)` (formatter verde; el caso de perfil se completa en R7) |
+| R3 | `STRIP`::`it('asigna cada valor, icono y etiqueta a su celda y a ninguna otra')`, con la fixture de cuatro valores **distintos entre sí** (`'12.4 kg'`, `'1h 35m'`, `'45m'`, `'2.4 km'`). Dentro del mismo nodo de cada celda exige su valor, su icono `Weight`/`Walk`/`Moon`/`Map` identificado por el doble de `reicon`, y su etiqueta Peso/Actividad/Descanso/Distancia. Es el candado que mata por separado las cuatro mutaciones de valor de R15b y los intercambios icono↔celda y etiqueta↔celda del review | `71c24f6` test rojo con mutación de celda 1 → `ba11de7` `feat(mobile-home-stats-strip): map each metric to its cell (R3)` (verde); cobertura de icono y etiqueta: `18454a4` rojo → `6e31b6a` `fix(mobile-home-stats-strip): bind cell icons and labels (R1,R3)` (verde) |
+| R4 | `STRIP`::`it('conserva el descanso como celda siempre visible')`, que exige `summary-sleep` visible y etiquetado `Descanso` **sin tocar ninguna barra de la gráfica** — la diferencia con `weekly-activity-detail-rest`, que solo existe tras un toque | `646b501` test rojo con etiqueta mutada → `cc32d85` `feat(mobile-home-stats-strip): preserve always-visible rest cell (R4)` (verde) |
+| R5 | `STRIP`::`it('no repite los paseos dentro de la tira')` (`queryByTestId('summary-walks')` a `null`; `summary-card` sin el texto de `t('home.walks')`; `pet-hero-highlight-value` con el recuento del día) + `HOME`::`describe('R7: el hero pinta los paseos de hoy')` (`:944-1002`, de #67) **en verde y sin tocar** | `f8a99c9` test rojo con duplicación plantada → `8813b83` `feat(mobile-home-stats-strip): keep walks exclusively in the hero (R5)` (verde) |
+| R6 | `STRIP`::`it('coloca la tira sobre la tarjeta del collar')`, que espera `['summary-card','collar-card','weekly-activity-card','last-position-card']` tras filtrar los hijos de `home-content` + `HOME`::`it('queda entre el resumen y la última posición en el árbol')` (`:1121-1150`, de #68) **en verde y sin tocar** | `2d6fd49` test rojo por orden → `23d9904` `feat(mobile-home-stats-strip): move today strip above collar card (R6)` (verde) |
+| R7 | `HOME`::`describe('R9: summary degrada con gracia')` (`:441-560`) con los cinco `it` existentes **verdes y sin debilitar**, `it('shows dashes instead of zero for missing metrics')` ampliado a `summary-weight`, y el `it` nuevo de `mockGetPet` en `unreachable` | `5b0738a` test rojo con fallback mutado a `0 kg` → `df8508c` `feat(mobile-home-stats-strip): degrade weight cell to a dash (R7)` (los 7 `it` reales del bloque, verdes) |
+| R8 | `STRIP`::`it('no añade ninguna llamada a la API')`, que compara el recuento de `mockGetPet` y `mockGetDailyActivity` con el escenario equivalente. Verificación adicional del reviewer: `git diff --stat` sin ficheros fuera de `mobile-pet-tracker/` y `specs/` | `84170d8` test rojo con una segunda invocación de `useApi(detailFn)` → `1e4a0a7` `feat(mobile-home-stats-strip): reuse existing home requests (R8)` (1 llamada de detalle y 1 de actividad, verde) |
+| R9 | `STRIP`::`it('usa iconos de reicon y ningún emoji')`, leyendo el fuente con `readFileSync`: import de `Weight`, cuatro usos `size={20} color={muted}`, ausencia de `⚖️ ⚡ 🦮 📍` + `src/__tests__/consistency-classnames.test.ts:186-217` (#62 R7) y `legibility-classnames.test.ts:145-149` (#61 R4, sin `useThemeColors(['accent'])`) en verde | `2b15b2f` test rojo con `Weight` a 19 → `7a67acb` `feat(mobile-home-stats-strip): use canonical strip icons (R9)` (verde) |
+| R10 | `src/__tests__/consistency-classnames.test.ts:334-358` (#62 R15): fila `screens/home/index.tsx` a **5** y total cerrado `14 + 4 + 1`. Y `:269-332` (#62 R14) **sin cambio**: la Home sigue con 1 `CONTINUOUS_CORNER` | `ab4cd34` test rojo con el uso nuevo retirado → `7d1f26a` `feat(mobile-home-stats-strip): use tabular figures for weight (R10)` (53/53 del candado, verde) |
+| R11 | `src/__tests__/ui-language.test.ts` (candados de #65: una clave presente en un idioma y ausente en el otro no compila, `:348`; `checkUses(R3_HOME)` exige una fila por llamada) + la fila nueva en `ui-copy-table.ts:45-82` + el registro en `specs/mobile-ui-language/design.md` §2 + `src/providers/__tests__/language-provider.test.tsx:41` incorporado por [[requirements]] §D1 | `8509f77` test rojo porque `home.weight` tenía 0 usos → `984583c` registro inicial; D1: `e090688` candado rojo en 276/277 → `13026e6` `fix(mobile-home-stats-strip): restore registered weight copy (R11,R14)` (25/25 y typecheck verdes) |
+| R12 | `STRIP`::`it('deja que cada celda se anuncie por separado')`: la fila contenedora sin `accessible` ni `accessibilityLabel`, los cuatro `Text` de valor alcanzables, y ninguna celda `Pressable` | `cb0543c` test rojo con la fila agrupada mediante `accessible` → `dc7fb80` `feat(mobile-home-stats-strip): keep cells independently announced (R12)` (verde y sin `onPress` en las cuatro celdas) |
+| R13 | `src/__tests__/design-drift.test.ts`::`describe('#69 R13: la tira de estadísticas no mete drift de estilo')`, sobre la lista nominal de los cinco ficheros de esta feature. **Candado de cadena literal, no de conducta**, y así está declarado en [[requirements]] R13 | `400ff4a` test rojo detectando el hex plantado en `screens/home/index.tsx` → `09b128f` `feat(mobile-home-stats-strip): keep feature sources token-only (R13)` (25/25, verde) |
+| R14 | Los deltas de la tabla de [[requirements]] R14 y el candado de catálogo añadido por §D1, verificados por el reviewer **rehaciendo cada `grep`**, no leyendo el informe del implementer. Esta feature **no reubica nada**: si aparece una reubicación, alguien está moviendo un fichero que no toca | `a53fdec` test rojo con delta tabular inesperado de 2 → `22e7fc9` inventarios iniciales; D1: `e090688` candado de `language-provider.test.tsx` rojo en 276/277 → `13026e6` verde con `260 + 16 + 1`. Medición contra `9358cc7`: tabular +1, copy +1, catálogo +1, drift +1 describe; esquinas, botones, tinta y `SCREEN_FILES` +0 |
+| R15 | Requisito de **verificación** (C4 vía (b)): `bun run test` y `bun run typecheck` verdes desde `mobile-pet-tracker/`, grep-clean de la carta §Decisiones fijas 3 intacto y escala de radios de #62 R4 sin clase fuera de escala | `1586d07` rojo por orden mutado → `6c170da` `feat(mobile-home-stats-strip): verify strip behaviour locks (R15,R15b)`; suite móvil 68/68 y 1041/1041, typecheck y grep-clean verdes; `env -u FORCE_COLOR ./init.sh` exit 0 |
+| R15b | Las **seis** mutaciones de [[tasks]] §R15 (2), plantadas de una en una, más las dos sondas del review que cruzan iconos y etiquetas, con la evidencia en `progress/impl_mobile-home-stats-strip.md` §prueba de mutación. Las cuatro mutaciones de valor y las dos sondas nuevas prueban las seis posiciones del discriminante celda↔contenido; todas ponen la suite roja **por separado** | `1586d07` prueba roja versionada → `6c170da` restauración verde para las seis originales; refuerzo `18454a4` rojo → `6e31b6a` verde. Tras el review se replantaron las cuatro de valor y las dos nuevas, todas rojas por el mismo `it` de R3 |
+
+Regla: el reviewer no aprueba si alguna fila queda "pendiente" en la columna
+Commit.
+Convención de commit: `feat(mobile-home-stats-strip): <desc> (R1,R3)`.
+El implementer actualiza esta tabla tras cada commit; el reviewer la valida al
+aprobar (ver [[../../docs/specs|specs]] y [[../../CHECKPOINTS|CHECKPOINTS]] C5).
+
+**Fuera de esta tabla y no delegable a IA**: el gate humano de smoke en dev
+build de Android (nunca Expo Go), en tema claro y oscuro, comprobando que la
+tira va pegada bajo el hero y sobre la tarjeta del collar; que las cuatro celdas
+caben en una línea sin truncar en la pantalla más estrecha, con `12.4 kg` y
+`1h 35m`; que los tres divisores se ven en los dos temas; que una mascota sin
+peso registrado pinta `—` sin romper la fila; que los paseos salen **solo** en
+el hero; que el descanso sigue visible sin tocar nada; y que TalkBack anuncia
+las cuatro celdas por separado. Guion completo en [[requirements]] §Aprobación.
+Sin él la feature no pasa a `done`, tenga la tabla las filas que tenga.

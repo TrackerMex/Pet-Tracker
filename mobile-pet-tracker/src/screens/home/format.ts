@@ -11,3 +11,7 @@ export function fmtKm(meters: number | null): string {
 export function fmtCount(count: number | null): string {
   return count === null ? '—' : String(count);
 }
+
+export function fmtKg(kg: number | null): string {
+  return kg === null ? '—' : `${kg} kg`;
+}

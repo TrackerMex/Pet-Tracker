@@ -1287,15 +1287,20 @@
   {
     "id": 69,
     "name": "mobile-home-stats-strip",
-    "status": "pending",
+    "status": "done",
     "priority": "P3",
-    "description": "Bloque 1. El Make monta sobre el hero de la Home una tira de 4 celdas separadas por divisores -Peso, Activo, Paseos, Distancia- (App.tsx:366-384); la app tiene un summary-card con 3 -actividad, sueno, distancia- y no muestra paseos. Los datos de la cuarta celda YA se sirven: walkCount viene en cada entrada de activity/daily y currentWeightKg en el perfil, asi que no hay backend nuevo. La spec tiene que decidir por escrito que pasa con 'sueno', que la app muestra hoy (restMinutes) y el diseno no: el informe lo marca como caso de la decision E -el Make oculta datos reales que la app ya ensena-, y el humano ya fijo el criterio general de no perder informacion util solo por fidelidad, asi que la spec debe conservarlo o justificar donde se va. Depende de #67 porque la tira se monta sobre el hero.",
+    "description": "Bloque 1. El Make monta sobre el hero una tira de 4 celdas separadas por divisores (specs/mobile-figma-polish/design-src/App.tsx:368-383, con emojis: Peso, Activo, Paseos, Distancia); la app tiene un summary-card con 3 -actividad, sueno, distancia- en src/screens/home/index.tsx:282-353. CORRECCION AL ENUNCIADO ORIGINAL (2026-09-08, verificada contra el arbol): el enunciado decia que la app 'no muestra paseos' y pedia anadir esa cuarta celda. Es FALSO desde #67: walkCount ya se pinta en src/screens/home/index.tsx:142, en text-3xl, como dato destacado del hero. Anadir la celda 'Paseos' duplicaria el mismo numero en la misma pantalla. Asi que la celda 3 la ocupa el DESCANSO -que es ademas la resolucion de la decision E: la app lo muestra hoy y el diseno no lo dibuja, y el criterio del humano es no perder informacion util solo por fidelidad- y los paseos se quedan donde ya estan. Resultado: cero datos perdidos y cero datos duplicados. Los datos de las cuatro celdas ya se sirven: currentWeightKg en el perfil -verificado de pets.schema.ts:36 al mapper :70 y al controlador pets.controller.ts:82-94- y el resto en activity/daily, asi que no hay backend nuevo. Depende de #67 porque la tira se monta sobre el hero.",
     "acceptance_criteria": [
-      "La Home muestra las cuatro celdas del diseno, incluida Paseos, sin anadir llamadas nuevas a la API",
-      "La spec decide por escrito que pasa con el dato de sueno que hoy se muestra y el diseno no dibuja",
-      "Los valores usan tabular-nums, como fijo #62 R15",
-      "Suite movil completa verde; grep-clean intacto",
-      "Gate humano: smoke en dev build de Android en los dos temas. No delegable a IA"
+      "La Home muestra cuatro celdas con tres divisores, sin anadir llamadas nuevas a la API",
+      "La celda 3 es Descanso y NO Paseos: los paseos ya se pintan en el hero desde #67 y duplicarlos en la misma pantalla es el defecto que esta correccion evita; un test lo fija",
+      "El dato de sueno que la app muestra hoy se conserva como celda siempre visible: es la resolucion por escrito de la decision E",
+      "El peso sale del detalle del perfil y se pinta '—' cuando es null",
+      "Cada celda pinta su dato y ningun otro; el test usa un fixture con cuatro valores distintos para que un cruce se vea",
+      "Los cuatro valores usan tabular-nums, como fijo #62",
+      "La accesibilidad anuncia las cuatro celdas por separado, no un unico resumen",
+      "Iconos de reicon, ningun emoji del Make",
+      "Suite movil completa verde; deltas medidos contra el commit base, nunca cifras absolutas",
+      "Gate humano: smoke en dev build de Android en los dos temas, con una mascota sin peso registrado. No delegable a IA"
     ],
     "files_affected": [
       "mobile-pet-tracker/src/app/(tabs)/home.tsx"
@@ -1404,6 +1409,109 @@
     ],
     "files_affected": [
       "init.sh"
+    ]
+  },
+  {
+    "id": 76,
+    "name": "e2e-audit-log-order-assert",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Encontrado al medir el baseline de #69 el 2026-09-08: init.sh salio rojo en main (9358cc7) por backend-pet-tracker/test/health-vaccines.e2e-spec.ts:497, y la misma suite corrida aislada paso 15/15. No es flakiness misteriosa, es un test mal escrito: la consulta db.select().from(auditLog).where(and(eq(entity,'vaccine'), eq(entityId,id))) NO lleva orderBy, asi que Postgres puede devolver las filas en cualquier orden, y el test asserta toEqual(['vaccine.create','vaccine.update','vaccine.delete']) -un array ordenado- y ademas indexa rows[1].meta dando por hecho que el update es el segundo. Con la suite entera y el Postgres bajo carga el orden fisico cambia y el assert cae. Sin ORDER BY el orden de un SELECT no esta definido: el test ha estado pasando por suerte. Merece revisar si hay mas asserts sobre consultas sin ordenar en el resto de los e2e, porque el patron seguramente esta copiado.",
+    "acceptance_criteria": [
+      "La consulta del audit log ordena explicitamente por la columna que da el orden cronologico real, no por el orden fisico",
+      "El assert deja de depender del indice: o se ordena de verdad, o se compara como conjunto",
+      "Se barre el resto de los e2e buscando el mismo patron -assert ordenado sobre select sin orderBy- y se reporta lo que aparezca",
+      "La suite e2e completa pasa varias veces seguidas, no una"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/test/health-vaccines.e2e-spec.ts"
+    ]
+  },
+  {
+    "id": 77,
+    "name": "mobile-home-weight-without-collar",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Abierta por decision del humano el 2026-09-08 al firmar la spec de #69, que la dejo explicitamente fuera y escribio por que (specs/mobile-home-stats-strip/requirements.md R7). Hoy la tira de estadisticas de la Home aparece y desaparece ENTERA con el estado de la actividad: si activity.data no es 'ok' -mascota sin collar (402 no-tracking), error, unreachable o missing-config- no se pinta ninguna celda. El peso se va con ellas aunque no dependa del collar para nada: viene de currentWeightKg del perfil, que es otra peticion y otro estado de carga. El resultado es que una mascota sin collar tiene peso registrado y el dueno no lo ve en la Home. Lo que cuesta arreglarlo, ya medido en R7 de #69: una fila que a veces tiene una celda y a veces cuatro, con su propio juego de divisores, y reescribir los cinco 'it' de describe('R9: summary degrada con gracia') en src/screens/home/index.test.tsx:441-560. No es un ajuste, es un estado de carga nuevo. Relativo a antes de #69 no se pierde nada -el peso no se pintaba en la Home en ningun estado-, asi que esto es mejora, no regresion.",
+    "acceptance_criteria": [
+      "La celda de peso se pinta cuando hay peso registrado, aunque la actividad no este disponible: sin collar, en error, unreachable o missing-config",
+      "La fila se compone bien con una sola celda: los divisores no dejan bordes sueltos ni celdas de ancho raro",
+      "Los cinco 'it' de describe('R9: summary degrada con gracia') quedan verdes SIN debilitar ningun assert, y se anaden los del estado nuevo",
+      "Sin peso registrado la celda pinta '—', no desaparece",
+      "Cero llamadas nuevas a la API: el peso ya viene en el detalle del perfil",
+      "Suite movil completa verde; ninguna cifra de candado se mueve sin declararlo como delta",
+      "Gate humano: smoke en dev build de Android con una mascota SIN collar y con peso registrado. No delegable a IA"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/home/index.tsx",
+      "mobile-pet-tracker/src/screens/home/index.test.tsx"
+    ]
+  },
+  {
+    "id": 78,
+    "name": "mobile-alerts-center",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Centro de alertas en la app y campana en el hero de Home. Registrada el 2026-09-08 al revisar como se manejan las notificaciones: el backend esta completo desde #12/#13 (alert_events, notifier, GET /v1/alerts?status=open|acked|closed&cursor= y POST /v1/alerts/:id/ack en alerts.controller.ts:34-66, respuesta {id,petId,petName,type,status,geofenceId,payload,openedAt,ackedAt,closedAt}) pero no existe src/api/alerts.ts ni ninguna ruta bajo src/app/ que lo consuma: el centro de alertas entero esta sin cliente (progress/explore_design-gap-vs-make.md:441). La spec de #67 dejo la campana del Make fuera con este nombre exacto como destino (specs/mobile-pet-hero-header/requirements.md:497-502): un boton que no navega a ninguna parte es peor que su ausencia. Alcance: (1) src/api/alerts.ts con listado paginado por cursor y ack, mismo patron que activity.ts incluido el 402 como kind 'no-tracking' porque las lecturas de alerts estan tras el gate de suscripcion del dispositivo; (2) ruta nueva src/app/(tabs)/alerts.tsx + src/screens/alerts/ con el patron route delgado de docs/conventions.md, igual que reminders.tsx, no es pestana; (3) campana en el hero de Home con punto rojo cuando existe al menos una alerta status=open; el ack es el 'leido'. Decisiones que la spec cierra por escrito: el punto rojo es derivable de la lista pero el NUMERO exacto no, ListAlertsQuerySchema es strictObject sin limit y ?limit= responde 400 (explore :442), asi que la campana lleva punto y no contador salvo que se abra una feature backend para GET /v1/alerts/count; alert_events_type_check solo admite geofence_exit y battery_low, los recordatorios los despacha el scheduler y nunca entran en /alerts (explore :443), la spec decide si el centro muestra solo alertas (recomendado, sin fusionar fuentes en cliente); /v1/alerts devuelve todas mis mascotas, la spec decide si filtra por la mascota seleccionada o lista con petName. No depende de #79: sin push el usuario ve las alertas al abrir la app, que ya es el 90% del valor. Todo el copy via t() segun docs/ui-guidelines.md.",
+    "acceptance_criteria": [
+      "La campana del hero de Home pinta el punto rojo cuando GET /v1/alerts?status=open devuelve al menos un item y lo quita cuando no hay ninguno",
+      "Tocar la campana navega a la ruta de alertas; la ruta existe bajo src/app/(tabs)/ y NO aparece como pestana",
+      "El listado muestra las alertas open primero con petName, tipo traducido (geofence_exit, battery_low), y openedAt relativo; las acked/closed quedan distinguibles",
+      "Ack de una alerta open -> POST /v1/alerts/:id/ack, el item pasa a acked sin recargar la pantalla y el punto rojo se actualiza",
+      "Paginacion por nextCursor: al llegar al final carga la siguiente pagina; sin nextCursor no pide mas",
+      "402 en /v1/alerts (mascota sin suscripcion) -> estado vacio con texto, sin crash y sin campana rota; el patron es el kind 'no-tracking' de src/api/activity.ts",
+      "Estado vacio y estado de error con copy via t(), cero literales en ingles en pantalla ni en tests",
+      "Tests unitarios de src/api/alerts.ts y de la pantalla; suite movil completa verde; ninguna cifra de candado se mueve sin declararlo como delta",
+      "Gate humano: smoke en dev build de Android con una alerta open real (salida de geocerca con collar o fila insertada a mano en alert_events). No delegable a IA"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/api/alerts.ts",
+      "mobile-pet-tracker/src/app/(tabs)/alerts.tsx",
+      "mobile-pet-tracker/src/screens/alerts/index.tsx",
+      "mobile-pet-tracker/src/screens/alerts/index.test.tsx",
+      "mobile-pet-tracker/src/screens/home/index.tsx",
+      "mobile-pet-tracker/src/i18n/catalog.ts"
+    ]
+  },
+  {
+    "id": 79,
+    "name": "mobile-push-registration",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Registro del push token de Expo desde la app y recepcion de notificaciones. Registrada el 2026-09-08: el backend ya envia push desde #13 (notifier -> expo-server-sdk tras el puerto PushSender, gate PUSH_ENABLED, tokens DeviceNotRegistered se borran) y expone POST/DELETE /v1/me/push-tokens con body {expoToken, platform: 'ios'|'android'} validado por /^Expo(nent)?PushToken\\[[^\\]]+\\]$/ (specs/alerts-center-notifier R3-R6), pero la app nunca registra ningun token: la tabla push_tokens esta vacia en produccion y ningun push llega a nadie. #39 dejo expo-notifications explicitamente fuera (specs/mobile-reminders/requirements.md:356) y esta es la feature de backlog que ahi se prometia. Alcance: (1) instalar expo-notifications y su config plugin en app.json, dependencia declarada en la spec que es lo que la autoriza; (2) hook src/hooks/use-push-registration.ts: tras signIn pide permiso (Android 13+ es permiso de runtime POST_NOTIFICATIONS, crear canal de notificacion por defecto), obtiene el token con getExpoPushTokenAsync({projectId}) y hace POST /v1/me/push-tokens; el upsert de R3 es idempotente asi que se re-registra en cada arranque con sesion sin coste; (3) en signOut de src/providers/auth-provider.tsx hace DELETE /v1/me/push-tokens con ese token ANTES de borrar la sesion, para que un telefono compartido no reciba alertas del usuario anterior; (4) src/api/push-tokens.ts; (5) handler de tap (addNotificationResponseReceivedListener + getLastNotificationResponseAsync para arranque en frio) que navega a la ruta de alertas si #78 ya existe y a Home si no; setNotificationHandler para mostrar banner en primer plano. Decisiones que la spec cierra: getExpoPushTokenAsync exige un projectId de EAS y app.json no tiene extra.eas.projectId, asi que hay una tarea humana previa (eas init, gratis, requiere cuenta Expo) y la spec dice de donde lee el id (Constants.expoConfig.extra.eas.projectId); Expo Go no soporta push desde SDK 53, guard con Device.isDevice y ejecutar solo en dev build; permiso denegado -> no registrar, no insistir, sin pantalla de ajustes en esta feature; si el usuario tiene varios dispositivos cada uno registra el suyo, el backend ya notifica a todas las filas del user. Para que el smoke sea real el backend local necesita PUSH_ENABLED=true (.env.example:98) y Expo necesita credenciales FCM V1 subidas al proyecto EAS (eas credentials, cuenta Firebase gratuita): son cuentas y claves, tarea humana no delegable. No depende de #78, pero sin #78 el tap solo abre Home; orden recomendado #78 y luego esta.",
+    "acceptance_criteria": [
+      "Con sesion iniciada en dev build de Android aparece exactamente 1 fila en push_tokens para ese usuario con expoToken con formato ExpoPushToken[...] y platform 'android'; reiniciar la app no crea una segunda fila",
+      "signOut hace DELETE /v1/me/push-tokens con el token del dispositivo antes de borrar la sesion; tras cerrar sesion la fila ya no existe",
+      "Permiso de notificaciones denegado -> ningun POST a /v1/me/push-tokens, ningun crash, ningun dialogo repetido en arranques siguientes",
+      "Fuera de dev build (Expo Go, Device.isDevice false) el hook no llama a expo-notifications ni a la API",
+      "Fallo de red en el registro no bloquea el login: el usuario entra igual y se reintenta en el siguiente arranque",
+      "Tap sobre una notificacion con la app cerrada y con la app en segundo plano abre la app y navega a la ruta de alertas (o Home si #78 no existe), verificado con getLastNotificationResponseAsync",
+      "Tests unitarios del hook y de src/api/push-tokens.ts con expo-notifications mockeado en jest; suite movil completa verde; typecheck verde con el config plugin anadido",
+      "Tareas humanas previas documentadas en la spec: eas init con projectId en app.json y credenciales FCM V1 en EAS; sin ellas el smoke no se ejecuta",
+      "Gate humano: smoke en dev build de Android con PUSH_ENABLED=true en el backend local, salida de geocerca simulada segun specs/alerts-center-notifier y notificacion recibida en el telefono. No delegable a IA"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/app.json",
+      "mobile-pet-tracker/package.json",
+      "mobile-pet-tracker/src/api/push-tokens.ts",
+      "mobile-pet-tracker/src/hooks/use-push-registration.ts",
+      "mobile-pet-tracker/src/providers/auth-provider.tsx",
+      "mobile-pet-tracker/src/app/_layout.tsx"
+    ]
+  },
+  {
+    "id": 80,
+    "name": "mobile-test-double-icon-scope",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Observacion 9 del reviewer de #69 (2026-09-08). Los testID del doble de reicon en mobile-pet-tracker/src/screens/home/index.test.tsx se atan al COMPONENTE y no a su uso, asi que prometen un ambito que no tienen: Moon emite summary-icon-sleep tambien en la tarjeta del collar (src/screens/home/index.tsx:305) y Map emite summary-icon-distance tambien en la de ultima posicion (:416), los dos fuera de la tira de estadisticas. El it de R3 lo esquiva acotando la busqueda con within(value.parent!), asi que hoy no falla, pero el nombre miente: cualquier test futuro que busque summary-icon-sleep a secas encontrara dos nodos y fallara por una razon que no tiene nada que ver con lo que quiere probar. El arreglo es nombrar los dobles por su uso, o exponer el testID desde el punto de uso en vez del doble.",
+    "acceptance_criteria": [
+      "Ningun testID de icono se resuelve a mas de un nodo en la Home, o el nombre dice explicitamente que es del componente y no de la celda",
+      "El it de R3 sigue verde sin necesitar within() para desambiguar",
+      "Suite movil completa verde; ninguna cifra de candado se mueve"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/home/index.test.tsx"
     ]
   }
 ]

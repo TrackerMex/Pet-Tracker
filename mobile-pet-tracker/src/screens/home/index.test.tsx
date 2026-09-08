@@ -24,6 +24,17 @@ import { SelectedPetProvider } from '../../providers/selected-pet-provider';
 import * as selectedPetHooks from '../../providers/selected-pet-provider';
 import { HomeScreen } from './index';
 
+declare function require(moduleName: 'fs'): {
+  readFileSync: (path: string, encoding: 'utf8') => string;
+};
+
+declare function require(moduleName: 'path'): {
+  join: (...paths: string[]) => string;
+};
+
+const { readFileSync } = require('fs');
+const { join } = require('path');
+
 jest.mock('../../api/pets', () => ({
   getPet: jest.fn(),
   listPets: jest.fn(),
@@ -47,6 +58,28 @@ jest.mock('react-native-safe-area-context', () => ({
   ...jest.requireActual('react-native-safe-area-context'),
   useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
 }));
+
+jest.mock('reicon-react-native', () => {
+  const actual = jest.requireActual<typeof import('reicon-react-native')>(
+    'reicon-react-native',
+  );
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>(
+    'react-native',
+  );
+  const mockIcon = (testID: string) =>
+    function MockIcon() {
+      return React.createElement(View, { testID });
+    };
+
+  return {
+    ...actual,
+    Weight: mockIcon('summary-icon-weight'),
+    Walk: mockIcon('summary-icon-activity'),
+    Moon: mockIcon('summary-icon-sleep'),
+    Map: mockIcon('summary-icon-distance'),
+  };
+});
 
 const apiUrl = 'http://example.test/v1';
 const mockGetDailyActivity = jest.mocked(getDailyActivity);
@@ -470,6 +503,9 @@ describe('R9: summary degrada con gracia', () => {
   });
 
   it('shows dashes instead of zero for missing metrics', async () => {
+    const pet = makePet({ currentWeightKg: null });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
     mockGetDailyActivity.mockResolvedValue({
       kind: 'ok',
       days: [
@@ -490,9 +526,32 @@ describe('R9: summary degrada con gracia', () => {
     await renderHome();
 
     await waitFor(() => expect(screen.getByTestId('summary-card')).toBeVisible());
+    expect(screen.getByTestId('summary-weight')).toHaveTextContent('—');
     expect(screen.getByTestId('summary-activity')).toHaveTextContent('—');
     expect(screen.getByTestId('summary-sleep')).toHaveTextContent('—');
     expect(screen.getByTestId('summary-distance')).toHaveTextContent('—');
+  });
+
+  it('#69 R7: degrada el peso a un guion cuando el perfil no resuelve', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'unreachable', message: 'network down' });
+    mockGetDailyActivity.mockResolvedValue({
+      kind: 'ok',
+      days: [makeDay()],
+      weekComparison: { distanceM: 5, activeMinutes: 10, walkCount: 20 },
+    });
+
+    await renderHome();
+
+    await waitFor(() => expect(screen.getByTestId('summary-card')).toBeVisible());
+    for (const testId of [
+      'summary-weight',
+      'summary-activity',
+      'summary-sleep',
+      'summary-distance',
+    ]) {
+      expect(screen.getByTestId(testId)).toBeVisible();
+    }
+    expect(screen.getByTestId('summary-weight')).toHaveTextContent('—');
   });
 
   it('explains that activity tracking requires a collar', async () => {
@@ -1199,5 +1258,219 @@ describe('R14: la Home monta la actividad semanal sin pedir nada nuevo', () => {
 
     expect(screen.queryByTestId('weekly-activity-card')).toBeNull();
     expect(screen.queryByTestId('weekly-activity-skeleton')).toBeNull();
+  });
+});
+
+describe('#69 R1: la tira de hoy tiene cuatro celdas con tres divisores', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    const pet = makePet({ currentWeightKg: 12.4 });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+    mockGetDailyActivity.mockResolvedValue({
+      kind: 'ok',
+      days: [
+        makeDay({
+          activeMinutes: 95,
+          restMinutes: 45,
+          distanceM: 2350,
+          walkCount: 2,
+        }),
+      ],
+      weekComparison: { distanceM: 5, activeMinutes: 10, walkCount: 20 },
+    });
+  });
+
+  it('renders the four value testIDs in tree order', async () => {
+    await renderHome();
+
+    const summary = await screen.findByTestId('summary-card');
+    const valueTestIds = within(summary)
+      .getAllByTestId(/^summary-(weight|activity|sleep|distance)$/)
+      .map(({ props }) => props.testID);
+
+    expect(valueTestIds).toEqual([
+      'summary-weight',
+      'summary-activity',
+      'summary-sleep',
+      'summary-distance',
+    ]);
+  });
+
+  it('renders exactly three dividers between the four cells', async () => {
+    await renderHome();
+
+    await screen.findByTestId('summary-card');
+    const dividedCells = [
+      'summary-weight',
+      'summary-activity',
+      'summary-sleep',
+      'summary-distance',
+    ].filter((testId) =>
+      screen
+        .getByTestId(testId)
+        .parent?.props.className?.includes('border-r border-border'),
+    );
+
+    expect(dividedCells).toHaveLength(3);
+  });
+
+  it('keeps the row flush without spacing utilities', async () => {
+    await renderHome();
+
+    const activityValue = await screen.findByTestId('summary-activity');
+    const rowClassName = activityValue.parent?.parent?.props.className;
+
+    expect(rowClassName).toBe('flex-row');
+    expect(rowClassName).not.toContain('gap-3');
+    expect(rowClassName).not.toContain('justify-between');
+  });
+
+  it('asigna cada valor, icono y etiqueta a su celda y a ninguna otra', async () => {
+    await renderHome();
+
+    await screen.findByTestId('summary-card');
+    const cells = [
+      ['summary-weight', '12.4 kg', 'summary-icon-weight', 'Peso'],
+      ['summary-activity', '1h 35m', 'summary-icon-activity', 'Actividad'],
+      ['summary-sleep', '45m', 'summary-icon-sleep', 'Descanso'],
+      ['summary-distance', '2.4 km', 'summary-icon-distance', 'Distancia'],
+    ] as const;
+
+    for (const [testID, expectedValue, iconTestID, label] of cells) {
+      const value = screen.getByTestId(testID);
+      const cell = within(value.parent!);
+
+      expect(value).toHaveTextContent(expectedValue);
+      expect(cell.getByTestId(iconTestID)).toBeVisible();
+      expect(cell.getByText(label)).toBeVisible();
+    }
+  });
+
+  it('conserva el descanso como celda siempre visible', async () => {
+    await renderHome();
+
+    const sleepValue = await screen.findByTestId('summary-sleep');
+    expect(sleepValue).toBeVisible();
+    expect(within(sleepValue.parent!).getByText('Descanso')).toBeVisible();
+    expect(screen.queryByTestId('weekly-activity-detail')).toBeNull();
+  });
+
+  it('no repite los paseos dentro de la tira', async () => {
+    await renderHome();
+
+    const summary = await screen.findByTestId('summary-card');
+    expect(screen.queryByTestId('summary-walks')).toBeNull();
+    expect(within(summary).queryByText('Paseos')).toBeNull();
+    expect(screen.getByTestId('pet-hero-highlight-value')).toHaveTextContent(
+      '2',
+    );
+  });
+
+  it('coloca la tira sobre la tarjeta del collar', async () => {
+    const pet = makePet({
+      currentWeightKg: 12.4,
+      device: {
+        model: 'PetTrack One',
+        batteryPct: 82,
+        connectivity: 'online',
+        lastMessageAt: '2026-09-08T12:00:00.000Z',
+        esn: 'ACT-001',
+      },
+    });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+
+    await renderHome();
+
+    await screen.findByTestId('weekly-activity-card');
+    const relevantChildren = screen
+      .getByTestId('home-content')
+      .children.flatMap((child) =>
+        typeof child === 'string' ? [] : [child.props.testID],
+      )
+      .filter((testID) =>
+        [
+          'summary-card',
+          'collar-card',
+          'weekly-activity-card',
+          'last-position-card',
+        ].includes(testID),
+      );
+
+    expect(relevantChildren).toEqual([
+      'summary-card',
+      'collar-card',
+      'weekly-activity-card',
+      'last-position-card',
+    ]);
+  });
+
+  it('#69 R9: usa iconos de reicon y ningún emoji', () => {
+    const source = readFileSync(
+      join(process.cwd(), 'src/screens/home/index.tsx'),
+      'utf8',
+    );
+    const reiconImport =
+      source.match(
+        /import \{([\s\S]*?)\} from 'reicon-react-native';/,
+      )?.[1] ?? '';
+
+    expect(reiconImport).toMatch(/\bWeight\b/);
+    expect(
+      source.match(
+        /<(?:Weight|Walk|Moon|Map) size=\{20\} color=\{muted\} \/>/g,
+      ) ?? [],
+    ).toHaveLength(4);
+    for (const emoji of ['⚖️', '⚡', '🦮', '📍']) {
+      expect(source).not.toContain(emoji);
+    }
+  });
+
+  it('#69 R12: deja que cada celda se anuncie por separado', async () => {
+    await renderHome();
+
+    await screen.findByTestId('summary-card');
+    const values = [
+      screen.getByTestId('summary-weight'),
+      screen.getByTestId('summary-activity'),
+      screen.getByTestId('summary-sleep'),
+      screen.getByTestId('summary-distance'),
+    ];
+    const row = values[0].parent?.parent;
+
+    expect(row?.props.accessible).toBeUndefined();
+    expect(row?.props.accessibilityLabel).toBeUndefined();
+    expect(values).toHaveLength(4);
+    for (const value of values) {
+      expect(value).toBeVisible();
+    }
+    expect(
+      row?.children.filter((child) => typeof child !== 'string'),
+    ).toHaveLength(4);
+    for (const cell of row?.children ?? []) {
+      if (typeof cell !== 'string') {
+        expect(cell.props.onPress).toBeUndefined();
+      }
+    }
+  });
+
+  it('#69 R8: no añade ninguna llamada a la API', async () => {
+    const existingScenarioCallCount = { detail: 1, activity: 1 };
+
+    await renderHome();
+    await screen.findByTestId('summary-card');
+
+    expect({
+      detail: mockGetPet.mock.calls.length,
+      activity: mockGetDailyActivity.mock.calls.length,
+    }).toEqual(existingScenarioCallCount);
   });
 });

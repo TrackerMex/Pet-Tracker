@@ -9,6 +9,7 @@ import {
   Map,
   Moon,
   Walk,
+  Weight,
   Wifi,
   WifiOff,
 } from 'reicon-react-native';
@@ -32,7 +33,7 @@ import {
   TABULAR_NUMS,
 } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
-import { fmtCount, fmtKm, fmtMinutes } from './format';
+import { fmtCount, fmtKg, fmtKm, fmtMinutes } from './format';
 import { WeeklyActivityChart } from './weekly-activity-chart';
 
 const WEEKLY_ACTIVITY_SKELETON_HEIGHT = 408;
@@ -202,6 +203,96 @@ export function HomeScreen() {
           </HeroUICard>
         ) : null}
 
+        {selectedPetId ? (
+          <Card testID="summary-card" className="gap-4">
+            <Text
+              testID="summary-card-title"
+              className="text-base font-bold text-foreground"
+            >
+              {t('home.summaryTitle')}
+            </Text>
+
+            {activity.data === undefined ? (
+              <Skeleton testID="summary-skeleton" className="h-16 w-full rounded-xl" />
+            ) : null}
+
+            {activity.data?.kind === 'no-tracking' ? (
+              <Text testID="summary-note" className="font-normal text-muted">
+                {t('home.activityNeedsCollar')}
+              </Text>
+            ) : null}
+
+            {activity.data?.kind === 'error' ||
+            activity.data?.kind === 'unreachable' ||
+            activity.data?.kind === 'missing-config' ? (
+              <Text testID="summary-note" className="font-normal text-muted">
+                {t('home.couldNotLoadActivity')}
+              </Text>
+            ) : null}
+
+            {activity.data?.kind === 'ok' ? (
+              <View className="flex-row">
+                <View className="flex-1 items-center gap-1 border-r border-border">
+                  <Weight size={20} color={muted} />
+                  <Text
+                    testID="summary-weight"
+                    className="text-sm font-bold text-foreground"
+                    style={TABULAR_NUMS}
+                  >
+                    {fmtKg(
+                      detail.data?.kind === 'ok'
+                        ? detail.data.pet.currentWeightKg
+                        : null,
+                    )}
+                  </Text>
+                  <Text className="text-2xs font-normal text-muted">
+                    {t('home.weight')}
+                  </Text>
+                </View>
+                <View className="flex-1 items-center gap-1 border-r border-border">
+                  <Walk size={20} color={muted} />
+                  <Text
+                    testID="summary-activity"
+                    className="text-sm font-bold text-foreground"
+                    style={TABULAR_NUMS}
+                  >
+                    {fmtMinutes(today?.activeMinutes ?? null)}
+                  </Text>
+                  <Text className="text-2xs font-normal text-muted">
+                    {t('home.activity')}
+                  </Text>
+                </View>
+                <View className="flex-1 items-center gap-1 border-r border-border">
+                  <Moon size={20} color={muted} />
+                  <Text
+                    testID="summary-sleep"
+                    className="text-sm font-bold text-foreground"
+                    style={TABULAR_NUMS}
+                  >
+                    {fmtMinutes(today?.restMinutes ?? null)}
+                  </Text>
+                  <Text className="text-2xs font-normal text-muted">
+                    {t('home.sleep')}
+                  </Text>
+                </View>
+                <View className="flex-1 items-center gap-1">
+                  <Map size={20} color={muted} />
+                  <Text
+                    testID="summary-distance"
+                    className="text-sm font-bold text-foreground"
+                    style={TABULAR_NUMS}
+                  >
+                    {fmtKm(today?.distanceM ?? null)}
+                  </Text>
+                  <Text className="text-2xs font-normal text-muted">
+                    {t('home.distance')}
+                  </Text>
+                </View>
+              </View>
+            ) : null}
+          </Card>
+        ) : null}
+
         {detail.data?.kind === 'ok' ? (
           <>
             <Card
@@ -277,79 +368,6 @@ export function HomeScreen() {
               ) : null}
             </Card>
           </>
-        ) : null}
-
-        {selectedPetId ? (
-          <Card testID="summary-card" className="gap-4">
-            <Text
-              testID="summary-card-title"
-              className="text-base font-bold text-foreground"
-            >
-              {t('home.summaryTitle')}
-            </Text>
-
-            {activity.data === undefined ? (
-              <Skeleton testID="summary-skeleton" className="h-16 w-full rounded-xl" />
-            ) : null}
-
-            {activity.data?.kind === 'no-tracking' ? (
-              <Text testID="summary-note" className="font-normal text-muted">
-                {t('home.activityNeedsCollar')}
-              </Text>
-            ) : null}
-
-            {activity.data?.kind === 'error' ||
-            activity.data?.kind === 'unreachable' ||
-            activity.data?.kind === 'missing-config' ? (
-              <Text testID="summary-note" className="font-normal text-muted">
-                {t('home.couldNotLoadActivity')}
-              </Text>
-            ) : null}
-
-            {activity.data?.kind === 'ok' ? (
-              <View className="flex-row justify-between gap-3">
-                <View className="flex-1 items-center gap-1 border-r border-border">
-                  <Walk size={20} color={muted} />
-                  <Text
-                    testID="summary-activity"
-                    className="text-sm font-bold text-foreground"
-                    style={TABULAR_NUMS}
-                  >
-                    {fmtMinutes(today?.activeMinutes ?? null)}
-                  </Text>
-                  <Text className="text-2xs font-normal text-muted">
-                    {t('home.activity')}
-                  </Text>
-                </View>
-                <View className="flex-1 items-center gap-1 border-r border-border">
-                  <Moon size={20} color={muted} />
-                  <Text
-                    testID="summary-sleep"
-                    className="text-sm font-bold text-foreground"
-                    style={TABULAR_NUMS}
-                  >
-                    {fmtMinutes(today?.restMinutes ?? null)}
-                  </Text>
-                  <Text className="text-2xs font-normal text-muted">
-                    {t('home.sleep')}
-                  </Text>
-                </View>
-                <View className="flex-1 items-center gap-1">
-                  <Map size={20} color={muted} />
-                  <Text
-                    testID="summary-distance"
-                    className="text-sm font-bold text-foreground"
-                    style={TABULAR_NUMS}
-                  >
-                    {fmtKm(today?.distanceM ?? null)}
-                  </Text>
-                  <Text className="text-2xs font-normal text-muted">
-                    {t('home.distance')}
-                  </Text>
-                </View>
-              </View>
-            ) : null}
-          </Card>
         ) : null}
 
         {selectedPetId && activity.data === undefined ? (

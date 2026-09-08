@@ -79,8 +79,8 @@ describe('#65 R2: la barra de pestañas resuelve su copy por clave', () => {
 describe('#65 R3: Home resuelve su copy por clave', () => {
   // 20 en `303fc19` + 1 de `home.walks` (#67 R7b, delta declarado en su R9b).
   // #68 añade el delta medido de weekly-activity-chart, sin recontar la base.
-  it('resuelve las ocurrencias normativas y el delta de actividad semanal', () => {
-    expect(R3_HOME).toHaveLength(21 + 15);
+  it('#69 R11: resuelve Home con el delta de peso registrado', () => {
+    expect(R3_HOME).toHaveLength(21 + 15 + 1);
     checkUses(R3_HOME);
   });
 });

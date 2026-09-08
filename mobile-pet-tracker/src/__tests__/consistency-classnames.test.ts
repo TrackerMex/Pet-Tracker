@@ -332,9 +332,14 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
 });
 
 describe('#62 R15: todo contador usa cifras tabulares', () => {
+  const HOME_TABULAR_AT_9358CC7 = 4;
+  const HOME_TABULAR_DELTA_69 = 1;
   const counters = [
     [join('app', '(tabs)', 'map.tsx'), 3],
-    [join('screens', 'home', 'index.tsx'), 4],
+    [
+      join('screens', 'home', 'index.tsx'),
+      HOME_TABULAR_AT_9358CC7 + HOME_TABULAR_DELTA_69,
+    ],
     [join('screens', 'home', 'weekly-activity-chart.tsx'), 4],
     [join('app', '(tabs)', 'health.tsx'), 2],
     [join('app', '(tabs)', 'weight-log.tsx'), 2],
@@ -350,10 +355,17 @@ describe('#62 R15: todo contador usa cifras tabulares', () => {
     expect(source.match(/style=\{TABULAR_NUMS\}/g)).toHaveLength(count);
   });
 
-  it('mantiene la base cerrada más el delta medido de la gráfica', () => {
+  it('#69 R10: mantiene la base cerrada más los deltas medidos', () => {
     expect(counters.reduce((total, [, count]) => total + count, 0)).toBe(
-      14 + 4,
+      14 + 4 + 1,
     );
+  });
+
+  it('#69 R14: conserva el único delta tabular declarado contra 9358cc7', () => {
+    const home = readSource(join('screens', 'home', 'index.tsx'));
+    const measured = home.match(/style=\{TABULAR_NUMS\}/g)?.length ?? 0;
+
+    expect(measured - HOME_TABULAR_AT_9358CC7).toBe(HOME_TABULAR_DELTA_69);
   });
 });
 

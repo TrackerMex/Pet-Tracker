@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-09-08
-**Features completadas**: 64/75 (`feature_list.json`)
+**Features completadas**: 65/80 (`feature_list.json`)
 **En progreso**: ninguna
 
-**Pendientes**: 11 (#18, #41, #60, #63, #69-#75). El rediseño contra el diseño del Make abrió el bloque #64-#71: #64 `mobile-pastel-category-palette`, #65 `mobile-ui-language`, #66 `pets-list-response-enrichment` y #67 `mobile-pet-hero-header` están cerradas y **mergeadas** (PR #106, #110, #111 y #112). #68 `mobile-home-weekly-activity` está cerrada con los tres gates humanos firmados; **PR pendiente de merge por el humano**. Quedan del bloque #69 tira de estadísticas, #70 recordatorios y #71 accesos rápidos, ninguna especificada todavía. Deuda registrada al cerrar #68: #73 `pet-online-pill` -la píldora "En línea", que necesita arreglar el pestillo de conectividad del backend y definir un umbral de silencio-, #74 `mobile-metric-selector-a11y` -el selector no se anuncia como grupo en TalkBack- y #75 `harness-init-force-color` -`init.sh` aborta en falso si el entorno trae `FORCE_COLOR`-. #72 registra un flake de un test de `add-pet` sin causa confirmada.
+**Pendientes**: 15 (#18, #41, #60, #63, #70-#80). El rediseño contra el diseño del Make abrió el bloque #64-#71: #64, #65, #66, #67 y #68 están cerradas y **mergeadas** (PR #106, #110, #111, #112 y #113). #69 `mobile-home-stats-strip` está cerrada con los dos gates humanos firmados; **PR pendiente de merge por el humano**. Quedan del bloque #70 recordatorios y #71 accesos rápidos, ninguna especificada. Deuda registrada: #72 flake de add-pet; #73 `pet-online-pill`; #74 el selector que TalkBack lee como tres controles sueltos; #75 `init.sh` aborta en falso con `FORCE_COLOR`; #76 un e2e que asserta orden sobre un `SELECT` sin `ORDER BY`; #77 el peso visible sin collar; #80 los `testID` del doble atados al componente y no al uso. #78 y #79 (`mobile-alerts-center`, `mobile-push-registration`) entraron desde otra sesión.
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
 desde 2026-08-10. Hay recursos vivos en la cuenta, aunque hoy sin coste.
@@ -86,6 +86,29 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Estado actual
+
+- **`mobile-home-stats-strip` (#69) done** (2026-09-08): la Home muestra la
+  **tira de cuatro celdas** sobre el hero — Peso, Actividad, Descanso,
+  Distancia — con tres divisores, en `src/screens/home/index.tsx`. Cero
+  llamadas nuevas a la API, cero backend, cero dependencias.
+  - **La celda 3 es Descanso y no Paseos**, contra lo que pedía el enunciado
+    original: `walkCount` ya se pinta desde #67 en `text-3xl` como dato
+    destacado del hero, así que esa celda habría duplicado el mismo número en
+    la misma pantalla. El descanso ocupa su sitio, que además resuelve la
+    decisión E — cero datos perdidos, cero duplicados.
+  - **Codex paró a mitad de R15 ante un delta no declarado** y no ajustó la
+    cifra por su cuenta: `language-provider.test.tsx:41` cierra la longitud del
+    catálogo y ni R14 ni `design.md` §5 lo enumeraban. Se resolvió con la
+    casilla **D1** firmada. Es la segunda vez que ese candado se omite en una
+    spec; en #68 pasó igual con un delta de +16.
+  - **El reviewer encontró la quinta y la sexta posición del discriminante**:
+    R1 decide tres cosas por celda —icono, etiqueta y valor— y solo el valor
+    estaba bajo candado, así que la app podía pintar `12.4 kg` bajo la etiqueta
+    "Distancia" sin que nada fallara. Cerrado con un refuerzo solo de test.
+  - **C4 gana un punto** a raíz de ese refuerzo: cuando un candado se añade
+    sobre código ya correcto, el rojo legítimo es la **mutación de producción**
+    versionada en el rojo y revertida en el verde; mutar un doble demuestra que
+    la aserción puede fallar, no que vigile la app.
 
 - **`mobile-home-weekly-activity` (#68) done** (2026-09-08): la Home dibuja la
   **actividad de los siete días que ya descargaba y tiraba**, en
