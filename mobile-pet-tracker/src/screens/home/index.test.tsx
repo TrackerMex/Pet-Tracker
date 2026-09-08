@@ -1273,4 +1273,14 @@ describe('#69 R1: la tira de hoy tiene cuatro celdas con tres divisores', () => 
     expect(rowClassName).not.toContain('gap-3');
     expect(rowClassName).not.toContain('justify-between');
   });
+
+  it('asigna cada valor a su celda y a ninguna otra', async () => {
+    await renderHome();
+
+    await screen.findByTestId('summary-card');
+    expect(screen.getByTestId('summary-weight')).toHaveTextContent('12.4 kg');
+    expect(screen.getByTestId('summary-activity')).toHaveTextContent('1h 35m');
+    expect(screen.getByTestId('summary-sleep')).toHaveTextContent('45m');
+    expect(screen.getByTestId('summary-distance')).toHaveTextContent('2.4 km');
+  });
 });

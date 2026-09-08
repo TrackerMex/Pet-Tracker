@@ -316,11 +316,7 @@ export function HomeScreen() {
                     className="text-sm font-bold text-foreground"
                     style={TABULAR_NUMS}
                   >
-                    {fmtKg(
-                      detail.data?.kind === 'ok'
-                        ? detail.data.pet.currentWeightKg
-                        : null,
-                    )}
+                    {fmtMinutes(today?.activeMinutes ?? null)}
                   </Text>
                   <Text className="text-2xs font-normal text-muted">
                     {t('health.weight')}
