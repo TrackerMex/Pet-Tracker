@@ -1201,3 +1201,76 @@ describe('R14: la Home monta la actividad semanal sin pedir nada nuevo', () => {
     expect(screen.queryByTestId('weekly-activity-skeleton')).toBeNull();
   });
 });
+
+describe('#69 R1: la tira de hoy tiene cuatro celdas con tres divisores', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    const pet = makePet({ currentWeightKg: 12.4 });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+    mockGetDailyActivity.mockResolvedValue({
+      kind: 'ok',
+      days: [
+        makeDay({
+          activeMinutes: 95,
+          restMinutes: 45,
+          distanceM: 2350,
+          walkCount: 2,
+        }),
+      ],
+      weekComparison: { distanceM: 5, activeMinutes: 10, walkCount: 20 },
+    });
+  });
+
+  it('renders the four value testIDs in tree order', async () => {
+    await renderHome();
+
+    const summary = await screen.findByTestId('summary-card');
+    const valueTestIds = within(summary)
+      .getAllByTestId(/^summary-(weight|activity|sleep|distance)$/)
+      .map(({ props }) => props.testID);
+
+    expect(valueTestIds).toEqual([
+      'summary-weight',
+      'summary-activity',
+      'summary-sleep',
+      'summary-distance',
+    ]);
+  });
+
+  it('renders exactly three dividers between the four cells', async () => {
+    await renderHome();
+
+    await screen.findByTestId('summary-card');
+    const dividedCells = [
+      'summary-weight',
+      'summary-activity',
+      'summary-sleep',
+      'summary-distance',
+    ].filter((testId) =>
+      screen
+        .getByTestId(testId)
+        .parent?.props.className?.includes('border-r border-border'),
+    );
+
+    expect(dividedCells).toHaveLength(3);
+  });
+
+  it('keeps the row flush without spacing utilities', async () => {
+    await renderHome();
+
+    const activityValue = await screen.findByTestId('summary-activity');
+    const rowClassName = activityValue.parent?.parent?.props.className;
+
+    expect(rowClassName).toBe('flex-row');
+    expect(rowClassName).not.toContain('gap-3');
+    expect(rowClassName).not.toContain('justify-between');
+  });
+});
