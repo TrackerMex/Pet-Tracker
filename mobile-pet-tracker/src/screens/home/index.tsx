@@ -1,11 +1,13 @@
-import { router, useFocusEffect } from 'expo-router';
+import { type Href, router, useFocusEffect } from 'expo-router';
 import { Button, Card as HeroUICard, Skeleton } from 'heroui-native';
 import { useCallback, useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Battery,
+  CalendarPlus,
   ChevronRight,
+  FileText,
   Map,
   Moon,
   Walk,
@@ -33,10 +35,35 @@ import {
   TABULAR_NUMS,
 } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
+import { CATEGORY_SLOTS } from '../../utils/category-palette';
 import { fmtCount, fmtKg, fmtKm, fmtMinutes } from './format';
 import { WeeklyActivityChart } from './weekly-activity-chart';
 
 const WEEKLY_ACTIVITY_SKELETON_HEIGHT = 408;
+
+const QUICK_ACTIONS = [
+  {
+    testID: 'quick-action-weight',
+    Icon: Weight,
+    labelKey: 'home.quickActionWeight',
+    slot: 'violet',
+    href: (_petId: string) => '/weight-log',
+  },
+  {
+    testID: 'quick-action-reminder',
+    Icon: CalendarPlus,
+    labelKey: 'home.quickActionReminder',
+    slot: 'amber',
+    href: (_petId: string) => '/add-reminder',
+  },
+  {
+    testID: 'quick-action-documents',
+    Icon: FileText,
+    labelKey: 'home.quickActionDocuments',
+    slot: 'blue',
+    href: (petId: string) => `/pets/${petId}/docs`,
+  },
+] as const;
 
 function isPetsError(state: PetsState): boolean {
   return ['error', 'unreachable', 'missing-config'].includes(state.kind);
@@ -70,6 +97,9 @@ export function HomeScreen() {
     'warning',
     'muted',
   ]);
+  const quickActionInks = useThemeColors(
+    QUICK_ACTIONS.map(({ slot }) => `category-${slot}-strong`),
+  );
   const petsFn = useCallback(
     () => listPets(baseUrl, token ?? ''),
     [baseUrl, token],
@@ -368,6 +398,36 @@ export function HomeScreen() {
               ) : null}
             </Card>
           </>
+        ) : null}
+
+        {selectedPetId ? (
+          <View testID="quick-actions" className="gap-3">
+            <Text
+              testID="quick-actions-title"
+              className="text-xs font-semibold uppercase tracking-widest text-muted"
+            >
+              {t('home.quickActions')}
+            </Text>
+            <View className="flex-row gap-3">
+              {QUICK_ACTIONS.map(
+                ({ testID, Icon, labelKey, slot, href }, index) => (
+                  <Pressable
+                    key={testID}
+                    testID={testID}
+                    accessibilityRole="button"
+                    className={`min-h-11 flex-1 items-center gap-1.5 rounded-xl py-3 ${CATEGORY_SLOTS[slot].surface}`}
+                    style={CONTINUOUS_CORNER}
+                    onPress={() => router.push(href(selectedPetId) as Href)}
+                  >
+                    <Icon size={24} color={quickActionInks[index]} />
+                    <Text className="text-2xs font-semibold text-foreground">
+                      {t(labelKey)}
+                    </Text>
+                  </Pressable>
+                ),
+              )}
+            </View>
+          </View>
         ) : null}
 
         {selectedPetId && activity.data === undefined ? (
