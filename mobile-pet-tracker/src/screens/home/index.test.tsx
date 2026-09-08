@@ -28,7 +28,7 @@ declare function require(moduleName: 'fs'): {
   readdirSync: (
     path: string,
     options: { withFileTypes: true },
-  ) => Array<{ name: string; isDirectory: () => boolean }>;
+  ) => { name: string; isDirectory: () => boolean }[];
   readFileSync: (path: string, encoding: 'utf8') => string;
 };
 
