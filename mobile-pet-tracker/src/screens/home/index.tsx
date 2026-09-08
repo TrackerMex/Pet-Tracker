@@ -9,6 +9,7 @@ import {
   Map,
   Moon,
   Walk,
+  Weight,
   Wifi,
   WifiOff,
 } from 'reicon-react-native';
@@ -32,7 +33,7 @@ import {
   TABULAR_NUMS,
 } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
-import { fmtCount, fmtKm, fmtMinutes } from './format';
+import { fmtCount, fmtKg, fmtKm, fmtMinutes } from './format';
 import { WeeklyActivityChart } from './weekly-activity-chart';
 
 const WEEKLY_ACTIVITY_SKELETON_HEIGHT = 408;
@@ -307,7 +308,24 @@ export function HomeScreen() {
             ) : null}
 
             {activity.data?.kind === 'ok' ? (
-              <View className="flex-row justify-between gap-3">
+              <View className="flex-row">
+                <View className="flex-1 items-center gap-1 border-r border-border">
+                  <Weight size={20} color={muted} />
+                  <Text
+                    testID="summary-weight"
+                    className="text-sm font-bold text-foreground"
+                    style={TABULAR_NUMS}
+                  >
+                    {fmtKg(
+                      detail.data?.kind === 'ok'
+                        ? detail.data.pet.currentWeightKg
+                        : null,
+                    )}
+                  </Text>
+                  <Text className="text-2xs font-normal text-muted">
+                    {t('health.weight')}
+                  </Text>
+                </View>
                 <View className="flex-1 items-center gap-1 border-r border-border">
                   <Walk size={20} color={muted} />
                   <Text
