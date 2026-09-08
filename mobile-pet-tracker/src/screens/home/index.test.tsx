@@ -1646,4 +1646,15 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
 
     expect(mockRouter.push).toHaveBeenCalledTimes(bindings.length);
   });
+
+  it('resuelve el fondo y la tinta desde el mismo hueco', () => {
+    const source = readFileSync(
+      join(process.cwd(), 'src/screens/home/index.tsx'),
+      'utf8',
+    );
+
+    expect(source).toContain('CATEGORY_SLOTS[slot].surface');
+    expect(source).toContain('`category-${slot}-strong`');
+    expect(source).not.toMatch(/(?:bg|text)-category-/);
+  });
 });
