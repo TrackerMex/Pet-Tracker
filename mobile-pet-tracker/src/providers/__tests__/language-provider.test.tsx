@@ -38,7 +38,7 @@ describe('#65 R12: el cat√°logo tiene los dos idiomas y t resuelve claves y par√
     const englishKeys = Object.keys(en).sort();
     const spanishKeys = Object.keys(es).sort();
 
-    expect(englishKeys).toHaveLength(260 + 16 + 1);
+    expect(englishKeys).toHaveLength(260 + 16 + 1 + 4);
     expect(spanishKeys).toEqual(englishKeys);
     for (const key of englishKeys) {
       expect(markerNames(es[key as keyof typeof es])).toEqual(
