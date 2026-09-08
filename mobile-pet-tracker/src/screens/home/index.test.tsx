@@ -1303,4 +1303,43 @@ describe('#69 R1: la tira de hoy tiene cuatro celdas con tres divisores', () => 
       '2',
     );
   });
+
+  it('coloca la tira sobre la tarjeta del collar', async () => {
+    const pet = makePet({
+      currentWeightKg: 12.4,
+      device: {
+        model: 'PetTrack One',
+        batteryPct: 82,
+        connectivity: 'online',
+        lastMessageAt: '2026-09-08T12:00:00.000Z',
+        esn: 'ACT-001',
+      },
+    });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+
+    await renderHome();
+
+    await screen.findByTestId('weekly-activity-card');
+    const relevantChildren = screen
+      .getByTestId('home-content')
+      .children.flatMap((child) =>
+        typeof child === 'string' ? [] : [child.props.testID],
+      )
+      .filter((testID) =>
+        [
+          'summary-card',
+          'collar-card',
+          'weekly-activity-card',
+          'last-position-card',
+        ].includes(testID),
+      );
+
+    expect(relevantChildren).toEqual([
+      'summary-card',
+      'collar-card',
+      'weekly-activity-card',
+      'last-position-card',
+    ]);
+  });
 });
