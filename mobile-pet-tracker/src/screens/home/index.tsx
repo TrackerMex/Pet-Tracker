@@ -375,7 +375,7 @@ export function HomeScreen() {
             {selectedToday ? (
               <Button
                 testID="weekly-activity-day-map"
-                className="min-h-11 w-full rounded-xl"
+                className="min-h-11 w-full rounded-xl bg-default"
                 variant="secondary"
                 onPress={() => router.push('/map')}
               >
