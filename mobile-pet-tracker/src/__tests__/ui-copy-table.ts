@@ -62,6 +62,7 @@ export const R3_HOME: UseRow[] = [
   { file: 'src/screens/home/index.tsx', key: 'home.activity' },
   { file: 'src/screens/home/index.tsx', key: 'home.sleep' },
   { file: 'src/screens/home/index.tsx', key: 'home.distance' },
+  { file: 'src/screens/home/index.tsx', key: 'home.weight' },
   { file: 'src/screens/home/index.tsx', key: 'home.viewOnMap' },
   { file: 'src/screens/home/index.tsx', key: 'home.walks' },
   { file: 'src/screens/home/weekly-activity-chart.tsx', key: 'weeklyActivity.dayLabelMissing' },
