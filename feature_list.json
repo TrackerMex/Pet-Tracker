@@ -1287,15 +1287,20 @@
   {
     "id": 69,
     "name": "mobile-home-stats-strip",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P3",
-    "description": "Bloque 1. El Make monta sobre el hero de la Home una tira de 4 celdas separadas por divisores -Peso, Activo, Paseos, Distancia- (App.tsx:366-384); la app tiene un summary-card con 3 -actividad, sueno, distancia- y no muestra paseos. Los datos de la cuarta celda YA se sirven: walkCount viene en cada entrada de activity/daily y currentWeightKg en el perfil, asi que no hay backend nuevo. La spec tiene que decidir por escrito que pasa con 'sueno', que la app muestra hoy (restMinutes) y el diseno no: el informe lo marca como caso de la decision E -el Make oculta datos reales que la app ya ensena-, y el humano ya fijo el criterio general de no perder informacion util solo por fidelidad, asi que la spec debe conservarlo o justificar donde se va. Depende de #67 porque la tira se monta sobre el hero.",
+    "description": "Bloque 1. El Make monta sobre el hero una tira de 4 celdas separadas por divisores (specs/mobile-figma-polish/design-src/App.tsx:368-383, con emojis: Peso, Activo, Paseos, Distancia); la app tiene un summary-card con 3 -actividad, sueno, distancia- en src/screens/home/index.tsx:282-353. CORRECCION AL ENUNCIADO ORIGINAL (2026-09-08, verificada contra el arbol): el enunciado decia que la app 'no muestra paseos' y pedia anadir esa cuarta celda. Es FALSO desde #67: walkCount ya se pinta en src/screens/home/index.tsx:142, en text-3xl, como dato destacado del hero. Anadir la celda 'Paseos' duplicaria el mismo numero en la misma pantalla. Asi que la celda 3 la ocupa el DESCANSO -que es ademas la resolucion de la decision E: la app lo muestra hoy y el diseno no lo dibuja, y el criterio del humano es no perder informacion util solo por fidelidad- y los paseos se quedan donde ya estan. Resultado: cero datos perdidos y cero datos duplicados. Los datos de las cuatro celdas ya se sirven: currentWeightKg en el perfil -verificado de pets.schema.ts:36 al mapper :70 y al controlador pets.controller.ts:82-94- y el resto en activity/daily, asi que no hay backend nuevo. Depende de #67 porque la tira se monta sobre el hero.",
     "acceptance_criteria": [
-      "La Home muestra las cuatro celdas del diseno, incluida Paseos, sin anadir llamadas nuevas a la API",
-      "La spec decide por escrito que pasa con el dato de sueno que hoy se muestra y el diseno no dibuja",
-      "Los valores usan tabular-nums, como fijo #62 R15",
-      "Suite movil completa verde; grep-clean intacto",
-      "Gate humano: smoke en dev build de Android en los dos temas. No delegable a IA"
+      "La Home muestra cuatro celdas con tres divisores, sin anadir llamadas nuevas a la API",
+      "La celda 3 es Descanso y NO Paseos: los paseos ya se pintan en el hero desde #67 y duplicarlos en la misma pantalla es el defecto que esta correccion evita; un test lo fija",
+      "El dato de sueno que la app muestra hoy se conserva como celda siempre visible: es la resolucion por escrito de la decision E",
+      "El peso sale del detalle del perfil y se pinta '—' cuando es null",
+      "Cada celda pinta su dato y ningun otro; el test usa un fixture con cuatro valores distintos para que un cruce se vea",
+      "Los cuatro valores usan tabular-nums, como fijo #62",
+      "La accesibilidad anuncia las cuatro celdas por separado, no un unico resumen",
+      "Iconos de reicon, ningun emoji del Make",
+      "Suite movil completa verde; deltas medidos contra el commit base, nunca cifras absolutas",
+      "Gate humano: smoke en dev build de Android en los dos temas, con una mascota sin peso registrado. No delegable a IA"
     ],
     "files_affected": [
       "mobile-pet-tracker/src/app/(tabs)/home.tsx"
