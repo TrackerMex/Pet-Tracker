@@ -43,6 +43,7 @@ duplica.
 | `docs/conventions.md` | Convenciones de estilo del proyecto (naming, errores, DTOs, tests, commits) | Antes de escribir código |
 | `docs/ui-guidelines.md` | Carta de UI móvil: tokens, componentes compartidos, @expo/ui, animación, grep-clean | Antes de cualquier trabajo en `mobile-pet-tracker/` |
 | `docs/verification.md` | Cómo verificar que una feature funciona correctamente + disciplina TDD | Antes de declarar done |
+| `docs/demo-runbook.md` | Runbook de demo: arranque del entorno local en Windows, IP LAN, datos y guion (hasta #69) | Antes de mostrar la app a alguien |
 | `docs/specs.md` | El proceso SDD completo: estados, gates, cuándo se escribe cada spec | Antes de escribir o aprobar una spec |
 | `docs/obsidian.md` | Cómo usar este proyecto como vault de Obsidian | Si usas Obsidian para navegar el proyecto |
 | `CHECKPOINTS.md` | Criterios objetivos de "estado final correcto" (C1..C6) | Para auto-evaluarte |
