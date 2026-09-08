@@ -745,7 +745,7 @@ spec (mismo procedimiento que las enmiendas A8/A9 de #67).
 
 **Desviación de un requisito de ESTA spec, ya aprobado.** R6 (`:285-292`)
 prescribe literalmente *"SHALL implementarlo con `SegmentedControl` de
-`@expo/ui/community/segmented-control`"*, y §Fuera de alcance (`:832-834`)
+`@expo/ui/community/segmented-control`"*, y §Fuera de alcance (`:867-869`)
 remata que *"cambiar de capa es una feature separada"*. El humano autorizó la
 sustitución de viva voz en la terminal de Codex el 2026-09-08, después de
 medirlo en el dev build; esta casilla es lo que deja constancia versionada de

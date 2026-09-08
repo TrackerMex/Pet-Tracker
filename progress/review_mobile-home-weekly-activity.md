@@ -599,3 +599,416 @@ cuesta ningún commit de código.
 2. **Casilla D1** de §Enmiendas: (a) dejarlo en `secondary` con `bg-default` —lo
    implementado, coste cero— o (b) volver a acción acentuada, que arrastra una
    enmienda firmada a `specs/mobile-figma-polish/`.
+
+---
+---
+
+# Tercer veredicto — D1(b), defectos del smoke y sustitución del selector
+
+Fecha: 2026-09-08
+Rango revisado: `eb4195e..HEAD` (`77f7819`), 14 ficheros
+Base de deltas: `4a5f6dd`
+Tandas: (1) `eb4195e..f4543dd` D1(b)/E2 · (2) `3299704`+`9ea5ac1` defectos del
+smoke · (3) `e486e4d`+`8003451` sustitución y `18e3a85`+`7c3738c`+`1620d9f`
+tabs animadas
+
+**Veredicto: APROBADO**
+
+La sustitución que contradice R6 está descrita en D2 **exactamente** como el
+diff la ejecuta —verifiqué las dieciséis promesas una a una—, la carta
+§Decisiones fijas 5 no se tocó, el contraste del par nuevo lo recalculé y pasa
+AA en los dos temas, y ningún inventario se movió salvo el 12→13 que E2 firma.
+Repliqué las cinco mutaciones que Codex declara y añadí nueve mías: **doce de
+catorce mueren**. Las dos que sobreviven son huecos de candado, no defectos de
+producto, y van como observaciones 1 y 2.
+
+**La casilla D2 sigue sin firmar. Ese es el gate**, y no lo cierra el reviewer.
+
+## Verificación independiente
+
+### `./init.sh` — corrido por mí, en primer plano, exit 0
+
+`pgrep -f init.sh` antes de lanzar: ningún gate hermano en marcha.
+
+**La primera corrida falló, y no por #68.** Salió
+`❌ Más de 1 feature en in_progress (1)` con exit 1, teniendo `feature_list.json`
+exactamente una (`#68`). Causa: mi shell trae `FORCE_COLOR=3`, así que el
+`console.log(<número>)` de `init.sh:131` emite `\e[33m1\e[39m` y la comparación
+`[ "$IN_PROGRESS" = "1" ]` de `init.sh:141` no casa. Es fragilidad del harness
+—apunte, no defecto de la feature—; se cierra con `.toString()` en el `console.log`
+o comparando con `-eq`. Relanzado con `FORCE_COLOR` fuera:
+
+```
+Test Suites: 3 skipped, 25 passed, 25 of 28 total
+Tests:       8 skipped, 354 passed, 362 total
+Time:        111.042 s
+✅ Tests e2e pasados
+→ Lint...    ✅ Lint sin errores
+→ Typecheck... ✅ Typecheck sin errores
+✅ Todo verde. Listo para trabajar.
+  Features: 63/73 completadas | 9 pendientes
+=== EXIT: 0 ===
+```
+
+Avisos no bloqueantes y ajenos a #68: `.env` (3 claves), `unrs-resolver` y
+`NodeVersionSupportWarning` del AWS SDK.
+
+### Suite móvil, referencia medida por mí
+
+```
+Test Suites: 67 passed, 67 total
+Tests:       1025 passed, 1025 total
+```
+
+Coincide con el último gate de Codex. (El informe cita 1024 en la tanda de la
+sustitución y 1025 tras las tabs animadas: el delta es el `it` nuevo de la
+píldora, no una regresión.) **El flaky #72 de Add Pet no apareció ni una vez**
+en ~16 corridas.
+
+## Checklist
+
+**C2 — Estado coherente**
+- [x] Solo `#68` en `in_progress`; no se marcó `done`
+- [x] `progress/current.md` con las tres tandas anotadas, incluido el punto de
+      parada respetado y la autorización de viva voz
+- [x] Sin PR, sin merge, branch correcta
+
+**C3 — Arquitectura**
+- [x] **Cero ficheros de `backend-pet-tracker/` y cero de `infra/`** en
+      `4a5f6dd..HEAD`
+- [x] `weekly-activity-chart.tsx` sigue sin red, sin Router y sin `useApi`
+- [x] El selector nuevo es estado local; cero llamadas nuevas
+
+**C4 — TDD**
+- [x] Los cuatro rojos (`1e8a2f0`, `3299704`, `e486e4d`, `18e3a85`) tocan
+      **solo ficheros de test** —`1e8a2f0` añade además el texto de E2, que es
+      su enmienda firmada—; los cuatro verdes (`705daea`, `9ea5ac1`, `8003451`,
+      `7c3738c`) tocan **solo producción**
+- [x] **Rojo comprobado por ejecución, no por mensaje**: puse el test de
+      `18e3a85` sobre la producción de su padre `4df7a9f` → falla **por
+      aserción** en los dos `it` nuevos (`R6 › desliza una única píldora…`,
+      `R9 › adapta píldora, texto e icono…`), con 34 verdes y cero
+      `ReferenceError`
+
+**C5 — Trazabilidad**
+- [x] `traceability.md` sin filas "pendiente" (la única coincidencia es la línea
+      de la regla al pie)
+- [x] Las filas R6 y R9 registran los seis commits nuevos con su hash y su
+      mensaje íntegro, y narran las tres tandas en orden
+- [x] Formato `fix(mobile-home-weekly-activity): <desc> (R-ids)` / `docs(...)`
+
+**C6 — Spec aprobada**
+- [x] `status: approved`, casilla humana `[X]` con fecha
+- [x] El diff de `requirements.md` en el rango es **puramente aditivo**: cero
+      líneas borradas, ningún texto de requisito modificado
+- [x] **D1 opción (b) la firmó el humano en su propio commit** `4673bed`
+      (AlexisSM377); **E2 en `efc1e32`** (AlexisSM377, un fichero, una línea, la
+      casilla y nada más), **04:18 UTC, cinco minutos antes** del candado
+      `1e8a2f0` que la consume
+- [ ] **D2 sin firmar** (`requirements.md:777`). Gate humano abierto, ver abajo
+
+**C7 — Sin código huérfano**
+- [x] El `SegmentedControl` se fue entero: cero `@expo/ui` y cero `useUniwind`
+      en producción, y el candado `not.toContain('@expo/ui/community/segmented-control')`
+      lo fija
+- [x] El `appearance` de la tanda 2 se retiró con su control, y su candado se
+      reemplazó por el de tokens (`not.toContain('appearance=')`)
+- [ ] Queda andamiaje muerto en el test: `jest.mock('uniwind', …)`
+      (`weekly-activity-chart.test.tsx:53-56`) ya no lo necesita nadie —
+      producción no importa `uniwind` y `useThemeColors` está mockeado entero.
+      Lo quité y la suite queda **36/36**. Observación 4
+
+**C8 — Carta de UI**
+- [x] Grep-clean de los dos ficheros de producción tocados: cero hex, cero
+      clases arbitrarias, cero `StyleSheet.create`, cero shadow/elevation, cero
+      radios fuera de escala
+- [x] Touch target 44 pt (`h-11`) con feedback de presión (`opacity: pressed`),
+      y el `h-11` está **candado** (mutación 13)
+- [x] Animación Reanimated en UI thread, sin `Color`/var CSS en estilos
+      animados (solo `width` y `translateX` numéricos), interrumpible por
+      construcción (retarget del mismo shared value)
+- [x] `borderCurve` no aplica al selector: `rounded-full` es cápsula, y la
+      micro-regla exime a las cápsulas
+- [x] Contraste AA recalculado, ver abajo
+
+## 1. La sustitución contra D2 — descrita exactamente
+
+R6 (`requirements.md:285-292`) sigue diciendo *"SHALL implementarlo con
+`SegmentedControl`"* y la producción ya no lo hace. Cotejé D2 promesa por
+promesa contra el diff:
+
+| D2 promete | En el código | Candado |
+|---|---|---|
+| grupo privado de tres `Pressable` en el fichero de la feature | `MetricSelector`, no exportada, `weekly-activity-chart.tsx:251` | — |
+| `role="radio"` | `accessibilityRole="radio"` `:342` | mut. 8 roja |
+| `accessibilityLabel` de catálogo | `:341`, desde `metricLabels` (`t()`) | mut. 11 roja |
+| `accessibilityState.selected` | `:343` | mut. 7 roja |
+| altura táctil `h-11` | `:344` | mut. 13 roja |
+| `numberOfLines={1}` | `:370` | mut. 1 roja |
+| reparto de ancho proporcional al copy | `flexGrow: label.length` `:348` | mut. 10 roja |
+| píldora Reanimated, precedente `floating-tab-bar.tsx` | `METRIC_TAB_SPRING` `:52-56` | mut. 4 y 6 rojas |
+| spring crítico 250 ms, `ReduceMotion.System` | idéntico a `TAB_INDICATOR_SPRING` (`floating-tab-bar.tsx:57-61`) | mut. 6 roja |
+| tres métricas en el orden de `WEEKLY_METRICS` | `:332` | verde de R6 |
+| `testID="weekly-activity-metric"` | `:325` | — |
+| `values` por catálogo (R17) | `metricLabels` `:406-410` | — |
+| estado local | `useState(selectedMetricIndex)` | verde de R6 |
+| ninguna dependencia nueva, `expo-haptics` sin instalar | `package.json` y `bun.lock` **sin diff** en el rango; cero `expo-haptics` | — |
+| ningún token nuevo en `global.css` | fichero no tocado | — |
+| ninguna llamada a la API | sin diff en `src/api/` | verde de R2/R14 |
+
+**Nada que el diff haga queda fuera de D2, y nada que D2 prometa falta.** Lo que
+D2 no enuncia es cosmético y no la contradice: el icono `Check`, el par de
+tokens final (`bg-tab-pill`/`text-accent-strong`, que llegó en la tanda de tabs)
+y el trío `adjustsFontSizeToFit`/`minimumFontScale`/`maxFontSizeMultiplier`.
+D2 tampoco enumera `onChange`/`tintColor` entre lo que "NO cambia" — correcto,
+porque desaparecen con el control; no sobrepromete.
+
+**§Decisiones fijas 5 intacta**: `git diff --stat eb4195e HEAD -- docs/ui-guidelines.md`
+sale **vacío**. El único hunk del fichero en toda la feature sigue siendo E1. La
+capa root de `@expo/ui` no se adopta: el reemplazo son primitivas de RN, y el
+punto 5 sigue listando `community/segmented-control` para quien lo necesite. Se
+abandona un control por ilegible, no la regla de capas. ✔
+
+## 2. Accesibilidad
+
+**Lo que se conserva y muerde:**
+
+- Cada opción lleva `accessible`, `role="radio"`, `accessibilityLabel` de
+  catálogo y `accessibilityState.selected`. **Los tres están candados**: quitar
+  el estado deja 2 tests rojos, quitar la etiqueta o degradar el rol a `button`
+  deja 1 cada uno
+- El icono lleva `accessible={false}`: no duplica anuncio
+- **Los siete anuncios por columna siguen intactos.** El `day-row` no tiene ni
+  una línea de diff en la tanda 3, y el candado sigue vivo: anulé el
+  `accessibilityLabel` de la columna y caen 2 tests
+
+**Lo que se pierde, y es el hallazgo:** el grupo **no se anuncia como grupo**. El
+contenedor (`weekly-activity-chart.tsx:325-328`) es un `View` pelado, sin
+`accessibilityRole="radiogroup"` —rol que RN 0.86.2 sí soporta
+(`ViewAccessibility.d.ts:209`)—. TalkBack leerá tres radios sueltos sin el "1 de
+3" posicional que el `SegmentedButtonRow` de Compose daba gratis. Ver
+observación 1.
+
+## 3. `adjustsFontSizeToFit` en Android — **sí actúa; el suelo que lo acompaña no**
+
+Contesto lo que se preguntó, verificado contra el RN instalado (0.86.2), no de
+memoria:
+
+- **El prop NO es inerte en Android.** Está implementado:
+  `TextLayoutManager.kt:840` entra en la rama y `:942 adjustSpannableFontToFit()`
+  hace la búsqueda binaria de tamaño hasta que cabe en `maximumNumberOfLines`.
+  Que los tipos de TS lo declaren dentro de `TextPropsIOS`
+  (`Libraries/Text/Text.d.ts:22-26`) es un tipado desactualizado, no la conducta.
+  El camino legacy también lo tiene (`ReactTextViewManager.kt:264`). **El candado
+  de "una sola línea" descansa sobre algo que actúa: en Android el texto encoge,
+  no se recorta con elipsis.**
+- **Pero `minimumFontScale={0.85}` sí es inerte en Android**, y eso es el
+  hallazgo. El suelo del algoritmo sale de `PA_KEY_MINIMUM_FONT_SIZE`
+  (`TextLayoutManager.kt:841-844`), que el C++ rellena con
+  `paragraphAttributes.minimumFontSize` (`conversions.h:1155`) — **otro prop**.
+  `<Text>` solo expone `minimumFontScale` (`TextNativeComponent.js:44-45`);
+  `minimumFontSize` no tiene prop pública de `Text` y queda `NaN`
+  (`ParagraphAttributes.h:70`), así que el suelo cae al *fallback*
+  `4.dpToPx()` (`:961-962`). En iOS el 0,85 sí manda.
+
+Consecuencia para el re-smoke: en el Android estrecho "Minutos activos" **no
+saltará de línea** —el defecto medido queda resuelto— pero puede encoger por
+debajo de `--text-2xs: 10px`, el menor tamaño que la carta declara
+(§Decisiones fijas 2), sin tope efectivo. Y **ningún test lo vigila**: quité
+`minimumFontScale` y la suite queda 36/36. Ver observación 2.
+
+## 4. La píldora animada — el candado de reduced motion existe
+
+No me basté con que el código lo tenga: **planté la mutación**.
+`reduceMotion: ReduceMotion.System` → `ReduceMotion.Never` deja el test **rojo**
+(`R6 › desliza una única píldora…`, vía
+`expect.objectContaining({ reduceMotion: ReduceMotion.System })` sobre las dos
+llamadas a `withSpring`). El candado fija la configuración accesible, no solo la
+duración.
+
+El precedente se sigue al pie de la letra: `METRIC_TAB_SPRING` es
+carácter por carácter `TAB_INDICATOR_SPRING` de `floating-tab-bar.tsx:57-61`
+(duplica la constante en vez de importarla, lo cual prefiero a acoplar la
+gráfica al tab bar). Interrumpible: retargetear el mismo shared value con
+`withSpring` corta la animación en curso, igual que el precedente. Primera
+posición sin animar (`indicatorWidth.get() <= 0`), animada a partir de ahí.
+
+Comprobé además la geometría, porque la píldora es absoluta y el contenedor
+tiene `p-1` + `border`: con `YGErrataAll`, que es el defecto de RN
+(`YogaLayoutableShadowNode.cpp:604`), el hijo absoluto sin insets **excluye el
+padding** (`AbsoluteLayout.cpp:29-32`), así que el origen es el borde y el
+desfase contra el `x` de `onLayout` es de 1 px. Irrelevante; lo dejo escrito
+para que nadie lo re-investigue.
+
+## 5. Contraste del par nuevo — recalculado, pasa
+
+Composité `bg-tab-pill` sobre `bg-default` (que es la superficie real del
+contenedor) en los dos temas:
+
+| Pareja | Claro | Oscuro | Mínimo |
+|---|---:|---:|---:|
+| `accent-strong` sobre píldora (**reposo, activa**) | **4,67:1** | **4,90:1** | 4,5 |
+| icono `Check` sobre píldora | 4,67:1 | 4,90:1 | 3,0 |
+| `foreground` sobre `bg-default` (inactivas) | 17,50:1 | 14,69:1 | 4,5 |
+| `accent-strong` sobre `bg-default` (**en tránsito**, la nueva ya activa) | 5,58:1 | 6,13:1 | 4,5 |
+| `foreground` sobre píldora (**en tránsito**, la vieja aún debajo) | 14,63:1 | 11,75:1 | 4,5 |
+
+Todas pasan AA para texto normal (la etiqueta es `text-xs` semibold). Mis
+números coinciden con los de Codex (4,68/4,89) dentro del redondeo.
+
+**El argumento de Codex es correcto y lo verifiqué**: el par anterior
+(`bg-accent` + blanco) daba 4,82:1 en reposo —también pasaba—, pero mientras la
+píldora viajaba la etiqueta recién activa quedaba **blanca sobre `bg-default`**,
+es decir **1,08:1**: invisible. El cambio empeora el reposo en 0,15 y arregla un
+tránsito ilegible. Bien resuelto.
+
+Sigue siendo el par más justo de la feature: 4,67 con 0,17 de margen. Si alguien
+toca `--tab-pill`, `--default` o `--accent-strong`, se cae.
+
+## 6. Inventarios — solo se movió el que E2 firma
+
+- **Un único fichero de candados tocado en todo el rango**:
+  `consistency-classnames.test.ts`. `src/providers/__tests__/` sin diff
+- **Una única cifra movida**: `toHaveLength(12)` → `(13)`, exactamente lo que E2
+  autoriza, con el nombre del `it` actualizado a "los trece"
+- **La segunda aserción de #62 R1 sigue en cero**: `expect(filesMatching(/rounded-2xl bg-accent…/)).toEqual([])`
+  no se tocó ni una letra
+- **Esquinas continuas: la cifra no se movió** — 1 `style={CONTINUOUS_CORNER}`
+  en la gráfica antes (`2ebfb97:549`) y 1 ahora (`:682`). **La cifra es
+  correcta; la explicación del informe no**: Codex escribe que "las tres
+  opciones conservan `CONTINUOUS_CORNER` desde su `Pressable`" y los tres
+  `Pressable` **no llevan ninguno** — ni deben, porque `rounded-full` es cápsula
+  y la micro-regla exime a las cápsulas. Retirar la superficie redundante fue lo
+  correcto; el relato de por qué no lo es
+- **Catálogo intacto en número**: el diff de `catalog.ts` son 2 líneas, `-`/`+`
+  de **la misma clave** (`weeklyActivity.metricDistance`), así que el candado
+  `260 + 16` de `language-provider.test.tsx` sigue siendo cierto
+- **`R3_HOME` no se movió**: 16 llamadas `t('` en la gráfica antes y ahora
+- Filas de cifras tabulares, `text-accent-strong`, entrypoints delgados y
+  dependencias aprobadas: sin diff
+
+## 7. Mutaciones — replantadas por mí, no leídas de su tabla
+
+Cada una sola sobre árbol limpio, suite dirigida completa, `git checkout --`
+después. `git status --porcelain` vacío al terminar.
+
+| # | Mutación | Origen | Resultado |
+|---:|---|---|---|
+| 1 | `numberOfLines={1}` → `{2}` | Codex | **ROJA** |
+| 2 | etiqueta activa → `text-foreground` | Codex | **ROJA** |
+| 3 | `Check` con `color="black"` fijo | Codex | **ROJA** |
+| 4 | `indicatorX.set(withSpring(…))` → asignación directa | Codex | **ROJA** |
+| 5 | `bg-tab-pill` → `bg-accent` | Codex | **ROJA** |
+| 6 | `ReduceMotion.System` → `ReduceMotion.Never` | mía | **ROJA** |
+| 7 | sin `accessibilityState` | mía | **ROJA** (2 tests) |
+| 8 | `role="radio"` → `"button"` | mía | **ROJA** |
+| 9 | sin `adjustsFontSizeToFit` | mía | **ROJA** |
+| 10 | `flexGrow: label.length` → `1` | mía | **ROJA** |
+| 11 | sin `accessibilityLabel` | mía | **ROJA** |
+| 12 | indicador montado siempre (sin esperar medida) | mía | **ROJA** |
+| 13 | `h-11` → `h-9` | mía | **ROJA** |
+| 14 | **sin `minimumFontScale`** | mía, zona ciega | **VERDE** → obs. 2 |
+| 15 | columna sin `accessibilityLabel` (los 7 anuncios) | mía | **ROJA** (2 tests) |
+| 16 | **`accessible` + `accessibilityLabel` en el contenedor del selector** | mía, zona ciega | **VERDE** → obs. 1 |
+| 17 | quitar el `jest.mock('uniwind')` del test | mía | **VERDE** → obs. 4 |
+
+Las cinco de Codex mueren, y coinciden con lo que declara. De las nueve mías,
+siete mueren.
+
+## 8. Deriva — ninguna
+
+- 14 ficheros en `eb4195e..HEAD`; **cero de `backend-pet-tracker/`, cero de
+  `infra/`** (verificado también contra `4a5f6dd`)
+- Los **seis** ficheros móviles están todos en `design.md` §4
+  (`:443-446`, `:498`, `:509`); los otros ocho son las dos specs, dos handoffs,
+  `current.md`, el informe, la trazabilidad y `design.md` de #62
+- `package.json` y `bun.lock` **sin diff**; `expo-haptics` sigue sin instalar
+- **El flaky #72 no salió ni una vez** en ~16 corridas mías
+
+---
+
+## Observaciones
+
+### No bloqueantes
+
+**1. El grupo del selector no se anuncia como grupo, y nada lo vigila.**
+`src/screens/home/weekly-activity-chart.tsx:325-328`. El contenedor es un `View`
+sin `accessibilityRole="radiogroup"` (RN 0.86.2 lo soporta:
+`ViewAccessibility.d.ts:209`). Con TalkBack son tres radios sueltos, sin el "1
+de 3" que el control nativo daba. Es lo único que la sustitución empeoró.
+
+Peor que la ausencia es el hueco de candado que la acompaña: **planté
+`accessible` + `accessibilityLabel="Metrica"` en ese mismo contenedor y la suite
+queda 36/36 en verde** (mutación 16). En un dispositivo eso **colapsa las tres
+opciones en un solo nodo** — exactamente el fallo que R9 dedica una cláusula
+entera a prohibir para el contenedor de las siete columnas
+(*"SHALL **no** declarar `accessibilityLabel` en el contenedor"*), y que allí sí
+tiene candado. El selector nuevo no heredó esa guardia.
+
+*Arreglo, ambas mitades baratas*: añadir `accessibilityRole="radiogroup"` al
+contenedor, y en `R6 › ofrece tres opciones accesibles…` asertar sobre
+`selector.props` que el rol es el de grupo y que **no** trae `accessible` ni
+`accessibilityLabel` propios, espejando la aserción que ya existe para el
+contenedor del gráfico.
+
+**2. El suelo de encogimiento del texto es inerte en Android y no está candado.**
+`weekly-activity-chart.tsx:372` (`minimumFontScale={METRIC_LABEL_MIN_FONT_SCALE}`,
+0,85). Por §3 de arriba: Android lee `minimumFontSize`, que `<Text>` no expone,
+así que el suelo real es `4 dp` y el 0,85 solo actúa en iOS. Quitar la línea
+entera deja la suite **36/36** (mutación 14): el candado de R6 vigila
+`numberOfLines` y `adjustsFontSizeToFit`, no el suelo.
+
+No es un defecto de producto —el prop es correcto y en iOS sirve—, pero **el
+humano lo va a ver en el re-smoke**: en la pantalla más estrecha "Minutos
+activos" encogerá sin tope hasta caber, y puede bajar de los 10 px que la carta
+fija como mínimo. Sugerencia para el guion del smoke: mirar el tamaño de
+"Minutos activos" con la fuente del sistema al máximo, y decidir ahí si hace
+falta un mínimo real (un `fontSize` explícito con `flexShrink`, o acortar el
+copy) o si el ancho proporcional ya lo evita.
+
+**3. La cita de línea de D2 está desfasada.** `requirements.md:747-749` cita
+*"§Fuera de alcance (`:832-834`)"*, pero esas líneas son la opción (b) de D1; el
+bullet que dice "cambiar de capa es una feature separada" está en **`:867-869`**.
+El texto citado es literal y correcto — solo el número está mal. Se arregla al
+firmar.
+
+**4. Andamiaje muerto en el test.** `weekly-activity-chart.test.tsx:53-56`
+mantiene `jest.mock('uniwind', …)`, que era el mecanismo de la tanda 2
+(`appearance` vía `useUniwind`). Producción ya no importa `uniwind` y
+`useThemeColors` está mockeado entero: quité el bloque y la suite queda 36/36
+(mutación 17). `mockTheme` sigue haciendo falta — lo consume el mock de
+`useThemeColors`.
+
+**5. `describe('R9: el selector sigue el tema de la app')` cuelga de un R-id que
+no lo cubre.** R9 (`requirements.md:366-390`) habla de las siete columnas, del
+`accessibilityLabel` del `BarChart` y de `getBarChartAccessibilitySummary`; nada
+de tokens del selector. El contenido del test es correcto y necesario —es
+territorio de R18/carta—, pero el título hereda un R-id ajeno. Misma familia que
+la observación 6 del primer veredicto: apunte para el `spec_author`, no defecto
+de #68.
+
+**6. `init.sh` se rompe con `FORCE_COLOR` puesto.** `init.sh:127-148`: el
+`console.log` de un número que Node colorea cuando `FORCE_COLOR` está en el
+entorno mete `\e[33m…\e[39m` en `IN_PROGRESS`, y la comparación por cadena manda
+el flujo al `fail` aunque haya exactamente una feature en curso. Me pasó a mí en
+la primera corrida. Apunte de harness, ajeno a #68.
+
+### De los veredictos anteriores, siguen abiertas y siguen sin bloquear
+
+- **Observación 5** (el candado de R18 prohíbe `StyleSheet` a secas) → sin tocar
+- **Observación 6** (seis requisitos sin test que nombre su R-id) → sin tocar
+- **Observaciones 7-10** (parser AST y espía de `Date`) → sin tocar; la
+  producción de R4/R5 no tiene ni un cambio en este rango
+
+## Gates humanos pendientes antes de `done`
+
+1. **Firmar D2** (`specs/mobile-home-weekly-activity/requirements.md:777`). Es
+   la constancia versionada de la autorización de viva voz que ya se ejecutó.
+   Sin ella, el árbol contradice R6 sin respaldo escrito. **No lo cierra el
+   reviewer.**
+2. **Re-smoke firmado en dev build de Android**, claro y oscuro, en la pantalla
+   más estrecha soportada: que "Minutos activos" ya no salte de línea **y a qué
+   tamaño acaba** (observación 2); movimiento de la píldora entre las tres
+   métricas y con pulsaciones rápidas; "Reducir movimiento" activado; texto
+   grande; y **TalkBack sobre el selector**, para oír si los tres radios sueltos
+   molestan (observación 1). Más el guion completo que ya estaba abierto.
