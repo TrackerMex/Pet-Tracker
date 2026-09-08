@@ -396,3 +396,206 @@ columnas con sus barras, selector sin parpadeo, tooltip y detalle, enlace al
 mapa solo en hoy, animación con y sin "reducir movimiento", sin desbordamiento
 horizontal, conexión ya no dice `LTE`, y TalkBack anunciando siete columnas.
 Añadir a ese guion la comprobación del punto 4 (fondo del botón de mapa).
+
+---
+---
+
+# Segundo veredicto — correcciones tras el rechazo
+
+Fecha: 2026-09-08
+Rango revisado: `db53dde..HEAD`
+**Nota de rango**: el encargo citaba 7 commits hasta `241741e`. Hay **8**: el
+octavo, `0556830` (`docs: abre la casilla D1 del botón de mapa`), es del propio
+leader y llegó después del mensaje. Lo reviso igual (punto 11).
+
+**Veredicto: APROBADO**
+
+Los dos bloqueantes quedan cerrados y la observación 4 también. Replanté yo el
+bypass exacto que mató al candado anterior y la mutación en los cuatro sitios,
+uno por uno. Quedan cuatro apuntes nuevos, ninguno bloqueante, y el gate humano
+—ahora doble— sigue abierto.
+
+## Verificación independiente
+
+`pgrep -f init.sh` antes de lanzar: solo mi propio shell. `./init.sh` corrido por
+mí en primer plano: **exit 0**, con `✅ Lint sin errores`, `✅ Typecheck sin
+errores` y `✅ Todo verde`. Suite móvil medida aparte:
+
+```
+Test Suites: 67 passed, 67 total
+Tests:       1023 passed, 1023 total
+```
+
+Mismo recuento que antes: no se añadió ni se borró ningún `it`. Los `expect`
+**suben** (118 → 127 en el test de la gráfica, 131 → 132 en el de la Home): los
+candados se reforzaron, no se aflojaron.
+
+## Bloqueante 1 (R4) — **CERRADO**
+
+Codex tomó la vía (a): espía `global.Date`, delega en el constructor real con
+`Reflect.construct`, asserta `dateConstructor.mock.calls` igual a
+`[[2026, 8, 6]]`, y **eliminó** el `not.toContain('new Date(date)')`.
+
+Replanté la mutación exacta que dejaba verde al candado anterior —renombrar el
+parámetro a `isoDate` y dejar `new Date(isoDate).toLocaleDateString(...)`— y
+**ahora se pone rojo por aserción** (`Expected [[2026,8,6]]` /
+`Received [['2026-09-06']]`). El agujero concreto está tapado.
+
+Busqué la siguiente vía de escape. Ninguna pasa:
+
+| Construcción alternativa que también desplaza el día | Resultado |
+|---|---|
+| `new Date(isoDate)` (renombre del parámetro) | **roja** por aserción del espía |
+| `new Date(Date.parse(date))` | **roja** |
+| `new Date(Date.UTC(year, month - 1, day))` | **roja** |
+| `new Date(Date.UTC(...) + 0)` (aritmética de ms) | **roja** |
+
+Razoné además el hueco teórico —una construcción correcta seguida de un
+desplazamiento posterior (`setDate`, `toISOString` y reparseo)— y también cae:
+lo primero rompe la mitad conductual (`toBe('dom')` da `'sáb'` ya en UTC) y lo
+segundo suma una segunda llamada al constructor. **No encontré ninguna vía que
+pase en silencio.**
+
+## Bloqueante 2 (R5) — **CERRADO, con el matiz que pediste**
+
+Replanté la mutación en las cuatro líneas, **una por una**, y anoté qué mata
+cada una leyendo la aserción que falla:
+
+| Línea | Qué decide | Muere por | Aserción que falla |
+|---:|---|---|---|
+| **283** | valor entregado al `BarChart` | **conducta** | `latestBarChartProps().data` → `value: 90` en vez de `null` |
+| **287** | denominador de la media | **solo el parser AST** | `measuredValues: false` |
+| **296** | ancla de la línea de media | **solo el parser AST** | `averageAnchorIndex: false` |
+| **551** | `noDataForDay` del panel de detalle | **conducta** | `detail-active-minutes` deja de mostrar `'—'` |
+
+Las dos que llevan conducta observable —283 y 551, las que de verdad le llegan
+al usuario— **mueren por conducta**, gracias al fixture centinela (`missing` con
+`activeMinutes: 90`, `stored` con `null`), que es exactamente el arreglo que
+pedí. Las otras dos mueren **solo por el parser**, y lo digo explícitamente
+porque me lo pediste.
+
+### ¿Es cierto que 287 y 296 son mutantes equivalentes en caja negra?
+
+**Sí, y lo verifiqué en vez de creerlo.** Demostración por casos, dado un 283
+correcto (`value = source === 'missing' ? null : metricValue(day, m)`):
+
+```
+measuredValues = chartData.flatMap(({day, value}) => COND && typeof value === 'number' ? [value] : [])
+```
+
+- Si `typeof value === 'number'`, entonces `value` no es null, luego `source !== 'missing'`
+  **y** `metricValue(day, m) !== null`: original y mutante valen ambos `true`.
+- Si `typeof value !== 'number'`, el segundo operando corta y el día queda fuera
+  sea cual sea `COND`.
+
+Para toda entrada posible la salida es idéntica; ningún fixture puede
+distinguirlas. Idéntico argumento para 296, que lleva la misma guarda
+`typeof value === 'number'`. Confirmación empírica: con la mutación de 287
+plantada corrí la **suite completa** y el único fallo en 1023 tests es la
+aserción del AST — **ninguna prueba de conducta se mueve, en ningún fichero**.
+
+Conclusión: **no había un test de conducta posible en 287/296**, así que el
+nivel estructural no sustituye a conducta disponible — cubre una posición que de
+otro modo quedaría sin candado alguno. **Esa es la diferencia con R4**, y por eso
+lo acepto aquí habiéndolo rechazado allí: el candado viejo de R4 vigilaba con una
+cadena literal una posición que **sí** era observable (el espía lo demuestra), y
+se esquivaba con un renombre inocente. Aquí no hay conducta que observar y el
+esquive exige plantar un señuelo a propósito.
+
+### Esquivando el parser
+
+- **Señuelo en 283** (comparación presente pero decidiendo por `null`): **roja**.
+  El sitio que importa está defendido por conducta, así que el señuelo no cuela.
+- **Señuelo en 287** (`... && (day.source === 'missing' || true)`): **verde**.
+  El parser sí se esquiva ahí — pero la consecuencia es nula, porque la posición
+  es un mutante equivalente demostrado. Queda como apunte 7.
+
+## Observación 4 — **CERRADA**
+
+`bg-default` añadido (`index.tsx:378`), con un assert nuevo que lo fija
+(`index.test.tsx`: `expect(mapButton.props.className).toContain('bg-default')`).
+Era la única pareja de contraste que me faltaba; calculada:
+
+| Pareja | Claro | Oscuro | Mínimo |
+|---|---:|---:|---:|
+| `text-foreground` sobre `bg-default` | **17,50:1** | **14,69:1** | 4,5 |
+
+Pasa AA con margen enorme en los dos temas. El precedente que cita Codex es
+exacto: `profile/index.tsx:357-361` usa el mismo trío
+`rounded-xl bg-default` + `variant="secondary"` + `text-foreground`.
+
+Dato para el smoke, no defecto: la **superficie** del botón contra la card que
+lo contiene queda en 1,08:1 (claro) y 1,11:1 (oscuro), así que su borde es casi
+invisible. No lo cuento como hallazgo porque es una propiedad de la pareja de
+tokens que el repo ya lleva en Profile, y porque quien identifica el control es
+su etiqueta, no su borde.
+
+## Sin deriva
+
+- **Cero ficheros de `backend-pet-tracker/` y cero de `infra/`** en todo el rango
+  de la feature (`4a5f6dd..HEAD`)
+- **`weekly-activity-chart.tsx` no tiene ni un cambio** en el rango de
+  correcciones, y quedó sin diff tras las ~12 mutaciones que planté
+  (`git status --porcelain` vacío al terminar)
+- **Ningún candado de recuento tocado**: el diff sobre `src/__tests__/` y
+  `src/providers/` en el rango nuevo está **vacío**. Ninguna cifra bajada
+- **Ningún assert debilitado**: cero `it` eliminados, `expect` al alza en los dos
+  ficheros de test
+- **Ninguna dependencia nueva**: `package.json` y `bun.lock` intactos en el rango.
+  El `import * as ts from 'typescript'` del test usa la devDependency que ya
+  existía (`~6.0.3`)
+- **`traceability.md` sin filas pendientes**: las 23 filas siguen rellenas; la
+  única coincidencia de "pendiente" es la línea de la regla al pie
+- Los 8 commits van en pares rojo→verde con tipo `fix(...)` y sus R-ids; el repo
+  ya usa `docs(`/`style(`/`fix(` además de `feat(`, así que C5 aguanta
+
+## Observaciones nuevas (ninguna bloqueante)
+
+**7. El parser AST vigila la grafía, no la conducta, en 287 y 296.** Un señuelo
+inerte (`&& (day.source === 'missing' || true)`) lo deja verde con la decisión
+tomada por `null`. Consecuencia práctica **nula** —ambas posiciones son mutantes
+equivalentes demostrados—, pero conviene saber que ahí el candado no prueba nada
+que un usuario pueda notar.
+
+**8. El parser da falso positivo en dos refactors honestos.** Reescribí
+`chartData` de dos formas correctas y equivalentes, y las dos ponen el test rojo
+sin que nada esté mal: `const { source } = day; source === 'missing'`
+(`isSource` exige un `PropertyAccessExpression`, y un identificador pelado no lo
+es) y un helper compartido `isMissing(day)`. Un `switch (day.source)` o un
+`['missing'].includes(...)` caerían igual. Es un impuesto: fija la **grafía** del
+código correcto, así que el próximo que ordene esa función se come un rojo que no
+señala ningún defecto.
+
+**9. Tres de las cuatro vías de escape de R4 mueren por accidente, no por
+diseño.** `Date.parse`, `Date.UTC` y la aritmética de milisegundos fallan con
+`TypeError: Date.parse is not a function`, porque `jest.spyOn(global, 'Date')`
+deja un mock sin métodos estáticos. Mueren —que es lo que importa— pero el
+mensaje despista a quien se los encuentre: parece un fallo de entorno y es el
+candado haciendo su trabajo.
+
+**10. El espía de R4 fija el constructor a exactamente una llamada.**
+`toEqual([[2026, 8, 6]])` no admite que `weekdayLabel` construya dos `Date`, aunque
+lo hiciera correctamente. Misma familia que el apunte 8, más leve.
+
+**11. `0556830` abre una casilla humana nueva dentro de una spec `approved`.**
+Es del leader, es **aditiva** —añade el bloque D1 en §Enmiendas con dos opciones
+sin marcar— y **no modifica el texto de ningún requisito**, así que C6 aguanta:
+no es saltarse el gate, es abrirlo. Resuelve bien mi observación 3 (la decisión
+visual sin firmar del botón de mapa). Efecto práctico: **#68 gana un segundo gate
+humano** además del smoke. La opción (a) es la implementada, así que firmarla no
+cuesta ningún commit de código.
+
+### De la revisión anterior, siguen abiertas y siguen sin bloquear
+
+- **Observación 3** → reencaminada a la casilla D1 de `0556830`. Pendiente de firma.
+- **Observación 5** (R18 prohíbe `StyleSheet` a secas, no `StyleSheet.create`) → sin tocar.
+- **Observación 6** (R1b, R4, R14b, R15, R17 y R19 sin test que nombre su R-id) → sin
+  tocar; sigue siendo apunte para el `spec_author`, no defecto de #68.
+
+## Gates humanos pendientes antes de `done`
+
+1. **Smoke firmado en dev build de Android**, tema claro y oscuro, con un día sin
+   dato y otro de cero: el guion completo de [[requirements]] §Aprobación.
+2. **Casilla D1** de §Enmiendas: (a) dejarlo en `secondary` con `bg-default` —lo
+   implementado, coste cero— o (b) volver a acción acentuada, que arrastra una
+   enmienda firmada a `specs/mobile-figma-polish/`.
