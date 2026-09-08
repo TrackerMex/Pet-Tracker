@@ -133,27 +133,13 @@ jest.mock('react-native-chart-kit/v2', () => {
   };
 });
 
-jest.mock('@expo/ui/community/segmented-control', () => {
-  const React = jest.requireActual<typeof import('react')>('react');
-  const { View } = jest.requireActual<typeof import('react-native')>(
-    'react-native',
-  );
-  const MockSegmentedControl = ({
-    children,
-    ...props
-  }: Record<string, unknown>) =>
-    React.createElement(View, props, children as never);
-
-  return {
-    __esModule: true,
-    default: MockSegmentedControl,
-    SegmentedControl: MockSegmentedControl,
-  };
-});
-
 jest.mock('../../theme/use-theme-colors', () => ({
   useThemeColors: (mockTokens: readonly string[]) =>
-    mockTokens.map((token) => `resolved-${token}`),
+    mockTokens.map((token) =>
+      token === 'accent-foreground'
+        ? `${mockTheme}-accent-foreground`
+        : `resolved-${token}`,
+    ),
 }));
 
 jest.mock('reicon-react-native', () => {
@@ -174,6 +160,7 @@ jest.mock('reicon-react-native', () => {
     };
 
   return {
+    Check: mockIcon('weekly-activity-metric-selected'),
     TrendUp: mockIcon('weekly-activity-trend-up'),
     TrendDown: mockIcon('weekly-activity-trend-down'),
   };
@@ -826,42 +813,61 @@ describe('R11: la gráfica se dimensiona por onLayout, no por porcentaje', () =>
 });
 
 describe('R6: el selector cambia de métrica sin volver a pedir nada', () => {
-  it('ofrece las tres etiquetas de catálogo en el orden acordado', async () => {
+  it('ofrece tres opciones accesibles y mantiene cada etiqueta en una línea', async () => {
     const result = await renderChart(
       makeWeek('2026-09-02', [10, 20, 30, 40, 50, 60, 70]),
     );
     const selector = result.getByTestId('weekly-activity-metric');
-
-    expect(selector.props).toEqual(
-      expect.objectContaining({
-        values: ['Minutos activos', 'Distancia', 'Paseos'],
-        selectedIndex: 0,
-        tintColor: 'resolved-accent-strong',
-      }),
+    const segments = WEEKLY_METRICS.map((metric) =>
+      result.getByTestId(`weekly-activity-metric-${metric}`),
     );
-    expect(readFileSync(chartSourcePath, 'utf8')).toContain(
-      "from '@expo/ui/community/segmented-control'",
+    const labels = WEEKLY_METRICS.map((metric) =>
+      result.getByTestId(`weekly-activity-metric-label-${metric}`),
+    );
+
+    expect(within(selector).getAllByRole('radio')).toEqual(segments);
+    expect(segments.map(({ props }) => props.accessibilityLabel)).toEqual([
+      'Minutos activos',
+      'Distancia',
+      'Paseos',
+    ]);
+    expect(segments.map(({ props }) => props.accessibilityState)).toEqual([
+      { selected: true },
+      { selected: false },
+      { selected: false },
+    ]);
+    expect(
+      segments.every(({ props }) => props.className.includes('h-11')),
+    ).toBe(true);
+    expect(
+      labels.every(
+        ({ props }) =>
+          props.numberOfLines === 1 && props.adjustsFontSizeToFit === true,
+      ),
+    ).toBe(true);
+    expect(mergeObjectStyles(segments[0].props.style).flexGrow).toBeGreaterThan(
+      mergeObjectStyles(segments[1].props.style).flexGrow,
+    );
+    expect(readFileSync(chartSourcePath, 'utf8')).not.toContain(
+      "@expo/ui/community/segmented-control",
     );
     expect(readFileSync(chartSourcePath, 'utf8')).not.toContain(
       "useThemeColors(['accent'])",
     );
   });
 
-  it('lee el índice del evento y repinta distancia con los mismos datos', async () => {
+  it('repinta distancia desde la opción pulsada con los mismos datos', async () => {
     const days = makeWeek('2026-09-02', [10, 20, 30, 40, 50, 60, 70]);
     const result = await renderChart(days);
-    const selector = result.getByTestId('weekly-activity-metric');
 
-    await act(() =>
-      selector.props.onChange({
-        nativeEvent: {
-          selectedSegmentIndex: 1,
-          value: 'un texto que no debe decidir la métrica',
-        },
-      }),
+    await fireEvent.press(
+      result.getByTestId('weekly-activity-metric-distanceM'),
     );
 
-    expect(selector.props.selectedIndex).toBe(1);
+    expect(
+      result.getByTestId('weekly-activity-metric-distanceM').props
+        .accessibilityState,
+    ).toEqual({ selected: true });
     expect(
       (latestBarChartProps().data as { value: number | null }[]).map(
         ({ value }) => value,
@@ -874,22 +880,54 @@ describe('R6: el selector cambia de métrica sin volver a pedir nada', () => {
 });
 
 describe('R9: el selector sigue el tema de la app', () => {
-  it('fuerza appearance dark y light sin depender del tema del sistema', async () => {
+  it('adapta texto e icono seleccionados con tokens semánticos en ambos temas', async () => {
     const days = makeWeek('2026-09-02', [10, 20, 30, 40, 50, 60, 70]);
     mockTheme = 'dark';
     const dark = await renderChart(days);
-
-    expect(dark.getByTestId('weekly-activity-metric').props.appearance).toBe(
-      'dark',
+    const darkSelected = dark.getByTestId(
+      'weekly-activity-metric-activeMinutes',
     );
+
+    expect(darkSelected.props.className).toContain('bg-accent');
+    expect(
+      dark.getByTestId('weekly-activity-metric-label-activeMinutes').props
+        .className,
+    ).toContain('text-accent-foreground');
+    expect(
+      within(darkSelected).getByTestId('weekly-activity-metric-selected').props
+        .accessibilityHint,
+    ).toBe('dark-accent-foreground');
+    expect(
+      dark.getByTestId('weekly-activity-metric-label-distanceM').props
+        .className,
+    ).toContain('text-foreground');
 
     await dark.unmount();
     mockTheme = 'light';
     const light = await renderChart(days);
-
-    expect(light.getByTestId('weekly-activity-metric').props.appearance).toBe(
-      'light',
+    const lightSelected = light.getByTestId(
+      'weekly-activity-metric-activeMinutes',
     );
+
+    expect(lightSelected.props.className).toContain('bg-accent');
+    expect(
+      light.getByTestId('weekly-activity-metric-label-activeMinutes').props
+        .className,
+    ).toContain('text-accent-foreground');
+    expect(
+      within(lightSelected).getByTestId('weekly-activity-metric-selected').props
+        .accessibilityHint,
+    ).toBe('light-accent-foreground');
+    expect(
+      light.getByTestId('weekly-activity-metric-label-distanceM').props
+        .className,
+    ).toContain('text-foreground');
+    expect(
+      readFileSync(chartSourcePath, 'utf8'),
+    ).toContain("'accent-foreground'");
+    expect(
+      readFileSync(chartSourcePath, 'utf8'),
+    ).not.toContain('appearance=');
   });
 });
 
@@ -1038,10 +1076,8 @@ describe('R12: la tendencia sigue a la métrica y se calla sin base', () => {
       walkCount: 0,
     });
 
-    await act(() =>
-      result.getByTestId('weekly-activity-metric').props.onChange({
-        nativeEvent: { selectedSegmentIndex: 1, value: 'Distancia recorrida' },
-      }),
+    await fireEvent.press(
+      result.getByTestId('weekly-activity-metric-distanceM'),
     );
 
     expect(result.getByTestId('weekly-activity-trend')).toHaveTextContent(

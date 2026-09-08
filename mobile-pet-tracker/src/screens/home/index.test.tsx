@@ -1164,10 +1164,8 @@ describe('R14: la Home monta la actividad semanal sin pedir nada nuevo', () => {
     );
     const callsBeforeMetricChange = [...mockGetDailyActivity.mock.calls];
 
-    await act(() =>
-      screen
-        .getByTestId('weekly-activity-metric')
-        .props.onSelectionChange({ nativeEvent: { selection: 1 } }),
+    await fireEvent.press(
+      screen.getByTestId('weekly-activity-metric-distanceM'),
     );
 
     expect(mockGetDailyActivity.mock.calls).toEqual(callsBeforeMetricChange);
