@@ -767,7 +767,7 @@ porque toca una spec `approved` distinta de esta.
   decidió en D1(b) que esta acción es acentuada. R19 de #68 prohibía
   *absorberlo en silencio*, no subirlo con firma.
 
-- [ ] Enmienda aprobada por humano
+- [X] Enmienda aprobada por humano
 
 ### D1 — el botón de mapa de R8 quedó en `variant="secondary"`
 
