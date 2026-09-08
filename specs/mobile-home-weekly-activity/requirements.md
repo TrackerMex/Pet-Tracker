@@ -741,6 +741,34 @@ spec (mismo procedimiento que las enmiendas A8/A9 de #67).
 
 ---
 
+### E2 — `specs/mobile-ui-consistency-polish/` R1: el inventario de botones primarios pasa de 12 a 13
+
+La abre **D1 opción (b)**, que el humano firmó el 2026-09-08. No es una
+decisión nueva: es la consecuencia mecánica de aquella, y va con casilla propia
+porque toca una spec `approved` distinta de esta.
+
+- **Spec enmendada**: `specs/mobile-ui-consistency-polish/requirements.md` R1
+  (`:81-88`) y su candado `src/__tests__/consistency-classnames.test.ts:97-103`,
+  `it('deja los doce botones primarios sólidos en un único radio')`.
+- **Qué dice hoy**: *"WHEN se renderiza cualquiera de los **12** botones
+  primarios sólidos de acento (`className` que contiene exactamente
+  `bg-accent`, enumerados en [[design]] §4 R1) THE SYSTEM SHALL aplicarles
+  `rounded-xl`"*, con el candado en `toHaveLength(12)`.
+- **Qué pasa a decir**: **13**, sumando el botón de mapa del detalle del día de
+  #68 (`src/screens/home/index.tsx`). El candado pasa a `toHaveLength(13)` y el
+  nombre del `it` a "los trece botones primarios".
+- **Qué NO cambia**: la regla de fondo de R1 —un solo radio para el botón
+  primario, `rounded-xl`— se cumple igual; el botón nuevo nace con
+  `rounded-xl bg-accent`, así que **la segunda aserción del candado**
+  (`rounded-2xl bg-accent` prohibido) sigue en cero. Ningún otro requisito de
+  #62, ni su estado de aprobación, ni el resto de sus candados. Los doce
+  botones existentes no se tocan.
+- **Por qué sube el número en vez de quedarse en doce**: porque el humano
+  decidió en D1(b) que esta acción es acentuada. R19 de #68 prohibía
+  *absorberlo en silencio*, no subirlo con firma.
+
+- [ ] Enmienda aprobada por humano
+
 ### D1 — el botón de mapa de R8 quedó en `variant="secondary"`
 
 **No es una enmienda a otra spec: es una desviación del diseño aprobado de
