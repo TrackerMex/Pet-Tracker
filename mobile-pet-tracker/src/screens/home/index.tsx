@@ -8,7 +8,6 @@ import {
   CalendarPlus,
   ChevronRight,
   FileText,
-  ForkKnife,
   Map,
   Moon,
   Walk,
@@ -59,7 +58,7 @@ const QUICK_ACTIONS = [
   },
   {
     testID: 'quick-action-documents',
-    Icon: ForkKnife,
+    Icon: FileText,
     labelKey: 'home.quickActionDocuments',
     slot: 'blue',
     href: (petId: string) => `/pets/${petId}/docs`,
