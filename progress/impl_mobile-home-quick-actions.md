@@ -127,5 +127,14 @@ barra de tabs, `_layout.tsx`, `src/app/`, `src/components/`, `src/theme/`,
 
 ## Gate final
 
-- `env -u FORCE_COLOR ./init.sh`: pendiente de la única corrida final.
-- `graphify update .`: pendiente, se ejecuta después del gate.
+- `env -u FORCE_COLOR ./init.sh`: única corrida final, exit 0. Build verde;
+  backend unitario verde; móvil 68/68 suites, 1054/1054 tests y 1/1 snapshot;
+  e2e 25 suites y 354 tests verdes, con 3 suites/8 tests omitidos por el arnés;
+  lint y typecheck verdes.
+- `graphify update .`: exit 0 después del gate. Actualizó el grafo local a
+  11034 nodos, 17031 aristas y 684 comunidades; `graphify-out/` sigue ignorado
+  y no añadió cambios versionados. Avisó de que 16 ficheros SQL no aportaron al
+  grafo por no estar instalado el extra opcional `tree_sitter_sql`.
+- Aviso no bloqueante ya existente durante `init.sh`: AWS SDK comunica que sus
+  versiones posteriores a la primera semana de enero de 2027 exigirán Node 22;
+  la ejecución actual con Node 20.20.2 terminó verde.
