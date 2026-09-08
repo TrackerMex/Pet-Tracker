@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-09-07
-**Features completadas**: 63/72 (`feature_list.json`)
+**Última actualización**: 2026-09-08
+**Features completadas**: 64/75 (`feature_list.json`)
 **En progreso**: ninguna
 
-**Pendientes**: 9 (#18, #41, #60, #63, #68-#72). El rediseño contra el diseño del Make abrió el bloque #64-#71: #64 `mobile-pastel-category-palette`, #65 `mobile-ui-language` y #66 `pets-list-response-enrichment` están cerradas y mergeadas (PR #106, #110 y #111). #67 `mobile-pet-hero-header` está cerrada con los dos gates humanos firmados; **PR #112 pendiente de merge por el humano**. Quedan del bloque #68 actividad semanal, #69 tira de estadísticas -ya desbloqueada por el hero-, #70 recordatorios y #71 accesos rápidos, ninguna especificada todavía. #72 registra un flake de un test de `add-pet` sin causa confirmada.
+**Pendientes**: 11 (#18, #41, #60, #63, #69-#75). El rediseño contra el diseño del Make abrió el bloque #64-#71: #64 `mobile-pastel-category-palette`, #65 `mobile-ui-language`, #66 `pets-list-response-enrichment` y #67 `mobile-pet-hero-header` están cerradas y **mergeadas** (PR #106, #110, #111 y #112). #68 `mobile-home-weekly-activity` está cerrada con los tres gates humanos firmados; **PR pendiente de merge por el humano**. Quedan del bloque #69 tira de estadísticas, #70 recordatorios y #71 accesos rápidos, ninguna especificada todavía. Deuda registrada al cerrar #68: #73 `pet-online-pill` -la píldora "En línea", que necesita arreglar el pestillo de conectividad del backend y definir un umbral de silencio-, #74 `mobile-metric-selector-a11y` -el selector no se anuncia como grupo en TalkBack- y #75 `harness-init-force-color` -`init.sh` aborta en falso si el entorno trae `FORCE_COLOR`-. #72 registra un flake de un test de `add-pet` sin causa confirmada.
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
 desde 2026-08-10. Hay recursos vivos en la cuenta, aunque hoy sin coste.
@@ -86,6 +86,36 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Estado actual
+
+- **`mobile-home-weekly-activity` (#68) done** (2026-09-08): la Home dibuja la
+  **actividad de los siete días que ya descargaba y tiraba**, en
+  `src/screens/home/weekly-activity-chart.tsx`, con selector de métrica,
+  detalle por día, eje Y, rejilla, línea de media y tendencia. Cero llamadas
+  nuevas a la API y cero backend. Tres cosas que conviene no perder:
+  - **El discriminante de "sin dato" es `source`, nunca `null`.**
+    `missingEntry()` pone todas las métricas a `null`, pero `emptyActivity()`
+    devuelve **ceros**, así que hoy `null` equivale a `missing` **por
+    coincidencia**: ramificar por `metrica === null` pasaría todos los tests
+    siendo falso. Un cero medido es descanso confirmado y se dibuja; un
+    `missing` no. El primer veredicto **rechazó** precisamente porque el
+    candado solo vigilaba 4 de los 8 sitios de esa decisión.
+  - **Un candado que prohíbe una cadena literal no es un candado.** R4 cerraba
+    el desfase de zona horaria con `not.toContain('new Date(date)')`, y
+    renombrar el parámetro a `isoDate` dejando el mismo bug pasaba con la suite
+    entera verde. Se sustituyó por un espía de `global.Date` con
+    `Reflect.construct`, porque en un worker de `jest-expo` `process.env` es una
+    copia y reasignar `TZ` no ejecuta `tzset`.
+  - **El `SegmentedControl` nativo se abandonó por ilegible**, con la enmienda
+    D2 firmada: su wrapper no expone `fontStyle` ni `activeFontStyle` y en
+    Android `tintColor` solo pinta el contenedor activo, así que "Minutos
+    activos" saltaba de línea y el texto negro del segmento activo se perdía
+    sobre el verde. Lo sustituyen tres `Pressable` propios con píldora animada
+    (`bg-tab-pill` + `text-accent-strong`: 4,67:1 claro y 4,90:1 oscuro, frente
+    al **1,08:1 en tránsito** del par anterior). La regla de capas de la carta
+    §Decisiones fijas 5 **no se tocó**.
+  Dependencia nueva: `react-native-chart-kit` pinneada a **7.0.4 exacta** e
+  importada **solo** por su subpath `/v2` — la v1 tipa `data` como `number[]`
+  sin null y perdería en silencio la distinción sin-dato/cero.
 
 - **`mobile-pet-hero-header` (#67) done** (2026-09-07): Home y Profile abren con
   una **cabecera fotográfica compartida**, `src/components/pet-hero-header.tsx`,

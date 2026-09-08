@@ -1257,7 +1257,7 @@
   {
     "id": 68,
     "name": "mobile-home-weekly-activity",
-    "status": "in_progress",
+    "status": "done",
     "priority": "P2",
     "description": "Bloque 1. La grafica de barras de 7 dias que el Make pone en la Home (design-src/App.tsx:411-424) y que la app no dibuja. LOS DATOS YA SE DESCARGAN Y SE TIRAN: GET /v1/pets/:petId/activity/daily devuelve una entrada por dia sin huecos con un rango por defecto de 7 dias terminando hoy en la zona horaria del dueno, el cliente llama sin parametros y la Home descarta seis de las siete entradas (home.tsx:100-103). ALCANCE AMPLIADO POR EL HUMANO EL 2026-09-07: entra todo lo que la primera spec habia dejado fuera salvo lo que es otra feature. Entran el selector de metrica (minutos activos / distancia / paseos), el detalle por dia al tocar una barra con tooltip, el eje Y, la rejilla, la linea de media, la navegacion a /trips, la animacion de entrada de las barras, la migracion de la Home a src/screens/home/ segun la convencion de #39, y la traduccion de los enum crudos de la API (device.connectivity se pinta hoy en bruto en src/screens/pairing/index.tsx:421-422, un 'LTE' a pelo). NO entran: la tira de 4 celdas (es #69), los accesos rapidos (son #71) y la pildora 'En linea' (es #73, depende de un pestillo roto en backend). Con este alcance la libreria de graficas SI se paga: se usa react-native-chart-kit, designada por el humano, y obligatoriamente por su subpath v2 ('react-native-chart-kit/v2'), porque la API v1 tipa data como number[] sin null y perderia en silencio la distincion entre un dia sin dato y un dia de cero. Tres avisos que la spec DEBE recoger o la grafica mentira: (1) un dia pasado sin datos vuelve con source 'missing' y las metricas en null, no en cero -un cero significa descanso confirmado-, y el discriminante es source y NUNCA null, porque los dias medidos devuelven ceros (emptyActivity en pipeline/activity.ts:83-91) y hoy null equivale a missing solo por coincidencia; (2) el array es cronologico terminando hoy, NO lunes a domingo, asi que la letra del eje se deriva de la fecha y nunca del indice; (3) weekComparison trae delta porcentual de la media diaria a un decimal y solo para distanceM, activeMinutes y walkCount -restMinutes no tiene comparacion-.",
     "acceptance_criteria": [
@@ -1370,6 +1370,40 @@
     "files_affected": [
       "backend-pet-tracker/src/workers/ingestion.drizzle.store.ts",
       "mobile-pet-tracker/src/app/(tabs)/home.tsx"
+    ]
+  },
+  {
+    "id": 74,
+    "name": "mobile-metric-selector-a11y",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Deuda registrada al cerrar #68 el 2026-09-08. Son las tres observaciones no bloqueantes del tercer veredicto (progress/review_mobile-home-weekly-activity.md), con handoff ya escrito en progress/handoff_mobile-home-weekly-activity_a11y.md. La que pesa es de accesibilidad: el contenedor de las tres opciones del selector de metrica (mobile-pet-tracker/src/screens/home/weekly-activity-chart.tsx:325-328) no declara accessibilityRole='radiogroup', asi que TalkBack lee tres controles sueltos en vez de un conjunto y no anuncia '1 de 3'. Cada Pressable si tiene su rol radio y su accessibilityState.selected. Y no hay candado: el reviewer planto accessible + accessibilityLabel en ese contenedor -que en dispositivo COLAPSA los tres radios en un solo nodo, exactamente lo que R9 prohibe para el contenedor de las siete columnas- y la suite se quedo verde. Van con ella dos apuntes menores: minimumFontScale={0.85} es inerte en Android porque el runtime lee minimumFontSize (TextLayoutManager.kt:841-844 via conversions.h:1155) y <Text> no lo expone, asi que el suelo real es 4 dp y no el 85% que la linea aparenta prometer -ojo, adjustsFontSizeToFit SI funciona en Android en RN 0.86.2, lo inerte es solo su suelo-; y el jest.mock('uniwind') de weekly-activity-chart.test.tsx:53-56 quedo muerto desde que el SegmentedControl se fue.",
+    "acceptance_criteria": [
+      "El contenedor del selector declara accessibilityRole='radiogroup' y TalkBack anuncia el conjunto",
+      "Hay candado que FALLA si el contenedor recibe accessible o accessibilityLabel, copiando el patron que R9 ya usa para el contenedor de las siete columnas",
+      "El suelo de tamano de fuente en Android queda resuelto por una via que si actua, o documentado por escrito por que se acepta que no aplique",
+      "El jest.mock('uniwind') muerto queda borrado",
+      "Suite movil completa verde; ninguna cifra de candado se mueve",
+      "Gate humano: TalkBack en dev build de Android sobre el selector. No delegable a IA"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/home/weekly-activity-chart.tsx",
+      "mobile-pet-tracker/src/screens/home/weekly-activity-chart.test.tsx"
+    ]
+  },
+  {
+    "id": 75,
+    "name": "harness-init-force-color",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Bug del harness, ajeno a cualquier feature, encontrado por el reviewer de #68 el 2026-09-08 y reproducido por el leader. init.sh:127-148 comprueba cuantas features estan in_progress comparando POR CADENA un numero que Node imprime coloreado. Si el entorno tiene FORCE_COLOR, el numero llega con codigos ANSI alrededor, la comparacion falla y init.sh aborta con 'Mas de 1 feature en in_progress (1)' habiendo exactamente una. Es un falso negativo que para el trabajo y cuya causa no se ve en el mensaje: el propio mensaje imprime (1), que es el valor correcto. Se sortea con env -u FORCE_COLOR, pero eso es un parche del que lo sepa, no un arreglo.",
+    "acceptance_criteria": [
+      "init.sh cuenta las features in_progress sin depender de como Node colorea la salida",
+      "init.sh pasa con FORCE_COLOR puesto y sin ella, y un test o una comprobacion del propio script lo fija",
+      "El mensaje de error, cuando de verdad hay mas de una in_progress, sigue diciendo cuales"
+    ],
+    "files_affected": [
+      "init.sh"
     ]
   }
 ]
