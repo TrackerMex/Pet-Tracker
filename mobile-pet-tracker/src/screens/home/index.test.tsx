@@ -1778,4 +1778,17 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
     await screen.findByTestId('home-empty');
     expect(screen.queryByTestId('quick-actions')).toBeNull();
   });
+
+  it('no añade ninguna llamada a la API', async () => {
+    const existingScenarioCallCount = { pets: 1, detail: 1, activity: 1 };
+
+    await renderHome();
+    await screen.findByTestId('summary-card');
+
+    expect({
+      pets: mockListPets.mock.calls.length,
+      detail: mockGetPet.mock.calls.length,
+      activity: mockGetDailyActivity.mock.calls.length,
+    }).toEqual(existingScenarioCallCount);
+  });
 });
