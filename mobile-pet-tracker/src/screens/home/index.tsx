@@ -63,13 +63,6 @@ const QUICK_ACTIONS = [
     slot: 'blue',
     href: (petId: string) => `/pets/${petId}/docs`,
   },
-  {
-    testID: 'quick-action-map',
-    Icon: Map,
-    labelKey: 'tabs.map',
-    slot: 'green',
-    href: (_petId: string) => '/map',
-  },
 ] as const;
 
 function isPetsError(state: PetsState): boolean {
