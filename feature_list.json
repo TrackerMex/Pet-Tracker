@@ -1287,7 +1287,7 @@
   {
     "id": 69,
     "name": "mobile-home-stats-strip",
-    "status": "in_progress",
+    "status": "done",
     "priority": "P3",
     "description": "Bloque 1. El Make monta sobre el hero una tira de 4 celdas separadas por divisores (specs/mobile-figma-polish/design-src/App.tsx:368-383, con emojis: Peso, Activo, Paseos, Distancia); la app tiene un summary-card con 3 -actividad, sueno, distancia- en src/screens/home/index.tsx:282-353. CORRECCION AL ENUNCIADO ORIGINAL (2026-09-08, verificada contra el arbol): el enunciado decia que la app 'no muestra paseos' y pedia anadir esa cuarta celda. Es FALSO desde #67: walkCount ya se pinta en src/screens/home/index.tsx:142, en text-3xl, como dato destacado del hero. Anadir la celda 'Paseos' duplicaria el mismo numero en la misma pantalla. Asi que la celda 3 la ocupa el DESCANSO -que es ademas la resolucion de la decision E: la app lo muestra hoy y el diseno no lo dibuja, y el criterio del humano es no perder informacion util solo por fidelidad- y los paseos se quedan donde ya estan. Resultado: cero datos perdidos y cero datos duplicados. Los datos de las cuatro celdas ya se sirven: currentWeightKg en el perfil -verificado de pets.schema.ts:36 al mapper :70 y al controlador pets.controller.ts:82-94- y el resto en activity/daily, asi que no hay backend nuevo. Depende de #67 porque la tira se monta sobre el hero.",
     "acceptance_criteria": [
