@@ -71,7 +71,7 @@ AWS_ENDPOINT_URL=http://localhost:4566
 AWS_PRESIGN_ENDPOINT_URL=http://<IP LAN>:4566
 ```
 
-`AWS_PRESIGN_ENDPOINT_URL` no está en `.env.example`: añádela a mano si falta.
+`AWS_PRESIGN_ENDPOINT_URL` va comentada en `.env.example`, así que el drift no la reclama: añádela a mano si falta.
 Sin ella las fotos de mascota no cargan en el teléfono (#57). La IP LAN se
 resuelve en el paso 3; vuelve aquí cuando la tengas.
 
