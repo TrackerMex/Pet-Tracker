@@ -245,10 +245,7 @@ export function HomeScreen() {
                         : null,
                     )}
                   </Text>
-                  <Text
-                    className="text-2xs font-normal text-muted"
-                    style={TABULAR_NUMS}
-                  >
+                  <Text className="text-2xs font-normal text-muted">
                     {t('home.weight')}
                   </Text>
                 </View>
