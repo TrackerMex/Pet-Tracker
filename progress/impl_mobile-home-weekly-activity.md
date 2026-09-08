@@ -395,3 +395,63 @@ Gate automatizado final de esta sustitución:
   en `design.md` §4, más la trazabilidad y los dos informes obligatorios. Cero
   ficheros de backend o infraestructura; no se marcó la feature `done`, no se
   abrió PR y no se hizo merge.
+
+## Tabs animadas solicitadas tras el smoke
+
+El humano prefirió la sensación del selector de tabs animado frente a los tres
+botones estáticos. Se conservó el grupo accesible que corrigió el salto de línea
+y se añadió una sola píldora de selección: cada opción comunica su `x` y su
+ancho real mediante `onLayout`, la primera posición se aplica sin animación y
+los cambios posteriores animan `translateX` y el ancho con Reanimated. El
+indicador es absoluto y no tiene hijos, por lo que animar su ancho no relayouta
+el texto ni cambia la distribución proporcional que reserva más espacio a
+“Minutos activos”.
+
+Se siguió el precedente de `src/components/floating-tab-bar.tsx`: spring crítico
+de 250 ms, interrumpible al retargetear el mismo shared value y
+`ReduceMotion.System`. No se añadió `expo-haptics` ni ninguna dependencia. Las
+tres opciones conservan rol `radio`, estado seleccionado, `h-11`, feedback de
+presión, copy íntegro, una sola línea y ajuste de fuente.
+
+El patrón visual anterior de fondo verde sólido y texto blanco era correcto en
+reposo, pero podía producir un instante de texto blanco sobre la superficie
+clara mientras la píldora viajaba. Para que el contraste sea estable durante
+todo el movimiento se adoptó también el par del tab bar: `bg-tab-pill` con
+`text-accent-strong`, y el check recibe `accent-strong` desde
+`useThemeColors`. El contraste calculado del estado activo sobre la composición
+real es 4,68:1 en claro y 4,89:1 en oscuro; ambos superan AA para texto normal.
+
+Commits test-primero:
+
+- rojo `18e3a85` — `fix(mobile-home-weekly-activity): guard animated metric tabs (R6,R9)`: exige que el indicador no exista antes de medir, que haya exactamente uno después, que siga las medidas de origen y destino y que las dos coordenadas se animen con la configuración accesible;
+- verde `7c3738c` — `fix(mobile-home-weekly-activity): restore animated metric tabs (R6,R9)`: implementa la píldora medida y el patrón temático de tabs sin tocar la carga de datos.
+
+Evidencia de mutación, plantada y restaurada de una en una:
+
+| Mutación | Salida dirigida |
+|---|---|
+| `indicatorX.set(withSpring(...))` pasa a asignación directa | exit 1 en R6; esperaba el destino horizontal `152` como primera llamada al spring y solo recibió la animación del ancho |
+| `bg-tab-pill` vuelve a `bg-accent` | exit 1 en R9; el indicador recibió `bg-accent` donde el candado exige el token adaptativo de tabs |
+
+Tras restaurarlas, la suite de la gráfica terminó 36/36 y la batería dirigida
+—gráfica, Home, `FloatingTabBar`, consistencia, legibilidad y drift— terminó
+6 suites/195 tests, con lint y typecheck en verde. Ningún candado ni inventario
+global cambió; grep-clean permanece intacto.
+
+El código de producción modificado sigue limitado a
+`src/screens/home/weekly-activity-chart.tsx`, listado en `design.md` §4. Además
+se actualizaron su test, la trazabilidad y los informes exigidos. Cero cambios
+en backend o infraestructura. Falta el re-smoke humano en el Android estrecho:
+movimiento entre las tres métricas, claro/oscuro, texto grande, pulsaciones
+rápidas y “Reducir movimiento”. #68 permanece `in_progress`.
+
+Gate automatizado final de esta corrección:
+
+- `./init.sh`: exit 0 en una sola corrida final limpia; build verde, backend
+  163/163 suites y 1243/1243 tests, infraestructura 2/2 suites y 14/14 tests,
+  móvil 67/67 suites y 1025/1025 tests, e2e 25 suites ejecutadas y 354 tests
+  aprobados, lint y typecheck;
+- `graphify update .`: exit 0, sin cambios versionados y solo con el aviso ya
+  conocido por `tree_sitter_sql` opcional ausente;
+- auditoría final: grep-clean intacto, cero ficheros de backend o
+  infraestructura, feature todavía `in_progress`, sin PR y sin merge.
