@@ -250,6 +250,33 @@ infraestructura.
   `backend-pet-tracker/` ni `infra/`; la feature sigue `in_progress` y no se
   abrió PR ni se hizo merge.
 
+## D1 opcion (b)
+
+La firma humana de D1(b) y E2 sustituye la decisión neutral documentada en
+“Superficie explícita del botón de mapa”. El botón de
+`weekly-activity-day-map` vuelve al patrón primario sólido del repositorio:
+`min-h-11 w-full rounded-xl bg-accent`, variante primaria por defecto y label
+`text-accent-foreground`. Conserva el área táctil, `testID`, copy,
+`router.push('/map')` y la condición que lo muestra solo para hoy.
+
+- Rojo `1e8a2f0` — `fix(mobile-home-weekly-activity): require thirteenth primary action (D1,E2)`: el caso de Home recibió todavía `secondary/bg-default`, y el candado global esperaba trece coincidencias pero recibió doce.
+- Verde `705daea` — `fix(mobile-home-weekly-activity): restore primary map action (D1,E2)`: los casos dirigidos de Home y consistencia quedaron verdes.
+- La segunda aserción de #62 R1, que prohíbe `rounded-2xl bg-accent`, no se modificó y sigue verde.
+- `specs/mobile-ui-consistency-polish/requirements.md` solo cambia **12** por
+  **13** en R1; conserva estado, requisitos y las cuatro ocurrencias históricas
+  de `rounded-2xl`.
+- `specs/mobile-ui-consistency-polish/design.md` sí enumeraba los doce sitios.
+  §4 R1 pasa a trece y añade `src/screens/home/index.tsx`; “cambian 4” queda
+  intacto porque describe las cuatro correcciones históricas de radio, mientras
+  el sitio de #68 se incorpora ya conforme a `rounded-xl`.
+- Las suites dirigidas completas de Home, consistencia, legibilidad y drift,
+  además de lint y typecheck, terminaron con exit 0. No se movió ningún otro
+  inventario y no se ajustó ningún otro candado.
+- `./init.sh` final terminó con exit 0: build, suites completas —incluida la
+  móvil con el nuevo candado—, e2e, lint y typecheck verdes.
+- `graphify update .` terminó con exit 0 y no dejó cambios versionados; mantuvo
+  únicamente el aviso conocido por la dependencia SQL opcional ausente.
+
 ## Pendiente humano
 
 Queda el smoke firmado en dev build Android, tema claro y oscuro, con un día
