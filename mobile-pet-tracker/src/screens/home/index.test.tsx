@@ -1042,11 +1042,12 @@ describe('R8: el mapa solo se ofrece para hoy', () => {
     await fireEvent.press(
       screen.getByTestId('weekly-activity-day-2026-09-02'),
     );
-    expect(screen.getByTestId('weekly-activity-day-map')).toHaveTextContent(
-      'Ver en el mapa',
-    );
+    const mapButton = screen.getByTestId('weekly-activity-day-map');
 
-    await fireEvent.press(screen.getByTestId('weekly-activity-day-map'));
+    expect(mapButton).toHaveTextContent('Ver en el mapa');
+    expect(mapButton.props.className).toContain('bg-default');
+
+    await fireEvent.press(mapButton);
     expect(mockRouter.push).toHaveBeenCalledWith('/map');
 
     await fireEvent.press(
