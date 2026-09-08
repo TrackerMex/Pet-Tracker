@@ -1498,5 +1498,20 @@
       "mobile-pet-tracker/src/providers/auth-provider.tsx",
       "mobile-pet-tracker/src/app/_layout.tsx"
     ]
+  },
+  {
+    "id": 80,
+    "name": "mobile-test-double-icon-scope",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Observacion 9 del reviewer de #69 (2026-09-08). Los testID del doble de reicon en mobile-pet-tracker/src/screens/home/index.test.tsx se atan al COMPONENTE y no a su uso, asi que prometen un ambito que no tienen: Moon emite summary-icon-sleep tambien en la tarjeta del collar (src/screens/home/index.tsx:305) y Map emite summary-icon-distance tambien en la de ultima posicion (:416), los dos fuera de la tira de estadisticas. El it de R3 lo esquiva acotando la busqueda con within(value.parent!), asi que hoy no falla, pero el nombre miente: cualquier test futuro que busque summary-icon-sleep a secas encontrara dos nodos y fallara por una razon que no tiene nada que ver con lo que quiere probar. El arreglo es nombrar los dobles por su uso, o exponer el testID desde el punto de uso en vez del doble.",
+    "acceptance_criteria": [
+      "Ningun testID de icono se resuelve a mas de un nodo en la Home, o el nombre dice explicitamente que es del componente y no de la celda",
+      "El it de R3 sigue verde sin necesitar within() para desambiguar",
+      "Suite movil completa verde; ninguna cifra de candado se mueve"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/home/index.test.tsx"
+    ]
   }
 ]

@@ -399,3 +399,138 @@ delta móvil es **+1 suite** (`format.test.ts`) y **+16 tests**: los 3 de
 bloque de degradación, y los 2 `it` nuevos de los candados (`#69 R14` en
 `consistency-classnames.test.ts` y `#69 R13` en `design-drift.test.ts`).
 Ninguna cifra bajó.
+
+---
+---
+
+# Addendum — refuerzo de las observaciones 1 y 2
+
+Fecha: 2026-09-08
+Rango: `f976cde` (excluido) → `c736a19` (HEAD)
+Commits: `18454a4`, `6e31b6a`, `4738568`, `c736a19`
+
+**Veredicto: APROBADO** (se mantiene). El candado nuevo **muerde sobre
+producción**, verificado por el reviewer con las dos mutaciones reales. Las
+observaciones **1 y 2 quedan cerradas**. Una salvedad de proceso, en la
+observación 8, que no cambia el resultado pero sí debería dejar criterio escrito
+en `CHECKPOINTS.md`.
+
+## Condición del encargo: producción no cambia
+
+- [x] El diff del rango toca **solo** `src/screens/home/index.test.tsx`, más el
+      informe y `traceability.md`
+- [x] `src/screens/home/index.tsx`, `format.ts` y `catalog.ts` son **byte a byte
+      idénticos** a `182a450`, el árbol que ya pasó `./init.sh` verde dos veces
+- [x] Por eso no se repite `init.sh`: en su lugar, suite móvil completa y
+      typecheck en `c736a19` → **68/68 suites, 1041/1041 tests, 1 snapshot**,
+      `tsc --noEmit` exit 0. Mismo recuento que antes: el refuerzo **reescribió**
+      un `it` existente en vez de añadir uno
+
+## Qué hace el candado nuevo
+
+El `it` de R3 pasó de assertar una cosa por celda a assertar **tres**, dentro del
+nodo de cada celda (`within(value.parent!)`): su valor, su icono —identificado
+por un doble de `reicon-react-native` que da a `Weight`/`Walk`/`Moon`/`Map` un
+`testID` propio— y su etiqueta.
+
+## Mutaciones reales sobre producción, replantadas por el reviewer
+
+Siete mutaciones, plantadas una por una **sobre `src/screens/home/index.tsx` y
+`format.ts`**, no sobre el doble. Todas rojas. Árbol restaurado y
+`git status --short` vacío después de cada una.
+
+| # | Mutación real sobre producción | Resultado | Aserción que la mata |
+|---|---|---|---|
+| icono | `<Weight/>` (`:236`) ↔ `<Moon/>` (`:266`) | **ROJO** | `Unable to find an element with testID: summary-icon-weight` |
+| etiqueta | `t('home.weight')` (`:249`) ↔ `t('home.distance')` (`:288`) | **ROJO** | `Unable to find an element with text: Peso` |
+| 1 | celda 1 pinta `activeMinutes` | **ROJO** | `toHaveTextContent` en el `it` de R3 |
+| 2 | celda 2 pinta `restMinutes` | **ROJO** | ídem |
+| 3 | celda 3 pinta `distanceM` | **ROJO** | ídem |
+| 4 | celda 4 pinta `currentWeightKg` | **ROJO** | ídem |
+| 6 | `summary-card` detrás de `collar-card` | **ROJO** | `#69 R1 › coloca la tira sobre la tarjeta del collar` |
+
+(La 5, `fmtKg(null) → '0 kg'`, también se replantó: roja en `format.test.ts:5` y
+en dos `it` del bloque de degradación.)
+
+**Las cuatro mutaciones de valor siguen muriendo** tras la reescritura del `it`:
+el riesgo de que un test que ahora asserta tres cosas por celda dejara escapar
+alguna de las cuatro **no se materializó**. Las seis posiciones del
+discriminante celda↔contenido —cuatro valores, el icono y la etiqueta— están
+bajo candado.
+
+Nótese que el intercambio de iconos **no** rompe el test de R9: su regex sigue
+contando cuatro `<X size={20} color={muted} />` y el import de `Weight`. Es la
+confirmación de que R9 nunca fue el candado del reparto, que era exactamente lo
+que decía la observación 1.
+
+## El par rojo→verde del refuerzo: juicio contra C4
+
+Los hechos, verificados: `18454a4` escribió el doble con
+`Weight: mockIcon('summary-icon-sleep')` y `Moon: mockIcon('summary-icon-weight')`
+—cruzados **dentro del mock**—, y `6e31b6a` los descruzó. Producción no cambió
+en ninguno de los dos. El rojo lo causó el doble, no una carencia de producción.
+
+Codex lo declara abiertamente, en el informe **y** en `traceability.md`. La buena
+fe no está en discusión; lo que se juzga es si el rojo demuestra algo.
+
+**No lo demuestra, y no es rojo legítimo bajo C4.** El razonamiento es el mismo
+que sostiene la cláusula del `ReferenceError`: un rojo vale cuando prueba que el
+candado está vivo, no cuando prueba que un símbolo falta. Mutar el doble prueba
+que **la aserción puede fallar**; lo que hay que probar es que **la aserción
+vigila producción**. Son proposiciones distintas: un test escrito contra el
+registro del propio mock, en vez de contra el árbol renderizado, se habría puesto
+rojo en `18454a4` exactamente igual y no valdría nada.
+
+**Y el argumento de que no había rojo honesto disponible es falso en los
+hechos.** Lo había, y es barato: plantar el intercambio en producción, versionar
+esa mutación en el commit rojo y revertirla en el verde. Codex usó ese patrón
+**en esta misma feature, tres commits antes**, para la mutación 6 de R15b
+(`1586d07` → `6c170da`, restauración byte a byte comprobada). La herramienta y el
+precedente estaban los dos ahí.
+
+**Aun así el requisito queda cerrado**, porque C4 vía (b) no exige el commit
+rojo: exige *"romper a propósito el valor y ver el test rojo **por su aserción**,
+con la evidencia en el reporte del `reviewer`"*. Esa evidencia es la tabla de
+arriba. El par `18454a4`→`6e31b6a` es superfluo, no es la puerta.
+
+**Criterio propuesto para `CHECKPOINTS.md` C4**, que es lo que falta por escrito:
+
+> Cuando un candado se añade sobre código **ya correcto** —el hueco es la
+> ausencia de test, no un defecto—, el rojo legítimo es la **mutación de
+> producción**: se versiona en el commit rojo y se revierte en el verde. Mutar
+> un doble de test **no** sirve como rojo: demuestra que la aserción puede
+> fallar, no que vigile producción. Precedente en el repo: `1586d07` → `6c170da`
+> (#69 R15b).
+
+## Trazabilidad
+
+- [x] `traceability.md` actualizada en las filas R1, R3 y R15b, sin dejar
+      ninguna "pendiente" y sin debilitar ninguna descripción
+- [x] La fila R1 declara literalmente que el rojo cruzó los iconos **"en el
+      doble"** — el informe no esconde el punto de la observación 8
+
+## Observaciones
+
+Las **1 y 2 quedan CERRADAS**. La **6 también**: los seis commits posteriores a
+D1 fueron rebasados sobre la firma del humano (`d01889b`..`1b63fb8`), así que
+`origin` y el árbol local ya no divergen. Siguen en pie la 3 (TalkBack para ocho
+veces, no cuatro), la 4 (contraste de los divisores, 1.16:1 y 1.25:1), la 5
+(`{ detail: 1, activity: 1 }` congelado a mano en el test de R8) y la 7
+(`STATUS.md` desactualizado). Se añaden dos:
+
+8. **El rojo del refuerzo mutó el doble, no producción**, así que no demuestra
+   que el candado vigile la app; el requisito cierra igualmente por C4 vía (b)
+   con las mutaciones reales de este addendum, y arriba queda el criterio
+   propuesto para que el harness no tenga que volver a decidirlo caso por caso.
+9. **Los `testID` del doble se atan al componente, no al uso**: `Moon` también
+   se usa en la tarjeta del collar (`index.tsx:305`) y `Map` en la de última
+   posición (`:416`), así que `summary-icon-sleep` y `summary-icon-distance`
+   aparecen **fuera** de la tira. El `it` de R3 lo esquiva porque busca dentro
+   de `within(value.parent!)`, pero los nombres prometen un ámbito que no
+   tienen y un `getByTestId` sin acotar sobre ellos sería ambiguo.
+
+## Gate humano pendiente
+
+Sin cambios: el **smoke en dev build de Android**, tema claro y oscuro, sigue
+siendo el único gate que queda. Con la atención extra que ya pedía el veredicto
+original en las observaciones 3 y 4.
