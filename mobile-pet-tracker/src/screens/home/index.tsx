@@ -91,7 +91,6 @@ export function HomeScreen() {
     [baseUrl, selectedPetId, token],
   );
   const detail = useApi(detailFn);
-  useApi(detailFn);
   const activity = useApi(activityFn);
   const refetchPets = pets.refetch;
   const refetchDetail = detail.refetch;
