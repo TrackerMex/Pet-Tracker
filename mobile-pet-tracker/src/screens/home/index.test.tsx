@@ -1578,4 +1578,34 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
       expect(routes).toContain(destination);
     }
   });
+
+  it('no dibuja ningún tile a una pestaña ni a un destino inexistente', async () => {
+    await renderHome();
+
+    const weightTile = await screen.findByTestId('quick-action-weight');
+    const tileRow = weightTile.parent;
+    const source = readFileSync(
+      join(process.cwd(), 'src/screens/home/index.tsx'),
+      'utf8',
+    );
+    const start = source.indexOf('const QUICK_ACTIONS');
+    const end = source.indexOf('] as const;', start);
+    const quickActions = source.slice(start, end);
+
+    expect(
+      tileRow?.children.filter((child) => typeof child !== 'string'),
+    ).toHaveLength(3);
+    for (const forbiddenDestination of [
+      '/map',
+      '/health',
+      '/food',
+      '/trips',
+      '/reminders',
+      '/pairing',
+      '/pets/add',
+      '/meal-schedule',
+    ]) {
+      expect(quickActions).not.toContain(`'${forbiddenDestination}'`);
+    }
+  });
 });
