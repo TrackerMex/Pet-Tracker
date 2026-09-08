@@ -59,6 +59,28 @@ jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
 }));
 
+jest.mock('reicon-react-native', () => {
+  const actual = jest.requireActual<typeof import('reicon-react-native')>(
+    'reicon-react-native',
+  );
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>(
+    'react-native',
+  );
+  const mockIcon = (testID: string) =>
+    function MockIcon() {
+      return React.createElement(View, { testID });
+    };
+
+  return {
+    ...actual,
+    Weight: mockIcon('summary-icon-sleep'),
+    Walk: mockIcon('summary-icon-activity'),
+    Moon: mockIcon('summary-icon-weight'),
+    Map: mockIcon('summary-icon-distance'),
+  };
+});
+
 const apiUrl = 'http://example.test/v1';
 const mockGetDailyActivity = jest.mocked(getDailyActivity);
 const mockGetPet = jest.mocked(getPet);
@@ -1311,14 +1333,25 @@ describe('#69 R1: la tira de hoy tiene cuatro celdas con tres divisores', () => 
     expect(rowClassName).not.toContain('justify-between');
   });
 
-  it('asigna cada valor a su celda y a ninguna otra', async () => {
+  it('asigna cada valor, icono y etiqueta a su celda y a ninguna otra', async () => {
     await renderHome();
 
     await screen.findByTestId('summary-card');
-    expect(screen.getByTestId('summary-weight')).toHaveTextContent('12.4 kg');
-    expect(screen.getByTestId('summary-activity')).toHaveTextContent('1h 35m');
-    expect(screen.getByTestId('summary-sleep')).toHaveTextContent('45m');
-    expect(screen.getByTestId('summary-distance')).toHaveTextContent('2.4 km');
+    const cells = [
+      ['summary-weight', '12.4 kg', 'summary-icon-weight', 'Peso'],
+      ['summary-activity', '1h 35m', 'summary-icon-activity', 'Actividad'],
+      ['summary-sleep', '45m', 'summary-icon-sleep', 'Descanso'],
+      ['summary-distance', '2.4 km', 'summary-icon-distance', 'Distancia'],
+    ] as const;
+
+    for (const [testID, expectedValue, iconTestID, label] of cells) {
+      const value = screen.getByTestId(testID);
+      const cell = within(value.parent!);
+
+      expect(value).toHaveTextContent(expectedValue);
+      expect(cell.getByTestId(iconTestID)).toBeVisible();
+      expect(cell.getByText(label)).toBeVisible();
+    }
   });
 
   it('conserva el descanso como celda siempre visible', async () => {
