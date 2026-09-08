@@ -203,6 +203,83 @@ export function HomeScreen() {
           </HeroUICard>
         ) : null}
 
+        {detail.data?.kind === 'ok' ? (
+          <>
+            <Card
+              testID="collar-card"
+              className="gap-3 bg-default"
+            >
+              <View className="flex-row items-center gap-3">
+                <View className="size-9 items-center justify-center rounded-full bg-accent-soft">
+                  {detail.data.pet.device === null ? (
+                    <Moon size={20} color={accent} />
+                  ) : detail.data.pet.device.connectivity === 'online' ? (
+                    <Wifi size={20} color={accent} />
+                  ) : (
+                    <WifiOff size={20} color={accent} />
+                  )}
+                </View>
+                <Text
+                  testID="collar-status"
+                  className="text-base font-bold text-foreground"
+                >
+                  {detail.data.pet.device === null
+                    ? t('home.free')
+                    : detail.data.pet.device.connectivity === 'online'
+                      ? t('home.online')
+                      : t('home.offline')}
+                </Text>
+              </View>
+              {detail.data.pet.device ? (
+                <View className="flex-row items-center gap-2">
+                  <Battery
+                    size={18}
+                    color={
+                      detail.data.pet.device.batteryPct === null
+                        ? muted
+                        : detail.data.pet.device.batteryPct > 60
+                          ? success
+                          : warning
+                    }
+                  />
+                  <Text
+                    testID="collar-battery"
+                    style={TABULAR_NUMS}
+                    className={
+                      detail.data.pet.device.batteryPct === null
+                        ? 'font-normal text-muted'
+                        : detail.data.pet.device.batteryPct > 60
+                          ? 'font-semibold text-success'
+                          : 'font-semibold text-warning-strong'
+                    }
+                  >
+                    {detail.data.pet.device.batteryPct === null
+                      ? '—'
+                      : `${detail.data.pet.device.batteryPct}%`}
+                  </Text>
+                </View>
+              ) : (
+                <Text className="font-normal text-muted">
+                  {t('home.noCollar')}
+                </Text>
+              )}
+              {detail.data.pet.device === null ? (
+                    <Pressable
+                      accessibilityRole="button"
+                      testID="collar-pair-link"
+                      className="min-h-11 items-center justify-center rounded-xl bg-accent-soft px-4"
+                      style={CONTINUOUS_CORNER}
+                      onPress={() => router.push('/pairing')}
+                >
+                  <Text className="font-bold text-foreground">
+                    {t('home.pairCollar')}
+                  </Text>
+                </Pressable>
+              ) : null}
+            </Card>
+          </>
+        ) : null}
+
         {selectedPetId ? (
           <Card testID="summary-card" className="gap-4">
             <Text
@@ -291,83 +368,6 @@ export function HomeScreen() {
               </View>
             ) : null}
           </Card>
-        ) : null}
-
-        {detail.data?.kind === 'ok' ? (
-          <>
-            <Card
-              testID="collar-card"
-              className="gap-3 bg-default"
-            >
-              <View className="flex-row items-center gap-3">
-                <View className="size-9 items-center justify-center rounded-full bg-accent-soft">
-                  {detail.data.pet.device === null ? (
-                    <Moon size={20} color={accent} />
-                  ) : detail.data.pet.device.connectivity === 'online' ? (
-                    <Wifi size={20} color={accent} />
-                  ) : (
-                    <WifiOff size={20} color={accent} />
-                  )}
-                </View>
-                <Text
-                  testID="collar-status"
-                  className="text-base font-bold text-foreground"
-                >
-                  {detail.data.pet.device === null
-                    ? t('home.free')
-                    : detail.data.pet.device.connectivity === 'online'
-                      ? t('home.online')
-                      : t('home.offline')}
-                </Text>
-              </View>
-              {detail.data.pet.device ? (
-                <View className="flex-row items-center gap-2">
-                  <Battery
-                    size={18}
-                    color={
-                      detail.data.pet.device.batteryPct === null
-                        ? muted
-                        : detail.data.pet.device.batteryPct > 60
-                          ? success
-                          : warning
-                    }
-                  />
-                  <Text
-                    testID="collar-battery"
-                    style={TABULAR_NUMS}
-                    className={
-                      detail.data.pet.device.batteryPct === null
-                        ? 'font-normal text-muted'
-                        : detail.data.pet.device.batteryPct > 60
-                          ? 'font-semibold text-success'
-                          : 'font-semibold text-warning-strong'
-                    }
-                  >
-                    {detail.data.pet.device.batteryPct === null
-                      ? '—'
-                      : `${detail.data.pet.device.batteryPct}%`}
-                  </Text>
-                </View>
-              ) : (
-                <Text className="font-normal text-muted">
-                  {t('home.noCollar')}
-                </Text>
-              )}
-              {detail.data.pet.device === null ? (
-                    <Pressable
-                      accessibilityRole="button"
-                      testID="collar-pair-link"
-                      className="min-h-11 items-center justify-center rounded-xl bg-accent-soft px-4"
-                      style={CONTINUOUS_CORNER}
-                      onPress={() => router.push('/pairing')}
-                >
-                  <Text className="font-bold text-foreground">
-                    {t('home.pairCollar')}
-                  </Text>
-                </Pressable>
-              ) : null}
-            </Card>
-          </>
         ) : null}
 
         {selectedPetId && activity.data === undefined ? (
