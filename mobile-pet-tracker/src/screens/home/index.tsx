@@ -231,7 +231,7 @@ export function HomeScreen() {
             ) : null}
 
             {activity.data?.kind === 'ok' ? (
-              <View accessible className="flex-row">
+              <View className="flex-row">
                 <View className="flex-1 items-center gap-1 border-r border-border">
                   <Weight size={20} color={muted} />
                   <Text

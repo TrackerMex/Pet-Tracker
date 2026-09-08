@@ -9,7 +9,6 @@ import {
 import { router, useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
-import { Pressable } from 'react-native';
 
 import {
   getDailyActivity,
@@ -1405,7 +1404,7 @@ describe('#69 R1: la tira de hoy tiene cuatro celdas con tres divisores', () => 
   it('#69 R12: deja que cada celda se anuncie por separado', async () => {
     await renderHome();
 
-    const summary = await screen.findByTestId('summary-card');
+    await screen.findByTestId('summary-card');
     const values = [
       screen.getByTestId('summary-weight'),
       screen.getByTestId('summary-activity'),
@@ -1420,6 +1419,13 @@ describe('#69 R1: la tira de hoy tiene cuatro celdas con tres divisores', () => 
     for (const value of values) {
       expect(value).toBeVisible();
     }
-    expect(within(summary).UNSAFE_queryAllByType(Pressable)).toHaveLength(0);
+    expect(
+      row?.children.filter((child) => typeof child !== 'string'),
+    ).toHaveLength(4);
+    for (const cell of row?.children ?? []) {
+      if (typeof cell !== 'string') {
+        expect(cell.props.onPress).toBeUndefined();
+      }
+    }
   });
 });
