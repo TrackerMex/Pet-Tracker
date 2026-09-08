@@ -41,7 +41,7 @@ Se respetó el orden prescrito:
 | R11 | cuatro usos registrados y copy documentada | `cf6ec2e` → `84198eb` |
 | R13 | bloque nominal de drift sobre los tres fuentes | `9ea0a17` → `ed591de` |
 | R14 | deltas declarados; rojo natural `+4` del catálogo | `17c8c01` → `bf18ed2` |
-| R15/R15b | suite/typecheck y siete pares de mutación de producción | `7ed1283`…`8b9bef4`; detalle abajo |
+| R15/R15b | suite/typecheck y siete pares de mutación de producción | `7ed1283`…`8b9bef4`; gate final `b73eb38`; detalle abajo |
 
 `17c8c01` es deliberadamente un commit vacío: captura el árbol rojo natural
 que dejaron las cuatro claves de R1 frente a la base histórica. La spec autoriza
@@ -119,11 +119,19 @@ No se editó ninguna spec `approved` para resolver estos matices.
 
 ## Alcance de ficheros
 
-Los cambios de implementación se limitan a la lista de `design.md` §7. La
-única modificación fuera de esa lista es `progress/current.md`, exigida por
-`AGENTS.md` para documentar la sesión mientras está activa. No se tocó la
+Los cambios de esta implementación se limitan a la lista de `design.md` §7. La
+única modificación propia fuera de esa lista es `progress/current.md`, exigida
+por `AGENTS.md` para documentar la sesión mientras está activa. No se tocó la
 barra de tabs, `_layout.tsx`, `src/app/`, `src/components/`, `src/theme/`,
 `src/utils/`, backend ni infraestructura; tampoco se añadieron dependencias.
+
+Durante la corrida final apareció en este worktree compartido el commit
+concurrente `997c080`, perteneciente a otra sesión de Claude y ajeno a #71. Ese
+commit modifica `docs/demo-runbook.md`, fuera de §7, para aclarar que
+`AWS_PRESIGN_ENDPOINT_URL` está comentada en `.env.example`. No lo creó ni lo
+modificó esta implementación y se conservó sin reescribir historia ni revertir
+trabajo ajeno. Por ello el diff de la branch contra `71a4db7` sí enumera ese
+fichero externo, aunque no forma parte del alcance de la feature.
 
 ## Gate final
 
