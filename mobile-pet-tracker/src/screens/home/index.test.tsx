@@ -1283,4 +1283,13 @@ describe('#69 R1: la tira de hoy tiene cuatro celdas con tres divisores', () => 
     expect(screen.getByTestId('summary-sleep')).toHaveTextContent('45m');
     expect(screen.getByTestId('summary-distance')).toHaveTextContent('2.4 km');
   });
+
+  it('conserva el descanso como celda siempre visible', async () => {
+    await renderHome();
+
+    const sleepValue = await screen.findByTestId('summary-sleep');
+    expect(sleepValue).toBeVisible();
+    expect(within(sleepValue.parent!).getByText('Descanso')).toBeVisible();
+    expect(screen.queryByTestId('weekly-activity-detail')).toBeNull();
+  });
 });
