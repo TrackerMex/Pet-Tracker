@@ -237,6 +237,7 @@ export function HomeScreen() {
                   <Text
                     testID="summary-weight"
                     className="text-sm font-bold text-foreground"
+                    style={TABULAR_NUMS}
                   >
                     {fmtKg(
                       detail.data?.kind === 'ok'
