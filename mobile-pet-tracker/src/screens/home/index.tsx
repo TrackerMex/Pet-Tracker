@@ -242,7 +242,7 @@ export function HomeScreen() {
                     {fmtKg(
                       detail.data?.kind === 'ok'
                         ? detail.data.pet.currentWeightKg
-                        : 0,
+                        : null,
                     )}
                   </Text>
                   <Text className="text-2xs font-normal text-muted">
