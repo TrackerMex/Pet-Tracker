@@ -24,6 +24,17 @@ import { SelectedPetProvider } from '../../providers/selected-pet-provider';
 import * as selectedPetHooks from '../../providers/selected-pet-provider';
 import { HomeScreen } from './index';
 
+declare function require(moduleName: 'fs'): {
+  readFileSync: (path: string, encoding: 'utf8') => string;
+};
+
+declare function require(moduleName: 'path'): {
+  join: (...paths: string[]) => string;
+};
+
+const { readFileSync } = require('fs');
+const { join } = require('path');
+
 jest.mock('../../api/pets', () => ({
   getPet: jest.fn(),
   listPets: jest.fn(),
@@ -1367,5 +1378,26 @@ describe('#69 R1: la tira de hoy tiene cuatro celdas con tres divisores', () => 
       'weekly-activity-card',
       'last-position-card',
     ]);
+  });
+
+  it('#69 R9: usa iconos de reicon y ningún emoji', () => {
+    const source = readFileSync(
+      join(process.cwd(), 'src/screens/home/index.tsx'),
+      'utf8',
+    );
+    const reiconImport =
+      source.match(
+        /import \{([\s\S]*?)\} from 'reicon-react-native';/,
+      )?.[1] ?? '';
+
+    expect(reiconImport).toMatch(/\bWeight\b/);
+    expect(
+      source.match(
+        /<(?:Weight|Walk|Moon|Map) size=\{20\} color=\{muted\} \/>/g,
+      ) ?? [],
+    ).toHaveLength(4);
+    for (const emoji of ['⚖️', '⚡', '🦮', '📍']) {
+      expect(source).not.toContain(emoji);
+    }
   });
 });
