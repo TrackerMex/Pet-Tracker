@@ -47,7 +47,7 @@ const QUICK_ACTIONS = [
     Icon: Weight,
     labelKey: 'home.quickActionWeight',
     slot: 'violet',
-    href: (_petId: string) => '/add-reminder',
+    href: (_petId: string) => '/weight-log',
   },
   {
     testID: 'quick-action-reminder',
