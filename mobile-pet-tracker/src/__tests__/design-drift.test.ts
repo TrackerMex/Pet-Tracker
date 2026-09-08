@@ -68,8 +68,8 @@ describe('R3: Card compartido elimina rounded arbitrario', () => {
     'map',
   ])('%s importa el Card compartido', (screen) => {
     const contents = readFileSync(
-      screen === 'profile'
-        ? join(sourceRoot, 'screens', 'profile', 'index.tsx')
+      screen === 'profile' || screen === 'home'
+        ? join(sourceRoot, 'screens', screen, 'index.tsx')
         : join(sourceRoot, 'app', '(tabs)', `${screen}.tsx`),
       'utf8',
     );
@@ -109,8 +109,9 @@ describe('R9: mobile-pets-profile sin drift', () => {
     expect(violations).toEqual([]);
   });
 
-  it('keeps the three Expo Router entrypoints thin', () => {
+  it('keeps the four Expo Router entrypoints thin', () => {
     const routes = [
+      'app/(tabs)/home.tsx',
       'app/(tabs)/profile.tsx',
       'app/(tabs)/pets/add.tsx',
       'app/(tabs)/pets/[petId]/docs.tsx',
@@ -132,7 +133,7 @@ describe('R9: mobile-pets-profile sin drift', () => {
     routeLengths.forEach(({ lines }) => expect(lines).toBeLessThan(10));
   });
 
-  it('contains dependencies to the two approved additions', () => {
+  it('contains the approved dependencies', () => {
     const packageJson = JSON.parse(
       readFileSync(join(projectRoot, 'package.json'), 'utf8'),
     ) as { dependencies: Record<string, string> };
@@ -141,6 +142,7 @@ describe('R9: mobile-pets-profile sin drift', () => {
     expect(packageJson.dependencies['expo-image-picker']).toBe('~57.0.13');
     expect(packageJson.dependencies['@blobatar/react']).toBeUndefined();
     expect(packageJson.dependencies['@gorhom/bottom-sheet']).toBe('^5.2.14');
+    expect(packageJson.dependencies['react-native-chart-kit']).toBe('7.0.4');
   });
 
   it('has an implementation trace instead of a pending R9 row', () => {
@@ -181,5 +183,79 @@ describe('R11 (mobile-device-pairing): pairing usa el Card compartido y las dime
     expect(pairingSource).not.toMatch(
       /#[\da-f]{3,8}\b|[A-Za-z0-9_-]+-\[[^\]]+\]|StyleSheet\.create|shadowColor|shadowOffset|shadowOpacity|shadowRadius|\belevation\s*:/i,
     );
+  });
+});
+
+describe('#68 R18: la actividad semanal no mete drift de estilo', () => {
+  const featureFiles = [
+    'app/(tabs)/home.tsx',
+    'i18n/catalog.ts',
+    'screens/home/format.ts',
+    'screens/home/index.test.tsx',
+    'screens/home/index.tsx',
+    'screens/home/weekly-activity-chart.test.tsx',
+    'screens/home/weekly-activity-chart.tsx',
+    'screens/pairing/index.test.tsx',
+    'screens/pairing/index.tsx',
+    'utils/device-connectivity.test.ts',
+    'utils/device-connectivity.ts',
+  ];
+
+  it('keeps arbitrary text, hex colors, and StyleSheet out of feature sources', () => {
+    const violations = featureFiles.flatMap((relativePath) => {
+      const contents = readFileSync(join(sourceRoot, relativePath), 'utf8');
+      return /text-\[10px\]|#[\da-f]{3,8}\b|StyleSheet/i.test(contents)
+        ? [relativePath]
+        : [];
+    });
+
+    expect(violations).toEqual([]);
+  });
+
+  it('keeps the resolved token theme and rejects chart presets', () => {
+    const chartSource = readFileSync(
+      join(sourceRoot, 'screens', 'home', 'weekly-activity-chart.tsx'),
+      'utf8',
+    );
+
+    expect(chartSource).toContain('series: [accentStrong]');
+    expect(chartSource).toContain('grid: border');
+    expect(chartSource).toContain('axis: border');
+    expect(chartSource).toContain('text: foreground');
+    expect(chartSource).toContain('mutedText: muted');
+    expect(chartSource).toContain('background: surface');
+    expect(chartSource).toContain('plotBackground: surface');
+    expect(chartSource).toContain(
+      'typography: { axisLabelSize: CHART_AXIS_LABEL_SIZE }',
+    );
+    expect(chartSource).not.toMatch(/\bpreset=/);
+  });
+});
+
+describe('#68 E1: la carta retira connectivity de los enum crudos', () => {
+  const charter = readFileSync(
+    join(projectRoot, '..', 'docs', 'ui-guidelines.md'),
+    'utf8',
+  );
+  const start = charter.indexOf(
+    '- **Los valores de enum que la API devuelve se pintan crudos**:',
+  );
+  const end = charter.indexOf('\n\n## Checklist de autocrítica', start);
+  const corollary = charter.slice(start, end);
+  const rawEnumList = corollary.slice(0, corollary.indexOf('. Siguen'));
+
+  it('conserva crudos solo los cuatro ámbitos aún pendientes', () => {
+    expect(rawEnumList).toContain('`pet.sex`');
+    expect(rawEnumList).toContain('`document.type`');
+    expect(rawEnumList).toContain('`foodType`');
+    expect(rawEnumList).toContain('`activityLevel`');
+    expect(rawEnumList).not.toContain('`device.connectivity`');
+  });
+
+  it('registra que connectivity se resuelve por catálogo desde R16', () => {
+    expect(corollary).toContain(
+      '`device.connectivity` dejó de pintarse crudo en la feature #68 (R16)',
+    );
+    expect(corollary).toContain('`src/utils/device-connectivity.ts`');
   });
 });

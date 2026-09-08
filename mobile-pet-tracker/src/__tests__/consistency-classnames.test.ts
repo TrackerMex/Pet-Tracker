@@ -94,12 +94,12 @@ describe('#62 R1: la escala de radios está declarada y el botón primario tiene
     expect(button).not.toContain('rounded-2xl');
   });
 
-  it('deja los doce botones primarios sólidos en un único radio', () => {
+  it('deja los trece botones primarios sólidos en un único radio', () => {
     const primaryRadius = sourceFiles().flatMap((path) =>
       readFileSync(path, 'utf8').match(/rounded-xl bg-accent(?=[\s'"`])/g) ?? [],
     );
 
-    expect(primaryRadius).toHaveLength(12);
+    expect(primaryRadius).toHaveLength(13);
     expect(filesMatching(/rounded-2xl bg-accent(?=[\s'"`])/)).toEqual([]);
   });
 });
@@ -270,7 +270,8 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
   const directUses = [
     [join('app', '(auth)', 'forgot.tsx'), 1],
     [join('components', 'pet-hero-header.tsx'), 1],
-    [join('app', '(tabs)', 'home.tsx'), 1],
+    [join('screens', 'home', 'index.tsx'), 1],
+    [join('screens', 'home', 'weekly-activity-chart.tsx'), 1],
     [join('app', '(tabs)', 'health.tsx'), 2],
     [join('app', '(tabs)', 'food.tsx'), 2],
     [join('app', '(tabs)', 'map.tsx'), 4],
@@ -326,14 +327,15 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
     expect(card.match(/style=\{mergedStyle\}/g)).toHaveLength(2);
     expect(
       directUses.reduce((total, [, count]) => total + count, 2),
-    ).toBe(33);
+    ).toBe(33 + 1);
   });
 });
 
 describe('#62 R15: todo contador usa cifras tabulares', () => {
   const counters = [
     [join('app', '(tabs)', 'map.tsx'), 3],
-    [join('app', '(tabs)', 'home.tsx'), 4],
+    [join('screens', 'home', 'index.tsx'), 4],
+    [join('screens', 'home', 'weekly-activity-chart.tsx'), 4],
     [join('app', '(tabs)', 'health.tsx'), 2],
     [join('app', '(tabs)', 'weight-log.tsx'), 2],
     [join('screens', 'reminders', 'index.tsx'), 3],
@@ -348,8 +350,10 @@ describe('#62 R15: todo contador usa cifras tabulares', () => {
     expect(source.match(/style=\{TABULAR_NUMS\}/g)).toHaveLength(count);
   });
 
-  it('mantiene el inventario cerrado en catorce contadores', () => {
-    expect(counters.reduce((total, [, count]) => total + count, 0)).toBe(14);
+  it('mantiene la base cerrada más el delta medido de la gráfica', () => {
+    expect(counters.reduce((total, [, count]) => total + count, 0)).toBe(
+      14 + 4,
+    );
   });
 });
 

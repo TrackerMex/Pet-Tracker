@@ -13,27 +13,27 @@ import type { ReactNode } from 'react';
 import {
   getDailyActivity,
   type DailyActivityState,
-} from '../../../api/activity';
-import { getPet, listPets, type PetState, type PetsState } from '../../../api/pets';
-import type { DayEntry, PetProfile } from '../../../api/types';
-import * as apiHooks from '../../../hooks/use-api';
-import type { ApiResult } from '../../../hooks/use-api';
-import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
-import { LanguageProvider } from '../../../providers/language-provider';
-import { SelectedPetProvider } from '../../../providers/selected-pet-provider';
-import * as selectedPetHooks from '../../../providers/selected-pet-provider';
-import HomeScreen from '../home';
+} from '../../api/activity';
+import { getPet, listPets, type PetState, type PetsState } from '../../api/pets';
+import type { DayEntry, PetProfile } from '../../api/types';
+import * as apiHooks from '../../hooks/use-api';
+import type { ApiResult } from '../../hooks/use-api';
+import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
+import { LanguageProvider } from '../../providers/language-provider';
+import { SelectedPetProvider } from '../../providers/selected-pet-provider';
+import * as selectedPetHooks from '../../providers/selected-pet-provider';
+import { HomeScreen } from './index';
 
-jest.mock('../../../api/pets', () => ({
+jest.mock('../../api/pets', () => ({
   getPet: jest.fn(),
   listPets: jest.fn(),
 }));
 
-jest.mock('../../../api/activity', () => ({
+jest.mock('../../api/activity', () => ({
   getDailyActivity: jest.fn(),
 }));
 
-jest.mock('../../../providers/auth-provider', () => ({
+jest.mock('../../providers/auth-provider', () => ({
   useAuth: jest.fn(),
 }));
 
@@ -998,5 +998,206 @@ describe('R7: el hero pinta los paseos de hoy', () => {
 
     await waitFor(() => expect(screen.getByTestId('pet-hero')).toBeVisible());
     expect(screen.queryByTestId('pet-hero-highlight-value')).toBeNull();
+  });
+});
+
+describe('R8: el mapa solo se ofrece para hoy', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    const pet = makePet();
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+  });
+
+  it('ofrece el mapa solo para el día de hoy', async () => {
+    const days = [
+      makeDay({ date: '2026-09-01' }),
+      makeDay({ date: '2026-09-02' }),
+    ];
+    mockGetDailyActivity.mockResolvedValue({
+      kind: 'ok',
+      days,
+      weekComparison: { distanceM: null, activeMinutes: null, walkCount: null },
+    });
+
+    await renderHome();
+    await waitFor(() =>
+      expect(
+        screen.getByTestId('weekly-activity-day-2026-09-01'),
+      ).toBeVisible(),
+    );
+
+    await fireEvent.press(
+      screen.getByTestId('weekly-activity-day-2026-09-01'),
+    );
+    expect(screen.queryByTestId('weekly-activity-day-map')).toBeNull();
+
+    await fireEvent.press(
+      screen.getByTestId('weekly-activity-day-2026-09-02'),
+    );
+    const mapButton = screen.getByTestId('weekly-activity-day-map');
+
+    expect(mapButton).toHaveTextContent('Ver en el mapa');
+    expect(mapButton.props.className).toContain('rounded-xl bg-accent');
+    expect(
+      within(mapButton).getByText('Ver en el mapa').props.className,
+    ).toContain('text-accent-foreground');
+
+    await fireEvent.press(mapButton);
+    expect(mockRouter.push).toHaveBeenCalledWith('/map');
+
+    await fireEvent.press(
+      screen.getByTestId('weekly-activity-day-2026-09-01'),
+    );
+    expect(screen.queryByTestId('weekly-activity-day-map')).toBeNull();
+  });
+});
+
+describe('R14: la Home monta la actividad semanal sin pedir nada nuevo', () => {
+  const weekDates = [
+    '2026-09-01',
+    '2026-09-02',
+    '2026-09-03',
+    '2026-09-04',
+    '2026-09-05',
+    '2026-09-06',
+    '2026-09-07',
+  ];
+  const days = weekDates.map((date) => makeDay({ date }));
+  const weekComparison = {
+    distanceM: 5,
+    activeMinutes: 10,
+    walkCount: 20,
+  };
+  const device = {
+    model: 'PetTrack One',
+    batteryPct: 82,
+    connectivity: 'online',
+    lastMessageAt: '2026-09-07T12:00:00.000Z',
+    esn: 'ACT-001',
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    const pet = makePet({ device });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+  });
+
+  it('muestra la tarjeta con los siete días recibidos', async () => {
+    mockGetDailyActivity.mockResolvedValue({
+      kind: 'ok',
+      days,
+      weekComparison,
+    });
+
+    await renderHome();
+    await waitFor(() =>
+      expect(screen.getByTestId('weekly-activity-card')).toBeVisible(),
+    );
+
+    expect(
+      screen
+        .getAllByTestId(/^weekly-activity-day-\d{4}-\d{2}-\d{2}$/)
+        .map(({ props }) => props.testID),
+    ).toEqual(
+      weekDates.map((date) => `weekly-activity-day-${date}`),
+    );
+  });
+
+  it('queda entre el resumen y la última posición en el árbol', async () => {
+    mockGetDailyActivity.mockResolvedValue({
+      kind: 'ok',
+      days,
+      weekComparison,
+    });
+
+    await renderHome();
+    await waitFor(() =>
+      expect(screen.getByTestId('last-position-card')).toBeVisible(),
+    );
+
+    const relevantChildren = screen
+      .getByTestId('home-content')
+      .children.flatMap((child) =>
+        typeof child === 'string' ? [] : [child.props.testID],
+      )
+      .filter((testID) =>
+        [
+          'summary-card',
+          'weekly-activity-card',
+          'last-position-card',
+        ].includes(testID),
+      );
+
+    expect(relevantChildren).toEqual([
+      'summary-card',
+      'weekly-activity-card',
+      'last-position-card',
+    ]);
+  });
+
+  it('no vuelve a pedir la actividad al cambiar de métrica', async () => {
+    mockGetDailyActivity.mockResolvedValue({
+      kind: 'ok',
+      days,
+      weekComparison,
+    });
+
+    await renderHome();
+    await waitFor(() =>
+      expect(screen.getByTestId('weekly-activity-metric')).toBeVisible(),
+    );
+    const callsBeforeMetricChange = [...mockGetDailyActivity.mock.calls];
+
+    await fireEvent.press(
+      screen.getByTestId('weekly-activity-metric-distanceM'),
+    );
+
+    expect(mockGetDailyActivity.mock.calls).toEqual(callsBeforeMetricChange);
+  });
+
+  it('carga con skeleton y se calla cuando la actividad falla', async () => {
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+
+    const loading = await render(<HomeScreen />, { wrapper: HomeWrapper });
+    await waitFor(() =>
+      expect(screen.getByTestId('summary-skeleton')).toBeVisible(),
+    );
+    const skeleton = screen.getByTestId('weekly-activity-skeleton');
+
+    expect(skeleton.props.className).toContain('w-full');
+    expect(skeleton.props.className).toContain('rounded-card');
+    expect(skeleton.props.style).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ height: expect.any(Number) }),
+      ]),
+    );
+
+    await loading.unmount();
+    mockGetDailyActivity.mockResolvedValue({ kind: 'error' });
+    await renderHome();
+    await waitFor(() =>
+      expect(screen.getByTestId('summary-note')).toHaveTextContent(
+        'No se pudo cargar la actividad',
+      ),
+    );
+
+    expect(screen.queryByTestId('weekly-activity-card')).toBeNull();
+    expect(screen.queryByTestId('weekly-activity-skeleton')).toBeNull();
   });
 });

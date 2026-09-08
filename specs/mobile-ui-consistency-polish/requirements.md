@@ -78,7 +78,7 @@ esos valores se re-litiga.
   por rol: `rounded-card` para superficie de card, `rounded-xl` para control /
   tile / input / botón, `rounded-full` para cápsula; `rounded-2xl`,
   `rounded-lg`, `rounded-md` y `rounded-sm` prohibidos en
-  `mobile-pet-tracker/src/`); AND WHEN se renderiza cualquiera de los **12**
+  `mobile-pet-tracker/src/`); AND WHEN se renderiza cualquiera de los **13**
   botones primarios sólidos de acento (`className` que contiene exactamente
   `bg-accent`, enumerados en [[design]] §4 R1) THE SYSTEM SHALL aplicarles
   `rounded-xl`, cambiando las **4** ocurrencias que hoy usan `rounded-2xl`

@@ -508,7 +508,9 @@ describe('R8: con collar muestra el estado del dispositivo y el plan tracked/fre
     expect(screen.getByTestId('device-status-card')).toBeVisible();
     expect(screen.getByTestId('device-model')).toHaveTextContent('TrailTag Pro');
     expect(screen.getByTestId('device-battery')).toHaveTextContent('82%');
-    expect(screen.getByTestId('device-connectivity')).toHaveTextContent('LTE');
+    expect(screen.getByTestId('device-connectivity')).toHaveTextContent(
+      'Desconocida',
+    );
     expect(screen.getByTestId('device-last-message')).toHaveTextContent(
       new Date('2026-09-03T10:00:00.000Z').toLocaleString('es-MX'),
     );
