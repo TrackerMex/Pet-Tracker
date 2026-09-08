@@ -283,3 +283,46 @@ Queda el smoke firmado en dev build Android, tema claro y oscuro, con un día
 sin dato y otro de cero confirmado, incluida la revisión visual, reduced motion
 y TalkBack. Hasta ese gate, #68 debe seguir `in_progress` y el leader decide el
 push y la apertura del PR.
+
+## Defectos del smoke
+
+El smoke humano del 2026-09-08 encontró dos defectos en el selector nativo de
+métrica. Se mantuvo `@expo/ui/community/segmented-control`: no se sustituyó el
+control ni se recortó “Minutos activos”.
+
+### Tema de las etiquetas (R9)
+
+- Rojo `3299704` — `fix(mobile-home-weekly-activity): guard metric selector regressions (R6,R9)`: el nuevo caso monta la gráfica primero con tema oscuro y después con tema claro, usando el mismo mock de `useUniwind` que `map.test.tsx`; recibió `appearance: undefined` donde esperaba `dark`.
+- Verde `9ea5ac1` — `fix(mobile-home-weekly-activity): sync metric selector theme and copy (R6,R9)`: `WeeklyActivityChart` obtiene `theme` mediante `useUniwind()` y pasa exactamente `appearance={theme === 'dark' ? 'dark' : 'light'}` al control. El caso comprueba ambos valores.
+
+### Copy compacto (R6)
+
+- El mismo rojo `3299704` exige `['Minutos activos', 'Distancia', 'Paseos']` y recibió todavía “Distancia recorrida”.
+- El mismo verde `9ea5ac1` cambia únicamente el valor español de `weeklyActivity.metricDistance` a “Distancia”; no añade, elimina ni mueve claves.
+- El inventario de #65 se midió antes y después del cambio con los mismos dos ficheros: 2 suites y 23 tests en verde en ambas corridas. No se ajustó ninguna cifra de `ui-language.test.ts` ni ninguna fila de `ui-copy-table.ts`.
+
+### Medición estrecha en dev build Android
+
+La observación visual de “Minutos activos” queda **pendiente y no se da por
+superada**. Este entorno no puede ejecutar el dev build: no tiene `adb`, SDK de
+Android, JDK, emulador, dispositivo USB ni `/dev/kvm`; tampoco existe un runner
+remoto del proyecto y EAS no tiene una sesión iniciada. Jest usa un mock del
+control y la implementación web no reproduce el `SegmentedButton` de Jetpack
+Compose, por lo que ninguno de los dos constituye la medición Android pedida.
+
+Hace falta abrir este commit en el dev build y observar la Home en la pantalla
+más estrecha soportada. Si “Minutos activos” sigue saltando de línea, el trabajo
+se para para una decisión humana: no se acorta ese texto ni se sustituye el
+control nativo dentro de este arreglo. Si ya no salta, esa confirmación completa
+este punto y debe incorporarse aquí antes de cerrar el gate.
+
+### Verificación automatizada post-cambio
+
+- Suite dirigida de la gráfica: 1 suite, 35/35 tests, exit 0.
+- Candados de idioma de #65: 2 suites, 23/23 tests, exit 0, misma cifra antes y después.
+- Consistencia, drift y legibilidad: 3 suites, 102/102 tests, exit 0; ningún otro inventario se movió.
+- Suite móvil completa: 67/67 suites, 1024/1024 tests, exit 0; el delta de un test corresponde solo al nuevo candado de tema.
+- Grep-clean de los dos ficheros de producción modificados: cero hex, clases arbitrarias, `StyleSheet.create`, sombras o `elevation`.
+- `./init.sh` post-cambio: exit 0; build, 163 suites/1243 tests de backend, 2 suites/14 tests de infra, 67 suites/1024 tests móviles, 25 suites/354 tests e2e ejecutados, lint y typecheck en verde. Permanecen solo los avisos preexistentes de `.env`, `STATUS.md` y la futura versión mínima de Node del AWS SDK.
+- `graphify update .`: completó la extracción sin cambios versionados; conservó el aviso conocido por `tree_sitter_sql` opcional ausente.
+- Auditoría de alcance: cero cambios en `backend-pet-tracker/` e `infra/`; #68 permanece `in_progress`, sin PR ni merge.
