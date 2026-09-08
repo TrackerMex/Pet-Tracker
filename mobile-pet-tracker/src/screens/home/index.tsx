@@ -408,7 +408,7 @@ export function HomeScreen() {
             >
               {t('home.quickActions')}
             </Text>
-            <View accessible className="flex-row gap-3">
+            <View className="flex-row gap-3">
               {QUICK_ACTIONS.map(
                 ({ testID, Icon, labelKey, slot, href }, index) => (
                   <Pressable
