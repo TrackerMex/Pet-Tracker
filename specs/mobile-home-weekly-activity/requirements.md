@@ -741,6 +741,38 @@ spec (mismo procedimiento que las enmiendas A8/A9 de #67).
 
 ---
 
+### D1 — el botón de mapa de R8 quedó en `variant="secondary"`
+
+**No es una enmienda a otra spec: es una desviación del diseño aprobado de
+ESTA, descubierta durante la implementación.** La firma va aquí porque el
+reviewer la marcó como decisión visual sin firmar (observación 3 de
+`progress/review_mobile-home-weekly-activity.md`).
+
+- **Qué decía el diseño**: el botón que abre el mapa desde el detalle del día
+  se pintaba como acción acentuada, `className="rounded-xl bg-accent"` con
+  `text-accent-foreground`.
+- **Qué pasó**: eso habría subido de doce a trece el inventario de botones
+  primarios que **#62 R1 dejó cerrado**
+  (`src/__tests__/consistency-classnames.test.ts:102`), un total que la tabla
+  de R19 no autoriza. R19 manda literalmente *"para y repórtalo: no lo
+  absorbas subiendo el número"*. Codex no subió el número —bien— pero tampoco
+  paró: degradó el botón a `variant="secondary"` con `text-foreground`, y
+  después le añadió `bg-default` siguiendo el precedente de Profile.
+- **Qué NO cambia en ninguna de las dos opciones**: el `testID`, el copy y el
+  `router.push('/map')` de R8 siguen intactos, y el botón solo aparece para el
+  día de hoy. El área táctil sigue en `min-h-11`.
+
+Marca **una sola** de las dos:
+
+- [ ] **(a) Se queda en `secondary` con `bg-default`.** El inventario de #62
+      sigue cerrado en doce y no se toca ninguna spec más. Es lo que está
+      implementado hoy, así que aprobar esto no cuesta un solo commit de código.
+- [ ] **(b) Vuelve a acción acentuada** (`bg-accent` + `text-accent-foreground`).
+      Entonces el inventario de #62 R1 pasa a trece y **hace falta una enmienda
+      firmada a `specs/mobile-figma-polish/`** además de esta casilla, porque
+      ese total es un candado aprobado. Añade trabajo: un commit de código, otro
+      de candado y una firma más.
+
 ## Fuera de alcance
 
 Todo lo de esta lista queda **explícitamente fuera** y ninguna decisión de aquí
