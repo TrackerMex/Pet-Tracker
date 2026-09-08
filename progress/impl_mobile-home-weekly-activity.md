@@ -168,6 +168,88 @@ No se tocó ningún archivo adicional sin dejarlo declarado:
 `graphify update .` no dejó archivos versionados modificados. Fuera de la lista
 anterior, el diff de implementación coincide con §4.
 
+## Correcciones tras el veredicto
+
+El veredicto del reviewer no exigía corregir la lógica de la gráfica: el parseo
+local de fecha y las decisiones por `day.source` ya eran correctos. Se
+reforzaron sus candados sin modificar producción en R4 ni R5.
+
+### R4 — construcción local observable
+
+Se eligió la vía (a) aprobada: espiar `global.Date` y delegar cada llamada al
+constructor real mediante `Reflect.construct`. Es la alternativa más pequeña:
+no añade otro proyecto ni otro worker Jest y comprueba la construcción local
+con componentes numéricos independientemente del nombre del parámetro. El
+candado anterior por `not.toContain('new Date(date)')` quedó eliminado.
+
+- Test primero: `cab9028` — `fix(mobile-home-weekly-activity): guard numeric date construction (R4)`.
+- Verificación verde tras restaurar producción: `b833f1d` — `fix(mobile-home-weekly-activity): verify numeric date construction (R4)`.
+- Mutación nueva: parámetro renombrado a `isoDate` y
+  `new Date(isoDate).toLocaleDateString(...)`. Salida de la suite móvil completa:
+  exit 1 en `no se desplaza un día en una zona horaria negativa`; el espía
+  esperaba la llamada `[2026, 8, 6]` y recibió `['2026-09-06']`. La producción
+  se restauró sin diff.
+
+### R5 — `source` en cada decisión
+
+El caso `source:'stored'` con métrica nula ahora verifica, sobre ese mismo día,
+el dato entregado a `BarChart`, la media y el panel de detalle. El fixture añade
+un día `missing` con un valor centinela no nulo, de modo que `source` y el valor
+dejen de coincidir accidentalmente.
+
+Además, el test parsea el TSX y exige una comparación entre la propiedad
+`source` y `'missing'` dentro de los contextos semánticos `chartData`,
+`measuredValues`, `averageAnchorIndex` y el condicional que contiene
+`weeklyActivity.noDataForDay`. No busca una cadena de fuente concreta: acepta
+inversión de operandos y ambas polaridades estrictas. Este segundo nivel es
+necesario porque, una vez que `chartData` normaliza correctamente el hueco a
+`null`, las variantes por valor del denominador y del ancla pueden ser mutantes
+equivalentes en caja negra si se plantan aisladas.
+
+- Test primero: `6420f75` — `fix(mobile-home-weekly-activity): guard every missing-data decision (R5)`.
+- Verificación verde tras restaurar producción: `8fd2780` — `fix(mobile-home-weekly-activity): verify missing-data decisions (R5)`.
+
+Las mutaciones se plantaron una por una y cada corrida usó
+`bun run test -- --runInBand --silent` sobre la suite móvil completa:
+
+| Decisión mutada | Salida nueva que demuestra que murió |
+|---|---|
+| `chartData`: el valor enviado al gráfico pasa a decidirse por `metricValue(...) === null` | exit 1 en el `it` de R5; `latestBarChartProps().data` recibió el valor centinela del día `missing` donde esperaba `null` |
+| `measuredValues`: el denominador pasa a decidirse por la métrica | exit 1 en el mismo `it`; el guard del contexto `measuredValues` recibió `false` donde exige el discriminante `source` |
+| `averageAnchorIndex`: el ancla pasa a decidirse por la métrica | exit 1 en el mismo `it`; el guard del contexto `averageAnchorIndex` recibió `false` donde exige el discriminante `source` |
+| Panel de detalle: `noDataForDay` pasa a decidirse por `metricValue(...) === null` | exit 1 en el mismo `it`; desapareció `weekly-activity-detail-active-minutes` y apareció “Sin datos de este día” para la entrada `stored` |
+
+La corrida del denominador coincidió con una reaparición del flaky conocido de
+selección de foto en Add Pet; el fallo prescrito de R5 estuvo presente en esa
+misma salida. La corrida siguiente dejó Add Pet verde y la referencia restaurada
+de la suite móvil completa terminó con exit 0. Tras cada mutación se restauró la
+línea correspondiente; `weekly-activity-chart.tsx` no conserva ningún diff.
+
+### Superficie explícita del botón de mapa
+
+Se mantuvo `variant="secondary"`, porque cambiar su jerarquía sería resolver la
+observación visual 3 que el humano dejó fuera de este encargo. Se añadió
+`bg-default`: es el precedente neutral de Profile y empareja el
+`text-foreground` existente. `bg-accent-soft` se reserva en el precedente de
+Add Pet para la acción acentuada de elegir foto.
+
+- Rojo: `60f3f9c` — `fix(mobile-home-weekly-activity): test explicit map action surface (R8)`; el botón no contenía `bg-default`.
+- Verde: `c433e77` — `fix(mobile-home-weekly-activity): declare map action surface (R8)`; caso dirigido, candados de estilo relacionados, lint y typecheck en verde.
+
+No se tocaron las observaciones 3, 5 ni 6, ni ningún fichero de backend o
+infraestructura.
+
+### Gate final de la corrección
+
+- `./init.sh`: exit 0 en una única corrida final limpia, con build, tests, e2e,
+  lint y typecheck verdes.
+- `graphify update .`: exit 0; actualizó el grafo sin dejar cambios
+  versionados. El aviso por la dependencia SQL opcional ausente no bloqueó la
+  extracción del código.
+- Auditoría de alcance: el diff correctivo no contiene ficheros de
+  `backend-pet-tracker/` ni `infra/`; la feature sigue `in_progress` y no se
+  abrió PR ni se hizo merge.
+
 ## Pendiente humano
 
 Queda el smoke firmado en dev build Android, tema claro y oscuro, con un día
