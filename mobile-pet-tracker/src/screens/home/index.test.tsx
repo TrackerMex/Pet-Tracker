@@ -1729,4 +1729,53 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
       expect(group?.props.accessibilityLabel).toBeUndefined();
     }
   });
+
+  it('coloca la rejilla entre el collar y la actividad semanal', async () => {
+    const pet = makePet({
+      device: {
+        model: 'PetTrack One',
+        batteryPct: 82,
+        connectivity: 'online',
+        lastMessageAt: '2026-09-08T12:00:00.000Z',
+        esn: 'ACT-001',
+      },
+    });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+
+    await renderHome();
+    await screen.findByTestId('last-position-card');
+
+    const relevantChildren = screen
+      .getByTestId('home-content')
+      .children.flatMap((child) =>
+        typeof child === 'string' ? [] : [child.props.testID],
+      )
+      .filter((testID) =>
+        [
+          'summary-card',
+          'collar-card',
+          'quick-actions',
+          'weekly-activity-card',
+          'last-position-card',
+        ].includes(testID),
+      );
+
+    expect(relevantChildren).toEqual([
+      'summary-card',
+      'collar-card',
+      'quick-actions',
+      'weekly-activity-card',
+      'last-position-card',
+    ]);
+  });
+
+  it('no dibuja la rejilla sin mascota seleccionada', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+
+    await renderHome();
+
+    await screen.findByTestId('home-empty');
+    expect(screen.queryByTestId('quick-actions')).toBeNull();
+  });
 });

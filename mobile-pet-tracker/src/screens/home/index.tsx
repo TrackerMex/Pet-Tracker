@@ -400,36 +400,6 @@ export function HomeScreen() {
           </>
         ) : null}
 
-        {selectedPetId ? (
-          <View testID="quick-actions" className="gap-3">
-            <Text
-              testID="quick-actions-title"
-              className="text-xs font-semibold uppercase tracking-widest text-muted"
-            >
-              {t('home.quickActions')}
-            </Text>
-            <View className="flex-row gap-3">
-              {QUICK_ACTIONS.map(
-                ({ testID, Icon, labelKey, slot, href }, index) => (
-                  <Pressable
-                    key={testID}
-                    testID={testID}
-                    accessibilityRole="button"
-                className={`min-h-11 flex-1 items-center gap-1.5 rounded-xl py-3 ${CATEGORY_SLOTS[slot].surface}`}
-                    style={CONTINUOUS_CORNER}
-                    onPress={() => router.push(href(selectedPetId) as Href)}
-                  >
-                    <Icon size={24} color={quickActionInks[index]} />
-                    <Text className="text-2xs font-semibold text-foreground">
-                      {t(labelKey)}
-                    </Text>
-                  </Pressable>
-                ),
-              )}
-            </View>
-          </View>
-        ) : null}
-
         {selectedPetId && activity.data === undefined ? (
           <Skeleton
             testID="weekly-activity-skeleton"
@@ -462,6 +432,36 @@ export function HomeScreen() {
               </Button>
             ) : null}
           </>
+        ) : null}
+
+        {selectedPetId ? (
+          <View testID="quick-actions" className="gap-3">
+            <Text
+              testID="quick-actions-title"
+              className="text-xs font-semibold uppercase tracking-widest text-muted"
+            >
+              {t('home.quickActions')}
+            </Text>
+            <View className="flex-row gap-3">
+              {QUICK_ACTIONS.map(
+                ({ testID, Icon, labelKey, slot, href }, index) => (
+                  <Pressable
+                    key={testID}
+                    testID={testID}
+                    accessibilityRole="button"
+                    className={`min-h-11 flex-1 items-center gap-1.5 rounded-xl py-3 ${CATEGORY_SLOTS[slot].surface}`}
+                    style={CONTINUOUS_CORNER}
+                    onPress={() => router.push(href(selectedPetId) as Href)}
+                  >
+                    <Icon size={24} color={quickActionInks[index]} />
+                    <Text className="text-2xs font-semibold text-foreground">
+                      {t(labelKey)}
+                    </Text>
+                  </Pressable>
+                ),
+              )}
+            </View>
+          </View>
         ) : null}
 
         {detail.data?.kind === 'ok' && detail.data.pet.device ? (
