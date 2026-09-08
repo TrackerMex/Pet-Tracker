@@ -89,8 +89,8 @@ jest.mock('reicon-react-native', () => {
     'react-native',
   );
   const mockIcon = (testID: string) =>
-    function MockIcon() {
-      return React.createElement(View, { testID });
+    function MockIcon(props: Record<string, unknown>) {
+      return React.createElement(View, { testID, ...props });
     };
 
   return {
@@ -1672,6 +1672,39 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
       expect(tile.props.className).toContain('min-h-11');
       expect(tile.props.className).toContain('flex-1');
       expect(tile.props.hitSlop).toBeUndefined();
+    }
+  });
+
+  it('usa iconos de reicon y ningún emoji', async () => {
+    const source = readFileSync(
+      join(process.cwd(), 'src/screens/home/index.tsx'),
+      'utf8',
+    );
+    const reiconImport = source.match(
+      /import \{([\s\S]*?)\} from 'reicon-react-native';/,
+    )?.[1];
+    const start = source.indexOf('const QUICK_ACTIONS');
+    const end = source.indexOf('] as const;', start);
+    const quickActions = source.slice(start, end);
+
+    expect(reiconImport).toBeDefined();
+    for (const iconName of ['Weight', 'CalendarPlus', 'FileText']) {
+      expect(reiconImport).toMatch(new RegExp(`\\b${iconName}\\b`));
+    }
+    expect(source.match(/<Icon size=\{24\}/g)).toHaveLength(1);
+    expect(quickActions).not.toMatch(/\b(?:HeartPulse|ForkKnife)\b/);
+    for (const emoji of ['🗺️', '🏃', '💉', '🍽️']) {
+      expect(source).not.toContain(emoji);
+    }
+
+    await renderHome();
+    for (const [testID, iconTestID] of [
+      ['quick-action-weight', 'icon-weight'],
+      ['quick-action-reminder', 'icon-calendar-plus'],
+      ['quick-action-documents', 'icon-file-text'],
+    ] as const) {
+      const tile = screen.getByTestId(testID);
+      expect(within(tile).getByTestId(iconTestID).props.size).toBe(24);
     }
   });
 });
