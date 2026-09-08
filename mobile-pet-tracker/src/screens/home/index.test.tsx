@@ -1657,4 +1657,21 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
     expect(source).toContain('`category-${slot}-strong`');
     expect(source).not.toMatch(/(?:bg|text)-category-/);
   });
+
+  it('da a cada tile 44 pt de objetivo táctil', async () => {
+    await renderHome();
+
+    const quickActions = await screen.findByTestId('quick-actions');
+    for (const testID of [
+      'quick-action-weight',
+      'quick-action-reminder',
+      'quick-action-documents',
+    ]) {
+      const tile = within(quickActions).getByTestId(testID);
+
+      expect(tile.props.className).toContain('min-h-11');
+      expect(tile.props.className).toContain('flex-1');
+      expect(tile.props.hitSlop).toBeUndefined();
+    }
+  });
 });
