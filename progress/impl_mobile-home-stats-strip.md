@@ -27,8 +27,13 @@ tokens ni ficheros de componente. No se tocó ningún fichero de
 `backend-pet-tracker/`, `infra/` ni `hosting/`.
 
 La feature permanece `in_progress`: no se marcó `done`, no se abrió PR y no se
-hizo merge. El smoke humano de Android y la revisión siguen siendo gates no
-delegables.
+hizo merge. El review está aprobado; el smoke humano de Android sigue siendo
+el único gate no delegable.
+
+Tras las observaciones 1 y 2 de
+`progress/review_mobile-home-stats-strip.md`, el mismo `it` de R3 liga ahora las
+tres decisiones de cada celda: valor, icono y etiqueta. El refuerzo es solo de
+test; `src/screens/home/index.tsx` no recibió ningún cambio permanente.
 
 ## Rojo → verde por requisito
 
@@ -55,27 +60,40 @@ quedan registrados con los mensajes completos en
 | R13 | Bloque propio de drift sobre los cinco ficheros nominales | `400ff4a` | `09b128f` |
 | R14 | Solo se aceptan los deltas declarados contra `9358cc7` | `a53fdec` | `22e7fc9` |
 | R15, R15b | Suite, typecheck, grep-clean y seis mutaciones independientes | `1586d07` | `6c170da` |
+| R1, R3 (refuerzo tras review) | Cada celda liga su valor, icono y etiqueta; los intercambios de iconos y etiquetas quedan bajo candado | `18454a4` | `6e31b6a` |
 
 ## Prueba de mutación de R15b
 
 Cada mutación se plantó sola, se ejecutó y se restauró antes de introducir la
-siguiente. Las cuatro primeras usaron el mismo discriminante de R3 en sus
-cuatro sitios. Todas terminaron con exit 1 por el assert prescrito, nunca por
-un `ReferenceError` ni por un helper ausente.
+siguiente. Las seis primeras son las prescritas originalmente por R15b. Tras
+las observaciones 1 y 2 del review se replantaron las cuatro mutaciones de
+valor y se añadieron las sondas 7 y 8 para las otras dos decisiones del mismo
+discriminante, icono y etiqueta. Todas terminaron con exit 1 por el assert
+prescrito, nunca por un `ReferenceError` ni por un helper ausente.
 
 | # | Mutación temporal | Comando dirigido | Evidencia roja |
 |---|---|---|---|
-| 1 | Celda Peso: `currentWeightKg` → `activeMinutes` | `bun run test --runInBand --silent src/screens/home/index.test.tsx -t 'asigna cada valor a su celda'` | R3 esperaba `12.4 kg` en `summary-weight` y recibió `1h 35m` |
+| 1 | Celda Peso: `currentWeightKg` → `activeMinutes` | `bun run test --runInBand --silent src/screens/home/index.test.tsx -t 'asigna cada valor'` | R3 esperaba `12.4 kg` en `summary-weight` y recibió `1h 35m` |
 | 2 | Celda Actividad: `activeMinutes` → `restMinutes` | mismo comando de R3 | R3 esperaba `1h 35m` en `summary-activity` y recibió `45m` |
 | 3 | Celda Descanso: `restMinutes` → `distanceM` | mismo comando de R3 | R3 esperaba `45m` en `summary-sleep` y recibió `2.4 km` |
 | 4 | Celda Distancia: `distanceM` → `currentWeightKg` | mismo comando de R3 | R3 esperaba `2.4 km` en `summary-distance` y recibió `12.4 kg` |
 | 5 | `fmtKg(null)`: `—` → `0 kg` | `bun run test --runInBand --silent src/screens/home/format.test.ts -t '#69 R2: fmtKg'` | R2 esperaba `—` y recibió `0 kg` |
 | 6 | `summary-card` detrás de `collar-card` | `bun run test --runInBand --silent src/screens/home/index.test.tsx -t 'coloca la tira sobre la tarjeta del collar'` | R6 recibió `collar-card, summary-card, weekly-activity-card, last-position-card` en vez de comenzar por `summary-card` |
+| 7 | Iconos de las celdas Peso y Descanso: `Weight` ↔ `Moon` | comando dirigido de R3 (`-t 'asigna cada valor'`) | R3 buscó `summary-icon-weight` dentro de `summary-weight`; recibió `summary-icon-sleep` y terminó con exit 1 |
+| 8 | Etiquetas de las celdas Peso y Distancia: `t('home.weight')` ↔ `t('home.distance')` | comando dirigido de R3 (`-t 'asigna cada valor'`) | R3 buscó `Peso` dentro de `summary-weight`; recibió `Distancia` y terminó con exit 1 |
 
 La sexta mutación quedó visible en el commit rojo `1586d07`. La restauración
 `6c170da` devolvió el fichero de Home byte a byte al contenido anterior a ese
 rojo. Después de restaurar las seis, la corrida conjunta de R2, R3 y R6 pasó
 con 2 suites y 5 tests verdes.
+
+El refuerzo rojo `18454a4` reprodujo el intercambio `Weight`/`Moon` dentro del
+doble de `reicon`, sin tocar producción; `6e31b6a` restauró el mapeo canónico.
+Ya en verde se plantaron sobre producción, una por una y con restauración
+comprobada por diff vacío, las cuatro mutaciones de valor, el intercambio real
+`Weight`/`Moon` y el intercambio real de `home.weight`/`home.distance`. Las seis
+corridas murieron en el mismo `it` de R3. Restaurado el árbol, el conjunto que
+usó el reviewer quedó en 9/9 suites y 194/194 tests verdes.
 
 ## Deltas medidos de R14 y D1
 
@@ -111,6 +129,8 @@ declarado como candado adicional de #69.
 
 - Suite móvil completa restaurada: 68/68 suites, 1041/1041 tests y 1 snapshot,
   exit 0.
+- Refuerzo tras review: `src/screens/home/index.test.tsx` + `src/__tests__`,
+  9/9 suites y 194/194 tests, exit 0.
 - `bun run typecheck`: exit 0.
 - Grep de producción: cero hex fuera de `src/theme/`, clases arbitrarias,
   `StyleSheet.create`, shadow/elevation legacy o radios fuera de
