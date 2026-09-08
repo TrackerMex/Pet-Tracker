@@ -1329,13 +1329,16 @@
     "name": "mobile-home-quick-actions",
     "status": "in_progress",
     "priority": "P3",
-    "description": "Bloque 1. La rejilla 'Accesos rapidos' de la Home: 4 tiles con fondo pastel que llevan a Mapa, Actividad, Vacunas y Comidas (App.tsx:396-412). No necesita ningun dato: es navegacion pura. DEPENDE DE #64: sin los tokens de la paleta pastel categorica, los cuatro fondos se implementarian con clases arbitrarias y romperian el grep-clean que la carta declara en §Decisiones fijas 3. La spec tiene que resolver dos cosas que el mock no dice: a que ruta real lleva cada tile -el Make tiene pantallas que la app no tiene, asi que si algun destino no existe, ese tile no se dibuja en vez de navegar a una ruta rota- y si los cuatro destinos deben ser los del diseno o los cuatro que mas se usan. Anade navegacion, asi que rompe el invariante de #46/#61/#62.",
+    "description": "Bloque 1. La rejilla de accesos rapidos de la Home. No necesita ningun dato: es navegacion pura. DECISION DEL HUMANO DEL 2026-09-08 que cambia el enunciado original: los tiles apuntan SOLO a destinos que NO son alcanzables desde el tab bar. El enunciado pedia Mapa, Actividad, Vacunas y Comidas (specs/mobile-figma-polish/design-src/App.tsx:395-410), pero Mapa, Vacunas y Comidas son tres de las cinco pestanas (src/app/(tabs)/_layout.tsx:26-30) y el tab bar flotante usa LOS MISMOS componentes de icono Map y ForkKnife, asi que esos tiles habrian duplicado navegacion visible en la misma pantalla; y Actividad no tiene pantalla propia -vive dentro de la Home desde #68-. Los tres destinos finales salen de un filtro de tres condiciones aplicado a las once rutas de la app -ni pestana, ni pantalla hija, ni configuracion de una vez-: Peso a /weight-log (su valor ya se ve en la tira de #69 sin forma de abrirlo), Recordatorio a /add-reminder (hoy el camino mas largo de la app, 3 toques) y Documentos a /pets/[petId]/docs. /reminders queda fuera por colision con #70, que pone el enlace a esa lista en esta misma Home. Del Make se toma la forma -rejilla de tiles con fondo pastel- y ni un destino ni una etiqueta. DEPENDE DE #64: los fondos salen de CATEGORY_SLOTS, y #64 R9 prohibe la clase completa bg-category-* fuera de src/utils/category-palette.ts, no solo las arbitrarias.",
     "acceptance_criteria": [
-      "Los tiles llevan a rutas que existen; la spec enumera destino por destino y omite el tile de cualquier destino que no exista todavia",
-      "Los fondos salen de los tokens de #64: cero clases arbitrarias, cero hex fuera de src/theme/",
+      "Los tiles llevan a rutas que existen y que NO son alcanzables desde el tab bar; la spec enumera destino por destino con su fichero",
+      "La rejilla tiene exactamente tres tiles y un test lo fija sobre el arbol renderizado, no sobre una lista blanca de nombres: anadir un cuarto tile tiene que poner la suite roja",
+      "Cruzar icono, etiqueta, color o destino entre dos tiles pone la suite roja; las cuatro dimensiones se observan con within(tile)",
+      "Los fondos salen de los tokens de #64: cero clases arbitrarias, cero clase completa bg-category-* fuera de category-palette.ts, cero hex fuera de src/theme/",
       "Cada tile tiene area tactil >=44pt, como fijo #61 R10",
-      "Suite movil completa verde; grep-clean intacto",
-      "Gate humano: smoke en dev build de Android en los dos temas, pulsando los cuatro. No delegable a IA"
+      "Cero datos, cero llamadas a la API, cero backend, y cero cambios en el tab bar",
+      "Suite movil completa verde; deltas medidos contra el commit base, con el candado de longitud de catalogo enumerado",
+      "Gate humano: smoke en dev build de Android en los dos temas, pulsando los tres. No delegable a IA"
     ],
     "files_affected": [
       "mobile-pet-tracker/src/app/(tabs)/home.tsx",
