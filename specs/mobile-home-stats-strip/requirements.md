@@ -510,7 +510,7 @@ handoff le exigía.
   de catálogo debe incluir `language-provider.test.tsx` siempre que la feature
   añada claves.
 
-- [ ] Aprobado por humano
+- [X] Aprobado por humano
 
 ## Fuera de alcance
 
