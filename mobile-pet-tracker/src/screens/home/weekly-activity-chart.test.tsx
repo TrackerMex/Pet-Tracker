@@ -7,7 +7,12 @@ import {
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
 import { BarChart } from 'react-native-chart-kit/v2';
-import { withDelay, withTiming } from 'react-native-reanimated';
+import {
+  ReduceMotion,
+  withDelay,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 import * as ts from 'typescript';
 
 import type { DayEntry, WeekComparison } from '../../api/types';
@@ -56,6 +61,7 @@ jest.mock('react-native-reanimated', () => ({
   ),
   useReducedMotion: () => mockUseReducedMotion(),
   withDelay: jest.fn((_delay: number, animation: unknown) => animation),
+  withSpring: jest.fn((value: number) => value),
   withTiming: jest.fn((value: number) => value),
 }));
 
@@ -136,8 +142,8 @@ jest.mock('react-native-chart-kit/v2', () => {
 jest.mock('../../theme/use-theme-colors', () => ({
   useThemeColors: (mockTokens: readonly string[]) =>
     mockTokens.map((token) =>
-      token === 'accent-foreground'
-        ? `${mockTheme}-accent-foreground`
+      token === 'accent-foreground' || token === 'accent-strong'
+        ? `${mockTheme}-${token}`
         : `resolved-${token}`,
     ),
 }));
@@ -408,6 +414,7 @@ function hasMissingSourceDiscriminant(node: ts.Node): boolean {
 
 const mockBarChart = jest.mocked(BarChart);
 const mockWithDelay = jest.mocked(withDelay);
+const mockWithSpring = jest.mocked(withSpring);
 const mockWithTiming = jest.mocked(withTiming);
 
 beforeEach(() => {
@@ -877,10 +884,75 @@ describe('R6: el selector cambia de métrica sin volver a pedir nada', () => {
       result.getByTestId('weekly-activity-value-2026-09-02'),
     ).toHaveTextContent('1.0 km');
   });
+
+  it('desliza una única píldora entre las medidas reales de las pestañas', async () => {
+    const result = await renderChart(
+      makeWeek('2026-09-02', [10, 20, 30, 40, 50, 60, 70]),
+    );
+    const activeMinutes = result.getByTestId(
+      'weekly-activity-metric-activeMinutes',
+    );
+    const distance = result.getByTestId(
+      'weekly-activity-metric-distanceM',
+    );
+
+    expect(
+      result.queryByTestId('weekly-activity-metric-indicator'),
+    ).toBeNull();
+
+    await fireEvent(activeMinutes, 'layout', {
+      nativeEvent: {
+        layout: { x: 4, y: 4, width: 144, height: 44 },
+      },
+    });
+    await fireEvent(distance, 'layout', {
+      nativeEvent: {
+        layout: { x: 152, y: 4, width: 88, height: 44 },
+      },
+    });
+
+    expect(
+      result.getAllByTestId('weekly-activity-metric-indicator'),
+    ).toHaveLength(1);
+    expect(
+      result.getByTestId('weekly-activity-metric-indicator'),
+    ).toHaveAnimatedStyle({
+      width: 144,
+      transform: [{ translateX: 4 }],
+    });
+
+    mockWithSpring.mockClear();
+    await fireEvent.press(distance);
+
+    expect(mockWithSpring).toHaveBeenNthCalledWith(
+      1,
+      152,
+      expect.objectContaining({
+        duration: 250,
+        dampingRatio: 1,
+        reduceMotion: ReduceMotion.System,
+      }),
+    );
+    expect(mockWithSpring).toHaveBeenNthCalledWith(
+      2,
+      88,
+      expect.objectContaining({
+        duration: 250,
+        dampingRatio: 1,
+        reduceMotion: ReduceMotion.System,
+      }),
+    );
+    expect(
+      result.getByTestId('weekly-activity-metric-indicator'),
+    ).toHaveAnimatedStyle({
+      width: 88,
+      transform: [{ translateX: 152 }],
+    });
+  });
 });
 
 describe('R9: el selector sigue el tema de la app', () => {
-  it('adapta texto e icono seleccionados con tokens semánticos en ambos temas', async () => {
+  it('adapta píldora, texto e icono con los tokens de tabs en ambos temas', async () => {
     const days = makeWeek('2026-09-02', [10, 20, 30, 40, 50, 60, 70]);
     mockTheme = 'dark';
     const dark = await renderChart(days);
@@ -888,15 +960,23 @@ describe('R9: el selector sigue el tema de la app', () => {
       'weekly-activity-metric-activeMinutes',
     );
 
-    expect(darkSelected.props.className).toContain('bg-accent');
+    await fireEvent(darkSelected, 'layout', {
+      nativeEvent: {
+        layout: { x: 4, y: 4, width: 144, height: 44 },
+      },
+    });
+
+    expect(
+      dark.getByTestId('weekly-activity-metric-indicator').props.className,
+    ).toContain('bg-tab-pill');
     expect(
       dark.getByTestId('weekly-activity-metric-label-activeMinutes').props
         .className,
-    ).toContain('text-accent-foreground');
+    ).toContain('text-accent-strong');
     expect(
       within(darkSelected).getByTestId('weekly-activity-metric-selected').props
         .accessibilityHint,
-    ).toBe('dark-accent-foreground');
+    ).toBe('dark-accent-strong');
     expect(
       dark.getByTestId('weekly-activity-metric-label-distanceM').props
         .className,
@@ -909,22 +989,27 @@ describe('R9: el selector sigue el tema de la app', () => {
       'weekly-activity-metric-activeMinutes',
     );
 
-    expect(lightSelected.props.className).toContain('bg-accent');
+    await fireEvent(lightSelected, 'layout', {
+      nativeEvent: {
+        layout: { x: 4, y: 4, width: 144, height: 44 },
+      },
+    });
+
+    expect(
+      light.getByTestId('weekly-activity-metric-indicator').props.className,
+    ).toContain('bg-tab-pill');
     expect(
       light.getByTestId('weekly-activity-metric-label-activeMinutes').props
         .className,
-    ).toContain('text-accent-foreground');
+    ).toContain('text-accent-strong');
     expect(
       within(lightSelected).getByTestId('weekly-activity-metric-selected').props
         .accessibilityHint,
-    ).toBe('light-accent-foreground');
+    ).toBe('light-accent-strong');
     expect(
       light.getByTestId('weekly-activity-metric-label-distanceM').props
         .className,
     ).toContain('text-foreground');
-    expect(
-      readFileSync(chartSourcePath, 'utf8'),
-    ).toContain("'accent-foreground'");
     expect(
       readFileSync(chartSourcePath, 'utf8'),
     ).not.toContain('appearance=');
