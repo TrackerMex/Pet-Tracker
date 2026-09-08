@@ -1605,4 +1605,45 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
       expect(quickActions).not.toContain(`'${forbiddenDestination}'`);
     }
   });
+
+  it('liga icono, etiqueta, color y destino de cada tile y de ninguno más', async () => {
+    await renderHome();
+
+    const bindings = [
+      [
+        'quick-action-weight',
+        'icon-weight',
+        'Peso',
+        'bg-category-violet',
+        '/weight-log',
+      ],
+      [
+        'quick-action-reminder',
+        'icon-calendar-plus',
+        'Recordatorio',
+        'bg-category-amber',
+        '/add-reminder',
+      ],
+      [
+        'quick-action-documents',
+        'icon-file-text',
+        'Documentos',
+        'bg-category-blue',
+        '/pets/pet-1/docs',
+      ],
+    ] as const;
+
+    for (const [testID, iconTestID, label, surface, href] of bindings) {
+      const tile = screen.getByTestId(testID);
+      const tileQueries = within(tile);
+
+      expect(tileQueries.getByTestId(iconTestID)).toBeVisible();
+      expect(tileQueries.getByText(label)).toBeVisible();
+      expect(tile.props.className).toContain(surface);
+      fireEvent.press(tile);
+      expect(mockRouter.push).toHaveBeenLastCalledWith(href);
+    }
+
+    expect(mockRouter.push).toHaveBeenCalledTimes(bindings.length);
+  });
 });
