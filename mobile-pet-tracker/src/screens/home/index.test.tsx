@@ -25,6 +25,10 @@ import * as selectedPetHooks from '../../providers/selected-pet-provider';
 import { HomeScreen } from './index';
 
 declare function require(moduleName: 'fs'): {
+  readdirSync: (
+    path: string,
+    options: { withFileTypes: true },
+  ) => Array<{ name: string; isDirectory: () => boolean }>;
   readFileSync: (path: string, encoding: 'utf8') => string;
 };
 
@@ -32,8 +36,25 @@ declare function require(moduleName: 'path'): {
   join: (...paths: string[]) => string;
 };
 
-const { readFileSync } = require('fs');
+const { readdirSync, readFileSync } = require('fs');
 const { join } = require('path');
+
+function appRoutes(directory: string, prefix = ''): string[] {
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const relativePath = prefix ? `${prefix}/${entry.name}` : entry.name;
+    const absolutePath = join(directory, entry.name);
+
+    if (entry.isDirectory()) {
+      return entry.name === '__tests__'
+        ? []
+        : appRoutes(absolutePath, relativePath);
+    }
+
+    return entry.name.endsWith('.tsx') && entry.name !== '_layout.tsx'
+      ? [`/${relativePath.replace(/\.tsx$/, '')}`]
+      : [];
+  });
+}
 
 jest.mock('../../api/pets', () => ({
   getPet: jest.fn(),
@@ -1516,5 +1537,45 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
       'quick-action-documents',
     ]);
     expect(screen.queryByTestId('quick-action-map')).toBeNull();
+  });
+
+  it('lleva cada tile a su ruta existente', async () => {
+    await renderHome();
+
+    for (const testID of [
+      'quick-action-weight',
+      'quick-action-reminder',
+      'quick-action-documents',
+    ]) {
+      fireEvent.press(screen.getByTestId(testID));
+    }
+
+    expect(mockRouter.push).toHaveBeenCalledTimes(3);
+    expect(mockRouter.push).toHaveBeenNthCalledWith(1, '/weight-log');
+    expect(mockRouter.push).toHaveBeenNthCalledWith(2, '/add-reminder');
+    expect(mockRouter.push).toHaveBeenNthCalledWith(3, '/pets/pet-1/docs');
+  });
+
+  it('no apunta a ninguna ruta inexistente', () => {
+    const source = readFileSync(
+      join(process.cwd(), 'src/screens/home/index.tsx'),
+      'utf8',
+    );
+    const start = source.indexOf('const QUICK_ACTIONS');
+    const end = source.indexOf('] as const;', start);
+    const quickActions = source.slice(start, end);
+    const destinations = [
+      ...quickActions.matchAll(
+        /href:\s*\([^)]*\)\s*=>\s*(?:'([^']+)'|`([^`]+)`)/g,
+      ),
+    ].map(([, literal, template]) =>
+      (literal ?? template).replace('${petId}', '[petId]'),
+    );
+    const routes = appRoutes(join(process.cwd(), 'src/app/(tabs)'));
+
+    expect(destinations).toHaveLength(3);
+    for (const destination of destinations) {
+      expect(routes).toContain(destination);
+    }
   });
 });
