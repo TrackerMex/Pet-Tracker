@@ -1327,7 +1327,7 @@
   {
     "id": 71,
     "name": "mobile-home-quick-actions",
-    "status": "spec_ready",
+    "status": "in_progress",
     "priority": "P3",
     "description": "Bloque 1. La rejilla 'Accesos rapidos' de la Home: 4 tiles con fondo pastel que llevan a Mapa, Actividad, Vacunas y Comidas (App.tsx:396-412). No necesita ningun dato: es navegacion pura. DEPENDE DE #64: sin los tokens de la paleta pastel categorica, los cuatro fondos se implementarian con clases arbitrarias y romperian el grep-clean que la carta declara en §Decisiones fijas 3. La spec tiene que resolver dos cosas que el mock no dice: a que ruta real lleva cada tile -el Make tiene pantallas que la app no tiene, asi que si algun destino no existe, ese tile no se dibuja en vez de navegar a una ruta rota- y si los cuatro destinos deben ser los del diseno o los cuatro que mas se usan. Anade navegacion, asi que rompe el invariante de #46/#61/#62.",
     "acceptance_criteria": [
