@@ -232,6 +232,27 @@ describe('#68 R18: la actividad semanal no mete drift de estilo', () => {
   });
 });
 
+describe('#69 R13: la tira de estadísticas no mete drift de estilo', () => {
+  const featureFiles = [
+    'i18n/catalog.ts',
+    'screens/home/format.ts',
+    'screens/home/format.test.ts',
+    'screens/home/index.test.tsx',
+    'screens/home/index.tsx',
+  ];
+
+  it('mantiene sus cinco ficheros sin escapes de estilo literales', () => {
+    const violations = featureFiles.flatMap((relativePath) => {
+      const contents = readFileSync(join(sourceRoot, relativePath), 'utf8');
+      return /text-\[10px\]|#[\da-f]{3,8}\b|StyleSheet/i.test(contents)
+        ? [relativePath]
+        : [];
+    });
+
+    expect(violations).toEqual([]);
+  });
+});
+
 describe('#68 E1: la carta retira connectivity de los enum crudos', () => {
   const charter = readFileSync(
     join(projectRoot, '..', 'docs', 'ui-guidelines.md'),
