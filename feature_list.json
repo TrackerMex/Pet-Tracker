@@ -1287,7 +1287,7 @@
   {
     "id": 69,
     "name": "mobile-home-stats-strip",
-    "status": "spec_ready",
+    "status": "in_progress",
     "priority": "P3",
     "description": "Bloque 1. El Make monta sobre el hero una tira de 4 celdas separadas por divisores (specs/mobile-figma-polish/design-src/App.tsx:368-383, con emojis: Peso, Activo, Paseos, Distancia); la app tiene un summary-card con 3 -actividad, sueno, distancia- en src/screens/home/index.tsx:282-353. CORRECCION AL ENUNCIADO ORIGINAL (2026-09-08, verificada contra el arbol): el enunciado decia que la app 'no muestra paseos' y pedia anadir esa cuarta celda. Es FALSO desde #67: walkCount ya se pinta en src/screens/home/index.tsx:142, en text-3xl, como dato destacado del hero. Anadir la celda 'Paseos' duplicaria el mismo numero en la misma pantalla. Asi que la celda 3 la ocupa el DESCANSO -que es ademas la resolucion de la decision E: la app lo muestra hoy y el diseno no lo dibuja, y el criterio del humano es no perder informacion util solo por fidelidad- y los paseos se quedan donde ya estan. Resultado: cero datos perdidos y cero datos duplicados. Los datos de las cuatro celdas ya se sirven: currentWeightKg en el perfil -verificado de pets.schema.ts:36 al mapper :70 y al controlador pets.controller.ts:82-94- y el resto en activity/daily, asi que no hay backend nuevo. Depende de #67 porque la tira se monta sobre el hero.",
     "acceptance_criteria": [
@@ -1425,6 +1425,26 @@
     ],
     "files_affected": [
       "backend-pet-tracker/test/health-vaccines.e2e-spec.ts"
+    ]
+  },
+  {
+    "id": 77,
+    "name": "mobile-home-weight-without-collar",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Abierta por decision del humano el 2026-09-08 al firmar la spec de #69, que la dejo explicitamente fuera y escribio por que (specs/mobile-home-stats-strip/requirements.md R7). Hoy la tira de estadisticas de la Home aparece y desaparece ENTERA con el estado de la actividad: si activity.data no es 'ok' -mascota sin collar (402 no-tracking), error, unreachable o missing-config- no se pinta ninguna celda. El peso se va con ellas aunque no dependa del collar para nada: viene de currentWeightKg del perfil, que es otra peticion y otro estado de carga. El resultado es que una mascota sin collar tiene peso registrado y el dueno no lo ve en la Home. Lo que cuesta arreglarlo, ya medido en R7 de #69: una fila que a veces tiene una celda y a veces cuatro, con su propio juego de divisores, y reescribir los cinco 'it' de describe('R9: summary degrada con gracia') en src/screens/home/index.test.tsx:441-560. No es un ajuste, es un estado de carga nuevo. Relativo a antes de #69 no se pierde nada -el peso no se pintaba en la Home en ningun estado-, asi que esto es mejora, no regresion.",
+    "acceptance_criteria": [
+      "La celda de peso se pinta cuando hay peso registrado, aunque la actividad no este disponible: sin collar, en error, unreachable o missing-config",
+      "La fila se compone bien con una sola celda: los divisores no dejan bordes sueltos ni celdas de ancho raro",
+      "Los cinco 'it' de describe('R9: summary degrada con gracia') quedan verdes SIN debilitar ningun assert, y se anaden los del estado nuevo",
+      "Sin peso registrado la celda pinta '—', no desaparece",
+      "Cero llamadas nuevas a la API: el peso ya viene en el detalle del perfil",
+      "Suite movil completa verde; ninguna cifra de candado se mueve sin declararlo como delta",
+      "Gate humano: smoke en dev build de Android con una mascota SIN collar y con peso registrado. No delegable a IA"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/home/index.tsx",
+      "mobile-pet-tracker/src/screens/home/index.test.tsx"
     ]
   }
 ]
