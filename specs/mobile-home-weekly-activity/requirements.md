@@ -741,6 +741,41 @@ spec (mismo procedimiento que las enmiendas A8/A9 de #67).
 
 ---
 
+### D2 — R6 deja de usar `SegmentedControl` y pasa a un grupo propio de opciones
+
+**Desviación de un requisito de ESTA spec, ya aprobado.** R6 (`:285-292`)
+prescribe literalmente *"SHALL implementarlo con `SegmentedControl` de
+`@expo/ui/community/segmented-control`"*, y §Fuera de alcance (`:832-834`)
+remata que *"cambiar de capa es una feature separada"*. El humano autorizó la
+sustitución de viva voz en la terminal de Codex el 2026-09-08, después de
+medirlo en el dev build; esta casilla es lo que deja constancia versionada de
+esa autorización, que es como el resto de decisiones de #68.
+
+- **Por qué se cambió, medido en dispositivo y no supuesto**: con el copy ya
+  acortado a "Distancia", **"Minutos activos" seguía saltando de línea**, y en
+  tema claro el texto y el check negros del segmento seleccionado perdían
+  legibilidad sobre el verde. La causa está en el wrapper, no en el uso:
+  `SegmentedControlProps` no expone `fontStyle` ni `activeFontStyle`, y en
+  Android `tintColor` solo pinta el contenedor activo. Desde fuera del control
+  no había arreglo posible.
+- **Qué lo sustituye**: un grupo privado de tres `Pressable` dentro del propio
+  fichero de la feature, con `role="radio"`, `accessibilityLabel` de catálogo,
+  `accessibilityState.selected`, altura táctil `h-11`, `numberOfLines={1}` y
+  reparto de ancho proporcional al copy. Más una píldora de selección animada
+  con Reanimated siguiendo el precedente de `floating-tab-bar.tsx` (spring
+  crítico de 250 ms, interrumpible, `ReduceMotion.System`).
+- **Qué NO cambia**: sigue habiendo **exactamente las tres métricas** de
+  `weekComparison` en el orden de `WEEKLY_METRICS`, con
+  `testID="weekly-activity-metric"`, `values` resueltos por catálogo (R17) y
+  estado local. No se añade ninguna dependencia —`expo-haptics` sigue sin
+  instalarse—, ningún token nuevo a `global.css`, ninguna llamada a la API.
+- **Qué sigue prohibido, y esto no lo toca la enmienda**: adoptar la capa
+  root/universal de `@expo/ui`. La carta §Decisiones fijas 5 sigue intacta; lo
+  que se abandona es un control nativo concreto por ilegible, no la regla de
+  capas.
+
+- [ ] Enmienda aprobada por humano
+
 ### E2 — `specs/mobile-ui-consistency-polish/` R1: el inventario de botones primarios pasa de 12 a 13
 
 La abre **D1 opción (b)**, que el humano firmó el 2026-09-08. No es una
