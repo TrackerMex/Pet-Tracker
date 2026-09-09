@@ -30,6 +30,7 @@ Todas las mutaciones se plantan en código de producción, de una en una.
 |---|---|---|
 | M1 | Commit `97e06c0`: `localDayOf` cambió a `getUTC*`. `bun run test`, con `TZ` ausente, dejó 1 suite/1 test rojo y 67 suites/1082 tests verdes. Cayó exactamente `#85 R2` → `it('toma el día civil de los getters locales, nunca de los UTC')`: esperaba `2026-09-11`, recibió `2026-09-12`. `3d0ab78` completó el doble de padding para eliminar un `TypeError` secundario antes de registrar la evidencia definitiva. | Getters locales restaurados; `format.test.ts` volvió a 9/9 verde. |
 | M3 | Se retiró temporalmente el filtro `status === 'scheduled'`. `format.test.ts` dejó 1 fallo/12 verdes: cayó exactamente `#85 R3` → `it('descarta enviados, cancelados y pasados, y conserva el de hoy')`. La salida fue `[rem-today, rem-next, rem-sent]`; aflora `rem-sent`, mientras `rem-cancelled` queda cuarto y lo recorta el tope de tres. El `it` espera exactamente `[rem-today, rem-next]`. | Filtro de estado restaurado sin commit; `format.test.ts` volvió a 13/13 verde. |
+| M4 | Se retiró temporalmente el filtro `calendarDaysUntil(localDayOf(dueAt), now) >= 0`. `format.test.ts` dejó 1 fallo/12 verdes: cayó exactamente el mismo `it` de R3 que M3, pero con salida `[rem-past, rem-today, rem-next]`. Entró `rem-past`, un motivo e id distintos de M3. | Filtro de futuro restaurado sin commit; `format.test.ts` volvió a 13/13 verde. |
 
 ## A8 — corrección de la evidencia prescrita para M3
 
