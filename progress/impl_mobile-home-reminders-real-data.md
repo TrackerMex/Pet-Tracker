@@ -31,6 +31,8 @@ Todas las mutaciones se plantan en código de producción, de una en una.
 | M1 | Commit `97e06c0`: `localDayOf` cambió a `getUTC*`. `bun run test`, con `TZ` ausente, dejó 1 suite/1 test rojo y 67 suites/1082 tests verdes. Cayó exactamente `#85 R2` → `it('toma el día civil de los getters locales, nunca de los UTC')`: esperaba `2026-09-11`, recibió `2026-09-12`. `3d0ab78` completó el doble de padding para eliminar un `TypeError` secundario antes de registrar la evidencia definitiva. | Getters locales restaurados; `format.test.ts` volvió a 9/9 verde. |
 | M3 | Se retiró temporalmente el filtro `status === 'scheduled'`. `format.test.ts` dejó 1 fallo/12 verdes: cayó exactamente `#85 R3` → `it('descarta enviados, cancelados y pasados, y conserva el de hoy')`. La salida fue `[rem-today, rem-next, rem-sent]`; aflora `rem-sent`, mientras `rem-cancelled` queda cuarto y lo recorta el tope de tres. El `it` espera exactamente `[rem-today, rem-next]`. | Filtro de estado restaurado sin commit; `format.test.ts` volvió a 13/13 verde. |
 | M4 | Se retiró temporalmente el filtro `calendarDaysUntil(localDayOf(dueAt), now) >= 0`. `format.test.ts` dejó 1 fallo/12 verdes: cayó exactamente el mismo `it` de R3 que M3, pero con salida `[rem-past, rem-today, rem-next]`. Entró `rem-past`, un motivo e id distintos de M3. | Filtro de futuro restaurado sin commit; `format.test.ts` volvió a 13/13 verde. |
+| M5 | El corte inclusivo cambió temporalmente de `>= 0` a `> 0`. `format.test.ts` dejó 1 fallo/12 verdes: cayó exactamente el `it` de R3 prescrito y la salida perdió `rem-today`, conservando solo `[rem-next]`. | Corte inclusivo restaurado sin commit; `format.test.ts` volvió a 13/13 verde. |
+| M6 | Se retiró temporalmente `a.id.localeCompare(b.id)` del comparador. `format.test.ts` dejó 1 fallo/12 verdes: cayó exactamente `it('desempata por id ascendente')`; el sort estable conservó la fixture invertida como `[rem-z, rem-a]` en vez de `[rem-a, rem-z]`. Con la condición contraria —fixture entregada ya como `[rem-a, rem-z]`— la mutación habría quedado verde. | Desempate por id restaurado sin commit; `format.test.ts` volvió a 13/13 verde. |
 
 ## A8 — corrección de la evidencia prescrita para M3
 
@@ -42,7 +44,7 @@ La corrida dejó 1 fallo/12 verdes por `rem-sent`. A8 confirma esta medición,
 mantiene intactos la fixture y el candado, y corrige únicamente la evidencia
 esperada. M3 se restauró sin commit y la suite dirigida volvió a 13/13 verde.
 
-## Bloqueo de orden tras M4
+## A9 — corrección del orden de M7 y M8
 
 `tasks.md:95-96` ordena plantar M3..M8 durante R3 y comprobar que cada mutación
 cae por todos los `it` que R15 nombra. Sin embargo, R15/M7 y R15/M8 exigen
@@ -51,7 +53,7 @@ vacuna` y `corta en tres aunque haya cinco`; `requirements.md:404-421` y el
 propio orden normativo los crean recién en R5. En este punto solo existen los
 candados de `format.test.ts`.
 
-No es posible completar M7/M8 según R3 sin adelantar tests de R5 ni incumplir
-la exigencia de observar todos los `it` nombrados. Tras documentar M4 se paró,
-con la mutación restaurada, suite dirigida 13/13 verde y árbol limpio; M5 no se
-plantó.
+A9 resuelve la incompatibilidad sin retirar candados: R3 verifica M3..M6 y R5
+verificará M7/M8 una sola vez, cuando también existan sus dos `it` de Home.
+Tras la firma se plantaron M5 y M6, ambas cayeron por el `it` prescrito, se
+restauraron y la suite dirigida quedó 13/13 verde.
