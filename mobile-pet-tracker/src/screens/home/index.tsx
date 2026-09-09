@@ -643,14 +643,14 @@ export function HomeScreen() {
                     </View>
                     <View className="flex-1">
                       <Text
-                        testID={`reminders-item-${reminder.id}-title`}
-                        className="text-sm font-semibold text-foreground"
+                        testID={`reminders-item-${reminder.id}-date`}
+                        className="text-xs font-normal text-muted"
                       >
                         {reminder.title}
                       </Text>
                       <Text
-                        testID={`reminders-item-${reminder.id}-date`}
-                        className="text-xs font-normal text-muted"
+                        testID={`reminders-item-${reminder.id}-title`}
+                        className="text-sm font-semibold text-foreground"
                       >
                         {fmtDate(dueDay, locale)}
                       </Text>

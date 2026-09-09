@@ -2216,6 +2216,126 @@ describe('#85 R6: cada tipo trae su icono, su hueco y su tinta', () => {
   });
 });
 
+describe('#85 R7: ninguna fila lleva el dato ni el sitio de otra', () => {
+  const vaccine = {
+    id: 'vac-9',
+    name: 'Antirrábica',
+    nextDoseAt: '2026-09-15',
+  };
+  const expected = [
+    {
+      id: 'rem-b',
+      iconTestID: 'icon-pill',
+      title: 'Pastilla antipulgas',
+      date: '11 sep 2026',
+      days: '1 d',
+    },
+    {
+      id: 'rem-a',
+      iconTestID: 'icon-stethoscope',
+      title: 'Consulta anual',
+      date: '13 sep 2026',
+      days: '3 d',
+    },
+    {
+      id: 'rem-c',
+      iconTestID: 'icon-bone',
+      title: 'Comprar croquetas',
+      date: '16 sep 2026',
+      days: '6 d',
+    },
+  ] as const;
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date(2026, 8, 10, 12, 0));
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    const pet = makePet({ nextVaccine: vaccine });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+    mockListReminders.mockResolvedValue({
+      kind: 'ok',
+      reminders: makeReminderFixture(),
+    });
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+    jest.restoreAllMocks();
+  });
+
+  it('no cruza ningún dato entre las tres filas ni con la vacuna', async () => {
+    await renderHome();
+
+    await screen.findByTestId('reminders-item-rem-b');
+    const foreignTexts = [
+      ...expected.flatMap(({ title, date, days }) => [title, date, days]),
+      'Antirrábica',
+      '15 sep 2026',
+      '5 d',
+    ];
+
+    for (const { id, title, date, days } of expected) {
+      const row = screen.getByTestId(`reminders-item-${id}`);
+      const rowQueries = within(row);
+      const nodes = [
+        [rowQueries.getByTestId(`reminders-item-${id}-title`), title],
+        [rowQueries.getByTestId(`reminders-item-${id}-date`), date],
+        [rowQueries.getByTestId(`reminders-item-${id}-days`), days],
+      ] as const;
+
+      for (const [node, ownText] of nodes) {
+        expect(node).toHaveTextContent(ownText);
+        for (const foreignText of foreignTexts) {
+          if (foreignText !== ownText) {
+            expect(node).not.toHaveTextContent(foreignText);
+          }
+        }
+      }
+      expect(row).not.toHaveTextContent('Antirrábica');
+    }
+  });
+
+  it('fija la posición de los hijos de cada fila', async () => {
+    await renderHome();
+
+    for (const { id, iconTestID } of expected) {
+      const row = await screen.findByTestId(`reminders-item-${id}`);
+      expect(row.children).toHaveLength(3);
+      const [disk, group, counter] = row.children;
+
+      expect(typeof disk).not.toBe('string');
+      expect(typeof group).not.toBe('string');
+      expect(typeof counter).not.toBe('string');
+      if (
+        typeof disk !== 'string' &&
+        typeof group !== 'string' &&
+        typeof counter !== 'string'
+      ) {
+        expect(within(disk).getByTestId(iconTestID)).toBeVisible();
+        expect(group.props.className).toBe('flex-1');
+        expect(counter.props.testID).toBe(`reminders-item-${id}-days`);
+        expect(group.children[0]).toHaveProperty(
+          'props.testID',
+          `reminders-item-${id}-title`,
+        );
+        expect(group.children[1]).toHaveProperty(
+          'props.testID',
+          `reminders-item-${id}-date`,
+        );
+      }
+    }
+  });
+});
+
 describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
   const vaccine = {
     id: 'vac-9',
