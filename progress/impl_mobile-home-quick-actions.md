@@ -27,11 +27,11 @@ Se respetó el orden prescrito:
 
 | R-id | Resultado | Rojo → verde |
 |---|---|---|
-| R1 | tabla, rótulo y tres tiles en orden | `4552103` → `5eb6c2c`; corrección `9a4854e` → `7bf12d5` |
+| R1 | tabla, rótulo y tres hijos reales en orden | `4552103` → `5eb6c2c`; correcciones `9a4854e` → `7bf12d5` y O7 `cc89976` → `deedf19` |
 | R2 | navegación exacta y cruce con rutas reales, sin cast común | `20355a6` → `48a0fe0`; correcciones `167e505`, `7f967b3`, `da9a847` → `ba92380` y `db588de` |
-| R3 | solo tres destinos ganan sitio; ninguna pestaña | `d4c506e` → `feb786f`; corrección `9a4854e` → `7bf12d5` |
-| R4 | icono, etiqueta, color, tinta y destino ligados por tile con `within(tile)` | `b9b6926` → `50527a6`; corrección `8246d2e` → `41838b5` |
-| R5 | fondo desde `CATEGORY_SLOTS`; tinta derivada y observada por hueco | `5c73799` → `9f6b76c`; corrección `8246d2e` → `41838b5` |
+| R3 | solo tres destinos ganan sitio; ningún cuarto hijo aunque carezca de `testID` | `d4c506e` → `feb786f`; correcciones `9a4854e` → `7bf12d5` y O7 `cc89976` → `deedf19` |
+| R4 | seis decisiones ligadas por tile con `within(tile)`: icono, etiqueta, fondo, destino, tinta y color de etiqueta | `b9b6926` → `50527a6`; correcciones `8246d2e` → `41838b5` y O8 `2aa9ed5` → `81bb1e6` |
+| R5 | fondo desde `CATEGORY_SLOTS`; tinta derivada por hueco y etiqueta en `text-foreground` | `5c73799` → `9f6b76c`; correcciones `8246d2e` → `41838b5` y O8 `2aa9ed5` → `81bb1e6` |
 | R6 | `min-h-11`, `flex-1`, sin `hitSlop` | `e98030e` → `494bae2` |
 | R7 | `Weight`, `CalendarPlus`, `FileText`, tamaño 24 y sin glifos del tab bar | preparación `a1796c9`; `8e21f05` → `bb3ae19` |
 | R8 | `rounded-xl` y un solo `CONTINUOUS_CORNER` dentro del `.map()` | `f8040c3` → `063d6c9` |
@@ -41,7 +41,7 @@ Se respetó el orden prescrito:
 | R11 | cuatro usos registrados y copy documentada | `cf6ec2e` → `84198eb` |
 | R13 | bloque nominal de drift sobre los tres fuentes | `9ea0a17` → `ed591de` |
 | R14 | deltas declarados; rojo natural `+4` del catálogo | `17c8c01` → `bf18ed2` |
-| R15/R15b | suite/typecheck y mutaciones de producción | `7ed1283`…`8b9bef4`; correcciones `9a4854e`…`41838b5`; detalle abajo |
+| R15/R15b | suite/typecheck y mutaciones de producción | `7ed1283`…`8b9bef4`; correcciones `9a4854e`…`41838b5`, O7 `cc89976` → `deedf19` y O8 `2aa9ed5` → `81bb1e6`; detalle abajo |
 
 `17c8c01` es deliberadamente un commit vacío: captura el árbol rojo natural
 que dejaron las cuatro claves de R1 frente a la base histórica. La spec autoriza
@@ -162,6 +162,8 @@ El veredicto rechazado quedó registrado en `c18f099`. El preflight del
 | O2 — tinta ligada a cada tile | `8246d2e` → `41838b5` | Con `quickActionInks[0]`, R4 esperaba `--color-category-amber-strong` en Recordatorio y recibió violeta. El icono se consulta con `within(tile)`; restaurar `[index]` dejó el candado verde. |
 | O3 — cast no declarado | `da9a847` → `ba92380`; ajuste `db588de` | El test R2 quedó rojo contra el cast común; se retiraron el cast y el import, y tanto el test como `tsc --noEmit` pasaron. La aserción final usa regex para no sumar una coincidencia ficticia al inventario literal. |
 | O5 — evidencia de M5 | documentación | La fila original queda corregida: M5 provoca tres fallos, no dos. |
+| O7 — contar hijos, no coincidencias de `testID` | `cc89976` → `deedf19` | La fila recibió `testID="quick-actions-row"` y R1/R3 asertan `children.length === 3`. El rojo versionado añadió un cuarto `Pressable` sin `testID`: recibió 4 hijos. La restauración retiró solo ese hijo y conservó el nuevo punto de observación. |
+| O8 — color de etiqueta por tile | `2aa9ed5` → `81bb1e6` | El cruce R4 añadió `text-foreground` a cada tupla y lo comprueba sobre el `Text` obtenido con `within(tile)`. La mutación versionada `text-muted` falló con esperado `text-foreground`; al restaurarla volvió a verde. |
 
 Después de las correcciones se replantaron, una por una, las siete mutaciones
 originales de producción sobre el filtro de seis suites (198 tests), restaurando
@@ -194,3 +196,60 @@ Gate correctivo final:
   instalado el extra opcional `tree_sitter_sql`.
 - Avisos preexistentes no bloqueantes: faltan `RESEND_API_KEY`, `RESEND_FROM` y
   `RESET_LINK_HOST` en `.env`; AWS SDK anuncia el requisito futuro de Node 22.
+
+### Segunda corrección: O7 y O8
+
+El preflight del 2026-09-09 sobre `68d8d24`, antes de tocar código, terminó con
+exit 0: móvil 68/68 suites y 1054/1054 tests; backend 163/163 y 1243/1243;
+infraestructura 2/2 y 14/14; e2e 25 suites y 354 tests, con las omisiones
+previstas; lint y typecheck verdes.
+
+Evidencia específica de O7:
+
+- Cuarto hijo **sin `testID`**, versionado en `cc89976`: el test focalizado
+  falló con `Expected length: 3` y `Received length: 4` (1 suite roja, 1 fallo;
+  los otros 67 tests del fichero quedaron omitidos por el filtro). `deedf19`
+  retiró solo la mutación y dejó el test verde.
+- Cuarto hijo con `testID="shortcut-extra"`, sonda temporal sobre el estado
+  verde: el filtro de seis suites quedó rojo con 3 fallos / 198 tests. El
+  recuento de hijos detectó 4; los otros dos fallos fueron el cruce de copy de
+  #65 porque la sonda reutilizaba `home.quickActionWeight`. Se restauró el
+  fichero inmediatamente.
+
+Evidencia específica de O8:
+
+- `text-foreground` → `text-muted`, versionado en `2aa9ed5`: el test R4
+  focalizado falló sobre el nodo de etiqueta con `Expected substring:
+  "text-foreground"` y `Received string: "text-2xs font-semibold text-muted"`.
+  `81bb1e6` restauró producción y el mismo test pasó.
+- Con ambas correcciones restauradas, el control pasó 6/6 suites y 198/198
+  tests.
+
+#### Inventario completo de decisiones repetidas
+
+Para una futura spec con elementos repetidos, el cruce de cada tile debe
+enumerar y observar juntas estas **seis decisiones**:
+
+1. componente de icono;
+2. etiqueta visible / clave de copy;
+3. color o hueco de fondo;
+4. destino de navegación;
+5. tinta del icono;
+6. color de la etiqueta.
+
+Además, la identidad (`testID`), el orden y la cardinalidad son decisiones
+estructurales: aquí están vigiladas por R1/R3 y O7, pero no sustituyen ninguna
+de las seis dimensiones de conducta. Los invariantes compartidos también deben
+inventariarse por separado: tamaño del icono (R7), objetivo táctil y reparto
+(R6), radio/esquina (R8), rol y agrupación accesible (R9), y condición/sitio de
+render (R10).
+
+La auditoría encontró una **séptima decisión visual prescrita por `design.md`
+§D12 pero no vigilada**: la receta tipográfica de etiqueta
+`text-2xs font-semibold`. Una sonda temporal de producción a
+`text-xs font-medium` dejó el filtro verde, 6/6 suites y 198/198 tests. No se
+amplió O7/O8 para añadir ese candado; la sonda quedó restaurada y la deuda se
+declara aquí. También quedan sin aserción exacta los detalles compartidos de
+composición interior `items-center gap-1.5 py-3`; no son asociaciones distintas
+por fila, pero una futura spec debe decidir si los congela o los deja como
+libertad de implementación.
