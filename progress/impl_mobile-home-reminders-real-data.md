@@ -26,6 +26,9 @@
   adapta el doble posicional heredado de tres a cuatro hooks por render. Home
   quedó 90/90 verde; la suite móvil, 68 suites/1089 tests y 1 snapshot verde;
   `bun run typecheck`, exit 0.
+- **R5**: rojo `10c9636`. Los cinco `it` normativos fallaron por ausencia de
+  `reminders-item-*`, con 90 tests heredados verdes. El verde está bloqueado
+  por la contradicción de aislamiento del mock descrita abajo.
 
 ## Prueba de mutación
 
@@ -82,3 +85,24 @@ las dos aserciones del test. Con esa adaptación y la implementación mínima de
 R4, `index.test.tsx` quedó 90/90 verde y la suite móvil completa 1089/1089.
 La deuda de reemplazar el doble posicional por uno indexado por función queda
 registrada en #86 y fuera de #85.
+
+## Bloqueo de aislamiento del mock en R5
+
+La implementación mínima exacta de R5 puso verdes sus cinco `it`, pero dejó
+`index.test.tsx` en 3 fallos/92 verdes. Los tres fallos son candados heredados
+de #70 que esperaban cuerpos con cero recordatorios reales y recibieron la
+última fixture de R5 (`rem-1`).
+
+La causa es el andamiaje prescrito: los tests de R5 llaman a
+`mockListReminders.mockResolvedValue(...)`, y su `afterEach` no restaura un
+`jest.fn` de módulo. Después, los `beforeEach` heredados solo ejecutan
+`jest.clearAllMocks()`, que limpia llamadas pero conserva precisamente esa
+implementación. Por tanto, ya no vuelve por sí sola la respuesta `[]` escrita
+en la factoría.
+
+Esto contradice la premisa de R4/A6 y `tasks.md:115-118`, que atribuye a la
+factoría la conservación automática de los `describe` heredados sin tocarlos.
+Resolverlo exige una regla no prescrita: restaurar el mock vacío al salir de
+R5, fijarlo en el `beforeEach` de #70 o reordenar los `describe`. No se eligió
+ninguna. La implementación de producción se retiró sin commit y se paró antes
+de M7, con cero cambios de backend.

@@ -14,7 +14,7 @@ Base de medición: **`20c7b3c`** (merge del PR #116, #70).
 | R2 — `localDayOf` | `src/screens/home/format.test.ts`::`describe('#85 R2: localDayOf reduce el instante a día civil local')` | `109cdaa feat(mobile-home-reminders-real-data): lock local reminder day (R2)` + `2fb06c5 feat(mobile-home-reminders-real-data): derive local reminder day (R2)` + M1 `97e06c0`/`80595f9` |
 | R3 — `upcomingReminders` | `src/screens/home/format.test.ts`::`describe('#85 R3: upcomingReminders filtra, ordena y acota')` | `37f7d74 feat(mobile-home-reminders-real-data): lock upcoming reminder selection (R3)` + `4788104 feat(mobile-home-reminders-real-data): select upcoming reminders (R3)`; M3..M6 validadas en el informe según A8/A9 |
 | R4 — la Home pide los recordatorios | `src/screens/home/index.test.tsx`::`describe('#85 R4: la Home pide los recordatorios de la mascota')` + adaptación de `#70 R15` | `c2d5dfd feat(mobile-home-reminders-real-data): lock home reminder request (R4)` + `fc7a31d feat(mobile-home-reminders-real-data): fetch home reminders (R4)`; A10 adapta el doble posicional |
-| R5 — las filas y su cardinalidad | pendiente | pendiente |
+| R5 — las filas y su cardinalidad | `src/screens/home/index.test.tsx`::`describe('#85 R5: la sección pinta los recordatorios reales')` | rojo `10c9636 feat(mobile-home-reminders-real-data): lock real reminder rows (R5)`; verde bloqueado por la persistencia de la fixture del mock documentada en el informe |
 | R6 — icono, hueco y tinta por tipo | pendiente | pendiente |
 | R7 — cruce de dato y posición | pendiente | pendiente |
 | R8 — no pulsables y accesibilidad | pendiente | pendiente |
