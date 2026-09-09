@@ -629,3 +629,215 @@ Avisos preexistentes y ajenos a #71, sin cambio: faltan `RESEND_API_KEY`,
 `RESEND_FROM` y `RESET_LINK_HOST` en `.env`; el AWS SDK v3 anuncia que sus
 versiones posteriores a enero de 2027 exigirán Node ≥22 (esta corrida, con Node
 20.20.2, terminó verde).
+
+---
+---
+
+# Revisión final — rango `68d8d24..ce66d27` (10 commits)
+
+Fecha: 2026-09-09
+Veredicto: **APROBADO — veredicto final de #71**
+
+O7 y O8 cerradas y verificadas replantando yo las mutaciones. Las once
+mutaciones anteriores siguen rojas. Gate verde a la primera. Lo único que queda
+para `done` es el smoke humano.
+
+## Alcance
+
+Producción: **2 líneas** en `index.tsx` — `testID="quick-actions-row"` en la
+`View` de `flex-row gap-3`. Es exactamente el arreglo que prescribí en O7, y era
+el único que no podía ser solo de test. Test: 21 líneas en `index.test.tsx`.
+
+**Ninguna cifra de candado se movió**: los ficheros de candado
+(`consistency-classnames`, `ui-language`, `ui-copy-table`, `language-provider`,
+`design-drift`) entran en el diff de la branch **solo** en el rango original,
+por los cuatro deltas declarados de R14, y **no** en éste ni en el correctivo
+anterior. Las catorce filas siguen como las validé.
+
+Commits ajenos: siguen siendo **los mismos dos** (`71a4db7`, `997c080`), sin un
+tercero. `100ef1a` es el commit de aprobación del humano.
+
+El `testID` nuevo no viola R15 —prohíbe **renombrar** `testID` de producción, no
+añadir uno— y no toca accesibilidad: R9 sigue verde y sigue exigiendo que ni la
+sección ni la fila declaren `accessible` ni `accessibilityLabel`.
+
+## O7 — cerrada: ahora cuenta hijos renderizados
+
+`index.test.tsx:1545`, `expect(tileRow.children).toHaveLength(3)`.
+
+Replanté las dos formas que antes pasaban, más la tercera que pediste:
+
+| # | Forma del cuarto hijo | Antes | Ahora |
+|---|---|---|---|
+| W1 | `<Pressable testID="shortcut-extra">` → `/pairing` | **verde** | **ROJO** |
+| W2 | `<Pressable>` **sin `testID`** → `/pairing` | **verde** | **ROJO** |
+| W3 | `<View className="flex-1" />` — ni `Pressable` ni `testID` | no probada | **ROJO** |
+
+Las tres mueren en `dibuja el rótulo y los tres tiles en orden`. El candado ya no
+depende del nombre ni del tipo de componente: cuenta hijos.
+
+**La cuarta forma, envolver:** un fragmento `<>…</>` no ayuda —RNTL lo aplana y
+los hijos siguen contándose uno a uno— y un `{cond ? <Pressable/> : null}` muere
+cuando de verdad renderiza, que es lo correcto. La única variante que preserva
+el recuento es **partir el `.map()` y meter un tile real junto al extra dentro de
+un `View`**, y esa está cerrada **por composición con otros dos candados**: exige
+duplicar el cuerpo del tile en el fuente, y entonces R7 falla —asserta
+`source.match(/<Icon size=\{24\}/g)` con longitud **1**— y #62 R14 también, porque
+la fila `screens/home/index.tsx` del inventario de esquinas continuas está
+cerrada en **2**. No hay que añadir nada: ya muerde.
+
+## O8 — cerrada: el color de etiqueta se liga por tile
+
+`text-foreground` → `text-muted` ahora muere en el cruce de R4, sobre el nodo
+`Text` obtenido con `within(tile)` y con `text-foreground` en la tupla de cada
+tile. El `it` pasa de cinco a **seis** dimensiones por tile.
+
+## Sin regresión: las once siguen rojas
+
+Replantadas una por una sobre el árbol corregido, restaurando entre cada una:
+
+| Mutación | Fallos | Test que muere |
+|---|---|---|
+| M1 destino | 2 | R4 + `lleva cada tile a su ruta existente` |
+| M2 icono | 2 | R4 + `usa iconos de reicon y ningún emoji` |
+| M3 etiqueta | 1 | R4 |
+| M4 hueco/fondo | 1 | R4 |
+| M5 cuarto tile `/map` | 3 | R1 + `no apunta a ninguna ruta inexistente` + R3 |
+| M6 colocación | 1 | R10 |
+| M7 `min-h-11` | 1 | R6 |
+| O1 tile `quick-action-extra` | 1 | R1 |
+| O2 tinta al índice 0 | 1 | R4 |
+| O3 cast `as Href` reintroducido | 1 | `no apunta a ninguna ruta inexistente` |
+| O8 etiqueta `text-muted` | 1 | R4 |
+
+Ninguna quedó verde. Los tests de #69 siguen verdes (van dentro de las 68/68).
+Árbol limpio antes y después de cada sonda.
+
+## La séptima, confirmada exacta
+
+Verificado como pediste, **antes de que la registres como deuda**:
+
+`text-2xs font-semibold` → `text-xs font-medium` en la etiqueta del tile deja la
+**suite móvil completa verde: 68/68 suites, 1054/1054 tests, 1/1 snapshot**.
+No solo el filtro de seis: la suite entera. `design.md` §D12 prescribe la receta
+y nada la vigila. La sonda quedó restaurada y el árbol limpio, comprobado con
+`git status --porcelain` vacío.
+
+El hecho que declara Codex es **exacto**. Adelante con el id propio.
+
+## Residual, sin arreglo pedido
+
+**W4 — un `Pressable` extra anidado *dentro* de un tile** deja el filtro verde
+(68/68 en la suite del fichero). El recuento de hijos mira la fila, no el
+interior de cada tile. No es la misma clase de defecto que O7 —no es un cuarto
+acceso rápido, es un control anidado dentro de uno existente— y ninguna
+decisión de la spec lo contempla. Lo dejo escrito y **no pido arreglo**: cerrarlo
+pediría un recuento de hijos por tile que congelaría la composición interior, y
+eso es justamente lo que el propio informe propone dejar como libertad de
+implementación.
+
+## Mi criterio sobre el inventario de decisiones repetidas
+
+Le pediste plantilla para próximas specs. Como está, es **correcta para #71 pero
+incompleta como plantilla**. Le faltan tres cosas, y la primera es la que más
+importa:
+
+1. **El dato que cada elemento muestra.** La lista tiene *destino de navegación*
+   porque #71 es navegación. La tira de **#69** tenía un **valor** por celda
+   (`12,4 kg`), y ése fue exactamente el eje que #69 dejó sin vigilar. Una
+   plantilla que solo enumere "destino" hará que la próxima spec de una tira de
+   datos repita el defecto de #69 al pie de la letra. La dimensión general es
+   **"el contenido que cada elemento muestra"**, distinta de la etiqueta, y
+   *destino* es su caso particular cuando el elemento navega en vez de informar.
+
+2. **El nombre accesible por elemento.** La lista archiva *rol y agrupación
+   accesible* entre los invariantes compartidos. Aquí acierta, porque R9 decide
+   que la etiqueta visible **es** el nombre accesible. Pero en un elemento
+   repetido solo-icono, o cuando el `accessibilityLabel` difiere del texto
+   visible, el nombre accesible es una decisión **por elemento** y se cruza igual
+   que la etiqueta: TalkBack leyendo "Documentos" sobre el tile de Recordatorio
+   es un cruce que **ninguna** aserción de texto visible detecta.
+
+3. **La condición de render por elemento.** *Condición y sitio de render* está
+   como invariante compartido (R10: la sección entera aparece con mascota
+   seleccionada). Distinto es que **un elemento concreto** aparezca o no —"el tile
+   de Documentos solo si la mascota tiene documentos"—: eso mueve la
+   cardinalidad en tiempo de ejecución, y un recuento de hijos verificado en **un
+   solo escenario** no lo cubre. La plantilla debe pedir un caso por condición.
+
+Lo demás lo firmo: las seis dimensiones de conducta están bien separadas, la
+distinción entre decisiones **estructurales** (identidad, orden, cardinalidad) y
+de **conducta** es la correcta, y dejar `items-center gap-1.5 py-3` como libertad
+de implementación en vez de congelarlo es la decisión sensata.
+
+**Una línea más para los invariantes compartidos, que es deuda del repo y no de
+#71**: el **feedback pressed**. `CHECKPOINTS.md` C8 lo pide para todo elemento
+tappable, y los tiles son `Pressable` pelados. No lo cuento contra esta feature
+—la spec aprobada nunca lo pidió, R12 prohíbe tocar componentes compartidos, y
+en toda la app hay **un solo** sitio con estilo de pulsado,
+`weekly-activity-chart.tsx:345` de #68—, pero es un hueco real y transversal, y
+en la plantilla debe figurar para que la próxima spec lo decida a propósito en
+vez de por omisión.
+
+## Checklists finales
+
+- **C2** — [x] una sola feature `in_progress`; [x] `progress/current.md` al día
+- **C3** — [x] solo presentación; cero backend, infra y capas de dominio
+- **C4** — [x] cada `R<n>` con test que lo nombra; [x] test-primero;
+  [x] quinto punto: los rojos `cc89976` (cuarto hijo sin `testID`) y `2aa9ed5`
+  (`text-muted`) son **mutaciones de producción** versionadas y revertidas en su
+  verde. Cero mocks mutados en toda la feature
+- **C5** — [x] `traceability.md` sin filas "pendiente"; las filas R1, R3, R4, R5
+  y R15/R15b describen lo que los tests hacen ahora
+- **C6** — [x] `status: approved` intacto; ningún requisito modificado; las
+  correcciones viven en informe y trazabilidad, no en la spec
+- **C7** — [ ] N/A: no reemplaza nada; cero ficheros borrados
+- **C8** — [x] grep-clean, radios, tokens, táctil y a11y de tres botones
+  independientes, sin cambio. Salvedad declarada arriba sobre *feedback pressed*,
+  transversal al repo y ajena a esta feature
+
+## Output de `./init.sh` — gate final
+
+Corrido por mí, primer plano, árbol limpio en `ce66d27`, `env -u FORCE_COLOR`
+(#75), tras `pgrep -f init.sh` (libre). **Una sola corrida: no apareció el flaky
+#76.** Árbol limpio también después.
+
+```
+✅ node / pnpm / bun · .env · DATABASE_URL
+✅ Dependencias instaladas
+✅ Archivos del harness presentes
+✅ STATUS.md sincronizado con feature_list.json
+✅ Build exitoso
+
+→ Tests
+  backend unitario:  163/163 suites · 1243/1243 tests
+  infra:               2/2 suites   ·   14/14 tests
+  móvil:              68/68 suites  · 1054/1054 tests · 1/1 snapshot
+✅ Tests pasados
+
+→ Tests e2e
+  3 skipped, 25 passed de 28 suites · 8 skipped, 354 passed de 362 tests
+✅ Tests e2e pasados
+
+✅ Lint sin errores
+✅ Typecheck sin errores
+✅ Todo verde.
+
+EXIT=0
+```
+
+Avisos preexistentes y ajenos, sin cambio: faltan `RESEND_API_KEY`,
+`RESEND_FROM` y `RESET_LINK_HOST` en `.env`; el AWS SDK v3 anuncia Node ≥22 para
+después de enero de 2027 (esta corrida, con Node 20.20.2, verde).
+
+## Lo único que falta para `done`
+
+El **gate humano de smoke en dev build de Android** (nunca Expo Go), tema claro y
+oscuro, con el guion de `requirements.md` §Aprobación. Y que la descripción del
+PR nombre los dos commits ajenos de documentación, como decidió el humano.
+
+Deuda abierta que deja esta feature, para que el leader le dé id:
+**la receta tipográfica de la etiqueta sin vigilar** (§La séptima),
+**O6** (`feature_list.json` de #71 obsoleto),
+**O9** (un intermitente sin identificar visto una vez en la suite móvil) y
+el hueco transversal de **feedback pressed**.

@@ -1516,5 +1516,21 @@
     "files_affected": [
       "mobile-pet-tracker/src/screens/home/index.test.tsx"
     ]
+  },
+  {
+    "id": 81,
+    "name": "mobile-quick-actions-typography-lock",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Deuda declarada por Codex y verificada por el reviewer al cerrar #71 el 2026-09-09. La receta tipografica de la etiqueta de los tiles -text-2xs font-semibold, prescrita por design.md §D12 de specs/mobile-home-quick-actions/- NO esta vigilada: una sonda de produccion a text-xs font-medium deja la suite movil COMPLETA verde, 68/68 suites y 1054/1054 tests, no solo el filtro dirigido. Es la septima dimension del tile; las otras seis quedaron bajo candado en #71. Va con dos residuales de la misma auditoria que la spec debe decidir si congela o deja como libertad de implementacion: los detalles de composicion interior items-center gap-1.5 py-3, y que un Pressable ANIDADO dentro de un tile no se cuenta en el recuento de hijos -otra clase de defecto, y cerrarlo congelaria la composicion interior-.",
+    "acceptance_criteria": [
+      "Cambiar la receta tipografica de la etiqueta del tile pone la suite roja",
+      "La spec decide por escrito si los detalles de composicion interior se congelan o se dejan libres, y por que",
+      "El candado nuevo no congela mas de lo que design.md prescribe: si el diseno no fija algo, el test no lo fija",
+      "Suite movil completa verde; ninguna cifra de candado se mueve"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/home/index.test.tsx"
+    ]
   }
 ]
