@@ -197,7 +197,7 @@ implementación + tests + docs incumple `CHECKPOINTS.md` C4 y **se rechaza**.
 > rojo y revertida en el verde (`CHECKPOINTS.md` C4, quinto punto). Mutar un
 > doble de test **no vale**.
 
-- [ ] (1) Escribir test que falla para R7
+- [x] (1) Escribir test que falla para R7
   - Plantar **M9** (cruce de dato título↔fecha) **y M10** (intercambio de
     posición de los dos hijos del agrupador, sin tocar `testID`) en
     `src/screens/home/index.tsx`, **versionadas en este commit**.
@@ -208,10 +208,10 @@ implementación + tests + docs incumple `CHECKPOINTS.md` C4 y **se rechaza**.
   - **Si M10 no pone rojo, el test está escrito solo con
     `within(fila).getByTestId(...)` —que es agnóstico al orden— y hay que
     reescribirlo con `children[i]` antes de seguir.**
-- [ ] (2) Implementación mínima que lo pasa
+- [x] (2) Implementación mínima que lo pasa
   - **Revertir M9 y M10.** No se escribe código nuevo: el verde es la
     restauración de lo que R5 y R6 dejaron correcto.
-- [ ] (3) Refactor con tests verdes
+- [x] (3) Refactor con tests verdes
   - Anotar en el informe el mensaje exacto de cada rojo y el `git diff` vacío
     tras revertir.
 

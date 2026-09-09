@@ -34,6 +34,9 @@
 - **R6**: rojo `bb83edc`; verde `d4733ef`. Cada tipo resuelve su icono mediante
   el mapa exhaustivo, y el hueco/tinta desde `REMINDER_TYPE_META`. R6 quedó 3/3
   verde; `#70 R13` y `#64 R9`, 4/4 y 2/2 verdes respectivamente.
+- **R7**: rojo versionado `4078fdc`; verde `c5e30e2`. Los dos candados ligan el
+  contenido y la posición a su propia fila. Home quedó 100/100 verde y el
+  `git diff` vacío tras restaurar M9/M10.
 
 ## Prueba de mutación
 
@@ -49,6 +52,8 @@ Todas las mutaciones se plantan en código de producción, de una en una.
 | M6 | Se retiró temporalmente `a.id.localeCompare(b.id)` del comparador. `format.test.ts` dejó 1 fallo/12 verdes: cayó exactamente `it('desempata por id ascendente')`; el sort estable conservó la fixture invertida como `[rem-z, rem-a]` en vez de `[rem-a, rem-z]`. Con la condición contraria —fixture entregada ya como `[rem-a, rem-z]`— la mutación habría quedado verde. | Desempate por id restaurado sin commit; `format.test.ts` volvió a 13/13 verde. |
 | M7 | Se invirtió temporalmente el comparador primario a `b.dueAt.localeCompare(a.dueAt)`. Las suites de helper y Home dejaron 5 fallos/103 verdes: cayeron los dos `it` de orden y los dos de tope nombrados por A9; el `it` de filtro añadió un quinto rojo porque también fija el orden exacto. | Comparador ascendente restaurado sin commit; ambas suites volvieron a 108/108 verde. |
 | M8 | El tope cambió temporalmente de `slice(0, 3)` a `slice(0, 4)`. Helper y Home dejaron exactamente 2 fallos/106 verdes: `devuelve como mucho tres` recibió `rem-plus-4`, y `corta en tres aunque haya cinco` recibió 5 hijos en vez de 4. | Tope de tres restaurado sin commit; ambas suites volvieron a 108/108 verde. |
+| M9 | Commit rojo `4078fdc`: el nodo `…-title` pintó la fecha y `…-date` pintó `reminder.title`. Cayó `it('no cruza ningún dato entre las tres filas ni con la vacuna')`: esperaba `Pastilla antipulgas` y recibió `11 sep 2026`. | Datos restaurados en `c5e30e2`; R7 volvió 2/2 verde y el `git diff` quedó vacío. |
+| M10 | Commit rojo `4078fdc`: dentro del agrupador se colocó primero el nodo `…-date` y después `…-title`, sin cambiar sus `testID`. Cayó `it('fija la posición de los hijos de cada fila')`: `group.children[0]` recibió `reminders-item-rem-b-date` en vez de `…-title`. Con la condición contraria —aserciones solo mediante `within(fila).getByTestId(...)`— la mutación habría quedado verde porque esa búsqueda ignora el orden. | Posición restaurada en `c5e30e2`; R7 volvió 2/2 verde y el `git diff` quedó vacío. |
 | M11 | Se añadió temporalmente al cuerpo `<View className="h-1.5 rounded-full bg-default" />` sin `testID`. Home dejó 5 fallos/90 verdes: cayó el `it` nominal de tres escenarios por 2 hijos en vez de 1, además del tope y tres cardinalidades heredadas. | Hijo intruso retirado sin commit; Home volvió a 95/95 verde. |
 | M12 | Se cruzaron temporalmente `medication: Stethoscope` y `appointment: Pill`. R6 dejó 1 fallo/2 verdes: cayó exactamente `it('liga icono, superficie y tinta a su tipo')` porque `rem-b` no contenía `icon-pill`. | Mapa exacto restaurado sin commit; R6, `#70 R13` y `#64 R9` volvieron verdes, y `git diff` quedó vacío. |
 
