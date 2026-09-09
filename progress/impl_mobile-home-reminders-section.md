@@ -118,6 +118,12 @@ Se completa durante la secuencia TDD; los hashes definitivos también quedan en
 - **Grafo**: `graphify update .` terminó con exit 0; reextrajo 723 ficheros y
   reconstruyó 11271 nodos, 17276 aristas y 702 comunidades. El aviso conocido
   por `tree_sitter_sql` siguió intacto y no hubo cambios versionados.
+- **Gate integral final del segundo pase**: `env -u FORCE_COLOR ./init.sh`
+  terminó con exit 0. Build verde; backend 163 suites/1243 tests, infra 2/14,
+  móvil 68/1078 con 1 snapshot, e2e 25 suites/354 tests pasados y 3 suites/8
+  tests omitidos; lint y typecheck verdes. Los avisos de `.env`, `STATUS.md`,
+  Node/AWS y servicios simulados siguieron siendo los conocidos y no
+  bloqueantes del harness.
 
 ## Deltas R18
 
@@ -208,12 +214,12 @@ revierte exactamente su mutación de producción.
 - Grep-clean de R19: cero hex fuera de `src/theme/`, cero clases arbitrarias,
   `StyleSheet.create`, sombras/elevation legacy; el inventario de radios contiene
   únicamente `rounded-card`, `rounded-full` y `rounded-xl`.
-- Única corrida final `env -u FORCE_COLOR ./init.sh`: exit 0. Build verde;
+- Primera entrega — corrida final `env -u FORCE_COLOR ./init.sh`: exit 0. Build verde;
   backend 163 suites/1243 tests, infra 2/14, móvil 68/1078 con 1 snapshot,
   e2e 25 suites/354 tests pasados y 3 suites/8 tests omitidos; lint y typecheck
   verdes. Los avisos de `.env`, `STATUS.md`, Node/AWS y servicios simulados son
   los mismos avisos no bloqueantes del harness; no se modificó ninguno.
-- `graphify update .`: exit 0; reextrajo 726 ficheros y reconstruyó el grafo
+- Primera entrega — `graphify update .`: exit 0; reextrajo 726 ficheros y reconstruyó el grafo
   con 11234 nodos, 17241 aristas y 718 comunidades. El aviso por la dependencia
   opcional `tree_sitter_sql` se dejó intacto —esta feature no añade
   dependencias— y el comando no produjo cambios versionados.
