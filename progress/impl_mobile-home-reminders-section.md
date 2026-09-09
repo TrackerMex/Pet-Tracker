@@ -164,6 +164,31 @@ Se completa durante la secuencia TDD; los hashes definitivos también quedan en
   los avisos de `.env`, `STATUS.md`, Node/AWS y servicios simulados siguieron
   siendo los no bloqueantes del harness.
 
+## Cuarto pase
+
+- **Gate previo**: D8 quedó firmada por el humano en `28ebba8`. El baseline
+  `env -u FORCE_COLOR ./init.sh` terminó con exit 0: backend 163 suites/1243
+  tests, infra 2/14, móvil 68/1078, e2e 25 suites/354 tests pasados y 3 suites/8
+  tests omitidos; build, lint y typecheck verdes.
+- **Rojo de copy**: `e794c96` actualizó el candado literal de la cabecera y fijó
+  el rótulo del enlace. La corrida dirigida dejó 1 fallo/85 tests verdes:
+  esperaba `Próxima vacuna` y recibió `Recordatorios`.
+- **Verde de copy**: `828889e` cambió únicamente los valores de
+  `home.reminders` y `home.remindersSeeAll` en español e inglés. Las dos suites
+  dirigidas (`index.test.tsx` y `ui-language.test.ts`) quedaron con 108/108
+  tests verdes. No se renombró ninguna clave, no cambió ningún recuento y
+  `language-provider.test.tsx` quedó intacto.
+- **Grafo**: `graphify update .` terminó con exit 0; reextrajo 724 ficheros y
+  reconstruyó 11289 nodos, 17292 aristas y 711 comunidades. Conservó el aviso
+  conocido de `tree_sitter_sql` y no produjo cambios versionados.
+- **Gate integral**: el primer `env -u FORCE_COLOR ./init.sh` llegó a la suite
+  móvil y encontró el flaky conocido #72 en
+  `src/screens/add-pet/index.test.tsx` (1 fallo/1077 verdes). La corrida dirigida
+  inmediata quedó 17/17 verde sin cambios. La repetición integral terminó con
+  exit 0: backend 163 suites/1243 tests, infra 2/14, móvil 68/1078 con 1
+  snapshot, e2e 25 suites/354 tests pasados y 3 suites/8 tests omitidos; build,
+  lint y typecheck verdes.
+
 ## Deltas R18
 
 Medición ejecutada contra `b0ec5a8`, conservando cada base como expresión y no
@@ -189,7 +214,7 @@ tests verdes; el candado explícito de R18 añadió el cuarto rojo esperado. Tra
 | 7 | Home `2` → `2`; total `33 + 1 + 1` → `33 + 1 + 1` | `Δ0`; las dos ramas nuevas heredan `Card` |
 | 8 | `['utils/category-palette.ts']` → la misma lista | `Δ0`; ninguna clase categórica se escribió en Home |
 | 9 | 16 usos de `bg-accent-soft` → 16 | `Δ0` |
-| 10 | 13 botones sólidos primarios → 13 | `Δ0`; “Ver todos” sigue siendo enlace de texto |
+| 10 | 13 botones sólidos primarios → 13 | `Δ0`; “Ver recordatorios” sigue siendo enlace de texto |
 | 11 | listas de radios prohibidos `[]` → `[]` | `Δ0` |
 | 12 | `19 + 2` ficheros de pantalla → `19 + 2` | `Δ0`; no se creó pantalla ni módulo de producción |
 | 13 | glifos `[]` → `[]`; tres `ChevronRight` de Profile → tres | `Δ0` |

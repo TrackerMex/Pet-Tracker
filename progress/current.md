@@ -25,6 +25,13 @@
 - **Inicio**: 2026-09-09 04:20 UTC.
 - **Segundo pase iniciado**: 2026-09-09 13:36 UTC, despues del rechazo del reviewer.
 - **Tercer pase iniciado**: 2026-09-09 14:47 UTC, despues de la aprobacion del segundo pase y la firma humana de D7 en `4e4efdd`.
+- **Cuarto pase iniciado**: 2026-09-09 16:00 UTC, despues de la firma humana de D8 en `28ebba8`.
+- **Plan D8**: actualizar solo los valores de `home.reminders` y `home.remindersSeeAll` en ambos idiomas, ajustar cualquier candado literal sin renombrar claves ni mover recuentos, documentar el rojo/verde, actualizar trazabilidad y ejecutar `graphify update .` y el gate integral.
+- **Baseline del cuarto pase**: `env -u FORCE_COLOR ./init.sh` termino con exit 0 antes del cambio de copy (backend 163/1243, infra 2/14, movil 68/1078, e2e 25 suites/354 tests pasados y 3 suites/8 tests omitidos; build, lint y typecheck verdes).
+- **Evidencia D8**: `e794c96` actualizo el candado literal y dejo `index.test.tsx` rojo con 1 fallo/85 verdes (`Próxima vacuna` esperado, `Recordatorios` recibido). `828889e` cambio solo los cuatro literales de las dos claves aprobadas; `index.test.tsx` y `ui-language.test.ts` quedaron con 2 suites/108 tests verdes. No se renombro ninguna clave, no se movio ningun recuento y `language-provider.test.tsx` quedo intacto.
+- **Grafo del cuarto pase**: `graphify update .` termino con exit 0 (724 ficheros, 11289 nodos, 17292 aristas y 711 comunidades) y no produjo cambios versionados.
+- **Gate final del cuarto pase**: el primer `env -u FORCE_COLOR ./init.sh` encontro el flaky conocido #72 en `src/screens/add-pet/index.test.tsx`; su reintento dirigido quedo 17/17 verde. La repeticion integral termino con exit 0 (backend 163/1243, infra 2/14, movil 68/1078, e2e 25 suites/354 tests pasados y 3 suites/8 tests omitidos; build, lint y typecheck verdes).
+- **Siguiente paso**: reviewer del cuarto pase y repeticion humana del smoke Android con los rotulos de D8; la feature permanece `in_progress`.
 - **Branch/worktree**: `feature/70-mobile-home-reminders-section` en `/home/claude/sites/Pet-Tracker` (el worktree recibido en el contexto estaba asociado a #43; no se desmonta ni se altera).
 - **Gate D4-D6**: aprobado por el humano en `6eae6ed`; D6 esta firmada en `requirements.md:1106` antes de iniciar este pase.
 - **Baseline del segundo pase**: `env -u FORCE_COLOR ./init.sh` en verde antes de tocar los candados (163 suites backend, 2 infra, 68 movil y 25 e2e; lint y typecheck verdes).
