@@ -1185,7 +1185,7 @@ suite móvil completa:
 otro candado. R5, R8 y R12 siguen exigiendo lo mismo; lo que se añade es lo que
 lo demuestra.
 
-  - [ ] Aprobado por humano
+  - [X] Aprobado por humano
 
 ## Aprobación
 
