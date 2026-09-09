@@ -154,3 +154,27 @@ sondas pueden quedar fuera de las trece M1-M13 de R15, pero la enmienda debe
 decirlo expresamente para no crear otra discrepancia de recuento. Se paró antes
 de escribir los tests de R9; R8 y `#70 R11` estaban 4/4 verdes, typecheck y lint
 dirigido en exit 0, y no hay cambios de backend.
+
+## Bloqueo de evidencia P9 tras A12
+
+A12 prescribe una sonda válida —añadir el estado `ok` de recordatorios a la
+condición de `reminders-next-vaccine`—, pero atribuye al rojo un efecto que esa
+edición no puede producir: afirma que desaparece
+`reminders-section-skeleton` (`requirements.md:1315-1317`).
+
+En producción son ramas hermanas independientes. El skeleton depende solo de
+`detail.data === undefined` (`index.tsx:566-571`); la línea que P9 modifica es
+la condición separada de la tarjeta (`index.tsx:573-606`). Cuando el perfil
+está cargando, `nextVaccine` ya es nulo con o sin P9, de modo que la sonda no
+cambia el skeleton y el escenario conserva exactamente uno.
+
+P9 sí mata los dos casos nominales de R9 por el motivo correcto: con detalle
+resuelto y vacuna presente, recordatorios pendientes o fallidos apagan
+`reminders-next-vaccine`, por lo que `body.children.length` pasa de 1 a 0. La
+corrección mínima es conservar la sonda y sustituir únicamente la evidencia
+`desaparece el reminders-section-skeleton` por
+`desaparece reminders-next-vaccine y el cuerpo pasa de un hijo a cero`; el
+subescenario de perfil cargando debe seguir esperando un skeleton.
+
+Se paró antes de escribir tests o mutar producción. El árbol seguía limpio,
+R1-R8 permanecían cerrados y no se tocó backend.
