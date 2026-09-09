@@ -92,9 +92,11 @@ implementación + tests + docs incumple `CHECKPOINTS.md` C4 y **se rechaza**.
     orden por `dueAt` con `localeCompare`, desempate por `id`, `slice(0, 3)`.
   - `import type { Reminder } from '../../api/types';` — **solo tipo**.
 - [ ] (3) Refactor con tests verdes
-  - Plantar **M3**, **M4**, **M5**, **M6**, **M7** y **M8** de una en una,
-    comprobar el rojo y **que cada una cae por el `it` que R15 nombra**.
-    Revertir cada una. Anotar.
+  - Plantar **M3**, **M4**, **M5** y **M6** de una en una, comprobar el rojo y
+    **que cada una cae por el `it` que R15 nombra**. Revertir cada una. Anotar.
+  - **M7 y M8 NO se plantan aquí** (enmienda **A9**): nombran además dos `it` de
+    la Home que no existen hasta R5. Se verifican en el refactor de R5, donde
+    existen los cuatro.
 
 ## R4 — La Home pide los recordatorios: una llamada más, declarada
 
@@ -136,6 +138,10 @@ implementación + tests + docs incumple `CHECKPOINTS.md` C4 y **se rechaza**.
     fecha, y la píldora del contador con `TABULAR_NUMS`.
   - **Sin disco de icono todavía**: entra en R6.
 - [ ] (3) Refactor con tests verdes
+  - Plantar **M7** (comparador invertido) y **M8** (`slice(0, 4)`), aplazadas
+    desde R3 por **A9**, y comprobar que cada una cae por **los cuatro** `it`
+    que R15 les nombra: los dos de `format.test.ts` y los dos de la Home.
+    Revertir cada una. Anotar.
   - Plantar **M2** (pasar `dueAt` crudo) y **M11** (hijo intruso sin `testID`)
     de una en una, ver el rojo, revertir, anotar. **Si M11 queda verde, el
     recuento se está haciendo por `testID` y se arregla antes de seguir.**

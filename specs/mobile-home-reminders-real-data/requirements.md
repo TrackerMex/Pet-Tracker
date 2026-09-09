@@ -1142,6 +1142,50 @@ No hay zona ciega: el tope nunca esconde a los dos a la vez, porque en el caso
 
   - [X] Aprobado por humano
 
+
+### A9 — la verificación de M7 y M8 se aplaza de R3 a R5
+
+`tasks.md:95-96` manda plantar **M3-M8** durante **R3** y comprobar que cada una
+cae por **todos** los `it` que R15 nombra. Pero **M7** y **M8** nombran, además
+de los `it` de `format.test.ts`, dos de la Home
+—`it('las ordena por fecha ascendente bajo la fila de la vacuna')` y
+`it('corta en tres aunque haya cinco')`— que **el propio orden normativo no crea
+hasta R5**. En R3 solo existen los candados del helper.
+
+Es la **misma clase de fallo que A7**: prescribir una observación sobre un
+sujeto que el orden de tareas todavía no ha creado. Allí era un `it`, aquí es la
+evidencia de una mutación.
+
+- **Qué cambia, y solo esto**: **M7 y M8 se plantan y se verifican en el paso de
+  refactor de R5**, no en el de R3. Allí existen **los cuatro** `it` que R15 les
+  nombra —los dos del helper siguen vivos— así que la comprobación es la
+  completa, no una a medias.
+- **R3 conserva M3, M4, M5 y M6**, que nombran únicamente `it` de
+  `format.test.ts` y son verificables donde están.
+- **Qué NO cambia**: ninguna mutación se retira, ninguna pierde un `it`, la
+  fixture normativa sigue intacta y M6 conserva su orden invertido. R15 sigue
+  exigiendo las trece.
+- **Por qué no la otra salida**: verificar M7 y M8 en R3 contra los `it` del
+  helper y **repetirlas** en R5 no añade garantía —la verificación de R5 incluye
+  los mismos `it` del helper, que no desaparecen— y duplica trabajo.
+
+**Comprobación de las trece, para que no haya una quinta parada.** El leader
+recorrió la tabla de R15 contra el orden de `tasks.md`:
+
+| mutación | se planta en | `it` que nombra | ¿existe ya? |
+|---|---|---|---|
+| M1 | R2 | `format.test.ts :: #85 R2` | sí |
+| M3, M4, M5, M6 | R3 | solo `format.test.ts :: #85 R3` | sí |
+| **M7, M8** | **R3 → R5 por esta enmienda** | `format.test.ts` **y** `index.test.tsx :: #85 R5` | **no en R3; sí en R5** |
+| M2, M11 | R5 | `index.test.tsx :: #85 R5` | sí |
+| M12 | R6 | `index.test.tsx :: #85 R6` | sí |
+| M9, M10 | R7 | `index.test.tsx :: #85 R7` | sí |
+| M13 | R11 | `index.test.tsx :: #85 R1` | sí, desde R1 |
+
+Solo M7 y M8 estaban mal colocadas.
+
+  - [ ] Aprobado por humano
+
 ## Aprobación
 
 - [X] Aprobado por humano (fecha: 2026-09-09) ← gate obligatorio antes de implementar
