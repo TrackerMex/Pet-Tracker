@@ -4,7 +4,8 @@
 
 - Branch: `feature/70-mobile-home-reminders-section`.
 - Base de deltas: `b0ec5a8`.
-- D1-D3 aprobadas por humano en `requirements.md` e incorporadas en `40413db`.
+- D1-D3 aprobadas por humano en `requirements.md` e incorporadas en `40413db`;
+  D4-D6 ratificadas en `d5b0a43` y firmadas por el humano en `6eae6ed`.
 - Cero llamadas nuevas, cero backend, cero infra y cero dependencias.
 
 ## Baseline
@@ -23,20 +24,23 @@ Se completa durante la secuencia TDD; los hashes definitivos también quedan en
   `bun run typecheck`, verdes tras la implementación.
 - **R4**: rojo `aa7f9aa` (casos futuro/mañana/hoy/pasado); verde `3badfec`
   (componentes de calendario, medianoches UTC y cero normalizado).
-- **R5**: rojos `9bbbbd8` (M1 de producción: verde en UTC y rojo en México)
-  y `5e591b0` (parseo UTC de fecha visible: `14 sep`); verdes `a6b82bf` y
-  `af8ae4e` (aritmética y formato por componentes locales de calendario).
+- **R5**: la implementación original quedó verde en `a6b82bf` y `af8ae4e`.
+  D5 sustituyó el andamiaje inerte de `process.env.TZ` por espías estructurales
+  en `5385ed8` y `238e414`: `Date.UTC` recibe componentes, `Date.parse` no se
+  usa y el constructor `Date` nunca recibe la cadena cruda.
 - **R1**: rojo `16c6b22` (estructura, rótulo y enlace); verde `f498f1e`
   (cabecera y cuerpo vacío conforme a D1, más las siete claves necesarias).
   La auditoría endureció clase/orden con el rojo conjunto `6247c3f` y el verde
   `0e00251`, ambos nombrando R1.
 - **R6**: rojo `6247c3f` (fixture distinta en lista y detalle, enlace exacto de
   nombre/fecha/contador e inercia); verde `0e00251` (fila `Card` desde el
-  detalle, sin renderizar el id ni añadir navegación).
+  detalle, sin renderizar el id ni añadir navegación). D6 añadió en `5385ed8`
+  los candados de pertenencia/tinta del icono y recetas de nombre/fecha.
 - **R7**: rojo `bbb54e4` (`0 d` contradice `Hoy`); verde `675390c` (helper de
   módulo con ramas futura, hoy y vencida, y texto/nombre accesible unidos).
 - **R8**: rojo `e0c15c7` (estado vacío ausente); verde `0752baf` (`Card`
-  neutral con la misma anatomía de fila y sin datos ficticios).
+  neutral con la misma anatomía de fila y sin datos ficticios). D6 añadió en
+  `5385ed8` los candados de pertenencia/tinta y receta del texto vacío.
 - **R9**: rojo `1f2ed2b` (esqueleto ausente y cardinalidad pendiente 0 en vez
   de 1); verde `36012d4` (un esqueleto y silencio en todos los errores). La
   cardinalidad trasladada por D1 cuenta `children`, no `testID`.
@@ -76,12 +80,44 @@ Se completa durante la secuencia TDD; los hashes definitivos también quedan en
 - D1: la cardinalidad 1/1/0 se prueba en R9, cuando ya existen los hijos reales.
 - D2: #83 y #84 ya existen; el cálculo fingido de comidas servidas vive en
   `food.tsx:65-67` y el estado por fila en `food.tsx:194`.
-- D3: `calendarDaysUntil` normaliza cero para no producir `-0`; M1 debe mostrar
-  asimetría UTC/México y no una diferencia de signo.
+- D3: `calendarDaysUntil` normaliza cero para no producir `-0`.
+- D5: cambiar `process.env.TZ` dentro de un `it` de Jest no cambia la zona de
+  V8; la disciplina de parseo se prueba estructuralmente y muerde en cualquier
+  zona del runner.
 - R16: `specs/mobile-ui-language/design.md` no contenía el bloque de
   `src/screens/home/index.tsx` que la spec daba por existente; conservaba el
   bloque histórico de `src/app/(tabs)/home.tsx`. Se añadió un bloque nuevo sin
   reescribir el historial.
+
+## Segundo pase
+
+- **Gate previo**: D4-D6 estaban firmadas en `6eae6ed`. El baseline
+  `env -u FORCE_COLOR ./init.sh` terminó con exit 0 antes de tocar los
+  candados: backend 163 suites/1243 tests, infra 2/14, móvil 68/1078, e2e 25
+  suites/354 tests pasados y 3 suites/8 tests omitidos; lint y typecheck verdes.
+- **B1 / D5**: `5385ed8` borró los dos `try/finally` sobre `process.env.TZ` y
+  añadió los espías de `Date.parse`, `Date.UTC` y constructor `Date`.
+  `238e414` cerró además la variante cruda por constructor en
+  `calendarDaysUntil`. Una sonda funcional que construía el objetivo con
+  `new Date('2026-09-15')` dejó 1 fallo/5 verdes en `format.test.ts`, aunque el
+  resultado numérico seguía siendo correcto en UTC: el espía vio dos llamadas
+  con la cadena cruda. La producción se restauró antes de continuar.
+- **O1 / D6 — tintas**: se cruzaron `vaccineInk` y `muted` en los dos usos de
+  `Syringe` de producción. `index.test.tsx` quedó con 2 fallos/84 verdes: la
+  fila recibió `--color-muted` donde esperaba `--color-category-blue-strong`,
+  y el vacío recibió el valor inverso. Se restauró producción.
+- **O1 / D6 — recetas**: tres sondas separadas cambiaron en producción la
+  receta del nombre, la fecha y el texto vacío. Cada corrida dirigida quedó
+  con 1 fallo/85 verdes en la aserción exacta correspondiente. Tras restaurar
+  cada una, las dos suites dirigidas quedaron 92/92 verdes. Los iconos se
+  obtienen ahora con `within(row).getByTestId('icon-syringe')`, no solo por
+  inventario de fuente.
+- **M1 y M2 rehechas**: se ejecutó literalmente `bun run test`, sin exportar
+  `TZ` (`TZ=UNSET`), sobre cada commit rojo y cada restauración. Los pares
+  finales y su resultado se detallan en §Prueba de mutación R19b.
+- **Grafo**: `graphify update .` terminó con exit 0; reextrajo 723 ficheros y
+  reconstruyó 11271 nodos, 17276 aristas y 702 comunidades. El aviso conocido
+  por `tree_sitter_sql` siguió intacto y no hubo cambios versionados.
 
 ## Deltas R18
 
@@ -123,14 +159,15 @@ quedaron sin cambio.
 
 ## Prueba de mutación R19b
 
-- **M1**: rojo `1ab9a89`; `TZ=UTC` dejó 6/6 verdes y
-  `TZ=America/Mexico_City` dejó 1 fallo/5 verdes: R5 recibió `4` donde esperaba
-  `5`. Verde `4499db4`, con 6/6 en ambas zonas. La normalización del cero evitó
-  que el rojo dependiera de `-0`.
-- **M2**: rojo `cdfb868`, con `fmtDate` construido desde `new Date(date)`. Dos
-  procesos separados dejaron 4/4 tests dirigidos verdes en `TZ=UTC`, y 2
-  fallos/2 verdes en `TZ=America/Mexico_City`: R5 vio `14 sep` y R6 dejó de
-  ver `15 sep`. Verde `499b0ec`, 4/4 en ambas zonas.
+- **M1**: rojo final `544a525`, con `calendarDaysUntil` cambiado a
+  `Math.ceil((Date.parse(date) - now.getTime()) / DAY_MS)` y la normalización
+  de cero de D3 intacta. `bun run test`, sin `TZ`, dejó 1 fallo/1077 verdes:
+  R5 observó dos llamadas de `Date.parse` con `'2026-09-15'`. Verde final
+  `a50245e`: 68/68 suites y 1078/1078 tests.
+- **M2**: rojo final `75dd5c1`, con `fmtDate` construido desde
+  `new Date(date)`. `bun run test`, sin `TZ`, dejó 1 fallo/1077 verdes: el espía
+  recibió `[['2026-09-15']]` donde exige `[[2026, 8, 15]]`. Verde final
+  `bcde085`: 68/68 suites y 1078/1078 tests.
 - **M3**: rojo `58338f3`, cruzando los datos de nombre y fecha. En R6 cayó
   exactamente el candado de enlace de datos —esperaba `Antirrábica` y recibió
   el ISO—, con 1 fallo/1 verde. Verde `1c940e8`.
@@ -150,23 +187,16 @@ quedaron sin cambio.
   tests dirigidos: R12 recibió `undefined` y R18 midió `0` donde exigía el
   delta `+1`. Verde `d22e1c9`.
 
-M1 y M2 se ejecutaron con la zona en el entorno del proceso, no cambiándola
-solo dentro del worker:
-
-```sh
-TZ=UTC bun run test -- --runInBand <suites-dirigidas>
-TZ=America/Mexico_City bun run test -- --runInBand <suites-dirigidas>
-```
-
 La comprobación `git diff --quiet <rojo>^ <verde> -- <fichero-producción>` dio
-`restored` para los ocho pares: cada verde revierte exactamente su mutación de
-producción.
+`restored` para los ocho pares, incluidos los pares finales M1/M2: cada verde
+revierte exactamente su mutación de producción.
 
 ## Decisiones humanas durante la implementación
 
 - Tras detectar que el JSX exacto de R10 omitía el feedback obligatorio de C8,
   el humano autorizó el 2026-09-09 añadir feedback `pressed` y su candado al
-  enlace `reminders-see-all`.
+  enlace `reminders-see-all`; D4 lo ratificó por escrito y quedó firmado junto
+  con D5-D6 en `6eae6ed`.
 
 ## Verificación final
 
