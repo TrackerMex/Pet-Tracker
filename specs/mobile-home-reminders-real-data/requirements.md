@@ -1236,6 +1236,53 @@ feature ya lleva cuatro paradas.
 
   - [X] Aprobado por humano
 
+
+### A11 — el valor por defecto de `listReminders` se restaura en cada test
+
+La fixture de R5 se filtra a tres `describe` heredados de #70, que esperaban un
+cuerpo **sin** recordatorios y reciben `rem-1`.
+
+**La causa, y es una premisa falsa mía.** `tasks.md:115-118` y A6 dan por hecho
+que la factoría del mock —`index.test.tsx:73`,
+`listReminders: jest.fn(async () => ({ kind: 'ok', reminders: [] }))`— conserva
+sola el `[]` para los `describe` heredados. **No lo hace.** Los tests de R5
+llaman a `mockListReminders.mockResolvedValue(...)`, que **sustituye la
+implementación de forma permanente**, y los `beforeEach` heredados solo corren
+`jest.clearAllMocks()`, que **limpia llamadas pero no implementaciones**. El
+`[]` de la factoría no vuelve nunca.
+
+- **Qué se añade**: un `beforeEach` **de nivel de fichero**, justo después de
+  `const mockListReminders = jest.mocked(listReminders);` (`:120`):
+
+  ```ts
+  beforeEach(() => {
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [] });
+  });
+  ```
+
+  Jest ejecuta los `beforeEach` de fuera adentro, así que éste corre **antes**
+  que el `jest.clearAllMocks()` de cada `describe`, y sobrevive a él
+  precisamente porque `clearAllMocks` no toca implementaciones. Cualquier
+  `describe` que quiera otra respuesta la fija después, como ya hace R5.
+- **Por qué así y no un `afterEach` en R5**: un `afterEach` local arregla solo
+  los `describe` que van **después** de R5, deja el resultado dependiente del
+  **orden de declaración**, y obliga a repetir la limpieza en cada futuro
+  `describe` que sobrescriba el mock. El `beforeEach` de fichero es
+  **independiente del orden** y no hay que acordarse de él nunca más.
+- **Qué NO cambia**: ningún `describe` heredado se toca —ni sus `beforeEach`, ni
+  sus aserciones—, la factoría de `:73` se queda como está, y R5 sigue fijando
+  su fixture como la fija hoy. **A6 no se modifica**: se le añade este `beforeEach`
+  como el mecanismo que hace cierta su promesa.
+- **Si tras añadirlo cae algo más, para y repórtalo.**
+
+**Corolario para el harness**, y vale para cualquier mock de módulo de este
+repo: **`jest.clearAllMocks()` no restaura el valor por defecto de una
+factoría**. Si un `describe` usa `mockResolvedValue` o `mockImplementation`, ese
+valor **contamina todo lo que venga después** salvo que algo lo reponga
+explícitamente. Dar por hecho lo contrario es lo que produjo esta parada.
+
+  - [ ] Aprobado por humano
+
 ## Aprobación
 
 - [X] Aprobado por humano (fecha: 2026-09-09) ← gate obligatorio antes de implementar

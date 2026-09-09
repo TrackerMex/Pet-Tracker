@@ -138,6 +138,13 @@ implementación + tests + docs incumple `CHECKPOINTS.md` C4 y **se rechaza**.
     coincidencias de `testID`.**
   - **Rojo esperado**: no existe ningún `reminders-item-*`.
 - [ ] (2) Implementación mínima que lo pasa
+  - **Antes de nada, enmienda A11**: añadir un `beforeEach` de **nivel de
+    fichero**, tras `const mockListReminders = jest.mocked(listReminders);`
+    (`:120`), con
+    `mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [] });`.
+    Sin él, la fixture de R5 se filtra a tres `describe` heredados de #70:
+    `jest.clearAllMocks()` limpia llamadas pero **no** implementaciones, así que
+    el `[]` de la factoría no vuelve solo.
   - Renombrar `vaccineCountdown` → `dueCountdown` (misma firma, mismas ramas,
     mismas claves) y usarlo desde los dos sitios.
   - Derivar `const upcoming = reminders.data?.kind === 'ok' ? upcomingReminders(reminders.data.reminders, new Date()) : [];`
