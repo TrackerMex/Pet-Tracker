@@ -445,8 +445,15 @@ export function HomeScreen() {
               >
                 {t('home.reminders')}
               </Text>
-              <Pressable testID="reminders-see-all">
-                <Text>{t('home.remindersSeeAll')}</Text>
+              <Pressable
+                testID="reminders-see-all"
+                accessibilityRole="button"
+                className="min-h-11 justify-center"
+                onPress={() => router.push('/reminders')}
+              >
+                <Text className="text-xs font-semibold text-accent-strong">
+                  {t('home.remindersSeeAll')}
+                </Text>
               </Pressable>
             </View>
 
