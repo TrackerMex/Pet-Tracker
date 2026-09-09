@@ -43,6 +43,9 @@
 - **R9**: rojo versionado `1d8c3d5`; verde `68b3d90`. Carga y los cinco estados
   de fallo dejan cero filas propias, conservan la cabecera y la ranura de la
   vacuna. R9 junto con `#70 R9`/`#70 R1` quedó 24/24 verde.
+- **R10**: rojo versionado `7016683`; verde `3b7bcfa`. Las filas conservan el
+  `Card` compartido, las recetas exactas y la píldora ámbar con cifras
+  tabulares. R10 y los candados globales enumerados quedaron 44/44 verdes.
 
 ## Prueba de mutación
 
@@ -193,3 +196,15 @@ causa, conforme a A13.
 
 P9 se retiró en `68b3d90`; R9 y los candados heredados `#70 R9`/`#70 R1`
 volvieron 24/24 verdes, y `git diff --exit-code` confirmó la restauración.
+
+## Sonda P10 de R10
+
+En el commit rojo `7016683`, la píldora usó temporalmente la superficie y tinta
+del tipo del recordatorio en vez del ámbar fijo. Cayó exactamente
+`it('aplica la receta de cada nodo y ninguna otra')`: la fila `appointment`
+recibió `bg-category-green text-category-green-strong` donde esperaba
+`bg-category-amber text-category-amber-strong`.
+
+P10 se retiró en `3b7bcfa`; R10 volvió 1/1 verde, los candados `#62 R14`,
+`#62 R4`, `#64 R9`, `#61 R4` y `#61 R5` quedaron 43/43 verdes, y
+`git diff --exit-code` confirmó la restauración. P10 queda fuera de M1-M13.

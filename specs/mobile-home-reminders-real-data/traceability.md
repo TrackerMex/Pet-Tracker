@@ -19,7 +19,7 @@ Base de medición: **`20c7b3c`** (merge del PR #116, #70).
 | R7 — cruce de dato y posición | `src/screens/home/index.test.tsx`::`describe('#85 R7: ninguna fila lleva el dato ni el sitio de otra')` | `4078fdc test(mobile-home-reminders-real-data): catch crossed row data and order (R7)` + `c5e30e2 feat(mobile-home-reminders-real-data): keep row data and order aligned (R7)`; M9/M10 versionadas |
 | R8 — no pulsables y accesibilidad | `src/screens/home/index.test.tsx`::`describe('#85 R8: las filas no son pulsables y se anuncian por partes')` | `7dac461 test(mobile-home-reminders-real-data): expose missing row labels (R8)` + `fecd8e8 feat(mobile-home-reminders-real-data): label row countdowns (R8)` |
 | R9 — carga y fallo de `listReminders` | `src/screens/home/index.test.tsx`::`describe('#85 R9: la sección aguanta la carga y el fallo de los recordatorios')` | `1d8c3d5 test(mobile-home-reminders-real-data): prove reminder failures preserve vaccine slot (R9)` + `68b3d90 feat(mobile-home-reminders-real-data): preserve vaccine slot across reminder states (R9)`; sonda P9 documentada aparte de M1-M13 |
-| R10 — estilo y tokens | pendiente | pendiente |
+| R10 — estilo y tokens | `src/screens/home/index.test.tsx`::`describe('#85 R10: viste las filas con el Card compartido y los tokens')` | `7016683 test(mobile-home-reminders-real-data): prove countdown color means urgency (R10)` + `3b7bcfa feat(mobile-home-reminders-real-data): keep countdown urgency styling (R10)`; sonda P10 documentada aparte de M1-M13 |
 | R11 — cero claves y cero ocurrencias nuevas | pendiente | pendiente |
 | R12 — bloque de drift de estilo | pendiente | pendiente |
 | R13 — deltas de candados globales | pendiente | pendiente |

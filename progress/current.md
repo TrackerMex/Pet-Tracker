@@ -18,4 +18,4 @@
 - A12: firmada y leída; declara R9/R10 de verificación y prescribe P9/P10 fuera de M1-M13.
 - A13: firmada y leída; corrige solo la evidencia de P9: desaparece la tarjeta y el cuerpo pasa de 1 a 0; el skeleton no cambia.
 - Avance: R1-R8 completos. R8 rojo `7dac461`, verde `fecd8e8`; sus tres pruebas y `#70 R11` verdes.
-- Avance: R9 completo, rojo `1d8c3d5`, verde `68b3d90`; P9 produjo 6 rojos por cuerpo 0 en vez de 1 y quedó restaurada. R9 + `#70 R9`/`#70 R1`: 24/24 verdes. Siguiente paso: R10 con P10.
+- Avance: R9-R10 completos. R10 rojo `7016683`, verde `3b7bcfa`; P10 cayó por verde en vez de ámbar y quedó restaurada. R10 + candados globales enumerados: 44/44 verdes. Siguiente paso: R11/M13.

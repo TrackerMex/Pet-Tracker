@@ -253,16 +253,16 @@ implementación + tests + docs incumple `CHECKPOINTS.md` C4 y **se rechaza**.
 
 ## R10 — Estilo: `Card` compartido, radios, tintas de #64 y cifras tabulares
 
-- [ ] (1) Escribir test que falla para R10
+- [x] (1) Escribir test que falla para R10
   - `describe('#85 R10: viste las filas con el Card compartido y los tokens')`
     con su `it`, asertando `className` con **`toBe`**, nunca con `toContain`,
     en título, fecha y contador.
   - **Rojo esperado**: si alguna receta no coincide exactamente con la tabla de
     R5, cae aquí.
-- [ ] (2) Implementación mínima que lo pasa
+- [x] (2) Implementación mínima que lo pasa
   - Ajustar las recetas exactas. Sin tokens nuevos, sin `bg-accent-soft`, sin
     radios fuera de la escala de #62 R4.
-- [ ] (3) Refactor con tests verdes
+- [x] (3) Refactor con tests verdes
   - Comprobar `#62 R14` (esquinas, sin cambio), `#62 R4` (radios),
     `#61 R4`/`#61 R5` (tintas) y `#64 R9` (`bg-accent-soft` = 16), todos
     **sin tocarlos**.
