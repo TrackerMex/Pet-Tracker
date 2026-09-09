@@ -426,10 +426,6 @@ export function HomeScreen() {
                   </Pressable>
                 ),
               )}
-              <Pressable
-                testID="quick-action-extra"
-                onPress={() => router.push('/pairing')}
-              />
             </View>
           </View>
         ) : null}
