@@ -1,4 +1,4 @@
-import { type Href, router, useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { Button, Card as HeroUICard, Skeleton } from 'heroui-native';
 import { useCallback, useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
@@ -417,7 +417,7 @@ export function HomeScreen() {
                     accessibilityRole="button"
                     className={`min-h-11 flex-1 items-center gap-1.5 rounded-xl py-3 ${CATEGORY_SLOTS[slot].surface}`}
                     style={CONTINUOUS_CORNER}
-                    onPress={() => router.push(href(selectedPetId) as Href)}
+                    onPress={() => router.push(href(selectedPetId))}
                   >
                     <Icon size={24} color={quickActionInks[index]} />
                     <Text className="text-2xs font-semibold text-foreground">
