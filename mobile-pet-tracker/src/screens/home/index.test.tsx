@@ -1886,6 +1886,7 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
       const title = within(section).getByTestId('reminders-section-title');
       const header = title.parent;
       const body = within(section).getByTestId('reminders-section-body');
+      const seeAll = within(section).getByTestId('reminders-see-all');
 
       expect(section.children).toHaveLength(2);
       expect(section.props.className).toBe('gap-3');
@@ -1894,11 +1895,12 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
       );
       expect(section.children[0]).toBe(header);
       expect(section.children[1]).toBe(body);
-      expect(title).toHaveTextContent('Recordatorios');
+      expect(title).toHaveTextContent('Próxima vacuna');
       expect(title.props.className).toBe(
         'text-base font-bold text-foreground',
       );
-      expect(within(section).getByTestId('reminders-see-all')).toBeVisible();
+      expect(seeAll).toBeVisible();
+      expect(seeAll).toHaveTextContent('Ver recordatorios');
       expect(body.props.className).toBe('gap-2');
     });
   });
