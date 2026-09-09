@@ -1098,7 +1098,7 @@ verificar **contra su propio `tasks.md`** que cada sujeto nombrado ya existe en
 ese punto del orden. Es exactamente la comprobación que el encargo del
 `spec_author` pedía y que no se aplicó a R1.
 
-  - [ ] Aprobado por humano
+  - [X] Aprobado por humano
 
 ## Aprobación
 
