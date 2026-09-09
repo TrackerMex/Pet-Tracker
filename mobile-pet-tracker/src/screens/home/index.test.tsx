@@ -16,7 +16,7 @@ import {
   type DailyActivityState,
 } from '../../api/activity';
 import { getPet, listPets, type PetState, type PetsState } from '../../api/pets';
-import { listReminders } from '../../api/reminders';
+import { listReminders, type RemindersState } from '../../api/reminders';
 import type { DayEntry, PetProfile, Reminder } from '../../api/types';
 import * as apiHooks from '../../hooks/use-api';
 import type { ApiResult } from '../../hooks/use-api';
@@ -2430,6 +2430,86 @@ describe('#85 R8: las filas no son pulsables y se anuncian por partes', () => {
       (await screen.findByTestId('reminders-item-rem-b-days')).props
         .accessibilityLabel,
     ).toBe('In 1 days');
+  });
+});
+
+describe('#85 R9: la sección aguanta la carga y el fallo de los recordatorios', () => {
+  const vaccine = {
+    id: 'vac-9',
+    name: 'Antirrábica',
+    nextDoseAt: '2026-09-15',
+  };
+  const failureStates: RemindersState[] = [
+    { kind: 'not-found' },
+    { kind: 'unauthorized' },
+    { kind: 'error' },
+    { kind: 'unreachable', message: 'offline' },
+    { kind: 'missing-config' },
+  ];
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    const pet = makePet({ nextVaccine: vaccine });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('no pinta filas mientras carga', async () => {
+    mockListReminders.mockReturnValue(pending<RemindersState>());
+    const loadedProfile = await render(<HomeScreen />, {
+      wrapper: HomeWrapper,
+    });
+
+    const body = await screen.findByTestId('reminders-section-body');
+    expect(body.children).toHaveLength(1);
+    expect(
+      within(body).getByTestId('reminders-next-vaccine'),
+    ).toBeVisible();
+    expect(within(body).queryAllByTestId(/^reminders-item-/)).toHaveLength(0);
+
+    await loadedProfile.unmount();
+    mockGetPet.mockReturnValue(pending<PetState>());
+    await render(<HomeScreen />, { wrapper: HomeWrapper });
+
+    const loadingBody = await screen.findByTestId('reminders-section-body');
+    expect(loadingBody.children).toHaveLength(1);
+    expect(
+      within(loadingBody).getAllByTestId('reminders-section-skeleton'),
+    ).toHaveLength(1);
+    expect(
+      within(loadingBody).queryAllByTestId(/^reminders-item-/),
+    ).toHaveLength(0);
+  });
+
+  it.each(failureStates)('se calla ante $kind', async (failureState) => {
+    mockListReminders.mockResolvedValue(failureState);
+
+    await renderHome();
+
+    const section = await screen.findByTestId('reminders-section');
+    const sectionQueries = within(section);
+    const body = sectionQueries.getByTestId('reminders-section-body');
+    expect(body.children).toHaveLength(1);
+    expect(
+      within(body).getByTestId('reminders-next-vaccine'),
+    ).toBeVisible();
+    expect(sectionQueries.getByTestId('reminders-section-title')).toBeVisible();
+    expect(sectionQueries.getByTestId('reminders-see-all')).toBeVisible();
+    expect(
+      sectionQueries.queryAllByTestId(/-(?:error|retry)$/),
+    ).toHaveLength(0);
   });
 });
 

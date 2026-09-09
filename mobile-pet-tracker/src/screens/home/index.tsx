@@ -570,7 +570,9 @@ export function HomeScreen() {
                 />
               ) : null}
 
-              {nextVaccine && nextVaccineCountdown ? (
+              {reminders.data?.kind === 'ok' &&
+              nextVaccine &&
+              nextVaccineCountdown ? (
                 <Card
                   testID="reminders-next-vaccine"
                   className="flex-row items-center gap-3"
