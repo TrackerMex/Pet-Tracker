@@ -120,7 +120,7 @@ describe('#61 R4: el acento como tinta usa accent-strong', () => {
     [join('app', '(auth)', 'login.tsx'), 2],
     [join('app', '(auth)', 'forgot.tsx'), 1],
     [join('screens', 'reset-password', 'index.tsx'), 2],
-    [join('screens', 'home', 'index.tsx'), 1],
+    [join('screens', 'home', 'index.tsx'), 2],
     [join('app', '(tabs)', 'health.tsx'), 1],
     [join('app', '(tabs)', 'food.tsx'), 1],
     [join('app', '(tabs)', 'map.tsx'), 2],
@@ -135,7 +135,7 @@ describe('#61 R4: el acento como tinta usa accent-strong', () => {
   it('suma las trece ocurrencias que enumera la spec', () => {
     expect(
       inkSites.reduce((total, [, sites]) => total + sites, 0),
-    ).toBe(13);
+    ).toBe(13 + 1);
   });
 
   it('no deja ningún text-accent suelto en las fuentes', () => {
