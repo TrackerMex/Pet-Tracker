@@ -57,6 +57,9 @@ Se completa durante la secuencia TDD; los hashes definitivos también quedan en
   alterar los tres candados de orden heredados).
 - **R15**: rojo `837e838` (mutación de producción elevó `getPet` de 1 a 2);
   verde `1ad0d08` (recuento preservado: lista 1, detalle 1, actividad 1).
+- **R3**: rojo `0b30065` (M5 añadió un segundo hijo sin `testID`; murieron R3
+  y la cardinalidad de R9); verde `264c490` (barra de comidas ausente, sin
+  import de nutrición ni dato inventado).
 
 ## Premisas corregidas contra el árbol
 

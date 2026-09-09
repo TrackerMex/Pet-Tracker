@@ -80,8 +80,42 @@ describe('#65 R3: Home resuelve su copy por clave', () => {
   // 20 en `303fc19` + 1 de `home.walks` (#67 R7b, delta declarado en su R9b).
   // #68 añade el delta medido de weekly-activity-chart, sin recontar la base.
   it('#71 R11: registra el copy de accesos rápidos sobre los deltas heredados', () => {
-    expect(R3_HOME).toHaveLength(21 + 15 + 1 + 4);
+    expect(R3_HOME).toHaveLength(21 + 15 + 1 + 4 + 7);
     checkUses(R3_HOME);
+  });
+});
+
+describe('#70 R16: copy de recordatorios de la Home', () => {
+  it('registra las siete claves en la tabla y en la carta de idioma', () => {
+    const keys: TranslationKey[] = [
+      'home.reminders',
+      'home.remindersSeeAll',
+      'home.nextVaccineDays',
+      'home.nextVaccineDaysLeft',
+      'home.nextVaccineToday',
+      'home.nextVaccineOverdue',
+      'home.noUpcomingVaccine',
+    ];
+    const rows = R3_HOME.filter(
+      ({ file, key }) =>
+        file === 'src/screens/home/index.tsx' && keys.includes(key),
+    );
+    const languageDesign = readFileSync(
+      join(SOURCE_ROOT, '../specs/mobile-ui-language/design.md'),
+      'utf8',
+    );
+
+    expect(rows.map(({ key }) => key)).toEqual(keys);
+    checkUses(rows);
+    for (const key of keys) {
+      expect(languageDesign).toMatch(
+        new RegExp(
+          '\\| — \\| `' +
+            escapeRegExp(key) +
+            '`[^\\n]*← añadida por #70 \\(R16\\)',
+        ),
+      );
+    }
   });
 });
 
