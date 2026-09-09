@@ -1281,7 +1281,7 @@ factoría**. Si un `describe` usa `mockResolvedValue` o `mockImplementation`, es
 valor **contamina todo lo que venga después** salvo que algo lo reponga
 explícitamente. Dar por hecho lo contrario es lo que produjo esta parada.
 
-  - [ ] Aprobado por humano
+  - [X] Aprobado por humano
 
 ## Aprobación
 
