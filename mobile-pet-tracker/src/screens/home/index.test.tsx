@@ -9,6 +9,7 @@ import {
 import { router, useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
+import { Uniwind } from 'uniwind';
 
 import {
   getDailyActivity,
@@ -1518,6 +1519,10 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
     });
   });
 
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   it('dibuja el rótulo y los tres tiles en orden', async () => {
     await renderHome();
 
@@ -1604,7 +1609,10 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
     }
   });
 
-  it('liga icono, etiqueta, color y destino de cada tile y de ninguno más', async () => {
+  it('liga icono, etiqueta, color, tinta y destino de cada tile y de ninguno más', async () => {
+    jest
+      .spyOn(Uniwind, 'getCSSVariable')
+      .mockImplementation((token) => token);
     await renderHome();
 
     const bindings = [
@@ -1613,6 +1621,7 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
         'icon-weight',
         'Peso',
         'bg-category-violet',
+        '--color-category-violet-strong',
         '/weight-log',
       ],
       [
@@ -1620,6 +1629,7 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
         'icon-calendar-plus',
         'Recordatorio',
         'bg-category-amber',
+        '--color-category-amber-strong',
         '/add-reminder',
       ],
       [
@@ -1627,15 +1637,18 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
         'icon-file-text',
         'Documentos',
         'bg-category-blue',
+        '--color-category-blue-strong',
         '/pets/pet-1/docs',
       ],
     ] as const;
 
-    for (const [testID, iconTestID, label, surface, href] of bindings) {
+    for (const [testID, iconTestID, label, surface, ink, href] of bindings) {
       const tile = screen.getByTestId(testID);
       const tileQueries = within(tile);
+      const icon = tileQueries.getByTestId(iconTestID);
 
-      expect(tileQueries.getByTestId(iconTestID)).toBeVisible();
+      expect(icon).toBeVisible();
+      expect(icon.props.color).toBe(ink);
       expect(tileQueries.getByText(label)).toBeVisible();
       expect(tile.props.className).toContain(surface);
       await fireEvent.press(tile);

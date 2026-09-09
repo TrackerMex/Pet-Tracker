@@ -419,7 +419,7 @@ export function HomeScreen() {
                     style={CONTINUOUS_CORNER}
                     onPress={() => router.push(href(selectedPetId) as Href)}
                   >
-                    <Icon size={24} color={quickActionInks[index]} />
+                    <Icon size={24} color={quickActionInks[0]} />
                     <Text className="text-2xs font-semibold text-foreground">
                       {t(labelKey)}
                     </Text>
