@@ -136,7 +136,7 @@ a otra sesión de Claude: `71a4db7` añadió el runbook de demo y una fila a
 línea del mismo runbook durante la primera corrida final. Se conservaron sin
 reescribir historia ni revertir trabajo ajeno y deben nombrarse al abrir la PR.
 
-## Gate final
+## Gate final inicial
 
 - `env -u FORCE_COLOR ./init.sh`: única corrida final, exit 0. Build verde;
   backend unitario verde; móvil 68/68 suites, 1054/1054 tests y 1/1 snapshot;
@@ -181,5 +181,16 @@ El control posterior pasó 6/6 suites y 198/198 tests. No quedó ninguna mutaci�
 en producción, no se movió ninguna cifra de candado y no se tocó backend ni
 infraestructura.
 
-Gate correctivo final: pendiente de la única corrida final de
-`env -u FORCE_COLOR ./init.sh` y del posterior `graphify update .`.
+Gate correctivo final:
+
+- `env -u FORCE_COLOR ./init.sh`: única corrida final posterior a las
+  correcciones, exit 0. Build verde; backend 163/163 suites y 1243/1243 tests;
+  infraestructura 2/2 suites y 14/14 tests; móvil 68/68 suites, 1054/1054 tests
+  y 1/1 snapshot; e2e 25 suites y 354 tests verdes, con 3 suites/8 tests
+  omitidos por el arnés; lint y typecheck verdes.
+- `graphify update .`: exit 0 después del gate. Actualizó el grafo local a
+  11063 nodos, 17058 aristas y 691 comunidades; `graphify-out/` permanece
+  ignorado. Conserva el aviso no bloqueante de 16 SQL omitidos por no estar
+  instalado el extra opcional `tree_sitter_sql`.
+- Avisos preexistentes no bloqueantes: faltan `RESEND_API_KEY`, `RESEND_FROM` y
+  `RESET_LINK_HOST` en `.env`; AWS SDK anuncia el requisito futuro de Node 22.
