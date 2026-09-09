@@ -17,7 +17,7 @@ import {
 } from '../../api/activity';
 import { getPet, listPets, type PetState, type PetsState } from '../../api/pets';
 import { listReminders } from '../../api/reminders';
-import type { DayEntry, PetProfile } from '../../api/types';
+import type { DayEntry, PetProfile, Reminder } from '../../api/types';
 import * as apiHooks from '../../hooks/use-api';
 import type { ApiResult } from '../../hooks/use-api';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
@@ -164,6 +164,23 @@ function makeDay(overrides: Partial<DayEntry> = {}): DayEntry {
     lastWalkAt: '2026-08-21T18:00:00.000Z',
     timeAwayMinutes: null,
     source: 'computed',
+    ...overrides,
+  };
+}
+
+function localIso(year: number, monthIndex: number, day: number): string {
+  return new Date(year, monthIndex, day, 12, 0).toISOString();
+}
+
+function makeReminder(overrides: Partial<Reminder> = {}): Reminder {
+  return {
+    id: 'rem-1',
+    petId: 'pet-1',
+    type: 'custom',
+    title: 'Revisión',
+    dueAt: localIso(2026, 8, 11),
+    advanceMinutes: 60,
+    status: 'scheduled',
     ...overrides,
   };
 }
@@ -1917,6 +1934,177 @@ describe('#85 R4: la Home pide los recordatorios de la mascota', () => {
 
     await screen.findByTestId('home-empty');
     expect(mockListReminders).not.toHaveBeenCalled();
+  });
+});
+
+describe('#85 R5: la sección pinta los recordatorios reales', () => {
+  const vaccine = {
+    id: 'vac-9',
+    name: 'Antirrábica',
+    nextDoseAt: '2026-09-15',
+  };
+  const reminderFixture = [
+    makeReminder({
+      id: 'rem-a',
+      type: 'appointment',
+      title: 'Consulta anual',
+      dueAt: localIso(2026, 8, 13),
+    }),
+    makeReminder({
+      id: 'rem-c',
+      type: 'food',
+      title: 'Comprar croquetas',
+      dueAt: localIso(2026, 8, 16),
+    }),
+    makeReminder({
+      id: 'rem-b',
+      type: 'medication',
+      title: 'Pastilla antipulgas',
+      dueAt: localIso(2026, 8, 11),
+    }),
+  ];
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date(2026, 8, 10, 12, 0));
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    const pet = makePet({ nextVaccine: vaccine });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+    mockListReminders.mockResolvedValue({
+      kind: 'ok',
+      reminders: reminderFixture,
+    });
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+    jest.restoreAllMocks();
+  });
+
+  it('pinta las tres filas con su título, su fecha y su contador', async () => {
+    await renderHome();
+
+    const section = await screen.findByTestId('reminders-section');
+    const expected = [
+      ['rem-b', 'Pastilla antipulgas', '11 sep 2026', '1 d'],
+      ['rem-a', 'Consulta anual', '13 sep 2026', '3 d'],
+      ['rem-c', 'Comprar croquetas', '16 sep 2026', '6 d'],
+    ] as const;
+
+    for (const [id, title, date, days] of expected) {
+      const row = await within(section).findByTestId(`reminders-item-${id}`);
+
+      expect(
+        within(row).getByTestId(`reminders-item-${id}-title`),
+      ).toHaveTextContent(title);
+      expect(
+        within(row).getByTestId(`reminders-item-${id}-date`),
+      ).toHaveTextContent(date);
+      expect(
+        within(row).getByTestId(`reminders-item-${id}-days`),
+      ).toHaveTextContent(days);
+    }
+  });
+
+  it('las ordena por fecha ascendente bajo la fila de la vacuna', async () => {
+    await renderHome();
+
+    await screen.findByTestId('reminders-item-rem-b');
+    const body = screen.getByTestId('reminders-section-body');
+
+    expect(body.children[0]).toHaveProperty(
+      'props.testID',
+      'reminders-next-vaccine',
+    );
+    expect(
+      body.children.slice(1).map((child) =>
+        typeof child === 'string' ? child : child.props.testID,
+      ),
+    ).toEqual([
+      'reminders-item-rem-b',
+      'reminders-item-rem-a',
+      'reminders-item-rem-c',
+    ]);
+  });
+
+  it('cuenta los hijos del cuerpo en tres escenarios', async () => {
+    const scenarios: [Reminder[], number][] = [
+      [[], 1],
+      [[reminderFixture[0]], 2],
+      [reminderFixture, 4],
+    ];
+
+    for (const [reminderList, childCount] of scenarios) {
+      mockListReminders.mockResolvedValue({
+        kind: 'ok',
+        reminders: reminderList,
+      });
+      const view = await render(<HomeScreen />, { wrapper: HomeWrapper });
+
+      try {
+        await screen.findByTestId('reminders-next-vaccine');
+        await waitFor(() =>
+          expect(screen.getByTestId('reminders-section-body').children).toHaveLength(
+            childCount,
+          ),
+        );
+      } finally {
+        await view.unmount();
+      }
+    }
+  });
+
+  it('corta en tres aunque haya cinco', async () => {
+    mockListReminders.mockResolvedValue({
+      kind: 'ok',
+      reminders: [1, 2, 3, 4, 5].map((days) =>
+        makeReminder({
+          id: `rem-plus-${days}`,
+          dueAt: localIso(2026, 8, 10 + days),
+        }),
+      ),
+    });
+
+    await renderHome();
+
+    await screen.findByTestId('reminders-item-rem-plus-1');
+    const body = screen.getByTestId('reminders-section-body');
+    expect(body.children).toHaveLength(4);
+    expect(
+      body.children.slice(1).map((child) =>
+        typeof child === 'string' ? child : child.props.testID,
+      ),
+    ).toEqual([
+      'reminders-item-rem-plus-1',
+      'reminders-item-rem-plus-2',
+      'reminders-item-rem-plus-3',
+    ]);
+  });
+
+  it('pinta fecha y contador reales para un dueAt con hora', async () => {
+    mockListReminders.mockResolvedValue({
+      kind: 'ok',
+      reminders: [makeReminder()],
+    });
+
+    await renderHome();
+
+    const row = await screen.findByTestId('reminders-item-rem-1');
+    expect(within(row).getByTestId('reminders-item-rem-1-date')).not.toHaveTextContent(
+      'Invalid',
+    );
+    expect(within(row).getByTestId('reminders-item-rem-1-days')).not.toHaveTextContent(
+      'NaN',
+    );
   });
 });
 
