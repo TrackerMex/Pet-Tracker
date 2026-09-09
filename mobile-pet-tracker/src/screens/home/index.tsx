@@ -451,6 +451,13 @@ export function HomeScreen() {
             </View>
 
             <View testID="reminders-section-body" className="gap-2">
+              {detail.data === undefined ? (
+                <Skeleton
+                  testID="reminders-section-skeleton"
+                  className="h-16 w-full rounded-card"
+                />
+              ) : null}
+
               {nextVaccine && nextVaccineCountdown ? (
                 <Card
                   testID="reminders-next-vaccine"

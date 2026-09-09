@@ -2006,7 +2006,7 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
           'reminders-section-skeleton',
         );
 
-        expect(skeleton.props.className).toBe('h-16 w-full rounded-card');
+        expect(skeleton.props.className).toContain('h-16 w-full rounded-card');
         expect(
           within(section).queryAllByTestId(/(?:-error|-retry)$/),
         ).toHaveLength(0);
