@@ -87,8 +87,20 @@ Pendiente de medir tras la implementación.
 
 ## Prueba de mutación R19b
 
-Pendiente: M1-M8, una por una, todas sobre código de producción.
+- **M1**: rojo `1ab9a89`; `TZ=UTC` dejó 6/6 verdes y
+  `TZ=America/Mexico_City` dejó 1 fallo/5 verdes: R5 recibió `4` donde esperaba
+  `5`. Verde `4499db4`, con 6/6 en ambas zonas. La normalización del cero evitó
+  que el rojo dependiera de `-0`.
+- M2-M8: pendientes.
+
+## Decisiones humanas durante la implementación
+
+- Tras detectar que el JSX exacto de R10 omitía el feedback obligatorio de C8,
+  el humano autorizó el 2026-09-09 añadir feedback `pressed` y su candado al
+  enlace `reminders-see-all`.
 
 ## Verificación final
 
-Pendiente.
+- Previa a las mutaciones: `bun run test` — 68 suites, 1077 tests y 1 snapshot
+  verdes—; `bun run typecheck`, verde.
+- Gate final pendiente.

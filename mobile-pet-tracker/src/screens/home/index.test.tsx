@@ -2110,6 +2110,34 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
       expect(source.match(/['"]\/reminders['"]/g) ?? []).toHaveLength(1);
       expect(quickActions).not.toContain("'/reminders'");
     });
+
+    it('muestra feedback visual al pulsar el enlace', async () => {
+      const opacityOf = (style: unknown): unknown => {
+        const entries = (Array.isArray(style) ? style.flat(Infinity) : [style])
+          .filter(
+            (entry): entry is Record<string, unknown> =>
+              typeof entry === 'object' && entry !== null,
+          );
+
+        return entries.find((entry) => 'opacity' in entry)?.opacity;
+      };
+
+      await renderHome();
+
+      expect(
+        opacityOf((await screen.findByTestId('reminders-see-all')).props.style),
+      ).toBe(1);
+
+      fireEvent(screen.getByTestId('reminders-see-all'), 'pressIn');
+      expect(
+        opacityOf(screen.getByTestId('reminders-see-all').props.style),
+      ).toBe(0.8);
+
+      fireEvent(screen.getByTestId('reminders-see-all'), 'pressOut');
+      expect(
+        opacityOf(screen.getByTestId('reminders-see-all').props.style),
+      ).toBe(1);
+    });
   });
 
   describe('#70 R11: accesibilidad por partes', () => {
