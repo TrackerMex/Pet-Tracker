@@ -1,10 +1,7 @@
 const DAY_MS = 86_400_000;
 
 export function calendarDaysUntil(date: string, now: Date): number {
-  const [year, month, day] = date.split('-').map(Number);
-  const target = Date.UTC(year, month - 1, day);
-  const today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
-  const days = Math.round((target - today) / DAY_MS);
+  const days = Math.ceil((Date.parse(date) - now.getTime()) / DAY_MS);
 
   return days === 0 ? 0 : days;
 }

@@ -23,4 +23,25 @@ describe('#70 R4: calendarDaysUntil cuenta días de calendario', () => {
     expect(calendarDaysUntil('2026-09-10', now)).toBe(0);
     expect(calendarDaysUntil('2026-09-08', now)).toBe(-2);
   });
+
+  it('no se desplaza un día en una zona horaria negativa', () => {
+    const previousTimezone = process.env.TZ;
+
+    try {
+      process.env.TZ = 'America/Mexico_City';
+
+      expect(
+        calendarDaysUntil('2026-09-15', new Date(2026, 8, 10, 23, 30)),
+      ).toBe(5);
+      expect(
+        calendarDaysUntil('2026-09-15', new Date(2026, 8, 10, 0, 30)),
+      ).toBe(5);
+    } finally {
+      if (previousTimezone === undefined) {
+        delete process.env.TZ;
+      } else {
+        process.env.TZ = previousTimezone;
+      }
+    }
+  });
 });

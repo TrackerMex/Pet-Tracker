@@ -21,6 +21,8 @@ Se completa durante la secuencia TDD; los hashes definitivos también quedan en
 - **R2**: rojo `345558a` (candado del contrato); verde `df759b8` (interfaz
   exacta y `nextReminder`/`activitySummary` intactos). Test dirigido y
   `bun run typecheck`, verdes tras la implementación.
+- **R4**: rojo `aa7f9aa` (casos futuro/mañana/hoy/pasado); verde `3badfec`
+  (componentes de calendario, medianoches UTC y cero normalizado).
 
 ## Premisas corregidas contra el árbol
 
