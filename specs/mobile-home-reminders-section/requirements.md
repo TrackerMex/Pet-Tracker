@@ -1233,7 +1233,7 @@ se arregla lo barato, que es que el texto diga lo que hay.
 - **Sin mutación nueva**: es copy. Basta el rojo del candado de literal, si
   existe, y dejar escrito en el informe qué test cayó y por qué.
 
-  - [ ] Aprobado por humano
+  - [X] Aprobado por humano
 
 ## Aprobación
 
