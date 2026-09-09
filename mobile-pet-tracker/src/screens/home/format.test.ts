@@ -26,17 +26,24 @@ describe('#70 R4: calendarDaysUntil cuenta días de calendario', () => {
 
   describe('#70 R5: la zona horaria no desplaza fechas', () => {
     it('normaliza ambos días por componentes sin parsear la cadena cruda', () => {
-      const dateParse = jest.spyOn(Date, 'parse');
-      const dateUtc = jest.spyOn(Date, 'UTC');
+      const late = new Date(2026, 8, 10, 23, 30);
+      const early = new Date(2026, 8, 10, 0, 30);
+      const RealDate = Date;
+      const dateParse = jest.spyOn(RealDate, 'parse');
+      const dateUtc = jest.spyOn(RealDate, 'UTC');
+      const dateConstructor = jest
+        .spyOn(global, 'Date')
+        .mockImplementation(
+          (value: string | number | Date, ...dateParts: number[]) =>
+            Reflect.construct(RealDate, [value, ...dateParts]) as Date,
+        );
+      Object.assign(dateConstructor, { parse: dateParse, UTC: dateUtc });
 
       try {
-        expect(
-          calendarDaysUntil('2026-09-15', new Date(2026, 8, 10, 23, 30)),
-        ).toBe(5);
-        expect(
-          calendarDaysUntil('2026-09-15', new Date(2026, 8, 10, 0, 30)),
-        ).toBe(5);
+        expect(calendarDaysUntil('2026-09-15', late)).toBe(5);
+        expect(calendarDaysUntil('2026-09-15', early)).toBe(5);
 
+        expect(dateConstructor).not.toHaveBeenCalled();
         expect(dateParse).not.toHaveBeenCalled();
         expect(dateUtc.mock.calls).toEqual([
           [2026, 8, 15],
@@ -45,6 +52,7 @@ describe('#70 R4: calendarDaysUntil cuenta días de calendario', () => {
           [2026, 8, 10],
         ]);
       } finally {
+        dateConstructor.mockRestore();
         dateParse.mockRestore();
         dateUtc.mockRestore();
       }
