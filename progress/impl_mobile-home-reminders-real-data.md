@@ -21,6 +21,9 @@
 - **R3**: rojo `37f7d74`; verde `4788104`. El helper filtra por estado y día
   local inclusivo, ordena por instante/id y corta en tres. Su verificación por
   mutación M3 quedó validada con la evidencia corregida por A8.
+- **R4**: rojo `c2d5dfd`. Los dos fallos esperados observan que
+  `listReminders` aún recibe cero llamadas; el verde está bloqueado por la
+  contradicción de arnés descrita abajo.
 
 ## Prueba de mutación
 
@@ -57,3 +60,23 @@ A9 resuelve la incompatibilidad sin retirar candados: R3 verifica M3..M6 y R5
 verificará M7/M8 una sola vez, cuando también existan sus dos `it` de Home.
 Tras la firma se plantaron M5 y M6, ambas cayeron por el `it` prescrito, se
 restauraron y la suite dirigida quedó 13/13 verde.
+
+## Bloqueo de arnés en R4
+
+La implementación mínima exacta de R4 —`listReminders`, `remindersFn` y un
+cuarto `useApi(remindersFn)`— puso verdes los dos candados nuevos y la
+adaptación de #70, pero dejó la suite de Home en 1 fallo/89 verdes. Cayó el
+test heredado `R10: preserva la mascota durante el refetch` con
+`TypeError: Cannot read properties of undefined (reading 'nextVaccine')`.
+
+Ese test sustituye `useApi` con un contador posicional `hookCall++ % 3`; tres
+llamadas por render mantienen el ciclo alineado, pero la cuarta exigida por R4
+desplaza qué estado recibe cada hook en renders posteriores. El mock por
+defecto de `listReminders` prescrito por A6 no interviene porque el test
+sustituye el hook entero.
+
+`tasks.md:115-118` exige que los `describe` heredados queden verdes **sin
+tocarlos**, mientras adaptar el doble a `% 4` es necesario para conservar su
+intención. `design.md:267` tampoco enumera esa adaptación entre los cambios
+permitidos de `index.test.tsx`. La implementación de producción se retiró sin
+commit y se paró en el rojo versionado, sin tocar el doble ni el backend.
