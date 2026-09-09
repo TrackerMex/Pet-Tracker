@@ -15,7 +15,7 @@ Base de medición: **`20c7b3c`** (merge del PR #116, #70).
 | R3 — `upcomingReminders` | `src/screens/home/format.test.ts`::`describe('#85 R3: upcomingReminders filtra, ordena y acota')` | `37f7d74 feat(mobile-home-reminders-real-data): lock upcoming reminder selection (R3)` + `4788104 feat(mobile-home-reminders-real-data): select upcoming reminders (R3)`; M3..M6 validadas en el informe según A8/A9 |
 | R4 — la Home pide los recordatorios | `src/screens/home/index.test.tsx`::`describe('#85 R4: la Home pide los recordatorios de la mascota')` + adaptación de `#70 R15` | `c2d5dfd feat(mobile-home-reminders-real-data): lock home reminder request (R4)` + `fc7a31d feat(mobile-home-reminders-real-data): fetch home reminders (R4)`; A10 adapta el doble posicional |
 | R5 — las filas y su cardinalidad | `src/screens/home/index.test.tsx`::`describe('#85 R5: la sección pinta los recordatorios reales')` | `10c9636 feat(mobile-home-reminders-real-data): lock real reminder rows (R5)` + `4262348 feat(mobile-home-reminders-real-data): render real reminder rows (R5)` + candado M2 `ad08010` + refactor `a7733b8`; M2/M7/M8/M11 en el informe |
-| R6 — icono, hueco y tinta por tipo | pendiente | pendiente |
+| R6 — icono, hueco y tinta por tipo | `src/screens/home/index.test.tsx`::`describe('#85 R6: cada tipo trae su icono, su hueco y su tinta')` | `bb83edc test(mobile-home-reminders-real-data): expose missing row icons (R6)` + `d4733ef feat(mobile-home-reminders-real-data): identify reminder types (R6)`; M12 validada en el informe |
 | R7 — cruce de dato y posición | pendiente | pendiente |
 | R8 — no pulsables y accesibilidad | pendiente | pendiente |
 | R9 — carga y fallo de `listReminders` | pendiente | pendiente |

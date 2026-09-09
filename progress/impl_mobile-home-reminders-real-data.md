@@ -31,6 +31,9 @@
   `ad08010` endurece el candado de ISO con hora tras la primera sonda de M2;
   `a7733b8` adapta solo el título heredado de cardinalidad. Home y helper
   quedaron 108/108 verdes.
+- **R6**: rojo `bb83edc`; verde `d4733ef`. Cada tipo resuelve su icono mediante
+  el mapa exhaustivo, y el hueco/tinta desde `REMINDER_TYPE_META`. R6 quedó 3/3
+  verde; `#70 R13` y `#64 R9`, 4/4 y 2/2 verdes respectivamente.
 
 ## Prueba de mutación
 
@@ -47,6 +50,7 @@ Todas las mutaciones se plantan en código de producción, de una en una.
 | M7 | Se invirtió temporalmente el comparador primario a `b.dueAt.localeCompare(a.dueAt)`. Las suites de helper y Home dejaron 5 fallos/103 verdes: cayeron los dos `it` de orden y los dos de tope nombrados por A9; el `it` de filtro añadió un quinto rojo porque también fija el orden exacto. | Comparador ascendente restaurado sin commit; ambas suites volvieron a 108/108 verde. |
 | M8 | El tope cambió temporalmente de `slice(0, 3)` a `slice(0, 4)`. Helper y Home dejaron exactamente 2 fallos/106 verdes: `devuelve como mucho tres` recibió `rem-plus-4`, y `corta en tres aunque haya cinco` recibió 5 hijos en vez de 4. | Tope de tres restaurado sin commit; ambas suites volvieron a 108/108 verde. |
 | M11 | Se añadió temporalmente al cuerpo `<View className="h-1.5 rounded-full bg-default" />` sin `testID`. Home dejó 5 fallos/90 verdes: cayó el `it` nominal de tres escenarios por 2 hijos en vez de 1, además del tope y tres cardinalidades heredadas. | Hijo intruso retirado sin commit; Home volvió a 95/95 verde. |
+| M12 | Se cruzaron temporalmente `medication: Stethoscope` y `appointment: Pill`. R6 dejó 1 fallo/2 verdes: cayó exactamente `it('liga icono, superficie y tinta a su tipo')` porque `rem-b` no contenía `icon-pill`. | Mapa exacto restaurado sin commit; R6, `#70 R13` y `#64 R9` volvieron verdes, y `git diff` quedó vacío. |
 
 ## A8 — corrección de la evidencia prescrita para M3
 

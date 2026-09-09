@@ -128,7 +128,7 @@ implementación + tests + docs incumple `CHECKPOINTS.md` C4 y **se rechaza**.
 
 ## R5 — Las filas: hasta tres, con su título, su fecha y su contador
 
-- [ ] (1) Escribir test que falla para R5
+- [x] (1) Escribir test que falla para R5
   - En `index.test.tsx`: helpers `localIso` y `makeReminder`, y la **fixture
     normativa de tres filas** de [[requirements]] R5, entregada **desordenada**.
   - `describe('#85 R5: la sección pinta los recordatorios reales')` con sus
@@ -137,7 +137,7 @@ implementación + tests + docs incumple `CHECKPOINTS.md` C4 y **se rechaza**.
   - **La cardinalidad se cuenta con `children.length` del contenedor, JAMÁS con
     coincidencias de `testID`.**
   - **Rojo esperado**: no existe ningún `reminders-item-*`.
-- [ ] (2) Implementación mínima que lo pasa
+- [x] (2) Implementación mínima que lo pasa
   - **Antes de nada, enmienda A11**: añadir un `beforeEach` de **nivel de
     fichero**, tras `const mockListReminders = jest.mocked(listReminders);`
     (`:120`), con
@@ -153,7 +153,7 @@ implementación + tests + docs incumple `CHECKPOINTS.md` C4 y **se rechaza**.
     `className="flex-row items-center gap-3"`, agrupador `flex-1` con título y
     fecha, y la píldora del contador con `TABULAR_NUMS`.
   - **Sin disco de icono todavía**: entra en R6.
-- [ ] (3) Refactor con tests verdes
+- [x] (3) Refactor con tests verdes
   - Plantar **M7** (comparador invertido) y **M8** (`slice(0, 4)`), aplazadas
     desde R3 por **A9**, y comprobar que cada una cae por **los cuatro** `it`
     que R15 les nombra: los dos de `format.test.ts` y los dos de la Home.
@@ -167,7 +167,7 @@ implementación + tests + docs incumple `CHECKPOINTS.md` C4 y **se rechaza**.
 
 ## R6 — Un icono de `reicon` por tipo, con su hueco y su tinta
 
-- [ ] (1) Escribir test que falla para R6
+- [x] (1) Escribir test que falla para R6
   - Añadir al doble de `reicon` (`:86-102`) las **cinco** entradas nuevas:
     `Bacteria`, `Pill`, `Stethoscope`, `Bone`, `Bell`. `Syringe` y `Weight` ya
     están y **no se renombran**.
@@ -176,7 +176,7 @@ implementación + tests + docs incumple `CHECKPOINTS.md` C4 y **se rechaza**.
     `jest.spyOn(Uniwind, 'getCSSVariable').mockImplementation((token) => token)`
     y **`within(fila)`** en todas las aserciones.
   - **Rojo esperado**: las filas no tienen disco ni icono.
-- [ ] (2) Implementación mínima que lo pasa
+- [x] (2) Implementación mínima que lo pasa
   - `REMINDER_ROW_ICONS` como constante de módulo con los siete tipos.
   - Tintas: **una sola** llamada `useThemeColors` de longitud fija, con
     `slot === 'neutral' ? 'muted' : \`category-${slot}-strong\``.
@@ -184,7 +184,7 @@ implementación + tests + docs incumple `CHECKPOINTS.md` C4 y **se rechaza**.
     como **primer hijo** de la `Card`, con `<Icon size={20} color={ink} />`.
   - **Por variable, nunca siete etiquetas literales**: `#70 R13` cuenta
     `<Syringe size={20}` y espera **2**.
-- [ ] (3) Refactor con tests verdes
+- [x] (3) Refactor con tests verdes
   - Plantar **M12** (cruzar dos iconos del mapa), ver el rojo por el `it` de R6,
     revertir, anotar.
   - Comprobar que `#70 R13` (`:2270-2285`) y `#64 R9`
