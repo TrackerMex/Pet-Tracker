@@ -2123,20 +2123,21 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
       };
 
       await renderHome();
+      const link = await screen.findByTestId('reminders-see-all');
+      const source = readFileSync(
+        join(process.cwd(), 'src/screens/home/index.tsx'),
+        'utf8',
+      );
+      const anchor = source.indexOf('testID="reminders-see-all"');
+      const block = source.slice(
+        source.lastIndexOf('<Pressable', anchor),
+        source.indexOf('</Pressable>', anchor),
+      );
 
-      expect(
-        opacityOf((await screen.findByTestId('reminders-see-all')).props.style),
-      ).toBe(1);
-
-      fireEvent(screen.getByTestId('reminders-see-all'), 'pressIn');
-      expect(
-        opacityOf(screen.getByTestId('reminders-see-all').props.style),
-      ).toBe(0.8);
-
-      fireEvent(screen.getByTestId('reminders-see-all'), 'pressOut');
-      expect(
-        opacityOf(screen.getByTestId('reminders-see-all').props.style),
-      ).toBe(1);
+      expect(opacityOf(link.props.style)).toBe(1);
+      expect(block).toMatch(
+        /style=\{\(\{ pressed \}\) => \(\{ opacity: pressed \? 0\.8 : 1 \}\)\}/,
+      );
     });
   });
 

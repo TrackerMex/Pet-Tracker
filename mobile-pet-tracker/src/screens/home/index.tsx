@@ -513,6 +513,7 @@ export function HomeScreen() {
                 testID="reminders-see-all"
                 accessibilityRole="button"
                 className="min-h-11 justify-center"
+                style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
                 onPress={() => router.push('/reminders')}
               >
                 <Text className="text-xs font-semibold text-accent-strong">
