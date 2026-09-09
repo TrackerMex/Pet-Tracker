@@ -1186,6 +1186,56 @@ Solo M7 y M8 estaban mal colocadas.
 
   - [X] Aprobado por humano
 
+
+### A10 — el doble posicional de `useApi` se adapta a la cuarta llamada
+
+R4 añade la cuarta petición de la Home y eso rompe un test **heredado** que
+`tasks.md:115-118` manda dejar verde **sin tocarlo**. La contradicción es real y
+no tiene salida sin enmienda.
+
+**Por qué se rompe.** `index.test.tsx:790-800`
+(`describe('R10: preserva la mascota durante el refetch')`) sustituye `useApi`
+entero por un doble **posicional**:
+
+```js
+let hookCall = 0;
+jest.spyOn(apiHooks, 'useApi').mockImplementation(() => {
+  const result = hookCall++ % 3 === 0 ? petsResult : emptyResult;
+  return result;
+});
+```
+
+El `% 3` **codifica el número de llamadas por render**: la primera devuelve la
+lista de mascotas y las otras dos, vacío. Con cuatro llamadas el ciclo se
+desalinea en el segundo render y el hook de la lista recibe `emptyResult`, de
+donde sale el `TypeError: Cannot read properties of undefined (reading
+'nextVaccine')` que Codex observó. El mock por defecto de `listReminders` que
+prescribe **A6** no interviene, porque este test sustituye el hook entero y
+nunca llega a la capa de API.
+
+- **Qué se autoriza, y solo esto**: cambiar `% 3` por `% 4` en
+  `index.test.tsx:797`. **Un carácter.**
+- **La intención del test se conserva exacta**: la primera llamada de cada
+  render sigue siendo la de la lista de mascotas y el resto sigue devolviendo
+  vacío. Lo que el `it` prueba —que un refetch de la lista no vuelve a llamar a
+  `selectPet`— no se toca, y sus dos `expect(selectPet).not.toHaveBeenCalled()`
+  siguen intactos.
+- **Esto NO es mutar un doble para fabricar un rojo**, que es lo que prohíbe el
+  quinto punto de C4. Es al revés: el doble codifica una aridad que la feature
+  cambia legítimamente, y se actualiza para que siga midiendo lo mismo.
+- **Qué NO cambia**: ningún otro `describe` heredado, ninguna aserción, ningún
+  otro doble. Si al cambiar el `% 4` cae algo más, **para y repórtalo**.
+
+**Deuda que esto destapa, registrada como #86**: el doble es frágil por diseño.
+Acopla el test al **número** de llamadas a `useApi` de la pantalla, así que
+**cualquier** feature futura que añada una petición a la Home lo romperá igual,
+y el síntoma será un `TypeError` opaco a tres capas de distancia de la causa.
+Lo honesto es indexar por la **función pasada** al hook y no por el orden de
+llamada. No entra aquí: es una refactorización de un test heredado y esta
+feature ya lleva cuatro paradas.
+
+  - [ ] Aprobado por humano
+
 ## Aprobación
 
 - [X] Aprobado por humano (fecha: 2026-09-09) ← gate obligatorio antes de implementar

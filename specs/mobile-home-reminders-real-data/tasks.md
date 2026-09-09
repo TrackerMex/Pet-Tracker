@@ -116,6 +116,15 @@ implementación + tests + docs incumple `CHECKPOINTS.md` C4 y **se rechaza**.
   - Suite completa verde. Comprobar que los ~20 `describe` que ya renderizaban
     la Home siguen verdes **sin haberlos tocado** (gracias a la implementación
     por defecto de la factoría).
+  - **Adaptación autorizada por A10**: en `index.test.tsx:797`, el doble
+    posicional de `useApi` del `describe('R10: preserva la mascota durante el
+    refetch')` pasa de `hookCall++ % 3` a `hookCall++ % 4`. **Un carácter.** El
+    `% 3` codificaba las tres llamadas por render; la cuarta de R4 desalinea el
+    ciclo y el hook de la lista acaba recibiendo `emptyResult`. La intención del
+    `it` no cambia y sus dos `expect(selectPet).not.toHaveBeenCalled()` siguen
+    intactos. **Si al cambiarlo cae algo más, para y repórtalo.**
+
+
 
 ## R5 — Las filas: hasta tres, con su título, su fecha y su contador
 

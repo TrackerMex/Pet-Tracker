@@ -1604,5 +1604,21 @@
       "mobile-pet-tracker/src/__tests__/design-drift.test.ts",
       "mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts"
     ]
+  },
+  {
+    "id": 86,
+    "name": "mobile-home-useapi-double-by-identity",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Destapado por la cuarta parada de #85 el 2026-09-09. El test heredado 'R10: preserva la mascota durante el refetch' (mobile-pet-tracker/src/screens/home/index.test.tsx:790-800) sustituye useApi entero por un doble POSICIONAL: `hookCall++ % 3 === 0 ? petsResult : emptyResult`. El `% 3` codifica cuantas llamadas a useApi hace la Home por render. Al anadir #85 la cuarta peticion, el ciclo se desalinea en el segundo render, el hook de la lista recibe emptyResult y sale un `TypeError: Cannot read properties of undefined (reading 'nextVaccine')`, opaco y a tres capas de la causa. #85 lo parcheo con A10 cambiando el 3 por un 4, que conserva la intencion exacta pero deja la fragilidad intacta: CUALQUIER feature futura que anada una peticion a la Home lo rompera igual. El arreglo honesto es indexar el doble por la FUNCION pasada al hook, no por el orden de llamada, de modo que anadir o quitar peticiones no lo afecte.",
+    "acceptance_criteria": [
+      "El doble de useApi de ese test resuelve por identidad de la funcion pasada, no por contador posicional",
+      "Anadir una quinta llamada a useApi en la Home deja ese test verde sin tocarlo",
+      "La intencion del it no cambia: un refetch de la lista no vuelve a llamar a selectPet",
+      "Suite movil completa verde; ninguna cifra de candado se mueve"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/home/index.test.tsx"
+    ]
   }
 ]
