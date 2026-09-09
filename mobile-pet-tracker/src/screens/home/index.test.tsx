@@ -2348,7 +2348,7 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
       }
     });
 
-    it('deja el cuerpo con un solo hijo', async () => {
+    it('deja el cuerpo con la fila de la vacuna y nada más cuando no hay recordatorios', async () => {
       mockGetPet.mockResolvedValue({
         kind: 'ok',
         pet: makePet({ nextVaccine: vaccine }),
