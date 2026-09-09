@@ -304,3 +304,51 @@ la enmienda está en su `requirements.md` §R10.
   aprobación, ni los tests que ya la cubren.
 
 - [X] Enmienda aprobada por humano
+
+## Enmienda #70 — elementos repetidos: qué hay que candar
+
+> Añadida el 2026-09-09. Tres features seguidas —#69, #71, #70— cerraron con el
+> mismo patrón: la revisión destapa una dimensión sin vigilar, se cierra, y la
+> siguiente revisión destapa otra por el mismo mecanismo. Cuatro rondas, cuatro
+> dimensiones. Esta lista existe para que la quinta no haga falta.
+
+Cuando una pantalla pinta un **elemento repetido** —una celda de una tira, un
+tile de una rejilla, una fila de una lista— la spec enumera **todas** las
+decisiones que ese elemento toma, y el criterio de aceptación es siempre el
+mismo: **cruzar cualquiera de ellas entre dos elementos pone la suite roja**,
+observado con `within(elemento)`.
+
+**Decisiones de conducta, una por elemento:**
+
+1. el **dato que muestra** — el más olvidado;
+2. componente de icono;
+3. etiqueta visible / clave de copy;
+4. **nombre accesible** — se cruza igual en un elemento solo-icono, donde
+   ninguna aserción de texto lo ve;
+5. color o hueco de fondo;
+6. **tinta del icono**;
+7. **color y receta tipográfica de cada texto** — no solo del principal;
+8. destino de navegación;
+9. **condición de render** — mueve la cardinalidad, así que el recuento se
+   verifica en más de un escenario;
+10. **forma del contenedor** (`flex-row items-center gap-*`) — y en **todas** sus
+    ramas, no solo la cargada: si el estado vacío promete "la misma anatomía de
+    fila", eso es una aserción, no una frase del título del test;
+11. **envoltorios de agrupación** (`flex-1` y equivalentes) que reparten el
+    espacio;
+12. **orden de los hijos**. `within(row).getByTestId(...)` es **agnóstico al
+    orden**: intercambiar dos textos deja la suite entera verde. Se cierra
+    fijando la posición, p. ej.
+    `expect(row.children[1]).toHaveProperty('props.className', 'flex-1')`.
+
+**Estructurales, del contenedor:** identidad, orden y cardinalidad. El recuento
+se cierra con `children.length`, **nunca contando coincidencias de `testID`** —
+un recuento por prefijo deja pasar cualquier hijo sin `testID`.
+
+**Invariantes compartidos, a inventariar aparte:** tamaño de icono, objetivo
+táctil y reparto, radio, rol y agrupación accesible, sitio de render, y feedback
+de pulsado.
+
+**Método**: cada candado se demuestra con una sonda —cruzar el valor en
+producción, ver el rojo, restaurar con `git diff` vacío— y la evidencia se
+escribe. Un candado que nadie vio fallar no es un candado.
