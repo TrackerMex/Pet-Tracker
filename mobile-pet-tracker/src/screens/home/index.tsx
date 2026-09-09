@@ -10,7 +10,6 @@ import {
   FileText,
   Map,
   Moon,
-  Syringe,
   Walk,
   Weight,
   Wifi,
@@ -473,7 +472,7 @@ export function HomeScreen() {
                   <View
                     className={`size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS.blue.surface}`}
                   >
-                    <Syringe size={20} color={vaccineInk} />
+                    <CalendarPlus size={20} color={vaccineInk} />
                   </View>
                   <View className="flex-1">
                     <Text
@@ -508,7 +507,7 @@ export function HomeScreen() {
                   <View
                     className={`size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS.neutral.surface}`}
                   >
-                    <Syringe size={20} color={muted} />
+                    <CalendarPlus size={20} color={muted} />
                   </View>
                   <Text className="flex-1 text-sm font-normal text-muted">
                     {t('home.noUpcomingVaccine')}

@@ -46,6 +46,9 @@ Se completa durante la secuencia TDD; los hashes definitivos también quedan en
 - **R11**: rojo `c4c0b45` (mutación de producción que quitó el nombre accesible
   y murió con `undefined`); verde `e34b07e` (restauración del label expandido,
   con un solo botón accesible en la sección).
+- **R12**: rojo `8f694bb` (M8 de producción quitó `TABULAR_NUMS` y recibió
+  `undefined`); verde `677ab51` (contador tabular; nombre, fecha y vacío sin
+  cifras tabulares; `Card` y huecos de categoría verificados).
 
 ## Premisas corregidas contra el árbol
 

@@ -104,6 +104,7 @@ jest.mock('reicon-react-native', () => {
     Map: mockIcon('icon-map'),
     CalendarPlus: mockIcon('icon-calendar-plus'),
     FileText: mockIcon('icon-file-text'),
+    Syringe: mockIcon('icon-syringe'),
   };
 });
 
@@ -2210,6 +2211,22 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
       } finally {
         await empty.unmount();
       }
+    });
+  });
+
+  describe('#70 R13: icono de vacuna', () => {
+    it('usa el icono de reicon y ningún emoji', () => {
+      const source = readFileSync(
+        join(process.cwd(), 'src/screens/home/index.tsx'),
+        'utf8',
+      );
+      const reiconImport =
+        source.match(/import \{[\s\S]*?\} from 'reicon-react-native';/)?.[0] ??
+        '';
+
+      expect(reiconImport).toMatch(/\bSyringe\b/);
+      expect(source.match(/<Syringe\s+size=\{20\}/g) ?? []).toHaveLength(2);
+      expect(source).not.toContain('💉');
     });
   });
 });
