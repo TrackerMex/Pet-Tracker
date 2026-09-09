@@ -45,6 +45,8 @@ import {
   fmtKg,
   fmtKm,
   fmtMinutes,
+  localDayOf,
+  upcomingReminders,
 } from './format';
 import { WeeklyActivityChart } from './weekly-activity-chart';
 
@@ -88,7 +90,7 @@ function fmtLastSeen(
     : t('home.lastSeen', { date: new Date(iso).toLocaleString(locale) });
 }
 
-function vaccineCountdown(
+function dueCountdown(
   days: number,
   t: ReturnType<typeof useTranslate>,
 ): { text: string; label: string } {
@@ -160,13 +162,17 @@ export function HomeScreen() {
   const detail = useApi(detailFn);
   const activity = useApi(activityFn);
   const reminders = useApi(remindersFn);
+  const upcoming =
+    reminders.data?.kind === 'ok'
+      ? upcomingReminders(reminders.data.reminders, new Date())
+      : [];
   const nextVaccine =
     detail.data?.kind === 'ok' ? detail.data.pet.nextVaccine : null;
   const nextVaccineDays = nextVaccine
     ? calendarDaysUntil(nextVaccine.nextDoseAt, new Date())
     : null;
   const nextVaccineCountdown =
-    nextVaccineDays === null ? null : vaccineCountdown(nextVaccineDays, t);
+    nextVaccineDays === null ? null : dueCountdown(nextVaccineDays, t);
   const refetchPets = pets.refetch;
   const refetchDetail = detail.refetch;
   const today =
@@ -589,6 +595,44 @@ export function HomeScreen() {
                   </Text>
                 </Card>
               ) : null}
+
+              {upcoming.map((reminder) => {
+                const dueDay = localDayOf(reminder.dueAt);
+                const countdown = dueCountdown(
+                  calendarDaysUntil(dueDay, new Date()),
+                  t,
+                );
+
+                return (
+                  <Card
+                    key={reminder.id}
+                    testID={`reminders-item-${reminder.id}`}
+                    className="flex-row items-center gap-3"
+                  >
+                    <View className="flex-1">
+                      <Text
+                        testID={`reminders-item-${reminder.id}-title`}
+                        className="text-sm font-semibold text-foreground"
+                      >
+                        {reminder.title}
+                      </Text>
+                      <Text
+                        testID={`reminders-item-${reminder.id}-date`}
+                        className="text-xs font-normal text-muted"
+                      >
+                        {fmtDate(dueDay, locale)}
+                      </Text>
+                    </View>
+                    <Text
+                      testID={`reminders-item-${reminder.id}-days`}
+                      style={TABULAR_NUMS}
+                      className={`rounded-full px-2.5 py-1 text-xs font-bold ${CATEGORY_SLOTS.amber.surface} ${CATEGORY_SLOTS.amber.ink}`}
+                    >
+                      {countdown.text}
+                    </Text>
+                  </Card>
+                );
+              })}
             </View>
           </View>
         ) : null}

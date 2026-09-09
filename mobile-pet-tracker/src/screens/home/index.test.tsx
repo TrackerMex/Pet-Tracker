@@ -118,6 +118,11 @@ const mockGetDailyActivity = jest.mocked(getDailyActivity);
 const mockGetPet = jest.mocked(getPet);
 const mockListPets = jest.mocked(listPets);
 const mockListReminders = jest.mocked(listReminders);
+
+beforeEach(() => {
+  mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [] });
+});
+
 const mockUseAuth = jest.mocked(useAuth);
 const mockRouter = jest.mocked(router);
 const mockUseFocusEffect = jest.mocked(useFocusEffect);
