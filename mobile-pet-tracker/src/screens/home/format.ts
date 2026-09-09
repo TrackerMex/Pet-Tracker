@@ -9,6 +9,14 @@ export function calendarDaysUntil(date: string, now: Date): number {
   return days === 0 ? 0 : days;
 }
 
+export function fmtDate(date: string, locale: string): string {
+  return new Date(date).toLocaleDateString(locale, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+}
+
 export function fmtMinutes(minutes: number | null): string {
   if (minutes === null) return '—';
   if (minutes < 60) return `${minutes}m`;
