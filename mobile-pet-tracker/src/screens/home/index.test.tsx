@@ -9,6 +9,7 @@ import {
 import { router, useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
+import { Uniwind } from 'uniwind';
 
 import {
   getDailyActivity,
@@ -25,6 +26,10 @@ import * as selectedPetHooks from '../../providers/selected-pet-provider';
 import { HomeScreen } from './index';
 
 declare function require(moduleName: 'fs'): {
+  readdirSync: (
+    path: string,
+    options: { withFileTypes: true },
+  ) => { name: string; isDirectory: () => boolean }[];
   readFileSync: (path: string, encoding: 'utf8') => string;
 };
 
@@ -32,8 +37,25 @@ declare function require(moduleName: 'path'): {
   join: (...paths: string[]) => string;
 };
 
-const { readFileSync } = require('fs');
+const { readdirSync, readFileSync } = require('fs');
 const { join } = require('path');
+
+function appRoutes(directory: string, prefix = ''): string[] {
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const relativePath = prefix ? `${prefix}/${entry.name}` : entry.name;
+    const absolutePath = join(directory, entry.name);
+
+    if (entry.isDirectory()) {
+      return entry.name === '__tests__'
+        ? []
+        : appRoutes(absolutePath, relativePath);
+    }
+
+    return entry.name.endsWith('.tsx') && entry.name !== '_layout.tsx'
+      ? [`/${relativePath.replace(/\.tsx$/, '')}`]
+      : [];
+  });
+}
 
 jest.mock('../../api/pets', () => ({
   getPet: jest.fn(),
@@ -68,16 +90,18 @@ jest.mock('reicon-react-native', () => {
     'react-native',
   );
   const mockIcon = (testID: string) =>
-    function MockIcon() {
-      return React.createElement(View, { testID });
+    function MockIcon(props: Record<string, unknown>) {
+      return React.createElement(View, { testID, ...props });
     };
 
   return {
     ...actual,
-    Weight: mockIcon('summary-icon-weight'),
-    Walk: mockIcon('summary-icon-activity'),
-    Moon: mockIcon('summary-icon-sleep'),
-    Map: mockIcon('summary-icon-distance'),
+    Weight: mockIcon('icon-weight'),
+    Walk: mockIcon('icon-walk'),
+    Moon: mockIcon('icon-moon'),
+    Map: mockIcon('icon-map'),
+    CalendarPlus: mockIcon('icon-calendar-plus'),
+    FileText: mockIcon('icon-file-text'),
   };
 });
 
@@ -1338,10 +1362,10 @@ describe('#69 R1: la tira de hoy tiene cuatro celdas con tres divisores', () => 
 
     await screen.findByTestId('summary-card');
     const cells = [
-      ['summary-weight', '12.4 kg', 'summary-icon-weight', 'Peso'],
-      ['summary-activity', '1h 35m', 'summary-icon-activity', 'Actividad'],
-      ['summary-sleep', '45m', 'summary-icon-sleep', 'Descanso'],
-      ['summary-distance', '2.4 km', 'summary-icon-distance', 'Distancia'],
+      ['summary-weight', '12.4 kg', 'icon-weight', 'Peso'],
+      ['summary-activity', '1h 35m', 'icon-walk', 'Actividad'],
+      ['summary-sleep', '45m', 'icon-moon', 'Descanso'],
+      ['summary-distance', '2.4 km', 'icon-map', 'Distancia'],
     ] as const;
 
     for (const [testID, expectedValue, iconTestID, label] of cells) {
@@ -1469,6 +1493,327 @@ describe('#69 R1: la tira de hoy tiene cuatro celdas con tres divisores', () => 
     await screen.findByTestId('summary-card');
 
     expect({
+      detail: mockGetPet.mock.calls.length,
+      activity: mockGetDailyActivity.mock.calls.length,
+    }).toEqual(existingScenarioCallCount);
+  });
+});
+
+describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    const pet = makePet();
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+    mockGetDailyActivity.mockResolvedValue({
+      kind: 'ok',
+      days: [makeDay()],
+      weekComparison: { distanceM: 5, activeMinutes: 10, walkCount: 20 },
+    });
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('dibuja el rótulo y los tres tiles en orden', async () => {
+    await renderHome();
+
+    const quickActions = await screen.findByTestId('quick-actions');
+    const title = within(quickActions).getByTestId('quick-actions-title');
+    const tileRow = within(quickActions).getByTestId('quick-actions-row');
+    const tileTestIds = within(quickActions)
+      .getAllByTestId(/^quick-action-/)
+      .map(({ props }) => props.testID);
+
+    expect(title).toHaveTextContent('Accesos rápidos');
+    expect(title.props.className).toBe(
+      'text-xs font-semibold uppercase tracking-widest text-muted',
+    );
+    expect(tileTestIds).toEqual([
+      'quick-action-weight',
+      'quick-action-reminder',
+      'quick-action-documents',
+    ]);
+    expect(tileRow.children).toHaveLength(3);
+    expect(screen.queryByTestId('quick-action-map')).toBeNull();
+  });
+
+  it('lleva cada tile a su ruta existente', async () => {
+    await renderHome();
+
+    for (const testID of [
+      'quick-action-weight',
+      'quick-action-reminder',
+      'quick-action-documents',
+    ]) {
+      await fireEvent.press(screen.getByTestId(testID));
+    }
+
+    expect(mockRouter.push).toHaveBeenCalledTimes(3);
+    expect(mockRouter.push).toHaveBeenNthCalledWith(1, '/weight-log');
+    expect(mockRouter.push).toHaveBeenNthCalledWith(2, '/add-reminder');
+    expect(mockRouter.push).toHaveBeenNthCalledWith(3, '/pets/pet-1/docs');
+  });
+
+  it('no apunta a ninguna ruta inexistente', () => {
+    const source = readFileSync(
+      join(process.cwd(), 'src/screens/home/index.tsx'),
+      'utf8',
+    );
+    const start = source.indexOf('const QUICK_ACTIONS');
+    const end = source.indexOf('] as const;', start);
+    const quickActions = source.slice(start, end);
+    const destinations = [
+      ...quickActions.matchAll(
+        /href:\s*\([^)]*\)\s*=>\s*(?:'([^']+)'|`([^`]+)`)/g,
+      ),
+    ].map(([, literal, template]) =>
+      (literal ?? template).replace('${petId}', '[petId]'),
+    );
+    const routes = appRoutes(join(process.cwd(), 'src/app/(tabs)'));
+
+    expect(destinations).toHaveLength(3);
+    for (const destination of destinations) {
+      expect(routes).toContain(destination);
+    }
+    expect(source).not.toMatch(/href\(selectedPetId\)\s+as\s+Href/);
+  });
+
+  it('no dibuja ningún tile a una pestaña ni a un destino inexistente', () => {
+    const source = readFileSync(
+      join(process.cwd(), 'src/screens/home/index.tsx'),
+      'utf8',
+    );
+    const start = source.indexOf('const QUICK_ACTIONS');
+    const end = source.indexOf('] as const;', start);
+    const quickActions = source.slice(start, end);
+
+    expect(quickActions.match(/testID: 'quick-action-/g)).toHaveLength(3);
+    expect(source).toContain('{QUICK_ACTIONS.map(');
+    for (const forbiddenDestination of [
+      '/map',
+      '/health',
+      '/food',
+      '/trips',
+      '/reminders',
+      '/pairing',
+      '/pets/add',
+      '/meal-schedule',
+    ]) {
+      expect(quickActions).not.toContain(`'${forbiddenDestination}'`);
+    }
+  });
+
+  it('liga icono, etiqueta, fondo, destino, tinta y color de etiqueta de cada tile y de ninguno más', async () => {
+    jest
+      .spyOn(Uniwind, 'getCSSVariable')
+      .mockImplementation((token) => token);
+    await renderHome();
+
+    const bindings = [
+      [
+        'quick-action-weight',
+        'icon-weight',
+        'Peso',
+        'bg-category-violet',
+        '--color-category-violet-strong',
+        'text-foreground',
+        '/weight-log',
+      ],
+      [
+        'quick-action-reminder',
+        'icon-calendar-plus',
+        'Recordatorio',
+        'bg-category-amber',
+        '--color-category-amber-strong',
+        'text-foreground',
+        '/add-reminder',
+      ],
+      [
+        'quick-action-documents',
+        'icon-file-text',
+        'Documentos',
+        'bg-category-blue',
+        '--color-category-blue-strong',
+        'text-foreground',
+        '/pets/pet-1/docs',
+      ],
+    ] as const;
+
+    for (const [
+      testID,
+      iconTestID,
+      label,
+      surface,
+      ink,
+      labelColor,
+      href,
+    ] of bindings) {
+      const tile = screen.getByTestId(testID);
+      const tileQueries = within(tile);
+      const icon = tileQueries.getByTestId(iconTestID);
+      const labelNode = tileQueries.getByText(label);
+
+      expect(icon).toBeVisible();
+      expect(icon.props.color).toBe(ink);
+      expect(labelNode).toBeVisible();
+      expect(labelNode.props.className).toContain(labelColor);
+      expect(tile.props.className).toContain(surface);
+      await fireEvent.press(tile);
+      expect(mockRouter.push).toHaveBeenLastCalledWith(href);
+    }
+
+    expect(mockRouter.push).toHaveBeenCalledTimes(bindings.length);
+  });
+
+  it('resuelve el fondo y la tinta desde el mismo hueco', () => {
+    const source = readFileSync(
+      join(process.cwd(), 'src/screens/home/index.tsx'),
+      'utf8',
+    );
+
+    expect(source).toContain('CATEGORY_SLOTS[slot].surface');
+    expect(source).toContain('`category-${slot}-strong`');
+    expect(source).not.toMatch(/(?:bg|text)-category-/);
+  });
+
+  it('da a cada tile 44 pt de objetivo táctil', async () => {
+    await renderHome();
+
+    const quickActions = await screen.findByTestId('quick-actions');
+    for (const testID of [
+      'quick-action-weight',
+      'quick-action-reminder',
+      'quick-action-documents',
+    ]) {
+      const tile = within(quickActions).getByTestId(testID);
+
+      expect(tile.props.className).toContain('min-h-11');
+      expect(tile.props.className).toContain('flex-1');
+      expect(tile.props.hitSlop).toBeUndefined();
+    }
+  });
+
+  it('usa iconos de reicon y ningún emoji', async () => {
+    const source = readFileSync(
+      join(process.cwd(), 'src/screens/home/index.tsx'),
+      'utf8',
+    );
+    const reiconImport = source.match(
+      /import \{([\s\S]*?)\} from 'reicon-react-native';/,
+    )?.[1];
+    const start = source.indexOf('const QUICK_ACTIONS');
+    const end = source.indexOf('] as const;', start);
+    const quickActions = source.slice(start, end);
+
+    expect(reiconImport).toBeDefined();
+    for (const iconName of ['Weight', 'CalendarPlus', 'FileText']) {
+      expect(reiconImport).toMatch(new RegExp(`\\b${iconName}\\b`));
+    }
+    expect(source.match(/<Icon size=\{24\}/g)).toHaveLength(1);
+    expect(quickActions).not.toMatch(/\b(?:HeartPulse|ForkKnife)\b/);
+    for (const emoji of ['🗺️', '🏃', '💉', '🍽️']) {
+      expect(source).not.toContain(emoji);
+    }
+
+    await renderHome();
+    for (const [testID, iconTestID] of [
+      ['quick-action-weight', 'icon-weight'],
+      ['quick-action-reminder', 'icon-calendar-plus'],
+      ['quick-action-documents', 'icon-file-text'],
+    ] as const) {
+      const tile = screen.getByTestId(testID);
+      expect(within(tile).getByTestId(iconTestID).props.size).toBe(24);
+    }
+  });
+
+  it('anuncia los tres tiles como botones independientes', async () => {
+    await renderHome();
+
+    const quickActions = await screen.findByTestId('quick-actions');
+    const weightTile = within(quickActions).getByTestId('quick-action-weight');
+    const tileRow = weightTile.parent;
+
+    for (const testID of [
+      'quick-action-weight',
+      'quick-action-reminder',
+      'quick-action-documents',
+    ]) {
+      expect(within(quickActions).getByTestId(testID).props.accessibilityRole).toBe(
+        'button',
+      );
+    }
+    for (const group of [quickActions, tileRow]) {
+      expect(group?.props.accessible).toBeUndefined();
+      expect(group?.props.accessibilityLabel).toBeUndefined();
+    }
+  });
+
+  it('coloca la rejilla entre el collar y la actividad semanal', async () => {
+    const pet = makePet({
+      device: {
+        model: 'PetTrack One',
+        batteryPct: 82,
+        connectivity: 'online',
+        lastMessageAt: '2026-09-08T12:00:00.000Z',
+        esn: 'ACT-001',
+      },
+    });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+
+    await renderHome();
+    await screen.findByTestId('last-position-card');
+
+    const relevantChildren = screen
+      .getByTestId('home-content')
+      .children.flatMap((child) =>
+        typeof child === 'string' ? [] : [child.props.testID],
+      )
+      .filter((testID) =>
+        [
+          'summary-card',
+          'collar-card',
+          'quick-actions',
+          'weekly-activity-card',
+          'last-position-card',
+        ].includes(testID),
+      );
+
+    expect(relevantChildren).toEqual([
+      'summary-card',
+      'collar-card',
+      'quick-actions',
+      'weekly-activity-card',
+      'last-position-card',
+    ]);
+  });
+
+  it('no dibuja la rejilla sin mascota seleccionada', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+
+    await renderHome();
+
+    await screen.findByTestId('home-empty');
+    expect(screen.queryByTestId('quick-actions')).toBeNull();
+  });
+
+  it('no añade ninguna llamada a la API', async () => {
+    const existingScenarioCallCount = { pets: 1, detail: 1, activity: 1 };
+
+    await renderHome();
+    await screen.findByTestId('summary-card');
+
+    expect({
+      pets: mockListPets.mock.calls.length,
       detail: mockGetPet.mock.calls.length,
       activity: mockGetDailyActivity.mock.calls.length,
     }).toEqual(existingScenarioCallCount);

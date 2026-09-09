@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-09-08
-**Features completadas**: 65/80 (`feature_list.json`)
+**Última actualización**: 2026-09-09
+**Features completadas**: 66/81 (`feature_list.json`)
 **En progreso**: ninguna
 
-**Pendientes**: 15 (#18, #41, #60, #63, #70-#80). El rediseño contra el diseño del Make abrió el bloque #64-#71: #64, #65, #66, #67 y #68 están cerradas y **mergeadas** (PR #106, #110, #111, #112 y #113). #69 `mobile-home-stats-strip` está cerrada con los dos gates humanos firmados; **PR pendiente de merge por el humano**. Quedan del bloque #70 recordatorios y #71 accesos rápidos, ninguna especificada. Deuda registrada: #72 flake de add-pet; #73 `pet-online-pill`; #74 el selector que TalkBack lee como tres controles sueltos; #75 `init.sh` aborta en falso con `FORCE_COLOR`; #76 un e2e que asserta orden sobre un `SELECT` sin `ORDER BY`; #77 el peso visible sin collar; #80 los `testID` del doble atados al componente y no al uso. #78 y #79 (`mobile-alerts-center`, `mobile-push-registration`) entraron desde otra sesión.
+**Pendientes**: 15 (#18, #41, #60, #63, #70, #72-#81). El rediseño contra el diseño del Make abrió el bloque #64-#71: #64, #65, #66, #67, #68 y #69 están cerradas y **mergeadas** (PR #106, #110, #111, #112, #113 y #114). #71 `mobile-home-quick-actions` está cerrada con los dos gates humanos firmados; **PR pendiente de merge por el humano**. Del bloque solo queda **#70 recordatorios**, sin especificar, y con la mitad del diseño bloqueada porque `nextReminder` y `activitySummary` siguen a `null` en el mapper del perfil. Deuda registrada: #72 flake de add-pet; #73 `pet-online-pill`; #74 el selector que TalkBack lee como tres controles sueltos; #75 `init.sh` aborta en falso con `FORCE_COLOR`; #76 un e2e que asserta orden sobre un `SELECT` sin `ORDER BY`; #77 el peso visible sin collar; #80 los `testID` del doble atados al componente; #81 la receta tipográfica del tile sin candado. #78 y #79 entraron desde otra sesión.
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
 desde 2026-08-10. Hay recursos vivos en la cuenta, aunque hoy sin coste.
@@ -86,6 +86,33 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Estado actual
+
+- **`mobile-home-quick-actions` (#71) done** (2026-09-09): la Home tiene una
+  rejilla de **tres accesos rápidos** con fondo pastel. Navegación pura: cero
+  datos, cero backend, cero dependencias.
+  - **Los destinos no son los del Make, y esa es la decisión.** El diseño pedía
+    Mapa, Actividad, Vacunas y Comidas, pero tres de ellos **son pestañas**
+    (`src/app/(tabs)/_layout.tsx:26-30`) y el tab bar flotante usa **los mismos
+    componentes de icono** `Map` y `ForkKnife`: la fila habría sido tres
+    botones duplicando navegación visible en la misma pantalla. El humano
+    decidió que los tiles apunten solo a destinos **no alcanzables desde el tab
+    bar**, y los tres salen de un filtro sobre las once rutas de la app:
+    `/weight-log`, `/add-reminder` —hoy el camino más largo, 3 toques— y
+    `/pets/[petId]/docs`. Del Make se toma la forma y ni un destino ni una
+    etiqueta.
+  - **Un rechazo que valió la feature entera**: el test de la rejilla usaba
+    lista blanca y contaba tiles sobre el fuente, así que la aserción de
+    "exactamente tres" no existía y un cuarto tile a `/pairing` dejaba la suite
+    verde. El arreglo pasó a prefijo y **seguía dejando entrar un tile sin
+    `testID`**; solo contar `children` de la fila lo cerró.
+  - **Un tile decide más cosas de las que parece.** Empezó en cuatro, la
+    primera revisión destapó la quinta (tinta del icono), la segunda la sexta
+    (color de la etiqueta) y la auditoría final la séptima (receta tipográfica,
+    ahora **#81**). La lista completa quedó escrita en el informe para que las
+    próximas specs con elementos repetidos la copien.
+  - **Estrenó el quinto punto de C4** —el rojo tiene que ser mutación de
+    producción, no del doble— y nació vivo: los rojos lo cumplen no solo en la
+    prueba de mutación sino en R2-R13.
 
 - **`mobile-home-stats-strip` (#69) done** (2026-09-08): la Home muestra la
   **tira de cuatro celdas** sobre el hero — Peso, Actividad, Descanso,

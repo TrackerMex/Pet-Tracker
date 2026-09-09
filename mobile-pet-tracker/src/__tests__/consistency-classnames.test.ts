@@ -270,7 +270,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
   const directUses = [
     [join('app', '(auth)', 'forgot.tsx'), 1],
     [join('components', 'pet-hero-header.tsx'), 1],
-    [join('screens', 'home', 'index.tsx'), 1],
+    [join('screens', 'home', 'index.tsx'), 2],
     [join('screens', 'home', 'weekly-activity-chart.tsx'), 1],
     [join('app', '(tabs)', 'health.tsx'), 2],
     [join('app', '(tabs)', 'food.tsx'), 2],
@@ -327,7 +327,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
     expect(card.match(/style=\{mergedStyle\}/g)).toHaveLength(2);
     expect(
       directUses.reduce((total, [, count]) => total + count, 2),
-    ).toBe(33 + 1);
+    ).toBe(33 + 1 + 1);
   });
 });
 
