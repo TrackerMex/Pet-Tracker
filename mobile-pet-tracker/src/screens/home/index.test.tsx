@@ -1524,9 +1524,7 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
     const quickActions = await screen.findByTestId('quick-actions');
     const title = within(quickActions).getByTestId('quick-actions-title');
     const tileTestIds = within(quickActions)
-      .getAllByTestId(
-        /^quick-action-(?:weight|reminder|documents)$/,
-      )
+      .getAllByTestId(/^quick-action-/)
       .map(({ props }) => props.testID);
 
     expect(title).toHaveTextContent('Accesos rápidos');
