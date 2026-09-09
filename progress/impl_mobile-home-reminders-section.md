@@ -40,6 +40,9 @@ Se completa durante la secuencia TDD; los hashes definitivos también quedan en
 - **R9**: rojo `1f2ed2b` (esqueleto ausente y cardinalidad pendiente 0 en vez
   de 1); verde `36012d4` (un esqueleto y silencio en todos los errores). La
   cardinalidad trasladada por D1 cuenta `children`, no `testID`.
+- **R10**: rojo `6087349` (cero navegación y cero apariciones de la ruta);
+  verde `0844b75` (un único `router.push('/reminders')`, fuera de
+  `QUICK_ACTIONS`, sin cast ni ruta nueva).
 
 ## Premisas corregidas contra el árbol
 

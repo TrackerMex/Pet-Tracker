@@ -2108,4 +2108,53 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
       expect(quickActions).not.toContain("'/reminders'");
     });
   });
+
+  describe('#70 R11: accesibilidad por partes', () => {
+    it('anuncia el enlace como botón y expande la abreviatura del contador', async () => {
+      jest.useFakeTimers();
+      jest.setSystemTime(new Date(2026, 8, 10, 12, 0));
+
+      const cases = [
+        ['2026-09-15', 'Faltan 5 días'],
+        ['2026-09-10', 'Hoy'],
+        ['2026-09-08', 'Vencida'],
+      ] as const;
+
+      for (const [nextDoseAt, label] of cases) {
+        mockGetPet.mockResolvedValue({
+          kind: 'ok',
+          pet: makePet({ nextVaccine: { ...vaccine, nextDoseAt } }),
+        });
+        const view = await render(<HomeScreen />, { wrapper: HomeWrapper });
+
+        try {
+          const section = await screen.findByTestId('reminders-section');
+          const body = within(section).getByTestId('reminders-section-body');
+          const days = within(section).getByTestId(
+            'reminders-next-vaccine-days',
+          );
+          const buttons = within(section).getAllByRole('button');
+
+          expect(buttons.map((node) => node.props.testID)).toEqual([
+            'reminders-see-all',
+          ]);
+          expect(days.props.accessibilityLabel).toBe(label);
+          expect(
+            within(section).getByTestId('reminders-next-vaccine-name').props
+              .accessibilityLabel,
+          ).toBeUndefined();
+          expect(
+            within(section).getByTestId('reminders-next-vaccine-date').props
+              .accessibilityLabel,
+          ).toBeUndefined();
+          for (const group of [section, body]) {
+            expect(group.props.accessible).toBeUndefined();
+            expect(group.props.accessibilityLabel).toBeUndefined();
+          }
+        } finally {
+          await view.unmount();
+        }
+      }
+    });
+  });
 });
