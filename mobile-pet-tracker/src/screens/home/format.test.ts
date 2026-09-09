@@ -1,4 +1,31 @@
-import { calendarDaysUntil, fmtDate, fmtKg, localDayOf } from './format';
+import type { Reminder } from '../../api/types';
+import {
+  calendarDaysUntil,
+  fmtDate,
+  fmtKg,
+  localDayOf,
+  upcomingReminders,
+} from './format';
+
+function localIso(year: number, monthIndex: number, day: number): string {
+  return new Date(year, monthIndex, day, 12, 0).toISOString();
+}
+
+function makeReminder(
+  id: string,
+  dueAt: string,
+  status: Reminder['status'] = 'scheduled',
+): Reminder {
+  return {
+    id,
+    petId: 'pet-1',
+    type: 'custom',
+    title: id,
+    dueAt,
+    advanceMinutes: 60,
+    status,
+  };
+}
 
 describe('#69 R2: fmtKg', () => {
   it('uses a dash when the weight is missing', () => {
@@ -158,5 +185,63 @@ describe('#85 R2: localDayOf reduce el instante a día civil local', () => {
     } finally {
       dateConstructor.mockRestore();
     }
+  });
+});
+
+describe('#85 R3: upcomingReminders filtra, ordena y acota', () => {
+  const now = new Date(2026, 8, 10, 12, 0);
+
+  it('descarta enviados, cancelados y pasados, y conserva el de hoy', () => {
+    const reminders = [
+      makeReminder('rem-sent', localIso(2026, 8, 12), 'sent'),
+      makeReminder('rem-cancelled', localIso(2026, 8, 13), 'cancelled'),
+      makeReminder('rem-past', localIso(2026, 8, 9)),
+      makeReminder('rem-today', localIso(2026, 8, 10)),
+      makeReminder('rem-next', localIso(2026, 8, 11)),
+    ];
+
+    expect(upcomingReminders(reminders, now).map(({ id }) => id)).toEqual([
+      'rem-today',
+      'rem-next',
+    ]);
+  });
+
+  it('ordena por fecha ascendente', () => {
+    const reminders = [
+      makeReminder('rem-plus-3', localIso(2026, 8, 13)),
+      makeReminder('rem-plus-6', localIso(2026, 8, 16)),
+      makeReminder('rem-plus-1', localIso(2026, 8, 11)),
+    ];
+
+    expect(upcomingReminders(reminders, now).map(({ id }) => id)).toEqual([
+      'rem-plus-1',
+      'rem-plus-3',
+      'rem-plus-6',
+    ]);
+  });
+
+  it('desempata por id ascendente', () => {
+    const tiedDueAt = localIso(2026, 8, 14);
+    const reminders = [
+      makeReminder('rem-z', tiedDueAt),
+      makeReminder('rem-a', tiedDueAt),
+    ];
+
+    expect(upcomingReminders(reminders, now).map(({ id }) => id)).toEqual([
+      'rem-a',
+      'rem-z',
+    ]);
+  });
+
+  it('devuelve como mucho tres', () => {
+    const reminders = [1, 2, 3, 4, 5].map((days) =>
+      makeReminder(`rem-plus-${days}`, localIso(2026, 8, 10 + days)),
+    );
+
+    expect(upcomingReminders(reminders, now).map(({ id }) => id)).toEqual([
+      'rem-plus-1',
+      'rem-plus-2',
+      'rem-plus-3',
+    ]);
   });
 });
