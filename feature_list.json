@@ -1327,7 +1327,7 @@
   {
     "id": 71,
     "name": "mobile-home-quick-actions",
-    "status": "in_progress",
+    "status": "done",
     "priority": "P3",
     "description": "Bloque 1. La rejilla de accesos rapidos de la Home. No necesita ningun dato: es navegacion pura. DECISION DEL HUMANO DEL 2026-09-08 que cambia el enunciado original: los tiles apuntan SOLO a destinos que NO son alcanzables desde el tab bar. El enunciado pedia Mapa, Actividad, Vacunas y Comidas (specs/mobile-figma-polish/design-src/App.tsx:395-410), pero Mapa, Vacunas y Comidas son tres de las cinco pestanas (src/app/(tabs)/_layout.tsx:26-30) y el tab bar flotante usa LOS MISMOS componentes de icono Map y ForkKnife, asi que esos tiles habrian duplicado navegacion visible en la misma pantalla; y Actividad no tiene pantalla propia -vive dentro de la Home desde #68-. Los tres destinos finales salen de un filtro de tres condiciones aplicado a las once rutas de la app -ni pestana, ni pantalla hija, ni configuracion de una vez-: Peso a /weight-log (su valor ya se ve en la tira de #69 sin forma de abrirlo), Recordatorio a /add-reminder (hoy el camino mas largo de la app, 3 toques) y Documentos a /pets/[petId]/docs. /reminders queda fuera por colision con #70, que pone el enlace a esa lista en esta misma Home. Del Make se toma la forma -rejilla de tiles con fondo pastel- y ni un destino ni una etiqueta. DEPENDE DE #64: los fondos salen de CATEGORY_SLOTS, y #64 R9 prohibe la clase completa bg-category-* fuera de src/utils/category-palette.ts, no solo las arbitrarias.",
     "acceptance_criteria": [
