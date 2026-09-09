@@ -580,6 +580,8 @@ export function HomeScreen() {
                   </Text>
                 </Card>
               ) : null}
+
+              <View className="h-1.5 rounded-full bg-default" />
             </View>
           </View>
         ) : null}
