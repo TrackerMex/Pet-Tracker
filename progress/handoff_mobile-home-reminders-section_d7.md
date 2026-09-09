@@ -100,8 +100,21 @@ lo es), pero sí dejar la evidencia escrita.
 
 ## Lo que NO se toca
 
-- **Nada de producción.** Si te ves editando `index.tsx` o `format.ts` fuera de
-  plantar y revertir M9, para: algo se entendió mal.
+- **Ningún cambio PERMANENTE en producción.** Al terminar, `index.tsx` y
+  `format.ts` deben quedar byte a byte como estaban: `git diff` contra el commit
+  de partida, vacío en los dos.
+- **Las sondas transitorias SÍ están autorizadas, y son obligatorias.** Cruzar un
+  valor en `index.tsx`, ver el rojo y restaurarlo es la única forma de demostrar
+  que un candado muerde, y D7 lo exige literalmente: *"cruza el valor, ve el
+  rojo, restaura"*. Vale para las dos sondas de O5 —`flex-row items-center gap-3`
+  del estado vacío y el envoltorio `flex-1`— igual que para M9.
+  - Diferencia con M9: **M9 se versiona** como noveno par rojo/verde, porque es
+    una mutación declarada en la spec. Las **dos sondas de O5 no se versionan**:
+    se plantan, se observa el rojo, se restauran, y lo que queda es la evidencia
+    escrita en el informe. Si prefieres versionarlas también como pares
+    rojo/verde, también vale — es más historial, no menos rigor.
+  - En los dos casos, **verifica la restauración con `git diff` vacío** antes de
+    seguir a la siguiente.
 - Ningún requisito de conducta, ningún otro candado. R5, R8 y R12 siguen
   exigiendo lo mismo; se añade lo que lo demuestra.
 - **#81 sigue abierto** — es el mismo defecto en el tile de acciones rápidas, y
