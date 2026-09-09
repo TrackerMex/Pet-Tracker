@@ -401,6 +401,24 @@ export function HomeScreen() {
         ) : null}
 
         {selectedPetId ? (
+          <View testID="reminders-section" className="gap-3">
+            <View className="flex-row items-center justify-between">
+              <Text
+                testID="reminders-section-title"
+                className="text-base font-bold text-foreground"
+              >
+                {t('home.reminders')}
+              </Text>
+              <Pressable testID="reminders-see-all">
+                <Text>{t('home.remindersSeeAll')}</Text>
+              </Pressable>
+            </View>
+
+            <View testID="reminders-section-body" className="gap-2" />
+          </View>
+        ) : null}
+
+        {selectedPetId ? (
           <View testID="quick-actions" className="gap-3">
             <Text
               testID="quick-actions-title"
