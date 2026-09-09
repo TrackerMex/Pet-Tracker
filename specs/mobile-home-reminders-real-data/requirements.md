@@ -1283,6 +1283,70 @@ explícitamente. Dar por hecho lo contrario es lo que produjo esta parada.
 
   - [X] Aprobado por humano
 
+
+### A12 — R9 y R10 son requisitos de verificación, y llevan su propia sonda
+
+**Codex paró bien y el análisis es suyo, no mío.** R9 y R10 asertan propiedades
+que **R5 y R6 ya dejaron puestas**: la guarda
+`reminders.data?.kind === 'ok' ? … : []` vive en producción desde R5
+(`index.tsx:182-185`), y las recetas exactas de fila, título, fecha y contador
+—`TABULAR_NUMS` incluida— desde R5 y R6. Sus tests **nacerían verdes por
+construcción**, y `tasks.md` les ordena igualmente "escribir test que falla".
+
+Eso es exactamente el caso que cubre el **quinto punto de C4**: un candado que
+se añade sobre código **ya correcto**. El rojo legítimo no es un test previo
+—no lo hay— sino una **mutación de producción** versionada en el commit rojo y
+revertida en el verde. R7 ya lo hace con M9 y M10; R12 prescribe una sonda. R9 y
+R10 se quedaron sin ninguna de las dos cosas. Es un descuido mío al escribir la
+spec, no un problema de la implementación.
+
+- **Qué se declara**: R9 y R10 pasan a ser **requisitos de verificación por
+  C4(b)**. Cada uno lleva **una sonda de producción versionada en su commit
+  rojo y revertida en el verde**, con su evidencia en el informe.
+
+- **Sonda P9 — el fallo de una petición no puede apagar la otra.** En la ranura
+  de la vacuna, condicionar su render al estado de los recordatorios:
+
+  ```diff
+  -{nextVaccine && nextVaccineCountdown ? (
+  +{reminders.data?.kind === 'ok' && nextVaccine && nextVaccineCountdown ? (
+  ```
+
+  **Rojo esperado**: cae `it('no pinta filas mientras carga')` —desaparece el
+  `reminders-section-skeleton`— y cae el `it.each` de los cinco kinds de fallo
+  —`body.children.length` pasa de `1` a `0`—. Es justo lo que R9 promete: *"el
+  fallo de `listReminders` no puede apagar el dato del perfil, ni al revés"*.
+
+- **Sonda P10 — el ámbar significa urgencia, no tipo.** En la píldora del
+  contador de la fila, sustituir el hueco ámbar fijo por el del tipo:
+
+  ```diff
+  -${CATEGORY_SLOTS.amber.surface} ${CATEGORY_SLOTS.amber.ink}
+  +${CATEGORY_SLOTS[REMINDER_TYPE_META[reminder.type].category].surface} …
+  ```
+
+  **Rojo esperado**: cae `it('aplica la receta de cada nodo y ninguna otra')`
+  por el `toBe` del `className` del contador. Ataca la frase normativa de R10
+  —*"el ámbar significa **urgencia**, no **tipo**; el tipo lo porta el disco"*—
+  y no una clase cualquiera.
+
+- **Las dos sondas quedan FUERA de las trece M1-M13.** R15 no se renumera ni
+  cambia: su tabla, sus trampas declaradas y su recuento siguen igual. P9 y P10
+  se documentan en el informe bajo R9 y R10, no bajo R15.
+
+- **Si una sonda pone rojo algún `it` de más, no es problema** —lo que se exige
+  es que caiga el del requisito—. **Lo que invalida la sonda es que su requisito
+  quede verde**: entonces el test está mal escrito y se para.
+
+**Corolario para el harness, y es el tercero de esta feature**: al escribir una
+spec hay que marcar, requisito por requisito, **cuáles asertan algo que un
+requisito anterior ya implementa**. Ésos no pueden pedir "test que falla": son
+de verificación y necesitan sonda. Aquí se detectó en R9 y R10; R7 y R12 sí lo
+llevaban, lo que prueba que la distinción se conocía y se aplicó de forma
+desigual.
+
+  - [ ] Aprobado por humano
+
 ## Aprobación
 
 - [X] Aprobado por humano (fecha: 2026-09-09) ← gate obligatorio antes de implementar

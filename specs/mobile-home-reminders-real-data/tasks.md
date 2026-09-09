@@ -239,6 +239,15 @@ implementación + tests + docs incumple `CHECKPOINTS.md` C4 y **se rechaza**.
     esqueleto propio, sin mensaje de error, sin botón de reintento.**
 - [ ] (3) Refactor con tests verdes
   - Comprobar que `#70 R9` (`:2061`) y `#70 R1` siguen verdes.
+  - **Enmienda A12 — R9 es requisito de VERIFICACIÓN, no de conducta nueva.** Su
+    rojo no puede venir de un test previo, porque la guarda de R5 ya cubre los
+    dos casos. Se versiona la **sonda P9** en el commit rojo y se revierte en el
+    verde: condicionar la ranura de la vacuna al estado de los recordatorios,
+    `{reminders.data?.kind === 'ok' && nextVaccine && nextVaccineCountdown ? (`.
+    **Rojo esperado**: cae `it('no pinta filas mientras carga')` y el `it.each`
+    de los cinco kinds. **Si R9 queda verde con P9 plantada, el test está mal
+    escrito y se para.**
+
 
 ## R10 — Estilo: `Card` compartido, radios, tintas de #64 y cifras tabulares
 
@@ -255,6 +264,15 @@ implementación + tests + docs incumple `CHECKPOINTS.md` C4 y **se rechaza**.
   - Comprobar `#62 R14` (esquinas, sin cambio), `#62 R4` (radios),
     `#61 R4`/`#61 R5` (tintas) y `#64 R9` (`bg-accent-soft` = 16), todos
     **sin tocarlos**.
+  - **Enmienda A12 — R10 es requisito de VERIFICACIÓN.** R5 y R6 ya dejaron las
+    recetas puestas. Se versiona la **sonda P10** en el commit rojo y se
+    revierte en el verde: en la píldora del contador, sustituir el hueco ámbar
+    fijo por el del tipo del recordatorio. **Rojo esperado**: cae
+    `it('aplica la receta de cada nodo y ninguna otra')` por el `toBe` del
+    `className` del contador. **Si R10 queda verde con P10 plantada, se para.**
+  - **P9 y P10 quedan fuera de las trece M1-M13**: R15 no se renumera y su
+    evidencia va bajo R9 y R10, no bajo R15.
+
 
 ## R11 — Copy: cero claves nuevas, cero ocurrencias nuevas
 
