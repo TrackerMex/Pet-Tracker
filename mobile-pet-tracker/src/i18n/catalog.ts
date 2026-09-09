@@ -50,7 +50,7 @@ export const en = {
   'home.quickActionReminder': 'Reminder',
   'home.quickActionDocuments': 'Documents',
   'home.viewOnMap': 'View on map',
-  'home.reminders': 'Reminders',
+  'home.reminders': 'Recordatorios',
   'home.remindersSeeAll': 'See all',
   'home.nextVaccineDays': '{{days}} d',
   'home.nextVaccineDaysLeft': 'In {{days}} days',
