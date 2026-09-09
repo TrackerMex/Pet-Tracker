@@ -33,6 +33,8 @@ Se completa durante la secuencia TDD; los hashes definitivos también quedan en
 - **R6**: rojo `6247c3f` (fixture distinta en lista y detalle, enlace exacto de
   nombre/fecha/contador e inercia); verde `0e00251` (fila `Card` desde el
   detalle, sin renderizar el id ni añadir navegación).
+- **R7**: rojo `bbb54e4` (`0 d` contradice `Hoy`); verde `675390c` (helper de
+  módulo con ramas futura, hoy y vencida, y texto/nombre accesible unidos).
 
 ## Premisas corregidas contra el árbol
 

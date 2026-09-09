@@ -1967,4 +1967,31 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
       }
     });
   });
+
+  describe('#70 R8: estado vacío de próxima vacuna', () => {
+    it('dibuja un estado vacío con forma de fila cuando no hay vacuna', async () => {
+      mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
+
+      await renderHome();
+
+      const section = await screen.findByTestId('reminders-section');
+      const empty = within(section).getByTestId('reminders-none-upcoming');
+
+      expect(within(empty).getByText('Sin vacuna próxima')).toBeVisible();
+      expect(within(section).queryByTestId('reminders-next-vaccine')).toBeNull();
+      expect(
+        within(section).queryByTestId('reminders-next-vaccine-name'),
+      ).toBeNull();
+      expect(
+        within(section).queryByTestId('reminders-next-vaccine-date'),
+      ).toBeNull();
+      expect(
+        within(section).queryByTestId('reminders-next-vaccine-days'),
+      ).toBeNull();
+      expect(
+        within(section).getByTestId('reminders-section-title'),
+      ).toBeVisible();
+      expect(within(section).getByTestId('reminders-see-all')).toBeVisible();
+    });
+  });
 });
