@@ -1612,7 +1612,7 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
     }
   });
 
-  it('liga icono, etiqueta, color, tinta y destino de cada tile y de ninguno más', async () => {
+  it('liga icono, etiqueta, fondo, destino, tinta y color de etiqueta de cada tile y de ninguno más', async () => {
     jest
       .spyOn(Uniwind, 'getCSSVariable')
       .mockImplementation((token) => token);
@@ -1625,6 +1625,7 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
         'Peso',
         'bg-category-violet',
         '--color-category-violet-strong',
+        'text-foreground',
         '/weight-log',
       ],
       [
@@ -1633,6 +1634,7 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
         'Recordatorio',
         'bg-category-amber',
         '--color-category-amber-strong',
+        'text-foreground',
         '/add-reminder',
       ],
       [
@@ -1641,18 +1643,29 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
         'Documentos',
         'bg-category-blue',
         '--color-category-blue-strong',
+        'text-foreground',
         '/pets/pet-1/docs',
       ],
     ] as const;
 
-    for (const [testID, iconTestID, label, surface, ink, href] of bindings) {
+    for (const [
+      testID,
+      iconTestID,
+      label,
+      surface,
+      ink,
+      labelColor,
+      href,
+    ] of bindings) {
       const tile = screen.getByTestId(testID);
       const tileQueries = within(tile);
       const icon = tileQueries.getByTestId(iconTestID);
+      const labelNode = tileQueries.getByText(label);
 
       expect(icon).toBeVisible();
       expect(icon.props.color).toBe(ink);
-      expect(tileQueries.getByText(label)).toBeVisible();
+      expect(labelNode).toBeVisible();
+      expect(labelNode.props.className).toContain(labelColor);
       expect(tile.props.className).toContain(surface);
       await fireEvent.press(tile);
       expect(mockRouter.push).toHaveBeenLastCalledWith(href);
