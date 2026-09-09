@@ -340,15 +340,15 @@ implementación + tests + docs incumple `CHECKPOINTS.md` C4 y **se rechaza**.
 
 ## R15 — Prueba de mutación: cada candado ha de haberse visto fallar
 
-- [ ] (1) Escribir test que falla para R15
+- [x] (1) Escribir test que falla para R15
   - Requisito de verificación (`CHECKPOINTS.md` C4 vía (b)).
-- [ ] (2) Implementación mínima que lo pasa
+- [x] (2) Implementación mínima que lo pasa
   - Plantar las **trece** mutaciones **de una en una**, todas en código de
     **producción**. **Ninguna en el doble de `reicon`, en `makePet`, en
     `makeReminder` ni en ningún otro mock.**
   - M1, M9, M10 y M13 ya quedaron versionadas en sus commits rojos (R2, R7,
     R11); las demás se plantan aquí como verificación de cierre.
-- [ ] (3) Refactor con tests verdes
+- [x] (3) Refactor con tests verdes
   - Escribir en `progress/impl_mobile-home-reminders-real-data.md` §prueba de
     mutación, **por cada mutación**: qué se mutó, qué `it` cayó, con qué mensaje,
     y el `git diff` vacío tras restaurar.
@@ -360,11 +360,11 @@ implementación + tests + docs incumple `CHECKPOINTS.md` C4 y **se rechaza**.
 
 ## Cierre (no es un requisito)
 
-- [ ] `specs/mobile-home-reminders-real-data/traceability.md` sin ninguna fila
+- [x] `specs/mobile-home-reminders-real-data/traceability.md` sin ninguna fila
       "pendiente".
 - [ ] `feature_list.json`: id 85 a `done` **solo** con veredicto aprobado del
       reviewer, y `files_affected` alineado con [[design]] §4.
-- [ ] `progress/impl_mobile-home-reminders-real-data.md` con: recuento de suites
+- [x] `progress/impl_mobile-home-reminders-real-data.md` con: recuento de suites
       antes/después, la tabla de mutación completa, y qué candados de #70 se
       adaptaron y cuáles quedaron intactos.
 - [ ] **Gate humano no delegable**: humo en **dev build de Android**, dos temas,

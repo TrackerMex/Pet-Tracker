@@ -23,8 +23,8 @@ Base de medición: **`20c7b3c`** (merge del PR #116, #70).
 | R11 — cero claves y cero ocurrencias nuevas | `src/screens/home/index.test.tsx`::`describe('#85 R1: la sección recupera su rótulo en los dos idiomas')` + seis recuentos de fuente | `ff4a627 test(mobile-home-reminders-real-data): prove english reminder copy guard (R11)` + `f80fac1 feat(mobile-home-reminders-real-data): preserve bilingual reminder copy (R11)`; M13 versionada |
 | R12 — bloque de drift de estilo | `src/__tests__/design-drift.test.ts`::`describe('#85 R12: la sección de recordatorios reales no mete drift de estilo')` | `fce3ffc test(mobile-home-reminders-real-data): lock feature style drift (R12)`; sonda hex documentada en el informe |
 | R13 — deltas de candados globales | candados existentes en `src/__tests__/consistency-classnames.test.ts` y recorrido de las 21 filas en el informe | `5febedb test(mobile-home-reminders-real-data): register tabular delta (R13)` |
-| R14 — suite, typecheck y grep-clean | pendiente | pendiente |
-| R15 — prueba de mutación (M1-M13) | pendiente | pendiente |
+| R14 — suite, typecheck y grep-clean | `bun run test`, `bun run typecheck`, cinco greps y `env -u FORCE_COLOR ./init.sh`; detalle en el informe §R14 | `f7814d3 docs(mobile-home-reminders-real-data): record R14 verification` |
+| R15 — prueba de mutación (M1-M13) | `progress/impl_mobile-home-reminders-real-data.md` §Prueba de mutación | M1 `97e06c0`/`80595f9`; M9/M10 `4078fdc`/`c5e30e2`; M13 `ff4a627`/`f80fac1`; M2-M8/M11-M12 verificadas sin commit y restauradas con diff vacío |
 
 ## Enmiendas a #70 (se registran igual que un requisito)
 
