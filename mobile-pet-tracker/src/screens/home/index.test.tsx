@@ -2282,4 +2282,18 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
       expect(screen.queryByTestId('reminders-section')).toBeNull();
     });
   });
+
+  describe('#70 R15: sin llamadas nuevas', () => {
+    it('no añade ninguna llamada a la API', async () => {
+      await renderHome();
+      await screen.findByTestId('reminders-next-vaccine');
+      await screen.findByTestId('weekly-activity-card');
+
+      expect({
+        pets: mockListPets.mock.calls.length,
+        detail: mockGetPet.mock.calls.length,
+        activity: mockGetDailyActivity.mock.calls.length,
+      }).toEqual({ pets: 1, detail: 1, activity: 1 });
+    });
+  });
 });

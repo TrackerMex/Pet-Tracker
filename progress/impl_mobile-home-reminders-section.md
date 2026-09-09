@@ -52,6 +52,9 @@ Se completa durante la secuencia TDD; los hashes definitivos también quedan en
 - **R13**: rojo `edef02e` (mutación de producción `Syringe` → `CalendarPlus`);
   verde `285efa7` (dos usos reales de `Syringe`, tamaño 20, sin emoji, y doble
   nominal añadido solo como preparación).
+- **R14**: rojo `c1be954` (orden observado con la sección antes de accesos);
+  verde `2666977` (sección entre actividad semanal y última posición, sin
+  alterar los tres candados de orden heredados).
 
 ## Premisas corregidas contra el árbol
 
