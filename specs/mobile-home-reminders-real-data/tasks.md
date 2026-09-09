@@ -278,14 +278,14 @@ implementación + tests + docs incumple `CHECKPOINTS.md` C4 y **se rechaza**.
 
 ## R11 — Copy: cero claves nuevas, cero ocurrencias nuevas
 
-- [ ] (1) Escribir test que falla para R11
+- [x] (1) Escribir test que falla para R11
   - No hay test nuevo: el candado es que **los existentes siguen verdes sin
     editarlos**. El rojo honesto es la mutación **M13**
     (`en['home.reminders']` → `'Recordatorios'`), plantada **en el commit rojo**
     y revertida en el verde, que demuestra que el `it` inglés de R1 muerde.
-- [ ] (2) Implementación mínima que lo pasa
+- [x] (2) Implementación mínima que lo pasa
   - **Revertir M13.**
-- [ ] (3) Refactor con tests verdes
+- [x] (3) Refactor con tests verdes
   - Verificar con `grep -c` que `t('home.nextVaccineDays'`, `…DaysLeft`,
     `…Today`, `…Overdue`, `home.reminders` y `home.remindersSeeAll` siguen con
     **una** ocurrencia cada una en `src/screens/home/index.tsx`.

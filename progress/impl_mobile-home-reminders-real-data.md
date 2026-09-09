@@ -46,6 +46,9 @@
 - **R10**: rojo versionado `7016683`; verde `3b7bcfa`. Las filas conservan el
   `Card` compartido, las recetas exactas y la píldora ámbar con cifras
   tabulares. R10 y los candados globales enumerados quedaron 44/44 verdes.
+- **R11**: rojo versionado `ff4a627`; verde `f80fac1`. M13 confirmó que el
+  candado inglés de R1 observa la UI. Las seis llamadas de copy siguen con una
+  ocurrencia y la tabla bilingüe existente ya contiene los valores restaurados.
 
 ## Prueba de mutación
 
@@ -65,6 +68,7 @@ Todas las mutaciones se plantan en código de producción, de una en una.
 | M10 | Commit rojo `4078fdc`: dentro del agrupador se colocó primero el nodo `…-date` y después `…-title`, sin cambiar sus `testID`. Cayó `it('fija la posición de los hijos de cada fila')`: `group.children[0]` recibió `reminders-item-rem-b-date` en vez de `…-title`. Con la condición contraria —aserciones solo mediante `within(fila).getByTestId(...)`— la mutación habría quedado verde porque esa búsqueda ignora el orden. | Posición restaurada en `c5e30e2`; R7 volvió 2/2 verde y el `git diff` quedó vacío. |
 | M11 | Se añadió temporalmente al cuerpo `<View className="h-1.5 rounded-full bg-default" />` sin `testID`. Home dejó 5 fallos/90 verdes: cayó el `it` nominal de tres escenarios por 2 hijos en vez de 1, además del tope y tres cardinalidades heredadas. | Hijo intruso retirado sin commit; Home volvió a 95/95 verde. |
 | M12 | Se cruzaron temporalmente `medication: Stethoscope` y `appointment: Pill`. R6 dejó 1 fallo/2 verdes: cayó exactamente `it('liga icono, superficie y tinta a su tipo')` porque `rem-b` no contenía `icon-pill`. | Mapa exacto restaurado sin commit; R6, `#70 R13` y `#64 R9` volvieron verdes, y `git diff` quedó vacío. |
+| M13 | Commit rojo `ff4a627`: `en['home.reminders']` cambió a `Recordatorios`. R1 dejó 1 fallo/2 verdes: cayó exactamente `it('rotula en inglés')`, que esperaba `Reminders` y recibió `Recordatorios`. | Valor inglés restaurado en `f80fac1`; R1 volvió 3/3 verde y `git diff` quedó vacío. |
 
 ## A8 — corrección de la evidencia prescrita para M3
 
