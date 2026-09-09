@@ -18,4 +18,4 @@
 - A12: firmada y leída; declara R9/R10 de verificación y prescribe P9/P10 fuera de M1-M13.
 - A13: firmada y leída; corrige solo la evidencia de P9: desaparece la tarjeta y el cuerpo pasa de 1 a 0; el skeleton no cambia.
 - Avance: R1-R8 completos. R8 rojo `7dac461`, verde `fecd8e8`; sus tres pruebas y `#70 R11` verdes.
-- Avance: R9-R11 completos. R11 rojo `ff4a627`, verde `f80fac1`; M13 mató solo el `it` inglés y quedó restaurada. Seis ocurrencias de copy a 1 y tabla bilingüe correcta. Siguiente paso: R12.
+- Avance: R9-R12 completos. R12 `fce3ffc`; su sonda hex detectó solo `screens/home/format.ts`, se retiró y drift quedó 28/28 verde. Siguiente paso: R13.

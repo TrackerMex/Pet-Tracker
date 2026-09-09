@@ -49,6 +49,9 @@
 - **R11**: rojo versionado `ff4a627`; verde `f80fac1`. M13 confirmó que el
   candado inglés de R1 observa la UI. Las seis llamadas de copy siguen con una
   ocurrencia y la tabla bilingüe existente ya contiene los valores restaurados.
+- **R12**: candado `fce3ffc`. El bloque nominal nació verde; la sonda temporal
+  `#fff` en `format.ts` lo puso rojo detectando exactamente ese fichero. Tras
+  retirarla, `design-drift.test.ts` quedó 28/28 verde.
 
 ## Prueba de mutación
 
@@ -212,3 +215,12 @@ recibió `bg-category-green text-category-green-strong` donde esperaba
 P10 se retiró en `3b7bcfa`; R10 volvió 1/1 verde, los candados `#62 R14`,
 `#62 R4`, `#64 R9`, `#61 R4` y `#61 R5` quedaron 43/43 verdes, y
 `git diff --exit-code` confirmó la restauración. P10 queda fuera de M1-M13.
+
+## Sonda de drift de R12
+
+El bloque `#85 R12` nació 1/1 verde sobre sus cinco ficheros nominales. Se
+añadió temporalmente `const STYLE_DRIFT_PROBE = '#fff'` a producción en
+`screens/home/format.ts`; el test cayó con `Received: ["screens/home/format.ts"]`
+frente a `Expected: []`. Retirada la sonda sin commit, el bloque volvió verde,
+la suite completa de drift quedó 28/28 y `git diff` solo contenía el test nuevo
+antes de versionarlo en `fce3ffc`.

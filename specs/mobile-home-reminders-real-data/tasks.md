@@ -295,7 +295,7 @@ implementación + tests + docs incumple `CHECKPOINTS.md` C4 y **se rechaza**.
 
 ## R12 — Cero drift de estilo en los ficheros de esta feature
 
-- [ ] (1) Escribir test que falla para R12
+- [x] (1) Escribir test que falla para R12
   - `src/__tests__/design-drift.test.ts`:
     `describe('#85 R12: la sección de recordatorios reales no mete drift de estilo')`
     con la lista nominal de cinco ficheros y el patrón
@@ -303,9 +303,9 @@ implementación + tests + docs incumple `CHECKPOINTS.md` C4 y **se rechaza**.
   - **Rojo esperado**: ninguno si el código ya está limpio. Entonces se demuestra
     con una sonda —meter un hex en `format.ts`, ver el rojo, quitarlo— y se
     anota; el candado no puede quedarse sin haberse visto fallar.
-- [ ] (2) Implementación mínima que lo pasa
+- [x] (2) Implementación mínima que lo pasa
   - Limpiar lo que salga. No debería salir nada.
-- [ ] (3) Refactor con tests verdes
+- [x] (3) Refactor con tests verdes
   - Título del `it` **sin** el número de ficheros escrito con letra.
 
 ## R13 — Los candados globales se mueven por sumando declarado contra `20c7b3c`

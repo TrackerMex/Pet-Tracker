@@ -21,7 +21,7 @@ Base de medición: **`20c7b3c`** (merge del PR #116, #70).
 | R9 — carga y fallo de `listReminders` | `src/screens/home/index.test.tsx`::`describe('#85 R9: la sección aguanta la carga y el fallo de los recordatorios')` | `1d8c3d5 test(mobile-home-reminders-real-data): prove reminder failures preserve vaccine slot (R9)` + `68b3d90 feat(mobile-home-reminders-real-data): preserve vaccine slot across reminder states (R9)`; sonda P9 documentada aparte de M1-M13 |
 | R10 — estilo y tokens | `src/screens/home/index.test.tsx`::`describe('#85 R10: viste las filas con el Card compartido y los tokens')` | `7016683 test(mobile-home-reminders-real-data): prove countdown color means urgency (R10)` + `3b7bcfa feat(mobile-home-reminders-real-data): keep countdown urgency styling (R10)`; sonda P10 documentada aparte de M1-M13 |
 | R11 — cero claves y cero ocurrencias nuevas | `src/screens/home/index.test.tsx`::`describe('#85 R1: la sección recupera su rótulo en los dos idiomas')` + seis recuentos de fuente | `ff4a627 test(mobile-home-reminders-real-data): prove english reminder copy guard (R11)` + `f80fac1 feat(mobile-home-reminders-real-data): preserve bilingual reminder copy (R11)`; M13 versionada |
-| R12 — bloque de drift de estilo | pendiente | pendiente |
+| R12 — bloque de drift de estilo | `src/__tests__/design-drift.test.ts`::`describe('#85 R12: la sección de recordatorios reales no mete drift de estilo')` | `fce3ffc test(mobile-home-reminders-real-data): lock feature style drift (R12)`; sonda hex documentada en el informe |
 | R13 — deltas de candados globales | pendiente | pendiente |
 | R14 — suite, typecheck y grep-clean | pendiente | pendiente |
 | R15 — prueba de mutación (M1-M13) | pendiente | pendiente |
