@@ -2336,6 +2336,103 @@ describe('#85 R7: ninguna fila lleva el dato ni el sitio de otra', () => {
   });
 });
 
+describe('#85 R8: las filas no son pulsables y se anuncian por partes', () => {
+  const rowIds = ['rem-b', 'rem-a', 'rem-c'] as const;
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date(2026, 8, 10, 12, 0));
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    const pet = makePet();
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+    mockListReminders.mockResolvedValue({
+      kind: 'ok',
+      reminders: makeReminderFixture(),
+    });
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+    jest.restoreAllMocks();
+  });
+
+  it('deja un único botón en la sección', async () => {
+    await renderHome();
+
+    const section = await screen.findByTestId('reminders-section');
+    expect(
+      within(section)
+        .getAllByRole('button')
+        .map(({ props }) => props.testID),
+    ).toEqual(['reminders-see-all']);
+  });
+
+  it('no navega al pulsar una fila', async () => {
+    await renderHome();
+
+    for (const id of rowIds) {
+      const row = await screen.findByTestId(`reminders-item-${id}`);
+      await fireEvent.press(row);
+      expect(row.props.onPress).toBeUndefined();
+      expect(row.props.accessibilityRole).toBeUndefined();
+    }
+    expect(mockRouter.push).not.toHaveBeenCalled();
+  });
+
+  it('expande la abreviatura del contador y no añade nombres redundantes', async () => {
+    const spanish = await render(<HomeScreen />, { wrapper: HomeWrapper });
+    const labels = [
+      ['rem-b', 'Faltan 1 días', 'icon-pill'],
+      ['rem-a', 'Faltan 3 días', 'icon-stethoscope'],
+      ['rem-c', 'Faltan 6 días', 'icon-bone'],
+    ] as const;
+
+    const section = await screen.findByTestId('reminders-section');
+    const body = within(section).getByTestId('reminders-section-body');
+    expect(section.props.accessible).toBeUndefined();
+    expect(section.props.accessibilityLabel).toBeUndefined();
+    expect(body.props.accessible).toBeUndefined();
+    expect(body.props.accessibilityLabel).toBeUndefined();
+
+    for (const [id, label, iconTestID] of labels) {
+      const row = within(body).getByTestId(`reminders-item-${id}`);
+      const rowQueries = within(row);
+      const title = rowQueries.getByTestId(`reminders-item-${id}-title`);
+      const date = rowQueries.getByTestId(`reminders-item-${id}-date`);
+      const counter = rowQueries.getByTestId(`reminders-item-${id}-days`);
+      const icon = rowQueries.getByTestId(iconTestID);
+      const disk = row.children[0];
+
+      expect(counter.props.accessibilityLabel).toBe(label);
+      expect(title.props.accessibilityLabel).toBeUndefined();
+      expect(date.props.accessibilityLabel).toBeUndefined();
+      expect(icon.props.accessibilityLabel).toBeUndefined();
+      expect(typeof disk).not.toBe('string');
+      if (typeof disk !== 'string') {
+        expect(disk.props.accessibilityLabel).toBeUndefined();
+      }
+      expect(row.props.accessible).toBeUndefined();
+      expect(row.props.accessibilityLabel).toBeUndefined();
+    }
+
+    await spanish.unmount();
+    await render(<HomeScreen />, { wrapper: HomeWrapperEn });
+    expect(
+      (await screen.findByTestId('reminders-item-rem-b-days')).props
+        .accessibilityLabel,
+    ).toBe('In 1 days');
+  });
+});
+
 describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
   const vaccine = {
     id: 'vac-9',
