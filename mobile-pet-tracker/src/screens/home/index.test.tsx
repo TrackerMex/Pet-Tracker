@@ -2296,4 +2296,21 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
       }).toEqual({ pets: 1, detail: 1, activity: 1 });
     });
   });
+
+  describe('#70 R3: la barra de comidas queda fuera', () => {
+    it('no dibuja la barra de comidas ni pide el plan de nutrición', async () => {
+      await renderHome();
+
+      const section = await screen.findByTestId('reminders-section');
+      const body = within(section).getByTestId('reminders-section-body');
+      const source = readFileSync(
+        join(process.cwd(), 'src/screens/home/index.tsx'),
+        'utf8',
+      );
+
+      expect(body.children).toHaveLength(1);
+      expect(within(section).queryByText(/\d+\s*\/\s*\d+/)).toBeNull();
+      expect(source).not.toContain("../../api/nutrition");
+    });
+  });
 });

@@ -55,6 +55,8 @@ Se completa durante la secuencia TDD; los hashes definitivos también quedan en
 - **R14**: rojo `c1be954` (orden observado con la sección antes de accesos);
   verde `2666977` (sección entre actividad semanal y última posición, sin
   alterar los tres candados de orden heredados).
+- **R15**: rojo `837e838` (mutación de producción elevó `getPet` de 1 a 2);
+  verde `1ad0d08` (recuento preservado: lista 1, detalle 1, actividad 1).
 
 ## Premisas corregidas contra el árbol
 
