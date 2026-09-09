@@ -26,9 +26,11 @@
   adapta el doble posicional heredado de tres a cuatro hooks por render. Home
   quedó 90/90 verde; la suite móvil, 68 suites/1089 tests y 1 snapshot verde;
   `bun run typecheck`, exit 0.
-- **R5**: rojo `10c9636`. Los cinco `it` normativos fallaron por ausencia de
-  `reminders-item-*`, con 90 tests heredados verdes. El verde está bloqueado
-  por la contradicción de aislamiento del mock descrita abajo.
+- **R5**: rojo `10c9636`; verde `4262348`. La sección pinta tras la vacuna
+  hasta tres filas reales, ordenadas, con título, día local y contador común.
+  `ad08010` endurece el candado de ISO con hora tras la primera sonda de M2;
+  `a7733b8` adapta solo el título heredado de cardinalidad. Home y helper
+  quedaron 108/108 verdes.
 
 ## Prueba de mutación
 
@@ -37,10 +39,14 @@ Todas las mutaciones se plantan en código de producción, de una en una.
 | Mutación | Cambio y rojo observado | Restauración |
 |---|---|---|
 | M1 | Commit `97e06c0`: `localDayOf` cambió a `getUTC*`. `bun run test`, con `TZ` ausente, dejó 1 suite/1 test rojo y 67 suites/1082 tests verdes. Cayó exactamente `#85 R2` → `it('toma el día civil de los getters locales, nunca de los UTC')`: esperaba `2026-09-11`, recibió `2026-09-12`. `3d0ab78` completó el doble de padding para eliminar un `TypeError` secundario antes de registrar la evidencia definitiva. | Getters locales restaurados; `format.test.ts` volvió a 9/9 verde. |
+| M2 | La Home pasó temporalmente `reminder.dueAt` crudo a `calendarDaysUntil` y `fmtDate`. Tras endurecer con regex el significado de “contiene” (`ad08010`), `index.test.tsx` dejó 2 fallos/93 verdes: cayó el `it` nominal `pinta fecha y contador reales para un dueAt con hora` por `Invalid Date`, y también el de los nueve nodos. | `localDayOf(reminder.dueAt)` restaurado sin commit; Home volvió a 95/95 verde. |
 | M3 | Se retiró temporalmente el filtro `status === 'scheduled'`. `format.test.ts` dejó 1 fallo/12 verdes: cayó exactamente `#85 R3` → `it('descarta enviados, cancelados y pasados, y conserva el de hoy')`. La salida fue `[rem-today, rem-next, rem-sent]`; aflora `rem-sent`, mientras `rem-cancelled` queda cuarto y lo recorta el tope de tres. El `it` espera exactamente `[rem-today, rem-next]`. | Filtro de estado restaurado sin commit; `format.test.ts` volvió a 13/13 verde. |
 | M4 | Se retiró temporalmente el filtro `calendarDaysUntil(localDayOf(dueAt), now) >= 0`. `format.test.ts` dejó 1 fallo/12 verdes: cayó exactamente el mismo `it` de R3 que M3, pero con salida `[rem-past, rem-today, rem-next]`. Entró `rem-past`, un motivo e id distintos de M3. | Filtro de futuro restaurado sin commit; `format.test.ts` volvió a 13/13 verde. |
 | M5 | El corte inclusivo cambió temporalmente de `>= 0` a `> 0`. `format.test.ts` dejó 1 fallo/12 verdes: cayó exactamente el `it` de R3 prescrito y la salida perdió `rem-today`, conservando solo `[rem-next]`. | Corte inclusivo restaurado sin commit; `format.test.ts` volvió a 13/13 verde. |
 | M6 | Se retiró temporalmente `a.id.localeCompare(b.id)` del comparador. `format.test.ts` dejó 1 fallo/12 verdes: cayó exactamente `it('desempata por id ascendente')`; el sort estable conservó la fixture invertida como `[rem-z, rem-a]` en vez de `[rem-a, rem-z]`. Con la condición contraria —fixture entregada ya como `[rem-a, rem-z]`— la mutación habría quedado verde. | Desempate por id restaurado sin commit; `format.test.ts` volvió a 13/13 verde. |
+| M7 | Se invirtió temporalmente el comparador primario a `b.dueAt.localeCompare(a.dueAt)`. Las suites de helper y Home dejaron 5 fallos/103 verdes: cayeron los dos `it` de orden y los dos de tope nombrados por A9; el `it` de filtro añadió un quinto rojo porque también fija el orden exacto. | Comparador ascendente restaurado sin commit; ambas suites volvieron a 108/108 verde. |
+| M8 | El tope cambió temporalmente de `slice(0, 3)` a `slice(0, 4)`. Helper y Home dejaron exactamente 2 fallos/106 verdes: `devuelve como mucho tres` recibió `rem-plus-4`, y `corta en tres aunque haya cinco` recibió 5 hijos en vez de 4. | Tope de tres restaurado sin commit; ambas suites volvieron a 108/108 verde. |
+| M11 | Se añadió temporalmente al cuerpo `<View className="h-1.5 rounded-full bg-default" />` sin `testID`. Home dejó 5 fallos/90 verdes: cayó el `it` nominal de tres escenarios por 2 hijos en vez de 1, además del tope y tres cardinalidades heredadas. | Hijo intruso retirado sin commit; Home volvió a 95/95 verde. |
 
 ## A8 — corrección de la evidencia prescrita para M3
 
@@ -86,7 +92,7 @@ R4, `index.test.tsx` quedó 90/90 verde y la suite móvil completa 1089/1089.
 La deuda de reemplazar el doble posicional por uno indexado por función queda
 registrada en #86 y fuera de #85.
 
-## Bloqueo de aislamiento del mock en R5
+## A11 — aislamiento del mock en R5
 
 La implementación mínima exacta de R5 puso verdes sus cinco `it`, pero dejó
 `index.test.tsx` en 3 fallos/92 verdes. Los tres fallos son candados heredados
@@ -100,9 +106,7 @@ La causa es el andamiaje prescrito: los tests de R5 llaman a
 implementación. Por tanto, ya no vuelve por sí sola la respuesta `[]` escrita
 en la factoría.
 
-Esto contradice la premisa de R4/A6 y `tasks.md:115-118`, que atribuye a la
-factoría la conservación automática de los `describe` heredados sin tocarlos.
-Resolverlo exige una regla no prescrita: restaurar el mock vacío al salir de
-R5, fijarlo en el `beforeEach` de #70 o reordenar los `describe`. No se eligió
-ninguna. La implementación de producción se retiró sin commit y se paró antes
-de M7, con cero cambios de backend.
+A11 añade un `beforeEach` de nivel de fichero que repone la respuesta vacía
+antes de cada test; cada `describe` puede sobrescribirla después. Con él, R5 y
+los heredados quedaron 95/95 verdes sin tocar ningún `describe` de #70. La
+factoría permanece intacta.

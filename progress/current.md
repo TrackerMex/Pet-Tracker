@@ -14,5 +14,5 @@
 - A8: firmada y leída; confirma que M3 aflora solo `rem-sent` porque el tope recorta `rem-cancelled`, sin cambiar fixture, candado ni código.
 - A9: firmada y leída; M7/M8 pasan de R3 al refactor de R5, donde existirán también sus dos candados de Home.
 - A10: firmada y leída; autoriza el cambio puntual del doble posicional de `hookCall++ % 3` a `% 4`. Deuda estructural registrada fuera de alcance en #86.
-- Avance: R1-R4 completos. R5 rojo versionado en `10c9636`: sus cinco `it` fallan por ausencia de filas y los 90 heredados quedan verdes.
-- Bloqueo de aislamiento en R5: la implementación mínima pone verdes los cinco `it` nuevos, pero deja 3 fallos/92 verdes en #70 porque la última `mockResolvedValue` de R5 sobrevive a `jest.clearAllMocks()`; la respuesta vacía de la factoría no se restaura. Esto contradice la premisa de R4/A6 de conservar los `describe` heredados sin tocarlos. Producción retirada sin commit; M7 no iniciado; cero backend.
+- A11: firmada y leída; un `beforeEach` de fichero repone la respuesta vacía de `listReminders` antes de cada test, sin depender del orden.
+- Avance: R1-R5 completos. R5 rojo `10c9636`, verde `4262348`; M2, M7, M8 y M11 probadas, documentadas y restauradas. Home + helper 108/108 verdes. Siguiente paso: R6 rojo.
