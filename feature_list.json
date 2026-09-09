@@ -1309,7 +1309,7 @@
   {
     "id": 70,
     "name": "mobile-home-reminders-section",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P3",
     "description": "Bloque 1. Seccion 'Recordatorios' en la Home (App.tsx:429-451): proxima vacuna con los dias que faltan y acceso a la lista completa. El dato existe y hoy no se usa: PetProfileResponse ya rellena nextVaccine de verdad con la forma { id, name, nextDoseAt }, y daysLeft es aritmetica de cliente. Cuidado con lo que el mismo contrato NO da: nextReminder y activitySummary siguen hardcodeados a null como placeholders reservados en el mapper del perfil, asi que la barra de progreso de comidas que el Make dibuja en esa misma seccion NO se puede construir aqui -es la feature de backend pet-profile-summary-slots y queda fuera-. La spec tiene que decir explicitamente que mitad de la seccion del diseno entra y cual no, en vez de inventar el dato que falta. Anade navegacion a la lista de recordatorios, asi que rompe el invariante de #46/#61/#62.",
     "acceptance_criteria": [
@@ -1531,6 +1531,54 @@
     ],
     "files_affected": [
       "mobile-pet-tracker/src/screens/home/index.test.tsx"
+    ]
+  },
+  {
+    "id": 82,
+    "name": "vaccine-due-today-inclusive",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Abierta al escribir la spec de #70 el 2026-09-09 (decision E1). El dia de la dosis, la app se contradice consigo misma: la pantalla de Salud enseña la vacuna (compara >= hoy en local) y la Home ya no, porque el backend filtra con gt estricto contra el hoy UTC del servidor (health/infrastructure/repositories/pet-vaccine.drizzle-reader.ts:27). O sea que el dueño ve la vacuna en una pantalla y no en la otra el dia que mas importa. Ademas el corte es UTC, asi que en zonas de offset negativo la vacuna desaparece de la Home varias horas antes de que termine el dia local. Es cambio de backend y toca decidir por escrito si el criterio es gte y en que zona horaria se evalua.",
+    "acceptance_criteria": [
+      "Salud y Home coinciden el dia de la dosis: o las dos la enseñan o ninguna, y la spec dice cual y por que",
+      "El corte se evalua en la zona horaria del dueño, no en UTC del servidor, o la spec justifica por escrito por que no",
+      "Un test e2e fija el comportamiento en el limite: dosis hoy, dosis ayer, dosis mañana"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/modules/health/infrastructure/repositories/pet-vaccine.drizzle-reader.ts"
+    ]
+  },
+  {
+    "id": 83,
+    "name": "meals-served-tracking",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Abierta al escribir la spec de #70 el 2026-09-09 (decision E2). Es lo que desbloquea la barra de progreso de comidas que el Make dibuja en la seccion de recordatorios y que #70 dejo FUERA por imposible. OJO, la causa real no es la que decia el enunciado de #70: la barra no lee nextReminder ni activitySummary, lee pet.meals y pet.totalMeals. Faltan DOS piezas, no una: (a) no existe registro de comida servida en el backend -no hay tabla ni endpoint, y food.tsx:185 lo finge con el reloj local-, y (b) mealsPerDay vive en el plan de nutricion y no en el perfil, asi que el total tampoco esta donde la Home lo necesita. Se abre como una sola feature porque las dos piezas carecen de sentido por separado; al especificarla se puede partir si el alcance lo pide.",
+    "acceptance_criteria": [
+      "Existe registro persistente de comida servida, con su endpoint, y deja de fingirse con el reloj del cliente",
+      "El total de comidas del dia llega a donde la Home lo necesita, sin que el cliente tenga que pedir el plan de nutricion aparte",
+      "La spec decide si esto se parte en dos features y lo justifica",
+      "Gate humano: smoke con una mascota con plan de comidas. No delegable a IA"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/modules/nutrition/",
+      "mobile-pet-tracker/src/app/(tabs)/food.tsx"
+    ]
+  },
+  {
+    "id": 84,
+    "name": "reminder-dates-days-until-drift",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Abierta al escribir la spec de #70 el 2026-09-09 (decision E3). mobile-pet-tracker/src/utils/reminder-dates.ts:15 calcula daysUntil con Math.ceil sobre una resta de milisegundos, que es el mismo patron que costo el veredicto rechazado de #68: el resultado depende de la hora del dia y se desplaza en zonas de offset negativo. #70 NO lo reutiliza a proposito -escribe su propio calendarDaysUntil con medianoches normalizadas- pero no lo arregla, porque lo consumen pill-week y el contador por fila de la pantalla de recordatorios y tocarlo desde #70 seria alcance ajeno. Merece feature propia con su candado de zona horaria.",
+    "acceptance_criteria": [
+      "daysUntil deja de depender de la hora del dia: normaliza a medianoche antes de restar",
+      "Un test bajo TZ negativa lo fija, y muere si alguien vuelve al patron de Math.ceil sobre milisegundos",
+      "Los consumidores -pill-week y el contador por fila de recordatorios- siguen verdes sin debilitar asserts",
+      "Se evalua unificar con el calendarDaysUntil que #70 introduce, en vez de dejar dos implementaciones"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/utils/reminder-dates.ts"
     ]
   }
 ]
