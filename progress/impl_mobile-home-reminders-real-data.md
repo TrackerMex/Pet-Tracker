@@ -122,3 +122,35 @@ A11 añade un `beforeEach` de nivel de fichero que repone la respuesta vacía
 antes de cada test; cada `describe` puede sobrescribirla después. Con él, R5 y
 los heredados quedaron 95/95 verdes sin tocar ningún `describe` de #70. La
 factoría permanece intacta.
+
+## Bloqueo C4 antes de R9: dos rojos imposibles por el orden prescrito
+
+R5 prescribe literalmente derivar `upcoming` con
+`reminders.data?.kind === 'ok' ? upcomingReminders(...) : []`
+(`tasks.md:150`). Esa guarda ya está en producción (`index.tsx:182-185`). Sin
+embargo, R9 ordena después `Escribir test que falla` y reconoce a la vez que
+`El ternario de R5 ya cubre los dos casos` (`tasks.md:232-239`). Sus pruebas de
+carga y de los cinco fallos nacerían verdes por construcción.
+
+R10 repite el mismo problema: R5 ya obliga a las recetas exactas de fila,
+título, fecha y contador, incluida `TABULAR_NUMS` (`tasks.md:150-154`), y R6
+añade el disco exacto. Producción ya contiene esos valores
+(`index.tsx:634-662`). R10 vuelve a ordenar `Escribir test que falla`, pero su
+rojo es condicional a que una receta anterior esté mal (`tasks.md:245-253`).
+Con R5/R6 verdes, su prueba también nacería verde.
+
+Esto contradice `CHECKPOINTS.md` C4: un requisito que solo asevera una
+propiedad dejada por otro requisito debe declararse de verificación antes del
+handoff y seguir la vía (a) test previo o (b) mutación de producción. R7 sí lo
+declara y versiona M9/M10; R12 sí prescribe una sonda. R9 y R10 no hacen
+ninguna de las dos cosas. Adelantar sus tests exigiría reescribir el historial,
+que está prohibido; fabricar un fallo no autorizado también incumpliría la
+spec.
+
+La salida mínima necesita una A12 aprobada: declarar R9 y R10 requisitos de
+verificación por C4(b), prescribir para cada uno una sonda de producción
+versionada que haga caer su propia aserción y restaurarla en el verde. Esas dos
+sondas pueden quedar fuera de las trece M1-M13 de R15, pero la enmienda debe
+decirlo expresamente para no crear otra discrepancia de recuento. Se paró antes
+de escribir los tests de R9; R8 y `#70 R11` estaban 4/4 verdes, typecheck y lint
+dirigido en exit 0, y no hay cambios de backend.

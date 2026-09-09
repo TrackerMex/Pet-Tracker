@@ -15,4 +15,5 @@
 - A9: firmada y leída; M7/M8 pasan de R3 al refactor de R5, donde existirán también sus dos candados de Home.
 - A10: firmada y leída; autoriza el cambio puntual del doble posicional de `hookCall++ % 3` a `% 4`. Deuda estructural registrada fuera de alcance en #86.
 - A11: firmada y leída; un `beforeEach` de fichero repone la respuesta vacía de `listReminders` antes de cada test, sin depender del orden.
-- Avance: R1-R8 completos. R8 rojo `7dac461`, verde `fecd8e8`; sus tres pruebas y `#70 R11` verdes. Siguiente paso: R9.
+- Avance: R1-R8 completos. R8 rojo `7dac461`, verde `fecd8e8`; sus tres pruebas y `#70 R11` verdes.
+- Bloqueo C4 antes de R9: R5 prescribe y ya implementó exactamente la guarda de carga/fallo que R9 pretende probar, y las recetas exactas de R5/R6 ya satisfacen R10. Por tanto, ambos tests nacerían verdes, pero la spec no declara R9/R10 como requisitos de verificación ni prescribe una mutación de producción. No se escribieron tests ni código de R9; cero backend.
