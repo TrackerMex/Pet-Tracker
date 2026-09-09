@@ -41,3 +41,17 @@ estado, ordenar y aplicar el tope obligatorio de tres, la salida es
 La corrida dejó 1 fallo/12 verdes por `rem-sent`. A8 confirma esta medición,
 mantiene intactos la fixture y el candado, y corrige únicamente la evidencia
 esperada. M3 se restauró sin commit y la suite dirigida volvió a 13/13 verde.
+
+## Bloqueo de orden tras M4
+
+`tasks.md:95-96` ordena plantar M3..M8 durante R3 y comprobar que cada mutación
+cae por todos los `it` que R15 nombra. Sin embargo, R15/M7 y R15/M8 exigen
+también los `it` de Home `las ordena por fecha ascendente bajo la fila de la
+vacuna` y `corta en tres aunque haya cinco`; `requirements.md:404-421` y el
+propio orden normativo los crean recién en R5. En este punto solo existen los
+candados de `format.test.ts`.
+
+No es posible completar M7/M8 según R3 sin adelantar tests de R5 ni incumplir
+la exigencia de observar todos los `it` nombrados. Tras documentar M4 se paró,
+con la mutación restaurada, suite dirigida 13/13 verde y árbol limpio; M5 no se
+plantó.
