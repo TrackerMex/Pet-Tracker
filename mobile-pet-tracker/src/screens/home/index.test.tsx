@@ -1582,6 +1582,7 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
     for (const destination of destinations) {
       expect(routes).toContain(destination);
     }
+    expect(source).not.toContain('href(selectedPetId) as Href');
   });
 
   it('no dibuja ningún tile a una pestaña ni a un destino inexistente', () => {
