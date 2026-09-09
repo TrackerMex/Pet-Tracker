@@ -18,6 +18,10 @@
 Se completa durante la secuencia TDD; los hashes definitivos también quedan en
 `specs/mobile-home-reminders-section/traceability.md`.
 
+- **R2**: rojo `345558a` (candado del contrato); verde `df759b8` (interfaz
+  exacta y `nextReminder`/`activitySummary` intactos). Test dirigido y
+  `bun run typecheck`, verdes tras la implementación.
+
 ## Premisas corregidas contra el árbol
 
 - D1: la cardinalidad 1/1/0 se prueba en R9, cuando ya existen los hijos reales.

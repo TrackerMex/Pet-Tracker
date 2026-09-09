@@ -1,4 +1,4 @@
-import { fmtKg } from './format';
+import { calendarDaysUntil, fmtKg } from './format';
 
 describe('#69 R2: fmtKg', () => {
   it('uses a dash when the weight is missing', () => {
@@ -11,5 +11,16 @@ describe('#69 R2: fmtKg', () => {
 
   it('preserves decimal weights', () => {
     expect(fmtKg(12.4)).toBe('12.4 kg');
+  });
+});
+
+describe('#70 R4: calendarDaysUntil cuenta días de calendario', () => {
+  it('cuenta futuro, mañana, hoy y pasado', () => {
+    const now = new Date(2026, 8, 10, 12, 0);
+
+    expect(calendarDaysUntil('2026-09-15', now)).toBe(5);
+    expect(calendarDaysUntil('2026-09-11', now)).toBe(1);
+    expect(calendarDaysUntil('2026-09-10', now)).toBe(0);
+    expect(calendarDaysUntil('2026-09-08', now)).toBe(-2);
   });
 });
