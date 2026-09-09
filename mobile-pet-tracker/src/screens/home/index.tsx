@@ -4,23 +4,29 @@ import { useCallback, useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
+  Bacteria,
   Battery,
+  Bell,
+  Bone,
   CalendarPlus,
   ChevronRight,
   FileText,
   Map,
   Moon,
+  Pill,
+  Stethoscope,
   Syringe,
   Walk,
   Weight,
   Wifi,
   WifiOff,
+  type IconComponent,
 } from 'reicon-react-native';
 
 import { getDailyActivity } from '../../api/activity';
 import { getPet, listPets, type PetsState } from '../../api/pets';
 import { listReminders } from '../../api/reminders';
-import type { DayEntry } from '../../api/types';
+import type { DayEntry, ReminderType } from '../../api/types';
 import { Card } from '../../components/card';
 import { PetHeroHeader } from '../../components/pet-hero-header';
 import { PetSwitcher } from '../../components/pet-switcher';
@@ -38,6 +44,7 @@ import {
 } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { CATEGORY_SLOTS } from '../../utils/category-palette';
+import { REMINDER_TYPE_META } from '../../utils/reminder-meta';
 import {
   calendarDaysUntil,
   fmtCount,
@@ -51,6 +58,16 @@ import {
 import { WeeklyActivityChart } from './weekly-activity-chart';
 
 const WEEKLY_ACTIVITY_SKELETON_HEIGHT = 408;
+
+const REMINDER_ROW_ICONS: Record<ReminderType, IconComponent> = {
+  vaccine: Syringe,
+  deworming: Bacteria,
+  medication: Pill,
+  appointment: Stethoscope,
+  weight: Weight,
+  food: Bone,
+  custom: Bell,
+};
 
 const QUICK_ACTIONS = [
   {
@@ -166,6 +183,14 @@ export function HomeScreen() {
     reminders.data?.kind === 'ok'
       ? upcomingReminders(reminders.data.reminders, new Date())
       : [];
+  const reminderRowInks = useThemeColors(
+    [upcoming[0], upcoming[1], upcoming[2]].map((reminder) => {
+      const slot = reminder
+        ? REMINDER_TYPE_META[reminder.type].category
+        : 'neutral';
+      return slot === 'neutral' ? 'muted' : `category-${slot}-strong`;
+    }),
+  );
   const nextVaccine =
     detail.data?.kind === 'ok' ? detail.data.pet.nextVaccine : null;
   const nextVaccineDays = nextVaccine
@@ -596,12 +621,14 @@ export function HomeScreen() {
                 </Card>
               ) : null}
 
-              {upcoming.map((reminder) => {
+              {upcoming.map((reminder, index) => {
                 const dueDay = localDayOf(reminder.dueAt);
                 const countdown = dueCountdown(
                   calendarDaysUntil(dueDay, new Date()),
                   t,
                 );
+                const Icon = REMINDER_ROW_ICONS[reminder.type];
+                const slot = REMINDER_TYPE_META[reminder.type].category;
 
                 return (
                   <Card
@@ -609,6 +636,11 @@ export function HomeScreen() {
                     testID={`reminders-item-${reminder.id}`}
                     className="flex-row items-center gap-3"
                   >
+                    <View
+                      className={`size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS[slot].surface}`}
+                    >
+                      <Icon size={20} color={reminderRowInks[index]} />
+                    </View>
                     <View className="flex-1">
                       <Text
                         testID={`reminders-item-${reminder.id}-title`}
