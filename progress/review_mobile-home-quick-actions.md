@@ -393,3 +393,239 @@ EXIT=0
 Aviso no bloqueante repetido durante la corrida: el AWS SDK v3 avisa de que sus
 versiones posteriores a la primera semana de enero de 2027 exigirán Node ≥22;
 esta corrida con Node 20.20.2 terminó verde. Preexistente y ajeno a #71.
+
+---
+---
+
+# Revisión correctiva — rango `c18f099..5daa368` (16 commits `fix(...)`)
+
+Fecha: 2026-09-09
+Veredicto: **APROBADO**
+
+O1 (el bloqueante), O2, O3 y O5 están cerradas y **verificadas replantando yo
+las mutaciones**, no leyendo el informe. El gate correctivo salió verde a la
+primera. Quedan dos huecos de candado nuevos —O7 y O8—, ninguno bloqueante:
+los dos son sobre código que **hoy es correcto**, y los dejo registrados como
+deuda con su arreglo exacto.
+
+## Alcance del rango correctivo
+
+Producción: **4 líneas** en `src/screens/home/index.tsx`, todas de O3 —se retira
+`as Href` del `router.push` y el `import { type Href }` que quedaba huérfano—.
+La tinta y la rejilla **no cambiaron en producción**: estaban bien, lo que
+faltaba era el candado, y eso es lo que arregla el rango.
+
+Test: 24 líneas en `index.test.tsx`. Nada más: ni `src/app/`, ni
+`src/components/`, ni `src/theme/`, ni `src/utils/`, ni backend, ni infra, ni
+dependencias, ni tokens. **Ninguna cifra de candado se movió** —ni
+`consistency-classnames`, ni `ui-language`, ni `language-provider`, ni
+`design-drift` entran en el diff—, así que las catorce filas de R14 siguen como
+las validé en la primera revisión.
+
+Commits ajenos: siguen siendo **exactamente los dos** de O4 (`71a4db7`,
+`997c080`), sin un tercero. El otro commit no-`fix` del historial es `100ef1a`
+*"Approve mobile home quick actions spec"*, firmado por el **humano**
+(`AlexisSM377`): es el gate de aprobación, no trabajo ajeno. Tomo nota de que el
+humano ya decidió que los dos viajen en el PR de #71 y se nombren en su
+descripción; no lo vuelvo a plantear.
+
+## C4 en el rango correctivo: los rojos siguen siendo de producción
+
+Verificado commit a commit, que es donde #69 se rompió:
+
+| Par | Rojo | Qué versiona el rojo |
+|---|---|---|
+| O1 | `9a4854e` → `7bf12d5` | **producción**: añade un `<Pressable testID="quick-action-extra" onPress={() => router.push('/pairing')} />` a `index.tsx` (+4 líneas), que el verde retira |
+| O2 | `8246d2e` → `41838b5` | **producción**: `quickActionInks[index]` → `quickActionInks[0]` en `index.tsx`, que el verde revierte |
+| O3 | `da9a847` → `ba92380` | test-first legítimo: el rojo solo añade la aserción, y lo que la pone roja es el **cast real que había en producción**; el verde lo retira. No es mutación de mock |
+| O3b | `db588de` | endurece la aserción de `toContain` a regex tolerante a espacios. Sin rojo asociado y sin necesitarlo |
+
+Ninguno toca el doble de `reicon` ni ningún otro mock.
+
+## Verificación por mutación, replantada por mí
+
+Filtro de seis suites (198 tests), fichero restaurado entre cada una.
+
+### Lo que se arregló
+
+| # | Mutación | Antes del arreglo | Ahora |
+|---|---|---|---|
+| V1 | cuarto `Pressable` inline `testID="quick-action-extra"` → `/pairing` | **verde** (68/68, 1054/1054) — era O1 | **ROJO**: `dibuja el rótulo y los tres tiles en orden` |
+| V4 | `quickActionInks[index]` → `[0]` | **verde** (68/68, 1054/1054) — era O2 | **ROJO**: `liga icono, etiqueta, color, tinta y destino…` |
+
+O1 y O2 cerradas. El `it` de R4 ahora observa **cinco** dimensiones por tile con
+`within(tile)`, y la tinta se lee de verdad sobre el árbol: el test espía
+`Uniwind.getCSSVariable` para hacer identificable el token que cada tile pide, y
+asserta `icon.props.color` por tile. Es candado de conducta, no de fuente.
+
+### Que no se rompió nada de camino
+
+Replanté las **siete** mutaciones originales de R15b sobre el árbol corregido:
+
+| Mutación | Fallos | Test que muere |
+|---|---|---|
+| M1 destino | 2 | R4 + `lleva cada tile a su ruta existente` |
+| M2 icono | 2 | R4 + `usa iconos de reicon y ningún emoji` |
+| M3 etiqueta | 1 | R4 |
+| M4 hueco/color | 1 | R4 |
+| M5 cuarto tile `/map` | 3 | R1 + `no apunta a ninguna ruta inexistente` + R3 |
+| M6 colocación | 1 | R10 |
+| M7 `min-h-11` | 1 | R6 |
+
+Las siete siguen rojas y coinciden con la tabla ya corregida del informe.
+
+**Un aviso metodológico contra mí mismo**: mi primer intento de replantar M6
+insertó la rejilla justo **antes** del bloque de la gráfica, y salió verde. No
+era un hueco: en el escenario del test la actividad está cargada, así que el
+skeleton no se monta y el orden resultante era **el correcto** — mi mutación era
+un no-op. Al moverla de verdad detrás de la gráfica, R10 muere. Lo dejo escrito
+porque una mutación mal plantada se lee igual que un candado muerto.
+
+### Sondas nuevas: la siguiente vía, y la sexta dimensión
+
+| # | Sonda | Resultado |
+|---|---|---|
+| V2 | cuarto tile inline con `testID="shortcut-extra"` → `/pairing` | **VERDE**, 198/198 → O7 |
+| V3 | cuarto tile inline **sin `testID`** → `/pairing` | **VERDE**, 198/198 → O7 |
+| V5 | etiqueta del tile `text-foreground` → `text-muted` | **VERDE** en la suite móvil completa (68/68, 1054/1054), repetido → O8 |
+
+## Checklists
+
+- **C2** — [x] una sola feature `in_progress`; [x] `progress/current.md` al día
+- **C3** — [x] solo presentación; cero domain/application/infrastructure/backend
+- **C4** — [x] cada `R<n>` con test que lo nombra; [x] test-primero;
+  [x] **quinto punto**: los rojos correctivos son de producción, verificados
+  fichero a fichero
+- **C5** — [x] `traceability.md` sin filas "pendiente"; las filas R1-R5, R15 y
+  R15b están reescritas y describen lo que los tests **hacen de verdad**,
+  incluida la sustitución de la aserción de R3 (ver O7); [x] formato de commit
+  `fix(mobile-home-quick-actions): … (R…)` correcto en los 16
+- **C6** — [x] `status: approved` intacto; ningún requisito modificado. Las
+  correcciones se documentan en el informe y en la trazabilidad, **sin editar
+  spec aprobada**, que es el procedimiento correcto
+- **C7** — [ ] N/A: no reemplaza nada; cero ficheros borrados
+- **C8** — [x] grep-clean intacto; radios en escala; sin tokens nuevos; táctil
+  ≥44 pt (M7 lo vigila); a11y de tres botones independientes sin cambios
+
+## Observaciones nuevas
+
+### O7 — El candado cuenta `testID`, no hijos de la fila: quedan dos variantes vivas
+
+`index.test.tsx:1528`, `getAllByTestId(/^quick-action-/)`.
+
+El arreglo cierra el caso que importaba —un cuarto tile con el nombre de la
+convención— pero el recuento sigue siendo **por `testID` que case el prefijo**,
+no **por hijos renderizados de la fila**, que es lo que la spec prescribe
+literalmente (*"exactamente tres hijos en la fila de tiles"*, R3 y
+`traceability.md`). Dos variantes lo atraviesan con 198/198 verde:
+
+- **V2**: cuarto tile con `testID="shortcut-extra"` → `/pairing`.
+- **V3**: cuarto tile **sin `testID`** → `/pairing`.
+
+El eje que decide no es el tipo de componente —un `<View>` con `testID`
+`quick-action-*` también muere— sino **si el nodo lleva un `testID` con ese
+prefijo**. Sin él, es invisible al candado.
+
+**Por qué no bloquea**: el camino realista a un cuarto tile es añadir una fila a
+`QUICK_ACTIONS` —cazada dos veces, por el recuento de fuente y por la regex
+abierta— o copiar un tile existente, que se lleva su `testID` de convención y
+muere. Escapar exige ahora **nombrar el tile fuera de convención a propósito**.
+Es mucho más estrecho que O1, donde pasaba el nombre canónico.
+
+**Arreglo cuando se retome** (una aserción, cierra las tres variantes):
+`expect(within(quickActions).getByTestId('quick-actions').children)` no sirve —
+la fila no tiene `testID` propio; lo directo es dar `testID="quick-actions-row"`
+a la `View` de `flex-row gap-3` y assertar su `children.length === 3`. Eso **sí**
+toca producción (un `testID` nuevo), así que es decisión del humano si entra
+aquí o como deuda.
+
+### O8 — Sexta dimensión sin vigilar: el color de la etiqueta del tile
+
+`index.tsx:423`, `<Text className="text-2xs font-semibold text-foreground">`.
+
+Cambiar `text-foreground` por `text-muted` deja la **suite móvil completa verde
+(68/68, 1054/1054)**, comprobado dos veces. Nada observa el color de la
+etiqueta, ni por árbol ni por fuente.
+
+No es cosmética: `design.md` §D12 fija la etiqueta en `foreground` y la tabla de
+contrastes de §4 **calcula exactamente ese par** —17,25-17,82 en claro y
+15,41-15,42 en oscuro—. Con `text-muted` el contraste real cae a **4,54-4,69 en
+claro y 6,45 en oscuro** (recalculado por mí sobre `--muted` `#667085` / `#9CA3AF`).
+Sigue pasando AA, pero en claro **por 0,04** y sobre texto de 10 px
+(`text-2xs`), donde AA normal es lo que aplica. Es decir: la tabla de la spec
+dejaría de describir lo que se envía y nadie se enteraría.
+
+**Por qué no bloquea**: hoy el valor es el correcto y el peor caso alcanzable
+sigue cumpliendo AA. **Arreglo**: una línea en el `it` de R4 —
+`expect(tileQueries.getByText(label).props.className).toContain('text-foreground')`.
+
+### O9 — Un fallo intermitente en la suite móvil que no pude atribuir
+
+Durante las sondas, **una** de mis siete corridas completas de la suite móvil
+devolvió `1 failed, 1053 passed`. Mi filtro de salida se comió la línea del
+fallo y no pude identificar el test; las **dos** repeticiones inmediatas de la
+misma mutación, y las otras cuatro corridas completas más las dos de `init.sh`,
+salieron 1054/1054. Un candado de cadena literal no puede fallar de forma
+intermitente, así que lo trato como flaky ajeno —el candidato natural es **#72**,
+el flaky de selección de foto de add-pet ya registrado—. **No lo cuento contra
+#71**, pero lo dejo escrito: un intermitente sin nombre en la suite móvil
+ensucia baselines igual que #76 ensucia las de e2e, y merece su propia entrada
+si vuelve a aparecer.
+
+### O6 (de la primera revisión) — sigue abierta
+
+La entrada de `feature_list.json` para #71 sigue describiendo cuatro tiles a
+Mapa/Actividad/Vacunas/Comidas y `files_affected` con dos ficheros que la
+feature no toca. Es del leader, no del implementer; conviene alinearla al cerrar.
+
+## Lo que sigue sin cerrar este veredicto
+
+El **gate humano de smoke en dev build de Android**, tema claro y oscuro, con el
+guion completo de `requirements.md` §Aprobación —los tres tiles abriendo su
+pantalla, Documentos con dos mascotas, el retorno a la Home tras guardar un
+recordatorio, los tres pasteles distinguibles del fondo (1,06-1,10 claro / 1,16
+oscuro), etiquetas sin truncar y TalkBack anunciando tres botones—. Sin él la
+feature no pasa a `done`.
+
+## Output de `./init.sh` — gate correctivo
+
+Corrido por mí, en primer plano, sobre el árbol limpio en `5daa368`, con
+`env -u FORCE_COLOR` (#75) y tras `pgrep -f init.sh` (libre).
+**Una sola corrida, sin repetir: no apareció el flaky #76 de
+`health-vaccines.e2e-spec.ts:497`.** Árbol limpio también después.
+
+```
+✅ node / pnpm / bun disponibles
+✅ .env encontrado · DATABASE_URL definida
+✅ Dependencias instaladas
+✅ Archivos del harness presentes
+✅ STATUS.md sincronizado con feature_list.json
+✅ Build exitoso
+
+→ Tests
+  backend unitario:  163 passed / 163 suites · 1243 passed / 1243 tests
+  infra:               2 passed / 2 suites   ·   14 passed / 14 tests
+  móvil:              68 passed / 68 suites  · 1054 passed / 1054 tests · 1/1 snapshot
+✅ Tests pasados
+
+→ Tests e2e
+  3 skipped, 25 passed de 28 suites · 8 skipped, 354 passed de 362 tests
+✅ Tests e2e pasados
+
+✅ Lint sin errores
+✅ Typecheck sin errores   (tsc --noEmit — confirma O3: las tres rutas,
+                            /weight-log incluida, typechequean sin `as Href`)
+✅ Todo verde. Listo para trabajar.
+
+EXIT=0
+```
+
+Inventario de `as Href` en producción, recontado por mí: **siete**, todos
+preexistentes —`profile/index.tsx` ×4, `add-reminder`, `reminders`, `food.tsx`—
+y **ninguno en la Home**. Coincide con la cifra que el informe declara en su
+premisa 4.
+
+Avisos preexistentes y ajenos a #71, sin cambio: faltan `RESEND_API_KEY`,
+`RESEND_FROM` y `RESET_LINK_HOST` en `.env`; el AWS SDK v3 anuncia que sus
+versiones posteriores a enero de 2027 exigirán Node ≥22 (esta corrida, con Node
+20.20.2, terminó verde).
