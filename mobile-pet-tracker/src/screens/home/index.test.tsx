@@ -1936,4 +1936,35 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
       expect(mockRouter.push).not.toHaveBeenCalled();
     });
   });
+
+  describe('#70 R7: ramas del contador de vacuna', () => {
+    it('resuelve las tres ramas del contador', async () => {
+      jest.useFakeTimers();
+      jest.setSystemTime(new Date(2026, 8, 10, 12, 0));
+
+      const cases = [
+        ['2026-09-15', '5 d', 'Faltan 5 días'],
+        ['2026-09-10', 'Hoy', 'Hoy'],
+        ['2026-09-08', 'Vencida', 'Vencida'],
+      ] as const;
+
+      for (const [nextDoseAt, text, label] of cases) {
+        mockGetPet.mockResolvedValue({
+          kind: 'ok',
+          pet: makePet({ nextVaccine: { ...vaccine, nextDoseAt } }),
+        });
+        const view = await render(<HomeScreen />, { wrapper: HomeWrapper });
+
+        try {
+          const days = await screen.findByTestId('reminders-next-vaccine-days');
+
+          expect(days.props.children).toBe(text);
+          expect(days.props.accessibilityLabel).toBe(label);
+          expect(days).not.toHaveTextContent('-');
+        } finally {
+          await view.unmount();
+        }
+      }
+    });
+  });
 });

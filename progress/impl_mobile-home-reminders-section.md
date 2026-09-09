@@ -28,6 +28,11 @@ Se completa durante la secuencia TDD; los hashes definitivos también quedan en
   `af8ae4e` (aritmética y formato por componentes locales de calendario).
 - **R1**: rojo `16c6b22` (estructura, rótulo y enlace); verde `f498f1e`
   (cabecera y cuerpo vacío conforme a D1, más las siete claves necesarias).
+  La auditoría endureció clase/orden con el rojo conjunto `6247c3f` y el verde
+  `0e00251`, ambos nombrando R1.
+- **R6**: rojo `6247c3f` (fixture distinta en lista y detalle, enlace exacto de
+  nombre/fecha/contador e inercia); verde `0e00251` (fila `Card` desde el
+  detalle, sin renderizar el id ni añadir navegación).
 
 ## Premisas corregidas contra el árbol
 
