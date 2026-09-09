@@ -42,7 +42,9 @@ Se completa durante la secuencia TDD; los hashes definitivos también quedan en
   cardinalidad trasladada por D1 cuenta `children`, no `testID`.
 - **R10**: rojo `6087349` (cero navegación y cero apariciones de la ruta);
   verde `0844b75` (un único `router.push('/reminders')`, fuera de
-  `QUICK_ACTIONS`, sin cast ni ruta nueva).
+  `QUICK_ACTIONS`, sin cast ni ruta nueva). Tras la autorización humana sobre
+  C8, rojo `9f36621` y verde `ed457ba` fijaron feedback `pressed` sin crear otro
+  camino.
 - **R11**: rojo `c4c0b45` (mutación de producción que quitó el nombre accesible
   y murió con `undefined`); verde `e34b07e` (restauración del label expandido,
   con un solo botón accesible en la sección).
@@ -83,7 +85,41 @@ Se completa durante la secuencia TDD; los hashes definitivos también quedan en
 
 ## Deltas R18
 
-Pendiente de medir tras la implementación.
+Medición ejecutada contra `b0ec5a8`, conservando cada base como expresión y no
+como una cifra final colapsada:
+
+```sh
+git diff --unified=0 b0ec5a8 -- mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx mobile-pet-tracker/src/__tests__/ui-copy-table.ts mobile-pet-tracker/src/__tests__/ui-language.test.ts mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts mobile-pet-tracker/src/__tests__/legibility-classnames.test.ts mobile-pet-tracker/src/__tests__/design-drift.test.ts mobile-pet-tracker/src/screens/home/index.test.tsx
+bun run test -- --runInBand src/providers/__tests__/language-provider.test.tsx src/__tests__/ui-language.test.ts src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts src/__tests__/design-drift.test.ts
+```
+
+Antes del verde, los candados heredados dejaron solo 3 fallos esperados y 129
+tests verdes; el candado explícito de R18 añadió el cuarto rojo esperado. Tras
+`dcd0faa`, las 5 suites y sus 133 tests quedaron verdes.
+
+| # | Base `b0ec5a8` → resultado | Delta observado |
+|---|---|---|
+| 1 | `260 + 16 + 1 + 4` → `260 + 16 + 1 + 4 + 7` | `+7`; igualdad de idiomas y marcadores intacta |
+| 2 | `21 + 15 + 1 + 4` → `21 + 15 + 1 + 4 + 7` | `+7` filas de `R3_HOME`; `ALL_USES` conserva su suma derivada, sin constante absoluta |
+| 3 | Home: `HOME_TABULAR_AT_9358CC7 + HOME_TABULAR_DELTA_69` → esa misma suma `+ HOME_TABULAR_DELTA_70`; total `14 + 4 + 1` → `14 + 4 + 1 + 1` | `+1` en Home. El grep nominal da 5→6 en Home y 20→21 global; el uso extra global de `PetHero` sigue fuera del inventario cerrado, igual que en la base |
+| 4 | Home `1` → `2`; total `.toBe(13)` → `.toBe(13 + 1)` | `+1` por el enlace. El grep global 14→15 conserva el uso de `weekly-activity-chart.tsx` que ya estaba fuera de ese inventario |
+| 5 | 9 bloques `describe` nominales → `9 + 1` | `+1`, el bloque propio de R17 |
+| 6 | 6 entradas nominales de `reicon` → `6 + 1` | `+1`, solo el doble `Syringe` de test |
+| 7 | Home `2` → `2`; total `33 + 1 + 1` → `33 + 1 + 1` | `Δ0`; las dos ramas nuevas heredan `Card` |
+| 8 | `['utils/category-palette.ts']` → la misma lista | `Δ0`; ninguna clase categórica se escribió en Home |
+| 9 | 16 usos de `bg-accent-soft` → 16 | `Δ0` |
+| 10 | 13 botones sólidos primarios → 13 | `Δ0`; “Ver todos” sigue siendo enlace de texto |
+| 11 | listas de radios prohibidos `[]` → `[]` | `Δ0` |
+| 12 | `19 + 2` ficheros de pantalla → `19 + 2` | `Δ0`; no se creó pantalla ni módulo de producción |
+| 13 | glifos `[]` → `[]`; tres `ChevronRight` de Profile → tres | `Δ0` |
+| 14 | inventario de `text-warning-strong` sin recuento → el mismo | `Δ0` |
+| 15 | tres bloques heredados de orden → byte idénticos | `Δ0`; no hubo reubicación de sus asserts |
+| 16 | comparaciones relativas entre idiomas → las mismas | Cuadran sin constante nueva |
+| 17 | `ALL_USES` contra suma de bloques → la misma relación | Cuadra solo con las siete filas nuevas |
+| 18 | rutas delgadas `[5, 5, 3, 7]` → `[5, 5, 3, 7]` | `Δ0`; `src/app/(tabs)/home.tsx` intacto |
+
+No se movió ninguna cifra fuera de las filas 1–6 previstas; las filas 7–18
+quedaron sin cambio.
 
 ## Prueba de mutación R19b
 
@@ -91,7 +127,40 @@ Pendiente de medir tras la implementación.
   `TZ=America/Mexico_City` dejó 1 fallo/5 verdes: R5 recibió `4` donde esperaba
   `5`. Verde `4499db4`, con 6/6 en ambas zonas. La normalización del cero evitó
   que el rojo dependiera de `-0`.
-- M2-M8: pendientes.
+- **M2**: rojo `cdfb868`, con `fmtDate` construido desde `new Date(date)`. Dos
+  procesos separados dejaron 4/4 tests dirigidos verdes en `TZ=UTC`, y 2
+  fallos/2 verdes en `TZ=America/Mexico_City`: R5 vio `14 sep` y R6 dejó de
+  ver `15 sep`. Verde `499b0ec`, 4/4 en ambas zonas.
+- **M3**: rojo `58338f3`, cruzando los datos de nombre y fecha. En R6 cayó
+  exactamente el candado de enlace de datos —esperaba `Antirrábica` y recibió
+  el ISO—, con 1 fallo/1 verde. Verde `1c940e8`.
+- **M4**: rojo `6e9206d`, eliminando la rama vencida. El único test de R7 cayó:
+  esperaba `Vencida` y recibió `-2 d`. Verde `06cd7cf`.
+- **M5**: rojo `1763391`, añadiendo al cuerpo un `View` de producción sin
+  `testID`. Cayeron exactamente dos candados: la cardinalidad de R9 trasladada
+  por D1 y la exclusión de comidas de R3 (esperaban 1 hijo y recibieron 2).
+  Verde `c13b934`.
+- **M6**: rojo `ca88209`, cambiando el destino a `/add-reminder`. R10 dejó 2
+  fallos/1 verde: destino exacto y unicidad del literal `/reminders`. Verde
+  `91d636d`.
+- **M7**: rojo `bffaa47`, moviendo la sección delante de `quick-actions`. R14
+  dejó 1 fallo/1 verde y mostró el único cambio de orden esperado. Verde
+  `a223d4c`.
+- **M8**: rojo `efb9bba`, quitando `style={TABULAR_NUMS}`. Cayeron los dos
+  tests dirigidos: R12 recibió `undefined` y R18 midió `0` donde exigía el
+  delta `+1`. Verde `d22e1c9`.
+
+M1 y M2 se ejecutaron con la zona en el entorno del proceso, no cambiándola
+solo dentro del worker:
+
+```sh
+TZ=UTC bun run test -- --runInBand <suites-dirigidas>
+TZ=America/Mexico_City bun run test -- --runInBand <suites-dirigidas>
+```
+
+La comprobación `git diff --quiet <rojo>^ <verde> -- <fichero-producción>` dio
+`restored` para los ocho pares: cada verde revierte exactamente su mutación de
+producción.
 
 ## Decisiones humanas durante la implementación
 
@@ -103,4 +172,11 @@ Pendiente de medir tras la implementación.
 
 - Previa a las mutaciones: `bun run test` — 68 suites, 1077 tests y 1 snapshot
   verdes—; `bun run typecheck`, verde.
-- Gate final pendiente.
+- Tras las ocho restauraciones y el candado de feedback autorizado:
+  `bun run test` —68 suites, 1078 tests y 1 snapshot verdes— y
+  `bun run typecheck`, verde.
+- Grep-clean de R19: cero hex fuera de `src/theme/`, cero clases arbitrarias,
+  `StyleSheet.create`, sombras/elevation legacy; el inventario de radios contiene
+  únicamente `rounded-card`, `rounded-full` y `rounded-xl`.
+- `env -u FORCE_COLOR ./init.sh`: pendiente de la única corrida final.
+- `graphify update .`: pendiente hasta después del gate final.
