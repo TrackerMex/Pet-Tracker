@@ -87,6 +87,26 @@ function fmtLastSeen(
     : t('home.lastSeen', { date: new Date(iso).toLocaleString(locale) });
 }
 
+function vaccineCountdown(
+  days: number,
+  t: ReturnType<typeof useTranslate>,
+): { text: string; label: string } {
+  if (days < 0) {
+    const overdue = t('home.nextVaccineOverdue');
+    return { text: overdue, label: overdue };
+  }
+
+  if (days === 0) {
+    const today = t('home.nextVaccineToday');
+    return { text: today, label: today };
+  }
+
+  return {
+    text: t('home.nextVaccineDays', { days }),
+    label: t('home.nextVaccineDaysLeft', { days }),
+  };
+}
+
 export function HomeScreen() {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { token } = useAuth();
@@ -136,6 +156,8 @@ export function HomeScreen() {
   const nextVaccineDays = nextVaccine
     ? calendarDaysUntil(nextVaccine.nextDoseAt, new Date())
     : null;
+  const nextVaccineCountdown =
+    nextVaccineDays === null ? null : vaccineCountdown(nextVaccineDays, t);
   const refetchPets = pets.refetch;
   const refetchDetail = detail.refetch;
   const today =
@@ -429,7 +451,7 @@ export function HomeScreen() {
             </View>
 
             <View testID="reminders-section-body" className="gap-2">
-              {nextVaccine && nextVaccineDays !== null ? (
+              {nextVaccine && nextVaccineCountdown ? (
                 <Card
                   testID="reminders-next-vaccine"
                   className="flex-row items-center gap-3"
@@ -455,13 +477,11 @@ export function HomeScreen() {
                   </View>
                   <Text
                     testID="reminders-next-vaccine-days"
-                    accessibilityLabel={t('home.nextVaccineDaysLeft', {
-                      days: nextVaccineDays,
-                    })}
+                    accessibilityLabel={nextVaccineCountdown.label}
                     style={TABULAR_NUMS}
                     className={`rounded-full px-2.5 py-1 text-xs font-bold ${CATEGORY_SLOTS.amber.surface} ${CATEGORY_SLOTS.amber.ink}`}
                   >
-                    {t('home.nextVaccineDays', { days: nextVaccineDays })}
+                    {nextVaccineCountdown.text}
                   </Text>
                 </Card>
               ) : null}
