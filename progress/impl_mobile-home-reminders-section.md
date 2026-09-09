@@ -26,6 +26,8 @@ Se completa durante la secuencia TDD; los hashes definitivos también quedan en
 - **R5**: rojos `9bbbbd8` (M1 de producción: verde en UTC y rojo en México)
   y `5e591b0` (parseo UTC de fecha visible: `14 sep`); verdes `a6b82bf` y
   `af8ae4e` (aritmética y formato por componentes locales de calendario).
+- **R1**: rojo `16c6b22` (estructura, rótulo y enlace); verde `f498f1e`
+  (cabecera y cuerpo vacío conforme a D1, más las siete claves necesarias).
 
 ## Premisas corregidas contra el árbol
 

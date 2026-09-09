@@ -402,7 +402,7 @@ export function HomeScreen() {
 
         {selectedPetId ? (
           <View testID="reminders-section" className="gap-3">
-            <View className="flex-row items-center justify-between">
+            <View className="flex-col items-center justify-between">
               <Text
                 testID="reminders-section-title"
                 className="text-base font-bold text-foreground"

@@ -1821,6 +1821,12 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
 });
 
 describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
+  const vaccine = {
+    id: 'vac-9',
+    name: 'Antirrábica',
+    nextDoseAt: '2026-09-15',
+  };
+
   beforeEach(() => {
     jest.clearAllMocks();
     process.env.EXPO_PUBLIC_API_URL = apiUrl;
@@ -1830,14 +1836,21 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
       signIn: jest.fn(),
       signOut: jest.fn(),
     } satisfies AuthContextValue);
-    const pet = makePet();
-    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
-    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetPet.mockResolvedValue({
+      kind: 'ok',
+      pet: makePet({ nextVaccine: vaccine }),
+    });
     mockGetDailyActivity.mockResolvedValue({
       kind: 'ok',
       days: [makeDay()],
       weekComparison: { distanceM: 5, activeMinutes: 10, walkCount: 20 },
     });
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+    jest.restoreAllMocks();
   });
 
   describe('#70 R2: contrato nextVaccine', () => {
@@ -1848,15 +1861,17 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
       );
       const nextVaccineBlock =
         source.match(/export interface NextVaccine \{[\s\S]*?\n\}/)?.[0] ?? '';
+      const petProfileBlock =
+        source.match(/export interface PetProfile \{[\s\S]*?\n\}/)?.[0] ?? '';
       const fields = [...nextVaccineBlock.matchAll(/^\s+(\w+):/gm)].map(
         ([, field]) => field,
       );
 
       expect(fields).toEqual(['id', 'name', 'nextDoseAt']);
       expect(nextVaccineBlock).not.toMatch(/\b(?:daysLeft|date):/);
-      expect(source).toContain('nextVaccine: NextVaccine | null;');
-      expect(source).toContain('nextReminder: unknown;');
-      expect(source).toContain('activitySummary: unknown;');
+      expect(petProfileBlock).toContain('nextVaccine: NextVaccine | null;');
+      expect(petProfileBlock).toContain('nextReminder: unknown;');
+      expect(petProfileBlock).toContain('activitySummary: unknown;');
     });
   });
 
@@ -1866,16 +1881,59 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
 
       const section = await screen.findByTestId('reminders-section');
       const title = within(section).getByTestId('reminders-section-title');
+      const header = title.parent;
+      const body = within(section).getByTestId('reminders-section-body');
 
       expect(section.children).toHaveLength(2);
+      expect(section.props.className).toBe('gap-3');
+      expect(header?.props.className).toBe(
+        'flex-row items-center justify-between',
+      );
+      expect(section.children[0]).toBe(header);
+      expect(section.children[1]).toBe(body);
       expect(title).toHaveTextContent('Recordatorios');
       expect(title.props.className).toBe(
         'text-base font-bold text-foreground',
       );
       expect(within(section).getByTestId('reminders-see-all')).toBeVisible();
-      expect(
-        within(section).getByTestId('reminders-section-body').props.className,
-      ).toBe('gap-2');
+      expect(body.props.className).toBe('gap-2');
+    });
+  });
+
+  describe('#70 R6: datos de la próxima vacuna', () => {
+    it('liga nombre, fecha y contador a su nodo y a ninguno más', async () => {
+      jest.useFakeTimers();
+      jest.setSystemTime(new Date(2026, 8, 10, 12, 0));
+
+      await renderHome();
+
+      const section = await screen.findByTestId('reminders-section');
+      const row = within(section).getByTestId('reminders-next-vaccine');
+      const name = within(row).getByTestId('reminders-next-vaccine-name');
+      const date = within(row).getByTestId('reminders-next-vaccine-date');
+      const days = within(row).getByTestId('reminders-next-vaccine-days');
+
+      expect(name.props.children).toBe('Antirrábica');
+      expect(date.props.children).toBe('15 sep 2026');
+      expect(days.props.children).toBe('5 d');
+      expect(name).not.toHaveTextContent('15 sep 2026');
+      expect(name).not.toHaveTextContent('5 d');
+      expect(date).not.toHaveTextContent('Antirrábica');
+      expect(date).not.toHaveTextContent('5 d');
+      expect(days).not.toHaveTextContent('Antirrábica');
+      expect(days).not.toHaveTextContent('15 sep 2026');
+      expect(within(section).queryByText('vac-9')).toBeNull();
+    });
+
+    it('no hace pulsable la fila de la vacuna', async () => {
+      await renderHome();
+
+      const row = await screen.findByTestId('reminders-next-vaccine');
+
+      expect(row.props.onPress).toBeUndefined();
+      expect(row.props.accessibilityRole).toBeUndefined();
+      fireEvent.press(row);
+      expect(mockRouter.push).not.toHaveBeenCalled();
     });
   });
 });
