@@ -40,6 +40,9 @@
 - **R8**: rojo `7dac461`; verde `fecd8e8`. Las filas permanecen no pulsables y
   separadas para accesibilidad; solo cada contador anuncia su texto expandido,
   incluido `In 1 days` en inglés. R8 y `#70 R11` quedaron 4/4 verdes.
+- **R9**: rojo versionado `1d8c3d5`; verde `68b3d90`. Carga y los cinco estados
+  de fallo dejan cero filas propias, conservan la cabecera y la ranura de la
+  vacuna. R9 junto con `#70 R9`/`#70 R1` quedó 24/24 verde.
 
 ## Prueba de mutación
 
@@ -178,3 +181,15 @@ subescenario de perfil cargando debe seguir esperando un skeleton.
 
 Se paró antes de escribir tests o mutar producción. El árbol seguía limpio,
 R1-R8 permanecían cerrados y no se tocó backend.
+
+## Sonda P9 de R9
+
+En el commit rojo `1d8c3d5`, la condición de `reminders-next-vaccine` se ligó
+temporalmente a `reminders.data?.kind === 'ok'`. R9 dejó 6 fallos/0 verdes: el
+`it('no pinta filas mientras carga')` y las cinco ejecuciones de
+`it.each` recibieron `body.children.length === 0` en vez de 1. En todos los
+casos desapareció la tarjeta de la vacuna; el skeleton independiente no fue la
+causa, conforme a A13.
+
+P9 se retiró en `68b3d90`; R9 y los candados heredados `#70 R9`/`#70 R1`
+volvieron 24/24 verdes, y `git diff --exit-code` confirmó la restauración.

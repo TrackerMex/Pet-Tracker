@@ -229,15 +229,15 @@ implementación + tests + docs incumple `CHECKPOINTS.md` C4 y **se rechaza**.
 
 ## R9 — Cargando y fallando: ni fila fantasma, ni error propio
 
-- [ ] (1) Escribir test que falla para R9
+- [x] (1) Escribir test que falla para R9
   - `describe('#85 R9: la sección aguanta la carga y el fallo de los recordatorios')`
     con el `it` de carga y el `it.each` de los **cinco** kinds de fallo.
   - **Rojo esperado**: si la implementación de R5 no guardó el `kind`, alguna
     rama revienta o pinta filas de más.
-- [ ] (2) Implementación mínima que lo pasa
+- [x] (2) Implementación mínima que lo pasa
   - El ternario de R5 ya cubre los dos casos; ajustar si hiciera falta. **Sin
     esqueleto propio, sin mensaje de error, sin botón de reintento.**
-- [ ] (3) Refactor con tests verdes
+- [x] (3) Refactor con tests verdes
   - Comprobar que `#70 R9` (`:2061`) y `#70 R1` siguen verdes.
   - **Enmienda A12 — R9 es requisito de VERIFICACIÓN, no de conducta nueva.** Su
     rojo no puede venir de un test previo, porque la guarda de R5 ya cubre los
