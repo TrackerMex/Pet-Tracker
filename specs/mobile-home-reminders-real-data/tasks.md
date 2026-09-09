@@ -217,14 +217,14 @@ implementación + tests + docs incumple `CHECKPOINTS.md` C4 y **se rechaza**.
 
 ## R8 — Las filas no son pulsables y la sección se anuncia por partes
 
-- [ ] (1) Escribir test que falla para R8
+- [x] (1) Escribir test que falla para R8
   - `describe('#85 R8: las filas no son pulsables y se anuncian por partes')`
     con sus tres `it`.
   - **Rojo esperado**: el `accessibilityLabel` del contador no existe todavía.
-- [ ] (2) Implementación mínima que lo pasa
+- [x] (2) Implementación mínima que lo pasa
   - `accessibilityLabel={countdown.label}` en la píldora de cada fila. Nada más:
     la `Card` sin `onPress` ya es no pulsable (`card.tsx:31-40`).
-- [ ] (3) Refactor con tests verdes
+- [x] (3) Refactor con tests verdes
   - Comprobar que `#70 R11` (`:2167`) sigue verde **sin tocarlo**.
 
 ## R9 — Cargando y fallando: ni fila fantasma, ni error propio

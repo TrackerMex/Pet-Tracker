@@ -17,7 +17,7 @@ Base de medición: **`20c7b3c`** (merge del PR #116, #70).
 | R5 — las filas y su cardinalidad | `src/screens/home/index.test.tsx`::`describe('#85 R5: la sección pinta los recordatorios reales')` | `10c9636 feat(mobile-home-reminders-real-data): lock real reminder rows (R5)` + `4262348 feat(mobile-home-reminders-real-data): render real reminder rows (R5)` + candado M2 `ad08010` + refactor `a7733b8`; M2/M7/M8/M11 en el informe |
 | R6 — icono, hueco y tinta por tipo | `src/screens/home/index.test.tsx`::`describe('#85 R6: cada tipo trae su icono, su hueco y su tinta')` | `bb83edc test(mobile-home-reminders-real-data): expose missing row icons (R6)` + `d4733ef feat(mobile-home-reminders-real-data): identify reminder types (R6)`; M12 validada en el informe |
 | R7 — cruce de dato y posición | `src/screens/home/index.test.tsx`::`describe('#85 R7: ninguna fila lleva el dato ni el sitio de otra')` | `4078fdc test(mobile-home-reminders-real-data): catch crossed row data and order (R7)` + `c5e30e2 feat(mobile-home-reminders-real-data): keep row data and order aligned (R7)`; M9/M10 versionadas |
-| R8 — no pulsables y accesibilidad | pendiente | pendiente |
+| R8 — no pulsables y accesibilidad | `src/screens/home/index.test.tsx`::`describe('#85 R8: las filas no son pulsables y se anuncian por partes')` | `7dac461 test(mobile-home-reminders-real-data): expose missing row labels (R8)` + `fecd8e8 feat(mobile-home-reminders-real-data): label row countdowns (R8)` |
 | R9 — carga y fallo de `listReminders` | pendiente | pendiente |
 | R10 — estilo y tokens | pendiente | pendiente |
 | R11 — cero claves y cero ocurrencias nuevas | pendiente | pendiente |

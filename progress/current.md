@@ -15,4 +15,4 @@
 - A9: firmada y leída; M7/M8 pasan de R3 al refactor de R5, donde existirán también sus dos candados de Home.
 - A10: firmada y leída; autoriza el cambio puntual del doble posicional de `hookCall++ % 3` a `% 4`. Deuda estructural registrada fuera de alcance en #86.
 - A11: firmada y leída; un `beforeEach` de fichero repone la respuesta vacía de `listReminders` antes de cada test, sin depender del orden.
-- Avance: R1-R7 completos. R7 rojo `4078fdc`, verde `c5e30e2`; M9/M10 versionadas, documentadas y restauradas. Home 100/100 verde. Siguiente paso: R8 rojo.
+- Avance: R1-R8 completos. R8 rojo `7dac461`, verde `fecd8e8`; sus tres pruebas y `#70 R11` verdes. Siguiente paso: R9.

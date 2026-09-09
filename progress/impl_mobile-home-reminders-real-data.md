@@ -37,6 +37,9 @@
 - **R7**: rojo versionado `4078fdc`; verde `c5e30e2`. Los dos candados ligan el
   contenido y la posición a su propia fila. Home quedó 100/100 verde y el
   `git diff` vacío tras restaurar M9/M10.
+- **R8**: rojo `7dac461`; verde `fecd8e8`. Las filas permanecen no pulsables y
+  separadas para accesibilidad; solo cada contador anuncia su texto expandido,
+  incluido `In 1 days` en inglés. R8 y `#70 R11` quedaron 4/4 verdes.
 
 ## Prueba de mutación
 
