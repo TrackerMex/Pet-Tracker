@@ -545,13 +545,13 @@ export function HomeScreen() {
                       testID="reminders-next-vaccine-name"
                       className="text-sm font-semibold text-foreground"
                     >
-                      {nextVaccine.name}
+                      {nextVaccine.nextDoseAt}
                     </Text>
                     <Text
                       testID="reminders-next-vaccine-date"
                       className="text-xs font-normal text-muted"
                     >
-                      {fmtDate(nextVaccine.nextDoseAt, locale)}
+                      {nextVaccine.name}
                     </Text>
                   </View>
                   <Text
