@@ -19,6 +19,7 @@ import {
 
 import { getDailyActivity } from '../../api/activity';
 import { getPet, listPets, type PetsState } from '../../api/pets';
+import { listReminders } from '../../api/reminders';
 import type { DayEntry } from '../../api/types';
 import { Card } from '../../components/card';
 import { PetHeroHeader } from '../../components/pet-hero-header';
@@ -149,8 +150,16 @@ export function HomeScreen() {
         : null,
     [baseUrl, selectedPetId, token],
   );
+  const remindersFn = useMemo(
+    () =>
+      selectedPetId
+        ? () => listReminders(baseUrl, token ?? '', selectedPetId)
+        : null,
+    [baseUrl, selectedPetId, token],
+  );
   const detail = useApi(detailFn);
   const activity = useApi(activityFn);
+  const reminders = useApi(remindersFn);
   const nextVaccine =
     detail.data?.kind === 'ok' ? detail.data.pet.nextVaccine : null;
   const nextVaccineDays = nextVaccine

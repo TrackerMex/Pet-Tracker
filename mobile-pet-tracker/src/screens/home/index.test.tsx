@@ -794,7 +794,7 @@ describe('R10: preserva la mascota durante el refetch', () => {
     });
     jest.spyOn(apiHooks, 'useApi').mockImplementation(
       <T extends { kind: string }>(): ApiResult<T> => {
-        const result = hookCall++ % 3 === 0 ? petsResult : emptyResult;
+        const result = hookCall++ % 4 === 0 ? petsResult : emptyResult;
         return result as ApiResult<T>;
       },
     );
