@@ -1,4 +1,4 @@
-import { calendarDaysUntil, fmtDate, fmtKg } from './format';
+import { calendarDaysUntil, fmtDate, fmtKg, localDayOf } from './format';
 
 describe('#69 R2: fmtKg', () => {
   it('uses a dash when the weight is missing', () => {
@@ -89,5 +89,71 @@ describe('#70 R4: calendarDaysUntil cuenta días de calendario', () => {
         dateConstructor.mockRestore();
       }
     });
+  });
+});
+
+describe('#85 R2: localDayOf reduce el instante a día civil local', () => {
+  it('pasa el instante crudo al constructor y no a Date.parse ni a Date.UTC', () => {
+    const RealDate = Date;
+    const dateParse = jest.spyOn(RealDate, 'parse');
+    const dateUtc = jest.spyOn(RealDate, 'UTC');
+    const dateConstructor = jest
+      .spyOn(global, 'Date')
+      .mockImplementation(
+        (value: string | number | Date, ...dateParts: number[]) =>
+          Reflect.construct(RealDate, [value, ...dateParts]) as Date,
+      );
+    Object.assign(dateConstructor, { parse: dateParse, UTC: dateUtc });
+
+    try {
+      localDayOf('2026-09-12T12:00:00.000Z');
+
+      expect(dateConstructor.mock.calls).toEqual([
+        ['2026-09-12T12:00:00.000Z'],
+      ]);
+      expect(dateParse).not.toHaveBeenCalled();
+      expect(dateUtc).not.toHaveBeenCalled();
+    } finally {
+      dateConstructor.mockRestore();
+      dateParse.mockRestore();
+      dateUtc.mockRestore();
+    }
+  });
+
+  it('toma el día civil de los getters locales, nunca de los UTC', () => {
+    const skewed = {
+      getFullYear: () => 2026,
+      getMonth: () => 8,
+      getDate: () => 11,
+      getUTCFullYear: () => 2026,
+      getUTCMonth: () => 8,
+      getUTCDate: () => 12,
+    } as unknown as Date;
+    const dateConstructor = jest
+      .spyOn(global, 'Date')
+      .mockImplementation(() => skewed);
+
+    try {
+      expect(localDayOf('2026-09-12T02:00:00.000Z')).toBe('2026-09-11');
+    } finally {
+      dateConstructor.mockRestore();
+    }
+  });
+
+  it('rellena mes y día a dos dígitos', () => {
+    const skewed = {
+      getFullYear: () => 2026,
+      getMonth: () => 0,
+      getDate: () => 5,
+    } as unknown as Date;
+    const dateConstructor = jest
+      .spyOn(global, 'Date')
+      .mockImplementation(() => skewed);
+
+    try {
+      expect(localDayOf('2026-01-05T12:00:00.000Z')).toBe('2026-01-05');
+    } finally {
+      dateConstructor.mockRestore();
+    }
   });
 });
