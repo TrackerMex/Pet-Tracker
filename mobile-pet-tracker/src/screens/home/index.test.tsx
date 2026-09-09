@@ -1528,6 +1528,7 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
 
     const quickActions = await screen.findByTestId('quick-actions');
     const title = within(quickActions).getByTestId('quick-actions-title');
+    const tileRow = within(quickActions).getByTestId('quick-actions-row');
     const tileTestIds = within(quickActions)
       .getAllByTestId(/^quick-action-/)
       .map(({ props }) => props.testID);
@@ -1541,6 +1542,7 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
       'quick-action-reminder',
       'quick-action-documents',
     ]);
+    expect(tileRow.children).toHaveLength(3);
     expect(screen.queryByTestId('quick-action-map')).toBeNull();
   });
 

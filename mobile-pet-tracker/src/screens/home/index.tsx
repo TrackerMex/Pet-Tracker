@@ -408,7 +408,7 @@ export function HomeScreen() {
             >
               {t('home.quickActions')}
             </Text>
-            <View className="flex-row gap-3">
+            <View testID="quick-actions-row" className="flex-row gap-3">
               {QUICK_ACTIONS.map(
                 ({ testID, Icon, labelKey, slot, href }, index) => (
                   <Pressable
@@ -426,6 +426,9 @@ export function HomeScreen() {
                   </Pressable>
                 ),
               )}
+              <Pressable onPress={() => router.push('/pairing')}>
+                <Text>{t('home.quickActionWeight')}</Text>
+              </Pressable>
             </View>
           </View>
         ) : null}
