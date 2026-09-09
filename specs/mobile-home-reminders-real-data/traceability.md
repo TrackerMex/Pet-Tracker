@@ -12,7 +12,7 @@ Base de medición: **`20c7b3c`** (merge del PR #116, #70).
 |---|---|---|
 | R1 — copy en los dos idiomas | `src/screens/home/index.test.tsx`::`describe('#85 R1: la sección recupera su rótulo en los dos idiomas')` + adaptación de `#70 R1` | `5ad5bc6 feat(mobile-home-reminders-real-data): lock restored reminder copy (R1)` + `41e7a99 feat(mobile-home-reminders-real-data): restore reminder section copy (R1)` |
 | R2 — `localDayOf` | `src/screens/home/format.test.ts`::`describe('#85 R2: localDayOf reduce el instante a día civil local')` | `109cdaa feat(mobile-home-reminders-real-data): lock local reminder day (R2)` + `2fb06c5 feat(mobile-home-reminders-real-data): derive local reminder day (R2)` + M1 `97e06c0`/`80595f9` |
-| R3 — `upcomingReminders` | pendiente | pendiente |
+| R3 — `upcomingReminders` | `src/screens/home/format.test.ts`::`describe('#85 R3: upcomingReminders filtra, ordena y acota')` | `37f7d74 feat(mobile-home-reminders-real-data): lock upcoming reminder selection (R3)` + `4788104 feat(mobile-home-reminders-real-data): select upcoming reminders (R3)`; ver bloqueo M3 en el informe |
 | R4 — la Home pide los recordatorios | pendiente | pendiente |
 | R5 — las filas y su cardinalidad | pendiente | pendiente |
 | R6 — icono, hueco y tinta por tipo | pendiente | pendiente |
