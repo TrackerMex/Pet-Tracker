@@ -294,6 +294,27 @@ describe('#70 R17: la sección de recordatorios no mete drift de estilo', () => 
   });
 });
 
+describe('#85 R12: la sección de recordatorios reales no mete drift de estilo', () => {
+  const featureFiles = [
+    'i18n/catalog.ts',
+    'screens/home/format.test.ts',
+    'screens/home/format.ts',
+    'screens/home/index.test.tsx',
+    'screens/home/index.tsx',
+  ];
+
+  it('mantiene sus ficheros sin escapes de estilo literales', () => {
+    const violations = featureFiles.flatMap((relativePath) => {
+      const contents = readFileSync(join(sourceRoot, relativePath), 'utf8');
+      return /text-\[10px\]|#[\da-f]{3,8}\b|StyleSheet/i.test(contents)
+        ? [relativePath]
+        : [];
+    });
+
+    expect(violations).toEqual([]);
+  });
+});
+
 describe('#68 E1: la carta retira connectivity de los enum crudos', () => {
   const charter = readFileSync(
     join(projectRoot, '..', 'docs', 'ui-guidelines.md'),
