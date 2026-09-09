@@ -2104,12 +2104,12 @@ describe('#85 R5: la sección pinta los recordatorios reales', () => {
     await renderHome();
 
     const row = await screen.findByTestId('reminders-item-rem-1');
-    expect(within(row).getByTestId('reminders-item-rem-1-date')).not.toHaveTextContent(
-      'Invalid',
-    );
-    expect(within(row).getByTestId('reminders-item-rem-1-days')).not.toHaveTextContent(
-      'NaN',
-    );
+    expect(
+      within(row).getByTestId('reminders-item-rem-1-date'),
+    ).not.toHaveTextContent(/Invalid/);
+    expect(
+      within(row).getByTestId('reminders-item-rem-1-days'),
+    ).not.toHaveTextContent(/NaN/);
   });
 });
 
