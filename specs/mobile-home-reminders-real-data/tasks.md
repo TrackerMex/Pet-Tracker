@@ -310,16 +310,16 @@ implementación + tests + docs incumple `CHECKPOINTS.md` C4 y **se rechaza**.
 
 ## R13 — Los candados globales se mueven por sumando declarado contra `20c7b3c`
 
-- [ ] (1) Escribir test que falla para R13
+- [x] (1) Escribir test que falla para R13
   - Los candados existentes ya están rojos si el trabajo anterior movió una
     cifra. Recorrer la tabla de [[requirements]] R13 **fila a fila** y
     comprobar cuál se ha movido de verdad con su propio `grep`.
-- [ ] (2) Implementación mínima que lo pasa
+- [x] (2) Implementación mínima que lo pasa
   - `consistency-classnames.test.ts`: `HOME_TABULAR_DELTA_85 = 1` y los
     **cuatro** mandos que se mueven con él (fila del fichero, total cerrado,
     guarda `#69 R14`, guarda `#70 R18`).
   - **Todo como sumando**: nunca reescribir `14 + 4 + 1 + 1` como `20`.
-- [ ] (3) Refactor con tests verdes
+- [x] (3) Refactor con tests verdes
   - IF un total cerrado se ha movido por una causa que la tabla **no** prevé
     THEN **para y repórtalo**. No lo absorbas subiendo el número.
 

@@ -52,6 +52,9 @@
 - **R12**: candado `fce3ffc`. El bloque nominal nació verde; la sonda temporal
   `#fff` en `format.ts` lo puso rojo detectando exactamente ese fichero. Tras
   retirarla, `design-drift.test.ts` quedó 28/28 verde.
+- **R13**: verde `5febedb`. Antes del delta, los seis ficheros de inventario
+  dejaron 3 fallos/241 verdes, todos del único `TABULAR_NUMS` nuevo. Tras mover
+  los cinco usos del sumando nombrado, quedaron 244/244 verdes.
 
 ## Prueba de mutación
 
@@ -224,3 +227,38 @@ añadió temporalmente `const STYLE_DRIFT_PROBE = '#fff'` a producción en
 frente a `Expected: []`. Retirada la sonda sin commit, el bloque volvió verde,
 la suite completa de drift quedó 28/28 y `git diff` solo contenía el test nuevo
 antes de versionarlo en `fce3ffc`.
+
+## R13 — recorrido de los candados globales
+
+La corrida previa dejó exactamente tres rojos en `#62 R15`: Home esperaba 6
+usos y midió 7; `#69 R14` esperaba delta 2 y midió 3; `#70 R18` esperaba delta
+1 y midió 2. El total declarado aún se autocumplía con sus cifras antiguas, por
+eso R13 mueve conjuntamente la constante `HOME_TABULAR_DELTA_85`, la fila de
+Home, el total cerrado y las dos guardas. No se absorbió ningún otro cambio.
+
+| Fila | Medición contra `20c7b3c` |
+|---|---|
+| 1 | catálogo 288 (`260 + 16 + 1 + 4 + 7`) por idioma; claves iguales |
+| 2 | `R3_HOME` 48 (`21 + 15 + 1 + 4 + 7`); usos exactos verdes |
+| 3 | las siete claves literales de `#70 R16` siguen iguales |
+| 4 | Home mide 7 usos tabulares: base 4 + deltas 1 + 1 + `HOME_TABULAR_DELTA_85 = 1` |
+| 5 | un `describe('#85 R12…')` nuevo, como estaba previsto |
+| 6 | cinco entradas nuevas en el doble de `reicon`, las cinco nominales |
+| 7 | Home conserva 2 esquinas directas; total cerrado `33 + 1 + 1` |
+| 8 | clases categóricas solo en `category-palette.ts`; interpoladas `[]` |
+| 9 | `bg-accent-soft` conserva 16 usos |
+| 10 | Home conserva 2 `text-accent-strong`; total `13 + 1` |
+| 11 | inventario `text-warning-strong` intacto y verde |
+| 12 | botones primarios conserva 13 |
+| 13 | las cuatro clases de radio prohibidas conservan listas vacías |
+| 14 | flechas tipográficas `[]`; Profile conserva 3 `ChevronRight` |
+| 15 | `<Syringe size={20}` conserva 2 ocurrencias y `💉` cero |
+| 16 | `SCREEN_FILES` conserva `19 + 2` |
+| 17 | los cuatro candados de orden de `home-content` siguen verdes |
+| 18 | `app/(tabs)/home.tsx` no aparece en el diff y su ruta sigue delgada |
+| 19 | consistencia relativa entre idiomas verde |
+| 20 | `ALL_USES` cuadra con la suma de sus once bloques |
+| 21 | `backend-pet-tracker/test/pet-reminders.e2e-spec.ts` no aparece en el diff |
+
+Tras aplicar solo el delta de la fila 4, las seis suites dirigidas quedaron
+244/244 verdes; typecheck y lint del candado, exit 0.
