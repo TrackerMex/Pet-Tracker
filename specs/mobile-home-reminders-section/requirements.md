@@ -1105,6 +1105,88 @@ están vigiladas; dos no, y las dos dejan la suite **entera** verde al cruzarse:
 
   - [X] Aprobado por humano
 
+
+### D7 — dos agujeros que el segundo pase destapó, y sus arreglos
+
+El reviewer aprobó el segundo pase: M1 y M2 ya ponen la suite **completa** roja
+con `bun run test` **sin exportar `TZ`**, que era el criterio no negociable de
+D5. Su juicio sobre el mecanismo nuevo: *"más fuerte, y por bastante, pero no
+completo"*. Estos son los dos huecos que quedan. Los dos arreglos son
+**solo de test** —no se toca una línea de producción— y el reviewer ya los
+escribió y los verificó.
+
+**O4 — el candado vigila el objetivo, no `now`.**
+`format.ts:6` normaliza el día local del dispositivo con getters locales:
+
+```ts
+const today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+```
+
+Sustituirlos por sus equivalentes UTC —llamémosla **M9**— produce en una caja
+UTC **exactamente las mismas llamadas** a `Date.UTC`, con los mismos
+componentes, así que pasa las tres aserciones de espía. Medido, no razonado:
+con M9 plantada, `bun run test` sin `TZ` deja **68/68 suites y 1078/1078 tests
+verdes**; la misma M9 bajo `TZ=America/Mexico_City` sale **roja**,
+`Expected: 5, Received: 4` — el desplazamiento de un día de #68, exacto.
+
+M9 es un bug de zona horaria real y viola la primera cláusula normativa de R5
+(*"WHEN el proceso corre en una zona horaria de offset negativo … SHALL devolver
+el mismo número que devolvería en UTC"*). No bloqueó porque D5 fijaba su
+criterio en M1 y M2 y ese criterio se cumplió; pero dejarlo abierto significa
+mergear #70 con el candado de R5 todavía incompleto, y R5 es justo lo que costó
+el rechazo.
+
+- **Qué se añade**: dentro del `it` de R5 de `format.test.ts`, un `now` cuyo día
+  **local** y día **UTC** difieran a propósito:
+
+  ```ts
+  const skewed = {
+    getFullYear: () => 2026, getMonth: () => 8, getDate: () => 10,
+    getUTCFullYear: () => 2026, getUTCMonth: () => 8, getUTCDate: () => 11,
+  } as unknown as Date;
+  expect(calendarDaysUntil('2026-09-15', skewed)).toBe(5);
+  ```
+
+  Verificado por el reviewer: con M9 plantada da **1 fallo / 5 verdes**; con
+  producción limpia, **6/6 verdes**. Mata M9 en cualquier zona horaria y no
+  necesita exportar nada.
+- **Criterio de aceptación**: **M9 se planta como noveno par de mutación**
+  —commit rojo con la mutación de producción, commit verde que la revierte— y
+  su rojo sale con `bun run test` **sin `TZ`**. Si no sale rojo así, el candado
+  no vale y **se para**.
+
+**O5 — las dimensiones 12 y 13 de la fila: la forma no está vigilada.**
+Tercera ronda seguida (#69, #71, ahora #70) en la que revisar un elemento
+repetido destapa una dimensión más. Dos sondas del reviewer, cada una sobre la
+suite móvil completa:
+
+1. **La `Card` del estado vacío puede perder su forma de fila.**
+   `index.tsx:571` lleva `className="flex-row items-center gap-3"`. Cambiarlo a
+   `className="gap-3"` —el icono se apilaría **encima** del texto— deja
+   **68/68 suites y 1078/1078 tests verdes**. R12 asserta esa receta sobre la
+   fila cargada (`index.test.tsx:2227`) pero **no** sobre
+   `reminders-none-upcoming`. R8 lo prescribe literalmente —*"la misma anatomía
+   de fila que R6 … para que la sección **no cambie de forma** al vaciarse"*— y
+   el test se llama `it('dibuja un estado vacío con forma de fila…')`: es una
+   promesa del título que la aserción no respalda.
+2. **El envoltorio `flex-1` de nombre + fecha.** `index.tsx:543`, el `<View
+   className="flex-1">` que agrupa nombre y fecha y empuja el contador a la
+   derecha. Cambiarlo a `className="w-24"` deja también **1078/1078 verdes**.
+
+- **Qué se añade**: una aserción por cada uno, con el patrón que R12 ya usa dos
+  líneas más arriba, p. ej.
+  `expect(emptyRow.props.className).toContain('flex-row items-center gap-3')`.
+- **Cada una se demuestra con una sonda**: cruzar el valor, ver el rojo,
+  restaurar, y decir en el informe qué se vio.
+- **#81 no se cierra con esto**: aquello es el tile de acciones rápidas y sigue
+  abierto.
+
+**Qué NO cambia**: nada de producción, ningún requisito de conducta, ningún
+otro candado. R5, R8 y R12 siguen exigiendo lo mismo; lo que se añade es lo que
+lo demuestra.
+
+  - [ ] Aprobado por humano
+
 ## Aprobación
 
 - [X] Aprobado por humano (fecha: 2026-09-08) ← gate obligatorio antes de implementar

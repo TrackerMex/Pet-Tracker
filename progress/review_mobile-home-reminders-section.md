@@ -1,423 +1,358 @@
-# review: mobile-home-reminders-section (#70)
+# review: mobile-home-reminders-section (#70) — SEGUNDO PASE
 
 Fecha: 2026-09-09
 Reviewer: subagente `reviewer` (Claude Opus 5)
-Rango revisado: `b0ec5a8364d8e0b05b2c9b4d5d46f53b4033e29f..82a1cbd7dd9c65b888c4d12860ce6c521a70b2a5` (65 commits)
-Branch: `feature/70-mobile-home-reminders-section`
+Rango nuevo revisado: `6eae6ed..434f40c` (13 commits)
+Branch: `feature/70-mobile-home-reminders-section`, HEAD `434f40c`
 
-## Veredicto: **RECHAZADO**
+## Veredicto: **APROBADO**
 
-Un solo defecto bloqueante, y es exactamente el que la propia spec pre-declaró
-como condición de parada: **los candados de zona horaria de R5 no vigilan nada**.
-Con M1 y con M2 plantadas, la suite queda **verde** en el entorno en el que corre
-`init.sh`. Reproducido por el reviewer, no deducido del informe.
+El bloqueante del primer pase está **arreglado y verificado por el reviewer**,
+no leído del informe: con M1 y con M2 plantadas, `bun run test` **sin exportar
+`TZ`** deja la suite **roja** (1 fallo / 1077 verdes cada una), reproducido dos
+veces sobre worktree desechable. Las dos dimensiones que D6 metió en alcance
+también muerden: cruzar las tintas da 2 fallos/84 verdes y cada receta
+tipográfica da 1 fallo/85 verdes. `env -u FORCE_COLOR ./init.sh` **exit 0**,
+corrido por el reviewer en primer plano.
 
-Todo lo demás está en muy buen estado: `init.sh` exit 0, las ocho mutaciones son
-de producción y revertidas exactamente, la trazabilidad está completa, los deltas
-de inventario cuadran uno a uno y el grep-clean de la carta está limpio.
+Quedan **dos hallazgos no bloqueantes** (O4 y O5), los dos de la misma clase que
+el O1 del primer pase: dimensiones sin vigilar que ninguna decisión firmada
+cubre. Se registran con reproducción exacta y arreglo probado, para que el
+humano decida si los firma como D7 o los abre con id propio. **No se rechaza por
+ellos**: rechazar por un defecto que el propio reviewer acaba de inventar, con
+el criterio de aceptación firmado cumplido al pie de la letra, sería mover la
+portería.
+
+---
+
+## Qué se rechazó en el primer pase, y en qué quedó
+
+| Hallazgo del 1er pase | Estado ahora |
+|---|---|
+| **B1 (bloqueante)** — los candados de zona horaria de R5 eran **inertes**: `process.env.TZ` asignado dentro de un `it` no llega a V8 bajo Jest, así que M1 y M2 dejaban el gate **verde**. El defecto de #68 podía reintroducirse en producción sin un solo test rojo | **CERRADO**. D5 autorizó el cambio de mecanismo; `5385ed8` borró los dos `try/finally` y montó los espías de `Date.parse`, `Date.UTC` y constructor `Date`; `238e414` cerró además la variante por constructor. Reproducido por el reviewer: M1 y M2 rojas sin `TZ` |
+| **O1** — tinta del icono y recetas tipográficas de nombre, fecha y texto vacío sin vigilar | **CERRADO** por D6, con sondas propias del reviewer |
+| **O2** — el icono se cubría por conteo de cadenas en el fuente, no por árbol | **CERRADO**: `within(row).getByTestId('icon-syringe')` en R6 y en R8 |
+| **O3** — el feedback `pressed` de R10 se autorizó de palabra, sin entrada firmada | **CERRADO**: D4 existe en `requirements.md` y el humano la firmó |
+
+---
+
+## Foco 1 — Reproducción del punto que decidía el veredicto
+
+**Método**: `git worktree add --detach /tmp/rev70b 434f40c`, `node_modules`
+enlazado, mutación plantada con `git checkout <rojo> -- format.ts`, y la suite
+**completa** corrida como la corre el gate
+(`TEST_CMD` de `init.config.sh:25` → `bun run --cwd mobile-pet-tracker test`),
+con `env -u TZ`. Caja en **UTC** (`date +%Z` → `UTC`, `TZ` sin definir), y ni
+`init.sh` ni `package.json` ni un `globalSetup` exportan zona alguna.
+El árbol revisado **no se tocó**: `git status --porcelain` vacío antes y después,
+worktree retirado con `git worktree remove`.
+
+| Mutación | Commit rojo | `bun run test` sin `TZ` | Aserción que muerde |
+|---|---|---|---|
+| **M1** — `Math.ceil((Date.parse(date) - now.getTime()) / DAY_MS)` | `544a525` | **1 fallo / 1077 verdes** | `format.test.ts:47` `expect(dateParse).not.toHaveBeenCalled()` → recibió 2 llamadas con `"2026-09-15"` |
+| **M2** — `new Date(date).toLocaleDateString(...)` | `75dd5c1` | **1 fallo / 1077 verdes** | `format.test.ts:75` `expect(dateConstructor.mock.calls).toEqual([[2026, 8, 15]])` → recibió `[["2026-09-15"]]` |
+
+Coincide **exactamente** con lo que declara
+`progress/impl_mobile-home-reminders-section.md` §Prueba de mutación R19b. El
+criterio no negociable de D5 —rojo sin exportar `TZ` a mano— está cumplido.
+
+## Foco 2 — ¿El mecanismo nuevo es más fuerte, o solo distinto?
+
+**Más fuerte, y por bastante, pero no completo.**
+
+Es **estrictamente** superior: el mecanismo viejo no mataba **nada** en la
+invocación por defecto; el nuevo mata toda la familia
+*cadena-cruda / `Date.parse` / constructor con string* en **cualquier** zona
+horaria, porque no depende de la zona del runner sino de la forma de las
+llamadas. `format.test.ts:48-53` fija además la secuencia exacta de `Date.UTC`
+—`[[2026,8,15],[2026,8,10],[2026,8,15],[2026,8,10]]`—, lo que mata también las
+variantes que cambian el orden de los operandos o el mes base.
+
+**Pero existe una tercera variante que pasa los espías**, y el reviewer la
+encontró y la ejecutó. Va en **O4**.
+
+## Foco 3 — Los cuatro pares de mutación nuevos
+
+Verificado par por par con git, sin fiarse del informe. `CHECKPOINTS.md` C4,
+quinto punto: **la mutación tiene que estar en código de producción**.
+
+| Par | Rojo / Verde | Fichero mutado | ¿Solo producción en el rojo? | `git diff --quiet <rojo>^ <verde> -- format.ts` |
+|---|---|---|---|---|
+| M1 reprueba | `c340d2b` / `0c133d1` | `screens/home/format.ts` | ✅ (el rojo toca **ese fichero y ninguno más**) | **0** |
+| M2 reprueba | `4027286` / `03ab8bc` | `screens/home/format.ts` | ✅ | **0** |
+| **M1 final** | `544a525` / `a50245e` | `screens/home/format.ts` | ✅ | **0** |
+| **M2 final** | `75dd5c1` / `bcde085` | `screens/home/format.ts` | ✅ | **0** |
+
+Además, el blob de `format.ts` en cada `<rojo>^` y en cada `<verde>` es
+**idéntico** al de `434f40c`: no se coló deriva por el baile de mutaciones.
+
+**Higiene mejorada respecto al primer pase**: allí `1ab9a89` mezclaba la
+mutación con bookkeeping de `traceability.md`. Los cuatro rojos nuevos tocan
+**un solo fichero de producción y nada más**.
+
+**Orden TDD correcto**: el endurecimiento va **antes** que su prueba.
+`5385ed8` (13:46) → reprueba M1/M2 → `238e414` (13:52:11, el candado extra del
+constructor) → `544a525` (13:52:26, M1 final) → `75dd5c1` (M2 final). El candado
+nunca se escribe después del rojo que dice matarlo.
+
+## Foco 4 — D6: sondas propias, y el recuento de dimensiones
+
+Las tres sondas de D6, ejecutadas por el reviewer sobre producción en el
+worktree, corriendo `index.test.tsx`:
+
+| Sonda | Resultado | Aserción que muerde |
+|---|---|---|
+| Cruzar `vaccineInk` ↔ `muted` en los dos `Syringe` (`index.tsx:541` y `:576`) | **2 fallos / 84 verdes** | `Expected "--color-category-blue-strong", Received "--color-muted"` (R6) y el inverso (R8) |
+| Intercambiar las recetas de nombre y fecha (`index.tsx:546` ↔ `:552`) | **1 fallo / 85 verdes** | `Expected "text-sm font-semibold text-foreground", Received "text-xs font-normal text-muted"` |
+| Cambiar la receta del texto vacío (`index.tsx:578`) | **1 fallo / 85 verdes** | `Expected "flex-1 text-sm font-normal text-muted"` |
+
+Coincide con lo declarado. Las aserciones usan `toBe` sobre el `className`
+**completo**, no `toContain`: es la forma fuerte.
+
+### Las once dimensiones, revisitadas — y la que hace doce
+
+| # | Decisión de la fila | ¿Vigilada? | Dónde |
+|---|---|---|---|
+| 1 | Dato mostrado (nombre / fecha / contador) | ✅ | `index.test.tsx:1924-1938` + negaciones cruzadas. M3 |
+| 2 | Condición de render (fila / vacío / esqueleto / error) | ✅ | R6, R8, R9 |
+| 3 | Cardinalidad del cuerpo | ✅ | `index.test.tsx:2068,2080,2092` sobre `.children`. M5 |
+| 4 | Nombre accesible del contador, 3 ramas | ✅ | R11, R7 |
+| 5 | Etiqueta / clave de copy | ✅ | R16 + `ui-copy-table.ts` |
+| 6 | Color del disco (azul vs neutral) | ✅ | R12, igualdad exacta contra `CATEGORY_SLOTS`, en **las dos** ramas |
+| 7 | Destino de navegación | ✅ | R10 + `appRoutes` + unicidad del literal. M6 |
+| 8 | Receta del contador + `TABULAR_NUMS` | ✅ | R12. M8 |
+| 9 | Componente de icono | ✅ **ahora por árbol** | `within(row).getByTestId('icon-syringe')` (R6 y R8) + conteo de fuente de R13 |
+| 10 | **Tinta del icono** | ✅ **nuevo (D6)** | `index.test.tsx:1924` (fila) y `:1999` (vacío) |
+| 11 | **Recetas de nombre, fecha y texto vacío** | ✅ **nuevo (D6)** | `index.test.tsx:1926-1930` (nombre, fecha) y `:2001-2003` (texto vacío) |
+| 12 | **Forma de fila de la `Card` del estado vacío** | ❌ **NO** | ver **O5** |
+| 13 | **El envoltorio `flex-1` que agrupa nombre y fecha** | ❌ **NO** | ver **O5** |
+
+Nota de método: `icon.props.size` **sí** queda cubierto, aunque de refilón —
+`index.test.tsx` no lo asserta, pero R13 exige exactamente **dos**
+coincidencias de `/<Syringe\s+size=\{20\}/` en el fuente, así que cambiar
+cualquiera de las dos pone la suite roja.
+
+## Foco 5 — Regresión sobre lo ya aprobado
+
+`git diff --stat 82a1cbd 434f40c` sobre `mobile-pet-tracker/`:
+
+- **Cero cambios en producción.** `src/screens/home/index.tsx` y
+  `src/screens/home/format.ts` son **byte-idénticos** a lo que se aprobó en el
+  primer pase. Lo único que se movió son dos ficheros de test y documentación.
+- `index.test.tsx`: **solo adiciones**, salvo una línea sustituida —
+  `expect(within(empty).getByText('Sin vacuna próxima')).toBeVisible()` pasa a
+  capturarse en `text` y a ganar la aserción de `className`. Estrictamente más
+  fuerte.
+- `format.test.ts`: las únicas líneas borradas son **exactamente** el andamiaje
+  inerte de `process.env.TZ` que D5 mandaba borrar, más los dos `new Date(...)`
+  inline reexpresados como `late` / `early`. Ningún assert perdido.
+- **Cardinalidad de D1 intacta**: sigue contando
+  `getByTestId('reminders-section-body').children` con `1` / `1` / `0`
+  (`index.test.tsx:2068,2080,2092`), **nunca** coincidencias de `testID`.
+- **Exclusión de comidas de R3 intacta**: `describe('#70 R3: la barra de comidas
+  queda fuera')` (`index.test.tsx:2349`) no aparece en el diff del segundo pase.
+- **Trazabilidad sin filas "pendiente"**; las filas R5, R6, R8, R19 y R19b se
+  reescribieron para describir los candados reales y los pares **finales**
+  `544a525`/`a50245e` y `75dd5c1`/`bcde085`.
+
+## Foco 6 — Deriva
+
+`git fetch origin`; HEAD local `434f40c` **==**
+`origin/feature/70-mobile-home-reminders-section`; working tree limpio; 80
+commits por delante de `origin/main`, 0 por detrás. **Lo revisado es exactamente
+lo publicado.**
+
+## Foco 7 — #83 / #84 no se colaron
+
+`mobile-pet-tracker/src/utils/reminder-dates.ts` tiene el **mismo blob**
+`587cbd6` en `b0ec5a8` (base), en `82a1cbd` (1er pase) y en `434f40c`. Ni
+`index.tsx` ni `format.ts` lo importan ni llaman `daysUntil`; `format.ts` no
+tiene ningún import. El `Math.ceil` defectuoso de
+`src/utils/reminder-dates.ts:15` **no se reutilizó**.
 
 ---
 
 ## Checklist C2 — Estado coherente
 
-- [x] Solo 1 feature `in_progress` (`feature_list.json:1310-1312`, #70)
-- [x] `progress/current.md` describe la sesión activa (§Implementación activa — #70)
-- [x] `progress/history.md` tiene entrada de cada sesión cerrada
+- [x] Solo 1 feature `in_progress` (`feature_list.json:1312`, #70)
+- [x] `progress/current.md` describe la sesión activa y el segundo pase (`:23-29`)
 - [x] Working tree limpio; `git status --porcelain` vacío
 
 ## Checklist C3 — Arquitectura
 
-No aplica en el sentido de capas backend: la feature es 100 % móvil y no toca
-`backend-pet-tracker/`. Verificado igualmente:
-
-- [x] `backend-pet-tracker/` **0 ficheros** cambiados (R15)
-- [x] `infra/` y `hosting/` **0 ficheros**
-- [x] `src/api/` solo `types.ts`, y solo para tipar (R2)
-- [x] Helpers puros en `src/screens/home/format.ts`, sin imports (función pura con `now` como parámetro)
+- [x] `backend-pet-tracker/`, `infra/` y `hosting/`: **0 ficheros** en el rango nuevo
+- [x] El segundo pase no toca producción en absoluto: solo tests y documentación
+- [x] `format.ts` sigue siendo puro, sin imports, con `now` como parámetro
 
 ## Checklist C4 — TDD
 
-- [x] Cada `R<n>` tiene al menos un test que lo nombra — verificado uno a uno:
-      R1/R2/R3/R6/R7/R8/R9/R10/R11/R12/R13/R14/R15 en `src/screens/home/index.test.tsx`,
-      R4/R5 en `src/screens/home/format.test.ts`, R16 en `src/__tests__/ui-language.test.ts:88`,
-      R17 en `src/__tests__/design-drift.test.ts:275`, R18 en `src/__tests__/consistency-classnames.test.ts:374`
-- [x] El historial muestra test-primero: cada R-id tiene su commit rojo (`lock …`)
-      separado del verde, no todo junto
-- [x] Ningún commit rojo falla por `ReferenceError` de un helper inexistente
-- [x] **Quinto punto (mutación de producción)**: las ocho mutaciones M1-M8 están
-      en código de producción, no en dobles. Ver §Auditoría de las ocho mutaciones
-- [ ] **PERO**: dos de las ocho mutaciones no ponen la suite roja en el gate.
-      Ver el **Hallazgo bloqueante B1**
+- [x] Cada `R<n>` tiene test que lo nombra (verificado uno a uno en el 1er pase; R5, R6 y R8 revalidados aquí)
+- [x] Historial test-primero: el candado (`5385ed8`, `238e414`) **precede** a su prueba de mutación (`544a525`, `75dd5c1`)
+- [x] **Quinto punto (mutación de producción)**: los cuatro pares nuevos mutan `screens/home/format.ts` y **solo** eso; los cuatro revierten exacto (`git diff --quiet` → 0)
+- [x] **M1 y M2 ponen la suite roja en la invocación del gate**, sin `TZ` — el bloqueante del 1er pase, reproducido y cerrado
 
 ## Checklist C5 — Trazabilidad
 
-- [x] `specs/mobile-home-reminders-section/traceability.md` **sin ninguna fila "pendiente"**
-- [x] Cada requisito tiene test y commit registrados, incluidas las filas R19 y R19b
-- [x] Commits siguen `feat(mobile-home-reminders-section): <desc> (R-ids)`.
-      Las seis excepciones son commits de spec/aprobación previos al handoff
-      (`40413db`, `6734b9b`, `bc70455`, `2f5cacf`, `2123f4e`, `a2b99bb`), ninguna
-      es de implementación ni de mutación
+- [x] `traceability.md` **sin ninguna fila "pendiente"**
+- [x] Las filas tocadas describen los candados reales y los commits finales
+- [x] Los 13 commits nuevos siguen `feat(mobile-home-reminders-section): <desc> (R-ids)`; la única excepción es `6eae6ed` ("spec aprovado"), que es la **firma del humano**
 
 ## Checklist C6 — Spec aprobada
 
-- [x] `requirements.md` con `status: approved` en el frontmatter
-- [x] Casilla `- [X] Aprobado por humano (fecha: 2026-09-08)` marcada
-- [x] D1, D2 y D3 dentro de §Decisiones de implementación, con su
-      `- [X] Aprobado por humano`, versionadas en `40413db`
-- [ ] **Ningún requisito modificado tras la aprobación sin volver a pasar el gate**
-      → ver **Hallazgo O3**: el feedback `pressed` de R10 se añadió con
-      autorización verbal, sin entrada firmada
+- [x] `status: approved` en el frontmatter
+- [x] `- [X] Aprobado por humano (fecha: 2026-09-08)` en §Aprobación
+- [x] **D4, D5 y D6 existen en §Decisiones de implementación** y el bloque está
+      firmado en `requirements.md:1106`, con la casilla volteada por el **humano**
+      en `6eae6ed` (Alexis Sovera Mireles, 2026-09-09 05:58 -0600) — mismo
+      mecanismo que `40413db` usó para D1-D3
+- [x] Ningún requisito modificado tras la aprobación sin enmienda firmada
 
 ## Checklist C7 — Sin código huérfano
 
-- [x] N/A — esta feature **no reemplaza nada existente**. Es un hermano nuevo en
-      `home-content`; no toca #67, #68, #69 ni #71, y sus tres candados de orden
-      heredados siguen byte-idénticos
+- [x] N/A — la feature no reemplaza nada. El único borrado del segundo pase es el
+      andamiaje `process.env.TZ`, que D5 **ordena** borrar por documentar un
+      mecanismo inexistente
 
 ## Checklist C8 — UI móvil (carta `docs/ui-guidelines.md`)
 
-- [x] Grep-clean: **cero** hex fuera de `src/theme/` en producción, cero clases
-      arbitrarias `[...]`, cero `StyleSheet.create` (solo `StyleSheet.flatten` en
-      `components/card.tsx:29`, patrón aprobado), cero shadow/elevation legacy
-- [x] Radios en `src/screens/home/index.tsx`: solo `rounded-card` ×3,
-      `rounded-full` ×5, `rounded-xl` ×4 — dentro de la escala de #62 R4
-- [x] Estado de carga con `Skeleton` **dimensionado** (`h-16 w-full rounded-card`),
-      no spinner suelto
-- [x] `Card` compartido reutilizado en las dos filas; sin fork local ni receta duplicada
-- [x] Tappable con touch target ≥ 44 pt (`min-h-11`) **y feedback `pressed`**
-      (`index.tsx:517`), con candado (`index.test.tsx:2118-2141`)
-- [x] Sin animaciones nuevas
-- [ ] **Recetas tipográficas y tinta de icono sin vigilar** → **Hallazgo O1**
+- [x] Producción sin cambios respecto al pase aprobado: grep-clean, escala de
+      radios y `Skeleton` dimensionado siguen como se validaron
+- [x] Feedback `pressed` del tappable, ahora **ratificado por escrito** (D4)
+- [x] Tinta de icono y recetas tipográficas **vigiladas** (D6)
+- [ ] Dimensiones 12 y 13 de la fila sin vigilar → **O5**, no bloqueante
 
 ---
 
-# Hallazgo bloqueante
+# Hallazgos no bloqueantes
 
-## B1 — Los candados de zona horaria de R5 son inertes: M1 y M2 dejan el gate verde
+## O4 — Una tercera variante de zona horaria pasa los espías
 
-**Rompe**: R5, R19b, `CHECKPOINTS.md` C4 (quinto punto, en su intención).
-**Fichero**: `mobile-pet-tracker/src/screens/home/format.test.ts:27-70`.
+**Clase**: el candado nuevo vigila el lado **del objetivo** (la cadena
+`'YYYY-MM-DD'`) de forma impecable, pero **no el lado de `now`**.
 
-`format.test.ts` fija la zona horaria así, en los dos `it` de R5:
+`format.ts:6` normaliza el día local del dispositivo con getters locales:
 
-```js
-process.env.TZ = 'America/Mexico_City';
-expect(calendarDaysUntil('2026-09-15', new Date(2026, 8, 10, 23, 30))).toBe(5);
+```ts
+const today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
 ```
 
-**Bajo Jest esa asignación no llega a V8.** Sonda ejecutada dentro del propio
-runner del proyecto (`jest-expo`, worktree desechable en el commit rojo de M1):
+Sustituirlos por sus equivalentes UTC produce una mutación —llamémosla **M9**—
+que en una caja UTC hace **exactamente las mismas llamadas** a `Date.UTC`, con
+los mismos componentes, y por tanto pasa las tres aserciones de espía:
 
-```
-TZ before assignment: 2026-09-10T23:30:00.000Z
-TZ after  assignment: 2026-09-10T23:30:00.000Z
-process.env is real process.env? true
-```
-
-El epoch es idéntico antes y después. En Node v20 pelado sí funciona
-(`getTimezoneOffset()` pasa de `0` a `360`), y por eso el defecto es invisible a
-simple vista; dentro del worker de Jest, no.
-
-### Reproducción, mutación por mutación
-
-Worktree aislado sobre los commits rojos, `node_modules` enlazado, sin tocar el
-árbol revisado:
-
-| Mutación | Commit rojo | TZ por defecto de la caja (UTC) — **lo que corre `init.sh`** | `TZ=America/Mexico_City` en el entorno del proceso |
-|---|---|---|---|
-| **M1** (`calendarDaysUntil` → `Math.ceil(Date.parse(...))`) | `1ab9a89` | **6/6 VERDE** | 1 fallo / 5 verdes (`Expected: 5, Received: 4`, `format.test.ts:36`) |
-| **M2** (`fmtDate` → `new Date(cadenaCruda)`) | `cdfb868` | **6/6 VERDE** | (informe: 2 fallos) |
-
-La caja está en UTC (`timedatectl` → `Universal time`, `TZ` sin definir), y
-`init.sh` no exporta ninguna zona. Es decir: **con el defecto de #68 reintroducido
-en producción, el gate completo pasa en verde.**
-
-### Por qué esto es exactamente lo que la spec prohíbe
-
-R19b, literal:
-
-> **M1 y M2 se plantan en la zona ciega a propósito**: las dos dejan la suite
-> verde bajo un runner en UTC. **Si no se ponen rojas, el `it` de R5 no está
-> fijando la zona horaria y no vigila nada.**
-
-R5, literal:
-
-> **Éstos son los únicos candados que matan la mutación M2 de R19b**: si con esa
-> mutación plantada la suite sigue verde, están mal escritos y se arreglan
-> **antes** de seguir.
-
-El implementer no aplicó esa cláusula. En vez de arreglar el candado, sorteó el
-síntoma ejecutando la prueba con la zona en el entorno del proceso, y lo dejó
-escrito en `progress/impl_mobile-home-reminders-section.md`:
-
-> `TZ=UTC` dejó 6/6 verdes y `TZ=America/Mexico_City` dejó 1 fallo/5 verdes
-
-Ese "6/6 verdes en UTC" **es el defecto**, no la asimetría buscada. La asimetría
-que D3 pedía es entre *zonas horarias del código bajo prueba*, no entre *formas
-de invocar el runner*: un candado que solo muerde cuando alguien recuerda
-exportar `TZ` a mano no vigila nada en CI ni en el gate.
-
-### La premisa de la spec sobre #68 se leyó a medias
-
-R5 dice: *"El mecanismo está probado en este repo: #68 R4 ya guarda
-`process.env.TZ`, lo fija a `'America/Mexico_City'`, llama al helper y lo
-restaura en un `finally`, y está verde. Se usa el mismo patrón."*
-
-Pero en #68 el `process.env.TZ` **no es lo que muerde**. Lo que muerde es el espía
-del constructor (`weekly-activity-chart.test.tsx:554-573`):
-
-```js
-const dateConstructor = jest.spyOn(global, 'Date')…
-expect(dateConstructor.mock.calls).toEqual([[2026, 8, 6]]);
+```ts
+const today = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
 ```
 
-Esa aserción —que `Date` se construye **por componentes** y nunca con la cadena
-cruda— es independiente de la zona y está viva siempre. #70 copió la mitad
-inerte (el andamiaje de `process.env.TZ`) y dejó fuera la mitad que sostiene el
-candado.
+**Medido por el reviewer**, no razonado:
 
-### Qué hay que hacer para que un segundo pase apruebe
+- con M9 plantada, `bun run test` sin `TZ` → **68/68 suites, 1078/1078 tests VERDES**;
+- la misma M9 bajo `TZ=America/Mexico_City` → **rojo**, `Expected: 5, Received: 4`
+  en `format.test.ts` — el desplazamiento de un día de #68, exacto.
 
-Cualquiera de estas dos, y volver a plantar M1 y M2 comprobando que la suite se
-pone roja **sin exportar `TZ` a mano**:
+Es decir: M9 **es** un bug de zona horaria real, viola la primera cláusula
+normativa de R5 (*"WHEN el proceso corre en una zona horaria de offset negativo
+… SHALL devolver el mismo número que devolvería en UTC"*), y el candado no lo ve
+en la invocación del gate.
 
-1. **Preferido, y con precedente en el repo**: replicar el patrón real de #68 en
-   `format.test.ts` — espiar `Date`/`Date.parse` y asertar que
-   `calendarDaysUntil` y `fmtDate` **nunca** reciben la cadena cruda, y que el
-   constructor se llama con componentes (`[[2026, 8, 15]]`). Mata M1 y M2 en
-   cualquier zona horaria.
-2. **Alternativa**: fijar la zona **antes de que arranquen los workers**
-   (`globalSetup` de Jest o `TZ` en el script `test` de `package.json`), no
-   dentro del `it`. Si se elige ésta, el `try/finally` de
-   `format.test.ts:27-70` debe borrarse, porque documenta un mecanismo que no
-   existe.
+**Por qué no bloquea**: D5 fija un criterio de aceptación explícito —M1 y M2
+rojas sin `TZ`— y está cumplido. M9 no la enumera ninguna decisión firmada, ni
+la spec, ni el primer pase, ni el implementer. Es un hallazgo **nuevo** del
+reviewer, de la misma clase que O1, que el humano prefirió tratar por enmienda.
 
-En los dos casos, **borrar del informe la evidencia de M1/M2 y rehacerla** con la
-suite roja en la invocación por defecto.
+**Arreglo, probado por el reviewer** (una constante y un `expect`, sin `TZ` y sin
+tocar producción): pasar un `now` cuyo día **local** y día **UTC** difieran a
+propósito, dentro del `it` de R5 de `format.test.ts`:
+
+```ts
+const skewed = {
+  getFullYear: () => 2026, getMonth: () => 8, getDate: () => 10,
+  getUTCFullYear: () => 2026, getUTCMonth: () => 8, getUTCDate: () => 11,
+} as unknown as Date;
+expect(calendarDaysUntil('2026-09-15', skewed)).toBe(5);
+```
+
+Verificado: con M9 plantada da **1 fallo / 5 verdes**
+(`Expected: 5, Received: 4`); con producción limpia, **6/6 verdes**. Mata M9 en
+cualquier zona horaria y no necesita exportar nada.
+
+## O5 — Dimensiones 12 y 13 de la fila: la forma no está vigilada
+
+Dos sondas del reviewer, cada una corrida sobre la **suite móvil completa**:
+
+**O5-a — la `Card` del estado vacío puede perder su forma de fila.**
+`index.tsx:571` lleva `className="flex-row items-center gap-3"`. Cambiarlo a
+`className="gap-3"` —el icono pasaría a apilarse **encima** del texto— deja
+**68/68 suites y 1078/1078 tests verdes**. R12 asserta `flex-row items-center
+gap-3` sobre la fila cargada (`index.test.tsx:2227`) pero **no** sobre
+`reminders-none-upcoming`, donde solo comprueba la receta compartida de `Card`.
+
+Esto es notable porque R8 lo prescribe **literalmente**: *"la misma anatomía de
+fila que R6 —disco de icono a la izquierda, texto a la derecha— para que la
+sección **no cambie de forma** al vaciarse"*, y el propio test se llama
+`it('dibuja un estado vacío con forma de fila cuando no hay vacuna')`. Es una
+promesa del título que la aserción no respalda.
+
+**O5-b — el envoltorio `flex-1` de nombre + fecha.**
+`index.tsx:543`, el `<View className="flex-1">` que agrupa nombre y fecha y
+empuja el contador a la derecha. Cambiarlo a `className="w-24"` deja también
+**1078/1078 verdes**.
+
+**Coste del arreglo**: una línea cada uno, con el patrón que R12 ya usa dos
+líneas más arriba:
+
+```ts
+expect(emptyRow.props.className).toContain('flex-row items-center gap-3');
+```
+
+**Precedente**: es la tercera ronda seguida (#69, #71, ahora #70) en la que una
+revisión de un elemento repetido destapa una dimensión más. La lección de
+`decisiones-por-elemento-repetido` se confirma otra vez: **contar por hijos del
+árbol, no por `testID`, y enumerar las decisiones de layout además de las de
+color y texto**.
+
+**Recomendación**: firmarlo como **D7** si se quiere cerrar dentro de #70, o
+abrirlo con id propio junto a **#81**, que es el mismo defecto en el tile de
+acciones rápidas.
 
 ---
 
-# Hallazgos no bloqueantes (deben resolverse o registrarse con id propio)
+## Gates humanos pendientes — ninguno lo puede cerrar una IA
 
-## O1 — Elemento repetido: dos dimensiones sin vigilar
+De `specs/mobile-home-reminders-section/traceability.md:48-66`:
 
-Precedente de #69 y #71: cada revisión destapa una dimensión más. Enumeradas
-**todas** las decisiones que toma la fila, observadas con `within(fila)`:
+1. **Aprobación de la spec** — **CERRADO** (`40413db` para D1-D3, `6eae6ed` para
+   D4-D6, ambos firmados por el humano).
+2. **Prueba de humo en dev build de Android**, en los **dos temas**, con los
+   cuatro escenarios — **ABIERTO**:
+   - mascota **con** vacuna próxima: fila completa (icono, nombre, fecha
+     localizada, contador `N d`);
+   - mascota **sin** vacuna próxima: estado vacío de R8, con la sección
+     conservando su altura;
+   - enlace **"Ver todos"** pulsado: abre la lista de recordatorios y el botón
+     "Nuevo" de esa pantalla sigue funcionando;
+   - tile **"Recordatorio"** de #71 pulsado en la misma sesión: lleva al **alta**
+     y no a la lista.
 
-| # | Decisión | ¿Vigilada? | Dónde |
-|---|---|---|---|
-| 1 | **Dato mostrado** (nombre / fecha / contador) | ✅ | `index.test.tsx:1915-1928`, valor exacto por nodo **más** negaciones cruzadas en las tres direcciones. M3 lo mata |
-| 2 | **Condición de render** (fila vs. vacío vs. esqueleto vs. error) | ✅ | R6, R8, R9 |
-| 3 | **Cardinalidad del cuerpo** | ✅ | `index.test.tsx:2028-2077`, sobre `.children` — nunca `testID`. M5 lo mata |
-| 4 | **Nombre accesible** del contador, en las tres ramas | ✅ | `index.test.tsx:2144-2190` (R11) y `:1963` (R7) |
-| 5 | **Etiqueta/clave de copy** | ✅ | R7 + `ui-copy-table.ts` (7 filas = 7 usos) |
-| 6 | **Color de fondo** (disco azul vs. neutral) | ✅ | `index.test.tsx:2214-2218` y `:2236-2240`, igualdad exacta contra `CATEGORY_SLOTS` |
-| 7 | **Destino de navegación** | ✅ | R10 + `appRoutes` + unicidad del literal. M6 lo mata |
-| 8 | **Receta tipográfica del contador** (incl. `TABULAR_NUMS`) | ✅ | `index.test.tsx:2221-2226`. M8 lo mata |
-| 9 | **Componente de icono** | ⚠️ parcial | Solo por **lectura de fuente** (`index.test.tsx:2248-2259`: dos `<Syringe size={20}`). Nunca se observa `icon-syringe` **dentro** de la fila |
-| 10 | **Tinta del icono** | ❌ **NO** | Nadie asserta `icon.props.color` |
-| 11 | **Color de etiqueta / receta tipográfica de nombre, fecha y texto vacío** | ❌ **NO** | Nadie asserta su `className` |
+   La memoria del proyecto es explícita: **dev build de Android, no Expo Go**.
+   Ojo al escenario 2: O5-a dice que si la forma de fila del estado vacío se
+   rompiera, ningún test lo diría — el smoke es hoy la única red para eso.
 
-**#10 — tinta del icono.** Producción usa `color={vaccineInk}`
-(`category-blue-strong`) en la fila (`index.tsx:541`) y `color={muted}` en el
-estado vacío (`:576`). El doble de `reicon` **sí** propaga las props
-(`index.test.tsx:96-99`: `React.createElement(View, { testID, ...props })`), y
-#71 usa exactamente eso una feature antes, en este mismo fichero:
+3. **Merge del PR** a `main` — el leader abre el PR, el humano mergea
+   (`docs/conventions.md` §Branches y Pull Requests).
 
-```js
-expect(icon.props.color).toBe(ink);          // index.test.tsx:1669
-expect(labelNode.props.className).toContain(labelColor);  // :1670
-```
-
-#70 no lo hace. Cruzar `vaccineInk` ↔ `muted` entre las dos filas deja la suite
-**entera** verde: la vacuna se pintaría gris apagado y el estado vacío azul de
-vacunación, sin un solo test rojo.
-
-**#11 — recetas de nombre, fecha y texto vacío.** R6 prescribe
-`text-sm font-semibold text-foreground` (nombre) y `text-xs font-normal text-muted`
-(fecha); R8 prescribe `flex-1 text-sm font-normal text-muted`. Los tests obtienen
-esos nodos (`index.test.tsx:1915-1916`, `:2199-2200`) pero solo assertan
-`props.children` y `props.style`; **nunca `props.className`**. Intercambiar las
-recetas de nombre y fecha no mueve ningún inventario global (las mismas clases
-siguen presentes, solo cambian de nodo) y deja la suite verde.
-
-Esto es **literalmente el defecto ya registrado como #81** una feature antes
-(`progress/current.md`: *"la receta tipografica `text-2xs font-semibold` del tile
-no esta vigilada: una sonda a `text-xs font-medium` deja la suite **completa**
-verde"*). Se repite en #70 con nodos distintos.
-
-Coste del arreglo: dos líneas por nodo, con el patrón de `index.test.tsx:1669-1671`
-ya escrito en el fichero.
-
-## O2 — La cobertura del icono es de cadena, no de árbol
-
-R13 cuenta `<Syringe size={20}` en el fuente y exige 2. Es suficiente para
-detectar un cambio de glifo, pero no observa **dónde** se renderiza: si el icono
-saliera de la fila, R13 seguiría verde y solo R12 (que asserta el `className` de
-`row.children[0]`) lo notaría de refilón. Recomendado añadir
-`within(row).getByTestId('icon-syringe')` en R6 y en R8, que además cierra O1 #10
-en la misma línea.
-
-## O3 — El feedback `pressed` de R10 necesitaba enmienda firmada, y se resolvió de palabra
-
-**El cambio está implementado y con candado**, verificado:
-
-- Producción: `src/screens/home/index.tsx:517`
-  `style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}`
-- Candado: `src/screens/home/index.test.tsx:2118-2141`,
-  `it('muestra feedback visual al pulsar el enlace')`, que asserta el valor en
-  reposo (`opacity === 1`) **y** el patrón exacto en el fuente
-
-**Juicio, como pide el encargo: sí necesitaba enmienda firmada, y no la tuvo.**
-
-- R10 prescribe la anatomía del control con nombres y clases exactos ("el control
-  SHALL ser un `Pressable` con `accessibilityRole="button"`,
-  `className="min-h-11 justify-center"` y un `Text` hijo con…"). Añadir una prop
-  `style` a ese JSX es modificar un requisito **después** de la aprobación, que es
-  lo que `CHECKPOINTS.md` C6, tercer punto, cierra.
-- Esta spec **ya tiene el mecanismo montado y usado tres veces**: §Decisiones de
-  implementación, con D1, D2 y D3, cada una con su `- [X] Aprobado por humano` y
-  versionada en `40413db`. Una **D4** con la misma forma era el camino obvio y
-  costaba una entrada.
-- En su lugar, la autorización vive solo como prosa en
-  `progress/impl_mobile-home-reminders-section.md` §Decisiones humanas
-  ("el humano autorizó el 2026-09-09…"). `traceability.md` la menciona en la fila
-  R10, pero la trazabilidad no es el artefacto del gate: `requirements.md` lo es.
-
-**Atenuante, y por eso no bloquea**: la decisión de fondo es **correcta**. C8 exige
-feedback `pressed` en todo elemento tappable y la carta gana sobre el JSX literal
-de una spec; el conflicto se resolvió a favor de la carta, que es lo que
-`CLAUDE.md` §UI móvil manda. Además la deuda ya estaba detectada en #71
-(`progress/current.md`: *"los `Pressable` de la app no tienen feedback de pulsado
-—C8 lo pide y hay un solo sitio resuelto en todo el repo"*).
-
-**Acción para el segundo pase**: añadir la entrada **D4** a
-`specs/mobile-home-reminders-section/requirements.md` §Decisiones de implementación,
-con su casilla, y que el humano la firme junto con el resto.
-
----
-
-# Auditoría de las ocho mutaciones (R19b) — par por par
-
-Verificado con git, sin fiarse de la tabla del informe. **Ninguna mutación está
-en un doble de test, un mock o una fixture.** Los ocho
-`git diff --quiet <rojo>^ <verde> -- <fichero-producción>` devuelven **0**.
-
-| # | Rojo / Verde | Fichero mutado | ¿Producción? | ¿Revierte exacto? | ¿Pone roja la suite en el gate? |
-|---|---|---|---|---|---|
-| M1 | `1ab9a89` / `4499db4` | `screens/home/format.ts` | ✅ | ✅ (0) | ❌ **NO** — B1 |
-| M2 | `cdfb868` / `499b0ec` | `screens/home/format.ts` | ✅ | ✅ (0) | ❌ **NO** — B1 |
-| M3 | `58338f3` / `1c940e8` | `screens/home/index.tsx` | ✅ | ✅ (0) | ✅ |
-| M4 | `6e9206d` / `06cd7cf` | `screens/home/index.tsx` | ✅ | ✅ (0) | ✅ |
-| M5 | `1763391` / `c13b934` | `screens/home/index.tsx` | ✅ | ✅ (0) | ✅ |
-| M6 | `ca88209` / `91d636d` | `screens/home/index.tsx` | ✅ | ✅ (0) | ✅ |
-| M7 | `bffaa47` / `a223d4c` | `screens/home/index.tsx` | ✅ | ✅ (0) | ✅ |
-| M8 | `efb9bba` / `d22e1c9` | `screens/home/index.tsx` | ✅ | ✅ (0) | ✅ |
-
-**M5 cumple la lección de #71 al pie de la letra** — el hijo intruso no lleva `testID`:
-
-```diff
-+              <View className="h-1.5 rounded-full bg-default" />
-```
-
-y muere contra la cardinalidad de R9 trasladada por D1, que cuenta
-`getByTestId('reminders-section-body').children`, nunca coincidencias de `testID`.
-
-**D3 quedó bien resuelta en su parte de diseño.** El rojo de M1 conserva la
-normalización del cero (`return days === 0 ? 0 : days;`), así que el fallo ya no
-sale de `expect(-0).toBe(0)`. Bajo `TZ=America/Mexico_City` el único fallo es el
-correcto —`Expected: 5, Received: 4` en `format.test.ts:36`— y R4 sigue verde. La
-asimetría **existe en la aritmética**; lo que falla es que el test no la puede ver
-(B1).
-
-Notas menores, no bloqueantes:
-
-- `1ab9a89` mezcla la mutación con bookkeeping de `traceability.md` y del informe.
-  Higiene, no C4.
-- M7 mueve la sección por delante de `quick-actions` **y** del bloque de actividad
-  semanal; la relación declarada se cumple, el movimiento es mayor que la frase.
-- Ningún commit rojo de mutación contiene su propio candado: los candados van en
-  commits `lock …` anteriores. Es la forma **más** estricta, no menos.
-
----
-
-# Verificaciones que pasan (resumen de lo comprobado y correcto)
-
-**D1 — cardinalidad trasladada a R9** ✅. `index.test.tsx:2028-2077` cuenta
-`getByTestId('reminders-section-body').children` con longitudes **1** (cargado),
-**1** (esqueleto) y **0** (error). Nunca cuenta `testID`. M5 lo mata.
-
-**Candado de longitud del catálogo** ✅. `language-provider.test.tsx:41` pasa de
-`260 + 16 + 1 + 4` a `260 + 16 + 1 + 4 + 7`. Claves reales medidas en
-`src/i18n/catalog.ts`: `en` 281 → **288**, `es` 281 → **288**. Las siete son
-exactamente las siete de R16, idénticas en los dos idiomas, ninguna borrada,
-ninguna duplicada. El delta declarado **coincide** con las claves realmente
-añadidas.
-
-**Drift de estilo (R17)** ✅. Confirmado por quinta vez que **no existe** candado
-global de hex: los tres barridos globales de `design-drift.test.ts` (`:50`, `:58`,
-`:85`) no persiguen hexadecimales, y todos los que sí lo hacen usan lista nominal.
-El bloque nuevo (`design-drift.test.ts:275-295`) lista sus **seis** ficheros, usa
-el mismo regex que sus hermanos (`:104`, `:207`, `:247`, `:266`) y su título no
-escribe la cifra con letra. La lista nominal **coincide 1:1** con los ficheros de
-producción que la feature tocó; `src/api/types.ts`, que no estaba en ninguna de
-las cinco listas previas, queda cubierto.
-
-**Deltas de inventario (R18)** ✅. Los tres mandos de la fila 3 se mueven juntos
-(`consistency-classnames.test.ts`: constante `HOME_TABULAR_DELTA_70` en `:337`,
-fila de Home en `:342`, total `14 + 4 + 1 + 1` en `:361`, guarda de #69 R14 en
-`:370`), y **ninguna base se colapsó a un literal plano**. Fila 4
-(`legibility-classnames.test.ts:123`, `:138`) ídem. Medido: `TABULAR_NUMS` en Home
-5 → 6; `text-accent-strong` en Home 1 → 2. `SCREEN_FILES` sin cambio (`19 + 2`).
-Ningún otro recuento cerrado se movió; ningún assert debilitado, borrado,
-renombrado ni saltado (`.skip`/`.only`/`xit` inexistentes en esos ficheros).
-
-**Alcance (R15)** ✅. 22 ficheros cambiados, todos dentro de
-`mobile-pet-tracker/`, `specs/`, `progress/` y `feature_list.json`. Cero en
-`backend-pet-tracker/`, `infra/`, `hosting/`, `src/utils/`, `src/components/`,
-`src/theme/`, `src/app/` y `src/screens/reminders/`.
-
-**#84 no se coló** ✅. `src/utils/reminder-dates.ts` tiene el **mismo blob**
-(`587cbd6`) en `b0ec5a8` y en `82a1cbd`: intacto. Ni `index.tsx` ni `format.ts`
-importan o llaman `daysUntil`; `format.ts` no tiene imports en absoluto.
-`calendarDaysUntil` es semánticamente distinta (normalización a medianoche UTC por
-componentes, no `Math.ceil` sobre milisegundos), así que **no se reutilizó el
-defecto de #68**.
-
-**Deriva de código** ✅. `git fetch origin`; HEAD local `82a1cbd` ==
-`origin/feature/70-mobile-home-reminders-section`; working tree limpio; 65 commits
-por delante de `origin/main`, 0 por detrás. **Lo revisado es exactamente lo publicado.**
-
-**Línea base roja de #76** — no apareció: los 25 suites e2e pasaron enteros. No
-hubo nada que imputar ni que descontar.
-
----
-
-## Resumen para el segundo pase
-
-Para aprobar hacen falta tres cosas, en este orden:
-
-1. **(bloqueante)** Arreglar los candados de R5 en `format.test.ts` para que
-   muerdan sin `TZ` externa —preferiblemente con el espía del constructor `Date`
-   de #68— y **rehacer la evidencia de M1 y M2** con la suite roja en la
-   invocación por defecto.
-2. **(recomendado, muy barato)** Cerrar O1: asertar `icon.props.color` en las dos
-   filas y el `className` de nombre, fecha y texto vacío, con el patrón que #71 ya
-   usa en `index.test.tsx:1669-1671`. Si el humano prefiere, registrarlo como
-   deuda con id propio junto a #81, que es el mismo defecto.
-3. **(proceso)** Añadir **D4** a §Decisiones de implementación de
-   `requirements.md` por el feedback `pressed`, y que el humano la firme.
-
-El gate humano restante (prueba de humo en dev build de Android, dos temas, cuatro
-escenarios) sigue **sin cerrar** y no lo puede cerrar ninguna IA.
+**Tarea de cierre del leader, no gate**: `STATUS.md` sigue desactualizado
+(66/81 declarado vs 66/84 real), por ids abiertos por el leader, no por esta
+feature.
 
 ---
 
 ## Output de `./init.sh`
 
-Ejecutado por el reviewer, en primer plano, desde `/home/claude/sites/Pet-Tracker`,
-con `env -u FORCE_COLOR ./init.sh`. Sin otro `init.sh` corriendo (`pgrep`
-comprobado antes de lanzar). Log completo en `/tmp/review70-init.log` (13 083 líneas).
+Ejecutado por el reviewer, **en primer plano**, desde
+`/home/claude/sites/Pet-Tracker`, con `env -u FORCE_COLOR ./init.sh`.
+Comprobado antes que no había ningún `init.sh` real corriendo. Log completo en
+`/tmp/review70-pass2-init.log` (13 255 líneas).
 
 ```
 === INIT.SH EXIT CODE: 0 ===
@@ -439,7 +374,7 @@ comprobado antes de lanzar). Log completo en `/tmp/review70-init.log` (13 083 l�
 → Verificando coherencia del harness...
 ✅ Archivos del harness presentes
 ⚠️  Feature en progreso: mobile-home-reminders-section
-⚠️  STATUS.md desactualizado (66/81 declarado vs 66/84 real) — actualízalo antes de cerrar la sesión
+⚠️  STATUS.md desactualizado (66/81 declarado vs 66/84 real)
 
 → Build...
 ✅ Build exitoso
@@ -470,36 +405,46 @@ Tests:       8 skipped, 354 passed, 362 total
   Features: 66/84 completadas | 17 pendientes
 ```
 
-Los avisos de `.env` y `STATUS.md` son los no bloqueantes de siempre del harness;
-`STATUS.md` (66/81 vs 66/84) viene de ids abiertos por el leader, no de esta feature.
+Los avisos de `.env` y `STATUS.md` son los no bloqueantes de siempre del harness.
+**La línea base roja conocida y ajena de #76** (`health-vaccines.e2e-spec.ts:497`)
+**no apareció**: las 25 suites e2e pasaron enteras. No hubo nada que descontar.
 
-## Comprobaciones de mutación ejecutadas por el reviewer
+## Sondas ejecutadas por el reviewer
 
-Sobre worktree desechable (`git worktree add --detach`, `node_modules` enlazado,
-retirado con `git worktree remove` al terminar). **El árbol revisado no se modificó
-en ningún momento**; `git status --porcelain` vacío antes y después.
+Todas sobre worktree desechable (`git worktree add --detach /tmp/rev70b 434f40c`,
+`node_modules` enlazado, retirado con `git worktree remove --force`). **El árbol
+revisado no se modificó en ningún momento**; `git status --porcelain` vacío antes
+y después.
 
 ```
-# M1 plantada (1ab9a89), TZ por defecto de la caja = UTC, igual que init.sh
-$ npx jest src/screens/home/format.test.ts
-Test Suites: 1 passed, 1 total
-Tests:       6 passed, 6 total          ← el candado NO muerde
+# M1 (544a525) plantada, suite COMPLETA, env -u TZ  -> lo que corre el gate
+Test Suites: 1 failed, 67 passed, 68 total
+Tests:       1 failed, 1077 passed, 1078 total
+  ● R5 › normaliza ambos días por componentes sin parsear la cadena cruda
+    expect(jest.fn()).not.toHaveBeenCalled()   Received number of calls: 2
+    1: "2026-09-15"   2: "2026-09-15"          (format.test.ts:47)
 
-# misma mutación, TZ forzada en el entorno del proceso
-$ TZ=America/Mexico_City npx jest src/screens/home/format.test.ts
-  ✕ no se desplaza un día en una zona horaria negativa
-    Expected: 5
-    Received: 4
-    at Object.toBe (src/screens/home/format.test.ts:36:11)
-Tests:       1 failed, 5 passed, 6 total
+# M2 (75dd5c1) plantada, suite COMPLETA, env -u TZ
+Test Suites: 1 failed, 67 passed, 68 total
+Tests:       1 failed, 1077 passed, 1078 total
+  ● R5 › formatea la fecha visible sin desplazarla
+    - Expected [[2026, 8, 15]]   + Received [["2026-09-15"]]   (format.test.ts:75)
 
-# M2 plantada (cdfb868), TZ por defecto de la caja
-$ npx jest src/screens/home/format.test.ts
-Test Suites: 1 passed, 1 total
-Tests:       6 passed, 6 total          ← el candado NO muerde
+# M9 (getUTC* sobre `now`) plantada, suite COMPLETA, env -u TZ   -> O4
+Test Suites: 68 passed, 68 total
+Tests:       1078 passed, 1078 total            ← NO muerde
+# la misma M9 con TZ=America/Mexico_City:  Expected: 5, Received: 4
 
-# sonda del mecanismo, dentro del runner del proyecto
-TZ before assignment: 2026-09-10T23:30:00.000Z
-TZ after  assignment: 2026-09-10T23:30:00.000Z
-process.env is real process.env? true   ← la asignación no llega a V8
+# D6 tintas cruzadas (vaccineInk <-> muted)
+Tests:       2 failed, 84 passed, 86 total
+
+# D6 recetas de nombre y fecha intercambiadas
+Tests:       1 failed, 85 passed, 86 total
+# D6 receta del texto vacío cambiada
+Tests:       1 failed, 85 passed, 86 total
+
+# O5-a  estado vacío pierde 'flex-row items-center gap-3', suite COMPLETA
+Tests:       1078 passed, 1078 total            ← NO muerde
+# O5-b  envoltorio 'flex-1' -> 'w-24', suite COMPLETA
+Tests:       1078 passed, 1078 total            ← NO muerde
 ```
