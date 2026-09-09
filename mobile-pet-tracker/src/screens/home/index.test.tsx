@@ -23,6 +23,8 @@ import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
 import { SelectedPetProvider } from '../../providers/selected-pet-provider';
 import * as selectedPetHooks from '../../providers/selected-pet-provider';
+import { TABULAR_NUMS } from '../../theme/native-styles';
+import { CATEGORY_SLOTS } from '../../utils/category-palette';
 import { HomeScreen } from './index';
 
 declare function require(moduleName: 'fs'): {
@@ -2154,6 +2156,59 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
         } finally {
           await view.unmount();
         }
+      }
+    });
+  });
+
+  describe('#70 R12: Card compartido y tokens', () => {
+    it('viste la sección con el Card compartido y los tokens', async () => {
+      const loaded = await render(<HomeScreen />, { wrapper: HomeWrapper });
+
+      try {
+        const row = await screen.findByTestId('reminders-next-vaccine');
+        const name = within(row).getByTestId('reminders-next-vaccine-name');
+        const date = within(row).getByTestId('reminders-next-vaccine-date');
+        const days = within(row).getByTestId('reminders-next-vaccine-days');
+        const disk = row.children[0];
+
+        expect(row.props.className).toContain(
+          'rounded-card border border-border bg-surface p-4 shadow-sm',
+        );
+        expect(row.props.className).toContain('flex-row items-center gap-3');
+        expect(typeof disk).not.toBe('string');
+        if (typeof disk !== 'string') {
+          expect(disk.props.className).toBe(
+            `size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS.blue.surface}`,
+          );
+        }
+        expect(days.props.className).toBe(
+          `rounded-full px-2.5 py-1 text-xs font-bold ${CATEGORY_SLOTS.amber.surface} ${CATEGORY_SLOTS.amber.ink}`,
+        );
+        expect(days.props.style).toEqual(TABULAR_NUMS);
+        expect(name.props.style).toBeUndefined();
+        expect(date.props.style).toBeUndefined();
+      } finally {
+        await loaded.unmount();
+      }
+
+      mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
+      const empty = await render(<HomeScreen />, { wrapper: HomeWrapper });
+
+      try {
+        const row = await screen.findByTestId('reminders-none-upcoming');
+        const disk = row.children[0];
+
+        expect(row.props.className).toContain(
+          'rounded-card border border-border bg-surface p-4 shadow-sm',
+        );
+        expect(typeof disk).not.toBe('string');
+        if (typeof disk !== 'string') {
+          expect(disk.props.className).toBe(
+            `size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS.neutral.surface}`,
+          );
+        }
+      } finally {
+        await empty.unmount();
       }
     });
   });

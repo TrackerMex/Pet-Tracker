@@ -43,6 +43,9 @@ Se completa durante la secuencia TDD; los hashes definitivos también quedan en
 - **R10**: rojo `6087349` (cero navegación y cero apariciones de la ruta);
   verde `0844b75` (un único `router.push('/reminders')`, fuera de
   `QUICK_ACTIONS`, sin cast ni ruta nueva).
+- **R11**: rojo `c4c0b45` (mutación de producción que quitó el nombre accesible
+  y murió con `undefined`); verde `e34b07e` (restauración del label expandido,
+  con un solo botón accesible en la sección).
 
 ## Premisas corregidas contra el árbol
 
