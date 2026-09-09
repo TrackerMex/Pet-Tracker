@@ -437,70 +437,6 @@ export function HomeScreen() {
         ) : null}
 
         {selectedPetId ? (
-          <View testID="quick-actions" className="gap-3">
-            <Text
-              testID="quick-actions-title"
-              className="text-xs font-semibold uppercase tracking-widest text-muted"
-            >
-              {t('home.quickActions')}
-            </Text>
-            <View testID="quick-actions-row" className="flex-row gap-3">
-              {QUICK_ACTIONS.map(
-                ({ testID, Icon, labelKey, slot, href }, index) => (
-                  <Pressable
-                    key={testID}
-                    testID={testID}
-                    accessibilityRole="button"
-                    className={`min-h-11 flex-1 items-center gap-1.5 rounded-xl py-3 ${CATEGORY_SLOTS[slot].surface}`}
-                    style={CONTINUOUS_CORNER}
-                    onPress={() => router.push(href(selectedPetId))}
-                  >
-                    <Icon size={24} color={quickActionInks[index]} />
-                    <Text className="text-2xs font-semibold text-foreground">
-                      {t(labelKey)}
-                    </Text>
-                  </Pressable>
-                ),
-              )}
-            </View>
-          </View>
-        ) : null}
-
-        {selectedPetId && activity.data === undefined ? (
-          <Skeleton
-            testID="weekly-activity-skeleton"
-            className="w-full rounded-card"
-            style={{ height: WEEKLY_ACTIVITY_SKELETON_HEIGHT }}
-          />
-        ) : null}
-
-        {activity.data?.kind === 'ok' ? (
-          <>
-            <WeeklyActivityChart
-              key={selectedPetId}
-              days={activity.data.days}
-              weekComparison={activity.data.weekComparison}
-              onSelectDay={(day) => {
-                if (selectedPetId) {
-                  setActivitySelection({ day, petId: selectedPetId });
-                }
-              }}
-            />
-            {selectedToday ? (
-              <Button
-                testID="weekly-activity-day-map"
-                className="min-h-11 w-full rounded-xl bg-accent"
-                onPress={() => router.push('/map')}
-              >
-                <Button.Label className="font-bold text-accent-foreground">
-                  {viewOnMapLabel}
-                </Button.Label>
-              </Button>
-            ) : null}
-          </>
-        ) : null}
-
-        {selectedPetId ? (
           <View testID="reminders-section" className="gap-3">
             <View className="flex-row items-center justify-between">
               <Text
@@ -582,6 +518,70 @@ export function HomeScreen() {
               ) : null}
             </View>
           </View>
+        ) : null}
+
+        {selectedPetId ? (
+          <View testID="quick-actions" className="gap-3">
+            <Text
+              testID="quick-actions-title"
+              className="text-xs font-semibold uppercase tracking-widest text-muted"
+            >
+              {t('home.quickActions')}
+            </Text>
+            <View testID="quick-actions-row" className="flex-row gap-3">
+              {QUICK_ACTIONS.map(
+                ({ testID, Icon, labelKey, slot, href }, index) => (
+                  <Pressable
+                    key={testID}
+                    testID={testID}
+                    accessibilityRole="button"
+                    className={`min-h-11 flex-1 items-center gap-1.5 rounded-xl py-3 ${CATEGORY_SLOTS[slot].surface}`}
+                    style={CONTINUOUS_CORNER}
+                    onPress={() => router.push(href(selectedPetId))}
+                  >
+                    <Icon size={24} color={quickActionInks[index]} />
+                    <Text className="text-2xs font-semibold text-foreground">
+                      {t(labelKey)}
+                    </Text>
+                  </Pressable>
+                ),
+              )}
+            </View>
+          </View>
+        ) : null}
+
+        {selectedPetId && activity.data === undefined ? (
+          <Skeleton
+            testID="weekly-activity-skeleton"
+            className="w-full rounded-card"
+            style={{ height: WEEKLY_ACTIVITY_SKELETON_HEIGHT }}
+          />
+        ) : null}
+
+        {activity.data?.kind === 'ok' ? (
+          <>
+            <WeeklyActivityChart
+              key={selectedPetId}
+              days={activity.data.days}
+              weekComparison={activity.data.weekComparison}
+              onSelectDay={(day) => {
+                if (selectedPetId) {
+                  setActivitySelection({ day, petId: selectedPetId });
+                }
+              }}
+            />
+            {selectedToday ? (
+              <Button
+                testID="weekly-activity-day-map"
+                className="min-h-11 w-full rounded-xl bg-accent"
+                onPress={() => router.push('/map')}
+              >
+                <Button.Label className="font-bold text-accent-foreground">
+                  {viewOnMapLabel}
+                </Button.Label>
+              </Button>
+            ) : null}
+          </>
         ) : null}
 
         {detail.data?.kind === 'ok' && detail.data.pet.device ? (
