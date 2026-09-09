@@ -1994,4 +1994,83 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
       expect(within(section).getByTestId('reminders-see-all')).toBeVisible();
     });
   });
+
+  describe('#70 R9: estados de carga y error del detalle', () => {
+    it('esqueletiza mientras carga y calla cuando el perfil falla', async () => {
+      mockGetPet.mockReturnValue(pending<PetState>());
+      const loading = await render(<HomeScreen />, { wrapper: HomeWrapper });
+
+      try {
+        const section = await screen.findByTestId('reminders-section');
+        const skeleton = within(section).getByTestId(
+          'reminders-section-skeleton',
+        );
+
+        expect(skeleton.props.className).toBe('h-16 w-full rounded-card');
+        expect(
+          within(section).queryAllByTestId(/(?:-error|-retry)$/),
+        ).toHaveLength(0);
+        expect(within(section).getByTestId('reminders-see-all')).toBeVisible();
+      } finally {
+        await loading.unmount();
+      }
+
+      mockGetPet.mockResolvedValue({ kind: 'error' });
+      const failed = await render(<HomeScreen />, { wrapper: HomeWrapper });
+
+      try {
+        const section = await screen.findByTestId('reminders-section');
+        const body = within(section).getByTestId('reminders-section-body');
+
+        expect(body.children).toHaveLength(0);
+        expect(
+          within(section).queryAllByTestId(/(?:-error|-retry)$/),
+        ).toHaveLength(0);
+        expect(within(section).getByTestId('reminders-see-all')).toBeVisible();
+      } finally {
+        await failed.unmount();
+      }
+    });
+
+    it('deja el cuerpo con un solo hijo', async () => {
+      mockGetPet.mockResolvedValue({
+        kind: 'ok',
+        pet: makePet({ nextVaccine: vaccine }),
+      });
+      const loaded = await render(<HomeScreen />, { wrapper: HomeWrapper });
+
+      try {
+        await screen.findByTestId('reminders-next-vaccine');
+        expect(
+          screen.getByTestId('reminders-section-body').children,
+        ).toHaveLength(1);
+      } finally {
+        await loaded.unmount();
+      }
+
+      mockGetPet.mockReturnValue(pending<PetState>());
+      const loading = await render(<HomeScreen />, { wrapper: HomeWrapper });
+
+      try {
+        await screen.findByTestId('reminders-section');
+        expect(
+          screen.getByTestId('reminders-section-body').children,
+        ).toHaveLength(1);
+      } finally {
+        await loading.unmount();
+      }
+
+      mockGetPet.mockResolvedValue({ kind: 'error' });
+      const failed = await render(<HomeScreen />, { wrapper: HomeWrapper });
+
+      try {
+        await screen.findByTestId('reminders-section');
+        expect(
+          screen.getByTestId('reminders-section-body').children,
+        ).toHaveLength(0);
+      } finally {
+        await failed.unmount();
+      }
+    });
+  });
 });

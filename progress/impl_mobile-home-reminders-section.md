@@ -35,6 +35,8 @@ Se completa durante la secuencia TDD; los hashes definitivos también quedan en
   detalle, sin renderizar el id ni añadir navegación).
 - **R7**: rojo `bbb54e4` (`0 d` contradice `Hoy`); verde `675390c` (helper de
   módulo con ramas futura, hoy y vencida, y texto/nombre accesible unidos).
+- **R8**: rojo `e0c15c7` (estado vacío ausente); verde `0752baf` (`Card`
+  neutral con la misma anatomía de fila y sin datos ficticios).
 
 ## Premisas corregidas contra el árbol
 
