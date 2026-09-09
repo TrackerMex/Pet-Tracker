@@ -334,6 +334,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
 describe('#62 R15: todo contador usa cifras tabulares', () => {
   const HOME_TABULAR_AT_9358CC7 = 4;
   const HOME_TABULAR_DELTA_69 = 1;
+  const HOME_TABULAR_DELTA_70 = 0;
   const counters = [
     [join('app', '(tabs)', 'map.tsx'), 3],
     [
@@ -366,6 +367,15 @@ describe('#62 R15: todo contador usa cifras tabulares', () => {
     const measured = home.match(/style=\{TABULAR_NUMS\}/g)?.length ?? 0;
 
     expect(measured - HOME_TABULAR_AT_9358CC7).toBe(HOME_TABULAR_DELTA_69);
+  });
+
+  it('#70 R18: registra el delta tabular de la sección de recordatorios', () => {
+    const home = readSource(join('screens', 'home', 'index.tsx'));
+    const measured = home.match(/style=\{TABULAR_NUMS\}/g)?.length ?? 0;
+
+    expect(
+      measured - HOME_TABULAR_AT_9358CC7 - HOME_TABULAR_DELTA_69,
+    ).toBe(HOME_TABULAR_DELTA_70);
   });
 });
 

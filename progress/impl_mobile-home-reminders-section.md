@@ -63,6 +63,8 @@ Se completa durante la secuencia TDD; los hashes definitivos también quedan en
 - **R16**: rojo `bbeb986` (filas/usos registrados, carta aún sin el bloque y
   longitud todavía 281); verde `b5575f9` (288 claves por idioma y bloque nuevo
   de `src/screens/home/index.tsx` en la carta).
+- **R17**: rojo `dfdf89a` (hex de producción detectado en `index.tsx`); verde
+  `f81668c` (tinta del icono restaurada al token resuelto por tema).
 
 ## Premisas corregidas contra el árbol
 
