@@ -125,6 +125,39 @@ Se completa durante la secuencia TDD; los hashes definitivos también quedan en
   Node/AWS y servicios simulados siguieron siendo los conocidos y no
   bloqueantes del harness.
 
+## Tercer pase
+
+- **Gate previo**: D7 quedó firmada por el humano en `4e4efdd`, sobre la
+  enmienda `30eda5b`; `a62fe67` aclaró que las sondas transitorias de O5 están
+  autorizadas. El baseline `env -u FORCE_COLOR ./init.sh` terminó con exit 0:
+  backend 163 suites/1243 tests, infra 2/14, móvil 68/1078, e2e 25 suites/354
+  tests pasados y 3 suites/8 tests omitidos; build, lint y typecheck verdes.
+- **Candados D7**: `232c38b` añadió en R5 un `now` sintético cuyo día local es
+  10 y cuyo día UTC es 11, y extendió las llamadas esperadas a `Date.UTC` con
+  sus componentes locales. R8 exige ahora `flex-row items-center gap-3` en el
+  estado vacío y R12 fija el segundo hijo de la fila cargada como el
+  envoltorio `flex-1`. En producción limpia, las dos suites dirigidas quedaron
+  92/92 verdes y `bun run typecheck` terminó verde.
+- **Sonda O5-a**: se cambió transitoriamente la fila vacía de
+  `flex-row items-center gap-3` a `gap-3`. `index.test.tsx` quedó con 1
+  fallo/85 verdes, exactamente en R8: esperaba la receta de fila y recibió la
+  `Card` sin `flex-row items-center`. Se restauró y `git diff` quedó vacío.
+- **Sonda O5-b**: se cambió transitoriamente el envoltorio de nombre + fecha de
+  `flex-1` a `w-24`. `index.test.tsx` quedó con 1 fallo/85 verdes,
+  exactamente en R12: esperaba `flex-1` y recibió `w-24`. Se restauró y
+  `git diff` quedó vacío; las dos suites dirigidas volvieron a 92/92 verdes.
+- **M9**: rojo `9adea68`, sustituyendo los getters locales de `now` por
+  `getUTCFullYear`/`getUTCMonth`/`getUTCDate`. El comando literal
+  `bun run test`, con `TZ` sin definir, dejó 1 suite/1 test rojo y 67 suites/
+  1077 tests verdes: el caso sesgado de R5 esperaba `5` y recibió `4`. Verde
+  `4140c2c`: 68/68 suites y 1078/1078 tests. La comprobación
+  `git diff --quiet 9adea68^ 4140c2c -- mobile-pet-tracker/src/screens/home/format.ts`
+  confirmó que el par restaura producción exactamente; el diff conjunto de
+  `format.ts` e `index.tsx` contra `4e4efdd` también quedó vacío.
+- **Grafo**: `graphify update .` terminó con exit 0; reextrajo 723 ficheros y
+  reconstruyó 11281 nodos, 17285 aristas y 717 comunidades. Conservó el aviso
+  conocido de `tree_sitter_sql` y no produjo cambios versionados.
+
 ## Deltas R18
 
 Medición ejecutada contra `b0ec5a8`, conservando cada base como expresión y no
