@@ -110,6 +110,11 @@ jest.mock('reicon-react-native', () => {
     CalendarPlus: mockIcon('icon-calendar-plus'),
     FileText: mockIcon('icon-file-text'),
     Syringe: mockIcon('icon-syringe'),
+    Bacteria: mockIcon('icon-bacteria'),
+    Pill: mockIcon('icon-pill'),
+    Stethoscope: mockIcon('icon-stethoscope'),
+    Bone: mockIcon('icon-bone'),
+    Bell: mockIcon('icon-bell'),
   };
 });
 
@@ -188,6 +193,29 @@ function makeReminder(overrides: Partial<Reminder> = {}): Reminder {
     status: 'scheduled',
     ...overrides,
   };
+}
+
+function makeReminderFixture(): Reminder[] {
+  return [
+    makeReminder({
+      id: 'rem-a',
+      type: 'appointment',
+      title: 'Consulta anual',
+      dueAt: localIso(2026, 8, 13),
+    }),
+    makeReminder({
+      id: 'rem-c',
+      type: 'food',
+      title: 'Comprar croquetas',
+      dueAt: localIso(2026, 8, 16),
+    }),
+    makeReminder({
+      id: 'rem-b',
+      type: 'medication',
+      title: 'Pastilla antipulgas',
+      dueAt: localIso(2026, 8, 11),
+    }),
+  ];
 }
 
 function pending<T>(): Promise<T> {
@@ -1948,26 +1976,7 @@ describe('#85 R5: la sección pinta los recordatorios reales', () => {
     name: 'Antirrábica',
     nextDoseAt: '2026-09-15',
   };
-  const reminderFixture = [
-    makeReminder({
-      id: 'rem-a',
-      type: 'appointment',
-      title: 'Consulta anual',
-      dueAt: localIso(2026, 8, 13),
-    }),
-    makeReminder({
-      id: 'rem-c',
-      type: 'food',
-      title: 'Comprar croquetas',
-      dueAt: localIso(2026, 8, 16),
-    }),
-    makeReminder({
-      id: 'rem-b',
-      type: 'medication',
-      title: 'Pastilla antipulgas',
-      dueAt: localIso(2026, 8, 11),
-    }),
-  ];
+  const reminderFixture = makeReminderFixture();
 
   beforeEach(() => {
     jest.useFakeTimers();
@@ -2110,6 +2119,100 @@ describe('#85 R5: la sección pinta los recordatorios reales', () => {
     expect(
       within(row).getByTestId('reminders-item-rem-1-days'),
     ).not.toHaveTextContent(/NaN/);
+  });
+});
+
+describe('#85 R6: cada tipo trae su icono, su hueco y su tinta', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date(2026, 8, 10, 12, 0));
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    const pet = makePet();
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+    mockListReminders.mockResolvedValue({
+      kind: 'ok',
+      reminders: makeReminderFixture(),
+    });
+    jest
+      .spyOn(Uniwind, 'getCSSVariable')
+      .mockImplementation((token) => token);
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+    jest.restoreAllMocks();
+  });
+
+  it('liga icono, superficie y tinta a su tipo', async () => {
+    await renderHome();
+
+    const expected = [
+      ['rem-b', 'icon-pill', 'amber'],
+      ['rem-a', 'icon-stethoscope', 'green'],
+      ['rem-c', 'icon-bone', 'rose'],
+    ] as const;
+
+    for (const [id, iconTestID, slot] of expected) {
+      const row = await screen.findByTestId(`reminders-item-${id}`);
+      const icon = within(row).getByTestId(iconTestID);
+
+      expect(icon.props.color).toBe(`--color-category-${slot}-strong`);
+      expect(icon.parent?.props.className).toBe(
+        `size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS[slot].surface}`,
+      );
+    }
+  });
+
+  it('resuelve el hueco neutral con bg-default y tinta muted', async () => {
+    mockListReminders.mockResolvedValue({
+      kind: 'ok',
+      reminders: [makeReminder({ type: 'custom' })],
+    });
+
+    await renderHome();
+
+    const row = await screen.findByTestId('reminders-item-rem-1');
+    const icon = within(row).getByTestId('icon-bell');
+    expect(icon.props.color).toBe('--color-muted');
+    expect(icon.parent?.props.className).toBe(
+      `size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS.neutral.surface}`,
+    );
+  });
+
+  it('cubre los siete tipos y no inventa la categoría', () => {
+    const source = readFileSync(
+      join(process.cwd(), 'src/screens/home/index.tsx'),
+      'utf8',
+    );
+    const iconMap =
+      source.match(
+        /const REMINDER_ROW_ICONS:[\s\S]*?= \{[\s\S]*?\n\};/,
+      )?.[0] ?? '';
+
+    expect(iconMap).not.toBe('');
+    for (const type of [
+      'vaccine',
+      'deworming',
+      'medication',
+      'appointment',
+      'weight',
+      'food',
+      'custom',
+    ]) {
+      expect(iconMap).toMatch(new RegExp(`\\b${type}:`));
+    }
+    expect(iconMap).not.toMatch(
+      /['"](?:blue|amber|green|violet|rose|neutral)['"]/,
+    );
   });
 });
 
