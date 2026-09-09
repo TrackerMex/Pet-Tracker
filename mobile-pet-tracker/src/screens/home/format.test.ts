@@ -145,6 +145,9 @@ describe('#85 R2: localDayOf reduce el instante a día civil local', () => {
       getFullYear: () => 2026,
       getMonth: () => 0,
       getDate: () => 5,
+      getUTCFullYear: () => 2026,
+      getUTCMonth: () => 0,
+      getUTCDate: () => 5,
     } as unknown as Date;
     const dateConstructor = jest
       .spyOn(global, 'Date')
