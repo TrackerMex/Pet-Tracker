@@ -1100,6 +1100,48 @@ ese punto del orden. Es exactamente la comprobación que el encargo del
 
   - [X] Aprobado por humano
 
+
+### A8 — la evidencia prescrita de M3 estaba mal contada
+
+**Codex volvió a parar bien**, y esta vez el defecto es **solo de la evidencia
+escrita**, no del candado.
+
+La tabla de R15 dice que con M3 plantada —el filtro pierde la cláusula
+`status === 'scheduled'`— *"Entran `rem-sent` y `rem-cancelled`"*. **Falso.** Con
+la fixture normativa y el tope de tres, la salida ordenada es
+`rem-today(+0d)`, `rem-next(+1d)`, `rem-sent(+2d)`, `rem-cancelled(+3d)`: el
+cuarto **lo recorta el tope**. Solo aflora `rem-sent`. Codex midió 1 fallo/12
+verdes, exactamente por él.
+
+**El candado NO se debilita, y esto es lo que había que decidir.** La salida
+esperada del `it` son **exactamente dos ids**, así que cualquier intruso lo pone
+rojo. Verificado caso por caso:
+
+| mutación | salida con el tope aplicado | resultado |
+|---|---|---|
+| quitar solo la exclusión de `sent` | `[rem-today, rem-next, rem-sent]` | **rojo** |
+| quitar solo la exclusión de `cancelled` | `[rem-today, rem-next, rem-cancelled]` | **rojo** |
+| quitar las dos (M3 tal cual) | `[rem-today, rem-next, rem-sent]` | **rojo** |
+
+No hay zona ciega: el tope nunca esconde a los dos a la vez, porque en el caso
+"solo `cancelled`" el hueco que deja `sent` lo deja entrar.
+
+- **Qué se corrige, y solo esto**: la celda "¿Muere siempre?" de **M3** pasa a
+  decir *"**Sí.** Aflora `rem-sent`; `rem-cancelled` queda cuarto y lo recorta el
+  tope de tres. El `it` falla igual porque espera **exactamente dos** ids"*.
+- **Qué NO cambia**: la fixture normativa **se queda como está** —tocarla
+  arrastraría a M4, M5 y M6, y M6 depende del orden invertido del par
+  empatado—; M3 sigue siendo la misma mutación, sigue cayendo por el mismo `it`,
+  y M4 y M5 no se tocan.
+- **Corolario, y es la parte que importa**: prescribir la evidencia exacta de una
+  mutación es bueno —obliga a mirar— pero **la evidencia hay que contarla
+  aplicando todas las cláusulas del pipeline**, no solo la que la mutación
+  rompe. Aquí se contó el filtro y se olvidó el tope, que es la cláusula
+  siguiente. Vale para cualquier mutación sobre una tubería de
+  filtrar-ordenar-cortar.
+
+  - [ ] Aprobado por humano
+
 ## Aprobación
 
 - [X] Aprobado por humano (fecha: 2026-09-09) ← gate obligatorio antes de implementar
