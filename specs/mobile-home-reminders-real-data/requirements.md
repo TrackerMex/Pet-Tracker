@@ -1345,7 +1345,7 @@ de verificación y necesitan sonda. Aquí se detectó en R9 y R10; R7 y R12 sí 
 llevaban, lo que prueba que la distinción se conocía y se aplicó de forma
 desigual.
 
-  - [ ] Aprobado por humano
+  - [X] Aprobado por humano
 
 ## Aprobación
 
