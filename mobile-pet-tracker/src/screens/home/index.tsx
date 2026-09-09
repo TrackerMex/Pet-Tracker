@@ -659,7 +659,7 @@ export function HomeScreen() {
                       testID={`reminders-item-${reminder.id}-days`}
                       accessibilityLabel={countdown.label}
                       style={TABULAR_NUMS}
-                      className={`rounded-full px-2.5 py-1 text-xs font-bold ${CATEGORY_SLOTS[slot].surface} ${CATEGORY_SLOTS[slot].ink}`}
+                      className={`rounded-full px-2.5 py-1 text-xs font-bold ${CATEGORY_SLOTS.amber.surface} ${CATEGORY_SLOTS.amber.ink}`}
                     >
                       {countdown.text}
                     </Text>
