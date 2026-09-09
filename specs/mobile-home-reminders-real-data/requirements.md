@@ -1140,7 +1140,7 @@ No hay zona ciega: el tope nunca esconde a los dos a la vez, porque en el caso
   siguiente. Vale para cualquier mutación sobre una tubería de
   filtrar-ordenar-cortar.
 
-  - [ ] Aprobado por humano
+  - [X] Aprobado por humano
 
 ## Aprobación
 
