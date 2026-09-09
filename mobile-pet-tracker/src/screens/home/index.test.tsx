@@ -16,6 +16,7 @@ import {
   type DailyActivityState,
 } from '../../api/activity';
 import { getPet, listPets, type PetState, type PetsState } from '../../api/pets';
+import { listReminders } from '../../api/reminders';
 import type { DayEntry, PetProfile } from '../../api/types';
 import * as apiHooks from '../../hooks/use-api';
 import type { ApiResult } from '../../hooks/use-api';
@@ -68,6 +69,10 @@ jest.mock('../../api/activity', () => ({
   getDailyActivity: jest.fn(),
 }));
 
+jest.mock('../../api/reminders', () => ({
+  listReminders: jest.fn(async () => ({ kind: 'ok', reminders: [] })),
+}));
+
 jest.mock('../../providers/auth-provider', () => ({
   useAuth: jest.fn(),
 }));
@@ -112,6 +117,7 @@ const apiUrl = 'http://example.test/v1';
 const mockGetDailyActivity = jest.mocked(getDailyActivity);
 const mockGetPet = jest.mocked(getPet);
 const mockListPets = jest.mocked(listPets);
+const mockListReminders = jest.mocked(listReminders);
 const mockUseAuth = jest.mocked(useAuth);
 const mockRouter = jest.mocked(router);
 const mockUseFocusEffect = jest.mocked(useFocusEffect);
@@ -1877,6 +1883,43 @@ describe('#85 R1: la sección recupera su rótulo en los dos idiomas', () => {
   });
 });
 
+describe('#85 R4: la Home pide los recordatorios de la mascota', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    const pet = makePet();
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+  });
+
+  it('pide una vez los recordatorios de la mascota seleccionada', async () => {
+    await renderHome();
+
+    await waitFor(() => expect(mockListReminders).toHaveBeenCalledTimes(1));
+    expect(mockListReminders).toHaveBeenCalledWith(
+      apiUrl,
+      'jwt-token',
+      'pet-1',
+    );
+  });
+
+  it('no pide nada sin mascota seleccionada', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+
+    await renderHome();
+
+    await screen.findByTestId('home-empty');
+    expect(mockListReminders).not.toHaveBeenCalled();
+  });
+});
+
 describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
   const vaccine = {
     id: 'vac-9',
@@ -2400,7 +2443,8 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
         pets: mockListPets.mock.calls.length,
         detail: mockGetPet.mock.calls.length,
         activity: mockGetDailyActivity.mock.calls.length,
-      }).toEqual({ pets: 1, detail: 1, activity: 1 });
+        reminders: mockListReminders.mock.calls.length,
+      }).toEqual({ pets: 1, detail: 1, activity: 1, reminders: 1 });
     });
   });
 
