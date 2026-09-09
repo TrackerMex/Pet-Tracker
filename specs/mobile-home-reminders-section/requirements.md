@@ -957,6 +957,61 @@ lo habilita de paso.
 
 ---
 
+## Decisiones de implementación
+
+### D1 — la aserción de cardinalidad se traslada de R1 a R9
+
+**Codex paró antes de escribir una línea de código y paró bien.** `tasks.md`
+§R1 se contradice consigo mismo: su test rojo exige que
+`reminders-section-body.children` tenga longitud **1** en el escenario cargado
+y **1** en el pendiente (`:358`), pero su implementación mínima manda dejar el
+cuerpo **vacío** (`:363`). Los hijos reales no existen hasta **R6** (la fila),
+**R8** (el estado vacío) y **R9** (el esqueleto). Con el orden aprobado, ese
+test no puede ponerse verde sin un placeholder que nadie autorizó, sin
+adelantar requisitos o sin diferir el assert.
+
+- **Qué se cambia, y solo esto**: R1 conserva su primer `it` —cabecera, rótulo,
+  receta tipográfica y `reminders-see-all`— y **pierde** el `it('deja el cuerpo
+  con un solo hijo')`. Esa aserción de cardinalidad **se traslada íntegra a
+  R9**, que es el último de los tres requisitos que introduce un hijo del
+  cuerpo: al llegar ahí, los tres escenarios ya tienen su hijo real y el assert
+  mide lo que dice medir.
+- **Qué NO cambia**: la cardinalidad se sigue contando sobre `children` del
+  contenedor y **nunca** sobre coincidencias de `testID`; siguen siendo las
+  mismas tres longitudes —1 cargado, 1 pendiente, 0 error—; y **M5 sigue
+  plantando un elemento sin `testID`**, ahora contra el candado de R9. No se
+  relaja ningún assert: se mueve de sitio para que pueda existir.
+- **Por qué no la otra salida**: autorizar un placeholder transitorio en R1
+  daría un verde que no prueba nada y habría que borrarlo tres requisitos
+  después. Mover el assert al sitio donde el sujeto existe es lo que C4 pide.
+
+### D2 — dos correcciones a premisas de la spec, sin efecto en el alcance
+
+Detectadas por Codex al leer la spec contra el árbol. Se corrigen aquí para que
+no se propaguen, como manda el precedente de #67:
+
+1. La spec dice que `pet-profile-summary-slots` **no existe** como id. Era
+   cierto al escribirla; desde entonces el leader abrió **#83**
+   (`meals-served-tracking`) y **#84** (`reminder-dates-days-until-drift`). Las
+   citas a "feature propia" de §Fuera de alcance apuntan a esos dos ids.
+2. Las líneas citadas de `food.tsx` se desplazaron. El hecho —que la comida
+   servida se finge con el reloj local— se sostiene; el número no. Quien
+   implemente re-deriva la línea, no la copia.
+
+### D3 — M1 no distingue lo que dice distinguir
+
+Codex encontró que **M1 falla también en UTC**, por `-0` frente a `0`: en Jest
+`expect(-0).toBe(0)` es rojo. Una mutación que debía morir **solo** bajo una
+zona horaria negativa muere siempre, y por una razón que no tiene nada que ver
+con la zona horaria. Eso la invalida como prueba de zona ciega.
+
+- **Qué se autoriza**: que `calendarDaysUntil` normalice el cero —devolver `0`
+  y nunca `-0`— y que M1 se replantee para que su rojo dependa **de verdad** de
+  la zona horaria. La conducta que R5 exige no cambia; lo que se arregla es que
+  el candado pueda demostrarla.
+
+- [ ] Aprobado por humano
+
 ## Aprobación
 
 - [X] Aprobado por humano (fecha: 2026-09-08) ← gate obligatorio antes de implementar
