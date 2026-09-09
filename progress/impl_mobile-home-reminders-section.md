@@ -178,5 +178,12 @@ producción.
 - Grep-clean de R19: cero hex fuera de `src/theme/`, cero clases arbitrarias,
   `StyleSheet.create`, sombras/elevation legacy; el inventario de radios contiene
   únicamente `rounded-card`, `rounded-full` y `rounded-xl`.
-- `env -u FORCE_COLOR ./init.sh`: pendiente de la única corrida final.
-- `graphify update .`: pendiente hasta después del gate final.
+- Única corrida final `env -u FORCE_COLOR ./init.sh`: exit 0. Build verde;
+  backend 163 suites/1243 tests, infra 2/14, móvil 68/1078 con 1 snapshot,
+  e2e 25 suites/354 tests pasados y 3 suites/8 tests omitidos; lint y typecheck
+  verdes. Los avisos de `.env`, `STATUS.md`, Node/AWS y servicios simulados son
+  los mismos avisos no bloqueantes del harness; no se modificó ninguno.
+- `graphify update .`: exit 0; reextrajo 726 ficheros y reconstruyó el grafo
+  con 11234 nodos, 17241 aristas y 718 comunidades. El aviso por la dependencia
+  opcional `tree_sitter_sql` se dejó intacto —esta feature no añade
+  dependencias— y el comando no produjo cambios versionados.
