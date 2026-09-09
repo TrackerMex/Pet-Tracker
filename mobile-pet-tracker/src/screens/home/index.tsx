@@ -10,6 +10,7 @@ import {
   FileText,
   Map,
   Moon,
+  Syringe,
   Walk,
   Weight,
   Wifi,
@@ -36,7 +37,14 @@ import {
 } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { CATEGORY_SLOTS } from '../../utils/category-palette';
-import { fmtCount, fmtKg, fmtKm, fmtMinutes } from './format';
+import {
+  calendarDaysUntil,
+  fmtCount,
+  fmtDate,
+  fmtKg,
+  fmtKm,
+  fmtMinutes,
+} from './format';
 import { WeeklyActivityChart } from './weekly-activity-chart';
 
 const WEEKLY_ACTIVITY_SKELETON_HEIGHT = 408;
@@ -91,11 +99,12 @@ export function HomeScreen() {
     petId: string;
   } | null>(null);
   const insets = useSafeAreaInsets();
-  const [accent, success, warning, muted] = useThemeColors([
+  const [accent, success, warning, muted, vaccineInk] = useThemeColors([
     'accent-strong',
     'success',
     'warning',
     'muted',
+    'category-blue-strong',
   ]);
   const quickActionInks = useThemeColors(
     QUICK_ACTIONS.map(({ slot }) => `category-${slot}-strong`),
@@ -122,6 +131,11 @@ export function HomeScreen() {
   );
   const detail = useApi(detailFn);
   const activity = useApi(activityFn);
+  const nextVaccine =
+    detail.data?.kind === 'ok' ? detail.data.pet.nextVaccine : null;
+  const nextVaccineDays = nextVaccine
+    ? calendarDaysUntil(nextVaccine.nextDoseAt, new Date())
+    : null;
   const refetchPets = pets.refetch;
   const refetchDetail = detail.refetch;
   const today =
@@ -402,7 +416,7 @@ export function HomeScreen() {
 
         {selectedPetId ? (
           <View testID="reminders-section" className="gap-3">
-            <View className="flex-col items-center justify-between">
+            <View className="flex-row items-center justify-between">
               <Text
                 testID="reminders-section-title"
                 className="text-base font-bold text-foreground"
@@ -414,7 +428,44 @@ export function HomeScreen() {
               </Pressable>
             </View>
 
-            <View testID="reminders-section-body" className="gap-2" />
+            <View testID="reminders-section-body" className="gap-2">
+              {nextVaccine && nextVaccineDays !== null ? (
+                <Card
+                  testID="reminders-next-vaccine"
+                  className="flex-row items-center gap-3"
+                >
+                  <View
+                    className={`size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS.blue.surface}`}
+                  >
+                    <Syringe size={20} color={vaccineInk} />
+                  </View>
+                  <View className="flex-1">
+                    <Text
+                      testID="reminders-next-vaccine-name"
+                      className="text-sm font-semibold text-foreground"
+                    >
+                      {nextVaccine.name}
+                    </Text>
+                    <Text
+                      testID="reminders-next-vaccine-date"
+                      className="text-xs font-normal text-muted"
+                    >
+                      {fmtDate(nextVaccine.nextDoseAt, locale)}
+                    </Text>
+                  </View>
+                  <Text
+                    testID="reminders-next-vaccine-days"
+                    accessibilityLabel={t('home.nextVaccineDaysLeft', {
+                      days: nextVaccineDays,
+                    })}
+                    style={TABULAR_NUMS}
+                    className={`rounded-full px-2.5 py-1 text-xs font-bold ${CATEGORY_SLOTS.amber.surface} ${CATEGORY_SLOTS.amber.ink}`}
+                  >
+                    {t('home.nextVaccineDays', { days: nextVaccineDays })}
+                  </Text>
+                </Card>
+              ) : null}
+            </View>
           </View>
         ) : null}
 
