@@ -25,43 +25,49 @@ describe('#70 R4: calendarDaysUntil cuenta días de calendario', () => {
   });
 
   describe('#70 R5: la zona horaria no desplaza fechas', () => {
-    it('no se desplaza un día en una zona horaria negativa', () => {
-      const previousTimezone = process.env.TZ;
+    it('normaliza ambos días por componentes sin parsear la cadena cruda', () => {
+      const dateParse = jest.spyOn(Date, 'parse');
+      const dateUtc = jest.spyOn(Date, 'UTC');
 
       try {
-        process.env.TZ = 'America/Mexico_City';
-
         expect(
           calendarDaysUntil('2026-09-15', new Date(2026, 8, 10, 23, 30)),
         ).toBe(5);
         expect(
           calendarDaysUntil('2026-09-15', new Date(2026, 8, 10, 0, 30)),
         ).toBe(5);
+
+        expect(dateParse).not.toHaveBeenCalled();
+        expect(dateUtc.mock.calls).toEqual([
+          [2026, 8, 15],
+          [2026, 8, 10],
+          [2026, 8, 15],
+          [2026, 8, 10],
+        ]);
       } finally {
-        if (previousTimezone === undefined) {
-          delete process.env.TZ;
-        } else {
-          process.env.TZ = previousTimezone;
-        }
+        dateParse.mockRestore();
+        dateUtc.mockRestore();
       }
     });
 
     it('formatea la fecha visible sin desplazarla', () => {
-      const previousTimezone = process.env.TZ;
+      const RealDate = Date;
+      const dateConstructor = jest
+        .spyOn(global, 'Date')
+        .mockImplementation(
+          (value: string | number | Date, ...dateParts: number[]) =>
+            Reflect.construct(RealDate, [value, ...dateParts]) as Date,
+        );
 
       try {
-        process.env.TZ = 'America/Mexico_City';
-
         const formatted = fmtDate('2026-09-15', 'es-MX');
 
         expect(formatted).toContain('15');
         expect(formatted).not.toContain('14');
+        expect(dateConstructor.mock.calls).toEqual([[2026, 8, 15]]);
+        expect(dateConstructor).not.toHaveBeenCalledWith('2026-09-15');
       } finally {
-        if (previousTimezone === undefined) {
-          delete process.env.TZ;
-        } else {
-          process.env.TZ = previousTimezone;
-        }
+        dateConstructor.mockRestore();
       }
     });
   });

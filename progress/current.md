@@ -23,8 +23,12 @@
 ## Implementacion activa — #70 mobile-home-reminders-section
 
 - **Inicio**: 2026-09-09 04:20 UTC.
+- **Segundo pase iniciado**: 2026-09-09 13:36 UTC, despues del rechazo del reviewer.
 - **Branch/worktree**: `feature/70-mobile-home-reminders-section` en `/home/claude/sites/Pet-Tracker` (el worktree recibido en el contexto estaba asociado a #43; no se desmonta ni se altera).
-- **Baseline**: `env -u FORCE_COLOR ./init.sh` en verde antes de tocar codigo.
+- **Gate D4-D6**: aprobado por el humano en `6eae6ed`; D6 esta firmada en `requirements.md:1106` antes de iniciar este pase.
+- **Baseline del segundo pase**: `env -u FORCE_COLOR ./init.sh` en verde antes de tocar los candados (163 suites backend, 2 infra, 68 movil y 25 e2e; lint y typecheck verdes).
+- **Veredicto a corregir**: B1 — los dos `it` de R5 cambian `process.env.TZ` dentro de Jest, pero V8 conserva UTC; M1 y M2 dejan verde la invocacion por defecto. O1 entra en alcance por D6: faltan candados de tinta, receta tipografica y pertenencia del icono al arbol.
+- **Plan del segundo pase**: sustituir el andamiaje TZ por espias sobre el constructor `Date`; anadir las aserciones de O1 observadas con `within`; probar cada eje de O1 con una sonda temporal de produccion; replantar M1 y M2 por separado como commits rojos de produccion y restaurarlos en commits verdes; rehacer la evidencia en `progress/impl_mobile-home-reminders-section.md`; ejecutar `graphify update .` y el gate final.
 - **Plan**: TDD y commits rojo/verde en el orden aprobado R2 → R4 → R5 → R1 → R6 → R7 → R8 → R9 → R10 → R11 → R12 → R13 → R14 → R15 → R3 → R16 → R17 → R18 → R19; despues, ocho mutaciones de produccion M1-M8, una a una, informe y corrida final unica de `init.sh`.
 - **Bloqueo previo al codigo**: `specs/mobile-home-reminders-section/tasks.md` hace incompatible el verde de R1 con su propio paso de implementacion. El test obligatorio exige `reminders-section-body.children` con longitudes `1` (perfil cargado), `1` (detalle pendiente) y `0` (error), pero el paso verde de R1 ordena dejar el cuerpo vacio; los hijos reales se implementan despues en R6, R8 y R9. Respetar ambas instrucciones exigiria adelantar esos requisitos, diferir el assert o introducir un hijo provisional no prescrito. La regla del handoff obliga a parar antes de enmendar una spec aprobada.
 - **Premisas desactualizadas detectadas**: la spec dice que el id maximo es 81 y que E2/E3 carecen de feature, pero el arbol ya contiene #83 y #84; la cita `food.tsx:185` tambien se desplazo (el calculo vive ahora en `:65-67` y `:194`). Ademas, M1 no queda verde en UTC con todo R4: el caso de hoy al mediodia produce `-0`, y Jest `toBe(0)` lo distingue. Ninguna de estas premisas autoriza a cambiar la spec sin un nuevo gate humano.

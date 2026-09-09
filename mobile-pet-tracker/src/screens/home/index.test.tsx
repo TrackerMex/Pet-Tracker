@@ -1907,17 +1907,27 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
     it('liga nombre, fecha y contador a su nodo y a ninguno más', async () => {
       jest.useFakeTimers();
       jest.setSystemTime(new Date(2026, 8, 10, 12, 0));
+      jest
+        .spyOn(Uniwind, 'getCSSVariable')
+        .mockImplementation((token) => token);
 
       await renderHome();
 
       const section = await screen.findByTestId('reminders-section');
       const row = within(section).getByTestId('reminders-next-vaccine');
+      const icon = within(row).getByTestId('icon-syringe');
       const name = within(row).getByTestId('reminders-next-vaccine-name');
       const date = within(row).getByTestId('reminders-next-vaccine-date');
       const days = within(row).getByTestId('reminders-next-vaccine-days');
 
+      expect(icon).toBeVisible();
+      expect(icon.props.color).toBe('--color-category-blue-strong');
       expect(name.props.children).toBe('Antirrábica');
+      expect(name.props.className).toBe(
+        'text-sm font-semibold text-foreground',
+      );
       expect(date.props.children).toBe('15 sep 2026');
+      expect(date.props.className).toBe('text-xs font-normal text-muted');
       expect(days.props.children).toBe('5 d');
       expect(name).not.toHaveTextContent('15 sep 2026');
       expect(name).not.toHaveTextContent('5 d');
@@ -1974,13 +1984,23 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
   describe('#70 R8: estado vacío de próxima vacuna', () => {
     it('dibuja un estado vacío con forma de fila cuando no hay vacuna', async () => {
       mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
+      jest
+        .spyOn(Uniwind, 'getCSSVariable')
+        .mockImplementation((token) => token);
 
       await renderHome();
 
       const section = await screen.findByTestId('reminders-section');
       const empty = within(section).getByTestId('reminders-none-upcoming');
+      const icon = within(empty).getByTestId('icon-syringe');
+      const text = within(empty).getByText('Sin vacuna próxima');
 
-      expect(within(empty).getByText('Sin vacuna próxima')).toBeVisible();
+      expect(icon).toBeVisible();
+      expect(icon.props.color).toBe('--color-muted');
+      expect(text).toBeVisible();
+      expect(text.props.className).toBe(
+        'flex-1 text-sm font-normal text-muted',
+      );
       expect(within(section).queryByTestId('reminders-next-vaccine')).toBeNull();
       expect(
         within(section).queryByTestId('reminders-next-vaccine-name'),
