@@ -1187,6 +1187,54 @@ lo demuestra.
 
   - [X] Aprobado por humano
 
+
+### D8 — el título dice "Recordatorios" y la sección muestra vacunas
+
+**Lo destapó la prueba de humo del 2026-09-09**, que es exactamente para lo que
+sirve: una mascota **con** recordatorios y **sin** vacuna próxima ve un
+encabezado que promete recordatorios y un cuerpo que habla de vacunas.
+
+```
+Título        home.reminders          "Recordatorios"
+Estado vacío  home.noUpcomingVaccine  "Sin vacuna próxima"
+```
+
+Ningún test lo detecta porque **los dos textos son los que la spec pidió**. El
+comportamiento es correcto contra la spec —§Fuera de alcance dice literalmente
+que listar *"cualquier otro tipo de recordatorio en la sección"* no entra, porque
+el contrato del perfil da **una** próxima vacuna y nada más— pero el nombre
+promete algo que la sección no hace.
+
+Que la sección muestre recordatorios de verdad necesita que el contrato del
+perfil los devuelva: **eso es #85**, feature aparte con trabajo de backend. Aquí
+se arregla lo barato, que es que el texto diga lo que hay.
+
+- **Qué se cambia**: dos **valores** del catálogo, en los dos idiomas. Las
+  **claves no se renombran** —`home.reminders` y `home.remindersSeeAll` siguen
+  llamándose igual— para no arrastrar el cambio a `index.tsx`, a los tests ni a
+  la longitud del catálogo:
+
+  | clave | es | en |
+  |---|---|---|
+  | `home.reminders` | `Próxima vacuna` | `Next vaccine` |
+  | `home.remindersSeeAll` | `Ver recordatorios` | `See reminders` |
+
+  El enlace se re-rotula porque con el título nuevo *"Ver todos"* leería como
+  "ver todas las vacunas", y lleva a `/reminders`. `Ver recordatorios` dice a
+  dónde va.
+- **Qué NO cambia**: ni el destino de R10 (`/reminders`), ni `testID` alguno, ni
+  la anatomía de la sección, ni `home.noUpcomingVaccine`, ni el número de claves
+  del catálogo — **`language-provider.test.tsx` no se mueve**, porque no se añade
+  ni se quita ninguna clave.
+- **Ojo al delta de R18**: `ui-copy-table.ts` y `ui-language.test.ts` pueden
+  fijar los literales. Si alguno lo hace, se actualiza **el literal**, nunca el
+  recuento. Si algún candado exige mover una cifra, **para y repórtalo**: sería
+  señal de que este cambio toca más de lo que dice.
+- **Sin mutación nueva**: es copy. Basta el rojo del candado de literal, si
+  existe, y dejar escrito en el informe qué test cayó y por qué.
+
+  - [ ] Aprobado por humano
+
 ## Aprobación
 
 - [X] Aprobado por humano (fecha: 2026-09-08) ← gate obligatorio antes de implementar
