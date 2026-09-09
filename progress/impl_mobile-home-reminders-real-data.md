@@ -87,6 +87,7 @@ Todas las mutaciones se plantan en código de producción, de una en una.
 
 Cierre R15: `format.test.ts` + `index.test.tsx` quedaron 123/123 verdes y
 `bun run typecheck` terminó en exit 0 con todas las mutaciones restauradas.
+Después, `graphify update .` actualizó correctamente el índice ignorado.
 
 ## A8 — corrección de la evidencia prescrita para M3
 
