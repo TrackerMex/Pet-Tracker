@@ -1234,7 +1234,7 @@ Lo honesto es indexar por la **función pasada** al hook y no por el orden de
 llamada. No entra aquí: es una refactorización de un test heredado y esta
 feature ya lleva cuatro paradas.
 
-  - [ ] Aprobado por humano
+  - [X] Aprobado por humano
 
 ## Aprobación
 
