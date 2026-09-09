@@ -176,6 +176,16 @@ function HomeWrapper({ children }: { children: ReactNode }) {
   );
 }
 
+function HomeWrapperEn({ children }: { children: ReactNode }) {
+  return (
+    <HeroUINativeProvider>
+      <LanguageProvider initial="en">
+        <SelectedPetProvider>{children}</SelectedPetProvider>
+      </LanguageProvider>
+    </HeroUINativeProvider>
+  );
+}
+
 async function renderHome() {
   await render(<HomeScreen />, { wrapper: HomeWrapper });
 }
@@ -1823,6 +1833,50 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
   });
 });
 
+describe('#85 R1: la sección recupera su rótulo en los dos idiomas', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    const pet = makePet();
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+  });
+
+  it('rotula en español', async () => {
+    await renderHome();
+
+    const section = await screen.findByTestId('reminders-section');
+
+    expect(
+      within(section).getByTestId('reminders-section-title'),
+    ).toHaveTextContent('Recordatorios');
+    expect(within(section).getByTestId('reminders-see-all')).toHaveTextContent(
+      'Ver todos',
+    );
+  });
+
+  it('rotula en inglés', async () => {
+    await render(<HomeScreen />, { wrapper: HomeWrapperEn });
+
+    const section = await screen.findByTestId('reminders-section');
+
+    expect(
+      within(section).getByTestId('reminders-section-title'),
+    ).toHaveTextContent('Reminders');
+    expect(within(section).getByTestId('reminders-see-all')).toHaveTextContent(
+      'See all',
+    );
+    expect(within(section).getByText('No upcoming vaccine')).toBeVisible();
+  });
+});
+
 describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
   const vaccine = {
     id: 'vac-9',
@@ -1895,12 +1949,12 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
       );
       expect(section.children[0]).toBe(header);
       expect(section.children[1]).toBe(body);
-      expect(title).toHaveTextContent('Próxima vacuna');
+      expect(title).toHaveTextContent('Recordatorios');
       expect(title.props.className).toBe(
         'text-base font-bold text-foreground',
       );
       expect(seeAll).toBeVisible();
-      expect(seeAll).toHaveTextContent('Ver recordatorios');
+      expect(seeAll).toHaveTextContent('Ver todos');
       expect(body.props.className).toBe('gap-2');
     });
   });
