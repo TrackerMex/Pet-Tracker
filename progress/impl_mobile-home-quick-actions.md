@@ -1,6 +1,6 @@
 # Implementación — mobile-home-quick-actions (#71)
 
-- Fecha: 2026-09-08
+- Fecha: 2026-09-08; correcciones tras review: 2026-09-09
 - Branch: `feature/71-mobile-home-quick-actions`
 - Base de medición de R14: `f9163bf`
 - HEAD al iniciar esta sesión: `71a4db7`
@@ -27,11 +27,11 @@ Se respetó el orden prescrito:
 
 | R-id | Resultado | Rojo → verde |
 |---|---|---|
-| R1 | tabla, rótulo y tres tiles en orden | `4552103` → `5eb6c2c` |
-| R2 | navegación exacta y cruce con rutas reales | `20355a6` → `48a0fe0`; correcciones de arnés `167e505`, `7f967b3` |
-| R3 | solo tres destinos ganan sitio; ninguna pestaña | `d4c506e` → `feb786f` |
-| R4 | icono, etiqueta, color y destino ligados por tile con `within(tile)` | `b9b6926` → `50527a6` |
-| R5 | fondo desde `CATEGORY_SLOTS`; tinta derivada del mismo hueco | `5c73799` → `9f6b76c` |
+| R1 | tabla, rótulo y tres tiles en orden | `4552103` → `5eb6c2c`; corrección `9a4854e` → `7bf12d5` |
+| R2 | navegación exacta y cruce con rutas reales, sin cast común | `20355a6` → `48a0fe0`; correcciones `167e505`, `7f967b3`, `da9a847` → `ba92380` y `db588de` |
+| R3 | solo tres destinos ganan sitio; ninguna pestaña | `d4c506e` → `feb786f`; corrección `9a4854e` → `7bf12d5` |
+| R4 | icono, etiqueta, color, tinta y destino ligados por tile con `within(tile)` | `b9b6926` → `50527a6`; corrección `8246d2e` → `41838b5` |
+| R5 | fondo desde `CATEGORY_SLOTS`; tinta derivada y observada por hueco | `5c73799` → `9f6b76c`; corrección `8246d2e` → `41838b5` |
 | R6 | `min-h-11`, `flex-1`, sin `hitSlop` | `e98030e` → `494bae2` |
 | R7 | `Weight`, `CalendarPlus`, `FileText`, tamaño 24 y sin glifos del tab bar | preparación `a1796c9`; `8e21f05` → `bb3ae19` |
 | R8 | `rounded-xl` y un solo `CONTINUOUS_CORNER` dentro del `.map()` | `f8040c3` → `063d6c9` |
@@ -41,7 +41,7 @@ Se respetó el orden prescrito:
 | R11 | cuatro usos registrados y copy documentada | `cf6ec2e` → `84198eb` |
 | R13 | bloque nominal de drift sobre los tres fuentes | `9ea0a17` → `ed591de` |
 | R14 | deltas declarados; rojo natural `+4` del catálogo | `17c8c01` → `bf18ed2` |
-| R15/R15b | suite/typecheck y siete pares de mutación de producción | `7ed1283`…`8b9bef4`; gate final `b73eb38`; detalle abajo |
+| R15/R15b | suite/typecheck y mutaciones de producción | `7ed1283`…`8b9bef4`; correcciones `9a4854e`…`41838b5`; detalle abajo |
 
 `17c8c01` es deliberadamente un commit vacío: captura el árbol rojo natural
 que dejaron las cuatro claves de R1 frente a la base histórica. La spec autoriza
@@ -87,7 +87,7 @@ verde. No se mutó ningún mock.
 | 2 | intercambio de `Icon` entre Recordatorio y Documentos | 2 fallos: R4 no encontró `icon-calendar-plus` dentro del tile 2 y R7 no encontró `icon-file-text` dentro del tile 3 | `d94f57d` → `098bab5` |
 | 3 | intercambio de `labelKey` entre tiles 2 y 3 | R4 no encontró `Recordatorio` dentro del tile 2; el registro R11 siguió verde porque ambas claves conservan un uso | `d7460dd` → `8498798` |
 | 4 | Peso: `slot: 'violet'` → `'amber'` | R4 esperaba `bg-category-violet` y recibió `bg-category-amber`; el candado de forma R5 siguió verde | `acb5368` → `685bf22` |
-| 5 | cuarto tile con `Map`, `tabs.map`, `green`, `/map` | exactamente 2 fallos: R1 encontró `quick-action-map` y R3 contó cuatro definiciones | `9c2605f` → `2c84a52` |
+| 5 | cuarto tile con `Map`, `tabs.map`, `green`, `/map` | 3 fallos: R1 encontró `quick-action-map`, R2 contó cuatro destinos y R3 contó cuatro definiciones | `9c2605f` → `2c84a52` |
 | 6 | rejilla detrás de `weekly-activity-card` | R10 recibió `weekly-activity-card` antes de `quick-actions`; los dos órdenes heredados siguieron verdes | `15ab56c` → `7a20b4a` |
 | 7 | retirada de `min-h-11` | R6 recibió el `className` sin el objetivo táctil mínimo | `0c2d790` → `8b9bef4` |
 
@@ -100,7 +100,7 @@ errores ni warnings.
 
 ## Premisas contrastadas con el árbol
 
-Tres matices de redacción de la spec no describen literalmente el arnés, pero
+Cuatro matices de redacción de la spec no describen literalmente el arnés, pero
 no requieren enmienda ni dejan un comportamiento sin vigilar:
 
 1. R7/tasks dice “tres usos `size={24}`” al hablar de lectura de fuente. El
@@ -114,6 +114,11 @@ no requieren enmienda ni dejan un comportamiento sin vigilar:
    Cambiar un `slot` mantiene correctamente la derivación
    `CATEGORY_SLOTS[slot]`/``category-${slot}-strong``; R4 fija qué hueco
    corresponde a Peso.
+4. R2 afirma que el repo usaba `as Href` en dos sitios. Tras retirar de Home el
+   cast común innecesario, `src/` conserva siete usos: cuatro en Profile y uno
+   en Add Reminder, Reminders y Food. El `router.push` único del `.map()` acepta
+   las tres rutas sin cast y `tsc --noEmit` queda verde; por tanto `/weight-log`
+   vuelve a typecheckear sin quedar cubierto por `as Href`.
 
 No se editó ninguna spec `approved` para resolver estos matices.
 
@@ -125,13 +130,11 @@ por `AGENTS.md` para documentar la sesión mientras está activa. No se tocó la
 barra de tabs, `_layout.tsx`, `src/app/`, `src/components/`, `src/theme/`,
 `src/utils/`, backend ni infraestructura; tampoco se añadieron dependencias.
 
-Durante la corrida final apareció en este worktree compartido el commit
-concurrente `997c080`, perteneciente a otra sesión de Claude y ajeno a #71. Ese
-commit modifica `docs/demo-runbook.md`, fuera de §7, para aclarar que
-`AWS_PRESIGN_ENDPOINT_URL` está comentada en `.env.example`. No lo creó ni lo
-modificó esta implementación y se conservó sin reescribir historia ni revertir
-trabajo ajeno. Por ello el diff de la branch contra `71a4db7` sí enumera ese
-fichero externo, aunque no forma parte del alcance de la feature.
+La branch contiene dos commits de documentación ajenos a #71 y pertenecientes
+a otra sesión de Claude: `71a4db7` añadió el runbook de demo y una fila a
+`AGENTS.md` antes de que empezara esta implementación; `997c080` corrigió una
+línea del mismo runbook durante la primera corrida final. Se conservaron sin
+reescribir historia ni revertir trabajo ajeno y deben nombrarse al abrir la PR.
 
 ## Gate final
 
@@ -146,3 +149,37 @@ fichero externo, aunque no forma parte del alcance de la feature.
 - Aviso no bloqueante ya existente durante `init.sh`: AWS SDK comunica que sus
   versiones posteriores a la primera semana de enero de 2027 exigirán Node 22;
   la ejecución actual con Node 20.20.2 terminó verde.
+
+## Correcciones tras el veredicto
+
+El veredicto rechazado quedó registrado en `c18f099`. El preflight del
+2026-09-09 terminó con exit 0 antes de editar: 68 suites / 1054 tests móviles y
+25 suites / 354 tests e2e verdes.
+
+| Observación | Rojo → verde | Evidencia |
+|---|---|---|
+| O1 — exactamente tres tiles renderizados | `9a4854e` → `7bf12d5` | Con un cuarto `Pressable` inline a `/pairing`, la regex amplia `/^quick-action-/` recibió `quick-action-extra`; al retirar solo la mutación, el test volvió a verde. |
+| O2 — tinta ligada a cada tile | `8246d2e` → `41838b5` | Con `quickActionInks[0]`, R4 esperaba `--color-category-amber-strong` en Recordatorio y recibió violeta. El icono se consulta con `within(tile)`; restaurar `[index]` dejó el candado verde. |
+| O3 — cast no declarado | `da9a847` → `ba92380`; ajuste `db588de` | El test R2 quedó rojo contra el cast común; se retiraron el cast y el import, y tanto el test como `tsc --noEmit` pasaron. La aserción final usa regex para no sumar una coincidencia ficticia al inventario literal. |
+| O5 — evidencia de M5 | documentación | La fila original queda corregida: M5 provoca tres fallos, no dos. |
+
+Después de las correcciones se replantaron, una por una, las siete mutaciones
+originales de producción sobre el filtro de seis suites (198 tests), restaurando
+`src/screens/home/index.tsx` entre ejecuciones:
+
+| Mutación | Resultado rojo tras el review |
+|---|---|
+| M1 destino | 2 fallos: navegación exacta y cruce R4 |
+| M2 icono | 2 fallos: cruce R4 e iconografía R7 |
+| M3 etiqueta | 1 fallo: cruce R4 |
+| M4 hueco/color | 1 fallo: R4 detectó primero la tinta ámbar en Peso |
+| M5 cuarto tile `/map` | 3 fallos: árbol renderizado R1, inventario R2 y filtro R3 |
+| M6 colocación | 1 fallo: R10 |
+| M7 objetivo táctil | 1 fallo: R6 |
+
+El control posterior pasó 6/6 suites y 198/198 tests. No quedó ninguna mutación
+en producción, no se movió ninguna cifra de candado y no se tocó backend ni
+infraestructura.
+
+Gate correctivo final: pendiente de la única corrida final de
+`env -u FORCE_COLOR ./init.sh` y del posterior `graphify update .`.
