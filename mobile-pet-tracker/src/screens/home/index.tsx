@@ -537,7 +537,7 @@ export function HomeScreen() {
                   <View
                     className={`size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS.blue.surface}`}
                   >
-                    <Syringe size={20} color="#FFF7ED" />
+                    <Syringe size={20} color={vaccineInk} />
                   </View>
                   <View className="flex-1">
                     <Text
