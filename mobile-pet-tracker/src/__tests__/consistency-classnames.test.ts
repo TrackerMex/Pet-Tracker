@@ -335,11 +335,15 @@ describe('#62 R15: todo contador usa cifras tabulares', () => {
   const HOME_TABULAR_AT_9358CC7 = 4;
   const HOME_TABULAR_DELTA_69 = 1;
   const HOME_TABULAR_DELTA_70 = 1;
+  const HOME_TABULAR_DELTA_85 = 1;
   const counters = [
     [join('app', '(tabs)', 'map.tsx'), 3],
     [
       join('screens', 'home', 'index.tsx'),
-      HOME_TABULAR_AT_9358CC7 + HOME_TABULAR_DELTA_69 + HOME_TABULAR_DELTA_70,
+      HOME_TABULAR_AT_9358CC7 +
+        HOME_TABULAR_DELTA_69 +
+        HOME_TABULAR_DELTA_70 +
+        HOME_TABULAR_DELTA_85,
     ],
     [join('screens', 'home', 'weekly-activity-chart.tsx'), 4],
     [join('app', '(tabs)', 'health.tsx'), 2],
@@ -358,7 +362,7 @@ describe('#62 R15: todo contador usa cifras tabulares', () => {
 
   it('#69 R10: mantiene la base cerrada más los deltas medidos', () => {
     expect(counters.reduce((total, [, count]) => total + count, 0)).toBe(
-      14 + 4 + 1 + 1,
+      14 + 4 + 1 + 1 + 1,
     );
   });
 
@@ -367,7 +371,7 @@ describe('#62 R15: todo contador usa cifras tabulares', () => {
     const measured = home.match(/style=\{TABULAR_NUMS\}/g)?.length ?? 0;
 
     expect(measured - HOME_TABULAR_AT_9358CC7).toBe(
-      HOME_TABULAR_DELTA_69 + HOME_TABULAR_DELTA_70,
+      HOME_TABULAR_DELTA_69 + HOME_TABULAR_DELTA_70 + HOME_TABULAR_DELTA_85,
     );
   });
 
@@ -377,7 +381,7 @@ describe('#62 R15: todo contador usa cifras tabulares', () => {
 
     expect(
       measured - HOME_TABULAR_AT_9358CC7 - HOME_TABULAR_DELTA_69,
-    ).toBe(HOME_TABULAR_DELTA_70);
+    ).toBe(HOME_TABULAR_DELTA_70 + HOME_TABULAR_DELTA_85);
   });
 });
 
