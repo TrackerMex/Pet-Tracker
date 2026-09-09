@@ -1057,6 +1057,49 @@ lo habilita de paso.
 
 ---
 
+
+### A7 — la aserción inglesa del contador se traslada de R1 a R8
+
+**Codex paró antes de escribir una línea de código, y paró bien.** R1 exige que
+`it('rotula en inglés')` asserte, además de los rótulos, el
+`accessibilityLabel` **del contador de la primera fila de recordatorio**
+(`'In 1 days'`). Pero en R1 no existe ni la petición —llega en **R4**— ni la
+fila —llega en **R5**—. Ese `it` fallaría por **sujeto ausente**, no por la copy
+que R1 arregla, y su verde exigiría adelantar dos requisitos.
+
+Es el mismo fallo que la enmienda **D1 de #70** tuvo que corregir. Se repitió
+porque al escribir R1 pensé en "todo lo que la sección enseña en inglés" en vez
+de "lo que existe cuando R1 se implementa".
+
+- **Qué cambia, y solo esto**: `it('rotula en inglés')` de R1 **conserva** los
+  tres literales cuyo sujeto sí existe en R1 —`Reminders`, `See all` y el estado
+  vacío `No upcoming vaccine`, que #70 ya renderiza— y **pierde** la aserción
+  del `accessibilityLabel` del contador.
+- **A dónde va**: a **R8**, que es donde ya vive el candado del
+  `accessibilityLabel` del contador en español
+  —`it('expande la abreviatura del contador y no añade nombres redundantes')`,
+  que asserta `'Faltan 1 días'`, `'Faltan 3 días'` y `'Faltan 6 días'`—. Allí las
+  tres filas existen, y la aserción inglesa es **una locale más sobre el mismo
+  sujeto**, no un test nuevo: se renderiza el mismo escenario con
+  `HomeWrapperEn` y se asserta el contador de la primera fila.
+- **Qué NO cambia**: R1 sigue candando los dos idiomas —que es lo que **D-H**
+  decidió y lo que cierra el hallazgo **O7** de #70—, sigue observando **el texto
+  pintado por la app** y nunca `catalog.ts`, y **M13 no se toca**: sigue
+  mutando `en['home.reminders']` y muriendo en `it('rotula en inglés')`.
+  El alcance del candado inglés sigue limitado a esta sección.
+- **Por qué no la otra salida**: adelantar R4 y R5 dentro de R1 juntaría en un
+  requisito la copy, la petición y el render de las filas, y dejaría a R1 sin un
+  rojo que hable de lo suyo. Mover la aserción al punto donde su sujeto existe es
+  lo que C4 pide.
+
+**Corolario para el harness**, porque van dos veces: cuando un requisito de copy
+o de accesibilidad enumere lo que se observa en pantalla, la spec tiene que
+verificar **contra su propio `tasks.md`** que cada sujeto nombrado ya existe en
+ese punto del orden. Es exactamente la comprobación que el encargo del
+`spec_author` pedía y que no se aplicó a R1.
+
+  - [ ] Aprobado por humano
+
 ## Aprobación
 
 - [X] Aprobado por humano (fecha: 2026-09-09) ← gate obligatorio antes de implementar
