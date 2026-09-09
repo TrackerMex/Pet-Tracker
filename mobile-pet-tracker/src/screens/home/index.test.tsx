@@ -1819,3 +1819,23 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
     }).toEqual(existingScenarioCallCount);
   });
 });
+
+describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
+  it('tipa nextVaccine con los tres campos del contrato y ninguno más', () => {
+    const source = readFileSync(
+      join(process.cwd(), 'src/api/types.ts'),
+      'utf8',
+    );
+    const nextVaccineBlock =
+      source.match(/export interface NextVaccine \{[\s\S]*?\n\}/)?.[0] ?? '';
+    const fields = [...nextVaccineBlock.matchAll(/^\s+(\w+):/gm)].map(
+      ([, field]) => field,
+    );
+
+    expect(fields).toEqual(['id', 'name', 'nextDoseAt']);
+    expect(nextVaccineBlock).not.toMatch(/\b(?:daysLeft|date):/);
+    expect(source).toContain('nextVaccine: NextVaccine | null;');
+    expect(source).toContain('nextReminder: unknown;');
+    expect(source).toContain('activitySummary: unknown;');
+  });
+});
