@@ -485,6 +485,22 @@ export function HomeScreen() {
                   </Text>
                 </Card>
               ) : null}
+
+              {detail.data?.kind === 'ok' && !detail.data.pet.nextVaccine ? (
+                <Card
+                  testID="reminders-none-upcoming"
+                  className="flex-row items-center gap-3"
+                >
+                  <View
+                    className={`size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS.neutral.surface}`}
+                  >
+                    <Syringe size={20} color={muted} />
+                  </View>
+                  <Text className="flex-1 text-sm font-normal text-muted">
+                    {t('home.noUpcomingVaccine')}
+                  </Text>
+                </Card>
+              ) : null}
             </View>
           </View>
         ) : null}
