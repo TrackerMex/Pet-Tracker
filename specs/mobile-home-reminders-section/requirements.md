@@ -1012,6 +1012,99 @@ con la zona horaria. Eso la invalida como prueba de zona ciega.
 
   - [X] Aprobado por humano
 
+
+### D4 — el feedback `pressed` de R10 se ratifica por escrito
+
+R10 prescribe la anatomía exacta del enlace `reminders-see-all` —`Pressable`,
+`accessibilityRole="button"`, `className="min-h-11 justify-center"`, un `Text`
+hijo— y **omite el feedback de pulsado que C8 exige a todo elemento tappable**.
+Codex lo detectó, el humano lo autorizó de palabra el 2026-09-09, y el cambio
+está implementado y con candado (`index.tsx:517`, `index.test.tsx:2118-2141`).
+
+El fondo es correcto —la carta gana sobre el JSX literal de una spec, que es lo
+que manda `CLAUDE.md` §UI móvil— pero la forma no: una autorización que solo
+vive en prosa dentro de `progress/impl_*.md` no es el artefacto del gate.
+`requirements.md` lo es, y esta spec ya tenía el mecanismo montado y usado tres
+veces.
+
+- **Qué se ratifica**: el enlace lleva
+  `style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}` además de lo que
+  R10 prescribe, y su candado. **Nada más se toca de R10.**
+- **Sin trabajo nuevo**: ya está hecho. Esta entrada cierra el hueco de proceso.
+
+### D5 — el candado de zona horaria de R5 es inerte y cambia de mecanismo
+
+**Bloqueante, y verificado por el leader además del reviewer.** R5 fija la zona
+con `process.env.TZ = 'America/Mexico_City'` dentro del `it`. **Bajo Jest esa
+asignación no llega a V8.** Sonda corrida en el runner del proyecto:
+
+```
+PROBE before= 2026-09-10T12:00:00.000Z offset= 0
+PROBE after = 2026-09-10T12:00:00.000Z offset= 0
+PROBE changed= false
+```
+
+El epoch y el offset son idénticos después de asignar. En Node pelado sí
+funciona, y por eso el defecto es invisible a simple vista. Consecuencia
+medida: con M1 o M2 plantadas, **el gate completo pasa en verde** en la
+invocación por defecto, que es la única que corre `init.sh`. Es exactamente la
+condición de parada que R5 y R19b pre-declaran, y no se aplicó.
+
+La premisa que R5 tomó de #68 se leyó a medias: allí el `process.env.TZ` tampoco
+muerde —lo que muerde es el espía del constructor,
+`weekly-activity-chart.test.tsx:566-567`, que asserta
+`expect(dateConstructor.mock.calls).toEqual([[2026, 8, 6]])` y está vivo en
+cualquier zona horaria. #70 copió el andamiaje inerte y dejó fuera los dientes.
+
+- **Qué se cambia**: los dos `it` de R5 en `format.test.ts` sustituyen el
+  `try/finally` sobre `process.env.TZ` por el **espía del constructor `Date`**
+  de #68, asertando que `calendarDaysUntil` y `fmtDate` construyen la fecha
+  **por componentes** y **nunca** reciben la cadena cruda `'YYYY-MM-DD'`.
+  El `try/finally` de `process.env.TZ` se **borra**: documenta un mecanismo que
+  no existe y engaña al siguiente que lo lea.
+- **Criterio de aceptación, no negociable**: con M1 plantada, y por separado con
+  M2 plantada, `bun run test` **sin exportar `TZ`** deja la suite **roja**.
+  Si hace falta exportar `TZ` a mano para que muerda, el candado sigue sin
+  vigilar nada y **se para otra vez**.
+- **La evidencia de M1 y M2 en el informe se borra y se rehace** bajo ese
+  criterio. La conducta que R5 exige no cambia; cambia lo que la demuestra.
+- **Alternativa admitida** si el espía no cubriera algún caso: fijar `TZ` en
+  `globalSetup` de Jest o en el script `test` de `package.json` —antes de que
+  arranquen los workers—, nunca dentro del `it`.
+
+### D6 — dos dimensiones de la fila entran en alcance
+
+Precedente de #69 y #71: cada revisión de un elemento repetido destapa una
+dimensión más. De las once decisiones que toma la fila de recordatorio, nueve
+están vigiladas; dos no, y las dos dejan la suite **entera** verde al cruzarse:
+
+1. **Tinta del icono.** Producción usa `color={vaccineInk}` en la fila
+   (`index.tsx:541`) y `color={muted}` en el estado vacío (`:576`).
+   Nadie asserta `icon.props.color`: cruzarlos pintaría la vacuna gris apagado y
+   el estado vacío azul de vacunación, sin un test rojo. El doble de `reicon`
+   ya propaga las props (`index.test.tsx:96-99`).
+2. **Recetas tipográficas de nombre, fecha y texto vacío.** R6 prescribe
+   `text-sm font-semibold text-foreground` y `text-xs font-normal text-muted`;
+   R8 prescribe `flex-1 text-sm font-normal text-muted`. Los tests obtienen esos
+   nodos pero solo assertan `children` y `style`, **nunca `className`**.
+   Intercambiar las recetas de nombre y fecha no mueve ningún inventario global
+   —las mismas clases siguen presentes, solo cambian de nodo— y deja la suite
+   verde. Es el defecto ya registrado como **#81** una feature antes, repetido
+   con nodos distintos.
+
+- **Qué se añade**: aserciones de `icon.props.color` en la fila y en el estado
+  vacío, y de `props.className` en nombre, fecha y texto vacío, observadas con
+  `within(fila)`. El patrón ya está escrito en este mismo fichero
+  (`index.test.tsx:1669-1671`, de #71). Se añade también
+  `within(row).getByTestId('icon-syringe')` en R6 y R8, que ancla el icono al
+  árbol y no solo a una cuenta de cadenas en el fuente.
+- **Sin mutación nueva obligatoria**, pero cada aserción debe demostrarse con una
+  sonda: cruzar el valor y ver el rojo antes de dejarla.
+- **#81 no se cierra con esto**: aquello es el tile de acciones rápidas y sigue
+  abierto.
+
+  - [ ] Aprobado por humano
+
 ## Aprobación
 
 - [X] Aprobado por humano (fecha: 2026-09-08) ← gate obligatorio antes de implementar
