@@ -244,9 +244,11 @@ implementación + tests + docs incumple `CHECKPOINTS.md` C4 y **se rechaza**.
     dos casos. Se versiona la **sonda P9** en el commit rojo y se revierte en el
     verde: condicionar la ranura de la vacuna al estado de los recordatorios,
     `{reminders.data?.kind === 'ok' && nextVaccine && nextVaccineCountdown ? (`.
-    **Rojo esperado**: cae `it('no pinta filas mientras carga')` y el `it.each`
-    de los cinco kinds. **Si R9 queda verde con P9 plantada, el test está mal
-    escrito y se para.**
+    **Rojo esperado** (corregido por **A13**): caen los **dos** `it` de R9 por
+    la **misma** causa —desaparece la tarjeta de la vacuna y el cuerpo pasa de
+    1 hijo a 0—. **No** por el `reminders-section-skeleton`, que depende solo de
+    `detail.data === undefined` y que P9 no toca. **Si R9 queda verde con P9
+    plantada, el test está mal escrito y se para.**
 
 
 ## R10 — Estilo: `Card` compartido, radios, tintas de #64 y cifras tabulares

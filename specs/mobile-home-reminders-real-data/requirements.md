@@ -1347,6 +1347,38 @@ desigual.
 
   - [X] Aprobado por humano
 
+
+### A13 — la evidencia de P9 estaba mal predicha
+
+**La sonda P9 vale; lo que estaba mal es la frase que describe su rojo.** A12
+decía que P9 hace desaparecer `reminders-section-skeleton`. **Falso.** Ese
+esqueleto depende **solo** de `detail.data === undefined`
+(`index.tsx:566-571`), y P9 condiciona **únicamente** la tarjeta
+`reminders-next-vaccine`. La sonda no lo toca.
+
+- **Evidencia real de P9**, en los dos `it` de R9 y por la **misma** causa:
+  desaparece la tarjeta de la vacuna y el cuerpo pasa de **1 hijo a 0**.
+  - `it('no pinta filas mientras carga')`: mientras `listReminders` está
+    pendiente, `reminders.data === undefined`, así que la guarda añadida apaga
+    la ranura de la vacuna que el `it` exige presente.
+  - `it.each` de los cinco kinds de fallo: `body.children.length` pasa de `1`
+    a `0`.
+- **Qué se corrige, y solo esto**: la descripción del rojo esperado de P9 en
+  A12. **La sonda, su sitio y su commit no cambian**, y sigue atacando la frase
+  normativa de R9 —*"el fallo de `listReminders` no puede apagar el dato del
+  perfil, ni al revés"*—, que es exactamente lo que rompe.
+- **Qué NO cambia**: R9 conserva sus dos `it` y todas sus aserciones; P10 no se
+  toca; R15 sigue sin renumerar.
+
+**Corolario, y es la segunda vez en esta feature** —la primera fue A8 con el
+tope de tres en M3—: **la evidencia de una mutación hay que derivarla de las
+condiciones de render reales, no de la intuición de qué "debería" romperse.**
+Las dos veces la mutación era buena y lo que falló fue la predicción escrita al
+lado. Cuando una spec prescribe el `it` exacto que debe caer, esa predicción
+tiene el mismo peso normativo que la mutación y merece la misma comprobación.
+
+  - [ ] Aprobado por humano
+
 ## Aprobación
 
 - [X] Aprobado por humano (fecha: 2026-09-09) ← gate obligatorio antes de implementar
