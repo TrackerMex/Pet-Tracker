@@ -37,6 +37,9 @@ Se completa durante la secuencia TDD; los hashes definitivos también quedan en
   módulo con ramas futura, hoy y vencida, y texto/nombre accesible unidos).
 - **R8**: rojo `e0c15c7` (estado vacío ausente); verde `0752baf` (`Card`
   neutral con la misma anatomía de fila y sin datos ficticios).
+- **R9**: rojo `1f2ed2b` (esqueleto ausente y cardinalidad pendiente 0 en vez
+  de 1); verde `36012d4` (un esqueleto y silencio en todos los errores). La
+  cardinalidad trasladada por D1 cuenta `children`, no `testID`.
 
 ## Premisas corregidas contra el árbol
 

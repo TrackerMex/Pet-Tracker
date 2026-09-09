@@ -2073,4 +2073,39 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
       }
     });
   });
+
+  describe('#70 R10: enlace a la lista de recordatorios', () => {
+    it('lleva a la lista de recordatorios existente', async () => {
+      await renderHome();
+
+      fireEvent.press(await screen.findByTestId('reminders-see-all'));
+
+      expect(mockRouter.push).toHaveBeenCalledTimes(1);
+      expect(mockRouter.push).toHaveBeenCalledWith('/reminders');
+      expect(appRoutes(join(process.cwd(), 'src/app/(tabs)'))).toContain(
+        '/reminders',
+      );
+
+      const source = readFileSync(
+        join(process.cwd(), 'src/screens/home/index.tsx'),
+        'utf8',
+      );
+      expect(source).not.toContain("'/reminders' as Href");
+      expect(source).not.toMatch(/import\s*\{[^}]*\bHref\b[^}]*\}\s*from/);
+    });
+
+    it('no añade un segundo camino a la lista desde la Home', () => {
+      const source = readFileSync(
+        join(process.cwd(), 'src/screens/home/index.tsx'),
+        'utf8',
+      );
+      const quickActions = source.slice(
+        source.indexOf('const QUICK_ACTIONS = ['),
+        source.indexOf('] as const;', source.indexOf('const QUICK_ACTIONS = [')),
+      );
+
+      expect(source.match(/['"]\/reminders['"]/g) ?? []).toHaveLength(1);
+      expect(quickActions).not.toContain("'/reminders'");
+    });
+  });
 });
