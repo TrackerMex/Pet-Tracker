@@ -1,7 +1,7 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-09-09
-**Features completadas**: 66/85 (`feature_list.json`)
+**Features completadas**: 67/85 (`feature_list.json`)
 **En progreso**: ninguna
 
 **Pendientes**: 15 (#18, #41, #60, #63, #70, #72-#81). El rediseño contra el diseño del Make abrió el bloque #64-#71: #64, #65, #66, #67, #68 y #69 están cerradas y **mergeadas** (PR #106, #110, #111, #112, #113 y #114). #71 `mobile-home-quick-actions` está cerrada con los dos gates humanos firmados; **PR pendiente de merge por el humano**. Del bloque solo queda **#70 recordatorios**, sin especificar, y con la mitad del diseño bloqueada porque `nextReminder` y `activitySummary` siguen a `null` en el mapper del perfil. Deuda registrada: #72 flake de add-pet; #73 `pet-online-pill`; #74 el selector que TalkBack lee como tres controles sueltos; #75 `init.sh` aborta en falso con `FORCE_COLOR`; #76 un e2e que asserta orden sobre un `SELECT` sin `ORDER BY`; #77 el peso visible sin collar; #80 los `testID` del doble atados al componente; #81 la receta tipográfica del tile sin candado. #78 y #79 entraron desde otra sesión.
@@ -86,6 +86,41 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Estado actual
+
+- **`mobile-home-reminders-section` (#70) done** (2026-09-09): la Home tiene una
+  sección **"Próxima vacuna"** con la vacuna más cercana —icono, nombre, fecha
+  localizada y contador `N d`— más un enlace a `/reminders`. Cero backend, cero
+  dependencias, cero ficheros nuevos de producción.
+  - **Cuatro pases de revisión, uno rechazado.** El rechazo fue por un candado
+    que no podía fallar: `process.env.TZ` asignado dentro de un `it` **no llega
+    a V8 bajo Jest**, así que con el bug de fechas de #68 reintroducido en
+    producción el gate entero pasaba en verde. La spec heredó la premisa a
+    medias de #68, donde lo que muerde no es el `TZ` sino el espía del
+    constructor `Date`. Se sustituyó el mecanismo (D5) y M1 y M2 pasaron a
+    morir en la invocación por defecto.
+  - **Ocho enmiendas firmadas.** D1 movió una aserción de cardinalidad de R1 a
+    R9, donde el sujeto que medía por fin existía —el orden de tareas aprobado
+    la hacía imposible—. D3 encontró que M1 moría **siempre** por `-0` frente a
+    `0`, no por la zona horaria: una mutación que muere siempre parece un
+    candado sano y no lo es. D7 cerró un hueco que el propio reviewer destapó
+    buscando: el candado vigilaba el objetivo pero no `now`.
+  - **Nueve pares de mutación de producción**, todos con reversión verificada
+    por `git diff` vacío.
+  - **El smoke destapó lo que ningún test podía ver** (D8): la sección se
+    titulaba "Recordatorios" y su estado vacío decía "Sin vacuna próxima". Los
+    dos textos eran los que la spec pidió, así que la suite los daba por
+    buenos. Se renombró el título a "Próxima vacuna" y el enlace a "Ver
+    recordatorios".
+  - **Deuda abierta desde aquí**: **#85**, que la sección muestre los
+    recordatorios reales —hoy solo lee `nextVaccine` del contrato del perfil, y
+    una mascota con recordatorios y sin vacuna próxima ve el estado vacío—.
+    Lleva anotado **O7**: la mitad **inglesa** de la copy no tiene candado, así
+    que D8 nació de un texto que ningún test miraba y dejó ciega la otra mitad
+    del mismo texto. Y **O6**: el **orden** de los hijos de la fila no está
+    vigilado, la cuarta dimensión destapada en cuatro rondas seguidas.
+  - **Lo que dejó en el harness**: `docs/ui-guidelines.md` §Enmienda #70, con la
+    lista completa de las doce decisiones que toma un elemento repetido, para
+    que la quinta ronda no haga falta.
 
 - **`mobile-home-quick-actions` (#71) done** (2026-09-09): la Home tiene una
   rejilla de **tres accesos rápidos** con fondo pastel. Navegación pura: cero

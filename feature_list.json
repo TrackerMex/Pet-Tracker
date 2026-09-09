@@ -1309,7 +1309,7 @@
   {
     "id": 70,
     "name": "mobile-home-reminders-section",
-    "status": "in_progress",
+    "status": "done",
     "priority": "P3",
     "description": "Bloque 1. Seccion 'Recordatorios' en la Home (App.tsx:429-451): proxima vacuna con los dias que faltan y acceso a la lista completa. El dato existe y hoy no se usa: PetProfileResponse ya rellena nextVaccine de verdad con la forma { id, name, nextDoseAt }, y daysLeft es aritmetica de cliente. Cuidado con lo que el mismo contrato NO da: nextReminder y activitySummary siguen hardcodeados a null como placeholders reservados en el mapper del perfil, asi que la barra de progreso de comidas que el Make dibuja en esa misma seccion NO se puede construir aqui -es la feature de backend pet-profile-summary-slots y queda fuera-. La spec tiene que decir explicitamente que mitad de la seccion del diseno entra y cual no, en vez de inventar el dato que falta. Anade navegacion a la lista de recordatorios, asi que rompe el invariante de #46/#61/#62.",
     "acceptance_criteria": [
