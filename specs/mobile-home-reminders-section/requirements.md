@@ -1010,7 +1010,7 @@ con la zona horaria. Eso la invalida como prueba de zona ciega.
   la zona horaria. La conducta que R5 exige no cambia; lo que se arregla es que
   el candado pueda demostrarla.
 
-- [ ] Aprobado por humano
+  - [X] Aprobado por humano
 
 ## Aprobación
 
