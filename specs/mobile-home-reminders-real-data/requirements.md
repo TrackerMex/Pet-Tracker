@@ -1377,7 +1377,7 @@ Las dos veces la mutación era buena y lo que falló fue la predicción escrita 
 lado. Cuando una spec prescribe el `it` exacto que debe caer, esa predicción
 tiene el mismo peso normativo que la mutación y merece la misma comprobación.
 
-  - [ ] Aprobado por humano
+  - [X] Aprobado por humano
 
 ## Aprobación
 
