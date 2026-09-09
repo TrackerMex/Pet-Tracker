@@ -2513,6 +2513,61 @@ describe('#85 R9: la sección aguanta la carga y el fallo de los recordatorios',
   });
 });
 
+describe('#85 R10: viste las filas con el Card compartido y los tokens', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date(2026, 8, 10, 12, 0));
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    const pet = makePet();
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+    mockListReminders.mockResolvedValue({
+      kind: 'ok',
+      reminders: makeReminderFixture(),
+    });
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+    jest.restoreAllMocks();
+  });
+
+  it('aplica la receta de cada nodo y ninguna otra', async () => {
+    await renderHome();
+
+    for (const id of ['rem-b', 'rem-a', 'rem-c']) {
+      const row = await screen.findByTestId(`reminders-item-${id}`);
+      const rowQueries = within(row);
+      const title = rowQueries.getByTestId(`reminders-item-${id}-title`);
+      const date = rowQueries.getByTestId(`reminders-item-${id}-date`);
+      const counter = rowQueries.getByTestId(`reminders-item-${id}-days`);
+
+      expect(row.props.className).toContain(
+        'rounded-card border border-border bg-surface p-4 shadow-sm',
+      );
+      expect(row.props.className).toContain('flex-row items-center gap-3');
+      expect(title.props.className).toBe(
+        'text-sm font-semibold text-foreground',
+      );
+      expect(date.props.className).toBe('text-xs font-normal text-muted');
+      expect(counter.props.className).toBe(
+        `rounded-full px-2.5 py-1 text-xs font-bold ${CATEGORY_SLOTS.amber.surface} ${CATEGORY_SLOTS.amber.ink}`,
+      );
+      expect(counter.props.style).toEqual(TABULAR_NUMS);
+      expect(title.props.style).toBeUndefined();
+      expect(date.props.style).toBeUndefined();
+    }
+  });
+});
+
 describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
   const vaccine = {
     id: 'vac-9',
