@@ -157,6 +157,12 @@ Se completa durante la secuencia TDD; los hashes definitivos también quedan en
 - **Grafo**: `graphify update .` terminó con exit 0; reextrajo 723 ficheros y
   reconstruyó 11281 nodos, 17285 aristas y 717 comunidades. Conservó el aviso
   conocido de `tree_sitter_sql` y no produjo cambios versionados.
+- **Gate integral final del tercer pase**: `env -u FORCE_COLOR ./init.sh`
+  terminó con exit 0. Build verde; backend 163 suites/1243 tests, infra 2/14,
+  móvil 68/1078 con 1 snapshot, e2e 25 suites/354 tests pasados y 3 suites/8
+  tests omitidos; lint y typecheck verdes. El flaky conocido #76 no apareció;
+  los avisos de `.env`, `STATUS.md`, Node/AWS y servicios simulados siguieron
+  siendo los no bloqueantes del harness.
 
 ## Deltas R18
 
