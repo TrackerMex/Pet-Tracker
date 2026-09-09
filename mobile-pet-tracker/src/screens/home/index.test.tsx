@@ -1995,6 +1995,7 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
       const icon = within(empty).getByTestId('icon-syringe');
       const text = within(empty).getByText('Sin vacuna próxima');
 
+      expect(empty.props.className).toContain('flex-row items-center gap-3');
       expect(icon).toBeVisible();
       expect(icon.props.color).toBe('--color-muted');
       expect(text).toBeVisible();
@@ -2225,6 +2226,7 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
           'rounded-card border border-border bg-surface p-4 shadow-sm',
         );
         expect(row.props.className).toContain('flex-row items-center gap-3');
+        expect(row.children[1]).toHaveProperty('props.className', 'flex-1');
         expect(typeof disk).not.toBe('string');
         if (typeof disk !== 'string') {
           expect(disk.props.className).toBe(
