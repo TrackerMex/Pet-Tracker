@@ -10,9 +10,7 @@ export function calendarDaysUntil(date: string, now: Date): number {
 }
 
 export function fmtDate(date: string, locale: string): string {
-  const [year, month, day] = date.split('-').map(Number);
-
-  return new Date(year, month - 1, day).toLocaleDateString(locale, {
+  return new Date(date).toLocaleDateString(locale, {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
