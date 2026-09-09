@@ -49,6 +49,12 @@ export interface DeviceStatus {
   esn: string | null;
 }
 
+export interface NextVaccine {
+  id: string;
+  name: string;
+  nextDoseAt: string;
+}
+
 export interface PetProfile {
   id: string;
   name: string;
@@ -69,7 +75,7 @@ export interface PetProfile {
   lastCommunicationAt: string | null;
   myRole: 'owner' | 'family' | 'walker' | 'vet';
   device: DeviceStatus | null;
-  nextVaccine: unknown;
+  nextVaccine: NextVaccine | null;
   nextReminder: unknown;
   activitySummary: unknown;
   createdAt: string;
