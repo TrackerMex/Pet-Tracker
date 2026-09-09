@@ -65,6 +65,9 @@ Se completa durante la secuencia TDD; los hashes definitivos también quedan en
   de `src/screens/home/index.tsx` en la carta).
 - **R17**: rojo `dfdf89a` (hex de producción detectado en `index.tsx`); verde
   `f81668c` (tinta del icono restaurada al token resuelto por tema).
+- **R18**: rojo `dfbdb1b` (solo fallaron los deltas declarados de cifras
+  tabulares y tinta acento); verde `dcd0faa` (cuatro mandos tabulares y dos de
+  legibilidad actualizados como sumas visibles).
 
 ## Premisas corregidas contra el árbol
 
