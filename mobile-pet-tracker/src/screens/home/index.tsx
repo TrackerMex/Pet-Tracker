@@ -420,7 +420,7 @@ export function HomeScreen() {
                     onPress={() => router.push(href(selectedPetId))}
                   >
                     <Icon size={24} color={quickActionInks[index]} />
-                    <Text className="text-2xs font-semibold text-muted">
+                    <Text className="text-2xs font-semibold text-foreground">
                       {t(labelKey)}
                     </Text>
                   </Pressable>
