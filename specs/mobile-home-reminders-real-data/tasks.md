@@ -37,7 +37,7 @@ implementación + tests + docs incumple `CHECKPOINTS.md` C4 y **se rechaza**.
 
 ## R1 — La copy vuelve a "Recordatorios" / "Ver todos", candada en los dos idiomas
 
-- [ ] (1) Escribir test que falla para R1
+- [x] (1) Escribir test que falla para R1
   - `src/screens/home/index.test.tsx`: `HomeWrapperEn` (idéntico a `HomeWrapper`
     pero `<LanguageProvider initial="en">`).
   - `describe('#85 R1: la sección recupera su rótulo en los dos idiomas')` con
@@ -46,20 +46,20 @@ implementación + tests + docs incumple `CHECKPOINTS.md` C4 y **se rechaza**.
     (`:1898` `'Próxima vacuna'` → `'Recordatorios'`, `:1903`
     `'Ver recordatorios'` → `'Ver todos'`).
   - **Rojo esperado**: los cuatro literales fallan contra el catálogo actual.
-- [ ] (2) Implementación mínima que lo pasa
+- [x] (2) Implementación mínima que lo pasa
   - `src/i18n/catalog.ts`: `en['home.reminders'] = 'Reminders'`,
     `en['home.remindersSeeAll'] = 'See all'`,
     `es['home.reminders'] = 'Recordatorios'`,
     `es['home.remindersSeeAll'] = 'Ver todos'`.
   - **Ninguna clave se añade, se quita ni se renombra.**
-- [ ] (3) Refactor con tests verdes
+- [x] (3) Refactor con tests verdes
   - Comprobar que `language-provider.test.tsx` y `ui-language.test.ts` siguen
     verdes **sin tocarlos** (R13 filas 1-3, delta `+ 0`). Si alguno se mueve,
     **para y reporta**.
 
 ## R2 — `localDayOf`: el instante ISO se reduce a día civil local
 
-- [ ] (1) Escribir test que falla para R2
+- [x] (1) Escribir test que falla para R2
   - `src/screens/home/format.test.ts`:
     `describe('#85 R2: localDayOf reduce el instante a día civil local')` con
     los tres `it` de [[requirements]] R2, copiando el patrón de espía de
@@ -68,30 +68,30 @@ implementación + tests + docs incumple `CHECKPOINTS.md` C4 y **se rechaza**.
   - **Rojo esperado**: la función no existe en producción. El fallo debe nombrar
     el símbolo **de producción**, no un helper de test que falte
     (`CHECKPOINTS.md` C4, cuarto punto).
-- [ ] (2) Implementación mínima que lo pasa
+- [x] (2) Implementación mínima que lo pasa
   - `src/screens/home/format.ts`: `export function localDayOf(instant: string): string`
     con `new Date(instant)` y los getters **locales**, mes y día con `padStart(2, '0')`.
   - `calendarDaysUntil` y `fmtDate` **no se tocan**.
-- [ ] (3) Refactor con tests verdes
+- [x] (3) Refactor con tests verdes
   - Plantar **M1** (getters UTC) y comprobar que la suite se pone roja
     **sin exportar `TZ`**. Revertir. Anotar en el informe. Si solo muere con
     `TZ` exportado, **el candado no vale y se para**.
 
 ## R3 — `upcomingReminders`: pendientes, futuros, ascendente, tope 3
 
-- [ ] (1) Escribir test que falla para R3
+- [x] (1) Escribir test que falla para R3
   - `src/screens/home/format.test.ts`: helper `localIso(y, mIndex, d)` y
     `describe('#85 R3: upcomingReminders filtra, ordena y acota')` con los
     cuatro `it` de [[requirements]] R3.
   - **El par empatado se entrega en orden invertido (`rem-z` antes que
     `rem-a`)**: es normativo, ver R15/M6.
   - **Ningún `dueAt` se escribe como literal `…Z`** ([[design]] §D4).
-- [ ] (2) Implementación mínima que lo pasa
+- [x] (2) Implementación mínima que lo pasa
   - `export function upcomingReminders(reminders: Reminder[], now: Date): Reminder[]`
     en `format.ts`: filtro de `status`, filtro `calendarDaysUntil(localDayOf(dueAt), now) >= 0`,
     orden por `dueAt` con `localeCompare`, desempate por `id`, `slice(0, 3)`.
   - `import type { Reminder } from '../../api/types';` — **solo tipo**.
-- [ ] (3) Refactor con tests verdes
+- [x] (3) Refactor con tests verdes
   - Plantar **M3**, **M4**, **M5** y **M6** de una en una, comprobar el rojo y
     **que cada una cae por el `it` que R15 nombra**. Revertir cada una. Anotar.
   - **M7 y M8 NO se plantan aquí** (enmienda **A9**): nombran además dos `it` de
@@ -100,7 +100,7 @@ implementación + tests + docs incumple `CHECKPOINTS.md` C4 y **se rechaza**.
 
 ## R4 — La Home pide los recordatorios: una llamada más, declarada
 
-- [ ] (1) Escribir test que falla para R4
+- [x] (1) Escribir test que falla para R4
   - `jest.mock('../../api/reminders', () => ({ listReminders: jest.fn(async () => ({ kind: 'ok', reminders: [] })) }));`
     y `const mockListReminders = jest.mocked(listReminders);`.
   - `describe('#85 R4: la Home pide los recordatorios de la mascota')` con sus
@@ -108,11 +108,11 @@ implementación + tests + docs incumple `CHECKPOINTS.md` C4 y **se rechaza**.
   - **Ampliar** el `it('no añade ninguna llamada a la API')` de `#70 R15`
     (`:2340-2350`) a `{ pets: 1, detail: 1, activity: 1, reminders: 1 }`.
   - **Rojo esperado**: `mockListReminders` no se llama nunca.
-- [ ] (2) Implementación mínima que lo pasa
+- [x] (2) Implementación mínima que lo pasa
   - `src/screens/home/index.tsx`: import de `listReminders`, `remindersFn` con
     `useMemo` y `const reminders = useApi(remindersFn);`. **Nada más todavía**:
     no se pinta ninguna fila en esta tarea.
-- [ ] (3) Refactor con tests verdes
+- [x] (3) Refactor con tests verdes
   - Suite completa verde. Comprobar que los ~20 `describe` que ya renderizaban
     la Home siguen verdes **sin haberlos tocado** (gracias a la implementación
     por defecto de la factoría).
