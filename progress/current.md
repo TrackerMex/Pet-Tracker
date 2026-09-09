@@ -13,5 +13,5 @@
 - A7: firmada y leída; traslada el candado inglés del contador a R8. Bloqueo resuelto, implementación reanudada en R1.
 - A8: firmada y leída; confirma que M3 aflora solo `rem-sent` porque el tope recorta `rem-cancelled`, sin cambiar fixture, candado ni código.
 - A9: firmada y leída; M7/M8 pasan de R3 al refactor de R5, donde existirán también sus dos candados de Home.
-- Avance: R1, R2 y R3 completos. M1 y M3..M6 probadas, documentadas y restauradas; `format.test.ts` quedó 13/13 verde. R4 rojo versionado en `c2d5dfd`.
-- Bloqueo de arnés en R4: la cuarta llamada obligatoria a `useApi` rompe el test heredado `R10: preserva la mascota durante el refetch`, cuyo doble cicla con `hookCall++ % 3`. La implementación exacta deja 1 fallo/89 verdes (`detail.data.pet` queda indefinido), pero `tasks.md:115-118` exige que los `describe` heredados queden verdes sin tocarlos y `design.md:267` no autoriza adaptar ese doble a `% 4`. Implementación retirada sin commit; no se tocó backend.
+- A10: firmada y leída; autoriza el cambio puntual del doble posicional de `hookCall++ % 3` a `% 4`. Deuda estructural registrada fuera de alcance en #86.
+- Avance: R1-R4 completos. R4 rojo `c2d5dfd`, verde `fc7a31d`; Home 90/90, móvil 68 suites/1089 tests y typecheck verdes. Siguiente paso: R5 rojo.

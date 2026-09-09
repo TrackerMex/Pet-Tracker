@@ -21,9 +21,11 @@
 - **R3**: rojo `37f7d74`; verde `4788104`. El helper filtra por estado y día
   local inclusivo, ordena por instante/id y corta en tres. Su verificación por
   mutación M3 quedó validada con la evidencia corregida por A8.
-- **R4**: rojo `c2d5dfd`. Los dos fallos esperados observan que
-  `listReminders` aún recibe cero llamadas; el verde está bloqueado por la
-  contradicción de arnés descrita abajo.
+- **R4**: rojo `c2d5dfd`; verde `fc7a31d`. La Home monta una única petición de
+  recordatorios para la mascota seleccionada y ninguna sin selección. A10
+  adapta el doble posicional heredado de tres a cuatro hooks por render. Home
+  quedó 90/90 verde; la suite móvil, 68 suites/1089 tests y 1 snapshot verde;
+  `bun run typecheck`, exit 0.
 
 ## Prueba de mutación
 
@@ -61,7 +63,7 @@ verificará M7/M8 una sola vez, cuando también existan sus dos `it` de Home.
 Tras la firma se plantaron M5 y M6, ambas cayeron por el `it` prescrito, se
 restauraron y la suite dirigida quedó 13/13 verde.
 
-## Bloqueo de arnés en R4
+## A10 — adaptación del doble posicional de R4
 
 La implementación mínima exacta de R4 —`listReminders`, `remindersFn` y un
 cuarto `useApi(remindersFn)`— puso verdes los dos candados nuevos y la
@@ -75,8 +77,8 @@ desplaza qué estado recibe cada hook en renders posteriores. El mock por
 defecto de `listReminders` prescrito por A6 no interviene porque el test
 sustituye el hook entero.
 
-`tasks.md:115-118` exige que los `describe` heredados queden verdes **sin
-tocarlos**, mientras adaptar el doble a `% 4` es necesario para conservar su
-intención. `design.md:267` tampoco enumera esa adaptación entre los cambios
-permitidos de `index.test.tsx`. La implementación de producción se retiró sin
-commit y se paró en el rojo versionado, sin tocar el doble ni el backend.
+A10 autoriza únicamente cambiar `% 3` por `% 4`, conservando la intención y
+las dos aserciones del test. Con esa adaptación y la implementación mínima de
+R4, `index.test.tsx` quedó 90/90 verde y la suite móvil completa 1089/1089.
+La deuda de reemplazar el doble posicional por uno indexado por función queda
+registrada en #86 y fuera de #85.
