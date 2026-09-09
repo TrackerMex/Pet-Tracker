@@ -304,6 +304,19 @@ total sin repetir es 252 + 3 del interruptor = **255**.
 | — | `home.quickActionReminder` | `Reminder` | `Recordatorio` | ← añadida por #71 (R11)
 | — | `home.quickActionDocuments` | `Documents` | `Documentos` | ← añadida por #71 (R11)
 
+**`mobile-pet-tracker/src/screens/home/index.tsx`** — claves de la sección de
+recordatorios añadidas por #70
+
+| Línea | Clave | `en` | `es` | Nota |
+|---|---|---|---|---|
+| — | `home.reminders` | `Reminders` | `Recordatorios` | ← añadida por #70 (R16)
+| — | `home.remindersSeeAll` | `See all` | `Ver todos` | ← añadida por #70 (R16)
+| — | `home.nextVaccineDays` **(param)** | `{{days}} d` | `{{days}} d` | ← añadida por #70 (R16)
+| — | `home.nextVaccineDaysLeft` **(param)** | `In {{days}} days` | `Faltan {{days}} días` | ← añadida por #70 (R16)
+| — | `home.nextVaccineToday` | `Today` | `Hoy` | ← añadida por #70 (R16)
+| — | `home.nextVaccineOverdue` | `Overdue` | `Vencida` | ← añadida por #70 (R16)
+| — | `home.noUpcomingVaccine` | `No upcoming vaccine` | `Sin vacuna próxima` | ← añadida por #70 (R16)
+
 **`mobile-pet-tracker/src/screens/home/weekly-activity-chart.tsx`** — claves
 añadidas por #68, registradas como delta sobre la tabla existente
 

@@ -10,6 +10,7 @@ import {
   FileText,
   Map,
   Moon,
+  Syringe,
   Walk,
   Weight,
   Wifi,
@@ -36,7 +37,14 @@ import {
 } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { CATEGORY_SLOTS } from '../../utils/category-palette';
-import { fmtCount, fmtKg, fmtKm, fmtMinutes } from './format';
+import {
+  calendarDaysUntil,
+  fmtCount,
+  fmtDate,
+  fmtKg,
+  fmtKm,
+  fmtMinutes,
+} from './format';
 import { WeeklyActivityChart } from './weekly-activity-chart';
 
 const WEEKLY_ACTIVITY_SKELETON_HEIGHT = 408;
@@ -79,6 +87,26 @@ function fmtLastSeen(
     : t('home.lastSeen', { date: new Date(iso).toLocaleString(locale) });
 }
 
+function vaccineCountdown(
+  days: number,
+  t: ReturnType<typeof useTranslate>,
+): { text: string; label: string } {
+  if (days < 0) {
+    const overdue = t('home.nextVaccineOverdue');
+    return { text: overdue, label: overdue };
+  }
+
+  if (days === 0) {
+    const today = t('home.nextVaccineToday');
+    return { text: today, label: today };
+  }
+
+  return {
+    text: t('home.nextVaccineDays', { days }),
+    label: t('home.nextVaccineDaysLeft', { days }),
+  };
+}
+
 export function HomeScreen() {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { token } = useAuth();
@@ -91,11 +119,12 @@ export function HomeScreen() {
     petId: string;
   } | null>(null);
   const insets = useSafeAreaInsets();
-  const [accent, success, warning, muted] = useThemeColors([
+  const [accent, success, warning, muted, vaccineInk] = useThemeColors([
     'accent-strong',
     'success',
     'warning',
     'muted',
+    'category-blue-strong',
   ]);
   const quickActionInks = useThemeColors(
     QUICK_ACTIONS.map(({ slot }) => `category-${slot}-strong`),
@@ -122,6 +151,13 @@ export function HomeScreen() {
   );
   const detail = useApi(detailFn);
   const activity = useApi(activityFn);
+  const nextVaccine =
+    detail.data?.kind === 'ok' ? detail.data.pet.nextVaccine : null;
+  const nextVaccineDays = nextVaccine
+    ? calendarDaysUntil(nextVaccine.nextDoseAt, new Date())
+    : null;
+  const nextVaccineCountdown =
+    nextVaccineDays === null ? null : vaccineCountdown(nextVaccineDays, t);
   const refetchPets = pets.refetch;
   const refetchDetail = detail.refetch;
   const today =
@@ -462,6 +498,90 @@ export function HomeScreen() {
               </Button>
             ) : null}
           </>
+        ) : null}
+
+        {selectedPetId ? (
+          <View testID="reminders-section" className="gap-3">
+            <View className="flex-row items-center justify-between">
+              <Text
+                testID="reminders-section-title"
+                className="text-base font-bold text-foreground"
+              >
+                {t('home.reminders')}
+              </Text>
+              <Pressable
+                testID="reminders-see-all"
+                accessibilityRole="button"
+                className="min-h-11 justify-center"
+                style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
+                onPress={() => router.push('/reminders')}
+              >
+                <Text className="text-xs font-semibold text-accent-strong">
+                  {t('home.remindersSeeAll')}
+                </Text>
+              </Pressable>
+            </View>
+
+            <View testID="reminders-section-body" className="gap-2">
+              {detail.data === undefined ? (
+                <Skeleton
+                  testID="reminders-section-skeleton"
+                  className="h-16 w-full rounded-card"
+                />
+              ) : null}
+
+              {nextVaccine && nextVaccineCountdown ? (
+                <Card
+                  testID="reminders-next-vaccine"
+                  className="flex-row items-center gap-3"
+                >
+                  <View
+                    className={`size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS.blue.surface}`}
+                  >
+                    <Syringe size={20} color={vaccineInk} />
+                  </View>
+                  <View className="flex-1">
+                    <Text
+                      testID="reminders-next-vaccine-name"
+                      className="text-sm font-semibold text-foreground"
+                    >
+                      {nextVaccine.name}
+                    </Text>
+                    <Text
+                      testID="reminders-next-vaccine-date"
+                      className="text-xs font-normal text-muted"
+                    >
+                      {fmtDate(nextVaccine.nextDoseAt, locale)}
+                    </Text>
+                  </View>
+                  <Text
+                    testID="reminders-next-vaccine-days"
+                    accessibilityLabel={nextVaccineCountdown.label}
+                    style={TABULAR_NUMS}
+                    className={`rounded-full px-2.5 py-1 text-xs font-bold ${CATEGORY_SLOTS.amber.surface} ${CATEGORY_SLOTS.amber.ink}`}
+                  >
+                    {nextVaccineCountdown.text}
+                  </Text>
+                </Card>
+              ) : null}
+
+              {detail.data?.kind === 'ok' && !detail.data.pet.nextVaccine ? (
+                <Card
+                  testID="reminders-none-upcoming"
+                  className="flex-row items-center gap-3"
+                >
+                  <View
+                    className={`size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS.neutral.surface}`}
+                  >
+                    <Syringe size={20} color={muted} />
+                  </View>
+                  <Text className="flex-1 text-sm font-normal text-muted">
+                    {t('home.noUpcomingVaccine')}
+                  </Text>
+                </Card>
+              ) : null}
+            </View>
+          </View>
         ) : null}
 
         {detail.data?.kind === 'ok' && detail.data.pet.device ? (

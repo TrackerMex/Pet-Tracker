@@ -23,6 +23,8 @@ import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
 import { SelectedPetProvider } from '../../providers/selected-pet-provider';
 import * as selectedPetHooks from '../../providers/selected-pet-provider';
+import { TABULAR_NUMS } from '../../theme/native-styles';
+import { CATEGORY_SLOTS } from '../../utils/category-palette';
 import { HomeScreen } from './index';
 
 declare function require(moduleName: 'fs'): {
@@ -102,6 +104,7 @@ jest.mock('reicon-react-native', () => {
     Map: mockIcon('icon-map'),
     CalendarPlus: mockIcon('icon-calendar-plus'),
     FileText: mockIcon('icon-file-text'),
+    Syringe: mockIcon('icon-syringe'),
   };
 });
 
@@ -1817,5 +1820,550 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
       detail: mockGetPet.mock.calls.length,
       activity: mockGetDailyActivity.mock.calls.length,
     }).toEqual(existingScenarioCallCount);
+  });
+});
+
+describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
+  const vaccine = {
+    id: 'vac-9',
+    name: 'Antirrábica',
+    nextDoseAt: '2026-09-15',
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetPet.mockResolvedValue({
+      kind: 'ok',
+      pet: makePet({ nextVaccine: vaccine }),
+    });
+    mockGetDailyActivity.mockResolvedValue({
+      kind: 'ok',
+      days: [makeDay()],
+      weekComparison: { distanceM: 5, activeMinutes: 10, walkCount: 20 },
+    });
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+    jest.restoreAllMocks();
+  });
+
+  describe('#70 R2: contrato nextVaccine', () => {
+    it('tipa nextVaccine con los tres campos del contrato y ninguno más', () => {
+      const source = readFileSync(
+        join(process.cwd(), 'src/api/types.ts'),
+        'utf8',
+      );
+      const nextVaccineBlock =
+        source.match(/export interface NextVaccine \{[\s\S]*?\n\}/)?.[0] ?? '';
+      const petProfileBlock =
+        source.match(/export interface PetProfile \{[\s\S]*?\n\}/)?.[0] ?? '';
+      const fields = [...nextVaccineBlock.matchAll(/^\s+(\w+):/gm)].map(
+        ([, field]) => field,
+      );
+
+      expect(fields).toEqual(['id', 'name', 'nextDoseAt']);
+      expect(nextVaccineBlock).not.toMatch(/\b(?:daysLeft|date):/);
+      expect(petProfileBlock).toContain('nextVaccine: NextVaccine | null;');
+      expect(petProfileBlock).toContain('nextReminder: unknown;');
+      expect(petProfileBlock).toContain('activitySummary: unknown;');
+    });
+  });
+
+  describe('#70 R1: estructura de la sección', () => {
+    it('dibuja la cabecera y el cuerpo de la sección', async () => {
+      await renderHome();
+
+      const section = await screen.findByTestId('reminders-section');
+      const title = within(section).getByTestId('reminders-section-title');
+      const header = title.parent;
+      const body = within(section).getByTestId('reminders-section-body');
+      const seeAll = within(section).getByTestId('reminders-see-all');
+
+      expect(section.children).toHaveLength(2);
+      expect(section.props.className).toBe('gap-3');
+      expect(header?.props.className).toBe(
+        'flex-row items-center justify-between',
+      );
+      expect(section.children[0]).toBe(header);
+      expect(section.children[1]).toBe(body);
+      expect(title).toHaveTextContent('Próxima vacuna');
+      expect(title.props.className).toBe(
+        'text-base font-bold text-foreground',
+      );
+      expect(seeAll).toBeVisible();
+      expect(seeAll).toHaveTextContent('Ver recordatorios');
+      expect(body.props.className).toBe('gap-2');
+    });
+  });
+
+  describe('#70 R6: datos de la próxima vacuna', () => {
+    it('liga nombre, fecha y contador a su nodo y a ninguno más', async () => {
+      jest.useFakeTimers();
+      jest.setSystemTime(new Date(2026, 8, 10, 12, 0));
+      jest
+        .spyOn(Uniwind, 'getCSSVariable')
+        .mockImplementation((token) => token);
+
+      await renderHome();
+
+      const section = await screen.findByTestId('reminders-section');
+      const row = within(section).getByTestId('reminders-next-vaccine');
+      const icon = within(row).getByTestId('icon-syringe');
+      const name = within(row).getByTestId('reminders-next-vaccine-name');
+      const date = within(row).getByTestId('reminders-next-vaccine-date');
+      const days = within(row).getByTestId('reminders-next-vaccine-days');
+
+      expect(icon).toBeVisible();
+      expect(icon.props.color).toBe('--color-category-blue-strong');
+      expect(name.props.children).toBe('Antirrábica');
+      expect(name.props.className).toBe(
+        'text-sm font-semibold text-foreground',
+      );
+      expect(date.props.children).toBe('15 sep 2026');
+      expect(date.props.className).toBe('text-xs font-normal text-muted');
+      expect(days.props.children).toBe('5 d');
+      expect(name).not.toHaveTextContent('15 sep 2026');
+      expect(name).not.toHaveTextContent('5 d');
+      expect(date).not.toHaveTextContent('Antirrábica');
+      expect(date).not.toHaveTextContent('5 d');
+      expect(days).not.toHaveTextContent('Antirrábica');
+      expect(days).not.toHaveTextContent('15 sep 2026');
+      expect(within(section).queryByText('vac-9')).toBeNull();
+    });
+
+    it('no hace pulsable la fila de la vacuna', async () => {
+      await renderHome();
+
+      const row = await screen.findByTestId('reminders-next-vaccine');
+
+      expect(row.props.onPress).toBeUndefined();
+      expect(row.props.accessibilityRole).toBeUndefined();
+      fireEvent.press(row);
+      expect(mockRouter.push).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('#70 R7: ramas del contador de vacuna', () => {
+    it('resuelve las tres ramas del contador', async () => {
+      jest.useFakeTimers();
+      jest.setSystemTime(new Date(2026, 8, 10, 12, 0));
+
+      const cases = [
+        ['2026-09-15', '5 d', 'Faltan 5 días'],
+        ['2026-09-10', 'Hoy', 'Hoy'],
+        ['2026-09-08', 'Vencida', 'Vencida'],
+      ] as const;
+
+      for (const [nextDoseAt, text, label] of cases) {
+        mockGetPet.mockResolvedValue({
+          kind: 'ok',
+          pet: makePet({ nextVaccine: { ...vaccine, nextDoseAt } }),
+        });
+        const view = await render(<HomeScreen />, { wrapper: HomeWrapper });
+
+        try {
+          const days = await screen.findByTestId('reminders-next-vaccine-days');
+
+          expect(days.props.children).toBe(text);
+          expect(days.props.accessibilityLabel).toBe(label);
+          expect(days).not.toHaveTextContent('-');
+        } finally {
+          await view.unmount();
+        }
+      }
+    });
+  });
+
+  describe('#70 R8: estado vacío de próxima vacuna', () => {
+    it('dibuja un estado vacío con forma de fila cuando no hay vacuna', async () => {
+      mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
+      jest
+        .spyOn(Uniwind, 'getCSSVariable')
+        .mockImplementation((token) => token);
+
+      await renderHome();
+
+      const section = await screen.findByTestId('reminders-section');
+      const empty = within(section).getByTestId('reminders-none-upcoming');
+      const icon = within(empty).getByTestId('icon-syringe');
+      const text = within(empty).getByText('Sin vacuna próxima');
+
+      expect(empty.props.className).toContain('flex-row items-center gap-3');
+      expect(icon).toBeVisible();
+      expect(icon.props.color).toBe('--color-muted');
+      expect(text).toBeVisible();
+      expect(text.props.className).toBe(
+        'flex-1 text-sm font-normal text-muted',
+      );
+      expect(within(section).queryByTestId('reminders-next-vaccine')).toBeNull();
+      expect(
+        within(section).queryByTestId('reminders-next-vaccine-name'),
+      ).toBeNull();
+      expect(
+        within(section).queryByTestId('reminders-next-vaccine-date'),
+      ).toBeNull();
+      expect(
+        within(section).queryByTestId('reminders-next-vaccine-days'),
+      ).toBeNull();
+      expect(
+        within(section).getByTestId('reminders-section-title'),
+      ).toBeVisible();
+      expect(within(section).getByTestId('reminders-see-all')).toBeVisible();
+    });
+  });
+
+  describe('#70 R9: estados de carga y error del detalle', () => {
+    it('esqueletiza mientras carga y calla cuando el perfil falla', async () => {
+      mockGetPet.mockReturnValue(pending<PetState>());
+      const loading = await render(<HomeScreen />, { wrapper: HomeWrapper });
+
+      try {
+        const section = await screen.findByTestId('reminders-section');
+        const skeleton = within(section).getByTestId(
+          'reminders-section-skeleton',
+        );
+
+        expect(skeleton.props.className).toContain('h-16 w-full rounded-card');
+        expect(
+          within(section).queryAllByTestId(/(?:-error|-retry)$/),
+        ).toHaveLength(0);
+        expect(within(section).getByTestId('reminders-see-all')).toBeVisible();
+      } finally {
+        await loading.unmount();
+      }
+
+      mockGetPet.mockResolvedValue({ kind: 'error' });
+      const failed = await render(<HomeScreen />, { wrapper: HomeWrapper });
+
+      try {
+        const section = await screen.findByTestId('reminders-section');
+        const body = within(section).getByTestId('reminders-section-body');
+
+        expect(body.children).toHaveLength(0);
+        expect(
+          within(section).queryAllByTestId(/(?:-error|-retry)$/),
+        ).toHaveLength(0);
+        expect(within(section).getByTestId('reminders-see-all')).toBeVisible();
+      } finally {
+        await failed.unmount();
+      }
+    });
+
+    it('deja el cuerpo con un solo hijo', async () => {
+      mockGetPet.mockResolvedValue({
+        kind: 'ok',
+        pet: makePet({ nextVaccine: vaccine }),
+      });
+      const loaded = await render(<HomeScreen />, { wrapper: HomeWrapper });
+
+      try {
+        await screen.findByTestId('reminders-next-vaccine');
+        expect(
+          screen.getByTestId('reminders-section-body').children,
+        ).toHaveLength(1);
+      } finally {
+        await loaded.unmount();
+      }
+
+      mockGetPet.mockReturnValue(pending<PetState>());
+      const loading = await render(<HomeScreen />, { wrapper: HomeWrapper });
+
+      try {
+        await screen.findByTestId('reminders-section');
+        expect(
+          screen.getByTestId('reminders-section-body').children,
+        ).toHaveLength(1);
+      } finally {
+        await loading.unmount();
+      }
+
+      mockGetPet.mockResolvedValue({ kind: 'error' });
+      const failed = await render(<HomeScreen />, { wrapper: HomeWrapper });
+
+      try {
+        await screen.findByTestId('reminders-section');
+        expect(
+          screen.getByTestId('reminders-section-body').children,
+        ).toHaveLength(0);
+      } finally {
+        await failed.unmount();
+      }
+    });
+  });
+
+  describe('#70 R10: enlace a la lista de recordatorios', () => {
+    it('lleva a la lista de recordatorios existente', async () => {
+      await renderHome();
+
+      fireEvent.press(await screen.findByTestId('reminders-see-all'));
+
+      expect(mockRouter.push).toHaveBeenCalledTimes(1);
+      expect(mockRouter.push).toHaveBeenCalledWith('/reminders');
+      expect(appRoutes(join(process.cwd(), 'src/app/(tabs)'))).toContain(
+        '/reminders',
+      );
+
+      const source = readFileSync(
+        join(process.cwd(), 'src/screens/home/index.tsx'),
+        'utf8',
+      );
+      expect(source).not.toContain("'/reminders' as Href");
+      expect(source).not.toMatch(/import\s*\{[^}]*\bHref\b[^}]*\}\s*from/);
+    });
+
+    it('no añade un segundo camino a la lista desde la Home', () => {
+      const source = readFileSync(
+        join(process.cwd(), 'src/screens/home/index.tsx'),
+        'utf8',
+      );
+      const quickActions = source.slice(
+        source.indexOf('const QUICK_ACTIONS = ['),
+        source.indexOf('] as const;', source.indexOf('const QUICK_ACTIONS = [')),
+      );
+
+      expect(source.match(/['"]\/reminders['"]/g) ?? []).toHaveLength(1);
+      expect(quickActions).not.toContain("'/reminders'");
+    });
+
+    it('muestra feedback visual al pulsar el enlace', async () => {
+      const opacityOf = (style: unknown): unknown => {
+        const entries = (Array.isArray(style) ? style.flat(Infinity) : [style])
+          .filter(
+            (entry): entry is Record<string, unknown> =>
+              typeof entry === 'object' && entry !== null,
+          );
+
+        return entries.find((entry) => 'opacity' in entry)?.opacity;
+      };
+
+      await renderHome();
+      const link = await screen.findByTestId('reminders-see-all');
+      const source = readFileSync(
+        join(process.cwd(), 'src/screens/home/index.tsx'),
+        'utf8',
+      );
+      const anchor = source.indexOf('testID="reminders-see-all"');
+      const block = source.slice(
+        source.lastIndexOf('<Pressable', anchor),
+        source.indexOf('</Pressable>', anchor),
+      );
+
+      expect(opacityOf(link.props.style)).toBe(1);
+      expect(block).toMatch(
+        /style=\{\(\{ pressed \}\) => \(\{ opacity: pressed \? 0\.8 : 1 \}\)\}/,
+      );
+    });
+  });
+
+  describe('#70 R11: accesibilidad por partes', () => {
+    it('anuncia el enlace como botón y expande la abreviatura del contador', async () => {
+      jest.useFakeTimers();
+      jest.setSystemTime(new Date(2026, 8, 10, 12, 0));
+
+      const cases = [
+        ['2026-09-15', 'Faltan 5 días'],
+        ['2026-09-10', 'Hoy'],
+        ['2026-09-08', 'Vencida'],
+      ] as const;
+
+      for (const [nextDoseAt, label] of cases) {
+        mockGetPet.mockResolvedValue({
+          kind: 'ok',
+          pet: makePet({ nextVaccine: { ...vaccine, nextDoseAt } }),
+        });
+        const view = await render(<HomeScreen />, { wrapper: HomeWrapper });
+
+        try {
+          const section = await screen.findByTestId('reminders-section');
+          const body = within(section).getByTestId('reminders-section-body');
+          const days = within(section).getByTestId(
+            'reminders-next-vaccine-days',
+          );
+          const buttons = within(section).getAllByRole('button');
+
+          expect(buttons.map((node) => node.props.testID)).toEqual([
+            'reminders-see-all',
+          ]);
+          expect(days.props.accessibilityLabel).toBe(label);
+          expect(
+            within(section).getByTestId('reminders-next-vaccine-name').props
+              .accessibilityLabel,
+          ).toBeUndefined();
+          expect(
+            within(section).getByTestId('reminders-next-vaccine-date').props
+              .accessibilityLabel,
+          ).toBeUndefined();
+          for (const group of [section, body]) {
+            expect(group.props.accessible).toBeUndefined();
+            expect(group.props.accessibilityLabel).toBeUndefined();
+          }
+        } finally {
+          await view.unmount();
+        }
+      }
+    });
+  });
+
+  describe('#70 R12: Card compartido y tokens', () => {
+    it('viste la sección con el Card compartido y los tokens', async () => {
+      const loaded = await render(<HomeScreen />, { wrapper: HomeWrapper });
+
+      try {
+        const row = await screen.findByTestId('reminders-next-vaccine');
+        const name = within(row).getByTestId('reminders-next-vaccine-name');
+        const date = within(row).getByTestId('reminders-next-vaccine-date');
+        const days = within(row).getByTestId('reminders-next-vaccine-days');
+        const disk = row.children[0];
+
+        expect(row.props.className).toContain(
+          'rounded-card border border-border bg-surface p-4 shadow-sm',
+        );
+        expect(row.props.className).toContain('flex-row items-center gap-3');
+        expect(row.children[1]).toHaveProperty('props.className', 'flex-1');
+        expect(typeof disk).not.toBe('string');
+        if (typeof disk !== 'string') {
+          expect(disk.props.className).toBe(
+            `size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS.blue.surface}`,
+          );
+        }
+        expect(days.props.className).toBe(
+          `rounded-full px-2.5 py-1 text-xs font-bold ${CATEGORY_SLOTS.amber.surface} ${CATEGORY_SLOTS.amber.ink}`,
+        );
+        expect(days.props.style).toEqual(TABULAR_NUMS);
+        expect(name.props.style).toBeUndefined();
+        expect(date.props.style).toBeUndefined();
+      } finally {
+        await loaded.unmount();
+      }
+
+      mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
+      const empty = await render(<HomeScreen />, { wrapper: HomeWrapper });
+
+      try {
+        const row = await screen.findByTestId('reminders-none-upcoming');
+        const disk = row.children[0];
+
+        expect(row.props.className).toContain(
+          'rounded-card border border-border bg-surface p-4 shadow-sm',
+        );
+        expect(typeof disk).not.toBe('string');
+        if (typeof disk !== 'string') {
+          expect(disk.props.className).toBe(
+            `size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS.neutral.surface}`,
+          );
+        }
+      } finally {
+        await empty.unmount();
+      }
+    });
+  });
+
+  describe('#70 R13: icono de vacuna', () => {
+    it('usa el icono de reicon y ningún emoji', () => {
+      const source = readFileSync(
+        join(process.cwd(), 'src/screens/home/index.tsx'),
+        'utf8',
+      );
+      const reiconImport =
+        source.match(/import \{[\s\S]*?\} from 'reicon-react-native';/)?.[0] ??
+        '';
+
+      expect(reiconImport).toMatch(/\bSyringe\b/);
+      expect(source.match(/<Syringe\s+size=\{20\}/g) ?? []).toHaveLength(2);
+      expect(source).not.toContain('💉');
+    });
+  });
+
+  describe('#70 R14: posición y condición de la sección', () => {
+    it('coloca la sección entre la actividad semanal y la última posición', async () => {
+      const detailPet = makePet({
+        nextVaccine: vaccine,
+        device: {
+          model: 'PetTrack One',
+          batteryPct: 82,
+          connectivity: 'online',
+          lastMessageAt: '2026-09-08T12:00:00.000Z',
+          esn: 'REM-001',
+        },
+      });
+      mockGetPet.mockResolvedValue({ kind: 'ok', pet: detailPet });
+
+      await renderHome();
+      await screen.findByTestId('last-position-card');
+
+      const relevantChildren = screen
+        .getByTestId('home-content')
+        .children.flatMap((child) =>
+          typeof child === 'string' ? [] : [child.props.testID],
+        )
+        .filter((testID) =>
+          [
+            'summary-card',
+            'collar-card',
+            'quick-actions',
+            'weekly-activity-card',
+            'reminders-section',
+            'last-position-card',
+          ].includes(testID),
+        );
+
+      expect(relevantChildren).toEqual([
+        'summary-card',
+        'collar-card',
+        'quick-actions',
+        'weekly-activity-card',
+        'reminders-section',
+        'last-position-card',
+      ]);
+    });
+
+    it('no dibuja la sección sin mascota seleccionada', async () => {
+      mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+
+      await renderHome();
+
+      await screen.findByTestId('home-empty');
+      expect(screen.queryByTestId('reminders-section')).toBeNull();
+    });
+  });
+
+  describe('#70 R15: sin llamadas nuevas', () => {
+    it('no añade ninguna llamada a la API', async () => {
+      await renderHome();
+      await screen.findByTestId('reminders-next-vaccine');
+      await screen.findByTestId('weekly-activity-card');
+
+      expect({
+        pets: mockListPets.mock.calls.length,
+        detail: mockGetPet.mock.calls.length,
+        activity: mockGetDailyActivity.mock.calls.length,
+      }).toEqual({ pets: 1, detail: 1, activity: 1 });
+    });
+  });
+
+  describe('#70 R3: la barra de comidas queda fuera', () => {
+    it('no dibuja la barra de comidas ni pide el plan de nutrición', async () => {
+      await renderHome();
+
+      const section = await screen.findByTestId('reminders-section');
+      const body = within(section).getByTestId('reminders-section-body');
+      const source = readFileSync(
+        join(process.cwd(), 'src/screens/home/index.tsx'),
+        'utf8',
+      );
+
+      expect(body.children).toHaveLength(1);
+      expect(within(section).queryByText(/\d+\s*\/\s*\d+/)).toBeNull();
+      expect(source).not.toContain("../../api/nutrition");
+    });
   });
 });
