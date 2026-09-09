@@ -1103,7 +1103,7 @@ están vigiladas; dos no, y las dos dejan la suite **entera** verde al cruzarse:
 - **#81 no se cierra con esto**: aquello es el tile de acciones rápidas y sigue
   abierto.
 
-  - [ ] Aprobado por humano
+  - [X] Aprobado por humano
 
 ## Aprobación
 
