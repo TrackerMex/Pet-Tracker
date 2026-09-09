@@ -976,7 +976,7 @@ lo hacen porque su *sujeto* cambió (la copy, el número de llamadas) o porque s
   (`getAllByRole('button')`) se conserva **y se refuerza** con un escenario
   nuevo **con filas** en R8.
 
-  - [ ] Enmiendas A1-A6 aprobadas por humano
+  - [X] Enmiendas A1-A6 aprobadas por humano
 
 ---
 
