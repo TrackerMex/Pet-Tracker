@@ -1184,7 +1184,7 @@ recorrió la tabla de R15 contra el orden de `tasks.md`:
 
 Solo M7 y M8 estaban mal colocadas.
 
-  - [ ] Aprobado por humano
+  - [X] Aprobado por humano
 
 ## Aprobación
 
