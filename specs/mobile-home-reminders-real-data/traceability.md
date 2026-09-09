@@ -10,7 +10,7 @@ Base de medición: **`20c7b3c`** (merge del PR #116, #70).
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 — copy en los dos idiomas | pendiente | pendiente |
+| R1 — copy en los dos idiomas | `src/screens/home/index.test.tsx`::`describe('#85 R1: la sección recupera su rótulo en los dos idiomas')` + adaptación de `#70 R1` | `5ad5bc6 feat(mobile-home-reminders-real-data): lock restored reminder copy (R1)` + `41e7a99 feat(mobile-home-reminders-real-data): restore reminder section copy (R1)` |
 | R2 — `localDayOf` | pendiente | pendiente |
 | R3 — `upcomingReminders` | pendiente | pendiente |
 | R4 — la Home pide los recordatorios | pendiente | pendiente |
@@ -33,7 +33,7 @@ Base de medición: **`20c7b3c`** (merge del PR #116, #70).
 | A1 — R15 pasa de 3 a 4 llamadas | pendiente | pendiente |
 | A2 — `vaccineCountdown` → `dueCountdown` | pendiente | pendiente |
 | A3 — cardinalidad del cuerpo `1` → `1 + n` | pendiente | pendiente |
-| A4 — D8 revertida: copy restaurada | pendiente | pendiente |
+| A4 — D8 revertida: copy restaurada | valores bilingües de `home.reminders` / `home.remindersSeeAll` y literales de `#70 R1` | `5ad5bc6` + `41e7a99` |
 | A5 — claves `home.nextVaccine*` sirven a dos filas | pendiente | pendiente |
 | A6 — andamiaje de test gana `listReminders` | pendiente | pendiente |
 
