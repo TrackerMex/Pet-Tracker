@@ -91,6 +91,11 @@ function vaccineCountdown(
   days: number,
   t: ReturnType<typeof useTranslate>,
 ): { text: string; label: string } {
+  if (days < 0) {
+    const overdue = t('home.nextVaccineOverdue');
+    return { text: overdue, label: overdue };
+  }
+
   if (days === 0) {
     const today = t('home.nextVaccineToday');
     return { text: today, label: today };
