@@ -49,6 +49,9 @@ Se completa durante la secuencia TDD; los hashes definitivos también quedan en
 - **R12**: rojo `8f694bb` (M8 de producción quitó `TABULAR_NUMS` y recibió
   `undefined`); verde `677ab51` (contador tabular; nombre, fecha y vacío sin
   cifras tabulares; `Card` y huecos de categoría verificados).
+- **R13**: rojo `edef02e` (mutación de producción `Syringe` → `CalendarPlus`);
+  verde `285efa7` (dos usos reales de `Syringe`, tamaño 20, sin emoji, y doble
+  nominal añadido solo como preparación).
 
 ## Premisas corregidas contra el árbol
 

@@ -2229,4 +2229,57 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
       expect(source).not.toContain('💉');
     });
   });
+
+  describe('#70 R14: posición y condición de la sección', () => {
+    it('coloca la sección entre la actividad semanal y la última posición', async () => {
+      const detailPet = makePet({
+        nextVaccine: vaccine,
+        device: {
+          model: 'PetTrack One',
+          batteryPct: 82,
+          connectivity: 'online',
+          lastMessageAt: '2026-09-08T12:00:00.000Z',
+          esn: 'REM-001',
+        },
+      });
+      mockGetPet.mockResolvedValue({ kind: 'ok', pet: detailPet });
+
+      await renderHome();
+      await screen.findByTestId('last-position-card');
+
+      const relevantChildren = screen
+        .getByTestId('home-content')
+        .children.flatMap((child) =>
+          typeof child === 'string' ? [] : [child.props.testID],
+        )
+        .filter((testID) =>
+          [
+            'summary-card',
+            'collar-card',
+            'quick-actions',
+            'weekly-activity-card',
+            'reminders-section',
+            'last-position-card',
+          ].includes(testID),
+        );
+
+      expect(relevantChildren).toEqual([
+        'summary-card',
+        'collar-card',
+        'quick-actions',
+        'weekly-activity-card',
+        'reminders-section',
+        'last-position-card',
+      ]);
+    });
+
+    it('no dibuja la sección sin mascota seleccionada', async () => {
+      mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+
+      await renderHome();
+
+      await screen.findByTestId('home-empty');
+      expect(screen.queryByTestId('reminders-section')).toBeNull();
+    });
+  });
 });
