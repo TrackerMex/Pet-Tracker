@@ -349,6 +349,13 @@ un recuento por prefijo deja pasar cualquier hijo sin `testID`.
 táctil y reparto, radio, rol y agrupación accesible, sitio de render, y feedback
 de pulsado.
 
+> **Inventariar no es candar.** Añadido el 2026-09-09 tras #85: la spec copió
+> esta lista en prosa —incluido "tamaño de icono"— y aun así el `size={20}` del
+> icono de fila quedó sin una sola aserción: ponerlo a `28` dejó la suite móvil
+> completa verde. Cada invariante de esta lista necesita **un `expect`**, no una
+> mención. Y ojo con el caso que lo produjo: un `size` renderizado **por
+> variable** no lo ve ningún recuento de literales en el fuente.
+
 **Método**: cada candado se demuestra con una sonda —cruzar el valor en
 producción, ver el rojo, restaurar con `git diff` vacío— y la evidencia se
 escribe. Un candado que nadie vio fallar no es un candado.
