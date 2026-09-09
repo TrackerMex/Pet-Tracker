@@ -426,9 +426,6 @@ export function HomeScreen() {
                   </Pressable>
                 ),
               )}
-              <Pressable onPress={() => router.push('/pairing')}>
-                <Text>{t('home.quickActionWeight')}</Text>
-              </Pressable>
             </View>
           </View>
         ) : null}
