@@ -557,7 +557,6 @@ export function HomeScreen() {
                   <Text
                     testID="reminders-next-vaccine-days"
                     accessibilityLabel={nextVaccineCountdown.label}
-                    style={TABULAR_NUMS}
                     className={`rounded-full px-2.5 py-1 text-xs font-bold ${CATEGORY_SLOTS.amber.surface} ${CATEGORY_SLOTS.amber.ink}`}
                   >
                     {nextVaccineCountdown.text}
