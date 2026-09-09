@@ -253,3 +253,18 @@ declara aquí. También quedan sin aserción exacta los detalles compartidos de
 composición interior `items-center gap-1.5 py-3`; no son asociaciones distintas
 por fila, pero una futura spec debe decidir si los congela o los deja como
 libertad de implementación.
+
+Gate final de la segunda corrección:
+
+- `env -u FORCE_COLOR ./init.sh`: única corrida final posterior a O7/O8, exit
+  0. Build verde; backend 163/163 suites y 1243/1243 tests; infraestructura
+  2/2 suites y 14/14 tests; móvil 68/68 suites, 1054/1054 tests y 1/1 snapshot;
+  e2e 25 suites y 354 tests verdes, con 3 suites/8 tests omitidos por el arnés;
+  lint y typecheck verdes.
+- `graphify update .`: exit 0 después del gate; 11083 nodos, 17077 aristas y
+  677 comunidades. `graphify-out/` sigue ignorado. Conserva el aviso no
+  bloqueante de 16 SQL sin extracción por faltar el extra opcional
+  `tree_sitter_sql`.
+- Los avisos preexistentes de las tres claves ausentes en `.env` y del requisito
+  futuro de Node 22 no cambiaron el exit 0. Ninguna cifra de candado cambió,
+  no quedó ninguna mutación y no se tocó backend ni infraestructura.
