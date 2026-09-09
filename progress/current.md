@@ -18,4 +18,4 @@
 - A12: firmada y leída; declara R9/R10 de verificación y prescribe P9/P10 fuera de M1-M13.
 - A13: firmada y leída; corrige solo la evidencia de P9: desaparece la tarjeta y el cuerpo pasa de 1 a 0; el skeleton no cambia.
 - Avance: R1-R8 completos. R8 rojo `7dac461`, verde `fecd8e8`; sus tres pruebas y `#70 R11` verdes.
-- Avance: R9-R13 completos. R13 `5febedb`; antes, 3 fallos/241 verdes por el único uso tabular nuevo; después, seis suites de inventario 244/244 verdes. Las 21 filas cuadran sin delta imprevisto. Siguiente paso: R14.
+- Avance: R9-R14 completos. R14 cerró 68 suites/1110 tests móviles, typecheck y grep-clean verdes; tras aislar un flake ajeno de `add-pet`, `env -u FORCE_COLOR ./init.sh` terminó en exit 0. Siguiente paso: R15.

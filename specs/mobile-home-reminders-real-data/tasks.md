@@ -325,15 +325,15 @@ implementación + tests + docs incumple `CHECKPOINTS.md` C4 y **se rechaza**.
 
 ## R14 — Verificación: suite verde, typecheck y grep-clean
 
-- [ ] (1) Escribir test que falla para R14
+- [x] (1) Escribir test que falla para R14
   - Requisito de verificación: no lleva test propio.
-- [ ] (2) Implementación mínima que lo pasa
+- [x] (2) Implementación mínima que lo pasa
   - `bun run test` y `bun run typecheck` desde `mobile-pet-tracker/`,
     **sin exportar `TZ`**.
   - Grep-clean de la carta §Decisiones fijas 3.
   - `git diff --stat` sin ficheros fuera de `mobile-pet-tracker/`, `specs/`,
     `progress/` y `feature_list.json`.
-- [ ] (3) Refactor con tests verdes
+- [x] (3) Refactor con tests verdes
   - `./init.sh` exit 0.
   - Dejar en el informe el recuento de suites/tests, comparado con el de
     partida.

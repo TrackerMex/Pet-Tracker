@@ -55,6 +55,11 @@
 - **R13**: verde `5febedb`. Antes del delta, los seis ficheros de inventario
   dejaron 3 fallos/241 verdes, todos del único `TABULAR_NUMS` nuevo. Tras mover
   los cinco usos del sumando nombrado, quedaron 244/244 verdes.
+- **R14**: sin test propio. La suite móvil cerró 68/68 suites y 1110/1110 tests
+  (32 tests más que la base, mismo número de suites), con 1 snapshot; typecheck
+  y los cinco greps normativos quedaron verdes, sin `TZ` y sin rutas fantasma.
+  El primer `init.sh` encontró un flake ajeno en `add-pet` (1/1110); esa suite
+  pasó 17/17 aislada y la repetición completa terminó en exit 0.
 
 ## Prueba de mutación
 
@@ -262,3 +267,21 @@ Home, el total cerrado y las dos guardas. No se absorbió ningún otro cambio.
 
 Tras aplicar solo el delta de la fila 4, las seis suites dirigidas quedaron
 244/244 verdes; typecheck y lint del candado, exit 0.
+
+## R14 — gate completo
+
+- `bun run test`, con `TZ` ausente: 68 suites, 1110 tests y 1 snapshot, todo
+  verde. Base: 68 suites, 1078 tests y 1 snapshot; delta: +32 tests.
+- `bun run typecheck`: exit 0.
+- Grep-clean sobre producción: hex fuera de `src/theme/` 0, clases arbitrarias
+  0, `StyleSheet.create` 0, shadow/elevation legacy 0 y radios prohibidos 0.
+- `git diff --name-only 20c7b3c...HEAD`: 0 rutas fuera de
+  `mobile-pet-tracker/`, `specs/`, `progress/` y `feature_list.json`.
+- No existía `.expo/types/router.d.ts`; tampoco había otro `init.sh` real en
+  ejecución.
+- Primer `env -u FORCE_COLOR ./init.sh`: rojo por un único flake ajeno a #85 en
+  `src/screens/add-pet/index.test.tsx`; el mock del picker devolvió `undefined`.
+  La suite pasó 17/17 inmediatamente aislada, sin cambios.
+- Segundo `env -u FORCE_COLOR ./init.sh`: exit 0. Pasaron backend 163/1243,
+  infra 2/14, harness 11/28, móvil 68/1110, e2e 25/354 (3 suites/8 tests
+  omitidos), lint y typecheck. El árbol siguió sin cambios de backend.
