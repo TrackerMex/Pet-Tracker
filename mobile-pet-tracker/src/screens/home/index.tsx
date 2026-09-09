@@ -138,10 +138,7 @@ export function HomeScreen() {
   const detailFn = useMemo(
     () =>
       selectedPetId
-        ? async () => {
-            await getPet(baseUrl, token ?? '', selectedPetId);
-            return getPet(baseUrl, token ?? '', selectedPetId);
-          }
+        ? () => getPet(baseUrl, token ?? '', selectedPetId)
         : null,
     [baseUrl, selectedPetId, token],
   );
