@@ -1,4 +1,10 @@
-import { render, screen, waitFor } from '@testing-library/react-native';
+import {
+  cleanup,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react-native';
+import type { QueryClient } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { Uniwind } from 'uniwind';
 
@@ -10,6 +16,7 @@ const { readFileSync } = require('fs') as typeof import('fs');
 const { join } = require('path') as typeof import('path');
 
 let mockUseQueryInStack = false;
+let mockLayoutQueryClient: QueryClient | undefined;
 
 jest.mock('../../utils/language-preference', () => ({
   getStoredLanguage: jest.fn(),
@@ -32,11 +39,12 @@ jest.mock('expo-router', () => {
   const { Text, View } = jest.requireActual<typeof import('react-native')>(
     'react-native',
   );
-  const { useQuery } = jest.requireActual<
+  const { useQuery, useQueryClient } = jest.requireActual<
     typeof import('@tanstack/react-query')
   >('@tanstack/react-query');
 
   function QueryStack() {
+    mockLayoutQueryClient = useQueryClient();
     const query = useQuery({
       queryKey: ['layout-probe'],
       queryFn: async () => 'ok',
@@ -172,7 +180,10 @@ describe('#87 R4: QueryProvider envuelve la app dentro de AuthProvider', () => {
     mockUseQueryInStack = true;
   });
 
-  afterEach(() => {
+  afterEach(async () => {
+    await cleanup();
+    mockLayoutQueryClient?.clear();
+    mockLayoutQueryClient = undefined;
     mockUseQueryInStack = false;
   });
 
