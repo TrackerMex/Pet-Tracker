@@ -633,9 +633,10 @@ describe('R9: summary degrada con gracia', () => {
 
     await renderHome();
 
-    await waitFor(() => expect(screen.getByTestId('summary-card')).toBeVisible());
+    await waitFor(() =>
+      expect(screen.getByTestId('summary-activity')).toHaveTextContent('1h 35m'),
+    );
     expect(screen.getByText('Resumen de hoy')).toBeVisible();
-    expect(screen.getByTestId('summary-activity')).toHaveTextContent('1h 35m');
     expect(screen.getByTestId('summary-sleep')).toHaveTextContent('45m');
     expect(screen.getByTestId('summary-distance')).toHaveTextContent('2.4 km');
   });
@@ -663,8 +664,9 @@ describe('R9: summary degrada con gracia', () => {
 
     await renderHome();
 
-    await waitFor(() => expect(screen.getByTestId('summary-card')).toBeVisible());
-    expect(screen.getByTestId('summary-weight')).toHaveTextContent('—');
+    await waitFor(() =>
+      expect(screen.getByTestId('summary-weight')).toHaveTextContent('—'),
+    );
     expect(screen.getByTestId('summary-activity')).toHaveTextContent('—');
     expect(screen.getByTestId('summary-sleep')).toHaveTextContent('—');
     expect(screen.getByTestId('summary-distance')).toHaveTextContent('—');
@@ -680,7 +682,9 @@ describe('R9: summary degrada con gracia', () => {
 
     await renderHome();
 
-    await waitFor(() => expect(screen.getByTestId('summary-card')).toBeVisible());
+    await waitFor(() =>
+      expect(screen.getByTestId('summary-weight')).toHaveTextContent('—'),
+    );
     for (const testId of [
       'summary-weight',
       'summary-activity',
@@ -689,7 +693,6 @@ describe('R9: summary degrada con gracia', () => {
     ]) {
       expect(screen.getByTestId(testId)).toBeVisible();
     }
-    expect(screen.getByTestId('summary-weight')).toHaveTextContent('—');
   });
 
   it('explains that activity tracking requires a collar', async () => {
