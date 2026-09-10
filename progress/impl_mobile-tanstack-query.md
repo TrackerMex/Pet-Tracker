@@ -85,7 +85,13 @@ Home sin cambiar la aserción ni su valor esperado.
   evento; el foco sigue llamando solo a mascotas y detalle.
 - R17, `src/screens/home/index.test.tsx`: se añadieron esperas de disponibilidad
   antes de las aserciones ya existentes de accesos rápidos, copy inglesa y filas
-  de recordatorio/vacuna. Ningún matcher ni valor esperado cambió.
+  de recordatorio/vacuna. La suite completa reveló además que esperar contenedores
+  siempre montados (`pet-hero`, `summary-card`, `reminders-section`) dejaba carreras;
+  ahora se espera el hijo exacto ya esperado por cada prueba. Ningún matcher ni
+  valor esperado cambió.
+- R7, `src/api/query-keys.ts`: la propiedad pública `positionKeys.last` se escribe
+  como `'last'` para que el barrido histórico de pseudo-clases no confunda
+  `last:` de TypeScript con `last:` de Uniwind; la clave y el acceso no cambian.
 - R18, `src/app/(tabs)/map.tsx`: los dos botones de reintento adaptan el evento;
   el `useFocusEffect`, su intervalo de 15 s y la exclusión de la ruta quedan
   intactos.

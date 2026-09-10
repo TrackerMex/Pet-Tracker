@@ -15,7 +15,7 @@ export const healthKeys = {
 };
 
 export const positionKeys = {
-  last: (petId: string) => ['positions', 'last', petId] as const,
+  'last': (petId: string) => ['positions', 'last', petId] as const,
   list: (petId: string) => ['positions', 'list', petId] as const,
 };
 

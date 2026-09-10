@@ -384,18 +384,18 @@ describe('#87 R17: HomeScreen lee por TanStack Query', () => {
     const { queryClient } = await renderWithProviders(<HomeScreen />, {
       wrapper: HomeWrapper,
     });
-    await screen.findByTestId('pet-hero');
-
-    expect(queryClient.getQueryData(petKeys.list())).toEqual(petsState);
-    expect(queryClient.getQueryData(petKeys.detail('pet-1'))).toEqual(
-      detailState,
-    );
-    expect(queryClient.getQueryData(activityKeys.daily('pet-1'))).toEqual(
-      activityState,
-    );
-    expect(queryClient.getQueryData(reminderKeys.list('pet-1'))).toEqual(
-      remindersState,
-    );
+    await waitFor(() => {
+      expect(queryClient.getQueryData(petKeys.list())).toEqual(petsState);
+      expect(queryClient.getQueryData(petKeys.detail('pet-1'))).toEqual(
+        detailState,
+      );
+      expect(queryClient.getQueryData(activityKeys.daily('pet-1'))).toEqual(
+        activityState,
+      );
+      expect(queryClient.getQueryData(reminderKeys.list('pet-1'))).toEqual(
+        remindersState,
+      );
+    });
   });
 });
 
@@ -427,7 +427,7 @@ describe('R7: el hero muestra el perfil (antes pet card)', () => {
 
     await renderHome();
 
-    await waitFor(() => expect(screen.getByTestId('pet-hero')).toBeVisible());
+    await screen.findByTestId('pet-hero-media');
     expect(screen.getByTestId('pet-hero-media').props.source).toEqual([
       { uri: pet.photoUrl, cacheKey: pet.id },
     ]);
@@ -443,7 +443,7 @@ describe('R7: el hero muestra el perfil (antes pet card)', () => {
 
     await renderHome();
 
-    await waitFor(() => expect(screen.getByTestId('pet-hero')).toBeVisible());
+    await screen.findByTestId('pet-hero-media');
     expect(screen.getByTestId('pet-hero-media').props.xml).toContain('<svg');
     expect(screen.getByTestId('pet-hero-breed')).toHaveTextContent('—');
   });
@@ -481,7 +481,7 @@ describe('R5 (#40): Home usa el fallback blobatar compartido', () => {
   it('renders the generated SVG under the pet-hero-media contract', async () => {
     await renderHome();
 
-    await waitFor(() => expect(screen.getByTestId('pet-hero')).toBeVisible());
+    await screen.findByTestId('pet-hero-media');
     const avatar = screen.getByTestId('pet-hero-media');
     expect(avatar.props.xml).toContain('<svg');
     expect(within(screen.getByTestId('pet-hero')).getByTestId('pet-hero-media')).toBe(
@@ -1057,7 +1057,7 @@ describe('R5: Home usa el hero compartido', () => {
 
     await renderHome();
 
-    await waitFor(() => expect(screen.getByTestId('pet-hero')).toBeVisible());
+    await screen.findByTestId('pet-hero-media');
     const hero = screen.getByTestId('pet-hero');
     expect(within(hero).getByTestId('pet-hero-media')).toBeVisible();
     expect(within(hero).getByTestId('pet-hero-slot')).toBeVisible();
@@ -1076,7 +1076,7 @@ describe('R5: Home usa el hero compartido', () => {
 
     await renderHome();
 
-    await waitFor(() => expect(screen.getByTestId('pet-hero')).toBeVisible());
+    await screen.findByTestId('collar-card');
     expect(screen.getByTestId('screen-home').props.contentContainerStyle).toEqual({
       gap: 16,
       paddingBottom: 120,
@@ -1219,7 +1219,7 @@ describe('R7: el hero pinta los paseos de hoy', () => {
 
     await renderHome();
 
-    await waitFor(() => expect(screen.getByTestId('pet-hero')).toBeVisible());
+    await screen.findByTestId('pet-hero-media');
     expect(screen.queryByTestId('pet-hero-highlight-value')).toBeNull();
   });
 });
@@ -1455,7 +1455,8 @@ describe('#69 R1: la tira de hoy tiene cuatro celdas con tres divisores', () => 
   it('renders the four value testIDs in tree order', async () => {
     await renderHome();
 
-    const summary = await screen.findByTestId('summary-card');
+    await screen.findByTestId('summary-weight');
+    const summary = screen.getByTestId('summary-card');
     const valueTestIds = within(summary)
       .getAllByTestId(/^summary-(weight|activity|sleep|distance)$/)
       .map(({ props }) => props.testID);
@@ -1471,7 +1472,7 @@ describe('#69 R1: la tira de hoy tiene cuatro celdas con tres divisores', () => 
   it('renders exactly three dividers between the four cells', async () => {
     await renderHome();
 
-    await screen.findByTestId('summary-card');
+    await screen.findByTestId('summary-weight');
     const dividedCells = [
       'summary-weight',
       'summary-activity',
@@ -1500,7 +1501,7 @@ describe('#69 R1: la tira de hoy tiene cuatro celdas con tres divisores', () => 
   it('asigna cada valor, icono y etiqueta a su celda y a ninguna otra', async () => {
     await renderHome();
 
-    await screen.findByTestId('summary-card');
+    await screen.findByTestId('summary-weight');
     const cells = [
       ['summary-weight', '12.4 kg', 'icon-weight', 'Peso'],
       ['summary-activity', '1h 35m', 'icon-walk', 'Actividad'],
@@ -1530,7 +1531,8 @@ describe('#69 R1: la tira de hoy tiene cuatro celdas con tres divisores', () => 
   it('no repite los paseos dentro de la tira', async () => {
     await renderHome();
 
-    const summary = await screen.findByTestId('summary-card');
+    await screen.findByTestId('summary-weight');
+    const summary = screen.getByTestId('summary-card');
     expect(screen.queryByTestId('summary-walks')).toBeNull();
     expect(within(summary).queryByText('Paseos')).toBeNull();
     expect(screen.getByTestId('pet-hero-highlight-value')).toHaveTextContent(
@@ -1601,7 +1603,7 @@ describe('#69 R1: la tira de hoy tiene cuatro celdas con tres divisores', () => 
   it('#69 R12: deja que cada celda se anuncie por separado', async () => {
     await renderHome();
 
-    await screen.findByTestId('summary-card');
+    await screen.findByTestId('summary-weight');
     const values = [
       screen.getByTestId('summary-weight'),
       screen.getByTestId('summary-activity'),
@@ -1630,7 +1632,7 @@ describe('#69 R1: la tira de hoy tiene cuatro celdas con tres divisores', () => 
     const existingScenarioCallCount = { detail: 1, activity: 1 };
 
     await renderHome();
-    await screen.findByTestId('summary-card');
+    await screen.findByTestId('summary-weight');
 
     expect({
       detail: mockGetPet.mock.calls.length,
@@ -1953,7 +1955,7 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
     const existingScenarioCallCount = { pets: 1, detail: 1, activity: 1 };
 
     await renderHome();
-    await screen.findByTestId('summary-card');
+    await screen.findByTestId('summary-weight');
 
     expect({
       pets: mockListPets.mock.calls.length,
@@ -2487,6 +2489,7 @@ describe('#85 R8: las filas no son pulsables y se anuncian por partes', () => {
     await renderHome();
 
     const section = await screen.findByTestId('reminders-section');
+    await screen.findByTestId('reminders-item-rem-b');
     expect(
       within(section)
         .getAllByRole('button')
@@ -2592,10 +2595,12 @@ describe('#85 R9: la sección aguanta la carga y el fallo de los recordatorios',
     });
 
     const body = await screen.findByTestId('reminders-section-body');
-    expect(body.children).toHaveLength(1);
-    expect(
-      within(body).getByTestId('reminders-next-vaccine'),
-    ).toBeVisible();
+    await waitFor(() => {
+      expect(body.children).toHaveLength(1);
+      expect(
+        within(body).getByTestId('reminders-next-vaccine'),
+      ).toBeVisible();
+    });
     expect(within(body).queryAllByTestId(/^reminders-item-/)).toHaveLength(0);
 
     await loadedProfile.unmount();
@@ -2620,10 +2625,12 @@ describe('#85 R9: la sección aguanta la carga y el fallo de los recordatorios',
     const section = await screen.findByTestId('reminders-section');
     const sectionQueries = within(section);
     const body = sectionQueries.getByTestId('reminders-section-body');
-    expect(body.children).toHaveLength(1);
-    expect(
-      within(body).getByTestId('reminders-next-vaccine'),
-    ).toBeVisible();
+    await waitFor(() => {
+      expect(body.children).toHaveLength(1);
+      expect(
+        within(body).getByTestId('reminders-next-vaccine'),
+      ).toBeVisible();
+    });
     expect(sectionQueries.getByTestId('reminders-section-title')).toBeVisible();
     expect(sectionQueries.getByTestId('reminders-see-all')).toBeVisible();
     expect(
@@ -2862,6 +2869,11 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
       await renderHome();
 
       const section = await screen.findByTestId('reminders-section');
+      await waitFor(() =>
+        expect(
+          within(section).getByTestId('reminders-none-upcoming'),
+        ).toBeVisible(),
+      );
       const empty = within(section).getByTestId('reminders-none-upcoming');
       const icon = within(empty).getByTestId('icon-syringe');
       const text = within(empty).getByText('Sin vacuna próxima');
@@ -2917,7 +2929,7 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
         const section = await screen.findByTestId('reminders-section');
         const body = within(section).getByTestId('reminders-section-body');
 
-        expect(body.children).toHaveLength(0);
+        await waitFor(() => expect(body.children).toHaveLength(0));
         expect(
           within(section).queryAllByTestId(/(?:-error|-retry)$/),
         ).toHaveLength(0);
@@ -2960,9 +2972,11 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
 
       try {
         await screen.findByTestId('reminders-section');
-        expect(
-          screen.getByTestId('reminders-section-body').children,
-        ).toHaveLength(0);
+        await waitFor(() =>
+          expect(
+            screen.getByTestId('reminders-section-body').children,
+          ).toHaveLength(0),
+        );
       } finally {
         await failed.unmount();
       }
@@ -3230,6 +3244,7 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
       await renderHome();
 
       const section = await screen.findByTestId('reminders-section');
+      await screen.findByTestId('reminders-next-vaccine');
       const body = within(section).getByTestId('reminders-section-body');
       const source = readFileSync(
         join(process.cwd(), 'src/screens/home/index.tsx'),
