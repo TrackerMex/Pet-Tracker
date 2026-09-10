@@ -22,7 +22,8 @@ describe('#87 R3: el helper monta el QueryClientProvider y devuelve su cliente',
   it('resolves a query while preserving the caller wrapper', async () => {
     await renderWithProviders(<Probe />, { wrapper: CustomWrapper });
 
-    expect(await screen.findByTestId('probe')).toHaveTextContent('ok');
+    await screen.findByText('ok');
+    expect(screen.getByTestId('probe')).toHaveTextContent('ok');
     expect(screen.getByTestId('custom-wrapper')).toBeVisible();
   });
 
