@@ -27,7 +27,7 @@ tags: [harness, spec]
 | R13 | `app/(tabs)/health.tsx` (clave con `limit`) | `src/app/(tabs)/__tests__/health.test.tsx::#87 R13` | rojo `b77c366`; verde `157a7a8` | cumplido |
 | R14 | `screens/reminders/index.tsx` | `src/screens/reminders/index.test.tsx::#87 R14` | rojo `6991074`; verde `0baba1d` | cumplido |
 | R15 | `screens/pairing/index.tsx` (dos `useFocusEffect`) | `src/screens/pairing/index.test.tsx::#87 R15` | rojo `c204287`; verde `79363d9` | cumplido |
-| R16 | `screens/profile/index.tsx` | `src/screens/profile/index.test.tsx::#87 R16` | rojo `9f0e27e`; verde — | rojo confirmado |
+| R16 | `screens/profile/index.tsx` | `src/screens/profile/index.test.tsx::#87 R16` | rojo `9f0e27e`; verde `f9afe6a` | cumplido |
 | R17 | `screens/home/index.tsx` | `src/screens/home/index.test.tsx::#87 R17` | — | pendiente |
 | R18 | `app/(tabs)/map.tsx` (sondeo de 15 s intacto) | `src/app/(tabs)/__tests__/map.test.tsx::#87 R18` | — | pendiente |
 | R19 | `use-api` borrado y sin huella | `src/__tests__/design-drift.test.ts::#87 R19` | — | pendiente |

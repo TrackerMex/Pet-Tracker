@@ -16,6 +16,11 @@ import {
   type DailyActivityState,
 } from '../../api/activity';
 import { getPet, listPets, type PetState, type PetsState } from '../../api/pets';
+import {
+  activityKeys,
+  petKeys,
+  reminderKeys,
+} from '../../api/query-keys';
 import { listReminders, type RemindersState } from '../../api/reminders';
 import type { DayEntry, PetProfile, Reminder } from '../../api/types';
 import * as apiHooks from '../../hooks/use-api';
@@ -27,6 +32,7 @@ import * as selectedPetHooks from '../../providers/selected-pet-provider';
 import { TABULAR_NUMS } from '../../theme/native-styles';
 import { CATEGORY_SLOTS } from '../../utils/category-palette';
 import { HomeScreen } from './index';
+import { renderWithProviders } from '../../../test/render-with-providers';
 
 declare function require(moduleName: 'fs'): {
   readdirSync: (
@@ -351,6 +357,48 @@ describe('R6: home carga pets y selecciona', () => {
       expect(mockGetPet).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'pet-2');
       expect(mockGetDailyActivity).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'pet-2');
     });
+  });
+});
+
+describe('#87 R17: HomeScreen lee por TanStack Query', () => {
+  it('deja sus cuatro recursos en las claves canónicas', async () => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    const pet = makePet();
+    const petsState: PetsState = { kind: 'ok', pets: [pet] };
+    const detailState: PetState = { kind: 'ok', pet };
+    const activityState: DailyActivityState = {
+      kind: 'ok',
+      days: [makeDay()],
+      weekComparison: { distanceM: 5, activeMinutes: 10, walkCount: 20 },
+    };
+    const remindersState: RemindersState = { kind: 'ok', reminders: [] };
+    mockListPets.mockResolvedValue(petsState);
+    mockGetPet.mockResolvedValue(detailState);
+    mockGetDailyActivity.mockResolvedValue(activityState);
+    mockListReminders.mockResolvedValue(remindersState);
+
+    const { queryClient } = await renderWithProviders(<HomeScreen />, {
+      wrapper: HomeWrapper,
+    });
+    await screen.findByTestId('pet-hero');
+
+    expect(queryClient.getQueryData(petKeys.list())).toEqual(petsState);
+    expect(queryClient.getQueryData(petKeys.detail('pet-1'))).toEqual(
+      detailState,
+    );
+    expect(queryClient.getQueryData(activityKeys.daily('pet-1'))).toEqual(
+      activityState,
+    );
+    expect(queryClient.getQueryData(reminderKeys.list('pet-1'))).toEqual(
+      remindersState,
+    );
   });
 });
 

@@ -36,7 +36,7 @@
 | R13 | `b77c366` | `157a7a8` | 3 claves, peso con `limit: 1`, candado real; 28 pruebas y typecheck verdes |
 | R14 | `6991074` | `0baba1d` | 2 claves; foco y mutacion preservados; 22 pruebas y typecheck verdes |
 | R15 | `c204287` | `79363d9` | condicion triple, 2 focos y 2 mutaciones verdes; 48 pruebas y typecheck verdes |
-| R16 | `9f0e27e` | pendiente | cuenta, mascotas y detalle ausentes de cache; 31 pruebas heredadas verdes |
+| R16 | `9f0e27e` | `f9afe6a` | 3 claves y 3 ficheros de montaje verdes; 35 pruebas y typecheck verdes |
 | R17 | pendiente | pendiente | pendiente |
 | R18 | pendiente | pendiente | pendiente |
 | R19 | pendiente | pendiente | pendiente |
