@@ -1,7 +1,6 @@
 import { renderHook } from '@testing-library/react-native';
 import { useIsFocused } from 'expo-router';
 
-import type { PetsState } from '../api/pets';
 import type { PetProfile } from '../api/types';
 import {
   useSelectedPet,

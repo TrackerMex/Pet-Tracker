@@ -40,10 +40,12 @@ export function createQueryClient(
 export function QueryProvider({ children }: { children: ReactNode }) {
   const { signOut, status } = useAuth();
   const signOutRef = useRef(signOut);
+  /* eslint-disable react-hooks/refs -- QueryCache invokes this callback after render; the ref keeps the latest auth action. */
   signOutRef.current = signOut;
   const [client] = useState(() =>
     createQueryClient(() => void signOutRef.current()),
   );
+  /* eslint-enable react-hooks/refs */
 
   useEffect(() => {
     if (status === 'unauthenticated') client.clear();

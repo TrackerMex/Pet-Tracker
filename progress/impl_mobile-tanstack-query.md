@@ -40,7 +40,7 @@
 | R17 | `9a5476e` | `bbc6193` | 4 claves, foco limitado y candado real; 112 pruebas y typecheck verdes |
 | R18 | `6afcc38` | `5fa6c6e` | 4 claves, sondeo de 15 s y ruta excluida preservados; 49 pruebas verdes |
 | R19 | `98b563f` | `e443eb3` | 2 ficheros borrados; solo sobrevive el candado semanal; query keys literales ausentes y 9 `signOut(` de mutación, delta 0 respecto a `5666b85` |
-| R20 | `c53f003` | pendiente | mutación exacta versionada; los 3 candados de pantalla y el homólogo del hook fallan por llamar `selectPet('pet-old')` |
+| R20 | `c53f003` | `264e1c8` | mutación exacta versionada y revertida; 4 candados rojos con `pet-old`, después 4 verdes; hook idéntico al estado tras R8 |
 
 ## Evidencia R20
 

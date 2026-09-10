@@ -12,8 +12,8 @@ import { getStoredLanguage } from '../../utils/language-preference';
 import { getStoredTheme } from '../../utils/theme-preference';
 import RootLayout from '../_layout';
 
-const { readFileSync } = require('fs') as typeof import('fs');
-const { join } = require('path') as typeof import('path');
+const { readFileSync } = jest.requireActual<typeof import('fs')>('fs');
+const { join } = jest.requireActual<typeof import('path')>('path');
 
 let mockUseQueryInStack = false;
 let mockLayoutQueryClient: QueryClient | undefined;

@@ -10,6 +10,7 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { Text } from 'react-native';
 
 import { useAuth, type AuthContextValue } from '../auth-provider';
@@ -22,7 +23,10 @@ const mockSignOut = jest.fn<Promise<void>, []>();
 let mountedClient: QueryClient | undefined;
 
 function QueryProbe({ result }: { result: { kind: string; message?: string } }) {
-  mountedClient = useQueryClient();
+  const client = useQueryClient();
+  useEffect(() => {
+    mountedClient = client;
+  }, [client]);
   const query = useQuery({
     queryKey: ['unauthorized-probe'],
     queryFn: async () => result,
@@ -32,7 +36,10 @@ function QueryProbe({ result }: { result: { kind: string; message?: string } }) 
 }
 
 function ClientProbe() {
-  mountedClient = useQueryClient();
+  const client = useQueryClient();
+  useEffect(() => {
+    mountedClient = client;
+  }, [client]);
 
   return <Text>client ready</Text>;
 }
