@@ -93,7 +93,9 @@ describe('#87 R5: unauthorized expulsa desde un único sitio', () => {
       </QueryProvider>,
     );
 
-    expect(await screen.findByTestId('query-result')).toHaveTextContent('ok');
+    await waitFor(() =>
+      expect(screen.getByTestId('query-result')).toHaveTextContent('ok'),
+    );
     expect(mockSignOut).not.toHaveBeenCalled();
   });
 
@@ -104,8 +106,10 @@ describe('#87 R5: unauthorized expulsa desde un único sitio', () => {
       </QueryProvider>,
     );
 
-    expect(await screen.findByTestId('query-result')).toHaveTextContent(
-      'unreachable',
+    await waitFor(() =>
+      expect(screen.getByTestId('query-result')).toHaveTextContent(
+        'unreachable',
+      ),
     );
     expect(mockSignOut).not.toHaveBeenCalled();
   });

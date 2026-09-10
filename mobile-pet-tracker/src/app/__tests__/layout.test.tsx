@@ -205,6 +205,8 @@ describe('#87 R4: QueryProvider envuelve la app dentro de AuthProvider', () => {
   it('provides a QueryClient to the routed tree', async () => {
     await render(<RootLayout />);
 
-    expect(await screen.findByTestId('query-probe')).toHaveTextContent('ok');
+    await waitFor(() =>
+      expect(screen.getByTestId('query-probe')).toHaveTextContent('ok'),
+    );
   });
 });
