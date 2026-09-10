@@ -7,8 +7,10 @@ import {
   useSelectedPet,
   type SelectedPetContextValue,
 } from '../providers/selected-pet-provider';
-import type { ApiResult } from './use-api';
-import { usePetSelection } from './use-pet-selection';
+import {
+  usePetSelection,
+  type PetSelectionSource,
+} from './use-pet-selection';
 
 interface DirectoryEntry {
   name: string;
@@ -65,11 +67,10 @@ function makePet(id: string): PetProfile {
 function petsResult(
   pets: PetProfile[],
   isRefreshing = false,
-): ApiResult<PetsState> {
+): PetSelectionSource {
   return {
     data: { kind: 'ok', pets },
     isRefreshing,
-    refetch: jest.fn(),
   };
 }
 
