@@ -16,6 +16,7 @@ import {
   type WeightsState,
 } from '../../../api/health-records';
 import { listPets, type PetsState } from '../../../api/pets';
+import { healthKeys, petKeys } from '../../../api/query-keys';
 import type { PetProfile, Vaccine, WeightEntry } from '../../../api/types';
 import * as apiHooks from '../../../hooks/use-api';
 import type { ApiResult } from '../../../hooks/use-api';
@@ -25,6 +26,7 @@ import { SelectedPetProvider } from '../../../providers/selected-pet-provider';
 import * as selectedPetHooks from '../../../providers/selected-pet-provider';
 import HealthScreen from '../health';
 import { TOUCH_SLOP } from '../../../theme/touch-target';
+import { renderWithProviders } from '../../../../test/render-with-providers';
 
 let mockTheme: 'light' | 'dark' = 'light';
 
@@ -616,6 +618,43 @@ describe('#62 R5: el título de card usa un único tratamiento', () => {
 
     expect((await screen.findByTestId('weight-card-title')).props.className).toBe(
       'text-base font-bold text-foreground',
+    );
+  });
+});
+
+describe('#87 R13: HealthScreen lee por TanStack Query', () => {
+  it('deja mascotas, vacunas y un solo peso en sus claves canónicas', async () => {
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    const petsState: PetsState = { kind: 'ok', pets: [makePet()] };
+    const vaccinesState: VaccinesState = {
+      kind: 'ok',
+      vaccines: [makeVaccine()],
+    };
+    const weightsState: WeightsState = {
+      kind: 'ok',
+      weights: [makeWeight()],
+    };
+    mockListPets.mockResolvedValue(petsState);
+    mockListVaccines.mockResolvedValue(vaccinesState);
+    mockListWeights.mockResolvedValue(weightsState);
+
+    const { queryClient } = await renderWithProviders(<HealthScreen />, {
+      wrapper: HealthWrapper,
+    });
+    await screen.findByTestId('weight-current');
+
+    expect(queryClient.getQueryData(petKeys.list())).toEqual(petsState);
+    expect(queryClient.getQueryData(healthKeys.vaccines('pet-1'))).toEqual(
+      vaccinesState,
+    );
+    expect(queryClient.getQueryData(healthKeys.weights('pet-1', 1))).toEqual(
+      weightsState,
     );
   });
 });

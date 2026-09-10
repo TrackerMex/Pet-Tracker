@@ -32,7 +32,7 @@
 | R9 | `07c4ba5` | `5e00853` | 2 entradas de cache, suite de Docs y typecheck verdes |
 | R10 | `8a46cc7` | `97049e7` | clave con `limit: undefined`; 23 pruebas y typecheck verdes |
 | R11 | `be536d1` | `6966af6` | 2 claves; `retryAll` y refresco tras generar preservados; 22 pruebas y typecheck verdes |
-| R12 | `b4b279e` | pendiente | mascotas y plan ausentes de cache; 22 pruebas heredadas verdes |
+| R12 | `b4b279e` | `e1df8ef` | `enabled` del plan y candado de revalidacion real verdes; 23 pruebas y typecheck verdes |
 | R13 | pendiente | pendiente | pendiente |
 | R14 | pendiente | pendiente | pendiente |
 | R15 | pendiente | pendiente | pendiente |
