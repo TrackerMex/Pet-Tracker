@@ -10,7 +10,7 @@
 - **Branch**: `feature/76-e2e-audit-log-order-assert` (desde `origin/main` @ 5666b85)
 - **Worktree**: `/home/claude/sites/Pet-Tracker-wt-backend` (sesion Backend; la sesion Frontend trabaja #78 en `/home/claude/sites/Pet-Tracker`)
 - **Inicio**: 2026-09-10
-- **Estado**: `spec_ready` -> esperando gate humano (spec escrita 2026-09-10, sin aprobar)
+- **Estado**: `in_progress` (spec aprobada por el humano en ed09b73, 2026-09-10; handoff a Codex CLI escrito)
 - **Prioridad**: P3
 
 ### Plan
