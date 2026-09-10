@@ -15,7 +15,7 @@ tags: [harness, spec]
 | R1 | dependencia `@tanstack/react-query@5.102.8` exacta | `src/__tests__/design-drift.test.ts::#87 R1` | rojo `2837dc3`; verde `a6e5cdf` | cumplido |
 | R2 | los cinco mandos del `QueryClient` | `src/providers/__tests__/query-provider.test.tsx::#87 R2` | rojo `a231cdd`; verde `492cdab` | cumplido |
 | R3 | helper `renderWithProviders` con su `queryClient` | `test/__tests__/render-with-providers.test.tsx::#87 R3` | rojo `af1ac31`; verde `3cd184f` | cumplido |
-| R4 | `QueryProvider` dentro de `AuthProvider`, fuera de `Stack` | `src/app/__tests__/layout.test.tsx::#87 R4` | rojo `cbceb6b`; verde — | rojo confirmado |
+| R4 | `QueryProvider` dentro de `AuthProvider`, fuera de `Stack` | `src/app/__tests__/layout.test.tsx::#87 R4` | rojo `cbceb6b`; verde `50cb93a` | cumplido |
 | R5 | `unauthorized` de lectura ⇒ `signOut` desde un único sitio | `src/providers/__tests__/query-provider.test.tsx::#87 R5` | — | pendiente |
 | R6 | `queryClient.clear()` al pasar a `unauthenticated` | `src/providers/__tests__/query-provider.test.tsx::#87 R6` | — | pendiente |
 | R7 | convención y las catorce query keys | `src/api/__tests__/query-keys.test.ts::#87 R7` | — | pendiente |
