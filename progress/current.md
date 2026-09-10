@@ -53,3 +53,21 @@ lanzarlo como `env -u FORCE_COLOR bash ./init.sh`.**
 
 Lleva #76 en `/home/claude/sites/Pet-Tracker-wt-backend`. Comparten el Postgres de
 docker: `pgrep` y aviso mutuo antes de cada `init.sh`. Id #87 reservado y avisado.
+
+### Evidencia cruzada sobre el flake #72 (2026-09-10)
+
+`#72 mobile-add-pet-photo-test-flake` está `pending` con prioridad **P3**, y hay
+razón para subirla:
+
+- El `reviewer` de #87 midió la tasa en la base, sin nada de #87 encima:
+  **2 de 13** pasadas completas de la suite móvil en rojo.
+- La sesión Backend reportó que su **primer `init.sh` de cierre de #82 cayó por
+  ese mismo test** (`add-pet`, *"uploads a chosen preview only after createPet
+  succeeds"*) con **cero archivos móviles en su diff**; la segunda corrida salió
+  verde sin tocar nada.
+
+Es decir: el flake ya está tumbando gates de features que no tocan el móvil, y
+obliga a repetir corridas de `init.sh` completas. El coste real no es el test,
+es el tiempo de gate de cualquier feature del repo y el riesgo de que alguien
+normalice el "vuelve a correrlo, seguro que pasa" y con eso se cuele un rojo de
+verdad.
