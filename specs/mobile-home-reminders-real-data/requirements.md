@@ -1447,7 +1447,7 @@ La carta §Enmienda #70 nombraba "tamaño de icono" y la spec lo copió **en
 prosa**; nadie lo convirtió en `expect`. Cada invariante de esa lista necesita
 una aserción, no una mención.
 
-  - [ ] Aprobado por humano
+  - [X] Aprobado por humano
 
 ## Aprobación
 
