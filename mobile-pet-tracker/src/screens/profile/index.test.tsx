@@ -1,7 +1,6 @@
 import {
   act,
   fireEvent,
-  render,
   screen,
   waitFor,
   within,
@@ -228,7 +227,7 @@ function ProfileWrapper({ children }: { children: ReactNode }) {
 }
 
 function renderProfile() {
-  return render(<ProfileScreen />, { wrapper: ProfileWrapper });
+  return renderWithProviders(<ProfileScreen />, { wrapper: ProfileWrapper });
 }
 
 describe('R1: me card', () => {

@@ -36,7 +36,7 @@
 | R13 | `b77c366` | `157a7a8` | 3 claves, peso con `limit: 1`, candado real; 28 pruebas y typecheck verdes |
 | R14 | `6991074` | `0baba1d` | 2 claves; foco y mutacion preservados; 22 pruebas y typecheck verdes |
 | R15 | `c204287` | `79363d9` | condicion triple, 2 focos y 2 mutaciones verdes; 48 pruebas y typecheck verdes |
-| R16 | pendiente | pendiente | pendiente |
+| R16 | `9f0e27e` | pendiente | cuenta, mascotas y detalle ausentes de cache; 31 pruebas heredadas verdes |
 | R17 | pendiente | pendiente | pendiente |
 | R18 | pendiente | pendiente | pendiente |
 | R19 | pendiente | pendiente | pendiente |
@@ -67,6 +67,8 @@ Pendiente.
   el bloque `useFocusEffect` y el `signOut` de la mutación quedan intactos.
 - R15, `src/screens/pairing/index.tsx`: el botón de reintento adapta el evento;
   permanecen dos `useFocusEffect` y las dos expulsiones de mutación.
+- R16, `src/screens/profile/index.tsx`: el botón de reintento adapta el evento;
+  el foco, el refresco tras foto y las dos expulsiones permanecen intactos.
 
 ## Cierre
 

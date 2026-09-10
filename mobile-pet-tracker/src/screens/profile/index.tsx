@@ -1,7 +1,8 @@
+import { useQuery } from '@tanstack/react-query';
 import { router, type Href, useFocusEffect } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Button, Skeleton } from 'heroui-native';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronRight } from 'reicon-react-native';
@@ -13,12 +14,12 @@ import {
   uploadPhotoToUrl,
 } from '../../api/media';
 import { getPet, listPets } from '../../api/pets';
+import { petKeys, userKeys } from '../../api/query-keys';
 import type { PetProfile } from '../../api/types';
 import { getMe } from '../../api/users';
 import { Card } from '../../components/card';
 import { PetHeroHeader } from '../../components/pet-hero-header';
 import { PetSwitcher } from '../../components/pet-switcher';
-import { useApi } from '../../hooks/use-api';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import {
@@ -98,25 +99,20 @@ export function ProfileScreen() {
   const [muted] = useThemeColors(['muted']);
   const [photoUploading, setPhotoUploading] = useState(false);
   const [photoError, setPhotoError] = useState<string | null>(null);
-  const meFn = useCallback(
-    () => getMe(baseUrl, token ?? ''),
-    [baseUrl, token],
-  );
-  const petsFn = useCallback(
-    () => listPets(baseUrl, token ?? ''),
-    [baseUrl, token],
-  );
-  const detailFn = useMemo(
-    () =>
-      selectedPetId
-        ? () => getPet(baseUrl, token ?? '', selectedPetId)
-        : null,
-    [baseUrl, selectedPetId, token],
-  );
-  const me = useApi(meFn);
-  const pets = useApi(petsFn);
-  usePetSelection(pets);
-  const detail = useApi(detailFn);
+  const me = useQuery({
+    queryKey: userKeys.me(),
+    queryFn: () => getMe(baseUrl, token ?? ''),
+  });
+  const pets = useQuery({
+    queryKey: petKeys.list(),
+    queryFn: () => listPets(baseUrl, token ?? ''),
+  });
+  usePetSelection({ data: pets.data, isRefreshing: pets.isRefetching });
+  const detail = useQuery({
+    queryKey: petKeys.detail(selectedPetId ?? ''),
+    queryFn: () => getPet(baseUrl, token ?? '', selectedPetId!),
+    enabled: selectedPetId !== null,
+  });
   const refetchPets = pets.refetch;
   const refetchDetail = detail.refetch;
 
@@ -242,7 +238,10 @@ export function ProfileScreen() {
       {detail.data && ['error', 'unreachable', 'missing-config'].includes(detail.data.kind) ? (
         <Card testID="profile-pet-error" className="items-start gap-3">
           <Text className="text-danger">{t('profile.couldNotLoadPet')}</Text>
-          <Button testID="profile-pet-retry" onPress={detail.refetch}>
+          <Button
+            testID="profile-pet-retry"
+            onPress={() => void detail.refetch()}
+          >
             <Button.Label>{t('common.retry')}</Button.Label>
           </Button>
         </Card>
