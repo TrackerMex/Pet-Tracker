@@ -33,7 +33,7 @@
 | R10 | `8a46cc7` | `97049e7` | clave con `limit: undefined`; 23 pruebas y typecheck verdes |
 | R11 | `be536d1` | `6966af6` | 2 claves; `retryAll` y refresco tras generar preservados; 22 pruebas y typecheck verdes |
 | R12 | `b4b279e` | `e1df8ef` | `enabled` del plan y candado de revalidacion real verdes; 23 pruebas y typecheck verdes |
-| R13 | `b77c366` | pendiente | 3 entradas ausentes de cache; 27 pruebas heredadas verdes |
+| R13 | `b77c366` | `157a7a8` | 3 claves, peso con `limit: 1`, candado real; 28 pruebas y typecheck verdes |
 | R14 | pendiente | pendiente | pendiente |
 | R15 | pendiente | pendiente | pendiente |
 | R16 | pendiente | pendiente | pendiente |

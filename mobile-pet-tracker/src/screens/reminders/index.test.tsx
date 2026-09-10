@@ -11,6 +11,7 @@ import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
 
 import { listPets } from '../../api/pets';
+import { petKeys, reminderKeys } from '../../api/query-keys';
 import {
   deleteReminder,
   listReminders,
@@ -22,6 +23,7 @@ import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
 import { SelectedPetProvider } from '../../providers/selected-pet-provider';
 import { RemindersScreen } from '.';
+import { renderWithProviders } from '../../../test/render-with-providers';
 
 jest.mock('../../api/pets', () => ({
   listPets: jest.fn(),
@@ -603,5 +605,35 @@ describe('#64 R7: la fila de recordatorio pinta el icono con el color de su tipo
     expect(vaccineRow.getByText('Vacuna')).toBeVisible();
     expect(medicationRow.getByText('💊')).toBeVisible();
     expect(medicationRow.getByText('Medicamento')).toBeVisible();
+  });
+});
+
+describe('#87 R14: RemindersScreen lee por TanStack Query', () => {
+  it('deja mascotas y recordatorios en sus claves canónicas', async () => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    const petsState = { kind: 'ok' as const, pets: [makePet()] };
+    const remindersState: RemindersState = {
+      kind: 'ok',
+      reminders: [makeReminder()],
+    };
+    mockListPets.mockResolvedValue(petsState);
+    mockListReminders.mockResolvedValue(remindersState);
+
+    const { queryClient } = await renderWithProviders(<RemindersScreen />, {
+      wrapper: RemindersWrapper,
+    });
+    await screen.findByTestId('reminder-row-reminder-1');
+
+    expect(queryClient.getQueryData(petKeys.list())).toEqual(petsState);
+    expect(queryClient.getQueryData(reminderKeys.list('pet-1'))).toEqual(
+      remindersState,
+    );
   });
 });
