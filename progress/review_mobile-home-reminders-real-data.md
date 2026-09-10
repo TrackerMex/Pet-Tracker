@@ -436,3 +436,221 @@ cambio que evita la sexta ronda.
 6. **Decisión sobre O1**: cerrarlo con una línea antes del PR, o registrarlo como
    requisito de la próxima feature móvil. Mi recomendación: **no lo aplaces más de
    una feature** — lleva cinco rondas saliendo la misma clase de hueco.
+
+---
+---
+
+# Segundo pase — solo el delta de A14
+
+Fecha: 2026-09-10
+Reviewer: agente `reviewer` (Claude Opus 5)
+Commit revisado: `ff12c66` — idéntico a `origin/feature/85-mobile-home-reminders-real-data`
+Rango del pase: `c27b0e4..HEAD` (8 commits). Firma humana de A14: `eb5790e`
+Veredicto de este pase: **APROBADO**
+Veredicto de la feature: **APROBADO** (el del primer pase se mantiene; A14 no lo altera)
+
+**Alcance deliberadamente estrecho.** La revisión completa se hizo el 2026-09-09
+sobre `d90b41c` y quedó aprobada. Aquí sólo se juzga el delta que A14 metió
+después, que son **tres líneas de producción**. No se repite nada de lo anterior.
+
+## Qué entró, medido
+
+`git diff --stat c27b0e4..HEAD`: seis ficheros. **Producción: uno solo**,
+`mobile-pet-tracker/src/screens/home/index.tsx`, con `4 ++-` (3 inserciones,
+1 borrado). El resto son `index.test.tsx` (**42 inserciones, 0 borrados**),
+`progress/current.md`, `progress/impl_*.md`, `requirements.md` y
+`traceability.md`.
+
+### 1 — La condición nueva es exactamente la de A14
+
+`index.tsx:608-610`:
+
+```
+{detail.data?.kind === 'ok' &&
+!detail.data.pet.nextVaccine &&
+upcoming.length === 0 ? (
+```
+
+Carácter por carácter el `diff` que A14 prescribe. **Nada más se coló en
+producción**: el diff de `screens/home/` sobre el rango no toca otra línea de
+`index.tsx`. `upcoming` (definido en `:182`) es el mismo array que `:626`
+mapea para pintar las filas, así que la guarda mide **el cuerpo real**, no una
+lista paralela. El estado vacío pasa a significar lo que promete su nombre.
+
+- [x] Sin cambio de texto, `testID` ni anatomía de la tarjeta, como A14 exige
+- [x] La rama *con* vacuna (`nextVaccine && nextVaccineCountdown`, `:573`) queda
+      intacta: A14 sólo toca el caso *sin vacuna*
+
+### 2 — P14: mutación en producción, plantada sola, idempotente
+
+| Comprobación | Resultado |
+|---|---|
+| Rojo `8381d0d` toca **código de producción** | **Sí** — `index.tsx`, y **sólo** ese fichero |
+| Plantada **sola** (lo que A14 pidió tras el hallazgo O3) | **Sí** — `1 file changed, 1 insertion(+), 2 deletions(-)`. Una mutación, un commit |
+| Verde `8e152db` la revierte | **Sí** — el diff inverso exacto |
+| `git diff --quiet 8381d0d^ 8e152db -- index.tsx` | **Vacío** |
+
+O3 queda corregido en la práctica, no sólo en la prosa: M9 y M10 compartieron
+commit en su día; P14 no.
+
+### 3 — El candado nuevo cubre los dos escenarios, y lo vi fallar
+
+`index.test.tsx:2080-2117`, dentro de `#85 R5`, recorre dos escenarios con
+`makePet()` — cuyo `nextVaccine` es **`null`** por defecto (`:158`), o sea
+*sin vacuna* de verdad en los dos:
+
+| Escenario | Cuerpo | `reminders-none-upcoming` |
+|---|---|---|
+| con 3 recordatorios | `toHaveLength(3)` | `queryByTestId` → `toBeNull()` |
+| sin recordatorios | `toHaveLength(1)` | `getByTestId` → `toBeVisible()` |
+
+**Sonda plantada por mí** (quitar `upcoming.length === 0` de `index.tsx:610`,
+el mismo P14):
+
+```
+● #85 R5 › solo muestra el vacío cuando no hay vacuna ni recordatorios
+  expect(received).toHaveLength(expected)
+  Expected length: 3
+  Received length: 4
+  at src/screens/home/index.test.tsx:2105:31
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 110 passed, 111 total
+```
+
+**Muerde.** El cuarto hijo del array recibido es literalmente la tarjeta
+`reminders-none-upcoming` **encima** de `reminders-item-rem-b`: es el defecto que
+vio la prueba de humo, reproducido en test. Restaurado, verde.
+
+### 4 — O1 cerrado, y el candado muerde
+
+`index.test.tsx:2210` añade `expect(icon.props.size).toBe(20);` dentro del bucle
+de `#85 R6`, con el nodo que ya tenía a mano — la línea que A14 prescribe.
+
+**Repetida mi propia sonda de O1**: `index.tsx:644`, `size={20}` → `size={28}`,
+**suite móvil completa**:
+
+```
+● #85 R6: cada tipo trae su icono, su hueco y su tinta › liga icono, superficie y tinta a su tipo
+Test Suites: 1 failed, 67 passed, 68 total
+Tests:       1 failed, 1110 passed, 1111 total
+```
+
+El hueco que medí en **68/1110 todo verde** ahora da **rojo**. Restaurado, verde.
+
+### 5 — Regresión sobre #70: intactos y verdes, y la teoría se sostiene
+
+- [x] **Nadie los editó**: `git diff --numstat c27b0e4..HEAD -- index.test.tsx`
+      → `42  0`. **Cero líneas borradas**. Ningún assert de #70 tocado ni
+      debilitado (A0 sigue respetado)
+- [x] **La teoría del `beforeEach` de A11 es cierta, verificada leyendo el
+      fichero**: `index.test.tsx:127-129` es un `beforeEach` **de nivel de
+      fichero** que repone `mockListReminders.mockResolvedValue({ kind: 'ok',
+      reminders: [] })` antes de **cada** test. Los dos candados heredados que
+      miran `reminders-none-upcoming` — `#70 R8` (`:2773`) y el de forma
+      (`:3035`) — **no** sobreescriben el mock, así que corren con `[]`, la
+      cláusula nueva es verdadera y la tarjeta se pinta como siempre
+- [x] **Probado, no supuesto**: con la sonda del punto 3 puesta,
+      `#70 R9 › deja el cuerpo con la fila de la vacuna y nada más cuando no hay
+      recordatorios` siguió **verde** — la sonda cae en el escenario *con*
+      recordatorios, que es justo el que #70 no tenía. Los 110 tests restantes
+      del fichero, verdes
+
+### 6 — Ningún recuento global movido
+
+- [x] `mobile-pet-tracker/src/i18n/` **intacto** en el rango → la longitud del
+      catálogo no se mueve, y `language-provider.test.tsx` no se toca
+- [x] `design-drift`, `consistency-classnames`, `legibility-classnames`:
+      **cero** ficheros tocados en el rango
+- [x] El recuento de `#70 R13` sigue cuadrando: `<Syringe size={20}` sigue
+      apareciendo **2** veces literales en `index.tsx`. La fila nueva renderiza
+      por variable (`<Icon …`), que es lo que R6 exige, y el `size` ahora lo
+      canda R6, no un recuento de fuente
+- [x] Delta de tests: **1110 → 1111**, `+1`, mismas 68 suites. Cuadra con **un**
+      `it` nuevo; el `expect` del `size` entró en un `it` existente. No se borró
+      ni se saltó ningún test
+
+### 7 — Trazabilidad y deriva
+
+- [x] `traceability.md` **sin ninguna fila "pendiente"** (la única aparición de
+      la palabra es la línea de la regla, `:41`). Fila **A14** añadida, y las de
+      R5 y R6 actualizadas con `56414ff`/`47f1020`, P14 `8381d0d`/`8e152db` y
+      `992aa13`
+- [x] `requirements.md` en el rango cambia **una sola línea**: la casilla de A14
+      `- [ ]` → `- [X]`, que es la firma humana de `eb5790e`. Ningún requisito
+      reescrito
+- [x] `git fetch origin`: `HEAD` == `origin/feature/85-mobile-home-reminders-real-data`
+      == `ff12c66`, diff **vacío**. `origin/main` sigue en `20c7b3c`, la base
+      declarada. **Sin deriva**
+- [x] Árbol limpio en `ff12c66` al terminar: las dos sondas revertidas con
+      `git checkout --`, `git status --short` vacío
+
+## Output de `./init.sh` (corrida propia, primer plano, `env -u FORCE_COLOR`)
+
+`pgrep -f "bash ./init.sh"` antes: nada corriendo, sin colisión de worktrees en
+el Postgres compartido. **La corrida llegó al final** — no cayó en el flake de
+`health-vaccines.e2e-spec.ts:497` (#76) ni en el de la foto de add-pet (#72),
+así que `set -e` no abortó y **lint y typecheck sí se ejecutaron**. Una sola
+corrida verifica el gate entero.
+
+```
+✅ .env encontrado
+⚠️  .env desactualizado: faltan 3 claves de .env.example
+✅ Dependencias instaladas
+✅ Archivos del harness presentes
+⚠️  STATUS.md desactualizado (67/85 declarado vs 67/86 real)
+✅ Build exitoso
+→ Tests...
+   Test Suites: 163 passed, 163 total   Tests: 1243 passed, 1243 total   ← backend
+   Test Suites:   2 passed,   2 total   Tests:   14 passed,   14 total   ← infra
+   (env-drift.test.mjs: 28 tests, 0 fail)                                ← harness
+   Test Suites:  68 passed,  68 total   Tests: 1111 passed, 1111 total   ← móvil
+                              ✅ Tests pasados
+→ Tests e2e...
+   Test Suites: 3 skipped, 25 passed, 25 of 28 total
+   Tests:       8 skipped, 354 passed, 362 total
+                              ✅ Tests e2e pasados
+→ Lint...                     ✅ Lint sin errores
+→ Typecheck...                ✅ Typecheck sin errores
+
+══════════════════════════════════════════
+✅ Todo verde. Listo para trabajar.
+
+  Features: 67/86 completadas | 18 pendientes
+```
+
+**exit code 0.** Los dos avisos son los mismos del primer pase, ninguno lo
+introduce A14: el de `STATUS.md` lo causa el alta de #86 y es tarea de cierre
+del leader.
+
+## Observaciones de este pase
+
+Ninguna. **Nada que arreglar.**
+
+A14 es el tamaño correcto para lo que arregla: una guarda de tres líneas, con su
+mutación versionada aparte, y el `expect` de una línea que cierra O1. Las dos
+cosas que dejé medidas en el primer pase están cerradas y **las dos las vi
+fallar yo**, no las leí en un informe.
+
+Vale la pena dejar escrito que el defecto del estado vacío **lo destapó la
+prueba de humo y no un test** — y no por un descuido: los candados de #70 eran
+correctos para #70, donde la sección *sólo* tenía vacuna. El escenario que
+faltaba —*sin vacuna* **y** *con* recordatorios— sólo existe desde #85. Es la
+misma clase de hueco que O1: **una dimensión nueva que nace al combinar dos
+features**, y que ninguna de las dos, por separado, tenía motivo para mirar.
+Coherente con la lección de memoria *"decisiones por elemento repetido"*: cada
+ronda destapa una dimensión más.
+
+## Qué queda antes de `done`
+
+Del primer pase seguían abiertos seis puntos. Con este pase y el humo humano del
+2026-09-10, quedan **cuatro**, todos del leader o del humano, ninguno de código:
+
+1. **`STATUS.md`**: `67/85` → `67/86`
+2. **`feature_list.json`**: `85` a `"done"`
+3. **PR** con `gh pr create`; **el humano mergea**
+4. **O1 ya no está abierto** — A14 lo cerró. Lo que sí queda vivo es el corolario
+   que A14 dejó escrito en `docs/ui-guidelines.md`: *inventariar no es candar*
+
+**Este es el gate que faltaba. Por mi parte, la feature #85 está lista para
+marcarse `done`.**

@@ -3095,3 +3095,84 @@ logica de aplicacion. Reporte en `progress/impl_db-migrate-script.md`.
   `CAP_NET_ADMIN`. El binario lanzado a pelo si funciona. Costo ~70 minutos de
   espera contra un proceso vivo que no hacia nada.
 
+---
+
+- Feature: #85 `mobile-home-reminders-real-data`
+- Branch: `feature/85-mobile-home-reminders-real-data`
+- Inicio: 2026-09-09 17:33 UTC
+- Base: `df9b398`; `env -u FORCE_COLOR ./init.sh` verde tras A7 (móvil: 68 suites / 1078 tests)
+- Plan: ejecutar R1-R15 en el orden normativo de `tasks.md`, TDD por requisito, sin tocar backend; actualizar trazabilidad tras cada par rojo/verde.
+- A7: firmada y leída; traslada el candado inglés del contador a R8. Bloqueo resuelto, implementación reanudada en R1.
+- A8: firmada y leída; confirma que M3 aflora solo `rem-sent` porque el tope recorta `rem-cancelled`, sin cambiar fixture, candado ni código.
+- A9: firmada y leída; M7/M8 pasan de R3 al refactor de R5, donde existirán también sus dos candados de Home.
+- A10: firmada y leída; autoriza el cambio puntual del doble posicional de `hookCall++ % 3` a `% 4`. Deuda estructural registrada fuera de alcance en #86.
+- A11: firmada y leída; un `beforeEach` de fichero repone la respuesta vacía de `listReminders` antes de cada test, sin depender del orden.
+- A12: firmada y leída; declara R9/R10 de verificación y prescribe P9/P10 fuera de M1-M13.
+- A13: firmada y leída; corrige solo la evidencia de P9: desaparece la tarjeta y el cuerpo pasa de 1 a 0; el skeleton no cambia.
+- A14: firmada y leída; añade la guarda `upcoming.length === 0` al estado vacío y canda `size={20}` en R6. Base tras `git pull`: `env -u FORCE_COLOR ./init.sh` verde (móvil: 68 suites / 1110 tests).
+- Avance: R1-R8 completos. R8 rojo `7dac461`, verde `fecd8e8`; sus tres pruebas y `#70 R11` verdes.
+- Avance: R9-R15 completos. R14 cerró 68 suites/1110 tests móviles, typecheck, grep-clean e `init.sh` verdes. R15 replantó las nueve mutaciones no versionadas y auditó las cuatro versionadas; M1-M13 muerden y cada restauración dejó diff vacío. `graphify update .` completado. Pendientes: push, smoke Android humano y reviewer; el PR se abre tras su veredicto.
+- Avance A14: candado rojo `56414ff`, guarda verde `47f1020`; P14 quedó sola en `8381d0d` y restaurada en `8e152db`. R6 canda `size={20}` en `992aa13`; la sonda temporal `28` dio `Expected: 20 / Received: 28` y dejó diff vacío al restaurar. Home: 111/111; móvil: 68/1111; `env -u FORCE_COLOR ./init.sh` y `graphify update .`, verdes.
+
+---
+
+## #85 mobile-home-reminders-real-data (cerrada 2026-09-10)
+
+- **Qué entrega**: la Home enseña la proxima vacuna como primera fila fija y
+  debajo hasta tres recordatorios reales, solo pendientes y futuros, por fecha
+  ascendente. **Cero backend**: `GET /pets/:petId/reminders` ya existia y la
+  Home lo reutiliza filtrando en cliente. Lo decidio el explorer al descubrir
+  que el contrato del perfil esta congelado y su unica ranura, `nextReminder`,
+  es **singular** por diseno documentado: meterle un array habria sido mentirle
+  al nombre del campo.
+- **Hallazgo de diseno que lo cambio todo**: vacunas y recordatorios son
+  entidades **disjuntas**. Dos tablas, dos modulos, cero cruces, y
+  `reminders.type` admite `'vaccine'` pero es texto libre **sin FK**. La Home
+  puede ensenar la misma vacuna dos veces y **no hay clave para deduplicar**.
+  Por eso la vacuna quedo como fila fija separada y no fusionada en el orden:
+  elimina de raiz el empate y el comparar un dia civil con un instante.
+- **Ocho paradas antes de escribir codigo, las ocho correctas.** Seis fueron
+  descuidos de la spec. Merecen quedar escritas por clase, no por numero:
+  - **Sujeto ausente** (A7, A9): tests y verificaciones de mutacion que median
+    algo que el propio `tasks.md` no creaba hasta tres o cuatro requisitos
+    despues. Pasa en R1 porque al escribirlo uno piensa en *todo lo que la
+    seccion ensena* en vez de *lo que existe cuando R1 se implementa*. Ya habia
+    pasado en #70 (D1). Guardado en memoria.
+  - **Evidencia mal predicha** (A8, A13): la mutacion era buena las dos veces;
+    lo que fallo fue la frase que decia por que caeria. En A8 se conto el filtro
+    y se olvido el tope de tres; en A13 se atribuyo el rojo al esqueleto, que
+    depende de otra cosa. **Cuando una spec prescribe el `it` exacto que debe
+    caer, esa prediccion tiene el mismo peso normativo que la mutacion.**
+  - **Premisas falsas sobre el arnes** (A10, A11): el doble posicional de
+    `useApi` codificaba la aridad de la pantalla, y `jest.clearAllMocks()` **no
+    restaura el valor por defecto de una factoria** -limpia llamadas, no
+    implementaciones-, asi que la fixture de R5 contaminaba los `describe`
+    heredados.
+  - **Requisitos sin rojo posible** (A12): R9 y R10 asertaban lo que R5 y R6 ya
+    implementaban. Es el quinto punto de C4, y lo revelador es que **R7 y R12 si
+    llevaban su sonda**: la distincion se conocia y se aplico de forma desigual.
+- **El smoke volvio a encontrar lo que la suite entera daba por bueno**: la
+  tarjeta "Sin vacuna proxima" pintada encima de tres recordatorios, porque
+  miraba solo su propia rama. Segunda feature seguida con un defecto de esta
+  clase -en #70 fue un titulo diciendo "Recordatorios" sobre un cuerpo de
+  vacunas-. Los tests miran cada rama por separado; el ojo humano ve la pantalla
+  entera. Es el argumento entero a favor del gate no delegable.
+- **O1 del reviewer**: el `size={20}` del icono de fila sin candado, medido en
+  68/1110 verde. No lo tapaba el recuento de literales de #70 R13 porque la fila
+  nueva renderiza **por variable**, que es justo lo que R6 exige: el acierto de
+  R6 abria el hueco. Cerrado en A14.
+- **Cierre**: reviewer aprobado en dos pases -el segundo por A14, que toco
+  produccion despues del primero-, con M1, M9 pura, M10, M11, M13, P14 y la
+  sonda del `size` reproducidas por el en worktree desechable. Gate
+  `env -u FORCE_COLOR ./init.sh` exit 0 llegando al final, asi que lint y
+  typecheck si corrieron. Smoke en dev build confirmado por el humano.
+  `feature_list.json` #85 a `done` (68/86).
+- **Deuda abierta desde aqui**: **#86** -el doble posicional de `useApi` acopla
+  el test al numero de peticiones de la Home, asi que la proxima feature que
+  anada una lo rompera igual-; **#82** y **#84**, declarados como defecto
+  heredado y no introducido.
+- **Lo que dejo en el harness**: la nota de `docs/ui-guidelines.md` §Enmienda
+  #70 -**inventariar no es candar**-, escrita porque la carta nombraba "tamano
+  de icono" y la spec lo copio en prosa sin convertirlo en `expect`. Y en
+  memoria, [[sujeto-ausente-en-tasks]].
+

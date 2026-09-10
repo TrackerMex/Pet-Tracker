@@ -1,7 +1,7 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-09-09
-**Features completadas**: 67/85 (`feature_list.json`)
+**Features completadas**: 68/86 (`feature_list.json`)
 **En progreso**: ninguna
 
 **Pendientes**: 15 (#18, #41, #60, #63, #70, #72-#81). El rediseño contra el diseño del Make abrió el bloque #64-#71: #64, #65, #66, #67, #68 y #69 están cerradas y **mergeadas** (PR #106, #110, #111, #112, #113 y #114). #71 `mobile-home-quick-actions` está cerrada con los dos gates humanos firmados; **PR pendiente de merge por el humano**. Del bloque solo queda **#70 recordatorios**, sin especificar, y con la mitad del diseño bloqueada porque `nextReminder` y `activitySummary` siguen a `null` en el mapper del perfil. Deuda registrada: #72 flake de add-pet; #73 `pet-online-pill`; #74 el selector que TalkBack lee como tres controles sueltos; #75 `init.sh` aborta en falso con `FORCE_COLOR`; #76 un e2e que asserta orden sobre un `SELECT` sin `ORDER BY`; #77 el peso visible sin collar; #80 los `testID` del doble atados al componente; #81 la receta tipográfica del tile sin candado. #78 y #79 entraron desde otra sesión.
@@ -86,6 +86,36 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Estado actual
+
+- **`mobile-home-reminders-real-data` (#85) done** (2026-09-10): la Home enseña
+  la próxima vacuna como **primera fila fija** y debajo hasta **tres
+  recordatorios reales**, sólo pendientes y futuros, por fecha ascendente.
+  **Cero backend**: `GET /pets/:petId/reminders` ya existía y la Home lo
+  reutiliza, filtrando en cliente.
+  - **Ocho paradas antes de escribir código, y las ocho correctas.** Seis eran
+    descuidos de la spec: tests que medían un sujeto que el propio orden de
+    tareas no creaba hasta tres o cuatro requisitos después (A7, A9), evidencia
+    de mutación mal contada (A8, A13), premisas falsas sobre el arnés (A10,
+    A11), y dos requisitos —R9 y R10— que asertaban lo que un requisito
+    anterior ya implementaba y por tanto no podían tener rojo (A12). Ninguna
+    llegó a producir código malo.
+  - **Catorce enmiendas firmadas**, trece mutaciones y dos sondas, todas de
+    código de producción y con reversión verificada.
+  - **El smoke volvió a encontrar lo que la suite entera daba por bueno**: la
+    tarjeta "Sin vacuna próxima" se pintaba encima de tres recordatorios,
+    porque miraba sólo su propia rama. Segunda feature seguida en que el gate
+    humano destapa un defecto de este tipo — en #70 fue un título que decía
+    "Recordatorios" sobre un cuerpo de vacunas.
+  - **Hallazgo O1 del reviewer, cerrado en A14**: el `size={20}` del icono de
+    fila no tenía candado —puesto a `28`, la suite completa quedaba verde— y no
+    lo tapaba el recuento de literales de #70 R13, porque la fila nueva
+    renderiza **por variable**. El acierto de R6 abría el hueco.
+  - **Deuda abierta**: **#86** el doble posicional de `useApi` acopla el test al
+    número de peticiones de la Home; **#82** y **#84** siguen vivos y declarados
+    como defecto heredado.
+  - **Lo que dejó en el harness**: la nota de `docs/ui-guidelines.md` §Enmienda
+    #70 —*inventariar no es candar*—, escrita porque la carta nombraba "tamaño
+    de icono" y la spec lo copió en prosa sin convertirlo en `expect`.
 
 - **`mobile-home-reminders-section` (#70) done** (2026-09-09): la Home tiene una
   sección **"Próxima vacuna"** con la vacuna más cercana —icono, nombre, fecha
