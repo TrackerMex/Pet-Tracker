@@ -16,6 +16,11 @@ import {
   type SetLostModeState,
 } from '../../../api/pets';
 import {
+  petKeys,
+  positionKeys,
+  tripKeys,
+} from '../../../api/query-keys';
+import {
   getLastPosition,
   listPositions,
   type LastPositionState,
@@ -35,6 +40,7 @@ import {
   useSelectedPet,
 } from '../../../providers/selected-pet-provider';
 import MapScreen from '../map';
+import { renderWithProviders } from '../../../../test/render-with-providers';
 
 let mockFocusCleanup: (() => void) | undefined;
 let mockTheme: 'light' | 'dark' = 'light';
@@ -1218,6 +1224,47 @@ describe('#62 R15: el overlay del mapa usa cifras tabulares', () => {
     );
     expect(screen.getByTestId('stat-gps').props.style).not.toEqual(
       expect.objectContaining({ fontVariant: ['tabular-nums'] }),
+    );
+  });
+});
+
+describe('#87 R18: MapScreen lee por TanStack Query', () => {
+  it('deja sus cuatro recursos en las claves canónicas', async () => {
+    initialSelectedPetId = 'pet-1';
+    const petsState: PetsState = { kind: 'ok', pets: [makePet()] };
+    const lastState: LastPositionState = {
+      kind: 'ok',
+      position: makeLastPosition(),
+    };
+    const positionsState: PositionsState = {
+      kind: 'ok',
+      items: [makeStoredPosition()],
+      nextCursor: null,
+    };
+    const routeState: DayRouteState = {
+      kind: 'ok',
+      date: '2026-08-21',
+      trips: [makeTrip()],
+    };
+    mockListPets.mockResolvedValue(petsState);
+    mockGetLastPosition.mockResolvedValue(lastState);
+    mockListPositions.mockResolvedValue(positionsState);
+    mockGetDayRoute.mockResolvedValue(routeState);
+
+    const { queryClient } = await renderWithProviders(<MapScreen />, {
+      wrapper: MapWrapper,
+    });
+    await screen.findByTestId('stat-speed');
+
+    expect(queryClient.getQueryData(petKeys.list())).toEqual(petsState);
+    expect(queryClient.getQueryData(positionKeys.last('pet-1'))).toEqual(
+      lastState,
+    );
+    expect(queryClient.getQueryData(positionKeys.list('pet-1'))).toEqual(
+      positionsState,
+    );
+    expect(queryClient.getQueryData(tripKeys.dayRoute('pet-1'))).toEqual(
+      routeState,
     );
   });
 });
