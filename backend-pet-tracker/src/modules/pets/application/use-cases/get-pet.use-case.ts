@@ -15,6 +15,7 @@ import type {
 } from '@/modules/pets/domain/ports/pet-vaccine-reader';
 import { PET_REPOSITORY } from '@/modules/pets/domain/repositories/pet.repository';
 import type { PetRepository } from '@/modules/pets/domain/repositories/pet.repository';
+import { localDayOf } from '@/pipeline/local-day';
 
 /** Vigencia del GET prefirmado del perfil (R6): exactamente 1 hora. */
 export const PHOTO_DOWNLOAD_URL_EXPIRES_IN_SECONDS = 3600;
@@ -35,6 +36,7 @@ export interface PetProfile {
  * activo via el puerto PET_DEVICE_READER. Desde pet-photos-s3 (#6 R6/R7)
  * resuelve `photoUrl` via PET_PHOTO_URL_RESOLVER solo cuando `photoKey` no
  * es nulo — evita una firma S3 innecesaria cuando no hay foto.
+ * Desde vaccine-due-today-inclusive (#82), usa el dia civil del owner.
  */
 @Injectable()
 export class GetPetUseCase {
@@ -49,7 +51,7 @@ export class GetPetUseCase {
     private readonly vaccineReader: PetVaccineReader,
   ) {}
 
-  async execute(petId: string): Promise<PetProfile> {
+  async execute(petId: string, now: Date): Promise<PetProfile> {
     const pet = await this.pets.findById(petId);
 
     if (!pet) {
@@ -63,6 +65,7 @@ export class GetPetUseCase {
             PHOTO_DOWNLOAD_URL_EXPIRES_IN_SECONDS,
           )
         : null;
+    const timezone = (await this.pets.findOwnerTimezone(petId)) ?? 'UTC';
 
     return {
       pet,
@@ -70,7 +73,7 @@ export class GetPetUseCase {
       photoUrl,
       nextVaccine: await this.vaccineReader.findNextVaccine(
         petId,
-        new Date().toISOString().slice(0, 10),
+        localDayOf(now.getTime(), timezone),
       ),
     };
   }
