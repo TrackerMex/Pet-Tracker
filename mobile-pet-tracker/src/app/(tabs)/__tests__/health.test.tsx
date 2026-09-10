@@ -1,6 +1,6 @@
 import {
+  act,
   fireEvent,
-  render,
   screen,
   waitFor,
   within,
@@ -18,8 +18,6 @@ import {
 import { listPets, type PetsState } from '../../../api/pets';
 import { healthKeys, petKeys } from '../../../api/query-keys';
 import type { PetProfile, Vaccine, WeightEntry } from '../../../api/types';
-import * as apiHooks from '../../../hooks/use-api';
-import type { ApiResult } from '../../../hooks/use-api';
 import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
 import { LanguageProvider } from '../../../providers/language-provider';
 import { SelectedPetProvider } from '../../../providers/selected-pet-provider';
@@ -164,7 +162,7 @@ function HealthWrapper({ children }: { children: ReactNode }) {
 }
 
 async function renderHealth() {
-  return render(<HealthScreen />, { wrapper: HealthWrapper });
+  return renderWithProviders(<HealthScreen />, { wrapper: HealthWrapper });
 }
 
 beforeEach(() => {
@@ -529,40 +527,44 @@ describe('R10: preserva la mascota durante el refetch', () => {
     const existingPet = makePet();
     const createdPet = makePet({ id: 'pet-new', name: 'Nala' });
     const selectPet = jest.fn();
-    let petsResult: ApiResult<PetsState> = {
-      data: { kind: 'ok', pets: [existingPet] },
-      isRefreshing: true,
-      refetch: jest.fn(),
-    };
-    const emptyResult: ApiResult<{ kind: string }> = {
-      data: undefined,
-      isRefreshing: false,
-      refetch: jest.fn(),
-    };
-    let hookCall = 0;
-    jest.spyOn(selectedPetHooks, 'useSelectedPet').mockReturnValue({
+    let resolvePets!: (state: PetsState) => void;
+    const revalidatedPets = new Promise<PetsState>((resolve) => {
+      resolvePets = resolve;
+    });
+    const useSelectedPet = selectedPetHooks.useSelectedPet;
+    mockListPets.mockResolvedValueOnce({ kind: 'ok', pets: [existingPet] });
+    mockListVaccines.mockReturnValue(pending<VaccinesState>());
+    mockListWeights.mockReturnValue(pending<WeightsState>());
+
+    const { queryClient, unmount } = await renderHealth();
+    await screen.findByTestId(`pet-chip-${existingPet.id}`);
+
+    jest.spyOn(selectedPetHooks, 'useSelectedPet').mockImplementation(() => ({
+      ...useSelectedPet(),
       selectedPetId: createdPet.id,
       selectPet,
+    }));
+    mockListPets.mockReturnValue(revalidatedPets);
+    await act(() => {
+      void queryClient.refetchQueries({ queryKey: petKeys.list() });
     });
-    jest.spyOn(apiHooks, 'useApi').mockImplementation(
-      <T extends { kind: string }>(): ApiResult<T> => {
-        const result = hookCall++ % 3 === 0 ? petsResult : emptyResult;
-        return result as ApiResult<T>;
-      },
+    await waitFor(() =>
+      expect(queryClient.isFetching({ queryKey: petKeys.list() })).toBe(1),
     );
 
-    const view = await renderHealth();
+    expect(selectPet).not.toHaveBeenCalled();
+    expect(screen.getByTestId(`pet-chip-${existingPet.id}`)).toBeVisible();
+
+    await act(async () => {
+      resolvePets({ kind: 'ok', pets: [existingPet, createdPet] });
+      await revalidatedPets;
+    });
+    await waitFor(() =>
+      expect(queryClient.isFetching({ queryKey: petKeys.list() })).toBe(0),
+    );
 
     expect(selectPet).not.toHaveBeenCalled();
-
-    petsResult = {
-      data: { kind: 'ok', pets: [existingPet, createdPet] },
-      isRefreshing: false,
-      refetch: jest.fn(),
-    };
-    await view.rerender(<HealthScreen />);
-
-    expect(selectPet).not.toHaveBeenCalled();
+    await unmount();
   });
 });
 

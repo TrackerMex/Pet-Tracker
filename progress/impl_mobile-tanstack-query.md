@@ -33,7 +33,7 @@
 | R10 | `8a46cc7` | `97049e7` | clave con `limit: undefined`; 23 pruebas y typecheck verdes |
 | R11 | `be536d1` | `6966af6` | 2 claves; `retryAll` y refresco tras generar preservados; 22 pruebas y typecheck verdes |
 | R12 | `b4b279e` | `e1df8ef` | `enabled` del plan y candado de revalidacion real verdes; 23 pruebas y typecheck verdes |
-| R13 | pendiente | pendiente | pendiente |
+| R13 | `b77c366` | pendiente | 3 entradas ausentes de cache; 27 pruebas heredadas verdes |
 | R14 | pendiente | pendiente | pendiente |
 | R15 | pendiente | pendiente | pendiente |
 | R16 | pendiente | pendiente | pendiente |
@@ -60,6 +60,9 @@ Pendiente.
   sin cambiar valores esperados, las cuatro aserciones del esqueleto de plan y
   las cinco aserciones de títulos de card; la actualización de caché notifica en
   un turno asíncrono adicional.
+- R13, `src/app/(tabs)/health.tsx`: los dos botones de reintento adaptan el evento
+  de React Native y `vaccines.isRefreshing` pasa al equivalente v5
+  `vaccines.isRefetching`; no cambia ningún valor esperado.
 
 ## Cierre
 

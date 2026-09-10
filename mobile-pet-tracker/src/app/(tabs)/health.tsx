@@ -1,15 +1,15 @@
+import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
-import { useCallback, useMemo } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronRight, HeartPulse, Syringe } from 'reicon-react-native';
 
 import { listVaccines, listWeights } from '../../api/health-records';
 import { listPets, type PetsState } from '../../api/pets';
+import { healthKeys, petKeys } from '../../api/query-keys';
 import { Card } from '../../components/card';
 import { PetSwitcher } from '../../components/pet-switcher';
-import { useApi } from '../../hooks/use-api';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
@@ -44,28 +44,22 @@ export default function HealthScreen() {
   const t = useTranslate();
   const { selectedPetId, selectPet } = useSelectedPet();
   const insets = useSafeAreaInsets();
-  const petsFn = useCallback(
-    () => listPets(baseUrl, token ?? ''),
-    [baseUrl, token],
-  );
-  const pets = useApi(petsFn);
-  usePetSelection(pets);
-  const vaccinesFn = useMemo(
-    () =>
-      selectedPetId
-        ? () => listVaccines(baseUrl, token ?? '', selectedPetId)
-        : null,
-    [baseUrl, selectedPetId, token],
-  );
-  const weightFn = useMemo(
-    () =>
-      selectedPetId
-        ? () => listWeights(baseUrl, token ?? '', selectedPetId, fetch, 1)
-        : null,
-    [baseUrl, selectedPetId, token],
-  );
-  const vaccines = useApi(vaccinesFn);
-  const weight = useApi(weightFn);
+  const pets = useQuery({
+    queryKey: petKeys.list(),
+    queryFn: () => listPets(baseUrl, token ?? ''),
+  });
+  usePetSelection({ data: pets.data, isRefreshing: pets.isRefetching });
+  const vaccines = useQuery({
+    queryKey: healthKeys.vaccines(selectedPetId ?? ''),
+    queryFn: () => listVaccines(baseUrl, token ?? '', selectedPetId!),
+    enabled: selectedPetId !== null,
+  });
+  const weight = useQuery({
+    queryKey: healthKeys.weights(selectedPetId ?? '', 1),
+    queryFn: () =>
+      listWeights(baseUrl, token ?? '', selectedPetId!, fetch, 1),
+    enabled: selectedPetId !== null,
+  });
   const today = localTodayIso();
   const nextVaccine =
     vaccines.data?.kind === 'ok'
@@ -103,7 +97,10 @@ export default function HealthScreen() {
           <Text testID="health-error" className="text-danger">
             {t('common.somethingWentWrong')}
           </Text>
-          <Button testID="health-retry" onPress={pets.refetch}>
+          <Button
+            testID="health-retry"
+            onPress={() => void pets.refetch()}
+          >
             {t('common.retry')}
           </Button>
         </View>
@@ -132,7 +129,7 @@ export default function HealthScreen() {
             </Text>
           </View>
 
-          {vaccines.data === undefined || vaccines.isRefreshing ? (
+          {vaccines.data === undefined || vaccines.isRefetching ? (
             <Skeleton
               testID="vaccines-skeleton"
               className="h-24 w-full rounded-card"
@@ -176,7 +173,10 @@ export default function HealthScreen() {
               <Text testID="vaccines-error" className="text-danger">
                 {t('health.couldNotLoadVaccines')}
               </Text>
-              <Button testID="vaccines-retry" onPress={vaccines.refetch}>
+              <Button
+                testID="vaccines-retry"
+                onPress={() => void vaccines.refetch()}
+              >
                 {t('common.retry')}
               </Button>
             </View>
