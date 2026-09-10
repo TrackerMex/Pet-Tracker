@@ -2207,6 +2207,7 @@ describe('#85 R6: cada tipo trae su icono, su hueco y su tinta', () => {
       const icon = within(row).getByTestId(iconTestID);
 
       expect(icon.props.color).toBe(`--color-category-${slot}-strong`);
+      expect(icon.props.size).toBe(20);
       expect(icon.parent?.props.className).toBe(
         `size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS[slot].surface}`,
       );
