@@ -1538,7 +1538,7 @@
   {
     "id": 82,
     "name": "vaccine-due-today-inclusive",
-    "status": "in_progress",
+    "status": "done",
     "priority": "P3",
     "description": "Abierta al escribir la spec de #70 el 2026-09-09 (decision E1). El dia de la dosis, la app se contradice consigo misma: la pantalla de Salud enseña la vacuna (compara >= hoy en local) y la Home ya no, porque el backend filtra con gt estricto contra el hoy UTC del servidor (health/infrastructure/repositories/pet-vaccine.drizzle-reader.ts:27). O sea que el dueño ve la vacuna en una pantalla y no en la otra el dia que mas importa. Ademas el corte es UTC, asi que en zonas de offset negativo la vacuna desaparece de la Home varias horas antes de que termine el dia local. Es cambio de backend y toca decidir por escrito si el criterio es gte y en que zona horaria se evalua.",
     "acceptance_criteria": [
@@ -1619,6 +1619,24 @@
     ],
     "files_affected": [
       "mobile-pet-tracker/src/screens/home/index.test.tsx"
+    ]
+  },
+  {
+    "id": 88,
+    "name": "vaccine-applied-at-owner-timezone",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Deuda D5 registrada al cerrar #82 el 2026-09-10 (specs/vaccine-due-today-inclusive/requirements.md §Fuera de alcance). El DTO de vacunas valida appliedAt <= hoy con el dia UTC del servidor (backend-pet-tracker/src/modules/health/application/dto/vaccine.dto.ts:12-15 y :29-32, todayIsoDateUtc en iso-date.ts:5-7): una vacuna aplicada hoy a las 20:00 en UTC-6 ya es manana en UTC y el POST/PATCH responde 400 'Applied date cannot be in the future'. Es el mismo sesgo que #82 corrigio para nextDoseAt, en el mismo modulo, pero en la escritura y no en la lectura. #82 ya dejo el patron: dia civil en users.timezone del owner con localDayOf y fallback a UTC. Aqui la zona tiene que llegar al DTO o a la validacion del use case (el DTO de zod no tiene acceso al repositorio), asi que la spec debe decidir donde se evalua y si el validador acepta un dia de margen para dispositivos adelantados.",
+    "acceptance_criteria": [
+      "Crear o editar una vacuna con appliedAt = hoy en la zona del owner responde 2xx a cualquier hora del dia, incluidas las horas en que UTC ya es manana",
+      "appliedAt = manana en la zona del owner sigue respondiendo 400 con el mismo mensaje",
+      "Un test e2e fija el limite con el mismo par de zonas de #82 (Pacific/Kiritimati y Pacific/Pago_Pago) y un unitario cubre la zona nula o no IANA con fallback a UTC",
+      "La validacion sale del DTO puro solo si la spec lo justifica por escrito; si se queda en el use case, el DTO deja de comparar fechas"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/modules/health/application/dto/vaccine.dto.ts",
+      "backend-pet-tracker/src/modules/health/application/dto/iso-date.ts",
+      "backend-pet-tracker/test/health-vaccines.e2e-spec.ts"
     ]
   }
 ]
