@@ -1,47 +1,44 @@
-function notImplemented(): never {
-  throw new Error('not implemented');
-}
-
 export const petKeys = {
-  list: () => notImplemented(),
-  detail: (_petId: string) => notImplemented(),
+  list: () => ['pets', 'list'] as const,
+  detail: (petId: string) => ['pets', 'detail', petId] as const,
 };
 
 export const nutritionKeys = {
-  plan: (_petId: string) => notImplemented(),
-  profile: (_petId: string) => notImplemented(),
+  plan: (petId: string) => ['nutrition', 'plan', petId] as const,
+  profile: (petId: string) => ['nutrition', 'profile', petId] as const,
 };
 
 export const healthKeys = {
-  vaccines: (_petId: string) => notImplemented(),
-  weights: (_petId: string, _limit: number | undefined) => notImplemented(),
+  vaccines: (petId: string) => ['health', 'vaccines', petId] as const,
+  weights: (petId: string, limit: number | undefined) =>
+    ['health', 'weights', petId, { limit }] as const,
 };
 
 export const positionKeys = {
-  last: (_petId: string) => notImplemented(),
-  list: (_petId: string) => notImplemented(),
+  last: (petId: string) => ['positions', 'last', petId] as const,
+  list: (petId: string) => ['positions', 'list', petId] as const,
 };
 
 export const tripKeys = {
-  dayRoute: (_petId: string) => notImplemented(),
+  dayRoute: (petId: string) => ['trips', 'day-route', petId] as const,
 };
 
 export const activityKeys = {
-  daily: (_petId: string) => notImplemented(),
+  daily: (petId: string) => ['activity', 'daily', petId] as const,
 };
 
 export const reminderKeys = {
-  list: (_petId: string) => notImplemented(),
+  list: (petId: string) => ['reminders', 'list', petId] as const,
 };
 
 export const deviceKeys = {
-  tracking: (_petId: string) => notImplemented(),
+  tracking: (petId: string) => ['devices', 'tracking', petId] as const,
 };
 
 export const userKeys = {
-  me: () => notImplemented(),
+  me: () => ['users', 'me'] as const,
 };
 
 export const mediaKeys = {
-  petDocs: (_petId: string) => notImplemented(),
+  petDocs: (petId: string) => ['media', 'pet-docs', petId] as const,
 };
