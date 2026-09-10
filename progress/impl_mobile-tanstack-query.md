@@ -37,7 +37,7 @@
 | R14 | `6991074` | `0baba1d` | 2 claves; foco y mutacion preservados; 22 pruebas y typecheck verdes |
 | R15 | `c204287` | `79363d9` | condicion triple, 2 focos y 2 mutaciones verdes; 48 pruebas y typecheck verdes |
 | R16 | `9f0e27e` | `f9afe6a` | 3 claves y 3 ficheros de montaje verdes; 35 pruebas y typecheck verdes |
-| R17 | pendiente | pendiente | pendiente |
+| R17 | `9a5476e` | pendiente | 4 entradas ausentes de cache; 111 pruebas heredadas verdes |
 | R18 | pendiente | pendiente | pendiente |
 | R19 | pendiente | pendiente | pendiente |
 | R20 | pendiente | pendiente | pendiente |
@@ -69,6 +69,11 @@ Pendiente.
   permanecen dos `useFocusEffect` y las dos expulsiones de mutación.
 - R16, `src/screens/profile/index.tsx`: el botón de reintento adapta el evento;
   el foco, el refresco tras foto y las dos expulsiones permanecen intactos.
+- R17, `src/screens/home/index.tsx`: los dos botones de reintento adaptan el
+  evento; el foco sigue llamando solo a mascotas y detalle.
+- R17, `src/screens/home/index.test.tsx`: se añadieron esperas de disponibilidad
+  antes de las aserciones ya existentes de accesos rápidos, copy inglesa y filas
+  de recordatorio/vacuna. Ningún matcher ni valor esperado cambió.
 
 ## Cierre
 

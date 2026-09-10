@@ -1,7 +1,6 @@
 import {
   act,
   fireEvent,
-  render,
   screen,
   waitFor,
   within,
@@ -23,8 +22,6 @@ import {
 } from '../../api/query-keys';
 import { listReminders, type RemindersState } from '../../api/reminders';
 import type { DayEntry, PetProfile, Reminder } from '../../api/types';
-import * as apiHooks from '../../hooks/use-api';
-import type { ApiResult } from '../../hooks/use-api';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
 import { SelectedPetProvider } from '../../providers/selected-pet-provider';
@@ -249,7 +246,7 @@ function HomeWrapperEn({ children }: { children: ReactNode }) {
 }
 
 async function renderHome() {
-  await render(<HomeScreen />, { wrapper: HomeWrapper });
+  await renderWithProviders(<HomeScreen />, { wrapper: HomeWrapper });
 }
 
 describe('R6: home carga pets y selecciona', () => {
@@ -875,40 +872,47 @@ describe('R10: preserva la mascota durante el refetch', () => {
     const existingPet = makePet();
     const createdPet = makePet({ id: 'pet-new', name: 'Nala' });
     const selectPet = jest.fn();
-    let petsResult: ApiResult<PetsState> = {
-      data: { kind: 'ok', pets: [existingPet] },
-      isRefreshing: true,
-      refetch: jest.fn(),
-    };
-    const emptyResult: ApiResult<{ kind: string }> = {
-      data: undefined,
-      isRefreshing: false,
-      refetch: jest.fn(),
-    };
-    let hookCall = 0;
-    jest.spyOn(selectedPetHooks, 'useSelectedPet').mockReturnValue({
+    let resolvePets!: (state: PetsState) => void;
+    const revalidatedPets = new Promise<PetsState>((resolve) => {
+      resolvePets = resolve;
+    });
+    const useSelectedPet = selectedPetHooks.useSelectedPet;
+    mockListPets.mockResolvedValueOnce({ kind: 'ok', pets: [existingPet] });
+    mockGetPet.mockReturnValue(pending<PetState>());
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+    mockListReminders.mockReturnValue(pending<RemindersState>());
+
+    const view = await renderWithProviders(<HomeScreen />, {
+      wrapper: HomeWrapper,
+    });
+    await screen.findByTestId(`pet-chip-${existingPet.id}`);
+
+    jest.spyOn(selectedPetHooks, 'useSelectedPet').mockImplementation(() => ({
+      ...useSelectedPet(),
       selectedPetId: createdPet.id,
       selectPet,
+    }));
+    mockListPets.mockReturnValue(revalidatedPets);
+    await act(() => {
+      void view.queryClient.refetchQueries({ queryKey: petKeys.list() });
     });
-    jest.spyOn(apiHooks, 'useApi').mockImplementation(
-      <T extends { kind: string }>(): ApiResult<T> => {
-        const result = hookCall++ % 4 === 0 ? petsResult : emptyResult;
-        return result as ApiResult<T>;
-      },
+    await waitFor(() =>
+      expect(view.queryClient.isFetching({ queryKey: petKeys.list() })).toBe(1),
     );
 
-    const view = await render(<HomeScreen />, { wrapper: HomeWrapper });
+    expect(selectPet).not.toHaveBeenCalled();
+    expect(screen.getByTestId(`pet-chip-${existingPet.id}`)).toBeVisible();
+
+    await act(async () => {
+      resolvePets({ kind: 'ok', pets: [existingPet, createdPet] });
+      await revalidatedPets;
+    });
+    await waitFor(() =>
+      expect(view.queryClient.isFetching({ queryKey: petKeys.list() })).toBe(0),
+    );
 
     expect(selectPet).not.toHaveBeenCalled();
-
-    petsResult = {
-      data: { kind: 'ok', pets: [existingPet, createdPet] },
-      isRefreshing: false,
-      refetch: jest.fn(),
-    };
-    await view.rerender(<HomeScreen />);
-
-    expect(selectPet).not.toHaveBeenCalled();
+    await view.unmount();
   });
 });
 
@@ -1374,7 +1378,7 @@ describe('R14: la Home monta la actividad semanal sin pedir nada nuevo', () => {
   it('carga con skeleton y se calla cuando la actividad falla', async () => {
     mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
 
-    const loading = await render(<HomeScreen />, { wrapper: HomeWrapper });
+    const loading = await renderWithProviders(<HomeScreen />, { wrapper: HomeWrapper });
     await waitFor(() =>
       expect(screen.getByTestId('summary-skeleton')).toBeVisible(),
     );
@@ -1665,6 +1669,7 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
 
   it('lleva cada tile a su ruta existente', async () => {
     await renderHome();
+    await screen.findByTestId('quick-action-weight');
 
     for (const testID of [
       'quick-action-weight',
@@ -1734,6 +1739,7 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
       .spyOn(Uniwind, 'getCSSVariable')
       .mockImplementation((token) => token);
     await renderHome();
+    await screen.findByTestId('quick-action-weight');
 
     const bindings = [
       [
@@ -1842,6 +1848,7 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
     }
 
     await renderHome();
+    await screen.findByTestId('quick-action-weight');
     for (const [testID, iconTestID] of [
       ['quick-action-weight', 'icon-weight'],
       ['quick-action-reminder', 'icon-calendar-plus'],
@@ -1967,7 +1974,7 @@ describe('#85 R1: la sección recupera su rótulo en los dos idiomas', () => {
   });
 
   it('rotula en inglés', async () => {
-    await render(<HomeScreen />, { wrapper: HomeWrapperEn });
+    await renderWithProviders(<HomeScreen />, { wrapper: HomeWrapperEn });
 
     const section = await screen.findByTestId('reminders-section');
 
@@ -1977,7 +1984,9 @@ describe('#85 R1: la sección recupera su rótulo en los dos idiomas', () => {
     expect(within(section).getByTestId('reminders-see-all')).toHaveTextContent(
       'See all',
     );
-    expect(within(section).getByText('No upcoming vaccine')).toBeVisible();
+    await waitFor(() =>
+      expect(within(section).getByText('No upcoming vaccine')).toBeVisible(),
+    );
   });
 });
 
@@ -2110,7 +2119,7 @@ describe('#85 R5: la sección pinta los recordatorios reales', () => {
         kind: 'ok',
         reminders: reminderList,
       });
-      const view = await render(<HomeScreen />, { wrapper: HomeWrapper });
+      const view = await renderWithProviders(<HomeScreen />, { wrapper: HomeWrapper });
 
       try {
         await screen.findByTestId('reminders-next-vaccine');
@@ -2144,7 +2153,7 @@ describe('#85 R5: la sección pinta los recordatorios reales', () => {
 
     for (const { reminders, childCount, showsEmpty, readyTestID } of scenarios) {
       mockListReminders.mockResolvedValue({ kind: 'ok', reminders });
-      const view = await render(<HomeScreen />, { wrapper: HomeWrapper });
+      const view = await renderWithProviders(<HomeScreen />, { wrapper: HomeWrapper });
 
       try {
         await screen.findByTestId(readyTestID);
@@ -2479,7 +2488,7 @@ describe('#85 R8: las filas no son pulsables y se anuncian por partes', () => {
   });
 
   it('expande la abreviatura del contador y no añade nombres redundantes', async () => {
-    const spanish = await render(<HomeScreen />, { wrapper: HomeWrapper });
+    const spanish = await renderWithProviders(<HomeScreen />, { wrapper: HomeWrapper });
     const labels = [
       ['rem-b', 'Faltan 1 días', 'icon-pill'],
       ['rem-a', 'Faltan 3 días', 'icon-stethoscope'],
@@ -2488,6 +2497,7 @@ describe('#85 R8: las filas no son pulsables y se anuncian por partes', () => {
 
     const section = await screen.findByTestId('reminders-section');
     const body = within(section).getByTestId('reminders-section-body');
+    await screen.findByTestId('reminders-item-rem-b');
     expect(section.props.accessible).toBeUndefined();
     expect(section.props.accessibilityLabel).toBeUndefined();
     expect(body.props.accessible).toBeUndefined();
@@ -2515,7 +2525,7 @@ describe('#85 R8: las filas no son pulsables y se anuncian por partes', () => {
     }
 
     await spanish.unmount();
-    await render(<HomeScreen />, { wrapper: HomeWrapperEn });
+    await renderWithProviders(<HomeScreen />, { wrapper: HomeWrapperEn });
     expect(
       (await screen.findByTestId('reminders-item-rem-b-days')).props
         .accessibilityLabel,
@@ -2558,7 +2568,7 @@ describe('#85 R9: la sección aguanta la carga y el fallo de los recordatorios',
 
   it('no pinta filas mientras carga', async () => {
     mockListReminders.mockReturnValue(pending<RemindersState>());
-    const loadedProfile = await render(<HomeScreen />, {
+    const loadedProfile = await renderWithProviders(<HomeScreen />, {
       wrapper: HomeWrapper,
     });
 
@@ -2571,7 +2581,7 @@ describe('#85 R9: la sección aguanta la carga y el fallo de los recordatorios',
 
     await loadedProfile.unmount();
     mockGetPet.mockReturnValue(pending<PetState>());
-    await render(<HomeScreen />, { wrapper: HomeWrapper });
+    await renderWithProviders(<HomeScreen />, { wrapper: HomeWrapper });
 
     const loadingBody = await screen.findByTestId('reminders-section-body');
     expect(loadingBody.children).toHaveLength(1);
@@ -2751,6 +2761,11 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
       await renderHome();
 
       const section = await screen.findByTestId('reminders-section');
+      await waitFor(() =>
+        expect(
+          within(section).getByTestId('reminders-next-vaccine'),
+        ).toBeVisible(),
+      );
       const row = within(section).getByTestId('reminders-next-vaccine');
       const icon = within(row).getByTestId('icon-syringe');
       const name = within(row).getByTestId('reminders-next-vaccine-name');
@@ -2803,7 +2818,7 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
           kind: 'ok',
           pet: makePet({ nextVaccine: { ...vaccine, nextDoseAt } }),
         });
-        const view = await render(<HomeScreen />, { wrapper: HomeWrapper });
+        const view = await renderWithProviders(<HomeScreen />, { wrapper: HomeWrapper });
 
         try {
           const days = await screen.findByTestId('reminders-next-vaccine-days');
@@ -2859,7 +2874,7 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
   describe('#70 R9: estados de carga y error del detalle', () => {
     it('esqueletiza mientras carga y calla cuando el perfil falla', async () => {
       mockGetPet.mockReturnValue(pending<PetState>());
-      const loading = await render(<HomeScreen />, { wrapper: HomeWrapper });
+      const loading = await renderWithProviders(<HomeScreen />, { wrapper: HomeWrapper });
 
       try {
         const section = await screen.findByTestId('reminders-section');
@@ -2877,7 +2892,7 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
       }
 
       mockGetPet.mockResolvedValue({ kind: 'error' });
-      const failed = await render(<HomeScreen />, { wrapper: HomeWrapper });
+      const failed = await renderWithProviders(<HomeScreen />, { wrapper: HomeWrapper });
 
       try {
         const section = await screen.findByTestId('reminders-section');
@@ -2898,7 +2913,7 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
         kind: 'ok',
         pet: makePet({ nextVaccine: vaccine }),
       });
-      const loaded = await render(<HomeScreen />, { wrapper: HomeWrapper });
+      const loaded = await renderWithProviders(<HomeScreen />, { wrapper: HomeWrapper });
 
       try {
         await screen.findByTestId('reminders-next-vaccine');
@@ -2910,7 +2925,7 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
       }
 
       mockGetPet.mockReturnValue(pending<PetState>());
-      const loading = await render(<HomeScreen />, { wrapper: HomeWrapper });
+      const loading = await renderWithProviders(<HomeScreen />, { wrapper: HomeWrapper });
 
       try {
         await screen.findByTestId('reminders-section');
@@ -2922,7 +2937,7 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
       }
 
       mockGetPet.mockResolvedValue({ kind: 'error' });
-      const failed = await render(<HomeScreen />, { wrapper: HomeWrapper });
+      const failed = await renderWithProviders(<HomeScreen />, { wrapper: HomeWrapper });
 
       try {
         await screen.findByTestId('reminders-section');
@@ -3015,11 +3030,16 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
           kind: 'ok',
           pet: makePet({ nextVaccine: { ...vaccine, nextDoseAt } }),
         });
-        const view = await render(<HomeScreen />, { wrapper: HomeWrapper });
+        const view = await renderWithProviders(<HomeScreen />, { wrapper: HomeWrapper });
 
         try {
           const section = await screen.findByTestId('reminders-section');
           const body = within(section).getByTestId('reminders-section-body');
+          await waitFor(() =>
+            expect(
+              within(section).getByTestId('reminders-next-vaccine-days'),
+            ).toBeVisible(),
+          );
           const days = within(section).getByTestId(
             'reminders-next-vaccine-days',
           );
@@ -3050,7 +3070,7 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
 
   describe('#70 R12: Card compartido y tokens', () => {
     it('viste la sección con el Card compartido y los tokens', async () => {
-      const loaded = await render(<HomeScreen />, { wrapper: HomeWrapper });
+      const loaded = await renderWithProviders(<HomeScreen />, { wrapper: HomeWrapper });
 
       try {
         const row = await screen.findByTestId('reminders-next-vaccine');
@@ -3081,7 +3101,7 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
       }
 
       mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
-      const empty = await render(<HomeScreen />, { wrapper: HomeWrapper });
+      const empty = await renderWithProviders(<HomeScreen />, { wrapper: HomeWrapper });
 
       try {
         const row = await screen.findByTestId('reminders-none-upcoming');
