@@ -1379,6 +1379,76 @@ tiene el mismo peso normativo que la mutación y merece la misma comprobación.
 
   - [X] Aprobado por humano
 
+
+### A14 — el estado vacío de la vacuna solo aparece si el cuerpo se queda vacío, y el `size` del icono se canda
+
+Dos cosas, las dos de test salvo una línea de producción. **La primera la
+destapó la prueba de humo del 2026-09-10; la segunda, el reviewer.**
+
+#### 1. `reminders-none-upcoming` mira ahora también los recordatorios
+
+`index.tsx:608` pinta la tarjeta *"Sin vacuna próxima"* con la sola condición
+`detail.data?.kind === 'ok' && !detail.data.pet.nextVaccine`. **No mira si hay
+recordatorios debajo.** Con la lista llena, esa tarjeta anuncia una ausencia que
+ya no le importa a nadie: el usuario ve tres recordatorios y, encima de ellos,
+un cartel diciendo que no hay nada.
+
+La conducta era correcta contra la spec —**D-C** puso la vacuna como primera
+fila fija y su estado vacío venía heredado de #70, donde la sección **solo**
+tenía vacuna— pero deja de tener sentido en cuanto hay algo más en el cuerpo.
+
+- **Qué se cambia**: la condición gana una cláusula.
+
+  ```diff
+  -{detail.data?.kind === 'ok' && !detail.data.pet.nextVaccine ? (
+  +{detail.data?.kind === 'ok' &&
+  + !detail.data.pet.nextVaccine &&
+  + upcoming.length === 0 ? (
+  ```
+
+  El estado vacío pasa a significar lo que su nombre promete: **el cuerpo de la
+  sección no tiene nada que enseñar**.
+- **Qué NO cambia**: cuando **sí** hay vacuna, la fila de la vacuna se pinta
+  igual, esté la lista llena o vacía. Esto solo afecta al caso *sin vacuna*.
+  Tampoco cambia el texto, ni el `testID`, ni la anatomía de la tarjeta.
+- **Los candados de #70 sobre `reminders-none-upcoming` siguen intactos** y
+  siguen pasando: sus escenarios no tienen recordatorios —el `beforeEach` de
+  **A11** repone `listReminders` a `[]`—, así que para ellos la cláusula nueva
+  es verdadera y la tarjeta se pinta como siempre.
+- **Candado nuevo**, en `#85 R9` o donde el implementador vea que encaja mejor
+  dentro de R5:
+  - sin vacuna **y con** recordatorios → **no** existe
+    `reminders-none-upcoming`, y el cuerpo tiene exactamente `n` hijos;
+  - sin vacuna **y sin** recordatorios → **sí** existe, y el cuerpo tiene 1.
+- **Mutación P14, versionada en el rojo y revertida en el verde**: quitar la
+  cláusula `upcoming.length === 0`. **Rojo esperado**: reaparece la tarjeta en
+  el escenario con recordatorios. **Si queda verde, el candado no vale y se
+  para.**
+
+#### 2. El `size={20}` del icono de fila se canda (hallazgo O1)
+
+Medido por el reviewer, no supuesto: puesto a `28`, la suite móvil **completa**
+queda 68/1110 verde. Rompe la cláusula SHALL de **R6** —cuya mitad del `color`
+**sí** está candada— y el inventario de invariantes de **R7**.
+
+No lo tapa el recuento de #70 R13: aquél cuenta literales
+`<Syringe size={20}` en el fuente, y la fila nueva renderiza **por variable**
+(`<Icon …`), que es exactamente lo que R6 exige. **El acierto de R6 abre el
+hueco.**
+
+- **Qué se añade**: una línea en el bucle de `#85 R6 › liga icono, superficie y
+  tinta a su tipo`, que ya tiene el nodo a mano:
+  `expect(icon.props.size).toBe(20);`.
+- **Sin mutación versionada**: basta una sonda —poner `28`, ver el rojo,
+  restaurar— con la evidencia escrita.
+
+**Corolario, y ya está en `docs/ui-guidelines.md`**: *inventariar no es candar*.
+La carta §Enmienda #70 nombraba "tamaño de icono" y la spec lo copió **en
+prosa**; nadie lo convirtió en `expect`. Cada invariante de esa lista necesita
+una aserción, no una mención.
+
+  - [ ] Aprobado por humano
+
 ## Aprobación
 
 - [X] Aprobado por humano (fecha: 2026-09-09) ← gate obligatorio antes de implementar
