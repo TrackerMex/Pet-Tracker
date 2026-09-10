@@ -2077,6 +2077,47 @@ describe('#85 R5: la sección pinta los recordatorios reales', () => {
     }
   });
 
+  it('solo muestra el vacío cuando no hay vacuna ni recordatorios', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
+    const scenarios = [
+      {
+        reminders: reminderFixture,
+        childCount: 3,
+        showsEmpty: false,
+        readyTestID: 'reminders-item-rem-b',
+      },
+      {
+        reminders: [],
+        childCount: 1,
+        showsEmpty: true,
+        readyTestID: 'reminders-none-upcoming',
+      },
+    ];
+
+    for (const { reminders, childCount, showsEmpty, readyTestID } of scenarios) {
+      mockListReminders.mockResolvedValue({ kind: 'ok', reminders });
+      const view = await render(<HomeScreen />, { wrapper: HomeWrapper });
+
+      try {
+        await screen.findByTestId(readyTestID);
+        const body = screen.getByTestId('reminders-section-body');
+
+        expect(body.children).toHaveLength(childCount);
+        if (showsEmpty) {
+          expect(
+            within(body).getByTestId('reminders-none-upcoming'),
+          ).toBeVisible();
+        } else {
+          expect(
+            within(body).queryByTestId('reminders-none-upcoming'),
+          ).toBeNull();
+        }
+      } finally {
+        await view.unmount();
+      }
+    }
+  });
+
   it('corta en tres aunque haya cinco', async () => {
     mockListReminders.mockResolvedValue({
       kind: 'ok',
