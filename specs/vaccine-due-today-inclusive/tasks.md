@@ -31,7 +31,7 @@ tags: [harness, spec]
 > R1 → R2 → R3/R4/R5 → R6 → R7 y no se adelanta ninguno.
 >
 > **Regla dura**: si para poner verde algún test hace falta tocar un archivo
-> que no esté en los nueve de [[design]] §Archivos afectados, o cualquier
+> que no esté en los diez de [[design]] §Archivos afectados (A1), o cualquier
 > cosa bajo `mobile-pet-tracker/`, **para y repórtalo** en
 > `progress/impl_vaccine-due-today-inclusive.md`. Igual si el rename de D7
 > obliga a tocar un tercer archivo: no lo hagas, documéntalo.
@@ -185,7 +185,7 @@ Sujeto sobre el que asevera: el árbol en `HEAD` tras el commit 6.
 
 - [ ] (1) Verificación (sin test nuevo): `git diff --name-only
       7f298f2...HEAD -- backend-pet-tracker/` lista **exactamente** los
-      nueve archivos de [[design]] §Archivos afectados; `git diff --stat
+      diez archivos de [[design]] §Archivos afectados (A1); `git diff --stat
       7f298f2...HEAD -- mobile-pet-tracker/` vacío; `grep -n
       "PET_VACCINE_READER\|findNextVaccine"
       src/modules/pets/application/use-cases/list-pets.use-case.ts` vacío;

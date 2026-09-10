@@ -239,7 +239,7 @@ Entre el commit 2 y el 6 el árbol es coherente (día del owner con `gt`):
 
 ## Archivos afectados
 
-Exactamente estos nueve bajo `backend-pet-tracker/` (R6-d los verifica con
+Exactamente estos diez bajo `backend-pet-tracker/` (A1 añadió el 10; R6-d los verifica con
 `git diff --name-only 7f298f2...HEAD -- backend-pet-tracker/`):
 
 1. `src/modules/pets/domain/repositories/pet.repository.ts` — domain: método
@@ -273,6 +273,10 @@ Exactamente estos nueve bajo `backend-pet-tracker/` (R6-d los verifica con
    infrastructure: `gt` → `gte` (`:2`, `:27`), `after` → `from` (`:17`).
 9. `test/health-vaccines.e2e-spec.ts` — test: `seedUser(label, timezone =
    'UTC')` (`:36-52`), import de `localDayOf`/`shiftDay`, describe R3-R5.
+10. `src/workers/alerts-engine/alerts-engine-consumer.service.spec.ts` —
+    test heredado (A1): `petsStub` (`:109-118`) es un `MockOf<PetRepository>`
+    exhaustivo y gana la línea `findOwnerTimezone: jest.fn(),`. Sin ella el
+    typecheck de `init.sh` falla con TS2741. Commit 2.
 
 Fuera de `backend-pet-tracker/`: `../specs/vaccine-due-today-inclusive/traceability.md`
 (Codex rellena), `../progress/impl_vaccine-due-today-inclusive.md` (reporte

@@ -22,7 +22,7 @@ tags: [harness, spec]
 | R3 | `test/health-vaccines.e2e-spec.ts::R3 (vaccine-due-today-inclusive #82): la dosis de hoy en la zona del owner es la proxima::'devuelve la dosis de hoy para owners en Pacific/Kiritimati y Pacific/Pago_Pago (R3)'` | pendiente |
 | R4 | mismo describe::`'un family en otra zona ve el nextVaccine del dia del owner (R4)'` | pendiente |
 | R5 | mismo describe::`'owner con timezone fuera del catalogo IANA responde 200 con el hoy UTC (R5)'` | pendiente |
-| R6 | Sin test nuevo — `git diff --name-only 7f298f2...HEAD -- backend-pet-tracker/` = los nueve archivos de [[design]]; `test/pets.e2e-spec.ts` y el `it` de #14 R13 sin cambios; suite e2e completa + `env -u FORCE_COLOR bash ./init.sh` verdes; sección `## Regresión (R6)` del reporte | pendiente |
+| R6 | Sin test nuevo — `git diff --name-only 7f298f2...HEAD -- backend-pet-tracker/` = los diez archivos de [[design]] (A1); `test/pets.e2e-spec.ts` y el `it` de #14 R13 sin cambios; suite e2e completa + `env -u FORCE_COLOR bash ./init.sh` verdes; sección `## Regresión (R6)` del reporte | pendiente |
 | R7 | Sin test nuevo — M1 (`gte`→`gt`) y M2 (`findOwnerTimezone` → `null`) ponen rojo por aserción el `it` de R3; unitarios verdes bajo M2; sección `## Mutación (R7)` del reporte y reproducción en `progress/review_vaccine-due-today-inclusive.md` | pendiente |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".

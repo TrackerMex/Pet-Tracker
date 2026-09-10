@@ -217,7 +217,7 @@ cambia de forma** en esta feature.
   (c) `ListPetsUseCase` intacto — el candado de fuente
   `src/modules/pets/application/use-cases/list-pets.use-case.spec.ts:200`
   sigue verde sin tocarlo; (d) `git diff --name-only 7f298f2...HEAD --
-  backend-pet-tracker/` SHALL listar **exactamente** los nueve archivos de
+  backend-pet-tracker/` SHALL listar **exactamente** los diez archivos de (A1)
   [[design]] §Archivos afectados (delta contra el commit base, no recuento
   absoluto); (e) `pnpm -C backend-pet-tracker run test:e2e -- health-vaccines`
   y la suite e2e completa verdes, y `env -u FORCE_COLOR bash ./init.sh`
@@ -288,6 +288,33 @@ cambia de forma** en esta feature.
   (`reminder-dates.ts`).
 - **Seeds de LocalStack**: `scripts/seed-vaccines.ts` solo siembra el
   catálogo; nada cambia de resultado.
+
+## Enmiendas a specs aprobadas
+
+### A1 — el doble exhaustivo de `PetRepository` en el spec del alerts-engine es el décimo archivo
+
+- **Qué pasó**: Codex paró en el commit 2 (verde de R1) por la regla dura de
+  [[tasks]]: `pnpm -C backend-pet-tracker exec tsc --noEmit` falla con
+  `TS2741: Property 'findOwnerTimezone' is missing in type '{...}' but required
+  in type 'MockOf<PetRepository>'` en
+  `src/workers/alerts-engine/alerts-engine-consumer.service.spec.ts:109-118`
+  (`petsStub`). Ese doble es **exhaustivo** (`MockOf<T> = { [K in keyof T]:
+  jest.Mock }`), así que cualquier método nuevo del puerto lo rompe en
+  typecheck. Los demás dobles de `PetRepository` usan `as unknown as
+  PetRepository` y no lo son (verificado con `grep` en `7f298f2`: solo ese
+  archivo tipa `MockOf<PetRepository>`). Es un archivo que el inventario de
+  [[design]] §Archivos afectados debió listar desde el principio.
+- **Qué cambia**: `petsStub` gana **una línea**, `findOwnerTimezone:
+  jest.fn(),` (sin `mockResolvedValue`: el consumer no lo llama). Va en el
+  **commit 2** (verde de R1), porque el typecheck es parte del verde. R6-d
+  pasa de nueve a **diez** archivos; [[design]] §Archivos afectados gana el
+  punto 10; la regla dura de [[tasks]] dice diez.
+- **Qué no cambia**: ningún requisito R1-R7, ningún test del alerts-engine
+  (el stub sigue devolviendo lo mismo), ninguna decisión D1-D11. El diseño
+  del puerto (D8) se mantiene: rediseñarlo para esquivar un `jest.fn()` sería
+  más archivos, no menos.
+
+- [ ] A1 ratificada por humano (fecha: ____)
 
 ## Aprobación
 
