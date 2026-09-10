@@ -1,6 +1,5 @@
 import {
   fireEvent,
-  render,
   screen,
   waitFor,
   within,
@@ -97,7 +96,7 @@ function SelectionProbe() {
 }
 
 async function renderWeightLog(selected = true) {
-  await render(
+  return renderWithProviders(
     <HeroUINativeProvider>
       <LanguageProvider initial="es">
         <SelectedPetProvider>

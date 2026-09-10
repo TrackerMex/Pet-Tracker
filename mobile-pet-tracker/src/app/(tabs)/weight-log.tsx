@@ -7,7 +7,8 @@ import {
   Skeleton,
   TextField,
 } from 'heroui-native';
-import { useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft, Minus, TrendDown, TrendUp } from 'reicon-react-native';
@@ -17,9 +18,9 @@ import {
   listWeights,
   type WeightsState,
 } from '../../api/health-records';
+import { healthKeys } from '../../api/query-keys';
 import { Card } from '../../components/card';
 import { WeightChart } from '../../components/weight-chart';
-import { useApi } from '../../hooks/use-api';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
@@ -62,11 +63,10 @@ function WeightLogContent({ petId }: { petId: string }) {
   const [bodyConditionText, setBodyConditionText] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-  const weightsFn = useMemo(
-    () => () => listWeights(baseUrl, token ?? '', petId),
-    [baseUrl, petId, token],
-  );
-  const weights = useApi(weightsFn);
+  const weights = useQuery({
+    queryKey: healthKeys.weights(petId, undefined),
+    queryFn: () => listWeights(baseUrl, token ?? '', petId),
+  });
 
   async function handleSubmit() {
     const weightKg = parseFloat(weightText);
@@ -223,7 +223,10 @@ function WeightLogContent({ petId }: { petId: string }) {
           <Text testID="weight-log-error" className="text-danger">
             {t('common.somethingWentWrong')}
           </Text>
-          <Button testID="weight-log-retry" onPress={weights.refetch}>
+          <Button
+            testID="weight-log-retry"
+            onPress={() => void weights.refetch()}
+          >
             {t('common.retry')}
           </Button>
         </View>

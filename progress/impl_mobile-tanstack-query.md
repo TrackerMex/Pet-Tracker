@@ -30,7 +30,7 @@
 | R7 | `1c947c4` | `b5e7f31` | 14 claves exactas, `limit` y prefijos verdes; typecheck verde |
 | R8 | `cfe1b34` | `15b9eea` | forma minima verde; 10 pantallas antiguas siguen compilando |
 | R9 | `07c4ba5` | `5e00853` | 2 entradas de cache, suite de Docs y typecheck verdes |
-| R10 | pendiente | pendiente | pendiente |
+| R10 | `8a46cc7` | pendiente | cache ausente antes de migrar; 22 pruebas heredadas siguieron verdes |
 | R11 | pendiente | pendiente | pendiente |
 | R12 | pendiente | pendiente | pendiente |
 | R13 | pendiente | pendiente | pendiente |
