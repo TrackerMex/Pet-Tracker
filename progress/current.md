@@ -7,13 +7,20 @@
 
 ## Feature #87 — mobile-tanstack-query (activa)
 
-- **Branch**: `feature/87-mobile-tanstack-query` (desde `main` @ 5666b85)
+- **Branch**: `feature/87-mobile-tanstack-query` (rebasado sobre `main` @ 7f298f2)
 - **Inicio**: 2026-09-10
-- **Estado**: `pending` -> spec en redaccion
+- **Estado**: `in_progress` — spec **aprobada** por el humano el 2026-09-10, handoff a Codex CLI entregado
 - **Prioridad**: P2
 
 Migracion del fetching movil de `src/hooks/use-api.ts` a TanStack Query.
 Decidida por el humano el 2026-09-10 al revisar la spec de #78.
+
+Spec: `specs/mobile-tanstack-query/` — 20 requisitos, los cuatro ficheros en
+`approved`. Implementa **Codex CLI**, no un subagente. Mientras Codex trabaja,
+esta sesion no toca `mobile-pet-tracker/`: solo `docs/`, `specs/`, `progress/`
+y `feature_list.json`.
+
+Rebase hecho sobre `main` @ 7f298f2 (merge de #76 / PR #118).
 
 ## Feature #78 — mobile-alerts-center (en espera, NO abandonada)
 
