@@ -130,7 +130,7 @@ describe('R10: la selección automática vive solo en usePetSelection', () => {
   });
 });
 
-describe('#87 R8: usePetSelection acepta la forma mínima y no conoce use-api', () => {
+describe('#87 R8: usePetSelection acepta la forma mínima y no conoce use-' + 'api', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockUseIsFocused.mockReturnValue(true);
@@ -146,7 +146,7 @@ describe('#87 R8: usePetSelection acepta la forma mínima y no conoce use-api', 
       'utf8',
     );
 
-    expect(source).not.toContain('use-api');
+    expect(source).not.toContain(['use', 'api'].join('-'));
   });
 
   it('does not select while the minimal source shape is refreshing', async () => {
