@@ -15,6 +15,7 @@ import {
   type CreateWeightState,
   type WeightsState,
 } from '../../../api/health-records';
+import { healthKeys } from '../../../api/query-keys';
 import type { WeightEntry } from '../../../api/types';
 import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
 import { LanguageProvider } from '../../../providers/language-provider';
@@ -24,6 +25,7 @@ import {
 } from '../../../providers/selected-pet-provider';
 import WeightLogScreen from '../weight-log';
 import { TOUCH_SLOP } from '../../../theme/touch-target';
+import { renderWithProviders } from '../../../../test/render-with-providers';
 
 jest.mock('../../../api/health-records', () => ({
   createWeight: jest.fn(),
@@ -488,5 +490,39 @@ describe('#62 R9: la gráfica de peso vive dentro de una card', () => {
 
     expect(card.props.className).toContain('rounded-card');
     expect(within(card).getByTestId('weight-chart')).toBeVisible();
+  });
+});
+
+describe('#87 R10: WeightLogContent lee por TanStack Query', () => {
+  it('deja el historial en la caché bajo su clave sin límite', async () => {
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    });
+    const weightsState: WeightsState = {
+      kind: 'ok',
+      weights: [makeWeight()],
+    };
+    mockListWeights.mockResolvedValue(weightsState);
+    mockCreateWeight.mockReturnValue(pending());
+
+    const { queryClient } = await renderWithProviders(
+      <HeroUINativeProvider>
+        <LanguageProvider initial="es">
+          <SelectedPetProvider>
+            <SelectionProbe />
+            <WeightLogScreen />
+          </SelectedPetProvider>
+        </LanguageProvider>
+      </HeroUINativeProvider>,
+    );
+    await screen.findByTestId('weight-row-weight-1');
+
+    expect(
+      queryClient.getQueryData(healthKeys.weights('pet-1', undefined)),
+    ).toEqual(weightsState);
   });
 });
