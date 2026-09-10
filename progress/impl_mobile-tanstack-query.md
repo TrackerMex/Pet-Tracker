@@ -27,7 +27,7 @@
 | R4 | `cbceb6b` | `50cb93a` | orden y sonda verdes; el test desmonta y limpia su cliente para no dejar el timer de `gcTime` abierto |
 | R5 | `49dc149` | `171ed65` | `unauthorized` rojo 0/1; callback global verde y no actúa sobre `ok`/`unreachable` |
 | R6 | `2a5c404` | `fe9f282` | cache vaciada solo en `unauthenticated`; transicion loading→authenticated conserva datos |
-| R7 | `1c947c4` | pendiente | las 14 factorias, la colision por `limit` y prefijos fallaron como `not implemented` |
+| R7 | `1c947c4` | `b5e7f31` | 14 claves exactas, `limit` y prefijos verdes; typecheck verde |
 | R8 | pendiente | pendiente | pendiente |
 | R9 | pendiente | pendiente | pendiente |
 | R10 | pendiente | pendiente | pendiente |

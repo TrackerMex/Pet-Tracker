@@ -128,3 +128,34 @@ describe('R10: la selección automática vive solo en usePetSelection', () => {
     expect(violations).toEqual([]);
   });
 });
+
+describe('#87 R8: usePetSelection acepta la forma mínima y no conoce use-api', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockUseIsFocused.mockReturnValue(true);
+    mockUseSelectedPet.mockReturnValue({
+      selectedPetId: 'pet-new',
+      selectPet: mockSelectPet,
+    } satisfies SelectedPetContextValue);
+  });
+
+  it('does not import the retired fetching hook', () => {
+    const source = readFileSync(
+      join(sourceRoot, 'hooks', 'use-pet-selection.ts'),
+      'utf8',
+    );
+
+    expect(source).not.toContain('use-api');
+  });
+
+  it('does not select while the minimal source shape is refreshing', async () => {
+    await renderHook(() =>
+      usePetSelection({
+        data: { kind: 'ok', pets: [makePet('pet-old')] },
+        isRefreshing: true,
+      }),
+    );
+
+    expect(mockSelectPet).not.toHaveBeenCalled();
+  });
+});
