@@ -10,7 +10,7 @@
 - **Branch**: `feature/82-vaccine-due-today-inclusive` (desde `origin/main` @ 7f298f2, merge de #118/#76)
 - **Worktree**: `/home/claude/sites/Pet-Tracker-wt-backend` (sesion Backend; Frontend trabaja #87 en `/home/claude/sites/Pet-Tracker`)
 - **Inicio**: 2026-09-10
-- **Estado**: `spec_ready` -> esperando gate humano (exploracion y spec escritas 2026-09-10, sin aprobar)
+- **Estado**: `in_progress` (spec aprobada por el humano en 7d87e93, 2026-09-10; handoff a Codex CLI escrito)
 - **Prioridad**: P3
 
 ### Plan

@@ -1538,7 +1538,7 @@
   {
     "id": 82,
     "name": "vaccine-due-today-inclusive",
-    "status": "spec_ready",
+    "status": "in_progress",
     "priority": "P3",
     "description": "Abierta al escribir la spec de #70 el 2026-09-09 (decision E1). El dia de la dosis, la app se contradice consigo misma: la pantalla de Salud enseña la vacuna (compara >= hoy en local) y la Home ya no, porque el backend filtra con gt estricto contra el hoy UTC del servidor (health/infrastructure/repositories/pet-vaccine.drizzle-reader.ts:27). O sea que el dueño ve la vacuna en una pantalla y no en la otra el dia que mas importa. Ademas el corte es UTC, asi que en zonas de offset negativo la vacuna desaparece de la Home varias horas antes de que termine el dia local. Es cambio de backend y toca decidir por escrito si el criterio es gte y en que zona horaria se evalua.",
     "acceptance_criteria": [

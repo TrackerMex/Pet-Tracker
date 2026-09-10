@@ -1,6 +1,6 @@
 ---
 feature: "vaccine-due-today-inclusive"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec]
 ---
 
