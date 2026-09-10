@@ -1,6 +1,5 @@
 import {
   fireEvent,
-  render,
   screen,
   waitFor,
   within,
@@ -67,7 +66,7 @@ function makePet(): PetProfile {
 }
 
 async function renderDocs() {
-  return render(
+  return renderWithProviders(
     <HeroUINativeProvider>
       <LanguageProvider initial="es">
         <DocsScreen petId="pet-1" />
