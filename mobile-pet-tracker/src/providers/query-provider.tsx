@@ -3,7 +3,7 @@ import {
   QueryClient,
   QueryClientProvider,
 } from '@tanstack/react-query';
-import { type ReactNode, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 
 import { useAuth } from './auth-provider';
 
@@ -37,12 +37,16 @@ export function createQueryClient(
 }
 
 export function QueryProvider({ children }: { children: ReactNode }) {
-  const { signOut } = useAuth();
+  const { signOut, status } = useAuth();
   const signOutRef = useRef(signOut);
   signOutRef.current = signOut;
   const [client] = useState(() =>
     createQueryClient(() => void signOutRef.current()),
   );
+
+  useEffect(() => {
+    if (status === 'unauthenticated') client.clear();
+  }, [status, client]);
 
   return (
     <QueryClientProvider client={client}>{children}</QueryClientProvider>
