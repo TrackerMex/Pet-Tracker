@@ -14,7 +14,7 @@ tags: [harness, spec]
 |---|---|---|---|---|
 | R1 | dependencia `@tanstack/react-query@5.102.8` exacta | `src/__tests__/design-drift.test.ts::#87 R1` | rojo `2837dc3`; verde `a6e5cdf` | cumplido |
 | R2 | los cinco mandos del `QueryClient` | `src/providers/__tests__/query-provider.test.tsx::#87 R2` | rojo `a231cdd`; verde `492cdab` | cumplido |
-| R3 | helper `renderWithProviders` con su `queryClient` | `test/__tests__/render-with-providers.test.tsx::#87 R3` | rojo `af1ac31`; verde `3cd184f` | cumplido |
+| R3 | helper `renderWithProviders` con su `queryClient` | `test/__tests__/render-with-providers.test.tsx::#87 R3` | rojo `af1ac31`; verde `3cd184f`; corrección ronda 2 `2c38a54` | cumplido |
 | R4 | `QueryProvider` dentro de `AuthProvider`, fuera de `Stack` | `src/app/__tests__/layout.test.tsx::#87 R4` | rojo `cbceb6b`; verde `50cb93a` | cumplido |
 | R5 | `unauthorized` de lectura ⇒ `signOut` desde un único sitio | `src/providers/__tests__/query-provider.test.tsx::#87 R5` | rojo `49dc149`; verde `171ed65` | cumplido |
 | R6 | `queryClient.clear()` al pasar a `unauthenticated` | `src/providers/__tests__/query-provider.test.tsx::#87 R6` | rojo `2a5c404`; verde `fe9f282` | cumplido |
@@ -28,7 +28,7 @@ tags: [harness, spec]
 | R14 | `screens/reminders/index.tsx` | `src/screens/reminders/index.test.tsx::#87 R14` | rojo `6991074`; verde `0baba1d` | cumplido |
 | R15 | `screens/pairing/index.tsx` (dos `useFocusEffect`) | `src/screens/pairing/index.test.tsx::#87 R15` | rojo `c204287`; verde `79363d9` | cumplido |
 | R16 | `screens/profile/index.tsx` | `src/screens/profile/index.test.tsx::#87 R16` | rojo `9f0e27e`; verde `f9afe6a` | cumplido |
-| R17 | `screens/home/index.tsx` | `src/screens/home/index.test.tsx::#87 R17` | rojo `9a5476e`; verde `bbc6193` | cumplido |
+| R17 | `screens/home/index.tsx` | `src/screens/home/index.test.tsx::#87 R17` | rojo `9a5476e`; verde `bbc6193`; corrección ronda 2 `efdf52c` | cumplido |
 | R18 | `app/(tabs)/map.tsx` (sondeo de 15 s intacto) | `src/app/(tabs)/__tests__/map.test.tsx::#87 R18` | rojo `6afcc38`; verde `5fa6c6e` | cumplido |
 | R19 | `use-api` borrado y sin huella | `src/__tests__/design-drift.test.ts::#87 R19` | rojo `98b563f`; verde `e443eb3` | cumplido |
 | R20 | los tres candados de `usePetSelection` vivos (**mutación**) | `food.test.tsx` / `health.test.tsx` / `home/index.test.tsx` — `it('does not replace a new selection while the stale pet list refreshes')` | rojo `c53f003`; verde `264e1c8` | cumplido |

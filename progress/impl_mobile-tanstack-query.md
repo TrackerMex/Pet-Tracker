@@ -130,3 +130,31 @@ claves opcionales en `.env`. También avisa que `STATUS.md` declara 69/86 frente
 
 Único gate restante: smoke humano en dev build de Android, no delegable según la
 spec. No se abrió ni se mergeó ningún PR.
+
+## Ronda 2 — corrección tras veredicto rechazado
+
+| Defecto | Requisito | Commit de corrección | Resultado |
+|---|---|---|---|
+| El `Probe` esperaba un nodo ya presente durante la carga | R3 | `2c38a54` | espera primero el contenido `ok` y conserva intacta la aserción sobre `probe` |
+| Tres pruebas de Summary esperaban el contenedor antes que los datos | R17 | `efdf52c` | cada `waitFor` contiene la primera aserción de datos; las restantes siguen fuera con `getByTestId` |
+
+Se repasaron los tests nuevos y modificados por #87 buscando ambos patrones. No
+quedó otro caso equivalente: los demás nodos usados como espera aparecen en la
+misma rama de render que sus hijos, una vez resuelta la query. No se relajó
+ninguna aserción.
+
+### Evidencia de cierre de la ronda
+
+- Test focal R3: 1 suite, 3 tests, verde.
+- Test focal Home: 1 suite, 112 tests, verde.
+- Suite móvil completa: **10 pasadas verdes consecutivas**, cada una con 70
+  suites, 1156 tests y 1 snapshot. Las rachas preliminares en las que cayó `add-pet`
+  se reiniciaron; se confirmó el flake #72 y no se tocó por estar fuera de
+  alcance.
+- Antes de `init.sh`, `pgrep -af 'init\.sh' | grep -v grep` devolvió `ninguno`.
+- `env -u FORCE_COLOR bash ./init.sh`: verde de extremo a extremo; la suite
+  móvil volvió a quedar verde y `tsc --noEmit` terminó sin errores.
+- **No se tocó código de producción**: los dos commits de corrección modifican
+  únicamente `test/__tests__/render-with-providers.test.tsx` y
+  `src/screens/home/index.test.tsx`. Tampoco se tocó `feature_list.json` ni
+  `backend-pet-tracker/`.
