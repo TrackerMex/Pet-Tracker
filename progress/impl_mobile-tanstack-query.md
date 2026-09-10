@@ -23,7 +23,7 @@
 |---|---|---|---|
 | R1 | `2837dc3` | `a6e5cdf` | 2 aserciones rojas por dependencia ausente; test focal verde |
 | R2 | `a231cdd` | `492cdab` | 5 aserciones rojas por opciones ausentes; test focal y typecheck verdes |
-| R3 | pendiente | pendiente | pendiente |
+| R3 | `af1ac31` | pendiente | los 3 tests rojos por `No QueryClient set` |
 | R4 | pendiente | pendiente | pendiente |
 | R5 | pendiente | pendiente | pendiente |
 | R6 | pendiente | pendiente | pendiente |
