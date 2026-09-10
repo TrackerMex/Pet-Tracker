@@ -22,7 +22,7 @@
 | Requisito | Commit rojo | Commit verde | Evidencia |
 |---|---|---|---|
 | R1 | `2837dc3` | `a6e5cdf` | 2 aserciones rojas por dependencia ausente; test focal verde |
-| R2 | `a231cdd` | pendiente | 5 aserciones rojas por opciones ausentes; `placeholderData` ya `undefined` |
+| R2 | `a231cdd` | `492cdab` | 5 aserciones rojas por opciones ausentes; test focal y typecheck verdes |
 | R3 | pendiente | pendiente | pendiente |
 | R4 | pendiente | pendiente | pendiente |
 | R5 | pendiente | pendiente | pendiente |
