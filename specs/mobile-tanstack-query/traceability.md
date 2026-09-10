@@ -17,7 +17,7 @@ tags: [harness, spec]
 | R3 | helper `renderWithProviders` con su `queryClient` | `test/__tests__/render-with-providers.test.tsx::#87 R3` | rojo `af1ac31`; verde `3cd184f` | cumplido |
 | R4 | `QueryProvider` dentro de `AuthProvider`, fuera de `Stack` | `src/app/__tests__/layout.test.tsx::#87 R4` | rojo `cbceb6b`; verde `50cb93a` | cumplido |
 | R5 | `unauthorized` de lectura ⇒ `signOut` desde un único sitio | `src/providers/__tests__/query-provider.test.tsx::#87 R5` | rojo `49dc149`; verde `171ed65` | cumplido |
-| R6 | `queryClient.clear()` al pasar a `unauthenticated` | `src/providers/__tests__/query-provider.test.tsx::#87 R6` | rojo `2a5c404`; verde — | rojo confirmado |
+| R6 | `queryClient.clear()` al pasar a `unauthenticated` | `src/providers/__tests__/query-provider.test.tsx::#87 R6` | rojo `2a5c404`; verde `fe9f282` | cumplido |
 | R7 | convención y las catorce query keys | `src/api/__tests__/query-keys.test.ts::#87 R7` | — | pendiente |
 | R8 | `usePetSelection` sin `ApiResult` | `src/hooks/use-pet-selection.test.tsx::#87 R8` | — | pendiente |
 | R9 | `screens/docs/index.tsx` por TanStack Query | `src/screens/docs/index.test.tsx::#87 R9` | — | pendiente |
