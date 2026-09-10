@@ -606,7 +606,8 @@ export function HomeScreen() {
               ) : null}
 
               {detail.data?.kind === 'ok' &&
-              !detail.data.pet.nextVaccine ? (
+              !detail.data.pet.nextVaccine &&
+              upcoming.length === 0 ? (
                 <Card
                   testID="reminders-none-upcoming"
                   className="flex-row items-center gap-3"
