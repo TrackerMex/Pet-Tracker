@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { Pet } from '@/modules/pets/domain/entities/pet.entity';
 import { PetNotFoundError } from '@/modules/pets/domain/errors/pet.errors';
 import { PetDeviceReader } from '@/modules/pets/domain/ports/pet-device-reader';
@@ -7,6 +8,7 @@ import { PetRepository } from '@/modules/pets/domain/repositories/pet.repository
 import { GetPetUseCase } from './get-pet.use-case';
 
 const PET_ID = '0198b2c3-4d5e-7a01-b234-56789abcdef0';
+const NOW = new Date('2026-08-10T03:00:00.000Z');
 
 function buildPet(overrides: Partial<{ photoKey: string | null }> = {}): Pet {
   return new Pet({
@@ -33,11 +35,12 @@ function buildPet(overrides: Partial<{ photoKey: string | null }> = {}): Pet {
 
 function buildDeps(petOverrides: Partial<{ photoKey: string | null }> = {}) {
   const findById = jest.fn().mockResolvedValue(buildPet(petOverrides));
+  const findOwnerTimezone = jest.fn().mockResolvedValue('UTC');
   const findActiveDevice = jest.fn().mockResolvedValue(null);
   const resolveDownloadUrl = jest
     .fn()
     .mockResolvedValue('https://example.local/signed-get-url');
-  const pets = { findById } as unknown as PetRepository;
+  const pets = { findById, findOwnerTimezone } as unknown as PetRepository;
   const deviceReader: PetDeviceReader = { findActiveDevice };
   const photoUrlResolver: PetPhotoUrlResolver = { resolveDownloadUrl };
   const findNextVaccine = jest.fn().mockResolvedValue(null);
@@ -49,6 +52,7 @@ function buildDeps(petOverrides: Partial<{ photoKey: string | null }> = {}) {
     photoUrlResolver,
     vaccineReader,
     findById,
+    findOwnerTimezone,
     findActiveDevice,
     resolveDownloadUrl,
     findNextVaccine,
@@ -65,7 +69,7 @@ describe('R8: GetPetUseCase devuelve la mascota para el perfil de detalle', () =
       deps.vaccineReader,
     );
 
-    const profile = await useCase.execute(PET_ID);
+    const profile = await useCase.execute(PET_ID, NOW);
 
     expect(deps.findById).toHaveBeenCalledWith(PET_ID);
     expect(profile.pet.id).toBe(PET_ID);
@@ -83,7 +87,9 @@ describe('R9: si la fila desaparecio tras pasar el guard, el use case lanza PetN
       deps.vaccineReader,
     );
 
-    await expect(useCase.execute(PET_ID)).rejects.toThrow(PetNotFoundError);
+    await expect(useCase.execute(PET_ID, NOW)).rejects.toThrow(
+      PetNotFoundError,
+    );
     expect(deps.findActiveDevice).not.toHaveBeenCalled();
     expect(deps.resolveDownloadUrl).not.toHaveBeenCalled();
   });
@@ -106,7 +112,7 @@ describe('R12 (devices-claim): el perfil incluye el collar activo del puerto', (
       deps.vaccineReader,
     );
 
-    const profile = await useCase.execute(PET_ID);
+    const profile = await useCase.execute(PET_ID, NOW);
 
     expect(deps.findActiveDevice).toHaveBeenCalledWith(PET_ID);
     expect(profile.device).toEqual({
@@ -127,7 +133,7 @@ describe('R12 (devices-claim): el perfil incluye el collar activo del puerto', (
       deps.vaccineReader,
     );
 
-    const profile = await useCase.execute(PET_ID);
+    const profile = await useCase.execute(PET_ID, NOW);
 
     expect(profile.device).toBeNull();
   });
@@ -143,7 +149,7 @@ describe('R6 (pet-photos-s3 #6): con photoKey no nulo, photoUrl viene de PET_PHO
       deps.vaccineReader,
     );
 
-    const profile = await useCase.execute(PET_ID);
+    const profile = await useCase.execute(PET_ID, NOW);
 
     expect(deps.resolveDownloadUrl).toHaveBeenCalledWith(
       'pets/pet-id/photo-123',
@@ -163,17 +169,17 @@ describe('R7 (pet-photos-s3 #6): con photoKey nulo, photoUrl es null sin invocar
       deps.vaccineReader,
     );
 
-    const profile = await useCase.execute(PET_ID);
+    const profile = await useCase.execute(PET_ID, NOW);
 
     expect(deps.resolveDownloadUrl).not.toHaveBeenCalled();
     expect(profile.photoUrl).toBeNull();
   });
 });
 
-describe('R13 (health-vaccines #14): el perfil consulta la proxima vacuna futura', () => {
-  it('devuelve el valor del PET_VACCINE_READER usando la fecha actual', async () => {
-    jest.useFakeTimers({ now: new Date('2026-08-09T12:00:00.000Z') });
+describe('R1 (vaccine-due-today-inclusive #82, sustituye a R13 de #14): el perfil consulta la proxima vacuna desde el dia civil del owner', () => {
+  it('pasa a findNextVaccine el dia local del owner calculado desde now, no el dia UTC', async () => {
     const deps = buildDeps();
+    deps.findOwnerTimezone.mockResolvedValue('America/Mexico_City');
     deps.findNextVaccine.mockResolvedValue({
       id: '0198dead-beef-7c23-d456-789abcdef012',
       name: 'Rabia',
@@ -186,14 +192,79 @@ describe('R13 (health-vaccines #14): el perfil consulta la proxima vacuna futura
       deps.vaccineReader,
     );
 
-    const profile = await useCase.execute(PET_ID);
+    const profile = await useCase.execute(PET_ID, NOW);
 
+    expect(deps.findOwnerTimezone).toHaveBeenCalledWith(PET_ID);
     expect(deps.findNextVaccine).toHaveBeenCalledWith(PET_ID, '2026-08-09');
     expect(profile.nextVaccine).toEqual({
       id: '0198dead-beef-7c23-d456-789abcdef012',
       name: 'Rabia',
       nextDoseAt: '2026-08-10',
     });
-    jest.useRealTimers();
+  });
+});
+
+describe('R2 (vaccine-due-today-inclusive #82): zona del owner nula o fuera del catalogo IANA degrada a UTC con warn', () => {
+  let warnSpy: jest.SpyInstance;
+
+  beforeEach(() => {
+    warnSpy = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+  });
+
+  afterEach(() => {
+    warnSpy.mockRestore();
+  });
+
+  it('sin owner activo (null) usa el dia UTC de now y avisa una vez', async () => {
+    const deps = buildDeps();
+    deps.findOwnerTimezone.mockResolvedValue(null);
+    const useCase = new GetPetUseCase(
+      deps.pets,
+      deps.deviceReader,
+      deps.photoUrlResolver,
+      deps.vaccineReader,
+    );
+
+    await useCase.execute(PET_ID, NOW);
+
+    expect(deps.findNextVaccine).toHaveBeenCalledWith(PET_ID, '2026-08-10');
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ petId: PET_ID, timezone: null }),
+    );
+  });
+
+  it("con 'Not/A/Zone' usa el dia UTC de now y avisa una vez", async () => {
+    const deps = buildDeps();
+    deps.findOwnerTimezone.mockResolvedValue('Not/A/Zone');
+    const useCase = new GetPetUseCase(
+      deps.pets,
+      deps.deviceReader,
+      deps.photoUrlResolver,
+      deps.vaccineReader,
+    );
+
+    await useCase.execute(PET_ID, NOW);
+
+    expect(deps.findNextVaccine).toHaveBeenCalledWith(PET_ID, '2026-08-10');
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ petId: PET_ID, timezone: 'Not/A/Zone' }),
+    );
+  });
+
+  it('con zona valida no avisa', async () => {
+    const deps = buildDeps();
+    deps.findOwnerTimezone.mockResolvedValue('America/Mexico_City');
+    const useCase = new GetPetUseCase(
+      deps.pets,
+      deps.deviceReader,
+      deps.photoUrlResolver,
+      deps.vaccineReader,
+    );
+
+    await useCase.execute(PET_ID, NOW);
+
+    expect(warnSpy).not.toHaveBeenCalled();
   });
 });

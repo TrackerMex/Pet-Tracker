@@ -3202,3 +3202,34 @@ logica de aplicacion. Reporte en `progress/impl_db-migrate-script.md`.
 - **Deuda que toca**: #75 (`FORCE_COLOR` rompe `init.sh`) sigue abierta; todo
   gate se corre con `env -u FORCE_COLOR`. Siguiente backend sin decisión humana
   pendiente: #82.
+
+## #82 vaccine-due-today-inclusive (cerrada 2026-09-10)
+
+- **Qué entrega**: `GET /v1/pets/:petId` calcula `nextVaccine` desde el día civil
+  en `users.timezone` del owner (`localDayOf`, fallback a UTC con `warn`) y con
+  `gte`: la dosis de hoy es la próxima hasta que acaba el día local. Solo
+  backend, diez archivos, contrato intacto. `after` → `from` en el puerto.
+- **Por qué existía**: el lector filtraba `gt` contra el hoy UTC del servidor; la
+  pestaña Salud compara `>= hoy` local. El día de la dosis, Salud la enseñaba y
+  la Home no; en UTC negativo la Home la perdía horas antes.
+- **Decisión de zona**: owner, no requester ni dispositivo. La zona ya vivía en
+  `users.timezone` (registro) y activity (#10) ya tenía el patrón; el móvil no
+  manda nada. Acordado con la sesión Frontend para no pisar #87 (Home y Salud).
+- **Parada de Codex (A1)**: `alerts-engine-consumer.service.spec.ts:109` tipa un
+  `MockOf<PetRepository>` exhaustivo; el método nuevo del puerto rompía el
+  typecheck con jest verde. Décimo archivo, una línea, enmienda firmada.
+  Memoria: [[dobles-exhaustivos-de-puertos]].
+- **Candados**: e2e hoy/ayer/mañana con Kiritimati/Pago_Pago (rojo a cualquier
+  hora si UTC o requester), family en otra zona, owner `'Not/A/Zone'` → 200.
+  M1 `gte→gt` y M2 zona `null` (ciega para el unitario) reproducidas por el
+  reviewer. Suite e2e dos veces con `357 passed`; `init.sh` exit 0.
+- **Deuda**: #88 `vaccine-applied-at-owner-timezone` (`appliedAt <= hoy UTC` en
+  el DTO, 400 por la tarde en zonas negativas).
+- **Cierre en dos corridas**: el primer `init.sh` de cierre salió rojo por el
+  flake #72 (`add-pet/index.test.tsx`, "uploads a chosen preview only after
+  createPet succeeds"), con cero archivos móviles en el diff y backend/e2e
+  verdes; la segunda corrida, sin tocar nada, exit 0 con `1111 passed` en móvil.
+  El leader leyó "exit 0" de la notificación de fondo cuando era el del `echo`
+  y commiteó el cierre antes de mirar el log: el PR se abrió solo tras la
+  corrida verde. Lección: leer siempre la última línea del log, no el estado
+  de la tarea.

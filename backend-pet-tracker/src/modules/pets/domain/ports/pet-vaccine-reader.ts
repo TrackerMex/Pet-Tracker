@@ -7,5 +7,6 @@ export interface NextPetVaccine {
 }
 
 export interface PetVaccineReader {
-  findNextVaccine(petId: string, after: string): Promise<NextPetVaccine | null>;
+  /** `from` es el primer dia civil incluido. */
+  findNextVaccine(petId: string, from: string): Promise<NextPetVaccine | null>;
 }

@@ -1,7 +1,7 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-09-10
-**Features completadas**: 69/86 (`feature_list.json`)
+**Features completadas**: 70/87 (`feature_list.json`)
 **En progreso**: ninguna
 
 **Pendientes**: 15 (#18, #41, #60, #63, #70, #72-#81). El rediseño contra el diseño del Make abrió el bloque #64-#71: #64, #65, #66, #67, #68 y #69 están cerradas y **mergeadas** (PR #106, #110, #111, #112, #113 y #114). #71 `mobile-home-quick-actions` está cerrada con los dos gates humanos firmados; **PR pendiente de merge por el humano**. Del bloque solo queda **#70 recordatorios**, sin especificar, y con la mitad del diseño bloqueada porque `nextReminder` y `activitySummary` siguen a `null` en el mapper del perfil. Deuda registrada: #72 flake de add-pet; #73 `pet-online-pill`; #74 el selector que TalkBack lee como tres controles sueltos; #75 `init.sh` aborta en falso con `FORCE_COLOR`; #76 un e2e que asserta orden sobre un `SELECT` sin `ORDER BY`; #77 el peso visible sin collar; #80 los `testID` del doble atados al componente; #81 la receta tipográfica del tile sin candado. #78 y #79 entraron desde otra sesión.
@@ -87,6 +87,26 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
+- **`vaccine-due-today-inclusive` (#82) done** (2026-09-10): `GET /v1/pets/:petId`
+  calcula `nextVaccine` con el **día civil en la zona del owner** (`users.timezone`,
+  `localDayOf`, fallback a UTC con `warn`) y el corte pasa de `gt` a **`gte`**: la
+  dosis de hoy sigue siendo la próxima hasta que acaba el día, igual que en la
+  pestaña Salud. Solo backend, diez archivos, contrato del perfil intacto.
+  - **La zona ya estaba**: el registro guarda `Intl...timeZone` en `users.timezone`
+    desde #3 y activity (#10) ya resolvía "hoy en la zona del owner". No hizo falta
+    que el móvil mandara nada: cero archivos en `mobile-pet-tracker/` mientras #87
+    reescribe Home y Salud en otro worktree.
+  - **Una parada de Codex, correcta**: la spec inventarió nueve archivos y el
+    décimo era un doble **exhaustivo** `MockOf<PetRepository>` en el spec del
+    alerts-engine que rompía el typecheck (TS2741) con jest verde. Enmienda A1
+    (una línea) firmada por el humano. En memoria: grep de `MockOf<Puerto>` antes
+    de inventariar.
+  - **Candados**: e2e de frontera hoy/ayer/mañana con el par Kiritimati/Pago_Pago
+    (25 h, rojo a cualquier hora si se usara UTC o el requester), family en otra
+    zona, owner con zona inválida. Mutaciones M1 (`gte→gt`) y M2 (zona a `null`,
+    ciega para el unitario) reproducidas por el reviewer.
+  - **Deuda abierta**: **#88** `vaccine-applied-at-owner-timezone`, el mismo
+    sesgo UTC en `appliedAt <= hoy` del DTO de vacunas (400 por la tarde en UTC-6).
 - **`e2e-audit-log-order-assert` (#76) done** (2026-09-10): el test de auditoría
   de vacunas (`backend-pet-tracker/test/health-vaccines.e2e-spec.ts`, R12 de #14)
   asertaba una secuencia create→update→delete sobre un `db.select()` **sin
@@ -1077,6 +1097,11 @@ debe listar las 4 URLs de cola.
 
 ## Última sesión
 
+- **2026-09-10 (2)** — **#82 `vaccine-due-today-inclusive` cerrada**: explorer
+  + spec + gate + Codex + una enmienda (A1, décimo archivo) + reviewer aprobado
+  a la primera sobre ba28618. Abre **#88** (deuda `appliedAt` en la zona del
+  owner). Segunda feature del día desde el worktree `Pet-Tracker-wt-backend` en
+  paralelo con la sesión Frontend (#87 en corrección tras rechazo de su reviewer).
 - **2026-09-10** — **#76 `e2e-audit-log-order-assert` cerrada** en el día:
   spec, gate humano, Codex CLI en el worktree `Pet-Tracker-wt-backend`, y
   `reviewer` aprobado a la primera sobre fdf81c8. Sesión Backend en paralelo
