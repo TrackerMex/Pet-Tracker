@@ -21,7 +21,7 @@
 
 | Requisito | Commit rojo | Commit verde | Evidencia |
 |---|---|---|---|
-| R1 | pendiente | pendiente | pendiente |
+| R1 | `2837dc3` | pendiente | 2 aserciones rojas: dependencia ausente |
 | R2 | pendiente | pendiente | pendiente |
 | R3 | pendiente | pendiente | pendiente |
 | R4 | pendiente | pendiente | pendiente |

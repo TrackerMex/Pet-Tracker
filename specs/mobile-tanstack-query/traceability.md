@@ -12,7 +12,7 @@ tags: [harness, spec]
 
 | R | Resumen | Test que lo nombra | Commit | Estado |
 |---|---|---|---|---|
-| R1 | dependencia `@tanstack/react-query@5.102.8` exacta | `src/__tests__/design-drift.test.ts::#87 R1` | — | pendiente |
+| R1 | dependencia `@tanstack/react-query@5.102.8` exacta | `src/__tests__/design-drift.test.ts::#87 R1` | rojo `2837dc3`; verde — | rojo confirmado |
 | R2 | los cinco mandos del `QueryClient` | `src/providers/__tests__/query-provider.test.tsx::#87 R2` | — | pendiente |
 | R3 | helper `renderWithProviders` con su `queryClient` | `test/__tests__/render-with-providers.test.tsx::#87 R3` | — | pendiente |
 | R4 | `QueryProvider` dentro de `AuthProvider`, fuera de `Stack` | `src/app/__tests__/layout.test.tsx::#87 R4` | — | pendiente |

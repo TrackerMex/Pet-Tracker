@@ -5,6 +5,7 @@
   "dependencies": {
     "@expo/ui": "~57.0.11",
     "@gorhom/bottom-sheet": "^5.2.14",
+    "@tanstack/react-query": "5.102.8",
     "blobatar": "^2.5.0",
     "expo": "~57.0.14",
     "expo-blur": "~57.0.2",
