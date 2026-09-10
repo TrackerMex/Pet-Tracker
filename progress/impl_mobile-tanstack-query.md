@@ -32,7 +32,7 @@
 | R9 | `07c4ba5` | `5e00853` | 2 entradas de cache, suite de Docs y typecheck verdes |
 | R10 | `8a46cc7` | `97049e7` | clave con `limit: undefined`; 23 pruebas y typecheck verdes |
 | R11 | `be536d1` | `6966af6` | 2 claves; `retryAll` y refresco tras generar preservados; 22 pruebas y typecheck verdes |
-| R12 | pendiente | pendiente | pendiente |
+| R12 | `b4b279e` | pendiente | mascotas y plan ausentes de cache; 22 pruebas heredadas verdes |
 | R13 | pendiente | pendiente | pendiente |
 | R14 | pendiente | pendiente | pendiente |
 | R15 | pendiente | pendiente | pendiente |
@@ -54,6 +54,12 @@ Pendiente.
   recuento esperado de llamadas intactos.
 - R10, `src/app/(tabs)/weight-log.tsx`: mismo ajuste de tipo en el botón de
   reintento, con el mismo comportamiento observable.
+- R12, `src/app/(tabs)/food.tsx`: los dos botones de reintento usan el mismo
+  adaptador de evento `() => void query.refetch()`.
+- R12, `src/app/(tabs)/__tests__/food.test.tsx`: se envolvieron en `waitFor`,
+  sin cambiar valores esperados, las cuatro aserciones del esqueleto de plan y
+  las cinco aserciones de títulos de card; la actualización de caché notifica en
+  un turno asíncrono adicional.
 
 ## Cierre
 
