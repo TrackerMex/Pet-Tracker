@@ -185,6 +185,6 @@ Hechos verificados en el árbol (no supuestos):
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
-- [ ] Excepción C4 de R2 (sin commit rojo; evidencia por mutación no
+- [X] Aprobado por humano (fecha: 2026-09-10) ← gate obligatorio antes de implementar
+- [X] Excepción C4 de R2 (sin commit rojo; evidencia por mutación no
       versionada) aceptada por humano con esta misma firma
