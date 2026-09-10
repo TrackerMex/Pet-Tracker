@@ -19,7 +19,7 @@ tags: [harness, spec]
 | R5 | `unauthorized` de lectura ⇒ `signOut` desde un único sitio | `src/providers/__tests__/query-provider.test.tsx::#87 R5` | rojo `49dc149`; verde `171ed65` | cumplido |
 | R6 | `queryClient.clear()` al pasar a `unauthenticated` | `src/providers/__tests__/query-provider.test.tsx::#87 R6` | rojo `2a5c404`; verde `fe9f282` | cumplido |
 | R7 | convención y las catorce query keys | `src/api/__tests__/query-keys.test.ts::#87 R7` | rojo `1c947c4`; verde `b5e7f31` | cumplido |
-| R8 | `usePetSelection` sin `ApiResult` | `src/hooks/use-pet-selection.test.tsx::#87 R8` | rojo `cfe1b34`; verde — | rojo confirmado |
+| R8 | `usePetSelection` sin `ApiResult` | `src/hooks/use-pet-selection.test.tsx::#87 R8` | rojo `cfe1b34`; verde `15b9eea` | cumplido |
 | R9 | `screens/docs/index.tsx` por TanStack Query | `src/screens/docs/index.test.tsx::#87 R9` | — | pendiente |
 | R10 | `app/(tabs)/weight-log.tsx` | `src/app/(tabs)/__tests__/weight-log.test.tsx::#87 R10` | — | pendiente |
 | R11 | `app/(tabs)/meal-schedule.tsx` | `src/app/(tabs)/__tests__/meal-schedule.test.tsx::#87 R11` | — | pendiente |

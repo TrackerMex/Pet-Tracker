@@ -28,7 +28,7 @@
 | R5 | `49dc149` | `171ed65` | `unauthorized` rojo 0/1; callback global verde y no actúa sobre `ok`/`unreachable` |
 | R6 | `2a5c404` | `fe9f282` | cache vaciada solo en `unauthenticated`; transicion loading→authenticated conserva datos |
 | R7 | `1c947c4` | `b5e7f31` | 14 claves exactas, `limit` y prefijos verdes; typecheck verde |
-| R8 | `cfe1b34` | pendiente | fuente roja por el import `./use-api`; conducta de refresco siguio verde |
+| R8 | `cfe1b34` | `15b9eea` | forma minima verde; 10 pantallas antiguas siguen compilando |
 | R9 | pendiente | pendiente | pendiente |
 | R10 | pendiente | pendiente | pendiente |
 | R11 | pendiente | pendiente | pendiente |
