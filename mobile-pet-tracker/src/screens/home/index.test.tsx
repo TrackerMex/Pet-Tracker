@@ -864,12 +864,23 @@ describe('R10: refetch al foco', () => {
 });
 
 describe('R10: preserva la mascota durante el refetch', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+  });
+
   afterEach(() => {
     jest.restoreAllMocks();
   });
 
   it('does not replace a new selection while the stale pet list refreshes', async () => {
-    const existingPet = makePet();
+    const existingPet = makePet({ id: 'pet-old' });
     const createdPet = makePet({ id: 'pet-new', name: 'Nala' });
     const selectPet = jest.fn();
     let resolvePets!: (state: PetsState) => void;
@@ -887,17 +898,25 @@ describe('R10: preserva la mascota durante el refetch', () => {
     });
     await screen.findByTestId(`pet-chip-${existingPet.id}`);
 
-    jest.spyOn(selectedPetHooks, 'useSelectedPet').mockImplementation(() => ({
-      ...useSelectedPet(),
-      selectedPetId: createdPet.id,
-      selectPet,
-    }));
+    const selectedPetSpy = jest
+      .spyOn(selectedPetHooks, 'useSelectedPet')
+      .mockImplementation(() => ({
+        ...useSelectedPet(),
+        selectedPetId: createdPet.id,
+        selectPet,
+      }));
+    const callsBeforeRefetch = selectedPetSpy.mock.calls.length;
     mockListPets.mockReturnValue(revalidatedPets);
     await act(() => {
       void view.queryClient.refetchQueries({ queryKey: petKeys.list() });
     });
     await waitFor(() =>
       expect(view.queryClient.isFetching({ queryKey: petKeys.list() })).toBe(1),
+    );
+    await waitFor(() =>
+      expect(selectedPetSpy.mock.calls.length).toBeGreaterThan(
+        callsBeforeRefetch,
+      ),
     );
 
     expect(selectPet).not.toHaveBeenCalled();

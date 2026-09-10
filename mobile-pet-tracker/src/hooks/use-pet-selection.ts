@@ -15,7 +15,6 @@ export function usePetSelection(pets: PetSelectionSource): void {
 
   useEffect(() => {
     if (!isFocused) return;
-    if (pets.isRefreshing) return;
     if (pets.data?.kind !== 'ok' || pets.data.pets.length === 0) return;
 
     const selectionExists = pets.data.pets.some(

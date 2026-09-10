@@ -39,7 +39,7 @@
 | R16 | `9f0e27e` | `f9afe6a` | 3 claves y 3 ficheros de montaje verdes; 35 pruebas y typecheck verdes |
 | R17 | `9a5476e` | `bbc6193` | 4 claves, foco limitado y candado real; 112 pruebas y typecheck verdes |
 | R18 | `6afcc38` | `5fa6c6e` | 4 claves, sondeo de 15 s y ruta excluida preservados; 49 pruebas verdes |
-| R19 | `98b563f` | pendiente | ficheros legados y 3 huellas extra detectados; claves literales ausentes y `signOut(` con delta 0 |
+| R19 | `98b563f` | `e443eb3` | 2 ficheros borrados; solo sobrevive el candado semanal; query keys literales ausentes y 9 `signOut(` de mutación, delta 0 respecto a `5666b85` |
 | R20 | pendiente | pendiente | pendiente |
 
 ## Evidencia R20

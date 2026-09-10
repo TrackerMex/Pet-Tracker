@@ -441,7 +441,7 @@ describe('R10: preserva la mascota durante el refetch', () => {
   });
 
   it('does not replace a new selection while the stale pet list refreshes', async () => {
-    const existingPet = makePet();
+    const existingPet = makePet({ id: 'pet-old' });
     const createdPet = makePet({ id: 'pet-new', name: 'Nala' });
     const selectPet = jest.fn();
     let resolvePets!: (state: PetsState) => void;
@@ -455,17 +455,25 @@ describe('R10: preserva la mascota durante el refetch', () => {
     const { queryClient, unmount } = await renderFood();
     await screen.findByTestId(`pet-chip-${existingPet.id}`);
 
-    jest.spyOn(selectedPetHooks, 'useSelectedPet').mockImplementation(() => ({
-      ...useSelectedPet(),
-      selectedPetId: createdPet.id,
-      selectPet,
-    }));
+    const selectedPetSpy = jest
+      .spyOn(selectedPetHooks, 'useSelectedPet')
+      .mockImplementation(() => ({
+        ...useSelectedPet(),
+        selectedPetId: createdPet.id,
+        selectPet,
+      }));
+    const callsBeforeRefetch = selectedPetSpy.mock.calls.length;
     mockListPets.mockReturnValue(revalidatedPets);
     await act(() => {
       void queryClient.refetchQueries({ queryKey: petKeys.list() });
     });
     await waitFor(() =>
       expect(queryClient.isFetching({ queryKey: petKeys.list() })).toBe(1),
+    );
+    await waitFor(() =>
+      expect(selectedPetSpy.mock.calls.length).toBeGreaterThan(
+        callsBeforeRefetch,
+      ),
     );
 
     expect(selectPet).not.toHaveBeenCalled();
