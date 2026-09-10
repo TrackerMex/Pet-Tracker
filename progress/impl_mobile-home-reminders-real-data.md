@@ -293,3 +293,25 @@ Tras aplicar solo el delta de la fila 4, las seis suites dirigidas quedaron
 - Segundo `env -u FORCE_COLOR ./init.sh`: exit 0. Pasaron backend 163/1243,
   infra 2/14, harness 11/28, móvil 68/1110, e2e 25/354 (3 suites/8 tests
   omitidos), lint y typecheck. El árbol siguió sin cambios de backend.
+
+## A14 — vacío real y tamaño de icono candado
+
+- El candado de R5 se versionó rojo en `56414ff`: sin vacuna y con tres
+  recordatorios esperaba 3 hijos y recibió 4; el hijo intruso era
+  `reminders-none-upcoming`. También fija el caso sin vacuna ni recordatorios:
+  la tarjeta existe y el cuerpo tiene 1 hijo.
+- La guarda `upcoming.length === 0` quedó verde en `47f1020`. El candado nuevo
+  y los heredados `#70 R8`/`#70 R12` pasaron 3/3 sin tocar #70.
+- P14 se plantó **sola** en producción y se versionó en `8381d0d`: al retirar
+  la guarda, el mismo `it` volvió a `Expected length: 3 / Received length: 4`.
+  Se restauró en `8e152db`; los tres candados volvieron verdes.
+- R6 añadió únicamente `expect(icon.props.size).toBe(20)` en `992aa13`. La
+  sonda no versionada cambió el `<Icon>` variable a `size={28}` y cayó solo
+  `it('liga icono, superficie y tinta a su tipo')` con `Expected: 20 /
+  Received: 28`. Restaurado `20`, el `it` volvió verde y
+  `git diff --exit-code` quedó vacío.
+- `index.test.tsx` completo terminó 111/111 verde después de ambas correcciones.
+- `graphify update .` terminó en exit 0 sin cambios topológicos. El gate final
+  `env -u FORCE_COLOR ./init.sh` también terminó en exit 0: backend 163/1243,
+  infra 2/14, harness 11/28, móvil 68/1111, e2e 25/354 (3 suites/8 tests
+  omitidos), lint y typecheck verdes. No hubo cambios de backend.
