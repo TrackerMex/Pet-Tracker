@@ -31,7 +31,7 @@ tags: [harness, spec]
 | R17 | `screens/home/index.tsx` | `src/screens/home/index.test.tsx::#87 R17` | rojo `9a5476e`; verde `bbc6193` | cumplido |
 | R18 | `app/(tabs)/map.tsx` (sondeo de 15 s intacto) | `src/app/(tabs)/__tests__/map.test.tsx::#87 R18` | rojo `6afcc38`; verde `5fa6c6e` | cumplido |
 | R19 | `use-api` borrado y sin huella | `src/__tests__/design-drift.test.ts::#87 R19` | rojo `98b563f`; verde `e443eb3` | cumplido |
-| R20 | los tres candados de `usePetSelection` vivos (**mutación**) | `food.test.tsx` / `health.test.tsx` / `home/index.test.tsx` — `it('does not replace a new selection while the stale pet list refreshes')` | — | pendiente |
+| R20 | los tres candados de `usePetSelection` vivos (**mutación**) | `food.test.tsx` / `health.test.tsx` / `home/index.test.tsx` — `it('does not replace a new selection while the stale pet list refreshes')` | rojo `c53f003`; verde — | rojo confirmado |
 
 ---
 

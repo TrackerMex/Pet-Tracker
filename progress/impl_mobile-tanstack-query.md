@@ -40,11 +40,23 @@
 | R17 | `9a5476e` | `bbc6193` | 4 claves, foco limitado y candado real; 112 pruebas y typecheck verdes |
 | R18 | `6afcc38` | `5fa6c6e` | 4 claves, sondeo de 15 s y ruta excluida preservados; 49 pruebas verdes |
 | R19 | `98b563f` | `e443eb3` | 2 ficheros borrados; solo sobrevive el candado semanal; query keys literales ausentes y 9 `signOut(` de mutación, delta 0 respecto a `5666b85` |
-| R20 | pendiente | pendiente | pendiente |
+| R20 | `c53f003` | pendiente | mutación exacta versionada; los 3 candados de pantalla y el homólogo del hook fallan por llamar `selectPet('pet-old')` |
 
 ## Evidencia R20
 
-Pendiente.
+Mutación versionada en `c53f003`: se borró únicamente
+`if (pets.isRefreshing) return;` de `use-pet-selection.ts`. Resultado rojo:
+
+- `food.test.tsx` — `does not replace a new selection while the stale pet list refreshes`:
+  `not.toHaveBeenCalled()`, 1 llamada recibida con `"pet-old"`.
+- `health.test.tsx` — mismo nombre y mismo fallo: 1 llamada con `"pet-old"`.
+- `home/index.test.tsx` — mismo nombre y mismo fallo: 1 llamada con `"pet-old"`.
+- `use-pet-selection.test.tsx` — `no pisa la selección mientras la pantalla enfocada revalida`:
+  `not.toHaveBeenCalled()`, 1 llamada recibida con `"pet-old"`.
+
+Los tres tests de pantalla esperan además una notificación real de rerender del
+observer antes de comprobar el candado. Esto elimina una carrera observada en
+Home sin cambiar la aserción ni su valor esperado.
 
 ## Ajustes asincronos sin relajar aserciones
 
