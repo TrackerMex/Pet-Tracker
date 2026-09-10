@@ -35,7 +35,7 @@
 | R12 | `b4b279e` | `e1df8ef` | `enabled` del plan y candado de revalidacion real verdes; 23 pruebas y typecheck verdes |
 | R13 | `b77c366` | `157a7a8` | 3 claves, peso con `limit: 1`, candado real; 28 pruebas y typecheck verdes |
 | R14 | `6991074` | `0baba1d` | 2 claves; foco y mutacion preservados; 22 pruebas y typecheck verdes |
-| R15 | pendiente | pendiente | pendiente |
+| R15 | `c204287` | pendiente | mascotas y tracking ausentes de cache; 47 pruebas heredadas verdes |
 | R16 | pendiente | pendiente | pendiente |
 | R17 | pendiente | pendiente | pendiente |
 | R18 | pendiente | pendiente | pendiente |
@@ -65,6 +65,8 @@ Pendiente.
   `vaccines.isRefetching`; no cambia ningún valor esperado.
 - R14, `src/screens/reminders/index.tsx`: el botón de reintento adapta el evento;
   el bloque `useFocusEffect` y el `signOut` de la mutación quedan intactos.
+- R15, `src/screens/pairing/index.tsx`: el botón de reintento adapta el evento;
+  permanecen dos `useFocusEffect` y las dos expulsiones de mutación.
 
 ## Cierre
 

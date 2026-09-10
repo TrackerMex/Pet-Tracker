@@ -1,7 +1,6 @@
 import {
   act,
   fireEvent,
-  render,
   screen,
   waitFor,
 } from '@testing-library/react-native';
@@ -124,7 +123,7 @@ function PairingWrapper({ children }: { children: ReactNode }) {
 }
 
 async function renderPairing() {
-  return render(<PairingRoute />, { wrapper: PairingWrapper });
+  return renderWithProviders(<PairingRoute />, { wrapper: PairingWrapper });
 }
 
 describe('R4: /pairing monta dentro de (tabs) con selector de mascota y estados de carga', () => {

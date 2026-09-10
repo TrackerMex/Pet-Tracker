@@ -1,6 +1,7 @@
+import { useQuery } from '@tanstack/react-query';
 import { router, useFocusEffect } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
   Alert,
   Pressable,
@@ -14,11 +15,11 @@ import { ArrowLeft } from 'reicon-react-native';
 
 import { claimDevice, releaseDevice } from '../../api/devices';
 import { listPets, type PetsState } from '../../api/pets';
+import { deviceKeys, petKeys } from '../../api/query-keys';
 import { getPetTracking, type PetTrackingState } from '../../api/subscriptions';
 import type { DeviceStatus } from '../../api/types';
 import { Card } from '../../components/card';
 import { PetSwitcher } from '../../components/pet-switcher';
-import { useApi } from '../../hooks/use-api';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import {
@@ -69,12 +70,11 @@ export function PairingScreen() {
   const { selectedPetId, selectPet } = useSelectedPet();
   const insets = useSafeAreaInsets();
   const [foreground] = useThemeColors(['foreground']);
-  const petsFn = useCallback(
-    () => listPets(baseUrl, token ?? ''),
-    [baseUrl, token],
-  );
-  const pets = useApi(petsFn);
-  usePetSelection(pets);
+  const pets = useQuery({
+    queryKey: petKeys.list(),
+    queryFn: () => listPets(baseUrl, token ?? ''),
+  });
+  usePetSelection({ data: pets.data, isRefreshing: pets.isRefetching });
   const refetchPets = pets.refetch;
   const [code, setCode] = useState('');
   const [claiming, setClaiming] = useState(false);
@@ -90,14 +90,12 @@ export function PairingScreen() {
   const connectivityKey = connectivityLabelKey(
     selectedPet?.device?.connectivity ?? null,
   );
-  const trackingFn = useMemo(
-    () =>
-      phase === 'idle' && selectedPetId && hasSelectedDevice
-        ? () => getPetTracking(baseUrl, token ?? '', selectedPetId)
-        : null,
-    [baseUrl, hasSelectedDevice, phase, selectedPetId, token],
-  );
-  const tracking = useApi(trackingFn);
+  const tracking = useQuery({
+    queryKey: deviceKeys.tracking(selectedPetId ?? ''),
+    queryFn: () => getPetTracking(baseUrl, token ?? '', selectedPetId!),
+    enabled:
+      phase === 'idle' && selectedPetId !== null && hasSelectedDevice,
+  });
   const refetchTracking = tracking.refetch;
 
   useFocusEffect(
@@ -272,7 +270,10 @@ export function PairingScreen() {
           <Text testID="pairing-error-pets" className="text-danger" selectable>
             {t('common.somethingWentWrong')}
           </Text>
-          <Button testID="pairing-retry" onPress={pets.refetch}>
+          <Button
+            testID="pairing-retry"
+            onPress={() => void pets.refetch()}
+          >
             <Button.Label>{t('common.retry')}</Button.Label>
           </Button>
         </View>
