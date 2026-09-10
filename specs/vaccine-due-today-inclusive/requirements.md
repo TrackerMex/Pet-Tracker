@@ -314,7 +314,7 @@ cambia de forma** en esta feature.
   del puerto (D8) se mantiene: rediseñarlo para esquivar un `jest.fn()` sería
   más archivos, no menos.
 
-- [ ] A1 ratificada por humano (fecha: ____)
+- [X] A1 ratificada por humano (fecha: 2026-09-10)
 
 ## Aprobación
 
