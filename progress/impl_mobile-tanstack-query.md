@@ -30,7 +30,7 @@
 | R7 | `1c947c4` | `b5e7f31` | 14 claves exactas, `limit` y prefijos verdes; typecheck verde |
 | R8 | `cfe1b34` | `15b9eea` | forma minima verde; 10 pantallas antiguas siguen compilando |
 | R9 | `07c4ba5` | `5e00853` | 2 entradas de cache, suite de Docs y typecheck verdes |
-| R10 | `8a46cc7` | pendiente | cache ausente antes de migrar; 22 pruebas heredadas siguieron verdes |
+| R10 | `8a46cc7` | `97049e7` | clave con `limit: undefined`; 23 pruebas y typecheck verdes |
 | R11 | pendiente | pendiente | pendiente |
 | R12 | pendiente | pendiente | pendiente |
 | R13 | pendiente | pendiente | pendiente |
@@ -52,6 +52,8 @@ Pendiente.
   `query.refetch` directamente porque React Native le pasa un evento que no es
   `RefetchOptions`; se usa `() => void docs.refetch()`. Conducta visible y
   recuento esperado de llamadas intactos.
+- R10, `src/app/(tabs)/weight-log.tsx`: mismo ajuste de tipo en el botón de
+  reintento, con el mismo comportamiento observable.
 
 ## Cierre
 
