@@ -17,5 +17,6 @@
 - A11: firmada y leída; un `beforeEach` de fichero repone la respuesta vacía de `listReminders` antes de cada test, sin depender del orden.
 - A12: firmada y leída; declara R9/R10 de verificación y prescribe P9/P10 fuera de M1-M13.
 - A13: firmada y leída; corrige solo la evidencia de P9: desaparece la tarjeta y el cuerpo pasa de 1 a 0; el skeleton no cambia.
+- A14: firmada y leída; añade la guarda `upcoming.length === 0` al estado vacío y canda `size={20}` en R6. Base tras `git pull`: `env -u FORCE_COLOR ./init.sh` verde (móvil: 68 suites / 1110 tests).
 - Avance: R1-R8 completos. R8 rojo `7dac461`, verde `fecd8e8`; sus tres pruebas y `#70 R11` verdes.
 - Avance: R9-R15 completos. R14 cerró 68 suites/1110 tests móviles, typecheck, grep-clean e `init.sh` verdes. R15 replantó las nueve mutaciones no versionadas y auditó las cuatro versionadas; M1-M13 muerden y cada restauración dejó diff vacío. `graphify update .` completado. Pendientes: push, smoke Android humano y reviewer; el PR se abre tras su veredicto.
