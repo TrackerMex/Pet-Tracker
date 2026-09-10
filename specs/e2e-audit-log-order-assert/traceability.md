@@ -18,10 +18,10 @@ tags: [harness, spec]
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | `test/health-vaccines.e2e-spec.ts::R12: auditoria de mutaciones::'registra create/update/delete en orden cronologico y no audita PATCH vacio (e2e-audit-log-order-assert #76: R1,R2)'` — verde con `orderBy(asc(auditLog.at), asc(auditLog.id))` | pendiente (commit 1) |
-| R2 | El mismo `it`, **rojo por aserción** con `orderBy(desc(...), desc(...))` (mutación no versionada) — evidencia en `progress/impl_e2e-audit-log-order-assert.md` §Mutación (R2) y en `progress/review_e2e-audit-log-order-assert.md` | pendiente (commit 2, solo evidencia) |
-| R3 | Sin test nuevo — `git diff --name-only 5666b85...HEAD -- backend-pet-tracker/` = solo `test/health-vaccines.e2e-spec.ts`; `grep -n "orderBy" test/*.e2e-spec.ts` = `devices` + `health-vaccines`; sección §Barrido (R3) del reporte | pendiente (commit 2) |
-| R4 | Sin test nuevo — 1 corrida de Codex + 3 corridas consecutivas del reviewer de `pnpm -C backend-pet-tracker run test:e2e` con el mismo `N` en `Tests: N passed`, más `env -u FORCE_COLOR bash ./init.sh` verde sin «se saltan los e2e» | pendiente (commit 2; corridas del reviewer en `progress/review_...md`) |
+| R1 | `test/health-vaccines.e2e-spec.ts::R12: auditoria de mutaciones::'registra create/update/delete en orden cronologico y no audita PATCH vacio (e2e-audit-log-order-assert #76: R1,R2)'` — verde con `orderBy(asc(auditLog.at), asc(auditLog.id))` | `900b164 test(e2e-audit-log-order-assert): order audit log rows before asserting (R1)` |
+| R2 | El mismo `it`, **rojo por aserción** con `orderBy(desc(...), desc(...))` (mutación no versionada) — evidencia en `progress/impl_e2e-audit-log-order-assert.md` §Mutación (R2) y en `progress/review_e2e-audit-log-order-assert.md` | Sujeto: `900b164`; evidencia Codex: este commit, `docs(e2e-audit-log-order-assert): mutation evidence, sweep and traceability (R2,R3,R4)` |
+| R3 | Sin test nuevo — `git diff --name-only 5666b85...HEAD -- backend-pet-tracker/` = solo `test/health-vaccines.e2e-spec.ts`; `grep -n "orderBy" test/*.e2e-spec.ts` = `devices` + `health-vaccines`; sección §Barrido (R3) del reporte | Sujeto: `900b164`; barrido: este commit, `docs(e2e-audit-log-order-assert): mutation evidence, sweep and traceability (R2,R3,R4)` |
+| R4 | Sin test nuevo — 1 corrida de Codex + 3 corridas consecutivas del reviewer de `pnpm -C backend-pet-tracker run test:e2e` con el mismo `N` en `Tests: N passed`, más `env -u FORCE_COLOR bash ./init.sh` verde sin «se saltan los e2e» | Codex: este commit, `docs(e2e-audit-log-order-assert): mutation evidence, sweep and traceability (R2,R3,R4)`; reproducción independiente en `progress/review_...md` |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
 Convención de commit: `test(e2e-audit-log-order-assert): <desc> (R1)` /
@@ -31,10 +31,10 @@ Convención de commit: `test(e2e-audit-log-order-assert): <desc> (R1)` /
 
 | # | Criterio de aceptación (abreviado) | Requisito(s) | Estado |
 |---|---|---|---|
-| 1 | La consulta del audit log ordena explícitamente por la columna cronológica real, no por el orden físico | R1 (`at` + desempate `id`, [[design]] D1) | pendiente |
-| 2 | El assert deja de depender del índice: o se ordena de verdad, o se compara como conjunto | R1 (se ordena de verdad; el índice `[1]` pasa a ser legítimo, [[design]] D2) + R2 (la mutación prueba que el orden gobierna la aserción) | pendiente |
-| 3 | Se barre el resto de los e2e buscando el mismo patrón y se reporta lo que aparezca | Barrido hecho en [[design]] D4 (un solo hallazgo: el de R1); R3 fija que el diff no toca nada más y clasifica el delta | pendiente |
-| 4 | La suite e2e completa pasa varias veces seguidas, no una | R4 (3 corridas consecutivas del reviewer + `init.sh`) | pendiente |
+| 1 | La consulta del audit log ordena explícitamente por la columna cronológica real, no por el orden físico | R1 (`at` + desempate `id`, [[design]] D1) | Cubierto por `900b164` |
+| 2 | El assert deja de depender del índice: o se ordena de verdad, o se compara como conjunto | R1 (se ordena de verdad; el índice `[1]` pasa a ser legítimo, [[design]] D2) + R2 (la mutación prueba que el orden gobierna la aserción) | Cubierto por `900b164` y §Mutación (R2) |
+| 3 | Se barre el resto de los e2e buscando el mismo patrón y se reporta lo que aparezca | Barrido hecho en [[design]] D4 (un solo hallazgo: el de R1); R3 fija que el diff no toca nada más y clasifica el delta | Cubierto por §Barrido (R3), sin hallazgos adicionales |
+| 4 | La suite e2e completa pasa varias veces seguidas, no una | R4 (3 corridas consecutivas del reviewer + `init.sh`) | Gate Codex cubierto; reproducción 3× asignada al reviewer |
 
 ## Tests de features anteriores actualizados, no borrados
 
@@ -44,7 +44,7 @@ Convención de commit: `test(e2e-audit-log-order-assert): <desc> (R1)` /
 
 | Test | Feature dueña | Qué cambia y por qué | Commit |
 |---|---|---|---|
-| `test/health-vaccines.e2e-spec.ts::R12: auditoria de mutaciones::'registra create/update/delete y no audita PATCH vacio'` (línea 471 en `5666b85`) | #14 | (a) Nombre: pasa a `'registra create/update/delete en orden cronologico y no audita PATCH vacio (e2e-audit-log-order-assert #76: R1,R2)'` para nombrar esta feature (C4). (b) Consulta: gana `.orderBy(asc(auditLog.at), asc(auditLog.id))`. (c) Aserciones: **intactas** — las mismas dos `expect`, mismo orden esperado, mismo `rows[1].meta`. El `describe` `R12: ...` de #14 no cambia. | pendiente (commit 1) |
+| `test/health-vaccines.e2e-spec.ts::R12: auditoria de mutaciones::'registra create/update/delete y no audita PATCH vacio'` (línea 471 en `5666b85`) | #14 | (a) Nombre: pasa a `'registra create/update/delete en orden cronologico y no audita PATCH vacio (e2e-audit-log-order-assert #76: R1,R2)'` para nombrar esta feature (C4). (b) Consulta: gana `.orderBy(asc(auditLog.at), asc(auditLog.id))`. (c) Aserciones: **intactas** — las mismas dos `expect`, mismo orden esperado, mismo `rows[1].meta`. El `describe` `R12: ...` de #14 no cambia. | `900b164 test(e2e-audit-log-order-assert): order audit log rows before asserting (R1)` |
 
 ## Tests que deben quedar verdes SIN editarse
 
