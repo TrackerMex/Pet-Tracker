@@ -103,5 +103,30 @@ Home sin cambiar la aserción ni su valor esperado.
 
 ## Cierre
 
-Pendiente: suite movil, typecheck, lint, `init.sh`, deltas contra la linea base y
-push final.
+- Suite móvil completa verde: delta **+2 suites**, **+45 tests** y **0 snapshots**
+  respecto a `5666b85`; ningún recuento absoluto se usa como candado.
+- `bun run typecheck`: verde.
+- `bun run lint`: verde, sin errores ni avisos.
+- `pgrep -af 'init\.sh'`: `ninguno` antes del cierre.
+- `env -u FORCE_COLOR bash ./init.sh`: verde de extremo a extremo (build, suites
+  unitarias, infra, móvil, e2e, lint y typecheck).
+- Los seis candados numéricos de `design.md` §6.4 tienen delta **0 respecto a
+  `5666b85`**. El candado de sondeo conserva `initial + 1`; el catálogo, los
+  recuentos de estilos y `TextInput`, y `weekly-activity-chart.test.tsx` no
+  cambian.
+- Los nueve `signOut(` de mutación tienen delta **0 respecto a `5666b85`** y el
+  `signOut` de lectura vive solo en `QueryCache.onSuccess`.
+- `use-api.ts` y su test no existen; el único fichero que contiene la subcadena
+  histórica es `weekly-activity-chart.test.tsx`, cuya aserción quedó intacta.
+- `traceability.md`: R1–R20 cumplidos, sin filas pendientes.
+- No se añadió ninguna variable de entorno ni ninguna dependencia aparte de la
+  autorizada `@tanstack/react-query@5.102.8`; el lock añade únicamente ésta y su
+  `query-core@5.102.8` transitiva.
+
+Avisos no bloqueantes de `init.sh`, ya presentes en la línea base: faltan tres
+claves opcionales en `.env`. También avisa que `STATUS.md` declara 69/86 frente a
+69/87; ese bookkeeping corresponde al leader y esta sesión no tocó
+`feature_list.json` ni `STATUS.md`.
+
+Único gate restante: smoke humano en dev build de Android, no delegable según la
+spec. No se abrió ni se mergeó ningún PR.
