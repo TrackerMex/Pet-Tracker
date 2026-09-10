@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { Pet } from '@/modules/pets/domain/entities/pet.entity';
 import { PetNotFoundError } from '@/modules/pets/domain/errors/pet.errors';
 import { PetDeviceReader } from '@/modules/pets/domain/ports/pet-device-reader';
@@ -200,5 +201,70 @@ describe('R1 (vaccine-due-today-inclusive #82, sustituye a R13 de #14): el perfi
       name: 'Rabia',
       nextDoseAt: '2026-08-10',
     });
+  });
+});
+
+describe('R2 (vaccine-due-today-inclusive #82): zona del owner nula o fuera del catalogo IANA degrada a UTC con warn', () => {
+  let warnSpy: jest.SpyInstance;
+
+  beforeEach(() => {
+    warnSpy = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+  });
+
+  afterEach(() => {
+    warnSpy.mockRestore();
+  });
+
+  it('sin owner activo (null) usa el dia UTC de now y avisa una vez', async () => {
+    const deps = buildDeps();
+    deps.findOwnerTimezone.mockResolvedValue(null);
+    const useCase = new GetPetUseCase(
+      deps.pets,
+      deps.deviceReader,
+      deps.photoUrlResolver,
+      deps.vaccineReader,
+    );
+
+    await useCase.execute(PET_ID, NOW);
+
+    expect(deps.findNextVaccine).toHaveBeenCalledWith(PET_ID, '2026-08-10');
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ petId: PET_ID, timezone: null }),
+    );
+  });
+
+  it("con 'Not/A/Zone' usa el dia UTC de now y avisa una vez", async () => {
+    const deps = buildDeps();
+    deps.findOwnerTimezone.mockResolvedValue('Not/A/Zone');
+    const useCase = new GetPetUseCase(
+      deps.pets,
+      deps.deviceReader,
+      deps.photoUrlResolver,
+      deps.vaccineReader,
+    );
+
+    await useCase.execute(PET_ID, NOW);
+
+    expect(deps.findNextVaccine).toHaveBeenCalledWith(PET_ID, '2026-08-10');
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ petId: PET_ID, timezone: 'Not/A/Zone' }),
+    );
+  });
+
+  it('con zona valida no avisa', async () => {
+    const deps = buildDeps();
+    deps.findOwnerTimezone.mockResolvedValue('America/Mexico_City');
+    const useCase = new GetPetUseCase(
+      deps.pets,
+      deps.deviceReader,
+      deps.photoUrlResolver,
+      deps.vaccineReader,
+    );
+
+    await useCase.execute(PET_ID, NOW);
+
+    expect(warnSpy).not.toHaveBeenCalled();
   });
 });
