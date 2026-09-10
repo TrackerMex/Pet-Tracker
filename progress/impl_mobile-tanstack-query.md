@@ -31,7 +31,7 @@
 | R8 | `cfe1b34` | `15b9eea` | forma minima verde; 10 pantallas antiguas siguen compilando |
 | R9 | `07c4ba5` | `5e00853` | 2 entradas de cache, suite de Docs y typecheck verdes |
 | R10 | `8a46cc7` | `97049e7` | clave con `limit: undefined`; 23 pruebas y typecheck verdes |
-| R11 | `be536d1` | pendiente | plan y perfil ausentes de cache; 21 pruebas heredadas verdes |
+| R11 | `be536d1` | `6966af6` | 2 claves; `retryAll` y refresco tras generar preservados; 22 pruebas y typecheck verdes |
 | R12 | pendiente | pendiente | pendiente |
 | R13 | pendiente | pendiente | pendiente |
 | R14 | pendiente | pendiente | pendiente |

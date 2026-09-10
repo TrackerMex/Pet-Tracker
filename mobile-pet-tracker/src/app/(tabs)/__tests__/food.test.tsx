@@ -11,6 +11,7 @@ import type { ReactNode } from 'react';
 
 import { getNutritionPlan, type NutritionPlanState } from '../../../api/nutrition';
 import { listPets, type PetsState } from '../../../api/pets';
+import { nutritionKeys, petKeys } from '../../../api/query-keys';
 import type { NutritionPlan, PetProfile } from '../../../api/types';
 import * as apiHooks from '../../../hooks/use-api';
 import type { ApiResult } from '../../../hooks/use-api';
@@ -19,6 +20,7 @@ import { LanguageProvider } from '../../../providers/language-provider';
 import { SelectedPetProvider } from '../../../providers/selected-pet-provider';
 import * as selectedPetHooks from '../../../providers/selected-pet-provider';
 import FoodScreen from '../food';
+import { renderWithProviders } from '../../../../test/render-with-providers';
 
 jest.mock('../../../api/pets', () => ({
   listPets: jest.fn(),
@@ -509,6 +511,25 @@ describe('#62 R3: los avisos de plan usan el Card compartido', () => {
     expect(card.props.className).toContain('shadow-sm');
     expect(card.props.className).toContain('bg-default');
     expect(screen.queryAllByTestId(/^plan-warning-/)).toHaveLength(1);
+  });
+});
+
+describe('#87 R12: FoodScreen lee por TanStack Query', () => {
+  it('deja mascotas y plan en sus claves canónicas', async () => {
+    const petsState: PetsState = { kind: 'ok', pets: [makePet()] };
+    const planState: NutritionPlanState = { kind: 'ok', plan: makePlan() };
+    mockListPets.mockResolvedValue(petsState);
+    mockGetNutritionPlan.mockResolvedValue(planState);
+
+    const { queryClient } = await renderWithProviders(<FoodScreen />, {
+      wrapper: FoodWrapper,
+    });
+    await screen.findByTestId('food-plan-card');
+
+    expect(queryClient.getQueryData(petKeys.list())).toEqual(petsState);
+    expect(queryClient.getQueryData(nutritionKeys.plan('pet-1'))).toEqual(
+      planState,
+    );
   });
 });
 

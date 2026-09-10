@@ -22,7 +22,7 @@ tags: [harness, spec]
 | R8 | `usePetSelection` sin `ApiResult` | `src/hooks/use-pet-selection.test.tsx::#87 R8` | rojo `cfe1b34`; verde `15b9eea` | cumplido |
 | R9 | `screens/docs/index.tsx` por TanStack Query | `src/screens/docs/index.test.tsx::#87 R9` | rojo `07c4ba5`; verde `5e00853` | cumplido |
 | R10 | `app/(tabs)/weight-log.tsx` | `src/app/(tabs)/__tests__/weight-log.test.tsx::#87 R10` | rojo `8a46cc7`; verde `97049e7` | cumplido |
-| R11 | `app/(tabs)/meal-schedule.tsx` | `src/app/(tabs)/__tests__/meal-schedule.test.tsx::#87 R11` | rojo `be536d1`; verde — | rojo confirmado |
+| R11 | `app/(tabs)/meal-schedule.tsx` | `src/app/(tabs)/__tests__/meal-schedule.test.tsx::#87 R11` | rojo `be536d1`; verde `6966af6` | cumplido |
 | R12 | `app/(tabs)/food.tsx` | `src/app/(tabs)/__tests__/food.test.tsx::#87 R12` | — | pendiente |
 | R13 | `app/(tabs)/health.tsx` (clave con `limit`) | `src/app/(tabs)/__tests__/health.test.tsx::#87 R13` | — | pendiente |
 | R14 | `screens/reminders/index.tsx` | `src/screens/reminders/index.test.tsx::#87 R14` | — | pendiente |
