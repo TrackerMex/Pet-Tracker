@@ -1,7 +1,6 @@
 import {
   act,
   fireEvent,
-  render,
   screen,
   waitFor,
   within,
@@ -139,7 +138,9 @@ function RemindersWrapper({ children }: { children: ReactNode }) {
 }
 
 async function renderReminders() {
-  return render(<RemindersScreen />, { wrapper: RemindersWrapper });
+  return renderWithProviders(<RemindersScreen />, {
+    wrapper: RemindersWrapper,
+  });
 }
 
 async function confirmDelete(reminderId: string) {

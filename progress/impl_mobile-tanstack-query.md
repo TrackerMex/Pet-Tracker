@@ -34,7 +34,7 @@
 | R11 | `be536d1` | `6966af6` | 2 claves; `retryAll` y refresco tras generar preservados; 22 pruebas y typecheck verdes |
 | R12 | `b4b279e` | `e1df8ef` | `enabled` del plan y candado de revalidacion real verdes; 23 pruebas y typecheck verdes |
 | R13 | `b77c366` | `157a7a8` | 3 claves, peso con `limit: 1`, candado real; 28 pruebas y typecheck verdes |
-| R14 | pendiente | pendiente | pendiente |
+| R14 | `6991074` | pendiente | mascotas y recordatorios ausentes de cache; 21 pruebas heredadas verdes |
 | R15 | pendiente | pendiente | pendiente |
 | R16 | pendiente | pendiente | pendiente |
 | R17 | pendiente | pendiente | pendiente |
@@ -63,6 +63,8 @@ Pendiente.
 - R13, `src/app/(tabs)/health.tsx`: los dos botones de reintento adaptan el evento
   de React Native y `vaccines.isRefreshing` pasa al equivalente v5
   `vaccines.isRefetching`; no cambia ningún valor esperado.
+- R14, `src/screens/reminders/index.tsx`: el botón de reintento adapta el evento;
+  el bloque `useFocusEffect` y el `signOut` de la mutación quedan intactos.
 
 ## Cierre
 
