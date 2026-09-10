@@ -342,3 +342,27 @@ describe('#68 E1: la carta retira connectivity de los enum crudos', () => {
     expect(corollary).toContain('`src/utils/device-connectivity.ts`');
   });
 });
+
+describe('#87 R1: la dependencia queda declarada y fijada', () => {
+  const packageJson = JSON.parse(
+    readFileSync(join(projectRoot, 'package.json'), 'utf8'),
+  ) as {
+    dependencies: Record<string, string>;
+    jest: { transformIgnorePatterns: string[] };
+  };
+  const version = packageJson.dependencies['@tanstack/react-query'];
+
+  it('declares exactly version 5.102.8', () => {
+    expect(version).toBe('5.102.8');
+  });
+
+  it('does not use a semver range', () => {
+    expect(version).not.toMatch(/^[\^~]/);
+  });
+
+  it('keeps TanStack out of transformIgnorePatterns', () => {
+    expect(packageJson.jest.transformIgnorePatterns[0]).not.toContain(
+      '@tanstack',
+    );
+  });
+});
