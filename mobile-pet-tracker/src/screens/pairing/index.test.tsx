@@ -17,6 +17,7 @@ import {
   type ReleaseDeviceState,
 } from '../../api/devices';
 import { listPets, type PetsState } from '../../api/pets';
+import { deviceKeys, petKeys } from '../../api/query-keys';
 import {
   getPetTracking,
   type PetTrackingState,
@@ -26,6 +27,7 @@ import PairingRoute from '../../app/(tabs)/pairing';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
 import { SelectedPetProvider } from '../../providers/selected-pet-provider';
+import { renderWithProviders } from '../../../test/render-with-providers';
 
 jest.mock('../../api/devices', () => ({
   claimDevice: jest.fn(),
@@ -806,6 +808,36 @@ describe('R9: desvincular pide confirmación nativa, libera el collar y vuelve a
     });
     await waitFor(() =>
       expect(screen.getByTestId('device-unpair')).not.toBeDisabled(),
+    );
+  });
+});
+
+describe('#87 R15: PairingScreen lee por TanStack Query', () => {
+  it('deja mascotas y tracking en sus claves canónicas', async () => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    const petsState: PetsState = {
+      kind: 'ok',
+      pets: [makePet({ device: makeDevice() })],
+    };
+    const trackingState: PetTrackingState = { kind: 'ok', tracked: true };
+    mockListPets.mockResolvedValue(petsState);
+    mockGetPetTracking.mockResolvedValue(trackingState);
+
+    const { queryClient } = await renderWithProviders(<PairingRoute />, {
+      wrapper: PairingWrapper,
+    });
+    await screen.findByTestId('plan-tracked');
+
+    expect(queryClient.getQueryData(petKeys.list())).toEqual(petsState);
+    expect(queryClient.getQueryData(deviceKeys.tracking('pet-1'))).toEqual(
+      trackingState,
     );
   });
 });

@@ -25,7 +25,7 @@ tags: [harness, spec]
 | R11 | `app/(tabs)/meal-schedule.tsx` | `src/app/(tabs)/__tests__/meal-schedule.test.tsx::#87 R11` | rojo `be536d1`; verde `6966af6` | cumplido |
 | R12 | `app/(tabs)/food.tsx` | `src/app/(tabs)/__tests__/food.test.tsx::#87 R12` | rojo `b4b279e`; verde `e1df8ef` | cumplido |
 | R13 | `app/(tabs)/health.tsx` (clave con `limit`) | `src/app/(tabs)/__tests__/health.test.tsx::#87 R13` | rojo `b77c366`; verde `157a7a8` | cumplido |
-| R14 | `screens/reminders/index.tsx` | `src/screens/reminders/index.test.tsx::#87 R14` | rojo `6991074`; verde — | rojo confirmado |
+| R14 | `screens/reminders/index.tsx` | `src/screens/reminders/index.test.tsx::#87 R14` | rojo `6991074`; verde `0baba1d` | cumplido |
 | R15 | `screens/pairing/index.tsx` (dos `useFocusEffect`) | `src/screens/pairing/index.test.tsx::#87 R15` | — | pendiente |
 | R16 | `screens/profile/index.tsx` | `src/screens/profile/index.test.tsx::#87 R16` | — | pendiente |
 | R17 | `screens/home/index.tsx` | `src/screens/home/index.test.tsx::#87 R17` | — | pendiente |
