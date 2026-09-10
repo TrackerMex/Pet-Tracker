@@ -38,7 +38,7 @@
 | R15 | `c204287` | `79363d9` | condicion triple, 2 focos y 2 mutaciones verdes; 48 pruebas y typecheck verdes |
 | R16 | `9f0e27e` | `f9afe6a` | 3 claves y 3 ficheros de montaje verdes; 35 pruebas y typecheck verdes |
 | R17 | `9a5476e` | `bbc6193` | 4 claves, foco limitado y candado real; 112 pruebas y typecheck verdes |
-| R18 | `6afcc38` | pendiente | 4 entradas ausentes de cache; 48 pruebas heredadas verdes |
+| R18 | `6afcc38` | `5fa6c6e` | 4 claves, sondeo de 15 s y ruta excluida preservados; 49 pruebas verdes |
 | R19 | pendiente | pendiente | pendiente |
 | R20 | pendiente | pendiente | pendiente |
 
