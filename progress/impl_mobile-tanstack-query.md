@@ -38,7 +38,7 @@
 | R15 | `c204287` | `79363d9` | condicion triple, 2 focos y 2 mutaciones verdes; 48 pruebas y typecheck verdes |
 | R16 | `9f0e27e` | `f9afe6a` | 3 claves y 3 ficheros de montaje verdes; 35 pruebas y typecheck verdes |
 | R17 | `9a5476e` | `bbc6193` | 4 claves, foco limitado y candado real; 112 pruebas y typecheck verdes |
-| R18 | pendiente | pendiente | pendiente |
+| R18 | `6afcc38` | pendiente | 4 entradas ausentes de cache; 48 pruebas heredadas verdes |
 | R19 | pendiente | pendiente | pendiente |
 | R20 | pendiente | pendiente | pendiente |
 
@@ -74,6 +74,14 @@ Pendiente.
 - R17, `src/screens/home/index.test.tsx`: se añadieron esperas de disponibilidad
   antes de las aserciones ya existentes de accesos rápidos, copy inglesa y filas
   de recordatorio/vacuna. Ningún matcher ni valor esperado cambió.
+- R18, `src/app/(tabs)/map.tsx`: los dos botones de reintento adaptan el evento;
+  el `useFocusEffect`, su intervalo de 15 s y la exclusión de la ruta quedan
+  intactos.
+- R18, `src/app/(tabs)/__tests__/map.test.tsx`: la primera aserción del marcador
+  del test de sondeo se envolvió en `waitFor` sin cambiar su valor. El helper usa
+  el mismo `createQueryClient` de producción con `gcTime: 0` y acepta el callback
+  del arnés, conservando verdes las dos aserciones heredadas de `unauthorized` sin
+  duplicar el interceptor.
 
 ## Cierre
 

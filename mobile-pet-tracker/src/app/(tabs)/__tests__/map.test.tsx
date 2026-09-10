@@ -1,7 +1,6 @@
 import {
   act,
   fireEvent,
-  render,
   screen,
   waitFor,
   within,
@@ -221,7 +220,10 @@ function MapWrapper({ children }: { children: ReactNode }) {
 }
 
 async function renderMap() {
-  await render(<MapScreen />, { wrapper: MapWrapper });
+  await renderWithProviders(<MapScreen />, {
+    wrapper: MapWrapper,
+    onUnauthorized: () => void mockUseAuth().signOut(),
+  });
 }
 
 beforeEach(() => {
@@ -716,12 +718,14 @@ describe('R9: polling con foco', () => {
       await Promise.resolve();
     });
 
-    expect(screen.getByTestId('map-view').props.markers).toEqual([
-      {
-        id: 'last-position',
-        coordinates: { latitude: 19.4326, longitude: -99.1332 },
-      },
-    ]);
+    await waitFor(() =>
+      expect(screen.getByTestId('map-view').props.markers).toEqual([
+        {
+          id: 'last-position',
+          coordinates: { latitude: 19.4326, longitude: -99.1332 },
+        },
+      ]),
+    );
     expect(mockFocusCleanup).toEqual(expect.any(Function));
     const initialLastCalls = mockGetLastPosition.mock.calls.length;
     const initialPositionsCalls = mockListPositions.mock.calls.length;

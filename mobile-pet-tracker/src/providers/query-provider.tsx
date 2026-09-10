@@ -17,6 +17,7 @@ function isUnauthorized(data: unknown): boolean {
 
 export function createQueryClient(
   onUnauthorized: () => void = () => undefined,
+  gcTime = 5 * 60 * 1000,
 ): QueryClient {
   return new QueryClient({
     queryCache: new QueryCache({
@@ -27,7 +28,7 @@ export function createQueryClient(
     defaultOptions: {
       queries: {
         staleTime: 0,
-        gcTime: 5 * 60 * 1000,
+        gcTime,
         retry: false,
         refetchOnWindowFocus: false,
         refetchOnReconnect: false,
