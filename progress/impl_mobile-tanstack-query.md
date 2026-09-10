@@ -25,7 +25,7 @@
 | R2 | `a231cdd` | `492cdab` | 5 aserciones rojas por opciones ausentes; test focal y typecheck verdes |
 | R3 | `af1ac31` | `3cd184f` | 3 rojos por proveedor ausente; helper aislado y typecheck verdes |
 | R4 | `cbceb6b` | `50cb93a` | orden y sonda verdes; el test desmonta y limpia su cliente para no dejar el timer de `gcTime` abierto |
-| R5 | `49dc149` | pendiente | `unauthorized` rojo: `signOut` recibió 0 llamadas en vez de 1 |
+| R5 | `49dc149` | `171ed65` | `unauthorized` rojo 0/1; callback global verde y no actúa sobre `ok`/`unreachable` |
 | R6 | pendiente | pendiente | pendiente |
 | R7 | pendiente | pendiente | pendiente |
 | R8 | pendiente | pendiente | pendiente |

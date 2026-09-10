@@ -1,4 +1,5 @@
 import {
+  act,
   cleanup,
   render,
   screen,
@@ -28,6 +29,12 @@ function QueryProbe({ result }: { result: { kind: string; message?: string } }) 
   });
 
   return <Text testID="query-result">{query.data?.kind ?? 'loading'}</Text>;
+}
+
+function ClientProbe() {
+  mountedClient = useQueryClient();
+
+  return <Text>client ready</Text>;
 }
 
 describe('#87 R2: el QueryClient fija sus cinco mandos', () => {
@@ -112,5 +119,73 @@ describe('#87 R5: unauthorized expulsa desde un único sitio', () => {
       ),
     );
     expect(mockSignOut).not.toHaveBeenCalled();
+  });
+});
+
+describe('#87 R6: cerrar sesión vacía la caché', () => {
+  afterEach(async () => {
+    await cleanup();
+    mountedClient?.clear();
+    mountedClient = undefined;
+  });
+
+  it('clears cached server data when auth becomes unauthenticated', async () => {
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'test-token',
+      signIn: jest.fn(),
+      signOut: mockSignOut,
+    });
+    const result = await render(
+      <QueryProvider>
+        <ClientProbe />
+      </QueryProvider>,
+    );
+    await act(() => mountedClient?.setQueryData(['probe'], 'v1'));
+
+    mockUseAuth.mockReturnValue({
+      status: 'unauthenticated',
+      token: null,
+      signIn: jest.fn(),
+      signOut: mockSignOut,
+    });
+    await result.rerender(
+      <QueryProvider>
+        <ClientProbe />
+      </QueryProvider>,
+    );
+
+    await waitFor(() =>
+      expect(mountedClient?.getQueryData(['probe'])).toBeUndefined(),
+    );
+  });
+
+  it('keeps cached data while auth finishes loading successfully', async () => {
+    mockUseAuth.mockReturnValue({
+      status: 'loading',
+      token: null,
+      signIn: jest.fn(),
+      signOut: mockSignOut,
+    });
+    const result = await render(
+      <QueryProvider>
+        <ClientProbe />
+      </QueryProvider>,
+    );
+    await act(() => mountedClient?.setQueryData(['probe'], 'v1'));
+
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'test-token',
+      signIn: jest.fn(),
+      signOut: mockSignOut,
+    });
+    await result.rerender(
+      <QueryProvider>
+        <ClientProbe />
+      </QueryProvider>,
+    );
+
+    expect(mountedClient?.getQueryData(['probe'])).toBe('v1');
   });
 });
