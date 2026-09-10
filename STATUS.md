@@ -1,7 +1,7 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-09-09
-**Features completadas**: 68/86 (`feature_list.json`)
+**Última actualización**: 2026-09-10
+**Features completadas**: 69/86 (`feature_list.json`)
 **En progreso**: ninguna
 
 **Pendientes**: 15 (#18, #41, #60, #63, #70, #72-#81). El rediseño contra el diseño del Make abrió el bloque #64-#71: #64, #65, #66, #67, #68 y #69 están cerradas y **mergeadas** (PR #106, #110, #111, #112, #113 y #114). #71 `mobile-home-quick-actions` está cerrada con los dos gates humanos firmados; **PR pendiente de merge por el humano**. Del bloque solo queda **#70 recordatorios**, sin especificar, y con la mitad del diseño bloqueada porque `nextReminder` y `activitySummary` siguen a `null` en el mapper del perfil. Deuda registrada: #72 flake de add-pet; #73 `pet-online-pill`; #74 el selector que TalkBack lee como tres controles sueltos; #75 `init.sh` aborta en falso con `FORCE_COLOR`; #76 un e2e que asserta orden sobre un `SELECT` sin `ORDER BY`; #77 el peso visible sin collar; #80 los `testID` del doble atados al componente; #81 la receta tipográfica del tile sin candado. #78 y #79 entraron desde otra sesión.
@@ -87,6 +87,23 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
+- **`e2e-audit-log-order-assert` (#76) done** (2026-09-10): el test de auditoría
+  de vacunas (`backend-pet-tracker/test/health-vaccines.e2e-spec.ts`, R12 de #14)
+  asertaba una secuencia create→update→delete sobre un `db.select()` **sin
+  `orderBy`**; pasaba por suerte y puso `init.sh` rojo en `main` (9358cc7) bajo
+  carga. Ahora ordena por `(at, id)`. Diff de un solo archivo y cero producción.
+  - **Sin commit rojo, y firmado**: el defecto es el propio test, así que no hay
+    rojo reproducible; la evidencia C4 es una mutación `asc`→`desc` no
+    versionada que Codex ejecutó y el `reviewer` reprodujo (falla solo por la
+    aserción, `Received` invertido). Excepción aceptada por el humano en la
+    misma firma de la spec.
+  - **Barrido**: es el único `select` sin `orderBy` con aserción ordenada en
+    todo `test/`; los demás son order-safe (lista en `design.md` D4).
+  - **Estabilidad**: tres corridas consecutivas de la suite e2e con el mismo
+    `Tests: 354 passed`, más `init.sh` exit 0.
+  - **Primera feature cerrada desde un worktree propio** (`Pet-Tracker-wt-backend`)
+    en paralelo con la sesión Frontend (#78/#87), coordinando el Postgres
+    compartido por `pgrep` y aviso cruzado antes de cada `init.sh`.
 - **`mobile-home-reminders-real-data` (#85) done** (2026-09-10): la Home enseña
   la próxima vacuna como **primera fila fija** y debajo hasta **tres
   recordatorios reales**, sólo pendientes y futuros, por fecha ascendente.
@@ -1060,6 +1077,13 @@ debe listar las 4 URLs de cola.
 
 ## Última sesión
 
+- **2026-09-10** — **#76 `e2e-audit-log-order-assert` cerrada** en el día:
+  spec, gate humano, Codex CLI en el worktree `Pet-Tracker-wt-backend`, y
+  `reviewer` aprobado a la primera sobre fdf81c8. Sesión Backend en paralelo
+  con la Frontend (#78 en espera, #87 en spec); dos worktrees, un Postgres,
+  cero colisiones gracias al aviso cruzado antes de cada `init.sh`. Sigue
+  **#82** (`vaccine-due-today-inclusive`) como siguiente backend sin decisión
+  humana pendiente.
 - **2026-09-06** — **#65 `mobile-ui-language` cerrada** tras tres enmiendas
   firmadas y **un rechazo del `reviewer` que valió la pena**. El candado de
   R18 —el que garantiza que no queda copy suelta— tenía **regiones ciegas en 11

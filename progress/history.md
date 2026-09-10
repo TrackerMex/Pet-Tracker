@@ -3176,3 +3176,29 @@ logica de aplicacion. Reporte en `progress/impl_db-migrate-script.md`.
   de icono" y la spec lo copio en prosa sin convertirlo en `expect`. Y en
   memoria, [[sujeto-ausente-en-tasks]].
 
+
+## #76 e2e-audit-log-order-assert (cerrada 2026-09-10)
+
+- **Qué entrega**: `backend-pet-tracker/test/health-vaccines.e2e-spec.ts` ordena
+  la consulta del audit log por `(at, id)` antes de asertar la secuencia
+  create→update→delete. Diff de un archivo, tres ediciones, cero producción.
+- **Por qué existía**: sin `ORDER BY` el orden de un `SELECT` no está definido;
+  aislado pasaba, con la suite entera y el heap con huecos cayó en `main`
+  9358cc7 el 2026-09-08.
+- **C4 sin rojo, por escrito**: el defecto es el test, no hay rojo reproducible.
+  La evidencia es una mutación `asc`→`desc` no versionada, ejecutada por Codex y
+  reproducida por el reviewer (falla solo ese `it`, solo por `toEqual`, `Received`
+  invertido). El humano firmó la excepción en la misma casilla de aprobación.
+- **Barrido (R3)**: único hallazgo en `test/`; los demás `select` multi-fila
+  son order-safe (`toHaveLength`, `.find()`, `arrayContaining`). Verificado
+  línea a línea por el spec_author, repetido por Codex y por el reviewer.
+- **Estabilidad (R4)**: tres corridas consecutivas de la suite e2e, mismo
+  `Tests: 354 passed, 362 total`, más `env -u FORCE_COLOR bash ./init.sh` exit 0.
+- **Cómo se trabajó**: primera feature desde un worktree propio
+  (`/home/claude/sites/Pet-Tracker-wt-backend`) con la sesión Frontend activa en
+  el árbol principal. Protocolo: `pgrep -af 'init\.sh'` antes de cada gate y
+  aviso cruzado por SendMessage; `feature_list.json` editado por línea, nunca
+  con dump del JSON. Cero colisiones.
+- **Deuda que toca**: #75 (`FORCE_COLOR` rompe `init.sh`) sigue abierta; todo
+  gate se corre con `env -u FORCE_COLOR`. Siguiente backend sin decisión humana
+  pendiente: #82.

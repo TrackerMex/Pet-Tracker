@@ -1,6 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { and, eq, inArray } from 'drizzle-orm';
+import { and, asc, eq, inArray } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import request from 'supertest';
 import { App } from 'supertest/types';
@@ -468,7 +468,7 @@ describe('Health vaccines (e2e)', () => {
   });
 
   describe('R12: auditoria de mutaciones', () => {
-    it('registra create/update/delete y no audita PATCH vacio', async () => {
+    it('registra create/update/delete en orden cronologico y no audita PATCH vacio (e2e-audit-log-order-assert #76: R1,R2)', async () => {
       const owner = await seedUser('r12');
       const pet = await seedPet(owner);
       const created = await postVaccine(owner, pet.id, {
@@ -493,7 +493,8 @@ describe('Health vaccines (e2e)', () => {
       const rows = await db
         .select()
         .from(auditLog)
-        .where(and(eq(auditLog.entity, 'vaccine'), eq(auditLog.entityId, id)));
+        .where(and(eq(auditLog.entity, 'vaccine'), eq(auditLog.entityId, id)))
+        .orderBy(asc(auditLog.at), asc(auditLog.id));
       expect(rows.map((row) => row.action)).toEqual([
         'vaccine.create',
         'vaccine.update',
