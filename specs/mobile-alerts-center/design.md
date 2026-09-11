@@ -1,6 +1,6 @@
 ---
 feature: "mobile-alerts-center"
-status: draft        # draft | approved
+status: approved     # draft | approved  (enmendado por E1-E8 de [[requirements]])
 tags: [harness, spec]
 ---
 
@@ -51,34 +51,32 @@ del brief ("¿hay alguna alerta?") con la información que el backend sí garant
 La puerta al contador es una feature de backend (`GET /v1/alerts/count` o
 `unreadCount` en la lista), no un apaño de cliente.
 
-### D3 — Datos: `useApi` + overlay local, porque aquí no hay TanStack Query
+### D3 — Datos: `useInfiniteQuery` para las páginas, overlay local para el ack
 
 **Sirve a**: R4, R8, R9, R11.
+**Reescrito el 2026-09-11 por las enmiendas E1, E3, E5 y E6** de
+[[requirements]]: la versión original de esta decisión se apoyaba en
+`src/hooks/use-api.ts`, que #87 borró al migrar el repo a TanStack Query
+(`@tanstack/react-query` 5.102.8, `main` @ `cea72945`). La **mitad del overlay
+sobrevive intacta**; la mitad del fetching se sustituye.
 
-`mobile-pet-tracker/package.json` no tiene `@tanstack/react-query` ni ninguna
-otra librería de fetching. El repo entero usa `src/hooks/use-api.ts`
-(`useApi(fn) → {data, isRefreshing, refetch}`, con `signOut()` automático en
-`unauthorized`) más `useFocusEffect` para recargar al volver a una pantalla.
-El diseño se pliega a eso:
-
-- **Home**: `useApi(alertsFn)` con `alertsFn` memoizada por `useCallback`
-  (`[baseUrl, token]`), y `alerts.refetch` añadido al `useFocusEffect` que ya
-  existe. El punto rojo es `data?.kind === 'ok' && data.items.length > 0`.
-- **Centro de alertas**: `useApi` resuelve **la primera página** (conserva el
-  `signOut` gratis) y la pantalla añade dos piezas de estado local, cada una con
-  una responsabilidad:
+- **Home**: `useQuery` con `alertKeys.open()` (E2) y
+  `queryFn: () => listAlerts(baseUrl, token ?? '', 'open')`. El punto rojo es
+  `data?.kind === 'ok' && data.items.length > 0`, y `refetch` entra en el
+  `useFocusEffect` que Home ya tiene. Home **no** llama a `signOut`: lo hace el
+  `QueryCache` del `QueryProvider` para toda la app.
+- **Centro de alertas**: `useInfiniteQuery` con `alertKeys.list()` resuelve
+  **todas** las páginas (ver el bloque exacto en R9), y la pantalla conserva
+  **una sola** pieza de estado local, la que la librería no puede dar:
 
   ```ts
-  const first = useApi(alertsFn);                       // página 1
-  const [more, setMore] = useState<Alert[]>([]);        // páginas 2..n, en orden
-  const [cursor, setCursor] = useState<string | null>();// undefined = usa el de la página 1
   const [acked, setAcked] = useState<Record<string, Alert>>({}); // overlay del ack
   ```
 
   y el render se compone así, **en este orden y no otro**:
 
   ```ts
-  const fetched  = first.data?.kind === 'ok' ? [...first.data.items, ...more] : [];
+  const fetched  = alerts.data?.pages.flatMap(p => p.kind === 'ok' ? p.items : []) ?? [];
   const ordered  = [...fetched.filter(a => a.status === 'open'),
                     ...fetched.filter(a => a.status !== 'open')];   // R7, sobre el status DESCARGADO
   const rows     = ordered.map(a => acked[a.id] ?? a);              // R8, solo apariencia
@@ -88,10 +86,18 @@ El diseño se pliega a eso:
   al pulsar su ack (R7). El overlay es lo que hace literal el "sin recargar la
   pantalla" (R8): no hay refetch, no hay remonta, no hay parpadeo.
 
+  **Por qué el overlay y no `setQueryData`** (la pregunta que ahora se hace
+  sola): parchear el `status` dentro de la caché infinita recalcularía la
+  partición de R7 y la fila saltaría de grupo bajo el dedo — la alternativa A9,
+  ya descartada. La caché guarda lo que dijo el servidor; el overlay guarda lo
+  que el usuario acaba de hacer.
+
 **Alternativa que se descarta aquí y no en §Alternativas** por ser la trampa
-obvia: sembrar un `useState` con los items de la página 1 mediante un `useEffect`.
-Es la fuente clásica de estado desincronizado y obliga a un guard de "solo la
-primera vez". El overlay no necesita sincronizar nada.
+obvia: sembrar un `useState` con los items de las páginas mediante un
+`useEffect`. Es la fuente clásica de estado desincronizado y obliga a un guard de
+"solo la primera vez". Con `useInfiniteQuery` ya no hay ni tentación: la caché es
+la única fuente de las filas descargadas, y el overlay —que no sincroniza nada—
+es la única fuente de la apariencia del ack.
 
 ### D4 — Una sola lista, de todas las mascotas, con `petName`
 
@@ -224,7 +230,10 @@ criterio de `init.sh` es "exit 0", no un número de tests.
 | `src/api/types.ts` | `AlertType`, `AlertStatus`, `interface Alert` al final, junto a `Reminder` | R1 |
 | `src/i18n/catalog.ts` | +14 claves en `en` y en `es` | R3 |
 | `src/providers/__tests__/language-provider.test.tsx` | `+ 14` en la suma de la línea 41 y `describe` nuevo al final | R3 |
-| `src/screens/home/index.tsx` | `useApi` de alertas, `refetch` en el `useFocusEffect` existente, `home-hero-actions` con switcher + campana + punto | R10, R11 |
+| `src/screens/home/index.tsx` | `useQuery` de alertas con `alertKeys.open()`, su `refetch` en el `useFocusEffect` existente, `home-hero-actions` con switcher + campana + punto. **Cero `signOut`, cero `queryKey` literal** (candados de #87 R19) | R10, R11 |
+| `src/api/query-keys.ts` | `alertKeys` con `list()` y `open()` (enmienda E2) | R1, R9, R11 |
+| `src/api/__tests__/query-keys.test.ts` | dos filas nuevas en el array `cases`, dominio `'alerts'` | R1 |
+| `src/__tests__/design-drift.test.ts` | una fila en el mapa `screenSignOutCalls`: `'screens/alerts/index.tsx': 1` (enmienda E8) | R8, R13 |
 | `src/screens/home/index.test.tsx` | `jest.mock('../../api/alerts')` y los `describe` de R10 y R11 | R10, R11 |
 | `src/__tests__/ui-copy-table.ts` | `R12_ALERTS`, en `ALL_USES` y en el array `blocks` de su test interno; +2 filas en `R3_HOME` | R12 |
 | `src/__tests__/ui-language.test.ts` | `19 + 2 + 1`, `21 + 15 + 1 + 4 + 7 + 2`, `describe` de #78 R12 | R12 |
@@ -234,8 +243,10 @@ criterio de `init.sh` es "exit 0", no un número de tests.
 
 `src/components/pet-hero-header.tsx`, `src/components/pet-switcher.tsx`,
 `src/components/floating-tab-bar.tsx`, `src/app/(tabs)/_layout.tsx`,
-`src/utils/category-palette.ts`, `src/hooks/use-api.ts`, `src/theme/global.css`,
-`package.json` y **todo** `backend-pet-tracker/`.
+`src/utils/category-palette.ts`, `src/providers/query-provider.tsx`,
+`test/render-with-providers.tsx`, `src/theme/global.css`, `package.json` (**cero
+dependencias nuevas**: `@tanstack/react-query` ya está instalada y fijada por
+#87) y **todo** `backend-pet-tracker/`.
 
 ---
 
@@ -296,6 +307,16 @@ AlertResponse = { id, petId, petName, type, status, geofenceId, payload,
 - **A9 — Reordenar la lista después de aplicar el ack.** Descartada por R7: la
   fila saltaría bajo el dedo justo al pulsarla.
 - **A10 — Instalar `@tanstack/react-query` para resolver caché e invalidación.**
-  Descartada: sería la primera librería de fetching del repo, obligaría a
-  envolver la app en un provider nuevo y a convivir con `useApi` en 19 pantallas.
-  Cambio de arquitectura transversal, no parte de esta feature.
+  Descartada **en su día y por el motivo correcto** —era un cambio de
+  arquitectura transversal, no parte de esta feature— y **resuelta por la vía
+  larga**: el humano abrió #87 para hacer esa migración entera y la mergeó el
+  2026-09-11 (`cea72945`). Esta feature ya no instala nada: **consume** lo que
+  #87 dejó. Ver E1-E6 de [[requirements]].
+- **A11 — `invalidateQueries` tras el ack para apagar el punto rojo.**
+  Descartada por E6: `staleTime: 0` + `refetchOnMount` y el `refetch` por foco de
+  Home ya lo cubren sin una línea nueva, y adoptarla metería el primer
+  `useQueryClient` de producción del repo para acoplar dos pantallas. La
+  condición exacta que la revive está escrita en E6.
+- **A12 — `useMutation` para el ack.** Descartada por E5: tras #87 el repo tiene
+  cero `useMutation`; las mutaciones son llamadas planas más `refetch`. El ack no
+  necesita reintentos ni estado global, y su efecto en pantalla es el overlay.

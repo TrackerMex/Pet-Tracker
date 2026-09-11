@@ -1,6 +1,6 @@
 ---
 feature: "mobile-alerts-center"
-status: draft        # draft | approved
+status: approved     # draft | approved  (enmendada tras #87, ver §Enmiendas)
 tags: [harness, spec]
 ---
 
@@ -97,7 +97,7 @@ feature aparte. **Decisión cerrada: punto rojo, sin número** (R11).
 | Orden del feed | `alert.drizzle.repository.ts:93`: `ORDER BY opened_at DESC, id DESC`. Sin `?status=` llegan **las tres** situaciones mezcladas, más nuevas primero |
 | Cursor | `cursor.ts:23-33` sobre `(openedAtMs, id)`, base64url, versión 1. Un cursor emitido con otro `?status=` es **400** (`list-alerts.use-case.ts:80-82`): un cursor **nunca** se reusa entre filtros distintos |
 | Autorización | `INNER JOIN pet_users … status='active'` en las dos consultas: `/v1/alerts` es **del usuario**, no de una mascota. No existe `?petId=` y pedirlo sería 400 por `strictObject` |
-| TanStack Query | **no está instalado**. `mobile-pet-tracker/package.json` no tiene `@tanstack/react-query` ni ninguna librería de data-fetching. El repo usa el hook propio `src/hooks/use-api.ts` (`useApi(fn)` → `{data, isRefreshing, refetch}`) más `useFocusEffect`. **No hay query keys que invalidar** (ver D3 en [[design]]) |
+| TanStack Query | **DEROGADA el 2026-09-11 por la enmienda E1**. Era cierta cuando se escribió esta spec (`main` @ `5666b85`). Hoy `@tanstack/react-query` **5.102.8** está instalado y es obligatorio: lo trajo #87, mergeada en `main` (`cea72945`, PR #121), que además **borró** `src/hooks/use-api.ts`. Ver §Enmiendas E1 |
 | Mecanismo "no es pestaña" | `floating-tab-bar.tsx:49-55` define un `const TABS` de módulo con exactamente cinco entradas (`home, map, health, food, profile`) y **solo itera sobre ese array** (`:155`), buscando cada nombre en `state.routes` y devolviendo `null` si no lo encuentra (`:156-162`). Una ruta de `(tabs)/` que no esté en `TABS` **no puede** pintar píldora. Además `tabWidth = (containerWidth - 16) / TABS.length` (`:77`): tocar `TABS` recolocaría las cinco pestañas. `(tabs)/_layout.tsx:26-30` declara los mismos cinco `<Tabs.Screen>`. Precedente vivo: `reminders.tsx`, `pairing.tsx`, `add-reminder.tsx`, `weight-log.tsx`, `meal-schedule.tsx`, `pets/add.tsx` y `pets/[petId]/docs.tsx` existen bajo `(tabs)/`, no están en `TABS` ni en `_layout.tsx`, y no son pestañas |
 | Iconos disponibles | `reicon-react-native` exporta `Bell`, `BatteryLow` (`index.d.ts:255`), `LocationSlash` (`:1415`) y `CheckCircle`. No hay que instalar nada |
 | Tokens `*-soft` de severidad | `bg-danger-soft`, `bg-warning-soft` y `text-warning-strong` existen (`node_modules/heroui-native/src/styles/theme.css:87,91` y `src/theme/global.css:20`) y ya se usan en `screens/reminders/index.tsx:298,329` |
@@ -167,6 +167,20 @@ export interface Alert {
 
 El orden de los items **se conserva tal cual llega**: `src/api/alerts.ts` no
 ordena, no filtra y no agrupa.
+
+**AND (enmienda E2)** `src/api/query-keys.ts` exportará `alertKeys` con las dos
+claves que consumen R9 y R11, en el mismo estilo que `healthKeys.weights`:
+
+```ts
+export const alertKeys = {
+  list: () => ['alerts', 'list'] as const,
+  open: () => ['alerts', 'list', { status: 'open' }] as const,
+};
+```
+
+No es cosmética: `design-drift.test.ts:438-446` (`#87 R19`) **prohíbe** un
+`queryKey: [` literal en `src/screens/home/index.tsx`, así que la campana no
+puede escribir su clave a mano.
 
 **Test**: `src/api/__tests__/alerts.test.ts::#78 R1: listAlerts mapea la
 respuesta por kind` — mismo andamiaje que `src/api/__tests__/activity.test.ts:1-18`
@@ -289,11 +303,26 @@ excepción A9, porque esta pantalla **no** lleva cabecera a sangre), `className=
    Esta rama es también la que ve un usuario cuyas mascotas no tienen suscripción
    vigente (§0.2 D1).
 6. **Cargada**: una fila por item, con `testID={"alert-row-" + item.id}`.
-7. `kind === 'unauthorized'` no pinta nada propio: `useApi` ya llama a `signOut()`
-   (`src/hooks/use-api.ts:29`).
+7. `kind === 'unauthorized'` no pinta nada propio **(enmienda E4)**: el
+   `QueryCache` del `QueryProvider` llama a `signOut()` en cuanto **cualquier**
+   query resuelve `{kind:'unauthorized'}` (`src/providers/query-provider.tsx:23-27`
+   y `:41-47`). La pantalla no llama a `signOut` por esta vía.
 
 Los tres estados son **excluyentes**: en cualquier render hay como mucho uno de
 `alerts-loading` / `alerts-error` / `alerts-empty`, y ninguno cuando hay filas.
+
+**De dónde sale cada estado (enmienda E4)**, con la query infinita de E3:
+
+| Estado | Condición exacta |
+|---|---|
+| cargando | `alerts.isPending` (aún no hay primera página) |
+| error | `alerts.data.pages[0].kind` ∈ `error \| unreachable \| missing-config` |
+| vacío | `alerts.data.pages[0].kind === 'ok'` y **cero** items sumando todas las páginas `ok` |
+| cargada | hay al menos un item |
+
+`isError` de la query **nunca** se usa: `listAlerts` no lanza, devuelve unión
+discriminada, así que para TanStack toda página es un éxito. El `onPress` de
+`alerts-retry` es `() => void alerts.refetch()`.
 
 **Test**: `src/screens/alerts/index.test.tsx::#78 R4: la pantalla pinta su
 esqueleto, su error, su vacío y sus filas` — cinco `it` (cargando / error /
@@ -462,13 +491,21 @@ y conserva la posición tras el ack` — dos `it`: (a) una página con
 la lista, y se limpia al iniciar el siguiente ack — mismo patrón que
 `screens/reminders/index.tsx:66,195-199`.
 
-**Cómo se entera la campana** (la pregunta que el enunciado planteaba como
-"invalidación de TanStack Query"): **no hay TanStack Query en este repo** (§0.4).
-El punto rojo de Home se recalcula porque Home reejecuta su `useFocusEffect` al
-recuperar el foco, y R11 mete el refetch de alertas dentro de ese mismo callback.
-No hay ninguna query key que nombrar; el mecanismo exacto es
-`useApi(alertsFn).refetch` invocado desde el `useFocusEffect` de
-`src/screens/home/index.tsx:221-226`.
+**Cómo se entera la campana (enmienda E5/E6)**: el punto rojo de Home se
+recalcula al volver a Home, por los dos caminos que #87 ya dejó montados y que no
+cuestan una línea de código nueva —`staleTime: 0` con `refetchOnMount` por
+defecto (`src/providers/query-provider.tsx:29-36`), y el `refetch` de la query de
+la campana dentro del `useFocusEffect` que Home ya tiene
+(`src/screens/home/index.tsx:216-221`, R11)—. **No se usa `invalidateQueries`**:
+ver E6 para el motivo y para la condición exacta que lo reviviría.
+
+**El ack no pasa por `useMutation`** (enmienda E5): sigue siendo la llamada plana
+`ackAlert` más el overlay local de [[design]] D3, que es lo que congela la
+posición de la fila (R7). `setQueryData` sobre la caché infinita queda
+**descartado** por lo mismo: reescribir el `status` en la caché movería la fila
+de grupo bajo el dedo. La rama `unauthorized` de esta tabla **sí** la resuelve la
+pantalla con `signOut()` de `useAuth`, porque un ack no es una query y no pasa
+por el `QueryCache`.
 
 **Test**: `src/screens/alerts/index.test.tsx::#78 R8: el ack cambia la fila sin
 recargar la lista` — un `it` por fila de la tabla, más uno que afirma
@@ -481,19 +518,46 @@ afirma que dos `fireEvent.press` seguidos dejan
 **WHEN** el `FlatList` `alerts-list` emite `onEndReached`
 **THE SYSTEM SHALL**:
 
-- si el último `nextCursor` conocido es un `string`: llamar
-  `listAlerts(baseUrl, token, undefined, nextCursor)` **una sola vez** y añadir
-  `items` al final de lo ya cargado, sustituyendo el `nextCursor` por el de la
-  respuesta nueva;
-- si el último `nextCursor` conocido es `null`: **no** llamar a `listAlerts`;
-- si ya hay una página en vuelo: **no** lanzar una segunda.
+**(reescrito por la enmienda E3: la acumulación manual de páginas la hace
+`useInfiniteQuery`, no `useState`.)**
+
+- llamar `alerts.fetchNextPage()` **una sola vez**, guardada por
+  `if (!alerts.hasNextPage || alerts.isFetchingNextPage) return;`;
+- si el último `nextCursor` conocido es `null` (o la última página no es `ok`):
+  `hasNextPage` es `false` y **no** se llama a `listAlerts`;
+- si ya hay una página en vuelo: `isFetchingNextPage` corta la segunda llamada, y
+  `fetchNextPage` de TanStack la dedupe además por su cuenta.
+
+La query es **exactamente** ésta, con la clave de E2:
+
+```ts
+const alerts = useInfiniteQuery({
+  queryKey: alertKeys.list(),
+  queryFn: ({ pageParam }) => listAlerts(baseUrl, token ?? '', undefined, pageParam),
+  initialPageParam: undefined as string | undefined,
+  getNextPageParam: (lastPage) =>
+    lastPage.kind === 'ok' && lastPage.nextCursor !== null
+      ? lastPage.nextCursor
+      : undefined,
+});
+```
+
+y los items se componen con
+`alerts.data?.pages.flatMap((page) => (page.kind === 'ok' ? page.items : [])) ?? []`,
+**antes** de la partición de R7 y del overlay de R8, en ese orden.
 
 **AND** el `?status=` de las páginas siguientes será el mismo que el de la
-primera (aquí: ninguno), porque un cursor emitido bajo otro filtro es un **400**
-(`list-alerts.use-case.ts:80-82`).
+primera (aquí: ninguno, `undefined` en el tercer argumento), porque un cursor
+emitido bajo otro filtro es un **400** (`list-alerts.use-case.ts:80-82`).
 
 **AND** si una página siguiente falla (`error`/`unreachable`), lo ya cargado se
-queda en pantalla y se pinta `alerts-action-error`; nunca se vacía la lista.
+queda en pantalla y se pinta `alerts-action-error`; nunca se vacía la lista. La
+página fallida entra en `data.pages` como cualquier otra —`getNextPageParam` la
+ve no-`ok` y deja `hasNextPage` en `false`, de modo que el scroll no reintenta en
+bucle— y la condición del mensaje es *"alguna página distinta de la primera no es
+`ok`"*. El `alerts-retry` de R4 solo existe para la primera página; una página
+siguiente fallida se recupera al volver a entrar en la pantalla (`refetchOnMount`
+con `staleTime: 0`).
 
 **Test**: `src/screens/alerts/index.test.tsx::#78 R9: pagina por nextCursor y se
 para cuando no hay` — cuatro `it`, disparando el evento como ya hace este repo
@@ -558,13 +622,26 @@ el primero es el envoltorio `flex-1` del switcher; (b) pulsar la campana llama
 El punto es un `<View testID="home-alerts-dot" className="absolute right-1 top-1 size-2.5 rounded-full bg-danger" />`
 dentro del `Pressable` de la campana. **Sin número**: ver §0.3 D2.
 
-**AND** la petición se hará con `useApi` y una `alertsFn` memoizada con
-`useCallback([baseUrl, token])`, igual que `petsFn`
-(`src/screens/home/index.tsx:152-155`), y su `refetch` se añadirá al
-`useFocusEffect` que ya existe en `:221-226`, junto a `refetchPets` y
-`refetchDetail`. Ése —y no otro— es el mecanismo por el que el punto se apaga
-tras un ack: el usuario vuelve de `/alerts`, Home recupera el foco, refetch,
-`items.length === 0`, punto fuera.
+**AND (reescrito por la enmienda E6)** la petición se hará con `useQuery`, en el
+bloque de queries que Home ya tiene (`src/screens/home/index.tsx:157-175`):
+
+```ts
+const openAlerts = useQuery({
+  queryKey: alertKeys.open(),
+  queryFn: () => listAlerts(baseUrl, token ?? '', 'open'),
+});
+```
+
+y `openAlerts.refetch` se añadirá —con su nombre estable `refetchOpenAlerts`,
+como `refetchPets` y `refetchDetail` en `:196-197`— al `useFocusEffect` que ya
+existe en `:216-221`, y al array de dependencias de su `useCallback`. Ése —y no
+otro— es el mecanismo por el que el punto se apaga tras un ack: el usuario vuelve
+de `/alerts`, Home recupera el foco, refetch, `items.length === 0`, punto fuera.
+
+La fila *"aún sin resolver"* de la tabla es `openAlerts.data === undefined`.
+Home **no** llama a `signOut` en ninguna rama: el candado `#87 R19`
+(`design-drift.test.ts:386-397`) fija `'screens/home/index.tsx': 0` y el
+`unauthorized` lo resuelve el `QueryCache` del provider.
 
 **Test**: `src/screens/home/index.test.tsx::#78 R11: el punto rojo sigue a las
 alertas abiertas` — un `it` por fila de la tabla (con
@@ -624,7 +701,10 @@ que es a la vez el criterio de diseño de la pantalla:
 | `consistency-classnames.test.ts:446` `bg-accent-soft` | 16 | la campana no lleva fondo: va sobre la banda opaca del slot del hero |
 | `consistency-classnames.test.ts:388-437` clases `category-*` | solo en `utils/category-palette.ts` | la pantalla usa severidad (`danger-soft`/`warning-soft`/`default`), no la paleta categórica |
 | `legibility-classnames.test.ts:117-140` `text-accent-strong` (lista + total `13 + 1`) | sin sumandos nuevos | ni la pantalla ni la campana usan `text-accent-strong` |
-| `design-drift.test.ts:141-145` versiones de dependencias | sin cambios | **cero dependencias nuevas** |
+| `design-drift.test.ts:359-381` (`#87 R1`) versión fijada de `@tanstack/react-query` | `5.102.8`, sin rango | **cero dependencias nuevas**: la que se usa ya está instalada y fijada por #87 |
+| `design-drift.test.ts:438-446` (`#87 R19`) cero `queryKey: [` literal en las pantallas migradas | lista vacía | la campana usa `alertKeys.open()` (E2), nunca un array a mano |
+| `design-drift.test.ts:410-436` (`#87 R19`) huella de `use-api` | solo `screens/home/weekly-activity-chart.test.tsx` | #78 no nombra `useApi` ni `use-api` en **ningún** fichero de `src/` ni de `test/` |
+| `design-drift.test.ts:386-397` (`#87 R19`) `signOut` por pantalla | `'screens/home/index.tsx': 0` **no se mueve**; se declara el **delta** `+ 'screens/alerts/index.tsx': 1` | el único `signOut` de esta feature está en la rama `unauthorized` del ack (R8), que no es una query |
 
 **AND** cumplirá el grep-clean de la carta §Decisiones fijas 3 y C8: cero hex
 fuera de `src/theme/`, cero clases arbitrarias `[...]`, cero `StyleSheet.create`,
@@ -722,6 +802,181 @@ aprobado el resto.
 
 ---
 
+## Enmiendas tras el cierre de #87 (2026-09-11)
+
+Ocho, **todas a esta misma spec**, y todas por la misma causa: #78 se especificó
+y se aprobó (2026-09-10) sobre un árbol **sin** TanStack Query, y al día
+siguiente #87 `mobile-tanstack-query` se mergeó en `main` (`cea72945`, PR #121),
+migró las pantallas del repo y **borró** `src/hooks/use-api.ts`. La spec tal
+como quedó firmada manda escribir la pantalla contra un hook que ya no existe.
+
+El humano decidió el 2026-09-10 esperar a #87 **precisamente** para no escribir
+la pantalla dos veces; esta enmienda es el cobro de esa decisión, no un cambio de
+alcance. **Ningún R-id se renumera, ninguna decisión de producto se reabre y
+ningún requisito se relaja**: R2, R3, R5, R6, R7, R10, R12 y R14 quedan intactos,
+y las cuatro decisiones ratificadas en §Aprobación siguen vigentes salvo la (4),
+que es justamente lo que E1 deroga.
+
+Todo lo que sigue está verificado contra el árbol de esta branch con `main`
+mergeada (`d07427e9`), no contra el recuerdo de cómo quedó #87.
+
+### E1 — la premisa "no hay TanStack Query" queda derogada
+
+- **Qué cambia**: la fila de §0.4 y el punto (4) de §Aprobación. La premisa era
+  cierta en `5666b85` y es falsa hoy.
+- **Qué es cierto ahora**, leído en el árbol:
+  - `package.json:8` declara `"@tanstack/react-query": "5.102.8"`, sin rango,
+    candado por `design-drift.test.ts:359-381`.
+  - `src/hooks/` contiene **solo** `use-pet-selection.ts` y su test. `use-api.ts`
+    y `use-api.test.tsx` ya no existen, con candado
+    (`design-drift.test.ts:399-408`) que falla si alguien los recrea.
+  - Cada pantalla pide con `useQuery` y una clave de `src/api/query-keys.ts`
+    (ejemplo vivo: `src/screens/reminders/index.tsx:49-59`).
+  - La app va envuelta en `QueryProvider` (`src/providers/query-provider.tsx`):
+    `staleTime: 0`, `gcTime` 5 min, `retry: false`, `refetchOnWindowFocus: false`,
+    `refetchOnReconnect: false` (`:29-36`), y un `QueryCache.onSuccess` que llama
+    a `signOut()` cuando una query resuelve `{kind:'unauthorized'}` (`:23-27`).
+  - Los tests montan con `renderWithProviders` de `test/render-with-providers.tsx`,
+    que crea el cliente con `createQueryClient(onUnauthorized, 0)` y **devuelve el
+    `queryClient`** para inspeccionar la caché.
+- **Qué NO cambia**: `src/api/alerts.ts` sigue siendo funciones planas sin estado
+  ni hooks (R1, R2 intactos). La frontera "API pura / pantalla con estado" es la
+  misma que respeta el resto del repo tras #87.
+
+### E2 — R1 gana `alertKeys` en `src/api/query-keys.ts`
+
+- **Qué cambia**: `src/api/query-keys.ts` pasa a la lista de ficheros
+  modificados, con `alertKeys.list()` → `['alerts','list']` y `alertKeys.open()`
+  → `['alerts','list',{status:'open'}]`.
+- **Por qué es obligatorio y no estético**: `design-drift.test.ts:438-446`
+  (`#87 R19`) falla si `src/screens/home/index.tsx` contiene un `queryKey: [`
+  literal. La campana **no puede** escribir su clave a mano.
+- **Por qué esa forma**: es la convención que ya sigue
+  `healthKeys.weights(petId, limit)` → `['health','weights',petId,{limit}]`: el
+  parámetro viaja como objeto al final. Que `open()` extienda a `list()` como
+  prefijo es deseable —un futuro `invalidateQueries({queryKey:['alerts']})`
+  alcanzaría a las dos— y no colisiona: son claves de distinta longitud, luego
+  de distinto hash, y la infinita nunca comparte entrada de caché con la normal.
+- **Test (delta declarado, sin cifra congelada)**: dos filas nuevas en el array
+  `cases` de `src/api/__tests__/query-keys.test.ts`, que se enumera a mano y no
+  lleva `toHaveLength`. Con ellas, el `it('keeps domain prefixes stable…')`
+  existente comprueba gratis que el dominio de las dos es `'alerts'`.
+
+### E3 — R9: `useInfiniteQuery` sustituye la acumulación manual de páginas
+
+- **Qué cambia**: desaparecen los `useState` de `more` y `cursor` de [[design]]
+  D3. La query, `getNextPageParam`, el guard de `onEndReached` y la composición
+  de `items` quedan escritos literalmente en R9.
+- **Por qué**: acumular páginas a mano es exactamente lo que la librería recién
+  instalada hace, y hacerlo a mano obligaría a un guard de "primera vez" y a
+  mantener dos fuentes de verdad (la caché y el `useState`) que se desincronizan
+  en cuanto haya un refetch.
+- **Qué NO cambia**: ni un solo comportamiento observable de R9. Las cuatro
+  situaciones (segunda página, `nextCursor: null`, doble `onEndReached`, página
+  siguiente fallida) siguen siendo las mismas y sus cuatro `it` siguen midiendo
+  lo mismo; solo cambia de dónde sale el estado. El aviso sobre
+  `initialNumToRender` de `FlatList` en jest sigue vigente.
+- **Detalle que la implementación no puede inventarse**: como `listAlerts`
+  **devuelve** la unión en vez de lanzar, toda página es un éxito para TanStack;
+  por eso `isError` no se usa en ninguna parte y el estado de error sale del
+  `kind` de `data.pages[0]`.
+
+### E4 — R4: los estados salen de la query, y el `unauthorized` ya no lo ve la pantalla
+
+- **Qué cambia**: la tabla de derivación de estados añadida a R4, y su punto 7.
+  El `signOut()` del `unauthorized` **de la lista** ya no lo dispara la pantalla:
+  lo dispara el `QueryCache` del provider, para toda la app.
+- **Qué NO cambia**: los cinco `testID` (`alerts-loading`, los tres
+  `alert-row-skeleton-n`, `alerts-error`, `alerts-retry`, `alerts-empty`), las
+  dimensiones exactas del `contentContainerStyle`, la exclusión mutua de los tres
+  estados y el `ListHeaderComponent`. Los `it` de R4 siguen siendo los mismos
+  seis, montados ahora con `renderWithProviders`.
+
+### E5 — R8: el ack sigue siendo llamada plana más overlay; ni `useMutation` ni `setQueryData`
+
+- **Qué cambia**: se dice por escrito que el ack **no** se migra, y por qué, para
+  que nadie lo "arregle" al ver TanStack en el fichero de al lado.
+- **Por qué no `useMutation`**: tras #87 el repo tiene **cero** usos de
+  `useMutation` en `src/` (verificado con `grep`); las mutaciones siguen siendo
+  llamadas planas más `refetch`, como el borrado de
+  `src/screens/reminders/index.tsx:71-105`. Un `useMutation` aquí sería el primer
+  uso del repo para un caso que no necesita ni reintentos ni estado global.
+- **Por qué no `setQueryData`**: parchear el `status` dentro de la caché infinita
+  movería la fila de grupo al recalcularse la partición de R7 — la fila saltaría
+  bajo el dedo justo al pulsarla, que es la alternativa **A9 ya descartada**. El
+  overlay de D3 se aplica **después** de ordenar y solo cambia apariencia.
+- **Qué NO cambia**: las siete filas de la tabla de R8, el `isDisabled` mientras
+  vuela la petición, `alerts-action-error` y su limpieza al iniciar el siguiente
+  ack. La rama `unauthorized` la sigue resolviendo la pantalla con `signOut()` de
+  `useAuth` —un ack no es una query, no pasa por el `QueryCache`—, y por eso el
+  mapa de `design-drift.test.ts:386-397` gana la fila
+  `'screens/alerts/index.tsx': 1` (declarado en R13).
+
+### E6 — R11: la campana es `useQuery`, y **no** se adopta `invalidateQueries`
+
+- **Qué cambia**: `useApi(alertsFn)` + `useCallback` pasa a `useQuery` con
+  `alertKeys.open()`; `openAlerts.refetch` entra en el `useFocusEffect` que Home
+  ya tiene (`src/screens/home/index.tsx:216-221`).
+- **Qué NO cambia**: las cuatro filas de la tabla de R11, el `testID`
+  `home-alerts-dot`, su `className` exacta, y que no hay número.
+- **La decisión que esta enmienda cierra en contra de lo que anticipó el cierre
+  de #87**: `progress/history.md` preveía pasar R8/R11 a `invalidateQueries`.
+  **No se adopta.** El punto se apaga ya por dos caminos que existen y no cuestan
+  código: `staleTime: 0` con `refetchOnMount` por defecto, y el `refetch` por
+  foco que R11 pedía desde el principio. Adoptarlo obligaría a meter
+  `useQueryClient` en la pantalla de alertas —**cero** usos en producción hoy— y
+  a que la pantalla conozca la clave de la campana, acoplando dos pantallas por
+  un efecto que ya está cubierto.
+  - **Condición exacta que lo revive**: si Home dejase de refrescar por foco, si
+    la campana pasara a `staleTime > 0`, o si aparece un caso en que el punto
+    deba apagarse **sin** que el usuario vuelva a Home (por ejemplo, cuando #79
+    traiga push y haya que reaccionar a una notificación en primer plano).
+
+### E7 — referencias de línea reapuntadas tras la migración de #87
+
+#87 reescribió Home y sus tests; las referencias que esta spec citaba se
+movieron. Reapuntadas una a una contra `d07427e9` (el `git merge` de `main` en
+esta branch, ya hecho):
+
+| Referencia en la spec | Antes | Ahora |
+|---|---|---|
+| Home: bloque de queries (la campana se añade ahí) | `home/index.tsx:152-155` | `:157-175` |
+| Home: `refetch` con nombre estable | — | `:196-197` |
+| Home: `useFocusEffect` | `:221-226` | `:216-221` |
+| Home: condición `hasPets` del hero | `:243` | `:203` (cálculo) y `:238` (render) |
+| Home: patrón `style={({pressed}) => …}` de la campana | `:556` | `:557` |
+| `signOut()` automático en `unauthorized` | `use-api.ts:29` (**borrado**) | `providers/query-provider.tsx:23-27` |
+| Test de Home: mock de `useSafeAreaInsets` | `home/index.test.tsx:85-88` | `:91` |
+| Test de Home: invocar el callback de foco | `:806-816` | `:854` |
+| Test de Home: `icon.props.size` a 20 | `:2210` | `:2291` |
+| Recordatorios: cabecera `text-2xl font-black` | `reminders/index.tsx:143-145` | `:139-142` |
+| Recordatorios: botón de reintento sin acento | `:182` | `:179-184` |
+| Recordatorios: `actionError` y su `Text` | `:66,195-199` | `:63` y `:195-198` |
+
+Las referencias al **backend** (`alerts.controller.ts`, `alert-response.mapper.ts`,
+`list-alerts.dto.ts`, `alerts.schema.ts`, `ack-alert.use-case.ts`,
+`alert.drizzle.repository.ts`, `cursor.ts`, `alerts.constants.ts`) **no** se
+tocan: #87 fue solo móvil y ninguna cambió.
+
+### E8 — R13 hereda los candados de #87
+
+- **Qué cambia**: la tabla de R13 gana cuatro filas (versión fijada de la
+  dependencia, cero `queryKey` literales en pantallas migradas, huella de
+  `use-api`, y el mapa de `signOut` por pantalla), y la fila que citaba
+  `design-drift.test.ts:141-145` para "versiones de dependencias" se sustituye
+  por la que de verdad las fija hoy (`:359-380`).
+- **El único delta de cifra que esta feature mueve en un candado de #87** es la
+  fila nueva `'screens/alerts/index.tsx': 1` del mapa `screenSignOutCalls`.
+  `'screens/home/index.tsx': 0` **no se mueve**: si la campana necesitara llamar
+  a `signOut`, sería señal de que se implementó mal (E4).
+- **Qué NO cambia**: las siete filas de candados que ya estaban en R13 siguen
+  exactamente igual, y la regla de "cero cifras absolutas nuevas" de [[design]]
+  D10 sigue rigiendo.
+
+- [ ] Enmiendas E1-E8 aprobadas por humano (fecha: ____)
+
+---
+
 ## Aprobación
 
 - [X] Aprobado por humano (fecha: 2026-09-10) ← gate obligatorio antes de implementar
@@ -739,6 +994,6 @@ conversación:
    miente).
 3. **D4 (R7)**: el centro lista **todas** las mascotas con `petName`, sin filtrar
    por la mascota seleccionada.
-4. **§0.4**: no hay TanStack Query en este repo; el refresco del punto rojo es
-   `useApi().refetch` dentro del `useFocusEffect` de Home, y no hay ninguna query
-   key que invalidar.
+4. **§0.4**: **DEROGADA por E1 el 2026-09-11** — cuando el humano firmó esta
+   casilla (2026-09-10) la premisa era cierta; #87 la invalidó al mergearse. Lo
+   que la sustituye está en E1-E8 y tiene su propio gate, abajo.

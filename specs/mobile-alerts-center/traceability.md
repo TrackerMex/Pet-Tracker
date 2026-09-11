@@ -1,6 +1,6 @@
 ---
 feature: "mobile-alerts-center"
-status: draft        # draft | approved
+status: approved     # draft | approved  (enmendado por E1-E8 de [[requirements]])
 tags: [harness, spec]
 ---
 
@@ -22,6 +22,14 @@ tags: [harness, spec]
 | R12 | pendiente | pendiente |
 | R13 | pendiente (verificación — se cierra con la evidencia de mutación de `progress/impl_mobile-alerts-center.md` §R13) | pendiente |
 | R14 | pendiente (gate humano — sin test automatizado; evidencia en `progress/impl_mobile-alerts-center.md` §R14) | pendiente |
+| E1 | pendiente (documental — la premisa derogada; sin test) | pendiente |
+| E2 | pendiente — `src/api/__tests__/query-keys.test.ts` (dos filas nuevas del array `cases`) | pendiente |
+| E3 | pendiente — `src/screens/alerts/index.test.tsx :: #78 R9` | pendiente |
+| E4 | pendiente — `src/screens/alerts/index.test.tsx :: #78 R4` | pendiente |
+| E5 | pendiente — `src/screens/alerts/index.test.tsx :: #78 R8` | pendiente |
+| E6 | pendiente — `src/screens/home/index.test.tsx :: #78 R11` | pendiente |
+| E7 | pendiente (documental — referencias de línea reapuntadas; sin test) | pendiente |
+| E8 | pendiente — `src/__tests__/design-drift.test.ts :: #87 R19` (fila nueva del mapa `screenSignOutCalls`) | pendiente |
 
 Tests esperados por requisito (rutas desde `mobile-pet-tracker/`):
 
@@ -40,7 +48,10 @@ Tests esperados por requisito (rutas desde `mobile-pet-tracker/`):
 | R11 | `src/screens/home/index.test.tsx` | `#78 R11: el punto rojo sigue a las alertas abiertas` |
 | R12 | `src/__tests__/ui-language.test.ts` | `#78 R12: el centro de alertas resuelve su copy por clave` |
 
-Regla: el reviewer no aprueba si alguna fila queda "pendiente".
+Regla: el reviewer no aprueba si alguna fila queda "pendiente". Las filas E1-E8
+son las **enmiendas post-#87** de [[requirements]] §Enmiendas: el reviewer
+comprueba además que su casilla humana está marcada, como con cualquier enmienda
+a una spec aprobada.
 Convención de commit: `feat(<scope>): <desc> (R1,R2)`.
 El implementer actualiza esta tabla tras cada commit; el reviewer la valida
 al aprobar (ver [[../../docs/specs|specs]] y [[../../CHECKPOINTS|CHECKPOINTS]] C5).

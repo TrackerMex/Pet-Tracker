@@ -1,6 +1,6 @@
 ---
 feature: "mobile-alerts-center"
-status: draft        # draft | approved
+status: approved     # draft | approved  (enmendado por E1-E8 de [[requirements]])
 tags: [harness, spec]
 ---
 
@@ -28,6 +28,14 @@ tags: [harness, spec]
       carta le pone — el sistema de estilos es el de este repo, no el suyo).
 - [ ] Leer `docs/ui-guidelines.md` entero, incluida la **Enmienda #70** sobre
       elementos repetidos: la fila de alerta es uno.
+- [ ] Leer §Enmiendas E1-E8 de [[requirements]] **antes que los requisitos**:
+      esta spec se escribió sobre un árbol sin TanStack Query y #87 lo cambió.
+      Donde el cuerpo de un requisito y una enmienda parezcan discrepar, manda la
+      enmienda.
+- [ ] Leer los tres ficheros que #87 dejó y que esta feature consume tal cual:
+      `src/api/query-keys.ts`, `src/providers/query-provider.tsx` y
+      `test/render-with-providers.tsx`. El ejemplo vivo de pantalla migrada es
+      `src/screens/reminders/index.tsx:49-68`.
 - [ ] Si existe `mobile-pet-tracker/.expo/types/router.d.ts`, **borrarlo** antes
       de tocar código: está gitignorado, se queda obsoleto y rompe el `typecheck`
       con rutas fantasma. Se regenera solo.
@@ -48,9 +56,13 @@ tags: [harness, spec]
 - [ ] (2) Implementación mínima que lo pasa — `listAlerts` sobre `getJson`, más
       `AlertType`/`AlertStatus`/`Alert` al final de `src/api/types.ts`.
 - [ ] (3) Refactor con tests verdes.
+- [ ] (4) **Enmienda E2** — dos filas nuevas en el array `cases` de
+      `src/api/__tests__/query-keys.test.ts` (rojo primero: `alertKeys` no
+      existe), y `alertKeys` en `src/api/query-keys.ts` para ponerlas verdes.
+      Commit test-primero igual que los demás.
 
 > **Sujeto**: el test asserta sobre `src/api/alerts.ts`, que esta misma tarea
-> crea. No depende de nada posterior.
+> crea. No depende de nada posterior. Las claves de (4) las consumen R9 y R11.
 
 ## R2 — cliente `ackAlert`
 
@@ -87,11 +99,15 @@ tags: [harness, spec]
       filas', …)`, con `src/api/alerts` mockeado. Crear antes
       `src/screens/alerts/index.tsx` exportando un `AlertsScreen` que devuelva
       `null`, para que el rojo sea de las aserciones y no un `ReferenceError`
-      (C4, cuarto punto).
+      (C4, cuarto punto). **Montar con `renderWithProviders`** de
+      `test/render-with-providers.tsx` (enmienda E4): sin el `QueryClientProvider`
+      la pantalla no puede montar.
 - [ ] (2) Implementación mínima que lo pasa — `FlatList` con
       `contentContainerStyle` exacto, `ListHeaderComponent` con el título,
       `ListEmptyComponent` con los tres `Skeleton` / error+retry / vacío, y una
-      fila mínima por item con `testID={"alert-row-" + id}`.
+      fila mínima por item con `testID={"alert-row-" + id}`. Los tres estados
+      salen de la query infinita de E3 (`isPending`, `data.pages[0].kind`, suma
+      de items), **no** de un `useState`.
 - [ ] (3) Refactor con tests verdes.
 
 > **Sujeto**: la pantalla, que esta tarea crea, y el catálogo de R3, ya en el
@@ -150,8 +166,14 @@ tags: [harness, spec]
       más `listAlerts` llamado una sola vez tras el ack y doble pulsación → una
       llamada.
 - [ ] (2) Implementación mínima que lo pasa — `handleAck` con el overlay
-      `acked`, el `isDisabled` durante el vuelo y `alerts-action-error`.
+      `acked`, el `isDisabled` durante el vuelo y `alerts-action-error`. **Sin
+      `useMutation` y sin `setQueryData`** (enmienda E5): la caché guarda lo que
+      dijo el servidor, el overlay lo que acaba de hacer el usuario.
 - [ ] (3) Refactor con tests verdes.
+- [ ] (4) **Enmienda E8** — añadir la fila `'screens/alerts/index.tsx': 1` al
+      mapa `screenSignOutCalls` de `src/__tests__/design-drift.test.ts:386-397`.
+      Es el único delta que esta feature mueve en un candado de #87, y se declara
+      como fila nueva, nunca tocando `'screens/home/index.tsx': 0`.
 
 > **Sujeto**: el botón `alert-row-{id}-ack` de R6 y `ackAlert` de R2.
 
@@ -160,8 +182,11 @@ tags: [harness, spec]
 - [ ] (1) Escribir test que falla para R9 — cuatro `it`, disparando
       `await fireEvent(screen.getByTestId('alerts-list'), 'onEndReached')`.
       Fixturas de 2-3 items por página (jest monta 10 filas como mucho).
-- [ ] (2) Implementación mínima que lo pasa — `more`, `cursor`, guard de
-      "página en vuelo" y guard de `cursor === null`.
+- [ ] (2) Implementación mínima que lo pasa (enmienda E3) — `useInfiniteQuery`
+      con `alertKeys.list()`, `initialPageParam: undefined`, el
+      `getNextPageParam` que corta en `nextCursor === null` o página no-`ok`, y
+      el guard `!hasNextPage || isFetchingNextPage` en `onEndReached`. **Cero
+      `useState` de páginas o de cursor.**
 - [ ] (3) Refactor con tests verdes.
 
 > **Sujeto**: el `FlatList` `alerts-list` de R4 y `listAlerts` de R1.
@@ -187,9 +212,12 @@ tags: [harness, spec]
 - [ ] (1) Escribir test que falla para R11 — un `it` por fila de la tabla de
       estados, más el que invoca el callback de `useFocusEffect` y comprueba que
       el punto desaparece con la segunda respuesta vacía.
-- [ ] (2) Implementación mínima que lo pasa — `alertsFn` + `useApi` en Home,
-      `alerts.refetch` dentro del `useFocusEffect` existente, el `View` del
-      punto y el `accessibilityLabel` condicional.
+- [ ] (2) Implementación mínima que lo pasa (enmienda E6) — `useQuery` con
+      `alertKeys.open()` en el bloque de queries de Home (`index.tsx:157-175`),
+      `refetchOpenAlerts` dentro del `useFocusEffect` existente (`:216-221`) y en
+      sus dependencias, el `View` del punto y el `accessibilityLabel`
+      condicional. **Ni un `signOut` ni un `queryKey` literal en Home**: los dos
+      tienen candado en `design-drift.test.ts` (#87 R19).
 - [ ] (3) Refactor con tests verdes.
 
 > **Sujeto**: el `Pressable` de la campana que **R10 creó**, y `listAlerts` de
