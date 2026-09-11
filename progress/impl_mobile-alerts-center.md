@@ -10,9 +10,9 @@ Branch: `feature/78-mobile-alerts-center`
 | R1 | `ee17732b` | `f6062ed0` | `listAlerts` y mapeo de resultados por `kind` |
 | R2 | `d6803629` | `02593774` | `ackAlert` con `POST` y cuerpo vacío |
 | R3 | `0467146a` | `d2f10c67` | 14 claves en ambos idiomas y tabla normativa |
-| R4 | `2dc14118` | `a8fa22d2` | estados de carga, error, vacío, filas y `unauthorized` de query |
+| R4 | `2dc14118` | `a8fa22d2` | estados de carga, error, vacío, filas y `unauthorized` de query; refuerzo de test `a08b37a9` en ronda 2 |
 | R5 | `8d7b5f13` | `e9f3b126` | ruta delgada bajo `(tabs)` sin añadir pestaña |
-| R6 | `e2a10a0a` | `ccefd8fe` | doce decisiones de cada fila, incluidas cardinalidad y orden de hijos |
+| R6 | `e2a10a0a` | `ccefd8fe` | doce decisiones de cada fila, incluidas cardinalidad y orden de hijos; refuerzo de test `12d396fd` en ronda 2 |
 | R7 | `d72ba1dd` | `3e7bebb9` | partición por estado descargado y posición estable tras ack |
 | R8 | `290abc42` | `63faca32` | ack plano, overlay local, exclusión mutua y errores |
 | R9 | `b4cd1f97` | `288c8c72` | `useInfiniteQuery`, cursor y guard de fin/carga |
@@ -76,6 +76,112 @@ Alerts; la fila de Home no se movió. El grep de los ficheros de #78 queda limpi
 de hex fuera del tema, clases arbitrarias, `StyleSheet.create`, sombras/elevation
 legacy y radios prohibidos.
 
+## Ronda 2 — refuerzo de R6 y R4
+
+Esta ronda no modifica producción ni mueve cifras de candados:
+
+| Corrección | Commit de test | Evidencia |
+|---|---|---|
+| R6, orden interno de los tres textos | `12d396fd` | fija `type`, `pet` y `time` por posición dentro de `row.children[1]` |
+| R4.1, receta tipográfica del título | `a08b37a9` | fija la `className` normativa del título |
+
+### Sonda R6 — intercambio de tipo y mascota
+
+Tras `12d396fd` se intercambiaron temporalmente en producción los `<Text>` de
+tipo y `petName`. La suite dirigida falló por las nuevas aserciones posicionales:
+
+```text
+● #78 R6: cada fila de alerta trae su icono, su hueco, su tinta y sus tres hijos en orden › canda las doce decisiones para geofence_exit
+
+  expect(received).toBe(expected) // Object.is equality
+
+  Expected: "alert-row-geofence_exit-type"
+  Received: "alert-row-geofence_exit-pet"
+
+    341 |       const column = elementChild(row, 1);
+    342 |       expect(column.children).toHaveLength(3);
+  > 343 |       expect(elementChild(column, 0).props.testID).toBe(`${rowId}-type`);
+        |                                                    ^
+    344 |       expect(elementChild(column, 1).props.testID).toBe(`${rowId}-pet`);
+    345 |       expect(elementChild(column, 2).props.testID).toBe(`${rowId}-time`);
+    346 |       expect(elementChild(row, 2).props.testID).toBe(`${rowId}-ack`);
+
+    at toBe (src/screens/alerts/index.test.tsx:343:52)
+    at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+● #78 R6: cada fila de alerta trae su icono, su hueco, su tinta y sus tres hijos en orden › canda las doce decisiones para battery_low
+
+  expect(received).toBe(expected) // Object.is equality
+
+  Expected: "alert-row-battery_low-type"
+  Received: "alert-row-battery_low-pet"
+
+    341 |       const column = elementChild(row, 1);
+    342 |       expect(column.children).toHaveLength(3);
+  > 343 |       expect(elementChild(column, 0).props.testID).toBe(`${rowId}-type`);
+        |                                                    ^
+    344 |       expect(elementChild(column, 1).props.testID).toBe(`${rowId}-pet`);
+    345 |       expect(elementChild(column, 2).props.testID).toBe(`${rowId}-time`);
+    346 |       expect(elementChild(row, 2).props.testID).toBe(`${rowId}-ack`);
+
+    at toBe (src/screens/alerts/index.test.tsx:343:52)
+    at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+● #78 R6: cada fila de alerta trae su icono, su hueco, su tinta y sus tres hijos en orden › canda las doce decisiones para future_alert_type
+
+  expect(received).toBe(expected) // Object.is equality
+
+  Expected: "alert-row-future_alert_type-type"
+  Received: "alert-row-future_alert_type-pet"
+
+    341 |       const column = elementChild(row, 1);
+    342 |       expect(column.children).toHaveLength(3);
+  > 343 |       expect(elementChild(column, 0).props.testID).toBe(`${rowId}-type`);
+        |                                                    ^
+    344 |       expect(elementChild(column, 1).props.testID).toBe(`${rowId}-pet`);
+    345 |       expect(elementChild(column, 2).props.testID).toBe(`${rowId}-time`);
+    346 |       expect(elementChild(row, 2).props.testID).toBe(`${rowId}-ack`);
+
+    at toBe (src/screens/alerts/index.test.tsx:343:52)
+    at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+Se restauró `src/screens/alerts/index.tsx` con `git checkout --`; `git diff`
+quedó vacío y `#78 R6` volvió a verde.
+
+### Sonda R4 — degradación de la receta del título
+
+Tras `a08b37a9` se cambió temporalmente la `className` del título a
+`text-xs font-normal text-muted`. La suite dirigida falló solo por la nueva
+aserción:
+
+```text
+● #78 R4: la pantalla pinta su esqueleto, su error, su vacío y sus filas › pinta tres esqueletos mientras espera la primera página
+
+  expect(received).toBe(expected) // Object.is equality
+
+  Expected: "text-2xl font-black text-foreground"
+  Received: "text-xs font-normal text-muted"
+
+    135 |     expect(screen.getByTestId('screen-alerts')).toBeVisible();
+    136 |     expect(screen.getByText(es['alerts.title'])).toBeVisible();
+  > 137 |     expect(screen.getByText(es['alerts.title']).props.className).toBe(
+        |                                                                  ^
+    138 |       'text-2xl font-black text-foreground',
+    139 |     );
+    140 |     const loading = screen.getByTestId('alerts-loading');
+
+    at Object.toBe (src/screens/alerts/index.test.tsx:137:66)
+    at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+    at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+Se restauró el mismo fichero con `git checkout --`; `git diff` quedó vacío y
+las secciones dirigidas `#78 R4|#78 R6` volvieron a verde.
+
 ## Verificación automatizada
 
 - Suite móvil completa: exit 0 en la repetición.
@@ -86,6 +192,11 @@ legacy y radios prohibidos.
 - `env -u FORCE_COLOR bash ./init.sh`: exit 0 el 2026-09-11; build, suites,
   e2e, lint y typecheck verdes. Antes de lanzarlo se comprobó que no había otro
   `init.sh` usando el Postgres compartido.
+- Ronda 2: `env -u FORCE_COLOR bash ./init.sh` volvió a terminar con exit 0 el
+  2026-09-11 después de los dos refuerzos; la suite móvil completa, e2e, lint y
+  typecheck quedaron verdes. El flake #72 no apareció en esta corrida.
+- El aviso de `STATUS.md` (71/88 declarado frente a 71/89 real) es el drift del
+  leader ya recogido por el reviewer; esta ronda no modificó `STATUS.md`.
 
 La primera corrida completa de la suite móvil encontró el flake conocido #72:
 `src/screens/add-pet/index.test.tsx`, “uploads a chosen preview only after
