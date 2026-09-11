@@ -1,7 +1,6 @@
 import {
   act,
   fireEvent,
-  render,
   screen,
   waitFor,
   within,
@@ -15,6 +14,11 @@ import {
   type PetsState,
   type SetLostModeState,
 } from '../../../api/pets';
+import {
+  petKeys,
+  positionKeys,
+  tripKeys,
+} from '../../../api/query-keys';
 import {
   getLastPosition,
   listPositions,
@@ -35,6 +39,7 @@ import {
   useSelectedPet,
 } from '../../../providers/selected-pet-provider';
 import MapScreen from '../map';
+import { renderWithProviders } from '../../../../test/render-with-providers';
 
 let mockFocusCleanup: (() => void) | undefined;
 let mockTheme: 'light' | 'dark' = 'light';
@@ -215,7 +220,10 @@ function MapWrapper({ children }: { children: ReactNode }) {
 }
 
 async function renderMap() {
-  await render(<MapScreen />, { wrapper: MapWrapper });
+  await renderWithProviders(<MapScreen />, {
+    wrapper: MapWrapper,
+    onUnauthorized: () => void mockUseAuth().signOut(),
+  });
 }
 
 beforeEach(() => {
@@ -710,12 +718,14 @@ describe('R9: polling con foco', () => {
       await Promise.resolve();
     });
 
-    expect(screen.getByTestId('map-view').props.markers).toEqual([
-      {
-        id: 'last-position',
-        coordinates: { latitude: 19.4326, longitude: -99.1332 },
-      },
-    ]);
+    await waitFor(() =>
+      expect(screen.getByTestId('map-view').props.markers).toEqual([
+        {
+          id: 'last-position',
+          coordinates: { latitude: 19.4326, longitude: -99.1332 },
+        },
+      ]),
+    );
     expect(mockFocusCleanup).toEqual(expect.any(Function));
     const initialLastCalls = mockGetLastPosition.mock.calls.length;
     const initialPositionsCalls = mockListPositions.mock.calls.length;
@@ -1218,6 +1228,47 @@ describe('#62 R15: el overlay del mapa usa cifras tabulares', () => {
     );
     expect(screen.getByTestId('stat-gps').props.style).not.toEqual(
       expect.objectContaining({ fontVariant: ['tabular-nums'] }),
+    );
+  });
+});
+
+describe('#87 R18: MapScreen lee por TanStack Query', () => {
+  it('deja sus cuatro recursos en las claves canónicas', async () => {
+    initialSelectedPetId = 'pet-1';
+    const petsState: PetsState = { kind: 'ok', pets: [makePet()] };
+    const lastState: LastPositionState = {
+      kind: 'ok',
+      position: makeLastPosition(),
+    };
+    const positionsState: PositionsState = {
+      kind: 'ok',
+      items: [makeStoredPosition()],
+      nextCursor: null,
+    };
+    const routeState: DayRouteState = {
+      kind: 'ok',
+      date: '2026-08-21',
+      trips: [makeTrip()],
+    };
+    mockListPets.mockResolvedValue(petsState);
+    mockGetLastPosition.mockResolvedValue(lastState);
+    mockListPositions.mockResolvedValue(positionsState);
+    mockGetDayRoute.mockResolvedValue(routeState);
+
+    const { queryClient } = await renderWithProviders(<MapScreen />, {
+      wrapper: MapWrapper,
+    });
+    await screen.findByTestId('stat-speed');
+
+    expect(queryClient.getQueryData(petKeys.list())).toEqual(petsState);
+    expect(queryClient.getQueryData(positionKeys.last('pet-1'))).toEqual(
+      lastState,
+    );
+    expect(queryClient.getQueryData(positionKeys.list('pet-1'))).toEqual(
+      positionsState,
+    );
+    expect(queryClient.getQueryData(tripKeys.dayRoute('pet-1'))).toEqual(
+      routeState,
     );
   });
 });

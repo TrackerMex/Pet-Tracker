@@ -1,7 +1,6 @@
 import {
   act,
   fireEvent,
-  render,
   screen,
   waitFor,
   within,
@@ -17,6 +16,7 @@ import { withThemeTransition } from 'react-native-nitro-theme-transition';
 
 import { requestPhotoUploadUrl, uploadPhotoToUrl } from '../../api/media';
 import { getPet, listPets, type PetState, type PetsState } from '../../api/pets';
+import { petKeys, userKeys } from '../../api/query-keys';
 import type { PetProfile } from '../../api/types';
 import { getMe, type MeState } from '../../api/users';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
@@ -29,6 +29,7 @@ import { setStoredTheme } from '../../utils/theme-preference';
 import { setStoredLanguage } from '../../utils/language-preference';
 import { ProfileScreen } from '.';
 import { TOUCH_SLOP } from '../../theme/touch-target';
+import { renderWithProviders } from '../../../test/render-with-providers';
 
 let mockTheme: 'light' | 'dark' = 'light';
 
@@ -226,7 +227,7 @@ function ProfileWrapper({ children }: { children: ReactNode }) {
 }
 
 function renderProfile() {
-  return render(<ProfileScreen />, { wrapper: ProfileWrapper });
+  return renderWithProviders(<ProfileScreen />, { wrapper: ProfileWrapper });
 }
 
 describe('R1: me card', () => {
@@ -888,5 +889,49 @@ describe('R6: Profile usa el hero compartido', () => {
     expect(
       within(screen.getByTestId('pet-hero')).queryByTestId('change-photo'),
     ).toBeNull();
+  });
+});
+
+describe('#87 R16: ProfileScreen lee por TanStack Query', () => {
+  it('deja cuenta, mascotas y detalle en sus claves canónicas', async () => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    const meState: MeState = {
+      kind: 'ok',
+      me: {
+        id: 'user-1',
+        email: 'ada@example.test',
+        firstName: 'Ada',
+        lastName: 'Lovelace',
+        phone: '+525500000000',
+        country: 'MX',
+        timezone: 'America/Mexico_City',
+        createdAt: '2026-08-20T00:00:00.000Z',
+        updatedAt: '2026-08-21T00:00:00.000Z',
+      },
+    };
+    const pet = makePet();
+    const petsState: PetsState = { kind: 'ok', pets: [pet] };
+    const detailState: PetState = { kind: 'ok', pet };
+    mockGetMe.mockResolvedValue(meState);
+    mockListPets.mockResolvedValue(petsState);
+    mockGetPet.mockResolvedValue(detailState);
+
+    const { queryClient } = await renderWithProviders(<ProfileScreen />, {
+      wrapper: ProfileWrapper,
+    });
+    await screen.findByTestId('pet-hero');
+
+    expect(queryClient.getQueryData(userKeys.me())).toEqual(meState);
+    expect(queryClient.getQueryData(petKeys.list())).toEqual(petsState);
+    expect(queryClient.getQueryData(petKeys.detail('pet-1'))).toEqual(
+      detailState,
+    );
   });
 });

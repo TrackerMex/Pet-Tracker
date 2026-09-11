@@ -1,6 +1,6 @@
 import {
+  act,
   fireEvent,
-  render,
   screen,
   waitFor,
   within,
@@ -11,14 +11,14 @@ import type { ReactNode } from 'react';
 
 import { getNutritionPlan, type NutritionPlanState } from '../../../api/nutrition';
 import { listPets, type PetsState } from '../../../api/pets';
+import { nutritionKeys, petKeys } from '../../../api/query-keys';
 import type { NutritionPlan, PetProfile } from '../../../api/types';
-import * as apiHooks from '../../../hooks/use-api';
-import type { ApiResult } from '../../../hooks/use-api';
 import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
 import { LanguageProvider } from '../../../providers/language-provider';
 import { SelectedPetProvider } from '../../../providers/selected-pet-provider';
 import * as selectedPetHooks from '../../../providers/selected-pet-provider';
 import FoodScreen from '../food';
+import { renderWithProviders } from '../../../../test/render-with-providers';
 
 jest.mock('../../../api/pets', () => ({
   listPets: jest.fn(),
@@ -133,7 +133,7 @@ function FoodWrapper({ children }: { children: ReactNode }) {
 }
 
 async function renderFood() {
-  return render(<FoodScreen />, { wrapper: FoodWrapper });
+  return renderWithProviders(<FoodScreen />, { wrapper: FoodWrapper });
 }
 
 beforeEach(() => {
@@ -274,15 +274,15 @@ describe('R5: plan del día con horarios y warnings', () => {
 
     await renderFood();
 
-    await waitFor(() =>
-      expect(screen.getByTestId('food-plan-skeleton')).toBeVisible(),
-    );
-    expect(screen.getByTestId('food-meals-skeleton')).toHaveProp(
-      'className',
-      expect.stringContaining('h-56'),
-    );
-    expect(screen.queryByTestId('food-schedule-skeleton')).toBeNull();
-    expect(screen.getByTestId('meal-schedule-link')).toBeVisible();
+    await waitFor(() => {
+      expect(screen.getByTestId('food-plan-skeleton')).toBeVisible();
+      expect(screen.getByTestId('food-meals-skeleton')).toHaveProp(
+        'className',
+        expect.stringContaining('h-56'),
+      );
+      expect(screen.queryByTestId('food-schedule-skeleton')).toBeNull();
+      expect(screen.getByTestId('meal-schedule-link')).toBeVisible();
+    });
   });
 
   it('renders kcal, grams, ordered meals, portions, and local-time badges', async () => {
@@ -441,43 +441,54 @@ describe('R10: preserva la mascota durante el refetch', () => {
   });
 
   it('does not replace a new selection while the stale pet list refreshes', async () => {
-    const existingPet = makePet();
+    const existingPet = makePet({ id: 'pet-old' });
     const createdPet = makePet({ id: 'pet-new', name: 'Nala' });
     const selectPet = jest.fn();
-    let petsResult: ApiResult<PetsState> = {
-      data: { kind: 'ok', pets: [existingPet] },
-      isRefreshing: true,
-      refetch: jest.fn(),
-    };
-    const emptyResult: ApiResult<{ kind: string }> = {
-      data: undefined,
-      isRefreshing: false,
-      refetch: jest.fn(),
-    };
-    let hookCall = 0;
-    jest.spyOn(selectedPetHooks, 'useSelectedPet').mockReturnValue({
-      selectedPetId: createdPet.id,
-      selectPet,
+    let resolvePets!: (state: PetsState) => void;
+    const revalidatedPets = new Promise<PetsState>((resolve) => {
+      resolvePets = resolve;
     });
-    jest.spyOn(apiHooks, 'useApi').mockImplementation(
-      <T extends { kind: string }>(): ApiResult<T> => {
-        const result = hookCall++ % 2 === 0 ? petsResult : emptyResult;
-        return result as ApiResult<T>;
-      },
+    const useSelectedPet = selectedPetHooks.useSelectedPet;
+    mockListPets.mockResolvedValueOnce({ kind: 'ok', pets: [existingPet] });
+    mockGetNutritionPlan.mockReturnValue(pending<NutritionPlanState>());
+
+    const { queryClient, unmount } = await renderFood();
+    await screen.findByTestId(`pet-chip-${existingPet.id}`);
+
+    const selectedPetSpy = jest
+      .spyOn(selectedPetHooks, 'useSelectedPet')
+      .mockImplementation(() => ({
+        ...useSelectedPet(),
+        selectedPetId: createdPet.id,
+        selectPet,
+      }));
+    const callsBeforeRefetch = selectedPetSpy.mock.calls.length;
+    mockListPets.mockReturnValue(revalidatedPets);
+    await act(() => {
+      void queryClient.refetchQueries({ queryKey: petKeys.list() });
+    });
+    await waitFor(() =>
+      expect(queryClient.isFetching({ queryKey: petKeys.list() })).toBe(1),
+    );
+    await waitFor(() =>
+      expect(selectedPetSpy.mock.calls.length).toBeGreaterThan(
+        callsBeforeRefetch,
+      ),
     );
 
-    const view = await renderFood();
+    expect(selectPet).not.toHaveBeenCalled();
+    expect(screen.getByTestId(`pet-chip-${existingPet.id}`)).toBeVisible();
+
+    await act(async () => {
+      resolvePets({ kind: 'ok', pets: [existingPet, createdPet] });
+      await revalidatedPets;
+    });
+    await waitFor(() =>
+      expect(queryClient.isFetching({ queryKey: petKeys.list() })).toBe(0),
+    );
 
     expect(selectPet).not.toHaveBeenCalled();
-
-    petsResult = {
-      data: { kind: 'ok', pets: [existingPet, createdPet] },
-      isRefreshing: false,
-      refetch: jest.fn(),
-    };
-    await view.rerender(<FoodScreen />);
-
-    expect(selectPet).not.toHaveBeenCalled();
+    await unmount();
   });
 });
 
@@ -509,6 +520,25 @@ describe('#62 R3: los avisos de plan usan el Card compartido', () => {
     expect(card.props.className).toContain('shadow-sm');
     expect(card.props.className).toContain('bg-default');
     expect(screen.queryAllByTestId(/^plan-warning-/)).toHaveLength(1);
+  });
+});
+
+describe('#87 R12: FoodScreen lee por TanStack Query', () => {
+  it('deja mascotas y plan en sus claves canónicas', async () => {
+    const petsState: PetsState = { kind: 'ok', pets: [makePet()] };
+    const planState: NutritionPlanState = { kind: 'ok', plan: makePlan() };
+    mockListPets.mockResolvedValue(petsState);
+    mockGetNutritionPlan.mockResolvedValue(planState);
+
+    const { queryClient } = await renderWithProviders(<FoodScreen />, {
+      wrapper: FoodWrapper,
+    });
+    await screen.findByTestId('food-plan-card');
+
+    expect(queryClient.getQueryData(petKeys.list())).toEqual(petsState);
+    expect(queryClient.getQueryData(nutritionKeys.plan('pet-1'))).toEqual(
+      planState,
+    );
   });
 });
 
@@ -553,10 +583,12 @@ describe('#65 R17: los títulos de card se localizan por testID y su copy sigue 
   it('expone los tres títulos de Food sin perder sus dos aserciones de copy', async () => {
     await renderFood();
 
-    expect(screen.getByText('Comidas hoy')).toBeVisible();
-    expect(screen.getByText('Horario de comidas')).toBeVisible();
-    expect(await screen.findByTestId('food-meals-title')).toBeVisible();
-    expect(screen.getByTestId('food-ai-title')).toBeVisible();
-    expect(screen.getByTestId('meal-schedule-link-title')).toBeVisible();
+    await waitFor(() => {
+      expect(screen.getByText('Comidas hoy')).toBeVisible();
+      expect(screen.getByText('Horario de comidas')).toBeVisible();
+      expect(screen.getByTestId('food-meals-title')).toBeVisible();
+      expect(screen.getByTestId('food-ai-title')).toBeVisible();
+      expect(screen.getByTestId('meal-schedule-link-title')).toBeVisible();
+    });
   });
 });

@@ -1,6 +1,6 @@
 import {
+  act,
   fireEvent,
-  render,
   screen,
   waitFor,
   within,
@@ -16,15 +16,15 @@ import {
   type WeightsState,
 } from '../../../api/health-records';
 import { listPets, type PetsState } from '../../../api/pets';
+import { healthKeys, petKeys } from '../../../api/query-keys';
 import type { PetProfile, Vaccine, WeightEntry } from '../../../api/types';
-import * as apiHooks from '../../../hooks/use-api';
-import type { ApiResult } from '../../../hooks/use-api';
 import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
 import { LanguageProvider } from '../../../providers/language-provider';
 import { SelectedPetProvider } from '../../../providers/selected-pet-provider';
 import * as selectedPetHooks from '../../../providers/selected-pet-provider';
 import HealthScreen from '../health';
 import { TOUCH_SLOP } from '../../../theme/touch-target';
+import { renderWithProviders } from '../../../../test/render-with-providers';
 
 let mockTheme: 'light' | 'dark' = 'light';
 
@@ -162,7 +162,7 @@ function HealthWrapper({ children }: { children: ReactNode }) {
 }
 
 async function renderHealth() {
-  return render(<HealthScreen />, { wrapper: HealthWrapper });
+  return renderWithProviders(<HealthScreen />, { wrapper: HealthWrapper });
 }
 
 beforeEach(() => {
@@ -519,48 +519,71 @@ describe('R6: weight card enlaza al log', () => {
 });
 
 describe('R10: preserva la mascota durante el refetch', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+  });
+
   afterEach(() => {
     jest.restoreAllMocks();
   });
 
   it('does not replace a new selection while the stale pet list refreshes', async () => {
-    const existingPet = makePet();
+    const existingPet = makePet({ id: 'pet-old' });
     const createdPet = makePet({ id: 'pet-new', name: 'Nala' });
     const selectPet = jest.fn();
-    let petsResult: ApiResult<PetsState> = {
-      data: { kind: 'ok', pets: [existingPet] },
-      isRefreshing: true,
-      refetch: jest.fn(),
-    };
-    const emptyResult: ApiResult<{ kind: string }> = {
-      data: undefined,
-      isRefreshing: false,
-      refetch: jest.fn(),
-    };
-    let hookCall = 0;
-    jest.spyOn(selectedPetHooks, 'useSelectedPet').mockReturnValue({
-      selectedPetId: createdPet.id,
-      selectPet,
+    let resolvePets!: (state: PetsState) => void;
+    const revalidatedPets = new Promise<PetsState>((resolve) => {
+      resolvePets = resolve;
     });
-    jest.spyOn(apiHooks, 'useApi').mockImplementation(
-      <T extends { kind: string }>(): ApiResult<T> => {
-        const result = hookCall++ % 3 === 0 ? petsResult : emptyResult;
-        return result as ApiResult<T>;
-      },
+    const useSelectedPet = selectedPetHooks.useSelectedPet;
+    mockListPets.mockResolvedValueOnce({ kind: 'ok', pets: [existingPet] });
+    mockListVaccines.mockReturnValue(pending<VaccinesState>());
+    mockListWeights.mockReturnValue(pending<WeightsState>());
+
+    const { queryClient, unmount } = await renderHealth();
+    await screen.findByTestId(`pet-chip-${existingPet.id}`);
+
+    const selectedPetSpy = jest
+      .spyOn(selectedPetHooks, 'useSelectedPet')
+      .mockImplementation(() => ({
+        ...useSelectedPet(),
+        selectedPetId: createdPet.id,
+        selectPet,
+      }));
+    const callsBeforeRefetch = selectedPetSpy.mock.calls.length;
+    mockListPets.mockReturnValue(revalidatedPets);
+    await act(() => {
+      void queryClient.refetchQueries({ queryKey: petKeys.list() });
+    });
+    await waitFor(() =>
+      expect(queryClient.isFetching({ queryKey: petKeys.list() })).toBe(1),
+    );
+    await waitFor(() =>
+      expect(selectedPetSpy.mock.calls.length).toBeGreaterThan(
+        callsBeforeRefetch,
+      ),
     );
 
-    const view = await renderHealth();
+    expect(selectPet).not.toHaveBeenCalled();
+    expect(screen.getByTestId(`pet-chip-${existingPet.id}`)).toBeVisible();
+
+    await act(async () => {
+      resolvePets({ kind: 'ok', pets: [existingPet, createdPet] });
+      await revalidatedPets;
+    });
+    await waitFor(() =>
+      expect(queryClient.isFetching({ queryKey: petKeys.list() })).toBe(0),
+    );
 
     expect(selectPet).not.toHaveBeenCalled();
-
-    petsResult = {
-      data: { kind: 'ok', pets: [existingPet, createdPet] },
-      isRefreshing: false,
-      refetch: jest.fn(),
-    };
-    await view.rerender(<HealthScreen />);
-
-    expect(selectPet).not.toHaveBeenCalled();
+    await unmount();
   });
 });
 
@@ -616,6 +639,43 @@ describe('#62 R5: el título de card usa un único tratamiento', () => {
 
     expect((await screen.findByTestId('weight-card-title')).props.className).toBe(
       'text-base font-bold text-foreground',
+    );
+  });
+});
+
+describe('#87 R13: HealthScreen lee por TanStack Query', () => {
+  it('deja mascotas, vacunas y un solo peso en sus claves canónicas', async () => {
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    const petsState: PetsState = { kind: 'ok', pets: [makePet()] };
+    const vaccinesState: VaccinesState = {
+      kind: 'ok',
+      vaccines: [makeVaccine()],
+    };
+    const weightsState: WeightsState = {
+      kind: 'ok',
+      weights: [makeWeight()],
+    };
+    mockListPets.mockResolvedValue(petsState);
+    mockListVaccines.mockResolvedValue(vaccinesState);
+    mockListWeights.mockResolvedValue(weightsState);
+
+    const { queryClient } = await renderWithProviders(<HealthScreen />, {
+      wrapper: HealthWrapper,
+    });
+    await screen.findByTestId('weight-current');
+
+    expect(queryClient.getQueryData(petKeys.list())).toEqual(petsState);
+    expect(queryClient.getQueryData(healthKeys.vaccines('pet-1'))).toEqual(
+      vaccinesState,
+    );
+    expect(queryClient.getQueryData(healthKeys.weights('pet-1', 1))).toEqual(
+      weightsState,
     );
   });
 });

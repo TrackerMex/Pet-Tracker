@@ -3258,3 +3258,83 @@ logica de aplicacion. Reporte en `progress/impl_db-migrate-script.md`.
   mató. Memoria: `pgrep -af 'init\.sh|test:e2e|jest-e2e'`.
 - **Deuda**: #89 `dto-dates-owner-timezone` (`weight.dto.ts` con margen +1,
   `create-pet.dto.ts` birthDate; en create-pet la zona es la del requester).
+---
+
+## 2026-09-11 — #87 `mobile-tanstack-query` (cerrada)
+
+## Feature #87 — mobile-tanstack-query (activa)
+
+- **Branch**: `feature/87-mobile-tanstack-query` (rebasado sobre `main` @ 7f298f2)
+- **Inicio**: 2026-09-10
+- **Estado**: `in_progress` — spec **aprobada** por el humano el 2026-09-10, handoff a Codex CLI entregado
+- **Prioridad**: P2
+
+Migracion del fetching movil de `src/hooks/use-api.ts` a TanStack Query.
+Decidida por el humano el 2026-09-10 al revisar la spec de #78.
+
+Spec: `specs/mobile-tanstack-query/` — 20 requisitos, los cuatro ficheros en
+`approved`. Implementa **Codex CLI**, no un subagente. Mientras Codex trabaja,
+esta sesion no toca `mobile-pet-tracker/`: solo `docs/`, `specs/`, `progress/`
+y `feature_list.json`.
+
+Rebase hecho sobre `main` @ 7f298f2 (merge de #76 / PR #118).
+
+## Feature #78 — mobile-alerts-center (en espera, NO abandonada)
+
+- **Branch**: `feature/78-mobile-alerts-center`, pusheado (`99f5f2d`, `1e4af3a`)
+- **Estado**: `spec_ready`, frontmatter en `draft`, pendiente del gate humano
+- **Espera a #87 por decision del humano**, para que la pantalla de alertas se
+  escriba una sola vez sobre el patron final en vez de con acumulacion manual de
+  paginas que #87 reescribiria.
+- Cuando #87 cierre hay que **enmendar R1, R8, R9 y R11** de
+  `specs/mobile-alerts-center/`: pasan de acumulacion manual + refetch por foco a
+  `useInfiniteQuery` + `invalidateQueries`. `design.md` y `tasks.md` con ellos.
+- Las cinco decisiones que el humano tenia que firmar siguen abiertas y se firman
+  con la spec ya enmendada, no antes.
+
+### Por que dos features en vuelo
+
+No se viola "una sola in_progress": #78 esta `spec_ready`, no `in_progress`, y su
+branch queda quieto. El guard de `init.sh` cuenta por arbol de trabajo, asi que
+tampoco choca con la sesion Backend que lleva #76 en su propio worktree.
+
+### Incidencia del entorno (2026-09-10)
+
+`init.sh` aborta en este VPS con `❌ Más de 1 feature en in_progress (0)` habiendo
+**cero**. Es el bug **#75 `harness-init-force-color`**, todavia `pending`: el
+entorno tiene `FORCE_COLOR=3`, Node imprime el numero coloreado y la comparacion
+por cadena de `init.sh:138` no matchea `"0"`. **Todo gate de esta sesion tiene que
+lanzarlo como `env -u FORCE_COLOR bash ./init.sh`.**
+
+### Coordinacion con la sesion Backend
+
+Lleva #76 en `/home/claude/sites/Pet-Tracker-wt-backend`. Comparten el Postgres de
+docker: `pgrep` y aviso mutuo antes de cada `init.sh`. Id #87 reservado y avisado.
+
+### Evidencia cruzada sobre el flake #72 (2026-09-10)
+
+`#72 mobile-add-pet-photo-test-flake` está `pending` con prioridad **P3**, y hay
+razón para subirla:
+
+- El `reviewer` de #87 midió la tasa en la base, sin nada de #87 encima:
+  **2 de 13** pasadas completas de la suite móvil en rojo.
+- La sesión Backend reportó que su **primer `init.sh` de cierre de #82 cayó por
+  ese mismo test** (`add-pet`, *"uploads a chosen preview only after createPet
+  succeeds"*) con **cero archivos móviles en su diff**; la segunda corrida salió
+  verde sin tocar nada.
+
+Es decir: el flake ya está tumbando gates de features que no tocan el móvil, y
+obliga a repetir corridas de `init.sh` completas. El coste real no es el test,
+es el tiempo de gate de cualquier feature del repo y el riesgo de que alguien
+normalice el "vuelve a correrlo, seguro que pasa" y con eso se cuele un rojo de
+verdad.
+
+### Cierre
+
+- `reviewer` aprobado en la **ronda 2** (`progress/review_mobile-tanstack-query.md`).
+  La ronda 1 rechazó por dos carreras asíncronas en tests, sin tocar producción.
+- Gate humano firmado el 2026-09-11: smoke en dev build de Android, rutas cargando.
+- El rebase sobre `main` @ `f3e3280` invalidó los 42 hashes de `traceability.md`
+  y del reporte de impl; se reapuntaron verificando `merge-base --is-ancestor`
+  uno a uno. Para la próxima, mergear `main` en vez de rebasar cuando la
+  trazabilidad ya está escrita.

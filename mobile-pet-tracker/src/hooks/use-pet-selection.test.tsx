@@ -1,14 +1,15 @@
 import { renderHook } from '@testing-library/react-native';
 import { useIsFocused } from 'expo-router';
 
-import type { PetsState } from '../api/pets';
 import type { PetProfile } from '../api/types';
 import {
   useSelectedPet,
   type SelectedPetContextValue,
 } from '../providers/selected-pet-provider';
-import type { ApiResult } from './use-api';
-import { usePetSelection } from './use-pet-selection';
+import {
+  usePetSelection,
+  type PetSelectionSource,
+} from './use-pet-selection';
 
 interface DirectoryEntry {
   name: string;
@@ -65,11 +66,10 @@ function makePet(id: string): PetProfile {
 function petsResult(
   pets: PetProfile[],
   isRefreshing = false,
-): ApiResult<PetsState> {
+): PetSelectionSource {
   return {
     data: { kind: 'ok', pets },
     isRefreshing,
-    refetch: jest.fn(),
   };
 }
 
@@ -126,5 +126,36 @@ describe('R10: la selección automática vive solo en usePetSelection', () => {
       .map((path) => path.slice(sourceRoot.length + 1));
 
     expect(violations).toEqual([]);
+  });
+});
+
+describe('#87 R8: usePetSelection acepta la forma mínima y no conoce use-' + 'api', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockUseIsFocused.mockReturnValue(true);
+    mockUseSelectedPet.mockReturnValue({
+      selectedPetId: 'pet-new',
+      selectPet: mockSelectPet,
+    } satisfies SelectedPetContextValue);
+  });
+
+  it('does not import the retired fetching hook', () => {
+    const source = readFileSync(
+      join(sourceRoot, 'hooks', 'use-pet-selection.ts'),
+      'utf8',
+    );
+
+    expect(source).not.toContain(['use', 'api'].join('-'));
+  });
+
+  it('does not select while the minimal source shape is refreshing', async () => {
+    await renderHook(() =>
+      usePetSelection({
+        data: { kind: 'ok', pets: [makePet('pet-old')] },
+        isRefreshing: true,
+      }),
+    );
+
+    expect(mockSelectPet).not.toHaveBeenCalled();
   });
 });

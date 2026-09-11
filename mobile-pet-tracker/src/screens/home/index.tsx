@@ -1,6 +1,7 @@
+import { useQuery } from '@tanstack/react-query';
 import { router, useFocusEffect } from 'expo-router';
 import { Button, Card as HeroUICard, Skeleton } from 'heroui-native';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -25,12 +26,16 @@ import {
 
 import { getDailyActivity } from '../../api/activity';
 import { getPet, listPets, type PetsState } from '../../api/pets';
+import {
+  activityKeys,
+  petKeys,
+  reminderKeys,
+} from '../../api/query-keys';
 import { listReminders } from '../../api/reminders';
 import type { DayEntry, ReminderType } from '../../api/types';
 import { Card } from '../../components/card';
 import { PetHeroHeader } from '../../components/pet-hero-header';
 import { PetSwitcher } from '../../components/pet-switcher';
-import { useApi } from '../../hooks/use-api';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import {
@@ -149,36 +154,26 @@ export function HomeScreen() {
   const quickActionInks = useThemeColors(
     QUICK_ACTIONS.map(({ slot }) => `category-${slot}-strong`),
   );
-  const petsFn = useCallback(
-    () => listPets(baseUrl, token ?? ''),
-    [baseUrl, token],
-  );
-  const pets = useApi(petsFn);
-  usePetSelection(pets);
-  const detailFn = useMemo(
-    () =>
-      selectedPetId
-        ? () => getPet(baseUrl, token ?? '', selectedPetId)
-        : null,
-    [baseUrl, selectedPetId, token],
-  );
-  const activityFn = useMemo(
-    () =>
-      selectedPetId
-        ? () => getDailyActivity(baseUrl, token ?? '', selectedPetId)
-        : null,
-    [baseUrl, selectedPetId, token],
-  );
-  const remindersFn = useMemo(
-    () =>
-      selectedPetId
-        ? () => listReminders(baseUrl, token ?? '', selectedPetId)
-        : null,
-    [baseUrl, selectedPetId, token],
-  );
-  const detail = useApi(detailFn);
-  const activity = useApi(activityFn);
-  const reminders = useApi(remindersFn);
+  const pets = useQuery({
+    queryKey: petKeys.list(),
+    queryFn: () => listPets(baseUrl, token ?? ''),
+  });
+  usePetSelection({ data: pets.data, isRefreshing: pets.isRefetching });
+  const detail = useQuery({
+    queryKey: petKeys.detail(selectedPetId ?? ''),
+    queryFn: () => getPet(baseUrl, token ?? '', selectedPetId!),
+    enabled: selectedPetId !== null,
+  });
+  const activity = useQuery({
+    queryKey: activityKeys.daily(selectedPetId ?? ''),
+    queryFn: () => getDailyActivity(baseUrl, token ?? '', selectedPetId!),
+    enabled: selectedPetId !== null,
+  });
+  const reminders = useQuery({
+    queryKey: reminderKeys.list(selectedPetId ?? ''),
+    queryFn: () => listReminders(baseUrl, token ?? '', selectedPetId!),
+    enabled: selectedPetId !== null,
+  });
   const upcoming =
     reminders.data?.kind === 'ok'
       ? upcomingReminders(reminders.data.reminders, new Date())
@@ -283,7 +278,10 @@ export function HomeScreen() {
               <Text testID="home-error" className="text-danger">
                 {t('common.somethingWentWrong')}
               </Text>
-              <Button testID="home-retry" onPress={pets.refetch}>
+              <Button
+                testID="home-retry"
+                onPress={() => void pets.refetch()}
+              >
                 {t('common.retry')}
               </Button>
             </View>
@@ -303,7 +301,10 @@ export function HomeScreen() {
             <Text className="text-danger">
               {t('common.somethingWentWrong')}
             </Text>
-            <Button testID="pet-hero-retry" onPress={detail.refetch}>
+            <Button
+              testID="pet-hero-retry"
+              onPress={() => void detail.refetch()}
+            >
               {t('common.retry')}
             </Button>
           </HeroUICard>

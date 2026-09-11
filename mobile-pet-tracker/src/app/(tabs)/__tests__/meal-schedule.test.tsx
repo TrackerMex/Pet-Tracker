@@ -1,6 +1,5 @@
 import {
   fireEvent,
-  render,
   screen,
   waitFor,
   within,
@@ -17,6 +16,7 @@ import {
   type NutritionPlanState,
   type NutritionProfileState,
 } from '../../../api/nutrition';
+import { nutritionKeys } from '../../../api/query-keys';
 import type { NutritionPlan, NutritionProfile } from '../../../api/types';
 import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
 import { LanguageProvider } from '../../../providers/language-provider';
@@ -26,6 +26,7 @@ import {
 } from '../../../providers/selected-pet-provider';
 import MealScheduleScreen from '../meal-schedule';
 import { TOUCH_SLOP } from '../../../theme/touch-target';
+import { renderWithProviders } from '../../../../test/render-with-providers';
 
 jest.mock('../../../api/nutrition', () => ({
   generateNutritionPlan: jest.fn(),
@@ -136,7 +137,7 @@ function SelectionProbe() {
 }
 
 async function renderMealSchedule(selected = true) {
-  await render(
+  return renderWithProviders(
     <HeroUINativeProvider>
       <LanguageProvider initial="es">
         <SelectedPetProvider>
@@ -462,5 +463,36 @@ describe('#62 R5: el título de card usa un único tratamiento', () => {
     expect(
       (await screen.findByTestId('nutrition-profile-title')).props.className,
     ).toBe('text-base font-bold text-foreground');
+  });
+});
+
+describe('#87 R11: MealScheduleContent lee por TanStack Query', () => {
+  it('deja el plan y el perfil en sus claves canónicas', async () => {
+    const planState: NutritionPlanState = { kind: 'ok', plan: makePlan() };
+    const profileState: NutritionProfileState = {
+      kind: 'ok',
+      profile: makeProfile(),
+    };
+    mockGetNutritionPlan.mockResolvedValue(planState);
+    mockGetNutritionProfile.mockResolvedValue(profileState);
+
+    const { queryClient } = await renderWithProviders(
+      <HeroUINativeProvider>
+        <LanguageProvider initial="es">
+          <SelectedPetProvider>
+            <SelectionProbe />
+            <MealScheduleScreen />
+          </SelectedPetProvider>
+        </LanguageProvider>
+      </HeroUINativeProvider>,
+    );
+    await screen.findByTestId('meal-schedule-summary');
+
+    expect(queryClient.getQueryData(nutritionKeys.plan('pet-1'))).toEqual(
+      planState,
+    );
+    expect(queryClient.getQueryData(nutritionKeys.profile('pet-1'))).toEqual(
+      profileState,
+    );
   });
 });

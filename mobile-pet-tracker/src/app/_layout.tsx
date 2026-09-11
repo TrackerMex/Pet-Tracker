@@ -10,6 +10,7 @@ import { Uniwind } from 'uniwind';
 import { DEFAULT_LANGUAGE, type Language } from '../i18n/catalog';
 import { AuthProvider } from '../providers/auth-provider';
 import { LanguageProvider } from '../providers/language-provider';
+import { QueryProvider } from '../providers/query-provider';
 import { getStoredLanguage } from '../utils/language-preference';
 import { getStoredTheme } from '../utils/theme-preference';
 
@@ -49,7 +50,9 @@ export default function RootLayout() {
       <HeroUINativeProvider>
         <LanguageProvider initial={initialLanguage}>
           <AuthProvider>
-            <Stack screenOptions={{ headerShown: false }} />
+            <QueryProvider>
+              <Stack screenOptions={{ headerShown: false }} />
+            </QueryProvider>
           </AuthProvider>
         </LanguageProvider>
       </HeroUINativeProvider>

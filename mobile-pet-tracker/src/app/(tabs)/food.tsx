@@ -1,15 +1,15 @@
+import { useQuery } from '@tanstack/react-query';
 import { router, type Href } from 'expo-router';
 import { Button, Skeleton, Spinner } from 'heroui-native';
-import { useCallback, useMemo } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronRight, Clock, ForkKnife, Sparkles } from 'reicon-react-native';
 
 import { getNutritionPlan } from '../../api/nutrition';
 import { listPets, type PetsState } from '../../api/pets';
+import { nutritionKeys, petKeys } from '../../api/query-keys';
 import { Card } from '../../components/card';
 import { PetSwitcher } from '../../components/pet-switcher';
-import { useApi } from '../../hooks/use-api';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
@@ -39,20 +39,16 @@ export default function FoodScreen() {
   const t = useTranslate();
   const { selectedPetId, selectPet } = useSelectedPet();
   const insets = useSafeAreaInsets();
-  const petsFn = useCallback(
-    () => listPets(baseUrl, token ?? ''),
-    [baseUrl, token],
-  );
-  const pets = useApi(petsFn);
-  usePetSelection(pets);
-  const planFn = useMemo(
-    () =>
-      selectedPetId
-        ? () => getNutritionPlan(baseUrl, token ?? '', selectedPetId)
-        : null,
-    [baseUrl, selectedPetId, token],
-  );
-  const plan = useApi(planFn);
+  const pets = useQuery({
+    queryKey: petKeys.list(),
+    queryFn: () => listPets(baseUrl, token ?? ''),
+  });
+  usePetSelection({ data: pets.data, isRefreshing: pets.isRefetching });
+  const plan = useQuery({
+    queryKey: nutritionKeys.plan(selectedPetId ?? ''),
+    queryFn: () => getNutritionPlan(baseUrl, token ?? '', selectedPetId!),
+    enabled: selectedPetId !== null,
+  });
   const hhmm = localTimeHhmm();
   const loadedPlan = plan.data?.kind === 'ok' ? plan.data.plan : null;
   const waitingForPetSelection =
@@ -94,7 +90,10 @@ export default function FoodScreen() {
           <Text testID="food-error" className="text-danger">
             {t('common.somethingWentWrong')}
           </Text>
-          <Button testID="food-retry" onPress={pets.refetch}>
+          <Button
+            testID="food-retry"
+            onPress={() => void pets.refetch()}
+          >
             {t('common.retry')}
           </Button>
         </View>
@@ -292,7 +291,10 @@ export default function FoodScreen() {
               <Text testID="food-plan-error" className="text-danger">
                 {t('food.couldNotLoadPlan')}
               </Text>
-              <Button testID="food-plan-retry" onPress={plan.refetch}>
+              <Button
+                testID="food-plan-retry"
+                onPress={() => void plan.refetch()}
+              >
                 {t('common.retry')}
               </Button>
             </View>
