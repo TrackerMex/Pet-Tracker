@@ -89,6 +89,7 @@ describe('R2: POST /v1/pets responde el perfil creado con myRole owner', () => {
     expect(createExecute).toHaveBeenCalledWith(
       { name: 'Firulais', species: 'dog', birthDate: '2024-01-15' },
       USER.id,
+      expect.any(Date),
     );
   });
 
@@ -288,9 +289,12 @@ describe('R13: PATCH /v1/pets/:petId delega el subconjunto validado', () => {
       name: 'Firu',
     });
 
-    expect(updateExecute).toHaveBeenCalledWith(PET_ID, USER.id, {
-      name: 'Firu',
-    });
+    expect(updateExecute).toHaveBeenCalledWith(
+      PET_ID,
+      USER.id,
+      { name: 'Firu' },
+      expect.any(Date),
+    );
     expect(response.myRole).toBe('owner');
   });
 

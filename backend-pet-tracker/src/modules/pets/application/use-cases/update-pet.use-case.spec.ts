@@ -10,6 +10,8 @@ import { UpdatePetUseCase } from './update-pet.use-case';
 
 const PET_ID = '0198b2c3-4d5e-7a01-b234-56789abcdef0';
 const USER_ID = '0198a1f0-3d5c-7f21-b0a1-6f1c9e2d4b77';
+const NOW_CDMX_EVENING = new Date('2026-08-11T02:00:00.000Z');
+const NOW_KIRITIMATI_MORNING = new Date('2026-08-10T20:00:00.000Z');
 
 function buildPet(): Pet {
   return new Pet({
@@ -37,11 +39,23 @@ function buildPet(): Pet {
 function buildDeps() {
   const update = jest.fn().mockResolvedValue(buildPet());
   const findById = jest.fn().mockResolvedValue(buildPet());
+  const findOwnerTimezone = jest.fn().mockResolvedValue('UTC');
   const record = jest.fn().mockResolvedValue(undefined);
-  const pets = { update, findById } as unknown as PetRepository;
+  const pets = {
+    update,
+    findById,
+    findOwnerTimezone,
+  } as unknown as PetRepository;
   const auditLogger: AuditLogger = { record };
 
-  return { pets, auditLogger, update, findById, record };
+  return {
+    pets,
+    auditLogger,
+    update,
+    findById,
+    findOwnerTimezone,
+    record,
+  };
 }
 
 describe('R13: PATCH actualiza unicamente los campos presentes', () => {
@@ -49,7 +63,7 @@ describe('R13: PATCH actualiza unicamente los campos presentes', () => {
     const { pets, auditLogger, update } = buildDeps();
     const useCase = new UpdatePetUseCase(pets, auditLogger);
 
-    await useCase.execute(PET_ID, USER_ID, { name: 'Firu' });
+    await useCase.execute(PET_ID, USER_ID, { name: 'Firu' }, NOW_CDMX_EVENING);
 
     expect(update).toHaveBeenCalledWith(PET_ID, { name: 'Firu' });
   });
@@ -69,7 +83,12 @@ describe('R14: persistir un campo de edad anula el otro', () => {
     const { pets, auditLogger, update } = buildDeps();
     const useCase = new UpdatePetUseCase(pets, auditLogger);
 
-    await useCase.execute(PET_ID, USER_ID, { birthDate: '2024-01-15' });
+    await useCase.execute(
+      PET_ID,
+      USER_ID,
+      { birthDate: '2024-01-15' },
+      NOW_CDMX_EVENING,
+    );
 
     expect(update).toHaveBeenCalledWith(PET_ID, {
       birthDate: '2024-01-15',
@@ -81,7 +100,12 @@ describe('R14: persistir un campo de edad anula el otro', () => {
     const { pets, auditLogger, update } = buildDeps();
     const useCase = new UpdatePetUseCase(pets, auditLogger);
 
-    await useCase.execute(PET_ID, USER_ID, { approxAgeMonths: 18 });
+    await useCase.execute(
+      PET_ID,
+      USER_ID,
+      { approxAgeMonths: 18 },
+      NOW_CDMX_EVENING,
+    );
 
     expect(update).toHaveBeenCalledWith(PET_ID, {
       approxAgeMonths: 18,
@@ -95,7 +119,7 @@ describe('R15: el PATCH con cambios audita pet.update con nombres de campos', ()
     const { pets, auditLogger, record } = buildDeps();
     const useCase = new UpdatePetUseCase(pets, auditLogger);
 
-    await useCase.execute(PET_ID, USER_ID, { name: 'Firu' });
+    await useCase.execute(PET_ID, USER_ID, { name: 'Firu' }, NOW_CDMX_EVENING);
 
     expect(record).toHaveBeenCalledWith({
       userId: USER_ID,
@@ -112,7 +136,7 @@ describe('R15: el body vacio es un no-op 200 sin escritura ni auditoria', () => 
     const { pets, auditLogger, update, findById, record } = buildDeps();
     const useCase = new UpdatePetUseCase(pets, auditLogger);
 
-    const pet = await useCase.execute(PET_ID, USER_ID, {});
+    const pet = await useCase.execute(PET_ID, USER_ID, {}, NOW_CDMX_EVENING);
 
     expect(pet.id).toBe(PET_ID);
     expect(findById).toHaveBeenCalledWith(PET_ID);
@@ -125,7 +149,7 @@ describe('R15: el body vacio es un no-op 200 sin escritura ni auditoria', () => 
     const useCase = new UpdatePetUseCase(pets, auditLogger);
 
     const dto = UpdatePetSchema.parse({ weightKg: 99 });
-    await useCase.execute(PET_ID, USER_ID, dto);
+    await useCase.execute(PET_ID, USER_ID, dto, NOW_CDMX_EVENING);
 
     expect(findById).toHaveBeenCalledWith(PET_ID);
     expect(update).not.toHaveBeenCalled();
@@ -137,8 +161,84 @@ describe('R15: el body vacio es un no-op 200 sin escritura ni auditoria', () => 
     findById.mockResolvedValue(null);
     const useCase = new UpdatePetUseCase(pets, auditLogger);
 
-    await expect(useCase.execute(PET_ID, USER_ID, {})).rejects.toThrow(
-      PetNotFoundError,
+    await expect(
+      useCase.execute(PET_ID, USER_ID, {}, NOW_CDMX_EVENING),
+    ).rejects.toThrow(PetNotFoundError);
+  });
+});
+
+describe('R4 (dto-dates-owner-timezone #89): update compara birthDate con el dia civil del owner solo cuando el body lo trae', () => {
+  it('acepta hoy local aunque UTC ya sea manana (America/Mexico_City, 20:00)', async () => {
+    const { pets, auditLogger, update, findOwnerTimezone } = buildDeps();
+    findOwnerTimezone.mockResolvedValue('America/Mexico_City');
+    const useCase = new UpdatePetUseCase(pets, auditLogger);
+
+    await expect(
+      useCase.execute(
+        PET_ID,
+        USER_ID,
+        { birthDate: '2026-08-10' },
+        NOW_CDMX_EVENING,
+      ),
+    ).resolves.toBeDefined();
+    expect(findOwnerTimezone).toHaveBeenCalledWith(PET_ID);
+    expect(update).toHaveBeenCalledWith(PET_ID, {
+      birthDate: '2026-08-10',
+      approxAgeMonths: null,
+    });
+  });
+
+  it('rechaza manana local aunque UTC ya sea ese dia (America/Mexico_City, 20:00)', async () => {
+    const { pets, auditLogger, update, findOwnerTimezone, record } =
+      buildDeps();
+    findOwnerTimezone.mockResolvedValue('America/Mexico_City');
+    const useCase = new UpdatePetUseCase(pets, auditLogger);
+
+    const execution = useCase.execute(
+      PET_ID,
+      USER_ID,
+      { birthDate: '2026-08-11' },
+      NOW_CDMX_EVENING,
     );
+
+    await expect(execution).rejects.toThrow(
+      'birthDate cannot be in the future',
+    );
+    await expect(execution).rejects.toMatchObject({
+      name: 'PetBirthDateInFutureError',
+    });
+    expect(update).not.toHaveBeenCalled();
+    expect(record).not.toHaveBeenCalled();
+  });
+
+  it('acepta hoy local aunque UTC todavia sea ayer (Pacific/Kiritimati, 10:00)', async () => {
+    const { pets, auditLogger, update, findOwnerTimezone } = buildDeps();
+    findOwnerTimezone.mockResolvedValue('Pacific/Kiritimati');
+    const useCase = new UpdatePetUseCase(pets, auditLogger);
+
+    await expect(
+      useCase.execute(
+        PET_ID,
+        USER_ID,
+        { birthDate: '2026-08-11' },
+        NOW_KIRITIMATI_MORNING,
+      ),
+    ).resolves.toBeDefined();
+    expect(findOwnerTimezone).toHaveBeenCalledWith(PET_ID);
+    expect(update).toHaveBeenCalledWith(PET_ID, {
+      birthDate: '2026-08-11',
+      approxAgeMonths: null,
+    });
+  });
+
+  it('sin birthDate en el body no consulta la zona del owner', async () => {
+    const { pets, auditLogger, update, findOwnerTimezone } = buildDeps();
+    const useCase = new UpdatePetUseCase(pets, auditLogger);
+
+    await expect(
+      useCase.execute(PET_ID, USER_ID, { name: 'Firu' }, NOW_CDMX_EVENING),
+    ).resolves.toBeDefined();
+    expect(findOwnerTimezone).not.toHaveBeenCalled();
+    expect(update).toHaveBeenCalledWith(PET_ID, { name: 'Firu' });
   });
 });

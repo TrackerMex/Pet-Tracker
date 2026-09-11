@@ -3234,6 +3234,30 @@ logica de aplicacion. Reporte en `progress/impl_db-migrate-script.md`.
   corrida verde. Lección: leer siempre la última línea del log, no el estado
   de la tarea.
 
+## #88 vaccine-applied-at-owner-timezone (cerrada 2026-09-11)
+
+- **Qué entrega**: `POST/PATCH /v1/pets/:petId/vaccines` validan `appliedAt` contra
+  el día civil en `users.timezone` del owner, en el use case y con `now` inyectado
+  desde el controller. El DTO solo valida formato. `VaccineAppliedInFutureError`
+  mapeado al mismo 400 de zod. Helper `ownerLocalDay(pets, petId, now)` compartido
+  con `GetPetUseCase` (#82), con fallback UTC + warn.
+- **Por qué existía**: el DTO comparaba con el hoy UTC del servidor: 400 indebido
+  para zonas positivas tras su medianoche y futuro aceptado para zonas negativas
+  por la tarde. El enunciado original tenía la dirección invertida; se corrigió
+  con `Intl` antes de especificar.
+- **Premisa del leader corregida por el spec_author**: `UpdateVaccineUseCase` no
+  inyectaba `PetRepository`; gana el parámetro y el `it` posicional de #14 se
+  adapta. Inventario de once archivos, sin dobles exhaustivos afectados (no se
+  añaden métodos a puertos).
+- **Cierre limpio**: diez commits rojo→verde en orden, verde mínimo por commit,
+  reviewer aprobado a la primera (rojos en worktree desechable, M1 día UTC y M2
+  `<=`→`<`, dos corridas e2e con `359 passed`, `init.sh` exit 0 sin flake #72,
+  hashes de trazabilidad verificados con `merge-base --is-ancestor`).
+- **Coordinación**: la sesión Frontend tenía un bucle que relanzaba su `init.sh`
+  al no ver otro vivo, sin mirar `test:e2e`; se detectó antes de chocar y lo
+  mató. Memoria: `pgrep -af 'init\.sh|test:e2e|jest-e2e'`.
+- **Deuda**: #89 `dto-dates-owner-timezone` (`weight.dto.ts` con margen +1,
+  `create-pet.dto.ts` birthDate; en create-pet la zona es la del requester).
 ---
 
 ## 2026-09-11 — #87 `mobile-tanstack-query` (cerrada)
@@ -3314,3 +3338,50 @@ verdad.
   y del reporte de impl; se reapuntaron verificando `merge-base --is-ancestor`
   uno a uno. Para la próxima, mergear `main` en vez de rebasar cuando la
   trazabilidad ya está escrita.
+
+## 2026-09-11 — #89 `dto-dates-owner-timezone` (cerrada)
+
+## Feature #89 — dto-dates-owner-timezone
+
+- **Branch**: `feature/89-dto-dates-owner-timezone` (desde `origin/main` @ 381d1e36, merge de #88 ya integrado)
+- **Worktree**: `/home/claude/sites/Pet-Tracker-wt-backend` (el worktree principal lo ocupa #78, sesion Frontend)
+- **Inicio**: 2026-09-11
+- **Estado**: `in_progress` -> handoff a Codex CLI (spec aprobada por el humano en 62992e82)
+- **Prioridad**: P3
+
+### Plan
+
+1. `init.sh` de base sobre `origin/main` en este worktree (con `env -u FORCE_COLOR`, bug #75 sigue `pending`).
+2. `spec_author` escribe `specs/dto-dates-owner-timezone/` (requirements EARS + design + tasks + traceability).
+3. **PARADA**: gate humano de aprobacion de la spec (frontmatter `approved` en branch, flujo de aprobacion por commit).
+4. Handoff a Codex CLI con la spec autosuficiente.
+5. `reviewer` con `init.sh` en primer plano.
+
+### Por que #89
+
+Continuacion directa de #88 (mergeada hoy en PR #120): mismo sesgo UTC, mismos modulos, patron
+`ownerLocalDay` ya en `main`. El humano pidio el 2026-09-11 continuar la linea de #88; #88 ya
+estaba `done` y mergeada, asi que la siguiente es su deuda declarada.
+
+### Coordinacion con la sesion Frontend
+
+Sesiones paralelas sobre el mismo Postgres de docker. Antes de cada `init.sh` se comprueba que no
+haya otro corriendo (`pgrep -f "^bash ./init.sh"`). Mensaje a la sesion Frontend con las dos
+preguntas que la spec debe cerrar: formato de `measuredAt` y `birthDate` que manda el movil
+(fecha civil o instante UTC) y si alguna pantalla depende del margen de +1 dia en pesos.
+
+### Avance 2026-09-11
+
+- `init.sh` de base verde en este worktree sobre 381d1e36 (`env -u FORCE_COLOR`, exit 0; backend, infra, movil y e2e sin rojos).
+- `spec_author` entrego `specs/dto-dates-owner-timezone/` en cf51a1a9. Anade Bloque D (PATCH `/v1/pets/:petId`): `UpdatePetSchema = PetFieldsSchema.partial()` hereda el `refine` UTC, asi que quitarlo del DTO sin mover la regla al use case dejaria PATCH sin validar.
+- Respuesta de Frontend incorporada como premisa verificada (fecha civil del dispositivo, nada depende del margen +1) y deuda movil nombrada en §Fuera de alcance sin id.
+- Decisiones que el humano ratifica o enmienda en el gate: D2 (sin margen, coherente con #88), D3/D7 (zona del requester en POST, del owner en PATCH), literal del mensaje de pesos.
+- Gate humano firmado en 62992e82 (tres casillas, sin enmiendas). Frontmatter a `approved`, #89 a `in_progress`.
+- Handoff en `progress/handoff_dto-dates-owner-timezone.md`. Mientras Codex implementa, esta sesion no toca `backend-pet-tracker/`.
+- Codex de #78 corre en paralelo en el worktree principal: los gates se turnan con `pgrep -af 'init\.sh'`.
+
+### Cierre
+
+- Codex: trece commits bd97047c..198d67b1, veintidós archivos justos, reporte en `progress/impl_dto-dates-owner-timezone.md`.
+- Reviewer: APROBADO sobre 198d67b1 (`progress/review_dto-dates-owner-timezone.md`): seis rojos reproducidos por checkout, M1-M3 reproducidas, barrido y candados sin diff, `init.sh` verde en primer plano en una corrida. Única nota: `files_affected` de #89 corregido a la lista de veintidós.
+- `feature_list.json` #89 -> `done`. PR abierto por el leader; mergea el humano.

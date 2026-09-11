@@ -1,4 +1,5 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { ownerLocalDay } from '@/modules/pets/application/owner-local-day';
 import { Pet } from '@/modules/pets/domain/entities/pet.entity';
 import { PetNotFoundError } from '@/modules/pets/domain/errors/pet.errors';
 import { PET_DEVICE_READER } from '@/modules/pets/domain/ports/pet-device-reader';
@@ -15,7 +16,6 @@ import type {
 } from '@/modules/pets/domain/ports/pet-vaccine-reader';
 import { PET_REPOSITORY } from '@/modules/pets/domain/repositories/pet.repository';
 import type { PetRepository } from '@/modules/pets/domain/repositories/pet.repository';
-import { isSupportedTimeZone, localDayOf } from '@/pipeline/local-day';
 
 /** Vigencia del GET prefirmado del perfil (R6): exactamente 1 hora. */
 export const PHOTO_DOWNLOAD_URL_EXPIRES_IN_SECONDS = 3600;
@@ -37,11 +37,10 @@ export interface PetProfile {
  * resuelve `photoUrl` via PET_PHOTO_URL_RESOLVER solo cuando `photoKey` no
  * es nulo — evita una firma S3 innecesaria cuando no hay foto.
  * Desde vaccine-due-today-inclusive (#82), usa el dia civil del owner.
+ * Desde #88, delega la resolucion de ese dia a ownerLocalDay.
  */
 @Injectable()
 export class GetPetUseCase {
-  private readonly logger = new Logger(GetPetUseCase.name);
-
   constructor(
     @Inject(PET_REPOSITORY)
     private readonly pets: PetRepository,
@@ -67,30 +66,13 @@ export class GetPetUseCase {
             PHOTO_DOWNLOAD_URL_EXPIRES_IN_SECONDS,
           )
         : null;
-    const ownerTimezone = await this.pets.findOwnerTimezone(petId);
-    const timezone =
-      ownerTimezone !== null && isSupportedTimeZone(ownerTimezone)
-        ? ownerTimezone
-        : 'UTC';
-
-    if (timezone !== ownerTimezone) {
-      this.logger.warn({
-        scope: 'get-pet',
-        petId,
-        timezone: ownerTimezone,
-        message:
-          'falling back to UTC: owner timezone missing or not a IANA zone',
-      });
-    }
+    const today = await ownerLocalDay(this.pets, petId, now);
 
     return {
       pet,
       device: await this.deviceReader.findActiveDevice(petId),
       photoUrl,
-      nextVaccine: await this.vaccineReader.findNextVaccine(
-        petId,
-        localDayOf(now.getTime(), timezone),
-      ),
+      nextVaccine: await this.vaccineReader.findNextVaccine(petId, today),
     };
   }
 }

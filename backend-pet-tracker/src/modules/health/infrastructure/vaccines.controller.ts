@@ -62,11 +62,13 @@ export class VaccinesController {
   ): Promise<VaccineResponse> {
     const dto = parseBody<CreateVaccineDto>(CreateVaccineSchema, body);
     try {
+      const now = new Date();
       return toVaccineResponse(
         await this.createVaccine.execute(
           request.petMembership.petId,
           dto,
           request.user.id,
+          now,
         ),
       );
     } catch (error) {
@@ -90,12 +92,14 @@ export class VaccinesController {
   ): Promise<VaccineResponse> {
     const dto = parseBody<UpdateVaccineDto>(UpdateVaccineSchema, body);
     try {
+      const now = new Date();
       return toVaccineResponse(
         await this.updateVaccine.execute(
           request.petMembership.petId,
           id,
           dto,
           request.user.id,
+          now,
         ),
       );
     } catch (error) {
