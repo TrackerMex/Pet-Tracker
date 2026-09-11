@@ -1,7 +1,7 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-09-10
-**Features completadas**: 70/87 (`feature_list.json`)
+**Última actualización**: 2026-09-11
+**Features completadas**: 71/88 (`feature_list.json`)
 **En progreso**: ninguna
 
 **Pendientes**: 15 (#18, #41, #60, #63, #70, #72-#81). El rediseño contra el diseño del Make abrió el bloque #64-#71: #64, #65, #66, #67, #68 y #69 están cerradas y **mergeadas** (PR #106, #110, #111, #112, #113 y #114). #71 `mobile-home-quick-actions` está cerrada con los dos gates humanos firmados; **PR pendiente de merge por el humano**. Del bloque solo queda **#70 recordatorios**, sin especificar, y con la mitad del diseño bloqueada porque `nextReminder` y `activitySummary` siguen a `null` en el mapper del perfil. Deuda registrada: #72 flake de add-pet; #73 `pet-online-pill`; #74 el selector que TalkBack lee como tres controles sueltos; #75 `init.sh` aborta en falso con `FORCE_COLOR`; #76 un e2e que asserta orden sobre un `SELECT` sin `ORDER BY`; #77 el peso visible sin collar; #80 los `testID` del doble atados al componente; #81 la receta tipográfica del tile sin candado. #78 y #79 entraron desde otra sesión.
@@ -87,6 +87,25 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
+- **`vaccine-applied-at-owner-timezone` (#88) done** (2026-09-11): la validación
+  «`appliedAt` no puede ser futuro» sale del DTO de zod y vive en los use cases de
+  crear y editar vacuna, comparando con el **día civil en la zona del owner**
+  (`ownerLocalDay`, helper nuevo en `pets/application/` que `GetPetUseCase` de #82
+  también usa ahora). Owners en zonas positivas ya no reciben 400 por la vacuna
+  de esta mañana, y los de zonas negativas ya no pueden registrar mañana. El 400
+  conserva byte a byte la forma de zod. Solo backend, once archivos.
+  - **La premisa venía invertida**: el enunciado decía que el 400 lo sufría UTC-6
+    a las 20:00; verificado con `Intl`, ese caso pasaba. Corregido antes de
+    especificar, y una premisa mía también cayó: `UpdateVaccineUseCase` no
+    inyectaba `PetRepository`; la spec lo destapó.
+  - **Diez commits rojo→verde**, verde mínimo por commit (el helper sin IANA ni
+    warn hasta su propio rojo), refactor de #82 en commit aparte con sus tests
+    intactos como candado. Reviewer aprobado a la primera sobre dc9ee8d, con
+    rojos reproducidos en worktree desechable, M1/M2 y todos los hashes de la
+    trazabilidad verificados como ancestros de `HEAD`.
+  - **Deuda abierta**: **#89** `dto-dates-owner-timezone`, los dos DTOs que
+    siguen comparando con el hoy UTC (`weight.dto.ts` con margen +1,
+    `create-pet.dto.ts` birthDate).
 - **`vaccine-due-today-inclusive` (#82) done** (2026-09-10): `GET /v1/pets/:petId`
   calcula `nextVaccine` con el **día civil en la zona del owner** (`users.timezone`,
   `localDayOf`, fallback a UTC con `warn`) y el corte pasa de `gt` a **`gte`**: la
@@ -1097,6 +1116,13 @@ debe listar las 4 URLs de cola.
 
 ## Última sesión
 
+- **2026-09-11** — **#88 `vaccine-applied-at-owner-timezone` cerrada**: spec,
+  gate, Codex (diez commits sin paradas), reviewer aprobado a la primera sobre
+  dc9ee8d. Abre **#89** (DTOs hermanos). Tercera feature de backend en dos días
+  desde el worktree `Pet-Tracker-wt-backend` en paralelo con la Frontend (#87
+  cerrada por su lado, PR pendiente). Lecciones a memoria: el `pgrep` de
+  contención debe cubrir `test:e2e`, no solo `init.sh`; y no rebasear una branch
+  tras la trazabilidad de Codex.
 - **2026-09-10 (2)** — **#82 `vaccine-due-today-inclusive` cerrada**: explorer
   + spec + gate + Codex + una enmienda (A1, décimo archivo) + reviewer aprobado
   a la primera sobre ba28618. Abre **#88** (deuda `appliedAt` en la zona del
