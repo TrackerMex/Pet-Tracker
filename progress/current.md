@@ -74,6 +74,11 @@ Con la casilla marcada, lo siguiente es el **handoff a Codex CLI**
   `app/(tabs)/weight-log.tsx` (pesos) y a `screens/add-pet/index.tsx`
   (`birthDate`, que con #89 pasa a aceptar hoy a cualquier hora, o sea mejora).
   **No** se abre id ahora: la decision puede cambiar en el gate de #89.
+  Anclaje verificado el 2026-09-11: la deuda queda nombrada en
+  `specs/dto-dates-owner-timezone/requirements.md:661-673` §Fuera de alcance
+  (branch `feature/89-dto-dates-owner-timezone`, `cf51a1a9`), con la condicion
+  escrita de que el id lo abre esta sesion solo si el humano firma #89 con la
+  decision por defecto.
 
 ### Recordatorio de entorno
 
