@@ -13,7 +13,7 @@ tags: [harness, spec]
 | R3 | `src/providers/__tests__/language-provider.test.tsx :: #78 R3: el catálogo trae las claves del centro de alertas` | rojo `0467146a`; verde `d2f10c67` |
 | R4 | `src/screens/alerts/index.test.tsx :: #78 R4: la pantalla pinta su esqueleto, su error, su vacío y sus filas` | rojo `2dc14118`; verde `a8fa22d2` |
 | R5 | `src/app/(tabs)/__tests__/alerts.test.tsx :: #78 R5: la ruta delega en la pantalla y no es pestaña` | rojo `8d7b5f13`; verde `e9f3b126` |
-| R6 | pendiente | pendiente |
+| R6 | `src/screens/alerts/index.test.tsx :: #78 R6: cada fila de alerta trae su icono, su hueco, su tinta y sus tres hijos en orden` | rojo `e2a10a0a`; verde pendiente |
 | R7 | pendiente | pendiente |
 | R8 | pendiente | pendiente |
 | R9 | pendiente | pendiente |

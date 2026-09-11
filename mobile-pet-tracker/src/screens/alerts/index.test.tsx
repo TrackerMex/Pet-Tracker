@@ -6,6 +6,7 @@ import {
 } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
+import type { TestInstance } from 'test-renderer';
 
 import {
   listAlerts,
@@ -42,7 +43,10 @@ jest.mock('reicon-react-native', () => {
   );
   const icon = (iconName: string) =>
     function MockIcon(props: Record<string, unknown>) {
-      return React.createElement(View, { ...props, iconName });
+      return React.createElement(
+        View as unknown as React.ComponentType<Record<string, unknown>>,
+        { ...props, iconName },
+      );
     };
 
   return {
@@ -79,6 +83,15 @@ function makeAlert(overrides: Partial<Alert> = {}): Alert {
 
 function pending<T>(): Promise<T> {
   return new Promise(() => undefined);
+}
+
+function elementChild(
+  node: TestInstance,
+  index: number,
+): TestInstance {
+  const child = node.children[index];
+  if (typeof child === 'string') throw new Error('Expected an element child');
+  return child;
 }
 
 function AlertsWrapper({ children }: { children: ReactNode }) {
@@ -314,10 +327,12 @@ describe('#78 R6: cada fila de alerta trae su icono, su hueco, su tinta y sus tr
         'min-h-20 flex-row items-center gap-3',
       );
       expect(row.children).toHaveLength(3);
-      expect(row.children[0].props.className).toContain('size-11');
-      expect(row.children[1].props.className).toBe('min-w-0 flex-1 gap-1');
-      expect(row.children[1].children).toHaveLength(3);
-      expect(row.children[2].props.testID).toBe(`${rowId}-ack`);
+      expect(elementChild(row, 0).props.className).toContain('size-11');
+      expect(elementChild(row, 1).props.className).toBe(
+        'min-w-0 flex-1 gap-1',
+      );
+      expect(elementChild(row, 1).children).toHaveLength(3);
+      expect(elementChild(row, 2).props.testID).toBe(`${rowId}-ack`);
     },
   );
 
@@ -344,8 +359,10 @@ describe('#78 R6: cada fila de alerta trae su icono, su hueco, su tinta y sus tr
       expect(row.props.className).toContain(
         'min-h-20 flex-row items-center gap-3',
       );
-      expect(row.children[0].props.className).toContain('size-11');
-      expect(row.children[1].props.className).toBe('min-w-0 flex-1 gap-1');
+      expect(elementChild(row, 0).props.className).toContain('size-11');
+      expect(elementChild(row, 1).props.className).toBe(
+        'min-w-0 flex-1 gap-1',
+      );
     }
 
     const open = within(within(list).getByTestId('alert-row-open'));
