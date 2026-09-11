@@ -18,7 +18,7 @@ tags: [harness, spec]
 | R8 | `src/screens/alerts/index.test.tsx :: #78 R8: el ack cambia la fila sin recargar la lista` | rojo `290abc42`; verde `63faca32` |
 | R9 | `src/screens/alerts/index.test.tsx :: #78 R9: pagina por nextCursor y se para cuando no hay` | rojo `b4cd1f97`; verde `288c8c72` |
 | R10 | `src/screens/home/index.test.tsx :: #78 R10: la campana vive en el hero y lleva al centro de alertas` | rojo `73307e12`; verde `3ac78d34` |
-| R11 | pendiente | pendiente |
+| R11 | `src/screens/home/index.test.tsx :: #78 R11: el punto rojo sigue a las alertas abiertas` | rojo `bf3e6622`; verde pendiente |
 | R12 | pendiente | pendiente |
 | R13 | pendiente (verificación — se cierra con la evidencia de mutación de `progress/impl_mobile-alerts-center.md` §R13) | pendiente |
 | R14 | pendiente (gate humano — sin test automatizado; evidencia en `progress/impl_mobile-alerts-center.md` §R14) | pendiente |
@@ -27,7 +27,7 @@ tags: [harness, spec]
 | E3 | `src/screens/alerts/index.test.tsx :: #78 R9: pagina por nextCursor y se para cuando no hay` | rojo `b4cd1f97`; verde `288c8c72` |
 | E4 | pendiente — `src/screens/alerts/index.test.tsx :: #78 R4` | pendiente |
 | E5 | `src/screens/alerts/index.test.tsx :: #78 R8: el ack cambia la fila sin recargar la lista` | rojo `290abc42`; verde `63faca32` |
-| E6 | pendiente — `src/screens/home/index.test.tsx :: #78 R11` | pendiente |
+| E6 | `src/screens/home/index.test.tsx :: #78 R11: el punto rojo sigue a las alertas abiertas` | rojo `bf3e6622`; verde pendiente |
 | E7 | pendiente (documental — referencias de línea reapuntadas; sin test) | pendiente |
 | E8 | `src/__tests__/design-drift.test.ts :: #87 R19: use-api no deja huella` (fila nueva del mapa `screenSignOutCalls`) | rojo `54b8932d`; verde `63faca32` |
 

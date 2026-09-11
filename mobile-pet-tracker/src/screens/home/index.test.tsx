@@ -3408,7 +3408,7 @@ describe('#78 R11: el punto rojo sigue a las alertas abiertas', () => {
     await renderHome();
 
     await waitFor(() => expect(mockListAlerts).toHaveBeenCalledTimes(1));
-    const bell = screen.getByTestId('home-alerts-bell');
+    const bell = await screen.findByTestId('home-alerts-bell');
     expect(screen.queryByTestId('home-alerts-dot')).toBeNull();
     expect(bell.props.accessibilityLabel).toBe(es['home.alertsBell']);
   });
@@ -3435,7 +3435,7 @@ describe('#78 R11: el punto rojo sigue a las alertas abiertas', () => {
     await renderHome();
 
     await waitFor(() => expect(mockListAlerts).toHaveBeenCalledTimes(1));
-    const bell = screen.getByTestId('home-alerts-bell');
+    const bell = await screen.findByTestId('home-alerts-bell');
     expect(screen.queryByTestId('home-alerts-dot')).toBeNull();
     expect(bell.props.accessibilityLabel).toBe(es['home.alertsBell']);
 
