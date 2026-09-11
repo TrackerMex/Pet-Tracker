@@ -18,6 +18,7 @@ import {
 } from '@/modules/health/application/dto/weight.dto';
 import { CreateWeightUseCase } from '@/modules/health/application/use-cases/create-weight.use-case';
 import { ListWeightsUseCase } from '@/modules/health/application/use-cases/list-weights.use-case';
+import { WeightMeasuredInFutureError } from '@/modules/health/domain/errors/weight.errors';
 import { RequirePetRole } from '@/modules/pets/infrastructure/decorators/require-pet-role.decorator';
 import { PetAccessGuard } from '@/modules/pets/infrastructure/guards/pet-access.guard';
 import type { PetAccessRequest } from '@/modules/pets/infrastructure/guards/pet-access.guard';
@@ -39,14 +40,23 @@ export class WeightsController {
   ): Promise<WeightResponse> {
     const dto = parseBody<CreateWeightDto>(CreateWeightSchema, body);
     const now = new Date();
-    return toWeightResponse(
-      await this.createWeight.execute(
-        request.petMembership.petId,
-        dto,
-        request.user.id,
-        now,
-      ),
-    );
+    try {
+      return toWeightResponse(
+        await this.createWeight.execute(
+          request.petMembership.petId,
+          dto,
+          request.user.id,
+          now,
+        ),
+      );
+    } catch (error) {
+      if (error instanceof WeightMeasuredInFutureError) {
+        throw validationError([
+          { path: ['measuredAt'], message: error.message },
+        ]);
+      }
+      throw error;
+    }
   }
 
   @Get()
