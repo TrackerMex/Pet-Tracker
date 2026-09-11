@@ -38,11 +38,13 @@ export class WeightsController {
     @Body() body: unknown,
   ): Promise<WeightResponse> {
     const dto = parseBody<CreateWeightDto>(CreateWeightSchema, body);
+    const now = new Date();
     return toWeightResponse(
       await this.createWeight.execute(
         request.petMembership.petId,
         dto,
         request.user.id,
+        now,
       ),
     );
   }

@@ -59,11 +59,9 @@ describe('R10 (health-weights #15): auditoria weight.create ocurre despues de es
     const pets = {
       findOwnerTimezone: jest.fn().mockResolvedValue('UTC'),
     } as unknown as PetRepository;
-    const useCase = new CreateWeightUseCase(
-      repository({ create }),
-      pets,
-      { record },
-    );
+    const useCase = new CreateWeightUseCase(repository({ create }), pets, {
+      record,
+    });
 
     await useCase.execute(
       PET_ID,
@@ -140,9 +138,7 @@ describe('R1 (dto-dates-owner-timezone #89): create compara measuredAt con el di
   it('acepta hoy local aunque UTC todavia sea ayer (Pacific/Kiritimati, 10:00)', async () => {
     const create = jest.fn().mockResolvedValue(persistedWeight());
     const weights = repository({ create });
-    const findOwnerTimezone = jest
-      .fn()
-      .mockResolvedValue('Pacific/Kiritimati');
+    const findOwnerTimezone = jest.fn().mockResolvedValue('Pacific/Kiritimati');
     const pets = { findOwnerTimezone } as unknown as PetRepository;
     const audit = { record: jest.fn().mockResolvedValue(undefined) };
     const useCase = new CreateWeightUseCase(weights, pets, audit);
