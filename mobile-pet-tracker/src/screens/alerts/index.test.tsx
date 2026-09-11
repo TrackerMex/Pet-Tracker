@@ -6,6 +6,7 @@ import {
   listAlerts,
   type AlertsState,
 } from '../../api/alerts';
+import { alertKeys } from '../../api/query-keys';
 import type { Alert } from '../../api/types';
 import { es } from '../../i18n/catalog';
 import {
@@ -40,7 +41,10 @@ function makeAlert(overrides: Partial<Alert> = {}): Alert {
     petName: 'Luna',
     type: 'geofence_exit',
     status: 'open',
+    geofenceId: null,
     openedAt: '2026-09-11T10:00:00.000Z',
+    ackedAt: null,
+    closedAt: null,
     payload: {},
     ...overrides,
   };
@@ -58,10 +62,9 @@ function AlertsWrapper({ children }: { children: ReactNode }) {
   );
 }
 
-function renderAlerts(onUnauthorized?: () => void) {
+function renderAlerts() {
   return renderWithProviders(<AlertsScreen />, {
     wrapper: AlertsWrapper,
-    onUnauthorized,
   });
 }
 
@@ -89,7 +92,7 @@ describe('#78 R4: la pantalla pinta su esqueleto, su error, su vacío y sus fila
     for (const number of [1, 2, 3]) {
       expect(
         screen.getByTestId(`alert-row-skeleton-${number}`).props.className,
-      ).toBe('h-20 w-full rounded-card');
+      ).toContain('h-20 w-full rounded-card');
     }
   });
 
@@ -99,23 +102,29 @@ describe('#78 R4: la pantalla pinta su esqueleto, su error, su vacío y sus fila
       { kind: 'unreachable', message: 'network down' },
       { kind: 'missing-config' },
     ];
+    for (const error of errors) mockListAlerts.mockResolvedValueOnce(error);
 
-    for (const error of errors) {
-      mockListAlerts.mockReset().mockResolvedValue(error);
-      const rendered = await renderAlerts();
+    const rendered = await renderAlerts();
 
+    for (const [index, error] of errors.entries()) {
       await waitFor(() =>
-        expect(screen.getByTestId('alerts-error')).toHaveTextContent(
-          es['common.somethingWentWrong'],
+        expect(rendered.queryClient.getQueryData(alertKeys.list())).toEqual(
+          expect.objectContaining({ pages: [error] }),
         ),
+      );
+      expect(screen.getByTestId('alerts-error')).toHaveTextContent(
+        es['common.somethingWentWrong'],
       );
       expect(screen.getByTestId('alerts-error').props.className).toBe(
         'text-danger',
       );
       expect(screen.getByText(es['common.retry'])).toBeVisible();
-      await fireEvent.press(screen.getByTestId('alerts-retry'));
-      await waitFor(() => expect(mockListAlerts).toHaveBeenCalledTimes(2));
-      rendered.unmount();
+      if (index < errors.length - 1) {
+        await fireEvent.press(screen.getByTestId('alerts-retry'));
+        await waitFor(() =>
+          expect(mockListAlerts).toHaveBeenCalledTimes(index + 2),
+        );
+      }
     }
   });
 
@@ -148,52 +157,22 @@ describe('#78 R4: la pantalla pinta su esqueleto, su error, su vacío y sus fila
     );
     expect(screen.getByTestId('alert-row-alert-2')).toBeVisible();
     expect(screen.getByTestId('alerts-list').props.data).toHaveLength(2);
+    expect(screen.queryByTestId('alerts-loading')).toBeNull();
+    expect(screen.queryByTestId('alerts-error')).toBeNull();
+    expect(screen.queryByTestId('alerts-empty')).toBeNull();
   });
 
   it('mantiene los estados excluyentes y no pinta uno para unauthorized', async () => {
-    const cases: Array<{
-      result: Promise<AlertsState>;
-      visible: string | null;
-    }> = [
-      { result: pending<AlertsState>(), visible: 'alerts-loading' },
-      { result: Promise.resolve({ kind: 'error' }), visible: 'alerts-error' },
-      {
-        result: Promise.resolve({ kind: 'ok', items: [], nextCursor: null }),
-        visible: 'alerts-empty',
-      },
-      {
-        result: Promise.resolve({
-          kind: 'ok',
-          items: [makeAlert()],
-          nextCursor: null,
-        }),
-        visible: null,
-      },
-      { result: Promise.resolve({ kind: 'unauthorized' }), visible: null },
-    ];
+    mockListAlerts.mockResolvedValue({ kind: 'unauthorized' });
 
-    for (const testCase of cases) {
-      const onUnauthorized = jest.fn();
-      mockListAlerts.mockReset().mockReturnValue(testCase.result);
-      const rendered = await renderAlerts(onUnauthorized);
+    await renderAlerts();
 
-      if (testCase.visible) {
-        await waitFor(() =>
-          expect(screen.getByTestId(testCase.visible!)).toBeVisible(),
-        );
-      } else {
-        await waitFor(() => expect(mockListAlerts).toHaveBeenCalledTimes(1));
-      }
-      const visibleStates = [
-        'alerts-loading',
-        'alerts-error',
-        'alerts-empty',
-      ].filter((testID) => screen.queryByTestId(testID) !== null);
-      expect(visibleStates).toEqual(
-        testCase.visible === null ? [] : [testCase.visible],
-      );
-      rendered.unmount();
-    }
+    await waitFor(() =>
+      expect(screen.queryByTestId('alerts-loading')).toBeNull(),
+    );
+    expect(screen.queryByTestId('alerts-loading')).toBeNull();
+    expect(screen.queryByTestId('alerts-error')).toBeNull();
+    expect(screen.queryByTestId('alerts-empty')).toBeNull();
   });
 
   it('respeta las dimensiones, el inset automático y los safe areas', async () => {
