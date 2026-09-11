@@ -1,10 +1,11 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { Button, Skeleton } from 'heroui-native';
+import { useRef, useState } from 'react';
 import { FlatList, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BatteryLow, Bell, LocationSlash } from 'reicon-react-native';
 
-import { listAlerts } from '../../api/alerts';
+import { ackAlert, listAlerts } from '../../api/alerts';
 import { alertKeys } from '../../api/query-keys';
 import type { Alert } from '../../api/types';
 import { Card } from '../../components/card';
@@ -51,7 +52,7 @@ function fmtOpenedAt(
 
 export function AlertsScreen() {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
-  const { token } = useAuth();
+  const { signOut, token } = useAuth();
   const t = useTranslate();
   const insets = useSafeAreaInsets();
   const [danger, warningStrong, muted] = useThemeColors([
@@ -59,6 +60,10 @@ export function AlertsScreen() {
     'warning-strong',
     'muted',
   ]);
+  const [acked, setAcked] = useState<Record<string, Alert>>({});
+  const [ackingId, setAckingId] = useState<string | null>(null);
+  const ackingIdRef = useRef<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const alerts = useInfiniteQuery({
     queryKey: alertKeys.list(),
     queryFn: ({ pageParam }) =>
@@ -73,15 +78,59 @@ export function AlertsScreen() {
     alerts.data?.pages.flatMap((page) =>
       page.kind === 'ok' ? page.items : [],
     ) ?? [];
-  const items = [
+  const ordered = [
     ...fetched.filter((alert) => alert.status === 'open'),
     ...fetched.filter((alert) => alert.status !== 'open'),
   ];
+  const rows = ordered.map((alert) => acked[alert.id] ?? alert);
   const firstPage = alerts.data?.pages[0];
   const firstPageFailed =
     firstPage !== undefined &&
     ['error', 'unreachable', 'missing-config'].includes(firstPage.kind);
   const now = new Date(Date.now());
+
+  async function handleAck(alert: Alert) {
+    if (ackingIdRef.current !== null) return;
+    ackingIdRef.current = alert.id;
+    setAckingId(alert.id);
+    setActionError(null);
+
+    try {
+      const result = await ackAlert(baseUrl, token ?? '', alert.id);
+
+      switch (result.kind) {
+        case 'ok':
+          setAcked((current) => ({
+            ...current,
+            [alert.id]: result.alert,
+          }));
+          return;
+        case 'already-closed':
+          setAcked((current) => ({
+            ...current,
+            [alert.id]: { ...alert, status: 'closed' },
+          }));
+          return;
+        case 'not-found':
+          setActionError(t('common.somethingWentWrong'));
+          return;
+        case 'unreachable':
+          setActionError(t('common.cannotReachServer'));
+          return;
+        case 'unauthorized':
+          await signOut();
+          return;
+        case 'error':
+        case 'missing-config':
+          setActionError(t('common.somethingWentWrong'));
+      }
+    } catch {
+      setActionError(t('common.somethingWentWrong'));
+    } finally {
+      ackingIdRef.current = null;
+      setAckingId(null);
+    }
+  }
 
   const empty = alerts.isPending ? (
     <View testID="alerts-loading" className="gap-3">
@@ -102,7 +151,7 @@ export function AlertsScreen() {
         <Button.Label>{t('common.retry')}</Button.Label>
       </Button>
     </View>
-  ) : firstPage?.kind === 'ok' && items.length === 0 ? (
+  ) : firstPage?.kind === 'ok' && rows.length === 0 ? (
     <Text testID="alerts-empty" className="font-normal text-muted">
       {t('alerts.empty')}
     </Text>
@@ -120,12 +169,19 @@ export function AlertsScreen() {
           paddingTop: insets.top + 12,
           paddingBottom: insets.bottom + 96,
         }}
-        data={items}
+        data={rows}
         keyExtractor={(item) => item.id}
         ListHeaderComponent={
-          <Text className="text-2xl font-black text-foreground">
-            {t('alerts.title')}
-          </Text>
+          <View className="gap-3">
+            <Text className="text-2xl font-black text-foreground">
+              {t('alerts.title')}
+            </Text>
+            {actionError ? (
+              <Text testID="alerts-action-error" className="text-danger">
+                {actionError}
+              </Text>
+            ) : null}
+          </View>
         }
         ListEmptyComponent={empty}
         renderItem={({ item }) => {
@@ -178,6 +234,8 @@ export function AlertsScreen() {
                   testID={`${rowId}-ack`}
                   accessibilityRole="button"
                   className="min-h-11"
+                  isDisabled={ackingId !== null}
+                  onPress={() => void handleAck(item)}
                 >
                   <Button.Label>{t('alerts.ack')}</Button.Label>
                 </Button>

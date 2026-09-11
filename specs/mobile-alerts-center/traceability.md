@@ -29,7 +29,7 @@ tags: [harness, spec]
 | E5 | `src/screens/alerts/index.test.tsx :: #78 R8: el ack cambia la fila sin recargar la lista` | rojo `290abc42`; verde pendiente |
 | E6 | pendiente — `src/screens/home/index.test.tsx :: #78 R11` | pendiente |
 | E7 | pendiente (documental — referencias de línea reapuntadas; sin test) | pendiente |
-| E8 | `src/__tests__/design-drift.test.ts :: #87 R19: use-api no deja huella` (fila nueva del mapa `screenSignOutCalls`) | rojo pendiente; verde pendiente |
+| E8 | `src/__tests__/design-drift.test.ts :: #87 R19: use-api no deja huella` (fila nueva del mapa `screenSignOutCalls`) | rojo `54b8932d`; verde pendiente |
 
 Tests esperados por requisito (rutas desde `mobile-pet-tracker/`):
 

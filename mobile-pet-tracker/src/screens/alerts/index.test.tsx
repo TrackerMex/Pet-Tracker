@@ -353,11 +353,6 @@ describe('#78 R6: cada fila de alerta trae su icono, su hueco, su tinta y sus tr
       items: alerts,
       nextCursor: null,
     });
-    mockAckAlert.mockResolvedValue({
-      kind: 'ok',
-      alert: { ...alerts[1], status: 'acked' },
-    });
-
     await renderAlerts();
 
     const list = screen.getByTestId('alerts-list');
@@ -455,6 +450,10 @@ describe('#78 R7: pinta las abiertas primero y conserva la posición tras el ack
       kind: 'ok',
       items: alerts,
       nextCursor: null,
+    });
+    mockAckAlert.mockResolvedValue({
+      kind: 'ok',
+      alert: { ...alerts[1], status: 'acked' },
     });
   });
 
