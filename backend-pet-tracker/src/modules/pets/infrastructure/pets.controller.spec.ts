@@ -289,9 +289,12 @@ describe('R13: PATCH /v1/pets/:petId delega el subconjunto validado', () => {
       name: 'Firu',
     });
 
-    expect(updateExecute).toHaveBeenCalledWith(PET_ID, USER.id, {
-      name: 'Firu',
-    });
+    expect(updateExecute).toHaveBeenCalledWith(
+      PET_ID,
+      USER.id,
+      { name: 'Firu' },
+      expect.any(Date),
+    );
     expect(response.myRole).toBe('owner');
   });
 
