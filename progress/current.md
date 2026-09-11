@@ -95,7 +95,15 @@
   tendria que mandar la del owner, o al menos explicar el 400. Afecta a
   `app/(tabs)/weight-log.tsx` (pesos) y a `screens/add-pet/index.tsx`
   (`birthDate`, que con #89 pasa a aceptar hoy a cualquier hora, o sea mejora).
-  **No** se abre id ahora: la decision puede cambiar en el gate de #89.
+  **Id abierto el 2026-09-11 como #90 `mobile-owner-timezone-dates`** (`pending`,
+  P2), despues de que el humano firmara el gate de #89 con la decision por
+  defecto (verificado: casilla `[X]` en
+  `specs/dto-dates-owner-timezone/requirements.md:701`). Id contrastado contra
+  `origin/main` y contra la branch de #89: el maximo era 89 en las dos.
+  **Ojo al mergear**: el `feature_list.json` de esta branch no tiene aun la
+  entrada de #89 —vive en `feature/89-dto-dates-owner-timezone`—, asi que las
+  dos entradas caen en el mismo sitio del array y el merge a `main` pedira una
+  resolucion trivial: conservar las dos, #89 antes de #90.
   Anclaje verificado el 2026-09-11: la deuda queda nombrada en
   `specs/dto-dates-owner-timezone/requirements.md:661-673` §Fuera de alcance
   (branch `feature/89-dto-dates-owner-timezone`, `cf51a1a9`), con la condicion

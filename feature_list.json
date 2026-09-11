@@ -1663,5 +1663,25 @@
       "backend-pet-tracker/src/modules/health/application/dto/iso-date.ts",
       "backend-pet-tracker/test/health-vaccines.e2e-spec.ts"
     ]
+  },
+  {
+    "id": 90,
+    "name": "mobile-owner-timezone-dates",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Deuda movil declarada por la sesion Backend al especificar #89 y firmada por el humano el 2026-09-11 con la decision por defecto (D2, sin margen). Enunciado y evidencia en specs/dto-dates-owner-timezone/requirements.md:661-673, seccion Fuera de alcance, vineta 'Deuda movil declarada (sin id todavia)', que nombra este id como el que la recoge. El problema: el movil construye la fecha civil con la hora del DISPOSITIVO y la manda como YYYY-MM-DD (mobile-pet-tracker/src/app/(tabs)/weight-log.tsx:39-44 localTodayIso para measuredAt; mobile-pet-tracker/src/screens/add-pet/index.tsx:34-39 dateToIso para birthDate), mientras que desde #88/#89 el backend valida contra el dia civil de users.timezone del owner y SIN el margen de +1 dia que antes lo absorbia. Consecuencia observable: un usuario cuyo dispositivo va por delante de la zona del owner recibe 400 al guardar 'hoy' desde su punto de vista. No es rotura ni crash: el 400 ya se mapea a error de campo (src/api/health-records.ts:132-140 -> formError de weight-log), pero el texto no dice nada de zonas, asi que es una regresion funcional silenciosa. En birthDate el efecto de #89 es el contrario, una MEJORA: hoy a cualquier hora pasa a aceptarse; lo unico que hace falta ahi es un test de regresion que lo fije. Punto de partida verificado: GET /v1/users/me ya devuelve timezone y el cliente ya lo tipa (src/api/users.ts:10,35 y src/api/types.ts:40), asi que la zona del usuario logueado esta disponible sin backend nuevo. Decision que la spec tiene que cerrar por escrito, y que puede obligar a una feature de backend aparte: para una mascota COMPARTIDA el validador usa la zona del OWNER, que no es necesariamente la del usuario logueado, y ningun endpoint movil expone hoy la zona del owner de la mascota. Opciones a evaluar: (a) usar la timezone del perfil propio, que cubre el caso mayoritario -owner = usuario- y deja el compartido como esta; (b) pedir a backend que exponga la zona del owner en la respuesta de mascotas, feature suya; (c) no calcular nada en cliente y limitarse a que el 400 explique la zona contra la que se valido, lo que exige que el mensaje del backend la nombre -hoy no lo hace, el texto se conserva byte a byte-. Todo el copy nuevo via t() segun docs/ui-guidelines.md. Cero dependencias nuevas: Intl.DateTimeFormat con timeZone basta para la fecha civil en una zona dada.",
+    "acceptance_criteria": [
+      "La fecha por defecto y la enviada en el alta de peso se calculan en la zona contra la que valida el backend, no en la del dispositivo, o la spec justifica por escrito por que se queda como esta (opcion c)",
+      "Con dispositivo en una zona por delante de la del owner, guardar 'hoy' no produce un 400 inesperado; si el 400 sigue siendo posible, el texto en pantalla explica la causa y sale de t()",
+      "Test de regresion de birthDate: hoy a cualquier hora se acepta tras #89 (el caso que antes dependia del refine UTC)",
+      "Test unitario del helper de fecha civil con zona explicita, con una fixture de dispositivo en zona distinta a la del owner",
+      "Cero dependencias nuevas; suite movil completa verde; ninguna cifra de candado se mueve sin declararla como delta",
+      "La decision sobre mascotas compartidas queda cerrada en la spec: opcion elegida y, si es la (b), el id de la feature de backend que la habilita"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/app/(tabs)/weight-log.tsx",
+      "mobile-pet-tracker/src/screens/add-pet/index.tsx",
+      "mobile-pet-tracker/src/i18n/catalog.ts"
+    ]
   }
 ]
