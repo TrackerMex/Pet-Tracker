@@ -42,7 +42,27 @@
       derogada por E1.
 - [X] **Enmiendas E1-E8 aprobadas** — `4f9298e0` (2026-09-11).
 
-### Estado actual: R1-R13 implementados; R14 reservado al humano
+### Ronda 1: reviewer RECHAZO (2026-09-11)
+
+- `reviewer` **rechazado** (`progress/review_mobile-alerts-center.md`), por
+  **un hallazgo bloqueante y uno menor, los dos SOLO DE TEST**:
+  1. **R6 decision 12**: intercambiar los dos `<Text>` de la columna de la fila
+     —el `petName` pasa a pintarse encima del tipo— deja la suite **entera
+     verde** (73 suites, 1230 tests). El candado de orden se paro en
+     `row.children`; dentro de `row.children[1]` los tres textos se buscan con
+     `getByTestId`, agnostico al orden.
+  2. **R4.1**: la receta tipografica del titulo (`text-2xl font-black
+     text-foreground`) no tiene `expect`; degradarla deja todo verde.
+- **Aceptado** lo demas: E1-E8 una a una, trazabilidad limpia salvo R14, los 37
+  hashes resuelven y son ancestros de HEAD, las tres cifras movidas declaradas
+  como suma, sonda de R13 verificada y cero drift. El reviewer corrio `init.sh`
+  dos veces, exit 0 las dos, sin que cayera el flake #72.
+- Handoff de correccion en **`progress/handoff_mobile-alerts-center_fix1.md`**,
+  con sonda en rojo obligatoria para cada asercion nueva.
+- Pendiente del leader al mergear `main`: `STATUS.md` quedo desactualizado por
+  el alta de #90; se actualiza cuando el recuento sea estable.
+
+### Ronda 1, lo que reporto Codex: R1-R13 implementados; R14 reservado al humano
 
 - **Inicio**: 2026-09-11 15:23 UTC.
 - Preflight `env -u FORCE_COLOR bash ./init.sh`: verde antes de tocar código
