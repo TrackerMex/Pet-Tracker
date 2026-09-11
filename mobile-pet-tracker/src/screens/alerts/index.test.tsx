@@ -417,3 +417,61 @@ describe('#78 R6: cada fila de alerta trae su icono, su hueco, su tinta y sus tr
     }
   });
 });
+
+describe('#78 R7: pinta las abiertas primero y conserva la posición tras el ack', () => {
+  const alerts = [
+    makeAlert({ id: 'acked', status: 'acked' }),
+    makeAlert({ id: 'open1', status: 'open' }),
+    makeAlert({ id: 'closed', status: 'closed' }),
+    makeAlert({ id: 'open2', status: 'open' }),
+  ];
+  const expectedOrder = [
+    'alert-row-open1',
+    'alert-row-open2',
+    'alert-row-acked',
+    'alert-row-closed',
+  ];
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListAlerts.mockResolvedValue({
+      kind: 'ok',
+      items: alerts,
+      nextCursor: null,
+    });
+  });
+
+  function rowOrder(): string[] {
+    return (screen.getByTestId('alerts-list').props.data as Alert[]).map(
+      (alert) => `alert-row-${alert.id}`,
+    );
+  }
+
+  it('particiona por el status descargado y conserva el orden de cada grupo', async () => {
+    await renderAlerts();
+
+    await waitFor(() => expect(rowOrder()).toEqual(expectedOrder));
+    expect(mockListAlerts).toHaveBeenCalledWith(
+      apiUrl,
+      'jwt-token',
+      undefined,
+      undefined,
+    );
+  });
+
+  it('no mueve la fila abierta al pulsar su ack', async () => {
+    await renderAlerts();
+    await waitFor(() => expect(rowOrder()).toEqual(expectedOrder));
+
+    await fireEvent.press(screen.getByTestId('alert-row-open1-ack'));
+
+    expect(rowOrder()).toEqual(expectedOrder);
+  });
+});
