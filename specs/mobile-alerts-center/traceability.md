@@ -15,7 +15,7 @@ tags: [harness, spec]
 | R5 | `src/app/(tabs)/__tests__/alerts.test.tsx :: #78 R5: la ruta delega en la pantalla y no es pestaña` | rojo `8d7b5f13`; verde `e9f3b126` |
 | R6 | `src/screens/alerts/index.test.tsx :: #78 R6: cada fila de alerta trae su icono, su hueco, su tinta y sus tres hijos en orden` | rojo `e2a10a0a`; verde `ccefd8fe` |
 | R7 | `src/screens/alerts/index.test.tsx :: #78 R7: pinta las abiertas primero y conserva la posición tras el ack` | rojo `d72ba1dd`; verde `3e7bebb9` |
-| R8 | `src/screens/alerts/index.test.tsx :: #78 R8: el ack cambia la fila sin recargar la lista` | rojo `290abc42`; verde pendiente |
+| R8 | `src/screens/alerts/index.test.tsx :: #78 R8: el ack cambia la fila sin recargar la lista` | rojo `290abc42`; verde `63faca32` |
 | R9 | pendiente | pendiente |
 | R10 | pendiente | pendiente |
 | R11 | pendiente | pendiente |
@@ -26,10 +26,10 @@ tags: [harness, spec]
 | E2 | `src/api/__tests__/query-keys.test.ts` (dos filas nuevas del array `cases`) | rojo `8e05f068`; verde `749cde81` |
 | E3 | pendiente — `src/screens/alerts/index.test.tsx :: #78 R9` | pendiente |
 | E4 | pendiente — `src/screens/alerts/index.test.tsx :: #78 R4` | pendiente |
-| E5 | `src/screens/alerts/index.test.tsx :: #78 R8: el ack cambia la fila sin recargar la lista` | rojo `290abc42`; verde pendiente |
+| E5 | `src/screens/alerts/index.test.tsx :: #78 R8: el ack cambia la fila sin recargar la lista` | rojo `290abc42`; verde `63faca32` |
 | E6 | pendiente — `src/screens/home/index.test.tsx :: #78 R11` | pendiente |
 | E7 | pendiente (documental — referencias de línea reapuntadas; sin test) | pendiente |
-| E8 | `src/__tests__/design-drift.test.ts :: #87 R19: use-api no deja huella` (fila nueva del mapa `screenSignOutCalls`) | rojo `54b8932d`; verde pendiente |
+| E8 | `src/__tests__/design-drift.test.ts :: #87 R19: use-api no deja huella` (fila nueva del mapa `screenSignOutCalls`) | rojo `54b8932d`; verde `63faca32` |
 
 Tests esperados por requisito (rutas desde `mobile-pet-tracker/`):
 

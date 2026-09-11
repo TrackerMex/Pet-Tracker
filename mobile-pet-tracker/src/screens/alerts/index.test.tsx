@@ -117,6 +117,7 @@ function renderAlerts() {
 describe('#78 R4: la pantalla pinta su esqueleto, su error, su vacío y sus filas', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockListAlerts.mockReset();
     process.env.EXPO_PUBLIC_API_URL = apiUrl;
     mockUseAuth.mockReturnValue({
       status: 'authenticated',
@@ -649,5 +650,108 @@ describe('#78 R8: el ack cambia la fila sin recargar la lista', () => {
     await waitFor(() =>
       expect(screen.getByTestId('alert-row-alert-1-status')).toBeVisible(),
     );
+  });
+});
+
+describe('#78 R9: pagina por nextCursor y se para cuando no hay', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockListAlerts.mockReset();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+  });
+
+  function rowIds(): string[] {
+    return (screen.getByTestId('alerts-list').props.data as Alert[]).map(
+      ({ id }) => id,
+    );
+  }
+
+  it('pide el cursor siguiente y conserva las filas de ambas páginas', async () => {
+    mockListAlerts
+      .mockResolvedValueOnce({
+        kind: 'ok',
+        items: [makeAlert({ id: 'p1a' }), makeAlert({ id: 'p1b' })],
+        nextCursor: 'c1',
+      })
+      .mockResolvedValueOnce({
+        kind: 'ok',
+        items: [makeAlert({ id: 'p2a' }), makeAlert({ id: 'p2b' })],
+        nextCursor: null,
+      });
+    await renderAlerts();
+    await waitFor(() => expect(rowIds()).toEqual(['p1a', 'p1b']));
+
+    await fireEvent(screen.getByTestId('alerts-list'), 'onEndReached');
+
+    await waitFor(() =>
+      expect(rowIds()).toEqual(['p1a', 'p1b', 'p2a', 'p2b']),
+    );
+    expect(mockListAlerts).toHaveBeenNthCalledWith(
+      2,
+      apiUrl,
+      'jwt-token',
+      undefined,
+      'c1',
+    );
+  });
+
+  it('no pide otra página cuando nextCursor es null', async () => {
+    mockListAlerts.mockResolvedValue({
+      kind: 'ok',
+      items: [makeAlert()],
+      nextCursor: null,
+    });
+    await renderAlerts();
+    await waitFor(() => expect(rowIds()).toEqual(['alert-1']));
+
+    await fireEvent(screen.getByTestId('alerts-list'), 'onEndReached');
+
+    expect(mockListAlerts).toHaveBeenCalledTimes(1);
+  });
+
+  it('corta el segundo onEndReached mientras la página está en vuelo', async () => {
+    mockListAlerts
+      .mockResolvedValueOnce({
+        kind: 'ok',
+        items: [makeAlert()],
+        nextCursor: 'c1',
+      })
+      .mockReturnValueOnce(pending<AlertsState>());
+    await renderAlerts();
+    await waitFor(() => expect(rowIds()).toEqual(['alert-1']));
+
+    await fireEvent(screen.getByTestId('alerts-list'), 'onEndReached');
+    await fireEvent(screen.getByTestId('alerts-list'), 'onEndReached');
+
+    await waitFor(() => expect(mockListAlerts).toHaveBeenCalledTimes(2));
+  });
+
+  it('conserva la primera página y muestra error si falla la segunda', async () => {
+    mockListAlerts
+      .mockResolvedValueOnce({
+        kind: 'ok',
+        items: [makeAlert({ id: 'p1a' }), makeAlert({ id: 'p1b' })],
+        nextCursor: 'c1',
+      })
+      .mockResolvedValueOnce({ kind: 'error' });
+    await renderAlerts();
+    await waitFor(() => expect(rowIds()).toEqual(['p1a', 'p1b']));
+
+    await fireEvent(screen.getByTestId('alerts-list'), 'onEndReached');
+
+    await waitFor(() =>
+      expect(screen.getByTestId('alerts-action-error')).toHaveTextContent(
+        es['common.somethingWentWrong'],
+      ),
+    );
+    expect(rowIds()).toEqual(['p1a', 'p1b']);
+    await fireEvent(screen.getByTestId('alerts-list'), 'onEndReached');
+    expect(mockListAlerts).toHaveBeenCalledTimes(2);
   });
 });
