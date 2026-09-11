@@ -266,9 +266,11 @@ export function HomeScreen() {
             <Pressable
               testID="home-alerts-bell"
               accessibilityRole="button"
-              accessibilityLabel={t(
-                hasOpenAlerts ? 'home.alertsBellUnread' : 'home.alertsBell',
-              )}
+              accessibilityLabel={
+                hasOpenAlerts
+                  ? t('home.alertsBellUnread')
+                  : t('home.alertsBell')
+              }
               className="size-11 items-center justify-center rounded-full"
               style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
               onPress={() => router.push('/alerts')}

@@ -81,7 +81,7 @@ describe('#65 R3: Home resuelve su copy por clave', () => {
   // 20 en `303fc19` + 1 de `home.walks` (#67 R7b, delta declarado en su R9b).
   // #68 añade el delta medido de weekly-activity-chart, sin recontar la base.
   it('#71 R11: registra el copy de accesos rápidos sobre los deltas heredados', () => {
-    expect(R3_HOME).toHaveLength(21 + 15 + 1 + 4 + 7);
+    expect(R3_HOME).toHaveLength(21 + 15 + 1 + 4 + 7 + 2);
     checkUses(R3_HOME);
   });
 });
@@ -434,7 +434,7 @@ describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () =>
   });
 
   it('no deja ningún valor fijo del catálogo como literal entero en las pantallas', () => {
-    expect(SCREEN_FILES).toHaveLength(19 + 2);
+    expect(SCREEN_FILES).toHaveLength(19 + 2 + 1);
 
     for (const file of SCREEN_FILES) {
       const literals = wholeLiterals(readFileSync(join(SOURCE_ROOT, file), 'utf8'));

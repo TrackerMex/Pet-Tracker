@@ -19,7 +19,7 @@ tags: [harness, spec]
 | R9 | `src/screens/alerts/index.test.tsx :: #78 R9: pagina por nextCursor y se para cuando no hay` | rojo `b4cd1f97`; verde `288c8c72` |
 | R10 | `src/screens/home/index.test.tsx :: #78 R10: la campana vive en el hero y lleva al centro de alertas` | rojo `73307e12`; verde `3ac78d34` |
 | R11 | `src/screens/home/index.test.tsx :: #78 R11: el punto rojo sigue a las alertas abiertas` | rojo `bf3e6622`; verde `418bc7cd` |
-| R12 | pendiente | pendiente |
+| R12 | `src/__tests__/ui-language.test.ts :: #78 R12: el centro de alertas resuelve su copy por clave` | rojo `24d0426a`; verde pendiente |
 | R13 | pendiente (verificación — se cierra con la evidencia de mutación de `progress/impl_mobile-alerts-center.md` §R13) | pendiente |
 | R14 | pendiente (gate humano — sin test automatizado; evidencia en `progress/impl_mobile-alerts-center.md` §R14) | pendiente |
 | E1 | pendiente (documental — la premisa derogada; sin test) | pendiente |

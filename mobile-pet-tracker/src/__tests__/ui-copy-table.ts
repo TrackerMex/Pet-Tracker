@@ -76,6 +76,8 @@ export const R3_HOME: UseRow[] = [
   { file: 'src/screens/home/index.tsx', key: 'home.nextVaccineToday' },
   { file: 'src/screens/home/index.tsx', key: 'home.nextVaccineOverdue' },
   { file: 'src/screens/home/index.tsx', key: 'home.noUpcomingVaccine' },
+  { file: 'src/screens/home/index.tsx', key: 'home.alertsBellUnread' },
+  { file: 'src/screens/home/index.tsx', key: 'home.alertsBell' },
   { file: 'src/screens/home/weekly-activity-chart.tsx', key: 'weeklyActivity.dayLabelMissing' },
   { file: 'src/screens/home/weekly-activity-chart.tsx', key: 'weeklyActivity.dayLabelDistance' },
   { file: 'src/screens/home/weekly-activity-chart.tsx', key: 'weeklyActivity.dayLabelWalks' },
@@ -390,7 +392,27 @@ export const R11_RESET: UseRow[] = [
   { file: 'src/screens/reset-password/index.tsx', key: 'resetPassword.updatePassword' },
 ];
 
-export const R12_ALERTS: UseRow[] = [];
+export const R12_ALERTS: UseRow[] = [
+  { file: 'src/screens/alerts/index.tsx', key: 'alerts.typeGeofenceExit' },
+  { file: 'src/screens/alerts/index.tsx', key: 'alerts.typeBatteryLow' },
+  { file: 'src/screens/alerts/index.tsx', key: 'alerts.typeUnknown' },
+  { file: 'src/screens/alerts/index.tsx', key: 'alerts.justNow' },
+  { file: 'src/screens/alerts/index.tsx', key: 'alerts.minutesAgo' },
+  { file: 'src/screens/alerts/index.tsx', key: 'alerts.hoursAgo' },
+  { file: 'src/screens/alerts/index.tsx', key: 'alerts.daysAgo' },
+  { file: 'src/screens/alerts/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/alerts/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/alerts/index.tsx', key: 'common.cannotReachServer' },
+  { file: 'src/screens/alerts/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/alerts/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/alerts/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/alerts/index.tsx', key: 'common.retry' },
+  { file: 'src/screens/alerts/index.tsx', key: 'alerts.empty' },
+  { file: 'src/screens/alerts/index.tsx', key: 'alerts.title' },
+  { file: 'src/screens/alerts/index.tsx', key: 'alerts.ack' },
+  { file: 'src/screens/alerts/index.tsx', key: 'alerts.statusAcked' },
+  { file: 'src/screens/alerts/index.tsx', key: 'alerts.statusClosed' },
+];
 
 export const ALL_USES: UseRow[] = [
   ...R1_AUTH,
@@ -404,6 +426,7 @@ export const ALL_USES: UseRow[] = [
   ...R9_ADD_PET,
   ...R10_PAIRING,
   ...R11_RESET,
+  ...R12_ALERTS,
 ];
 
 describe('#65: la tabla de uso de copy está disponible al runner', () => {
@@ -413,10 +436,11 @@ describe('#65: la tabla de uso de copy está disponible al runner', () => {
 
   // Enmienda (3): el candado es la consistencia interna, no una constante
   // escrita a mano — es la tercera vez que una cifra congelada envejece.
-  it('cuadra ALL_USES con la suma de los once bloques', () => {
+  it('cuadra ALL_USES con la suma de los doce bloques', () => {
     const blocks = [
       R1_AUTH, R2_TABS, R3_HOME, R4_MAP, R5_HEALTH, R6_FOOD,
       R7_PROFILE, R8_REMINDERS, R9_ADD_PET, R10_PAIRING, R11_RESET,
+      R12_ALERTS,
     ];
 
     expect(ALL_USES).toHaveLength(

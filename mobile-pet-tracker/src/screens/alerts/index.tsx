@@ -255,11 +255,9 @@ export function AlertsScreen() {
                   testID={`${rowId}-status`}
                   className="rounded-full bg-default px-2 py-0.5 text-2xs font-bold text-muted"
                 >
-                  {t(
-                    item.status === 'acked'
-                      ? 'alerts.statusAcked'
-                      : 'alerts.statusClosed',
-                  )}
+                  {item.status === 'acked'
+                    ? t('alerts.statusAcked')
+                    : t('alerts.statusClosed')}
                 </Text>
               )}
             </Card>

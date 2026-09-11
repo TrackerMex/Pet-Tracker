@@ -639,13 +639,14 @@ describe('#78 R8: el ack cambia la fila sin recargar la lista', () => {
       screen.getByTestId('alert-row-alert-1-ack'),
     );
 
-    fireEvent.press(button);
-    fireEvent.press(button);
+    await fireEvent.press(button);
+    await fireEvent.press(button);
 
     await waitFor(() => expect(mockAckAlert).toHaveBeenCalledTimes(1));
     expect(screen.getByTestId('alert-row-alert-1-ack')).toBeDisabled();
     await act(async () => {
       resolveAck({ kind: 'ok', alert: ackedAlert });
+      await Promise.resolve();
     });
     await waitFor(() =>
       expect(screen.getByTestId('alert-row-alert-1-status')).toBeVisible(),
