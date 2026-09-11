@@ -1,4 +1,5 @@
 import {
+  act,
   fireEvent,
   screen,
   waitFor,
@@ -9,6 +10,8 @@ import type { ReactNode } from 'react';
 import type { TestInstance } from 'test-renderer';
 
 import {
+  ackAlert,
+  type AckAlertState,
   listAlerts,
   type AlertsState,
 } from '../../api/alerts';
@@ -24,6 +27,7 @@ import { renderWithProviders } from '../../../test/render-with-providers';
 import { AlertsScreen } from '.';
 
 jest.mock('../../api/alerts', () => ({
+  ackAlert: jest.fn(),
   listAlerts: jest.fn(),
 }));
 
@@ -62,8 +66,10 @@ jest.mock('../../theme/use-theme-colors', () => ({
 }));
 
 const apiUrl = 'http://example.test/v1';
+const mockAckAlert = jest.mocked(ackAlert);
 const mockListAlerts = jest.mocked(listAlerts);
 const mockUseAuth = jest.mocked(useAuth);
+const mockSignOut = jest.fn<Promise<void>, []>();
 
 function makeAlert(overrides: Partial<Alert> = {}): Alert {
   return {
@@ -347,6 +353,10 @@ describe('#78 R6: cada fila de alerta trae su icono, su hueco, su tinta y sus tr
       items: alerts,
       nextCursor: null,
     });
+    mockAckAlert.mockResolvedValue({
+      kind: 'ok',
+      alert: { ...alerts[1], status: 'acked' },
+    });
 
     await renderAlerts();
 
@@ -472,6 +482,173 @@ describe('#78 R7: pinta las abiertas primero y conserva la posición tras el ack
 
     await fireEvent.press(screen.getByTestId('alert-row-open1-ack'));
 
+    await waitFor(() =>
+      expect(screen.getByTestId('alert-row-open1-status')).toHaveTextContent(
+        es['alerts.statusAcked'],
+      ),
+    );
     expect(rowOrder()).toEqual(expectedOrder);
+  });
+});
+
+describe('#78 R8: el ack cambia la fila sin recargar la lista', () => {
+  const openAlert = makeAlert();
+  const ackedAlert = {
+    ...openAlert,
+    status: 'acked',
+    ackedAt: '2026-09-11T12:00:00.000Z',
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockSignOut.mockResolvedValue();
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: mockSignOut,
+    } satisfies AuthContextValue);
+    mockListAlerts.mockResolvedValue({
+      kind: 'ok',
+      items: [openAlert],
+      nextCursor: null,
+    });
+  });
+
+  async function pressAck() {
+    await renderAlerts();
+    const button = await waitFor(() =>
+      screen.getByTestId('alert-row-alert-1-ack'),
+    );
+    await fireEvent.press(button);
+  }
+
+  it('aplica el Alert devuelto por ok y quita el botón', async () => {
+    mockAckAlert.mockResolvedValue({ kind: 'ok', alert: ackedAlert });
+
+    await pressAck();
+
+    expect(mockAckAlert).toHaveBeenCalledWith(
+      apiUrl,
+      'jwt-token',
+      openAlert.id,
+    );
+    await waitFor(() =>
+      expect(screen.getByTestId('alert-row-alert-1-status')).toHaveTextContent(
+        es['alerts.statusAcked'],
+      ),
+    );
+    expect(screen.queryByTestId('alert-row-alert-1-ack')).toBeNull();
+  });
+
+  it('convierte already-closed en la píldora resuelta', async () => {
+    mockAckAlert.mockResolvedValue({ kind: 'already-closed' });
+
+    await pressAck();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('alert-row-alert-1-status')).toHaveTextContent(
+        es['alerts.statusClosed'],
+      ),
+    );
+    expect(screen.queryByTestId('alert-row-alert-1-ack')).toBeNull();
+  });
+
+  it('mantiene la fila en not-found, muestra el error y lo limpia al reintentar', async () => {
+    mockAckAlert
+      .mockResolvedValueOnce({ kind: 'not-found' })
+      .mockResolvedValueOnce({ kind: 'ok', alert: ackedAlert });
+
+    await pressAck();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('alerts-action-error')).toHaveTextContent(
+        es['common.somethingWentWrong'],
+      ),
+    );
+    expect(screen.getByTestId('alerts-action-error').props.className).toBe(
+      'text-danger',
+    );
+    expect(screen.getByTestId('alert-row-alert-1-ack')).toBeVisible();
+    await fireEvent.press(screen.getByTestId('alert-row-alert-1-ack'));
+    await waitFor(() =>
+      expect(screen.queryByTestId('alerts-action-error')).toBeNull(),
+    );
+  });
+
+  it('traduce unreachable como servidor inalcanzable', async () => {
+    mockAckAlert.mockResolvedValue({
+      kind: 'unreachable',
+      message: 'network down',
+    });
+
+    await pressAck();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('alerts-action-error')).toHaveTextContent(
+        es['common.cannotReachServer'],
+      ),
+    );
+  });
+
+  it('cierra sesión en unauthorized sin pintar error', async () => {
+    mockAckAlert.mockResolvedValue({ kind: 'unauthorized' });
+
+    await pressAck();
+
+    await waitFor(() => expect(mockSignOut).toHaveBeenCalledTimes(1));
+    expect(screen.queryByTestId('alerts-action-error')).toBeNull();
+  });
+
+  it.each([
+    { kind: 'error' },
+    { kind: 'missing-config' },
+  ] as const)('traduce $kind como error genérico', async (result) => {
+    mockAckAlert.mockResolvedValue(result);
+
+    await pressAck();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('alerts-action-error')).toHaveTextContent(
+        es['common.somethingWentWrong'],
+      ),
+    );
+  });
+
+  it('no vuelve a cargar la lista tras el ack', async () => {
+    mockAckAlert.mockResolvedValue({ kind: 'ok', alert: ackedAlert });
+
+    await pressAck();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('alert-row-alert-1-status')).toBeVisible(),
+    );
+    expect(mockListAlerts).toHaveBeenCalledTimes(1);
+  });
+
+  it('deshabilita durante el vuelo y corta dos pulsaciones seguidas', async () => {
+    let resolveAck!: (result: AckAlertState) => void;
+    mockAckAlert.mockReturnValue(
+      new Promise((resolve) => {
+        resolveAck = resolve;
+      }),
+    );
+    await renderAlerts();
+    const button = await waitFor(() =>
+      screen.getByTestId('alert-row-alert-1-ack'),
+    );
+
+    fireEvent.press(button);
+    fireEvent.press(button);
+
+    await waitFor(() => expect(mockAckAlert).toHaveBeenCalledTimes(1));
+    expect(screen.getByTestId('alert-row-alert-1-ack')).toBeDisabled();
+    await act(async () => {
+      resolveAck({ kind: 'ok', alert: ackedAlert });
+    });
+    await waitFor(() =>
+      expect(screen.getByTestId('alert-row-alert-1-status')).toBeVisible(),
+    );
   });
 });
