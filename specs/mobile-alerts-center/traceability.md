@@ -11,7 +11,7 @@ tags: [harness, spec]
 | R1 | `src/api/__tests__/alerts.test.ts :: #78 R1: listAlerts mapea la respuesta por kind` | rojo `ee17732b`; verde `f6062ed0` |
 | R2 | `src/api/__tests__/alerts.test.ts :: #78 R2: ackAlert mapea la respuesta por kind` | rojo `d6803629`; verde `02593774` |
 | R3 | `src/providers/__tests__/language-provider.test.tsx :: #78 R3: el catálogo trae las claves del centro de alertas` | rojo `0467146a`; verde `d2f10c67` |
-| R4 | `src/screens/alerts/index.test.tsx :: #78 R4: la pantalla pinta su esqueleto, su error, su vacío y sus filas` | rojo `2dc14118`; verde pendiente |
+| R4 | `src/screens/alerts/index.test.tsx :: #78 R4: la pantalla pinta su esqueleto, su error, su vacío y sus filas` | rojo `2dc14118`; verde `a8fa22d2` |
 | R5 | pendiente | pendiente |
 | R6 | pendiente | pendiente |
 | R7 | pendiente | pendiente |
