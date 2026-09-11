@@ -1,4 +1,9 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react-native';
+import {
+  fireEvent,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
 
@@ -28,6 +33,28 @@ jest.mock('../../providers/auth-provider', () => ({
 jest.mock('react-native-safe-area-context', () => ({
   ...jest.requireActual('react-native-safe-area-context'),
   useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
+}));
+
+jest.mock('reicon-react-native', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>(
+    'react-native',
+  );
+  const icon = (iconName: string) =>
+    function MockIcon(props: Record<string, unknown>) {
+      return React.createElement(View, { ...props, iconName });
+    };
+
+  return {
+    BatteryLow: icon('BatteryLow'),
+    Bell: icon('Bell'),
+    LocationSlash: icon('LocationSlash'),
+  };
+});
+
+jest.mock('../../theme/use-theme-colors', () => ({
+  useThemeColors: (tokens: readonly string[]) =>
+    tokens.map((token) => `--color-${token}`),
 }));
 
 const apiUrl = 'http://example.test/v1';
@@ -190,5 +217,186 @@ describe('#78 R4: la pantalla pinta su esqueleto, su error, su vacío y sus fila
       paddingTop: 52,
       paddingBottom: 120,
     });
+  });
+});
+
+describe('#78 R6: cada fila de alerta trae su icono, su hueco, su tinta y sus tres hijos en orden', () => {
+  const now = Date.parse('2026-09-11T12:00:00.000Z');
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    jest.spyOn(Date, 'now').mockReturnValue(now);
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it.each([
+    {
+      type: 'geofence_exit',
+      iconName: 'LocationSlash',
+      labelKey: 'alerts.typeGeofenceExit',
+      surface: 'bg-danger-soft',
+      color: '--color-danger',
+    },
+    {
+      type: 'battery_low',
+      iconName: 'BatteryLow',
+      labelKey: 'alerts.typeBatteryLow',
+      surface: 'bg-warning-soft',
+      color: '--color-warning-strong',
+    },
+    {
+      type: 'future_alert_type',
+      iconName: 'Bell',
+      labelKey: 'alerts.typeUnknown',
+      surface: 'bg-default',
+      color: '--color-muted',
+    },
+  ] as const)(
+    'canda las doce decisiones para $type',
+    async ({ type, iconName, labelKey, surface, color }) => {
+      const alert = makeAlert({ id: type, type });
+      mockListAlerts.mockResolvedValue({
+        kind: 'ok',
+        items: [alert],
+        nextCursor: null,
+      });
+
+      await renderAlerts();
+
+      const list = screen.getByTestId('alerts-list');
+      await waitFor(() => expect(list.props.data).toHaveLength(1));
+      const rowId = `alert-row-${alert.id}`;
+      const row = within(list).getByTestId(rowId);
+      const rowScope = within(row);
+      const icon = rowScope.getByTestId(`${rowId}-icon`);
+      const typeText = rowScope.getByTestId(`${rowId}-type`);
+      const petText = rowScope.getByTestId(`${rowId}-pet`);
+      const timeText = rowScope.getByTestId(`${rowId}-time`);
+      const ack = rowScope.getByTestId(`${rowId}-ack`);
+
+      expect(icon.props.iconName).toBe(iconName);
+      expect(icon.props.size).toBe(20);
+      expect(icon.props.color).toBe(color);
+      expect(icon.parent?.props.className).toBe(
+        `size-11 items-center justify-center rounded-full ${surface}`,
+      );
+      expect(typeText).toHaveTextContent(es[labelKey]);
+      expect(typeText.props.className).toBe(
+        'text-sm font-bold text-foreground',
+      );
+      expect(petText).toHaveTextContent(alert.petName);
+      expect(petText.props.className).toBe(
+        'text-xs font-semibold text-muted',
+      );
+      expect(timeText).toHaveTextContent(
+        es['alerts.hoursAgo'].replace('{{hours}}', '2'),
+      );
+      expect(timeText.props.className).toBe(
+        'text-xs font-normal text-muted',
+      );
+      expect(ack.props.accessibilityRole).toBe('button');
+      expect(ack.props.className).toContain('min-h-11');
+      expect(rowScope.getByText(es['alerts.ack'])).toBeVisible();
+      expect(rowScope.queryByTestId(`${rowId}-status`)).toBeNull();
+      expect(row.props.onPress).toBeUndefined();
+      expect(row.props.accessibilityRole).toBeUndefined();
+      expect(row.props.className).toContain(
+        'min-h-20 flex-row items-center gap-3',
+      );
+      expect(row.children).toHaveLength(3);
+      expect(row.children[0].props.className).toContain('size-11');
+      expect(row.children[1].props.className).toBe('min-w-0 flex-1 gap-1');
+      expect(row.children[1].children).toHaveLength(3);
+      expect(row.children[2].props.testID).toBe(`${rowId}-ack`);
+    },
+  );
+
+  it('alterna el tercer hijo entre ack y la píldora traducida', async () => {
+    const alerts = [
+      makeAlert({ id: 'open', status: 'open' }),
+      makeAlert({ id: 'acked', status: 'acked' }),
+      makeAlert({ id: 'closed', status: 'closed' }),
+    ];
+    mockListAlerts.mockResolvedValue({
+      kind: 'ok',
+      items: alerts,
+      nextCursor: null,
+    });
+
+    await renderAlerts();
+
+    const list = screen.getByTestId('alerts-list');
+    await waitFor(() => expect(list.props.data).toHaveLength(3));
+    for (const alert of alerts) {
+      const rowId = `alert-row-${alert.id}`;
+      const row = within(list).getByTestId(rowId);
+      expect(row.children).toHaveLength(3);
+      expect(row.props.className).toContain(
+        'min-h-20 flex-row items-center gap-3',
+      );
+      expect(row.children[0].props.className).toContain('size-11');
+      expect(row.children[1].props.className).toBe('min-w-0 flex-1 gap-1');
+    }
+
+    const open = within(within(list).getByTestId('alert-row-open'));
+    expect(open.getByTestId('alert-row-open-ack')).toBeVisible();
+    expect(open.queryByTestId('alert-row-open-status')).toBeNull();
+
+    for (const [status, labelKey] of [
+      ['acked', 'alerts.statusAcked'],
+      ['closed', 'alerts.statusClosed'],
+    ] as const) {
+      const rowScope = within(
+        within(list).getByTestId(`alert-row-${status}`),
+      );
+      const pill = rowScope.getByTestId(`alert-row-${status}-status`);
+      expect(rowScope.queryByTestId(`alert-row-${status}-ack`)).toBeNull();
+      expect(pill).toHaveTextContent(es[labelKey]);
+      expect(pill.props.className).toBe(
+        'rounded-full bg-default px-2 py-0.5 text-2xs font-bold text-muted',
+      );
+    }
+  });
+
+  it('formatea ahora, minutos, horas y días por la clave correspondiente', async () => {
+    const alerts = [
+      makeAlert({ id: 'now', openedAt: '2026-09-11T11:59:30.000Z' }),
+      makeAlert({ id: 'minutes', openedAt: '2026-09-11T11:55:00.000Z' }),
+      makeAlert({ id: 'hours', openedAt: '2026-09-11T10:00:00.000Z' }),
+      makeAlert({ id: 'days', openedAt: '2026-09-08T12:00:00.000Z' }),
+    ];
+    mockListAlerts.mockResolvedValue({
+      kind: 'ok',
+      items: alerts,
+      nextCursor: null,
+    });
+
+    await renderAlerts();
+
+    const list = screen.getByTestId('alerts-list');
+    await waitFor(() => expect(list.props.data).toHaveLength(4));
+    const expected = {
+      now: es['alerts.justNow'],
+      minutes: es['alerts.minutesAgo'].replace('{{minutes}}', '5'),
+      hours: es['alerts.hoursAgo'].replace('{{hours}}', '2'),
+      days: es['alerts.daysAgo'].replace('{{days}}', '3'),
+    };
+    for (const alert of alerts) {
+      const row = within(list).getByTestId(`alert-row-${alert.id}`);
+      expect(
+        within(row).getByTestId(`alert-row-${alert.id}-time`),
+      ).toHaveTextContent(expected[alert.id as keyof typeof expected]);
+      expect(row.children).toHaveLength(3);
+    }
   });
 });

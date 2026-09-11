@@ -12,7 +12,7 @@ tags: [harness, spec]
 | R2 | `src/api/__tests__/alerts.test.ts :: #78 R2: ackAlert mapea la respuesta por kind` | rojo `d6803629`; verde `02593774` |
 | R3 | `src/providers/__tests__/language-provider.test.tsx :: #78 R3: el catálogo trae las claves del centro de alertas` | rojo `0467146a`; verde `d2f10c67` |
 | R4 | `src/screens/alerts/index.test.tsx :: #78 R4: la pantalla pinta su esqueleto, su error, su vacío y sus filas` | rojo `2dc14118`; verde `a8fa22d2` |
-| R5 | `src/app/(tabs)/__tests__/alerts.test.tsx :: #78 R5: la ruta delega en la pantalla y no es pestaña` | rojo `8d7b5f13`; verde pendiente |
+| R5 | `src/app/(tabs)/__tests__/alerts.test.tsx :: #78 R5: la ruta delega en la pantalla y no es pestaña` | rojo `8d7b5f13`; verde `e9f3b126` |
 | R6 | pendiente | pendiente |
 | R7 | pendiente | pendiente |
 | R8 | pendiente | pendiente |
