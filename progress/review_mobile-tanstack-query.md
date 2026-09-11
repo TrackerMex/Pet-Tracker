@@ -417,3 +417,465 @@ el de `add-pet`.
 
 Avisos no bloqueantes, ya presentes en la línea base: faltan `RESEND_API_KEY`,
 `RESEND_FROM` y `RESET_LINK_HOST` en `.env`. #87 no usa ninguna.
+
+---
+---
+
+# Ronda 2 — re-revisión tras la corrección de Codex
+
+Fecha: 2026-09-11T03:25:25+00:00
+Revisor: subagente `reviewer` (Claude Opus 5)
+Branch: `feature/87-mobile-tanstack-query`
+HEAD revisado: **`64b82f16`**
+Base de candados: **`5666b85`** (verificado ancestro de HEAD)
+Diff de la corrección: `936fab4..HEAD -- mobile-pet-tracker/` → **2 ficheros, ambos
+de test, cero producción**
+
+> **Aviso de rebase.** La branch se rebasó sobre `main` @ `f3e3280` (que ya trae
+> #82). Comprobado que `main` **no tocó `mobile-pet-tracker/` entre `5666b85` y
+> `f3e3280`** (`git diff --stat 5666b85..f3e3280 -- mobile-pet-tracker/` → vacío),
+> así que **todos los deltas móviles medidos en la ronda 1 siguen midiendo lo
+> mismo**. Y `git diff --stat f3e3280..HEAD -- backend-pet-tracker/ infra/` → vacío:
+> #87 sigue sin tocar backend.
+
+## Veredicto: **APROBADO**
+
+Las dos carreras están cerradas y verificadas por mí: **10/10 verdes** en racha
+sobre los dos ficheros tocados y **4/4 verdes** de la suite móvil completa (3
+pasadas sueltas + la de `init.sh`). **`./init.sh` en verde de extremo a extremo**,
+ya con #82 dentro. El flake **#72** de `add-pet` **no cayó ni una sola vez** en
+esas 4 pasadas.
+
+Queda **un defecto no bloqueante del veredicto pero sí bloqueante del cierre**
+(D2, hashes de trazabilidad muertos por el rebase), que arregla el **leader** en
+`specs/` y `progress/` sin otra ronda de Codex ni tocar código.
+
+---
+
+## 1. ¿Están cerradas las dos carreras? **SÍ, las dos.**
+
+### B1.a — `test/__tests__/render-with-providers.test.tsx` (R3) → **cerrada**
+
+```diff
+-    expect(await screen.findByTestId('probe')).toHaveTextContent('ok');
++    await screen.findByText('ok');
++    expect(screen.getByTestId('probe')).toHaveTextContent('ok');
+```
+
+Correcto y **sin pérdida**: la aserción original sobre `probe` se conserva
+literalmente; lo que cambia es **quién espera**. `findByText('ok')` no puede
+resolver hasta que la query resuelve — el nodo con texto `'ok'` no existe durante
+la carga, donde el `Probe` pinta `'…'`. La carrera desaparece por construcción, no
+por suerte de scheduling. Es además el patrón que ya usaban los otros dos `it` del
+mismo fichero, que nunca fallaron; ahora los tres son homogéneos.
+
+### B1.b — `src/screens/home/index.test.tsx` (R17) → **cerrada en los tres sitios**
+
+Los tres `await waitFor(() => expect(getByTestId('summary-card')).toBeVisible())`
+pasan a esperar **contenido del hijo** dentro del propio `waitFor`:
+
+| Caso | Antes esperaba | Ahora espera |
+|---|---|---|
+| `formats metrics from the last day…` | `summary-card` visible | `summary-activity` → `'1h 35m'` |
+| `shows dashes instead of zero…` | `summary-card` visible | `summary-weight` → `'—'` |
+| `#69 R7: degrada el peso a un guion…` | `summary-card` visible | `summary-weight` → `'—'` |
+
+`summary-card` es el contenedor (`home/index.tsx:314`), siempre montado en cuanto
+hay `selectedPetId`; las celdas `summary-*` viven dentro de la rama
+`activity.data?.kind === 'ok'`, que es la que llega tarde. Esperar la celda es
+esperar el dato. Carrera cerrada por construcción.
+
+**Barrido de casos hermanos** (¿queda algún otro `waitFor` sobre contenedor?):
+comprobado que las 6 esperas sobre `summary-card` sueltas
+(`await screen.findByTestId('summary-card')`) ya habían pasado en la ronda 1 a
+`await screen.findByTestId('summary-weight')`, y que las de `pet-hero` pasaron a
+`pet-hero-media` / `collar-card`. **No queda ninguna espera sobre contenedor en el
+fichero.**
+
+---
+
+## 2. Dictamen sobre las aserciones borradas — **sustitución legítima, NO bloqueante**
+
+### Primera corrección al encargo: **son tres, no dos**
+
+Se borraron **tres** `expect(screen.getByTestId('summary-card')).toBeVisible()`:
+en `formats metrics…` (~636), en `shows dashes…` (~666) **y también** en
+`#69 R7: degrada el peso…` (~683), donde el mismo `waitFor` desapareció y la
+`toHaveTextContent('—')` del final se movió dentro. Conteo neto en el fichero:
+6 líneas `-expect` frente a 3 `+expect` → **−3 `expect`**, las tres el mismo
+`toBeVisible` sobre el contenedor. Tras la ronda 2 **ningún test del árbol asserta
+ya `expect(getByTestId('summary-card')).toBeVisible()`** (`grep` → vacío).
+
+### No lo he razonado: lo he medido con dos mutaciones
+
+No acepto "la aserción del hijo implica la del padre" como argumento de sillón.
+Lo puse a prueba en un **worktree desechable** sobre `64b82f16`, mutando el
+contenedor y corriendo el `describe` entero `R9: summary degrada con gracia`
+(7 tests):
+
+**Mutación A — `<Card testID="summary-card" … style={{ opacity: 0 }}>`**
+
+```
+✕ formats metrics from the last day in the response
+✕ #69 R7: degrada el peso a un guion cuando el perfil no resuelve
+✕ shows a summary skeleton while activity is pending
+✕ shows skeletons without the previous pet data while a newly selected pet loads
+✓ shows dashes instead of zero for missing metrics      ← NO muerde
+✓ explains that activity tracking requires a collar
+✓ degrades an activity error without breaking the dashboard
+Tests: 4 failed, 3 passed
+```
+
+**Mutación B — `<Card testID="summary-card" … style={{ display: 'none' }}>`**
+
+```
+✕ los 7 tests del describe, incluido 'shows dashes instead of zero…'
+Tests: 7 failed
+```
+
+### Qué prueban exactamente esas dos corridas
+
+1. **Casos 1 y 3 (`formats metrics…` y `#69 R7…`): pérdida CERO, demostrada.**
+   Siguen mordiendo la mutación de visibilidad del contenedor **por sí mismos**.
+   - Caso 1 conserva `expect(screen.getByText('Resumen de hoy')).toBeVisible()`.
+     `'Resumen de hoy'` es `home.summaryTitle` (`i18n/catalog.ts:333`), es decir
+     `summary-card-title`, **hijo directo** de `summary-card`
+     (`home/index.tsx:314-319`).
+   - Caso 3 conserva el bucle
+     `for (testId of [summary-weight, summary-activity, summary-sleep, summary-distance]) expect(getByTestId(testId)).toBeVisible()`.
+   - `toBeVisible` de RNTL **recorre recursivamente los ancestros**
+     (`matchers/to-be-visible.js`: `return isElementVisible(parent, cache)`), así que
+     *hijo visible ⟹ contenedor visible*. La línea borrada era **redundante**, y la
+     mutación A lo confirma: ambos tests caen igual sin ella.
+
+2. **Caso 2 (`shows dashes instead of zero…`): pierde exactamente un vector, el
+   `opacity: 0`. Nada más.**
+   Sus cuatro aserciones restantes son `toHaveTextContent('—')`, que no comprueba
+   visibilidad. Pero **sí sobrevive el filtro de accesibilidad**: RNTL 14.0.1 trae
+   `defaultIncludeHiddenElements: false` (`dist/config.js`) y **no hay ningún
+   `configure()`** en `test/jest-setup.js`, así que `getByTestId` **no encuentra**
+   elementos ocultos ni los de un subárbol oculto (`display:none`, `aria-hidden`,
+   `accessibilityElementsHidden`, `importantForAccessibility`). Por eso la mutación
+   B **sí** lo tumba. Lo único que `isHiddenFromAccessibility` deja fuera es —
+   literalmente, por comentario en el propio código de RNTL — `opacity: 0`.
+
+3. **A nivel de fichero el delta de capacidad es 0.** El único vector perdido
+   (`opacity: 0` sobre el contenedor) lo siguen mordiendo **cuatro** tests del
+   mismo `describe`, que renderizan la misma pantalla por el mismo camino.
+
+### Por qué esto es sustitución y no relajación (y por qué es consistente)
+
+La «regla de oro» (`requirements.md:174-187`) prohíbe *borrar una aserción*. La
+letra se incumple. Pero su propósito declarado es el criterio 5, *"sin relajar
+aserciones"*, y **mido que la red no se ha aflojado**: en dos de los tres casos la
+línea borrada es demostrablemente redundante, y en el tercero el hueco es un
+vector que el mismo `describe` cubre cuatro veces.
+
+Pesa además la **consistencia con mi propio veredicto de la ronda 1**, donde
+aprobé **seis** sustituciones de exactamente esta forma
+(`waitFor(expect(getByTestId('pet-hero')).toBeVisible())` →
+`await screen.findByTestId('pet-hero-media')`), que también borran un `toBeVisible`
+de contenedor y lo reemplazan por una consulta *hidden-aware* sobre el hijo.
+Bloquear ahora las tres de la ronda 2 obligaría a reabrir aquellas seis. El
+criterio que apliqué entonces y aplico ahora es el mismo: **esperar/assertar el
+hijo exacto es más fuerte que assertar el contenedor siempre montado**.
+
+**Dictamen: sustitución legítima. No bloqueante. No exijo restitución.**
+
+### D1 — Observación no bloqueante (y aviso al humano)
+
+Dos cosas que sí anoto, sin bloquear:
+
+- **El reporte de Codex dice literalmente «No se relajó ninguna aserción».
+  Es inexacto**: se borraron tres. La regla de oro reserva esta decisión al humano
+  (*"se para y se escribe por qué […] y decide el humano en la revisión"*) y Codex
+  ni paró ni lo escribió. **La decisión queda formalmente abierta al humano** que
+  firme el smoke: si prefiere la letra sobre el fondo, la restitución es de una
+  línea por caso, sin tocar los `waitFor` nuevos —
+  `expect(screen.getByTestId('summary-card')).toBeVisible();` inmediatamente
+  después del `waitFor`, en `src/screens/home/index.test.tsx` líneas ~638, ~669 y
+  ~687. Yo no lo exijo porque he medido que no compra cobertura nueva salvo en el
+  caso 2, y ahí solo el vector `opacity: 0` que ya cubren cuatro hermanos.
+- Los dos commits de corrección **no llevan R-id en el asunto**
+  (`fix(mobile-tanstack-query): await probe content` /
+  `await home summary content`), contra el formato de C5. `traceability.md` sí los
+  mapea a R3 y R17 explícitamente, así que la trazabilidad no se pierde.
+
+---
+
+## 3. Determinismo — medido por mí
+
+### Verificación del número que declara Codex
+
+Codex declara **«Suite móvil completa: 10 pasadas verdes consecutivas»**.
+**No es verificable desde disco**: no hay log ni artefacto versionado de esas
+pasadas, solo la afirmación en `progress/impl_mobile-tanstack-query.md`. Lo que sí
+puedo decir es que **es consistente con lo que yo mido** y que el propio reporte es
+honesto sobre el método (*"Las rachas preliminares en las que cayó `add-pet` se
+reiniciaron"*): es una **racha** reiniciada ante el flake #72, no 10 corridas
+arbitrarias. Con la tasa de #72 medida en la ronda 1 (~15 %), una racha así exige
+varios reintentos, que es exactamente lo que describe.
+
+### Criterio a — racha de 10 sobre los dos ficheros tocados
+
+`npx jest test/__tests__/render-with-providers.test.tsx src/screens/home/index.test.tsx`,
+en serie, sin nada más corriendo (~18 s por pasada):
+
+```
+pasada  1 :: Test Suites: 2 passed, 2 total  Tests: 115 passed, 115 total
+pasada  2 :: Test Suites: 2 passed, 2 total  Tests: 115 passed, 115 total
+pasada  3 :: Test Suites: 2 passed, 2 total  Tests: 115 passed, 115 total
+pasada  4 :: Test Suites: 2 passed, 2 total  Tests: 115 passed, 115 total
+pasada  5 :: Test Suites: 2 passed, 2 total  Tests: 115 passed, 115 total
+pasada  6 :: Test Suites: 2 passed, 2 total  Tests: 115 passed, 115 total
+pasada  7 :: Test Suites: 2 passed, 2 total  Tests: 115 passed, 115 total
+pasada  8 :: Test Suites: 2 passed, 2 total  Tests: 115 passed, 115 total
+pasada  9 :: Test Suites: 2 passed, 2 total  Tests: 115 passed, 115 total
+pasada 10 :: Test Suites: 2 passed, 2 total  Tests: 115 passed, 115 total
+```
+
+**10/10 verdes** (11 contando la pasada de cronometraje previa). Cero rojos.
+
+### Criterio b — tres pasadas de la suite móvil completa
+
+```
+########## SUITE COMPLETA pasada 1 ##########
+Test Suites: 70 passed, 70 total
+Tests:       1156 passed, 1156 total
+Snapshots:   1 passed, 1 total
+########## SUITE COMPLETA pasada 2 ##########
+Test Suites: 70 passed, 70 total
+Tests:       1156 passed, 1156 total
+Snapshots:   1 passed, 1 total
+########## SUITE COMPLETA pasada 3 ##########
+Test Suites: 70 passed, 70 total
+Tests:       1156 passed, 1156 total
+Snapshots:   1 passed, 1 total
+```
+
+Más la pasada móvil **dentro de `init.sh`**: `70 passed / 1156 passed`, verde.
+
+- **`add-pet` (#72): cayó 0 de 4 veces.** No hizo falta invocar la excepción
+  concedida.
+- **No cayó nada más. Cero rojos de cualquier clase en las 4 pasadas completas.**
+
+Comparado con la ronda 1 — **6/14 pasadas en rojo**, de las cuales 4 imputables a
+#87 — el cambio es el esperado de cerrar las dos carreras.
+
+**Salvedad honesta**: 10 pasadas de dos ficheros y 4 completas no *demuestran*
+ausencia de flake; lo que cierra el asunto de verdad es que ambas correcciones son
+**estructuralmente** no-carrera (se espera el nodo que solo existe cuando el dato
+llegó), no que la moneda haya salido cara 14 veces.
+
+---
+
+## 4. El rebase no ha roto nada
+
+- `env -u FORCE_COLOR bash ./init.sh` → **`EXIT=0`, todo verde**, ya con #82 dentro
+  (ver el bloque de salida al final).
+- Backend post-#82 verde en mi propia corrida: unit `163 suites / 1246 tests`,
+  infra `2 / 14`, e2e `25 de 28 suites (3 skipped) / 357 passed, 8 skipped`.
+- **Los 42 commits de #87 sobrevivieron al rebase 1:1**, mismo asunto y mismo
+  orden: mapeé los 42 hashes viejos contra `797a5bd5..HEAD` y **los 42 casan por
+  asunto**, ninguno perdido ni fusionado. La alternancia **test → feat/refactor**
+  se conserva intacta comando a comando, así que **C4 sigue en pie post-rebase**.
+- C6 intacto: `fb0fb7b5 Approve mobile TanStack Query specification gate`,
+  **AlexisSM377 <al222111377@gmail.com>**, +1/−1 sobre `requirements.md`; los 4
+  ficheros de spec con `status: approved`; `requirements.md:943` → `- [X] Aprobado
+  por humano (fecha: 2026-09-10)`.
+
+### D2 — **Defecto: todos los hashes de `traceability.md` están muertos tras el rebase**
+
+`traceability.md` (y la tabla de commits de `impl_mobile-tanstack-query.md`) citan
+los hashes **pre-rebase**. Comprobado uno a uno: **existen todavía como objetos
+sueltos en este clon** (los mantiene vivos el reflog) pero **ninguno es ancestro de
+HEAD**:
+
+```
+2837dc3 : existe : NO-ancestro      9a5476e : existe : NO-ancestro
+a6e5cdf : existe : NO-ancestro      bbc6193 : existe : NO-ancestro
+c53f003 : existe : NO-ancestro      264e1c8 : existe : NO-ancestro
+2c38a54 : existe : NO-ancestro      efdf52c : existe : NO-ancestro
+```
+
+Tras un `git gc`, en un clon nuevo o en el PR **no resuelven**: la columna
+*Evidencia* de las 20 filas queda apuntando a la nada, y C5 pide precisamente que
+el commit sea localizable. En la ronda 1 verifiqué que «los 40 hashes existen y
+están en el rango revisado»; **eso ya no es cierto**.
+
+**No bloquea el veredicto de la implementación** —el código y los tests son
+correctos y el contenido de los commits es idéntico— **pero sí bloquea marcar #87
+como `done`.** Lo arregla el **leader**, que es quien posee `specs/` y `progress/`,
+sin otra ronda de Codex y sin tocar código.
+
+**Arreglo exacto — mapeo viejo → nuevo, verificado por asunto (42/42):**
+
+| Viejo | Nuevo | Asunto |
+|---|---|---|
+| `2837dc3` | `0f9b0293` | test … lock exact dependency (R1) |
+| `a6e5cdf` | `f9655ada` | feat … install TanStack Query (R1) |
+| `a231cdd` | `1775ebe5` | test … lock QueryClient defaults (R2) |
+| `492cdab` | `f37f5f27` | feat … configure QueryClient defaults (R2) |
+| `af1ac31` | `82997296` | test … require isolated query test helper (R3) |
+| `3cd184f` | `2f6c8f8e` | feat … add isolated query test helper (R3) |
+| `cbceb6b` | `e9cd3778` | test … require root query provider (R4) |
+| `50cb93a` | `c56df5ea` | feat … mount root query provider (R4) |
+| `49dc149` | `7e09aa6e` | test … require global unauthorized handling (R5) |
+| `171ed65` | `b1726090` | feat … centralize unauthorized reads (R5) |
+| `2a5c404` | `df05877d` | test … require cache clearing on sign-out (R6) |
+| `fe9f282` | `dd5f180b` | feat … clear cache on sign-out (R6) |
+| `1c947c4` | `67c40976` | test … define query key contract (R7) |
+| `b5e7f31` | `f6ef34d9` | feat … add canonical query keys (R7) |
+| `cfe1b34` | `e5c23b5e` | test … decouple pet selection source (R8) |
+| `15b9eea` | `1d1fdbb0` | refactor … narrow pet selection source (R8) |
+| `07c4ba5` | `cad725dc` | test … require docs query cache entries (R9) |
+| `5e00853` | `12c84b76` | refactor … migrate docs queries (R9) |
+| `8a46cc7` | `9645cbcf` | test … require weight query cache entry (R10) |
+| `97049e7` | `0d64e42b` | refactor … migrate weight log query (R10) |
+| `be536d1` | `284eeb2b` | test … require meal query cache entries (R11) |
+| `6966af6` | `73fc423e` | refactor … migrate meal schedule queries (R11) |
+| `b4b279e` | `3f47ebc0` | test … require food query cache entries (R12) |
+| `e1df8ef` | `05222fa9` | refactor … migrate food queries (R12) |
+| `b77c366` | `7e135990` | test … require health query cache entries (R13) |
+| `157a7a8` | `84d30862` | refactor … migrate health queries (R13) |
+| `6991074` | `7fe2c50c` | test … require reminder query cache entries (R14) |
+| `0baba1d` | `e20111de` | refactor … migrate reminder queries (R14) |
+| `c204287` | `ab66c3b7` | test … require pairing query cache entries (R15) |
+| `79363d9` | `f79ddf58` | refactor … migrate pairing queries (R15) |
+| `9f0e27e` | `cb0b6f98` | test … require profile query cache entries (R16) |
+| `f9afe6a` | `2d75b433` | refactor … migrate profile queries (R16) |
+| `9a5476e` | `70199d55` | test … require home query cache entries (R17) |
+| `bbc6193` | `ee94846d` | refactor … migrate home queries (R17) |
+| `6afcc38` | `b30a0c83` | test … require map query cache entries (R18) |
+| `5fa6c6e` | `aaa5c60a` | refactor … migrate map queries (R18) |
+| `98b563f` | `fbdd3cdd` | test … forbid legacy use-api footprint (R19) |
+| `e443eb3` | `588c691d` | refactor … remove legacy use-api hook (R19) |
+| `c53f003` | `523ef5b5` | test … prove stale selection guards (R20) |
+| `264e1c8` | `f13d945b` | fix … restore stale selection guard (R20) |
+| `2c38a54` | `2daf16ba` | fix … await probe content (ronda 2, R3) |
+| `efdf52c` | `33f31f42` | fix … await home summary content (ronda 2, R17) |
+
+---
+
+## Lo que doy por bueno de la ronda 1, y por qué sigue valiendo
+
+Todo lo que aprobé en la ronda 1 **sigue midiendo lo mismo**, porque la base de
+candados `5666b85` sigue siendo ancestro de HEAD y `main` **no tocó
+`mobile-pet-tracker/` entre `5666b85` y `f3e3280`**. La corrección de la ronda 2 se
+limita a dos ficheros de test (2 y 15 líneas), sin producción. No re-audito:
+
+| Dado por bueno en ronda 1 | Por qué sigue valiendo |
+|---|---|
+| Cero aserciones relajadas en las 23 `-expect` auditadas | Ficheros intactos salvo `home/index.test.tsx`, cuyo delta de ronda 2 reauditado arriba punto por punto |
+| Los seis candados numéricos con delta 0 | La base móvil no se movió con el rebase |
+| `signOut` 9 mutación / 7 ficheros, delta 0 | Ídem; ningún commit de ronda 2 toca `src/` de producción |
+| Pin exacto `5.102.8` + `bun.lock` con solo dos entradas | Reverificado: `package.json:8` sigue en `"5.102.8"` |
+| Los tres deltas de conducta autorizados (`map.tsx`, `pairing.tsx`) | Ficheros no tocados en ronda 2 |
+| TDD rojo→verde en los 40 commits | Reverificado post-rebase: los 42 casan 1:1 y la alternancia se conserva |
+| Mutación de R20 reproducida por mí | `use-pet-selection.ts` no tocado en ronda 2 |
+| C7 — `use-api.ts` y su test borrados, cero importadores | Reverificado: fichero ausente, `grep` de importadores vacío |
+
+## Checklists (ronda 2)
+
+**C2 — Estado coherente**
+- [x] Solo 1 feature `in_progress` en `feature_list.json` (#87)
+- [x] `progress/current.md` actualizado con la ronda de corrección
+
+**C3 — Arquitectura**
+- [x] N/A backend: `git diff f3e3280..HEAD -- backend-pet-tracker/ infra/` → vacío
+- [x] C8 / `docs/ui-guidelines.md`: la corrección no toca ni un `className` ni un
+      `style=` de producción (los dos commits son 100 % test)
+
+**C4 — TDD**
+- [x] Los 19 `describe('#87 R<n>: …')` intactos; R20 por la vía (b) de C4, como en
+      la ronda 1
+- [x] Alternancia test → implementación conservada por el rebase (42/42)
+- [~] Los dos commits `fix` de la ronda 2 no llevan R-id en el asunto (D1)
+
+**C5 — Trazabilidad**
+- [x] `traceability.md`: 20 filas, **ninguna `pendiente`** (la única aparición de
+      la palabra es la leyenda de C5 en la línea 10)
+- [ ] **Los hashes de la columna *Evidencia* no son ancestros de HEAD → D2**
+
+**C6 — Spec aprobada**
+- [x] 4 ficheros con `status: approved`; casilla humana marcada; firma real de
+      AlexisSM377 en `fb0fb7b5`
+
+**C7 — Sin código huérfano**
+- [x] `use-api.ts` y `use-api.test.tsx` ausentes, cero importadores
+
+## No evaluado (fuera del alcance del reviewer)
+
+- **Gate humano no delegable**: prueba de humo en **dev build de Android**, con la
+  firma de los tres deltas de conducta. **No lo simulo.** Añado a esa firma la
+  decisión abierta de D1 sobre las tres `toBeVisible` borradas.
+
+---
+
+## Resumen para el leader (ronda 2)
+
+**Aprobado.** Las dos carreras están cerradas por construcción, no por suerte:
+**10/10** verdes en los dos ficheros tocados, **4/4** verdes de la suite móvil
+completa (#72 no cayó ninguna vez) y **`init.sh` verde de extremo a extremo** con
+#82 ya dentro.
+
+Sobre las aserciones borradas: **son tres, no dos**, y mi dictamen es
+**sustitución legítima**, demostrado con dos mutaciones sobre el contenedor —
+`opacity: 0` tumba 4 de los 7 tests del `describe`, `display: 'none'` tumba los 7.
+Dos de las tres líneas borradas eran redundantes; la tercera pierde solo el vector
+`opacity: 0` en su test, que cuatro hermanos siguen mordiendo. Bloquearlo sería
+además incoherente con las seis sustituciones idénticas que aprobé en la ronda 1.
+
+**Antes de marcar `done`, dos cosas:**
+1. **D2 (te toca a ti)**: refrescar los 42 hashes de `specs/mobile-tanstack-query/traceability.md`
+   y de la tabla de `progress/impl_mobile-tanstack-query.md` con el mapeo de arriba —
+   los actuales murieron en el rebase.
+2. **Smoke humano en dev build de Android**, y de paso que el humano ratifique D1
+   (la letra de la regla de oro dice que esa decisión es suya).
+
+---
+
+## Output de `./init.sh` (ronda 2)
+
+`pgrep -af 'init\.sh' | grep -v grep` → `ninguno` antes de lanzarlo. Ejecutado por
+mí, en primer plano, con `env -u FORCE_COLOR bash ./init.sh`. **`EXIT=0`.**
+
+```
+→ Verificando entorno...
+✅ node / pnpm / bun disponibles
+
+→ Verificando variables de entorno...
+✅ .env encontrado          ✅ DATABASE_URL definida
+⚠️  faltan 3 claves de .env.example: RESEND_API_KEY, RESEND_FROM, RESET_LINK_HOST
+    (preexistentes; #87 no usa ninguna)
+
+→ Verificando coherencia del harness...
+✅ Archivos del harness presentes
+⚠️  Feature en progreso: mobile-tanstack-query
+✅ STATUS.md sincronizado con feature_list.json
+
+→ Build...        ✅ Build exitoso
+
+→ Ejecutando tests...
+  backend unit   Test Suites: 163 passed, 163 total   Tests: 1246 passed, 1246 total
+  infra          Test Suites:   2 passed,   2 total   Tests:   14 passed,   14 total
+  móvil          Test Suites:  70 passed,  70 total   Tests: 1156 passed, 1156 total
+                 Snapshots: 1 passed, 1 total        Time: 29.763 s
+✅ Tests pasados
+
+→ Tests e2e...
+  Test Suites: 3 skipped, 25 passed, 25 of 28 total
+  Tests:       8 skipped, 357 passed, 365 total
+  Time:        86.345 s
+✅ Tests e2e pasados
+
+→ Lint...       ✅ Lint sin errores
+→ Typecheck...  ✅ Typecheck sin errores
+
+══════════════════════════════════════════
+✅ Todo verde. Listo para trabajar.
+  Features: 70/88 completadas | 17 pendientes
+```
+
+Sin un solo test en rojo. Los avisos de `.env` y el de `NodeVersionSupportWarning`
+del AWS SDK son preexistentes y ajenos a #87.

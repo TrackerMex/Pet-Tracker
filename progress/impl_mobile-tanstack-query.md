@@ -21,30 +21,30 @@
 
 | Requisito | Commit rojo | Commit verde | Evidencia |
 |---|---|---|---|
-| R1 | `2837dc3` | `a6e5cdf` | 2 aserciones rojas por dependencia ausente; test focal verde |
-| R2 | `a231cdd` | `492cdab` | 5 aserciones rojas por opciones ausentes; test focal y typecheck verdes |
-| R3 | `af1ac31` | `3cd184f` | 3 rojos por proveedor ausente; helper aislado y typecheck verdes |
-| R4 | `cbceb6b` | `50cb93a` | orden y sonda verdes; el test desmonta y limpia su cliente para no dejar el timer de `gcTime` abierto |
-| R5 | `49dc149` | `171ed65` | `unauthorized` rojo 0/1; callback global verde y no actúa sobre `ok`/`unreachable` |
-| R6 | `2a5c404` | `fe9f282` | cache vaciada solo en `unauthenticated`; transicion loading→authenticated conserva datos |
-| R7 | `1c947c4` | `b5e7f31` | 14 claves exactas, `limit` y prefijos verdes; typecheck verde |
-| R8 | `cfe1b34` | `15b9eea` | forma minima verde; 10 pantallas antiguas siguen compilando |
-| R9 | `07c4ba5` | `5e00853` | 2 entradas de cache, suite de Docs y typecheck verdes |
-| R10 | `8a46cc7` | `97049e7` | clave con `limit: undefined`; 23 pruebas y typecheck verdes |
-| R11 | `be536d1` | `6966af6` | 2 claves; `retryAll` y refresco tras generar preservados; 22 pruebas y typecheck verdes |
-| R12 | `b4b279e` | `e1df8ef` | `enabled` del plan y candado de revalidacion real verdes; 23 pruebas y typecheck verdes |
-| R13 | `b77c366` | `157a7a8` | 3 claves, peso con `limit: 1`, candado real; 28 pruebas y typecheck verdes |
-| R14 | `6991074` | `0baba1d` | 2 claves; foco y mutacion preservados; 22 pruebas y typecheck verdes |
-| R15 | `c204287` | `79363d9` | condicion triple, 2 focos y 2 mutaciones verdes; 48 pruebas y typecheck verdes |
-| R16 | `9f0e27e` | `f9afe6a` | 3 claves y 3 ficheros de montaje verdes; 35 pruebas y typecheck verdes |
-| R17 | `9a5476e` | `bbc6193` | 4 claves, foco limitado y candado real; 112 pruebas y typecheck verdes |
-| R18 | `6afcc38` | `5fa6c6e` | 4 claves, sondeo de 15 s y ruta excluida preservados; 49 pruebas verdes |
-| R19 | `98b563f` | `e443eb3` | 2 ficheros borrados; solo sobrevive el candado semanal; query keys literales ausentes y 9 `signOut(` de mutación, delta 0 respecto a `5666b85` |
-| R20 | `c53f003` | `264e1c8` | mutación exacta versionada y revertida; 4 candados rojos con `pet-old`, después 4 verdes; hook idéntico al estado tras R8 |
+| R1 | `0f9b0293` | `f9655ada` | 2 aserciones rojas por dependencia ausente; test focal verde |
+| R2 | `1775ebe5` | `f37f5f27` | 5 aserciones rojas por opciones ausentes; test focal y typecheck verdes |
+| R3 | `82997296` | `2f6c8f8e` | 3 rojos por proveedor ausente; helper aislado y typecheck verdes |
+| R4 | `e9cd3778` | `c56df5ea` | orden y sonda verdes; el test desmonta y limpia su cliente para no dejar el timer de `gcTime` abierto |
+| R5 | `7e09aa6e` | `b1726090` | `unauthorized` rojo 0/1; callback global verde y no actúa sobre `ok`/`unreachable` |
+| R6 | `df05877d` | `dd5f180b` | cache vaciada solo en `unauthenticated`; transicion loading→authenticated conserva datos |
+| R7 | `67c40976` | `f6ef34d9` | 14 claves exactas, `limit` y prefijos verdes; typecheck verde |
+| R8 | `e5c23b5e` | `1d1fdbb0` | forma minima verde; 10 pantallas antiguas siguen compilando |
+| R9 | `cad725dc` | `12c84b76` | 2 entradas de cache, suite de Docs y typecheck verdes |
+| R10 | `9645cbcf` | `0d64e42b` | clave con `limit: undefined`; 23 pruebas y typecheck verdes |
+| R11 | `284eeb2b` | `73fc423e` | 2 claves; `retryAll` y refresco tras generar preservados; 22 pruebas y typecheck verdes |
+| R12 | `3f47ebc0` | `05222fa9` | `enabled` del plan y candado de revalidacion real verdes; 23 pruebas y typecheck verdes |
+| R13 | `7e135990` | `84d30862` | 3 claves, peso con `limit: 1`, candado real; 28 pruebas y typecheck verdes |
+| R14 | `7fe2c50c` | `e20111de` | 2 claves; foco y mutacion preservados; 22 pruebas y typecheck verdes |
+| R15 | `ab66c3b7` | `f79ddf58` | condicion triple, 2 focos y 2 mutaciones verdes; 48 pruebas y typecheck verdes |
+| R16 | `cb0b6f98` | `2d75b433` | 3 claves y 3 ficheros de montaje verdes; 35 pruebas y typecheck verdes |
+| R17 | `70199d55` | `ee94846d` | 4 claves, foco limitado y candado real; 112 pruebas y typecheck verdes |
+| R18 | `b30a0c83` | `aaa5c60a` | 4 claves, sondeo de 15 s y ruta excluida preservados; 49 pruebas verdes |
+| R19 | `fbdd3cdd` | `588c691d` | 2 ficheros borrados; solo sobrevive el candado semanal; query keys literales ausentes y 9 `signOut(` de mutación, delta 0 respecto a `5666b85` |
+| R20 | `523ef5b5` | `f13d945b` | mutación exacta versionada y revertida; 4 candados rojos con `pet-old`, después 4 verdes; hook idéntico al estado tras R8 |
 
 ## Evidencia R20
 
-Mutación versionada en `c53f003`: se borró únicamente
+Mutación versionada en `523ef5b5`: se borró únicamente
 `if (pets.isRefreshing) return;` de `use-pet-selection.ts`. Resultado rojo:
 
 - `food.test.tsx` — `does not replace a new selection while the stale pet list refreshes`:
@@ -135,8 +135,8 @@ spec. No se abrió ni se mergeó ningún PR.
 
 | Defecto | Requisito | Commit de corrección | Resultado |
 |---|---|---|---|
-| El `Probe` esperaba un nodo ya presente durante la carga | R3 | `2c38a54` | espera primero el contenido `ok` y conserva intacta la aserción sobre `probe` |
-| Tres pruebas de Summary esperaban el contenedor antes que los datos | R17 | `efdf52c` | cada `waitFor` contiene la primera aserción de datos; las restantes siguen fuera con `getByTestId` |
+| El `Probe` esperaba un nodo ya presente durante la carga | R3 | `2daf16ba` | espera primero el contenido `ok` y conserva intacta la aserción sobre `probe` |
+| Tres pruebas de Summary esperaban el contenedor antes que los datos | R17 | `33f31f42` | cada `waitFor` contiene la primera aserción de datos; las restantes siguen fuera con `getByTestId` |
 
 Se repasaron los tests nuevos y modificados por #87 buscando ambos patrones. No
 quedó otro caso equivalente: los demás nodos usados como espera aparecen en la
