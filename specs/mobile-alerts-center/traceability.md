@@ -19,16 +19,16 @@ tags: [harness, spec]
 | R9 | `src/screens/alerts/index.test.tsx :: #78 R9: pagina por nextCursor y se para cuando no hay` | rojo `b4cd1f97`; verde `288c8c72` |
 | R10 | `src/screens/home/index.test.tsx :: #78 R10: la campana vive en el hero y lleva al centro de alertas` | rojo `73307e12`; verde `3ac78d34` |
 | R11 | `src/screens/home/index.test.tsx :: #78 R11: el punto rojo sigue a las alertas abiertas` | rojo `bf3e6622`; verde `418bc7cd` |
-| R12 | `src/__tests__/ui-language.test.ts :: #78 R12: el centro de alertas resuelve su copy por clave` | rojo `24d0426a`; verde pendiente |
-| R13 | pendiente (verificación — se cierra con la evidencia de mutación de `progress/impl_mobile-alerts-center.md` §R13) | pendiente |
-| R14 | pendiente (gate humano — sin test automatizado; evidencia en `progress/impl_mobile-alerts-center.md` §R14) | pendiente |
-| E1 | pendiente (documental — la premisa derogada; sin test) | pendiente |
+| R12 | `src/__tests__/ui-language.test.ts :: #78 R12: el centro de alertas resuelve su copy por clave` | rojo `24d0426a`; verde `e1fb6ad6` |
+| R13 | `src/__tests__/consistency-classnames.test.ts :: #64 R9: el color categórico solo se nombra en el módulo de paleta` + evidencia de mutación en `progress/impl_mobile-alerts-center.md` §R13 | rojo `7d1bff33`; verde `df3b4ea2`; ajuste de lint `adbfecc6` |
+| R14 | Gate humano en dev build de Android; guion y estado en `progress/impl_mobile-alerts-center.md` §R14 | no aplica a IA — gate humano por ejecutar |
+| E1 | `src/screens/alerts/index.test.tsx :: #78 R4` + `src/__tests__/design-drift.test.ts` (`#87 R1`/`R19`) | rojo `2dc14118`; verde `a8fa22d2` |
 | E2 | `src/api/__tests__/query-keys.test.ts` (dos filas nuevas del array `cases`) | rojo `8e05f068`; verde `749cde81` |
 | E3 | `src/screens/alerts/index.test.tsx :: #78 R9: pagina por nextCursor y se para cuando no hay` | rojo `b4cd1f97`; verde `288c8c72` |
-| E4 | pendiente — `src/screens/alerts/index.test.tsx :: #78 R4` | pendiente |
+| E4 | `src/screens/alerts/index.test.tsx :: #78 R4: la pantalla pinta su esqueleto, su error, su vacío y sus filas` | rojo `2dc14118`; verde `a8fa22d2` |
 | E5 | `src/screens/alerts/index.test.tsx :: #78 R8: el ack cambia la fila sin recargar la lista` | rojo `290abc42`; verde `63faca32` |
 | E6 | `src/screens/home/index.test.tsx :: #78 R11: el punto rojo sigue a las alertas abiertas` | rojo `bf3e6622`; verde `418bc7cd` |
-| E7 | pendiente (documental — referencias de línea reapuntadas; sin test) | pendiente |
+| E7 | `requirements.md` §E7 (referencias contrastadas con el árbol post-#87) | actualización documental `ecb449ee`; aprobación humana `4f9298e0` (sin ciclo TDD aplicable) |
 | E8 | `src/__tests__/design-drift.test.ts :: #87 R19: use-api no deja huella` (fila nueva del mapa `screenSignOutCalls`) | rojo `54b8932d`; verde `63faca32` |
 
 Tests esperados por requisito (rutas desde `mobile-pet-tracker/`):
