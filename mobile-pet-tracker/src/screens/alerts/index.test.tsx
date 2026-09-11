@@ -338,7 +338,11 @@ describe('#78 R6: cada fila de alerta trae su icono, su hueco, su tinta y sus tr
       expect(elementChild(row, 1).props.className).toBe(
         'min-w-0 flex-1 gap-1',
       );
-      expect(elementChild(row, 1).children).toHaveLength(3);
+      const column = elementChild(row, 1);
+      expect(column.children).toHaveLength(3);
+      expect(elementChild(column, 0).props.testID).toBe(`${rowId}-type`);
+      expect(elementChild(column, 1).props.testID).toBe(`${rowId}-pet`);
+      expect(elementChild(column, 2).props.testID).toBe(`${rowId}-time`);
       expect(elementChild(row, 2).props.testID).toBe(`${rowId}-ack`);
     },
   );
