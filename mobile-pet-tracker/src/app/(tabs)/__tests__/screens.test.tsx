@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { fireEvent, screen } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ComponentType, ReactNode } from 'react';
 
@@ -8,6 +8,7 @@ import { useAuth, type AuthContextValue } from '../../../providers/auth-provider
 import { LanguageProvider } from '../../../providers/language-provider';
 import { SelectedPetProvider } from '../../../providers/selected-pet-provider';
 import ProfileScreen from '../profile';
+import { renderWithProviders } from '../../../../test/render-with-providers';
 
 jest.mock('../../../api/pets', () => ({ getPet: jest.fn(), listPets: jest.fn() }));
 jest.mock('../../../api/users', () => ({ getMe: jest.fn() }));
@@ -79,7 +80,7 @@ describe('R5: placeholders de tabs', () => {
   }>([
     { Screen: ProfileScreen, testID: 'screen-profile', title: 'Perfil' },
   ])('renders the $title placeholder', async ({ Screen, testID, title }) => {
-    await render(<Screen />, { wrapper: ProfileWrapper });
+    await renderWithProviders(<Screen />, { wrapper: ProfileWrapper });
 
     expect(screen.getByTestId(testID)).toBeVisible();
     expect(screen.getByText(title)).toBeVisible();
@@ -88,7 +89,7 @@ describe('R5: placeholders de tabs', () => {
 
 describe('R6: profile permite cerrar sesión', () => {
   it('signs out from the profile placeholder', async () => {
-    await render(<ProfileScreen />, { wrapper: ProfileWrapper });
+    await renderWithProviders(<ProfileScreen />, { wrapper: ProfileWrapper });
 
     await fireEvent.press(screen.getByTestId('profile-sign-out'));
 

@@ -1,6 +1,7 @@
+import { useQuery } from '@tanstack/react-query';
 import { Redirect, router } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft, Clock, ForkKnife } from 'reicon-react-native';
@@ -12,8 +13,8 @@ import {
   type NutritionPlanState,
   type NutritionProfileState,
 } from '../../api/nutrition';
+import { nutritionKeys } from '../../api/query-keys';
 import { Card } from '../../components/card';
-import { useApi } from '../../hooks/use-api';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
@@ -41,16 +42,14 @@ function MealScheduleContent({ petId }: { petId: string }) {
   const insets = useSafeAreaInsets();
   const [submitting, setSubmitting] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
-  const planFn = useMemo(
-    () => () => getNutritionPlan(baseUrl, token ?? '', petId),
-    [baseUrl, petId, token],
-  );
-  const profileFn = useMemo(
-    () => () => getNutritionProfile(baseUrl, token ?? '', petId),
-    [baseUrl, petId, token],
-  );
-  const plan = useApi(planFn);
-  const profile = useApi(profileFn);
+  const plan = useQuery({
+    queryKey: nutritionKeys.plan(petId),
+    queryFn: () => getNutritionPlan(baseUrl, token ?? '', petId),
+  });
+  const profile = useQuery({
+    queryKey: nutritionKeys.profile(petId),
+    queryFn: () => getNutritionProfile(baseUrl, token ?? '', petId),
+  });
   const loadedPlan = plan.data?.kind === 'ok' ? plan.data.plan : null;
   const loadedProfile =
     profile.data?.kind === 'ok' ? profile.data.profile : null;

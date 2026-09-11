@@ -1,10 +1,22 @@
-import { render, screen, waitFor } from '@testing-library/react-native';
+import {
+  cleanup,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react-native';
+import type { QueryClient } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { Uniwind } from 'uniwind';
 
 import { getStoredLanguage } from '../../utils/language-preference';
 import { getStoredTheme } from '../../utils/theme-preference';
 import RootLayout from '../_layout';
+
+const { readFileSync } = jest.requireActual<typeof import('fs')>('fs');
+const { join } = jest.requireActual<typeof import('path')>('path');
+
+let mockUseQueryInStack = false;
+let mockLayoutQueryClient: QueryClient | undefined;
 
 jest.mock('../../utils/language-preference', () => ({
   getStoredLanguage: jest.fn(),
@@ -24,11 +36,29 @@ jest.mock('expo-font', () => ({
 
 jest.mock('expo-router', () => {
   const React = jest.requireActual<typeof import('react')>('react');
-  const { View } = jest.requireActual<typeof import('react-native')>(
+  const { Text, View } = jest.requireActual<typeof import('react-native')>(
     'react-native',
   );
+  const { useQuery, useQueryClient } = jest.requireActual<
+    typeof import('@tanstack/react-query')
+  >('@tanstack/react-query');
 
-  return { Stack: () => React.createElement(View, { testID: 'root-stack' }) };
+  function QueryStack() {
+    mockLayoutQueryClient = useQueryClient();
+    const query = useQuery({
+      queryKey: ['layout-probe'],
+      queryFn: async () => 'ok',
+    });
+
+    return React.createElement(Text, { testID: 'query-probe' }, query.data);
+  }
+
+  return {
+    Stack: () =>
+      mockUseQueryInStack
+        ? React.createElement(QueryStack)
+        : React.createElement(View, { testID: 'root-stack' }),
+  };
 });
 
 jest.mock('heroui-native', () => ({
@@ -41,6 +71,12 @@ jest.mock('react-native-gesture-handler', () => ({
 
 jest.mock('../../providers/auth-provider', () => ({
   AuthProvider: ({ children }: { children: ReactNode }) => children,
+  useAuth: () => ({
+    status: 'authenticated',
+    token: 'test-token',
+    signIn: jest.fn(),
+    signOut: jest.fn(),
+  }),
 }));
 
 jest.mock('../../providers/language-provider', () => {
@@ -133,5 +169,44 @@ describe('#65 R16: sin preferencia guardada la app arranca en español', () => {
     resolveLanguage(undefined);
 
     await waitFor(() => expect(screen.getByTestId('root-stack')).toBeVisible());
+  });
+});
+
+describe('#87 R4: QueryProvider envuelve la app dentro de AuthProvider', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockGetStoredTheme.mockResolvedValue(undefined);
+    mockGetStoredLanguage.mockResolvedValue(undefined);
+    mockUseQueryInStack = true;
+  });
+
+  afterEach(async () => {
+    await cleanup();
+    mockLayoutQueryClient?.clear();
+    mockLayoutQueryClient = undefined;
+    mockUseQueryInStack = false;
+  });
+
+  it('keeps AuthProvider outside QueryProvider and QueryProvider outside Stack', () => {
+    const source = readFileSync(
+      join(process.cwd(), 'src', 'app', '_layout.tsx'),
+      'utf8',
+    );
+    const authIndex = source.indexOf('<AuthProvider>');
+    const queryIndex = source.indexOf('<QueryProvider>');
+    const stackIndex = source.indexOf('<Stack ');
+
+    expect(authIndex).toBeGreaterThan(-1);
+    expect(queryIndex).toBeGreaterThan(authIndex);
+    expect(stackIndex).toBeGreaterThan(queryIndex);
+    expect(source).toContain('</QueryProvider>');
+  });
+
+  it('provides a QueryClient to the routed tree', async () => {
+    await render(<RootLayout />);
+
+    await waitFor(() =>
+      expect(screen.getByTestId('query-probe')).toHaveTextContent('ok'),
+    );
   });
 });

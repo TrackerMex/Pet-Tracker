@@ -1,14 +1,14 @@
+import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
-import { useCallback } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft } from 'reicon-react-native';
 
 import { listPetDocs, type PetDocument } from '../../api/media';
 import { getPet } from '../../api/pets';
+import { mediaKeys, petKeys } from '../../api/query-keys';
 import { Card } from '../../components/card';
-import { useApi } from '../../hooks/use-api';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
@@ -49,16 +49,14 @@ export function DocsScreen({ petId }: { petId: string }) {
   const t = useTranslate();
   const insets = useSafeAreaInsets();
   const [foreground] = useThemeColors(['foreground']);
-  const petFn = useCallback(
-    () => getPet(baseUrl, token ?? '', petId),
-    [baseUrl, petId, token],
-  );
-  const docsFn = useCallback(
-    () => listPetDocs(baseUrl, token ?? '', petId),
-    [baseUrl, petId, token],
-  );
-  const pet = useApi(petFn);
-  const docs = useApi(docsFn);
+  const pet = useQuery({
+    queryKey: petKeys.detail(petId),
+    queryFn: () => getPet(baseUrl, token ?? '', petId),
+  });
+  const docs = useQuery({
+    queryKey: mediaKeys.petDocs(petId),
+    queryFn: () => listPetDocs(baseUrl, token ?? '', petId),
+  });
   const petName = pet.data?.kind === 'ok' ? pet.data.pet.name : null;
 
   return (
@@ -128,7 +126,7 @@ export function DocsScreen({ petId }: { petId: string }) {
           <Text className="font-normal text-danger">
             {t('docs.couldNotLoadDocuments')}
           </Text>
-          <Button testID="docs-retry" onPress={docs.refetch}>
+          <Button testID="docs-retry" onPress={() => void docs.refetch()}>
             <Button.Label>{t('common.retry')}</Button.Label>
           </Button>
         </Card>

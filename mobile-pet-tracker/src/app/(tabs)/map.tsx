@@ -1,6 +1,7 @@
+import { useQuery } from '@tanstack/react-query';
 import { Button, Skeleton } from 'heroui-native';
 import { useFocusEffect } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUniwind } from 'uniwind';
@@ -11,10 +12,10 @@ import {
   listPositions,
   type LastPositionState,
 } from '../../api/positions';
+import { petKeys, positionKeys, tripKeys } from '../../api/query-keys';
 import { getDayRoute } from '../../api/trips';
 import { Card } from '../../components/card';
 import { PetMap } from '../../components/pet-map';
-import { useApi } from '../../hooks/use-api';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
@@ -82,38 +83,28 @@ export default function MapScreen() {
   const { selectedPetId } = useSelectedPet();
   const insets = useSafeAreaInsets();
   const { theme } = useUniwind();
-  const petsFn = useCallback(
-    () => listPets(baseUrl, token ?? ''),
-    [baseUrl, token],
-  );
-  const pets = useApi(petsFn);
-  usePetSelection(pets);
+  const pets = useQuery({
+    queryKey: petKeys.list(),
+    queryFn: () => listPets(baseUrl, token ?? ''),
+  });
+  usePetSelection({ data: pets.data, isRefreshing: pets.isRefetching });
   const [lostModeBusy, setLostModeBusy] = useState(false);
   const [lostModeFailed, setLostModeFailed] = useState(false);
-  const lastFn = useMemo(
-    () =>
-      selectedPetId
-        ? () => getLastPosition(baseUrl, token ?? '', selectedPetId)
-        : null,
-    [baseUrl, selectedPetId, token],
-  );
-  const positionsFn = useMemo(
-    () =>
-      selectedPetId
-        ? () => listPositions(baseUrl, token ?? '', selectedPetId)
-        : null,
-    [baseUrl, selectedPetId, token],
-  );
-  const routeFn = useMemo(
-    () =>
-      selectedPetId
-        ? () => getDayRoute(baseUrl, token ?? '', selectedPetId)
-        : null,
-    [baseUrl, selectedPetId, token],
-  );
-  const last = useApi(lastFn);
-  const positions = useApi(positionsFn);
-  const route = useApi(routeFn);
+  const last = useQuery({
+    queryKey: positionKeys.last(selectedPetId ?? ''),
+    queryFn: () => getLastPosition(baseUrl, token ?? '', selectedPetId!),
+    enabled: selectedPetId !== null,
+  });
+  const positions = useQuery({
+    queryKey: positionKeys.list(selectedPetId ?? ''),
+    queryFn: () => listPositions(baseUrl, token ?? '', selectedPetId!),
+    enabled: selectedPetId !== null,
+  });
+  const route = useQuery({
+    queryKey: tripKeys.dayRoute(selectedPetId ?? ''),
+    queryFn: () => getDayRoute(baseUrl, token ?? '', selectedPetId!),
+    enabled: selectedPetId !== null,
+  });
   const refetchLast = last.refetch;
   const refetchPositions = positions.refetch;
   const refetchRoute = route.refetch;
@@ -216,7 +207,10 @@ export default function MapScreen() {
           <Text testID="map-error" className="text-danger">
             {t('common.somethingWentWrong')}
           </Text>
-          <Button testID="map-retry" onPress={pets.refetch}>
+          <Button
+            testID="map-retry"
+            onPress={() => void pets.refetch()}
+          >
             {t('common.retry')}
           </Button>
         </View>
@@ -246,7 +240,10 @@ export default function MapScreen() {
           <Text selectable testID="map-last-error" className="text-danger">
             {t('common.somethingWentWrong')}
           </Text>
-          <Button testID="map-last-retry" onPress={refetchLast}>
+          <Button
+            testID="map-last-retry"
+            onPress={() => void refetchLast()}
+          >
             {t('common.retry')}
           </Button>
         </View>

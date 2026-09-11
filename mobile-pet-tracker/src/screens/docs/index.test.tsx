@@ -1,6 +1,5 @@
 import {
   fireEvent,
-  render,
   screen,
   waitFor,
   within,
@@ -10,11 +9,13 @@ import { HeroUINativeProvider } from 'heroui-native';
 
 import { listPetDocs, type PetDocsState } from '../../api/media';
 import { getPet, type PetState } from '../../api/pets';
+import { mediaKeys, petKeys } from '../../api/query-keys';
 import type { PetProfile } from '../../api/types';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
 import { DocsScreen } from '.';
 import { TOUCH_SLOP } from '../../theme/touch-target';
+import { renderWithProviders } from '../../../test/render-with-providers';
 
 jest.mock('../../api/media', () => ({ listPetDocs: jest.fn() }));
 jest.mock('../../api/pets', () => ({ getPet: jest.fn() }));
@@ -65,7 +66,7 @@ function makePet(): PetProfile {
 }
 
 async function renderDocs() {
-  return render(
+  return renderWithProviders(
     <HeroUINativeProvider>
       <LanguageProvider initial="es">
         <DocsScreen petId="pet-1" />
@@ -267,5 +268,47 @@ describe('#64 R8: la fila de documento pinta icono y badge con el color de su ti
     );
     expect(vaccineRow.getByText('📄')).toBeVisible();
     expect(unknownRow.getByText('📄')).toBeVisible();
+  });
+});
+
+describe('#87 R9: DocsScreen lee por TanStack Query', () => {
+  it('deja cada recurso en la caché bajo su clave', async () => {
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    });
+    const petState: PetState = { kind: 'ok', pet: makePet() };
+    const docsState: PetDocsState = {
+      kind: 'ok',
+      docs: [
+        {
+          id: 'doc-cache',
+          type: 'Vacunación',
+          name: 'Antirrábica',
+          date: '2026-07-12',
+        },
+      ],
+    };
+    mockGetPet.mockResolvedValue(petState);
+    mockListPetDocs.mockResolvedValue(docsState);
+
+    const { queryClient } = await renderWithProviders(
+      <HeroUINativeProvider>
+        <LanguageProvider initial="es">
+          <DocsScreen petId="pet-1" />
+        </LanguageProvider>
+      </HeroUINativeProvider>,
+    );
+    await screen.findByTestId('doc-doc-cache');
+
+    expect(queryClient.getQueryData(petKeys.detail('pet-1'))).toEqual(
+      petState,
+    );
+    expect(queryClient.getQueryData(mediaKeys.petDocs('pet-1'))).toEqual(
+      docsState,
+    );
   });
 });
