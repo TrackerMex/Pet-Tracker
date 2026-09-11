@@ -1649,19 +1649,41 @@
   {
     "id": 88,
     "name": "vaccine-applied-at-owner-timezone",
-    "status": "pending",
+    "status": "done",
     "priority": "P3",
-    "description": "Deuda D5 registrada al cerrar #82 el 2026-09-10 (specs/vaccine-due-today-inclusive/requirements.md §Fuera de alcance). El DTO de vacunas valida appliedAt <= hoy con el dia UTC del servidor (backend-pet-tracker/src/modules/health/application/dto/vaccine.dto.ts:12-15 y :29-32, todayIsoDateUtc en iso-date.ts:5-7): una vacuna aplicada hoy a las 20:00 en UTC-6 ya es manana en UTC y el POST/PATCH responde 400 'Applied date cannot be in the future'. Es el mismo sesgo que #82 corrigio para nextDoseAt, en el mismo modulo, pero en la escritura y no en la lectura. #82 ya dejo el patron: dia civil en users.timezone del owner con localDayOf y fallback a UTC. Aqui la zona tiene que llegar al DTO o a la validacion del use case (el DTO de zod no tiene acceso al repositorio), asi que la spec debe decidir donde se evalua y si el validador acepta un dia de margen para dispositivos adelantados.",
+    "description": "Deuda D5 registrada al cerrar #82 el 2026-09-10 (specs/vaccine-due-today-inclusive/requirements.md §Fuera de alcance). El DTO de vacunas valida appliedAt <= hoy con el dia UTC del servidor (backend-pet-tracker/src/modules/health/application/dto/vaccine.dto.ts:12-15 y :29-32, todayIsoDateUtc en iso-date.ts:5-7): CORRECCION del leader al abrir la sesion (2026-09-10, verificado con Intl en el Node del VPS): la direccion del enunciado original estaba invertida. Falla en dos sentidos. (1) Owner en zona UTC-positiva (Espana entre las 00:00 y las 02:00, Pacific/Kiritimati hasta las 14:00): su hoy local ya es manana en UTC, asi que appliedAt = hoy local es mayor que el hoy UTC y el POST/PATCH responde 400 'Applied date cannot be in the future' por una vacuna puesta esta misma manana. (2) Owner en zona UTC-negativa por la tarde (America/Mexico_City a las 20:00): UTC ya es manana, asi que appliedAt = manana local pasa la validacion y se registra una vacuna en el futuro. Es el mismo sesgo que #82 corrigio para nextDoseAt, en el mismo modulo, pero en la escritura y no en la lectura. Tiene ademas dos hermanos con el mismo patron que la spec debe barrer y decidir por escrito: weight.dto.ts:30 (peso medido hoy) y create-pet.dto.ts:10,64 (fecha de nacimiento, con su propio todayIsoDateUtc local). #82 ya dejo el patron: dia civil en users.timezone del owner con localDayOf y fallback a UTC. Aqui la zona tiene que llegar al DTO o a la validacion del use case (el DTO de zod no tiene acceso al repositorio), asi que la spec debe decidir donde se evalua y si el validador acepta un dia de margen para dispositivos adelantados.",
     "acceptance_criteria": [
-      "Crear o editar una vacuna con appliedAt = hoy en la zona del owner responde 2xx a cualquier hora del dia, incluidas las horas en que UTC ya es manana",
+      "Crear o editar una vacuna con appliedAt = hoy en la zona del owner responde 2xx a cualquier hora del dia, incluidas las horas en que UTC todavia es ayer (zonas positivas tras su medianoche)",
       "appliedAt = manana en la zona del owner sigue respondiendo 400 con el mismo mensaje",
       "Un test e2e fija el limite con el mismo par de zonas de #82 (Pacific/Kiritimati y Pacific/Pago_Pago) y un unitario cubre la zona nula o no IANA con fallback a UTC",
       "La validacion sale del DTO puro solo si la spec lo justifica por escrito; si se queda en el use case, el DTO deja de comparar fechas"
     ],
     "files_affected": [
       "backend-pet-tracker/src/modules/health/application/dto/vaccine.dto.ts",
-      "backend-pet-tracker/src/modules/health/application/dto/iso-date.ts",
+      "backend-pet-tracker/src/modules/health/application/use-cases/create-vaccine.use-case.ts",
+      "backend-pet-tracker/src/modules/health/application/use-cases/update-vaccine.use-case.ts",
+      "backend-pet-tracker/src/modules/pets/application/owner-local-day.ts",
+      "backend-pet-tracker/src/modules/health/infrastructure/mappers/vaccine-error.mapper.ts",
       "backend-pet-tracker/test/health-vaccines.e2e-spec.ts"
+    ]
+  },
+  {
+    "id": 89,
+    "name": "dto-dates-owner-timezone",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Deuda registrada al cerrar #88 el 2026-09-11 (specs/vaccine-applied-at-owner-timezone/requirements.md §Fuera de alcance). Quedan dos DTOs que comparan una fecha del body con el hoy UTC del servidor, el mismo sesgo que #82 y #88 corrigieron para las vacunas: (a) backend-pet-tracker/src/modules/health/application/dto/weight.dto.ts:10-13 y :30, measuredAt <= hoy UTC + 1, que ya lleva un margen de un dia para tapar el sintoma y por eso acepta una medicion de manana local en zonas negativas; (b) backend-pet-tracker/src/modules/pets/application/dto/create-pet.dto.ts:10-12 y :64, birthDate <= hoy UTC con su propia copia local de todayIsoDateUtc, que rechaza con 400 una mascota nacida hoy para owners en zonas positivas tras su medianoche. #88 dejo el patron listo: helper ownerLocalDay(pets, petId, now) en pets/application/owner-local-day.ts, validacion en el use case con now inyectado desde el controller, DTO solo de formato, y 400 con la forma de zod byte a byte. En create-pet no hay owner todavia: la zona es la del requester (users.timezone via USER_REPOSITORY.findById), y la spec debe decidirlo por escrito. La spec debe barrer src con grep de todayIsoDateUtc y de toISOString().slice(0, 10) para confirmar que estos dos son los ultimos.",
+    "acceptance_criteria": [
+      "Registrar un peso con measuredAt = hoy en la zona del owner responde 2xx a cualquier hora, y measuredAt = manana en esa zona responde 400 (desaparece el margen de un dia)",
+      "Crear una mascota con birthDate = hoy en la zona del requester responde 201 a cualquier hora, y birthDate = manana responde 400",
+      "Los dos DTOs dejan de comparar fechas; la validacion vive en el use case con now inyectado, reutilizando ownerLocalDay o un equivalente por requester sin duplicar la logica IANA + warn",
+      "Un test e2e por caso fija el limite con el par Pacific/Kiritimati y Pacific/Pago_Pago; el barrido de src no deja ningun otro comparador de fecha contra hoy UTC"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/modules/health/application/dto/weight.dto.ts",
+      "backend-pet-tracker/src/modules/pets/application/dto/create-pet.dto.ts",
+      "backend-pet-tracker/test/health-weights.e2e-spec.ts",
+      "backend-pet-tracker/test/pets.e2e-spec.ts"
     ]
   }
 ]

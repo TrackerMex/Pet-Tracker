@@ -3234,6 +3234,30 @@ logica de aplicacion. Reporte en `progress/impl_db-migrate-script.md`.
   corrida verde. Lección: leer siempre la última línea del log, no el estado
   de la tarea.
 
+## #88 vaccine-applied-at-owner-timezone (cerrada 2026-09-11)
+
+- **Qué entrega**: `POST/PATCH /v1/pets/:petId/vaccines` validan `appliedAt` contra
+  el día civil en `users.timezone` del owner, en el use case y con `now` inyectado
+  desde el controller. El DTO solo valida formato. `VaccineAppliedInFutureError`
+  mapeado al mismo 400 de zod. Helper `ownerLocalDay(pets, petId, now)` compartido
+  con `GetPetUseCase` (#82), con fallback UTC + warn.
+- **Por qué existía**: el DTO comparaba con el hoy UTC del servidor: 400 indebido
+  para zonas positivas tras su medianoche y futuro aceptado para zonas negativas
+  por la tarde. El enunciado original tenía la dirección invertida; se corrigió
+  con `Intl` antes de especificar.
+- **Premisa del leader corregida por el spec_author**: `UpdateVaccineUseCase` no
+  inyectaba `PetRepository`; gana el parámetro y el `it` posicional de #14 se
+  adapta. Inventario de once archivos, sin dobles exhaustivos afectados (no se
+  añaden métodos a puertos).
+- **Cierre limpio**: diez commits rojo→verde en orden, verde mínimo por commit,
+  reviewer aprobado a la primera (rojos en worktree desechable, M1 día UTC y M2
+  `<=`→`<`, dos corridas e2e con `359 passed`, `init.sh` exit 0 sin flake #72,
+  hashes de trazabilidad verificados con `merge-base --is-ancestor`).
+- **Coordinación**: la sesión Frontend tenía un bucle que relanzaba su `init.sh`
+  al no ver otro vivo, sin mirar `test:e2e`; se detectó antes de chocar y lo
+  mató. Memoria: `pgrep -af 'init\.sh|test:e2e|jest-e2e'`.
+- **Deuda**: #89 `dto-dates-owner-timezone` (`weight.dto.ts` con margen +1,
+  `create-pet.dto.ts` birthDate; en create-pet la zona es la del requester).
 ---
 
 ## 2026-09-11 — #87 `mobile-tanstack-query` (cerrada)

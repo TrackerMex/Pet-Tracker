@@ -12,6 +12,13 @@ export class VaccineSpeciesMismatchError extends Error {
   }
 }
 
+export class VaccineAppliedInFutureError extends Error {
+  constructor() {
+    super('Applied date cannot be in the future');
+    this.name = 'VaccineAppliedInFutureError';
+  }
+}
+
 export class VaccineNotFoundError extends Error {
   constructor(id: string) {
     super(`Vaccine not found: ${id}`);

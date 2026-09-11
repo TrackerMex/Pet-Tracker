@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { IsoDateSchema, todayIsoDateUtc } from './iso-date';
+import { IsoDateSchema } from './iso-date';
 
 const NonEmptyText = (max: number) => z.string().trim().min(1).max(max);
 
@@ -9,10 +9,7 @@ export const CreateVaccineSchema = z
   .object({
     catalogId: z.uuid().optional(),
     name: NonEmptyText(120).optional(),
-    appliedAt: IsoDateSchema.refine(
-      (date) => date <= todayIsoDateUtc(),
-      'Applied date cannot be in the future',
-    ),
+    appliedAt: IsoDateSchema,
     nextDoseAt: IsoDateSchema.optional(),
     vetName: NonEmptyText(120).optional(),
     clinic: NonEmptyText(120).optional(),
@@ -26,10 +23,7 @@ export const CreateVaccineSchema = z
 export const UpdateVaccineSchema = z
   .object({
     name: NonEmptyText(120).optional(),
-    appliedAt: IsoDateSchema.refine(
-      (date) => date <= todayIsoDateUtc(),
-      'Applied date cannot be in the future',
-    ).optional(),
+    appliedAt: IsoDateSchema.optional(),
     nextDoseAt: IsoDateSchema.nullable().optional(),
     vetName: NonEmptyText(120).nullable().optional(),
     clinic: NonEmptyText(120).nullable().optional(),
