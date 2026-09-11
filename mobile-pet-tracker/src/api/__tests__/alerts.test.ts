@@ -1,4 +1,4 @@
-import { listAlerts } from '../alerts';
+import { ackAlert, listAlerts } from '../alerts';
 
 const baseUrl = 'http://example.test/v1/';
 
@@ -130,6 +130,82 @@ describe('#78 R1: listAlerts mapea la respuesta por kind', () => {
 
       await expect(
         listAlerts(missingUrl, 'jwt-token', undefined, undefined, fetchFn),
+      ).resolves.toEqual({ kind: 'missing-config' });
+      expect(fetchFn).not.toHaveBeenCalled();
+    },
+  );
+});
+
+describe('#78 R2: ackAlert mapea la respuesta por kind', () => {
+  it('posts an empty object and returns the acknowledged alert', async () => {
+    const alert = makeAlert('alert-1');
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValue(response(200, alert)) as unknown as typeof fetch;
+
+    await expect(
+      ackAlert(baseUrl, 'jwt-token', 'alert-1', fetchFn),
+    ).resolves.toEqual({ kind: 'ok', alert });
+    expect(fetchFn).toHaveBeenCalledWith(
+      'http://example.test/v1/alerts/alert-1/ack',
+      {
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer jwt-token',
+          'Content-Type': 'application/json',
+        },
+        body: '{}',
+      },
+    );
+  });
+
+  it.each([
+    [401, { kind: 'unauthorized' }],
+    [404, { kind: 'not-found' }],
+    [409, { kind: 'already-closed' }],
+    [400, { kind: 'error' }],
+    [500, { kind: 'error' }],
+  ] as const)('maps HTTP %i', async (status, expected) => {
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValue(response(status, {})) as unknown as typeof fetch;
+
+    await expect(
+      ackAlert(baseUrl, 'jwt-token', 'alert-1', fetchFn),
+    ).resolves.toEqual(expected);
+  });
+
+  it.each([
+    ['invalid JSON', invalidJsonResponse(200)],
+    ['an array success body', response(200, [])],
+    ['a null success body', response(200, null)],
+  ])('maps %s to error', async (_case, backendResponse) => {
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValue(backendResponse) as unknown as typeof fetch;
+
+    await expect(
+      ackAlert(baseUrl, 'jwt-token', 'alert-1', fetchFn),
+    ).resolves.toEqual({ kind: 'error' });
+  });
+
+  it('maps a fetch rejection to unreachable', async () => {
+    const fetchFn = jest
+      .fn()
+      .mockRejectedValue(new Error('network down')) as unknown as typeof fetch;
+
+    await expect(
+      ackAlert(baseUrl, 'jwt-token', 'alert-1', fetchFn),
+    ).resolves.toEqual({ kind: 'unreachable', message: 'network down' });
+  });
+
+  it.each([undefined, ''])(
+    'maps missing base URL %p without fetching',
+    async (missingUrl) => {
+      const fetchFn = jest.fn() as unknown as typeof fetch;
+
+      await expect(
+        ackAlert(missingUrl, 'jwt-token', 'alert-1', fetchFn),
       ).resolves.toEqual({ kind: 'missing-config' });
       expect(fetchFn).not.toHaveBeenCalled();
     },

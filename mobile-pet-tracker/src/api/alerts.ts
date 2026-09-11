@@ -8,6 +8,15 @@ export type AlertsState =
   | { kind: 'unreachable'; message: string }
   | { kind: 'missing-config' };
 
+export type AckAlertState =
+  | { kind: 'ok'; alert: Alert }
+  | { kind: 'not-found' }
+  | { kind: 'already-closed' }
+  | { kind: 'unauthorized' }
+  | { kind: 'error' }
+  | { kind: 'unreachable'; message: string }
+  | { kind: 'missing-config' };
+
 export async function listAlerts(
   baseUrl: string | undefined,
   token: string,
@@ -48,4 +57,17 @@ export async function listAlerts(
         ? (body as { nextCursor: string }).nextCursor
         : null,
   };
+}
+
+export async function ackAlert(
+  baseUrl: string | undefined,
+  token: string,
+  alertId: string,
+  fetchFn: typeof fetch = fetch,
+): Promise<AckAlertState> {
+  void baseUrl;
+  void token;
+  void alertId;
+  void fetchFn;
+  throw new Error('not implemented');
 }
