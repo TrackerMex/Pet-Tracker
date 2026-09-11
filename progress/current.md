@@ -42,7 +42,16 @@
       derogada por E1.
 - [X] **Enmiendas E1-E8 aprobadas** — `4f9298e0` (2026-09-11).
 
-### Estado actual: esperando a Codex CLI
+### Estado actual: implementación activa en Codex CLI
+
+- **Inicio**: 2026-09-11 15:23 UTC.
+- Preflight `env -u FORCE_COLOR bash ./init.sh`: verde antes de tocar código
+  (build, tests, e2e, lint y typecheck).
+- Skills cargadas: `expo-overview`, `expo-router`, `expo-data-fetching`,
+  `expo-native-ui`, `expo-ui`, `appllama-app-design-skill` y Ponytail `full`;
+  documentación oficial de Expo SDK 57 consultada en su URL versionada.
+- Plan en curso: R1→R13, estrictamente en el orden de `tasks.md`, con commits
+  rojo/verde y trazabilidad incremental. R14 queda reservado al humano.
 
 - `feature_list.json`: #78 pasa a **`in_progress`** (2026-09-11).
 - Handoff escrito en **`progress/handoff_mobile-alerts-center.md`**. El humano
