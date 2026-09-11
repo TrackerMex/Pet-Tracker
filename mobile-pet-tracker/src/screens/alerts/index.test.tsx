@@ -134,6 +134,9 @@ describe('#78 R4: la pantalla pinta su esqueleto, su error, su vacío y sus fila
 
     expect(screen.getByTestId('screen-alerts')).toBeVisible();
     expect(screen.getByText(es['alerts.title'])).toBeVisible();
+    expect(screen.getByText(es['alerts.title']).props.className).toBe(
+      'text-2xl font-black text-foreground',
+    );
     const loading = screen.getByTestId('alerts-loading');
     expect(loading.children).toHaveLength(3);
     for (const number of [1, 2, 3]) {
