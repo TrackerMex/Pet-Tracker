@@ -1,6 +1,6 @@
 ---
 feature: "vaccine-applied-at-owner-timezone"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec]
 ---
 

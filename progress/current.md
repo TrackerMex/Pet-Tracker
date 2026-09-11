@@ -10,7 +10,7 @@
 - **Branch**: `feature/88-vaccine-applied-at-owner-timezone` (desde `origin/main` @ f3e3280, merge de #119/#82)
 - **Worktree**: `/home/claude/sites/Pet-Tracker-wt-backend` (sesion Backend; Frontend trabaja #87 en `/home/claude/sites/Pet-Tracker`)
 - **Inicio**: 2026-09-10
-- **Estado**: `spec_ready` -> esperando gate humano (spec escrita 2026-09-10, sin aprobar)
+- **Estado**: `in_progress` (spec aprobada por el humano en bf94ec1, 2026-09-11; handoff a Codex CLI escrito)
 - **Prioridad**: P3
 
 ### Plan
