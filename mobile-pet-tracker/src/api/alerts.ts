@@ -1,4 +1,4 @@
-import { getJson, readJson } from './http';
+import { getJson, postJson, readJson } from './http';
 import type { Alert, AlertStatus } from './types';
 
 export type AlertsState =
@@ -65,9 +65,23 @@ export async function ackAlert(
   alertId: string,
   fetchFn: typeof fetch = fetch,
 ): Promise<AckAlertState> {
-  void baseUrl;
-  void token;
-  void alertId;
-  void fetchFn;
-  throw new Error('not implemented');
+  if (!baseUrl) return { kind: 'missing-config' };
+
+  const result = await postJson(
+    baseUrl,
+    `/alerts/${alertId}/ack`,
+    token,
+    {},
+    fetchFn,
+  );
+  if (result.kind === 'unreachable') return result;
+  if (result.response.status === 401) return { kind: 'unauthorized' };
+  if (result.response.status === 404) return { kind: 'not-found' };
+  if (result.response.status === 409) return { kind: 'already-closed' };
+  if (result.response.status !== 200) return { kind: 'error' };
+
+  const body = await readJson(result.response);
+  return typeof body === 'object' && body !== null && !Array.isArray(body)
+    ? { kind: 'ok', alert: body as Alert }
+    : { kind: 'error' };
 }

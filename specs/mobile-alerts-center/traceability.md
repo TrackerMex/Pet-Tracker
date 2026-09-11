@@ -9,7 +9,7 @@ tags: [harness, spec]
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
 | R1 | `src/api/__tests__/alerts.test.ts :: #78 R1: listAlerts mapea la respuesta por kind` | rojo `ee17732b`; verde `f6062ed0` |
-| R2 | pendiente | pendiente |
+| R2 | `src/api/__tests__/alerts.test.ts :: #78 R2: ackAlert mapea la respuesta por kind` | rojo `d6803629`; verde pendiente |
 | R3 | pendiente | pendiente |
 | R4 | pendiente | pendiente |
 | R5 | pendiente | pendiente |
