@@ -1670,7 +1670,7 @@
   {
     "id": 89,
     "name": "dto-dates-owner-timezone",
-    "status": "in_progress",
+    "status": "done",
     "priority": "P3",
     "description": "Deuda registrada al cerrar #88 el 2026-09-11 (specs/vaccine-applied-at-owner-timezone/requirements.md §Fuera de alcance). Quedan dos DTOs que comparan una fecha del body con el hoy UTC del servidor, el mismo sesgo que #82 y #88 corrigieron para las vacunas: (a) backend-pet-tracker/src/modules/health/application/dto/weight.dto.ts:10-13 y :30, measuredAt <= hoy UTC + 1, que ya lleva un margen de un dia para tapar el sintoma y por eso acepta una medicion de manana local en zonas negativas; (b) backend-pet-tracker/src/modules/pets/application/dto/create-pet.dto.ts:10-12 y :64, birthDate <= hoy UTC con su propia copia local de todayIsoDateUtc, que rechaza con 400 una mascota nacida hoy para owners en zonas positivas tras su medianoche. #88 dejo el patron listo: helper ownerLocalDay(pets, petId, now) en pets/application/owner-local-day.ts, validacion en el use case con now inyectado desde el controller, DTO solo de formato, y 400 con la forma de zod byte a byte. En create-pet no hay owner todavia: la zona es la del requester (users.timezone via USER_REPOSITORY.findById), y la spec debe decidirlo por escrito. La spec debe barrer src con grep de todayIsoDateUtc y de toISOString().slice(0, 10) para confirmar que estos dos son los ultimos.",
     "acceptance_criteria": [
@@ -1680,8 +1680,26 @@
       "Un test e2e por caso fija el limite con el par Pacific/Kiritimati y Pacific/Pago_Pago; el barrido de src no deja ningun otro comparador de fecha contra hoy UTC"
     ],
     "files_affected": [
+      "backend-pet-tracker/src/modules/health/application/dto/iso-date.ts",
       "backend-pet-tracker/src/modules/health/application/dto/weight.dto.ts",
+      "backend-pet-tracker/src/modules/health/application/use-cases/create-weight.use-case.spec.ts",
+      "backend-pet-tracker/src/modules/health/application/use-cases/create-weight.use-case.ts",
+      "backend-pet-tracker/src/modules/health/domain/errors/weight.errors.ts",
+      "backend-pet-tracker/src/modules/health/infrastructure/weights.controller.ts",
+      "backend-pet-tracker/src/modules/pets/application/dto/create-pet.dto.spec.ts",
       "backend-pet-tracker/src/modules/pets/application/dto/create-pet.dto.ts",
+      "backend-pet-tracker/src/modules/pets/application/dto/update-pet.dto.spec.ts",
+      "backend-pet-tracker/src/modules/pets/application/owner-local-day.ts",
+      "backend-pet-tracker/src/modules/pets/application/requester-local-day.spec.ts",
+      "backend-pet-tracker/src/modules/pets/application/requester-local-day.ts",
+      "backend-pet-tracker/src/modules/pets/application/use-cases/create-pet.use-case.spec.ts",
+      "backend-pet-tracker/src/modules/pets/application/use-cases/create-pet.use-case.ts",
+      "backend-pet-tracker/src/modules/pets/application/use-cases/update-pet.use-case.spec.ts",
+      "backend-pet-tracker/src/modules/pets/application/use-cases/update-pet.use-case.ts",
+      "backend-pet-tracker/src/modules/pets/domain/errors/pet.errors.ts",
+      "backend-pet-tracker/src/modules/pets/infrastructure/pets.controller.spec.ts",
+      "backend-pet-tracker/src/modules/pets/infrastructure/pets.controller.ts",
+      "backend-pet-tracker/src/modules/pets/pets.module.ts",
       "backend-pet-tracker/test/health-weights.e2e-spec.ts",
       "backend-pet-tracker/test/pets.e2e-spec.ts"
     ]
