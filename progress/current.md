@@ -10,7 +10,7 @@
 - **Branch**: `feature/89-dto-dates-owner-timezone` (desde `origin/main` @ 381d1e36, merge de #88 ya integrado)
 - **Worktree**: `/home/claude/sites/Pet-Tracker-wt-backend` (el worktree principal lo ocupa #78, sesion Frontend)
 - **Inicio**: 2026-09-11
-- **Estado**: `spec_ready` (commit cf51a1a9) -> esperando gate humano
+- **Estado**: `in_progress` -> handoff a Codex CLI (spec aprobada por el humano en 62992e82)
 - **Prioridad**: P3
 
 ### Plan
@@ -40,3 +40,6 @@ preguntas que la spec debe cerrar: formato de `measuredAt` y `birthDate` que man
 - `spec_author` entrego `specs/dto-dates-owner-timezone/` en cf51a1a9. Anade Bloque D (PATCH `/v1/pets/:petId`): `UpdatePetSchema = PetFieldsSchema.partial()` hereda el `refine` UTC, asi que quitarlo del DTO sin mover la regla al use case dejaria PATCH sin validar.
 - Respuesta de Frontend incorporada como premisa verificada (fecha civil del dispositivo, nada depende del margen +1) y deuda movil nombrada en §Fuera de alcance sin id.
 - Decisiones que el humano ratifica o enmienda en el gate: D2 (sin margen, coherente con #88), D3/D7 (zona del requester en POST, del owner en PATCH), literal del mensaje de pesos.
+- Gate humano firmado en 62992e82 (tres casillas, sin enmiendas). Frontmatter a `approved`, #89 a `in_progress`.
+- Handoff en `progress/handoff_dto-dates-owner-timezone.md`. Mientras Codex implementa, esta sesion no toca `backend-pet-tracker/`.
+- Codex de #78 corre en paralelo en el worktree principal: los gates se turnan con `pgrep -af 'init\.sh'`.
