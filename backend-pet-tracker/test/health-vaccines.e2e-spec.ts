@@ -1,6 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { and, eq, inArray } from 'drizzle-orm';
+import { and, asc, eq, inArray } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import request from 'supertest';
 import { App } from 'supertest/types';
@@ -13,6 +13,7 @@ import { seedVaccineCatalog } from '@/db/seed/vaccine-catalog';
 import { DRIZZLE } from '@/db/drizzle.constants';
 import { TOKEN_SERVICE } from '@/modules/auth/domain/ports/token-service';
 import type { TokenService } from '@/modules/auth/domain/ports/token-service';
+import { localDayOf, shiftDay } from '@/pipeline/local-day';
 import { AppModule } from '../src/app.module';
 
 describe('Health vaccines (e2e)', () => {
@@ -33,7 +34,10 @@ describe('Health vaccines (e2e)', () => {
   const dateOffset = (days: number) =>
     new Date(Date.now() + days * 86_400_000).toISOString().slice(0, 10);
 
-  async function seedUser(label: string): Promise<UserFixture> {
+  async function seedUser(
+    label: string,
+    timezone = 'UTC',
+  ): Promise<UserFixture> {
     const id = uuidv7();
     const email = `vaccines-${label}-${runId}@example.com`;
     await db.insert(users).values({
@@ -44,7 +48,7 @@ describe('Health vaccines (e2e)', () => {
       lastName: label,
       phone: '+525512345678',
       country: 'MX',
-      timezone: 'UTC',
+      timezone,
       termsAcceptedAt: new Date(),
     });
     userIds.push(id);
@@ -468,7 +472,7 @@ describe('Health vaccines (e2e)', () => {
   });
 
   describe('R12: auditoria de mutaciones', () => {
-    it('registra create/update/delete y no audita PATCH vacio', async () => {
+    it('registra create/update/delete en orden cronologico y no audita PATCH vacio (e2e-audit-log-order-assert #76: R1,R2)', async () => {
       const owner = await seedUser('r12');
       const pet = await seedPet(owner);
       const created = await postVaccine(owner, pet.id, {
@@ -493,7 +497,8 @@ describe('Health vaccines (e2e)', () => {
       const rows = await db
         .select()
         .from(auditLog)
-        .where(and(eq(auditLog.entity, 'vaccine'), eq(auditLog.entityId, id)));
+        .where(and(eq(auditLog.entity, 'vaccine'), eq(auditLog.entityId, id)))
+        .orderBy(asc(auditLog.at), asc(auditLog.id));
       expect(rows.map((row) => row.action)).toEqual([
         'vaccine.create',
         'vaccine.update',
@@ -551,6 +556,165 @@ describe('Health vaccines (e2e)', () => {
         nextDoseAt: nextDate,
       });
       expect({ ...after, nextVaccine: null }).toEqual(before);
+    });
+  });
+
+  describe('R3 (vaccine-due-today-inclusive #82): la dosis de hoy en la zona del owner es la proxima', () => {
+    it('devuelve la dosis de hoy para owners en Pacific/Kiritimati y Pacific/Pago_Pago (R3)', async () => {
+      const actual: Array<{
+        id: string;
+        name: string;
+        nextDoseAt: string;
+      }> = [];
+      const expected: typeof actual = [];
+
+      for (const [index, timezone] of [
+        'Pacific/Kiritimati',
+        'Pacific/Pago_Pago',
+      ].entries()) {
+        const owner = await seedUser(`r3-owner-${index}`, timezone);
+        const pet = await seedPet(owner);
+        const today = localDayOf(Date.now(), timezone);
+        const todayId = uuidv7();
+
+        await db.insert(petVaccines).values([
+          {
+            id: uuidv7(),
+            petId: pet.id,
+            name: 'Ayer',
+            appliedAt: '2025-01-01',
+            nextDoseAt: shiftDay(today, -1),
+            createdBy: owner.id,
+          },
+          {
+            id: todayId,
+            petId: pet.id,
+            name: 'Hoy',
+            appliedAt: '2025-01-01',
+            nextDoseAt: today,
+            createdBy: owner.id,
+          },
+          {
+            id: uuidv7(),
+            petId: pet.id,
+            name: 'Manana',
+            appliedAt: '2025-01-01',
+            nextDoseAt: shiftDay(today, 1),
+            createdBy: owner.id,
+          },
+        ]);
+
+        const response = await api()
+          .get(`/v1/pets/${pet.id}`)
+          .set(auth(owner.token))
+          .expect(200);
+        const body = response.body as {
+          nextVaccine: { id: string; name: string; nextDoseAt: string };
+        };
+
+        actual.push(body.nextVaccine);
+        expected.push({
+          id: todayId,
+          name: 'Hoy',
+          nextDoseAt: today,
+        });
+      }
+
+      expect(actual).toEqual(expected);
+    });
+
+    it('un family en otra zona ve el nextVaccine del dia del owner (R4)', async () => {
+      const owner = await seedUser('r4-owner-zone', 'Pacific/Kiritimati');
+      const family = await seedUser('r4-family-zone', 'Pacific/Pago_Pago');
+      const pet = await seedPet(owner);
+      await db.insert(petUsers).values({
+        petId: pet.id,
+        userId: family.id,
+        role: 'family',
+        status: 'active',
+      });
+      const today = localDayOf(Date.now(), 'Pacific/Kiritimati');
+
+      await db.insert(petVaccines).values([
+        {
+          id: uuidv7(),
+          petId: pet.id,
+          name: 'Ayer',
+          appliedAt: '2025-01-01',
+          nextDoseAt: shiftDay(today, -1),
+          createdBy: owner.id,
+        },
+        {
+          id: uuidv7(),
+          petId: pet.id,
+          name: 'Hoy',
+          appliedAt: '2025-01-01',
+          nextDoseAt: today,
+          createdBy: owner.id,
+        },
+        {
+          id: uuidv7(),
+          petId: pet.id,
+          name: 'Manana',
+          appliedAt: '2025-01-01',
+          nextDoseAt: shiftDay(today, 1),
+          createdBy: owner.id,
+        },
+      ]);
+
+      const response = await api()
+        .get(`/v1/pets/${pet.id}`)
+        .set(auth(family.token))
+        .expect(200);
+      const body = response.body as {
+        nextVaccine: { name: string; nextDoseAt: string };
+      };
+
+      expect(body.nextVaccine.nextDoseAt).toBe(today);
+      expect(body.nextVaccine.name).toBe('Hoy');
+    });
+
+    it('owner con timezone fuera del catalogo IANA responde 200 con el hoy UTC (R5)', async () => {
+      const owner = await seedUser('r5-tz', 'Not/A/Zone');
+      const pet = await seedPet(owner);
+      const today = dateOffset(0);
+
+      await db.insert(petVaccines).values([
+        {
+          id: uuidv7(),
+          petId: pet.id,
+          name: 'Ayer',
+          appliedAt: '2025-01-01',
+          nextDoseAt: dateOffset(-1),
+          createdBy: owner.id,
+        },
+        {
+          id: uuidv7(),
+          petId: pet.id,
+          name: 'Hoy',
+          appliedAt: '2025-01-01',
+          nextDoseAt: today,
+          createdBy: owner.id,
+        },
+        {
+          id: uuidv7(),
+          petId: pet.id,
+          name: 'Manana',
+          appliedAt: '2025-01-01',
+          nextDoseAt: dateOffset(1),
+          createdBy: owner.id,
+        },
+      ]);
+
+      const response = await api()
+        .get(`/v1/pets/${pet.id}`)
+        .set(auth(owner.token))
+        .expect(200);
+      const body = response.body as {
+        nextVaccine: { nextDoseAt: string };
+      };
+
+      expect(body.nextVaccine.nextDoseAt).toBe(today);
     });
   });
 });

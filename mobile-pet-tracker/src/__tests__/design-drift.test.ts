@@ -4,6 +4,7 @@ interface DirectoryEntry {
 }
 
 declare function require(moduleName: 'fs'): {
+  existsSync: (path: string) => boolean;
   readdirSync: (
     path: string,
     options: { withFileTypes: true },
@@ -15,7 +16,7 @@ declare function require(moduleName: 'path'): {
   join: (...paths: string[]) => string;
 };
 
-const { readdirSync, readFileSync } = require('fs');
+const { existsSync, readdirSync, readFileSync } = require('fs');
 const { join } = require('path');
 
 const sourceRoot = join(process.cwd(), 'src');
@@ -30,6 +31,18 @@ function sourceFiles(directory: string): string[] {
     }
 
     return /\.tsx?$/.test(entry.name) ? [path] : [];
+  });
+}
+
+function allTypeScriptFiles(directory: string): string[] {
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const path = join(directory, entry.name);
+
+    return entry.isDirectory()
+      ? allTypeScriptFiles(path)
+      : /\.tsx?$/.test(entry.name)
+        ? [path]
+        : [];
   });
 }
 
@@ -340,5 +353,110 @@ describe('#68 E1: la carta retira connectivity de los enum crudos', () => {
       '`device.connectivity` dejó de pintarse crudo en la feature #68 (R16)',
     );
     expect(corollary).toContain('`src/utils/device-connectivity.ts`');
+  });
+});
+
+describe('#87 R1: la dependencia queda declarada y fijada', () => {
+  const packageJson = JSON.parse(
+    readFileSync(join(projectRoot, 'package.json'), 'utf8'),
+  ) as {
+    dependencies: Record<string, string>;
+    jest: { transformIgnorePatterns: string[] };
+  };
+  const version = packageJson.dependencies['@tanstack/react-query'];
+
+  it('declares exactly version 5.102.8', () => {
+    expect(version).toBe('5.102.8');
+  });
+
+  it('does not use a semver range', () => {
+    expect(version).not.toMatch(/^[\^~]/);
+  });
+
+  it('keeps TanStack out of transformIgnorePatterns', () => {
+    expect(packageJson.jest.transformIgnorePatterns[0]).not.toContain(
+      '@tanstack',
+    );
+  });
+});
+
+describe('#87 R19: use-' + 'api no deja huella', () => {
+  const legacyModule = ['use', 'api'].join('-');
+  const legacyIdentifier = ['use', 'Api'].join('');
+  const screenSignOutCalls: Record<string, number> = {
+    'app/(tabs)/food.tsx': 0,
+    'app/(tabs)/health.tsx': 0,
+    'app/(tabs)/map.tsx': 0,
+    'app/(tabs)/meal-schedule.tsx': 1,
+    'app/(tabs)/weight-log.tsx': 1,
+    'screens/docs/index.tsx': 0,
+    'screens/home/index.tsx': 0,
+    'screens/pairing/index.tsx': 2,
+    'screens/profile/index.tsx': 2,
+    'screens/reminders/index.tsx': 1,
+  };
+
+  it('removes both legacy hook files', () => {
+    expect(
+      existsSync(join(sourceRoot, 'hooks', `${legacyModule}.ts`)),
+    ).toBe(false);
+    expect(
+      existsSync(
+        join(sourceRoot, 'hooks', '__tests__', `${legacyModule}.test.tsx`),
+      ),
+    ).toBe(false);
+  });
+
+  it('leaves only the weekly activity guard mentioning the legacy hook', () => {
+    const testRoot = join(projectRoot, 'test');
+    const files = [
+      ...allTypeScriptFiles(sourceRoot).map((path) => ({
+        path,
+        relativePath: path.slice(sourceRoot.length + 1),
+      })),
+      ...allTypeScriptFiles(testRoot).map((path) => ({
+        path,
+        relativePath: `test/${path.slice(testRoot.length + 1)}`,
+      })),
+    ];
+    const footprints = files
+      .filter(({ path }) => {
+        const contents = readFileSync(path, 'utf8');
+
+        return (
+          contents.includes(legacyModule) ||
+          contents.includes(legacyIdentifier)
+        );
+      })
+      .map(({ relativePath }) => relativePath);
+
+    expect(footprints).toEqual([
+      'screens/home/weekly-activity-chart.test.tsx',
+    ]);
+  });
+
+  it('keeps literal query keys out of every migrated screen', () => {
+    const violations = Object.keys(screenSignOutCalls).filter((relativePath) =>
+      /queryKey:\s*\[/.test(
+        readFileSync(join(sourceRoot, relativePath), 'utf8'),
+      ),
+    );
+
+    expect(violations).toEqual([]);
+  });
+
+  it('preserves every mutation sign-out with zero delta', () => {
+    const actual = Object.fromEntries(
+      Object.keys(screenSignOutCalls).map((relativePath) => {
+        const contents = readFileSync(
+          join(sourceRoot, relativePath),
+          'utf8',
+        );
+
+        return [relativePath, contents.split('signOut(').length - 1];
+      }),
+    );
+
+    expect(actual).toEqual(screenSignOutCalls);
   });
 });

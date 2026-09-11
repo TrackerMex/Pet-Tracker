@@ -201,7 +201,7 @@ describe('R8: GET /v1/pets/:petId responde el perfil con el rol de la membresia'
 
     const response = await controller.detail(buildPetRequest('vet'));
 
-    expect(getExecute).toHaveBeenCalledWith(PET_ID);
+    expect(getExecute).toHaveBeenCalledWith(PET_ID, expect.any(Date));
     expect(response.id).toBe(PET_ID);
     expect(response.myRole).toBe('vet');
   });

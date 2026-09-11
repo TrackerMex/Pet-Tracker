@@ -2,13 +2,15 @@ import {
   BottomSheet,
   BottomSheetView,
 } from '@expo/ui/community/bottom-sheet';
+import { useQuery } from '@tanstack/react-query';
 import { router, type Href, useFocusEffect } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { listPets } from '../../api/pets';
+import { petKeys, reminderKeys } from '../../api/query-keys';
 import {
   deleteReminder,
   listReminders,
@@ -17,7 +19,6 @@ import {
 import type { Reminder } from '../../api/types';
 import { Card } from '../../components/card';
 import { PetSwitcher } from '../../components/pet-switcher';
-import { useApi } from '../../hooks/use-api';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import {
@@ -46,20 +47,16 @@ export function RemindersScreen() {
   const t = useTranslate();
   const { selectedPetId, selectPet } = useSelectedPet();
   const insets = useSafeAreaInsets();
-  const petsFn = useCallback(
-    () => listPets(baseUrl, token ?? ''),
-    [baseUrl, token],
-  );
-  const pets = useApi(petsFn);
-  usePetSelection(pets);
-  const remindersFn = useMemo(
-    () =>
-      selectedPetId
-        ? () => listReminders(baseUrl, token ?? '', selectedPetId)
-        : null,
-    [baseUrl, selectedPetId, token],
-  );
-  const reminders = useApi(remindersFn);
+  const pets = useQuery({
+    queryKey: petKeys.list(),
+    queryFn: () => listPets(baseUrl, token ?? ''),
+  });
+  usePetSelection({ data: pets.data, isRefreshing: pets.isRefetching });
+  const reminders = useQuery({
+    queryKey: reminderKeys.list(selectedPetId ?? ''),
+    queryFn: () => listReminders(baseUrl, token ?? '', selectedPetId!),
+    enabled: selectedPetId !== null,
+  });
   const refetchReminders = reminders.refetch;
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteCandidate, setDeleteCandidate] = useState<Reminder | null>(null);
@@ -179,7 +176,10 @@ export function RemindersScreen() {
           <Text testID="reminders-error" className="text-danger">
             {t('common.somethingWentWrong')}
           </Text>
-          <Button testID="reminders-retry" onPress={reminders.refetch}>
+          <Button
+            testID="reminders-retry"
+            onPress={() => void reminders.refetch()}
+          >
             <Button.Label>{t('common.retry')}</Button.Label>
           </Button>
         </View>
