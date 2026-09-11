@@ -16,7 +16,7 @@ tags: [harness, spec]
 | R6 | `src/screens/alerts/index.test.tsx :: #78 R6: cada fila de alerta trae su icono, su hueco, su tinta y sus tres hijos en orden` | rojo `e2a10a0a`; verde `ccefd8fe` |
 | R7 | `src/screens/alerts/index.test.tsx :: #78 R7: pinta las abiertas primero y conserva la posición tras el ack` | rojo `d72ba1dd`; verde `3e7bebb9` |
 | R8 | `src/screens/alerts/index.test.tsx :: #78 R8: el ack cambia la fila sin recargar la lista` | rojo `290abc42`; verde `63faca32` |
-| R9 | pendiente | pendiente |
+| R9 | `src/screens/alerts/index.test.tsx :: #78 R9: pagina por nextCursor y se para cuando no hay` | rojo `b4cd1f97`; verde pendiente |
 | R10 | pendiente | pendiente |
 | R11 | pendiente | pendiente |
 | R12 | pendiente | pendiente |
@@ -24,7 +24,7 @@ tags: [harness, spec]
 | R14 | pendiente (gate humano — sin test automatizado; evidencia en `progress/impl_mobile-alerts-center.md` §R14) | pendiente |
 | E1 | pendiente (documental — la premisa derogada; sin test) | pendiente |
 | E2 | `src/api/__tests__/query-keys.test.ts` (dos filas nuevas del array `cases`) | rojo `8e05f068`; verde `749cde81` |
-| E3 | pendiente — `src/screens/alerts/index.test.tsx :: #78 R9` | pendiente |
+| E3 | `src/screens/alerts/index.test.tsx :: #78 R9: pagina por nextCursor y se para cuando no hay` | rojo `b4cd1f97`; verde pendiente |
 | E4 | pendiente — `src/screens/alerts/index.test.tsx :: #78 R4` | pendiente |
 | E5 | `src/screens/alerts/index.test.tsx :: #78 R8: el ack cambia la fila sin recargar la lista` | rojo `290abc42`; verde `63faca32` |
 | E6 | pendiente — `src/screens/home/index.test.tsx :: #78 R11` | pendiente |

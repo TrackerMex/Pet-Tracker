@@ -87,6 +87,13 @@ export function AlertsScreen() {
   const firstPageFailed =
     firstPage !== undefined &&
     ['error', 'unreachable', 'missing-config'].includes(firstPage.kind);
+  const laterPageFailed =
+    alerts.data?.pages
+      .slice(1)
+      .some((page) => page.kind !== 'ok') ?? false;
+  const displayedActionError =
+    actionError ??
+    (laterPageFailed ? t('common.somethingWentWrong') : null);
   const now = new Date(Date.now());
 
   async function handleAck(alert: Alert) {
@@ -171,14 +178,18 @@ export function AlertsScreen() {
         }}
         data={rows}
         keyExtractor={(item) => item.id}
+        onEndReached={() => {
+          if (!alerts.hasNextPage || alerts.isFetchingNextPage) return;
+          void alerts.fetchNextPage();
+        }}
         ListHeaderComponent={
           <View className="gap-3">
             <Text className="text-2xl font-black text-foreground">
               {t('alerts.title')}
             </Text>
-            {actionError ? (
+            {displayedActionError ? (
               <Text testID="alerts-action-error" className="text-danger">
-                {actionError}
+                {displayedActionError}
               </Text>
             ) : null}
           </View>

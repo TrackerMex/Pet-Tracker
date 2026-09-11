@@ -725,11 +725,18 @@ describe('#78 R9: pagina por nextCursor y se para cuando no hay', () => {
       .mockReturnValueOnce(pending<AlertsState>());
     await renderAlerts();
     await waitFor(() => expect(rowIds()).toEqual(['alert-1']));
+    const firstHandler = screen.getByTestId('alerts-list').props.onEndReached;
 
     await fireEvent(screen.getByTestId('alerts-list'), 'onEndReached');
-    await fireEvent(screen.getByTestId('alerts-list'), 'onEndReached');
-
     await waitFor(() => expect(mockListAlerts).toHaveBeenCalledTimes(2));
+    await waitFor(() =>
+      expect(screen.getByTestId('alerts-list').props.onEndReached).not.toBe(
+        firstHandler,
+      ),
+    );
+    await fireEvent(screen.getByTestId('alerts-list'), 'onEndReached');
+
+    expect(mockListAlerts).toHaveBeenCalledTimes(2);
   });
 
   it('conserva la primera página y muestra error si falla la segunda', async () => {
