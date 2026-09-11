@@ -12,7 +12,7 @@ import { pets, petUsers } from '@/db/schema/pets.schema';
 import { users } from '@/db/schema/users.schema';
 import { TOKEN_SERVICE } from '@/modules/auth/domain/ports/token-service';
 import type { TokenService } from '@/modules/auth/domain/ports/token-service';
-import { MEASURED_AT_MAX_FUTURE_DAYS } from '@/modules/health/application/dto/weight.dto';
+import { localDayOf, shiftDay } from '@/pipeline/local-day';
 import { AppModule } from '../src/app.module';
 
 describe('Health weights (e2e)', () => {
@@ -37,7 +37,10 @@ describe('Health weights (e2e)', () => {
   };
   const today = () => isoDateOffset(0);
 
-  async function seedUser(label: string): Promise<UserFixture> {
+  async function seedUser(
+    label: string,
+    timezone = 'UTC',
+  ): Promise<UserFixture> {
     const id = uuidv7();
     const email = `weights-${label}-${runId}@example.com`;
     await db.insert(users).values({
@@ -48,7 +51,7 @@ describe('Health weights (e2e)', () => {
       lastName: label,
       phone: '+525512345678',
       country: 'MX',
-      timezone: 'UTC',
+      timezone,
       termsAcceptedAt: new Date(),
     });
     userIds.push(id);
@@ -377,7 +380,7 @@ describe('Health weights (e2e)', () => {
       expect(await currentWeight(owner, pet.id)).toBeNull();
     });
 
-    it('acepta hoy y hoy mas un dia, pero rechaza hoy mas dos', async () => {
+    it('acepta hoy y rechaza manana (owner en UTC; sin margen desde #89)', async () => {
       const owner = await seedUser('r7-future-boundary');
       const pet = await seedPet(owner);
 
@@ -387,17 +390,48 @@ describe('Health weights (e2e)', () => {
       }).expect(201);
       await postWeight(owner, pet.id, {
         weightKg: 21,
-        measuredAt: isoDateOffset(MEASURED_AT_MAX_FUTURE_DAYS),
-      }).expect(201);
-      await postWeight(owner, pet.id, {
-        weightKg: 22,
-        measuredAt: isoDateOffset(MEASURED_AT_MAX_FUTURE_DAYS + 1),
+        measuredAt: isoDateOffset(1),
       }).expect(400);
 
       expect(
         await db.select().from(weights).where(eq(weights.petId, pet.id)),
-      ).toHaveLength(2);
-      expect(await currentWeight(owner, pet.id)).toBe(21);
+      ).toHaveLength(1);
+      expect(await currentWeight(owner, pet.id)).toBe(20);
+    });
+  });
+
+  describe('R5 (dto-dates-owner-timezone #89): measuredAt se compara con el dia civil del owner, sin margen', () => {
+    it('POST acepta hoy y rechaza manana en la zona del owner para Pacific/Kiritimati y Pacific/Pago_Pago (R5)', async () => {
+      for (const [index, timezone] of [
+        'Pacific/Kiritimati',
+        'Pacific/Pago_Pago',
+      ].entries()) {
+        const owner = await seedUser(`r5-post-${index}`, timezone);
+        const pet = await seedPet(owner);
+        const today = localDayOf(Date.now(), timezone);
+
+        const created = await postWeight(owner, pet.id, {
+          weightKg: 20,
+          measuredAt: today,
+        }).expect(201);
+        expect((created.body as { measuredAt: string }).measuredAt).toBe(today);
+
+        const rejected = await postWeight(owner, pet.id, {
+          weightKg: 21,
+          measuredAt: shiftDay(today, 1),
+        }).expect(400);
+        expect(rejected.body).toEqual({
+          statusCode: 400,
+          message: 'Validation failed',
+          errors: [
+            {
+              path: 'measuredAt',
+              message: 'measuredAt is too far in the future',
+            },
+          ],
+        });
+        expect(await currentWeight(owner, pet.id)).toBe(20);
+      }
     });
   });
 
