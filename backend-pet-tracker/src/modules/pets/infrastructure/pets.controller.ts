@@ -16,7 +16,10 @@ import { ZodType } from 'zod';
 import { toDeviceStatusResponse } from '@/modules/devices/infrastructure/mappers/device-status.mapper';
 import { CurrentUser } from '@/modules/auth/infrastructure/decorators/current-user.decorator';
 import type { CurrentUserPayload } from '@/modules/auth/infrastructure/decorators/current-user.decorator';
-import { PetNotFoundError } from '@/modules/pets/domain/errors/pet.errors';
+import {
+  PetBirthDateInFutureError,
+  PetNotFoundError,
+} from '@/modules/pets/domain/errors/pet.errors';
 import {
   CreatePetDto,
   CreatePetSchema,
@@ -61,10 +64,15 @@ export class PetsController {
   ): Promise<PetProfileResponse> {
     const dto = parseBody<CreatePetDto>(CreatePetSchema, body);
     const now = new Date();
-    const pet = await this.createPet.execute(dto, user.id, now);
 
-    // R2: el creador siempre queda como owner de su mascota recien creada.
-    return toPetProfileResponse(pet, 'owner');
+    try {
+      const pet = await this.createPet.execute(dto, user.id, now);
+
+      // R2: el creador siempre queda como owner de su mascota recien creada.
+      return toPetProfileResponse(pet, 'owner');
+    } catch (error) {
+      throw mapPetError(error);
+    }
   }
 
   @Get()
@@ -171,6 +179,13 @@ export class PetsController {
  * error de dominio se traduce al mismo 404 generico que emite el guard.
  */
 function mapPetError(error: unknown): unknown {
+  if (error instanceof PetBirthDateInFutureError) {
+    return new BadRequestException({
+      statusCode: HttpStatus.BAD_REQUEST,
+      message: 'Validation failed',
+      errors: [{ path: 'birthDate', message: error.message }],
+    });
+  }
   return error instanceof PetNotFoundError ? new NotFoundException() : error;
 }
 
