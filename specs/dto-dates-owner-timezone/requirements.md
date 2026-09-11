@@ -698,10 +698,10 @@ corrigieron para las vacunas:
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
-- [ ] Requisitos de verificación R7 y R8 (evidencia por mutación **no
+- [X] Aprobado por humano (fecha: 2026-09-11) ← gate obligatorio antes de implementar
+- [X] Requisitos de verificación R7 y R8 (evidencia por mutación **no
       versionada**, además de los commits rojos reales de R1-R6) aceptados
       por humano con esta misma firma
-- [ ] Decisiones D1-D13 de [[design]] ratificadas (o enmendadas por escrito
+- [X] Decisiones D1-D13 de [[design]] ratificadas (o enmendadas por escrito
       antes de implementar); en particular D2 (sin margen) y D3/D7 (zona
       del requester en POST, del owner en PATCH)
