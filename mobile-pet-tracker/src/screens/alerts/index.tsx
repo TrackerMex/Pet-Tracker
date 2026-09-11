@@ -94,7 +94,7 @@ export function AlertsScreen() {
   const displayedActionError =
     actionError ??
     (laterPageFailed ? t('common.somethingWentWrong') : null);
-  const now = new Date(Date.now());
+  const now = new Date(alerts.dataUpdatedAt);
 
   async function handleAck(alert: Alert) {
     if (ackingIdRef.current !== null) return;
