@@ -390,6 +390,8 @@ export const R11_RESET: UseRow[] = [
   { file: 'src/screens/reset-password/index.tsx', key: 'resetPassword.updatePassword' },
 ];
 
+export const R12_ALERTS: UseRow[] = [];
+
 export const ALL_USES: UseRow[] = [
   ...R1_AUTH,
   ...R2_TABS,

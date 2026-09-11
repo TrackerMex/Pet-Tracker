@@ -14,6 +14,7 @@ import {
   R9_ADD_PET,
   R10_PAIRING,
   R11_RESET,
+  R12_ALERTS,
   type UseRow,
 } from './ui-copy-table';
 
@@ -172,6 +173,51 @@ describe('#65 R11: restablecer contraseña resuelve su copy por clave', () => {
   it('resuelve las 15 ocurrencias normativas', () => {
     expect(R11_RESET).toHaveLength(15);
     checkUses(R11_RESET);
+  });
+});
+
+describe('#78 R12: el centro de alertas resuelve su copy por clave', () => {
+  it('registra cada ocurrencia de la pantalla', () => {
+    expect(R12_ALERTS.length).toBeGreaterThan(0);
+    expect(
+      R12_ALERTS.every(
+        ({ file }) => file === 'src/screens/alerts/index.tsx',
+      ),
+    ).toBe(true);
+    checkUses(R12_ALERTS);
+  });
+
+  it('documenta las catorce claves con el sufijo normativo', () => {
+    const keys: TranslationKey[] = [
+      'alerts.title',
+      'alerts.empty',
+      'alerts.ack',
+      'alerts.typeGeofenceExit',
+      'alerts.typeBatteryLow',
+      'alerts.typeUnknown',
+      'alerts.statusAcked',
+      'alerts.statusClosed',
+      'alerts.justNow',
+      'alerts.minutesAgo',
+      'alerts.hoursAgo',
+      'alerts.daysAgo',
+      'home.alertsBell',
+      'home.alertsBellUnread',
+    ];
+    const languageDesign = readFileSync(
+      join(SOURCE_ROOT, '../specs/mobile-ui-language/design.md'),
+      'utf8',
+    );
+
+    for (const key of keys) {
+      expect(languageDesign).toMatch(
+        new RegExp(
+          '\\| — \\| `' +
+            escapeRegExp(key) +
+            '`[^\\n]*← añadida por #78 \\(R3\\)',
+        ),
+      );
+    }
   });
 });
 
