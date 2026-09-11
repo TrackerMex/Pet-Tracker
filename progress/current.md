@@ -10,7 +10,7 @@
 - **Branch**: `feature/89-dto-dates-owner-timezone` (desde `origin/main` @ 381d1e36, merge de #88 ya integrado)
 - **Worktree**: `/home/claude/sites/Pet-Tracker-wt-backend` (el worktree principal lo ocupa #78, sesion Frontend)
 - **Inicio**: 2026-09-11
-- **Estado**: `pending` -> spec en redaccion
+- **Estado**: `spec_ready` (commit cf51a1a9) -> esperando gate humano
 - **Prioridad**: P3
 
 ### Plan
@@ -33,3 +33,10 @@ Sesiones paralelas sobre el mismo Postgres de docker. Antes de cada `init.sh` se
 haya otro corriendo (`pgrep -f "^bash ./init.sh"`). Mensaje a la sesion Frontend con las dos
 preguntas que la spec debe cerrar: formato de `measuredAt` y `birthDate` que manda el movil
 (fecha civil o instante UTC) y si alguna pantalla depende del margen de +1 dia en pesos.
+
+### Avance 2026-09-11
+
+- `init.sh` de base verde en este worktree sobre 381d1e36 (`env -u FORCE_COLOR`, exit 0; backend, infra, movil y e2e sin rojos).
+- `spec_author` entrego `specs/dto-dates-owner-timezone/` en cf51a1a9. Anade Bloque D (PATCH `/v1/pets/:petId`): `UpdatePetSchema = PetFieldsSchema.partial()` hereda el `refine` UTC, asi que quitarlo del DTO sin mover la regla al use case dejaria PATCH sin validar.
+- Respuesta de Frontend incorporada como premisa verificada (fecha civil del dispositivo, nada depende del margen +1) y deuda movil nombrada en §Fuera de alcance sin id.
+- Decisiones que el humano ratifica o enmienda en el gate: D2 (sin margen, coherente con #88), D3/D7 (zona del requester en POST, del owner en PATCH), literal del mensaje de pesos.
