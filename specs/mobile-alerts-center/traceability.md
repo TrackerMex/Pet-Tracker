@@ -10,7 +10,7 @@ tags: [harness, spec]
 |---|---|---|
 | R1 | `src/api/__tests__/alerts.test.ts :: #78 R1: listAlerts mapea la respuesta por kind` | rojo `ee17732b`; verde `f6062ed0` |
 | R2 | `src/api/__tests__/alerts.test.ts :: #78 R2: ackAlert mapea la respuesta por kind` | rojo `d6803629`; verde `02593774` |
-| R3 | pendiente | pendiente |
+| R3 | `src/providers/__tests__/language-provider.test.tsx :: #78 R3: el catálogo trae las claves del centro de alertas` | rojo `0467146a`; verde pendiente |
 | R4 | pendiente | pendiente |
 | R5 | pendiente | pendiente |
 | R6 | pendiente | pendiente |

@@ -771,6 +771,25 @@ copy completa en cada una.
 
 ---
 
+### §2.13 — Añadidos por #78 — Centro de alertas móvil
+
+| Línea | Clave | `en` | `es` | Nota |
+|---|---|---|---|---|
+| — | `alerts.title` | `Alerts` | `Alertas` | ← añadida por #78 (R3)
+| — | `alerts.empty` | `No alerts` | `No hay alertas` | ← añadida por #78 (R3)
+| — | `alerts.ack` | `Mark as read` | `Marcar leída` | ← añadida por #78 (R3)
+| — | `alerts.typeGeofenceExit` | `Left the safe zone` | `Salió de la zona` | ← añadida por #78 (R3)
+| — | `alerts.typeBatteryLow` | `Low battery` | `Batería baja` | ← añadida por #78 (R3)
+| — | `alerts.typeUnknown` | `Notice` | `Aviso` | ← añadida por #78 (R3)
+| — | `alerts.statusAcked` | `Read` | `Leída` | ← añadida por #78 (R3)
+| — | `alerts.statusClosed` | `Resolved` | `Resuelta` | ← añadida por #78 (R3)
+| — | `alerts.justNow` | `Just now` | `Ahora mismo` | ← añadida por #78 (R3)
+| — | `alerts.minutesAgo` **(param)** | `{{minutes}} min ago` | `Hace {{minutes}} min` | ← añadida por #78 (R3)
+| — | `alerts.hoursAgo` **(param)** | `{{hours}} h ago` | `Hace {{hours}} h` | ← añadida por #78 (R3)
+| — | `alerts.daysAgo` **(param)** | `{{days}} d ago` | `Hace {{days}} d` | ← añadida por #78 (R3)
+| — | `home.alertsBell` | `Alerts` | `Alertas` | ← añadida por #78 (R3)
+| — | `home.alertsBellUnread` | `Unread alerts` | `Alertas sin leer` | ← añadida por #78 (R3)
+
 ## 3. La infraestructura
 
 ### 3.1 Decisiones
