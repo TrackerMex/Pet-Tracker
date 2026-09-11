@@ -724,7 +724,7 @@ aprobado el resto.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [X] Aprobado por humano (fecha: 2026-09-10) ← gate obligatorio antes de implementar
 
 Al aprobar, el humano ratifica además **cuatro decisiones que corrigen o cierran
 el enunciado de #78**, y que Codex no podrá reabrir porque no verá esta
