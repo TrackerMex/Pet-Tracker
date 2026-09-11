@@ -717,4 +717,77 @@ describe('Health vaccines (e2e)', () => {
       expect(body.nextVaccine.nextDoseAt).toBe(today);
     });
   });
+
+  describe('R4 (vaccine-applied-at-owner-timezone #88): appliedAt se compara con el dia civil del owner en POST y PATCH', () => {
+    it('POST acepta hoy y rechaza manana en la zona del owner para Pacific/Kiritimati y Pacific/Pago_Pago (R4)', async () => {
+      for (const [index, timezone] of [
+        'Pacific/Kiritimati',
+        'Pacific/Pago_Pago',
+      ].entries()) {
+        const owner = await seedUser(`r4-post-${index}`, timezone);
+        const pet = await seedPet(owner);
+        const today = localDayOf(Date.now(), timezone);
+
+        const accepted = await postVaccine(owner, pet.id, {
+          name: 'Hoy',
+          appliedAt: today,
+        }).expect(201);
+        expect((accepted.body as { appliedAt: string }).appliedAt).toBe(today);
+
+        const rejected = await postVaccine(owner, pet.id, {
+          name: 'Manana',
+          appliedAt: shiftDay(today, 1),
+        }).expect(400);
+        expect(rejected.body).toEqual({
+          statusCode: 400,
+          message: 'Validation failed',
+          errors: [
+            {
+              path: 'appliedAt',
+              message: 'Applied date cannot be in the future',
+            },
+          ],
+        });
+      }
+    });
+
+    it('PATCH acepta hoy y rechaza manana en la zona del owner para Pacific/Kiritimati y Pacific/Pago_Pago (R4)', async () => {
+      for (const [index, timezone] of [
+        'Pacific/Kiritimati',
+        'Pacific/Pago_Pago',
+      ].entries()) {
+        const owner = await seedUser(`r4-patch-${index}`, timezone);
+        const pet = await seedPet(owner);
+        const created = await postVaccine(owner, pet.id, {
+          name: 'Inicial',
+          appliedAt: '2025-01-01',
+        }).expect(201);
+        const id = (created.body as { id: string }).id;
+        const today = localDayOf(Date.now(), timezone);
+
+        const accepted = await api()
+          .patch(`/v1/pets/${pet.id}/vaccines/${id}`)
+          .set(auth(owner.token))
+          .send({ appliedAt: today })
+          .expect(200);
+        expect((accepted.body as { appliedAt: string }).appliedAt).toBe(today);
+
+        const rejected = await api()
+          .patch(`/v1/pets/${pet.id}/vaccines/${id}`)
+          .set(auth(owner.token))
+          .send({ appliedAt: shiftDay(today, 1) })
+          .expect(400);
+        expect(rejected.body).toEqual({
+          statusCode: 400,
+          message: 'Validation failed',
+          errors: [
+            {
+              path: 'appliedAt',
+              message: 'Applied date cannot be in the future',
+            },
+          ],
+        });
+      }
+    });
+  });
 });
