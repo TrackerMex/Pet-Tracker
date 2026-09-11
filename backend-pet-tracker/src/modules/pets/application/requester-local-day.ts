@@ -1,5 +1,5 @@
 import type { UserRepository } from '@/modules/auth/domain/repositories/user.repository';
-import { localDayOf } from '@/pipeline/local-day';
+import { localDayInZone } from './owner-local-day';
 
 export async function requesterLocalDay(
   users: UserRepository,
@@ -7,5 +7,8 @@ export async function requesterLocalDay(
   now: Date,
 ): Promise<string> {
   const user = await users.findById(userId);
-  return localDayOf(now.getTime(), user?.timezone ?? 'UTC');
+  return localDayInZone(user?.timezone ?? null, now, {
+    scope: 'requester-local-day',
+    userId,
+  });
 }
