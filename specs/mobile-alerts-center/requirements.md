@@ -973,13 +973,13 @@ tocan: #87 fue solo móvil y ninguna cambió.
   exactamente igual, y la regla de "cero cifras absolutas nuevas" de [[design]]
   D10 sigue rigiendo.
 
-- [ ] Enmiendas E1-E8 aprobadas por humano (fecha: ____)
+- [X] Enmiendas E1-E8 aprobadas por humano (fecha: 2026-09-11)
 
 ---
 
 ## Aprobación
 
-- [X] Aprobado por humano (fecha: 2026-09-10) ← gate obligatorio antes de implementar
+- [X] Aprobado por humano (fecha: 2026-09-11) ← gate obligatorio antes de implementar
 
 Al aprobar, el humano ratifica además **cuatro decisiones que corrigen o cierran
 el enunciado de #78**, y que Codex no podrá reabrir porque no verá esta
