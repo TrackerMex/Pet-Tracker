@@ -17,7 +17,7 @@ tags: [harness, spec]
 | R7 | `src/screens/alerts/index.test.tsx :: #78 R7: pinta las abiertas primero y conserva la posición tras el ack` | rojo `d72ba1dd`; verde `3e7bebb9` |
 | R8 | `src/screens/alerts/index.test.tsx :: #78 R8: el ack cambia la fila sin recargar la lista` | rojo `290abc42`; verde `63faca32` |
 | R9 | `src/screens/alerts/index.test.tsx :: #78 R9: pagina por nextCursor y se para cuando no hay` | rojo `b4cd1f97`; verde `288c8c72` |
-| R10 | pendiente | pendiente |
+| R10 | `src/screens/home/index.test.tsx :: #78 R10: la campana vive en el hero y lleva al centro de alertas` | rojo `73307e12`; verde pendiente |
 | R11 | pendiente | pendiente |
 | R12 | pendiente | pendiente |
 | R13 | pendiente (verificación — se cierra con la evidencia de mutación de `progress/impl_mobile-alerts-center.md` §R13) | pendiente |

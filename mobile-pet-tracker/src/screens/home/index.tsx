@@ -245,11 +245,25 @@ export function HomeScreen() {
               : undefined
           }
         >
-          <PetSwitcher
-            pets={petList}
-            selectedPetId={selectedPetId}
-            onSelect={selectPet}
-          />
+          <View testID="home-hero-actions" className="flex-row items-center gap-3">
+            <View className="flex-1">
+              <PetSwitcher
+                pets={petList}
+                selectedPetId={selectedPetId}
+                onSelect={selectPet}
+              />
+            </View>
+            <Pressable
+              testID="home-alerts-bell"
+              accessibilityRole="button"
+              accessibilityLabel={t('home.alertsBell')}
+              className="size-11 items-center justify-center rounded-full"
+              style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
+              onPress={() => router.push('/alerts')}
+            >
+              <Bell size={24} color={muted} />
+            </Pressable>
+          </View>
         </PetHeroHeader>
       ) : null}
 
