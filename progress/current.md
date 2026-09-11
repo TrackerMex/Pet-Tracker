@@ -42,6 +42,31 @@
       derogada por E1.
 - [X] **Enmiendas E1-E8 aprobadas** — `4f9298e0` (2026-09-11).
 
+### Ronda 2: reviewer APROBADO (2026-09-11)
+
+- Veredicto **aprobado** en `progress/review_mobile-alerts-center.md` (ronda 2
+  arriba, ronda 1 conservada debajo como historial).
+- Codex corrigio con **un solo fichero tocado**, y es de test
+  (`src/screens/alerts/index.test.tsx`): cero produccion, cero cifras de
+  candado movidas.
+- El reviewer **replanto el las dos mutaciones**: la de R6 da 3 fallos, todos
+  en la asercion nueva del orden interno, con los otros 23 tests verdes; la de
+  R4 da 1 fallo en la suya. Rojo por la asercion nueva y por ninguna otra.
+- `env -u FORCE_COLOR bash ./init.sh`: exit 0 en una corrida, sin que cayera el
+  flake #72. Backend sube a 165/1268 y e2e a 362 por el merge de #89; el movil
+  sigue en 73/1230, que es lo correcto: las correcciones son aserciones dentro
+  de `it` existentes, no `it` nuevos.
+- 41 hashes citados, todos ancestros de HEAD. Mergear en vez de rebasar evito
+  repetir el reapuntado de #87.
+
+### Lo unico que falta: el gate humano R14
+
+**#78 NO pasa a `done`** hasta que un humano firme las seis casillas del smoke
+en un **dev build de Android** (`specs/mobile-alerts-center/requirements.md`
+§R14). Aviso practico del reviewer: la alerta de prueba tiene que ser de una
+mascota **con dispositivo y suscripcion vigente**, o el `INNER JOIN` del
+backend la esconde y el smoke da un falso negativo.
+
 ### Ronda 1: reviewer RECHAZO (2026-09-11)
 
 - `reviewer` **rechazado** (`progress/review_mobile-alerts-center.md`), por

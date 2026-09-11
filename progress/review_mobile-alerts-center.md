@@ -1,5 +1,214 @@
 # review: mobile-alerts-center (#78)
 
+> Dos rondas. La **ronda 2 es el veredicto vigente**; la ronda 1 se conserva
+> íntegra más abajo como historial.
+
+---
+
+# Ronda 2 — veredicto vigente
+
+Fecha: 2026-09-11
+Branch: `feature/78-mobile-alerts-center` — HEAD `16e1a43c`
+Base de comparación: `origin/main` @ `2d94dc0e` (ya con #89 `dto-dates-owner-timezone` y `vaccine-applied-at-owner-timezone` mergeadas)
+
+**Veredicto: APROBADO** — con R14 pendiente de gate humano.
+
+Los dos hallazgos de la ronda 1 están cerrados, y cerrados **de verdad**: planté
+yo mismo las dos mutaciones y el rojo sale **por la aserción nueva**, no por otra
+que ya estuviera. La corrección es estrictamente de test, no se movió ninguna
+cifra de candado, y el merge de `main` no rompió nada.
+
+## 1. Las dos aserciones nuevas cierran su dimensión
+
+No acepté el bloque rojo del reporte: replanté las dos sondas en producción sobre
+`src/screens/alerts/index.tsx`.
+
+### Sonda R6 — intercambiar los dos `<Text>` de la columna
+
+El `petName` pasa a pintarse **encima** del tipo de alerta. Resultado:
+
+```text
+Tests: 3 failed, 23 passed, 26 total
+
+● #78 R6: … › canda las doce decisiones para geofence_exit
+  expect(received).toBe(expected) // Object.is equality
+  Expected: "alert-row-geofence_exit-type"
+  Received: "alert-row-geofence_exit-pet"
+
+    344 |       const column = elementChild(row, 1);
+    345 |       expect(column.children).toHaveLength(3);
+  > 346 |       expect(elementChild(column, 0).props.testID).toBe(`${rowId}-type`);
+        |                                                    ^
+    347 |       expect(elementChild(column, 1).props.testID).toBe(`${rowId}-pet`);
+    348 |       expect(elementChild(column, 2).props.testID).toBe(`${rowId}-time`);
+    349 |       expect(elementChild(row, 2).props.testID).toBe(`${rowId}-ack`);
+
+    at toBe (src/screens/alerts/index.test.tsx:346:52)
+```
+
+Los **tres** fallos (uno por cada caso del `it.each`) son todos de la línea 346,
+la aserción que añadió `12d396fd`. Ninguna otra aserción de la suite reacciona
+—los 23 tests restantes siguen verdes—, que es exactamente lo que había que
+demostrar: en la ronda 1 esta misma mutación dejaba las 73 suites verdes.
+
+> La línea es 346 en mi corrida y 343 en el reporte de Codex porque `a08b37a9`
+> insertó tres líneas por encima **después** de que Codex corriera esta sonda.
+> No es discrepancia.
+
+### Sonda R4 — degradar la receta tipográfica del título
+
+`text-2xl font-black text-foreground` → `text-xs font-normal text-muted`:
+
+```text
+Tests: 1 failed, 25 passed, 26 total
+
+● #78 R4: … › pinta tres esqueletos mientras espera la primera página
+  expect(received).toBe(expected) // Object.is equality
+  Expected: "text-2xl font-black text-foreground"
+  Received: "text-xs font-normal text-muted"
+
+    135 |     expect(screen.getByTestId('screen-alerts')).toBeVisible();
+    136 |     expect(screen.getByText(es['alerts.title'])).toBeVisible();
+  > 137 |     expect(screen.getByText(es['alerts.title']).props.className).toBe(
+        |                                                                  ^
+    138 |       'text-2xl font-black text-foreground',
+    139 |     );
+
+    at Object.toBe (src/screens/alerts/index.test.tsx:137:66)
+```
+
+Un único fallo, en la línea 137, la aserción que añadió `a08b37a9`. Línea
+idéntica a la que reporta Codex.
+
+Las dos sondas revertidas con `git checkout -- mobile-pet-tracker/src/screens/alerts/index.tsx`.
+Estado final: `git status --short` vacío, `git diff` vacío, HEAD sigue en
+`16e1a43c`. **No edité código de la aplicación, ni `feature_list.json`, ni `STATUS.md`.**
+
+## 2. La corrección es solo de test
+
+`git diff --stat 5a51d596 daeebb9e` (la ronda 2 de Codex, antes del merge del leader):
+
+```
+ mobile-pet-tracker/src/screens/alerts/index.test.tsx |   9 +-
+ progress/current.md                                  |  22 +-
+ progress/handoff_mobile-alerts-center_fix1.md        | 112 ++++
+ progress/impl_mobile-alerts-center.md                | 115 +++-
+ progress/review_mobile-alerts-center.md              | 419 +++++++++
+```
+
+**Un solo fichero de `mobile-pet-tracker/`, y es el de test.**
+`src/screens/alerts/index.tsx` no aparece; ningún fichero de producción del repo
+aparece. Los dos commits son `test(...)` y su contenido es, íntegro, las cinco
+líneas de aserción de arriba.
+
+## 3. Ninguna cifra de candado movida; trazabilidad intacta
+
+- `git diff 5a51d596 daeebb9e` sobre `src/__tests__/`, `src/providers/__tests__/`,
+  `src/api/`, `src/i18n/`, `src/screens/home/` y `src/app/` → **vacío**. La ronda
+  2 no tocó un solo fichero de candado.
+- Las tres sumas siguen exactamente como las aprobé:
+  `language-provider.test.tsx:41` `260 + 16 + 1 + 4 + 7 + 14`;
+  `ui-language.test.ts:84` `21 + 15 + 1 + 4 + 7 + 2`;
+  `ui-language.test.ts:437` `19 + 2 + 1`.
+- `design-drift.test.ts` `screenSignOutCalls`: `'screens/alerts/index.tsx': 1`
+  (:393) y `'screens/home/index.tsx': 0` (:394). Sin movimiento.
+- `traceability.md` sin ninguna fila "pendiente" —la única aparición de la
+  palabra es la regla de la nota al pie, :51—, y **R14** sigue marcada como gate
+  humano por ejecutar.
+- Los **41** hashes citados (37 de la ronda 1 + `12d396fd`, `a08b37a9`,
+  `daeebb9e`, `16e1a43c`) resuelven y son ancestros de HEAD. El leader mergeó en
+  vez de rebasar, así que la trazabilidad de la ronda 1 no necesitó reapuntarse.
+
+## 4. El merge de `main` no rompió nada
+
+`./init.sh` corrido por mí, **en primer plano**, `env -u FORCE_COLOR`, tras
+comprobar con `pgrep -af 'init\.sh' | grep -v grep` que no había nada vivo
+(la sesión Backend estaba efectivamente parada). Una sola corrida, verde.
+**El flake #72 no apareció.**
+
+```
+INIT_EXIT=0
+
+→ Verificando coherencia del harness...
+✅ Archivos del harness presentes
+⚠️  Feature en progreso: mobile-alerts-center
+✅ STATUS.md sincronizado con feature_list.json
+
+→ Build...
+✅ Build exitoso
+
+→ Ejecutando tests...
+  backend   Test Suites: 165 passed, 165 total   Tests: 1268 passed, 1268 total
+  infra     Test Suites:   2 passed,   2 total   Tests:   14 passed,   14 total
+  mobile    Test Suites:  73 passed,  73 total   Tests: 1230 passed, 1230 total
+✅ Tests pasados
+
+→ Tests e2e...
+Test Suites: 3 skipped, 25 passed, 25 of 28 total
+Tests:       8 skipped, 362 passed, 370 total
+✅ Tests e2e pasados
+
+→ Lint...      ✅ Lint sin errores
+→ Typecheck... ✅ Typecheck sin errores
+
+══════════════════════════════════════════
+✅ Todo verde. Listo para trabajar.
+
+  Features: 73/90 completadas | 16 pendientes
+```
+
+Dos notas de lectura:
+
+- Backend pasa de 163/1246 a **165/1268**: son las suites que trae el merge
+  (#89 y `vaccine-applied-at-owner-timezone`), y e2e de 357 a 362 pasados. Verde.
+- Móvil sigue en **73 suites / 1230 tests**, el mismo recuento que la ronda 1, y
+  es lo correcto: las dos correcciones añaden aserciones **dentro** de `it`
+  existentes, no `it` nuevos. Si el número hubiera subido, sería señal de que se
+  duplicó un test en vez de reforzarlo.
+- El aviso de `STATUS.md` de la ronda 1 ha desaparecido: ahora dice
+  `✅ STATUS.md sincronizado con feature_list.json`.
+
+## 5. Drift de código
+
+`git diff --stat origin/main...HEAD` contra el `origin/main` nuevo (`2d94dc0e`)
+= 29 ficheros, todos atribuibles:
+
+- 17 de `mobile-pet-tracker/` — los mismos de la ronda 1; el único que cambia de
+  tamaño es `screens/alerts/index.test.tsx` (765 → 772 líneas, +7 = las dos
+  aserciones nuevas).
+- `STATUS.md` y `feature_list.json` — del leader, declarados.
+- 8 de `progress/` y `specs/` de #78 más `specs/mobile-ui-language/design.md` (R3).
+
+**Cero** `backend-pet-tracker/`, cero `infra/`, cero `package.json`, cero
+lockfiles. Nada ajeno a la spec.
+
+## Checklist de la ronda 2
+
+| Gate | Estado |
+|---|---|
+| C2 — estado coherente | **OK** — 1 sola feature `in_progress`; `STATUS.md` ya sincronizado |
+| C3 — arquitectura | **OK** — sin cambios; la ronda no tocó producción |
+| C4 — TDD | **OK** — dos refuerzos de candado sobre código ya correcto, cerrados por **mutación de producción** vista en rojo, que es la vía que CHECKPOINTS C4 exige para este caso (y explícitamente **no** mutando un doble de test) |
+| C5 — trazabilidad | **OK** — sin filas pendientes salvo R14; 41 hashes ancestros de HEAD |
+| C6 — spec aprobada | **OK** — sin cambios; nadie tocó `requirements.md` esta ronda |
+| C7 — código huérfano | **N/A** — la feature no reemplaza nada |
+| C8 — carta de UI | **OK** — la decisión 12 de §Enmienda #70 queda candada: cruzar dos textos ahora pone la suite roja |
+
+## Lo que queda
+
+**R14, y solo R14.** Gate humano: smoke en dev build de Android con una alerta
+`open` real, seis pasos, guion en `progress/impl_mobile-alerts-center.md` §R14.
+Las seis casillas siguen sin marcar (:211-216) — nadie las ha firmado ni
+simulado, y yo tampoco. **#78 no pasa a `done` hasta que un humano las marque.**
+
+Recordatorio del guion: la alerta real tiene que ser de una mascota con
+dispositivo y suscripción vigente, o el `INNER JOIN` del backend la esconde y el
+smoke da un falso negativo.
+
+---
+
+# Ronda 1 — historial (RECHAZADO)
+
 Fecha: 2026-09-11
 Branch: `feature/78-mobile-alerts-center` — HEAD `5a51d596` (último commit de código de Codex: `f5d15844`)
 Base de comparación: `origin/main` @ `381d1e36`
