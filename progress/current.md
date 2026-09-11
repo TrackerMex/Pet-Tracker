@@ -5,7 +5,7 @@
 
 ---
 
-## Feature #78 — mobile-alerts-center (spec_ready, enmendada, esperando gate humano)
+## Feature #78 — mobile-alerts-center (in_progress, handoff entregado a Codex CLI)
 
 - **Branch**: `feature/78-mobile-alerts-center`, worktree principal
   `/home/claude/sites/Pet-Tracker`.
@@ -35,16 +35,23 @@
 | E7 | Referencias de linea reapuntadas tras la migracion de #87 |
 | E8 | R13 hereda los cuatro candados de #87; unico delta declarado: `'screens/alerts/index.tsx': 1` en `screenSignOutCalls` |
 
-### Lo que bloquea ahora
+### Gates humanos: los dos firmados
 
-- [ ] **Gate humano de las enmiendas**: casilla `Enmiendas E1-E8 aprobadas por
-      humano` en `specs/mobile-alerts-center/requirements.md`. Se firma con
-      commit del humano en esta branch (flujo de `main` protegida).
-- [ ] Las **cuatro decisiones** de §Aprobacion ya estan firmadas (2026-09-10);
-      la (4) queda derogada por E1 y no hay que volver a firmarla.
+- [X] Spec aprobada — `09f1f309` (2026-09-10), refrescada a 2026-09-11 en
+      `4f9298e0`. Con ella, las cuatro decisiones de §Aprobacion; la (4) queda
+      derogada por E1.
+- [X] **Enmiendas E1-E8 aprobadas** — `4f9298e0` (2026-09-11).
 
-Con la casilla marcada, lo siguiente es el **handoff a Codex CLI**
-(plantilla en `.claude/agents/leader.md`), no implementar aqui.
+### Estado actual: esperando a Codex CLI
+
+- `feature_list.json`: #78 pasa a **`in_progress`** (2026-09-11).
+- Handoff escrito en **`progress/handoff_mobile-alerts-center.md`**. El humano
+  lo corre en su terminal; esta sesion **no** toca `mobile-pet-tracker/`
+  mientras tanto (un solo escritor sobre el working tree).
+- Cuando el humano confirme que Codex termino: leer
+  `progress/impl_mobile-alerts-center.md` y lanzar el `reviewer`.
+- Queda para el final el gate humano **R14**: smoke en **dev build de Android**
+  con una alerta `open` real. No delegable a IA.
 
 ### Coordinacion con la sesion Backend (2026-09-11)
 
