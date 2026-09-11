@@ -69,10 +69,14 @@ export function AlertsScreen() {
         ? lastPage.nextCursor
         : undefined,
   });
-  const items =
+  const fetched =
     alerts.data?.pages.flatMap((page) =>
       page.kind === 'ok' ? page.items : [],
     ) ?? [];
+  const items = [
+    ...fetched.filter((alert) => alert.status === 'open'),
+    ...fetched.filter((alert) => alert.status !== 'open'),
+  ];
   const firstPage = alerts.data?.pages[0];
   const firstPageFailed =
     firstPage !== undefined &&

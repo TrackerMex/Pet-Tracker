@@ -14,7 +14,7 @@ tags: [harness, spec]
 | R4 | `src/screens/alerts/index.test.tsx :: #78 R4: la pantalla pinta su esqueleto, su error, su vacío y sus filas` | rojo `2dc14118`; verde `a8fa22d2` |
 | R5 | `src/app/(tabs)/__tests__/alerts.test.tsx :: #78 R5: la ruta delega en la pantalla y no es pestaña` | rojo `8d7b5f13`; verde `e9f3b126` |
 | R6 | `src/screens/alerts/index.test.tsx :: #78 R6: cada fila de alerta trae su icono, su hueco, su tinta y sus tres hijos en orden` | rojo `e2a10a0a`; verde `ccefd8fe` |
-| R7 | pendiente | pendiente |
+| R7 | `src/screens/alerts/index.test.tsx :: #78 R7: pinta las abiertas primero y conserva la posición tras el ack` | rojo `d72ba1dd`; verde pendiente |
 | R8 | pendiente | pendiente |
 | R9 | pendiente | pendiente |
 | R10 | pendiente | pendiente |
