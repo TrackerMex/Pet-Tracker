@@ -60,7 +60,8 @@ export class PetsController {
     @Body() body: unknown,
   ): Promise<PetProfileResponse> {
     const dto = parseBody<CreatePetDto>(CreatePetSchema, body);
-    const pet = await this.createPet.execute(dto, user.id);
+    const now = new Date();
+    const pet = await this.createPet.execute(dto, user.id, now);
 
     // R2: el creador siempre queda como owner de su mascota recien creada.
     return toPetProfileResponse(pet, 'owner');

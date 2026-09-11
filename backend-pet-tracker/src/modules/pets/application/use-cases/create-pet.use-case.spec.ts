@@ -11,6 +11,10 @@ const PET_ID = '0198b2c3-4d5e-7a01-b234-56789abcdef0';
 const NOW_CDMX_EVENING = new Date('2026-08-11T02:00:00.000Z');
 const NOW_KIRITIMATI_MORNING = new Date('2026-08-10T20:00:00.000Z');
 
+function userWithTimezone(timezone: string): User {
+  return { timezone } as User;
+}
+
 function buildPet(): Pet {
   return new Pet({
     id: PET_ID,
@@ -57,7 +61,7 @@ function buildDeps(overrides?: { createWithOwner?: jest.Mock }) {
 
   const pets = { createWithOwner } as unknown as PetRepository;
   const users = {
-    findById: jest.fn().mockResolvedValue({ timezone: 'UTC' } as User),
+    findById: jest.fn().mockResolvedValue(userWithTimezone('UTC')),
   } as unknown as UserRepository;
   const auditLogger: AuditLogger = { record };
 
@@ -117,7 +121,7 @@ describe('R2 (dto-dates-owner-timezone #89): create compara birthDate con el dia
   function dependencies(timezone: string) {
     const createWithOwner = jest.fn().mockResolvedValue(buildPet());
     const pets = { createWithOwner } as unknown as PetRepository;
-    const findById = jest.fn().mockResolvedValue({ timezone } as User);
+    const findById = jest.fn().mockResolvedValue(userWithTimezone(timezone));
     const users = { findById } as unknown as UserRepository;
     const record = jest.fn().mockResolvedValue(undefined);
     const auditLogger: AuditLogger = { record };

@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { AuthModule } from '@/modules/auth/auth.module';
 import { PetDeviceReadModule } from '@/modules/devices/pet-device-read.module';
 import { PetPhotoReadModule } from '@/modules/media/pet-photo-read.module';
 import { PetVaccineReadModule } from '@/modules/health/pet-vaccine-read.module';
@@ -19,9 +20,15 @@ import { PetDrizzleRepository } from './infrastructure/repositories/pet.drizzle.
  * PetAccessGuard se exportan para que las features con rutas :petId
  * (#6, #7, #9...) los reutilicen importando este modulo — mismo principio
  * de reutilizacion que llevo AuditLogger a src/audit/.
+ * #89 importa AuthModule para reutilizar USER_REPOSITORY sin duplicarlo.
  */
 @Module({
-  imports: [PetDeviceReadModule, PetPhotoReadModule, PetVaccineReadModule],
+  imports: [
+    AuthModule,
+    PetDeviceReadModule,
+    PetPhotoReadModule,
+    PetVaccineReadModule,
+  ],
   controllers: [PetsController],
   providers: [
     CreatePetUseCase,
