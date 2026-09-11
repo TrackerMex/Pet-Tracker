@@ -27,6 +27,11 @@ export const activityKeys = {
   daily: (petId: string) => ['activity', 'daily', petId] as const,
 };
 
+export const alertKeys = {
+  list: () => ['alerts', 'list'] as const,
+  open: () => ['alerts', 'list', { status: 'open' }] as const,
+};
+
 export const reminderKeys = {
   list: (petId: string) => ['reminders', 'list', petId] as const,
 };

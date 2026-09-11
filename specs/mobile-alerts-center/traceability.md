@@ -23,7 +23,7 @@ tags: [harness, spec]
 | R13 | pendiente (verificación — se cierra con la evidencia de mutación de `progress/impl_mobile-alerts-center.md` §R13) | pendiente |
 | R14 | pendiente (gate humano — sin test automatizado; evidencia en `progress/impl_mobile-alerts-center.md` §R14) | pendiente |
 | E1 | pendiente (documental — la premisa derogada; sin test) | pendiente |
-| E2 | pendiente — `src/api/__tests__/query-keys.test.ts` (dos filas nuevas del array `cases`) | pendiente |
+| E2 | `src/api/__tests__/query-keys.test.ts` (dos filas nuevas del array `cases`) | rojo `8e05f068`; verde pendiente |
 | E3 | pendiente — `src/screens/alerts/index.test.tsx :: #78 R9` | pendiente |
 | E4 | pendiente — `src/screens/alerts/index.test.tsx :: #78 R4` | pendiente |
 | E5 | pendiente — `src/screens/alerts/index.test.tsx :: #78 R8` | pendiente |
