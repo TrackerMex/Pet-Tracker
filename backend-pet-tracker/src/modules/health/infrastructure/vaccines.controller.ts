@@ -92,12 +92,14 @@ export class VaccinesController {
   ): Promise<VaccineResponse> {
     const dto = parseBody<UpdateVaccineDto>(UpdateVaccineSchema, body);
     try {
+      const now = new Date();
       return toVaccineResponse(
         await this.updateVaccine.execute(
           request.petMembership.petId,
           id,
           dto,
           request.user.id,
+          now,
         ),
       );
     } catch (error) {
