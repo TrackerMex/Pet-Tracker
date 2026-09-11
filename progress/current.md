@@ -63,6 +63,17 @@ Con la casilla marcada, lo siguiente es el **handoff a Codex CLI**
     (`weight-log.test.tsx:380` mapea el 400 `Date is in the future`).
   - Riesgo que se les traslada: la zona del **dispositivo** puede no ser la del
     owner; hoy el margen de +1 dia lo absorbe.
+- **Decision de Backend (2026-09-11)**: #89 va **sin margen**, validando contra
+  `users.timezone` del owner, por coherencia con lo que #88 fijo para
+  `appliedAt`. El caso "dispositivo por delante del owner" queda en su
+  §Fuera de alcance para que lo decida el humano en el gate. La forma del 400 se
+  mantiene byte a byte, asi que `src/api/health-records.ts:132` sigue valiendo.
+- **Deuda movil que nace si #89 mergea asi** (registrar como feature cuando el
+  humano firme, no antes): el movil manda la fecha civil del **dispositivo** y
+  tendria que mandar la del owner, o al menos explicar el 400. Afecta a
+  `app/(tabs)/weight-log.tsx` (pesos) y a `screens/add-pet/index.tsx`
+  (`birthDate`, que con #89 pasa a aceptar hoy a cualquier hora, o sea mejora).
+  **No** se abre id ahora: la decision puede cambiar en el gate de #89.
 
 ### Recordatorio de entorno
 
