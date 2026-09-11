@@ -11,6 +11,7 @@ import { pets, petUsers } from '@/db/schema/pets.schema';
 import { users } from '@/db/schema/users.schema';
 import { TOKEN_SERVICE } from '@/modules/auth/domain/ports/token-service';
 import type { TokenService } from '@/modules/auth/domain/ports/token-service';
+import { localDayOf, shiftDay } from '@/pipeline/local-day';
 import { AppModule } from './../src/app.module';
 
 /** Shape del contrato R8 tal como viaja por HTTP (todo serializado). */
@@ -100,7 +101,7 @@ describe('Pets CRUD (e2e)', () => {
     token: string;
   }
 
-  async function seedUser(label: string): Promise<TestUser> {
+  async function seedUser(label: string, timezone = 'UTC'): Promise<TestUser> {
     const id = uuidv7();
     const email = `pets-e2e-${label}-${RUN_ID}@example.com`;
 
@@ -112,7 +113,7 @@ describe('Pets CRUD (e2e)', () => {
       lastName: label,
       phone: '+525512345678',
       country: 'MX',
-      timezone: 'UTC',
+      timezone,
       termsAcceptedAt: new Date(),
     });
     createdUserIds.push(id);
@@ -297,6 +298,73 @@ describe('Pets CRUD (e2e)', () => {
         .set('Authorization', `Bearer ${owner.token}`)
         .send({ name: 'Neither', species: 'cat' })
         .expect(400);
+    });
+  });
+
+  describe('R6 (dto-dates-owner-timezone #89): birthDate se compara con el dia civil del requester en POST y del owner en PATCH', () => {
+    const timezones = ['Pacific/Kiritimati', 'Pacific/Pago_Pago'];
+
+    it('POST acepta hoy y rechaza manana en la zona del requester para Pacific/Kiritimati y Pacific/Pago_Pago (R6)', async () => {
+      for (const [index, timezone] of timezones.entries()) {
+        const requester = await seedUser(`r6-post-${index}`, timezone);
+        const today = localDayOf(Date.now(), timezone);
+
+        const created = await createPetViaApi(requester, {
+          birthDate: today,
+        });
+        expect(created.birthDate).toBe(today);
+
+        const rejected = await api()
+          .post('/v1/pets')
+          .set('Authorization', `Bearer ${requester.token}`)
+          .send({
+            name: `Manana-${RUN_ID}`,
+            species: 'dog',
+            birthDate: shiftDay(today, 1),
+          })
+          .expect(400);
+        expect(rejected.body).toEqual({
+          statusCode: 400,
+          message: 'Validation failed',
+          errors: [
+            {
+              path: 'birthDate',
+              message: 'birthDate cannot be in the future',
+            },
+          ],
+        });
+      }
+    });
+
+    it('PATCH acepta hoy y rechaza manana en la zona del owner para Pacific/Kiritimati y Pacific/Pago_Pago (R6)', async () => {
+      for (const [index, timezone] of timezones.entries()) {
+        const owner = await seedUser(`r6-patch-${index}`, timezone);
+        const pet = await createPetViaApi(owner);
+        const today = localDayOf(Date.now(), timezone);
+
+        const updated = await api()
+          .patch(`/v1/pets/${pet.id}`)
+          .set('Authorization', `Bearer ${owner.token}`)
+          .send({ birthDate: today })
+          .expect(200);
+        expect(profileBody(updated).birthDate).toBe(today);
+
+        const rejected = await api()
+          .patch(`/v1/pets/${pet.id}`)
+          .set('Authorization', `Bearer ${owner.token}`)
+          .send({ birthDate: shiftDay(today, 1) })
+          .expect(400);
+        expect(rejected.body).toEqual({
+          statusCode: 400,
+          message: 'Validation failed',
+          errors: [
+            {
+              path: 'birthDate',
+              message: 'birthDate cannot be in the future',
+            },
+          ],
+        });
+      }
     });
   });
 

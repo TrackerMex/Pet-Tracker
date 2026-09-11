@@ -13,7 +13,6 @@ describe('R13: el schema de PATCH acepta subconjuntos validos del DTO de creacio
     ['name vacio', { name: '' }],
     ['species fuera de dog/cat', { species: 'bird' }],
     ['approxAgeMonths no entero', { approxAgeMonths: 3.5 }],
-    ['birthDate futura', { birthDate: '2999-01-01' }],
     ['microchip de mas de 32 caracteres', { microchip: 'a'.repeat(33) }],
   ])('rechaza %s (mismas reglas que R4)', (_label, body) => {
     expect(UpdatePetSchema.safeParse(body).success).toBe(false);

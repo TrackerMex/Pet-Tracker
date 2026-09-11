@@ -10,3 +10,10 @@ export class PetNotFoundError extends Error {
     this.name = 'PetNotFoundError';
   }
 }
+
+export class PetBirthDateInFutureError extends Error {
+  constructor() {
+    super('birthDate cannot be in the future');
+    this.name = 'PetBirthDateInFutureError';
+  }
+}
