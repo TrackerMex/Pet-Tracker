@@ -17,7 +17,7 @@ const ALERT_TYPE_META = {
   geofence_exit: {
     Icon: LocationSlash,
     labelKey: 'alerts.typeGeofenceExit',
-    surface: 'bg-accent-soft',
+    surface: 'bg-danger-soft',
     ink: 'danger',
   },
   battery_low: {
