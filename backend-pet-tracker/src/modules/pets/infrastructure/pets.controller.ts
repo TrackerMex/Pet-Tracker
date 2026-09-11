@@ -121,8 +121,9 @@ export class PetsController {
     const { petId, role } = request.petMembership;
 
     try {
+      const now = new Date();
       return toPetProfileResponse(
-        await this.updatePet.execute(petId, request.user.id, dto),
+        await this.updatePet.execute(petId, request.user.id, dto, now),
         role,
       );
     } catch (error) {
