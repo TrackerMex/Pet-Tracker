@@ -360,7 +360,7 @@ No lo cierra ninguna IA. El guion y el resultado se anotan en
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [X] Aprobado por humano (fecha: 2026-09-12) ← gate obligatorio antes de implementar
 
 Al aprobar, el humano ratifica además **cuatro decisiones cerradas** que Codex no
 podrá reabrir porque no verá la conversación que las originó:
