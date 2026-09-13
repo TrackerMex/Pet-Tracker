@@ -3,6 +3,7 @@ import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
 import { StyleSheet } from 'react-native';
 import { ReduceMotion } from 'react-native-reanimated';
+import type { TestInstance } from 'test-renderer';
 
 import {
   FloatingTabBar,
@@ -46,6 +47,29 @@ jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 34, left: 0 }),
 }));
 
+jest.mock('reicon-react-native', () => {
+  const actual = jest.requireActual<typeof import('reicon-react-native')>(
+    'reicon-react-native',
+  );
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>(
+    'react-native',
+  );
+  const mockIcon = (testID: string) =>
+    function MockIcon(props: Record<string, unknown>) {
+      return React.createElement(View, { testID, ...props });
+    };
+
+  return {
+    ...actual,
+    Home: mockIcon('icon-tab-home'),
+    Map: mockIcon('icon-tab-map'),
+    HeartPulse: mockIcon('icon-tab-health'),
+    ForkKnife: mockIcon('icon-tab-food'),
+    Profile: mockIcon('icon-tab-profile'),
+  };
+});
+
 type TabPressEvent = Parameters<FloatingTabBarProps['navigation']['emit']>[0];
 
 const routes = [
@@ -55,12 +79,18 @@ const routes = [
   { key: 'food-1', name: 'food' },
   { key: 'profile-1', name: 'profile' },
 ];
+const alertsRoute = { key: 'alerts-1', name: 'alerts' };
+const routesWithAlerts = [...routes, alertsRoute];
+const routesAlertsFirst = [alertsRoute, ...routes];
 const mockEmit = jest.fn<{ defaultPrevented: boolean }, [TabPressEvent]>();
 const mockNavigate = jest.fn<void, [string]>();
 
-function tabBarProps(index = 0): FloatingTabBarProps {
+function tabBarProps(
+  index = 0,
+  stateRoutes: FloatingTabBarProps['state']['routes'] = routes,
+): FloatingTabBarProps {
   return {
-    state: { index, routes },
+    state: { index, routes: stateRoutes },
     navigation: {
       emit: mockEmit,
       navigate: mockNavigate,
@@ -68,10 +98,19 @@ function tabBarProps(index = 0): FloatingTabBarProps {
   };
 }
 
-async function renderTabBar(index = 0) {
-  return render(<FloatingTabBar {...tabBarProps(index)} />, {
+async function renderTabBar(
+  index = 0,
+  stateRoutes: FloatingTabBarProps['state']['routes'] = routes,
+) {
+  return render(<FloatingTabBar {...tabBarProps(index, stateRoutes)} />, {
     wrapper: TabBarWrapper,
   });
+}
+
+function elementChild(node: TestInstance, index: number): TestInstance {
+  const child = node.children[index];
+  if (typeof child === 'string') throw new Error('Expected an element child');
+  return child;
 }
 
 function TabBarWrapper({ children }: { children: ReactNode }) {
