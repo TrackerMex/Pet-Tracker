@@ -1,6 +1,6 @@
 ---
 feature: "pet-online-pill"
-status: draft        # draft | approved
+status: approved        # draft | approved
 tags: [harness, spec]
 ---
 
@@ -15,7 +15,7 @@ tags: [harness, spec]
 | R5 | `mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx :: #73 R5: el catalogo trae home.unknown y deviceConnectivity.offline en los dos idiomas y registrados en la tabla` | pendiente |
 | R6 | `mobile-pet-tracker/src/utils/device-connectivity.test.ts :: #73 R6: el estado de conexion se decide en un solo sitio` + `mobile-pet-tracker/src/screens/pairing/index.test.tsx :: #73 R6: pinta Sin conexion para un collar desconectado` | pendiente |
 | R7 | `mobile-pet-tracker/src/screens/home/index.test.tsx :: #73 R7: treats a never-reported collar as unknown (Esperando señal), not offline` + `:: #73 R7: shows an offline collar as Sin conexión with its battery` | pendiente |
-| R8 | `mobile-pet-tracker/src/components/__tests__/pet-hero-header.test.tsx :: #73 R8: la pildora de estado vive en la banda inferior, encima del nombre, con todas sus decisiones candadas` | pendiente |
+| R8 | `mobile-pet-tracker/src/components/__tests__/pet-hero-header.test.tsx :: #73 R8: la pildora de estado vive en la banda inferior, encima del nombre, con todas sus decisiones candadas` + `:: #73 E2: el punto de "en linea" pulsa con Reanimated y respeta reduced motion` (enmienda E2, 5 `it`) | pendiente |
 | R9 | `mobile-pet-tracker/src/screens/home/index.test.tsx :: #73 R9: la pildora del hero y collar-status nacen del mismo estado` | pendiente |
 | R10 | requisito de verificación (C4 vía (b)): candados existentes de [[requirements]] §Candados + 5 sondas de mutación en `progress/impl_pet-online-pill.md` §R10 | pendiente |
 | R11 | gate humano en dev build de Android; guion y resultado en `progress/impl_pet-online-pill.md` §R11 | no aplica a IA — gate humano por ejecutar |

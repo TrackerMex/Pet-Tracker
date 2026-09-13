@@ -1,6 +1,6 @@
 ---
 feature: "pet-online-pill"
-status: draft        # draft | approved
+status: approved        # draft | approved
 tags: [harness, spec]
 ---
 
@@ -700,6 +700,237 @@ aprobado el resto.
   degrada lo desconocido.
 - **Alerta `device_offline`** (`plans/007:115`, tipos reservados en
   `alerts.schema.ts:16-19`): esta feature solo pinta el estado; no abre alertas.
+
+---
+
+## Enmiendas tras la firma (2026-09-13)
+
+Tres, **todas a esta misma spec**, y todas por la misma causa: al firmar en
+`0a76562b` (2026-09-12 −06:00, 2026-09-13 en UTC) el humano **no** aceptó los
+defaults en dos filas de §Aprobación — **G2** (marcó `[X] 120 s`) y **G7b**
+(marcó `[X] otra: "Reanimated + reduced-motion para agregar animacion"`) — y
+marcó además `[X] Enmienda aprobada por humano` en el bloque literal de R4 (el
+que R4 mandaba copiar "sin marcar"). Los requisitos firmados **no se
+reescriben**: cada enmienda dice qué cambia, qué no cambia y por qué, con su
+propia casilla al final. Codex implementa R1-R11 **leídos a través de E1-E3**.
+Ningún R-id se renumera; ninguna otra fila de §Aprobación se reabre.
+
+Todo lo que sigue está verificado contra el árbol de esta branch con `main`
+mergeada (`bc29e5a0`), no contra el recuerdo de la spec.
+
+### E1 — G2: el umbral es 120 s, no 300 s
+
+- **Qué cambia**:
+  - `DEVICE_ONLINE_THRESHOLD_MS = 2 * 60_000` (120 000 ms). El comentario
+    **literal** de R1 se sustituye por este (mismo estilo ASCII del fichero):
+
+    ```ts
+    /** Silencio maximo (ms) para que un collar siga 'online' en lectura (#73 G2,
+     * enmienda E1: 120 s elegidos por el humano al firmar, 0a76562b).
+     * Formula: cadencia supuesta del collar 30 s (SIM_STEP_SECONDS del simulador,
+     * no dato de hardware) + poller 60 s + consumer 15 s = 105 s de latencia peor
+     * caso en regimen; 120 s deja 15 s de margen. Coincide con STALE_SECONDS = 120
+     * del mapa movil (map.tsx) y con R6 de positions-api (staleSeconds < 120): un
+     * solo numero para "fresco" en toda la app. El riesgo de parpadeo de un collar
+     * sano con el retardo de Wialon queda aceptado por escrito en la spec (E1).
+     * Si la cadencia pasa a adaptativa (plans/012 §Maintenance notes,
+     * docs/brief.md §13) este valor se revisa. */
+    export const DEVICE_ONLINE_THRESHOLD_MS = 2 * 60_000;
+    ```
+
+  - R1 `it` 1 se retitula `'el umbral vale exactamente 120 s (2 min), decision G2 enmendada por E1'`
+    y espera `expect(DEVICE_ONLINE_THRESHOLD_MS).toBe(120_000)`.
+  - Mutación de R1 y **sonda 2 de R10**: `DEVICE_ONLINE_THRESHOLD_MS = 2 * 60_000 - 1_000`
+    → rojo `it` 1 (antes `5 * 60_000 - 1_000`).
+  - **R11 paso 2**: "Tras **2 min** sin poller, A pasa también a 'Sin conexión'
+    (es el umbral, no un fallo)". Consecuencia práctica que el guion debe decir:
+    el `UPDATE` de `SIM-002` y la comprobación "A sigue En línea / B Sin
+    conexión" se hacen **dentro de los 2 min** siguientes a parar el poller; si
+    A ya dice "Sin conexión" al mirar, no es defecto: paso 7 (poller vivo,
+    ≤ 90 s) y repetir el paso 2.
+  - **R11 paso 5** deja de ser una divergencia temporal y pasa a:
+    *"**Mapa (G4 sigue vigente; ya no hay divergencia de umbral)** — con el
+    poller parado, el mapa de A dice 'Desactualizado' y la Home 'Sin conexión'
+    a partir de los ~120 s, con un desfase de como mucho un ciclo de sondeo
+    (`POLL_MS = 15000` del mapa, `map.tsx:77`; refetch al foco en Home). Son
+    dos relojes distintos que ahora comparten número: `staleSeconds` de la
+    **posición**, calculado en el servidor y sondeado por el mapa, y
+    `connectivity` del **collar**, calculado en el servidor al refetch del
+    detalle. Que coincidan en 120 s no los une: `map.tsx:76` no se toca (R10
+    sonda 5) y alinear ambos en una sola fuente sigue siendo feature aparte."*
+  - [[design]] D3 (título y números), D4 (ya no "entre los 120 s y los 300 s"),
+    tabla "Decisiones cerradas" G2, fila 2 de "Cobertura de los criterios" (R1
+    fija 120 s) y [[tasks]] R1 (1) ("0 ≠ 120 000") / R1 (2) (`2 * 60_000`) /
+    R10 (1) (sonda 2): ver el bloque de enmiendas de cada fichero.
+- **Qué NO cambia**: nada más de R1-R4. La constante sigue en
+  `src/pipeline/constants.ts` tras `FUTURE_TS_TOLERANCE_MS`, en ms, con sufijo
+  `_MS`; el límite sigue **inclusivo** (`≤`); `ts > now` sigue `'online'`; los
+  `it` 2-6 de R1, los tests de R2 y R3 y el `UPDATE … - interval '10 minutes'`
+  de R11 usan el símbolo o un valor muy por encima del umbral y **no se tocan**.
+  `FUTURE_TS_TOLERANCE_MS` sigue en 5 min (G11 de §Fuera de alcance: un collar
+  adelantado hasta 5 min sigue pareciendo en línea ese tiempo de más — ahora
+  5 min + 2 min).
+- **Por qué**: decisión del humano al firmar (§Aprobación G2). Lo que se gana
+  es un solo número de "fresco" en la app (`STALE_SECONDS = 120`,
+  `mobile-pet-tracker/src/app/(tabs)/map.tsx:76`; `specs/positions-api/requirements.md:96-99`);
+  lo que se paga —15 s de margen sobre los 105 s de latencia peor caso, parpadeo
+  posible con el retardo de Wialon o con ticks solapados del poller
+  (`poller.service.ts:37-42`)— queda **aceptado por escrito** aquí y en el
+  comentario de la constante. Si el parpadeo aparece en el smoke (R11), es
+  conducta esperada, no rechazo.
+
+### E2 — G7b: el punto de "en línea" pulsa (Reanimated + reduced motion)
+
+- **Qué cambia**: la decisión **9** de la tabla de R8 (era "ninguna"), la
+  decisión **2** (hijo 0) y la **10** (componentes permitidos), el `it` 3 de R8,
+  [[design]] D7 (párrafo "Sin animación") y D8, la bala "Animación de pulso" de
+  §Fuera de alcance (derogada), la tabla "Decisiones cerradas" G7 y R11 paso 6
+  (+ paso 6-bis). Todo lo demás de R8 y R9 queda intacto.
+- **Gate de la skill `expo:expo-animation`** (cargada para escribir esto):
+  frecuencia = indicador ambiental, visible en cada visita a Home; propósito =
+  **indicación de estado** (el collar está vivo ahora mismo, no solo "estuvo");
+  herramienta = shared value + `withRepeat` en UI thread; propiedad = solo
+  `opacity` (gratis, sin layout); curva = timing ease-in-out (movimiento en
+  pantalla, no entrada/salida); reduced motion **en la misma feature**, no
+  después. Rechazado con motivo: animar el texto o la superficie (carta
+  `docs/ui-guidelines.md:159-160`: timings solo para opacidad/color, y el texto
+  es el portador AA), pulsar `warning` (un ámbar latiendo lee como urgencia que
+  el copy "Sin conexión" no lleva) y pulsar `muted`.
+- **Decisiones candadas del punto** (amplían la tabla de R8; el criterio sigue
+  siendo el de la Enmienda #70 de la carta: cruzar cualquiera pone rojo):
+
+| # | Decisión | Valor candado |
+|---|---|---|
+| 2' | Hijo 0 (punto), dos ramas | `pulses ? <AnimatedView testID="pet-hero-status-dot" className={\`size-1.5 rounded-full ${tone.dot}\`} style={dotStyle} /> : <View testID="pet-hero-status-dot" className={\`size-1.5 rounded-full ${tone.dot}\`} />` — mismo `testID`, mismas clases en las dos ramas; la píldora sigue con **exactamente 2 hijos**, punto → texto |
+| 9' | Cuándo pulsa | `const pulses = !reduceMotion && pet !== null && status?.tone === 'success';` — **solo** el punto, **solo** `success`, **solo** sin reduced motion. `warning`, `muted` y reduced motion → `View` estático (opacidad 1). El texto y la superficie **nunca** animan |
+| 9'a | Receta (= `animate-pulse` de Tailwind, Make `App.tsx:358`) | `opacity` 1 → 0.5 → 1; `withRepeat(withSequence(withTiming(0.5, STATUS_DOT_PULSE), withTiming(1, STATUS_DOT_PULSE)), -1, false)` — ciclo 2 s, repetición infinita, **sin** reverse (la secuencia ya vuelve a 1) |
+| 9'b | Constante exportada | `export const STATUS_DOT_PULSE = { duration: 1000, easing: Easing.bezier(0.4, 0, 0.6, 1), reduceMotion: ReduceMotion.System } as const;` con docblock *"Pulso del punto 'en línea' (#73 E2): animate-pulse de Tailwind traducido a Reanimated; misma cadencia que el pulse del Skeleton de heroui que ya vive en este hero."* — misma forma y mismo candado que `TAB_INDICATOR_SPRING` (`src/components/floating-tab-bar.tsx:60-64`, test `src/components/__tests__/floating-tab-bar.test.tsx:221-225`) y `METRIC_TAB_SPRING` (`src/screens/home/weekly-activity-chart.tsx:55-59`) |
+| 9'c | Nodo animado | `const AnimatedView = Animated.createAnimatedComponent(View);` a nivel de módulo en `pet-hero-header.tsx` — precedente literal `weekly-activity-chart.tsx:91`, cuyo `className` sobre ese nodo está asertado en `weekly-activity-chart.test.tsx:970-972`. **No** `Animated.View`: no pasa por el `View` de uniwind y perdería las clases (`floating-tab-bar.tsx:138-150` lo usa solo con `style`) |
+| 9'd | Hooks (en el cuerpo de `PetHeroHeader`, incondicionales, orden fijo) | `const reduceMotion = useReducedMotion();` `const dotOpacity = useSharedValue(1);` `const dotStyle = useAnimatedStyle(() => ({ opacity: dotOpacity.get() }));` `useEffect(() => { if (!pulses) return; dotOpacity.set(withRepeat(…9'a…)); return () => { cancelAnimation(dotOpacity); dotOpacity.set(1); }; }, [pulses, dotOpacity]);` — `.get()/.set()` como `floating-tab-bar.tsx:79-105` (React Compiler activo, `app.json:41`). Con `pulses` falso (Profile, `warning`, `muted`, reduced motion) el efecto no arranca nada |
+| 9'e | Limpieza | **sí** hay `cancelAnimation` en el cleanup: `withRepeat(…, -1)` no se cancela solo al desmontar ni al cambiar de tono, y sin él un tono `warning` heredaría una opacidad a medio tramo; `dotOpacity.set(1)` deja el valor listo para el siguiente `success`. Una línea, correcta en el borde |
+| 9'f | Reduced motion, doble guarda | (1) `useReducedMotion()` → rama estática del 2'; (2) `reduceMotion: ReduceMotion.System` dentro de `STATUS_DOT_PULSE`. Exactamente el patrón de `weekly-activity-chart.tsx:106-129,144` y la carta `:171-172` |
+| 9'g | Hilo y duración | UI thread (shared value + `useAnimatedStyle`); ningún `setState`, ningún timer JS. 1000 ms por tramo **no** está en la lista 150/250/400 de la carta (`:160-162`) porque esa lista es de movimiento de un solo disparo; el bucle copia el tempo del pulse del `Skeleton` de heroui (opacity 0.5→1, 1000 ms, `progress/audit_animations_mobile.md:17`) que **este mismo hero** pinta mientras carga (`pet-hero-header.tsx:130-133`), y el de `animate-pulse` de Tailwind. Sin token `--motion-*`: un solo uso (carta: token a partir de la segunda repetición) |
+| 10' | Componentes | `View` + `Text` de `react-native` **y** `AnimatedView` (9'c) de `react-native-reanimated`, todo dentro de `pet-hero-header.tsx`; sigue **sin** `Chip` y **sin** fichero nuevo. Imports nuevos del hero: `import { useEffect, type ReactNode } from 'react';` y `import Animated, { cancelAnimation, Easing, ReduceMotion, useAnimatedStyle, useReducedMotion, useSharedValue, withRepeat, withSequence, withTiming } from 'react-native-reanimated';` |
+
+- **Cero dependencias nuevas** (la cabecera de esta spec sigue siendo cierta):
+  `react-native-reanimated` `4.5.1` y `react-native-worklets` `0.10.1` ya están
+  en `mobile-pet-tracker/package.json:36,41`; `test/jest-setup.js` ya llama a
+  `setUpTests()` y mockea `react-native-worklets`, así que `toHaveAnimatedStyle`
+  está disponible en cualquier test del móvil.
+- **Test** — `mobile-pet-tracker/src/components/__tests__/pet-hero-header.test.tsx`:
+  - Cabecera del fichero: mock de Reanimated **calcado** de
+    `src/screens/home/weekly-activity-chart.test.tsx:50,58-65` (patrón también
+    en `src/theme/__tests__/theme-transition.test.tsx:11,18-23`):
+    `const mockUseReducedMotion = jest.fn<boolean, []>(() => false);` y
+    `jest.mock('react-native-reanimated', () => ({ ...jest.requireActual<typeof import('react-native-reanimated')>('react-native-reanimated'), useReducedMotion: () => mockUseReducedMotion(), withRepeat: jest.fn((animation: unknown) => animation), withSequence: jest.fn((...steps: unknown[]) => steps.at(-1)), withTiming: jest.fn((value: number) => value), cancelAnimation: jest.fn() }));`
+    más `import { cancelAnimation, ReduceMotion, withRepeat, withTiming } from 'react-native-reanimated';`,
+    `STATUS_DOT_PULSE` en el import de `'../pet-hero-header'`, y
+    `const mockWithRepeat = jest.mocked(withRepeat); const mockWithTiming = jest.mocked(withTiming); const mockCancelAnimation = jest.mocked(cancelAnimation);`.
+    Los `describe` de #67 (R1-R7) no cambian: no montan la píldora.
+  - El `it` 3 de R8 se retitula
+    `'es una capsula rounded-full de text-2xs font-semibold, self-start, sin animate-pulse ni Chip'`:
+    conserva `not.toContain('animate-pulse')` y `not.toMatch(/\bChip\b/)`, y
+    **cambia** `not.toContain('react-native-reanimated')` por
+    `toContain("from 'react-native-reanimated'")`. **Delta declarado.**
+  - Nuevo `describe('#73 E2: el punto de "en linea" pulsa con Reanimated y respeta reduced motion')`
+    (`beforeEach`: `mockWithRepeat.mockClear(); mockWithTiming.mockClear(); mockCancelAnimation.mockClear(); mockUseReducedMotion.mockReturnValue(false);`
+    `afterEach(() => cleanup())`; `renderHero` con `pet={makePet()}` y
+    `status={{ label: 'En línea', tone: 'success' }}` salvo donde se dice otra
+    cosa; `dot = within(getByTestId('pet-hero-status')).getByTestId('pet-hero-status-dot')`):
+    1. `it('STATUS_DOT_PULSE es el animate-pulse de Tailwind: 1000 ms por tramo, bezier(0.4, 0, 0.6, 1) y reduced motion del sistema')`
+       → `expect(STATUS_DOT_PULSE).toMatchObject({ duration: 1000, reduceMotion: ReduceMotion.System })`
+       y `expect(readSource('components', 'pet-hero-header.tsx')).toContain('easing: Easing.bezier(0.4, 0, 0.6, 1)')`
+       (`Easing.bezier` devuelve una factoría, no comparable por valor: el
+       candado de la curva es de fuente, como el resto de `readSource` de R8).
+    2. `it('con reduced motion activo el punto es estatico: sin estilo animado y sin arrancar ningun bucle')`
+       → `mockUseReducedMotion.mockReturnValue(true)`; `expect(dot).not.toHaveAnimatedStyle({ opacity: 1 })`
+       (el matcher falla sin estilo animado, `node_modules/react-native-reanimated/lib/module/jestUtils/index.js:145`);
+       `expect(mockWithRepeat).not.toHaveBeenCalled()`; `expect(dot.props.className).toContain('bg-success')`
+       (las clases no dependen de la rama).
+    3. `it('con tone success el punto es el nodo animado: 1 -> 0.5 -> 1 con STATUS_DOT_PULSE, infinito y sin reverse')`
+       → `expect(dot).toHaveAnimatedStyle({ opacity: 1 })`;
+       `expect(mockWithTiming).toHaveBeenNthCalledWith(1, 0.5, STATUS_DOT_PULSE)`;
+       `expect(mockWithTiming).toHaveBeenNthCalledWith(2, 1, STATUS_DOT_PULSE)`;
+       `expect(mockWithRepeat).toHaveBeenCalledTimes(1)`;
+       `expect(mockWithRepeat).toHaveBeenCalledWith(expect.anything(), -1, false)`.
+    4. `it.each([['warning'], ['muted']])('%s: el punto es estatico y no arranca ningun bucle')`
+       → `status={{ label: 'x', tone }}`; `expect(dot).not.toHaveAnimatedStyle({ opacity: 1 })`;
+       `expect(mockWithRepeat).not.toHaveBeenCalled()`.
+    5. `it('al desmontar cancela el bucle del punto')` → `const { unmount } = await renderHero(…success…)`;
+       `unmount()`; `expect(mockCancelAnimation).toHaveBeenCalledTimes(1)`.
+  - Los `it` 1, 2, 4, 5 y 6 de R8 **no cambian**: `pill.children` sigue en 2
+    (el `AnimatedView` es un solo hijo con `props.testID`), el orden punto →
+    texto, las clases por tono, `accessible`/`accessibilityLabel` y las
+    condiciones de render son las mismas en ambas ramas.
+  - **R9** (`src/screens/home/index.test.tsx`) **no** gana mock de Reanimated:
+    la fila `online` del `it.each` monta el bucle real bajo el runtime de
+    jest, como ya hace esa suite con las animaciones de
+    `weekly-activity-chart.tsx` que la Home monta; RNTL desmonta al acabar
+    cada `it` y el cleanup de 9'e lo cancela. Sus aserciones (`className`
+    del punto, texto, `accessibilityLabel`) valen igual en las dos ramas.
+- **Mutación que lo pone rojo** (además de las de R8): quitar `!reduceMotion`
+  de `pulses` → rojo 2; `status?.tone !== 'muted'` en `pulses` → rojo 4 (fila
+  `warning`); `withRepeat(…, -1, true)` → rojo 3; `duration: 300` → rojo 1;
+  pintar `View` estático también para `success` (o quitar `style={dotStyle}`)
+  → rojo 3; quitar el cleanup del efecto → rojo 5; `Animated.View` en vez de
+  `AnimatedView` → rojo el `it.each` 2 de R8 (`dot.props.className` vacío).
+- **Candados re-verificados** (`grep -rn "react-native-reanimated\|Animated\.View\|useReducedMotion" mobile-pet-tracker/src/__tests__/` → **0** resultados):
+  ningún test del repo cuenta imports de Reanimated ni nodos animados por
+  fichero. `src/__tests__/design-drift.test.ts` (sin hex, sin `StyleSheet`;
+  `style={dotStyle}` es un objeto como el `style={TABULAR_NUMS}` que el hero ya
+  tiene), `consistency-classnames.test.ts` (el punto no gana ni pierde clases)
+  y `legibility-classnames.test.ts` (ninguna tinta nueva; sigue `13 + 1 + 1`)
+  **no se mueven**. `progress/audit_animations_mobile.md` no lo lee ningún test
+  (`grep -rl audit_animations mobile-pet-tracker/src` → nada) y **no se edita**:
+  su inventario ("cero Reanimated en código propio", `:12`) ya estaba
+  desactualizado por `floating-tab-bar.tsx`, `weekly-activity-chart.tsx` y
+  `theme-transition.ts`, y ponerlo al día es de otra feature. `docs/ui-guidelines.md`
+  **no se edita**: la píldora cumple su §Animación tal como está (Reanimated en
+  UI thread, timing solo para opacidad, reduced motion respetado, interrumpible
+  por diseño al no tener gesto). **Ningún recuento absoluto nuevo.**
+- **R11 paso 6** pierde "sin animación de pulso" y gana el **paso 6-bis**:
+  *"**Pulso** — en la mascota en línea el punto verde de la píldora late
+  suavemente (2 s por ciclo, nunca el texto); en las de 'Sin conexión',
+  'Esperando señal' y 'Sin collar' el punto está fijo. Activar «Quitar
+  animaciones» en Ajustes › Accesibilidad de Android y volver a Home: el punto
+  verde queda fijo, opacidad plena, sin salto. Desactivarlo: vuelve a latir."*
+  Se anota en la misma tabla de `progress/impl_pet-online-pill.md` §R11.
+- **Qué NO cambia**: tokens por tono (decisión 5, D7 con sus contrastes),
+  cardinalidad, orden, `testID`s, `accessibilityLabel`, `text-2xs`,
+  `rounded-full`, condición de render, sitio, ausencia de skeleton, G6 (Profile
+  sin píldora), R9 entero, el mapa (G4) y la regla "cero dependencias nuevas".
+- **Por qué**: decisión del humano al firmar (§Aprobación G7b). El Make lo
+  pinta así (`App.tsx:358`, `animate-pulse` en el `span` verde) y la carta solo
+  vetaba hacerlo **sin** Reanimated y **sin** reduced motion; con las dos
+  condiciones cumplidas, dejarlo para "feature aparte" era prudencia, no
+  restricción. Se descarta la alternativa "CSS animation de Reanimated 4"
+  (`animationName` + `animationIterationCount: 'infinite'`) porque no lleva
+  `reduceMotion` por animación, no tiene precedente ni mocks en el repo, y el
+  candado de constante (`TAB_INDICATOR_SPRING`, `METRIC_TAB_SPRING`) es el que
+  el repo ya vigila.
+
+### E3 — R4: el bloque E-#8 se copia **firmado**
+
+- **Qué cambia**: R4 decía que el bloque `## Enmienda #73 — la conectividad se
+  deriva en lectura` se añade a `specs/wialon-ingestion-pipeline/requirements.md`
+  "**sin marcar** la firma" y §Aprobación E-#8 decía "el humano la marca junto
+  con esta casilla". El humano ya la marcó **aquí** (`0a76562b`, línea del
+  bloque literal de R4: `- [X] Enmienda aprobada por humano`). Codex copia el
+  bloque **tal como está en R4** (con la casilla marcada) y su última línea
+  pasa a:
+  `- [X] Enmienda aprobada por humano (firmada en \`0a76562b\`, 2026-09-12 — ver §Aprobación de \`specs/pet-online-pill/requirements.md\`)`.
+  [[tasks]] R4 (2) se lee con "firma **marcada**".
+- **Qué NO cambia**: el resto de R4 (línea `:97` borrada, docblock del puerto,
+  nota en `docs/data-model.md:53`, `test/ingestion.e2e-spec.ts:218` →
+  `toBeNull()`, sonda de mutación), el sitio del bloque (al final del fichero,
+  formato canónico de `specs/mobile-pet-hero-header/design.md:539-563`) ni el
+  texto de "Qué cambia / Qué NO cambia" del bloque.
+- **Por qué**: una casilla sin marcar en la spec enmendada, con la firma ya
+  dada en la spec de origen, obligaría al humano a firmar dos veces lo mismo y
+  dejaría un gate abierto que nadie va a cerrar. La referencia al commit deja
+  la trazabilidad de la firma en el fichero que la muestra.
+
+- [ ] Enmiendas E1-E3 aprobadas por humano (fecha: ____)
 
 ---
 

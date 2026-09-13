@@ -1,6 +1,6 @@
 ---
 feature: "pet-online-pill"
-status: draft        # draft | approved
+status: approved        # draft | approved
 tags: [harness, spec]
 ---
 
@@ -333,3 +333,111 @@ antes del `feat` de R2) → R4. Cada commit corre la suite de su lado.
 - **Skeleton para la píldora**: D6.
 - **Editar `specs/devices-claim/requirements.md` R11**: sigue siendo literalmente
   cierto (D2); editar por editar mueve un doc aprobado sin ganar nada.
+
+---
+
+## Enmiendas E1-E3 (2026-09-13) — qué decisión de arriba cambia y cómo
+
+Espejo de [[requirements]] §Enmiendas tras la firma. Lo firmado arriba no se
+reescribe; cada punto dice cómo se lee ahora.
+
+### D3 se lee como "Umbral **120 s**, inclusivo, `ts > now` ⇒ online" (E1)
+
+- Los dos primeros bullets de D3 (restricción dura de 105 s; por qué 300 s)
+  quedan como **razonamiento del default rechazado**. El humano eligió la
+  alternativa del tercer bullet (120 s) al firmar `0a76562b`:
+  `DEVICE_ONLINE_THRESHOLD_MS = 2 * 60_000`.
+- Lo que se gana: un solo número de "fresco" en la app — `STALE_SECONDS = 120`
+  (`mobile-pet-tracker/src/app/(tabs)/map.tsx:76`) y R6 de #9
+  (`specs/positions-api/requirements.md:96-99`, `staleSeconds < 120`). Ya no
+  hay simetría con `FUTURE_TS_TOLERANCE_MS` (5 min) ni coincidencia con
+  `plans/007:115` (5 min): se pierden a propósito.
+- Lo que se paga, **aceptado por escrito**: 15 s de margen sobre los 105 s de
+  latencia peor caso; un collar sano puede parpadear a "Sin conexión" con el
+  retardo de Wialon o con un tick de poller saltado (`poller.service.ts:37-42`).
+  El comentario literal de la constante (E1) lo dice; el smoke (R11) lo trata
+  como conducta esperada.
+- Unidad, límite inclusivo, `ts > now` ⇒ online y la cláusula de revisión por
+  cadencia adaptativa: **sin cambios**.
+
+### D4 se lee sin "divergen entre los 120 s y los 300 s" (E1)
+
+Mapa y píldora ahora comparten número, no fuente: `staleSeconds` de la posición
+(servidor, sondeado por el mapa cada `POLL_MS = 15000`) frente a `connectivity`
+del collar (servidor, al refetch del detalle). Con el poller parado cambian a
+la vez a los ~120 s salvo un ciclo de sondeo de desfase. **G4 sigue**: `map.tsx`
+y `map.test.tsx` no se tocan; unificar la fuente sigue siendo feature aparte.
+R11 paso 5 queda redactado así en E1.
+
+### D7: el párrafo "Sin animación" queda derogado; el punto `success` pulsa (E2)
+
+- **Gate** (`expo:expo-animation`): indicador ambiental → propósito
+  **indicación de estado**; herramienta shared value + `withRepeat` (UI
+  thread); propiedad `opacity` sola; timing ease-in-out
+  `Easing.bezier(0.4, 0, 0.6, 1)`; 1000 ms por tramo, ciclo 2 s; reduced motion
+  en la misma feature. Es `animate-pulse` de Tailwind (Make `App.tsx:358`)
+  traducido literalmente, y el mismo tempo que el pulse del `Skeleton` de heroui
+  que este hero pinta mientras carga (`progress/audit_animations_mobile.md:17`).
+- **Sólo el punto, sólo `success`**: el texto es el portador AA (carta
+  `:159-160`, timings solo para opacidad/color pero nunca sobre el texto que
+  garantiza el contraste); un ámbar latiendo lee como alarma; `muted` no tiene
+  nada que anunciar. Los contrastes de la tabla de D7 no cambian: la opacidad
+  mínima 0,5 del punto verde es transitoria y el color nunca es el único
+  portador (el texto "En línea" queda fijo a 5,12:1).
+- **Constante candada**: `STATUS_DOT_PULSE` con `reduceMotion: ReduceMotion.System`,
+  misma forma que `TAB_INDICATOR_SPRING` (`floating-tab-bar.tsx:60-64`) y
+  `METRIC_TAB_SPRING` (`weekly-activity-chart.tsx:55-59`), con su test de
+  candado (E2 `it` 1). Sin token `--motion-*` (un solo uso).
+- **Doble guarda de reduced motion**: `useReducedMotion()` decide la rama
+  estática; `ReduceMotion.System` en la config es el cinturón. Es el patrón de
+  `weekly-activity-chart.tsx:106-129,144`, no uno nuevo.
+- **Limpieza**: `cancelAnimation` + `set(1)` en el cleanup del efecto. Sin
+  ello, un bucle `-1` sigue vivo tras desmontar y un cambio `success` →
+  `warning` heredaría una opacidad a medio tramo. Una línea, correcta en el
+  borde; también es lo que deja limpia la suite de Home (R9 monta el bucle
+  real).
+- **Alternativa descartada — CSS animation de Reanimated 4** (`animationName`
+  con keyframes + `animationIterationCount: 'infinite'`): menos código, pero
+  sin `reduceMotion` por animación, sin precedente ni mocks en el repo, y sin
+  el candado de constante que el repo ya vigila. Se prefiere el patrón que dos
+  tests existentes ya conocen.
+
+### D8: `View` + `Text` **y** `AnimatedView` dentro de `pet-hero-header.tsx` (E2)
+
+- El punto animado es `Animated.createAnimatedComponent(View)` a nivel de
+  módulo — precedente `weekly-activity-chart.tsx:91`, con `className` asertado
+  sobre ese nodo en su test (`:970-972`). **No** `Animated.View`: no pasa por
+  el `View` de uniwind y las clases (`size-1.5 rounded-full bg-success`) se
+  perderían; `floating-tab-bar.tsx:138-150` lo usa solo con `style`.
+- Los hooks van en el cuerpo de `PetHeroHeader`, incondicionales, con la
+  guarda `pulses` dentro del efecto. Se descarta un subcomponente
+  `PetHeroStatusDot` en el mismo fichero: `pill.children[0]` sería la instancia
+  compuesta con `props = { tone }` y el `it` 1 de R8 (`elementChild(pill, 0).props.testID`)
+  dejaría de ver el `testID`. Con `AnimatedView` como hijo directo, la
+  instancia hija lleva `testID` y `className` en sus props y R8 no se toca.
+- Sigue sin `Chip` (los tres motivos de D8) y sin fichero nuevo.
+
+### Archivos afectados — delta de E1-E3
+
+| Fichero | Delta | E |
+|---|---|---|
+| `backend-pet-tracker/src/pipeline/constants.ts` | `2 * 60_000` y el comentario literal de E1 | E1 |
+| `backend-pet-tracker/src/modules/devices/domain/connectivity.spec.ts` | `it` 1 → `120_000` y título de E1 | E1 |
+| `specs/wialon-ingestion-pipeline/requirements.md` | bloque copiado con la casilla **marcada** y la referencia a `0a76562b` | E3 |
+| `mobile-pet-tracker/src/components/pet-hero-header.tsx` | `+ STATUS_DOT_PULSE`, `+ AnimatedView`, hooks 9'd, rama animada del hijo 0, imports de `react` (`useEffect`) y `react-native-reanimated` | E2 |
+| `mobile-pet-tracker/src/components/__tests__/pet-hero-header.test.tsx` | mock de Reanimated en cabecera; `it` 3 de R8 retitulado y con `toContain("from 'react-native-reanimated'")`; `describe` E2 (5 `it`) | E2 |
+
+**Siguen sin tocarse**: todo lo de la lista "No se tocan" de arriba, más
+`docs/ui-guidelines.md`, `progress/audit_animations_mobile.md`,
+`mobile-pet-tracker/package.json` (Reanimated y worklets ya instalados) y
+`test/jest-setup.js` (ya llama a `setUpTests()`).
+
+### Alternativas descartadas — delta
+
+- La bala "**`animate-pulse` / Reanimated**: D7; feature aparte con
+  reduced-motion" queda derogada por E2 (se hace aquí, con reduced motion).
+- **`Animated.View` directo**: pierde el `className` de uniwind (D8').
+- **Subcomponente `PetHeroStatusDot`**: rompe el `it` 1 de R8 (D8').
+- **CSS animation de Reanimated 4**: D7'.
+- **Pulsar también `warning`**: lee como alarma (D7').
+- **Umbral 300 s**: era el default; el humano eligió 120 s (D3').

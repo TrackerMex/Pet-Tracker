@@ -1,6 +1,6 @@
 ---
 feature: "pet-online-pill"
-status: draft        # draft | approved
+status: approved        # draft | approved
 tags: [harness, spec]
 ---
 
@@ -290,3 +290,75 @@ tags: [harness, spec]
       requisito (C4).
 - [ ] `gh pr create --title "feat(pet-online-pill): derive collar connectivity at read and show the status pill" --body …`
       enlazando `specs/pet-online-pill/` y los R-ids. **PARA**: el humano mergea.
+
+---
+
+## Enmiendas E1-E3 (2026-09-13) — cómo se leen las tareas de arriba
+
+Las tareas firmadas no se reescriben; estas líneas **sustituyen** el detalle
+indicado cuando se ejecutan. Ver [[requirements]] §Enmiendas tras la firma.
+
+### §0 — antes de la primera tarea
+
+- [ ] Cargar también `expo:expo-animation` (E2) junto a `expo:expo-overview` y
+      `expo:expo-native-ui`. Leer [[design]] D7'/D8' (bloque de enmiendas) y la
+      tabla 2'/9'/10' de E2 antes de tocar `pet-hero-header.tsx`.
+
+### R1 (E1)
+
+- [ ] (1) Igual, con el `it` 1 titulado
+      `'el umbral vale exactamente 120 s (2 min), decision G2 enmendada por E1'`
+      y `toBe(120_000)`. Rojo: `it` 1 (0 ≠ 120 000) y 2-6 (throw).
+- [ ] (2) Constante **`2 * 60_000`** con el **comentario literal de E1** (no el
+      de R1). Verde: `pnpm test`.
+- [ ] (3) Sin cambios.
+
+### R4 (E3)
+
+- [ ] (2) El bloque de enmienda se copia a
+      `specs/wialon-ingestion-pipeline/requirements.md` con la casilla
+      **marcada** y la referencia literal de E3
+      (`- [X] Enmienda aprobada por humano (firmada en \`0a76562b\`, 2026-09-12 — ver §Aprobación de \`specs/pet-online-pill/requirements.md\`)`).
+      El resto del (2) igual.
+
+### R8 (E2)
+
+- [ ] (1) Además de lo firmado: en `pet-hero-header.test.tsx` la cabecera gana
+      el mock de Reanimated de E2 (calcado de
+      `weekly-activity-chart.test.tsx:50,58-65`), los imports de
+      `cancelAnimation`, `ReduceMotion`, `withRepeat`, `withTiming` y
+      `STATUS_DOT_PULSE`, los tres `jest.mocked(...)`, el `it` 3 de R8 con su
+      título y aserción nuevos, y el `describe('#73 E2: …')` con sus 5 `it`.
+      Para que el rojo sea de aserciones, el stub de este commit exporta en
+      `pet-hero-header.tsx` **también**
+      `export const STATUS_DOT_PULSE = { duration: 0, easing: Easing.bezier(0.4, 0, 0.6, 1), reduceMotion: ReduceMotion.System } as const;`
+      (placeholder `duration: 0`; el import de `react-native-reanimated` entra
+      aquí, así el `it` 3 ya compila). Rojo: E2 `it` 1 (0 ≠ 1000); E2 `it` 2-5
+      y R8 1-6 (`pet-hero-status` no existe). Suite:
+      `bun run test -- pet-hero-header legibility consistency design-drift`.
+- [ ] (2) Además de lo firmado: `duration: 1000`, `AnimatedView`, los hooks
+      9'd con la guarda `pulses`, la rama animada del hijo 0 (2') y el cleanup
+      9'e. Verde: la misma suite + `bun run typecheck`.
+- [ ] (3) Sondas adicionales: quitar `!reduceMotion` de `pulses` → rojo E2 `it` 2;
+      `status?.tone !== 'muted'` → rojo E2 `it.each` (fila `warning`); quitar el
+      cleanup → rojo E2 `it` 5. Restaurar (`git diff` vacío). Evidencia en
+      `progress/impl_pet-online-pill.md` §R8.
+
+### R9 (E2)
+
+- [ ] (1)-(3) Sin cambios de código ni de test. `index.test.tsx` **no** gana
+      mock de Reanimated (E2 lo declara: el bucle real se cancela al desmontar).
+
+### R10 (E1)
+
+- [ ] (1) Sonda 2: `DEVICE_ONLINE_THRESHOLD_MS = 2 * 60_000 - 1_000` → rojo
+      `connectivity.spec.ts` `it` 1 → restaurar.
+
+### R11 (E1, E2)
+
+- [ ] (1) El guion literal lleva el paso 2 con "**2 min**" y la advertencia de
+      hacer el `UPDATE` y mirar A dentro de los 2 min (E1), el paso 5 redactado
+      como en E1, el paso 6 sin "sin animación de pulso" y el **paso 6-bis**
+      (pulso + «Quitar animaciones» de Android) de E2. Tabla de resultados con
+      una fila por paso, 6-bis incluido.
+- [ ] (2)-(3) Sin cambios.

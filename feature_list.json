@@ -1365,7 +1365,7 @@
   {
     "id": 73,
     "name": "pet-online-pill",
-    "status": "spec_ready",
+    "status": "in_progress",
     "priority": "P3",
     "description": "Sale del alcance de #68 el 2026-09-07 por decision del humano, y arrastra la decision G que #67 ya habia dejado abierta. La pildora 'En linea' del Make no se puede pintar hoy por dos razones independientes, y ninguna es de UI: el pestillo de conectividad del backend esta roto (backend-pet-tracker/src/workers/ingestion.drizzle.store.ts:97) y el umbral de silencio a partir del cual una mascota deja de considerarse en linea nunca se definio. Pintarla con el dato tal como llega hoy seria pintar un estado incorrecto: la pildora mentiria. Es la unica de la lista de fuera-de-alcance de #68 que no se puede resolver solo en movil. Emparejada con esto va la decision de si 'en linea' se deriva del ultimo ping o del pestillo, que es lo que fija el umbral.",
     "acceptance_criteria": [
