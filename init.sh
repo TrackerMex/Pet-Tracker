@@ -18,6 +18,14 @@ ok()   { echo -e "${GREEN}✅ $1${NC}"; }
 warn() { echo -e "${YELLOW}⚠️  $1${NC}"; }
 fail() { echo -e "${RED}❌ $1${NC}"; exit 1; }
 
+# Node colorea los valores no-string de console.log cuando FORCE_COLOR viene del
+# entorno — Claude Code lo exporta como 3. Esas secuencias ANSI acaban dentro de
+# las cadenas que este script captura, y entonces "0" deja de ser igual a 0: la
+# comprobación de features in_progress reportaba "Más de 1 feature en in_progress
+# (0)" y abortaba el arranque. Ninguna de estas consultas quiere color: su salida
+# va a una variable, no a la terminal.
+nodeq() { FORCE_COLOR=0 node "$@"; }
+
 # ¿Hay algo escuchando en un puerto de localhost? Sin dependencias externas:
 # nc/lsof no están garantizados en Git Bash ni en los runners.
 port_open() {
@@ -78,7 +86,7 @@ fi
 # REQUIRED_TOOL y init.sh lo usa desde la linea 115— porque .env.example
 # esta commiteado con CRLF y sort/comm/grep de Git Bash tropiezan con ellos.
 if [ -f .env ] && [ -f .env.example ]; then
-  ENV_DRIFT="$(node env-drift.mjs || true)"
+  ENV_DRIFT="$(nodeq env-drift.mjs || true)"
   if [ -n "$ENV_DRIFT" ]; then
     while IFS= read -r drift_line; do
       warn "$drift_line"
@@ -125,7 +133,7 @@ done
 ok "Archivos del harness presentes"
 
 # Verificar máximo 1 feature in_progress
-IN_PROGRESS=$(node -e "
+IN_PROGRESS=$(nodeq -e "
   try {
     const f = require('./feature_list.json');
     console.log(f.filter(x => x.status === 'in_progress').length);
@@ -138,7 +146,7 @@ IN_PROGRESS=$(node -e "
 if [ "$IN_PROGRESS" = "0" ]; then
   ok "Sin features en progreso (sesión limpia)"
 elif [ "$IN_PROGRESS" = "1" ]; then
-  FEATURE_NAME=$(node -e "
+  FEATURE_NAME=$(nodeq -e "
     const f = require('./feature_list.json');
     const ip = f.find(x => x.status === 'in_progress');
     console.log(ip ? ip.name : 'unknown');
@@ -159,14 +167,14 @@ while IFS='|' read -r name status; do
       warn "Feature '${name}' (done) sin ${spec_file} — probablemente anterior a la adopción de specs"
     fi
   fi
-done < <(node -e "
+done < <(nodeq -e "
   const f = require('./feature_list.json');
   f.filter(x => x.status === 'in_progress' || x.status === 'done')
    .forEach(x => console.log(x.name + '|' + x.status));
 ")
 
 # Verificar que STATUS.md refleja el conteo real de feature_list.json
-STATUS_SYNC=$(node -e "
+STATUS_SYNC=$(nodeq -e "
   const fs = require('fs');
   const f = require('./feature_list.json');
   const done = f.filter(x => x.status === 'done').length;
@@ -258,15 +266,15 @@ fi
 echo ""
 echo "══════════════════════════════════════════"
 
-PENDING_COUNT=$(node -e "
+PENDING_COUNT=$(nodeq -e "
   const f = require('./feature_list.json');
   console.log(f.filter(x => x.status === 'pending').length);
 ")
-DONE_COUNT=$(node -e "
+DONE_COUNT=$(nodeq -e "
   const f = require('./feature_list.json');
   console.log(f.filter(x => x.status === 'done').length);
 ")
-TOTAL=$(node -e "
+TOTAL=$(nodeq -e "
   const f = require('./feature_list.json');
   console.log(f.length);
 ")
@@ -278,7 +286,7 @@ echo ""
 
 if [ "$PENDING_COUNT" -gt 0 ]; then
   echo "  Próxima feature:"
-  node -e "
+  nodeq -e "
     const f = require('./feature_list.json');
     const next = f.find(x => x.status === 'pending');
     if (next) console.log('  [#' + next.id + '] ' + next.name + ' (' + next.priority + ')');
