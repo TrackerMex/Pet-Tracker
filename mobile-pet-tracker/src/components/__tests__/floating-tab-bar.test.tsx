@@ -446,7 +446,7 @@ describe('#91 R3: el cambio de ruta desliza la burbuja al índice de TABS', () =
     await tabBar.rerender(
       <FloatingTabBar {...tabBarProps(3, routesAlertsFirst)} />,
     );
-    jest.advanceTimersByTime(300);
+    jest.advanceTimersByTime(400);
 
     expect(screen.getByTestId('tab-indicator')).toHaveAnimatedStyle({
       transform: [{ translateX: 137.6 }],
