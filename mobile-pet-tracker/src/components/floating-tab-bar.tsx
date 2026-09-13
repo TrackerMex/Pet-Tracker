@@ -170,7 +170,7 @@ export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
             return null;
           }
 
-          const isActive = activeRouteName === name;
+          const isActive = activeTabIndex < 0 || activeRouteName === name;
 
           return (
             <Pressable

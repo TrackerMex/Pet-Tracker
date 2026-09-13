@@ -47,6 +47,10 @@ jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 34, left: 0 }),
 }));
 
+jest.mock('../../theme/use-theme-colors', () => ({
+  useThemeColors: (tokens: string[]) => tokens,
+}));
+
 jest.mock('reicon-react-native', () => {
   const actual = jest.requireActual<typeof import('reicon-react-native')>(
     'reicon-react-native',
@@ -501,5 +505,55 @@ describe('#91 R4: al volver de una ruta ajena la burbuja aparece ya colocada', (
     expect(screen.getByTestId('tab-indicator')).toHaveAnimatedStyle({
       transform: [{ translateX: 137.6 }],
     });
+  });
+});
+
+describe('#91 R5: con una ruta ajena las cinco celdas quedan inactivas y siguen navegando', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockEmit.mockReturnValue({ defaultPrevented: false });
+    mockIsLiquidGlassAvailable.mockReturnValue(false);
+    mockTheme = 'light';
+  });
+
+  it('conserva el estado inactivo, los dos hijos y la navegación de cada pestaña', async () => {
+    const tabBar = await renderTabBar(2, routesWithAlerts);
+    const activeColor = screen.getByTestId('icon-tab-health').props.color;
+    const mutedColor = screen.getByTestId('icon-tab-map').props.color;
+
+    expect(activeColor).not.toBe(mutedColor);
+
+    await tabBar.rerender(
+      <FloatingTabBar {...tabBarProps(5, routesWithAlerts)} />,
+    );
+
+    for (const [name, label] of [
+      ['home', 'Inicio'],
+      ['map', 'Mapa'],
+      ['health', 'Salud'],
+      ['food', 'Nutrición'],
+      ['profile', 'Perfil'],
+    ] as const) {
+      const tab = screen.getByTestId(`tab-${name}`);
+
+      expect(tab.children).toHaveLength(2);
+      expect(tab).toHaveProp('accessibilityState', { selected: false });
+      expect(elementChild(tab, 0)).toHaveProp('weight', 'Outline');
+      expect(elementChild(tab, 0)).toHaveProp('color', mutedColor);
+      expect(elementChild(tab, 1)).toHaveProp(
+        'className',
+        'text-2xs font-semibold text-muted',
+      );
+      expect(elementChild(tab, 1)).toHaveTextContent(label);
+    }
+
+    await fireEvent.press(screen.getByTestId('tab-home'));
+
+    expect(mockEmit).toHaveBeenCalledWith({
+      type: 'tabPress',
+      target: 'home-1',
+      canPreventDefault: true,
+    });
+    expect(mockNavigate).toHaveBeenCalledWith('home');
   });
 });
