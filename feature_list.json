@@ -1365,7 +1365,7 @@
   {
     "id": 73,
     "name": "pet-online-pill",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P3",
     "description": "Sale del alcance de #68 el 2026-09-07 por decision del humano, y arrastra la decision G que #67 ya habia dejado abierta. La pildora 'En linea' del Make no se puede pintar hoy por dos razones independientes, y ninguna es de UI: el pestillo de conectividad del backend esta roto (backend-pet-tracker/src/workers/ingestion.drizzle.store.ts:97) y el umbral de silencio a partir del cual una mascota deja de considerarse en linea nunca se definio. Pintarla con el dato tal como llega hoy seria pintar un estado incorrecto: la pildora mentiria. Es la unica de la lista de fuera-de-alcance de #68 que no se puede resolver solo en movil. Emparejada con esto va la decision de si 'en linea' se deriva del ultimo ping o del pestillo, que es lo que fija el umbral.",
     "acceptance_criteria": [
@@ -1377,7 +1377,33 @@
     ],
     "files_affected": [
       "backend-pet-tracker/src/workers/ingestion.drizzle.store.ts",
-      "mobile-pet-tracker/src/app/(tabs)/home.tsx"
+      "backend-pet-tracker/src/workers/ingestion-store.ts",
+      "backend-pet-tracker/src/pipeline/constants.ts",
+      "backend-pet-tracker/src/modules/devices/domain/connectivity.ts",
+      "backend-pet-tracker/src/modules/devices/domain/connectivity.spec.ts",
+      "backend-pet-tracker/src/modules/devices/infrastructure/mappers/device-status.mapper.ts",
+      "backend-pet-tracker/src/modules/devices/infrastructure/mappers/device-status.mapper.spec.ts",
+      "backend-pet-tracker/src/modules/devices/infrastructure/pet-device.controller.ts",
+      "backend-pet-tracker/src/modules/devices/infrastructure/devices.controller.ts",
+      "backend-pet-tracker/src/modules/pets/infrastructure/pets.controller.ts",
+      "backend-pet-tracker/src/modules/pets/infrastructure/pets.controller.spec.ts",
+      "backend-pet-tracker/test/device-connectivity.e2e-spec.ts",
+      "backend-pet-tracker/test/ingestion.e2e-spec.ts",
+      "docs/data-model.md",
+      "specs/wialon-ingestion-pipeline/requirements.md",
+      "specs/mobile-ui-language/design.md",
+      "mobile-pet-tracker/src/i18n/catalog.ts",
+      "mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx",
+      "mobile-pet-tracker/src/utils/device-connectivity.ts",
+      "mobile-pet-tracker/src/utils/device-connectivity.test.ts",
+      "mobile-pet-tracker/src/screens/pairing/index.test.tsx",
+      "mobile-pet-tracker/src/screens/home/index.tsx",
+      "mobile-pet-tracker/src/screens/home/index.test.tsx",
+      "mobile-pet-tracker/src/components/pet-hero-header.tsx",
+      "mobile-pet-tracker/src/components/__tests__/pet-hero-header.test.tsx",
+      "mobile-pet-tracker/src/__tests__/ui-copy-table.ts",
+      "mobile-pet-tracker/src/__tests__/ui-language.test.ts",
+      "mobile-pet-tracker/src/__tests__/legibility-classnames.test.ts"
     ]
   },
   {
