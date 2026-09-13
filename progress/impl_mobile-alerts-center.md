@@ -208,12 +208,12 @@ se silenció; la repetición completa terminó con exit 0.
 Estado: **por ejecutar y firmar por un humano** en un dev build de Android. La
 feature no debe pasar a `done` hasta completar, en orden:
 
-- [ ] Home muestra el punto rojo con una alerta `open` real.
-- [ ] La campana abre Alertas sin crear una sexta pestaña.
-- [ ] La alerta aparece arriba con mascota, tipo en español y tiempo relativo.
-- [ ] Marcar leída actualiza sin parpadeo, recarga ni cambio de posición.
-- [ ] Al volver a Home desaparece el punto rojo.
-- [ ] Todo el texto visible está en español.
+- [X] Home muestra el punto rojo con una alerta `open` real.
+- [X] La campana abre Alertas sin crear una sexta pestaña.
+- [X] La alerta aparece arriba con mascota, tipo en español y tiempo relativo.
+- [X] Marcar leída actualiza sin parpadeo, recarga ni cambio de posición.
+- [X] Al volver a Home desaparece el punto rojo.
+- [X] Todo el texto visible está en español.
 
 La alerta real debe pertenecer a una mascota con dispositivo y suscripción
 vigente; de lo contrario, el `INNER JOIN` del backend la oculta y el smoke daría
