@@ -10,7 +10,7 @@ tags: [harness, spec]
 |---|---|---|
 | R1 | `src/components/__tests__/floating-tab-bar.test.tsx :: #91 R1: una ruta fuera de TABS no monta la burbuja` | rojo `81282615`; verde `29f1b667` |
 | R2 | `src/components/__tests__/floating-tab-bar.test.tsx :: #91 R2: el primer layout coloca la burbuja por el índice de TABS` | rojo `99f1534f`; verde `dcbab0d1` |
-| R3 | pendiente | pendiente |
+| R3 | `src/components/__tests__/floating-tab-bar.test.tsx :: #91 R3: el cambio de ruta desliza la burbuja al índice de TABS` | rojo `1addfc97`; ajuste de espera aún rojo `6863488b`; verde `eedcb3b5` |
 | R4 | pendiente | pendiente |
 | R5 | pendiente | pendiente |
 | R6 | pendiente | pendiente |
