@@ -299,7 +299,7 @@ spec de origen es `specs/pet-online-pill/`; el detalle de la enmienda está en s
   aprobación, ni los tests que ya la cubren salvo la aserción declarada de
   `test/ingestion.e2e-spec.ts:218`.
 
-- [ ] Enmienda aprobada por humano
+- [X] Enmienda aprobada por humano
 ```
 
 **Test**: `backend-pet-tracker/test/ingestion.e2e-spec.ts:218` — dentro de
@@ -705,20 +705,20 @@ aprobado el resto.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [X] Aprobado por humano (fecha: 2026-09-12) ← gate obligatorio antes de implementar
 
 Al firmar, el humano ratifica **o cambia** estas decisiones (firmar sin editar =
 aceptar los defaults; Codex no verá la conversación que las originó):
 
 | Id | Decisión | Default (esta spec) | Alternativa que el humano puede elegir | Marca |
 |---|---|---|---|---|
-| G1 | Fuente de "en línea" | **A2**: derivar en lectura de `last_message_at` + borrar el write `:97`; columna obsoleta | A1 (dejar el write como caché muerta: no cumple el criterio 1); B (job que apaga el pestillo: dos fuentes de verdad, un tick de retraso, env y docs nuevas); C (derivar en el móvil: reloj del teléfono, rompe fixtures) | [ ] default / [ ] otra: ____ |
-| G2 | Umbral | **300 s** (`5 * 60_000` ms), límite inclusivo | **120 s** (coherente con `map.tsx:76`; margen de solo 15 s sobre los 105 s de latencia peor caso ⇒ un collar sano puede parpadear con el retardo de Wialon) | [ ] 300 s / [ ] 120 s / [ ] otro: ____ |
-| G4 | Mapa | **no se toca** (divergencia declarada, R11 paso 5) | alinear `STALE_SECONDS` en feature aparte | [ ] default / [ ] otra: ____ |
-| G5a | Copy de "desconocido" | **`home.unknown`** = `Esperando señal` / `Awaiting signal` | `Sin señal todavía` / `No signal yet`; o reusar `deviceConnectivity.unknown` (`Desconocida`, desaconsejado: §0.2 C3) | [ ] default / [ ] otra: ____ |
-| G5b | Copy de Pairing para `offline` | **`deviceConnectivity.offline`** = `Sin conexión` / `Offline` | otro texto: ____ | [ ] default / [ ] otra: ____ |
-| G6 | Dónde entra la píldora | **prop `status` del hero**, columna izquierda, encima del nombre; Profile sin píldora | Profile también la muestra (entonces R8 `it` 6 cambia y `profile/index.tsx:252` pasa `status`) | [ ] default / [ ] otra: ____ |
-| G7a | Tokens (texto / punto / superficie) | success: `text-accent-strong` / `bg-success` (3,04:1) / `bg-success-soft`; warning: `text-warning-strong` / `bg-warning-strong` / `bg-warning-soft`; muted: `text-muted` / `bg-muted` / `bg-default` | punto "en línea" `bg-accent-strong` (5,12:1, más margen; misma tinta que el texto) | [ ] default / [ ] otra: ____ |
-| G7b | Animación | **ninguna** | pulso con Reanimated + reduced-motion, feature aparte | [ ] default / [ ] otra: ____ |
-| G7c | Componente | **`View`+`Text` dentro de `pet-hero-header.tsx`** | `Chip` de heroui (ver [[design]] D8: AA no garantizable, `Pressable`, clases opacas al grep) | [ ] default / [ ] otra: ____ |
-| E-#8 | Enmienda a `specs/wialon-ingestion-pipeline/requirements.md` (R4) | bloque canónico al final, firma sin marcar | — (el humano la marca junto con esta casilla) | [ ] leída |
+| G1 | Fuente de "en línea" | **A2**: derivar en lectura de `last_message_at` + borrar el write `:97`; columna obsoleta | A1 (dejar el write como caché muerta: no cumple el criterio 1); B (job que apaga el pestillo: dos fuentes de verdad, un tick de retraso, env y docs nuevas); C (derivar en el móvil: reloj del teléfono, rompe fixtures) | [X] default / [ ] otra: ____ |
+| G2 | Umbral | **300 s** (`5 * 60_000` ms), límite inclusivo | **120 s** (coherente con `map.tsx:76`; margen de solo 15 s sobre los 105 s de latencia peor caso ⇒ un collar sano puede parpadear con el retardo de Wialon) | [ ] 300 s / [X] 120 s / [ ] otro: ____ |
+| G4 | Mapa | **no se toca** (divergencia declarada, R11 paso 5) | alinear `STALE_SECONDS` en feature aparte | [X] default / [ ] otra: ____ |
+| G5a | Copy de "desconocido" | **`home.unknown`** = `Esperando señal` / `Awaiting signal` | `Sin señal todavía` / `No signal yet`; o reusar `deviceConnectivity.unknown` (`Desconocida`, desaconsejado: §0.2 C3) | [X] default / [ ] otra: ____ |
+| G5b | Copy de Pairing para `offline` | **`deviceConnectivity.offline`** = `Sin conexión` / `Offline` | otro texto: ____ | [X] default / [ ] otra: ____ |
+| G6 | Dónde entra la píldora | **prop `status` del hero**, columna izquierda, encima del nombre; Profile sin píldora | Profile también la muestra (entonces R8 `it` 6 cambia y `profile/index.tsx:252` pasa `status`) | [X] default / [ ] otra: ____ |
+| G7a | Tokens (texto / punto / superficie) | success: `text-accent-strong` / `bg-success` (3,04:1) / `bg-success-soft`; warning: `text-warning-strong` / `bg-warning-strong` / `bg-warning-soft`; muted: `text-muted` / `bg-muted` / `bg-default` | punto "en línea" `bg-accent-strong` (5,12:1, más margen; misma tinta que el texto) | [X] default / [ ] otra: ____ |
+| G7b | Animación | **ninguna** | pulso con Reanimated + reduced-motion, feature aparte | [ ] default / [X] otra:  Reanimated + reduced-motion para agregar animacion  |
+| G7c | Componente | **`View`+`Text` dentro de `pet-hero-header.tsx`** | `Chip` de heroui (ver [[design]] D8: AA no garantizable, `Pressable`, clases opacas al grep) | [X] default / [ ] otra: ____ |
+| E-#8 | Enmienda a `specs/wialon-ingestion-pipeline/requirements.md` (R4) | bloque canónico al final, firma sin marcar | — (el humano la marca junto con esta casilla) | [X] leída |
