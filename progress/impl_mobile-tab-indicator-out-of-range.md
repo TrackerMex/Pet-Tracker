@@ -2,7 +2,7 @@
 
 Fecha: 2026-09-13
 
-Branch: `feature/91-mobile-tab-indicator-out-of-range`  
+Branch: `feature/91-mobile-tab-indicator-out-of-range`
 Base verificada: `072cff40` es ancestro de `HEAD`.
 
 ## R6 — Nada más se mueve
