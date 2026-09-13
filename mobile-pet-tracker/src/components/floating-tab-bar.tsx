@@ -70,10 +70,10 @@ export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
   const insets = useSafeAreaInsets();
   const { theme } = useUniwind();
   const [containerWidth, setContainerWidth] = useState(0);
-  const translateX = useSharedValue(0);
-  const lastPositionedIndex = useRef(state.index);
   const activeRouteName = state.routes[state.index]?.name;
   const activeTabIndex = TABS.findIndex((tab) => tab.name === activeRouteName);
+  const translateX = useSharedValue(0);
+  const lastPositionedIndex = useRef(activeTabIndex);
   const hasLiquidGlass = isLiquidGlassAvailable();
   const tabWidth = (containerWidth - 16) / TABS.length;
   const indicatorAnimatedStyle = useAnimatedStyle(() => ({
@@ -81,16 +81,20 @@ export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
   }));
 
   useEffect(() => {
-    if (
-      containerWidth <= 0 ||
-      lastPositionedIndex.current === state.index
-    ) {
+    if (containerWidth <= 0 || lastPositionedIndex.current === activeTabIndex) {
       return;
     }
 
-    lastPositionedIndex.current = state.index;
+    const previousIndex = lastPositionedIndex.current;
+    lastPositionedIndex.current = activeTabIndex;
+
+    if (activeTabIndex < 0) {
+      return;
+    }
+
+    const nextX = activeTabIndex * tabWidth;
     translateX.set(
-      withSpring(activeTabIndex * tabWidth, TAB_INDICATOR_SPRING),
+      previousIndex < 0 ? nextX : withSpring(nextX, TAB_INDICATOR_SPRING),
     );
   }, [activeTabIndex, containerWidth, tabWidth, translateX]);
 
@@ -103,10 +107,12 @@ export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
     }
 
     const nextTabWidth = (width - 16) / TABS.length;
+
     if (activeTabIndex >= 0) {
       translateX.set(activeTabIndex * nextTabWidth);
     }
-    lastPositionedIndex.current = state.index;
+
+    lastPositionedIndex.current = activeTabIndex;
     setContainerWidth(width);
   }
 
