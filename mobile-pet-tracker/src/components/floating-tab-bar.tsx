@@ -90,9 +90,9 @@ export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
 
     lastPositionedIndex.current = state.index;
     translateX.set(
-      withSpring(state.index * tabWidth, TAB_INDICATOR_SPRING),
+      withSpring(activeTabIndex * tabWidth, TAB_INDICATOR_SPRING),
     );
-  }, [containerWidth, state.index, tabWidth, translateX]);
+  }, [activeTabIndex, containerWidth, tabWidth, translateX]);
 
   function handleLayout(event: LayoutChangeEvent) {
     const { width } = event.nativeEvent.layout;
