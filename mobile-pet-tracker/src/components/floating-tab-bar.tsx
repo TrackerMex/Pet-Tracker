@@ -73,6 +73,7 @@ export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
   const translateX = useSharedValue(0);
   const lastPositionedIndex = useRef(state.index);
   const activeRouteName = state.routes[state.index]?.name;
+  const activeTabIndex = TABS.findIndex((tab) => tab.name === activeRouteName);
   const hasLiquidGlass = isLiquidGlassAvailable();
   const tabWidth = (containerWidth - 16) / TABS.length;
   const indicatorAnimatedStyle = useAnimatedStyle(() => ({
@@ -134,7 +135,7 @@ export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
           />
         </BlurView>
       )}
-      {containerWidth > 0 ? (
+      {containerWidth > 0 && activeTabIndex >= 0 ? (
         <Animated.View
           testID="tab-indicator"
           style={[
