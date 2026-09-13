@@ -85,3 +85,27 @@ Diff de una línea:
 Tras las tres comprobaciones,
 `git diff --exit-code -- mobile-pet-tracker/src/components/floating-tab-bar.tsx`
 terminó con exit 0: no quedó ninguna mutación en el árbol.
+
+## R8 — Gate humano en dev build de Android
+
+Ejecutar este guion en un **dev build de Android**, no en Expo Go, sobre el
+commit de cierre de esta rama y con una sesión que tenga al menos una mascota:
+
+1. Recorrer `Inicio`, `Mapa`, `Salud`, `Nutrición` y `Perfil` pulsando cada
+   pestaña. En las cinco, comprobar que la burbuja queda bajo la pestaña activa
+   como antes del arreglo.
+2. Volver a `Inicio` y abrir `Alertas` con la campana del hero. Comprobar que no
+   aparece ninguna burbuja y que las cinco etiquetas de la barra están grises.
+3. Desde `Alertas`, pulsar primero la misma pestaña de origen y repetir entrando
+   otra vez y pulsando una pestaña distinta. En ambos retornos, comprobar en el
+   primer frame visible que la burbuja ya está bajo la pestaña elegida y que no
+   se desliza desde una ranura fantasma.
+4. Repetir las comprobaciones de los pasos 2 y 3 entrando en `Recordatorios`
+   (Perfil → Recordatorios o Inicio → Ver todo), `Registrar peso` (Inicio →
+   Peso) y una ruta `pets/` (Inicio → Documentos o Perfil → Documentos). En cada
+   pantalla ajena: ninguna burbuja y cinco etiquetas grises; al pulsar una
+   pestaña: burbuja ya colocada, sin deslizamiento fantasma.
+
+Resultado humano: **por ejecutar**. Registrar aquí dispositivo, versión del dev
+build, commit probado y veredicto PASS/FAIL; después completar R8 en
+`specs/mobile-tab-indicator-out-of-range/traceability.md`.
