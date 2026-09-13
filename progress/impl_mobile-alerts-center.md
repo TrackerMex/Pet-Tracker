@@ -205,15 +205,28 @@ se silenció; la repetición completa terminó con exit 0.
 
 ## R14 — gate humano
 
-Estado: **por ejecutar y firmar por un humano** en un dev build de Android. La
-feature no debe pasar a `done` hasta completar, en orden:
+Estado: **FIRMADO por el humano el 2026-09-13**, en dev build de Android, con
+una alerta `geofence_exit` `open` insertada a mano en `alert_events` para la
+mascota *Michi* (collar activo y suscripción vigente, comprobado contra los
+`INNER JOIN` del repositorio antes de abrir la app).
 
-- [ ] Home muestra el punto rojo con una alerta `open` real.
-- [ ] La campana abre Alertas sin crear una sexta pestaña.
-- [ ] La alerta aparece arriba con mascota, tipo en español y tiempo relativo.
-- [ ] Marcar leída actualiza sin parpadeo, recarga ni cambio de posición.
-- [ ] Al volver a Home desaparece el punto rojo.
-- [ ] Todo el texto visible está en español.
+- [X] Home muestra el punto rojo con una alerta `open` real.
+- [X] La campana abre Alertas sin crear una sexta pestaña.
+- [X] La alerta aparece arriba con mascota, tipo en español y tiempo relativo.
+- [X] Marcar leída actualiza sin parpadeo, recarga ni cambio de posición.
+- [X] Al volver a Home desaparece el punto rojo.
+- [X] Todo el texto visible está en español.
+
+**Salvedad de la casilla 2, registrada como feature aparte**: no aparece una
+sexta pestaña —`TABS` sigue en cinco entradas y `(tabs)/_layout.tsx` en cinco
+`<Tabs.Screen>`—, pero el humano observó que **la burbuja del indicador se
+desliza a una ranura fantasma detrás de Perfil** al entrar en `/alerts`. Es un
+defecto **anterior a #78**: `floating-tab-bar.tsx:91-93` posiciona la burbuja con
+`state.index`, el índice dentro de `state.routes` —que incluye las once rutas del
+grupo `(tabs)/`—, mientras la geometría usa `TABS.length`. Le pasa igual a
+`reminders`, `pairing`, `weight-log`, `meal-schedule` y `add-reminder` desde hace
+meses. Queda abierto como **#91 `mobile-tab-indicator-out-of-range`**; el humano
+decidió cerrar #78 y corregirlo por su cuenta.
 
 La alerta real debe pertenecer a una mascota con dispositivo y suscripción
 vigente; de lo contrario, el `INNER JOIN` del backend la oculta y el smoke daría
