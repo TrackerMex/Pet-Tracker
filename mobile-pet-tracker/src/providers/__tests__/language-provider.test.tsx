@@ -33,12 +33,12 @@ function LocaleProbe() {
 }
 
 describe('#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y parámetros', () => {
-  // 259 en `303fc19` + 1 de `home.walks` (#67 R7b) + 16 de #68.
+  // 259 en `303fc19` + 1 de `home.walks` (#67 R7b) + 16 de #68 + 14 de #78.
   it('mantiene la base más las claves de #68 y los mismos marcadores en ambos idiomas', () => {
     const englishKeys = Object.keys(en).sort();
     const spanishKeys = Object.keys(es).sort();
 
-    expect(englishKeys).toHaveLength(260 + 16 + 1 + 4 + 7);
+    expect(englishKeys).toHaveLength(260 + 16 + 1 + 4 + 7 + 14);
     expect(spanishKeys).toEqual(englishKeys);
     for (const key of englishKeys) {
       expect(markerNames(es[key as keyof typeof es])).toEqual(
@@ -77,5 +77,33 @@ describe('#65 R15: el locale de fechas y números sigue al idioma elegido', () =
     );
 
     expect(screen.getByTestId('locale')).toHaveTextContent(locale);
+  });
+});
+
+describe('#78 R3: el catálogo trae las claves del centro de alertas', () => {
+  it('incluye las catorce traducciones en inglés y español', () => {
+    const translations = [
+      ['alerts.title', 'Alerts', 'Alertas'],
+      ['alerts.empty', 'No alerts', 'No hay alertas'],
+      ['alerts.ack', 'Mark as read', 'Marcar leída'],
+      ['alerts.typeGeofenceExit', 'Left the safe zone', 'Salió de la zona'],
+      ['alerts.typeBatteryLow', 'Low battery', 'Batería baja'],
+      ['alerts.typeUnknown', 'Notice', 'Aviso'],
+      ['alerts.statusAcked', 'Read', 'Leída'],
+      ['alerts.statusClosed', 'Resolved', 'Resuelta'],
+      ['alerts.justNow', 'Just now', 'Ahora mismo'],
+      ['alerts.minutesAgo', '{{minutes}} min ago', 'Hace {{minutes}} min'],
+      ['alerts.hoursAgo', '{{hours}} h ago', 'Hace {{hours}} h'],
+      ['alerts.daysAgo', '{{days}} d ago', 'Hace {{days}} d'],
+      ['home.alertsBell', 'Alerts', 'Alertas'],
+      ['home.alertsBellUnread', 'Unread alerts', 'Alertas sin leer'],
+    ] as const;
+    const english = en as Record<string, string>;
+    const spanish = es as Record<string, string>;
+
+    for (const [key, englishValue, spanishValue] of translations) {
+      expect(english[key]).toBe(englishValue);
+      expect(spanish[key]).toBe(spanishValue);
+    }
   });
 });

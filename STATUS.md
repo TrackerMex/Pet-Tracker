@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-09-11
-**Features completadas**: 73/89 (`feature_list.json`)
+**Última actualización**: 2026-09-13
+**Features completadas**: 74/91 (`feature_list.json`)
 **En progreso**: ninguna
 
-**Pendientes**: 16 (#18, #41, #60, #63, #72-#75, #77-#81, #83, #84, #86). El rediseño contra el diseño del Make abrió el bloque #64-#71: #64, #65, #66, #67, #68 y #69 están cerradas y **mergeadas** (PR #106, #110, #111, #112, #113 y #114). #71 `mobile-home-quick-actions` está cerrada con los dos gates humanos firmados; **PR pendiente de merge por el humano**. Del bloque solo queda **#70 recordatorios**, sin especificar, y con la mitad del diseño bloqueada porque `nextReminder` y `activitySummary` siguen a `null` en el mapper del perfil. Deuda registrada: #72 flake de add-pet; #73 `pet-online-pill`; #74 el selector que TalkBack lee como tres controles sueltos; #75 `init.sh` aborta en falso con `FORCE_COLOR`; #77 el peso visible sin collar; #80 los `testID` del doble atados al componente; #81 la receta tipográfica del tile sin candado. #78 y #79 entraron desde otra sesión.
+**Pendientes**: 17 (#18, #41, #60, #63, #72-#75, #77, #79-#81, #83, #84, #86, #90, #91). El rediseño contra el diseño del Make abrió el bloque #64-#71: #64, #65, #66, #67, #68 y #69 están cerradas y **mergeadas** (PR #106, #110, #111, #112, #113 y #114). #71 `mobile-home-quick-actions` está cerrada con los dos gates humanos firmados; **PR pendiente de merge por el humano**. Del bloque solo queda **#70 recordatorios**, sin especificar, y con la mitad del diseño bloqueada porque `nextReminder` y `activitySummary` siguen a `null` en el mapper del perfil. Deuda registrada: #72 flake de add-pet; #73 `pet-online-pill`; #74 el selector que TalkBack lee como tres controles sueltos; #75 `init.sh` aborta en falso con `FORCE_COLOR`; #77 el peso visible sin collar; #80 los `testID` del doble atados al componente; #81 la receta tipográfica del tile sin candado. #78 y #79 entraron desde otra sesión. #90 `mobile-owner-timezone-dates` la abrió el 2026-09-11 la decisión por defecto de #89: el móvil manda la fecha civil del dispositivo contra una validación que ya usa la zona del owner sin margen. #91 `mobile-tab-indicator-out-of-range` la destapó el gate humano de #78 el 2026-09-13: la burbuja del indicador se posiciona con el índice de `state.routes`, así que cualquier ruta de `(tabs)/` fuera de `TABS` la manda a una ranura fantasma detrás de Perfil. Es anterior a #78 y afecta también a recordatorios, pairing, peso y comidas.
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
 desde 2026-08-10. Hay recursos vivos en la cuenta, aunque hoy sin coste.
@@ -1125,6 +1125,26 @@ debe listar las 4 URLs de cola.
 
 ## Última sesión
 
+- **2026-09-13** — **#78 `mobile-alerts-center` cerrada**: centro de alertas y
+  campana con punto rojo en el hero de Home, 14 requisitos más **ocho enmiendas
+  E1-E8** con gate humano propio. Las enmiendas nacieron de que la spec se firmó
+  el 2026-09-10 sobre un árbol **sin** TanStack Query y #87 se mergeó al día
+  siguiente borrando `src/hooks/use-api.ts`: R4, R8, R9 y R11 se reescribieron a
+  `useInfiniteQuery` + `useQuery` con `alertKeys`, y se **descartó**
+  `invalidateQueries` por escrito con la condición que lo revive. Implementó
+  **Codex CLI**; el `reviewer` **rechazó la ronda 1** por dos candados que nadie
+  había visto en rojo —el orden de los tres textos **dentro** de la columna de la
+  fila (intercambiarlos dejaba 73 suites y 1230 tests verdes) y la receta
+  tipográfica del título—, los dos corregidos **solo con tests** y aprobados en la
+  ronda 2. El gate humano R14 (smoke en dev build de Android con una alerta
+  `geofence_exit` real) quedó firmado el 2026-09-13. PR #123. La lección que deja:
+  un candado de orden puede pararse **un nivel por encima** de la hoja que
+  protege, y la lista de la carta §Enmienda #70 no basta si la aserción se queda
+  en el envoltorio. **Deuda abierta desde el gate**: #91
+  `mobile-tab-indicator-out-of-range`, la burbuja del indicador se posiciona con
+  el índice de `state.routes` y cualquier ruta de `(tabs)/` fuera de `TABS` la
+  manda detrás de Perfil — anterior a #78, afecta también a recordatorios,
+  pairing, peso y comidas.
 - **2026-09-11 (2)** — **#89 `dto-dates-owner-timezone` cerrada**: spec, gate,
   Codex (trece commits sin paradas), reviewer aprobado a la primera sobre
   198d67b1 (seis rojos reproducidos por checkout, M1-M3 reproducidas, init.sh

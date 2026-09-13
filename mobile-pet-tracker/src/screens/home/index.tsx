@@ -25,9 +25,11 @@ import {
 } from 'reicon-react-native';
 
 import { getDailyActivity } from '../../api/activity';
+import { listAlerts } from '../../api/alerts';
 import { getPet, listPets, type PetsState } from '../../api/pets';
 import {
   activityKeys,
+  alertKeys,
   petKeys,
   reminderKeys,
 } from '../../api/query-keys';
@@ -174,6 +176,10 @@ export function HomeScreen() {
     queryFn: () => listReminders(baseUrl, token ?? '', selectedPetId!),
     enabled: selectedPetId !== null,
   });
+  const openAlerts = useQuery({
+    queryKey: alertKeys.open(),
+    queryFn: () => listAlerts(baseUrl, token ?? '', 'open'),
+  });
   const upcoming =
     reminders.data?.kind === 'ok'
       ? upcomingReminders(reminders.data.reminders, new Date())
@@ -195,12 +201,15 @@ export function HomeScreen() {
     nextVaccineDays === null ? null : dueCountdown(nextVaccineDays, t);
   const refetchPets = pets.refetch;
   const refetchDetail = detail.refetch;
+  const refetchOpenAlerts = openAlerts.refetch;
   const today =
     activity.data?.kind === 'ok'
       ? activity.data.days[activity.data.days.length - 1]
       : undefined;
   const petList = pets.data?.kind === 'ok' ? pets.data.pets : [];
   const hasPets = petList.length > 0;
+  const hasOpenAlerts =
+    openAlerts.data?.kind === 'ok' && openAlerts.data.items.length > 0;
   const latestActivityDay =
     activity.data?.kind === 'ok'
       ? activity.data.days[activity.data.days.length - 1]
@@ -217,7 +226,8 @@ export function HomeScreen() {
     useCallback(() => {
       refetchPets();
       refetchDetail();
-    }, [refetchDetail, refetchPets]),
+      refetchOpenAlerts();
+    }, [refetchDetail, refetchOpenAlerts, refetchPets]),
   );
 
   return (
@@ -245,11 +255,35 @@ export function HomeScreen() {
               : undefined
           }
         >
-          <PetSwitcher
-            pets={petList}
-            selectedPetId={selectedPetId}
-            onSelect={selectPet}
-          />
+          <View testID="home-hero-actions" className="flex-row items-center gap-3">
+            <View className="flex-1">
+              <PetSwitcher
+                pets={petList}
+                selectedPetId={selectedPetId}
+                onSelect={selectPet}
+              />
+            </View>
+            <Pressable
+              testID="home-alerts-bell"
+              accessibilityRole="button"
+              accessibilityLabel={
+                hasOpenAlerts
+                  ? t('home.alertsBellUnread')
+                  : t('home.alertsBell')
+              }
+              className="size-11 items-center justify-center rounded-full"
+              style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
+              onPress={() => router.push('/alerts')}
+            >
+              <Bell size={24} color={muted} />
+              {hasOpenAlerts ? (
+                <View
+                  testID="home-alerts-dot"
+                  className="absolute right-1 top-1 size-2.5 rounded-full bg-danger"
+                />
+              ) : null}
+            </Pressable>
+          </View>
         </PetHeroHeader>
       ) : null}
 

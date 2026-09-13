@@ -1,5 +1,6 @@
 import {
   activityKeys,
+  alertKeys,
   deviceKeys,
   healthKeys,
   mediaKeys,
@@ -76,6 +77,18 @@ const cases: {
     domain: 'activity',
     factory: () => activityKeys.daily('p1'),
     expected: ['activity', 'daily', 'p1'],
+  },
+  {
+    name: 'alert list',
+    domain: 'alerts',
+    factory: () => alertKeys.list(),
+    expected: ['alerts', 'list'],
+  },
+  {
+    name: 'open alerts',
+    domain: 'alerts',
+    factory: () => alertKeys.open(),
+    expected: ['alerts', 'list', { status: 'open' }],
   },
   {
     name: 'reminder list',

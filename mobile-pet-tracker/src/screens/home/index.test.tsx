@@ -14,6 +14,7 @@ import {
   getDailyActivity,
   type DailyActivityState,
 } from '../../api/activity';
+import { listAlerts, type AlertsState } from '../../api/alerts';
 import { getPet, listPets, type PetState, type PetsState } from '../../api/pets';
 import {
   activityKeys,
@@ -21,7 +22,8 @@ import {
   reminderKeys,
 } from '../../api/query-keys';
 import { listReminders, type RemindersState } from '../../api/reminders';
-import type { DayEntry, PetProfile, Reminder } from '../../api/types';
+import type { Alert, DayEntry, PetProfile, Reminder } from '../../api/types';
+import { es } from '../../i18n/catalog';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
 import { SelectedPetProvider } from '../../providers/selected-pet-provider';
@@ -70,6 +72,10 @@ jest.mock('../../api/pets', () => ({
 
 jest.mock('../../api/activity', () => ({
   getDailyActivity: jest.fn(),
+}));
+
+jest.mock('../../api/alerts', () => ({
+  listAlerts: jest.fn(),
 }));
 
 jest.mock('../../api/reminders', () => ({
@@ -121,13 +127,93 @@ jest.mock('reicon-react-native', () => {
   };
 });
 
+describe('#78 R10: la campana vive en el hero y lleva al centro de alertas', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetPet.mockReturnValue(pending<PetState>());
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [] });
+  });
+
+  it('compone el selector y la campana como dos hijos en ese orden', async () => {
+    await renderHome();
+
+    const actions = await screen.findByTestId('home-hero-actions');
+    expect(actions.children).toHaveLength(2);
+    const switcherWrapper = actions.children[0];
+    const bellChild = actions.children[1];
+    if (typeof switcherWrapper === 'string' || typeof bellChild === 'string') {
+      throw new Error('Expected element children');
+    }
+    expect(switcherWrapper.props.className).toBe('flex-1');
+    expect(within(switcherWrapper).getByTestId('pet-chip-pet-1')).toBeVisible();
+    expect(bellChild.props.testID).toBe('home-alerts-bell');
+
+    const bell = within(actions).getByTestId('home-alerts-bell');
+    expect(bell.props.accessibilityRole).toBe('button');
+    expect(bell.props.className).toBe(
+      'size-11 items-center justify-center rounded-full',
+    );
+    const icon = within(bell).getByTestId('icon-bell');
+    expect(icon.props.size).toBe(24);
+    expect(icon.props.color).toBeDefined();
+  });
+
+  it('navega una sola vez al centro de alertas', async () => {
+    await renderHome();
+    await screen.findByTestId('home-alerts-bell');
+
+    await fireEvent.press(screen.getByTestId('home-alerts-bell'));
+
+    expect(mockRouter.push).toHaveBeenCalledTimes(1);
+    expect(mockRouter.push).toHaveBeenCalledWith('/alerts');
+  });
+
+  it('usa la ruta real sin cast Href y conserva el feedback de pulsado', () => {
+    const source = readFileSync(
+      join(process.cwd(), 'src/screens/home/index.tsx'),
+      'utf8',
+    );
+
+    expect(appRoutes(join(process.cwd(), 'src/app/(tabs)'))).toContain('/alerts');
+    expect(source).not.toContain("'/alerts' as Href");
+    expect(source).toMatch(
+      /style=\{\(\{ pressed \}\) => \(\{ opacity: pressed \? 0\.8 : 1 \}\)\}/,
+    );
+    expect(source).toContain('<Bell size={24} color={muted} />');
+  });
+
+  it('no pinta campana cuando no hay mascotas', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+
+    await renderHome();
+
+    await screen.findByTestId('home-empty');
+    expect(screen.queryByTestId('home-alerts-bell')).toBeNull();
+  });
+});
+
 const apiUrl = 'http://example.test/v1';
 const mockGetDailyActivity = jest.mocked(getDailyActivity);
 const mockGetPet = jest.mocked(getPet);
 const mockListPets = jest.mocked(listPets);
+const mockListAlerts = jest.mocked(listAlerts);
 const mockListReminders = jest.mocked(listReminders);
 
 beforeEach(() => {
+  mockListAlerts.mockResolvedValue({
+    kind: 'ok',
+    items: [],
+    nextCursor: null,
+  });
   mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [] });
 });
 
@@ -161,6 +247,22 @@ function makePet(overrides: Partial<PetProfile> = {}): PetProfile {
     activitySummary: null,
     createdAt: '2026-08-20T00:00:00.000Z',
     updatedAt: '2026-08-21T00:00:00.000Z',
+    ...overrides,
+  };
+}
+
+function makeAlert(overrides: Partial<Alert> = {}): Alert {
+  return {
+    id: 'alert-1',
+    petId: 'pet-1',
+    petName: 'Luna',
+    type: 'geofence_exit',
+    status: 'open',
+    geofenceId: null,
+    payload: {},
+    openedAt: '2026-09-11T08:00:00.000Z',
+    ackedAt: null,
+    closedAt: null,
     ...overrides,
   };
 }
@@ -3258,5 +3360,112 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
       expect(within(section).queryByText(/\d+\s*\/\s*\d+/)).toBeNull();
       expect(source).not.toContain("../../api/nutrition");
     });
+  });
+});
+
+describe('#78 R11: el punto rojo sigue a las alertas abiertas', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetPet.mockReturnValue(pending<PetState>());
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [] });
+  });
+
+  it('pinta el punto y anuncia alertas sin leer cuando hay abiertas', async () => {
+    mockListAlerts.mockResolvedValue({
+      kind: 'ok',
+      items: [makeAlert()],
+      nextCursor: null,
+    });
+
+    await renderHome();
+
+    const bell = await screen.findByTestId('home-alerts-bell');
+    const dot = await within(bell).findByTestId('home-alerts-dot');
+    expect(dot.props.className).toBe(
+      'absolute right-1 top-1 size-2.5 rounded-full bg-danger',
+    );
+    expect(dot.children).toHaveLength(0);
+    expect(bell.props.accessibilityLabel).toBe(es['home.alertsBellUnread']);
+    expect(mockListAlerts).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'open');
+  });
+
+  it('quita el punto y usa el nombre base cuando no hay abiertas', async () => {
+    mockListAlerts.mockResolvedValue({
+      kind: 'ok',
+      items: [],
+      nextCursor: null,
+    });
+
+    await renderHome();
+
+    await waitFor(() => expect(mockListAlerts).toHaveBeenCalledTimes(1));
+    const bell = await screen.findByTestId('home-alerts-bell');
+    expect(screen.queryByTestId('home-alerts-dot')).toBeNull();
+    expect(bell.props.accessibilityLabel).toBe(es['home.alertsBell']);
+  });
+
+  it('omite el punto y usa el nombre base mientras no ha resuelto', async () => {
+    mockListAlerts.mockReturnValue(pending<AlertsState>());
+
+    await renderHome();
+
+    const bell = await screen.findByTestId('home-alerts-bell');
+    expect(mockListAlerts).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'open');
+    expect(screen.queryByTestId('home-alerts-dot')).toBeNull();
+    expect(bell.props.accessibilityLabel).toBe(es['home.alertsBell']);
+  });
+
+  it.each<AlertsState>([
+    { kind: 'unauthorized' },
+    { kind: 'error' },
+    { kind: 'unreachable', message: 'offline' },
+    { kind: 'missing-config' },
+  ])('mantiene la campana sin punto con $kind', async (state) => {
+    mockListAlerts.mockResolvedValue(state);
+
+    await renderHome();
+
+    await waitFor(() => expect(mockListAlerts).toHaveBeenCalledTimes(1));
+    const bell = await screen.findByTestId('home-alerts-bell');
+    expect(screen.queryByTestId('home-alerts-dot')).toBeNull();
+    expect(bell.props.accessibilityLabel).toBe(es['home.alertsBell']);
+
+    fireEvent.press(bell);
+    expect(mockRouter.push).toHaveBeenCalledTimes(1);
+    expect(mockRouter.push).toHaveBeenCalledWith('/alerts');
+  });
+
+  it('apaga el punto al recuperar foco y recibir una lista vacía', async () => {
+    mockListAlerts
+      .mockResolvedValueOnce({
+        kind: 'ok',
+        items: [makeAlert()],
+        nextCursor: null,
+      })
+      .mockResolvedValueOnce({ kind: 'ok', items: [], nextCursor: null });
+
+    await renderHome();
+    await screen.findByTestId('home-alerts-dot');
+    const focusCallback = mockUseFocusEffect.mock.calls.at(-1)?.[0];
+    expect(focusCallback).toBeDefined();
+
+    await act(async () => {
+      focusCallback?.();
+      await Promise.resolve();
+    });
+
+    await waitFor(() => expect(mockListAlerts).toHaveBeenCalledTimes(2));
+    await waitFor(() =>
+      expect(screen.queryByTestId('home-alerts-dot')).toBeNull(),
+    );
   });
 });

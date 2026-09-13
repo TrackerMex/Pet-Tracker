@@ -14,6 +14,7 @@ import {
   R9_ADD_PET,
   R10_PAIRING,
   R11_RESET,
+  R12_ALERTS,
   type UseRow,
 } from './ui-copy-table';
 
@@ -80,7 +81,7 @@ describe('#65 R3: Home resuelve su copy por clave', () => {
   // 20 en `303fc19` + 1 de `home.walks` (#67 R7b, delta declarado en su R9b).
   // #68 añade el delta medido de weekly-activity-chart, sin recontar la base.
   it('#71 R11: registra el copy de accesos rápidos sobre los deltas heredados', () => {
-    expect(R3_HOME).toHaveLength(21 + 15 + 1 + 4 + 7);
+    expect(R3_HOME).toHaveLength(21 + 15 + 1 + 4 + 7 + 2);
     checkUses(R3_HOME);
   });
 });
@@ -172,6 +173,51 @@ describe('#65 R11: restablecer contraseña resuelve su copy por clave', () => {
   it('resuelve las 15 ocurrencias normativas', () => {
     expect(R11_RESET).toHaveLength(15);
     checkUses(R11_RESET);
+  });
+});
+
+describe('#78 R12: el centro de alertas resuelve su copy por clave', () => {
+  it('registra cada ocurrencia de la pantalla', () => {
+    expect(R12_ALERTS.length).toBeGreaterThan(0);
+    expect(
+      R12_ALERTS.every(
+        ({ file }) => file === 'src/screens/alerts/index.tsx',
+      ),
+    ).toBe(true);
+    checkUses(R12_ALERTS);
+  });
+
+  it('documenta las catorce claves con el sufijo normativo', () => {
+    const keys: TranslationKey[] = [
+      'alerts.title',
+      'alerts.empty',
+      'alerts.ack',
+      'alerts.typeGeofenceExit',
+      'alerts.typeBatteryLow',
+      'alerts.typeUnknown',
+      'alerts.statusAcked',
+      'alerts.statusClosed',
+      'alerts.justNow',
+      'alerts.minutesAgo',
+      'alerts.hoursAgo',
+      'alerts.daysAgo',
+      'home.alertsBell',
+      'home.alertsBellUnread',
+    ];
+    const languageDesign = readFileSync(
+      join(SOURCE_ROOT, '../specs/mobile-ui-language/design.md'),
+      'utf8',
+    );
+
+    for (const key of keys) {
+      expect(languageDesign).toMatch(
+        new RegExp(
+          '\\| — \\| `' +
+            escapeRegExp(key) +
+            '`[^\\n]*← añadida por #78 \\(R3\\)',
+        ),
+      );
+    }
   });
 });
 
@@ -388,7 +434,7 @@ describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () =>
   });
 
   it('no deja ningún valor fijo del catálogo como literal entero en las pantallas', () => {
-    expect(SCREEN_FILES).toHaveLength(19 + 2);
+    expect(SCREEN_FILES).toHaveLength(19 + 2 + 1);
 
     for (const file of SCREEN_FILES) {
       const literals = wholeLiterals(readFileSync(join(SOURCE_ROOT, file), 'utf8'));

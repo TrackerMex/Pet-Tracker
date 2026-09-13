@@ -390,6 +390,7 @@ describe('#87 R19: use-' + 'api no deja huella', () => {
     'app/(tabs)/meal-schedule.tsx': 1,
     'app/(tabs)/weight-log.tsx': 1,
     'screens/docs/index.tsx': 0,
+    'screens/alerts/index.tsx': 1,
     'screens/home/index.tsx': 0,
     'screens/pairing/index.tsx': 2,
     'screens/profile/index.tsx': 2,

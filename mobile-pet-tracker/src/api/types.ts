@@ -215,3 +215,19 @@ export interface Reminder {
   advanceMinutes: number;
   status: ReminderStatus;
 }
+
+export type AlertType = 'geofence_exit' | 'battery_low';
+export type AlertStatus = 'open' | 'acked' | 'closed';
+
+export interface Alert {
+  id: string;
+  petId: string;
+  petName: string;
+  type: string;
+  status: string;
+  geofenceId: string | null;
+  payload: Record<string, unknown>;
+  openedAt: string;
+  ackedAt: string | null;
+  closedAt: string | null;
+}
