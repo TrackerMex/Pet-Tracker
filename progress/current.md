@@ -80,3 +80,42 @@ afectados, y se anadio el aviso de que los cinco `describe` nuevos van prefijado
 Prompt de handoff a Codex CLI entregado al humano en el chat de la sesion. Codex escribe
 `progress/impl_mobile-tab-indicator-out-of-range.md`; el handoff es por disco. Cuando el
 humano confirme que Codex termino, esta sesion lanza `reviewer`.
+
+### Veredicto del reviewer
+
+**APROBADO** — `progress/review_mobile-tab-indicator-out-of-range.md`, sobre el HEAD
+`1a57f1aa` y los 24 commits de Codex (`622a94de`..`26ca348f`). Sin bloqueantes.
+
+El reviewer no acepto el reporte de Codex como evidencia: corrio `init.sh` el mismo
+(exit=0 medido sin pipe, sorteando el defecto #75 con `env -u FORCE_COLOR`) y reprodujo
+los cinco rojos y los dos de mutacion en un worktree desechable. Movil 1230 -> 1236
+tests, los seis `it` nuevos exactamente.
+
+Dos comprobaciones que valia la pena hacer:
+
+- El commit intermedio de R3 (`6863488b`) **no relajo la asercion**: solo amplio la
+  ventana del temporizador de 300 a 400 ms; el esperado `137.6` quedo intacto y el rojo
+  se mantuvo en los dos estados (`206.32` a 300 ms, `206.39999999999998` a 400 ms).
+- **M1 y M2 no venian versionadas**, asi que el reviewer las reprodujo, cada una con la
+  otra revertida: M1 pone rojo `#91 R3`, M2 pone rojo `#91 R2`. R7 cierra con una
+  mutacion por sitio, que es lo que la spec exigia.
+
+Verificado por el leader: cero drift de codigo entre el ultimo commit de Codex y el HEAD
+revisado (`git diff 26ca348f..HEAD -- mobile-pet-tracker/` vacio).
+
+### Lo que falta para cerrar #91
+
+**R8, el gate humano**: prueba de humo en dev build de Android (no Expo Go), guion en
+`progress/impl_mobile-tab-indicator-out-of-range.md` §R8. Hasta que el humano lo corra,
+#91 se queda en `in_progress`: el veredicto del reviewer no basta cuando la feature
+tiene un requisito que solo cierra una persona.
+
+### Deuda registrada por el reviewer (no bloqueante)
+
+1. R3 quedo con ventana de temporizador de 400 ms donde la spec fijo 300. La asercion
+   normativa no se movio. Leccion para specs futuras con `withSpring`: derivar la
+   ventana de la duracion real en vez de fijarla a ojo.
+2. `622a94de` no lleva R-id porque es la tarea T0; un sufijo `(T0)` lo habria hecho
+   legible desde `git log`.
+3. La tercera observacion —#75 vivo en `main`— quedo **obsoleta**: el PR #124 se mergeo
+   en `572a24e4` mientras corria la revision.
