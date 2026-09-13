@@ -419,3 +419,37 @@ describe('#91 R2: el primer layout coloca la burbuja por el índice de TABS', ()
     });
   });
 });
+
+describe('#91 R3: el cambio de ruta desliza la burbuja al índice de TABS', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.clearAllMocks();
+    mockEmit.mockReturnValue({ defaultPrevented: false });
+    mockIsLiquidGlassAvailable.mockReturnValue(false);
+    mockTheme = 'light';
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('anima health a su índice en TABS aunque difiera de state.index', async () => {
+    const tabBar = await renderTabBar(2, routesAlertsFirst);
+
+    await fireEvent(screen.getByTestId('floating-tab-bar'), 'layout', {
+      nativeEvent: {
+        layout: { width: 360, height: 64, x: 0, y: 0 },
+      },
+    });
+    jest.advanceTimersByTime(300);
+
+    await tabBar.rerender(
+      <FloatingTabBar {...tabBarProps(3, routesAlertsFirst)} />,
+    );
+    jest.advanceTimersByTime(300);
+
+    expect(screen.getByTestId('tab-indicator')).toHaveAnimatedStyle({
+      transform: [{ translateX: 137.6 }],
+    });
+  });
+});
