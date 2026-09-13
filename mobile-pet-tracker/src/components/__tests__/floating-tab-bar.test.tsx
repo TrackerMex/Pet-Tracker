@@ -390,3 +390,32 @@ describe('#91 R1: una ruta fuera de TABS no monta la burbuja', () => {
     expect(screen.queryByTestId('tab-indicator')).not.toBeOnTheScreen();
   });
 });
+
+describe('#91 R2: el primer layout coloca la burbuja por el índice de TABS', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.clearAllMocks();
+    mockEmit.mockReturnValue({ defaultPrevented: false });
+    mockIsLiquidGlassAvailable.mockReturnValue(false);
+    mockTheme = 'light';
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('usa el índice de map en TABS aunque difiera de state.index', async () => {
+    await renderTabBar(2, routesAlertsFirst);
+
+    await fireEvent(screen.getByTestId('floating-tab-bar'), 'layout', {
+      nativeEvent: {
+        layout: { width: 360, height: 64, x: 0, y: 0 },
+      },
+    });
+    jest.advanceTimersByTime(300);
+
+    expect(screen.getByTestId('tab-indicator')).toHaveAnimatedStyle({
+      transform: [{ translateX: 68.8 }],
+    });
+  });
+});
