@@ -36,13 +36,21 @@ extenderlo.
 
 ### Bloqueos y observaciones
 
-- `./init.sh` corre y sale con codigo 0, pero imprime
-  `Mas de 1 feature en in_progress (0). Resolver antes de continuar.` con el `0` envuelto
-  en codigos de color ANSI. Es exactamente la feature #75 `harness-init-force-color`, ya
-  registrada: `FORCE_COLOR` hace que `console.log` de Node coloree el numero, y la
-  comparacion `[ "$IN_PROGRESS" = "0" ]` de `init.sh:137` falla contra la cadena
-  coloreada. No bloquea (exit 0) pero el harness reporta un falso negativo en cada
-  arranque. Queda fuera del alcance de #91.
+- `./init.sh` **aborta** en la comprobacion del harness con
+  `Mas de 1 feature en in_progress (0). Resolver antes de continuar.` y el `0` envuelto
+  en codigos de color ANSI. Es la feature #75 `harness-init-force-color`: Claude Code
+  exporta `FORCE_COLOR=3`, Node colorea los valores no-string de `console.log`, y la
+  comparacion `[ "$IN_PROGRESS" = "0" ]` falla contra la cadena coloreada; el `else`
+  llama a `fail`, que con `set -e` sale con codigo 1.
+
+  **Correccion del registro:** esta sesion anoto antes "sale con codigo 0, no bloquea".
+  Era falso y el error fue de medicion: se lanzo `./init.sh 2>&1 | tail -40`, y el codigo
+  de salida de un pipeline es el de `tail`, no el de `init.sh`. El arranque **si** se
+  cortaba ahi, y las suites nunca llegaron a correr en esta sesion.
+
+  Arreglado aparte, a peticion del humano, en la rama `feature/75-harness-init-force-color`
+  (commit `f3b3016e`, PR #124), hecho en el worktree `Pet-Tracker-wt-75` para no tocar el
+  working tree principal mientras Codex implementa #91. Sigue fuera del alcance de #91.
 
 ### Baseline de la suite en 072cff40
 
@@ -50,6 +58,11 @@ La sesion Backend corrio `./init.sh` en su worktree sobre el mismo commit y repo
 backend 25 suites / 362 tests, movil 73 suites / 1230 tests. Sirve de referencia para
 declarar el delta de #91 en el gate, no como cifra congelada: lo que se compara es el
 delta contra este commit.
+
+Esa linea base es valida pese al defecto de #75: la sesion Backend confirmo que en su
+entorno `FORCE_COLOR` esta unset, que su log no trae el aviso del harness y que el
+`exit=0` lo capturo sin pipe (`./init.sh > log; echo exit=$?`). El defecto solo muerde
+en sesiones que exportan la variable.
 
 ### Gate de la spec — verificado
 
