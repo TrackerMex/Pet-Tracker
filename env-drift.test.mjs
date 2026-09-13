@@ -189,7 +189,9 @@ describe('R7 (init-env-drift-warning #23): init.sh invoca el chequeo con warn()'
     const driftBlockIndex = source.indexOf('# Deriva de claves entre .env y .env.example (#23)');
     const dependenciesIndex = source.indexOf('# ── 3. DEPENDENCIAS');
 
-    assert.match(source, /node env-drift\.mjs \|\| true/);
+    // `nodeq` es el wrapper de #75: node con FORCE_COLOR=0. Lo que este
+    // candado fija es la forma de la invocación (con `|| true`), no el binario.
+    assert.match(source, /\bnodeq? env-drift\.mjs \|\| true/);
     assert.match(source, /warn "\$drift_line"/);
     assert.ok(driftBlockIndex > requiredLoopIndex);
     assert.ok(driftBlockIndex < dependenciesIndex);
