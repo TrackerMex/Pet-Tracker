@@ -8,7 +8,7 @@ tags: [harness, spec]
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | pendiente | pendiente |
+| R1 | `src/components/__tests__/floating-tab-bar.test.tsx :: #91 R1: una ruta fuera de TABS no monta la burbuja` | rojo `81282615`; verde `29f1b667` |
 | R2 | pendiente | pendiente |
 | R3 | pendiente | pendiente |
 | R4 | pendiente | pendiente |
