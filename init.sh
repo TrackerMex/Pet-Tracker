@@ -83,7 +83,7 @@ fi
 
 # Deriva de claves entre .env y .env.example (#23). Solo avisa: no copia
 # valores, no escribe .env y no aborta. El diff lo hace node —ya es
-# REQUIRED_TOOL y init.sh lo usa desde la linea 115— porque .env.example
+# REQUIRED_TOOL y este script ya lo usa más arriba— porque .env.example
 # esta commiteado con CRLF y sort/comm/grep de Git Bash tropiezan con ellos.
 if [ -f .env ] && [ -f .env.example ]; then
   ENV_DRIFT="$(nodeq env-drift.mjs || true)"
