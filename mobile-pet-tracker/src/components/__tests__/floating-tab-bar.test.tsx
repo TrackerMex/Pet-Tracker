@@ -453,3 +453,53 @@ describe('#91 R3: el cambio de ruta desliza la burbuja al índice de TABS', () =
     });
   });
 });
+
+describe('#91 R4: al volver de una ruta ajena la burbuja aparece ya colocada', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.clearAllMocks();
+    mockEmit.mockReturnValue({ defaultPrevented: false });
+    mockIsLiquidGlassAvailable.mockReturnValue(false);
+    mockTheme = 'light';
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('reaparece en la pestaña nueva sin animarse desde una ranura invisible', async () => {
+    const tabBar = await renderTabBar(1, routesWithAlerts);
+
+    await fireEvent(screen.getByTestId('floating-tab-bar'), 'layout', {
+      nativeEvent: {
+        layout: { width: 360, height: 64, x: 0, y: 0 },
+      },
+    });
+    jest.advanceTimersByTime(300);
+
+    expect(screen.getByTestId('tab-indicator')).toHaveAnimatedStyle({
+      transform: [{ translateX: 68.8 }],
+    });
+
+    await tabBar.rerender(
+      <FloatingTabBar {...tabBarProps(5, routesWithAlerts)} />,
+    );
+    jest.advanceTimersByTime(300);
+
+    expect(screen.queryByTestId('tab-indicator')).not.toBeOnTheScreen();
+
+    await tabBar.rerender(
+      <FloatingTabBar {...tabBarProps(2, routesWithAlerts)} />,
+    );
+
+    expect(screen.getByTestId('tab-indicator')).toHaveAnimatedStyle({
+      transform: [{ translateX: 137.6 }],
+    });
+
+    jest.advanceTimersByTime(300);
+
+    expect(screen.getByTestId('tab-indicator')).toHaveAnimatedStyle({
+      transform: [{ translateX: 137.6 }],
+    });
+  });
+});
