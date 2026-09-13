@@ -103,7 +103,9 @@ export function FloatingTabBar({ state, navigation }: FloatingTabBarProps) {
     }
 
     const nextTabWidth = (width - 16) / TABS.length;
-    translateX.set(state.index * nextTabWidth);
+    if (activeTabIndex >= 0) {
+      translateX.set(activeTabIndex * nextTabWidth);
+    }
     lastPositionedIndex.current = state.index;
     setContainerWidth(width);
   }
