@@ -30,3 +30,58 @@ Verificación ejecutada desde la raíz:
   `src/components/floating-tab-bar.tsx` y
   `src/components/__tests__/floating-tab-bar.test.tsx`.
 
+## R7 — Pruebas de mutación por sitio
+
+Cada mutación se comprobó sola sobre el árbol final, con las otras dos
+revertidas. M1 y M2 fueron mutaciones temporales sin commit; M3 quedó versionada
+en el rojo de R5 y revertida en su verde.
+
+### M1 — destino del `useEffect`
+
+Diff de una línea:
+
+```diff
+- previousIndex < 0 ? nextX : withSpring(nextX, TAB_INDICATOR_SPRING)
++ previousIndex < 0 ? nextX : withSpring(state.index * tabWidth, TAB_INDICATOR_SPRING)
+```
+
+- Test rojo: `#91 R3: el cambio de ruta desliza la burbuja al índice de TABS ›
+  anima health a su índice en TABS aunque difiera de state.index`.
+- Fallo: esperaba `translateX: 137.6` y recibió
+  `translateX: 206.39999999999998`.
+- Resultado de la suite: 1 fallido, 17 pasados. Mutación revertida.
+
+### M2 — escritura de `handleLayout`
+
+Diff de una línea:
+
+```diff
+- translateX.set(activeTabIndex * nextTabWidth)
++ translateX.set(state.index * nextTabWidth)
+```
+
+- Test rojo: `#91 R2: el primer layout coloca la burbuja por el índice de TABS ›
+  usa el índice de map en TABS aunque difiera de state.index`.
+- Fallo: esperaba `translateX: 68.8` y recibió `translateX: 137.6`.
+- Resultado de la suite: 1 fallido, 17 pasados. Mutación revertida.
+
+### M3 — estado activo de las celdas
+
+Diff de una línea:
+
+```diff
+- const isActive = activeRouteName === name
++ const isActive = activeTabIndex < 0 || activeRouteName === name
+```
+
+- Test rojo: `#91 R5: con una ruta ajena las cinco celdas quedan inactivas y
+  siguen navegando › conserva el estado inactivo, los dos hijos y la navegación
+  de cada pestaña`.
+- Fallo: esperaba `accessibilityState={{ selected: false }}` y recibió
+  `selected: true` en la primera celda.
+- Resultado de la suite: 1 fallido, 17 pasados. Mutación versionada en
+  `1c77093e` y revertida en `dba1ea57`.
+
+Tras las tres comprobaciones,
+`git diff --exit-code -- mobile-pet-tracker/src/components/floating-tab-bar.tsx`
+terminó con exit 0: no quedó ninguna mutación en el árbol.
