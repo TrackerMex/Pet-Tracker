@@ -15,7 +15,7 @@ tags: [harness, spec]
 | R5 | `src/components/__tests__/floating-tab-bar.test.tsx :: #91 R5: con una ruta ajena las cinco celdas quedan inactivas y siguen navegando` | rojo M3 `1c77093e`; verde `dba1ea57` |
 | R6 | `./init.sh` completo; candados uno por uno y diff móvil de dos ficheros en `progress/impl_mobile-tab-indicator-out-of-range.md` §R6 | `e26a34b2` (`docs(tab-indicator): verifica los candados sin delta (R6)`) |
 | R7 | `progress/impl_mobile-tab-indicator-out-of-range.md` §R7: M1 → rojo `#91 R3`; M2 → rojo `#91 R2`; M3 → rojo `#91 R5` | evidencia `ee9e4f3d`; M3 rojo versionado `1c77093e` y verde `dba1ea57` |
-| R8 | pendiente | pendiente |
+| R8 | Guion en `progress/impl_mobile-tab-indicator-out-of-range.md` §R8; veredicto humano pendiente en dev build de Android | guion `c3cf74a1`; cierre reservado al humano |
 
 Tests esperados por requisito (rutas desde `mobile-pet-tracker/`):
 
