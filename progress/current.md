@@ -10,8 +10,10 @@
 - **Inicio:** 2026-09-13
 - **Rama:** `feature/91-mobile-tab-indicator-out-of-range`, creada desde `origin/main` en
   `072cff40` (merge del PR #123, cierre de #78)
-- **Estado:** `pending` -> `spec_author` lanzado. La sesion PARA cuando la spec quede en
-  `draft`, a la espera de la firma humana.
+- **Estado:** `in_progress`. Spec escrita (`ebc61b73`) y **firmada por el humano** en
+  `95354a19` el 2026-09-12; frontmatter de los cuatro archivos pasado a `approved`.
+  Siguiente paso: el humano corre el handoff en Codex CLI. Mientras Codex implementa,
+  esta sesion no toca `mobile-pet-tracker/`.
 - **Reparto acordado con el humano:** el lado movil (#91) lo lleva esta sesion; la feature
   #73 `pet-online-pill` se paso a la sesion Backend, que trabaja en el worktree
   `/home/claude/sites/Pet-Tracker-wt-backend`. Sin solape de archivos: #91 solo toca
@@ -48,3 +50,20 @@ La sesion Backend corrio `./init.sh` en su worktree sobre el mismo commit y repo
 backend 25 suites / 362 tests, movil 73 suites / 1230 tests. Sirve de referencia para
 declarar el delta de #91 en el gate, no como cifra congelada: lo que se compara es el
 delta contra este commit.
+
+### Gate de la spec — verificado
+
+El commit de firma `95354a19` toca **un solo archivo**, `requirements.md`, y un solo
+renglon: la casilla de §Aprobacion. Cero drift de codigo colado en el gate.
+
+Correccion aplicada por el leader antes de commitear la spec: el `spec_author` escribio
+"los ocho `describe` existentes" en `floating-tab-bar.test.tsx` y son **siete**
+(`R1`-`R5`, `R7`, `R8`, sin `R6`). Se corrigio en `tasks.md` §T0 y `design.md` §Archivos
+afectados, y se anadio el aviso de que los cinco `describe` nuevos van prefijados
+`#91 R...` para que Codex no renumere los viejos.
+
+### Handoff
+
+Prompt de handoff a Codex CLI entregado al humano en el chat de la sesion. Codex escribe
+`progress/impl_mobile-tab-indicator-out-of-range.md`; el handoff es por disco. Cuando el
+humano confirme que Codex termino, esta sesion lanza `reviewer`.

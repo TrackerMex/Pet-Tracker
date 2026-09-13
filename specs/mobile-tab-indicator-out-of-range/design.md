@@ -1,6 +1,6 @@
 ---
 feature: "mobile-tab-indicator-out-of-range"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec]
 ---
 
