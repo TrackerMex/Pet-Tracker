@@ -9,7 +9,7 @@ tags: [harness, spec]
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
 | R1 | `src/components/__tests__/floating-tab-bar.test.tsx :: #91 R1: una ruta fuera de TABS no monta la burbuja` | rojo `81282615`; verde `29f1b667` |
-| R2 | pendiente | pendiente |
+| R2 | `src/components/__tests__/floating-tab-bar.test.tsx :: #91 R2: el primer layout coloca la burbuja por el índice de TABS` | rojo `99f1534f`; verde `dcbab0d1` |
 | R3 | pendiente | pendiente |
 | R4 | pendiente | pendiente |
 | R5 | pendiente | pendiente |
