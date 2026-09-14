@@ -1142,7 +1142,7 @@ debe listar las 4 URLs de cola.
   humano firmó el smoke R11 en dev build Android (8 pasos, pulso incluido).
   Deuda nombrada, sin id: telemetría heredada tras release+claim (G8), migración
   que borre `devices.connectivity`, alinear el umbral del mapa con el del
-  collar (G4). PR #126 mergeado el 2026-09-14 (antes de que entrara el registro de #92-#94, que llega en el PR de este cambio). Qué sigue: elegir la próxima feature `pending`.
+  collar (G4). PR #126 mergeado el 2026-09-14; el registro de #92-#94 quedó fuera de ese merge y entró por el PR #127. Qué sigue: elegir la próxima feature `pending`.
 - **2026-09-13** — **#78 `mobile-alerts-center` cerrada**: centro de alertas y
   campana con punto rojo en el hero de Home, 14 requisitos más **ocho enmiendas
   E1-E8** con gate humano propio. Las enmiendas nacieron de que la spec se firmó
