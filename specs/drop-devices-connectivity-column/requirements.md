@@ -350,4 +350,4 @@ Firmar sin editar = aceptar D1-D7 tal cual (en particular **D3: Codex aplica
 o el humano solo tras el merge de #63**, con el SQL de [[design]] §Aplicación
 en el Postgres compartido).
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [X] Aprobado por humano (fecha: 2026-09-14) ← gate obligatorio antes de implementar
