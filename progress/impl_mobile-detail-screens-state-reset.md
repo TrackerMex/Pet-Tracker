@@ -13,7 +13,7 @@ Spec: `specs/mobile-detail-screens-state-reset/` (aprobada por humano)
 | R3 | `5343f374 feat(detail-state-reset): reset weight form state on blur (R3)` | rojo `d922f8ba` → verde `5343f374` |
 | R4 | `947a9d07 feat(detail-state-reset): clear meal error on blur (R4)` | rojo `9537666b` → verde `947a9d07` |
 | R5 | `7b809932 feat(detail-state-reset): reset pairing state on blur (R5)` | rojo `e46cfd2e` → verde `7b809932` |
-| R6 | `6fd8de2e feat(detail-state-reset): reset pairing state on pet change (R6)` | rojo `4c8ec120` → verde `6fd8de2e` |
+| R6 | `6fd8de2e feat(detail-state-reset): reset pairing state on pet change (R6)` + ajuste lint `79ed667a` | rojo `4c8ec120` → verde `6fd8de2e` |
 | R7 | `5cdf2024 test(detail-state-reset): preserve request guards on blur (R7)` | requisito de verificación, vía (b) de C4 |
 
 ## Mutaciones de R7
@@ -82,4 +82,8 @@ R7 pairing revert: git diff empty; worktree clean
   blur antes de comprobar el botón. R5 limpia `code`, y sin este paso el botón
   seguiría deshabilitado por código vacío aunque la mutación borrara
   `claiming`; así la prueba distingue de verdad el guarda de petición en vuelo.
+- Expo lint 57 activa `react-hooks/set-state-in-effect`, que rechaza el
+  `useEffect` síncrono exigido literalmente por D3/R6. Se mantuvo la mecánica
+  firmada y se añadió una supresión local, de una sola línea y con motivo, en
+  vez de alterar el reset con temporizadores o microtareas.
 - No hubo otras decisiones fuera de lo firmado en D1-D5.
