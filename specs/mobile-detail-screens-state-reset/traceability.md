@@ -15,7 +15,7 @@ Commit base: `f50b4203` (`chore(harness): registra baseline verde de #63`).
 | R3 | `mobile-pet-tracker/src/app/(tabs)/__tests__/weight-log.test.tsx::R3: el formulario vuelve a sus valores iniciales al perder el foco` → `restaura los cuatro valores visibles tras el blur` | rojo: `d922f8ba test(detail-state-reset): cover weight form blur reset (R3)`; verde: `5343f374 feat(detail-state-reset): reset weight form state on blur (R3)` |
 | R4 | `mobile-pet-tracker/src/app/(tabs)/__tests__/meal-schedule.test.tsx::R4: el error de generación desaparece al perder el foco` → `limpia generateError tras el blur` | rojo: `9537666b test(detail-state-reset): cover meal error blur reset (R4)`; verde: `947a9d07 feat(detail-state-reset): clear meal error on blur (R4)` |
 | R5 | `mobile-pet-tracker/src/screens/pairing/index.test.tsx::R5: el estado local de pairing se limpia al perder el foco` → `limpia la vista ready y el código tras el blur`; `limpia actionError tras el blur` | rojo: `e46cfd2e test(detail-state-reset): cover pairing blur reset (R5)`; verde: `7b809932 feat(detail-state-reset): reset pairing state on blur (R5)` |
-| R6 | pendiente | pendiente |
+| R6 | `mobile-pet-tracker/src/screens/pairing/index.test.tsx::R6: el estado local de pairing se limpia al cambiar de mascota` → `limpia la vista ready y el código al seleccionar otra mascota`; `limpia actionError al seleccionar otra mascota` | rojo: `4c8ec120 test(detail-state-reset): cover pairing pet switch reset (R6)`; verde: `6fd8de2e feat(detail-state-reset): reset pairing state on pet change (R6)` |
 | R7 | pendiente | pendiente |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
