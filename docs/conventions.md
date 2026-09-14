@@ -154,6 +154,47 @@ dejar que un error de Drizzle/pg llegue crudo al cliente.
 describe('R1: <resumen del requisito>', () => { ... })
 ```
 
+### Prefijo de feature cuando un fichero acumula R-ids de dos specs
+
+Un R-id solo es único **dentro de su spec**. En cuanto una segunda feature
+añade requisitos al mismo fichero de test, el título desnudo deja de
+identificar nada: tras #63, `src/screens/pairing/index.test.tsx` tiene `R5`,
+`R6` y `R7` **dos veces** —los viejos de #42, los nuevos de #63—, y lo mismo
+pasa en `add-pet`, `weight-log` y `meal-schedule`.
+
+Cuando el fichero ya contenga R-ids de otra spec, **prefija con el id de la
+feature**:
+
+```
+describe('#63 R5: <resumen del requisito>', () => { ... })
+```
+
+El repo ya lo resolvió así tres veces de forma suelta (`#87 R15`, `#61 R10`,
+`R1 (mobile-jest-mock-hygiene)`); esta es la forma canónica. La responsabilidad
+es del `spec_author`: si `tasks.md` prescribe títulos desnudos, el implementador
+los copia literalmente y la colisión llega hasta el reviewer.
+
+No rompe la trazabilidad retroactivamente —`traceability.md` desambigua por
+título completo— pero un `-t 'R7'` sí selecciona los dos.
+
+### Filtros de jest con rutas que llevan paréntesis
+
+Los argumentos posicionales de `jest` son **regex**, no rutas. Las pantallas de
+Expo Router viven en `src/app/(tabs)/`, así que un filtro literal trata
+`(tabs)` como grupo de captura, casa con `src/app/tabs/` —que no existe— y
+**salta el fichero en silencio, con exit 0 y sin aviso**:
+
+```bash
+npx jest "src/app/(tabs)/__tests__/weight-log"      # ❌ no corre nada, exit 0
+npx jest 'src/app/\(tabs\)/__tests__/weight-log'    # ✅
+npx jest --runTestsByPath 'src/app/(tabs)/__tests__/weight-log.test.tsx'  # ✅
+```
+
+En #63 el comando de verificación de la spec —ya firmada— llevaba dos rutas sin
+escapar: daba verde con exit 0 habiendo corrido 5 suites de 7, sin ejecutar dos
+requisitos. **Comprueba siempre que el número de suites que imprime jest
+coincide con el de ficheros que el filtro pretendía coger.**
+
 ---
 
 ## Commits

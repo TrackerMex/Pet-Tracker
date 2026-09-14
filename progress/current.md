@@ -36,67 +36,80 @@ codigo pero deja las dos cosas abiertas. `/pairing` es caso aparte: es pestaña 
 decision D4 de #42 y su arreglo ya esta prescrito (reset de `code`, `actionError`,
 `phase` y `readyDevice`).
 
-### Spec APROBADA — parado esperando a Codex CLI
+### Reviewer APROBADO — queda solo el gate humano de humo
 
-Firma humana `1a9fef11` (AlexisSM377, 2026-09-14). Verificada: toca **solo** la
-casilla de aprobacion, sin drift de codigo colado. Frontmatter de los cuatro
-ficheros a `approved`; #63 a `spec_ready`.
+`progress/review_mobile-detail-screens-state-reset.md`. `./init.sh` exit 0:
+delta 0 en backend, infra y e2e; movil **+10 tests, 0 suites**, exactamente los
+diez `it(` de R1-R7, sin test perdido ni renombrado. Sin hallazgos bloqueantes.
 
-`specs/mobile-detail-screens-state-reset/` (R1-R7):
+Los cuatro puntos que el leader mando mirar con lupa:
 
-- **D1: reset local en el cleanup de `useFocusEffect`**, no Stack. Cinco costes
-  medidos contra el arbol.
-- **Cinco pantallas**: add-reminder (R1), add-pet (R2, 15 `useState`),
-  weight-log (R3, parcial), meal-schedule (R4, solo `generateError`), pairing
-  (R5 blur + R6 cambio de `selectedPetId`). **docs NO** tiene el defecto: cero
-  `useState`, con evidencia.
-- **R7** cierra por mutacion en dos sitios que `submitting`/`claiming`/
-  `releasing` SOBREVIVEN al blur (guardas de peticion en vuelo).
-- Erratas del enunciado corregidas contra el arbol y verificadas por el leader:
-  `useState` de add-reminder en `:49-57` (no 39-47), segundo `router.back()` en
-  `:133`, y `pairing` declara **seis** `useState`, no cuatro.
-- Correccion del leader a `design.md`: `unmountOnBlur` SI existe en el arbol
-  (`ui/TabContext.d.ts:7`), pero en la API de tabs headless `expo-router/ui`
-  que la app no usa. Lo que se verifica y queda escrito es que no esta en
-  `BottomTabNavigationOptions`.
+1. **Supresion de lint: correcta.** El reviewer la verifico load-bearing
+   borrandola: `react-hooks/set-state-in-effect` es **error**, no warning, y
+   pone `expo lint` en exit 1. Es minima, nominal, con motivo y R-id escritos,
+   y sigue el estilo de `query-provider.tsx:43`. Existe una via lint-limpia
+   (ajustar estado en render con centinela), pero **D3 punto 1 la rechazo por
+   escrito**: adoptarla habria sido revocar una decision firmada.
+2. **Colision de R-ids: real, no bloqueante, y es deuda de spec.** `tasks.md`
+   prescribe los titulos desnudos (lineas 55, 84, 101, 117, 132, 153, 180). C5
+   se cumple porque `traceability.md` desambigua por titulo completo, pero un
+   `-t 'R7'` selecciona los dos. Codificado ya en `docs/conventions.md`.
+3. **Mutaciones de R7: replantadas las dos** por el reviewer, rojas por
+   asercion y no por compilacion, `git diff` vacio tras revertir.
+4. **Errata del comando de jest confirmada empiricamente**: sin escapar, 5
+   suites/114 tests y **exit 0** saltandose weight-log y meal-schedule;
+   escapado, 7 suites/161. Codex no se comio R3/R4: 114 + 47 = 161 exactos.
 
-### Deuda registrada
+**Flake #72**: no se manifesto (6/6 aislado + verde en init.sh). El reviewer
+comprobo ademas que #63 no puede agravarlo pese a tocar
+`mockLaunchImageLibrary`: el `beforeEach` de `add-pet/index.test.tsx:93-96`
+hace `mockReset()` incondicional, barrera que ninguna cola cruza.
 
-**#95 `mobile-detail-screens-to-stack`** (P3), con el enunciado que la spec dejo
-listo. La via del Stack queda pospuesta por coste, no descartada; retirar el
-reset local de #63 donde quede redundante es parte de su cierre (C7).
+Alcance, C8 y drift limpios: 10 ficheros moviles, cero backend, `HEAD ==
+origin`. El reviewer señalo `feature_list.json` en el diff: es el registro de
+#95 y la evidencia de #72, territorio del leader, esperado.
 
-### Decision que sigue abierta (del humano, no la tomo yo)
+### Codificado en docs/conventions.md §Tests
 
-**`reminders` y `alerts`** tienen el mismo patron (`deletingId`,
-`deleteCandidate`, `actionError` / `acked`, `ackingId`, `actionError`) y
-quedaron FUERA porque el criterio 4 del enunciado de #63 acota a cuatro
-pantallas. Anotadas en `design.md` §Auditoria. Decidir si van a feature aparte.
-No bloquea #63.
+Dos reglas que no estaban escritas en ningun sitio y que ya han costado trabajo:
 
-### Estado: handoff escrito, leader PARADO
+1. **Prefijo de feature** (`describe('#63 R5: ...')`) cuando un fichero acumula
+   R-ids de dos specs. El repo lo resolvio asi tres veces de forma suelta
+   (`#87 R15`, `#61 R10`, `R1 (mobile-jest-mock-hygiene)`) sin codificarlo, por
+   eso el `spec_author` lo vuelve a omitir.
+2. **Escapar los parentesis en filtros de jest**, con el caso de #63 como
+   evidencia de que la omision da verde en falso.
 
-`progress/handoff_mobile-detail-screens-state-reset.md`. Lo corre el humano en
-su terminal de Codex CLI. Mientras Codex implementa, esta sesion **no toca**
-`mobile-pet-tracker/`: solo `docs/`, `specs/`, `progress/` y
-`feature_list.json`.
+### PENDIENTE: gate humano no delegable
 
-El handoff prohibe `./init.sh` a Codex (Postgres compartido con la sesion
-Backend, que trabaja #92 en `Pet-Tracker-wt-backend`) y le da el comando
-dirigido de jest en su lugar.
+#63 queda **`in_progress`**, no `done`, y **sin PR**, hasta que el humano firme
+el humo. Mismo precedente que #73. Los cinco pasos, en **dev build de Android**
+(nunca Expo Go):
 
-### Implementacion Codex en curso
+1. Crear un recordatorio completo y guardar; reentrar: formulario en blanco,
+   `vaccine`, hora 09:00, antelacion 7 dias.
+2. Crear un segundo recordatorio seguido: sigue en blanco.
+3. Escribir medio formulario, salir con la flecha sin guardar, reentrar: en
+   blanco.
+4. En `/pairing`, emparejar hasta "Tracker is ready", salir por la barra de
+   tabs y volver: ya no aparece.
+5. En `/pairing` con dos mascotas: provocar error con la mascota A, cambiar a
+   la B: el error y el codigo desaparecen.
 
-- **Inicio:** 2026-09-14, sobre `b3b957d9`, en la branch entregada.
-- **Precondiciones:** skills `expo-overview` y `expo-router` cargadas en ese orden;
-  `.expo/types/router.d.ts` ausente; baseline dirigido verde (5 suites, 106 tests).
-- **Plan:** ejecutar R1-R7 en el orden de `tasks.md`, con commit rojo, verde y
-  trazabilidad por requisito; despues mutaciones R7, typecheck, lint y reporte.
+### Coordinacion con la sesion Backend
 
-### Pendiente
+- Postgres y LocalStack libres; avisada de que mi reviewer termino.
+- **#93 aplica `DROP COLUMN connectivity` sobre la DB compartida y queda
+  congelado hasta que #63 mergee a main.** Mi branch sale de `66a9d52b`, que
+  aun declara esa columna: con ella borrada, mis e2e caerian con un rojo ajeno
+  a #63.
+- Base por worktree ya montada por ellos (`pet_tracker_wt`), pendiente de
+  validar con e2e. Cuando salga limpia, el leader escribe la convencion en
+  `docs/`: base por worktree, `docker-compose.override.yml` y el 5433 de este
+  VPS (nada de eso esta documentado hoy), y las **14 de 29 suites e2e que tocan
+  LocalStack**, unicas que siguen necesitando aviso previo.
 
-1. El humano confirma que Codex termino; leer `progress/impl_*.md`.
-2. Lanzar `reviewer` — avisando antes a la sesion Backend por SendMessage,
-   porque ese si corre `./init.sh`.
-3. Gate humano final: smoke en **dev build de Android**, crear dos recordatorios
-   seguidos.
+### Decision del humano que sigue abierta
+
+**`reminders` y `alerts`** tienen el mismo patron de estado superviviente y
+quedaron fuera por el criterio 4 de #63. Feature aparte o no: sin decidir.
