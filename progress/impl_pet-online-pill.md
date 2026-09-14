@@ -138,7 +138,11 @@ status: in_progress
 
 ## R9 — Home monta la píldora desde el mismo estado
 
-Pendiente.
+- Rojo preparado: cuatro filas comparan la píldora con `collar-status`, más
+  candados para mantenerla fuera del slot y ausente durante el skeleton.
+- `bun run test -- screens/home --silent`: exit 1 (4 fallos, 176 pasaron);
+  cada fila falló porque Home todavía no entregaba `pet-hero-status`, mientras
+  los candados de slot y skeleton quedaron verdes.
 
 ## R10 — candados y verificación final
 
