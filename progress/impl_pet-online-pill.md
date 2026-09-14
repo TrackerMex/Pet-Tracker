@@ -269,11 +269,11 @@ Android** (nunca Expo Go), con backend local en `SIM_MODE=true`:
 
 | Paso | Resultado humano | Fecha / firma |
 |---|---|---|
-| 1 |  |  |
-| 2 |  |  |
-| 3 |  |  |
-| 4 |  |  |
-| 5 |  |  |
-| 6 |  |  |
-| 6-bis |  |  |
-| 7 |  |  |
+| 1 |  La prueba funciona correctamente activando el POLLER_ENABLED en las tres mascotas | 2026-09-14 |
+| 2 | El silencio provocado funciona correctamente, realice el proceso de silencio y verifique que el punto verde de la píldora no latirá | 2026-09-14 |
+| 3 | Funciona correctamente, el status se actualiza correctamente en las tres mascotas | 2026-09-14 |
+| 4 |  La prueba funciona correctamente con una mascota sin collar las pildoras muestran el status correcto| 2026-09-14 |
+| 5 | El mapa funciona correctamente |  2026-09-14 |
+| 6 |  Las pildoras se adaptan correctamente al dark theme el texto se ve legible |  2026-09-14 |
+| 6-bis | La animación de pulso funciona correctamente en la mascota en línea |  2026-09-14 |
+| 7 | Al activar el POLLER_ENABLED a true funciona correctamente |  2026-09-14 |
