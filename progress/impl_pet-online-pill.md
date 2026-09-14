@@ -143,6 +143,16 @@ status: in_progress
 - `bun run test -- screens/home --silent`: exit 1 (4 fallos, 176 pasaron);
   cada fila falló porque Home todavía no entregaba `pet-hero-status`, mientras
   los candados de slot y skeleton quedaron verdes.
+- Rojo `b0570334` publicado.
+- Implementación: Home entrega al hero la etiqueta traducida y el tono del
+  mismo `HOME_CONNECTION[connection]` que alimenta `collar-status`; la píldora
+  queda fuera del slot y no aparece mientras el detalle carga.
+- Verde: `bun run test --silent` pasó toda la app móvil (73 suites, 1259 tests)
+  y `bun run typecheck` terminó exit 0.
+- Sonda R9: al cruzar temporalmente los `labelKey` de `unknown` y `offline`,
+  `bun run test -- screens/home --silent` quedó rojo (4 fallos en
+  `index.test.tsx:658`, `:681` y dos filas en `:747`); tras restaurar, pasó
+  (3 suites, 180 tests).
 
 ## R10 — candados y verificación final
 

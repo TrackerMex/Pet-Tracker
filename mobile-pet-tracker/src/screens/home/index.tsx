@@ -36,7 +36,10 @@ import {
 import { listReminders } from '../../api/reminders';
 import type { DayEntry, ReminderType } from '../../api/types';
 import { Card } from '../../components/card';
-import { PetHeroHeader } from '../../components/pet-hero-header';
+import {
+  PetHeroHeader,
+  type PetHeroStatusTone,
+} from '../../components/pet-hero-header';
 import { PetSwitcher } from '../../components/pet-switcher';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import type { TranslationKey } from '../../i18n/catalog';
@@ -70,8 +73,6 @@ import {
 import { WeeklyActivityChart } from './weekly-activity-chart';
 
 const WEEKLY_ACTIVITY_SKELETON_HEIGHT = 408;
-
-type PetHeroStatusTone = 'success' | 'warning' | 'muted';
 
 const REMINDER_ROW_ICONS: Record<ReminderType, IconComponent> = {
   vaccine: Syringe,
@@ -270,6 +271,14 @@ export function HomeScreen() {
         <PetHeroHeader
           pet={detail.data?.kind === 'ok' ? detail.data.pet : null}
           variant="bleed"
+          status={
+            connection
+              ? {
+                  label: t(HOME_CONNECTION[connection].labelKey),
+                  tone: HOME_CONNECTION[connection].tone,
+                }
+              : undefined
+          }
           highlight={
             today
               ? { value: fmtCount(today.walkCount), label: t('home.walks') }
