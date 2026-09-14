@@ -186,6 +186,58 @@ describe('R5: el estado local de pairing se limpia al perder el foco', () => {
   });
 });
 
+describe('R6: el estado local de pairing se limpia al cambiar de mascota', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({
+      kind: 'ok',
+      pets: [makePet(), makePet({ id: 'pet-2', name: 'Milo', device: null })],
+    });
+  });
+
+  it('limpia la vista ready y el código al seleccionar otra mascota', async () => {
+    mockClaimDevice.mockResolvedValue({ kind: 'ok', device: makeDevice() });
+    await renderPairing();
+    await fireEvent.changeText(
+      await screen.findByTestId('activation-code-input'),
+      'ACT-READY',
+    );
+    await fireEvent.press(screen.getByTestId('pairing-submit'));
+    expect(await screen.findByTestId('pairing-ready')).toBeVisible();
+
+    await fireEvent.press(screen.getByTestId('pet-chip-pet-2'));
+
+    await waitFor(() => {
+      expect(screen.queryByTestId('pairing-ready')).toBeNull();
+      expect(screen.getByTestId('activation-code-input').props.value).toBe('');
+    });
+  });
+
+  it('limpia actionError al seleccionar otra mascota', async () => {
+    mockClaimDevice.mockResolvedValue({ kind: 'invalid' });
+    await renderPairing();
+    await fireEvent.changeText(
+      await screen.findByTestId('activation-code-input'),
+      'ACT-INVALID',
+    );
+    await fireEvent.press(screen.getByTestId('pairing-submit'));
+    expect(await screen.findByTestId('pairing-error')).toBeVisible();
+
+    await fireEvent.press(screen.getByTestId('pet-chip-pet-2'));
+
+    await waitFor(() => {
+      expect(screen.queryByTestId('pairing-error')).toBeNull();
+    });
+  });
+});
+
 describe('R4: /pairing monta dentro de (tabs) con selector de mascota y estados de carga', () => {
   beforeEach(() => {
     jest.clearAllMocks();
