@@ -212,6 +212,40 @@ describe('R1: el formulario vuelve a sus valores iniciales al perder el foco', (
   });
 });
 
+describe('R7: el guarda de envío sobrevive al blur', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockCreateReminder.mockReturnValue(pending<CreateReminderState>());
+  });
+
+  it('mantiene deshabilitado el envío pendiente tras el blur', async () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(12, 0, 0, 0);
+    await renderAddReminder();
+    await waitFor(() => expect(screen.getByTestId('title-input')).toBeVisible());
+    await fireEvent.changeText(screen.getByTestId('title-input'), 'Rabies');
+    await pickDate(tomorrow);
+    await fireEvent.press(screen.getByTestId('add-reminder-submit'));
+    await waitFor(() =>
+      expect(screen.getByTestId('add-reminder-submit')).toBeDisabled(),
+    );
+
+    await blurScreen();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('add-reminder-submit')).toBeDisabled(),
+    );
+  });
+});
+
 describe('R8: formulario de alta con chips y pickers', () => {
   beforeEach(() => {
     jest.clearAllMocks();

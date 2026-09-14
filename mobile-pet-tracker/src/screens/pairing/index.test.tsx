@@ -238,6 +238,44 @@ describe('R6: el estado local de pairing se limpia al cambiar de mascota', () =>
   });
 });
 
+describe('R7: el guarda de envío sobrevive al blur', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockClaimDevice.mockReturnValue(pending<ClaimDeviceState>());
+  });
+
+  it('mantiene deshabilitado el claim pendiente tras el blur', async () => {
+    await renderPairing();
+    await fireEvent.changeText(
+      await screen.findByTestId('activation-code-input'),
+      'ACT-PENDING',
+    );
+    await fireEvent.press(screen.getByTestId('pairing-submit'));
+    await waitFor(() =>
+      expect(screen.getByTestId('pairing-submit')).toBeDisabled(),
+    );
+
+    await blurPairing();
+    await fireEvent.changeText(
+      screen.getByTestId('activation-code-input'),
+      'ACT-AGAIN',
+    );
+
+    await waitFor(() =>
+      expect(screen.getByTestId('pairing-submit')).toBeDisabled(),
+    );
+    expect(mockClaimDevice).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe('R4: /pairing monta dentro de (tabs) con selector de mascota y estados de carga', () => {
   beforeEach(() => {
     jest.clearAllMocks();
