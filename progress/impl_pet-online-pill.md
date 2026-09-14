@@ -102,6 +102,11 @@ status: in_progress
 - `bun run test -- screens/home ui-language`: exit 1 (3 fallos); el collar con
   `connectivity: null` pintó `Sin conexión` y `checkUses` contó cero usos de
   `home.unknown` (en sus dos recorridos).
+- Rojo `e5a498c9` publicado.
+- Verde: Home deriva `connection` una sola vez, resuelve copy y tono con
+  `HOME_CONNECTION`, y escoge el icono desde ese estado. `bun run test --
+  screens/home ui-language legibility` pasó (5 suites, 223 tests); no queda
+  ninguna comparación directa con `device.connectivity` en la pantalla.
 
 ## R8 — píldora y pulso accesible
 
