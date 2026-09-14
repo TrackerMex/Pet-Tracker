@@ -930,6 +930,16 @@ mergeada (`bc29e5a0`), no contra el recuerdo de la spec.
   dejaría un gate abierto que nadie va a cerrar. La referencia al commit deja
   la trazabilidad de la firma en el fichero que la muestra.
 
+**Errata a E2 (2026-09-14, tras la revisión; no altera lo firmado):** el mock
+de Reanimated "calcado" de `weekly-activity-chart.test.tsx` rompía el `Skeleton`
+de heroui dentro de `pet-hero-header.test.tsx` (tres `it` de #67 caían por
+arnés, no por producto). Codex añadió en ese fichero un mock de `Skeleton` y un
+parche `default.View` no prescritos aquí; el `Skeleton` real sigue cubierto por
+`src/screens/home/index.test.tsx`. Y el `it` 3 de R8 asevera `animate-pulse`
+ausente con una regex sobre `className=` porque el docblock de
+`STATUS_DOT_PULSE` (9'b) contiene literalmente ese texto. Registrado en
+`progress/review_pet-online-pill.md`; sin efecto sobre R1-R10.
+
 - [X] Enmiendas E1-E3 aprobadas por humano (fecha: 2026-09-13)
 
 ---
