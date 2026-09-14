@@ -256,4 +256,4 @@ Firmar sin editar = aceptar D1-D5 tal cual (en particular **D1: reset en
 `claim`, `release` intacto**, que corrige la recomendación del enunciado, y
 **D3: `DeviceRepository.claim` devuelve `Promise<Device>`**).
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [X] Aprobado por humano (fecha: 2026-09-14) ← gate obligatorio antes de implementar
