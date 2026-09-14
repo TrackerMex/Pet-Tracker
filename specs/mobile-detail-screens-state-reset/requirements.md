@@ -175,9 +175,20 @@ listo para `feature_list.json`:
 
   ```
   cd mobile-pet-tracker && npx jest src/screens/add-reminder src/screens/add-pet \
-    src/screens/pairing src/screens/docs "src/app/(tabs)/__tests__/weight-log" \
-    "src/app/(tabs)/__tests__/meal-schedule" src/providers/__tests__/language-provider
+    src/screens/pairing src/screens/docs 'src/app/\(tabs\)/__tests__/weight-log' \
+    'src/app/\(tabs\)/__tests__/meal-schedule' src/providers/__tests__/language-provider
   ```
+
+  > **Errata del leader (2026-09-14, post-firma).** La primera redacción de este
+  > comando pasaba los paths con `(tabs)` **sin escapar**. Jest los interpreta
+  > como **regex**, así que `(tabs)` es un grupo de captura y el patrón solo
+  > casa con la ruta literal `src/app/tabs/...`, que no existe: `weight-log` y
+  > `meal-schedule` **se saltaban en silencio**, con exit 0 y sin aviso. Es
+  > decir, el comando daba verde sin haber ejecutado R3 ni R4. Corregido arriba
+  > escapando los paréntesis; equivalente válido: `--runTestsByPath` con las
+  > rutas literales. Esto es errata de §Verificación, **no toca R1-R7 ni
+  > ninguna decisión firmada**. Comprobado tras la corrección: los dos ficheros
+  > corren y pasan.
 
   En `f50b4203` ese conjunto está en verde (comprobado durante la redacción de
   esta spec sobre `add-reminder` y `pairing`). **No se congela aquí ningún

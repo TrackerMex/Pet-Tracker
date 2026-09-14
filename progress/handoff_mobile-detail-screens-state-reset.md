@@ -72,8 +72,12 @@ gate completo lo corre el reviewer, coordinado. Durante la implementación usa
 el comando dirigido de requirements.md §Verificación:
 
   cd mobile-pet-tracker && npx jest src/screens/add-reminder src/screens/add-pet \
-    src/screens/pairing src/screens/docs "src/app/(tabs)/__tests__/weight-log" \
-    "src/app/(tabs)/__tests__/meal-schedule" src/providers/__tests__/language-provider
+    src/screens/pairing src/screens/docs 'src/app/\(tabs\)/__tests__/weight-log' \
+    'src/app/\(tabs\)/__tests__/meal-schedule' src/providers/__tests__/language-provider
+
+(Parentesis escapados: jest trata los argumentos como regex, y sin escapar
+'(tabs)' es un grupo de captura que no casa con la ruta real. Sin escapar, R3 y
+R4 se saltan en silencio con exit 0.)
 
 Más npx tsc --noEmit y npx expo lint en mobile-pet-tracker/.
 
