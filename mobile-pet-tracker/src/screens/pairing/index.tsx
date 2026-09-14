@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { router, useFocusEffect } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   Alert,
   Pressable,
@@ -119,6 +119,10 @@ export function PairingScreen() {
   useFocusEffect(
     useCallback(() => () => resetPairingState(), [resetPairingState]),
   );
+
+  useEffect(() => {
+    resetPairingState();
+  }, [resetPairingState, selectedPetId]);
 
   async function handleClaim() {
     const activationCode = code.trim();
