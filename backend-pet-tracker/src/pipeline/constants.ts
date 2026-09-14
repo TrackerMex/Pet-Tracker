@@ -15,6 +15,8 @@ export const LOW_ACCURACY_MIN_SATS = 4;
  * adelantos de hardware roto por horas, dias o anos quedan fuera. */
 export const FUTURE_TS_TOLERANCE_MS = 5 * 60_000;
 
+export const DEVICE_ONLINE_THRESHOLD_MS = 0;
+
 /** Umbral de bateria baja: battery.low dispara al cruzar hacia abajo (R17).
  * Histeresis: #12 cierra la alerta con bateria >= 30 (design.md D8). */
 export const BATTERY_LOW_THRESHOLD_PCT = 20;
