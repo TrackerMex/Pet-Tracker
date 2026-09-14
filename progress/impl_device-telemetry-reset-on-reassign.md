@@ -12,7 +12,7 @@
   `batteryPct: 37` donde esperaba `null`; el `it` (b) recibió
   `batteryPct: 63` donde esperaba `null`; los otros 27 tests pasaron.
 
-### Verde
+### Verde — `f1f44880`
 
 - `pnpm test` — exit `0`: 166 suites, 1278 tests.
 - `pnpm test:e2e -- devices.e2e-spec` — exit `0`: 1 suite, 29 tests.
