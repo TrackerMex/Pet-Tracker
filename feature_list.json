@@ -1789,7 +1789,7 @@
   {
     "id": 93,
     "name": "drop-devices-connectivity-column",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P3",
     "description": "Deuda nombrada por #73 (fuera de alcance de su spec). Desde #73 ningun escritor alimenta devices.connectivity (varchar 20, nullable; backend-pet-tracker/src/db/schema/devices.schema.ts:38): el store de ingesta ya no la escribe y la API deriva online|offline|null en lectura con deriveConnectivity. La columna sigue en el schema, en la entidad Device (device.entity.ts), en el puerto ActivePetDeviceStatus (pet-device-reader.ts), en el reader (pet-device.drizzle.reader.ts), en el candado devices.schema.spec.ts y en docs/data-model.md, donde #73 la marco obsoleta. Borrarla exige migracion drizzle-kit (out: src/db/migrations, drizzle.config.ts:32) y limpiar los cinco sitios; el contrato HTTP de 5 claves no cambia porque connectivity ya es derivada. Bloqueada hasta que #92 decida que columnas resetea, para no tocar dos veces el mismo fichero.",
     "acceptance_criteria": [

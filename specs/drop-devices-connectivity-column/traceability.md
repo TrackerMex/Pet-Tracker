@@ -1,0 +1,20 @@
+---
+feature: "drop-devices-connectivity-column"
+status: draft        # draft | approved
+tags: [harness, spec]
+---
+
+# Trazabilidad — [[drop-devices-connectivity-column]]
+
+| Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
+|---|---|---|
+| R1 | pendiente — `backend-pet-tracker/src/db/schema/devices.schema.spec.ts :: R1: la migracion crea devices conforme a docs/data-model.md › se llama devices y tiene exactamente las columnas de la spec` (lista de 14) + `:: #93 R1: la migracion 0016 borra devices.connectivity y nada mas` | pendiente — rojo `test(drop-devices-connectivity-column): … (R1)`; verde `feat(drop-devices-connectivity-column): … (R1)`; docs `docs(drop-devices-connectivity-column): … (R1)` |
+| R2 | pendiente — requisito de verificación (C4 vía (b)): candados (b) de [[requirements]] §Inventario intactos + tres `grep` a 0 + `git diff --stat` acotado, en `progress/impl_drop-devices-connectivity-column.md` §R2 | pendiente — sin hash de test propio; evidencia en el impl §R2 |
+| R3 | pendiente — requisito de verificación (C4 vía (b)): `pnpm db:migrate` ×2 contra `pet_tracker_wt` + consultas psql vía `docker exec` (columna ausente, journal 16 → 17 filas) + `db:generate` no-op + `pnpm test:e2e` verde antes y después + `./init.sh` exit 0 sin pipe, en el impl §R3 | pendiente — sin hash de test propio; evidencia en el impl §R3 |
+
+Regla: el reviewer no aprueba si alguna fila queda "pendiente".
+Convención de commit: `feat(<scope>): <desc> (R1,R2)`; aquí
+`test(drop-devices-connectivity-column): … (R1)` para el rojo y
+`feat|docs(drop-devices-connectivity-column): … (R1)` para el verde y los docs.
+El implementer actualiza esta tabla tras cada commit; el reviewer la valida
+al aprobar (ver [[../../docs/specs|specs]] y [[../../CHECKPOINTS|CHECKPOINTS]] C5).
