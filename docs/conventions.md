@@ -313,6 +313,31 @@ línea de comando del shell que lo lanza— y da falsos positivos. Ante un pid
 dudoso, mira su antigüedad con `ps -o etime= -p <pid>`: uno de 00:00 es el
 propio `pgrep`.
 
+### Nunca apliques una migración con `psql` crudo
+
+`pnpm run db:migrate` hace dos cosas: ejecuta el `.sql` **y** escribe su fila en
+`drizzle.__drizzle_migrations`. Aplicarlo a mano con `psql` hace solo la
+primera, y el journal queda mintiendo: la siguiente migración que alguien añada
+hace que drizzle reintente desde la primera fila que falta, el `CREATE TABLE`
+choca con la tabla que ya existe y **toda la migración nueva se va en el
+rollback**.
+
+Es un fallo latente: no lo detecta ningún gate, porque `init.sh` **no corre
+`db:migrate`** (`init.config.sh` solo tiene install, build, test, lint y
+typecheck) y los e2e pasan contra el esquema que ya está puesto. Se descubre
+meses después, cuando otra feature añade una migración.
+
+Pasó en #26 (`progress/impl_auth-forgot-password.md:70-72`): 0014 y 0015 se
+aplicaron con `psql` y no entraron en el journal de la base compartida del VPS.
+
+Si por lo que sea hay que aplicarlo a mano, la fila va detrás, con el `sha256`
+del `.sql` y el `when` que ese `tag` tiene en `meta/_journal.json`:
+
+```sql
+INSERT INTO drizzle.__drizzle_migrations (hash, created_at)
+VALUES ('<sha256sum del fichero .sql>', <when de meta/_journal.json>);
+```
+
 ### Migraciones destructivas
 
 Una migración que borra o renombra una columna rompe a **toda** sesión cuyo
