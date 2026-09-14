@@ -13,8 +13,19 @@
 - **Estado**: `pending` → `spec_author` lanzado. Sin `explorer`: el enunciado de
   `feature_list.json` ya trae la exploracion (causa raiz, lineas y el detalle del
   mock de `useFocusEffect` en `pairing/index.test.tsx`).
-- **Baseline**: `./init.sh` corriendo al arrancar la sesion, sin concurrencia con la
-  sesion Backend (`pgrep` limpio antes de lanzarlo).
+- **Baseline**: `./init.sh` VERDE, exit 0, medido sin pipe sobre `66a9d52b` (el commit
+  del que sale la branch; el unico commit encima, `2c516932`, solo toca este archivo).
+  Sin concurrencia con la sesion Backend (`pgrep` limpio antes de lanzarlo).
+
+  | Bloque | Suites | Tests |
+  |---|---|---|
+  | backend | 166 | 1277 |
+  | infra | 2 | 14 |
+  | movil | 73 | 1265 |
+  | e2e | 26 de 29 (3 skipped) | 365 passed de 373 (8 skipped) |
+
+  Estas cifras son el punto de comparacion para el **delta** de #63. No las copies
+  como constante en la spec: se miden de nuevo contra este commit al cerrar.
 
 ### Decision que la spec tiene que cerrar
 
