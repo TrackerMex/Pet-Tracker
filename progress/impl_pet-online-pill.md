@@ -40,7 +40,10 @@ status: in_progress
 
 ## R3 — tres estados por API contra Postgres
 
-Pendiente.
+- Rojo preparado con Postgres real, sin sleeps ni `device_subscriptions`.
+- `pnpm test:e2e -- device-connectivity`: exit 1; el caso `null` pasó y las
+  aserciones de perfil para `offline` (`:163`) y `online` (`:175`) recibieron
+  `null`, el placeholder de R2.
 
 ## R4 — eliminación del pestillo
 
