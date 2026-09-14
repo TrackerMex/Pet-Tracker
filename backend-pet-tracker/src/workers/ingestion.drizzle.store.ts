@@ -94,7 +94,6 @@ export class IngestionDrizzleStore implements IngestionStore {
       .update(devices)
       .set({
         batteryPct: update.batteryPct,
-        connectivity: 'online',
         lastMessageAt: update.lastMessageAt,
         updatedAt: new Date(),
       })

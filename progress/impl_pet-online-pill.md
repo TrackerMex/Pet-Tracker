@@ -57,6 +57,17 @@ status: in_progress
   último mensaje y watermark, pero ahora exige que `connectivity` siga NULL.
 - `pnpm test:e2e -- ingestion`: exit 1 en `ingestion.e2e-spec.ts:218`;
   `toBeNull()` recibió `"online"`, demostrando el pestillo vigente.
+- Rojo `0bce51d6` publicado.
+- Implementación: el store conserva solo batería, `lastMessageAt` y
+  `updatedAt`; el puerto, el modelo de datos y la spec de ingesta documentan
+  que la conectividad se deriva al leer. La enmienda se copió con la firma E3.
+- Verde: `pnpm test:e2e` pasó (26 suites, 365 tests; 3 suites y 8 tests
+  omitidos) y `pnpm test:e2e -- ingestion` pasó (1 suite, 3 tests).
+- Sonda R4: al restaurar temporalmente `connectivity: 'online',`,
+  `pnpm test:e2e -- ingestion` falló en `ingestion.e2e-spec.ts:218` con
+  `toBeNull()` / `Received: "online"`; tras quitarla de nuevo, los 3 tests
+  pasaron y `rg -n "connectivity: 'online'" backend-pet-tracker/src/workers`
+  no devolvió coincidencias.
 
 ## R5 — catálogo bilingüe
 
