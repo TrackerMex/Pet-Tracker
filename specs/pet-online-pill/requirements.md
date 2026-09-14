@@ -930,7 +930,7 @@ mergeada (`bc29e5a0`), no contra el recuerdo de la spec.
   dejaría un gate abierto que nadie va a cerrar. La referencia al commit deja
   la trazabilidad de la firma en el fichero que la muestra.
 
-- [ ] Enmiendas E1-E3 aprobadas por humano (fecha: ____)
+- [X] Enmiendas E1-E3 aprobadas por humano (fecha: 2026-09-13)
 
 ---
 
