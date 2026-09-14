@@ -288,6 +288,7 @@ total sin repetir es 252 + 3 del interruptor = **255**.
 | 197 | `home.free` | `Free` | `Sin collar` |
 | 199 | `home.online` | `Online` | `En línea` |
 | 200 | `home.offline` | `Offline` | `Sin conexión` |
+| — | `home.unknown` | `Awaiting signal` | `Esperando señal` | ← añadida por #73 (R5)
 | 233 | `home.noCollar` | `No collar — health only` | `Sin collar — solo salud` |
 | 245 | `home.pairCollar` | `Pair a collar` | `Vincular collar` |
 | 256 | `home.summaryTitle` | `Today&apos;s Summary` | `Resumen de hoy` |
@@ -681,6 +682,7 @@ añadidas por #68, registradas como delta sobre la tabla existente
 |---|---|---|---|
 | — | `deviceConnectivity.online` | `Online` | `En línea` |
 | — | `deviceConnectivity.unknown` | `Unknown` | `Desconocida` |
+| — | `deviceConnectivity.offline` | `Offline` | `Sin conexión` | ← añadida por #73 (R5)
 
 
 ### §2.11 — R11 — Restablecer contraseña (15 ocurrencias, 11 claves)

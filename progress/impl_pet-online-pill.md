@@ -75,6 +75,11 @@ status: in_progress
   nuevas y un test exige sus valores bilingües y filas normativas.
 - `bun run test -- language-provider`: exit 1; cardinalidad esperada 304 y
   recibida 302, y `home.unknown` recibió `undefined` en el test nuevo.
+- Rojo `d2a7f56f` publicado.
+- Verde: se añadieron únicamente `home.unknown` y
+  `deviceConnectivity.offline` en `en`/`es`, más sus dos filas normativas;
+  `bun run test -- language-provider ui-language` pasó (2 suites, 30 tests).
+  No hay literales `Esperando señal`/`Awaiting signal` en pantallas.
 
 ## R6 — helper único y Pairing offline
 
