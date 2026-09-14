@@ -8,7 +8,7 @@ tags: [harness, spec]
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | `backend-pet-tracker/src/modules/devices/domain/connectivity.spec.ts :: #73 R1: deriveConnectivity decide online/offline contra el reloj del servidor con DEVICE_ONLINE_THRESHOLD_MS` | rojo `b9026577` (`test(pet-online-pill): specify derived connectivity threshold (R1)`); verde pendiente |
+| R1 | `backend-pet-tracker/src/modules/devices/domain/connectivity.spec.ts :: #73 R1: deriveConnectivity decide online/offline contra el reloj del servidor con DEVICE_ONLINE_THRESHOLD_MS` | rojo `b9026577` (`test(pet-online-pill): specify derived connectivity threshold (R1)`); verde `d0b4de73` (`feat(pet-online-pill): derive collar connectivity by silence threshold (R1)`) |
 | R2 | `backend-pet-tracker/src/modules/devices/infrastructure/mappers/device-status.mapper.spec.ts :: #73 R2 (R11 de devices-claim): el estado de device deriva connectivity de lastMessageAt contra now y conserva las 5 claves` + `backend-pet-tracker/src/modules/pets/infrastructure/pets.controller.spec.ts :: R12 (devices-claim) + #73 R2: el detalle serializa la clave device del use case con connectivity derivada` | pendiente |
 | R3 | `backend-pet-tracker/test/device-connectivity.e2e-spec.ts :: #73 R3: GET /v1/pets/:petId y GET /v1/pets/:petId/device derivan connectivity de devices.last_message_at` | pendiente (rojo propio; verde compartido con R2) |
 | R4 | `backend-pet-tracker/test/ingestion.e2e-spec.ts :: R19 … recorre la cadena completa y deja el estado esperado` (aserción `:218` → `toBeNull()`) + sonda de mutación en `progress/impl_pet-online-pill.md` §R4 | pendiente |

@@ -32,7 +32,11 @@ status: in_progress
 
 ## R2 — contrato derivado en lectura
 
-Pendiente.
+- Rojo preparado: el mapper ya recibe `now`, su fuente ya no acepta
+  `connectivity` y los tres controllers pasan el reloj, pero el cuerpo conserva
+  el placeholder `connectivity: null`.
+- `pnpm test -- device-status pets.controller`: exit 1, cuatro aserciones
+  fallaron con `Expected: online|offline`, `Received: null`; `pnpm build`: exit 0.
 
 ## R3 — tres estados por API contra Postgres
 

@@ -7,7 +7,6 @@
 export interface DeviceStatusSource {
   model: string | null;
   batteryPct: number | null;
-  connectivity: string | null;
   lastMessageAt: Date | null;
   esn: string | null;
 }
@@ -23,11 +22,14 @@ export interface DeviceStatusResponse {
 /** Lista explicita de claves — nunca se serializa la entidad completa. */
 export function toDeviceStatusResponse(
   source: DeviceStatusSource,
+  now: Date,
 ): DeviceStatusResponse {
+  void now;
+
   return {
     model: source.model,
     batteryPct: source.batteryPct,
-    connectivity: source.connectivity,
+    connectivity: null,
     lastMessageAt: source.lastMessageAt
       ? source.lastMessageAt.toISOString()
       : null,

@@ -208,8 +208,8 @@ describe('R8: GET /v1/pets/:petId responde el perfil con el rol de la membresia'
   });
 });
 
-describe('R12 (devices-claim): el detalle serializa la clave device del use case', () => {
-  it('mapea el collar activo a las 5 claves del contrato de device', async () => {
+describe('R12 (devices-claim) + #73 R2: el detalle serializa la clave device del use case con connectivity derivada', () => {
+  it('deriva connectivity del lastMessageAt del use case: uno de 2026-08-01 sale offline', async () => {
     const { controller, getExecute } = buildController();
     getExecute.mockResolvedValue({
       pet: buildPet(),
@@ -227,10 +227,46 @@ describe('R12 (devices-claim): el detalle serializa la clave device del use case
     expect(response.device).toEqual({
       model: 'sim-collar',
       batteryPct: null,
-      connectivity: null,
+      connectivity: 'offline',
       lastMessageAt: '2026-08-01T11:59:00.000Z',
       esn: 'SIM-001',
     });
+  });
+
+  it('un lastMessageAt de ahora mismo sale online', async () => {
+    const { controller, getExecute } = buildController();
+    getExecute.mockResolvedValue({
+      pet: buildPet(),
+      device: {
+        model: 'sim-collar',
+        batteryPct: 87,
+        connectivity: null,
+        lastMessageAt: new Date(),
+        esn: 'SIM-001',
+      },
+    });
+
+    const response = await controller.detail(buildPetRequest('owner'));
+
+    expect(response.device?.connectivity).toBe('online');
+  });
+
+  it('un collar que nunca reporto sale con connectivity null', async () => {
+    const { controller, getExecute } = buildController();
+    getExecute.mockResolvedValue({
+      pet: buildPet(),
+      device: {
+        model: 'sim-collar',
+        batteryPct: null,
+        connectivity: null,
+        lastMessageAt: null,
+        esn: 'SIM-001',
+      },
+    });
+
+    const response = await controller.detail(buildPetRequest('owner'));
+
+    expect(response.device?.connectivity).toBeNull();
   });
 
   it('sin collar activo la clave device sigue en null', async () => {
