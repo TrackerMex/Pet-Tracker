@@ -372,6 +372,7 @@ export const R10_PAIRING: UseRow[] = [
   { file: 'src/screens/pairing/index.tsx', key: 'pairing.esn' },
   { file: 'src/utils/device-connectivity.ts', key: 'deviceConnectivity.online' },
   { file: 'src/utils/device-connectivity.ts', key: 'deviceConnectivity.unknown' },
+  { file: 'src/utils/device-connectivity.ts', key: 'deviceConnectivity.offline' },
 ];
 
 export const R11_RESET: UseRow[] = [

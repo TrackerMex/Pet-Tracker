@@ -1,4 +1,7 @@
+import type { DeviceStatus } from '../api/types';
 import type { TranslationKey } from '../i18n/catalog';
+
+export type DeviceConnectionState = 'none' | 'unknown' | 'offline' | 'online';
 
 export const DEVICE_CONNECTIVITY_META: Record<
   string,
@@ -20,4 +23,11 @@ export function connectivityLabelKey(
     DEVICE_CONNECTIVITY_META[value]?.labelKey ??
     UNKNOWN_CONNECTIVITY_META.labelKey
   );
+}
+
+export function deviceConnectionState(
+  device: DeviceStatus | null,
+): DeviceConnectionState {
+  void device;
+  throw new Error('not implemented');
 }

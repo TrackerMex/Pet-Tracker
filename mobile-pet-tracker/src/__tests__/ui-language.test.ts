@@ -164,7 +164,7 @@ describe('#65 R9: el alta de mascota resuelve su copy por clave', () => {
 
 describe('#65 R10: el emparejado del collar resuelve su copy por clave', () => {
   it('resuelve las ocurrencias normativas y el delta de conectividad', () => {
-    expect(R10_PAIRING).toHaveLength(42 + 2);
+    expect(R10_PAIRING).toHaveLength(42 + 2 + 1);
     checkUses(R10_PAIRING);
   });
 });

@@ -83,7 +83,11 @@ status: in_progress
 
 ## R6 — helper único y Pairing offline
 
-Pendiente.
+- Rojo preparado: el tipo de cuatro estados y el helper ya existen como
+  sujeto (stub), mientras tests de unidad, Pairing y copy exigen `offline`.
+- `bun run test -- device-connectivity pairing ui-language`: exit 1 (3 suites,
+  8 fallos): `offline` cayó en `unknown`, las cuatro decisiones alcanzaron
+  `not implemented`, Pairing pintó `Desconocida` y `checkUses` contó 0.
 
 ## R7 — cuatro estados en `collar-status`
 
