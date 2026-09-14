@@ -684,7 +684,7 @@ describe('R8: collar card refleja el device', () => {
 });
 
 describe('#73 R9: la pildora del hero y collar-status nacen del mismo estado', () => {
-  const states: Array<[PetProfile['device'], string, string]> = [
+  const states: [PetProfile['device'], string, string][] = [
     [null, 'Sin collar', 'bg-muted'],
     [
       {

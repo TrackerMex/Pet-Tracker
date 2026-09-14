@@ -156,8 +156,124 @@ status: in_progress
 
 ## R10 — candados y verificación final
 
-Pendiente.
+- Las cinco sondas de producción se restauraron y `git diff --exit-code` dio
+  exit 0 antes de escribir este informe.
+
+| # | Sonda | Visto en rojo (comando + línea) |
+|---|---|---|
+| 1 | Reponer `connectivity: 'online'` en `ingestion.drizzle.store.ts` | R4: `pnpm test:e2e -- ingestion` → `ingestion.e2e-spec.ts:218`, `toBeNull()` recibió `"online"`. |
+| 2 | `DEVICE_ONLINE_THRESHOLD_MS = 2 * 60_000 - 1_000` | `pnpm test -- connectivity` → `connectivity.spec.ts:8`, esperado `120000`, recibido `119000`. |
+| 3 | Cruzar `dot` entre `success` y `warning` en `STATUS_TONE_CLASSES` | R8/E2: `bun run test -- pet-hero-header --runInBand --silent` → `pet-hero-header.test.tsx:448`, las filas `success`/`warning` quedaron rojas. |
+| 4 | Cruzar `labelKey` de `unknown` y `offline` en `HOME_CONNECTION` | R9: `bun run test -- screens/home --silent` → `index.test.tsx:658`, `:681` y dos filas en `:747`, 4 fallos. |
+| 5 | Solo lectura: `git diff --name-only origin/main...HEAD \| grep -c 'map\\.'` | Salida `0`; no se modificaron `map.tsx` ni `map.test.tsx`. |
+
+- La sonda 2 restaurada pasó con `pnpm test -- connectivity` (exit 0, 6
+  tests). La sonda 4 restaurada pasó con `bun run test -- screens/home
+  --silent` (exit 0, 3 suites).
+- Grep-clean sobre `components/pet-hero-header.tsx`, `i18n/catalog.ts`,
+  `screens/home/index.tsx`, `screens/pairing/index.tsx` y
+  `utils/device-connectivity.ts`: cero hex, clases arbitrarias,
+  `StyleSheet.create`, shadow/elevation legacy, `rounded-2xl|lg|md|sm` y
+  `text-[11px]`.
+- `git diff --name-only origin/main...HEAD`:
+
+```text
+backend-pet-tracker/src/modules/devices/domain/connectivity.spec.ts
+backend-pet-tracker/src/modules/devices/domain/connectivity.ts
+backend-pet-tracker/src/modules/devices/infrastructure/devices.controller.ts
+backend-pet-tracker/src/modules/devices/infrastructure/mappers/device-status.mapper.spec.ts
+backend-pet-tracker/src/modules/devices/infrastructure/mappers/device-status.mapper.ts
+backend-pet-tracker/src/modules/devices/infrastructure/pet-device.controller.ts
+backend-pet-tracker/src/modules/pets/infrastructure/pets.controller.spec.ts
+backend-pet-tracker/src/modules/pets/infrastructure/pets.controller.ts
+backend-pet-tracker/src/pipeline/constants.ts
+backend-pet-tracker/src/workers/ingestion-store.ts
+backend-pet-tracker/src/workers/ingestion.drizzle.store.ts
+backend-pet-tracker/test/device-connectivity.e2e-spec.ts
+backend-pet-tracker/test/ingestion.e2e-spec.ts
+docs/data-model.md
+feature_list.json
+mobile-pet-tracker/src/__tests__/legibility-classnames.test.ts
+mobile-pet-tracker/src/__tests__/ui-copy-table.ts
+mobile-pet-tracker/src/__tests__/ui-language.test.ts
+mobile-pet-tracker/src/components/__tests__/pet-hero-header.test.tsx
+mobile-pet-tracker/src/components/pet-hero-header.tsx
+mobile-pet-tracker/src/i18n/catalog.ts
+mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+mobile-pet-tracker/src/screens/home/index.test.tsx
+mobile-pet-tracker/src/screens/home/index.tsx
+mobile-pet-tracker/src/screens/pairing/index.test.tsx
+mobile-pet-tracker/src/utils/device-connectivity.test.ts
+mobile-pet-tracker/src/utils/device-connectivity.ts
+progress/current.md
+progress/explore_pet-online-pill.md
+progress/handoff_pet-online-pill.md
+progress/impl_pet-online-pill.md
+specs/mobile-ui-language/design.md
+specs/pet-online-pill/design.md
+specs/pet-online-pill/requirements.md
+specs/pet-online-pill/tasks.md
+specs/pet-online-pill/traceability.md
+specs/wialon-ingestion-pipeline/requirements.md
+```
+
+- Verificación final: `./init.sh` exit 0 tras `pgrep` vacío; build, tests,
+  e2e, lint y typecheck quedaron verdes. Ninguna suite que ya estaba verde
+  quedó roja.
 
 ## R11 — smoke humano en dev build Android
 
-Pendiente de preparar; no ejecutable por IA.
+No ejecutado por IA. Este guion se ejecuta por un humano en un **dev build de
+Android** (nunca Expo Go), con backend local en `SIM_MODE=true`:
+
+1. **Preparación** — `POLLER_ENABLED=true`; tres mascotas del mismo usuario;
+   desde Pairing vincular `ACT-001` a la mascota A y `ACT-002` a la mascota B
+   (`src/db/seed/simulated-devices.ts:7-9`); esperar ≥ 90 s (un ciclo de poller
+   + consumer). Home de A y de B: píldora **"En línea"** (verde, punto verde)
+   encima del nombre, y `collar-status` "En línea". Pairing de A: "Conexión: En línea".
+2. **Silencio provocado** — parar el backend, `POLLER_ENABLED=false`, arrancar
+   (con el poller vivo el simulador refrescaría `last_message_at` en ≤ 75 s y
+   el silencio no duraría). En Postgres:
+   `UPDATE devices SET last_message_at = now() - interval '10 minutes' WHERE esn = 'SIM-002';`
+   Volver a Home (refetch al foco) → B: píldora **"Sin conexión"** (ámbar) y
+   `collar-status` "Sin conexión"; A sigue **"En línea"**. Pairing de B:
+   "Conexión: Sin conexión". Hacer el `UPDATE` y comprobar "A sigue En línea /
+   B Sin conexión" **dentro de los 2 min** siguientes a parar el poller; si A
+   ya dice "Sin conexión" al mirar, no es defecto: paso 7 (poller vivo, ≤ 90 s)
+   y repetir el paso 2. Tras **2 min** sin poller, A pasa también a "Sin conexión"
+   (es el umbral, no un fallo).
+3. **Desconocido** — con el poller aún parado, vincular `ACT-003` a la mascota C
+   desde Pairing (o `UPDATE devices SET last_message_at = NULL, battery_pct = NULL WHERE esn = 'SIM-003';`
+   si ya estaba vinculado). Home de C: píldora **"Esperando señal"** (gris) y
+   `collar-status` "Esperando señal"; Pairing de C: "Conexión: —" y "Sin mensajes todavía".
+4. **Sin collar** — una mascota sin collar: píldora **"Sin collar"** (gris) y
+   `collar-status` "Sin collar"; sin fila de batería.
+5. **Mapa (G4 sigue vigente; ya no hay divergencia de umbral)** — con el
+   poller parado, el mapa de A dice "Desactualizado" y la Home "Sin conexión"
+   a partir de los ~120 s, con un desfase de como mucho un ciclo de sondeo
+   (`POLL_MS = 15000` del mapa, `map.tsx:77`; refetch al foco en Home). Son
+   dos relojes distintos que ahora comparten número: `staleSeconds` de la
+   **posición**, calculado en el servidor y sondeado por el mapa, y
+   `connectivity` del **collar**, calculado en el servidor al refetch del
+   detalle. Que coincidan en 120 s no los une: `map.tsx:76` no se toca (R10
+   sonda 5) y alinear ambos en una sola fuente sigue siendo feature aparte.
+6. **Temas y texto** — cambiar a dark: la píldora sigue legible en los cuatro
+   estados; todo en español; el selector y la campana siguen en su sitio.
+6-bis. **Pulso** — en la mascota en línea el punto verde de la píldora late
+   suavemente (2 s por ciclo, nunca el texto); en las de "Sin conexión",
+   "Esperando señal" y "Sin collar" el punto está fijo. Activar «Quitar
+   animaciones» en Ajustes › Accesibilidad de Android y volver a Home: el punto
+   verde queda fijo, opacidad plena, sin salto. Desactivarlo: vuelve a latir.
+7. **Restaurar** — `POLLER_ENABLED=true`, reiniciar; en ≤ 90 s A, B y C vuelven
+   a "En línea".
+
+| Paso | Resultado humano | Fecha / firma |
+|---|---|---|
+| 1 |  |  |
+| 2 |  |  |
+| 3 |  |  |
+| 4 |  |  |
+| 5 |  |  |
+| 6 |  |  |
+| 6-bis |  |  |
+| 7 |  |  |

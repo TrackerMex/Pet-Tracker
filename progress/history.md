@@ -3544,3 +3544,19 @@ backend la esconde y el smoke da un falso negativo.
 
 `init.sh` aborta en falso en este VPS con `FORCE_COLOR` (#75, `pending`):
 lanzarlo siempre como `env -u FORCE_COLOR bash ./init.sh`.
+
+---
+
+# Sesión #73 pet-online-pill (cierre de implementación, 2026-09-14)
+
+- Branch `feature/73-pet-online-pill`, worktree
+  `/home/claude/sites/Pet-Tracker-wt-backend`.
+- Codex ejecutó R1-R10 en orden TDD; los rojos/verdes de R1-R9 y sus hashes
+  están en `specs/pet-online-pill/traceability.md`. R2 y R3 comparten el verde
+  `f92f0736` por diseño de la tarea.
+- R10 deja cinco sondas de mutación, grep-clean, alcance sin los archivos
+  prohibidos y la corrida final `./init.sh` con exit 0 en
+  `progress/impl_pet-online-pill.md`.
+- R11 no se ejecutó: queda el guion literal en dev build Android y su tabla
+  vacía para firma humana. Por ese gate, #73 permanece `in_progress`; no se
+  abrió PR.

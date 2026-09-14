@@ -12,8 +12,7 @@ export function deriveConnectivity(
     return null;
   }
 
-  return now.getTime() - lastMessageAt.getTime() <=
-    DEVICE_ONLINE_THRESHOLD_MS
+  return now.getTime() - lastMessageAt.getTime() <= DEVICE_ONLINE_THRESHOLD_MS
     ? 'online'
     : 'offline';
 }

@@ -112,9 +112,7 @@ describe('Device connectivity derived at read (e2e)', () => {
       status: 'assigned',
       isSimulated: true,
     });
-    await db
-      .insert(petDevices)
-      .values({ id: uuidv7(), petId, deviceId });
+    await db.insert(petDevices).values({ id: uuidv7(), petId, deviceId });
   });
 
   afterAll(async () => {
