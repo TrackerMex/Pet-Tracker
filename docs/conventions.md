@@ -243,6 +243,86 @@ push directo. Lo que no toca código de la app (harness, `docs/`, `specs/`,
 
 ---
 
+## Sesiones en paralelo: un worktree, una base de datos
+
+Dos sesiones de IA trabajando a la vez usan `git worktree` (uno por feature),
+pero el HEAD separado no separa la **infraestructura**: `docker-compose.yml`
+levanta **un** Postgres y **un** LocalStack para toda la máquina. Dos
+`./init.sh` simultáneos se borran filas entre sí y producen **e2e rojos falsos**
+que parecen bugs de código y se investigan durante media hora. Ya costó dos
+corridas completas en el cierre de #64.
+
+### Postgres: una base por worktree (elimina la coordinación)
+
+Un servidor Postgres aloja varias bases. Cada worktree usa la suya y el
+problema desaparece — no hay que avisar a nadie para correr tests que solo
+tocan Postgres:
+
+```bash
+# 1. crear la base (docker exec, NO docker compose exec: desde el worktree el
+#    proyecto compose se llama distinto y no encuentra el contenedor)
+docker exec pet-tracker-postgres \
+  psql -U pet_tracker -d postgres \
+  -c 'CREATE DATABASE pet_tracker_wt OWNER pet_tracker;'
+
+# 2. apuntar el .env del worktree (gitignorado, local a ese worktree)
+#    DATABASE_URL=postgresql://pet_tracker:<pass>@localhost:5433/pet_tracker_wt
+
+# 3. aplicar migraciones
+cd backend-pet-tracker && pnpm run db:migrate
+```
+
+`drizzle.config.ts:17` carga `../.env` por su cuenta con `dotenv`, así que el
+paso 3 **no** necesita exportar variables a mano. Y `init.sh` solo copia
+`.env.example` **si `.env` no existe** (`init.sh:58`): nunca lo sobrescribe, el
+apunte sobrevive.
+
+Validado el 2026-09-14 en `Pet-Tracker-wt-backend`: suite e2e completa exit 0
+con los mismos números que el baseline, y `pg_stat_database` confirmó que los
+inserts fueron a la base nueva y no a la compartida.
+
+### El puerto es 5433 en el VPS, y eso es correcto
+
+`docker-compose.yml` mapea `5432:5432` y `.env.example` dice 5432 — es el valor
+por defecto y no se toca. En el VPS algo ocupa `127.0.0.1:5432`, así que hay un
+**`docker-compose.override.yml` gitignorado** que remapea a 5433. Ese es el
+mecanismo previsto: cada máquina ajusta lo suyo en el override, no en el fichero
+versionado.
+
+### LocalStack sigue compartido: ahí el aviso previo se mantiene
+
+SQS, DynamoDB y S3 viven en un único LocalStack en `:4566`. Separar Postgres no
+lo separa. **14 de las 29 suites e2e lo tocan** y siguen necesitando aviso a la
+otra sesión antes de correr:
+
+`activity`, `alerts-center-notifier`, `alerts-engine`, `aws-real-ingest`,
+`aws-real-media`, `aws-real-smoke`, `device-subscriptions`, `ingestion`,
+`localstack-provisioning`, `media`, `media-docs`, `pet-reminders`, `positions`,
+`resource-isolation`
+
+Las otras 15 solo tocan Postgres: con base propia, se solapan sin avisar.
+
+### Antes de lanzar un gate, comprueba que no hay otro
+
+```bash
+pgrep -af 'init\.sh|test:e2e|jest-e2e' | grep -v pgrep
+```
+
+`pgrep -f 'bash ./init.sh'` **se encuentra a sí mismo** —el patrón está en la
+línea de comando del shell que lo lanza— y da falsos positivos. Ante un pid
+dudoso, mira su antigüedad con `ps -o etime= -p <pid>`: uno de 00:00 es el
+propio `pgrep`.
+
+### Migraciones destructivas
+
+Una migración que borra o renombra una columna rompe a **toda** sesión cuyo
+código aún la declare, con un error que no tiene nada que ver con su feature
+(`column X does not exist`). Aplícala sobre la base compartida solo cuando la
+otra sesión haya **mergeado** su branch, no cuando termine su gate: entre el
+veredicto y el merge todavía quedan corridas de `init.sh`.
+
+---
+
 ## Variables de entorno
 
 Toda variable nueva se añade a esta tabla y a `.env.example` en el mismo
