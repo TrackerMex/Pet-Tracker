@@ -53,7 +53,10 @@ status: in_progress
 
 ## R4 — eliminación del pestillo
 
-Pendiente.
+- Rojo preparado: el e2e de ingesta conserva todos los checks de batería,
+  último mensaje y watermark, pero ahora exige que `connectivity` siga NULL.
+- `pnpm test:e2e -- ingestion`: exit 1 en `ingestion.e2e-spec.ts:218`;
+  `toBeNull()` recibió `"online"`, demostrando el pestillo vigente.
 
 ## R5 — catálogo bilingüe
 

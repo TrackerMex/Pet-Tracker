@@ -215,7 +215,7 @@ describe('Wialon ingestion pipeline (e2e)', () => {
         .select()
         .from(devices)
         .where(eq(devices.esn, 'SIM-001'));
-      expect(deviceRow.connectivity).toBe('online');
+      expect(deviceRow.connectivity).toBeNull(); // #73 R4: nadie escribe la columna
       expect(deviceRow.batteryPct).not.toBeNull();
       expect(deviceRow.lastMessageAt?.getTime()).toBe(lastPosition.ts);
       // R10 en vivo: watermark avanzo al ts del ultimo mensaje.
