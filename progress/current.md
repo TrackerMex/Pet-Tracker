@@ -36,45 +36,59 @@ codigo pero deja las dos cosas abiertas. `/pairing` es caso aparte: es pestaña 
 decision D4 de #42 y su arreglo ya esta prescrito (reset de `code`, `actionError`,
 `phase` y `readyDevice`).
 
-### Spec entregada — PARADO EN EL GATE HUMANO
+### Spec APROBADA — parado esperando a Codex CLI
 
-`specs/mobile-detail-screens-state-reset/` (R1-R7), pusheada en la branch.
+Firma humana `1a9fef11` (AlexisSM377, 2026-09-14). Verificada: toca **solo** la
+casilla de aprobacion, sin drift de codigo colado. Frontmatter de los cuatro
+ficheros a `approved`; #63 a `spec_ready`.
+
+`specs/mobile-detail-screens-state-reset/` (R1-R7):
 
 - **D1: reset local en el cleanup de `useFocusEffect`**, no Stack. Cinco costes
-  medidos contra el arbol; el Stack queda como deuda con enunciado listo en
-  `requirements.md` §Deuda, no descartado.
+  medidos contra el arbol.
 - **Cinco pantallas**: add-reminder (R1), add-pet (R2, 15 `useState`),
   weight-log (R3, parcial), meal-schedule (R4, solo `generateError`), pairing
   (R5 blur + R6 cambio de `selectedPetId`). **docs NO** tiene el defecto: cero
   `useState`, con evidencia.
 - **R7** cierra por mutacion en dos sitios que `submitting`/`claiming`/
   `releasing` SOBREVIVEN al blur (guardas de peticion en vuelo).
-- Erratas del enunciado corregidas contra el arbol: `add-reminder` declara sus
-  nueve `useState` en `:49-57` (no 39-47), el `router.back()` del alta esta en
-  `:89` y hay un segundo en `:133`, y `pairing` declara **seis** `useState`, no
-  cuatro. Verificadas por el leader, no solo por el spec_author.
-- **Correccion del leader a `design.md`**: la justificacion afirmaba que
-  `unmountOnBlur` "ya no existe" en expo-router 57.0.14. Si existe, en
-  `ui/TabContext.d.ts:7`, pero es la API de tabs headless (`expo-router/ui`)
-  que la app no usa. Lo cierto, y lo que queda escrito, es que no esta en
-  `BottomTabNavigationOptions`, que es el navegador que monta
-  `(tabs)/_layout.tsx`.
+- Erratas del enunciado corregidas contra el arbol y verificadas por el leader:
+  `useState` de add-reminder en `:49-57` (no 39-47), segundo `router.back()` en
+  `:133`, y `pairing` declara **seis** `useState`, no cuatro.
+- Correccion del leader a `design.md`: `unmountOnBlur` SI existe en el arbol
+  (`ui/TabContext.d.ts:7`), pero en la API de tabs headless `expo-router/ui`
+  que la app no usa. Lo que se verifica y queda escrito es que no esta en
+  `BottomTabNavigationOptions`.
 
-### Dos decisiones que esperan al humano, no las tomo yo
+### Deuda registrada
 
-1. **Registrar la deuda `mobile-detail-screens-to-stack`** (seria #95). En
-   espera a proposito: si el humano rechaza D1 y elige el Stack, esta deuda no
-   existe.
-2. **`reminders` y `alerts`** tienen el mismo patron (`deletingId`,
-   `deleteCandidate`, `actionError` / `acked`, `ackingId`, `actionError`) y
-   quedaron FUERA porque el criterio 4 del enunciado de #63 acota a cuatro
-   pantallas. Anotadas en `design.md` §Auditoria. Decidir si se meten en #63
-   ampliando el alcance, o si van a feature aparte.
+**#95 `mobile-detail-screens-to-stack`** (P3), con el enunciado que la spec dejo
+listo. La via del Stack queda pospuesta por coste, no descartada; retirar el
+reset local de #63 donde quede redundante es parte de su cierre (C7).
 
-### Pendiente despues del gate
+### Decision que sigue abierta (del humano, no la tomo yo)
 
-1. Handoff a Codex CLI (plantilla de `.claude/agents/leader.md`, exigiendo
-   commits test-primero).
-2. `reviewer`.
+**`reminders` y `alerts`** tienen el mismo patron (`deletingId`,
+`deleteCandidate`, `actionError` / `acked`, `ackingId`, `actionError`) y
+quedaron FUERA porque el criterio 4 del enunciado de #63 acota a cuatro
+pantallas. Anotadas en `design.md` §Auditoria. Decidir si van a feature aparte.
+No bloquea #63.
+
+### Estado: handoff escrito, leader PARADO
+
+`progress/handoff_mobile-detail-screens-state-reset.md`. Lo corre el humano en
+su terminal de Codex CLI. Mientras Codex implementa, esta sesion **no toca**
+`mobile-pet-tracker/`: solo `docs/`, `specs/`, `progress/` y
+`feature_list.json`.
+
+El handoff prohibe `./init.sh` a Codex (Postgres compartido con la sesion
+Backend, que trabaja #92 en `Pet-Tracker-wt-backend`) y le da el comando
+dirigido de jest en su lugar.
+
+### Pendiente
+
+1. El humano confirma que Codex termino; leer `progress/impl_*.md`.
+2. Lanzar `reviewer` — avisando antes a la sesion Backend por SendMessage,
+   porque ese si corre `./init.sh`.
 3. Gate humano final: smoke en **dev build de Android**, crear dos recordatorios
    seguidos.
