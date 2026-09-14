@@ -1772,7 +1772,7 @@
   {
     "id": 92,
     "name": "device-telemetry-reset-on-reassign",
-    "status": "spec_ready",
+    "status": "in_progress",
     "priority": "P3",
     "description": "Deuda nombrada por #73 (explore §1 y §9 G8, fuera de alcance de su spec). release (backend-pet-tracker/src/modules/devices/infrastructure/repositories/device.drizzle.repository.ts:107-112) solo escribe released_at y status, y claim (:89-92) solo status e ingest_watermark: la fila de devices conserva battery_pct y last_message_at del dueno anterior. Desde #73 connectivity se deriva en lectura de last_message_at, asi que una mascota que reclama un collar que otra uso hace un minuto se ve 'En linea' con bateria y senal ajenas hasta el primer mensaje nuevo; antes de #73 el pestillo lo escondia porque siempre decia 'online'. La spec decide por escrito en que momento se resetea (recomendado: en release, que es cuando los datos dejan de pertenecer a la mascota; alternativa: en claim) y que columnas entran (battery_pct y last_message_at; connectivity ya esta obsoleta por #73 y la borra #93). pets.last_position y pets.last_communication_at son de la mascota, no del collar, y quedan fuera.",
     "acceptance_criteria": [

@@ -1,6 +1,6 @@
 ---
 feature: "device-telemetry-reset-on-reassign"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec]
 ---
 
