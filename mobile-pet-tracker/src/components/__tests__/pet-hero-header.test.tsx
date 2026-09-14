@@ -8,6 +8,13 @@ import { blobatar } from 'blobatar';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
 import { StyleSheet, Text } from 'react-native';
+import {
+  cancelAnimation,
+  ReduceMotion,
+  withRepeat,
+  withTiming,
+} from 'react-native-reanimated';
+import type { TestInstance } from 'test-renderer';
 import { Uniwind } from 'uniwind';
 
 import type { PetProfile } from '../../api/types';
@@ -15,6 +22,7 @@ import { useThemeColors } from '../../theme/use-theme-colors';
 import {
   PET_HERO_FADE_HEIGHT,
   PET_HERO_MEDIA_HEIGHT,
+  STATUS_DOT_PULSE,
   PetHeroHeader,
 } from '../pet-hero-header';
 
@@ -30,9 +38,31 @@ const { readFileSync } = require('fs');
 const { join } = require('path');
 
 const SOURCE_ROOT = join(process.cwd(), 'src');
+const mockUseReducedMotion = jest.fn<boolean, []>(() => false);
+
+jest.mock('react-native-reanimated', () => ({
+  ...jest.requireActual<typeof import('react-native-reanimated')>(
+    'react-native-reanimated',
+  ),
+  useReducedMotion: () => mockUseReducedMotion(),
+  withRepeat: jest.fn((animation: unknown) => animation),
+  withSequence: jest.fn((...steps: unknown[]) => steps.at(-1)),
+  withTiming: jest.fn((value: number) => value),
+  cancelAnimation: jest.fn(),
+}));
+
+const mockWithRepeat = jest.mocked(withRepeat);
+const mockWithTiming = jest.mocked(withTiming);
+const mockCancelAnimation = jest.mocked(cancelAnimation);
 
 function readSource(...segments: string[]): string {
   return readFileSync(join(SOURCE_ROOT, ...segments), 'utf8');
+}
+
+function elementChild(node: TestInstance, index: number): TestInstance {
+  const child = node.children[index];
+  if (typeof child === 'string') throw new Error('Expected an element child');
+  return child;
 }
 
 jest.mock('react-native-safe-area-context', () => ({
@@ -353,5 +383,206 @@ describe('R8: el hero sin mascota es un skeleton dimensionado', () => {
 
     expect(source).toContain("import { Skeleton } from 'heroui-native';");
     expect(source).not.toContain('Spinner');
+  });
+});
+
+describe('#73 R8: la pildora de estado vive en la banda inferior, encima del nombre, con todas sus decisiones candadas', () => {
+  afterEach(() => cleanup());
+
+  it('pinta la pildora con sus dos hijos en orden punto -> texto y el texto formateado por el llamante', async () => {
+    await renderHero(
+      <PetHeroHeader
+        pet={makePet()}
+        status={{ label: 'En línea', tone: 'success' }}
+      />,
+    );
+
+    const pill = screen.getByTestId('pet-hero-status');
+    expect(pill.children).toHaveLength(2);
+    expect(elementChild(pill, 0).props.testID).toBe('pet-hero-status-dot');
+    expect(elementChild(pill, 1).props.testID).toBe('pet-hero-status-text');
+    expect(
+      within(pill).getByTestId('pet-hero-status-text'),
+    ).toHaveTextContent('En línea');
+  });
+
+  it.each([
+    ['success', 'bg-success-soft', 'bg-success', 'text-accent-strong'],
+    ['warning', 'bg-warning-soft', 'bg-warning-strong', 'text-warning-strong'],
+    ['muted', 'bg-default', 'bg-muted', 'text-muted'],
+  ] as const)(
+    '%s: superficie, punto y tinta usan los tokens del tono',
+    async (tone, surfaceClass, dotClass, textClass) => {
+      await renderHero(
+        <PetHeroHeader pet={makePet()} status={{ label: 'x', tone }} />,
+      );
+
+      const pill = screen.getByTestId('pet-hero-status');
+      expect(pill.props.className).toContain(surfaceClass);
+      expect(elementChild(pill, 0).props.className).toContain(dotClass);
+      expect(elementChild(pill, 1).props.className).toContain(textClass);
+    },
+  );
+
+  it('es una capsula rounded-full de text-2xs font-semibold, self-start, sin animate-pulse ni Chip', async () => {
+    await renderHero(
+      <PetHeroHeader
+        pet={makePet()}
+        status={{ label: 'En línea', tone: 'success' }}
+      />,
+    );
+
+    const pill = screen.getByTestId('pet-hero-status');
+    const dot = elementChild(pill, 0);
+    const text = elementChild(pill, 1);
+    const source = readSource('components', 'pet-hero-header.tsx');
+
+    expect(pill.props.className).toContain(
+      'flex-row items-center gap-1 self-start rounded-full px-2.5 py-0.5',
+    );
+    expect(dot.props.className).toContain('size-1.5 rounded-full');
+    expect(text.props.className).toContain('text-2xs font-semibold');
+    expect(source).not.toContain('animate-pulse');
+    expect(source).toContain("from 'react-native-reanimated'");
+    expect(source).not.toMatch(/\bChip\b/);
+  });
+
+  it('es un solo nodo accesible con el texto del estado como nombre', async () => {
+    await renderHero(
+      <PetHeroHeader
+        pet={makePet()}
+        status={{ label: 'En línea', tone: 'success' }}
+      />,
+    );
+
+    const pill = screen.getByTestId('pet-hero-status');
+    expect(pill.props.accessible).toBe(true);
+    expect(pill.props.accessibilityLabel).toBe('En línea');
+  });
+
+  it('va dentro de la banda inferior y antes del nombre, nunca en el slot ni sobre la foto', async () => {
+    await renderHero(
+      <PetHeroHeader
+        pet={makePet()}
+        status={{ label: 'En línea', tone: 'success' }}
+      >
+        <Text testID="slot-child">selector</Text>
+      </PetHeroHeader>,
+    );
+
+    const caption = screen.getByTestId('pet-hero-caption');
+    const left = elementChild(caption, 0);
+    expect(elementChild(left, 0).props.testID).toBe('pet-hero-status');
+    expect(elementChild(left, 1).props.testID).toBe('pet-hero-name');
+    expect(
+      within(screen.getByTestId('pet-hero-slot')).queryByTestId(
+        'pet-hero-status',
+      ),
+    ).toBeNull();
+    expect(
+      within(screen.getByTestId('pet-hero-media')).queryByTestId(
+        'pet-hero-status',
+      ),
+    ).toBeNull();
+  });
+
+  it('sin status no hay pildora (Profile) y con pet null tampoco, aunque llegue status', async () => {
+    await renderHero(<PetHeroHeader pet={makePet()} />);
+    expect(screen.queryByTestId('pet-hero-status')).toBeNull();
+    cleanup();
+
+    await renderHero(
+      <PetHeroHeader
+        pet={null}
+        status={{ label: 'En línea', tone: 'success' }}
+      />,
+    );
+    expect(screen.queryByTestId('pet-hero-status')).toBeNull();
+    expect(
+      within(screen.getByTestId('pet-hero-caption')).queryAllByText(/\S/),
+    ).toEqual([]);
+  });
+});
+
+describe('#73 E2: el punto de "en linea" pulsa con Reanimated y respeta reduced motion', () => {
+  beforeEach(() => {
+    mockWithRepeat.mockClear();
+    mockWithTiming.mockClear();
+    mockCancelAnimation.mockClear();
+    mockUseReducedMotion.mockReturnValue(false);
+  });
+
+  afterEach(() => cleanup());
+
+  it('STATUS_DOT_PULSE es el animate-pulse de Tailwind: 1000 ms por tramo, bezier(0.4, 0, 0.6, 1) y reduced motion del sistema', () => {
+    expect(STATUS_DOT_PULSE).toMatchObject({
+      duration: 1000,
+      reduceMotion: ReduceMotion.System,
+    });
+    expect(readSource('components', 'pet-hero-header.tsx')).toContain(
+      'easing: Easing.bezier(0.4, 0, 0.6, 1)',
+    );
+  });
+
+  it('con reduced motion activo el punto es estatico: sin estilo animado y sin arrancar ningun bucle', async () => {
+    mockUseReducedMotion.mockReturnValue(true);
+    await renderHero(
+      <PetHeroHeader
+        pet={makePet()}
+        status={{ label: 'En línea', tone: 'success' }}
+      />,
+    );
+    const dot = within(screen.getByTestId('pet-hero-status')).getByTestId(
+      'pet-hero-status-dot',
+    );
+
+    expect(dot).not.toHaveAnimatedStyle({ opacity: 1 });
+    expect(mockWithRepeat).not.toHaveBeenCalled();
+    expect(dot.props.className).toContain('bg-success');
+  });
+
+  it('con tone success el punto es el nodo animado: 1 -> 0.5 -> 1 con STATUS_DOT_PULSE, infinito y sin reverse', async () => {
+    await renderHero(
+      <PetHeroHeader
+        pet={makePet()}
+        status={{ label: 'En línea', tone: 'success' }}
+      />,
+    );
+    const dot = within(screen.getByTestId('pet-hero-status')).getByTestId(
+      'pet-hero-status-dot',
+    );
+
+    expect(dot).toHaveAnimatedStyle({ opacity: 1 });
+    expect(mockWithTiming).toHaveBeenNthCalledWith(1, 0.5, STATUS_DOT_PULSE);
+    expect(mockWithTiming).toHaveBeenNthCalledWith(2, 1, STATUS_DOT_PULSE);
+    expect(mockWithRepeat).toHaveBeenCalledTimes(1);
+    expect(mockWithRepeat).toHaveBeenCalledWith(expect.anything(), -1, false);
+  });
+
+  it.each([['warning'], ['muted']] as const)(
+    '%s: el punto es estatico y no arranca ningun bucle',
+    async (tone) => {
+      await renderHero(
+        <PetHeroHeader pet={makePet()} status={{ label: 'x', tone }} />,
+      );
+      const dot = within(screen.getByTestId('pet-hero-status')).getByTestId(
+        'pet-hero-status-dot',
+      );
+
+      expect(dot).not.toHaveAnimatedStyle({ opacity: 1 });
+      expect(mockWithRepeat).not.toHaveBeenCalled();
+    },
+  );
+
+  it('al desmontar cancela el bucle del punto', async () => {
+    const { unmount } = await renderHero(
+      <PetHeroHeader
+        pet={makePet()}
+        status={{ label: 'En línea', tone: 'success' }}
+      />,
+    );
+
+    unmount();
+    expect(mockCancelAnimation).toHaveBeenCalledTimes(1);
   });
 });

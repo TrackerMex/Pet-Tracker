@@ -1,6 +1,7 @@
 import { Skeleton } from 'heroui-native';
 import type { ReactNode } from 'react';
 import { Text, View } from 'react-native';
+import { Easing, ReduceMotion } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { PetProfile } from '../api/types';
@@ -18,9 +19,22 @@ export const PET_HERO_MEDIA_HEIGHT = 260;
 /** Alto de cada franja de degradado entre la imagen y una banda opaca. */
 export const PET_HERO_FADE_HEIGHT = 64;
 
+export const STATUS_DOT_PULSE = {
+  duration: 0,
+  easing: Easing.bezier(0.4, 0, 0.6, 1),
+  reduceMotion: ReduceMotion.System,
+} as const;
+
 export interface PetHeroHighlight {
   value: string;
   label: string;
+}
+
+export type PetHeroStatusTone = 'success' | 'warning' | 'muted';
+
+export interface PetHeroStatus {
+  label: string;
+  tone: PetHeroStatusTone;
 }
 
 export interface PetHeroHeaderProps {
@@ -33,6 +47,8 @@ export interface PetHeroHeaderProps {
   variant?: 'bleed' | 'card';
   /** Dato destacado YA FORMATEADO por el llamante (R7). */
   highlight?: PetHeroHighlight;
+  /** Estado YA FORMATEADO por el llamante, misma regla que `highlight` (R7 de #67). */
+  status?: PetHeroStatus;
   /** Slot de la zona superior. El hero NO conoce a su contenido (D2). */
   children?: ReactNode;
 }

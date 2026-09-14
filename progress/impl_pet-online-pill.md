@@ -110,7 +110,14 @@ status: in_progress
 
 ## R8 — píldora y pulso accesible
 
-Pendiente.
+- Gate E1-E3 revalidado inmediatamente antes de R8: `git pull --no-rebase
+  origin feature/73-pet-online-pill` indicó `Already up to date` y la casilla
+  aprobada sigue marcada en `requirements.md:933`.
+- Rojo preparado: tipos y prop públicos más constante E2 placeholder; los
+  tests candan estructura, tokens, accesibilidad, ubicación y pulso reducido.
+- `bun run test -- pet-hero-header legibility consistency design-drift`: exit
+  1; 18 fallos nuevos: no existe `pet-hero-status`, legibilidad cuenta 0,
+  `STATUS_DOT_PULSE.duration` es 0 y el cleanup no cancela ningún bucle.
 
 ## R9 — Home monta la píldora desde el mismo estado
 
