@@ -85,6 +85,14 @@ El handoff prohibe `./init.sh` a Codex (Postgres compartido con la sesion
 Backend, que trabaja #92 en `Pet-Tracker-wt-backend`) y le da el comando
 dirigido de jest en su lugar.
 
+### Implementacion Codex en curso
+
+- **Inicio:** 2026-09-14, sobre `b3b957d9`, en la branch entregada.
+- **Precondiciones:** skills `expo-overview` y `expo-router` cargadas en ese orden;
+  `.expo/types/router.d.ts` ausente; baseline dirigido verde (5 suites, 106 tests).
+- **Plan:** ejecutar R1-R7 en el orden de `tasks.md`, con commit rojo, verde y
+  trazabilidad por requisito; despues mutaciones R7, typecheck, lint y reporte.
+
 ### Pendiente
 
 1. El humano confirma que Codex termino; leer `progress/impl_*.md`.
