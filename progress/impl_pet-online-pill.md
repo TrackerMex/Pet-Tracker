@@ -71,7 +71,10 @@ status: in_progress
 
 ## R5 — catálogo bilingüe
 
-Pendiente.
+- Rojo preparado: el candado de cardinalidad espera exactamente dos claves
+  nuevas y un test exige sus valores bilingües y filas normativas.
+- `bun run test -- language-provider`: exit 1; cardinalidad esperada 304 y
+  recibida 302, y `home.unknown` recibió `undefined` en el test nuevo.
 
 ## R6 — helper único y Pairing offline
 

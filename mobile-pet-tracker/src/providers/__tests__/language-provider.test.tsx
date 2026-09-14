@@ -9,8 +9,22 @@ import {
   useTranslate,
 } from '../language-provider';
 
+declare function require(moduleName: 'fs'): {
+  readFileSync: (path: string, encoding: 'utf8') => string;
+};
+
+declare function require(moduleName: 'path'): {
+  join: (...paths: string[]) => string;
+};
+
+const { readFileSync } = require('fs');
+const { join } = require('path');
+
 const markerNames = (value: string) =>
   [...value.matchAll(/{{([^{}]+)}}/g)].map((match) => match[1]).sort();
+
+const escapeRegExp = (value: string) =>
+  value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 function TranslationProbe() {
   const { language } = useLanguage();
@@ -33,16 +47,41 @@ function LocaleProbe() {
 }
 
 describe('#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y parámetros', () => {
-  // 259 en `303fc19` + 1 de `home.walks` (#67 R7b) + 16 de #68 + 14 de #78.
+  // 259 en `303fc19` + 1 de `home.walks` (#67 R7b) + 16 de #68 + 14 de #78 + 2 de #73.
   it('mantiene la base más las claves de #68 y los mismos marcadores en ambos idiomas', () => {
     const englishKeys = Object.keys(en).sort();
     const spanishKeys = Object.keys(es).sort();
 
-    expect(englishKeys).toHaveLength(260 + 16 + 1 + 4 + 7 + 14);
+    expect(englishKeys).toHaveLength(260 + 16 + 1 + 4 + 7 + 14 + 2);
     expect(spanishKeys).toEqual(englishKeys);
     for (const key of englishKeys) {
       expect(markerNames(es[key as keyof typeof es])).toEqual(
         markerNames(en[key as keyof typeof en]),
+      );
+    }
+  });
+
+  it('#73 R5: el catalogo trae home.unknown y deviceConnectivity.offline en los dos idiomas y registrados en la tabla', () => {
+    const english = en as Record<string, string>;
+    const spanish = es as Record<string, string>;
+    const languageDesign = readFileSync(
+      join(process.cwd(), '../specs/mobile-ui-language/design.md'),
+      'utf8',
+    );
+    const translations = [
+      ['home.unknown', 'Awaiting signal', 'Esperando señal'],
+      ['deviceConnectivity.offline', 'Offline', 'Sin conexión'],
+    ] as const;
+
+    for (const [key, englishValue, spanishValue] of translations) {
+      expect(english[key]).toBe(englishValue);
+      expect(spanish[key]).toBe(spanishValue);
+      expect(languageDesign).toMatch(
+        new RegExp(
+          '\\| — \\| `' +
+            escapeRegExp(key) +
+            '`[^\\n]*← añadida por #73 \\(R5\\)',
+        ),
       );
     }
   });
