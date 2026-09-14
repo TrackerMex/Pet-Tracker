@@ -118,6 +118,23 @@ status: in_progress
 - `bun run test -- pet-hero-header legibility consistency design-drift`: exit
   1; 18 fallos nuevos: no existe `pet-hero-status`, legibilidad cuenta 0,
   `STATUS_DOT_PULSE.duration` es 0 y el cleanup no cancela ningún bucle.
+- Rojo `dcff4641` publicado.
+- Implementación: píldora accesible de dos hijos con tokens por tono; solo el
+  punto `success` usa un shared value de opacidad 1 → 0.5 → 1, 1000 ms por
+  tramo, UI thread, doble guarda de reduced motion y cleanup con cancelación.
+- El mock prescrito de Reanimated no exponía el `Animated.View` consumido por
+  el `Skeleton` de HeroUI en esta suite; el test conserva un `View` nativo para
+  ese tercero. El candado de `animate-pulse` busca ahora una clase, no la
+  mención obligatoria del nombre en el docblock E2.
+- Verde: `bun run test -- pet-hero-header legibility consistency design-drift
+  --silent` pasó (4 suites, 152 tests) y `bun run typecheck` terminó exit 0.
+- Sondas R8/E2, todas con `bun run test -- pet-hero-header --runInBand
+  --silent` y restauración inmediata:
+  - cruzar puntos success/warning: rojo en `pet-hero-header.test.tsx:448` para
+    ambas filas (`bg-success`/`bg-warning-strong`; también el guard reduced);
+  - quitar `!reduceMotion`: rojo en `:564`, el punto resultó animado;
+  - pulsar todo tono distinto de muted: rojo en `:597` para `warning`;
+  - quitar el cleanup: rojo en `:611`, `cancelAnimation` recibió 0 llamadas.
 
 ## R9 — Home monta la píldora desde el mismo estado
 

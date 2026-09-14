@@ -1,4 +1,5 @@
 import {
+  act,
   cleanup,
   render,
   screen,
@@ -40,16 +41,41 @@ const { join } = require('path');
 const SOURCE_ROOT = join(process.cwd(), 'src');
 const mockUseReducedMotion = jest.fn<boolean, []>(() => false);
 
-jest.mock('react-native-reanimated', () => ({
-  ...jest.requireActual<typeof import('react-native-reanimated')>(
+jest.mock('heroui-native', () => {
+  const actual = jest.requireActual<typeof import('heroui-native')>(
+    'heroui-native',
+  );
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>(
+    'react-native',
+  );
+
+  return {
+    ...actual,
+    Skeleton: (props: Record<string, unknown>) =>
+      React.createElement(View, props),
+  };
+});
+
+jest.mock('react-native-reanimated', () => {
+  const actual = jest.requireActual<typeof import('react-native-reanimated')>(
     'react-native-reanimated',
-  ),
-  useReducedMotion: () => mockUseReducedMotion(),
-  withRepeat: jest.fn((animation: unknown) => animation),
-  withSequence: jest.fn((...steps: unknown[]) => steps.at(-1)),
-  withTiming: jest.fn((value: number) => value),
-  cancelAnimation: jest.fn(),
-}));
+  );
+  const { View } = jest.requireActual<typeof import('react-native')>(
+    'react-native',
+  );
+
+  return {
+    ...actual,
+    // HeroUI Skeleton usa Animated.View; el requireActual de Jest no lo trae.
+    default: { ...actual.default, View },
+    useReducedMotion: () => mockUseReducedMotion(),
+    withRepeat: jest.fn((animation: unknown) => animation),
+    withSequence: jest.fn((...steps: unknown[]) => steps.at(-1)),
+    withTiming: jest.fn((value: number) => value),
+    cancelAnimation: jest.fn(),
+  };
+});
 
 const mockWithRepeat = jest.mocked(withRepeat);
 const mockWithTiming = jest.mocked(withTiming);
@@ -442,7 +468,7 @@ describe('#73 R8: la pildora de estado vive en la banda inferior, encima del nom
     );
     expect(dot.props.className).toContain('size-1.5 rounded-full');
     expect(text.props.className).toContain('text-2xs font-semibold');
-    expect(source).not.toContain('animate-pulse');
+    expect(source).not.toMatch(/className=[^\n]*animate-pulse/);
     expect(source).toContain("from 'react-native-reanimated'");
     expect(source).not.toMatch(/\bChip\b/);
   });
@@ -487,19 +513,18 @@ describe('#73 R8: la pildora de estado vive en la banda inferior, encima del nom
   });
 
   it('sin status no hay pildora (Profile) y con pet null tampoco, aunque llegue status', async () => {
-    await renderHero(<PetHeroHeader pet={makePet()} />);
-    expect(screen.queryByTestId('pet-hero-status')).toBeNull();
-    cleanup();
+    const view = await renderHero(<PetHeroHeader pet={makePet()} />);
+    expect(view.queryByTestId('pet-hero-status')).toBeNull();
 
-    await renderHero(
+    await view.rerender(
       <PetHeroHeader
         pet={null}
         status={{ label: 'En línea', tone: 'success' }}
       />,
     );
-    expect(screen.queryByTestId('pet-hero-status')).toBeNull();
+    expect(view.queryByTestId('pet-hero-status')).toBeNull();
     expect(
-      within(screen.getByTestId('pet-hero-caption')).queryAllByText(/\S/),
+      within(view.getByTestId('pet-hero-caption')).queryAllByText(/\S/),
     ).toEqual([]);
   });
 });
@@ -582,7 +607,7 @@ describe('#73 E2: el punto de "en linea" pulsa con Reanimated y respeta reduced 
       />,
     );
 
-    unmount();
+    await act(() => unmount());
     expect(mockCancelAnimation).toHaveBeenCalledTimes(1);
   });
 });
