@@ -75,21 +75,31 @@ export class DeviceDrizzleRepository implements DeviceRepository {
     deviceId: string,
     petId: string,
     ingestWatermark: Date,
-  ): Promise<void> {
+  ): Promise<Device> {
     try {
       // R3: asignacion + cache de status atomicos — si cualquiera falla,
-      // Postgres revierte ambos.
-      await this.db.transaction(async (tx) => {
+      // Postgres revierte ambos. #92 R1: la telemetria cacheada es de la
+      // asignacion, no del collar, y vuelve a NULL con cada claim.
+      return await this.db.transaction(async (tx) => {
         await tx.insert(petDevices).values({
           id: uuidv7(),
           petId,
           deviceId,
         });
 
-        await tx
+        const [row] = await tx
           .update(devices)
-          .set({ status: 'assigned', ingestWatermark, updatedAt: new Date() })
-          .where(eq(devices.id, deviceId));
+          .set({
+            status: 'assigned',
+            ingestWatermark,
+            batteryPct: null,
+            lastMessageAt: null,
+            updatedAt: new Date(),
+          })
+          .where(eq(devices.id, deviceId))
+          .returning();
+
+        return toDomain(row);
       });
     } catch (error) {
       // R8: la carrera de claims la decide el indice unico parcial — la

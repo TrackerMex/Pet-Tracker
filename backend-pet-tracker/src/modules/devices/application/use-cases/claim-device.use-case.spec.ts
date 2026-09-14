@@ -61,7 +61,9 @@ function buildDeps() {
   const findByIdentifier = jest.fn().mockResolvedValue(buildDevice());
   const hasActiveAssignment = jest.fn().mockResolvedValue(false);
   const findActiveByPetId = jest.fn().mockResolvedValue(null);
-  const claim = jest.fn().mockResolvedValue(undefined);
+  const claim = jest
+    .fn()
+    .mockResolvedValue(buildDevice({ status: 'assigned' }));
   const record = jest.fn().mockResolvedValue(undefined);
   const isDeviceEntitled = jest.fn().mockResolvedValue(true);
 
@@ -333,6 +335,27 @@ describe('R7 (device-subscriptions #25): subscription is the last claim check', 
 
     expect(deps.isDeviceEntitled.mock.invocationCallOrder[0]).toBeLessThan(
       deps.claim.mock.invocationCallOrder[0],
+    );
+  });
+});
+
+describe('#92 R1: execute devuelve la entidad que claim() persistió, no el snapshot previo', () => {
+  it('devuelve por identidad la entidad resuelta por claim', async () => {
+    const deps = buildDeps();
+    deps.findByIdentifier.mockResolvedValue(
+      buildDevice({
+        batteryPct: 37,
+        lastMessageAt: new Date('2026-08-01T11:59:00.000Z'),
+      }),
+    );
+    const claimed = buildDevice({
+      status: 'assigned',
+      ingestWatermark: new Date('2026-08-01T11:50:00.000Z'),
+    });
+    deps.claim.mockResolvedValue(claimed);
+
+    await expect(buildUseCase(deps).execute(DTO, USER_ID)).resolves.toBe(
+      claimed,
     );
   });
 });

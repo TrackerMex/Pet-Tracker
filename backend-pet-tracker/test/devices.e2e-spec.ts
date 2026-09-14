@@ -15,6 +15,8 @@ import { TOKEN_SERVICE } from '@/modules/auth/domain/ports/token-service';
 import type { TokenService } from '@/modules/auth/domain/ports/token-service';
 import { DEVICE_REPOSITORY } from '@/modules/devices/domain/repositories/device.repository';
 import type { DeviceRepository } from '@/modules/devices/domain/repositories/device.repository';
+import { INGESTION_STORE } from '@/workers/ingestion-store';
+import type { IngestionStore } from '@/workers/ingestion-store';
 import { seedSimulatedDevices } from '../scripts/seed-devices';
 import { AppModule } from './../src/app.module';
 
@@ -1014,6 +1016,136 @@ describe('Devices claim (e2e)', () => {
         );
       expect(activeRows).toHaveLength(1);
       expect(activeRows[0].petId).toBe(petB.id);
+    });
+  });
+
+  describe('#92 R1: el claim deja battery_pct y last_message_at en NULL y el 201 refleja la fila persistida', () => {
+    it('(a) limpia telemetría sembrada y acepta el primer mensaje nuevo', async () => {
+      const owner = await seedUser('r1-92a-owner');
+      const pet = await createPetViaApi(owner, `R1-92a-${RUN_ID}`);
+      const device = await seedDevice('R1-92A', {
+        batteryPct: 37,
+        lastMessageAt: new Date(Date.now() - 60_000),
+      });
+
+      const response = await claim(owner, {
+        petId: pet.id,
+        activationCode: device.activationCode,
+      }).expect(201);
+      const resetDevice = {
+        model: 'e2e-collar',
+        batteryPct: null,
+        connectivity: null,
+        lastMessageAt: null,
+        esn: device.esn,
+      };
+
+      expect(
+        Object.keys(response.body as Record<string, unknown>).sort(),
+      ).toEqual(CLAIM_KEYS);
+      expect(response.body).toEqual(resetDevice);
+
+      const [deviceRow] = await db
+        .select()
+        .from(devices)
+        .where(eq(devices.id, device.id));
+      expect(deviceRow.batteryPct).toBeNull();
+      expect(deviceRow.lastMessageAt).toBeNull();
+      expect(deviceRow.status).toBe('assigned');
+
+      const direct = await api()
+        .get(`/v1/pets/${pet.id}/device`)
+        .set('Authorization', `Bearer ${owner.token}`)
+        .expect(200);
+      expect(direct.body).toEqual(resetDevice);
+
+      const firstMessageAt = new Date();
+      const store = app.get<IngestionStore>(INGESTION_STORE);
+      await store.updateDeviceTelemetry(device.id, {
+        batteryPct: 80,
+        lastMessageAt: firstMessageAt,
+      });
+
+      const afterFirstMessage = await api()
+        .get(`/v1/pets/${pet.id}/device`)
+        .set('Authorization', `Bearer ${owner.token}`)
+        .expect(200);
+      const afterFirstMessageBody = afterFirstMessage.body as Record<
+        string,
+        unknown
+      >;
+      expect(afterFirstMessageBody.batteryPct).toBe(80);
+      expect(afterFirstMessageBody.connectivity).toBe('online');
+      expect(afterFirstMessageBody.lastMessageAt).toBe(
+        firstMessageAt.toISOString(),
+      );
+    });
+
+    it('(b) limpia la telemetría del dueño anterior al reasignar', async () => {
+      const ownerA = await seedUser('r1-92b-owner-a');
+      const ownerB = await seedUser('r1-92b-owner-b');
+      const petA = await createPetViaApi(ownerA, `R1-92b-a-${RUN_ID}`);
+      const petB = await createPetViaApi(ownerB, `R1-92b-b-${RUN_ID}`);
+      const device = await seedDevice('R1-92B');
+
+      await claim(ownerA, {
+        petId: petA.id,
+        activationCode: device.activationCode,
+      }).expect(201);
+      await db
+        .update(devices)
+        .set({
+          batteryPct: 63,
+          lastMessageAt: new Date(Date.now() - 30_000),
+        })
+        .where(eq(devices.id, device.id));
+
+      const [petABefore] = await db
+        .select({
+          lastPosition: pets.lastPosition,
+          lastCommunicationAt: pets.lastCommunicationAt,
+        })
+        .from(pets)
+        .where(eq(pets.id, petA.id));
+
+      await api()
+        .delete(`/v1/pets/${petA.id}/device`)
+        .set('Authorization', `Bearer ${ownerA.token}`)
+        .expect(204);
+
+      const response = await claim(ownerB, {
+        petId: petB.id,
+        activationCode: device.activationCode,
+      }).expect(201);
+      const resetDevice = {
+        model: 'e2e-collar',
+        batteryPct: null,
+        connectivity: null,
+        lastMessageAt: null,
+        esn: device.esn,
+      };
+      expect(response.body).toEqual(resetDevice);
+
+      const direct = await api()
+        .get(`/v1/pets/${petB.id}/device`)
+        .set('Authorization', `Bearer ${ownerB.token}`)
+        .expect(200);
+      expect(direct.body).toEqual(resetDevice);
+
+      const profile = await api()
+        .get(`/v1/pets/${petB.id}`)
+        .set('Authorization', `Bearer ${ownerB.token}`)
+        .expect(200);
+      expect((profile.body as { device: unknown }).device).toEqual(resetDevice);
+
+      const [petAAfter] = await db
+        .select({
+          lastPosition: pets.lastPosition,
+          lastCommunicationAt: pets.lastCommunicationAt,
+        })
+        .from(pets)
+        .where(eq(pets.id, petA.id));
+      expect(petAAfter).toEqual(petABefore);
     });
   });
 });
