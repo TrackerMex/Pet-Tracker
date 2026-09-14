@@ -10,7 +10,7 @@ Commit base: `f50b4203` (`chore(harness): registra baseline verde de #63`).
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | pendiente | pendiente |
+| R1 | `mobile-pet-tracker/src/screens/add-reminder/index.test.tsx::R1: el formulario vuelve a sus valores iniciales al perder el foco` → `restaura los ocho valores visibles tras el blur` | rojo: `a710b05b test(detail-state-reset): cover reminder blur reset (R1)`; verde: `00e82481 feat(detail-state-reset): reset reminder state on blur (R1)` |
 | R2 | pendiente | pendiente |
 | R3 | pendiente | pendiente |
 | R4 | pendiente | pendiente |
