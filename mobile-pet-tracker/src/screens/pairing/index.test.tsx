@@ -126,6 +126,66 @@ async function renderPairing() {
   return renderWithProviders(<PairingRoute />, { wrapper: PairingWrapper });
 }
 
+async function blurPairing() {
+  await act(async () => {
+    mockUseFocusEffect.mock.calls.forEach(([focusCallback]) => {
+      const cleanup = focusCallback();
+      if (typeof cleanup === 'function') cleanup();
+    });
+    await Promise.resolve();
+  });
+}
+
+describe('R5: el estado local de pairing se limpia al perder el foco', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  });
+
+  it('limpia la vista ready y el código tras el blur', async () => {
+    mockClaimDevice.mockResolvedValue({ kind: 'ok', device: makeDevice() });
+    await renderPairing();
+    await fireEvent.changeText(
+      await screen.findByTestId('activation-code-input'),
+      'ACT-READY',
+    );
+    await fireEvent.press(screen.getByTestId('pairing-submit'));
+    expect(await screen.findByTestId('pairing-ready')).toBeVisible();
+
+    await blurPairing();
+
+    await waitFor(() => {
+      expect(screen.queryByTestId('pairing-ready')).toBeNull();
+      expect(screen.getByTestId('activation-code-input').props.value).toBe('');
+      expect(screen.queryByTestId('pairing-error')).toBeNull();
+    });
+  });
+
+  it('limpia actionError tras el blur', async () => {
+    mockClaimDevice.mockResolvedValue({ kind: 'invalid' });
+    await renderPairing();
+    await fireEvent.changeText(
+      await screen.findByTestId('activation-code-input'),
+      'ACT-INVALID',
+    );
+    await fireEvent.press(screen.getByTestId('pairing-submit'));
+    expect(await screen.findByTestId('pairing-error')).toBeVisible();
+
+    await blurPairing();
+
+    await waitFor(() => {
+      expect(screen.queryByTestId('pairing-error')).toBeNull();
+    });
+  });
+});
+
 describe('R4: /pairing monta dentro de (tabs) con selector de mascota y estados de carga', () => {
   beforeEach(() => {
     jest.clearAllMocks();
