@@ -1768,5 +1768,62 @@
       "mobile-pet-tracker/src/components/floating-tab-bar.tsx",
       "mobile-pet-tracker/src/components/__tests__/floating-tab-bar.test.tsx"
     ]
+  },
+  {
+    "id": 92,
+    "name": "device-telemetry-reset-on-reassign",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Deuda nombrada por #73 (explore §1 y §9 G8, fuera de alcance de su spec). release (backend-pet-tracker/src/modules/devices/infrastructure/repositories/device.drizzle.repository.ts:107-112) solo escribe released_at y status, y claim (:89-92) solo status e ingest_watermark: la fila de devices conserva battery_pct y last_message_at del dueno anterior. Desde #73 connectivity se deriva en lectura de last_message_at, asi que una mascota que reclama un collar que otra uso hace un minuto se ve 'En linea' con bateria y senal ajenas hasta el primer mensaje nuevo; antes de #73 el pestillo lo escondia porque siempre decia 'online'. La spec decide por escrito en que momento se resetea (recomendado: en release, que es cuando los datos dejan de pertenecer a la mascota; alternativa: en claim) y que columnas entran (battery_pct y last_message_at; connectivity ya esta obsoleta por #73 y la borra #93). pets.last_position y pets.last_communication_at son de la mascota, no del collar, y quedan fuera.",
+    "acceptance_criteria": [
+      "Tras release, o en claim segun decida la spec, battery_pct y last_message_at del device quedan NULL; e2e que reclama un collar con telemetria vieja sembrada en Postgres y recibe connectivity null y batteryPct null en el 201 y en GET /v1/pets/:petId/device",
+      "El WHERE de monotonicidad de updateDeviceTelemetry (ingestion.drizzle.store.ts) sigue aceptando el primer mensaje tras el reset (last_message_at IS NULL)",
+      "Los candados de claves de test/devices.e2e-spec.ts y test/device-subscriptions.e2e-spec.ts siguen verdes sin tocarlos",
+      "Suite backend verde; ninguna cifra de candado se mueve sin declararla como delta"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/modules/devices/infrastructure/repositories/device.drizzle.repository.ts",
+      "backend-pet-tracker/test/devices.e2e-spec.ts"
+    ]
+  },
+  {
+    "id": 93,
+    "name": "drop-devices-connectivity-column",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Deuda nombrada por #73 (fuera de alcance de su spec). Desde #73 ningun escritor alimenta devices.connectivity (varchar 20, nullable; backend-pet-tracker/src/db/schema/devices.schema.ts:38): el store de ingesta ya no la escribe y la API deriva online|offline|null en lectura con deriveConnectivity. La columna sigue en el schema, en la entidad Device (device.entity.ts), en el puerto ActivePetDeviceStatus (pet-device-reader.ts), en el reader (pet-device.drizzle.reader.ts), en el candado devices.schema.spec.ts y en docs/data-model.md, donde #73 la marco obsoleta. Borrarla exige migracion drizzle-kit (out: src/db/migrations, drizzle.config.ts:32) y limpiar los cinco sitios; el contrato HTTP de 5 claves no cambia porque connectivity ya es derivada. Bloqueada hasta que #92 decida que columnas resetea, para no tocar dos veces el mismo fichero.",
+    "acceptance_criteria": [
+      "Migracion generada con pnpm db:generate que hace DROP COLUMN connectivity en devices, aplicada por init.sh sin intervencion manual",
+      "Ninguna referencia a connectivity queda en src/db/schema, entidad, puerto, reader ni seeds; devices.schema.spec.ts deja de asertar la columna y docs/data-model.md quita la nota de obsoleta",
+      "El contrato de toDeviceStatusResponse conserva sus 5 claves y los e2e de claim, device y perfil siguen verdes sin tocarlos",
+      "Suite backend y e2e verdes"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/db/schema/devices.schema.ts",
+      "backend-pet-tracker/src/db/schema/devices.schema.spec.ts",
+      "backend-pet-tracker/src/db/migrations/",
+      "backend-pet-tracker/src/modules/devices/domain/entities/device.entity.ts",
+      "backend-pet-tracker/src/modules/pets/domain/ports/pet-device-reader.ts",
+      "backend-pet-tracker/src/modules/devices/infrastructure/repositories/pet-device.drizzle.reader.ts",
+      "docs/data-model.md"
+    ]
+  },
+  {
+    "id": 94,
+    "name": "mobile-map-staleness-single-source",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Deuda nombrada por #73 (decision G4 de su spec, fuera de alcance). El mapa decide 'En vivo' / 'Desactualizado' con su propia constante STALE_SECONDS = 120 en mobile-pet-tracker/src/app/(tabs)/map.tsx:76 contra staleSeconds de GET /v1/pets/:petId/positions/last, mientras la pildora y collar-status de la Home leen device.connectivity, que el backend deriva con DEVICE_ONLINE_THRESHOLD_MS = 120 s (backend-pet-tracker/src/pipeline/constants.ts). Hoy coinciden porque el humano eligio 120 s en #73, pero son dos fuentes: si una cambia, Home y Mapa se contradicen en pantalla para la misma mascota. La spec cierra que fuente manda: (a) el mapa consume device.connectivity del detalle para el badge y staleSeconds solo para el texto de antiguedad, o (b) la API expone el umbral y el movil borra la constante. Hay que mantener map.test.tsx:548-585 (15 s en vivo, 121 s desactualizado) o declarar su delta. map.tsx sigue siendo route file sin migrar a src/screens/ (convencion #39): decidir si esta feature lo migra o no.",
+    "acceptance_criteria": [
+      "Una sola fuente de verdad para 'fresco' entre la Home y el Mapa, escrita en la spec con su justificacion; ninguna constante de umbral duplicada en mobile-pet-tracker/",
+      "Test que fija que, para el mismo detalle de mascota, el badge del mapa y la pildora del hero nunca discrepan (mismo estado de entrada, mismo texto de estado)",
+      "map.test.tsx conserva sus casos o declara el delta; suite movil verde; cero dependencias nuevas",
+      "Gate humano: smoke en dev build de Android con el poller parado comprobando que Home y Mapa cambian de estado a la vez"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/app/(tabs)/map.tsx",
+      "mobile-pet-tracker/src/app/(tabs)/__tests__/map.test.tsx",
+      "mobile-pet-tracker/src/utils/device-connectivity.ts"
+    ]
   }
 ]
