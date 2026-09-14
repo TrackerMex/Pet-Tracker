@@ -54,6 +54,7 @@ export const R3_HOME: UseRow[] = [
   { file: 'src/screens/home/index.tsx', key: 'home.free' },
   { file: 'src/screens/home/index.tsx', key: 'home.online' },
   { file: 'src/screens/home/index.tsx', key: 'home.offline' },
+  { file: 'src/screens/home/index.tsx', key: 'home.unknown' },
   { file: 'src/screens/home/index.tsx', key: 'home.noCollar' },
   { file: 'src/screens/home/index.tsx', key: 'home.pairCollar' },
   { file: 'src/screens/home/index.tsx', key: 'home.summaryTitle' },

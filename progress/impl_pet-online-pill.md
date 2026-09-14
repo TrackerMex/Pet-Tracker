@@ -96,7 +96,12 @@ status: in_progress
 
 ## R7 — cuatro estados en `collar-status`
 
-Pendiente.
+- Rojo preparado: Home debe pintar `Esperando señal` para un collar sin primer
+  reporte y conservar `Sin conexión` con batería para `offline`; el candado de
+  copy exige `home.unknown` en la pantalla.
+- `bun run test -- screens/home ui-language`: exit 1 (3 fallos); el collar con
+  `connectivity: null` pintó `Sin conexión` y `checkUses` contó cero usos de
+  `home.unknown` (en sus dos recorridos).
 
 ## R8 — píldora y pulso accesible
 

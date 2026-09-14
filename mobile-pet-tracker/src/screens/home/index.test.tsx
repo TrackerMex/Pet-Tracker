@@ -638,7 +638,7 @@ describe('R8: collar card refleja el device', () => {
     expect(screen.getByTestId('collar-battery')).toHaveTextContent('82%');
   });
 
-  it('treats an unknown connection as offline and preserves missing battery', async () => {
+  it('#73 R7: treats a never-reported collar as unknown (Esperando señal), not offline', async () => {
     mockGetPet.mockResolvedValue({
       kind: 'ok',
       pet: makePet({
@@ -655,8 +655,31 @@ describe('R8: collar card refleja el device', () => {
     await renderHome();
 
     await waitFor(() => expect(screen.getByTestId('collar-card')).toBeVisible());
-    expect(screen.getByTestId('collar-status')).toHaveTextContent('Sin conexión');
+    expect(screen.getByTestId('collar-status')).toHaveTextContent(
+      'Esperando señal',
+    );
     expect(screen.getByTestId('collar-battery')).toHaveTextContent('—');
+  });
+
+  it('#73 R7: shows an offline collar as Sin conexión with its battery', async () => {
+    mockGetPet.mockResolvedValue({
+      kind: 'ok',
+      pet: makePet({
+        device: {
+          model: 'PetTrack One',
+          batteryPct: 12,
+          connectivity: 'offline',
+          lastMessageAt: '2026-08-21T12:00:00.000Z',
+          esn: 'ACT-001',
+        },
+      }),
+    });
+
+    await renderHome();
+
+    await waitFor(() => expect(screen.getByTestId('collar-card')).toBeVisible());
+    expect(screen.getByTestId('collar-status')).toHaveTextContent('Sin conexión');
+    expect(screen.getByTestId('collar-battery')).toHaveTextContent('12%');
   });
 });
 
