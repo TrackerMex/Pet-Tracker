@@ -106,6 +106,11 @@ commit de cierre de esta rama y con una sesión que tenga al menos una mascota:
    pantalla ajena: ninguna burbuja y cinco etiquetas grises; al pulsar una
    pestaña: burbuja ya colocada, sin deslizamiento fantasma.
 
-Resultado humano: **por ejecutar**. Registrar aquí dispositivo, versión del dev
-build, commit probado y veredicto PASS/FAIL; después completar R8 en
-`specs/mobile-tab-indicator-out-of-range/traceability.md`.
+Resultado humano: **PASS**, reportado el 2026-09-14. El humano corrió el guion
+completo —los cuatro pasos— en su dev build de Android y confirmó que sale bien.
+Commit probado: `b5faca09`, cabeza de `feature/91-mobile-tab-indicator-out-of-range`
+en ese momento; el código de producción de ese commit es el mismo que revisó el
+reviewer, sin drift desde `26ca348f`.
+
+Dispositivo y versión del dev build: no anotados por el humano al reportar. Si
+hacen falta para el historial, se completan aquí; no cambian el veredicto.
