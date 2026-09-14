@@ -523,6 +523,19 @@ describe('R8: con collar muestra el estado del dispositivo y el plan tracked/fre
     );
   });
 
+  it('#73 R6: pinta Sin conexion para un collar desconectado', async () => {
+    mockListPets.mockResolvedValue({
+      kind: 'ok',
+      pets: [makePet({ device: makeDevice({ connectivity: 'offline' }) })],
+    });
+
+    await renderPairing();
+
+    expect(await screen.findByTestId('device-connectivity')).toHaveTextContent(
+      'Sin conexión',
+    );
+  });
+
   it('uses the specified fallbacks for nullable device values', async () => {
     mockListPets.mockResolvedValue({
       kind: 'ok',

@@ -638,7 +638,7 @@ describe('R8: collar card refleja el device', () => {
     expect(screen.getByTestId('collar-battery')).toHaveTextContent('82%');
   });
 
-  it('treats an unknown connection as offline and preserves missing battery', async () => {
+  it('#73 R7: treats a never-reported collar as unknown (Esperando señal), not offline', async () => {
     mockGetPet.mockResolvedValue({
       kind: 'ok',
       pet: makePet({
@@ -655,8 +655,120 @@ describe('R8: collar card refleja el device', () => {
     await renderHome();
 
     await waitFor(() => expect(screen.getByTestId('collar-card')).toBeVisible());
-    expect(screen.getByTestId('collar-status')).toHaveTextContent('Sin conexión');
+    expect(screen.getByTestId('collar-status')).toHaveTextContent(
+      'Esperando señal',
+    );
     expect(screen.getByTestId('collar-battery')).toHaveTextContent('—');
+  });
+
+  it('#73 R7: shows an offline collar as Sin conexión with its battery', async () => {
+    mockGetPet.mockResolvedValue({
+      kind: 'ok',
+      pet: makePet({
+        device: {
+          model: 'PetTrack One',
+          batteryPct: 12,
+          connectivity: 'offline',
+          lastMessageAt: '2026-08-21T12:00:00.000Z',
+          esn: 'ACT-001',
+        },
+      }),
+    });
+
+    await renderHome();
+
+    await waitFor(() => expect(screen.getByTestId('collar-card')).toBeVisible());
+    expect(screen.getByTestId('collar-status')).toHaveTextContent('Sin conexión');
+    expect(screen.getByTestId('collar-battery')).toHaveTextContent('12%');
+  });
+});
+
+describe('#73 R9: la pildora del hero y collar-status nacen del mismo estado', () => {
+  const states: [PetProfile['device'], string, string][] = [
+    [null, 'Sin collar', 'bg-muted'],
+    [
+      {
+        model: 'PetTrack One',
+        batteryPct: null,
+        connectivity: null,
+        lastMessageAt: null,
+        esn: 'ACT-001',
+      },
+      'Esperando señal',
+      'bg-muted',
+    ],
+    [
+      {
+        model: 'PetTrack One',
+        batteryPct: 12,
+        connectivity: 'offline',
+        lastMessageAt: '2026-08-21T12:00:00.000Z',
+        esn: 'ACT-001',
+      },
+      'Sin conexión',
+      'bg-warning-strong',
+    ],
+    [
+      {
+        model: 'PetTrack One',
+        batteryPct: 82,
+        connectivity: 'online',
+        lastMessageAt: '2026-08-21T12:00:00.000Z',
+        esn: 'ACT-001',
+      },
+      'En línea',
+      'bg-success',
+    ],
+  ];
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+  });
+
+  it.each(states)('%s -> pildora "%s" con punto %s', async (device, label, dotClass) => {
+    mockGetPet.mockResolvedValue({
+      kind: 'ok',
+      pet: makePet({ device }),
+    });
+
+    await renderHome();
+
+    const pill = await screen.findByTestId('pet-hero-status');
+    expect(within(pill).getByTestId('pet-hero-status-text')).toHaveTextContent(
+      label,
+    );
+    expect(screen.getByTestId('collar-status')).toHaveTextContent(label);
+    expect(
+      within(pill).getByTestId('pet-hero-status-dot').props.className,
+    ).toContain(dotClass);
+    expect(pill.props.accessibilityLabel).toBe(label);
+  });
+
+  it('la pildora no entra en el slot: home-hero-actions sigue con dos hijos', async () => {
+    await renderHome();
+
+    const actions = await screen.findByTestId('home-hero-actions');
+    expect(actions.children).toHaveLength(2);
+    expect(within(actions).queryByTestId('pet-hero-status')).toBeNull();
+  });
+
+  it('mientras el detalle carga no hay pildora y si hay skeleton', async () => {
+    mockGetPet.mockReturnValue(pending<PetState>());
+
+    await renderHome();
+
+    expect(await screen.findByTestId('pet-hero-skeleton')).toBeVisible();
+    expect(screen.queryByTestId('pet-hero-status')).toBeNull();
   });
 });
 

@@ -1,6 +1,17 @@
 import { Skeleton } from 'heroui-native';
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { Text, View } from 'react-native';
+import Animated, {
+  cancelAnimation,
+  Easing,
+  ReduceMotion,
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withTiming,
+} from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { PetProfile } from '../api/types';
@@ -18,10 +29,51 @@ export const PET_HERO_MEDIA_HEIGHT = 260;
 /** Alto de cada franja de degradado entre la imagen y una banda opaca. */
 export const PET_HERO_FADE_HEIGHT = 64;
 
+/**
+ * Pulso del punto 'en línea' (#73 E2): animate-pulse de Tailwind traducido a
+ * Reanimated; misma cadencia que el pulse del Skeleton de heroui que ya vive
+ * en este hero.
+ */
+export const STATUS_DOT_PULSE = {
+  duration: 1000,
+  easing: Easing.bezier(0.4, 0, 0.6, 1),
+  reduceMotion: ReduceMotion.System,
+} as const;
+
+const AnimatedView = Animated.createAnimatedComponent(View);
+
 export interface PetHeroHighlight {
   value: string;
   label: string;
 }
+
+export type PetHeroStatusTone = 'success' | 'warning' | 'muted';
+
+export interface PetHeroStatus {
+  label: string;
+  tone: PetHeroStatusTone;
+}
+
+const STATUS_TONE_CLASSES: Record<
+  PetHeroStatusTone,
+  { surface: string; dot: string; text: string }
+> = {
+  success: {
+    surface: 'bg-success-soft',
+    dot: 'bg-success',
+    text: 'text-accent-strong',
+  },
+  warning: {
+    surface: 'bg-warning-soft',
+    dot: 'bg-warning-strong',
+    text: 'text-warning-strong',
+  },
+  muted: {
+    surface: 'bg-default',
+    dot: 'bg-muted',
+    text: 'text-muted',
+  },
+};
 
 export interface PetHeroHeaderProps {
   /** null mientras el detalle de la mascota no ha resuelto (R8). */
@@ -33,6 +85,8 @@ export interface PetHeroHeaderProps {
   variant?: 'bleed' | 'card';
   /** Dato destacado YA FORMATEADO por el llamante (R7). */
   highlight?: PetHeroHighlight;
+  /** Estado YA FORMATEADO por el llamante, misma regla que `highlight` (R7 de #67). */
+  status?: PetHeroStatus;
   /** Slot de la zona superior. El hero NO conoce a su contenido (D2). */
   children?: ReactNode;
 }
@@ -41,10 +95,36 @@ export function PetHeroHeader({
   pet,
   variant = 'card',
   highlight,
+  status,
   children,
 }: PetHeroHeaderProps) {
   const insets = useSafeAreaInsets();
   const [background] = useThemeColors(['background']);
+  const reduceMotion = useReducedMotion();
+  const dotOpacity = useSharedValue(1);
+  const dotStyle = useAnimatedStyle(() => ({ opacity: dotOpacity.get() }));
+  const pulses = !reduceMotion && pet !== null && status?.tone === 'success';
+  const tone = STATUS_TONE_CLASSES[status?.tone ?? 'muted'];
+
+  useEffect(() => {
+    if (!pulses) return;
+
+    dotOpacity.set(
+      withRepeat(
+        withSequence(
+          withTiming(0.5, STATUS_DOT_PULSE),
+          withTiming(1, STATUS_DOT_PULSE),
+        ),
+        -1,
+        false,
+      ),
+    );
+
+    return () => {
+      cancelAnimation(dotOpacity);
+      dotOpacity.set(1);
+    };
+  }, [pulses, dotOpacity]);
 
   return (
     <View
@@ -116,6 +196,33 @@ export function PetHeroHeader({
         <View className="flex-1 gap-1">
           {pet ? (
             <>
+              {status ? (
+                <View
+                  testID="pet-hero-status"
+                  accessible
+                  accessibilityLabel={status.label}
+                  className={`flex-row items-center gap-1 self-start rounded-full px-2.5 py-0.5 ${tone.surface}`}
+                >
+                  {pulses ? (
+                    <AnimatedView
+                      testID="pet-hero-status-dot"
+                      className={`size-1.5 rounded-full ${tone.dot}`}
+                      style={dotStyle}
+                    />
+                  ) : (
+                    <View
+                      testID="pet-hero-status-dot"
+                      className={`size-1.5 rounded-full ${tone.dot}`}
+                    />
+                  )}
+                  <Text
+                    testID="pet-hero-status-text"
+                    className={`text-2xs font-semibold ${tone.text}`}
+                  >
+                    {status.label}
+                  </Text>
+                </View>
+              ) : null}
               <Text
                 testID="pet-hero-name"
                 className="text-3xl font-black text-foreground"

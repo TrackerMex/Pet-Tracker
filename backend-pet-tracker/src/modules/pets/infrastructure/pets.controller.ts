@@ -107,7 +107,7 @@ export class PetsController {
         pet,
         role,
         now,
-        device ? toDeviceStatusResponse(device) : null,
+        device ? toDeviceStatusResponse(device, now) : null,
         photoUrl,
         nextVaccine,
       );

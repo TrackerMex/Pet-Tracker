@@ -3688,3 +3688,42 @@ habria dejado dos PRs declarando cada uno `75/91` en `STATUS.md` por razones dis
 un conflicto seguro en esa linea al mergear el segundo. Yendo junto, el contador queda en
 `76/91`, que es el numero correcto cuando #91 y #75 esten las dos en `main`.
 
+
+---
+
+# Sesión #73 pet-online-pill (cierre de implementación, 2026-09-14)
+
+- Branch `feature/73-pet-online-pill`, worktree
+  `/home/claude/sites/Pet-Tracker-wt-backend`.
+- Codex ejecutó R1-R10 en orden TDD; los rojos/verdes de R1-R9 y sus hashes
+  están en `specs/pet-online-pill/traceability.md`. R2 y R3 comparten el verde
+  `f92f0736` por diseño de la tarea.
+- R10 deja cinco sondas de mutación, grep-clean, alcance sin los archivos
+  prohibidos y la corrida final `./init.sh` con exit 0 en
+  `progress/impl_pet-online-pill.md`.
+- R11 no se ejecutó: queda el guion literal en dev build Android y su tabla
+  vacía para firma humana. Por ese gate, #73 permanece `in_progress`; no se
+  abrió PR.
+
+---
+
+# Sesión #73 pet-online-pill (cierre, 2026-09-14, sesión Backend)
+
+- Recibida el 2026-09-13 desde la sesión Frontend (reparto por el humano). Worktree
+  `/home/claude/sites/Pet-Tracker-wt-backend`, branch `feature/73-pet-online-pill`
+  desde `origin/main` `072cff40`.
+- `explorer` → `progress/explore_pet-online-pill.md`: pestillo confirmado (único
+  escritor `ingestion.drizzle.store.ts:97`, nadie lo apaga); umbral inexistente en
+  backend, el mapa ya usa 120 s; `files_affected` citaba el route delgado.
+- `spec_author` → `specs/pet-online-pill/` con decisiones por defecto (A2: derivar en
+  lectura; 300 s; cuatro estados; píldora por prop del hero). Firma humana `0a76562b`
+  con G2 = 120 s y G7b = pulso con Reanimated; enmiendas E1-E3 firmadas en `383d3fef`.
+  Corrección del leader a tasks.md: el rojo de R2 era de compilación (ts-jest con
+  diagnósticos), se cambió a stub con placeholder.
+- Codex: R1-R10, 19 commits test→feat. `reviewer` aprobado (`progress/review_pet-online-pill.md`),
+  hallazgos no bloqueantes: mock de `Skeleton` no prescrito por E2 (errata en la spec),
+  Codex cerró `current.md` antes de tiempo.
+- Smoke R11 firmado por el humano (`4f9a0eac`). Merge de `origin/main` (#75, #91) en la
+  branch con conflictos en `STATUS.md` (contador recalculado: 77/91) e `history.md`.
+- Coordinación con la sesión Frontend por SendMessage antes de cada init.sh; Postgres
+  compartido sin colisiones.

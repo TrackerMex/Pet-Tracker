@@ -36,9 +36,13 @@ import {
 import { listReminders } from '../../api/reminders';
 import type { DayEntry, ReminderType } from '../../api/types';
 import { Card } from '../../components/card';
-import { PetHeroHeader } from '../../components/pet-hero-header';
+import {
+  PetHeroHeader,
+  type PetHeroStatusTone,
+} from '../../components/pet-hero-header';
 import { PetSwitcher } from '../../components/pet-switcher';
 import { usePetSelection } from '../../hooks/use-pet-selection';
+import type { TranslationKey } from '../../i18n/catalog';
 import { useAuth } from '../../providers/auth-provider';
 import {
   useLocale,
@@ -51,6 +55,10 @@ import {
 } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { CATEGORY_SLOTS } from '../../utils/category-palette';
+import {
+  deviceConnectionState,
+  type DeviceConnectionState,
+} from '../../utils/device-connectivity';
 import { REMINDER_TYPE_META } from '../../utils/reminder-meta';
 import {
   calendarDaysUntil,
@@ -99,6 +107,16 @@ const QUICK_ACTIONS = [
     href: (petId: string) => `/pets/${petId}/docs`,
   },
 ] as const;
+
+const HOME_CONNECTION: Record<
+  DeviceConnectionState,
+  { labelKey: TranslationKey; tone: PetHeroStatusTone }
+> = {
+  none: { labelKey: 'home.free', tone: 'muted' },
+  unknown: { labelKey: 'home.unknown', tone: 'muted' },
+  offline: { labelKey: 'home.offline', tone: 'warning' },
+  online: { labelKey: 'home.online', tone: 'success' },
+};
 
 function isPetsError(state: PetsState): boolean {
   return ['error', 'unreachable', 'missing-config'].includes(state.kind);
@@ -221,6 +239,10 @@ export function HomeScreen() {
   const selectedToday =
     selectedActivityDay !== null &&
     selectedActivityDay.date === latestActivityDay?.date;
+  const connection =
+    detail.data?.kind === 'ok'
+      ? deviceConnectionState(detail.data.pet.device)
+      : null;
 
   useFocusEffect(
     useCallback(() => {
@@ -249,6 +271,14 @@ export function HomeScreen() {
         <PetHeroHeader
           pet={detail.data?.kind === 'ok' ? detail.data.pet : null}
           variant="bleed"
+          status={
+            connection
+              ? {
+                  label: t(HOME_CONNECTION[connection].labelKey),
+                  tone: HOME_CONNECTION[connection].tone,
+                }
+              : undefined
+          }
           highlight={
             today
               ? { value: fmtCount(today.walkCount), label: t('home.walks') }
@@ -434,7 +464,7 @@ export function HomeScreen() {
           </Card>
         ) : null}
 
-        {detail.data?.kind === 'ok' ? (
+        {detail.data?.kind === 'ok' && connection ? (
           <>
             <Card
               testID="collar-card"
@@ -442,9 +472,9 @@ export function HomeScreen() {
             >
               <View className="flex-row items-center gap-3">
                 <View className="size-9 items-center justify-center rounded-full bg-accent-soft">
-                  {detail.data.pet.device === null ? (
+                  {connection === 'none' ? (
                     <Moon size={20} color={accent} />
-                  ) : detail.data.pet.device.connectivity === 'online' ? (
+                  ) : connection === 'online' ? (
                     <Wifi size={20} color={accent} />
                   ) : (
                     <WifiOff size={20} color={accent} />
@@ -454,11 +484,7 @@ export function HomeScreen() {
                   testID="collar-status"
                   className="text-base font-bold text-foreground"
                 >
-                  {detail.data.pet.device === null
-                    ? t('home.free')
-                    : detail.data.pet.device.connectivity === 'online'
-                      ? t('home.online')
-                      : t('home.offline')}
+                  {t(HOME_CONNECTION[connection].labelKey)}
                 </Text>
               </View>
               {detail.data.pet.device ? (

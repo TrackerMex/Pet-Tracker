@@ -80,8 +80,9 @@ describe('#65 R2: la barra de pestañas resuelve su copy por clave', () => {
 describe('#65 R3: Home resuelve su copy por clave', () => {
   // 20 en `303fc19` + 1 de `home.walks` (#67 R7b, delta declarado en su R9b).
   // #68 añade el delta medido de weekly-activity-chart, sin recontar la base.
+  // #73 añade `home.unknown` para distinguir espera inicial de desconexión.
   it('#71 R11: registra el copy de accesos rápidos sobre los deltas heredados', () => {
-    expect(R3_HOME).toHaveLength(21 + 15 + 1 + 4 + 7 + 2);
+    expect(R3_HOME).toHaveLength(21 + 15 + 1 + 4 + 7 + 2 + 1);
     checkUses(R3_HOME);
   });
 });
@@ -164,7 +165,7 @@ describe('#65 R9: el alta de mascota resuelve su copy por clave', () => {
 
 describe('#65 R10: el emparejado del collar resuelve su copy por clave', () => {
   it('resuelve las ocurrencias normativas y el delta de conectividad', () => {
-    expect(R10_PAIRING).toHaveLength(42 + 2);
+    expect(R10_PAIRING).toHaveLength(42 + 2 + 1);
     checkUses(R10_PAIRING);
   });
 });

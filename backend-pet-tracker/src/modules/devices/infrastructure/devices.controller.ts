@@ -40,6 +40,7 @@ export class DevicesController {
     try {
       return toDeviceStatusResponse(
         await this.claimDevice.execute(dto, user.id),
+        new Date(),
       );
     } catch (error) {
       throw mapDeviceError(error);

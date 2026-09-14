@@ -322,3 +322,20 @@ tags: [harness, spec]
 ## Aprobación
 
 - [X] Aprobado por humano (fecha: 2026-08-02) ← gate obligatorio antes de implementar
+
+## Enmienda #73 — la conectividad se deriva en lectura
+
+`pet-online-pill` (#73) modifica una decisión que esta spec dejó aprobada. La
+spec de origen es `specs/pet-online-pill/`; el detalle de la enmienda está en su
+`requirements.md` §R4.
+
+- Spec enmendada: `wialon-ingestion-pipeline`
+- Qué cambia: R14 deja de escribir `connectivity = 'online'` (el store solo
+  actualiza `battery_pct` y `last_message_at`); la línea de §Fuera de alcance
+  "`connectivity = 'offline'` / detección de silencio: nadie la marca" queda
+  cerrada por #73 con derivación en lectura, no con una marca en escritura.
+- Qué NO cambia: ningún otro requisito de esta spec, ni su estado de
+  aprobación, ni los tests que ya la cubren salvo la aserción declarada de
+  `test/ingestion.e2e-spec.ts:218`.
+
+- [X] Enmienda aprobada por humano (firmada en `0a76562b`, 2026-09-12 — ver §Aprobación de `specs/pet-online-pill/requirements.md`)
