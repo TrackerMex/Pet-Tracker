@@ -1,6 +1,6 @@
 ---
 feature: "mobile-detail-screens-state-reset"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec, mobile]
 ---
 

@@ -1148,7 +1148,7 @@
   {
     "id": 63,
     "name": "mobile-detail-screens-state-reset",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P2",
     "description": "Los formularios de las pantallas de detalle conservan lo que el usuario escribio la vez anterior. Reportado por el humano el 2026-09-04 durante el smoke de #61: crear un recordatorio, volver, y entrar de nuevo a crear otro deja el formulario con el registro anterior en vez de en blanco. Causa: add-reminder vive en mobile-pet-tracker/src/app/(tabs)/add-reminder.tsx, asi que Expo Router la trata como RUTA DE TAB. Al guardar, el use-case llama a router.back() (src/screens/add-reminder/index.tsx:79), que cambia de tab pero NO desmonta el componente: los nueve useState de :39-47 (type, title, date, time, advanceMinutes, los dos flags de picker, submitting y formError) conservan su valor, y al reentrar la pantalla se pinta con ellos. No es un bug de la llamada a la API ni del cache de TanStack Query: el registro se crea bien, lo que sobrevive es estado local de React. Preexistente, no lo introdujo #61 (que en esa pantalla solo anadio hitSlop a tres controles). El mismo patron afecta en principio a las otras pantallas de detalle que viven bajo (tabs): add-pet, weight-log, meal-schedule y docs; hay que comprobar una por una cuales tienen estado que sobreviva de forma visible, no asumirlo. La via de fondo ya esta identificada en progress/audit_ui_polish.md, seccion Fuera de alcance: sacar las pantallas de detalle del Tabs a un Stack, que ademas les daria cabecera nativa y arreglaria el teleport sin transicion que anoto progress/audit_animations_mobile.md (M3). La spec tiene que decidir explicitamente entre esa via estructural y un reset local mas barato, y decir por que; el reset local es menos codigo pero deja el teleport y la cabecera a mano sin arreglar, y hay que verificar que no rompe el caso legitimo de volver a una pantalla a medio llenar. Ampliacion del 2026-09-04, confirmada por la sesion que llevo #42 mobile-device-pairing: la pantalla /pairing hereda el mismo patron. Vive en src/app/(tabs)/pairing.tsx por decision D4 de su spec (mismo precedente que add-reminder: asi hereda el Redirect y el SelectedPetProvider, y el FloatingTabBar la ignora), asi que al salir con router.back() o cambiando de tab no se desmonta. Sobreviven cuatro useState de src/screens/pairing/index.tsx: code (el texto del codigo de activacion), actionError (el ultimo mensaje de error), phase ('idle' | 'ready') y readyDevice. Los CTAs de la vista ready si resetean phase y readyDevice via leaveReady, pero salir por la barra de tabs en fase ready deja 'Tracker is ready' pegado, y code y actionError no se limpian nunca. Lo que si se refresca son los datos: dos useFocusEffect refetchean pets y tracking al volver. No se reabrio en #42 porque su gate G1 ya paso con collar real y su PR #102 quedo cerrado por review. Detalle que condiciona el test: src/screens/pairing/index.test.tsx mockea useFocusEffect como jest.fn(), asi que el test nuevo tiene que capturar el callback y ejecutar su cleanup a mano.",
     "acceptance_criteria": [
@@ -1824,6 +1824,29 @@
       "mobile-pet-tracker/src/app/(tabs)/map.tsx",
       "mobile-pet-tracker/src/app/(tabs)/__tests__/map.test.tsx",
       "mobile-pet-tracker/src/utils/device-connectivity.ts"
+    ]
+  },
+  {
+    "id": 95,
+    "name": "mobile-detail-screens-to-stack",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Deuda declarada por la decision D1 de #63 y firmada por el humano el 2026-09-14 (specs/mobile-detail-screens-state-reset/requirements.md, seccion Deuda que esta spec deja abierta). Sacar las seis pantallas de detalle (add-reminder, pets/add, pets/[petId]/docs, weight-log, meal-schedule, pairing) de mobile-pet-tracker/src/app/(tabs)/ a un Stack nativo, para darles push/pop de plataforma y cabecera nativa. Cierra M3 de progress/audit_animations_mobile.md (hoy router.push a estas rutas es un teleport sin transicion) y el punto de progress/audit_ui_polish.md:125 (cabecera nativa en vez de los seis botones de volver a mano). #63 eligio el reset local por coste, no por preferencia: el Stack es la via de fondo correcta y queda pospuesta, no descartada. Requiere subir SelectedPetProvider y el Redirect a /login de src/app/(tabs)/_layout.tsx a src/app/_layout.tsx -lo que los pone tambien sobre (auth) y reset-password-, revisar el paddingBottom: insets.bottom + 96 de las seis pantallas (ese hueco existe por el FloatingTabBar, que deja de pintarse sobre una pantalla del Stack), sustituir los seis botones de volver y sus testID por cabecera de Stack con claves de copy nuevas en los dos idiomas (candado de longitud de catalogo en language-provider.test.tsx), y borrar mobile-pet-tracker/.expo/types/router.d.ts antes de tocar codigo. Revierte la decision D4 de specs/mobile-device-pairing/design.md, que metio /pairing bajo (tabs) precisamente para heredar guard y provider.",
+    "acceptance_criteria": [
+      "Las seis pantallas de detalle viven fuera de (tabs) y se navegan con push/pop nativo, con transicion de plataforma en vez del teleport de M3",
+      "El Redirect a /login y el SelectedPetProvider siguen protegiendo las seis pantallas tras subir al layout raiz, sin quedar activos sobre (auth) ni reset-password de forma que rompa el login",
+      "El paddingBottom: insets.bottom + 96 se revisa una por una: ninguna deja banda muerta visible donde antes flotaba el FloatingTabBar",
+      "Los seis botones de volver a mano se sustituyen por cabecera de Stack; la spec decide que pasa con sus testID y con las aserciones de TOUCH_SLOP de #61 R10",
+      "El reset local que introdujo #63 se retira de las pantallas que se muevan, donde queda redundante (C7), sin que R1-R7 de #63 dejen de cumplirse en las que sigan bajo (tabs)",
+      "La reversion de D4 de specs/mobile-device-pairing/design.md se escribe y pasa su propio gate humano, por ser cambio de spec ajena",
+      "Gate humano: smoke en dev build de Android de la transicion y la cabecera en las seis pantallas. No delegable a IA"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/app/_layout.tsx",
+      "mobile-pet-tracker/src/app/(tabs)/_layout.tsx",
+      "mobile-pet-tracker/src/app/(tabs)/",
+      "mobile-pet-tracker/src/i18n/catalog.ts",
+      "specs/mobile-device-pairing/design.md"
     ]
   }
 ]
