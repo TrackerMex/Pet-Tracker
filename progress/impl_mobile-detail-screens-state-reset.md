@@ -70,9 +70,25 @@ R7 pairing revert: git diff empty; worktree clean
 
 ## Verificación final
 
-- Comando Jest dirigido: pendiente.
-- `npx tsc --noEmit`: pendiente.
-- `npx expo lint`: pendiente.
+Comando Jest dirigido, ejecutado literalmente y sin pipe:
+
+```text
+npx jest src/screens/add-reminder src/screens/add-pet src/screens/pairing src/screens/docs "src/app/(tabs)/__tests__/weight-log" "src/app/(tabs)/__tests__/meal-schedule" src/providers/__tests__/language-provider
+```
+
+- Resultado: **5 suites, 114
+  tests, 0 fallos, exit 0**. Emitió los avisos ya conocidos de HeroUI/Uniwind.
+- La regex de ese comando no selecciona los paths con `(tabs)`; comprobación
+  adicional con `--runTestsByPath` para weight-log y meal-schedule: **2 suites,
+  47 tests, 0 fallos, exit 0**.
+- `src/__tests__/consistency-classnames.test.ts`: **55/55, exit 0**.
+- `npx tsc --noEmit`: **exit 0, sin salida**.
+- `npx expo lint`: **exit 0, sin salida**.
+- Alcance desde `f50b4203`: **exactamente 10 ficheros móviles** (cinco de
+  producción y cinco de test). `src/i18n/catalog.ts`, el test de
+  language-provider, `(tabs)/_layout.tsx` y `screens/docs/index.tsx` no tienen
+  diff.
+- `mobile-pet-tracker/.expo/types/router.d.ts` sigue sin existir.
 - `./init.sh`: no ejecutado por instrucción expresa; el gate completo lo coordina el reviewer.
 - Smoke test en Android dev build: reservado al humano.
 
