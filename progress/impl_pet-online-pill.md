@@ -37,6 +37,9 @@ status: in_progress
   el placeholder `connectivity: null`.
 - `pnpm test -- device-status pets.controller`: exit 1, cuatro aserciones
   fallaron con `Expected: online|offline`, `Received: null`; `pnpm build`: exit 0.
+- Rojo `2f04bc49` publicado.
+- Verde: `pnpm test` pasó (166 suites, 1277 tests) y `pnpm build` terminó con
+  exit 0 tras delegar la derivación al helper único.
 
 ## R3 — tres estados por API contra Postgres
 
@@ -44,6 +47,9 @@ status: in_progress
 - `pnpm test:e2e -- device-connectivity`: exit 1; el caso `null` pasó y las
   aserciones de perfil para `offline` (`:163`) y `online` (`:175`) recibieron
   `null`, el placeholder de R2.
+- Rojo `b77468ba` publicado.
+- Verde: `pnpm test:e2e -- device-connectivity` pasó (1 suite, 3 tests) contra
+  Postgres real; los dos endpoints devolvieron las cinco claves esperadas.
 
 ## R4 — eliminación del pestillo
 
