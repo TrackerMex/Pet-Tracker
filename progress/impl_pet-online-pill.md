@@ -22,7 +22,13 @@ status: in_progress
 
 ## R1 — umbral y derivación pura
 
-Pendiente.
+- Rojo `b9026577`: `pnpm test -- connectivity` terminó exit 1; la primera
+  aserción mostró `Expected: 120000`, `Received: 0`, y las otras cinco
+  alcanzaron el stub `not implemented`.
+- Implementación: umbral inclusivo `2 * 60_000`, documentado con E1, y función
+  pura que conserva `null`, considera online el límite y los timestamps futuros.
+- Verde: `pnpm test` en backend, exit 0. `connectivity.ts` solo importa la
+  constante pura de `@/pipeline/constants`.
 
 ## R2 — contrato derivado en lectura
 
