@@ -3674,3 +3674,17 @@ Aparte, en la misma sesion: se arreglo #75 (`harness-init-force-color`) en la ra
 `feature/75-harness-init-force-color`, mergeada a `main` en `572a24e4` (PR #124). Sigue
 en `pending` en `feature_list.json` a la espera de que el humano decida su estado, porque
 se cerro por la excepcion de harness, sin spec ni reviewer.
+
+### Cierre administrativo de #75 (2026-09-14)
+
+#75 `harness-init-force-color` pasa a `done`. Su codigo lleva en `main` desde `572a24e4`
+(PR #124) con el CI verde. Se cerro por la excepcion de `CLAUDE.md` §Cuando NO aplica
+este rol —arreglo de archivos del harness, no de la aplicacion—, asi que no tuvo spec ni
+veredicto de `reviewer`: el gate fue el humano al mergear el PR, y la decision de marcarla
+`done` es suya, del 2026-09-14.
+
+El cambio de estado viaja en la rama de #91 a proposito. Hacerlo en una rama propia
+habria dejado dos PRs declarando cada uno `75/91` en `STATUS.md` por razones distintas, y
+un conflicto seguro en esa linea al mergear el segundo. Yendo junto, el contador queda en
+`76/91`, que es el numero correcto cuando #91 y #75 esten las dos en `main`.
+

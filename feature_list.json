@@ -1402,7 +1402,7 @@
   {
     "id": 75,
     "name": "harness-init-force-color",
-    "status": "pending",
+    "status": "done",
     "priority": "P3",
     "description": "Bug del harness, ajeno a cualquier feature, encontrado por el reviewer de #68 el 2026-09-08 y reproducido por el leader. init.sh:127-148 comprueba cuantas features estan in_progress comparando POR CADENA un numero que Node imprime coloreado. Si el entorno tiene FORCE_COLOR, el numero llega con codigos ANSI alrededor, la comparacion falla y init.sh aborta con 'Mas de 1 feature en in_progress (1)' habiendo exactamente una. Es un falso negativo que para el trabajo y cuya causa no se ve en el mensaje: el propio mensaje imprime (1), que es el valor correcto. Se sortea con env -u FORCE_COLOR, pero eso es un parche del que lo sepa, no un arreglo.",
     "acceptance_criteria": [
