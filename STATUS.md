@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-09-14
-**Features completadas**: 74/91 (`feature_list.json`)
-**En progreso**: #73 `pet-online-pill` — implementación R1-R10 lista; pendiente el smoke humano R11.
+**Features completadas**: 77/91 (`feature_list.json`)
+**En progreso**: ninguna
 
-**Pendientes**: 16 (#18, #41, #60, #63, #72, #74-#75, #77, #79-#81, #83, #84, #86, #90, #91). El rediseño contra el diseño del Make abrió el bloque #64-#71: #64, #65, #66, #67, #68 y #69 están cerradas y **mergeadas** (PR #106, #110, #111, #112, #113 y #114). #71 `mobile-home-quick-actions` está cerrada con los dos gates humanos firmados; **PR pendiente de merge por el humano**. Del bloque solo queda **#70 recordatorios**, sin especificar, y con la mitad del diseño bloqueada porque `nextReminder` y `activitySummary` siguen a `null` en el mapper del perfil. Deuda registrada: #72 flake de add-pet; #74 el selector que TalkBack lee como tres controles sueltos; #75 `init.sh` aborta en falso con `FORCE_COLOR`; #77 el peso visible sin collar; #80 los `testID` del doble atados al componente; #81 la receta tipográfica del tile sin candado. #78 y #79 entraron desde otra sesión. #90 `mobile-owner-timezone-dates` la abrió el 2026-09-11 la decisión por defecto de #89: el móvil manda la fecha civil del dispositivo contra una validación que ya usa la zona del owner sin margen. #91 `mobile-tab-indicator-out-of-range` la destapó el gate humano de #78 el 2026-09-13: la burbuja del indicador se posiciona con el índice de `state.routes`, así que cualquier ruta de `(tabs)/` fuera de `TABS` la manda a una ranura fantasma detrás de Perfil. Es anterior a #78 y afecta también a recordatorios, pairing, peso y comidas.
+**Pendientes**: 14 (#18, #41, #60, #63, #72, #74, #77, #79-#81, #83, #84, #86, #90). El rediseño contra el diseño del Make abrió el bloque #64-#71: #64, #65, #66, #67, #68 y #69 están cerradas y **mergeadas** (PR #106, #110, #111, #112, #113 y #114). #71 `mobile-home-quick-actions` está cerrada con los dos gates humanos firmados; **PR pendiente de merge por el humano**. Del bloque solo queda **#70 recordatorios**, sin especificar, y con la mitad del diseño bloqueada porque `nextReminder` y `activitySummary` siguen a `null` en el mapper del perfil. Deuda registrada: #72 flake de add-pet; #74 el selector que TalkBack lee como tres controles sueltos; #77 el peso visible sin collar; #80 los `testID` del doble atados al componente; #81 la receta tipográfica del tile sin candado. #78 y #79 entraron desde otra sesión. #90 `mobile-owner-timezone-dates` la abrió el 2026-09-11 la decisión por defecto de #89: el móvil manda la fecha civil del dispositivo contra una validación que ya usa la zona del owner sin margen. #91 `mobile-tab-indicator-out-of-range` la destapó el gate humano de #78 el 2026-09-13: la burbuja del indicador se posiciona con el índice de `state.routes`, así que cualquier ruta de `(tabs)/` fuera de `TABS` la manda a una ranura fantasma detrás de Perfil. Es anterior a #78 y afecta también a recordatorios, pairing, peso y comidas. #75 y #91 están cerradas y mergeadas (PR #124 y #125); #73 `pet-online-pill` cerrada con los dos gates firmados, **PR pendiente de merge por el humano**.
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
 desde 2026-08-10. Hay recursos vivos en la cuenta, aunque hoy sin coste.
@@ -87,11 +87,14 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
-- **`pet-online-pill` (#73) in_progress** (2026-09-14): R1-R10 derivan la
-  conectividad del último mensaje en lectura, eliminan el pestillo de ingesta y
-  muestran la píldora accesible en Home (incluido pulso reducido). Trazabilidad,
-  cinco sondas de mutación y `./init.sh` están verdes. Falta solo R11: smoke
-  humano en dev build Android; no se abrió PR hasta ese gate y el reviewer.
+- **`pet-online-pill` (#73) done** (2026-09-14): `connectivity` se deriva en
+  lectura de `devices.last_message_at` contra el reloj del servidor con
+  `DEVICE_ONLINE_THRESHOLD_MS` (120 s, elegido por el humano); el pestillo
+  `'online'` de la ingesta desaparece y la columna queda obsoleta. La API sirve
+  `online | offline | null`; la Home distingue cuatro estados (sin collar,
+  esperando señal, sin conexión, en línea) en `collar-status` y en la píldora
+  nueva del hero, con punto que pulsa solo en línea y respeta reduced motion.
+  Reviewer aprobado y smoke humano R11 firmado; **PR pendiente de merge**.
 - **`dto-dates-owner-timezone` (#89) done** (2026-09-11): los dos últimos DTOs que
   comparaban una fecha del body con el día UTC del servidor dejan de hacerlo.
   `measuredAt` (pesos) se compara en el use case con el día civil del owner
@@ -1130,12 +1133,16 @@ debe listar las 4 URLs de cola.
 
 ## Última sesión
 
-- **2026-09-14** — **#73 `pet-online-pill`, implementación lista**: Codex
-  completó R1-R10 con TDD, pulso de Reanimated que respeta reduced motion y
-  cinco sondas de mutación; `./init.sh` terminó exit 0. R11 queda como smoke
-  humano en dev build Android, con guion y tabla vacía en
-  `progress/impl_pet-online-pill.md`; por ello la feature sigue `in_progress`
-  y no hay PR todavía.
+- **2026-09-14** — **#73 `pet-online-pill` cerrada**: spec firmada el 13 con
+  dos decisiones del humano sobre los defaults (umbral 120 s en vez de 300 s;
+  pulso del punto con Reanimated + reduced motion dentro de la feature) que
+  entraron como enmiendas E1-E3 con gate propio. Codex implementó R1-R10 en 19
+  commits test→feat; reviewer aprobado con init.sh en primer plano, cinco
+  sondas de mutación reproducidas y C4 verificado en worktrees temporales; el
+  humano firmó el smoke R11 en dev build Android (8 pasos, pulso incluido).
+  Deuda nombrada, sin id: telemetría heredada tras release+claim (G8), migración
+  que borre `devices.connectivity`, alinear el umbral del mapa con el del
+  collar (G4). Qué sigue: merge del PR y elegir la próxima feature `pending`.
 - **2026-09-13** — **#78 `mobile-alerts-center` cerrada**: centro de alertas y
   campana con punto rojo en el hero de Home, 14 requisitos más **ocho enmiendas
   E1-E8** con gate humano propio. Las enmiendas nacieron de que la spec se firmó

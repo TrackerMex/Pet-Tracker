@@ -1365,7 +1365,7 @@
   {
     "id": 73,
     "name": "pet-online-pill",
-    "status": "in_progress",
+    "status": "done",
     "priority": "P3",
     "description": "Sale del alcance de #68 el 2026-09-07 por decision del humano, y arrastra la decision G que #67 ya habia dejado abierta. La pildora 'En linea' del Make no se puede pintar hoy por dos razones independientes, y ninguna es de UI: el pestillo de conectividad del backend esta roto (backend-pet-tracker/src/workers/ingestion.drizzle.store.ts:97) y el umbral de silencio a partir del cual una mascota deja de considerarse en linea nunca se definio. Pintarla con el dato tal como llega hoy seria pintar un estado incorrecto: la pildora mentiria. Es la unica de la lista de fuera-de-alcance de #68 que no se puede resolver solo en movil. Emparejada con esto va la decision de si 'en linea' se deriva del ultimo ping o del pestillo, que es lo que fija el umbral.",
     "acceptance_criteria": [
@@ -1428,7 +1428,7 @@
   {
     "id": 75,
     "name": "harness-init-force-color",
-    "status": "pending",
+    "status": "done",
     "priority": "P3",
     "description": "Bug del harness, ajeno a cualquier feature, encontrado por el reviewer de #68 el 2026-09-08 y reproducido por el leader. init.sh:127-148 comprueba cuantas features estan in_progress comparando POR CADENA un numero que Node imprime coloreado. Si el entorno tiene FORCE_COLOR, el numero llega con codigos ANSI alrededor, la comparacion falla y init.sh aborta con 'Mas de 1 feature en in_progress (1)' habiendo exactamente una. Es un falso negativo que para el trabajo y cuya causa no se ve en el mensaje: el propio mensaje imprime (1), que es el valor correcto. Se sortea con env -u FORCE_COLOR, pero eso es un parche del que lo sepa, no un arreglo.",
     "acceptance_criteria": [
@@ -1753,7 +1753,7 @@
   {
     "id": 91,
     "name": "mobile-tab-indicator-out-of-range",
-    "status": "pending",
+    "status": "done",
     "priority": "P2",
     "description": "Defecto visual del shell de pestanas, ANTERIOR a #78, destapado por el gate humano R14 de #78 el 2026-09-13: al entrar en una ruta de src/app/(tabs)/ que NO esta en el array TABS, la burbuja del indicador se desliza a una ranura fantasma detras de 'Perfil' y la barra aparenta haber ganado una sexta pestana. Causa raiz verificada: src/components/floating-tab-bar.tsx:91-93 y :105 posicionan la burbuja con state.index * tabWidth, donde state.index es el indice dentro de state.routes del navegador —que incluye TODAS las rutas del grupo (tabs)/— mientras que la geometria de la burbuja se calcula con tabWidth = (containerWidth - 16) / TABS.length, o sea cinco ranuras. Cualquier ruta fuera de TABS cae en indice >= 5 y la burbuja sale del rango. Afecta hoy a alerts.tsx (#78), reminders.tsx, pairing.tsx, weight-log.tsx, meal-schedule.tsx, add-reminder.tsx y a las rutas de pets/, es decir a siete destinos que existen desde antes de #78; #78 solo lo hace visible a diario porque la campana del hero la toca cualquiera. Por que la suite no lo ve: src/components/__tests__/floating-tab-bar.test.tsx solo monta indices 0-4 —renderTabBar(2), tabBarProps(4), tabBarProps(1)— y ningun caso con una ruta ajena a TABS; los candados de #78 (R5) comprueban por lectura de fuente que TABS sigue en cinco entradas y que _layout.tsx conserva cinco <Tabs.Screen>, cosa que es cierta: no hay pestana nueva, es el indicador. Direccion de arreglo, a cerrar en la spec: derivar la posicion de TABS y no de state.routes, con TABS.findIndex(tab => tab.name === activeRouteName) —variable que ya existe en el componente, :76— y decidir por escrito que hace la burbuja cuando el indice es -1: no renderizarla (recomendado, el patron 'ninguna pestana activa') o dejarla donde estaba. Cero dependencias nuevas; el arreglo cabe en el propio componente.",
     "acceptance_criteria": [

@@ -3,6 +3,7 @@ import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
 import { StyleSheet } from 'react-native';
 import { ReduceMotion } from 'react-native-reanimated';
+import type { TestInstance } from 'test-renderer';
 
 import {
   FloatingTabBar,
@@ -46,6 +47,33 @@ jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 34, left: 0 }),
 }));
 
+jest.mock('../../theme/use-theme-colors', () => ({
+  useThemeColors: (tokens: string[]) => tokens,
+}));
+
+jest.mock('reicon-react-native', () => {
+  const actual = jest.requireActual<typeof import('reicon-react-native')>(
+    'reicon-react-native',
+  );
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>(
+    'react-native',
+  );
+  const mockIcon = (testID: string) =>
+    function MockIcon(props: Record<string, unknown>) {
+      return React.createElement(View, { testID, ...props });
+    };
+
+  return {
+    ...actual,
+    Home: mockIcon('icon-tab-home'),
+    Map: mockIcon('icon-tab-map'),
+    HeartPulse: mockIcon('icon-tab-health'),
+    ForkKnife: mockIcon('icon-tab-food'),
+    Profile: mockIcon('icon-tab-profile'),
+  };
+});
+
 type TabPressEvent = Parameters<FloatingTabBarProps['navigation']['emit']>[0];
 
 const routes = [
@@ -55,12 +83,18 @@ const routes = [
   { key: 'food-1', name: 'food' },
   { key: 'profile-1', name: 'profile' },
 ];
+const alertsRoute = { key: 'alerts-1', name: 'alerts' };
+const routesWithAlerts = [...routes, alertsRoute];
+const routesAlertsFirst = [alertsRoute, ...routes];
 const mockEmit = jest.fn<{ defaultPrevented: boolean }, [TabPressEvent]>();
 const mockNavigate = jest.fn<void, [string]>();
 
-function tabBarProps(index = 0): FloatingTabBarProps {
+function tabBarProps(
+  index = 0,
+  stateRoutes: FloatingTabBarProps['state']['routes'] = routes,
+): FloatingTabBarProps {
   return {
-    state: { index, routes },
+    state: { index, routes: stateRoutes },
     navigation: {
       emit: mockEmit,
       navigate: mockNavigate,
@@ -68,10 +102,19 @@ function tabBarProps(index = 0): FloatingTabBarProps {
   };
 }
 
-async function renderTabBar(index = 0) {
-  return render(<FloatingTabBar {...tabBarProps(index)} />, {
+async function renderTabBar(
+  index = 0,
+  stateRoutes: FloatingTabBarProps['state']['routes'] = routes,
+) {
+  return render(<FloatingTabBar {...tabBarProps(index, stateRoutes)} />, {
     wrapper: TabBarWrapper,
   });
+}
+
+function elementChild(node: TestInstance, index: number): TestInstance {
+  const child = node.children[index];
+  if (typeof child === 'string') throw new Error('Expected an element child');
+  return child;
 }
 
 function TabBarWrapper({ children }: { children: ReactNode }) {
@@ -300,5 +343,217 @@ describe('R8: tab bar flota con safe area', () => {
       screen.getByTestId('floating-tab-bar').props.style,
     );
     expect(style).toMatchObject({ bottom: 46, left: 16, right: 16 });
+  });
+});
+
+describe('#91 R1: una ruta fuera de TABS no monta la burbuja', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.clearAllMocks();
+    mockEmit.mockReturnValue({ defaultPrevented: false });
+    mockIsLiquidGlassAvailable.mockReturnValue(false);
+    mockTheme = 'light';
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('no monta la burbuja si el primer layout ocurre en alerts', async () => {
+    await renderTabBar(5, routesWithAlerts);
+
+    await fireEvent(screen.getByTestId('floating-tab-bar'), 'layout', {
+      nativeEvent: {
+        layout: { width: 360, height: 64, x: 0, y: 0 },
+      },
+    });
+    jest.advanceTimersByTime(300);
+
+    expect(screen.queryByTestId('tab-indicator')).not.toBeOnTheScreen();
+  });
+
+  it('desmonta la burbuja al navegar de health a alerts', async () => {
+    const tabBar = await renderTabBar(2, routesWithAlerts);
+
+    await fireEvent(screen.getByTestId('floating-tab-bar'), 'layout', {
+      nativeEvent: {
+        layout: { width: 360, height: 64, x: 0, y: 0 },
+      },
+    });
+    jest.advanceTimersByTime(300);
+
+    expect(screen.getByTestId('tab-indicator')).toHaveAnimatedStyle({
+      transform: [{ translateX: 137.6 }],
+    });
+
+    await tabBar.rerender(
+      <FloatingTabBar {...tabBarProps(5, routesWithAlerts)} />,
+    );
+    jest.advanceTimersByTime(300);
+
+    expect(screen.queryByTestId('tab-indicator')).not.toBeOnTheScreen();
+  });
+});
+
+describe('#91 R2: el primer layout coloca la burbuja por el índice de TABS', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.clearAllMocks();
+    mockEmit.mockReturnValue({ defaultPrevented: false });
+    mockIsLiquidGlassAvailable.mockReturnValue(false);
+    mockTheme = 'light';
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('usa el índice de map en TABS aunque difiera de state.index', async () => {
+    await renderTabBar(2, routesAlertsFirst);
+
+    await fireEvent(screen.getByTestId('floating-tab-bar'), 'layout', {
+      nativeEvent: {
+        layout: { width: 360, height: 64, x: 0, y: 0 },
+      },
+    });
+    jest.advanceTimersByTime(300);
+
+    expect(screen.getByTestId('tab-indicator')).toHaveAnimatedStyle({
+      transform: [{ translateX: 68.8 }],
+    });
+  });
+});
+
+describe('#91 R3: el cambio de ruta desliza la burbuja al índice de TABS', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.clearAllMocks();
+    mockEmit.mockReturnValue({ defaultPrevented: false });
+    mockIsLiquidGlassAvailable.mockReturnValue(false);
+    mockTheme = 'light';
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('anima health a su índice en TABS aunque difiera de state.index', async () => {
+    const tabBar = await renderTabBar(2, routesAlertsFirst);
+
+    await fireEvent(screen.getByTestId('floating-tab-bar'), 'layout', {
+      nativeEvent: {
+        layout: { width: 360, height: 64, x: 0, y: 0 },
+      },
+    });
+    jest.advanceTimersByTime(300);
+
+    await tabBar.rerender(
+      <FloatingTabBar {...tabBarProps(3, routesAlertsFirst)} />,
+    );
+    jest.advanceTimersByTime(400);
+
+    expect(screen.getByTestId('tab-indicator')).toHaveAnimatedStyle({
+      transform: [{ translateX: 137.6 }],
+    });
+  });
+});
+
+describe('#91 R4: al volver de una ruta ajena la burbuja aparece ya colocada', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.clearAllMocks();
+    mockEmit.mockReturnValue({ defaultPrevented: false });
+    mockIsLiquidGlassAvailable.mockReturnValue(false);
+    mockTheme = 'light';
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('reaparece en la pestaña nueva sin animarse desde una ranura invisible', async () => {
+    const tabBar = await renderTabBar(1, routesWithAlerts);
+
+    await fireEvent(screen.getByTestId('floating-tab-bar'), 'layout', {
+      nativeEvent: {
+        layout: { width: 360, height: 64, x: 0, y: 0 },
+      },
+    });
+    jest.advanceTimersByTime(300);
+
+    expect(screen.getByTestId('tab-indicator')).toHaveAnimatedStyle({
+      transform: [{ translateX: 68.8 }],
+    });
+
+    await tabBar.rerender(
+      <FloatingTabBar {...tabBarProps(5, routesWithAlerts)} />,
+    );
+    jest.advanceTimersByTime(300);
+
+    expect(screen.queryByTestId('tab-indicator')).not.toBeOnTheScreen();
+
+    await tabBar.rerender(
+      <FloatingTabBar {...tabBarProps(2, routesWithAlerts)} />,
+    );
+
+    expect(screen.getByTestId('tab-indicator')).toHaveAnimatedStyle({
+      transform: [{ translateX: 137.6 }],
+    });
+
+    jest.advanceTimersByTime(300);
+
+    expect(screen.getByTestId('tab-indicator')).toHaveAnimatedStyle({
+      transform: [{ translateX: 137.6 }],
+    });
+  });
+});
+
+describe('#91 R5: con una ruta ajena las cinco celdas quedan inactivas y siguen navegando', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockEmit.mockReturnValue({ defaultPrevented: false });
+    mockIsLiquidGlassAvailable.mockReturnValue(false);
+    mockTheme = 'light';
+  });
+
+  it('conserva el estado inactivo, los dos hijos y la navegación de cada pestaña', async () => {
+    const tabBar = await renderTabBar(2, routesWithAlerts);
+    const activeColor = screen.getByTestId('icon-tab-health').props.color;
+    const mutedColor = screen.getByTestId('icon-tab-map').props.color;
+
+    expect(activeColor).not.toBe(mutedColor);
+
+    await tabBar.rerender(
+      <FloatingTabBar {...tabBarProps(5, routesWithAlerts)} />,
+    );
+
+    for (const [name, label] of [
+      ['home', 'Inicio'],
+      ['map', 'Mapa'],
+      ['health', 'Salud'],
+      ['food', 'Nutrición'],
+      ['profile', 'Perfil'],
+    ] as const) {
+      const tab = screen.getByTestId(`tab-${name}`);
+
+      expect(tab.children).toHaveLength(2);
+      expect(tab).toHaveProp('accessibilityState', { selected: false });
+      expect(elementChild(tab, 0)).toHaveProp('weight', 'Outline');
+      expect(elementChild(tab, 0)).toHaveProp('color', mutedColor);
+      expect(elementChild(tab, 1)).toHaveProp(
+        'className',
+        'text-2xs font-semibold text-muted',
+      );
+      expect(elementChild(tab, 1)).toHaveTextContent(label);
+    }
+
+    await fireEvent.press(screen.getByTestId('tab-home'));
+
+    expect(mockEmit).toHaveBeenCalledWith({
+      type: 'tabPress',
+      target: 'home-1',
+      canPreventDefault: true,
+    });
+    expect(mockNavigate).toHaveBeenCalledWith('home');
   });
 });
