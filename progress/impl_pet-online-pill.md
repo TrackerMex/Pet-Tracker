@@ -88,6 +88,11 @@ status: in_progress
 - `bun run test -- device-connectivity pairing ui-language`: exit 1 (3 suites,
   8 fallos): `offline` cayó en `unknown`, las cuatro decisiones alcanzaron
   `not implemented`, Pairing pintó `Desconocida` y `checkUses` contó 0.
+- Rojo `badf0069` publicado.
+- Verde: `DEVICE_CONNECTIVITY_META` reconoce `offline` y
+  `deviceConnectionState` resuelve sus cuatro ramas sin estrechar el contrato
+  API. `bun run test -- device-connectivity pairing ui-language design-drift`
+  pasó (4 suites, 116 tests).
 
 ## R7 — cuatro estados en `collar-status`
 

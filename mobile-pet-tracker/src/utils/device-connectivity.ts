@@ -8,6 +8,7 @@ export const DEVICE_CONNECTIVITY_META: Record<
   { labelKey: TranslationKey }
 > = {
   online: { labelKey: 'deviceConnectivity.online' },
+  offline: { labelKey: 'deviceConnectivity.offline' },
 };
 
 const UNKNOWN_CONNECTIVITY_META: { labelKey: TranslationKey } = {
@@ -28,6 +29,8 @@ export function connectivityLabelKey(
 export function deviceConnectionState(
   device: DeviceStatus | null,
 ): DeviceConnectionState {
-  void device;
-  throw new Error('not implemented');
+  if (device === null) return 'none';
+  if (device.connectivity === 'online') return 'online';
+  if (device.connectivity === 'offline') return 'offline';
+  return 'unknown';
 }
