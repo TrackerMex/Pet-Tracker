@@ -82,6 +82,12 @@ export function PairingScreen() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [phase, setPhase] = useState<'idle' | 'ready'>('idle');
   const [readyDevice, setReadyDevice] = useState<DeviceStatus | null>(null);
+  const resetPairingState = useCallback(() => {
+    setCode('');
+    setActionError(null);
+    setPhase('idle');
+    setReadyDevice(null);
+  }, []);
   const selectedPet =
     pets.data?.kind === 'ok'
       ? pets.data.pets.find(({ id }) => id === selectedPetId)
@@ -108,6 +114,10 @@ export function PairingScreen() {
     useCallback(() => {
       refetchTracking();
     }, [refetchTracking]),
+  );
+
+  useFocusEffect(
+    useCallback(() => () => resetPairingState(), [resetPairingState]),
   );
 
   async function handleClaim() {
