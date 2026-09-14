@@ -36,10 +36,45 @@ codigo pero deja las dos cosas abiertas. `/pairing` es caso aparte: es pestaña 
 decision D4 de #42 y su arreglo ya esta prescrito (reset de `code`, `actionError`,
 `phase` y `readyDevice`).
 
-### Pendiente tras la spec
+### Spec entregada — PARADO EN EL GATE HUMANO
 
-1. Gate humano de la spec (firma en branch, `main` protegida).
-2. Handoff a Codex CLI.
-3. `reviewer`.
-4. Gate humano final: smoke en **dev build de Android**, crear dos recordatorios
+`specs/mobile-detail-screens-state-reset/` (R1-R7), pusheada en la branch.
+
+- **D1: reset local en el cleanup de `useFocusEffect`**, no Stack. Cinco costes
+  medidos contra el arbol; el Stack queda como deuda con enunciado listo en
+  `requirements.md` §Deuda, no descartado.
+- **Cinco pantallas**: add-reminder (R1), add-pet (R2, 15 `useState`),
+  weight-log (R3, parcial), meal-schedule (R4, solo `generateError`), pairing
+  (R5 blur + R6 cambio de `selectedPetId`). **docs NO** tiene el defecto: cero
+  `useState`, con evidencia.
+- **R7** cierra por mutacion en dos sitios que `submitting`/`claiming`/
+  `releasing` SOBREVIVEN al blur (guardas de peticion en vuelo).
+- Erratas del enunciado corregidas contra el arbol: `add-reminder` declara sus
+  nueve `useState` en `:49-57` (no 39-47), el `router.back()` del alta esta en
+  `:89` y hay un segundo en `:133`, y `pairing` declara **seis** `useState`, no
+  cuatro. Verificadas por el leader, no solo por el spec_author.
+- **Correccion del leader a `design.md`**: la justificacion afirmaba que
+  `unmountOnBlur` "ya no existe" en expo-router 57.0.14. Si existe, en
+  `ui/TabContext.d.ts:7`, pero es la API de tabs headless (`expo-router/ui`)
+  que la app no usa. Lo cierto, y lo que queda escrito, es que no esta en
+  `BottomTabNavigationOptions`, que es el navegador que monta
+  `(tabs)/_layout.tsx`.
+
+### Dos decisiones que esperan al humano, no las tomo yo
+
+1. **Registrar la deuda `mobile-detail-screens-to-stack`** (seria #95). En
+   espera a proposito: si el humano rechaza D1 y elige el Stack, esta deuda no
+   existe.
+2. **`reminders` y `alerts`** tienen el mismo patron (`deletingId`,
+   `deleteCandidate`, `actionError` / `acked`, `ackingId`, `actionError`) y
+   quedaron FUERA porque el criterio 4 del enunciado de #63 acota a cuatro
+   pantallas. Anotadas en `design.md` §Auditoria. Decidir si se meten en #63
+   ampliando el alcance, o si van a feature aparte.
+
+### Pendiente despues del gate
+
+1. Handoff a Codex CLI (plantilla de `.claude/agents/leader.md`, exigiendo
+   commits test-primero).
+2. `reviewer`.
+3. Gate humano final: smoke en **dev build de Android**, crear dos recordatorios
    seguidos.
