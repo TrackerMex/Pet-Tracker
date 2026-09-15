@@ -1011,7 +1011,7 @@ tocan: #87 fue solo móvil y ninguna cambió.
 - **Dónde está el detalle**: `specs/mobile-reminders-alerts-state-reset/requirements.md`
   §Enmienda E9 a la spec de #78, y su [[../mobile-reminders-alerts-state-reset/design|design]] §D3.
 
-- [ ] Enmienda E9 aprobada por humano ← se firma con el gate de #97
+- [X] Enmienda E9 aprobada por humano (fecha: 2026-09-15) ← firmada con el gate de #97 en `da957174`, que marca su casilla espejo en `specs/mobile-reminders-alerts-state-reset/requirements.md`
 
 ---
 

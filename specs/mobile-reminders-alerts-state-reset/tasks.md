@@ -1,6 +1,6 @@
 ---
 feature: "mobile-reminders-alerts-state-reset"
-status: spec_ready   # draft | spec_ready (pendiente gate humano) | approved
+status: approved   # aprobada por humano en da957174 (gate de requirements.md)
 tags: [harness, spec, mobile]
 ---
 
