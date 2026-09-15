@@ -66,9 +66,7 @@ describe('R4 (meals-served-tracking #83): sin plan o franja fuera del plan el us
   });
 
   it('lanza MealTimeNotInPlanError antes de escribir', async () => {
-    const { useCase, create, record } = buildUseCase(
-      plan(['07:30', '19:30']),
-    );
+    const { useCase, create, record } = buildUseCase(plan(['07:30', '19:30']));
 
     await expect(
       useCase.execute(PET_ID, { mealTime: '12:00' }, USER_ID, NOW),
@@ -92,9 +90,7 @@ describe('R8 (meals-served-tracking #83): meal.serve se audita despues de crear 
   });
 
   it('audita el id creado despues de resolver create', async () => {
-    const { useCase, create, record } = buildUseCase(
-      plan(['07:30', '19:30']),
-    );
+    const { useCase, create, record } = buildUseCase(plan(['07:30', '19:30']));
 
     await useCase.execute(PET_ID, { mealTime: '07:30' }, USER_ID, NOW);
 

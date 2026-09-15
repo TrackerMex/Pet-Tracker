@@ -72,9 +72,7 @@ describe('R8: el perfil de mascota expone exactamente las claves del contrato', 
     expect(response.nextVaccine).toBeNull();
     expect(response.nextReminder).toBeNull();
     expect(response.activitySummary).toBeNull();
-    expect(
-      (response as unknown as { mealsToday: unknown }).mealsToday,
-    ).toBeNull();
+    expect(response.mealsToday).toBeNull();
   });
 
   it('photoUrl es null por defecto; lastPosition y lastCommunicationAt son null mientras #8 no los alimente', () => {

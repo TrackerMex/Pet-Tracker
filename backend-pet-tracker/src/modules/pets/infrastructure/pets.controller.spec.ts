@@ -194,9 +194,7 @@ describe('R2 (pets-list-response-enrichment #66): GET /v1/pets serializa el phot
     expect(response[0].nextVaccine).toBeNull();
     expect(response[0].nextReminder).toBeNull();
     expect(response[0].activitySummary).toBeNull();
-    expect(
-      (response[0] as unknown as { mealsToday: unknown }).mealsToday,
-    ).toBeNull();
+    expect(response[0].mealsToday).toBeNull();
   });
 });
 

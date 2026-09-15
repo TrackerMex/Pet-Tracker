@@ -7,10 +7,7 @@ import { App } from 'supertest/types';
 import { uuidv7 } from 'uuidv7';
 import { DRIZZLE } from '@/db/drizzle.constants';
 import { auditLog } from '@/db/schema/audit-log.schema';
-import {
-  mealServings,
-  nutritionPlans,
-} from '@/db/schema/nutrition.schema';
+import { mealServings, nutritionPlans } from '@/db/schema/nutrition.schema';
 import { pets, petUsers } from '@/db/schema/pets.schema';
 import { users } from '@/db/schema/users.schema';
 import { TOKEN_SERVICE } from '@/modules/auth/domain/ports/token-service';
@@ -117,9 +114,7 @@ describe('Meals served tracking (e2e)', () => {
   ) => api().post(`/v1/pets/${petId}/meals`).set(auth(user.token)).send(body);
 
   const unserveMeal = (user: UserFixture, petId: string, mealTime: string) =>
-    api()
-      .delete(`/v1/pets/${petId}/meals/${mealTime}`)
-      .set(auth(user.token));
+    api().delete(`/v1/pets/${petId}/meals/${mealTime}`).set(auth(user.token));
 
   const addMember = (
     petId: string,
@@ -315,10 +310,7 @@ describe('Meals served tracking (e2e)', () => {
         .select({ value: count() })
         .from(auditLog)
         .where(
-          and(
-            eq(auditLog.userId, owner.id),
-            eq(auditLog.action, 'meal.serve'),
-          ),
+          and(eq(auditLog.userId, owner.id), eq(auditLog.action, 'meal.serve')),
         );
       expect(audits.value).toBe(1);
     });
@@ -497,9 +489,7 @@ describe('Meals served tracking (e2e)', () => {
           'servedToday',
         ].sort(),
       );
-      expect((empty.body as { servedToday: string[] }).servedToday).toEqual(
-        [],
-      );
+      expect((empty.body as { servedToday: string[] }).servedToday).toEqual([]);
 
       await serveMeal(owner, pet.id, { mealTime: '19:30' }).expect(201);
       await serveMeal(owner, pet.id, { mealTime: '07:30' }).expect(201);
