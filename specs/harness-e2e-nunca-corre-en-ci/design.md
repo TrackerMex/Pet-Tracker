@@ -505,8 +505,9 @@ nueva. Cualquier otro fichero que haga falta se declara en
 
 ## Enmienda E1 — el candado de `AWS_MODE` cubre todas las formas
 
-**Estado: pendiente de firma humana.** Esta enmienda se aprueba por separado;
-el resto del documento ya está aprobado en `0f47c176` y no se reabre.
+**Estado: aprobada por humano en `dbeb6b92`.** Esta enmienda se aprobó por
+separado; el resto del documento ya estaba aprobado en `0f47c176` y no se
+reabrió.
 
 **Por qué.** El reviewer de #96 demostró con mutaciones que las aserciones que
 fijaba §D7 para R2 dejan pasar dos formas de poner `AWS_MODE` en `aws`, con la
