@@ -174,3 +174,11 @@ describe('R6 (harness-e2e-nunca-corre-en-ci #96): migraciones y provisioning ant
     assert.doesNotMatch(initConfig, /\bpsql\b/);
   });
 });
+
+describe('R8 (harness-e2e-nunca-corre-en-ci #96): ningun comentario describe ya el agujero', () => {
+  it('documenta el gate vigente en init.sh y en CI', () => {
+    assert.doesNotMatch(initSh, /pasa de largo sin verificar nada/);
+    assert.doesNotMatch(workflow, /anadir services aqui|añadir services aquí/i);
+    assert.match(e2eBlock(), /^# .*docker compose up -d/m);
+  });
+});
