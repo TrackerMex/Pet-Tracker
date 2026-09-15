@@ -1,6 +1,6 @@
 ---
 feature: "harness-e2e-nunca-corre-en-ci"
-status: spec_ready   # draft | spec_ready (pendiente gate humano) | approved
+status: approved   # aprobada por humano en 0f47c176 (gate de requirements.md)
 tags: [harness, spec, ci]
 ---
 
