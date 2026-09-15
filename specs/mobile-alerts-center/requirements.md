@@ -977,6 +977,44 @@ tocan: #87 fue solo móvil y ninguna cambió.
 
 ---
 
+## Enmienda externa E9 — la escribe #97 (2026-09-15)
+
+> Esta enmienda **no** la pide #78: la trae
+> `specs/mobile-reminders-alerts-state-reset/` (feature #97), que arregla el
+> estado local que sobrevive en `reminders` y `alerts` al salir por la barra de
+> tabs. Se registra aquí para que quien lea D3 no "arregle" el cambio al verlo
+> en el fuente — el mismo motivo por el que existe E5.
+
+### E9 — R8/D3: el overlay del ack deja de aplicarse cuando la lista ya no trae la alerta como `open`
+
+- **Qué cambia**: la tercera línea del bloque de composición de [[design]] §D3,
+  el marcado *"en este orden y no otro"*. Pasa de
+  `const rows = ordered.map(a => acked[a.id] ?? a);` a aplicar el overlay **solo
+  mientras la alerta descargada siga siendo `open`**.
+- **Por qué**: una alerta ya `acked` puede pasar a `closed` en el servidor —el
+  motor cierra por `status IN ('open','acked')`,
+  `workers/alerts-engine/alerts-engine.drizzle.store.ts:99-102`, #13 R23/D1—, y
+  con el overlay incondicional esa fila se seguiría pintando "Atendida" durante
+  toda la vida del proceso. #97 R8 acota **cuándo se consulta** el overlay en vez
+  de borrarlo, que es lo que permite que `acked` sobreviva a la pérdida de foco
+  (su R6) sin quedar desincronizado.
+- **Qué NO cambia**: las dos primeras líneas del bloque (`fetched` y `ordered`) y
+  su orden, así que **R7 sigue intacto**: la partición se calcula igual, sobre el
+  `status` descargado, y el ack sigue sin mover la fila de grupo. **Todas** las
+  filas de la tabla de R8 siguen siendo literalmente ciertas, porque en el
+  momento del ack la alerta descargada **es** `open`. Tampoco cambia el
+  `isDisabled` mientras vuela la petición, ni `alerts-action-error`, ni las dos
+  prohibiciones de E5 (`useMutation` y `setQueryData` siguen descartados).
+- **Qué añade #97 a esta pantalla, y esta enmienda no discute**: un `refetch` al
+  ganar el foco (su R7). No contradice R8 —que prohíbe recargar **por el ack**,
+  no al entrar— ni E6, que hablaba de la campana de Home.
+- **Dónde está el detalle**: `specs/mobile-reminders-alerts-state-reset/requirements.md`
+  §Enmienda E9 a la spec de #78, y su [[../mobile-reminders-alerts-state-reset/design|design]] §D3.
+
+- [X] Enmienda E9 aprobada por humano (fecha: 2026-09-15) ← firmada con el gate de #97 en `da957174`, que marca su casilla espejo en `specs/mobile-reminders-alerts-state-reset/requirements.md`
+
+---
+
 ## Aprobación
 
 - [X] Aprobado por humano (fecha: 2026-09-11) ← gate obligatorio antes de implementar

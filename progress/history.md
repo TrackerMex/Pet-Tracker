@@ -3925,3 +3925,58 @@ un conflicto seguro en esa linea al mergear el segundo. Yendo junto, el contador
 - Consecuencia para todas las maquinas: `./init.sh` pasa a exigir
   `docker compose up -d` y aborta si la infra no responde.
 - Cierre: #96 `done`, 81/96, PR #134 abierto; el humano mergea.
+
+## Feature #97 `mobile-reminders-alerts-state-reset` (P2)
+
+- Sesion Frontend (leader), arbol principal. Rama
+  `feature/97-mobile-reminders-alerts-state-reset` desde `0e4aa810`. PR #137.
+- Continuacion de #63: aquella arreglo el estado superviviente en las pantallas
+  de formulario bajo `(tabs)`, pero su criterio 4 se acoto a add-pet, weight-log,
+  meal-schedule y docs. Las dos pantallas de lista quedaron fuera.
+- El caso peor no era cosmetico: en reminders, `deleteCandidate` alimenta el
+  bottom sheet de confirmacion de borrado, asi que abrir la confirmacion, salir
+  por la barra de tabs y volver reabria el dialogo con el boton de confirmar a
+  un toque.
+- **Dos decisiones en contra del enunciado**, ambas del spec_author y ambas
+  correctas:
+  - `deletingId` **no** se resetea. Es un guarda de peticion en vuelo cuya vida
+    va de `setDeletingId` al `finally`; resetearlo en el blur solo tendria
+    efecto mientras el DELETE vuela, y ahi abre un segundo DELETE. La spec
+    entrega el observable del criterio y rechaza su mecanismo por escrito. El
+    criterio lo habia escrito yo y estaba mal.
+  - `acked` **sobrevive**. No es basura de formulario sino una capa optimista
+    sobre el servidor: resetearlo haria que una alerta atendida vuelva a verse
+    sin atender. Era el "caso legitimo de estado que debe sobrevivir" que el
+    criterio 5 de #63 obligaba a nombrar.
+- Consecuencia: para que sobrevivir no signifique desincronizarse se anaden R7
+  (refetch al ganar el foco, alerts era la unica lista de `(tabs)` sin el) y R8
+  (caducidad del overlay cuando la lista ya no trae la alerta como `open`). R8
+  enmienda D3 de la spec de #78 — enmienda **E9**, aditiva, firmada por el
+  humano junto al gate en `da957174`. Motivo verificado en el backend, no
+  supuesto: el motor cierra por `status IN ('open','acked')`
+  (`alerts-engine.drizzle.store.ts:102`), asi que con el overlay incondicional
+  una alerta atendida y luego cerrada se pintaria "Atendida" para siempre.
+- Codex: 27 commits, 8 trios rojo-verde-trazabilidad. R3, R5 y R6 son requisitos
+  de verificacion: la mutacion de produccion se versiona en el rojo y se
+  revierte en el verde.
+- `reviewer` APROBADO. No se fio del reporte en ningun punto duro: cinco rojos
+  verificados por checkout (se pedian tres), todos fallando por su propia
+  asercion; las mutaciones confirmadas **por hash de blob**; la sonda de zona
+  ciega de `ackingIdRef`, que ningun commit versiona, reproducida por el. Cero
+  `getQueryData` en las lineas anadidas de los tests, asi que no se sembro el
+  patron del flake de #72. i18n byte a byte. `./init.sh` exit 0 sin tuberia; los
+  dos flakes de #72 no se manifestaron esta vez.
+- **Gate humano cerrado**: los cuatro pasos del smoke en dev build de Android.
+  El entorno no tenia ninguna alerta —solo las produce el motor, sin endpoint de
+  creacion— asi que el humano inserto dos filas de prueba de tipos distintos (el
+  indice anti-spam solo admite una activa por `(pet_id, type, geofence_id)`) y
+  uso una para el paso 3 y otra para el 4.
+- Coordinacion con Backend: se le reservaron 4566 y 5433 para el gate del
+  reviewer; su Codex de #83 corria `pnpm test`, `tsc` y `db:migrate` contra
+  `pet_tracker_wt` sin avisar, asi que se aviso al reviewer de que la contencion
+  de CPU ensancha la ventana de los flakes de #72. Cero claves de i18n, asi que
+  el acuerdo del catalogo quedo dormido hasta #98. La leccion del overlay
+  optimista se le paso a Backend, que la aplico a #98 con la distincion
+  correcta: en alertas el servidor **supersede** la accion, en comidas puede
+  **invalidarla**, asi que alli toca refrescar y no mantener overlay.
+- Cierre: #97 `done`, 82/97, PR #137 abierto; el humano mergea.
