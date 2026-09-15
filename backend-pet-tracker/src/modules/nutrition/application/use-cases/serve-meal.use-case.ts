@@ -47,7 +47,7 @@ export class ServeMealUseCase {
     });
     await this.audit.record({
       userId,
-      action: 'meal.create',
+      action: 'meal.serve',
       entity: 'meal_serving',
       entityId: serving.id,
       meta: { petId, mealTime: serving.mealTime, servedOn: serving.servedOn },
