@@ -79,6 +79,7 @@ export function AlertsScreen() {
 
   useFocusEffect(
     useCallback(() => {
+      void refetchAlerts();
       return () => {
         setActionError(null);
       };

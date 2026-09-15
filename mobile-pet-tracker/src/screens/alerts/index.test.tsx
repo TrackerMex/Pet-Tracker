@@ -135,7 +135,10 @@ async function focusScreen(): Promise<(() => void)[]> {
   let cleanups: (() => void)[] = [];
 
   await act(async () => {
-    cleanups = mockUseFocusEffect.mock.calls.flatMap(([callback]) => {
+    const callbacks = new Set(
+      mockUseFocusEffect.mock.calls.map(([callback]) => callback),
+    );
+    cleanups = [...callbacks].flatMap((callback) => {
       const cleanup = callback();
       return typeof cleanup === 'function' ? [cleanup] : [];
     });
