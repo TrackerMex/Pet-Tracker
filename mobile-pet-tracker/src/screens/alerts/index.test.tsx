@@ -908,3 +908,59 @@ describe(
     });
   },
 );
+
+describe(
+  '#97 R6: la alerta atendida sigue atendida al volver a la pantalla',
+  () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+      mockListAlerts.mockReset();
+      process.env.EXPO_PUBLIC_API_URL = apiUrl;
+      mockUseAuth.mockReturnValue({
+        status: 'authenticated',
+        token: 'jwt-token',
+        signIn: jest.fn(),
+        signOut: jest.fn(),
+      } satisfies AuthContextValue);
+      mockListAlerts
+        .mockResolvedValueOnce({
+          kind: 'ok',
+          items: [makeAlert()],
+          nextCursor: null,
+        })
+        .mockReturnValue(pending<AlertsState>());
+      mockAckAlert.mockResolvedValue({
+        kind: 'ok',
+        alert: makeAlert({
+          status: 'acked',
+          ackedAt: '2026-09-11T12:00:00.000Z',
+        }),
+      });
+    });
+
+    it('conserva el overlay local aunque el refetch siga pendiente', async () => {
+      await renderAlerts();
+      const button = await waitFor(() =>
+        screen.getByTestId('alert-row-alert-1-ack'),
+      );
+      const cleanups = await focusScreen();
+
+      await fireEvent.press(button);
+      await waitFor(() =>
+        expect(screen.getByTestId('alert-row-alert-1-status')).toHaveTextContent(
+          es['alerts.statusAcked'],
+        ),
+      );
+
+      await blurScreen(cleanups);
+      await focusScreen();
+
+      await waitFor(() =>
+        expect(screen.getByTestId('alert-row-alert-1-status')).toHaveTextContent(
+          es['alerts.statusAcked'],
+        ),
+      );
+      expect(screen.queryByTestId('alert-row-alert-1-ack')).toBeNull();
+    });
+  },
+);
