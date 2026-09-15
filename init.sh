@@ -250,6 +250,11 @@ if [ -n "$E2E_CMD" ]; then
       || fail "Infra e2e caída: ${e2e_host}:${e2e_port} no responde (derivado de ${e2e_key} en .env). Levántala con: docker compose up -d"
   done
 
+  if [ -n "$E2E_SETUP_CMD" ]; then
+    eval "$E2E_SETUP_CMD" 2>&1
+    ok "Esquema y recursos e2e listos"
+  fi
+
   eval "$E2E_CMD" 2>&1
   ok "Tests e2e pasados"
 else
