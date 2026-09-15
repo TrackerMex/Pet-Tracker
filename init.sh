@@ -241,27 +241,16 @@ if [ -n "$E2E_CMD" ]; then
     esac
   }
 
-  E2E_INFRA_READY=true
   for e2e_key in "${E2E_PORT_SOURCES[@]}"; do
     e2e_hp="$(url_host_port "$(env_value "$e2e_key")")"
-    if [ -z "$e2e_hp" ]; then
-      warn "No se pudo derivar host:puerto de ${e2e_key} en .env — se saltan los e2e"
-      E2E_INFRA_READY=false
-      break
-    fi
+    [ -n "$e2e_hp" ] || fail "No se pudo derivar host:puerto de ${e2e_key} en .env — los e2e no se pueden verificar sin saber contra qué corren"
     e2e_host="${e2e_hp% *}"
     e2e_port="${e2e_hp#* }"
-    if ! port_open "$e2e_host" "$e2e_port"; then
-      warn "Infra e2e caída: ${e2e_host}:${e2e_port} no responde (derivado de ${e2e_key} en .env) — se saltan los e2e"
-      E2E_INFRA_READY=false
-      break
-    fi
+    port_open "$e2e_host" "$e2e_port" || fail "Infra e2e no disponible"
   done
 
-  if [ "$E2E_INFRA_READY" = true ]; then
-    eval "$E2E_CMD" 2>&1
-    ok "Tests e2e pasados"
-  fi
+  eval "$E2E_CMD" 2>&1
+  ok "Tests e2e pasados"
 else
   warn "E2E_CMD vacío en init.config.sh — se saltan tests e2e"
 fi
