@@ -283,4 +283,4 @@ Demostración con un rojo **deliberado**, nunca por inspección del YAML:
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [X] Aprobado por humano (fecha: 2026-09-14) ← gate obligatorio antes de implementar
