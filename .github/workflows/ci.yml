@@ -12,6 +12,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Infra e2e (Postgres + LocalStack)
+        run: docker compose up -d --wait --wait-timeout 120
+
       - uses: pnpm/action-setup@v4
         with:
           version: 10
