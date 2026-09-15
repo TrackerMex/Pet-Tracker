@@ -4,6 +4,7 @@ import { GetNutritionProfileUseCase } from '@/modules/nutrition/application/use-
 import { GenerateNutritionPlanUseCase } from '@/modules/nutrition/application/use-cases/generate-nutrition-plan.use-case';
 import { GetNutritionPlanUseCase } from '@/modules/nutrition/application/use-cases/get-nutrition-plan.use-case';
 import { ServeMealUseCase } from '@/modules/nutrition/application/use-cases/serve-meal.use-case';
+import { UnserveMealUseCase } from '@/modules/nutrition/application/use-cases/unserve-meal.use-case';
 import { MEAL_SERVING_REPOSITORY } from '@/modules/nutrition/domain/repositories/meal-serving.repository';
 import { NUTRITION_REPOSITORY } from '@/modules/nutrition/domain/repositories/nutrition.repository';
 import { NutritionController } from '@/modules/nutrition/infrastructure/nutrition.controller';
@@ -21,6 +22,7 @@ import { PetsModule } from '@/modules/pets/pets.module';
     GenerateNutritionPlanUseCase,
     GetNutritionPlanUseCase,
     ServeMealUseCase,
+    UnserveMealUseCase,
     {
       provide: NUTRITION_REPOSITORY,
       useClass: NutritionDrizzleRepository,

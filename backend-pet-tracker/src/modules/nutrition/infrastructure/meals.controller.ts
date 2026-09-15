@@ -2,7 +2,10 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
+  HttpCode,
   HttpStatus,
+  Param,
   Post,
   Req,
   UseGuards,
@@ -13,6 +16,7 @@ import {
   ServeMealSchema,
 } from '@/modules/nutrition/application/dto/meal.dto';
 import { ServeMealUseCase } from '@/modules/nutrition/application/use-cases/serve-meal.use-case';
+import { UnserveMealUseCase } from '@/modules/nutrition/application/use-cases/unserve-meal.use-case';
 import { mapNutritionError } from '@/modules/nutrition/infrastructure/mappers/nutrition-error.mapper';
 import {
   MealServingResponse,
@@ -24,7 +28,10 @@ import type { PetAccessRequest } from '@/modules/pets/infrastructure/guards/pet-
 @Controller('pets/:petId/meals')
 @UseGuards(PetAccessGuard)
 export class MealsController {
-  constructor(private readonly serveMeal: ServeMealUseCase) {}
+  constructor(
+    private readonly serveMeal: ServeMealUseCase,
+    private readonly unserveMeal: UnserveMealUseCase,
+  ) {}
 
   @Post()
   async serve(
@@ -41,6 +48,25 @@ export class MealsController {
           request.user.id,
           now,
         ),
+      );
+    } catch (error) {
+      throw mapNutritionError(error);
+    }
+  }
+
+  @Delete(':mealTime')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async unserve(
+    @Req() request: PetAccessRequest,
+    @Param('mealTime') mealTime: string,
+  ): Promise<void> {
+    const now = new Date();
+    try {
+      await this.unserveMeal.execute(
+        request.petMembership.petId,
+        mealTime,
+        request.user.id,
+        now,
       );
     } catch (error) {
       throw mapNutritionError(error);
