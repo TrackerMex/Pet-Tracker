@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-09-14
-**Features completadas**: 79/94 (`feature_list.json`)
+**Última actualización**: 2026-09-15
+**Features completadas**: 80/95 (`feature_list.json`)
 **En progreso**: ninguna
 
-**Pendientes**: 17 (#18, #41, #60, #63, #72, #74, #77, #79-#81, #83, #84, #86, #90, #92-#94). #92-#94 son la deuda que #73 dejo nombrada: reset de telemetria del collar al reasignarlo (#92), borrar la columna obsoleta devices.connectivity (#93, tras #92) y una sola fuente de frescura entre Home y Mapa (#94). El rediseño contra el diseño del Make abrió el bloque #64-#71: #64, #65, #66, #67, #68 y #69 están cerradas y **mergeadas** (PR #106, #110, #111, #112, #113 y #114). #71 `mobile-home-quick-actions` está cerrada con los dos gates humanos firmados; **PR pendiente de merge por el humano**. Del bloque solo queda **#70 recordatorios**, sin especificar, y con la mitad del diseño bloqueada porque `nextReminder` y `activitySummary` siguen a `null` en el mapper del perfil. Deuda registrada: #72 flake de add-pet; #74 el selector que TalkBack lee como tres controles sueltos; #77 el peso visible sin collar; #80 los `testID` del doble atados al componente; #81 la receta tipográfica del tile sin candado. #78 y #79 entraron desde otra sesión. #90 `mobile-owner-timezone-dates` la abrió el 2026-09-11 la decisión por defecto de #89: el móvil manda la fecha civil del dispositivo contra una validación que ya usa la zona del owner sin margen. #91 `mobile-tab-indicator-out-of-range` la destapó el gate humano de #78 el 2026-09-13: la burbuja del indicador se posiciona con el índice de `state.routes`, así que cualquier ruta de `(tabs)/` fuera de `TABS` la manda a una ranura fantasma detrás de Perfil. Es anterior a #78 y afecta también a recordatorios, pairing, peso y comidas. #75 y #91 están cerradas y mergeadas (PR #124 y #125); #73 `pet-online-pill` cerrada y **mergeada** (PR #126).
+**Pendientes**: 15 (#18, #41, #60, #72, #74, #77, #79-#81, #83, #84, #86, #90, #94, #95). #93 `drop-devices-connectivity-column` cerrada (PR #131, pendiente de merge): la columna obsoleta sale del schema con la migración 0016; en el Postgres local compartido se aplica tras mergear. #63 `mobile-detail-screens-state-reset` cerrada y **mergeada** (PR #130): los formularios de detalle ya no conservan lo tecleado la vez anterior. #92 cerrada y **mergeada** (PR #129); queda #94 (una sola fuente de frescura entre Home y Mapa). **#95 `mobile-detail-screens-to-stack`** la abrió la decisión D1 de #63: sacar las seis pantallas de detalle de `(tabs)` a un Stack nativo cierra el teleport sin transición (M3) y las cabeceras a mano; se pospuso por coste, no se descartó. #92-#94 son la deuda que #73 dejo nombrada: reset de telemetria del collar al reasignarlo (#92), borrar la columna obsoleta devices.connectivity (#93, tras #92) y una sola fuente de frescura entre Home y Mapa (#94). El rediseño contra el diseño del Make abrió el bloque #64-#71: #64, #65, #66, #67, #68 y #69 están cerradas y **mergeadas** (PR #106, #110, #111, #112, #113 y #114). #71 `mobile-home-quick-actions` está cerrada con los dos gates humanos firmados; **PR pendiente de merge por el humano**. Del bloque solo queda **#70 recordatorios**, sin especificar, y con la mitad del diseño bloqueada porque `nextReminder` y `activitySummary` siguen a `null` en el mapper del perfil. Deuda registrada: #72 flake de add-pet; #74 el selector que TalkBack lee como tres controles sueltos; #77 el peso visible sin collar; #80 los `testID` del doble atados al componente; #81 la receta tipográfica del tile sin candado. #78 y #79 entraron desde otra sesión. #90 `mobile-owner-timezone-dates` la abrió el 2026-09-11 la decisión por defecto de #89: el móvil manda la fecha civil del dispositivo contra una validación que ya usa la zona del owner sin margen. #91 `mobile-tab-indicator-out-of-range` la destapó el gate humano de #78 el 2026-09-13: la burbuja del indicador se posiciona con el índice de `state.routes`, así que cualquier ruta de `(tabs)/` fuera de `TABS` la manda a una ranura fantasma detrás de Perfil. Es anterior a #78 y afecta también a recordatorios, pairing, peso y comidas. #75 y #91 están cerradas y mergeadas (PR #124 y #125); #73 `pet-online-pill` cerrada y **mergeada** (PR #126).
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
 desde 2026-08-10. Hay recursos vivos en la cuenta, aunque hoy sin coste.
@@ -107,6 +107,38 @@ debe listar las 4 URLs de cola.
   nunca pasa por release). `release()`, el WHERE de monotonicidad del store y el
   consumer intactos; `connectivity` sigue para #93. Solo backend, 10 ficheros,
   sin migración. Reviewer aprobado a la primera con dos sondas de mutación.
+- **`mobile-detail-screens-state-reset` (#63) done** (2026-09-15): los formularios
+  de las pantallas de detalle dejan de conservar lo que el usuario escribió la vez
+  anterior. Las rutas viven bajo `src/app/(tabs)/`, así que Expo Router las trata
+  como pestañas: salir con `router.back()` o por la barra de tabs cambia de
+  pantalla pero **no desmonta el componente**, y su `useState` sobrevive. Reset en
+  el cleanup de `useFocusEffect`, que es el único punto por el que pasan todas las
+  salidas. Cinco pantallas: `add-reminder` (R1), `add-pet` (R2, quince `useState`,
+  la peor), `weight-log` (R3), `meal-schedule` (R4, solo `generateError`) y
+  `pairing` (R5 blur + R6 cambio de `selectedPetId`). **`docs` no tenía el
+  defecto**: cero `useState`, auditado con evidencia. Diez ficheros móviles, cero
+  backend, cero copy nueva.
+  - **D1 eligió el reset local frente al Stack**, con los cinco costes medidos
+    contra el árbol y no estimados: el Stack sube el `Redirect` y el
+    `SelectedPetProvider` al layout raíz, revierte la decisión D4 de #42, invalida
+    el `paddingBottom: insets.bottom + 96` de las seis pantallas, obliga a cambiar
+    los seis botones de volver por cabecera nativa con copy nueva, y **aun así R6
+    haría falta igual** porque cambiar de mascota no desmonta nada. Queda como
+    **#95**, pospuesta y no descartada.
+  - **R7 es un requisito de que algo NO pase**: `submitting`, `claiming` y
+    `releasing` son guardas de petición en vuelo y sobreviven al blur; si se
+    reseteasen, al volver se podría disparar un segundo POST sobre una petición
+    viva. Cerrado por mutación en dos sitios, replantadas por el reviewer.
+  - **El comando de verificación de la spec firmada estaba roto**: los paths con
+    `(tabs)` iban sin escapar y jest los trata como regex, así que `(tabs)` era un
+    grupo de captura que no casaba con nada. Daba **verde con exit 0 habiendo
+    corrido 5 suites de 7**, sin ejecutar R3 ni R4. Corregido, y la regla escrita
+    en `docs/conventions.md` junto con el prefijo de feature para los R-id cuando
+    un fichero acumula los de dos specs (`pairing/index.test.tsx` tiene ahora `R5`,
+    `R6` y `R7` de #42 y de #63).
+  - Gate humano firmado el 2026-09-15: los cinco pasos en dev build de Android,
+    incluidos los dos de `/pairing` con collar real y el cambio de mascota.
+
 - **`pet-online-pill` (#73) done** (2026-09-14): `connectivity` se deriva en
   lectura de `devices.last_message_at` contra el reloj del servidor con
   `DEVICE_ONLINE_THRESHOLD_MS` (120 s, elegido por el humano); el pestillo

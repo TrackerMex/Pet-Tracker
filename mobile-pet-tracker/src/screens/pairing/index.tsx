@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { router, useFocusEffect } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   Alert,
   Pressable,
@@ -82,6 +82,12 @@ export function PairingScreen() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [phase, setPhase] = useState<'idle' | 'ready'>('idle');
   const [readyDevice, setReadyDevice] = useState<DeviceStatus | null>(null);
+  const resetPairingState = useCallback(() => {
+    setCode('');
+    setActionError(null);
+    setPhase('idle');
+    setReadyDevice(null);
+  }, []);
   const selectedPet =
     pets.data?.kind === 'ok'
       ? pets.data.pets.find(({ id }) => id === selectedPetId)
@@ -109,6 +115,15 @@ export function PairingScreen() {
       refetchTracking();
     }, [refetchTracking]),
   );
+
+  useFocusEffect(
+    useCallback(() => () => resetPairingState(), [resetPairingState]),
+  );
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- R6 resets form state when the selected pet changes.
+    resetPairingState();
+  }, [resetPairingState, selectedPetId]);
 
   async function handleClaim() {
     const activationCode = code.trim();

@@ -3770,6 +3770,52 @@ un conflicto seguro en esa linea al mergear el segundo. Yendo junto, el contador
   'canceled')`; móvil sin diff contra `origin/main`); el fichero 3 de 3 verde suelto y
   la segunda corrida completa exit 0 sin pipe (backend 166/1278, infra 2/14, móvil
   73/1265, e2e 367 de 375). #92 `done`, STATUS.md 78/94, PR abierto; el humano mergea.
+---
+
+# Sesión #63 mobile-detail-screens-state-reset (cierre, 2026-09-15, sesión Frontend)
+
+- Worktree principal `/home/claude/sites/Pet-Tracker`, branch
+  `feature/63-mobile-detail-screens-state-reset` desde `origin/main` `66a9d52b`,
+  en paralelo con la sesión Backend (#92 y luego #93) en `Pet-Tracker-wt-backend`.
+- Sin `explorer`: el enunciado de #63 ya traía la exploración. `spec_author` →
+  `specs/mobile-detail-screens-state-reset/` con **D1 = reset local, no Stack**,
+  cinco costes medidos. Firma humana `1a9fef11`, verificada por el leader: toca
+  solo la casilla, sin drift de código.
+- Codex CLI: 22 commits test→feat→docs por R-id. `reviewer` aprobado a la primera
+  (`progress/review_mobile-detail-screens-state-reset.md`), `./init.sh` exit 0,
+  móvil +10 tests y 0 suites contra el baseline `f50b4203`.
+- Gate humano firmado el 2026-09-15: cinco pasos en dev build de Android,
+  incluidos los dos de `/pairing` con collar real.
+
+## Tres cosas que conviene no perder
+
+1. **El comando de verificación de una spec ya firmada estaba roto.** Los paths
+   con `(tabs)` sin escapar: jest los trata como regex, `(tabs)` es grupo de
+   captura, no casa con nada, y el gate daba **verde con exit 0 habiendo corrido
+   5 suites de 7** — sin ejecutar R3 ni R4. Lo detectó el leader al verificar por
+   su cuenta lo que Codex había dejado en "pendiente". Regla en
+   `docs/conventions.md`.
+2. **Colisión de R-ids entre specs.** `pairing/index.test.tsx` acumula `R5`, `R6`
+   y `R7` de #42 y de #63. El repo ya lo había resuelto tres veces con prefijo
+   (`#87 R15`, `#61 R10`) sin escribir la regla, por eso el `spec_author` la
+   vuelve a omitir. Codificada ahora.
+3. **Coordinación entre sesiones, resuelta de raíz.** El Postgres compartido dejó
+   de ser cuello de botella: una base por worktree (`pet_tracker_wt`), validada
+   por la sesión Backend con la e2e completa en verde. Quedan compartidos
+   LocalStack (14 de 29 suites lo tocan) y el journal de migraciones de
+   `pet_tracker`, que tiene 14 filas para 20 tablas porque #26 aplicó 0014 y 0015
+   con `psql` crudo. Todo escrito en `docs/conventions.md` §Sesiones en paralelo.
+
+## Decisiones del humano en esta sesión
+
+- **#60 iOS pospuesto** (2026-09-15, tras retractarse el mismo día): "continuamos
+  con android". La decisión de costo sigue abierta. El leader llegó a escribir el
+  Apple Developer Program en el ticket como consecuencia inferida —99 USD/año que
+  el humano nunca enunció— y hubo que revertirlo: las consecuencias no enunciadas
+  de una decisión de costo se anotan como pregunta abierta, no como parte de la
+  decisión.
+- **`reminders` y `alerts`** tienen el mismo patrón de estado superviviente y
+  siguen fuera de alcance, sin decidir si van a feature aparte.
 
 ---
 

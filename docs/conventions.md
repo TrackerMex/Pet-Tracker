@@ -154,6 +154,47 @@ dejar que un error de Drizzle/pg llegue crudo al cliente.
 describe('R1: <resumen del requisito>', () => { ... })
 ```
 
+### Prefijo de feature cuando un fichero acumula R-ids de dos specs
+
+Un R-id solo es único **dentro de su spec**. En cuanto una segunda feature
+añade requisitos al mismo fichero de test, el título desnudo deja de
+identificar nada: tras #63, `src/screens/pairing/index.test.tsx` tiene `R5`,
+`R6` y `R7` **dos veces** —los viejos de #42, los nuevos de #63—, y lo mismo
+pasa en `add-pet`, `weight-log` y `meal-schedule`.
+
+Cuando el fichero ya contenga R-ids de otra spec, **prefija con el id de la
+feature**:
+
+```
+describe('#63 R5: <resumen del requisito>', () => { ... })
+```
+
+El repo ya lo resolvió así tres veces de forma suelta (`#87 R15`, `#61 R10`,
+`R1 (mobile-jest-mock-hygiene)`); esta es la forma canónica. La responsabilidad
+es del `spec_author`: si `tasks.md` prescribe títulos desnudos, el implementador
+los copia literalmente y la colisión llega hasta el reviewer.
+
+No rompe la trazabilidad retroactivamente —`traceability.md` desambigua por
+título completo— pero un `-t 'R7'` sí selecciona los dos.
+
+### Filtros de jest con rutas que llevan paréntesis
+
+Los argumentos posicionales de `jest` son **regex**, no rutas. Las pantallas de
+Expo Router viven en `src/app/(tabs)/`, así que un filtro literal trata
+`(tabs)` como grupo de captura, casa con `src/app/tabs/` —que no existe— y
+**salta el fichero en silencio, con exit 0 y sin aviso**:
+
+```bash
+npx jest "src/app/(tabs)/__tests__/weight-log"      # ❌ no corre nada, exit 0
+npx jest 'src/app/\(tabs\)/__tests__/weight-log'    # ✅
+npx jest --runTestsByPath 'src/app/(tabs)/__tests__/weight-log.test.tsx'  # ✅
+```
+
+En #63 el comando de verificación de la spec —ya firmada— llevaba dos rutas sin
+escapar: daba verde con exit 0 habiendo corrido 5 suites de 7, sin ejecutar dos
+requisitos. **Comprueba siempre que el número de suites que imprime jest
+coincide con el de ficheros que el filtro pretendía coger.**
+
 ---
 
 ## Commits
@@ -199,6 +240,111 @@ solapar, `git worktree`.
 push directo. Lo que no toca código de la app (harness, `docs/`, `specs/`,
 `progress/`, `feature_list.json` en fase de spec) va igualmente por branch —
 `docs/<tema>` o `update-status-<id>` — y PR, solo que sin esperar al reviewer.
+
+---
+
+## Sesiones en paralelo: un worktree, una base de datos
+
+Dos sesiones de IA trabajando a la vez usan `git worktree` (uno por feature),
+pero el HEAD separado no separa la **infraestructura**: `docker-compose.yml`
+levanta **un** Postgres y **un** LocalStack para toda la máquina. Dos
+`./init.sh` simultáneos se borran filas entre sí y producen **e2e rojos falsos**
+que parecen bugs de código y se investigan durante media hora. Ya costó dos
+corridas completas en el cierre de #64.
+
+### Postgres: una base por worktree (elimina la coordinación)
+
+Un servidor Postgres aloja varias bases. Cada worktree usa la suya y el
+problema desaparece — no hay que avisar a nadie para correr tests que solo
+tocan Postgres:
+
+```bash
+# 1. crear la base (docker exec, NO docker compose exec: desde el worktree el
+#    proyecto compose se llama distinto y no encuentra el contenedor)
+docker exec pet-tracker-postgres \
+  psql -U pet_tracker -d postgres \
+  -c 'CREATE DATABASE pet_tracker_wt OWNER pet_tracker;'
+
+# 2. apuntar el .env del worktree (gitignorado, local a ese worktree)
+#    DATABASE_URL=postgresql://pet_tracker:<pass>@localhost:5433/pet_tracker_wt
+
+# 3. aplicar migraciones
+cd backend-pet-tracker && pnpm run db:migrate
+```
+
+`drizzle.config.ts:17` carga `../.env` por su cuenta con `dotenv`, así que el
+paso 3 **no** necesita exportar variables a mano. Y `init.sh` solo copia
+`.env.example` **si `.env` no existe** (`init.sh:58`): nunca lo sobrescribe, el
+apunte sobrevive.
+
+Validado el 2026-09-14 en `Pet-Tracker-wt-backend`: suite e2e completa exit 0
+con los mismos números que el baseline, y `pg_stat_database` confirmó que los
+inserts fueron a la base nueva y no a la compartida.
+
+### El puerto es 5433 en el VPS, y eso es correcto
+
+`docker-compose.yml` mapea `5432:5432` y `.env.example` dice 5432 — es el valor
+por defecto y no se toca. En el VPS algo ocupa `127.0.0.1:5432`, así que hay un
+**`docker-compose.override.yml` gitignorado** que remapea a 5433. Ese es el
+mecanismo previsto: cada máquina ajusta lo suyo en el override, no en el fichero
+versionado.
+
+### LocalStack sigue compartido: ahí el aviso previo se mantiene
+
+SQS, DynamoDB y S3 viven en un único LocalStack en `:4566`. Separar Postgres no
+lo separa. **14 de las 29 suites e2e lo tocan** y siguen necesitando aviso a la
+otra sesión antes de correr:
+
+`activity`, `alerts-center-notifier`, `alerts-engine`, `aws-real-ingest`,
+`aws-real-media`, `aws-real-smoke`, `device-subscriptions`, `ingestion`,
+`localstack-provisioning`, `media`, `media-docs`, `pet-reminders`, `positions`,
+`resource-isolation`
+
+Las otras 15 solo tocan Postgres: con base propia, se solapan sin avisar.
+
+### Antes de lanzar un gate, comprueba que no hay otro
+
+```bash
+pgrep -af 'init\.sh|test:e2e|jest-e2e' | grep -v pgrep
+```
+
+`pgrep -f 'bash ./init.sh'` **se encuentra a sí mismo** —el patrón está en la
+línea de comando del shell que lo lanza— y da falsos positivos. Ante un pid
+dudoso, mira su antigüedad con `ps -o etime= -p <pid>`: uno de 00:00 es el
+propio `pgrep`.
+
+### Nunca apliques una migración con `psql` crudo
+
+`pnpm run db:migrate` hace dos cosas: ejecuta el `.sql` **y** escribe su fila en
+`drizzle.__drizzle_migrations`. Aplicarlo a mano con `psql` hace solo la
+primera, y el journal queda mintiendo: la siguiente migración que alguien añada
+hace que drizzle reintente desde la primera fila que falta, el `CREATE TABLE`
+choca con la tabla que ya existe y **toda la migración nueva se va en el
+rollback**.
+
+Es un fallo latente: no lo detecta ningún gate, porque `init.sh` **no corre
+`db:migrate`** (`init.config.sh` solo tiene install, build, test, lint y
+typecheck) y los e2e pasan contra el esquema que ya está puesto. Se descubre
+meses después, cuando otra feature añade una migración.
+
+Pasó en #26 (`progress/impl_auth-forgot-password.md:70-72`): 0014 y 0015 se
+aplicaron con `psql` y no entraron en el journal de la base compartida del VPS.
+
+Si por lo que sea hay que aplicarlo a mano, la fila va detrás, con el `sha256`
+del `.sql` y el `when` que ese `tag` tiene en `meta/_journal.json`:
+
+```sql
+INSERT INTO drizzle.__drizzle_migrations (hash, created_at)
+VALUES ('<sha256sum del fichero .sql>', <when de meta/_journal.json>);
+```
+
+### Migraciones destructivas
+
+Una migración que borra o renombra una columna rompe a **toda** sesión cuyo
+código aún la declare, con un error que no tiene nada que ver con su feature
+(`column X does not exist`). Aplícala sobre la base compartida solo cuando la
+otra sesión haya **mergeado** su branch, no cuando termine su gate: entre el
+veredicto y el merge todavía quedan corridas de `init.sh`.
 
 ---
 
