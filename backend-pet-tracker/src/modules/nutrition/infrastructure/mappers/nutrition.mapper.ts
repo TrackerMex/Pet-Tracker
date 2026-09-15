@@ -1,5 +1,6 @@
 import type { NutritionProfile } from '@/modules/nutrition/domain/entities/nutrition-profile.entity';
 import type { NutritionPlan } from '@/modules/nutrition/domain/entities/nutrition-plan.entity';
+import type { NutritionPlanToday } from '@/modules/nutrition/application/use-cases/get-nutrition-plan.use-case';
 import type { MealServing } from '@/modules/nutrition/domain/entities/meal-serving.entity';
 import type {
   NutritionObjective,
@@ -30,6 +31,10 @@ export interface NutritionPlanResponse {
   warnings: NutritionWarning[];
   aiExplanation: string | null;
   generatedAt: string;
+}
+
+export interface NutritionPlanTodayResponse extends NutritionPlanResponse {
+  servedToday: string[];
 }
 
 export interface MealServingResponse {
@@ -73,6 +78,13 @@ export function toNutritionPlanResponse(
     aiExplanation: null,
     generatedAt: plan.generatedAt.toISOString(),
   };
+}
+
+export function toNutritionPlanTodayResponse({
+  plan,
+  servedToday,
+}: NutritionPlanToday): NutritionPlanTodayResponse {
+  return { ...toNutritionPlanResponse(plan), servedToday };
 }
 
 export function toMealServingResponse(
