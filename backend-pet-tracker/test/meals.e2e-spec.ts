@@ -415,4 +415,48 @@ describe('Meals served tracking (e2e)', () => {
       await unserveMeal(owner, 'not-a-uuid', '07:30').expect(404);
     });
   });
+
+  describe('R8 (meals-served-tracking #83): POST y DELETE dejan filas meal.serve y meal.unserve en audit_log', () => {
+    it('audita ambas escrituras con actor, serving y metadatos', async () => {
+      const owner = await seedUser('r8');
+      const pet = await seedPet(owner);
+      await seedPlan(owner, pet.id);
+
+      const created = await serveMeal(owner, pet.id, {
+        mealTime: '07:30',
+      }).expect(201);
+      const serving = created.body as {
+        id: string;
+        servedOn: string;
+      };
+      await unserveMeal(owner, pet.id, '07:30').expect(204);
+
+      const rows = await db
+        .select()
+        .from(auditLog)
+        .where(
+          and(
+            eq(auditLog.entity, 'meal_serving'),
+            eq(auditLog.entityId, serving.id),
+          ),
+        );
+      expect(rows).toHaveLength(2);
+      expect(rows.map((row) => row.action).sort()).toEqual([
+        'meal.serve',
+        'meal.unserve',
+      ]);
+      for (const row of rows) {
+        expect(row).toMatchObject({
+          userId: owner.id,
+          entity: 'meal_serving',
+          entityId: serving.id,
+          meta: {
+            petId: pet.id,
+            mealTime: '07:30',
+            servedOn: serving.servedOn,
+          },
+        });
+      }
+    });
+  });
 });

@@ -30,7 +30,7 @@ export class UnserveMealUseCase {
     }
     await this.audit.record({
       userId,
-      action: 'meal.unserve',
+      action: 'meal.delete',
       entity: 'meal_serving',
       entityId: deleted.id,
       meta: { petId, mealTime, servedOn },

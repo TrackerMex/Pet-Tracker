@@ -38,10 +38,13 @@ function serving(): MealServing {
   });
 }
 
-function buildUseCase(latestPlan: NutritionPlan | null) {
+function buildUseCase(
+  latestPlan: NutritionPlan | null,
+  overrides: { create?: jest.Mock; record?: jest.Mock } = {},
+) {
   const findLatestPlan = jest.fn().mockResolvedValue(latestPlan);
-  const create = jest.fn().mockResolvedValue(serving());
-  const record = jest.fn().mockResolvedValue(undefined);
+  const create = overrides.create ?? jest.fn().mockResolvedValue(serving());
+  const record = overrides.record ?? jest.fn().mockResolvedValue(undefined);
   const nutrition = { findLatestPlan } as unknown as NutritionRepository;
   const meals = { create } as unknown as MealServingRepository;
   const pets = {
@@ -72,5 +75,38 @@ describe('R4 (meals-served-tracking #83): sin plan o franja fuera del plan el us
     ).rejects.toMatchObject({ name: 'MealTimeNotInPlanError' });
     expect(create).not.toHaveBeenCalled();
     expect(record).not.toHaveBeenCalled();
+  });
+});
+
+describe('R8 (meals-served-tracking #83): meal.serve se audita despues de crear y nunca si create falla', () => {
+  it('no audita cuando create falla', async () => {
+    const create = jest.fn().mockRejectedValue(new Error('write failed'));
+    const { useCase, record } = buildUseCase(plan(['07:30', '19:30']), {
+      create,
+    });
+
+    await expect(
+      useCase.execute(PET_ID, { mealTime: '07:30' }, USER_ID, NOW),
+    ).rejects.toThrow('write failed');
+    expect(record).not.toHaveBeenCalled();
+  });
+
+  it('audita el id creado despues de resolver create', async () => {
+    const { useCase, create, record } = buildUseCase(
+      plan(['07:30', '19:30']),
+    );
+
+    await useCase.execute(PET_ID, { mealTime: '07:30' }, USER_ID, NOW);
+
+    expect(record).toHaveBeenCalledWith({
+      userId: USER_ID,
+      action: 'meal.serve',
+      entity: 'meal_serving',
+      entityId: SERVING_ID,
+      meta: { petId: PET_ID, mealTime: '07:30', servedOn: '2026-08-11' },
+    });
+    expect(create.mock.invocationCallOrder[0]).toBeLessThan(
+      record.mock.invocationCallOrder[0],
+    );
   });
 });
