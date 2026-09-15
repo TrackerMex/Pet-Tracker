@@ -998,3 +998,65 @@ describe('#97 R7: la lista se revalida al ganar el foco', () => {
     await waitFor(() => expect(mockListAlerts).toHaveBeenCalledTimes(2));
   });
 });
+
+describe(
+  '#97 R8: el overlay del ack caduca cuando la lista trae otro status',
+  () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+      mockListAlerts.mockReset();
+      process.env.EXPO_PUBLIC_API_URL = apiUrl;
+      mockUseAuth.mockReturnValue({
+        status: 'authenticated',
+        token: 'jwt-token',
+        signIn: jest.fn(),
+        signOut: jest.fn(),
+      } satisfies AuthContextValue);
+      mockListAlerts
+        .mockResolvedValueOnce({
+          kind: 'ok',
+          items: [makeAlert()],
+          nextCursor: null,
+        })
+        .mockResolvedValueOnce({
+          kind: 'ok',
+          items: [
+            makeAlert({
+              status: 'closed',
+              closedAt: '2026-09-11T12:05:00.000Z',
+            }),
+          ],
+          nextCursor: null,
+        });
+      mockAckAlert.mockResolvedValue({
+        kind: 'ok',
+        alert: makeAlert({
+          status: 'acked',
+          ackedAt: '2026-09-11T12:00:00.000Z',
+        }),
+      });
+    });
+
+    it('da prioridad al status cerrado descargado en el siguiente foco', async () => {
+      await renderAlerts();
+      const button = await waitFor(() =>
+        screen.getByTestId('alert-row-alert-1-ack'),
+      );
+
+      await fireEvent.press(button);
+      await waitFor(() =>
+        expect(screen.getByTestId('alert-row-alert-1-status')).toHaveTextContent(
+          es['alerts.statusAcked'],
+        ),
+      );
+
+      await focusScreen();
+
+      await waitFor(() =>
+        expect(screen.getByTestId('alert-row-alert-1-status')).toHaveTextContent(
+          es['alerts.statusClosed'],
+        ),
+      );
+    });
+  },
+);
