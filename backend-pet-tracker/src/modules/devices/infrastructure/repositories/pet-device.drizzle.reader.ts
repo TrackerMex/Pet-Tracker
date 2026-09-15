@@ -34,7 +34,6 @@ export class PetDeviceDrizzleReader implements PetDeviceReader {
     return {
       model: row.device.model ?? null,
       batteryPct: row.device.batteryPct ?? null,
-      connectivity: row.device.connectivity ?? null,
       lastMessageAt: row.device.lastMessageAt ?? null,
       esn: row.device.esn ?? null,
     };

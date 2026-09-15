@@ -101,7 +101,6 @@ describe('R12 (devices-claim): el perfil incluye el collar activo del puerto', (
     deps.findActiveDevice.mockResolvedValue({
       model: 'sim-collar',
       batteryPct: null,
-      connectivity: null,
       lastMessageAt: null,
       esn: 'SIM-001',
     });
@@ -118,7 +117,6 @@ describe('R12 (devices-claim): el perfil incluye el collar activo del puerto', (
     expect(profile.device).toEqual({
       model: 'sim-collar',
       batteryPct: null,
-      connectivity: null,
       lastMessageAt: null,
       esn: 'SIM-001',
     });

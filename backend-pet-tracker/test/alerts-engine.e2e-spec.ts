@@ -133,7 +133,6 @@ describe('Alerts engine (e2e)', () => {
         status: 'available',
         ingestWatermark: null,
         batteryPct: null,
-        connectivity: null,
         lastMessageAt: null,
       })
       .where(eq(devices.id, sim2.id));

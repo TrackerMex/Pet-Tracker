@@ -44,8 +44,6 @@ export interface IngestionStore {
   /**
    * Actualiza devices (battery_pct, last_message_at) solo si lastMessageAt es
    * mas reciente que el cacheado — el WHERE vive en la implementacion (R14).
-   * connectivity no se escribe desde #73: se deriva en lectura
-   * (modules/devices/domain/connectivity.ts).
    */
   updateDeviceTelemetry(
     deviceId: string,

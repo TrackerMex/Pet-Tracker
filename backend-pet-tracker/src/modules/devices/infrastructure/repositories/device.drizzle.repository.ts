@@ -136,7 +136,6 @@ function toDomain(row: DeviceRow): Device {
     model: row.model ?? null,
     status: row.status as DeviceStatus,
     batteryPct: row.batteryPct ?? null,
-    connectivity: row.connectivity ?? null,
     lastMessageAt: row.lastMessageAt ?? null,
     ingestWatermark: row.ingestWatermark ?? null,
     isSimulated: row.isSimulated,
