@@ -200,3 +200,60 @@
   ✅ Typecheck sin errores
   ✅ Todo verde. Listo para trabajar.
   ```
+
+### Cierre y alcance
+
+- Estado final de `pet_tracker_wt`: journal `17|1789440631931`; consulta de
+  la columna `connectivity`: `0`.
+- `git diff --stat origin/main` capturado después del init final y antes de
+  añadir este bloque:
+
+  ```text
+   .../migrations/0016_drop_devices_connectivity.sql  |    1 +
+   .../src/db/migrations/meta/0016_snapshot.json      | 2369 ++++++++++++++++++++
+   .../src/db/migrations/meta/_journal.json           |    7 +
+   .../src/db/schema/devices.schema.spec.ts           |   14 +-
+   .../src/db/schema/devices.schema.ts                |    3 +-
+   .../use-cases/claim-device.use-case.spec.ts        |    1 -
+   .../use-cases/get-pet-device.use-case.spec.ts      |    1 -
+   .../use-cases/release-device.use-case.spec.ts      |    1 -
+   .../devices/domain/entities/device.entity.ts       |    4 -
+   .../repositories/device.drizzle.repository.ts      |    1 -
+   .../repositories/pet-device.drizzle.reader.ts      |    1 -
+   .../application/use-cases/get-pet.use-case.spec.ts |    2 -
+   .../modules/pets/domain/ports/pet-device-reader.ts |    1 -
+   .../pets/infrastructure/pets.controller.spec.ts    |    3 -
+   backend-pet-tracker/src/workers/ingestion-store.ts |    2 -
+   backend-pet-tracker/test/alerts-engine.e2e-spec.ts |    1 -
+   backend-pet-tracker/test/ingestion.e2e-spec.ts     |    2 -
+   .../test/provision-device.e2e-spec.ts              |    1 -
+   .../test/resource-isolation.e2e-spec.ts            |    1 -
+   docs/data-model.md                                 |    2 +-
+   feature_list.json                                  |    2 +-
+   progress/current.md                                |   33 +
+   .../handoff_drop-devices-connectivity-column.md    |   82 +
+   progress/impl_drop-devices-connectivity-column.md  |  202 ++
+   specs/drop-devices-connectivity-column/design.md   |  216 ++
+   .../requirements.md                                |  353 +++
+   specs/drop-devices-connectivity-column/tasks.md    |  196 ++
+   .../traceability.md                                |   20 +
+   28 files changed, 3494 insertions(+), 28 deletions(-)
+  ```
+
+  Los 22 ficheros desde el handoff `d7110e60` son exactamente los de
+  `design.md` §Archivos afectados. Los otros seis (`feature_list.json`,
+  `progress/current.md`, handoff, requirements, design y tasks) ya estaban
+  en la branch al recibirla. El diff acotado a los tres e2e protegidos,
+  mapper, `connectivity.ts` y sus specs terminó en exit `0` sin salida;
+  `mobile-pet-tracker/` tampoco tiene diff.
+
+- Historia de implementación, sin rebase:
+
+  ```text
+  ffaf0669 test(drop-devices-connectivity-column): lock devices schema without connectivity (R1)
+  0a131779 feat(drop-devices-connectivity-column): drop devices.connectivity column and migration 0016 (R1)
+  f9020c3f docs(drop-devices-connectivity-column): drop connectivity from data-model (R1)
+  8f16049b docs(drop-devices-connectivity-column): record pre-migration verification (R2)
+  edcabc41 docs(drop-devices-connectivity-column): record migration verification (R3)
+  9f61e16c docs(drop-devices-connectivity-column): finalize traceability (R1,R2,R3)
+  ```
