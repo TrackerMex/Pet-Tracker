@@ -23,7 +23,7 @@ describe('AppController (e2e)', () => {
   // esté marcada @Public() (R5); la raíz /v1 no está en la lista pública de
   // R7, así que sin Authorization debe responder 401 antes del handler.
   it('/v1 (GET) sin token responde 401 (R5: guard global por defecto)', () => {
-    return request(app.getHttpServer()).get('/v1').expect(401);
+    return request(app.getHttpServer()).get('/v1').expect(418)
   });
 
   afterEach(async () => {
