@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import { Redirect, router } from 'expo-router';
+import { Redirect, router, useFocusEffect } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft, Clock, ForkKnife } from 'reicon-react-native';
@@ -42,6 +42,9 @@ function MealScheduleContent({ petId }: { petId: string }) {
   const insets = useSafeAreaInsets();
   const [submitting, setSubmitting] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
+  useFocusEffect(
+    useCallback(() => () => setGenerateError(null), []),
+  );
   const plan = useQuery({
     queryKey: nutritionKeys.plan(petId),
     queryFn: () => getNutritionPlan(baseUrl, token ?? '', petId),

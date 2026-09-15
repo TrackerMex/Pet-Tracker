@@ -1,4 +1,4 @@
-import { Redirect, router } from 'expo-router';
+import { Redirect, router, useFocusEffect } from 'expo-router';
 import {
   Button,
   Card as HeroUICard,
@@ -8,7 +8,7 @@ import {
   TextField,
 } from 'heroui-native';
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft, Minus, TrendDown, TrendUp } from 'reicon-react-native';
@@ -63,6 +63,17 @@ function WeightLogContent({ petId }: { petId: string }) {
   const [bodyConditionText, setBodyConditionText] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  useFocusEffect(
+    useCallback(
+      () => () => {
+        setWeightText('');
+        setMeasuredAt(localTodayIso());
+        setBodyConditionText('');
+        setFormError(null);
+      },
+      [],
+    ),
+  );
   const weights = useQuery({
     queryKey: healthKeys.weights(petId, undefined),
     queryFn: () => listWeights(baseUrl, token ?? '', petId),
