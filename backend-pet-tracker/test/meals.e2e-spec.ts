@@ -1,6 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { count, eq, inArray } from 'drizzle-orm';
+import { and, count, eq, inArray } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import request from 'supertest';
 import { App } from 'supertest/types';
@@ -204,6 +204,59 @@ describe('Meals served tracking (e2e)', () => {
         .from(mealServings)
         .where(eq(mealServings.petId, pet.id));
       expect(row.value).toBe(0);
+    });
+  });
+
+  describe('R4 (meals-served-tracking #83): 422 NUTRITION_PLAN_REQUIRED y 422 MEAL_TIME_NOT_IN_PLAN sin persistir', () => {
+    it('responde NUTRITION_PLAN_REQUIRED cuando no hay plan', async () => {
+      const owner = await seedUser('r4-no-plan');
+      const pet = await seedPet(owner);
+
+      const response = await serveMeal(owner, pet.id, {
+        mealTime: '07:30',
+      }).expect(422);
+      expect(response.body).toEqual({
+        statusCode: 422,
+        code: 'NUTRITION_PLAN_REQUIRED',
+        message: 'Generate a nutrition plan before serving meals',
+      });
+
+      const [row] = await db
+        .select({ value: count() })
+        .from(mealServings)
+        .where(eq(mealServings.petId, pet.id));
+      expect(row.value).toBe(0);
+    });
+
+    it('responde MEAL_TIME_NOT_IN_PLAN sin persistir ni auditar', async () => {
+      const owner = await seedUser('r4-off-plan');
+      const pet = await seedPet(owner);
+      await seedPlan(owner, pet.id);
+
+      const response = await serveMeal(owner, pet.id, {
+        mealTime: '12:00',
+      }).expect(422);
+      expect(response.body).toEqual({
+        statusCode: 422,
+        code: 'MEAL_TIME_NOT_IN_PLAN',
+        message: 'mealTime is not part of the current nutrition plan',
+      });
+
+      const [servings] = await db
+        .select({ value: count() })
+        .from(mealServings)
+        .where(eq(mealServings.petId, pet.id));
+      expect(servings.value).toBe(0);
+      const [audits] = await db
+        .select({ value: count() })
+        .from(auditLog)
+        .where(
+          and(
+            eq(auditLog.userId, owner.id),
+            eq(auditLog.entity, 'meal_serving'),
+          ),
+        );
+      expect(audits.value).toBe(0);
     });
   });
 });
