@@ -27,6 +27,17 @@ import { LanguageProvider } from '../../providers/language-provider';
 import { renderWithProviders } from '../../../test/render-with-providers';
 import { AlertsScreen } from '.';
 
+declare function require(moduleName: 'fs'): {
+  readFileSync: (path: string, encoding: 'utf8') => string;
+};
+
+declare function require(moduleName: 'path'): {
+  join: (...paths: string[]) => string;
+};
+
+const { readFileSync } = require('fs');
+const { join } = require('path');
+
 jest.mock('../../api/alerts', () => ({
   ackAlert: jest.fn(),
   listAlerts: jest.fn(),
@@ -836,6 +847,64 @@ describe(
       await waitFor(() =>
         expect(screen.queryByTestId('alerts-action-error')).toBeNull(),
       );
+    });
+  },
+);
+
+describe(
+  '#97 R5: el guarda del ack en vuelo sobrevive a la pérdida de foco',
+  () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+      mockListAlerts.mockReset();
+      process.env.EXPO_PUBLIC_API_URL = apiUrl;
+      mockUseAuth.mockReturnValue({
+        status: 'authenticated',
+        token: 'jwt-token',
+        signIn: jest.fn(),
+        signOut: jest.fn(),
+      } satisfies AuthContextValue);
+      mockListAlerts.mockResolvedValue({
+        kind: 'ok',
+        items: [makeAlert()],
+        nextCursor: null,
+      });
+      mockAckAlert.mockReturnValue(pending<AckAlertState>());
+    });
+
+    it('mantiene bloqueado el ack que sigue en vuelo', async () => {
+      await renderAlerts();
+      const button = await waitFor(() =>
+        screen.getByTestId('alert-row-alert-1-ack'),
+      );
+      const cleanups = await focusScreen();
+
+      await fireEvent.press(button);
+      await waitFor(() =>
+        expect(screen.getByTestId('alert-row-alert-1-ack')).toBeDisabled(),
+      );
+
+      await blurScreen(cleanups);
+
+      await waitFor(() =>
+        expect(screen.getByTestId('alert-row-alert-1-ack')).toBeDisabled(),
+      );
+      await fireEvent.press(screen.getByTestId('alert-row-alert-1-ack'));
+      expect(mockAckAlert).toHaveBeenCalledTimes(1);
+    });
+
+    it('no resetea el estado ni el ref desde el cleanup de foco', () => {
+      const source = readFileSync(
+        join(process.cwd(), 'src/screens/alerts/index.tsx'),
+        'utf8',
+      );
+      const focusBlock = source.slice(
+        source.indexOf('useFocusEffect('),
+        source.indexOf('async function handleAck'),
+      );
+
+      expect(focusBlock).not.toContain('AckingId');
+      expect(focusBlock).not.toContain('ackingIdRef');
     });
   },
 );

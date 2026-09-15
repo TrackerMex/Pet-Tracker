@@ -79,7 +79,11 @@ export function AlertsScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      return () => setActionError(null);
+      return () => {
+        setActionError(null);
+        setAckingId(null);
+        ackingIdRef.current = null;
+      };
     }, [refetchAlerts]),
   );
 
