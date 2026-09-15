@@ -1,0 +1,44 @@
+---
+feature: "harness-e2e-nunca-corre-en-ci"
+status: spec_ready   # draft | spec_ready (pendiente gate humano) | approved
+tags: [harness, spec, ci]
+---
+
+# Trazabilidad — [[harness-e2e-nunca-corre-en-ci]]
+
+Commit base: `48e4130d`
+(`Merge pull request #132 from TrackerMex/docs/72-tercer-avistamiento`).
+
+Todos los tests viven en el mismo fichero nuevo, `init-e2e-gate.test.mjs`
+(raíz del repo), un `describe` por R-id, con el id y el `#96` en el título —
+mismo patrón que `env-drift.test.mjs` e `init-color.test.mjs`.
+
+| Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
+|---|---|---|
+| R1 | `init-e2e-gate.test.mjs::R1 (harness-e2e-nunca-corre-en-ci #96): CI levanta la infra antes de init.sh` | pendiente |
+| R2 | `init-e2e-gate.test.mjs::R2 (harness-e2e-nunca-corre-en-ci #96): el workflow fija AWS_MODE local y nunca toca AWS real` | pendiente |
+| R3 | `init-e2e-gate.test.mjs::R3 (harness-e2e-nunca-corre-en-ci #96): los puertos se derivan del .env` | pendiente |
+| R4 | `init-e2e-gate.test.mjs::R4 (harness-e2e-nunca-corre-en-ci #96): la infra caida aborta init.sh con codigo 1` | pendiente |
+| R5 | `init-e2e-gate.test.mjs::R5 (harness-e2e-nunca-corre-en-ci #96): el fallo nombra host, puerto y clave de origen` | pendiente |
+| R6 | `init-e2e-gate.test.mjs::R6 (harness-e2e-nunca-corre-en-ci #96): migraciones y provisioning antes de los e2e` | pendiente |
+| R7 | `init-e2e-gate.test.mjs::R7 (harness-e2e-nunca-corre-en-ci #96): la suite entra en TEST_CMD y en el mapa del repo` | pendiente |
+| R8 | `init-e2e-gate.test.mjs::R8 (harness-e2e-nunca-corre-en-ci #96): ningun comentario describe ya el agujero` | pendiente |
+| R9 | `init-e2e-gate.test.mjs::R9 (harness-e2e-nunca-corre-en-ci #96): docs/verification.md documenta el gate` | pendiente |
+| G1 | **gate humano** — corrida de CI verde del PR, con el resumen de jest e2e y la igualdad de [[requirements]] §"Cómo se mide el criterio 1" | pendiente (URL de la corrida en `progress/impl_harness-e2e-nunca-corre-en-ci.md`) |
+| G2 | **gate humano** — rojo deliberado en `test/96-ci-red-probe`, PR en borrador cerrado sin mergear | pendiente (URL de la corrida roja + línea del fallo en `progress/impl_harness-e2e-nunca-corre-en-ci.md`) |
+
+Regla: el reviewer no aprueba si alguna fila queda "pendiente".
+Convención de commit: `feat(ci-e2e): <desc> (R1,R2)`; el commit rojo previo va
+como `test(ci-e2e): <desc> (R1)`.
+El implementer actualiza esta tabla tras cada commit; el reviewer la valida
+al aprobar (ver [[../../docs/specs|specs]] y [[../../CHECKPOINTS|CHECKPOINTS]] C5).
+
+**G1 y G2 no los cierra el reviewer.** El criterio de aceptación 2 exige un rojo
+real observado en una corrida, no una inspección del YAML; ninguna IA puede
+firmarlo. El reviewer verifica R1-R9 y comprueba que las dos filas de gate
+traen su URL y su evidencia anotadas por el humano — si no las traen, la feature
+**no** pasa a `done`.
+
+**No rebasees esta rama después de rellenar la tabla.** Un rebase reescribe los
+hashes y deja cada fila apuntando a un commit que ya no existe; si aun así hace
+falta, hay que reapuntarlos y verificar con `git merge-base --is-ancestor`.
