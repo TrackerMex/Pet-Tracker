@@ -660,39 +660,42 @@ describe('#87 R14: RemindersScreen lee por TanStack Query', () => {
   });
 });
 
-describe('#97 R1: blur cierra el bottom sheet de delete', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    process.env.EXPO_PUBLIC_API_URL = apiUrl;
-    mockUseAuth.mockReturnValue({
-      status: 'authenticated',
-      token: 'jwt-token',
-      signIn: jest.fn(),
-      signOut: jest.fn(),
-    } satisfies AuthContextValue);
-    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
-    mockListReminders.mockResolvedValue({
-      kind: 'ok',
-      reminders: [makeReminder()],
+describe(
+  '#97 R1: la confirmación de borrado no sobrevive a la pérdida de foco',
+  () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+      process.env.EXPO_PUBLIC_API_URL = apiUrl;
+      mockUseAuth.mockReturnValue({
+        status: 'authenticated',
+        token: 'jwt-token',
+        signIn: jest.fn(),
+        signOut: jest.fn(),
+      } satisfies AuthContextValue);
+      mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+      mockListReminders.mockResolvedValue({
+        kind: 'ok',
+        reminders: [makeReminder()],
+      });
     });
-  });
 
-  it('cierra el sheet y elimina su contenido accesible al perder foco', async () => {
-    await renderReminders();
-    await waitFor(() =>
-      expect(screen.getByTestId('reminder-row-reminder-1')).toBeVisible(),
-    );
-    const cleanups = await focusScreen();
+    it('cierra el sheet y elimina su contenido accesible al perder foco', async () => {
+      await renderReminders();
+      await waitFor(() =>
+        expect(screen.getByTestId('reminder-row-reminder-1')).toBeVisible(),
+      );
+      const cleanups = await focusScreen();
 
-    await fireEvent.press(screen.getByTestId('reminder-delete-reminder-1'));
-    expect(screen.getByTestId('community-bottom-sheet')).toBeVisible();
+      await fireEvent.press(screen.getByTestId('reminder-delete-reminder-1'));
+      expect(screen.getByTestId('community-bottom-sheet')).toBeVisible();
 
-    await blurScreen(cleanups);
+      await blurScreen(cleanups);
 
-    await waitFor(() => {
-      expect(screen.queryByTestId('community-bottom-sheet')).toBeNull();
-      expect(screen.queryByText('¿Eliminar recordatorio?')).toBeNull();
-      expect(screen.queryByTestId('reminders-delete-confirm')).toBeNull();
+      await waitFor(() => {
+        expect(screen.queryByTestId('community-bottom-sheet')).toBeNull();
+        expect(screen.queryByText('¿Eliminar recordatorio?')).toBeNull();
+        expect(screen.queryByTestId('reminders-delete-confirm')).toBeNull();
+      });
     });
-  });
-});
+  },
+);
