@@ -693,7 +693,7 @@ describe(
 
       await waitFor(() => {
         expect(screen.queryByTestId('community-bottom-sheet')).toBeNull();
-        expect(screen.queryByText('¿Eliminar recordatorio?')).toBeNull();
+        expect(screen.queryByTestId('reminders-delete-sheet')).toBeNull();
         expect(screen.queryByTestId('reminders-delete-confirm')).toBeNull();
       });
     });
