@@ -92,6 +92,9 @@ describe('Meals served tracking (e2e)', () => {
       .post(`/v1/pets/${petId}/nutrition-plan/generate`)
       .set(auth(user.token));
 
+  const getPlan = (user: UserFixture, petId: string) =>
+    api().get(`/v1/pets/${petId}/nutrition-plan`).set(auth(user.token));
+
   async function seedPlan(owner: UserFixture, petId: string, timezone = 'UTC') {
     await putProfile(owner, petId).expect(200);
     await postWeight(owner, petId, timezone).expect(201);
@@ -348,6 +351,8 @@ describe('Meals served tracking (e2e)', () => {
           .from(mealServings)
           .where(eq(mealServings.petId, pet.id)),
       ).toHaveLength(0);
+      const plan = await getPlan(owner, pet.id).expect(200);
+      expect(plan.body).toMatchObject({ servedToday: [] });
 
       const missing = await unserveMeal(owner, pet.id, '07:30').expect(404);
       expect(missing.body).toEqual({
@@ -457,6 +462,47 @@ describe('Meals served tracking (e2e)', () => {
           },
         });
       }
+    });
+  });
+
+  describe('R9 (meals-served-tracking #83): GET nutrition-plan devuelve servedToday en orden del plan y generate no', () => {
+    it('devuelve solo las franjas servidas, ordenadas por el plan', async () => {
+      const owner = await seedUser('r9');
+      const pet = await seedPet(owner);
+      const generated = await seedPlan(owner, pet.id);
+
+      const empty = await getPlan(owner, pet.id).expect(200);
+      expect(Object.keys(empty.body as object).sort()).toEqual(
+        [
+          'id',
+          'petId',
+          'rerKcal',
+          'merKcal',
+          'dailyGrams',
+          'mealsPerDay',
+          'mealTimes',
+          'objective',
+          'warnings',
+          'aiExplanation',
+          'generatedAt',
+          'servedToday',
+        ].sort(),
+      );
+      expect((empty.body as { servedToday: string[] }).servedToday).toEqual(
+        [],
+      );
+
+      await serveMeal(owner, pet.id, { mealTime: '19:30' }).expect(201);
+      await serveMeal(owner, pet.id, { mealTime: '07:30' }).expect(201);
+
+      const served = await getPlan(owner, pet.id).expect(200);
+      expect((served.body as { servedToday: string[] }).servedToday).toEqual([
+        '07:30',
+        '19:30',
+      ]);
+      expect(generated.body).not.toHaveProperty('servedToday');
+      const regenerated = await generatePlan(owner, pet.id).expect(200);
+      expect(regenerated.body).not.toHaveProperty('servedToday');
     });
   });
 });
