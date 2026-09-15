@@ -18,7 +18,7 @@ function e2eBlock() {
   return initSh.slice(a, b);
 }
 
-function corre({ env, portOpen = true }) {
+function corre({ env, portOpen = true, setup = 'echo SETUP' }) {
   const fixtureDir = mkdtempSync(join(tmpdir(), 'init-e2e-gate-'));
   writeFileSync(join(fixtureDir, '.env'), env);
   const script = [
@@ -28,7 +28,7 @@ function corre({ env, portOpen = true }) {
     'fail(){ echo "FAIL:$1"; exit 1; }',
     `port_open(){ echo "PROBE:$1:$2"; return ${portOpen ? 0 : 1}; }`,
     'E2E_PORT_SOURCES=("DATABASE_URL" "AWS_ENDPOINT_URL")',
-    'E2E_SETUP_CMD=\'echo SETUP\'',
+    `E2E_SETUP_CMD=${JSON.stringify(setup)}`,
     'E2E_CMD=\'echo E2E\'',
     `cd ${JSON.stringify(fixtureDir)}`,
     e2eBlock(),
@@ -137,5 +137,40 @@ describe('R5 (harness-e2e-nunca-corre-en-ci #96): el fallo nombra host, puerto y
     const failLine = result.stdout.split('\n').find((line) => line.startsWith('FAIL:')) ?? '';
 
     assert.match(failLine, /localhost:5433.*DATABASE_URL/);
+  });
+});
+
+describe('R6 (harness-e2e-nunca-corre-en-ci #96): migraciones y provisioning antes de los e2e', () => {
+  it('ejecuta setup antes de la suite', () => {
+    const result = corre({
+      env:
+        'DATABASE_URL=postgresql://pet_tracker:pet_tracker@localhost:5433/pet_tracker\n' +
+        'AWS_ENDPOINT_URL=http://localhost:4566\n',
+    });
+
+    assert.ok(result.stdout.indexOf('SETUP') !== -1);
+    assert.ok(result.stdout.indexOf('SETUP') < result.stdout.indexOf('E2E'));
+  });
+
+  it('no ejecuta la suite si setup falla', () => {
+    const result = corre({
+      env:
+        'DATABASE_URL=postgresql://pet_tracker:pet_tracker@localhost:5433/pet_tracker\n' +
+        'AWS_ENDPOINT_URL=http://localhost:4566\n',
+      setup: 'echo SETUP; exit 7',
+    });
+
+    assert.notEqual(result.status, 0);
+    assert.doesNotMatch(result.stdout, /\bE2E\b/);
+  });
+
+  it('configura migraciones y provisioning sin psql', () => {
+    const setupLine = initConfig
+      .split('\n')
+      .find((line) => line.startsWith('E2E_SETUP_CMD=')) ?? '';
+
+    assert.match(setupLine, /db:migrate/);
+    assert.match(setupLine, /provision:local/);
+    assert.doesNotMatch(initConfig, /\bpsql\b/);
   });
 });
