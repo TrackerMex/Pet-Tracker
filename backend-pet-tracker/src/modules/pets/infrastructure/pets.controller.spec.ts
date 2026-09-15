@@ -216,7 +216,6 @@ describe('R12 (devices-claim) + #73 R2: el detalle serializa la clave device del
       device: {
         model: 'sim-collar',
         batteryPct: null,
-        connectivity: null,
         lastMessageAt: new Date('2026-08-01T11:59:00.000Z'),
         esn: 'SIM-001',
       },
@@ -240,7 +239,6 @@ describe('R12 (devices-claim) + #73 R2: el detalle serializa la clave device del
       device: {
         model: 'sim-collar',
         batteryPct: 87,
-        connectivity: null,
         lastMessageAt: new Date(),
         esn: 'SIM-001',
       },
@@ -258,7 +256,6 @@ describe('R12 (devices-claim) + #73 R2: el detalle serializa la clave device del
       device: {
         model: 'sim-collar',
         batteryPct: null,
-        connectivity: null,
         lastMessageAt: null,
         esn: 'SIM-001',
       },

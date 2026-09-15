@@ -128,7 +128,6 @@ describe('R10: la ingesta no mueve las colas de desarrollo', () => {
         status: 'available',
         ingestWatermark: null,
         batteryPct: null,
-        connectivity: null,
         lastMessageAt: null,
       })
       .where(eq(devices.id, device.id));
