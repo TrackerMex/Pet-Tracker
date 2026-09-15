@@ -27,9 +27,13 @@ $TEST_CMD
 ### 3. Init verde
 
 ```bash
+docker compose up -d
 ./init.sh
 # Debe terminar con "✅ Todo verde"
 ```
+
+`./init.sh` requiere Postgres y LocalStack levantados. Si falta cualquiera de
+los destinos derivados del `.env`, aborta en vez de saltarse los E2E.
 
 ---
 
@@ -825,6 +829,55 @@ direcciones de correo, contraseñas ni tokens al reporte.
 Registra únicamente los resultados y status en
 `progress/impl_auth-reset-deep-link.md`. G1–G4 siguen pendientes hasta esa
 confirmación humana; las suites automáticas no los sustituyen.
+
+### Feature 96 — harness-e2e-nunca-corre-en-ci
+
+`./init.sh` ya requiere Postgres y LocalStack levantados con
+`docker compose up -d`; si alguna URL de infraestructura del `.env` no
+responde, termina con error antes de los E2E. En CI, el workflow levanta el
+Compose versionado y espera sus healthchecks antes de ejecutar el harness.
+
+Las tres suites `aws-real-*` se saltan por diseño con `AWS_MODE=local`: el
+verde correcto ejecuta todas las suites menos esas tres. No congeles el
+recuento; comprueba en el commit evaluado que:
+
+```text
+suites ejecutadas = ficheros test/*.e2e-spec.ts - ficheros test/aws-real-*.e2e-spec.ts
+```
+
+El resultado debe ser distinto de cero. Nunca cambies CI a `AWS_MODE=aws` para
+forzar las suites reales.
+
+**G1 — demostrar que un CI verde ejecuta los E2E (solo humano):**
+
+1. Abre el PR de `feature/96-harness-e2e-nunca-corre-en-ci` contra `main` y
+   espera al job `verify`.
+2. En el log confirma la sección `→ Tests e2e...` y la línea de resumen
+   `Test Suites: …` de Jest.
+3. Recuenta los dos globs del commit y verifica la igualdad anterior: el
+   número de suites ejecutadas debe ser distinto de cero.
+4. Confirma que el job termina verde y registra su URL en
+   `progress/impl_harness-e2e-nunca-corre-en-ci.md`.
+
+Si el rojo procede del flake móvil conocido de `add-pet` o `alerts`, relanza el
+job: ese fallo no demuestra nada sobre este gate.
+
+**G2 — demostrar que un E2E rojo pone el PR en rojo (solo humano, después de
+G1):**
+
+1. Crea la rama temporal `test/96-ci-red-probe` desde la rama de la feature.
+2. En `backend-pet-tracker/test/app.e2e-spec.ts`, cambia únicamente el
+   `.expect(401)` del único test por `.expect(418)` y commitea con
+   `test(ci): probe deliberado de rojo e2e (no mergear)`.
+3. Publica la rama y abre un PR en borrador contra `main`.
+4. Comprueba que el check queda rojo, que falla el paso
+   `Harness verification (init.sh)` dentro de `→ Tests e2e...`, y que el log
+   nombra `app.e2e-spec.ts` y `expected 418`.
+5. Cierra el PR sin mergear y borra la rama temporal local y remota.
+6. Registra en el reporte la URL de esta corrida roja, su línea de fallo y la
+   URL verde de G1.
+
+G1 y G2 son gates humanos: ninguna suite automática ni reviewer los cierra.
 
 ---
 
