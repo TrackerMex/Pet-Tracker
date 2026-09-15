@@ -158,6 +158,29 @@ implementación la rama ya difería de la base en seis ficheros, incluido
 `feature_list.json`; por eso el total literal no puede ser nueve sin deshacer
 bookkeeping aprobado o dejar el reporte sin versionar.
 
-## Gate humano
+## Gate humano — cerrado el 2026-09-15
 
-El smoke test en dev build Android queda pendiente de ejecución humana.
+Smoke en dev build de Android ejecutado por el humano. **Los cuatro pasos
+pasaron.**
+
+1. Recordatorios: abrir la hoja de confirmación de borrado, salir por la barra
+   de tabs y volver deja la hoja cerrada y el recordatorio intacto.
+2. Recordatorios: el mensaje de error de un borrado fallido (modo avión) ya no
+   está al volver.
+3. Alertas: una alerta atendida desde la app **sigue** atendida al volver, sin
+   parpadear a "sin atender".
+4. Alertas: una alerta atendida **desde fuera de la app** aparece ya atendida
+   al entrar, sin reiniciar.
+
+Los pasos 3 y 4 son los que cierran la decisión de diseño en dispositivo real:
+el 3 confirma que `acked` sobrevive —la divergencia deliberada respecto al
+arreglo de #63— y el 4 que el refetch al ganar el foco lo mantiene coherente,
+que es la contrapartida sin la cual esa supervivencia no se sostiene. Juntos
+justifican en la práctica la enmienda E9 a la spec de #78.
+
+Nota de método: el entorno no tenía ninguna alerta (solo las produce el motor,
+tipos `geofence_exit` y `battery_low`, sin endpoint de creación), así que el
+humano insertó dos filas de prueba en `alert_events` de su base de desarrollo
+—de tipos distintos, porque el índice único anti-spam solo admite una alerta
+activa por `(pet_id, type, geofence_id)`— y usó una para el paso 3 y la otra
+para el paso 4.

@@ -25,6 +25,8 @@ va a mover ese fichero.
 | R7 | `mobile-pet-tracker/src/screens/alerts/index.test.tsx::#97 R7: la lista se revalida al ganar el foco` | rojo: `773f5b4d` (`test(reminders-alerts-state-reset): cover focus refetch (R7)`); verde: `7d1034a6` (`feat(reminders-alerts-state-reset): refetch alerts on focus (R7)`) |
 | R8 | `mobile-pet-tracker/src/screens/alerts/index.test.tsx::#97 R8: el overlay del ack caduca cuando la lista trae otro status` | rojo: `3ea45ed6` (`test(reminders-alerts-state-reset): cover ack overlay expiry (R8)`); verde: `cf436661` (`feat(reminders-alerts-state-reset): expire ack overlay on server status (R8)`) |
 
+| Gate humano | Smoke en dev build de Android, 4 pasos de [[requirements]] §Gate humano | **cerrado el 2026-09-15**: los cuatro pasos pasaron. Paso 3 (la alerta atendida en la app sigue atendida al volver) y paso 4 (la atendida desde la API aparece atendida sin reiniciar) confirman en dispositivo real las dos mitades de la decisión sobre `acked` y la enmienda E9 |
+
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
 Convención de commit: `feat(reminders-alerts-state-reset): <desc> (R1,R2)`; el
 commit rojo previo va como `test(reminders-alerts-state-reset): <desc> (R1)`.
