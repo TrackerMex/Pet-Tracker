@@ -27,6 +27,17 @@ mismo patrón que `env-drift.test.mjs` e `init-color.test.mjs`.
 | G1 | **gate humano** — corrida de CI verde del PR, con el resumen de jest e2e y la igualdad de [[requirements]] §"Cómo se mide el criterio 1" | pendiente (URL de la corrida en `progress/impl_harness-e2e-nunca-corre-en-ci.md`) |
 | G2 | **gate humano** — rojo deliberado en `test/96-ci-red-probe`, PR en borrador cerrado sin mergear | pendiente (URL de la corrida roja + línea del fallo en `progress/impl_harness-e2e-nunca-corre-en-ci.md`) |
 
+## Enmienda E1 — candado completo de `AWS_MODE`
+
+| Caso | Test | Evidencia y commit |
+|---|---|---|
+| R2/E1-a | `init-e2e-gate.test.mjs::R2` rechaza `run: AWS_MODE=aws bash ./init.sh` | copia desechable: exit 1 por `doesNotMatch`; `abc0ac32` `test(ci-e2e): cover all AWS_MODE forms (R2)` |
+| R2/E1-b | `init-e2e-gate.test.mjs::R2` exige exactamente una clave `AWS_MODE:` | copia desechable con un segundo `AWS_MODE: "aws"`: exit 1, `2 !== 1`; `abc0ac32` `test(ci-e2e): cover all AWS_MODE forms (R2)` |
+
+No hay commit `feat` para E1: el `ci.yml` real ya cumplía ambas condiciones y
+la corrida de control terminó con exit 0. Las mutaciones solo existieron en
+copias temporales del árbol; los hashes históricos de R1-R9 no se reescribieron.
+
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
 Convención de commit: `feat(ci-e2e): <desc> (R1,R2)`; el commit rojo previo va
 como `test(ci-e2e): <desc> (R1)`.

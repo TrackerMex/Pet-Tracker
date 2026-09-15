@@ -103,3 +103,28 @@ El setup del gate usó exclusivamente
 
 La feature no debe pasar a `done` hasta que un humano aporte ambas evidencias y
 el reviewer emita su veredicto.
+
+## Enmienda E1
+
+Enmienda aprobada por humano en `dbeb6b92`. Se reforzó únicamente la suite R2
+de `init-e2e-gate.test.mjs` en `abc0ac32` para comprobar que:
+
+1. existe exactamente una clave YAML `AWS_MODE:` y su valor es `local`, con o
+   sin comillas;
+2. ningún `run:` contiene una asignación `AWS_MODE=`.
+
+No hubo commit `feat` ni cambio en `.github/workflows/ci.yml`: el workflow real
+ya cumplía ambas condiciones, así que el arreglo era solo del candado. El ciclo
+rojo→verde se verificó directamente, sin tuberías, sobre copias desechables del
+árbol:
+
+| Árbol | Mutación | Resultado de `node --test init-e2e-gate.test.mjs` |
+|---|---|---|
+| copia A | `run: AWS_MODE=aws bash ./init.sh` | exit 1; R2 falla por `doesNotMatch`; 14/15 tests pasan |
+| copia B | segundo `AWS_MODE: "aws"`, conservando `AWS_MODE: local` | exit 1; R2 falla con `2 !== 1`; 14/15 tests pasan |
+| real | ninguna | exit 0; 15/15 tests pasan |
+
+Las dos copias se eliminaron después de medirlas. El `./init.sh` final también
+terminó con exit 0: 26/29 suites E2E y 367/375 tests ejecutados en verde; las 3
+suites y 8 tests `aws-real-*` quedaron omitidos por diseño con
+`AWS_MODE=local`. No se usó AWS real.
