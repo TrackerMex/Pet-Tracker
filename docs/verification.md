@@ -879,6 +879,20 @@ G1):**
 
 G1 y G2 son gates humanos: ninguna suite automática ni reviewer los cierra.
 
+**Ruido esperado en el log, que no es un fallo de la guarda.** La corrida
+imprime varias líneas `ERROR [PollerService] ... connect ECONNREFUSED
+127.0.0.1:4566`. No son LocalStack caído: salen de un `mockRejectedValue(new
+Error('connect ECONNREFUSED 127.0.0.1:4566'))` en
+`backend-pet-tracker/src/workers/poller.service.spec.ts`, el test que comprueba
+que el ciclo del poller se salta sin tumbar el proceso cuando SQS falla. Ya
+aparecían antes de la feature 96. Si la guarda nueva fuese la que falla, la
+línea sería otra y la corrida no llegaría a los E2E:
+
+```
+Infra e2e caída: <host>:<puerto> no responde (derivado de <CLAVE> en .env).
+Levántala con: docker compose up -d
+```
+
 ---
 
 ## Notas para el implementer
