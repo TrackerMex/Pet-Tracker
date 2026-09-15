@@ -94,7 +94,9 @@ export function AlertsScreen() {
     ...fetched.filter((alert) => alert.status === 'open'),
     ...fetched.filter((alert) => alert.status !== 'open'),
   ];
-  const rows = ordered.map((alert) => acked[alert.id] ?? alert);
+  const rows = ordered.map((alert) =>
+    alert.status === 'open' ? (acked[alert.id] ?? alert) : alert,
+  );
   const firstPage = alerts.data?.pages[0];
   const firstPageFailed =
     firstPage !== undefined &&
