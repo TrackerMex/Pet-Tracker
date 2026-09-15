@@ -226,7 +226,7 @@ registra también en `specs/mobile-alerts-center/requirements.md` §E9.
 - **Qué añade a #78**: el `refetch` por foco (R7), que #78 no tenía y que su E6
   dejó explícitamente fuera **para la campana de Home**, no para esta pantalla.
 
-- [ ] Enmienda E9 aprobada por humano ← se firma junto con §Aprobación
+- [X] Enmienda E9 aprobada por humano ← se firma junto con §Aprobación
 
 ## Fuera de alcance
 
@@ -322,7 +322,7 @@ es dev build desde 2026-08-27). La corre el humano, no una IA:
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [X] Aprobado por humano (fecha: 2026-09-15) ← gate obligatorio antes de implementar
 
 Al aprobar, el humano ratifica además **tres decisiones que corrigen o amplían
 el enunciado de #97**, y que Codex no podrá reabrir porque no verá la
