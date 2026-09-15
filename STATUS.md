@@ -1,7 +1,7 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-09-14
-**Features completadas**: 78/94 (`feature_list.json`)
+**Features completadas**: 79/94 (`feature_list.json`)
 **En progreso**: ninguna
 
 **Pendientes**: 17 (#18, #41, #60, #63, #72, #74, #77, #79-#81, #83, #84, #86, #90, #92-#94). #92-#94 son la deuda que #73 dejo nombrada: reset de telemetria del collar al reasignarlo (#92), borrar la columna obsoleta devices.connectivity (#93, tras #92) y una sola fuente de frescura entre Home y Mapa (#94). El rediseño contra el diseño del Make abrió el bloque #64-#71: #64, #65, #66, #67, #68 y #69 están cerradas y **mergeadas** (PR #106, #110, #111, #112, #113 y #114). #71 `mobile-home-quick-actions` está cerrada con los dos gates humanos firmados; **PR pendiente de merge por el humano**. Del bloque solo queda **#70 recordatorios**, sin especificar, y con la mitad del diseño bloqueada porque `nextReminder` y `activitySummary` siguen a `null` en el mapper del perfil. Deuda registrada: #72 flake de add-pet; #74 el selector que TalkBack lee como tres controles sueltos; #77 el peso visible sin collar; #80 los `testID` del doble atados al componente; #81 la receta tipográfica del tile sin candado. #78 y #79 entraron desde otra sesión. #90 `mobile-owner-timezone-dates` la abrió el 2026-09-11 la decisión por defecto de #89: el móvil manda la fecha civil del dispositivo contra una validación que ya usa la zona del owner sin margen. #91 `mobile-tab-indicator-out-of-range` la destapó el gate humano de #78 el 2026-09-13: la burbuja del indicador se posiciona con el índice de `state.routes`, así que cualquier ruta de `(tabs)/` fuera de `TABS` la manda a una ranura fantasma detrás de Perfil. Es anterior a #78 y afecta también a recordatorios, pairing, peso y comidas. #75 y #91 están cerradas y mergeadas (PR #124 y #125); #73 `pet-online-pill` cerrada y **mergeada** (PR #126).
@@ -87,6 +87,17 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
+- **`drop-devices-connectivity-column` (#93) done** (2026-09-15): la columna
+  `devices.connectivity`, sin escritor desde #73, desaparece del schema Drizzle,
+  de la entidad `Device`, del puerto `ActivePetDeviceStatus`, del reader, del
+  `toDomain` y de `docs/data-model.md`, con la migración
+  `0016_drop_devices_connectivity.sql` (una sola sentencia `DROP COLUMN`). La
+  clave `connectivity` del contrato HTTP sigue derivada de `last_message_at` y
+  los e2e de claim, device y perfil no se tocaron. Codex la aplicó en la base
+  propia del worktree (`pet_tracker_wt`, journal 17, idempotente); la base
+  compartida `pet_tracker` se repara (journal en 0013) y migra **después** del
+  merge de #63, con el procedimiento de `design.md` §Aplicación en el Postgres
+  compartido. Reviewer aprobado con dos sondas de mutación.
 - **`device-telemetry-reset-on-reassign` (#92) done** (2026-09-14): `claim()`
   deja `devices.battery_pct` y `last_message_at` en NULL en el mismo UPDATE de
   la transacción de #7 y devuelve la fila persistida (`.returning()`), así que
@@ -1142,6 +1153,18 @@ debe listar las 4 URLs de cola.
 
 ## Última sesión
 
+- **2026-09-15** — **#93 `drop-devices-connectivity-column` cerrada** (sesión
+  Backend, worktree `wt-backend`): spec sin explorer, corrigió dos premisas del
+  enunciado (`init.sh` no aplica migraciones; el journal de la base compartida
+  va por 0013 porque 0014/0015 entraron con psql crudo) y se enmendó antes de la
+  firma para que Codex migrase su base propia `pet_tracker_wt`, creada ese día
+  a propuesta de la sesión Frontend para dejar de compartir Postgres entre
+  worktrees. Codex: 7 commits (test→feat→docs de R1 + evidencias R2/R3);
+  reviewer aprobado con `init.sh` en primer plano (+1 unit sobre el baseline)
+  tras una primera corrida caída por el flake #72 de `add-pet`. Errata del
+  leader tras la firma: el grep de cierre excluye `*.spec.ts`. Qué sigue:
+  mergear el PR de #93; tras el merge de #63 (PR #130), reparar el journal de
+  `pet_tracker` y aplicar 0016 allí; elegir la próxima `pending`.
 - **2026-09-14** — **#92 `device-telemetry-reset-on-reassign` cerrada** (sesión
   Backend, worktree `wt-backend`): spec sin explorer (el contexto vivía en el
   explore de #73), firmada el mismo día con D1 = reset en `claim` corrigiendo la

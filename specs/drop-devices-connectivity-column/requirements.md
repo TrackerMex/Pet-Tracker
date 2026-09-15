@@ -135,7 +135,7 @@ tags: [harness, spec]
 | `plans/001-paquete-diseno-aprobacion.md:91`, `plans/005-collar-wialon-ingesta.md:55,70` | planes históricos |
 
 **Candado del inventario** (R2): desde `backend-pet-tracker/`,
-`grep -rn "connectivity" src/db/schema src/modules/devices/domain/entities src/modules/pets/domain/ports src/modules/devices/infrastructure/repositories src/workers scripts` → **0 líneas**;
+`grep -rn "connectivity" src/db/schema src/modules/devices/domain/entities src/modules/pets/domain/ports src/modules/devices/infrastructure/repositories src/workers scripts --exclude='*.spec.ts'` → **0 líneas**;
 `grep -rn "connectivity: null" src` → **0 líneas**;
 `grep -rn "deviceRow\.connectivity\|row\.connectivity\|device\.connectivity" src test` → **0 líneas**.
 (Los ficheros de (b) siguen conteniendo la palabra; el grep no los cubre a propósito.)
@@ -310,6 +310,16 @@ credenciales); evidencia (salida de cada uno) en
 | 4. Suite backend y e2e verdes | R2 (sin migración aplicada), R3 (con migración aplicada, `./init.sh`) | — |
 
 ---
+
+## Errata tras la firma (leader, 2026-09-15)
+
+El primer grep del "Candado del inventario" (§Inventario y R2) cubría
+`src/db/schema`, donde R1 obliga a escribir el `describe('#93 R1')` cuyo
+nombre, ruta del `.sql` y sentencia esperada contienen la palabra
+`connectivity`: 0 líneas y ese candado eran incompatibles. Se añade
+`--exclude='*.spec.ts'` al grep (hallazgo del reviewer, observación 1). No
+cambia ningún requisito ni el código: Codex lo detectó y no tocó el test para
+cuadrar el grep.
 
 ## Fuera de alcance (cada uno con su porqué)
 

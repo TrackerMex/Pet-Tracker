@@ -136,7 +136,7 @@ tags: [harness, spec]
 - [ ] (1) Escribir test que falla para R2 — no aplica (verificación). Desde
       `backend-pet-tracker/`, con la migración **sin** aplicar:
       ```sh
-      grep -rn "connectivity" src/db/schema src/modules/devices/domain/entities src/modules/pets/domain/ports src/modules/devices/infrastructure/repositories src/workers scripts | wc -l   # 0
+      grep -rn "connectivity" src/db/schema src/modules/devices/domain/entities src/modules/pets/domain/ports src/modules/devices/infrastructure/repositories src/workers scripts --exclude='*.spec.ts' | wc -l   # 0
       grep -rn "connectivity: null" src | wc -l                                                     # 0
       grep -rn "deviceRow\.connectivity\|row\.connectivity\|device\.connectivity" src test | wc -l  # 0
       git diff --stat origin/main -- test/devices.e2e-spec.ts test/device-subscriptions.e2e-spec.ts test/device-connectivity.e2e-spec.ts src/modules/devices/infrastructure/mappers src/modules/devices/domain/connectivity.ts src/modules/devices/domain/connectivity.spec.ts   # vacío
