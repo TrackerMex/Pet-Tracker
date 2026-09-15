@@ -964,3 +964,34 @@ describe(
     });
   },
 );
+
+describe('#97 R7: la lista se revalida al ganar el foco', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockListAlerts.mockReset();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListAlerts.mockResolvedValue({
+      kind: 'ok',
+      items: [makeAlert()],
+      nextCursor: null,
+    });
+  });
+
+  it('vuelve a pedir la página visible al recuperar foco', async () => {
+    await renderAlerts();
+    await waitFor(() =>
+      expect(screen.getByTestId('alert-row-alert-1')).toBeVisible(),
+    );
+    expect(mockListAlerts).toHaveBeenCalledTimes(1);
+
+    await focusScreen();
+
+    await waitFor(() => expect(mockListAlerts).toHaveBeenCalledTimes(2));
+  });
+});
