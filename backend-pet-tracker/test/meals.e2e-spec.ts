@@ -12,7 +12,7 @@ import { pets } from '@/db/schema/pets.schema';
 import { users } from '@/db/schema/users.schema';
 import { TOKEN_SERVICE } from '@/modules/auth/domain/ports/token-service';
 import type { TokenService } from '@/modules/auth/domain/ports/token-service';
-import { localDayOf } from '@/pipeline/local-day';
+import { localDayOf, shiftDay } from '@/pipeline/local-day';
 import { AppModule } from '../src/app.module';
 
 describe('Meals served tracking (e2e)', () => {
@@ -257,6 +257,68 @@ describe('Meals served tracking (e2e)', () => {
           ),
         );
       expect(audits.value).toBe(0);
+    });
+  });
+
+  describe('R5 (meals-served-tracking #83): la misma franja el mismo dia responde 409; otro dia no', () => {
+    it('responde 409 y conserva una sola fila y auditoria', async () => {
+      const owner = await seedUser('r5-duplicate');
+      const pet = await seedPet(owner);
+      await seedPlan(owner, pet.id);
+
+      const first = await serveMeal(owner, pet.id, {
+        mealTime: '07:30',
+      }).expect(201);
+      const duplicate = await serveMeal(owner, pet.id, {
+        mealTime: '07:30',
+      }).expect(409);
+      expect(duplicate.body).toEqual({
+        statusCode: 409,
+        code: 'MEAL_ALREADY_SERVED',
+        message: 'Meal already served today',
+      });
+
+      const rows = await db
+        .select()
+        .from(mealServings)
+        .where(eq(mealServings.petId, pet.id));
+      expect(rows).toHaveLength(1);
+      expect(rows[0]).toMatchObject({ createdBy: owner.id });
+      expect(rows[0].servedAt.toISOString()).toBe(
+        (first.body as { servedAt: string }).servedAt,
+      );
+
+      const [audits] = await db
+        .select({ value: count() })
+        .from(auditLog)
+        .where(
+          and(
+            eq(auditLog.userId, owner.id),
+            eq(auditLog.action, 'meal.serve'),
+          ),
+        );
+      expect(audits.value).toBe(1);
+    });
+
+    it('acepta la misma franja si la fila existente es de ayer', async () => {
+      const owner = await seedUser('r5-yesterday');
+      const pet = await seedPet(owner);
+      await seedPlan(owner, pet.id);
+      await db.insert(mealServings).values({
+        id: uuidv7(),
+        petId: pet.id,
+        servedOn: shiftDay(localDayOf(Date.now(), 'UTC'), -1),
+        mealTime: '07:30',
+        createdBy: owner.id,
+      });
+
+      await serveMeal(owner, pet.id, { mealTime: '07:30' }).expect(201);
+
+      const rows = await db
+        .select()
+        .from(mealServings)
+        .where(eq(mealServings.petId, pet.id));
+      expect(rows).toHaveLength(2);
     });
   });
 });
