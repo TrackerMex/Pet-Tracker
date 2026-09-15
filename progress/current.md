@@ -7,9 +7,19 @@
 
 ## Feature #96 — harness-e2e-nunca-corre-en-ci
 
-- **Sesion**: Frontend (leader). Arbol principal `/home/claude/sites/Pet-Tracker`.
+- **Sesion**: Codex (implementer). Arbol principal `/home/claude/sites/Pet-Tracker`.
 - **Rama**: `feature/96-harness-e2e-nunca-corre-en-ci`, creada desde `origin/main` en 48e4130d.
-- **Estado**: `spec_author` escribiendo la spec. Pendiente el gate humano de aprobacion.
+- **Estado**: implementacion TDD de R1-R9 en curso. Spec aprobada por humano en
+  `0f47c176`; feature marcada `in_progress` en `80d3f9a4`.
+
+### Inicio de implementacion — 2026-09-15
+
+- Baseline: `./init.sh` termino con exit 0 tras aplicar `db:migrate` y
+  `provision:local`; E2E: 3 suites `aws-real-*` saltadas y 26/29 verdes.
+- Plan: implementar en el orden de `tasks.md` (R1, R2, R3, R4, R5, R6, R8,
+  R9, R7), con commit rojo y commit verde separados por requisito.
+- Contencion: no repetir gates pesados mientras otro `init.sh`/E2E este activo;
+  5433 y 4566 son compartidos.
 
 ### Por que esta feature
 
