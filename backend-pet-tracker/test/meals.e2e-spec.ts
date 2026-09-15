@@ -104,6 +104,11 @@ describe('Meals served tracking (e2e)', () => {
     body: Record<string, unknown>,
   ) => api().post(`/v1/pets/${petId}/meals`).set(auth(user.token)).send(body);
 
+  const unserveMeal = (user: UserFixture, petId: string, mealTime: string) =>
+    api()
+      .delete(`/v1/pets/${petId}/meals/${mealTime}`)
+      .set(auth(user.token));
+
   beforeAll(async () => {
     const module = await Test.createTestingModule({
       imports: [AppModule],
@@ -319,6 +324,54 @@ describe('Meals served tracking (e2e)', () => {
         .from(mealServings)
         .where(eq(mealServings.petId, pet.id));
       expect(rows).toHaveLength(2);
+    });
+  });
+
+  describe('R7 (meals-served-tracking #83): DELETE deshace la franja de hoy y responde 404 si no existe', () => {
+    it('borra hoy con 204 vacio y luego responde 404 para franjas ausentes', async () => {
+      const owner = await seedUser('r7-today');
+      const pet = await seedPet(owner);
+      await seedPlan(owner, pet.id);
+      await serveMeal(owner, pet.id, { mealTime: '07:30' }).expect(201);
+
+      const deleted = await unserveMeal(owner, pet.id, '07:30').expect(204);
+      expect(deleted.text).toBe('');
+      expect(
+        await db
+          .select()
+          .from(mealServings)
+          .where(eq(mealServings.petId, pet.id)),
+      ).toHaveLength(0);
+
+      const missing = await unserveMeal(owner, pet.id, '07:30').expect(404);
+      expect(missing.body).toEqual({
+        statusCode: 404,
+        code: 'MEAL_SERVING_NOT_FOUND',
+        message: 'Meal serving not found for today',
+      });
+      await unserveMeal(owner, pet.id, '19:30').expect(404);
+      await unserveMeal(owner, pet.id, '7:30').expect(404);
+    });
+
+    it('no borra una fila de ayer', async () => {
+      const owner = await seedUser('r7-yesterday');
+      const pet = await seedPet(owner);
+      await db.insert(mealServings).values({
+        id: uuidv7(),
+        petId: pet.id,
+        servedOn: shiftDay(localDayOf(Date.now(), 'UTC'), -1),
+        mealTime: '07:30',
+        createdBy: owner.id,
+      });
+
+      await unserveMeal(owner, pet.id, '07:30').expect(404);
+
+      expect(
+        await db
+          .select()
+          .from(mealServings)
+          .where(eq(mealServings.petId, pet.id)),
+      ).toHaveLength(1);
     });
   });
 });
