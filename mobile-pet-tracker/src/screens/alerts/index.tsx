@@ -1,6 +1,7 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
+import { useFocusEffect } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
-import { useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { FlatList, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BatteryLow, Bell, LocationSlash } from 'reicon-react-native';
@@ -74,6 +75,17 @@ export function AlertsScreen() {
         ? lastPage.nextCursor
         : undefined,
   });
+  const refetchAlerts = alerts.refetch;
+
+  useFocusEffect(
+    useCallback(() => {
+      void refetchAlerts();
+      return () => {
+        setActionError(null);
+      };
+    }, [refetchAlerts]),
+  );
+
   const fetched =
     alerts.data?.pages.flatMap((page) =>
       page.kind === 'ok' ? page.items : [],
@@ -82,7 +94,9 @@ export function AlertsScreen() {
     ...fetched.filter((alert) => alert.status === 'open'),
     ...fetched.filter((alert) => alert.status !== 'open'),
   ];
-  const rows = ordered.map((alert) => acked[alert.id] ?? alert);
+  const rows = ordered.map((alert) =>
+    alert.status === 'open' ? (acked[alert.id] ?? alert) : alert,
+  );
   const firstPage = alerts.data?.pages[0];
   const firstPageFailed =
     firstPage !== undefined &&

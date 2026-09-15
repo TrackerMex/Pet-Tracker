@@ -5,6 +5,7 @@ import {
   waitFor,
   within,
 } from '@testing-library/react-native';
+import { useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
 import type { TestInstance } from 'test-renderer';
@@ -26,6 +27,17 @@ import { LanguageProvider } from '../../providers/language-provider';
 import { renderWithProviders } from '../../../test/render-with-providers';
 import { AlertsScreen } from '.';
 
+declare function require(moduleName: 'fs'): {
+  readFileSync: (path: string, encoding: 'utf8') => string;
+};
+
+declare function require(moduleName: 'path'): {
+  join: (...paths: string[]) => string;
+};
+
+const { readFileSync } = require('fs');
+const { join } = require('path');
+
 jest.mock('../../api/alerts', () => ({
   ackAlert: jest.fn(),
   listAlerts: jest.fn(),
@@ -33,6 +45,10 @@ jest.mock('../../api/alerts', () => ({
 
 jest.mock('../../providers/auth-provider', () => ({
   useAuth: jest.fn(),
+}));
+
+jest.mock('expo-router', () => ({
+  useFocusEffect: jest.fn(),
 }));
 
 jest.mock('react-native-safe-area-context', () => ({
@@ -69,6 +85,7 @@ const apiUrl = 'http://example.test/v1';
 const mockAckAlert = jest.mocked(ackAlert);
 const mockListAlerts = jest.mocked(listAlerts);
 const mockUseAuth = jest.mocked(useAuth);
+const mockUseFocusEffect = jest.mocked(useFocusEffect);
 const mockSignOut = jest.fn<Promise<void>, []>();
 
 function makeAlert(overrides: Partial<Alert> = {}): Alert {
@@ -111,6 +128,30 @@ function AlertsWrapper({ children }: { children: ReactNode }) {
 function renderAlerts() {
   return renderWithProviders(<AlertsScreen />, {
     wrapper: AlertsWrapper,
+  });
+}
+
+async function focusScreen(): Promise<(() => void)[]> {
+  let cleanups: (() => void)[] = [];
+
+  await act(async () => {
+    const callbacks = new Set(
+      mockUseFocusEffect.mock.calls.map(([callback]) => callback),
+    );
+    cleanups = [...callbacks].flatMap((callback) => {
+      const cleanup = callback();
+      return typeof cleanup === 'function' ? [cleanup] : [];
+    });
+    await Promise.resolve();
+  });
+
+  return cleanups;
+}
+
+async function blurScreen(cleanups: (() => void)[]) {
+  await act(async () => {
+    cleanups.forEach((cleanup) => cleanup());
+    await Promise.resolve();
   });
 }
 
@@ -770,3 +811,252 @@ describe('#78 R9: pagina por nextCursor y se para cuando no hay', () => {
     expect(mockListAlerts).toHaveBeenCalledTimes(2);
   });
 });
+
+describe(
+  '#97 R4: el error del ack no sobrevive a la pérdida de foco',
+  () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+      mockListAlerts.mockReset();
+      process.env.EXPO_PUBLIC_API_URL = apiUrl;
+      mockUseAuth.mockReturnValue({
+        status: 'authenticated',
+        token: 'jwt-token',
+        signIn: jest.fn(),
+        signOut: jest.fn(),
+      } satisfies AuthContextValue);
+      mockListAlerts.mockResolvedValue({
+        kind: 'ok',
+        items: [makeAlert()],
+        nextCursor: null,
+      });
+      mockAckAlert.mockResolvedValue({ kind: 'error' });
+    });
+
+    it('borra el error visible al perder foco', async () => {
+      await renderAlerts();
+      const button = await waitFor(() =>
+        screen.getByTestId('alert-row-alert-1-ack'),
+      );
+      const cleanups = await focusScreen();
+
+      await fireEvent.press(button);
+      await waitFor(() =>
+        expect(screen.getByTestId('alerts-action-error')).toBeVisible(),
+      );
+
+      await blurScreen(cleanups);
+
+      await waitFor(() =>
+        expect(screen.queryByTestId('alerts-action-error')).toBeNull(),
+      );
+    });
+  },
+);
+
+describe(
+  '#97 R5: el guarda del ack en vuelo sobrevive a la pérdida de foco',
+  () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+      mockListAlerts.mockReset();
+      process.env.EXPO_PUBLIC_API_URL = apiUrl;
+      mockUseAuth.mockReturnValue({
+        status: 'authenticated',
+        token: 'jwt-token',
+        signIn: jest.fn(),
+        signOut: jest.fn(),
+      } satisfies AuthContextValue);
+      mockListAlerts.mockResolvedValue({
+        kind: 'ok',
+        items: [makeAlert()],
+        nextCursor: null,
+      });
+      mockAckAlert.mockReturnValue(pending<AckAlertState>());
+    });
+
+    it('mantiene bloqueado el ack que sigue en vuelo', async () => {
+      await renderAlerts();
+      const button = await waitFor(() =>
+        screen.getByTestId('alert-row-alert-1-ack'),
+      );
+      const cleanups = await focusScreen();
+
+      await fireEvent.press(button);
+      await waitFor(() =>
+        expect(screen.getByTestId('alert-row-alert-1-ack')).toBeDisabled(),
+      );
+
+      await blurScreen(cleanups);
+
+      await waitFor(() =>
+        expect(screen.getByTestId('alert-row-alert-1-ack')).toBeDisabled(),
+      );
+      await fireEvent.press(screen.getByTestId('alert-row-alert-1-ack'));
+      expect(mockAckAlert).toHaveBeenCalledTimes(1);
+    });
+
+    it('no resetea el estado ni el ref desde el cleanup de foco', () => {
+      const source = readFileSync(
+        join(process.cwd(), 'src/screens/alerts/index.tsx'),
+        'utf8',
+      );
+      const focusBlock = source.slice(
+        source.indexOf('useFocusEffect('),
+        source.indexOf('async function handleAck'),
+      );
+
+      expect(focusBlock).not.toContain('AckingId');
+      expect(focusBlock).not.toContain('ackingIdRef');
+    });
+  },
+);
+
+describe(
+  '#97 R6: la alerta atendida sigue atendida al volver a la pantalla',
+  () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+      mockListAlerts.mockReset();
+      process.env.EXPO_PUBLIC_API_URL = apiUrl;
+      mockUseAuth.mockReturnValue({
+        status: 'authenticated',
+        token: 'jwt-token',
+        signIn: jest.fn(),
+        signOut: jest.fn(),
+      } satisfies AuthContextValue);
+      mockListAlerts
+        .mockResolvedValueOnce({
+          kind: 'ok',
+          items: [makeAlert()],
+          nextCursor: null,
+        })
+        .mockReturnValue(pending<AlertsState>());
+      mockAckAlert.mockResolvedValue({
+        kind: 'ok',
+        alert: makeAlert({
+          status: 'acked',
+          ackedAt: '2026-09-11T12:00:00.000Z',
+        }),
+      });
+    });
+
+    it('conserva el overlay local aunque el refetch siga pendiente', async () => {
+      await renderAlerts();
+      const button = await waitFor(() =>
+        screen.getByTestId('alert-row-alert-1-ack'),
+      );
+      const cleanups = await focusScreen();
+
+      await fireEvent.press(button);
+      await waitFor(() =>
+        expect(screen.getByTestId('alert-row-alert-1-status')).toHaveTextContent(
+          es['alerts.statusAcked'],
+        ),
+      );
+
+      await blurScreen(cleanups);
+      await focusScreen();
+
+      await waitFor(() =>
+        expect(screen.getByTestId('alert-row-alert-1-status')).toHaveTextContent(
+          es['alerts.statusAcked'],
+        ),
+      );
+      expect(screen.queryByTestId('alert-row-alert-1-ack')).toBeNull();
+    });
+  },
+);
+
+describe('#97 R7: la lista se revalida al ganar el foco', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockListAlerts.mockReset();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListAlerts.mockResolvedValue({
+      kind: 'ok',
+      items: [makeAlert()],
+      nextCursor: null,
+    });
+  });
+
+  it('vuelve a pedir la página visible al recuperar foco', async () => {
+    await renderAlerts();
+    await waitFor(() =>
+      expect(screen.getByTestId('alert-row-alert-1')).toBeVisible(),
+    );
+    expect(mockListAlerts).toHaveBeenCalledTimes(1);
+
+    await focusScreen();
+
+    await waitFor(() => expect(mockListAlerts).toHaveBeenCalledTimes(2));
+  });
+});
+
+describe(
+  '#97 R8: el overlay del ack caduca cuando la lista trae otro status',
+  () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+      mockListAlerts.mockReset();
+      process.env.EXPO_PUBLIC_API_URL = apiUrl;
+      mockUseAuth.mockReturnValue({
+        status: 'authenticated',
+        token: 'jwt-token',
+        signIn: jest.fn(),
+        signOut: jest.fn(),
+      } satisfies AuthContextValue);
+      mockListAlerts
+        .mockResolvedValueOnce({
+          kind: 'ok',
+          items: [makeAlert()],
+          nextCursor: null,
+        })
+        .mockResolvedValueOnce({
+          kind: 'ok',
+          items: [
+            makeAlert({
+              status: 'closed',
+              closedAt: '2026-09-11T12:05:00.000Z',
+            }),
+          ],
+          nextCursor: null,
+        });
+      mockAckAlert.mockResolvedValue({
+        kind: 'ok',
+        alert: makeAlert({
+          status: 'acked',
+          ackedAt: '2026-09-11T12:00:00.000Z',
+        }),
+      });
+    });
+
+    it('da prioridad al status cerrado descargado en el siguiente foco', async () => {
+      await renderAlerts();
+      const button = await waitFor(() =>
+        screen.getByTestId('alert-row-alert-1-ack'),
+      );
+
+      await fireEvent.press(button);
+      await waitFor(() =>
+        expect(screen.getByTestId('alert-row-alert-1-status')).toHaveTextContent(
+          es['alerts.statusAcked'],
+        ),
+      );
+
+      await focusScreen();
+
+      await waitFor(() =>
+        expect(screen.getByTestId('alert-row-alert-1-status')).toHaveTextContent(
+          es['alerts.statusClosed'],
+        ),
+      );
+    });
+  },
+);
