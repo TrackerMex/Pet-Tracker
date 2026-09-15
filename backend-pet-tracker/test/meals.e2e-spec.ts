@@ -1,6 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { eq, inArray } from 'drizzle-orm';
+import { count, eq, inArray } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import request from 'supertest';
 import { App } from 'supertest/types';
@@ -174,6 +174,36 @@ describe('Meals served tracking (e2e)', () => {
           localDayOf(Date.now(), timezone),
         );
       }
+    });
+  });
+
+  describe('R6 (meals-served-tracking #83): body invalido responde 400 sin persistir', () => {
+    it('rechaza cuerpos incompletos, mal formados y con claves extra antes de leer el plan', async () => {
+      const owner = await seedUser('r6');
+      const pet = await seedPet(owner);
+
+      for (const body of [
+        {},
+        { mealTime: '7:30' },
+        { mealTime: 730 },
+        { mealTime: '07:30', extra: true },
+        { mealTime: '07:30', servedOn: '2026-01-01' },
+      ]) {
+        const response = await serveMeal(owner, pet.id, body).expect(400);
+        expect(response.body).toMatchObject({
+          statusCode: 400,
+          message: 'Validation failed',
+        });
+        expect(
+          (response.body as { errors: unknown[] }).errors.length,
+        ).toBeGreaterThanOrEqual(1);
+      }
+
+      const [row] = await db
+        .select({ value: count() })
+        .from(mealServings)
+        .where(eq(mealServings.petId, pet.id));
+      expect(row.value).toBe(0);
     });
   });
 });
