@@ -1197,6 +1197,40 @@ debe listar las 4 URLs de cola.
   leader tras la firma: el grep de cierre excluye `*.spec.ts`. Qué sigue:
   mergear el PR de #93; tras el merge de #63 (PR #130), reparar el journal de
   `pet_tracker` y aplicar 0016 allí; elegir la próxima `pending`.
+- **2026-09-15** — **#63 `mobile-detail-screens-state-reset` cerrada** (sesión
+  Frontend, tree principal): los formularios de detalle dejan de conservar lo
+  tecleado la vez anterior. Sin explorer, porque el enunciado ya traía la
+  exploración. **D1 eligió el reset local frente al Stack** con los cinco costes
+  medidos contra el árbol —el Stack sube el `Redirect` y el
+  `SelectedPetProvider` al layout raíz, revierte D4 de #42, invalida el
+  `paddingBottom: insets.bottom + 96`, obliga a cabecera nativa con copy nueva, y
+  **aun así R6 haría falta igual**— y quedó registrado como **#95**, pospuesto y
+  no descartado. Cinco pantallas afectadas; `docs` auditada y descartada con
+  evidencia (cero `useState`). **R7 es un requisito de que algo NO pase**: los
+  guardas de petición en vuelo sobreviven al blur, cerrado por mutación en dos
+  sitios. Codex en 22 commits test→feat→docs, reviewer aprobado a la primera,
+  gate humano firmado con los cinco pasos en dev build de Android. PR #130
+  mergeado.
+  - **El comando de verificación de la spec ya firmada estaba roto**: los paths
+    con `(tabs)` sin escapar, que jest trata como regex, así que el grupo de
+    captura no casaba con nada. Daba **verde con exit 0 habiendo corrido 5 suites
+    de 7**, sin ejecutar R3 ni R4. Lo destapó el leader al verificar por su
+    cuenta lo que Codex había dejado en "pendiente", no el gate. Regla en
+    `docs/conventions.md`, junto con el prefijo de feature para los R-id cuando
+    un fichero acumula los de dos specs.
+  - **Coordinación entre sesiones resuelta de raíz**: una base de datos por
+    worktree (`pet_tracker_wt`) quita el cuello de botella del Postgres
+    compartido; quedan LocalStack (14 de 29 suites lo tocan) y el journal de
+    migraciones de `pet_tracker`, que tenía 14 filas para 20 tablas porque #26
+    aplicó 0014 y 0015 con `psql` crudo. Todo en `docs/conventions.md`
+    §Sesiones en paralelo.
+  - **El `init.sh` de cierre salió rojo y era flake**: `alerts/index.test.tsx`,
+    verde 5 de 5 aislado y verde entero en la segunda corrida completa. Con eso
+    el flake de **#72 pasa a afectar a dos ficheros**, no uno, con la misma firma
+    y distinto mecanismo. Registrado en #72 (criterio 4).
+  - Qué sigue: decidir entre #72 (subir a P2 por coste: obliga a repetir el
+    `init.sh` de cada cierre) y #79 `mobile-push-registration`. Sin decidir
+    todavía si `reminders` y `alerts` van a feature aparte.
 - **2026-09-14** — **#92 `device-telemetry-reset-on-reassign` cerrada** (sesión
   Backend, worktree `wt-backend`): spec sin explorer (el contexto vivía en el
   explore de #73), firmada el mismo día con D1 = reset en `claim` corrigiendo la
