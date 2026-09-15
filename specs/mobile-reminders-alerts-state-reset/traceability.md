@@ -21,7 +21,7 @@ va a mover ese fichero.
 | R3 | `mobile-pet-tracker/src/screens/reminders/index.test.tsx::#97 R3: el guarda del borrado en vuelo sobrevive a la pérdida de foco` | rojo: `c1705c44` (`test(reminders-alerts-state-reset): prove deleting guard survives blur (R3)`); verde: `9bbf664f` (`feat(reminders-alerts-state-reset): preserve deleting guard on blur (R3)`) |
 | R4 | `mobile-pet-tracker/src/screens/alerts/index.test.tsx::#97 R4: el error del ack no sobrevive a la pérdida de foco` | rojo: `2c0cfe31` (`test(reminders-alerts-state-reset): cover ack error blur (R4)`); verde: `b5436b8c` (`feat(reminders-alerts-state-reset): clear ack error on blur (R4)`) |
 | R5 | `mobile-pet-tracker/src/screens/alerts/index.test.tsx::#97 R5: el guarda del ack en vuelo sobrevive a la pérdida de foco` (dos `it`: comportamiento y fuente) | rojo: `9eec5bad` (`test(reminders-alerts-state-reset): prove ack guards survive blur (R5)`); verde: `f838fe96` (`feat(reminders-alerts-state-reset): preserve ack guards on blur (R5)`) |
-| R6 | `mobile-pet-tracker/src/screens/alerts/index.test.tsx::#97 R6: la alerta atendida sigue atendida al volver a la pantalla` | pendiente |
+| R6 | `mobile-pet-tracker/src/screens/alerts/index.test.tsx::#97 R6: la alerta atendida sigue atendida al volver a la pantalla` | rojo: `f8cc86ed` (`test(reminders-alerts-state-reset): prove ack overlay survives blur (R6)`); verde: `3d12a476` (`feat(reminders-alerts-state-reset): preserve ack overlay on blur (R6)`) |
 | R7 | `mobile-pet-tracker/src/screens/alerts/index.test.tsx::#97 R7: la lista se revalida al ganar el foco` | pendiente |
 | R8 | `mobile-pet-tracker/src/screens/alerts/index.test.tsx::#97 R8: el overlay del ack caduca cuando la lista trae otro status` | pendiente |
 
