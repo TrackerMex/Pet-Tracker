@@ -57,9 +57,12 @@ describe('R1 (harness-e2e-nunca-corre-en-ci #96): CI levanta la infra antes de i
 });
 
 describe('R2 (harness-e2e-nunca-corre-en-ci #96): el workflow fija AWS_MODE local y nunca toca AWS real', () => {
-  it('usa LocalStack sin credenciales ni configuracion de AWS real', () => {
-    assert.match(workflow, /^\s+AWS_MODE:\s*local\s*$/m);
-    assert.doesNotMatch(workflow, /AWS_MODE:\s*aws\b/);
+  it('declara una sola vez AWS_MODE local y nunca lo reasigna desde run', () => {
+    const awsModeLines = workflow.match(/^\s*AWS_MODE\s*:[^\n]*$/gm) ?? [];
+
+    assert.equal(awsModeLines.length, 1);
+    assert.match(awsModeLines[0], /^\s*AWS_MODE\s*:\s*(["']?)local\1\s*$/);
+    assert.doesNotMatch(workflow, /^\s*(?:-\s*)?run\s*:[^\n]*\bAWS_MODE\s*=/m);
     assert.doesNotMatch(workflow, /configure-aws-credentials/);
     assert.doesNotMatch(workflow, /secrets\.AWS_(?:ACCESS_KEY_ID|SECRET_ACCESS_KEY)/);
   });
