@@ -18,7 +18,7 @@ function e2eBlock() {
   return initSh.slice(a, b);
 }
 
-function corre(env) {
+function corre({ env, portOpen = true }) {
   const fixtureDir = mkdtempSync(join(tmpdir(), 'init-e2e-gate-'));
   writeFileSync(join(fixtureDir, '.env'), env);
   const script = [
@@ -26,14 +26,23 @@ function corre(env) {
     'ok(){ echo "OK:$1"; }',
     'warn(){ echo "WARN:$1"; }',
     'fail(){ echo "FAIL:$1"; exit 1; }',
-    'port_open(){ echo "PROBE:$1:$2"; return 0; }',
+    `port_open(){ echo "PROBE:$1:$2"; return ${portOpen ? 0 : 1}; }`,
     'E2E_PORT_SOURCES=("DATABASE_URL" "AWS_ENDPOINT_URL")',
+    'E2E_SETUP_CMD=\'echo SETUP\'',
     'E2E_CMD=\'echo E2E\'',
     `cd ${JSON.stringify(fixtureDir)}`,
     e2eBlock(),
+    'echo FIN',
   ].join('\n');
 
-  return execFileSync('bash', ['-c', script], { encoding: 'utf8' });
+  try {
+    return {
+      status: 0,
+      stdout: execFileSync('bash', ['-c', script], { encoding: 'utf8' }),
+    };
+  } catch (error) {
+    return { status: error.status, stdout: `${error.stdout ?? ''}${error.stderr ?? ''}` };
+  }
 }
 
 describe('R1 (harness-e2e-nunca-corre-en-ci #96): CI levanta la infra antes de init.sh', () => {
@@ -58,18 +67,21 @@ describe('R2 (harness-e2e-nunca-corre-en-ci #96): el workflow fija AWS_MODE loca
 
 describe('R3 (harness-e2e-nunca-corre-en-ci #96): los puertos se derivan del .env', () => {
   it('sondea el host y puerto de cada URL, incluso con @ en la contrasena', () => {
-    const local = corre(
-      'DATABASE_URL=postgresql://pet_tracker:pet_tracker@localhost:5433/pet_tracker_wt\n' +
+    const local = corre({
+      env:
+        'DATABASE_URL=postgresql://pet_tracker:pet_tracker@localhost:5433/pet_tracker_wt\n' +
         'AWS_ENDPOINT_URL=http://localhost:4566\n',
-    );
-    const ci = corre(
-      'DATABASE_URL=postgresql://pet_tracker:pet_tracker@localhost:5432/pet_tracker\n' +
+    }).stdout;
+    const ci = corre({
+      env:
+        'DATABASE_URL=postgresql://pet_tracker:pet_tracker@localhost:5432/pet_tracker\n' +
         'AWS_ENDPOINT_URL=http://localhost:4566\n',
-    );
-    const atInPassword = corre(
-      'DATABASE_URL=postgresql://u:p@ss@localhost:5433/db\n' +
+    }).stdout;
+    const atInPassword = corre({
+      env:
+        'DATABASE_URL=postgresql://u:p@ss@localhost:5433/db\n' +
         'AWS_ENDPOINT_URL=http://localhost:4566\n',
-    );
+    }).stdout;
 
     assert.match(local, /PROBE:localhost:5433/);
     assert.match(local, /PROBE:localhost:4566/);
@@ -80,5 +92,36 @@ describe('R3 (harness-e2e-nunca-corre-en-ci #96): los puertos se derivan del .en
 
   it('no conserva puertos ni la lista antigua en init.config.sh', () => {
     assert.doesNotMatch(initConfig, /E2E_REQUIRED_PORTS|5432|5433|4566/);
+  });
+});
+
+describe('R4 (harness-e2e-nunca-corre-en-ci #96): la infra caida aborta init.sh con codigo 1', () => {
+  it('sale 1 sin setup, e2e ni fin cuando un puerto no responde', () => {
+    const result = corre({
+      env:
+        'DATABASE_URL=postgresql://pet_tracker:pet_tracker@localhost:5433/pet_tracker\n' +
+        'AWS_ENDPOINT_URL=http://localhost:4566\n',
+      portOpen: false,
+    });
+
+    assert.equal(result.status, 1);
+    assert.doesNotMatch(result.stdout, /\b(?:SETUP|E2E|FIN)\b/);
+  });
+
+  it('sale 1 sin ejecutar nada cuando falta DATABASE_URL', () => {
+    const result = corre({ env: 'AWS_ENDPOINT_URL=http://localhost:4566\n' });
+
+    assert.equal(result.status, 1);
+    assert.doesNotMatch(result.stdout, /\b(?:SETUP|E2E|FIN)\b/);
+  });
+
+  it('usa fail en la guarda y no crea una rama especial para CI', () => {
+    const block = e2eBlock();
+    const probeIndex = block.indexOf('port_open');
+    const guard = block.slice(probeIndex, block.indexOf('done', probeIndex));
+
+    assert.match(guard, /\|\|\s*fail/);
+    assert.doesNotMatch(guard, /\bwarn\b/);
+    assert.doesNotMatch(block, /if\s+\[\s+-n\s+["']?\$CI/);
   });
 });
