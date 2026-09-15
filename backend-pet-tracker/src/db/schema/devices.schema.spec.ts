@@ -205,6 +205,8 @@ describe('#93 R1: la migracion 0016 borra devices.connectivity y nada mas', () =
       join(MIGRATIONS_DIR, '0016_drop_devices_connectivity.sql'),
       'utf8',
     );
-    expect(sql.trim()).toBe('ALTER TABLE "devices" DROP COLUMN "connectivity";');
+    expect(sql.trim()).toBe(
+      'ALTER TABLE "devices" DROP COLUMN "connectivity";',
+    );
   });
 });
