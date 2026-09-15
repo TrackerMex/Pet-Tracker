@@ -246,7 +246,8 @@ if [ -n "$E2E_CMD" ]; then
     [ -n "$e2e_hp" ] || fail "No se pudo derivar host:puerto de ${e2e_key} en .env — los e2e no se pueden verificar sin saber contra qué corren"
     e2e_host="${e2e_hp% *}"
     e2e_port="${e2e_hp#* }"
-    port_open "$e2e_host" "$e2e_port" || fail "Infra e2e no disponible"
+    port_open "$e2e_host" "$e2e_port" \
+      || fail "Infra e2e caída: ${e2e_host}:${e2e_port} no responde (derivado de ${e2e_key} en .env). Levántala con: docker compose up -d"
   done
 
   eval "$E2E_CMD" 2>&1
