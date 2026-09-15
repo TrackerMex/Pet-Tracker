@@ -21,9 +21,6 @@ export class MealServing implements MealServingProps {
 }
 
 /** D4: franjas del plan vigente ya servidas, en el orden del plan. */
-export function servedInPlan(
-  mealTimes: string[],
-  served: string[],
-): string[] {
+export function servedInPlan(mealTimes: string[], served: string[]): string[] {
   return mealTimes.filter((mealTime) => served.includes(mealTime));
 }

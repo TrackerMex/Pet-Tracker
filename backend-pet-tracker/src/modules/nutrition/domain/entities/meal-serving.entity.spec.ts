@@ -2,9 +2,10 @@ import { servedInPlan } from './meal-serving.entity';
 
 describe('R11 (meals-served-tracking #83): servedInPlan devuelve solo franjas del plan, en su orden y sin duplicados', () => {
   it('devuelve las franjas servidas en el orden del plan', () => {
-    expect(
-      servedInPlan(['07:30', '19:30'], ['19:30', '07:30']),
-    ).toEqual(['07:30', '19:30']);
+    expect(servedInPlan(['07:30', '19:30'], ['19:30', '07:30'])).toEqual([
+      '07:30',
+      '19:30',
+    ]);
   });
 
   it('excluye franjas que ya no pertenecen al plan vigente', () => {

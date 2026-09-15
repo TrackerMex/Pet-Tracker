@@ -78,11 +78,7 @@ describe('Meals served tracking (e2e)', () => {
         kcalPer100g: 350,
       });
 
-  const postWeight = (
-    user: UserFixture,
-    petId: string,
-    timezone = 'UTC',
-  ) =>
+  const postWeight = (user: UserFixture, petId: string, timezone = 'UTC') =>
     api()
       .post(`/v1/pets/${petId}/weights`)
       .set(auth(user.token))
@@ -96,11 +92,7 @@ describe('Meals served tracking (e2e)', () => {
       .post(`/v1/pets/${petId}/nutrition-plan/generate`)
       .set(auth(user.token));
 
-  async function seedPlan(
-    owner: UserFixture,
-    petId: string,
-    timezone = 'UTC',
-  ) {
+  async function seedPlan(owner: UserFixture, petId: string, timezone = 'UTC') {
     await putProfile(owner, petId).expect(200);
     await postWeight(owner, petId, timezone).expect(201);
     return generatePlan(owner, petId).expect(200);
@@ -110,11 +102,7 @@ describe('Meals served tracking (e2e)', () => {
     user: UserFixture,
     petId: string,
     body: Record<string, unknown>,
-  ) =>
-    api()
-      .post(`/v1/pets/${petId}/meals`)
-      .set(auth(user.token))
-      .send(body);
+  ) => api().post(`/v1/pets/${petId}/meals`).set(auth(user.token)).send(body);
 
   beforeAll(async () => {
     const module = await Test.createTestingModule({
