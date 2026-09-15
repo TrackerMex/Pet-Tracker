@@ -1,7 +1,7 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-09-15
-**Features completadas**: 80/95 (`feature_list.json`)
+**Features completadas**: 80/96 (`feature_list.json`)
 **En progreso**: ninguna
 
 **Pendientes**: 15 (#18, #41, #60, #72, #74, #77, #79-#81, #83, #84, #86, #90, #94, #95). #93 `drop-devices-connectivity-column` cerrada (PR #131, pendiente de merge): la columna obsoleta sale del schema con la migración 0016; en el Postgres local compartido se aplica tras mergear. #63 `mobile-detail-screens-state-reset` cerrada y **mergeada** (PR #130): los formularios de detalle ya no conservan lo tecleado la vez anterior. #92 cerrada y **mergeada** (PR #129); queda #94 (una sola fuente de frescura entre Home y Mapa). **#95 `mobile-detail-screens-to-stack`** la abrió la decisión D1 de #63: sacar las seis pantallas de detalle de `(tabs)` a un Stack nativo cierra el teleport sin transición (M3) y las cabeceras a mano; se pospuso por coste, no se descartó. #92-#94 son la deuda que #73 dejo nombrada: reset de telemetria del collar al reasignarlo (#92), borrar la columna obsoleta devices.connectivity (#93, tras #92) y una sola fuente de frescura entre Home y Mapa (#94). El rediseño contra el diseño del Make abrió el bloque #64-#71: #64, #65, #66, #67, #68 y #69 están cerradas y **mergeadas** (PR #106, #110, #111, #112, #113 y #114). #71 `mobile-home-quick-actions` está cerrada con los dos gates humanos firmados; **PR pendiente de merge por el humano**. Del bloque solo queda **#70 recordatorios**, sin especificar, y con la mitad del diseño bloqueada porque `nextReminder` y `activitySummary` siguen a `null` en el mapper del perfil. Deuda registrada: #72 flake de add-pet; #74 el selector que TalkBack lee como tres controles sueltos; #77 el peso visible sin collar; #80 los `testID` del doble atados al componente; #81 la receta tipográfica del tile sin candado. #78 y #79 entraron desde otra sesión. #90 `mobile-owner-timezone-dates` la abrió el 2026-09-11 la decisión por defecto de #89: el móvil manda la fecha civil del dispositivo contra una validación que ya usa la zona del owner sin margen. #91 `mobile-tab-indicator-out-of-range` la destapó el gate humano de #78 el 2026-09-13: la burbuja del indicador se posiciona con el índice de `state.routes`, así que cualquier ruta de `(tabs)/` fuera de `TABS` la manda a una ranura fantasma detrás de Perfil. Es anterior a #78 y afecta también a recordatorios, pairing, peso y comidas. #75 y #91 están cerradas y mergeadas (PR #124 y #125); #73 `pet-online-pill` cerrada y **mergeada** (PR #126).
@@ -1197,6 +1197,40 @@ debe listar las 4 URLs de cola.
   leader tras la firma: el grep de cierre excluye `*.spec.ts`. Qué sigue:
   mergear el PR de #93; tras el merge de #63 (PR #130), reparar el journal de
   `pet_tracker` y aplicar 0016 allí; elegir la próxima `pending`.
+- **2026-09-15** — **#63 `mobile-detail-screens-state-reset` cerrada** (sesión
+  Frontend, tree principal): los formularios de detalle dejan de conservar lo
+  tecleado la vez anterior. Sin explorer, porque el enunciado ya traía la
+  exploración. **D1 eligió el reset local frente al Stack** con los cinco costes
+  medidos contra el árbol —el Stack sube el `Redirect` y el
+  `SelectedPetProvider` al layout raíz, revierte D4 de #42, invalida el
+  `paddingBottom: insets.bottom + 96`, obliga a cabecera nativa con copy nueva, y
+  **aun así R6 haría falta igual**— y quedó registrado como **#95**, pospuesto y
+  no descartado. Cinco pantallas afectadas; `docs` auditada y descartada con
+  evidencia (cero `useState`). **R7 es un requisito de que algo NO pase**: los
+  guardas de petición en vuelo sobreviven al blur, cerrado por mutación en dos
+  sitios. Codex en 22 commits test→feat→docs, reviewer aprobado a la primera,
+  gate humano firmado con los cinco pasos en dev build de Android. PR #130
+  mergeado.
+  - **El comando de verificación de la spec ya firmada estaba roto**: los paths
+    con `(tabs)` sin escapar, que jest trata como regex, así que el grupo de
+    captura no casaba con nada. Daba **verde con exit 0 habiendo corrido 5 suites
+    de 7**, sin ejecutar R3 ni R4. Lo destapó el leader al verificar por su
+    cuenta lo que Codex había dejado en "pendiente", no el gate. Regla en
+    `docs/conventions.md`, junto con el prefijo de feature para los R-id cuando
+    un fichero acumula los de dos specs.
+  - **Coordinación entre sesiones resuelta de raíz**: una base de datos por
+    worktree (`pet_tracker_wt`) quita el cuello de botella del Postgres
+    compartido; quedan LocalStack (14 de 29 suites lo tocan) y el journal de
+    migraciones de `pet_tracker`, que tenía 14 filas para 20 tablas porque #26
+    aplicó 0014 y 0015 con `psql` crudo. Todo en `docs/conventions.md`
+    §Sesiones en paralelo.
+  - **El `init.sh` de cierre salió rojo y era flake**: `alerts/index.test.tsx`,
+    verde 5 de 5 aislado y verde entero en la segunda corrida completa. Con eso
+    el flake de **#72 pasa a afectar a dos ficheros**, no uno, con la misma firma
+    y distinto mecanismo. Registrado en #72 (criterio 4).
+  - Qué sigue: decidir entre #72 (subir a P2 por coste: obliga a repetir el
+    `init.sh` de cada cierre) y #79 `mobile-push-registration`. Sin decidir
+    todavía si `reminders` y `alerts` van a feature aparte.
 - **2026-09-14** — **#92 `device-telemetry-reset-on-reassign` cerrada** (sesión
   Backend, worktree `wt-backend`): spec sin explorer (el contexto vivía en el
   explore de #73), firmada el mismo día con D1 = reset en `claim` corrigiendo la
