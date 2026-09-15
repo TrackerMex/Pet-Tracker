@@ -193,3 +193,17 @@ describe('R9 (harness-e2e-nunca-corre-en-ci #96): docs/verification.md documenta
     );
   });
 });
+
+describe('R7 (harness-e2e-nunca-corre-en-ci #96): la suite entra en TEST_CMD y en el mapa del repo', () => {
+  it('cablea la suite sin reemplazar los candados existentes', () => {
+    assert.ok(initConfig.includes('node --test init-e2e-gate.test.mjs'));
+    assert.ok(initConfig.includes('node --test env-drift.test.mjs'));
+    assert.ok(initConfig.includes('node --test init-color.test.mjs'));
+  });
+
+  it('lista el candado en AGENTS.md', () => {
+    const agents = readFileSync(new URL('./AGENTS.md', import.meta.url), 'utf8');
+
+    assert.ok(agents.includes('init-e2e-gate.test.mjs'));
+  });
+});
