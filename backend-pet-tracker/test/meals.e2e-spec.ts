@@ -8,7 +8,7 @@ import { uuidv7 } from 'uuidv7';
 import { DRIZZLE } from '@/db/drizzle.constants';
 import { auditLog } from '@/db/schema/audit-log.schema';
 import { mealServings } from '@/db/schema/nutrition.schema';
-import { pets } from '@/db/schema/pets.schema';
+import { pets, petUsers } from '@/db/schema/pets.schema';
 import { users } from '@/db/schema/users.schema';
 import { TOKEN_SERVICE } from '@/modules/auth/domain/ports/token-service';
 import type { TokenService } from '@/modules/auth/domain/ports/token-service';
@@ -108,6 +108,12 @@ describe('Meals served tracking (e2e)', () => {
     api()
       .delete(`/v1/pets/${petId}/meals/${mealTime}`)
       .set(auth(user.token));
+
+  const addMember = (
+    petId: string,
+    userId: string,
+    role: 'family' | 'walker',
+  ) => db.insert(petUsers).values({ petId, userId, role, status: 'active' });
 
   beforeAll(async () => {
     const module = await Test.createTestingModule({
@@ -372,6 +378,41 @@ describe('Meals served tracking (e2e)', () => {
           .from(mealServings)
           .where(eq(mealServings.petId, pet.id)),
       ).toHaveLength(1);
+    });
+  });
+
+  describe('R3 (meals-served-tracking #83): cualquier miembro activo sirve y deshace; 404 del guard precede', () => {
+    it('family sirve y walker deshace una franja servida por otro miembro', async () => {
+      const owner = await seedUser('r3-owner');
+      const family = await seedUser('r3-family');
+      const walker = await seedUser('r3-walker');
+      const pet = await seedPet(owner);
+      await seedPlan(owner, pet.id);
+      await addMember(pet.id, family.id, 'family');
+      await addMember(pet.id, walker.id, 'walker');
+
+      const created = await serveMeal(family, pet.id, {
+        mealTime: '07:30',
+      }).expect(201);
+      expect((created.body as { createdBy: string }).createdBy).toBe(family.id);
+      await unserveMeal(walker, pet.id, '07:30').expect(204);
+      expect(
+        await db
+          .select()
+          .from(mealServings)
+          .where(eq(mealServings.petId, pet.id)),
+      ).toHaveLength(0);
+    });
+
+    it('responde 404 a outsider y petId no UUID antes del body', async () => {
+      const owner = await seedUser('r3-hidden-owner');
+      const outsider = await seedUser('r3-outsider');
+      const pet = await seedPet(owner);
+
+      await serveMeal(outsider, pet.id, {}).expect(404);
+      await unserveMeal(outsider, pet.id, '07:30').expect(404);
+      await serveMeal(owner, 'not-a-uuid', {}).expect(404);
+      await unserveMeal(owner, 'not-a-uuid', '07:30').expect(404);
     });
   });
 });

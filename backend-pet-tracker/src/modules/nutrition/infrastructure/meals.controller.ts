@@ -22,6 +22,7 @@ import {
   MealServingResponse,
   toMealServingResponse,
 } from '@/modules/nutrition/infrastructure/mappers/nutrition.mapper';
+import { RequirePetRole } from '@/modules/pets/infrastructure/decorators/require-pet-role.decorator';
 import { PetAccessGuard } from '@/modules/pets/infrastructure/guards/pet-access.guard';
 import type { PetAccessRequest } from '@/modules/pets/infrastructure/guards/pet-access.guard';
 
@@ -34,6 +35,7 @@ export class MealsController {
   ) {}
 
   @Post()
+  @RequirePetRole('owner')
   async serve(
     @Req() request: PetAccessRequest,
     @Body() body: unknown,
@@ -56,6 +58,7 @@ export class MealsController {
 
   @Delete(':mealTime')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @RequirePetRole('owner')
   async unserve(
     @Req() request: PetAccessRequest,
     @Param('mealTime') mealTime: string,
