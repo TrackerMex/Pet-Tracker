@@ -642,4 +642,4 @@ owner-only), **C2** (sin índice `(pet_id, served_on)`: lo cubre el único),
 propio; una línea de R24 de #17 se mueve) y **D10** (sin e2e permanente
 sobre `information_schema`; la base compartida se migra tras el merge).
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [X] Aprobado por humano (fecha: 2026-09-15) ← gate obligatorio antes de implementar
