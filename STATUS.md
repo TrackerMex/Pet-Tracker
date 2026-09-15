@@ -1,7 +1,7 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-09-14
-**Features completadas**: 77/94 (`feature_list.json`)
+**Features completadas**: 78/94 (`feature_list.json`)
 **En progreso**: ninguna
 
 **Pendientes**: 17 (#18, #41, #60, #63, #72, #74, #77, #79-#81, #83, #84, #86, #90, #92-#94). #92-#94 son la deuda que #73 dejo nombrada: reset de telemetria del collar al reasignarlo (#92), borrar la columna obsoleta devices.connectivity (#93, tras #92) y una sola fuente de frescura entre Home y Mapa (#94). El rediseño contra el diseño del Make abrió el bloque #64-#71: #64, #65, #66, #67, #68 y #69 están cerradas y **mergeadas** (PR #106, #110, #111, #112, #113 y #114). #71 `mobile-home-quick-actions` está cerrada con los dos gates humanos firmados; **PR pendiente de merge por el humano**. Del bloque solo queda **#70 recordatorios**, sin especificar, y con la mitad del diseño bloqueada porque `nextReminder` y `activitySummary` siguen a `null` en el mapper del perfil. Deuda registrada: #72 flake de add-pet; #74 el selector que TalkBack lee como tres controles sueltos; #77 el peso visible sin collar; #80 los `testID` del doble atados al componente; #81 la receta tipográfica del tile sin candado. #78 y #79 entraron desde otra sesión. #90 `mobile-owner-timezone-dates` la abrió el 2026-09-11 la decisión por defecto de #89: el móvil manda la fecha civil del dispositivo contra una validación que ya usa la zona del owner sin margen. #91 `mobile-tab-indicator-out-of-range` la destapó el gate humano de #78 el 2026-09-13: la burbuja del indicador se posiciona con el índice de `state.routes`, así que cualquier ruta de `(tabs)/` fuera de `TABS` la manda a una ranura fantasma detrás de Perfil. Es anterior a #78 y afecta también a recordatorios, pairing, peso y comidas. #75 y #91 están cerradas y mergeadas (PR #124 y #125); #73 `pet-online-pill` cerrada y **mergeada** (PR #126).
@@ -87,6 +87,15 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
+- **`device-telemetry-reset-on-reassign` (#92) done** (2026-09-14): `claim()`
+  deja `devices.battery_pct` y `last_message_at` en NULL en el mismo UPDATE de
+  la transacción de #7 y devuelve la fila persistida (`.returning()`), así que
+  el 201 del claim, `GET /v1/pets/:petId/device` y `device` del perfil responden
+  `batteryPct/connectivity/lastMessageAt: null` hasta el primer mensaje nuevo.
+  Reset en `claim` y no en `release` (decisión D1: el cascade de borrar mascota
+  nunca pasa por release). `release()`, el WHERE de monotonicidad del store y el
+  consumer intactos; `connectivity` sigue para #93. Solo backend, 10 ficheros,
+  sin migración. Reviewer aprobado a la primera con dos sondas de mutación.
 - **`pet-online-pill` (#73) done** (2026-09-14): `connectivity` se deriva en
   lectura de `devices.last_message_at` contra el reloj del servidor con
   `DEVICE_ONLINE_THRESHOLD_MS` (120 s, elegido por el humano); el pestillo
@@ -1133,6 +1142,16 @@ debe listar las 4 URLs de cola.
 
 ## Última sesión
 
+- **2026-09-14** — **#92 `device-telemetry-reset-on-reassign` cerrada** (sesión
+  Backend, worktree `wt-backend`): spec sin explorer (el contexto vivía en el
+  explore de #73), firmada el mismo día con D1 = reset en `claim` corrigiendo la
+  recomendación del enunciado (release). Codex implementó R1 en tres commits
+  test→feat→docs y dejó las evidencias de R2 (sonda) y R3 (init.sh) en un cuarto;
+  reviewer aprobado con init.sh en primer plano (+1 unit, +2 e2e sobre el
+  baseline) y las dos sondas repetidas. Incidente de arranque: la sesión empezó
+  en el tree principal, que la sesión Frontend (#63) ocupa; se movió a
+  `wt-backend` antes de escribir. Qué sigue: mergear el PR de #92; #93
+  (`drop-devices-connectivity-column`) ya tiene su decisión de columnas.
 - **2026-09-14** — **#73 `pet-online-pill` cerrada**: spec firmada el 13 con
   dos decisiones del humano sobre los defaults (umbral 120 s en vez de 300 s;
   pulso del punto con Reanimated + reduced motion dentro de la feature) que

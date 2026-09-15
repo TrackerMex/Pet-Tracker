@@ -14,11 +14,11 @@ interface DeviceProps {
    * por si mismo (R8/R15).
    */
   status: DeviceStatus;
-  /** NULL hasta que el pipeline de ingesta (#8) lo alimente. */
+  /** NULL hasta ingesta (#8); vuelve a NULL en cada claim (#92). */
   batteryPct: number | null;
   /** NULL hasta que el pipeline de ingesta (#8) lo alimente. */
   connectivity: string | null;
-  /** NULL hasta que el pipeline de ingesta (#8) lo alimente. */
+  /** NULL hasta ingesta (#8); vuelve a NULL en cada claim (#92). */
   lastMessageAt: Date | null;
   /** Arranca en el claim como now-10min (R3); lo avanza el poller de #8. */
   ingestWatermark: Date | null;

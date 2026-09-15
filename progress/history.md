@@ -3727,3 +3727,46 @@ un conflicto seguro en esa linea al mergear el segundo. Yendo junto, el contador
   branch con conflictos en `STATUS.md` (contador recalculado: 77/91) e `history.md`.
 - Coordinación con la sesión Frontend por SendMessage antes de cada init.sh; Postgres
   compartido sin colisiones.
+
+
+---
+
+# Sesión #92 device-telemetry-reset-on-reassign (2026-09-14, sesión Backend)
+
+## Feature #92 `device-telemetry-reset-on-reassign` (P3)
+
+- **Sesion**: Backend, worktree `/home/claude/sites/Pet-Tracker-wt-backend`.
+- **Branch**: `feature/92-device-telemetry-reset-on-reassign`, desde `origin/main` `66a9d52b`.
+- **Inicio**: 2026-09-14.
+- **Estado**: `in_progress`. Spec escrita por `spec_author` (`e0cf0bf9`), firmada por el
+  humano (`901d815f`, 2026-09-14), frontmatter de los 4 ficheros en `approved`.
+  Handoff a Codex CLI en `progress/handoff_device-telemetry-reset-on-reassign.md`;
+  el humano lo corre en su terminal. Mientras, este leader no toca `backend-pet-tracker/`.
+- **Plan de Codex**: R1 (claim resetea `battery_pct`/`last_message_at` y devuelve la fila
+  persistida; e2e (a)+(b) y unit), R2 (sonda de mutación sobre el WHERE), R3 (`init.sh`
+  + `diff --stat`).
+- **Baseline**: `./init.sh` VERDE, exit 0, medido sin pipe sobre `66a9d52b`. El primer
+  intento choco con el `init.sh` de la sesion Frontend (#63) en `cdk.out`
+  ("Another CLI is currently synthing"); se esperó su pid y se repitio.
+  Cifras: backend 166 suites / 1277 tests; infra 2 / 14; movil 73 / 1265;
+  e2e 26 de 29 suites (3 skipped), 365 de 373 tests (8 skipped). Punto de comparacion
+  para el delta, no constante de spec.
+- **Incidente**: la sesion arranco en `/home/claude/sites/Pet-Tracker`, que la sesion
+  Frontend ocupa y cuyo HEAD cambio a `feature/63-...` a mitad de arranque. #92 se movio
+  a este worktree antes de que `spec_author` escribiera nada.
+
+- Codex: 4 commits (`4160f514` test R1 → `f1f44880` feat R1 → `3328c0dc` docs R1 →
+  `b980d6ed` evidencias R2/R3). `reviewer` APROBADO a la primera
+  (`progress/review_device-telemetry-reset-on-reassign.md`): C2-C6 con evidencia,
+  sonda R2 (sin `isNull` cae en `batteryPct === 80`) y sonda de zona ciega
+  (sin `batteryPct: null` caen (a) y (b) en el 201) repetidas; `init.sh` exit 0
+  sin pipe, backend 166/1278, e2e 367 de 375 (+1 unit, +2 e2e). Notas menores
+  sin acción: labels de `seedDevice` en mayúscula; esqueleto del impl dentro del
+  commit rojo.
+- Coordinación con la sesión Frontend por SendMessage antes del `init.sh` del
+  reviewer; receta de pgrep ampliada a `test:e2e|jest-e2e`.
+- Cierre: `init.sh` del leader, primera corrida exit 1 por el flake conocido #72
+  (`add-pet/index.test.tsx` R7 foto, `Cannot read properties of undefined (reading
+  'canceled')`; móvil sin diff contra `origin/main`); el fichero 3 de 3 verde suelto y
+  la segunda corrida completa exit 0 sin pipe (backend 166/1278, infra 2/14, móvil
+  73/1265, e2e 367 de 375). #92 `done`, STATUS.md 78/94, PR abierto; el humano mergea.

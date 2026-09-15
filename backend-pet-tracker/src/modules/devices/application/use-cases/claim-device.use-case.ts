@@ -88,7 +88,11 @@ export class ClaimDeviceUseCase {
     );
 
     // R3: INSERT pet_devices + UPDATE devices en una transaccion del repo.
-    await this.devices.claim(device.id, dto.petId, ingestWatermark);
+    const claimed = await this.devices.claim(
+      device.id,
+      dto.petId,
+      ingestWatermark,
+    );
 
     // R10: solo tras el commit; meta lleva petId, nunca el identificador.
     await this.auditLogger.record({
@@ -99,6 +103,6 @@ export class ClaimDeviceUseCase {
       meta: { petId: dto.petId },
     });
 
-    return device;
+    return claimed;
   }
 }
