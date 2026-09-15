@@ -1579,7 +1579,7 @@
   {
     "id": 83,
     "name": "meals-served-tracking",
-    "status": "spec_ready",
+    "status": "in_progress",
     "priority": "P3",
     "description": "Abierta al escribir la spec de #70 el 2026-09-09 (decision E2). Es lo que desbloquea la barra de progreso de comidas que el Make dibuja en la seccion de recordatorios y que #70 dejo FUERA por imposible. OJO, la causa real no es la que decia el enunciado de #70: la barra no lee nextReminder ni activitySummary, lee pet.meals y pet.totalMeals. Faltan DOS piezas, no una: (a) no existe registro de comida servida en el backend -no hay tabla ni endpoint, y food.tsx:185 lo finge con el reloj local-, y (b) mealsPerDay vive en el plan de nutricion y no en el perfil, asi que el total tampoco esta donde la Home lo necesita. Se abre como una sola feature porque las dos piezas carecen de sentido por separado; al especificarla se puede partir si el alcance lo pide. PARTIDA el 2026-09-15 al especificar (decision D1 del humano): #83 es SOLO BACKEND -tabla meal_servings con served_on = dia civil del owner y UNIQUE (pet_id, served_on, meal_time); POST/DELETE /v1/pets/:petId/meals abiertos a cualquier miembro activo (D2); 409 al repetir franja (D3); mealsToday { served, total } | null en GET /v1/pets/:petId y servedToday en GET nutrition-plan contando solo franjas del plan vigente (D4)-. La parte movil (boton por franja en food.tsx, barra en la Home) es la feature #98 mobile-meals-served-ui, bloqueada por esta. El criterio 4 se cierra aqui con un smoke por curl; el smoke con la barra pintada pasa a #98.",
     "acceptance_criteria": [
