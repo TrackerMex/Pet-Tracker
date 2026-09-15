@@ -68,7 +68,6 @@ export function RemindersScreen() {
       return () => {
         setDeleteCandidate(null);
         setActionError(null);
-        setDeletingId(null);
       };
     }, [refetchReminders]),
   );
