@@ -17,7 +17,7 @@ mismo patrón que `env-drift.test.mjs` e `init-color.test.mjs`.
 |---|---|---|
 | R1 | `init-e2e-gate.test.mjs::R1 (harness-e2e-nunca-corre-en-ci #96): CI levanta la infra antes de init.sh` | rojo: `ae21880a` `test(ci-e2e): require infra before init.sh (R1)`; verde: `64a0ecc0` `feat(ci-e2e): start infra before init.sh (R1)` |
 | R2 | `init-e2e-gate.test.mjs::R2 (harness-e2e-nunca-corre-en-ci #96): el workflow fija AWS_MODE local y nunca toca AWS real` | rojo: `ba934c99` `test(ci-e2e): forbid real AWS in CI (R2)`; verde: `a306d2e3` `feat(ci-e2e): pin CI to LocalStack (R2)` |
-| R3 | `init-e2e-gate.test.mjs::R3 (harness-e2e-nunca-corre-en-ci #96): los puertos se derivan del .env` | pendiente |
+| R3 | `init-e2e-gate.test.mjs::R3 (harness-e2e-nunca-corre-en-ci #96): los puertos se derivan del .env` | rojo: `4a13f00a` `test(ci-e2e): derive probe targets from env (R3)`; verde: pendiente |
 | R4 | `init-e2e-gate.test.mjs::R4 (harness-e2e-nunca-corre-en-ci #96): la infra caida aborta init.sh con codigo 1` | pendiente |
 | R5 | `init-e2e-gate.test.mjs::R5 (harness-e2e-nunca-corre-en-ci #96): el fallo nombra host, puerto y clave de origen` | pendiente |
 | R6 | `init-e2e-gate.test.mjs::R6 (harness-e2e-nunca-corre-en-ci #96): migraciones y provisioning antes de los e2e` | pendiente |

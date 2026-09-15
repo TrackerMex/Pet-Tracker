@@ -31,6 +31,6 @@ TYPECHECK_CMD="pnpm -C backend-pet-tracker exec tsc --noEmit && pnpm -C infra ex
 # ese jest usa rootDir "src" y testRegex ".*\.spec\.ts$".
 E2E_CMD="pnpm -C backend-pet-tracker run test:e2e"
 
-# Puertos que deben responder para que los e2e tengan sentido (docker-compose).
-# Si no responden, init.sh los salta con aviso en vez de fallar.
-E2E_REQUIRED_PORTS=(5432 4566)
+# Claves del .env de cuyas URLs se deriva la infra que los e2e necesitan.
+# No se duplican puertos: se sondea exactamente el destino que usa el backend.
+E2E_PORT_SOURCES=("DATABASE_URL" "AWS_ENDPOINT_URL")
