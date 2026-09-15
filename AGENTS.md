@@ -50,6 +50,7 @@ duplica.
 | `.claude/agents/` | Definiciones de subagentes (leader, spec_author, explorer, implementer, reviewer) | Si orquestas trabajo |
 | `.claude/skills/` | Skills reutilizables, un nivel plano (`<track>-<nombre>/SKILL.md`) — ver `.claude/skills/README.md` | Antes de repetir una tarea ya resuelta en otro proyecto |
 | `env-drift.mjs` | Diff de claves entre `.env` y `.env.example` que usa `init.sh` §2 (#23) | Si `init.sh` avisa de claves faltantes |
+| `init-e2e-gate.test.mjs` | Candado del gate E2E de CI y de `init.sh` §6b (#96) | Si cambias el arranque, las guardas o el setup E2E |
 | `init.config.sh` | Comandos de build/test/lint específicos de este proyecto | Antes de correr `init.sh` por primera vez |
 | `mobile-pet-tracker/` | App móvil Expo SDK 57 (Expo Router + TypeScript + bun) | Para implementar o verificar el cliente móvil |
 | `hosting/` | Artefactos estáticos de App Links y fallback web de reset | Para revisar o desplegar `assetlinks.json` y la página de `/reset-password` |

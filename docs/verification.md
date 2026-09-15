@@ -27,9 +27,13 @@ $TEST_CMD
 ### 3. Init verde
 
 ```bash
+docker compose up -d
 ./init.sh
 # Debe terminar con "✅ Todo verde"
 ```
+
+`./init.sh` requiere Postgres y LocalStack levantados. Si falta cualquiera de
+los destinos derivados del `.env`, aborta en vez de saltarse los E2E.
 
 ---
 
@@ -825,6 +829,84 @@ direcciones de correo, contraseñas ni tokens al reporte.
 Registra únicamente los resultados y status en
 `progress/impl_auth-reset-deep-link.md`. G1–G4 siguen pendientes hasta esa
 confirmación humana; las suites automáticas no los sustituyen.
+
+### Feature 96 — harness-e2e-nunca-corre-en-ci
+
+`./init.sh` ya requiere Postgres y LocalStack levantados con
+`docker compose up -d`; si alguna URL de infraestructura del `.env` no
+responde, termina con error antes de los E2E. En CI, el workflow levanta el
+Compose versionado y espera sus healthchecks antes de ejecutar el harness.
+
+Las tres suites `aws-real-*` se saltan por diseño con `AWS_MODE=local`: el
+verde correcto ejecuta todas las suites menos esas tres. No congeles el
+recuento; comprueba en el commit evaluado que:
+
+```text
+suites ejecutadas = ficheros test/*.e2e-spec.ts - ficheros test/aws-real-*.e2e-spec.ts
+```
+
+El resultado debe ser distinto de cero. Nunca cambies CI a `AWS_MODE=aws` para
+forzar las suites reales.
+
+**G1 — demostrar que un CI verde ejecuta los E2E (solo humano):**
+
+1. Abre el PR de `feature/96-harness-e2e-nunca-corre-en-ci` contra `main` y
+   espera al job `verify`.
+2. En el log confirma la sección `→ Tests e2e...` y la línea de resumen
+   `Test Suites: …` de Jest.
+3. Recuenta los dos globs del commit y verifica la igualdad anterior: el
+   número de suites ejecutadas debe ser distinto de cero.
+4. Confirma que el job termina verde y registra su URL en
+   `progress/impl_harness-e2e-nunca-corre-en-ci.md`.
+
+Si el rojo procede del flake móvil conocido de `add-pet` o `alerts`, relanza el
+job: ese fallo no demuestra nada sobre este gate.
+
+**G2 — demostrar que un E2E rojo pone el PR en rojo (solo humano, después de
+G1):**
+
+1. Crea la rama temporal `test/96-ci-red-probe` desde la rama de la feature.
+2. En `backend-pet-tracker/test/app.e2e-spec.ts`, cambia únicamente el
+   `.expect(401)` del único test por `.expect(418)` y commitea con
+   `test(ci): probe deliberado de rojo e2e (no mergear)`.
+3. Publica la rama y abre un PR en borrador contra `main`.
+4. Comprueba que el check queda rojo, que falla el paso
+   `Harness verification (init.sh)` dentro de `→ Tests e2e...`, y que el log
+   nombra `app.e2e-spec.ts` y `expected 418`.
+5. Cierra el PR sin mergear y borra la rama temporal local y remota.
+6. Registra en el reporte la URL de esta corrida roja, su línea de fallo y la
+   URL verde de G1.
+
+G1 y G2 son gates humanos: ninguna suite automática ni reviewer los cierra.
+
+**Techo conocido del candado de `AWS_MODE` (enmienda E1).** El candado cuenta
+las claves YAML `AWS_MODE:` **a principio de línea** y prohíbe `AWS_MODE=` en
+cualquier `run:`. Eso cubre las formas que se escriben en la práctica, pero no
+un mapping de flujo:
+
+```yaml
+env: { AWS_MODE: aws }     # la suite sigue verde
+```
+
+Medido por el reviewer el 2026-09-15. No se cerró porque hacerlo exige parsear
+YAML de verdad, y el gasto está además cortado aguas abajo por el guard
+`runSmoke` de las tres suites `aws-real-*`. Si algún día se edita `ci.yml` con
+esa forma, el candado no lo va a parar: cerrarlo pide una enmienda nueva con su
+propia firma.
+
+**Ruido esperado en el log, que no es un fallo de la guarda.** La corrida
+imprime varias líneas `ERROR [PollerService] ... connect ECONNREFUSED
+127.0.0.1:4566`. No son LocalStack caído: salen de un `mockRejectedValue(new
+Error('connect ECONNREFUSED 127.0.0.1:4566'))` en
+`backend-pet-tracker/src/workers/poller.service.spec.ts`, el test que comprueba
+que el ciclo del poller se salta sin tumbar el proceso cuando SQS falla. Ya
+aparecían antes de la feature 96. Si la guarda nueva fuese la que falla, la
+línea sería otra y la corrida no llegaría a los E2E:
+
+```
+Infra e2e caída: <host>:<puerto> no responde (derivado de <CLAVE> en .env).
+Levántala con: docker compose up -d
+```
 
 ---
 

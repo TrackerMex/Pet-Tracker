@@ -9,8 +9,17 @@ on:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    env:
+      # Los e2e corren contra LocalStack, nunca contra la cuenta AWS real.
+      # Las tres suites aws-real-* se auto-saltan con AWS_MODE != aws y eso es
+      # deliberado: pegar a AWS real en cada PR cuesta dinero y esa prueba la
+      # corre solo un humano (CLAUDE.md §Excepciones). NO lo cambies a "aws".
+      AWS_MODE: local
     steps:
       - uses: actions/checkout@v4
+
+      - name: Infra e2e (Postgres + LocalStack)
+        run: docker compose up -d --wait --wait-timeout 120
 
       - uses: pnpm/action-setup@v4
         with:
@@ -33,6 +42,8 @@ jobs:
 
       # Misma verificacion que en local: harness + install + build + test + lint + typecheck.
       # init.sh copia .env.example -> .env si falta, asi que no necesita secrets.
-      # Cuando existan tests e2e contra Postgres/LocalStack, anadir services aqui.
+      # Los e2e los corre init.sh §6b contra la infra del paso anterior; si esa
+      # infra no responde, init.sh aborta (no los salta). Ver specs/
+      # harness-e2e-nunca-corre-en-ci/.
       - name: Harness verification (init.sh)
         run: bash ./init.sh

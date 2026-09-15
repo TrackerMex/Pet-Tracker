@@ -1852,7 +1852,7 @@
   {
     "id": 96,
     "name": "harness-e2e-nunca-corre-en-ci",
-    "status": "pending",
+    "status": "done",
     "priority": "P2",
     "description": "Los 29 e2e de backend-pet-tracker/test/ NO se ejecutan nunca en CI, asi que todo PR se mergea con ellos sin verificar. Dos causas encadenadas, las dos verificadas el 2026-09-15. (a) .github/workflows/ci.yml no declara services: su unico paso es 'bash ./init.sh' sobre ubuntu-latest, sin Postgres ni LocalStack; la linea 36 lleva el comentario 'Cuando existan tests e2e contra Postgres/LocalStack, anadir services aqui', escrito antes de que existieran y nunca atendido. (b) init.sh:226-245 salta los e2e con un warn -no con un fallo- si alguno de E2E_REQUIRED_PORTS no responde. El propio init.sh:224-225 documenta la contrapartida por escrito: 'donde de verdad importa -CI- la infra debe estar levantada, o este paso pasa de largo sin verificar nada'. Eso es exactamente lo que ocurre hoy. Defecto adicional en la misma zona: E2E_REQUIRED_PORTS=(5432 4566) en init.config.sh:36, pero el Postgres del proyecto escucha en 5433 (docker-compose.override.yml lo remapea porque algo ocupa 127.0.0.1:5432 en el VPS). port_open comprueba 127.0.0.1:5432 y da true por ese OTRO Postgres ajeno al proyecto, asi que la guarda pasa por el motivo equivocado: los e2e corren igual porque DATABASE_URL apunta a 5433, pero el dia que ese Postgres ajeno se pare, init.sh saltara los e2e en silencio con gate verde. Es la misma forma de fallo que ya mordio dos veces el 2026-09-15: verde sin haber ejecutado nada (el filtro de jest con parentesis sin escapar, y este).",
     "acceptance_criteria": [

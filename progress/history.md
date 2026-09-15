@@ -3866,3 +3866,62 @@ un conflicto seguro en esa linea al mergear el segundo. Yendo junto, el contador
 - Cierre: #93 `done`, STATUS.md 79/94, PR abierto; el humano mergea. Pendiente operativo
   tras el merge de #130: dos INSERT en `drizzle.__drizzle_migrations` de `pet_tracker` +
   `pnpm db:migrate` (design.md §Aplicación en el Postgres compartido).
+
+
+## Feature #96 `harness-e2e-nunca-corre-en-ci` (P2)
+
+- Sesion Frontend (leader) en el arbol principal; rama
+  `feature/96-harness-e2e-nunca-corre-en-ci` desde `48e4130d`. PR #134.
+- Problema: los 29 e2e de `backend-pet-tracker/test/` no se ejecutaban **nunca**
+  en CI. Dos causas encadenadas: `ci.yml` sin `services`, e `init.sh` saltandose
+  los e2e con un `warn` en vez de fallar. Mas un defecto de puertos:
+  `E2E_REQUIRED_PORTS=(5432 4566)` daba true por un Postgres ajeno al proyecto,
+  porque el del proyecto escucha en 5433.
+- Decisiones de la spec: `docker compose up -d --wait` en vez de `services:`
+  (no duplica las imagenes ya pineadas y ejecuta el HEALTHCHECK de la imagen);
+  fallo duro siempre, sin rama por `$CI`; `E2E_PORT_SOURCES` parseando
+  `DATABASE_URL` y `AWS_ENDPOINT_URL`; `E2E_SETUP_CMD` con `db:migrate` y
+  `provision:local` dentro de init.sh, no en el workflow (necesitan el
+  `node_modules` de `INSTALL_CMD`). El workflow **no** fija `DATABASE_URL`:
+  `.env.example` y el compose base ya cuadran en los cuatro campos.
+- Hallazgo que no estaba en el enunciado: `provision:local` en CI no es
+  opcional. `localstack-provisioning.e2e-spec.ts` provisiona en su `beforeAll`,
+  pero jest ordena por tamano y no es el primero. En el VPS no se notaba porque
+  LocalStack llevaba horas provisionado; en CI arranca vacio cada job.
+- Codex: 19 commits, 9 pares rojo->verde uno por R-id. El `reviewer` no se fio
+  del reporte: extrajo el arbol de los 18 commits con `git archive` y corrio los
+  tests en cada uno — los 9 rojos fallan **solo** en la suite de su propio R-id.
+  APROBADO R1-R9.
+- Enmienda **E1** (firmada por el humano en `dbeb6b92`): el reviewer demostro
+  con mutaciones que el candado de R2 dejaba pasar `run: AWS_MODE=aws bash
+  ./init.sh` y una segunda ocurrencia de `AWS_MODE`. R2 **no** cambio — su
+  redaccion ya lo prohibia; lo corto era el candado que lo comprueba. Codex lo
+  reforzo en `abc0ac32` (solo el `it` de R2, sin tocar `ci.yml`). Segunda
+  revision APROBADA, con una mutacion extra del reviewer (segundo
+  `AWS_MODE: "local"`) que confirma que la condicion 1 va por recuento y no por
+  regex de valor.
+- Techo conocido y documentado en `docs/verification.md`: `env: { AWS_MODE: aws }`
+  en mapping de flujo YAML deja la suite verde. No se cerro: exige parsear YAML
+  de verdad y el gasto esta cortado aguas abajo por `runSmoke`.
+- **G1 cerrado**: run `34992040777` sobre `73a1d6b0`, verde, con los e2e
+  ejecutandose de verdad en CI por primera vez (`26 of 29`, migraciones
+  aplicadas). Una verde anterior (`34990504701`) se descarto por correr sobre
+  `ea5e62bb`, antes de E1.
+- **G2 cerrado**: run `34990834840` sobre `87637ceb`, rojo por la mutacion
+  deliberada `.expect(401)` -> `.expect(418)` en `app.e2e-spec.ts`. Un unico
+  fallo, exit 1; las 73 suites moviles verdes, asi que no fue el flake de #72.
+  PR #135 cerrado sin mergear y rama `test/96-ci-red-probe` borrada.
+- Coordinacion con Backend: se le aviso **antes** de escribir la spec y sus
+  cuatro respuestas entraron en ella (los 29 e2e verdes en su worktree con 3
+  skipped por diseno, sus variables literales, cero PRs en vuelo, y que nunca
+  corre init.sh con la infra abajo — lo que elimino la rama por `$CI`). Corrio
+  ademas el init.sh entero de la rama desde wt-backend para cubrir el unico caso
+  que no se prueba desde el arbol principal: la derivacion de 5433 desde su
+  `DATABASE_URL`. Exit 0. Suya es la peticion que quedo como R5.
+- Ruido documentado para que nadie lea mal G1: las lineas
+  `ERROR [PollerService] ... connect ECONNREFUSED 127.0.0.1:4566` del log son un
+  `mockRejectedValue` de `poller.service.spec.ts`, no LocalStack caido, y ya
+  salian antes de #96.
+- Consecuencia para todas las maquinas: `./init.sh` pasa a exigir
+  `docker compose up -d` y aborta si la infra no responde.
+- Cierre: #96 `done`, 81/96, PR #134 abierto; el humano mergea.

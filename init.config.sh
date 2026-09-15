@@ -22,7 +22,7 @@ REQUIRED_ENV_VARS=("DATABASE_URL")
 # El backend vive en backend-pet-tracker/ — pnpm -C apunta ahí desde la raíz
 INSTALL_CMD="pnpm -C backend-pet-tracker install && pnpm -C infra install && bun install --cwd mobile-pet-tracker"
 BUILD_CMD="pnpm -C backend-pet-tracker run build && pnpm -C infra run synth"
-TEST_CMD="pnpm -C backend-pet-tracker test --passWithNoTests && pnpm -C infra test --passWithNoTests --runInBand && node --test env-drift.test.mjs && node --test init-color.test.mjs && bun run --cwd mobile-pet-tracker test"
+TEST_CMD="pnpm -C backend-pet-tracker test --passWithNoTests && pnpm -C infra test --passWithNoTests --runInBand && node --test env-drift.test.mjs && node --test init-color.test.mjs && node --test init-e2e-gate.test.mjs && bun run --cwd mobile-pet-tracker test"
 LINT_CMD="pnpm -C backend-pet-tracker run lint && pnpm -C infra run lint && bun run --cwd mobile-pet-tracker lint"
 TYPECHECK_CMD="pnpm -C backend-pet-tracker exec tsc --noEmit && pnpm -C infra exec tsc --noEmit && bun run --cwd mobile-pet-tracker typecheck"
 
@@ -31,6 +31,10 @@ TYPECHECK_CMD="pnpm -C backend-pet-tracker exec tsc --noEmit && pnpm -C infra ex
 # ese jest usa rootDir "src" y testRegex ".*\.spec\.ts$".
 E2E_CMD="pnpm -C backend-pet-tracker run test:e2e"
 
-# Puertos que deben responder para que los e2e tengan sentido (docker-compose).
-# Si no responden, init.sh los salta con aviso en vez de fallar.
-E2E_REQUIRED_PORTS=(5432 4566)
+# Puesta a punto idempotente antes de los e2e (#96): aplica las migraciones con
+# su journal y crea en LocalStack los recursos de desarrollo y de test.
+E2E_SETUP_CMD="pnpm -C backend-pet-tracker run db:migrate && pnpm -C backend-pet-tracker run provision:local"
+
+# Claves del .env de cuyas URLs se deriva la infra que los e2e necesitan.
+# No se duplican puertos: se sondea exactamente el destino que usa el backend.
+E2E_PORT_SOURCES=("DATABASE_URL" "AWS_ENDPOINT_URL")

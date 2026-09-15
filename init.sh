@@ -26,10 +26,10 @@ fail() { echo -e "${RED}❌ $1${NC}"; exit 1; }
 # va a una variable, no a la terminal.
 nodeq() { FORCE_COLOR=0 node "$@"; }
 
-# ¿Hay algo escuchando en un puerto de localhost? Sin dependencias externas:
-# nc/lsof no están garantizados en Git Bash ni en los runners.
+# ¿Hay algo escuchando en host:puerto? Sin dependencias externas: nc/lsof no
+# están garantizados en Git Bash ni en los runners.
 port_open() {
-  (exec 3<>"/dev/tcp/127.0.0.1/$1") 2>/dev/null || return 1
+  (exec 3<>"/dev/tcp/$1/$2") 2>/dev/null || return 1
   exec 3<&-
   return 0
 }
@@ -219,30 +219,53 @@ else
 fi
 
 # ── 6b. TESTS E2E ────────────────────────────
-# Necesitan Postgres + LocalStack arriba (docker compose up -d). Si la infra no
-# responde se saltan con aviso en vez de fallar: init.sh tiene que poder correr
-# sin Docker. Contrapartida: donde de verdad importa — CI — la infra debe estar
-# levantada, o este paso pasa de largo sin verificar nada.
+# >>> bloque e2e (#96) >>>
+# Los e2e necesitan Postgres + LocalStack arriba. Si la infra no responde, esto
+# ABORTA: antes se saltaba con un aviso, y donde de verdad importaba —CI— el
+# gate salía verde sin haber ejecutado ni una suite. Levanta la infra con
+# `docker compose up -d`; en CI la levanta el paso previo del workflow.
+# Los puertos no están escritos aquí: se derivan del .env, que es lo que el
+# backend usa de verdad (5433 en el VPS por docker-compose.override.yml, 5432
+# en CI, donde ese override no existe porque está gitignorado).
 if [ -n "$E2E_CMD" ]; then
   echo ""
   echo "→ Tests e2e..."
-  E2E_MISSING_PORT=""
-  for port in "${E2E_REQUIRED_PORTS[@]}"; do
-    if ! port_open "$port"; then
-      E2E_MISSING_PORT="$port"
-      break
-    fi
+
+  env_value() {
+    [ -f .env ] || return 0
+    sed -n "s/^[[:space:]]*$1[[:space:]]*=[[:space:]]*//p" .env | tail -n 1 | tr -d '\r'
+  }
+
+  url_host_port() {
+    local rest="${1##*@}"
+    rest="${rest#*://}"
+    rest="${rest%%/*}"
+    case "$rest" in
+      *:*) echo "${rest%:*} ${rest##*:}" ;;
+      *)   echo "" ;;
+    esac
+  }
+
+  for e2e_key in "${E2E_PORT_SOURCES[@]}"; do
+    e2e_hp="$(url_host_port "$(env_value "$e2e_key")")"
+    [ -n "$e2e_hp" ] || fail "No se pudo derivar host:puerto de ${e2e_key} en .env — los e2e no se pueden verificar sin saber contra qué corren"
+    e2e_host="${e2e_hp% *}"
+    e2e_port="${e2e_hp#* }"
+    port_open "$e2e_host" "$e2e_port" \
+      || fail "Infra e2e caída: ${e2e_host}:${e2e_port} no responde (derivado de ${e2e_key} en .env). Levántala con: docker compose up -d"
   done
 
-  if [ -n "$E2E_MISSING_PORT" ]; then
-    warn "Puerto $E2E_MISSING_PORT sin respuesta — se saltan los e2e (levanta la infra con: docker compose up -d)"
-  else
-    eval "$E2E_CMD" 2>&1
-    ok "Tests e2e pasados"
+  if [ -n "$E2E_SETUP_CMD" ]; then
+    eval "$E2E_SETUP_CMD" 2>&1
+    ok "Esquema y recursos e2e listos"
   fi
+
+  eval "$E2E_CMD" 2>&1
+  ok "Tests e2e pasados"
 else
   warn "E2E_CMD vacío en init.config.sh — se saltan tests e2e"
 fi
+# <<< bloque e2e (#96) <<<
 
 if [ -n "$LINT_CMD" ]; then
   echo ""
