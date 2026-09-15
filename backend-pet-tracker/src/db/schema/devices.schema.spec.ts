@@ -40,7 +40,6 @@ describe('R1: la migracion crea devices conforme a docs/data-model.md', () => {
         'model',
         'status',
         'battery_pct',
-        'connectivity',
         'last_message_at',
         'ingest_watermark',
         'is_simulated',
@@ -83,7 +82,6 @@ describe('R1: la migracion crea devices conforme a docs/data-model.md', () => {
     const batteryPct = columns.get('battery_pct');
     expect(batteryPct?.getSQLType()).toBe('integer');
     expect(batteryPct?.notNull).toBe(false);
-    expect(columns.get('connectivity')?.notNull).toBe(false);
     for (const ts of ['last_message_at', 'ingest_watermark']) {
       const column = columns.get(ts);
       expect(column?.notNull).toBe(false);
@@ -198,5 +196,17 @@ describe('R1: el SQL de la migracion nueva no toca ninguna otra tabla', () => {
     expect(sql).not.toContain('"users"');
     expect(sql).not.toContain('ALTER TABLE "pets"');
     expect(sql).not.toContain('CREATE TABLE "pets"');
+  });
+});
+
+describe('#93 R1: la migracion 0016 borra devices.connectivity y nada mas', () => {
+  it('0016_drop_devices_connectivity.sql contiene exactamente el DROP COLUMN', () => {
+    const sql = readFileSync(
+      join(MIGRATIONS_DIR, '0016_drop_devices_connectivity.sql'),
+      'utf8',
+    );
+    expect(sql.trim()).toBe(
+      'ALTER TABLE "devices" DROP COLUMN "connectivity";',
+    );
   });
 });

@@ -3816,3 +3816,53 @@ un conflicto seguro en esa linea al mergear el segundo. Yendo junto, el contador
   decisión.
 - **`reminders` y `alerts`** tienen el mismo patrón de estado superviviente y
   siguen fuera de alcance, sin decidir si van a feature aparte.
+
+---
+
+# Sesión #93 drop-devices-connectivity-column (2026-09-14/15, sesión Backend)
+
+## Feature #93 `drop-devices-connectivity-column` (P3)
+
+- **Sesion**: Backend, worktree `/home/claude/sites/Pet-Tracker-wt-backend`.
+- **Branch**: `feature/93-drop-devices-connectivity-column`, desde `origin/main` `d8e8a49c`
+  (merge de #92, PR #129).
+- **Inicio**: 2026-09-14, en paralelo con #63 (sesion Frontend, tree principal, solo movil).
+- **Estado**: `in_progress`. Spec de `spec_author` (`659b365a`, enmendada para la base propia
+  `pet_tracker_wt`), firmada por el humano (`0cfeae40`, 2026-09-14), frontmatter de los 4
+  ficheros en `approved`. Handoff a Codex CLI en
+  `progress/handoff_drop-devices-connectivity-column.md`; el humano lo corre en su terminal.
+  Mientras, este leader no toca `backend-pet-tracker/`.
+- **Base propia**: `pet_tracker_wt` (creada y migrada el 2026-09-14, e2e validado 26/367).
+  Codex migra ahi; la compartida `pet_tracker` (journal en 0013) se repara y migra tras el
+  merge de #63 (design.md §Aplicacion en el Postgres compartido).
+- **Baseline**: el `init.sh` de cierre de #92 (exit 0, sin pipe) sobre el contenido que
+  mergeo `d8e8a49c`: backend 166 suites / 1278 tests; infra 2 / 14; movil 73 / 1265;
+  e2e 26 de 29 suites (3 skipped), 367 de 375 tests (8 skipped).
+- **Premisa falsa detectada antes de especificar**: el criterio 1 dice "aplicada por
+  init.sh sin intervencion manual", pero `init.sh` no corre migraciones; se aplican a mano
+  con `pnpm db:migrate` (`docs/conventions.md:216`). La spec debe corregirlo en §0.2.
+- **Riesgo de Postgres compartido**: `DROP COLUMN` aplicado en la DB de docker rompe los e2e
+  de cualquier sesion cuyo codigo aun declare `devices.connectivity` en el schema (la
+  sesion Frontend en `origin/main` pre-#93). Con Drizzle, los e2e de #93 pasan con o sin la
+  migracion aplicada (solo selecciona columnas declaradas), asi que `db:migrate` en la DB
+  compartida se difiere hasta que #63 cierre sus gates o #93 se mergee.
+
+- Codex: 7 commits (`ffaf0669` test R1 → `0a131779` feat R1 → `f9020c3f` docs R1 →
+  `8f16049b` R2 → `edcabc41` R3 → `9f61e16c`, `3e3bdc28` trazabilidad/alcance).
+  `reviewer` APROBADO (`progress/review_drop-devices-connectivity-column.md`): D1 (.sql
+  de una sentencia, journal, snapshot), D2 (greps e intactos), R3 repetido sobre
+  `pet_tracker_wt` (17 filas, columna ausente, idempotente, `db:generate` no-op), sondas:
+  columna reinsertada en el schema (cae el candado de 14) y `.sql` alterado (cae el
+  `describe` #93 R1). `init.sh`: primera corrida exit 1 por el flake #72 (`add-pet` R7
+  foto; fichero 3 de 3 verde suelto), segunda exit 0 sin pipe: backend 166/1279 (+1),
+  infra 2/14, móvil 73/1265, e2e 367 de 375.
+- Observación 1 del reviewer: contradicción interna de la spec (grep de cierre sobre
+  `src/db/schema` frente al `describe` obligatorio en el spec del schema). Errata del
+  leader tras la firma en requirements.md y tasks.md (`--exclude='*.spec.ts'`), sin
+  re-gate: no cambia requisitos ni código.
+- Coordinación: aviso a Frontend antes del reviewer (LocalStack compartido); Frontend
+  cerró #63 con PR #130 en paralelo. Regla acordada: migraciones destructivas en la base
+  compartida solo tras el merge de la otra sesión, con reparación previa del journal.
+- Cierre: #93 `done`, STATUS.md 79/94, PR abierto; el humano mergea. Pendiente operativo
+  tras el merge de #130: dos INSERT en `drizzle.__drizzle_migrations` de `pet_tracker` +
+  `pnpm db:migrate` (design.md §Aplicación en el Postgres compartido).

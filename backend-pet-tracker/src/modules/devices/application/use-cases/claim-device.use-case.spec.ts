@@ -34,7 +34,6 @@ function buildDevice(overrides: Partial<Device> = {}): Device {
     model: 'sim-collar',
     status: 'available',
     batteryPct: null,
-    connectivity: null,
     lastMessageAt: null,
     ingestWatermark: null,
     isSimulated: true,

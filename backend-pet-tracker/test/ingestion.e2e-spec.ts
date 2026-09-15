@@ -86,7 +86,6 @@ describe('Wialon ingestion pipeline (e2e)', () => {
         status: 'available',
         ingestWatermark: null,
         batteryPct: null,
-        connectivity: null,
         lastMessageAt: null,
       })
       .where(eq(devices.id, sim1.id));
@@ -215,7 +214,6 @@ describe('Wialon ingestion pipeline (e2e)', () => {
         .select()
         .from(devices)
         .where(eq(devices.esn, 'SIM-001'));
-      expect(deviceRow.connectivity).toBeNull(); // #73 R4: nadie escribe la columna
       expect(deviceRow.batteryPct).not.toBeNull();
       expect(deviceRow.lastMessageAt?.getTime()).toBe(lastPosition.ts);
       // R10 en vivo: watermark avanzo al ts del ultimo mensaje.
