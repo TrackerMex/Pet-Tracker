@@ -17,7 +17,7 @@ va a mover ese fichero.
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
 | R1 | `mobile-pet-tracker/src/screens/reminders/index.test.tsx::#97 R1: la confirmación de borrado no sobrevive a la pérdida de foco` | rojo: `e4b77d28` (`test(reminders-alerts-state-reset): cover delete sheet blur (R1)`); verde: `958bc293` (`feat(reminders-alerts-state-reset): clear delete sheet on blur (R1)`) |
-| R2 | `mobile-pet-tracker/src/screens/reminders/index.test.tsx::#97 R2: el error de acción no sobrevive a la pérdida de foco` | pendiente |
+| R2 | `mobile-pet-tracker/src/screens/reminders/index.test.tsx::#97 R2: el error de acción no sobrevive a la pérdida de foco` | rojo: `642fc42d` (`test(reminders-alerts-state-reset): cover action error blur (R2)`); verde: `b0d17b5c` (`feat(reminders-alerts-state-reset): clear action error on blur (R2)`) |
 | R3 | `mobile-pet-tracker/src/screens/reminders/index.test.tsx::#97 R3: el guarda del borrado en vuelo sobrevive a la pérdida de foco` | pendiente |
 | R4 | `mobile-pet-tracker/src/screens/alerts/index.test.tsx::#97 R4: el error del ack no sobrevive a la pérdida de foco` | pendiente |
 | R5 | `mobile-pet-tracker/src/screens/alerts/index.test.tsx::#97 R5: el guarda del ack en vuelo sobrevive a la pérdida de foco` (dos `it`: comportamiento y fuente) | pendiente |
