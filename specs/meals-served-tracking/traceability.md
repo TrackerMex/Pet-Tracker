@@ -12,7 +12,7 @@ tags: [harness, spec]
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | `src/db/schema/meal-servings.schema.spec.ts::R1 (meals-served-tracking #83): tabla meal_servings y migracion nueva` | pendiente |
+| R1 | `src/db/schema/meal-servings.schema.spec.ts::R1 (meals-served-tracking #83): tabla meal_servings y migracion nueva` | rojo `4a0e3d8c`; verde `ad85e3e9`; docs pendiente |
 | R2 | `test/meals.e2e-spec.ts::R2 (meals-served-tracking #83): POST inserta con el dia civil del owner y responde el shape congelado` | pendiente |
 | R3 | `test/meals.e2e-spec.ts::R3 (meals-served-tracking #83): cualquier miembro activo sirve y deshace; 404 del guard precede` | pendiente |
 | R4 | `src/modules/nutrition/application/use-cases/serve-meal.use-case.spec.ts::R4 (meals-served-tracking #83): sin plan o franja fuera del plan el use case lanza sin escribir ni auditar` + `test/meals.e2e-spec.ts::R4 (meals-served-tracking #83): 422 NUTRITION_PLAN_REQUIRED y 422 MEAL_TIME_NOT_IN_PLAN sin persistir` | pendiente |
