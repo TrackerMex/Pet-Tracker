@@ -23,7 +23,7 @@ va a mover ese fichero.
 | R5 | `mobile-pet-tracker/src/screens/alerts/index.test.tsx::#97 R5: el guarda del ack en vuelo sobrevive a la pérdida de foco` (dos `it`: comportamiento y fuente) | rojo: `9eec5bad` (`test(reminders-alerts-state-reset): prove ack guards survive blur (R5)`); verde: `f838fe96` (`feat(reminders-alerts-state-reset): preserve ack guards on blur (R5)`) |
 | R6 | `mobile-pet-tracker/src/screens/alerts/index.test.tsx::#97 R6: la alerta atendida sigue atendida al volver a la pantalla` | rojo: `f8cc86ed` (`test(reminders-alerts-state-reset): prove ack overlay survives blur (R6)`); verde: `3d12a476` (`feat(reminders-alerts-state-reset): preserve ack overlay on blur (R6)`) |
 | R7 | `mobile-pet-tracker/src/screens/alerts/index.test.tsx::#97 R7: la lista se revalida al ganar el foco` | rojo: `773f5b4d` (`test(reminders-alerts-state-reset): cover focus refetch (R7)`); verde: `7d1034a6` (`feat(reminders-alerts-state-reset): refetch alerts on focus (R7)`) |
-| R8 | `mobile-pet-tracker/src/screens/alerts/index.test.tsx::#97 R8: el overlay del ack caduca cuando la lista trae otro status` | pendiente |
+| R8 | `mobile-pet-tracker/src/screens/alerts/index.test.tsx::#97 R8: el overlay del ack caduca cuando la lista trae otro status` | rojo: `3ea45ed6` (`test(reminders-alerts-state-reset): cover ack overlay expiry (R8)`); verde: `cf436661` (`feat(reminders-alerts-state-reset): expire ack overlay on server status (R8)`) |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
 Convención de commit: `feat(reminders-alerts-state-reset): <desc> (R1,R2)`; el
