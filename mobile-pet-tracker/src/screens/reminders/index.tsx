@@ -65,7 +65,10 @@ export function RemindersScreen() {
   useFocusEffect(
     useCallback(() => {
       refetchReminders();
-      return () => setDeleteCandidate(null);
+      return () => {
+        setDeleteCandidate(null);
+        setActionError(null);
+      };
     }, [refetchReminders]),
   );
 
