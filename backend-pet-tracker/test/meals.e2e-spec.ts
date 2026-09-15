@@ -7,7 +7,10 @@ import { App } from 'supertest/types';
 import { uuidv7 } from 'uuidv7';
 import { DRIZZLE } from '@/db/drizzle.constants';
 import { auditLog } from '@/db/schema/audit-log.schema';
-import { mealServings } from '@/db/schema/nutrition.schema';
+import {
+  mealServings,
+  nutritionPlans,
+} from '@/db/schema/nutrition.schema';
 import { pets, petUsers } from '@/db/schema/pets.schema';
 import { users } from '@/db/schema/users.schema';
 import { TOKEN_SERVICE } from '@/modules/auth/domain/ports/token-service';
@@ -94,6 +97,12 @@ describe('Meals served tracking (e2e)', () => {
 
   const getPlan = (user: UserFixture, petId: string) =>
     api().get(`/v1/pets/${petId}/nutrition-plan`).set(auth(user.token));
+
+  const getProfile = (user: UserFixture, petId: string) =>
+    api().get(`/v1/pets/${petId}`).set(auth(user.token));
+
+  const listPets = (user: UserFixture) =>
+    api().get('/v1/pets').set(auth(user.token));
 
   async function seedPlan(owner: UserFixture, petId: string, timezone = 'UTC') {
     await putProfile(owner, petId).expect(200);
@@ -503,6 +512,93 @@ describe('Meals served tracking (e2e)', () => {
       expect(generated.body).not.toHaveProperty('servedToday');
       const regenerated = await generatePlan(owner, pet.id).expect(200);
       expect(regenerated.body).not.toHaveProperty('servedToday');
+    });
+  });
+
+  describe('R10 (meals-served-tracking #83): GET perfil devuelve mealsToday y el listado lo deja en null', () => {
+    it('devuelve null cuando la mascota no tiene plan', async () => {
+      const owner = await seedUser('r10-no-plan');
+      const pet = await seedPet(owner);
+
+      const response = await getProfile(owner, pet.id).expect(200);
+
+      expect(response.body).toHaveProperty('mealsToday', null);
+    });
+
+    it('cuenta solo las franjas servidas del plan', async () => {
+      const owner = await seedUser('r10-count');
+      const pet = await seedPet(owner);
+      await seedPlan(owner, pet.id);
+
+      const empty = await getProfile(owner, pet.id).expect(200);
+      expect((empty.body as { mealsToday: unknown }).mealsToday).toEqual({
+        served: 0,
+        total: 2,
+      });
+
+      await serveMeal(owner, pet.id, { mealTime: '07:30' }).expect(201);
+      const served = await getProfile(owner, pet.id).expect(200);
+      expect((served.body as { mealsToday: unknown }).mealsToday).toEqual({
+        served: 1,
+        total: 2,
+      });
+    });
+
+    it('mantiene mealsToday presente y null en el listado', async () => {
+      const owner = await seedUser('r10-list');
+      await seedPet(owner);
+
+      const response = await listPets(owner).expect(200);
+
+      expect(response.body).not.toHaveLength(0);
+      for (const pet of response.body as Array<Record<string, unknown>>) {
+        expect(pet).toHaveProperty('mealsToday', null);
+      }
+    });
+
+    it('excluye las franjas del plan anterior tras regenerar', async () => {
+      const owner = await seedUser('r10-regenerated');
+      const pet = await seedPet(owner);
+      await seedPlan(owner, pet.id);
+      await serveMeal(owner, pet.id, { mealTime: '07:30' }).expect(201);
+      await db.insert(nutritionPlans).values({
+        id: uuidv7(),
+        petId: pet.id,
+        rerKcal: 662,
+        merKcal: 1059,
+        dailyGrams: 305,
+        mealsPerDay: 3,
+        mealTimes: ['08:00', '13:00', '20:00'],
+        objective: 'maintenance',
+        warnings: [],
+        aiExplanation: null,
+        inputsHash: 'f'.repeat(64),
+      });
+
+      await serveMeal(owner, pet.id, { mealTime: '08:00' }).expect(201);
+
+      const profile = await getProfile(owner, pet.id).expect(200);
+      expect((profile.body as { mealsToday: unknown }).mealsToday).toEqual({
+        served: 1,
+        total: 3,
+      });
+      const plan = await getPlan(owner, pet.id).expect(200);
+      expect((plan.body as { servedToday: string[] }).servedToday).toEqual([
+        '08:00',
+      ]);
+      const offPlan = await serveMeal(owner, pet.id, {
+        mealTime: '07:30',
+      }).expect(422);
+      expect((offPlan.body as { code: string }).code).toBe(
+        'MEAL_TIME_NOT_IN_PLAN',
+      );
+      expect(
+        await db
+          .select()
+          .from(mealServings)
+          .where(eq(mealServings.petId, pet.id)),
+      ).toHaveLength(2);
+      await unserveMeal(owner, pet.id, '07:30').expect(204);
     });
   });
 });

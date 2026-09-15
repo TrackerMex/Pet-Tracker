@@ -10,6 +10,21 @@ import { GetPetUseCase } from './get-pet.use-case';
 const PET_ID = '0198b2c3-4d5e-7a01-b234-56789abcdef0';
 const NOW = new Date('2026-08-10T03:00:00.000Z');
 
+interface PetMealsReaderContract {
+  findMealsToday(
+    petId: string,
+    day: string,
+  ): Promise<{ served: number; total: number } | null>;
+}
+
+const GetPetUseCaseWithMeals = GetPetUseCase as unknown as new (
+  pets: PetRepository,
+  deviceReader: PetDeviceReader,
+  photoUrlResolver: PetPhotoUrlResolver,
+  vaccineReader: PetVaccineReader,
+  mealsReader: PetMealsReaderContract,
+) => GetPetUseCase;
+
 function buildPet(overrides: Partial<{ photoKey: string | null }> = {}): Pet {
   return new Pet({
     id: PET_ID,
@@ -45,28 +60,33 @@ function buildDeps(petOverrides: Partial<{ photoKey: string | null }> = {}) {
   const photoUrlResolver: PetPhotoUrlResolver = { resolveDownloadUrl };
   const findNextVaccine = jest.fn().mockResolvedValue(null);
   const vaccineReader: PetVaccineReader = { findNextVaccine };
+  const findMealsToday = jest.fn().mockResolvedValue(null);
+  const mealsReader: PetMealsReaderContract = { findMealsToday };
 
   return {
     pets,
     deviceReader,
     photoUrlResolver,
     vaccineReader,
+    mealsReader,
     findById,
     findOwnerTimezone,
     findActiveDevice,
     resolveDownloadUrl,
     findNextVaccine,
+    findMealsToday,
   };
 }
 
 describe('R8: GetPetUseCase devuelve la mascota para el perfil de detalle', () => {
   it('delega en findById y devuelve la entidad', async () => {
     const deps = buildDeps();
-    const useCase = new GetPetUseCase(
+    const useCase = new GetPetUseCaseWithMeals(
       deps.pets,
       deps.deviceReader,
       deps.photoUrlResolver,
       deps.vaccineReader,
+      deps.mealsReader,
     );
 
     const profile = await useCase.execute(PET_ID, NOW);
@@ -80,11 +100,12 @@ describe('R9: si la fila desaparecio tras pasar el guard, el use case lanza PetN
   it('lanza PetNotFoundError para un id sin fila (delete concurrente)', async () => {
     const deps = buildDeps();
     deps.findById.mockResolvedValue(null);
-    const useCase = new GetPetUseCase(
+    const useCase = new GetPetUseCaseWithMeals(
       deps.pets,
       deps.deviceReader,
       deps.photoUrlResolver,
       deps.vaccineReader,
+      deps.mealsReader,
     );
 
     await expect(useCase.execute(PET_ID, NOW)).rejects.toThrow(
@@ -104,11 +125,12 @@ describe('R12 (devices-claim): el perfil incluye el collar activo del puerto', (
       lastMessageAt: null,
       esn: 'SIM-001',
     });
-    const useCase = new GetPetUseCase(
+    const useCase = new GetPetUseCaseWithMeals(
       deps.pets,
       deps.deviceReader,
       deps.photoUrlResolver,
       deps.vaccineReader,
+      deps.mealsReader,
     );
 
     const profile = await useCase.execute(PET_ID, NOW);
@@ -124,11 +146,12 @@ describe('R12 (devices-claim): el perfil incluye el collar activo del puerto', (
 
   it('sin collar activo la clave device sigue siendo null', async () => {
     const deps = buildDeps();
-    const useCase = new GetPetUseCase(
+    const useCase = new GetPetUseCaseWithMeals(
       deps.pets,
       deps.deviceReader,
       deps.photoUrlResolver,
       deps.vaccineReader,
+      deps.mealsReader,
     );
 
     const profile = await useCase.execute(PET_ID, NOW);
@@ -140,11 +163,12 @@ describe('R12 (devices-claim): el perfil incluye el collar activo del puerto', (
 describe('R6 (pet-photos-s3 #6): con photoKey no nulo, photoUrl viene de PET_PHOTO_URL_RESOLVER (1 h)', () => {
   it('invoca resolveDownloadUrl con la clave y expiresInSeconds = 3600', async () => {
     const deps = buildDeps({ photoKey: 'pets/pet-id/photo-123' });
-    const useCase = new GetPetUseCase(
+    const useCase = new GetPetUseCaseWithMeals(
       deps.pets,
       deps.deviceReader,
       deps.photoUrlResolver,
       deps.vaccineReader,
+      deps.mealsReader,
     );
 
     const profile = await useCase.execute(PET_ID, NOW);
@@ -160,11 +184,12 @@ describe('R6 (pet-photos-s3 #6): con photoKey no nulo, photoUrl viene de PET_PHO
 describe('R7 (pet-photos-s3 #6): con photoKey nulo, photoUrl es null sin invocar el resolver', () => {
   it('no llama a PET_PHOTO_URL_RESOLVER cuando la mascota no tiene foto', async () => {
     const deps = buildDeps({ photoKey: null });
-    const useCase = new GetPetUseCase(
+    const useCase = new GetPetUseCaseWithMeals(
       deps.pets,
       deps.deviceReader,
       deps.photoUrlResolver,
       deps.vaccineReader,
+      deps.mealsReader,
     );
 
     const profile = await useCase.execute(PET_ID, NOW);
@@ -183,11 +208,12 @@ describe('R1 (vaccine-due-today-inclusive #82, sustituye a R13 de #14): el perfi
       name: 'Rabia',
       nextDoseAt: '2026-08-10',
     });
-    const useCase = new GetPetUseCase(
+    const useCase = new GetPetUseCaseWithMeals(
       deps.pets,
       deps.deviceReader,
       deps.photoUrlResolver,
       deps.vaccineReader,
+      deps.mealsReader,
     );
 
     const profile = await useCase.execute(PET_ID, NOW);
@@ -216,11 +242,12 @@ describe('R2 (vaccine-due-today-inclusive #82): zona del owner nula o fuera del 
   it('sin owner activo (null) usa el dia UTC de now y avisa una vez', async () => {
     const deps = buildDeps();
     deps.findOwnerTimezone.mockResolvedValue(null);
-    const useCase = new GetPetUseCase(
+    const useCase = new GetPetUseCaseWithMeals(
       deps.pets,
       deps.deviceReader,
       deps.photoUrlResolver,
       deps.vaccineReader,
+      deps.mealsReader,
     );
 
     await useCase.execute(PET_ID, NOW);
@@ -235,11 +262,12 @@ describe('R2 (vaccine-due-today-inclusive #82): zona del owner nula o fuera del 
   it("con 'Not/A/Zone' usa el dia UTC de now y avisa una vez", async () => {
     const deps = buildDeps();
     deps.findOwnerTimezone.mockResolvedValue('Not/A/Zone');
-    const useCase = new GetPetUseCase(
+    const useCase = new GetPetUseCaseWithMeals(
       deps.pets,
       deps.deviceReader,
       deps.photoUrlResolver,
       deps.vaccineReader,
+      deps.mealsReader,
     );
 
     await useCase.execute(PET_ID, NOW);
@@ -254,15 +282,59 @@ describe('R2 (vaccine-due-today-inclusive #82): zona del owner nula o fuera del 
   it('con zona valida no avisa', async () => {
     const deps = buildDeps();
     deps.findOwnerTimezone.mockResolvedValue('America/Mexico_City');
-    const useCase = new GetPetUseCase(
+    const useCase = new GetPetUseCaseWithMeals(
       deps.pets,
       deps.deviceReader,
       deps.photoUrlResolver,
       deps.vaccineReader,
+      deps.mealsReader,
     );
 
     await useCase.execute(PET_ID, NOW);
 
     expect(warnSpy).not.toHaveBeenCalled();
+  });
+});
+
+describe('R10 (meals-served-tracking #83): el perfil consulta mealsToday con el dia civil del owner', () => {
+  it('consulta el lector con el mismo dia local y devuelve su contador', async () => {
+    const deps = buildDeps();
+    deps.findOwnerTimezone.mockResolvedValue('America/Mexico_City');
+    deps.findMealsToday.mockResolvedValue({ served: 1, total: 2 });
+    const useCase = new GetPetUseCaseWithMeals(
+      deps.pets,
+      deps.deviceReader,
+      deps.photoUrlResolver,
+      deps.vaccineReader,
+      deps.mealsReader,
+    );
+
+    const profile = await useCase.execute(PET_ID, NOW);
+
+    expect(deps.findMealsToday).toHaveBeenCalledWith(PET_ID, '2026-08-09');
+    expect(
+      (
+        profile as unknown as {
+          mealsToday: { served: number; total: number } | null;
+        }
+      ).mealsToday,
+    ).toEqual({ served: 1, total: 2 });
+  });
+
+  it('conserva null cuando la mascota no tiene plan', async () => {
+    const deps = buildDeps();
+    const useCase = new GetPetUseCaseWithMeals(
+      deps.pets,
+      deps.deviceReader,
+      deps.photoUrlResolver,
+      deps.vaccineReader,
+      deps.mealsReader,
+    );
+
+    const profile = await useCase.execute(PET_ID, NOW);
+
+    expect(
+      (profile as unknown as { mealsToday: unknown }).mealsToday,
+    ).toBeNull();
   });
 });

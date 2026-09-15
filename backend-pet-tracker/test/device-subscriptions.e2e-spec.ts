@@ -347,6 +347,7 @@ describe('Device subscriptions (e2e)', () => {
           'nextVaccine',
           'nextReminder',
           'activitySummary',
+          'mealsToday',
           'createdAt',
           'updatedAt',
         ].sort(),
