@@ -554,4 +554,4 @@ una copia del árbol, ponen `node --test init-e2e-gate.test.mjs` en rojo; el
 
 ### Aprobación de E1
 
-- [ ] Aprobada por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [X] Aprobada por humano (fecha: 2026-09-15) ← gate obligatorio antes de implementar
