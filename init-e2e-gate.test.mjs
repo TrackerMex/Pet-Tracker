@@ -182,3 +182,14 @@ describe('R8 (harness-e2e-nunca-corre-en-ci #96): ningun comentario describe ya 
     assert.match(e2eBlock(), /^# .*docker compose up -d/m);
   });
 });
+
+describe('R9 (harness-e2e-nunca-corre-en-ci #96): docs/verification.md documenta el gate', () => {
+  it('incluye la verificacion manual de la feature', () => {
+    const verification = readFileSync(new URL('./docs/verification.md', import.meta.url), 'utf8');
+
+    assert.ok(
+      verification.includes('### Feature 96 — harness-e2e-nunca-corre-en-ci'),
+      'docs/verification.md debe incluir la seccion de la feature 96',
+    );
+  });
+});

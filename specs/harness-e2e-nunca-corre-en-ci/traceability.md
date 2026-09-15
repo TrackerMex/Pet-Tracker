@@ -22,7 +22,7 @@ mismo patrón que `env-drift.test.mjs` e `init-color.test.mjs`.
 | R5 | `init-e2e-gate.test.mjs::R5 (harness-e2e-nunca-corre-en-ci #96): el fallo nombra host, puerto y clave de origen` | rojo: `fd380f3c` `test(ci-e2e): require actionable infra error (R5)`; verde: `cb618641` `feat(ci-e2e): report failed infra source (R5)` |
 | R6 | `init-e2e-gate.test.mjs::R6 (harness-e2e-nunca-corre-en-ci #96): migraciones y provisioning antes de los e2e` | rojo: `9fa459fe` `test(ci-e2e): require setup before e2e (R6)`; verde: `437557a4` `feat(ci-e2e): prepare infra before e2e (R6)` |
 | R7 | `init-e2e-gate.test.mjs::R7 (harness-e2e-nunca-corre-en-ci #96): la suite entra en TEST_CMD y en el mapa del repo` | pendiente |
-| R8 | `init-e2e-gate.test.mjs::R8 (harness-e2e-nunca-corre-en-ci #96): ningun comentario describe ya el agujero` | rojo: `1ea1fbd1` `test(ci-e2e): reject silent-skip comments (R8)`; verde: pendiente |
+| R8 | `init-e2e-gate.test.mjs::R8 (harness-e2e-nunca-corre-en-ci #96): ningun comentario describe ya el agujero` | rojo: `1ea1fbd1` `test(ci-e2e): reject silent-skip comments (R8)`; verde: `719b539a` `feat(ci-e2e): document enforced gate (R8)` |
 | R9 | `init-e2e-gate.test.mjs::R9 (harness-e2e-nunca-corre-en-ci #96): docs/verification.md documenta el gate` | pendiente |
 | G1 | **gate humano** — corrida de CI verde del PR, con el resumen de jest e2e y la igualdad de [[requirements]] §"Cómo se mide el criterio 1" | pendiente (URL de la corrida en `progress/impl_harness-e2e-nunca-corre-en-ci.md`) |
 | G2 | **gate humano** — rojo deliberado en `test/96-ci-red-probe`, PR en borrador cerrado sin mergear | pendiente (URL de la corrida roja + línea del fallo en `progress/impl_harness-e2e-nunca-corre-en-ci.md`) |
