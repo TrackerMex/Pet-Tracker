@@ -42,6 +42,8 @@ jobs:
 
       # Misma verificacion que en local: harness + install + build + test + lint + typecheck.
       # init.sh copia .env.example -> .env si falta, asi que no necesita secrets.
-      # Cuando existan tests e2e contra Postgres/LocalStack, anadir services aqui.
+      # Los e2e los corre init.sh §6b contra la infra del paso anterior; si esa
+      # infra no responde, init.sh aborta (no los salta). Ver specs/
+      # harness-e2e-nunca-corre-en-ci/.
       - name: Harness verification (init.sh)
         run: bash ./init.sh

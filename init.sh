@@ -220,8 +220,13 @@ fi
 
 # ── 6b. TESTS E2E ────────────────────────────
 # >>> bloque e2e (#96) >>>
-# Los e2e necesitan Postgres + LocalStack arriba. Los puertos se derivan del
-# .env que consume el backend, en vez de duplicarlos en el harness.
+# Los e2e necesitan Postgres + LocalStack arriba. Si la infra no responde, esto
+# ABORTA: antes se saltaba con un aviso, y donde de verdad importaba —CI— el
+# gate salía verde sin haber ejecutado ni una suite. Levanta la infra con
+# `docker compose up -d`; en CI la levanta el paso previo del workflow.
+# Los puertos no están escritos aquí: se derivan del .env, que es lo que el
+# backend usa de verdad (5433 en el VPS por docker-compose.override.yml, 5432
+# en CI, donde ese override no existe porque está gitignorado).
 if [ -n "$E2E_CMD" ]; then
   echo ""
   echo "→ Tests e2e..."
