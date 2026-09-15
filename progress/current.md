@@ -9,8 +9,10 @@
 
 - **Sesion**: Codex (implementer). Arbol principal `/home/claude/sites/Pet-Tracker`.
 - **Rama**: `feature/96-harness-e2e-nunca-corre-en-ci`, creada desde `origin/main` en 48e4130d.
-- **Estado**: implementacion TDD de R1-R9 en curso. Spec aprobada por humano en
-  `0f47c176`; feature marcada `in_progress` en `80d3f9a4`.
+- **Estado**: implementacion TDD de R1-R9 terminada. G1/G2 y el veredicto del
+  reviewer siguen pendientes; la feature permanece `in_progress`. Spec
+  aprobada por humano en `0f47c176`; feature marcada `in_progress` en
+  `80d3f9a4`.
 
 ### Inicio de implementacion — 2026-09-15
 
@@ -20,6 +22,16 @@
   R9, R7), con commit rojo y commit verde separados por requisito.
 - Contencion: no repetir gates pesados mientras otro `init.sh`/E2E este activo;
   5433 y 4566 son compartidos.
+
+### Cierre de implementacion — 2026-09-15
+
+- 18 commits TDD: un rojo y un verde por cada R1-R9, sin rebase; hashes en
+  `specs/harness-e2e-nunca-corre-en-ci/traceability.md`.
+- Suite dirigida: 9 suites y 15 tests verdes.
+- `./init.sh` directo: exit 0; build, tests, setup E2E, lint y typecheck verdes.
+  E2E: 3 suites `aws-real-*` saltadas, 26/29 verdes y 367 tests pasados.
+- Reporte: `progress/impl_harness-e2e-nunca-corre-en-ci.md`.
+- Pendiente humano: G1 y G2. No se abrio PR ni se marco la feature `done`.
 
 ### Por que esta feature
 
