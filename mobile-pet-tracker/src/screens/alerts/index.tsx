@@ -81,7 +81,6 @@ export function AlertsScreen() {
     useCallback(() => {
       return () => {
         setActionError(null);
-        setAcked({});
       };
     }, [refetchAlerts]),
   );
