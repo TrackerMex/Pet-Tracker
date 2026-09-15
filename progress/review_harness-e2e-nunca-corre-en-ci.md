@@ -326,3 +326,207 @@ de CI.
 3. Con las dos evidencias en `progress/impl_harness-e2e-nunca-corre-en-ci.md` y
    las filas G1/G2 de `traceability.md` ya sin "pendiente", el leader puede
    marcar la #96 `done`. Antes no.
+
+---
+
+# Enmienda E1
+
+Fecha: 2026-09-15 16:03 UTC
+Commit revisado: `73a1d6b0`
+Alcance: **solo el delta `33a1d80c..HEAD`**. El veredicto de R1-R9 sobre
+`33a1d80c` sigue en pie tal cual está escrito arriba; esta sección no lo
+reabre.
+Veredicto: **APROBADO**
+
+## Qué entró en el delta
+
+```
+73a1d6b0 Merge (Claude)
+470e42a9 docs(ci-e2e): record AWS_MODE amendment evidence (R2)   — reporte + trazabilidad
+1d93e860 Merge (AlexisSM377)
+1701b489 Record E2E CI gate evidence URLs                        — humano, URLs G1/G2
+abc0ac32 test(ci-e2e): cover all AWS_MODE forms (R2)             — ÚNICO cambio de código
+ea5e62bb spec(...): E1 firmada en dbeb6b92                       — estado de E1 a aprobada
+dbeb6b92 Approve E2E CI harness design                           — firma humana de E1
+967e3c66 spec(...): enmienda E1, candado de AWS_MODE
+946d2727 docs(ci-e2e): ruido esperado vs fallo de la guarda en G1
+941f5842 chore(harness): veredicto del reviewer para #96
+```
+
+`git diff --stat 33a1d80c..HEAD` toca 6 ficheros: `init-e2e-gate.test.mjs`
+(+6/−3), `docs/verification.md`, los dos de `specs/`, y los dos de `progress/`.
+Ningún fichero de `backend-pet-tracker/` ni de `mobile-pet-tracker/`.
+
+## 1. Las mutaciones ponen la suite en rojo (medido, no aceptado del reporte)
+
+Copias desechables del árbol en el scratchpad (`init-e2e-gate.test.mjs`,
+`init.sh`, `init.config.sh`, `AGENTS.md`, `.github/workflows/ci.yml`,
+`docs/verification.md`), una por mutación, `node --test
+init-e2e-gate.test.mjs` sin tubería. **Ni el repo ni ningún fichero versionado
+se tocaron.**
+
+| # | Mutación sobre `ci.yml` | Exit | Resultado | Aserción que la caza |
+|---|---|---|---|---|
+| control | ninguna (árbol real copiado) | **0** | 15/15, 9 suites | — |
+| M1 | `run: AWS_MODE=aws bash ./init.sh` | **1** | 14/15, falla R2 | `doesNotMatch(/^\s*(?:-\s*)?run\s*:[^\n]*\bAWS_MODE\s*=/m)` |
+| M2 | segundo `AWS_MODE: "aws"`, conservando el `AWS_MODE: local` | **1** | 14/15, falla R2 | `equal(awsModeLines.length, 1)` → `2 !== 1` |
+| **M3** (mía) | **segundo `AWS_MODE: "local"`** | **1** | 14/15, falla R2 | `equal(awsModeLines.length, 1)` → `2 !== 1` |
+| M4 (mía) | única ocurrencia, valor `"aws"` entrecomillado | **1** | 14/15, falla R2 | `match(/^\s*AWS_MODE\s*:\s*(["']?)local\1\s*$/)` |
+
+M1 y M2 son las dos que E1 prescribe: rojas, como reporta Codex. El reporte del
+implementer es exacto en exit codes y en recuentos.
+
+**M3 es la prueba que pedía el gate.** E1 avisa de que una regex de valor tipo
+`/AWS_MODE\s*[:=]\s*["']?aws\b/i` no detectaría un segundo `AWS_MODE: "local"`.
+La implementación no usa esa regex: cuenta con
+`workflow.match(/^\s*AWS_MODE\s*:[^\n]*$/gm)` y **después** comprueba el valor
+de la única línea encontrada. M3 muere en el recuento (`2 !== 1`), no en el
+valor. **La condición 1 está implementada por recuento, como E1 exige.** M4
+confirma que el segundo tramo (el valor) tampoco es decorativo.
+
+En las cuatro mutaciones falla exactamente un test, siempre el de R2
+(`not ok 1 - declara una sola vez AWS_MODE local y nunca lo reasigna desde
+run`); las otras 8 suites quedan verdes, así que las mutaciones no contaminan
+el resto del candado.
+
+## 2. El alcance fue el declarado
+
+- `git diff 33a1d80c..HEAD -- .github/workflows/ci.yml` → **vacío**. El
+  workflow no cambió; la afirmación de Codex de que ya cumplía las dos
+  condiciones es cierta (`grep -n AWS_MODE ci.yml`: línea 14 comentario, línea
+  17 `AWS_MODE: local`, y ningún `run:` con `AWS_MODE=`). Por eso no hay commit
+  `feat` para E1: no había nada que arreglar aguas abajo del candado.
+- `git diff 33a1d80c..HEAD -- init-e2e-gate.test.mjs` cabe en una pantalla y
+  **solo sustituye el cuerpo del `it` de la suite R2**. Las otras 8 suites
+  (R1, R3-R9) llegan byte a byte iguales a como las aprobé en `33a1d80c`. Las
+  dos aserciones viejas de R2 se eliminaron, no quedaron colgando junto a las
+  nuevas (C7 a escala de aserción).
+
+## 3. Sin regresión
+
+`node --test init-e2e-gate.test.mjs` en el árbol real, sin tubería:
+
+```
+EXIT CODE = 0
+# tests 15
+# suites 9
+# pass 15
+# fail 0
+```
+
+Las 9 suites en verde, los mismos 15 tests que antes de la enmienda (el `it` de
+R2 se reescribió, no se duplicó ni se partió).
+
+**No ejecuté `./init.sh`**: el delta es un fichero de test que no levanta nada,
+y el 4566 y el 5433 los comparte otro worktree. La única evidencia de `init.sh`
+completo sobre este árbol es la que reporta Codex (exit 0, 26/29 suites e2e,
+367/375 tests, 3 suites `aws-real-*` omitidas), que **no verifiqué**.
+
+## 4. Trazabilidad
+
+- `traceability.md` gana la sección "Enmienda E1" con dos filas, R2/E1-a y
+  R2/E1-b, ambas citando `abc0ac32`. Ninguna dice "pendiente".
+- Los **20 hashes** citados en `traceability.md` existen y son ancestros de
+  `HEAD` (`git merge-base --is-ancestor` en verde para todos). **La rama no se
+  rebaseó**: los hashes de R1-R9 son los mismos que en mi revisión anterior.
+- `abc0ac32` sigue la convención (`test(ci-e2e): <desc> (R2)`) y nombra su
+  R-id. El test dentro sigue nombrando `R2 (harness-e2e-nunca-corre-en-ci #96)`
+  en el `describe` (C4).
+
+**Sobre C4 y el ciclo rojo→verde**: `abc0ac32` es un commit `test` que nace
+verde sobre el árbol real, y no le sigue ningún `feat`. No es un incumplimiento
+de C4 aquí: E1 no pide cambiar producción — el `ci.yml` ya cumplía — sino
+endurecer el candado, y la propia enmienda prescribe la mutación sobre copias
+como método de verificación del rojo. El rojo existe y lo reproduje yo en las
+cuatro copias de arriba.
+
+## 5. Drift en la spec
+
+`git diff dbeb6b92..HEAD -- specs/` trae dos cosas, ambas legítimas:
+
+1. `design.md`: el cambio de estado de E1 a "aprobada por humano en
+   `dbeb6b92`", hecho por el leader en `ea5e62bb`. Es lo esperado.
+2. `traceability.md`: las dos filas de E1, añadidas por Codex en `470e42a9`.
+   **No estaba en la lista de cambios previstos por el leader**, pero es
+   exactamente lo que C5 exige de un implementer: dejar la trazabilidad de lo
+   que implementó. No toca ninguna fila anterior ni el texto normativo. No lo
+   cuento como drift.
+
+Ni una línea de `requirements.md` cambió. R2 sigue redactado como se aprobó, que
+es el punto de E1: lo corto era el candado, no el requisito. El bloque
+"Aprobación de E1" tiene la casilla `[X]` y la firma cae en `dbeb6b92`, commit
+del humano (`AlexisSM377`), anterior a `abc0ac32` — se implementó **después** de
+la firma, no antes.
+
+## 6. Gates humanos G1 y G2 — dato objetivo, no los cierro
+
+Siguen siendo del humano. Pero el dato que se pidió para el informe:
+
+```
+gh run view 34990504701
+  headSha:    ea5e62bb8ca9c6cae80435fbc5482f8d0a1f8d48
+  conclusion: success
+  createdAt:  2026-09-15T15:44:54Z
+```
+
+`ea5e62bb` es **anterior** a `abc0ac32` (`git merge-base --is-ancestor
+ea5e62bb abc0ac32` en verde). **La corrida verde anotada para G1 no cubre el
+HEAD actual**: se ejecutó sobre el árbol previo a la enmienda, sin el candado
+nuevo. Hace falta una corrida verde posterior para que G1 valga sobre lo que se
+va a mergear.
+
+```
+gh run view 34992040777
+  headSha:    73a1d6b0698f182b1010b4c2ae0f1b5959a9bda1   (= HEAD)
+  status:     in_progress
+```
+
+Esa sí cubriría el HEAD. Estaba corriendo al escribir esto; su resultado lo
+valora el humano, no yo. Las filas G1 y G2 de `traceability.md` siguen en
+"pendiente" y **bloquean el `done` de la feature**, no esta enmienda.
+
+## Checklist de la enmienda
+
+- [x] **C2** — el delta no toca `feature_list.json` ni abre otra feature; el
+      working tree está limpio y en `feature/96-harness-e2e-nunca-corre-en-ci`
+- [x] **C3** — N/A por capas: el delta vive en el harness (`init-e2e-gate.test.mjs`),
+      no en `backend-pet-tracker/`
+- [x] **C4** — el test nombra su R-id; el rojo se demuestra por mutación, que es
+      el método que la propia E1 prescribe (ver §4)
+- [x] **C5** — filas de E1 con hash, ninguna "pendiente" en la sección de E1;
+      los 20 hashes son ancestros de HEAD, sin rebase
+- [x] **C6** — E1 firmada por el humano en `dbeb6b92`, casilla `[X]`, antes de
+      implementar
+- [x] **C7** — las dos aserciones viejas de R2 se borraron al sustituirlas; no
+      queda candado huérfano
+
+## Observaciones
+
+Ninguna bloquea. Una sola, para que quede escrita:
+
+- **Queda una forma de `AWS_MODE` que el candado no ve: el mapping de flujo
+  YAML.** Probé una quinta mutación propia, `env: { AWS_MODE: aws }` en el paso
+  `Harness verification (init.sh)`: la suite pasa **verde**, exit 0, 15/15. El
+  recuento usa `^\s*AWS_MODE\s*:` y la clave en flujo no arranca línea, y el
+  `doesNotMatch` de `run:` no la ve porque va en la línea de `env:`, no en la de
+  `run:`.
+  **No es motivo de rechazo**: E1 dice literalmente "basta con que las dos
+  mutaciones de arriba pongan la suite en rojo; el implementador elige el
+  parseo", y las dos están rojas. Además, un recuento textual crudo sobre el
+  fichero es inviable tal cual, porque la línea 14 de `ci.yml` menciona
+  `AWS_MODE` en un comentario. Si se quiere cerrar también esa forma, el parseo
+  tendría que ser YAML de verdad (o `js-yaml` sobre el workflow), y eso es una
+  enmienda nueva con su firma, no algo que se cuele en esta revisión.
+
+## Comandos de verificación independientes
+
+```
+git diff 33a1d80c..HEAD -- .github/workflows/ci.yml        # vacío
+git diff 33a1d80c..HEAD -- init-e2e-gate.test.mjs          # solo el it de R2
+git merge-base --is-ancestor <20 hashes de traceability> HEAD   # todos OK
+git merge-base --is-ancestor ea5e62bb abc0ac32             # OK (G1 es anterior)
+node --test init-e2e-gate.test.mjs                         # EXIT 0, 15/15, 9 suites
+node --test init-e2e-gate.test.mjs  (M1..M4, copias)       # EXIT 1, 14/15, falla R2
+node --test init-e2e-gate.test.mjs  (M5, copia)            # EXIT 0 — ver Observaciones
+gh run view 34990504701 / 34992040777
+```

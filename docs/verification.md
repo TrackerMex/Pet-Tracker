@@ -879,6 +879,21 @@ G1):**
 
 G1 y G2 son gates humanos: ninguna suite automática ni reviewer los cierra.
 
+**Techo conocido del candado de `AWS_MODE` (enmienda E1).** El candado cuenta
+las claves YAML `AWS_MODE:` **a principio de línea** y prohíbe `AWS_MODE=` en
+cualquier `run:`. Eso cubre las formas que se escriben en la práctica, pero no
+un mapping de flujo:
+
+```yaml
+env: { AWS_MODE: aws }     # la suite sigue verde
+```
+
+Medido por el reviewer el 2026-09-15. No se cerró porque hacerlo exige parsear
+YAML de verdad, y el gasto está además cortado aguas abajo por el guard
+`runSmoke` de las tres suites `aws-real-*`. Si algún día se edita `ci.yml` con
+esa forma, el candado no lo va a parar: cerrarlo pide una enmienda nueva con su
+propia firma.
+
 **Ruido esperado en el log, que no es un fallo de la guarda.** La corrida
 imprime varias líneas `ERROR [PollerService] ... connect ECONNREFUSED
 127.0.0.1:4566`. No son LocalStack caído: salen de un `mockRejectedValue(new

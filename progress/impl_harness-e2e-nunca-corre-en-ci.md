@@ -93,20 +93,33 @@ El setup del gate usó exclusivamente
 `pnpm -C backend-pet-tracker run db:migrate` y
 `pnpm -C backend-pet-tracker run provision:local`.
 
-## Gates humanos pendientes
+## Gates humanos: cerrados el 2026-09-15
 
-- **G1 — pendiente:** URL de la corrida verde del PR y comprobación del resumen
-  E2E según la igualdad dinámica de `requirements.md`.
-  El gate 1 la corrida verde
-  URL: https://github.com/TrackerMex/Pet-Tracker/pull/134
-- **G2 — pendiente:** URL de la corrida roja deliberada con
-  `test/96-ci-red-probe`, línea exacta del fallo y cierre del PR de prueba sin
-  mergear.
-  El gate 2 la corrida roja
-  URL: https://github.com/TrackerMex/Pet-Tracker/pull/135
+- **G1 — cerrado.** Run
+  [34992040777](https://github.com/TrackerMex/Pet-Tracker/actions/runs/34992040777)
+  (PR #134), commit `73a1d6b0`, `success`. El log muestra que los E2E se
+  ejecutaron de verdad en CI por primera vez: `→ Tests e2e...`,
+  `[✓] migrations applied successfully!`, `provision-local.ts`, y
+  `Test Suites: 3 skipped, 26 passed, 26 of 29 total` /
+  `Tests: 8 skipped, 367 passed, 375 total`. Las 3 omitidas son las `aws-real-*`,
+  que es el verde correcto.
 
-La feature no debe pasar a `done` hasta que un humano aporte ambas evidencias y
-el reviewer emita su veredicto.
+  Una corrida verde anterior (`34990504701`) se anotó primero, pero corrió sobre
+  `ea5e62bb`, **antes** de la enmienda E1 (`abc0ac32`), así que no cubría lo que
+  se iba a mergear. Se sustituyó por la de arriba.
+
+- **G2 — cerrado.** Run
+  [34990834840](https://github.com/TrackerMex/Pet-Tracker/actions/runs/34990834840)
+  (PR #135, rama `test/96-ci-red-probe`), commit `87637ceb`, `failure`.
+  Mutación deliberada: `.expect(401)` → `.expect(418)` en
+  `backend-pet-tracker/test/app.e2e-spec.ts`. Resultado:
+  `Test Suites: 1 failed, 3 skipped, 25 passed, 26 of 29 total` /
+  `Tests: 1 failed, 8 skipped, 366 passed, 375 total`, traza en supertest y
+  `Process completed with exit code 1`. Un único fallo, el inyectado; las 73
+  suites móviles pasaron, así que no fue el flake de #72. PR #135 cerrado sin
+  mergear y rama borrada.
+
+  Antes de #96 ese mismo commit habría salido verde: los E2E no se ejecutaban.
 
 ## Enmienda E1
 

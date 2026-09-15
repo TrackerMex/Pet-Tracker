@@ -24,8 +24,8 @@ mismo patrón que `env-drift.test.mjs` e `init-color.test.mjs`.
 | R7 | `init-e2e-gate.test.mjs::R7 (harness-e2e-nunca-corre-en-ci #96): la suite entra en TEST_CMD y en el mapa del repo` | rojo: `8d8eacfb` `test(ci-e2e): require harness gate wiring (R7)`; verde: `b75e4602` `feat(ci-e2e): wire harness gate test (R7)` |
 | R8 | `init-e2e-gate.test.mjs::R8 (harness-e2e-nunca-corre-en-ci #96): ningun comentario describe ya el agujero` | rojo: `1ea1fbd1` `test(ci-e2e): reject silent-skip comments (R8)`; verde: `719b539a` `feat(ci-e2e): document enforced gate (R8)` |
 | R9 | `init-e2e-gate.test.mjs::R9 (harness-e2e-nunca-corre-en-ci #96): docs/verification.md documenta el gate` | rojo: `f6d82df7` `test(ci-e2e): require gate runbook (R9)`; verde: `9c6a813e` `feat(ci-e2e): document human gate checks (R9)` |
-| G1 | **gate humano** — corrida de CI verde del PR, con el resumen de jest e2e y la igualdad de [[requirements]] §"Cómo se mide el criterio 1" | pendiente (URL de la corrida en `progress/impl_harness-e2e-nunca-corre-en-ci.md`) |
-| G2 | **gate humano** — rojo deliberado en `test/96-ci-red-probe`, PR en borrador cerrado sin mergear | pendiente (URL de la corrida roja + línea del fallo en `progress/impl_harness-e2e-nunca-corre-en-ci.md`) |
+| G1 | **gate humano** — corrida de CI verde del PR, con el resumen de jest e2e y la igualdad de [[requirements]] §"Cómo se mide el criterio 1" | **cerrado** — run [34992040777](https://github.com/TrackerMex/Pet-Tracker/actions/runs/34992040777) sobre `73a1d6b0`, `success`: `Test Suites: 3 skipped, 26 passed, 26 of 29 total` |
+| G2 | **gate humano** — rojo deliberado en `test/96-ci-red-probe`, PR en borrador cerrado sin mergear | **cerrado** — run [34990834840](https://github.com/TrackerMex/Pet-Tracker/actions/runs/34990834840) sobre `87637ceb`, `failure`: `Test Suites: 1 failed, 3 skipped, 25 passed, 26 of 29 total`, exit 1. PR #135 cerrado sin mergear, rama borrada |
 
 ## Enmienda E1 — candado completo de `AWS_MODE`
 
@@ -43,6 +43,12 @@ Convención de commit: `feat(ci-e2e): <desc> (R1,R2)`; el commit rojo previo va
 como `test(ci-e2e): <desc> (R1)`.
 El implementer actualiza esta tabla tras cada commit; el reviewer la valida
 al aprobar (ver [[../../docs/specs|specs]] y [[../../CHECKPOINTS|CHECKPOINTS]] C5).
+
+**G1 y G2 quedaron cerrados por el humano el 2026-09-15** con las corridas
+enlazadas arriba. La mutación de G2 fue `.expect(401)` → `.expect(418)` en
+`backend-pet-tracker/test/app.e2e-spec.ts`: un único test rojo, traza en
+supertest, ninguna suite móvil afectada. Antes de #96 ese mismo commit habría
+salido verde porque los e2e no se ejecutaban en CI.
 
 **G1 y G2 no los cierra el reviewer.** El criterio de aceptación 2 exige un rojo
 real observado en una corrida, no una inspección del YAML; ninguna IA puede
