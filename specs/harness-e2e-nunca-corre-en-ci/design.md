@@ -410,10 +410,14 @@ Cobertura por R-id (los nombres exactos van en [[traceability]]):
 - **R1, R2** — aserciones estáticas sobre `.github/workflows/ci.yml`: existe un
   paso con `docker compose up -d --wait`, su índice en el fichero es **menor**
   que el del paso `bash ./init.sh` (mismo truco de orden que
-  `env-drift.test.mjs` R7 con `indexOf`), aparece `AWS_MODE: local`, y **no**
-  aparecen `AWS_MODE: aws`, `configure-aws-credentials` ni
-  `secrets.AWS_ACCESS_KEY_ID`. Además el YAML no contiene la etiqueta
-  `localstack/localstack` ni `postgres:` (viven solo en `docker-compose.yml`).
+  `env-drift.test.mjs` R7 con `indexOf`), y **no** aparecen
+  `configure-aws-credentials` ni `secrets.AWS_ACCESS_KEY_ID`. Además el YAML no
+  contiene la etiqueta `localstack/localstack` ni `postgres:` (viven solo en
+  `docker-compose.yml`).
+
+  Para `AWS_MODE`, ver la **enmienda E1** al final de este documento: la
+  redacción original de esta viñeta (`aparece AWS_MODE: local` y **no** aparece
+  `AWS_MODE: aws`) deja pasar dos formas de fijarlo en `aws`.
 - **R3** — `corre()` con `portOpen: true` y tres fixtures de `.env` (forma de
   `wt-backend` con 5433, forma de `.env.example` con 5432, y una contraseña con
   `@`): el stub de `port_open` imprime `PROBE:localhost:5433`,
@@ -496,3 +500,58 @@ nueva. Cualquier otro fichero que haga falta se declara en
   Postgres y un LocalStack recién creados. D5 elimina las dos causas conocidas
   (esquema y recursos); si aparece una tercera, la destapa G1 y se corrige en
   esta misma rama.
+
+---
+
+## Enmienda E1 — el candado de `AWS_MODE` cubre todas las formas
+
+**Estado: pendiente de firma humana.** Esta enmienda se aprueba por separado;
+el resto del documento ya está aprobado en `0f47c176` y no se reabre.
+
+**Por qué.** El reviewer de #96 demostró con mutaciones que las aserciones que
+fijaba §D7 para R2 dejan pasar dos formas de poner `AWS_MODE` en `aws`, con la
+suite en verde:
+
+```yaml
+run: AWS_MODE=aws bash ./init.sh     # forma de shell, YAML válido
+```
+
+```yaml
+env:
+  AWS_MODE: local
+  AWS_MODE: "aws"                    # segunda ocurrencia, la primera intacta
+```
+
+R2 **no** cambia: su redacción ya exigía que el workflow no contenga "ningún
+paso que ponga `AWS_MODE` en `aws`". Lo que estaba corto era el candado que
+§D7 prescribía para comprobarlo, no el requisito. Esto es lo que se corrige.
+
+Importa porque es la cara de dinero de la feature: con `AWS_MODE=aws` las tres
+suites `aws-real-*` dejan de auto-saltarse y CI pega a la cuenta AWS real en
+cada PR. El gasto está cortado aguas abajo por el guard `runSmoke`, así que el
+agujero no es explotable hoy por accidente; se cierra porque el candado existe
+precisamente para que un cambio futuro del workflow no pueda colarlo en
+silencio.
+
+**Qué se prescribe.** La aserción de R2 sobre `ci.yml` pasa a comprobar las
+dos cosas:
+
+1. **`AWS_MODE` aparece exactamente una vez** en el fichero, y su valor es
+   `local` (con o sin comillas). Una segunda ocurrencia es fallo, diga lo que
+   diga.
+2. **Ningún `run:` contiene `AWS_MODE=`**, en ninguna forma.
+
+Basta con que las dos mutaciones de arriba pongan la suite en rojo; el
+implementador elige el parseo. Una expresión del estilo
+`/AWS_MODE\s*[:=]\s*["']?aws\b/i` cubre la segunda condición y parte de la
+primera, pero **no** sustituye al recuento de ocurrencias: un segundo
+`AWS_MODE: "local"` seguido de la línea real no lo detectaría, y el objetivo es
+que el valor efectivo sea inequívoco al leer el fichero.
+
+**Verificación de la enmienda**: las dos mutaciones de arriba, aplicadas sobre
+una copia del árbol, ponen `node --test init-e2e-gate.test.mjs` en rojo; el
+`ci.yml` real sigue en verde.
+
+### Aprobación de E1
+
+- [ ] Aprobada por humano (fecha: ____) ← gate obligatorio antes de implementar
