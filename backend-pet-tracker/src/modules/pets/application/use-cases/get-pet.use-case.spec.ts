@@ -2,6 +2,7 @@ import { Logger } from '@nestjs/common';
 import { Pet } from '@/modules/pets/domain/entities/pet.entity';
 import { PetNotFoundError } from '@/modules/pets/domain/errors/pet.errors';
 import { PetDeviceReader } from '@/modules/pets/domain/ports/pet-device-reader';
+import { PetMealsReader } from '@/modules/pets/domain/ports/pet-meals-reader';
 import { PetPhotoUrlResolver } from '@/modules/pets/domain/ports/pet-photo-url-resolver';
 import { PetVaccineReader } from '@/modules/pets/domain/ports/pet-vaccine-reader';
 import { PetRepository } from '@/modules/pets/domain/repositories/pet.repository';
@@ -45,17 +46,21 @@ function buildDeps(petOverrides: Partial<{ photoKey: string | null }> = {}) {
   const photoUrlResolver: PetPhotoUrlResolver = { resolveDownloadUrl };
   const findNextVaccine = jest.fn().mockResolvedValue(null);
   const vaccineReader: PetVaccineReader = { findNextVaccine };
+  const findMealsToday = jest.fn().mockResolvedValue(null);
+  const mealsReader: PetMealsReader = { findMealsToday };
 
   return {
     pets,
     deviceReader,
     photoUrlResolver,
     vaccineReader,
+    mealsReader,
     findById,
     findOwnerTimezone,
     findActiveDevice,
     resolveDownloadUrl,
     findNextVaccine,
+    findMealsToday,
   };
 }
 
@@ -67,6 +72,7 @@ describe('R8: GetPetUseCase devuelve la mascota para el perfil de detalle', () =
       deps.deviceReader,
       deps.photoUrlResolver,
       deps.vaccineReader,
+      deps.mealsReader,
     );
 
     const profile = await useCase.execute(PET_ID, NOW);
@@ -85,6 +91,7 @@ describe('R9: si la fila desaparecio tras pasar el guard, el use case lanza PetN
       deps.deviceReader,
       deps.photoUrlResolver,
       deps.vaccineReader,
+      deps.mealsReader,
     );
 
     await expect(useCase.execute(PET_ID, NOW)).rejects.toThrow(
@@ -109,6 +116,7 @@ describe('R12 (devices-claim): el perfil incluye el collar activo del puerto', (
       deps.deviceReader,
       deps.photoUrlResolver,
       deps.vaccineReader,
+      deps.mealsReader,
     );
 
     const profile = await useCase.execute(PET_ID, NOW);
@@ -129,6 +137,7 @@ describe('R12 (devices-claim): el perfil incluye el collar activo del puerto', (
       deps.deviceReader,
       deps.photoUrlResolver,
       deps.vaccineReader,
+      deps.mealsReader,
     );
 
     const profile = await useCase.execute(PET_ID, NOW);
@@ -145,6 +154,7 @@ describe('R6 (pet-photos-s3 #6): con photoKey no nulo, photoUrl viene de PET_PHO
       deps.deviceReader,
       deps.photoUrlResolver,
       deps.vaccineReader,
+      deps.mealsReader,
     );
 
     const profile = await useCase.execute(PET_ID, NOW);
@@ -165,6 +175,7 @@ describe('R7 (pet-photos-s3 #6): con photoKey nulo, photoUrl es null sin invocar
       deps.deviceReader,
       deps.photoUrlResolver,
       deps.vaccineReader,
+      deps.mealsReader,
     );
 
     const profile = await useCase.execute(PET_ID, NOW);
@@ -188,6 +199,7 @@ describe('R1 (vaccine-due-today-inclusive #82, sustituye a R13 de #14): el perfi
       deps.deviceReader,
       deps.photoUrlResolver,
       deps.vaccineReader,
+      deps.mealsReader,
     );
 
     const profile = await useCase.execute(PET_ID, NOW);
@@ -221,6 +233,7 @@ describe('R2 (vaccine-due-today-inclusive #82): zona del owner nula o fuera del 
       deps.deviceReader,
       deps.photoUrlResolver,
       deps.vaccineReader,
+      deps.mealsReader,
     );
 
     await useCase.execute(PET_ID, NOW);
@@ -240,6 +253,7 @@ describe('R2 (vaccine-due-today-inclusive #82): zona del owner nula o fuera del 
       deps.deviceReader,
       deps.photoUrlResolver,
       deps.vaccineReader,
+      deps.mealsReader,
     );
 
     await useCase.execute(PET_ID, NOW);
@@ -259,10 +273,46 @@ describe('R2 (vaccine-due-today-inclusive #82): zona del owner nula o fuera del 
       deps.deviceReader,
       deps.photoUrlResolver,
       deps.vaccineReader,
+      deps.mealsReader,
     );
 
     await useCase.execute(PET_ID, NOW);
 
     expect(warnSpy).not.toHaveBeenCalled();
+  });
+});
+
+describe('R10 (meals-served-tracking #83): el perfil consulta mealsToday con el dia civil del owner', () => {
+  it('consulta el lector con el mismo dia local y devuelve su contador', async () => {
+    const deps = buildDeps();
+    deps.findOwnerTimezone.mockResolvedValue('America/Mexico_City');
+    deps.findMealsToday.mockResolvedValue({ served: 1, total: 2 });
+    const useCase = new GetPetUseCase(
+      deps.pets,
+      deps.deviceReader,
+      deps.photoUrlResolver,
+      deps.vaccineReader,
+      deps.mealsReader,
+    );
+
+    const profile = await useCase.execute(PET_ID, NOW);
+
+    expect(deps.findMealsToday).toHaveBeenCalledWith(PET_ID, '2026-08-09');
+    expect(profile.mealsToday).toEqual({ served: 1, total: 2 });
+  });
+
+  it('conserva null cuando la mascota no tiene plan', async () => {
+    const deps = buildDeps();
+    const useCase = new GetPetUseCase(
+      deps.pets,
+      deps.deviceReader,
+      deps.photoUrlResolver,
+      deps.vaccineReader,
+      deps.mealsReader,
+    );
+
+    const profile = await useCase.execute(PET_ID, NOW);
+
+    expect(profile.mealsToday).toBeNull();
   });
 });

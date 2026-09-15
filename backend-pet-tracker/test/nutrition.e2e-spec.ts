@@ -475,7 +475,7 @@ describe('Nutrition profile and plans (e2e)', () => {
         .get(`/v1/pets/${pet.id}/nutrition-plan`)
         .set(auth(owner.token))
         .expect(200);
-      expect(latest.body).toEqual(second.body);
+      expect(latest.body).toEqual({ ...second.body, servedToday: [] });
     });
   });
 

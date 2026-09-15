@@ -1579,18 +1579,24 @@
   {
     "id": 83,
     "name": "meals-served-tracking",
-    "status": "pending",
+    "status": "in_progress",
     "priority": "P3",
-    "description": "Abierta al escribir la spec de #70 el 2026-09-09 (decision E2). Es lo que desbloquea la barra de progreso de comidas que el Make dibuja en la seccion de recordatorios y que #70 dejo FUERA por imposible. OJO, la causa real no es la que decia el enunciado de #70: la barra no lee nextReminder ni activitySummary, lee pet.meals y pet.totalMeals. Faltan DOS piezas, no una: (a) no existe registro de comida servida en el backend -no hay tabla ni endpoint, y food.tsx:185 lo finge con el reloj local-, y (b) mealsPerDay vive en el plan de nutricion y no en el perfil, asi que el total tampoco esta donde la Home lo necesita. Se abre como una sola feature porque las dos piezas carecen de sentido por separado; al especificarla se puede partir si el alcance lo pide.",
+    "description": "Abierta al escribir la spec de #70 el 2026-09-09 (decision E2). Es lo que desbloquea la barra de progreso de comidas que el Make dibuja en la seccion de recordatorios y que #70 dejo FUERA por imposible. OJO, la causa real no es la que decia el enunciado de #70: la barra no lee nextReminder ni activitySummary, lee pet.meals y pet.totalMeals. Faltan DOS piezas, no una: (a) no existe registro de comida servida en el backend -no hay tabla ni endpoint, y food.tsx:185 lo finge con el reloj local-, y (b) mealsPerDay vive en el plan de nutricion y no en el perfil, asi que el total tampoco esta donde la Home lo necesita. Se abre como una sola feature porque las dos piezas carecen de sentido por separado; al especificarla se puede partir si el alcance lo pide. PARTIDA el 2026-09-15 al especificar (decision D1 del humano): #83 es SOLO BACKEND -tabla meal_servings con served_on = dia civil del owner y UNIQUE (pet_id, served_on, meal_time); POST/DELETE /v1/pets/:petId/meals abiertos a cualquier miembro activo (D2); 409 al repetir franja (D3); mealsToday { served, total } | null en GET /v1/pets/:petId y servedToday en GET nutrition-plan contando solo franjas del plan vigente (D4)-. La parte movil (boton por franja en food.tsx, barra en la Home) es la feature #98 mobile-meals-served-ui, bloqueada por esta. El criterio 4 se cierra aqui con un smoke por curl; el smoke con la barra pintada pasa a #98.",
     "acceptance_criteria": [
       "Existe registro persistente de comida servida, con su endpoint, y deja de fingirse con el reloj del cliente",
       "El total de comidas del dia llega a donde la Home lo necesita, sin que el cliente tenga que pedir el plan de nutricion aparte",
       "La spec decide si esto se parte en dos features y lo justifica",
-      "Gate humano: smoke con una mascota con plan de comidas. No delegable a IA"
+      "Gate humano: smoke por curl contra el backend local con una mascota con plan de comidas (POST meals, GET perfil con mealsToday, DELETE). No delegable a IA. El smoke con la barra pintada en la Home pasa a #98"
     ],
     "files_affected": [
+      "backend-pet-tracker/src/db/schema/nutrition.schema.ts",
+      "backend-pet-tracker/src/db/migrations/",
       "backend-pet-tracker/src/modules/nutrition/",
-      "mobile-pet-tracker/src/app/(tabs)/food.tsx"
+      "backend-pet-tracker/src/modules/pets/domain/ports/",
+      "backend-pet-tracker/src/modules/pets/application/use-cases/get-pet.use-case.ts",
+      "backend-pet-tracker/src/modules/pets/infrastructure/mappers/pet-profile-response.mapper.ts",
+      "backend-pet-tracker/test/meals.e2e-spec.ts",
+      "docs/data-model.md"
     ]
   },
   {
@@ -1890,6 +1896,31 @@
       "mobile-pet-tracker/src/screens/alerts/index.tsx",
       "mobile-pet-tracker/src/screens/reminders/index.test.tsx",
       "mobile-pet-tracker/src/screens/alerts/index.test.tsx"
+    ]
+  },
+  {
+    "id": 98,
+    "name": "mobile-meals-served-ui",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Mitad movil de #83 meals-served-tracking, partida el 2026-09-15 por decision D1 del humano (specs/meals-served-tracking/design.md). Bloqueada hasta que #83 este mergeada en main Y su migracion meal_servings este aplicada en la base que use esta sesion (pnpm db:migrate desde backend-pet-tracker/, nunca psql crudo). Dos piezas. (1) src/app/(tabs)/food.tsx deja de fingir la comida servida con el reloj del dispositivo: hoy localTimeHhmm (:24-29), hhmm (:52), servedMeals = mealTimes.filter(mealTime <= hhmm) (:61-64), el contador food-meals-progress (:185-188) y el badge por fila served = mealTime <= hhmm (:193, testIDs meal-served-<i> / meal-pending-<i> :221-225) son la decision D7 de #38 aprobada por humano (specs/mobile-food/requirements.md, seccion Decisiones del gate) porque no habia backend; se sustituyen por un boton por franja que llama a POST /v1/pets/:petId/meals { mealTime } y a DELETE /v1/pets/:petId/meals/:mealTime (409 MEAL_ALREADY_SERVED y 404 MEAL_SERVING_NOT_FOUND se resuelven refrescando), y el estado servido sale de servedToday: string[] que GET /v1/pets/:petId/nutrition-plan devuelve desde #83 R9; tras cada POST/DELETE se refrescan nutritionKeys.plan y petKeys.detail (sin useMutation ni invalidateQueries en src/: patron weight-log.tsx createWeight + refetch). El tipo NutritionPlan de src/api/types.ts gana servedToday. (2) Barra de comidas en la Home: hijo nuevo de reminders-section-body (src/screens/home/index.tsx:626) despues de reminders-next-vaccine (:636), leyendo mealsToday: { served, total } | null que GET /v1/pets/:petId devuelve desde #83 R10 (ya en detail.data.pet, cero llamadas nuevas: R15 de #70 y la tercera asercion de su R3 -la Home no importa ../../api/nutrition- se conservan); render solo si mealsToday no es null; fila con icono, titulo, contador served/total y barra de ancho served/total sobre bg-accent (el Make usa #2AB87C: en el repo es el token), segun el Make App.tsx:438-446 y los tokens de docs/ui-guidelines.md. El tipo PetProfile de src/api/types.ts gana mealsToday: { served: number; total: number } | null; nextReminder y activitySummary siguen unknown (index.test.tsx:3200-3210). CANDADOS que la spec debe retirar o recontar con ruta:linea y valor nuevo: (a) #70 R3 en src/screens/home/index.test.tsx:3459-3474 -sus dos primeras aserciones (body con 1 hijo, sin texto d+/d+) se sustituyen; la tercera (no importar ../../api/nutrition) se conserva-; (b) cardinalidades de reminders-section-body en index.test.tsx :2365, :2400 (childCount por escenario), :2431 (4), :2814-2846 (1) y el orden body.children[0] === reminders-next-vaccine (:2331-2345, :2430-2433): dar el recuento nuevo por escenario (con plan / sin plan / cargando), no un delta generico; (c) catalogo i18n: language-provider.test.tsx:55 suma un termino + N por las claves nuevas (titulo de la barra, copy del boton servir/deshacer, nombre accesible del contador), nombrandolas; reutilizar food.mealsToday y food.served/food.pending donde encajen; (d) las 11 fixtures tipadas PetProfile (food.test.tsx, health.test.tsx, map.test.tsx, home/index.test.tsx, profile/index.test.tsx, reminders/index.test.tsx, pairing/index.test.tsx, docs/index.test.tsx, use-pet-selection.test.tsx, pet-switcher.test.tsx, pet-hero-header.test.tsx) ganan mealsToday: null; (e) food.test.tsx :263-264 (setSystemTime), :301 ('1/2'), :310/:315 (badges por reloj), :327-334 ('2/3') se reescriben contra servedToday del mock del plan; (f) enmienda #70 de docs/ui-guidelines.md (:308-): la barra es un elemento nuevo en una seccion de elementos repetidos -candar dato, icono, copy, nombre accesible, fondo, tinta, receta tipografica, condicion de render, forma y orden de hijos, contando children.length y nunca testID-. Jest con (tabs) escapado o --runTestsByPath. Cero dependencias nuevas. Coordinar con la sesion que lleve #97 si ambas anaden claves i18n.",
+    "acceptance_criteria": [
+      "food.tsx no contiene localTimeHhmm ni ninguna comparacion mealTime <= hhmm; el badge por franja y el contador salen de servedToday del plan y cada franja tiene un boton que llama a POST/DELETE meals y refresca el plan y el perfil",
+      "La Home pinta la barra de comidas dentro de reminders-section-body tras reminders-next-vaccine solo cuando mealsToday no es null, con served/total y ancho proporcional, sin ninguna llamada nueva desde la Home",
+      "Todos los candados listados en la description se retiran o recuentan con su valor nuevo declarado en la spec; ninguna cifra se mueve sin declararla como delta",
+      "Suite movil completa verde; grep-clean intacto; cero dependencias nuevas",
+      "Gate humano: smoke en dev build de Android (nunca Expo Go) con una mascota con plan: servir una franja, ver la barra en la Home, deshacer, ver la barra bajar. No delegable a IA"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/app/(tabs)/food.tsx",
+      "mobile-pet-tracker/src/app/(tabs)/__tests__/food.test.tsx",
+      "mobile-pet-tracker/src/screens/home/index.tsx",
+      "mobile-pet-tracker/src/screens/home/index.test.tsx",
+      "mobile-pet-tracker/src/api/types.ts",
+      "mobile-pet-tracker/src/api/nutrition.ts",
+      "mobile-pet-tracker/src/i18n/catalog.ts",
+      "mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx",
+      "docs/ui-guidelines.md"
     ]
   }
 ]

@@ -3,6 +3,7 @@ import { AuthModule } from '@/modules/auth/auth.module';
 import { PetDeviceReadModule } from '@/modules/devices/pet-device-read.module';
 import { PetPhotoReadModule } from '@/modules/media/pet-photo-read.module';
 import { PetVaccineReadModule } from '@/modules/health/pet-vaccine-read.module';
+import { PetMealsReadModule } from '@/modules/nutrition/pet-meals-read.module';
 import { PET_REPOSITORY } from './domain/repositories/pet.repository';
 import { CreatePetUseCase } from './application/use-cases/create-pet.use-case';
 import { DeletePetUseCase } from './application/use-cases/delete-pet.use-case';
@@ -28,6 +29,7 @@ import { PetDrizzleRepository } from './infrastructure/repositories/pet.drizzle.
     PetDeviceReadModule,
     PetPhotoReadModule,
     PetVaccineReadModule,
+    PetMealsReadModule,
   ],
   controllers: [PetsController],
   providers: [

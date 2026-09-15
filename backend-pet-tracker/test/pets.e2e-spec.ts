@@ -84,6 +84,7 @@ describe('Pets CRUD (e2e)', () => {
     'nextVaccine',
     'nextReminder',
     'activitySummary',
+    'mealsToday',
     'createdAt',
     'updatedAt',
   ].sort();
@@ -411,7 +412,7 @@ describe('Pets CRUD (e2e)', () => {
   });
 
   describe('R8: GET /v1/pets/:petId devuelve el contrato completo', () => {
-    it('responde exactamente las 24 claves con los placeholders en null', async () => {
+    it('responde exactamente las 25 claves con los placeholders en null', async () => {
       const owner = await seedUser('r8-owner');
       const pet = await createPetViaApi(owner, { name: `R8-${RUN_ID}` });
 
