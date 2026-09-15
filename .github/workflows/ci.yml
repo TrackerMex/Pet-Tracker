@@ -9,6 +9,12 @@ on:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    env:
+      # Los e2e corren contra LocalStack, nunca contra la cuenta AWS real.
+      # Las tres suites aws-real-* se auto-saltan con AWS_MODE != aws y eso es
+      # deliberado: pegar a AWS real en cada PR cuesta dinero y esa prueba la
+      # corre solo un humano (CLAUDE.md §Excepciones). NO lo cambies a "aws".
+      AWS_MODE: local
     steps:
       - uses: actions/checkout@v4
 
