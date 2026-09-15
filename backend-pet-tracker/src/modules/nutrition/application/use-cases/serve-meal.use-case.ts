@@ -32,7 +32,11 @@ export class ServeMealUseCase {
     userId: string,
     now: Date,
   ): Promise<MealServing> {
-    const plan = (await this.nutrition.findLatestPlan(petId))!;
+    const plan = await this.nutrition.findLatestPlan(petId);
+    if (!plan) throw new NutritionPlanRequiredError(petId);
+    if (!plan.mealTimes.includes(dto.mealTime)) {
+      throw new MealTimeNotInPlanError(petId, dto.mealTime);
+    }
 
     const servedOn = await ownerLocalDay(this.pets, petId, now);
     const serving = await this.meals.create({
