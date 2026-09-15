@@ -740,3 +740,56 @@ describe(
     });
   },
 );
+
+describe(
+  '#97 R3: el guarda del borrado en vuelo sobrevive a la pérdida de foco',
+  () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+      process.env.EXPO_PUBLIC_API_URL = apiUrl;
+      mockUseAuth.mockReturnValue({
+        status: 'authenticated',
+        token: 'jwt-token',
+        signIn: jest.fn(),
+        signOut: jest.fn(),
+      } satisfies AuthContextValue);
+      mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+      mockListReminders.mockResolvedValue({
+        kind: 'ok',
+        reminders: [makeReminder(), makeReminder({ id: 'reminder-2' })],
+      });
+      mockDeleteReminder.mockReturnValue(pending<DeleteReminderState>());
+    });
+
+    it('mantiene deshabilitada solo la fila cuyo delete sigue pendiente', async () => {
+      await renderReminders();
+      await waitFor(() =>
+        expect(screen.getByTestId('reminder-delete-reminder-1')).toBeVisible(),
+      );
+      const cleanups = await focusScreen();
+
+      await confirmDelete('reminder-1');
+      await waitFor(() =>
+        expect(
+          screen.getByTestId('reminder-delete-reminder-1').props
+            .accessibilityState.disabled,
+        ).toBe(true),
+      );
+      expect(
+        screen.getByTestId('reminder-delete-reminder-2').props
+          .accessibilityState.disabled,
+      ).toBe(false);
+
+      await blurScreen(cleanups);
+
+      expect(
+        screen.getByTestId('reminder-delete-reminder-1').props
+          .accessibilityState.disabled,
+      ).toBe(true);
+      expect(
+        screen.getByTestId('reminder-delete-reminder-2').props
+          .accessibilityState.disabled,
+      ).toBe(false);
+    });
+  },
+);
