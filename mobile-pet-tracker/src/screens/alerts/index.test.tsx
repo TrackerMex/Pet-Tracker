@@ -5,6 +5,7 @@ import {
   waitFor,
   within,
 } from '@testing-library/react-native';
+import { useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
 import type { TestInstance } from 'test-renderer';
@@ -33,6 +34,10 @@ jest.mock('../../api/alerts', () => ({
 
 jest.mock('../../providers/auth-provider', () => ({
   useAuth: jest.fn(),
+}));
+
+jest.mock('expo-router', () => ({
+  useFocusEffect: jest.fn(),
 }));
 
 jest.mock('react-native-safe-area-context', () => ({
@@ -69,6 +74,7 @@ const apiUrl = 'http://example.test/v1';
 const mockAckAlert = jest.mocked(ackAlert);
 const mockListAlerts = jest.mocked(listAlerts);
 const mockUseAuth = jest.mocked(useAuth);
+const mockUseFocusEffect = jest.mocked(useFocusEffect);
 const mockSignOut = jest.fn<Promise<void>, []>();
 
 function makeAlert(overrides: Partial<Alert> = {}): Alert {
@@ -111,6 +117,27 @@ function AlertsWrapper({ children }: { children: ReactNode }) {
 function renderAlerts() {
   return renderWithProviders(<AlertsScreen />, {
     wrapper: AlertsWrapper,
+  });
+}
+
+async function focusScreen(): Promise<(() => void)[]> {
+  let cleanups: (() => void)[] = [];
+
+  await act(async () => {
+    cleanups = mockUseFocusEffect.mock.calls.flatMap(([callback]) => {
+      const cleanup = callback();
+      return typeof cleanup === 'function' ? [cleanup] : [];
+    });
+    await Promise.resolve();
+  });
+
+  return cleanups;
+}
+
+async function blurScreen(cleanups: (() => void)[]) {
+  await act(async () => {
+    cleanups.forEach((cleanup) => cleanup());
+    await Promise.resolve();
   });
 }
 
@@ -770,3 +797,45 @@ describe('#78 R9: pagina por nextCursor y se para cuando no hay', () => {
     expect(mockListAlerts).toHaveBeenCalledTimes(2);
   });
 });
+
+describe(
+  '#97 R4: el error del ack no sobrevive a la pérdida de foco',
+  () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+      mockListAlerts.mockReset();
+      process.env.EXPO_PUBLIC_API_URL = apiUrl;
+      mockUseAuth.mockReturnValue({
+        status: 'authenticated',
+        token: 'jwt-token',
+        signIn: jest.fn(),
+        signOut: jest.fn(),
+      } satisfies AuthContextValue);
+      mockListAlerts.mockResolvedValue({
+        kind: 'ok',
+        items: [makeAlert()],
+        nextCursor: null,
+      });
+      mockAckAlert.mockResolvedValue({ kind: 'error' });
+    });
+
+    it('borra el error visible al perder foco', async () => {
+      await renderAlerts();
+      const button = await waitFor(() =>
+        screen.getByTestId('alert-row-alert-1-ack'),
+      );
+      const cleanups = await focusScreen();
+
+      await fireEvent.press(button);
+      await waitFor(() =>
+        expect(screen.getByTestId('alerts-action-error')).toBeVisible(),
+      );
+
+      await blurScreen(cleanups);
+
+      await waitFor(() =>
+        expect(screen.queryByTestId('alerts-action-error')).toBeNull(),
+      );
+    });
+  },
+);
