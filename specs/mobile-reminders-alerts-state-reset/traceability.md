@@ -16,7 +16,7 @@ va a mover ese fichero.
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | `mobile-pet-tracker/src/screens/reminders/index.test.tsx::#97 R1: la confirmación de borrado no sobrevive a la pérdida de foco` | rojo: `e4b77d28` (`test(reminders-alerts-state-reset): cover delete sheet blur (R1)`); verde: `958bc293` (`feat(reminders-alerts-state-reset): clear delete sheet on blur (R1)`) |
+| R1 | `mobile-pet-tracker/src/screens/reminders/index.test.tsx::#97 R1: la confirmación de borrado no sobrevive a la pérdida de foco` | rojo: `e4b77d28` (`test(reminders-alerts-state-reset): cover delete sheet blur (R1)`); verde: `958bc293` (`feat(reminders-alerts-state-reset): clear delete sheet on blur (R1)`); aserción exacta del sheet: `7f8fad59` |
 | R2 | `mobile-pet-tracker/src/screens/reminders/index.test.tsx::#97 R2: el error de acción no sobrevive a la pérdida de foco` | rojo: `642fc42d` (`test(reminders-alerts-state-reset): cover action error blur (R2)`); verde: `b0d17b5c` (`feat(reminders-alerts-state-reset): clear action error on blur (R2)`) |
 | R3 | `mobile-pet-tracker/src/screens/reminders/index.test.tsx::#97 R3: el guarda del borrado en vuelo sobrevive a la pérdida de foco` | rojo: `c1705c44` (`test(reminders-alerts-state-reset): prove deleting guard survives blur (R3)`); verde: `9bbf664f` (`feat(reminders-alerts-state-reset): preserve deleting guard on blur (R3)`) |
 | R4 | `mobile-pet-tracker/src/screens/alerts/index.test.tsx::#97 R4: el error del ack no sobrevive a la pérdida de foco` | rojo: `2c0cfe31` (`test(reminders-alerts-state-reset): cover ack error blur (R4)`); verde: `b5436b8c` (`feat(reminders-alerts-state-reset): clear ack error on blur (R4)`) |
