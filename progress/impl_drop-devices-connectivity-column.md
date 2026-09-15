@@ -114,3 +114,89 @@
   `progress/current.md`, el handoff y los cuatro ficheros de spec).
 
 ## R3
+
+### Migración de `pet_tracker_wt`
+
+- a) Estado previo del journal — exit `0`:
+
+  ```text
+  16|1787957375434
+  ```
+
+- b) Columna presente antes — exit `0`:
+
+  ```text
+  1
+  ```
+
+- c) Primera aplicación, `pnpm db:migrate` — exit `0`:
+
+  ```text
+  > drizzle-kit migrate
+  Using 'pg' driver for database querying
+  [✓] migrations applied successfully!
+  ```
+
+- d) Columna ausente después — exit `0`:
+
+  ```text
+  0
+  ```
+
+- e) Journal después — exit `0`:
+
+  ```text
+  17|1789440631931
+  ```
+
+- f) Segunda aplicación inmediata, `pnpm db:migrate` — exit `0`:
+
+  ```text
+  > drizzle-kit migrate
+  Using 'pg' driver for database querying
+  [✓] migrations applied successfully!
+  17|1789440631931
+  0
+  ```
+
+- g) `pnpm db:generate && git status --porcelain src/db/migrations` — exit
+  `0`; la parte de `git status` no imprimió nada:
+
+  ```text
+  devices 14 columns 0 indexes 0 fks
+  No schema changes, nothing to migrate 😴
+  ```
+
+### Verificación posterior
+
+- Precondición LocalStack:
+  `pgrep -af 'init\.sh|test:e2e|jest-e2e' | grep -v pgrep` sin salida.
+- `pnpm test:e2e` con la columna ausente — exit `0`:
+
+  ```text
+  Test Suites: 3 skipped, 26 passed, 26 of 29 total
+  Tests:       8 skipped, 367 passed, 375 total
+  Snapshots:   0 total
+  ```
+
+- La base compartida `pet_tracker` no se consultó ni modificó.
+
+- Precondición del cierre:
+  `pgrep -af 'init\.sh|test:e2e|jest-e2e' | grep -v pgrep` sin salida.
+- `./init.sh` final desde la raíz, sin pipe — exit `0`:
+
+  ```text
+  ✅ Build exitoso
+  Test Suites: 166 passed, 166 total
+  Tests:       1279 passed, 1279 total
+  Test Suites: 2 passed, 2 total
+  Tests:       14 passed, 14 total
+  Test Suites: 73 passed, 73 total
+  Tests:       1265 passed, 1265 total
+  Test Suites: 3 skipped, 26 passed, 26 of 29 total
+  Tests:       8 skipped, 367 passed, 375 total
+  ✅ Tests e2e pasados
+  ✅ Lint sin errores
+  ✅ Typecheck sin errores
+  ✅ Todo verde. Listo para trabajar.
+  ```
