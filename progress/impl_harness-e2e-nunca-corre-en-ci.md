@@ -97,9 +97,13 @@ El setup del gate usó exclusivamente
 
 - **G1 — pendiente:** URL de la corrida verde del PR y comprobación del resumen
   E2E según la igualdad dinámica de `requirements.md`.
+  El gate 1 la corrida verde
+  URL: https://github.com/TrackerMex/Pet-Tracker/pull/134
 - **G2 — pendiente:** URL de la corrida roja deliberada con
   `test/96-ci-red-probe`, línea exacta del fallo y cierre del PR de prueba sin
   mergear.
+  El gate 2 la corrida roja
+  URL: https://github.com/TrackerMex/Pet-Tracker/pull/135
 
 La feature no debe pasar a `done` hasta que un humano aporte ambas evidencias y
 el reviewer emita su veredicto.
