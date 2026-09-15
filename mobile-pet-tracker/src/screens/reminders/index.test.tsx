@@ -169,6 +169,27 @@ async function confirmDelete(reminderId: string) {
   await fireEvent.press(screen.getByTestId('reminders-delete-confirm'));
 }
 
+async function focusScreen(): Promise<(() => void)[]> {
+  let cleanups: (() => void)[] = [];
+
+  await act(async () => {
+    cleanups = mockUseFocusEffect.mock.calls.flatMap(([callback]) => {
+      const cleanup = callback();
+      return typeof cleanup === 'function' ? [cleanup] : [];
+    });
+    await Promise.resolve();
+  });
+
+  return cleanups;
+}
+
+async function blurScreen(cleanups: (() => void)[]) {
+  await act(async () => {
+    cleanups.forEach((cleanup) => cleanup());
+    await Promise.resolve();
+  });
+}
+
 describe('R5: reminders monta con métricas y estados', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -636,5 +657,42 @@ describe('#87 R14: RemindersScreen lee por TanStack Query', () => {
     expect(queryClient.getQueryData(reminderKeys.list('pet-1'))).toEqual(
       remindersState,
     );
+  });
+});
+
+describe('#97 R1: blur cierra el bottom sheet de delete', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockListReminders.mockResolvedValue({
+      kind: 'ok',
+      reminders: [makeReminder()],
+    });
+  });
+
+  it('cierra el sheet y elimina su contenido accesible al perder foco', async () => {
+    await renderReminders();
+    await waitFor(() =>
+      expect(screen.getByTestId('reminder-row-reminder-1')).toBeVisible(),
+    );
+    const cleanups = await focusScreen();
+
+    await fireEvent.press(screen.getByTestId('reminder-delete-reminder-1'));
+    expect(screen.getByTestId('community-bottom-sheet')).toBeVisible();
+
+    await blurScreen(cleanups);
+
+    await waitFor(() => {
+      expect(screen.queryByTestId('community-bottom-sheet')).toBeNull();
+      expect(screen.queryByText('¿Eliminar recordatorio?')).toBeNull();
+      expect(screen.queryByTestId('reminders-delete-confirm')).toBeNull();
+    });
   });
 });
