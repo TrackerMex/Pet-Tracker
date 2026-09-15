@@ -125,3 +125,17 @@ describe('R4 (harness-e2e-nunca-corre-en-ci #96): la infra caida aborta init.sh 
     assert.doesNotMatch(block, /if\s+\[\s+-n\s+["']?\$CI/);
   });
 });
+
+describe('R5 (harness-e2e-nunca-corre-en-ci #96): el fallo nombra host, puerto y clave de origen', () => {
+  it('explica que destino fallo y de que clave se derivo', () => {
+    const result = corre({
+      env:
+        'DATABASE_URL=postgresql://pet_tracker:pet_tracker@localhost:5433/pet_tracker\n' +
+        'AWS_ENDPOINT_URL=http://localhost:4566\n',
+      portOpen: false,
+    });
+    const failLine = result.stdout.split('\n').find((line) => line.startsWith('FAIL:')) ?? '';
+
+    assert.match(failLine, /localhost:5433.*DATABASE_URL/);
+  });
+});
