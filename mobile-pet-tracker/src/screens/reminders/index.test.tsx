@@ -699,3 +699,44 @@ describe(
     });
   },
 );
+
+describe(
+  '#97 R2: el error de acción no sobrevive a la pérdida de foco',
+  () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+      process.env.EXPO_PUBLIC_API_URL = apiUrl;
+      mockUseAuth.mockReturnValue({
+        status: 'authenticated',
+        token: 'jwt-token',
+        signIn: jest.fn(),
+        signOut: jest.fn(),
+      } satisfies AuthContextValue);
+      mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+      mockListReminders.mockResolvedValue({
+        kind: 'ok',
+        reminders: [makeReminder()],
+      });
+      mockDeleteReminder.mockResolvedValue({ kind: 'error' });
+    });
+
+    it('borra el error visible al perder foco', async () => {
+      await renderReminders();
+      await waitFor(() =>
+        expect(screen.getByTestId('reminder-delete-reminder-1')).toBeVisible(),
+      );
+      const cleanups = await focusScreen();
+
+      await confirmDelete('reminder-1');
+      await waitFor(() =>
+        expect(screen.getByTestId('reminders-action-error')).toBeVisible(),
+      );
+
+      await blurScreen(cleanups);
+
+      await waitFor(() =>
+        expect(screen.queryByTestId('reminders-action-error')).toBeNull(),
+      );
+    });
+  },
+);
