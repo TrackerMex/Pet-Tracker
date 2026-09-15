@@ -21,6 +21,13 @@ export class MealServingDrizzleRepository implements MealServingRepository {
     const [row] = await this.db
       .insert(mealServings)
       .values({ id: uuidv7(), ...data })
+      .onConflictDoNothing({
+        target: [
+          mealServings.petId,
+          mealServings.servedOn,
+          mealServings.mealTime,
+        ],
+      })
       .returning();
 
     if (!row) {
