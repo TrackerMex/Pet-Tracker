@@ -81,8 +81,6 @@ export function AlertsScreen() {
     useCallback(() => {
       return () => {
         setActionError(null);
-        setAckingId(null);
-        ackingIdRef.current = null;
       };
     }, [refetchAlerts]),
   );
