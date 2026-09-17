@@ -124,6 +124,8 @@ Rojo válido: L1 falla 304 ≠ 305 y la clave es `undefined`.
 
 Se añadió `weightLog.dateCannotBeAfterToday` al final de ambos bloques `weightLog.` y su fila `← añadida por #90 (R2)` en §2.5. No se tocó aún `ui-copy-table.ts`.
 
+Commit verde: `60923eef`.
+
 ```text
 $ bunx jest --runTestsByPath src/providers/__tests__/language-provider.test.tsx src/__tests__/ui-language.test.ts
 PASS src/providers/__tests__/language-provider.test.tsx
@@ -140,6 +142,89 @@ exit=0
 - `grep -c "^  '" src/i18n/catalog.ts`: `610`, exit 0 (base 608 + 2).
 
 ## R3 — fecha por defecto en la zona del perfil
+
+### Elección de fake timers
+
+Se probaron las dos variantes exigidas en este mismo fichero:
+
+- `jest.useFakeTimers()`: 1 suite, 20 tests pasan y 6 fallan únicamente por el rojo esperado; `waitFor` y el árbol siguen avanzando.
+- `jest.useFakeTimers({ doNotFake: ['requestAnimationFrame'] })`: el mismo resultado (1 suite, 20 pasan, los mismos 6 rojos), sin timeout ni diferencia observable.
+
+Se conserva `jest.useFakeTimers()` sin opciones: es la variante mínima y mantiene vivos `waitFor`, TanStack Query y el árbol renderizado.
+
+### Rojo
+
+Se añadieron el mock raíz de `getMe`, el perfil completo, el reloj `2026-09-17T23:30:00Z`, el par Kiritimati/Pago_Pago y los cuatro candados anteriores con sufijo `(#90 R3)`. Todas las esperas de fecha terminan en `weight-date-input.props.value`.
+
+Salida literal de la corrida elegida (`--silent` solo suprime el ruido de HeroUI, no filtra ni canaliza el proceso):
+
+```text
+$ bunx jest --runTestsByPath 'src/app/(tabs)/__tests__/weight-log.test.tsx' --silent
+FAIL src/app/(tabs)/__tests__/weight-log.test.tsx (7.049 s)
+  ● R3: el formulario vuelve a sus valores iniciales al perder el foco › restaura los cuatro valores visibles tras el blur (#90 R3)
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "2026-09-18"
+    Received: "2026-09-17"
+
+  ● R9: alta de peso con degradación por kind › renders the inline form with the local date prefilled (#90 R3)
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "2026-09-18"
+    Received: "2026-09-17"
+
+  ● R9: alta de peso con degradación por kind › submits all fields, clears them, and refetches the list (#72 R2) (#90 R3)
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "2026-09-18"
+    Received: "2026-09-17"
+
+  ● R9: alta de peso con degradación por kind › omits body condition when its field is blank (#90 R3)
+
+    expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+    - Expected
+    + Received
+
+      "http://example.test/v1",
+      "jwt-token",
+      "pet-1",
+      Object {
+    -   "measuredAt": "2026-09-18",
+    +   "measuredAt": "2026-09-17",
+        "weightKg": 12.4,
+      },
+
+    Number of calls: 1
+
+  ● #90 R3: la fecha por defecto sale de la zona del perfil › usa Pacific/Kiritimati para el valor visible, el payload y el reset
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "2026-09-18"
+    Received: "2026-09-17"
+
+  ● #90 R3: la fecha por defecto sale de la zona del perfil › usa Pacific/Pago_Pago para el valor visible, el payload y el reset
+
+    expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+    Expected: "http://example.test/v1", "jwt-token"
+
+    Number of calls: 0
+
+Test Suites: 1 failed, 1 total
+Tests:       6 failed, 20 passed, 26 total
+Snapshots:   0 total
+Time:        7.208 s
+exit=1
+```
+
+Rojo válido: cinco fallas prueban la fecha del dispositivo (`09-17` frente a `09-18`) y Pago_Pago prueba que producción todavía no llama `getMe`; no hay `ReferenceError`.
+
+### Verde
 
 Pendiente.
 
