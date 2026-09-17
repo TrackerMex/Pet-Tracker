@@ -80,6 +80,11 @@ async function renderAddPet() {
 }
 
 async function pressPickPhoto(): Promise<void> {
+  if (mockLaunchImageLibrary.getMockImplementation() === undefined) {
+    throw new Error(
+      'PICKER_MOCK_UNARMED: launchImageLibraryAsync must be rearmed by the root beforeEach in add-pet/index.test.tsx',
+    );
+  }
   await fireEvent.press(screen.getByTestId('add-pet-photo'));
 }
 
@@ -145,13 +150,13 @@ describe('R2: el formulario vuelve a sus valores iniciales al perder el foco', (
     await fireEvent.press(screen.getByTestId('birth-date-field'));
     await fireEvent.press(screen.getByTestId('age-mode-months'));
     await fireEvent.changeText(screen.getByTestId('approx-age-input'), '999');
-    await fireEvent.press(screen.getByTestId('add-pet-photo'));
+    await pressPickPhoto();
     await waitFor(() =>
       expect(screen.getByTestId('pet-avatar').props.photoUrl).toBe(
         'file:///pet.jpg',
       ),
     );
-    await fireEvent.press(screen.getByTestId('add-pet-photo'));
+    await pressPickPhoto();
     await waitFor(() =>
       expect(screen.getByTestId('photo-upload-error')).toBeVisible(),
     );
@@ -356,7 +361,7 @@ describe('R7: foto opcional tras alta', () => {
     }) as unknown as typeof fetch;
     await renderAddPet();
 
-    await fireEvent.press(screen.getByTestId('add-pet-photo'));
+    await pressPickPhoto();
     await waitFor(() =>
       expect(screen.getByTestId('pet-avatar').props.photoUrl).toBe(
         'file:///new-pet.jpg',
