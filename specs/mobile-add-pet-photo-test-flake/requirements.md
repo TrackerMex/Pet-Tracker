@@ -244,7 +244,7 @@ ramas excluyentes:
 `explorer` sigue **abierta** y así queda escrita. Si A vuelve a morder, se abre una
 feature nueva que arranca del mensaje diagnóstico, no de cero.
 
-- [ ] **D-A aprobada por humano** (fecha: ____)
+- [X] **D-A aprobada por humano** (fecha: 2026-09-17)
 
 ### D-B — El criterio 5 se sustituye por el Protocolo V
 
@@ -259,7 +259,7 @@ programe primero el fichero que acaba de fallar (F3), y `./init.sh` entero es
 mucho más caro que la suite móvil (~33 s de mediana) y además colisiona con la otra
 sesión en el Postgres/LocalStack compartidos.
 
-- [ ] **D-B aprobada por humano** (fecha: ____)
+- [X] **D-B aprobada por humano** (fecha: 2026-09-17)
 
 ---
 
@@ -419,9 +419,9 @@ debe salir **vacío**.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
-- [ ] D-A aprobada (§Decisiones)
-- [ ] D-B aprobada (§Decisiones)
+- [X] Aprobado por humano (fecha: 2026-09-17) ← gate obligatorio antes de implementar
+- [X] D-A aprobada (§Decisiones)
+- [X] D-B aprobada (§Decisiones)
 
 > Al firmar D-A y D-B, el `leader` reescribe los criterios de aceptación 1, 2 y 5 de
 > la entrada #72 de `feature_list.json` para que digan lo que esta spec fija.
