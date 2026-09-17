@@ -281,3 +281,39 @@ describe('R8: obtiene el token con el projectId, lo publica y hace POST', () => 
     });
   });
 });
+
+describe('R9: un fallo de token o de red no rompe ni reintenta en la sesión', () => {
+  it('absorbe un fallo al obtener el token y conserva el probe', async () => {
+    mockGetExpoPushToken.mockRejectedValue(new Error('offline'));
+
+    const probe = await renderHook(() => {
+      usePushRegistration();
+      return 'mounted';
+    });
+
+    await waitFor(() => {
+      expect(mockGetExpoPushToken).toHaveBeenCalledTimes(1);
+      expect(mockRegisterPushToken).not.toHaveBeenCalled();
+      expect(probe.result.current).toBe('mounted');
+    });
+  });
+
+  it.each([
+    ['unreachable', { kind: 'unreachable' as const, message: 'offline' }],
+    ['error', { kind: 'error' as const }],
+    ['unauthorized', { kind: 'unauthorized' as const }],
+  ])('no reintenta un resultado %s dentro del mismo montaje', async (_case, result) => {
+    mockRegisterPushToken.mockResolvedValue(result);
+    const probe = await renderHook(
+      (_props: { tick: number }) => usePushRegistration(),
+      { initialProps: { tick: 0 } },
+    );
+    await waitFor(() => {
+      expect(mockRegisterPushToken).toHaveBeenCalledTimes(1);
+    });
+
+    await probe.rerender({ tick: 1 });
+
+    expect(mockRegisterPushToken).toHaveBeenCalledTimes(1);
+  });
+});
