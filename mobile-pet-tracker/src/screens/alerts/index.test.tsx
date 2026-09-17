@@ -5,6 +5,7 @@ import {
   waitFor,
   within,
 } from '@testing-library/react-native';
+import { defaultScheduler, notifyManager } from '@tanstack/react-query';
 import { useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
@@ -155,6 +156,8 @@ async function blurScreen(cleanups: (() => void)[]) {
   });
 }
 
+afterEach(() => notifyManager.setScheduler(defaultScheduler));
+
 describe('#78 R4: la pantalla pinta su esqueleto, su error, su vacío y sus filas', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -187,7 +190,8 @@ describe('#78 R4: la pantalla pinta su esqueleto, su error, su vacío y sus fila
     }
   });
 
-  it('pinta y reintenta cada error de la primera página', async () => {
+  it('pinta y reintenta cada error de la primera página (#72 R1)', async () => {
+    notifyManager.setScheduler((callback) => setTimeout(callback, 200));
     const errors: AlertsState[] = [
       { kind: 'error' },
       { kind: 'unreachable', message: 'network down' },
