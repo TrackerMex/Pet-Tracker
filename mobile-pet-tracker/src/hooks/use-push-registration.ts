@@ -26,27 +26,31 @@ export function usePushRegistration(): void {
     if (!projectId) return;
 
     void (async () => {
-      if (platform === 'android') {
-        await Notifications.setNotificationChannelAsync('default', {
-          name: 'default',
-          importance: Notifications.AndroidImportance.MAX,
+      try {
+        if (platform === 'android') {
+          await Notifications.setNotificationChannelAsync('default', {
+            name: 'default',
+            importance: Notifications.AndroidImportance.MAX,
+          });
+        }
+
+        let permissions = await Notifications.getPermissionsAsync();
+        if (!permissions.granted && permissions.canAskAgain) {
+          permissions = await Notifications.requestPermissionsAsync();
+        }
+        if (!permissions.granted) return;
+
+        const expoToken = (
+          await Notifications.getExpoPushTokenAsync({ projectId })
+        ).data;
+        setPushToken(expoToken);
+        await registerPushToken(process.env.EXPO_PUBLIC_API_URL, token, {
+          expoToken,
+          platform,
         });
+      } catch {
+        // Registration is best-effort and runs again on the next app start.
       }
-
-      let permissions = await Notifications.getPermissionsAsync();
-      if (!permissions.granted && permissions.canAskAgain) {
-        permissions = await Notifications.requestPermissionsAsync();
-      }
-      if (!permissions.granted) return;
-
-      const expoToken = (
-        await Notifications.getExpoPushTokenAsync({ projectId })
-      ).data;
-      setPushToken(expoToken);
-      await registerPushToken(process.env.EXPO_PUBLIC_API_URL, token, {
-        expoToken,
-        platform,
-      });
     })();
   }, [setPushToken, status, token]);
 }
