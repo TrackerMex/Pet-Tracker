@@ -20,6 +20,8 @@ Branch: `feature/90-mobile-owner-timezone-dates`
 
 Se añadió el test de los casos (a)–(e) y un esqueleto que ignora `timeZone` y devuelve el día local del dispositivo. Comando, desde `mobile-pet-tracker/`:
 
+Commit rojo: `819fa5c9`.
+
 ```text
 $ bunx jest --runTestsByPath src/utils/civil-today-iso.test.ts
 FAIL src/utils/civil-today-iso.test.ts
@@ -53,7 +55,29 @@ Rojo válido: las dos fallas son por el día civil esperado; no hay `Cannot find
 
 ### Verde
 
-Pendiente.
+Se sustituyó el esqueleto por `Intl.DateTimeFormat('en-US', { timeZone, year, month, day }).formatToParts(now)`, reensamblando `year-month-day`; todo el camino queda dentro de `try/catch` y el `catch` usa los getters locales del dispositivo.
+
+```text
+$ bunx jest --runTestsByPath src/utils/civil-today-iso.test.ts
+PASS src/utils/civil-today-iso.test.ts
+  #90 R1: civilTodayIso devuelve el día civil de una zona y cae al dispositivo
+    ✓ resuelve el mismo instante en Pacific/Kiritimati como 2026-09-18 (19 ms)
+    ✓ resuelve el mismo instante en Pacific/Pago_Pago como 2026-09-17 (1 ms)
+    ✓ rellena mes y día con cero (1 ms)
+    ✓ usa el día del dispositivo sin zona
+    ✓ usa el día del dispositivo sin lanzar para una zona inválida
+    ✓ usa new Date() cuando now no se proporciona (2 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       6 passed, 6 total
+Snapshots:   0 total
+Time:        1.66 s, estimated 2 s
+Ran all test suites within paths "src/utils/civil-today-iso.test.ts".
+exit=0
+```
+
+- `bun run typecheck`: exit 0.
+- `rg -n '\.format\(' src/utils/civil-today-iso.ts`: sin coincidencias, exit 1 esperado.
 
 ## R2 — catálogo y registro de copy
 

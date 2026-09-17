@@ -18,7 +18,7 @@ tags: [harness, spec, mobile]
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | `src/utils/civil-today-iso.test.ts::#90 R1: civilTodayIso devuelve el día civil de una zona y cae al dispositivo` (casos a-e) | pendiente |
+| R1 | `src/utils/civil-today-iso.test.ts::#90 R1: civilTodayIso devuelve el día civil de una zona y cae al dispositivo` (casos a-e) | rojo `819fa5c9` `test(mobile-owner-timezone-dates): civilTodayIso resolves a civil day per zone and falls back to the device (R1)` → verde pendiente |
 | R2 | `src/providers/__tests__/language-provider.test.tsx::#90 R2: el catálogo trae weightLog.dateCannotBeAfterToday en los dos idiomas y registrada en la tabla` + candado L1 (`:55`, `+ 1`) | pendiente |
 | R3 | `src/app/(tabs)/__tests__/weight-log.test.tsx::#90 R3: la fecha por defecto sale de la zona del perfil` (`it.each` Kiritimati/Pago_Pago) + los cuatro `it` editados con sufijo ` (#90 R3)` (tabla de abajo) | pendiente |
 | R4 | `src/app/(tabs)/__tests__/weight-log.test.tsx::#90 R4: sin zona del perfil la fecha cae al dispositivo` (a, b×3, c) — rojo por M4-i/M4-ii | pendiente |
