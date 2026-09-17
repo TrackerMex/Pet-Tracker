@@ -1,6 +1,6 @@
 ---
 feature: "mobile-add-pet-photo-test-flake"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec, mobile, tests]
 ---
 
