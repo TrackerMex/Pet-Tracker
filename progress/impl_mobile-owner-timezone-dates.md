@@ -411,6 +411,8 @@ exit=0
 
 Se añadió `#90 R6` después de `#72 R4`, con `jest.useFakeTimers()` (misma variante mínima validada en R3), reloj `23:30Z` y un `Date` real cuyos getters UTC están sesgados al día 18. Hereda el `beforeEach` raíz de `expo-image-picker` y no pulsa `add-pet-photo`. M6 cambió únicamente `dateToIso` a getters UTC.
 
+Commit rojo con M6: `48e8206f`.
+
 ```text
 $ bunx jest --runTestsByPath src/screens/add-pet/index.test.tsx --silent
 FAIL src/screens/add-pet/index.test.tsx (11.014 s)
@@ -434,7 +436,22 @@ Rojo válido: la única falla es el payload UTC `2026-09-18` frente al día loca
 
 ### Verde — reversión de M6
 
-Pendiente.
+Se restauraron `getFullYear`/`getMonth`/`getDate` y no se cambió el test.
+
+```text
+$ bunx jest --runTestsByPath src/screens/add-pet/index.test.tsx --silent
+PASS src/screens/add-pet/index.test.tsx (5.392 s)
+
+Test Suites: 1 passed, 1 total
+Tests:       20 passed, 20 total
+Snapshots:   0 total
+Time:        5.516 s, estimated 12 s
+exit=0
+```
+
+- `bun run typecheck`: exit 0.
+- `git diff origin/main -- mobile-pet-tracker/src/screens/add-pet/index.tsx`: vacío (0 bytes).
+- El bloque `#90 R6` no contiene `add-pet-photo` ni llama `pressPickPhoto()`.
 
 ## R7 — verificación final
 
