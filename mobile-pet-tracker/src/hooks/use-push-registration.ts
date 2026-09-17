@@ -1,11 +1,21 @@
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
-import { useEffect } from 'react';
+import { router } from 'expo-router';
+import { useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
 
 import { registerPushToken } from '../api/push-tokens';
 import { useAuth } from '../providers/auth-provider';
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowBanner: true,
+    shouldShowList: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
 
 function getProjectId(): string | undefined {
   const projectId = Constants.expoConfig?.extra?.eas?.projectId;
@@ -16,6 +26,7 @@ function getProjectId(): string | undefined {
 
 export function usePushRegistration(): void {
   const { setPushToken, status, token } = useAuth();
+  const handledInitialResponse = useRef(false);
 
   useEffect(() => {
     if (status !== 'authenticated' || token === null || !setPushToken) return;
@@ -24,6 +35,20 @@ export function usePushRegistration(): void {
     if (platform !== 'android' && platform !== 'ios') return;
     const projectId = getProjectId();
     if (!projectId) return;
+
+    const responseSubscription =
+      Notifications.addNotificationResponseReceivedListener(() => {
+        router.push('/alerts');
+      });
+
+    if (!handledInitialResponse.current) {
+      handledInitialResponse.current = true;
+      void Notifications.getLastNotificationResponseAsync()
+        .then((response) => {
+          if (response) router.push('/alerts');
+        })
+        .catch(() => undefined);
+    }
 
     void (async () => {
       try {
@@ -52,5 +77,7 @@ export function usePushRegistration(): void {
         // Registration is best-effort and runs again on the next app start.
       }
     })();
+
+    return () => responseSubscription.remove();
   }, [setPushToken, status, token]);
 }
