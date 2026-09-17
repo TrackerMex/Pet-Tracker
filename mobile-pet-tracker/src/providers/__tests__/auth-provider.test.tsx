@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-
 import * as SecureStore from 'expo-secure-store';
 import { Button, Text } from 'react-native';
 
+import { deletePushToken } from '../../api/push-tokens';
 import { AuthProvider, useAuth } from '../auth-provider';
 
 jest.mock('expo-secure-store', () => ({
@@ -9,19 +10,38 @@ jest.mock('expo-secure-store', () => ({
   setItemAsync: jest.fn(),
   deleteItemAsync: jest.fn(),
 }));
+jest.mock('../../api/push-tokens', () => ({
+  deletePushToken: jest.fn(),
+}));
 
 const getItemAsync = jest.mocked(SecureStore.getItemAsync);
 const setItemAsync = jest.mocked(SecureStore.setItemAsync);
 const deleteItemAsync = jest.mocked(SecureStore.deleteItemAsync);
+const deletePushTokenMock = jest.mocked(deletePushToken);
+
+let authProbeRenderCount = 0;
+let latestSetPushToken: ((expoToken: string | null) => void) | undefined;
+let latestSignOut: (() => Promise<void>) | undefined;
 
 function AuthProbe() {
-  const { status, token, signIn, signOut } = useAuth();
+  const { status, token, signIn, signOut, setPushToken } = useAuth() as ReturnType<
+    typeof useAuth
+  > & {
+    setPushToken?: (expoToken: string | null) => void;
+  };
+  authProbeRenderCount += 1;
+  latestSetPushToken = setPushToken;
+  latestSignOut = signOut;
 
   return (
     <>
       <Text testID="auth-status">{status}</Text>
       <Text testID="auth-token">{token ?? 'none'}</Text>
       <Button title="Sign in" onPress={() => void signIn('new-token')} />
+      <Button
+        title="Set push token"
+        onPress={() => setPushToken?.('ExpoPushToken[xxx]')}
+      />
       <Button title="Sign out" onPress={() => void signOut()} />
     </>
   );
@@ -129,5 +149,127 @@ describe('R4: signIn y signOut', () => {
       expect(screen.getByTestId('auth-status')).toHaveTextContent('unauthenticated');
       expect(screen.getByTestId('auth-token')).toHaveTextContent('none');
     });
+  });
+});
+
+describe('#79 R5: signOut borra el push token antes que la sesión', () => {
+  const originalApiUrl = process.env.EXPO_PUBLIC_API_URL;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    authProbeRenderCount = 0;
+    latestSetPushToken = undefined;
+    latestSignOut = undefined;
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    getItemAsync.mockResolvedValue('jwt-token');
+    setItemAsync.mockResolvedValue();
+    deleteItemAsync.mockResolvedValue();
+    deletePushTokenMock.mockResolvedValue({ kind: 'ok' });
+  });
+
+  afterAll(() => {
+    if (originalApiUrl === undefined) {
+      delete process.env.EXPO_PUBLIC_API_URL;
+    } else {
+      process.env.EXPO_PUBLIC_API_URL = originalApiUrl;
+    }
+  });
+
+  it('hace DELETE con el JWT vigente antes de borrar SecureStore', async () => {
+    await render(
+      <AuthProvider>
+        <AuthProbe />
+      </AuthProvider>,
+    );
+    await waitFor(() => {
+      expect(screen.getByTestId('auth-status')).toHaveTextContent('authenticated');
+    });
+
+    await act(() => latestSetPushToken?.('ExpoPushToken[xxx]'));
+    await act(async () => {
+      await latestSignOut?.();
+    });
+
+    await waitFor(() => {
+      expect(deletePushTokenMock).toHaveBeenCalledWith(
+        'http://example.test/v1',
+        'jwt-token',
+        'ExpoPushToken[xxx]',
+      );
+      expect(deleteItemAsync).toHaveBeenCalledWith('auth_token');
+      expect(deletePushTokenMock.mock.invocationCallOrder[0]).toBeLessThan(
+        deleteItemAsync.mock.invocationCallOrder[0]!,
+      );
+    });
+  });
+
+  it('sin token publicado cierra sesión sin hacer DELETE remoto', async () => {
+    await render(
+      <AuthProvider>
+        <AuthProbe />
+      </AuthProvider>,
+    );
+    await waitFor(() => {
+      expect(screen.getByTestId('auth-status')).toHaveTextContent('authenticated');
+    });
+
+    await act(async () => {
+      await latestSignOut?.();
+    });
+
+    await waitFor(() => {
+      expect(deletePushTokenMock).not.toHaveBeenCalled();
+      expect(deleteItemAsync).toHaveBeenCalledWith('auth_token');
+      expect(screen.getByTestId('auth-status')).toHaveTextContent(
+        'unauthenticated',
+      );
+    });
+  });
+
+  it('cierra sesión aunque falle el DELETE remoto', async () => {
+    deletePushTokenMock.mockResolvedValueOnce({
+      kind: 'unreachable',
+      message: 'offline',
+    });
+    await render(
+      <AuthProvider>
+        <AuthProbe />
+      </AuthProvider>,
+    );
+    await waitFor(() => {
+      expect(screen.getByTestId('auth-status')).toHaveTextContent('authenticated');
+    });
+
+    await act(() => latestSetPushToken?.('ExpoPushToken[xxx]'));
+    await act(async () => {
+      await latestSignOut?.();
+    });
+
+    await waitFor(() => {
+      expect(deletePushTokenMock).toHaveBeenCalledTimes(1);
+      expect(deleteItemAsync).toHaveBeenCalledWith('auth_token');
+      expect(screen.getByTestId('auth-status')).toHaveTextContent(
+        'unauthenticated',
+      );
+    });
+  });
+
+  it('publicar el token no re-renderiza y conserva una función estable', async () => {
+    await render(
+      <AuthProvider>
+        <AuthProbe />
+      </AuthProvider>,
+    );
+    await waitFor(() => {
+      expect(screen.getByTestId('auth-status')).toHaveTextContent('authenticated');
+    });
+    const rendersBefore = authProbeRenderCount;
+    const setterBefore = latestSetPushToken;
+
+    await act(() => latestSetPushToken?.('ExpoPushToken[xxx]'));
+
+    expect(authProbeRenderCount).toBe(rendersBefore);
+    expect(latestSetPushToken).toBe(setterBefore);
+    expect(latestSetPushToken).toEqual(expect.any(Function));
   });
 });
