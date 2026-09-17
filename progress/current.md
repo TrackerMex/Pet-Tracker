@@ -14,3 +14,4 @@
 - plan: tabla meal_servings + migracion 0017, POST/DELETE /v1/pets/:petId/meals, mealsToday en GET /v1/pets/:petId, servedToday en GET nutrition-plan, auditoria meal.serve/meal.unserve, test/meals.e2e-spec.ts; migracion aplicada por Codex en pet_tracker_wt (R12) y por el leader en pet_tracker tras el merge
 - coordinacion movil con #97: el que anada claves i18n avisa (candado de longitud en language-provider.test.tsx); #83 no toca src/app/(tabs)/_layout.tsx salvo que la spec lo decida, y entonces se avisa
 - flakes conocidos en la suite movil: alerts/index.test.tsx y add-pet/index.test.tsx (#72, P2); verde aislado, rojo en primera corrida completa
+- smoke curl (humano, 2026-09-17): OK. mealsToday null sin plan; POST 07:30 → 201; segundo POST → 409 MEAL_ALREADY_SERVED; 12:00 → 422 MEAL_TIME_NOT_IN_PLAN; perfil {served:1,total:2}; servedToday ["07:30"]; DELETE → 204, segundo → 404; perfil {served:0,total:2}; listado null
