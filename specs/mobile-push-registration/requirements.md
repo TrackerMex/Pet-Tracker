@@ -624,7 +624,7 @@ de R1 sigue igual, incluida la regla de instalar con `npx expo install` y **no
 retocar el rango a mano**: si en el futuro `expo install` volviera a escribir algo
 distinto, se vuelve a parar y se vuelve a enmendar.
 
-- [ ] **E1 aprobada por humano** (fecha: ____)
+- [X] **E1 aprobada por humano** (fecha: 2026-09-17)
 
 ---
 
