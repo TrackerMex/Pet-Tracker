@@ -135,7 +135,7 @@ Si algún día el backend cambiara ese texto, el móvil **degrada a crudo** (no 
 y el e2e R5 de #89 es el que avisaría. Alternativa rechazada: solo `path`
 (una condición menos, un mensaje falso en el caso de formato).
 
-- [ ] **P1 aceptada por humano** (fecha: ____) — si se rechaza, R5 pasa a
+- [X] **P1 aceptada por humano** (fecha: 2026-09-17) — si se rechaza, R5 pasa a
   discriminar solo por `path` y su segundo `it` (formato crudo) se elimina.
 
 ### Del leader (técnicas)
@@ -546,8 +546,8 @@ parchea con una tabla de offsets).
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
-- [ ] P1 aceptada (§Decisiones del gate) — o rechazada, y R5 se simplifica
+- [X] Aprobado por humano (fecha: 2026-09-17) ← gate obligatorio antes de implementar
+- [X] P1 aceptada (§Decisiones del gate) — o rechazada, y R5 se simplifica
 
 > Al firmar, el `leader` pasa el frontmatter de los cuatro ficheros a `approved`,
 > corrige `GET /v1/users/me` → `GET /v1/me` en la entrada #90 de `feature_list.json`
