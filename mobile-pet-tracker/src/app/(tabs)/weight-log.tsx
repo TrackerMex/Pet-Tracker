@@ -63,7 +63,7 @@ function WeightLogContent({ petId }: { petId: string }) {
     queryFn: () => getMe(baseUrl, token ?? ''),
   });
   const profileTimeZone =
-    me.data?.kind === 'ok' ? me.data.me.timezone : undefined;
+    me.data?.kind === 'ok' ? me.data.me.timezone : 'Pacific/Kiritimati';
   const measuredAt = measuredAtDraft ?? civilTodayIso(profileTimeZone);
   useFocusEffect(
     useCallback(

@@ -575,6 +575,70 @@ describe('#90 R3: la fecha por defecto sale de la zona del perfil', () => {
   });
 });
 
+describe('#90 R4: sin zona del perfil la fecha cae al dispositivo', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-09-17T23:30:00Z'));
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListWeights.mockResolvedValue({ kind: 'ok', weights: [] });
+    mockCreateWeight.mockReturnValue(pending());
+  });
+
+  afterEach(() => jest.useRealTimers());
+
+  it('usa el día del dispositivo mientras el perfil está pendiente', async () => {
+    mockGetMe.mockReturnValue(pending());
+
+    await renderWeightLog();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('weight-date-input').props.value).toBe(
+        deviceTodayIso(),
+      ),
+    );
+  });
+
+  it.each([
+    { kind: 'unreachable', message: 'network down' } as const,
+    { kind: 'error' } as const,
+    { kind: 'missing-config' } as const,
+  ])('usa el día del dispositivo cuando me devuelve $kind', async (state) => {
+    mockGetMe.mockResolvedValue(state);
+
+    await renderWeightLog();
+    await waitFor(() => expect(screen.getByTestId('weight-input')).toBeVisible());
+    await waitFor(() =>
+      expect(screen.getByTestId('weight-date-input').props.value).toBe(
+        deviceTodayIso(),
+      ),
+    );
+    expect(screen.queryByTestId('weight-form-error')).toBeNull();
+  });
+
+  it('usa el día del dispositivo sin lanzar para una zona inválida', async () => {
+    mockGetMe.mockResolvedValue({
+      kind: 'ok',
+      me: makeProfile('Not/A/Zone'),
+    });
+
+    await renderWeightLog();
+    await waitFor(() => expect(screen.getByTestId('weight-input')).toBeVisible());
+    await waitFor(() =>
+      expect(screen.getByTestId('weight-date-input').props.value).toBe(
+        deviceTodayIso(),
+      ),
+    );
+    expect(screen.queryByTestId('weight-form-error')).toBeNull();
+  });
+});
+
 describe('#61 R10: los controles táctiles declaran TOUCH_SLOP', () => {
   beforeEach(() => {
     jest.clearAllMocks();

@@ -230,6 +230,8 @@ Rojo válido: cinco fallas prueban la fecha del dispositivo (`09-17` frente a `0
 
 `WeightLogContent` consulta `userKeys.me()` inline mediante `getMe(baseUrl, token ?? '')`; lee la zona solo para `kind: 'ok'`. El estado pasó a `measuredAtDraft: string | null`, y el valor visible/enviado es `measuredAtDraft ?? civilTodayIso(profileTimeZone)`. El montaje, blur y éxito regresan el borrador a `null`.
 
+Commit verde: `d79524cc`.
+
 ```text
 $ bunx jest --runTestsByPath 'src/app/(tabs)/__tests__/weight-log.test.tsx'
 PASS src/app/(tabs)/__tests__/weight-log.test.tsx (7.035 s)
@@ -247,6 +249,58 @@ exit=0
 - Se actualizaron `specs/mobile-detail-screens-state-reset/traceability.md` y `specs/mobile-add-pet-photo-test-flake/traceability.md` con los títulos nuevos; no se alteraron sus requisitos.
 
 ## R4 — fallback al dispositivo (mutación M4)
+
+### Rojo — M4 versionada
+
+- M4-i: el fallback de `profileTimeZone` se mutó de `undefined` a `'Pacific/Kiritimati'`.
+- M4-ii: se quitó el `try/catch` completo de `civilTodayIso`.
+- Se añadieron los cinco escenarios de `#90 R4`; las ausencias de error se anclan primero a `weight-input`, y las fechas esperan directamente a `weight-date-input.props.value`.
+
+```text
+$ bunx jest --runTestsByPath 'src/app/(tabs)/__tests__/weight-log.test.tsx' src/utils/civil-today-iso.test.ts --silent
+FAIL src/utils/civil-today-iso.test.ts
+  ● #90 R1: civilTodayIso devuelve el día civil de una zona y cae al dispositivo › usa el día del dispositivo sin lanzar para una zona inválida
+
+    expect(received).not.toThrow()
+
+    Error name:    "RangeError"
+    Error message: "Invalid time zone specified: Not/A/Zone"
+
+FAIL src/app/(tabs)/__tests__/weight-log.test.tsx (11.873 s)
+  ● #90 R4: sin zona del perfil la fecha cae al dispositivo › usa el día del dispositivo mientras el perfil está pendiente
+
+    Expected: "2026-09-17"
+    Received: "2026-09-18"
+
+  ● #90 R4: sin zona del perfil la fecha cae al dispositivo › usa el día del dispositivo cuando me devuelve unreachable
+
+    Expected: "2026-09-17"
+    Received: "2026-09-18"
+
+  ● #90 R4: sin zona del perfil la fecha cae al dispositivo › usa el día del dispositivo cuando me devuelve error
+
+    Expected: "2026-09-17"
+    Received: "2026-09-18"
+
+  ● #90 R4: sin zona del perfil la fecha cae al dispositivo › usa el día del dispositivo cuando me devuelve missing-config
+
+    Expected: "2026-09-17"
+    Received: "2026-09-18"
+
+  ● #90 R4: sin zona del perfil la fecha cae al dispositivo › usa el día del dispositivo sin lanzar para una zona inválida
+
+    RangeError: Invalid time zone specified: Not/A/Zone
+
+Test Suites: 2 failed, 2 total
+Tests:       6 failed, 31 passed, 37 total
+Snapshots:   0 total
+Time:        12.33 s
+exit=1
+```
+
+Rojo válido: (a) y las tres filas de (b) fallan por la fecha mutada; (c) y R1(d) fallan por el `RangeError` de M4-ii. El timeout adicional de (c) es la consecuencia del error no capturado durante la actualización asíncrona de Query, no la causa del rojo.
+
+### Verde — reversión de M4
 
 Pendiente.
 
