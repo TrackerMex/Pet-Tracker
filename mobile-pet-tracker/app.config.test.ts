@@ -178,3 +178,32 @@ describe('R4 (auth-reset-deep-link): sin RESET_LINK_HOST avisa y no declara inte
     expect(warning).toEqual(expect.stringContaining('docs/verification.md'));
   });
 });
+
+describe('#79 R2: app.json declara el plugin de notificaciones y POST_NOTIFICATIONS', () => {
+  const expo = appJson.expo as {
+    android: { package: string; permissions?: string[] };
+    plugins: unknown[];
+  };
+
+  it('conserva los plugins existentes y añade expo-notifications', () => {
+    expect(expo.plugins).toContain('expo-router');
+    expect(expo.plugins).toContain('expo-secure-store');
+    expect(expo.plugins).toContainEqual([
+      'expo-splash-screen',
+      {
+        backgroundColor: '#208AEF',
+        image: './assets/images/splash-icon.png',
+        imageWidth: 76,
+      },
+    ]);
+    expect(expo.plugins).toContainEqual([
+      'expo-notifications',
+      { defaultChannel: 'default' },
+    ]);
+  });
+
+  it('declara el permiso de Android sin cambiar el package', () => {
+    expect(expo.android.permissions).toContain('POST_NOTIFICATIONS');
+    expect(expo.android.package).toBe('com.trackermex.pettracker');
+  });
+});
