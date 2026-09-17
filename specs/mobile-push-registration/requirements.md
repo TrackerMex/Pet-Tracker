@@ -596,6 +596,38 @@ El resultado (cada paso, con fecha) se anota en
 
 ---
 
+## Enmiendas posteriores a la firma
+
+### E1 — el rango de `expo-notifications` pasa de `~57.0.12` a `~57.0.19`
+
+**Qué pasó.** Codex paró en R1 tal y como la spec le ordena: `npx expo install
+expo-notifications` escribió `~57.0.19`, no `~57.0.12`. No retocó el rango a mano
+y no siguió a R2. El comportamiento es el correcto y el rojo de R1 quedó
+versionado en `a4f0bc8c`.
+
+**Por qué la spec se equivocó.** El `~57.0.12` salió de
+`node_modules/expo/bundledNativeModules.json`, que **no es la lista viva**: es la
+instantánea que venía dentro del paquete `expo@57.0.14` instalado en este árbol.
+`expo install` no lee ese fichero, consulta el resolutor de Expo, que hoy
+recomienda `~57.0.19` para SDK 57 — y la doc versionada del SDK 57 dice lo mismo.
+O sea: la cifra estaba caducada en el momento de escribirla, y este es el mismo
+patrón que ya nos paró tres veces con los recuentos congelados.
+
+**Qué NO significa.** No es un salto de versión real: `~57.0.12` admite en semver
+cualquier `57.0.x` desde la 12, la 19 incluida. Lo instalado estaba dentro de lo
+que la spec autorizaba; lo que discrepa es el **literal declarado** en
+`package.json`, que es lo que el candado compara.
+
+**Qué cambia.** El rango declarado y candado pasa a ser **`~57.0.19`** en R1,
+en `design.md` §D1 y en la tabla de ficheros, y en `tasks.md` R1. Todo lo demás
+de R1 sigue igual, incluida la regla de instalar con `npx expo install` y **no
+retocar el rango a mano**: si en el futuro `expo install` volviera a escribir algo
+distinto, se vuelve a parar y se vuelve a enmendar.
+
+- [ ] **E1 aprobada por humano** (fecha: ____)
+
+---
+
 ## Aprobación
 
 - [X] Aprobado por humano (fecha: 2026-09-17) ← gate obligatorio antes de implementar
