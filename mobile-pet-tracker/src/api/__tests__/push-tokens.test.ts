@@ -1,4 +1,4 @@
-import { registerPushToken } from '../push-tokens';
+import { deletePushToken, registerPushToken } from '../push-tokens';
 
 const baseUrl = 'http://example.test/v1/';
 const endpoint = 'http://example.test/v1/me/push-tokens';
@@ -63,6 +63,60 @@ describe('R3: registerPushToken mapea POST me/push-tokens por kind', () => {
 
     await expect(
       registerPushToken(baseUrl, 'jwt-token', pushToken, fetchFn),
+    ).resolves.toEqual({ kind: 'unreachable', message: 'offline' });
+  });
+});
+
+describe('R4: deletePushToken manda el expoToken en el body del DELETE', () => {
+  const expoToken = 'ExpoPushToken[xxx]';
+
+  it('envía el token con bearer y mapea 204 a ok', async () => {
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValue(response(204)) as unknown as typeof fetch;
+
+    await expect(
+      deletePushToken(baseUrl, 'jwt-token', expoToken, fetchFn),
+    ).resolves.toEqual({ kind: 'ok' });
+    expect(fetchFn).toHaveBeenCalledWith(endpoint, {
+      method: 'DELETE',
+      headers: {
+        Authorization: 'Bearer jwt-token',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ expoToken }),
+    });
+  });
+
+  it.each([
+    [401, { kind: 'unauthorized' }],
+    [500, { kind: 'error' }],
+  ])('mapea el status %i', async (status, expected) => {
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValue(response(status)) as unknown as typeof fetch;
+
+    await expect(
+      deletePushToken(baseUrl, 'jwt-token', expoToken, fetchFn),
+    ).resolves.toEqual(expected);
+  });
+
+  it('mapea baseUrl ausente sin llamar a fetch', async () => {
+    const fetchFn = jest.fn() as unknown as typeof fetch;
+
+    await expect(
+      deletePushToken(undefined, 'jwt-token', expoToken, fetchFn),
+    ).resolves.toEqual({ kind: 'missing-config' });
+    expect(fetchFn).not.toHaveBeenCalled();
+  });
+
+  it('mapea un rechazo de fetch a unreachable', async () => {
+    const fetchFn = jest
+      .fn()
+      .mockRejectedValue(new Error('offline')) as unknown as typeof fetch;
+
+    await expect(
+      deletePushToken(baseUrl, 'jwt-token', expoToken, fetchFn),
     ).resolves.toEqual({ kind: 'unreachable', message: 'offline' });
   });
 });
