@@ -19,7 +19,7 @@ jest.mock('../../api/media', () => ({
 }));
 jest.mock('expo-image-picker', () => ({
   launchImageLibraryAsync: jest.fn(),
-}), { virtual: true });
+}));
 jest.mock('../../providers/auth-provider', () => ({ useAuth: jest.fn() }));
 jest.mock('../../providers/selected-pet-provider', () => ({
   useSelectedPet: jest.fn(),
