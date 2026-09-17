@@ -19,7 +19,13 @@
 3. Decisiones tecnicas del leader (no de producto): fallback a la zona del dispositivo si no hay perfil o la zona no es IANA (try/catch sobre `Intl.DateTimeFormat`); `useQuery(userKeys.me())` inline en `weight-log` con la configuracion global (`staleTime: 0`), sin hook nuevo; test de regresion de `birthDate` como test en `add-pet/index.test.tsx` con `setSystemTime` en frontera (sin cambio de produccion); smoke humano en dev build de Android con zona del dispositivo distinta a la del perfil.
 4. Spec en `spec_ready` (95678193); firmada por el humano el 2026-09-17 (e5d11b4a, aprobado + P1 aceptada); frontmatters `approved`; #90 `in_progress`.
 5. Handoff a Codex CLI: `progress/handoff_mobile-owner-timezone-dates.md`. Codex implementa en este worktree; el leader no toca `mobile-pet-tracker/` mientras tanto.
-6. Siguiente: cuando el humano confirme que Codex terminó, `reviewer` (init.sh en primer plano, avisar a Frontend antes por LocalStack).
+6. Codex terminó el 2026-09-17: 13 commits (819fa5c9..274736de), pares rojo/verde por R, mutaciones M4/M6 revertidas. Impl en `progress/impl_mobile-owner-timezone-dates.md`.
+7. Reviewer: **APROBADO** (`progress/review_mobile-owner-timezone-dates.md`, sobre HEAD 274736de). `./init.sh` EXIT=0 (movil 74 suites / 1302 tests; backend 170 / 1295; e2e 27 de 30), log `init-review-90.log` en el scratchpad, sin flakes. Sonda A (`format()` en vez de `formatToParts`) es zona ciega declarada en D2: solo la cierra el smoke Android.
+8. **Pendiente del humano**: smoke en dev build de Android, pasos 1-7 de `requirements.md` §Gate humano (perfil en CDMX, dispositivo en Asia/Tokyo). Registrar aqui el resultado (fecha/hora, zonas, pasos 2-6). Hasta entonces #90 sigue `in_progress`; con el smoke OK el leader cierra (done, STATUS, history, PR).
+
+### Deuda detectada (no bloqueante, sin id)
+
+- `src/app/(tabs)/health.tsx:28` conserva su propia `localTodayIso` (dispositivo) para filtrar la proxima vacuna y marcar vencidas (`:63-68`, `:201`). Solo pantalla, no manda nada al backend; desfase cosmetico de un dia en el borde cuando dispositivo y perfil no coinciden. Fuera de #90 por D-B. Siguiente id libre si se registra: 102 (Frontend reservo #99-#101).
 
 ### Coordinacion con Frontend
 
