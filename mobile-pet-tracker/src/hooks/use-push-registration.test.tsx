@@ -268,7 +268,7 @@ describe('R8: obtiene el token con el projectId, lo publica y hace POST', () => 
     await waitFor(() => {
       expect(mockRegisterPushToken).toHaveBeenCalledTimes(1);
     });
-    first.unmount();
+    await first.unmount();
 
     await renderHook(() => usePushRegistration());
 
