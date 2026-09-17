@@ -9,8 +9,8 @@
 
 - **Rama**: `feature/79-mobile-push-registration`, creada desde `origin/main` en 29689598 (merge de #139, cierre de #72).
 - **Sesion**: Frontend. La sesion Backend trabaja #90 `mobile-owner-timezone-dates` en su worktree. Las dos features son moviles y **ambas pueden tocar `src/i18n/catalog.ts`**: ese es el punto de colision de esta ronda. Acuerdo vigente: quien vaya a anadir claves lo anuncia en cuanto su spec lo sepa, y el segundo en mergear actualiza el numero conservando la suma visible.
-- **Estado**: `in_progress` desde el 2026-09-17. Spec firmada por el humano ese dia (e6c0a722), incluidas las tres decisiones cerradas (C1, C2, R5) y las dos tareas humanas. Handoff a Codex CLI entregado.
-- **Plan que implementa Codex**: R1 declara `expo-notifications@~57.0.12` con su candado; R2 mete el config plugin y el permiso de Android en `app.json`; R3 y R4 el cliente HTTP, incluido el `body` opcional de `deleteJson`; R5 el `DELETE` antes de borrar la sesion; R6 a R9 el hook de registro (guarda de dev build, permiso sin insistir, token y POST, y que ningun fallo bloquee el login); R10 el handler de tap a `/alerts`; R11 el montaje en `_layout.tsx`; R12 el gate humano.
+- **Estado**: `in_progress` desde el 2026-09-17. R1-R11 implementados y verificados; R12 queda pendiente del gate humano.
+- **Plan que implementa Codex**: R1 declara `expo-notifications@~57.0.19` con su candado; R2 mete el config plugin y el permiso de Android en `app.json`; R3 y R4 el cliente HTTP, incluido el `body` opcional de `deleteJson`; R5 el `DELETE` antes de borrar la sesion; R6 a R9 el hook de registro (guarda de dev build, permiso sin insistir, token y POST, y que ningun fallo bloquee el login); R10 el handler de tap a `/alerts`; R11 el montaje en `_layout.tsx`; R12 el gate humano.
 - **Pendiente real que puede frenar el gate**: la Tarea A esta firmada pero `extra.eas.projectId` **no esta en `app.json`** (el arbol no tiene bloque `extra`). `eas.json` si existe, pero es de #mobile-ui-foundation R7, no de este `eas init`. Sin ese id el codigo no puede pedir el token y el smoke de R12 no se puede correr; la implementacion si puede avanzar porque los tests mockean `expo-constants`.
 
 ### Por que no hubo explorer
@@ -42,3 +42,19 @@ lo que se ejecuto en su momento. La norma vigente desde el 2026-09-17 es **bun**
 para todo en `mobile-pet-tracker/` (`bun add`, `bunx expo install`, `bunx jest`,
 `bunx tsc --noEmit`, `bunx <cli>@latest`), escrita en `docs/conventions.md`
 §Convenciones de la app movil.
+
+### Reanudación y cierre de R1-R11 (2026-09-17)
+
+- La enmienda E1 dejó el rango aprobado en `~57.0.19`; `b1204355` conserva el
+  `package.json` y el `bun.lock` generados por el instalador. R1-R11 siguieron
+  TDD requisito por requisito y sus hashes quedaron en `traceability.md`.
+- Verificación final verde: `bunx jest` (75 suites, 1326 tests, 1 snapshot),
+  `bunx tsc --noEmit`, `bun run lint` y `./init.sh`. El gate completo incluyó
+  backend (170 suites / 1295 tests), infraestructura (2 / 14), móvil
+  (75 / 1326) y e2e (27 suites / 384 tests pasados; 3 / 8 omitidos).
+- El delta de i18n es cero y ninguno de los ficheros prohibidos por la spec
+  aparece en el diff de implementación.
+- R12 no se ejecutó. Aunque las tareas A y B figuran marcadas en la spec,
+  `mobile-pet-tracker/app.json` no contiene `extra.eas.projectId`; el hook
+  degrada sin registrar por R6. El detalle queda en
+  `progress/impl_mobile-push-registration.md` §R12.
