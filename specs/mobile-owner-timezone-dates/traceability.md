@@ -19,7 +19,7 @@ tags: [harness, spec, mobile]
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
 | R1 | `src/utils/civil-today-iso.test.ts::#90 R1: civilTodayIso devuelve el día civil de una zona y cae al dispositivo` (casos a-e) | rojo `819fa5c9` `test(mobile-owner-timezone-dates): civilTodayIso resolves a civil day per zone and falls back to the device (R1)` → verde `fffd2434` `feat(mobile-owner-timezone-dates): civilTodayIso with Intl formatToParts and device fallback (R1)` |
-| R2 | `src/providers/__tests__/language-provider.test.tsx::#90 R2: el catálogo trae weightLog.dateCannotBeAfterToday en los dos idiomas y registrada en la tabla` + candado L1 (`:55`, `+ 1`) | pendiente |
+| R2 | `src/providers/__tests__/language-provider.test.tsx::#90 R2: el catálogo trae weightLog.dateCannotBeAfterToday en los dos idiomas y registrada en la tabla` + candado L1 (`:55`, `+ 1`) | rojo `da18d263` `test(mobile-owner-timezone-dates): the catalog must carry weightLog.dateCannotBeAfterToday (R2)` → verde pendiente |
 | R3 | `src/app/(tabs)/__tests__/weight-log.test.tsx::#90 R3: la fecha por defecto sale de la zona del perfil` (`it.each` Kiritimati/Pago_Pago) + los cuatro `it` editados con sufijo ` (#90 R3)` (tabla de abajo) | pendiente |
 | R4 | `src/app/(tabs)/__tests__/weight-log.test.tsx::#90 R4: sin zona del perfil la fecha cae al dispositivo` (a, b×3, c) — rojo por M4-i/M4-ii | pendiente |
 | R5 | `src/app/(tabs)/__tests__/weight-log.test.tsx::R9 … › joins backend validation messages, translating the future-date one (#90 R5)` y `› keeps a malformed-date validation message raw (#90 R5)` + candado L3 (`src/__tests__/ui-language.test.ts::#65 R5 … › resuelve las 33 ocurrencias normativas`) | pendiente |

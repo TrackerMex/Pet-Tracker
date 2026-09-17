@@ -87,6 +87,8 @@ exit=0
 
 Se movió L1 como delta (`+ 1`, comentario `+ 1 de #90`) y se añadió el describe `#90 R2` antes del catálogo y de la fila normativa.
 
+Commit rojo: `da18d263`.
+
 ```text
 $ bunx jest --runTestsByPath src/providers/__tests__/language-provider.test.tsx
 FAIL src/providers/__tests__/language-provider.test.tsx
@@ -120,7 +122,22 @@ Rojo válido: L1 falla 304 ≠ 305 y la clave es `undefined`.
 
 ### Verde
 
-Pendiente.
+Se añadió `weightLog.dateCannotBeAfterToday` al final de ambos bloques `weightLog.` y su fila `← añadida por #90 (R2)` en §2.5. No se tocó aún `ui-copy-table.ts`.
+
+```text
+$ bunx jest --runTestsByPath src/providers/__tests__/language-provider.test.tsx src/__tests__/ui-language.test.ts
+PASS src/providers/__tests__/language-provider.test.tsx
+PASS src/__tests__/ui-language.test.ts
+
+Test Suites: 2 passed, 2 total
+Tests:       31 passed, 31 total
+Snapshots:   0 total
+Time:        2.846 s
+Ran all test suites within paths "src/providers/__tests__/language-provider.test.tsx", "src/__tests__/ui-language.test.ts".
+exit=0
+```
+
+- `grep -c "^  '" src/i18n/catalog.ts`: `610`, exit 0 (base 608 + 2).
 
 ## R3 — fecha por defecto en la zona del perfil
 
