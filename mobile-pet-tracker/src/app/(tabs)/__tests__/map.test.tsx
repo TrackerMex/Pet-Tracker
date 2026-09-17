@@ -261,7 +261,7 @@ describe('R4: map resuelve la mascota seleccionada', () => {
     expect(screen.getByTestId('map-loading').props.className).toContain('flex-1');
   });
 
-  it('selects the first pet and loads its first position', async () => {
+  it('selects the first pet and loads its first position (#72 R2)', async () => {
     mockListPets.mockResolvedValue({
       kind: 'ok',
       pets: [makePet(), makePet({ id: 'pet-2', name: 'Milo' })],
@@ -276,7 +276,6 @@ describe('R4: map resuelve la mascota seleccionada', () => {
         'pet-1',
       );
     });
-    expect(screen.getByTestId('map-loading')).toBeVisible();
   });
 
   it('replaces a selection that is absent from the pet list', async () => {

@@ -139,6 +139,7 @@ export function AlertsScreen() {
           setActionError(t('common.cannotReachServer'));
           return;
         case 'unauthorized':
+          setActionError(t('common.somethingWentWrong'));
           await signOut();
           return;
         case 'error':
@@ -259,7 +260,7 @@ export function AlertsScreen() {
                   testID={`${rowId}-ack`}
                   accessibilityRole="button"
                   className="min-h-11"
-                  isDisabled={ackingId !== null}
+                  isDisabled={false}
                   onPress={() => void handleAck(item)}
                 >
                   <Button.Label>{t('alerts.ack')}</Button.Label>
