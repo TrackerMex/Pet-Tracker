@@ -256,6 +256,8 @@ exit=0
 - M4-ii: se quitó el `try/catch` completo de `civilTodayIso`.
 - Se añadieron los cinco escenarios de `#90 R4`; las ausencias de error se anclan primero a `weight-input`, y las fechas esperan directamente a `weight-date-input.props.value`.
 
+Commit rojo con ambas mutaciones: `c6914614`.
+
 ```text
 $ bunx jest --runTestsByPath 'src/app/(tabs)/__tests__/weight-log.test.tsx' src/utils/civil-today-iso.test.ts --silent
 FAIL src/utils/civil-today-iso.test.ts
@@ -302,7 +304,22 @@ Rojo válido: (a) y las tres filas de (b) fallan por la fecha mutada; (c) y R1(d
 
 ### Verde — reversión de M4
 
-Pendiente.
+Se restauró `undefined` para estados no `ok` y el `try/catch` completo del helper; no se cambió ninguna aserción de R4.
+
+```text
+$ bunx jest --runTestsByPath 'src/app/(tabs)/__tests__/weight-log.test.tsx' src/utils/civil-today-iso.test.ts --silent
+PASS src/utils/civil-today-iso.test.ts
+PASS src/app/(tabs)/__tests__/weight-log.test.tsx (5.897 s)
+
+Test Suites: 2 passed, 2 total
+Tests:       37 passed, 37 total
+Snapshots:   0 total
+Time:        6.288 s, estimated 12 s
+exit=0
+```
+
+- `bun run typecheck`: exit 0.
+- `rg -n "Pacific/Kiritimati" src --glob '!*.test.*'`: sin coincidencias, exit 1 esperado.
 
 ## R5 — 400 futuro traducido y formato crudo
 
