@@ -30,7 +30,7 @@ tags: [harness, spec]
 3. **R1 y R2 son requisitos de verificación** (aseveran una propiedad de un
    artefacto, no un comportamiento): se cierran por la **vía (a)** de C4 — su
    test se escribe **antes** del cambio que verifica, y su rojo es una aserción
-   fallida real (`undefined` ≠ `'~57.0.12'`; el array `plugins` sin la entrada).
+   fallida real (`undefined` ≠ `'~57.0.19'`; el array `plugins` sin la entrada).
    **No** se cierran por mutación.
 4. **Ningún rojo puede ser un `ReferenceError` de un helper de test inexistente.**
    Si un test necesita un helper, va en el mismo commit rojo.
@@ -45,26 +45,26 @@ tags: [harness, spec]
    hacen las aserciones siguientes. En los tests de este hook casi todo es
    `renderHook` + mocks, así que la espera natural es sobre el mock que la
    aserción interroga — nunca esperar a un contador y aseverar sobre otro.
-7. **Medir sin pipe**: `npx jest | tail` devuelve el exit code de `tail`.
+7. **Medir sin pipe**: `bunx jest | tail` devuelve el exit code de `tail`.
 8. **Filtros de jest**: el argumento posicional es **regex** (`\(tabs\)` va
    escapado); `--runTestsByPath` trata sus argumentos como rutas.
 
 ---
 
-## R1 — `expo-notifications@~57.0.12` declarada y fijada
+## R1 — `expo-notifications@~57.0.19` declarada y fijada
 
 - [ ] (1) Escribir test que falla para R1 — en `src/__tests__/design-drift.test.ts`,
       `describe('#79 R1: expo-notifications queda declarada y fijada', …)`:
-      lee `package.json`, asevera `dependencies['expo-notifications'] === '~57.0.12'`,
+      lee `package.json`, asevera `dependencies['expo-notifications'] === '~57.0.19'`,
       que no aparece en `jest.transformIgnorePatterns[0]` (ya cubierto por el
       fragmento `expo(nent)?`) y que `devDependencies['expo-notifications']` es
       `undefined`. **Rojo real**: hoy la clave no existe.
 - [ ] (2) Implementación mínima que lo pasa — `cd mobile-pet-tracker &&
-      npx expo install expo-notifications`. **No editar el rango a mano.** Si
-      `expo install` escribe algo distinto de `~57.0.12`, **PARA** y reporta:
+      bunx expo install expo-notifications`. **No editar el rango a mano.** Si
+      `expo install` escribe algo distinto de `~57.0.19`, **PARA** y reporta:
       es una enmienda de spec, no un retoque.
 - [ ] (3) Refactor con tests verdes — comprobar que `package-lock.json` /
-      `bun.lock` (el que use el repo) queda coherente y que `npx jest` completo
+      `bun.lock` (el que use el repo) queda coherente y que `bunx jest` completo
       sigue verde tras la instalación.
 
 ## R2 — `app.json`: config plugin y permiso de Android
@@ -117,7 +117,7 @@ tags: [harness, spec]
       opcional `body?: unknown` a `deleteJson` en `src/api/http.ts` (cuando no se
       pasa, la petición emitida no cambia) y escribir `deletePushToken` encima.
 - [ ] (3) Refactor con tests verdes — correr
-      `npx jest 'src/api/__tests__/devices' 'src/api/__tests__/reminders'` y
+      `bunx jest 'src/api/__tests__/devices' 'src/api/__tests__/reminders'` y
       confirmar que **no se editó ni una línea** de `src/api/devices.ts` ni de
       `src/api/reminders.ts`.
 
@@ -247,13 +247,13 @@ tags: [harness, spec]
       colocado **dentro** de `<QueryProvider>` como hermano de `<Stack />`.
 - [ ] (3) Refactor con tests verdes — confirmar que `describe('R4: …')`,
       `describe('#65 R16: …')` y `describe('#87 R4: …')` del mismo fichero siguen
-      verdes, y correr la **suite completa** (`npx jest`, sin pipe) para
+      verdes, y correr la **suite completa** (`bunx jest`, sin pipe) para
       comprobar que ninguna otra suite necesitó el mock de `expo-notifications`.
 
 ## R12 — Gate humano: prueba de humo
 
 - [ ] (1) No lleva test automático: es el gate humano. Antes de pedirlo,
-      dejar verdes `npx tsc --noEmit`, `npx jest` (suite completa, sin pipe) y
+      dejar verdes `bunx tsc --noEmit`, `bunx jest` (suite completa, sin pipe) y
       `./init.sh` desde la raíz (sin pipe, y comprobando antes con
       `pgrep -af init.sh` que no hay otro gate contra el Postgres compartido).
 - [ ] (2) Comprobar que las Tareas humanas A y B están firmadas en

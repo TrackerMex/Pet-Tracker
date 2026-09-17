@@ -25,3 +25,12 @@ La entrada de la feature ya trae el alcance en cinco puntos y varias decisiones 
 
 - `expo` en `~57.0.14`; **no existe** `expo-notifications`.
 - `app.json`: plugins `expo-router`, `expo-splash-screen`, `expo-secure-store`. **Sin bloque `extra`**, o sea sin `extra.eas.projectId`. `android.package` = `com.trackermex.pettracker`, sin `googleServicesFile` ni permisos declarados.
+
+### Ejecución Codex (2026-09-17)
+
+- Worktree correcto confirmado: `/home/claude/sites/Pet-Tracker`, branch `feature/79-mobile-push-registration`, árbol limpio al arrancar.
+- `./init.sh` inicial verde: backend 170 suites / 1295 tests, móvil 73 suites / 1286 tests, e2e 27 suites / 384 tests; build, lint y typecheck verdes.
+- La skill solicitada `expo-overview` no está instalada en el plugin Expo 1.0.2 disponible; se usa como fuente de verdad la documentación oficial versionada de SDK 57.
+- Firmas verificadas en `https://docs.expo.dev/versions/v57.0.0/sdk/notifications/`: handler de cuatro campos, canal Android, permisos, token con `projectId`, listener con `.remove()` y respuesta inicial. `getLastNotificationResponseAsync()` existe en v57 aunque la referencia ya recomienda su reemplazo síncrono; la implementación conserva el método exigido por R10.
+- R1 rojo confirmado y guardado en `a4f0bc8c`: el test esperaba `~57.0.12` y recibió `undefined`.
+- **Bloqueo R1**: el 2026-09-17, `npx expo install expo-notifications` resolvió e instaló `~57.0.19`, no el `~57.0.12` fijado por la spec. `tasks.md` ordena parar si el CLI escribe otra versión y prohíbe corregirla a mano, así que no se avanzó a R2. Quedan sin commit los cambios generados por el CLI en `mobile-pet-tracker/package.json` y `mobile-pet-tracker/bun.lock`, a la espera de que el humano actualice/confirme la versión aprobada.

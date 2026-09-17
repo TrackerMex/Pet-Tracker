@@ -91,7 +91,8 @@ Ningún agente ejecuta `eas init` ni toca credenciales.
 `getExpoPushTokenAsync` exige un `projectId` de EAS. Es gratis; requiere una
 cuenta Expo (https://expo.dev, plan Free).
 
-1. `npm i -g eas-cli` (o `npx eas-cli@latest` en cada comando).
+1. `bunx eas-cli@latest` delante de cada comando de EAS. En este repo **todo se
+   instala y se ejecuta con bun**: nada de `npm i -g`.
 2. `cd mobile-pet-tracker && eas login` → verificar con `eas whoami`.
 3. `eas init` — crea el proyecto en la cuenta Expo y devuelve un `projectId` (UUID).
 4. **Comprobar `app.json`**: debe quedar
@@ -141,8 +142,10 @@ nada al teléfono: el envío del notifier de #13 termina en ticket de error.
 
 - **R1**: WHEN se inspecciona `mobile-pet-tracker/package.json`, THE SYSTEM
   SHALL declarar `expo-notifications` en `dependencies` con el rango
-  **exactamente `~57.0.12`** —el que `node_modules/expo/bundledNativeModules.json`
-  fija para SDK 57 y el que escribe `npx expo install expo-notifications`— y
+  **exactamente `~57.0.19`** —el que escribe `bunx expo install expo-notifications`,
+  confirmado contra la doc versionada del SDK 57 (enmienda **E1**; el
+  `bundledNativeModules.json` del árbol dice `~57.0.12`, pero es una instantánea
+  caducada del paquete `expo` instalado, no la lista viva)— y
   SHALL NOT añadir ninguna otra dependencia ni devDependencia, ni modificar
   `jest.transformIgnorePatterns` (su primera entrada ya cubre
   `expo-notifications` con el fragmento `expo(nent)?|@expo(nent)?/.*`).
@@ -150,9 +153,9 @@ nada al teléfono: el envío del notifier de #13 termina en ticket de error.
   una dependencia nueva es legítima si la spec la declara).
   Verificable en `src/__tests__/design-drift.test.ts` — el fichero que ya
   custodia los rangos de dependencias (precedente `#87 R1`).
-  **La instalación se hace con `npx expo install expo-notifications`, nunca
+  **La instalación se hace con `bunx expo install expo-notifications`, nunca
   editando el rango a mano. Si `expo install` escribiera un rango distinto de
-  `~57.0.12`, PARA y repórtalo: la spec se enmienda, el rango no se retoca.**
+  `~57.0.19`, PARA y repórtalo: la spec se enmienda, el rango no se retoca.**
 
 - **R2**: WHEN se inspecciona `mobile-pet-tracker/app.json`, THE SYSTEM SHALL
   contener, dentro de `expo`:
@@ -395,18 +398,18 @@ En consecuencia:
 
 Todo desde `mobile-pet-tracker/`:
 
-1. `npx tsc --noEmit` — typecheck verde **con el config plugin añadido**
+1. `bunx tsc --noEmit` — typecheck verde **con el config plugin añadido**
    (criterio 7). Si antes fallara por rutas fantasma, borrar
    `.expo/types/router.d.ts` y repetir.
-2. `npx jest` — **suite móvil completa** verde. Sin pipes: `npx jest | tail`
+2. `bunx jest` — **suite móvil completa** verde. Sin pipes: `bunx jest | tail`
    devuelve el código de `tail`, no el de jest.
 3. Ficheros sueltos, con los paréntesis escapados porque el argumento posicional
    de jest es **regex**:
 
    ```bash
-   npx jest 'src/api/__tests__/push-tokens' 'src/hooks/use-push-registration' \
+   bunx jest 'src/api/__tests__/push-tokens' 'src/hooks/use-push-registration' \
             'src/providers/__tests__/auth-provider' 'app.config.test'
-   npx jest --runTestsByPath 'src/app/__tests__/layout.test.tsx'
+   bunx jest --runTestsByPath 'src/app/__tests__/layout.test.tsx'
    ```
 
    `--runTestsByPath` trata sus argumentos como **rutas**, así que ahí `(tabs)`
@@ -446,7 +449,7 @@ Todo desde `mobile-pet-tracker/`:
 
    ```bash
    cd mobile-pet-tracker
-   npx expo prebuild --clean --platform android
+   bunx expo prebuild --clean --platform android
    grep -c "POST_NOTIFICATIONS" android/app/src/main/AndroidManifest.xml   # debe imprimir 1
    bunx expo run:android
    ```
@@ -530,7 +533,7 @@ Todo desde `mobile-pet-tracker/`:
     ningún `POST /v1/me/push-tokens`.
 
 11. **Fuera de dev build** (criterio 4). Abrir el proyecto en **Expo Go**
-    (`npx expo start --go`) e iniciar sesión. Esperado: la app entra
+    (`bunx expo start --go`) e iniciar sesión. Esperado: la app entra
     normalmente, sin crash, sin diálogo de permiso, y el SELECT sigue igual que
     antes de abrir Expo Go — el hook no llamó a `expo-notifications` ni a la API.
 
@@ -620,7 +623,8 @@ que la spec autorizaba; lo que discrepa es el **literal declarado** en
 
 **Qué cambia.** El rango declarado y candado pasa a ser **`~57.0.19`** en R1,
 en `design.md` §D1 y en la tabla de ficheros, y en `tasks.md` R1. Todo lo demás
-de R1 sigue igual, incluida la regla de instalar con `npx expo install` y **no
+de R1 sigue igual, salvo que el comando pasa a ser `bunx expo install` —en este
+repo todo se instala y se ejecuta con **bun**—, y sigue vigente **no
 retocar el rango a mano**: si en el futuro `expo install` volviera a escribir algo
 distinto, se vuelve a parar y se vuelve a enmendar.
 

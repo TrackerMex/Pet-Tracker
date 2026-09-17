@@ -16,12 +16,12 @@ tags: [harness, spec]
 
 ## Decisiones técnicas
 
-### D1 — `expo-notifications@~57.0.12`, instalado con `npx expo install` (R1)
+### D1 — `expo-notifications@~57.0.19`, instalado con `bunx expo install` (R1)
 
 Es la **única** dependencia nueva, y esta spec es lo que la autoriza. El rango
-`~57.0.12` no es una elección: es el que
+`~57.0.19` no es una elección: es el que
 `node_modules/expo/bundledNativeModules.json` fija para SDK 57 y el que
-`npx expo install expo-notifications` escribirá. El `dist-tag` `sdk-57` del
+`bunx expo install expo-notifications` escribirá. El `dist-tag` `sdk-57` del
 registro apunta hoy a `57.0.19`, que cae dentro del rango.
 
 `jest.transformIgnorePatterns` **no se toca**: su primera entrada ya contiene
@@ -196,7 +196,7 @@ feature no llega a la capa de presentación.
 
 | Archivo | Qué cambia |
 |---|---|
-| `package.json` | `dependencies["expo-notifications"] = "~57.0.12"` (R1). Nada más: ni scripts, ni `transformIgnorePatterns` |
+| `package.json` | `dependencies["expo-notifications"] = "~57.0.19"` (R1). Nada más: ni scripts, ni `transformIgnorePatterns` |
 | `app.json` | Plugin, `android.permissions` (R2) y, **por mano humana**, `extra.eas.projectId` (Tarea A) |
 | `src/api/http.ts` | `deleteJson` gana un quinto parámetro opcional `body?: unknown` (R4, D7) |
 | `src/providers/auth-provider.tsx` | `setPushToken` en `AuthContextValue` + `DELETE` antes de borrar la sesión en `signOut` (R5, D6) |
