@@ -498,7 +498,7 @@ este runbook no cambian.
    `android/app/debug.keystore`. La config avisa por consola, pero no aborta:
 
    ```bash
-   cd mobile-pet-tracker && npx expo prebuild --clean --platform android
+   cd mobile-pet-tracker && bunx expo prebuild --clean --platform android
    ```
 
 2. Obtén la SHA-1 del keystore de debug desde el proyecto Android generado:
@@ -537,7 +537,7 @@ este runbook no cambian.
    durante el prebuild:
 
    ```bash
-   npx expo prebuild --clean --platform android
+   bunx expo prebuild --clean --platform android
    grep -c "com.google.android.geo.API_KEY" android/app/src/main/AndroidManifest.xml
    bunx expo run:android
    ```
@@ -583,7 +583,7 @@ Go:
 
 ```bash
 cd mobile-pet-tracker
-npx expo prebuild --clean --platform android
+bunx expo prebuild --clean --platform android
 grep -c "com.google.android.geo.API_KEY" android/app/src/main/AndroidManifest.xml
 bunx expo run:android
 ```
@@ -765,7 +765,7 @@ direcciones de correo, contraseñas ni tokens al reporte.
 
 1. **G1 — obtener y publicar el fingerprint SHA-256 del dev build.**
 
-   El dev build local (`npx expo run:android`) se firma con el keystore que
+   El dev build local (`bunx expo run:android`) se firma con el keystore que
    genera el prebuild en `mobile-pet-tracker/android/app/debug.keystore`, no
    con `~/.android/debug.keystore` de Android Studio. Desde
    `mobile-pet-tracker/android` ejecuta:
