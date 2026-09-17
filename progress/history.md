@@ -3980,3 +3980,58 @@ un conflicto seguro en esa linea al mergear el segundo. Yendo junto, el contador
   correcta: en alertas el servidor **supersede** la accion, en comidas puede
   **invalidarla**, asi que alli toca refrescar y no mantener overlay.
 - Cierre: #97 `done`, 82/97, PR #137 abierto; el humano mergea.
+
+## Feature #83 `meals-served-tracking` (P3)
+
+- Sesion Backend (leader), worktree `wt-backend`, base propia `pet_tracker_wt`.
+  Rama `feature/83-meals-served-tracking` desde `1b9efe86` (main con #96).
+  PR #138. Fechas: 2026-09-15 (spec e implementacion) y 2026-09-17 (smoke y
+  cierre).
+- Arranque: primer `init.sh` con la guarda de infra de #96 desde este worktree,
+  exit 0 (5433 y 4566 derivados de `DATABASE_URL` y `AWS_ENDPOINT_URL`).
+- Explorer antes de la spec porque el enunciado tenia cuatro decisiones
+  abiertas. Hallazgos verificados: la Home **no** pinta ninguna barra de
+  comidas (solo el Make, `design-src/App.tsx:438-446`); `food.tsx` finge lo
+  servido comparando `mealTimes` con el reloj del dispositivo, conducta
+  aprobada como D7 de #38; el patron a copiar es `health-weights` mas el
+  helper `ownerLocalDay`; ningun `MockOf<T>` afecta si no se toca
+  `PetRepository`.
+- Decisiones del humano (AskUserQuestion, 2026-09-15): partir en dos (#83
+  backend, #98 movil); cualquier miembro activo sirve y deshace (excepcion
+  explicita al owner-only de pesos y plan); 409 al repetir franja mas DELETE
+  para deshacer; el contador solo cuenta franjas del plan vigente.
+- El id #98 se reservo anunciandolo a la sesion Frontend: `origin/main` iba
+  por 97 y la regla "maximo en origin/main" habria repetido el choque #55/#56.
+  Frontend lo anoto en la memoria del proyecto.
+- spec_author corrigio siete premisas del encargo (§0.2 C1-C7): seis listas de
+  claves del perfil y no cuatro; el indice `(pet_id, served_on)` sobra bajo el
+  UNIQUE; `servedToday` solo en el `GET` del plan (R19 de #17 congela las 11
+  claves de `generate`) y desde el repositorio propio, no desde el lector de
+  pets; el orden plan → pertenencia → unicidad hace que una franja servida y
+  luego fuera del plan regenerado responda 422 y no 409.
+- Handoff a Codex CLI: 25 commits, un par rojo/verde por requisito (R1-R11) y
+  R12 como verificacion contra `pet_tracker_wt`. Migracion
+  `0017_meal_servings` renombrada como #93.
+- `reviewer` APROBADO: `init.sh` en primer plano exit 0 sin tuberia (backend
+  170/1295, movil 73/1275 sin flake, e2e 27 de 30 con 3 `aws-real` skipped);
+  once rojos comprobados (seis por checkout en worktree temporal); drift
+  limitado a la lista cerrada de design.md; journal 18 con `created_at` =
+  `when` de 0017, tabla e indices presentes, `db:migrate` idempotente y
+  `db:generate` no-op; cinco sondas de mutacion caidas (servedInPlan sin
+  filtro, pertenencia al plan, dia UTC en el DELETE, default no nulo en el
+  mapper, `@RequirePetRole('owner')`).
+- Smoke `curl` del humano (2026-09-17) OK en las trece lineas. Antes dio 500
+  en `GET nutrition-plan`: su base local no tenia 0017 y el `GET` consulta
+  `meal_servings` desde R9; `pnpm db:migrate` lo resolvio. Leccion: el
+  handoff y la spec dicen que `init.sh` migra, pero un backend arrancado con
+  `start:dev` sin `init.sh` previo no.
+- Coordinacion con Frontend: LocalStack serializado por SendMessage en cada
+  gate; #97 no anadio claves i18n, asi que el candado del catalogo llega
+  intacto a #98. La leccion del overlay optimista de #97 se escribio en #98
+  con la distincion supersede/invalida. Los dos `init.sh` rojos de wt-backend
+  (#92 y #93, `reading 'canceled'`) sirvieron a #72 como primeros logs rojos
+  con orden de suites y descartaron la hipotesis de que el flake dependia del
+  entorno.
+- Cierre: #83 `done`, 83/98, PR #138 abierto; el humano mergea. Pendiente del
+  leader: aplicar 0017 en `pet_tracker` con `pnpm db:migrate` tras el merge,
+  avisando antes a Frontend.

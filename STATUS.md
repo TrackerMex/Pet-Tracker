@@ -1,9 +1,9 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-09-15
+**Última actualización**: 2026-09-17
 **En progreso**: ninguna
 
-**Pendientes**: 17 (#18, #41, #60, #72, #74, #77, #79-#81, #83, #84, #86, #90, #94, #95, #97, #98). #83 `meals-served-tracking` en spec_ready (solo backend; su mitad movil es #98 `mobile-meals-served-ui`, bloqueada por #83). #93 `drop-devices-connectivity-column` cerrada (PR #131, pendiente de merge): la columna obsoleta sale del schema con la migración 0016; en el Postgres local compartido se aplica tras mergear. #63 `mobile-detail-screens-state-reset` cerrada y **mergeada** (PR #130): los formularios de detalle ya no conservan lo tecleado la vez anterior. #92 cerrada y **mergeada** (PR #129); queda #94 (una sola fuente de frescura entre Home y Mapa). **#95 `mobile-detail-screens-to-stack`** la abrió la decisión D1 de #63: sacar las seis pantallas de detalle de `(tabs)` a un Stack nativo cierra el teleport sin transición (M3) y las cabeceras a mano; se pospuso por coste, no se descartó. #92-#94 son la deuda que #73 dejo nombrada: reset de telemetria del collar al reasignarlo (#92), borrar la columna obsoleta devices.connectivity (#93, tras #92) y una sola fuente de frescura entre Home y Mapa (#94). El rediseño contra el diseño del Make abrió el bloque #64-#71: #64, #65, #66, #67, #68 y #69 están cerradas y **mergeadas** (PR #106, #110, #111, #112, #113 y #114). #71 `mobile-home-quick-actions` está cerrada con los dos gates humanos firmados; **PR pendiente de merge por el humano**. Del bloque solo queda **#70 recordatorios**, sin especificar, y con la mitad del diseño bloqueada porque `nextReminder` y `activitySummary` siguen a `null` en el mapper del perfil. Deuda registrada: #72 flake de add-pet; #74 el selector que TalkBack lee como tres controles sueltos; #77 el peso visible sin collar; #80 los `testID` del doble atados al componente; #81 la receta tipográfica del tile sin candado. #78 y #79 entraron desde otra sesión. #90 `mobile-owner-timezone-dates` la abrió el 2026-09-11 la decisión por defecto de #89: el móvil manda la fecha civil del dispositivo contra una validación que ya usa la zona del owner sin margen. #91 `mobile-tab-indicator-out-of-range` la destapó el gate humano de #78 el 2026-09-13: la burbuja del indicador se posiciona con el índice de `state.routes`, así que cualquier ruta de `(tabs)/` fuera de `TABS` la manda a una ranura fantasma detrás de Perfil. Es anterior a #78 y afecta también a recordatorios, pairing, peso y comidas. #75 y #91 están cerradas y mergeadas (PR #124 y #125); #73 `pet-online-pill` cerrada y **mergeada** (PR #126).
+**Pendientes**: 15 (#18, #41, #60, #72, #74, #77, #79-#81, #84, #86, #90, #94, #95, #98). #83 `meals-served-tracking` cerrada (PR #138, pendiente de merge): registro persistente de comida servida y `mealsToday` en el perfil; su mitad móvil es #98 `mobile-meals-served-ui`, bloqueada hasta que #138 entre en `main` y la migración 0017 esté aplicada en la base local. #93 `drop-devices-connectivity-column` cerrada (PR #131, pendiente de merge): la columna obsoleta sale del schema con la migración 0016; en el Postgres local compartido se aplica tras mergear. #63 `mobile-detail-screens-state-reset` cerrada y **mergeada** (PR #130): los formularios de detalle ya no conservan lo tecleado la vez anterior. #92 cerrada y **mergeada** (PR #129); queda #94 (una sola fuente de frescura entre Home y Mapa). **#95 `mobile-detail-screens-to-stack`** la abrió la decisión D1 de #63: sacar las seis pantallas de detalle de `(tabs)` a un Stack nativo cierra el teleport sin transición (M3) y las cabeceras a mano; se pospuso por coste, no se descartó. #92-#94 son la deuda que #73 dejo nombrada: reset de telemetria del collar al reasignarlo (#92), borrar la columna obsoleta devices.connectivity (#93, tras #92) y una sola fuente de frescura entre Home y Mapa (#94). El rediseño contra el diseño del Make abrió el bloque #64-#71: #64, #65, #66, #67, #68 y #69 están cerradas y **mergeadas** (PR #106, #110, #111, #112, #113 y #114). #71 `mobile-home-quick-actions` está cerrada con los dos gates humanos firmados; **PR pendiente de merge por el humano**. Del bloque solo queda **#70 recordatorios**, sin especificar, y con la mitad del diseño bloqueada porque `nextReminder` y `activitySummary` siguen a `null` en el mapper del perfil. Deuda registrada: #72 flake de add-pet; #74 el selector que TalkBack lee como tres controles sueltos; #77 el peso visible sin collar; #80 los `testID` del doble atados al componente; #81 la receta tipográfica del tile sin candado. #78 y #79 entraron desde otra sesión. #90 `mobile-owner-timezone-dates` la abrió el 2026-09-11 la decisión por defecto de #89: el móvil manda la fecha civil del dispositivo contra una validación que ya usa la zona del owner sin margen. #91 `mobile-tab-indicator-out-of-range` la destapó el gate humano de #78 el 2026-09-13: la burbuja del indicador se posiciona con el índice de `state.routes`, así que cualquier ruta de `(tabs)/` fuera de `TABS` la manda a una ranura fantasma detrás de Perfil. Es anterior a #78 y afecta también a recordatorios, pairing, peso y comidas. #75 y #91 están cerradas y mergeadas (PR #124 y #125); #73 `pet-online-pill` cerrada y **mergeada** (PR #126).
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
 desde 2026-08-10. Hay recursos vivos en la cuenta, aunque hoy sin coste.
@@ -85,6 +85,16 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Estado actual
+
+- **`meals-served-tracking` (#83) done** (2026-09-17): tabla `meal_servings`
+  (`served_on` = día civil del owner, UNIQUE por franja) con la migración
+  `0017_meal_servings`; `POST /v1/pets/:petId/meals { mealTime }` y
+  `DELETE /v1/pets/:petId/meals/:mealTime` para cualquier miembro activo (409 al
+  repetir franja, 422 sin plan o fuera del plan); `mealsToday: { served, total } | null`
+  en `GET /v1/pets/:petId` y `servedToday` en `GET nutrition-plan`, contando
+  solo franjas del plan vigente. Solo backend: el botón por franja y la barra
+  de comidas de la Home son #98. La migración se aplica en la base compartida
+  `pet_tracker` tras el merge de PR #138, con `pnpm db:migrate`.
 
 - **`drop-devices-connectivity-column` (#93) done** (2026-09-15): la columna
   `devices.connectivity`, sin escritor desde #73, desaparece del schema Drizzle,
@@ -1183,6 +1193,23 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-09-17** — **#83 `meals-served-tracking` cerrada** (sesión Backend,
+  worktree `wt-backend`, rama desde `1b9efe86`, PR #138): explorer verificó que
+  la barra de comidas no existía en la Home (solo en el Make) y que `food.tsx`
+  fingía lo servido con el reloj del dispositivo (D7 de #38); el humano cerró
+  cuatro decisiones antes de la spec (partir en backend #83 y móvil #98,
+  cualquier miembro activo sirve, 409 + DELETE, contar solo franjas del plan
+  vigente). El spec_author corrigió siete premisas del encargo (seis listas de
+  claves del perfil, no cuatro; sin índice redundante bajo el UNIQUE;
+  `servedToday` solo en el `GET` del plan). Codex: 25 commits, un par
+  rojo/verde por requisito. Reviewer APROBADO: `init.sh` exit 0 sin tubería,
+  e2e 27 de 30, migración 0017 verificada en `pet_tracker_wt` (journal 18),
+  once rojos comprobados y cinco sondas de mutación caídas. Smoke `curl` del
+  humano OK el 2026-09-17 (el 500 inicial en `GET nutrition-plan` fue la base
+  local sin 0017: `db:migrate` lo resolvió). Pendiente del leader: 0017 en
+  `pet_tracker` tras el merge. El id #98 se reservó anunciándolo a la sesión
+  Frontend porque `origin/main` no lo mostraba aún.
 
 - **2026-09-15** — **#93 `drop-devices-connectivity-column` cerrada** (sesión
   Backend, worktree `wt-backend`): spec sin explorer, corrigió dos premisas del
