@@ -1,4 +1,4 @@
-import { postJson } from './http';
+import { deleteJson, postJson } from './http';
 
 export interface PushTokenPayload {
   expoToken: string;
@@ -30,6 +30,28 @@ export async function registerPushToken(
   if (result.kind === 'unreachable') return result;
   if (result.response.status === 401) return { kind: 'unauthorized' };
   if (result.response.status !== 200) return { kind: 'error' };
+
+  return { kind: 'ok' };
+}
+
+export async function deletePushToken(
+  baseUrl: string | undefined,
+  token: string,
+  expoToken: string,
+  fetchFn: typeof fetch = fetch,
+): Promise<PushTokenState> {
+  if (!baseUrl) return { kind: 'missing-config' };
+
+  const result = await deleteJson(
+    baseUrl,
+    '/me/push-tokens',
+    token,
+    fetchFn,
+    { expoToken },
+  );
+  if (result.kind === 'unreachable') return result;
+  if (result.response.status === 401) return { kind: 'unauthorized' };
+  if (result.response.status !== 204) return { kind: 'error' };
 
   return { kind: 'ok' };
 }
