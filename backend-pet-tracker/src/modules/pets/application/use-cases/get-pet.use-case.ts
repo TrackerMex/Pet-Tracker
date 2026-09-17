@@ -9,6 +9,11 @@ import type {
 } from '@/modules/pets/domain/ports/pet-device-reader';
 import { PET_PHOTO_URL_RESOLVER } from '@/modules/pets/domain/ports/pet-photo-url-resolver';
 import type { PetPhotoUrlResolver } from '@/modules/pets/domain/ports/pet-photo-url-resolver';
+import { PET_MEALS_READER } from '@/modules/pets/domain/ports/pet-meals-reader';
+import type {
+  PetMealsReader,
+  PetMealsToday,
+} from '@/modules/pets/domain/ports/pet-meals-reader';
 import { PET_VACCINE_READER } from '@/modules/pets/domain/ports/pet-vaccine-reader';
 import type {
   NextPetVaccine,
@@ -27,6 +32,7 @@ export interface PetProfile {
   /** URL GET prefirmada (R6) o null si la mascota no tiene foto (R7). */
   photoUrl: string | null;
   nextVaccine: NextPetVaccine | null;
+  mealsToday: PetMealsToday | null;
 }
 
 /**
@@ -50,6 +56,8 @@ export class GetPetUseCase {
     private readonly photoUrlResolver: PetPhotoUrlResolver,
     @Inject(PET_VACCINE_READER)
     private readonly vaccineReader: PetVaccineReader,
+    @Inject(PET_MEALS_READER)
+    private readonly mealsReader: PetMealsReader,
   ) {}
 
   async execute(petId: string, now: Date): Promise<PetProfile> {
@@ -73,6 +81,7 @@ export class GetPetUseCase {
       device: await this.deviceReader.findActiveDevice(petId),
       photoUrl,
       nextVaccine: await this.vaccineReader.findNextVaccine(petId, today),
+      mealsToday: await this.mealsReader.findMealsToday(petId, today),
     };
   }
 }

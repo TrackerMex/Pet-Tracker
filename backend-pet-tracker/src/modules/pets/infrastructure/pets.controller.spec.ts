@@ -148,7 +148,7 @@ describe('R2 (pets-list-response-enrichment #66): GET /v1/pets serializa el phot
     expect(response[1].myRole).toBe('family');
   });
 
-  it('mantiene exactamente las 24 claves y los placeholders no enriquecidos en null', async () => {
+  it('mantiene exactamente las 25 claves y los placeholders no enriquecidos en null', async () => {
     const { controller, listExecute } = buildController();
     listExecute.mockResolvedValue([
       {
@@ -185,6 +185,7 @@ describe('R2 (pets-list-response-enrichment #66): GET /v1/pets serializa el phot
         'nextVaccine',
         'nextReminder',
         'activitySummary',
+        'mealsToday',
         'createdAt',
         'updatedAt',
       ].sort(),
@@ -193,6 +194,7 @@ describe('R2 (pets-list-response-enrichment #66): GET /v1/pets serializa el phot
     expect(response[0].nextVaccine).toBeNull();
     expect(response[0].nextReminder).toBeNull();
     expect(response[0].activitySummary).toBeNull();
+    expect(response[0].mealsToday).toBeNull();
   });
 });
 
