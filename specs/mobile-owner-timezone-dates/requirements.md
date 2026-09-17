@@ -1,6 +1,6 @@
 ---
 feature: "mobile-owner-timezone-dates"
-status: spec_ready     # draft | spec_ready | approved
+status: approved     # draft | spec_ready | approved
 tags: [harness, spec, mobile]
 ---
 
