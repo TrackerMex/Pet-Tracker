@@ -603,7 +603,10 @@ El resultado (cada paso, con fecha) se anota en
 
 ### E1 — el rango de `expo-notifications` pasa de `~57.0.12` a `~57.0.19`
 
-**Qué pasó.** Codex paró en R1 tal y como la spec le ordena: `npx expo install
+**Qué pasó.** Codex paró en R1 tal y como la spec le ordena. (Los comandos de
+este relato se citan **tal y como se ejecutaron entonces**, con `npx`; la norma
+vigente es `bunx` y está en el cuerpo de R1 y en `docs/conventions.md`.)
+`npx expo install
 expo-notifications` escribió `~57.0.19`, no `~57.0.12`. No retocó el rango a mano
 y no siguió a R2. El comportamiento es el correcto y el rojo de R1 quedó
 versionado en `a4f0bc8c`.

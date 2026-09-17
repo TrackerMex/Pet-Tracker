@@ -34,3 +34,11 @@ La entrada de la feature ya trae el alcance en cinco puntos y varias decisiones 
 - Firmas verificadas en `https://docs.expo.dev/versions/v57.0.0/sdk/notifications/`: handler de cuatro campos, canal Android, permisos, token con `projectId`, listener con `.remove()` y respuesta inicial. `getLastNotificationResponseAsync()` existe en v57 aunque la referencia ya recomienda su reemplazo síncrono; la implementación conserva el método exigido por R10.
 - R1 rojo confirmado y guardado en `a4f0bc8c`: el test esperaba `~57.0.12` y recibió `undefined`.
 - **Bloqueo R1**: el 2026-09-17, `npx expo install expo-notifications` resolvió e instaló `~57.0.19`, no el `~57.0.12` fijado por la spec. `tasks.md` ordena parar si el CLI escribe otra versión y prohíbe corregirla a mano, así que no se avanzó a R2. Quedan sin commit los cambios generados por el CLI en `mobile-pet-tracker/package.json` y `mobile-pet-tracker/bun.lock`, a la espera de que el humano actualice/confirme la versión aprobada.
+
+### Nota sobre los comandos citados aqui
+
+Cualquier comando con `npx` que aparezca en este fichero es **cita historica** de
+lo que se ejecuto en su momento. La norma vigente desde el 2026-09-17 es **bun**
+para todo en `mobile-pet-tracker/` (`bun add`, `bunx expo install`, `bunx jest`,
+`bunx tsc --noEmit`, `bunx <cli>@latest`), escrita en `docs/conventions.md`
+§Convenciones de la app movil.
