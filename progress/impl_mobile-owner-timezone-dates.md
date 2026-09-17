@@ -306,6 +306,8 @@ Rojo válido: (a) y las tres filas de (b) fallan por la fecha mutada; (c) y R1(d
 
 Se restauró `undefined` para estados no `ok` y el `try/catch` completo del helper; no se cambió ninguna aserción de R4.
 
+Commit verde que revierte ambas mutaciones: `7964d04c`.
+
 ```text
 $ bunx jest --runTestsByPath 'src/app/(tabs)/__tests__/weight-log.test.tsx' src/utils/civil-today-iso.test.ts --silent
 PASS src/utils/civil-today-iso.test.ts
@@ -322,6 +324,52 @@ exit=0
 - `rg -n "Pacific/Kiritimati" src --glob '!*.test.*'`: sin coincidencias, exit 1 esperado.
 
 ## R5 — 400 futuro traducido y formato crudo
+
+### Rojo
+
+Se reescribió el test del join con el contrato byte a byte, se añadió el caso P1 de formato crudo y se movió L3 como delta (`32 + 1`, fila nueva en `ui-copy-table.ts`).
+
+```text
+$ bunx jest --runTestsByPath 'src/app/(tabs)/__tests__/weight-log.test.tsx' src/__tests__/ui-language.test.ts --silent
+FAIL src/__tests__/ui-language.test.ts
+  ● #65 R5: Health resuelve su copy por clave › resuelve las 33 ocurrencias normativas
+
+      Object {
+        "file": "src/app/(tabs)/weight-log.tsx",
+        "key": "weightLog.dateCannotBeAfterToday",
+    -   "uses": 1,
+    +   "uses": 0,
+      }
+
+  ● #65 R18: los sitios resuelven por clave y no queda copy suelta › resuelve cada ocurrencia de la tabla contra la clave exacta
+
+      Object {
+        "file": "src/app/(tabs)/weight-log.tsx",
+        "key": "weightLog.dateCannotBeAfterToday",
+    -   "uses": 1,
+    +   "uses": 0,
+      }
+
+FAIL src/app/(tabs)/__tests__/weight-log.test.tsx (6.531 s)
+  ● R9: alta de peso con degradación por kind › joins backend validation messages, translating the future-date one (#90 R5)
+
+    - Expected  - 1
+    + Received  + 1
+
+      Weight is too high
+    - La fecha no puede ser posterior a hoy
+    + measuredAt is too far in the future
+
+Test Suites: 2 failed, 2 total
+Tests:       3 failed, 53 passed, 56 total
+Snapshots:   0 total
+Time:        6.963 s
+exit=1
+```
+
+Rojo válido: el mensaje futuro sigue crudo y los dos `checkUses` cuentan 0 frente a 1. El nuevo test de `Invalid ISO date` ya pasa, fijando P1. La longitud de L3 pasa porque la fila y el delta se añaden juntos, como ordena `tasks.md`; el candado rojo vivo es `checkUses`.
+
+### Verde
 
 Pendiente.
 

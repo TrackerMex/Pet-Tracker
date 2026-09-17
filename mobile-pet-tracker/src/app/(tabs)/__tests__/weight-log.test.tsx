@@ -467,12 +467,15 @@ describe('R9: alta de peso con degradación por kind', () => {
     );
   });
 
-  it('joins backend validation messages', async () => {
+  it('joins backend validation messages, translating the future-date one (#90 R5)', async () => {
     mockCreateWeight.mockResolvedValue({
       kind: 'validation',
       errors: [
         { path: 'weightKg', message: 'Weight is too high' },
-        { path: 'measuredAt', message: 'Date is in the future' },
+        {
+          path: 'measuredAt',
+          message: 'measuredAt is too far in the future',
+        },
       ],
     });
 
@@ -483,7 +486,25 @@ describe('R9: alta de peso con degradación por kind', () => {
 
     await waitFor(() =>
       expect(screen.getByTestId('weight-form-error').props.children).toBe(
-        'Weight is too high\nDate is in the future',
+        'Weight is too high\nLa fecha no puede ser posterior a hoy',
+      ),
+    );
+  });
+
+  it('keeps a malformed-date validation message raw (#90 R5)', async () => {
+    mockCreateWeight.mockResolvedValue({
+      kind: 'validation',
+      errors: [{ path: 'measuredAt', message: 'Invalid ISO date' }],
+    });
+
+    await renderWeightLog();
+    await waitFor(() => expect(screen.getByTestId('weight-input')).toBeVisible());
+    await fireEvent.changeText(screen.getByTestId('weight-input'), '12.4');
+    await fireEvent.press(screen.getByTestId('weight-submit'));
+
+    await waitFor(() =>
+      expect(screen.getByTestId('weight-form-error').props.children).toBe(
+        'Invalid ISO date',
       ),
     );
   });

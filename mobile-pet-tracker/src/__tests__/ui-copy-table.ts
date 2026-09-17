@@ -151,6 +151,7 @@ export const R5_HEALTH: UseRow[] = [
   { file: 'src/app/(tabs)/weight-log.tsx', key: 'common.retry' },
   { file: 'src/app/(tabs)/weight-log.tsx', key: 'weightLog.noWeightEntriesYet' },
   { file: 'src/app/(tabs)/weight-log.tsx', key: 'weightLog.bodyConditionValue' },
+  { file: 'src/app/(tabs)/weight-log.tsx', key: 'weightLog.dateCannotBeAfterToday' },
   { file: 'src/components/weight-chart.tsx', key: 'weightChart.notEnoughDataYet' },
 ];
 
