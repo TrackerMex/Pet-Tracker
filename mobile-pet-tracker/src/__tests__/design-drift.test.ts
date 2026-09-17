@@ -390,7 +390,7 @@ describe('#79 R1: expo-notifications queda declarada y fijada', () => {
   };
 
   it('declara la versión compatible con Expo SDK 57 como dependencia de producción', () => {
-    expect(packageJson.dependencies?.['expo-notifications']).toBe('~57.0.12');
+    expect(packageJson.dependencies?.['expo-notifications']).toBe('~57.0.19');
   });
 
   it('no duplica la dependencia ni añade una excepción literal de transformación', () => {
