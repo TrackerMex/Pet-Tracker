@@ -57,6 +57,8 @@ Rojo válido: las dos fallas son por el día civil esperado; no hay `Cannot find
 
 Se sustituyó el esqueleto por `Intl.DateTimeFormat('en-US', { timeZone, year, month, day }).formatToParts(now)`, reensamblando `year-month-day`; todo el camino queda dentro de `try/catch` y el `catch` usa los getters locales del dispositivo.
 
+Commit verde: `fffd2434`.
+
 ```text
 $ bunx jest --runTestsByPath src/utils/civil-today-iso.test.ts
 PASS src/utils/civil-today-iso.test.ts
@@ -80,6 +82,43 @@ exit=0
 - `rg -n '\.format\(' src/utils/civil-today-iso.ts`: sin coincidencias, exit 1 esperado.
 
 ## R2 — catálogo y registro de copy
+
+### Rojo
+
+Se movió L1 como delta (`+ 1`, comentario `+ 1 de #90`) y se añadió el describe `#90 R2` antes del catálogo y de la fila normativa.
+
+```text
+$ bunx jest --runTestsByPath src/providers/__tests__/language-provider.test.tsx
+FAIL src/providers/__tests__/language-provider.test.tsx
+  #65 R12: el catálogo tiene los dos idiomas y t resuelve claves y parámetros
+    ✕ mantiene la base más las claves de #68 y los mismos marcadores en ambos idiomas (4 ms)
+    ✓ #73 R5: el catalogo trae home.unknown y deviceConnectivity.offline en los dos idiomas y registrados en la tabla (5 ms)
+    ✓ usa español por defecto, traduce e interpola sin ocultar parámetros ausentes (15 ms)
+  #90 R2: el catálogo trae weightLog.dateCannotBeAfterToday en los dos idiomas y registrada en la tabla
+    ✕ incluye la traducción y su fila normativa (1 ms)
+  #65 R15: el locale de fechas y números sigue al idioma elegido
+    ✓ maps es to es-MX (3 ms)
+    ✓ maps en to en-US (2 ms)
+  #78 R3: el catálogo trae las claves del centro de alertas
+    ✓ incluye las catorce traducciones en inglés y español (2 ms)
+
+Expected length: 305
+Received length: 304
+
+Expected: "Date cannot be after today"
+Received: undefined
+
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 5 passed, 7 total
+Snapshots:   0 total
+Time:        1.822 s
+Ran all test suites within paths "src/providers/__tests__/language-provider.test.tsx".
+exit=1
+```
+
+Rojo válido: L1 falla 304 ≠ 305 y la clave es `undefined`.
+
+### Verde
 
 Pendiente.
 
