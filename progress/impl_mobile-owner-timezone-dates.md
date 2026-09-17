@@ -1,7 +1,7 @@
 # Implementación — #90 `mobile-owner-timezone-dates`
 
-Fecha: 2026-09-17  
-Worktree: `/home/claude/sites/Pet-Tracker-wt-backend`  
+Fecha: 2026-09-17
+Worktree: `/home/claude/sites/Pet-Tracker-wt-backend`
 Branch: `feature/90-mobile-owner-timezone-dates`
 
 ## Preflight
@@ -438,6 +438,8 @@ Rojo válido: la única falla es el payload UTC `2026-09-18` frente al día loca
 
 Se restauraron `getFullYear`/`getMonth`/`getDate` y no se cambió el test.
 
+Commit verde que revierte M6: `224a8b5c`.
+
 ```text
 $ bunx jest --runTestsByPath src/screens/add-pet/index.test.tsx --silent
 PASS src/screens/add-pet/index.test.tsx (5.392 s)
@@ -455,7 +457,30 @@ exit=0
 
 ## R7 — verificación final
 
-Pendiente.
+Todas las mediciones de R7 se hicieron directamente sobre la salida de cada
+comando, sin pipes.
+
+| Verificación | Resultado |
+|---|---|
+| `mobile-pet-tracker/.expo/types/router.d.ts` | Ya estaba ausente; `test ! -e …` confirma ausencia, exit 0. |
+| `bun run typecheck` | `tsc --noEmit`, exit 0. |
+| `bun run lint` | `expo lint`, exit 0. |
+| `bunx jest --listTests` | Exit 0; `S = 74` rutas contadas directamente desde la salida. |
+| `bun run test` | Exit 0; `Test Suites: 74 passed, 74 total`; `Tests: 1302 passed, 1302 total`; `N = S = 74`. |
+| C8: `rg -n '#[0-9a-fA-F]{3,8}\b\|StyleSheet\.create\|\[[0-9]+px\]' …` | Cero coincidencias; exit 1 esperado de `rg`. |
+| `grep -c "^  '" src/i18n/catalog.ts` | `610`, exit 0 (608 + 2 entradas bilingües). |
+| Diff de `package.json` y `bun.lock` contra `origin/main` | Vacío, exit 0. |
+| Diff de los ficheros que no se tocan y `backend-pet-tracker/` | Vacío, exit 0. Incluye `add-pet/index.tsx`, perfil, query provider, APIs/tipos, helpers de test, dependencias y todo backend. |
+| `pgrep -af 'init\.sh\|test:e2e\|jest-e2e'` antes del gate | Sin salida, exit 1; no había otro gate activo. |
+| `./init.sh` desde la raíz | Exit 0: build verde; backend 170/170 suites y 1295/1295 tests; infra 2/2 y 14/14; móvil 74/74 y 1302/1302; E2E 27 pasadas de 30, 3 suites omitidas, 384 pasados y 8 omitidos de 392; lint y typecheck verdes. |
+
+El diff de implementación desde el handoff `19c853e3` contiene 14 ficheros: los
+12 finales de la lista cerrada de diseño (sin el `add-pet/index.tsx` transitorio)
+y las dos traceabilities ajenas que el propio handoff obliga a sincronizar al
+cambiar títulos de #63 y #72. El diff completo contra `origin/main` contiene
+además los siete ficheros de preparación/spec ya presentes en la branch al
+recibirla (`95678193..19c853e3`). No hay cambios de dependencias, backend, CI,
+`init.sh` ni AWS real.
 
 ## Gate humano — smoke Android/Hermes
 
