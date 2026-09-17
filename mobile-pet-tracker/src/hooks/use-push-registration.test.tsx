@@ -1,5 +1,6 @@
 import { renderHook, waitFor } from '@testing-library/react-native';
 import * as Notifications from 'expo-notifications';
+import { router } from 'expo-router';
 import { Platform } from 'react-native';
 
 import { registerPushToken } from '../api/push-tokens';
@@ -46,6 +47,9 @@ jest.mock('../providers/auth-provider', () => ({
 
 const mockUseAuth = jest.mocked(useAuth);
 const mockRegisterPushToken = jest.mocked(registerPushToken);
+const mockSetNotificationHandler = jest.mocked(
+  Notifications.setNotificationHandler,
+);
 const mockSetNotificationChannel = jest.mocked(
   Notifications.setNotificationChannelAsync,
 );
@@ -63,7 +67,7 @@ const mockGetLastResponse = jest.mocked(
   Notifications.getLastNotificationResponseAsync,
 );
 const notificationMocks = [
-  jest.mocked(Notifications.setNotificationHandler),
+  mockSetNotificationHandler,
   mockSetNotificationChannel,
   mockGetPermissions,
   mockRequestPermissions,
@@ -74,6 +78,13 @@ const notificationMocks = [
 const originalPlatform = Platform.OS;
 const originalApiUrl = process.env.EXPO_PUBLIC_API_URL;
 const mockSetPushToken = jest.fn();
+const mockRouterPush = jest.mocked(router.push);
+const mockRemoveResponseListener = jest.fn();
+const notificationHandlerCallsAtImport = mockSetNotificationHandler.mock.calls.length;
+const foregroundNotificationHandler = mockSetNotificationHandler.mock.calls[0]?.[0];
+let responseListener:
+  | Parameters<typeof Notifications.addNotificationResponseReceivedListener>[0]
+  | undefined;
 
 function setPlatform(os: string): void {
   Object.defineProperty(Platform, 'OS', { configurable: true, value: os });
@@ -117,7 +128,11 @@ beforeEach(() => {
     type: 'expo',
     data: 'ExpoPushToken[xxx]',
   });
-  mockAddResponseListener.mockReturnValue({ remove: jest.fn() });
+  responseListener = undefined;
+  mockAddResponseListener.mockImplementation((listener) => {
+    responseListener = listener;
+    return { remove: mockRemoveResponseListener };
+  });
   mockGetLastResponse.mockResolvedValue(null);
   mockRegisterPushToken.mockResolvedValue({ kind: 'ok' });
 });
@@ -315,5 +330,80 @@ describe('R9: un fallo de token o de red no rompe ni reintenta en la sesión', (
     await probe.rerender({ tick: 1 });
 
     expect(mockRegisterPushToken).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('R10: banner en primer plano y tap que navega a /alerts', () => {
+  const notificationResponse = {} as Notifications.NotificationResponse;
+
+  it('configura al importar el comportamiento de primer plano de SDK 57', async () => {
+    const behavior = await foregroundNotificationHandler?.handleNotification(
+      {} as Notifications.Notification,
+    );
+
+    expect(notificationHandlerCallsAtImport).toBe(1);
+    expect(behavior).toEqual({
+      shouldShowBanner: true,
+      shouldShowList: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+    });
+    expect(behavior).not.toHaveProperty('shouldShowAlert');
+  });
+
+  it('navega una vez al recibir un tap con sesión', async () => {
+    await renderHook(() => usePushRegistration());
+    await waitFor(() => {
+      expect(mockAddResponseListener).toHaveBeenCalledTimes(1);
+      expect(responseListener).toEqual(expect.any(Function));
+    });
+
+    responseListener?.(notificationResponse);
+
+    expect(mockRouterPush).toHaveBeenCalledTimes(1);
+    expect(mockRouterPush).toHaveBeenCalledWith('/alerts');
+  });
+
+  it('navega una sola vez desde una respuesta de cold start', async () => {
+    mockGetLastResponse.mockResolvedValue(notificationResponse);
+    const probe = await renderHook(
+      (_props: { tick: number }) => usePushRegistration(),
+      { initialProps: { tick: 0 } },
+    );
+
+    await waitFor(() => {
+      expect(mockGetLastResponse).toHaveBeenCalledTimes(1);
+      expect(mockRouterPush).toHaveBeenCalledTimes(1);
+      expect(mockRouterPush).toHaveBeenCalledWith('/alerts');
+    });
+
+    await probe.rerender({ tick: 1 });
+
+    expect(mockGetLastResponse).toHaveBeenCalledTimes(1);
+    expect(mockRouterPush).toHaveBeenCalledTimes(1);
+  });
+
+  it('no se suscribe ni consulta la respuesta sin sesión', async () => {
+    mockUseAuth.mockReturnValue({
+      ...authenticatedAuth(),
+      status: 'unauthenticated',
+      token: null,
+    });
+
+    await renderHook(() => usePushRegistration());
+
+    expect(mockAddResponseListener).not.toHaveBeenCalled();
+    expect(mockGetLastResponse).not.toHaveBeenCalled();
+  });
+
+  it('retira el listener al desmontar', async () => {
+    const probe = await renderHook(() => usePushRegistration());
+    await waitFor(() => {
+      expect(mockAddResponseListener).toHaveBeenCalledTimes(1);
+    });
+
+    await probe.unmount();
+
+    expect(mockRemoveResponseListener).toHaveBeenCalledTimes(1);
   });
 });
