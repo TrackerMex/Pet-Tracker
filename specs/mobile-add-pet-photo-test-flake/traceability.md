@@ -8,7 +8,7 @@ tags: [harness, spec, mobile, tests]
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | `mobile-pet-tracker/src/screens/alerts/index.test.tsx` :: `#78 R4: … › pinta y reintenta cada error de la primera página (#72 R1)` | pendiente (rojo) + pendiente (verde) |
+| R1 | `mobile-pet-tracker/src/screens/alerts/index.test.tsx` :: `#78 R4: … › pinta y reintenta cada error de la primera página (#72 R1)` | `b7095168` `test(add-pet-photo-test-flake): reproduce the alerts cache-vs-render race on demand (R1)` (rojo) + pendiente (verde) |
 | R2 | `mobile-pet-tracker/src/screens/alerts/index.test.tsx` :: `deshabilita durante el vuelo y corta dos pulsaciones seguidas (#72 R2)` y `cierra sesión en unauthorized sin pintar error (#72 R2)`; `mobile-pet-tracker/src/screens/pairing/index.test.tsx` :: `signs out for unauthorized without showing an error message (#72 R2)` y `signs out for unauthorized without showing a local error (#72 R2)`; `mobile-pet-tracker/src/app/(tabs)/__tests__/map.test.tsx` :: `selects the first pet and loads its first position (#72 R2)`; `mobile-pet-tracker/src/app/(tabs)/__tests__/weight-log.test.tsx` :: `submits all fields, clears them, and refetches the list (#72 R2)` | pendiente (rojo con mutaciones) + pendiente (verde sin mutaciones) |
 | R3 | `mobile-pet-tracker/src/screens/profile/index.test.tsx` :: `#72 R3: el mock del picker no hereda implementación entre tests` | pendiente (rojo) + pendiente (verde) |
 | R4 | `mobile-pet-tracker/src/screens/add-pet/index.test.tsx` :: `#72 R4: el fallo del picker nombra el invariante roto` | pendiente (rojo) + pendiente (verde) |

@@ -207,7 +207,7 @@ describe('#78 R4: la pantalla pinta su esqueleto, su error, su vacío y sus fila
           expect.objectContaining({ pages: [error] }),
         ),
       );
-      expect(screen.getByTestId('alerts-error')).toHaveTextContent(
+      expect(await screen.findByTestId('alerts-error')).toHaveTextContent(
         es['common.somethingWentWrong'],
       );
       expect(screen.getByTestId('alerts-error').props.className).toBe(
