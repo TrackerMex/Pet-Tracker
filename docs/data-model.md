@@ -35,6 +35,7 @@ erDiagram
   pets ||--o{ reminders : "has"
   pets ||--|| nutrition_profiles : "has"
   pets ||--o{ nutrition_plans : "has"
+  pets ||--o{ meal_servings : "has"
   pets ||--o{ activity_daily : "has"
 ```
 
@@ -61,11 +62,12 @@ Convención: snake_case, PK `uuid` (UUIDv7 generado en app) salvo indicado,
 | `reminders` | id PK, pet_id FK, type ('vaccine','deworming','medication','appointment','weight','food','custom'), title, due_at, advance_minutes DEFAULT 60, channel DEFAULT 'push', status ('scheduled','sent','cancelled'), schedule_name NULL, enqueued_at timestamptz NULL, created_by FK | En local, un intervalo de 60 s encola vencidos: `enqueued_at` evita reencolar entre ticks y `schedule_name` es el token de la programación vigente que invalida mensajes en vuelo. En AWS real, `schedule_name` será el nombre de EventBridge Scheduler y `enqueued_at` quedará sin uso (pet-reminders D2/D3/D9) |
 | `nutrition_profiles` | `pet_id uuid PK/FK NOT NULL`, `activity_level varchar(10) NOT NULL CHECK (low, medium, high)`, `body_condition integer NULL CHECK (1..9)`, `target_weight_kg numeric(5,2) NULL`, `food_type varchar(10) NOT NULL CHECK (dry, wet, mixed, homemade)`, `kcal_per_100g numeric(6,1) NOT NULL CHECK (80..600)`, `allergies jsonb NOT NULL DEFAULT []`, `diseases jsonb NOT NULL DEFAULT []`, `created_at timestamptz NOT NULL`, `updated_at timestamptz NOT NULL` | 1:1 con mascota; FK a `pets(id)` con `ON DELETE CASCADE` |
 | `nutrition_plans` | `id uuid PK NOT NULL`, `pet_id uuid FK NOT NULL`, `rer_kcal integer NOT NULL`, `mer_kcal integer NOT NULL`, `daily_grams integer NOT NULL`, `meals_per_day integer NOT NULL CHECK (1..6)`, `meal_times jsonb NOT NULL`, `objective varchar(20) NOT NULL CHECK (maintenance, weight_loss, growth)`, `warnings jsonb NOT NULL DEFAULT []`, `ai_explanation text NULL`, `inputs_hash char(64) NOT NULL`, `generated_at timestamptz NOT NULL` | FK a `pets(id)` con `ON DELETE CASCADE`; indice `nutrition_plans_pet_id_generated_at_idx (pet_id, generated_at DESC)`; sin UNIQUE por hash |
+| `meal_servings` | `id uuid PK` (UUIDv7 en app), `pet_id uuid FK NOT NULL`, `served_on date NOT NULL` (día civil del **owner**, patrón `activity_daily`), `meal_time varchar(5) NOT NULL`, `served_at timestamptz NOT NULL DEFAULT now()`, `created_by uuid FK users NOT NULL` | `meals-served-tracking` (#83, migración `0017`). Índice único `(pet_id, served_on, meal_time)`: una franja se sirve una vez por día (409) y cubre `pet_id` como prefijo, sin índice manual aparte; `created_by` sí lleva índice. Cualquier miembro activo escribe (D2 de #83); `served_on` no se recomputa si el owner cambia de zona (D9 de #10) |
 | `push_tokens` | id PK, user_id FK CASCADE, expo_token UNIQUE, platform, created_at, last_seen_at | En local el notifier corre `PUSH_ENABLED=false` (solo log) |
 | `audit_log` | id bigint identity PK, user_id NULL, action, entity, entity_id, meta jsonb, at DEFAULT now() | Brief §19 |
 | `activity_daily` | PK (pet_id, date), pet_id FK CASCADE, date `date` (día local del **owner**), distance_m int, active_minutes int, rest_minutes int, walk_count int, avg_walk_minutes numeric(6,2), first_walk_at timestamptz NULL, last_walk_at timestamptz NULL, time_away_minutes int NULL, computed_at timestamptz DEFAULT now(), CHECK ≥ 0 en las cuatro métricas contables | KPIs diarios (plan 006), implementada en `trips-activity` (#10, migración 0005). Sin índice manual para `pet_id`: la PK compuesta lo cubre como prefijo. `avg_walk_minutes` es `numeric(6,2)` y no `int` (D9: redondear la media de 5 y 6 min inflaría el KPI un 9 %). `time_away_minutes` nace NULL, la llena geocercas (007 / #13) y el upsert de #10 la excluye del `DO UPDATE SET` para no borrarla |
 
-Las tablas de nutricion se crean en la migracion `0013_wet_may_parker.sql`.
+Las tablas de nutricion se crean en la migracion `0013_wet_may_parker.sql`; `meal_servings` en `0017_meal_servings.sql` (#83).
 
 Índices además de los implícitos: toda columna FK lleva índice manual
 (Postgres no indexa FKs), compuestos `(pet_id, <fecha> DESC)` en historial,

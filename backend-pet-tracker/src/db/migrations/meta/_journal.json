@@ -120,6 +120,13 @@
       "when": 1789440631931,
       "tag": "0016_drop_devices_connectivity",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1789493838553,
+      "tag": "0017_meal_servings",
+      "breakpoints": true
     }
   ]
 }

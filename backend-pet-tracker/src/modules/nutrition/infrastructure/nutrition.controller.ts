@@ -23,8 +23,10 @@ import { mapNutritionError } from '@/modules/nutrition/infrastructure/mappers/nu
 import {
   NutritionProfileResponse,
   NutritionPlanResponse,
+  NutritionPlanTodayResponse,
   toNutritionProfileResponse,
   toNutritionPlanResponse,
+  toNutritionPlanTodayResponse,
 } from '@/modules/nutrition/infrastructure/mappers/nutrition.mapper';
 import { RequirePetRole } from '@/modules/pets/infrastructure/decorators/require-pet-role.decorator';
 import { PetAccessGuard } from '@/modules/pets/infrastructure/guards/pet-access.guard';
@@ -86,10 +88,10 @@ export class NutritionController {
   @Get('nutrition-plan')
   async latestPlan(
     @Req() request: PetAccessRequest,
-  ): Promise<NutritionPlanResponse> {
+  ): Promise<NutritionPlanTodayResponse> {
     try {
-      return toNutritionPlanResponse(
-        await this.getPlan.execute(request.petMembership.petId),
+      return toNutritionPlanTodayResponse(
+        await this.getPlan.execute(request.petMembership.petId, new Date()),
       );
     } catch (error) {
       throw mapNutritionError(error);

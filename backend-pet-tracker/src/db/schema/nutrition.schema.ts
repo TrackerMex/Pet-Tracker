@@ -2,6 +2,7 @@ import { sql } from 'drizzle-orm';
 import {
   char,
   check,
+  date,
   index,
   integer,
   jsonb,
@@ -9,11 +10,13 @@ import {
   pgTable,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
   varchar,
 } from 'drizzle-orm/pg-core';
 import type { NutritionWarning } from '@/modules/nutrition/domain/nutrition-engine';
 import { pets } from './pets.schema';
+import { users } from './users.schema';
 
 export const nutritionProfiles = pgTable(
   'nutrition_profiles',
@@ -106,5 +109,31 @@ export const nutritionPlans = pgTable(
       table.petId,
       table.generatedAt.desc(),
     ),
+  ],
+);
+
+export const mealServings = pgTable(
+  'meal_servings',
+  {
+    id: uuid('id').primaryKey(),
+    petId: uuid('pet_id')
+      .notNull()
+      .references(() => pets.id, { onDelete: 'cascade' }),
+    servedOn: date('served_on').notNull(),
+    mealTime: varchar('meal_time', { length: 5 }).notNull(),
+    servedAt: timestamp('served_at', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    createdBy: uuid('created_by')
+      .notNull()
+      .references(() => users.id),
+  },
+  (table) => [
+    uniqueIndex('meal_servings_pet_id_served_on_meal_time_idx').on(
+      table.petId,
+      table.servedOn,
+      table.mealTime,
+    ),
+    index('meal_servings_created_by_idx').on(table.createdBy),
   ],
 );

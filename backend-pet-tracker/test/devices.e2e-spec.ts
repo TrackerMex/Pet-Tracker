@@ -791,7 +791,7 @@ describe('Devices claim (e2e)', () => {
   });
 
   describe('R12: el perfil GET /v1/pets/:petId rellena la clave device', () => {
-    // Contrato congelado del perfil (R8 de #5): mismas 24 claves siempre.
+    // Contrato congelado del perfil (R8 de #5): mismas 25 claves siempre.
     const PROFILE_KEYS = [
       'id',
       'name',
@@ -815,6 +815,7 @@ describe('Devices claim (e2e)', () => {
       'nextVaccine',
       'nextReminder',
       'activitySummary',
+      'mealsToday',
       'createdAt',
       'updatedAt',
     ].sort();
