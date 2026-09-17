@@ -4,6 +4,7 @@ import * as Notifications from 'expo-notifications';
 import { useEffect } from 'react';
 import { Platform } from 'react-native';
 
+import { registerPushToken } from '../api/push-tokens';
 import { useAuth } from '../providers/auth-provider';
 
 function getProjectId(): string | undefined {
@@ -14,10 +15,10 @@ function getProjectId(): string | undefined {
 }
 
 export function usePushRegistration(): void {
-  const { status, token } = useAuth();
+  const { setPushToken, status, token } = useAuth();
 
   useEffect(() => {
-    if (status !== 'authenticated' || token === null) return;
+    if (status !== 'authenticated' || token === null || !setPushToken) return;
     if (!Device.isDevice) return;
     const platform = Platform.OS;
     if (platform !== 'android' && platform !== 'ios') return;
@@ -38,7 +39,14 @@ export function usePushRegistration(): void {
       }
       if (!permissions.granted) return;
 
-      await Notifications.getExpoPushTokenAsync({ projectId });
+      const expoToken = (
+        await Notifications.getExpoPushTokenAsync({ projectId })
+      ).data;
+      setPushToken(expoToken);
+      await registerPushToken(process.env.EXPO_PUBLIC_API_URL, token, {
+        expoToken,
+        platform,
+      });
     })();
-  }, [status, token]);
+  }, [setPushToken, status, token]);
 }
