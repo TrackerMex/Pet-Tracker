@@ -72,6 +72,7 @@ const notificationMocks = [
   mockGetLastResponse,
 ];
 const originalPlatform = Platform.OS;
+const originalApiUrl = process.env.EXPO_PUBLIC_API_URL;
 const mockSetPushToken = jest.fn();
 
 function setPlatform(os: string): void {
@@ -107,6 +108,7 @@ beforeEach(() => {
   mockIsDevice = true;
   mockProjectId = 'project-id';
   setPlatform('android');
+  process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
   mockUseAuth.mockReturnValue(authenticatedAuth());
   mockSetNotificationChannel.mockResolvedValue(null);
   mockGetPermissions.mockResolvedValue(permission(true, true));
@@ -122,6 +124,11 @@ beforeEach(() => {
 
 afterAll(() => {
   setPlatform(originalPlatform);
+  if (originalApiUrl === undefined) {
+    delete process.env.EXPO_PUBLIC_API_URL;
+  } else {
+    process.env.EXPO_PUBLIC_API_URL = originalApiUrl;
+  }
 });
 
 describe('R6: el hook no toca expo-notifications ni la API sin las precondiciones', () => {
@@ -211,6 +218,66 @@ describe('R7: el permiso se pide solo con granted false y canAskAgain true', () 
       expect(mockSetNotificationChannel.mock.invocationCallOrder[0]).toBeLessThan(
         mockGetExpoPushToken.mock.invocationCallOrder[0]!,
       );
+    });
+  });
+});
+
+describe('R8: obtiene el token con el projectId, lo publica y hace POST', () => {
+  it('publica el token antes de registrarlo para Android', async () => {
+    await renderHook(() => usePushRegistration());
+
+    await waitFor(() => {
+      expect(mockGetExpoPushToken).toHaveBeenCalledWith({
+        projectId: 'project-id',
+      });
+      expect(mockSetPushToken).toHaveBeenCalledWith('ExpoPushToken[xxx]');
+      expect(mockRegisterPushToken).toHaveBeenCalledWith(
+        'http://example.test/v1',
+        'jwt-token',
+        {
+          expoToken: 'ExpoPushToken[xxx]',
+          platform: 'android',
+        },
+      );
+      expect(mockSetPushToken.mock.invocationCallOrder[0]).toBeLessThan(
+        mockRegisterPushToken.mock.invocationCallOrder[0]!,
+      );
+    });
+  });
+
+  it('registra ios como plataforma en un dispositivo Apple', async () => {
+    setPlatform('ios');
+
+    await renderHook(() => usePushRegistration());
+
+    await waitFor(() => {
+      expect(mockSetNotificationChannel).not.toHaveBeenCalled();
+      expect(mockRegisterPushToken).toHaveBeenCalledWith(
+        'http://example.test/v1',
+        'jwt-token',
+        {
+          expoToken: 'ExpoPushToken[xxx]',
+          platform: 'ios',
+        },
+      );
+    });
+  });
+
+  it('repite la secuencia completa en un segundo montaje', async () => {
+    const first = await renderHook(() => usePushRegistration());
+    await waitFor(() => {
+      expect(mockRegisterPushToken).toHaveBeenCalledTimes(1);
+    });
+    first.unmount();
+
+    await renderHook(() => usePushRegistration());
+
+    await waitFor(() => {
+      expect(mockSetNotificationChannel).toHaveBeenCalledTimes(2);
+      expect(mockGetPermissions).toHaveBeenCalledTimes(2);
+      expect(mockGetExpoPushToken).toHaveBeenCalledTimes(2);
+      expect(mockSetPushToken).toHaveBeenCalledTimes(2);
+      expect(mockRegisterPushToken).toHaveBeenCalledTimes(2);
     });
   });
 });
