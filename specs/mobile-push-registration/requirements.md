@@ -598,7 +598,7 @@ El resultado (cada paso, con fecha) se anota en
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [X] Aprobado por humano (fecha: 2026-09-17) ← gate obligatorio antes de implementar
 
 Al firmar, confirmar también estas tres decisiones cerradas por la spec:
 
@@ -609,5 +609,5 @@ Al firmar, confirmar también estas tres decisiones cerradas por la spec:
   `useRef`), que es lo que permite hacer el `DELETE` antes de borrar la sesión
   sin que `expo-notifications` entre en el provider.
 
-- [ ] Tarea humana A — `eas init` y `extra.eas.projectId` en `app.json` (fecha: ____)
-- [ ] Tarea humana B — credenciales FCM V1 subidas a EAS (fecha: ____)
+- [X] Tarea humana A — `eas init` y `extra.eas.projectId` en `app.json` (fecha: 2026-09-17)
+- [X] Tarea humana B — credenciales FCM V1 subidas a EAS (fecha: 2026-09-17)
