@@ -160,7 +160,6 @@ export function PairingScreen() {
           setActionError(t('pairing.errorForbiddenClaim'));
           break;
         case 'unauthorized':
-          setActionError(t('common.somethingWentWrong'));
           await signOut();
           break;
         case 'unreachable':
@@ -209,7 +208,6 @@ export function PairingScreen() {
           setActionError(t('pairing.errorForbiddenRelease'));
           break;
         case 'unauthorized':
-          setActionError(t('common.somethingWentWrong'));
           await signOut();
           break;
         case 'unreachable':

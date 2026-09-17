@@ -100,6 +100,7 @@ function WeightLogContent({ petId }: { petId: string }) {
 
       switch (result.kind) {
         case 'ok':
+          setWeightText('');
           setMeasuredAt(localTodayIso());
           setBodyConditionText('');
           weights.refetch();
