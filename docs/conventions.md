@@ -195,6 +195,14 @@ escapar: daba verde con exit 0 habiendo corrido 5 suites de 7, sin ejecutar dos
 requisitos. **Comprueba siempre que el número de suites que imprime jest
 coincide con el de ficheros que el filtro pretendía coger.**
 
+### Esperas sobre el árbol renderizado
+
+La condición que termina una espera debe ser la misma observación que hacen las
+aserciones posteriores. Si el test asevera el árbol, espera al árbol: esperar a
+la caché de Query o al contador de un mock y consultar el DOM después introduce
+una carrera. Una aserción de ausencia se ancla primero a la aparición o al estado
+final de un nodo positivo del mismo escenario.
+
 ---
 
 ## Commits

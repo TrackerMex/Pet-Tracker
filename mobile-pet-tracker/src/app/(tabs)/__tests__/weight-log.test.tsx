@@ -374,7 +374,7 @@ describe('R9: alta de peso con degradación por kind', () => {
     expect(mockCreateWeight).not.toHaveBeenCalled();
   });
 
-  it('submits all fields, clears them, and refetches the list', async () => {
+  it('submits all fields, clears them, and refetches the list (#72 R2)', async () => {
     mockCreateWeight.mockResolvedValue({
       kind: 'ok',
       weight: makeWeight({ weightKg: 12.8, bodyCondition: 6 }),
@@ -398,8 +398,10 @@ describe('R9: alta de peso con degradación por kind', () => {
         { weightKg: 12.8, measuredAt: '2026-08-20', bodyCondition: 6 },
       ),
     );
-    await waitFor(() => expect(mockListWeights).toHaveBeenCalledTimes(2));
-    expect(screen.getByTestId('weight-input').props.value).toBe('');
+    await waitFor(() =>
+      expect(screen.getByTestId('weight-input').props.value).toBe(''),
+    );
+    expect(mockListWeights).toHaveBeenCalledTimes(2);
     expect(screen.getByTestId('weight-bc-input').props.value).toBe('');
     expect(screen.getByTestId('weight-date-input').props.value).toBe(
       localTodayIso(),

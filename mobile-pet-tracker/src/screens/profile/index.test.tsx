@@ -147,6 +147,11 @@ const mockSetStoredTheme = jest.mocked(setStoredTheme);
 const mockSetTheme = jest.mocked(Uniwind.setTheme);
 let selectPetFromTest: ((petId: string) => void) | undefined;
 
+beforeEach(() => {
+  mockLaunchImageLibrary.mockReset();
+  mockLaunchImageLibrary.mockResolvedValue({ canceled: true, assets: null });
+});
+
 function pending<T>(): Promise<T> {
   return new Promise(() => undefined);
 }
@@ -933,5 +938,14 @@ describe('#87 R16: ProfileScreen lee por TanStack Query', () => {
     expect(queryClient.getQueryData(petKeys.detail('pet-1'))).toEqual(
       detailState,
     );
+  });
+});
+
+describe('#72 R3: el mock del picker no hereda implementación entre tests', () => {
+  it('#72 R3: resuelve al valor cancelado por defecto', async () => {
+    await expect(mockLaunchImageLibrary()).resolves.toEqual({
+      canceled: true,
+      assets: null,
+    });
   });
 });

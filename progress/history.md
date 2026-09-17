@@ -4035,3 +4035,64 @@ un conflicto seguro en esa linea al mergear el segundo. Yendo junto, el contador
 - Cierre: #83 `done`, 83/98, PR #138 abierto; el humano mergea. Pendiente del
   leader: aplicar 0017 en `pet_tracker` con `pnpm db:migrate` tras el merge,
   avisando antes a Frontend.
+
+## Feature #72 `mobile-add-pet-photo-test-flake` (P2)
+
+- Rama `feature/72-mobile-add-pet-photo-test-flake` desde `main` 9c3dcab6.
+  Feature de tests: ni una linea de produccion en el arbol final.
+- `explorer` antes que `spec_author`, porque el criterio 1 exigia causa raiz con
+  evidencia y solo una de las dos causas la tenia. Fue la decision que salvo la
+  feature: **falso la hipotesis central** que la entrada arrastraba desde el
+  segundo avistamiento. Los dos logs rojos que existen son de `main@961b330a`,
+  donde `add-pet/index.test.tsx` tenia 386 lineas y **cero**
+  `mockResolvedValueOnce` del picker; el primero lo introdujo `eb931f7e` y llego
+  a main en el PR #130, despues de los tres avistamientos. No puede agotarse una
+  cola que no existia.
+- Son **dos causas distintas**, no una de aislamiento entre suites: firmas
+  incompatibles, poblaciones disjuntas en 40 corridas registradas sin cruzarse
+  ni una vez, y `add-pet` ni siquiera usa TanStack Query.
+- Alerts: reproducido (1 de 32) y cerrado a nivel de fuente. `query-core`
+  escribe la cache de forma sincrona pero notifica a React via `setTimeout(0)`
+  (`notifyManager`, `defaultScheduler = systemSetTimeoutZero`), asi que
+  `getQueryData` es cierto una macrotarea antes de que cambie el DOM. El test
+  esperaba a la senal equivocada. R1 lo vuelve determinista con una viga de
+  200 ms en el notificador, derivada de las constantes reales de RNTL
+  (`50 < 200 < 1000`), restaurada en un `afterEach`.
+- add-pet: **no se reprodujo en 32 corridas** y los cinco caminos que producirian
+  `undefined` estan descartados con fuente. El arreglo obvio ya se habia
+  aplicado el 2026-09-03 en `43183c4a` y no basto. El `explorer` se nego a
+  inventar una causa, que es la conducta correcta.
+- Hallazgo que cambio el gate: **"la primera pasada muerde y la segunda sale
+  verde" es en parte un artefacto del sequencer de jest**, que programa primero
+  el fichero que fallo en la corrida anterior (cache en `/tmp/jest_ru/perf-cache-*`).
+  Verificado en las dos direcciones: add-pet cayo 14o y 15o en las rojas y 3o en
+  las verdes de repeticion; alerts, 7o en la roja y 1o en la verde siguiente. La
+  segunda corrida verde **no es una absolucion: es el control mas favorable**.
+- Por eso el criterio 5 original ("tres `./init.sh` verdes") no media nada. El
+  humano firmo dos decisiones el 2026-09-17: **D-A**, cerrar la mitad de add-pet
+  con endurecimiento diagnostico (`PICKER_MOCK_UNARMED`) en vez de causa raiz, y
+  **D-B**, sustituir el criterio 5 por el Protocolo V. Los criterios 1, 2 y 5 de
+  `feature_list.json` se reescribieron al firmar.
+- La spec dice sin adornos lo que el gate no prueba: 20 corridas detectan un
+  flake del >=14 %, no uno del ~3 % como el de alerts. B se cierra por el
+  determinismo de R1, no por estadistica; A no se cierra con ninguna N razonable.
+- Codex: 11 commits, rojo->verde por R-id. R2 versiona cinco mutaciones de
+  produccion en el rojo y las revierte en el verde.
+- `reviewer` APROBADO, sin fiarse del reporte en ningun punto duro: revirtio a
+  mano la correccion de R1 con la viga puesta y obtuvo rojo 3 de 3 (verde 2 de 2
+  al deshacerlo), reprodujo los rojos de R2 fichero a fichero, comprobo que el
+  invariante de R4 salta y **no da falsos positivos** con colas
+  `mockResolvedValueOnce`, y re-corrio su propia muestra del Protocolo V (V1
+  completo, 5 corridas de V2 con `N == S == 73`, `./init.sh` exit 0 sin tuberia).
+- Dos observaciones no bloqueantes que quedan escritas: la premisa de `design.md`
+  §D5 era falsa (`profile/index.test.tsx` **si** usa `virtual: true`) y Codex lo
+  declaro en vez de taparlo — ese `virtual` sigue abierto para otra feature; y la
+  prueba de zona ciega de S3/S4/S5 no dio el contraste previsto (los tres tests
+  viejos tambien salieron rojos), anotado sin adornar como autoriza `tasks.md`.
+- Coordinacion con Backend: puertos serializados en las dos direcciones, 0017
+  aplicada por ellos mientras Codex corria solo jest, y conflicto de
+  `docs/conventions.md` descartado antes del merge (#138 solo toco dos cifras de
+  §Sesiones en paralelo; la subseccion nueva va a §Tests). `git merge-tree` de la
+  rama contra main sale limpio, asi que **no se rebasa**: rebasar invalidaria los
+  hashes de `traceability.md`.
+- Cierre: #72 `done`, 84 de 98 tras integrar main (#83 entro por el PR #138 mientras esta feature estaba en vuelo). PR #139.

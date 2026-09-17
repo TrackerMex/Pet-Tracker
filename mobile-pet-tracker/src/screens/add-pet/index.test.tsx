@@ -19,7 +19,7 @@ jest.mock('../../api/media', () => ({
 }));
 jest.mock('expo-image-picker', () => ({
   launchImageLibraryAsync: jest.fn(),
-}), { virtual: true });
+}));
 jest.mock('../../providers/auth-provider', () => ({ useAuth: jest.fn() }));
 jest.mock('../../providers/selected-pet-provider', () => ({
   useSelectedPet: jest.fn(),
@@ -77,6 +77,15 @@ async function renderAddPet() {
       </LanguageProvider>
     </HeroUINativeProvider>,
   );
+}
+
+async function pressPickPhoto(): Promise<void> {
+  if (mockLaunchImageLibrary.getMockImplementation() === undefined) {
+    throw new Error(
+      'PICKER_MOCK_UNARMED: launchImageLibraryAsync must be rearmed by the root beforeEach in add-pet/index.test.tsx',
+    );
+  }
+  await fireEvent.press(screen.getByTestId('add-pet-photo'));
 }
 
 async function blurScreen() {
@@ -141,13 +150,13 @@ describe('R2: el formulario vuelve a sus valores iniciales al perder el foco', (
     await fireEvent.press(screen.getByTestId('birth-date-field'));
     await fireEvent.press(screen.getByTestId('age-mode-months'));
     await fireEvent.changeText(screen.getByTestId('approx-age-input'), '999');
-    await fireEvent.press(screen.getByTestId('add-pet-photo'));
+    await pressPickPhoto();
     await waitFor(() =>
       expect(screen.getByTestId('pet-avatar').props.photoUrl).toBe(
         'file:///pet.jpg',
       ),
     );
-    await fireEvent.press(screen.getByTestId('add-pet-photo'));
+    await pressPickPhoto();
     await waitFor(() =>
       expect(screen.getByTestId('photo-upload-error')).toBeVisible(),
     );
@@ -352,7 +361,7 @@ describe('R7: foto opcional tras alta', () => {
     }) as unknown as typeof fetch;
     await renderAddPet();
 
-    await fireEvent.press(screen.getByTestId('add-pet-photo'));
+    await pressPickPhoto();
     await waitFor(() =>
       expect(screen.getByTestId('pet-avatar').props.photoUrl).toBe(
         'file:///new-pet.jpg',
@@ -387,6 +396,25 @@ describe('R1 (mobile-jest-mock-hygiene): el mock del picker se reinicializa por 
       assets: null,
     });
     expect(mockLaunchImageLibrary).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('#72 R4: el fallo del picker nombra el invariante roto', () => {
+  it('#72 R4: falla con PICKER_MOCK_UNARMED si el mock está desarmado', async () => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockUseSelectedPet.mockReturnValue({ selectedPetId: null, selectPet });
+    mockCreatePet.mockReturnValue(pending());
+    await renderAddPet();
+    mockLaunchImageLibrary.mockReset();
+
+    await expect(pressPickPhoto()).rejects.toThrow(/PICKER_MOCK_UNARMED/);
   });
 });
 

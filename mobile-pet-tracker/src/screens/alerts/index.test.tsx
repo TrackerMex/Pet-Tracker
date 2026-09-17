@@ -5,6 +5,7 @@ import {
   waitFor,
   within,
 } from '@testing-library/react-native';
+import { defaultScheduler, notifyManager } from '@tanstack/react-query';
 import { useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
@@ -155,6 +156,8 @@ async function blurScreen(cleanups: (() => void)[]) {
   });
 }
 
+afterEach(() => notifyManager.setScheduler(defaultScheduler));
+
 describe('#78 R4: la pantalla pinta su esqueleto, su error, su vacío y sus filas', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -187,7 +190,8 @@ describe('#78 R4: la pantalla pinta su esqueleto, su error, su vacío y sus fila
     }
   });
 
-  it('pinta y reintenta cada error de la primera página', async () => {
+  it('pinta y reintenta cada error de la primera página (#72 R1)', async () => {
+    notifyManager.setScheduler((callback) => setTimeout(callback, 200));
     const errors: AlertsState[] = [
       { kind: 'error' },
       { kind: 'unreachable', message: 'network down' },
@@ -203,7 +207,7 @@ describe('#78 R4: la pantalla pinta su esqueleto, su error, su vacío y sus fila
           expect.objectContaining({ pages: [error] }),
         ),
       );
-      expect(screen.getByTestId('alerts-error')).toHaveTextContent(
+      expect(await screen.findByTestId('alerts-error')).toHaveTextContent(
         es['common.somethingWentWrong'],
       );
       expect(screen.getByTestId('alerts-error').props.className).toBe(
@@ -640,12 +644,15 @@ describe('#78 R8: el ack cambia la fila sin recargar la lista', () => {
     );
   });
 
-  it('cierra sesión en unauthorized sin pintar error', async () => {
+  it('cierra sesión en unauthorized sin pintar error (#72 R2)', async () => {
     mockAckAlert.mockResolvedValue({ kind: 'unauthorized' });
 
     await pressAck();
 
-    await waitFor(() => expect(mockSignOut).toHaveBeenCalledTimes(1));
+    await waitFor(() =>
+      expect(screen.getByTestId('alert-row-alert-1-ack')).not.toBeDisabled(),
+    );
+    expect(mockSignOut).toHaveBeenCalledTimes(1);
     expect(screen.queryByTestId('alerts-action-error')).toBeNull();
   });
 
@@ -675,7 +682,7 @@ describe('#78 R8: el ack cambia la fila sin recargar la lista', () => {
     expect(mockListAlerts).toHaveBeenCalledTimes(1);
   });
 
-  it('deshabilita durante el vuelo y corta dos pulsaciones seguidas', async () => {
+  it('deshabilita durante el vuelo y corta dos pulsaciones seguidas (#72 R2)', async () => {
     let resolveAck!: (result: AckAlertState) => void;
     mockAckAlert.mockReturnValue(
       new Promise((resolve) => {
@@ -690,8 +697,10 @@ describe('#78 R8: el ack cambia la fila sin recargar la lista', () => {
     await fireEvent.press(button);
     await fireEvent.press(button);
 
-    await waitFor(() => expect(mockAckAlert).toHaveBeenCalledTimes(1));
-    expect(screen.getByTestId('alert-row-alert-1-ack')).toBeDisabled();
+    await waitFor(() =>
+      expect(screen.getByTestId('alert-row-alert-1-ack')).toBeDisabled(),
+    );
+    expect(mockAckAlert).toHaveBeenCalledTimes(1);
     await act(async () => {
       resolveAck({ kind: 'ok', alert: ackedAlert });
       await Promise.resolve();

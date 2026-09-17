@@ -542,7 +542,7 @@ describe('R6: el claim mapea cada kind a su mensaje y permite reintentar', () =>
     await waitFor(() => expect(mockClaimDevice).toHaveBeenCalledTimes(2));
   });
 
-  it('signs out for unauthorized without showing an error message', async () => {
+  it('signs out for unauthorized without showing an error message (#72 R2)', async () => {
     const signOut = jest.fn().mockResolvedValue(undefined);
     mockUseAuth.mockReturnValue({
       status: 'authenticated',
@@ -559,7 +559,10 @@ describe('R6: el claim mapea cada kind a su mensaje y permite reintentar', () =>
 
     await fireEvent.press(screen.getByTestId('pairing-submit'));
 
-    await waitFor(() => expect(signOut).toHaveBeenCalledTimes(1));
+    await waitFor(() =>
+      expect(screen.getByTestId('pairing-submit')).not.toBeDisabled(),
+    );
+    expect(signOut).toHaveBeenCalledTimes(1);
     expect(screen.queryByTestId('pairing-error')).toBeNull();
   });
 });
@@ -928,7 +931,7 @@ describe('R9: desvincular pide confirmación nativa, libera el collar y vuelve a
     expect(error.props.selectable).toBe(true);
   });
 
-  it('signs out for unauthorized without showing a local error', async () => {
+  it('signs out for unauthorized without showing a local error (#72 R2)', async () => {
     const signOut = jest.fn().mockResolvedValue(undefined);
     mockUseAuth.mockReturnValue({
       status: 'authenticated',
@@ -944,7 +947,10 @@ describe('R9: desvincular pide confirmación nativa, libera el collar y vuelve a
       await Promise.resolve();
     });
 
-    await waitFor(() => expect(signOut).toHaveBeenCalledTimes(1));
+    await waitFor(() =>
+      expect(screen.getByTestId('device-unpair')).not.toBeDisabled(),
+    );
+    expect(signOut).toHaveBeenCalledTimes(1);
     expect(screen.queryByTestId('pairing-error')).toBeNull();
   });
 
