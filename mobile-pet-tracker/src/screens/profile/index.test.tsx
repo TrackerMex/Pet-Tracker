@@ -935,3 +935,12 @@ describe('#87 R16: ProfileScreen lee por TanStack Query', () => {
     );
   });
 });
+
+describe('#72 R3: el mock del picker no hereda implementación entre tests', () => {
+  it('#72 R3: resuelve al valor cancelado por defecto', async () => {
+    await expect(mockLaunchImageLibrary()).resolves.toEqual({
+      canceled: true,
+      assets: null,
+    });
+  });
+});
