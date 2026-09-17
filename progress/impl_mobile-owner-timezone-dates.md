@@ -156,6 +156,8 @@ Se conserva `jest.useFakeTimers()` sin opciones: es la variante mínima y mantie
 
 Se añadieron el mock raíz de `getMe`, el perfil completo, el reloj `2026-09-17T23:30:00Z`, el par Kiritimati/Pago_Pago y los cuatro candados anteriores con sufijo `(#90 R3)`. Todas las esperas de fecha terminan en `weight-date-input.props.value`.
 
+Commit rojo: `c8ee54b1`.
+
 Salida literal de la corrida elegida (`--silent` solo suprime el ruido de HeroUI, no filtra ni canaliza el proceso):
 
 ```text
@@ -226,7 +228,23 @@ Rojo válido: cinco fallas prueban la fecha del dispositivo (`09-17` frente a `0
 
 ### Verde
 
-Pendiente.
+`WeightLogContent` consulta `userKeys.me()` inline mediante `getMe(baseUrl, token ?? '')`; lee la zona solo para `kind: 'ok'`. El estado pasó a `measuredAtDraft: string | null`, y el valor visible/enviado es `measuredAtDraft ?? civilTodayIso(profileTimeZone)`. El montaje, blur y éxito regresan el borrador a `null`.
+
+```text
+$ bunx jest --runTestsByPath 'src/app/(tabs)/__tests__/weight-log.test.tsx'
+PASS src/app/(tabs)/__tests__/weight-log.test.tsx (7.035 s)
+
+Test Suites: 1 passed, 1 total
+Tests:       26 passed, 26 total
+Snapshots:   0 total
+Time:        7.206 s, estimated 8 s
+Ran all test suites within paths "src/app/(tabs)/__tests__/weight-log.test.tsx".
+exit=0
+```
+
+- `bun run typecheck`: exit 0.
+- `rg -n "localTodayIso" 'src/app/(tabs)/weight-log.tsx' 'src/app/(tabs)/__tests__/weight-log.test.tsx'`: sin coincidencias, exit 1 esperado.
+- Se actualizaron `specs/mobile-detail-screens-state-reset/traceability.md` y `specs/mobile-add-pet-photo-test-flake/traceability.md` con los títulos nuevos; no se alteraron sus requisitos.
 
 ## R4 — fallback al dispositivo (mutación M4)
 
