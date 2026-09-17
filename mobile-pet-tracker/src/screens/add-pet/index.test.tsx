@@ -79,6 +79,10 @@ async function renderAddPet() {
   );
 }
 
+async function pressPickPhoto(): Promise<void> {
+  await fireEvent.press(screen.getByTestId('add-pet-photo'));
+}
+
 async function blurScreen() {
   await act(() => {
     mockUseFocusEffect.mock.calls.forEach(([effect]) => {
@@ -387,6 +391,25 @@ describe('R1 (mobile-jest-mock-hygiene): el mock del picker se reinicializa por 
       assets: null,
     });
     expect(mockLaunchImageLibrary).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('#72 R4: el fallo del picker nombra el invariante roto', () => {
+  it('#72 R4: falla con PICKER_MOCK_UNARMED si el mock está desarmado', async () => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockUseSelectedPet.mockReturnValue({ selectedPetId: null, selectPet });
+    mockCreatePet.mockReturnValue(pending());
+    await renderAddPet();
+    mockLaunchImageLibrary.mockReset();
+
+    await expect(pressPickPhoto()).rejects.toThrow(/PICKER_MOCK_UNARMED/);
   });
 });
 
