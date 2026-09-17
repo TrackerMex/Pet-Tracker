@@ -1935,5 +1935,59 @@
       "mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx",
       "docs/ui-guidelines.md"
     ]
+  },
+  {
+    "id": 99,
+    "name": "mobile-notifications-permission-recovery",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada el 2026-09-17 desde la seccion Fuera de alcance de la spec de #79, por decision del humano. Si el usuario deniega el permiso de notificaciones, hoy la app se queda sin salida: #79 R7 solo vuelve a pedirlo cuando el sistema dice canAskAgain true, asi que tras la segunda negativa en Android no hay forma de activar las notificaciones desde dentro de la app y el usuario tiene que llegar solo a los ajustes del sistema. Eso anula justo lo que #79 habilita: el backend manda push desde #13, el token no se registra nunca y el usuario no sabe por que no recibe nada. Alcance: detectar el estado denegado sin volver a lanzar el dialogo del sistema, mostrar un aviso con accion -banner o fila en Perfil, la spec decide cual y donde- y abrir los ajustes de notificaciones de la app con Linking.openSettings() o el intent de Android correspondiente. Al volver de los ajustes hay que reevaluar el permiso y, si quedo concedido, disparar el registro de #79 sin exigir un reinicio de la app. Depende de #79: no tiene sentido hasta que el registro exista. Ojo con no reintroducir el dialogo repetido que #79 R7 evita a proposito.",
+    "acceptance_criteria": [
+      "Con el permiso denegado y canAskAgain false, la app muestra un aviso accionable y NO lanza el dialogo del sistema",
+      "La accion abre los ajustes de notificaciones de la app en un dev build de Android",
+      "Al volver de los ajustes con el permiso ya concedido, el token se registra sin reiniciar la app y aparece la fila en push_tokens",
+      "Con el permiso concedido de entrada, el aviso no aparece en ningun sitio",
+      "Tests unitarios con expo-notifications y Linking mockeados; suite movil completa verde; el delta de claves de i18n se declara como suma visible"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/hooks/use-push-registration.ts",
+      "mobile-pet-tracker/src/i18n/catalog.ts"
+    ]
+  },
+  {
+    "id": 100,
+    "name": "mobile-alert-detail-screen",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada el 2026-09-17 desde la seccion Fuera de alcance de la spec de #79, por decision del humano. El tap sobre una notificacion push lleva hoy al centro de alertas (#79 R10 fija router.push('/alerts')) y la alerta recien llegada se ve arriba, pero no se navega a ELLA: el payload trae data.petId y data.alertId y nadie los usa. La razon es que no existe pantalla de detalle: #78 cerro explicitamente en su Fuera de alcance que la fila no navega. Alcance: pantalla de detalle de una alerta -tipo, mascota, momento de apertura, estado, y la accion de atender que hoy vive en la fila del centro-, ruta que acepte el id, y que el handler de tap de #79 navegue a ella usando data.alertId cuando venga en el payload, cayendo al centro de alertas cuando no venga o cuando la alerta ya no exista. Decision que la spec tiene que cerrar: si la pantalla vive en (tabs) o en un Stack, que enlaza con #95; y si el detalle necesita un GET por id en el backend o basta con lo que ya devuelve el listado, porque si hace falta endpoint nuevo es feature de backend aparte. Depende de #79 para la mitad del tap.",
+    "acceptance_criteria": [
+      "Existe una pantalla de detalle de alerta accesible desde la fila del centro de alertas",
+      "El tap sobre una notificacion con data.alertId abre esa alerta concreta, con la app cerrada y en segundo plano",
+      "Sin data.alertId, o con una alerta que ya no existe, el tap lleva al centro de alertas sin error visible",
+      "La accion de atender funciona desde el detalle y el centro de alertas refleja el cambio al volver",
+      "La spec cierra por escrito si hace falta endpoint nuevo y, si hace falta, el id de la feature de backend que lo habilita",
+      "Suite movil completa verde; el delta de claves de i18n se declara como suma visible"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/alerts/index.tsx",
+      "mobile-pet-tracker/src/i18n/catalog.ts"
+    ]
+  },
+  {
+    "id": 101,
+    "name": "mobile-android-notification-icon",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada el 2026-09-17 desde la seccion Fuera de alcance de la spec de #79, por decision del humano. El config plugin de expo-notifications acepta las opciones icon y color para la notificacion de Android; #79 no las usa porque exigen un PNG blanco sobre transparente de 96x96 en assets/ que no existe. Sin el, Android cae al icono de la app, que al reducirse a monocromo se ve como una mancha. Es el unico punto de los tres que esta bloqueado por un asset de diseno y no por codigo: mientras no llegue el PNG, no hay nada que implementar. Alcance: el asset, las dos opciones en el plugin dentro de app.json, y el candado en app.config.test.ts. El color conviene fijarlo al token de marca que ya usa el splash (#208AEF en app.json) en vez de inventar uno.",
+    "acceptance_criteria": [
+      "Existe el PNG blanco sobre transparente de 96x96 en assets/, entregado por diseno",
+      "app.json declara icon y color en el config plugin de expo-notifications y app.config.test.ts lo candea",
+      "En un dev build de Android la notificacion se ve con el icono nuevo y el color de marca, no con el icono de la app",
+      "Cero dependencias nuevas; suite movil completa verde"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/app.json",
+      "mobile-pet-tracker/app.config.test.ts"
+    ]
   }
 ]
