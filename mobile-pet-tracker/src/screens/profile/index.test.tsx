@@ -147,6 +147,11 @@ const mockSetStoredTheme = jest.mocked(setStoredTheme);
 const mockSetTheme = jest.mocked(Uniwind.setTheme);
 let selectPetFromTest: ((petId: string) => void) | undefined;
 
+beforeEach(() => {
+  mockLaunchImageLibrary.mockReset();
+  mockLaunchImageLibrary.mockResolvedValue({ canceled: true, assets: null });
+});
+
 function pending<T>(): Promise<T> {
   return new Promise(() => undefined);
 }
