@@ -22,7 +22,7 @@ tags: [harness, spec, mobile]
 | R2 | `src/providers/__tests__/language-provider.test.tsx::#90 R2: el catálogo trae weightLog.dateCannotBeAfterToday en los dos idiomas y registrada en la tabla` + candado L1 (`:55`, `+ 1`) | rojo `da18d263` `test(mobile-owner-timezone-dates): the catalog must carry weightLog.dateCannotBeAfterToday (R2)` → verde `60923eef` `feat(mobile-owner-timezone-dates): add weightLog.dateCannotBeAfterToday in both languages (R2)` |
 | R3 | `src/app/(tabs)/__tests__/weight-log.test.tsx::#90 R3: la fecha por defecto sale de la zona del perfil` (`it.each` Kiritimati/Pago_Pago) + los cuatro `it` editados con sufijo ` (#90 R3)` (tabla de abajo) | rojo `c8ee54b1` `test(mobile-owner-timezone-dates): the weight log default date must follow the profile zone (R3)` → verde `d79524cc` `feat(mobile-owner-timezone-dates): derive the weight date from the profile zone via userKeys.me (R3)` |
 | R4 | `src/app/(tabs)/__tests__/weight-log.test.tsx::#90 R4: sin zona del perfil la fecha cae al dispositivo` (a, b×3, c) — rojo por M4-i/M4-ii | rojo `c6914614` `test(mobile-owner-timezone-dates): mutate the zone fallback to prove the device path is locked (R4)` → verde `7964d04c` `feat(mobile-owner-timezone-dates): revert the fallback mutations, device path locked (R4)` |
-| R5 | `src/app/(tabs)/__tests__/weight-log.test.tsx::R9 … › joins backend validation messages, translating the future-date one (#90 R5)` y `› keeps a malformed-date validation message raw (#90 R5)` + candado L3 (`src/__tests__/ui-language.test.ts::#65 R5 … › resuelve las 33 ocurrencias normativas`) | pendiente |
+| R5 | `src/app/(tabs)/__tests__/weight-log.test.tsx::R9 … › joins backend validation messages, translating the future-date one (#90 R5)` y `› keeps a malformed-date validation message raw (#90 R5)` + candado L3 (`src/__tests__/ui-language.test.ts::#65 R5 … › resuelve las 33 ocurrencias normativas`) | rojo `26f6861b` `test(mobile-owner-timezone-dates): the future-date 400 must render translated and the rest raw (R5)` → verde pendiente |
 | R6 | `src/screens/add-pet/index.test.tsx::#90 R6: birthDate manda el día civil local del picker, no el UTC` — rojo por M6; backend cubierto por `backend-pet-tracker/test/pets.e2e-spec.ts::R6 (dto-dates-owner-timezone #89)` (ya en `main`) | pendiente |
 | R7 | Sin test nuevo — `bun run typecheck`, `bun run lint`, `bun run test` (N == S), `./init.sh`, grep-clean C8, diffs vacíos, delta del catálogo (608 → 610); sección de verificación de `progress/impl_mobile-owner-timezone-dates.md` | pendiente |
 
@@ -54,10 +54,10 @@ Convención de commit: `test(mobile-owner-timezone-dates): … (R<n>)` para el r
 | `weight-log.test.tsx:346` `R9 … › 'renders the inline form with the local date prefilled'` (`:355-357`) | R9 de weight-log | Ídem, dentro de `waitFor`; sufijo ` (#90 R3)` | rojo `c8ee54b1` → verde `d79524cc` |
 | `weight-log.test.tsx:377` `R9 … › 'submits all fields, clears them, and refetches the list (#72 R2)'` (`:406-408`) | #72 R2 (S7) | Ídem; la espera de `:401-403` se conserva; sufijo ` (#90 R3)`; fila de `specs/mobile-add-pet-photo-test-flake/traceability.md` actualizada | rojo `c8ee54b1` → verde `d79524cc` |
 | `weight-log.test.tsx:412` `R9 … › 'omits body condition when its field is blank'` (`:428`) | R9 de weight-log | `measuredAt: '2026-09-18'`; sufijo ` (#90 R3)` | rojo `c8ee54b1` → verde `d79524cc` |
-| `weight-log.test.tsx:433` `R9 … › 'joins backend validation messages'` | R9 de weight-log | Reescrito: mezcla crudo + traducido, título nuevo con ` (#90 R5)` | pendiente |
+| `weight-log.test.tsx:433` `R9 … › 'joins backend validation messages'` | R9 de weight-log | Reescrito: mezcla crudo + traducido, título nuevo con ` (#90 R5)` | rojo `26f6861b` → verde pendiente |
 | `weight-log.test.tsx:84-89` `localTodayIso` (copia) | — | Renombrada `deviceTodayIso`; solo la usa R4 | rojo `c8ee54b1` → verde `d79524cc` |
 | `language-provider.test.tsx:50,55` (#65 R12) | #65 | `+ 1` al literal y ` + 1 de #90` al comentario | pendiente |
-| `ui-language.test.ts:132-133` (#65 R5) | #65 | `toHaveLength(32 + 1)`, título `33 ocurrencias` | pendiente |
+| `ui-language.test.ts:132-133` (#65 R5) | #65 | `toHaveLength(32 + 1)`, título `33 ocurrencias` | rojo `26f6861b` → verde pendiente |
 
 ## Tests que deben quedar verdes SIN editarse
 

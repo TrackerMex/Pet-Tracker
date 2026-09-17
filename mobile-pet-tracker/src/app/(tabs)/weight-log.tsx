@@ -33,6 +33,9 @@ import { useThemeColors } from '../../theme/use-theme-colors';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 import { civilTodayIso } from '../../utils/civil-today-iso';
 
+const MEASURED_AT_IN_FUTURE_MESSAGE =
+  'measuredAt is too far in the future';
+
 function fmtVariation(variation: number | null): string {
   if (variation === null) return '—';
   return variation > 0 ? `+${variation} kg` : `${variation} kg`;
@@ -108,7 +111,16 @@ function WeightLogContent({ petId }: { petId: string }) {
           weights.refetch();
           return;
         case 'validation':
-          setFormError(result.errors.map(({ message }) => message).join('\n'));
+          setFormError(
+            result.errors
+              .map(({ path, message }) =>
+                path === 'measuredAt' &&
+                message === MEASURED_AT_IN_FUTURE_MESSAGE
+                  ? t('weightLog.dateCannotBeAfterToday')
+                  : message,
+              )
+              .join('\n'),
+          );
           return;
         case 'forbidden':
           setFormError(t('weightLog.errorForbidden'));

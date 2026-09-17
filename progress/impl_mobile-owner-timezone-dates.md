@@ -329,6 +329,8 @@ exit=0
 
 Se reescribió el test del join con el contrato byte a byte, se añadió el caso P1 de formato crudo y se movió L3 como delta (`32 + 1`, fila nueva en `ui-copy-table.ts`).
 
+Commit rojo: `26f6861b`.
+
 ```text
 $ bunx jest --runTestsByPath 'src/app/(tabs)/__tests__/weight-log.test.tsx' src/__tests__/ui-language.test.ts --silent
 FAIL src/__tests__/ui-language.test.ts
@@ -371,7 +373,35 @@ Rojo válido: el mensaje futuro sigue crudo y los dos `checkUses` cuentan 0 fren
 
 ### Verde
 
-Pendiente.
+Se añadió una sola constante `MEASURED_AT_IN_FUTURE_MESSAGE` y el `map` sustituye únicamente `path === 'measuredAt' && message === MEASURED_AT_IN_FUTURE_MESSAGE`; conserva orden, mensajes restantes y `join('\n')`.
+
+```text
+$ bunx jest --runTestsByPath 'src/app/(tabs)/__tests__/weight-log.test.tsx' src/__tests__/ui-language.test.ts --silent
+PASS src/__tests__/ui-language.test.ts
+PASS src/app/(tabs)/__tests__/weight-log.test.tsx (7.234 s)
+
+Test Suites: 2 passed, 2 total
+Tests:       56 passed, 56 total
+Snapshots:   0 total
+Time:        7.766 s
+exit=0
+```
+
+```text
+$ bunx jest --runTestsByPath src/__tests__/ui-language.test.ts src/providers/__tests__/language-provider.test.tsx --silent
+PASS src/providers/__tests__/language-provider.test.tsx
+PASS src/__tests__/ui-language.test.ts
+
+Test Suites: 2 passed, 2 total
+Tests:       31 passed, 31 total
+Snapshots:   0 total
+Time:        2.425 s, estimated 3 s
+exit=0
+```
+
+- `bun run typecheck`: exit 0.
+- Los valores de catálogo no aparecen literales en `weight-log.tsx` (rg sin coincidencias, exit 1).
+- `t('weightLog.dateCannotBeAfterToday')` aparece exactamente una vez, en la línea del mapeo.
 
 ## R6 — regresión de `birthDate` (mutación M6)
 
