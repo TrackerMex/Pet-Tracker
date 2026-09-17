@@ -418,6 +418,54 @@ describe('#72 R4: el fallo del picker nombra el invariante roto', () => {
   });
 });
 
+describe('#90 R6: birthDate manda el día civil local del picker, no el UTC', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-09-17T23:30:00Z'));
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet });
+    mockCreatePet.mockReturnValue(pending());
+  });
+
+  afterEach(() => jest.useRealTimers());
+
+  it('envía los getters locales aunque los getters UTC estén en el día siguiente', async () => {
+    mockCreatePet.mockResolvedValue({
+      kind: 'ok',
+      pet: { id: 'pet-new', name: 'Nala' } as never,
+    });
+    const birthDate = Object.assign(new Date(2026, 8, 17, 23, 30), {
+      getUTCFullYear: () => 2026,
+      getUTCMonth: () => 8,
+      getUTCDate: () => 18,
+    });
+
+    await renderAddPet();
+    await fireEvent.changeText(screen.getByTestId('name-input'), 'Nala');
+    await fireEvent.press(screen.getByTestId('birth-date-field'));
+    const picker = within(
+      screen.getByTestId('expo-ui-picker-host'),
+    ).getByTestId('birth-date-picker');
+    await fireEvent(picker, 'onValueChange', {}, birthDate);
+    await fireEvent.press(screen.getByTestId('add-pet-submit'));
+
+    await waitFor(() =>
+      expect(mockCreatePet).toHaveBeenCalledWith(
+        'http://example.test/v1',
+        'jwt-token',
+        expect.objectContaining({ birthDate: '2026-09-17' }),
+      ),
+    );
+  });
+});
+
 describe('#61 R10: los controles táctiles declaran TOUCH_SLOP', () => {
   beforeEach(() => {
     jest.clearAllMocks();

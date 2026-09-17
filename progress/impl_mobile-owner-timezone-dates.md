@@ -375,6 +375,8 @@ Rojo válido: el mensaje futuro sigue crudo y los dos `checkUses` cuentan 0 fren
 
 Se añadió una sola constante `MEASURED_AT_IN_FUTURE_MESSAGE` y el `map` sustituye únicamente `path === 'measuredAt' && message === MEASURED_AT_IN_FUTURE_MESSAGE`; conserva orden, mensajes restantes y `join('\n')`.
 
+Commit verde: `b9dc4b69`.
+
 ```text
 $ bunx jest --runTestsByPath 'src/app/(tabs)/__tests__/weight-log.test.tsx' src/__tests__/ui-language.test.ts --silent
 PASS src/__tests__/ui-language.test.ts
@@ -404,6 +406,33 @@ exit=0
 - `t('weightLog.dateCannotBeAfterToday')` aparece exactamente una vez, en la línea del mapeo.
 
 ## R6 — regresión de `birthDate` (mutación M6)
+
+### Rojo — M6 versionada
+
+Se añadió `#90 R6` después de `#72 R4`, con `jest.useFakeTimers()` (misma variante mínima validada en R3), reloj `23:30Z` y un `Date` real cuyos getters UTC están sesgados al día 18. Hereda el `beforeEach` raíz de `expo-image-picker` y no pulsa `add-pet-photo`. M6 cambió únicamente `dateToIso` a getters UTC.
+
+```text
+$ bunx jest --runTestsByPath src/screens/add-pet/index.test.tsx --silent
+FAIL src/screens/add-pet/index.test.tsx (11.014 s)
+  ● #90 R6: birthDate manda el día civil local del picker, no el UTC › envía los getters locales aunque los getters UTC estén en el día siguiente
+
+    expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+    Expected: "http://example.test/v1", "jwt-token", ObjectContaining {"birthDate": "2026-09-17"}
+    Received: "http://example.test/v1", "jwt-token", {"birthDate": "2026-09-18", "name": "Nala", "species": "dog"}
+
+    Number of calls: 1
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 19 passed, 20 total
+Snapshots:   0 total
+Time:        11.171 s
+exit=1
+```
+
+Rojo válido: la única falla es el payload UTC `2026-09-18` frente al día local `2026-09-17`; no aparece `PICKER_MOCK_UNARMED`.
+
+### Verde — reversión de M6
 
 Pendiente.
 
