@@ -1,5 +1,6 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
 import * as SecureStore from 'expo-secure-store';
+import { useEffect } from 'react';
 import { Button, Text } from 'react-native';
 
 import { deletePushToken } from '../../api/push-tokens';
@@ -18,10 +19,17 @@ const getItemAsync = jest.mocked(SecureStore.getItemAsync);
 const setItemAsync = jest.mocked(SecureStore.setItemAsync);
 const deleteItemAsync = jest.mocked(SecureStore.deleteItemAsync);
 const deletePushTokenMock = jest.mocked(deletePushToken);
+const observeAuthProbe = jest.fn();
 
-let authProbeRenderCount = 0;
-let latestSetPushToken: ((expoToken: string | null) => void) | undefined;
-let latestSignOut: (() => Promise<void>) | undefined;
+interface AuthProbeObservation {
+  setPushToken?: (expoToken: string | null) => void;
+  signOut: () => Promise<void>;
+}
+
+function latestAuthProbeObservation(): AuthProbeObservation | undefined {
+  const calls = observeAuthProbe.mock.calls;
+  return calls[calls.length - 1]?.[0] as AuthProbeObservation | undefined;
+}
 
 function AuthProbe() {
   const { status, token, signIn, signOut, setPushToken } = useAuth() as ReturnType<
@@ -29,9 +37,9 @@ function AuthProbe() {
   > & {
     setPushToken?: (expoToken: string | null) => void;
   };
-  authProbeRenderCount += 1;
-  latestSetPushToken = setPushToken;
-  latestSignOut = signOut;
+  useEffect(() => {
+    observeAuthProbe({ setPushToken, signOut });
+  });
 
   return (
     <>
@@ -157,9 +165,6 @@ describe('#79 R5: signOut borra el push token antes que la sesión', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    authProbeRenderCount = 0;
-    latestSetPushToken = undefined;
-    latestSignOut = undefined;
     process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
     getItemAsync.mockResolvedValue('jwt-token');
     setItemAsync.mockResolvedValue();
@@ -184,10 +189,11 @@ describe('#79 R5: signOut borra el push token antes que la sesión', () => {
     await waitFor(() => {
       expect(screen.getByTestId('auth-status')).toHaveTextContent('authenticated');
     });
+    const observation = latestAuthProbeObservation();
 
-    await act(() => latestSetPushToken?.('ExpoPushToken[xxx]'));
+    await act(() => observation?.setPushToken?.('ExpoPushToken[xxx]'));
     await act(async () => {
-      await latestSignOut?.();
+      await observation?.signOut();
     });
 
     await waitFor(() => {
@@ -212,9 +218,10 @@ describe('#79 R5: signOut borra el push token antes que la sesión', () => {
     await waitFor(() => {
       expect(screen.getByTestId('auth-status')).toHaveTextContent('authenticated');
     });
+    const observation = latestAuthProbeObservation();
 
     await act(async () => {
-      await latestSignOut?.();
+      await observation?.signOut();
     });
 
     await waitFor(() => {
@@ -239,10 +246,11 @@ describe('#79 R5: signOut borra el push token antes que la sesión', () => {
     await waitFor(() => {
       expect(screen.getByTestId('auth-status')).toHaveTextContent('authenticated');
     });
+    const observation = latestAuthProbeObservation();
 
-    await act(() => latestSetPushToken?.('ExpoPushToken[xxx]'));
+    await act(() => observation?.setPushToken?.('ExpoPushToken[xxx]'));
     await act(async () => {
-      await latestSignOut?.();
+      await observation?.signOut();
     });
 
     await waitFor(() => {
@@ -263,13 +271,13 @@ describe('#79 R5: signOut borra el push token antes que la sesión', () => {
     await waitFor(() => {
       expect(screen.getByTestId('auth-status')).toHaveTextContent('authenticated');
     });
-    const rendersBefore = authProbeRenderCount;
-    const setterBefore = latestSetPushToken;
+    const rendersBefore = observeAuthProbe.mock.calls.length;
+    const setterBefore = latestAuthProbeObservation()?.setPushToken;
 
-    await act(() => latestSetPushToken?.('ExpoPushToken[xxx]'));
+    await act(() => setterBefore?.('ExpoPushToken[xxx]'));
 
-    expect(authProbeRenderCount).toBe(rendersBefore);
-    expect(latestSetPushToken).toBe(setterBefore);
-    expect(latestSetPushToken).toEqual(expect.any(Function));
+    expect(observeAuthProbe).toHaveBeenCalledTimes(rendersBefore);
+    expect(latestAuthProbeObservation()?.setPushToken).toBe(setterBefore);
+    expect(setterBefore).toEqual(expect.any(Function));
   });
 });
