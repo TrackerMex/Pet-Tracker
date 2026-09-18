@@ -77,6 +77,7 @@ const notificationMocks = [
 ];
 const originalPlatform = Platform.OS;
 const originalApiUrl = process.env.EXPO_PUBLIC_API_URL;
+const originalDev = globalThis.__DEV__;
 const mockSetPushToken = jest.fn();
 const mockRouterPush = jest.mocked(router.push);
 const mockRemoveResponseListener = jest.fn();
@@ -85,6 +86,7 @@ const foregroundNotificationHandler = mockSetNotificationHandler.mock.calls[0]?.
 let responseListener:
   | Parameters<typeof Notifications.addNotificationResponseReceivedListener>[0]
   | undefined;
+let warnSpy: jest.SpiedFunction<typeof console.warn>;
 
 function setPlatform(os: string): void {
   Object.defineProperty(Platform, 'OS', { configurable: true, value: os });
@@ -116,6 +118,8 @@ function expectNoPushSideEffects(): void {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  globalThis.__DEV__ = true;
+  warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
   mockIsDevice = true;
   mockProjectId = 'project-id';
   setPlatform('android');
@@ -137,7 +141,12 @@ beforeEach(() => {
   mockRegisterPushToken.mockResolvedValue({ kind: 'ok' });
 });
 
+afterEach(() => {
+  warnSpy.mockRestore();
+});
+
 afterAll(() => {
+  globalThis.__DEV__ = originalDev;
   setPlatform(originalPlatform);
   if (originalApiUrl === undefined) {
     delete process.env.EXPO_PUBLIC_API_URL;
@@ -157,6 +166,25 @@ describe('R6: el hook no toca expo-notifications ni la API sin las precondicione
     await renderHook(() => usePushRegistration());
 
     expectNoPushSideEffects();
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    expect(warnSpy).toHaveBeenCalledWith(
+      '[push] skipped: unauthenticated or missing auth token',
+    );
+  });
+
+  it('no hace nada sin publicador de push token', async () => {
+    mockUseAuth.mockReturnValue({
+      ...authenticatedAuth(),
+      setPushToken: undefined,
+    });
+
+    await renderHook(() => usePushRegistration());
+
+    expectNoPushSideEffects();
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    expect(warnSpy).toHaveBeenCalledWith(
+      '[push] skipped: setPushToken unavailable',
+    );
   });
 
   it('no hace nada fuera de un dispositivo físico', async () => {
@@ -165,6 +193,10 @@ describe('R6: el hook no toca expo-notifications ni la API sin las precondicione
     await renderHook(() => usePushRegistration());
 
     expectNoPushSideEffects();
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    expect(warnSpy).toHaveBeenCalledWith(
+      '[push] skipped: physical device required',
+    );
   });
 
   it('no hace nada en una plataforma no soportada', async () => {
@@ -173,6 +205,10 @@ describe('R6: el hook no toca expo-notifications ni la API sin las precondicione
     await renderHook(() => usePushRegistration());
 
     expectNoPushSideEffects();
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    expect(warnSpy).toHaveBeenCalledWith(
+      '[push] skipped: unsupported platform (web)',
+    );
   });
 
   it.each([undefined, ''])('no hace nada con projectId %p', async (projectId) => {
@@ -181,6 +217,10 @@ describe('R6: el hook no toca expo-notifications ni la API sin las precondicione
     await renderHook(() => usePushRegistration());
 
     expectNoPushSideEffects();
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    expect(warnSpy).toHaveBeenCalledWith(
+      '[push] skipped: EAS projectId missing',
+    );
   });
 });
 
@@ -205,6 +245,10 @@ describe('R7: el permiso se pide solo con granted false y canAskAgain true', () 
       expect(mockRequestPermissions).toHaveBeenCalledTimes(1);
       expect(mockGetExpoPushToken).not.toHaveBeenCalled();
       expect(mockRegisterPushToken).not.toHaveBeenCalled();
+      expect(warnSpy).toHaveBeenCalledTimes(1);
+      expect(warnSpy).toHaveBeenCalledWith(
+        '[push] skipped: notification permission denied',
+      );
     });
   });
 
@@ -218,6 +262,10 @@ describe('R7: el permiso se pide solo con granted false y canAskAgain true', () 
       expect(mockRequestPermissions).not.toHaveBeenCalled();
       expect(mockGetExpoPushToken).not.toHaveBeenCalled();
       expect(mockRegisterPushToken).not.toHaveBeenCalled();
+      expect(warnSpy).toHaveBeenCalledTimes(1);
+      expect(warnSpy).toHaveBeenCalledWith(
+        '[push] skipped: notification permission denied',
+      );
     });
   });
 
@@ -299,7 +347,8 @@ describe('R8: obtiene el token con el projectId, lo publica y hace POST', () => 
 
 describe('R9: un fallo de token o de red no rompe ni reintenta en la sesión', () => {
   it('absorbe un fallo al obtener el token y conserva el probe', async () => {
-    mockGetExpoPushToken.mockRejectedValue(new Error('offline'));
+    const error = new Error('offline');
+    mockGetExpoPushToken.mockRejectedValue(error);
 
     const probe = await renderHook(() => {
       usePushRegistration();
@@ -310,6 +359,11 @@ describe('R9: un fallo de token o de red no rompe ni reintenta en la sesión', (
       expect(mockGetExpoPushToken).toHaveBeenCalledTimes(1);
       expect(mockRegisterPushToken).not.toHaveBeenCalled();
       expect(probe.result.current).toBe('mounted');
+      expect(warnSpy).toHaveBeenCalledTimes(1);
+      expect(warnSpy).toHaveBeenCalledWith(
+        '[push] registration failed',
+        error,
+      );
     });
   });
 
@@ -330,6 +384,27 @@ describe('R9: un fallo de token o de red no rompe ni reintenta en la sesión', (
     await probe.rerender({ tick: 1 });
 
     expect(mockRegisterPushToken).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('R13: cada salida silenciosa se nombra en desarrollo', () => {
+  it('no avisa en producción', async () => {
+    globalThis.__DEV__ = false;
+    mockProjectId = undefined;
+
+    await renderHook(() => usePushRegistration());
+
+    expectNoPushSideEffects();
+    expect(warnSpy).not.toHaveBeenCalled();
+  });
+
+  it('no avisa en el camino feliz', async () => {
+    await renderHook(() => usePushRegistration());
+
+    await waitFor(() => {
+      expect(mockRegisterPushToken).toHaveBeenCalledTimes(1);
+      expect(warnSpy).not.toHaveBeenCalled();
+    });
   });
 });
 
