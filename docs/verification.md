@@ -830,6 +830,48 @@ Registra únicamente los resultados y status en
 `progress/impl_auth-reset-deep-link.md`. G1–G4 siguen pendientes hasta esa
 confirmación humana; las suites automáticas no los sustituyen.
 
+### Feature 79 — mobile-push-registration: `google-services.json` del dev build
+
+El registro del push token falla en un dev build **local** si Firebase no está
+inicializado en el APK. El síntoma exacto, con el diagnóstico de R13 puesto:
+
+```
+[push] registration failed [Error: Unable to get Firebase Messaging instance.
+Did you configure `googleServicesFile` path in app config? …
+Default FirebaseApp is not initialized in this process com.trackermex.pettracker]
+```
+
+**Por qué pasa aunque las credenciales FCM V1 estén subidas a EAS**: esas
+credenciales las inyecta **EAS Build**. Un dev build compilado en la máquina del
+humano con `bunx expo run:android` no pasa por EAS, así que necesita el fichero
+de configuración de Firebase en el proyecto.
+
+**Cómo obtenerlo** (una vez por máquina):
+
+1. Consola de Firebase → el proyecto ligado a la credencial FCM V1 de esta app.
+2. Configuración del proyecto → tus apps → la app de Android con
+   `applicationId` **`com.trackermex.pettracker`**. Si no existe, añadirla con ese
+   mismo id.
+3. Descargar `google-services.json` y dejarlo en `mobile-pet-tracker/`.
+
+**El fichero NO se versiona**: está en `mobile-pet-tracker/.gitignore` porque
+identifica el proyecto de Firebase del humano. Cada máquina que compile un dev
+build de Android lo descarga por su cuenta.
+
+**Después de colocarlo**, el build nativo hay que rehacerlo — la configuración
+entra en el `AndroidManifest.xml` durante el prebuild:
+
+```bash
+cd mobile-pet-tracker
+bunx expo prebuild --clean --platform android
+bunx expo run:android
+```
+
+Si el fichero falta, `app.config.ts` **no** declara `googleServicesFile` y avisa
+por consola remitiendo a esta sección (R14). Eso es deliberado: sin el aviso, el
+build salía adelante y el fallo aparecía mucho más tarde, en forma de un push que
+nunca llega.
+
 ### Feature 96 — harness-e2e-nunca-corre-en-ci
 
 `./init.sh` ya requiere Postgres y LocalStack levantados con

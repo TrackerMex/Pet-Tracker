@@ -279,6 +279,31 @@ no toca ningún otro.
 
 ---
 
+## R14 — `googleServicesFile` cuando el fichero existe (enmienda E3)
+
+Sujetos: `app.config.ts`, `app.config.test.ts`, `.gitignore`. **No** se toca
+`app.json` ni ningún fichero de `src/`.
+
+- [ ] **(1) Rojo** — en `app.config.test.ts`, un `describe('#79 R14: …')` con dos
+      casos, calcados del patrón que el fichero ya usa para
+      `GOOGLE_MAPS_API_KEY_ANDROID` y `RESET_LINK_HOST`: con el fichero presente,
+      la config resuelta trae `android.googleServicesFile`; sin él, **no** trae la
+      clave y se emite un aviso que nombra `google-services.json` y cita
+      `docs/verification.md`. Correr
+      `bunx jest --runTestsByPath app.config.test.ts` y guardar la salida.
+  - Commit: `test(mobile-push-registration): require google services file wiring (R14)`
+- [ ] **(2) Verde** — implementarlo en `app.config.ts` siguiendo el patrón
+      existente (comprobar existencia con `fs.existsSync` sobre una ruta relativa
+      al propio fichero de config, acumular el aviso en el array `warnings` que ya
+      hay, y añadir la clave dentro del bloque `android` solo cuando existe).
+  - Commit: `feat(mobile-push-registration): wire google-services.json when present (R14)`
+- [ ] **(3) Refactor** — añadir `google-services.json` a
+      `mobile-pet-tracker/.gitignore` y comprobar con
+      `git check-ignore -v mobile-pet-tracker/google-services.json` que queda
+      ignorado. Suite completa y `bunx tsc --noEmit` verdes.
+
+---
+
 ## R12 — Gate humano: prueba de humo
 
 - [ ] (1) No lleva test automático: es el gate humano. Antes de pedirlo,

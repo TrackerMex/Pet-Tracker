@@ -680,6 +680,57 @@ reintentando en el siguiente arranque. Solo deja de ser mudo mientras se depura.
 
 ---
 
+### E3 — el dev build local necesita `google-services.json` (requisito nuevo R14)
+
+**Qué pasó.** Con R13 puesto, el gate del 2026-09-18 dejó de ser ciego y dio la
+causa en una línea:
+
+```
+[push] registration failed [Error: Unable to get Firebase Messaging instance.
+Did you configure `googleServicesFile` path in app config? …
+Default FirebaseApp is not initialized in this process com.trackermex.pettracker]
+```
+
+**Premisa falsa de esta spec, que queda corregida.** §Fuera de alcance decía:
+*"`googleServicesFile` / `google-services.json` en el repo. La credencial FCM V1
+vive en EAS (Tarea B) y el dev build no la necesita en el árbol."* **Es falso.**
+Las credenciales que se suben a EAS las inyecta **EAS Build**; un dev build
+compilado en la máquina del humano con `bunx expo run:android` no pasa por EAS,
+así que Firebase no se inicializa y `getExpoPushTokenAsync` falla siempre. La
+Tarea B estaba bien hecha y aun así no cubría este camino. Esa viñeta de
+§Fuera de alcance queda **anulada** por esta enmienda.
+
+**Decisión del humano (2026-09-18): opción A — dev build local, con el fichero
+FUERA del repo.** Se descarta compilar el dev client con EAS Build, que habría
+evitado el fichero pero ata cada rebuild nativo a la nube y a la cuota del plan
+gratuito.
+
+**Qué cambia:**
+
+- **R14**: WHEN existe `mobile-pet-tracker/google-services.json`, THE SYSTEM
+  SHALL declarar `android.googleServicesFile` apuntando a él en la configuración
+  resuelta de Expo; **IF** no existe, **THEN** THE SYSTEM SHALL emitir un aviso
+  por consola que nombre el fichero ausente y remita a `docs/verification.md`,
+  **sin** declarar la clave y **sin** romper la resolución de config.
+- El fichero **no se versiona**: entra en `mobile-pet-tracker/.gitignore`.
+  Identifica el proyecto de Firebase del humano y cada máquina lo descarga de la
+  consola de Firebase.
+- **Se levanta el veto de C1 sobre `app.config.ts` solo para esto.** R14 vive
+  ahí, no en `app.json`, porque es exactamente el patrón que ese fichero ya usa
+  dos veces (`GOOGLE_MAPS_API_KEY_ANDROID` y `RESET_LINK_HOST`): configurar si
+  el dato está, avisar si falta. Ponerlo estático en `app.json` rompería
+  `bunx expo prebuild` para cualquiera que no tenga el fichero, incluidos los
+  smokes de otras features que ya lo usan.
+- `docs/verification.md` documenta de dónde sale el fichero y dónde va.
+
+**Lo que esto NO cambia.** Ni un requisito de R1 a R13, ni el contrato con el
+backend, ni el comportamiento de la app en producción. Es configuración nativa
+del build de desarrollo.
+
+- [ ] **E3 aprobada por humano** (fecha: ____)
+
+---
+
 ## Aprobación
 
 - [X] Aprobado por humano (fecha: 2026-09-17) ← gate obligatorio antes de implementar
