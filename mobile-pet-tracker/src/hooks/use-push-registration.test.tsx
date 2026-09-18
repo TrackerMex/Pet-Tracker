@@ -77,7 +77,8 @@ const notificationMocks = [
 ];
 const originalPlatform = Platform.OS;
 const originalApiUrl = process.env.EXPO_PUBLIC_API_URL;
-const originalDev = globalThis.__DEV__;
+const devGlobal = globalThis as typeof globalThis & { __DEV__: boolean };
+const originalDev = devGlobal.__DEV__;
 const mockSetPushToken = jest.fn();
 const mockRouterPush = jest.mocked(router.push);
 const mockRemoveResponseListener = jest.fn();
@@ -118,7 +119,7 @@ function expectNoPushSideEffects(): void {
 
 beforeEach(() => {
   jest.clearAllMocks();
-  globalThis.__DEV__ = true;
+  devGlobal.__DEV__ = true;
   warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
   mockIsDevice = true;
   mockProjectId = 'project-id';
@@ -146,7 +147,7 @@ afterEach(() => {
 });
 
 afterAll(() => {
-  globalThis.__DEV__ = originalDev;
+  devGlobal.__DEV__ = originalDev;
   setPlatform(originalPlatform);
   if (originalApiUrl === undefined) {
     delete process.env.EXPO_PUBLIC_API_URL;
@@ -389,7 +390,7 @@ describe('R9: un fallo de token o de red no rompe ni reintenta en la sesión', (
 
 describe('R13: cada salida silenciosa se nombra en desarrollo', () => {
   it('no avisa en producción', async () => {
-    globalThis.__DEV__ = false;
+    devGlobal.__DEV__ = false;
     mockProjectId = undefined;
 
     await renderHook(() => usePushRegistration());
