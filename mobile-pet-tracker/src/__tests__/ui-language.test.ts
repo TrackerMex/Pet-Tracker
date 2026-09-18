@@ -129,8 +129,8 @@ describe('#65 R4: Map resuelve su copy por clave', () => {
 });
 
 describe('#65 R5: Health resuelve su copy por clave', () => {
-  it('resuelve las 32 ocurrencias normativas', () => {
-    expect(R5_HEALTH).toHaveLength(32);
+  it('resuelve las 33 ocurrencias normativas', () => {
+    expect(R5_HEALTH).toHaveLength(32 + 1); // +1 #90 R5
     checkUses(R5_HEALTH);
   });
 });
