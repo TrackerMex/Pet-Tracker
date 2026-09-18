@@ -484,4 +484,21 @@ recibirla (`95678193..19c853e3`). No hay cambios de dependencias, backend, CI,
 
 ## Gate humano — smoke Android/Hermes
 
-Pendiente de ejecución por el humano después de esta implementación. Seguir los pasos 1–7 de `specs/mobile-owner-timezone-dates/requirements.md` §Gate humano y registrar fecha/hora, zonas y resultados sin secretos.
+Ejecutado por el humano siguiendo los pasos 1–7 de
+`specs/mobile-owner-timezone-dates/requirements.md` §Gate humano.
+
+- **Fecha/hora**: 2026-09-17 09:48 (hora CDMX).
+- **Zona del perfil**: `America/Mexico_City`.
+- **Zona del dispositivo**: `Asia/Tokyo`.
+- **Build**: dev build de Android.
+
+| Paso | Resultado |
+|---|---|
+| 2. Default | Muestra `2026-09-17` (día CDMX) — OK |
+| 3. Hoy → 201 | Fila nueva con `2026-09-17` — OK |
+| 4. Mañana → 400 traducido | `La fecha no puede ser posterior a hoy` — OK |
+| 5. Formato → crudo | `2026-13-45` → `Invalid ISO date` — OK |
+| 6. Fallback (modo avión) | Fecha del dispositivo (Tokio), sin error de formulario — OK |
+
+Gate humano superado sin señales de desviación en `Intl` con `timeZone` bajo
+Hermes.
