@@ -872,6 +872,31 @@ por consola remitiendo a esta sección (R14). Eso es deliberado: sin el aviso, e
 build salía adelante y el fallo aparecía mucho más tarde, en forma de un push que
 nunca llega.
 
+### Push en un build de producción — lo que habrá que resolver (nota, 2026-09-18)
+
+Nada de esto aplica todavía: no hay build de producción. Se anota aquí al
+descubrirse durante el gate de #79, para no volver a deducirlo.
+
+1. **El `google-services.json` no está en el repo** (`.gitignore`), así que un
+   build de EAS no lo encuentra solo. Hay que subirlo como *file secret*
+   (`eas secret:create --type file`) y referenciarlo en el perfil de build. Si
+   falta, el APK de producción falla **igual que en local pero en silencio**: el
+   aviso de R13 está guardado por `__DEV__`.
+2. **Credenciales FCM V1 por perfil.** La clave de service account se subió para
+   el perfil `development`; verificar con `eas credentials` que el perfil de
+   producción también la tiene.
+3. **El fichero está atado al `applicationId`.** Si producción usa un id distinto
+   de `com.trackermex.pettracker`, hace falta una **segunda app** en el proyecto
+   de Firebase y su propio `google-services.json`.
+4. **Un registro fallido es invisible para el usuario y para nosotros.** No da
+   error: simplemente no llega ningún push. La señal explotable está en el
+   backend — un usuario sin fila en `push_tokens` es un registro que falló. Vale
+   una feature de observabilidad antes del lanzamiento.
+5. **El backend de producción necesita `PUSH_ENABLED=true` y la cola
+   `notifications` creada en la cuenta AWS real**, no solo en LocalStack.
+6. **iOS no usa FCM**: va por APNs con su propia clave, y entra por #60
+   `mobile-ios-support`.
+
 ### Feature 96 — harness-e2e-nunca-corre-en-ci
 
 `./init.sh` ya requiere Postgres y LocalStack levantados con
