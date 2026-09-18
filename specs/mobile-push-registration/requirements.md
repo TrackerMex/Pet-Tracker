@@ -727,7 +727,7 @@ gratuito.
 backend, ni el comportamiento de la app en producción. Es configuración nativa
 del build de desarrollo.
 
-- [ ] **E3 aprobada por humano** (fecha: ____)
+- [X] **E3 aprobada por humano** (fecha: 2026-09-18)
 
 ---
 
