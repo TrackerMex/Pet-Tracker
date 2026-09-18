@@ -676,7 +676,7 @@ los que ya existen, más uno que fije el silencio con `__DEV__` falso.
 el registro sigue siendo best-effort, sigue sin bloquear el login y sigue
 reintentando en el siguiente arranque. Solo deja de ser mudo mientras se depura.
 
-- [ ] **E2 aprobada por humano** (fecha: ____)
+- [X] **E2 aprobada por humano** (fecha: 2026-09-18)
 
 ---
 
