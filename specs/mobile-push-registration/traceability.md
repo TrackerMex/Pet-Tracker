@@ -19,6 +19,7 @@ tags: [harness, spec]
 | R9 | `mobile-pet-tracker/src/hooks/use-push-registration.test.tsx::R9: un fallo de token o de red no rompe ni reintenta en la sesión` | `ac5a63a8 test(mobile-push-registration): specify push failure isolation (R9)` rojo → `c6e6a29a feat(mobile-push-registration): isolate push registration failures (R9)` verde |
 | R10 | `mobile-pet-tracker/src/hooks/use-push-registration.test.tsx::R10: banner en primer plano y tap que navega a /alerts` | `1d404ebc test(mobile-push-registration): specify notification response routing (R10)` rojo → `be3f8bb5 feat(mobile-push-registration): route notification taps to alerts (R10)` verde |
 | R11 | `mobile-pet-tracker/src/app/__tests__/layout.test.tsx::#79 R11: el registro de push se monta dentro de AuthProvider` | `bdc95eff test(mobile-push-registration): specify root push registration mount (R11)` rojo → `0a3ee506 feat(mobile-push-registration): mount push registration in root layout (R11)` verde |
+| R13 | `mobile-pet-tracker/src/hooks/use-push-registration.test.tsx::R13: cada salida silenciosa se nombra en desarrollo` | pendiente: enmienda E2, firmada 2026-09-18 |
 | R12 | pendiente: gate humano sin test automático; ver `progress/impl_mobile-push-registration.md` §R12 | pendiente: no ejecutado |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".

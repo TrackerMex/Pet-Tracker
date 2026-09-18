@@ -250,6 +250,35 @@ tags: [harness, spec]
       verdes, y correr la **suite completa** (`bunx jest`, sin pipe) para
       comprobar que ninguna otra suite necesitó el mock de `expo-notifications`.
 
+## R13 — El hook dice en desarrollo por qué no registró (enmienda E2)
+
+Sujeto: `src/hooks/use-push-registration.ts` y
+`src/hooks/use-push-registration.test.tsx`. **Solo ese fichero y su test**: R13
+no toca ningún otro.
+
+- [ ] **(1) Rojo** — añadir al test del hook las aserciones sobre un espía de
+      `console.warn`, una por cada salida que ya tiene test de comportamiento
+      (R6 cubre las precondiciones, R7 el permiso denegado, R9 el fallo del
+      `catch`), más un caso con `__DEV__` **falso** que exige **cero** llamadas.
+      Cada aserción comprueba que el mensaje lleva el prefijo `[push]` y nombra
+      la salida. Correr
+      `bunx jest --runTestsByPath src/hooks/use-push-registration.test.tsx` y
+      **guardar la salida**: debe fallar por esas aserciones, no por compilación.
+  - Commit: `test(mobile-push-registration): name the skipped push path in dev (R13)`
+- [ ] **(2) Verde** — instrumentar las **seis** salidas del hook con un
+      `console.warn` guardado por `__DEV__`:
+      (1) sesión no autenticada o sin token, (2) `setPushToken` ausente,
+      (3) `!Device.isDevice`, (4) plataforma no soportada, (5) `projectId`
+      ausente, (6) el `catch`, que además incluye el error capturado.
+      Prefijo estable `[push]` y un motivo legible en cada uno. **Nada en el
+      camino feliz** y nada cuando `__DEV__` es falso.
+  - Commit: `feat(mobile-push-registration): warn in dev when push registration is skipped (R13)`
+- [ ] **(3) Refactor** — comprobar que R9 sigue intacto: el registro sigue siendo
+      best-effort, no bloquea el login y reintenta en el siguiente arranque. La
+      suite completa verde y `bunx tsc --noEmit` verde.
+
+---
+
 ## R12 — Gate humano: prueba de humo
 
 - [ ] (1) No lleva test automático: es el gate humano. Antes de pedirlo,
