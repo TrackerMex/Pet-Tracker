@@ -635,6 +635,51 @@ distinto, se vuelve a parar y se vuelve a enmendar.
 
 ---
 
+### E2 — el hook dice en desarrollo por qué no registró (requisito nuevo R13)
+
+**Qué pasó.** En el gate humano del 2026-09-18 la fila de `push_tokens` no
+aparecía. El backend quedó descartado con evidencia: un `POST /v1/me/push-tokens`
+hecho a mano contra el backend de la LAN responde **200** y crea la fila. O sea
+que el fallo está en la app, y ahí no hay nada que mirar: el hook tiene **seis
+salidas que no dejan rastro** (`src/hooks/use-push-registration.ts`):
+
+1. `status !== 'authenticated' || token === null`
+2. `!setPushToken`
+3. `!Device.isDevice`
+4. `platform` distinto de `android`/`ios`
+5. `!projectId`
+6. el `catch` del bloque de registro, que se traga cualquier error de
+   `setNotificationChannelAsync`, del permiso, de `getExpoPushTokenAsync` o de
+   `registerPushToken`
+
+El silencio de la 1 a la 5 y del `catch` es **deliberado y correcto** en
+producción: R9 exige que un fallo de registro no bloquee el login ni moleste al
+usuario. El problema no es el comportamiento, es que el gate humano no puede
+distinguir "no hay `projectId`" de "el permiso está denegado" de "la llamada a
+Expo falló". Es el mismo agujero que #72 cerró con su invariante.
+
+**Qué cambia.** Requisito nuevo:
+
+- **R13**: WHEN `__DEV__` es verdadero y `usePushRegistration` **no** llega a
+  publicar el token, THE SYSTEM SHALL emitir exactamente un `console.warn` que
+  **nombre la salida tomada**, con un prefijo estable `[push]` y un motivo
+  legible por cada uno de los seis casos de arriba (en el `catch`, además, el
+  error capturado). **IF** `__DEV__` es falso, **THEN** THE SYSTEM SHALL NOT
+  emitir nada: en producción el comportamiento observable no cambia ni un ápice,
+  y en particular **no** se introduce ningún log en el camino feliz.
+
+Verificable en los tests del hook: cada caso ya tiene su test de comportamiento
+(R6-R9), así que basta añadir la aserción del `console.warn` sobre un espía en
+los que ya existen, más uno que fije el silencio con `__DEV__` falso.
+
+**Lo que esto NO es.** No es un cambio de comportamiento ni una relajación de R9:
+el registro sigue siendo best-effort, sigue sin bloquear el login y sigue
+reintentando en el siguiente arranque. Solo deja de ser mudo mientras se depura.
+
+- [ ] **E2 aprobada por humano** (fecha: ____)
+
+---
+
 ## Aprobación
 
 - [X] Aprobado por humano (fecha: 2026-09-17) ← gate obligatorio antes de implementar
