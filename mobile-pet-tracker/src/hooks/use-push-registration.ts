@@ -24,17 +24,42 @@ function getProjectId(): string | undefined {
     : undefined;
 }
 
+function warnPush(reason: string, error?: unknown): void {
+  if (__DEV__) {
+    console.warn(
+      `[push] ${reason}`,
+      ...(error === undefined ? [] : [error]),
+    );
+  }
+}
+
 export function usePushRegistration(): void {
   const { setPushToken, status, token } = useAuth();
   const handledInitialResponse = useRef(false);
 
   useEffect(() => {
-    if (status !== 'authenticated' || token === null || !setPushToken) return;
-    if (!Device.isDevice) return;
+    if (status !== 'authenticated' || token === null) {
+      warnPush('skipped: unauthenticated or missing auth token');
+      return;
+    }
+    if (!setPushToken) {
+      warnPush('skipped: setPushToken unavailable');
+      return;
+    }
+    if (!Device.isDevice) {
+      warnPush('skipped: physical device required');
+      return;
+    }
     const platform = Platform.OS;
-    if (platform !== 'android' && platform !== 'ios') return;
+    if (platform !== 'android' && platform !== 'ios') {
+      warnPush(`skipped: unsupported platform (${platform})`);
+      return;
+    }
     const projectId = getProjectId();
-    if (!projectId) return;
+    if (!projectId) {
+      warnPush('skipped: EAS projectId missing');
+      return;
+    }
 
     const responseSubscription =
       Notifications.addNotificationResponseReceivedListener(() => {
@@ -63,7 +88,10 @@ export function usePushRegistration(): void {
         if (!permissions.granted && permissions.canAskAgain) {
           permissions = await Notifications.requestPermissionsAsync();
         }
-        if (!permissions.granted) return;
+        if (!permissions.granted) {
+          warnPush('skipped: notification permission denied');
+          return;
+        }
 
         const expoToken = (
           await Notifications.getExpoPushTokenAsync({ projectId })
@@ -73,7 +101,8 @@ export function usePushRegistration(): void {
           expoToken,
           platform,
         });
-      } catch {
+      } catch (error) {
+        warnPush('registration failed', error);
         // Registration is best-effort and runs again on the next app start.
       }
     })();
