@@ -37,6 +37,7 @@ jest.mock('expo-constants', () => ({
 }));
 jest.mock('expo-router', () => ({
   router: { push: jest.fn() },
+  usePathname: jest.fn(() => '/home'),
 }));
 jest.mock('../api/push-tokens', () => ({
   registerPushToken: jest.fn(),

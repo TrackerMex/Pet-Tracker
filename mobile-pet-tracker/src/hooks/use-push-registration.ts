@@ -1,7 +1,7 @@
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
-import { router } from 'expo-router';
+import { router, usePathname } from 'expo-router';
 import { useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
 
@@ -36,8 +36,11 @@ function warnPush(reason: string, error?: unknown): void {
 export function usePushRegistration(): void {
   const { setPushToken, status, token } = useAuth();
   const handledInitialResponse = useRef(false);
+  const pushReady = useRef(false);
+  const pathname = usePathname();
 
   useEffect(() => {
+    pushReady.current = false;
     if (status !== 'authenticated' || token === null) {
       warnPush('skipped: unauthenticated or missing auth token');
       return;
@@ -61,19 +64,11 @@ export function usePushRegistration(): void {
       return;
     }
 
+    pushReady.current = true;
     const responseSubscription =
       Notifications.addNotificationResponseReceivedListener(() => {
         router.push('/alerts');
       });
-
-    if (!handledInitialResponse.current) {
-      handledInitialResponse.current = true;
-      void Notifications.getLastNotificationResponseAsync()
-        .then((response) => {
-          if (response) router.push('/alerts');
-        })
-        .catch(() => undefined);
-    }
 
     void (async () => {
       try {
@@ -109,4 +104,21 @@ export function usePushRegistration(): void {
 
     return () => responseSubscription.remove();
   }, [setPushToken, status, token]);
+
+  useEffect(() => {
+    if (
+      !pushReady.current ||
+      pathname === '/' ||
+      handledInitialResponse.current
+    ) {
+      return;
+    }
+
+    handledInitialResponse.current = true;
+    void Notifications.getLastNotificationResponseAsync()
+      .then((response) => {
+        if (response) router.push('/alerts');
+      })
+      .catch(() => undefined);
+  }, [pathname, setPushToken, status, token]);
 }

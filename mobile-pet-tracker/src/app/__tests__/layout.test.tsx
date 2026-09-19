@@ -85,6 +85,7 @@ jest.mock('expo-router', () => {
 
   return {
     router: { push: jest.fn() },
+    usePathname: () => '/home',
     Stack: () =>
       mockUseQueryInStack
         ? React.createElement(QueryStack)

@@ -1,12 +1,43 @@
-import { act, renderRouter, screen, waitFor } from 'expo-router/testing-library';
-import { router, Stack } from 'expo-router';
+import { render, screen } from '@testing-library/react-native';
 import * as Notifications from 'expo-notifications';
+import { usePathname } from 'expo-router';
 import { Text } from 'react-native';
 
 import { registerPushToken } from '../api/push-tokens';
 import { useAuth, type AuthContextValue } from '../providers/auth-provider';
 import { usePushRegistration } from './use-push-registration';
 
+let mockHistory = ['/'];
+
+function mockPush(pathname: string): void {
+  mockHistory.push(pathname);
+}
+
+function mockReplace(pathname: string): void {
+  mockHistory[mockHistory.length - 1] = pathname;
+}
+
+function mockBack(): void {
+  if (mockHistory.length > 1) mockHistory.pop();
+}
+
+function mockCanGoBack(): boolean {
+  return mockHistory.length > 1;
+}
+
+jest.mock('expo-router', () => {
+  const getPathname = () => mockHistory[mockHistory.length - 1]!;
+
+  return {
+    router: {
+      push: mockPush,
+      replace: mockReplace,
+      back: mockBack,
+      canGoBack: mockCanGoBack,
+    },
+    usePathname: getPathname,
+  };
+});
 jest.mock('expo-notifications', () => ({
   AndroidImportance: { MAX: 7 },
   setNotificationHandler: jest.fn(),
@@ -17,7 +48,6 @@ jest.mock('expo-notifications', () => ({
   addNotificationResponseReceivedListener: jest.fn(),
   getLastNotificationResponseAsync: jest.fn(),
 }));
-jest.mock('standard-navigation', () => ({}));
 jest.mock('expo-device', () => ({ isDevice: true }));
 jest.mock('expo-constants', () => ({
   __esModule: true,
@@ -49,35 +79,23 @@ function authenticatedAuth(): AuthContextValue {
   };
 }
 
-function PushRegistration() {
+function App() {
   usePushRegistration();
-  return null;
-}
+  const pathname = usePathname();
 
-function TestLayout() {
-  return (
-    <>
-      <PushRegistration />
-      <Stack screenOptions={{ headerShown: false }} />
-    </>
-  );
-}
-
-function Home() {
-  return <Text testID="home-route">Home</Text>;
-}
-
-function Launch() {
-  return <Text>Launch</Text>;
-}
-
-function Alerts() {
-  return <Text testID="alerts-route">Alerts</Text>;
+  if (pathname === '/alerts') {
+    return <Text testID="alerts-route">Alerts</Text>;
+  }
+  if (pathname === '/home') {
+    return <Text testID="home-route">Home</Text>;
+  }
+  return <Text testID="launch-route">Launch</Text>;
 }
 
 describe('R10: cold start conserva alertas frente al redirect autenticado', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockHistory = ['/'];
     mockUseAuth.mockReturnValue(authenticatedAuth());
     mockGetPermissions.mockResolvedValue({
       granted: true,
@@ -88,50 +106,36 @@ describe('R10: cold start conserva alertas frente al redirect autenticado', () =
       data: 'ExpoPushToken[xxx]',
     });
     mockAddResponseListener.mockReturnValue({ remove: jest.fn() });
-    mockGetLastResponse.mockResolvedValue(
-      {} as Notifications.NotificationResponse,
-    );
     mockRegisterPushToken.mockResolvedValue({ kind: 'ok' });
-  });
-
-  afterEach(() => {
-    jest.useRealTimers();
   });
 
   it('termina en alertas y vuelve una sola vez a Home', async () => {
     let resolveLastResponse!: (
       response: Notifications.NotificationResponse,
     ) => void;
-    mockGetLastResponse.mockReturnValue(
-      new Promise((resolve) => {
+    const lastResponse = new Promise<Notifications.NotificationResponse>(
+      (resolve) => {
         resolveLastResponse = resolve;
-      }),
-    );
-    const app = renderRouter(
-      {
-        _layout: TestLayout,
-        index: Launch,
-        home: Home,
-        alerts: Alerts,
       },
-      { initialUrl: '/' },
     );
+    mockGetLastResponse.mockReturnValue(lastResponse);
+    const app = await render(<App />);
 
-    await act(async () => {
-      resolveLastResponse({} as Notifications.NotificationResponse);
-    });
-    act(() => router.replace('/home'));
+    resolveLastResponse({} as Notifications.NotificationResponse);
+    await lastResponse;
+    await app.rerender(<App />);
 
-    await waitFor(() => {
-      expect(app.getPathname()).toBe('/alerts');
-      expect(screen.getByTestId('alerts-route')).toBeOnTheScreen();
-    });
+    // Es el replace que deja pendiente <Redirect href="/home" /> al arrancar.
+    mockReplace('/home');
+    await app.rerender(<App />);
+    await Promise.resolve();
+    await app.rerender(<App />);
 
-    act(() => router.back());
-    await waitFor(() => {
-      expect(app.getPathname()).toBe('/home');
-      expect(screen.getByTestId('home-route')).toBeOnTheScreen();
-    });
-    expect(router.canGoBack()).toBe(false);
+    expect(screen.getByTestId('alerts-route')).toBeOnTheScreen();
+
+    mockBack();
+    await app.rerender(<App />);
+    expect(screen.getByTestId('home-route')).toBeOnTheScreen();
+    expect(mockCanGoBack()).toBe(false);
   });
 });
