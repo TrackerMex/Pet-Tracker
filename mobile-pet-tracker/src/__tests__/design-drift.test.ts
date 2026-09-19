@@ -380,6 +380,27 @@ describe('#87 R1: la dependencia queda declarada y fijada', () => {
   });
 });
 
+describe('#79 R1: expo-notifications queda declarada y fijada', () => {
+  const packageJson = JSON.parse(
+    readFileSync(join(projectRoot, 'package.json'), 'utf8'),
+  ) as {
+    dependencies?: Record<string, string>;
+    devDependencies?: Record<string, string>;
+    jest?: { transformIgnorePatterns?: string[] };
+  };
+
+  it('declara la versión compatible con Expo SDK 57 como dependencia de producción', () => {
+    expect(packageJson.dependencies?.['expo-notifications']).toBe('~57.0.19');
+  });
+
+  it('no duplica la dependencia ni añade una excepción literal de transformación', () => {
+    expect(packageJson.devDependencies?.['expo-notifications']).toBeUndefined();
+    expect(packageJson.jest?.transformIgnorePatterns?.join(' ')).not.toContain(
+      'expo-notifications',
+    );
+  });
+});
+
 describe('#87 R19: use-' + 'api no deja huella', () => {
   const legacyModule = ['use', 'api'].join('-');
   const legacyIdentifier = ['use', 'Api'].join('');

@@ -6,8 +6,11 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
+
+import { deletePushToken } from '../api/push-tokens';
 
 const TOKEN_KEY = 'auth_token';
 
@@ -18,6 +21,7 @@ export interface AuthContextValue {
   token: string | null;
   signIn: (token: string) => Promise<void>;
   signOut: () => Promise<void>;
+  setPushToken?: (expoToken: string | null) => void;
 }
 
 interface AuthState {
@@ -28,6 +32,7 @@ interface AuthState {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const pushTokenRef = useRef<string | null>(null);
   const [state, setState] = useState<AuthState>({
     status: 'loading',
     token: null,
@@ -61,14 +66,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setState({ status: 'authenticated', token });
   }, []);
 
-  const signOut = useCallback(async () => {
-    await SecureStore.deleteItemAsync(TOKEN_KEY);
-    setState({ status: 'unauthenticated', token: null });
+  const setPushToken = useCallback((expoToken: string | null) => {
+    pushTokenRef.current = expoToken;
   }, []);
 
+  const signOut = useCallback(async () => {
+    if (
+      process.env.EXPO_PUBLIC_API_URL &&
+      state.token &&
+      pushTokenRef.current
+    ) {
+      await deletePushToken(
+        process.env.EXPO_PUBLIC_API_URL,
+        state.token,
+        pushTokenRef.current,
+      );
+    }
+    await SecureStore.deleteItemAsync(TOKEN_KEY);
+    pushTokenRef.current = null;
+    setState({ status: 'unauthenticated', token: null });
+  }, [state.token]);
+
   const value = useMemo<AuthContextValue>(
-    () => ({ ...state, signIn, signOut }),
-    [signIn, signOut, state],
+    () => ({ ...state, signIn, signOut, setPushToken }),
+    [setPushToken, signIn, signOut, state],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

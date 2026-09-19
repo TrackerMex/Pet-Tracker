@@ -185,9 +185,9 @@ Expo Router viven en `src/app/(tabs)/`, así que un filtro literal trata
 **salta el fichero en silencio, con exit 0 y sin aviso**:
 
 ```bash
-npx jest "src/app/(tabs)/__tests__/weight-log"      # ❌ no corre nada, exit 0
-npx jest 'src/app/\(tabs\)/__tests__/weight-log'    # ✅
-npx jest --runTestsByPath 'src/app/(tabs)/__tests__/weight-log.test.tsx'  # ✅
+bunx jest "src/app/(tabs)/__tests__/weight-log"      # ❌ no corre nada, exit 0
+bunx jest 'src/app/\(tabs\)/__tests__/weight-log'    # ✅
+bunx jest --runTestsByPath 'src/app/(tabs)/__tests__/weight-log.test.tsx'  # ✅
 ```
 
 En #63 el comando de verificación de la spec —ya firmada— llevaba dos rutas sin
@@ -407,6 +407,14 @@ claro si `DATABASE_URL` falta o está vacía — no hace falta exportarla a mano
 La app Expo vive en `mobile-pet-tracker/` como una isla gestionada con **bun**;
 sus dependencias, scripts y lockfile se administran desde esa carpeta, sin
 mezclarlos con el workspace pnpm de backend e infraestructura.
+
+En la práctica eso significa **bun también para ejecutar**, no solo para
+instalar: `bun add <pkg>`, `bunx expo install <pkg>` (que además fija el rango
+que el SDK recomienda), `bunx jest`, `bunx tsc --noEmit`, y `bunx <cli>@latest`
+para una herramienta puntual como `eas-cli`. Nada de `npm`, `npx` ni `npm i -g`:
+lo global no queda versionado y `npm` escribiría un `package-lock.json` que
+compite con `bun.lock`. `init.sh` ya corre la parte móvil con
+`bun run --cwd mobile-pet-tracker`.
 
 > **Carta de UI**: las decisiones de diseño visual, tokens, componentes
 > compartidos, `@expo/ui` y animación viven en `docs/ui-guidelines.md`
