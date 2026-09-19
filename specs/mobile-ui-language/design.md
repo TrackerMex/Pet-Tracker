@@ -408,6 +408,7 @@ añadidas por #68, registradas como delta sobre la tabla existente
 | 223 | `common.retry` | `Retry` | `Reintentar` |
 | 230 | `weightLog.noWeightEntriesYet` | `No weight entries yet` | `Aún no hay registros de peso` |
 | 284 | `weightLog.bodyConditionValue` **(param)** | `BC {{value}}/9` | `CC {{value}}/9` |
+| — | `weightLog.dateCannotBeAfterToday` | `Date cannot be after today` | `La fecha no puede ser posterior a hoy` | ← añadida por #90 (R2) |
 
 **`mobile-pet-tracker/src/components/weight-chart.tsx`** — 1 ocurrencias
 

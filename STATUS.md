@@ -1,10 +1,11 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-09-17
-**Features completadas**: 84/101 (`feature_list.json`)
-**En progreso**: #79 `mobile-push-registration` (reviewer aprobado R1-R11; espera el gate humano R12, bloqueado hasta que el projectId de EAS entre en app.json)
+**Última actualización**: 2026-09-19
+**Features completadas**: 85/101 (`feature_list.json`)
+**En progreso**: #79 `mobile-push-registration` (R10 reparado tras el rechazo del gate; espera repetir el paso 8 de R12 en un dev build Android)
 
-**Pendientes**: 17 (#18, #41, #60, #74, #77, #79-#81, #84, #86, #90, #94, #95, #98-#101). #83 `meals-served-tracking` cerrada (PR #138, pendiente de merge): registro persistente de comida servida y `mealsToday` en el perfil; su mitad móvil es #98 `mobile-meals-served-ui`, bloqueada hasta que #138 entre en `main` y la migración 0017 esté aplicada en la base local. #93 `drop-devices-connectivity-column` cerrada (PR #131, pendiente de merge): la columna obsoleta sale del schema con la migración 0016; en el Postgres local compartido se aplica tras mergear. #63 `mobile-detail-screens-state-reset` cerrada y **mergeada** (PR #130): los formularios de detalle ya no conservan lo tecleado la vez anterior. #92 cerrada y **mergeada** (PR #129); queda #94 (una sola fuente de frescura entre Home y Mapa). **#95 `mobile-detail-screens-to-stack`** la abrió la decisión D1 de #63: sacar las seis pantallas de detalle de `(tabs)` a un Stack nativo cierra el teleport sin transición (M3) y las cabeceras a mano; se pospuso por coste, no se descartó. #92-#94 son la deuda que #73 dejo nombrada: reset de telemetria del collar al reasignarlo (#92), borrar la columna obsoleta devices.connectivity (#93, tras #92) y una sola fuente de frescura entre Home y Mapa (#94). El rediseño contra el diseño del Make abrió el bloque #64-#71: #64, #65, #66, #67, #68 y #69 están cerradas y **mergeadas** (PR #106, #110, #111, #112, #113 y #114). #71 `mobile-home-quick-actions` está cerrada con los dos gates humanos firmados; **PR pendiente de merge por el humano**. Del bloque solo queda **#70 recordatorios**, sin especificar, y con la mitad del diseño bloqueada porque `nextReminder` y `activitySummary` siguen a `null` en el mapper del perfil. Deuda registrada: #74 el selector que TalkBack lee como tres controles sueltos; #77 el peso visible sin collar; #80 los `testID` del doble atados al componente; #81 la receta tipográfica del tile sin candado. #78 y #79 entraron desde otra sesión. #99 `mobile-notifications-permission-recovery`, #100 `mobile-alert-detail-screen` y #101 `mobile-android-notification-icon` se registraron el 2026-09-17 desde la seccion Fuera de alcance de #79, por decision del humano: hoy un permiso denegado deja al usuario sin forma de activar las notificaciones desde la app, el tap de una notificacion lleva al centro de alertas y no a la alerta concreta -el payload trae data.alertId y nadie lo usa, porque #78 cerro que la fila no navega-, y el icono de notificacion de Android espera un PNG de diseno. #72 `mobile-add-pet-photo-test-flake` cerrada (PR #139, pendiente de merge): eran **dos** flakes con causas distintas, no uno. El de alerts esta arreglado y su causa cerrada a nivel de fuente —el test esperaba a la cache de TanStack Query, que es cierta una macrotarea antes de que cambie el DOM— y la regla derivada queda en `docs/conventions.md` §Tests. El de add-pet **sigue sin causa raiz**: no se reprodujo en 32 corridas, la hipotesis de la cola de `mockResolvedValueOnce` quedo falsada (los dos logs rojos son de un arbol donde ese mock no existia) y el humano firmo cerrar esa mitad con un invariante `PICKER_MOCK_UNARMED` que hara diagnosticable el proximo avistamiento. De paso destapo que el sequencer de jest programa primero el fichero que acaba de fallar, asi que repetir un gate rojo no es una absolucion: por eso el criterio de 'tres ./init.sh verdes' se sustituyo por el Protocolo V. #90 `mobile-owner-timezone-dates` la abrió el 2026-09-11 la decisión por defecto de #89: el móvil manda la fecha civil del dispositivo contra una validación que ya usa la zona del owner sin margen. #91 `mobile-tab-indicator-out-of-range` la destapó el gate humano de #78 el 2026-09-13: la burbuja del indicador se posiciona con el índice de `state.routes`, así que cualquier ruta de `(tabs)/` fuera de `TABS` la manda a una ranura fantasma detrás de Perfil. Es anterior a #78 y afecta también a recordatorios, pairing, peso y comidas. #75 y #91 están cerradas y mergeadas (PR #124 y #125); #73 `pet-online-pill` cerrada y **mergeada** (PR #126).
+**Pendientes**: 16 (#18, #41, #60, #74, #77, #79-#81, #84, #86, #94, #95, #98-#101). #90 `mobile-owner-timezone-dates` cerrada y **mergeada** (PR #141): el alta de peso calcula «hoy» en la zona del perfil y traduce el 400 de fecha futura; `add-pet` no cambia en producción. #83 `meals-served-tracking` cerrada (PR #138, pendiente de merge): registro persistente de comida servida y `mealsToday` en el perfil; su mitad móvil es #98 `mobile-meals-served-ui`, bloqueada hasta que #138 entre en `main` y la migración 0017 esté aplicada en la base local. #93 `drop-devices-connectivity-column` cerrada (PR #131, pendiente de merge): la columna obsoleta sale del schema con la migración 0016; en el Postgres local compartido se aplica tras mergear. #63 `mobile-detail-screens-state-reset` cerrada y **mergeada** (PR #130): los formularios de detalle ya no conservan lo tecleado la vez anterior. #92 cerrada y **mergeada** (PR #129); queda #94 (una sola fuente de frescura entre Home y Mapa). **#95 `mobile-detail-screens-to-stack`** la abrió la decisión D1 de #63: sacar las seis pantallas de detalle de `(tabs)` a un Stack nativo cierra el teleport sin transición (M3) y las cabeceras a mano; se pospuso por coste, no se descartó. #92-#94 son la deuda que #73 dejo nombrada: reset de telemetria del collar al reasignarlo (#92), borrar la columna obsoleta devices.connectivity (#93, tras #92) y una sola fuente de frescura entre Home y Mapa (#94). El rediseño contra el diseño del Make abrió el bloque #64-#71: #64, #65, #66, #67, #68 y #69 están cerradas y **mergeadas** (PR #106, #110, #111, #112, #113 y #114). #71 `mobile-home-quick-actions` está cerrada con los dos gates humanos firmados; **PR pendiente de merge por el humano**. Del bloque solo queda **#70 recordatorios**, sin especificar, y con la mitad del diseño bloqueada porque `nextReminder` y `activitySummary` siguen a `null` en el mapper del perfil. Deuda registrada: #74 el selector que TalkBack lee como tres controles sueltos; #77 el peso visible sin collar; #80 los `testID` del doble atados al componente; #81 la receta tipográfica del tile sin candado. #78 y #79 entraron desde otra sesión. #99 `mobile-notifications-permission-recovery`, #100 `mobile-alert-detail-screen` y #101 `mobile-android-notification-icon` se registraron el 2026-09-17 desde la seccion Fuera de alcance de #79, por decision del humano: hoy un permiso denegado deja al usuario sin forma de activar las notificaciones desde la app, el tap de una notificacion lleva al centro de alertas y no a la alerta concreta -el payload trae data.alertId y nadie lo usa, porque #78 cerro que la fila no navega-, y el icono de notificacion de Android espera un PNG de diseno. #72 `mobile-add-pet-photo-test-flake` cerrada (PR #139, pendiente de merge): eran **dos** flakes con causas distintas, no uno. El de alerts esta arreglado y su causa cerrada a nivel de fuente —el test esperaba a la cache de TanStack Query, que es cierta una macrotarea antes de que cambie el DOM— y la regla derivada queda en `docs/conventions.md` §Tests. El de add-pet **sigue sin causa raiz**: no se reprodujo en 32 corridas, la hipotesis de la cola de `mockResolvedValueOnce` quedo falsada (los dos logs rojos son de un arbol donde ese mock no existia) y el humano firmo cerrar esa mitad con un invariante `PICKER_MOCK_UNARMED` que hara diagnosticable el proximo avistamiento. De paso destapo que el sequencer de jest programa primero el fichero que acaba de fallar, asi que repetir un gate rojo no es una absolucion: por eso el criterio de 'tres ./init.sh verdes' se sustituyo por el Protocolo V. #90 `mobile-owner-timezone-dates` la abrió el 2026-09-11 la decisión por defecto de #89: el móvil manda la fecha civil del dispositivo contra una validación que ya usa la zona del owner sin margen. #91 `mobile-tab-indicator-out-of-range` la destapó el gate humano de #78 el 2026-09-13: la burbuja del indicador se posiciona con el índice de `state.routes`, así que cualquier ruta de `(tabs)/` fuera de `TABS` la manda a una ranura fantasma detrás de Perfil. Es anterior a #78 y afecta también a recordatorios, pairing, peso y comidas. #75 y #91 están cerradas y mergeadas (PR #124 y #125); #73 `pet-online-pill` cerrada y **mergeada** (PR #126).
+
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
 desde 2026-08-10. Hay recursos vivos en la cuenta, aunque hoy sin coste.
@@ -87,6 +88,20 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
+- **`mobile-owner-timezone-dates` (#90) done** (2026-09-18): `weight-log.tsx`
+  deja de mandar la fecha civil del dispositivo. Helper puro
+  `civilTodayIso(timeZone, now)` (`src/utils/civil-today-iso.ts`,
+  `Intl.DateTimeFormat` + `formatToParts`, fallback al dispositivo si no hay
+  perfil o la zona no es IANA); la pantalla lee la zona de `GET /v1/me` con
+  `useQuery(userKeys.me())` inline y deriva el valor mostrado y enviado como
+  `borrador ?? civilTodayIso(zona)` en los tres puntos (inicial, blur, tras
+  guardar). El 400 `measuredAt is too far in the future` se pinta como
+  `weightLog.dateCannotBeAfterToday` (catálogo +1); un `Invalid ISO date` sigue
+  crudo (P1). `add-pet/index.tsx` no cambia: su regresión de `birthDate` queda
+  fijada por un test con mutación. Solo móvil, cero dependencias. Smoke del
+  humano en dev build de Android OK (perfil CDMX, dispositivo Tokio). Deuda sin
+  id: `health.tsx` conserva su propio «hoy» del dispositivo para la próxima
+  vacuna (solo pantalla).
 - **`meals-served-tracking` (#83) done** (2026-09-17): tabla `meal_servings`
   (`served_on` = día civil del owner, UNIQUE por franja) con la migración
   `0017_meal_servings`; `POST /v1/pets/:petId/meals { mealTime }` y
@@ -1195,6 +1210,23 @@ debe listar las 4 URLs de cola.
 
 ## Última sesión
 
+- **2026-09-18** — **#90 `mobile-owner-timezone-dates` cerrada** (sesión Backend,
+  worktree `wt-backend`, rama desde `29689598`): el explorer verificó que
+  `POST …/weights` es owner-only y que `birthDate` valida contra el requester,
+  así que la zona del perfil propio es exacta y la opción (b) del enunciado
+  (exponer la zona del owner en mascotas) sobraba; también que la ruta real es
+  `GET /v1/me`, no `/v1/users/me`. El humano cerró tres decisiones antes de la
+  spec (zona del perfil, solo `weight-log` en producción, campo de fecha libre
+  con el 400 traducido) y firmó P1 (discriminar por `path` y mensaje, para no
+  traducir un error de formato como «fecha futura»). Codex: 13 commits, un par
+  rojo/verde por requisito, mutaciones M4/M6 versionadas y revertidas.
+  Reviewer APROBADO: rojos reproducidos por commit, cinco de seis sondas
+  cazadas (la sexta, `format()` en vez de `formatToParts`, es zona ciega
+  declarada que solo cierra el smoke), `init.sh` exit 0. Smoke Android del
+  humano OK. Coordinación con Frontend (#79 en paralelo): delta i18n +1
+  declarado como suma, `init.sh` del gate lanzado solo tras su aviso explícito
+  (el `pgrep` tiene ventana de carrera). Frontend reservó #99-#101; siguiente
+  id libre 102.
 - **2026-09-17** — **#83 `meals-served-tracking` cerrada** (sesión Backend,
   worktree `wt-backend`, rama desde `1b9efe86`, PR #138): explorer verificó que
   la barra de comidas no existía en la Home (solo en el Make) y que `food.tsx`

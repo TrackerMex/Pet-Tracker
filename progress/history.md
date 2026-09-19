@@ -4096,3 +4096,52 @@ un conflicto seguro en esa linea al mergear el segundo. Yendo junto, el contador
   rama contra main sale limpio, asi que **no se rebasa**: rebasar invalidaria los
   hashes de `traceability.md`.
 - Cierre: #72 `done`, 84 de 98 tras integrar main (#83 entro por el PR #138 mientras esta feature estaba en vuelo). PR #139.
+
+## Feature #90 `mobile-owner-timezone-dates` (P2)
+
+- Sesion Backend (leader), worktree `wt-backend`. Rama
+  `feature/90-mobile-owner-timezone-dates` desde `29689598` (main con #83 y
+  #72). Fechas: 2026-09-17 (explore, spec, implementacion, review) y
+  2026-09-18 (smoke y cierre).
+- Baseline `init.sh` exit 0 (movil 170 suites / 1295 tests). Sin flakes.
+- Explorer: `POST /v1/pets/:petId/weights` lleva `@RequirePetRole('owner')` y
+  `birthDate` en el alta valida contra el requester, asi que la zona del perfil
+  propio coincide con la del owner en toda peticion que pueda dar 201; la
+  ambiguedad "mascota compartida" del enunciado no existia. Ruta real del
+  perfil `GET /v1/me` (el enunciado decia `/v1/users/me`; corregido en
+  `feature_list.json`). Ningun helper con `timeZone` en el movil; nadie fija
+  `TZ` en jest ni en CI.
+- Decisiones del humano (AskUserQuestion, 2026-09-17): (a) zona del perfil
+  via `GET /v1/me`; B1 solo `weight-log` en produccion, `add-pet` con test de
+  regresion; C-A campo de fecha libre y el 400 de fecha futura traducido. P1
+  firmada en el gate: discriminar por `path` Y mensaje byte a byte de #89,
+  porque `Invalid ISO date` llega con el mismo `path`.
+- Spec: 7 requisitos. Candados como delta (`+ 1` sobre el literal del catalogo,
+  `32 + 1` en la tabla de usos); las cuatro aserciones de fecha de
+  `weight-log.test.tsx` pasan a reloj fijo `2026-09-17T23:30:00Z` con perfil
+  en `Pacific/Kiritimati` (par Kiritimati/Pago_Pago para que el candado no
+  dependa de la zona del host). R4 y R6 como requisitos de verificacion con
+  mutacion versionada en el rojo y revertida en el verde.
+- Codex: 13 commits (819fa5c9..274736de). Helper `civilTodayIso` con
+  `Intl.DateTimeFormat` + `formatToParts` y `try/catch`; `measuredAtDraft:
+  string | null` con valor derivado; constante unica del literal del backend;
+  un solo `t('weightLog.dateCannotBeAfterToday')`.
+- Reviewer APROBADO sobre 274736de: rojos reproducidos commit a commit,
+  `add-pet/index.tsx` sin diff contra main, lista cerrada respetada, 5 de 6
+  sondas cazadas (sonda A, `format()` en vez de `formatToParts`, es zona ciega
+  declarada en D2: solo la cierra el smoke en Hermes). Gate movil 74 suites /
+  1302 tests; `init.sh` exit 0 medido sin pipe, lanzado solo tras el aviso
+  explicito de Frontend (su reviewer de #79 estaba vivo y el `pgrep` tiene
+  ventana de carrera; leccion del 2026-09-06).
+- Smoke del humano en dev build de Android (2026-09-17 09:48 CDMX; perfil
+  `America/Mexico_City`, dispositivo `Asia/Tokyo`): default en dia CDMX, 201
+  con hoy, 400 traducido con manana, `Invalid ISO date` crudo, fallback al
+  dispositivo en modo avion. Registrado en `progress/impl_mobile-owner-timezone-dates.md`.
+- Coordinacion con Frontend (#79 en paralelo, PR #140): #79 con delta i18n
+  cero, `catalog.ts` byte-identico a main; #90 no toca `http.ts` ni
+  `auth-provider.tsx`, merge limpio en cualquier orden. Frontend reservo
+  #99-#101 en su rama; siguiente id libre 102.
+- Deuda detectada sin id: `health.tsx:28` conserva su propia `localTodayIso`
+  (dispositivo) para filtrar la proxima vacuna y marcar vencidas; solo
+  pantalla, fuera de #90 por D-B.
+- Cierre: #90 `done`, 85 de 98. PR abierto por el leader; el humano mergea.

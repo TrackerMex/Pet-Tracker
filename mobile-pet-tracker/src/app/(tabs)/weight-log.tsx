@@ -18,7 +18,8 @@ import {
   listWeights,
   type WeightsState,
 } from '../../api/health-records';
-import { healthKeys } from '../../api/query-keys';
+import { healthKeys, userKeys } from '../../api/query-keys';
+import { getMe } from '../../api/users';
 import { Card } from '../../components/card';
 import { WeightChart } from '../../components/weight-chart';
 import { useAuth } from '../../providers/auth-provider';
@@ -30,17 +31,14 @@ import {
 } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { TOUCH_SLOP } from '../../theme/touch-target';
+import { civilTodayIso } from '../../utils/civil-today-iso';
+
+const MEASURED_AT_IN_FUTURE_MESSAGE =
+  'measuredAt is too far in the future';
 
 function fmtVariation(variation: number | null): string {
   if (variation === null) return '—';
   return variation > 0 ? `+${variation} kg` : `${variation} kg`;
-}
-
-function localTodayIso(): string {
-  const today = new Date();
-  const month = String(today.getMonth() + 1).padStart(2, '0');
-  const day = String(today.getDate()).padStart(2, '0');
-  return `${today.getFullYear()}-${month}-${day}`;
 }
 
 function isWeightsError(state: WeightsState): boolean {
@@ -59,15 +57,22 @@ function WeightLogContent({ petId }: { petId: string }) {
   const t = useTranslate();
   const insets = useSafeAreaInsets();
   const [weightText, setWeightText] = useState('');
-  const [measuredAt, setMeasuredAt] = useState(localTodayIso);
+  const [measuredAtDraft, setMeasuredAtDraft] = useState<string | null>(null);
   const [bodyConditionText, setBodyConditionText] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const me = useQuery({
+    queryKey: userKeys.me(),
+    queryFn: () => getMe(baseUrl, token ?? ''),
+  });
+  const profileTimeZone =
+    me.data?.kind === 'ok' ? me.data.me.timezone : undefined;
+  const measuredAt = measuredAtDraft ?? civilTodayIso(profileTimeZone);
   useFocusEffect(
     useCallback(
       () => () => {
         setWeightText('');
-        setMeasuredAt(localTodayIso());
+        setMeasuredAtDraft(null);
         setBodyConditionText('');
         setFormError(null);
       },
@@ -101,12 +106,21 @@ function WeightLogContent({ petId }: { petId: string }) {
       switch (result.kind) {
         case 'ok':
           setWeightText('');
-          setMeasuredAt(localTodayIso());
+          setMeasuredAtDraft(null);
           setBodyConditionText('');
           weights.refetch();
           return;
         case 'validation':
-          setFormError(result.errors.map(({ message }) => message).join('\n'));
+          setFormError(
+            result.errors
+              .map(({ path, message }) =>
+                path === 'measuredAt' &&
+                message === MEASURED_AT_IN_FUTURE_MESSAGE
+                  ? t('weightLog.dateCannotBeAfterToday')
+                  : message,
+              )
+              .join('\n'),
+          );
           return;
         case 'forbidden':
           setFormError(t('weightLog.errorForbidden'));
@@ -186,7 +200,7 @@ function WeightLogContent({ petId }: { petId: string }) {
               className="rounded-xl bg-default"
               placeholder={t('weightLog.yyyyMmDd')}
               value={measuredAt}
-              onChangeText={setMeasuredAt}
+              onChangeText={setMeasuredAtDraft}
             />
           </TextField>
           <TextField>
