@@ -58,3 +58,36 @@ para todo en `mobile-pet-tracker/` (`bun add`, `bunx expo install`, `bunx jest`,
   `mobile-pet-tracker/app.json` no contiene `extra.eas.projectId`; el hook
   degrada sin registrar por R6. El detalle queda en
   `progress/impl_mobile-push-registration.md` §R12.
+
+## Gate humano de #79 — resultado del 2026-09-19: RECHAZADO en el paso 8
+
+Recorrido por el humano en dev build de Android sobre telefono fisico.
+
+**Pasos que PASAN** (no hay que repetirlos salvo como regresion): 1 prebuild con
+el permiso en el manifiesto; 2 login y permiso concedido; 3 la fila aparece en
+`push_tokens` con `ExpoPushToken[...]` y `platform = android`; 5 la alerta se
+encola (se uso la ruta determinista de la spec, encolando el mensaje de 7 claves
+en `notifications`, porque el pipeline del motor tardaba); 6 banner en primer
+plano; **7 tap en segundo plano termina en el centro de alertas**.
+
+**Paso 8 FALLA**: con la app **matada**, tocar la notificacion abre la app pero
+**se queda en Home**, no navega a alertas. Ademas el boton atras se comporta mal:
+una pulsacion lleva a Home otra vez y hacen falta dos para salir, lo que indica
+que la pila no es la que deberia.
+
+**Mecanismo, con la evidencia que lo acota**: que el paso 7 SI funcione descarta
+que `router.push('/alerts')` este roto en general, y deja el defecto en el camino
+de arranque en frio. `src/app/index.tsx:11` devuelve `<Redirect href="/home" />`
+cuando hay sesion; en arranque en frio el hook resuelve
+`getLastNotificationResponseAsync()` y hace su `router.push('/alerts')`, pero ese
+redirect declarativo se aplica despues o a la vez y se lleva por delante la
+navegacion. Es una carrera entre una navegacion imperativa lanzada desde un
+efecto y un redirect declarativo del router.
+
+**Por que los tests no lo vieron**: el test de R10 monta el hook aislado y
+verifica que se llama a `router.push`, no que la navegacion sobreviva al redirect
+de arranque. La llamada ocurre; lo que no ocurre es el resultado.
+
+R10 **no cambia**: ya exige que el tap navegue a alertas con la app cerrada. Esto
+es un defecto contra R10, no una enmienda. Vuelve a Codex.
+
