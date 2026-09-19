@@ -158,6 +158,14 @@ Dos caminos, porque cubren estados distintos del proceso:
   app**, con guarda de `useRef` — sin ella, cada re-ejecución del efecto volvería
   a leer la misma respuesta y a empujar `/alerts` otra vez.
 
+El camino de app muerta espera además a que `usePathname()` deje `/`. En `/`,
+`src/app/index.tsx` todavía tiene pendiente su `<Redirect href="/home" />`; hacer
+el `push` antes permite que ese `replace` posterior gane la carrera y deje Home
+encima de una pila incorrecta. El efecto de registro publica mediante un `ref`
+que ya pasaron las guardas de sesión/dispositivo/plataforma/proyecto, y un efecto
+separado consulta la respuesta inicial cuando esa marca está activa y el redirect
+ya cambió el pathname. No hay temporizador ni se modifica `index.tsx`.
+
 Destino: `router.push('/alerts')`, literal. #78 está mergeada, la ruta existe
 (`src/app/(tabs)/alerts.tsx`) y `src/screens/home/index.tsx:306` ya usa esa forma
 exacta bajo `typedRoutes: true`; su test prohíbe el cast `as Href`. **No hay
@@ -191,6 +199,7 @@ feature no llega a la capa de presentación.
 | `src/api/__tests__/push-tokens.test.ts` | Tests de R3 y R4 |
 | `src/hooks/use-push-registration.ts` | `usePushRegistration()` — único símbolo público; único importador de `expo-notifications` (R6-R10) |
 | `src/hooks/use-push-registration.test.tsx` | Tests de R6-R10. Junto al fichero, como `use-pet-selection.test.tsx` — **no** en un `__tests__/` |
+| `src/hooks/use-push-registration.navigation.test.tsx` | Regresión de R10 sobre destino y pila observables cuando el redirect autenticado se compromete después de la respuesta inicial |
 
 ### Modificados
 

@@ -91,3 +91,26 @@ de arranque. La llamada ocurre; lo que no ocurre es el resultado.
 R10 **no cambia**: ya exige que el tap navegue a alertas con la app cerrada. Esto
 es un defecto contra R10, no una enmienda. Vuelve a Codex.
 
+### Correccion de R10 tras el rechazo (2026-09-19)
+
+- Worktree y rama reconfirmados; arbol limpio al retomar.
+- `./init.sh` inicial verde: backend 170 suites / 1295 tests, infraestructura
+  2 / 14, movil 75 suites / 1331 tests y e2e 27 suites / 384 tests pasados
+  (3 / 8 omitidos).
+- Plan TDD: añadir un arnes de navegacion que observe el destino final y la pila
+  del arranque en frio; conservar `src/app/index.tsx` intacto; diferir la consulta
+  de la respuesta inicial hasta que sesion y router hayan resuelto el redirect,
+  sin temporizadores.
+- Rojo `c231651a`: la regresion observable termino en Home
+  (`Expected: /alerts`, `Received: /home`) cuando el `replace('/home')` pendiente
+  se aplico despues de la respuesta inicial.
+- Verde `0a68e99e`: el hook espera a que el pathname deje `/` y a que hayan
+  pasado sus guardas antes de consultar la respuesta inicial. `index.tsx` no se
+  modifico y no se añadió ningun `setTimeout`.
+- Verificacion focal: las dos suites del hook pasan (25 tests), junto con
+  `layout.test.tsx` (7 tests), `bunx tsc --noEmit` y ESLint de los cuatro
+  ficheros tocados.
+- Gate completo verde: `bunx jest` (76 suites / 1332 tests), typecheck, lint y
+  `./init.sh`; este ultimo incluyo backend 170 / 1295, infraestructura 2 / 14,
+  movil 76 / 1332 y e2e 27 suites / 384 tests pasados (3 / 8 omitidos).
+- Pendiente unico de esta reparacion: repetir en dispositivo el paso 8 de R12.

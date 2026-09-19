@@ -2,7 +2,7 @@
 
 - **Fecha**: 2026-09-17
 - **Rama**: `feature/79-mobile-push-registration`
-- **Estado**: R1-R11 verdes; R12 pendiente del gate humano
+- **Estado**: R1-R11 verdes; R10 reparado tras el rechazo; R12 pendiente de repetir el gate humano
 
 ## Resultado
 
@@ -17,7 +17,7 @@
 | R7 | canal Android y flujo de permiso sin insistencia | `68a514d4` → `9e48f2c3` |
 | R8 | token obtenido con el `projectId`, publicado y registrado | `9fe60971` → `8e85b485`; cleanup de test en `b7fbd56e` |
 | R9 | fallos de Expo o red aislados del login | `ac5a63a8` → `c6e6a29a` |
-| R10 | banner en primer plano y taps dirigidos a `/alerts` | `1d404ebc` → `be3f8bb5` |
+| R10 | banner en primer plano y taps dirigidos a `/alerts`; el cold start espera al redirect autenticado y conserva la pila Home → Alerts | `1d404ebc` → `be3f8bb5`; regresión `c231651a` → `0a68e99e` |
 | R11 | hook montado dentro de `QueryProvider`/`AuthProvider` | `bdc95eff` → `0a3ee506` |
 
 Las firmas de `expo-notifications` se comprobaron contra la documentación
@@ -30,31 +30,33 @@ la tabla de ficheros autorizados; el hook comprueba su presencia antes de usarla
 
 ## Verificación
 
-- `bunx jest 'src/api/__tests__/push-tokens' 'src/hooks/use-push-registration' 'src/providers/__tests__/auth-provider' 'app.config.test'`: 4 suites, 50 tests verdes.
-- `bunx jest --runTestsByPath 'src/app/__tests__/layout.test.tsx'`: 1 suite, 7 tests verdes.
-- `bunx jest`: 75 suites, 1326 tests y 1 snapshot verdes.
+- Tras reparar R10,
+  `bunx jest --runTestsByPath 'src/app/__tests__/layout.test.tsx' 'src/hooks/use-push-registration.navigation.test.tsx' 'src/hooks/use-push-registration.test.tsx' --runInBand --silent`:
+  3 suites y 32 tests verdes.
+- `bunx jest --runInBand --silent`: 76 suites, 1332 tests y 1 snapshot verdes.
 - `bunx tsc --noEmit`: verde.
 - `bun run lint`: verde.
 - `./init.sh`: verde; backend 170 suites / 1295 tests, infraestructura 2 / 14,
-  móvil 75 / 1326 y e2e 27 suites / 384 tests pasados (3 / 8 omitidos).
-- Grep-clean de los cuatro ficheros nuevos: sin hex, clases arbitrarias,
+  móvil 76 / 1332 y e2e 27 suites / 384 tests pasados (3 / 8 omitidos).
+- Grep-clean de los cinco ficheros nuevos: sin hex, clases arbitrarias,
   `StyleSheet.create`, sombras ni `elevation`.
 - Delta de i18n: cero. Los ficheros prohibidos de la spec no aparecen en el
   diff de implementación.
 
 `init.sh` conservó avisos no bloqueantes ya conocidos: faltan localmente
-`RESEND_API_KEY`, `RESEND_FROM` y `RESET_LINK_HOST`; `STATUS.md` todavía refleja
-84/98 frente a las 101 entradas actuales; Expo avisa del futuro requisito de
-Node 20.
+`RESEND_API_KEY`, `RESEND_FROM` y `RESET_LINK_HOST`; una feature histórica no
+tiene spec; el AWS SDK avisa de su futuro requisito de Node 22.
 
 ## R12
 
-**No ejecutado.** R12 es el gate humano y no se sustituye por un test automático.
+**Ejecutado y rechazado el 2026-09-19 en el paso 8.** En un teléfono Android
+físico pasaron el registro del token, el banner en primer plano y el tap con la
+app viva en segundo plano. Con la app matada, el tap abrió Home en vez de Alerts
+y dejó una entrada extra en la pila.
 
-Las tareas A y B aparecen firmadas con fecha 2026-09-17 en `requirements.md`,
-pero la precondición observable de A no está presente: `app.json` no contiene
-`extra.eas.projectId`. Por R6 el hook termina sin registrar en ese estado. El
-humano debe aportar el identificador público, confirmar las credenciales FCM V1
-y recorrer los 11 pasos de la prueba de humo en un dev build Android. Hasta que
-anote aquí el resultado y la fecha, R12, la feature y su fila de trazabilidad
-permanecen pendientes.
+La regresión automática nueva reproduce que el `replace('/home')` pendiente
+puede ganar al `push('/alerts')` inicial y comprueba el resultado observable:
+Alerts final, una vuelta a Home y ninguna vuelta adicional. El arreglo quedó en
+`0a68e99e`, sin modificar `src/app/index.tsx` ni usar temporizadores. R12, la
+feature y su fila de trazabilidad siguen pendientes hasta que un humano repita
+el paso 8 (y complete los pasos restantes aplicables) en el dev build.
