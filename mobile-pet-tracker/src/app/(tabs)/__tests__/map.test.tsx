@@ -1445,3 +1445,72 @@ describe('#94 R6: el tile de conexión se rotula como en Pairing', () => {
     expect(screen.queryByText('GPS')).toBeNull();
   });
 });
+
+describe('#94 R7: el poll refresca también el detalle', () => {
+  beforeEach(() => {
+    jest.useFakeTimers({ doNotFake: ['requestAnimationFrame'] });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetPet
+      .mockResolvedValueOnce({
+        kind: 'ok',
+        pet: makePet({ device: makeDevice('online') }),
+      })
+      .mockResolvedValue({
+        kind: 'ok',
+        pet: makePet({ device: makeDevice('offline') }),
+      });
+    mockGetLastPosition.mockResolvedValue({
+      kind: 'ok',
+      position: makeLastPosition(),
+    });
+    mockListPositions.mockResolvedValue({
+      kind: 'ok',
+      items: [makeStoredPosition()],
+      nextCursor: null,
+    });
+    mockGetDayRoute.mockResolvedValue({
+      kind: 'ok',
+      date: '2026-08-21',
+      trips: [],
+    });
+  });
+
+  afterEach(() => {
+    mockFocusCleanup?.();
+    jest.useRealTimers();
+  });
+
+  it('actualiza el badge con el mismo intervalo de 15 segundos', async () => {
+    await renderMap();
+
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    await waitFor(() =>
+      expect(screen.getByTestId('stat-gps')).toHaveTextContent('En vivo'),
+    );
+    const initialDetailCalls = mockGetPet.mock.calls.length;
+
+    await act(async () => {
+      jest.advanceTimersByTime(15000);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    await waitFor(() =>
+      expect(screen.getByTestId('stat-gps')).toHaveTextContent(
+        'Desactualizado',
+      ),
+    );
+    expect(mockGetPet).toHaveBeenCalledTimes(initialDetailCalls + 1);
+    expect(mockGetPet).toHaveBeenLastCalledWith(
+      apiUrl,
+      'jwt-token',
+      'pet-1',
+    );
+  });
+});
