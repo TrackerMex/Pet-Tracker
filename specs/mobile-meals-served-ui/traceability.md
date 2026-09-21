@@ -22,7 +22,7 @@ El implementador rellena las dos últimas columnas tras cada commit; el
 | R7 — barra de comidas y sus 12 decisiones | `src/screens/home/index.test.tsx` :: `#98 R7: la barra de comidas y todas sus decisiones` | `783c3a59` | `40e062c2` |
 | R8 — cardinalidad, orden y cero llamadas nuevas | `src/screens/home/index.test.tsx` :: `#98 R8: la barra de comidas entra sin traerse el cliente de nutrición` (reemplaza a `#70 R3`, `:3459-3475`) | `f2bd2cbd` | `1af633ce` |
 | R9 — tabla de uso de copy (R6_FOOD 35→38, R3_HOME 51→53) | `src/__tests__/ui-language.test.ts` :: `#98 R9: el copy de comidas servidas queda registrado` (+ `:85` y `:140`) | `6e29cbcb` | `2f9752c8` |
-| R10 — candados de estilo (TABULAR_NUMS 7→8; el resto inmóvil) | `src/__tests__/consistency-classnames.test.ts` :: `#62 R15` (4 sitios) y `#98 R10: los candados que esta feature no mueve`; `src/__tests__/design-drift.test.ts` :: `#98 R10: la barra de comidas no mete drift de estilo` | `04034a3d` | pendiente |
+| R10 — candados de estilo (TABULAR_NUMS 7→8; el resto inmóvil) | `src/__tests__/consistency-classnames.test.ts` :: `#62 R15` (4 sitios) y `#98 R10: los candados que esta feature no mueve`; `src/__tests__/design-drift.test.ts` :: `#98 R10: la barra de comidas no mete drift de estilo` | `04034a3d` | `dbd4a84a` |
 | R11 — enmiendas a la carta y a `mobile-food` | `src/__tests__/consistency-classnames.test.ts` :: `#98 R11: la carta y la spec de Food registran la enmienda` | pendiente | pendiente |
 
 ## Candados ajenos que esta feature mueve (delta declarado)

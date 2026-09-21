@@ -94,7 +94,10 @@
   `#98 R7`; `ForkKnife size={28}` rompe su tamaño en `#98 R7`; quitar
   `TABULAR_NUMS` rompe los tres candados de `#62 R15`. Tras cada sonda se
   restauró `src/screens/home/index.tsx` con `git checkout --` y `git diff`
-  quedó vacío respecto del verde indexado.
+  quedó vacío respecto del verde indexado. Commit verde `dbd4a84a`.
+- **R11 rojo:** el test literal de las dos enmiendas falla porque el rótulo
+  `Enmienda #98` aún no existe en la carta; 56 tests heredados verdes y
+  typecheck limpio.
 
 ### Por que esta feature
 

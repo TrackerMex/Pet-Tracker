@@ -514,3 +514,31 @@ describe('#64 R10: la carta declara la paleta categórica y su tabla de huecos',
     );
   });
 });
+
+describe('#98 R11: la carta y la spec de Food registran la enmienda', () => {
+  it('declara la barra de comidas en la carta y retira D7 de mobile-food', () => {
+    const amendments = [
+      [
+        readFileSync(
+          join(process.cwd(), '..', 'docs', 'ui-guidelines.md'),
+          'utf8',
+        ),
+        '## Enmienda #98 — la barra de comidas de la Home',
+      ],
+      [
+        readFileSync(
+          join(process.cwd(), '..', 'specs', 'mobile-food', 'requirements.md'),
+          'utf8',
+        ),
+        '## Enmienda #98 — la comida servida deja de derivarse del reloj',
+      ],
+    ] as const;
+
+    for (const [source, heading] of amendments) {
+      expect(source).toContain(heading);
+      expect(source.slice(source.indexOf(heading))).toMatch(
+        /- \[[ xX]\] Enmienda aprobada por humano/,
+      );
+    }
+  });
+});

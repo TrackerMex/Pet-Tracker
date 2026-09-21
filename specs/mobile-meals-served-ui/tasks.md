@@ -231,7 +231,7 @@ orden no haya creado todavía**.
 
 ## R11 — Las dos enmiendas
 
-- [ ] **(1) Rojo.** En `src/__tests__/consistency-classnames.test.ts`,
+- [x] **(1) Rojo.** En `src/__tests__/consistency-classnames.test.ts`,
       `describe('#98 R11: la carta y la spec de Food registran la enmienda')`
       con `it('declara la barra de comidas en la carta y retira D7 de mobile-food')`.
       Rojo: los rótulos no existen.
