@@ -10,8 +10,9 @@
 - **Inicio:** 2026-09-21
 - **Rama:** `feature/98-mobile-meals-served-ui`, creada desde `origin/main` en el commit `914905b8`
 - **Estado en `feature_list.json`:** `in_progress` desde el 2026-09-21
-- **Fase:** spec **aprobada** (`8658be20`, 2026-09-21). Handoff a Codex escrito;
-  esperando a que el humano lo corra
+- **Fase:** implementación TDD R1→R11 en curso por Codex
+- **Baseline móvil antes de editar:** lote principal 8 suites / 341 tests;
+  fixtures R1 8 suites / 239 tests; `bunx tsc --noEmit` limpio
 
 ### Por que esta feature
 

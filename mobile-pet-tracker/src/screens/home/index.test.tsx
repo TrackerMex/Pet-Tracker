@@ -2966,6 +2966,39 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
     });
   });
 
+  describe('#98 R1: los tipos del cliente declaran servedToday y mealsToday', () => {
+    it('añade los dos campos sin tocar nextReminder ni activitySummary', () => {
+      const source = readFileSync(
+        join(process.cwd(), 'src/api/types.ts'),
+        'utf8',
+      );
+      const nutritionPlanBlock =
+        source.match(/export interface NutritionPlan \{[\s\S]*?\n\}/)?.[0] ?? '';
+      const petProfileBlock =
+        source.match(/export interface PetProfile \{[\s\S]*?\n\}/)?.[0] ?? '';
+      const fieldsOf = (block: string) =>
+        [...block.matchAll(/^\s+(\w+):/gm)].map(([, field]) => field);
+      const nutritionPlanFields = fieldsOf(nutritionPlanBlock);
+      const petProfileFields = fieldsOf(petProfileBlock);
+
+      expect(nutritionPlanFields).toHaveLength(12);
+      expect(nutritionPlanFields.slice(-2)).toEqual([
+        'generatedAt',
+        'servedToday',
+      ]);
+      expect(petProfileFields).toHaveLength(25);
+      expect(petProfileFields.slice(-5)).toEqual([
+        'nextReminder',
+        'activitySummary',
+        'mealsToday',
+        'createdAt',
+        'updatedAt',
+      ]);
+      expect(petProfileBlock).toContain('nextReminder: unknown;');
+      expect(petProfileBlock).toContain('activitySummary: unknown;');
+    });
+  });
+
   describe('#70 R1: estructura de la sección', () => {
     it('dibuja la cabecera y el cuerpo de la sección', async () => {
       await renderHome();
