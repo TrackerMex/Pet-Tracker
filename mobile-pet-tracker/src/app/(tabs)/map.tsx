@@ -201,10 +201,7 @@ export default function MapScreen() {
     route.data?.kind === 'ok'
       ? route.data.trips.reduce((total, trip) => total + trip.distanceM, 0)
       : null;
-  const updated =
-    detail.data?.kind === 'ok' && detail.data.pet.device?.lastMessageAt
-      ? detail.data.pet.device.lastMessageAt
-      : '—';
+  const updated = position ? fmtAgo(position.staleSeconds, t) : '—';
   const gps =
     detail.data?.kind === 'ok'
       ? t(
