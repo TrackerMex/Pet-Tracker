@@ -556,6 +556,67 @@ describe('#98 R5: cada franja sirve, deshace y refresca', () => {
   });
 });
 
+describe('#98 R6: el conflicto se resuelve refrescando y el fallo avisa', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  });
+
+  it('no muestra error cuando el servidor ya estaba en el estado pedido', async () => {
+    mockGetNutritionPlan.mockResolvedValue({
+      kind: 'ok',
+      plan: makePlan({ servedToday: [] }),
+    });
+    mockServeMeal.mockResolvedValue({ kind: 'already-served' });
+    const servedView = await renderFood();
+
+    expect(screen.queryByTestId('food-meal-error')).toBeNull();
+    await fireEvent.press(await screen.findByTestId('meal-toggle-0'));
+    await waitFor(() => expect(mockGetNutritionPlan).toHaveBeenCalledTimes(2));
+    expect(screen.queryByTestId('food-meal-error')).toBeNull();
+    await servedView.unmount();
+
+    mockGetNutritionPlan.mockClear();
+    mockGetNutritionPlan.mockResolvedValue({
+      kind: 'ok',
+      plan: makePlan({ servedToday: ['07:30'] }),
+    });
+    mockUnserveMeal.mockResolvedValue({ kind: 'not-served' });
+    await renderFood();
+
+    await fireEvent.press(await screen.findByTestId('meal-toggle-0'));
+    await waitFor(() => expect(mockGetNutritionPlan).toHaveBeenCalledTimes(2));
+    expect(screen.queryByTestId('food-meal-error')).toBeNull();
+  });
+
+  it('muestra el aviso ante un fallo y lo borra en el reintento con éxito', async () => {
+    mockGetNutritionPlan.mockResolvedValue({
+      kind: 'ok',
+      plan: makePlan({ servedToday: [] }),
+    });
+    mockServeMeal
+      .mockResolvedValueOnce({ kind: 'error' })
+      .mockResolvedValueOnce({ kind: 'ok' });
+    await renderFood();
+
+    expect(screen.queryByTestId('food-meal-error')).toBeNull();
+    await fireEvent.press(await screen.findByTestId('meal-toggle-0'));
+
+    const error = await screen.findByTestId('food-meal-error');
+    expect(error).toHaveTextContent('No se pudo actualizar la comida');
+    expect(error.props.selectable).toBe(true);
+    expect(screen.getAllByTestId(/^meal-row-/)).toHaveLength(2);
+    const mealsSection = screen.getByTestId('food-meals-section');
+    expect(mealsSection.children[mealsSection.children.length - 1]).toBe(error);
+    await waitFor(() => expect(mockGetNutritionPlan).toHaveBeenCalledTimes(2));
+
+    await fireEvent.press(screen.getByTestId('meal-toggle-0'));
+    await waitFor(() =>
+      expect(screen.queryByTestId('food-meal-error')).toBeNull(),
+    );
+    await waitFor(() => expect(mockGetNutritionPlan).toHaveBeenCalledTimes(3));
+  });
+});
+
 describe('R6: aiExplanation nullable con gracia', () => {
   beforeEach(() => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });

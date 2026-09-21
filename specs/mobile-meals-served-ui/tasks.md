@@ -128,7 +128,7 @@ orden no haya creado todavía**.
 
 ## R6 — Conflicto silencioso, fallo con aviso
 
-- [ ] **(1) Rojo.** `describe('#98 R6: el conflicto se resuelve refrescando y el fallo avisa')`
+- [x] **(1) Rojo.** `describe('#98 R6: el conflicto se resuelve refrescando y el fallo avisa')`
       en `food.test.tsx`, con los dos `it` de [[requirements]] R6. Rojo: hoy
       ningún `kind` pinta nada.
 - [ ] **(2) Verde.** `const [mealError, setMealError] = useState<string | null>(null)`;

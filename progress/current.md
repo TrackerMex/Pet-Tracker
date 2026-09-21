@@ -47,7 +47,10 @@
 - **Ajuste de test R5:** `Pressable` expone el bloqueo como estado accesible;
   la aserción usa `toBeDisabled()` en lugar de leer `props.disabled`.
 - **R5 verde:** Food 1 suite / 28 tests y typecheck limpios; sin estado
-  optimista, `useMutation` ni `invalidateQueries`.
+  optimista, `useMutation` ni `invalidateQueries`. Commit `98b6deec`.
+- **R6 rojo:** tests de conflictos silenciosos y error recuperable añadidos
+  antes de crear el estado de aviso; 1 fallo por aviso ausente, 29 tests verdes
+  y typecheck limpio.
 
 ### Por que esta feature
 
