@@ -131,12 +131,12 @@ orden no haya creado todavía**.
 - [x] **(1) Rojo.** `describe('#98 R6: el conflicto se resuelve refrescando y el fallo avisa')`
       en `food.test.tsx`, con los dos `it` de [[requirements]] R6. Rojo: hoy
       ningún `kind` pinta nada.
-- [ ] **(2) Verde.** `const [mealError, setMealError] = useState<string | null>(null)`;
+- [x] **(2) Verde.** `const [mealError, setMealError] = useState<string | null>(null)`;
       `setMealError(null)` al inicio de `toggleMeal`; `setMealError(t('food.couldNotUpdateMeal'))`
       en los cuatro `kind` de fallo; `<Text testID="food-meal-error" selectable className="text-danger">`
       como **último** hijo de `food-meals-section`, renderizado solo si
       `mealError !== null`.
-- [ ] **(3) Refactor.** Comprobar que `food-meals-section` mantiene el número de
+- [x] **(3) Refactor.** Comprobar que `food-meals-section` mantiene el número de
       hijos esperado en cada rama y que el aviso convive con las filas (no las
       sustituye).
 

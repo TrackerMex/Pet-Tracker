@@ -51,6 +51,8 @@
 - **R6 rojo:** tests de conflictos silenciosos y error recuperable añadidos
   antes de crear el estado de aviso; 1 fallo por aviso ausente, 29 tests verdes
   y typecheck limpio.
+- **R6 verde:** Food 1 suite / 30 tests y typecheck limpios; error seleccionable
+  al final de la card y conflictos idempotentes silenciosos.
 
 ### Por que esta feature
 

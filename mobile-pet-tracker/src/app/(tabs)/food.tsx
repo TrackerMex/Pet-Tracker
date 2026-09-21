@@ -38,6 +38,7 @@ export default function FoodScreen() {
   const { selectedPetId, selectPet } = useSelectedPet();
   const queryClient = useQueryClient();
   const [pendingMealTime, setPendingMealTime] = useState<string | null>(null);
+  const [mealError, setMealError] = useState<string | null>(null);
   const insets = useSafeAreaInsets();
   const pets = useQuery({
     queryKey: petKeys.list(),
@@ -65,13 +66,17 @@ export default function FoodScreen() {
     }
 
     setPendingMealTime(mealTime);
+    setMealError(null);
     try {
-      await (served ? unserveMeal : serveMeal)(
+      const result = await (served ? unserveMeal : serveMeal)(
         baseUrl,
         token ?? '',
         selectedPetId,
         mealTime,
       );
+      if (!['ok', 'already-served', 'not-served'].includes(result.kind)) {
+        setMealError(t('food.couldNotUpdateMeal'));
+      }
       await plan.refetch();
       await queryClient.refetchQueries({
         queryKey: petKeys.detail(selectedPetId),
@@ -267,6 +272,16 @@ export default function FoodScreen() {
                     </View>
                   );
                 })}
+
+                {mealError !== null ? (
+                  <Text
+                    testID="food-meal-error"
+                    selectable
+                    className="text-danger"
+                  >
+                    {mealError}
+                  </Text>
+                ) : null}
               </Card>
 
               {loadedPlan.warnings.length > 0 ? (
