@@ -780,7 +780,7 @@ entorno donde la librería no existe.
 Los pasos 1-10 del smoke ya están dados por buenos y **no se repiten**: al cerrar
 esto solo se repite el paso 11.
 
-- [ ] **E4 aprobada por humano** (fecha: ____)
+- [x] **E4 aprobada por humano** (fecha: 2026-09-20)
 
 ---
 
