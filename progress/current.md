@@ -84,3 +84,39 @@ deliberadamente sin `TABULAR_NUMS` para que el rojo de R10 sea real.
 
 Con la spec firmada: `feature_list.json` a `in_progress` y handoff a Codex CLI.
 La implementacion no la escribo yo.
+
+### Cinco features registradas desde la §Fuera de alcance de #98 (2026-09-21)
+
+Por decision del humano, siguiendo el patron de #79 (de cuya §Fuera de alcance
+salieron #99, #100 y #101). De las nueve vinetas de la seccion, cuatro eran
+delimitaciones y no deuda (la Home no escribe, no tocar backend/infra/CI, no
+traducir errores que la UI nunca ensena, extraer a `components/` cuando haya
+segunda pantalla) y no se registraron: en `feature_list.json` serian ruido que
+caduca.
+
+- **#102 `mobile-routes-to-screens`** — las cinco rutas pre-#39, no solo
+  `food.tsx`. **Contradice `docs/conventions.md:445-446`**; arranca enmendando
+  la convencion, con firma propia. Choca con #98 si no esta mergeada.
+- **#103 `meal-schedule-editing`** — editar horarios y anadir comidas. Backend
+  nuevo. Debe cerrar la D4 de #83 (que pasa con las comidas ya servidas de una
+  franja borrada).
+- **#104 `nutrition-kcal-consumed`** — kcal consumidas del dia. Backend nuevo.
+- **#105 `meals-history`** — historial de dias anteriores. Backend nuevo.
+- **#106 `mobile-meals-bar-motion`** — animacion de la barra y haptics.
+  Depende de #98 mergeada.
+
+Tres premisas falsas de la spec de #98, corregidas de paso en su §Fuera de
+alcance y en `design.md`:
+
+1. El Make **no** pinta un anillo de kcal sino una **barra horizontal**
+   (`design-src/App.tsx:605-615`).
+2. El historial **no** estaba desbloqueado: el puerto `MealServingRepository`
+   solo expone `listTimesServedOn(petId, servedOn)` de un dia y el reader solo
+   `findMealsToday`. Las filas existen; el acceso no.
+3. `react-native-reanimated` **4.5.1 ya esta instalado** (`package.json:37`).
+   La spec metia animacion y haptics en el mismo saco de dependencia nueva;
+   solo `expo-haptics` lo es.
+
+Ninguna de las tres toca los requisitos R1-R11 ni los candados: son texto de
+§Fuera de alcance y de §Decisiones descartadas. El gate de #98 sigue en pie tal
+cual.

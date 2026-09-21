@@ -652,19 +652,40 @@ Requisitos de entorno, todos verificables antes de empezar:
   (`docs/conventions.md` §Estructura Expo oficial), pero esa misma convención
   dice que las pantallas anteriores a #39 «no se migran en frío». Queda **fuera
   de alcance** y se declara aquí para que el humano decida si abre feature
-  aparte. #98 edita `food.tsx` en el sitio.
+  aparte. #98 edita `food.tsx` en el sitio. **Registrada el 2026-09-21 como
+  #102 `mobile-routes-to-screens`**, ampliada a las cinco rutas pre-#39
+  (`map.tsx` 388, `weight-log.tsx` 341, `food.tsx` 325, `meal-schedule.tsx`
+  324, `health.tsx` 279), porque abrirla solo para `food.tsx` sería arbitrario.
+  Esa feature **contradice `docs/conventions.md:445-446`** («las pantallas
+  anteriores a #39 NO se migran en frío»), así que arranca enmendando la
+  convención, con firma propia.
 - Extraer la barra a `src/components/`: la regla de extracción de la carta
   (§Decisiones fijas 4) pide ≥2 pantallas; hoy es una.
 - `POST /v1/pets/:petId/meals` desde la Home: la Home no escribe, solo lee.
-- Editar horarios, añadir comidas o el anillo de kcal consumidas del Make: sin
-  dato en backend, igual que declaró #38.
-- Historial de comidas servidas de días anteriores (el backend las guarda; nadie
-  las pide).
+- Editar horarios y añadir comidas: sin endpoints en backend, igual que declaró
+  #38 (`specs/mobile-food/requirements.md:306-309`). **Registrado como #103
+  `meal-schedule-editing`**; `meal-schedule.tsx` es hoy de solo lectura
+  (verificado: ni un `POST`/`PATCH`/`PUT`/`DELETE` en sus 324 líneas).
+- Las kcal consumidas del día del Make: sin dato en backend. **Registrado como
+  #104 `nutrition-kcal-consumed`.** Corrección a esta spec: el Make **no pinta
+  un anillo** sino una **barra horizontal** blanca dentro de la tarjeta
+  «Objetivo diario» (`design-src/App.tsx:605-615`), alimentada por
+  `caloriesConsumed` (`:37`, `:56`).
+- Historial de comidas servidas de días anteriores. **Registrado como #105
+  `meals-history`.** Corrección a esta spec: el backend guarda las **filas**
+  (`servedOn` por fila), pero **no son consultables** — el puerto
+  `meal-serving.repository.ts` solo expone `create`, `deleteOne` y
+  `listTimesServedOn(petId, servedOn)` de **un** día, y el reader solo
+  `findMealsToday`. Necesita backend nuevo, no es feature móvil pura.
 - Traducir los mensajes del backend (`MEAL_ALREADY_SERVED`, …): la UI nunca los
   enseña, muestra su propio copy.
 - Cambios en `backend-pet-tracker/`, `infra/`, `init.config.sh` o CI.
-- Animación de la barra, haptics (`expo-haptics` no está instalado) y cualquier
-  dependencia nueva.
+- Animación de la barra y haptics. **Registrado como #106
+  `mobile-meals-bar-motion`.** Corrección a esta spec: `react-native-reanimated`
+  **4.5.1 sí está instalado** (`package.json:37`), así que animar la barra no
+  exige dependencia nueva; solo `expo-haptics` lo sería, y el veto vivo sobre
+  dependencias es nominal a `expo-linear-gradient`, no genérico.
+- Cualquier otra dependencia nueva.
 
 ## Aprobación
 

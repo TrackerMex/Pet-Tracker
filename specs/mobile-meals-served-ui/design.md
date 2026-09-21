@@ -329,5 +329,7 @@ sesión en un worktree vecino**: Postgres y LocalStack son compartidos
   (`index.tsx:83`); reutilizarlo cruzaría la decisión 2 de la §Enmienda #70
   entre dos elementos de la misma sección. Se usa `ForkKnife`, el que Food ya
   usa para su propio plan.
-- **Animar la barra con Reanimated.** Fuera de alcance; si se quiere, entra por
-  `progress/audit_animations_mobile.md`.
+- **Animar la barra con Reanimated.** Fuera de alcance de #98; registrado el
+  2026-09-21 como **#106 `mobile-meals-bar-motion`**. `react-native-reanimated`
+  4.5.1 ya está instalado (`package.json:37`), así que esa feature no arrastra
+  dependencia nueva salvo que incluya `expo-haptics`.
