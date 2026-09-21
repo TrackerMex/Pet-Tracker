@@ -3,8 +3,6 @@ import type { TranslationKey } from '../i18n/catalog';
 
 export type DeviceConnectionState = 'none' | 'unknown' | 'offline' | 'online';
 
-const STALE_SECONDS = 120;
-
 export const DEVICE_CONNECTIVITY_META: Record<
   string,
   { labelKey: TranslationKey }
