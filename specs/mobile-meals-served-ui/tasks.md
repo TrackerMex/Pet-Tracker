@@ -186,13 +186,13 @@ orden no haya creado todavía**.
       `it('resuelve las 38 ocurrencias normativas')`; añadir
       `describe('#98 R9: el copy de comidas servidas queda registrado')`. Rojo:
       `51 !== 53` y `35 !== 38`.
-- [ ] **(2) Verde.** Añadir a `src/__tests__/ui-copy-table.ts` las tres filas de
+- [x] **(2) Verde.** Añadir a `src/__tests__/ui-copy-table.ts` las tres filas de
       `src/app/(tabs)/food.tsx` en `R6_FOOD` y las dos de
       `src/screens/home/index.tsx` en `R3_HOME`. **No** tocar `ALL_USES`.
       Desdoblar el ternario de R5 en dos llamadas directas `t('clave')` para
       que `checkUses` pueda resolverlas (corrección autorizada por el humano el
       2026-09-21), sin alterar la condición ni el resultado.
-- [ ] **(3) Refactor.** `bunx jest --runTestsByPath 'src/__tests__/ui-language.test.ts'`.
+- [x] **(3) Refactor.** `bunx jest --runTestsByPath 'src/__tests__/ui-language.test.ts'`.
       `checkUses` compara ocurrencia a ocurrencia: si sale un descuadre, es que
       una clave se usa más o menos veces de lo que la tabla dice.
 

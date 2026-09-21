@@ -80,6 +80,9 @@
 - **R9 rojo:** los candados nuevos fallan con los deltas exactos 51 ≠ 53 y
   35 ≠ 38; el test de las cinco filas también falla antes de registrarlas.
   Resultado: 3 fallos / 22 tests heredados verdes; typecheck limpio.
+- **R9 verde:** `R3_HOME` queda en 53, `R6_FOOD` en 38 y las cinco filas
+  resuelven una ocurrencia directa cada una; UI language + Food 2 suites /
+  55 tests y typecheck limpios. `ALL_USES` permanece intacto.
 
 ### Por que esta feature
 

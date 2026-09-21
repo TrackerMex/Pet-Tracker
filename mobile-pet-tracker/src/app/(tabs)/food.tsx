@@ -243,10 +243,11 @@ export default function FoodScreen() {
                       <Pressable
                         testID={`meal-toggle-${index}`}
                         accessibilityRole="button"
-                        accessibilityLabel={t(
-                          served ? 'food.undoServed' : 'food.markServed',
-                          { time: mealTime },
-                        )}
+                        accessibilityLabel={
+                          served
+                            ? t('food.undoServed', { time: mealTime })
+                            : t('food.markServed', { time: mealTime })
+                        }
                         disabled={pendingMealTime === mealTime}
                         className="min-h-11 justify-center"
                         style={({ pressed }) => ({
