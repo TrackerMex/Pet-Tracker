@@ -3,12 +3,25 @@
 **Feature**: #94 `mobile-map-staleness-single-source` (P3)
 **Branch**: `feature/94-mobile-map-staleness-single-source` (desde `origin/main` 914905b8)
 **Worktree**: `/home/claude/sites/Pet-Tracker-wt-ui`
-**Fase**: esperando a Codex CLI (handoff entregado el 2026-09-21)
+**Fase**: aprobada por el reviewer; pendiente SOLO del gate humano R8 (2026-09-21)
 
-Handoff en `progress/handoff_mobile-map-staleness-single-source.md` (commit
-`606d5a6c`). Enmienda E1 firmada por el humano en `ce652eae`. Cuando el humano
-confirme que Codex terminó: leer `progress/impl_mobile-map-staleness-single-source.md`
-y lanzar `reviewer`. Mientras tanto el leader no toca `mobile-pet-tracker/`.
+Dos rondas. La primera (`c558fca0`) salió **rechazada** por H1: la
+implementación cambió el helper compartido `sourceFiles()` de
+`design-drift.test.ts` y dejó sin cobertura a los 14 describes preexistentes del
+fichero. La segunda (`0dcbba3b`) lo revierte y añade **R10** —el inventario de
+lecturas de `staleSeconds`, enmienda E2 firmada en `38298cff`— que cierra el H2
+que el reviewer había dejado como no bloqueante y el humano decidió cerrar
+dentro de la feature.
+
+**Veredicto de la ronda 2: aprobado, 0 hallazgos**
+(`progress/review_mobile-map-staleness-single-source.md` §Ronda 2). Medido por
+el reviewer, no copiado del reporte: 5 suites/137 en el gate dirigido, suite
+móvil completa 1367, `tsc --noEmit` exit 0. Sin drift entre `origin` y la punta
+del veredicto.
+
+**#94 NO pasa a `done` todavía**: R8 (smoke en dev build de Android) es la única
+fila viva de `traceability.md` y solo la cierra el humano. Guion en
+`specs/mobile-map-staleness-single-source/tasks.md` §R8.
 
 Gate humano cerrado el 2026-09-21 en los commits `cf55f1ed` y `0142417b`: spec
 aprobada y las tres decisiones abiertas firmadas — **D1** via (a), el badge sale

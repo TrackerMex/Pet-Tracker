@@ -342,3 +342,210 @@ en conducta y solo queda anotado.
 Nada más de la feature necesita cambios: E1 está aplicada exactamente como se
 firmó, el historial rojo→verde es real en los 7 requisitos automáticos, los
 límites del reparto con #98 se respetan al 100 % y la suite móvil está verde.
+
+---
+---
+
+# review: mobile-map-staleness-single-source (#94) — **Ronda 2**
+
+Fecha: 2026-09-21
+Worktree: `/home/claude/sites/Pet-Tracker-wt-ui`
+Branch: `feature/94-mobile-map-staleness-single-source`
+Punta revisada: **`0dcbba3b`** (ronda 1 terminaba en `c558fca0`; 5 commits nuevos sobre `d5212d2a`)
+
+**Veredicto: APROBADO**
+
+Hallazgos: **0**.
+
+El bloqueante **H1** está corregido de verdad —no solo revertida la línea, sino
+recuperada la cobertura, lo he probado plantando una violación en un test
+colocado— y **H2** deja de ser deuda: la enmienda **E2** que firmó el humano
+añade **R10**, y R10 caza las dos mitades del agujero que yo abrí en la ronda 1.
+Nada de la ronda 1 se ha degradado.
+
+> **Esto no marca la feature como `done`.** **R8** sigue abierto: es el smoke
+> humano en dev build de Android y ninguna IA lo cierra. Mi veredicto cubre todo
+> lo automático; el paso a `done` espera la firma de R8 (`CLAUDE.md` §Reglas
+> duras).
+
+---
+
+## H1 — corregido y **verificado por cobertura**, no solo por diff
+
+`git diff 7eb66357..HEAD -- mobile-pet-tracker/src/__tests__/design-drift.test.ts`
+es ahora **adición pura**: los dos `describe` nuevos (`#94 R5` y `#94 R10`) y
+nada más. `sourceFiles()` (`:25-35`) y `allTypeScriptFiles()` (`:37-49`) son
+**idénticos byte a byte** a `7eb66357`.
+
+El filtro de `*.test.*` que pide la letra de R5 vive ahora **local**, dentro de
+su propio `describe` (`design-drift.test.ts:487-488`):
+
+```ts
+const productionFilesMatching = (pattern: RegExp) =>
+  filesMatching(pattern).filter((path) => !/\.test\.tsx?$/.test(path));
+```
+
+Es exactamente la corrección que prescribí en la ronda 1, punto 2.
+
+**Prueba de que la cobertura volvió** (no me basta con leer el diff). Planté una
+clase arbitraria en un test **colocado** —invisible para los candados en la
+ronda 1—:
+
+```bash
+# src/utils/device-connectivity.test.ts, primera línea:
+#   const ponytailProbe = 'bg-[#123456]';
+bunx jest --runTestsByPath 'src/__tests__/design-drift.test.ts'
+```
+
+→ **exit 1, 2 rojos**, y los dos son candados **preexistentes y ajenos a #94**:
+
+- `C8: la UI no usa clases arbitrarias` → `["utils/device-connectivity.test.ts"]`
+- `#68 R18: la actividad semanal no mete drift de estilo`
+
+En la ronda 1 esa misma sonda quedaba verde. Los 14 describes compartidos vuelven
+a ver los tests colocados bajo `src/`. Y `#94 R5` siguió verde, que es lo
+correcto: su filtro local sí los excluye, como manda su letra.
+
+`c2b67934` aislado: **exit 0, 39/39** — el fix de H1 no rompe nada y aún no trae
+R10.
+
+## H2 — cerrado por R10 (enmienda E2), no por reescribir R5
+
+- [x] **E2 aprobada por el humano**: `requirements.md` §Enmienda E2 con
+  `[X] Enmienda E2 aprobada por humano (2026-09-21)`, firmada en `38298cff`
+  ("Approve E2 map staleness amendment", `AlexisSM377 <al222111377@gmail.com>`),
+  ancestro de HEAD.
+- [x] **R5 intacto**: las dos aserciones conservan su regex byte a byte y su
+  `toEqual([])`. Lo único que cambia es de qué lista parten, y eso lo autoriza
+  E2 §Compatibilidad con H1 ("si hace falta, le da a `#94 R5` su propia lista
+  filtrada local"). No se reescribió ningún requisito firmado: C6 respetado.
+- [x] **R10 no se apoya en `sourceFiles()`**: usa `allTypeScriptFiles(sourceRoot)`
+  (`:511`) con `.filter()` local (`:517-522`), tal como exige E2. Y
+  `allTypeScriptFiles()` no se ha tocado.
+
+### Las dos mitades del agujero, medidas
+
+| # | Mutación | Resultado |
+|---|---|---|
+| 1 | **mi propia mutación de H2, repetida tal cual** en `src/app/(tabs)/map.tsx:207`: `const positionAge = position?.staleSeconds ?? 0; const isFresh = positionAge <= 120;` | **CAZADA** — exit 1, `#94 R10` rojo: `"app/(tabs)/map.tsx": 2` frente al `1` declarado. En la ronda 1 esto daba exit 0. |
+| 2 | **mudanza a fichero no declarado**: nuevo `src/utils/position-freshness.ts` con `const age = position.staleSeconds; return age <= 120;` | **CAZADA por clave inesperada** — exit 1, el inventario suma `"utils/position-freshness.ts": 1`, que no está en la tabla. No es solo un candado de recuento. |
+
+En la mutación 2, **R5 se quedó verde** y solo habló R10 — que es justo la
+demostración de que R10 cierra otra propiedad y no es un R5 más ancho.
+
+El inventario declarado (`design-drift.test.ts:504-507`) corresponde a la
+realidad del árbol, comprobado a mano:
+
+```
+src/api/types.ts:110:  staleSeconds: number;                                   → 1
+src/app/(tabs)/map.tsx:207:  const updated = position ? fmtAgo(position.staleSeconds, t) : '—';  → 1
+```
+
+## Sin degradación de la ronda 1
+
+Repetidas las tres mutaciones que ya cazaba, sobre `0dcbba3b`:
+
+| Mutación | Ronda 1 | Ronda 2 |
+|---|---|---|
+| invertir `online`/`offline` en `MAP_CONNECTION_LABEL_KEY` | exit 1, 8 rojos | **exit 1, 8 rojos** (7 de ellos `#94 R*`) |
+| revertir una fila de E1 (`pairing.connection` → `map.gps`), sin mover la longitud | exit 1, `#65 R4` + `#65 R18` | **exit 1, los mismos dos** |
+| umbral con la forma literal de R5 (`STALE_SECONDS` + `staleSeconds <= …`) | exit 1, 2 rojos (`#94 R5` ×2) | **exit 1, 3 rojos**: `#94 R5` ×2 **+ `#94 R10`** |
+
+La tercera mejora: el mismo umbral dispara ahora dos candados independientes.
+
+## Historial rojo→verde de R10 (comprobado por checkout, no por la tabla)
+
+| Commit | exit | Rojo por |
+|---|---|---|
+| `86594a29` (rojo, recuento) | **1** | `#94 R10` → `"app/(tabs)/map.tsx": 2` vs `1` |
+| `4c6dc3ab` (rojo, clave) | **1** | `#94 R10` → `"utils/device-connectivity.ts": 2` inesperado |
+| `d04326b6` (verde) | **0** | 40/40 |
+
+- [x] Los dos rojos son **mutación de producción versionada**, vía (b) de C4,
+  igual que R5. Ninguno estaba verde.
+- [x] Los dos prueban **dimensiones distintas** (recuento y clave), que es lo que
+  pedía el criterio de aceptación de E2.
+
+## Trazabilidad
+
+- [x] La fila de R10 ya no dice `pendiente`: registra los tres hashes
+  (`86594a29`, `4c6dc3ab`, `d04326b6`) con su rol.
+- [x] Los **5** hashes nuevos (`c2b67934`, `86594a29`, `4c6dc3ab`, `d04326b6`,
+  `38298cff`) existen y son **ancestros** de `0dcbba3b`. La rama no se rebasó.
+- [x] Queda anotado en §Notas de cierre que H1 se corrigió en `c2b67934`.
+- [x] Única fila abierta: **R8**, el gate humano declarado.
+
+## Límites de la ronda 2
+
+`git diff --stat d5212d2a..HEAD` → exactamente tres ficheros:
+
+```
+mobile-pet-tracker/src/__tests__/design-drift.test.ts   | 46 +++++++++++---
+progress/impl_mobile-map-staleness-single-source.md     | 43 ++++++++----
+specs/mobile-map-staleness-single-source/traceability.md|  4 +-
+```
+
+- [x] **`api/types.ts` se nombra en la tabla de R10 pero NO está editado**
+  (`git diff --name-only 7eb66357..HEAD` no lo incluye). Declararlo es leerlo.
+- [x] Cero ficheros de #98 en todo `7eb66357..HEAD`.
+- [x] Cero dependencias nuevas (`package.json`, `bun.lock` intactos).
+- [x] Catálogo i18n sin tocar: delta de i18n **cero**.
+- [x] Cero ficheros de `backend-pet-tracker/`.
+
+## Gate ejecutado (ronda 2)
+
+`./init.sh` **no se ejecutó**, otra vez por instrucción del leader (LocalStack y
+Postgres son de la sesión #98) y otra vez **no es imprescindible**: la ronda 2
+solo toca un fichero de test móvil. Medido por mí, en primer plano, sin pipe y
+sin `Monitor`:
+
+```
+bunx jest                 → Test Suites: 77 passed, 77 total
+                            Tests:       1367 passed, 1367 total
+                            Snapshots:   1 passed, 1 total
+                            JEST_FULL_EXIT=0
+bunx tsc --noEmit         → TSC_EXIT=0
+```
+
+Baselines de E2, cuadran **exactamente**:
+
+| Medida | E2 declara | Medido |
+|---|---|---|
+| 5 suites del gate dirigido | 137 | **5 suites, 137 tests, exit 0** ✅ |
+| `design-drift.test.ts` sola | 40 | **1 suite, 40 tests, exit 0** ✅ |
+| suite completa | 1366 + 1 | **1367, exit 0** ✅ |
+
+Ninguna suite saltada: jest imprime **5** y **77** donde tocaba (las rutas con
+`(tabs)` fueron siempre entre comillas).
+
+## Estado del árbol
+
+Todas las mutaciones revertidas y el fichero sonda borrado. Verificado al
+terminar:
+
+```
+git rev-parse HEAD       → 0dcbba3bc3916efd8646537ba8c7d38f8a911eb8
+git rev-parse --abbrev-ref HEAD → feature/94-mobile-map-staleness-single-source
+git diff --stat          → (vacío)
+git status --porcelain   → (solo este fichero de review)
+```
+
+## Nota sobre H3 (ronda 1)
+
+`renderMap()` sigue con `return` en lugar de `await`
+(`map.test.tsx:238`). **Correcto así**: en la ronda 1 lo marqué no bloqueante y
+dije expresamente que no se tocara. Queda como anotación del delta, no como
+deuda.
+
+## Qué queda para cerrar #94
+
+Nada automático. Solo **R8**, y lo cierra el humano:
+
+- dev build de **Android** (nunca Expo Go: `expo-maps` no existe ahí),
+- poller de posiciones parado,
+- misma mascota: el estado de conexión cambia **a la vez** en la píldora del hero
+  de la Home y en el tile del Mapa,
+- y el caso firmado en **D3**: collar `online` con fix viejo → `En vivo` en
+  `stat-gps` y `hace N min` en `stat-updated`.
+
+Con esa casilla firmada, #94 puede pasar a `done`.
