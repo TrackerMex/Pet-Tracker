@@ -181,7 +181,32 @@ Aviso pendiente de respuesta: el humano firmo `bd9758bc`, y el commit `3bbb1efb`
 anadio despues texto a §Fuera de alcance que no vio al firmar. Es texto de
 §Fuera de alcance y §Decisiones descartadas, cero cambio en R1-R11.
 
-### Codex termino; el reviewer RECHAZO (2026-09-21)
+### Ronda 2 del reviewer: APROBADO (2026-09-21)
+
+`progress/review_mobile-meals-served-ui.md`, 423 lineas, las dos rondas.
+
+**C6 cerrado** por la firma humana `812f222f`: 3 ficheros, 3 lineas, +3-3, las
+tres el checkbox, cero codigo dentro. El reviewer verifico ademas que el commit
+del leader que abrio el sitio de firma no toco ningun requisito (19 inserciones,
+**0 supresiones**, todas detras de `## Aprobacion`) y que en todo
+`1a6fa7bb..HEAD` los tres ficheros de spec y doc suprimen exactamente dos
+lineas: las dos `- [ ] Enmienda aprobada por humano`.
+
+De paso cerro la casilla de **C4** que la ronda 1 dejaba colgando de C6: la
+declaracion tardia de R8 como requisito de verificacion era E2, justo lo que el
+humano ratifico.
+
+No repitio la suite, y dice por que en el veredicto: `git diff --name-only
+1a6fa7bb..HEAD` son cinco ficheros y **ninguno bajo `mobile-pet-tracker/`**.
+Reutiliza su medicion de la ronda 1. `init.sh` no se lanzo en ninguna ronda.
+
+**El hueco del `meal-toggle` es deuda NO bloqueante.** El argumento: C8 pregunta
+por el codigo y el codigo tiene el feedback pressed y el touch target; C4 pide un
+test que nombre el R-id y R5 tiene tres; y la spec firmada nunca pidio ese
+candado, asi que rechazar por el seria inventar un requisito post-firma, que es
+lo que costo la ronda 1.
+
+### Historial: la ronda 1 RECHAZO
 
 Veredicto en `progress/review_mobile-meals-served-ui.md`. Motivo unico: **C6**.
 R1, R8 y R9 se editaron **despues** de la firma humana (`8658be20`) y el unico

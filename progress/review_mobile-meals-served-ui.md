@@ -1,5 +1,15 @@
 # review: mobile-meals-served-ui (#98)
 
+> **VEREDICTO VIGENTE — ronda 2 (2026-09-21), HEAD `812f222f`: APROBADO.**
+> La ronda 1 rechazó por C6 (tercer punto); la firma humana `812f222f` cerró ese
+> motivo. Este fichero conserva **las dos rondas**: la 1 íntegra y sin retocar
+> —sus checkboxes son los de aquel momento—, y la 2 al final, que es la que
+> manda.
+
+---
+
+# Ronda 1 — veredicto: RECHAZADO
+
 Fecha: 2026-09-21
 Rama: `feature/98-mobile-meals-served-ui` — HEAD `1a6fa7bb`
 Rango revisado: `189c1406..1a6fa7bb` (23 commits de Codex CLI) sobre la base de
@@ -262,3 +272,152 @@ gates pendientes.
 No bloqueante, para cuando toque: el candado del feedback de pulsado del
 `meal-toggle` (sonda A), el sub-rótulo de la §2.6 de #65 y la línea en blanco
 suelta que el vaivén de R8 dejó en `home/index.tsx:785`.
+
+---
+
+# Ronda 2 — 2026-09-21 — veredicto: APROBADO
+
+Fecha: 2026-09-21
+Rama: `feature/98-mobile-meals-served-ui` — HEAD `812f222f`
+Rango nuevo desde la ronda 1: `1a6fa7bb..812f222f` (3 commits).
+
+**Veredicto: APROBADO.** C6 queda cerrado. Ningún otro checkpoint se mueve, y
+las cifras de la ronda 1 siguen vigentes porque **no cambió una línea de código**.
+
+## 1. C6 — cerrado, verificado commit a commit
+
+| Qué comprobé | Resultado |
+|---|---|
+| El commit de firma existe y es del humano | `812f222f`, **AlexisSM377 <al222111377@gmail.com>**, 2026-09-21 12:23:55 -0600, «Approve mobile UI specification amendments» |
+| Qué toca | **3 ficheros, 3 líneas, +3/−3**, y las tres son el checkbox. Leí el diff entero: no hay nada más dentro |
+| `docs/ui-guidelines.md:399` | `- [ ]` → `- [X] Enmienda aprobada por humano` |
+| `specs/mobile-food/requirements.md:380` | `- [ ]` → `- [X] Enmienda aprobada por humano` |
+| `specs/mobile-meals-served-ui/requirements.md:730` | `- [X] Enmiendas E1, E2 y E3 aprobadas por humano (fecha: 2026-09-21)` |
+| Drift de código en el commit humano | **cero**: ni un fichero de `mobile-pet-tracker/`, `backend-pet-tracker/`, `infra/` ni CI |
+
+**El sitio de firma (`177d34e3`, del leader) no tocó ningún requisito** —lo
+comprobé con `git show`, no de oídas—: **19 inserciones, 0 supresiones**, todas
+detrás de `## Aprobación`, en una sección nueva `## Enmiendas posteriores a la
+firma`. Y el diff acumulado `1a6fa7bb..HEAD` sobre los tres ficheros de spec y
+doc suprime **exactamente dos líneas**, las dos `- [ ] Enmienda aprobada por
+humano` que la firma convierte en `- [X]`. Ni una línea de requisito se movió
+entre mi medición y la firma.
+
+Verifiqué además que la tabla E1/E2/E3 apunta a donde dice: `:116-121` es el
+párrafo `AND SHALL añadir servedToday: []` de R1, `:409-415` el blockquote de
+R8 y `:468-474` el de R9. Son las tres enmiendas que medí en la ronda 1, las
+mismas, sin retoques.
+
+- [x] **C6 — `requirements.md` con `status: approved` y casilla humana marcada**
+- [x] **C6 — ningún requisito modificado tras la aprobación sin pasar de nuevo
+      por el gate:** los tres que se modificaron (E1/E2/E3) pasaron por el gate
+      el 2026-09-21 con commit del humano
+
+### Nota sobre C4, que la ronda 1 dejó pendiente vía C6
+
+La casilla que quedó vacía en la ronda 1 era «requisito de verificación
+declarado por escrito **antes** del handoff» (R8). Esa declaración tardía es la
+enmienda **E2**, y es justo lo que el humano acaba de ratificar. La sustancia
+que C4 vía (b) exige —«romper a propósito el valor y ver el test rojo **por su
+aserción**, con la evidencia en el reporte del `reviewer`»— ya estaba cubierta
+en la ronda 1: reproduje el estado rojo histórico y lo vi caer por la aserción
+de orden de R8. Con la ratificación humana, **C4 queda marcado**.
+
+- [x] C4 completo
+
+> Lección para la próxima spec, no para esta: R10 sí venía clasificado como
+> requisito de verificación desde la firma y R8 no, y esa omisión del
+> `spec_author` costó una ronda entera. Clasificar **antes del handoff** todo
+> requisito que solo asevere una propiedad de lo que otro requisito ya dejó
+> puesto.
+
+## 2. El hueco de cobertura del `meal-toggle`: **NO bloqueante**
+
+Es una **observación**, no un motivo de rechazo. No lo cuelgo de ningún
+checkpoint. Razones, en orden de peso:
+
+1. **C8 se cumple en HEAD.** La casilla dice «elementos tappables con feedback
+   pressed y touch target ≥ 44 pt», y el control **tiene las dos cosas**:
+   `style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}`
+   (`food.tsx:253-255`) y `className="min-h-11 justify-center"`. Lo verifiqué
+   leyendo el fuente. C8 pregunta por el estado del código, no por si hay un
+   test que lo vigile.
+2. **C4 se cumple.** Exige que cada `R<n>` tenga al menos un test que lo nombre;
+   R5 tiene tres, todos verdes, y candan lo demás de la receta (rol, etiqueta
+   accesible literal, `min-h-11`, single-flight, `disabled`, orden de refresco).
+   No exige candar cada cláusula.
+3. **La spec firmada no pidió ese candado.** Ni la lista de tests de R5 ni la
+   tabla de candados de R10 lo incluyen. Rechazar por él sería inventar un
+   requisito después de la firma — y obligaría a **otra** edición post-firma de
+   la spec, que es exactamente lo que nos costó la ronda 1.
+
+Queda como **deuda registrada**. Y ojo al detalle que confirmé en el árbol,
+porque invalida el atajo obvio: el `style` vive en **tres líneas** en
+`food.tsx:253-255` (prettier lo parte por la profundidad de indentación),
+mientras en la Home cabe en una (`index.tsx:314` y `:626`). La regex de
+`index.test.tsx:190` **no sirve calcada**. Lo barato y a prueba de formato es
+aseverar la prop, no el fuente:
+
+```ts
+expect(toggle.props.style({ pressed: true })).toEqual({ opacity: 0.8 });
+expect(toggle.props.style({ pressed: false })).toEqual({ opacity: 1 });
+```
+
+Dos líneas dentro del `it` de R5 que ya existe. Si el humano lo manda a Codex,
+es eso; si lo registra como deuda, que sea con esta nota, porque el siguiente
+que lo intente con la regex de la Home se va a llevar un verde falso.
+
+## 3. Cifras: reutilizo la medición de la ronda 1, y digo por qué
+
+`git diff --name-only 1a6fa7bb..HEAD` devuelve exactamente cinco ficheros:
+
+```
+docs/ui-guidelines.md
+progress/current.md
+progress/review_mobile-meals-served-ui.md
+specs/mobile-food/requirements.md
+specs/mobile-meals-served-ui/requirements.md
+```
+
+**Ni uno bajo `mobile-pet-tracker/`.** Cero código, cero tests, cero
+configuración. Por tanto **no repito la suite**, y las cifras de la ronda 1
+siguen siendo válidas y son las de HEAD:
+
+| Medición (ronda 1, vigente) | Resultado |
+|---|---|
+| `bunx jest --runInBand --ci`, suite móvil completa | **77/77 suites, 1369/1369 tests, 1/1 snapshot, exit 0** |
+| Reconciliación de suites | 76 ficheros de test + `ui-copy-table.ts` = 77; ninguna saltada en silencio por el paréntesis de `(tabs)` |
+| `bunx tsc --noEmit` | **exit 0, limpio** |
+| Catálogo i18n | 305 (ancla) → **309** |
+| `style={TABULAR_NUMS}` en la Home | 7 (ancla) → **8** |
+| Cardinalidades de `reminders-section-body` | byte idénticas al ancla, contadas por `children.length` |
+
+Árbol de trabajo **limpio** al cerrar (`git status --porcelain` vacío), las dos
+sondas de mutación de la ronda 1 restauradas.
+
+`./init.sh` sigue **sin ejecutarse**: prohibido esta sesión por los worktrees
+vecinos vivos, y sigue sin hacer falta para el veredicto (perímetro fuera de
+`mobile-pet-tracker/` vacío, comprobado de nuevo en este rango). Un `init.sh`
+verde sigue siendo parte del cierre y lo corre el humano o el leader con la
+ventana coordinada.
+
+## 4. Checklist consolidado de la ronda 2
+
+- [x] **C2** — una sola feature `in_progress` (#98); `current.md` describe la sesión; Codex no tocó `feature_list.json`
+- [x] **C3** — perímetro backend intacto; la Home no importa el cliente de nutrición; `#70 R15` sin una llamada nueva
+- [x] **C4** — 11 pares rojo→verde, todos los R-id nombrados, rojos honestos (el de R8 muta producción, reproducido por mí), y la clasificación tardía de R8 ratificada por el humano
+- [x] **C5** — trazabilidad sin «pendiente», 13 filas, formato de commit correcto
+- [x] **C6** — spec aprobada y **las tres enmiendas posteriores firmadas** en `812f222f`
+- [x] **C7** — D7 de #38 eliminada de raíz, sin importadores huérfanos, con la retirada escrita en las dos specs
+- [x] **C8** — grep-clean, Card compartida, Skeleton, safe areas, touch target candado, sin animaciones ni dependencias nuevas *(observación no bloqueante: el feedback pressed no tiene candado)*
+
+## 5. Lo que sigue pendiente, y no es mío
+
+- **Smoke en dev build de Android**, sin ejecutar: lo cierra el humano. Hasta
+  entonces #98 no es `done`, por mucho que este veredicto sea aprobado
+  (`CLAUDE.md`: si la feature tiene requisitos que solo cierra un humano, se
+  esperan también esos).
+- Deuda menor, para cuando toque: el candado del feedback pressed del
+  `meal-toggle` (§2), el sub-rótulo «16 ocurrencias» de la §2.6 de
+  `specs/mobile-ui-language/design.md` (dueño: #65, `wt-ui`) y la línea en
+  blanco suelta que el vaivén de R8 dejó en `home/index.tsx:785`.

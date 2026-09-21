@@ -1,19 +1,25 @@
 # Rebote a Codex CLI — #98, hueco de candado en `meal-toggle`
 
-> Escrito por el `leader` el 2026-09-21, tras el veredicto del `reviewer`
-> (`progress/review_mobile-meals-served-ui.md`, primera ronda). El humano copia
-> el bloque de abajo en su terminal de Codex CLI.
+> Escrito por el `leader` el 2026-09-21 y actualizado tras la segunda ronda del
+> `reviewer` (`progress/review_mobile-meals-served-ui.md`). El humano copia el
+> bloque de abajo en su terminal de Codex CLI.
 >
-> **Esperar a que el `reviewer` de la segunda ronda termine antes de lanzarlo**:
-> un solo escritor sobre el working tree.
+> **Este rebote es OPCIONAL.** La ronda 2 aprobó #98 y declaró este hueco
+> **deuda no bloqueante**: la spec firmada nunca pidió el candado, así que
+> rechazar por él sería inventar un requisito post-firma. El humano pidió
+> mandarlo igualmente el 2026-09-21, antes de conocer ese veredicto.
+>
+> El `reviewer` ya terminó, así que el working tree está libre.
 
 ---
 
 ```
 Feature: mobile-meals-served-ui (#98), branch: feature/98-mobile-meals-served-ui
-Esto es un REBOTE, no una feature nueva. Tu implementación de #98 está medida y
-sin objeciones de código (77/77 suites, 1369/1369 tests, tsc limpio). Falta UNA
-cosa, que encontró el reviewer con una sonda de mutación propia.
+Esto es un REBOTE, no una feature nueva. Tu implementación de #98 está APROBADA
+por el reviewer (77/77 suites, 1369/1369 tests, tsc limpio). Lo de abajo es
+deuda declarada NO bloqueante, no un defecto que te devuelva la feature: la
+spec firmada nunca pidió este candado. Se cierra porque mejora la cobertura,
+no porque falte para aprobar.
 
 EL HUECO
 
@@ -44,22 +50,38 @@ POR QUÉ ES OBLIGATORIO, NO OPCIONAL
 
 QUÉ HACER
 
-Dos piezas, en este orden:
+El reviewer propone aseverar la PROP en vez del fuente, y tiene razón en que es
+lo barato y lo robusto al formato:
 
-1. NORMALIZA food.tsx:253-255 a UNA SOLA LÍNEA, exactamente como la escribe la
-   spec en :299 y como ya está en la Home (src/screens/home/index.tsx:314 y
-   :626). Hoy está en tres líneas, y por eso la regex ya probada de la Home no
-   sirve calcada. Normalizar es más barato que escribir una regex multilínea
-   nueva, y deja las tres apariciones del repo idénticas.
+    expect(toggle.props.style({ pressed: true })).toEqual({ opacity: 0.8 })
 
-2. AÑADE EL CANDADO en src/app/(tabs)/__tests__/food.test.tsx, dentro del
-   describe de #98 R5 que ya existe, reutilizando el patrón de la Home: leer el
-   fuente de food.tsx con readFileSync y asertar la regex de arriba sobre el
-   bloque del meal-toggle.
+dos líneas dentro del `it` de #98 R5 que ya existe, sin tocar producción.
 
-   NO copies la aserción de index.test.tsx:190 a ciegas: ábrela, mira qué
-   ámbito acota (allí el bloque es de la Home) y adáptala a food.tsx. Un mock o
-   una aserción calcada de otra suite ya rompió trabajo en #73.
+PERO ESO NO TIENE PRECEDENTE EN ESTE REPO. Verificado por el leader:
+`grep -rn 'props\.style(' src/` devuelve CERO. Hay cinco tests que leen
+`.props.style` (pet-avatar :66, pet-map :50, floating-tab-bar :207 y :343,
+pet-hero-header :278) y todos la tratan como objeto, nunca como función. El
+mismo Pressable lleva `className="min-h-11 justify-center"`, que procesa
+NativeWind, así que la función podría no llegar intacta al árbol renderizado.
+
+Por eso: PRUEBA EL CAMINO A, Y SI NO SALE, CAE AL B. No al revés.
+
+  CAMINO A (preferido, dos líneas, no toca producción)
+    Asevera la prop como arriba. Antes de escribirlo, comprueba en el árbol
+    renderizado que `toggle.props.style` es realmente una función: si NativeWind
+    la ha envuelto o aplanado, A no vale y pasas a B sin insistir.
+
+  CAMINO B (plan de respaldo)
+    1. Normaliza food.tsx:253-255 a UNA SOLA LÍNEA, exactamente como la escribe
+       la spec en :299 y como ya está en la Home (src/screens/home/index.tsx:314
+       y :626). Hoy está en tres líneas, y por eso la regex ya probada de la
+       Home no sirve calcada.
+    2. Canda con readFileSync sobre el fuente, reutilizando el patrón de
+       src/screens/home/index.test.tsx:190. NO la copies a ciegas: ábrela, mira
+       qué ámbito acota y adáptala a food.tsx. Una aserción calcada de otra
+       suite ya rompió trabajo en #73.
+
+Digas cuál uses, escribe en el reporte POR QUÉ, con lo que observaste.
 
 REQUISITO DE VERIFICACIÓN (C4, vía (b)) — LÉELO ANTES DE COMMITEAR
 
