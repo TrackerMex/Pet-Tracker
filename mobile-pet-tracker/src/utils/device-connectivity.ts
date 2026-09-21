@@ -1,10 +1,6 @@
 import type { DeviceStatus } from '../api/types';
 import type { TranslationKey } from '../i18n/catalog';
 
-const FRESH_LIMIT = (s: number) => s <= 120;
-const isFresh = (position: { staleSeconds: number }) =>
-  FRESH_LIMIT(position.staleSeconds);
-
 export type DeviceConnectionState = 'none' | 'unknown' | 'offline' | 'online';
 
 export const DEVICE_CONNECTIVITY_META: Record<
