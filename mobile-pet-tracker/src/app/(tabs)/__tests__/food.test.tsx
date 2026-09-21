@@ -9,7 +9,12 @@ import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
 
-import { getNutritionPlan, type NutritionPlanState } from '../../../api/nutrition';
+import {
+  getNutritionPlan,
+  serveMeal,
+  type NutritionPlanState,
+  unserveMeal,
+} from '../../../api/nutrition';
 import { listPets, type PetsState } from '../../../api/pets';
 import { nutritionKeys, petKeys } from '../../../api/query-keys';
 import type { NutritionPlan, PetProfile } from '../../../api/types';
@@ -20,12 +25,16 @@ import * as selectedPetHooks from '../../../providers/selected-pet-provider';
 import FoodScreen from '../food';
 import { renderWithProviders } from '../../../../test/render-with-providers';
 
+const { readFileSync } = jest.requireActual<typeof import('fs')>('fs');
+
 jest.mock('../../../api/pets', () => ({
   listPets: jest.fn(),
 }));
 
 jest.mock('../../../api/nutrition', () => ({
   getNutritionPlan: jest.fn(),
+  serveMeal: jest.fn(),
+  unserveMeal: jest.fn(),
 }));
 
 jest.mock('../../../providers/auth-provider', () => ({
@@ -60,13 +69,15 @@ jest.mock('reicon-react-native', () => {
 jest.mock(
   '../../../theme/use-theme-colors',
   () => ({
-    useThemeColors: (tokens: string[]) => tokens.map(() => '#000000'),
+    useThemeColors: (tokens: string[]) => tokens,
   }),
   { virtual: true },
 );
 
 const apiUrl = 'http://example.test/v1';
 const mockGetNutritionPlan = jest.mocked(getNutritionPlan);
+const mockServeMeal = jest.mocked(serveMeal);
+const mockUnserveMeal = jest.mocked(unserveMeal);
 const mockListPets = jest.mocked(listPets);
 const mockUseAuth = jest.mocked(useAuth);
 const mockRouter = jest.mocked(router);
@@ -95,6 +106,7 @@ function makePet(overrides: Partial<PetProfile> = {}): PetProfile {
     nextVaccine: null,
     nextReminder: null,
     activitySummary: null,
+    mealsToday: null,
     createdAt: '2026-08-20T00:00:00.000Z',
     updatedAt: '2026-08-21T00:00:00.000Z',
     ...overrides,
@@ -114,6 +126,7 @@ function makePlan(overrides: Partial<NutritionPlan> = {}): NutritionPlan {
     warnings: [],
     aiExplanation: null,
     generatedAt: '2026-08-23T12:00:00.000Z',
+    servedToday: [],
     ...overrides,
   };
 }
@@ -260,13 +273,7 @@ describe('R4: food resuelve la mascota seleccionada', () => {
 
 describe('R5: plan del día con horarios y warnings', () => {
   beforeEach(() => {
-    jest.useFakeTimers({ doNotFake: ['requestAnimationFrame'] });
-    jest.setSystemTime(new Date('2026-08-23T13:00:00'));
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
-  });
-
-  afterEach(() => {
-    jest.useRealTimers();
   });
 
   it('shows a skeleton and schedule link while the plan is pending', async () => {
@@ -286,7 +293,10 @@ describe('R5: plan del día con horarios y warnings', () => {
   });
 
   it('renders kcal, grams, ordered meals, portions, and local-time badges', async () => {
-    mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan() });
+    mockGetNutritionPlan.mockResolvedValue({
+      kind: 'ok',
+      plan: makePlan({ servedToday: ['07:30'] }),
+    });
 
     await renderFood();
 
@@ -325,6 +335,7 @@ describe('R5: plan del día con horarios y warnings', () => {
         dailyGrams: 300,
         mealsPerDay: 3,
         mealTimes: ['06:00', '12:00', '18:00'],
+        servedToday: ['06:00', '12:00'],
       }),
     });
 
@@ -397,6 +408,212 @@ describe('R5: plan del día con horarios y warnings', () => {
 
     await waitFor(() => expect(screen.getByTestId('food-plan-card')).toBeVisible());
     expect(mockGetNutritionPlan).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('#98 R4: el estado servido sale de servedToday, no del reloj', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  });
+
+  it('pinta badges y contador desde servedToday con el reloj del dispositivo en cualquier hora', async () => {
+    mockGetNutritionPlan.mockResolvedValue({
+      kind: 'ok',
+      plan: makePlan({ servedToday: [] }),
+    });
+
+    const pendingView = await renderFood();
+    await waitFor(() =>
+      expect(screen.getByTestId('food-meals-progress')).toHaveTextContent('0/2'),
+    );
+    expect(screen.getAllByTestId(/^meal-pending-/)).toHaveLength(2);
+    expect(screen.queryAllByTestId(/^meal-served-/)).toHaveLength(0);
+    for (const row of screen.getAllByTestId(/^meal-row-/)) {
+      expect(row.props.className).toContain('bg-default');
+      expect(within(row).getByTestId('food-icon-clock').props.style).toEqual({
+        color: 'muted',
+      });
+    }
+    await pendingView.unmount();
+
+    mockGetNutritionPlan.mockResolvedValue({
+      kind: 'ok',
+      plan: makePlan({ servedToday: ['07:30', '19:30'] }),
+    });
+
+    await renderFood();
+    await waitFor(() =>
+      expect(screen.getByTestId('food-meals-progress')).toHaveTextContent('2/2'),
+    );
+    expect(screen.getAllByTestId(/^meal-served-/)).toHaveLength(2);
+    expect(screen.queryAllByTestId(/^meal-pending-/)).toHaveLength(0);
+    for (const row of screen.getAllByTestId(/^meal-row-/)) {
+      expect(row.props.className).toContain('bg-surface-secondary');
+      expect(within(row).getByTestId('food-icon-clock').props.style).toEqual({
+        color: 'accent-strong',
+      });
+    }
+  });
+
+  it('no deja rastro del reloj en el fuente de Food', () => {
+    const source = readFileSync('src/app/(tabs)/food.tsx', 'utf8');
+
+    expect(source).not.toContain('localTimeHhmm');
+    expect(source).not.toContain('new Date(');
+    expect(source).not.toMatch(/mealTime\s*<=\s*hhmm/);
+  });
+});
+
+describe('#98 R5: cada franja sirve, deshace y refresca', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  });
+
+  it('sirve una franja pendiente y refresca el plan y el perfil', async () => {
+    mockGetNutritionPlan.mockResolvedValue({
+      kind: 'ok',
+      plan: makePlan({ servedToday: [] }),
+    });
+    mockServeMeal.mockResolvedValue({ kind: 'ok' });
+    const view = await renderFood();
+    const toggle = await screen.findByTestId('meal-toggle-0');
+    const refetchQueries = jest.spyOn(view.queryClient, 'refetchQueries');
+
+    expect(toggle.props.accessibilityRole).toBe('button');
+    expect(toggle.props.accessibilityLabel).toBe(
+      'Marcar 07:30 como servida',
+    );
+    expect(toggle.props.className).toBe('min-h-11 justify-center');
+    await fireEvent.press(toggle);
+
+    await waitFor(() => expect(mockGetNutritionPlan).toHaveBeenCalledTimes(2));
+    expect(mockServeMeal).toHaveBeenCalledWith(
+      apiUrl,
+      'jwt-token',
+      'pet-1',
+      '07:30',
+    );
+    expect(refetchQueries).toHaveBeenCalledWith({
+      queryKey: petKeys.detail('pet-1'),
+    });
+    expect(mockGetNutritionPlan.mock.invocationCallOrder[1]).toBeLessThan(
+      refetchQueries.mock.invocationCallOrder[0],
+    );
+  });
+
+  it('deshace una franja servida y refresca el plan y el perfil', async () => {
+    mockGetNutritionPlan.mockResolvedValue({
+      kind: 'ok',
+      plan: makePlan({ servedToday: ['07:30'] }),
+    });
+    mockUnserveMeal.mockResolvedValue({ kind: 'ok' });
+    const view = await renderFood();
+    const toggle = await screen.findByTestId('meal-toggle-0');
+    const refetchQueries = jest.spyOn(view.queryClient, 'refetchQueries');
+
+    expect(toggle.props.accessibilityLabel).toBe('Deshacer 07:30');
+    await fireEvent.press(toggle);
+
+    await waitFor(() => expect(mockGetNutritionPlan).toHaveBeenCalledTimes(2));
+    expect(mockUnserveMeal).toHaveBeenCalledWith(
+      apiUrl,
+      'jwt-token',
+      'pet-1',
+      '07:30',
+    );
+    expect(refetchQueries).toHaveBeenCalledWith({
+      queryKey: petKeys.detail('pet-1'),
+    });
+    expect(mockGetNutritionPlan.mock.invocationCallOrder[1]).toBeLessThan(
+      refetchQueries.mock.invocationCallOrder[0],
+    );
+  });
+
+  it('ignora la segunda pulsación mientras la primera está en vuelo', async () => {
+    let resolveServe!: (state: { kind: 'ok' }) => void;
+    mockGetNutritionPlan.mockResolvedValue({
+      kind: 'ok',
+      plan: makePlan({ servedToday: [] }),
+    });
+    mockServeMeal.mockReturnValue(
+      new Promise((resolve) => {
+        resolveServe = resolve;
+      }),
+    );
+    await renderFood();
+    const toggle = await screen.findByTestId('meal-toggle-0');
+
+    await fireEvent.press(toggle);
+    await fireEvent.press(toggle);
+
+    expect(mockServeMeal).toHaveBeenCalledTimes(1);
+    expect(screen.getByTestId('meal-pending-0')).toBeVisible();
+    await waitFor(() =>
+      expect(screen.getByTestId('meal-toggle-0')).toBeDisabled(),
+    );
+
+    await act(async () => resolveServe({ kind: 'ok' }));
+  });
+});
+
+describe('#98 R6: el conflicto se resuelve refrescando y el fallo avisa', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  });
+
+  it('no muestra error cuando el servidor ya estaba en el estado pedido', async () => {
+    mockGetNutritionPlan.mockResolvedValue({
+      kind: 'ok',
+      plan: makePlan({ servedToday: [] }),
+    });
+    mockServeMeal.mockResolvedValue({ kind: 'already-served' });
+    const servedView = await renderFood();
+
+    expect(screen.queryByTestId('food-meal-error')).toBeNull();
+    await fireEvent.press(await screen.findByTestId('meal-toggle-0'));
+    await waitFor(() => expect(mockGetNutritionPlan).toHaveBeenCalledTimes(2));
+    expect(screen.queryByTestId('food-meal-error')).toBeNull();
+    await servedView.unmount();
+
+    mockGetNutritionPlan.mockClear();
+    mockGetNutritionPlan.mockResolvedValue({
+      kind: 'ok',
+      plan: makePlan({ servedToday: ['07:30'] }),
+    });
+    mockUnserveMeal.mockResolvedValue({ kind: 'not-served' });
+    await renderFood();
+
+    await fireEvent.press(await screen.findByTestId('meal-toggle-0'));
+    await waitFor(() => expect(mockGetNutritionPlan).toHaveBeenCalledTimes(2));
+    expect(screen.queryByTestId('food-meal-error')).toBeNull();
+  });
+
+  it('muestra el aviso ante un fallo y lo borra en el reintento con éxito', async () => {
+    mockGetNutritionPlan.mockResolvedValue({
+      kind: 'ok',
+      plan: makePlan({ servedToday: [] }),
+    });
+    mockServeMeal
+      .mockResolvedValueOnce({ kind: 'error' })
+      .mockResolvedValueOnce({ kind: 'ok' });
+    await renderFood();
+
+    expect(screen.queryByTestId('food-meal-error')).toBeNull();
+    await fireEvent.press(await screen.findByTestId('meal-toggle-0'));
+
+    const error = await screen.findByTestId('food-meal-error');
+    expect(error).toHaveTextContent('No se pudo actualizar la comida');
+    expect(error.props.selectable).toBe(true);
+    expect(screen.getAllByTestId(/^meal-row-/)).toHaveLength(2);
+    const mealsSection = screen.getByTestId('food-meals-section');
+    expect(mealsSection.children[mealsSection.children.length - 1]).toBe(error);
+    await waitFor(() => expect(mockGetNutritionPlan).toHaveBeenCalledTimes(2));
+
+    await fireEvent.press(screen.getByTestId('meal-toggle-0'));
+    await waitFor(() =>
+      expect(screen.queryByTestId('food-meal-error')).toBeNull(),
+    );
+    await waitFor(() => expect(mockGetNutritionPlan).toHaveBeenCalledTimes(3));
   });
 });
 

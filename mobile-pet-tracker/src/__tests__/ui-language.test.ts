@@ -82,7 +82,7 @@ describe('#65 R3: Home resuelve su copy por clave', () => {
   // #68 añade el delta medido de weekly-activity-chart, sin recontar la base.
   // #73 añade `home.unknown` para distinguir espera inicial de desconexión.
   it('#71 R11: registra el copy de accesos rápidos sobre los deltas heredados', () => {
-    expect(R3_HOME).toHaveLength(21 + 15 + 1 + 4 + 7 + 2 + 1);
+    expect(R3_HOME).toHaveLength(21 + 15 + 1 + 4 + 7 + 2 + 1 + 2);
     checkUses(R3_HOME);
   });
 });
@@ -136,9 +136,28 @@ describe('#65 R5: Health resuelve su copy por clave', () => {
 });
 
 describe('#65 R6: Food resuelve su copy por clave', () => {
-  it('resuelve las 35 ocurrencias normativas', () => {
-    expect(R6_FOOD).toHaveLength(35);
+  it('resuelve las 38 ocurrencias normativas', () => {
+    expect(R6_FOOD).toHaveLength(35 + 3);
     checkUses(R6_FOOD);
+  });
+});
+
+describe('#98 R9: el copy de comidas servidas queda registrado', () => {
+  it('nombra las cinco ocurrencias nuevas y las resuelve en su fichero', () => {
+    const keys: TranslationKey[] = [
+      'food.markServed',
+      'food.undoServed',
+      'food.couldNotUpdateMeal',
+      'food.mealsToday',
+      'food.mealsServedOfTotal',
+    ];
+    const rows = [
+      ...R6_FOOD.filter(({ key }) => keys.slice(0, 3).includes(key)),
+      ...R3_HOME.filter(({ key }) => keys.slice(3).includes(key)),
+    ];
+
+    expect(rows.map(({ key }) => key)).toEqual(keys);
+    checkUses(rows);
   });
 });
 

@@ -104,6 +104,7 @@ function makePlan(overrides: Partial<NutritionPlan> = {}): NutritionPlan {
     warnings: [],
     aiExplanation: null,
     generatedAt: '2026-08-23T12:00:00.000Z',
+    servedToday: [],
     ...overrides,
   };
 }

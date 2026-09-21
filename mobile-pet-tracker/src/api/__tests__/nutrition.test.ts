@@ -2,6 +2,8 @@ import {
   generateNutritionPlan,
   getNutritionPlan,
   getNutritionProfile,
+  serveMeal,
+  unserveMeal,
 } from '../nutrition';
 
 const baseUrl = 'http://example.test/v1/';
@@ -282,4 +284,123 @@ describe('R3: generateNutritionPlan publica y mapea por kind', () => {
       expect(fetchFn).not.toHaveBeenCalled();
     },
   );
+});
+
+describe('#98 R2: serveMeal y unserveMeal mapean la respuesta por kind', () => {
+  it('serveMeal publica mealTime y distingue el 409 del error', async () => {
+    const fetchMock = jest.fn();
+    const fetchFn = fetchMock as unknown as typeof fetch;
+
+    fetchMock.mockResolvedValueOnce(response(201, {}));
+    await expect(
+      serveMeal(baseUrl, 'jwt-token', 'pet-1', '07:30', fetchFn),
+    ).resolves.toEqual({ kind: 'ok' });
+    expect(fetchMock).toHaveBeenLastCalledWith(
+      'http://example.test/v1/pets/pet-1/meals',
+      {
+        method: 'POST',
+        headers: {
+          Authorization: 'Bearer jwt-token',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ mealTime: '07:30' }),
+      },
+    );
+
+    fetchMock.mockResolvedValueOnce(
+      response(409, { code: 'MEAL_ALREADY_SERVED' }),
+    );
+    await expect(
+      serveMeal(baseUrl, 'jwt-token', 'pet-1', '07:30', fetchFn),
+    ).resolves.toEqual({ kind: 'already-served' });
+
+    for (const backendResponse of [
+      response(409, { code: 'OTHER' }),
+      invalidJsonResponse(409),
+      response(400, {}),
+      response(404, {}),
+      response(422, {}),
+      response(500, {}),
+    ]) {
+      fetchMock.mockResolvedValueOnce(backendResponse);
+      await expect(
+        serveMeal(baseUrl, 'jwt-token', 'pet-1', '07:30', fetchFn),
+      ).resolves.toEqual({ kind: 'error' });
+    }
+
+    fetchMock.mockResolvedValueOnce(response(401, {}));
+    await expect(
+      serveMeal(baseUrl, 'jwt-token', 'pet-1', '07:30', fetchFn),
+    ).resolves.toEqual({ kind: 'unauthorized' });
+
+    fetchMock.mockRejectedValueOnce(new Error('network down'));
+    await expect(
+      serveMeal(baseUrl, 'jwt-token', 'pet-1', '07:30', fetchFn),
+    ).resolves.toEqual({ kind: 'unreachable', message: 'network down' });
+
+    const missingConfigFetch = jest.fn() as unknown as typeof fetch;
+    await expect(
+      serveMeal(undefined, 'jwt-token', 'pet-1', '07:30', missingConfigFetch),
+    ).resolves.toEqual({ kind: 'missing-config' });
+    expect(missingConfigFetch).not.toHaveBeenCalled();
+  });
+
+  it('unserveMeal borra la franja de hoy y distingue el 404 de la franja del 404 del guard', async () => {
+    const fetchMock = jest.fn();
+    const fetchFn = fetchMock as unknown as typeof fetch;
+
+    fetchMock.mockResolvedValueOnce(response(204, undefined));
+    await expect(
+      unserveMeal(baseUrl, 'jwt-token', 'pet-1', '07:30', fetchFn),
+    ).resolves.toEqual({ kind: 'ok' });
+    expect(fetchMock).toHaveBeenLastCalledWith(
+      'http://example.test/v1/pets/pet-1/meals/07:30',
+      {
+        method: 'DELETE',
+        headers: { Authorization: 'Bearer jwt-token' },
+      },
+    );
+
+    fetchMock.mockResolvedValueOnce(
+      response(404, { code: 'MEAL_SERVING_NOT_FOUND' }),
+    );
+    await expect(
+      unserveMeal(baseUrl, 'jwt-token', 'pet-1', '07:30', fetchFn),
+    ).resolves.toEqual({ kind: 'not-served' });
+
+    for (const backendResponse of [
+      response(404, {}),
+      invalidJsonResponse(404),
+      response(400, {}),
+      response(422, {}),
+      response(500, {}),
+    ]) {
+      fetchMock.mockResolvedValueOnce(backendResponse);
+      await expect(
+        unserveMeal(baseUrl, 'jwt-token', 'pet-1', '07:30', fetchFn),
+      ).resolves.toEqual({ kind: 'error' });
+    }
+
+    fetchMock.mockResolvedValueOnce(response(401, {}));
+    await expect(
+      unserveMeal(baseUrl, 'jwt-token', 'pet-1', '07:30', fetchFn),
+    ).resolves.toEqual({ kind: 'unauthorized' });
+
+    fetchMock.mockRejectedValueOnce(new Error('network down'));
+    await expect(
+      unserveMeal(baseUrl, 'jwt-token', 'pet-1', '07:30', fetchFn),
+    ).resolves.toEqual({ kind: 'unreachable', message: 'network down' });
+
+    const missingConfigFetch = jest.fn() as unknown as typeof fetch;
+    await expect(
+      unserveMeal(
+        undefined,
+        'jwt-token',
+        'pet-1',
+        '07:30',
+        missingConfigFetch,
+      ),
+    ).resolves.toEqual({ kind: 'missing-config' });
+    expect(missingConfigFetch).not.toHaveBeenCalled();
+  });
 });

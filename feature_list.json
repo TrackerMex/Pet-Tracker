@@ -1914,7 +1914,7 @@
   {
     "id": 98,
     "name": "mobile-meals-served-ui",
-    "status": "pending",
+    "status": "done",
     "priority": "P3",
     "description": "Mitad movil de #83 meals-served-tracking, partida el 2026-09-15 por decision D1 del humano (specs/meals-served-tracking/design.md). Bloqueada hasta que #83 este mergeada en main Y su migracion meal_servings este aplicada en la base que use esta sesion (pnpm db:migrate desde backend-pet-tracker/, nunca psql crudo). Dos piezas. (1) src/app/(tabs)/food.tsx deja de fingir la comida servida con el reloj del dispositivo: hoy localTimeHhmm (:24-29), hhmm (:52), servedMeals = mealTimes.filter(mealTime <= hhmm) (:61-64), el contador food-meals-progress (:185-188) y el badge por fila served = mealTime <= hhmm (:193, testIDs meal-served-<i> / meal-pending-<i> :221-225) son la decision D7 de #38 aprobada por humano (specs/mobile-food/requirements.md, seccion Decisiones del gate) porque no habia backend; se sustituyen por un boton por franja que llama a POST /v1/pets/:petId/meals { mealTime } y a DELETE /v1/pets/:petId/meals/:mealTime (409 MEAL_ALREADY_SERVED y 404 MEAL_SERVING_NOT_FOUND se resuelven refrescando), y el estado servido sale de servedToday: string[] que GET /v1/pets/:petId/nutrition-plan devuelve desde #83 R9; tras cada POST/DELETE se refrescan nutritionKeys.plan y petKeys.detail (sin useMutation ni invalidateQueries en src/: patron weight-log.tsx createWeight + refetch). El tipo NutritionPlan de src/api/types.ts gana servedToday. (2) Barra de comidas en la Home: hijo nuevo de reminders-section-body (src/screens/home/index.tsx:626) despues de reminders-next-vaccine (:636), leyendo mealsToday: { served, total } | null que GET /v1/pets/:petId devuelve desde #83 R10 (ya en detail.data.pet, cero llamadas nuevas: R15 de #70 y la tercera asercion de su R3 -la Home no importa ../../api/nutrition- se conservan); render solo si mealsToday no es null; fila con icono, titulo, contador served/total y barra de ancho served/total sobre bg-accent (el Make usa #2AB87C: en el repo es el token), segun el Make App.tsx:438-446 y los tokens de docs/ui-guidelines.md. El tipo PetProfile de src/api/types.ts gana mealsToday: { served: number; total: number } | null; nextReminder y activitySummary siguen unknown (index.test.tsx:3200-3210). CANDADOS que la spec debe retirar o recontar con ruta:linea y valor nuevo: (a) #70 R3 en src/screens/home/index.test.tsx:3459-3474 -sus dos primeras aserciones (body con 1 hijo, sin texto d+/d+) se sustituyen; la tercera (no importar ../../api/nutrition) se conserva-; (b) cardinalidades de reminders-section-body en index.test.tsx :2365, :2400 (childCount por escenario), :2431 (4), :2814-2846 (1) y el orden body.children[0] === reminders-next-vaccine (:2331-2345, :2430-2433): dar el recuento nuevo por escenario (con plan / sin plan / cargando), no un delta generico; (c) catalogo i18n: language-provider.test.tsx:55 suma un termino + N por las claves nuevas (titulo de la barra, copy del boton servir/deshacer, nombre accesible del contador), nombrandolas; reutilizar food.mealsToday y food.served/food.pending donde encajen; (d) las 11 fixtures tipadas PetProfile (food.test.tsx, health.test.tsx, map.test.tsx, home/index.test.tsx, profile/index.test.tsx, reminders/index.test.tsx, pairing/index.test.tsx, docs/index.test.tsx, use-pet-selection.test.tsx, pet-switcher.test.tsx, pet-hero-header.test.tsx) ganan mealsToday: null; (e) food.test.tsx :263-264 (setSystemTime), :301 ('1/2'), :310/:315 (badges por reloj), :327-334 ('2/3') se reescriben contra servedToday del mock del plan; (f) enmienda #70 de docs/ui-guidelines.md (:308-): la barra es un elemento nuevo en una seccion de elementos repetidos -candar dato, icono, copy, nombre accesible, fondo, tinta, receta tipografica, condicion de render, forma y orden de hijos, contando children.length y nunca testID-. Jest con (tabs) escapado o --runTestsByPath. Cero dependencias nuevas. Coordinar con la sesion que lleve #97 si ambas anaden claves i18n. Sin estado optimista en el cliente para las comidas servidas (decision del 2026-09-15, sesiones Backend y Frontend): a diferencia de #97, donde el servidor solo SUPERSEDE la accion del usuario (la alerta atendida luego se cierra, asi que el overlay optimista sigue siendo cierto un rato), en comidas el servidor puede INVALIDAR la accion: si el plan se regenera sin esa franja (D4 de #83), la comida servida deja de contar y un overlay local afirmaria algo falso. Tras cada POST/DELETE …/meals se refrescan nutritionKeys.plan y petKeys.detail y la UI pinta lo que devuelve el servidor; no copiar el patron de acked de alerts.",
     "acceptance_criteria": [
@@ -1988,6 +1988,113 @@
     "files_affected": [
       "mobile-pet-tracker/app.json",
       "mobile-pet-tracker/app.config.test.ts"
+    ]
+  },
+  {
+    "id": 102,
+    "name": "mobile-routes-to-screens",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada el 2026-09-21 desde la seccion Fuera de alcance de la spec de #98, por decision del humano. Cinco rutas anteriores a #39 siguen siendo ficheros gordos que mezclan ruta y cuerpo de pantalla, contra el patron route delgado + src/screens/ vigente desde #39: src/app/(tabs)/map.tsx (388 lineas), weight-log.tsx (341), food.tsx (325), meal-schedule.tsx (324) y health.tsx (279). ATENCION, esta feature contradice una convencion vigente: docs/conventions.md:445-446 dice literalmente que las pantallas anteriores a #39 NO se migran en frio y que se mueven al patron solo cuando una feature las toque de fondo. El humano abrio esta entrada a sabiendas el 2026-09-21; la spec debe empezar por enmendar esa vinneta de conventions.md o el trabajo entero queda fuera de norma, y esa enmienda necesita su propia firma. Alcance: mover el cuerpo de cada ruta a src/screens/<nombre>/index.tsx dejando el fichero de src/app/ solo con la ruta, y mover los tests junto al screen body. Refactor puro, cero cambio de comportamiento: la suite existente es el candado y ningun test cambia de asercion, solo de ruta de fichero. Ojo al orden respecto de #98, que edita food.tsx en el sitio: si #98 no esta mergeada, esta feature la rompe en conflicto. Los tests viven hoy en src/app/(tabs)/__tests__/ y jest necesita (tabs) escapado o --runTestsByPath.",
+    "acceptance_criteria": [
+      "Enmienda a docs/conventions.md:445-446 firmada por humano antes de tocar codigo, o la feature se cierra sin implementar",
+      "Las cinco rutas de src/app/(tabs)/ quedan con solo la ruta; el cuerpo vive en src/screens/<nombre>/index.tsx",
+      "Cero cambios de asercion en los tests: solo se mueven de fichero, y el recuento de tests por suite es identico antes y despues",
+      "#98 mergeada antes de empezar, o food.tsx queda fuera de esta feature",
+      "Suite movil completa verde; typecheck limpio; cero dependencias nuevas"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/app/(tabs)/",
+      "mobile-pet-tracker/src/screens/",
+      "docs/conventions.md"
+    ]
+  },
+  {
+    "id": 103,
+    "name": "meal-schedule-editing",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada el 2026-09-21 desde la seccion Fuera de alcance de la spec de #98, por decision del humano. Los botones Editar horario y Anadir comida del diseno llevan sin backend desde #38, que ya los declaro no implementables en specs/mobile-food/requirements.md:306-309. #83 y #98 resolvieron marcar servido, pero no tocar los horarios: hoy mealTimes sale del plan generado y el usuario no puede cambiarlo. src/app/(tabs)/meal-schedule.tsx (324 lineas) es hoy de solo lectura, verificado con grep: no contiene ni un POST, PATCH, PUT ni DELETE. Necesita backend nuevo: endpoints para editar y anadir franjas del plan, y una decision de diseno que #83 dejo abierta en su D4 (que pasa con las comidas ya servidas de una franja que el usuario borra o mueve). Se partira en mitad backend y mitad movil cuando se escriba su spec, como se hizo con #83/#98; no se pre-parte ahora.",
+    "acceptance_criteria": [
+      "La spec cierra por escrito que ocurre con las meal_servings de una franja editada o borrada, resolviendo la D4 de #83",
+      "Backend expone editar y anadir franja con sus tests e2e; el plan generado deja de ser la unica fuente de mealTimes",
+      "meal-schedule.tsx gana los botones del diseno contra esos endpoints, sin estado optimista, con el mismo patron de refetch que #98",
+      "Gate humano: smoke en dev build de Android editando una franja con comida ya servida"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/modules/nutrition/",
+      "mobile-pet-tracker/src/app/(tabs)/meal-schedule.tsx"
+    ]
+  },
+  {
+    "id": 104,
+    "name": "nutrition-kcal-consumed",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada el 2026-09-21 desde la seccion Fuera de alcance de la spec de #98, por decision del humano. El diseno pinta las kcal consumidas del dia contra el objetivo diario, y hoy no hay dato. OJO, la spec de #98 lo llamo anillo y es falso: verificado en specs/mobile-figma-polish/design-src/App.tsx:605-615, es una BARRA horizontal blanca dentro de la tarjeta Objetivo diario, sobre un degradado 135deg #1DA868 a #2AB87C, con el numero grande de kcal/dia, la linea {caloriesConsumed} kcal a la izquierda y el porcentaje a la derecha. El Make lo alimenta con caloriesConsumed (App.tsx:37 y :56), un campo que el backend no calcula. Necesita backend: sumar las kcal de las comidas servidas del dia, lo que exige saber cuanto vale en kcal cada franja del plan, dato que hoy el plan no desglosa por franja. Depende de #83, ya mergeada, para saber que franjas se sirvieron.",
+    "acceptance_criteria": [
+      "El plan de nutricion desglosa kcal por franja, o la spec declara por escrito que reparto usa y por que",
+      "GET del plan devuelve las kcal consumidas del dia derivadas de las comidas servidas, con test e2e",
+      "La tarjeta Objetivo diario pinta la barra segun App.tsx:605-615 y los tokens de docs/ui-guidelines.md, no un anillo",
+      "Cero dependencias nuevas; suite movil completa verde"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/modules/nutrition/",
+      "mobile-pet-tracker/src/app/(tabs)/food.tsx",
+      "docs/ui-guidelines.md"
+    ]
+  },
+  {
+    "id": 105,
+    "name": "meals-history",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada el 2026-09-21 desde la seccion Fuera de alcance de la spec de #98, por decision del humano. Las comidas servidas de dias anteriores existen como filas desde #83 (meal_servings tiene servedOn por fila), pero NO son consultables: verificado en el puerto backend-pet-tracker/src/modules/nutrition/domain/repositories/meal-serving.repository.ts, que solo expone create, deleteOne y listTimesServedOn(petId, servedOn) de UN dia, y en pet-meals.drizzle-reader.ts, cuyo unico metodo es findMealsToday. Asi que esto no es una feature movil pura como parecia al registrarla: necesita metodo de rango en el puerto y sus dos implementaciones, endpoint nuevo y despues pantalla. Nadie ha pedido este historial todavia; queda registrado para que exista la entrada, no porque haga falta ya. Antes de especificarlo conviene preguntar al humano para que lo quiere, porque el alcance cambia mucho entre un resumen de los ultimos siete dias y un calendario navegable.",
+    "acceptance_criteria": [
+      "El humano declara el caso de uso concreto antes de escribir la spec; sin el, la feature no se especifica",
+      "El puerto MealServingRepository gana un metodo de rango con sus tests, y el endpoint lo expone",
+      "La pantalla movil consume ese endpoint y nace ya con el patron route delgado + src/screens/",
+      "Cero dependencias nuevas; suite completa verde"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/modules/nutrition/",
+      "mobile-pet-tracker/src/screens/"
+    ]
+  },
+  {
+    "id": 106,
+    "name": "mobile-meals-bar-motion",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada el 2026-09-21 desde la seccion Fuera de alcance de la spec de #98, por decision del humano. La barra de comidas de la Home que introduce #98 salta de un ancho a otro sin transicion, y el boton de servir no da respuesta tactil. La spec de #98 metio animacion y haptics en el mismo saco de dependencia nueva, y es inexacto: verificado en mobile-pet-tracker/package.json:37, react-native-reanimated 4.5.1 YA esta instalado, asi que animar el ancho de la barra no necesita nada nuevo. El unico que faltaria es expo-haptics, que si es dependencia nueva y necesita firma del humano en el gate de esta spec; el veto vivo sobre dependencias es nominal a expo-linear-gradient, no generico, asi que se puede pedir. Depende de #98 mergeada. Alcance: transicion del ancho de la barra al cambiar served, y opcionalmente el haptic al servir y deshacer. Cargar la skill expo:expo-animation al especificar.",
+    "acceptance_criteria": [
+      "#98 mergeada antes de empezar",
+      "El ancho de la barra transiciona con Reanimated; los ms salen de la duracion real y la ventana de los timers en tests se deriva de ella, nunca al reves",
+      "Si entran haptics, expo-haptics queda declarado en la spec y firmado por el humano; si no, la feature se cierra solo con la animacion",
+      "Respeta reduce motion del sistema",
+      "Gate humano: smoke en dev build de Android viendo la barra moverse al servir y al deshacer"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/home/index.tsx",
+      "mobile-pet-tracker/src/app/(tabs)/food.tsx"
+    ]
+  },
+  {
+    "id": 107,
+    "name": "mobile-meal-toggle-press-lock",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada el 2026-09-21 al cerrar #98, por decision del humano. Deuda declarada NO bloqueante por el reviewer en la ronda 2 (progress/review_mobile-meals-served-ui.md): quitar el feedback tactil del boton por franja deja 4 suites y 150 tests VERDES. El style vive en mobile-pet-tracker/src/app/(tabs)/food.tsx:253-255 y nadie lo canda: los ocho usos de meal-toggle-0 en src/app/(tabs)/__tests__/food.test.tsx (:479, :511, :544, :552, :573, :586, :602, :612) son findByTestId, toBeDisabled y fireEvent.press, ninguno mira el style. Lo exigen R5 de #98 (specs/mobile-meals-served-ui/requirements.md:299 prescribe la receta literal) y docs/ui-guidelines.md:184 (feedback pressed en TODO elemento tappable), que es C8. El reviewer no lo hizo bloqueante porque la spec firmada nunca pidio el candado y rechazar por el habria sido inventar un requisito post-firma. El handoff completo ya esta escrito en progress/handoff_98_rebote_meal-toggle.md, con los dos caminos: el preferido es aseverar la prop -toggle.props.style({ pressed: true }) igual a { opacity: 0.8 }, dos lineas dentro del it de R5 que ya existe y sin tocar produccion-, y el de respaldo es normalizar food.tsx:253-255 a una sola linea como la Home y candar con readFileSync. OJO: aseverar props.style como FUNCION no tiene ni un precedente en src/ (grep -rn 'props.style(' src/ da cero; los cinco tests que leen .props.style la tratan como objeto), y el mismo Pressable lleva className que procesa NativeWind, asi que hay que comprobar que la funcion llega intacta al arbol renderizado antes de casarse con ese camino. Como el style ya esta en produccion, el candado es requisito de verificacion por la via (b) de C4: el commit rojo quita el style y el verde lo restaura.",
+    "acceptance_criteria": [
+      "Quitar el style del meal-toggle en food.tsx deja al menos un test ROJO que nombra R5",
+      "El commit rojo precede al verde y el rojo falla por la ausencia del feedback, no por otra cosa",
+      "El reporte declara cual de los dos caminos se uso y por que, con lo observado sobre props.style",
+      "Solo se tocan food.tsx y food.test.tsx; no se anade un R12 ni se enmienda la spec de #98",
+      "Suite movil completa verde; cero dependencias nuevas"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/app/(tabs)/food.tsx",
+      "mobile-pet-tracker/src/app/(tabs)/__tests__/food.test.tsx"
     ]
   }
 ]

@@ -1,11 +1,16 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { router, type Href } from 'expo-router';
 import { Button, Skeleton, Spinner } from 'heroui-native';
-import { ScrollView, Text, View } from 'react-native';
+import { useState } from 'react';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronRight, Clock, ForkKnife, Sparkles } from 'reicon-react-native';
 
-import { getNutritionPlan } from '../../api/nutrition';
+import {
+  getNutritionPlan,
+  serveMeal,
+  unserveMeal,
+} from '../../api/nutrition';
 import { listPets, type PetsState } from '../../api/pets';
 import { nutritionKeys, petKeys } from '../../api/query-keys';
 import { Card } from '../../components/card';
@@ -21,13 +26,6 @@ function isPetsError(state: PetsState): boolean {
   return ['error', 'unreachable', 'missing-config'].includes(state.kind);
 }
 
-function localTimeHhmm(): string {
-  const now = new Date();
-  const hours = String(now.getHours()).padStart(2, '0');
-  const minutes = String(now.getMinutes()).padStart(2, '0');
-  return `${hours}:${minutes}`;
-}
-
 export default function FoodScreen() {
   const [muted, accent, foreground] = useThemeColors([
     'muted',
@@ -38,6 +36,9 @@ export default function FoodScreen() {
   const { token } = useAuth();
   const t = useTranslate();
   const { selectedPetId, selectPet } = useSelectedPet();
+  const queryClient = useQueryClient();
+  const [pendingMealTime, setPendingMealTime] = useState<string | null>(null);
+  const [mealError, setMealError] = useState<string | null>(null);
   const insets = useSafeAreaInsets();
   const pets = useQuery({
     queryKey: petKeys.list(),
@@ -49,7 +50,6 @@ export default function FoodScreen() {
     queryFn: () => getNutritionPlan(baseUrl, token ?? '', selectedPetId!),
     enabled: selectedPetId !== null,
   });
-  const hhmm = localTimeHhmm();
   const loadedPlan = plan.data?.kind === 'ok' ? plan.data.plan : null;
   const waitingForPetSelection =
     selectedPetId === null &&
@@ -58,10 +58,33 @@ export default function FoodScreen() {
   const showPlanSkeletons =
     waitingForPetSelection ||
     (selectedPetId !== null && plan.data === undefined);
-  const servedMeals =
-    loadedPlan !== null
-      ? loadedPlan.mealTimes.filter((mealTime) => mealTime <= hhmm).length
-      : 0;
+  const servedMeals = loadedPlan?.servedToday.length ?? 0;
+
+  async function toggleMeal(mealTime: string, served: boolean) {
+    if (pendingMealTime !== null || selectedPetId === null) {
+      return;
+    }
+
+    setPendingMealTime(mealTime);
+    setMealError(null);
+    try {
+      const result = await (served ? unserveMeal : serveMeal)(
+        baseUrl,
+        token ?? '',
+        selectedPetId,
+        mealTime,
+      );
+      if (!['ok', 'already-served', 'not-served'].includes(result.kind)) {
+        setMealError(t('food.couldNotUpdateMeal'));
+      }
+      await plan.refetch();
+      await queryClient.refetchQueries({
+        queryKey: petKeys.detail(selectedPetId),
+      });
+    } finally {
+      setPendingMealTime(null);
+    }
+  }
 
   return (
     <ScrollView
@@ -190,7 +213,7 @@ export default function FoodScreen() {
                 </View>
 
                 {loadedPlan.mealTimes.map((mealTime, index) => {
-                  const served = mealTime <= hhmm;
+                  const served = loadedPlan.servedToday.includes(mealTime);
                   const portionGrams = Math.round(
                     loadedPlan.dailyGrams / loadedPlan.mealsPerDay,
                   );
@@ -217,23 +240,49 @@ export default function FoodScreen() {
                           {portionGrams} g
                         </Text>
                       </View>
-                      <Text
-                        testID={
+                      <Pressable
+                        testID={`meal-toggle-${index}`}
+                        accessibilityRole="button"
+                        accessibilityLabel={
                           served
-                            ? `meal-served-${index}`
-                            : `meal-pending-${index}`
+                            ? t('food.undoServed', { time: mealTime })
+                            : t('food.markServed', { time: mealTime })
                         }
-                        className={
-                          served
-                            ? 'rounded-full bg-surface px-2 py-1 text-2xs font-bold text-accent-strong'
-                            : 'rounded-full bg-surface px-2 py-1 text-2xs font-bold text-muted'
-                        }
+                        disabled={pendingMealTime === mealTime}
+                        className="min-h-11 justify-center"
+                        style={({ pressed }) => ({
+                          opacity: pressed ? 0.8 : 1,
+                        })}
+                        onPress={() => void toggleMeal(mealTime, served)}
                       >
-                        {served ? t('food.served') : t('food.pending')}
-                      </Text>
+                        <Text
+                          testID={
+                            served
+                              ? `meal-served-${index}`
+                              : `meal-pending-${index}`
+                          }
+                          className={
+                            served
+                              ? 'rounded-full bg-surface px-2 py-1 text-2xs font-bold text-accent-strong'
+                              : 'rounded-full bg-surface px-2 py-1 text-2xs font-bold text-muted'
+                          }
+                        >
+                          {served ? t('food.served') : t('food.pending')}
+                        </Text>
+                      </Pressable>
                     </View>
                   );
                 })}
+
+                {mealError !== null ? (
+                  <Text
+                    testID="food-meal-error"
+                    selectable
+                    className="text-danger"
+                  >
+                    {mealError}
+                  </Text>
+                ) : null}
               </Card>
 
               {loadedPlan.warnings.length > 0 ? (

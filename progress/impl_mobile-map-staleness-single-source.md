@@ -111,3 +111,34 @@ esta sesión.
 El gate humano paso el estado de conexión a `En vivo` y `hace N min` correctamente.
 Cambie el Poller a false y confirme que el estado de conexión se actualiza correctamente.
 La actualización del estado de conexión se debe ver reflejada en Home y Mapa.
+
+## Ronda 3 — integración de `origin/main`
+
+Merge de `origin/main` (`9df7b5bc`) sobre la rama, sin rebase, desde la base
+común `914905b8`. Resultado de los seis ficheros compartidos:
+
+1. `src/__tests__/ui-copy-table.ts`: conserva las cinco filas de #98 en
+   `R3_HOME` y `R6_FOOD`; conserva también el delta de #94: `R4_MAP` queda sin
+   `map.live`, `map.stale` ni `map.noSignal`, `map.gps` se sustituye por
+   `pairing.connection` y las cuatro filas nuevas del util quedan al final de
+   `R10_PAIRING`.
+2. `src/__tests__/ui-language.test.ts`: `R4_MAP = 17` y el título dice
+   "resuelve las 17 ocurrencias normativas"; `R10_PAIRING = 42 + 2 + 1 + 4`
+   con el comentario de E1; los deltas de #98 quedan en `R3_HOME` (`+ 2`) y
+   `R6_FOOD` (`35 + 3`); `SCREEN_FILES = 19 + 2 + 1` no cambia.
+3. `src/__tests__/design-drift.test.ts`: conserva el `describe` de #98 y el de
+   `#94 R10`; `sourceFiles()` mantiene
+   `return /\.tsx?$/.test(entry.name) ? [path] : [];` sin filtro de tests y
+   R10 recorre `allTypeScriptFiles(sourceRoot)`.
+4. `src/app/(tabs)/__tests__/map.test.tsx`: conserva la suite del badge de #94
+   y la fixture `PetProfile` incluye `mealsToday: null` de #98.
+5. `feature_list.json`: #94 y #98 quedan `done`; inventario resuelto: 88 de
+   107 features `done`.
+6. `progress/history.md`: conserva completas las bitácoras de #94 y #98; ambos
+   recuentos de cierre quedan normalizados a 88 de 107.
+
+Verificación desde `mobile-pet-tracker/`, sin pipe:
+
+- `bunx jest` → exit 0; 77 suites, 1386 tests y 1 snapshot, todos verdes
+  (36.62 s).
+- `bunx tsc --noEmit` → exit 0, sin salida.

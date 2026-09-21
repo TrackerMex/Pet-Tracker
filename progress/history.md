@@ -4254,5 +4254,74 @@ mismo dia antes de que existiera el codigo. La casilla se anadio en `ff76cbfa`.
   desde el primer dia, delta de i18n **cero** por nuestro lado, y `./init.sh`
   **nunca ejecutado** en toda la feature — es 100% movil, el gate real era jest
   mas `tsc`, y los puertos eran de la otra sesion.
-- Cierre: #94 `done`, 87 de 101. Suite movil 77 suites / 1367 tests, `tsc`
+- Cierre: #94 `done`, 88 de 107. Suite movil 77 suites / 1367 tests, `tsc`
   limpio, medido sin pipe en la punta de la rama.
+
+---
+
+## #98 — `mobile-meals-served-ui` (2026-09-21)
+
+Mitad móvil de #83. `food.tsx` deja de fingir la comida servida con el reloj del
+dispositivo y gana un botón por franja contra `POST`/`DELETE
+/v1/pets/:petId/meals`; la Home gana una barra de comidas que lee `mealsToday`
+de `detail.data.pet`, sin una sola llamada nueva.
+
+Cerrada con **88 de 107** features. PR abierto tras el smoke; el humano mergea.
+
+### La spec acertó; lo que falló fue el entorno del humano, otra vez
+
+Codex entregó **23 commits** con historial rojo→verde por requisito, y el
+`reviewer` no le encontró **una sola objeción de código**: 77/77 suites,
+1369/1369 tests, `tsc` limpio, catálogo 305→309, `TABULAR_NUMS` 7→8, y las
+cardinalidades de `reminders-section-body` byte idénticas al ancla `914905b8`.
+
+El tiempo se fue en otra parte. El smoke murió en `pnpm db:migrate` con un
+`ELIFECYCLE` mudo, y el diagnóstico tardó tres rondas porque el síntoma mentía:
+la tabla `meal_servings` **existía**, el journal marcaba **18 de 18**, y
+`docker exec psql` respondía de maravilla. Lo que no respondía era
+`localhost:5432`: el `docker-compose.override.yml` del VPS —gitignored y con un
+comentario que dice literalmente «específico de esta máquina, no commitear»—
+estaba también en la máquina Windows, publicando el Postgres en **5433**
+mientras el `.env` apuntaba al 5432.
+
+**La lección es la forma del engaño, no el puerto.** `docker exec` entra por
+dentro del contenedor y nunca toca el mapeo de puertos, así que confirma que la
+base está sana justo cuando el problema es que nadie puede llegar a ella. Tres
+comprobaciones dieron verde seguidas mientras el backend no conectaba.
+
+### El rechazo de la ronda 1 no fue por código
+
+Fue **C6**: Codex editó la spec aprobada *después* de la firma (R1, R8, R9) y el
+único aval era su propia prosa. Las tres eran correctas —el `reviewer` midió que
+ninguna relajaba un requisito— pero no existía **sitio donde firmarlas**: vivían
+como párrafos sueltos dentro de su requisito. El leader abrió una sección
+`## Enmiendas posteriores a la firma` con una tabla que sitúa cada una, y el
+humano las firmó de una vez con las dos `§Enmienda #98` que ya debía.
+
+Patrón para la próxima: **una enmienda sin casilla no es una enmienda, es una
+nota**. Si Codex tiene que cambiar la spec a mitad de implementación, el handoff
+debe pedirle que abra él la casilla.
+
+### Deuda y features nuevas
+
+- **#107** `mobile-meal-toggle-press-lock`, el único hueco que encontró el
+  `reviewer`, con **sonda propia** en un sitio que Codex no había sondeado:
+  quitar el feedback pressed del `meal-toggle` deja 4 suites y 150 tests verdes.
+  Lo declaró **no bloqueante** con un argumento que conviene recordar: la spec
+  firmada nunca pidió ese candado, y rechazar por él habría sido inventar un
+  requisito post-firma — exactamente lo que costó la ronda 1.
+- De la §Fuera de alcance salieron **#102** (las cinco rutas pre-#39, que
+  contradice `conventions.md:445-446` y arranca enmendándola), **#103**, **#104**
+  y **#105**, las tres bloqueadas por backend, y **#106** (animación y haptics).
+  De las nueve viñetas, cuatro eran delimitaciones y no se registraron.
+- Tres premisas falsas de la spec, cazadas al registrarlas: el Make pinta una
+  **barra** de kcal y no un anillo; el historial **no** estaba desbloqueado
+  porque el puerto solo consulta un día; y `react-native-reanimated` ya estaba
+  instalado.
+
+### Coordinación
+
+Codex movió un candado de `specs/mobile-ui-language/design.md`, que es de #65 y
+está viva en `wt-ui`. El recuento nuevo es correcto (33 claves, 38 ocurrencias)
+pero dejó los **sub-rótulos por fichero obsoletos**: 16 + 19 = 35, no 38. Lo
+cierra quien lleve #65.
