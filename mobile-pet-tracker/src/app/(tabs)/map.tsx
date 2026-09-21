@@ -82,7 +82,6 @@ const DEFAULT_CENTER = {
   latitude: 19.4326,
   longitude: -99.1332,
 };
-const STALE_SECONDS = 120;
 const POLL_MS = 15000;
 
 export default function MapScreen() {
@@ -203,11 +202,6 @@ export default function MapScreen() {
       ? route.data.trips.reduce((total, trip) => total + trip.distanceM, 0)
       : null;
   const updated = position ? fmtAgo(position.staleSeconds, t) : '—';
-  const isFresh =
-    position !== undefined &&
-    position !== null &&
-    position.staleSeconds <= STALE_SECONDS;
-  void isFresh;
   const gps =
     detail.data?.kind === 'ok'
       ? t(

@@ -16,7 +16,7 @@ los tres ficheros de test ya acumulan R-ids de otras specs
 | R2 | `src/app/(tabs)/__tests__/map.test.tsx::#94 R2: el tile de conexión sigue al collar` + `::#94 R2: la antigüedad de la posición ya no mueve el tile de conexión` + `::#94 R2: sin collar el tile de conexión dice Sin señal` | rojo `2dcebb2a` (`feat(mobile-map-staleness): specify detail-backed map badge (R2)`); verde `a83aae5c` (`feat(mobile-map-staleness): read map badge from pet detail (R2,R9)`) |
 | R3 | `src/app/(tabs)/__tests__/map.test.tsx::#94 R3: sin detalle el tile de conexión cae al guion` | rojo `7f4709bc` (`feat(mobile-map-staleness): specify unresolved detail fallback (R3)`); verde `2ea2ff9c` (`feat(mobile-map-staleness): show dash without pet detail (R3)`) |
 | R4 | `src/app/(tabs)/__tests__/map.test.tsx::#94 R4: la antigüedad y la conexión son datos independientes` | rojo `feeabb27` (`feat(mobile-map-staleness): lock position age source (R4)`); verde `83e6d554` (`feat(mobile-map-staleness): preserve position age display (R4)`) |
-| R5 | `src/__tests__/design-drift.test.ts::#94 R5: el umbral de frescura no vive en el móvil` | pendiente |
+| R5 | `src/__tests__/design-drift.test.ts::#94 R5: el umbral de frescura no vive en el móvil` | rojos `cb6084e7` (`feat(mobile-map-staleness): guard mobile freshness threshold (R5)`) + segunda sonda pendiente; verde pendiente |
 | R6 | `src/app/(tabs)/__tests__/map.test.tsx::#94 R6: el tile de conexión se rotula como en Pairing` | pendiente (D2 **firmada**, así que R6 se implementa) |
 | R7 | `src/app/(tabs)/__tests__/map.test.tsx::#94 R7: el poll refresca también el detalle` | pendiente |
 | R8 | gate humano — smoke en dev build de Android, sin test automático | pendiente (firma en [[requirements]] §Aprobación) |
