@@ -67,10 +67,10 @@ i18n no se tocó.
    necesitaba una rama para detalle no resuelto y usaba correctamente `—`. Se
    cerró el historial TDD con una mutación de producción versionada (`?`) que
    hizo fallar solo las dos aserciones `#94 R3`, y se restauró en el verde.
-2. `sourceFiles()` en `design-drift.test.ts` no excluía los `*.test.*`
-   colocados, aunque R5 afirmaba que `filesMatching()` ya miraba solo
-   producción. Se añadió el filtro mínimo al helper antes de evaluar el
-   umbral.
+2. Mi supuesto de que R5 exigía cambiar el `sourceFiles()` compartido era
+   falso: ese cambio quitaba los `*.test.*` colocados de los 14 `describe`
+   preexistentes. H1 restaura el helper y confina esa exclusión a la lista
+   local de `#94 R5`.
 3. La salida roja de R9 no puede listar los cuatro pares en una sola corrida:
    `checkUses()` es fail-fast. Se obtuvieron las cuatro salidas mediante las
    corridas aisladas descritas arriba.

@@ -30,9 +30,7 @@ function sourceFiles(directory: string): string[] {
       return entry.name === '__tests__' ? [] : sourceFiles(path);
     }
 
-    return /\.tsx?$/.test(entry.name) && !/\.test\.tsx?$/.test(entry.name)
-      ? [path]
-      : [];
+    return /\.tsx?$/.test(entry.name) ? [path] : [];
   });
 }
 
@@ -486,13 +484,16 @@ describe('#87 R19: use-' + 'api no deja huella', () => {
 });
 
 describe('#94 R5: el umbral de frescura no vive en el móvil', () => {
+  const productionFilesMatching = (pattern: RegExp) =>
+    filesMatching(pattern).filter((path) => !/\.test\.tsx?$/.test(path));
+
   it('no declara el identificador STALE_SECONDS en producción', () => {
-    expect(filesMatching(/\bSTALE_SECONDS\b/)).toEqual([]);
+    expect(productionFilesMatching(/\bSTALE_SECONDS\b/)).toEqual([]);
   });
 
   it('no compara staleSeconds con ningún umbral', () => {
     expect(
-      filesMatching(
+      productionFilesMatching(
         /\bstaleSeconds\s*(?:<=|>=|<|>)|(?:<=|>=|<|>)\s*\bstaleSeconds\b/,
       ),
     ).toEqual([]);
