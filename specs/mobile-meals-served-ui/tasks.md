@@ -63,7 +63,7 @@ orden no haya creado todavía**.
 
 ## R2 — `serveMeal` y `unserveMeal`
 
-- [ ] **(1) Rojo.** En `src/api/__tests__/nutrition.test.ts`,
+- [x] **(1) Rojo.** En `src/api/__tests__/nutrition.test.ts`,
       `describe('#98 R2: serveMeal y unserveMeal mapean la respuesta por kind')`
       con los dos `it` de [[requirements]] R2. Importar las dos funciones desde
       `../nutrition`: el rojo es de compilación y de aserción, no un

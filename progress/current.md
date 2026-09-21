@@ -23,7 +23,11 @@
   `servedToday: []` a esa fixture y corregir el alcance de R1 en requirements,
   design, tasks y traceability.
 - **R1 verde:** typecheck limpio; lote principal 8 suites / 342 tests; lote de
-  fixtures 8 suites / 239 tests; `meal-schedule` 1 suite / 23 tests.
+  fixtures 8 suites / 239 tests; `meal-schedule` 1 suite / 23 tests. Commit
+  `1a54ef7b`.
+- **R2 rojo:** tests contractuales añadidos antes de `serveMeal` y
+  `unserveMeal`; la suite falla en ambos títulos porque las funciones todavía
+  no existen (2 fallos / 38 pruebas heredadas verdes).
 
 ### Por que esta feature
 
