@@ -75,7 +75,7 @@ constante"), con dos motivos independientes:
    Además convierte un umbral de dominio del backend en parte del contrato
    público de la API, que es acoplamiento nuevo a cambio de nada.
 
-- [ ] **D1 firmada por el humano** — vía (a)
+- [X] **D1 firmada por el humano** — vía (a)
 
 ### D2 — El rótulo del tile pasa de "GPS" a "Conexión"
 
@@ -99,7 +99,7 @@ aquí.
 [[requirements]], `map.test.tsx:1172` no se toca, y queda escrito que el rótulo
 no describe el dato.
 
-- [ ] **D2 firmada por el humano** — rótulo `pairing.connection`
+- [X] **D2 firmada por el humano** — rótulo `pairing.connection`
 
 ### D3 — La consecuencia visible que hay que aceptar
 
@@ -115,7 +115,7 @@ que está vivo es el collar y no el fix?** Si la respuesta es no, D1 decae y la
 feature vuelve a diseño: no hay una vía (a) que evite esto, porque es
 precisamente el dato que (a) empieza a mostrar.
 
-- [ ] **D3 firmada por el humano** — consecuencia aceptada
+- [X] **D3 firmada por el humano** — consecuencia aceptada
 
 ---
 
