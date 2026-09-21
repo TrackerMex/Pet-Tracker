@@ -118,6 +118,7 @@ export default function MapScreen() {
     queryFn: () => getDayRoute(baseUrl, token ?? '', selectedPetId!),
     enabled: selectedPetId !== null,
   });
+  const refetchDetail = detail.refetch;
   const refetchLast = last.refetch;
   const refetchPositions = positions.refetch;
   const refetchRoute = route.refetch;
@@ -156,6 +157,7 @@ export default function MapScreen() {
 
       refetchRoute();
       const intervalId = setInterval(() => {
+        refetchDetail();
         refetchLast();
         refetchPositions();
       }, POLL_MS);
@@ -163,6 +165,7 @@ export default function MapScreen() {
       return () => clearInterval(intervalId);
     }, [
       lastKind,
+      refetchDetail,
       refetchLast,
       refetchPositions,
       refetchRoute,
