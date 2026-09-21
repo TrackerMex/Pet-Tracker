@@ -2,14 +2,22 @@
 Fecha: 2026-09-21
 Alcance: **solo el delta de R15** — commits `7b6b3b92` (rojo) y `b6c3392e` (verde).
 R1-R11, R13, R14 y el arreglo de arranque en frío de R10 se miran únicamente como regresión.
-Veredicto: **RECHAZADO**
+Veredicto: **RECHAZADO** (1ª vuelta) → **APROBADO** (2ª vuelta, tras `48768ca6`)
+Última revisión: 2026-09-21. El motivo único del rechazo quedó corregido; ver **§11**.
 
 > **El código es correcto.** Los diez puntos técnicos de E4 se verificaron uno a
 > uno y todos pasan, incluido el que más podía fallar (que no quede un
-> `require('expo-notifications')` en el cuerpo del módulo). El rechazo es
-> **exclusivamente de trazabilidad**: la fila de R15 se quedó en "pendiente" y
-> el reviewer no puede aprobar con una fila pendiente que no sea la de R12.
-> Se arregla con un commit de spec, sin tocar código. Ver §Observaciones.
+> `require('expo-notifications')` en el cuerpo del módulo). El rechazo de la 1ª
+> vuelta fue **exclusivamente de trazabilidad**: la fila de R15 se quedó en
+> "pendiente".
+>
+> **Corregido en `48768ca6`, sin tocar código. El delta de R15 queda APROBADO.**
+> Lo de abajo (§1-§10) se conserva como registro de la 1ª vuelta y sigue siendo
+> válido palabra por palabra: el árbol de `mobile-pet-tracker/` no ha cambiado
+> ni un byte desde entonces (§11).
+>
+> **Esto NO cierra la feature #79.** R12 sigue pendiente: el paso 11 del gate lo
+> repite un humano en dispositivo. Ver §Lo que NO puedo verificar.
 
 ---
 
@@ -25,7 +33,7 @@ Veredicto: **RECHAZADO**
 | 6 | `src/app/_layout.tsx` no se tocó | ✅ | §6 |
 | 7 | Regresión completa (`bunx jest` + `./init.sh`, sin pipe) | ✅ | §7 |
 | 8 | i18n en delta cero y candado de catálogo con el `+1` de #90 | ✅ | §8 |
-| 9 | Trazabilidad de R15 con los dos hashes | ❌ | §9 |
+| 9 | Trazabilidad de R15 con los dos hashes | ❌ 1ª vuelta → ✅ tras `48768ca6` | §9, §11 |
 | 10 | Ni un `npx` nuevo | ✅ | §10 |
 
 ---
@@ -358,7 +366,9 @@ $ git diff 7b6b3b92~1..HEAD | grep "^+.*npx"
       de R10). Revertida la impl, el rojo falla hoy (§1)
 
 ### C5 — Trazabilidad
-- [ ] **`traceability.md` tiene la fila de R15 en "pendiente"** (§9) ← **bloqueante**
+- [x] `traceability.md` sin filas "pendiente" salvo la de R12, que debe seguirlo
+      (gate humano). En la 1ª vuelta la fila de R15 estaba "pendiente" y fue el
+      motivo del rechazo; corregida en `48768ca6` y **reverificada** en §11
 - [x] Los commits siguen el formato `<tipo>(<scope>): <desc> (R15)`
 
 ### C6 — Spec aprobada
@@ -430,3 +440,125 @@ darlo por cerrado sin dispositivo:
   en el **dev build de Android**, donde sí hay registro.
 
 Mi veredicto no sustituye ese gate: la fila de R12 sigue "pendiente" con razón.
+
+---
+
+# §11 — Segunda vuelta: reverificación de la trazabilidad (2026-09-21)
+
+Reviso **solo** el motivo del rechazo, más la comprobación de que no se coló
+código aprovechando el viaje. No repito §1-§10.
+
+## La fila de R15 está rellenada y los hashes son reales
+
+`specs/mobile-push-registration/traceability.md:24` en HEAD:
+
+```
+| R15 | `mobile-pet-tracker/src/hooks/use-push-registration.test.tsx::R15: importar el modulo no toca expo-notifications` | `7b6b3b92 test(mobile-push-registration): importing the hook must not touch expo-notifications (R15)` rojo → `b6c3392e feat(mobile-push-registration): keep expo-notifications out of module scope (R15)` verde |
+```
+
+Mismo formato `<hash> <mensaje>` rojo → verde que el resto de la tabla.
+
+**Los hashes no me los creo, los comprobé contra el historial.** Los sujetos
+citados coinciden **literalmente** con los commits reales, no son una
+reconstrucción de memoria:
+
+```
+$ git log --format="%h %s" -1 7b6b3b92
+7b6b3b92 test(mobile-push-registration): importing the hook must not touch expo-notifications (R15)
+$ git log --format="%h %s" -1 b6c3392e
+b6c3392e feat(mobile-push-registration): keep expo-notifications out of module scope (R15)
+```
+
+Y ambos siguen en el historial de esta branch:
+
+```
+$ git merge-base --is-ancestor 7b6b3b92 HEAD   → 7b6b3b92 ES ancestro de HEAD
+$ git merge-base --is-ancestor b6c3392e HEAD   → b6c3392e ES ancestro de HEAD
+```
+
+(Lo verifico yo aunque el coordinador ya lo dijera: un rebase posterior los
+habría dejado colgando, que es la lección de #87. No ha habido rebase.)
+
+## No queda ninguna fila "pendiente" indebida
+
+```
+$ grep -n "pendiente" specs/mobile-push-registration/traceability.md
+25:| R12 | pendiente: gate humano sin test automático; ver `progress/impl_mobile-push-registration.md` §R12 | pendiente: no ejecutado |
+27:Regla: el reviewer no aprueba si alguna fila queda "pendiente".
+```
+
+La única fila pendiente es la de **R12**, y **debe seguir estándolo**: es el gate
+humano, el paso 11 no lo cierra ningún test. La línea 27 es el texto de la regla,
+no una fila. **C5 cumplido.**
+
+## El commit es solo de spec, y no hay drift de código
+
+El diff de `48768ca6` sobre `traceability.md` es de **una línea**, exactamente la
+de R15 (`-` pendiente / `+` los dos hashes). No toca la fila de R12 ni ninguna otra.
+
+Comprobación de drift sobre **todo el repo**, no solo sobre el móvil — porque lo
+que hay que descartar es que alguien colara código aprovechando un commit
+etiquetado como "solo spec":
+
+```
+$ git diff --name-only b6c3392e..HEAD
+progress/review_mobile-push-registration-r15.md
+specs/mobile-push-registration/traceability.md
+
+$ git diff --stat b6c3392e..HEAD -- mobile-pet-tracker/
+(vacío)
+
+$ md5sum mobile-pet-tracker/src/hooks/use-push-registration.ts
+3cb731fd36e2f9dc7131f6edba243c08   ← idéntico al que verifiqué en la 1ª vuelta
+
+$ git status --porcelain
+(vacío)
+```
+
+Cero ficheros de código tocados en backend, infra o móvil. El árbol que aprueba
+este veredicto es **byte a byte** el que pasó §1-§10, así que no hay que volver a
+correr la suite: `bunx jest` 77/77 y `./init.sh` exit 0 siguen siendo la medición
+vigente.
+
+## Veredicto: **APROBADO** (delta de R15)
+
+El delta de R15 (`7b6b3b92` rojo → `b6c3392e` verde) queda **aprobado**.
+
+## Lo que sigue abierto (no bloquea, pero que no se pierda)
+
+Los tres puntos de higiene de §Observaciones **siguen sin hacer**. Los comprobé
+otra vez y no han cambiado:
+
+```
+$ sed -n '<bloque R15>' specs/mobile-push-registration/tasks.md | grep "^- \["
+- [ ] **(1) Rojo** — ...          ← las tres casillas del bloque siguen sin marcar
+$ grep -c "R15" progress/impl_mobile-push-registration.md   → 0
+$ grep -c "R15\|E4" progress/current.md                     → 0
+```
+
+No los convierto en bloqueantes: en la 1ª vuelta los clasifiqué explícitamente
+como higiene y cambiarles el rango ahora sería mover la portería. Pero constan,
+y lo suyo es barrerlos en el commit de cierre de la feature:
+
+1. `specs/mobile-push-registration/tasks.md` §R15 — marcar las casillas (1), (2) y (3).
+2. `progress/impl_mobile-push-registration.md` — añadir la sección de R15/E4 (rojo,
+   verde, verificación), como tienen R13 y R14. Hoy el relato de esta enmienda solo
+   existe en este review.
+3. `progress/current.md` — su última entrada sigue siendo la corrección de R10 del 19-sep.
+
+## Y lo que este veredicto NO autoriza
+
+**No marcar #79 como `done`.** Aprobar el delta de R15 no es aprobar la feature:
+
+- La fila de **R12 sigue pendiente** y sigue siendo correcto que lo esté.
+- El **paso 11 del gate** (arrancar en Expo Go sobre teléfono físico, sin el
+  `ERROR` de `expo-notifications` y sin error visible) lo repite un humano. Lo que
+  yo verifiqué es que el módulo ya no rompe al importarse **contra un doble de
+  Jest**, no contra Expo Go real.
+- Sigue en pie la única premisa de E4 que ningún test de este repo puede cerrar:
+  que `Constants.executionEnvironment` valga efectivamente `'storeClient'` en el
+  Expo Go real de SDK 57. Si valiera otra cosa, el guard de la línea 48 no
+  dispararía y el paso 11 volvería a romper **exactamente igual que antes**, con
+  toda la suite en verde. Es el primer sitio donde mirar si el gate falla otra vez.
+
+`done` solo cuando el humano firme el paso 11.

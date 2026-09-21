@@ -309,7 +309,7 @@ Sujetos: `app.config.ts`, `app.config.test.ts`, `.gitignore`. **No** se toca
 Sujetos: `src/hooks/use-push-registration.ts` y sus tests. **No** se toca
 `src/app/_layout.tsx` ni ningún otro fichero.
 
-- [ ] **(1) Rojo** — un test que falle HOY porque el módulo tiene efectos de
+- [x] **(1) Rojo** — un test que falle HOY porque el módulo tiene efectos de
       importación: aislar el módulo (`jest.isolateModulesAsync` o equivalente) con
       el doble de `expo-notifications` configurado para **lanzar** en
       `setNotificationHandler` y en cualquier acceso, imitando a Expo Go, y
@@ -319,13 +319,13 @@ Sujetos: `src/hooks/use-push-registration.ts` y sus tests. **No** se toca
       Correr `bunx jest --runTestsByPath src/hooks/use-push-registration.test.tsx`
       y guardar la salida.
   - Commit: `test(mobile-push-registration): importing the hook must not touch expo-notifications (R15)`
-- [ ] **(2) Verde** — sacar `setNotificationHandler` del nivel de módulo al
+- [x] **(2) Verde** — sacar `setNotificationHandler` del nivel de módulo al
       efecto, después de los guards de R6, y añadir la condición de Expo Go por
       entorno de ejecución. Si el `import` estático de la línea 3 sigue rompiendo
       en Expo Go, cargar `expo-notifications` de forma perezosa dentro del efecto
       (la spec lo autoriza expresamente en E4).
   - Commit: `feat(mobile-push-registration): keep expo-notifications out of module scope (R15)`
-- [ ] **(3) Refactor** — comprobar que R7, R8, R10 y R13 siguen verdes: el handler
+- [x] **(3) Refactor** — comprobar que R7, R8, R10 y R13 siguen verdes: el handler
       de primer plano debe seguir instalándose cuando sí se registra, y el tap
       debe seguir navegando. Suite completa y `bunx tsc --noEmit` verdes.
 

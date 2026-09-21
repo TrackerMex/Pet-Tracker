@@ -114,3 +114,18 @@ es un defecto contra R10, no una enmienda. Vuelve a Codex.
   `./init.sh`; este ultimo incluyo backend 170 / 1295, infraestructura 2 / 14,
   movil 76 / 1332 y e2e 27 suites / 384 tests pasados (3 / 8 omitidos).
 - Pendiente unico de esta reparacion: repetir en dispositivo el paso 8 de R12.
+
+## Estado tras la ronda de R15 (2026-09-21)
+
+Las cuatro enmiendas estan firmadas y sus requisitos implementados y aprobados:
+E1 (rango `~57.0.19`), E2 (R13, diagnostico en desarrollo), E3 (R14,
+`google-services.json` del dev build) y E4 (R15, sin efectos de importacion y
+Expo Go detectado por entorno).
+
+Del gate humano quedan dados por buenos los pasos **1 a 10**, incluido el 8 tras
+el arreglo de arranque en frio. **Solo falta repetir el paso 11** (Expo Go), que
+es el que destapo E4.
+
+#79 sigue en `in_progress` y **no pasa a `done`** hasta que el humano cierre ese
+paso.
+

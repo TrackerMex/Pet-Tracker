@@ -60,3 +60,23 @@ Alerts final, una vuelta a Home y ninguna vuelta adicional. El arreglo quedó en
 `0a68e99e`, sin modificar `src/app/index.tsx` ni usar temporizadores. R12, la
 feature y su fila de trazabilidad siguen pendientes hasta que un humano repita
 el paso 8 (y complete los pasos restantes aplicables) en el dev build.
+
+## R15 — el modulo no toca expo-notifications al importarse (enmienda E4)
+
+Anotado por el `leader` al cerrar la ronda, a partir de los commits y del
+veredicto; Codex no dejo seccion propia.
+
+- Rojo `7b6b3b92`: aisla el modulo con el doble de `expo-notifications`
+  configurado para lanzar y asevera que **importarlo** no lanza. Falla contra la
+  version anterior porque `setNotificationHandler` vivia en el nivel superior del
+  modulo.
+- Verde `b6c3392e`: el `import * as Notifications` estatico desaparece y queda
+  un `type NotificationsModule = typeof import('expo-notifications')`, que se
+  borra al compilar; la libreria se carga dentro del efecto, **despues** de los
+  guards de R6, y el handler de primer plano se instala ahi. Se anade la
+  condicion de Expo Go por entorno de ejecucion, que es lo que R6.2 creia cubrir
+  con `Device.isDevice` y no cubria.
+- Verificado por el `reviewer` en el JS transpilado: ningun `require` de
+  `expo-notifications` en el cuerpo del modulo. Detalle en
+  `progress/review_mobile-push-registration-r15.md`.
+
