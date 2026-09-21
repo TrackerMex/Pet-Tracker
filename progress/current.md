@@ -10,7 +10,7 @@
 - **Inicio:** 2026-09-21
 - **Rama:** `feature/98-mobile-meals-served-ui`, creada desde `origin/main` en el commit `914905b8`
 - **Estado en `feature_list.json`:** `pending` — pasa a `in_progress` solo tras el gate humano de la spec
-- **Fase:** escritura de la spec (`spec_author` lanzado)
+- **Fase:** spec escrita, **esperando gate humano**
 
 ### Por que esta feature
 
@@ -47,8 +47,40 @@ rutas fantasma que rompen el typecheck.
 La rama `chore/bitacora-cierre-79` tenia un commit sin pushear. Se pusheo; el
 humano la mergeo como PR #142 antes de que hiciese falta abrirlo yo.
 
-### Siguiente paso
+### Spec entregada
 
-Esperar la spec en `specs/mobile-meals-served-ui/`, revisarla contra los
-candados que la entrada de #98 enumera, y **parar** hasta que el humano la
-apruebe. La implementacion la escribe Codex CLI, no yo.
+`specs/mobile-meals-served-ui/` — R1-R11 EARS, mas design.md, tasks.md y
+traceability.md. `feature_list.json` id 98: `pending` -> `spec_ready`.
+
+El spec_author corrigio tres datos de la entrada de #98 (verificados por mi
+contra 914905b8): `nextReminder`/`activitySummary unknown` esta en
+`index.test.tsx:2964-2965` y no en `:3200-3210`; son **10** fixtures
+`PetProfile` y no 11, porque `use-pet-selection.test.tsx:63` usa
+`{ id } as PetProfile`; y el bloque del Make es `App.tsx:437-445`.
+
+Y encontro un candado que la entrada no listaba: **#62 R15** en
+`consistency-classnames.test.ts`. El contador nuevo de la Home exige
+`style={TABULAR_NUMS}` por la carta, y eso mueve cuatro aserciones en cascada.
+Declarado como `HOME_TABULAR_DELTA_98`, con R7 dejando el contador
+deliberadamente sin `TABULAR_NUMS` para que el rojo de R10 sea real.
+
+### Siguiente paso: **PARADA**. Cuatro decisiones para el humano
+
+1. **Titulo de la barra**: `food.mealsToday` («Comidas hoy», reutiliza clave) o
+   «Alimentacion» (palabra del Make). Si gana el Make: +1 clave, totales 310 y
+   R3_HOME 53. Mi recomendacion: **«Alimentacion»**, porque la carta manda usar
+   la palabra del diseno y reutilizar la clave es solo un ahorro.
+2. **Refresco de `petKeys.detail` desde Food**: la entrada lo pedia, y la spec
+   lo cumple con `useQueryClient().refetchQueries(...)`. Verificado que
+   `src/screens/home/index.tsx:247-252` **ya** llama `refetchDetail()` en
+   `useFocusEffect`, y que no hay **ni un** `useQueryClient` de produccion en
+   todo `src/`. Mi recomendacion: **quitarlo**; la barra solo se ve en la Home y
+   volver a la Home siempre pasa por el focus.
+3. **Dos enmiendas con firma propia** (R11): `docs/ui-guidelines.md` §Enmienda
+   #98, y `specs/mobile-food/requirements.md` §Enmienda #98, que retira la
+   decision **D7** que el propio humano aprobo el 2026-08-24.
+4. **Smoke en dev build de Android** (nunca Expo Go), con `0017_meal_servings`
+   aplicada y una mascota con plan. Checklist de 6 pasos en la spec.
+
+Con la spec firmada: `feature_list.json` a `in_progress` y handoff a Codex CLI.
+La implementacion no la escribo yo.
