@@ -4145,3 +4145,57 @@ un conflicto seguro en esa linea al mergear el segundo. Yendo junto, el contador
   (dispositivo) para filtrar la proxima vacuna y marcar vencidas; solo
   pantalla, fuera de #90 por D-B.
 - Cierre: #90 `done`, 85 de 98. PR abierto por el leader; el humano mergea.
+
+## Feature #79 `mobile-push-registration` (P2) — 2026-09-17 a 2026-09-21
+
+- Rama `feature/79-mobile-push-registration`, PR #140, mergeada. 86 de 101.
+- **Lo que cambia para el usuario**: desde #13 el backend enviaba push y **no
+  llegaba a nadie**, porque la app nunca registraba un token y `push_tokens`
+  estaba vacia. Ahora la cadena esta cerrada de punta a punta, verificada en un
+  telefono fisico.
+- Sin `explorer`: la entrada traia el alcance en cinco puntos y nueve criterios, y
+  el contrato del backend existia desde #13. Lo que faltaba no era investigacion.
+- La spec corrigio **dos premisas del enunciado** antes de empezar: existe
+  `app.config.ts` (config dinamica sobre `app.json`), y `deleteJson` **no admitia
+  body**, con lo que el `DELETE` del token habria salido 400 dejando el token vivo
+  en el servidor. Esa segunda es justo el bug del telefono compartido que la
+  feature venia a evitar.
+- Codex, 24 commits para R1-R11 mas las rondas de las enmiendas. Tres rondas de
+  `reviewer`, **una de ellas rechazo** por una fila de trazabilidad sin rellenar.
+  El reviewer probo el orden de R5 **invirtiendolo a mano**, y comprobo en el **JS
+  transpilado** que no queda ningun `require('expo-notifications')` en el cuerpo
+  del modulo.
+
+### El gate humano fallo una vez y destapo cinco supuestos falsos
+
+El **paso 8** (tap en arranque en frio) se quedaba en Home: la navegacion a
+`/alerts` perdia la carrera contra el `<Redirect href="/home" />` de
+`src/app/index.tsx:11`. El test de R10 no lo vio porque comprobaba que se
+**llamaba** a `router.push`; la llamada ocurria, lo que no ocurria era el
+resultado. Volvio a Codex y se arreglo esperando a la senal correcta.
+
+Las cinco enmiendas firmadas, y el patron que forman:
+
+| | Que se creia | Que era |
+|---|---|---|
+| **E1** | el rango sale de `bundledNativeModules.json` | ese fichero es la instantanea del paquete `expo` instalado, no la lista viva; `expo install` escribio `~57.0.19` |
+| **E2** | el hook podia depurarse | tenia **seis salidas mudas**; R13 las nombra con `__DEV__` |
+| **E3** | la credencial FCM en EAS basta | EAS Build la inyecta; un `expo run:android` local necesita `google-services.json` |
+| **E4** | `Device.isDevice` detecta Expo Go | en un telefono fisico es `true`; y el modulo rompia **al importarse** |
+| **E5** | la app puede abrirse en Expo Go | no: usa modulos nativos propios, empezando por `expo-maps` |
+
+**La spec acerto en todo el diseno y fallo cinco veces en supuestos sobre el
+entorno.** Ninguno de los cinco lo habria encontrado un test: en jest
+`expo-notifications` esta mockeado y el import nunca lanza. Los cinco los
+encontro el gate humano en el telefono.
+
+- De su §Fuera de alcance salieron **#99** (permiso denegado sin salida), **#100**
+  (tap al detalle de la alerta) y **#101** (icono de notificacion de Android),
+  elegidas por el humano; el resto de exclusiones no se registraron porque ya
+  estaban cubiertas (#60 iOS, borrado de tokens muertos en #13) o eran decisiones
+  deliberadas.
+- Coordinacion con Backend: puertos serializados **por aviso explicito y no por
+  `pgrep`**, al detectar que dos reviewers simultaneos veian la lista vacia a la
+  vez. i18n en delta cero por nuestro lado, asi que #90 movio el candado del
+  catalogo sin coordinarse.
+- Cierre: #79 `done`, 86 de 101, PR #140 mergeado.
