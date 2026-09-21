@@ -181,7 +181,56 @@ Aviso pendiente de respuesta: el humano firmo `bd9758bc`, y el commit `3bbb1efb`
 anadio despues texto a §Fuera de alcance que no vio al firmar. Es texto de
 §Fuera de alcance y §Decisiones descartadas, cero cambio en R1-R11.
 
-### Siguiente paso: handoff a Codex CLI
+### Codex termino; el reviewer RECHAZO (2026-09-21)
+
+Veredicto en `progress/review_mobile-meals-served-ui.md`. Motivo unico: **C6**.
+R1, R8 y R9 se editaron **despues** de la firma humana (`8658be20`) y el unico
+aval es la prosa de Codex; todo commit posterior a esa firma es del leader.
+
+**No es un rechazo de codigo.** El reviewer midio las tres enmiendas y ninguna
+relaja un requisito: R1 es inevitable (lo fuerza `tsc` sobre una segunda fixture
+`NutritionPlan` que la spec no enumeraba), R8 no cambia ninguna asercion y su
+rojo se reprodujo, y R9 la fuerza `checkUses`, con copy identico. Se pueden
+firmar tal cual, en el mismo commit humano que las dos §Enmienda #98 ya
+pendientes. No hace falta otra vuelta de Codex por esto.
+
+Medido por el reviewer, sin `init.sh` (no hizo falta: el perimetro fuera de
+`mobile-pet-tracker/` esta vacio): **77/77 suites, 1369/1369 tests, exit 0**,
+`tsc --noEmit` limpio, catalogo 305 a 309, `TABULAR_NUMS` en la Home 7 a 8, y
+las cardinalidades de `reminders-section-body` byte identicas al ancla.
+
+### Lo que SI vuelve a Codex: un hueco de candado
+
+Hallado con sonda propia del reviewer, en un sitio que Codex no sondeo. Quitar
+el `style` de feedback tactil del `meal-toggle` deja **4 suites y 150 tests
+verdes**. R5 y C8 lo exigen; la Home lo canda y el control nuevo no.
+
+Verificado por el leader en solo lectura, sin tocar codigo:
+
+- `src/app/(tabs)/food.tsx:253-255` tiene el `opacity: pressed ? 0.8 : 1`
+- los ocho usos de `meal-toggle-0` en `food.test.tsx` son `findByTestId`,
+  `toBeDisabled` y `fireEvent.press`: **ninguno mira el `style`**
+- la Home si lo canda, con regex sobre el fuente en `index.test.tsx:190` y
+  `:3297`
+
+**Ojo al calcar la regex**: en `food.tsx:253-255` el `style` es **multilinea**,
+y en la Home (`index.tsx:314`, `:626`) va en **una sola linea**. La regex de la
+Home no sirve copiada, que es el fallo que ya costo una ronda en #73.
+
+### Aviso de coordinacion con #65 (worktree wt-ui)
+
+Codex toco `specs/mobile-ui-language/design.md`. El candado era legitimo (lo lee
+el test de `#98 R3`) y el recuento nuevo es correcto: 33 claves y 38
+ocurrencias. Pero dejo los **sub-rotulos por fichero obsoletos**: 16 + 19 = 35,
+no 38, y la §2.6 tiene ya 39 filas. Nada rojo. Lo cierra quien lleve #65.
+
+### Decisiones pendientes del humano
+
+1. Firmar las tres enmiendas post-firma junto con las dos §Enmienda #98
+2. El hueco del `meal-toggle`: rebote minimo a Codex, o deuda registrada
+3. Quien avisa a la sesion de #65
+
+### Handoff original a Codex CLI
 
 `progress/handoff_mobile-meals-served-ui.md` — el humano copia el bloque en su
 terminal de Codex. El leader **para** hasta que confirme que Codex termino;
