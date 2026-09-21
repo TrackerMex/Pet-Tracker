@@ -118,6 +118,7 @@ jest.mock('reicon-react-native', () => {
     Map: mockIcon('icon-map'),
     CalendarPlus: mockIcon('icon-calendar-plus'),
     FileText: mockIcon('icon-file-text'),
+    ForkKnife: mockIcon('icon-fork-knife'),
     Syringe: mockIcon('icon-syringe'),
     Bacteria: mockIcon('icon-bacteria'),
     Pill: mockIcon('icon-pill'),
@@ -3506,6 +3507,151 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
       expect(within(section).queryByText(/\d+\s*\/\s*\d+/)).toBeNull();
       expect(source).not.toContain("../../api/nutrition");
     });
+  });
+});
+
+describe('#98 R7: la barra de comidas y todas sus decisiones', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [] });
+    mockListAlerts.mockResolvedValue({
+      kind: 'ok',
+      items: [],
+      nextCursor: null,
+    });
+    jest
+      .spyOn(Uniwind, 'getCSSVariable')
+      .mockImplementation((token) => token);
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('pinta dato, icono, copy, nombre accesible, huecos, tintas y tipografía', async () => {
+    mockGetPet.mockResolvedValue({
+      kind: 'ok',
+      pet: makePet({ mealsToday: { served: 1, total: 2 } }),
+    });
+    const planned = await renderWithProviders(<HomeScreen />, {
+      wrapper: HomeWrapper,
+    });
+
+    const row = await screen.findByTestId('reminders-meals');
+    const title = within(row).getByTestId('reminders-meals-title');
+    const count = within(row).getByTestId('reminders-meals-count');
+    const icon = within(row).getByTestId('icon-fork-knife');
+    const disk = row.children[0];
+
+    expect(row.props.className).toContain(
+      'rounded-card border border-border bg-surface p-4 shadow-sm',
+    );
+    expect(row.props.className).toContain('flex-row items-center gap-3');
+    expect(row.props.onPress).toBeUndefined();
+    expect(icon.props.size).toBe(20);
+    expect(icon.props.color).toBe('--color-category-rose-strong');
+    expect(typeof disk).not.toBe('string');
+    if (typeof disk !== 'string') {
+      expect(disk.props.className).toBe(
+        `size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS.rose.surface}`,
+      );
+    }
+    expect(title).toHaveTextContent('Comidas hoy');
+    expect(title.props.className).toBe(
+      'text-sm font-semibold text-foreground',
+    );
+    expect(count).toHaveTextContent('1/2');
+    expect(count.props.accessibilityLabel).toBe(
+      '1 de 2 comidas servidas',
+    );
+    expect(count.props.className).toBe('text-xs font-normal text-muted');
+    await planned.unmount();
+
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
+    await renderWithProviders(<HomeScreen />, { wrapper: HomeWrapper });
+    await screen.findByTestId('reminders-none-upcoming');
+    expect(screen.queryByTestId('reminders-meals')).toBeNull();
+  });
+
+  it('reparte el espacio y fija el orden de los hijos por posición', async () => {
+    mockGetPet.mockResolvedValue({
+      kind: 'ok',
+      pet: makePet({ mealsToday: { served: 1, total: 2 } }),
+    });
+
+    await renderHome();
+
+    const row = await screen.findByTestId('reminders-meals');
+    expect(row.children).toHaveLength(2);
+    const disk = row.children[0];
+    const column = row.children[1];
+    if (typeof disk === 'string' || typeof column === 'string') {
+      throw new Error('Expected element children');
+    }
+    expect(within(disk).getByTestId('icon-fork-knife')).toBeVisible();
+    expect(column.props.className).toBe('flex-1 gap-1.5');
+    expect(column.children).toHaveLength(2);
+    const header = column.children[0];
+    const track = column.children[1];
+    if (typeof header === 'string' || typeof track === 'string') {
+      throw new Error('Expected element children');
+    }
+    expect(header.props.className).toBe(
+      'flex-row items-center justify-between',
+    );
+    expect(header.children).toHaveLength(2);
+    expect(header.children[0]).toHaveProperty(
+      'props.testID',
+      'reminders-meals-title',
+    );
+    expect(header.children[1]).toHaveProperty(
+      'props.testID',
+      'reminders-meals-count',
+    );
+    expect(track.props.testID).toBe('reminders-meals-track');
+    expect(track.props.className).toBe(
+      'h-1.5 overflow-hidden rounded-full bg-default',
+    );
+    expect(track.children).toHaveLength(1);
+    const fill = track.children[0];
+    if (typeof fill === 'string') {
+      throw new Error('Expected element child');
+    }
+    expect(fill.props.testID).toBe('reminders-meals-fill');
+    expect(fill.props.className).toBe('h-full rounded-full bg-accent');
+    expect(fill.props.style).toEqual({ width: '50%' });
+  });
+
+  it('calcula el ancho del relleno con served/total', async () => {
+    const cases = [
+      [{ served: 0, total: 2 }, '0%'],
+      [{ served: 1, total: 2 }, '50%'],
+      [{ served: 3, total: 3 }, '100%'],
+    ] as const;
+
+    for (const [mealsToday, width] of cases) {
+      mockGetPet.mockResolvedValue({
+        kind: 'ok',
+        pet: makePet({ mealsToday }),
+      });
+      const view = await renderWithProviders(<HomeScreen />, {
+        wrapper: HomeWrapper,
+      });
+
+      expect(
+        (await screen.findByTestId('reminders-meals-fill')).props.style,
+      ).toEqual({ width });
+      await view.unmount();
+    }
   });
 });
 

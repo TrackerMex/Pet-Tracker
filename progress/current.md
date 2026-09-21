@@ -52,7 +52,10 @@
   antes de crear el estado de aviso; 1 fallo por aviso ausente, 29 tests verdes
   y typecheck limpio.
 - **R6 verde:** Food 1 suite / 30 tests y typecheck limpios; error seleccionable
-  al final de la card y conflictos idempotentes silenciosos.
+  al final de la card y conflictos idempotentes silenciosos. Commit `6eaf9fbe`.
+- **R7 rojo:** tres tests fijan las 12 decisiones de la barra antes de añadirla
+  a la Home; el contador queda deliberadamente sin aserción de `TABULAR_NUMS`.
+  Resultado: 3 fallos por nodos ausentes / 132 tests verdes; typecheck limpio.
 
 ### Por que esta feature
 

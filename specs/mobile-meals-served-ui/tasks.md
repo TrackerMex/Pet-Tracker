@@ -142,7 +142,7 @@ orden no haya creado todavía**.
 
 ## R7 — La barra de comidas en la Home
 
-- [ ] **(1) Rojo.** En `src/screens/home/index.test.tsx`: añadir
+- [x] **(1) Rojo.** En `src/screens/home/index.test.tsx`: añadir
       `ForkKnife: mockIcon('icon-fork-knife')` al mock de reicon (`:100-128`) y
       `describe('#98 R7: la barra de comidas y todas sus decisiones')` con sus
       tres `it`. Rojo por `reminders-meals` ausente.

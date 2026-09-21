@@ -18,7 +18,7 @@ El implementador rellena las dos últimas columnas tras cada commit; el
 | R3 — 4 claves de catálogo (305 → 309) | `src/providers/__tests__/language-provider.test.tsx` :: `#98 R3: el catálogo trae las cuatro claves de comidas servidas` (+ el `it` de longitud de `:51`) | `aac902ba` | `2f016105` |
 | R4 — estado servido desde `servedToday` | `src/app/(tabs)/__tests__/food.test.tsx` :: `#98 R4: el estado servido sale de servedToday, no del reloj` | `0885aae1` | `9318afaa` |
 | R5 — botón por franja + refresco | `src/app/(tabs)/__tests__/food.test.tsx` :: `#98 R5: cada franja sirve, deshace y refresca` | `49d398f5` | `98b6deec` |
-| R6 — conflicto silencioso / fallo con aviso | `src/app/(tabs)/__tests__/food.test.tsx` :: `#98 R6: el conflicto se resuelve refrescando y el fallo avisa` | `87bab767` | pendiente |
+| R6 — conflicto silencioso / fallo con aviso | `src/app/(tabs)/__tests__/food.test.tsx` :: `#98 R6: el conflicto se resuelve refrescando y el fallo avisa` | `87bab767` | `6eaf9fbe` |
 | R7 — barra de comidas y sus 12 decisiones | `src/screens/home/index.test.tsx` :: `#98 R7: la barra de comidas y todas sus decisiones` | pendiente | pendiente |
 | R8 — cardinalidad, orden y cero llamadas nuevas | `src/screens/home/index.test.tsx` :: `#98 R8: la barra de comidas entra sin traerse el cliente de nutrición` (reemplaza a `#70 R3`, `:3459-3475`) | pendiente | pendiente |
 | R9 — tabla de uso de copy (R6_FOOD 35→38, R3_HOME 51→53) | `src/__tests__/ui-language.test.ts` :: `#98 R9: el copy de comidas servidas queda registrado` (+ `:85` y `:140`) | pendiente | pendiente |
