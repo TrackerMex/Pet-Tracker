@@ -18,6 +18,10 @@ tags: [harness, spec, mobile, ui]
 > o estados que su propio orden no haya creado ya. Léelo de arriba abajo y no
 > lo reordenes.
 >
+> ⚠️ **Lee §Enmienda E1 (R9) y §Enmienda E2 (R10), al final de este fichero,
+> antes de empezar.** E2 añade **R10** tras el rechazo de la ronda 1 y fija el
+> baseline vigente (5 suites, **136** tests en `5a5f7fd3`).
+>
 > ⚠️ **Lee §Enmienda E1 (R9), al final de este fichero, antes de empezar.**
 > Precisa las tareas de **R1**, **R2** y **R6** —la tabla se escribe con
 > `{ labelKey }`, y el delta de `ui-copy-table.ts` viaja dentro de sus commits
@@ -414,3 +418,104 @@ Al §Cierre se le suma: `git diff --stat` contra `origin/main` no debe tocar
 `src/i18n/catalog.ts` ni `src/providers/__tests__/language-provider.test.tsx`
 (son de #98), y sí debe tocar `src/__tests__/ui-copy-table.ts` y
 `src/__tests__/ui-language.test.ts` (no son de #98).
+
+---
+
+## Enmienda E2 — R10: el inventario de lecturas de `staleSeconds`
+
+> Añadida el 2026-09-21 tras el **RECHAZO** de la primera revisión. Contexto,
+> tabla declarada, prueba de fuego y casilla de firma en [[requirements]]
+> §Enmienda E2; la decisión de forma, en [[design]] §D9. **No modifica ninguna
+> tarea anterior**: R1-R9 quedan tal cual, y R5 conserva sus dos aserciones.
+
+### Antes: dos cosas que NO son de esta tarea
+
+1. **H1 lo arregla Codex aparte.** Revertir `design-drift.test.ts:33-35` a
+   `return /\.tsx?$/.test(entry.name) ? [path] : [];` es la corrección del
+   bloqueante y va en su propio commit. R10 **no depende de ella ni la
+   sustituye**.
+2. **H3 no se corrige**, solo se anota: `map.test.tsx:238` pasó de `await
+   renderWithProviders(…)` a `return renderWithProviders(…)`. El reviewer lo
+   midió equivalente.
+
+### Baseline vigente (sustituye al de E1)
+
+Medido sobre la punta de la ronda 1 (`5a5f7fd3`), sin pipe:
+
+```bash
+cd mobile-pet-tracker
+bunx jest --runTestsByPath \
+  'src/app/(tabs)/__tests__/map.test.tsx' \
+  'src/utils/device-connectivity.test.ts' \
+  'src/__tests__/design-drift.test.ts' \
+  'src/__tests__/ui-language.test.ts' \
+  'src/__tests__/ui-copy-table.ts'
+```
+
+→ **5 suites, 136 tests, verde, exit 0**. `design-drift.test.ts` sola: **39**.
+Tras R10: **137** y **40**. Comprueba el **5** de suites en cada corrida.
+
+### R10 — La antigüedad de la posición se lee en un solo sitio
+
+*Sujeto*: `map.tsx` ya está en su forma final desde R2 y R4 (una sola lectura,
+la de `fmtAgo`), así que hay un inventario real que declarar. R10 va **después
+de R9** y es lo último automático antes del gate humano de R8.
+
+> **Requisito de verificación, vía (b) de C4**: el candado se añade sobre código
+> **ya correcto** —el hueco es la ausencia de test, no un defecto—, así que el
+> rojo legítimo es la **mutación de producción**, versionada en el commit rojo y
+> revertida en el verde. Mutar un doble de test no vale.
+
+- [ ] **(1) Rojo por mutación — la prueba de fuego literal de H2.** Escribir en
+      `mobile-pet-tracker/src/__tests__/design-drift.test.ts`, **después** del
+      `describe` de `#94 R5` (`:488-500`) y **sin tocarlo**:
+      `describe('#94 R10: la antigüedad de la posición se lee en un solo sitio', ...)`
+      con **un** `it` que:
+      - declare la tabla junto al `describe`, con el idioma que el fichero ya usa
+        en `:409` (`const screenSignOutCalls: Record<string, number>`):
+        `{ 'api/types.ts': 1, 'app/(tabs)/map.tsx': 1 }`;
+      - construya el observado **escaneando todos los fuentes de producción**,
+        no solo los declarados: `allTypeScriptFiles(sourceRoot)` (`:39-49`,
+        **reutilizado sin tocarlo**) + un `.filter()` **local** que descarte las
+        carpetas `__tests__/` y los `*.test.ts(x)` colocados;
+      - cuente con `(contents.match(/\bstaleSeconds\b/g) ?? []).length` —con
+        frontera de palabra, a diferencia del `split` de `:480`— y se quede solo
+        con los ficheros de recuento ≥ 1;
+      - compare con `toEqual(…)` contra la tabla.
+
+      En el **mismo commit rojo**, versionar la mutación de H2 en
+      `src/app/(tabs)/map.tsx`, junto a `const updated = …` (`:207`):
+
+      ```ts
+      const positionAge = position?.staleSeconds ?? 0;
+      const isFresh = positionAge <= 120;
+      ```
+
+      y guardar la salida de
+
+      ```bash
+      cd mobile-pet-tracker
+      bunx jest --runTestsByPath 'src/__tests__/design-drift.test.ts'
+      ```
+
+      **sin pipe**. Tiene que salir **roja por la aserción de `#94 R10`**, con
+      `'app/(tabs)/map.tsx'` en **2** frente al **1** declarado — y **no** por
+      ninguna aserción de `#94 R5`, que con esta mutación sigue verde: esa
+      diferencia **es** el hallazgo H2 y hay que dejarla por escrito.
+- [ ] **(1-bis) Segunda mutación, zona ciega.** Revertir la de `map.tsx` y mudar
+      el umbral a un fichero que la tabla **no nombra** —por ejemplo
+      `src/utils/device-connectivity.ts`, con un
+      `const FRESH_LIMIT = (s: number) => s <= 120;` que lea `staleSeconds`—.
+      Tiene que salir roja por **clave inesperada**, no por recuento. Guardar la
+      salida: demuestra que el inventario caza la mudanza, no solo el alias.
+- [ ] **(2) Verde.** Revertir las dos mutaciones. `git diff` vacío respecto del
+      estado tras R9, `design-drift.test.ts` en **40** y las 5 suites en
+      **137**, verde.
+- [ ] **(3) Refactor con tests verdes.** Comprobar **una por una** que estas
+      líneas siguen **sin tocar**: `design-drift.test.ts:25-37` (`sourceFiles`,
+      el helper compartido de H1 — si te descubres editándolo, **para**, es el
+      motivo exacto del rechazo de la ronda 1), `:39-49`
+      (`allTypeScriptFiles`), `:488-500` (`#94 R5` y sus dos aserciones) y
+      `src/api/types.ts` (se **nombra** en la tabla, no se edita: es de #98).
+      Escribir las dos salidas rojas y el `git diff` vacío en
+      `progress/impl_mobile-map-staleness-single-source.md`.

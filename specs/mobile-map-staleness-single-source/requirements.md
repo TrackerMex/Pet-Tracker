@@ -375,3 +375,159 @@ suites: `(tabs)` sin escapar salta ficheros en silencio con exit 0.
 ### Aprobación de E1
 
 - [X] Enmienda E1 aprobada por humano (fecha: 2026-09-21)
+
+---
+
+## Enmienda E2 — el candado de R5 se evade con un alias (H2)
+
+> Escrita el 2026-09-21 sobre la spec aprobada, tras el **RECHAZO** de la
+> primera revisión (`progress/review_mobile-map-staleness-single-source.md`,
+> punta `c558fca0`). No toca E1, ni D1-D3, ni el gate original, ni R1-R9: todo
+> eso sigue firmado. Añade **R10**. Su casilla va **sin marcar**: el humano
+> reabre gate solo para esta enmienda.
+>
+> El bloqueante **H1** (el helper compartido `sourceFiles()`) lo corrige Codex
+> en la ronda 2 y **no es asunto de esta enmienda**. E2 es solo H2, que el
+> reviewer dejó no bloqueante y que el humano decidió cerrar ahora, con su
+> frase: *"prefiero arrancar R5 ahora en esta feature"*.
+
+- Spec enmendada: `specs/mobile-map-staleness-single-source/`
+- Qué cambia: se añade **R10**; se actualiza el baseline de las 5 suites.
+- Qué NO cambia: **R5 conserva su letra y sus dos aserciones intactas**, y
+  ningún otro requisito, decisión o delta se mueve.
+
+### El hecho medido (H2 del reviewer)
+
+`mobile-pet-tracker/src/__tests__/design-drift.test.ts:493-499` casa
+
+```
+/\bstaleSeconds\s*(?:<=|>=|<|>)|(?:<=|>=|<|>)\s*\bstaleSeconds\b/
+```
+
+Un umbral local que pase por un **alias** no la dispara. La mutación exacta que
+el reviewer plantó en `src/app/(tabs)/map.tsx`, junto a `const updated = …`
+(`:207`):
+
+```ts
+const positionAge = position?.staleSeconds ?? 0;
+const isFresh = positionAge <= 120;
+```
+
+→ `design-drift.test.ts` en **exit 0, 39 passed**. El umbral vuelve al móvil y
+el candado no lo ve. Reproducido aquí contra el árbol: el regex de R5 devuelve
+`[]` con la mutación puesta.
+
+### Decisión: E2 añade **R10**, no amplía R5
+
+R5 está firmado con una letra concreta —"declare un identificador
+`STALE_SECONDS`, o compare `staleSeconds` con cualquier operando mediante `<`,
+`<=`, `>` o `>=`"— y la implementación **la cumple al pie**; por eso el
+reviewer no lo marcó bloqueante. Reescribir esa frase sería modificar un
+requisito ya aprobado, que es justo lo que C6 prohíbe sin volver a pasar por el
+gate, y dejaría sin sentido los commits que R5 ya tiene en [[traceability]].
+
+Y hay una razón de fondo, no solo de procedimiento: lo que R10 asevera **no es
+un R5 más ancho, es otra propiedad**. R5 dice "no compares"; R10 dice "no leas
+la antigüedad más que en el sitio declarado". La primera persigue sintaxis —y
+ese es el juego que H2 gana siempre, porque hay infinitas formas de escribir una
+comparación—; la segunda cierra la **única puerta** por la que un umbral puede
+entrar en el móvil, sin que le importe cómo esté escrito lo que venga después.
+
+Las dos conviven: R5 sigue cazando el caso obvio y directo, R10 caza el resto.
+Ninguna de las dos aserciones de R5 se toca.
+
+### R10 — nuevo requisito
+
+- **R10** *(requisito de verificación; su rojo se prueba por mutación de
+  producción, vía (b) de C4, igual que R5)*: WHEN corre la suite móvil, THE
+  SYSTEM SHALL comparar el **inventario de lecturas** del identificador
+  `staleSeconds` en los fuentes de producción de `mobile-pet-tracker/src/`
+  —cada fichero con su **recuento exacto** de ocurrencias, contando solo los
+  ficheros con al menos una— contra esta tabla declarada, y fallar ante
+  cualquier diferencia, sea un recuento distinto, un fichero de más o un
+  fichero de menos:
+
+  | Fichero (relativo a `mobile-pet-tracker/src/`) | Lecturas | Por qué es legítima |
+  |---|---|---|
+  | `api/types.ts` | **1** | la declaración del campo en `LastPosition` (`:110`). Fichero de #98: se **declara**, no se edita |
+  | `app/(tabs)/map.tsx` | **1** | `fmtAgo(position.staleSeconds, t)` (`:207`), la única lectura que R4 conserva |
+
+  **Criterio de aceptación verificable, literal.** Plantada la mutación de H2 en
+  `src/app/(tabs)/map.tsx` junto a `const updated = …` (`:207`):
+
+  ```ts
+  const positionAge = position?.staleSeconds ?? 0;
+  const isFresh = positionAge <= 120;
+  ```
+
+  este comando, **sin pipe** (el exit code de un pipe es el de `tail`, no el de
+  jest):
+
+  ```bash
+  cd mobile-pet-tracker
+  bunx jest --runTestsByPath 'src/__tests__/design-drift.test.ts'
+  ```
+
+  debe terminar **rojo, por la aserción de `#94 R10`**, con
+  `'app/(tabs)/map.tsx'` en **2** frente al **1** declarado. Simulado contra el
+  árbol antes de escribir esta enmienda: hoy el inventario da
+  `{ 'api/types.ts': 1, 'app/(tabs)/map.tsx': 1 }` y con la mutación da
+  `{ 'api/types.ts': 1, 'app/(tabs)/map.tsx': 2 }`.
+
+  *Test*: `mobile-pet-tracker/src/__tests__/design-drift.test.ts`,
+  `describe('#94 R10: la antigüedad de la posición se lee en un solo sitio')`,
+  **un `it` nuevo**, después del `describe` de `#94 R5` y sin tocarlo.
+
+### Delta declarado
+
+| Fichero:línea | Valor aprobado | Valor nuevo |
+|---|---|---|
+| `src/__tests__/design-drift.test.ts:488-500` (`#94 R5`) | 2 `it` | **sin cambio** — R5 conserva su letra y sus dos aserciones |
+| `src/__tests__/design-drift.test.ts`, tras `:500` | — | **nuevo** `describe('#94 R10: …')` con **1** `it` y su tabla declarada |
+| `src/__tests__/design-drift.test.ts:25-37` (`sourceFiles`) | — | **prohibido tocarlo** — ver §Compatibilidad con H1 |
+| `src/__tests__/design-drift.test.ts:39-49` (`allTypeScriptFiles`) | — | **sin cambio**: R10 lo **reutiliza** tal cual y filtra en local |
+| Baseline de `design-drift.test.ts` | 39 tests | **40** |
+| Baseline de las 5 suites | 136 tests | **137** |
+
+### Compatibilidad con la corrección de H1
+
+La ronda 2 revierte `design-drift.test.ts:33-35` a su forma de `7eb66357`
+(`return /\.tsx?$/.test(entry.name) ? [path] : [];`) y, si hace falta, le da a
+`#94 R5` su propia lista filtrada local. **R10 no puede volver a apoyarse en el
+helper compartido**: eso es exactamente lo que provocó el rechazo.
+
+R10 es **ortogonal** a esa corrección por construcción: no usa `sourceFiles()`
+en absoluto. Y además da el mismo resultado con cualquiera de las dos formas del
+helper, porque **ningún test colocado bajo `src/` contiene `staleSeconds`**
+—verificado: las únicas apariciones en tests están en `src/app/(tabs)/__tests__/`,
+`src/api/__tests__/` y el propio `design-drift.test.ts`, los tres dentro de
+carpetas `__tests__/` que ambas formas excluyen—. Así que revertir H1 no mueve
+el inventario de R10 ni un dígito.
+
+### Baseline corregido (sustituye al de E1)
+
+Medido en este worktree sobre la punta de la ronda 1 (`5a5f7fd3`), sin pipe:
+
+```bash
+cd mobile-pet-tracker
+bunx jest --runTestsByPath \
+  'src/app/(tabs)/__tests__/map.test.tsx' \
+  'src/utils/device-connectivity.test.ts' \
+  'src/__tests__/design-drift.test.ts' \
+  'src/__tests__/ui-language.test.ts' \
+  'src/__tests__/ui-copy-table.ts'
+```
+
+→ **5 suites, 136 tests, verde, exit 0**; `design-drift.test.ts` sola, **39**.
+Tras R10: **137** y **40**. (El 120 de E1 era la medida en `914905b8`, antes de
+los 16 commits de la ronda 1; no es comparable y queda sustituido.)
+
+### Lo que E2 NO cambia
+
+Cero dependencias nuevas, cero claves i18n, y los ficheros de #98 siguen
+prohibidos: `api/types.ts` **se nombra en la tabla de R10 pero no se edita** —
+declararlo es leerlo, no tocarlo.
+
+### Aprobación de E2
+
+- [ ] Enmienda E2 aprobada por humano (fecha: ____)

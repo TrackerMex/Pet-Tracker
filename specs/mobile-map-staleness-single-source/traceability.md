@@ -21,6 +21,7 @@ los tres ficheros de test ya acumulan R-ids de otras specs
 | R7 | `src/app/(tabs)/__tests__/map.test.tsx::#94 R7: el poll refresca también el detalle` | rojo `d0ea8cb0` (`feat(mobile-map-staleness): specify detail polling (R7)`); verde `9bc67e53` (`feat(mobile-map-staleness): refresh pet detail with map poll (R7)`) |
 | R8 | gate humano — smoke en dev build de Android, sin test automático | pendiente (firma en [[requirements]] §Aprobación) |
 | R9 *(E1)* | `src/__tests__/ui-language.test.ts::#65 R4: Map resuelve su copy por clave` + `::#65 R10: el emparejado del collar resuelve su copy por clave` + `::#65 R18: los sitios resuelven por clave y no queda copy suelta` — tests **ya existentes de #65**, no se crean nuevos | R2 `a83aae5c` (`feat(mobile-map-staleness): read map badge from pet detail (R2,R9)`); R6 `8ca103e4` (`feat(mobile-map-staleness): label connection tile consistently (R6,R9)`) |
+| R10 *(E2)* | `src/__tests__/design-drift.test.ts::#94 R10: la antigüedad de la posición se lee en un solo sitio` | pendiente |
 
 ## Notas de cierre que el reviewer comprueba
 
@@ -64,3 +65,35 @@ al aprobar (ver [[../../docs/specs|specs]] y [[../../CHECKPOINTS|CHECKPOINTS]] C
   sin marcar, R9 y las precisiones a R1, R2 y R6 **no están aprobadas** y la
   feature no cierra, aunque las 5 suites estén verdes (C6: ningún requisito
   modificado después de la aprobación sin volver a pasar por el gate).
+
+## Adenda de la enmienda E2
+
+- **R10 no sustituye a R5: convive con él.** R5 conserva su letra firmada y sus
+  dos aserciones (`design-drift.test.ts:488-500`), y su fila de esta tabla
+  conserva sus commits. R10 añade **un** `it` aparte, con otra propiedad: R5
+  dice "no compares", R10 dice "no leas la antigüedad fuera del sitio
+  declarado".
+- **Evidencia que R10 exige** en `progress/impl_mobile-map-staleness-single-source.md`,
+  las **dos** salidas rojas por mutación de producción (vía (b) de C4) y el
+  `git diff` vacío tras revertir:
+  1. el **alias de H2** en `map.tsx:207` → rojo por **recuento**
+     (`'app/(tabs)/map.tsx'` en 2 frente a 1);
+  2. la **mudanza a un fichero no declarado** → rojo por **clave inesperada**.
+
+  En la primera hay que dejar anotado que `#94 R5` sigue **verde** con esa misma
+  mutación: esa diferencia es el hallazgo H2 y es la razón de ser de R10.
+- **Tres cosas que el reviewer verifica que NO se tocaron**:
+  `design-drift.test.ts:25-37` (`sourceFiles`, el helper compartido cuyo cambio
+  provocó el rechazo de la ronda 1), `:39-49` (`allTypeScriptFiles`, que R10
+  **reutiliza**) y `src/api/types.ts` (se nombra en la tabla de R10, no se
+  edita: es de #98).
+- **Recuentos finales**: `design-drift.test.ts` **40** tests, gate dirigido de 5
+  suites **137**, medidos sin pipe. El 136/39 es la medida de la punta de la
+  ronda 1 (`5a5f7fd3`); el 120 de E1 era de `914905b8` y ya no es comparable.
+- **La enmienda E2 tiene su propio gate.** Mientras
+  `- [ ] Enmienda E2 aprobada por humano` de [[requirements]] §Enmienda E2 siga
+  sin marcar, R10 no está aprobado y la feature no cierra, aunque las 5 suites
+  estén verdes (C6).
+- **E2 no arregla H1.** El bloqueante va en su propio commit de la ronda 2 y se
+  registra donde corresponda; R10 es ortogonal y da el mismo inventario con
+  cualquiera de las dos formas del helper.

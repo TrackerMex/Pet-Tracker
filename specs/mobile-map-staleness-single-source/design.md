@@ -442,3 +442,108 @@ A la lista de §Archivos afectados se suman dos ficheros de test, **ninguno de
 
 Y en producción, `src/utils/device-connectivity.ts` cambia de forma (no de
 conducta) según D8.
+
+---
+
+## Enmienda E2 — D9: el candado de umbral pasa de regex a inventario
+
+> Añadida el 2026-09-21 tras el rechazo de la primera revisión (H2). Detalle,
+> tabla declarada, prueba de fuego y casilla de firma en [[requirements]]
+> §Enmienda E2. E1, D1-D3 y D4-D8 siguen firmadas y **no se tocan**. El
+> bloqueante H1 lo corrige Codex en la ronda 2 y no entra aquí.
+
+### D9 — Se asevera el inventario de lecturas, no la forma de la comparación
+
+El candado de R5 persigue **sintaxis**: busca `staleSeconds` pegado a un
+operador relacional. Esa partida se pierde siempre, porque hay infinitas formas
+de escribir la misma comparación, y H2 demostró la más barata de todas —un
+alias de una línea— con el candado en verde y exit 0.
+
+R10 cambia de eje. La observación que lo hace posible: **el móvil solo tiene una
+puerta a la antigüedad de la posición, y se llama `staleSeconds`.** Cualquier
+umbral local, con el alias que sea y con la forma que sea, tiene que leer ese
+identificador en algún sitio. Así que en vez de mirar *qué se hace* con el valor
+—inagotable— se asevera *cuántas veces y dónde se lee* —finito, hoy dos sitios—:
+
+```
+inventario_real(fuentes de producción de src/) === tabla declarada
+```
+
+con la tabla en `{ 'api/types.ts': 1, 'app/(tabs)/map.tsx': 1 }`. La mutación de
+H2 sube `map.tsx` a 2 y el inventario no cuadra: rojo. Un umbral mudado a
+`src/utils/`, a `device-connectivity.ts` o a un helper nuevo aparece como
+**clave inesperada**: rojo también. Y ninguna de las dos cosas depende de cómo
+esté escrita la comparación.
+
+**No es una cifra congelada de las que caducan.** El `1` de `map.tsx` no es un
+recuento incidental del fichero: es literalmente lo que R4 promete conservar
+—una sola lectura, la de `fmtAgo`—. Y el candado es de **consistencia interna**
+contra una tabla declarada junto a él, así que una feature futura que necesite
+una segunda lectura legítima actualiza la tabla en su mismo commit y deja escrito
+por qué, que es la disciplina de siempre. Lo que ya no puede pasar es que entre
+sin que nadie se entere.
+
+### El idioma no se inventa: ya vive ocho líneas más arriba
+
+`design-drift.test.ts:409` declara
+`const screenSignOutCalls: Record<string, number>` y `:472-485` compara los
+recuentos por fichero con `toEqual`. R10 es ese mismo patrón aplicado a
+`staleSeconds`, con **una mejora deliberada**:
+
+`screenSignOutCalls` construye el observado con
+`Object.keys(screenSignOutCalls).map(…)`, es decir **solo mira los ficheros que
+ya declara**: un fichero nuevo le es invisible. R10 construye el observado
+**escaneando todos los fuentes de producción** (77 hoy) y quedándose con los que
+tienen al menos una lectura. Por eso caza la mudanza a un fichero nuevo, que es
+la mitad del agujero de H2. Un inventario, no una lista de la compra.
+
+### Compatibilidad con H1: R10 no toca el helper compartido
+
+H1 rechazó la ronda 1 por modificar `sourceFiles()` (`:25-37`), del que cuelgan
+los 14 candados preexistentes del fichero. **R10 no lo usa ni lo toca.**
+Reutiliza `allTypeScriptFiles()` (`:39-49`, sin cambios; ya lo usan `:437` y
+`:441`) y aplica **su propio filtro local**, dentro del `describe` de `#94 R10`,
+para quedarse con los fuentes de producción: fuera las carpetas `__tests__/` y
+fuera los `*.test.ts(x)` colocados.
+
+Verificado además que la corrección de H1 no mueve el resultado de R10: ningún
+test colocado bajo `src/` contiene `staleSeconds`, así que el inventario sale
+idéntico con el helper viejo y con el nuevo.
+
+### Cómo se cuenta
+
+`(contents.match(/\bstaleSeconds\b/g) ?? []).length`, con frontera de palabra.
+Se aparta a propósito del `contents.split('signOut(').length - 1` de `:480`:
+aquel cuenta subcadenas, y aquí una frontera de palabra evita que un
+`staleSecondsLabel` cualquiera infle el recuento y produzca un rojo que no
+significa nada. El coste es el mismo y la señal es más limpia.
+
+### Alternativas descartadas dentro de E2
+
+- **Ampliar el regex de R5 con más formas** (alias, ternarios, `Math.min`,
+  desestructuración, `??`). Es perseguir sintaxis a base de parches: cada
+  evasión nueva pide otro parche y el candado nunca queda cerrado. Lo dijo el
+  encargo y se suscribe aquí.
+- **Reescribir R5 en vez de añadir R10.** R5 está firmado con su letra exacta y
+  la implementación la cumple; cambiarlo es modificar un requisito aprobado
+  (C6) y deja huérfanos sus commits en [[traceability]]. Razonado en
+  [[requirements]] §Enmienda E2.
+- **Análisis de flujo de datos** (seguir el valor de `staleSeconds` hasta una
+  comparación) con el AST de `typescript`, que ya es devDependency y ya se usa
+  en `ui-language.test.ts:382-408`. Cierra exactamente la propiedad que
+  interesa, pero cuesta un recorrido con seguimiento de asignaciones y alias
+  —decenas de líneas de analizador dentro de un fichero de candados— para
+  distinguir casos que el inventario ya descarta de un plumazo. Si algún día el
+  inventario resulta insuficiente, este es el siguiente escalón, no antes.
+- **Prohibir el literal `120` en el móvil.** Ni cubre `2 * 60` ni un umbral leído
+  de otro sitio, y choca de frente con los `120` legítimos que ya hay en el
+  árbol (`maxLength={120}`, `height: 120`, `TOOLTIP_WIDTH`).
+
+### Archivos afectados — adenda de E2
+
+- **`mobile-pet-tracker/src/__tests__/design-drift.test.ts`** — un `describe`
+  nuevo al final con **un** `it` y su tabla declarada. `sourceFiles()`
+  (`:25-37`), `allTypeScriptFiles()` (`:39-49`) y el `describe` de `#94 R5`
+  (`:488-500`) **no se tocan**.
+
+Ningún fichero de producción cambia por E2, y ninguno es de #98.
