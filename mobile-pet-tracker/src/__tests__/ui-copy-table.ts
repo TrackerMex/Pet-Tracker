@@ -113,7 +113,7 @@ export const R4_MAP: UseRow[] = [
   { file: 'src/app/(tabs)/map.tsx', key: 'map.deactivateLostMode' },
   { file: 'src/app/(tabs)/map.tsx', key: 'map.activateLostMode' },
   { file: 'src/app/(tabs)/map.tsx', key: 'map.couldNotUpdateLostMode' },
-  { file: 'src/app/(tabs)/map.tsx', key: 'map.gps' },
+  { file: 'src/app/(tabs)/map.tsx', key: 'pairing.connection' },
 ];
 
 export const R5_HEALTH: UseRow[] = [

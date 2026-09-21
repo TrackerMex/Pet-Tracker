@@ -364,7 +364,7 @@ export default function MapScreen() {
                       {gps}
                     </Text>
                     <Text className="mt-1 text-2xs font-normal text-muted">
-                      {t('map.gps')}
+                      {t('pairing.connection')}
                     </Text>
                   </View>
                 </View>
