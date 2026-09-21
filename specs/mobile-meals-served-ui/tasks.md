@@ -117,11 +117,11 @@ orden no haya creado todavía**.
       `describe('#98 R5: cada franja sirve, deshace y refresca')` con sus tres
       `it`. El `jest.spyOn(view.queryClient, 'refetchQueries')` se instala tras
       el render y **antes** del `press`.
-- [ ] **(2) Verde.** En `food.tsx`: `useQueryClient` de `@tanstack/react-query`;
+- [x] **(2) Verde.** En `food.tsx`: `useQueryClient` de `@tanstack/react-query`;
       `const [pendingMealTime, setPendingMealTime] = useState<string | null>(null)`;
       `toggleMeal(mealTime, served)` con el flujo de [[design]] §3; el badge
       envuelto en el `Pressable` de [[design]] §5.
-- [ ] **(3) Refactor.** `bunx jest --runTestsByPath 'src/app/(tabs)/__tests__/food.test.tsx'`.
+- [x] **(3) Refactor.** `bunx jest --runTestsByPath 'src/app/(tabs)/__tests__/food.test.tsx'`.
       Si alguna aserción heredada se apoyaba en la posición del badge dentro de
       `meal-row-<i>`, reapuntarla al `Pressable` y buscar el `Text` con
       `within(toggle)`.

@@ -1,11 +1,16 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { router, type Href } from 'expo-router';
 import { Button, Skeleton, Spinner } from 'heroui-native';
-import { ScrollView, Text, View } from 'react-native';
+import { useState } from 'react';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronRight, Clock, ForkKnife, Sparkles } from 'reicon-react-native';
 
-import { getNutritionPlan } from '../../api/nutrition';
+import {
+  getNutritionPlan,
+  serveMeal,
+  unserveMeal,
+} from '../../api/nutrition';
 import { listPets, type PetsState } from '../../api/pets';
 import { nutritionKeys, petKeys } from '../../api/query-keys';
 import { Card } from '../../components/card';
@@ -31,6 +36,8 @@ export default function FoodScreen() {
   const { token } = useAuth();
   const t = useTranslate();
   const { selectedPetId, selectPet } = useSelectedPet();
+  const queryClient = useQueryClient();
+  const [pendingMealTime, setPendingMealTime] = useState<string | null>(null);
   const insets = useSafeAreaInsets();
   const pets = useQuery({
     queryKey: petKeys.list(),
@@ -51,6 +58,28 @@ export default function FoodScreen() {
     waitingForPetSelection ||
     (selectedPetId !== null && plan.data === undefined);
   const servedMeals = loadedPlan?.servedToday.length ?? 0;
+
+  async function toggleMeal(mealTime: string, served: boolean) {
+    if (pendingMealTime !== null || selectedPetId === null) {
+      return;
+    }
+
+    setPendingMealTime(mealTime);
+    try {
+      await (served ? unserveMeal : serveMeal)(
+        baseUrl,
+        token ?? '',
+        selectedPetId,
+        mealTime,
+      );
+      await plan.refetch();
+      await queryClient.refetchQueries({
+        queryKey: petKeys.detail(selectedPetId),
+      });
+    } finally {
+      setPendingMealTime(null);
+    }
+  }
 
   return (
     <ScrollView
@@ -206,20 +235,35 @@ export default function FoodScreen() {
                           {portionGrams} g
                         </Text>
                       </View>
-                      <Text
-                        testID={
-                          served
-                            ? `meal-served-${index}`
-                            : `meal-pending-${index}`
-                        }
-                        className={
-                          served
-                            ? 'rounded-full bg-surface px-2 py-1 text-2xs font-bold text-accent-strong'
-                            : 'rounded-full bg-surface px-2 py-1 text-2xs font-bold text-muted'
-                        }
+                      <Pressable
+                        testID={`meal-toggle-${index}`}
+                        accessibilityRole="button"
+                        accessibilityLabel={t(
+                          served ? 'food.undoServed' : 'food.markServed',
+                          { time: mealTime },
+                        )}
+                        disabled={pendingMealTime === mealTime}
+                        className="min-h-11 justify-center"
+                        style={({ pressed }) => ({
+                          opacity: pressed ? 0.8 : 1,
+                        })}
+                        onPress={() => void toggleMeal(mealTime, served)}
                       >
-                        {served ? t('food.served') : t('food.pending')}
-                      </Text>
+                        <Text
+                          testID={
+                            served
+                              ? `meal-served-${index}`
+                              : `meal-pending-${index}`
+                          }
+                          className={
+                            served
+                              ? 'rounded-full bg-surface px-2 py-1 text-2xs font-bold text-accent-strong'
+                              : 'rounded-full bg-surface px-2 py-1 text-2xs font-bold text-muted'
+                          }
+                        >
+                          {served ? t('food.served') : t('food.pending')}
+                        </Text>
+                      </Pressable>
                     </View>
                   );
                 })}

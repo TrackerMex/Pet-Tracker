@@ -549,7 +549,7 @@ describe('#98 R5: cada franja sirve, deshace y refresca', () => {
     expect(mockServeMeal).toHaveBeenCalledTimes(1);
     expect(screen.getByTestId('meal-pending-0')).toBeVisible();
     await waitFor(() =>
-      expect(screen.getByTestId('meal-toggle-0').props.disabled).toBe(true),
+      expect(screen.getByTestId('meal-toggle-0')).toBeDisabled(),
     );
 
     await act(async () => resolveServe({ kind: 'ok' }));

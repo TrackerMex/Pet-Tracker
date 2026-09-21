@@ -44,6 +44,10 @@
 - **R5 rojo:** tests de servir, deshacer, orden de refresco y doble pulsación
   añadidos antes del control interactivo; 3 fallos por `meal-toggle-0` ausente,
   25 tests heredados verdes y typecheck limpio.
+- **Ajuste de test R5:** `Pressable` expone el bloqueo como estado accesible;
+  la aserción usa `toBeDisabled()` en lugar de leer `props.disabled`.
+- **R5 verde:** Food 1 suite / 28 tests y typecheck limpios; sin estado
+  optimista, `useMutation` ni `invalidateQueries`.
 
 ### Por que esta feature
 
