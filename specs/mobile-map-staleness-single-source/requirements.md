@@ -234,3 +234,144 @@ El humano firma a la vez las tres decisiones abiertas de [[design]] §Decisiones
 abiertas: **D1** (qué fuente manda), **D2** (rótulo del tile) y **D3**
 (consecuencia visible aceptada). Si D2 se rechaza, R6 se retira de esta spec y
 el resto no cambia.
+
+---
+
+## Enmienda E1 — el candado de copy de #65 (`ui-language.test.ts`)
+
+> Escrita el 2026-09-21 **sobre la spec ya aprobada**. No modifica ningún
+> requisito aprobado ni ninguna decisión firmada (D1, D2 y D3 siguen tal cual):
+> añade **R9** y precisa la *forma* en que R1, R2 y R6 se escriben, porque tal
+> como estaban redactados dejan **rojo** un candado que la spec no mencionaba.
+> Su casilla de firma va **sin marcar**: el humano reabre el gate solo para esta
+> enmienda.
+
+- Spec enmendada: `specs/mobile-map-staleness-single-source/`
+- Qué cambia: se añade **R9**; R1 y R2 pasan a usar la forma `{ labelKey }`; se
+  amplían §Ficheros que esta feature NO toca (no cambia) y el baseline del
+  §Contexto verificado 8, que medía 3 suites y debía medir 5.
+- Qué NO cambia: R3, R4, R5, R6, R7, R8, las decisiones D1-D7, el delta de i18n
+  (sigue en **cero**) ni el estado de aprobación del resto de la spec.
+
+### El hecho que la spec no vio
+
+`mobile-pet-tracker/src/__tests__/ui-language.test.ts` es un candado de #65.
+Su `checkUses()` (`:38-63`) lee el fichero fuente de cada fila de
+`src/__tests__/ui-copy-table.ts` y **cuenta las ocurrencias exactas** de dos
+formas, y **solo** de esas dos:
+
+```
+t('<clave>')          →  new RegExp(`\\bt\\(\\s*['"]<clave>['"]`, 'g')
+labelKey: '<clave>'   →  new RegExp(`\\blabelKey:\\s*['"]<clave>['"]`, 'g')
+```
+
+Una clave que deja de aparecer en su fichero deja la fila esperando 1 y
+encontrando 0: **rojo**. `R4_MAP` (`ui-copy-table.ts:99-120`) tiene **20 filas**
+para `src/app/(tabs)/map.tsx`, y `ui-language.test.ts:126` fija
+`expect(R4_MAP).toHaveLength(20)`. Cuatro de esas filas son las que esta feature
+mueve: `map.noSignal` (`:103`), `map.live` (`:104`), `map.stale` (`:105`) y
+`map.gps` (`:119`).
+
+**Un segundo candado, que el aviso no nombraba y aquí queda cerrado**:
+`ui-language.test.ts:437-448` (`#65 R18`) deriva `SCREEN_FILES` de `ALL_USES` y
+fija `expect(SCREEN_FILES).toHaveLength(19 + 2 + 1)` — **22 ficheros distintos**.
+Registrar un fichero nuevo en la tabla lo pondría rojo. **No pasa**:
+`src/utils/device-connectivity.ts` ya está registrado (`ui-copy-table.ts:375-377`,
+dentro de `R10_PAIRING`), así que el recuento de ficheros **no se mueve** y esa
+línea **no se toca**. Queda escrito para que nadie la ajuste por reflejo.
+
+### Consecuencia sobre R1 y R2: la tabla se escribe con `{ labelKey }`
+
+`MAP_CONNECTION_LABEL_KEY` tal como la redactó R1 —
+`Record<DeviceConnectionState, TranslationKey>`, con valores sueltos del tipo
+`online: 'map.live'` — **no la ve ninguna de las dos formas** que `checkUses`
+reconoce. Las tres claves quedarían sin sitio donde contarse: fuera de
+`map.tsx` porque ya no se usan ahí, y fuera de `device-connectivity.ts` porque
+esa forma es invisible al candado.
+
+**R1 y R2 se precisan así** (la conducta no cambia; cambia la forma):
+
+| | Redacción aprobada | Redacción de E1 |
+|---|---|---|
+| Tipo de la tabla (R1) | `Record<DeviceConnectionState, TranslationKey>` | `Record<DeviceConnectionState, { labelKey: TranslationKey }>` |
+| Reparto (R1) | `online → 'map.live'`, … | `online → { labelKey: 'map.live' }`, `offline → { labelKey: 'map.stale' }`, `none → { labelKey: 'map.noSignal' }`, `unknown → { labelKey: 'map.noSignal' }` |
+| Expresión del badge (R2) | `t(MAP_CONNECTION_LABEL_KEY[deviceConnectionState(pet.device)])` | `t(MAP_CONNECTION_LABEL_KEY[deviceConnectionState(pet.device)].labelKey)` |
+| Aserciones de R1 | `MAP_CONNECTION_LABEL_KEY[deviceConnectionState(makeDevice('online'))]` → `'map.live'` | `…[deviceConnectionState(makeDevice('online'))].labelKey` → `'map.live'`, y así las cinco |
+| Exhaustividad de R1 | `Object.keys(...).sort()` → `['none','offline','online','unknown']` | **sin cambio** |
+
+No es una forma inventada: es **exactamente** la que
+`DEVICE_CONNECTIVITY_META` ya usa tres líneas más arriba, en ese mismo fichero
+(`src/utils/device-connectivity.ts:6-12`). La tabla nueva queda al lado de la
+vieja y con la misma anatomía.
+
+### R9 — nuevo requisito
+
+- **R9** *(requisito de verificación; su rojo es real y automático, no por
+  mutación)*: WHEN corre `mobile-pet-tracker/src/__tests__/ui-language.test.ts`,
+  THE SYSTEM SHALL encontrar cada fila de `ALL_USES` con su recuento exacto tras
+  aplicar este inventario, fila a fila, sobre
+  `mobile-pet-tracker/src/__tests__/ui-copy-table.ts`:
+
+  | Clave | Dónde está hoy | Qué pasa con su fila | Por qué |
+  |---|---|---|---|
+  | `map.live` | `R4_MAP:104`, fichero `map.tsx` | **se muda** a `src/utils/device-connectivity.ts` (1 fila) | el `t('map.live')` literal desaparece de `map.tsx`; pasa a `labelKey: 'map.live'` en la tabla compartida |
+  | `map.stale` | `R4_MAP:105`, fichero `map.tsx` | **se muda** a `src/utils/device-connectivity.ts` (1 fila) | idem |
+  | `map.noSignal` | `R4_MAP:103`, fichero `map.tsx` | **se muda** a `src/utils/device-connectivity.ts` con **2 filas** | `none` y `unknown` apuntan los dos a esa clave, así que `checkUses` cuenta **2** ocurrencias de `labelKey: 'map.noSignal'` |
+  | `map.gps` | `R4_MAP:119`, fichero `map.tsx` | **se sustituye 1:1** por `{ file: 'src/app/(tabs)/map.tsx', key: 'pairing.connection' }` | R6 cambia `t('map.gps')` por `t('pairing.connection')` en `map.tsx:352` |
+  | `pairing.connection` | `R10_PAIRING:366`, fichero `pairing/index.tsx` | **no se toca** | `checkUses` indexa por par (fichero, clave): la fila de Pairing y la nueva del Mapa son filas distintas y no se estorban |
+  | `map.justNow`, `map.agoMinutes`, `map.agoHours` | `R4_MAP:100-102` | **no se tocan** | `fmtAgo` sigue en `map.tsx` y sigue resolviéndolas con `t('…')` (R4) |
+
+  Y en consecuencia, con **ruta:línea y valor nuevo**:
+
+  | Fichero:línea | Valor aprobado | Valor nuevo |
+  |---|---|---|
+  | `src/__tests__/ui-copy-table.ts:99-120` (`R4_MAP`) | 20 filas | **17 filas**: fuera `:103`, `:104` y `:105`; `:119` sustituida por `pairing.connection` |
+  | `src/__tests__/ui-copy-table.ts:377` (final de `R10_PAIRING`) | 3 filas de `device-connectivity.ts` | **7**: se añaden `map.live` ×1, `map.stale` ×1, `map.noSignal` ×2 |
+  | `src/__tests__/ui-language.test.ts:125` (título) | `'resuelve las 20 ocurrencias normativas'` | `'resuelve las 17 ocurrencias normativas'` |
+  | `src/__tests__/ui-language.test.ts:126` | `expect(R4_MAP).toHaveLength(20)` | `expect(R4_MAP).toHaveLength(17)` |
+  | `src/__tests__/ui-language.test.ts:168` | `expect(R10_PAIRING).toHaveLength(42 + 2 + 1)` | `expect(R10_PAIRING).toHaveLength(42 + 2 + 1 + 4)` con el comentario `// +4 #94 E1: la tabla del Mapa comparte el util` — término nombrado, no una cifra recalculada a mano, como ya hacen `:133` y `:168` |
+  | `src/__tests__/ui-language.test.ts:438` | `expect(SCREEN_FILES).toHaveLength(19 + 2 + 1)` | **sin cambio** — ver arriba |
+  | `src/__tests__/ui-copy-table.ts:449-451` | suma de los doce bloques | **sin cambio** — es consistencia interna, se recalcula sola |
+
+  *Test*: `mobile-pet-tracker/src/__tests__/ui-language.test.ts`, los describes
+  `#65 R4` (`:124-129`), `#65 R10` (`:166-171`) y `#65 R18` (`:410-448`) ya
+  existentes. **R9 no añade ningún test nuevo**: lo que hace es mantener viva
+  una cerradura de #65 que R2 y R6 romperían en silencio.
+
+### Ficheros que E1 suma a los que la feature toca
+
+- `mobile-pet-tracker/src/__tests__/ui-copy-table.ts`
+- `mobile-pet-tracker/src/__tests__/ui-language.test.ts`
+
+Ninguno de los dos pertenece a #98, así que tocarlos **no invade** a la sesión
+Frontend, y el **delta de i18n sigue en cero**: `pairing.connection` ya existe en
+los dos idiomas (`src/i18n/catalog.ts:288` / `:598`) y `map.gps` se queda en el
+catálogo aunque nadie la use, como ya decía R6 paso (3).
+
+### Baseline corregido (sustituye al punto 8 de §Contexto verificado)
+
+El punto 8 medía **3 suites** y se quedaba corto: con los dos ficheros de E1 son
+**5**. Medido en este worktree sobre `914905b8`, sin pipe (exit code de jest, no
+de `tail`):
+
+```bash
+cd mobile-pet-tracker
+bunx jest --runTestsByPath \
+  'src/app/(tabs)/__tests__/map.test.tsx' \
+  'src/utils/device-connectivity.test.ts' \
+  'src/__tests__/design-drift.test.ts' \
+  'src/__tests__/ui-language.test.ts' \
+  'src/__tests__/ui-copy-table.ts'
+```
+
+→ **5 suites, 120 tests, verde, exit 0.** Comprueba que jest imprime **5**
+suites: `(tabs)` sin escapar salta ficheros en silencio con exit 0.
+
+> `src/__tests__/ui-copy-table.ts` no lleva `.test.` en el nombre pero **es una
+> suite**: jest-expo recoge todo `__tests__/**/*.ts` y el fichero trae su propio
+> `describe` en `:435-453`. Por eso cuenta como quinta suite y no como simple
+> módulo de datos.
+
+### Aprobación de E1
+
+- [ ] Enmienda E1 aprobada por humano (fecha: ____)

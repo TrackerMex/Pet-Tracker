@@ -367,3 +367,78 @@ Esto no lo ve ningún test y sí lo ve el gate humano. Antes de tocar una línea
    Query) y `expo-native-ui` (el tile). Es obligación de la carta de UI
    (`docs/ui-guidelines.md` §Skills: quién carga qué), también para Codex CLI,
    que las tiene vía su plugin `expo`.
+
+---
+
+## Enmienda E1 — D8: la forma de la tabla la dicta el candado de #65
+
+> Añadida el 2026-09-21 sobre la spec aprobada. Detalle, inventario fila a fila
+> y casilla de firma en [[requirements]] §Enmienda E1. D1, D2 y D3 siguen
+> firmadas y **no se tocan**; D4-D7 tampoco cambian.
+
+### D8 — `MAP_CONNECTION_LABEL_KEY` se escribe con `{ labelKey }`
+
+`ui-language.test.ts:38-63` (`checkUses`, candado de #65) reconoce exactamente
+dos formas de resolver copy, y ninguna otra: `t('<clave>')` y
+`labelKey: '<clave>'`. La tabla que D4 dejó especificada —
+`Record<DeviceConnectionState, TranslationKey>`, con `online: 'map.live'`— **no
+es ninguna de las dos**. Consecuencia, si se implementa tal cual: R2 borra los
+`t('map.live')` / `t('map.stale')` / `t('map.noSignal')` de `map.tsx`, sus tres
+filas de `R4_MAP` pasan a esperar 1 y encontrar 0, y el candado se pone rojo sin
+que quede sitio donde contar esas claves.
+
+La forma que sí ve el candado, y que además **ya está en ese mismo fichero tres
+líneas más arriba** (`src/utils/device-connectivity.ts:6-12`,
+`DEVICE_CONNECTIVITY_META`), es la de objeto con `labelKey`:
+
+```
+Record<DeviceConnectionState, { labelKey: TranslationKey }>
+```
+
+Se adopta esa. No es una capa de envoltorio gratuita: es el precio de que la
+resolución de copy siga siendo auditable desde la tabla de #65 cuando la clave
+vive en un módulo compartido y no en la pantalla. El acceso en `map.tsx` gana un
+`.labelKey`, y nada más cambia: el badge sigue saliendo de
+`deviceConnectionState(pet.device)` y de ninguna otra cosa, que es lo que D4
+cierra.
+
+Alternativas descartadas dentro de E1:
+
+- **Dejar el `Record<…, TranslationKey>` y registrar las filas igual.**
+  `checkUses` cuenta ocurrencias **en el fuente**: sin `labelKey:` ni `t(`, el
+  recuento sería 0 y la fila roja. La tabla de #65 no admite una tercera forma
+  sin tocar `checkUses`, y `ui-language.test.ts` es un candado de otra feature:
+  ablandarlo para que quepa esta es exactamente lo que no se hace.
+- **Resolver el texto dentro de `device-connectivity.ts` con un `t()` propio.**
+  Ese módulo es puro y no conoce el provider de idioma; meterle `useTranslate`
+  lo convertiría en un hook y rompería su test unitario y sus tres consumidores.
+- **Un bloque nuevo `R94_MAP_CONNECTION` en `ui-copy-table.ts`** en vez de
+  ampliar `R10_PAIRING`. Obliga a tocar `ALL_USES` (`:420-433`), el array
+  `blocks` (`:443-447`), la lista de imports de `ui-language.test.ts:4-19` y a
+  añadir un `describe` — cuatro sitios más, para un dato que ya vive donde debe:
+  las filas de `src/utils/device-connectivity.ts` están en `R10_PAIRING` desde
+  #73 R6, porque es el bloque del **módulo compartido**, no el de la pantalla de
+  Pairing. Se amplía ese bloque con un término nombrado (`42 + 2 + 1 + 4`), que
+  es el idioma que el propio fichero ya usa en `:133` y `:168`.
+
+### Qué NO se mueve, y hay que resistirse a tocar
+
+`ui-language.test.ts:438` fija `expect(SCREEN_FILES).toHaveLength(19 + 2 + 1)`
+— 22 ficheros distintos derivados de `ALL_USES`. E1 **no** registra ningún
+fichero nuevo: `src/utils/device-connectivity.ts` ya está en la tabla
+(`ui-copy-table.ts:375-377`). Esa línea se queda como está. Lo mismo
+`ui-copy-table.ts:449-451`, que cuadra `ALL_USES` contra la suma de los doce
+bloques: es consistencia interna y se recalcula sola.
+
+### Archivos afectados — adenda de E1
+
+A la lista de §Archivos afectados se suman dos ficheros de test, **ninguno de
+#98**:
+
+- **`mobile-pet-tracker/src/__tests__/ui-copy-table.ts`** — `R4_MAP` pasa de 20
+  a 17 filas; `R10_PAIRING` gana 4 filas de `src/utils/device-connectivity.ts`.
+- **`mobile-pet-tracker/src/__tests__/ui-language.test.ts`** — dos
+  `toHaveLength` y un título. Ninguna otra línea.
+
+Y en producción, `src/utils/device-connectivity.ts` cambia de forma (no de
+conducta) según D8.

@@ -17,9 +17,10 @@ los tres ficheros de test ya acumulan R-ids de otras specs
 | R3 | `src/app/(tabs)/__tests__/map.test.tsx::#94 R3: sin detalle el tile de conexión cae al guion` | pendiente |
 | R4 | `src/app/(tabs)/__tests__/map.test.tsx::#94 R4: la antigüedad y la conexión son datos independientes` | pendiente |
 | R5 | `src/__tests__/design-drift.test.ts::#94 R5: el umbral de frescura no vive en el móvil` | pendiente |
-| R6 | `src/app/(tabs)/__tests__/map.test.tsx::#94 R6: el tile de conexión se rotula como en Pairing` | pendiente (o "retirada por D2 rechazada") |
+| R6 | `src/app/(tabs)/__tests__/map.test.tsx::#94 R6: el tile de conexión se rotula como en Pairing` | pendiente (D2 **firmada**, así que R6 se implementa) |
 | R7 | `src/app/(tabs)/__tests__/map.test.tsx::#94 R7: el poll refresca también el detalle` | pendiente |
 | R8 | gate humano — smoke en dev build de Android, sin test automático | pendiente (firma en [[requirements]] §Aprobación) |
+| R9 *(E1)* | `src/__tests__/ui-language.test.ts::#65 R4: Map resuelve su copy por clave` + `::#65 R10: el emparejado del collar resuelve su copy por clave` + `::#65 R18: los sitios resuelven por clave y no queda copy suelta` — tests **ya existentes de #65**, no se crean nuevos | pendiente (los deltas de tabla viajan en los commits verdes de R2 y R6) |
 
 ## Notas de cierre que el reviewer comprueba
 
@@ -41,3 +42,25 @@ Regla: el reviewer no aprueba si alguna fila queda "pendiente".
 Convención de commit: `feat(mobile-map-staleness): <desc> (R1,R2)`.
 El implementador actualiza esta tabla tras cada commit; el reviewer la valida
 al aprobar (ver [[../../docs/specs|specs]] y [[../../CHECKPOINTS|CHECKPOINTS]] C5).
+
+## Adenda de la enmienda E1
+
+- **R9 no se cierra con un test nuevo.** Sus tres tests son de #65 y ya existen;
+  lo que E1 declara es el **delta de datos** de `src/__tests__/ui-copy-table.ts`
+  que los mantiene verdes. La fila se cierra con el commit que aplica ese delta.
+- **R9 no tiene commit propio.** Los deltas viajan dentro de los commits verdes
+  de **R2** (las 3 filas que se mudan a `src/utils/device-connectivity.ts` y los
+  dos `toHaveLength`) y de **R6** (la sustitución 1:1 de `map.gps` por
+  `pairing.connection`). Registra en esta fila **los dos hashes**, no uno.
+- **Recuentos finales que el reviewer verifica**: `R4_MAP` = **17** filas,
+  `R10_PAIRING` = **49** (`42 + 2 + 1 + 4`), `SCREEN_FILES` = **22** (`19 + 2 + 1`,
+  **sin tocar**), `ALL_USES` = suma de los doce bloques (se recalcula solo).
+- **Evidencia que R9 exige** en `progress/impl_mobile-map-staleness-single-source.md`:
+  la salida roja de `ui-language.test.ts` **previa** al delta, con los cuatro
+  pares (fichero, clave) en `uses: 0`. Sin ella no consta que el candado de #65
+  estuviera vivo.
+- **La enmienda E1 tiene su propio gate.** Mientras
+  `- [ ] Enmienda E1 aprobada por humano` de [[requirements]] §Enmienda E1 siga
+  sin marcar, R9 y las precisiones a R1, R2 y R6 **no están aprobadas** y la
+  feature no cierra, aunque las 5 suites estén verdes (C6: ningún requisito
+  modificado después de la aprobación sin volver a pasar por el gate).

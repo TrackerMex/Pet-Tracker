@@ -17,6 +17,12 @@ tags: [harness, spec, mobile, ui]
 > **Este orden tiene sujeto presente**: ningún R-id asevera sobre nodos, mocks
 > o estados que su propio orden no haya creado ya. Léelo de arriba abajo y no
 > lo reordenes.
+>
+> ⚠️ **Lee §Enmienda E1 (R9), al final de este fichero, antes de empezar.**
+> Precisa las tareas de **R1**, **R2** y **R6** —la tabla se escribe con
+> `{ labelKey }`, y el delta de `ui-copy-table.ts` viaja dentro de sus commits
+> verdes— y añade la tarea **R9**. Sin eso, R2 y R6 dejan rojo el candado de
+> copy de #65 y ningún commit vuelve a verde.
 
 ## Antes de empezar (una vez)
 
@@ -293,3 +299,118 @@ describir.
 - [ ] `git diff --stat` contra `origin/main`: cero ficheros bajo
       `backend-pet-tracker/`, y ninguno de la lista de [[requirements]]
       §Ficheros que esta feature NO toca.
+
+---
+
+## Enmienda E1 — R9 y las precisiones a R1, R2 y R6
+
+> Añadida el 2026-09-21 sobre la spec aprobada. Contexto completo, inventario
+> fila a fila y casilla de firma en [[requirements]] §Enmienda E1; la decisión
+> de forma, en [[design]] §D8. **Prevalece sobre el cuerpo aprobado de R1, R2 y
+> R6 en lo que aquí se precisa, y en nada más.**
+
+### Baseline corregido (sustituye al de §Antes de empezar)
+
+Son **5 suites**, no 3 — el de arriba se dejaba fuera los dos ficheros del
+candado de #65:
+
+```bash
+cd mobile-pet-tracker
+bunx jest --runTestsByPath \
+  'src/app/(tabs)/__tests__/map.test.tsx' \
+  'src/utils/device-connectivity.test.ts' \
+  'src/__tests__/design-drift.test.ts' \
+  'src/__tests__/ui-language.test.ts' \
+  'src/__tests__/ui-copy-table.ts'
+```
+
+Esperado en `914905b8`: **5 suites, 120 tests, verde, exit 0**. Comprueba el
+**5**: `(tabs)` sin escapar salta ficheros en silencio con exit 0. Usa este
+comando en cada paso rojo/verde de aquí en adelante, no el de 3 suites.
+
+### Precisión a R1 — la tabla se escribe con `{ labelKey }`
+
+En **R1 paso (1)**, las cinco aserciones llevan `.labelKey`:
+`MAP_CONNECTION_LABEL_KEY[deviceConnectionState(makeDevice('online'))].labelKey`
+→ `'map.live'`, y así las demás. La de exhaustividad
+(`Object.keys(...).sort()`) **no cambia**.
+
+En **R1 paso (2)**, el tipo es
+`Record<DeviceConnectionState, { labelKey: TranslationKey }>` y los valores son
+`{ labelKey: 'map.live' }`, `{ labelKey: 'map.stale' }` y
+`{ labelKey: 'map.noSignal' }` (este último dos veces: `none` y `unknown`).
+Es la misma anatomía que `DEVICE_CONNECTIVITY_META` ya tiene en `:6-12` de ese
+fichero — colócala al lado y no inventes otra.
+
+R1 **sigue quedando verde por sí solo**: añadir `labelKey: 'map.live'` en un
+fichero que aún no tiene fila en la tabla no rompe nada, porque `checkUses`
+solo recorre las filas que existen; nunca busca usos sin registrar.
+
+### Precisión a R2 — el delta de `R4_MAP` viaja en su commit verde
+
+En **R2 paso (2)**, en cuanto se borren los `t('map.live')`, `t('map.stale')` y
+`t('map.noSignal')` de `map.tsx`, el candado de #65 se pone rojo por sus tres
+filas. **Ese rojo es legítimo y esperado**, pero no puede sobrevivir al commit:
+en el **mismo commit verde de R2** se aplica el delta de la tabla, así que:
+
+- `src/__tests__/ui-copy-table.ts:103`, `:104` y `:105` — **se borran** las tres
+  filas de `map.tsx`.
+- `src/__tests__/ui-copy-table.ts`, al final de `R10_PAIRING` (tras `:377`) —
+  se añaden **cuatro** filas de `src/utils/device-connectivity.ts`:
+  `map.live` ×1, `map.stale` ×1, `map.noSignal` **×2**.
+- `src/__tests__/ui-language.test.ts:126` — `toHaveLength(20)` → **`(17)`**; el
+  título de `:125` pasa a `'resuelve las 17 ocurrencias normativas'`.
+- `src/__tests__/ui-language.test.ts:168` — `toHaveLength(42 + 2 + 1)` →
+  **`(42 + 2 + 1 + 4)`**, con el comentario
+  `// +4 #94 E1: la tabla del Mapa comparte el util`. Término nombrado, nunca
+  una cifra recalculada a mano.
+
+En **R2 paso (3)**, las **5** suites en verde.
+
+### Precisión a R6 — la sustitución de fila viaja en su commit verde
+
+En **R6 paso (2)**, al cambiar `t('map.gps')` por `t('pairing.connection')` en
+`map.tsx:352`, la fila `map.gps` de `ui-copy-table.ts:119` caduca. En el mismo
+commit verde se **sustituye 1:1** por
+`{ file: 'src/app/(tabs)/map.tsx', key: 'pairing.connection' }`.
+
+Sustitución 1:1 ⇒ **`R4_MAP` se queda en 17 y el `toHaveLength(17)` de
+`ui-language.test.ts:126` NO se vuelve a tocar.** La fila de
+`pairing.connection` que ya existe para `pairing/index.tsx`
+(`ui-copy-table.ts:366`) **no se toca**: `checkUses` indexa por par (fichero,
+clave) y son filas distintas.
+
+Si D2 se hubiera rechazado, esta precisión decaería con R6; **está firmada**
+(`[[design]]:102`), así que se aplica.
+
+### R9 — El candado de copy de #65 sigue verde con la tabla al día
+
+*Sujeto*: R2 y R6 ya dejaron `map.tsx` y `device-connectivity.ts` en su forma
+final; sin ellos no hay nada que inventariar. Por eso R9 va **después de R6**.
+
+> **Requisito de verificación con rojo real, no por mutación** (a diferencia de
+> R5): su test ya existe desde #65 y su rojo lo produce el código de producción
+> de R2 y R6. No hace falta plantar nada.
+
+- [ ] **(1) Rojo observado, no fabricado.** Antes de aplicar los deltas de las
+      precisiones de arriba, corre las 5 suites y **guarda la salida roja** de
+      `ui-language.test.ts` en los cuatro pares (fichero, clave) afectados:
+      `map.live`, `map.stale`, `map.noSignal` y `map.gps`, todos con
+      `uses: 0` frente a `uses: 1` esperado. Es la evidencia de que el candado
+      estaba vivo y de que esta feature lo habría roto en silencio.
+- [ ] **(2) Verde.** Aplicar el inventario completo de [[requirements]]
+      §Enmienda E1 (las dos tablas). Recuento final: `R4_MAP` **17** filas,
+      `R10_PAIRING` **49**, `ALL_USES` se recalcula solo.
+- [ ] **(3) Refactor con tests verdes.** Las 5 suites en verde. Comprueba
+      **una por una** que estas tres líneas siguen **sin tocar**:
+      `ui-language.test.ts:438` (`SCREEN_FILES`, `19 + 2 + 1`),
+      `ui-copy-table.ts:449-451` (suma de los doce bloques) y
+      `src/i18n/catalog.ts` (delta de i18n **cero**). Si te descubres editando
+      cualquiera de las tres, **para**: algo se desvió de la enmienda.
+
+### Cierre — adenda de E1
+
+Al §Cierre se le suma: `git diff --stat` contra `origin/main` no debe tocar
+`src/i18n/catalog.ts` ni `src/providers/__tests__/language-provider.test.tsx`
+(son de #98), y sí debe tocar `src/__tests__/ui-copy-table.ts` y
+`src/__tests__/ui-language.test.ts` (no son de #98).
