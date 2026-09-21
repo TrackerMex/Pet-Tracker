@@ -98,6 +98,9 @@
 - **R11 rojo:** el test literal de las dos enmiendas falla porque el rótulo
   `Enmienda #98` aún no existe en la carta; 56 tests heredados verdes y
   typecheck limpio.
+- **R11 verde:** carta y `mobile-food` registran las enmiendas, D7 y la antigua
+  exclusión quedan tachadas y remitidas, y las dos firmas #98 permanecen sin
+  marcar. Consistencia + UI language 2 suites / 82 tests y typecheck limpios.
 
 ### Por que esta feature
 

@@ -359,3 +359,41 @@ de pulsado.
 **Método**: cada candado se demuestra con una sonda —cruzar el valor en
 producción, ver el rojo, restaurar con `git diff` vacío— y la evidencia se
 escribe. Un candado que nadie vio fallar no es un candado.
+
+## Enmienda #98 — la barra de comidas de la Home
+
+`mobile-meals-served-ui` (#98) añade a la sección de recordatorios una barra
+informativa de las comidas servidas hoy. Se pinta solo con detalle cargado y
+`mealsToday !== null`, inmediatamente después de la próxima vacuna y antes del
+estado vacío o de las filas de recordatorio.
+
+**Decisiones de conducta de la barra:**
+
+1. el dato es `mealsToday.served` de `mealsToday.total`;
+2. el icono es `ForkKnife`, con `size={20}`;
+3. el título usa la clave `food.mealsToday`;
+4. el contador usa como nombre accesible la clave
+   `food.mealsServedOfTotal`, con `served` y `total`;
+5. el disco del icono ocupa el hueco **rosa** de la paleta categórica:
+   `bg-category-rose`, asignado al tipo `food`;
+6. la tinta del icono es `category-rose-strong` resuelta por
+   `useThemeColors`;
+7. el título usa `text-sm font-semibold text-foreground` y el contador
+   `text-xs font-normal text-muted` con cifras tabulares;
+8. no navega ni lleva `onPress`;
+9. solo se renderiza cuando el detalle es `ok` y `mealsToday !== null`;
+10. el `Card` compone una fila `flex-row items-center gap-3`;
+11. el contenido se agrupa en una columna `flex-1 gap-1.5`, con cabecera y
+    carril;
+12. el orden es disco del icono y columna; dentro de la columna, cabecera y
+    carril; dentro de la cabecera, título y contador.
+
+**Estructura e invariantes:** la fila tiene dos hijos, igual que la columna y
+la cabecera; el carril tiene un único relleno. El disco es una cápsula de
+36 px, el carril usa `h-1.5 overflow-hidden rounded-full bg-default` y el
+relleno usa `h-full rounded-full bg-accent`. Esto último aplica la regla fija
+**fondo ⇒ `bg-accent`**; `bg-accent-strong` sería tinta, no fondo. El ancho se
+calcula como el porcentaje redondeado de `served / total`, o `0%` si el total
+es cero.
+
+- [ ] Enmienda aprobada por humano

@@ -182,7 +182,7 @@ Controller: `backend-pet-tracker/src/modules/nutrition/infrastructure/nutrition.
   distintos en R8; `readJson` + acceso defensivo, mismo estilo que el
   parsing de `errors` en `createWeight`).
 
-- **D7 — Served/Pending derivado de la hora local.** El backend no
+- ~~**D7 — Served/Pending derivado de la hora local.** El backend no
   persiste servings. `const now = new Date();` →
   `const hhmm = String(now.getHours()).padStart(2,'0') + ':' +
   String(now.getMinutes()).padStart(2,'0');` y cada `mealTime <= hhmm`
@@ -192,7 +192,10 @@ Controller: `backend-pet-tracker/src/modules/nutrition/infrastructure/nutrition.
   puede no cuadrar exacta con `dailyGrams`. Tests con
   `jest.useFakeTimers({ doNotFake: [...] })` +
   `jest.setSystemTime(new Date('2026-08-23T13:00:00'))` (13:00 local:
-  con `['07:30','19:30']` → 1/2 servidas) para asserts deterministas.
+  con `['07:30','19:30']` → 1/2 servidas) para asserts deterministas.~~
+  **Enmendado por #98:** el estado sale de `servedToday`, persistido por el
+  backend, y las acciones sirven o deshacen una franja antes de refrescar; ver
+  `specs/mobile-meals-served-ui/requirements.md` R4–R6.
 
 - **D8 — Idiomas.** ~~Textos de UI en inglés (consistencia con
   Home/Map/Health).~~ **Enmendado por #65: los textos de UI viven en el

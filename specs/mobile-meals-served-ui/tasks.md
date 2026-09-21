@@ -235,14 +235,14 @@ orden no haya creado todavía**.
       `describe('#98 R11: la carta y la spec de Food registran la enmienda')`
       con `it('declara la barra de comidas en la carta y retira D7 de mobile-food')`.
       Rojo: los rótulos no existen.
-- [ ] **(2) Verde.** Escribir `## Enmienda #98 — la barra de comidas de la Home`
+- [x] **(2) Verde.** Escribir `## Enmienda #98 — la barra de comidas de la Home`
       al final de `docs/ui-guidelines.md`;
       `## Enmienda #98 — la comida servida deja de derivarse del reloj` en
       `specs/mobile-food/requirements.md`; tachar §D7 de
       `specs/mobile-food/design.md:185-195` con `~~…~~` + remisión a esta spec.
       Las dos enmiendas llevan `- [ ] Enmienda aprobada por humano` **sin
       marcar**: las firma el humano, no el implementador.
-- [ ] **(3) Refactor.** Releer las dos enmiendas contra el formato de las que ya
+- [x] **(3) Refactor.** Releer las dos enmiendas contra el formato de las que ya
       existen (§Enmienda #67 y §Enmienda #70 de la carta) y contra
       `ui-language.test.ts:295-303`, que exige la línea de firma marcada o no.
 
