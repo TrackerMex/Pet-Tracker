@@ -1190,7 +1190,7 @@ describe('#61 R11: el overlay de stats reparte los cuatro tiles en 2x2 sin envol
     expect(screen.getByText('Velocidad')).toBeVisible();
     expect(screen.getByText('Distancia')).toBeVisible();
     expect(screen.getByText('Actualizado')).toBeVisible();
-    expect(screen.getByText('GPS')).toBeVisible();
+    expect(screen.getByText('Conexión')).toBeVisible();
     expect(screen.getByTestId('map-stats').props.style).toEqual(
       expect.objectContaining({
         position: 'absolute',
@@ -1428,5 +1428,20 @@ describe('#94 R4: la antigüedad y la conexión son datos independientes', () =>
       expect(screen.getByTestId('stat-gps')).toHaveTextContent('En vivo'),
     );
     expect(screen.getByTestId('stat-updated')).toHaveTextContent('hace 2 min');
+  });
+});
+
+describe('#94 R6: el tile de conexión se rotula como en Pairing', () => {
+  it('muestra Conexión y retira GPS', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({
+      kind: 'ok',
+      position: makeLastPosition(),
+    });
+
+    await renderMap();
+
+    await waitFor(() => expect(screen.getByText('Conexión')).toBeVisible());
+    expect(screen.queryByText('GPS')).toBeNull();
   });
 });
