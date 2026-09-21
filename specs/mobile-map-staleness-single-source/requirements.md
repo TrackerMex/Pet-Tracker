@@ -235,6 +235,22 @@ abiertas: **D1** (qué fuente manda), **D2** (rótulo del tile) y **D3**
 (consecuencia visible aceptada). Si D2 se rechaza, R6 se retira de esta spec y
 el resto no cambia.
 
+### Cierre de R8 — el smoke en dev build de Android
+
+> Esta casilla faltaba: R8 remitía a §Aprobación, pero la línea de arriba es el
+> gate **previo a implementar** y se firmó antes de que existiera el código.
+> Añadida por el `leader` el 2026-09-21. Es la última fila viva de
+> [[traceability]]; mientras no esté marcada, #94 no pasa a `done`.
+
+- [ ] R8 verificado por humano — smoke en dev build de Android (fecha: ____)
+
+Lo que se firma con esa casilla, según [[tasks]] §R8: con el poller de
+posiciones **parado** y sin recargar la app, el tile de conexión del Mapa pasa
+de "En vivo" a "Desactualizado" y la píldora del hero de la Home pasa de "En
+línea" a "Sin conexión" para la misma mascota. El caso de D3 —collar hablando
+con fix viejo: "En vivo" más "hace N min"— es comprobación oportunista y no
+bloquea.
+
 ---
 
 ## Enmienda E1 — el candado de copy de #65 (`ui-language.test.ts`)
