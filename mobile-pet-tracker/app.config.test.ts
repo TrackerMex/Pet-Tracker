@@ -1,12 +1,24 @@
 /// <reference types="node" />
 
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import type { ConfigContext } from 'expo/config';
 
 import resolveConfig from './app.config';
 import appJson from './app.json';
+
+jest.mock('node:fs', () => ({
+  ...jest.requireActual<typeof import('node:fs')>('node:fs'),
+  existsSync: jest.fn(),
+}));
+
+const mockExistsSync = jest.mocked(existsSync);
+
+beforeEach(() => {
+  mockExistsSync.mockReset();
+  mockExistsSync.mockReturnValue(true);
+});
 
 describe('R1: la config resuelta inyecta la clave de Android desde el entorno', () => {
   const originalApiKey = process.env.GOOGLE_MAPS_API_KEY_ANDROID;
@@ -25,7 +37,7 @@ describe('R1: la config resuelta inyecta la clave de Android desde el entorno', 
 
     const resolved = resolveConfig({
       config: appJson.expo,
-    } as ConfigContext);
+    } as unknown as ConfigContext);
 
     expect(resolved).toMatchObject(appJson.expo);
     expect(resolved.android?.config?.googleMaps?.apiKey).toBe('test-key');
@@ -66,7 +78,9 @@ describe('R2: sin la variable no se declara el plugin y se avisa sin lanzar', ()
     let resolved: ReturnType<typeof resolveConfig> | undefined;
 
     expect(() => {
-      resolved = resolveConfig({ config: appJson.expo } as ConfigContext);
+      resolved = resolveConfig({
+        config: appJson.expo,
+      } as unknown as ConfigContext);
     }).not.toThrow();
     expect(resolved?.plugins).toEqual(appJson.expo.plugins);
     expect(warnSpy).toHaveBeenCalledTimes(1);
@@ -112,7 +126,9 @@ describe('R4 (auth-reset-deep-link): RESET_LINK_HOST declara el intent filter de
     process.env.GOOGLE_MAPS_API_KEY_ANDROID = 'maps-test-key';
     process.env.RESET_LINK_HOST = '  reset.example.test  ';
 
-    const resolved = resolveConfig({ config: appJson.expo } as ConfigContext);
+    const resolved = resolveConfig({
+      config: appJson.expo,
+    } as unknown as ConfigContext);
 
     expect(resolved).toMatchObject(appJson.expo);
     expect(resolved.android?.intentFilters).toEqual([
@@ -169,12 +185,107 @@ describe('R4 (auth-reset-deep-link): sin RESET_LINK_HOST avisa y no declara inte
       process.env.RESET_LINK_HOST = resetLinkHost;
     }
 
-    const resolved = resolveConfig({ config: appJson.expo } as ConfigContext);
+    const resolved = resolveConfig({
+      config: appJson.expo,
+    } as unknown as ConfigContext);
 
     expect(resolved.android?.intentFilters).toBeUndefined();
     expect(warnSpy).toHaveBeenCalledTimes(1);
     const warning = warnSpy.mock.calls[0]?.[0];
     expect(warning).toEqual(expect.stringContaining('RESET_LINK_HOST'));
+    expect(warning).toEqual(expect.stringContaining('docs/verification.md'));
+  });
+});
+
+describe('#79 R2: app.json declara el plugin de notificaciones y POST_NOTIFICATIONS', () => {
+  const expo = appJson.expo as {
+    android: { package: string; permissions?: string[] };
+    plugins: unknown[];
+  };
+
+  it('conserva los plugins existentes y añade expo-notifications', () => {
+    expect(expo.plugins).toContain('expo-router');
+    expect(expo.plugins).toContain('expo-secure-store');
+    expect(expo.plugins).toContainEqual([
+      'expo-splash-screen',
+      {
+        backgroundColor: '#208AEF',
+        image: './assets/images/splash-icon.png',
+        imageWidth: 76,
+      },
+    ]);
+    expect(expo.plugins).toContainEqual([
+      'expo-notifications',
+      { defaultChannel: 'default' },
+    ]);
+  });
+
+  it('declara el permiso de Android sin cambiar el package', () => {
+    expect(expo.android.permissions).toContain('POST_NOTIFICATIONS');
+    expect(expo.android.package).toBe('com.trackermex.pettracker');
+  });
+});
+
+describe('#79 R14: google-services.json se declara solo cuando existe', () => {
+  const originalApiKey = process.env.GOOGLE_MAPS_API_KEY_ANDROID;
+  const originalResetLinkHost = process.env.RESET_LINK_HOST;
+  let warnSpy: jest.SpiedFunction<typeof console.warn>;
+
+  beforeEach(() => {
+    process.env.GOOGLE_MAPS_API_KEY_ANDROID = 'maps-test-key';
+    process.env.RESET_LINK_HOST = 'reset.example.test';
+    warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+  });
+
+  afterEach(() => {
+    warnSpy.mockRestore();
+
+    if (originalApiKey === undefined) {
+      delete process.env.GOOGLE_MAPS_API_KEY_ANDROID;
+    } else {
+      process.env.GOOGLE_MAPS_API_KEY_ANDROID = originalApiKey;
+    }
+
+    if (originalResetLinkHost === undefined) {
+      delete process.env.RESET_LINK_HOST;
+    } else {
+      process.env.RESET_LINK_HOST = originalResetLinkHost;
+    }
+  });
+
+  it('declara android.googleServicesFile cuando el fichero existe', () => {
+    mockExistsSync.mockReturnValue(true);
+
+    const resolved = resolveConfig({
+      config: appJson.expo,
+    } as unknown as ConfigContext);
+
+    expect(mockExistsSync).toHaveBeenCalledWith(
+      join(__dirname, 'google-services.json'),
+    );
+    expect(resolved.android?.googleServicesFile).toBe(
+      './google-services.json',
+    );
+    expect(warnSpy).not.toHaveBeenCalled();
+  });
+
+  it('sin el fichero avisa, omite la clave y resuelve la config', () => {
+    mockExistsSync.mockReturnValue(false);
+    let resolved: ReturnType<typeof resolveConfig> | undefined;
+
+    expect(() => {
+      resolved = resolveConfig({
+        config: appJson.expo,
+      } as unknown as ConfigContext);
+    }).not.toThrow();
+    expect(
+      Object.hasOwn(resolved?.android ?? {}, 'googleServicesFile'),
+    ).toBe(false);
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+
+    const warning = warnSpy.mock.calls[0]?.[0];
+
+    expect(warning).toEqual(expect.stringContaining('google-services.json'));
     expect(warning).toEqual(expect.stringContaining('docs/verification.md'));
   });
 });

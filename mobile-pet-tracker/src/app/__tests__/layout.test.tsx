@@ -5,6 +5,7 @@ import {
   waitFor,
 } from '@testing-library/react-native';
 import type { QueryClient } from '@tanstack/react-query';
+import * as Notifications from 'expo-notifications';
 import type { ReactNode } from 'react';
 import { Uniwind } from 'uniwind';
 
@@ -17,6 +18,7 @@ const { join } = jest.requireActual<typeof import('path')>('path');
 
 let mockUseQueryInStack = false;
 let mockLayoutQueryClient: QueryClient | undefined;
+const mockSetPushToken = jest.fn();
 
 jest.mock('../../utils/language-preference', () => ({
   getStoredLanguage: jest.fn(),
@@ -32,6 +34,34 @@ jest.mock('uniwind', () => ({
 
 jest.mock('expo-font', () => ({
   useFonts: jest.fn(() => [true]),
+}));
+
+jest.mock('expo-device', () => ({ isDevice: true }));
+
+jest.mock('expo-constants', () => ({
+  __esModule: true,
+  default: {
+    expoConfig: { extra: { eas: { projectId: 'project-id' } } },
+  },
+}));
+
+jest.mock('expo-notifications', () => ({
+  AndroidImportance: { MAX: 7 },
+  setNotificationHandler: jest.fn(),
+  setNotificationChannelAsync: jest.fn().mockResolvedValue(null),
+  getPermissionsAsync: jest
+    .fn()
+    .mockResolvedValue({ granted: true, canAskAgain: true }),
+  requestPermissionsAsync: jest
+    .fn()
+    .mockResolvedValue({ granted: true, canAskAgain: true }),
+  getExpoPushTokenAsync: jest
+    .fn()
+    .mockResolvedValue({ type: 'expo', data: 'ExpoPushToken[layout]' }),
+  addNotificationResponseReceivedListener: jest
+    .fn()
+    .mockReturnValue({ remove: jest.fn() }),
+  getLastNotificationResponseAsync: jest.fn().mockResolvedValue(null),
 }));
 
 jest.mock('expo-router', () => {
@@ -54,6 +84,8 @@ jest.mock('expo-router', () => {
   }
 
   return {
+    router: { push: jest.fn() },
+    usePathname: () => '/home',
     Stack: () =>
       mockUseQueryInStack
         ? React.createElement(QueryStack)
@@ -76,6 +108,7 @@ jest.mock('../../providers/auth-provider', () => ({
     token: 'test-token',
     signIn: jest.fn(),
     signOut: jest.fn(),
+    setPushToken: mockSetPushToken,
   }),
 }));
 
@@ -104,6 +137,7 @@ jest.mock('../../providers/language-provider', () => {
 const mockGetStoredLanguage = jest.mocked(getStoredLanguage);
 const mockGetStoredTheme = jest.mocked(getStoredTheme);
 const mockSetTheme = jest.mocked(Uniwind.setTheme);
+const mockGetPermissions = jest.mocked(Notifications.getPermissionsAsync);
 
 describe('R4: RootLayout restaura el tema', () => {
   beforeEach(() => {
@@ -208,5 +242,22 @@ describe('#87 R4: QueryProvider envuelve la app dentro de AuthProvider', () => {
     await waitFor(() =>
       expect(screen.getByTestId('query-probe')).toHaveTextContent('ok'),
     );
+  });
+});
+
+describe('#79 R11: el registro de push se monta dentro de AuthProvider', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockGetStoredTheme.mockResolvedValue(undefined);
+    mockGetStoredLanguage.mockResolvedValue(undefined);
+  });
+
+  it('conserva el Stack y consulta permisos con la sesión disponible', async () => {
+    await render(<RootLayout />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('root-stack')).toBeVisible();
+      expect(mockGetPermissions).toHaveBeenCalledTimes(1);
+    });
   });
 });

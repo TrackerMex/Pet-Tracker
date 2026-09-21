@@ -498,7 +498,7 @@ este runbook no cambian.
    `android/app/debug.keystore`. La config avisa por consola, pero no aborta:
 
    ```bash
-   cd mobile-pet-tracker && npx expo prebuild --clean --platform android
+   cd mobile-pet-tracker && bunx expo prebuild --clean --platform android
    ```
 
 2. Obtén la SHA-1 del keystore de debug desde el proyecto Android generado:
@@ -537,7 +537,7 @@ este runbook no cambian.
    durante el prebuild:
 
    ```bash
-   npx expo prebuild --clean --platform android
+   bunx expo prebuild --clean --platform android
    grep -c "com.google.android.geo.API_KEY" android/app/src/main/AndroidManifest.xml
    bunx expo run:android
    ```
@@ -583,7 +583,7 @@ Go:
 
 ```bash
 cd mobile-pet-tracker
-npx expo prebuild --clean --platform android
+bunx expo prebuild --clean --platform android
 grep -c "com.google.android.geo.API_KEY" android/app/src/main/AndroidManifest.xml
 bunx expo run:android
 ```
@@ -765,7 +765,7 @@ direcciones de correo, contraseñas ni tokens al reporte.
 
 1. **G1 — obtener y publicar el fingerprint SHA-256 del dev build.**
 
-   El dev build local (`npx expo run:android`) se firma con el keystore que
+   El dev build local (`bunx expo run:android`) se firma con el keystore que
    genera el prebuild en `mobile-pet-tracker/android/app/debug.keystore`, no
    con `~/.android/debug.keystore` de Android Studio. Desde
    `mobile-pet-tracker/android` ejecuta:
@@ -829,6 +829,73 @@ direcciones de correo, contraseñas ni tokens al reporte.
 Registra únicamente los resultados y status en
 `progress/impl_auth-reset-deep-link.md`. G1–G4 siguen pendientes hasta esa
 confirmación humana; las suites automáticas no los sustituyen.
+
+### Feature 79 — mobile-push-registration: `google-services.json` del dev build
+
+El registro del push token falla en un dev build **local** si Firebase no está
+inicializado en el APK. El síntoma exacto, con el diagnóstico de R13 puesto:
+
+```
+[push] registration failed [Error: Unable to get Firebase Messaging instance.
+Did you configure `googleServicesFile` path in app config? …
+Default FirebaseApp is not initialized in this process com.trackermex.pettracker]
+```
+
+**Por qué pasa aunque las credenciales FCM V1 estén subidas a EAS**: esas
+credenciales las inyecta **EAS Build**. Un dev build compilado en la máquina del
+humano con `bunx expo run:android` no pasa por EAS, así que necesita el fichero
+de configuración de Firebase en el proyecto.
+
+**Cómo obtenerlo** (una vez por máquina):
+
+1. Consola de Firebase → el proyecto ligado a la credencial FCM V1 de esta app.
+2. Configuración del proyecto → tus apps → la app de Android con
+   `applicationId` **`com.trackermex.pettracker`**. Si no existe, añadirla con ese
+   mismo id.
+3. Descargar `google-services.json` y dejarlo en `mobile-pet-tracker/`.
+
+**El fichero NO se versiona**: está en `mobile-pet-tracker/.gitignore` porque
+identifica el proyecto de Firebase del humano. Cada máquina que compile un dev
+build de Android lo descarga por su cuenta.
+
+**Después de colocarlo**, el build nativo hay que rehacerlo — la configuración
+entra en el `AndroidManifest.xml` durante el prebuild:
+
+```bash
+cd mobile-pet-tracker
+bunx expo prebuild --clean --platform android
+bunx expo run:android
+```
+
+Si el fichero falta, `app.config.ts` **no** declara `googleServicesFile` y avisa
+por consola remitiendo a esta sección (R14). Eso es deliberado: sin el aviso, el
+build salía adelante y el fallo aparecía mucho más tarde, en forma de un push que
+nunca llega.
+
+### Push en un build de producción — lo que habrá que resolver (nota, 2026-09-18)
+
+Nada de esto aplica todavía: no hay build de producción. Se anota aquí al
+descubrirse durante el gate de #79, para no volver a deducirlo.
+
+1. **El `google-services.json` no está en el repo** (`.gitignore`), así que un
+   build de EAS no lo encuentra solo. Hay que subirlo como *file secret*
+   (`eas secret:create --type file`) y referenciarlo en el perfil de build. Si
+   falta, el APK de producción falla **igual que en local pero en silencio**: el
+   aviso de R13 está guardado por `__DEV__`.
+2. **Credenciales FCM V1 por perfil.** La clave de service account se subió para
+   el perfil `development`; verificar con `eas credentials` que el perfil de
+   producción también la tiene.
+3. **El fichero está atado al `applicationId`.** Si producción usa un id distinto
+   de `com.trackermex.pettracker`, hace falta una **segunda app** en el proyecto
+   de Firebase y su propio `google-services.json`.
+4. **Un registro fallido es invisible para el usuario y para nosotros.** No da
+   error: simplemente no llega ningún push. La señal explotable está en el
+   backend — un usuario sin fila en `push_tokens` es un registro que falló. Vale
+   una feature de observabilidad antes del lanzamiento.
+5. **El backend de producción necesita `PUSH_ENABLED=true` y la cola
+   `notifications` creada en la cuenta AWS real**, no solo en LocalStack.
+6. **iOS no usa FCM**: va por APNs con su propia clave, y entra por #60
+   `mobile-ios-support`.
 
 ### Feature 96 — harness-e2e-nunca-corre-en-ci
 

@@ -7,12 +7,19 @@ import { useEffect, useState } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Uniwind } from 'uniwind';
 
+import { usePushRegistration } from '../hooks/use-push-registration';
 import { DEFAULT_LANGUAGE, type Language } from '../i18n/catalog';
 import { AuthProvider } from '../providers/auth-provider';
 import { LanguageProvider } from '../providers/language-provider';
 import { QueryProvider } from '../providers/query-provider';
 import { getStoredLanguage } from '../utils/language-preference';
 import { getStoredTheme } from '../utils/theme-preference';
+
+function PushRegistration() {
+  usePushRegistration();
+  const empty = null;
+  return empty;
+}
 
 export default function RootLayout() {
   const [themeReady, setThemeReady] = useState(false);
@@ -51,6 +58,7 @@ export default function RootLayout() {
         <LanguageProvider initial={initialLanguage}>
           <AuthProvider>
             <QueryProvider>
+              <PushRegistration />
               <Stack screenOptions={{ headerShown: false }} />
             </QueryProvider>
           </AuthProvider>
