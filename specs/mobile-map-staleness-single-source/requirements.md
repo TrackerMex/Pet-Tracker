@@ -242,7 +242,7 @@ el resto no cambia.
 > Añadida por el `leader` el 2026-09-21. Es la última fila viva de
 > [[traceability]]; mientras no esté marcada, #94 no pasa a `done`.
 
-- [ ] R8 verificado por humano — smoke en dev build de Android (fecha: ____)
+- [X] R8 verificado por humano — smoke en dev build de Android (fecha: 2026-09-21)
 
 Lo que se firma con esa casilla, según [[tasks]] §R8: con el poller de
 posiciones **parado** y sin recargar la app, el tile de conexión del Mapa pasa
