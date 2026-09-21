@@ -209,7 +209,7 @@ export default function MapScreen() {
             deviceConnectionState(detail.data.pet.device)
           ].labelKey,
         )
-      : '—';
+      : '?';
 
   return (
     <View testID="screen-map" className="flex-1">

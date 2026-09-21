@@ -1377,3 +1377,35 @@ describe('#94 R2: el tile de conexión sigue al collar', () => {
     );
   });
 });
+
+describe('#94 R3: sin detalle el tile de conexión cae al guion', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({
+      kind: 'ok',
+      position: makeLastPosition(),
+    });
+  });
+
+  it('muestra el guion mientras el detalle está pendiente', async () => {
+    mockGetPet.mockReturnValue(pending<PetState>());
+
+    await renderMap();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('stat-speed')).toBeVisible(),
+    );
+    expect(screen.getByTestId('stat-distance')).toBeVisible();
+    expect(screen.getByTestId('stat-gps')).toHaveTextContent('—');
+  });
+
+  it('muestra el guion cuando el detalle falla', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'error' });
+
+    await renderMap();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('stat-gps')).toHaveTextContent('—'),
+    );
+  });
+});

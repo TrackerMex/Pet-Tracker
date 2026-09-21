@@ -13,14 +13,14 @@ los tres ficheros de test ya acumulan R-ids de otras specs
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
 | R1 | `src/utils/device-connectivity.test.ts::#94 R1: el tile de conexión del Mapa se decide en un solo sitio` | rojo `d4f2b77f` (`feat(mobile-map-staleness): specify shared map labels (R1)`); verde `039ed167` (`feat(mobile-map-staleness): provide shared map labels (R1)`) |
-| R2 | `src/app/(tabs)/__tests__/map.test.tsx::#94 R2: el tile de conexión sigue al collar` + `::#94 R2: la antigüedad de la posición ya no mueve el tile de conexión` + `::#94 R2: sin collar el tile de conexión dice Sin señal` | rojo `2dcebb2a` (`feat(mobile-map-staleness): specify detail-backed map badge (R2)`); verde pendiente |
+| R2 | `src/app/(tabs)/__tests__/map.test.tsx::#94 R2: el tile de conexión sigue al collar` + `::#94 R2: la antigüedad de la posición ya no mueve el tile de conexión` + `::#94 R2: sin collar el tile de conexión dice Sin señal` | rojo `2dcebb2a` (`feat(mobile-map-staleness): specify detail-backed map badge (R2)`); verde `a83aae5c` (`feat(mobile-map-staleness): read map badge from pet detail (R2,R9)`) |
 | R3 | `src/app/(tabs)/__tests__/map.test.tsx::#94 R3: sin detalle el tile de conexión cae al guion` | pendiente |
 | R4 | `src/app/(tabs)/__tests__/map.test.tsx::#94 R4: la antigüedad y la conexión son datos independientes` | pendiente |
 | R5 | `src/__tests__/design-drift.test.ts::#94 R5: el umbral de frescura no vive en el móvil` | pendiente |
 | R6 | `src/app/(tabs)/__tests__/map.test.tsx::#94 R6: el tile de conexión se rotula como en Pairing` | pendiente (D2 **firmada**, así que R6 se implementa) |
 | R7 | `src/app/(tabs)/__tests__/map.test.tsx::#94 R7: el poll refresca también el detalle` | pendiente |
 | R8 | gate humano — smoke en dev build de Android, sin test automático | pendiente (firma en [[requirements]] §Aprobación) |
-| R9 *(E1)* | `src/__tests__/ui-language.test.ts::#65 R4: Map resuelve su copy por clave` + `::#65 R10: el emparejado del collar resuelve su copy por clave` + `::#65 R18: los sitios resuelven por clave y no queda copy suelta` — tests **ya existentes de #65**, no se crean nuevos | pendiente (los deltas de tabla viajan en los commits verdes de R2 y R6) |
+| R9 *(E1)* | `src/__tests__/ui-language.test.ts::#65 R4: Map resuelve su copy por clave` + `::#65 R10: el emparejado del collar resuelve su copy por clave` + `::#65 R18: los sitios resuelven por clave y no queda copy suelta` — tests **ya existentes de #65**, no se crean nuevos | R2 `a83aae5c` (`feat(mobile-map-staleness): read map badge from pet detail (R2,R9)`); R6 pendiente |
 
 ## Notas de cierre que el reviewer comprueba
 
