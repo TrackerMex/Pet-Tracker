@@ -689,4 +689,4 @@ Requisitos de entorno, todos verificables antes de empezar:
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [X] Aprobado por humano (fecha: 2026-09-21) ← gate obligatorio antes de implementar
