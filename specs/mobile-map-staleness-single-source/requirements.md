@@ -374,4 +374,4 @@ suites: `(tabs)` sin escapar salta ficheros en silencio con exit 0.
 
 ### Aprobación de E1
 
-- [ ] Enmienda E1 aprobada por humano (fecha: ____)
+- [X] Enmienda E1 aprobada por humano (fecha: 2026-09-21)
