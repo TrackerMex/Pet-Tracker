@@ -13,6 +13,17 @@
 - **Fase:** implementación TDD R1→R11 en curso por Codex
 - **Baseline móvil antes de editar:** lote principal 8 suites / 341 tests;
   fixtures R1 8 suites / 239 tests; `bunx tsc --noEmit` limpio
+- **Bloqueo R1:** tras el rojo `189c1406`, la implementación mínima hace pasar
+  el test de R1 pero `tsc` descubre otro literal `NutritionPlan` en
+  `src/app/(tabs)/__tests__/meal-schedule.test.tsx:94-108`, no enumerado por la
+  spec ni por `design.md` §6. Además, `design.md` §1.3 declara que Generate no
+  devuelve `servedToday`, aunque `GeneratePlanState` comparte hoy
+  `NutritionPlan`. Se paró sin ampliar alcance ni commitear el verde.
+- **Bloqueo R1 resuelto:** el humano autorizó el 2026-09-21 añadir
+  `servedToday: []` a esa fixture y corregir el alcance de R1 en requirements,
+  design, tasks y traceability.
+- **R1 verde:** typecheck limpio; lote principal 8 suites / 342 tests; lote de
+  fixtures 8 suites / 239 tests; `meal-schedule` 1 suite / 23 tests.
 
 ### Por que esta feature
 

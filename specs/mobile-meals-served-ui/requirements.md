@@ -113,6 +113,12 @@ por tanto no exige el campo nuevo;
 **AND SHALL NOT** endurecer el guard `isPetProfile` (`src/api/pets.ts:48-55`):
 sigue comprobando solo `id` y `name` (P16 de #83).
 
+**AND SHALL** añadir `servedToday: []` a los dos constructores de fixture
+`NutritionPlan`: `src/app/(tabs)/__tests__/food.test.tsx:104-119` y
+`src/app/(tabs)/__tests__/meal-schedule.test.tsx:95-108`. El segundo no estaba
+enumerado en la spec aprobada; el humano autorizó esta corrección de alcance el
+2026-09-21 después de que `bunx tsc --noEmit` lo detectara durante R1.
+
 *Test:* `src/screens/home/index.test.tsx` →
 `describe('#98 R1: los tipos del cliente declaran servedToday y mealsToday')`,
 `it('añade los dos campos sin tocar nextReminder ni activitySummary')` — lee
@@ -123,8 +129,8 @@ extrae los bloques `export interface NutritionPlan \{[\s\S]*?\n\}` y
 `PetProfile` en `['…','activitySummary','mealsToday']`, `toHaveLength(12)` y
 `toHaveLength(25)` respectivamente, y que el bloque de `PetProfile` sigue
 conteniendo `'nextReminder: unknown;'` y `'activitySummary: unknown;'`. El
-`mealsToday: null` de las diez fixtures se prueba solo: sin él, `tsc` y las diez
-suites fallan en compilación.
+Los campos de las doce fixtures se prueban solos: sin ellos, `tsc` y sus suites
+fallan en compilación.
 
 ### R2 — El cliente API expone `serveMeal` y `unserveMeal`
 

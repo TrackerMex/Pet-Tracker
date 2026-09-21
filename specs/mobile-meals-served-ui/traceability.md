@@ -1,6 +1,6 @@
 ---
 feature: "mobile-meals-served-ui"
-status: spec_ready
+status: in_progress
 tags: [harness, spec, mobile]
 ---
 
@@ -13,7 +13,7 @@ El implementador rellena las dos últimas columnas tras cada commit; el
 
 | Requisito | Test (archivo :: título literal del `describe`) | Commit rojo | Commit verde |
 |---|---|---|---|
-| R1 — tipos `servedToday` / `mealsToday` + 10 fixtures | `src/screens/home/index.test.tsx` :: `#98 R1: los tipos del cliente declaran servedToday y mealsToday` | pendiente | pendiente |
+| R1 — tipos `servedToday` / `mealsToday` + 10 fixtures `PetProfile` + 2 fixtures `NutritionPlan` | `src/screens/home/index.test.tsx` :: `#98 R1: los tipos del cliente declaran servedToday y mealsToday` | `189c1406` | pendiente |
 | R2 — `serveMeal` / `unserveMeal` | `src/api/__tests__/nutrition.test.ts` :: `#98 R2: serveMeal y unserveMeal mapean la respuesta por kind` | pendiente | pendiente |
 | R3 — 4 claves de catálogo (305 → 309) | `src/providers/__tests__/language-provider.test.tsx` :: `#98 R3: el catálogo trae las cuatro claves de comidas servidas` (+ el `it` de longitud de `:51`) | pendiente | pendiente |
 | R4 — estado servido desde `servedToday` | `src/app/(tabs)/__tests__/food.test.tsx` :: `#98 R4: el estado servido sale de servedToday, no del reloj` | pendiente | pendiente |

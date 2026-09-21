@@ -95,6 +95,7 @@ function makePet(overrides: Partial<PetProfile> = {}): PetProfile {
     nextVaccine: null,
     nextReminder: null,
     activitySummary: null,
+    mealsToday: null,
     createdAt: '2026-08-20T00:00:00.000Z',
     updatedAt: '2026-08-21T00:00:00.000Z',
     ...overrides,
@@ -114,6 +115,7 @@ function makePlan(overrides: Partial<NutritionPlan> = {}): NutritionPlan {
     warnings: [],
     aiExplanation: null,
     generatedAt: '2026-08-23T12:00:00.000Z',
+    servedToday: [],
     ...overrides,
   };
 }

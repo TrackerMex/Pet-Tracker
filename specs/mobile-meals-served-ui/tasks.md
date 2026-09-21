@@ -29,7 +29,7 @@ orden no haya creado todavía**.
 
 | # | R | Sujeto que asevera | ¿Existe ya cuando se asevera? |
 |---|---|---|---|
-| 1 | R1 | `src/api/types.ts` y las 10 fixtures | Sí — los crea R1 |
+| 1 | R1 | `src/api/types.ts`, 10 fixtures `PetProfile` y 2 fixtures `NutritionPlan` | Sí — los crea R1 |
 | 2 | R2 | `serveMeal` / `unserveMeal` | Sí — los crea R2 |
 | 3 | R3 | las 4 claves de `catalog.ts` y las filas de `specs/mobile-ui-language/design.md` | Sí — los crea R3. Va **antes** de R4-R7 porque `TranslationKey` no compila si una pantalla llama a una clave que no existe |
 | 4 | R4 | `food-meals-progress`, `meal-served-*`, `meal-pending-*` | Sí — ya existen desde #38; R4 solo cambia de dónde sale su valor. Necesita `servedToday` (R1) |
@@ -45,18 +45,19 @@ orden no haya creado todavía**.
 
 ## R1 — Los tipos del cliente ganan `servedToday` y `mealsToday`
 
-- [ ] **(1) Rojo.** En `src/screens/home/index.test.tsx`, añadir
+- [x] **(1) Rojo.** En `src/screens/home/index.test.tsx`, añadir
       `describe('#98 R1: los tipos del cliente declaran servedToday y mealsToday')`
       con `it('añade los dos campos sin tocar nextReminder ni activitySummary')`,
       junto al `#70 R2` que ya lee `types.ts` (`:2947-2966`). Falla porque los
       bloques de interfaz no tienen los campos.
-- [ ] **(2) Verde.** Añadir `servedToday: string[]` a `NutritionPlan`,
+- [x] **(2) Verde.** Añadir `servedToday: string[]` a `NutritionPlan`,
       `export interface MealsToday { served: number; total: number }` y
       `mealsToday: MealsToday | null` a `PetProfile`. Añadir `mealsToday: null`
       a las **diez** fixtures `makePet` que [[requirements]] R1 enumera y
-      `servedToday: []` al `makePlan` de `food.test.tsx:104-119`. **No** tocar
-      `src/hooks/use-pet-selection.test.tsx`.
-- [ ] **(3) Refactor.** `bunx tsc --noEmit` + los dos lotes de jest de
+      `servedToday: []` a los `makePlan` de `food.test.tsx:104-119` y
+      `meal-schedule.test.tsx:95-108` (corrección de alcance autorizada por el
+      humano el 2026-09-21). **No** tocar `src/hooks/use-pet-selection.test.tsx`.
+- [x] **(3) Refactor.** `bunx tsc --noEmit` + los dos lotes de jest de
       [[design]] §7 (8 + 8 suites). Verificar que el número de suites que
       imprime jest coincide con el de rutas.
 

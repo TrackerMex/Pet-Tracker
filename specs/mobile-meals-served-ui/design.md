@@ -246,6 +246,7 @@ ya está mergeado (#83) y **no se toca**.
 | `specs/mobile-ui-language/design.md` | 4 filas en §2.6 + rótulo de sección | R3 |
 | `mobile-pet-tracker/src/app/(tabs)/food.tsx` | reloj fuera; `servedToday`; `useQueryClient`; `pendingMealTime`; `mealError`; `Pressable` por franja; `food-meal-error` | R4, R5, R6 |
 | `mobile-pet-tracker/src/app/(tabs)/__tests__/food.test.tsx` | fixture `mealsToday: null` y `servedToday: []`; fuera los fake timers; deltas `:301/:310/:315/:327-334`; `#98 R4/R5/R6` | R1, R4, R5, R6 |
+| `mobile-pet-tracker/src/app/(tabs)/__tests__/meal-schedule.test.tsx` | `servedToday: []` en `makePlan` (corrección de alcance autorizada por el humano el 2026-09-21) | R1 |
 | `mobile-pet-tracker/src/screens/home/index.tsx` | `mealsInk`; `ForkKnife`; `reminders-meals` tras `reminders-next-vaccine` | R7, R10 |
 | `mobile-pet-tracker/src/screens/home/index.test.tsx` | fixture; mock de `ForkKnife`; `#98 R1/R7/R8`; reescritura de `#70 R3` (`:3459-3474`) | R1, R7, R8 |
 | `mobile-pet-tracker/src/app/(tabs)/__tests__/health.test.tsx` · `map.test.tsx` · `src/screens/{profile,reminders,pairing,docs}/index.test.tsx` · `src/components/__tests__/{pet-switcher,pet-hero-header}.test.tsx` | `mealsToday: null` en `makePet` (8 ficheros) | R1 |
