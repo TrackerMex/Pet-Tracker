@@ -101,6 +101,11 @@
 - **R11 verde:** carta y `mobile-food` registran las enmiendas, D7 y la antigua
   exclusión quedan tachadas y remitidas, y las dos firmas #98 permanecen sin
   marcar. Consistencia + UI language 2 suites / 82 tests y typecheck limpios.
+  Commit `a4cc4292`.
+- **Cierre técnico:** lote principal de §7 8 suites / 360 tests; lote de
+  fixtures 8 suites / 239 tests; suite móvil completa 77 suites / 1369 tests /
+  1 snapshot; `bunx tsc --noEmit` limpio. #98 sigue `in_progress`: quedan el
+  smoke, las dos firmas de enmienda y la revisión humana.
 
 ### Por que esta feature
 

@@ -248,17 +248,17 @@ orden no haya creado todavía**.
 
 ## Cierre (antes de abrir el PR)
 
-- [ ] Los dos lotes de jest de [[design]] §7 en verde, con el recuento de suites
+- [x] Los dos lotes de jest de [[design]] §7 en verde, con el recuento de suites
       comprobado (8 y 8)
-- [ ] `bunx tsc --noEmit` limpio
-- [ ] Suite móvil completa en verde. Si jest repite primero un fichero que
+- [x] `bunx tsc --noEmit` limpio
+- [x] Suite móvil completa en verde. Si jest repite primero un fichero que
       estaba rojo, **borrar la perf-cache entre repeticiones**: la segunda
       corrida verde es el control más favorable, no una absolución
-- [ ] `progress/impl_mobile-meals-served-ui.md` con: los cuatro resultados de la
+- [x] `progress/impl_mobile-meals-served-ui.md` con: los cuatro resultados de la
       sonda de mutación, el `git diff` vacío tras restaurar, y la traza de cada
       commit rojo→verde
-- [ ] [[traceability]] sin ninguna fila «pendiente»
-- [ ] Commits con el formato `feat(mobile): <desc> (R1,R2)` y con historial
+- [x] [[traceability]] sin ninguna fila «pendiente»
+- [x] Commits con el formato `feat(mobile): <desc> (R1,R2)` y con historial
       **test-primero** visible
-- [ ] **No** marcar #98 como `done`, **no** mergear, **no** firmar las
+- [x] **No** marcar #98 como `done`, **no** mergear, **no** firmar las
       enmiendas de R11

@@ -23,7 +23,7 @@ El implementador rellena las dos últimas columnas tras cada commit; el
 | R8 — cardinalidad, orden y cero llamadas nuevas | `src/screens/home/index.test.tsx` :: `#98 R8: la barra de comidas entra sin traerse el cliente de nutrición` (reemplaza a `#70 R3`, `:3459-3475`) | `f2bd2cbd` | `1af633ce` |
 | R9 — tabla de uso de copy (R6_FOOD 35→38, R3_HOME 51→53) | `src/__tests__/ui-language.test.ts` :: `#98 R9: el copy de comidas servidas queda registrado` (+ `:85` y `:140`) | `6e29cbcb` | `2f9752c8` |
 | R10 — candados de estilo (TABULAR_NUMS 7→8; el resto inmóvil) | `src/__tests__/consistency-classnames.test.ts` :: `#62 R15` (4 sitios) y `#98 R10: los candados que esta feature no mueve`; `src/__tests__/design-drift.test.ts` :: `#98 R10: la barra de comidas no mete drift de estilo` | `04034a3d` | `dbd4a84a` |
-| R11 — enmiendas a la carta y a `mobile-food` | `src/__tests__/consistency-classnames.test.ts` :: `#98 R11: la carta y la spec de Food registran la enmienda` | `327d0c06` | pendiente |
+| R11 — enmiendas a la carta y a `mobile-food` | `src/__tests__/consistency-classnames.test.ts` :: `#98 R11: la carta y la spec de Food registran la enmienda` | `327d0c06` | `a4cc4292` |
 
 ## Candados ajenos que esta feature mueve (delta declarado)
 
@@ -34,18 +34,18 @@ comprueba que no se movió ninguno más.
 |---|---|---|---|---|
 | `src/providers/__tests__/language-provider.test.tsx:50` | comentario sin #98 | `+ 4 de #98` | R3 | `2f016105` |
 | `src/providers/__tests__/language-provider.test.tsx:55` | `260+16+1+4+7+14+2+1` = 305 | `… + 4` = 309 | R3 | `2f016105` |
-| `src/__tests__/ui-language.test.ts:85` | `21+15+1+4+7+2+1` = 51 | `… + 2` = 53 | R9 | pendiente |
-| `src/__tests__/ui-language.test.ts:140` | `toHaveLength(35)` | `toHaveLength(35 + 3)` = 38 | R9 | pendiente |
-| `src/__tests__/consistency-classnames.test.ts:335-338` | 3 constantes de delta | + `HOME_TABULAR_DELTA_98 = 1` | R10 | pendiente |
-| `src/__tests__/consistency-classnames.test.ts:342-347` | `4+1+1+1` = 7 | `4+1+1+1+1` = 8 | R10 | pendiente |
-| `src/__tests__/consistency-classnames.test.ts:363-367` | `14+4+1+1+1` = 21 | `… + 1` = 22 | R10 | pendiente |
-| `src/__tests__/consistency-classnames.test.ts:369-376` | `1+1+1` | `1+1+1+1` | R10 | pendiente |
-| `src/__tests__/consistency-classnames.test.ts:378-385` | `1+1` | `1+1+1` | R10 | pendiente |
+| `src/__tests__/ui-language.test.ts:85` | `21+15+1+4+7+2+1` = 51 | `… + 2` = 53 | R9 | `2f9752c8` |
+| `src/__tests__/ui-language.test.ts:140` | `toHaveLength(35)` | `toHaveLength(35 + 3)` = 38 | R9 | `2f9752c8` |
+| `src/__tests__/consistency-classnames.test.ts:335-338` | 3 constantes de delta | + `HOME_TABULAR_DELTA_98 = 1` | R10 | `dbd4a84a` |
+| `src/__tests__/consistency-classnames.test.ts:342-347` | `4+1+1+1` = 7 | `4+1+1+1+1` = 8 | R10 | `dbd4a84a` |
+| `src/__tests__/consistency-classnames.test.ts:363-367` | `14+4+1+1+1` = 21 | `… + 1` = 22 | R10 | `dbd4a84a` |
+| `src/__tests__/consistency-classnames.test.ts:369-376` | `1+1+1` | `1+1+1+1` | R10 | `dbd4a84a` |
+| `src/__tests__/consistency-classnames.test.ts:378-385` | `1+1` | `1+1+1` | R10 | `dbd4a84a` |
 | `src/app/(tabs)/__tests__/food.test.tsx:263-264, 268-270` | fake timers de D7 (#38) | eliminados | R4 | `9318afaa` |
 | `src/app/(tabs)/__tests__/food.test.tsx:301, 310, 315, 327-334` | derivados del reloj | derivados de `servedToday` | R4 | `9318afaa` |
 | `src/screens/home/index.test.tsx:3459-3475` (`#70 R3`) | 2 aserciones de ausencia + 1 de import | las 2 invertidas; la 3.ª **literal** | R8 | `1af633ce` |
 | `specs/mobile-ui-language/design.md` §2.6 rótulo | `(35 ocurrencias, 29 claves)` | `(38 ocurrencias, 33 claves)` | R3 | `2f016105` |
-| `specs/mobile-food/design.md:185-195` (§D7) | vigente | tachado + remisión a #98 | R11 | pendiente |
+| `specs/mobile-food/design.md:185-195` (§D7) | vigente | tachado + remisión a #98 | R11 | `a4cc4292` |
 
 ## Candados ajenos que esta feature NO mueve (declarado a propósito)
 
@@ -68,9 +68,9 @@ Si alguno de estos se mueve, es un defecto de implementación, no un delta.
 
 | Ítem | Dónde | Estado |
 |---|---|---|
-| Aprobación de la spec | `requirements.md` §Aprobación | pendiente |
-| Enmienda a `docs/ui-guidelines.md` | §Enmienda #98 de ese fichero | pendiente |
-| Enmienda a `specs/mobile-food/requirements.md` | §Enmienda #98 de ese fichero | pendiente |
-| Prueba de humo en **dev build de Android** | `requirements.md` §Prueba de humo | pendiente |
-| Decisión abierta 1 — título de la barra | `requirements.md` §Decisiones abiertas | pendiente |
-| Decisión abierta 2 — `refetchQueries` sobre `petKeys.detail` | ídem | pendiente |
+| Aprobación de la spec | `requirements.md` §Aprobación | aprobada por humano (`8658be20`, 2026-09-21) |
+| Enmienda a `docs/ui-guidelines.md` | §Enmienda #98 de ese fichero | sin firmar — requiere humano |
+| Enmienda a `specs/mobile-food/requirements.md` | §Enmienda #98 de ese fichero | sin firmar — requiere humano |
+| Prueba de humo en **dev build de Android** | `requirements.md` §Prueba de humo | sin ejecutar — requiere humano |
+| Decisión abierta 1 — título de la barra | `requirements.md` §Decisiones abiertas | cerrada por la aprobación: `food.mealsToday` |
+| Decisión abierta 2 — `refetchQueries` sobre `petKeys.detail` | ídem | cerrada por la aprobación: refrescar plan y detalle |
