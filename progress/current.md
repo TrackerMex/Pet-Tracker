@@ -28,6 +28,7 @@
 - **R2 rojo:** tests contractuales añadidos antes de `serveMeal` y
   `unserveMeal`; la suite falla en ambos títulos porque las funciones todavía
   no existen (2 fallos / 38 pruebas heredadas verdes).
+- **R2 verde:** nutrición 1 suite / 40 tests y typecheck limpios.
 
 ### Por que esta feature
 

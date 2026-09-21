@@ -69,11 +69,11 @@ orden no haya creado todavía**.
       `../nutrition`: el rojo es de compilación y de aserción, no un
       `ReferenceError` de helper — los helpers `response` e
       `invalidJsonResponse` ya viven en ese fichero (`:14-26`).
-- [ ] **(2) Verde.** Escribir `ServeMealState`, `UnserveMealState`, `serveMeal`
+- [x] **(2) Verde.** Escribir `ServeMealState`, `UnserveMealState`, `serveMeal`
       y `unserveMeal` en `src/api/nutrition.ts`, con `postJson`/`deleteJson` de
       `./http` y `readJson` solo donde hay que leer el `code`. Modelo estructural:
       `deleteReminder` en `src/api/reminders.ts:122-155`.
-- [ ] **(3) Refactor.** `bunx jest --runTestsByPath 'src/api/__tests__/nutrition.test.ts'`.
+- [x] **(3) Refactor.** `bunx jest --runTestsByPath 'src/api/__tests__/nutrition.test.ts'`.
 
 ## R3 — Cuatro claves nuevas en el catálogo
 
