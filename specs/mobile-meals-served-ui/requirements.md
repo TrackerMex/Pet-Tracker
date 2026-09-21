@@ -1,6 +1,6 @@
 ---
 feature: "mobile-meals-served-ui"
-status: spec_ready       # draft | spec_ready | approved  ← el gate humano lo pasa a approved
+status: approved         # draft | spec_ready | approved  ← firmada por el humano en 8658be20 (2026-09-21)
 tags: [harness, spec, mobile]
 ---
 

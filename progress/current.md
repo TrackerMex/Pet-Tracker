@@ -9,8 +9,9 @@
 
 - **Inicio:** 2026-09-21
 - **Rama:** `feature/98-mobile-meals-served-ui`, creada desde `origin/main` en el commit `914905b8`
-- **Estado en `feature_list.json`:** `pending` — pasa a `in_progress` solo tras el gate humano de la spec
-- **Fase:** spec escrita, **esperando gate humano**
+- **Estado en `feature_list.json`:** `in_progress` desde el 2026-09-21
+- **Fase:** spec **aprobada** (`8658be20`, 2026-09-21). Handoff a Codex escrito;
+  esperando a que el humano lo corra
 
 ### Por que esta feature
 
@@ -64,7 +65,42 @@ Y encontro un candado que la entrada no listaba: **#62 R15** en
 Declarado como `HOME_TABULAR_DELTA_98`, con R7 dejando el contador
 deliberadamente sin `TABULAR_NUMS` para que el rojo de R10 sea real.
 
-### Siguiente paso: **PARADA**. Cuatro decisiones para el humano
+### Gate humano cerrado
+
+El humano firmo la spec con su propio commit, `8658be20`, un cambio de una sola
+linea: el checkbox de §Aprobacion. Frontmatter pasado a `approved` por el
+leader, con el hash de su firma anotado al lado.
+
+Las cuatro decisiones que quedaron abiertas se resolvieron asi:
+
+1. **Titulo de la barra** y **2. `useQueryClient` desde Food**: la spec ya las
+   traia escritas como decisiones cerradas (`requirements.md:623` para el
+   titulo, `:602` y `:642` para el cliente de query), con sus alternativas
+   documentadas. El leader recomendaba lo contrario en ambas; el humano firmo
+   el documento tal cual, asi que van como la spec las tiene. No se reabre.
+3. **Las dos §Enmienda #98** las escribe Codex y las firma el humano despues:
+   `tasks.md:255` se lo prohibe explicitamente a Codex.
+4. **Smoke en dev build de Android**: checklist de 6 pasos en
+   `requirements.md:579-589`, pendiente hasta que Codex termine.
+
+Aviso pendiente de respuesta: el humano firmo `bd9758bc`, y el commit `3bbb1efb`
+anadio despues texto a §Fuera de alcance que no vio al firmar. Es texto de
+§Fuera de alcance y §Decisiones descartadas, cero cambio en R1-R11.
+
+### Siguiente paso: handoff a Codex CLI
+
+`progress/handoff_mobile-meals-served-ui.md` — el humano copia el bloque en su
+terminal de Codex. El leader **para** hasta que confirme que Codex termino;
+entonces lee `progress/impl_mobile-meals-served-ui.md` y lanza el `reviewer`.
+
+Mientras Codex implementa, el leader solo toca `docs/`, `specs/`, `progress/` y
+`feature_list.json`. Nunca `mobile-pet-tracker/` ni `backend-pet-tracker/`.
+
+Ancla de cifras verificada: desde `914905b8` esta rama solo ha tocado
+`specs/`, `progress/` y `feature_list.json`. Ninguna cifra de la spec ha
+caducado.
+
+### Las cuatro decisiones que se plantearon en el gate
 
 1. **Titulo de la barra**: `food.mealsToday` («Comidas hoy», reutiliza clave) o
    «Alimentacion» (palabra del Make). Si gana el Make: +1 clave, totales 310 y
