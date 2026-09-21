@@ -3,7 +3,14 @@
 **Feature**: #94 `mobile-map-staleness-single-source` (P3)
 **Branch**: `feature/94-mobile-map-staleness-single-source` (desde `origin/main` 914905b8)
 **Worktree**: `/home/claude/sites/Pet-Tracker-wt-ui`
-**Fase**: spec (spec_author lanzado el 2026-09-21)
+**Fase**: handoff a Codex CLI (2026-09-21)
+
+Gate humano cerrado el 2026-09-21 en los commits `cf55f1ed` y `0142417b`: spec
+aprobada y las tres decisiones abiertas firmadas — **D1** via (a), el badge sale
+de `device.connectivity` via `petKeys.detail`; **D2** el tile se rotula
+`pairing.connection`; **D3** aceptada la consecuencia visible (el Mapa dice "En
+vivo" con un fix antiguo si el collar habla). Frontmatter de las cuatro piezas
+de la spec a `approved`, #94 a `in_progress`.
 
 ## Coordinacion con la sesion Frontend
 
