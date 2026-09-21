@@ -12,7 +12,7 @@ los tres ficheros de test ya acumulan R-ids de otras specs
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | `src/utils/device-connectivity.test.ts::#94 R1: el tile de conexión del Mapa se decide en un solo sitio` | rojo `d4f2b77f` (`feat(mobile-map-staleness): specify shared map labels (R1)`); verde pendiente |
+| R1 | `src/utils/device-connectivity.test.ts::#94 R1: el tile de conexión del Mapa se decide en un solo sitio` | rojo `d4f2b77f` (`feat(mobile-map-staleness): specify shared map labels (R1)`); verde `039ed167` (`feat(mobile-map-staleness): provide shared map labels (R1)`) |
 | R2 | `src/app/(tabs)/__tests__/map.test.tsx::#94 R2: el tile de conexión sigue al collar` + `::#94 R2: la antigüedad de la posición ya no mueve el tile de conexión` + `::#94 R2: sin collar el tile de conexión dice Sin señal` | pendiente |
 | R3 | `src/app/(tabs)/__tests__/map.test.tsx::#94 R3: sin detalle el tile de conexión cae al guion` | pendiente |
 | R4 | `src/app/(tabs)/__tests__/map.test.tsx::#94 R4: la antigüedad y la conexión son datos independientes` | pendiente |
