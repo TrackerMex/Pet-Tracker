@@ -709,3 +709,22 @@ Requisitos de entorno, todos verificables antes de empezar:
 ## Aprobación
 
 - [X] Aprobado por humano (fecha: 2026-09-21) ← gate obligatorio antes de implementar
+
+## Enmiendas posteriores a la firma
+
+Codex editó esta spec **después** del commit de firma `8658be20`. Las tres
+enmiendas están ya escritas en su requisito; este bloque solo existe para que
+puedan firmarse, porque sin firma el `reviewer` rechaza por **C6**
+(`progress/review_mobile-meals-served-ui.md`).
+
+| | Dónde | Qué cambió | Por qué |
+|---|---|---|---|
+| **E1** | `:116-121` (R1) | Añade `servedToday: []` a una **segunda** fixture `NutritionPlan`, `src/app/(tabs)/__tests__/meal-schedule.test.tsx:95-108`, que la spec no enumeraba | `bunx tsc --noEmit` falla sin ella: el campo es requerido |
+| **E2** | `:409-415` (R8) | Declara R8 **requisito de verificación** por la vía (b) de C4: sus tests nacían verdes, así que el commit rojo mueve `reminders-meals` de sitio y el verde lo restaura | R8 solo asevera la cardinalidad y el orden de la barra que R7 ya dejó puesta |
+| **E3** | `:468-474` (R9) | Saca el ternario fuera de `t(...)`: cada rama hace su llamada literal | El `checkUses` heredado solo resuelve llamadas directas `t('clave')`, no `t(cond ? 'a' : 'b')` |
+
+El `reviewer` midió las tres y **ninguna relaja un requisito**: E1 es inevitable,
+E2 no cambia ninguna aserción y su rojo se reprodujo, y E3 deja el copy y el
+comportamiento idénticos. Se pueden firmar tal cual.
+
+- [ ] Enmiendas E1, E2 y E3 aprobadas por humano (fecha: ____)
