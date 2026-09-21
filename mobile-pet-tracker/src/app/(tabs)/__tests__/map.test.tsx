@@ -1409,3 +1409,24 @@ describe('#94 R3: sin detalle el tile de conexión cae al guion', () => {
     );
   });
 });
+
+describe('#94 R4: la antigüedad y la conexión son datos independientes', () => {
+  it('muestra un collar online junto a una posición de hace dos minutos', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetPet.mockResolvedValue({
+      kind: 'ok',
+      pet: makePet({ device: makeDevice('online') }),
+    });
+    mockGetLastPosition.mockResolvedValue({
+      kind: 'ok',
+      position: makeLastPosition({ staleSeconds: 121 }),
+    });
+
+    await renderMap();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('stat-gps')).toHaveTextContent('En vivo'),
+    );
+    expect(screen.getByTestId('stat-updated')).toHaveTextContent('hace 2 min');
+  });
+});
