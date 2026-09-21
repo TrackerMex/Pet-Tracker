@@ -467,6 +467,12 @@ aserción conservada más el recuento de `#70 R15`).
 
 ### R9 — La tabla de uso de copy registra las ocurrencias nuevas
 
+> **Corrección autorizada por el humano el 2026-09-21:** el `checkUses`
+> heredado solo reconoce llamadas directas `t('clave')`; no reconoce el
+> ternario dentro de `t(served ? 'food.undoServed' : 'food.markServed', ...)`
+> exigido literalmente por R5. En el verde de R9 la condición sale de `t` y
+> cada rama hace su llamada directa, sin cambiar el copy ni el comportamiento.
+
 **WHEN** Food y la Home resuelven su copy nueva, **THE SYSTEM SHALL** registrar
 cada ocurrencia en `mobile-pet-tracker/src/__tests__/ui-copy-table.ts`:
 

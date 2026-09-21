@@ -73,6 +73,13 @@
   typecheck limpio.
 - **R8 verde:** posición restaurada tras la vacuna; Home 1 suite / 136 tests y
   typecheck limpios. `#70 R15` conserva literalmente su recuento 1/1/1/1.
+  Commit `1af633ce`.
+- **Corrección R9 autorizada:** `checkUses` no reconoce el ternario dentro de
+  `t(...)`; el humano autorizó el 2026-09-21 sacar la condición fuera y dejar
+  una llamada literal por rama, sin cambio funcional.
+- **R9 rojo:** los candados nuevos fallan con los deltas exactos 51 ≠ 53 y
+  35 ≠ 38; el test de las cinco filas también falla antes de registrarlas.
+  Resultado: 3 fallos / 22 tests heredados verdes; typecheck limpio.
 
 ### Por que esta feature
 
