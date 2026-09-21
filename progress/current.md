@@ -37,6 +37,9 @@
 - **R4 rojo:** Food prueba `servedToday` y ausencia de reloj antes de cambiar
   producción; retirados los fake timers exclusivos de D7. Resultado: 2 fallos
   esperados / 23 tests heredados verdes.
+- **Ajuste de test R4:** la primera pasada verde reveló que las dos aserciones
+  de ausencia usaban `getAllByTestId`; se corrigieron a `queryAllByTestId`.
+- **R4 verde:** Food 1 suite / 25 tests y typecheck limpios; fuente sin reloj.
 
 ### Por que esta feature
 

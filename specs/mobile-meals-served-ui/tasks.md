@@ -101,11 +101,11 @@ orden no haya creado todavía**.
       `:301`, `:310`, `:315` y `:327-334` pasan a nacer de
       `makePlan({ servedToday: [...] })`. Rojo porque producción sigue mirando
       el reloj.
-- [ ] **(2) Verde.** En `src/app/(tabs)/food.tsx`: borrar `localTimeHhmm`
+- [x] **(2) Verde.** En `src/app/(tabs)/food.tsx`: borrar `localTimeHhmm`
       (`:24-29`), `const hhmm` (`:52`) y el `filter` de `:61-64`;
       `servedMeals` pasa a `loadedPlan.servedToday.length` y
       `const served = loadedPlan.servedToday.includes(mealTime)`.
-- [ ] **(3) Refactor.** `bunx jest --runTestsByPath 'src/app/(tabs)/__tests__/food.test.tsx'`.
+- [x] **(3) Refactor.** `bunx jest --runTestsByPath 'src/app/(tabs)/__tests__/food.test.tsx'`.
       Confirmar que el fuente ya no contiene `new Date(`.
 
 ## R5 — Botón por franja: sirve, deshace y refresca

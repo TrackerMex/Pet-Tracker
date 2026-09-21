@@ -418,7 +418,7 @@ describe('#98 R4: el estado servido sale de servedToday, no del reloj', () => {
       expect(screen.getByTestId('food-meals-progress')).toHaveTextContent('0/2'),
     );
     expect(screen.getAllByTestId(/^meal-pending-/)).toHaveLength(2);
-    expect(screen.getAllByTestId(/^meal-served-/)).toHaveLength(0);
+    expect(screen.queryAllByTestId(/^meal-served-/)).toHaveLength(0);
     for (const row of screen.getAllByTestId(/^meal-row-/)) {
       expect(row.props.className).toContain('bg-default');
       expect(within(row).getByTestId('food-icon-clock').props.style).toEqual({
@@ -437,7 +437,7 @@ describe('#98 R4: el estado servido sale de servedToday, no del reloj', () => {
       expect(screen.getByTestId('food-meals-progress')).toHaveTextContent('2/2'),
     );
     expect(screen.getAllByTestId(/^meal-served-/)).toHaveLength(2);
-    expect(screen.getAllByTestId(/^meal-pending-/)).toHaveLength(0);
+    expect(screen.queryAllByTestId(/^meal-pending-/)).toHaveLength(0);
     for (const row of screen.getAllByTestId(/^meal-row-/)) {
       expect(row.props.className).toContain('bg-surface-secondary');
       expect(within(row).getByTestId('food-icon-clock').props.style).toEqual({

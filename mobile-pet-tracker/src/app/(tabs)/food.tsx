@@ -21,13 +21,6 @@ function isPetsError(state: PetsState): boolean {
   return ['error', 'unreachable', 'missing-config'].includes(state.kind);
 }
 
-function localTimeHhmm(): string {
-  const now = new Date();
-  const hours = String(now.getHours()).padStart(2, '0');
-  const minutes = String(now.getMinutes()).padStart(2, '0');
-  return `${hours}:${minutes}`;
-}
-
 export default function FoodScreen() {
   const [muted, accent, foreground] = useThemeColors([
     'muted',
@@ -49,7 +42,6 @@ export default function FoodScreen() {
     queryFn: () => getNutritionPlan(baseUrl, token ?? '', selectedPetId!),
     enabled: selectedPetId !== null,
   });
-  const hhmm = localTimeHhmm();
   const loadedPlan = plan.data?.kind === 'ok' ? plan.data.plan : null;
   const waitingForPetSelection =
     selectedPetId === null &&
@@ -58,10 +50,7 @@ export default function FoodScreen() {
   const showPlanSkeletons =
     waitingForPetSelection ||
     (selectedPetId !== null && plan.data === undefined);
-  const servedMeals =
-    loadedPlan !== null
-      ? loadedPlan.mealTimes.filter((mealTime) => mealTime <= hhmm).length
-      : 0;
+  const servedMeals = loadedPlan?.servedToday.length ?? 0;
 
   return (
     <ScrollView
@@ -190,7 +179,7 @@ export default function FoodScreen() {
                 </View>
 
                 {loadedPlan.mealTimes.map((mealTime, index) => {
-                  const served = mealTime <= hhmm;
+                  const served = loadedPlan.servedToday.includes(mealTime);
                   const portionGrams = Math.round(
                     loadedPlan.dailyGrams / loadedPlan.mealsPerDay,
                   );
