@@ -33,6 +33,10 @@
 - **R3 rojo:** longitud y tabla contractual preparadas antes de añadir copy;
   falla 305 ≠ 309 y la primera clave está ausente (2 fallos / 6 tests verdes).
 - **R3 verde:** proveedor de idioma 1 suite / 8 tests y typecheck limpios.
+  Commit `2f016105`.
+- **R4 rojo:** Food prueba `servedToday` y ausencia de reloj antes de cambiar
+  producción; retirados los fake timers exclusivos de D7. Resultado: 2 fallos
+  esperados / 23 tests heredados verdes.
 
 ### Por que esta feature
 

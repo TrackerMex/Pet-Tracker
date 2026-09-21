@@ -93,7 +93,7 @@ orden no haya creado todavía**.
 
 ## R4 — El estado servido sale de `servedToday`
 
-- [ ] **(1) Rojo.** En `src/app/(tabs)/__tests__/food.test.tsx`: añadir
+- [x] **(1) Rojo.** En `src/app/(tabs)/__tests__/food.test.tsx`: añadir
       `describe('#98 R4: el estado servido sale de servedToday, no del reloj')`
       con sus dos `it`, y **en el mismo commit** aplicar los deltas de la tabla
       de [[requirements]] R4 a `describe('R5: …')`: fuera `jest.useFakeTimers`

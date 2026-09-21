@@ -20,6 +20,8 @@ import * as selectedPetHooks from '../../../providers/selected-pet-provider';
 import FoodScreen from '../food';
 import { renderWithProviders } from '../../../../test/render-with-providers';
 
+const { readFileSync } = jest.requireActual<typeof import('fs')>('fs');
+
 jest.mock('../../../api/pets', () => ({
   listPets: jest.fn(),
 }));
@@ -60,7 +62,7 @@ jest.mock('reicon-react-native', () => {
 jest.mock(
   '../../../theme/use-theme-colors',
   () => ({
-    useThemeColors: (tokens: string[]) => tokens.map(() => '#000000'),
+    useThemeColors: (tokens: string[]) => tokens,
   }),
   { virtual: true },
 );
@@ -262,13 +264,7 @@ describe('R4: food resuelve la mascota seleccionada', () => {
 
 describe('R5: plan del día con horarios y warnings', () => {
   beforeEach(() => {
-    jest.useFakeTimers({ doNotFake: ['requestAnimationFrame'] });
-    jest.setSystemTime(new Date('2026-08-23T13:00:00'));
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
-  });
-
-  afterEach(() => {
-    jest.useRealTimers();
   });
 
   it('shows a skeleton and schedule link while the plan is pending', async () => {
@@ -288,7 +284,10 @@ describe('R5: plan del día con horarios y warnings', () => {
   });
 
   it('renders kcal, grams, ordered meals, portions, and local-time badges', async () => {
-    mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan() });
+    mockGetNutritionPlan.mockResolvedValue({
+      kind: 'ok',
+      plan: makePlan({ servedToday: ['07:30'] }),
+    });
 
     await renderFood();
 
@@ -327,6 +326,7 @@ describe('R5: plan del día con horarios y warnings', () => {
         dailyGrams: 300,
         mealsPerDay: 3,
         mealTimes: ['06:00', '12:00', '18:00'],
+        servedToday: ['06:00', '12:00'],
       }),
     });
 
@@ -399,6 +399,59 @@ describe('R5: plan del día con horarios y warnings', () => {
 
     await waitFor(() => expect(screen.getByTestId('food-plan-card')).toBeVisible());
     expect(mockGetNutritionPlan).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('#98 R4: el estado servido sale de servedToday, no del reloj', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  });
+
+  it('pinta badges y contador desde servedToday con el reloj del dispositivo en cualquier hora', async () => {
+    mockGetNutritionPlan.mockResolvedValue({
+      kind: 'ok',
+      plan: makePlan({ servedToday: [] }),
+    });
+
+    const pendingView = await renderFood();
+    await waitFor(() =>
+      expect(screen.getByTestId('food-meals-progress')).toHaveTextContent('0/2'),
+    );
+    expect(screen.getAllByTestId(/^meal-pending-/)).toHaveLength(2);
+    expect(screen.getAllByTestId(/^meal-served-/)).toHaveLength(0);
+    for (const row of screen.getAllByTestId(/^meal-row-/)) {
+      expect(row.props.className).toContain('bg-default');
+      expect(within(row).getByTestId('food-icon-clock').props.style).toEqual({
+        color: 'muted',
+      });
+    }
+    await pendingView.unmount();
+
+    mockGetNutritionPlan.mockResolvedValue({
+      kind: 'ok',
+      plan: makePlan({ servedToday: ['07:30', '19:30'] }),
+    });
+
+    await renderFood();
+    await waitFor(() =>
+      expect(screen.getByTestId('food-meals-progress')).toHaveTextContent('2/2'),
+    );
+    expect(screen.getAllByTestId(/^meal-served-/)).toHaveLength(2);
+    expect(screen.getAllByTestId(/^meal-pending-/)).toHaveLength(0);
+    for (const row of screen.getAllByTestId(/^meal-row-/)) {
+      expect(row.props.className).toContain('bg-surface-secondary');
+      expect(within(row).getByTestId('food-icon-clock').props.style).toEqual({
+        color: 'accent-strong',
+      });
+    }
+  });
+
+  it('no deja rastro del reloj en el fuente de Food', () => {
+    const source = readFileSync('src/app/(tabs)/food.tsx', 'utf8');
+
+    expect(source).not.toContain('localTimeHhmm');
+    expect(source).not.toContain('new Date(');
+    expect(source).not.toMatch(/mealTime\s*<=\s*hhmm/);
   });
 });
 

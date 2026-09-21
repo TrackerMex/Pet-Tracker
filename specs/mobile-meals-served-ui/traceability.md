@@ -15,7 +15,7 @@ El implementador rellena las dos últimas columnas tras cada commit; el
 |---|---|---|---|
 | R1 — tipos `servedToday` / `mealsToday` + 10 fixtures `PetProfile` + 2 fixtures `NutritionPlan` | `src/screens/home/index.test.tsx` :: `#98 R1: los tipos del cliente declaran servedToday y mealsToday` | `189c1406` | `1a54ef7b` |
 | R2 — `serveMeal` / `unserveMeal` | `src/api/__tests__/nutrition.test.ts` :: `#98 R2: serveMeal y unserveMeal mapean la respuesta por kind` | `f4043843` | `d165d5e1` |
-| R3 — 4 claves de catálogo (305 → 309) | `src/providers/__tests__/language-provider.test.tsx` :: `#98 R3: el catálogo trae las cuatro claves de comidas servidas` (+ el `it` de longitud de `:51`) | `aac902ba` | pendiente |
+| R3 — 4 claves de catálogo (305 → 309) | `src/providers/__tests__/language-provider.test.tsx` :: `#98 R3: el catálogo trae las cuatro claves de comidas servidas` (+ el `it` de longitud de `:51`) | `aac902ba` | `2f016105` |
 | R4 — estado servido desde `servedToday` | `src/app/(tabs)/__tests__/food.test.tsx` :: `#98 R4: el estado servido sale de servedToday, no del reloj` | pendiente | pendiente |
 | R5 — botón por franja + refresco | `src/app/(tabs)/__tests__/food.test.tsx` :: `#98 R5: cada franja sirve, deshace y refresca` | pendiente | pendiente |
 | R6 — conflicto silencioso / fallo con aviso | `src/app/(tabs)/__tests__/food.test.tsx` :: `#98 R6: el conflicto se resuelve refrescando y el fallo avisa` | pendiente | pendiente |
@@ -32,8 +32,8 @@ comprueba que no se movió ninguno más.
 
 | Fichero : línea (en `914905b8`) | Viejo | Nuevo | R | Verificado |
 |---|---|---|---|---|
-| `src/providers/__tests__/language-provider.test.tsx:50` | comentario sin #98 | `+ 4 de #98` | R3 | pendiente |
-| `src/providers/__tests__/language-provider.test.tsx:55` | `260+16+1+4+7+14+2+1` = 305 | `… + 4` = 309 | R3 | pendiente |
+| `src/providers/__tests__/language-provider.test.tsx:50` | comentario sin #98 | `+ 4 de #98` | R3 | `2f016105` |
+| `src/providers/__tests__/language-provider.test.tsx:55` | `260+16+1+4+7+14+2+1` = 305 | `… + 4` = 309 | R3 | `2f016105` |
 | `src/__tests__/ui-language.test.ts:85` | `21+15+1+4+7+2+1` = 51 | `… + 2` = 53 | R9 | pendiente |
 | `src/__tests__/ui-language.test.ts:140` | `toHaveLength(35)` | `toHaveLength(35 + 3)` = 38 | R9 | pendiente |
 | `src/__tests__/consistency-classnames.test.ts:335-338` | 3 constantes de delta | + `HOME_TABULAR_DELTA_98 = 1` | R10 | pendiente |
@@ -44,7 +44,7 @@ comprueba que no se movió ninguno más.
 | `src/app/(tabs)/__tests__/food.test.tsx:263-264, 268-270` | fake timers de D7 (#38) | eliminados | R4 | pendiente |
 | `src/app/(tabs)/__tests__/food.test.tsx:301, 310, 315, 327-334` | derivados del reloj | derivados de `servedToday` | R4 | pendiente |
 | `src/screens/home/index.test.tsx:3459-3475` (`#70 R3`) | 2 aserciones de ausencia + 1 de import | las 2 invertidas; la 3.ª **literal** | R8 | pendiente |
-| `specs/mobile-ui-language/design.md` §2.6 rótulo | `(35 ocurrencias, 29 claves)` | `(38 ocurrencias, 33 claves)` | R3 | pendiente |
+| `specs/mobile-ui-language/design.md` §2.6 rótulo | `(35 ocurrencias, 29 claves)` | `(38 ocurrencias, 33 claves)` | R3 | `2f016105` |
 | `specs/mobile-food/design.md:185-195` (§D7) | vigente | tachado + remisión a #98 | R11 | pendiente |
 
 ## Candados ajenos que esta feature NO mueve (declarado a propósito)
