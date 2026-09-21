@@ -3,7 +3,12 @@
 **Feature**: #94 `mobile-map-staleness-single-source` (P3)
 **Branch**: `feature/94-mobile-map-staleness-single-source` (desde `origin/main` 914905b8)
 **Worktree**: `/home/claude/sites/Pet-Tracker-wt-ui`
-**Fase**: handoff a Codex CLI (2026-09-21)
+**Fase**: esperando a Codex CLI (handoff entregado el 2026-09-21)
+
+Handoff en `progress/handoff_mobile-map-staleness-single-source.md` (commit
+`606d5a6c`). Enmienda E1 firmada por el humano en `ce652eae`. Cuando el humano
+confirme que Codex terminó: leer `progress/impl_mobile-map-staleness-single-source.md`
+y lanzar `reviewer`. Mientras tanto el leader no toca `mobile-pet-tracker/`.
 
 Gate humano cerrado el 2026-09-21 en los commits `cf55f1ed` y `0142417b`: spec
 aprobada y las tres decisiones abiertas firmadas — **D1** via (a), el badge sale
