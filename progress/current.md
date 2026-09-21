@@ -71,6 +71,8 @@
 - **R8 rojo confirmado:** la mutación de producción deja `reminders-meals` al
   final y falla solo el orden con tres recordatorios; 135 tests verdes y
   typecheck limpio.
+- **R8 verde:** posición restaurada tras la vacuna; Home 1 suite / 136 tests y
+  typecheck limpios. `#70 R15` conserva literalmente su recuento 1/1/1/1.
 
 ### Por que esta feature
 

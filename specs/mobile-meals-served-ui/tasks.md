@@ -169,13 +169,13 @@ orden no haya creado todavía**.
       literal** `:3473`. Añadir el `it` de los tres escenarios nuevos. Mover
       temporalmente el bloque `reminders-meals` después de las filas de
       recordatorio: el rojo debe ser de orden en R8, no de un doble de test.
-- [ ] **(2) Verde.** Restaurar el bloque inmediatamente después de
+- [x] **(2) Verde.** Restaurar el bloque inmediatamente después de
       `reminders-next-vaccine`. Si algún
       recuento heredado de la tabla «viejo → nuevo» de [[requirements]] R8 se
       movió, el defecto está en la **condición de render** o en una fixture a la
       que le falta `mealsToday: null` — se arregla ahí, nunca cambiando el
       número.
-- [ ] **(3) Refactor.** Confirmar que `#70 R15` (`:3444-3457`) sigue verde **sin
+- [x] **(3) Refactor.** Confirmar que `#70 R15` (`:3444-3457`) sigue verde **sin
       una sola línea tocada** y que `#70 R1`, `R6`, `R7`, `R8`, `R9`, `R11`,
       `R12`, `R13`, `R14` y los `#85 R*` siguen verdes.
 
