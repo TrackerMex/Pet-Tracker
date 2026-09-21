@@ -727,4 +727,4 @@ El `reviewer` midió las tres y **ninguna relaja un requisito**: E1 es inevitabl
 E2 no cambia ninguna aserción y su rojo se reprodujo, y E3 deja el copy y el
 comportamiento idénticos. Se pueden firmar tal cual.
 
-- [ ] Enmiendas E1, E2 y E3 aprobadas por humano (fecha: ____)
+- [X] Enmiendas E1, E2 y E3 aprobadas por humano (fecha: 2026-09-21)

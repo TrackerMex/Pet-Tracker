@@ -396,4 +396,4 @@ relleno usa `h-full rounded-full bg-accent`. Esto último aplica la regla fija
 calcula como el porcentaje redondeado de `served / total`, o `0%` si el total
 es cero.
 
-- [ ] Enmienda aprobada por humano
+- [X] Enmienda aprobada por humano

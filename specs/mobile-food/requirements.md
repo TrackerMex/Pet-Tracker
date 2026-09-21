@@ -377,7 +377,7 @@ servida / tracking de raciones consumidas» de §Fuera de alcance.
   `specs/mobile-meals-served-ui/requirements.md` R4–R6. El detalle del retiro
   de D7 queda también en `specs/mobile-food/design.md` §D7.
 
-- [ ] Enmienda aprobada por humano
+- [X] Enmienda aprobada por humano
 
 ## Aprobación
 
