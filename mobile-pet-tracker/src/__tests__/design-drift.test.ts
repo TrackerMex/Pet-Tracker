@@ -328,6 +328,29 @@ describe('#85 R12: la sección de recordatorios reales no mete drift de estilo',
   });
 });
 
+describe('#98 R10: la barra de comidas no mete drift de estilo', () => {
+  const featureFiles = [
+    'api/nutrition.ts',
+    'api/types.ts',
+    'i18n/catalog.ts',
+    'app/(tabs)/food.tsx',
+    'screens/home/index.tsx',
+  ];
+
+  it('mantiene sus ficheros sin escapes de estilo literales', () => {
+    const violations = featureFiles.flatMap((relativePath) => {
+      const contents = readFileSync(join(sourceRoot, relativePath), 'utf8');
+      return /#[\da-f]{3,8}\b|[A-Za-z0-9_-]+-\[[^\]]+\]|StyleSheet(?:\.create)?|shadowColor|shadowOffset|shadowOpacity|shadowRadius|\belevation\s*:/i.test(
+        contents,
+      )
+        ? [relativePath]
+        : [];
+    });
+
+    expect(violations).toEqual([]);
+  });
+});
+
 describe('#68 E1: la carta retira connectivity de los enum crudos', () => {
   const charter = readFileSync(
     join(projectRoot, '..', 'docs', 'ui-guidelines.md'),

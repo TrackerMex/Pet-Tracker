@@ -336,6 +336,7 @@ describe('#62 R15: todo contador usa cifras tabulares', () => {
   const HOME_TABULAR_DELTA_69 = 1;
   const HOME_TABULAR_DELTA_70 = 1;
   const HOME_TABULAR_DELTA_85 = 1;
+  const HOME_TABULAR_DELTA_98 = 1;
   const counters = [
     [join('app', '(tabs)', 'map.tsx'), 3],
     [
@@ -343,7 +344,8 @@ describe('#62 R15: todo contador usa cifras tabulares', () => {
       HOME_TABULAR_AT_9358CC7 +
         HOME_TABULAR_DELTA_69 +
         HOME_TABULAR_DELTA_70 +
-        HOME_TABULAR_DELTA_85,
+        HOME_TABULAR_DELTA_85 +
+        HOME_TABULAR_DELTA_98,
     ],
     [join('screens', 'home', 'weekly-activity-chart.tsx'), 4],
     [join('app', '(tabs)', 'health.tsx'), 2],
@@ -362,7 +364,7 @@ describe('#62 R15: todo contador usa cifras tabulares', () => {
 
   it('#69 R10: mantiene la base cerrada más los deltas medidos', () => {
     expect(counters.reduce((total, [, count]) => total + count, 0)).toBe(
-      14 + 4 + 1 + 1 + 1,
+      14 + 4 + 1 + 1 + 1 + 1,
     );
   });
 
@@ -371,7 +373,10 @@ describe('#62 R15: todo contador usa cifras tabulares', () => {
     const measured = home.match(/style=\{TABULAR_NUMS\}/g)?.length ?? 0;
 
     expect(measured - HOME_TABULAR_AT_9358CC7).toBe(
-      HOME_TABULAR_DELTA_69 + HOME_TABULAR_DELTA_70 + HOME_TABULAR_DELTA_85,
+      HOME_TABULAR_DELTA_69 +
+        HOME_TABULAR_DELTA_70 +
+        HOME_TABULAR_DELTA_85 +
+        HOME_TABULAR_DELTA_98,
     );
   });
 
@@ -381,7 +386,31 @@ describe('#62 R15: todo contador usa cifras tabulares', () => {
 
     expect(
       measured - HOME_TABULAR_AT_9358CC7 - HOME_TABULAR_DELTA_69,
-    ).toBe(HOME_TABULAR_DELTA_70 + HOME_TABULAR_DELTA_85);
+    ).toBe(
+      HOME_TABULAR_DELTA_70 + HOME_TABULAR_DELTA_85 + HOME_TABULAR_DELTA_98,
+    );
+  });
+});
+
+describe('#98 R10: los candados que esta feature no mueve', () => {
+  it('deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban', () => {
+    const home = readSource(join('screens', 'home', 'index.tsx'));
+    const food = readSource(join('app', '(tabs)', 'food.tsx'));
+    const count = (pattern: RegExp) =>
+      sourceFiles().reduce(
+        (total, path) =>
+          total + (readFileSync(path, 'utf8').match(pattern) ?? []).length,
+        0,
+      );
+
+    expect(home.match(/style=\{CONTINUOUS_CORNER\}/g)).toHaveLength(2);
+    expect(food.match(/style=\{CONTINUOUS_CORNER\}/g)).toHaveLength(2);
+    expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(33);
+    expect(count(/rounded-xl bg-accent(?=[\s'"`])/g)).toBe(13);
+    expect(count(/bg-accent-soft/g)).toBe(16);
+    expect(home.match(/text-accent-strong\b/g)).toHaveLength(2);
+    expect(food.match(/text-accent-strong\b/g)).toHaveLength(1);
+    expect(filesMatching(/\brounded-(?:2xl|lg|md|sm)\b/)).toEqual([]);
   });
 });
 
@@ -483,5 +512,33 @@ describe('#64 R10: la carta declara la paleta categórica y su tabla de huecos',
     expect(guidelines).toContain(
       'se escriben esos nombres de clase. El color nunca es el único portador de la',
     );
+  });
+});
+
+describe('#98 R11: la carta y la spec de Food registran la enmienda', () => {
+  it('declara la barra de comidas en la carta y retira D7 de mobile-food', () => {
+    const amendments = [
+      [
+        readFileSync(
+          join(process.cwd(), '..', 'docs', 'ui-guidelines.md'),
+          'utf8',
+        ),
+        '## Enmienda #98 — la barra de comidas de la Home',
+      ],
+      [
+        readFileSync(
+          join(process.cwd(), '..', 'specs', 'mobile-food', 'requirements.md'),
+          'utf8',
+        ),
+        '## Enmienda #98 — la comida servida deja de derivarse del reloj',
+      ],
+    ] as const;
+
+    for (const [source, heading] of amendments) {
+      expect(source).toContain(heading);
+      expect(source.slice(source.indexOf(heading))).toMatch(
+        /- \[[ xX]\] Enmienda aprobada por humano/,
+      );
+    }
   });
 });

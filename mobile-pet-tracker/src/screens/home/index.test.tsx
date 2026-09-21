@@ -118,6 +118,7 @@ jest.mock('reicon-react-native', () => {
     Map: mockIcon('icon-map'),
     CalendarPlus: mockIcon('icon-calendar-plus'),
     FileText: mockIcon('icon-file-text'),
+    ForkKnife: mockIcon('icon-fork-knife'),
     Syringe: mockIcon('icon-syringe'),
     Bacteria: mockIcon('icon-bacteria'),
     Pill: mockIcon('icon-pill'),
@@ -245,6 +246,7 @@ function makePet(overrides: Partial<PetProfile> = {}): PetProfile {
     nextVaccine: null,
     nextReminder: null,
     activitySummary: null,
+    mealsToday: null,
     createdAt: '2026-08-20T00:00:00.000Z',
     updatedAt: '2026-08-21T00:00:00.000Z',
     ...overrides,
@@ -2966,6 +2968,39 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
     });
   });
 
+  describe('#98 R1: los tipos del cliente declaran servedToday y mealsToday', () => {
+    it('añade los dos campos sin tocar nextReminder ni activitySummary', () => {
+      const source = readFileSync(
+        join(process.cwd(), 'src/api/types.ts'),
+        'utf8',
+      );
+      const nutritionPlanBlock =
+        source.match(/export interface NutritionPlan \{[\s\S]*?\n\}/)?.[0] ?? '';
+      const petProfileBlock =
+        source.match(/export interface PetProfile \{[\s\S]*?\n\}/)?.[0] ?? '';
+      const fieldsOf = (block: string) =>
+        [...block.matchAll(/^\s+(\w+):/gm)].map(([, field]) => field);
+      const nutritionPlanFields = fieldsOf(nutritionPlanBlock);
+      const petProfileFields = fieldsOf(petProfileBlock);
+
+      expect(nutritionPlanFields).toHaveLength(12);
+      expect(nutritionPlanFields.slice(-2)).toEqual([
+        'generatedAt',
+        'servedToday',
+      ]);
+      expect(petProfileFields).toHaveLength(25);
+      expect(petProfileFields.slice(-5)).toEqual([
+        'nextReminder',
+        'activitySummary',
+        'mealsToday',
+        'createdAt',
+        'updatedAt',
+      ]);
+      expect(petProfileBlock).toContain('nextReminder: unknown;');
+      expect(petProfileBlock).toContain('activitySummary: unknown;');
+    });
+  });
+
   describe('#70 R1: estructura de la sección', () => {
     it('dibuja la cabecera y el cuerpo de la sección', async () => {
       await renderHome();
@@ -3456,22 +3491,233 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
     });
   });
 
-  describe('#70 R3: la barra de comidas queda fuera', () => {
-    it('no dibuja la barra de comidas ni pide el plan de nutrición', async () => {
-      await renderHome();
+  describe('#98 R8: la barra de comidas entra sin traerse el cliente de nutrición', () => {
+    it('suma un solo hijo y lo coloca tras la vacuna en tres escenarios', async () => {
+      jest.useFakeTimers();
+      jest.setSystemTime(new Date(2026, 8, 10, 12, 0));
+      const mealsToday = { served: 1, total: 2 };
+      const reminders = makeReminderFixture();
+      const scenarios = [
+        {
+          pet: makePet({ nextVaccine: vaccine, mealsToday }),
+          reminders: [],
+          expected: ['reminders-next-vaccine', 'reminders-meals'],
+        },
+        {
+          pet: makePet({ nextVaccine: vaccine, mealsToday }),
+          reminders,
+          expected: [
+            'reminders-next-vaccine',
+            'reminders-meals',
+            'reminders-item-rem-b',
+            'reminders-item-rem-a',
+            'reminders-item-rem-c',
+          ],
+        },
+        {
+          pet: makePet({ mealsToday }),
+          reminders: [],
+          expected: ['reminders-meals', 'reminders-none-upcoming'],
+        },
+      ] as const;
 
-      const section = await screen.findByTestId('reminders-section');
-      await screen.findByTestId('reminders-next-vaccine');
-      const body = within(section).getByTestId('reminders-section-body');
+      for (const scenario of scenarios) {
+        mockGetPet.mockResolvedValue({ kind: 'ok', pet: scenario.pet });
+        mockListReminders.mockResolvedValue({
+          kind: 'ok',
+          reminders: [...scenario.reminders],
+        });
+        const view = await renderWithProviders(<HomeScreen />, {
+          wrapper: HomeWrapper,
+        });
+
+        try {
+          await screen.findByTestId('reminders-meals');
+          const section = screen.getByTestId('reminders-section');
+          const body = within(section).getByTestId('reminders-section-body');
+
+          await waitFor(() =>
+            expect(
+              body.children.map((child) =>
+                typeof child === 'string' ? child : child.props.testID,
+              ),
+            ).toEqual(scenario.expected),
+          );
+          expect(within(section).getByText('1/2')).toBeVisible();
+        } finally {
+          await view.unmount();
+        }
+      }
+    });
+
+    it('no importa el cliente de nutrición ni añade llamadas', async () => {
+      const pet = makePet({
+        nextVaccine: vaccine,
+        mealsToday: { served: 1, total: 2 },
+      });
+      mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+      await renderHome();
+      await screen.findByTestId('reminders-meals');
+      await screen.findByTestId('weekly-activity-card');
       const source = readFileSync(
         join(process.cwd(), 'src/screens/home/index.tsx'),
         'utf8',
       );
 
-      expect(body.children).toHaveLength(1);
-      expect(within(section).queryByText(/\d+\s*\/\s*\d+/)).toBeNull();
       expect(source).not.toContain("../../api/nutrition");
+      expect({
+        pets: mockListPets.mock.calls.length,
+        detail: mockGetPet.mock.calls.length,
+        activity: mockGetDailyActivity.mock.calls.length,
+        reminders: mockListReminders.mock.calls.length,
+      }).toEqual({ pets: 1, detail: 1, activity: 1, reminders: 1 });
     });
+  });
+});
+
+describe('#98 R7: la barra de comidas y todas sus decisiones', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [] });
+    mockListAlerts.mockResolvedValue({
+      kind: 'ok',
+      items: [],
+      nextCursor: null,
+    });
+    jest
+      .spyOn(Uniwind, 'getCSSVariable')
+      .mockImplementation((token) => token);
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('pinta dato, icono, copy, nombre accesible, huecos, tintas y tipografía', async () => {
+    mockGetPet.mockResolvedValue({
+      kind: 'ok',
+      pet: makePet({ mealsToday: { served: 1, total: 2 } }),
+    });
+    const planned = await renderWithProviders(<HomeScreen />, {
+      wrapper: HomeWrapper,
+    });
+
+    const row = await screen.findByTestId('reminders-meals');
+    const title = within(row).getByTestId('reminders-meals-title');
+    const count = within(row).getByTestId('reminders-meals-count');
+    const icon = within(row).getByTestId('icon-fork-knife');
+    const disk = row.children[0];
+
+    expect(row.props.className).toContain(
+      'rounded-card border border-border bg-surface p-4 shadow-sm',
+    );
+    expect(row.props.className).toContain('flex-row items-center gap-3');
+    expect(row.props.onPress).toBeUndefined();
+    expect(icon.props.size).toBe(20);
+    expect(icon.props.color).toBe('--color-category-rose-strong');
+    expect(typeof disk).not.toBe('string');
+    if (typeof disk !== 'string') {
+      expect(disk.props.className).toBe(
+        `size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS.rose.surface}`,
+      );
+    }
+    expect(title).toHaveTextContent('Comidas hoy');
+    expect(title.props.className).toBe(
+      'text-sm font-semibold text-foreground',
+    );
+    expect(count).toHaveTextContent('1/2');
+    expect(count.props.accessibilityLabel).toBe(
+      '1 de 2 comidas servidas',
+    );
+    expect(count.props.style).toEqual(TABULAR_NUMS);
+    expect(count.props.className).toBe('text-xs font-normal text-muted');
+    await planned.unmount();
+
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
+    await renderWithProviders(<HomeScreen />, { wrapper: HomeWrapper });
+    await screen.findByTestId('reminders-none-upcoming');
+    expect(screen.queryByTestId('reminders-meals')).toBeNull();
+  });
+
+  it('reparte el espacio y fija el orden de los hijos por posición', async () => {
+    mockGetPet.mockResolvedValue({
+      kind: 'ok',
+      pet: makePet({ mealsToday: { served: 1, total: 2 } }),
+    });
+
+    await renderHome();
+
+    const row = await screen.findByTestId('reminders-meals');
+    expect(row.children).toHaveLength(2);
+    const disk = row.children[0];
+    const column = row.children[1];
+    if (typeof disk === 'string' || typeof column === 'string') {
+      throw new Error('Expected element children');
+    }
+    expect(within(disk).getByTestId('icon-fork-knife')).toBeVisible();
+    expect(column.props.className).toBe('flex-1 gap-1.5');
+    expect(column.children).toHaveLength(2);
+    const header = column.children[0];
+    const track = column.children[1];
+    if (typeof header === 'string' || typeof track === 'string') {
+      throw new Error('Expected element children');
+    }
+    expect(header.props.className).toBe(
+      'flex-row items-center justify-between',
+    );
+    expect(header.children).toHaveLength(2);
+    expect(header.children[0]).toHaveProperty(
+      'props.testID',
+      'reminders-meals-title',
+    );
+    expect(header.children[1]).toHaveProperty(
+      'props.testID',
+      'reminders-meals-count',
+    );
+    expect(track.props.testID).toBe('reminders-meals-track');
+    expect(track.props.className).toBe(
+      'h-1.5 overflow-hidden rounded-full bg-default',
+    );
+    expect(track.children).toHaveLength(1);
+    const fill = track.children[0];
+    if (typeof fill === 'string') {
+      throw new Error('Expected element child');
+    }
+    expect(fill.props.testID).toBe('reminders-meals-fill');
+    expect(fill.props.className).toBe('h-full rounded-full bg-accent');
+    expect(fill.props.style).toEqual({ width: '50%' });
+  });
+
+  it('calcula el ancho del relleno con served/total', async () => {
+    const cases = [
+      [{ served: 0, total: 2 }, '0%'],
+      [{ served: 1, total: 2 }, '50%'],
+      [{ served: 3, total: 3 }, '100%'],
+    ] as const;
+
+    for (const [mealsToday, width] of cases) {
+      mockGetPet.mockResolvedValue({
+        kind: 'ok',
+        pet: makePet({ mealsToday }),
+      });
+      const view = await renderWithProviders(<HomeScreen />, {
+        wrapper: HomeWrapper,
+      });
+
+      expect(
+        (await screen.findByTestId('reminders-meals-fill')).props.style,
+      ).toEqual({ width });
+      await view.unmount();
+    }
   });
 });
 

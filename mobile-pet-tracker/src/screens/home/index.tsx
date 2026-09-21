@@ -12,6 +12,7 @@ import {
   CalendarPlus,
   ChevronRight,
   FileText,
+  ForkKnife,
   Map,
   Moon,
   Pill,
@@ -164,13 +165,15 @@ export function HomeScreen() {
     petId: string;
   } | null>(null);
   const insets = useSafeAreaInsets();
-  const [accent, success, warning, muted, vaccineInk] = useThemeColors([
-    'accent-strong',
-    'success',
-    'warning',
-    'muted',
-    'category-blue-strong',
-  ]);
+  const [accent, success, warning, muted, vaccineInk, mealsInk] =
+    useThemeColors([
+      'accent-strong',
+      'success',
+      'warning',
+      'muted',
+      'category-blue-strong',
+      'category-rose-strong',
+    ]);
   const quickActionInks = useThemeColors(
     QUICK_ACTIONS.map(({ slot }) => `category-${slot}-strong`),
   );
@@ -217,6 +220,12 @@ export function HomeScreen() {
     : null;
   const nextVaccineCountdown =
     nextVaccineDays === null ? null : dueCountdown(nextVaccineDays, t);
+  const mealsToday =
+    detail.data?.kind === 'ok' ? detail.data.pet.mealsToday : null;
+  const mealsPct =
+    mealsToday !== null && mealsToday.total > 0
+      ? Math.round((mealsToday.served / mealsToday.total) * 100)
+      : 0;
   const refetchPets = pets.refetch;
   const refetchDetail = detail.refetch;
   const refetchOpenAlerts = openAlerts.refetch;
@@ -666,6 +675,50 @@ export function HomeScreen() {
                 </Card>
               ) : null}
 
+              {mealsToday !== null ? (
+                <Card
+                  testID="reminders-meals"
+                  className="flex-row items-center gap-3"
+                >
+                  <View
+                    className={`size-9 items-center justify-center rounded-full ${CATEGORY_SLOTS.rose.surface}`}
+                  >
+                    <ForkKnife size={20} color={mealsInk} />
+                  </View>
+                  <View className="flex-1 gap-1.5">
+                    <View className="flex-row items-center justify-between">
+                      <Text
+                        testID="reminders-meals-title"
+                        className="text-sm font-semibold text-foreground"
+                      >
+                        {t('food.mealsToday')}
+                      </Text>
+                      <Text
+                        testID="reminders-meals-count"
+                        accessibilityLabel={t('food.mealsServedOfTotal', {
+                          served: mealsToday.served,
+                          total: mealsToday.total,
+                        })}
+                        style={TABULAR_NUMS}
+                        className="text-xs font-normal text-muted"
+                      >
+                        {mealsToday.served}/{mealsToday.total}
+                      </Text>
+                    </View>
+                    <View
+                      testID="reminders-meals-track"
+                      className="h-1.5 overflow-hidden rounded-full bg-default"
+                    >
+                      <View
+                        testID="reminders-meals-fill"
+                        className="h-full rounded-full bg-accent"
+                        style={{ width: `${mealsPct}%` }}
+                      />
+                    </View>
+                  </View>
+                </Card>
+              ) : null}
+
               {detail.data?.kind === 'ok' &&
               !detail.data.pet.nextVaccine &&
               upcoming.length === 0 ? (
@@ -729,6 +782,7 @@ export function HomeScreen() {
                   </Card>
                 );
               })}
+
             </View>
           </View>
         ) : null}

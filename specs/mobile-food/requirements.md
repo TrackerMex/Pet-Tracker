@@ -303,10 +303,12 @@ Todo lo demás (R1–R8) sigue TDD estricto con test rojo primero.
 
 - **Crear/editar el perfil nutricional desde la app** (formulario PUT):
   el smoke lo crea vía curl; feature móvil futura.
-- **Marcar comida como servida / tracking de raciones consumidas**: el
+- ~~**Marcar comida como servida / tracking de raciones consumidas**: el
   backend no persiste servings — el estado Served/Pending se deriva de la
   hora local (§D7). Los botones `Marcar servido` / `Editar horario` /
-  `Añadir comida` del diseño no son implementables sin backend nuevo.
+  `Añadir comida` del diseño no son implementables sin backend nuevo.~~
+  **Retirado por la Enmienda #98:** #83 añadió la persistencia y #98 permite
+  marcar y deshacer una comida servida.
 - Selector editable de `Alimento principal` (el perfil solo guarda
   `foodType`/`kcalPer100g`; el catálogo de marcas del diseño no existe).
 - Recordatorios/notificaciones de comidas (la card `Recordatorios
@@ -322,9 +324,9 @@ Todo lo demás (R1–R8) sigue TDD estricto con test rojo primero.
 
 ## Decisiones del gate (resueltas por humano, 2026-08-24)
 
-- **D7 — Served/Pending por hora local**: APROBADO tal como está en
+- ~~**D7 — Served/Pending por hora local**: APROBADO tal como está en
   [[design]] §D7 (badge derivado comparando `HH:MM` local). R5 se
-  mantiene íntegro.
+  mantiene íntegro.~~ **Retirado por la Enmienda #98.**
 - **D9 — sin generate en Food**: APROBADO — el botón `Generate plan`
   vive solo en MealSchedule; el empty de Food (`No meal plan yet`)
   dirige ahí vía el link `Meal schedule`.
@@ -358,6 +360,24 @@ y su ampliación). Esta spec ratificó el inglés en su día; esa parte queda
   (`specs/mobile-ui-language/requirements.md` §Fuera de alcance 1).
 
 - [X] Enmienda aprobada por humano (fecha: 2026-09-06)
+
+## Enmienda #98 — la comida servida deja de derivarse del reloj
+
+El backend de #83 persiste las comidas servidas y expone `servedToday` en el
+plan. Por ello #98 sustituye la decisión D7 y retira «Marcar comida como
+servida / tracking de raciones consumidas» de §Fuera de alcance.
+
+- **Qué cambia:** Food decide `Served` / `Pending` exclusivamente con
+  `plan.servedToday`, permite marcar o deshacer cada franja mediante el backend
+  y, tras cada operación, refresca plan y detalle para pintar la respuesta del
+  servidor. No mantiene estado optimista.
+- **Qué NO cambia:** R5 de #38 sigue vigente en todo lo demás: contador,
+  horarios, porciones, warnings, recetas visuales y estados de carga/error.
+- **Fuente normativa nueva:**
+  `specs/mobile-meals-served-ui/requirements.md` R4–R6. El detalle del retiro
+  de D7 queda también en `specs/mobile-food/design.md` §D7.
+
+- [X] Enmienda aprobada por humano
 
 ## Aprobación
 

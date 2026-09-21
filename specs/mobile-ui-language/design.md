@@ -417,7 +417,7 @@ añadidas por #68, registradas como delta sobre la tabla existente
 | 20 | `weightChart.notEnoughDataYet` | `Not enough data yet` | `Aún no hay datos suficientes` |
 
 
-### §2.6 — R6 — Food y Meal schedule (35 ocurrencias, 29 claves)
+### §2.6 — R6 — Food y Meal schedule (38 ocurrencias, 33 claves)
 
 **`mobile-pet-tracker/src/app/(tabs)/food.tsx`** — 16 ocurrencias
 
@@ -431,6 +431,10 @@ añadidas por #68, registradas como delta sobre la tabla existente
 | 150 | `food.dailyKcal` **(param)** | `{{kcal}} kcal / day` | `{{kcal}} kcal / día` |
 | 156 | `food.dailyGrams` **(param)** | `{{grams}} g / day` | `{{grams}} g / día` |
 | 174 | `food.mealsToday` | `Meals today` | `Comidas hoy` |
+| — | `food.markServed` | `Mark {{time}} as served` | `Marcar {{time}} como servida` | ← añadida por #98 (R3)
+| — | `food.undoServed` | `Undo {{time}}` | `Deshacer {{time}}` | ← añadida por #98 (R3)
+| — | `food.couldNotUpdateMeal` | `Could not update the meal` | `No se pudo actualizar la comida` | ← añadida por #98 (R3)
+| — | `food.mealsServedOfTotal` | `{{served}} of {{total}} meals served` | `{{served}} de {{total}} comidas servidas` | ← añadida por #98 (R3)
 | 224 | `food.pending` | `Pending` | `Pendiente` |
 | 224 | `food.served` | `Served` | `Servido` |
 | 259 | `food.aiRecommendation` | `AI recommendation` | `Recomendación IA` |

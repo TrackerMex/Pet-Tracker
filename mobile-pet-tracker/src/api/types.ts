@@ -55,6 +55,11 @@ export interface NextVaccine {
   nextDoseAt: string;
 }
 
+export interface MealsToday {
+  served: number;
+  total: number;
+}
+
 export interface PetProfile {
   id: string;
   name: string;
@@ -78,6 +83,7 @@ export interface PetProfile {
   nextVaccine: NextVaccine | null;
   nextReminder: unknown;
   activitySummary: unknown;
+  mealsToday: MealsToday | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -193,6 +199,7 @@ export interface NutritionPlan {
   warnings: NutritionWarning[];
   aiExplanation: string | null;
   generatedAt: string;
+  servedToday: string[];
 }
 
 export type ReminderType =
