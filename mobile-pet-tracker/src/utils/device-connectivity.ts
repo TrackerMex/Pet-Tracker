@@ -11,6 +11,16 @@ export const DEVICE_CONNECTIVITY_META: Record<
   offline: { labelKey: 'deviceConnectivity.offline' },
 };
 
+export const MAP_CONNECTION_LABEL_KEY: Record<
+  DeviceConnectionState,
+  { labelKey: TranslationKey }
+> = {
+  none: { labelKey: 'map.noSignal' },
+  unknown: { labelKey: 'map.noSignal' },
+  offline: { labelKey: 'map.stale' },
+  online: { labelKey: 'map.live' },
+};
+
 const UNKNOWN_CONNECTIVITY_META: { labelKey: TranslationKey } = {
   labelKey: 'deviceConnectivity.unknown',
 };
