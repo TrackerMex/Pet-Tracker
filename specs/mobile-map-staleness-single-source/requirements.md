@@ -228,7 +228,7 @@ con R1 sobre la **función compartida**, no editando el test de la Home: ver
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [X] Aprobado por humano (fecha: 2026-09-21) ← gate obligatorio antes de implementar
 
 El humano firma a la vez las tres decisiones abiertas de [[design]] §Decisiones
 abiertas: **D1** (qué fuente manda), **D2** (rótulo del tile) y **D3**
