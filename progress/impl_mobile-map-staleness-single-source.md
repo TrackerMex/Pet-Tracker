@@ -107,3 +107,7 @@ posiciones y confirmar que Home y Mapa cambian juntos de estado de conexión.
 El mismo smoke debe confirmar el caso firmado por D3: collar online con fix
 viejo muestra `En vivo` y `hace N min`. No se usó Expo Go ni se firmó R8 desde
 esta sesión.
+
+El gate humano paso el estado de conexión a `En vivo` y `hace N min` correctamente.
+Cambien el Poller a false y confirme que el estado de conexión se actualiza correctamente.
+La actualización del estado de conexión se debe ver reflejada en Home y Mapa.
