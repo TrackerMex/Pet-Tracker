@@ -406,6 +406,13 @@ que la decisión 2 y el invariante de tamaño son observables. **Ojo:** el mock 
 
 ### R8 — Cardinalidad, orden y ausencia de llamadas nuevas en la Home
 
+> **Requisito de verificación** (CHECKPOINTS C4, vía (b)): R8 solo asevera la
+> cardinalidad y el orden de la barra que R7 ya dejó en el árbol, por lo que sus
+> tests nacen verdes. Corrección autorizada por el humano el 2026-09-21: el
+> commit rojo mueve temporalmente `reminders-meals` después de las filas de
+> recordatorio para romper el orden en producción; el verde restaura su
+> posición inmediatamente posterior a `reminders-next-vaccine`.
+
 **WHILE** la mascota **no** tiene plan (`mealsToday === null`, el valor por
 defecto de `makePet`), **THE SYSTEM SHALL** dejar `reminders-section-body`
 **exactamente** como en `914905b8`. Recuentos por escenario, viejo → nuevo:

@@ -3491,21 +3491,86 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
     });
   });
 
-  describe('#70 R3: la barra de comidas queda fuera', () => {
-    it('no dibuja la barra de comidas ni pide el plan de nutrición', async () => {
-      await renderHome();
+  describe('#98 R8: la barra de comidas entra sin traerse el cliente de nutrición', () => {
+    it('suma un solo hijo y lo coloca tras la vacuna en tres escenarios', async () => {
+      jest.useFakeTimers();
+      jest.setSystemTime(new Date(2026, 8, 10, 12, 0));
+      const mealsToday = { served: 1, total: 2 };
+      const reminders = makeReminderFixture();
+      const scenarios = [
+        {
+          pet: makePet({ nextVaccine: vaccine, mealsToday }),
+          reminders: [],
+          expected: ['reminders-next-vaccine', 'reminders-meals'],
+        },
+        {
+          pet: makePet({ nextVaccine: vaccine, mealsToday }),
+          reminders,
+          expected: [
+            'reminders-next-vaccine',
+            'reminders-meals',
+            'reminders-item-rem-b',
+            'reminders-item-rem-a',
+            'reminders-item-rem-c',
+          ],
+        },
+        {
+          pet: makePet({ mealsToday }),
+          reminders: [],
+          expected: ['reminders-meals', 'reminders-none-upcoming'],
+        },
+      ] as const;
 
-      const section = await screen.findByTestId('reminders-section');
-      await screen.findByTestId('reminders-next-vaccine');
-      const body = within(section).getByTestId('reminders-section-body');
+      for (const scenario of scenarios) {
+        mockGetPet.mockResolvedValue({ kind: 'ok', pet: scenario.pet });
+        mockListReminders.mockResolvedValue({
+          kind: 'ok',
+          reminders: [...scenario.reminders],
+        });
+        const view = await renderWithProviders(<HomeScreen />, {
+          wrapper: HomeWrapper,
+        });
+
+        try {
+          await screen.findByTestId('reminders-meals');
+          const section = screen.getByTestId('reminders-section');
+          const body = within(section).getByTestId('reminders-section-body');
+
+          await waitFor(() =>
+            expect(
+              body.children.map((child) =>
+                typeof child === 'string' ? child : child.props.testID,
+              ),
+            ).toEqual(scenario.expected),
+          );
+          expect(within(section).getByText('1/2')).toBeVisible();
+        } finally {
+          await view.unmount();
+        }
+      }
+    });
+
+    it('no importa el cliente de nutrición ni añade llamadas', async () => {
+      const pet = makePet({
+        nextVaccine: vaccine,
+        mealsToday: { served: 1, total: 2 },
+      });
+      mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+      await renderHome();
+      await screen.findByTestId('reminders-meals');
+      await screen.findByTestId('weekly-activity-card');
       const source = readFileSync(
         join(process.cwd(), 'src/screens/home/index.tsx'),
         'utf8',
       );
 
-      expect(body.children).toHaveLength(1);
-      expect(within(section).queryByText(/\d+\s*\/\s*\d+/)).toBeNull();
       expect(source).not.toContain("../../api/nutrition");
+      expect({
+        pets: mockListPets.mock.calls.length,
+        detail: mockGetPet.mock.calls.length,
+        activity: mockGetDailyActivity.mock.calls.length,
+        reminders: mockListReminders.mock.calls.length,
+      }).toEqual({ pets: 1, detail: 1, activity: 1, reminders: 1 });
     });
   });
 });

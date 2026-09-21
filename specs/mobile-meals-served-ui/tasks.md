@@ -160,13 +160,17 @@ orden no haya creado todavía**.
 
 ## R8 — Cardinalidad, orden y ausencia de llamadas nuevas
 
-- [ ] **(1) Rojo.** Reescribir `describe('#70 R3: la barra de comidas queda
+- [x] **(1) Rojo por mutación de producción (vía (b), autorizada por el humano
+      el 2026-09-21).** Reescribir `describe('#70 R3: la barra de comidas queda
       fuera')` (`:3459-3475`) como
       `describe('#98 R8: la barra de comidas entra sin traerse el cliente de nutrición')`
       con los dos `it` de [[requirements]] R8: sustituir `:3471` y `:3472` por
       sus contrarias bajo `mealsToday: { served: 1, total: 2 }` y **conservar
-      literal** `:3473`. Añadir el `it` de los tres escenarios nuevos.
-- [ ] **(2) Verde.** Normalmente ya lo está: R7 pintó la barra. Si algún
+      literal** `:3473`. Añadir el `it` de los tres escenarios nuevos. Mover
+      temporalmente el bloque `reminders-meals` después de las filas de
+      recordatorio: el rojo debe ser de orden en R8, no de un doble de test.
+- [ ] **(2) Verde.** Restaurar el bloque inmediatamente después de
+      `reminders-next-vaccine`. Si algún
       recuento heredado de la tabla «viejo → nuevo» de [[requirements]] R8 se
       movió, el defecto está en la **condición de render** o en una fixture a la
       que le falta `mealsToday: null` — se arregla ahí, nunca cambiando el

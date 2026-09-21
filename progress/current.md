@@ -57,7 +57,20 @@
   a la Home; el contador queda deliberadamente sin aserción de `TABULAR_NUMS`.
   Resultado: 3 fallos por nodos ausentes / 132 tests verdes; typecheck limpio.
 - **R7 verde:** Home 1 suite / 135 tests y typecheck limpios; sin adelantar
-  `TABULAR_NUMS` de R10.
+  `TABULAR_NUMS` de R10. Commit `40e062c2`.
+- **Bloqueo R8:** R7 ya dejó correcta la cardinalidad que R8 solo verifica, por
+  lo que los tests prescritos de R8 nacen verdes. `requirements.md` no declara
+  R8 como requisito de verificación ni elige la vía (b) de CHECKPOINTS C4. Se
+  paró antes de escribir R8; hace falta autorización humana para corregir la
+  spec y versionar una mutación de producción en el rojo, restaurada en verde.
+- **Bloqueo R8 resuelto:** el humano autorizó el 2026-09-21 declarar R8 como
+  requisito de verificación vía (b), con mutación de orden en producción para
+  el rojo y restauración en el verde.
+- **R8 rojo preparado:** el candado heredado se reescribió con los dos títulos
+  firmados y tres escenarios exactos de cardinalidad/orden.
+- **R8 rojo confirmado:** la mutación de producción deja `reminders-meals` al
+  final y falla solo el orden con tres recordatorios; 135 tests verdes y
+  typecheck limpio.
 
 ### Por que esta feature
 
