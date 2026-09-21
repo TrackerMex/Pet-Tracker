@@ -56,6 +56,8 @@
 - **R7 rojo:** tres tests fijan las 12 decisiones de la barra antes de añadirla
   a la Home; el contador queda deliberadamente sin aserción de `TABULAR_NUMS`.
   Resultado: 3 fallos por nodos ausentes / 132 tests verdes; typecheck limpio.
+- **R7 verde:** Home 1 suite / 135 tests y typecheck limpios; sin adelantar
+  `TABULAR_NUMS` de R10.
 
 ### Por que esta feature
 

@@ -146,14 +146,14 @@ orden no haya creado todavía**.
       `ForkKnife: mockIcon('icon-fork-knife')` al mock de reicon (`:100-128`) y
       `describe('#98 R7: la barra de comidas y todas sus decisiones')` con sus
       tres `it`. Rojo por `reminders-meals` ausente.
-- [ ] **(2) Verde.** En `src/screens/home/index.tsx`: importar `ForkKnife`;
+- [x] **(2) Verde.** En `src/screens/home/index.tsx`: importar `ForkKnife`;
       ampliar `useThemeColors` de `:167-173` con `'category-rose-strong'` →
       `mealsInk`; insertar el bloque de [[design]] §4 **entre**
       `reminders-next-vaccine` (acaba en `:667`) y `reminders-none-upcoming`
       (`:669`), con la condición
       `detail.data?.kind === 'ok' && detail.data.pet.mealsToday !== null`.
       **Sin `style={TABULAR_NUMS}` en el contador** — eso es R10.
-- [ ] **(3) Refactor.** `bunx jest --runTestsByPath 'src/screens/home/index.test.tsx'`.
+- [x] **(3) Refactor.** `bunx jest --runTestsByPath 'src/screens/home/index.test.tsx'`.
       Esperar rojo **solo** en los tests que R8 y R10 aún no han tocado; si algo
       más cae, es un candado no declarado: **parar y reportarlo**, no ajustar la
       cifra.
