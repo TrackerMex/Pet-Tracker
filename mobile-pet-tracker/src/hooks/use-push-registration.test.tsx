@@ -9,6 +9,7 @@ import { usePushRegistration } from './use-push-registration';
 
 let mockIsDevice = true;
 let mockProjectId: string | undefined = 'project-id';
+let mockExecutionEnvironment = 'bare';
 
 jest.mock('expo-notifications', () => ({
   AndroidImportance: { MAX: 7 },
@@ -28,6 +29,9 @@ jest.mock('expo-device', () => ({
 jest.mock('expo-constants', () => ({
   __esModule: true,
   default: {
+    get executionEnvironment() {
+      return mockExecutionEnvironment;
+    },
     get expoConfig() {
       return {
         extra: { eas: { projectId: mockProjectId } },
@@ -124,6 +128,7 @@ beforeEach(() => {
   warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
   mockIsDevice = true;
   mockProjectId = 'project-id';
+  mockExecutionEnvironment = 'bare';
   setPlatform('android');
   process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
   mockUseAuth.mockReturnValue(authenticatedAuth());
@@ -482,5 +487,46 @@ describe('R10: banner en primer plano y tap que navega a /alerts', () => {
     await probe.unmount();
 
     expect(mockRemoveResponseListener).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('R15: importar el modulo no toca expo-notifications', () => {
+  it('omite push en Expo Go y nombra la salida', async () => {
+    mockExecutionEnvironment = 'storeClient';
+
+    await renderHook(() => usePushRegistration());
+
+    expectNoPushSideEffects();
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    expect(warnSpy).toHaveBeenCalledWith(
+      '[push] skipped: Expo Go does not support remote notifications',
+    );
+  });
+
+  it('no accede a expo-notifications al importar el modulo', () => {
+    const expoGoImportError = new Error(
+      'expo-notifications unavailable in Expo Go',
+    );
+
+    jest.resetModules();
+
+    expect(() =>
+      jest.isolateModules(() => {
+        jest.doMock(
+          'expo-notifications',
+          () =>
+            new Proxy(
+              {},
+              {
+                get() {
+                  throw expoGoImportError;
+                },
+              },
+            ),
+        );
+
+        jest.requireActual('./use-push-registration');
+      }),
+    ).not.toThrow();
   });
 });
