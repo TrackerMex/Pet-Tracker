@@ -25,6 +25,8 @@ los tres ficheros de test ya acumulan R-ids de otras specs
 
 ## Notas de cierre que el reviewer comprueba
 
+- **H1 quedó corregido en `c2b67934`**: `sourceFiles()` recupera su forma
+  compartida de `7eb66357`, y solo `#94 R5` filtra los `*.test.*` colocados.
 - **R5 es requisito de verificación** ([[requirements]] §Requisito de
   verificación, vía **b**): su fila no se cierra sin la evidencia de las **dos**
   mutaciones de producción —`map.tsx` y `utils/device-connectivity.ts`— con sus

@@ -499,3 +499,38 @@ describe('#94 R5: el umbral de frescura no vive en el móvil', () => {
     ).toEqual([]);
   });
 });
+
+describe('#94 R10: la antigüedad de la posición se lee en un solo sitio', () => {
+  const staleSecondsReads: Record<string, number> = {
+    'api/types.ts': 1,
+    'app/(tabs)/map.tsx': 1,
+  };
+
+  it('inventaría cada lectura de staleSeconds en producción', () => {
+    const actual = Object.fromEntries(
+      allTypeScriptFiles(sourceRoot)
+        .map((path) => ({
+          path,
+          relativePath: path
+            .slice(sourceRoot.length + 1)
+            .replace(/\\/g, '/'),
+        }))
+        .filter(
+          ({ relativePath }) =>
+            !/(^|\/)__tests__\//.test(relativePath) &&
+            !/\.test\.tsx?$/.test(relativePath),
+        )
+        .map(({ path, relativePath }) => {
+          const contents = readFileSync(path, 'utf8');
+
+          return [
+            relativePath,
+            (contents.match(/\bstaleSeconds\b/g) ?? []).length,
+          ] as const;
+        })
+        .filter(([, count]) => count >= 1),
+    );
+
+    expect(actual).toEqual(staleSecondsReads);
+  });
+});
