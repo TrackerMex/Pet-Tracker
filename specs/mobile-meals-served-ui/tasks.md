@@ -82,13 +82,13 @@ orden no haya creado todavía**.
       comentario de `:50` con `+ 4 de #98`, y añadir
       `describe('#98 R3: el catálogo trae las cuatro claves de comidas servidas')`.
       Falla con `305 !== 309` y con las cuatro claves ausentes.
-- [ ] **(2) Verde.** Añadir las cuatro claves a `en` y a `es` de
+- [x] **(2) Verde.** Añadir las cuatro claves a `en` y a `es` de
       `src/i18n/catalog.ts` con los valores literales de la tabla de
       [[requirements]] R3, en el bloque `food.*` y en el **mismo orden** en los
       dos idiomas. Añadir las cuatro filas a `specs/mobile-ui-language/design.md`
       §2.6 con el sufijo `← añadida por #98 (R3)` y actualizar el rótulo de la
       sección a `(38 ocurrencias, 33 claves)`.
-- [ ] **(3) Refactor.** `bunx jest --runTestsByPath 'src/providers/__tests__/language-provider.test.tsx'`.
+- [x] **(3) Refactor.** `bunx jest --runTestsByPath 'src/providers/__tests__/language-provider.test.tsx'`.
       Comprobar que `Object.keys(en).length === Object.keys(es).length === 309`.
 
 ## R4 — El estado servido sale de `servedToday`

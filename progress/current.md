@@ -32,6 +32,7 @@
   `d165d5e1`.
 - **R3 rojo:** longitud y tabla contractual preparadas antes de añadir copy;
   falla 305 ≠ 309 y la primera clave está ausente (2 fallos / 6 tests verdes).
+- **R3 verde:** proveedor de idioma 1 suite / 8 tests y typecheck limpios.
 
 ### Por que esta feature
 
