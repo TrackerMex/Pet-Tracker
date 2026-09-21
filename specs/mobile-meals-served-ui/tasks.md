@@ -110,7 +110,7 @@ orden no haya creado todavía**.
 
 ## R5 — Botón por franja: sirve, deshace y refresca
 
-- [ ] **(1) Rojo.** En `food.test.tsx`: ampliar
+- [x] **(1) Rojo.** En `food.test.tsx`: ampliar
       `jest.mock('../../../api/nutrition', …)` (`:26-28`) a
       `{ getNutritionPlan: jest.fn(), serveMeal: jest.fn(), unserveMeal: jest.fn() }`,
       declarar `mockServeMeal` / `mockUnserveMeal` con `jest.mocked`, y añadir

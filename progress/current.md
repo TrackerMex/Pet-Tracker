@@ -40,6 +40,10 @@
 - **Ajuste de test R4:** la primera pasada verde reveló que las dos aserciones
   de ausencia usaban `getAllByTestId`; se corrigieron a `queryAllByTestId`.
 - **R4 verde:** Food 1 suite / 25 tests y typecheck limpios; fuente sin reloj.
+  Commit `9318afaa`.
+- **R5 rojo:** tests de servir, deshacer, orden de refresco y doble pulsación
+  añadidos antes del control interactivo; 3 fallos por `meal-toggle-0` ausente,
+  25 tests heredados verdes y typecheck limpio.
 
 ### Por que esta feature
 
