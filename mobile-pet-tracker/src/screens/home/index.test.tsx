@@ -3638,6 +3638,7 @@ describe('#98 R7: la barra de comidas y todas sus decisiones', () => {
     expect(count.props.accessibilityLabel).toBe(
       '1 de 2 comidas servidas',
     );
+    expect(count.props.style).toEqual(TABULAR_NUMS);
     expect(count.props.className).toBe('text-xs font-normal text-muted');
     await planned.unmount();
 

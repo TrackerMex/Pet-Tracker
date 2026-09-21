@@ -699,6 +699,7 @@ export function HomeScreen() {
                           served: mealsToday.served,
                           total: mealsToday.total,
                         })}
+                        style={TABULAR_NUMS}
                         className="text-xs font-normal text-muted"
                       >
                         {mealsToday.served}/{mealsToday.total}

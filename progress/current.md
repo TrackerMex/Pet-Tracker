@@ -87,6 +87,14 @@
 - **R10 rojo:** los tres candados tabulares fallan sobre la misma ausencia
   medida (Home tiene 7 usos y los deltas esperan 8); legibilidad, drift y los
   demás invariantes quedan verdes. Typecheck limpio.
+- **R10 verde base:** `TABULAR_NUMS` añadido y aseverado en R7; consistencia,
+  legibilidad, drift y Home pasan 4 suites / 256 tests; typecheck limpio.
+- **R10 sondas de mutación:** `bg-accent-strong` rompe la clase del relleno en
+  `#98 R7`; intercambiar los nombres accesibles rompe el del contador en
+  `#98 R7`; `ForkKnife size={28}` rompe su tamaño en `#98 R7`; quitar
+  `TABULAR_NUMS` rompe los tres candados de `#62 R15`. Tras cada sonda se
+  restauró `src/screens/home/index.tsx` con `git checkout --` y `git diff`
+  quedó vacío respecto del verde indexado.
 
 ### Por que esta feature
 

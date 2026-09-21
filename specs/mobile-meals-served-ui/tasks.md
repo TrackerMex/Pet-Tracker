@@ -215,10 +215,10 @@ orden no haya creado todavía**.
       `src/__tests__/design-drift.test.ts`, añadir
       `describe('#98 R10: la barra de comidas no mete drift de estilo')` con la
       lista de cinco ficheros de [[requirements]] R10. Rojo: 7 ≠ 8.
-- [ ] **(2) Verde.** Añadir `style={TABULAR_NUMS}` a `reminders-meals-count` en
+- [x] **(2) Verde.** Añadir `style={TABULAR_NUMS}` a `reminders-meals-count` en
       `src/screens/home/index.tsx`, y en `#98 R7` añadir la aserción
       `expect(count.props.style).toEqual(TABULAR_NUMS)`.
-- [ ] **(3) Refactor.** `bunx jest --runTestsByPath 'src/__tests__/consistency-classnames.test.ts'
+- [x] **(3) Refactor.** `bunx jest --runTestsByPath 'src/__tests__/consistency-classnames.test.ts'
       'src/__tests__/legibility-classnames.test.ts' 'src/__tests__/design-drift.test.ts'`.
       **Sonda de mutación, obligatoria y documentada en
       `progress/impl_mobile-meals-served-ui.md`:** (a) cambiar `bg-accent` del
