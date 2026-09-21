@@ -784,6 +784,50 @@ esto solo se repite el paso 11.
 
 ---
 
+### E5 — el paso 11 se redefine: esta app no puede correr en Expo Go, y no por #79
+
+**Qué pasó.** Repetido el paso 11 tras R15, el error de `expo-notifications`
+**desapareció** —R15 cumple— y en su lugar salió otro, de un módulo ajeno a esta
+feature:
+
+```
+ERROR [Error: Cannot find native module 'ExpoMaps']
+  <global> (src/components/pet-map.tsx:1)
+  <global> (src/app/(tabs)/map.tsx:18)
+```
+
+**Hecho verificado, no atribuible a #79**: `expo-maps` está en
+`mobile-pet-tracker/package.json:20` desde mucho antes de esta feature, y
+`src/components/pet-map.tsx` no se ha tocado desde el 2026-09-03. El diff de esta
+rama contra `origin/main` no incluye ninguno de los dos ficheros.
+
+**La conclusión que hay que escribir de una vez**: esta app **no arranca en Expo
+Go**, y no por un defecto, sino porque usa módulos nativos propios —`expo-maps`
+es solo el primero que revienta— y Expo Go solo trae los del SDK. Lo mismo vale
+para `@expo/ui` y el resto. Por eso todo smoke móvil de este repo se hace en dev
+build desde el 2026-08-27.
+
+**Qué cambia en el paso 11.** Ya no pide iniciar sesión en Expo Go, porque es
+imposible. Pasa a comprobar lo que el criterio 4 realmente protege —que el hook
+no toque `expo-notifications` fuera de un dev build— con estas tres evidencias:
+
+1. Al abrir el proyecto en Expo Go, **ningún error menciona `expo-notifications`
+   ni `use-push-registration`**. El error de `ExpoMaps` es esperado y ajeno.
+2. En Metro aparece el aviso de R13 nombrando la salida de entorno de ejecución,
+   **o** no aparece ninguno de `[push]` porque la app muere antes de montar el
+   hook. Cualquiera de las dos vale: ninguna implica registro.
+3. En el backend **no** llega ningún `POST /v1/me/push-tokens` y la consulta a
+   `push_tokens` sigue como estaba.
+
+**Lo que NO se hace.** No se intenta que la app funcione en Expo Go: eso exigiría
+renunciar a los módulos nativos que la app usa, y sería una decisión de producto
+del tamaño de varias features. El criterio 4 de `feature_list.json` se entiende
+cumplido con las tres evidencias de arriba.
+
+- [ ] **E5 aprobada por humano** (fecha: ____)
+
+---
+
 ## Aprobación
 
 - [X] Aprobado por humano (fecha: 2026-09-17) ← gate obligatorio antes de implementar
