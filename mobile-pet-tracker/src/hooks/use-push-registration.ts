@@ -1,6 +1,5 @@
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
-import * as Notifications from 'expo-notifications';
 import { router, usePathname } from 'expo-router';
 import { useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
@@ -8,14 +7,7 @@ import { Platform } from 'react-native';
 import { registerPushToken } from '../api/push-tokens';
 import { useAuth } from '../providers/auth-provider';
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  }),
-});
+type NotificationsModule = typeof import('expo-notifications');
 
 function getProjectId(): string | undefined {
   const projectId = Constants.expoConfig?.extra?.eas?.projectId;
@@ -36,11 +28,11 @@ function warnPush(reason: string, error?: unknown): void {
 export function usePushRegistration(): void {
   const { setPushToken, status, token } = useAuth();
   const handledInitialResponse = useRef(false);
-  const pushReady = useRef(false);
+  const notifications = useRef<NotificationsModule | null>(null);
   const pathname = usePathname();
 
   useEffect(() => {
-    pushReady.current = false;
+    notifications.current = null;
     if (status !== 'authenticated' || token === null) {
       warnPush('skipped: unauthenticated or missing auth token');
       return;
@@ -51,6 +43,10 @@ export function usePushRegistration(): void {
     }
     if (!Device.isDevice) {
       warnPush('skipped: physical device required');
+      return;
+    }
+    if (Constants.executionEnvironment === 'storeClient') {
+      warnPush('skipped: Expo Go does not support remote notifications');
       return;
     }
     const platform = Platform.OS;
@@ -64,11 +60,21 @@ export function usePushRegistration(): void {
       return;
     }
 
-    pushReady.current = true;
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const Notifications = require('expo-notifications') as NotificationsModule;
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowBanner: true,
+        shouldShowList: true,
+        shouldPlaySound: true,
+        shouldSetBadge: false,
+      }),
+    });
     const responseSubscription =
       Notifications.addNotificationResponseReceivedListener(() => {
         router.push('/alerts');
       });
+    notifications.current = Notifications;
 
     void (async () => {
       try {
@@ -106,8 +112,9 @@ export function usePushRegistration(): void {
   }, [setPushToken, status, token]);
 
   useEffect(() => {
+    const Notifications = notifications.current;
     if (
-      !pushReady.current ||
+      !Notifications ||
       pathname === '/' ||
       handledInitialResponse.current
     ) {

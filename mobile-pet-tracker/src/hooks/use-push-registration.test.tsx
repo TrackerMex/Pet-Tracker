@@ -87,8 +87,6 @@ const originalDev = devGlobal.__DEV__;
 const mockSetPushToken = jest.fn();
 const mockRouterPush = jest.mocked(router.push);
 const mockRemoveResponseListener = jest.fn();
-const notificationHandlerCallsAtImport = mockSetNotificationHandler.mock.calls.length;
-const foregroundNotificationHandler = mockSetNotificationHandler.mock.calls[0]?.[0];
 let responseListener:
   | Parameters<typeof Notifications.addNotificationResponseReceivedListener>[0]
   | undefined;
@@ -418,12 +416,17 @@ describe('R13: cada salida silenciosa se nombra en desarrollo', () => {
 describe('R10: banner en primer plano y tap que navega a /alerts', () => {
   const notificationResponse = {} as Notifications.NotificationResponse;
 
-  it('configura al importar el comportamiento de primer plano de SDK 57', async () => {
+  it('configura tras los guards el comportamiento de primer plano de SDK 57', async () => {
+    await renderHook(() => usePushRegistration());
+    await waitFor(() => {
+      expect(mockSetNotificationHandler).toHaveBeenCalledTimes(1);
+    });
+    const foregroundNotificationHandler =
+      mockSetNotificationHandler.mock.calls[0]?.[0];
     const behavior = await foregroundNotificationHandler?.handleNotification(
       {} as Notifications.Notification,
     );
 
-    expect(notificationHandlerCallsAtImport).toBe(1);
     expect(behavior).toEqual({
       shouldShowBanner: true,
       shouldShowList: true,
