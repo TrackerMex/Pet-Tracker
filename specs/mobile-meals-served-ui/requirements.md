@@ -595,17 +595,17 @@ Requisitos de entorno, todos verificables antes de empezar:
    comprueba.
 4. Dev build reconstruido si cambió algo nativo; si no, `bunx expo start --dev-client`.
 
-- [ ] Con plan: en Food, una franja pendiente → pulsar → queda **Servido** y el
+- [X] Con plan: en Food, una franja pendiente → pulsar → queda **Servido** y el
       contador sube
-- [ ] Ir a Home: la barra `Comidas hoy` aparece bajo la vacuna con el contador y
+- [X] Ir a Home: la barra `Comidas hoy` aparece bajo la vacuna con el contador y
       el relleno proporcional
-- [ ] Volver a Food, pulsar la misma franja → queda **Pendiente**; Home: la
+- [X] Volver a Food, pulsar la misma franja → queda **Pendiente**; Home: la
       barra baja
-- [ ] Segunda mascota **sin** plan: la barra **no** aparece en la Home
-- [ ] Con el backend apagado: pulsar una franja → aparece `No se pudo actualizar
+- [X] Segunda mascota **sin** plan: la barra **no** aparece en la Home
+- [X] Con el backend apagado: pulsar una franja → aparece `No se pudo actualizar
       la comida`; al volver el backend, reintentar la borra
-- [ ] Modo oscuro: el relleno verde y el disco rosa siguen legibles
-- [ ] Smoke ejecutado por el humano (fecha: ____)
+- [X] Modo oscuro: el relleno verde y el disco rosa siguen legibles
+- [X] Smoke ejecutado por el humano (fecha: 2026-09-21)
 
 ## Decisiones (cerradas por escrito, para Codex)
 
