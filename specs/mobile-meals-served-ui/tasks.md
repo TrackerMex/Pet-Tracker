@@ -207,7 +207,7 @@ orden no haya creado todavía**.
 > versionar el rojo por la aserción de `#62 R15`, y restaurarlo en el verde —
 > mutación de **producción**, nunca de un doble.
 
-- [ ] **(1) Rojo.** En `src/__tests__/consistency-classnames.test.ts`: añadir
+- [x] **(1) Rojo.** En `src/__tests__/consistency-classnames.test.ts`: añadir
       `const HOME_TABULAR_DELTA_98 = 1;` junto a las otras tres (`:335-338`) y
       aplicar los cuatro deltas de la tabla de [[requirements]] R10 (`:342-347`,
       `:363-367`, `:369-376`, `:378-385`). Añadir

@@ -82,7 +82,11 @@
   Resultado: 3 fallos / 22 tests heredados verdes; typecheck limpio.
 - **R9 verde:** `R3_HOME` queda en 53, `R6_FOOD` en 38 y las cinco filas
   resuelven una ocurrencia directa cada una; UI language + Food 2 suites /
-  55 tests y typecheck limpios. `ALL_USES` permanece intacto.
+  55 tests y typecheck limpios. `ALL_USES` permanece intacto. Commit
+  `2f9752c8`.
+- **R10 rojo:** los tres candados tabulares fallan sobre la misma ausencia
+  medida (Home tiene 7 usos y los deltas esperan 8); legibilidad, drift y los
+  demás invariantes quedan verdes. Typecheck limpio.
 
 ### Por que esta feature
 
