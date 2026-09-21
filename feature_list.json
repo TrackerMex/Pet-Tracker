@@ -1830,7 +1830,7 @@
   {
     "id": 94,
     "name": "mobile-map-staleness-single-source",
-    "status": "in_progress",
+    "status": "done",
     "priority": "P3",
     "description": "Deuda nombrada por #73 (decision G4 de su spec, fuera de alcance). El mapa decide 'En vivo' / 'Desactualizado' con su propia constante STALE_SECONDS = 120 en mobile-pet-tracker/src/app/(tabs)/map.tsx:76 contra staleSeconds de GET /v1/pets/:petId/positions/last, mientras la pildora y collar-status de la Home leen device.connectivity, que el backend deriva con DEVICE_ONLINE_THRESHOLD_MS = 120 s (backend-pet-tracker/src/pipeline/constants.ts). Hoy coinciden porque el humano eligio 120 s en #73, pero son dos fuentes: si una cambia, Home y Mapa se contradicen en pantalla para la misma mascota. La spec cierra que fuente manda: (a) el mapa consume device.connectivity del detalle para el badge y staleSeconds solo para el texto de antiguedad, o (b) la API expone el umbral y el movil borra la constante. Hay que mantener map.test.tsx:548-585 (15 s en vivo, 121 s desactualizado) o declarar su delta. map.tsx sigue siendo route file sin migrar a src/screens/ (convencion #39): decidir si esta feature lo migra o no.",
     "acceptance_criteria": [
