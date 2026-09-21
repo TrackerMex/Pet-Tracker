@@ -80,3 +80,30 @@ veredicto; Codex no dejo seccion propia.
   `expo-notifications` en el cuerpo del modulo. Detalle en
   `progress/review_mobile-push-registration-r15.md`.
 
+## R12 — gate humano: resultado (cerrado el 2026-09-21)
+
+Recorrido por el humano en **dev build de Android sobre telefono fisico**, contra
+el backend de su LAN. Anotado por el `leader` a partir de lo que reporto.
+
+| Paso | Resultado |
+|---|---|
+| 1 prebuild con el permiso en el manifiesto | pasa |
+| 2 login y permiso concedido | pasa |
+| 3 una fila en `push_tokens`, `ExpoPushToken[...]`, `platform = android` | pasa |
+| 4 reinicio: misma fila, `last_seen_at` mayor | pasa |
+| 5 alerta encolada | pasa, por la ruta determinista de la spec (mensaje de 7 claves en `notifications`); el pipeline del motor tardaba |
+| 6 banner en primer plano | pasa |
+| 7 tap en segundo plano abre alertas | pasa |
+| 8 tap en arranque en frio abre alertas | **fallo el 2026-09-19** (se quedaba en Home); **pasa** tras el arreglo de R10 |
+| 9 cerrar sesion deja `push_tokens` en cero filas | pasa |
+| 10 permiso denegado: sin dialogo, sin crash, sin POST, cero filas | pasa |
+| 11 Expo Go | pasa **segun la redefinicion de E5**: ningun error de `expo-notifications`, el aviso `[push] skipped` en Metro, ningun POST y la tabla intacta |
+
+**Lo que el gate destapo y ningun test habria encontrado**, todo ello convertido
+en enmiendas firmadas: el `projectId` de EAS ausente (E1 no, ese fue la Tarea A),
+el diagnostico mudo del hook (**E2**, R13), que la credencial de EAS no sirve
+para un dev build local y hace falta `google-services.json` (**E3**, R14), que
+`Device.isDevice` no detecta Expo Go y que el modulo rompia al importarse
+(**E4**, R15), y que esta app no puede correr en Expo Go por sus modulos nativos
+propios (**E5**, que redefine el paso 11).
+

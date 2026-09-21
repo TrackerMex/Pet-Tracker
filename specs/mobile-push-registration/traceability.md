@@ -22,7 +22,7 @@ tags: [harness, spec]
 | R13 | `mobile-pet-tracker/src/hooks/use-push-registration.test.tsx::R13: cada salida silenciosa se nombra en desarrollo` | `2cc99957 test(mobile-push-registration): name the skipped push path in dev (R13)` rojo → `387d71be feat(mobile-push-registration): warn in dev when push registration is skipped (R13)` verde → `bda615ee test(mobile-push-registration): type the dev flag override (R13)` |
 | R14 | `mobile-pet-tracker/app.config.test.ts::#79 R14: google-services.json se declara solo cuando existe` | `63e981d4 test(mobile-push-registration): require google services file wiring (R14)` rojo → `d8703096 feat(mobile-push-registration): wire google-services.json when present (R14)` verde |
 | R15 | `mobile-pet-tracker/src/hooks/use-push-registration.test.tsx::R15: importar el modulo no toca expo-notifications` | `7b6b3b92 test(mobile-push-registration): importing the hook must not touch expo-notifications (R15)` rojo → `b6c3392e feat(mobile-push-registration): keep expo-notifications out of module scope (R15)` verde |
-| R12 | pendiente: gate humano sin test automático; ver `progress/impl_mobile-push-registration.md` §R12 | pendiente: no ejecutado |
+| R12 | gate humano, sin test automatico: 11 pasos en dev build de Android sobre telefono fisico | cerrado por el humano el 2026-09-21; resultado en `progress/impl_mobile-push-registration.md` §R12 |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
 Convención de commit: `feat(mobile-push-registration): <desc> (R1,R2)`.
