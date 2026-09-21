@@ -530,4 +530,4 @@ declararlo es leerlo, no tocarlo.
 
 ### Aprobación de E2
 
-- [ ] Enmienda E2 aprobada por humano (fecha: ____)
+- [X] Enmienda E2 aprobada por humano (fecha: 2026-09-21)
