@@ -205,8 +205,6 @@ export default function MapScreen() {
       ? route.data.trips.reduce((total, trip) => total + trip.distanceM, 0)
       : null;
   const updated = position ? fmtAgo(position.staleSeconds, t) : '—';
-  const positionAge = position?.staleSeconds ?? 0;
-  const isFresh = positionAge <= 120;
   const gps =
     detail.data?.kind === 'ok'
       ? t(

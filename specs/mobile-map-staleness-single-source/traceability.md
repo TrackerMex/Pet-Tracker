@@ -21,7 +21,7 @@ los tres ficheros de test ya acumulan R-ids de otras specs
 | R7 | `src/app/(tabs)/__tests__/map.test.tsx::#94 R7: el poll refresca también el detalle` | rojo `d0ea8cb0` (`feat(mobile-map-staleness): specify detail polling (R7)`); verde `9bc67e53` (`feat(mobile-map-staleness): refresh pet detail with map poll (R7)`) |
 | R8 | gate humano — smoke en dev build de Android, sin test automático | pendiente (firma en [[requirements]] §Aprobación) |
 | R9 *(E1)* | `src/__tests__/ui-language.test.ts::#65 R4: Map resuelve su copy por clave` + `::#65 R10: el emparejado del collar resuelve su copy por clave` + `::#65 R18: los sitios resuelven por clave y no queda copy suelta` — tests **ya existentes de #65**, no se crean nuevos | R2 `a83aae5c` (`feat(mobile-map-staleness): read map badge from pet detail (R2,R9)`); R6 `8ca103e4` (`feat(mobile-map-staleness): label connection tile consistently (R6,R9)`) |
-| R10 *(E2)* | `src/__tests__/design-drift.test.ts::#94 R10: la antigüedad de la posición se lee en un solo sitio` | pendiente |
+| R10 *(E2)* | `src/__tests__/design-drift.test.ts::#94 R10: la antigüedad de la posición se lee en un solo sitio` | rojo por recuento `86594a29` (`feat(mobile-map-staleness): guard staleSeconds read inventory (R10)`); segunda mutación y verde pendientes |
 
 ## Notas de cierre que el reviewer comprueba
 
