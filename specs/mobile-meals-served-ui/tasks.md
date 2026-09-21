@@ -77,7 +77,7 @@ orden no haya creado todavía**.
 
 ## R3 — Cuatro claves nuevas en el catálogo
 
-- [ ] **(1) Rojo.** En `src/providers/__tests__/language-provider.test.tsx`:
+- [x] **(1) Rojo.** En `src/providers/__tests__/language-provider.test.tsx`:
       subir `:55` a `260 + 16 + 1 + 4 + 7 + 14 + 2 + 1 + 4`, ampliar el
       comentario de `:50` con `+ 4 de #98`, y añadir
       `describe('#98 R3: el catálogo trae las cuatro claves de comidas servidas')`.

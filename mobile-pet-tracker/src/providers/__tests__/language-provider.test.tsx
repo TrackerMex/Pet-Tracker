@@ -47,12 +47,14 @@ function LocaleProbe() {
 }
 
 describe('#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y parámetros', () => {
-  // 259 en `303fc19` + 1 de `home.walks` (#67 R7b) + 16 de #68 + 14 de #78 + 2 de #73 + 1 de #90.
+  // 259 en `303fc19` + 1 de `home.walks` (#67 R7b) + 16 de #68 + 14 de #78 + 2 de #73 + 1 de #90 + 4 de #98.
   it('mantiene la base más las claves de #68 y los mismos marcadores en ambos idiomas', () => {
     const englishKeys = Object.keys(en).sort();
     const spanishKeys = Object.keys(es).sort();
 
-    expect(englishKeys).toHaveLength(260 + 16 + 1 + 4 + 7 + 14 + 2 + 1);
+    expect(englishKeys).toHaveLength(
+      260 + 16 + 1 + 4 + 7 + 14 + 2 + 1 + 4,
+    );
     expect(spanishKeys).toEqual(englishKeys);
     for (const key of englishKeys) {
       expect(markerNames(es[key as keyof typeof es])).toEqual(
@@ -101,6 +103,47 @@ describe('#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y par�
     expect(screen.getByTestId('missing-param')).toHaveTextContent(
       'Última señal {{date}}',
     );
+  });
+});
+
+describe('#98 R3: el catálogo trae las cuatro claves de comidas servidas', () => {
+  it('registra las cuatro claves en los dos idiomas y en la tabla de la spec de idioma', () => {
+    const english = en as Record<string, string>;
+    const spanish = es as Record<string, string>;
+    const languageDesign = readFileSync(
+      join(process.cwd(), '../specs/mobile-ui-language/design.md'),
+      'utf8',
+    );
+    const translations = [
+      [
+        'food.markServed',
+        'Mark {{time}} as served',
+        'Marcar {{time}} como servida',
+      ],
+      ['food.undoServed', 'Undo {{time}}', 'Deshacer {{time}}'],
+      [
+        'food.couldNotUpdateMeal',
+        'Could not update the meal',
+        'No se pudo actualizar la comida',
+      ],
+      [
+        'food.mealsServedOfTotal',
+        '{{served}} of {{total}} meals served',
+        '{{served}} de {{total}} comidas servidas',
+      ],
+    ] as const;
+
+    for (const [key, englishValue, spanishValue] of translations) {
+      expect(english[key]).toBe(englishValue);
+      expect(spanish[key]).toBe(spanishValue);
+      expect(languageDesign).toMatch(
+        new RegExp(
+          '\\| — \\| `' +
+            escapeRegExp(key) +
+            '`[^\\n]*← añadida por #98 \\(R3\\)',
+        ),
+      );
+    }
   });
 });
 

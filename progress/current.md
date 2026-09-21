@@ -28,7 +28,10 @@
 - **R2 rojo:** tests contractuales añadidos antes de `serveMeal` y
   `unserveMeal`; la suite falla en ambos títulos porque las funciones todavía
   no existen (2 fallos / 38 pruebas heredadas verdes).
-- **R2 verde:** nutrición 1 suite / 40 tests y typecheck limpios.
+- **R2 verde:** nutrición 1 suite / 40 tests y typecheck limpios. Commit
+  `d165d5e1`.
+- **R3 rojo:** longitud y tabla contractual preparadas antes de añadir copy;
+  falla 305 ≠ 309 y la primera clave está ausente (2 fallos / 6 tests verdes).
 
 ### Por que esta feature
 
