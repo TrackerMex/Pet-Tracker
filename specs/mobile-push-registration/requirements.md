@@ -731,6 +731,59 @@ del build de desarrollo.
 
 ---
 
+### E4 — Expo Go no se detecta con `Device.isDevice`, y el módulo no puede tocar `expo-notifications` al importarse
+
+**Qué pasó.** Paso 11 del gate humano (2026-09-21), abriendo el proyecto en Expo
+Go: la app **revienta al arrancar**, antes de cualquier guard:
+
+```
+ERROR [Error: expo-notifications: Android Push notifications (remote
+notifications) functionality provided by expo-notifications was removed from
+Expo Go with the release of SDK 53. Use a development build instead of Expo Go.]
+  <global> (src/hooks/use-push-registration.ts:3)
+  <global> (src/app/_layout.tsx:10)
+```
+
+**Dos errores, y uno es de esta spec:**
+
+1. **Premisa falsa en R6.2.** Dice que `Device.isDevice` **false** cubre
+   *"emulador/simulador, y el caso Expo Go del criterio 4"*. Es falso: Expo Go
+   sobre un **teléfono físico** tiene `Device.isDevice` **true**, así que ese
+   guard nunca filtró Expo Go. Lo que distingue Expo Go es el entorno de
+   ejecución (`Constants.executionEnvironment === 'storeClient'`, o el
+   `appOwnership` equivalente), no si el aparato es físico.
+2. **El fallo ocurre en tiempo de importación**, así que **ningún** guard dentro
+   del hook podía evitarlo: `src/hooks/use-push-registration.ts` llama a
+   `Notifications.setNotificationHandler({...})` en el nivel superior del módulo,
+   y `src/app/_layout.tsx` lo importa siempre.
+
+**Qué cambia:**
+
+- **R6.2 queda corregido**: `Device.isDevice` cubre emulador y simulador. El caso
+  Expo Go se detecta por entorno de ejecución, y es una condición **añadida** a
+  las cuatro que ya tiene R6.
+- **R15**: WHEN el módulo `use-push-registration` se importa, THE SYSTEM SHALL
+  NOT ejecutar **ninguna** llamada a `expo-notifications` en el cuerpo del
+  módulo; toda interacción —incluida la instalación del handler de primer
+  plano— SHALL ocurrir dentro del efecto y **después** de que todas las
+  condiciones de R6 se hayan evaluado. **IF** el entorno es Expo Go, **THEN** la
+  app SHALL arrancar y funcionar con normalidad, sin diálogo, sin registro y
+  **sin error visible**, que es lo que pide el criterio 4 de la feature.
+
+**Nota de implementación que la spec deja cerrada**: si para cumplir R15 hace
+falta que `expo-notifications` se cargue de forma perezosa en vez de con el
+`import` estático de la línea 3, se hace, y el test lo fija. No es una
+optimización: es la única forma de que un módulo importado siempre no rompa un
+entorno donde la librería no existe.
+
+**Lo que NO cambia.** R10 (el tap navega a alertas) ni el resto del ciclo de vida.
+Los pasos 1-10 del smoke ya están dados por buenos y **no se repiten**: al cerrar
+esto solo se repite el paso 11.
+
+- [ ] **E4 aprobada por humano** (fecha: ____)
+
+---
+
 ## Aprobación
 
 - [X] Aprobado por humano (fecha: 2026-09-17) ← gate obligatorio antes de implementar
