@@ -824,7 +824,7 @@ renunciar a los módulos nativos que la app usa, y sería una decisión de produ
 del tamaño de varias features. El criterio 4 de `feature_list.json` se entiende
 cumplido con las tres evidencias de arriba.
 
-- [ ] **E5 aprobada por humano** (fecha: ____)
+- [X] **E5 aprobada por humano** (fecha: 2026-09-21)
 
 ---
 
