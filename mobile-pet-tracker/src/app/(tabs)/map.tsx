@@ -6,7 +6,12 @@ import { Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUniwind } from 'uniwind';
 
-import { listPets, setLostMode, type PetsState } from '../../api/pets';
+import {
+  getPet,
+  listPets,
+  setLostMode,
+  type PetsState,
+} from '../../api/pets';
 import {
   getLastPosition,
   listPositions,
@@ -24,6 +29,10 @@ import {
   CONTINUOUS_CORNER,
   TABULAR_NUMS,
 } from '../../theme/native-styles';
+import {
+  deviceConnectionState,
+  MAP_CONNECTION_LABEL_KEY,
+} from '../../utils/device-connectivity';
 
 function isPetsError(state: PetsState): boolean {
   switch (state.kind) {
@@ -73,7 +82,6 @@ const DEFAULT_CENTER = {
   latitude: 19.4326,
   longitude: -99.1332,
 };
-const STALE_SECONDS = 120;
 const POLL_MS = 15000;
 
 export default function MapScreen() {
@@ -90,6 +98,11 @@ export default function MapScreen() {
   usePetSelection({ data: pets.data, isRefreshing: pets.isRefetching });
   const [lostModeBusy, setLostModeBusy] = useState(false);
   const [lostModeFailed, setLostModeFailed] = useState(false);
+  const detail = useQuery({
+    queryKey: petKeys.detail(selectedPetId ?? ''),
+    queryFn: () => getPet(baseUrl, token ?? '', selectedPetId!),
+    enabled: selectedPetId !== null,
+  });
   const last = useQuery({
     queryKey: positionKeys.last(selectedPetId ?? ''),
     queryFn: () => getLastPosition(baseUrl, token ?? '', selectedPetId!),
@@ -190,11 +203,13 @@ export default function MapScreen() {
       : null;
   const updated = position ? fmtAgo(position.staleSeconds, t) : '—';
   const gps =
-    position === null
-      ? t('map.noSignal')
-      : position && position.staleSeconds <= STALE_SECONDS
-        ? t('map.live')
-        : t('map.stale');
+    detail.data?.kind === 'ok'
+      ? t(
+          MAP_CONNECTION_LABEL_KEY[
+            deviceConnectionState(detail.data.pet.device)
+          ].labelKey,
+        )
+      : '—';
 
   return (
     <View testID="screen-map" className="flex-1">
