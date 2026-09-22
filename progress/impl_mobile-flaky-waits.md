@@ -13,7 +13,7 @@ Handoff: `5251e10c`
 | R1 verde | `a054f085 test(mobile-flaky-waits): wait for resolved weight (R1)` |
 | R2 · S2 | `bcd8ba8a test(mobile-flaky-waits): align health query waits (R2)` |
 | R2 · S3..S7 | `9051eb77 test(mobile-flaky-waits): align map waits with assertions (R2)` |
-| R3..R6 | Sin cambio de código; evidencia debajo |
+| R3..R6 | `fba9c4c5 docs(mobile-flaky-waits): record verification evidence (R1,R2,R3,R4,R5,R6)` |
 
 ## Protocolo M
 
