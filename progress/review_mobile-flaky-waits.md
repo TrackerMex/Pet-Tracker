@@ -5,6 +5,14 @@ Worktree: `/home/claude/sites/Pet-Tracker-wt-ui` · branch `feature/111-mobile-f
 Rango revisado: `5251e10c` (handoff) → `5c2ac3d5` (HEAD). Base de rama: `73f14d5e`
 Reporte revisado: `progress/impl_mobile-flaky-waits.md`
 
+> **Este fichero contiene dos rondas.** Todo lo que sigue hasta `# Ronda 2` es el
+> veredicto de la **ronda 1 (RECHAZADO)**, conservado íntegro como historial. El
+> veredicto vigente es el de **`# Ronda 2` — APROBADO**, al final del fichero.
+
+---
+
+# Ronda 1 (historial)
+
 **Veredicto: RECHAZADO**
 
 Dos hallazgos bloqueantes. Ninguno de los dos es un rojo de la suite: el gate
@@ -222,3 +230,196 @@ Logs: `…/scratchpad/{v0,tsc,health,map,v1,v2-run-1..5}` y
    **No es trabajo de implementer**: es gate.
 
 Con esas dos cosas, y re-corriendo el gate numérico tras B2, esto se aprueba.
+
+---
+
+# Ronda 2
+
+Fecha: 2026-09-22 UTC
+Rango revisado: `790c58bd` (punto de partida de la ronda 2) → `62bf7232` (HEAD)
+Commits nuevos: `4477f0fc`, `3fbb07cd`, más la firma `62bf7232`
+
+**Veredicto: APROBADO**
+
+Los dos bloqueantes de la ronda 1 están cerrados: **B1** por la Enmienda E1
+firmada, **B2** por una línea de test. Re-medí todo lo que la ronda 1 dio por
+verde, no lo heredé del reporte. El gate numérico es **delta cero** y los cinco
+verdes consecutivos salieron a la primera.
+
+`./init.sh` **no se ejecutó**, igual que en la ronda 1 y por el mismo mandato
+(`requirements.md` §Fuera de alcance, `design.md` §Protocolo V): #111 no toca
+`backend-pet-tracker/` ni `infra/`. El gate real es jest + `tsc`.
+
+---
+
+## B1 — cerrado por enmienda firmada, no por código
+
+| Qué verifiqué | Medida |
+|---|---|
+| Casilla propia de E1 | `requirements.md:428` → `- [x] **Enmienda E1 aprobada por humano** (fecha: 2026-09-22)` |
+| Commit de firma | `62bf7232`, cuerpo cita página Notion `3e36115a9b2781848843ce414657243f`, `Estado del gate: Aprobado`, cuenta `alexis.s.mireles19@gmail.com`. Tecleado por el leader por delegación según `CLAUDE.md` §*Gate de specs vía Notion* |
+| Alcance de la firma | `62bf7232` toca **un fichero y una línea**: solo la casilla. Nada más |
+| Casillas previas intactas | `:505` Aprobado por humano `[x]`, `:506` Vía (b) de R2..R6 `[x]` |
+
+E1 decide lo que la ronda 1 dijo que hacía falta: S2 sale de §R2 (siete sitios →
+**seis**: R1 + S3..S7), su vía de C4 pasa al **argumento de invariancia sin
+mutación** con el precedente de #72 §S6, el cambio de `bcd8ba8a` se conserva como
+endurecimiento defensivo, y el `reviewer` **no** debe pedir par rojo/verde para
+S2. **No lo pido.** La causa que E1 alega la había medido yo misma en la ronda 1
+(viga sobre `mockListPets`, exit 0) y coincide con §F4, tercera categoría.
+
+## B2 — cerrado por `4477f0fc`, una línea, y asevera **más** que antes
+
+`mobile-pet-tracker/src/screens/map/index.test.tsx`, hunk `@@ -532,6 +532,7 @@`,
+`describe('R7: ruta del día como polylines')` ›
+`it('R3 (android-map-never-ready): pasa un array vacío para un día sin viajes')`.
+
+```
++    expect(screen.getByTestId('map-view')).toBeVisible();
+```
+
+| | Conjunto de aserciones del `it` |
+|---|---|
+| Base `73f14d5e` (antes de #111) | `waitFor(map-view toBeVisible)` · `polylines toEqual([])` |
+| HEAD `62bf7232` | `waitFor(stat-distance '0.0 km')` · **`map-view toBeVisible`** · `polylines toEqual([])` |
+
+**Estrictamente mayor**, no igual: el ancla nueva de `stat-distance` sigue en su
+sitio y la visibilidad de `map-view` vuelve detrás de ella. Es exactamente lo que
+la ronda 1 pidió y nada más. Balance global de `expect(` en el fichero: **148 →
+149** (`+1`, el de B2); en `health/index.test.tsx`, **60 → 60**. Ninguna aserción
+se perdió en ningún otro sitio.
+
+## El diff de la ronda 2 no toca nada más
+
+```text
+git diff 790c58bd..HEAD --stat
+ mobile-pet-tracker/src/screens/map/index.test.tsx |  1 +
+ progress/current.md                               |  6 +-
+ progress/impl_mobile-flaky-waits.md               | 77 ++++++++++++++-----
+ specs/mobile-flaky-waits/requirements.md          |  2 +-
+ specs/mobile-flaky-waits/traceability.md          |  4 +-
+```
+
+En `mobile-pet-tracker/` hay **`+1` línea y nada más**. El resto es bookkeeping
+(reporte, sesión, la casilla de E1 y dos filas de trazabilidad).
+
+## E1 no se usó como coartada para relajar otra cosa
+
+| Comprobación | Medida |
+|---|---|
+| El commit de E1 no borra spec | `git show 790c58bd -- specs/` → **0 líneas eliminadas**, 67 insertadas. La enmienda **solo añade** la sección E1 |
+| §R2, §C4, §F4, §Protocolo M sin retoques | No aparecen en el diff de `specs/` de `790c58bd` ni de `62bf7232` |
+| S3, S5, S6, S7 en trazabilidad | Filas **idénticas** en el diff de la ronda 2: `9051eb77` sigue siendo su commit y siguen etiquetadas `R2 · S<n>`. Nadie las reclasificó |
+| Filas que sí cambiaron | Solo dos, y ambas legítimas: **S2** pasa a `S2 · E1 (endurecimiento defensivo; C4 por invariancia)` citando `790c58bd`, y **S4** añade la cita de `4477f0fc` |
+| Ninguna fila "pendiente" | Verificado en la tabla completa |
+| Hashes vigentes | `git merge-base --is-ancestor` OK en los siete (`a054f085`, `60cf0534`, `bcd8ba8a`, `9051eb77`, `fba9c4c5`, `4477f0fc`, `790c58bd`). No hubo rebase |
+
+## El reporte cuenta bien lo de S2
+
+`progress/impl_mobile-flaky-waits.md` §S2 declara la evidencia como **argumento de
+invariancia citando E1** (`selectedPetId` → `enabled` → llamada, más las vigas que
+no dan rojo, incluida la mía sobre `mockListPets`), **no** como un par rojo/verde
+inventado. El párrafo de desviación de la ronda 1 («no se pudo obtener el par»)
+está **eliminado**, no reescrito para fingir que existe. La nueva entrada de S4 es
+igual de honesta: dice que B2 **no lleva par rojo/verde nuevo** porque solo
+restituye una aserción, y que el rojo de S4 es la prueba de zona ciega anterior.
+Correcto: eso ya lo re-medí yo en la ronda 1 (`0.8 km` contra `0.0 km`, exit 1).
+
+## Invariantes de la ronda 1, **re-medidos** (no heredados)
+
+| Invariante | Medida de esta ronda |
+|---|---|
+| **R3** byte a byte | Bloque `selects the first pet and loads its first position (#72 R2)`: **394 bytes vs 394**, comparación de cadenas `True`, y sigue empezando en la **línea 284** en base y en HEAD. `grep` del título en el diff de map = **0** |
+| **R4** | `git diff 73f14d5e..HEAD -- mobile-pet-tracker/package.json mobile-pet-tracker/bun.lock` → **0 bytes**. Cero dependencias nuevas |
+| **R5** | `git diff --name-only 73f14d5e..HEAD -- mobile-pet-tracker/ ':!*.test.tsx'` → **0 ficheros**. El delta de la rama sobre la app son **exactamente** `health/index.test.tsx` y `map/index.test.tsx` |
+| **Vigas supervivientes** | `+1` `setTimeout` en el diff de health (la de R1) y `-0`; **`0` añadidos y `0` quitados** en el de map |
+| **Ningún `it` añadido ni quitado** | health `it(`/`test(` **22 → 22**, `describe(` **7 → 7**; map `it(`/`test(` **48 → 48**, `describe(` **22 → 22** |
+
+## Gate numérico (medido por mí, sin pipe, `bun`/`bunx`)
+
+`rm -f mobile-pet-tracker/.expo/types/router.d.ts` antes de medir.
+`perf-cache-*` de `/tmp/jest_ru` borrado **antes de cada una** de las cinco.
+
+```text
+V0     exit=0   bunx jest --listTests → S = 77 rutas
+tsc    exit=0   bunx tsc --noEmit → salida vacía (0 bytes)
+health exit=0   Test Suites: 1 passed, 1 total   Tests: 28 passed, 28 total
+map    exit=0   Test Suites: 1 passed, 1 total   Tests: 58 passed, 58 total
+V1     exit=0   Test Suites: 2 passed, 2 total   Tests: 86 passed, 86 total
+run 1  exit=0   Test Suites: 77 passed, 77 total   Tests: 1396 passed, 1396 total
+run 2  exit=0   Test Suites: 77 passed, 77 total   Tests: 1396 passed, 1396 total
+run 3  exit=0   Test Suites: 77 passed, 77 total   Tests: 1396 passed, 1396 total
+run 4  exit=0   Test Suites: 77 passed, 77 total   Tests: 1396 passed, 1396 total
+run 5  exit=0   Test Suites: 77 passed, 77 total   Tests: 1396 passed, 1396 total
+```
+
+- **Delta cero** contra la base de rama y contra la ronda 1: `77 / 1396`, health
+  `28`, map `58`. B2 restituyó una aserción **dentro de un `it` que ya existía**,
+  así que el recuento no podía moverse — y no se movió.
+- **Consistencia interna §R6.3**: `N = 77` en las cinco corridas y `S = 77` rutas
+  de `--listTests` → **`N == S`**. Ningún fichero saltado en silencio.
+- **Las cinco corridas no prueban ausencia de flake**, y esta review no las usa
+  como si lo probaran. Son control de regresión de #111 y nada más; la spec lo
+  dice y la ventana histórica ya sobrevivió doce verdes seguidas.
+
+Logs: `…/scratchpad/r2-{v0,tsc,health,map,v1,run-1..5}.txt`.
+
+---
+
+## Checklists — ronda 2
+
+### C2 — Estado coherente
+- [x] Solo 1 feature `in_progress` en `feature_list.json` (#111; `grep -c` = 1)
+- [x] `progress/current.md` actualizado a la ronda 2 (plan de ronda 2, misma feature y branch)
+- [ ] N/A `progress/history.md`: la sesión la cierra el leader tras este veredicto
+
+### C3 — Arquitectura
+- [x] N/A justificado y re-verificado: delta de la rama = dos ficheros `.test.tsx`, cero producción. `docs/architecture.md` no aplica a `mobile-pet-tracker/`
+
+### C4 — TDD
+- [x] R1 test-primero real: rojo `60cf0534` → verde `a054f085` (verificado en la ronda 1)
+- [x] **Vía declarada respetada en todos los sitios**: S3..S7 con su par rojo/verde; **S2 por invariancia**, como ordena E1 firmada. Ya no queda ninguna casilla que nadie pueda cerrar
+- [x] `4477f0fc` no necesita par propio: restituye una aserción dentro del sitio cuyo rojo ya está medido
+- [ ] Ningún test nombra los R-ids **de #111**. Arrastrado de la ronda 1 y **no bloqueante** por la misma razón: la spec firmada cierra cada R-id por `git diff` y por protocolo, no por título
+
+### C5 — Trazabilidad
+- [x] Sin ninguna fila "pendiente"
+- [x] Los siete hashes citados son ancestros de HEAD; no hubo rebase
+- [x] Formato de commit conforme: `test(mobile-flaky-waits): restore map visibility assertion (R2)`
+
+### C6 — Spec aprobada
+- [x] `status: approved`, casilla de §Aprobación `[x]` y casilla propia de §C4 `[x]`
+- [x] **Casilla propia de la Enmienda E1 `[x]`**, firmada vía Notion en `62bf7232`
+- [x] La enmienda no altera ningún requisito previo: 67 insertadas, **0 eliminadas**
+
+### C7 — Sin código huérfano
+- [ ] N/A — #111 no reemplaza ni deprecia nada; cero cambio de producción
+
+### C8 — UI móvil
+- [x] N/A re-verificado: la única línea nueva es una aserción de test. Ningún componente, estilo, token, dimensión, animación ni `testID` tocado
+
+---
+
+## Hallazgos no bloqueantes (ronda 2)
+
+1. **`origin/main` avanzó a `2a9219b3`** (merge de #110) mientras esta feature
+   estaba en rebote. Medido: #110 toca `app/(tabs)/__tests__/food.test.tsx` y
+   `screens/home/index.test.tsx`, **cero solape** con los dos ficheros de #111, así
+   que el merge no necesita rebase — y **no se debe rebasar**, porque invalidaría
+   los hashes de la trazabilidad. Ojo al cerrar: el `1396` de este gate es el
+   recuento **de esta rama**; si main trae otro total, ese delta es de #110.
+2. **El cuerpo de §R2 sigue diciendo «los siete sitios (R1 + S2..S7)»** mientras E1
+   dice seis. E1 es posterior y firmada, así que prevalece; es un desajuste
+   documental, no un cambio de alcance.
+3. **El reporte de Codex termina diciendo que la casilla de E1 «continúa sin
+   marcar»**. Era cierto cuando lo escribió (`3fbb07cd`, 19:3x) y dejó de serlo con
+   `62bf7232` (19:48). Lo verifiqué yo: está marcada. Que el implementer no
+   auto-marcara el gate es lo correcto, no un defecto.
+4. Arrastrados de la ronda 1, sin cambio: titulación sin `(#111 R<n>)`, `5c2ac3d5`
+   sin R-ids en el mensaje, y la contradicción de la spec sobre la zona ciega de
+   `stat-speed` en S6 (que E1 no tocó y que no exige código).
+
+## Qué queda
+
+Nada bloqueante. Los dos hallazgos de la ronda 1 están cerrados y verificados por
+mí de forma independiente. La feature puede pasar a `done` y a PR.
