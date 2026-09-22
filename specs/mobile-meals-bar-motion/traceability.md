@@ -17,7 +17,7 @@ ancestros y habría que reapuntarlos uno a uno verificando `git merge-base
 
 | Requisito | Entrada | Test (archivo :: título literal del `describe`) | Commit rojo | Commit verde |
 |---|---|---|---|---|
-| R1 — `expo-haptics` declarada, sin `babel.config.js`, carta enmendada | #106 | `src/app/(tabs)/__tests__/food.test.tsx` :: `#106 R1: expo-haptics entra declarada y sin configuración de babel` | pendiente | pendiente |
+| R1 — `expo-haptics` declarada, sin `babel.config.js`, carta enmendada | #106 | `src/app/(tabs)/__tests__/food.test.tsx` :: `#106 R1: expo-haptics entra declarada y sin configuración de babel` | `91adccde` | `e14dd598` |
 | R2 — el relleno `reminders-meals-fill` transiciona su ancho con `withTiming` | #106 | `src/screens/home/index.test.tsx` :: `#106 R2: la barra de comidas transiciona su ancho` | pendiente | pendiente |
 | R3 — con reduce motion el ancho se fija sin animar | #106 | `src/screens/home/index.test.tsx` :: `#106 R3: reduce motion deja la barra sin animación` | pendiente | pendiente |
 | R4 — háptico de éxito/error al servir y deshacer | #106 | `src/app/(tabs)/__tests__/food.test.tsx` :: `#106 R4: servir y deshacer vibran una vez y distinguen éxito de fallo` | pendiente | pendiente |
