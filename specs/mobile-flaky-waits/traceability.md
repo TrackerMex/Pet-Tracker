@@ -10,15 +10,15 @@ tags: [harness, spec, mobile, tests]
 |---|---|---|
 | R1 | `mobile-pet-tracker/src/screens/health/index.test.tsx` :: `R6: weight card enlaza al log › shows the current weight and opens the weight log` | `a054f085 test(mobile-flaky-waits): wait for resolved weight (R1)` — rojo real: `60cf0534` |
 | R2 · S2 | `mobile-pet-tracker/src/screens/health/index.test.tsx` :: `R4: health resuelve la mascota seleccionada › keeps API order and selects the first pet by default` | `bcd8ba8a test(mobile-flaky-waits): align health query waits (R2)` |
-| R2 · S3 | `mobile-pet-tracker/src/screens/map/index.test.tsx` :: `R7: ruta del día como polylines › R3 (android-map-never-ready): pasa una polyline mapeada por cada viaje` | pendiente |
-| R2 · S4 | `mobile-pet-tracker/src/screens/map/index.test.tsx` :: `R7: ruta del día como polylines › R3 (android-map-never-ready): pasa un array vacío para un día sin viajes` | pendiente |
-| R2 · S5 | `mobile-pet-tracker/src/screens/map/index.test.tsx` :: `R8: stats calculadas de positions y trips › uses the latest speed, trip total, fresh age, and live GPS` | pendiente |
-| R2 · S6 | `mobile-pet-tracker/src/screens/map/index.test.tsx` :: `R8: stats calculadas de positions y trips › #94 R2: la antigüedad de la posición ya no mueve el tile de conexión` | pendiente |
-| R2 · S7 | `mobile-pet-tracker/src/screens/map/index.test.tsx` :: `R6: owner toglea lost mode contra el endpoint › posts the inverse, disables in flight, and refetches the new label` | pendiente |
-| R3 | `mobile-pet-tracker/src/screens/map/index.test.tsx` :: `R4: map resuelve la mascota seleccionada › selects the first pet and loads its first position (#72 R2)` — **sin editar**; la prueba es el `git diff` de [[requirements]] §R3 | pendiente |
-| R4 | `git diff origin/main..HEAD -- mobile-pet-tracker/package.json` **vacío** | pendiente |
-| R5 | `git diff --name-only origin/main..HEAD -- mobile-pet-tracker/ ':!*.test.tsx'` **vacío** | pendiente |
-| R6 | [[design]] §Protocolo V: V0 (`N == S`), V1 (`86`), V2 (5 × exit 0, `77 passed` / `1396 passed`) | pendiente |
+| R2 · S3 | `mobile-pet-tracker/src/screens/map/index.test.tsx` :: `R7: ruta del día como polylines › R3 (android-map-never-ready): pasa una polyline mapeada por cada viaje` | `9051eb77 test(mobile-flaky-waits): align map waits with assertions (R2)` |
+| R2 · S4 | `mobile-pet-tracker/src/screens/map/index.test.tsx` :: `R7: ruta del día como polylines › R3 (android-map-never-ready): pasa un array vacío para un día sin viajes` | `9051eb77 test(mobile-flaky-waits): align map waits with assertions (R2)` |
+| R2 · S5 | `mobile-pet-tracker/src/screens/map/index.test.tsx` :: `R8: stats calculadas de positions y trips › uses the latest speed, trip total, fresh age, and live GPS` | `9051eb77 test(mobile-flaky-waits): align map waits with assertions (R2)` |
+| R2 · S6 | `mobile-pet-tracker/src/screens/map/index.test.tsx` :: `R8: stats calculadas de positions y trips › #94 R2: la antigüedad de la posición ya no mueve el tile de conexión` | `9051eb77 test(mobile-flaky-waits): align map waits with assertions (R2)` |
+| R2 · S7 | `mobile-pet-tracker/src/screens/map/index.test.tsx` :: `R6: owner toglea lost mode contra el endpoint › posts the inverse, disables in flight, and refetches the new label` | `9051eb77 test(mobile-flaky-waits): align map waits with assertions (R2)` |
+| R3 | `mobile-pet-tracker/src/screens/map/index.test.tsx` :: `R4: map resuelve la mascota seleccionada › selects the first pet and loads its first position (#72 R2)` — **sin editar**; la prueba es el `git diff` de [[requirements]] §R3 | `9051eb77 test(mobile-flaky-waits): align map waits with assertions (R2)` — bloque protegido idéntico (`cmp` exit 0) |
+| R4 | `git diff origin/main..HEAD -- mobile-pet-tracker/package.json` **vacío** | `9051eb77 test(mobile-flaky-waits): align map waits with assertions (R2)` — diff vacío |
+| R5 | `git diff --name-only origin/main..HEAD -- mobile-pet-tracker/ ':!*.test.tsx'` **vacío** | `9051eb77 test(mobile-flaky-waits): align map waits with assertions (R2)` — diff vacío |
+| R6 | [[design]] §Protocolo V: V0 (`N == S`), V1 (`86`), V2 (5 × exit 0, `77 passed` / `1396 passed`) | `9051eb77 test(mobile-flaky-waits): align map waits with assertions (R2)` — verificación posterior documentada en `progress/impl_mobile-flaky-waits.md` |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
 Convención de commit: `test(mobile-flaky-waits): <desc> (R1,R2)`.
