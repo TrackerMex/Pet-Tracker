@@ -4562,3 +4562,89 @@ para la spec de #108.
 `./init.sh` final sobre el árbol ya fusionado con `main`: **exit 0** medido sin
 pipe — backend 1295, infra 14, móvil 77 suites / 1396 tests, e2e 384, lint y
 typecheck.
+
+---
+
+## 2026-09-22 — #109 `mobile-meal-toggle-source-lock-nesting`
+
+Deuda **B2** del veredicto de #106/#107. Cerrada con dos líneas de cambio en un
+fichero de test y **cero diff de producción**. Aprobada por el reviewer sin
+rebote y sin prueba de humo: sin cambio en producción no hay nada observable en
+el dispositivo, y la spec lo declaró por escrito antes del handoff.
+
+### El agujero, que era peor de lo que parecía
+
+El candado de R5 de #107 recortaba el fuente de `food.tsx` entre
+`lastIndexOf('<Pressable', anchor)` e `indexOf('</Pressable>', anchor)`. El
+encargo decía «agujero por anidamiento» sin decir en qué dirección, y **yo
+aposté por el límite de atrás y me equivoqué**.
+
+Es el de **delante**, y su modo de fallo es el malo: con un `Pressable` anidado
+dentro, el corte cae en el `</Pressable>` **del hijo**, así que el bloque se
+queda con el **tag de apertura del hijo y su `style`** dentro. El candado
+**pasa en verde vigilando el botón equivocado**. No falla hacia rojo, que es lo
+que yo había supuesto y lo que habría hecho la deuda inofensiva.
+
+El de atrás resultó benigno por una razón que solo se ve midiendo: el ancla
+`testID={…}` vive **dentro** del tag que `lastIndexOf` busca, así que ese
+límite se auto-ancla.
+
+### El arreglo, y lo que se descartó
+
+Recortar de `<` a `<` — el tag de apertura propio. **El anidamiento deja de
+existir como concepto**, en vez de defenderse de él. Dos `indexOf`, ningún
+símbolo nuevo que vigilar, que era justo el aviso de **B8**; y el patrón ya
+vivía en `consistency-classnames.test.ts:309-311`.
+
+Se descartaron dos alternativas, las dos midiendo:
+
+- **Balanceador de tags**: sería él mismo otro candado que mantener.
+- **Borrar el candado de fuente** y dejar solo la pata de árbol. Medido: cambiar
+  `0.8` por `0.5` deja el árbol **verde** y solo el fuente **rojo**. La pata de
+  fuente es el **único** sitio donde ese `0.8` está candado. Borrar habría
+  parecido limpieza y habría sido una pérdida silenciosa de cobertura.
+
+### El candado nuevo también tiene un agujero, y esta vez se decidió no taparlo
+
+El reviewer corrió siete sondas propias sobre el recorte nuevo. Es **más seguro
+que el viejo** —donde el viejo fabricaba verde falso, el nuevo se pone rojo— y
+su límite documentado (un `<` dentro del tag) falla hacia rojo, verificado
+plantándolo y no leyendo el comentario.
+
+Queda **uno residual**: todo lo que viva entre el `>` del tag y el primer hijo
+**elemento** entra en el bloque, incluida una **cadena hija**. Plantar la receta
+como texto da verde falso. Pero hay que construirlo a propósito y tumba 25 de
+38 tests al intentarlo, y **el recorte viejo también daba verde ahí**, así que
+no es regresión.
+
+Se aplicó el criterio que salió de #106 —**¿lo pisa un descuido o hay que
+construirlo?**— y la respuesta manda: se documenta, no se defiende. Defenderlo
+sería otro símbolo que vigilar, y la defensa cuesta más que el riesgo. Queda
+escrito en `docs/conventions.md` con **los dos límites y cuál de los dos
+avisa**, más la condición que cambiaría el cálculo: el día que un candado de
+estos vigile algo que también aparezca como texto en pantalla.
+
+### Primera spec aprobada desde Notion
+
+Estrena el flujo de #147. El humano movió `Estado del gate` a **Aprobado** en
+la página de la base *Specs*; el leader la leyó, verificó la propiedad y su
+`page_last_edited_at`, y firmó en el repo citando las dos cosas.
+
+La primera vuelta destapó un fallo en lo que yo mismo había escrito el día
+antes: **la sección prometía verificar *quién* aprobó, y la API no lo da** —
+devuelve qué y cuándo, pero el filtro por editor es de plan Business. Corregido
+en `leader.md` y declarado dentro de la propia spec, para que nadie lea dentro
+de seis meses «firmado por el humano» y suponga más de lo que se puede probar.
+La firma en el repo sigue abierta para cualquier spec que necesite autoría
+demostrable.
+
+### B5, reincidente
+
+Codex volvió a no tener `expo-overview` en su catálogo, igual que en #106.
+Inocuo aquí —cero producción— pero es la segunda vez. Hasta que se cierre, el
+handoff ahora le pide **listar las skills de su catálogo y decir cuáles cargó
+en el reporte**, para que el fallo salga ahí y no en el veredicto.
+
+`./init.sh` del reviewer: **exit 0** sin pipe, 5m51s, cero FAIL. El reviewer
+esperó a que cayera la corrida de #108 en `wt-ui` antes de lanzar, según
+`init-sh-concurrente-worktrees`.
