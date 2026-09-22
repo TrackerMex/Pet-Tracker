@@ -606,3 +606,21 @@ describe('#108 R2: el guard de estilo distingue un R-id de un color hex', () => 
     expect(MEALS_BAR_STYLE_ESCAPES.test(sample)).toBe(expected);
   });
 });
+
+describe('#108 R3: los títulos de #106 vuelven a ser literales enteros', () => {
+  const homeTestSource = readFileSync(
+    join(sourceRoot, 'screens', 'home', 'index.test.tsx'),
+    'utf8',
+  );
+
+  it.each([
+    "describe('#106 R2: la barra de comidas transiciona su ancho'",
+    "describe('#106 R3: reduce motion deja la barra sin animación'",
+  ])('contiene %s', (title) => {
+    expect(homeTestSource).toContain(title);
+  });
+
+  it('no parte el prefijo de #106', () => {
+    expect(homeTestSource).not.toContain("'#' + '106");
+  });
+});
