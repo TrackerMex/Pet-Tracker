@@ -621,7 +621,9 @@ describe('#108 R3: los títulos de #106 vuelven a ser literales enteros', () => 
   });
 
   it('no parte el prefijo de #106', () => {
-    expect(homeTestSource).not.toContain("'#' + '106");
+    const splitTitlePrefix = ["'#' + '", '106'].join('');
+
+    expect(homeTestSource).not.toContain(splitTitlePrefix);
   });
 });
 
