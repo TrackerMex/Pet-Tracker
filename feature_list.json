@@ -2064,7 +2064,7 @@
   {
     "id": 106,
     "name": "mobile-meals-bar-motion",
-    "status": "spec_ready",
+    "status": "in_progress",
     "priority": "P3",
     "description": "Registrada el 2026-09-21 desde la seccion Fuera de alcance de la spec de #98, por decision del humano. La barra de comidas de la Home que introduce #98 salta de un ancho a otro sin transicion, y el boton de servir no da respuesta tactil. La spec de #98 metio animacion y haptics en el mismo saco de dependencia nueva, y es inexacto: verificado en mobile-pet-tracker/package.json:37, react-native-reanimated 4.5.1 YA esta instalado, asi que animar el ancho de la barra no necesita nada nuevo. El unico que faltaria es expo-haptics, que si es dependencia nueva y necesita firma del humano en el gate de esta spec; el veto vivo sobre dependencias es nominal a expo-linear-gradient, no generico, asi que se puede pedir. Depende de #98 mergeada. Alcance: transicion del ancho de la barra al cambiar served, y opcionalmente el haptic al servir y deshacer. Cargar la skill expo:expo-animation al especificar.",
     "acceptance_criteria": [
@@ -2082,7 +2082,7 @@
   {
     "id": 107,
     "name": "mobile-meal-toggle-press-lock",
-    "status": "spec_ready",
+    "status": "in_progress",
     "priority": "P3",
     "description": "Registrada el 2026-09-21 al cerrar #98, por decision del humano. Deuda declarada NO bloqueante por el reviewer en la ronda 2 (progress/review_mobile-meals-served-ui.md): quitar el feedback tactil del boton por franja deja 4 suites y 150 tests VERDES. El style vive en mobile-pet-tracker/src/app/(tabs)/food.tsx:253-255 y nadie lo canda: los ocho usos de meal-toggle-0 en src/app/(tabs)/__tests__/food.test.tsx (:479, :511, :544, :552, :573, :586, :602, :612) son findByTestId, toBeDisabled y fireEvent.press, ninguno mira el style. Lo exigen R5 de #98 (specs/mobile-meals-served-ui/requirements.md:299 prescribe la receta literal) y docs/ui-guidelines.md:184 (feedback pressed en TODO elemento tappable), que es C8. El reviewer no lo hizo bloqueante porque la spec firmada nunca pidio el candado y rechazar por el habria sido inventar un requisito post-firma. El handoff completo ya esta escrito en progress/handoff_98_rebote_meal-toggle.md, con los dos caminos: el preferido es aseverar la prop -toggle.props.style({ pressed: true }) igual a { opacity: 0.8 }, dos lineas dentro del it de R5 que ya existe y sin tocar produccion-, y el de respaldo es normalizar food.tsx:253-255 a una sola linea como la Home y candar con readFileSync. OJO: aseverar props.style como FUNCION no tiene ni un precedente en src/ (grep -rn 'props.style(' src/ da cero; los cinco tests que leen .props.style la tratan como objeto), y el mismo Pressable lleva className que procesa NativeWind, asi que hay que comprobar que la funcion llega intacta al arbol renderizado antes de casarse con ese camino. Como el style ya esta en produccion, el candado es requisito de verificacion por la via (b) de C4: el commit rojo quita el style y el verde lo restaura.",
     "acceptance_criteria": [

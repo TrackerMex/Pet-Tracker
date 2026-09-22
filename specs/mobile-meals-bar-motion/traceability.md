@@ -1,6 +1,6 @@
 ---
 feature: "mobile-meals-bar-motion"
-status: spec_ready
+status: in_progress
 tags: [harness, spec, mobile]
 ---
 

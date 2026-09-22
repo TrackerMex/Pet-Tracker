@@ -1,6 +1,6 @@
 ---
 feature: "mobile-meals-bar-motion"
-status: spec_ready       # draft | spec_ready | approved
+status: approved         # draft | spec_ready | approved  ← firmada por el humano en ca13a804 (2026-09-21)
 tags: [harness, spec, mobile]
 ---
 
