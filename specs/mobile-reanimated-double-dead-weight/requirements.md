@@ -1,6 +1,6 @@
 ---
 feature: "mobile-reanimated-double-dead-weight"
-status: spec_ready        # draft | spec_ready | approved
+status: approved         # draft | spec_ready | approved  ← Gate 1 aprobado en Notion el 2026-09-22T18:43:55Z
 tags: [harness, spec, mobile, tests]
 ---
 
@@ -240,9 +240,20 @@ Es una desviación **deliberada, medida y local a este fichero** mientras el
 guard siga como está. Firmarla aquí es lo que la convierte en decisión tomada
 en vez de en atajo del implementador.
 
-- [ ] **Gate 1 — Aprobación de la spec** por humano (fecha: ____)
+- [X] **Gate 1 — Aprobación de la spec** por humano (fecha: 2026-09-22)
       ← obligatorio antes del handoff a Codex. Al marcarlo firmas también la
       desviación de arriba.
+
+> **Cómo se aprobó el Gate 1.** El humano puso `Estado del gate` = **Aprobado**
+> en la página de Notion `3e36115a-9b27-8127-96d3-f551d33a07b8`
+> (`Panel de Proyectos — Harness SDD / Specs`), espejada del commit
+> `fbf2557b`. El `leader` lo verificó leyéndola: propiedad en «Aprobado»,
+> `page_last_edited_at` = **2026-09-22T18:43:55.473Z**, y marcó esta casilla en
+> su nombre según `.claude/agents/leader.md` §Gate de aprobación vía Notion.
+>
+> La evidencia es **la propiedad y su marca de tiempo, no la autoría**: la API
+> no devuelve la cuenta que hizo el cambio. El Gate 2, si llegara a hacer
+> falta, puede firmarse por la misma vía o en el repo.
 
 - [ ] **Gate 2 — Decisión sobre #62 R8** (fecha: ____)
       ← **solo se marca si** el implementador paró por el escenario de
