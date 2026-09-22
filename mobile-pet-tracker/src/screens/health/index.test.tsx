@@ -261,16 +261,16 @@ describe('R4: health resuelve la mascota seleccionada', () => {
       expect(screen.getByTestId('pet-chip-pet-1').props.accessibilityState).toEqual({
         selected: true,
       });
+      expect(mockListPets).toHaveBeenCalledWith(apiUrl, 'jwt-token');
+      expect(mockListVaccines).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'pet-1');
+      expect(mockListWeights).toHaveBeenCalledWith(
+        apiUrl,
+        'jwt-token',
+        'pet-1',
+        expect.any(Function),
+        1,
+      );
     });
-    expect(mockListPets).toHaveBeenCalledWith(apiUrl, 'jwt-token');
-    expect(mockListVaccines).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'pet-1');
-    expect(mockListWeights).toHaveBeenCalledWith(
-      apiUrl,
-      'jwt-token',
-      'pet-1',
-      expect.any(Function),
-      1,
-    );
   });
 
   it('selects a pressed pet and reloads its health records', async () => {
