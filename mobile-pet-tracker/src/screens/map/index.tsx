@@ -84,7 +84,7 @@ const DEFAULT_CENTER = {
 };
 const POLL_MS = 15000;
 
-export default function MapScreen() {
+export function MapScreen() {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { token } = useAuth();
   const t = useTranslate();

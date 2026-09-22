@@ -9,7 +9,13 @@
 
 ## Evidencia rojo → verde
 
-Pendiente de ejecutar R2-R5.
+### R2 — map
+
+- Rojo, body: `JEST_EXIT=0`; 1 suite, 58/58 tests.
+- Rojo, candados: `JEST_EXIT=1`; 4 suites fallaron y 1 pasó; 10 tests fallaron
+  y 141 pasaron. Los fallos nombraron `ENOENT` sobre
+  `src/app/(tabs)/map.tsx`, todavía referenciado por los candados.
+- Verde: pendiente.
 
 ## R7 — escaneo de tests colocados
 
@@ -21,8 +27,13 @@ Pendiente.
 
 ## R-id → commit
 
-Pendiente.
+- R1: `ca2d6f80` — `docs(conventions): excepcion A10 para migracion en frio (R1)`.
 
 ## Desviaciones de tasks.md
 
-- Ninguna hasta ahora.
+- tasks.md ordena crear el route delgado en el commit rojo, pero eso contradice
+  dos comprobaciones de la misma spec: los candados no pueden fallar por
+  `ENOENT` si el path sigue existiendo y `git diff -M` no puede presentar el
+  cuerpo como rename si el path origen se recrea en el mismo snapshot. La
+  creación de cada route se desplaza al commit verde; no cambia el estado final
+  ni el orden rojo → verde y permite cumplir ambos candados observables.

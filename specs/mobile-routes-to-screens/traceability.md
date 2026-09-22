@@ -14,7 +14,7 @@ tags: [harness, spec, mobile, refactor]
 
 | Requisito | Test / comprobación que lo cierra | Fichero donde vive | Commit (hash + mensaje) |
 |---|---|---|---|
-| **R1** | `grep -c 'enmienda A10 de #102'` → 1 y `grep -c 'NO se migran en frío'` → 1 (sin test automático: es enmienda a doc con gate humano propio) | `docs/conventions.md:445-446` (raíz del repo) | pendiente |
+| **R1** | `grep -c 'enmienda A10 de #102'` → 1 y `grep -c 'NO se migran en frío'` → 1 (sin test automático: es enmienda a doc con gate humano propio) | `docs/conventions.md:445-446` (raíz del repo) | `ca2d6f80` — `docs(conventions): excepcion A10 para migracion en frio (R1)` |
 | **R2** | 58 tests intactos + los 6 sitios de candado de map repuntados | `src/screens/map/index.test.tsx` | pendiente |
 | **R3** | 28 tests intactos + los 6 sitios de candado de health repuntados | `src/screens/health/index.test.tsx` | pendiente |
 | **R4** | 32 tests intactos + los 5 sitios de candado de weight-log repuntados | `src/screens/weight-log/index.test.tsx` | pendiente |
