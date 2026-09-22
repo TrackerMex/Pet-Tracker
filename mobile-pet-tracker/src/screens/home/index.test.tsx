@@ -30,7 +30,7 @@ import { SelectedPetProvider } from '../../providers/selected-pet-provider';
 import * as selectedPetHooks from '../../providers/selected-pet-provider';
 import { TABULAR_NUMS } from '../../theme/native-styles';
 import { CATEGORY_SLOTS } from '../../utils/category-palette';
-import { HomeScreen } from './index';
+import { HomeScreen, MEALS_BAR_TIMING } from './index';
 import { renderWithProviders } from '../../../test/render-with-providers';
 
 declare function require(moduleName: 'fs'): {
@@ -3802,7 +3802,10 @@ describe('#106 R2: la barra de comidas transiciona su ancho', () => {
         const fill = await screen.findByTestId('reminders-meals-fill');
         expect(fill).toHaveAnimatedStyle({ width: `${percentage}%` });
         expect(fill.props.className).toBe('h-full rounded-full bg-accent');
-        expect(mockWithTiming).toHaveBeenCalledTimes(1);
+        expect(mockWithTiming).toHaveBeenCalledWith(
+          percentage,
+          MEALS_BAR_TIMING,
+        );
       } finally {
         await view.unmount();
       }
