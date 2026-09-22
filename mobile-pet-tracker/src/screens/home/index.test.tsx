@@ -121,25 +121,6 @@ jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
 }));
 
-jest.mock('heroui-native', () => {
-  const actual = jest.requireActual<typeof import('heroui-native')>(
-    'heroui-native',
-  );
-  const React = jest.requireActual<typeof import('react')>('react');
-  const { View } = jest.requireActual<typeof import('react-native')>(
-    'react-native',
-  );
-
-  return {
-    ...actual,
-    Skeleton: (props: Record<string, unknown>) =>
-      React.createElement(View, {
-        ...props,
-        style: Array.isArray(props.style) ? props.style : [props.style],
-      }),
-  };
-});
-
 jest.mock('react-native-reanimated', () => {
   const actual = jest.requireActual<typeof import('react-native-reanimated')>(
     'react-native-reanimated',
