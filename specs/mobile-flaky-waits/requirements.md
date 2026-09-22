@@ -425,7 +425,7 @@ producir su rojo no es una vía: es una casilla que nadie puede cerrar.
 
 ### Firma de la enmienda
 
-- [ ] **Enmienda E1 aprobada por humano** (fecha: ____) ← casilla propia. Sin ella,
+- [x] **Enmienda E1 aprobada por humano** (fecha: 2026-09-22) ← casilla propia. Sin ella,
       S2 sigue siendo un sitio de §R2 con una vía de C4 que nadie puede cerrar, y
       la feature no puede aprobarse.
 
