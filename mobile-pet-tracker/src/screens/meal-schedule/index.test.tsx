@@ -16,26 +16,26 @@ import {
   type GeneratePlanState,
   type NutritionPlanState,
   type NutritionProfileState,
-} from '../../../api/nutrition';
-import { nutritionKeys } from '../../../api/query-keys';
-import type { NutritionPlan, NutritionProfile } from '../../../api/types';
-import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
-import { LanguageProvider } from '../../../providers/language-provider';
+} from '../../api/nutrition';
+import { nutritionKeys } from '../../api/query-keys';
+import type { NutritionPlan, NutritionProfile } from '../../api/types';
+import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
+import { LanguageProvider } from '../../providers/language-provider';
 import {
   SelectedPetProvider,
   useSelectedPet,
-} from '../../../providers/selected-pet-provider';
-import MealScheduleScreen from '../meal-schedule';
-import { TOUCH_SLOP } from '../../../theme/touch-target';
-import { renderWithProviders } from '../../../../test/render-with-providers';
+} from '../../providers/selected-pet-provider';
+import { MealScheduleScreen } from '.';
+import { TOUCH_SLOP } from '../../theme/touch-target';
+import { renderWithProviders } from '../../../test/render-with-providers';
 
-jest.mock('../../../api/nutrition', () => ({
+jest.mock('../../api/nutrition', () => ({
   generateNutritionPlan: jest.fn(),
   getNutritionPlan: jest.fn(),
   getNutritionProfile: jest.fn(),
 }));
 
-jest.mock('../../../providers/auth-provider', () => ({
+jest.mock('../../providers/auth-provider', () => ({
   useAuth: jest.fn(),
 }));
 
@@ -76,7 +76,7 @@ jest.mock('reicon-react-native', () => {
 });
 
 jest.mock(
-  '../../../theme/use-theme-colors',
+  '../../theme/use-theme-colors',
   () => ({
     useThemeColors: (tokens: string[]) => tokens.map(() => '#000000'),
   }),

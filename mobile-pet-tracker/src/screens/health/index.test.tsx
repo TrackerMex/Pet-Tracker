@@ -14,30 +14,30 @@ import {
   listWeights,
   type VaccinesState,
   type WeightsState,
-} from '../../../api/health-records';
-import { listPets, type PetsState } from '../../../api/pets';
-import { healthKeys, petKeys } from '../../../api/query-keys';
-import type { PetProfile, Vaccine, WeightEntry } from '../../../api/types';
-import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
-import { LanguageProvider } from '../../../providers/language-provider';
-import { SelectedPetProvider } from '../../../providers/selected-pet-provider';
-import * as selectedPetHooks from '../../../providers/selected-pet-provider';
-import HealthScreen from '../health';
-import { TOUCH_SLOP } from '../../../theme/touch-target';
-import { renderWithProviders } from '../../../../test/render-with-providers';
+} from '../../api/health-records';
+import { listPets, type PetsState } from '../../api/pets';
+import { healthKeys, petKeys } from '../../api/query-keys';
+import type { PetProfile, Vaccine, WeightEntry } from '../../api/types';
+import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
+import { LanguageProvider } from '../../providers/language-provider';
+import { SelectedPetProvider } from '../../providers/selected-pet-provider';
+import * as selectedPetHooks from '../../providers/selected-pet-provider';
+import { HealthScreen } from '.';
+import { TOUCH_SLOP } from '../../theme/touch-target';
+import { renderWithProviders } from '../../../test/render-with-providers';
 
 let mockTheme: 'light' | 'dark' = 'light';
 
-jest.mock('../../../api/pets', () => ({
+jest.mock('../../api/pets', () => ({
   listPets: jest.fn(),
 }));
 
-jest.mock('../../../api/health-records', () => ({
+jest.mock('../../api/health-records', () => ({
   listVaccines: jest.fn(),
   listWeights: jest.fn(),
 }));
 
-jest.mock('../../../providers/auth-provider', () => ({
+jest.mock('../../providers/auth-provider', () => ({
   useAuth: jest.fn(),
 }));
 
@@ -66,7 +66,7 @@ jest.mock('reicon-react-native', () => {
 });
 
 jest.mock(
-  '../../../theme/use-theme-colors',
+  '../../theme/use-theme-colors',
   () => ({
     useThemeColors: (tokens: string[]) =>
       tokens.map((token) => {

@@ -15,54 +15,54 @@ import {
   type PetState,
   type PetsState,
   type SetLostModeState,
-} from '../../../api/pets';
+} from '../../api/pets';
 import {
   petKeys,
   positionKeys,
   tripKeys,
-} from '../../../api/query-keys';
+} from '../../api/query-keys';
 import {
   getLastPosition,
   listPositions,
   type LastPositionState,
   type PositionsState,
-} from '../../../api/positions';
-import { getDayRoute, type DayRouteState } from '../../../api/trips';
+} from '../../api/positions';
+import { getDayRoute, type DayRouteState } from '../../api/trips';
 import type {
   DeviceStatus,
   LastPosition,
   PetProfile,
   StoredPosition,
   TripDetail,
-} from '../../../api/types';
-import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
-import { LanguageProvider } from '../../../providers/language-provider';
+} from '../../api/types';
+import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
+import { LanguageProvider } from '../../providers/language-provider';
 import {
   SelectedPetProvider,
   useSelectedPet,
-} from '../../../providers/selected-pet-provider';
-import MapScreen from '../map';
-import { renderWithProviders } from '../../../../test/render-with-providers';
+} from '../../providers/selected-pet-provider';
+import { MapScreen } from '.';
+import { renderWithProviders } from '../../../test/render-with-providers';
 
 let mockFocusCleanup: (() => void) | undefined;
 let mockTheme: 'light' | 'dark' = 'light';
 
-jest.mock('../../../api/pets', () => ({
+jest.mock('../../api/pets', () => ({
   getPet: jest.fn(),
   listPets: jest.fn(),
   setLostMode: jest.fn(),
 }));
 
-jest.mock('../../../api/positions', () => ({
+jest.mock('../../api/positions', () => ({
   getLastPosition: jest.fn(),
   listPositions: jest.fn(),
 }));
 
-jest.mock('../../../api/trips', () => ({
+jest.mock('../../api/trips', () => ({
   getDayRoute: jest.fn(),
 }));
 
-jest.mock('../../../providers/auth-provider', () => ({
+jest.mock('../../providers/auth-provider', () => ({
   useAuth: jest.fn(),
 }));
 
