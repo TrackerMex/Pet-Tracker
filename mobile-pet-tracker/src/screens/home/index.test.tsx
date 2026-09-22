@@ -52,6 +52,26 @@ const { join } = require('path');
 const mockUseReducedMotion = jest.fn<boolean, []>(() => false);
 const mockWithTiming = jest.fn((value: number, _config?: unknown) => value);
 
+function expectMealsBarTiming(target: number): void {
+  const config = mockWithTiming.mock.calls.find(
+    ([value]) => value === target,
+  )?.[1];
+  expect(config).toEqual(
+    expect.objectContaining({
+      duration: 250,
+      reduceMotion: ReduceMotion.System,
+    }),
+  );
+
+  const actualEasing = (
+    config as { easing: ReturnType<typeof Easing.bezier> }
+  ).easing.factory();
+  const expectedEasing = Easing.bezier(0.77, 0, 0.175, 1).factory();
+  for (const point of [0.25, 0.75]) {
+    expect(actualEasing(point)).toBeCloseTo(expectedEasing(point), 6);
+  }
+}
+
 function appRoutes(directory: string, prefix = ''): string[] {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const relativePath = prefix ? `${prefix}/${entry.name}` : entry.name;
@@ -3804,14 +3824,7 @@ describe('#' + '106 R2: la barra de comidas transiciona su ancho', () => {
         const fill = await screen.findByTestId('reminders-meals-fill');
         expect(fill).toHaveAnimatedStyle({ width: `${percentage}%` });
         expect(fill.props.className).toBe('h-full rounded-full bg-accent');
-        expect(mockWithTiming).toHaveBeenCalledWith(
-          percentage,
-          expect.objectContaining({
-            duration: 250,
-            easing: Easing.bezier(0.77, 0, 0.175, 1),
-            reduceMotion: ReduceMotion.System,
-          }),
-        );
+        expectMealsBarTiming(percentage);
       } finally {
         await view.unmount();
       }
@@ -3858,14 +3871,7 @@ describe('#' + '106 R3: reduce motion deja la barra sin animación', () => {
     });
 
     await screen.findByTestId('reminders-meals-fill');
-    expect(mockWithTiming).toHaveBeenCalledWith(
-      50,
-      expect.objectContaining({
-        duration: 250,
-        easing: Easing.bezier(0.77, 0, 0.175, 1),
-        reduceMotion: ReduceMotion.System,
-      }),
-    );
+    expectMealsBarTiming(50);
     await animated.unmount();
   });
 });
