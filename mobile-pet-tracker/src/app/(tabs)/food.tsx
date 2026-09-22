@@ -259,28 +259,25 @@ export default function FoodScreen() {
                         }
                         disabled={pendingMealTime === mealTime}
                         className="min-h-11 justify-center"
+                        style={({ pressed }) => ({
+                          opacity: pressed ? 0.8 : 1,
+                        })}
                         onPress={() => void toggleMeal(mealTime, served)}
                       >
-                        <Pressable
-                          style={({ pressed }) => ({
-                            opacity: pressed ? 0.8 : 1,
-                          })}
+                        <Text
+                          testID={
+                            served
+                              ? `meal-served-${index}`
+                              : `meal-pending-${index}`
+                          }
+                          className={
+                            served
+                              ? 'rounded-full bg-surface px-2 py-1 text-2xs font-bold text-accent-strong'
+                              : 'rounded-full bg-surface px-2 py-1 text-2xs font-bold text-muted'
+                          }
                         >
-                          <Text
-                            testID={
-                              served
-                                ? `meal-served-${index}`
-                                : `meal-pending-${index}`
-                            }
-                            className={
-                              served
-                                ? 'rounded-full bg-surface px-2 py-1 text-2xs font-bold text-accent-strong'
-                                : 'rounded-full bg-surface px-2 py-1 text-2xs font-bold text-muted'
-                            }
-                          >
-                            {served ? t('food.served') : t('food.pending')}
-                          </Text>
-                        </Pressable>
+                          {served ? t('food.served') : t('food.pending')}
+                        </Text>
                       </Pressable>
                     </View>
                   );
