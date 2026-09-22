@@ -12,12 +12,21 @@
 ### R2 — map
 
 - Commit rojo: `b5562651`.
+- Commit verde: `762c6525`.
 - Rojo, body: `JEST_EXIT=0`; 1 suite, 58/58 tests.
 - Rojo, candados: `JEST_EXIT=1`; 4 suites fallaron y 1 pasó; 10 tests fallaron
   y 141 pasaron. Los fallos nombraron `ENOENT` sobre
   `src/app/(tabs)/map.tsx`, todavía referenciado por los candados.
 - Verde: `JEST_EXIT=0`; 6 suites y 209/209 tests (body 58 + candados
   2/25/41/57/26) pasaron.
+
+### R3 — health
+
+- Rojo, body: `JEST_EXIT=0`; 1 suite, 28/28 tests.
+- Rojo, candados: `JEST_EXIT=1`; 4 suites fallaron y 1 pasó; 11 tests fallaron
+  y 140 pasaron. Los fallos nombraron `ENOENT` sobre
+  `src/app/(tabs)/health.tsx`.
+- Verde: pendiente.
 
 ## R7 — escaneo de tests colocados
 
@@ -30,6 +39,7 @@ Pendiente.
 ## R-id → commit
 
 - R1: `ca2d6f80` — `docs(conventions): excepcion A10 para migracion en frio (R1)`.
+- R2: rojo `b5562651`; verde `762c6525`.
 
 ## Desviaciones de tasks.md
 

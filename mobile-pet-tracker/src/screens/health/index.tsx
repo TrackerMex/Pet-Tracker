@@ -37,7 +37,7 @@ function fmtVariation(variation: number | null): string {
   return variation > 0 ? `+${variation} kg` : `${variation} kg`;
 }
 
-export default function HealthScreen() {
+export function HealthScreen() {
   const [warning, muted] = useThemeColors(['warning', 'muted']);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { token } = useAuth();
