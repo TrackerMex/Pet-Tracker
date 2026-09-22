@@ -444,6 +444,15 @@ compite con `bun.lock`. `init.sh` ya corre la parte móvil con
     nuevas se colocan junto al screen body.
   - Las pantallas anteriores a #39 NO se migran en frío: se mueven a este
     patrón solo cuando una feature las toque de fondo.
+    **Excepción nombrada (enmienda A10 de #102, 2026-09-22)**: se admite una
+    migración en frío si, y solo si, la feature que la pide cumple las cuatro
+    condiciones a la vez — (1) es un refactor puro, sin un solo cambio de
+    aserción ni de comportamiento; (2) declara el recuento de tests por suite
+    antes y después, y ambos son idénticos; (3) no solapa ficheros con
+    ninguna feature `in_progress`; y (4) su spec trae la enmienda a esta
+    viñeta con su propia casilla de firma humana. Una migración en frío que
+    no cumpla las cuatro sigue prohibida, y "ya que estamos" nunca es
+    justificación: la regla por defecto no cambia.
 - **Dimensiones de pantalla uniformes** (pedido del humano en el smoke de
   #38, 2026-08-25): toda pantalla nueva usa las mismas métricas de layout
   que `home.tsx` — `contentContainerStyle` con `paddingTop: insets.top + 12`,
