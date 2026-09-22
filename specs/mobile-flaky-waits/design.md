@@ -1,6 +1,6 @@
 ---
 feature: "mobile-flaky-waits"
-status: draft        # draft | approved
+status: spec_ready       # draft | spec_ready | approved
 tags: [harness, spec, mobile, tests]
 ---
 
