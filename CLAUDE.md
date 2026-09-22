@@ -109,9 +109,17 @@ handoff a Codex no se mueve a Notion. Detalle en `.claude/agents/leader.md`
 Todo trabajo sobre `mobile-pet-tracker/` (specs, handoffs, reviews) se rige
 por `docs/ui-guidelines.md`. Carga la skill `expo:expo-overview` al empezar
 tarea móvil y las específicas que la carta indica; instruye lo mismo a
-subagentes. Codex CLI tiene el mismo contenido vía su plugin `expo`
-(`codex plugin add expo@openai-curated`, ya instalado) — el handoff debe
-pedirle cargarlas.
+subagentes.
+
+**Codex NO tiene el mismo contenido.** Es la deuda **B5**, que mordió en #106 y
+reincidió en #109. Su plugin `expo@openai-curated` es la **v1.0.2 con 13
+skills**; el nuestro es otra generación con más del doble y **otros nombres**.
+Pedirle por nombre una skill que no existe **no da error: da silencio**, y el
+`reviewer` lo descubre al final.
+
+La tabla de equivalencias y los huecos están en `.claude/agents/leader.md`
+§Catálogo real de skills de Codex. **Nombra en el handoff los nombres de
+Codex, no los nuestros.**
 
 ## graphify
 

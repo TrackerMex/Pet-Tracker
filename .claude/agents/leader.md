@@ -111,6 +111,78 @@ Devuelve: "aprobado" o "rechazado → <razón breve>"
 
 ---
 
+## Catálogo real de skills de Codex
+
+Cierra la deuda **B5**, que mordió en #106 y reincidió en #109. Medido el
+2026-09-22 sobre `~/.codex/cache/remote_plugin_catalog/`, no supuesto.
+
+**El plugin de Codex y el nuestro no son el mismo contenido**, aunque los dos
+se llamen `expo`:
+
+| | Nuestro plugin | El de Codex |
+|---|---|---|
+| Versión | `1.13.6` | **`1.0.2`** |
+| Skills | 23 | **13** |
+
+Y los nombres **no coinciden**. Pedirle por nombre una skill que no existe
+**no da error: da silencio**, y el `reviewer` lo descubre al final del ciclo.
+
+### Las 13 que Codex sí tiene
+
+`building-native-ui` · `codex-expo-run-actions` · `expo-api-routes` ·
+`expo-cicd-workflows` · `expo-deployment` · `expo-dev-client` · `expo-module` ·
+`expo-tailwind-setup` · `expo-ui-jetpack-compose` · `expo-ui-swift-ui` ·
+`native-data-fetching` · `upgrading-expo` · `use-dom`
+
+### Equivalencias, para traducir el handoff
+
+| Lo que pedimos nosotros | Lo que hay que escribirle a Codex |
+|---|---|
+| `expo-native-ui` | `building-native-ui` |
+| `expo-data-fetching` | `native-data-fetching` |
+| `expo-upgrade` | `upgrading-expo` |
+| `expo-dom` | `use-dom` |
+| `expo-ui` | `expo-ui-swift-ui` / `expo-ui-jetpack-compose` |
+| `eas-hosting` | `expo-api-routes` + `expo-deployment` |
+| `eas-workflows` | `expo-cicd-workflows` |
+| `expo-dev-client`, `expo-module`, `expo-tailwind-setup` | igual |
+
+### Los huecos, que son lo que de verdad importa
+
+Tres skills que damos por sentadas **no tienen equivalente**:
+
+- **`expo-overview`** — Codex no tiene router de skills. No hay nada que
+  «cargar primero». El sustituto honesto para trabajo de UI es
+  `building-native-ui`.
+- **`expo-animation`** — **no existe ninguna skill de animación**. #106 era una
+  feature de animación y Codex la implementó sin ninguna guía de movimiento:
+  salió bien porque la **spec** llevaba las decisiones dentro (spring vs
+  timing, duración, curva, reduce motion, el doble de `withTiming`).
+- **`expo-router`** — tampoco existe.
+
+**Consecuencia para el `leader`:** cuando una feature móvil caiga en uno de
+esos tres huecos, la guía que Codex no va a cargar **tiene que estar escrita en
+la spec**. No basta con nombrar la skill en el handoff, y la carta
+`docs/ui-guidelines.md` sigue siendo el gate C8 para el `reviewer` con
+independencia de lo que Codex tenga instalado.
+
+### Cómo se vuelve a medir
+
+El catálogo está cacheado y caduca:
+
+```bash
+python3 -c "
+import json
+d=json.load(open('$HOME/.codex/cache/remote_plugin_catalog/f787738308dab44d.json'))
+p=[x for x in d['plugins'] if x.get('name')=='expo'][0]
+print(p['release']['version'])
+[print(' -', s['name']) for s in p['release']['skills']]
+"
+```
+
+El nombre del fichero es un hash y cambia. Si no está, busca el `.json` más
+grande de ese directorio.
+
 ## Gate de aprobación vía Notion
 
 Desde 2026-09-22, por decisión del humano. El problema que resuelve: **firmar
@@ -217,12 +289,9 @@ Reglas críticas:
     **Verifica el catálogo de skills de Codex antes de nombrarlas**: en #106
     el handoff pidió `expo-overview` y `expo-animation`, ninguna de las dos
     estaba en su catálogo y Codex acabó cargando `expo:building-native-ui`.
-    Pedir por nombre una skill que no existe no da error: da silencio, y el
-    reviewer lo descubre al final (deuda B5 de
-    `progress/review_mobile-meals-bar-motion.md`, **reincidente en #109**).
-    Hasta que se cierre, **el handoff debe pedirle a Codex que liste las skills
-    expo de su catálogo y diga cuáles cargó, en el reporte**: así el fallo sale
-    en el reporte y no en el veredicto
+    **usando los nombres del catálogo de Codex, no los nuestros** — ver
+    §Catálogo real de skills de Codex. Y pídele siempre que **diga en el
+    reporte cuáles cargó**, como red de seguridad
   - TDD por requisito: test rojo → verde → refactor (ver specs/<feature>/tasks.md)
   - UN COMMIT POR REQUISITO como mínimo, con el test rojo antes que su
     implementación. Un único commit con todo incumple C4 de CHECKPOINTS.md
