@@ -13,6 +13,7 @@ Handoff: `5251e10c`
 | R1 verde | `a054f085 test(mobile-flaky-waits): wait for resolved weight (R1)` |
 | R2 · S2 | `bcd8ba8a test(mobile-flaky-waits): align health query waits (R2)` |
 | R2 · S3..S7 | `9051eb77 test(mobile-flaky-waits): align map waits with assertions (R2)` |
+| R2 · S4, ronda 2 | `4477f0fc test(mobile-flaky-waits): restore map visibility assertion (R2)` |
 | R3..R6 | `fba9c4c5 docs(mobile-flaky-waits): record verification evidence (R1,R2,R3,R4,R5,R6)` |
 
 ## Protocolo M
@@ -42,8 +43,15 @@ Tests:       28 passed, 28 total
 
 ### S2 — llamadas de vacunas y peso
 
-La viga prescrita no produjo el rojo esperado. Con 200 ms, el test viejo pasó;
-se amplió a 800 ms conforme a la spec y el fichero completo también pasó:
+La Enmienda E1 de `requirements.md` reclasifica S2: no es un defecto de R2 y su
+vía C4 es el argumento de invariancia, sin mutación, con el precedente de #72 S6.
+El `selectedPetId` que pinta el chip seleccionado habilita directamente las dos
+queries (`enabled: selectedPetId !== null` en `health/index.tsx:55` y `:61`), por
+lo que las llamadas de vacunas y peso están causalmente implicadas por el mismo
+render que termina el `waitFor`.
+
+Las mediciones confirman esa invariancia. Las vigas de 200 y 800 ms sobre
+`mockListVaccines`/`mockListWeights` no pusieron rojo el cuerpo viejo:
 
 ```text
 S2-old exit=0
@@ -55,10 +63,17 @@ Test Suites: 1 passed, 1 total
 Tests:       28 passed, 28 total
 ```
 
-La causa es observable en Jest: la llamada se registra al invocar el mock, antes
-de que resuelva la promesa que devuelve. Retrasar la resolución no puede convertir
-`toHaveBeenCalledWith` en `Number of calls: 0`. La corrección firmada se aplicó sin
-cambiar aserciones y pasó con 800 ms y sin viga:
+El reviewer midió además el único lever que abre la puerta a esas queries: viga
+de 200 ms sobre `mockListPets`, cuerpo viejo de `5251e10c`. También pasó:
+
+```text
+reviewer S2 mockListPets 200 ms exit=0
+Tests:       27 skipped, 1 passed, 28 total
+```
+
+El cambio de `bcd8ba8a` se conserva, como ordena E1, como endurecimiento
+defensivo: mueve las mismas tres aserciones dentro del `waitFor` sin cambiar su
+conjunto ni sus valores. Con 800 ms y sin viga quedó verde:
 
 ```text
 S2-new-800 exit=0
@@ -66,9 +81,6 @@ Tests:       27 skipped, 1 passed, 28 total
 S2-final exit=0
 Tests:       28 passed, 28 total
 ```
-
-Esto es una desviación de `tasks.md` R2(1): el par viejo-falla/nuevo-pasa no se
-pudo obtener con la mutación prescrita, ni ampliando su ventana.
 
 ### S3 — polylines de dos viajes
 
@@ -117,6 +129,19 @@ Restaurados `trips: []` y sin viga:
 ```text
 S4-final exit=0
 Tests:       57 skipped, 1 passed, 58 total
+```
+
+Ronda 2, hallazgo B2: `9051eb77` había sustituido la aserción de visibilidad de
+`map-view` en vez de conservarla. `4477f0fc` restituyó exactamente esa línea
+detrás del ancla correcta de `stat-distance`, sin tocar la espera ni el resto del
+test. No lleva un par rojo/verde nuevo: el rojo de S4 es la prueba de zona ciega
+anterior; B2 solo restituye una aserción perdida.
+
+```text
+B2-target exit=0
+Tests:       57 skipped, 1 passed, 58 total
+B2-map exit=0
+Tests:       58 passed, 58 total
 ```
 
 ### S5 — tiles de fuentes independientes
@@ -268,15 +293,37 @@ En las cinco, `N = 77 = S`. El recuento absoluto y el de los dos ficheros no se
 mueven. Como declara la spec, esto controla regresiones introducidas por #111; no
 demuestra ausencia del flake histórico.
 
+### Ronda 2
+
+```text
+V0 exit=0 — S = 77
+tsc exit=0 — salida vacía (0 bytes)
+health exit=0 — 28 passed, 28 total
+map exit=0 — 58 passed, 58 total
+V1 exit=0 — 86 passed, 86 total
+R3 compare exit=0
+R4 package diff lines=0
+R5 production diff lines=0
+map setTimeout additions=0
+run 1 exit=0 — Test Suites: 77 passed, 77 total — Tests: 1396 passed, 1396 total
+run 2 exit=0 — Test Suites: 77 passed, 77 total — Tests: 1396 passed, 1396 total
+run 3 exit=0 — Test Suites: 77 passed, 77 total — Tests: 1396 passed, 1396 total
+run 4 exit=0 — Test Suites: 77 passed, 77 total — Tests: 1396 passed, 1396 total
+run 5 exit=0 — Test Suites: 77 passed, 77 total — Tests: 1396 passed, 1396 total
+```
+
 ## Desviaciones y estado
 
 No se ejecutó `./init.sh`, por mandato de requirements §Fuera de alcance y
 design §Protocolo V. No hubo cambios de producción, dependencias, configuración ni
 número de tests.
 
-Quedan dos resultados distintos de los exigidos por C4: S2 no da rojo con la viga
-prescrita y la prueba de zona ciega de `stat-speed` en S6 no hace fallar el test
-corregido. Ambos límites derivan de qué observa cada aserción, no de falta de
-ventana. La implementación funcional y todos los gates de regresión están verdes,
-pero el estado de la feature debe permanecer `in_progress` hasta que un humano
-acepte esta evidencia o enmiende el Protocolo M.
+E1 resuelve S2 mediante invariancia medida y conserva `bcd8ba8a` como
+endurecimiento defensivo. B2 queda corregido por `4477f0fc`. La prueba adicional
+de zona ciega de `stat-speed` en S6 sigue documentando honestamente viejo-pasa /
+corregido-pasa; el reviewer la clasificó como no bloqueante y no pidió código.
+
+La casilla `Enmienda E1 aprobada por humano` continúa sin marcar en
+`requirements.md` a pesar de que el handoff de ronda 2 declara la firma. El
+implementer no la auto-marca; #111 permanece `in_progress` hasta que el humano
+corrija esa discrepancia y el reviewer emita veredicto.

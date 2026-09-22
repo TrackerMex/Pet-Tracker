@@ -9,6 +9,6 @@ Feature: #111 `mobile-flaky-waits`
 Branch: `feature/111-mobile-flaky-waits`
 Inicio: 2026-09-22 UTC
 
-Plan: ejecutar V0/V1 de base; cerrar R1 con commit rojo y verde; verificar y
-corregir S2..S7 uno a uno mediante Protocolo M; ejecutar Protocolo V, completar
-trazabilidad y reporte, y cerrar el bookkeeping sin tocar producción.
+Ronda 2: documentar S2 como invariancia bajo la Enmienda E1; restituir la
+aserción `map-view` visible de S4; repetir `tsc`, V0/V1 y cinco corridas V2;
+actualizar trazabilidad y reporte sin tocar producción.
