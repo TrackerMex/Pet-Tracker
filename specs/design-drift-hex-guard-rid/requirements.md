@@ -43,7 +43,7 @@ tiene que volver a medirlo**, pero si algo no cuadra, para y avisa.
 | La lista `shadowColor\|shadowOffset\|shadowOpacity\|shadowRadius\|\belevation\s*:` está duplicada | conteo del literal | **2** ocurrencias (`:197` y `:343`) |
 | El guard muerde ficheros de test porque las listas los enumeran | lectura de las listas `featureFiles` | 11 entradas `.test.ts(x)`; `screens/home/index.test.tsx` aparece en **cinco** (`:207, :253, :272, :294, :315`) |
 | `app/(tabs)/food.tsx` no está en ninguna lista | lectura de las listas | por eso nunca mordió ahí |
-| Los literales partidos siguen donde se dijo | `grep -n "'#' + '"` | `screens/home/index.test.tsx:3790` y `:3835` |
+| Los literales partidos siguen existiendo, **dos y solo dos** | `grep -n "'#' + '"` | `screens/home/index.test.tsx`: eran `:3790` y `:3835` el 2026-09-22; tras el merge de #110 (`2a9219b3`) son `:3767` y `:3812`. **El número no es el ancla: el ancla es el grep** |
 | Toda cita de R-id de `index.test.tsx` usa la forma `#<id> R<n>` | `grep -noE "#[0-9]{2,3}.{0,18}"` | 41 citas; 40 con ` R<n>`, una suelta (`#40)` en `:635`, de dos cifras) |
 | Ninguna cita existente de `index.test.tsx` es de tres cifras | mismo grep | todas son de dos cifras; por eso el árbol está verde hoy |
 | Unificar las dos formas largas **no** rompería nada hoy | sonda: `pairing/index.tsx` no contiene `StyleSheet` en ninguna forma | la unificación sería un cambio de cobertura **futura**, sin pago hoy (ver [[design]] §2) |
@@ -224,8 +224,8 @@ Los dos literales a devolver (líneas medidas contra el árbol tras el merge de
 
 | Línea | Hoy | Debe quedar |
 |---|---|---|
-| `:3790` | `describe('#' + '106 R2: la barra de comidas transiciona su ancho', () => {` | `describe('#106 R2: la barra de comidas transiciona su ancho', () => {` |
-| `:3835` | `describe('#' + '106 R3: reduce motion deja la barra sin animación', () => {` | `describe('#106 R3: reduce motion deja la barra sin animación', () => {` |
+| 1.ª | `describe('#' + '106 R2: la barra de comidas transiciona su ancho', () => {` | `describe('#106 R2: la barra de comidas transiciona su ancho', () => {` |
+| 2.ª | `describe('#' + '106 R3: reduce motion deja la barra sin animación', () => {` | `describe('#106 R3: reduce motion deja la barra sin animación', () => {` |
 
 No se toca nada más de ese fichero: ni el cuerpo de los describes, ni los otros
 títulos, ni el orden. El diff de R3 son **dos líneas**.

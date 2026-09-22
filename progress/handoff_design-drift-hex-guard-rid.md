@@ -68,7 +68,10 @@ R1  design-drift.test.ts: extraer HEX_LITERAL, ARBITRARY_CLASS y SHADOW_ESCAPES
     le toca a cada guard. HEX_LITERAL queda en UNA sola ocurrencia y R1 lo
     canda con un conteo.
 R2  anadir la lookahead a HEX_LITERAL.
-R3  screens/home/index.test.tsx: DOS lineas, :3790 y :3835, vuelven a ser
+R3  screens/home/index.test.tsx: DOS lineas, que LOCALIZAS CON grep y NUNCA
+    por numero (`grep -n "'#' + '" ...`; #110 las movio 23 lineas arriba al
+    mergear, de :3790/:3835 a :3767/:3812, y #112 las movera otra vez),
+    vuelven a ser
     literales enteros. Nada mas en ese fichero.
 R4  docs/conventions.md: un parrafo al final de la seccion «Prefijo de feature
     cuando un fichero acumula R-ids de dos specs», antes de «### Filtros de

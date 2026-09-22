@@ -184,7 +184,7 @@ igualdad al mutar la constante, y pasaba en verde con 250 → 2500.
 | `mobile-pet-tracker/src/__tests__/design-drift.test.ts` | Añade las constantes `HEX_LITERAL`, `ARBITRARY_CLASS`, `SHADOW_ESCAPES` y las tres formas compuestas; sustituye los ocho regex inline (`:117, :197, :220, :260, :279, :301, :322, :343`) por la forma que le toca a cada uno | R1 |
 | `mobile-pet-tracker/src/__tests__/design-drift.test.ts` | Añade la lookahead negativa `(?!\d{2,3} R\d)` a `HEX_LITERAL` | R2 |
 | `mobile-pet-tracker/src/__tests__/design-drift.test.ts` | Añade los cuatro describes nuevos: `#108 R1`, `#108 R2`, `#108 R3`, `#108 R4` (14 tests) | R1, R2, R3, R4 |
-| `mobile-pet-tracker/src/screens/home/index.test.tsx` | Dos líneas: `:3790` y `:3835` vuelven a ser literales enteros. Nada más | R3 |
+| `mobile-pet-tracker/src/screens/home/index.test.tsx` | Dos líneas: los **dos únicos** `describe('#' + '106 …')` vuelven a ser literales enteros. Nada más. **Se localizan por contenido**, con `grep -n "'#' + '"`, nunca por número: #110 las movió 23 líneas arriba al mergear | R3 |
 | `docs/conventions.md` | Un párrafo al final de §«Prefijo de feature cuando un fichero acumula R-ids de dos specs» (antes de `### Filtros de jest con rutas que llevan paréntesis`) | R4 |
 
 Ni `backend-pet-tracker/`, ni `infra/`, ni `package.json`, ni `init.config.sh`,

@@ -131,7 +131,7 @@ arréglalo antes de commitear.
       **Rojo esperado**: los tres, por aserción. Tres tests rojos.
       Commit: `test(mobile): exigir los titulos enteros de #106 (R3)`
 - [ ] **(2) Implementación mínima.** Deshacer la concatenación en
-      `src/screens/home/index.test.tsx:3790` y `:3835`, exactamente las dos
+      `src/screens/home/index.test.tsx`, localizadas con `grep -n "'#' + '"` y **nunca por número de línea**, exactamente las dos
       líneas de la tabla de [[requirements]] R3. **Diff de dos líneas**: no se
       toca el cuerpo de los describes, ni los otros títulos, ni el orden.
       Commit: `refactor(mobile): devolver los titulos de #106 a un literal (R3)`
