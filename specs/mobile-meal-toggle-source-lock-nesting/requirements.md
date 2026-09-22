@@ -153,7 +153,7 @@ Cada viñeta está clasificada: **(D)** delimitación de esta feature,
 ## Aprobación
 
 - [ ] **Aprobado por humano** (fecha: ____) ← gate obligatorio antes de
-      implementar. Al marcar esta casilla el humano firma también los cuatro
+      implementar. Al marcar esta casilla el humano firma también los cinco
       puntos de §Qué firma el humano al aprobar esta spec.
 
 > No hay ningún otro gate humano en esta feature: sin diff de producción no
