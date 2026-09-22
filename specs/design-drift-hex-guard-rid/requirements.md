@@ -294,10 +294,11 @@ borrado sí.
 ## Gate numérico
 
 > **Corrección del 2026-09-22, antes de la firma.** Las cifras absolutas de la
-> columna «Esperado al cerrar» **ya caducaron**: la feature #110, en vuelo en la
-> sesión paralela, sube la suite móvil de **1396 a 1398** (`+2` tests nuevos en
-> `screens/home/index.test.tsx`, 138 → 140), y no se sabe si entrará en `main`
-> antes o después de #108. Por eso **el candado es la derivación, no el número**:
+> columna «Esperado al cerrar» **ya caducaron**: #110 **mergeó** (`2a9219b3`) y
+> subió la suite móvil de **1396 a 1398** (`+2` tests en
+> `screens/home/index.test.tsx`, 138 → 140). Con esa base la derivación da
+> **1412**, no 1410. Y volverá a caducar: **#112 está registrada y vive en ese
+> mismo fichero**. Por eso **el candado es la derivación, no el número**:
 > quien implemente **mide la base él mismo al arrancar** y comprueba el delta. Las
 > cifras de la tabla se conservan como **descripción de lo que valía el 2026-09-22**,
 > y no son el gate.
