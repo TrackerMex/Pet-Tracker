@@ -17,7 +17,7 @@ tags: [harness, spec, mobile, refactor]
 | **R1** | `grep -c 'enmienda A10 de #102'` → 1 y `grep -c 'NO se migran en frío'` → 1 (sin test automático: es enmienda a doc con gate humano propio) | `docs/conventions.md:445-446` (raíz del repo) | `ca2d6f80` — `docs(conventions): excepcion A10 para migracion en frio (R1)` |
 | **R2** | 58 tests intactos + los 6 sitios de candado de map repuntados | `src/screens/map/index.test.tsx` | `762c6525` — `refactor(mobile): repunta los candados de map (R2)` |
 | **R3** | 28 tests intactos + los 6 sitios de candado de health repuntados | `src/screens/health/index.test.tsx` | `64168387` — `refactor(mobile): repunta los candados de health (R3)` |
-| **R4** | 32 tests intactos + los 5 sitios de candado de weight-log repuntados | `src/screens/weight-log/index.test.tsx` | pendiente |
+| **R4** | 32 tests intactos + los 5 sitios de candado de weight-log repuntados | `src/screens/weight-log/index.test.tsx` | `9f0240af` — `refactor(mobile): repunta los candados de weight-log (R4)` |
 | **R5** | 23 tests intactos + los 4 sitios de candado de meal-schedule repuntados | `src/screens/meal-schedule/index.test.tsx` | pendiente |
 | **R6** | `describe('R3: Card compartido elimina rounded arbitrario')`, ternario invertido sobre `food`, suite en 41 | `src/__tests__/design-drift.test.ts:84-86` | pendiente |
 | **R7** | `describe('C8: la UI no usa clases arbitrarias')`, `R3` y `R4` — las tres listas en `[]` con los 4 tests ya dentro del escaneo; `sourceFiles()` sin tocar | `src/__tests__/design-drift.test.ts` (`:25-35` intacto; describes `C8` `:61`, `R3` `:67`, `R4` `:94`) | pendiente |
@@ -64,7 +64,7 @@ mutación**, y el candado lo ve por su propia aserción.
 |---|---|---|---|
 | **R2** map | `b5562651` | 4 suites rojas por `ENOENT` sobre `src/app/(tabs)/map.tsx`; body 58/58 verde | `762c6525` |
 | **R3** health | `95ee54fc` | 4 suites rojas por `ENOENT` sobre `src/app/(tabs)/health.tsx`; body 28/28 verde | `64168387` |
-| **R4** weight-log | `d0df4df2` | 3 suites rojas por `ENOENT` sobre `src/app/(tabs)/weight-log.tsx`; body 32/32 verde | pendiente |
+| **R4** weight-log | `d0df4df2` | 3 suites rojas por `ENOENT` sobre `src/app/(tabs)/weight-log.tsx`; body 32/32 verde | `9f0240af` |
 | **R5** meal-schedule | pendiente | pendiente | pendiente |
 
 ## Gates humanos

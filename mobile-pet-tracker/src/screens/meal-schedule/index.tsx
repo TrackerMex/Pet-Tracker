@@ -313,7 +313,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
   );
 }
 
-export default function MealScheduleScreen() {
+export function MealScheduleScreen() {
   const { selectedPetId } = useSelectedPet();
 
   if (selectedPetId === null) {
