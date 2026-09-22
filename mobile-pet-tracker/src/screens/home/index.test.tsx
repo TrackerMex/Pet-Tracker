@@ -8,6 +8,7 @@ import {
 import { router, useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
+import { Easing, ReduceMotion } from 'react-native-reanimated';
 import { Uniwind } from 'uniwind';
 
 import {
@@ -30,7 +31,7 @@ import { SelectedPetProvider } from '../../providers/selected-pet-provider';
 import * as selectedPetHooks from '../../providers/selected-pet-provider';
 import { TABULAR_NUMS } from '../../theme/native-styles';
 import { CATEGORY_SLOTS } from '../../utils/category-palette';
-import { HomeScreen, MEALS_BAR_TIMING } from './index';
+import { HomeScreen } from './index';
 import { renderWithProviders } from '../../../test/render-with-providers';
 
 declare function require(moduleName: 'fs'): {
@@ -3805,7 +3806,11 @@ describe('#' + '106 R2: la barra de comidas transiciona su ancho', () => {
         expect(fill.props.className).toBe('h-full rounded-full bg-accent');
         expect(mockWithTiming).toHaveBeenCalledWith(
           percentage,
-          MEALS_BAR_TIMING,
+          expect.objectContaining({
+            duration: 250,
+            easing: Easing.bezier(0.77, 0, 0.175, 1),
+            reduceMotion: ReduceMotion.System,
+          }),
         );
       } finally {
         await view.unmount();
@@ -3853,7 +3858,14 @@ describe('#' + '106 R3: reduce motion deja la barra sin animación', () => {
     });
 
     await screen.findByTestId('reminders-meals-fill');
-    expect(mockWithTiming).toHaveBeenCalledWith(50, MEALS_BAR_TIMING);
+    expect(mockWithTiming).toHaveBeenCalledWith(
+      50,
+      expect.objectContaining({
+        duration: 250,
+        easing: Easing.bezier(0.77, 0, 0.175, 1),
+        reduceMotion: ReduceMotion.System,
+      }),
+    );
     await animated.unmount();
   });
 });
