@@ -504,11 +504,11 @@ Lo que se firma aquí es el **texto normativo de R1**: la excepción A10 a
 defecto intacta. Sin esta casilla, #102 **no existe** y se cierra sin implementar
 (criterio de aceptación 1 de la entrada).
 
-- [ ] Enmienda R1 (A10 de `docs/conventions.md`) aprobada por humano (fecha: ____)
+- [X] Enmienda R1 (A10 de `docs/conventions.md`) aprobada por humano (fecha: 2026-09-21)
 
 ### Aprobación de la spec
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [X] Aprobado por humano (fecha: 2026-09-21) ← gate obligatorio antes de implementar
 
 Al marcar esta casilla, el humano ratifica además:
 
