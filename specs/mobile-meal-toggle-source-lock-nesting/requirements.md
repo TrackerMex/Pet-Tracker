@@ -1,6 +1,6 @@
 ---
 feature: "mobile-meal-toggle-source-lock-nesting"
-status: spec_ready       # draft | spec_ready | approved
+status: approved         # draft | spec_ready | approved  ← aprobada por el humano en Notion el 2026-09-22T16:52:27Z
 tags: [harness, spec, mobile, deuda]
 ---
 
@@ -152,9 +152,23 @@ Cada viñeta está clasificada: **(D)** delimitación de esta feature,
 
 ## Aprobación
 
-- [ ] **Aprobado por humano** (fecha: ____) ← gate obligatorio antes de
+- [X] **Aprobado por humano** (fecha: 2026-09-22) ← gate obligatorio antes de
       implementar. Al marcar esta casilla el humano firma también los cinco
       puntos de §Qué firma el humano al aprobar esta spec.
+
+> **Cómo se aprobó, y qué se puede probar de ello.** El humano puso
+> `Estado del gate` = **Aprobado** en la página de Notion
+> `3e36115a-9b27-815f-a0d9-e0854ea6c602`
+> (`Panel de Proyectos — Harness SDD / Specs`), que el `leader` verificó
+> leyéndola: propiedad en «Aprobado», `page_last_edited_at` =
+> **2026-09-22T16:52:27.198Z**. La casilla la marca el `leader` en su nombre,
+> según `.claude/agents/leader.md` §Gate de aprobación vía Notion.
+>
+> **Lo que NO se puede probar por esta vía:** la API devuelve *qué* cambió y
+> *cuándo*, pero **no la cuenta que lo cambió** — el filtro por editor es de
+> plan Business. La evidencia es la propiedad y su marca de tiempo, no la
+> autoría. Si algún día hace falta autoría demostrable, el humano firma en el
+> repo con su propio commit, que es la vía que sigue abierta.
 
 > No hay ningún otro gate humano en esta feature: sin diff de producción no
 > hay prueba de humo que firmar. El cierre lo dan el veredicto del `reviewer`

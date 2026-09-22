@@ -2100,7 +2100,7 @@
   {
     "id": 109,
     "name": "mobile-meal-toggle-source-lock-nesting",
-    "status": "spec_ready",
+    "status": "in_progress",
     "priority": "P3",
     "description": "Deuda B2 del reviewer de #106/#107, ronda 1 (progress/review_mobile-meals-bar-motion.md). El candado de R5 que vigila el feedback de pulsado del boton por franja recorta el fuente de food.tsx con lastIndexOf/indexOf (mobile-pet-tracker/src/app/(tabs)/__tests__/food.test.tsx:783-793) y ese recorte tiene un agujero por anidamiento: un Pressable anidado dentro del recorte puede desplazar los limites y hacer que la regex mire un trozo que no es el del meal-toggle. Hoy NO es explotable porque la asercion de arbol que va al lado lo tapa, y el reviewer verifico que el par aguanta 3 de 4 variantes de acotado. Es deuda latente, no un fallo vivo: si alguien quita la asercion de arbol o anida otro Pressable ahi, el candado deja de mirar lo que dice mirar sin ponerse rojo. Arreglo: acotar por balance de tags en vez de por indices, o dejar el limite documentado como patron para que nadie lo copie a ciegas a otro sitio. OJO al copiar el patron: el mismo reviewer levanto en B8 que este tipo de localizacion por indice o por valor es fragil cuando se reusa.",
     "acceptance_criteria": [

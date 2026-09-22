@@ -160,10 +160,16 @@ la spec sigue intacta en disco y no se ha perdido trabajo.
    diga de qué commit salió el espejo.
 
 2. **Cuando el humano pone `Estado del gate` = Aprobado** — el leader:
-   - **verifica en Notion** quién lo cambió y cuándo (no se fía del reporte);
+   - **verifica en Notion** leyendo la página: que la propiedad dice
+     «Aprobado», y su `page_last_edited_at`. **No se fía del reporte.**
+     Ojo con lo que esa lectura **no** da: la API devuelve *qué* cambió y
+     *cuándo*, pero **no la cuenta que lo cambió** —el filtro por editor es de
+     plan Business—, así que se cita la propiedad y su marca de tiempo, nunca
+     la autoría. Si una spec necesitara autoría demostrable, el humano firma
+     en el repo con su propio commit, que es la vía que sigue abierta;
    - pasa el frontmatter de `requirements.md` a `approved`;
-   - hace el **commit de firma citando la página, la marca de tiempo y la
-     cuenta** que aprobó. Ese commit es la firma;
+   - hace el **commit de firma citando la página y la marca de tiempo**. Ese
+     commit es la firma;
    - pone `Rol actual` = Implementer.
 
 3. **Al cerrar la feature** — `Estado del gate` = Implementado,
