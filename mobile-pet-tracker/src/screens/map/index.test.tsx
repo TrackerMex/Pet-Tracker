@@ -532,6 +532,7 @@ describe('R7: ruta del día como polylines', () => {
     await waitFor(() =>
       expect(screen.getByTestId('stat-distance')).toHaveTextContent('0.0 km'),
     );
+    expect(screen.getByTestId('map-view')).toBeVisible();
     expect(screen.getByTestId('map-view').props.polylines).toEqual([]);
   });
 
