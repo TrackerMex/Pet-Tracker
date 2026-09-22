@@ -1,0 +1,125 @@
+PASS src/screens/home/weekly-activity-chart.test.tsx (51.898 s)
+FAIL src/screens/map/index.test.tsx (55.962 s)
+  ● R4: map resuelve la mascota seleccionada › selects the first pet and loads its first position (#72 R2)
+
+    expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+    Expected: "http://example.test/v1", "jwt-token", "pet-1"
+
+    Number of calls: 0
+
+      290 |     await renderMap();
+      291 |
+    > 292 |     await waitFor(() => {
+          |                  ^
+      293 |       expect(mockGetLastPosition).toHaveBeenCalledWith(
+      294 |         apiUrl,
+      295 |         'jwt-token',
+
+      at Object.<anonymous> (src/screens/map/index.test.tsx:292:18)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+PASS src/screens/alerts/index.test.tsx (5.718 s)
+PASS src/app/(tabs)/__tests__/food.test.tsx (9.396 s)
+PASS src/screens/pairing/index.test.tsx (87.614 s)
+PASS src/screens/profile/index.test.tsx (68.489 s)
+PASS src/__tests__/ui-copy-table.ts
+PASS src/theme/__tests__/global-css.test.ts
+PASS src/screens/reminders/index.test.tsx (5.366 s)
+PASS src/screens/weight-log/index.test.tsx (5.197 s)
+PASS src/screens/add-pet/index.test.tsx
+PASS src/screens/health/index.test.tsx
+PASS src/components/__tests__/pet-hero-header.test.tsx
+PASS src/__tests__/consistency-classnames.test.ts
+PASS src/__tests__/design-drift.test.ts
+PASS src/screens/home/index.test.tsx (152.324 s)
+PASS src/screens/add-reminder/index.test.tsx
+PASS src/hooks/use-push-registration.test.tsx
+PASS src/__tests__/ui-language.test.ts
+PASS src/screens/meal-schedule/index.test.tsx
+PASS src/components/__tests__/floating-tab-bar.test.tsx
+PASS src/api/__tests__/nutrition.test.ts
+PASS src/api/__tests__/health-records.test.ts
+PASS src/api/__tests__/pets.test.ts
+PASS ./app.config.test.ts
+PASS src/api/__tests__/auth.test.ts
+PASS src/providers/__tests__/auth-provider.test.tsx
+PASS src/app/__tests__/layout.test.tsx
+PASS src/screens/docs/index.test.tsx
+PASS src/screens/reset-password/index.test.tsx
+PASS src/api/__tests__/reminders.test.ts
+PASS src/screens/home/format.test.ts
+PASS src/providers/__tests__/language-provider.test.tsx
+PASS src/api/__tests__/positions.test.ts
+PASS src/api/__tests__/alerts.test.ts
+PASS src/api/__tests__/trips.test.ts
+PASS src/api/__tests__/devices.test.ts
+PASS src/api/__tests__/media.test.ts
+PASS src/__tests__/legibility-classnames.test.ts
+PASS src/app/(auth)/__tests__/register.test.tsx
+PASS src/providers/__tests__/query-provider.test.tsx
+PASS src/hooks/use-pet-selection.test.tsx
+PASS src/components/__tests__/pet-map.test.tsx
+PASS src/theme/__tests__/theme-transition.test.tsx
+PASS src/app/(auth)/__tests__/login.test.tsx
+PASS src/__tests__/hero-header-amendments.test.ts
+PASS src/components/__tests__/pet-avatar.test.tsx
+PASS src/__tests__/hosting-artifacts.test.ts
+PASS src/api/__tests__/push-tokens.test.ts
+PASS src/api/__tests__/activity.test.ts
+PASS src/api/__tests__/query-keys.test.ts
+PASS src/app/(tabs)/__tests__/screens.test.tsx
+PASS src/api/__tests__/subscriptions.test.ts
+PASS src/components/__tests__/weight-chart.test.tsx
+PASS src/utils/device-connectivity.test.ts
+PASS src/app/(tabs)/__tests__/layout.test.tsx (5.516 s)
+PASS src/components/__tests__/pet-switcher.test.tsx
+PASS src/api/__tests__/users.test.ts
+PASS src/components/__tests__/card.test.tsx
+PASS src/app/(auth)/__tests__/forgot.test.tsx
+PASS src/utils/__tests__/category-palette.test.ts
+PASS src/theme/__tests__/font-registration.test.ts
+PASS src/app/(tabs)/__tests__/alerts.test.tsx
+PASS src/utils/language-preference.test.ts
+PASS src/app/__tests__/index.test.tsx
+PASS test/__tests__/render-with-providers.test.tsx
+PASS src/app/(auth)/__tests__/layout.test.tsx
+PASS src/utils/theme-preference.test.ts
+PASS src/theme/__tests__/use-theme-colors.test.tsx
+PASS src/utils/civil-today-iso.test.ts
+PASS src/theme/__tests__/theme-transition.degraded.test.tsx
+PASS src/providers/__tests__/selected-pet-provider.test.tsx
+PASS src/utils/reminder-dates.test.ts
+PASS src/app/__tests__/tabs-layout.test.tsx
+PASS src/app/(tabs)/__tests__/profile.test.tsx
+PASS src/__tests__/heroui-smoke.test.tsx
+PASS src/hooks/use-push-registration.navigation.test.tsx (22.27 s)
+
+Summary of all failing tests
+FAIL src/screens/map/index.test.tsx (55.962 s)
+  ● R4: map resuelve la mascota seleccionada › selects the first pet and loads its first position (#72 R2)
+
+    expect(jest.fn()).toHaveBeenCalledWith(...expected)
+
+    Expected: "http://example.test/v1", "jwt-token", "pet-1"
+
+    Number of calls: 0
+
+      290 |     await renderMap();
+      291 |
+    > 292 |     await waitFor(() => {
+          |                  ^
+      293 |       expect(mockGetLastPosition).toHaveBeenCalledWith(
+      294 |         apiUrl,
+      295 |         'jwt-token',
+
+      at Object.<anonymous> (src/screens/map/index.test.tsx:292:18)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+
+
+Test Suites: 1 failed, 76 passed, 77 total
+Tests:       1 failed, 1395 passed, 1396 total
+Snapshots:   1 passed, 1 total
+Time:        185.322 s
