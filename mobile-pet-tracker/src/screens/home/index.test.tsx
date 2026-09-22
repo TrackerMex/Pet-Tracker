@@ -3987,3 +3987,16 @@ describe('R1 (mobile-reanimated-double-dead-weight): home monta el Skeleton real
     );
   });
 });
+
+describe('R2 (mobile-reanimated-double-dead-weight): Animated.View no es el View de react-native', () => {
+  it('conserva el Animated.View real de Reanimated', () => {
+    const Animated = jest.requireMock<
+      typeof import('react-native-reanimated')
+    >('react-native-reanimated').default;
+    const { View } = jest.requireActual<typeof import('react-native')>(
+      'react-native',
+    );
+
+    expect(Animated.View).not.toBe(View);
+  });
+});
