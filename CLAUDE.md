@@ -92,6 +92,18 @@ El contenido no viaja por chat — vive en disco y queda versionado.
 - Cambios en `docs/`, `progress/`, `specs/`, `feature_list.json` → puedes editarlos tú mismo
 - Correcciones en archivos del harness (este archivo, AGENTS.md, etc.) → puedes editarlos tú
 
+## Gate de specs vía Notion
+
+Desde 2026-09-22 el humano aprueba las specs **desde Notion**, no abriendo el
+repo. El leader espeja `specs/<feature>/requirements.md` a la base *Specs* del
+`Panel de Proyectos — Harness SDD` y, cuando el humano pone `Estado del gate`
+= Aprobado, hace él el commit de firma citando la página, la hora y la cuenta.
+
+**El repo sigue siendo la fuente de verdad y la firma sigue siendo un commit**
+— cambia quién lo teclea, no qué es. El espejo va en una sola dirección y el
+handoff a Codex no se mueve a Notion. Detalle en `.claude/agents/leader.md`
+§Gate de aprobación vía Notion.
+
 ## UI móvil
 
 Todo trabajo sobre `mobile-pet-tracker/` (specs, handoffs, reviews) se rige
