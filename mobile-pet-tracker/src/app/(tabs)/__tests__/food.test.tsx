@@ -147,6 +147,15 @@ function pending<T>(): Promise<T> {
   return new Promise(() => undefined);
 }
 
+function opacityOf(style: unknown): unknown {
+  const entries = (Array.isArray(style) ? style.flat(Infinity) : [style]).filter(
+    (entry): entry is Record<string, unknown> =>
+      typeof entry === 'object' && entry !== null,
+  );
+
+  return entries.find((entry) => 'opacity' in entry)?.opacity;
+}
+
 function FoodWrapper({ children }: { children: ReactNode }) {
   return (
     <HeroUINativeProvider>
@@ -755,6 +764,33 @@ describe('#106 R4: servir y deshacer vibran una vez y distinguen éxito de fallo
     await waitFor(() => expect(mockNotificationAsync).toHaveBeenCalledTimes(1));
     expect(mockNotificationAsync).toHaveBeenCalledWith(
       Haptics.NotificationFeedbackType.Success,
+    );
+  });
+});
+
+describe('#107 R5: el botón por franja conserva su feedback de pulsado', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan() });
+  });
+
+  it('expone opacidad 1 en reposo en el árbol renderizado', async () => {
+    await renderFood();
+
+    const toggle = await screen.findByTestId('meal-toggle-0');
+    expect(opacityOf(toggle.props.style)).toBe(1);
+  });
+
+  it('conserva la receta de opacidad en el bloque fuente del botón', () => {
+    const source = readFileSync('src/app/(tabs)/food.tsx', 'utf8');
+    const anchor = source.indexOf('testID={`meal-toggle-${index}`}');
+    const block = source.slice(
+      source.lastIndexOf('<Pressable', anchor),
+      source.indexOf('</Pressable>', anchor),
+    );
+
+    expect(block).toMatch(
+      /style=\{\(\{ pressed \}\) => \(\{\s*opacity: pressed \? 0\.8 : 1,?\s*\}\)\}/,
     );
   });
 });
