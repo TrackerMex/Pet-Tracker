@@ -67,7 +67,7 @@ function expectMealsBarTiming(target: number): void {
     config as { easing: ReturnType<typeof Easing.bezier> }
   ).easing.factory();
   const expectedEasing = Easing.bezier(0.77, 0, 0.175, 1).factory();
-  for (const point of [0.25, 0.75]) {
+  for (const point of [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]) {
     expect(actualEasing(point)).toBeCloseTo(expectedEasing(point), 6);
   }
 }
