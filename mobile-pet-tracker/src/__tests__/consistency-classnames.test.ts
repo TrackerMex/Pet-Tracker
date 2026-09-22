@@ -274,7 +274,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
     [join('screens', 'home', 'weekly-activity-chart.tsx'), 1],
     [join('app', '(tabs)', 'health.tsx'), 2],
     [join('app', '(tabs)', 'food.tsx'), 2],
-    [join('app', '(tabs)', 'map.tsx'), 4],
+    [join('screens', 'map', 'index.tsx'), 4],
     [join('app', '(tabs)', 'meal-schedule.tsx'), 1],
     [join('app', '(tabs)', 'weight-log.tsx'), 1],
     [join('screens', 'docs', 'index.tsx'), 1],
@@ -338,7 +338,7 @@ describe('#62 R15: todo contador usa cifras tabulares', () => {
   const HOME_TABULAR_DELTA_85 = 1;
   const HOME_TABULAR_DELTA_98 = 1;
   const counters = [
-    [join('app', '(tabs)', 'map.tsx'), 3],
+    [join('screens', 'map', 'index.tsx'), 3],
     [
       join('screens', 'home', 'index.tsx'),
       HOME_TABULAR_AT_9358CC7 +

@@ -11,11 +11,13 @@
 
 ### R2 — map
 
+- Commit rojo: `b5562651`.
 - Rojo, body: `JEST_EXIT=0`; 1 suite, 58/58 tests.
 - Rojo, candados: `JEST_EXIT=1`; 4 suites fallaron y 1 pasó; 10 tests fallaron
   y 141 pasaron. Los fallos nombraron `ENOENT` sobre
   `src/app/(tabs)/map.tsx`, todavía referenciado por los candados.
-- Verde: pendiente.
+- Verde: `JEST_EXIT=0`; 6 suites y 209/209 tests (body 58 + candados
+  2/25/41/57/26) pasaron.
 
 ## R7 — escaneo de tests colocados
 

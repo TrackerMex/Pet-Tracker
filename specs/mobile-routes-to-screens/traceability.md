@@ -62,7 +62,7 @@ mutación**, y el candado lo ve por su propia aserción.
 
 | Requisito | Commit rojo (hash) | Qué suites quedaron rojas | Commit verde (hash) |
 |---|---|---|---|
-| **R2** map | pendiente | pendiente | pendiente |
+| **R2** map | `b5562651` | 4 suites rojas por `ENOENT` sobre `src/app/(tabs)/map.tsx`; body 58/58 verde | pendiente |
 | **R3** health | pendiente | pendiente | pendiente |
 | **R4** weight-log | pendiente | pendiente | pendiente |
 | **R5** meal-schedule | pendiente | pendiente | pendiente |

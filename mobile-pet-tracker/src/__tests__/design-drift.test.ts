@@ -81,7 +81,7 @@ describe('R3: Card compartido elimina rounded arbitrario', () => {
     'map',
   ])('%s importa el Card compartido', (screen) => {
     const contents = readFileSync(
-      screen === 'profile' || screen === 'home'
+      screen === 'profile' || screen === 'home' || screen === 'map'
         ? join(sourceRoot, 'screens', screen, 'index.tsx')
         : join(sourceRoot, 'app', '(tabs)', `${screen}.tsx`),
       'utf8',
@@ -430,7 +430,7 @@ describe('#87 R19: use-' + 'api no deja huella', () => {
   const screenSignOutCalls: Record<string, number> = {
     'app/(tabs)/food.tsx': 0,
     'app/(tabs)/health.tsx': 0,
-    'app/(tabs)/map.tsx': 0,
+    'screens/map/index.tsx': 0,
     'app/(tabs)/meal-schedule.tsx': 1,
     'app/(tabs)/weight-log.tsx': 1,
     'screens/docs/index.tsx': 0,
@@ -526,7 +526,7 @@ describe('#94 R5: el umbral de frescura no vive en el móvil', () => {
 describe('#94 R10: la antigüedad de la posición se lee en un solo sitio', () => {
   const staleSecondsReads: Record<string, number> = {
     'api/types.ts': 1,
-    'app/(tabs)/map.tsx': 1,
+    'screens/map/index.tsx': 1,
   };
 
   it('inventaría cada lectura de staleSeconds en producción', () => {
