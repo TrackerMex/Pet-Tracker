@@ -8,7 +8,7 @@ tags: [harness, spec, mobile, tests]
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | `mobile-pet-tracker/src/screens/health/index.test.tsx` :: `R6: weight card enlaza al log › shows the current weight and opens the weight log` | pendiente |
+| R1 | `mobile-pet-tracker/src/screens/health/index.test.tsx` :: `R6: weight card enlaza al log › shows the current weight and opens the weight log` | `60cf0534 test(mobile-flaky-waits): expose delayed weight race (R1)` — rojo real; verde pendiente |
 | R2 · S2 | `mobile-pet-tracker/src/screens/health/index.test.tsx` :: `R4: health resuelve la mascota seleccionada › keeps API order and selects the first pet by default` | pendiente |
 | R2 · S3 | `mobile-pet-tracker/src/screens/map/index.test.tsx` :: `R7: ruta del día como polylines › R3 (android-map-never-ready): pasa una polyline mapeada por cada viaje` | pendiente |
 | R2 · S4 | `mobile-pet-tracker/src/screens/map/index.test.tsx` :: `R7: ruta del día como polylines › R3 (android-map-never-ready): pasa un array vacío para un día sin viajes` | pendiente |

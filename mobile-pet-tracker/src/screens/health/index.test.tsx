@@ -467,9 +467,11 @@ describe('R6: weight card enlaza al log', () => {
 
     await renderHealth();
 
-    await waitFor(() => expect(screen.getByTestId('weight-card')).toBeVisible());
+    await waitFor(() =>
+      expect(screen.getByTestId('weight-current')).toHaveTextContent('12.4 kg'),
+    );
+    expect(screen.getByTestId('weight-card')).toBeVisible();
     expect(screen.getByText('Peso')).toBeVisible();
-    expect(screen.getByTestId('weight-current')).toHaveTextContent('12.4 kg');
     expect(screen.getByTestId('weight-variation')).toHaveTextContent('+0.4 kg');
 
     await fireEvent.press(screen.getByTestId('weight-log-link'));
