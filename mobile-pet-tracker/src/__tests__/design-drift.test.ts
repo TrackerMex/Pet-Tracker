@@ -557,3 +557,17 @@ describe('#94 R10: la antigüedad de la posición se lee en un solo sitio', () =
     expect(actual).toEqual(staleSecondsReads);
   });
 });
+
+describe('#108 R1: los patrones compartidos se declaran una sola vez', () => {
+  const source = readFileSync(
+    join(sourceRoot, '__tests__', 'design-drift.test.ts'),
+    'utf8',
+  );
+
+  it.each([
+    ['[\\d', 'a-f]{3,8}'].join(''),
+    ['shadowColor|shadowOffset', '|shadowOpacity|shadowRadius'].join(''),
+  ])('declara una sola vez %s', (needle) => {
+    expect(source.split(needle).length - 1).toBe(1);
+  });
+});
