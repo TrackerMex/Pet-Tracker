@@ -1,6 +1,6 @@
 ---
 feature: "mobile-routes-to-screens"
-status: spec_ready       # draft | spec_ready | approved
+status: approved       # draft | spec_ready | approved
 tags: [harness, spec, mobile, refactor]
 ---
 
@@ -19,10 +19,10 @@ tags: [harness, spec, mobile, refactor]
 | **R3** | 28 tests intactos + los 6 sitios de candado de health repuntados | `src/screens/health/index.test.tsx` | `64168387` — `refactor(mobile): repunta los candados de health (R3)` |
 | **R4** | 32 tests intactos + los 5 sitios de candado de weight-log repuntados | `src/screens/weight-log/index.test.tsx` | `9f0240af` — `refactor(mobile): repunta los candados de weight-log (R4)` |
 | **R5** | 23 tests intactos + los 4 sitios de candado de meal-schedule repuntados | `src/screens/meal-schedule/index.test.tsx` | `e86c6f66` — `refactor(mobile): repunta los candados de meal-schedule (R5)` |
-| **R6** | `describe('R3: Card compartido elimina rounded arbitrario')`, ternario invertido sobre `food`, suite en 41 | `src/__tests__/design-drift.test.ts:84-86` | pendiente |
-| **R7** | `describe('C8: la UI no usa clases arbitrarias')`, `R3` y `R4` — las tres listas en `[]` con los 4 tests ya dentro del escaneo; `sourceFiles()` sin tocar | `src/__tests__/design-drift.test.ts` (`:25-35` intacto; describes `C8` `:61`, `R3` `:67`, `R4` `:94`) | pendiente |
-| **R8** | Suite móvil completa en **77 / 1386 / exit 0**, `bunx tsc --noEmit` limpio, 8 renames en `git log --stat -M`, `package.json` y `bun.lock` sin diff | suite móvil completa | pendiente |
-| **R9** | Entrada #102 sin `325` ni `388`, con la deuda de `food.tsx` nombrada | `feature_list.json` (raíz del repo) | pendiente |
+| **R6** | `describe('R3: Card compartido elimina rounded arbitrario')`, ternario invertido sobre `food`, suite en 41 | `src/__tests__/design-drift.test.ts:84-86` | `73bb67df` — `refactor(mobile): invierte el ternario de design-drift sobre food (R6)` |
+| **R7** | `describe('C8: la UI no usa clases arbitrarias')`, `R3` y `R4` — las tres listas en `[]` con los 4 tests ya dentro del escaneo; `sourceFiles()` sin tocar | `src/__tests__/design-drift.test.ts` (`:25-35` intacto; describes `C8` `:61`, `R3` `:67`, `R4` `:94`) | `1d16260d` — el último movimiento deja los cuatro tests dentro del escaneo; verificado tras `73bb67df` |
+| **R8** | Suite móvil completa en **77 / 1386 / exit 0**, `bunx tsc --noEmit` limpio, 8 renames en `git log --stat -M`, `package.json` y `bun.lock` sin diff | suite móvil completa | `73bb67df` — último commit de código; verificación final documentada en `progress/impl_mobile-routes-to-screens.md` |
+| **R9** | Entrada #102 sin `325` ni `388`, con la deuda de `food.tsx` nombrada | `feature_list.json` (raíz del repo) | `7098f985` — spec aprobada y corrección de la entrada #102 |
 
 ## Detalle por requisito: qué candado cierra cada uno
 
@@ -41,17 +41,17 @@ Medidos en `3a52028b`, sin pipe, `JEST_EXIT=0`. **Ninguno puede moverse.**
 
 | Suite (ruta tras la feature) | Antes | Después | Verificado |
 |---|---|---|---|
-| `src/screens/map/index.test.tsx` | 58 | 58 | pendiente |
-| `src/screens/health/index.test.tsx` | 28 | 28 | pendiente |
-| `src/screens/weight-log/index.test.tsx` | 32 | 32 | pendiente |
-| `src/screens/meal-schedule/index.test.tsx` | 23 | 23 | pendiente |
-| `src/app/(tabs)/__tests__/screens.test.tsx` | 2 | 2 | pendiente |
-| `src/__tests__/design-drift.test.ts` | 41 | 41 | pendiente |
-| `src/__tests__/consistency-classnames.test.ts` | 57 | 57 | pendiente |
-| `src/__tests__/legibility-classnames.test.ts` | 26 | 26 | pendiente |
-| `src/__tests__/ui-language.test.ts` | 25 | 25 | pendiente |
-| `src/__tests__/ui-copy-table.ts` | 2 | 2 | pendiente |
-| **Total suite móvil** | **77 / 1386** | **77 / 1386** | pendiente |
+| `src/screens/map/index.test.tsx` | 58 | 58 | sí, exit 0 |
+| `src/screens/health/index.test.tsx` | 28 | 28 | sí, exit 0 |
+| `src/screens/weight-log/index.test.tsx` | 32 | 32 | sí, exit 0 |
+| `src/screens/meal-schedule/index.test.tsx` | 23 | 23 | sí, exit 0 |
+| `src/app/(tabs)/__tests__/screens.test.tsx` | 2 | 2 | sí, exit 0 |
+| `src/__tests__/design-drift.test.ts` | 41 | 41 | sí, exit 0 |
+| `src/__tests__/consistency-classnames.test.ts` | 57 | 57 | sí, exit 0 |
+| `src/__tests__/legibility-classnames.test.ts` | 26 | 26 | sí, exit 0 |
+| `src/__tests__/ui-language.test.ts` | 25 | 25 | sí, exit 0 |
+| `src/__tests__/ui-copy-table.ts` | 2 | 2 | sí, exit 0 |
+| **Total suite móvil** | **77 / 1386** | **77 / 1386** | **sí, exit 0** |
 
 ## Evidencia de rojo (vía (b) de C4)
 
@@ -71,5 +71,5 @@ mutación**, y el candado lo ve por su propia aserción.
 
 | Gate | Dónde se firma | Estado |
 |---|---|---|
-| Enmienda R1 a `docs/conventions.md` | [[requirements]] §Aprobación → *Enmienda R1* | pendiente |
-| Aprobación de la spec | [[requirements]] §Aprobación → *Aprobación de la spec* | pendiente |
+| Enmienda R1 a `docs/conventions.md` | [[requirements]] §Aprobación → *Enmienda R1* | aprobada 2026-09-21 |
+| Aprobación de la spec | [[requirements]] §Aprobación → *Aprobación de la spec* | aprobada 2026-09-21 |

@@ -55,15 +55,52 @@
 
 ### R6 — ternario invertido
 
+- Commit: `73bb67df`.
 - `JEST_EXIT=0`; design-drift: 1 suite, 41/41 tests.
 
 ## R7 — escaneo de tests colocados
 
-Pendiente.
+- Patrón arbitrario: los cuatro ficheros devolvieron `0`; grep exit 1 por cero
+  coincidencias.
+- `rounded-[20px]` / `text-[10px]`: ninguna coincidencia; grep exit 1.
+- `sourceFiles()` líneas 25–35 comparado con `3a52028b`: `cmp` exit 0, idéntico.
+- design-drift: `JEST_EXIT=0`; 1 suite, 41/41 tests.
 
 ## R8 — cierre
 
-Pendiente.
+- Suite completa: `JEST_EXIT=0`; 77/77 suites, 1386/1386 tests y 1/1 snapshot.
+- Typecheck: `TSC_EXIT=0`; `/tmp/mobile-routes-tsc.txt` con 0 bytes.
+- Suites individuales, todas con 1 suite y exit 0:
+
+  | Suite | Antes | Después |
+  |---|---:|---:|
+  | map | 58 | 58 |
+  | health | 28 | 28 |
+  | weight-log | 32 | 32 |
+  | meal-schedule | 23 | 23 |
+  | screens | 2 | 2 |
+  | design-drift | 41 | 41 |
+  | consistency-classnames | 57 | 57 |
+  | legibility-classnames | 26 | 26 |
+  | ui-language | 25 | 25 |
+  | ui-copy-table | 2 | 2 |
+
+- `package.json` y `bun.lock`: diff vacío contra `3a52028b` (0 bytes).
+- `git log --stat=200 -M 3a52028b..HEAD`: ocho renames visibles, cuatro
+  bodies y cuatro tests.
+- Numstat de cada body en su commit rojo: `1/1`; el único cambio fue
+  `export default function XScreen` → `export function XScreen`.
+- Diff de los cuatro tests movidos: cero líneas añadidas o borradas con
+  `expect(`, `describe(`, `it(` o `test(`; las aserciones permanecen intactas.
+
+## R9 — deuda nombrada
+
+- Descripción #102: `325` = 0, `388` = 0, `406` = 1, `374` = 1 y
+  `DEUDA NOMBRADA` = 1.
+- Los cuatro bodies movidos conservan 406, 279, 341 y 324 líneas.
+- No se abrió ni se recontó `food.tsx`: el handoff lo prohíbe mientras
+  #106/#107 escriben ese fichero. El valor 374 y la deuda proceden del commit
+  humano aprobado `7098f985`.
 
 ## R-id → commit
 
@@ -72,6 +109,10 @@ Pendiente.
 - R3: rojo `95ee54fc`; verde `64168387`.
 - R4: rojo `d0df4df2`; verde `9f0240af`.
 - R5: rojo `1d16260d`; verde `e86c6f66`.
+- R6: `73bb67df`.
+- R7: `1d16260d` (último test movido); verificado tras `73bb67df`.
+- R8: `73bb67df` (último commit de código); verificación final 77/1386.
+- R9: `7098f985`.
 
 ## Desviaciones de tasks.md
 
@@ -81,3 +122,6 @@ Pendiente.
   cuerpo como rename si el path origen se recrea en el mismo snapshot. La
   creación de cada route se desplaza al commit verde; no cambia el estado final
   ni el orden rojo → verde y permite cumplir ambos candados observables.
+- R9 pide al leader recontar `food.tsx`, pero el handoff prohíbe abrirlo por la
+  regla de un solo escritor. Se verificó la entrada aprobada de
+  `feature_list.json` sin leer ese fichero.

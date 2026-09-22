@@ -11,8 +11,9 @@
   en `3a52028b` (el merge de PR #143, que cerro #94).
 - **Worktree**: `/home/claude/sites/Pet-Tracker-wt-ui`. El worktree principal
   `/home/claude/sites/Pet-Tracker` lo tiene la sesion de #106 + #107.
-- **Estado**: implementación en curso. La spec y la enmienda R1 fueron
-  aprobadas por humano el 2026-09-21; baseline móvil confirmado en 77/1386.
+- **Estado**: implementación terminada, pendiente de reviewer. La spec y la
+  enmienda R1 fueron aprobadas por humano el 2026-09-21; gate final móvil en
+  77/1386 y typecheck limpio.
 - **Plan**: cerrar R1; mover map, health, weight-log y meal-schedule con un
   commit rojo y uno verde por ruta; invertir el ternario de R6; verificar
   R7-R9 y documentar los recuentos finales.
