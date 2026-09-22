@@ -5,6 +5,7 @@ import {
   waitFor,
   within,
 } from '@testing-library/react-native';
+import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
@@ -37,6 +38,14 @@ jest.mock('../../../api/nutrition', () => ({
   getNutritionPlan: jest.fn(),
   serveMeal: jest.fn(),
   unserveMeal: jest.fn(),
+}));
+
+jest.mock('expo-haptics', () => ({
+  notificationAsync: jest.fn(() => Promise.resolve()),
+  NotificationFeedbackType: {
+    Success: 'mock-success',
+    Error: 'mock-error',
+  },
 }));
 
 jest.mock('../../../providers/auth-provider', () => ({
@@ -83,6 +92,7 @@ const mockUnserveMeal = jest.mocked(unserveMeal);
 const mockListPets = jest.mocked(listPets);
 const mockUseAuth = jest.mocked(useAuth);
 const mockRouter = jest.mocked(router);
+const mockNotificationAsync = jest.mocked(Haptics.notificationAsync);
 
 function makePet(overrides: Partial<PetProfile> = {}): PetProfile {
   return {
@@ -643,6 +653,109 @@ describe('#98 R6: el conflicto se resuelve refrescando y el fallo avisa', () => 
       expect(screen.queryByTestId('food-meal-error')).toBeNull(),
     );
     await waitFor(() => expect(mockGetNutritionPlan).toHaveBeenCalledTimes(3));
+  });
+});
+
+describe('#106 R4: servir y deshacer vibran una vez y distinguen éxito de fallo', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  });
+
+  it('no vibra al montar o refrescar sin una pulsación', async () => {
+    mockGetNutritionPlan.mockResolvedValue({
+      kind: 'ok',
+      plan: makePlan(),
+    });
+
+    const view = await renderFood();
+    await screen.findByTestId('meal-toggle-0');
+    await act(async () => view.queryClient.refetchQueries());
+
+    expect(mockNotificationAsync).not.toHaveBeenCalled();
+  });
+
+  it('vibra una vez con éxito después de servir', async () => {
+    mockGetNutritionPlan
+      .mockResolvedValueOnce({
+        kind: 'ok',
+        plan: makePlan({ servedToday: [] }),
+      })
+      .mockResolvedValue({
+        kind: 'ok',
+        plan: makePlan({ servedToday: ['07:30'] }),
+      });
+    mockServeMeal.mockResolvedValue({ kind: 'ok' });
+    await renderFood();
+
+    expect(mockNotificationAsync).not.toHaveBeenCalled();
+    await fireEvent.press(await screen.findByTestId('meal-toggle-0'));
+    await screen.findByTestId('meal-served-0');
+
+    await waitFor(() => expect(mockNotificationAsync).toHaveBeenCalledTimes(1));
+    expect(mockNotificationAsync).toHaveBeenCalledWith(
+      Haptics.NotificationFeedbackType.Success,
+    );
+  });
+
+  it('vibra una vez con éxito después de deshacer', async () => {
+    mockGetNutritionPlan
+      .mockResolvedValueOnce({
+        kind: 'ok',
+        plan: makePlan({ servedToday: ['07:30'] }),
+      })
+      .mockResolvedValue({
+        kind: 'ok',
+        plan: makePlan({ servedToday: [] }),
+      });
+    mockUnserveMeal.mockResolvedValue({ kind: 'ok' });
+    await renderFood();
+
+    await fireEvent.press(await screen.findByTestId('meal-toggle-0'));
+    await screen.findByTestId('meal-pending-0');
+
+    await waitFor(() => expect(mockNotificationAsync).toHaveBeenCalledTimes(1));
+    expect(mockNotificationAsync).toHaveBeenCalledWith(
+      Haptics.NotificationFeedbackType.Success,
+    );
+  });
+
+  it('vibra una vez con error sin sustituir el aviso visual', async () => {
+    mockGetNutritionPlan.mockResolvedValue({
+      kind: 'ok',
+      plan: makePlan({ servedToday: [] }),
+    });
+    mockServeMeal.mockResolvedValue({ kind: 'error' });
+    await renderFood();
+
+    await fireEvent.press(await screen.findByTestId('meal-toggle-0'));
+    expect(await screen.findByTestId('food-meal-error')).toBeVisible();
+
+    await waitFor(() => expect(mockNotificationAsync).toHaveBeenCalledTimes(1));
+    expect(mockNotificationAsync).toHaveBeenCalledWith(
+      Haptics.NotificationFeedbackType.Error,
+    );
+  });
+
+  it('trata already-served como éxito', async () => {
+    mockGetNutritionPlan
+      .mockResolvedValueOnce({
+        kind: 'ok',
+        plan: makePlan({ servedToday: [] }),
+      })
+      .mockResolvedValue({
+        kind: 'ok',
+        plan: makePlan({ servedToday: ['07:30'] }),
+      });
+    mockServeMeal.mockResolvedValue({ kind: 'already-served' });
+    await renderFood();
+
+    await fireEvent.press(await screen.findByTestId('meal-toggle-0'));
+    await screen.findByTestId('meal-served-0');
+
+    await waitFor(() => expect(mockNotificationAsync).toHaveBeenCalledTimes(1));
+    expect(mockNotificationAsync).toHaveBeenCalledWith(
+      Haptics.NotificationFeedbackType.Success,
+    );
   });
 });
 
