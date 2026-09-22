@@ -121,37 +121,14 @@ jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
 }));
 
-jest.mock('heroui-native', () => {
-  const actual = jest.requireActual<typeof import('heroui-native')>(
-    'heroui-native',
-  );
-  const React = jest.requireActual<typeof import('react')>('react');
-  const { View } = jest.requireActual<typeof import('react-native')>(
-    'react-native',
-  );
-
-  return {
-    ...actual,
-    Skeleton: (props: Record<string, unknown>) =>
-      React.createElement(View, {
-        ...props,
-        style: Array.isArray(props.style) ? props.style : [props.style],
-      }),
-  };
-});
-
 jest.mock('react-native-reanimated', () => {
   const actual = jest.requireActual<typeof import('react-native-reanimated')>(
     'react-native-reanimated',
-  );
-  const { View } = jest.requireActual<typeof import('react-native')>(
-    'react-native',
   );
 
   return {
     ...actual,
     __esModule: true,
-    default: { ...actual.default, View },
     useReducedMotion: () => mockUseReducedMotion(),
     withDelay: jest.fn((_delay: number, animation: unknown) => animation),
     withRepeat: jest.fn((animation: unknown) => animation),
@@ -3980,5 +3957,42 @@ describe('#78 R11: el punto rojo sigue a las alertas abiertas', () => {
     await waitFor(() =>
       expect(screen.queryByTestId('home-alerts-dot')).toBeNull(),
     );
+  });
+});
+
+describe('R1 (mobile-reanimated-double-dead-weight): home monta el Skeleton real de heroui-native', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockReturnValue(pending<PetsState>());
+    mockGetPet.mockReturnValue(pending<PetState>());
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+  });
+
+  it('conserva la clase base del Skeleton de HeroUI', async () => {
+    await renderHome();
+
+    expect(screen.getByTestId('home-loading').props.className).toContain(
+      'skeleton__root',
+    );
+  });
+});
+
+describe('R2 (mobile-reanimated-double-dead-weight): Animated.View no es el View de react-native', () => {
+  it('conserva el Animated.View real de Reanimated', () => {
+    const Animated = jest.requireMock<
+      typeof import('react-native-reanimated')
+    >('react-native-reanimated').default;
+    const { View } = jest.requireActual<typeof import('react-native')>(
+      'react-native',
+    );
+
+    expect(Animated.View).not.toBe(View);
   });
 });

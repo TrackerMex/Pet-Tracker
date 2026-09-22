@@ -218,8 +218,11 @@ también aparezca como texto en la pantalla, ese cálculo cambia.
 El patrón ya vive en
 `mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts:309-311`. Queda
 un gemelo por migrar en
-`mobile-pet-tracker/src/screens/home/index.test.tsx:3355-3359`; no se toca aquí
-porque pertenece a #108.
+`mobile-pet-tracker/src/screens/home/index.test.tsx:3355-3359`, registrado
+como **#112 `mobile-reminders-see-all-source-lock-nesting`**. #109 lo dejó
+fuera porque ese fichero lo tenía tomado #108; la sesión que lleva #108
+confirmó después que su spec firmada acota el fichero y **no lo absorbe**, así
+que se registró aparte.
 
 ### Esperas sobre el árbol renderizado
 
@@ -228,6 +231,18 @@ aserciones posteriores. Si el test asevera el árbol, espera al árbol: esperar 
 la caché de Query o al contador de un mock y consultar el DOM después introduce
 una carrera. Una aserción de ausencia se ancla primero a la aparición o al estado
 final de un nodo positivo del mismo escenario.
+
+### Inventario de dobles de HeroUI y Reanimated (#110)
+
+- `src/components/__tests__/pet-hero-header.test.tsx:71` repite el mismo
+  `default: { ...actual.default, View }` y también es peso muerto: quitarlo deja
+  36/36 verde, por lo que el comentario de `:70` queda desmentido. Es ajeno a
+  #110 y requiere su propio cambio.
+- El doble de `Skeleton` de ese fichero (`:44-58`) sí es load-bearing: quitarlo
+  deja 4 tests rojos, así que hoy es legítimo y no es el mismo caso.
+- Los dobles de Reanimated de `theme-transition.test.tsx:18` y
+  `weekly-activity-chart.test.tsx:58` son legítimos: ninguno toca
+  `default.View`.
 
 ---
 
