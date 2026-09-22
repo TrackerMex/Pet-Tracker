@@ -4562,3 +4562,191 @@ para la spec de #108.
 `./init.sh` final sobre el árbol ya fusionado con `main`: **exit 0** medido sin
 pipe — backend 1295, infra 14, móvil 77 suites / 1396 tests, e2e 384, lint y
 typecheck.
+
+---
+
+## 2026-09-22 — #109 `mobile-meal-toggle-source-lock-nesting`
+
+Deuda **B2** del veredicto de #106/#107. Cerrada con dos líneas de cambio en un
+fichero de test y **cero diff de producción**. Aprobada por el reviewer sin
+rebote y sin prueba de humo: sin cambio en producción no hay nada observable en
+el dispositivo, y la spec lo declaró por escrito antes del handoff.
+
+### El agujero, que era peor de lo que parecía
+
+El candado de R5 de #107 recortaba el fuente de `food.tsx` entre
+`lastIndexOf('<Pressable', anchor)` e `indexOf('</Pressable>', anchor)`. El
+encargo decía «agujero por anidamiento» sin decir en qué dirección, y **yo
+aposté por el límite de atrás y me equivoqué**.
+
+Es el de **delante**, y su modo de fallo es el malo: con un `Pressable` anidado
+dentro, el corte cae en el `</Pressable>` **del hijo**, así que el bloque se
+queda con el **tag de apertura del hijo y su `style`** dentro. El candado
+**pasa en verde vigilando el botón equivocado**. No falla hacia rojo, que es lo
+que yo había supuesto y lo que habría hecho la deuda inofensiva.
+
+El de atrás resultó benigno por una razón que solo se ve midiendo: el ancla
+`testID={…}` vive **dentro** del tag que `lastIndexOf` busca, así que ese
+límite se auto-ancla.
+
+### El arreglo, y lo que se descartó
+
+Recortar de `<` a `<` — el tag de apertura propio. **El anidamiento deja de
+existir como concepto**, en vez de defenderse de él. Dos `indexOf`, ningún
+símbolo nuevo que vigilar, que era justo el aviso de **B8**; y el patrón ya
+vivía en `consistency-classnames.test.ts:309-311`.
+
+Se descartaron dos alternativas, las dos midiendo:
+
+- **Balanceador de tags**: sería él mismo otro candado que mantener.
+- **Borrar el candado de fuente** y dejar solo la pata de árbol. Medido: cambiar
+  `0.8` por `0.5` deja el árbol **verde** y solo el fuente **rojo**. La pata de
+  fuente es el **único** sitio donde ese `0.8` está candado. Borrar habría
+  parecido limpieza y habría sido una pérdida silenciosa de cobertura.
+
+### El candado nuevo también tiene un agujero, y esta vez se decidió no taparlo
+
+El reviewer corrió siete sondas propias sobre el recorte nuevo. Es **más seguro
+que el viejo** —donde el viejo fabricaba verde falso, el nuevo se pone rojo— y
+su límite documentado (un `<` dentro del tag) falla hacia rojo, verificado
+plantándolo y no leyendo el comentario.
+
+Queda **uno residual**: todo lo que viva entre el `>` del tag y el primer hijo
+**elemento** entra en el bloque, incluida una **cadena hija**. Plantar la receta
+como texto da verde falso. Pero hay que construirlo a propósito y tumba 25 de
+38 tests al intentarlo, y **el recorte viejo también daba verde ahí**, así que
+no es regresión.
+
+Se aplicó el criterio que salió de #106 —**¿lo pisa un descuido o hay que
+construirlo?**— y la respuesta manda: se documenta, no se defiende. Defenderlo
+sería otro símbolo que vigilar, y la defensa cuesta más que el riesgo. Queda
+escrito en `docs/conventions.md` con **los dos límites y cuál de los dos
+avisa**, más la condición que cambiaría el cálculo: el día que un candado de
+estos vigile algo que también aparezca como texto en pantalla.
+
+### Primera spec aprobada desde Notion
+
+Estrena el flujo de #147. El humano movió `Estado del gate` a **Aprobado** en
+la página de la base *Specs*; el leader la leyó, verificó la propiedad y su
+`page_last_edited_at`, y firmó en el repo citando las dos cosas.
+
+La primera vuelta destapó un fallo en lo que yo mismo había escrito el día
+antes: **la sección prometía verificar *quién* aprobó, y la API no lo da** —
+devuelve qué y cuándo, pero el filtro por editor es de plan Business. Corregido
+en `leader.md` y declarado dentro de la propia spec, para que nadie lea dentro
+de seis meses «firmado por el humano» y suponga más de lo que se puede probar.
+La firma en el repo sigue abierta para cualquier spec que necesite autoría
+demostrable.
+
+### B5, reincidente
+
+Codex volvió a no tener `expo-overview` en su catálogo, igual que en #106.
+Inocuo aquí —cero producción— pero es la segunda vez. Hasta que se cierre, el
+handoff ahora le pide **listar las skills de su catálogo y decir cuáles cargó
+en el reporte**, para que el fallo salga ahí y no en el veredicto.
+
+`./init.sh` del reviewer: **exit 0** sin pipe, 5m51s, cero FAIL. El reviewer
+esperó a que cayera la corrida de #108 en `wt-ui` antes de lanzar, según
+`init-sh-concurrente-worktrees`.
+
+---
+
+## 2026-09-22 — #110 `mobile-reanimated-double-dead-weight`
+
+Deuda **B3** del veredicto de #106/#107. **Aprobada sin rebote**, cero
+bloqueantes, cero diff de producción. El fichero de tests de la Home pasa de
+138 a **140** tests y la suite móvil de 1396 a **1398**.
+
+El doble de la cabecera sustituía el `Skeleton` real de `heroui-native` por un
+`View` pelado en todos los tests del fichero. No candaba nada —quitarlo dejaba
+la suite verde— pero borraba la clase base del componente, el `borderCurve` y
+toda la superficie de animación. Ahora se monta el real, y dos tests nuevos lo
+candan.
+
+### La premisa con la que yo abrí la deuda era más ancha que la realidad
+
+La registré diciendo que **el test de #62 R8 creía probar producción y probaba
+un doble**. Se midió y es falso en la parte que importa: mutar lo que ese test
+vigila da **1 rojo idéntico con doble y sin doble**. El doble **no estaba
+cegando esa aserción**. Sobrevive a quitarlo porque asevera con `toContain`
+sobre el `className` y **ambos** Skeletons lo propagan; el real antepone
+`skeleton__root`, así que con `toBe` sí habría enrojecido.
+
+Lo que el doble borraba era real, pero #62 R8 no era su víctima. La sesión de
+Backend levantó la misma sospecha por su cuenta —«un test que no se entera de
+que le quitan el doble es lo que #110 dice estar cazando»— y la respuesta fue
+la medición, no el argumento.
+
+**Lección, que es la de siempre con otra cara:** al registrar una deuda desde
+un veredicto, lo que se copia es la observación del reviewer, no su alcance.
+Aquí el alcance se ensanchó por el camino y llegó a `feature_list.json` como un
+hecho. Verificarlo costó una sonda de dos minutos.
+
+### La desviación firmada
+
+Los títulos de los tests nuevos **no llevan `#110`**: van en la forma
+`R<n> (mobile-reanimated-double-dead-weight)`, sin almohadilla. El literal
+`#110` casa con `/#[\da-f]{3,8}\b/i` —`1`, `1` y `0` son dígitos hex— y pondría
+**rojos los cinco guards** de `design-drift.test.ts` que enumeran ese fichero.
+El reviewer lo verificó ejecutando la regex contra las dos formas.
+
+Las alternativas se descartaron por escrito: partir el literal es justo lo que
+**#108 está retirando**, y esperar a #108 acopla esta feature a otra que aún no
+ha tocado código.
+
+**Lo que hizo falta arreglar:** la desviación estaba razonada y medida en
+`design.md` **pero no había dónde firmarla**. El humano habría firmado la spec
+sin firmar la desviación, que es exactamente lo que costó una ronda en #98. Se
+le añadió su casilla al Gate 1. La regla se confirma otra vez: **una decisión
+que no es técnica necesita una casilla, no un párrafo.**
+
+### Lo que el reviewer añadió por su cuenta
+
+Inventarió **las nueve aserciones** sobre Skeletons del fichero para descartar
+que quitar el doble perdiera cobertura en silencio. La única de riesgo ya
+estaba escrita con `arrayContaining`/`objectContaining`, igual de laxa antes y
+después. Y volcó el nodo real con una sonda transitoria que **no toca** el `it`
+de #62 R8, para confirmar las dos mediciones de la spec sin tocar una spec
+firmada.
+
+Descubrió además que **la ganancia es mayor que la medida**: `pet-hero-header`
+no está mockeado, así que sus tres Skeletons también pasan a reales.
+
+### Triaje: cuatro observaciones, cero features
+
+Ninguna se registra, y merece la pena decir por qué:
+
+- **`borderCurve` se recupera pero ningún test lo canda.** No se registra
+  porque **no es nuestro**: es una prop interna de un componente de
+  `heroui-native`. Candarla sería testear la librería de otro.
+- **`conventions.md` lleva un `#110` literal.** Inocuo y **verificado**: ningún
+  guard lee ese fichero con la regex de drift. Queda escrito en el veredicto
+  precisamente para que nadie lo «arregle».
+- El párrafo de #112 en `conventions.md` viaja en esta PR por venir de la fase
+  de spec. Correcto.
+- La ganancia extra de `pet-hero-header` es buena noticia, no deuda.
+
+### Coordinación: un gate ajeno que esta feature caduca
+
+Los +2 tests dejan obsoleta la línea base de **#108**, cuyo criterio firmado
+decía «1396 antes, 1410 después». Se avisó **al medirlo, no al cerrar**, porque
+era el dato que les cambiaba el handoff.
+
+Su criterio sobrevive porque lo redactaron **también en forma delta**, y de ahí
+sale la mejor frase del intercambio, que afila una regla nuestra:
+
+> «El recuento final se deriva de esa suma, no de un número suelto. Si al
+> cerrar la cuenta no da, la pregunta correcta es qué requisito aportó un test
+> de más o de menos, no cuál era el número.»
+
+Nuestra regla decía «usa delta, no absoluto». La suya dice **por qué**: un
+recuento es una derivación, y cuando no cuadra la pregunta útil es de
+atribución, no de aritmética.
+
+Y el aviso que se les dio de vuelta: los 1398 vivían en la branch, **no en
+`main`**. Re-medir contra `origin/main` antes del merge habría fijado otra base
+que caducaría al mergear. Eligieron que Codex mida la base al arrancar, que es
+lo único inmune al orden de merge.
+
+`./init.sh` del reviewer: **exit 0** sin pipe, primer plano. Móvil 77/1398,
+backend 170/1295, infra 2/14, e2e verdes.
