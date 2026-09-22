@@ -125,14 +125,10 @@ jest.mock('react-native-reanimated', () => {
   const actual = jest.requireActual<typeof import('react-native-reanimated')>(
     'react-native-reanimated',
   );
-  const { View } = jest.requireActual<typeof import('react-native')>(
-    'react-native',
-  );
 
   return {
     ...actual,
     __esModule: true,
-    default: { ...actual.default, View },
     useReducedMotion: () => mockUseReducedMotion(),
     withDelay: jest.fn((_delay: number, animation: unknown) => animation),
     withRepeat: jest.fn((animation: unknown) => animation),
