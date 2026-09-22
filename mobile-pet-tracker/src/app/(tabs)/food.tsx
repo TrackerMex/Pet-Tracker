@@ -1,4 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import * as Haptics from 'expo-haptics';
 import { router, type Href } from 'expo-router';
 import { Button, Skeleton, Spinner } from 'heroui-native';
 import { useState } from 'react';
@@ -74,13 +75,21 @@ export default function FoodScreen() {
         selectedPetId,
         mealTime,
       );
-      if (!['ok', 'already-served', 'not-served'].includes(result.kind)) {
+      const failed = !['ok', 'already-served', 'not-served'].includes(
+        result.kind,
+      );
+      if (failed) {
         setMealError(t('food.couldNotUpdateMeal'));
       }
       await plan.refetch();
       await queryClient.refetchQueries({
         queryKey: petKeys.detail(selectedPetId),
       });
+      void Haptics.notificationAsync(
+        failed
+          ? Haptics.NotificationFeedbackType.Error
+          : Haptics.NotificationFeedbackType.Success,
+      );
     } finally {
       setPendingMealTime(null);
     }

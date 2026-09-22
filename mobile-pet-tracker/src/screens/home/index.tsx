@@ -1,8 +1,16 @@
 import { useQuery } from '@tanstack/react-query';
 import { router, useFocusEffect } from 'expo-router';
 import { Button, Card as HeroUICard, Skeleton } from 'heroui-native';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
+import Animated, {
+  Easing,
+  ReduceMotion,
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Bacteria,
@@ -74,6 +82,15 @@ import {
 import { WeeklyActivityChart } from './weekly-activity-chart';
 
 const WEEKLY_ACTIVITY_SKELETON_HEIGHT = 408;
+export const MEALS_BAR_DURATION_MS = 250;
+export const MEALS_BAR_EASING = Easing.bezier(0.77, 0, 0.175, 1);
+export const MEALS_BAR_TIMING = {
+  duration: MEALS_BAR_DURATION_MS,
+  easing: MEALS_BAR_EASING,
+  reduceMotion: ReduceMotion.System,
+};
+
+const AnimatedView = Animated.createAnimatedComponent(View);
 
 const REMINDER_ROW_ICONS: Record<ReminderType, IconComponent> = {
   vaccine: Syringe,
@@ -226,6 +243,16 @@ export function HomeScreen() {
     mealsToday !== null && mealsToday.total > 0
       ? Math.round((mealsToday.served / mealsToday.total) * 100)
       : 0;
+  const mealsBarWidth = useSharedValue(mealsPct);
+  const reduceMotion = useReducedMotion();
+  const mealsBarStyle = useAnimatedStyle(() => ({
+    width: `${mealsBarWidth.value}%` as `${number}%`,
+  }));
+  useEffect(() => {
+    mealsBarWidth.value = reduceMotion
+      ? mealsPct
+      : withTiming(mealsPct, MEALS_BAR_TIMING);
+  }, [mealsBarWidth, mealsPct, reduceMotion]);
   const refetchPets = pets.refetch;
   const refetchDetail = detail.refetch;
   const refetchOpenAlerts = openAlerts.refetch;
@@ -709,10 +736,10 @@ export function HomeScreen() {
                       testID="reminders-meals-track"
                       className="h-1.5 overflow-hidden rounded-full bg-default"
                     >
-                      <View
+                      <AnimatedView
                         testID="reminders-meals-fill"
                         className="h-full rounded-full bg-accent"
-                        style={{ width: `${mealsPct}%` }}
+                        style={mealsBarStyle}
                       />
                     </View>
                   </View>

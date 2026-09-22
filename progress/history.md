@@ -4435,3 +4435,130 @@ conflicto en `feature_list.json`, `progress/current.md` y este fichero.
 `./init.sh` no se lanzó en toda la feature: #102 no toca
 `backend-pet-tracker/` (verificado, ninguno de los 20 ficheros del diff está
 ahí) y los puertos eran de la sesión vecina.
+
+---
+
+## 2026-09-21 / 2026-09-22 — #106 `mobile-meals-bar-motion` + #107 `mobile-meal-toggle-press-lock`
+
+Dos entradas del `feature_list.json` cerradas con **una sola spec y un solo
+ciclo**, por decisión del humano: tocaban el mismo `Pressable` de
+`food.tsx` y la misma barra de `screens/home/index.tsx`, y #107 por su cuenta
+eran dos líneas de aserción que no justificaban su propio gate, su propio Codex
+y su propia revisión. Spec en `specs/mobile-meals-bar-motion/`, firmada en
+`ca13a804`; PR y merge al cierre.
+
+Entregado: la barra de comidas de la Home transiciona su ancho con `withTiming`
+(250 ms, `Easing.bezier(0.77, 0, 0.175, 1)`) y se fija sin animar con reduce
+motion; servir y deshacer una franja vibran distinguiendo éxito de fallo; y el
+feedback de pulsado del botón por franja por fin tiene candado.
+
+Entró **`expo-haptics` ~57.0.3**, primera dependencia nueva desde el veto. El
+veto vivo era nominal a `expo-linear-gradient`, no genérico, así que se pudo
+pedir. El humano firmó tres cosas que no eran requisitos técnicos: la
+instalación, la enmienda a `docs/ui-guidelines.md:171` —que afirmaba que no
+estaba instalada, y la carta es el gate C8— y que su dev build de Android
+quedaba obsoleto, porque un módulo nativo no entra por OTA ni por Metro.
+
+### Lo que se llevó las tres rondas: candados que no candaban
+
+El código de Codex no dio **una sola** objeción de comportamiento. Las tres
+rondas se fueron en tests que decían vigilar algo y no lo vigilaban, tres veces
+seguidas y cada una destapada por el mecanismo anterior.
+
+**#98 → #107.** La feature nació porque el `style` pressed de `food.tsx` no lo
+miraba ninguno de los ocho usos de `meal-toggle-0`.
+
+**B1.** El candado nuevo de R2 aseveraba contra `MEALS_BAR_TIMING` **importado
+del propio módulo de producción**: mutar `MEALS_BAR_DURATION_MS` de 250 a
+**2500** dejaba 138/138 en verde, porque la mutación movía los dos lados de la
+igualdad. Tautología. La sonda de Codex era honesta —mutó el call-site y eso sí
+enrojece— solo que demasiado débil para tocar lo que fija la carta.
+
+**B6.** El candado que sustituyó a B1 muestreaba la curva en `0.25` y `0.75`.
+El reviewer demostró que eso son **2 ecuaciones sobre 4 parámetros** y barrió
+la rejilla con una réplica del `Bezier.ts` de Reanimated hasta construir
+`Easing.bezier(0.97, 0.0893960980395263, 0.17, 0.9976664429227766)`: pasa
+138/138 **desviándose 0.33** a mitad de recorrido —la barra iría por el 28% en
+vez del 60%— porque los dos puntos elegidos caen en los tramos planos y el
+error se esconde en el salto central que queda entre ellos. Cerrado
+muestreando nueve puntos, con el barrido repetido para confirmar que no queda
+ni una solución en toda la rejilla.
+
+La regla que sale de las tres: **un candado que asevera contra un símbolo
+importado de producción no canda nada**, y **un candado que muestrea un
+continuo canda solo los puntos que muestrea**. La diferencia entre B1 y B6
+importa para decidir si se rebota: el agujero de B1 lo pisa cualquiera cambiando
+un 250, el de B6 necesita un solver. Por eso B1 fue rebote a Codex y B6 se
+arregló con el `implementer` sin volver a Codex.
+
+### El rechazo de la ronda 1 fue mío, no de Codex
+
+`./init.sh` salió **exit 1** en `init.sh:156`: «Más de 1 feature en
+in_progress». Yo había puesto #106 **y** #107 en `in_progress`. El script
+aborta ahí y **nunca llega a correr build, tests, e2e, lint ni typecheck**, así
+que un error de bookkeeping del leader se disfraza de rechazo técnico. El
+reviewer corrió a mano las ocho patas que el script se saltaba —todas exit 0— y
+además **simuló** la segunda mina en vez de deducirla: `init.sh:165` exige
+`specs/<nombre>/requirements.md` a toda feature `in_progress` o `done`, y #107
+no tiene spec propia.
+
+Arreglo: #107 vuelve a `spec_ready` y pasa a `done` a la vez que #106, y se le
+añade un **fichero puntero** en `specs/mobile-meal-toggle-press-lock/` que dice
+dónde vive su spec y por qué. El harness modela **una feature por ciclo**; dos
+entradas compartiendo uno necesitan esa costura explícita.
+
+### Premisas mías que se cayeron al verificarlas
+
+Cuatro, y dos importan. **En este repo no hay NativeWind**: el procesador de
+`className` es **uniwind** `^1.11.0`, y yo lo venía diciendo mal arrastrándolo
+del contexto de #98. Y **el camino preferido de mi propio rebote de #98 estaba
+equivocado**: `props.style` de un `Pressable` con `style` de función llega
+**resuelto** (`{opacity: 1}`), no como función, y `pressIn` no lo cambia. El
+camino bueno era el de respaldo, y encima sin normalizar producción: diff neto
+de `food.tsx` por R5 = **cero**.
+
+Codex también midió y descartó un camino antes de elegir, que es exactamente lo
+que se le pidió: comparar contra un `Easing.bezier` fresco **no** funciona,
+porque las closures `factory` son referencias distintas aunque los cuatro
+parámetros coincidan.
+
+### Triaje de las deudas: 2 de 7
+
+`fuera-de-alcance-no-todo-es-feature` otra vez. De las siete deudas del
+veredicto, **B1 y B6 quedaron cerradas** dentro del ciclo, **B4 se la llevó la
+sesión Backend como #108**, **B7 y B5 se arreglaron aquí mismo** —una es
+redacción de una celda de trazabilidad, la otra un apunte en la plantilla de
+handoff— y **B8 no se registra**: falla hacia rojo si alguna vez colisiona. Se
+registran **dos**: #109 y #110.
+
+De las dos, la que importa es **#110**: el doble de Reanimated de
+`index.test.tsx` trae un `jest.mock('heroui-native')` que no canda nada —
+quitarlo deja 138/138 verde— y que **sustituye el `Skeleton` real en los 138
+tests del fichero, incluido el de #62 R8**, una feature ajena que cree estar
+probando producción y está probando un doble. Un mock de conveniencia degradó
+el test de otra feature y nadie lo notó hasta tres rondas después.
+
+### B5 — pedir una skill que no existe no da error, da silencio
+
+El handoff pidió `expo-overview` y `expo-animation`. Ninguna de las dos estaba
+en el catálogo de Codex, que acabó cargando `expo:building-native-ui`. No hubo
+aviso: el reviewer lo descubrió al final. Queda anotado en la plantilla de
+handoff de `.claude/agents/leader.md`.
+
+### Coordinación con la sesión de #94 / #102 / #108
+
+Sin un solo conflicto, y no por suerte. Ellos dejaron `food.tsx` y
+`screens/home/index.tsx` fuera del alcance de #102 **a sabiendas** de que los
+teníamos nosotros, y midieron nuestro merge por su cuenta en vez de suponerlo.
+El intercambio produjo dos correcciones mutuas: yo dije «el guard de hex es una
+línea» sin abrir el fichero —son **ocho** guards con el regex duplicado— y
+ellos contaron «siete cortas y dos largas» cuando son **seis y dos**. El
+hallazgo más útil salió de revisar ese recuento: **las dos guardas largas
+difieren entre sí** (`:197` lleva `StyleSheet\.create`, `:343` lleva
+`StyleSheet(?:\.create)?`), así que unificarlas a ciegas cambiaría lo que cada
+una cubre. Eso convirtió «dejar el regex en un sitio» en una decisión de diseño
+para la spec de #108.
+
+`./init.sh` final sobre el árbol ya fusionado con `main`: **exit 0** medido sin
+pipe — backend 1295, infra 14, móvil 77 suites / 1396 tests, e2e 384, lint y
+typecheck.
