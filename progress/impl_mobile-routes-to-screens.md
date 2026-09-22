@@ -23,12 +23,21 @@
 ### R3 — health
 
 - Commit rojo: `95ee54fc`.
+- Commit verde: `64168387`.
 - Rojo, body: `JEST_EXIT=0`; 1 suite, 28/28 tests.
 - Rojo, candados: `JEST_EXIT=1`; 4 suites fallaron y 1 pasó; 11 tests fallaron
   y 140 pasaron. Los fallos nombraron `ENOENT` sobre
   `src/app/(tabs)/health.tsx`.
 - Verde: `JEST_EXIT=0`; 6 suites y 179/179 tests (body 28 + candados
   2/25/41/57/26) pasaron.
+
+### R4 — weight-log
+
+- Rojo, body: `JEST_EXIT=0`; 1 suite, 32/32 tests.
+- Rojo, candados: `JEST_EXIT=1`; 3 suites fallaron y 2 pasaron; 9 tests fallaron
+  y 142 pasaron. Los fallos nombraron `ENOENT` sobre
+  `src/app/(tabs)/weight-log.tsx`.
+- Verde: pendiente.
 
 ## R7 — escaneo de tests colocados
 
@@ -42,6 +51,7 @@ Pendiente.
 
 - R1: `ca2d6f80` — `docs(conventions): excepcion A10 para migracion en frio (R1)`.
 - R2: rojo `b5562651`; verde `762c6525`.
+- R3: rojo `95ee54fc`; verde `64168387`.
 
 ## Desviaciones de tasks.md
 

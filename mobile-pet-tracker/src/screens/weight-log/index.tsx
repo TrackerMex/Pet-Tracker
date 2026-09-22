@@ -330,7 +330,7 @@ function WeightLogContent({ petId }: { petId: string }) {
   );
 }
 
-export default function WeightLogScreen() {
+export function WeightLogScreen() {
   const { selectedPetId } = useSelectedPet();
 
   if (selectedPetId === null) {

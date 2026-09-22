@@ -14,30 +14,30 @@ import {
   listWeights,
   type CreateWeightState,
   type WeightsState,
-} from '../../../api/health-records';
-import { healthKeys } from '../../../api/query-keys';
-import type { WeightEntry } from '../../../api/types';
-import { getMe, type ProfileResponse } from '../../../api/users';
-import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
-import { LanguageProvider } from '../../../providers/language-provider';
+} from '../../api/health-records';
+import { healthKeys } from '../../api/query-keys';
+import type { WeightEntry } from '../../api/types';
+import { getMe, type ProfileResponse } from '../../api/users';
+import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
+import { LanguageProvider } from '../../providers/language-provider';
 import {
   SelectedPetProvider,
   useSelectedPet,
-} from '../../../providers/selected-pet-provider';
-import WeightLogScreen from '../weight-log';
-import { TOUCH_SLOP } from '../../../theme/touch-target';
-import { renderWithProviders } from '../../../../test/render-with-providers';
+} from '../../providers/selected-pet-provider';
+import { WeightLogScreen } from '.';
+import { TOUCH_SLOP } from '../../theme/touch-target';
+import { renderWithProviders } from '../../../test/render-with-providers';
 
-jest.mock('../../../api/health-records', () => ({
+jest.mock('../../api/health-records', () => ({
   createWeight: jest.fn(),
   listWeights: jest.fn(),
 }));
 
-jest.mock('../../../api/users', () => ({
+jest.mock('../../api/users', () => ({
   getMe: jest.fn(),
 }));
 
-jest.mock('../../../providers/auth-provider', () => ({
+jest.mock('../../providers/auth-provider', () => ({
   useAuth: jest.fn(),
 }));
 
