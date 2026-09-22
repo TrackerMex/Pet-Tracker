@@ -255,7 +255,7 @@ en vez de en atajo del implementador.
 > no devuelve la cuenta que hizo el cambio. El Gate 2, si llegara a hacer
 > falta, puede firmarse por la misma vía o en el repo.
 
-- [ ] **Gate 2 — Decisión sobre #62 R8** (fecha: ____)
+- [ ] **Gate 2 — Decisión sobre #62 R8** (no aplica; fecha: 2026-09-22)
       ← **solo se marca si** el implementador paró por el escenario de
       §Qué pasa si el test de #62 R8 se pone rojo. Si no paró, escribir
       «no aplica» y la fecha. Esta casilla es independiente del Gate 1: es el
