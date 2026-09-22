@@ -22,6 +22,22 @@ const { join } = require('path');
 const sourceRoot = join(process.cwd(), 'src');
 const projectRoot = process.cwd();
 
+const HEX_LITERAL = String.raw`#[\da-f]{3,8}\b`;
+const ARBITRARY_CLASS = String.raw`[A-Za-z0-9_-]+-\[[^\]]+\]`;
+const SHADOW_ESCAPES = String.raw`shadowColor|shadowOffset|shadowOpacity|shadowRadius|\belevation\s*:`;
+const FEATURE_STYLE_ESCAPES = new RegExp(
+  String.raw`text-\[10px\]|${HEX_LITERAL}|StyleSheet`,
+  'i',
+);
+const PAIRING_STYLE_ESCAPES = new RegExp(
+  String.raw`${HEX_LITERAL}|${ARBITRARY_CLASS}|StyleSheet\.create|${SHADOW_ESCAPES}`,
+  'i',
+);
+const MEALS_BAR_STYLE_ESCAPES = new RegExp(
+  String.raw`${HEX_LITERAL}|${ARBITRARY_CLASS}|StyleSheet(?:\.create)?|${SHADOW_ESCAPES}`,
+  'i',
+);
+
 function sourceFiles(directory: string): string[] {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const path = join(directory, entry.name);
@@ -114,7 +130,7 @@ describe('R9: mobile-pets-profile sin drift', () => {
   it('keeps arbitrary text, hex colors, and StyleSheet out of feature sources', () => {
     const violations = featureFiles.flatMap((relativePath) => {
       const contents = readFileSync(join(sourceRoot, relativePath), 'utf8');
-      return /text-\[10px\]|#[\da-f]{3,8}\b|StyleSheet/i.test(contents)
+      return FEATURE_STYLE_ESCAPES.test(contents)
         ? [relativePath]
         : [];
     });
@@ -193,9 +209,7 @@ describe('R11 (mobile-device-pairing): pairing usa el Card compartido y las dime
   });
 
   it('keeps pairing free of forbidden styling escapes', () => {
-    expect(pairingSource).not.toMatch(
-      /#[\da-f]{3,8}\b|[A-Za-z0-9_-]+-\[[^\]]+\]|StyleSheet\.create|shadowColor|shadowOffset|shadowOpacity|shadowRadius|\belevation\s*:/i,
-    );
+    expect(pairingSource).not.toMatch(PAIRING_STYLE_ESCAPES);
   });
 });
 
@@ -217,7 +231,7 @@ describe('#68 R18: la actividad semanal no mete drift de estilo', () => {
   it('keeps arbitrary text, hex colors, and StyleSheet out of feature sources', () => {
     const violations = featureFiles.flatMap((relativePath) => {
       const contents = readFileSync(join(sourceRoot, relativePath), 'utf8');
-      return /text-\[10px\]|#[\da-f]{3,8}\b|StyleSheet/i.test(contents)
+      return FEATURE_STYLE_ESCAPES.test(contents)
         ? [relativePath]
         : [];
     });
@@ -257,7 +271,7 @@ describe('#69 R13: la tira de estadísticas no mete drift de estilo', () => {
   it('mantiene sus cinco ficheros sin escapes de estilo literales', () => {
     const violations = featureFiles.flatMap((relativePath) => {
       const contents = readFileSync(join(sourceRoot, relativePath), 'utf8');
-      return /text-\[10px\]|#[\da-f]{3,8}\b|StyleSheet/i.test(contents)
+      return FEATURE_STYLE_ESCAPES.test(contents)
         ? [relativePath]
         : [];
     });
@@ -276,7 +290,7 @@ describe('#71 R13: la rejilla de accesos rápidos no mete drift de estilo', () =
   it('mantiene sus tres ficheros sin escapes de estilo literales', () => {
     const violations = featureFiles.flatMap((relativePath) => {
       const contents = readFileSync(join(sourceRoot, relativePath), 'utf8');
-      return /text-\[10px\]|#[\da-f]{3,8}\b|StyleSheet/i.test(contents)
+      return FEATURE_STYLE_ESCAPES.test(contents)
         ? [relativePath]
         : [];
     });
@@ -298,7 +312,7 @@ describe('#70 R17: la sección de recordatorios no mete drift de estilo', () => 
   it('mantiene sus ficheros sin escapes de estilo literales', () => {
     const violations = featureFiles.flatMap((relativePath) => {
       const contents = readFileSync(join(sourceRoot, relativePath), 'utf8');
-      return /text-\[10px\]|#[\da-f]{3,8}\b|StyleSheet/i.test(contents)
+      return FEATURE_STYLE_ESCAPES.test(contents)
         ? [relativePath]
         : [];
     });
@@ -319,7 +333,7 @@ describe('#85 R12: la sección de recordatorios reales no mete drift de estilo',
   it('mantiene sus ficheros sin escapes de estilo literales', () => {
     const violations = featureFiles.flatMap((relativePath) => {
       const contents = readFileSync(join(sourceRoot, relativePath), 'utf8');
-      return /text-\[10px\]|#[\da-f]{3,8}\b|StyleSheet/i.test(contents)
+      return FEATURE_STYLE_ESCAPES.test(contents)
         ? [relativePath]
         : [];
     });
@@ -340,9 +354,7 @@ describe('#98 R10: la barra de comidas no mete drift de estilo', () => {
   it('mantiene sus ficheros sin escapes de estilo literales', () => {
     const violations = featureFiles.flatMap((relativePath) => {
       const contents = readFileSync(join(sourceRoot, relativePath), 'utf8');
-      return /#[\da-f]{3,8}\b|[A-Za-z0-9_-]+-\[[^\]]+\]|StyleSheet(?:\.create)?|shadowColor|shadowOffset|shadowOpacity|shadowRadius|\belevation\s*:/i.test(
-        contents,
-      )
+      return MEALS_BAR_STYLE_ESCAPES.test(contents)
         ? [relativePath]
         : [];
     });
