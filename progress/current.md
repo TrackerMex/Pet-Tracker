@@ -22,8 +22,19 @@
   **dependencia nueva** y necesita su firma en el gate de esta spec.
   `docs/ui-guidelines.md:171` la declara no instalada, asi que la spec tiene
   que enmendar esa linea.
-- **Estado**: `spec_author` lanzado. Ambas features siguen `pending` hasta que
-  el humano firme la spec.
+- **Estado**: spec aprobada por el humano en `ca13a804`; #106 y #107 están
+  `in_progress`. Implementación iniciada por Codex el 2026-09-22 siguiendo
+  `R1 → R4 → R5 → R2 → R3` y sin ejecutar `init.sh`.
+- **Baseline móvil contra `9df7b5bc`**: `bunx jest` exit 0, 77 suites y 1369
+  tests. El cierre informará solo el delta respecto a estos valores.
+- **Implementado**: R1 (`91adccde` → `e14dd598`), R4 (`47945153` →
+  `205d8682`), R5 (`8fb833c9` → `83a63821`) y R2 (`a616ce07` →
+  `03c68786`) y R3 (`592a5046` → `3626b779`). Las sondas de mutación de R4,
+  R5 y R2 dieron rojo y se restauraron sin diff.
+- **Verificación final**: `bunx jest` exit 0 (77 suites, 1379 tests) y
+  `bunx tsc --noEmit` exit 0; delta contra `9df7b5bc`: +0 suites, +10 tests y
+  +0 suites rojas. Evidencia completa en
+  `progress/impl_mobile-meals-bar-motion.md`.
 
 ### Coordinacion con la sesion de #94
 
