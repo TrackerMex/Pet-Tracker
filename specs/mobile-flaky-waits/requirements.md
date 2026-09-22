@@ -364,6 +364,73 @@ debe dar **0** líneas añadidas con `setTimeout` en el fichero de map.
 
 ---
 
+## Enmienda E1 — S2 no es defecto, y su vía de C4 no era obtenible
+
+> **Abierta el 2026-09-22 tras el rechazo del `reviewer` (hallazgo B1).**
+> Enmienda a una spec ya firmada: **necesita su propia firma**, separada de la
+> de §Aprobación. Sin esa casilla marcada, esta enmienda no existe.
+
+### Qué falla en la spec firmada
+
+La tabla de §R2 lista **S2** (`health/index.test.tsx:256-272`,
+`keeps API order and selects the first pet by default`) como uno de los siete
+sitios a corregir. **Es un error de la propia spec**: S2 cae en la tercera
+categoría de §F4, la de las **aserciones causalmente implicadas por el estado
+esperado**, que §F4 declara explícitamente **no defecto**.
+
+Verificado contra la producción, no razonado de memoria:
+`src/screens/health/index.tsx:55` y `:61` declaran las queries `vaccines` y
+`weights` con `enabled: selectedPetId !== null`. El `waitFor` de `:256` espera a
+que `pet-chip-pet-1` tenga `accessibilityState.selected === true`, que sale de
+**ese mismo `selectedPetId`**. Las tres llamadas que el test asevera después son
+**consecuencia** del render esperado, no algo que pueda faltar cuando ese render
+ya ocurrió.
+
+Consecuencia práctica, medida por el `reviewer`: **no existe par rojo/verde para
+S2 y no es obtenible**. Con la viga prescrita por §Protocolo M, y también con una
+viga de 200 ms sobre `mockListPets` —que es el único lever que abre la puerta a
+las llamadas—, el test **viejo pasa igual** (`exit 0`). Una vía (b) que no puede
+producir su rojo no es una vía: es una casilla que nadie puede cerrar.
+
+### Qué se decide
+
+1. **S2 deja de ser un sitio de §R2.** No es defecto. El conteo de sitios de esta
+   feature pasa de **siete a seis**: R1 más S3..S7.
+2. **El cambio que Codex ya aplicó a S2 se conserva** (commit `bcd8ba8a`: las tres
+   aserciones de llamada pasan dentro del `waitFor` de `:256`). No se revierte, por
+   tres razones: el conjunto de aserciones es **idéntico** antes y después, así que
+   no debilita nada; deja el test alineado con la letra de
+   `docs/conventions.md` §*Esperas sobre el árbol renderizado* aunque no lo
+   necesitara; y revertirlo sería churn sin ganancia. **Queda como endurecimiento
+   defensivo, no como corrección de un defecto.**
+3. **Su vía de C4 pasa a ser el argumento de invariancia**, sin mutación, con el
+   precedente exacto de #72: su sitio **S6** se cerró así
+   (`specs/mobile-add-pet-photo-test-flake/design.md:151`, *«sin mutación; su
+   evidencia es el argumento de invariancia»*). La evidencia de S2 es el
+   encadenamiento `selectedPetId` → `enabled` → llamada, más la medición del
+   `reviewer` de que ninguna viga produce rojo.
+4. **La tabla de §C4 se lee así para S2**: vía **(b)**, rojo **no obtenible y no
+   exigible**, evidencia = invariancia medida. El `reviewer` **no** debe pedir un
+   par rojo/verde para S2.
+
+### Lo que esta enmienda NO cambia
+
+- **R1 sigue por la vía (a)** con su rojo real y su viga permanente. Verificado por
+  el `reviewer`: `Unable to find an element with testID: weight-current`, exit 1.
+- **S3..S7 siguen siendo defectos** y siguen exigiendo su par rojo/verde. La zona
+  ciega de S4 ya está medida y re-verificada por el `reviewer`.
+- **La regla dura de §R2 sigue intacta**: ninguna corrección puede aseverar menos
+  de lo que asevera hoy. El hallazgo **B2** del `reviewer` es precisamente una
+  violación de esa regla y **no** se perdona aquí: se corrige en la ronda 2.
+
+### Firma de la enmienda
+
+- [ ] **Enmienda E1 aprobada por humano** (fecha: ____) ← casilla propia. Sin ella,
+      S2 sigue siendo un sitio de §R2 con una vía de C4 que nadie puede cerrar, y
+      la feature no puede aprobarse.
+
+---
+
 ## Fuera de alcance
 
 Clasificado viñeta a viñeta: **[D]** = delimitación de esta feature;
