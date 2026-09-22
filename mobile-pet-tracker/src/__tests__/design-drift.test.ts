@@ -22,7 +22,7 @@ const { join } = require('path');
 const sourceRoot = join(process.cwd(), 'src');
 const projectRoot = process.cwd();
 
-const HEX_LITERAL = String.raw`#[\da-f]{3,8}\b`;
+const HEX_LITERAL = String.raw`#(?!\d{2,3} R\d)[\da-f]{3,8}\b`;
 const ARBITRARY_CLASS = String.raw`[A-Za-z0-9_-]+-\[[^\]]+\]`;
 const SHADOW_ESCAPES = String.raw`shadowColor|shadowOffset|shadowOpacity|shadowRadius|\belevation\s*:`;
 const FEATURE_STYLE_ESCAPES = new RegExp(
