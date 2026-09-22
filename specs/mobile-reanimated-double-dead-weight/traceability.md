@@ -10,7 +10,7 @@ tags: [harness, spec, mobile, tests]
 |---|---|---|
 | R1 | `src/screens/home/index.test.tsx::R1 (mobile-reanimated-double-dead-weight): home monta el Skeleton real de heroui-native` | `52f553ab test(mobile): use real HeroUI Skeleton (R1)` |
 | R2 | `src/screens/home/index.test.tsx::R2 (mobile-reanimated-double-dead-weight): Animated.View no es el View de react-native` | `1db9f6ff test(mobile): keep real Reanimated View (R2)` |
-| R3 | pendiente | pendiente |
+| R3 | `progress/impl_mobile-reanimated-double-dead-weight.md::R3 — bloque #62 R8 intacto y sonda de mutación` | `2b37b65d test(mobile): verify #62 Skeleton guard by mutation (R3)` |
 | R4 | pendiente | pendiente |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
