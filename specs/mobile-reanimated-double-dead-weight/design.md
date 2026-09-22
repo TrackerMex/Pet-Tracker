@@ -117,19 +117,27 @@ implementador no "ayudó" al test.
 | Rango | Qué es | Atribución |
 |---|---|---|
 | `:3790`, `:3835` | literales partidos `'#' + '106 R2…'` / `'#' + '106 R3…'` | **#108**, confirmado: su `requirements.md:227-228` los nombra uno a uno y los restaura a su forma entera |
-| `:3350-3363` | candado de `reminders-see-all` que recorta la fuente de `index.tsx` | **en disputa** |
+| `:3350-3363` | candado de `reminders-see-all` que recorta la fuente de `index.tsx` | **#112**, resuelto |
 
-**La disputa, registrada:** `docs/conventions.md` §Tests dice literalmente
-«Queda un gemelo por migrar en `…/index.test.tsx:3355-3359`; no se toca aquí
-porque pertenece a **#108**». El encargo de esta feature lo atribuye a **#112**.
-No se puede arbitrar desde esta base: **#112 no existe** —ni entrada en
-`feature_list.json` (el id máximo es 110) ni branch en `origin`—. Sí existen
-`origin/feature/108-design-drift-hex-guard-rid` y
-`origin/feature/111-mobile-flaky-waits`.
+**La disputa, y cómo se resolvió.** Al escribirse esta spec, `design.md`
+registró un conflicto: `docs/conventions.md` §Tests atribuía el gemelo a
+**#108** y el encargo a **#112**, y desde esta base **#112 no aparecía** —id
+máximo 110, sin branch en `origin`—.
 
-Para #110 la consecuencia es la misma sea de quien sea: **no se toca**. Se
-registra porque la próxima feature que pase por ahí necesitará saber a quién
-preguntar.
+**Era una base caducada, no un conflicto real.** Esta branch se cortó de
+`e4c9ea99`, y **#112 se registró después**, en `000c85b8` (PR #149). El
+`leader` fusionó `main` en esta branch y ahora #112 está aquí, `pending`. La
+línea de `conventions.md` también quedó corregida: la escribió #109 cuando
+#112 todavía no existía, y la sesión que lleva #108 confirmó después que su
+spec firmada acota el fichero y **no lo absorbe**.
+
+Vale la pena dejar registrado **cómo se manifestó**, porque volverá a pasar
+mientras haya dos sesiones en paralelo: un `feature_list.json` que no tiene una
+entrada no prueba que la entrada no exista, solo que no existía **cuando se
+cortó la branch**. Lo que sí es concluyente es `git show origin/main:<ruta>`,
+con `git fetch` delante.
+
+Para #110 la consecuencia no cambia: esa zona **no se toca**.
 
 ---
 

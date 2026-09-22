@@ -218,8 +218,11 @@ también aparezca como texto en la pantalla, ese cálculo cambia.
 El patrón ya vive en
 `mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts:309-311`. Queda
 un gemelo por migrar en
-`mobile-pet-tracker/src/screens/home/index.test.tsx:3355-3359`; no se toca aquí
-porque pertenece a #108.
+`mobile-pet-tracker/src/screens/home/index.test.tsx:3355-3359`, registrado
+como **#112 `mobile-reminders-see-all-source-lock-nesting`**. #109 lo dejó
+fuera porque ese fichero lo tenía tomado #108; la sesión que lleva #108
+confirmó después que su spec firmada acota el fichero y **no lo absorbe**, así
+que se registró aparte.
 
 ### Esperas sobre el árbol renderizado
 
