@@ -624,3 +624,20 @@ describe('#108 R3: los títulos de #106 vuelven a ser literales enteros', () => 
     expect(homeTestSource).not.toContain("'#' + '106");
   });
 });
+
+describe('#108 R4: la convención de cita del guard está documentada', () => {
+  const conventions = readFileSync(
+    join(projectRoot, '..', 'docs', 'conventions.md'),
+    'utf8',
+  );
+  const start = conventions.indexOf(
+    '### Prefijo de feature cuando un fichero acumula R-ids de dos specs',
+  );
+  const end = conventions.indexOf('\n### ', start + 1);
+  const section = conventions.slice(start, end);
+
+  it('documenta el guard y la forma canónica', () => {
+    expect(section).toContain('design-drift.test.ts');
+    expect(section).toContain('`#108 R1`');
+  });
+});
