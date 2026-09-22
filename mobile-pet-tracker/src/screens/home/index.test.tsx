@@ -254,6 +254,7 @@ const mockListAlerts = jest.mocked(listAlerts);
 const mockListReminders = jest.mocked(listReminders);
 
 beforeEach(() => {
+  mockUseReducedMotion.mockReturnValue(false);
   mockListAlerts.mockResolvedValue({
     kind: 'ok',
     items: [],
@@ -3810,6 +3811,50 @@ describe('#106 R2: la barra de comidas transiciona su ancho', () => {
         await view.unmount();
       }
     }
+  });
+});
+
+describe('#106 R3: reduce motion deja la barra sin animación', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetPet.mockResolvedValue({
+      kind: 'ok',
+      pet: makePet({ mealsToday: { served: 1, total: 2 } }),
+    });
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [] });
+  });
+
+  it('fija el ancho directamente si reduce motion está activo y anima si no', async () => {
+    mockUseReducedMotion.mockReturnValue(true);
+    mockWithTiming.mockClear();
+    const reduced = await renderWithProviders(<HomeScreen />, {
+      wrapper: HomeWrapper,
+    });
+
+    expect(
+      await screen.findByTestId('reminders-meals-fill'),
+    ).toHaveAnimatedStyle({ width: '50%' });
+    expect(mockWithTiming).not.toHaveBeenCalled();
+    await reduced.unmount();
+
+    mockUseReducedMotion.mockReturnValue(false);
+    mockWithTiming.mockClear();
+    const animated = await renderWithProviders(<HomeScreen />, {
+      wrapper: HomeWrapper,
+    });
+
+    await screen.findByTestId('reminders-meals-fill');
+    expect(mockWithTiming).toHaveBeenCalledWith(50, MEALS_BAR_TIMING);
+    await animated.unmount();
   });
 });
 
