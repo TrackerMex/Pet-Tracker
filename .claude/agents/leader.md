@@ -126,7 +126,13 @@ Reglas críticas:
   - Seguir convenciones de docs/conventions.md
   - Si la feature toca mobile-pet-tracker/: seguir docs/ui-guidelines.md y
     cargar las skills del plugin expo de Codex que ese doc indica
-    (expo-overview primero; el plugin ya está instalado en Codex CLI)
+    (expo-overview primero; el plugin ya está instalado en Codex CLI).
+    **Verifica el catálogo de skills de Codex antes de nombrarlas**: en #106
+    el handoff pidió `expo-overview` y `expo-animation`, ninguna de las dos
+    estaba en su catálogo y Codex acabó cargando `expo:building-native-ui`.
+    Pedir por nombre una skill que no existe no da error: da silencio, y el
+    reviewer lo descubre al final (deuda B5 de
+    `progress/review_mobile-meals-bar-motion.md`)
   - TDD por requisito: test rojo → verde → refactor (ver specs/<feature>/tasks.md)
   - UN COMMIT POR REQUISITO como mínimo, con el test rojo antes que su
     implementación. Un único commit con todo incumple C4 de CHECKPOINTS.md
