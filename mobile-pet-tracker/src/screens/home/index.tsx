@@ -7,6 +7,7 @@ import Animated, {
   Easing,
   ReduceMotion,
   useAnimatedStyle,
+  useReducedMotion,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
@@ -243,12 +244,15 @@ export function HomeScreen() {
       ? Math.round((mealsToday.served / mealsToday.total) * 100)
       : 0;
   const mealsBarWidth = useSharedValue(mealsPct);
+  const reduceMotion = useReducedMotion();
   const mealsBarStyle = useAnimatedStyle(() => ({
     width: `${mealsBarWidth.value}%` as `${number}%`,
   }));
   useEffect(() => {
-    mealsBarWidth.value = withTiming(mealsPct, MEALS_BAR_TIMING);
-  }, [mealsBarWidth, mealsPct]);
+    mealsBarWidth.value = reduceMotion
+      ? mealsPct
+      : withTiming(mealsPct, MEALS_BAR_TIMING);
+  }, [mealsBarWidth, mealsPct, reduceMotion]);
   const refetchPets = pets.refetch;
   const refetchDetail = detail.refetch;
   const refetchOpenAlerts = openAlerts.refetch;
