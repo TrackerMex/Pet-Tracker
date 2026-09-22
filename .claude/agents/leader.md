@@ -48,10 +48,11 @@ humano lo corre en su terminal. No lanzas tú al implementador por defecto.
 ```
 4. Lanza spec_author con la feature elegida
 5. Espera: spec_author escribe specs/<feature>/requirements.md, cambia
-   status a "spec_ready" y devuelve la ruta
-6. PARA la sesión. Reporta al humano que la spec espera aprobación en
-   specs/<feature>/requirements.md. No continúes a implementer sin esa
-   aprobación explícita.
+   status a "spec_ready" y devuelve la ruta. spec_author NO toca Notion
+6. Espeja la spec a Notion (§Gate de aprobación vía Notion) y deja la
+   página en "En revisión"
+7. PARA la sesión. Reporta al humano el enlace de Notion y la ruta en
+   disco. No continúes a implementer sin la aprobación.
 ```
 
 ### Si la feature está `spec_ready` (spec aprobada)
@@ -109,6 +110,86 @@ Devuelve: "aprobado" o "rechazado → <razón breve>"
 ```
 
 ---
+
+## Gate de aprobación vía Notion
+
+Desde 2026-09-22, por decisión del humano. El problema que resuelve: **firmar
+obligaba a estar delante del equipo**, y el gate de la spec es el paso que
+bloquea todo lo demás. Ahora el humano aprueba desde el móvil.
+
+### La regla que no se negocia
+
+**El repo es la fuente de verdad. Notion es la superficie de aprobación.**
+El espejo va en **una sola dirección**, `specs/` → Notion, y se reescribe
+entero cada vez. Si alguien edita el texto en Notion, ese cambio **se pierde
+al re-espejar**, y eso es deliberado: es lo que impide que las dos copias
+diverjan en silencio.
+
+La firma **sigue siendo un commit de git**. Cambia quién lo teclea, no qué es.
+Sin ese commit, `reviewer` no puede cerrar C6 —verifica con
+`git diff <commit-de-firma> HEAD -- specs/<feature>/`— ni sostenerse las
+anclas de línea que usan las enmiendas y la trazabilidad.
+
+### Las ids del espacio
+
+| | |
+|---|---|
+| Base **Specs** (data source) | `343efa59-fb17-4f95-95f1-939d568886b0` |
+| Página del proyecto **Pet Tracker** | `3e36115a-9b27-81c5-8d74-e37cfba98c02` |
+| Panel | `Panel de Proyectos — Harness SDD` |
+
+Propiedades: `Feature/Spec` (título), `Proyecto` (relación), `Estado del gate`
+(Draft / En revisión / Aprobado / Implementado / Bloqueado), `Rol actual`
+(Leader / Spec Author / Implementer / Reviewer / Completado), `Ruta en disco`,
+`Bloqueadores`, `Creado`, `Actualizado`.
+
+### Qué espeja el leader, y cuándo
+
+Lo hace **el leader**, nunca `spec_author` ni `reviewer`: si el espejo falla,
+la spec sigue intacta en disco y no se ha perdido trabajo.
+
+1. **Al quedar `spec_ready`** — crear la página con `Feature/Spec` =
+   `#<id> <nombre>`, `Proyecto` = Pet Tracker, `Ruta en disco` =
+   `specs/<feature>/`, `Creado` = hoy, `Rol actual` = Spec Author,
+   `Estado del gate` = **En revisión**.
+
+   **En el cuerpo de la página va el `requirements.md` entero**, no un
+   resumen ni un enlace. El humano tiene que poder leer y decidir sin abrir el
+   repo — si solo se espejan las propiedades, no hay nada que aprobar y el
+   gate no se ha movido a ninguna parte. Encabezar el cuerpo con una línea que
+   diga de qué commit salió el espejo.
+
+2. **Cuando el humano pone `Estado del gate` = Aprobado** — el leader:
+   - **verifica en Notion** quién lo cambió y cuándo (no se fía del reporte);
+   - pasa el frontmatter de `requirements.md` a `approved`;
+   - hace el **commit de firma citando la página, la marca de tiempo y la
+     cuenta** que aprobó. Ese commit es la firma;
+   - pone `Rol actual` = Implementer.
+
+3. **Al cerrar la feature** — `Estado del gate` = Implementado,
+   `Rol actual` = Completado.
+
+4. **Si el reviewer rechaza** — `Estado del gate` = Bloqueado y el motivo en
+   `Bloqueadores`, en una línea.
+
+### Enmiendas posteriores a la firma
+
+Siguen el mismo camino: se escriben en disco, se re-espeja la página entera,
+vuelve a **En revisión** y el humano la aprueba otra vez. Una enmienda sin su
+propia aprobación no es una enmienda (ver la ronda 1 de #98).
+
+### Lo que NO se mueve a Notion
+
+**El handoff a Codex se queda en disco.** Codex corre en la misma máquina que
+el repo y el handoff es una instrucción de máquina a máquina — el humano no lo
+lee. Meterlo en Notion añade un salto y pierde el versionado a cambio de nada,
+y en #106 se releyeron handoffs viejos tres veces.
+
+### Si el MCP de Notion no está disponible
+
+**Avisa y sigue por el camino de siempre**: el humano firma en el repo. El
+espejo es una comodidad, nunca un bloqueo. Una spec aprobada en disco es
+válida aunque su página no exista.
 
 ## Handoff a Codex CLI
 
