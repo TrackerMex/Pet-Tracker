@@ -166,6 +166,33 @@ la spec**. No basta con nombrar la skill en el handoff, y la carta
 `docs/ui-guidelines.md` sigue siendo el gate C8 para el `reviewer` con
 independencia de lo que Codex tenga instalado.
 
+**Y cuando ninguna de las 13 encaje, dilo en el handoff**: «no cargues ninguna
+skill de expo, no hay ninguna para esto». Un handoff **mudo** invita a Codex a
+cargar lo más cercano, que es exactamente el fallo silencioso. Aportación de la
+sesión Backend al escribir #111, donde ninguna aplicaba —son esperas de jest en
+tests de RN— y escribieron la guía inline.
+
+### Cuánto llevaba mordiendo
+
+No era teórico. Confirmado en dos features más, además de #106 y #109:
+
+- **#102** — `progress/handoff_mobile-routes-to-screens.md:131-132` pedía
+  `expo-overview` y `expo-project-structure`. Ninguna existe. Codex migró las
+  cuatro rutas a `src/screens/` **sin una sola línea de guía de Expo**, salió
+  verde y el `reviewer` la aprobó sin bloqueantes. El daño fue nulo porque era
+  un refactor puro, pero **no se enteró nadie**: ni Codex, ni el leader, ni el
+  reviewer.
+- **#55** — y esta es la lección de verdad.
+  `progress/handoff_mobile-map-last-position-error-state.md:18` ya llevaba la
+  nota *«y si tu versión no la trae (v1.0.2 no la traía en #55)»*. **El hallazgo
+  se hizo y se perdió**, porque se quedó como un paréntesis dentro de un
+  handoff —que se lee una vez— en vez de subir a un fichero del harness, que se
+  lee siempre. Costó cuatro features más volver a encontrarlo.
+
+  Regla derivada, aplicable a cualquier hallazgo y no solo a este: **si algo
+  que descubres cambia cómo se escriben los handoffs futuros, no vale
+  escribirlo en un handoff.**
+
 ### Cómo se vuelve a medir
 
 El catálogo está cacheado y caduca:
