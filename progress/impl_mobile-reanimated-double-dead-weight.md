@@ -55,7 +55,10 @@ mobile-pet-tracker/src/screens/home/index.tsx` salió 0.
 
 ## R4 — inventario de gemelos
 
-Pendiente de cierre.
+El inventario se añadió a `docs/conventions.md` §Tests. La sonda
+`grep -n "pet-hero-header" docs/conventions.md` devolvió la nueva entrada en
+la línea 237 (además de las referencias históricas de la enmienda #67). No se
+modificó ninguno de los ficheros gemelos inventariados.
 
 ## Verificación final
 
