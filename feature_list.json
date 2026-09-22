@@ -2145,8 +2145,7 @@
     ],
     "files_affected": [
       "mobile-pet-tracker/src/screens/health/index.test.tsx",
-      "mobile-pet-tracker/src/screens/map/index.test.tsx",
-      "mobile-pet-tracker/package.json"
+      "mobile-pet-tracker/src/screens/map/index.test.tsx"
     ]
   }
 ]
