@@ -2,6 +2,7 @@ import type { DeviceStatus } from '../api/types';
 import {
   connectivityLabelKey,
   deviceConnectionState,
+  MAP_CONNECTION_LABEL_KEY,
 } from './device-connectivity';
 
 function makeDevice(connectivity: string | null): DeviceStatus {
@@ -54,5 +55,51 @@ describe('#73 R6: el estado de conexion se decide en un solo sitio', () => {
 
   it('un valor de proveedor desconocido cae en unknown', () => {
     expect(deviceConnectionState(makeDevice('LTE'))).toBe('unknown');
+  });
+});
+
+describe('#94 R1: el tile de conexión del Mapa se decide en un solo sitio', () => {
+  it('resuelve online como En vivo', () => {
+    expect(
+      MAP_CONNECTION_LABEL_KEY[
+        deviceConnectionState(makeDevice('online'))
+      ].labelKey,
+    ).toBe('map.live');
+  });
+
+  it('resuelve offline como Desactualizado', () => {
+    expect(
+      MAP_CONNECTION_LABEL_KEY[
+        deviceConnectionState(makeDevice('offline'))
+      ].labelKey,
+    ).toBe('map.stale');
+  });
+
+  it('resuelve conectividad ausente o desconocida como Sin señal', () => {
+    expect(
+      MAP_CONNECTION_LABEL_KEY[
+        deviceConnectionState(makeDevice(null))
+      ].labelKey,
+    ).toBe('map.noSignal');
+    expect(
+      MAP_CONNECTION_LABEL_KEY[
+        deviceConnectionState(makeDevice('LTE'))
+      ].labelKey,
+    ).toBe('map.noSignal');
+  });
+
+  it('resuelve la ausencia de collar como Sin señal', () => {
+    expect(
+      MAP_CONNECTION_LABEL_KEY[deviceConnectionState(null)].labelKey,
+    ).toBe('map.noSignal');
+  });
+
+  it('cubre exhaustivamente todos los estados compartidos', () => {
+    expect(Object.keys(MAP_CONNECTION_LABEL_KEY).sort()).toEqual([
+      'none',
+      'offline',
+      'online',
+      'unknown',
+    ]);
   });
 });

@@ -102,9 +102,6 @@ export const R4_MAP: UseRow[] = [
   { file: 'src/app/(tabs)/map.tsx', key: 'map.justNow' },
   { file: 'src/app/(tabs)/map.tsx', key: 'map.agoMinutes' },
   { file: 'src/app/(tabs)/map.tsx', key: 'map.agoHours' },
-  { file: 'src/app/(tabs)/map.tsx', key: 'map.noSignal' },
-  { file: 'src/app/(tabs)/map.tsx', key: 'map.live' },
-  { file: 'src/app/(tabs)/map.tsx', key: 'map.stale' },
   { file: 'src/app/(tabs)/map.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/app/(tabs)/map.tsx', key: 'common.retry' },
   { file: 'src/app/(tabs)/map.tsx', key: 'common.noPetsYet' },
@@ -118,7 +115,7 @@ export const R4_MAP: UseRow[] = [
   { file: 'src/app/(tabs)/map.tsx', key: 'map.deactivateLostMode' },
   { file: 'src/app/(tabs)/map.tsx', key: 'map.activateLostMode' },
   { file: 'src/app/(tabs)/map.tsx', key: 'map.couldNotUpdateLostMode' },
-  { file: 'src/app/(tabs)/map.tsx', key: 'map.gps' },
+  { file: 'src/app/(tabs)/map.tsx', key: 'pairing.connection' },
 ];
 
 export const R5_HEALTH: UseRow[] = [
@@ -380,6 +377,10 @@ export const R10_PAIRING: UseRow[] = [
   { file: 'src/utils/device-connectivity.ts', key: 'deviceConnectivity.online' },
   { file: 'src/utils/device-connectivity.ts', key: 'deviceConnectivity.unknown' },
   { file: 'src/utils/device-connectivity.ts', key: 'deviceConnectivity.offline' },
+  { file: 'src/utils/device-connectivity.ts', key: 'map.live' },
+  { file: 'src/utils/device-connectivity.ts', key: 'map.stale' },
+  { file: 'src/utils/device-connectivity.ts', key: 'map.noSignal' },
+  { file: 'src/utils/device-connectivity.ts', key: 'map.noSignal' },
 ];
 
 export const R11_RESET: UseRow[] = [

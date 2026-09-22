@@ -9,8 +9,10 @@ import { HeroUINativeProvider } from 'heroui-native';
 import { useEffect, type ReactNode } from 'react';
 
 import {
+  getPet,
   listPets,
   setLostMode,
+  type PetState,
   type PetsState,
   type SetLostModeState,
 } from '../../../api/pets';
@@ -27,6 +29,7 @@ import {
 } from '../../../api/positions';
 import { getDayRoute, type DayRouteState } from '../../../api/trips';
 import type {
+  DeviceStatus,
   LastPosition,
   PetProfile,
   StoredPosition,
@@ -45,6 +48,7 @@ let mockFocusCleanup: (() => void) | undefined;
 let mockTheme: 'light' | 'dark' = 'light';
 
 jest.mock('../../../api/pets', () => ({
+  getPet: jest.fn(),
   listPets: jest.fn(),
   setLostMode: jest.fn(),
 }));
@@ -108,6 +112,7 @@ jest.mock('uniwind', () => ({
 const apiUrl = 'http://example.test/v1';
 const mockGetDayRoute = jest.mocked(getDayRoute);
 const mockGetLastPosition = jest.mocked(getLastPosition);
+const mockGetPet = jest.mocked(getPet);
 const mockListPets = jest.mocked(listPets);
 const mockSetLostMode = jest.mocked(setLostMode);
 const mockListPositions = jest.mocked(listPositions);
@@ -142,6 +147,16 @@ function makePet(overrides: Partial<PetProfile> = {}): PetProfile {
     createdAt: '2026-08-20T00:00:00.000Z',
     updatedAt: '2026-08-21T00:00:00.000Z',
     ...overrides,
+  };
+}
+
+function makeDevice(connectivity: string | null): DeviceStatus {
+  return {
+    model: null,
+    batteryPct: null,
+    connectivity,
+    lastMessageAt: null,
+    esn: null,
   };
 }
 
@@ -221,7 +236,7 @@ function MapWrapper({ children }: { children: ReactNode }) {
 }
 
 async function renderMap() {
-  await renderWithProviders(<MapScreen />, {
+  return renderWithProviders(<MapScreen />, {
     wrapper: MapWrapper,
     onUnauthorized: () => void mockUseAuth().signOut(),
   });
@@ -239,6 +254,10 @@ beforeEach(() => {
     signIn: jest.fn(),
     signOut: jest.fn(),
   } satisfies AuthContextValue);
+  mockGetPet.mockResolvedValue({
+    kind: 'ok',
+    pet: makePet({ device: makeDevice('online') }),
+  });
   mockGetLastPosition.mockReturnValue(pending<LastPositionState>());
   mockListPositions.mockReturnValue(pending<PositionsState>());
   mockGetDayRoute.mockReturnValue(pending<DayRouteState>());
@@ -579,7 +598,7 @@ describe('R8: stats calculadas de positions y trips', () => {
     );
   });
 
-  it('shows stale GPS, empty metric fallbacks, and zero trip distance', async () => {
+  it('#94 R2: la antigüedad de la posición ya no mueve el tile de conexión', async () => {
     mockGetLastPosition.mockResolvedValue({
       kind: 'ok',
       position: makeLastPosition({ staleSeconds: 121 }),
@@ -598,9 +617,7 @@ describe('R8: stats calculadas de positions y trips', () => {
     await renderMap();
 
     await waitFor(() =>
-      expect(screen.getByTestId('stat-gps')).toHaveTextContent(
-        'Desactualizado',
-      ),
+      expect(screen.getByTestId('stat-gps')).toHaveTextContent('En vivo'),
     );
     expect(screen.getByTestId('stat-speed')).toHaveTextContent('—');
     expect(screen.getByTestId('stat-distance')).toHaveTextContent('0.0 km');
@@ -658,7 +675,11 @@ describe('R8: stats calculadas de positions y trips', () => {
     });
   });
 
-  it('shows no signal and no age when the collar has never reported', async () => {
+  it('#94 R2: sin collar el tile de conexión dice Sin señal', async () => {
+    mockGetPet.mockResolvedValue({
+      kind: 'ok',
+      pet: makePet({ device: null }),
+    });
     mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: null });
     mockListPositions.mockResolvedValue({
       kind: 'ok',
@@ -1170,7 +1191,7 @@ describe('#61 R11: el overlay de stats reparte los cuatro tiles en 2x2 sin envol
     expect(screen.getByText('Velocidad')).toBeVisible();
     expect(screen.getByText('Distancia')).toBeVisible();
     expect(screen.getByText('Actualizado')).toBeVisible();
-    expect(screen.getByText('GPS')).toBeVisible();
+    expect(screen.getByText('Conexión')).toBeVisible();
     expect(screen.getByTestId('map-stats').props.style).toEqual(
       expect.objectContaining({
         position: 'absolute',
@@ -1233,9 +1254,13 @@ describe('#62 R15: el overlay del mapa usa cifras tabulares', () => {
 });
 
 describe('#87 R18: MapScreen lee por TanStack Query', () => {
-  it('deja sus cuatro recursos en las claves canónicas', async () => {
+  it('deja sus cinco recursos en las claves canónicas', async () => {
     initialSelectedPetId = 'pet-1';
     const petsState: PetsState = { kind: 'ok', pets: [makePet()] };
+    const petDetailState: PetState = {
+      kind: 'ok',
+      pet: makePet({ device: makeDevice('online') }),
+    };
     const lastState: LastPositionState = {
       kind: 'ok',
       position: makeLastPosition(),
@@ -1251,6 +1276,7 @@ describe('#87 R18: MapScreen lee por TanStack Query', () => {
       trips: [makeTrip()],
     };
     mockListPets.mockResolvedValue(petsState);
+    mockGetPet.mockResolvedValue(petDetailState);
     mockGetLastPosition.mockResolvedValue(lastState);
     mockListPositions.mockResolvedValue(positionsState);
     mockGetDayRoute.mockResolvedValue(routeState);
@@ -1261,6 +1287,9 @@ describe('#87 R18: MapScreen lee por TanStack Query', () => {
     await screen.findByTestId('stat-speed');
 
     expect(queryClient.getQueryData(petKeys.list())).toEqual(petsState);
+    expect(queryClient.getQueryData(petKeys.detail('pet-1'))).toEqual(
+      petDetailState,
+    );
     expect(queryClient.getQueryData(positionKeys.last('pet-1'))).toEqual(
       lastState,
     );
@@ -1269,6 +1298,220 @@ describe('#87 R18: MapScreen lee por TanStack Query', () => {
     );
     expect(queryClient.getQueryData(tripKeys.dayRoute('pet-1'))).toEqual(
       routeState,
+    );
+  });
+});
+
+describe('#94 R2: el tile de conexión sigue al collar', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({
+      kind: 'ok',
+      position: makeLastPosition({ staleSeconds: 15 }),
+    });
+  });
+
+  it('muestra En vivo aunque después falte la posición', async () => {
+    mockGetPet.mockResolvedValue({
+      kind: 'ok',
+      pet: makePet({ device: makeDevice('online') }),
+    });
+
+    const { queryClient } = await renderMap();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('stat-gps')).toHaveTextContent('En vivo'),
+    );
+
+    await act(async () => {
+      queryClient.setQueryData(positionKeys.last('pet-1'), {
+        kind: 'ok',
+        position: null,
+      } satisfies LastPositionState);
+      await Promise.resolve();
+    });
+
+    await waitFor(() =>
+      expect(screen.getByTestId('stat-updated')).toHaveTextContent('—'),
+    );
+    expect(screen.getByTestId('stat-gps')).toHaveTextContent('En vivo');
+  });
+
+  it('muestra Desactualizado para un collar offline', async () => {
+    mockGetPet.mockResolvedValue({
+      kind: 'ok',
+      pet: makePet({ device: makeDevice('offline') }),
+    });
+
+    await renderMap();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('stat-gps')).toHaveTextContent(
+        'Desactualizado',
+      ),
+    );
+  });
+
+  it('muestra Sin señal para una conectividad desconocida', async () => {
+    mockGetPet.mockResolvedValue({
+      kind: 'ok',
+      pet: makePet({ device: makeDevice(null) }),
+    });
+
+    await renderMap();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('stat-gps')).toHaveTextContent('Sin señal'),
+    );
+  });
+
+  it('muestra Sin señal sin collar aunque haya posición', async () => {
+    mockGetPet.mockResolvedValue({
+      kind: 'ok',
+      pet: makePet({ device: null }),
+    });
+
+    await renderMap();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('stat-gps')).toHaveTextContent('Sin señal'),
+    );
+  });
+});
+
+describe('#94 R3: sin detalle el tile de conexión cae al guion', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({
+      kind: 'ok',
+      position: makeLastPosition(),
+    });
+  });
+
+  it('muestra el guion mientras el detalle está pendiente', async () => {
+    mockGetPet.mockReturnValue(pending<PetState>());
+
+    await renderMap();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('stat-speed')).toBeVisible(),
+    );
+    expect(screen.getByTestId('stat-distance')).toBeVisible();
+    expect(screen.getByTestId('stat-gps')).toHaveTextContent('—');
+  });
+
+  it('muestra el guion cuando el detalle falla', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'error' });
+
+    await renderMap();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('stat-gps')).toHaveTextContent('—'),
+    );
+  });
+});
+
+describe('#94 R4: la antigüedad y la conexión son datos independientes', () => {
+  it('muestra un collar online junto a una posición de hace dos minutos', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetPet.mockResolvedValue({
+      kind: 'ok',
+      pet: makePet({ device: makeDevice('online') }),
+    });
+    mockGetLastPosition.mockResolvedValue({
+      kind: 'ok',
+      position: makeLastPosition({ staleSeconds: 121 }),
+    });
+
+    await renderMap();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('stat-gps')).toHaveTextContent('En vivo'),
+    );
+    expect(screen.getByTestId('stat-updated')).toHaveTextContent('hace 2 min');
+  });
+});
+
+describe('#94 R6: el tile de conexión se rotula como en Pairing', () => {
+  it('muestra Conexión y retira GPS', async () => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({
+      kind: 'ok',
+      position: makeLastPosition(),
+    });
+
+    await renderMap();
+
+    await waitFor(() => expect(screen.getByText('Conexión')).toBeVisible());
+    expect(screen.queryByText('GPS')).toBeNull();
+  });
+});
+
+describe('#94 R7: el poll refresca también el detalle', () => {
+  beforeEach(() => {
+    jest.useFakeTimers({ doNotFake: ['requestAnimationFrame'] });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetPet
+      .mockResolvedValueOnce({
+        kind: 'ok',
+        pet: makePet({ device: makeDevice('online') }),
+      })
+      .mockResolvedValue({
+        kind: 'ok',
+        pet: makePet({ device: makeDevice('offline') }),
+      });
+    mockGetLastPosition.mockResolvedValue({
+      kind: 'ok',
+      position: makeLastPosition(),
+    });
+    mockListPositions.mockResolvedValue({
+      kind: 'ok',
+      items: [makeStoredPosition()],
+      nextCursor: null,
+    });
+    mockGetDayRoute.mockResolvedValue({
+      kind: 'ok',
+      date: '2026-08-21',
+      trips: [],
+    });
+  });
+
+  afterEach(() => {
+    mockFocusCleanup?.();
+    jest.useRealTimers();
+  });
+
+  it('actualiza el badge con el mismo intervalo de 15 segundos', async () => {
+    await renderMap();
+
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    await waitFor(() =>
+      expect(screen.getByTestId('stat-gps')).toHaveTextContent('En vivo'),
+    );
+    const initialDetailCalls = mockGetPet.mock.calls.length;
+
+    await act(async () => {
+      jest.advanceTimersByTime(15000);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    await waitFor(() =>
+      expect(screen.getByTestId('stat-gps')).toHaveTextContent(
+        'Desactualizado',
+      ),
+    );
+    expect(mockGetPet).toHaveBeenCalledTimes(initialDetailCalls + 1);
+    expect(mockGetPet).toHaveBeenLastCalledWith(
+      apiUrl,
+      'jwt-token',
+      'pet-1',
     );
   });
 });
