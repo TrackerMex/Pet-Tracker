@@ -10,7 +10,17 @@
 - **Branch**: `feature/108-design-drift-hex-guard-rid`, cortada de `origin/main`
   y re-sincronizada con `7ce87d70` (merge de PR #146, que cerro #106 + #107).
 - **Worktree**: `/home/claude/sites/Pet-Tracker-wt-ui`.
-- **Estado**: `spec_author` lanzado. `pending` hasta que el humano firme.
+- **Estado**: spec escrita y en `spec_ready` (`77224889`), R1-R4. Esperando la
+  firma del humano en `specs/design-drift-hex-guard-rid/requirements.md:386`,
+  que es el **unico** gate humano de #108: no hay prueba de humo porque la
+  feature no cambia ni una linea que llegue al dispositivo.
+- **Orden duro que el handoff repite**: R2 antes que R3. Revertir los
+  literales con el regex viejo pone en rojo los cinco guards que listan
+  `screens/home/index.test.tsx` (`:220, :260, :279, :301, :322`), y ese rojo
+  no es el del candado de R3.
+- **Gate numerico**: 14 tests nuevos (R1=2, R2=8, R3=3, R4=1) en 4 describes.
+  1396 + 14 = **1410**; `design-drift.test.ts` 41 + 14 = **55** en 21
+  describes; `Test Suites` sigue en **77** (cero ficheros nuevos).
 - **Sin sesion paralela**: #106 + #107 cerradas y mergeadas. El worktree
   principal queda libre; aun asi #108 se queda en `-wt-ui`.
 
