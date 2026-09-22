@@ -5,6 +5,7 @@ import {
   waitFor,
   within,
 } from '@testing-library/react-native';
+import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
@@ -25,7 +26,9 @@ import * as selectedPetHooks from '../../../providers/selected-pet-provider';
 import FoodScreen from '../food';
 import { renderWithProviders } from '../../../../test/render-with-providers';
 
-const { readFileSync } = jest.requireActual<typeof import('fs')>('fs');
+const { existsSync, readFileSync } = jest.requireActual<typeof import('fs')>(
+  'fs',
+);
 
 jest.mock('../../../api/pets', () => ({
   listPets: jest.fn(),
@@ -35,6 +38,14 @@ jest.mock('../../../api/nutrition', () => ({
   getNutritionPlan: jest.fn(),
   serveMeal: jest.fn(),
   unserveMeal: jest.fn(),
+}));
+
+jest.mock('expo-haptics', () => ({
+  notificationAsync: jest.fn(() => Promise.resolve()),
+  NotificationFeedbackType: {
+    Success: 'mock-success',
+    Error: 'mock-error',
+  },
 }));
 
 jest.mock('../../../providers/auth-provider', () => ({
@@ -81,6 +92,7 @@ const mockUnserveMeal = jest.mocked(unserveMeal);
 const mockListPets = jest.mocked(listPets);
 const mockUseAuth = jest.mocked(useAuth);
 const mockRouter = jest.mocked(router);
+const mockNotificationAsync = jest.mocked(Haptics.notificationAsync);
 
 function makePet(overrides: Partial<PetProfile> = {}): PetProfile {
   return {
@@ -135,6 +147,15 @@ function pending<T>(): Promise<T> {
   return new Promise(() => undefined);
 }
 
+function opacityOf(style: unknown): unknown {
+  const entries = (Array.isArray(style) ? style.flat(Infinity) : [style]).filter(
+    (entry): entry is Record<string, unknown> =>
+      typeof entry === 'object' && entry !== null,
+  );
+
+  return entries.find((entry) => 'opacity' in entry)?.opacity;
+}
+
 function FoodWrapper({ children }: { children: ReactNode }) {
   return (
     <HeroUINativeProvider>
@@ -158,6 +179,33 @@ beforeEach(() => {
     signIn: jest.fn(),
     signOut: jest.fn(),
   } satisfies AuthContextValue);
+});
+
+describe('#106 R1: expo-haptics entra declarada y sin configuración de babel', () => {
+  it('declara una versión compatible sin configuración manual y enmienda la carta', () => {
+    const packageJson = JSON.parse(readFileSync('package.json', 'utf8')) as {
+      dependencies: Record<string, string>;
+    };
+    const hapticsVersion = packageJson.dependencies['expo-haptics'];
+
+    expect(hapticsVersion).toBeDefined();
+    expect(hapticsVersion?.match(/\d+/)?.[0]).toBe(
+      packageJson.dependencies.expo.match(/\d+/)?.[0],
+    );
+    for (const file of [
+      'babel.config.js',
+      'babel.config.cjs',
+      'babel.config.ts',
+      '.babelrc',
+      '.babelrc.js',
+    ]) {
+      expect(existsSync(file)).toBe(false);
+    }
+
+    const guidelines = readFileSync('../docs/ui-guidelines.md', 'utf8');
+    expect(guidelines).not.toContain('expo-haptics NO está instalado');
+    expect(guidelines).toContain('expo-haptics está instalado desde #106');
+  });
 });
 
 describe('R4: food resuelve la mascota seleccionada', () => {
@@ -614,6 +662,136 @@ describe('#98 R6: el conflicto se resuelve refrescando y el fallo avisa', () => 
       expect(screen.queryByTestId('food-meal-error')).toBeNull(),
     );
     await waitFor(() => expect(mockGetNutritionPlan).toHaveBeenCalledTimes(3));
+  });
+});
+
+describe('#106 R4: servir y deshacer vibran una vez y distinguen éxito de fallo', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  });
+
+  it('no vibra al montar o refrescar sin una pulsación', async () => {
+    mockGetNutritionPlan.mockResolvedValue({
+      kind: 'ok',
+      plan: makePlan(),
+    });
+
+    const view = await renderFood();
+    await screen.findByTestId('meal-toggle-0');
+    await act(async () => view.queryClient.refetchQueries());
+
+    expect(mockNotificationAsync).not.toHaveBeenCalled();
+  });
+
+  it('vibra una vez con éxito después de servir', async () => {
+    mockGetNutritionPlan
+      .mockResolvedValueOnce({
+        kind: 'ok',
+        plan: makePlan({ servedToday: [] }),
+      })
+      .mockResolvedValue({
+        kind: 'ok',
+        plan: makePlan({ servedToday: ['07:30'] }),
+      });
+    mockServeMeal.mockResolvedValue({ kind: 'ok' });
+    await renderFood();
+
+    expect(mockNotificationAsync).not.toHaveBeenCalled();
+    await fireEvent.press(await screen.findByTestId('meal-toggle-0'));
+    await screen.findByTestId('meal-served-0');
+
+    await waitFor(() => expect(mockNotificationAsync).toHaveBeenCalledTimes(1));
+    expect(mockNotificationAsync).toHaveBeenCalledWith(
+      Haptics.NotificationFeedbackType.Success,
+    );
+  });
+
+  it('vibra una vez con éxito después de deshacer', async () => {
+    mockGetNutritionPlan
+      .mockResolvedValueOnce({
+        kind: 'ok',
+        plan: makePlan({ servedToday: ['07:30'] }),
+      })
+      .mockResolvedValue({
+        kind: 'ok',
+        plan: makePlan({ servedToday: [] }),
+      });
+    mockUnserveMeal.mockResolvedValue({ kind: 'ok' });
+    await renderFood();
+
+    await fireEvent.press(await screen.findByTestId('meal-toggle-0'));
+    await screen.findByTestId('meal-pending-0');
+
+    await waitFor(() => expect(mockNotificationAsync).toHaveBeenCalledTimes(1));
+    expect(mockNotificationAsync).toHaveBeenCalledWith(
+      Haptics.NotificationFeedbackType.Success,
+    );
+  });
+
+  it('vibra una vez con error sin sustituir el aviso visual', async () => {
+    mockGetNutritionPlan.mockResolvedValue({
+      kind: 'ok',
+      plan: makePlan({ servedToday: [] }),
+    });
+    mockServeMeal.mockResolvedValue({ kind: 'error' });
+    await renderFood();
+
+    await fireEvent.press(await screen.findByTestId('meal-toggle-0'));
+    expect(await screen.findByTestId('food-meal-error')).toBeVisible();
+
+    await waitFor(() => expect(mockNotificationAsync).toHaveBeenCalledTimes(1));
+    expect(mockNotificationAsync).toHaveBeenCalledWith(
+      Haptics.NotificationFeedbackType.Error,
+    );
+  });
+
+  it('trata already-served como éxito', async () => {
+    mockGetNutritionPlan
+      .mockResolvedValueOnce({
+        kind: 'ok',
+        plan: makePlan({ servedToday: [] }),
+      })
+      .mockResolvedValue({
+        kind: 'ok',
+        plan: makePlan({ servedToday: ['07:30'] }),
+      });
+    mockServeMeal.mockResolvedValue({ kind: 'already-served' });
+    await renderFood();
+
+    await fireEvent.press(await screen.findByTestId('meal-toggle-0'));
+    await screen.findByTestId('meal-served-0');
+
+    await waitFor(() => expect(mockNotificationAsync).toHaveBeenCalledTimes(1));
+    expect(mockNotificationAsync).toHaveBeenCalledWith(
+      Haptics.NotificationFeedbackType.Success,
+    );
+  });
+});
+
+describe('#107 R5: el botón por franja conserva su feedback de pulsado', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan() });
+  });
+
+  it('expone opacidad 1 en reposo en el árbol renderizado', async () => {
+    await renderFood();
+
+    const toggle = await screen.findByTestId('meal-toggle-0');
+    expect(opacityOf(toggle.props.style)).toBe(1);
+  });
+
+  it('conserva la receta de opacidad en el bloque fuente del botón', () => {
+    const source = readFileSync('src/app/(tabs)/food.tsx', 'utf8');
+    const anchor = source.indexOf('testID={`meal-toggle-${index}`}');
+    const block = source.slice(
+      source.lastIndexOf('<Pressable', anchor),
+      source.indexOf('</Pressable>', anchor),
+    );
+
+    expect(block).toMatch(
+      /style=\{\(\{ pressed \}\) => \(\{\s*opacity: pressed \? 0\.8 : 1,?\s*\}\)\}/,
+    );
   });
 });
 

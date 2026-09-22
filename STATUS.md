@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-09-21
-**Features completadas**: 88/107 (`feature_list.json`)
+**Última actualización**: 2026-09-22
+**Features completadas**: 91/109 (`feature_list.json`)
 **En progreso**: ninguna
 
-**Pendientes**: 19 (#18, #41, #60, #74, #77, #80, #81, #84, #86, #95 y #99-#107). #94 `mobile-map-staleness-single-source` y #98 `mobile-meals-served-ui` están `done`; #98 ya está en `main` (PR #144) y la rama de #94 integra esa punta para que el PR #143 quede listo para el merge humano.
+**Pendientes**: 18 (#18, #41, #60, #74, #77, #80, #81, #84, #86, #95, #99-#105 y #109-#110). **#106 `mobile-meals-bar-motion` y #107 `mobile-meal-toggle-press-lock` cerradas y mergeadas**: la barra de comidas de la Home transiciona su ancho con `withTiming` respetando reduce motion, servir y deshacer vibran distinguiendo exito de fallo, y el feedback de pulsado del boton por franja por fin tiene candado. Son dos entradas cerradas con UNA sola spec y un solo ciclo, por decision del humano: tocaban el mismo Pressable. Entro `expo-haptics` ~57.0.3, la primera dependencia nueva desde el veto, firmada por el humano junto con la enmienda a `docs/ui-guidelines.md:171` que decia que no estaba instalada. Las tres rondas se fueron en candados que no candaban: B1 aseveraba contra la constante importada de produccion (mutar 250 a 2500 dejaba 138/138 verde) y B6 muestreaba la curva en dos puntos, agujero que el reviewer demostro construyendo con un solver una impostora que pasaba en verde desviandose 0.33 a mitad de recorrido. Los dos estan cerrados. Quedan #109 (agujero por anidamiento en el recorte del fuente de R5) y #110 (el doble de Reanimated sustituye el Skeleton real en 138 tests, incluido el de #62 R8, que cree probar produccion y prueba un doble). El guard de hex de `design-drift.test.ts` -todo R-id de tres cifras casa con `/#[\da-f]{3,8}\b/i` desde #100- se lo llevo la sesion Backend como #108. #94 `mobile-map-staleness-single-source` y #98 `mobile-meals-served-ui` están `done`; #98 ya está en `main` (PR #144) y la rama de #94 integra esa punta para que el PR #143 quede listo para el merge humano.
 
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`

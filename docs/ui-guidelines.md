@@ -168,8 +168,12 @@ Tres límites, no negociables:
 - Interrumpible siempre: un gesto puede cortar cualquier animación en curso.
 - `prefers-reduced-motion` respetado (Reanimated `ReducedMotionConfig` o
   guard equivalente).
-- expo-haptics NO está instalado; toda propuesta que lo requiera lo declara
-  como dependencia nueva en su spec.
+- expo-haptics está instalado desde #106 (2026-09-21), autorizado por el
+  humano en el gate de specs/mobile-meals-bar-motion/. Se usa con la tabla de
+  la skill expo-animation §8: selectionAsync para un detent, impactAsync para
+  un commit de gesto, notificationAsync(Success|Error) para una operación que
+  termina bien o mal. Tres reglas absolutas: mismo frame que el visual, uno
+  por acción del usuario, y nunca el único feedback.
 - El runtime de smoke del humano es el dev build de Android desde 2026-08-27;
   `expo-maps` no está disponible en Expo Go.
 - Backlog priorizado con valores exactos: `progress/audit_animations_mobile.md`.
