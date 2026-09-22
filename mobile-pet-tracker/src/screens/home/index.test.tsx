@@ -48,6 +48,9 @@ declare function require(moduleName: 'path'): {
 const { readdirSync, readFileSync } = require('fs');
 const { join } = require('path');
 
+const mockUseReducedMotion = jest.fn<boolean, []>(() => false);
+const mockWithTiming = jest.fn((value: number, _config?: unknown) => value);
+
 function appRoutes(directory: string, prefix = ''): string[] {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const relativePath = prefix ? `${prefix}/${entry.name}` : entry.name;
@@ -96,6 +99,47 @@ jest.mock('react-native-safe-area-context', () => ({
   ...jest.requireActual('react-native-safe-area-context'),
   useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
 }));
+
+jest.mock('heroui-native', () => {
+  const actual = jest.requireActual<typeof import('heroui-native')>(
+    'heroui-native',
+  );
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>(
+    'react-native',
+  );
+
+  return {
+    ...actual,
+    Skeleton: (props: Record<string, unknown>) =>
+      React.createElement(View, {
+        ...props,
+        style: Array.isArray(props.style) ? props.style : [props.style],
+      }),
+  };
+});
+
+jest.mock('react-native-reanimated', () => {
+  const actual = jest.requireActual<typeof import('react-native-reanimated')>(
+    'react-native-reanimated',
+  );
+  const { View } = jest.requireActual<typeof import('react-native')>(
+    'react-native',
+  );
+
+  return {
+    ...actual,
+    __esModule: true,
+    default: { ...actual.default, View },
+    useReducedMotion: () => mockUseReducedMotion(),
+    withDelay: jest.fn((_delay: number, animation: unknown) => animation),
+    withRepeat: jest.fn((animation: unknown) => animation),
+    withSequence: jest.fn((...steps: unknown[]) => steps.at(-1)),
+    withSpring: jest.fn((value: number) => value),
+    withTiming: (value: number, config?: unknown) =>
+      mockWithTiming(value, config),
+  };
+});
 
 jest.mock('reicon-react-native', () => {
   const actual = jest.requireActual<typeof import('reicon-react-native')>(
@@ -3694,7 +3738,7 @@ describe('#98 R7: la barra de comidas y todas sus decisiones', () => {
     }
     expect(fill.props.testID).toBe('reminders-meals-fill');
     expect(fill.props.className).toBe('h-full rounded-full bg-accent');
-    expect(fill.props.style).toEqual({ width: '50%' });
+    expect(fill).toHaveAnimatedStyle({ width: '50%' });
   });
 
   it('calcula el ancho del relleno con served/total', async () => {
@@ -3714,9 +3758,54 @@ describe('#98 R7: la barra de comidas y todas sus decisiones', () => {
       });
 
       expect(
-        (await screen.findByTestId('reminders-meals-fill')).props.style,
-      ).toEqual({ width });
+        await screen.findByTestId('reminders-meals-fill'),
+      ).toHaveAnimatedStyle({ width });
       await view.unmount();
+    }
+  });
+});
+
+describe('#106 R2: la barra de comidas transiciona su ancho', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockUseReducedMotion.mockReturnValue(false);
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+    mockListReminders.mockResolvedValue({ kind: 'ok', reminders: [] });
+  });
+
+  it('anima subida y bajada hasta el porcentaje final sin perder sus clases', async () => {
+    const cases = [
+      [{ served: 1, total: 2 }, 50],
+      [{ served: 2, total: 2 }, 100],
+      [{ served: 0, total: 2 }, 0],
+    ] as const;
+
+    for (const [mealsToday, percentage] of cases) {
+      mockGetPet.mockResolvedValue({
+        kind: 'ok',
+        pet: makePet({ mealsToday }),
+      });
+      mockWithTiming.mockClear();
+      const view = await renderWithProviders(<HomeScreen />, {
+        wrapper: HomeWrapper,
+      });
+
+      try {
+        const fill = await screen.findByTestId('reminders-meals-fill');
+        expect(fill).toHaveAnimatedStyle({ width: `${percentage}%` });
+        expect(fill.props.className).toBe('h-full rounded-full bg-accent');
+        expect(mockWithTiming).toHaveBeenCalledTimes(1);
+      } finally {
+        await view.unmount();
+      }
     }
   });
 });
