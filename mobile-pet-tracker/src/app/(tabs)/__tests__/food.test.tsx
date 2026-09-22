@@ -25,7 +25,9 @@ import * as selectedPetHooks from '../../../providers/selected-pet-provider';
 import FoodScreen from '../food';
 import { renderWithProviders } from '../../../../test/render-with-providers';
 
-const { readFileSync } = jest.requireActual<typeof import('fs')>('fs');
+const { existsSync, readFileSync } = jest.requireActual<typeof import('fs')>(
+  'fs',
+);
 
 jest.mock('../../../api/pets', () => ({
   listPets: jest.fn(),
@@ -158,6 +160,33 @@ beforeEach(() => {
     signIn: jest.fn(),
     signOut: jest.fn(),
   } satisfies AuthContextValue);
+});
+
+describe('#106 R1: expo-haptics entra declarada y sin configuración de babel', () => {
+  it('declara una versión compatible sin configuración manual y enmienda la carta', () => {
+    const packageJson = JSON.parse(readFileSync('package.json', 'utf8')) as {
+      dependencies: Record<string, string>;
+    };
+    const hapticsVersion = packageJson.dependencies['expo-haptics'];
+
+    expect(hapticsVersion).toBeDefined();
+    expect(hapticsVersion?.match(/\d+/)?.[0]).toBe(
+      packageJson.dependencies.expo.match(/\d+/)?.[0],
+    );
+    for (const file of [
+      'babel.config.js',
+      'babel.config.cjs',
+      'babel.config.ts',
+      '.babelrc',
+      '.babelrc.js',
+    ]) {
+      expect(existsSync(file)).toBe(false);
+    }
+
+    const guidelines = readFileSync('../docs/ui-guidelines.md', 'utf8');
+    expect(guidelines).not.toContain('expo-haptics NO está instalado');
+    expect(guidelines).toContain('expo-haptics está instalado desde #106');
+  });
 });
 
 describe('R4: food resuelve la mascota seleccionada', () => {
