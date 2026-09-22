@@ -3982,3 +3982,27 @@ describe('#78 R11: el punto rojo sigue a las alertas abiertas', () => {
     );
   });
 });
+
+describe('R1 (mobile-reanimated-double-dead-weight): home monta el Skeleton real de heroui-native', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockReturnValue(pending<PetsState>());
+    mockGetPet.mockReturnValue(pending<PetState>());
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+  });
+
+  it('conserva la clase base del Skeleton de HeroUI', async () => {
+    await renderHome();
+
+    expect(screen.getByTestId('home-loading').props.className).toContain(
+      'skeleton__root',
+    );
+  });
+});
