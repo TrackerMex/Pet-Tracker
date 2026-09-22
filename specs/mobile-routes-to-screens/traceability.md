@@ -65,7 +65,7 @@ mutación**, y el candado lo ve por su propia aserción.
 | **R2** map | `b5562651` | 4 suites rojas por `ENOENT` sobre `src/app/(tabs)/map.tsx`; body 58/58 verde | `762c6525` |
 | **R3** health | `95ee54fc` | 4 suites rojas por `ENOENT` sobre `src/app/(tabs)/health.tsx`; body 28/28 verde | `64168387` |
 | **R4** weight-log | `d0df4df2` | 3 suites rojas por `ENOENT` sobre `src/app/(tabs)/weight-log.tsx`; body 32/32 verde | `9f0240af` |
-| **R5** meal-schedule | pendiente | pendiente | pendiente |
+| **R5** meal-schedule | `1d16260d` | 4 suites rojas por `ENOENT` sobre `src/app/(tabs)/meal-schedule.tsx`; body 23/23 verde | pendiente |
 
 ## Gates humanos
 

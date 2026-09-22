@@ -44,11 +44,13 @@
 
 ### R5 — meal-schedule
 
+- Commit rojo: `1d16260d`.
 - Rojo, body: `JEST_EXIT=0`; 1 suite, 23/23 tests.
 - Rojo, candados: `JEST_EXIT=1`; 4 suites fallaron y 1 pasó; 9 tests fallaron
   y 142 pasaron. Los fallos nombraron `ENOENT` sobre
   `src/app/(tabs)/meal-schedule.tsx`.
-- Verde: pendiente.
+- Verde: `JEST_EXIT=0`; 6 suites y 174/174 tests (body 23 + candados
+  2/25/41/57/26) pasaron.
 
 ## R7 — escaneo de tests colocados
 

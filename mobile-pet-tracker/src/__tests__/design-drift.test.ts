@@ -85,7 +85,8 @@ describe('R3: Card compartido elimina rounded arbitrario', () => {
       screen === 'home' ||
       screen === 'map' ||
       screen === 'health' ||
-      screen === 'weight-log'
+      screen === 'weight-log' ||
+      screen === 'meal-schedule'
         ? join(sourceRoot, 'screens', screen, 'index.tsx')
         : join(sourceRoot, 'app', '(tabs)', `${screen}.tsx`),
       'utf8',
@@ -435,7 +436,7 @@ describe('#87 R19: use-' + 'api no deja huella', () => {
     'app/(tabs)/food.tsx': 0,
     'screens/health/index.tsx': 0,
     'screens/map/index.tsx': 0,
-    'app/(tabs)/meal-schedule.tsx': 1,
+    'screens/meal-schedule/index.tsx': 1,
     'screens/weight-log/index.tsx': 1,
     'screens/docs/index.tsx': 0,
     'screens/alerts/index.tsx': 1,

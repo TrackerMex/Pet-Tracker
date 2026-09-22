@@ -275,7 +275,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
     [join('screens', 'health', 'index.tsx'), 2],
     [join('app', '(tabs)', 'food.tsx'), 2],
     [join('screens', 'map', 'index.tsx'), 4],
-    [join('app', '(tabs)', 'meal-schedule.tsx'), 1],
+    [join('screens', 'meal-schedule', 'index.tsx'), 1],
     [join('screens', 'weight-log', 'index.tsx'), 1],
     [join('screens', 'docs', 'index.tsx'), 1],
     [join('screens', 'profile', 'index.tsx'), 3],
