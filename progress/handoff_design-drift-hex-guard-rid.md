@@ -114,17 +114,35 @@ Actualiza traceability.md tras cada commit.
 
 == GATE DE CIERRE ==
 
-Baseline medido en 7ce87d70, sin pipe, exit 0:
-  Test Suites: 77 passed   Tests: 1396 passed
-  design-drift.test.ts: 41 tests en 17 describes
+MIDE TU LA BASE. No te la doy congelada a proposito: la feature #110, en vuelo
+en la sesion paralela, sube la suite movil de 1396 a 1398 y nadie sabe si
+mergeara antes o despues que #108. Un numero absoluto aqui caducaria.
 
-Despues, exactamente:
-  Test Suites: 77 passed   <- ni uno mas: no nace ningun fichero
-  Tests: 1410 passed       <- 1396 + 14
-  design-drift.test.ts: 55 tests en 21 describes
+Primer paso, ANTES de tocar codigo, sin pipe:
+
+    bunx jest --silent > /tmp/base108.txt 2>&1; echo "EXIT=$?"
+    grep -E '^Test Suites:|^Tests:' /tmp/base108.txt
+    bunx jest --runTestsByPath 'src/__tests__/design-drift.test.ts' --silent
+
+Anota esos numeros en el reporte como BASE, con el hash de origin/main del
+momento. Si la base sale ROJA, PARA y dilo: no arranques sobre una base rota.
+
+El candado es el DELTA, no el absoluto:
+
+  Test Suites   base + 0    <- #108 no crea ningun fichero de test
+  Tests         base + 14   <- exactos
+  design-drift  41 + 14 = 55 tests en 17 + 4 = 21 describes
 
 Los 14 se reparten R1=2, R2=8, R3=3, R4=1. Si tu reparto sale distinto, la suma
 manda: dilo en el reporte en vez de ajustar el total a mano.
+
+Las cifras de design-drift.test.ts (41 y 17) SI son estables: ninguna otra
+feature en vuelo toca ese fichero. Si al arrancar no valieran 41 y 17, PARA y
+dilo en el reporte.
+
+Para referencia: el 2026-09-22 la base era 77 suites / 1396 tests, o sea que el
+cierre habria sido 1410. Si #110 ya mergeo, seran 1398 -> 1412. Ese numero es
+CONSECUENCIA, no gate.
 
 Mas: bunx tsc --noEmit limpio, y estas dos comprobaciones de R3:
   grep -rc "'#' + '106" mobile-pet-tracker/src/   -> ningun acierto

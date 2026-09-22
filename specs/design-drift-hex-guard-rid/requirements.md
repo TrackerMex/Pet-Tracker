@@ -293,10 +293,19 @@ borrado sí.
 
 ## Gate numérico
 
+> **Corrección del 2026-09-22, antes de la firma.** Las cifras absolutas de la
+> columna «Esperado al cerrar» **ya caducaron**: la feature #110, en vuelo en la
+> sesión paralela, sube la suite móvil de **1396 a 1398** (`+2` tests nuevos en
+> `screens/home/index.test.tsx`, 138 → 140), y no se sabe si entrará en `main`
+> antes o después de #108. Por eso **el candado es la derivación, no el número**:
+> quien implemente **mide la base él mismo al arrancar** y comprueba el delta. Las
+> cifras de la tabla se conservan como **descripción de lo que valía el 2026-09-22**,
+> y no son el gate.
+
 Baseline medido en este árbol, **sin pipe** (`cmd > fichero; echo $?`, porque
 `| tail` devuelve el código de `tail`), con `JEST_EXIT=0`:
 
-| Medida | Baseline (`7ce87d70`) | Tests que suma #108 | Esperado al cerrar |
+| Medida | Baseline el 2026-09-22 (`7ce87d70`) | Tests que suma #108 | Esperado = base + delta |
 |---|---|---|---|
 | `Test Suites` (móvil) | 77 passed | +0 (no hay fichero nuevo) | **77 passed** |
 | `Tests` (móvil) | 1396 passed | **+14** | **1410 passed** |
@@ -316,9 +325,14 @@ total (así se apagaron 14 describes en silencio en la ronda 1 de #94).
 
 Casillas del reviewer (aquí, no en otro gate):
 
-- [ ] `Test Suites: 77 passed` — ni uno menos
-- [ ] `Tests: 1410 passed` — y el delta contra 1396 es exactamente +14
-- [ ] `design-drift.test.ts`: 55 tests en 21 describes
+- [ ] `Test Suites`: **el mismo número que la base**, ni uno menos. #108 no crea
+      ningún fichero de test, así que el delta de suites es **+0** siempre
+- [ ] `Tests`: **base medida al arrancar `+ 14` exactos**. Con la base del
+      2026-09-22 eso eran `1396 → 1410`; si #110 ya mergeó, son `1398 → 1412`.
+      **El +14 es el candado; el absoluto es consecuencia**
+- [ ] `design-drift.test.ts`: **41 + 14 = 55** tests en **17 + 4 = 21** describes.
+      Estas dos sí son estables: ninguna otra feature en vuelo toca ese fichero,
+      y si al llegar no valieran 41 y 17, **para** y dilo en el reporte
 - [ ] `bunx tsc --noEmit` en `mobile-pet-tracker/` termina en 0
 - [ ] `grep -rc "'#' + '106" mobile-pet-tracker/src/` no devuelve ningún acierto
 - [ ] `grep -rn '#106 R2' mobile-pet-tracker/src/` devuelve al menos el describe
