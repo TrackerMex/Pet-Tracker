@@ -4648,3 +4648,105 @@ en el reporte**, para que el fallo salga ahí y no en el veredicto.
 `./init.sh` del reviewer: **exit 0** sin pipe, 5m51s, cero FAIL. El reviewer
 esperó a que cayera la corrida de #108 en `wt-ui` antes de lanzar, según
 `init-sh-concurrente-worktrees`.
+
+---
+
+## 2026-09-22 — #110 `mobile-reanimated-double-dead-weight`
+
+Deuda **B3** del veredicto de #106/#107. **Aprobada sin rebote**, cero
+bloqueantes, cero diff de producción. El fichero de tests de la Home pasa de
+138 a **140** tests y la suite móvil de 1396 a **1398**.
+
+El doble de la cabecera sustituía el `Skeleton` real de `heroui-native` por un
+`View` pelado en todos los tests del fichero. No candaba nada —quitarlo dejaba
+la suite verde— pero borraba la clase base del componente, el `borderCurve` y
+toda la superficie de animación. Ahora se monta el real, y dos tests nuevos lo
+candan.
+
+### La premisa con la que yo abrí la deuda era más ancha que la realidad
+
+La registré diciendo que **el test de #62 R8 creía probar producción y probaba
+un doble**. Se midió y es falso en la parte que importa: mutar lo que ese test
+vigila da **1 rojo idéntico con doble y sin doble**. El doble **no estaba
+cegando esa aserción**. Sobrevive a quitarlo porque asevera con `toContain`
+sobre el `className` y **ambos** Skeletons lo propagan; el real antepone
+`skeleton__root`, así que con `toBe` sí habría enrojecido.
+
+Lo que el doble borraba era real, pero #62 R8 no era su víctima. La sesión de
+Backend levantó la misma sospecha por su cuenta —«un test que no se entera de
+que le quitan el doble es lo que #110 dice estar cazando»— y la respuesta fue
+la medición, no el argumento.
+
+**Lección, que es la de siempre con otra cara:** al registrar una deuda desde
+un veredicto, lo que se copia es la observación del reviewer, no su alcance.
+Aquí el alcance se ensanchó por el camino y llegó a `feature_list.json` como un
+hecho. Verificarlo costó una sonda de dos minutos.
+
+### La desviación firmada
+
+Los títulos de los tests nuevos **no llevan `#110`**: van en la forma
+`R<n> (mobile-reanimated-double-dead-weight)`, sin almohadilla. El literal
+`#110` casa con `/#[\da-f]{3,8}\b/i` —`1`, `1` y `0` son dígitos hex— y pondría
+**rojos los cinco guards** de `design-drift.test.ts` que enumeran ese fichero.
+El reviewer lo verificó ejecutando la regex contra las dos formas.
+
+Las alternativas se descartaron por escrito: partir el literal es justo lo que
+**#108 está retirando**, y esperar a #108 acopla esta feature a otra que aún no
+ha tocado código.
+
+**Lo que hizo falta arreglar:** la desviación estaba razonada y medida en
+`design.md` **pero no había dónde firmarla**. El humano habría firmado la spec
+sin firmar la desviación, que es exactamente lo que costó una ronda en #98. Se
+le añadió su casilla al Gate 1. La regla se confirma otra vez: **una decisión
+que no es técnica necesita una casilla, no un párrafo.**
+
+### Lo que el reviewer añadió por su cuenta
+
+Inventarió **las nueve aserciones** sobre Skeletons del fichero para descartar
+que quitar el doble perdiera cobertura en silencio. La única de riesgo ya
+estaba escrita con `arrayContaining`/`objectContaining`, igual de laxa antes y
+después. Y volcó el nodo real con una sonda transitoria que **no toca** el `it`
+de #62 R8, para confirmar las dos mediciones de la spec sin tocar una spec
+firmada.
+
+Descubrió además que **la ganancia es mayor que la medida**: `pet-hero-header`
+no está mockeado, así que sus tres Skeletons también pasan a reales.
+
+### Triaje: cuatro observaciones, cero features
+
+Ninguna se registra, y merece la pena decir por qué:
+
+- **`borderCurve` se recupera pero ningún test lo canda.** No se registra
+  porque **no es nuestro**: es una prop interna de un componente de
+  `heroui-native`. Candarla sería testear la librería de otro.
+- **`conventions.md` lleva un `#110` literal.** Inocuo y **verificado**: ningún
+  guard lee ese fichero con la regex de drift. Queda escrito en el veredicto
+  precisamente para que nadie lo «arregle».
+- El párrafo de #112 en `conventions.md` viaja en esta PR por venir de la fase
+  de spec. Correcto.
+- La ganancia extra de `pet-hero-header` es buena noticia, no deuda.
+
+### Coordinación: un gate ajeno que esta feature caduca
+
+Los +2 tests dejan obsoleta la línea base de **#108**, cuyo criterio firmado
+decía «1396 antes, 1410 después». Se avisó **al medirlo, no al cerrar**, porque
+era el dato que les cambiaba el handoff.
+
+Su criterio sobrevive porque lo redactaron **también en forma delta**, y de ahí
+sale la mejor frase del intercambio, que afila una regla nuestra:
+
+> «El recuento final se deriva de esa suma, no de un número suelto. Si al
+> cerrar la cuenta no da, la pregunta correcta es qué requisito aportó un test
+> de más o de menos, no cuál era el número.»
+
+Nuestra regla decía «usa delta, no absoluto». La suya dice **por qué**: un
+recuento es una derivación, y cuando no cuadra la pregunta útil es de
+atribución, no de aritmética.
+
+Y el aviso que se les dio de vuelta: los 1398 vivían en la branch, **no en
+`main`**. Re-medir contra `origin/main` antes del merge habría fijado otra base
+que caducaría al mergear. Eligieron que Codex mida la base al arrancar, que es
+lo único inmune al orden de merge.
+
+`./init.sh` del reviewer: **exit 0** sin pipe, primer plano. Móvil 77/1398,
+backend 170/1295, infra 2/14, e2e verdes.

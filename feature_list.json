@@ -2116,7 +2116,7 @@
   {
     "id": 110,
     "name": "mobile-reanimated-double-dead-weight",
-    "status": "in_progress",
+    "status": "done",
     "priority": "P2",
     "description": "Deuda B3 del reviewer de #106/#107, ronda 1 (progress/review_mobile-meals-bar-motion.md). Es la mas valiosa de las que quedaron abiertas y la unica que degrada tests de OTRAS features. El doble ampliado de Reanimated en mobile-pet-tracker/src/screens/home/index.test.tsx trae dos piezas que no hacen falta: quitar jest.mock('heroui-native') y el default: { ...actual.default, View } deja 138/138 en verde, o sea que ninguna de las dos esta candando nada. El problema no es el peso muerto sino la fidelidad: ese jest.mock('heroui-native') sustituye el Skeleton REAL en los 138 tests del fichero, incluido el de #62 R8, que cree estar probando el Skeleton de produccion y esta probando un doble. Es decir que una feature ajena quedo con su test degradado de rebote y nadie lo noto. Arreglo: borrar las dos piezas y volver a correr, comprobando en particular que el test de #62 R8 sigue verde contra el Skeleton de verdad; si se pone rojo, ese rojo es informacion y no hay que taparlo con el mock otra vez.",
     "acceptance_criteria": [
