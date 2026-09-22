@@ -583,3 +583,26 @@ describe('#108 R1: los patrones compartidos se declaran una sola vez', () => {
     expect(source.split(needle).length - 1).toBe(1);
   });
 });
+
+describe('#108 R2: el guard de estilo distingue un R-id de un color hex', () => {
+  it.each([
+    [
+      "describe('#106 R2: la barra de comidas transiciona su ancho', () => {",
+      false,
+    ],
+    [
+      "describe('#98 R10: la barra de comidas no mete drift de estilo', () => {",
+      false,
+    ],
+    ['#fff', true],
+    ['#1DA868', true],
+    ['#000', true],
+    ['backgroundColor: #1DA868;', true],
+    ['ver el hilo #106, gracias', true],
+    ['#106 R2 usa el token y no #fff', true],
+  ])('%s', (sample, expected) => {
+    expect(FEATURE_STYLE_ESCAPES.test(sample)).toBe(expected);
+    expect(PAIRING_STYLE_ESCAPES.test(sample)).toBe(expected);
+    expect(MEALS_BAR_STYLE_ESCAPES.test(sample)).toBe(expected);
+  });
+});
