@@ -455,10 +455,15 @@ describe('R6: weight card enlaza al log', () => {
   });
 
   it('shows the current weight and opens the weight log', async () => {
-    mockListWeights.mockResolvedValue({
-      kind: 'ok',
-      weights: [makeWeight()],
-    });
+    mockListWeights.mockImplementation(
+      () =>
+        new Promise<WeightsState>((resolve) => {
+          setTimeout(
+            () => resolve({ kind: 'ok', weights: [makeWeight()] }),
+            200,
+          );
+        }),
+    );
 
     await renderHealth();
 
