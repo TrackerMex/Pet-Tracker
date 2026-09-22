@@ -8,7 +8,7 @@ tags: [harness, spec, mobile, tests]
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | pendiente | pendiente |
+| R1 | `src/screens/home/index.test.tsx::R1 (mobile-reanimated-double-dead-weight): home monta el Skeleton real de heroui-native` | `52f553ab test(mobile): use real HeroUI Skeleton (R1)` |
 | R2 | pendiente | pendiente |
 | R3 | pendiente | pendiente |
 | R4 | pendiente | pendiente |
