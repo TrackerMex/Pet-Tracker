@@ -2128,5 +2128,22 @@
     "files_affected": [
       "mobile-pet-tracker/src/screens/home/index.test.tsx"
     ]
+  },
+  {
+    "id": 112,
+    "name": "mobile-reminders-see-all-source-lock-nesting",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Gemelo del patron roto que #109 arreglo, dejado fuera de su alcance porque el fichero lo tenia tomado #108. La sesion Backend confirmo el 2026-09-22 que #108 NO lo absorbe: su spec esta firmada y acota el fichero a las dos lineas de los literales partidos, asi que meterlo obligaria a enmendar una spec firmada y reabrir el gate humano -y el ahorro de dos lineas no paga reabrir un gate-. Verificado por ellos contra main e4c9ea99, lineas 3356-3359 de mobile-pet-tracker/src/screens/home/index.test.tsx: el candado de reminders-see-all recorta con source.slice(source.lastIndexOf('<Pressable', anchor), source.indexOf('</Pressable>', anchor)) y el ancla es testID=\"reminders-see-all\". El agujero es el mismo que cerro #109: con un Pressable anidado dentro, el corte cae en el cierre del HIJO y el bloque se queda con el tag de apertura del hijo y su style, asi que el candado pasa VERDE vigilando el elemento equivocado y no avisa. El arreglo son dos lineas: recortar de menor-que a menor-que, el tag de apertura propio. El patron, sus DOS limites conocidos y cual de los dos avisa estan ya escritos en docs/conventions.md seccion Recortes del tag de apertura en candados de fuente, asi que esta feature solo aplica lo que ya esta decidido. OJO al orden: el fichero lo tocan tambien #108 y #110, asi que hay que coordinar con la sesion Backend antes de arrancar.",
+    "acceptance_criteria": [
+      "El recorte de reminders-see-all en src/screens/home/index.test.tsx pasa a acotar el tag de apertura propio, siguiendo el patron ya documentado en docs/conventions.md",
+      "Sonda de mutacion: anidar un Pressable con la receta dentro de reminders-see-all y comprobar que el candado se pone ROJO, donde hoy pasa verde",
+      "Las sondas de acotado que no son de anidamiento siguen dando el mismo veredicto que hoy: sin falsos rojos",
+      "Cero cambio en produccion: el diff de src/screens/home/index.tsx es vacio",
+      "Si al medirlo aparece un tercer gemelo del mismo patron en otro fichero, se registra en vez de ampliarse el alcance"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/home/index.test.tsx"
+    ]
   }
 ]
