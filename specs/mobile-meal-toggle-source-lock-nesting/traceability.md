@@ -11,11 +11,11 @@ tags: [harness, spec, mobile, deuda]
 
 | Requisito | Test (archivo::nombre) | Commit rojo | Commit verde |
 |---|---|---|---|
-| R1 — el bloque se acota al tag de apertura propio | `src/app/(tabs)/__tests__/food.test.tsx` :: `#109 R1: acota el bloque de fuente al tag de apertura propio del meal-toggle` | | |
-| R2 — rojo ante las cuatro variantes de acotado (V1–V4) | el mismo test de R1, cerrado por **mutación de producción** (C4 vía **b**); tabla de las cuatro sondas en `progress/impl_mobile-meal-toggle-source-lock-nesting.md` | | |
-| R3 — sin falsos rojos (V5, V6) y `0.8` sigue candado (V7) | el mismo test de R1, más el `it` de árbol `#107 R5: el botón por franja conserva su feedback de pulsado`; tabla de las tres sondas en el mismo reporte | | |
-| R4 — el límite del patrón, documentado | **sin test**: comentario sobre el `const block` en `src/app/(tabs)/__tests__/food.test.tsx` + subsección nueva en `docs/conventions.md` §Tests. Lo verifica el `reviewer` leyendo los dos sitios | | |
-| R5 — cero diff de producción | **sin test**: `git diff 73f14d5e -- 'mobile-pet-tracker/src/app/(tabs)/food.tsx'` sin salida. Lo verifica el `reviewer` | | |
+| R1 — el bloque se acota al tag de apertura propio | `src/app/(tabs)/__tests__/food.test.tsx` :: `#109 R1: acota el bloque de fuente al tag de apertura propio del meal-toggle` | `97f78f41` | `869441b9` |
+| R2 — rojo ante las cuatro variantes de acotado (V1–V4) | el mismo test de R1, cerrado por **mutación de producción** (C4 vía **b**); tabla de las cuatro sondas en `progress/impl_mobile-meal-toggle-source-lock-nesting.md` | `97f78f41` | `869441b9` |
+| R3 — sin falsos rojos (V5, V6) y `0.8` sigue candado (V7) | el mismo test de R1, más el `it` de árbol `#107 R5: el botón por franja conserva su feedback de pulsado`; tabla de las tres sondas en el mismo reporte | `97f78f41` (mismo candado de R1/R2) | `869441b9`; sondas V5–V7 temporales, sin commit |
+| R4 — el límite del patrón, documentado | **sin test**: comentario sobre el `const block` en `src/app/(tabs)/__tests__/food.test.tsx` + subsección nueva en `docs/conventions.md` §Tests. Lo verifica el `reviewer` leyendo los dos sitios | N/A — entregable documental declarado sin test | `c8d3d126` |
+| R5 — cero diff de producción | **sin test**: `git diff 73f14d5e -- 'mobile-pet-tracker/src/app/(tabs)/food.tsx'` sin salida. Lo verifica el `reviewer` | `97f78f41` (V4 versionada) | `869441b9` (V4 revertida) |
 
 Regla: el reviewer no aprueba si alguna fila queda "pendiente".
 
