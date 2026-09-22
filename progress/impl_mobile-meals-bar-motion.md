@@ -128,3 +128,33 @@ aprobación fue modificada.
    plugin requiere una acción de entorno para C8; no se inventó ni instaló una
    skill sustituta dentro del repositorio.
 
+## Rebote B1
+
+R2 ganó un segundo ciclo rojo→verde sin modificar producción:
+`7308a788` → `2004d56d`.
+
+La comparación con una curva fresca
+`Easing.bezier(0.77, 0, 0.175, 1)` se midió primero y no sirve por igualdad
+estructural: las closures `factory` son referencias distintas. El intento
+dejó 1 suite roja y 2 tests rojos aunque ambas curvas tenían los mismos cuatro
+parámetros.
+
+Se eligió el candado por comportamiento. Los dos call-sites comprueban
+`duration: 250` y `reduceMotion: ReduceMotion.System` sin importar ningún
+valor de producción; además ejecutan la curva recibida y una curva fresca con
+los literales aprobados en `0.25` y `0.75`, comparando ambos resultados con
+seis decimales.
+
+| Mutación en `src/screens/home/index.tsx` | Suites rojas | Tests rojos |
+|---|---:|---:|
+| `MEALS_BAR_DURATION_MS` 250 → 251 | 1 | 2 |
+| `MEALS_BAR_EASING` → `Easing.bezier(0.23, 1, 0.32, 1)` | 1 | 2 |
+| borrar `reduceMotion: ReduceMotion.System` | 1 | 2 |
+
+Cada sonda ejecutó la suite completa de `index.test.tsx`, devolvió exit 1 y
+dejó los otros 136 tests verdes. Tras cada una se restauró producción y
+`git diff --exit-code HEAD -- mobile-pet-tracker/src/screens/home/index.tsx`
+devolvió exit 0.
+
+Verificación final del rebote: `bunx jest` sin filtro ni pipe devolvió exit 0,
+con 77/77 suites, 1379/1379 tests y 1 snapshot verdes.
