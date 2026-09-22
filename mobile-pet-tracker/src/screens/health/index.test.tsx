@@ -261,16 +261,16 @@ describe('R4: health resuelve la mascota seleccionada', () => {
       expect(screen.getByTestId('pet-chip-pet-1').props.accessibilityState).toEqual({
         selected: true,
       });
+      expect(mockListPets).toHaveBeenCalledWith(apiUrl, 'jwt-token');
+      expect(mockListVaccines).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'pet-1');
+      expect(mockListWeights).toHaveBeenCalledWith(
+        apiUrl,
+        'jwt-token',
+        'pet-1',
+        expect.any(Function),
+        1,
+      );
     });
-    expect(mockListPets).toHaveBeenCalledWith(apiUrl, 'jwt-token');
-    expect(mockListVaccines).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'pet-1');
-    expect(mockListWeights).toHaveBeenCalledWith(
-      apiUrl,
-      'jwt-token',
-      'pet-1',
-      expect.any(Function),
-      1,
-    );
   });
 
   it('selects a pressed pet and reloads its health records', async () => {
@@ -455,16 +455,23 @@ describe('R6: weight card enlaza al log', () => {
   });
 
   it('shows the current weight and opens the weight log', async () => {
-    mockListWeights.mockResolvedValue({
-      kind: 'ok',
-      weights: [makeWeight()],
-    });
+    mockListWeights.mockImplementation(
+      () =>
+        new Promise<WeightsState>((resolve) => {
+          setTimeout(
+            () => resolve({ kind: 'ok', weights: [makeWeight()] }),
+            200,
+          );
+        }),
+    );
 
     await renderHealth();
 
-    await waitFor(() => expect(screen.getByTestId('weight-card')).toBeVisible());
+    await waitFor(() =>
+      expect(screen.getByTestId('weight-current')).toHaveTextContent('12.4 kg'),
+    );
+    expect(screen.getByTestId('weight-card')).toBeVisible();
     expect(screen.getByText('Peso')).toBeVisible();
-    expect(screen.getByTestId('weight-current')).toHaveTextContent('12.4 kg');
     expect(screen.getByTestId('weight-variation')).toHaveTextContent('+0.4 kg');
 
     await fireEvent.press(screen.getByTestId('weight-log-link'));

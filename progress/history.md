@@ -4750,3 +4750,110 @@ lo único inmune al orden de merge.
 
 `./init.sh` del reviewer: **exit 0** sin pipe, primer plano. Móvil 77/1398,
 backend 170/1295, infra 2/14, e2e verdes.
+
+## #111 `mobile-flaky-waits` — 2026-09-22
+
+Endurecimiento de **esperas** en dos ficheros de test, `screens/health/index.test.tsx`
+y `screens/map/index.test.tsx`. **Cero cambio de producción**: 0 ficheros no-test
+tocados. Recuento intacto, **77 suites / 1396 tests** antes y después, `tsc` 0
+bytes. Dos rondas: `reviewer` rechazó la primera, aprobó la segunda.
+
+### Lo que la justificó, y lo que NO la justificó
+
+Nació de **cuatro corridas rojas reales** (logs versionados en
+`progress/logs-111/`) que **nunca se reprodujeron**: después salieron **doce
+verdes seguidas**, con caché fría, caliente y los cuatro núcleos saturados. La
+spec dice por escrito que **no promete eliminar ningún flake** y que la causa de
+esa ventana sigue sin identificar.
+
+Lo que sí la justificó es objetivo: `docs/conventions.md` §*Esperas sobre el
+árbol renderizado* exige que la condición que termina una espera sea la misma
+observación que hacen las aserciones posteriores, y había sitios que la
+incumplían. **Un defecto de convención es defecto se reproduzca o no.**
+
+Corrección que tuve que hacerme a mí mismo a mitad: llegué a decirle al humano
+que «el gate de #102 cayó en corridas afortunadas». Con 12/12 verdes después,
+esa frase estaba de más y la retiré.
+
+### El dato que me desmintió, y que cambió un requisito entero
+
+Yo escribí en la entrada que los tests corrían contra un `waitFor` de **5000 ms**.
+Falso. El `spec_author` lo midió: **RNTL agota a 1000 ms**
+(`asyncUtilTimeout: 1000`, y `test/jest-setup.js` no llama a `configure`). Los
+5000 son el `testTimeout` de jest, que acota el **test entero**.
+
+Consecuencia: en las cuatro rojas **venció el plazo de RNTL**, así que subir
+`testTimeout` —lo que yo había planteado— **no habría salvado ninguna**. De ahí
+salió **R4**, que prohíbe tocar la config y explica por qué. `package.json` salió
+de `files_affected`.
+
+### El inventario destapó siete sitios, no dos
+
+Y #72 no los había dejado fuera: **se le escaparon**. Su R2 barrió el sub-patrón
+estrecho —esperar a un mock o a la caché y aseverar el árbol—; estos eran el otro
+—esperar al árbol, pero a un nodo **más débil** que el que se asevera—. Dos
+hallazgos quedan registrados **sin tocar**: `map:544-554` es un **candado
+tautológico** (ruta-en-error y ruta-pendiente pintan idéntico, ningún nodo las
+distingue) y `health:566-576` es el segundo sitio que #72 se dejó.
+
+### R1: convertir un flake irreproducible en un rojo al 100 %
+
+Lo mejor de esta feature. R1 fue por la **vía (a)**, con rojo real: una viga de
+200 ms sobre la fuente tardía hace fallar el test **siempre**, con la firma
+literal de los logs (`Unable to find an element with testID: weight-current`).
+**Esa viga se queda en el árbol.** Revertir la corrección vuelve a poner el test
+rojo de forma determinista, en vez de en una ventana que nadie supo reproducir.
+
+Los 200 ms no se eligieron a ojo: se derivan de `DEFAULT_INTERVAL = 50` y
+`asyncUtilTimeout = 1000`, con `50 < 200 < 1000`.
+
+### Los dos bloqueantes de la ronda 1, y cuál era culpa de quién
+
+- **B1 — culpa de la spec, no de Codex.** El `reviewer` no pudo cerrar la vía (b)
+  de C4 para **S2** porque **no existe par rojo/verde y no es obtenible**. La
+  causa: S2 cae en la tercera categoría de la propia §F4 —aserciones
+  **causalmente implicadas** por el estado esperado—, que §F4 declara **no
+  defecto**. `health/index.tsx:55` y `:61` declaran las queries con
+  `enabled: selectedPetId !== null`, el mismo estado que pinta el chip esperado.
+  **La tabla de §R2 se contradecía con §F4.** Se le pidió a Codex un rojo que no
+  existe. Cerrado con la **Enmienda E1**, firmada: S2 sale de §R2 (siete sitios →
+  seis), su evidencia pasa al **argumento de invariancia sin mutación** con el
+  precedente exacto de #72 §S6, y el cambio se conserva como endurecimiento
+  defensivo porque el conjunto de aserciones es idéntico.
+- **B2 — culpa de Codex, y de una línea.** En S4 **eliminó**
+  `expect(screen.getByTestId('map-view')).toBeVisible()` en vez de moverla,
+  incumpliendo la regla dura de §R2: *ninguna corrección puede aseverar menos de
+  lo que asevera hoy*. El test gemelo S3, en el mismo `describe`, sí la conservó.
+  La ronda 2 fue **+1 línea**.
+
+Los dos los verifiqué yo antes de aceptarlos, y el `reviewer` re-midió por su
+cuenta lo que Codex reportaba: el rojo real de R1, la zona ciega de S4, R3 byte a
+byte (393 vs 393 bytes).
+
+### Coordinación
+
+Reparto con la sesión de #106/#107/#109/#110 respetado en las dos direcciones.
+Dos avisos suyos evitaron paradas nuestras y uno nuestro evitó una suya:
+
+- Nos avisaron de que **#110 subía la base de 1396 a 1398** antes de mergear, lo
+  que salvó el gate de #108.
+- Nos avisaron del **desplazamiento de 23 líneas** en `home/index.test.tsx`, que
+  habría mandado a Codex a la línea equivocada en #108.
+- Les avisamos de que **quitar el `jest.mock` cambiaba el texto** de un fichero
+  que cinco guards de `design-drift.test.ts` leen **como texto**, no ejecutan.
+
+De ahí salió la regla que queda: **lo que se desplaza no puede ser el ancla**.
+Números de línea y recuentos absolutos son el mismo error con dos caras; el ancla
+es contenido grepeable y el número va como descripción fechada, nombrando por
+escrito quién lo volverá a mover.
+
+### Notas de harness
+
+Primera feature firmada por el **gate de Notion** (`CLAUDE.md` §Gate de specs vía
+Notion, que entró ese mismo día con el PR #147). Dos firmas: la spec y la
+enmienda E1, las dos verificadas por consulta directa a la base antes de
+teclear el commit.
+
+Y el handoff fue el primero que dijo explícitamente **«no cargues ninguna skill
+de Expo»**: el plugin de Codex es la v1.0.2 con 13 skills y **ninguna** cubre
+esperas de jest. Pedir una que no existe no da error, da silencio.
