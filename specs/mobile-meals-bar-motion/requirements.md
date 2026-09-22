@@ -388,23 +388,23 @@ Runtime: **dev build de Android**, nunca Expo Go — regla del repo desde
 2026-08-27, y aquí además es obligatorio porque `expo-haptics` es módulo
 nativo.
 
-- [ ] **Paso 0 — regenerar el dev build.** El dev build instalado hoy no lleva
+- [X] **Paso 0 — regenerar el dev build.** El dev build instalado hoy no lleva
       `expo-haptics`. Sin este paso, los pasos 3 y 4 no prueban nada.
-- [ ] 1. Abrir la Home con una mascota que tenga plan de nutrición. La barra de
+- [X] 1. Abrir la Home con una mascota que tenga plan de nutrición. La barra de
       comidas se ve con su `served/total`.
-- [ ] 2. Ir a Food y **servir** una franja pendiente. Volver a la Home: el
+- [X] 2. Ir a Food y **servir** una franja pendiente. Volver a la Home: el
       relleno **crece deslizándose**, no salta.
-- [ ] 3. Repetir el paso 2 sintiendo el teléfono en la mano: al completarse la
+- [X] 3. Repetir el paso 2 sintiendo el teléfono en la mano: al completarse la
       acción hay **una** vibración corta de éxito.
-- [ ] 4. **Deshacer** esa misma franja: el relleno **mengua deslizándose** y
+- [X] 4. **Deshacer** esa misma franja: el relleno **mengua deslizándose** y
       hay **una** vibración.
-- [ ] 5. Con el teléfono en modo avión (para forzar el fallo de red), pulsar
+- [X] 5. Con el teléfono en modo avión (para forzar el fallo de red), pulsar
       una franja: aparece el mensaje de error **y** la vibración se siente
       distinta a la de éxito.
-- [ ] 6. Activar «Reducir movimiento» en los ajustes de accesibilidad de
+- [X] 6. Activar «Reducir movimiento» en los ajustes de accesibilidad de
       Android, repetir el paso 2: la barra **cambia de ancho sin transición** y
       el número `served/total` sigue siendo correcto.
-- [ ] 7. Con el volumen y la vibración del sistema apagados, repetir el paso 2:
+- [X] 7. Con el volumen y la vibración del sistema apagados, repetir el paso 2:
       la app **no falla** y el badge sigue cambiando (el háptico nunca es el
       único feedback).
 
