@@ -81,14 +81,9 @@ describe('R3: Card compartido elimina rounded arbitrario', () => {
     'map',
   ])('%s importa el Card compartido', (screen) => {
     const contents = readFileSync(
-      screen === 'profile' ||
-      screen === 'home' ||
-      screen === 'map' ||
-      screen === 'health' ||
-      screen === 'weight-log' ||
-      screen === 'meal-schedule'
-        ? join(sourceRoot, 'screens', screen, 'index.tsx')
-        : join(sourceRoot, 'app', '(tabs)', `${screen}.tsx`),
+      screen === 'food'
+        ? join(sourceRoot, 'app', '(tabs)', `${screen}.tsx`)
+        : join(sourceRoot, 'screens', screen, 'index.tsx'),
       'utf8',
     );
 
