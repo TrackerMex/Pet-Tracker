@@ -171,7 +171,7 @@ describe('#62 R4: la app solo usa los radios de la escala declarada', () => {
     expect(readSource(join('app', '(auth)', 'forgot.tsx'))).toContain(
       'size-16 items-center justify-center rounded-xl bg-accent-soft',
     );
-    expect(readSource(join('app', '(tabs)', 'weight-log.tsx'))).toContain(
+    expect(readSource(join('screens', 'weight-log', 'index.tsx'))).toContain(
       'size-8 shrink-0 items-center justify-center rounded-xl ${tileClassName}',
     );
   });
@@ -276,7 +276,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
     [join('app', '(tabs)', 'food.tsx'), 2],
     [join('screens', 'map', 'index.tsx'), 4],
     [join('app', '(tabs)', 'meal-schedule.tsx'), 1],
-    [join('app', '(tabs)', 'weight-log.tsx'), 1],
+    [join('screens', 'weight-log', 'index.tsx'), 1],
     [join('screens', 'docs', 'index.tsx'), 1],
     [join('screens', 'profile', 'index.tsx'), 3],
     [join('screens', 'reminders', 'index.tsx'), 4],
@@ -349,7 +349,7 @@ describe('#62 R15: todo contador usa cifras tabulares', () => {
     ],
     [join('screens', 'home', 'weekly-activity-chart.tsx'), 4],
     [join('screens', 'health', 'index.tsx'), 2],
-    [join('app', '(tabs)', 'weight-log.tsx'), 2],
+    [join('screens', 'weight-log', 'index.tsx'), 2],
     [join('screens', 'reminders', 'index.tsx'), 3],
   ] as const;
 
