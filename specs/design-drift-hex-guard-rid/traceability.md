@@ -20,7 +20,7 @@ ancestros y habría que reapuntarlos uno a uno verificando
 |---|---|---|---|---|
 | R1 — el átomo hex y la lista de sombra se declaran una sola vez | `src/__tests__/design-drift.test.ts` :: `#108 R1: los patrones compartidos se declaran una sola vez` | 2 | `74c7cd29` | `cd1b262a` |
 | R2 — el guard ignora `#<id> R<n>` y sigue disparando ante cualquier hex | `src/__tests__/design-drift.test.ts` :: `#108 R2: el guard de estilo distingue un R-id de un color hex` | 8 | `63908134` | `0a56ddf9` |
-| R3 — los dos títulos de #106 vuelven a ser literales enteros | `src/__tests__/design-drift.test.ts` :: `#108 R3: los títulos de #106 vuelven a ser literales enteros` | 3 | pendiente | pendiente |
+| R3 — los dos títulos de #106 vuelven a ser literales enteros | `src/__tests__/design-drift.test.ts` :: `#108 R3: los títulos de #106 vuelven a ser literales enteros` | 3 | `ed7a1895` | pendiente |
 | R4 — la convención `#<id> R<n>` queda escrita en `docs/conventions.md` | `src/__tests__/design-drift.test.ts` :: `#108 R4: la convención de cita del guard está documentada` | 1 | pendiente | pendiente |
 
 **Total de tests nuevos: 14**, en 4 describes nuevos. El gate numérico de
