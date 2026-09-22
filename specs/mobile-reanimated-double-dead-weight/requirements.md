@@ -217,8 +217,32 @@ feature futura candidata, **(A)** ajeno con dueño.
 > `main` está protegida: la aprobación se firma en la branch con un commit del
 > humano, y el `leader` pasa el frontmatter a `approved`.
 
+### Qué firmas en el Gate 1
+
+Además de los requisitos, **una decisión que no es técnica y que nadie más
+puede autorizar**:
+
+**Los títulos de los `describe` se apartan de la forma canónica de
+`docs/conventions.md` §Tests.** En vez de `#110 R1: …` llevan
+`R1 (mobile-reanimated-double-dead-weight): …`, sin `#`.
+
+El motivo está medido en [[design]] §El guard de hex: el literal `#110` casa
+con `/#[\da-f]{3,8}\b/i` —`1`, `1` y `0` son dígitos hex— y **pondría rojos
+los cinco guards** de `design-drift.test.ts` que enumeran este fichero.
+
+Las alternativas se descartaron por escrito: partir el literal (`'#' + '110…'`)
+es justo lo que **#108 está retirando**, y esperar a que #108 mergee acopla
+esta feature a otra que todavía no ha tocado código. La forma elegida tiene
+**precedente exacto** en el repo: `src/screens/add-pet/index.test.tsx:392`,
+`describe('R1 (mobile-jest-mock-hygiene): …')`.
+
+Es una desviación **deliberada, medida y local a este fichero** mientras el
+guard siga como está. Firmarla aquí es lo que la convierte en decisión tomada
+en vez de en atajo del implementador.
+
 - [ ] **Gate 1 — Aprobación de la spec** por humano (fecha: ____)
-      ← obligatorio antes del handoff a Codex
+      ← obligatorio antes del handoff a Codex. Al marcarlo firmas también la
+      desviación de arriba.
 
 - [ ] **Gate 2 — Decisión sobre #62 R8** (fecha: ____)
       ← **solo se marca si** el implementador paró por el escenario de
