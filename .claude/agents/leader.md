@@ -219,7 +219,10 @@ Reglas críticas:
     estaba en su catálogo y Codex acabó cargando `expo:building-native-ui`.
     Pedir por nombre una skill que no existe no da error: da silencio, y el
     reviewer lo descubre al final (deuda B5 de
-    `progress/review_mobile-meals-bar-motion.md`)
+    `progress/review_mobile-meals-bar-motion.md`, **reincidente en #109**).
+    Hasta que se cierre, **el handoff debe pedirle a Codex que liste las skills
+    expo de su catálogo y diga cuáles cargó, en el reporte**: así el fallo sale
+    en el reporte y no en el veredicto
   - TDD por requisito: test rojo → verde → refactor (ver specs/<feature>/tasks.md)
   - UN COMMIT POR REQUISITO como mínimo, con el test rojo antes que su
     implementación. Un único commit con todo incumple C4 de CHECKPOINTS.md
