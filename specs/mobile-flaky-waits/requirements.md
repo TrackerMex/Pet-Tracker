@@ -1,6 +1,6 @@
 ---
 feature: "mobile-flaky-waits"
-status: spec_ready       # draft | spec_ready | approved
+status: approved       # draft | spec_ready | approved
 tags: [harness, spec, mobile, tests]
 ---
 
@@ -358,7 +358,7 @@ git diff origin/main..HEAD -- mobile-pet-tracker/src/screens/map/index.test.tsx 
 
 debe dar **0** líneas añadidas con `setTimeout` en el fichero de map.
 
-- [ ] **Vía (b) de R2..R6 aprobada por humano** (fecha: ____) ← casilla propia,
+- [x] **Vía (b) de R2..R6 aprobada por humano** (fecha: 2026-09-22) ← casilla propia,
       distinta de la de §Aprobación. `CHECKPOINTS.md` C4 exige que la spec declare
       la vía **por escrito antes del handoff** y que un humano la firme.
 
@@ -435,5 +435,5 @@ Clasificado viñeta a viñeta: **[D]** = delimitación de esta feature;
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
-- [ ] Vía (b) de R2..R6 firmada (§C4) ← casilla propia, se firma junto con la spec
+- [x] Aprobado por humano (fecha: 2026-09-22) ← gate obligatorio antes de implementar
+- [x] Vía (b) de R2..R6 firmada (fecha: 2026-09-22) (§C4) ← casilla propia, se firma junto con la spec
