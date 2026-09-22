@@ -89,7 +89,7 @@ describe('#61 R1: la etiqueta destructiva usa el token de danger', () => {
 describe('#61 R3: ningún texto sobre bg-accent se compone con opacidad', () => {
   const accentCards = [
     join('app', '(tabs)', 'food.tsx'),
-    join('app', '(tabs)', 'meal-schedule.tsx'),
+    join('screens', 'meal-schedule', 'index.tsx'),
   ];
 
   it.each(accentCards)('%s no compone su texto con opacidad', (path) => {
@@ -121,9 +121,9 @@ describe('#61 R4: el acento como tinta usa accent-strong', () => {
     [join('app', '(auth)', 'forgot.tsx'), 1],
     [join('screens', 'reset-password', 'index.tsx'), 2],
     [join('screens', 'home', 'index.tsx'), 2],
-    [join('app', '(tabs)', 'health.tsx'), 1],
+    [join('screens', 'health', 'index.tsx'), 1],
     [join('app', '(tabs)', 'food.tsx'), 1],
-    [join('app', '(tabs)', 'map.tsx'), 2],
+    [join('screens', 'map', 'index.tsx'), 2],
     [join('screens', 'profile', 'index.tsx'), 1],
     [join('screens', 'add-pet', 'index.tsx'), 1],
     [join('components', 'pet-hero-header.tsx'), 1],
@@ -152,7 +152,7 @@ describe('#61 R4: el acento como tinta usa accent-strong', () => {
 
 describe('#61 R5: text-warning deja de usarse como color de texto', () => {
   const warningSites = [
-    join('app', '(tabs)', 'health.tsx'),
+    join('screens', 'health', 'index.tsx'),
     join('screens', 'home', 'index.tsx'),
     join('screens', 'reminders', 'index.tsx'),
   ];

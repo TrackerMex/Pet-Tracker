@@ -122,8 +122,8 @@ describe('#70 R16: copy de recordatorios de la Home', () => {
 });
 
 describe('#65 R4: Map resuelve su copy por clave', () => {
-  it('resuelve las 20 ocurrencias normativas', () => {
-    expect(R4_MAP).toHaveLength(20);
+  it('resuelve las 17 ocurrencias normativas', () => {
+    expect(R4_MAP).toHaveLength(17);
     checkUses(R4_MAP);
   });
 });
@@ -184,7 +184,7 @@ describe('#65 R9: el alta de mascota resuelve su copy por clave', () => {
 
 describe('#65 R10: el emparejado del collar resuelve su copy por clave', () => {
   it('resuelve las ocurrencias normativas y el delta de conectividad', () => {
-    expect(R10_PAIRING).toHaveLength(42 + 2 + 1);
+    expect(R10_PAIRING).toHaveLength(42 + 2 + 1 + 4); // +4 #94 E1: la tabla del Mapa comparte el util
     checkUses(R10_PAIRING);
   });
 });
