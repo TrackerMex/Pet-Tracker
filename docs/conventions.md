@@ -195,6 +195,21 @@ escapar: daba verde con exit 0 habiendo corrido 5 suites de 7, sin ejecutar dos
 requisitos. **Comprueba siempre que el número de suites que imprime jest
 coincide con el de ficheros que el filtro pretendía coger.**
 
+### Recortes del tag de apertura en candados de fuente
+
+Para aislar el tag de apertura de un elemento, recorta de `<` a `<` alrededor
+de un ancla que viva dentro de ese mismo tag; no recortes de `<Tag>` a
+`</Tag>`. Encoger la ventana produce un rojo seguro, mientras que ensancharla
+puede incluir propiedades de un hijo o hermano y fabricar un verde falso. El
+límite conocido es un `<` dentro del propio tag (por ejemplo,
+`disabled={a < b}`), que adelanta el corte y falla hacia rojo.
+
+El patrón ya vive en
+`mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts:309-311`. Queda
+un gemelo por migrar en
+`mobile-pet-tracker/src/screens/home/index.test.tsx:3355-3359`; no se toca aquí
+porque pertenece a #108.
+
 ### Esperas sobre el árbol renderizado
 
 La condición que termina una espera debe ser la misma observación que hacen las

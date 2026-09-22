@@ -784,6 +784,10 @@ describe('#107 R5: el botón por franja conserva su feedback de pulsado', () => 
   it('#109 R1: acota el bloque de fuente al tag de apertura propio del meal-toggle', () => {
     const source = readFileSync('src/app/(tabs)/food.tsx', 'utf8');
     const anchor = source.indexOf('testID={`meal-toggle-${index}`}');
+    // This is the meal-toggle's own opening tag, from `<` to `<`: ending at
+    // `</Pressable>` let a nested Pressable lend it a foreign style (B2, #106/#107).
+    // A `<` inside the tag (for example, `disabled={a < b}`) shrinks the slice
+    // and makes the lock fail red, never green.
     const block = source.slice(
       source.lastIndexOf('<', anchor),
       source.indexOf('<', anchor),
