@@ -4325,3 +4325,113 @@ Codex movió un candado de `specs/mobile-ui-language/design.md`, que es de #65 y
 está viva en `wt-ui`. El recuento nuevo es correcto (33 claves, 38 ocurrencias)
 pero dejó los **sub-rótulos por fichero obsoletos**: 16 + 19 = 35, no 38. Lo
 cierra quien lleve #65.
+
+---
+
+## #102 `mobile-routes-to-screens` — 2026-09-22
+
+Refactor puro. Cuatro rutas anteriores a #39 pasan al patrón *route delgado +
+`src/screens/<nombre>/index.tsx>`*: `map` (406 líneas), `weight-log` (341),
+`meal-schedule` (324) y `health` (279). Sus tests se colocan junto al cuerpo.
+Cero cambio de aserción: **77 suites / 1386 tests antes y después**, medido sin
+pipe en `3a52028b` y en el tip. `tsc --noEmit` 0 bytes.
+
+Branch `feature/102-mobile-routes-to-screens` desde `3a52028b`, worktree
+`Pet-Tracker-wt-ui`. Spec firmada el 2026-09-21 (`7098f985`), 11 commits de
+Codex (`ca2d6f80`..`2ae43ea5`), reviewer **aprobado sin bloqueantes**.
+
+### La feature contradecía una convención, y esa era la primera tarea
+
+`docs/conventions.md:445-446` decía que las pantallas anteriores a #39 **no se
+migran en frío**. R1 la enmendó con la excepción **A10**, con casilla de firma
+**propia y separada** de la aprobación de la spec — lección de
+`gate-humano-sin-casilla-donde-firmar`, de #94. La regla por defecto queda
+intacta: A10 acota cuándo vale migrar en frío, no abre la puerta.
+
+### Alcance recortado a cuatro: `food.tsx` fuera
+
+El criterio de aceptación 4 de la entrada ya lo autorizaba ("o food.tsx queda
+fuera de esta feature"). Lo escribieron pensando en #98, que ya estaba
+mergeada, pero #106 + #107 estaban `in_progress` sobre `food.tsx` y su test
+**mientras** corría esta feature. Misma razón, otra feature de origen. Queda
+como deuda nombrada en la entrada.
+
+La cifra de `food.tsx` se dejó a propósito con su fecha y su contexto: 374 en
+`main` el 2026-09-22, **383** en la branch de #106+#107. Caduca al mergearlas
+(`constantes-congeladas-en-specs`).
+
+### Lo que abarató el trabajo: las profundidades relativas
+
+`src/app/(tabs)/x.tsx` y `src/screens/x/index.tsx` están **ambos a profundidad
+3**, así que los cuerpos no cambiaron **ni un import**: el diff real de cada
+cuerpo es **una línea**, la del `export default` → `export`. Los renames salen
+con `similarity 99%`. Los tests sí bajaron un nivel (`../../../` → `../../`).
+Quien migre `food.tsx` puede contar con lo mismo.
+
+### El coste real estaba en los candados, no en mover ficheros
+
+Cinco ficheros guardan rutas de fichero **literales**:
+
+- `ui-copy-table.ts` — 68 filas nuestras repuntadas (map 17, health 13,
+  weight-log 19, meal-schedule 19). Las 19 de `food.tsx` intactas.
+- `consistency-classnames.test.ts` y `legibility-classnames.test.ts` — los
+  `join('app','(tabs)',…)`, saltándose los de `food`.
+- `design-drift.test.ts` — tres sitios: el ternario, `screenSignOutCalls` de
+  #87 R19 y el inventario R10 que dejó #94.
+- `ui-language.test.ts` — **no se tocó**. Cero ocurrencias de `(tabs)`; sus
+  `toHaveLength` miden longitudes de bloque, no rutas.
+
+### Dos trampas que se cazaron antes del handoff, no después
+
+1. **El ternario de `design-drift.test.ts:84-86` se invierte, no se colapsa.**
+   Yo escribí en el prompt que las cuatro rutas migradas vaciaban la rama
+   `app/(tabs)/`. Falso: su `it.each` lista **siete** pantallas y `food` sigue
+   ahí. Colapsar habría leído `src/screens/food/index.tsx` → ENOENT → rojo. El
+   `spec_author` lo midió y me corrigió. Queda
+   `screen === 'food' ? app/(tabs) : screens/`.
+2. **`sourceFiles()` de `design-drift.test.ts:25-35` excluye la carpeta
+   `__tests__/` pero NO los `*.test.tsx` colocados** — a diferencia de
+   `consistency-classnames` y `legibility-classnames`, que excluyen ambos. Al
+   sacar los cuatro tests de `__tests__/` entraron por primera vez en el
+   escaneo de C8/R3/R4. Salió verde (cero coincidencias de los tres patrones),
+   pero era la trampa silenciosa de la feature. Se convirtió en **R7**, y la
+   spec **prohibió tocar el helper**: modificarlo fue el bloqueante H1 que hizo
+   rechazar la ronda 1 de #94 dos días antes. Codex no lo tocó (`cmp` exit 0,
+   17 describes antes y después).
+
+### C4 en un refactor puro: vía (b)
+
+No hay comportamiento nuevo que poner rojo, así que **el rojo lo produce el
+candado**. Un commit rojo + uno verde por ruta. El reviewer hizo checkout de
+los cuatro rojos y confirmó lo que importaba: fallan con **ENOENT sobre la ruta
+vieja**, cero `ReferenceError` y cero `Cannot find module`. Un rojo que falla
+por un import roto no prueba nada.
+
+Desviación de `tasks.md` aceptada: Codex crea el route delgado en el commit
+**verde**, no en el rojo. `tasks.md` contradecía a `requirements.md`, y con el
+route recreado no hay ENOENT ni rename. Corolario: los cuatro commits rojos
+dejan el árbol sin ese fichero de ruta.
+
+### Cuatro datos que yo le pasé mal al `spec_author`
+
+Los midió contra el árbol y me corrigió los cuatro: `map.tsx` son **406**
+líneas y no 388 (#94 lo engordó al mergear la víspera); `ui-copy-table.ts`
+tiene **87** ocurrencias de `(tabs)` y no 90; `ui-language.test.ts` **no
+participa**; y el ternario se invierte. Verifiqué las cuatro correcciones antes
+de pasarle la spec al humano. Moraleja repetida de
+`premisas-de-explore-sin-verificar`, esta vez con el leader como fuente del
+dato falso: el baseline que mides tú al abrir la sesión también caduca cuando
+otra feature mergea entre medias.
+
+### Coordinación con la sesión de #106 + #107
+
+Reparto pactado y **respetado por las dos partes**: intersección de ficheros
+**vacía**. Ayudó que su §D10 sacara a propósito su candado de
+`design-drift.test.ts` y lo metiera en `food.test.tsx`, lo que dejó los cinco
+candados compartidos sin disputa para #102. Sigue en pie
+`reparto-de-ficheros-caduca-al-mergear`: quien mergee segundo se come el
+conflicto en `feature_list.json`, `progress/current.md` y este fichero.
+
+`./init.sh` no se lanzó en toda la feature: #102 no toca
+`backend-pet-tracker/` (verificado, ninguno de los 20 ficheros del diff está
+ahí) y los puertos eran de la sesión vecina.
