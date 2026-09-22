@@ -4750,3 +4750,19 @@ lo único inmune al orden de merge.
 
 `./init.sh` del reviewer: **exit 0** sin pipe, primer plano. Móvil 77/1398,
 backend 170/1295, infra 2/14, e2e verdes.
+
+---
+
+## 2026-09-22 — #108 `design-drift-hex-guard-rid`
+
+Implementación completada en `feature/108-design-drift-hex-guard-rid`, sin
+marcar la feature `done`: queda pendiente del reviewer. Se ejecutaron cuatro
+pares rojo→verde en el orden R1, R2, R3 y R4. `HEX_LITERAL` pasa de ocho
+copias a una y excluye solo la forma canónica `#<id> R<n>`; las dos formas
+largas siguen separadas. Los dos describes de #106 vuelven a literales enteros
+y la convención queda en `docs/conventions.md`.
+
+Base sobre `origin/main` `2a9219b3`: 77 suites / 1398 tests y design-drift
+41 tests en 17 describes. Cierre: 77 / 1412, design-drift 55 / 21 y
+`bunx tsc --noEmit` en 0. Las sondas de mutación de R1 y R2 fallaron por sus
+aserciones. Reporte completo: `progress/impl_design-drift-hex-guard-rid.md`.
