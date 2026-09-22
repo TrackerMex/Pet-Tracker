@@ -9,7 +9,7 @@ tags: [harness, spec, mobile, tests]
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
 | R1 | `mobile-pet-tracker/src/screens/health/index.test.tsx` :: `R6: weight card enlaza al log › shows the current weight and opens the weight log` | `a054f085 test(mobile-flaky-waits): wait for resolved weight (R1)` — rojo real: `60cf0534` |
-| R2 · S2 | `mobile-pet-tracker/src/screens/health/index.test.tsx` :: `R4: health resuelve la mascota seleccionada › keeps API order and selects the first pet by default` | pendiente |
+| R2 · S2 | `mobile-pet-tracker/src/screens/health/index.test.tsx` :: `R4: health resuelve la mascota seleccionada › keeps API order and selects the first pet by default` | `bcd8ba8a test(mobile-flaky-waits): align health query waits (R2)` |
 | R2 · S3 | `mobile-pet-tracker/src/screens/map/index.test.tsx` :: `R7: ruta del día como polylines › R3 (android-map-never-ready): pasa una polyline mapeada por cada viaje` | pendiente |
 | R2 · S4 | `mobile-pet-tracker/src/screens/map/index.test.tsx` :: `R7: ruta del día como polylines › R3 (android-map-never-ready): pasa un array vacío para un día sin viajes` | pendiente |
 | R2 · S5 | `mobile-pet-tracker/src/screens/map/index.test.tsx` :: `R8: stats calculadas de positions y trips › uses the latest speed, trip total, fresh age, and live GPS` | pendiente |
