@@ -1,6 +1,6 @@
 ---
 feature: "design-drift-hex-guard-rid"
-status: spec_ready       # draft | spec_ready | approved
+status: approved       # draft | spec_ready | approved
 tags: [harness, spec, mobile]
 ---
 
@@ -398,7 +398,7 @@ nada, y aun así se descarta por lo que costaría mañana ([[design]] §2).
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (fecha: 2026-09-22) ← gate obligatorio antes de implementar
 
 Al marcar esta casilla el humano firma también el punto único de §Qué firma el
 humano al aprobar esta spec: que `#<id> R<n>` pasa a ser contrato con el guard,

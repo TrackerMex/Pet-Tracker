@@ -1,6 +1,6 @@
 ---
 feature: "design-drift-hex-guard-rid"
-status: spec_ready       # draft | spec_ready | approved
+status: approved       # draft | spec_ready | approved
 tags: [harness, spec, mobile]
 ---
 
