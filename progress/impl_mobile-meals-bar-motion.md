@@ -158,3 +158,70 @@ devolvió exit 0.
 
 Verificación final del rebote: `bunx jest` sin filtro ni pipe devolvió exit 0,
 con 77/77 suites, 1379/1379 tests y 1 snapshot verdes.
+
+## Cierre de B6
+
+Deuda **B6** de `progress/review_mobile-meals-bar-motion.md` §1b: el candado de
+R2 evaluaba la curva en solo `0.25` y `0.75` — 2 ecuaciones sobre los 4
+parámetros de un bezier, así que quedaba un plano entero de curvas impostoras
+en verde. Los dos puntos eran además los peores posibles: caen en los tramos
+planos de la `easeInOutQuart` y el error se esconde en el salto central que
+queda entre ellos.
+
+Cambio de una línea en `src/screens/home/index.test.tsx:70`, dentro del helper
+`expectMealsBarTiming`:
+
+```js
+for (const point of [0.25, 0.75]) {                             // antes
+for (const point of [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]) {  // ahora
+```
+
+Commit: `726cd302` — un solo fichero, 1 inserción y 1 borrado. **Producción no
+se toca**: el arreglo endurece un candado existente, no añade un requisito, así
+que no hay ciclo rojo→verde de producción. La evidencia es la **sonda de
+mutación**, que es más fuerte que un commit rojo (misma distinción que el
+reviewer hace en B7 sobre `7308a788`).
+
+### La sonda, en cuatro pasos
+
+La impostora es la que construyó el reviewer con un solver barriendo la rejilla
+`x1,x2 ∈ [0.02, 0.98]`:
+`Easing.bezier(0.97, 0.0893960980395263, 0.17, 0.9976664429227766)`, plantada en
+`src/screens/home/index.tsx:86`. Se desvía **0.33** a mitad de recorrido: a
+mitad de la animación la barra iría por el **28%** en vez de por el **60%**.
+
+| # | Paso | Comando | Exit sin pipe | Resultado |
+|---|---|---|---:|---|
+| 1 | Impostora plantada, helper **en 2 puntos** | `bunx jest --runTestsByPath src/screens/home/index.test.tsx` | **0** | **1 suite, 138/138 verde** — el agujero reproduce |
+| 2 | Impostora plantada, helper **en 9 puntos** | idem | **1** | **1 suite roja, 2 rojos / 136 verdes de 138** |
+| 3 | Producción restaurada | `git diff --exit-code HEAD -- mobile-pet-tracker/src/screens/home/index.tsx` | **0** | sin residuo de la sonda |
+| 4 | Producción intacta, helper en 9 puntos | `bunx jest` (sin filtro, sin pipe) | **0** | **77/77 suites, 1379/1379 tests, 1 snapshot** |
+
+Los dos rojos del paso 2 son exactamente los que tocan, sin daño colateral:
+
+```
+✕ #106 R2: la barra de comidas transiciona su ancho
+    › anima subida y bajada hasta el porcentaje final sin perder sus clases
+✕ #106 R3: reduce motion deja la barra sin animación
+    › fija el ancho directamente si reduce motion está activo y anima si no
+```
+
+Y mueren evaluando la curva, no comparando referencias — el primer punto
+muestreado (`0.1`) ya las tumba:
+
+```
+Expected: 0.006445201330602639
+Received: 0.01309863922847226
+Expected precision: 6
+```
+
+El paso 4 deja los mismos **77 suites / 1379 tests** de la ronda 2 del review:
+el cambio endurece una aserción existente, no añade tests.
+
+### Qué queda fuera
+
+B6 incluía también el acoplamiento a `.easing.factory()`. No se toca: es API
+pública tipada (`EasingFunctionFactory` en `index.d.ts`) y el test se tipa con
+`ReturnType<typeof Easing.bezier>`, así que un cambio futuro de Reanimated
+sale por `tsc`, no por un verde silencioso. El reviewer ya lo clasificó como
+deuda menor vigilada.

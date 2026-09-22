@@ -55,3 +55,18 @@ que la otra sesion avise.
   `map.tsx` — no se puede arrancar hasta que #94 entre en `main`.
 - **#104 `nutrition-kcal-consumed`** es la siguiente que pide backend de
   verdad; se parte en dos mitades como se hizo con #83/#98.
+
+### Fallback al subagente `implementer` (lo exige `CLAUDE.md` §Excepciones)
+
+El cierre de la deuda **B6** —`index.test.tsx:70`, muestrear la curva del bezier
+en nueve puntos en vez de dos— lo hizo el subagente **`implementer`**, no Codex
+CLI, en el commit `726cd302`. Es **una línea en un fichero de test**, +1/-1, que
+es literalmente el caso que `CLAUDE.md` §Excepciones admite: «solo si Codex CLI
+no está disponible o el cambio es trivial (una línea, un typo en un mensaje de
+error). Dilo explícitamente en `progress/current.md` cuando lo uses.» Queda
+dicho.
+
+La sonda que lo justifica va en el orden que importa: con la curva impostora
+plantada y el helper en dos puntos la suite sale **verde** (138/138), que es el
+agujero; con la impostora plantada y el helper en nueve sale **roja** (2 de 138).
+Detalle en `progress/impl_mobile-meals-bar-motion.md` §Cierre de B6.
