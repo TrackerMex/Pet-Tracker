@@ -121,7 +121,7 @@ describe('#61 R4: el acento como tinta usa accent-strong', () => {
     [join('app', '(auth)', 'forgot.tsx'), 1],
     [join('screens', 'reset-password', 'index.tsx'), 2],
     [join('screens', 'home', 'index.tsx'), 2],
-    [join('app', '(tabs)', 'health.tsx'), 1],
+    [join('screens', 'health', 'index.tsx'), 1],
     [join('app', '(tabs)', 'food.tsx'), 1],
     [join('screens', 'map', 'index.tsx'), 2],
     [join('screens', 'profile', 'index.tsx'), 1],
@@ -152,7 +152,7 @@ describe('#61 R4: el acento como tinta usa accent-strong', () => {
 
 describe('#61 R5: text-warning deja de usarse como color de texto', () => {
   const warningSites = [
-    join('app', '(tabs)', 'health.tsx'),
+    join('screens', 'health', 'index.tsx'),
     join('screens', 'home', 'index.tsx'),
     join('screens', 'reminders', 'index.tsx'),
   ];

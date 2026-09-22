@@ -81,7 +81,10 @@ describe('R3: Card compartido elimina rounded arbitrario', () => {
     'map',
   ])('%s importa el Card compartido', (screen) => {
     const contents = readFileSync(
-      screen === 'profile' || screen === 'home' || screen === 'map'
+      screen === 'profile' ||
+      screen === 'home' ||
+      screen === 'map' ||
+      screen === 'health'
         ? join(sourceRoot, 'screens', screen, 'index.tsx')
         : join(sourceRoot, 'app', '(tabs)', `${screen}.tsx`),
       'utf8',
@@ -429,7 +432,7 @@ describe('#87 R19: use-' + 'api no deja huella', () => {
   const legacyIdentifier = ['use', 'Api'].join('');
   const screenSignOutCalls: Record<string, number> = {
     'app/(tabs)/food.tsx': 0,
-    'app/(tabs)/health.tsx': 0,
+    'screens/health/index.tsx': 0,
     'screens/map/index.tsx': 0,
     'app/(tabs)/meal-schedule.tsx': 1,
     'app/(tabs)/weight-log.tsx': 1,

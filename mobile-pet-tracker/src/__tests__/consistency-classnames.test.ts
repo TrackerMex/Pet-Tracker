@@ -107,7 +107,7 @@ describe('#62 R1: la escala de radios está declarada y el botón primario tiene
 describe('#62 R2: cada skeleton tiene la forma del contenido que sustituye', () => {
   it.each([
     [
-      join('app', '(tabs)', 'health.tsx'),
+      join('screens', 'health', 'index.tsx'),
       'vaccines-skeleton',
       'h-24 w-full rounded-card',
     ],
@@ -272,7 +272,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
     [join('components', 'pet-hero-header.tsx'), 1],
     [join('screens', 'home', 'index.tsx'), 2],
     [join('screens', 'home', 'weekly-activity-chart.tsx'), 1],
-    [join('app', '(tabs)', 'health.tsx'), 2],
+    [join('screens', 'health', 'index.tsx'), 2],
     [join('app', '(tabs)', 'food.tsx'), 2],
     [join('screens', 'map', 'index.tsx'), 4],
     [join('app', '(tabs)', 'meal-schedule.tsx'), 1],
@@ -348,7 +348,7 @@ describe('#62 R15: todo contador usa cifras tabulares', () => {
         HOME_TABULAR_DELTA_98,
     ],
     [join('screens', 'home', 'weekly-activity-chart.tsx'), 4],
-    [join('app', '(tabs)', 'health.tsx'), 2],
+    [join('screens', 'health', 'index.tsx'), 2],
     [join('app', '(tabs)', 'weight-log.tsx'), 2],
     [join('screens', 'reminders', 'index.tsx'), 3],
   ] as const;

@@ -22,11 +22,13 @@
 
 ### R3 — health
 
+- Commit rojo: `95ee54fc`.
 - Rojo, body: `JEST_EXIT=0`; 1 suite, 28/28 tests.
 - Rojo, candados: `JEST_EXIT=1`; 4 suites fallaron y 1 pasó; 11 tests fallaron
   y 140 pasaron. Los fallos nombraron `ENOENT` sobre
   `src/app/(tabs)/health.tsx`.
-- Verde: pendiente.
+- Verde: `JEST_EXIT=0`; 6 suites y 179/179 tests (body 28 + candados
+  2/25/41/57/26) pasaron.
 
 ## R7 — escaneo de tests colocados
 
