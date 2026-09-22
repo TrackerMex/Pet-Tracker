@@ -28,14 +28,15 @@ Las cuatro que si se mueven, con su tamano medido hoy:
 
 | Ruta | Lineas | Test | Tests |
 |---|---|---|---|
-| `src/app/(tabs)/map.tsx` | 388 | `__tests__/map.test.tsx` | 58 |
+| `src/app/(tabs)/map.tsx` | 406 | `__tests__/map.test.tsx` | 58 |
 | `src/app/(tabs)/weight-log.tsx` | 341 | `__tests__/weight-log.test.tsx` | 32 |
 | `src/app/(tabs)/meal-schedule.tsx` | 324 | `__tests__/meal-schedule.test.tsx` | 23 |
 | `src/app/(tabs)/health.tsx` | 279 | `__tests__/health.test.tsx` | 28 |
 
-`food.tsx` son hoy **374** lineas, no las 325 que dice la entrada del
-`feature_list.json`: #98 lo engordo. Corregir ese numero al reabrir su
-migracion como deuda.
+`map.tsx` son **406** lineas (no las 388 que medi al abrir la sesion) y
+`food.tsx` **374** (no las 325 que dice la entrada del `feature_list.json`):
+#94 engordo map.tsx y #98 engordo food.tsx. Las dos cifras quedan corregidas
+en la entrada por R9 de la spec.
 
 ### Reparto de ficheros con la sesion de #106 + #107
 
