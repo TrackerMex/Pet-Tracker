@@ -9,9 +9,10 @@ import { Uniwind } from 'uniwind';
 
 import { usePushRegistration } from '../hooks/use-push-registration';
 import { DEFAULT_LANGUAGE, type Language } from '../i18n/catalog';
-import { AuthProvider } from '../providers/auth-provider';
+import { AuthProvider, useAuth } from '../providers/auth-provider';
 import { LanguageProvider } from '../providers/language-provider';
 import { QueryProvider } from '../providers/query-provider';
+import { SelectedPetProvider } from '../providers/selected-pet-provider';
 import { getStoredLanguage } from '../utils/language-preference';
 import { getStoredTheme } from '../utils/theme-preference';
 
@@ -58,12 +59,35 @@ export default function RootLayout() {
         <LanguageProvider initial={initialLanguage}>
           <AuthProvider>
             <QueryProvider>
-              <PushRegistration />
-              <Stack screenOptions={{ headerShown: false }} />
+              <SelectedPetProvider>
+                <PushRegistration />
+                <RootStack />
+              </SelectedPetProvider>
             </QueryProvider>
           </AuthProvider>
         </LanguageProvider>
       </HeroUINativeProvider>
     </GestureHandlerRootView>
+  );
+}
+
+function RootStack() {
+  const { status } = useAuth();
+
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="index" />
+      <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="(auth)" />
+      <Stack.Screen name="reset-password" />
+      <Stack.Protected guard={status === 'authenticated'}>
+        <Stack.Screen name="add-reminder" />
+        <Stack.Screen name="pets/add" />
+        <Stack.Screen name="pets/[petId]/docs" />
+        <Stack.Screen name="weight-log" />
+        <Stack.Screen name="meal-schedule" />
+        <Stack.Screen name="pairing" />
+      </Stack.Protected>
+    </Stack>
   );
 }

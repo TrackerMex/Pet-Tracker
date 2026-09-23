@@ -10,7 +10,9 @@ import AuthLayout from '../(auth)/_layout';
 import TabsLayout from '../(tabs)/_layout';
 import RootLayout from '../_layout';
 
-let mockAuthState = { status: 'authenticated', token: 'token-a' };
+let mockAuthState: { status: 'authenticated' | 'unauthenticated'; token: string | null } = {
+  status: 'authenticated', token: 'token-a',
+};
 const mockAuthListeners = new Set<() => void>();
 let mockAddReminderMounts = 0;
 
@@ -107,6 +109,7 @@ describe('#95 R3: la guarda protege las seis y deja libres (auth) y reset-passwo
       expect(app.getPathname()).toBe('/login');
       expect(rootStack(app)).toEqual(['(auth)']);
     }
+    expect(mockAddReminderMounts).toBe(0);
 
     await act(async () => router.push('/reset-password?token=abc'));
     await waitFor(() => expect(app.getPathname()).toBe('/reset-password'));

@@ -22,7 +22,7 @@ import {
   type PetTrackingState,
 } from '../../api/subscriptions';
 import type { PetProfile } from '../../api/types';
-import PairingRoute from '../../app/(tabs)/pairing';
+import PairingRoute from '../../app/pairing';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
 import { SelectedPetProvider } from '../../providers/selected-pet-provider';
@@ -277,7 +277,7 @@ describe('R7: el guarda de envío sobrevive al blur', () => {
   });
 });
 
-describe('R4: /pairing monta dentro de (tabs) con selector de mascota y estados de carga', () => {
+describe('R4: /pairing monta en el Stack raíz con selector de mascota y estados de carga', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     process.env.EXPO_PUBLIC_API_URL = apiUrl;

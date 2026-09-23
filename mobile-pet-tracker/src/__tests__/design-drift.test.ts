@@ -142,8 +142,8 @@ describe('R9: mobile-pets-profile sin drift', () => {
     const routes = [
       'app/(tabs)/home.tsx',
       'app/(tabs)/profile.tsx',
-      'app/(tabs)/pets/add.tsx',
-      'app/(tabs)/pets/[petId]/docs.tsx',
+      'app/pets/add.tsx',
+      'app/pets/[petId]/docs.tsx',
     ];
 
     const routeLengths = routes.map((relativePath) => ({
