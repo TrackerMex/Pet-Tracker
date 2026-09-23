@@ -32,21 +32,9 @@ jest.mock('../../providers/auth-provider', () => ({
   useAuth: jest.fn(),
 }));
 
-jest.mock('expo-router', () => {
-  const React = jest.requireActual<typeof import('react')>('react');
-  const { View } = jest.requireActual<typeof import('react-native')>(
-    'react-native',
-  );
-
-  return {
-    router: { push: jest.fn(), back: jest.fn() },
-      Redirect: ({ href }: { href: string }) => {
-      const props = { testID: 'add-reminder-redirect', href };
-
-      return React.createElement(View, props);
-    },
-  };
-});
+jest.mock('expo-router', () => ({
+  router: { push: jest.fn(), back: jest.fn(), dismissTo: jest.fn() },
+}));
 
 
 jest.mock('@expo/ui', () => {
@@ -151,13 +139,17 @@ describe('R8: formulario de alta con chips y pickers', () => {
     mockCreateReminder.mockReturnValue(pending());
   });
 
-  it('redirects a cold deep-link without a selected pet', async () => {
-    await renderAddReminder(false);
+  describe('#114 R7: sin mascota, add-reminder desapila hasta reminders', () => {
+    it('desapila una vez y no pinta el formulario ni una ruta de reemplazo', async () => {
+      await renderAddReminder(false);
 
-    expect(screen.getByTestId('add-reminder-redirect').props.href).toBe(
-      '/reminders',
-    );
-    expect(screen.queryByTestId('screen-add-reminder')).toBeNull();
+      expect(mockRouter.dismissTo).toHaveBeenCalledTimes(1);
+      expect(mockRouter.dismissTo).toHaveBeenCalledWith('/reminders');
+      expect(mockRouter.push).not.toHaveBeenCalled();
+      expect(mockRouter.back).not.toHaveBeenCalled();
+      expect(screen.queryByTestId('screen-add-reminder')).toBeNull();
+      expect(screen.queryByTestId('add-reminder-redirect')).toBeNull();
+    });
   });
 
   it('uses the metrics under the native header (#95 R6)', async () => {

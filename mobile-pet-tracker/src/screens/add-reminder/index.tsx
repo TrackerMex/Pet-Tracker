@@ -1,8 +1,8 @@
 import { Host } from '@expo/ui';
 import ExpoDateTimePicker from '@expo/ui/community/datetime-picker';
-import { Redirect, router, type Href } from 'expo-router';
+import { router, type Href } from 'expo-router';
 import { Button } from 'heroui-native';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -295,9 +295,10 @@ function AddReminderContent({ petId }: { petId: string }) {
 export function AddReminderScreen() {
   const { selectedPetId } = useSelectedPet();
 
-  if (selectedPetId === null) {
-    return <Redirect href={'/reminders' as Href} />;
-  }
+  useEffect(() => {
+    if (selectedPetId === null) router.dismissTo('/reminders' as Href);
+  }, [selectedPetId]);
 
+  if (selectedPetId === null) return null;
   return <AddReminderContent petId={selectedPetId} />;
 }

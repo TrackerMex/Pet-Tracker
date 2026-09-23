@@ -1015,6 +1015,16 @@ tocan: #87 fue solo móvil y ninguna cambió.
 
 ---
 
+## Enmienda externa A14 — la escribe #114 (2026-09-23)
+
+`mobile-reminders-alerts-to-stack` (#114) sube `alerts` al Stack raíz. **R5
+cambia solo en la ruta**: el fichero es `src/app/alerts.tsx`, hijo del
+`Stack.Protected` de `src/app/_layout.tsx`, con el mismo cuerpo salvo el import
+(`'../screens/alerts'`). Sigue sin ser pestaña: `TABS` y `(tabs)/_layout.tsx`
+no cambian. Su test sigue en `src/app/(tabs)/__tests__/alerts.test.tsx`, con el
+import `'../../alerts'`. Firma: casilla A14 de
+`specs/mobile-reminders-alerts-to-stack/requirements.md` §Aprobación.
+
 ## Aprobación
 
 - [X] Aprobado por humano (fecha: 2026-09-11) ← gate obligatorio antes de implementar

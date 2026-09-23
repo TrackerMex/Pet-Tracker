@@ -97,6 +97,8 @@ function RootStack() {
         <Stack.Screen name="weight-log" options={{ ...headerOptions, title: t('weightLog.weightLog') }} />
         <Stack.Screen name="meal-schedule" options={{ ...headerOptions, title: t('mealSchedule.mealSchedule') }} />
         <Stack.Screen name="pairing" options={{ ...headerOptions, title: '' }} />
+        <Stack.Screen name="reminders" options={{ ...headerOptions, title: t('reminders.reminders') }} />
+        <Stack.Screen name="alerts" dangerouslySingular options={{ ...headerOptions, title: t('alerts.title') }} />
       </Stack.Protected>
     </Stack>
   );

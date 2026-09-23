@@ -528,7 +528,7 @@ añadidas por #68, registradas como delta sobre la tabla existente
 | 90 | `common.cannotReachServer` | `Cannot reach server` | `No se pudo conectar con el servidor` |
 | 97 | `common.somethingWentWrong` | `Something went wrong` | `Algo salió mal` |
 | 100 | `common.somethingWentWrong` | `Something went wrong` | `Algo salió mal` |
-| 136 | `reminders.reminders` | `Reminders` | `Recordatorios` |
+| 136 | `reminders.reminders` | `Reminders` | `Recordatorios` ← se pinta desde `src/app/_layout.tsx` por #114 (R4) |
 | 143 | `reminders.new` | `New` | `Nuevo` |
 | 171 | `common.somethingWentWrong` | `Something went wrong` | `Algo salió mal` |
 | 174 | `common.retry` | `Retry` | `Reintentar` |
@@ -783,7 +783,7 @@ copy completa en cada una.
 
 | Línea | Clave | `en` | `es` | Nota |
 |---|---|---|---|---|
-| — | `alerts.title` | `Alerts` | `Alertas` | ← añadida por #78 (R3)
+| — | `alerts.title` | `Alerts` | `Alertas` | ← añadida por #78 (R3) · se pinta desde `src/app/_layout.tsx` por #114 (R4)
 | — | `alerts.empty` | `No alerts` | `No hay alertas` | ← añadida por #78 (R3)
 | — | `alerts.ack` | `Mark as read` | `Marcar leída` | ← añadida por #78 (R3)
 | — | `alerts.typeGeofenceExit` | `Left the safe zone` | `Salió de la zona` | ← añadida por #78 (R3)

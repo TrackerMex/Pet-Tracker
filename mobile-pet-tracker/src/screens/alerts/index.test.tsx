@@ -171,16 +171,29 @@ describe('#78 R4: la pantalla pinta su esqueleto, su error, su vacío y sus fila
     } satisfies AuthContextValue);
   });
 
+  describe('#114 R5: el título vive en la cabecera nativa', () => {
+    it('no pinta título en carga ni con filas y deja la cabecera nula sin error', async () => {
+      let resolveAlerts!: (state: AlertsState) => void;
+      mockListAlerts.mockReturnValue(new Promise((resolve) => { resolveAlerts = resolve; }));
+      await renderAlerts();
+
+      await screen.findByTestId('alerts-loading');
+      expect(screen.queryByText(es['alerts.title'])).toBeNull();
+
+      await act(async () => resolveAlerts({ kind: 'ok', items: [makeAlert()], nextCursor: null }));
+      await screen.findByTestId(`alert-row-${makeAlert().id}`);
+      expect(screen.queryByText(es['alerts.title'])).toBeNull();
+      expect(screen.queryByTestId('alerts-action-error')).toBeNull();
+      expect(screen.getByTestId('alerts-list').props.ListHeaderComponent).toBeNull();
+    });
+  });
+
   it('pinta tres esqueletos mientras espera la primera página', async () => {
     mockListAlerts.mockReturnValue(pending<AlertsState>());
 
     await renderAlerts();
 
     expect(screen.getByTestId('screen-alerts')).toBeVisible();
-    expect(screen.getByText(es['alerts.title'])).toBeVisible();
-    expect(screen.getByText(es['alerts.title']).props.className).toBe(
-      'text-2xl font-black text-foreground',
-    );
     const loading = screen.getByTestId('alerts-loading');
     expect(loading.children).toHaveLength(3);
     for (const number of [1, 2, 3]) {
@@ -270,7 +283,7 @@ describe('#78 R4: la pantalla pinta su esqueleto, su error, su vacío y sus fila
     expect(screen.queryByTestId('alerts-empty')).toBeNull();
   });
 
-  it('respeta las dimensiones, el inset automático y los safe areas', async () => {
+  it('respeta las dimensiones bajo cabecera nativa, el inset automático y los safe areas (#114 R6)', async () => {
     mockListAlerts.mockResolvedValue({ kind: 'ok', items: [], nextCursor: null });
 
     await renderAlerts();
@@ -282,8 +295,7 @@ describe('#78 R4: la pantalla pinta su esqueleto, su error, su vacío y sus fila
     expect(list.props.contentContainerStyle).toEqual({
       padding: 24,
       gap: 16,
-      paddingTop: 52,
-      paddingBottom: 120,
+      paddingBottom: 48,
     });
   });
 });

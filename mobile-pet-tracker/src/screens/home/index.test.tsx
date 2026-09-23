@@ -226,7 +226,7 @@ describe('#78 R10: la campana vive en el hero y lleva al centro de alertas', () 
       'utf8',
     );
 
-    expect(appRoutes(join(process.cwd(), 'src/app/(tabs)'))).toContain('/alerts');
+    expect(appRoutes(join(process.cwd(), 'src/app'))).toContain('/alerts');
     expect(source).not.toContain("'/alerts' as Href");
     expect(source).toMatch(
       /style=\{\(\{ pressed \}\) => \(\{ opacity: pressed \? 0\.8 : 1 \}\)\}/,
@@ -3286,7 +3286,7 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
 
       expect(mockRouter.push).toHaveBeenCalledTimes(1);
       expect(mockRouter.push).toHaveBeenCalledWith('/reminders');
-      expect(appRoutes(join(process.cwd(), 'src/app/(tabs)'))).toContain(
+      expect(appRoutes(join(process.cwd(), 'src/app'))).toContain(
         '/reminders',
       );
 

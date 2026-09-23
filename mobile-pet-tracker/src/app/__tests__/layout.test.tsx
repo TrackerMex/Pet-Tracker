@@ -322,7 +322,8 @@ describe('#95 R2: el layout raíz monta el provider y el Stack de detalle', () =
     if (!isValidElement<{ guard: boolean; children: ReactNode }>(protectedGroup)) return;
     expect(protectedGroup.type).toBe(Stack.Protected);
     expect(protectedGroup.props.guard).toBe(true);
-    expect(Children.toArray(protectedGroup.props.children).map((child) =>
+    expect(Children.toArray(protectedGroup.props.children).slice(0, 6).map((child) =>
+      // #114 R1: reminders y alerts van detrás
       isValidElement<{ name: string }>(child) ? [child.type, child.props.name] : null,
     )).toEqual([
       [Stack.Screen, 'add-reminder'],
@@ -349,6 +350,62 @@ describe('#95 R4: cada pantalla de detalle declara su cabecera nativa', () => {
     ['weight-log', 't:weightLog.weightLog'],
     ['meal-schedule', 't:mealSchedule.mealSchedule'],
     ['pairing', ''],
+  ])('%s usa exactamente las opciones de cabecera acordadas', async (name, title) => {
+    await render(<RootLayout />);
+    await waitFor(() => expect(jest.mocked(Stack)).toHaveBeenCalled());
+    const stack = jest.mocked(Stack).mock.calls.at(-1)?.[0];
+    const group = Children.toArray(stack?.children)[4];
+    if (!isValidElement<{ children: ReactNode }>(group)) throw new Error('Expected protected group');
+    const detail = Children.toArray(group.props.children).find((child) =>
+      isValidElement<{ name: string }>(child) && child.props.name === name,
+    );
+    expect(isValidElement<{ options?: unknown }>(detail) ? detail.props.options : undefined).toEqual({
+      headerShown: true,
+      title,
+      headerStyle: { backgroundColor: 'token:background' },
+      headerTintColor: 'token:foreground',
+      headerTitleStyle: { fontFamily: 'Inter-Bold' },
+      headerShadowVisible: false,
+    });
+  });
+});
+
+describe('#114 R1: la guarda de RootStack declara reminders y alerts tras las seis', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockGetStoredTheme.mockResolvedValue(undefined);
+    mockGetStoredLanguage.mockResolvedValue(undefined);
+  });
+
+  it('declara ocho rutas protegidas y alerts singular', async () => {
+    await render(<RootLayout />);
+    await waitFor(() => expect(jest.mocked(Stack)).toHaveBeenCalled());
+    const stack = jest.mocked(Stack).mock.calls.at(-1)?.[0];
+    const group = Children.toArray(stack?.children)[4];
+    if (!isValidElement<{ children: ReactNode }>(group)) throw new Error('Expected protected group');
+    const children = Children.toArray(group.props.children);
+    expect(children).toHaveLength(8);
+    expect(children.slice(6).map((child) =>
+      isValidElement<{ name: string; dangerouslySingular?: boolean }>(child)
+        ? [child.type, child.props.name, child.props.dangerouslySingular]
+        : null,
+    )).toEqual([
+      [Stack.Screen, 'reminders', undefined],
+      [Stack.Screen, 'alerts', true],
+    ]);
+  });
+});
+
+describe('#114 R4: reminders y alerts declaran su cabecera nativa', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockGetStoredTheme.mockResolvedValue(undefined);
+    mockGetStoredLanguage.mockResolvedValue(undefined);
+  });
+
+  it.each([
+    ['reminders', 't:reminders.reminders'],
+    ['alerts', 't:alerts.title'],
   ])('%s usa exactamente las opciones de cabecera acordadas', async (name, title) => {
     await render(<RootLayout />);
     await waitFor(() => expect(jest.mocked(Stack)).toHaveBeenCalled());

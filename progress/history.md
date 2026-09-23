@@ -5145,3 +5145,69 @@ gramos), asi que la formula lleva guarda.
   registra como feature.
 - Leccion guardada en memoria: `toHaveAnimatedStyle` sin `shouldMatchAllProps`
   deja una zona ciega; especificar el `style` de cada nodo no-texto candado.
+
+# Sesión #114 mobile-reminders-alerts-to-stack (2026-09-23, sesión Frontend)
+
+## Feature #114 `mobile-reminders-alerts-to-stack` (P3)
+
+- **Sesion**: Frontend (leader), tree principal `/home/claude/sites/Pet-Tracker`,
+  branch `feature/114-mobile-reminders-alerts-to-stack` desde `origin/main`
+  `a833f153` (#95 dentro). En paralelo, Backend cerro #113 y registro #115-#119
+  en `wt-backend`.
+- **Estado**: `done`. PR pendiente del merge humano.
+
+### Que se hizo
+
+`reminders` y `alerts` salen de `src/app/(tabs)/` al `Stack.Protected` de
+`RootStack`, detras de las seis de #95:
+- Cabecera nativa con las opciones de #95 R4; el titulo sale del cuerpo y
+  "Nuevo" se queda en el cuerpo (R4, R5).
+- `alerts` es `dangerouslySingular`: tocar una notificacion la apila encima de lo
+  que haya, una sola vez, sin segunda `(tabs)`. El arranque en frio termina en
+  `["(tabs)", "alerts"]` sin ancla. `use-push-registration.ts` no cambia (R2, R3).
+- Metricas bajo la excepcion A11, ampliada por A13 (R6).
+- `add-reminder` sin mascota hace `router.dismissTo('/reminders')` en vez de
+  `<Redirect>`, que apilaba dos Recordatorios (R7, enmienda externa A14).
+- Cero claves de catalogo: no choca con el candado de longitud que movia #113.
+
+### Gate y ciclo
+
+- **Spec** `85c37fb3`, espejada a Notion. El humano marco P1 = A, A13, A14 y la
+  spec, y puso Aprobado. El leader firmo en `f5a491ee` citando la pagina y
+  `page_last_edited_at` 2026-09-23T18:42:29Z.
+- **spec_author** desmonto dos premisas del enunciado: el arranque en frio ya
+  deja `(tabs)` debajo de Alertas, y Profile no navega a `/alerts`.
+- **Codex**: 15 commits, `c713068c..a8d656ad`. A14 primero, tres rojos y un
+  verde compartido para R1-R3, y despues rojo antes que verde en cada R-id.
+- **init.sh**: lo corrio el leader sobre `349c1a41` (exit 0; movil 82/1435,
+  +2/+9; e2e 27+3 skip). El reviewer leyo el log crudo y el `.head`.
+- **Reviewer**: aprobado a la primera, sin bloqueantes, con 31 mutaciones
+  propias.
+- **Integracion**: `origin/main` entro dos veces por merge, sin rebase:
+  - `446ba4d1` trae #113. Sin conflictos; el movil queda en 82/1452.
+  - `93dcf3d1` trae #157, el registro de #115-#119.
+  Los hashes de traceability siguen siendo ancestros.
+- **Prueba de humo**: el humano la firmo en `6f6da526`. El commit solo toca
+  casillas y la linea del `send-message`, cuyos ids reales devolvio el leader a
+  placeholders al cerrar. No hubo drift de codigo desde el veredicto.
+- **init.sh de cierre** sobre `93dcf3d1`: exit 0 (unit 170/1298, movil 82/1452,
+  e2e 27+3 skip).
+
+### Deuda y apuntes
+
+- **Obs. 1** del reviewer: las dos aserciones que siguen al segundo toque en el
+  test de R3 no pueden fallar, porque los temporizadores falsos no se vacian.
+  Anotada en #100 con su limite y su criterio de cierre; no se abrio rebote.
+- **Obs. 6**: el handoff dijo "SOLO `building-native-ui`" y dejo fuera
+  `appllama-app-design-skill`, que la carta hace obligatoria. Corregido en
+  `.claude/agents/leader.md` §Catalogo real de skills de Codex.
+- **Deuda candidata** de la spec, sin registrar:
+  - ramas de #91 en `FloatingTabBar` sin disparador en produccion;
+  - `<Redirect>` sin mascota en `weight-log` y `meal-schedule`;
+  - `routes()`/`rootStack()` copiados en cuatro tests.
+- **Supuestos de entorno de la prueba de humo** (leccion en memoria y en
+  `docs/verification.md` §Feature 79):
+  - al dev build de la maquina del humano le faltaba `google-services.json` y
+    hubo que regenerarlo, aunque la spec decia que no hacia falta;
+  - el `sqs send-message` pedia `aws login`: faltaban las credenciales `test`
+    de LocalStack, y en PowerShell el JSON va por `file://`.

@@ -172,6 +172,20 @@ cargar lo más cercano, que es exactamente el fallo silencioso. Aportación de l
 sesión Backend al escribir #111, donde ninguna aplicaba —son esperas de jest en
 tests de RN— y escribieron la guía inline.
 
+### Las skills del repo, que Codex también ve
+
+El catálogo de arriba es solo el **plugin**. Codex lee además las skills
+versionadas en `.agents/skills/` del repo (`b1216178`), entre ellas
+`appllama-app-design-skill`, `animate-expo` y `apple-design`.
+`docs/ui-guidelines.md` §Skills hace **obligatoria** `appllama-app-design-skill`
+al diseñar o cambiar una pantalla o un flujo completo.
+
+Por eso un handoff móvil **no dice «carga SOLO `building-native-ui`»**: esa
+frase la excluye, y Codex obedece. En #114 pasó así, y fue el `reviewer` quien
+la cargó (Obs. 6 de `progress/review_mobile-reminders-alerts-to-stack.md`).
+Nombra las del plugin **y** las de `.agents/skills/` que la carta pida para la
+tarea.
+
 ### Cuánto llevaba mordiendo
 
 No era teórico. Confirmado en dos features más, además de #106 y #109:

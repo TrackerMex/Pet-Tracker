@@ -1,6 +1,6 @@
 import { screen } from '@testing-library/react-native';
 
-import AlertsRoute from '../alerts';
+import AlertsRoute from '../../alerts';
 import { renderWithProviders } from '../../../../test/render-with-providers';
 
 declare function require(moduleName: 'fs'): {
