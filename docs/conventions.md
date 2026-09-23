@@ -177,6 +177,16 @@ los copia literalmente y la colisión llega hasta el reviewer.
 No rompe la trazabilidad retroactivamente —`traceability.md` desambigua por
 título completo— pero un `-t 'R7'` sí selecciona los dos.
 
+El prefijo, además, es **contrato con una máquina**. Desde #108,
+`src/__tests__/design-drift.test.ts` ignora un `#` seguido de dos o tres
+dígitos **solo cuando le sigue ` R<dígito>`**: esa es la única forma de cita
+que sus guards de color hex distinguen de un color. Una cita suelta —`#108`,
+`#108)`, `#108:`— dentro de un fichero que alguna lista `featureFiles`
+enumere se sigue leyendo como hex y pone el guard en rojo. Cítalo siempre
+como `#108 R1`. La exclusión es deliberadamente contextual y no léxica:
+ignorar todo `#` de tres dígitos decimales dejaría pasar `#000`, `#111` y
+`#999`, que son colores de verdad.
+
 ### Filtros de jest con rutas que llevan paréntesis
 
 Los argumentos posicionales de `jest` son **regex**, no rutas. Las pantallas de

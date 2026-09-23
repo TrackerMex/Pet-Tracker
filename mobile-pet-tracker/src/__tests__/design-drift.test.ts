@@ -22,6 +22,22 @@ const { join } = require('path');
 const sourceRoot = join(process.cwd(), 'src');
 const projectRoot = process.cwd();
 
+const HEX_LITERAL = String.raw`#(?!\d{2,3} R\d)[\da-f]{3,8}\b`;
+const ARBITRARY_CLASS = String.raw`[A-Za-z0-9_-]+-\[[^\]]+\]`;
+const SHADOW_ESCAPES = String.raw`shadowColor|shadowOffset|shadowOpacity|shadowRadius|\belevation\s*:`;
+const FEATURE_STYLE_ESCAPES = new RegExp(
+  String.raw`text-\[10px\]|${HEX_LITERAL}|StyleSheet`,
+  'i',
+);
+const PAIRING_STYLE_ESCAPES = new RegExp(
+  String.raw`${HEX_LITERAL}|${ARBITRARY_CLASS}|StyleSheet\.create|${SHADOW_ESCAPES}`,
+  'i',
+);
+const MEALS_BAR_STYLE_ESCAPES = new RegExp(
+  String.raw`${HEX_LITERAL}|${ARBITRARY_CLASS}|StyleSheet(?:\.create)?|${SHADOW_ESCAPES}`,
+  'i',
+);
+
 function sourceFiles(directory: string): string[] {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const path = join(directory, entry.name);
@@ -114,7 +130,7 @@ describe('R9: mobile-pets-profile sin drift', () => {
   it('keeps arbitrary text, hex colors, and StyleSheet out of feature sources', () => {
     const violations = featureFiles.flatMap((relativePath) => {
       const contents = readFileSync(join(sourceRoot, relativePath), 'utf8');
-      return /text-\[10px\]|#[\da-f]{3,8}\b|StyleSheet/i.test(contents)
+      return FEATURE_STYLE_ESCAPES.test(contents)
         ? [relativePath]
         : [];
     });
@@ -193,9 +209,7 @@ describe('R11 (mobile-device-pairing): pairing usa el Card compartido y las dime
   });
 
   it('keeps pairing free of forbidden styling escapes', () => {
-    expect(pairingSource).not.toMatch(
-      /#[\da-f]{3,8}\b|[A-Za-z0-9_-]+-\[[^\]]+\]|StyleSheet\.create|shadowColor|shadowOffset|shadowOpacity|shadowRadius|\belevation\s*:/i,
-    );
+    expect(pairingSource).not.toMatch(PAIRING_STYLE_ESCAPES);
   });
 });
 
@@ -217,7 +231,7 @@ describe('#68 R18: la actividad semanal no mete drift de estilo', () => {
   it('keeps arbitrary text, hex colors, and StyleSheet out of feature sources', () => {
     const violations = featureFiles.flatMap((relativePath) => {
       const contents = readFileSync(join(sourceRoot, relativePath), 'utf8');
-      return /text-\[10px\]|#[\da-f]{3,8}\b|StyleSheet/i.test(contents)
+      return FEATURE_STYLE_ESCAPES.test(contents)
         ? [relativePath]
         : [];
     });
@@ -257,7 +271,7 @@ describe('#69 R13: la tira de estadísticas no mete drift de estilo', () => {
   it('mantiene sus cinco ficheros sin escapes de estilo literales', () => {
     const violations = featureFiles.flatMap((relativePath) => {
       const contents = readFileSync(join(sourceRoot, relativePath), 'utf8');
-      return /text-\[10px\]|#[\da-f]{3,8}\b|StyleSheet/i.test(contents)
+      return FEATURE_STYLE_ESCAPES.test(contents)
         ? [relativePath]
         : [];
     });
@@ -276,7 +290,7 @@ describe('#71 R13: la rejilla de accesos rápidos no mete drift de estilo', () =
   it('mantiene sus tres ficheros sin escapes de estilo literales', () => {
     const violations = featureFiles.flatMap((relativePath) => {
       const contents = readFileSync(join(sourceRoot, relativePath), 'utf8');
-      return /text-\[10px\]|#[\da-f]{3,8}\b|StyleSheet/i.test(contents)
+      return FEATURE_STYLE_ESCAPES.test(contents)
         ? [relativePath]
         : [];
     });
@@ -298,7 +312,7 @@ describe('#70 R17: la sección de recordatorios no mete drift de estilo', () => 
   it('mantiene sus ficheros sin escapes de estilo literales', () => {
     const violations = featureFiles.flatMap((relativePath) => {
       const contents = readFileSync(join(sourceRoot, relativePath), 'utf8');
-      return /text-\[10px\]|#[\da-f]{3,8}\b|StyleSheet/i.test(contents)
+      return FEATURE_STYLE_ESCAPES.test(contents)
         ? [relativePath]
         : [];
     });
@@ -319,7 +333,7 @@ describe('#85 R12: la sección de recordatorios reales no mete drift de estilo',
   it('mantiene sus ficheros sin escapes de estilo literales', () => {
     const violations = featureFiles.flatMap((relativePath) => {
       const contents = readFileSync(join(sourceRoot, relativePath), 'utf8');
-      return /text-\[10px\]|#[\da-f]{3,8}\b|StyleSheet/i.test(contents)
+      return FEATURE_STYLE_ESCAPES.test(contents)
         ? [relativePath]
         : [];
     });
@@ -340,9 +354,7 @@ describe('#98 R10: la barra de comidas no mete drift de estilo', () => {
   it('mantiene sus ficheros sin escapes de estilo literales', () => {
     const violations = featureFiles.flatMap((relativePath) => {
       const contents = readFileSync(join(sourceRoot, relativePath), 'utf8');
-      return /#[\da-f]{3,8}\b|[A-Za-z0-9_-]+-\[[^\]]+\]|StyleSheet(?:\.create)?|shadowColor|shadowOffset|shadowOpacity|shadowRadius|\belevation\s*:/i.test(
-        contents,
-      )
+      return MEALS_BAR_STYLE_ESCAPES.test(contents)
         ? [relativePath]
         : [];
     });
@@ -555,5 +567,79 @@ describe('#94 R10: la antigüedad de la posición se lee en un solo sitio', () =
     );
 
     expect(actual).toEqual(staleSecondsReads);
+  });
+});
+
+describe('#108 R1: los patrones compartidos se declaran una sola vez', () => {
+  const source = readFileSync(
+    join(sourceRoot, '__tests__', 'design-drift.test.ts'),
+    'utf8',
+  );
+
+  it.each([
+    ['[\\d', 'a-f]{3,8}'].join(''),
+    ['shadowColor|shadowOffset', '|shadowOpacity|shadowRadius'].join(''),
+  ])('declara una sola vez %s', (needle) => {
+    expect(source.split(needle).length - 1).toBe(1);
+  });
+});
+
+describe('#108 R2: el guard de estilo distingue un R-id de un color hex', () => {
+  it.each([
+    [
+      "describe('#106 R2: la barra de comidas transiciona su ancho', () => {",
+      false,
+    ],
+    [
+      "describe('#98 R10: la barra de comidas no mete drift de estilo', () => {",
+      false,
+    ],
+    ['#fff', true],
+    ['#1DA868', true],
+    ['#000', true],
+    ['backgroundColor: #1DA868;', true],
+    ['ver el hilo #106, gracias', true],
+    ['#106 R2 usa el token y no #fff', true],
+  ])('%s', (sample, expected) => {
+    expect(FEATURE_STYLE_ESCAPES.test(sample)).toBe(expected);
+    expect(PAIRING_STYLE_ESCAPES.test(sample)).toBe(expected);
+    expect(MEALS_BAR_STYLE_ESCAPES.test(sample)).toBe(expected);
+  });
+});
+
+describe('#108 R3: los títulos de #106 vuelven a ser literales enteros', () => {
+  const homeTestSource = readFileSync(
+    join(sourceRoot, 'screens', 'home', 'index.test.tsx'),
+    'utf8',
+  );
+
+  it.each([
+    "describe('#106 R2: la barra de comidas transiciona su ancho'",
+    "describe('#106 R3: reduce motion deja la barra sin animación'",
+  ])('contiene %s', (title) => {
+    expect(homeTestSource).toContain(title);
+  });
+
+  it('no parte el prefijo de #106', () => {
+    const splitTitlePrefix = ["'#' + '", '106'].join('');
+
+    expect(homeTestSource).not.toContain(splitTitlePrefix);
+  });
+});
+
+describe('#108 R4: la convención de cita del guard está documentada', () => {
+  const conventions = readFileSync(
+    join(projectRoot, '..', 'docs', 'conventions.md'),
+    'utf8',
+  );
+  const start = conventions.indexOf(
+    '### Prefijo de feature cuando un fichero acumula R-ids de dos specs',
+  );
+  const end = conventions.indexOf('\n### ', start + 1);
+  const section = conventions.slice(start, end);
+
+  it('documenta el guard y la forma canónica', () => {
+    expect(section).toContain('design-drift.test.ts');
+    expect(section).toContain('`#108 R1`');
   });
 });

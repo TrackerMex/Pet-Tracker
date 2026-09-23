@@ -2098,6 +2098,24 @@
     ]
   },
   {
+    "id": 108,
+    "name": "design-drift-hex-guard-rid",
+    "status": "done",
+    "priority": "P2",
+    "description": "Registrada el 2026-09-22 por la sesion de #102 tras el aviso de la sesion de #106+#107 (su hallazgo B4). El guard de colores hex de mobile-pet-tracker/src/__tests__/design-drift.test.ts confunde un R-id de tres cifras con un color hex de tres digitos: el patron es /#[\\da-f]{3,8}\\b/i y los digitos 0-9 son un subconjunto de los hex, asi que '#106 R2' casa. La frontera es exacta y verificada: '#98' son dos caracteres y NO casa, '#100' en adelante SI. Toda feature de id >= 100 lo sufre, y #106 fue la primera en escribir tests para una. OJO, la estimacion de 'una linea' que circulo es falsa: el regex esta DUPLICADO en OCHO guards distintos (lineas 117, 197, 220, 260, 279, 301, 322, 343 en el tip 3a52028b+#102), SEIS con la forma corta text-[10px]|#hex|StyleSheet (117, 220, 260, 279, 301, 322) y DOS con la forma larga que anade shadowColor/elevation (197, 343). Las dos largas NO son iguales entre si: la de 197 lleva StyleSheet\\.create y la de 343 StyleSheet(?:\\.create)?, asi que unificarlas cambia lo que cada una cubre y la spec tiene que decidirlo explicitamente. Detalle de implementacion cazado por la sesion vecina: el \\b casa contra el espacio que sigue a '#106', asi que cualquier exclusion por alternancia tiene que ir ANTES en el patron; una lookahead negativa o un pre-filtrado del texto evita depender de ese orden. Y ojo al alcance: revertir los dos literales partidos arregla el grep de #106 pero NO la trampa, que vuelve con #109 o #110; el arreglo es el regex, la reversion es limpieza. El guard muerde ficheros de TEST porque las listas featureFiles los enumeran explicitamente: hay 11 entradas .test.ts(x) en esas listas (lineas 207, 209, 211, 213, 252, 253, 272, 292, 294, 313, 315) y screens/home/index.test.tsx aparece en CINCO de ellas. Workaround vigente que hay que deshacer: Codex partio el literal en mobile-pet-tracker/src/screens/home/index.test.tsx:3790 y :3835 como describe('#' + '106 R2: ...'), que funciona pero deja grep '#106 R2' src/ en falso negativo, y ese grep es justo el metodo con el que traceability.md cita el titulo literal del describe y con el que el reviewer verifica C5. La spec debe decidir si el arreglo es un helper compartido o un patron de exclusion (#\\d{2,3} R\\d) aplicado antes de buscar hex, y debe candar el caso con un test que falle si el guard vuelve a confundir un R-id; la via (b) de C4 aplica porque no hay comportamiento nuevo. Depende de que #106+#107 mergeen: los dos literales partidos viven en su branch. CASOS FRONTERA QUE LA SPEC DEBE EXIGIR, aportados por la sesion de #106+#107 tras su ronda 2: no basta probar con '#106' y '#fff'. El espacio es '#' seguido de 3 a 8 caracteres hex, y lo interesante son los casos que son LAS DOS COSAS A LA VEZ ('#106' es R-id y hex de 3 digitos valido al mismo tiempo). Minimo: un R-id de 3 cifras, uno de 2 ('#98', que hoy NO casa y debe seguir sin casar), un hex de 3, uno de 6 ('#1DA868'), y uno pegado a un limite de palabra distinto del espacio. Dos lecciones suyas de la misma ronda que aplican al candado de esta feature: (1) un candado que asevera contra un simbolo IMPORTADO de produccion no canda nada, porque mutar la constante mueve los dos lados de la igualdad —les paso con MEALS_BAR_TIMING y 250 -> 2500 pasaba en verde—, asi que el valor esperado va escrito literal en el test; (2) un candado que muestrea un continuo canda solo los puntos que muestrea. AVISO DE LINEAS: src/screens/home/index.test.tsx cambio mucho con #106 (el helper expectMealsBarTiming evalua la bezier en nueve puntos y las aserciones de ancho pasaron a toHaveAnimatedStyle), asi que las lineas 3790 y 3835 de los literales partidos hay que re-medirlas contra origin/main DESPUES de que mergee la PR #146, nunca contra lo medido antes.",
+    "acceptance_criteria": [
+      "Un R-id de tres cifras deja de disparar el guard de hex, y un color hex de verdad (#fff, #1DA868) lo sigue disparando: las dos direcciones candadas con test",
+      "El arreglo no se copia ocho veces: el regex queda en un solo sitio compartido por los ocho guards, o la spec justifica por escrito por que no",
+      "Los dos literales partidos de screens/home/index.test.tsx vuelven a ser un string entero, y grep '#106 R2' src/ los encuentra",
+      "Ningun describe preexistente deja de correr: el recuento de design-drift.test.ts y el total de la suite no bajan",
+      "#106 + #107 mergeadas antes de empezar; cero dependencias nuevas"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/__tests__/design-drift.test.ts",
+      "mobile-pet-tracker/src/screens/home/index.test.tsx"
+    ]
+  },
+  {
     "id": 109,
     "name": "mobile-meal-toggle-source-lock-nesting",
     "status": "done",

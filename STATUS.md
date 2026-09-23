@@ -1,8 +1,8 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-09-22
-**Features completadas**: 93/110 (`feature_list.json`)
-**En progreso**: ninguna
+**Features completadas**: 93/111 (`feature_list.json`)
+**En progreso**: #108 `design-drift-hex-guard-rid` implementada; pendiente de reviewer
 
 **Pendientes**: 17 (#18, #41, #60, #74, #77, #80, #81, #84, #86, #95, #99-#105 y #112). **#110 `mobile-reanimated-double-dead-weight` cerrada**: el fichero de tests de la Home montaba dobles que no candaban nada -quitarlos dejaba la suite verde- pero sustituian el Skeleton real de heroui-native por un View pelado en sus 138 tests, borrando la clase base, el borderCurve y toda la superficie de animacion. Ahora se monta el real y hay dos tests nuevos que lo candan: 140 en el fichero, 1398 en la suite. OJO, la premisa con la que se registro la deuda era MAS ANCHA de lo que resulto: se dijo que el test de #62 R8 creia probar produccion y probaba un doble, y se midio que NO -mutar lo que vigila da 1 rojo identico con doble y sin doble-; sobrevive porque asevera con toContain y ambos Skeletons propagan className. Los titulos de sus tests se apartan a proposito de la forma canonica -llevan `R<n> (nombre-de-feature)` sin almohadilla- porque el literal `#110` casa con el guard de colores hex y pondria rojos los cinco guards que vigilan ese fichero; es desviacion firmada por el humano, no atajo. Segunda spec aprobada desde Notion. **#109 `mobile-meal-toggle-source-lock-nesting` cerrada**: el candado de fuente del boton de comida recortaba entre `lastIndexOf('<Pressable')` y `indexOf('</Pressable>')`, y un Pressable anidado dentro cortaba en el cierre del HIJO, dejando el tag de apertura del hijo con su style dentro del bloque -o sea que el candado pasaba en VERDE vigilando el boton equivocado, sin avisar. Ahora recorta de `<` a `<`, su propio tag de apertura, y el anidamiento deja de existir como concepto: dos indexOf, ningun simbolo nuevo que vigilar. Diff de produccion **vacio** y el patron queda escrito en `docs/conventions.md` con sus DOS limites conocidos y cual de los dos avisa. Primera spec aprobada desde Notion (#147): el humano movio `Estado del gate` y el leader firmo en el repo citando la pagina y su marca de tiempo. Esa primera vuelta destapo que la API da que y cuando pero **no la cuenta** que aprobo, y el harness ya lo dice asi. **#106 `mobile-meals-bar-motion` y #107 `mobile-meal-toggle-press-lock` cerradas y mergeadas**: la barra de comidas de la Home transiciona su ancho con `withTiming` respetando reduce motion, servir y deshacer vibran distinguiendo exito de fallo, y el feedback de pulsado del boton por franja por fin tiene candado. Son dos entradas cerradas con UNA sola spec y un solo ciclo, por decision del humano: tocaban el mismo Pressable. Entro `expo-haptics` ~57.0.3, la primera dependencia nueva desde el veto, firmada por el humano junto con la enmienda a `docs/ui-guidelines.md:171` que decia que no estaba instalada. Las tres rondas se fueron en candados que no candaban: B1 aseveraba contra la constante importada de produccion (mutar 250 a 2500 dejaba 138/138 verde) y B6 muestreaba la curva en dos puntos, agujero que el reviewer demostro construyendo con un solver una impostora que pasaba en verde desviandose 0.33 a mitad de recorrido. Los dos estan cerrados. Quedan #109 (agujero por anidamiento en el recorte del fuente de R5) y #110 (el doble de Reanimated sustituye el Skeleton real en 138 tests, incluido el de #62 R8, que cree probar produccion y prueba un doble). El guard de hex de `design-drift.test.ts` -todo R-id de tres cifras casa con `/#[\da-f]{3,8}\b/i` desde #100- se lo llevo la sesion Backend como #108. #94 `mobile-map-staleness-single-source` y #98 `mobile-meals-served-ui` están `done`; #98 ya está en `main` (PR #144) y la rama de #94 integra esa punta para que el PR #143 quede listo para el merge humano.
 
@@ -88,6 +88,13 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
+- **`design-drift-hex-guard-rid` (#108) implementada, pendiente de reviewer**
+  (2026-09-22): el átomo hex de los ocho guards vive en una constante y excluye
+  solo citas canónicas `#<id> R<n>`; las dos formas largas conservan su cobertura
+  distinta. Los dos títulos de #106 vuelven a literales enteros y la convención
+  queda documentada. Gate móvil: 77 suites / 1412 tests, design-drift 55 tests
+  en 21 describes y `tsc --noEmit` limpio. No se marca `done` hasta el
+  veredicto del reviewer.
 - **`mobile-map-staleness-single-source` (#94) y `mobile-meals-served-ui`
   (#98) done** (2026-09-21): #98 ya está en `main` por el PR #144. La rama de
   #94 integró esa punta con merge, sin rebase: conserva la única fuente de
@@ -1216,6 +1223,13 @@ debe listar las 4 URLs de cola.
 
 ## Última sesión
 
+- **2026-09-22** — **#108 `design-drift-hex-guard-rid` implementada**
+  (worktree `wt-ui`): cuatro pares rojo→verde en orden R1, R2, R3 y R4; el
+  regex compartido distingue R-ids de colores sin unificar los dos guards
+  largos. Base 77/1398; cierre 77/1412; design-drift 41→55 tests y 17→21
+  describes; TypeScript limpio. Sondas de R1 y R2 rojas por aserción. Queda
+  `in_progress` hasta la revisión; reporte en
+  `progress/impl_design-drift-hex-guard-rid.md`.
 - **2026-09-21** — **#94, ronda 3: `origin/main` integrado en el PR #143**
   (worktree `wt-ui`): merge de `9df7b5bc` sobre `45c30047`, con base común
   `914905b8`; el único conflicto textual fue `progress/history.md` y se

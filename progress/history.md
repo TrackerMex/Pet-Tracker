@@ -4857,3 +4857,100 @@ teclear el commit.
 Y el handoff fue el primero que dijo explícitamente **«no cargues ninguna skill
 de Expo»**: el plugin de Codex es la v1.0.2 con 13 skills y **ninguna** cubre
 esperas de jest. Pedir una que no existe no da error, da silencio.
+
+---
+
+## #108 `design-drift-hex-guard-rid` — 2026-09-23
+
+El guard de colores hex de `src/__tests__/design-drift.test.ts` confundía un
+R-id de tres cifras con un color: `/#[\da-f]{3,8}\b/i` y los dígitos `0-9` son
+un subconjunto de los hex, así que **`#106` casaba**. Frontera exacta: `#98` son
+dos caracteres y no casa; **`#100` en adelante sí**. Afectaba a toda feature de
+id ≥ 100.
+
+Cuatro pares rojo→verde (R1..R4), `reviewer` **aprobado sin bloqueantes**.
+Cierre: **77 suites / 1412 tests**, `design-drift.test.ts` **55 tests en 21
+describes**, `tsc` 0 bytes.
+
+### De dónde salió: un aviso de la sesión vecina, no un test rojo
+
+Lo destapó #106 al escribir `describe('#106 R2: …')` y ver el guard morder. Su
+sesión lo esquivó partiendo el literal (`'#' + '106 R2: …'`), que funciona pero
+deja `grep '#106 R2' src/` en **falso negativo** — y ese grep es el método con
+el que la trazabilidad cita el título del describe y el `reviewer` verifica C5.
+Nos lo pasaron como deuda; lo verificamos y lo cogimos.
+
+**Su estimación de coste era falsa y lo dijimos.** Dijeron «es una línea». El
+regex estaba duplicado en **ocho** guards: seis con la forma corta (117, 220,
+260, 279, 301, 322) y dos con la larga (197, 343). Y al desglosarlo salió algo
+que el total escondía: **las dos largas no son iguales entre sí** — `:197` lleva
+`StyleSheet\.create` y `:343` lleva `StyleSheet(?:\.create)?`. Unificarlas
+habría cambiado cobertura sin requisito detrás, así que la spec las **deja
+separadas** y comparte solo el átomo roto.
+
+Yo también me equivoqué al registrar la entrada: escribí «siete cortas y dos
+largas», que suman nueve contra ocho. Lo cazó la sesión vecina **porque publiqué
+el desglose**: un total solo se verifica recontando, un desglose se verifica
+sumando.
+
+### El arreglo, y por qué es contextual y no léxico
+
+`HEX_LITERAL` pasa de **8 ocurrencias a 1** y la exclusión va como **lookahead
+negativa dentro del átomo**: `#(?!\d{2,3} R\d)[\da-f]{3,8}\b`. No como
+alternativa hermana, porque el `\b` casa contra el espacio que sigue y el orden
+dentro de una alternancia sería una trampa para el siguiente que lo edite.
+
+La fila crítica de la tabla de frontera es **F5: `#000` espera `true`**. Es tres
+dígitos decimales **y** un color real, así que cualquier exclusión puramente
+léxica —«tres decimales nunca es color»— lo habría apagado, junto con `#111`,
+`#222` y `#999`. Eso es lo que el humano firmó de fondo: que `#<id> R<n>` pasa a
+ser **contrato con una máquina**, y que una cita suelta seguirá poniendo el
+guard en rojo a propósito. R4 lo escribe en `docs/conventions.md`.
+
+Cada una de las ocho filas se asevera contra **las tres** formas compuestas, y
+los valores esperados van **literales**, nunca derivados de `HEX_LITERAL`: un
+candado que asevera contra el símbolo que vigila mueve los dos lados de la
+igualdad al mutarlo (lección de `MEALS_BAR_TIMING` en #106).
+
+### La lección que se llevó por delante dos veces el gate
+
+Esta feature esperó firma mientras **#110 y #111 mergeaban**. Su gate original
+era el absoluto `1396 → 1410`, y **nunca llegó a ser cierto**: #110 subió la base
+a 1398. Se reescribió como **derivación** antes de la firma —el implementador
+mide su propia base y comprueba `+14`— y al cerrar dio **1398 + 14 = 1412**,
+clavado. El absoluto habría fallado dos veces.
+
+Lo mismo con las posiciones: el handoff mandaba a Codex a `:3790` y `:3835`, y
+#110 los movió **23 líneas arriba**. Se salvó porque la sesión vecina avisó
+mientras miraba el diff. Ahora el ancla es `grep -n "'#' + '"` y el número queda
+como descripción fechada, nombrando por escrito que **#112 los moverá otra vez**.
+
+De ahí la regla: **lo que se desplaza no puede ser el ancla**. Recuentos y
+números de línea son el mismo error con dos caras.
+
+### Verificaciones que no se heredaron del reporte
+
+El `reviewer` corrió los cuatro commits rojos y midió que **todos fallan por
+aserción**, ninguno por `ReferenceError` ni módulo ausente. Para R2 confirmó lo
+que la spec predecía: contra el regex viejo **solo F1 falla**, F2–F8 ya estaban
+verdes. Reprodujo las ocho filas en `node` al margen de jest (8/8, con F5 en
+`true`), comprobó que ninguna forma lleva flag `g` —con `g`, `.test()` guarda
+`lastIndex` y todo depende del orden— y sondeó revirtiendo el fichero de Home
+contra el `design-drift.test.ts` nuevo: 3 rojos, exactamente los tres de R3.
+
+**`sourceFiles()` no se tocó**: solo aparece como contexto en el diff, y el
+inventario da cuatro describes añadidos y **cero suprimidos** (17→21).
+Modificarlo apagó 14 describes en silencio en la ronda 1 de #94.
+
+### Desviaciones, todas no bloqueantes
+
+- Codex **trabajó en el worktree equivocado** y lo cambió de branch. Sin pérdida
+  —todo commiteado y pusheado—, pero dejó los worktrees cruzados.
+- Codex escribió `progress/history.md` y vació `progress/current.md`, que son
+  artefactos de cierre del leader. Texto honesto, decía explícitamente que no
+  marcaba `done`.
+- Un commit extra sobre los ocho prescritos, para partir por concatenación la
+  aguja del test de R3 y evitar que el gate de grep diera falso positivo sobre
+  el propio candado. El `reviewer` sondeó que **no lo debilita**.
+- La nota de cierre de `traceability.md` seguía citando `1396 + 14 = 1410`.
+  Corregida al cerrar: el número que nunca fue cierto no se queda escrito.
