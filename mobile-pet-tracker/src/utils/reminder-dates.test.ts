@@ -43,3 +43,30 @@ describe('#84 R1: daysUntil cuenta días de calendario locales, no bloques de 24
     expect(daysUntil(from, to)).toBe(expected);
   });
 });
+
+describe('#84 R2: la zona horaria no desplaza la cuenta de días', () => {
+  function skewed(localDay: number, iso: string): Date {
+    const instant = new Date(iso);
+    return {
+      getFullYear: () => 2026,
+      getMonth: () => 8,
+      getDate: () => localDay,
+      getUTCFullYear: () => instant.getUTCFullYear(),
+      getUTCMonth: () => instant.getUTCMonth(),
+      getUTCDate: () => instant.getUTCDate(),
+      getTime: () => instant.getTime(),
+    } as unknown as Date;
+  }
+
+  const a = skewed(10, '2026-09-10T14:00:00.000Z');
+  const b = skewed(10, '2026-09-11T02:00:00.000Z');
+  const c = skewed(11, '2026-09-11T15:00:00.000Z');
+
+  it.each([
+    ['Ciudad de México, 08:00 → 20:00 del mismo día = 0', a, b, 0],
+    ['Ciudad de México, 20:00 → 09:00 del día siguiente = 1', b, c, 1],
+    ['Ciudad de México, 20:00 → 08:00 del mismo día = 0', b, a, 0],
+  ])('%s', (_title, from, to, expected) => {
+    expect(daysUntil(from, to)).toBe(expected);
+  });
+});

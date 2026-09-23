@@ -14,7 +14,7 @@ export function combineDateAndTime(date: Date, time: Date): Date {
 
 export function daysUntil(from: Date, to: Date): number {
   return (
-    Date.UTC(to.getFullYear(), to.getMonth(), to.getDate()) -
-    Date.UTC(from.getFullYear(), from.getMonth(), from.getDate())
+    Date.UTC(to.getUTCFullYear(), to.getUTCMonth(), to.getUTCDate()) -
+    Date.UTC(from.getUTCFullYear(), from.getUTCMonth(), from.getUTCDate())
   ) / DAY_MS;
 }
