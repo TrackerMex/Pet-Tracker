@@ -26,7 +26,7 @@
 
 ## R4
 
-Pendiente.
+- Rojo `pnpm test:e2e -- meals.e2e-spec` → `exit=1`, 6 failed / 16 passed: los 2 casos R4 fallan por `kcalConsumedToday` ausente (`530` antes del cambio; `0` con franjas nuevas). Las inserciones del plan vigente y `servedToday` funcionan. Persisten los rojos previstos de R2, R3 y R9.
 
 ## Cierre
 
