@@ -39,7 +39,7 @@ jest.mock('expo-router', () => {
   );
 
   return {
-    router: { push: jest.fn(), back: jest.fn() },
+    router: { push: jest.fn(), back: jest.fn(), dismissTo: jest.fn() },
       Redirect: ({ href }: { href: string }) => {
       const props = { testID: 'add-reminder-redirect', href };
 
@@ -149,6 +149,19 @@ describe('R8: formulario de alta con chips y pickers', () => {
       signOut: jest.fn(),
     } satisfies AuthContextValue);
     mockCreateReminder.mockReturnValue(pending());
+  });
+
+  describe('#114 R7: sin mascota, add-reminder desapila hasta reminders', () => {
+    it('desapila una vez y no pinta el formulario ni un Redirect', async () => {
+      await renderAddReminder(false);
+
+      expect(mockRouter.dismissTo).toHaveBeenCalledTimes(1);
+      expect(mockRouter.dismissTo).toHaveBeenCalledWith('/reminders');
+      expect(mockRouter.push).not.toHaveBeenCalled();
+      expect(mockRouter.back).not.toHaveBeenCalled();
+      expect(screen.queryByTestId('screen-add-reminder')).toBeNull();
+      expect(screen.queryByTestId('add-reminder-redirect')).toBeNull();
+    });
   });
 
   it('redirects a cold deep-link without a selected pet', async () => {
