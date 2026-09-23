@@ -1,6 +1,6 @@
 ---
 feature: "mobile-detail-screens-to-stack"
-status: draft        # draft | approved
+status: approved       # draft | approved
 tags: [harness, spec, mobile]
 ---
 
@@ -391,15 +391,15 @@ está instalado y enlazado; [[design]] §Entorno). App en español.
 
 ### Enmienda A11 — métricas bajo cabecera nativa (`docs/conventions.md`, `docs/ui-guidelines.md`)
 
-- [ ] Enmienda A11 aprobada por humano (fecha: ____)
+- [x] Enmienda A11 aprobada por humano (fecha: 2026-09-23)
 
 ### Enmienda A12 — reversión de D4 de `mobile-device-pairing`
 
 La casilla normativa vive en `specs/mobile-device-pairing/design.md`
 §Enmienda #95; esta es su espejo, para que se vea desde aquí que existe.
 
-- [ ] Enmienda A12 aprobada por humano (fecha: ____)
+- [x] Enmienda A12 aprobada por humano (fecha: 2026-09-23)
 
 ### Aprobación de la spec
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (fecha: 2026-09-23) ← gate obligatorio antes de implementar

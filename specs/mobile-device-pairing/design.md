@@ -488,4 +488,4 @@ design D1–D7 y D10).
   ("Vincular collar", "Dispositivo GPS", "El collar está listo"), ni su estado de
   aprobación. Tampoco el reset al cambiar de mascota que añadió #63 R6.
 
-- [ ] Enmienda aprobada por humano (fecha: ____)
+- [x] Enmienda aprobada por humano (fecha: 2026-09-23)

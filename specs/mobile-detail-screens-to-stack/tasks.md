@@ -1,6 +1,6 @@
 ---
 feature: "mobile-detail-screens-to-stack"
-status: draft        # draft | approved
+status: approved       # draft | approved
 tags: [harness, spec, mobile]
 ---
 
