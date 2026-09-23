@@ -13,4 +13,13 @@
   reinicio del VPS de las 03:52): exit=0 sin pipe. Linea base en 9932f314: backend unit 170 suites /
   1295 tests; e2e 27 passed + 3 skipped de 30 suites, 384 passed + 8 skipped tests; movil 77 suites /
   1412 tests; lint y typecheck verdes.
-- Pendiente: firma humana en Notion (D1 y D4 piden atencion). Despues: commit de firma y handoff a Codex.
+- Firma: el humano aprobo en Notion (Estado del gate = Aprobado, page_last_edited_at
+  2026-09-23T14:22:43.494Z). Commit de firma 5b743931; Notion Rol actual = Implementer.
+- feature: nutrition-kcal-consumed (#104), status in_progress
+- inicio: 2026-09-23T14:25Z
+- plan: Codex CLI implementa R1-R4 en este worktree (funcion pura kcalConsumed en dominio, cableada en
+  GetNutritionPlanUseCase y en el mapper del GET del plan; e2e en test/meals.e2e-spec.ts). Handoff en
+  progress/handoff_nutrition-kcal-consumed.md. Codex NO corre init.sh completo (LocalStack compartido
+  con #95): el init.sh completo lo corre el reviewer tras avisar a Frontend.
+- Siguiente: el humano confirma que Codex termino -> leer progress/impl_nutrition-kcal-consumed.md ->
+  avisar a Frontend -> reviewer.
