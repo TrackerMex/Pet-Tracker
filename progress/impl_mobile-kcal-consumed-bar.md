@@ -55,3 +55,44 @@ Commits TDD (rojo → verde):
 | R3 | `59220c29` | `40bfb708` |
 | R4 | `a91b6af7` | `cd2952e8` |
 | R5 | `a73390f7` | `82568138` |
+
+## Ronda 2 — Enmienda E1, R7
+
+- `pwd`: `/home/claude/sites/Pet-Tracker-wt-backend`.
+- `git branch --show-current`: `feature/113-mobile-kcal-consumed-bar`.
+- Skills: `expo:building-native-ui` y `ponytail:ponytail` (modo full), ya cargadas en la ronda 1 y reutilizadas aquí; ninguna otra skill de Expo.
+- Leídas completas las secciones §Enmienda E1 de `requirements.md` y `tasks.md`, y H1/§Sondas para la enmienda de H1 del review. Enmienda E1 firmada por humano en `9da4db78`.
+- Base medida en esta rama: `bunx jest --runTestsByPath 'src/app/(tabs)/__tests__/food.test.tsx'` → `Test Suites: 1 passed, 1 total`, `Tests: 53 passed, 53 total`, `exit=0`.
+- Base de `./init.sh` medida por el reviewer en `15e43269`: móvil 80 suites/1441 tests, `exit=0`; no se repite por infraestructura compartida.
+- R7 rojo `2a1d1cff`: `bunx jest --silent --runTestsByPath 'src/app/(tabs)/__tests__/food.test.tsx'` → `Test Suites: 1 failed, 1 total`; `Tests: 2 failed, 53 passed, 55 total`; `exit=1`. Las dos filas de R7 fallaron por aserción: `Expected: {"width":"0%"}` / `Received: {"width":"0%","opacity":0.7}` y lo mismo para `63%`; `'opacity' should be undefined, but is 0.7`. El resto de Food permaneció verde.
+- R7 verde `8dd65ed3`: Food `Test Suites: 1 passed, 1 total`; `Tests: 55 passed, 55 total`; `exit=0`. `git diff 15e43269 HEAD -- 'mobile-pet-tracker/src/app/(tabs)/food.tsx'` → salida vacía, `exit=0`: producción idéntica a la ronda 1.
+
+### Sondas de R7
+
+Cada sonda temporal corrió Food con `--runTestsByPath` y `-t '#113 R7:'`; se restauró inmediatamente y `git diff --exit-code -- food.tsx` devolvió `diff_exit=0` tras cada una.
+
+| Mutación temporal | Rojo observado |
+|---|---|
+| M13: `style={{ opacity: 0.5 }}` en `food-plan-track` | `2 failed, 53 skipped`, `exit=1`; falló la aserción de `track.props.style` |
+| M14: `backgroundColor: accent` en `kcalBarStyle` | `2 failed, 53 skipped`, `exit=1`; `'backgroundColor' should be undefined, but is "accent-strong"` |
+| Relleno `style={[kcalBarStyle, { opacity: 0.7 }]}` | `2 failed, 53 skipped`, `exit=1`; `'opacity' should be undefined, but is 0.7` |
+| Relleno `style={[{ opacity: 0.7 }, kcalBarStyle]}` | `2 failed, 53 skipped`, `exit=1`; misma clave extra `opacity` |
+| Relleno `style={[kcalBarStyle, [{ opacity: 0.7 }]]}` | `2 failed, 53 skipped`, `exit=1`; misma clave extra `opacity` |
+| `style={{ opacity: 0.5 }}` en `food-plan-progress` | `2 failed, 53 skipped`, `exit=1`; falló `progress.props.style` |
+| `style={{ opacity: 0.5 }}` en la cabecera del progreso | `2 failed, 53 skipped`, `exit=1`; falló `header.props.style` |
+
+El archivo `.expo/types/router.d.ts` estaba ausente (`router_dts_present=False`).
+
+### Verificación de cierre de ronda 2
+
+| Comando de `design.md` §6 | Salida final |
+|---|---|
+| `bunx jest --runTestsByPath 'src/app/(tabs)/__tests__/food.test.tsx'` | `Test Suites: 1 passed, 1 total`; `Tests: 55 passed, 55 total`; `exit=0` |
+| `bunx jest --runTestsByPath` con los siete ficheros de §6 | `Test Suites: 7 passed, 7 total`; `Tests: 330 passed, 330 total`; `exit=0` |
+| `bunx jest` | `Test Suites: 80 passed, 80 total`; `Tests: 1443 passed, 1443 total`; `Snapshots: 1 passed`; `exit=0` |
+| `bunx tsc --noEmit` | `exit=0` |
+| `bun run lint` | `$ expo lint`; `exit=0` |
+
+Delta frente a la ronda 1: Food `53 + 2 = 55`; móvil `1441 + 2 = 1443`, mismas 80 suites. Grep-clean de §6 (hex, clases arbitrarias, `StyleSheet`/sombras, radios/opacidades vetados): cuatro salidas vacías (`grep exit=1`). `git diff --name-only origin/main -- package.json bun.lock src/theme/` vacío; `git diff --check` vacío. `git diff 15e43269 HEAD -- food.tsx` vacío (`exit=0`). Los diez hashes R1-R5 y los dos de R7 son ancestros de HEAD (`hashes_ancestor_exit=0`). La ronda solo deja diff en `food.test.tsx`, `traceability.md` y este reporte; `food.tsx` vuelve al byte de la ronda 1. R6 sigue pendiente del humano. No se ejecutaron `./init.sh` ni e2e, ni se hizo rebase, merge, push o PR.
+
+Commits TDD de ronda 2: rojo `2a1d1cff` → verde `8dd65ed3`.
