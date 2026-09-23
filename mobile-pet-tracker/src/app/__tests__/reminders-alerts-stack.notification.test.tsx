@@ -16,7 +16,6 @@ import IndexRoute from '../index';
 const mockSetPushToken = jest.fn();
 let mockAuthState = { status: 'loading', token: null as string | null, setPushToken: mockSetPushToken };
 const mockAuthListeners = new Set<() => void>();
-let mockRemindersMounts = 0;
 let mockAlertsMounts = 0;
 
 jest.mock('standard-navigation', () => ({}));
@@ -80,13 +79,9 @@ function routes() {
         else if (key === '(tabs)/_layout') result[key] = TabsLayout;
         else if (key === '(auth)/_layout') result[key] = AuthLayout;
         else if (key.endsWith('/_layout')) throw new Error(`Unexpected layout: ${key}`);
-        else if (key.endsWith('reminders') || key.endsWith('alerts')) {
+        else if (key.endsWith('alerts')) {
           result[key] = function ListStub() {
-            useState(() => {
-              if (key.endsWith('reminders')) mockRemindersMounts += 1;
-              else mockAlertsMounts += 1;
-              return 0;
-            });
+            useState(() => { mockAlertsMounts += 1; return 0; });
             return <Text>{key}</Text>;
           };
         } else result[key] = () => <Text>{key}</Text>;

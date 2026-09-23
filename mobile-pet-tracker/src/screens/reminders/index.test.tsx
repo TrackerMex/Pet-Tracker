@@ -230,7 +230,6 @@ describe('R5: reminders monta con métricas y estados', () => {
     await renderReminders();
 
     expect(screen.getByTestId('screen-reminders')).toBeVisible();
-    expect(screen.getByText('Recordatorios')).toBeVisible();
     expect(
       screen.getByTestId('screen-reminders').props.contentContainerStyle,
     ).toEqual({

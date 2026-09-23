@@ -196,18 +196,11 @@ export function AlertsScreen() {
           if (!alerts.hasNextPage || alerts.isFetchingNextPage) return;
           void alerts.fetchNextPage();
         }}
-        ListHeaderComponent={
-          <View className="gap-3">
-            <Text className="text-2xl font-black text-foreground">
-              {t('alerts.title')}
-            </Text>
-            {displayedActionError ? (
-              <Text testID="alerts-action-error" className="text-danger">
-                {displayedActionError}
-              </Text>
-            ) : null}
-          </View>
-        }
+        ListHeaderComponent={displayedActionError ? (
+          <Text testID="alerts-action-error" className="text-danger">
+            {displayedActionError}
+          </Text>
+        ) : null}
         ListEmptyComponent={empty}
         renderItem={({ item }) => {
           const rowId = `alert-row-${item.id}`;

@@ -140,10 +140,7 @@ export function RemindersScreen() {
         paddingBottom: insets.bottom + 96,
       }}
     >
-      <View className="flex-row items-center justify-between gap-3">
-        <Text className="text-2xl font-black text-foreground">
-          {t('reminders.reminders')}
-        </Text>
+      <View testID="reminders-actions" className="flex-row justify-end">
         <Button
           testID="reminders-add-link"
           className="rounded-xl bg-accent"
