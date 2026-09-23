@@ -5,7 +5,7 @@ import { Button, Skeleton, Spinner } from 'heroui-native';
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
+import Animated, { Easing, ReduceMotion, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { ChevronRight, Clock, ForkKnife, Sparkles } from 'reicon-react-native';
 
 import {
@@ -25,6 +25,11 @@ import { CONTINUOUS_CORNER, TABULAR_NUMS } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
 
 const AnimatedView = Animated.createAnimatedComponent(View);
+const KCAL_BAR_TIMING = {
+  duration: 250,
+  easing: Easing.bezier(0.77, 0, 0.175, 1),
+  reduceMotion: ReduceMotion.System,
+};
 
 function isPetsError(state: PetsState): boolean {
   return ['error', 'unreachable', 'missing-config'].includes(state.kind);
@@ -72,7 +77,7 @@ export default function FoodScreen() {
     width: `${kcalBarWidth.get()}%` as `${number}%`,
   }));
   useEffect(() => {
-    kcalBarWidth.set(kcalPct);
+    kcalBarWidth.set(withTiming(kcalPct, KCAL_BAR_TIMING));
   }, [kcalBarWidth, kcalPct]);
 
   async function toggleMeal(mealTime: string, served: boolean) {
