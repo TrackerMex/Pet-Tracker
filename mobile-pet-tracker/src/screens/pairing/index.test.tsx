@@ -515,7 +515,7 @@ describe('R7: tras el 201 muestra "El collar está listo" con el collar y sus CT
 
     await fireEvent.press(screen.getByTestId('ready-map'));
 
-    expect(mockRouter.push).toHaveBeenCalledWith('/map');
+    expect(mockRouter.dismissTo).toHaveBeenCalledWith('/map');
     expect(screen.queryByTestId('pairing-ready')).toBeNull();
     expect(screen.getByTestId('activation-code-input')).toBeVisible();
   });

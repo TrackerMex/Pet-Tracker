@@ -174,7 +174,7 @@ export function PairingScreen() {
     setPhase('idle');
     setReadyDevice(null);
     if (destination === 'map') {
-      router.push('/map');
+      router.dismissTo('/map');
       return;
     }
     router.back();
