@@ -361,7 +361,7 @@ ningún módulo nativo; `dismissTo` y `dangerouslySingular` son JS de
   aws --endpoint-url http://localhost:4566 sqs send-message \
     --queue-url "$(aws --endpoint-url http://localhost:4566 sqs get-queue-url \
                      --queue-name notifications --query QueueUrl --output text)" \
-    --message-body '{"version":1,"kind":"alert","alertId":"<uuid>","petId":"<petId>","title":"Smoke 114","body":"Prueba de toque","data":{"petId":"<petId>","alertId":"<uuid>"}}'
+    --message-body '{"version":1,"kind":"alert","alertId":"<uuid>","petId":"<petId>","title":"Smoke 114","body":"Prueba de toque","data":{"petId":"01a025c9-ca2b-7950-8385-f3abed7b1bd8","alertId":"03e68dec-5ef3-4a5b-ab1d-9356b5db1eb8"}}'
   ```
 
 - `adb`: el teléfono sale **dos veces** en `adb devices -l` (IP y mDNS). En
@@ -370,35 +370,35 @@ ningún módulo nativo; `dismissTo` y `dangerouslySingular` son JS de
 
 **Pasos**
 
-- [ ] 1. Home → "Ver todos" (sección de recordatorios): Recordatorios **entra con
+- [X] 1. Home → "Ver todos" (sección de recordatorios): Recordatorios **entra con
       la transición de plataforma**, bajo una cabecera nativa "Recordatorios" con
       flecha, **sin** la barra flotante. "Nuevo" sigue arriba a la derecha y no
       queda hueco entre la cabecera y el primer elemento. Al final de la lista,
       ~24 px sobre la barra del sistema, sin banda vacía. La flecha vuelve a Home.
-- [ ] 2. Profile → "Recordatorios": igual que 1; la flecha vuelve a **Profile**.
-- [ ] 3. Recordatorios → "Nuevo" → escribir un título → flecha: se vuelve a
+- [X] 2. Profile → "Recordatorios": igual que 1; la flecha vuelve a **Profile**.
+- [X] 3. Recordatorios → "Nuevo" → escribir un título → flecha: se vuelve a
       Recordatorios sin que parpadee la lista. "Nuevo" otra vez: formulario en
       blanco. Guardar uno: vuelve a Recordatorios y aparece.
-- [ ] 4. Home → campana: "Alertas" con cabecera nativa y sin barra; la flecha
+- [X] 4. Home → campana: "Alertas" con cabecera nativa y sin barra; la flecha
       vuelve a Home. En 1, 2 y 4, el **gesto o botón atrás del sistema** hace lo
       mismo que la flecha.
-- [ ] 5. Tema oscuro (Profile): las dos cabeceras toman fondo y texto del tema,
+- [X] 5. Tema oscuro (Profile): las dos cabeceras toman fondo y texto del tema,
       sin franja blanca. En inglés, los títulos son "Reminders" y "Alerts".
-- [ ] 6. **Toque en caliente**: Recordatorios → "Nuevo", escribir un título;
+- [X] 6. **Toque en caliente**: Recordatorios → "Nuevo", escribir un título;
       disparar una notificación y tocar el banner → Alertas **encima**. Atrás →
       "Agregar recordatorio" **con el título aún escrito**; atrás →
       Recordatorios; atrás → Home. La barra flotante no aparece en ningún paso
       intermedio.
-- [ ] 7. **Toque estando en Alertas**: con Alertas abierta, disparar otra y
+- [X] 7. **Toque estando en Alertas**: con Alertas abierta, disparar otra y
       tocarla → sigue en Alertas; **un** atrás sale de Alertas (no hay otra debajo).
-- [ ] 8. **Toque en frío**: `adb -s <ip:puerto> shell am force-stop com.trackermex.pettracker`;
+- [X] 8. **Toque en frío**: `adb -s <ip:puerto> shell am force-stop com.trackermex.pettracker`;
       disparar una notificación y tocarla en la bandeja → la app abre y queda en
       Alertas con flecha. Atrás → Home **con** la barra; un segundo atrás sale de
       la app.
-- [ ] 9. (Solo si hay una cuenta **sin mascotas**.) Profile → Recordatorios →
+- [X] 9. (Solo si hay una cuenta **sin mascotas**.) Profile → Recordatorios →
       "Nuevo" → vuelve solo a Recordatorios; **un** atrás → Profile.
 
-- [ ] Prueba de humo superada (fecha: ____)
+- [X] Prueba de humo superada (fecha: 2026-09-23)
 
 ## Aprobación
 
