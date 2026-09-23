@@ -66,7 +66,6 @@ jest.mock('reicon-react-native', () => {
     };
 
   return {
-    ArrowLeft: icon('meal-schedule-icon-arrow-left'),
     Clock: icon('meal-schedule-icon-clock'),
     ForkKnife: icon('meal-schedule-icon-fork-knife'),
   };

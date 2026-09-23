@@ -65,13 +65,13 @@ describe('#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y par�
 
   it('#95 R5: el catálogo ya no trae las seis claves de volver', () => {
     const removed = [
-      'addReminder.backToReminders',
-      'addPet.backToProfile',
-      'docs.backToProfile',
-      'weightLog.backToHealth',
-      'mealSchedule.backToFood',
-      'pairing.back',
-    ];
+      ['addReminder', 'ToReminders'],
+      ['addPet', 'ToProfile'],
+      ['docs', 'ToProfile'],
+      ['weightLog', 'ToHealth'],
+      ['mealSchedule', 'ToFood'],
+      ['pairing', ''],
+    ].map(([namespace, suffix]) => `${namespace}.back${suffix}`);
     for (const language of [en, es]) {
       for (const key of removed) expect(Object.keys(language)).not.toContain(key);
     }
