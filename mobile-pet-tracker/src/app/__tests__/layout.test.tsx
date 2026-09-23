@@ -368,3 +368,29 @@ describe('#95 R4: cada pantalla de detalle declara su cabecera nativa', () => {
     });
   });
 });
+
+describe('#114 R1: la guarda de RootStack declara reminders y alerts tras las seis', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockGetStoredTheme.mockResolvedValue(undefined);
+    mockGetStoredLanguage.mockResolvedValue(undefined);
+  });
+
+  it('declara ocho rutas protegidas y alerts singular', async () => {
+    await render(<RootLayout />);
+    await waitFor(() => expect(jest.mocked(Stack)).toHaveBeenCalled());
+    const stack = jest.mocked(Stack).mock.calls.at(-1)?.[0];
+    const group = Children.toArray(stack?.children)[4];
+    if (!isValidElement<{ children: ReactNode }>(group)) throw new Error('Expected protected group');
+    const children = Children.toArray(group.props.children);
+    expect(children).toHaveLength(8);
+    expect(children.slice(6).map((child) =>
+      isValidElement<{ name: string; dangerouslySingular?: boolean }>(child)
+        ? [child.type, child.props.name, child.props.dangerouslySingular]
+        : null,
+    )).toEqual([
+      [Stack.Screen, 'reminders', undefined],
+      [Stack.Screen, 'alerts', true],
+    ]);
+  });
+});
