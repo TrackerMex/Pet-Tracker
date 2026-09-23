@@ -1190,3 +1190,30 @@ describe('#113 R5: el esqueleto del plan reserva el alto de la tarjeta con progr
     expect(screen.getByTestId('food-plan-skeleton').props.className).toBe('skeleton__root h-40 w-full rounded-card');
   });
 });
+
+describe('#113 R7: los nodos no-texto de la barra no llevan más estilo que el ancho (mobile-kcal-consumed-bar #113)', () => {
+  it.each([
+    { merKcal: 656, kcal: 0, servedToday: [], width: '0%' },
+    { merKcal: 1420, kcal: 890, servedToday: ['07:30'], width: '63%' },
+  ])('con merKcal $merKcal y kcalConsumedToday $kcal el relleno solo lleva width $width', async ({ merKcal, kcal, servedToday, width }) => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetNutritionPlan.mockResolvedValue({
+      kind: 'ok',
+      plan: makePlan({ merKcal, servedToday, kcalConsumedToday: kcal }),
+    });
+    await renderFood();
+
+    expect(await screen.findByTestId('food-plan-fill')).toHaveAnimatedStyle(
+      { width },
+      { shouldMatchAllProps: true },
+    );
+    const progress = screen.getByTestId('food-plan-progress');
+    expect(progress.props.style).toBeUndefined();
+    const header = progress.children[0];
+    if (typeof header === 'string') {
+      throw new Error('Expected element child');
+    }
+    expect(header.props.style).toBeUndefined();
+    expect(screen.getByTestId('food-plan-track').props.style).toBeUndefined();
+  });
+});
