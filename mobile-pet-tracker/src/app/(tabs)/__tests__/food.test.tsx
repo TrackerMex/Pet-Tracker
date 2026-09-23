@@ -19,6 +19,7 @@ import {
 import { listPets, type PetsState } from '../../../api/pets';
 import { nutritionKeys, petKeys } from '../../../api/query-keys';
 import type { NutritionPlan, PetProfile } from '../../../api/types';
+import { en, es } from '../../../i18n/catalog';
 import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
 import { LanguageProvider } from '../../../providers/language-provider';
 import { SelectedPetProvider } from '../../../providers/selected-pet-provider';
@@ -1071,6 +1072,38 @@ describe('#113 R2: la tarjeta Objetivo diario pinta las kcal servidas contra mer
     await renderFood();
     await screen.findByTestId('food-plan-empty');
     expect(screen.queryByTestId('food-plan-progress')).toBeNull();
+  });
+});
+
+describe('#113 R3: el progreso es un único elemento accesible con su clave de catálogo (mobile-kcal-consumed-bar #113)', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  });
+
+  it.each([
+    { merKcal: 1420, kcal: 890, servedToday: ['07:30'], label: '890 de 1420 kcal servidas hoy', now: 63 },
+    { merKcal: 656, kcal: 0, servedToday: [], label: '0 de 656 kcal servidas hoy', now: 0 },
+  ])('anuncia $label como un solo progressbar', async ({ merKcal, kcal, servedToday, label, now }) => {
+    mockGetNutritionPlan.mockResolvedValue({
+      kind: 'ok',
+      plan: makePlan({ merKcal, kcalConsumedToday: kcal, servedToday }),
+    });
+    await renderFood();
+    const progress = await screen.findByTestId('food-plan-progress');
+    expect(progress.props.accessible).toBe(true);
+    expect(progress.props.accessibilityRole).toBe('progressbar');
+    expect(progress.props.accessibilityLabel).toBe(label);
+    expect(progress.props.accessibilityValue).toEqual({ min: 0, max: 100, now });
+  });
+
+  it('registra food.kcalConsumedOfTarget en los dos idiomas y en la tabla de idioma', () => {
+    const english = en as Record<string, string>;
+    const spanish = es as Record<string, string>;
+    expect(english['food.kcalConsumedOfTarget']).toBe('{{consumed}} of {{target}} kcal served today');
+    expect(spanish['food.kcalConsumedOfTarget']).toBe('{{consumed}} de {{target}} kcal servidas hoy');
+    expect(readFileSync('../specs/mobile-ui-language/design.md', 'utf8')).toMatch(
+      /\| — \| `food\.kcalConsumedOfTarget`[^\n]*← añadida por #113 \(R3\)/,
+    );
   });
 });
 

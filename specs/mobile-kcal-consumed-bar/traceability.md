@@ -20,7 +20,7 @@ ancestros y habría que reapuntarlos verificando `git merge-base --is-ancestor`.
 | Requisito | Test (título literal del `describe`) | Commit rojo | Commit verde |
 |---|---|---|---|
 | R1 — `NutritionPlan` + `kcalConsumedToday: number` | `#113 R1: NutritionPlan declara kcalConsumedToday como número y último campo (mobile-kcal-consumed-bar #113)` | `c752795e` | `f4b0c388` |
-| R2 — bloque de progreso en `food-plan-card` | `#113 R2: la tarjeta Objetivo diario pinta las kcal servidas contra merKcal (mobile-kcal-consumed-bar #113)` | `a408be18` | pendiente |
+| R2 — bloque de progreso en `food-plan-card` | `#113 R2: la tarjeta Objetivo diario pinta las kcal servidas contra merKcal (mobile-kcal-consumed-bar #113)` | `a408be18` | `5523cd29` |
 | R3 — un único `progressbar` + `food.kcalConsumedOfTarget` | pendiente | pendiente | pendiente |
 | R4 — transición de 250 ms al servir y deshacer | pendiente | pendiente | pendiente |
 | R5 — `food-plan-skeleton` a `h-40` | pendiente | pendiente | pendiente |
