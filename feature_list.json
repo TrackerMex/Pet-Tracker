@@ -2014,16 +2014,16 @@
     "name": "meal-schedule-editing",
     "status": "pending",
     "priority": "P3",
-    "description": "Registrada el 2026-09-21 desde la seccion Fuera de alcance de la spec de #98, por decision del humano. Los botones Editar horario y Anadir comida del diseno llevan sin backend desde #38, que ya los declaro no implementables en specs/mobile-food/requirements.md:306-309. #83 y #98 resolvieron marcar servido, pero no tocar los horarios: hoy mealTimes sale del plan generado y el usuario no puede cambiarlo. src/app/(tabs)/meal-schedule.tsx (324 lineas) es hoy de solo lectura, verificado con grep: no contiene ni un POST, PATCH, PUT ni DELETE. Necesita backend nuevo: endpoints para editar y anadir franjas del plan, y una decision de diseno que #83 dejo abierta en su D4 (que pasa con las comidas ya servidas de una franja que el usuario borra o mueve). Se partira en mitad backend y mitad movil cuando se escriba su spec, como se hizo con #83/#98; no se pre-parte ahora.",
+    "description": "Registrada el 2026-09-21 desde la seccion Fuera de alcance de la spec de #98, por decision del humano. Los botones Editar horario y Anadir comida del diseno llevan sin backend desde #38, que ya los declaro no implementables en specs/mobile-food/requirements.md:306-309. #83 y #98 resolvieron marcar servido, pero no tocar los horarios: hoy mealTimes sale del plan generado y el usuario no puede cambiarlo. src/screens/meal-schedule/index.tsx (324 lineas; es el cuerpo de la pantalla desde #102, y su route delgado lo mueve #95 de src/app/(tabs)/ a src/app/meal-schedule.tsx) es hoy de solo lectura, verificado con grep: no contiene ni un POST, PATCH, PUT ni DELETE. Necesita backend nuevo: endpoints para editar y anadir franjas del plan, y una decision de diseno que #83 dejo abierta en su D4 (que pasa con las comidas ya servidas de una franja que el usuario borra o mueve). Se partira en mitad backend y mitad movil cuando se escriba su spec, como se hizo con #83/#98; no se pre-parte ahora.",
     "acceptance_criteria": [
       "La spec cierra por escrito que ocurre con las meal_servings de una franja editada o borrada, resolviendo la D4 de #83",
       "Backend expone editar y anadir franja con sus tests e2e; el plan generado deja de ser la unica fuente de mealTimes",
-      "meal-schedule.tsx gana los botones del diseno contra esos endpoints, sin estado optimista, con el mismo patron de refetch que #98",
+      "src/screens/meal-schedule/index.tsx gana los botones del diseno contra esos endpoints, sin estado optimista, con el mismo patron de refetch que #98",
       "Gate humano: smoke en dev build de Android editando una franja con comida ya servida"
     ],
     "files_affected": [
       "backend-pet-tracker/src/modules/nutrition/",
-      "mobile-pet-tracker/src/app/(tabs)/meal-schedule.tsx"
+      "mobile-pet-tracker/src/screens/meal-schedule/index.tsx"
     ]
   },
   {

@@ -195,9 +195,9 @@ Expo Router viven en `src/app/(tabs)/`, así que un filtro literal trata
 **salta el fichero en silencio, con exit 0 y sin aviso**:
 
 ```bash
-bunx jest "src/app/(tabs)/__tests__/weight-log"      # ❌ no corre nada, exit 0
-bunx jest 'src/app/\(tabs\)/__tests__/weight-log'    # ✅
-bunx jest --runTestsByPath 'src/app/(tabs)/__tests__/weight-log.test.tsx'  # ✅
+bunx jest "src/app/(tabs)/__tests__/food"      # ❌ no corre nada, exit 0
+bunx jest 'src/app/\(tabs\)/__tests__/food'    # ✅
+bunx jest --runTestsByPath 'src/app/(tabs)/__tests__/food.test.tsx'  # ✅
 ```
 
 En #63 el comando de verificación de la spec —ya firmada— llevaba dos rutas sin
