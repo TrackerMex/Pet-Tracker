@@ -6,7 +6,8 @@ import {
 } from '@testing-library/react-native';
 import type { QueryClient } from '@tanstack/react-query';
 import * as Notifications from 'expo-notifications';
-import type { ReactNode } from 'react';
+import { Stack } from 'expo-router';
+import { Children, isValidElement, type ReactNode } from 'react';
 import { Uniwind } from 'uniwind';
 
 import { getStoredLanguage } from '../../utils/language-preference';
@@ -86,10 +87,14 @@ jest.mock('expo-router', () => {
   return {
     router: { push: jest.fn() },
     usePathname: () => '/home',
-    Stack: () =>
-      mockUseQueryInStack
-        ? React.createElement(QueryStack)
-        : React.createElement(View, { testID: 'root-stack' }),
+    Stack: Object.assign(
+      jest.fn(() =>
+        mockUseQueryInStack
+          ? React.createElement(QueryStack)
+          : React.createElement(View, { testID: 'root-stack' }),
+      ),
+      { Screen: jest.fn(() => null), Protected: jest.fn(() => null) },
+    ),
   };
 });
 
@@ -119,6 +124,7 @@ jest.mock('../../providers/language-provider', () => {
   );
 
   return {
+    useTranslate: () => (key: string) => `t:${key}`,
     LanguageProvider: ({
       children,
       initial,
@@ -133,6 +139,10 @@ jest.mock('../../providers/language-provider', () => {
       ),
   };
 });
+
+jest.mock('../../theme/use-theme-colors', () => ({
+  useThemeColors: (tokens: string[]) => tokens.map((token) => `token:${token}`),
+}));
 
 const mockGetStoredLanguage = jest.mocked(getStoredLanguage);
 const mockGetStoredTheme = jest.mocked(getStoredTheme);
@@ -259,5 +269,68 @@ describe('#79 R11: el registro de push se monta dentro de AuthProvider', () => {
       expect(screen.getByTestId('root-stack')).toBeVisible();
       expect(mockGetPermissions).toHaveBeenCalledTimes(1);
     });
+  });
+});
+
+describe('#95 R2: el layout raíz monta el provider y el Stack de detalle', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockGetStoredTheme.mockResolvedValue(undefined);
+    mockGetStoredLanguage.mockResolvedValue(undefined);
+  });
+
+  it('sitúa SelectedPetProvider dentro de QueryProvider y declara RootStack después del layout', () => {
+    const source = readFileSync(join(process.cwd(), 'src/app/_layout.tsx'), 'utf8');
+    const markers = [
+      '<QueryProvider>',
+      '<SelectedPetProvider>',
+      '<PushRegistration />',
+      '<RootStack />',
+      '</SelectedPetProvider>',
+      '</QueryProvider>',
+    ];
+    let previous = -1;
+    for (const marker of markers) {
+      const position = source.indexOf(marker);
+      expect(position).toBeGreaterThan(previous);
+      previous = position;
+    }
+    expect(source.indexOf('function RootStack')).toBeGreaterThan(
+      source.indexOf('export default function RootLayout'),
+    );
+  });
+
+  it('declara cuatro rutas abiertas y las seis de detalle bajo una guarda', async () => {
+    await render(<RootLayout />);
+    await waitFor(() => expect(jest.mocked(Stack)).toHaveBeenCalled());
+    const props = jest.mocked(Stack).mock.calls.at(-1)?.[0];
+    expect(props?.screenOptions).toEqual({ headerShown: false });
+    const children = Children.toArray(props?.children);
+    expect(children).toHaveLength(5);
+    expect(children.slice(0, 4).map((child) =>
+      isValidElement<{ name: string; options?: unknown }>(child)
+        ? [child.type, child.props.name, child.props.options]
+        : null,
+    )).toEqual([
+      [Stack.Screen, 'index', undefined],
+      [Stack.Screen, '(tabs)', undefined],
+      [Stack.Screen, '(auth)', undefined],
+      [Stack.Screen, 'reset-password', undefined],
+    ]);
+    const protectedGroup = children[4];
+    expect(isValidElement<{ guard: boolean; children: ReactNode }>(protectedGroup)).toBe(true);
+    if (!isValidElement<{ guard: boolean; children: ReactNode }>(protectedGroup)) return;
+    expect(protectedGroup.type).toBe(Stack.Protected);
+    expect(protectedGroup.props.guard).toBe(true);
+    expect(Children.toArray(protectedGroup.props.children).map((child) =>
+      isValidElement<{ name: string }>(child) ? [child.type, child.props.name] : null,
+    )).toEqual([
+      [Stack.Screen, 'add-reminder'],
+      [Stack.Screen, 'pets/add'],
+      [Stack.Screen, 'pets/[petId]/docs'],
+      [Stack.Screen, 'weight-log'],
+      [Stack.Screen, 'meal-schedule'],
+      [Stack.Screen, 'pairing'],
+    ]);
   });
 });
