@@ -24,7 +24,7 @@ feature/95-mobile-detail-screens-to-stack
 | R7 | `9b60ba4c` | `16776430` | Cinco fallos por número de `useFocusEffect`. |
 | R8 | `9ec04363` | `2a506636` | `dismissTo` no llamado; `push` sí. |
 
-`specs/mobile-detail-screens-to-stack/traceability.md` se actualizó después de cada commit, sin rebase posterior. A12 estaba firmada antes de empezar y se aplicó al mover `pairing`.
+`specs/mobile-detail-screens-to-stack/traceability.md` se actualizó solo en `f9a22dd1`, después de los commits de implementación; no hubo rebase posterior. A12 estaba firmada antes de empezar y se aplicó al mover `pairing`.
 
 ## Mutación de R3
 
@@ -194,3 +194,59 @@ Comparación literal de A11 con el bloque aprobado de R6, sustituyendo `<fecha>`
 - El grep C7 trata el punto de `pairing.back` como comodín y coincidía con el `testID` retirado escrito literalmente en su nuevo test. El test compone el mismo `testID` con `['pairing', 'back'].join('-')`; el catálogo se comprueba con las seis claves reconstruidas desde sus partes. Esto mantiene las aserciones y deja el grep vacío.
 
 La prueba de humo de Android sigue reservada al humano según requirements.md. Los artefactos de cierre del leader (`progress/current.md`, `progress/history.md`, `STATUS.md`, `feature_list.json`) no se tocaron.
+
+## Ronda 2
+
+```text
+/home/claude/sites/Pet-Tracker
+feature/95-mobile-detail-screens-to-stack
+```
+
+Al empezar, HEAD era `da348322`: el commit del reviewer que añadió su informe sobre `f9a22dd1`, sin cambios de producción.
+
+Solo cambiaron los `it` R5 de `weight-log` y `meal-schedule`: ambos usan los fixtures `ok` ya presentes en sus ficheros y esperan respectivamente `weight-chart-card` y `meal-schedule-summary` antes de comprobar la ausencia del botón y el título. Se conservaron las aserciones existentes y el número de tests.
+
+| Paso | Commit | Resultado dirigido |
+|---|---|---|
+| Rojo M20/M21 | `24e881bb` `test(detail-stack): R5 mira el estado cargado en weight-log y meal-schedule (R5)` | `exit=1`; `Test Suites: 2 failed, 2 total`; `Tests: 2 failed, 51 passed, 53 total`. |
+| Verde | `5992daf9` `fix(detail-stack): revierte las mutaciones de la sonda de R5 (R5)` | `exit=0`; `Test Suites: 2 passed, 2 total`; `Tests: 53 passed, 53 total`. |
+
+El rojo fue por las propias aserciones de ausencia, después de alcanzar el estado cargado:
+
+```text
+meal-schedule: Received: <Text>Horario de comidas</Text>
+  expect(screen.queryByText(es['mealSchedule.mealSchedule'])).toBeNull();
+weight-log: Received: <Text>Registro de peso</Text>
+  expect(screen.queryByText(es['weightLog.weightLog'])).toBeNull();
+```
+
+M22 se aplicó solo en local dentro de `weight-chart-card` y se retiró sin commit. La sonda R5 de `weight-log` falló por su aserción del botón: `Received: <View testID="weight-log-back" />` en `expect(screen.queryByTestId('weight-log-back')).toBeNull();`. Salida: `exit=1`, `Test Suites: 1 failed, 1 total`, `Tests: 1 failed, 30 skipped, 31 total`.
+
+### Cierre de ronda 2
+
+Desde `mobile-pet-tracker/`, sin pipes:
+
+```text
+bunx jest --silent > /tmp/pet95-r2-jest.log 2>&1; printf 'exit=%s\n' "$?"
+exit=0
+Test Suites: 80 passed, 80 total
+Tests:       1426 passed, 1426 total
+Snapshots:   1 passed, 1 total
+Time:        40.62 s
+```
+
+```text
+python3 -c 'from pathlib import Path; Path(".expo/types/router.d.ts").unlink(missing_ok=True)' && bunx tsc --noEmit > /tmp/pet95-r2-tsc.log 2>&1; printf 'exit=%s\n' "$?"
+exit=0
+salida de tsc: 0 bytes
+bunx expo lint > /tmp/pet95-r2-lint.log 2>&1; printf 'exit=%s\n' "$?"
+exit=0
+salida de lint: 0 bytes
+```
+
+```text
+git diff f9a22dd1 HEAD -- mobile-pet-tracker/src/screens/weight-log/index.tsx mobile-pet-tracker/src/screens/meal-schedule/index.tsx
+(salida vacía; diff neto de producción: 0 bytes)
+```
+
+Delta contra D9 en esta ronda: `0` tests y `0` suites; el reparto por fichero de la ronda 1 permanece intacto. La única diferencia neta de código está en los dos `it` descritos arriba.
