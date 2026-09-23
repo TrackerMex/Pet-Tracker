@@ -1,0 +1,39 @@
+---
+feature: "mobile-kcal-consumed-bar"
+status: draft        # draft | approved
+tags: [harness, spec, mobile]
+---
+
+# Trazabilidad — [[mobile-kcal-consumed-bar]] (#113)
+
+Rutas relativas a `mobile-pet-tracker/`. Todos los tests viven en
+`src/app/(tabs)/__tests__/food.test.tsx`.
+Convención de commit: `test(kcal-bar): <desc> (Rn)` el rojo,
+`feat(kcal-bar): <desc> (Rn)` el verde.
+Codex rellena las tres últimas columnas tras cada commit; el `reviewer` no
+aprueba si queda una fila de R1-R5 en «pendiente» (CHECKPOINTS C5). R6 la
+cierra el humano en su casilla de [[requirements]].
+
+**No rebasear después de rellenar esta tabla**: los hashes dejarían de ser
+ancestros y habría que reapuntarlos verificando `git merge-base --is-ancestor`.
+
+| Requisito | Test (título literal del `describe`) | Commit rojo | Commit verde |
+|---|---|---|---|
+| R1 — `NutritionPlan` + `kcalConsumedToday: number` | pendiente | pendiente | pendiente |
+| R2 — bloque de progreso en `food-plan-card` | pendiente | pendiente | pendiente |
+| R3 — un único `progressbar` + `food.kcalConsumedOfTarget` | pendiente | pendiente | pendiente |
+| R4 — transición de 250 ms al servir y deshacer | pendiente | pendiente | pendiente |
+| R5 — `food-plan-skeleton` a `h-40` | pendiente | pendiente | pendiente |
+| R6 — smoke en dev build de Android | humano | — | pendiente del humano |
+
+## Candados ajenos movidos (se rellenan con el hash del commit que los mueve)
+
+| Candado | Delta | Commit |
+|---|---|---|
+| `src/screens/home/index.test.tsx` · `#98 R1` | `12 + 1`, `.slice(-3, -1)` | pendiente (rojo de R1) |
+| fixtures `makePlan` de `food.test.tsx` y `meal-schedule/index.test.tsx` | `kcalConsumedToday: 0` | pendiente (verde de R1) |
+| `src/providers/__tests__/language-provider.test.tsx` · `#65 R12` | `+ 1` | pendiente (rojo de R3) |
+| `src/__tests__/ui-language.test.ts` · `#65 R6` | `+ 1` y título | pendiente (rojo de R3) |
+| `src/__tests__/ui-copy-table.ts` · `R6_FOOD` | + 1 fila | pendiente (verde de R3) |
+| `specs/mobile-ui-language/design.md` §2.6 | + 1 fila | pendiente (verde de R3) |
+| `food.test.tsx` · `'h-32'` del `it('shows the hub and a loading state while pets are pending'` | `'h-40'` | pendiente (rojo de R5) |
