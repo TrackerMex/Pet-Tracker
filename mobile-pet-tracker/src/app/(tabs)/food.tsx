@@ -75,7 +75,6 @@ export default function FoodScreen() {
   const kcalBarWidth = useSharedValue(kcalPct);
   const kcalBarStyle = useAnimatedStyle(() => ({
     width: `${kcalBarWidth.get()}%` as `${number}%`,
-    opacity: 0.7,
   }));
   useEffect(() => {
     kcalBarWidth.set(withTiming(kcalPct, KCAL_BAR_TIMING));
