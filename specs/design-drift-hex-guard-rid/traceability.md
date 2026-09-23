@@ -24,9 +24,16 @@ ancestros y habría que reapuntarlos uno a uno verificando
 | R4 — la convención `#<id> R<n>` queda escrita en `docs/conventions.md` | `src/__tests__/design-drift.test.ts` :: `#108 R4: la convención de cita del guard está documentada` | 1 | `75b4d0d3` | `7c719c17` |
 
 **Total de tests nuevos: 14**, en 4 describes nuevos. El gate numérico de
-[[requirements]] se deriva de esta columna: 1396 + 14 = **1410** en la suite,
+[[requirements]] se deriva de esta columna: **base + 14** en la suite,
 41 + 14 = **55** en `design-drift.test.ts`, 17 + 4 = **21** describes. Si la
 columna «Tests» cambia, el gate cambia con ella.
+
+**La base de la suite no es una constante de esta spec.** Cambió **dos veces**
+mientras #108 esperaba su firma: #110 la subió de 1396 a 1398 y #111 la dejó
+ahí. Medido al cerrar contra `origin/main` = `7bd0fbb0`: base **1398**, cierre
+**1412**. La cifra `1410` que esta nota traía antes salía de la base de
+1396 y **nunca llegó a ser cierta**. Las de `design-drift.test.ts` (41→55,
+17→21) sí son estables, porque ninguna otra feature toca ese fichero.
 
 ## Notas para quien rellene la tabla
 
