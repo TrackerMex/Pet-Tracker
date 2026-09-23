@@ -243,6 +243,10 @@ comparada en **nueve** puntos (0,1…0,9, `toBeCloseTo(…, 6)`) contra
 `expect(screen.getByTestId('food-plan-skeleton').props.className).toBe('h-40 w-full rounded-card')`.
 Delta del candado ajeno en el mismo commit rojo (§Candados).
 
+> **Errata (§Enmienda E1, H2):** el literal que puede pasar es
+> `'skeleton__root h-40 w-full rounded-card'`: `Skeleton` de heroui-native
+> antepone `skeleton__root` al `className` del host. El SHALL no cambia.
+
 ### R6 — Gate humano: smoke en dev build de Android
 
 **WHEN** R1-R5 están en verde y el `reviewer` aprobó,
@@ -365,3 +369,114 @@ esta feature no añade módulos nativos (Reanimated ya está). Backend con #104
 ## Aprobación
 
 - [x] Aprobado por humano (fecha: 2026-09-23, vía Notion) ← gate obligatorio antes de implementar
+
+---
+
+## Enmienda E1 — R7: el estilo de los nodos no-texto de la barra (H1) y errata del test de R5 (H2)
+
+> Escrita el 2026-09-23 sobre la spec aprobada (firma `e4a4841e`), tras el
+> **RECHAZO** de la primera revisión (`progress/review_mobile-kcal-consumed-bar.md`,
+> commit `f82b94e8`, sobre la punta de Codex `15e43269`). No toca D1-D6 ni
+> R1-R6, ni la firma original: todo eso sigue firmado y su trazabilidad sigue
+> valiendo. Añade **R7** y corrige una errata del párrafo «Test» de R5. Su
+> casilla va **sin marcar**: el humano reabre el gate solo para esta enmienda.
+
+### El hecho medido (H1 del reviewer)
+
+Tres mutaciones de `src/app/(tabs)/food.tsx` dejan la suite móvil verde
+(`food.test.tsx` 53/53):
+
+| Id | Mutación | Efecto visible |
+|---|---|---|
+| M8 | `opacity: 0.7` dentro del objeto que devuelve el `useAnimatedStyle` de `kcalBarStyle` | el relleno pierde el contraste de D4 |
+| M14 | `backgroundColor: accent` en ese mismo objeto | relleno verde sobre tarjeta verde: la barra desaparece |
+| M13 | `style={{ opacity: 0.5 }}` en el `View` de `food-plan-track` | carril más tenue que el `/20` de D4 |
+
+**Causa.** `toHaveAnimatedStyle` de Reanimated compara por defecto **solo las
+claves del esperado** (`findStyleDiff` en
+`node_modules/react-native-reanimated/src/jestUtils/index.ts`); la
+comparación completa exige `{ shouldMatchAllProps: true }`. Y R2(a) candó el
+`className` de bloque, cabecera, carril y relleno, pero no su `style`, que
+puede pisar ese `className`. El código de producción en `15e43269` es
+correcto: el hueco está en el test que esta spec prescribió.
+
+### Decisión: E1 añade **R7**, no reescribe R2 ni R4
+
+R2 y R4 están firmados, la implementación los cumple al pie y sus commits
+están en [[traceability]]. Reescribir sus párrafos «Test» sería modificar
+requisitos aprobados (C6) y dejaría sin sentido sus pares rojo→verde. R7
+asevera **otra propiedad** («los nodos no-texto de la barra no llevan más
+estilo que el declarado») en un `describe` propio. Los tests de R2 y R4 no se
+tocan.
+
+### R7 — nuevo requisito
+
+**R7** *(requisito de verificación sobre código ya correcto: su rojo es una
+**mutación de producción** versionada en el commit rojo y revertida en el
+verde, CHECKPOINTS.md C4 quinto punto; nunca una mutación del doble)*:
+**WHEN** se pinta `food-plan-progress`,
+**THE SYSTEM SHALL** dar a `food-plan-fill` un estilo cuyo **único**
+contenido es `width: '<kcalPct>%'` (el objeto de `useAnimatedStyle` más
+cualquier estilo estático que se le junte, en objeto o en array), y **ningún**
+`style` a `food-plan-progress`, a su cabecera (`food-plan-progress` →
+`children[0]`) ni a `food-plan-track`.
+
+**Test** — `src/app/(tabs)/__tests__/food.test.tsx`,
+`describe('#113 R7: los nodos no-texto de la barra no llevan más estilo que el ancho (mobile-kcal-consumed-bar #113)')`,
+un `it.each` con título
+`'con merKcal $merKcal y kcalConsumedToday $kcal el relleno solo lleva width $width'`
+sobre estas dos filas literales:
+
+| `merKcal` | `kcal` (`kcalConsumedToday`) | `servedToday` | `width` |
+|---|---|---|---|
+| 656 | 0 | `[]` | `'0%'` |
+| 1420 | 890 | `['07:30']` | `'63%'` |
+
+Por fila, con `mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] })`
+y `mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan({ merKcal, servedToday, kcalConsumedToday: kcal }) })`:
+
+1. `expect(await screen.findByTestId('food-plan-fill')).toHaveAnimatedStyle({ width }, { shouldMatchAllProps: true })`;
+2. `const progress = screen.getByTestId('food-plan-progress')`;
+   `expect(progress.props.style).toBeUndefined()`;
+3. `const header = progress.children[0]`, con la misma guarda
+   `typeof header === 'string'` que usa R2(a);
+   `expect(header.props.style).toBeUndefined()`;
+4. `expect(screen.getByTestId('food-plan-track').props.style).toBeUndefined()`.
+
+**Criterio de aceptación verificable.** Medido por el reviewer con este mismo
+mecanismo (`progress/review_mobile-kcal-consumed-bar.md` §Sondas para la
+enmienda de H1): sin mutar, `food.test.tsx` verde; y cada una de estas
+mutaciones en `food.tsx` pone **rojo** R7:
+
+- M8, M13 y M14 (tabla de arriba);
+- en `food-plan-fill`, `style={[kcalBarStyle, { opacity: 0.7 }]}`,
+  `style={[{ opacity: 0.7 }, kcalBarStyle]}` y
+  `style={[kcalBarStyle, [{ opacity: 0.7 }]]}`: el matcher junta los objetos
+  del array con los valores animados antes de comparar, y la clave de más
+  rompe `shouldMatchAllProps`;
+- `style={{ opacity: 0.5 }}` en `food-plan-progress` y en su cabecera.
+
+Un `className` extra en el relleno (p. ej. ` opacity-70`) ya lo caza el `toBe`
+de R2(a): no es asunto de R7.
+
+### Errata del test de R5 (H2 del reviewer)
+
+El párrafo «Test» de R5 y el paso R5 (1) de [[tasks]] prescriben
+`.toBe('h-40 w-full rounded-card')`, que **no puede pasar**: `Skeleton` de
+heroui-native antepone `skeleton__root` al `className` del host
+(`base: 'skeleton__root'` en
+`node_modules/heroui-native/lib/module/components/skeleton/skeleton.styles.js`;
+`src/screens/home/index.test.tsx` ya lo asevera así). El literal correcto es
+**`'skeleton__root h-40 w-full rounded-card'`**, que es el que ya asevera el
+test del commit `a73390f7`. El SHALL de R5 (`className="h-40 w-full rounded-card"`
+en el call-site de `food.tsx`) no cambia. Sin trabajo de código.
+
+### Candados que se mueven con E1
+
+Ninguno. R7 es un `describe` nuevo en `food.test.tsx` y ningún test existente
+cambia. Recuento esperado: `food.test.tsx` 53 → **55**; suite móvil
+1441 → **1443**, mismas 80 suites.
+
+### Aprobación de la Enmienda E1
+
+- [ ] Enmienda E1 aprobada por humano (fecha: ____) ← gate obligatorio antes de la ronda 2 de Codex

@@ -298,6 +298,9 @@ verificación** (C4): los cinco tienen rojo real por aserción.
   **Mismo commit**: en `it('shows the hub and a loading state while pets are pending'`,
   `expect.stringContaining('h-32'),` → `expect.stringContaining('h-40'),`
   (único `h-32` del fichero).
+  **Errata (§Enmienda E1 de [[requirements]], H2):** el literal que puede
+  pasar es `'skeleton__root h-40 w-full rounded-card'` (heroui antepone
+  `skeleton__root`); es el que asevera `a73390f7`.
 - [ ] **(2) Commit verde** `feat(kcal-bar): grow the plan skeleton to h-40 (R5)`.
   `food.tsx`: en el `Skeleton` con `testID="food-plan-skeleton"`,
   `className="h-32 w-full rounded-card"` → `className="h-40 w-full rounded-card"`.
@@ -325,3 +328,42 @@ verificación** (C4): los cinco tienen rojo real por aserción.
 
 - [ ] Prueba de humo de [[requirements]] §Prueba de humo en dev build de
       Android, firmada en su casilla.
+
+---
+
+## Enmienda E1 — ronda 2: R7 (tras el rechazo de la ronda 1)
+
+> Requisito, mecanismo y mutaciones en [[requirements]] §Enmienda E1. Solo
+> se puede empezar con la casilla «Enmienda E1 aprobada» marcada.
+
+- [ ] **Antes de empezar.** La base es la punta de la ronda 1 más los
+      commits de review y de enmienda del leader; **no rebasear** (los hashes
+      de R1-R5 de [[traceability]] tienen que seguir siendo ancestros). Medir
+      y anotar sin pipe:
+      `bunx jest --runTestsByPath 'src/app/(tabs)/__tests__/food.test.tsx'; echo "exit=$?"`
+      (53 tests en `15e43269`).
+- [ ] **(1) Commit rojo** `test(kcal-bar): lock the style of the kcal bar's non-text nodes (R7)`.
+  - `food.test.tsx`: `describe` de R7 al final del fichero, literal de
+    [[requirements]] R7 (título, `it.each` de dos filas, cuatro aserciones).
+  - **Mismo commit, mutación de producción versionada** (C4 quinto punto):
+    en `src/app/(tabs)/food.tsx`, dentro del objeto que devuelve el
+    `useAnimatedStyle` de `kcalBarStyle`, añadir `opacity: 0.7,` detrás de la
+    línea de `width`. Nada más en producción.
+  - Rojo esperado: **2 failed** (las dos filas de R7) por aserción
+    (`'opacity' should be undefined, but is 0.7`), y el resto del fichero
+    verde (R2 y R4 no miran `opacity`). Nunca por `ReferenceError`.
+- [ ] **(2) Commit verde** `feat(kcal-bar): keep the kcal bar fill to its width alone (R7)`.
+  Revertir la mutación. Comprobar
+  `git diff 15e43269 HEAD -- 'mobile-pet-tracker/src/app/(tabs)/food.tsx'; echo "exit=$?"`
+  con salida **vacía**: producción queda idéntica a la ronda 1.
+- [ ] **(3) Sondas** (evidencia en el reporte; cada una roja en R7 y
+      restaurada con `git diff` vacío): M13 y M14 de [[requirements]]
+      §Enmienda E1; en `food-plan-fill`, `style={[kcalBarStyle, { opacity: 0.7 }]}`,
+      `style={[{ opacity: 0.7 }, kcalBarStyle]}` y
+      `style={[kcalBarStyle, [{ opacity: 0.7 }]]}`; `style={{ opacity: 0.5 }}`
+      en `food-plan-progress` y en su cabecera.
+- [ ] **Cierre ronda 2.** Los comandos de [[design]] §6, sin pipe:
+      `food.test.tsx` 55; suite móvil 80 suites / 1443 tests; `tsc` y lint
+      verdes; grep-clean vacío. [[traceability]]: fila R7 con título literal,
+      hash rojo y hash verde. `progress/impl_mobile-kcal-consumed-bar.md`:
+      apartado nuevo «Ronda 2» al final, sin reescribir la ronda 1.
