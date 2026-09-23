@@ -1,8 +1,8 @@
 import { Host } from '@expo/ui';
 import ExpoDateTimePicker from '@expo/ui/community/datetime-picker';
-import { Redirect, router, type Href, useFocusEffect } from 'expo-router';
+import { Redirect, router, type Href } from 'expo-router';
 import { Button } from 'heroui-native';
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -54,22 +54,6 @@ function AddReminderContent({ petId }: { petId: string }) {
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-
-  useFocusEffect(
-    useCallback(
-      () => () => {
-        setType('vaccine');
-        setTitle('');
-        setDate(null);
-        setTime(initialTime());
-        setAdvanceMinutes(10080);
-        setShowDatePicker(false);
-        setShowTimePicker(false);
-        setFormError(null);
-      },
-      [],
-    ),
-  );
 
   async function handleSubmit() {
     const trimmedTitle = title.trim();

@@ -1,4 +1,4 @@
-import { Redirect, useFocusEffect } from 'expo-router';
+import { Redirect } from 'expo-router';
 import {
   Button,
   Card as HeroUICard,
@@ -8,7 +8,7 @@ import {
   TextField,
 } from 'heroui-native';
 import { useQuery } from '@tanstack/react-query';
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Minus, TrendDown, TrendUp } from 'reicon-react-native';
@@ -66,17 +66,6 @@ function WeightLogContent({ petId }: { petId: string }) {
   const profileTimeZone =
     me.data?.kind === 'ok' ? me.data.me.timezone : undefined;
   const measuredAt = measuredAtDraft ?? civilTodayIso(profileTimeZone);
-  useFocusEffect(
-    useCallback(
-      () => () => {
-        setWeightText('');
-        setMeasuredAtDraft(null);
-        setBodyConditionText('');
-        setFormError(null);
-      },
-      [],
-    ),
-  );
   const weights = useQuery({
     queryKey: healthKeys.weights(petId, undefined),
     queryFn: () => listWeights(baseUrl, token ?? '', petId),

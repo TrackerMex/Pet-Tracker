@@ -113,10 +113,6 @@ export function PairingScreen() {
     }, [refetchTracking]),
   );
 
-  useFocusEffect(
-    useCallback(() => () => resetPairingState(), [resetPairingState]),
-  );
-
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- R6 resets form state when the selected pet changes.
     resetPairingState();

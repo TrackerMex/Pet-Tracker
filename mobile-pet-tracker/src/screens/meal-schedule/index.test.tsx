@@ -1,11 +1,9 @@
 import {
-  act,
   fireEvent,
   screen,
   waitFor,
   within,
 } from '@testing-library/react-native';
-import { useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import { useEffect } from 'react';
 
@@ -47,8 +45,7 @@ jest.mock('expo-router', () => {
 
   return {
     router: { push: jest.fn(), back: jest.fn() },
-    useFocusEffect: jest.fn(),
-    Redirect: ({ href }: { href: string }) => {
+      Redirect: ({ href }: { href: string }) => {
       const props = { testID: 'meal-schedule-redirect', href };
 
       return React.createElement(View, props);
@@ -88,7 +85,6 @@ const mockGenerateNutritionPlan = jest.mocked(generateNutritionPlan);
 const mockGetNutritionPlan = jest.mocked(getNutritionPlan);
 const mockGetNutritionProfile = jest.mocked(getNutritionProfile);
 const mockUseAuth = jest.mocked(useAuth);
-const mockUseFocusEffect = jest.mocked(useFocusEffect);
 
 function makePlan(overrides: Partial<NutritionPlan> = {}): NutritionPlan {
   return {
@@ -152,16 +148,6 @@ async function renderMealSchedule(selected = true) {
   );
 }
 
-async function blurScreen() {
-  await act(() => {
-    mockUseFocusEffect.mock.calls.forEach(([effect]) => {
-      const cleanup = effect();
-
-      if (typeof cleanup === 'function') cleanup();
-    });
-  });
-}
-
 beforeEach(() => {
   jest.clearAllMocks();
   mockGenerateNutritionPlan.mockReset();
@@ -174,32 +160,6 @@ beforeEach(() => {
     signIn: jest.fn(),
     signOut: jest.fn(),
   } satisfies AuthContextValue);
-});
-
-describe('R4: el error de generación desaparece al perder el foco', () => {
-  it('limpia generateError tras el blur', async () => {
-    mockGetNutritionPlan.mockResolvedValue({ kind: 'not-found' });
-    mockGetNutritionProfile.mockResolvedValue({ kind: 'not-found' });
-    mockGenerateNutritionPlan.mockResolvedValue({
-      kind: 'unprocessable',
-      code: 'PET_WEIGHT_REQUIRED',
-    });
-
-    await renderMealSchedule();
-    await waitFor(() =>
-      expect(screen.getByTestId('generate-plan-button')).toBeVisible(),
-    );
-    await fireEvent.press(screen.getByTestId('generate-plan-button'));
-    await waitFor(() =>
-      expect(screen.getByTestId('generate-plan-error')).toBeVisible(),
-    );
-
-    await blurScreen();
-
-    await waitFor(() =>
-      expect(screen.queryByTestId('generate-plan-error')).toBeNull(),
-    );
-  });
 });
 
 describe('R7: meal schedule muestra horarios y perfil', () => {

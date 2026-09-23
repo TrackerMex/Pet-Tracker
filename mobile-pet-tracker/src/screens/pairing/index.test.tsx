@@ -127,66 +127,6 @@ async function renderPairing() {
   return renderWithProviders(<PairingRoute />, { wrapper: PairingWrapper });
 }
 
-async function blurPairing() {
-  await act(async () => {
-    mockUseFocusEffect.mock.calls.forEach(([focusCallback]) => {
-      const cleanup = focusCallback();
-      if (typeof cleanup === 'function') cleanup();
-    });
-    await Promise.resolve();
-  });
-}
-
-describe('R5: el estado local de pairing se limpia al perder el foco', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    process.env.EXPO_PUBLIC_API_URL = apiUrl;
-    mockUseAuth.mockReturnValue({
-      status: 'authenticated',
-      token: 'jwt-token',
-      signIn: jest.fn(),
-      signOut: jest.fn(),
-    } satisfies AuthContextValue);
-    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
-  });
-
-  it('limpia la vista ready y el código tras el blur', async () => {
-    mockClaimDevice.mockResolvedValue({ kind: 'ok', device: makeDevice() });
-    await renderPairing();
-    await fireEvent.changeText(
-      await screen.findByTestId('activation-code-input'),
-      'ACT-READY',
-    );
-    await fireEvent.press(screen.getByTestId('pairing-submit'));
-    expect(await screen.findByTestId('pairing-ready')).toBeVisible();
-
-    await blurPairing();
-
-    await waitFor(() => {
-      expect(screen.queryByTestId('pairing-ready')).toBeNull();
-      expect(screen.getByTestId('activation-code-input').props.value).toBe('');
-      expect(screen.queryByTestId('pairing-error')).toBeNull();
-    });
-  });
-
-  it('limpia actionError tras el blur', async () => {
-    mockClaimDevice.mockResolvedValue({ kind: 'invalid' });
-    await renderPairing();
-    await fireEvent.changeText(
-      await screen.findByTestId('activation-code-input'),
-      'ACT-INVALID',
-    );
-    await fireEvent.press(screen.getByTestId('pairing-submit'));
-    expect(await screen.findByTestId('pairing-error')).toBeVisible();
-
-    await blurPairing();
-
-    await waitFor(() => {
-      expect(screen.queryByTestId('pairing-error')).toBeNull();
-    });
-  });
-});
-
 describe('R6: el estado local de pairing se limpia al cambiar de mascota', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -236,44 +176,6 @@ describe('R6: el estado local de pairing se limpia al cambiar de mascota', () =>
     await waitFor(() => {
       expect(screen.queryByTestId('pairing-error')).toBeNull();
     });
-  });
-});
-
-describe('R7: el guarda de envío sobrevive al blur', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    process.env.EXPO_PUBLIC_API_URL = apiUrl;
-    mockUseAuth.mockReturnValue({
-      status: 'authenticated',
-      token: 'jwt-token',
-      signIn: jest.fn(),
-      signOut: jest.fn(),
-    } satisfies AuthContextValue);
-    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
-    mockClaimDevice.mockReturnValue(pending<ClaimDeviceState>());
-  });
-
-  it('mantiene deshabilitado el claim pendiente tras el blur', async () => {
-    await renderPairing();
-    await fireEvent.changeText(
-      await screen.findByTestId('activation-code-input'),
-      'ACT-PENDING',
-    );
-    await fireEvent.press(screen.getByTestId('pairing-submit'));
-    await waitFor(() =>
-      expect(screen.getByTestId('pairing-submit')).toBeDisabled(),
-    );
-
-    await blurPairing();
-    await fireEvent.changeText(
-      screen.getByTestId('activation-code-input'),
-      'ACT-AGAIN',
-    );
-
-    await waitFor(() =>
-      expect(screen.getByTestId('pairing-submit')).toBeDisabled(),
-    );
-    expect(mockClaimDevice).toHaveBeenCalledTimes(1);
   });
 });
 

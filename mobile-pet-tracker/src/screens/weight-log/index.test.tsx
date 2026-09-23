@@ -1,11 +1,9 @@
 import {
-  act,
   fireEvent,
   screen,
   waitFor,
   within,
 } from '@testing-library/react-native';
-import { useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import { useEffect } from 'react';
 
@@ -49,8 +47,7 @@ jest.mock('expo-router', () => {
 
   return {
     router: { push: jest.fn(), back: jest.fn() },
-    useFocusEffect: jest.fn(),
-    Redirect: ({ href }: { href: string }) => {
+      Redirect: ({ href }: { href: string }) => {
       const props = { testID: 'weight-log-redirect', href };
 
       return React.createElement(View, props);
@@ -68,7 +65,6 @@ const mockCreateWeight = jest.mocked(createWeight);
 const mockListWeights = jest.mocked(listWeights);
 const mockGetMe = jest.mocked(getMe);
 const mockUseAuth = jest.mocked(useAuth);
-const mockUseFocusEffect = jest.mocked(useFocusEffect);
 
 function makeWeight(overrides: Partial<WeightEntry> = {}): WeightEntry {
   return {
@@ -136,61 +132,6 @@ async function renderWeightLog(selected = true) {
     </HeroUINativeProvider>,
   );
 }
-
-async function blurScreen() {
-  await act(() => {
-    mockUseFocusEffect.mock.calls.forEach(([effect]) => {
-      const cleanup = effect();
-
-      if (typeof cleanup === 'function') cleanup();
-    });
-  });
-}
-
-describe('R3: el formulario vuelve a sus valores iniciales al perder el foco', () => {
-  beforeEach(() => {
-    jest.useFakeTimers();
-    jest.setSystemTime(new Date('2026-09-17T23:30:00Z'));
-    jest.clearAllMocks();
-    process.env.EXPO_PUBLIC_API_URL = apiUrl;
-    mockUseAuth.mockReturnValue({
-      status: 'authenticated',
-      token: 'jwt-token',
-      signIn: jest.fn(),
-      signOut: jest.fn(),
-    } satisfies AuthContextValue);
-    mockListWeights.mockResolvedValue({ kind: 'ok', weights: [] });
-    mockCreateWeight.mockReturnValue(pending());
-  });
-
-  afterEach(() => jest.useRealTimers());
-
-  it('restaura los cuatro valores visibles tras el blur (#90 R3)', async () => {
-    await renderWeightLog();
-    await waitFor(() => expect(screen.getByTestId('weight-input')).toBeVisible());
-
-    await fireEvent.changeText(
-      screen.getByTestId('weight-input'),
-      'not-a-number',
-    );
-    await fireEvent.changeText(
-      screen.getByTestId('weight-date-input'),
-      '2026-01-02',
-    );
-    await fireEvent.changeText(screen.getByTestId('weight-bc-input'), '7');
-    await fireEvent.press(screen.getByTestId('weight-submit'));
-    expect(screen.getByTestId('weight-form-error')).toBeVisible();
-
-    await blurScreen();
-
-    await waitFor(() => {
-      expect(screen.getByTestId('weight-input').props.value).toBe('');
-      expect(screen.getByTestId('weight-date-input').props.value).toBe('2026-09-18');
-      expect(screen.getByTestId('weight-bc-input').props.value).toBe('');
-      expect(screen.queryByTestId('weight-form-error')).toBeNull();
-    });
-  });
-});
 
 describe('R7: weight log lista el historial', () => {
   beforeEach(() => {

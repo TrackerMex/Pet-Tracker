@@ -1,9 +1,9 @@
 import { Host } from '@expo/ui';
 import ExpoDateTimePicker from '@expo/ui/community/datetime-picker';
-import { router, useFocusEffect } from 'expo-router';
+import { router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Button } from 'heroui-native';
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -104,28 +104,6 @@ export function AddPetScreen() {
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [photoError, setPhotoError] = useState<string | null>(null);
-
-  useFocusEffect(
-    useCallback(
-      () => () => {
-        setSpecies('dog');
-        setName('');
-        setBreed('');
-        setSex(null);
-        setSize(null);
-        setSterilized(null);
-        setMicrochip('');
-        setAgeMode('birthDate');
-        setBirthDate(null);
-        setApproxAgeMonths('');
-        setShowDatePicker(false);
-        setPhotoAsset(null);
-        setFormError(null);
-        setPhotoError(null);
-      },
-      [],
-    ),
-  );
 
   async function handlePickPhoto() {
     setPhotoError(null);

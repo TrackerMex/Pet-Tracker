@@ -1,5 +1,5 @@
-import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react-native';
-import { router, useFocusEffect } from 'expo-router';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react-native';
+import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import * as ImagePicker from 'expo-image-picker';
 
@@ -34,7 +34,6 @@ jest.mock('../../components/pet-avatar', () => {
 });
 jest.mock('expo-router', () => ({
   router: { back: jest.fn(), replace: jest.fn() },
-  useFocusEffect: jest.fn(),
 }));
 jest.mock('@expo/ui', () => {
   const React = jest.requireActual<typeof import('react')>('react');
@@ -61,7 +60,6 @@ const mockLaunchImageLibrary = jest.mocked(ImagePicker.launchImageLibraryAsync);
 const mockRequestPhotoUploadUrl = jest.mocked(requestPhotoUploadUrl);
 const mockUploadPhotoToUrl = jest.mocked(uploadPhotoToUrl);
 const mockUseAuth = jest.mocked(useAuth);
-const mockUseFocusEffect = jest.mocked(useFocusEffect);
 const mockUseSelectedPet = jest.mocked(useSelectedPet);
 const mockRouter = jest.mocked(router);
 const selectPet = jest.fn();
@@ -89,115 +87,9 @@ async function pressPickPhoto(): Promise<void> {
   await fireEvent.press(screen.getByTestId('add-pet-photo'));
 }
 
-async function blurScreen() {
-  await act(() => {
-    mockUseFocusEffect.mock.calls.forEach(([effect]) => {
-      const cleanup = effect();
-
-      if (typeof cleanup === 'function') cleanup();
-    });
-  });
-}
-
 beforeEach(() => {
   mockLaunchImageLibrary.mockReset();
   mockLaunchImageLibrary.mockResolvedValue({ canceled: true, assets: null });
-});
-
-describe('R2: el formulario vuelve a sus valores iniciales al perder el foco', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
-    mockUseAuth.mockReturnValue({
-      status: 'authenticated',
-      token: 'jwt-token',
-      signIn: jest.fn(),
-      signOut: jest.fn(),
-    } satisfies AuthContextValue);
-    mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet });
-    mockCreatePet.mockReturnValue(pending());
-    mockLaunchImageLibrary
-      .mockResolvedValueOnce({
-        canceled: false,
-        assets: [
-          { uri: 'file:///pet.jpg', mimeType: 'image/jpeg' } as never,
-        ],
-      })
-      .mockResolvedValueOnce({
-        canceled: false,
-        assets: [
-          { uri: 'file:///pet.txt', mimeType: 'text/plain' } as never,
-        ],
-      });
-  });
-
-  it('restaura los catorce valores visibles tras el blur', async () => {
-    await renderAddPet();
-
-    await fireEvent.press(screen.getByTestId('species-cat'));
-    await fireEvent.changeText(screen.getByTestId('name-input'), 'Nala');
-    await fireEvent.changeText(screen.getByTestId('breed-input'), 'Mestiza');
-    await fireEvent.press(screen.getByTestId('sex-female'));
-    await fireEvent.press(screen.getByTestId('size-large'));
-    await fireEvent.press(screen.getByTestId('sterilized-true'));
-    await fireEvent.changeText(screen.getByTestId('microchip-input'), 'CHIP-9');
-    await fireEvent.press(screen.getByTestId('birth-date-field'));
-    await fireEvent(
-      screen.getByTestId('birth-date-picker'),
-      'onValueChange',
-      {},
-      new Date(2024, 3, 9, 12),
-    );
-    await fireEvent.press(screen.getByTestId('birth-date-field'));
-    await fireEvent.press(screen.getByTestId('age-mode-months'));
-    await fireEvent.changeText(screen.getByTestId('approx-age-input'), '999');
-    await pressPickPhoto();
-    await waitFor(() =>
-      expect(screen.getByTestId('pet-avatar').props.photoUrl).toBe(
-        'file:///pet.jpg',
-      ),
-    );
-    await pressPickPhoto();
-    await waitFor(() =>
-      expect(screen.getByTestId('photo-upload-error')).toBeVisible(),
-    );
-    await fireEvent.press(screen.getByTestId('add-pet-submit'));
-    expect(screen.getByTestId('add-pet-error')).toBeVisible();
-    expect(screen.getByTestId('birth-date-picker')).toBeVisible();
-
-    await blurScreen();
-
-    await waitFor(() => {
-      expect(screen.getByTestId('species-dog').props.accessibilityState).toEqual({
-        selected: true,
-      });
-      expect(screen.getByTestId('name-input').props.value).toBe('');
-      expect(screen.getByTestId('breed-input').props.value).toBe('');
-      expect(screen.getByTestId('microchip-input').props.value).toBe('');
-      expect(screen.getByTestId('sex-female').props.accessibilityState).toEqual({
-        selected: false,
-      });
-      expect(screen.getByTestId('size-large').props.accessibilityState).toEqual({
-        selected: false,
-      });
-      expect(
-        screen.getByTestId('sterilized-true').props.accessibilityState,
-      ).toEqual({ selected: false });
-      expect(
-        screen.getByTestId('age-mode-date').props.accessibilityState,
-      ).toEqual({ selected: true });
-      expect(screen.getByTestId('birth-date-field')).toHaveTextContent(
-        'Elige una fecha de nacimiento',
-      );
-      expect(screen.queryByTestId('birth-date-picker')).toBeNull();
-      expect(screen.getByTestId('pet-avatar').props.photoUrl).toBeNull();
-      expect(screen.queryByTestId('add-pet-error')).toBeNull();
-      expect(screen.queryByTestId('photo-upload-error')).toBeNull();
-    });
-
-    await fireEvent.press(screen.getByTestId('age-mode-months'));
-    expect(screen.getByTestId('approx-age-input').props.value).toBe('');
-  });
 });
 
 describe('R6: alta de mascota', () => {
