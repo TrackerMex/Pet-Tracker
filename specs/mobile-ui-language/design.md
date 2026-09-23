@@ -435,6 +435,7 @@ añadidas por #68, registradas como delta sobre la tabla existente
 | — | `food.undoServed` | `Undo {{time}}` | `Deshacer {{time}}` | ← añadida por #98 (R3)
 | — | `food.couldNotUpdateMeal` | `Could not update the meal` | `No se pudo actualizar la comida` | ← añadida por #98 (R3)
 | — | `food.mealsServedOfTotal` | `{{served}} of {{total}} meals served` | `{{served}} de {{total}} comidas servidas` | ← añadida por #98 (R3)
+| — | `food.kcalConsumedOfTarget` **(param)** | `{{consumed}} of {{target}} kcal served today` | `{{consumed}} de {{target}} kcal servidas hoy` | ← añadida por #113 (R3)
 | 224 | `food.pending` | `Pending` | `Pendiente` |
 | 224 | `food.served` | `Served` | `Servido` |
 | 259 | `food.aiRecommendation` | `AI recommendation` | `Recomendación IA` |

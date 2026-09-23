@@ -9,6 +9,7 @@ import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
+import { Easing, ReduceMotion } from 'react-native-reanimated';
 
 import {
   getNutritionPlan,
@@ -19,6 +20,7 @@ import {
 import { listPets, type PetsState } from '../../../api/pets';
 import { nutritionKeys, petKeys } from '../../../api/query-keys';
 import type { NutritionPlan, PetProfile } from '../../../api/types';
+import { en, es } from '../../../i18n/catalog';
 import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
 import { LanguageProvider } from '../../../providers/language-provider';
 import { SelectedPetProvider } from '../../../providers/selected-pet-provider';
@@ -60,6 +62,28 @@ jest.mock('expo-router', () => ({
 jest.mock('react-native-safe-area-context', () => ({
   ...jest.requireActual('react-native-safe-area-context'),
   useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
+}));
+
+const mockWithTiming = jest.fn((value: number, _config?: unknown) => value);
+
+function expectKcalBarTiming(target: number): void {
+  const config = mockWithTiming.mock.calls.find(([value]) => value === target)?.[1];
+  expect(config).toEqual(
+    expect.objectContaining({ duration: 250, reduceMotion: ReduceMotion.System }),
+  );
+  const actual = (config as { easing: ReturnType<typeof Easing.bezier> }).easing.factory();
+  const expected = Easing.bezier(0.77, 0, 0.175, 1).factory();
+  for (const point of [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]) {
+    expect(actual(point)).toBeCloseTo(expected(point), 6);
+  }
+}
+
+jest.mock('react-native-reanimated', () => ({
+  ...jest.requireActual('react-native-reanimated'),
+  __esModule: true,
+  withTiming: (value: number, config?: unknown) => mockWithTiming(value, config),
+  withRepeat: jest.fn((animation: unknown) => animation),
+  withSequence: jest.fn((...steps: unknown[]) => steps.at(-1)),
 }));
 
 jest.mock('reicon-react-native', () => {
@@ -139,6 +163,7 @@ function makePlan(overrides: Partial<NutritionPlan> = {}): NutritionPlan {
     aiExplanation: null,
     generatedAt: '2026-08-23T12:00:00.000Z',
     servedToday: [],
+    kcalConsumedToday: 0,
     ...overrides,
   };
 }
@@ -223,7 +248,7 @@ describe('R4: food resuelve la mascota seleccionada', () => {
     expect(screen.getByTestId('food-loading')).toBeVisible();
     expect(screen.getByTestId('food-plan-skeleton')).toHaveProp(
       'className',
-      expect.stringContaining('h-32'),
+      expect.stringContaining('h-40'),
     );
     expect(screen.getByTestId('food-meals-skeleton')).toHaveProp(
       'className',
@@ -968,6 +993,172 @@ describe('#62 R5: el título de card usa un único tratamiento', () => {
   );
 });
 
+describe('#113 R1: NutritionPlan declara kcalConsumedToday como número y último campo (mobile-kcal-consumed-bar #113)', () => {
+  it('añade kcalConsumedToday: number justo después de servedToday', () => {
+    const source = readFileSync('src/api/types.ts', 'utf8');
+    const block = source.match(/export interface NutritionPlan \{[\s\S]*?\n\}/)?.[0] ?? '';
+    const fields = [...block.matchAll(/^\s+(\w+):/gm)].map(([, field]) => field);
+    expect(fields.slice(-2)).toEqual(['servedToday', 'kcalConsumedToday']);
+    expect(block).toContain('\n  kcalConsumedToday: number;\n');
+  });
+});
+
+describe('#113 R2: la tarjeta Objetivo diario pinta las kcal servidas contra merKcal (mobile-kcal-consumed-bar #113)', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  });
+
+  it('compone la tarjeta: fila intacta y bloque de progreso debajo', async () => {
+    mockGetNutritionPlan.mockResolvedValue({
+      kind: 'ok',
+      plan: makePlan({ merKcal: 1420, kcalConsumedToday: 890, servedToday: ['07:30'] }),
+    });
+    await renderFood();
+
+    const card = await screen.findByTestId('food-plan-card');
+    expect(card.children).toHaveLength(2);
+    const row = card.children[0];
+    const progress = card.children[1];
+    if (typeof row === 'string' || typeof progress === 'string') {
+      throw new Error('Expected element children');
+    }
+    expect(row.props.className).toBe('flex-row items-center justify-between gap-4');
+    expect(row.children).toHaveLength(2);
+    const column = row.children[0];
+    const tile = row.children[1];
+    if (typeof column === 'string' || typeof tile === 'string') {
+      throw new Error('Expected element children');
+    }
+    expect(within(column).getByTestId('food-plan-kcal')).toBeVisible();
+    expect(within(tile).getByTestId('food-icon-fork-knife')).toBeVisible();
+    expect(progress.props.testID).toBe('food-plan-progress');
+    expect(progress.props.className).toBe('gap-1.5');
+    expect(progress.props.onPress).toBeUndefined();
+    expect(progress.children).toHaveLength(2);
+    const header = progress.children[0];
+    const track = progress.children[1];
+    if (typeof header === 'string' || typeof track === 'string') {
+      throw new Error('Expected element children');
+    }
+    expect(header.props.className).toBe('flex-row items-center justify-between');
+    expect(header.children).toHaveLength(2);
+    expect(header.children[0]).toHaveProperty('props.testID', 'food-plan-consumed');
+    expect(header.children[1]).toHaveProperty('props.testID', 'food-plan-percent');
+    for (const testID of ['food-plan-consumed', 'food-plan-percent']) {
+      const text = screen.getByTestId(testID);
+      expect(text.props.className).toBe('text-xs font-normal text-accent-foreground');
+      expect(text.props.style).toEqual({ fontVariant: ['tabular-nums'] });
+    }
+    expect(track.props.testID).toBe('food-plan-track');
+    expect(track.props.className).toBe('h-2 overflow-hidden rounded-full bg-accent-foreground/20');
+    expect(track.children).toHaveLength(1);
+    const fill = track.children[0];
+    if (typeof fill === 'string') {
+      throw new Error('Expected element child');
+    }
+    expect(fill.props.testID).toBe('food-plan-fill');
+    expect(fill.props.className).toBe('h-full rounded-full bg-accent-foreground');
+    expect(screen.getAllByTestId('food-plan-progress')).toHaveLength(1);
+  });
+
+  it.each([
+    { merKcal: 656, mealsPerDay: 2, mealTimes: ['07:30', '19:30'], servedToday: [], kcal: 0, consumed: '0 kcal', percent: '0%' },
+    { merKcal: 656, mealsPerDay: 2, mealTimes: ['07:30', '19:30'], servedToday: ['07:30'], kcal: 328, consumed: '328 kcal', percent: '50%' },
+    { merKcal: 656, mealsPerDay: 2, mealTimes: ['07:30', '19:30'], servedToday: ['07:30', '19:30'], kcal: 656, consumed: '656 kcal', percent: '100%' },
+    { merKcal: 1420, mealsPerDay: 2, mealTimes: ['07:30', '19:30'], servedToday: ['07:30'], kcal: 890, consumed: '890 kcal', percent: '63%' },
+    { merKcal: 1000, mealsPerDay: 3, mealTimes: ['08:00', '13:00', '20:00'], servedToday: ['08:00'], kcal: 333, consumed: '333 kcal', percent: '33%' },
+    { merKcal: 200, mealsPerDay: 6, mealTimes: ['06:00', '09:00', '12:00', '15:00', '18:00', '21:00'], servedToday: ['06:00'], kcal: 33, consumed: '33 kcal', percent: '17%' },
+    { merKcal: 0, mealsPerDay: 2, mealTimes: ['07:30', '19:30'], servedToday: [], kcal: 0, consumed: '0 kcal', percent: '0%' },
+  ])('con merKcal $merKcal y kcalConsumedToday $kcal pinta $consumed y $percent', async ({ merKcal, mealsPerDay, mealTimes, servedToday, kcal, consumed, percent }) => {
+    mockGetNutritionPlan.mockResolvedValue({
+      kind: 'ok',
+      plan: makePlan({ merKcal, mealsPerDay, mealTimes, servedToday, kcalConsumedToday: kcal }),
+    });
+    await renderFood();
+    expect(await screen.findByTestId('food-plan-consumed')).toHaveTextContent(consumed);
+    expect(screen.getByTestId('food-plan-percent')).toHaveTextContent(percent);
+    expect(screen.getByTestId('food-plan-fill')).toHaveAnimatedStyle({ width: percent });
+  });
+
+  it('no pinta el bloque sin plan', async () => {
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'not-found' });
+    await renderFood();
+    await screen.findByTestId('food-plan-empty');
+    expect(screen.queryByTestId('food-plan-progress')).toBeNull();
+  });
+});
+
+describe('#113 R3: el progreso es un único elemento accesible con su clave de catálogo (mobile-kcal-consumed-bar #113)', () => {
+  beforeEach(() => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  });
+
+  it.each([
+    { merKcal: 1420, kcal: 890, servedToday: ['07:30'], label: '890 de 1420 kcal servidas hoy', now: 63 },
+    { merKcal: 656, kcal: 0, servedToday: [], label: '0 de 656 kcal servidas hoy', now: 0 },
+  ])('anuncia $label como un solo progressbar', async ({ merKcal, kcal, servedToday, label, now }) => {
+    mockGetNutritionPlan.mockResolvedValue({
+      kind: 'ok',
+      plan: makePlan({ merKcal, kcalConsumedToday: kcal, servedToday }),
+    });
+    await renderFood();
+    const progress = await screen.findByTestId('food-plan-progress');
+    expect(progress.props.accessible).toBe(true);
+    expect(progress.props.accessibilityRole).toBe('progressbar');
+    expect(progress.props.accessibilityLabel).toBe(label);
+    expect(progress.props.accessibilityValue).toEqual({ min: 0, max: 100, now });
+  });
+
+  it('registra food.kcalConsumedOfTarget en los dos idiomas y en la tabla de idioma', () => {
+    const english = en as Record<string, string>;
+    const spanish = es as Record<string, string>;
+    expect(english['food.kcalConsumedOfTarget']).toBe('{{consumed}} of {{target}} kcal served today');
+    expect(spanish['food.kcalConsumedOfTarget']).toBe('{{consumed}} de {{target}} kcal servidas hoy');
+    expect(readFileSync('../specs/mobile-ui-language/design.md', 'utf8')).toMatch(
+      /\| — \| `food\.kcalConsumedOfTarget`[^\n]*← añadida por #113 \(R3\)/,
+    );
+  });
+});
+
+describe('#113 R4: el relleno transiciona su ancho al servir y al deshacer (mobile-kcal-consumed-bar #113)', () => {
+  afterEach(() => mockGetNutritionPlan.mockReset());
+
+  it('anima a 50, sube a 100 al servir y baja a 50 al deshacer con 250 ms y ease-in-out', async () => {
+    const half = makePlan({ merKcal: 1420, servedToday: ['07:30'], kcalConsumedToday: 710 });
+    const full = makePlan({ merKcal: 1420, servedToday: ['07:30', '19:30'], kcalConsumedToday: 1420 });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetNutritionPlan
+      .mockResolvedValueOnce({ kind: 'ok', plan: half })
+      .mockResolvedValueOnce({ kind: 'ok', plan: full })
+      .mockResolvedValue({ kind: 'ok', plan: half });
+    mockServeMeal.mockResolvedValue({ kind: 'ok' });
+    mockUnserveMeal.mockResolvedValue({ kind: 'ok' });
+
+    await renderFood();
+    expect(await screen.findByTestId('food-plan-consumed')).toHaveTextContent('710 kcal');
+    expect(screen.getByTestId('food-plan-percent')).toHaveTextContent('50%');
+    expect(screen.getByTestId('food-plan-fill')).toHaveAnimatedStyle({ width: '50%' });
+    expectKcalBarTiming(50);
+
+    mockWithTiming.mockClear();
+    await fireEvent.press(screen.getByTestId('meal-toggle-1'));
+    await screen.findByTestId('meal-served-1');
+    expect(screen.getByTestId('food-plan-consumed')).toHaveTextContent('1420 kcal');
+    expect(screen.getByTestId('food-plan-percent')).toHaveTextContent('100%');
+    expect(screen.getByTestId('food-plan-fill')).toHaveAnimatedStyle({ width: '100%' });
+    expectKcalBarTiming(100);
+
+    await waitFor(() => expect(screen.getByTestId('meal-toggle-1')).toBeEnabled());
+    mockWithTiming.mockClear();
+    await fireEvent.press(screen.getByTestId('meal-toggle-1'));
+    await screen.findByTestId('meal-pending-1');
+    expect(screen.getByTestId('food-plan-consumed')).toHaveTextContent('710 kcal');
+    expect(screen.getByTestId('food-plan-percent')).toHaveTextContent('50%');
+    expect(screen.getByTestId('food-plan-fill')).toHaveAnimatedStyle({ width: '50%' });
+    expectKcalBarTiming(50);
+  });
+});
+
 describe('#65 R17: los títulos de card se localizan por testID y su copy sigue asertada', () => {
   beforeEach(() => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
@@ -989,5 +1180,40 @@ describe('#65 R17: los títulos de card se localizan por testID y su copy sigue 
       expect(screen.getByTestId('food-ai-title')).toBeVisible();
       expect(screen.getByTestId('meal-schedule-link-title')).toBeVisible();
     });
+  });
+});
+
+describe('#113 R5: el esqueleto del plan reserva el alto de la tarjeta con progreso (mobile-kcal-consumed-bar #113)', () => {
+  it('usa h-40 con el radio de card', async () => {
+    mockListPets.mockReturnValue(pending<PetsState>());
+    await renderFood();
+    expect(screen.getByTestId('food-plan-skeleton').props.className).toBe('skeleton__root h-40 w-full rounded-card');
+  });
+});
+
+describe('#113 R7: los nodos no-texto de la barra no llevan más estilo que el ancho (mobile-kcal-consumed-bar #113)', () => {
+  it.each([
+    { merKcal: 656, kcal: 0, servedToday: [], width: '0%' },
+    { merKcal: 1420, kcal: 890, servedToday: ['07:30'], width: '63%' },
+  ])('con merKcal $merKcal y kcalConsumedToday $kcal el relleno solo lleva width $width', async ({ merKcal, kcal, servedToday, width }) => {
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetNutritionPlan.mockResolvedValue({
+      kind: 'ok',
+      plan: makePlan({ merKcal, servedToday, kcalConsumedToday: kcal }),
+    });
+    await renderFood();
+
+    expect(await screen.findByTestId('food-plan-fill')).toHaveAnimatedStyle(
+      { width },
+      { shouldMatchAllProps: true },
+    );
+    const progress = screen.getByTestId('food-plan-progress');
+    expect(progress.props.style).toBeUndefined();
+    const header = progress.children[0];
+    if (typeof header === 'string') {
+      throw new Error('Expected element child');
+    }
+    expect(header.props.style).toBeUndefined();
+    expect(screen.getByTestId('food-plan-track').props.style).toBeUndefined();
   });
 });

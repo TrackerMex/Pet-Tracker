@@ -3026,8 +3026,8 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
       const nutritionPlanFields = fieldsOf(nutritionPlanBlock);
       const petProfileFields = fieldsOf(petProfileBlock);
 
-      expect(nutritionPlanFields).toHaveLength(12);
-      expect(nutritionPlanFields.slice(-2)).toEqual([
+      expect(nutritionPlanFields).toHaveLength(12 + 1); // +1 #113 R1
+      expect(nutritionPlanFields.slice(-3, -1)).toEqual([
         'generatedAt',
         'servedToday',
       ]);
