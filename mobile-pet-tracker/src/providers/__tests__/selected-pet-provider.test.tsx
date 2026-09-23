@@ -79,6 +79,8 @@ describe('#95 R1: la selección pertenece a la sesión', () => {
     expect(screen.getByTestId('selected-pet')).toHaveTextContent('pet-1');
     await rerender(null);
     expect(screen.getByTestId('selected-pet')).toHaveTextContent('none');
+    await rerender('token-a');
+    expect(screen.getByTestId('selected-pet')).toHaveTextContent('none');
     await rerender('token-b');
     expect(screen.getByTestId('selected-pet')).toHaveTextContent('none');
     await fireEvent.press(screen.getByText('Select Luna'));
