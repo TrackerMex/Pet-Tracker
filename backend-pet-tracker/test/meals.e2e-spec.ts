@@ -487,6 +487,7 @@ describe('Meals served tracking (e2e)', () => {
           'aiExplanation',
           'generatedAt',
           'servedToday',
+          'kcalConsumedToday',
         ].sort(),
       );
       expect((empty.body as { servedToday: string[] }).servedToday).toEqual([]);
@@ -589,6 +590,45 @@ describe('Meals served tracking (e2e)', () => {
           .where(eq(mealServings.petId, pet.id)),
       ).toHaveLength(2);
       await unserveMeal(owner, pet.id, '07:30').expect(204);
+    });
+  });
+
+  describe('R2 (nutrition-kcal-consumed #104): GET nutrition-plan devuelve kcalConsumedToday de las franjas servidas hoy y generate no', () => {
+    it('vale 0 sin servidas, sube al servir, baja al deshacer y no aparece en generate', async () => {
+      const owner = await seedUser('kcal-r2');
+      const pet = await seedPet(owner);
+      const generated = await seedPlan(owner, pet.id);
+      expect(generated.body).toMatchObject({
+        merKcal: 1059,
+        mealsPerDay: 2,
+        mealTimes: ['07:30', '19:30'],
+      });
+      expect(generated.body).not.toHaveProperty('kcalConsumedToday');
+
+      expect((await getPlan(owner, pet.id).expect(200)).body).toMatchObject({
+        servedToday: [],
+        kcalConsumedToday: 0,
+      });
+      await serveMeal(owner, pet.id, { mealTime: '07:30' }).expect(201);
+      expect((await getPlan(owner, pet.id).expect(200)).body).toMatchObject({
+        servedToday: ['07:30'],
+        kcalConsumedToday: 530,
+      });
+      await serveMeal(owner, pet.id, { mealTime: '19:30' }).expect(201);
+      expect((await getPlan(owner, pet.id).expect(200)).body).toMatchObject({
+        servedToday: ['07:30', '19:30'],
+        kcalConsumedToday: 1059,
+      });
+      await unserveMeal(owner, pet.id, '19:30').expect(204);
+      expect((await getPlan(owner, pet.id).expect(200)).body).toMatchObject({
+        servedToday: ['07:30'],
+        kcalConsumedToday: 530,
+      });
+      await unserveMeal(owner, pet.id, '07:30').expect(204);
+      expect((await getPlan(owner, pet.id).expect(200)).body).toMatchObject({
+        servedToday: [],
+        kcalConsumedToday: 0,
+      });
     });
   });
 });

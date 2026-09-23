@@ -17,7 +17,8 @@
 
 ## R2
 
-Pendiente.
+- Rojo `pnpm test:e2e -- meals.e2e-spec` → `exit=1`, 1 suite failed, 2 failed / 16 passed: R2 `toMatchObject` esperaba `kcalConsumedToday: 0` y faltaba; R9 de #83 esperaba la misma clave en `Object.keys` y faltaba. Los otros tests pasan.
+- Rojo `pnpm test:e2e -- nutrition.e2e-spec` → `exit=1`, 1 suite failed, 1 failed / 22 passed: R24 de #17 esperaba `kcalConsumedToday: 0` en `toEqual` y faltaba. Los otros tests pasan.
 
 ## R3
 
