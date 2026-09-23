@@ -233,3 +233,96 @@ para `food-plan-progress`, la cabecera y `food-plan-track`, más el
 HEAD y rojo en M8, M13, M14, (a), (b), (c) y (d).
 
 Logs: `/tmp/claude-1002/-home-claude-sites-Pet-Tracker/f4719a40-0501-4a5f-80e7-b8287f1de20f/scratchpad/mut/h1-*.log`.
+
+---
+
+# Ronda 2 — Enmienda E1 (R7)
+Fecha: 2026-09-23 (tras `436f936f`)
+Veredicto: **APROBADO**
+
+Base revisada: HEAD `436f936f`. Commits de la ronda: `2a1d1cff` (rojo R7),
+`8dd65ed3` (verde R7) y `436f936f` (trazabilidad y reporte). La Enmienda E1
+está en `ed6ef397` y su firma en `9da4db78`. Mismo worktree y branch que la
+ronda 1.
+
+## H1 (ronda 1) — cerrado
+- **El `describe` de R7 coincide con el literal de requirements §Enmienda E1.**
+  - Título: `#113 R7: los nodos no-texto de la barra no llevan más estilo que el ancho (mobile-kcal-consumed-bar #113)`.
+  - `it.each` con el título literal y las dos filas: 656/0/`[]`/`'0%'` y 1420/890/`['07:30']`/`'63%'`.
+  - Mocks `mockListPets` y `mockGetNutritionPlan` según la spec.
+  - Las cuatro aserciones: `toHaveAnimatedStyle({ width }, { shouldMatchAllProps: true })`, `progress.props.style`, `header.props.style` con la guarda `typeof header === 'string'`, y `food-plan-track` `props.style` `toBeUndefined()`.
+- **Mutaciones replantadas por mí en HEAD.** Seis suites (food, design-drift, consistency, legibility, ui-language y home), 354 tests. Cada una se restauró con `git checkout` y `git diff --exit-code` dio 0 tras cada una y al final:
+
+| Mutación en `food.tsx` | Resultado |
+|---|---|
+| M8 `opacity: 0.7` en `kcalBarStyle` | **rojo**: R7 ×2 |
+| M14 `backgroundColor: accent` en `kcalBarStyle` | **rojo**: R7 ×2 |
+| M13 `style={{ opacity: 0.5 }}` en `food-plan-track` | **rojo**: R7 ×2 |
+| relleno `style={[kcalBarStyle, { opacity: 0.7 }]}` | **rojo**: R7 ×2 |
+| relleno `style={[{ opacity: 0.7 }, kcalBarStyle]}` | **rojo**: R7 ×2 |
+| relleno `style={[kcalBarStyle, [{ opacity: 0.7 }]]}` | **rojo**: R7 ×2 |
+| `style={{ opacity: 0.5 }}` en `food-plan-progress` | **rojo**: R7 ×2 |
+| `style={{ opacity: 0.5 }}` en la cabecera | **rojo**: R7 ×2 |
+
+## Búsqueda de zona ciega nueva (lo que R7 no mira)
+
+| Id | Mutación | Resultado |
+|---|---|---|
+| N1 | en `kcalBarStyle`: `...(kcalBarWidth.get() >= 100 ? { opacity: 0.7 } : {})` | **VERDE 354/354: sobrevive** |
+| N2 | en `food-plan-track`: `style={kcalPct >= 100 ? { opacity: 0.5 } : undefined}` | **VERDE 354/354: sobrevive** |
+| N3 | `importantForAccessibility="no-hide-descendants"` en `food-plan-progress` | **rojo**, 13 failed: R2, R3, R4 y R7, porque RNTL excluye los nodos ocultos de `getByTestId` |
+| N4 | `className` del relleno con ` opacity-70` solo al 100 % | **rojo**, pero lo caza `#61 R3` (grep de `opacity-70`), no R2. Con una clase no vetada sobreviviría, igual que N1 |
+
+**Qué es.** Un hueco de muestreo, no de mecanismo. R7 comprueba «no hay más
+estilo que el ancho» en 0 % y 63 %. El 100 % sí se pinta en R2(b), fila
+656/656, y en el paso de servir de R4, pero con el matcher parcial. Un estilo
+que solo aparece al completar el día queda fuera de R7.
+
+**Cierre verificado** con una sonda temporal ya revertida: añadir a R7 una
+tercera fila `{ merKcal: 656, kcal: 656, servedToday: ['07:30', '19:30'], width: '100%' }`.
+R7 queda en 3/3 verde en HEAD, y con esa fila N1 y N2 salen rojos (1 failed
+cada una, la fila del 100 %).
+
+## Checklist ronda 2
+- **C2** [x] Solo #113 `in_progress`. `progress/current.md` describe la ronda 2.
+- **C3** [x] N/A a capas. Producción idéntica a la ronda 1.
+- **C4** [x] Par rojo→verde de R7, cada uno en su commit.
+  - El rojo `2a1d1cff` lleva el `describe` de R7 más una **mutación de producción** versionada (`opacity: 0.7` en `kcalBarStyle` de `food.tsx`). No toca el doble: el diff del test en ese commit son solo las 27 líneas del `describe`.
+  - Checkout de `2a1d1cff`: food.test da **2 failed / 53 passed**, exit=1, **por aserción** (`Received: {"width":"0%","opacity":0.7}` · `'opacity' should be undefined, but is 0.7`, y lo mismo con `63%`). No hay ningún `ReferenceError`, `SyntaxError` ni módulo ausente.
+  - El verde `8dd65ed3` revierte la mutación: food.test da **55/55**, exit=0. `git diff 15e43269 HEAD -- 'mobile-pet-tracker/src/app/(tabs)/food.tsx'` sale **vacío**.
+- **C5** [x] Fila R7 con título literal, `2a1d1cff` y `8dd65ed3`. Los 12 hashes (R1-R5 y R7) son ancestros de HEAD. Commits `test(kcal-bar): … (R7)` y `feat(kcal-bar): … (R7)`. R6 sigue «pendiente del humano», como está previsto.
+- **C6** [x] Enmienda E1 firmada: casilla marcada y commit de firma `9da4db78`. `git diff 9da4db78 HEAD -- specs/mobile-kcal-consumed-bar/` solo cambia la fila R7 de `traceability.md` (de `pendiente (ronda 2)` a los hashes). El diff de `e4a4841e` a `9da4db78` es la enmienda firmada: añade R7 y las erratas y no modifica R1-R6 ni D1-D6.
+- **C7** [x] N/A.
+- **C8** [x] Sin cambios en producción respecto a la ronda 1, así que el grep-clean y el juicio de C8 de la ronda 1 siguen valiendo.
+- **Lista cerrada de la ronda 2** [x] `git diff --name-only 9fb6c11a HEAD` da `food.test.tsx`, `progress/impl_mobile-kcal-consumed-bar.md` y `specs/mobile-kcal-consumed-bar/traceability.md`. `food.tsx` aparece en los commits intermedios y su diff neto es nulo.
+- **R1-R5 intactos** [x] Desde `15e43269` la parte móvil solo suma 27 líneas en `food.test.tsx` (numstat `27 0`) y no borra ni cambia ninguna línea de ningún test existente.
+- **H2 cerrado** [x] La errata consta en requirements (bajo el párrafo «Test» de R5 y en §Enmienda E1) y en tasks.md (R5 (1)), con el literal `'skeleton__root h-40 w-full rounded-card'`. El SHALL de R5 no cambia.
+
+## Hallazgos ronda 2
+**H6 — BAJA, no bloqueante. R7 solo muestrea el 0 % y el 63 %: un estilo que aparece al completar el día sobrevive (N1, N2).**
+- **Por qué no bloquea.** La familia de mutaciones que produce un descuido, añadir una clave de estilo sin condición en objeto, array o array anidado, en cualquiera de los cuatro nodos, queda candada por completo. Lo que sobrevive exige un estilo **condicionado** a un estado que no se muestrea, y eso es un cambio de diseño deliberado, no un despiste. Además, el 100 % ya está cubierto en ancho y textos por R2(b) y R4.
+- **Si el leader quiere cerrarlo antes del `done`**: basta la tercera fila de 100 % de arriba, ya medida. Como la tabla de R7 está firmada, añadirla es una Enmienda E2 con su propia firma. La alternativa es registrarlo como deuda nombrada. Decide el leader.
+
+**H4 (ronda 1)** R6 (smoke en dev build de Android) sigue siendo del humano.
+La feature no puede pasar a `done` hasta que se marque su casilla.
+
+## Output de ./init.sh (ronda 2)
+
+Lanzado en primer plano, sin pipe, después de comprobar que `pgrep -af
+'init\.sh|test:e2e|jest-e2e'` salía vacío. Log completo:
+`/tmp/claude-1002/-home-claude-sites-Pet-Tracker/f4719a40-0501-4a5f-80e7-b8287f1de20f/scratchpad/init-113-review2.log`
+(18435 líneas). Tras la ejecución, `git status --short` sale vacío.
+
+```
+exit=0
+backend unit : Test Suites: 170 passed, 170 total   | Tests: 1298 passed, 1298 total
+infra        : Test Suites: 2 passed, 2 total       | Tests: 14 passed, 14 total
+móvil        : Test Suites: 80 passed, 80 total     | Tests: 1443 passed, 1443 total
+e2e          : Test Suites: 3 skipped, 27 passed, 27 of 30 total | Tests: 8 skipped, 389 passed, 397 total
+✅ Lint sin errores · ✅ Typecheck sin errores · ✅ Todo verde.
+```
+
+Coincide con lo esperado: móvil 1441 → **1443** (+2, las dos filas de R7),
+mismas 80 suites. Lo demás no cambia. No hay regresiones.
+
+Logs de la ronda 2: `…/scratchpad/r2/` (rojo, verde, mutaciones y sondas).
