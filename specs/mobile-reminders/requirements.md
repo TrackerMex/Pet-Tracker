@@ -391,6 +391,17 @@ y su ampliación). Esta spec ratificó el inglés en su día; esa parte queda
 
 - [X] Enmienda aprobada por humano (fecha: 2026-09-06)
 
+## Enmienda externa A14 — la escribe #114 (2026-09-23)
+
+`mobile-reminders-alerts-to-stack` (#114) sube `reminders` al Stack raíz.
+(1) **R8**: sin mascota seleccionada, `AddReminderScreen` ya no renderiza
+`<Redirect href="/reminders" />`: llama una vez a
+`router.dismissTo('/reminders')` y no pinta el formulario (#114 R7). (2)
+**R10**: `reminders.tsx` vive en `src/app/reminders.tsx` (import
+`'../screens/reminders'`) y `add-reminder.tsx` en `src/app/add-reminder.tsx`
+desde #95. Las dos siguen siendo routes delgados. Firma: casilla A14 de
+`specs/mobile-reminders-alerts-to-stack/requirements.md` §Aprobación.
+
 ## Aprobación
 
 - [X] Aprobado por humano (fecha: 2026-08-24) ← gate obligatorio antes de implementar
