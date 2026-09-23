@@ -31,3 +31,19 @@ describe('#95 R2: las seis rutas de detalle viven en la raíz de src/app', () =>
     ]);
   });
 });
+
+describe('#95 R7: el reset de #63 queda solo donde no lo cubre el Stack', () => {
+  it.each([
+    ['add-reminder', 0],
+    ['add-pet', 0],
+    ['weight-log', 0],
+    ['meal-schedule', 0],
+    ['pairing', 2],
+  ])('%s conserva %i useFocusEffect', (screen, count) => {
+    const source = readFileSync(join(process.cwd(), 'src/screens', screen, 'index.tsx'), 'utf8');
+    expect(source.match(/useFocusEffect\(/g) ?? []).toHaveLength(count);
+    if (screen === 'pairing') {
+      expect(source).toContain('}, [resetPairingState, selectedPetId]);');
+    }
+  });
+});
