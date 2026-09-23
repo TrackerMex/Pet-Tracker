@@ -46,7 +46,7 @@ jest.mock('../../providers/auth-provider', () => ({
 }));
 
 jest.mock('expo-router', () => ({
-  router: { push: jest.fn(), back: jest.fn() },
+  router: { push: jest.fn(), back: jest.fn(), dismissTo: jest.fn() },
   useFocusEffect: jest.fn(),
   useIsFocused: () => true,
 }));
@@ -528,6 +528,16 @@ describe('R7: tras el 201 muestra "El collar está listo" con el collar y sus CT
     expect(mockRouter.back).toHaveBeenCalledTimes(1);
     expect(screen.queryByTestId('pairing-ready')).toBeNull();
     expect(screen.getByTestId('activation-code-input')).toBeVisible();
+  });
+
+  describe('#95 R8: ver en el mapa desapila pairing', () => {
+    it('usa dismissTo una vez y no apila otra instancia de tabs', async () => {
+      await renderReady();
+      await fireEvent.press(screen.getByTestId('ready-map'));
+      expect(mockRouter.dismissTo).toHaveBeenCalledTimes(1);
+      expect(mockRouter.dismissTo).toHaveBeenCalledWith('/map');
+      expect(mockRouter.push).not.toHaveBeenCalled();
+    });
   });
 });
 
