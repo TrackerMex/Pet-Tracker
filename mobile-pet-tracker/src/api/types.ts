@@ -200,6 +200,7 @@ export interface NutritionPlan {
   aiExplanation: string | null;
   generatedAt: string;
   servedToday: string[];
+  kcalConsumedToday: number;
 }
 
 export type ReminderType =
