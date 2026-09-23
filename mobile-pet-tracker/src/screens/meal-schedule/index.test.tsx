@@ -19,6 +19,7 @@ import {
 } from '../../api/nutrition';
 import { nutritionKeys } from '../../api/query-keys';
 import type { NutritionPlan, NutritionProfile } from '../../api/types';
+import { es } from '../../i18n/catalog';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
 import {
@@ -534,5 +535,16 @@ describe('#87 R11: MealScheduleContent lee por TanStack Query', () => {
     expect(queryClient.getQueryData(nutritionKeys.profile('pet-1'))).toEqual(
       profileState,
     );
+  });
+});
+
+describe('#95 R5: la pantalla no dibuja cabecera propia', () => {
+  it('retira el botón y el título del cuerpo', async () => {
+    mockGetNutritionPlan.mockReturnValue(pending<NutritionPlanState>());
+    mockGetNutritionProfile.mockReturnValue(pending<NutritionProfileState>());
+    await renderMealSchedule();
+    await waitFor(() => expect(screen.getByTestId('screen-meal-schedule')).toBeVisible());
+    expect(screen.queryByTestId('meal-schedule-back')).toBeNull();
+    expect(screen.queryByText(es['mealSchedule.mealSchedule'])).toBeNull();
   });
 });

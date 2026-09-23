@@ -1010,3 +1010,14 @@ describe('#87 R15: PairingScreen lee por TanStack Query', () => {
     );
   });
 });
+
+describe('#95 R5: la pantalla no dibuja cabecera propia', () => {
+  it('retira el botón de volver del cuerpo', async () => {
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    await renderPairing();
+    await waitFor(() => expect(screen.getByTestId('screen-pairing')).toBeVisible());
+    expect(screen.queryByTestId('pairing-back')).toBeNull();
+  });
+});

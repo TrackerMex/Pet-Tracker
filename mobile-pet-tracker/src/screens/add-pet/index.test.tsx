@@ -5,6 +5,7 @@ import * as ImagePicker from 'expo-image-picker';
 
 import { requestPhotoUploadUrl, uploadPhotoToUrl } from '../../api/media';
 import { createPet } from '../../api/pets';
+import { es } from '../../i18n/catalog';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
@@ -566,5 +567,16 @@ describe('#62 R12: el placeholder del formulario sale del tema', () => {
     expect(screen.getByTestId('approx-age-input').props.placeholderTextColor).toBe(
       muted,
     );
+  });
+});
+
+describe('#95 R5: la pantalla no dibuja cabecera propia', () => {
+  it('retira el botón y el título del cuerpo', async () => {
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
+    mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet });
+    await renderAddPet();
+    expect(screen.queryByTestId('add-pet-back')).toBeNull();
+    expect(screen.queryByText(es['addPet.addPet'])).toBeNull();
   });
 });

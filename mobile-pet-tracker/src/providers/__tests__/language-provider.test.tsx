@@ -63,6 +63,20 @@ describe('#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y par�
     }
   });
 
+  it('#95 R5: el catálogo ya no trae las seis claves de volver', () => {
+    const removed = [
+      'addReminder.backToReminders',
+      'addPet.backToProfile',
+      'docs.backToProfile',
+      'weightLog.backToHealth',
+      'mealSchedule.backToFood',
+      'pairing.back',
+    ];
+    for (const language of [en, es]) {
+      for (const key of removed) expect(Object.keys(language)).not.toContain(key);
+    }
+  });
+
   it('#73 R5: el catalogo trae home.unknown y deviceConnectivity.offline en los dos idiomas y registrados en la tabla', () => {
     const english = en as Record<string, string>;
     const spanish = es as Record<string, string>;

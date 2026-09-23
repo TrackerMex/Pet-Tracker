@@ -11,6 +11,7 @@ import { listPetDocs, type PetDocsState } from '../../api/media';
 import { getPet, type PetState } from '../../api/pets';
 import { mediaKeys, petKeys } from '../../api/query-keys';
 import type { PetProfile } from '../../api/types';
+import { es } from '../../i18n/catalog';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
 import { DocsScreen } from '.';
@@ -311,5 +312,17 @@ describe('#87 R9: DocsScreen lee por TanStack Query', () => {
     expect(queryClient.getQueryData(mediaKeys.petDocs('pet-1'))).toEqual(
       docsState,
     );
+  });
+});
+
+describe('#95 R5: la pantalla no dibuja cabecera propia', () => {
+  it('retira el botón y conserva Documentos de', async () => {
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
+    mockListPetDocs.mockResolvedValue({ kind: 'ok', docs: [] });
+    await renderDocs();
+    await waitFor(() => expect(screen.getByText(es['docs.documentsOf'])).toBeVisible());
+    expect(screen.queryByTestId('docs-back')).toBeNull();
   });
 });

@@ -17,6 +17,7 @@ import {
 } from '../../api/health-records';
 import { healthKeys } from '../../api/query-keys';
 import type { WeightEntry } from '../../api/types';
+import { es } from '../../i18n/catalog';
 import { getMe, type ProfileResponse } from '../../api/users';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
@@ -753,5 +754,16 @@ describe('#87 R10: WeightLogContent lee por TanStack Query', () => {
     expect(
       queryClient.getQueryData(healthKeys.weights('pet-1', undefined)),
     ).toEqual(weightsState);
+  });
+});
+
+describe('#95 R5: la pantalla no dibuja cabecera propia', () => {
+  it('retira el botón y el título del cuerpo', async () => {
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
+    mockListWeights.mockReturnValue(pending<WeightsState>());
+    await renderWeightLog();
+    await waitFor(() => expect(screen.getByTestId('screen-weight-log')).toBeVisible());
+    expect(screen.queryByTestId('weight-log-back')).toBeNull();
+    expect(screen.queryByText(es['weightLog.weightLog'])).toBeNull();
   });
 });

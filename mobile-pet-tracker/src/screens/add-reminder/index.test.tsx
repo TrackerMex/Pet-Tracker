@@ -15,6 +15,7 @@ import {
   type CreateReminderState,
 } from '../../api/reminders';
 import type { Reminder } from '../../api/types';
+import { es } from '../../i18n/catalog';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
 import {
@@ -48,6 +49,7 @@ jest.mock('expo-router', () => {
     },
   };
 });
+
 
 jest.mock('@expo/ui', () => {
   const React = jest.requireActual<typeof import('react')>('react');
@@ -595,5 +597,17 @@ describe('#62 R12: el placeholder del formulario sale del tema', () => {
     expect(
       (await screen.findByTestId('title-input')).props.placeholderTextColor,
     ).toBe(muted);
+  });
+});
+
+describe('#95 R5: la pantalla no dibuja cabecera propia', () => {
+  it('retira el botón y el título del cuerpo', async () => {
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
+    mockCreateReminder.mockReturnValue(pending());
+    await renderAddReminder();
+    await waitFor(() => expect(screen.getByTestId('screen-add-reminder')).toBeVisible());
+    expect(screen.queryByTestId('add-reminder-back')).toBeNull();
+    expect(screen.queryByText(es['addReminder.addReminder'])).toBeNull();
   });
 });
