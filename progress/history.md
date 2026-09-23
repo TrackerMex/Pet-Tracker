@@ -5076,3 +5076,72 @@ raiz:
 - Tras el reinicio del VPS a las 03:52, `pet-tracker-postgres` y
   `pet-tracker-localstack` estaban caidos, sin politica de reinicio. Se
   levantaron con `docker compose up -d`.
+
+## #113 `mobile-kcal-consumed-bar` — 2026-09-23
+
+Sesion Backend, worktree `/home/claude/sites/Pet-Tracker-wt-backend`, branch
+`feature/113-mobile-kcal-consumed-bar` desde `origin/main` 103a3366 (#104
+mergeada) y rebasada sobre a833f153 al mergear #95. En paralelo, la sesion
+Frontend cerraba #95 y llevaba #114 en el tree principal.
+
+### Que se hizo
+
+La tarjeta Objetivo diario de `src/app/(tabs)/food.tsx` pinta las kcal
+servidas hoy contra `merKcal`, leyendo el `kcalConsumedToday` que el `GET` del
+plan devuelve desde #104. El tipo `NutritionPlan` gana el campo; bajo la fila
+actual entra un bloque `food-plan-progress` con `{n} kcal`, `{pct}%` y una
+barra cuyo relleno transiciona su ancho. Una clave de catalogo nueva,
+`food.kcalConsumedOfTarget`, como nombre del unico `progressbar`. Cero
+dependencias, tokens o llamadas HTTP.
+
+Decisiones firmadas: **D1** barra sola, sin el anillo del Make (el mismo
+porcentaje dos veces, y el anillo retiraba el tile y contradecia D2 de
+`mobile-food`); **D2** `pct = merKcal > 0 ? Math.round(c / m * 100) : 0`,
+leido del campo y nunca derivado de `servedToday`; **D3** `withTiming` 250 ms
+con `Easing.bezier(0.77, 0, 0.175, 1)` y `ReduceMotion.System`, la receta de
+#106; **D4** texto a opacidad plena, no el `white/70` del Make (no llega a AA);
+**D5** una sola clave nueva, `kcal` y `%` fuera del catalogo por D7 de #65;
+**D6** esqueleto `h-32` a `h-40`.
+
+### Premisas que no se heredaron
+
+La entrada decia "claves" en plural: es una. Decia que solo se rompian dos
+fixtures al tipar el campo: habia un tercer candado, `#98 R1` de la Home, que
+cuenta los campos de `NutritionPlan`. Decia que se tocaba
+`docs/ui-guidelines.md`: no hacia falta. Y `merKcal` puede valer 0 (pesos de
+gramos), asi que la formula lleva guarda.
+
+### Gate y ciclo
+
+- Spec `babb1317`, espejada a Notion. Los candados compartidos con #95
+  (catalogo, `R6_FOOD`, `meal-schedule`) se escribieron como delta y el
+  handoff espero al merge de #95; la branch se rebaso sobre a833f153 antes
+  del primer commit de Codex. Firma `e4a4841e` (`page_last_edited_at`
+  2026-09-23T16:47:25Z).
+- Codex ronda 1: diez commits TDD, movil 80/1426 a 80/1441.
+- Reviewer ronda 1: **rechazado** (H1). `toHaveAnimatedStyle` solo compara
+  las claves del esperado y nadie candaba el `style` de los nodos no-texto: una
+  opacidad o `backgroundColor: accent` en el relleno (barra invisible) y un
+  `style` en el carril pasaban 352/352. El codigo era correcto; el hueco era
+  de la prescripcion de la spec. H2: el literal del test de R5 no podia pasar
+  (heroui antepone `skeleton__root`); el de Codex era el correcto.
+- Enmienda E1 (`ed6ef397`): R7, con el mecanismo y las mutaciones medidos por
+  el reviewer antes de escribirla, y errata de R5. Gate reabierto solo para
+  E1; firma `9da4db78` (`page_last_edited_at` 2026-09-23T18:34:56Z).
+- Codex ronda 2: rojo con mutacion de produccion versionada (C4 quinto punto)
+  y verde que la revierte; `food.tsx` identico a la ronda 1. Movil 80/1443.
+- Reviewer ronda 2 (`b2535de8`): aprobado; las ocho mutaciones de H1 salen
+  rojas. init.sh exit=0 en las dos rondas.
+- R6: smoke en dev build de Android firmado por el humano en su propio commit
+  (`9c5d8eed`, CPH2709, 2026-09-23).
+
+### Desviaciones y deuda, todas no bloqueantes
+
+- `afterEach(mockReset)` en el `describe` de R4, no prescrito: sin el, una
+  respuesta en cola de R4 rompia `#65 R17`. El reviewer lo acepto.
+- **H6 (baja)**: un estilo condicionado a proposito al 100 % sobreviviria,
+  porque R7 mira 0 % y 63 %. Se cerraria con una tercera fila en una Enmienda
+  E2; el leader recomendo no hacerla y el humano cerro sin pedirla. No se
+  registra como feature.
+- Leccion guardada en memoria: `toHaveAnimatedStyle` sin `shouldMatchAllProps`
+  deja una zona ciega; especificar el `style` de cada nodo no-texto candado.

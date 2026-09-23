@@ -162,6 +162,7 @@ export const R6_FOOD: UseRow[] = [
   { file: 'src/app/(tabs)/food.tsx', key: 'food.dailyTarget' },
   { file: 'src/app/(tabs)/food.tsx', key: 'food.dailyKcal' },
   { file: 'src/app/(tabs)/food.tsx', key: 'food.dailyGrams' },
+  { file: 'src/app/(tabs)/food.tsx', key: 'food.kcalConsumedOfTarget' }, // #113 R3
   { file: 'src/app/(tabs)/food.tsx', key: 'food.mealsToday' },
   { file: 'src/app/(tabs)/food.tsx', key: 'food.markServed' },
   { file: 'src/app/(tabs)/food.tsx', key: 'food.undoServed' },
