@@ -19,7 +19,7 @@ ancestros y habría que reapuntarlos verificando `git merge-base --is-ancestor`.
 
 | Requisito | Test (título literal del `describe`) | Commit rojo | Commit verde |
 |---|---|---|---|
-| R1 — `NutritionPlan` + `kcalConsumedToday: number` | `#113 R1: NutritionPlan declara kcalConsumedToday como número y último campo (mobile-kcal-consumed-bar #113)` | `c752795e` | pendiente |
+| R1 — `NutritionPlan` + `kcalConsumedToday: number` | `#113 R1: NutritionPlan declara kcalConsumedToday como número y último campo (mobile-kcal-consumed-bar #113)` | `c752795e` | `f4b0c388` |
 | R2 — bloque de progreso en `food-plan-card` | pendiente | pendiente | pendiente |
 | R3 — un único `progressbar` + `food.kcalConsumedOfTarget` | pendiente | pendiente | pendiente |
 | R4 — transición de 250 ms al servir y deshacer | pendiente | pendiente | pendiente |
@@ -31,7 +31,7 @@ ancestros y habría que reapuntarlos verificando `git merge-base --is-ancestor`.
 | Candado | Delta | Commit |
 |---|---|---|
 | `src/screens/home/index.test.tsx` · `#98 R1` | `12 + 1`, `.slice(-3, -1)` | `c752795e` |
-| fixtures `makePlan` de `food.test.tsx` y `meal-schedule/index.test.tsx` | `kcalConsumedToday: 0` | pendiente (verde de R1) |
+| fixtures `makePlan` de `food.test.tsx` y `meal-schedule/index.test.tsx` | `kcalConsumedToday: 0` | `f4b0c388` |
 | `src/providers/__tests__/language-provider.test.tsx` · `#65 R12` | `+ 1` | pendiente (rojo de R3) |
 | `src/__tests__/ui-language.test.ts` · `#65 R6` | `+ 1` y título | pendiente (rojo de R3) |
 | `src/__tests__/ui-copy-table.ts` · `R6_FOOD` | + 1 fila | pendiente (verde de R3) |
