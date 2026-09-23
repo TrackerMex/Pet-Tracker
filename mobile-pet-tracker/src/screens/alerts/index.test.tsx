@@ -171,6 +171,23 @@ describe('#78 R4: la pantalla pinta su esqueleto, su error, su vacío y sus fila
     } satisfies AuthContextValue);
   });
 
+  describe('#114 R5: el título vive en la cabecera nativa', () => {
+    it('no pinta título en carga ni con filas y deja la cabecera nula sin error', async () => {
+      let resolveAlerts!: (state: AlertsState) => void;
+      mockListAlerts.mockReturnValue(new Promise((resolve) => { resolveAlerts = resolve; }));
+      await renderAlerts();
+
+      await screen.findByTestId('alerts-loading');
+      expect(screen.queryByText(es['alerts.title'])).toBeNull();
+
+      await act(async () => resolveAlerts({ kind: 'ok', items: [makeAlert()], nextCursor: null }));
+      await screen.findByTestId(`alert-row-${makeAlert().id}`);
+      expect(screen.queryByText(es['alerts.title'])).toBeNull();
+      expect(screen.queryByTestId('alerts-action-error')).toBeNull();
+      expect(screen.getByTestId('alerts-list').props.ListHeaderComponent).toBeNull();
+    });
+  });
+
   it('pinta tres esqueletos mientras espera la primera página', async () => {
     mockListAlerts.mockReturnValue(pending<AlertsState>());
 

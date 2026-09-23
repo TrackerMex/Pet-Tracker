@@ -18,6 +18,7 @@ import {
   type RemindersState,
 } from '../../api/reminders';
 import type { PetProfile, Reminder } from '../../api/types';
+import { es } from '../../i18n/catalog';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
 import { SelectedPetProvider } from '../../providers/selected-pet-provider';
@@ -202,6 +203,25 @@ describe('R5: reminders monta con métricas y estados', () => {
       signOut: jest.fn(),
     } satisfies AuthContextValue);
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  });
+
+  describe('#114 R5: el título vive en la cabecera nativa', () => {
+    it('deja Nuevo en su fila y no pinta título en carga ni con filas', async () => {
+      let resolveReminders!: (state: RemindersState) => void;
+      mockListReminders.mockReturnValue(new Promise((resolve) => { resolveReminders = resolve; }));
+      await renderReminders();
+
+      await screen.findByTestId('reminders-loading');
+      expect(screen.queryByText(es['reminders.reminders'])).toBeNull();
+      const actions = screen.getByTestId('reminders-actions');
+      expect(actions.props.className).toBe('flex-row justify-end');
+      expect(within(actions).getByTestId('reminders-add-link')).toBeVisible();
+
+      await act(async () => resolveReminders({ kind: 'ok', reminders: [makeReminder()] }));
+      await screen.findByTestId(`reminder-row-${makeReminder().id}`);
+      expect(screen.queryByText(es['reminders.reminders'])).toBeNull();
+      expect(screen.getByTestId('reminders-add-link')).toBeVisible();
+    });
   });
 
   it('uses uniform metrics, selects the first pet, and shows row skeletons', async () => {
