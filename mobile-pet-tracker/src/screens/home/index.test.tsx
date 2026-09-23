@@ -3764,7 +3764,7 @@ describe('#98 R7: la barra de comidas y todas sus decisiones', () => {
   });
 });
 
-describe('#' + '106 R2: la barra de comidas transiciona su ancho', () => {
+describe('#106 R2: la barra de comidas transiciona su ancho', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockUseReducedMotion.mockReturnValue(false);
@@ -3809,7 +3809,7 @@ describe('#' + '106 R2: la barra de comidas transiciona su ancho', () => {
   });
 });
 
-describe('#' + '106 R3: reduce motion deja la barra sin animación', () => {
+describe('#106 R3: reduce motion deja la barra sin animación', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     process.env.EXPO_PUBLIC_API_URL = apiUrl;
