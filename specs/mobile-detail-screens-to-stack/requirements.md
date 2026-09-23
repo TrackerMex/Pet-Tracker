@@ -352,36 +352,36 @@ Runtime: **dev build de Android**, nunca Expo Go. **No hace falta regenerar el
 dev build**: no entra ningún módulo nativo (`react-native-screens` `4.26.2` ya
 está instalado y enlazado; [[design]] §Entorno). App en español.
 
-- [ ] 1. Profile → "Añadir mascota": la pantalla **entra con la transición de
+- [X] 1. Profile → "Añadir mascota": la pantalla **entra con la transición de
       plataforma**, no con el fundido de pestaña, bajo una cabecera nativa
       titulada "Nueva mascota", con flecha de volver y **sin** la barra de
       pestañas flotante. Bajar hasta el final: "Guardar mascota" queda a unos
       24 px de la barra de navegación del sistema, **sin banda vacía**. La
       flecha vuelve a Profile con la transición de salida.
-- [ ] 2. Repetir el paso 1 con las otras cinco: Recordatorios → "Nuevo";
+- [X] 2. Repetir el paso 1 con las otras cinco: Recordatorios → "Nuevo";
       Profile → "Documentos" de una mascota (cabecera sin título, "Documentos
       de / <nombre>" al principio del cuerpo); Salud → "Registro de peso";
       Nutrición → "Horario de comidas"; Profile → "Configuración del
       Dispositivo GPS" (cabecera sin título). En ninguna queda hueco entre la
       cabecera y el primer elemento.
-- [ ] 3. En cualquiera de las seis, el **gesto o botón atrás del sistema** hace
+- [X] 3. En cualquiera de las seis, el **gesto o botón atrás del sistema** hace
       lo mismo que la flecha.
-- [ ] 4. Con tema oscuro (Profile), la cabecera de las seis toma el fondo y el
+- [X] 4. Con tema oscuro (Profile), la cabecera de las seis toma el fondo y el
       color de texto del tema, sin franja blanca. Volver a claro: idem.
-- [ ] 5. Cambiar a inglés: los cuatro títulos pasan a "Add reminder", "Add pet",
+- [X] 5. Cambiar a inglés: los cuatro títulos pasan a "Add reminder", "Add pet",
       "Weight log" y "Meal schedule".
-- [ ] 6. Reentrada en blanco (los pasos 1–3 de #63, ahora por estructura):
+- [X] 6. Reentrada en blanco (los pasos 1–3 de #63, ahora por estructura):
       escribir medio recordatorio, salir con la flecha y volver a entrar → vacío,
       con `vaccine` seleccionado, 09:00 y antelación de 7 días.
-- [ ] 7. En `pairing`, con un collar recién vinculado, "Ver en el mapa" abre Map,
+- [X] 7. En `pairing`, con un collar recién vinculado, "Ver en el mapa" abre Map,
       y el botón atrás **no** vuelve a `pairing`.
-- [ ] 8. Con la sesión cerrada, `adb shell am start -a android.intent.action.VIEW
+- [X] 8. Con la sesión cerrada, `adb shell am start -a android.intent.action.VIEW
       -d "mobilepettracker://reset-password?token=abc"`: aparece la pantalla de
       restablecer contraseña, **no** el login.
-- [ ] 9. (Solo si hay dos cuentas.) Cerrar sesión con la cuenta A y entrar con B:
+- [X] 9. (Solo si hay dos cuentas.) Cerrar sesión con la cuenta A y entrar con B:
       la Home muestra la mascota de B sin pasar por un error.
 
-- [ ] Prueba de humo superada (fecha: ____)
+- [X] Prueba de humo superada (fecha: 2026-09-23)
 
 ## Aprobación
 
