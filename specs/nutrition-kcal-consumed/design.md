@@ -1,6 +1,6 @@
 ---
 feature: "nutrition-kcal-consumed"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec]
 ---
 
@@ -18,7 +18,7 @@ tags: [harness, spec]
 
 ## Decisiones técnicas
 
-### D1 — Backend aquí, tarjeta móvil en #113 — **PENDIENTE DE FIRMA HUMANA**
+### D1 — Backend aquí, tarjeta móvil en #113 — **FIRMADA POR EL HUMANO el 2026-09-23 (Notion)**
 
 Sirve a los criterios 1 y 2 (se quedan) y saca de #104 los criterios 3 y 4
 (tarjeta «Objetivo diario», cero dependencias, suite móvil verde).

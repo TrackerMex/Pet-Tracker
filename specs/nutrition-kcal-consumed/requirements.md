@@ -1,6 +1,6 @@
 ---
 feature: "nutrition-kcal-consumed"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec]
 ---
 
@@ -21,7 +21,7 @@ tags: [harness, spec]
 > dependencias nuevas, cero variables de entorno nuevas, cero métodos nuevos
 > en puertos o repositorios.** La parte móvil (la tarjeta «Objetivo diario»
 > de `food.tsx`) es la feature **#113** `mobile-kcal-consumed-bar`, bloqueada
-> por esta (D1, pendiente de firma).
+> por esta (D1, firmada el 2026-09-23).
 >
 > Commit base `2be1b023` (= `origin/main`), branch
 > `feature/104-nutrition-kcal-consumed`, worktree
@@ -64,7 +64,7 @@ tags: [harness, spec]
 
 | Id | Decisión | Estado |
 |---|---|---|
-| **D1** | **#104 = backend; la tarjeta móvil va en #113** `mobile-kcal-consumed-bar` (`pending`, P3, bloqueada hasta que #104 esté en `main`). Mismo corte que #83/#98 | **Pendiente de firma humana** |
+| **D1** | **#104 = backend; la tarjeta móvil va en #113** `mobile-kcal-consumed-bar` (`pending`, P3, bloqueada hasta que #104 esté en `main`). Mismo corte que #83/#98 | **Firmada por el humano el 2026-09-23 (Notion)** |
 | D2 | **Reparto uniforme**: cada franja vale `merKcal / mealsPerDay` (sin redondear); las kcal consumidas son `Math.round(merKcal · servidas / mealsPerDay)`, redondeo **único** sobre el agregado, mitad hacia arriba | firmar = aceptar |
 | D3 | **Un solo campo nuevo** en el `GET` del plan: `kcalConsumedToday: number`, tras `servedToday`. Sin lista por franja, sin tocar `generate` ni el perfil | firmar = aceptar |
 | D4 | **Derivado al leer, nunca guardado**: siempre con el plan vigente y las franjas de `servedToday`; si el plan cambia a mitad de día, las franjas servidas se revalúan con el plan nuevo y las que ya no están en él dejan de contar | firmar = aceptar |
@@ -284,7 +284,7 @@ El número de suites no cambia (ningún fichero de test nuevo), así que
 |---|---|---|
 | 1. El plan desglosa kcal por franja, **o la spec declara por escrito qué reparto usa y por qué** | D2 ([[design]]) + R1 | Segunda rama: reparto uniforme, declarado y probado con literales; sin lista por franja (C2) |
 | 2. `GET` del plan devuelve las kcal consumidas del día derivadas de las comidas servidas, con test e2e | R2, R3, R4 (e2e en `test/meals.e2e-spec.ts`) | "Del día" = definición de #83 (P5, D5) |
-| (antes 3 y 4: tarjeta «Objetivo diario», dependencias, suite móvil) | **#113** | D1, pendiente de firma |
+| (antes 3 y 4: tarjeta «Objetivo diario», dependencias, suite móvil) | **#113** | D1, firmada el 2026-09-23 |
 
 Sin gate humano propio: todo lo observable lo cubren los e2e, y el reviewer
 corre `./init.sh`. El smoke con la tarjeta pintada es el gate de #113 (dev
@@ -332,4 +332,4 @@ creada en `feature_list.json`) y aceptar D2-D5 de [[design]] tal cual, en
 particular **D2** (reparto uniforme con un solo redondeo) y **D4** (si el plan
 cambia a mitad de día, las franjas servidas se revalúan con el plan nuevo).
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (fecha: 2026-09-23, vía Notion) ← gate obligatorio antes de implementar
