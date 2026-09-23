@@ -1,6 +1,6 @@
 ---
 feature: "reminder-dates-days-until-drift"
-status: spec_ready       # draft | spec_ready | approved
+status: approved         # draft | spec_ready | approved
 tags: [harness, spec, mobile]
 ---
 
