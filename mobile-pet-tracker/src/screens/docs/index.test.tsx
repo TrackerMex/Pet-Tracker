@@ -289,3 +289,16 @@ describe('#95 R5: la pantalla no dibuja cabecera propia', () => {
     expect(screen.queryByTestId('docs-back')).toBeNull();
   });
 });
+
+describe('#95 R6: métricas bajo cabecera nativa', () => {
+  it('usa solo el inset inferior del dispositivo', async () => {
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
+    mockGetPet.mockReturnValue(pending<PetState>());
+    mockListPetDocs.mockReturnValue(pending<PetDocsState>());
+    await renderDocs();
+    expect(screen.getByTestId('screen-docs').props.contentContainerStyle).toEqual({
+      padding: 24, gap: 16, paddingBottom: 48,
+    });
+  });
+});

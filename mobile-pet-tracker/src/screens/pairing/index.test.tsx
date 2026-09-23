@@ -290,7 +290,7 @@ describe('R4: /pairing monta en el Stack raíz con selector de mascota y estados
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
   });
 
-  it('renders the real route with uniform metrics and a dimensioned skeleton', async () => {
+  it('renders the real route with uniform metrics and a dimensioned skeleton (#95 R6)', async () => {
     mockListPets.mockReturnValue(pending<PetsState>());
 
     await renderPairing();
@@ -299,8 +299,7 @@ describe('R4: /pairing monta en el Stack raíz con selector de mascota y estados
     expect(screen.getByTestId('screen-pairing').props.contentContainerStyle).toEqual({
       padding: 24,
       gap: 16,
-      paddingTop: 52,
-      paddingBottom: 120,
+      paddingBottom: 48,
     });
     expect(screen.getByTestId('pairing-skeleton')).toBeVisible();
     expect(screen.getAllByTestId(/^pairing-content-skeleton-/)).toHaveLength(3);

@@ -215,7 +215,7 @@ describe('R7: meal schedule muestra horarios y perfil', () => {
     expect(mockGetNutritionProfile).not.toHaveBeenCalled();
   });
 
-  it('shows loading, safe padding, and navigates back', async () => {
+  it('shows loading and the metrics under the native header (#95 R6)', async () => {
     mockGetNutritionPlan.mockReturnValue(pending<NutritionPlanState>());
     mockGetNutritionProfile.mockReturnValue(pending<NutritionProfileState>());
 
@@ -243,13 +243,7 @@ describe('R7: meal schedule muestra horarios y perfil', () => {
     );
     expect(
       screen.getByTestId('screen-meal-schedule').props.contentContainerStyle,
-    ).toEqual(
-      expect.objectContaining({
-        padding: 24,
-        paddingTop: 52,
-        paddingBottom: 120,
-      }),
-    );
+    ).toEqual({ padding: 24, gap: 16, paddingBottom: 48 });
 
   });
 

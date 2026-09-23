@@ -215,7 +215,7 @@ describe('R7: weight log lista el historial', () => {
     expect(mockListWeights).not.toHaveBeenCalled();
   });
 
-  it('shows loading, safe padding, and navigates back', async () => {
+  it('shows loading and the metrics under the native header (#95 R6)', async () => {
     mockListWeights.mockReturnValue(pending<WeightsState>());
 
     await renderWeightLog();
@@ -226,11 +226,11 @@ describe('R7: weight log lista el historial', () => {
     expect(screen.getByTestId('weight-log-loading')).toBeVisible();
     expect(
       screen.getByTestId('screen-weight-log').props.contentContainerStyle,
-    ).toEqual(expect.objectContaining({ padding: 24, paddingBottom: 120 }));
+    ).toEqual({ padding: 24, gap: 16, paddingBottom: 48 });
 
   });
 
-  it('R5 (mobile-design-drift): aplica el safe area superior al contenido', async () => {
+  it('R5 (mobile-design-drift, enmendado por #95 R6): el inset superior lo consume la cabecera nativa', async () => {
     mockListWeights.mockReturnValue(pending<WeightsState>());
 
     await renderWeightLog();
@@ -240,7 +240,7 @@ describe('R7: weight log lista el historial', () => {
     );
     expect(
       screen.getByTestId('screen-weight-log').props.contentContainerStyle,
-    ).toEqual(expect.objectContaining({ paddingTop: 52 }));
+    ).not.toHaveProperty('paddingTop');
   });
 
   it('R8 (mobile-design-drift): reserva la altura del loading con Skeleton', async () => {

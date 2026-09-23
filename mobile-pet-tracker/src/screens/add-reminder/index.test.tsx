@@ -270,7 +270,7 @@ describe('R8: formulario de alta con chips y pickers', () => {
     expect(screen.queryByTestId('screen-add-reminder')).toBeNull();
   });
 
-  it('uses uniform metrics and navigates back', async () => {
+  it('uses the metrics under the native header (#95 R6)', async () => {
     await renderAddReminder();
 
     await waitFor(() =>
@@ -281,8 +281,7 @@ describe('R8: formulario de alta con chips y pickers', () => {
     ).toEqual({
       padding: 24,
       gap: 16,
-      paddingTop: 52,
-      paddingBottom: 120,
+      paddingBottom: 48,
     });
   });
 
