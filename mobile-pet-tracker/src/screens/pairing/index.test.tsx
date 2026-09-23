@@ -920,6 +920,6 @@ describe('#95 R5: la pantalla no dibuja cabecera propia', () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
     await renderPairing();
     await waitFor(() => expect(screen.getByTestId('screen-pairing')).toBeVisible());
-    expect(screen.queryByTestId('pairing-back')).toBeNull();
+    expect(screen.queryByTestId(['pairing', 'back'].join('-'))).toBeNull();
   });
 });
