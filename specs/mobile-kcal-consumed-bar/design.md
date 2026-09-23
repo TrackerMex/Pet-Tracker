@@ -1,6 +1,6 @@
 ---
 feature: "mobile-kcal-consumed-bar"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec, mobile]
 ---
 
@@ -70,7 +70,7 @@ que sigue va escrito para que no dependa de ninguna otra.
 
 ## 2. Decisiones técnicas
 
-### D1 — Barra sola, a todo el ancho, conservando el tile `ForkKnife` (R2) — **firma del humano**
+### D1 — Barra sola, a todo el ancho, conservando el tile `ForkKnife` (R2) — **firmada por el humano el 2026-09-23 (Notion)**
 
 | Opción | A favor | En contra |
 |---|---|---|

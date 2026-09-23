@@ -1,6 +1,6 @@
 ---
 feature: "mobile-kcal-consumed-bar"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec, mobile]
 ---
 
@@ -364,4 +364,4 @@ esta feature no añade módulos nativos (Reanimated ya está). Backend con #104
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (fecha: 2026-09-23, vía Notion) ← gate obligatorio antes de implementar
