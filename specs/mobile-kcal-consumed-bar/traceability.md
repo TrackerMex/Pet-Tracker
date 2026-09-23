@@ -23,7 +23,7 @@ ancestros y habría que reapuntarlos verificando `git merge-base --is-ancestor`.
 | R2 — bloque de progreso en `food-plan-card` | `#113 R2: la tarjeta Objetivo diario pinta las kcal servidas contra merKcal (mobile-kcal-consumed-bar #113)` | `a408be18` | `5523cd29` |
 | R3 — un único `progressbar` + `food.kcalConsumedOfTarget` | `#113 R3: el progreso es un único elemento accesible con su clave de catálogo (mobile-kcal-consumed-bar #113)` | `59220c29` | `40bfb708` |
 | R4 — transición de 250 ms al servir y deshacer | `#113 R4: el relleno transiciona su ancho al servir y al deshacer (mobile-kcal-consumed-bar #113)` | `a91b6af7` | `cd2952e8` |
-| R5 — `food-plan-skeleton` a `h-40` | `#113 R5: el esqueleto del plan reserva el alto de la tarjeta con progreso (mobile-kcal-consumed-bar #113)` | `a73390f7` | pendiente |
+| R5 — `food-plan-skeleton` a `h-40` | `#113 R5: el esqueleto del plan reserva el alto de la tarjeta con progreso (mobile-kcal-consumed-bar #113)` | `a73390f7` | `82568138` |
 | R6 — smoke en dev build de Android | humano | — | pendiente del humano |
 
 ## Candados ajenos movidos (se rellenan con el hash del commit que los mueve)
