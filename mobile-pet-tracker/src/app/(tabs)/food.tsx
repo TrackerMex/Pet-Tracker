@@ -168,7 +168,7 @@ export default function FoodScreen() {
         <View className="gap-4">
           <Skeleton
             testID="food-plan-skeleton"
-            className="h-32 w-full rounded-card"
+            className="h-40 w-full rounded-card"
           />
           <Skeleton
             testID="food-meals-skeleton"
