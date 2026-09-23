@@ -149,6 +149,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
 
       {!hasError && loadedPlan !== null ? (
         <>
+          <Text>{t('mealSchedule.mealSchedule')}</Text>
           <Card
             testID="meal-schedule-summary"
             variant="accent"

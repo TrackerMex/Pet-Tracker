@@ -667,9 +667,10 @@ describe('#87 R10: WeightLogContent lee por TanStack Query', () => {
 describe('#95 R5: la pantalla no dibuja cabecera propia', () => {
   it('retira el botón y el título del cuerpo', async () => {
     mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
-    mockListWeights.mockReturnValue(pending<WeightsState>());
+    mockListWeights.mockResolvedValue({ kind: 'ok', weights: [makeWeight()] });
     await renderWeightLog();
     await waitFor(() => expect(screen.getByTestId('screen-weight-log')).toBeVisible());
+    await screen.findByTestId('weight-chart-card');
     expect(screen.queryByTestId('weight-log-back')).toBeNull();
     expect(screen.queryByText(es['weightLog.weightLog'])).toBeNull();
   });

@@ -142,6 +142,7 @@ function WeightLogContent({ petId }: { petId: string }) {
     >
       {weights.data?.kind === 'ok' ? (
         <Card testID="weight-chart-card">
+          <Text>{t('weightLog.weightLog')}</Text>
           <WeightChart entries={weights.data.weights} />
         </Card>
       ) : null}

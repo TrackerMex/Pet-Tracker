@@ -471,10 +471,11 @@ describe('#87 R11: MealScheduleContent lee por TanStack Query', () => {
 
 describe('#95 R5: la pantalla no dibuja cabecera propia', () => {
   it('retira el botón y el título del cuerpo', async () => {
-    mockGetNutritionPlan.mockReturnValue(pending<NutritionPlanState>());
-    mockGetNutritionProfile.mockReturnValue(pending<NutritionProfileState>());
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan() });
+    mockGetNutritionProfile.mockResolvedValue({ kind: 'ok', profile: makeProfile() });
     await renderMealSchedule();
     await waitFor(() => expect(screen.getByTestId('screen-meal-schedule')).toBeVisible());
+    await screen.findByTestId('meal-schedule-summary');
     expect(screen.queryByTestId('meal-schedule-back')).toBeNull();
     expect(screen.queryByText(es['mealSchedule.mealSchedule'])).toBeNull();
   });
