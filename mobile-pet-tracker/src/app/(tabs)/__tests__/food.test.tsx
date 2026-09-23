@@ -968,6 +968,16 @@ describe('#62 R5: el título de card usa un único tratamiento', () => {
   );
 });
 
+describe('#113 R1: NutritionPlan declara kcalConsumedToday como número y último campo (mobile-kcal-consumed-bar #113)', () => {
+  it('añade kcalConsumedToday: number justo después de servedToday', () => {
+    const source = readFileSync('src/api/types.ts', 'utf8');
+    const block = source.match(/export interface NutritionPlan \{[\s\S]*?\n\}/)?.[0] ?? '';
+    const fields = [...block.matchAll(/^\s+(\w+):/gm)].map(([, field]) => field);
+    expect(fields.slice(-2)).toEqual(['servedToday', 'kcalConsumedToday']);
+    expect(block).toContain('\n  kcalConsumedToday: number;\n');
+  });
+});
+
 describe('#65 R17: los títulos de card se localizan por testID y su copy sigue asertada', () => {
   beforeEach(() => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
