@@ -4954,3 +4954,61 @@ Modificarlo apagó 14 describes en silencio en la ronda 1 de #94.
   el propio candado. El `reviewer` sondeó que **no lo debilita**.
 - La nota de cierre de `traceability.md` seguía citando `1396 + 14 = 1410`.
   Corregida al cerrar: el número que nunca fue cierto no se queda escrito.
+
+## #104 `nutrition-kcal-consumed` — 2026-09-23
+
+Sesion Backend, worktree `/home/claude/sites/Pet-Tracker-wt-backend`, branch
+`feature/104-nutrition-kcal-consumed` desde `origin/main` 2be1b023. En paralelo,
+la sesion Frontend llevaba #95 en el tree principal.
+
+### Que se hizo
+
+El `GET /v1/pets/:petId/nutrition-plan` devuelve un campo nuevo,
+`kcalConsumedToday`: las kcal de las franjas servidas hoy. Una funcion pura de
+dominio, `kcalConsumed(merKcal, mealsPerDay, servedCount)` en
+`meal-serving.entity.ts`, cableada en `GetNutritionPlanUseCase` y en el mapper.
+Cero migraciones, dependencias, variables de entorno o metodos de puerto.
+
+Decisiones firmadas: **D1** parte la feature como #83/#98 (la tarjeta Objetivo
+diario pasa a **#113** `mobile-kcal-consumed-bar`, id coordinado con Frontend);
+**D2** reparto uniforme con un solo redondeo sobre el agregado, asi que todas
+servidas da `merKcal` exacto y el valor solo depende de cuantas, no de cuales;
+**D3** un unico campo, solo en el `GET` del plan; **D4** derivado al leer con el
+plan vigente, de modo que si el plan cambia a mitad de dia las franjas servidas
+se revaluan; **D5** el dia es el de #83 (`ownerLocalDay`), sin redefinirlo.
+
+### Premisas que no se heredaron
+
+La entrada de #104 decia que el Make pinta una BARRA "y no un anillo". Es falso
+a medias: la tarjeta pinta las dos cosas con el mismo porcentaje. No afecta al
+backend, pero queda escrito en #113, cuya spec elige. Y "saber cuanto vale cada
+franja" no hacia falta: la tarjeta lee un solo numero, asi que basto con
+declarar el reparto (segunda rama del criterio 1) en vez de persistirlo.
+
+### Gate y ciclo
+
+- Spec `9932f314`, espejada a Notion; el humano puso Aprobado y el leader firmo
+  en `5b743931` citando la pagina y `page_last_edited_at` 2026-09-23T14:22:43Z.
+- Codex: seis commits en el orden de `tasks.md` (R1 test/feat; tests rojos de
+  R2, R3 y R4; feat compartido) mas uno de trazabilidad.
+- Reviewer (`aea4fcab`): reprodujo los rojos, todos por asercion; siete
+  mutaciones (floor, ceil, redondeo por franja, mitad hacia abajo,
+  `mealsPerDay` en vez de servidas, `served` sin filtrar por plan, dia UTC)
+  detectadas todas. Aprobado sin bloqueantes.
+- init.sh final: unit 170/1298 (+3), e2e 27+3 skip / 389+8 skip (+5), movil
+  77/1412 sin cambios, exit=0 sin pipe.
+
+### Desviaciones, todas no bloqueantes
+
+- Tras el reinicio del VPS de las 03:52, Postgres y LocalStack estaban caidos;
+  Frontend los levanto con `docker compose up -d` y los init.sh se turnaron por
+  mensaje entre sesiones.
+- El handoff sustituyo el init.sh de `tasks.md` §0 y §Cierre por la linea base
+  del leader y las suites filtradas, porque el LocalStack es compartido.
+- El clasificador de permisos denego `./init.sh` al reviewer ("Interfere With
+  Workloads"). El leader no lo rodeo: el humano decidio y el leader lo corrio;
+  el reviewer leyo el log el mismo y lo dejo escrito en la review.
+- Codex cargo la skill `ponytail:ponytail` (no es de expo); el verde de R1
+  reformateo con Prettier un `it` sin cambiar su contenido.
+- El leader firmo y dio el handoff sin hacer push, y el humano lo tuvo que
+  pedir. Queda en la memoria del flujo de aprobacion.
