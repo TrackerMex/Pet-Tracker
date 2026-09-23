@@ -16,3 +16,4 @@
 - Firma via Notion: Aprobado, page_last_edited_at 2026-09-23T18:42:29.873Z; P1 = A, A13 y A14 aprobadas.
 - Firma f5a491ee. Notion Rol actual = Implementer. #114 in_progress.
 - Handoff: progress/handoff_mobile-reminders-alerts-to-stack.md. Esperando a Codex.
+- #113 aprobada por su reviewer (ronda 2, movil 80/1443); PR abierta. Al mergear: traer main a esta branch con merge (no rebase) tras Codex; posibles conflictos en ui-copy-table.ts, ui-language.test.ts y specs/mobile-ui-language/design.md §2. Catalogo: #114 aporta 0, no recuenta. Cierre esperado sobre main con #113: 82/1452.
