@@ -170,7 +170,7 @@ describe('#65 R7: Profile resuelve su copy por clave', () => {
 
 describe('#65 R8: Recordatorios resuelve su copy por clave', () => {
   it('resuelve las 49 ocurrencias normativas', () => {
-    expect(R8_REMINDERS).toHaveLength(50 + 1 - 2); // +1 #95 R4, -2 #95 R5
+    expect(R8_REMINDERS).toHaveLength(50 + 1 - 2 + 1); // +1 #95 R4, -2 #95 R5, +1 #114 R4, -1 #114 R5
     checkUses(R8_REMINDERS);
   });
 });
@@ -201,7 +201,7 @@ describe('#78 R12: el centro de alertas resuelve su copy por clave', () => {
     expect(R12_ALERTS.length).toBeGreaterThan(0);
     expect(
       R12_ALERTS.every(
-        ({ file }) => file === 'src/screens/alerts/index.tsx',
+        ({ file }) => file === 'src/screens/alerts/index.tsx' || file === 'src/app/_layout.tsx', // #114 R4: el título lo pinta la cabecera
       ),
     ).toBe(true);
     checkUses(R12_ALERTS);

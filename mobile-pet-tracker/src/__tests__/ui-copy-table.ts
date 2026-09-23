@@ -232,6 +232,7 @@ export const R7_PROFILE: UseRow[] = [
 
 export const R8_REMINDERS: UseRow[] = [
   { file: 'src/app/_layout.tsx', key: 'addReminder.addReminder' }, // #95 R4
+  { file: 'src/app/_layout.tsx', key: 'reminders.reminders' }, // #114 R4
   { file: 'src/screens/reminders/index.tsx', key: 'reminders.errorForbidden' },
   { file: 'src/screens/reminders/index.tsx', key: 'common.cannotReachServer' },
   { file: 'src/screens/reminders/index.tsx', key: 'common.somethingWentWrong' },
@@ -396,6 +397,7 @@ export const R11_RESET: UseRow[] = [
 ];
 
 export const R12_ALERTS: UseRow[] = [
+  { file: 'src/app/_layout.tsx', key: 'alerts.title' }, // #114 R4
   { file: 'src/screens/alerts/index.tsx', key: 'alerts.typeGeofenceExit' },
   { file: 'src/screens/alerts/index.tsx', key: 'alerts.typeBatteryLow' },
   { file: 'src/screens/alerts/index.tsx', key: 'alerts.typeUnknown' },
