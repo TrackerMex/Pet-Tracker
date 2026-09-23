@@ -130,14 +130,14 @@ describe('#65 R4: Map resuelve su copy por clave', () => {
 
 describe('#65 R5: Health resuelve su copy por clave', () => {
   it('resuelve las 33 ocurrencias normativas', () => {
-    expect(R5_HEALTH).toHaveLength(32 + 1); // +1 #90 R5
+    expect(R5_HEALTH).toHaveLength(32 + 1 + 1); // +1 #90 R5, +1 #95 R4
     checkUses(R5_HEALTH);
   });
 });
 
 describe('#65 R6: Food resuelve su copy por clave', () => {
   it('resuelve las 38 ocurrencias normativas', () => {
-    expect(R6_FOOD).toHaveLength(35 + 3);
+    expect(R6_FOOD).toHaveLength(35 + 3 + 1); // +1 #95 R4
     checkUses(R6_FOOD);
   });
 });
@@ -170,14 +170,14 @@ describe('#65 R7: Profile resuelve su copy por clave', () => {
 
 describe('#65 R8: Recordatorios resuelve su copy por clave', () => {
   it('resuelve las 50 ocurrencias normativas', () => {
-    expect(R8_REMINDERS).toHaveLength(50);
+    expect(R8_REMINDERS).toHaveLength(50 + 1); // #95 R4
     checkUses(R8_REMINDERS);
   });
 });
 
 describe('#65 R9: el alta de mascota resuelve su copy por clave', () => {
   it('resuelve las 42 ocurrencias normativas', () => {
-    expect(R9_ADD_PET).toHaveLength(42);
+    expect(R9_ADD_PET).toHaveLength(42 + 1); // #95 R4
     checkUses(R9_ADD_PET);
   });
 });
@@ -454,7 +454,7 @@ describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () =>
   });
 
   it('no deja ningún valor fijo del catálogo como literal entero en las pantallas', () => {
-    expect(SCREEN_FILES).toHaveLength(19 + 2 + 1);
+    expect(SCREEN_FILES).toHaveLength(19 + 2 + 1 + 1); // #95 R4
 
     for (const file of SCREEN_FILES) {
       const literals = wholeLiterals(readFileSync(join(SOURCE_ROOT, file), 'utf8'));

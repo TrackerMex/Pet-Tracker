@@ -396,7 +396,7 @@ añadidas por #68, registradas como delta sobre la tabla existente
 | 109 | `common.somethingWentWrong` | `Something went wrong` | `Algo salió mal` |
 | 112 | `common.somethingWentWrong` | `Something went wrong` | `Algo salió mal` |
 | 133 | `weightLog.backToHealth` | `Back to health` | `Volver a Salud` |
-| 141 | `weightLog.weightLog` | `Weight log` | `Registro de peso` |
+| 141 | `weightLog.weightLog` | `Weight log` | `Registro de peso` ← se pinta desde `src/app/_layout.tsx` por #95 (R4) |
 | 154 | `weightLog.weight` | `Weight` | `Peso` |
 | 160 | `weightLog.weightKg` | `Weight (kg)` | `Peso (kg)` |
 | 167 | `weightLog.measuredAt` | `Measured at` | `Fecha de medición` |
@@ -456,7 +456,7 @@ añadidas por #68, registradas como delta sobre la tabla existente
 | 102 | `common.somethingWentWrong` | `Something went wrong` | `Algo salió mal` |
 | 105 | `common.somethingWentWrong` | `Something went wrong` | `Algo salió mal` |
 | 126 | `mealSchedule.backToFood` | `Back to food` | `Volver a Nutrición` |
-| 135 | `mealSchedule.mealSchedule` | `Meal schedule` | `Horario de comidas` |
+| 135 | `mealSchedule.mealSchedule` | `Meal schedule` | `Horario de comidas` ← se pinta desde `src/app/_layout.tsx` por #95 (R4) |
 | 160 | `common.somethingWentWrong` | `Something went wrong` | `Algo salió mal` |
 | 163 | `common.retry` | `Retry` | `Reintentar` |
 | 178 | `mealSchedule.dailyTarget` | `Daily target` | `Objetivo diario` |
@@ -574,7 +574,7 @@ añadidas por #68, registradas como delta sobre la tabla existente
 | 99 | `common.somethingWentWrong` | `Something went wrong` | `Algo salió mal` |
 | 102 | `common.somethingWentWrong` | `Something went wrong` | `Algo salió mal` |
 | 122 | `addReminder.backToReminders` | `Back to reminders` | `Volver a Recordatorios` |
-| 132 | `addReminder.addReminder` | `Add reminder` | `Agregar recordatorio` |
+| 132 | `addReminder.addReminder` | `Add reminder` | `Agregar recordatorio` ← se pinta desde `src/app/_layout.tsx` por #95 (R4) |
 | 138 | `addReminder.type` | `Type` | `Tipo` |
 | 169 | `addReminder.title` | `Title` | `Título` |
 | 176 | `addReminder.reminderTitle` | `Reminder title` | `Título del recordatorio` |
@@ -602,7 +602,7 @@ añadidas por #68, registradas como delta sobre la tabla existente
 | 208 | `common.somethingWentWrong` | `Something went wrong` | `Algo salió mal` |
 | 211 | `common.somethingWentWrong` | `Something went wrong` | `Algo salió mal` |
 | 231 | `addPet.backToProfile` | `Back to profile` | `Volver a Perfil` |
-| 240 | `addPet.addPet` | `Add pet` | `Nueva mascota` |
+| 240 | `addPet.addPet` | `Add pet` | `Nueva mascota` ← se pinta desde `src/app/_layout.tsx` por #95 (R4) |
 | 245 | `addPet.pet` | `Pet` | `Mascota` |
 | 250 | `addPet.avatarPreview` | `Avatar preview` | `Vista previa del avatar` |
 | 259 | `addPet.choosePhoto` | `Choose photo` | `Elegir foto` |
