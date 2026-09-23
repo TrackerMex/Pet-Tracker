@@ -487,6 +487,7 @@ describe('Meals served tracking (e2e)', () => {
           'aiExplanation',
           'generatedAt',
           'servedToday',
+          'kcalConsumedToday',
         ].sort(),
       );
       expect((empty.body as { servedToday: string[] }).servedToday).toEqual([]);
@@ -589,6 +590,151 @@ describe('Meals served tracking (e2e)', () => {
           .where(eq(mealServings.petId, pet.id)),
       ).toHaveLength(2);
       await unserveMeal(owner, pet.id, '07:30').expect(204);
+    });
+  });
+
+  describe('R2 (nutrition-kcal-consumed #104): GET nutrition-plan devuelve kcalConsumedToday de las franjas servidas hoy y generate no', () => {
+    it('vale 0 sin servidas, sube al servir, baja al deshacer y no aparece en generate', async () => {
+      const owner = await seedUser('kcal-r2');
+      const pet = await seedPet(owner);
+      const generated = await seedPlan(owner, pet.id);
+      expect(generated.body).toMatchObject({
+        merKcal: 1059,
+        mealsPerDay: 2,
+        mealTimes: ['07:30', '19:30'],
+      });
+      expect(generated.body).not.toHaveProperty('kcalConsumedToday');
+
+      expect((await getPlan(owner, pet.id).expect(200)).body).toMatchObject({
+        servedToday: [],
+        kcalConsumedToday: 0,
+      });
+      await serveMeal(owner, pet.id, { mealTime: '07:30' }).expect(201);
+      expect((await getPlan(owner, pet.id).expect(200)).body).toMatchObject({
+        servedToday: ['07:30'],
+        kcalConsumedToday: 530,
+      });
+      await serveMeal(owner, pet.id, { mealTime: '19:30' }).expect(201);
+      expect((await getPlan(owner, pet.id).expect(200)).body).toMatchObject({
+        servedToday: ['07:30', '19:30'],
+        kcalConsumedToday: 1059,
+      });
+      await unserveMeal(owner, pet.id, '19:30').expect(204);
+      expect((await getPlan(owner, pet.id).expect(200)).body).toMatchObject({
+        servedToday: ['07:30'],
+        kcalConsumedToday: 530,
+      });
+      await unserveMeal(owner, pet.id, '07:30').expect(204);
+      expect((await getPlan(owner, pet.id).expect(200)).body).toMatchObject({
+        servedToday: [],
+        kcalConsumedToday: 0,
+      });
+    });
+  });
+
+  describe('R3 (nutrition-kcal-consumed #104): kcalConsumedToday usa el mismo dia civil del owner que servedToday', () => {
+    it('cuenta la franja servida hoy en los dos extremos de zona horaria', async () => {
+      for (const [index, timezone] of [
+        'Pacific/Kiritimati',
+        'Pacific/Pago_Pago',
+      ].entries()) {
+        const owner = await seedUser(`kcal-r3-tz-${index}`, timezone);
+        const pet = await seedPet(owner);
+        await seedPlan(owner, pet.id, timezone);
+        const serving = await serveMeal(owner, pet.id, {
+          mealTime: '07:30',
+        }).expect(201);
+        expect((serving.body as { servedOn: string }).servedOn).toBe(
+          localDayOf(Date.now(), timezone),
+        );
+        expect((await getPlan(owner, pet.id).expect(200)).body).toMatchObject({
+          servedToday: ['07:30'],
+          kcalConsumedToday: 530,
+        });
+      }
+    });
+
+    it('no cuenta una franja servida ayer', async () => {
+      const owner = await seedUser('kcal-r3-yesterday');
+      const pet = await seedPet(owner);
+      await seedPlan(owner, pet.id);
+      await db.insert(mealServings).values({
+        id: uuidv7(),
+        petId: pet.id,
+        servedOn: shiftDay(localDayOf(Date.now(), 'UTC'), -1),
+        mealTime: '07:30',
+        createdBy: owner.id,
+      });
+      expect((await getPlan(owner, pet.id).expect(200)).body).toMatchObject({
+        servedToday: [],
+        kcalConsumedToday: 0,
+      });
+    });
+  });
+
+  describe('R4 (nutrition-kcal-consumed #104): tras cambiar el plan kcalConsumedToday se recalcula con el plan vigente', () => {
+    it('revalua las franjas servidas cuando cambia merKcal con las mismas franjas', async () => {
+      const owner = await seedUser('kcal-r4-mer');
+      const pet = await seedPet(owner);
+      await seedPlan(owner, pet.id);
+      await serveMeal(owner, pet.id, { mealTime: '07:30' }).expect(201);
+      expect((await getPlan(owner, pet.id).expect(200)).body).toMatchObject({
+        kcalConsumedToday: 530,
+      });
+      await db.insert(nutritionPlans).values({
+        id: uuidv7(),
+        petId: pet.id,
+        rerKcal: 500,
+        merKcal: 800,
+        dailyGrams: 230,
+        mealsPerDay: 2,
+        mealTimes: ['07:30', '19:30'],
+        objective: 'maintenance',
+        warnings: [],
+        aiExplanation: null,
+        inputsHash: 'e'.repeat(64),
+      });
+      expect((await getPlan(owner, pet.id).expect(200)).body).toMatchObject({
+        merKcal: 800,
+        servedToday: ['07:30'],
+        kcalConsumedToday: 400,
+      });
+    });
+
+    it('excluye las franjas fuera del plan vigente y reparte con su mealsPerDay', async () => {
+      const owner = await seedUser('kcal-r4-times');
+      const pet = await seedPet(owner);
+      await seedPlan(owner, pet.id);
+      await serveMeal(owner, pet.id, { mealTime: '07:30' }).expect(201);
+      await db.insert(nutritionPlans).values({
+        id: uuidv7(),
+        petId: pet.id,
+        rerKcal: 625,
+        merKcal: 1000,
+        dailyGrams: 285,
+        mealsPerDay: 3,
+        mealTimes: ['08:00', '13:00', '20:00'],
+        objective: 'maintenance',
+        warnings: [],
+        aiExplanation: null,
+        inputsHash: 'f'.repeat(64),
+      });
+      expect((await getPlan(owner, pet.id).expect(200)).body).toMatchObject({
+        servedToday: [],
+        kcalConsumedToday: 0,
+      });
+      await serveMeal(owner, pet.id, { mealTime: '08:00' }).expect(201);
+      expect((await getPlan(owner, pet.id).expect(200)).body).toMatchObject({
+        kcalConsumedToday: 333,
+      });
+      await serveMeal(owner, pet.id, { mealTime: '13:00' }).expect(201);
+      expect((await getPlan(owner, pet.id).expect(200)).body).toMatchObject({
+        kcalConsumedToday: 667,
+      });
+      await serveMeal(owner, pet.id, { mealTime: '20:00' }).expect(201);
+      expect((await getPlan(owner, pet.id).expect(200)).body).toMatchObject({
+        kcalConsumedToday: 1000,
+      });
     });
   });
 });
