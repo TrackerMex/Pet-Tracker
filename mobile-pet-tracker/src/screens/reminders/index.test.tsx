@@ -224,7 +224,7 @@ describe('R5: reminders monta con métricas y estados', () => {
     });
   });
 
-  it('uses uniform metrics, selects the first pet, and shows row skeletons', async () => {
+  it('uses the metrics under the native header, selects the first pet, and shows row skeletons (#114 R6)', async () => {
     mockListReminders.mockReturnValue(pending<RemindersState>());
 
     await renderReminders();
@@ -235,8 +235,7 @@ describe('R5: reminders monta con métricas y estados', () => {
     ).toEqual({
       padding: 24,
       gap: 16,
-      paddingTop: 52,
-      paddingBottom: 120,
+      paddingBottom: 48,
     });
     await waitFor(() =>
       expect(screen.getByTestId('pet-chip-pet-1').props.accessibilityState).toEqual({
