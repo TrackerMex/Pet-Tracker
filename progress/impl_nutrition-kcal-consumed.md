@@ -38,4 +38,11 @@
 - `pnpm lint` → `exit=0`.
 - E2E filtrados: `meals.e2e-spec` 22/22 (+5); `nutrition.e2e-spec` 23/23 (sin cambio). Mismas suites. Cada e2e se lanzó con `pgrep -af 'init\.sh|test:e2e|jest-e2e' | grep -v pgrep` vacío.
 - No se corrió `./init.sh` completo por indicación del leader (LocalStack compartido); lo hará el reviewer.
-- Commits: pendiente de completar tras el verde y la trazabilidad final.
+- Commits en orden:
+  1. `1edd6f37` `test(nutrition-kcal-consumed): kcalConsumed reparte a partes iguales (R1)` — rojo.
+  2. `a16dc9e1` `feat(nutrition-kcal-consumed): kcalConsumed en dominio (R1)` — verde.
+  3. `12239597` `test(nutrition-kcal-consumed): GET del plan con kcalConsumedToday (R2)` — rojo.
+  4. `109f0060` `test(nutrition-kcal-consumed): kcal del dia civil del owner (R3)` — rojo.
+  5. `bf6217af` `test(nutrition-kcal-consumed): kcal con el plan vigente tras regenerar (R4)` — rojo.
+  6. `e7ae5971` `feat(nutrition-kcal-consumed): GET del plan devuelve kcalConsumedToday (R2,R3,R4)` — verde.
+- La trazabilidad se actualizó tras cada commit. Los cambios finales de trazabilidad y este reporte van en un commit documental de cierre, sin reescribir los seis hashes de TDD.
