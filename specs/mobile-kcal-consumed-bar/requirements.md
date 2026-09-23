@@ -311,7 +311,7 @@ esta feature no añade módulos nativos (Reanimated ya está). Backend con #104
 6. Cambiar a tema oscuro: la tarjeta se ve igual (el acento y su texto son los
    mismos en los dos temas).
 
-- [ ] Prueba de humo de R6 superada por el humano (fecha: ____, dispositivo: ____)
+- [X] Prueba de humo de R6 superada por el humano (fecha: 2026-09-23, dispositivo: CPH2709 que esta conectado a la red)
 
 ---
 
