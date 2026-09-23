@@ -361,7 +361,7 @@ ningún módulo nativo; `dismissTo` y `dangerouslySingular` son JS de
   aws --endpoint-url http://localhost:4566 sqs send-message \
     --queue-url "$(aws --endpoint-url http://localhost:4566 sqs get-queue-url \
                      --queue-name notifications --query QueueUrl --output text)" \
-    --message-body '{"version":1,"kind":"alert","alertId":"<uuid>","petId":"<petId>","title":"Smoke 114","body":"Prueba de toque","data":{"petId":"01a025c9-ca2b-7950-8385-f3abed7b1bd8","alertId":"03e68dec-5ef3-4a5b-ab1d-9356b5db1eb8"}}'
+    --message-body '{"version":1,"kind":"alert","alertId":"<uuid>","petId":"<petId>","title":"Smoke 114","body":"Prueba de toque","data":{"petId":"<petId>","alertId":"<uuid>"}}'
   ```
 
 - `adb`: el teléfono sale **dos veces** en `adb devices -l` (IP y mDNS). En

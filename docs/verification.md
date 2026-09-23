@@ -872,6 +872,36 @@ por consola remitiendo a esta sección (R14). Eso es deliberado: sin el aviso, e
 build salía adelante y el fallo aparecía mucho más tarde, en forma de un push que
 nunca llega.
 
+#### Disparar la notificación a mano desde Windows (añadido en #114, 2026-09-23)
+
+La ruta alternativa determinista de la prueba de humo de #79 (`aws sqs
+send-message` contra la cola `notifications`) falla de dos formas en la máquina
+del humano:
+
+- **Pide `aws login`.** El comando apunta a LocalStack, que no necesita la
+  cuenta real, pero la CLI exige credenciales de todos modos. Se usan las
+  mismas de relleno que `.env.example` (`test`/`test`, `us-east-1`). **No inicies
+  sesión en la cuenta real** para esto.
+- **PowerShell rompe las comillas** del JSON al pasarlo a `aws`. El cuerpo va en
+  un fichero y se pasa con `file://`.
+
+```powershell
+$env:AWS_ACCESS_KEY_ID = "test"
+$env:AWS_SECRET_ACCESS_KEY = "test"
+$env:AWS_DEFAULT_REGION = "us-east-1"
+$pet = "<petId>"   # una mascota de tu cuenta: pets ⋈ pet_users ⋈ users por email
+$q = aws --endpoint-url http://localhost:4566 sqs get-queue-url --queue-name notifications --query QueueUrl --output text
+$id = [guid]::NewGuid().ToString()   # cualquier UUID: el notifier resuelve por petId
+@{ version = 1; kind = "alert"; alertId = $id; petId = $pet; title = "Smoke"; body = "Prueba de toque"; data = @{ petId = $pet; alertId = $id } } |
+  ConvertTo-Json -Compress | Set-Content -Encoding ascii msg.json
+aws --endpoint-url http://localhost:4566 sqs send-message --queue-url $q --message-body file://msg.json
+```
+
+Antes de disparar nada, comprueba que el dev build de **esa** máquina tiene
+`google-services.json` (la sección de arriba). Sin él, el registro avisa con
+`[push] registration failed` y no llega ningún push. En #114 la spec daba por
+hecho que no hacía falta regenerar el dev build, y en esa máquina no era cierto.
+
 ### Push en un build de producción — lo que habrá que resolver (nota, 2026-09-18)
 
 Nada de esto aplica todavía: no hay build de producción. Se anota aquí al
