@@ -1,7 +1,7 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-09-23
-**Features completadas**: 96/114 (`feature_list.json`)
+**Features completadas**: 97/114 (`feature_list.json`)
 **En progreso**: ninguna en esta rama. #104 `nutrition-kcal-consumed` cerrada con reviewer aprobado; pendiente del merge humano
 
 **Pendientes**: 17 (#18, #41, #60, #74, #77, #80, #81, #84, #86, #95, #99-#101, #103, #105, #112 y #113). **#104 `nutrition-kcal-consumed` cerrada**: el `GET` del plan de nutricion devuelve `kcalConsumedToday`, las kcal de las franjas servidas hoy con reparto uniforme y un solo redondeo sobre el agregado (`Math.round(merKcal * servidas / mealsPerDay)`), derivado al leer con el plan vigente y el mismo dia civil del owner que `servedToday` de #83. Sin migracion ni cambios de puerto. Partida por D1, firmada por el humano: la tarjeta Objetivo diario es #113 `mobile-kcal-consumed-bar`, y OJO, el Make pinta barra Y anillo, no solo barra como decia la entrada de #104. Tercera spec aprobada desde Notion. **#110 `mobile-reanimated-double-dead-weight` cerrada**: el fichero de tests de la Home montaba dobles que no candaban nada -quitarlos dejaba la suite verde- pero sustituian el Skeleton real de heroui-native por un View pelado en sus 138 tests, borrando la clase base, el borderCurve y toda la superficie de animacion. Ahora se monta el real y hay dos tests nuevos que lo candan: 140 en el fichero, 1398 en la suite. OJO, la premisa con la que se registro la deuda era MAS ANCHA de lo que resulto: se dijo que el test de #62 R8 creia probar produccion y probaba un doble, y se midio que NO -mutar lo que vigila da 1 rojo identico con doble y sin doble-; sobrevive porque asevera con toContain y ambos Skeletons propagan className. Los titulos de sus tests se apartan a proposito de la forma canonica -llevan `R<n> (nombre-de-feature)` sin almohadilla- porque el literal `#110` casa con el guard de colores hex y pondria rojos los cinco guards que vigilan ese fichero; es desviacion firmada por el humano, no atajo. Segunda spec aprobada desde Notion. **#109 `mobile-meal-toggle-source-lock-nesting` cerrada**: el candado de fuente del boton de comida recortaba entre `lastIndexOf('<Pressable')` y `indexOf('</Pressable>')`, y un Pressable anidado dentro cortaba en el cierre del HIJO, dejando el tag de apertura del hijo con su style dentro del bloque -o sea que el candado pasaba en VERDE vigilando el boton equivocado, sin avisar. Ahora recorta de `<` a `<`, su propio tag de apertura, y el anidamiento deja de existir como concepto: dos indexOf, ningun simbolo nuevo que vigilar. Diff de produccion **vacio** y el patron queda escrito en `docs/conventions.md` con sus DOS limites conocidos y cual de los dos avisa. Primera spec aprobada desde Notion (#147): el humano movio `Estado del gate` y el leader firmo en el repo citando la pagina y su marca de tiempo. Esa primera vuelta destapo que la API da que y cuando pero **no la cuenta** que aprobo, y el harness ya lo dice asi. **#106 `mobile-meals-bar-motion` y #107 `mobile-meal-toggle-press-lock` cerradas y mergeadas**: la barra de comidas de la Home transiciona su ancho con `withTiming` respetando reduce motion, servir y deshacer vibran distinguiendo exito de fallo, y el feedback de pulsado del boton por franja por fin tiene candado. Son dos entradas cerradas con UNA sola spec y un solo ciclo, por decision del humano: tocaban el mismo Pressable. Entro `expo-haptics` ~57.0.3, la primera dependencia nueva desde el veto, firmada por el humano junto con la enmienda a `docs/ui-guidelines.md:171` que decia que no estaba instalada. Las tres rondas se fueron en candados que no candaban: B1 aseveraba contra la constante importada de produccion (mutar 250 a 2500 dejaba 138/138 verde) y B6 muestreaba la curva en dos puntos, agujero que el reviewer demostro construyendo con un solver una impostora que pasaba en verde desviandose 0.33 a mitad de recorrido. Los dos estan cerrados. Quedan #109 (agujero por anidamiento en el recorte del fuente de R5) y #110 (el doble de Reanimated sustituye el Skeleton real en 138 tests, incluido el de #62 R8, que cree probar produccion y prueba un doble). El guard de hex de `design-drift.test.ts` -todo R-id de tres cifras casa con `/#[\da-f]{3,8}\b/i` desde #100- se lo llevo la sesion Backend como #108. #94 `mobile-map-staleness-single-source` y #98 `mobile-meals-served-ui` están `done`; #98 ya está en `main` (PR #144) y la rama de #94 integra esa punta para que el PR #143 quede listo para el merge humano.
@@ -88,14 +88,14 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
-- **`mobile-detail-screens-to-stack` (#95) aprobada por el reviewer, pendiente
-  de la prueba de humo** (2026-09-23, tree principal, sesion Frontend): las seis
-  pantallas de detalle salen de `(tabs)` al Stack raiz (`RootStack` con
-  `Stack.Protected`, cabecera nativa, `SelectedPetProvider` ligado a la sesion).
-  Gate sobre `7702e7eb`: movil 80 suites / 1426 tests (+3 / +14), e2e 27+3 skip,
-  lint y typecheck limpios. Ronda 1 rechazada (R5 solo miraba la carga), ronda 2
-  aprobada. No pasa a `done` hasta que el humano firme la prueba de humo en dev
-  build de Android. Registra #114 (`reminders` y `alerts` al Stack).
+- **`mobile-detail-screens-to-stack` (#95) done** (2026-09-23, tree principal,
+  sesion Frontend): las seis pantallas de detalle salen de `(tabs)` al Stack raiz
+  (`RootStack` con `Stack.Protected`, cabecera nativa, `SelectedPetProvider`
+  ligado a la sesion). Gate sobre `7702e7eb`: movil 80 suites / 1426 tests
+  (+3 / +14), e2e 27+3 skip, lint y typecheck limpios. Ronda 1 rechazada (R5
+  solo miraba la carga), ronda 2 aprobada; prueba de humo del humano en dev
+  build de Android superada (`63796c58`). PR #155 pendiente del merge humano.
+  Registra #114 (`reminders` y `alerts` al Stack).
 - **`nutrition-kcal-consumed` (#104) cerrada, reviewer aprobado** (2026-09-23,
   worktree `wt-backend`): `kcalConsumed` en dominio y `kcalConsumedToday` en el
   `GET /v1/pets/:petId/nutrition-plan`. Gate: unit 170 suites / 1298 tests (+3),
@@ -1236,14 +1236,15 @@ debe listar las 4 URLs de cola.
 
 ## Última sesión
 
-- **2026-09-23** — **#95 `mobile-detail-screens-to-stack` aprobada, a la espera
-  de la prueba de humo** (sesion Frontend, tree principal): spec firmada desde
-  Notion junto con las enmiendas A11 y A12. Codex implemento R1-R8 test-primero
-  en 20 commits. El reviewer rechazo la ronda 1 por R5 en estado de carga
-  (M20-M22 sobrevivian) y aprobo la ronda 2 (tres commits, sin cambio neto de
-  produccion). El init.sh lo corrio el leader con permiso del humano. Integra
-  `origin/main` (#104) por merge. Siguiente: prueba de humo del humano, cierre
-  a `done` y merge del PR.
+- **2026-09-23** — **#95 `mobile-detail-screens-to-stack` cerrada** (sesion
+  Frontend, tree principal): spec firmada desde Notion junto con las enmiendas
+  A11 y A12. Codex implemento R1-R8 test-primero en 20 commits. El reviewer
+  rechazo la ronda 1 por R5 en estado de carga (M20-M22 sobrevivian) y aprobo
+  la ronda 2 (tres commits, sin cambio neto de produccion). El init.sh lo corrio
+  el leader con permiso del humano. Integra `origin/main` (#104) por merge. La
+  prueba de humo en dev build de Android la supero el humano (`63796c58`).
+  Siguiente: merge humano del PR #155; despues #113 (Backend) puede soltar su
+  handoff.
 - **2026-09-23** — **#104 `nutrition-kcal-consumed` cerrada** (sesion Backend,
   worktree `wt-backend`): spec con D1 (partida en #104 backend y #113 movil),
   firmada desde Notion; Codex implemento R1-R4 en seis commits rojo→verde; el

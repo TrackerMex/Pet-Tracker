@@ -5012,3 +5012,67 @@ declarar el reparto (segunda rama del criterio 1) en vez de persistirlo.
   reformateo con Prettier un `it` sin cambiar su contenido.
 - El leader firmo y dio el handoff sin hacer push, y el humano lo tuvo que
   pedir. Queda en la memoria del flujo de aprobacion.
+
+# Sesión #95 mobile-detail-screens-to-stack (2026-09-23, sesión Frontend)
+
+## Feature #95 `mobile-detail-screens-to-stack` (P3)
+
+- **Sesion**: Frontend (leader), tree principal `/home/claude/sites/Pet-Tracker`,
+  branch `feature/95-mobile-detail-screens-to-stack` desde `origin/main` `2be1b023`.
+  En paralelo, Backend cerro #104 y arranco #113 en `wt-backend`.
+- **Estado**: `done`. PR #155 pendiente del merge humano.
+
+### Que se hizo
+
+Las seis pantallas de detalle (`add-reminder`, `pets/add`, `pets/[petId]/docs`,
+`weight-log`, `meal-schedule` y `pairing`) salen de `src/app/(tabs)/` al Stack
+raiz:
+- `RootStack` con `Stack.Protected guard={status === 'authenticated'}`. El
+  `Redirect` de `(tabs)` se queda donde estaba, y `(auth)` y `reset-password`
+  siguen libres.
+- `SelectedPetProvider` sube al layout raiz y la seleccion queda ligada al
+  `token` de la sesion (R1).
+- Cabecera nativa con los tokens del tema. Fuera los seis botones de volver
+  hechos a mano y sus seis claves del catalogo.
+- Metricas bajo la excepcion A11.
+- Retirada del reset en blur de #63.
+- `router.dismissTo('/map')` en `pairing` (A12).
+
+### Gate y ciclo
+
+- **Spec** `5fe72925`, espejada a Notion. El humano puso Aprobado y el leader
+  firmo en `a4b3e69f`, citando la pagina y `page_last_edited_at`
+  2026-09-23T14:15:50Z. La firma cubre la spec, A11 y A12, y acepta los valores
+  por defecto de las ocho preguntas abiertas.
+- **Codex ronda 1**: 20 commits, rojo antes que verde en cada R-id.
+- **Reviewer ronda 1**: rechazado. Los `it` de R5 de `weight-log` y
+  `meal-schedule` solo renderizaban la carga, y las mutaciones M20, M21 y M22
+  sobrevivian. Ademas, el clasificador de permisos le denego `init.sh`.
+- **Codex ronda 2** (`handoff_95_rebote_B1.md`): tres commits. El rojo es una
+  mutacion de produccion versionada y revertida (C4 via b); el diff neto de
+  produccion es vacio y el delta de tests es cero.
+- **init.sh**: lo corrio el leader con permiso explicito del humano sobre
+  `7702e7eb` (exit 0; movil 80/1426, +3/+14; e2e 27+3 skip). El reviewer de la
+  ronda 2 leyo el log crudo y comprobo que el HEAD coincidia. Aprobado.
+- **Integracion**: `origin/main` (#104) entro por merge, sin rebase, en
+  `90494116`. El unico conflicto fue el final de `feature_list.json` (#113 y
+  #114), y se conservaron los dos.
+- **Prueba de humo**: el humano la firmo en `63796c58`. El paso 8 necesito
+  `adb -s <serial>` porque el mismo telefono salia dos veces por Wi-Fi (IP y
+  mDNS). No hubo drift de codigo desde el veredicto.
+
+### Deuda y apuntes
+
+- Registrada #114 `mobile-reminders-alerts-to-stack` (pending).
+- Arreglados de paso en `677fbcad`: el ejemplo caducado de
+  `docs/conventions.md` §Filtros de jest y la ruta de #103.
+- Observaciones del reviewer que no bloquean:
+  - el `describe('#95 R8')` esta anidado en pairing;
+  - `(tabs)/_layout.tsx` conserva la sangria del provider retirado;
+  - los `it` de R5 ya no miran la carga (techo: un titulo que solo exista
+    mientras se muestra el Skeleton);
+  - el grep de §Cierre de tasks.md chocaba con el propio test de R5, y Codex
+    compuso las claves por partes (leccion de spec).
+- Tras el reinicio del VPS a las 03:52, `pet-tracker-postgres` y
+  `pet-tracker-localstack` estaban caidos, sin politica de reinicio. Se
+  levantaron con `docker compose up -d`.
