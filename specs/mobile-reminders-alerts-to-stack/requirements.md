@@ -1,6 +1,6 @@
 ---
 feature: "mobile-reminders-alerts-to-stack"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec, mobile]
 ---
 
@@ -408,20 +408,20 @@ ningún módulo nativo; `dismissTo` y `dangerouslySingular` son JS de
 
 ### P1 — Decisión de producto (marcar exactamente una)
 
-- [ ] A — mover `reminders` y `alerts` (esta spec)
+- [x] A — mover `reminders` y `alerts` (esta spec)
 - [ ] B — solo `reminders` (la spec se reescribe antes de aprobarla)
 - [ ] C — ninguna (la feature se cierra sin código)
 
-Firmado por humano (fecha: ____)
+Firmado por humano (fecha: 2026-09-23)
 
 ### Enmienda A13 — lista de A11 en `docs/conventions.md` y `docs/ui-guidelines.md`
 
-- [ ] Enmienda A13 aprobada por humano (fecha: ____)
+- [x] Enmienda A13 aprobada por humano (fecha: 2026-09-23)
 
 ### Enmienda A14 — `mobile-alerts-center` R5 y `mobile-reminders` R8 y R10
 
-- [ ] Enmienda A14 aprobada por humano (fecha: ____)
+- [x] Enmienda A14 aprobada por humano (fecha: 2026-09-23)
 
 ### Aprobación de la spec
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (fecha: 2026-09-23) ← gate obligatorio antes de implementar
