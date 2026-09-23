@@ -5,7 +5,7 @@ import {
   waitFor,
   within,
 } from '@testing-library/react-native';
-import { router, useFocusEffect } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import { useEffect } from 'react';
 
@@ -26,7 +26,6 @@ import {
   useSelectedPet,
 } from '../../providers/selected-pet-provider';
 import { WeightLogScreen } from '.';
-import { TOUCH_SLOP } from '../../theme/touch-target';
 import { renderWithProviders } from '../../../test/render-with-providers';
 
 jest.mock('../../api/health-records', () => ({
@@ -70,7 +69,6 @@ const mockListWeights = jest.mocked(listWeights);
 const mockGetMe = jest.mocked(getMe);
 const mockUseAuth = jest.mocked(useAuth);
 const mockUseFocusEffect = jest.mocked(useFocusEffect);
-const mockRouter = jest.mocked(router);
 
 function makeWeight(overrides: Partial<WeightEntry> = {}): WeightEntry {
   return {
@@ -225,15 +223,11 @@ describe('R7: weight log lista el historial', () => {
     await waitFor(() =>
       expect(screen.getByTestId('screen-weight-log')).toBeVisible(),
     );
-    expect(screen.getByText('Registro de peso')).toBeVisible();
     expect(screen.getByTestId('weight-log-loading')).toBeVisible();
     expect(
       screen.getByTestId('screen-weight-log').props.contentContainerStyle,
     ).toEqual(expect.objectContaining({ padding: 24, paddingBottom: 120 }));
 
-    await fireEvent.press(screen.getByTestId('weight-log-back'));
-
-    expect(mockRouter.back).toHaveBeenCalledTimes(1);
   });
 
   it('R5 (mobile-design-drift): aplica el safe area superior al contenido', async () => {
@@ -658,34 +652,6 @@ describe('#90 R4: sin zona del perfil la fecha cae al dispositivo', () => {
       ),
     );
     expect(screen.queryByTestId('weight-form-error')).toBeNull();
-  });
-});
-
-describe('#61 R10: los controles táctiles declaran TOUCH_SLOP', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    process.env.EXPO_PUBLIC_API_URL = apiUrl;
-    mockUseAuth.mockReturnValue({
-      status: 'authenticated',
-      token: 'jwt-token',
-      signIn: jest.fn(),
-      signOut: jest.fn(),
-    } satisfies AuthContextValue);
-    mockCreateWeight.mockReturnValue(pending());
-  });
-
-  it('el botón de volver llega a 44 pt sin crecer a la vista', async () => {
-    mockListWeights.mockReturnValue(pending<WeightsState>());
-
-    await renderWeightLog();
-
-    await waitFor(() =>
-      expect(screen.getByTestId('weight-log-back')).toBeVisible(),
-    );
-
-    expect(screen.getByTestId('weight-log-back').props.hitSlop).toEqual(
-      TOUCH_SLOP,
-    );
   });
 });
 

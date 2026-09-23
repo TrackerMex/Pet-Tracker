@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
-import { Redirect, router, useFocusEffect } from 'expo-router';
+import { Redirect, useFocusEffect } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
 import { useCallback, useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ArrowLeft, Clock, ForkKnife } from 'reicon-react-native';
+import { Clock, ForkKnife } from 'reicon-react-native';
 
 import {
   generateNutritionPlan,
@@ -20,7 +20,6 @@ import { useTranslate } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
-import { TOUCH_SLOP } from '../../theme/touch-target';
 
 function isPlanError(state: NutritionPlanState): boolean {
   return ['error', 'unreachable', 'missing-config'].includes(state.kind);
@@ -31,8 +30,7 @@ function isProfileError(state: NutritionProfileState): boolean {
 }
 
 function MealScheduleContent({ petId }: { petId: string }) {
-  const [foreground, accent, accentForeground] = useThemeColors([
-    'foreground',
+  const [accent, accentForeground] = useThemeColors([
     'accent-strong',
     'accent-foreground',
   ]);
@@ -124,22 +122,6 @@ function MealScheduleContent({ petId }: { petId: string }) {
         paddingBottom: insets.bottom + 96,
       }}
     >
-      <View className="flex-row items-center gap-3">
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('mealSchedule.backToFood')}
-          testID="meal-schedule-back"
-          hitSlop={TOUCH_SLOP}
-          className="rounded-full bg-default p-2"
-          onPress={() => router.back()}
-        >
-          <ArrowLeft size={20} color={foreground} />
-        </Pressable>
-        <Text className="text-2xl font-black text-foreground">
-          {t('mealSchedule.mealSchedule')}
-        </Text>
-      </View>
-
       <View testID={loading ? 'meal-schedule-loading' : undefined} className="gap-4">
         {!hasError && plan.data === undefined ? (
           <>

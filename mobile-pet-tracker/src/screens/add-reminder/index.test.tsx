@@ -276,7 +276,6 @@ describe('R8: formulario de alta con chips y pickers', () => {
     await waitFor(() =>
       expect(screen.getByTestId('screen-add-reminder')).toBeVisible(),
     );
-    expect(screen.getByText('Agregar recordatorio')).toBeVisible();
     expect(
       screen.getByTestId('screen-add-reminder').props.contentContainerStyle,
     ).toEqual({
@@ -285,8 +284,6 @@ describe('R8: formulario de alta con chips y pickers', () => {
       paddingTop: 52,
       paddingBottom: 120,
     });
-    await fireEvent.press(screen.getByTestId('add-reminder-back'));
-    expect(mockRouter.back).toHaveBeenCalledTimes(1);
   });
 
   it('renders all reminder types and selects vaccine by default', async () => {
@@ -553,7 +550,7 @@ describe('#61 R10: los controles táctiles declaran TOUCH_SLOP', () => {
     mockCreateReminder.mockReturnValue(pending());
   });
 
-  it.each(['add-reminder-back', 'type-chip-vaccine', 'advance-chip-1440'])(
+  it.each(['type-chip-vaccine', 'advance-chip-1440'])(
     '%s llega a 44 pt sin crecer a la vista',
     async (testID) => {
       await renderAddReminder();

@@ -1,4 +1,4 @@
-import { Redirect, router, useFocusEffect } from 'expo-router';
+import { Redirect, useFocusEffect } from 'expo-router';
 import {
   Button,
   Card as HeroUICard,
@@ -9,9 +9,9 @@ import {
 } from 'heroui-native';
 import { useQuery } from '@tanstack/react-query';
 import { useCallback, useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ArrowLeft, Minus, TrendDown, TrendUp } from 'reicon-react-native';
+import { Minus, TrendDown, TrendUp } from 'reicon-react-native';
 
 import {
   createWeight,
@@ -30,7 +30,6 @@ import {
   TABULAR_NUMS,
 } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
-import { TOUCH_SLOP } from '../../theme/touch-target';
 import { civilTodayIso } from '../../utils/civil-today-iso';
 
 const MEASURED_AT_IN_FUTURE_MESSAGE =
@@ -46,11 +45,10 @@ function isWeightsError(state: WeightsState): boolean {
 }
 
 function WeightLogContent({ petId }: { petId: string }) {
-  const [success, danger, muted, foreground] = useThemeColors([
+  const [success, danger, muted] = useThemeColors([
     'success',
     'danger',
     'muted',
-    'foreground',
   ]);
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
@@ -154,22 +152,6 @@ function WeightLogContent({ petId }: { petId: string }) {
         paddingBottom: insets.bottom + 96,
       }}
     >
-      <View className="flex-row items-center gap-3">
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('weightLog.backToHealth')}
-          testID="weight-log-back"
-          hitSlop={TOUCH_SLOP}
-          className="rounded-full bg-default p-2"
-          onPress={() => router.back()}
-        >
-          <ArrowLeft size={20} color={foreground} />
-        </Pressable>
-        <Text className="text-2xl font-black text-foreground">
-          {t('weightLog.weightLog')}
-        </Text>
-      </View>
-
       {weights.data?.kind === 'ok' ? (
         <Card testID="weight-chart-card">
           <WeightChart entries={weights.data.weights} />

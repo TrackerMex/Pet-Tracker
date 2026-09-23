@@ -5,7 +5,7 @@ import {
   waitFor,
   within,
 } from '@testing-library/react-native';
-import { router, useFocusEffect } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import { useEffect } from 'react';
 
@@ -27,7 +27,6 @@ import {
   useSelectedPet,
 } from '../../providers/selected-pet-provider';
 import { MealScheduleScreen } from '.';
-import { TOUCH_SLOP } from '../../theme/touch-target';
 import { renderWithProviders } from '../../../test/render-with-providers';
 
 jest.mock('../../api/nutrition', () => ({
@@ -90,7 +89,6 @@ const mockGetNutritionPlan = jest.mocked(getNutritionPlan);
 const mockGetNutritionProfile = jest.mocked(getNutritionProfile);
 const mockUseAuth = jest.mocked(useAuth);
 const mockUseFocusEffect = jest.mocked(useFocusEffect);
-const mockRouter = jest.mocked(router);
 
 function makePlan(overrides: Partial<NutritionPlan> = {}): NutritionPlan {
   return {
@@ -226,7 +224,6 @@ describe('R7: meal schedule muestra horarios y perfil', () => {
     await waitFor(() =>
       expect(screen.getByTestId('screen-meal-schedule')).toBeVisible(),
     );
-    expect(screen.getByText('Horario de comidas')).toBeVisible();
     expect(screen.getByTestId('meal-schedule-loading')).toBeVisible();
     expect(screen.getByTestId('meal-schedule-summary-skeleton')).toHaveProp(
       'className',
@@ -254,8 +251,6 @@ describe('R7: meal schedule muestra horarios y perfil', () => {
       }),
     );
 
-    await fireEvent.press(screen.getByTestId('meal-schedule-back'));
-    expect(mockRouter.back).toHaveBeenCalledTimes(1);
   });
 
   it('renders the plan summary, ordered portions, and complete profile', async () => {
@@ -470,23 +465,6 @@ describe('R8: generar plan con degradación por kind', () => {
       expect(
         screen.getByTestId('generate-plan-button').props.accessibilityState,
       ).toEqual(expect.objectContaining({ disabled: true })),
-    );
-  });
-});
-
-describe('#61 R10: los controles táctiles declaran TOUCH_SLOP', () => {
-  it('el botón de volver llega a 44 pt sin crecer a la vista', async () => {
-    mockGetNutritionPlan.mockReturnValue(pending<NutritionPlanState>());
-    mockGetNutritionProfile.mockReturnValue(pending<NutritionProfileState>());
-
-    await renderMealSchedule();
-
-    await waitFor(() =>
-      expect(screen.getByTestId('meal-schedule-back')).toBeVisible(),
-    );
-
-    expect(screen.getByTestId('meal-schedule-back').props.hitSlop).toEqual(
-      TOUCH_SLOP,
     );
   });
 });

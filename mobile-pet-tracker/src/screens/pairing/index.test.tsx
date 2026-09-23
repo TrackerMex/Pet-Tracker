@@ -307,15 +307,6 @@ describe('R4: /pairing monta en el Stack raíz con selector de mascota y estados
     expect(mockListPets).toHaveBeenCalledWith(apiUrl, 'jwt-token');
   });
 
-  it('goes back from the screen header', async () => {
-    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
-
-    await renderPairing();
-    await fireEvent.press(screen.getByTestId('pairing-back'));
-
-    expect(mockRouter.back).toHaveBeenCalledTimes(1);
-  });
-
   it.each([
     { kind: 'error' } as const,
     { kind: 'unreachable', message: 'network down' } as const,

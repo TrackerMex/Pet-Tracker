@@ -73,3 +73,5 @@ porque `acceptance_criteria` es contrato suyo.
 
 Hallazgos 8-12, 14-18, 20 y 22-26: **fuera de alcance**, son la feature #62.
 Hallazgo 18: cerrado por decisión humana del 2026-09-03, ver [[design]] §9.
+
+Nota #95 R5: los cinco casos de R10 que medían el botón de volver en add-reminder, add-pet, docs, weight-log y meal-schedule se retiraron al pasar esa acción a la cabecera nativa del Stack; los demás controles conservan el candado.

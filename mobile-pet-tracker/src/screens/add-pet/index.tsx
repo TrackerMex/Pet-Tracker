@@ -6,7 +6,6 @@ import { Button } from 'heroui-native';
 import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ArrowLeft } from 'reicon-react-native';
 
 import {
   requestPhotoUploadUrl,
@@ -86,7 +85,7 @@ export function AddPetScreen() {
   const t = useTranslate();
   const { selectPet } = useSelectedPet();
   const insets = useSafeAreaInsets();
-  const [foreground, muted] = useThemeColors(['foreground', 'muted']);
+  const [muted] = useThemeColors(['muted']);
   const [species, setSpecies] = useState<Species>('dog');
   const [name, setName] = useState('');
   const [breed, setBreed] = useState('');
@@ -254,22 +253,6 @@ export function AddPetScreen() {
         paddingBottom: insets.bottom + 96,
       }}
     >
-      <View className="flex-row items-center gap-3">
-        <Pressable
-          accessibilityLabel={t('addPet.backToProfile')}
-          accessibilityRole="button"
-          testID="add-pet-back"
-          hitSlop={TOUCH_SLOP}
-          className="size-10 items-center justify-center rounded-full bg-default"
-          onPress={() => router.back()}
-        >
-          <ArrowLeft size={20} color={foreground} />
-        </Pressable>
-        <Text className="text-2xl font-black text-foreground">
-          {t('addPet.addPet')}
-        </Text>
-      </View>
-
       <View className="items-center gap-2">
         <PetAvatar
           name={name.trim() || t('addPet.pet')}

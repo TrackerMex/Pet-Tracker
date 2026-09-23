@@ -4,7 +4,6 @@ import {
   waitFor,
   within,
 } from '@testing-library/react-native';
-import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 
 import { listPetDocs, type PetDocsState } from '../../api/media';
@@ -15,13 +14,11 @@ import { es } from '../../i18n/catalog';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
 import { DocsScreen } from '.';
-import { TOUCH_SLOP } from '../../theme/touch-target';
 import { renderWithProviders } from '../../../test/render-with-providers';
 
 jest.mock('../../api/media', () => ({ listPetDocs: jest.fn() }));
 jest.mock('../../api/pets', () => ({ getPet: jest.fn() }));
 jest.mock('../../providers/auth-provider', () => ({ useAuth: jest.fn() }));
-jest.mock('expo-router', () => ({ router: { back: jest.fn() } }));
 jest.mock('react-native-safe-area-context', () => ({
   ...jest.requireActual('react-native-safe-area-context'),
   useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
@@ -31,7 +28,6 @@ const apiUrl = 'http://example.test/v1';
 const mockListPetDocs = jest.mocked(listPetDocs);
 const mockGetPet = jest.mocked(getPet);
 const mockUseAuth = jest.mocked(useAuth);
-const mockRouter = jest.mocked(router);
 
 function pending<T>(): Promise<T> {
   return new Promise(() => undefined);
@@ -152,39 +148,6 @@ describe('R8: pantalla Docs', () => {
     await waitFor(() => expect(mockListPetDocs).toHaveBeenCalledTimes(2));
   });
 
-  it('navigates back from the header', async () => {
-    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
-    mockListPetDocs.mockResolvedValue({ kind: 'ok', docs: [] });
-    await renderDocs();
-
-    fireEvent.press(screen.getByTestId('docs-back'));
-
-    expect(mockRouter.back).toHaveBeenCalledTimes(1);
-  });
-});
-
-describe('#61 R10: los controles táctiles declaran TOUCH_SLOP', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    process.env.EXPO_PUBLIC_API_URL = apiUrl;
-    mockUseAuth.mockReturnValue({
-      status: 'authenticated',
-      token: 'jwt-token',
-      signIn: jest.fn(),
-      signOut: jest.fn(),
-    } satisfies AuthContextValue);
-  });
-
-  it('el botón de volver llega a 44 pt sin crecer a la vista', async () => {
-    mockGetPet.mockResolvedValue({ kind: 'ok', pet: makePet() });
-    mockListPetDocs.mockResolvedValue({ kind: 'ok', docs: [] });
-
-    await renderDocs();
-
-    await waitFor(() => expect(screen.getByTestId('docs-back')).toBeVisible());
-
-    expect(screen.getByTestId('docs-back').props.hitSlop).toEqual(TOUCH_SLOP);
-  });
 });
 
 describe('#62 R10: el tipo de documento se lee como badge', () => {

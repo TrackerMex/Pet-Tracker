@@ -482,7 +482,6 @@ describe('#61 R10: los controles táctiles declaran TOUCH_SLOP', () => {
   });
 
   it.each([
-    'add-pet-back',
     'species-dog',
     'sex-female',
     'size-small',
