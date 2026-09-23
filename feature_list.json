@@ -2148,6 +2148,25 @@
     ]
   },
   {
+    "id": 111,
+    "name": "mobile-flaky-waits",
+    "status": "done",
+    "priority": "P2",
+    "description": "Registrada el 2026-09-22 por la sesion de #108, tras parar Codex con la linea base en rojo. HONESTIDAD SOBRE LA EVIDENCIA: hubo CUATRO corridas rojas reales, con logs guardados, dos en el arbol de #108 (9055466d) y dos en 3a52028b (main antes de #102), mas una quinta que reporto Codex. Pero NO son reproducibles: despues salieron DOCE corridas verdes seguidas, con cache fria (--clearCache), con cache caliente y con los cuatro nucleos saturados por bucles. Asi que la causa de la ventana roja sigue sin identificar y esta feature NO debe venderse como 'arreglar una suite rota'. Lo que SI es defecto, lo reproduzca o no: (1) src/screens/health/index.test.tsx:467 ('R6: weight card enlaza al log') INCUMPLE una convencion escrita del repo, docs/conventions.md seccion 'Esperas sobre el arbol renderizado', que exige que la condicion que termina una espera sea la MISMA observacion que hacen las aserciones posteriores: el test espera con waitFor a weight-card, que es el contenedor y se pinta siempre que haya selectedPetId, y luego asevera weight-current FUERA del waitFor, cuando weight-current solo existe si weight.data?.kind === 'ok' (src/screens/health/index.tsx:226-229). (2) src/screens/map/index.test.tsx:292 ('selects the first pet and loads its first position (#72 R2)') espera sobre el CONTADOR DE UN MOCK, que la misma convencion desaconseja, y detras hay tres saltos asincronos encadenados (listPets resuelve, usePetSelection fija selectedPetId, la query last se habilita, dispara getLastPosition) contra el waitFor de RNTL, que agota a 1000 ms. (3) CORRECCION DEL 2026-09-22, la premisa original de esta entrada era FALSA: el waitFor de RNTL NO agota a los 5000 ms sino a los 1000, por asyncUtilTimeout: 1000 en node_modules/@testing-library/react-native/dist/config.js:15, y test/jest-setup.js no llama a configure. Los 5000 ms son el testTimeout de jest, que acota el test ENTERO, no cada waitFor. En las cuatro corridas rojas vencio el de RNTL, asi que subir testTimeout NO habria salvado ninguna: tocar la config de jest era un callejon sin salida y la spec lo descarta por escrito en R4. package.json sale de files_affected. Lo que si explica que ninguno salte aislado (health sola da 28/28) es la carga, no el timeout. Los dos fallos son de test, cero cambio de produccion. Alcance deliberadamente corto: endurecer esos dos tests segun la convencion que ya existe y decidir por escrito si se fija testTimeout. Relacionado con la memoria del repo sobre el flake de add-pet tras #72 y la carrera de TanStack Query en alerts. NO ampliar a una caceria general de flakes sin evidencia nueva. Bloquea a #108, cuyo gate es un delta exacto 1396 -> 1410 y necesita una base que no oscile.",
+    "acceptance_criteria": [
+      "R6 weight card espera y asevera la MISMA observacion, segun docs/conventions.md seccion Esperas sobre el arbol renderizado; el test sigue probando lo mismo que probaba",
+      "R4 map deja de esperar sobre el contador de un mock, o la spec justifica por escrito por que ahi es correcto y que lo hace robusto",
+      "La spec decide y escribe si se fija testTimeout en la config de jest, con el valor y su razon, o por que no se toca",
+      "Cero cambio de produccion: solo ficheros de test y, si acaso, la config de jest",
+      "El recuento no se mueve: 77 suites y 1396 tests antes y despues, medido sin pipe",
+      "Los cuatro logs rojos quedan citados en la spec con su ruta, para que la siguiente ventana roja se compare contra ellos en vez de re-descubrirse"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/health/index.test.tsx",
+      "mobile-pet-tracker/src/screens/map/index.test.tsx"
+    ]
+  },
+  {
     "id": 112,
     "name": "mobile-reminders-see-all-source-lock-nesting",
     "status": "pending",

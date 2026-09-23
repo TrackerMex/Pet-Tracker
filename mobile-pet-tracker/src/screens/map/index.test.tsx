@@ -497,25 +497,27 @@ describe('R7: ruta del día como polylines', () => {
 
     await renderMap();
 
-    await waitFor(() => expect(screen.getByTestId('map-view')).toBeVisible());
-    expect(screen.getByTestId('map-view').props.polylines).toEqual([
-      {
-        id: 'trip-0',
-        coordinates: [
-          { latitude: 19.4326, longitude: -99.1332 },
-          { latitude: 19.433, longitude: -99.1328 },
-        ],
-        color: expect.any(String),
-      },
-      {
-        id: 'trip-1',
-        coordinates: [
-          { latitude: 19.44, longitude: -99.12 },
-          { latitude: 19.45, longitude: -99.11 },
-        ],
-        color: expect.any(String),
-      },
-    ]);
+    await waitFor(() => {
+      expect(screen.getByTestId('map-view')).toBeVisible();
+      expect(screen.getByTestId('map-view').props.polylines).toEqual([
+        {
+          id: 'trip-0',
+          coordinates: [
+            { latitude: 19.4326, longitude: -99.1332 },
+            { latitude: 19.433, longitude: -99.1328 },
+          ],
+          color: expect.any(String),
+        },
+        {
+          id: 'trip-1',
+          coordinates: [
+            { latitude: 19.44, longitude: -99.12 },
+            { latitude: 19.45, longitude: -99.11 },
+          ],
+          color: expect.any(String),
+        },
+      ]);
+    });
   });
 
   it('R3 (android-map-never-ready): pasa un array vacío para un día sin viajes', async () => {
@@ -527,7 +529,10 @@ describe('R7: ruta del día como polylines', () => {
 
     await renderMap();
 
-    await waitFor(() => expect(screen.getByTestId('map-view')).toBeVisible());
+    await waitFor(() =>
+      expect(screen.getByTestId('stat-distance')).toHaveTextContent('0.0 km'),
+    );
+    expect(screen.getByTestId('map-view')).toBeVisible();
     expect(screen.getByTestId('map-view').props.polylines).toEqual([]);
   });
 
@@ -584,10 +589,10 @@ describe('R8: stats calculadas de positions y trips', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('stat-speed')).toHaveTextContent('12.3 km/h');
+      expect(screen.getByTestId('stat-distance')).toHaveTextContent('2.0 km');
+      expect(screen.getByTestId('stat-updated')).toHaveTextContent('Justo ahora');
+      expect(screen.getByTestId('stat-gps')).toHaveTextContent('En vivo');
     });
-    expect(screen.getByTestId('stat-distance')).toHaveTextContent('2.0 km');
-    expect(screen.getByTestId('stat-updated')).toHaveTextContent('Justo ahora');
-    expect(screen.getByTestId('stat-gps')).toHaveTextContent('En vivo');
     expect(screen.getByTestId('map-stats').props.style).toEqual(
       expect.objectContaining({
         position: 'absolute',
@@ -616,12 +621,12 @@ describe('R8: stats calculadas de positions y trips', () => {
 
     await renderMap();
 
-    await waitFor(() =>
-      expect(screen.getByTestId('stat-gps')).toHaveTextContent('En vivo'),
-    );
-    expect(screen.getByTestId('stat-speed')).toHaveTextContent('—');
-    expect(screen.getByTestId('stat-distance')).toHaveTextContent('0.0 km');
-    expect(screen.getByTestId('stat-updated')).toHaveTextContent('hace 2 min');
+    await waitFor(() => {
+      expect(screen.getByTestId('stat-gps')).toHaveTextContent('En vivo');
+      expect(screen.getByTestId('stat-speed')).toHaveTextContent('—');
+      expect(screen.getByTestId('stat-distance')).toHaveTextContent('0.0 km');
+      expect(screen.getByTestId('stat-updated')).toHaveTextContent('hace 2 min');
+    });
   });
 
   it('uses the last item even when its speed is null', async () => {
@@ -842,16 +847,16 @@ describe('R6: owner toglea lost mode contra el endpoint', () => {
     fireEvent.press(screen.getByTestId('lost-mode-button'));
 
     await waitFor(() => {
-      expect(mockSetLostMode).toHaveBeenCalledWith(
-        apiUrl,
-        'jwt-token',
-        'pet-1',
-        true,
-      );
+      expect(
+        screen.getByTestId('lost-mode-button').props.accessibilityState,
+      ).toEqual(expect.objectContaining({ disabled: true }));
     });
-    expect(
-      screen.getByTestId('lost-mode-button').props.accessibilityState,
-    ).toEqual(expect.objectContaining({ disabled: true }));
+    expect(mockSetLostMode).toHaveBeenCalledWith(
+      apiUrl,
+      'jwt-token',
+      'pet-1',
+      true,
+    );
 
     await act(async () => {
       resolveToggle({ kind: 'ok', pet: makePet({ lostMode: true }) });
