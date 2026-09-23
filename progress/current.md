@@ -23,5 +23,16 @@
   progreso animada en la tarjeta Objetivo diario de food.tsx, clave food.kcalConsumedOfTarget,
   esqueleto h-40). Handoff en progress/handoff_mobile-kcal-consumed-bar.md. Solo movil: Codex no
   corre init.sh ni e2e. R6 (smoke en dev build de Android) es del humano.
-- Siguiente: el humano confirma que Codex termino -> leer progress/impl_mobile-kcal-consumed-bar.md ->
+- (ronda 1) Siguiente: el humano confirma que Codex termino -> leer progress/impl_mobile-kcal-consumed-bar.md ->
   avisar a Frontend -> reviewer.
+- Ronda 1 de Codex: c752795e..15e43269 (10 commits TDD + trazabilidad), movil 80/1441.
+- Reviewer ronda 1: RECHAZADO (f82b94e8). H1 media: toHaveAnimatedStyle solo compara las claves
+  esperadas y nadie canda el style de los nodos no-texto; M8/M13/M14 sobreviven. Produccion correcta.
+  H2 baja: errata del literal del test de R5 (skeleton__root). init.sh del reviewer exit=0.
+- Enmienda E1 (ed6ef397): R7 (candado de estilo, rojo por mutacion de produccion, C4 quinto punto)
+  + errata de R5. Mecanismo y mutaciones medidos por el reviewer. Espejo en Notion, gate reabierto
+  solo para E1; el humano la firmo (page_last_edited_at 2026-09-23T18:34:56.963Z). Firma 9da4db78.
+- Ronda 2: handoff en progress/handoff_mobile-kcal-consumed-bar.md §Ronda 2. Solo tests; produccion
+  identica a 15e43269. Esperado movil 80/1443.
+- Siguiente: el humano confirma que Codex termino la ronda 2 -> leer el apartado Ronda 2 del impl ->
+  avisar a Frontend -> reviewer ronda 2.

@@ -149,3 +149,92 @@ Al terminar: escribir el resultado en progress/impl_mobile-kcal-consumed-bar.md
 final escrita, salida de cada rojo y cada verde, sondas, recuentos, grep-clean,
 lista de commits con hash) y parar.
 ```
+
+---
+
+## Ronda 2 — R7 (Enmienda E1), tras el rechazo de la ronda 1
+
+> Pegar el bloque de abajo en la terminal de Codex CLI. Sustituye al de la
+> ronda 1, que ya está hecho.
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-backend   <- PRIMERA LINEA: trabaja AQUI y solo aqui
+Antes de tocar nada, confirma en el reporte: `pwd` y `git branch --show-current`.
+Tienen que dar /home/claude/sites/Pet-Tracker-wt-backend y
+feature/113-mobile-kcal-consumed-bar. Si no, PARA.
+NO toques /home/claude/sites/Pet-Tracker: es el worktree de otra sesion.
+
+Feature: mobile-kcal-consumed-bar (#113), RONDA 2.
+La ronda 1 (tus commits c752795e..15e43269) fue RECHAZADA por el reviewer:
+  progress/review_mobile-kcal-consumed-bar.md, hallazgo H1 (y las
+  "Sondas para la enmienda de H1" al final).
+Tu codigo de produccion es correcto y NO cambia. El hueco estaba en los tests
+que prescribia la spec: toHaveAnimatedStyle solo compara las claves del
+esperado, y nadie candaba el `style` de los nodos no-texto de la barra.
+
+La spec se enmendo y el humano firmo la enmienda (commit de firma 9da4db78):
+  specs/mobile-kcal-consumed-bar/requirements.md  §Enmienda E1 (al final):
+      R7 nuevo, su test literal, las mutaciones que tiene que poner rojas,
+      y la errata de R5 (tu literal con skeleton__root era el correcto).
+  specs/mobile-kcal-consumed-bar/tasks.md         §Enmienda E1 — ronda 2 (al final):
+      orden de commits de esta ronda.
+Lee las dos secciones enteras antes de tocar nada. R1-R6 no cambian.
+
+== QUE HAY QUE HACER (dos commits y sondas) ==
+
+  1. test(kcal-bar): lock the style of the kcal bar's non-text nodes (R7)   <- ROJO
+     - describe de R7 al final de food.test.tsx, literal de requirements R7
+       (titulo, it.each de 2 filas, 4 aserciones, shouldMatchAllProps).
+     - MISMO commit: mutacion de produccion versionada en food.tsx:
+       `opacity: 0.7,` detras de la linea de `width` dentro del objeto que
+       devuelve el useAnimatedStyle de kcalBarStyle. Nada mas en produccion.
+     - Rojo esperado: 2 failed (las dos filas de R7) por asercion; el resto
+       del fichero verde. Es C4 quinto punto de CHECKPOINTS.md: sobre codigo
+       ya correcto, el rojo es una mutacion de PRODUCCION, nunca del doble.
+  2. feat(kcal-bar): keep the kcal bar fill to its width alone (R7)        <- VERDE
+     - Revierte la mutacion. Comprueba que produccion queda identica a la
+       ronda 1:
+       git diff 15e43269 HEAD -- 'mobile-pet-tracker/src/app/(tabs)/food.tsx'; echo "exit=$?"
+       -> salida vacia.
+  3. Sondas (no se commitean; cada una roja en R7 y restaurada con git diff
+     vacio): las de tasks.md §Enmienda E1 (3). Deja el rojo de cada una en
+     el reporte.
+
+== FICHEROS DE ESTA RONDA (lista cerrada) ==
+
+  mobile-pet-tracker/src/app/(tabs)/__tests__/food.test.tsx
+  mobile-pet-tracker/src/app/(tabs)/food.tsx   (solo la mutacion del rojo, revertida en el verde)
+  specs/mobile-kcal-consumed-bar/traceability.md   (fila R7: hash rojo y hash verde)
+  progress/impl_mobile-kcal-consumed-bar.md   (apartado nuevo "Ronda 2" AL FINAL;
+                                               no reescribas la ronda 1)
+
+== REGLAS CRITICAS ==
+
+- Skills: `building-native-ui` si la necesitas; ninguna otra de expo (no hay
+  de animacion ni hace falta aqui). Di en el reporte cuales cargaste.
+- Valores esperados literales de la spec. Nada importado de produccion.
+- Ningun test existente cambia. Si otro test se pone rojo, PARA y escribelo.
+- En produccion, ningun comentario que cite "#113" (guard hex de design-drift).
+- NO rebasees, NO mergees main, NO hagas push: los hashes de R1-R5 de
+  traceability.md tienen que seguir siendo ancestros de HEAD.
+- NO toques progress/history.md, progress/current.md, STATUS.md ni el
+  `status` de feature_list.json. NO abras PR. NO marques la casilla de R6.
+- bun para todo (bunx, bun run); rutas con (tabs) en jest SIEMPRE con
+  --runTestsByPath y comprobando el numero de suites impreso.
+- Exit codes sin pipe (`cmd; echo "exit=$?"`).
+
+== ENTORNO ==
+
+- NO corras ./init.sh ni e2e (Postgres y LocalStack compartidos con otra
+  sesion; esta ronda no los necesita). Base de la ronda: la medida por el
+  reviewer con init.sh exit=0 en 15e43269: movil 80 suites / 1441 tests.
+- Al arrancar, mide food.test.tsx (53 tests en 15e43269).
+- Cierre: los comandos de design.md §6 desde mobile-pet-tracker/, sin pipe.
+  Esperado: food.test.tsx 55; suite movil 80 suites / 1443 tests; tsc y
+  lint verdes; grep-clean vacio.
+
+Al terminar: apartado "Ronda 2" en progress/impl_mobile-kcal-consumed-bar.md
+(pwd y branch, skills, base medida, rojo con su salida, verde con su salida,
+diff de produccion vacio contra 15e43269, sondas con su rojo, recuentos,
+grep-clean, commits con hash) y parar.
+```
