@@ -8,7 +8,7 @@ tags: [harness, spec]
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | pendiente — `backend-pet-tracker/src/modules/nutrition/domain/entities/meal-serving.entity.spec.ts::R1 (nutrition-kcal-consumed #104): kcalConsumed reparte merKcal a partes iguales y redondea una sola vez el agregado` | pendiente (`test` rojo + `feat` verde) |
+| R1 | `backend-pet-tracker/src/modules/nutrition/domain/entities/meal-serving.entity.spec.ts::R1 (nutrition-kcal-consumed #104): kcalConsumed reparte merKcal a partes iguales y redondea una sola vez el agregado` | `1edd6f37` `test(nutrition-kcal-consumed): kcalConsumed reparte a partes iguales (R1)`; feat pendiente |
 | R2 | pendiente — `backend-pet-tracker/test/meals.e2e-spec.ts::R2 (nutrition-kcal-consumed #104): GET nutrition-plan devuelve kcalConsumedToday de las franjas servidas hoy y generate no` | pendiente (`test` rojo + `feat (R2,R3,R4)` verde) |
 | R3 | pendiente — `backend-pet-tracker/test/meals.e2e-spec.ts::R3 (nutrition-kcal-consumed #104): kcalConsumedToday usa el mismo dia civil del owner que servedToday` | pendiente (`test` rojo + `feat (R2,R3,R4)` verde; verificación vía (a)) |
 | R4 | pendiente — `backend-pet-tracker/test/meals.e2e-spec.ts::R4 (nutrition-kcal-consumed #104): tras cambiar el plan kcalConsumedToday se recalcula con el plan vigente` | pendiente (`test` rojo + `feat (R2,R3,R4)` verde; verificación vía (a)) |

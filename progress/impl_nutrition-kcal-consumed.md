@@ -12,7 +12,8 @@
 
 ## R1
 
-- Rojo: `pnpm test -- meal-serving.entity` → `exit=1`; 1 suite failed, 3 tests nuevos failed y los 4 de R11 pasaron. Los tres fallan con `TypeError: ...kcalConsumed is not a function` porque aún no se exporta.
+- Rojo (`1edd6f37`): `pnpm test -- meal-serving.entity` → `exit=1`; 1 suite failed, 3 tests nuevos failed y los 4 de R11 pasaron. Los tres fallan con `TypeError: ...kcalConsumed is not a function` porque aún no se exporta.
+- Verde: `pnpm test -- meal-serving.entity` → `exit=0`, 1 suite, 7 tests; `pnpm exec tsc --noEmit` → `exit=0`; `pnpm lint` → `exit=0`.
 
 ## R2
 

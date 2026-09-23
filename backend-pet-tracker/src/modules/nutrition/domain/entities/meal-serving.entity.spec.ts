@@ -34,9 +34,9 @@ describe('R1 (nutrition-kcal-consumed #104): kcalConsumed reparte merKcal a part
   });
 
   it('reparte 1000 kcal en 3 franjas y la suma de incrementos es el total', () => {
-    expect([0, 1, 2, 3].map((served) => kcalConsumed(1000, 3, served))).toEqual([
-      0, 333, 667, 1000,
-    ]);
+    expect([0, 1, 2, 3].map((served) => kcalConsumed(1000, 3, served))).toEqual(
+      [0, 333, 667, 1000],
+    );
   });
 
   it('reparte 1001 kcal en 4 franjas', () => {

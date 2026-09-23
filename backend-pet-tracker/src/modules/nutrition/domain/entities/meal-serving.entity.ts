@@ -24,3 +24,15 @@ export class MealServing implements MealServingProps {
 export function servedInPlan(mealTimes: string[], served: string[]): string[] {
   return mealTimes.filter((mealTime) => served.includes(mealTime));
 }
+
+/**
+ * #104 D2: cada franja vale merKcal / mealsPerDay; se redondea una sola vez
+ * el agregado, así todas servidas = merKcal exacto.
+ */
+export function kcalConsumed(
+  merKcal: number,
+  mealsPerDay: number,
+  servedCount: number,
+): number {
+  return Math.round((merKcal * servedCount) / mealsPerDay);
+}
