@@ -136,8 +136,7 @@ export function RemindersScreen() {
       contentContainerStyle={{
         padding: 24,
         gap: 16,
-        paddingTop: insets.top + 12,
-        paddingBottom: insets.bottom + 96,
+        paddingBottom: insets.bottom + 24,
       }}
     >
       <View testID="reminders-actions" className="flex-row justify-end">

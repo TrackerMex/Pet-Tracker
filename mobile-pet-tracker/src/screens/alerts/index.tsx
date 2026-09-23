@@ -187,8 +187,7 @@ export function AlertsScreen() {
         contentContainerStyle={{
           padding: 24,
           gap: 16,
-          paddingTop: insets.top + 12,
-          paddingBottom: insets.bottom + 96,
+          paddingBottom: insets.bottom + 24,
         }}
         data={rows}
         keyExtractor={(item) => item.id}
