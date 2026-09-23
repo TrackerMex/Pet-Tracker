@@ -22,7 +22,7 @@
 
 ## R3
 
-Pendiente.
+- Rojo `pnpm test:e2e -- meals.e2e-spec` → `exit=1`, 4 failed / 16 passed: los 2 casos R3 fallan por `kcalConsumedToday` ausente (`530` hoy en zona extrema; `0` ayer). `servedOn` y `servedToday` sí coinciden con el día civil del owner. Persisten los rojos previstos de R2 y R9.
 
 ## R4
 

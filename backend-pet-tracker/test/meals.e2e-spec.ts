@@ -631,4 +631,44 @@ describe('Meals served tracking (e2e)', () => {
       });
     });
   });
+
+  describe('R3 (nutrition-kcal-consumed #104): kcalConsumedToday usa el mismo dia civil del owner que servedToday', () => {
+    it('cuenta la franja servida hoy en los dos extremos de zona horaria', async () => {
+      for (const [index, timezone] of [
+        'Pacific/Kiritimati',
+        'Pacific/Pago_Pago',
+      ].entries()) {
+        const owner = await seedUser(`kcal-r3-tz-${index}`, timezone);
+        const pet = await seedPet(owner);
+        await seedPlan(owner, pet.id, timezone);
+        const serving = await serveMeal(owner, pet.id, {
+          mealTime: '07:30',
+        }).expect(201);
+        expect((serving.body as { servedOn: string }).servedOn).toBe(
+          localDayOf(Date.now(), timezone),
+        );
+        expect((await getPlan(owner, pet.id).expect(200)).body).toMatchObject({
+          servedToday: ['07:30'],
+          kcalConsumedToday: 530,
+        });
+      }
+    });
+
+    it('no cuenta una franja servida ayer', async () => {
+      const owner = await seedUser('kcal-r3-yesterday');
+      const pet = await seedPet(owner);
+      await seedPlan(owner, pet.id);
+      await db.insert(mealServings).values({
+        id: uuidv7(),
+        petId: pet.id,
+        servedOn: shiftDay(localDayOf(Date.now(), 'UTC'), -1),
+        mealTime: '07:30',
+        createdBy: owner.id,
+      });
+      expect((await getPlan(owner, pet.id).expect(200)).body).toMatchObject({
+        servedToday: [],
+        kcalConsumedToday: 0,
+      });
+    });
+  });
 });
