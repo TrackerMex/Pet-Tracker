@@ -2,9 +2,10 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import * as Haptics from 'expo-haptics';
 import { router, type Href } from 'expo-router';
 import { Button, Skeleton, Spinner } from 'heroui-native';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import { ChevronRight, Clock, ForkKnife, Sparkles } from 'reicon-react-native';
 
 import {
@@ -20,8 +21,10 @@ import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
-import { CONTINUOUS_CORNER } from '../../theme/native-styles';
+import { CONTINUOUS_CORNER, TABULAR_NUMS } from '../../theme/native-styles';
 import { useThemeColors } from '../../theme/use-theme-colors';
+
+const AnimatedView = Animated.createAnimatedComponent(View);
 
 function isPetsError(state: PetsState): boolean {
   return ['error', 'unreachable', 'missing-config'].includes(state.kind);
@@ -60,6 +63,17 @@ export default function FoodScreen() {
     waitingForPetSelection ||
     (selectedPetId !== null && plan.data === undefined);
   const servedMeals = loadedPlan?.servedToday.length ?? 0;
+  const kcalPct =
+    loadedPlan !== null && loadedPlan.merKcal > 0
+      ? Math.round((loadedPlan.kcalConsumedToday / loadedPlan.merKcal) * 100)
+      : 0;
+  const kcalBarWidth = useSharedValue(kcalPct);
+  const kcalBarStyle = useAnimatedStyle(() => ({
+    width: `${kcalBarWidth.get()}%` as `${number}%`,
+  }));
+  useEffect(() => {
+    kcalBarWidth.set(kcalPct);
+  }, [kcalBarWidth, kcalPct]);
 
   async function toggleMeal(mealTime: string, served: boolean) {
     if (pendingMealTime !== null || selectedPetId === null) {
@@ -198,6 +212,34 @@ export default function FoodScreen() {
                     style={CONTINUOUS_CORNER}
                   >
                     <ForkKnife size={26} color={accent} />
+                  </View>
+                </View>
+                <View testID="food-plan-progress" className="gap-1.5">
+                  <View className="flex-row items-center justify-between">
+                    <Text
+                      testID="food-plan-consumed"
+                      className="text-xs font-normal text-accent-foreground"
+                      style={TABULAR_NUMS}
+                    >
+                      {loadedPlan.kcalConsumedToday} kcal
+                    </Text>
+                    <Text
+                      testID="food-plan-percent"
+                      className="text-xs font-normal text-accent-foreground"
+                      style={TABULAR_NUMS}
+                    >
+                      {kcalPct}%
+                    </Text>
+                  </View>
+                  <View
+                    testID="food-plan-track"
+                    className="h-2 overflow-hidden rounded-full bg-accent-foreground/20"
+                  >
+                    <AnimatedView
+                      testID="food-plan-fill"
+                      className="h-full rounded-full bg-accent-foreground"
+                      style={kcalBarStyle}
+                    />
                   </View>
                 </View>
               </Card>
