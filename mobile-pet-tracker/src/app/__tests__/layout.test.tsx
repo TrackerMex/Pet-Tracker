@@ -334,3 +334,37 @@ describe('#95 R2: el layout raíz monta el provider y el Stack de detalle', () =
     ]);
   });
 });
+
+describe('#95 R4: cada pantalla de detalle declara su cabecera nativa', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockGetStoredTheme.mockResolvedValue(undefined);
+    mockGetStoredLanguage.mockResolvedValue(undefined);
+  });
+
+  it.each([
+    ['add-reminder', 't:addReminder.addReminder'],
+    ['pets/add', 't:addPet.addPet'],
+    ['pets/[petId]/docs', ''],
+    ['weight-log', 't:weightLog.weightLog'],
+    ['meal-schedule', 't:mealSchedule.mealSchedule'],
+    ['pairing', ''],
+  ])('%s usa exactamente las opciones de cabecera acordadas', async (name, title) => {
+    await render(<RootLayout />);
+    await waitFor(() => expect(jest.mocked(Stack)).toHaveBeenCalled());
+    const stack = jest.mocked(Stack).mock.calls.at(-1)?.[0];
+    const group = Children.toArray(stack?.children)[4];
+    if (!isValidElement<{ children: ReactNode }>(group)) throw new Error('Expected protected group');
+    const detail = Children.toArray(group.props.children).find((child) =>
+      isValidElement<{ name: string }>(child) && child.props.name === name,
+    );
+    expect(isValidElement<{ options?: unknown }>(detail) ? detail.props.options : undefined).toEqual({
+      headerShown: true,
+      title,
+      headerStyle: { backgroundColor: 'token:background' },
+      headerTintColor: 'token:foreground',
+      headerTitleStyle: { fontFamily: 'Inter-Bold' },
+      headerShadowVisible: false,
+    });
+  });
+});
