@@ -248,7 +248,7 @@ describe('R4: food resuelve la mascota seleccionada', () => {
     expect(screen.getByTestId('food-loading')).toBeVisible();
     expect(screen.getByTestId('food-plan-skeleton')).toHaveProp(
       'className',
-      expect.stringContaining('h-32'),
+      expect.stringContaining('h-40'),
     );
     expect(screen.getByTestId('food-meals-skeleton')).toHaveProp(
       'className',
@@ -1180,5 +1180,13 @@ describe('#65 R17: los títulos de card se localizan por testID y su copy sigue 
       expect(screen.getByTestId('food-ai-title')).toBeVisible();
       expect(screen.getByTestId('meal-schedule-link-title')).toBeVisible();
     });
+  });
+});
+
+describe('#113 R5: el esqueleto del plan reserva el alto de la tarjeta con progreso (mobile-kcal-consumed-bar #113)', () => {
+  it('usa h-40 con el radio de card', async () => {
+    mockListPets.mockReturnValue(pending<PetsState>());
+    await renderFood();
+    expect(screen.getByTestId('food-plan-skeleton').props.className).toBe('skeleton__root h-40 w-full rounded-card');
   });
 });
