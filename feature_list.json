@@ -2230,5 +2230,101 @@
       "mobile-pet-tracker/src/screens/reminders/",
       "mobile-pet-tracker/src/screens/alerts/"
     ]
+  },
+  {
+    "id": 115,
+    "name": "mobile-health-make-parity",
+    "status": "pending",
+    "priority": "P3",
+    "description": "ORDEN DEL HUMANO (2026-09-23): es de UI y va AL FINAL, despues de TODAS las pending registradas antes de #115; no se especifica hasta que esas esten cerradas. Registrada el 2026-09-23 por la sesion Backend a peticion del humano, desde la auditoria de paridad con el Figma Make (specs/mobile-figma-polish/design-src/App.tsx) sobre c71d8068 (main con #113). Premisas verificadas contra ese arbol; anclas por contenido grepeable, nunca por numero de linea. La pestana Salud (src/screens/health/index.tsx) es la mas lejana del Make (HealthScreen). Tres huecos solo de UI: (1) no hay grafica de peso: pide solo el ultimo registro (grep \"healthKeys.weights(selectedPetId ?? '', 1)\") y pinta un numero; el Make pinta \"Evolucion de peso\" y WeightChart ya existe en src/components/weight-chart.tsx, hoy usado solo por src/screens/weight-log/index.tsx; (2) no hay cabecera fotografica de 280 px (grep \"height: 280\" en HealthScreen del Make); PetHeroHeader existe en src/components/pet-hero-header.tsx y lo usan home y profile; (3) el proximo evento pinta la fecha ISO en crudo (grep \"{nextVaccine.nextDoseAt}\") en vez de los dias restantes; calendarDaysUntil ya existe en src/screens/home/format.ts y la Home ya lo usa. FUERA: \"Expediente medico\" del Make, que necesita backend nuevo (no hay eventos clinicos). Si anade copy, su spec TIENE que recontar como delta el candado de longitud del catalogo (expect(englishKeys).toHaveLength(...) en src/providers/__tests__/language-provider.test.tsx) y registrar las filas en src/__tests__/ui-copy-table.ts y specs/mobile-ui-language/design.md.",
+    "acceptance_criteria": [
+      "Salud pinta la evolucion del peso con el WeightChart existente, pidiendo el historial que la grafica necesite en vez de limit 1; la spec fija cuantos registros y el estado vacio",
+      "Salud lleva la cabecera fotografica de la mascota con PetHeroHeader, segun HealthScreen del Make y docs/ui-guidelines.md",
+      "El proximo evento de salud muestra los dias restantes calculados con calendarDaysUntil, no la fecha ISO cruda",
+      "Cero dependencias nuevas y cero cambios de backend; suite movil verde medida sin pipe; grep-clean intacto",
+      "Gate humano: smoke en dev build de Android (nunca Expo Go). No delegable a IA"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/health/",
+      "mobile-pet-tracker/src/components/weight-chart.tsx",
+      "mobile-pet-tracker/src/components/pet-hero-header.tsx",
+      "mobile-pet-tracker/src/screens/home/format.ts",
+      "mobile-pet-tracker/src/i18n/catalog.ts"
+    ]
+  },
+  {
+    "id": 116,
+    "name": "mobile-map-gps-pill-battery",
+    "status": "pending",
+    "priority": "P3",
+    "description": "ORDEN DEL HUMANO (2026-09-23): es de UI y va AL FINAL, despues de TODAS las pending registradas antes de #115; no se especifica hasta que esas esten cerradas. Registrada el 2026-09-23 por la sesion Backend a peticion del humano, desde la auditoria de paridad con el Figma Make (specs/mobile-figma-polish/design-src/App.tsx) sobre c71d8068 (main con #113). Premisas verificadas contra ese arbol; anclas por contenido grepeable, nunca por numero de linea. El Mapa (src/screens/map/index.tsx) no pinta dos cosas del MapScreen del Make que ya tienen dato: (1) la pildora flotante con avatar, nombre y \"GPS activo\" (grep \"GPS activo\" en el Make); la Home ya pinta una pildora de conectividad desde #73 (clave home.online); (2) la bateria del collar: el Make la pone en sus estadisticas (label \"Bateria\"), y la app pinta stat-speed, stat-distance, stat-updated y stat-gps sin bateria. El dato ya llega: getPet devuelve device: DeviceStatus | null con batteryPct, y LastPosition trae battery (src/api/types.ts). OJO: docs/ui-guidelines.md (Direccion de arte 5) pide conservar la rejilla de estadisticas actual; la spec decide si la bateria se anade o sustituye a una y lo justifica. FUERA: direccion literal (necesita geocodificacion de pago, decision abierta) y los botones Compartir y Recorrido (necesitan backend). Si anade copy, su spec TIENE que recontar como delta el candado de longitud del catalogo (expect(englishKeys).toHaveLength(...) en src/providers/__tests__/language-provider.test.tsx) y registrar las filas en src/__tests__/ui-copy-table.ts y specs/mobile-ui-language/design.md.",
+    "acceptance_criteria": [
+      "El Mapa pinta una pildora flotante con avatar, nombre de la mascota y estado del GPS segun MapScreen del Make, sin datos nuevos del backend",
+      "El Mapa muestra la bateria del collar leyendo el dato que ya llega; la spec decide su sitio en la rejilla respetando docs/ui-guidelines.md",
+      "Sin collar o sin dato de bateria, la spec define el estado vacio y lo canda",
+      "Cero dependencias nuevas y cero cambios de backend; suite movil verde medida sin pipe; grep-clean intacto",
+      "Gate humano: smoke en dev build de Android (nunca Expo Go). No delegable a IA"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/map/",
+      "mobile-pet-tracker/src/api/types.ts",
+      "mobile-pet-tracker/src/i18n/catalog.ts"
+    ]
+  },
+  {
+    "id": 117,
+    "name": "mobile-forgot-password",
+    "status": "pending",
+    "priority": "P3",
+    "description": "ORDEN DEL HUMANO (2026-09-23): es de UI y va AL FINAL, despues de TODAS las pending registradas antes de #115; no se especifica hasta que esas esten cerradas. Registrada el 2026-09-23 por la sesion Backend a peticion del humano, desde la auditoria de paridad con el Figma Make (specs/mobile-figma-polish/design-src/App.tsx) sobre c71d8068 (main con #113). Premisas verificadas contra ese arbol; anclas por contenido grepeable, nunca por numero de linea. Es la deuda \"mobile-forgot-password\" anotada por #44 y otra vez en specs/auth-reset-deep-link/requirements.md (seccion \"Deuda que esta feature deja anotada\", punto 1), que nunca tuvo id. La pantalla src/app/(auth)/forgot.tsx es un stub desactivado: TextField con isDisabled, Input con editable={false}, forgot-submit con isDisabled y el texto de la clave forgot.comingSoon. El backend esta hecho: POST /v1/auth/forgot-password (#44 auth-forgot-password, #58 auth-email-delivery) y la mitad receptora existe en la app (src/app/reset-password.tsx, deep link de #59). El cliente movil no tiene funcion para pedir el correo (grep forgot en src/api/ sin resultados). La spec tiene que leer el contrato real del endpoint (respuesta y errores, incluido el anti-enumeracion) en backend-pet-tracker/src/modules/auth/ antes de fijar estados, y alinear la pantalla con ForgotScreen del Make. Si anade copy, su spec TIENE que recontar como delta el candado de longitud del catalogo (expect(englishKeys).toHaveLength(...) en src/providers/__tests__/language-provider.test.tsx) y registrar las filas en src/__tests__/ui-copy-table.ts y specs/mobile-ui-language/design.md.",
+    "acceptance_criteria": [
+      "Recuperar contrasena permite escribir el correo y pedir el enlace contra POST /v1/auth/forgot-password con una funcion nueva del cliente en src/api/",
+      "La pantalla cubre los estados de envio, exito y error segun el contrato real del endpoint, sin revelar si el correo existe",
+      "La copia \"disponible pronto\" desaparece y el catalogo se recuenta como delta",
+      "Cero dependencias nuevas y cero cambios de backend; suite movil verde medida sin pipe",
+      "Gate humano: smoke en dev build de Android (nunca Expo Go) pidiendo el correo desde la app, recibiendolo y completando el reset por el deep link de #59. No delegable a IA"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/app/(auth)/forgot.tsx",
+      "mobile-pet-tracker/src/api/",
+      "mobile-pet-tracker/src/i18n/catalog.ts"
+    ]
+  },
+  {
+    "id": 118,
+    "name": "mobile-welcome-splash",
+    "status": "pending",
+    "priority": "P3",
+    "description": "ORDEN DEL HUMANO (2026-09-23): es de UI y va AL FINAL, despues de TODAS las pending registradas antes de #115; no se especifica hasta que esas esten cerradas. Registrada el 2026-09-23 por la sesion Backend a peticion del humano, desde la auditoria de paridad con el Figma Make (specs/mobile-figma-polish/design-src/App.tsx) sobre c71d8068 (main con #113). Premisas verificadas contra ese arbol; anclas por contenido grepeable, nunca por numero de linea. La bienvenida del Make (SplashScreen: foto, marca \"PET TRACKER\" + \"PRO\", texto de presentacion, chips GPS/Salud/Nutricion, \"Comenzar ahora\", \"Ya tengo una cuenta\" y aviso de Terminos y Politica de privacidad) no existe. Hoy src/app/index.tsx solo decide la sesion: Redirect a /home o /login y, mientras resuelve, pinta splash-logo. #33 mobile-auth pidio un splash minimalista antes de que el Make estuviera versionado. La spec decide: (a) si la bienvenida se ve solo en el primer arranque o siempre que no hay sesion, y como se recuerda sin dependencia nueva; (b) a donde llevan \"Comenzar ahora\" y \"Ya tengo una cuenta\" (register y login existen); (c) si Terminos y Politica tienen URL real o se quedan como texto. La carga de sesion sigue sin parpadeo. Si anade copy, su spec TIENE que recontar como delta el candado de longitud del catalogo (expect(englishKeys).toHaveLength(...) en src/providers/__tests__/language-provider.test.tsx) y registrar las filas en src/__tests__/ui-copy-table.ts y specs/mobile-ui-language/design.md.",
+    "acceptance_criteria": [
+      "Sin sesion, la app muestra la bienvenida del Make con sus dos acciones hacia registro e inicio de sesion, segun la decision de la spec sobre cuando se ve",
+      "Con sesion, la app sigue entrando directo a /home sin pasar por la bienvenida ni parpadear",
+      "Cero dependencias nuevas; suite movil verde medida sin pipe; grep-clean intacto",
+      "Gate humano: smoke en dev build de Android (nunca Expo Go). No delegable a IA"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/app/index.tsx",
+      "mobile-pet-tracker/src/app/_layout.tsx",
+      "mobile-pet-tracker/src/i18n/catalog.ts"
+    ]
+  },
+  {
+    "id": 119,
+    "name": "mobile-hero-food-and-detail",
+    "status": "pending",
+    "priority": "P3",
+    "description": "ORDEN DEL HUMANO (2026-09-23): es de UI y va AL FINAL, despues de TODAS las pending registradas antes de #115; no se especifica hasta que esas esten cerradas. Registrada el 2026-09-23 por la sesion Backend a peticion del humano, desde la auditoria de paridad con el Figma Make (specs/mobile-figma-polish/design-src/App.tsx) sobre c71d8068 (main con #113). Premisas verificadas contra ese arbol; anclas por contenido grepeable, nunca por numero de linea. Cabecera fotografica de la mascota donde el Make la pinta y la app no. (1) Nutricion (src/app/(tabs)/food.tsx, sigue siendo pestana): el Make pinta 280 px con \"NUTRICION DE <nombre>\" (grep \"height: 280\" en FoodScreen); PetHeroHeader ya existe en src/components/pet-hero-header.tsx. OJO: food.tsx es route gordo; migrarlo a src/screens/food/ es la deuda nombrada de #102, y la spec decide si va primero. (2) Pantallas de detalle (docs, add-reminder, meal-schedule, weight-log, pairing, pets/add y, con #114, reminders y alerts): el Make las pinta con cabecera fotografica, pero desde #95 (+#114) las ocho de Stack.Protected usan cabecera nativa por las enmiendas A11/A13, cuyas metricas fija docs/conventions.md y docs/ui-guidelines.md (grep \"enmienda A11 de #95\"). Ponerles cabecera fotografica REVIERTE esa decision firmada: la spec lo presenta como decision del humano con enmienda firmada, o limita la feature a Nutricion y lo deja escrito. Propuesto originalmente como mobile-detail-screens-hero en progress/explore_design-gap-vs-make.md y en #67 (Fuera de alcance), nunca registrado. Si anade copy, su spec TIENE que recontar como delta el candado de longitud del catalogo (expect(englishKeys).toHaveLength(...) en src/providers/__tests__/language-provider.test.tsx) y registrar las filas en src/__tests__/ui-copy-table.ts y specs/mobile-ui-language/design.md.",
+    "acceptance_criteria": [
+      "Nutricion lleva la cabecera fotografica de la mascota con PetHeroHeader segun FoodScreen del Make",
+      "La spec decide por escrito si las pantallas de detalle ganan cabecera fotografica; si si, lleva la enmienda de A11/A13 con su firma y actualiza docs/conventions.md y docs/ui-guidelines.md",
+      "Cero dependencias nuevas; suite movil verde medida sin pipe; grep-clean intacto",
+      "Gate humano: smoke en dev build de Android (nunca Expo Go). No delegable a IA"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/app/(tabs)/food.tsx",
+      "mobile-pet-tracker/src/components/pet-hero-header.tsx",
+      "docs/ui-guidelines.md",
+      "docs/conventions.md"
+    ]
   }
 ]
