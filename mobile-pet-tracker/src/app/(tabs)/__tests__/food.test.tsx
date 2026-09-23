@@ -9,6 +9,7 @@ import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
+import { Easing, ReduceMotion } from 'react-native-reanimated';
 
 import {
   getNutritionPlan,
@@ -64,6 +65,18 @@ jest.mock('react-native-safe-area-context', () => ({
 }));
 
 const mockWithTiming = jest.fn((value: number, _config?: unknown) => value);
+
+function expectKcalBarTiming(target: number): void {
+  const config = mockWithTiming.mock.calls.find(([value]) => value === target)?.[1];
+  expect(config).toEqual(
+    expect.objectContaining({ duration: 250, reduceMotion: ReduceMotion.System }),
+  );
+  const actual = (config as { easing: ReturnType<typeof Easing.bezier> }).easing.factory();
+  const expected = Easing.bezier(0.77, 0, 0.175, 1).factory();
+  for (const point of [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]) {
+    expect(actual(point)).toBeCloseTo(expected(point), 6);
+  }
+}
 
 jest.mock('react-native-reanimated', () => ({
   ...jest.requireActual('react-native-reanimated'),
@@ -1104,6 +1117,45 @@ describe('#113 R3: el progreso es un único elemento accesible con su clave de c
     expect(readFileSync('../specs/mobile-ui-language/design.md', 'utf8')).toMatch(
       /\| — \| `food\.kcalConsumedOfTarget`[^\n]*← añadida por #113 \(R3\)/,
     );
+  });
+});
+
+describe('#113 R4: el relleno transiciona su ancho al servir y al deshacer (mobile-kcal-consumed-bar #113)', () => {
+  afterEach(() => mockGetNutritionPlan.mockReset());
+
+  it('anima a 50, sube a 100 al servir y baja a 50 al deshacer con 250 ms y ease-in-out', async () => {
+    const half = makePlan({ merKcal: 1420, servedToday: ['07:30'], kcalConsumedToday: 710 });
+    const full = makePlan({ merKcal: 1420, servedToday: ['07:30', '19:30'], kcalConsumedToday: 1420 });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetNutritionPlan
+      .mockResolvedValueOnce({ kind: 'ok', plan: half })
+      .mockResolvedValueOnce({ kind: 'ok', plan: full })
+      .mockResolvedValue({ kind: 'ok', plan: half });
+    mockServeMeal.mockResolvedValue({ kind: 'ok' });
+    mockUnserveMeal.mockResolvedValue({ kind: 'ok' });
+
+    await renderFood();
+    expect(await screen.findByTestId('food-plan-consumed')).toHaveTextContent('710 kcal');
+    expect(screen.getByTestId('food-plan-percent')).toHaveTextContent('50%');
+    expect(screen.getByTestId('food-plan-fill')).toHaveAnimatedStyle({ width: '50%' });
+    expectKcalBarTiming(50);
+
+    mockWithTiming.mockClear();
+    await fireEvent.press(screen.getByTestId('meal-toggle-1'));
+    await screen.findByTestId('meal-served-1');
+    expect(screen.getByTestId('food-plan-consumed')).toHaveTextContent('1420 kcal');
+    expect(screen.getByTestId('food-plan-percent')).toHaveTextContent('100%');
+    expect(screen.getByTestId('food-plan-fill')).toHaveAnimatedStyle({ width: '100%' });
+    expectKcalBarTiming(100);
+
+    await waitFor(() => expect(screen.getByTestId('meal-toggle-1')).toBeEnabled());
+    mockWithTiming.mockClear();
+    await fireEvent.press(screen.getByTestId('meal-toggle-1'));
+    await screen.findByTestId('meal-pending-1');
+    expect(screen.getByTestId('food-plan-consumed')).toHaveTextContent('710 kcal');
+    expect(screen.getByTestId('food-plan-percent')).toHaveTextContent('50%');
+    expect(screen.getByTestId('food-plan-fill')).toHaveAnimatedStyle({ width: '50%' });
+    expectKcalBarTiming(50);
   });
 });
 
