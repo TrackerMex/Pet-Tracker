@@ -140,6 +140,9 @@ URL `http://example.test/v1/pets/pet-1/positions/last` con el bearer.
 
 ### D4 — Ubicación de la ruta: `src/app/(tabs)/pairing.tsx`
 
+> **Revertida por #95 (enmienda A12)** — ver §Enmienda #95 al final de este
+> fichero. Mientras su casilla no esté marcada, lo que sigue es lo vigente.
+
 `feature_list.json` sugiere `src/app/pairing/`; se sigue en cambio el
 precedente de `reminders.tsx`, `add-reminder.tsx`, `pets/add.tsx` y
 `pets/[petId]/docs.tsx`: dentro de `(tabs)` la ruta hereda el
@@ -442,3 +445,47 @@ y su ampliación). Esta spec ratificó el inglés en su día; esa parte queda
   (`specs/mobile-ui-language/requirements.md` §Fuera de alcance 1).
 
 - [X] Enmienda aprobada por humano (fecha: 2026-09-06)
+
+## Enmienda #95 — `/pairing` sale de `(tabs)` al Stack raíz (A12)
+
+`mobile-detail-screens-to-stack` (#95) saca las seis pantallas de detalle de
+`src/app/(tabs)/` al Stack raíz de `src/app/_layout.tsx` para darles push/pop de
+plataforma y cabecera nativa. `/pairing` es una de ellas, así que esta spec
+aprobada cambia en los puntos siguientes. El detalle y las pruebas viven en
+`specs/mobile-detail-screens-to-stack/` (requirements R2, R4, R5, R6 y R8;
+design D1–D7 y D10).
+
+- **Spec enmendada**: `specs/mobile-device-pairing/` (este `design.md` §D4 y las
+  partes citadas de `requirements.md` R4, R7 y R11).
+- **Qué cambia**:
+  1. **D4 se revierte.** La ruta pasa a `src/app/pairing.tsx` (mismo
+     `PairingRoute`, import `'../screens/pairing'`), hija del Stack raíz y
+     detrás de su `Stack.Protected guard={status === 'authenticated'}`. El
+     argumento de D4 —heredar el `Redirect` y el `SelectedPetProvider` de
+     `(tabs)`— deja de aplicar: el provider sube al layout raíz y la guarda es el
+     `Stack.Protected` (#95 R2, R3).
+  2. **R4**: donde dice "desde el route delgado `src/app/(tabs)/pairing.tsx`
+     (…), dentro del grupo `(tabs)` — hereda auth redirect y
+     `SelectedPetProvider`", pasa a ser `src/app/pairing.tsx`, pantalla del Stack
+     raíz, protegida por `Stack.Protected` y bajo el `SelectedPetProvider` raíz.
+     Las dimensiones pasan a `padding: 24`, `gap: 16`, `paddingBottom:
+     insets.bottom + 24`, **sin** `paddingTop` (excepción A11 de #95). El "botón
+     atrás `testID="pairing-back"` que llama `router.back()`" **se retira**: se
+     vuelve con la cabecera nativa del Stack, que en esta pantalla va sin título
+     porque los tres encabezados de estado siguen en el cuerpo. El `describe` de
+     su test pasa a `R4: /pairing monta en el Stack raíz con selector de mascota y
+     estados de carga`.
+  3. **R7**: `ready-map` llama a `router.dismissTo('/map')` en lugar de
+     `router.push('/map')`, porque desde el Stack un `push` apilaría una segunda
+     instancia de `(tabs)`. Sigue reseteando la fase antes de navegar.
+  4. **R11**: las métricas que canda `src/__tests__/design-drift.test.ts` pasan a
+     `padding: 24`, `gap: 16` e `insets.bottom + 24`, y se canda la **ausencia**
+     de `insets.top + 12` e `insets.bottom + 96`.
+  5. **D7**: la clave `pairing.back` (`Back` / `Volver`) sale del catálogo, porque
+     su único uso era el botón retirado.
+- **Qué NO cambia**: ningún otro requisito de esta spec (R1–R3, R5, R6, R8–R10
+  y el resto de R4, R7 y R11), ningún contrato de API, ningún texto de estado
+  ("Vincular collar", "Dispositivo GPS", "El collar está listo"), ni su estado de
+  aprobación. Tampoco el reset al cambiar de mascota que añadió #63 R6.
+
+- [ ] Enmienda aprobada por humano (fecha: ____)

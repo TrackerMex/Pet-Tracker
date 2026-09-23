@@ -1848,7 +1848,7 @@
   {
     "id": 95,
     "name": "mobile-detail-screens-to-stack",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P3",
     "description": "Deuda declarada por la decision D1 de #63 y firmada por el humano el 2026-09-14 (specs/mobile-detail-screens-state-reset/requirements.md, seccion Deuda que esta spec deja abierta). Sacar las seis pantallas de detalle (add-reminder, pets/add, pets/[petId]/docs, weight-log, meal-schedule, pairing) de mobile-pet-tracker/src/app/(tabs)/ a un Stack nativo, para darles push/pop de plataforma y cabecera nativa. Cierra M3 de progress/audit_animations_mobile.md (hoy router.push a estas rutas es un teleport sin transicion) y el punto de progress/audit_ui_polish.md:125 (cabecera nativa en vez de los seis botones de volver a mano). #63 eligio el reset local por coste, no por preferencia: el Stack es la via de fondo correcta y queda pospuesta, no descartada. Requiere subir SelectedPetProvider y el Redirect a /login de src/app/(tabs)/_layout.tsx a src/app/_layout.tsx -lo que los pone tambien sobre (auth) y reset-password-, revisar el paddingBottom: insets.bottom + 96 de las seis pantallas (ese hueco existe por el FloatingTabBar, que deja de pintarse sobre una pantalla del Stack), sustituir los seis botones de volver y sus testID por cabecera de Stack con claves de copy nuevas en los dos idiomas (candado de longitud de catalogo en language-provider.test.tsx), y borrar mobile-pet-tracker/.expo/types/router.d.ts antes de tocar codigo. Revierte la decision D4 de specs/mobile-device-pairing/design.md, que metio /pairing bajo (tabs) precisamente para heredar guard y provider.",
     "acceptance_criteria": [
