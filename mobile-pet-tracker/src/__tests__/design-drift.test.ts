@@ -142,8 +142,8 @@ describe('R9: mobile-pets-profile sin drift', () => {
     const routes = [
       'app/(tabs)/home.tsx',
       'app/(tabs)/profile.tsx',
-      'app/(tabs)/pets/add.tsx',
-      'app/(tabs)/pets/[petId]/docs.tsx',
+      'app/pets/add.tsx',
+      'app/pets/[petId]/docs.tsx',
     ];
 
     const routeLengths = routes.map((relativePath) => ({
@@ -202,10 +202,14 @@ describe('R11 (mobile-device-pairing): pairing usa el Card compartido y las dime
   it.each([
     'padding: 24',
     'gap: 16',
-    'insets.top + 12',
-    'insets.bottom + 96',
+    'insets.bottom + 24',
   ])('keeps the uniform screen metric %s', (metric) => {
     expect(pairingSource).toContain(metric);
+  });
+
+  it('#95 R6: pairing no reserva el inset superior ni la banda del FloatingTabBar', () => {
+    expect(pairingSource).not.toContain('insets.top + 12');
+    expect(pairingSource).not.toContain('insets.bottom + 96');
   });
 
   it('keeps pairing free of forbidden styling escapes', () => {

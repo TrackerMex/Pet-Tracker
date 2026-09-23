@@ -1,11 +1,10 @@
 import { Host } from '@expo/ui';
 import ExpoDateTimePicker from '@expo/ui/community/datetime-picker';
-import { Redirect, router, type Href, useFocusEffect } from 'expo-router';
+import { Redirect, router, type Href } from 'expo-router';
 import { Button } from 'heroui-native';
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ArrowLeft } from 'reicon-react-native';
 
 import { createReminder } from '../../api/reminders';
 import type { ReminderType } from '../../api/types';
@@ -45,7 +44,7 @@ function AddReminderContent({ petId }: { petId: string }) {
   const locale = useLocale();
   const t = useTranslate();
   const insets = useSafeAreaInsets();
-  const [foreground, muted] = useThemeColors(['foreground', 'muted']);
+  const [muted] = useThemeColors(['muted']);
   const [type, setType] = useState<ReminderType>('vaccine');
   const [title, setTitle] = useState('');
   const [date, setDate] = useState<Date | null>(null);
@@ -55,22 +54,6 @@ function AddReminderContent({ petId }: { petId: string }) {
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-
-  useFocusEffect(
-    useCallback(
-      () => () => {
-        setType('vaccine');
-        setTitle('');
-        setDate(null);
-        setTime(initialTime());
-        setAdvanceMinutes(10080);
-        setShowDatePicker(false);
-        setShowTimePicker(false);
-        setFormError(null);
-      },
-      [],
-    ),
-  );
 
   async function handleSubmit() {
     const trimmedTitle = title.trim();
@@ -135,26 +118,9 @@ function AddReminderContent({ petId }: { petId: string }) {
       contentContainerStyle={{
         padding: 24,
         gap: 16,
-        paddingTop: insets.top + 12,
-        paddingBottom: insets.bottom + 96,
+        paddingBottom: insets.bottom + 24,
       }}
     >
-      <View className="flex-row items-center gap-3">
-        <Pressable
-          accessibilityLabel={t('addReminder.backToReminders')}
-          accessibilityRole="button"
-          testID="add-reminder-back"
-          hitSlop={TOUCH_SLOP}
-          className="size-10 items-center justify-center rounded-full bg-default"
-          onPress={() => router.back()}
-        >
-          <ArrowLeft size={20} color={foreground} />
-        </Pressable>
-        <Text className="text-2xl font-black text-foreground">
-          {t('addReminder.addReminder')}
-        </Text>
-      </View>
-
       <View className="gap-2">
         <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
           {t('addReminder.type')}

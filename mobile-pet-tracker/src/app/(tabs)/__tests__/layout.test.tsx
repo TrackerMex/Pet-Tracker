@@ -6,8 +6,8 @@ import { FloatingTabBar } from '../../../components/floating-tab-bar';
 import { useAuth, type AuthContextValue } from '../../../providers/auth-provider';
 import { SelectedPetProvider } from '../../../providers/selected-pet-provider';
 import TabsLayout from '../_layout';
-import AddPetRoute from '../pets/add';
-import DocsRoute from '../pets/[petId]/docs';
+import AddPetRoute from '../../pets/add';
+import DocsRoute from '../../pets/[petId]/docs';
 
 jest.mock(
   '../../../components/floating-tab-bar',
@@ -102,18 +102,18 @@ describe('R1: (tabs) exige sesión', () => {
     expect(element?.props).toEqual({ state, navigation });
   });
 
-  it('wraps authenticated tabs in the shared selected pet provider', async () => {
+  it('ya no monta SelectedPetProvider: lo aporta el layout raíz (#95 R2)', async () => {
     mockUseAuth.mockReturnValue(authValue('authenticated'));
 
     await render(<TabsLayout />);
 
-    expect(mockSelectedPetProvider).toHaveBeenCalledTimes(1);
+    expect(mockSelectedPetProvider).not.toHaveBeenCalled();
     expect(mockTabs).toHaveBeenCalledTimes(1);
   });
 });
 
 describe('R10: las rutas de mascotas heredan SelectedPetProvider', () => {
-  it('mantiene AddPet y Docs dentro del grupo (tabs)', () => {
+  it('resuelve AddPet y Docs como rutas del Stack raíz', () => {
     expect(AddPetRoute).toEqual(expect.any(Function));
     expect(DocsRoute).toEqual(expect.any(Function));
   });

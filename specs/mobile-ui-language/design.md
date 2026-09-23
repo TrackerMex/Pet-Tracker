@@ -395,8 +395,8 @@ añadidas por #68, registradas como delta sobre la tabla existente
 | 102 | `common.cannotReachServer` | `Cannot reach server` | `No se pudo conectar con el servidor` |
 | 109 | `common.somethingWentWrong` | `Something went wrong` | `Algo salió mal` |
 | 112 | `common.somethingWentWrong` | `Something went wrong` | `Algo salió mal` |
-| 133 | `weightLog.backToHealth` | `Back to health` | `Volver a Salud` |
-| 141 | `weightLog.weightLog` | `Weight log` | `Registro de peso` |
+| 133 | `weightLog.backToHealth` | `Back to health` | `Volver a Salud` ← retirada por #95 (R5) |
+| 141 | `weightLog.weightLog` | `Weight log` | `Registro de peso` ← se pinta desde `src/app/_layout.tsx` por #95 (R4) |
 | 154 | `weightLog.weight` | `Weight` | `Peso` |
 | 160 | `weightLog.weightKg` | `Weight (kg)` | `Peso (kg)` |
 | 167 | `weightLog.measuredAt` | `Measured at` | `Fecha de medición` |
@@ -455,8 +455,8 @@ añadidas por #68, registradas como delta sobre la tabla existente
 | 95 | `common.cannotReachServer` | `Cannot reach server` | `No se pudo conectar con el servidor` |
 | 102 | `common.somethingWentWrong` | `Something went wrong` | `Algo salió mal` |
 | 105 | `common.somethingWentWrong` | `Something went wrong` | `Algo salió mal` |
-| 126 | `mealSchedule.backToFood` | `Back to food` | `Volver a Nutrición` |
-| 135 | `mealSchedule.mealSchedule` | `Meal schedule` | `Horario de comidas` |
+| 126 | `mealSchedule.backToFood` | `Back to food` | `Volver a Nutrición` ← retirada por #95 (R5) |
+| 135 | `mealSchedule.mealSchedule` | `Meal schedule` | `Horario de comidas` ← se pinta desde `src/app/_layout.tsx` por #95 (R4) |
 | 160 | `common.somethingWentWrong` | `Something went wrong` | `Algo salió mal` |
 | 163 | `common.retry` | `Retry` | `Reintentar` |
 | 178 | `mealSchedule.dailyTarget` | `Daily target` | `Objetivo diario` |
@@ -508,7 +508,7 @@ añadidas por #68, registradas como delta sobre la tabla existente
 
 | Línea | Clave | `en` | `es` |
 |---|---|---|---|
-| 68 | `docs.backToProfile` | `Back to profile` | `Volver a Perfil` |
+| 68 | `docs.backToProfile` | `Back to profile` | `Volver a Perfil` ← retirada por #95 (R5) |
 | 79 | `docs.documentsOf` *(ya en español)* | `Documents of` | `Documentos de` |
 | 85 | `docs.pet` | `Pet` | `Mascota` |
 | 101 | `docs.noDocumentsYet` | `No documents yet` | `Aún no hay documentos` |
@@ -573,8 +573,8 @@ añadidas por #68, registradas como delta sobre la tabla existente
 | 92 | `common.cannotReachServer` | `Cannot reach server` | `No se pudo conectar con el servidor` |
 | 99 | `common.somethingWentWrong` | `Something went wrong` | `Algo salió mal` |
 | 102 | `common.somethingWentWrong` | `Something went wrong` | `Algo salió mal` |
-| 122 | `addReminder.backToReminders` | `Back to reminders` | `Volver a Recordatorios` |
-| 132 | `addReminder.addReminder` | `Add reminder` | `Agregar recordatorio` |
+| 122 | `addReminder.backToReminders` | `Back to reminders` | `Volver a Recordatorios` ← retirada por #95 (R5) |
+| 132 | `addReminder.addReminder` | `Add reminder` | `Agregar recordatorio` ← se pinta desde `src/app/_layout.tsx` por #95 (R4) |
 | 138 | `addReminder.type` | `Type` | `Tipo` |
 | 169 | `addReminder.title` | `Title` | `Título` |
 | 176 | `addReminder.reminderTitle` | `Reminder title` | `Título del recordatorio` |
@@ -601,8 +601,8 @@ añadidas por #68, registradas como delta sobre la tabla existente
 | 204 | `common.cannotReachServer` | `Cannot reach server` | `No se pudo conectar con el servidor` |
 | 208 | `common.somethingWentWrong` | `Something went wrong` | `Algo salió mal` |
 | 211 | `common.somethingWentWrong` | `Something went wrong` | `Algo salió mal` |
-| 231 | `addPet.backToProfile` | `Back to profile` | `Volver a Perfil` |
-| 240 | `addPet.addPet` | `Add pet` | `Nueva mascota` |
+| 231 | `addPet.backToProfile` | `Back to profile` | `Volver a Perfil` ← retirada por #95 (R5) |
+| 240 | `addPet.addPet` | `Add pet` | `Nueva mascota` ← se pinta desde `src/app/_layout.tsx` por #95 (R4) |
 | 245 | `addPet.pet` | `Pet` | `Mascota` |
 | 250 | `addPet.avatarPreview` | `Avatar preview` | `Vista previa del avatar` |
 | 259 | `addPet.choosePhoto` | `Choose photo` | `Elegir foto` |
@@ -655,7 +655,7 @@ añadidas por #68, registradas como delta sobre la tabla existente
 | 213 | `pairing.unpairAlertBody` | `Location history stays, but live tracking stops until you pair a collar again.` | `El historial de ubicaciones se conserva, pero el rastreo en vivo se detiene hasta que vincules otro collar.` |
 | 215 | `pairing.cancel` | `Cancel` | `Cancelar` |
 | 217 | `pairing.unpair` | `Unpair` | `Desvincular` |
-| 238 | `pairing.back` | `Back` | `Volver` |
+| 238 | `pairing.back` | `Back` | `Volver` ← retirada por #95 (R5) |
 | 267 | `common.somethingWentWrong` | `Something went wrong` | `Algo salió mal` |
 | 270 | `common.retry` | `Retry` | `Reintentar` |
 | 277 | `pairing.addPetFirst` | `Add a pet first` | `Primero añade una mascota` |

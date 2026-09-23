@@ -1,12 +1,11 @@
 import { Host } from '@expo/ui';
 import ExpoDateTimePicker from '@expo/ui/community/datetime-picker';
-import { router, useFocusEffect } from 'expo-router';
+import { router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Button } from 'heroui-native';
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ArrowLeft } from 'reicon-react-native';
 
 import {
   requestPhotoUploadUrl,
@@ -86,7 +85,7 @@ export function AddPetScreen() {
   const t = useTranslate();
   const { selectPet } = useSelectedPet();
   const insets = useSafeAreaInsets();
-  const [foreground, muted] = useThemeColors(['foreground', 'muted']);
+  const [muted] = useThemeColors(['muted']);
   const [species, setSpecies] = useState<Species>('dog');
   const [name, setName] = useState('');
   const [breed, setBreed] = useState('');
@@ -105,28 +104,6 @@ export function AddPetScreen() {
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [photoError, setPhotoError] = useState<string | null>(null);
-
-  useFocusEffect(
-    useCallback(
-      () => () => {
-        setSpecies('dog');
-        setName('');
-        setBreed('');
-        setSex(null);
-        setSize(null);
-        setSterilized(null);
-        setMicrochip('');
-        setAgeMode('birthDate');
-        setBirthDate(null);
-        setApproxAgeMonths('');
-        setShowDatePicker(false);
-        setPhotoAsset(null);
-        setFormError(null);
-        setPhotoError(null);
-      },
-      [],
-    ),
-  );
 
   async function handlePickPhoto() {
     setPhotoError(null);
@@ -250,26 +227,9 @@ export function AddPetScreen() {
       contentContainerStyle={{
         padding: 24,
         gap: 16,
-        paddingTop: insets.top + 12,
-        paddingBottom: insets.bottom + 96,
+        paddingBottom: insets.bottom + 24,
       }}
     >
-      <View className="flex-row items-center gap-3">
-        <Pressable
-          accessibilityLabel={t('addPet.backToProfile')}
-          accessibilityRole="button"
-          testID="add-pet-back"
-          hitSlop={TOUCH_SLOP}
-          className="size-10 items-center justify-center rounded-full bg-default"
-          onPress={() => router.back()}
-        >
-          <ArrowLeft size={20} color={foreground} />
-        </Pressable>
-        <Text className="text-2xl font-black text-foreground">
-          {t('addPet.addPet')}
-        </Text>
-      </View>
-
       <View className="items-center gap-2">
         <PetAvatar
           name={name.trim() || t('addPet.pet')}

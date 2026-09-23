@@ -104,6 +104,16 @@ Tres límites, no negociables:
    y el `paddingTop: insets.top + 12` lo asume la cabecera vía su slot. Las
    ramas de estado sin cabecera llevan su propio envoltorio con ese
    `paddingTop`.
+
+   **Excepción nombrada (enmienda A11 de #95, 2026-09-23)**: una pantalla empujada
+   sobre el Stack raíz con cabecera nativa (`headerShown: true`) —hoy
+   `add-reminder`, `pets/add`, `pets/[petId]/docs`, `weight-log`,
+   `meal-schedule` y `pairing`— no lleva `paddingTop: insets.top + 12`, porque
+   el inset superior lo consume la cabecera, ni `paddingBottom: insets.bottom +
+   96`, porque sobre ella no flota el `FloatingTabBar`. Su
+   `contentContainerStyle` es `padding: 24`, `gap: 16` y `paddingBottom:
+   insets.bottom + 24`, la misma holgura inferior que `(auth)` y
+   `reset-password`.
 7. **Estados de carga**: Skeleton de heroui dimensionado como el contenido
    final. Prohibido Spinner suelto que salte el layout.
 8. **Estructura**: route delgado en `src/app/` + pantalla en `src/screens/`

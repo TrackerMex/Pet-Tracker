@@ -119,6 +119,7 @@ export const R4_MAP: UseRow[] = [
 ];
 
 export const R5_HEALTH: UseRow[] = [
+  { file: 'src/app/_layout.tsx', key: 'weightLog.weightLog' }, // #95 R4
   { file: 'src/screens/health/index.tsx', key: 'health.health' },
   { file: 'src/screens/health/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/health/index.tsx', key: 'common.retry' },
@@ -137,8 +138,6 @@ export const R5_HEALTH: UseRow[] = [
   { file: 'src/screens/weight-log/index.tsx', key: 'common.cannotReachServer' },
   { file: 'src/screens/weight-log/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/weight-log/index.tsx', key: 'common.somethingWentWrong' },
-  { file: 'src/screens/weight-log/index.tsx', key: 'weightLog.backToHealth' },
-  { file: 'src/screens/weight-log/index.tsx', key: 'weightLog.weightLog' },
   { file: 'src/screens/weight-log/index.tsx', key: 'weightLog.weight' },
   { file: 'src/screens/weight-log/index.tsx', key: 'weightLog.weightKg' },
   { file: 'src/screens/weight-log/index.tsx', key: 'weightLog.measuredAt' },
@@ -155,6 +154,7 @@ export const R5_HEALTH: UseRow[] = [
 ];
 
 export const R6_FOOD: UseRow[] = [
+  { file: 'src/app/_layout.tsx', key: 'mealSchedule.mealSchedule' }, // #95 R4
   { file: 'src/app/(tabs)/food.tsx', key: 'food.food' },
   { file: 'src/app/(tabs)/food.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/app/(tabs)/food.tsx', key: 'common.retry' },
@@ -181,8 +181,6 @@ export const R6_FOOD: UseRow[] = [
   { file: 'src/screens/meal-schedule/index.tsx', key: 'common.cannotReachServer' },
   { file: 'src/screens/meal-schedule/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/meal-schedule/index.tsx', key: 'common.somethingWentWrong' },
-  { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.backToFood' },
-  { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.mealSchedule' },
   { file: 'src/screens/meal-schedule/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/meal-schedule/index.tsx', key: 'common.retry' },
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.dailyTarget' },
@@ -224,7 +222,6 @@ export const R7_PROFILE: UseRow[] = [
   { file: 'src/screens/profile/index.tsx', key: 'profile.useDarkTheme' },
   { file: 'src/screens/profile/index.tsx', key: 'profile.useLightTheme' },
   { file: 'src/screens/profile/index.tsx', key: 'profile.signOut' },
-  { file: 'src/screens/docs/index.tsx', key: 'docs.backToProfile' },
   { file: 'src/screens/docs/index.tsx', key: 'docs.documentsOf' },
   { file: 'src/screens/docs/index.tsx', key: 'docs.pet' },
   { file: 'src/screens/docs/index.tsx', key: 'docs.noDocumentsYet' },
@@ -234,6 +231,7 @@ export const R7_PROFILE: UseRow[] = [
 ];
 
 export const R8_REMINDERS: UseRow[] = [
+  { file: 'src/app/_layout.tsx', key: 'addReminder.addReminder' }, // #95 R4
   { file: 'src/screens/reminders/index.tsx', key: 'reminders.errorForbidden' },
   { file: 'src/screens/reminders/index.tsx', key: 'common.cannotReachServer' },
   { file: 'src/screens/reminders/index.tsx', key: 'common.somethingWentWrong' },
@@ -274,8 +272,6 @@ export const R8_REMINDERS: UseRow[] = [
   { file: 'src/screens/add-reminder/index.tsx', key: 'common.cannotReachServer' },
   { file: 'src/screens/add-reminder/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/add-reminder/index.tsx', key: 'common.somethingWentWrong' },
-  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.backToReminders' },
-  { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.addReminder' },
   { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.type' },
   { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.title' },
   { file: 'src/screens/add-reminder/index.tsx', key: 'addReminder.reminderTitle' },
@@ -287,6 +283,7 @@ export const R8_REMINDERS: UseRow[] = [
 ];
 
 export const R9_ADD_PET: UseRow[] = [
+  { file: 'src/app/_layout.tsx', key: 'addPet.addPet' }, // #95 R4
   { file: 'src/screens/add-pet/index.tsx', key: 'addPet.errorPhotoFormat' },
   { file: 'src/screens/add-pet/index.tsx', key: 'addPet.nameIsRequired' },
   { file: 'src/screens/add-pet/index.tsx', key: 'addPet.chooseBirthDate' },
@@ -297,8 +294,6 @@ export const R9_ADD_PET: UseRow[] = [
   { file: 'src/screens/add-pet/index.tsx', key: 'common.cannotReachServer' },
   { file: 'src/screens/add-pet/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/add-pet/index.tsx', key: 'common.somethingWentWrong' },
-  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.backToProfile' },
-  { file: 'src/screens/add-pet/index.tsx', key: 'addPet.addPet' },
   { file: 'src/screens/add-pet/index.tsx', key: 'addPet.pet' },
   { file: 'src/screens/add-pet/index.tsx', key: 'addPet.avatarPreview' },
   { file: 'src/screens/add-pet/index.tsx', key: 'addPet.choosePhoto' },
@@ -348,7 +343,6 @@ export const R10_PAIRING: UseRow[] = [
   { file: 'src/screens/pairing/index.tsx', key: 'pairing.unpairAlertBody' },
   { file: 'src/screens/pairing/index.tsx', key: 'pairing.cancel' },
   { file: 'src/screens/pairing/index.tsx', key: 'pairing.unpair' },
-  { file: 'src/screens/pairing/index.tsx', key: 'pairing.back' },
   { file: 'src/screens/pairing/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/pairing/index.tsx', key: 'common.retry' },
   { file: 'src/screens/pairing/index.tsx', key: 'pairing.addPetFirst' },

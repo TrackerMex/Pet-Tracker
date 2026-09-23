@@ -80,7 +80,7 @@ function appRoutes(directory: string, prefix = ''): string[] {
     if (entry.isDirectory()) {
       return entry.name === '__tests__'
         ? []
-        : appRoutes(absolutePath, relativePath);
+        : appRoutes(absolutePath, /^\(.*\)$/.test(entry.name) ? prefix : relativePath);
     }
 
     return entry.name.endsWith('.tsx') && entry.name !== '_layout.tsx'
@@ -1983,7 +1983,7 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
     ].map(([, literal, template]) =>
       (literal ?? template).replace('${petId}', '[petId]'),
     );
-    const routes = appRoutes(join(process.cwd(), 'src/app/(tabs)'));
+    const routes = appRoutes(join(process.cwd(), 'src/app'));
 
     expect(destinations).toHaveLength(3);
     for (const destination of destinations) {

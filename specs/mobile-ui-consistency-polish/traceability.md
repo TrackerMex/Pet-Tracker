@@ -82,3 +82,5 @@ Estas cifras cambiaron y la spec usa las verificadas el **2026-09-04** sobre
 | Hallazgo 22: arreglo propuesto | alinear el radio | **migrar al `Card` compartido** | El criterio de aceptación 3 de #62 lo pide explícitamente y es más fuerte que la propuesta del audit |
 | Hallazgo 16: arreglo propuesto | quitar `border border-border` | **eso + `placeholderTextColor`** | La `description` de #62 amplió el hallazgo el 2026-09-04 tras el smoke: el placeholder ilegible en dark es un defecto real, no consistencia |
 | Hallazgo 26: arreglo propuesto | `useThemeColors(['accent'])` | **`useThemeColors(['accent-strong'])`** | `['accent']` rompería el invariante ya verde de #61 R4, y el icono se pinta encima de `bg-accent-soft` |
+
+Nota #95 R5: se retiraron los cuatro casos de R7 que exigían `ArrowLeft` en docs, add-pet, add-reminder y pairing; ahora el botón de volver es nativo. El guard de glifos y el de Profile siguen vigentes.

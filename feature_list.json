@@ -1848,7 +1848,7 @@
   {
     "id": 95,
     "name": "mobile-detail-screens-to-stack",
-    "status": "pending",
+    "status": "done",
     "priority": "P3",
     "description": "Deuda declarada por la decision D1 de #63 y firmada por el humano el 2026-09-14 (specs/mobile-detail-screens-state-reset/requirements.md, seccion Deuda que esta spec deja abierta). Sacar las seis pantallas de detalle (add-reminder, pets/add, pets/[petId]/docs, weight-log, meal-schedule, pairing) de mobile-pet-tracker/src/app/(tabs)/ a un Stack nativo, para darles push/pop de plataforma y cabecera nativa. Cierra M3 de progress/audit_animations_mobile.md (hoy router.push a estas rutas es un teleport sin transicion) y el punto de progress/audit_ui_polish.md:125 (cabecera nativa en vez de los seis botones de volver a mano). #63 eligio el reset local por coste, no por preferencia: el Stack es la via de fondo correcta y queda pospuesta, no descartada. Requiere subir SelectedPetProvider y el Redirect a /login de src/app/(tabs)/_layout.tsx a src/app/_layout.tsx -lo que los pone tambien sobre (auth) y reset-password-, revisar el paddingBottom: insets.bottom + 96 de las seis pantallas (ese hueco existe por el FloatingTabBar, que deja de pintarse sobre una pantalla del Stack), sustituir los seis botones de volver y sus testID por cabecera de Stack con claves de copy nuevas en los dos idiomas (candado de longitud de catalogo en language-provider.test.tsx), y borrar mobile-pet-tracker/.expo/types/router.d.ts antes de tocar codigo. Revierte la decision D4 de specs/mobile-device-pairing/design.md, que metio /pairing bajo (tabs) precisamente para heredar guard y provider.",
     "acceptance_criteria": [
@@ -2014,16 +2014,16 @@
     "name": "meal-schedule-editing",
     "status": "pending",
     "priority": "P3",
-    "description": "Registrada el 2026-09-21 desde la seccion Fuera de alcance de la spec de #98, por decision del humano. Los botones Editar horario y Anadir comida del diseno llevan sin backend desde #38, que ya los declaro no implementables en specs/mobile-food/requirements.md:306-309. #83 y #98 resolvieron marcar servido, pero no tocar los horarios: hoy mealTimes sale del plan generado y el usuario no puede cambiarlo. src/app/(tabs)/meal-schedule.tsx (324 lineas) es hoy de solo lectura, verificado con grep: no contiene ni un POST, PATCH, PUT ni DELETE. Necesita backend nuevo: endpoints para editar y anadir franjas del plan, y una decision de diseno que #83 dejo abierta en su D4 (que pasa con las comidas ya servidas de una franja que el usuario borra o mueve). Se partira en mitad backend y mitad movil cuando se escriba su spec, como se hizo con #83/#98; no se pre-parte ahora.",
+    "description": "Registrada el 2026-09-21 desde la seccion Fuera de alcance de la spec de #98, por decision del humano. Los botones Editar horario y Anadir comida del diseno llevan sin backend desde #38, que ya los declaro no implementables en specs/mobile-food/requirements.md:306-309. #83 y #98 resolvieron marcar servido, pero no tocar los horarios: hoy mealTimes sale del plan generado y el usuario no puede cambiarlo. src/screens/meal-schedule/index.tsx (324 lineas; es el cuerpo de la pantalla desde #102, y su route delgado lo mueve #95 de src/app/(tabs)/ a src/app/meal-schedule.tsx) es hoy de solo lectura, verificado con grep: no contiene ni un POST, PATCH, PUT ni DELETE. Necesita backend nuevo: endpoints para editar y anadir franjas del plan, y una decision de diseno que #83 dejo abierta en su D4 (que pasa con las comidas ya servidas de una franja que el usuario borra o mueve). Se partira en mitad backend y mitad movil cuando se escriba su spec, como se hizo con #83/#98; no se pre-parte ahora.",
     "acceptance_criteria": [
       "La spec cierra por escrito que ocurre con las meal_servings de una franja editada o borrada, resolviendo la D4 de #83",
       "Backend expone editar y anadir franja con sus tests e2e; el plan generado deja de ser la unica fuente de mealTimes",
-      "meal-schedule.tsx gana los botones del diseno contra esos endpoints, sin estado optimista, con el mismo patron de refetch que #98",
+      "src/screens/meal-schedule/index.tsx gana los botones del diseno contra esos endpoints, sin estado optimista, con el mismo patron de refetch que #98",
       "Gate humano: smoke en dev build de Android editando una franja con comida ya servida"
     ],
     "files_affected": [
       "backend-pet-tracker/src/modules/nutrition/",
-      "mobile-pet-tracker/src/app/(tabs)/meal-schedule.tsx"
+      "mobile-pet-tracker/src/screens/meal-schedule/index.tsx"
     ]
   },
   {
@@ -2204,6 +2204,28 @@
       "mobile-pet-tracker/src/i18n/catalog.ts",
       "mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx",
       "docs/ui-guidelines.md"
+    ]
+  },
+  {
+    "id": 114,
+    "name": "mobile-reminders-alerts-to-stack",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada el 2026-09-23 desde la seccion Fuera de alcance de la spec de #95 (specs/mobile-detail-screens-to-stack/requirements.md, Deuda candidata para el leader), aprobada por el humano en Notion. #95 saca al Stack raiz las seis pantallas de detalle pero deja bajo src/app/(tabs)/ otras dos rutas que tampoco son pestanas y solo se abren con router.push: reminders (desde home y profile) y alerts (desde home, profile y el toque de notificacion de use-push-registration). Hoy no tienen boton de volver y se salen por la barra de pestanas. Moverlas al Stack cambia su UX: pierden la barra y ganan cabecera nativa, asi que la decision es de producto y no una limpieza. Hay una razon mas: la auditoria de #63 anoto que reminders conserva deleteCandidate al volver, que es el mismo tipo de estado arrastrado que #95 resuelve con el Stack. Y #100 (detalle de alerta) nacera ya dentro del Stack.Protected de RootStack, de modo que alerts quedaria como la unica pieza del flujo de alertas bajo (tabs). Depende de #95 mergeada.",
+    "acceptance_criteria": [
+      "#95 mergeada antes de empezar; la spec parte del RootStack y del Stack.Protected que #95 deja en src/app/_layout.tsx",
+      "El humano decide en el gate si reminders y alerts pierden la barra de pestanas, y la spec lo escribe con el porque",
+      "Si se mueven: se apilan sobre (tabs) con cabecera nativa y transicion de plataforma, se desmontan al volver, y deleteCandidate de reminders no sobrevive a la salida",
+      "El toque de notificacion (use-push-registration) no apila una segunda instancia de (tabs); se prueba en test",
+      "Candado de longitud del catalogo en language-provider.test.tsx con su delta declarado si entran claves nuevas",
+      "Gate humano: smoke en dev build de Android de las dos pantallas y del toque de notificacion"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/app/_layout.tsx",
+      "mobile-pet-tracker/src/app/(tabs)/reminders.tsx",
+      "mobile-pet-tracker/src/app/(tabs)/alerts.tsx",
+      "mobile-pet-tracker/src/screens/reminders/",
+      "mobile-pet-tracker/src/screens/alerts/"
     ]
   }
 ]

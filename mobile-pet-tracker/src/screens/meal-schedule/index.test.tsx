@@ -1,11 +1,9 @@
 import {
-  act,
   fireEvent,
   screen,
   waitFor,
   within,
 } from '@testing-library/react-native';
-import { router, useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import { useEffect } from 'react';
 
@@ -19,6 +17,7 @@ import {
 } from '../../api/nutrition';
 import { nutritionKeys } from '../../api/query-keys';
 import type { NutritionPlan, NutritionProfile } from '../../api/types';
+import { es } from '../../i18n/catalog';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
 import {
@@ -26,7 +25,6 @@ import {
   useSelectedPet,
 } from '../../providers/selected-pet-provider';
 import { MealScheduleScreen } from '.';
-import { TOUCH_SLOP } from '../../theme/touch-target';
 import { renderWithProviders } from '../../../test/render-with-providers';
 
 jest.mock('../../api/nutrition', () => ({
@@ -47,8 +45,7 @@ jest.mock('expo-router', () => {
 
   return {
     router: { push: jest.fn(), back: jest.fn() },
-    useFocusEffect: jest.fn(),
-    Redirect: ({ href }: { href: string }) => {
+      Redirect: ({ href }: { href: string }) => {
       const props = { testID: 'meal-schedule-redirect', href };
 
       return React.createElement(View, props);
@@ -69,7 +66,6 @@ jest.mock('reicon-react-native', () => {
     };
 
   return {
-    ArrowLeft: icon('meal-schedule-icon-arrow-left'),
     Clock: icon('meal-schedule-icon-clock'),
     ForkKnife: icon('meal-schedule-icon-fork-knife'),
   };
@@ -88,8 +84,6 @@ const mockGenerateNutritionPlan = jest.mocked(generateNutritionPlan);
 const mockGetNutritionPlan = jest.mocked(getNutritionPlan);
 const mockGetNutritionProfile = jest.mocked(getNutritionProfile);
 const mockUseAuth = jest.mocked(useAuth);
-const mockUseFocusEffect = jest.mocked(useFocusEffect);
-const mockRouter = jest.mocked(router);
 
 function makePlan(overrides: Partial<NutritionPlan> = {}): NutritionPlan {
   return {
@@ -153,16 +147,6 @@ async function renderMealSchedule(selected = true) {
   );
 }
 
-async function blurScreen() {
-  await act(() => {
-    mockUseFocusEffect.mock.calls.forEach(([effect]) => {
-      const cleanup = effect();
-
-      if (typeof cleanup === 'function') cleanup();
-    });
-  });
-}
-
 beforeEach(() => {
   jest.clearAllMocks();
   mockGenerateNutritionPlan.mockReset();
@@ -175,32 +159,6 @@ beforeEach(() => {
     signIn: jest.fn(),
     signOut: jest.fn(),
   } satisfies AuthContextValue);
-});
-
-describe('R4: el error de generación desaparece al perder el foco', () => {
-  it('limpia generateError tras el blur', async () => {
-    mockGetNutritionPlan.mockResolvedValue({ kind: 'not-found' });
-    mockGetNutritionProfile.mockResolvedValue({ kind: 'not-found' });
-    mockGenerateNutritionPlan.mockResolvedValue({
-      kind: 'unprocessable',
-      code: 'PET_WEIGHT_REQUIRED',
-    });
-
-    await renderMealSchedule();
-    await waitFor(() =>
-      expect(screen.getByTestId('generate-plan-button')).toBeVisible(),
-    );
-    await fireEvent.press(screen.getByTestId('generate-plan-button'));
-    await waitFor(() =>
-      expect(screen.getByTestId('generate-plan-error')).toBeVisible(),
-    );
-
-    await blurScreen();
-
-    await waitFor(() =>
-      expect(screen.queryByTestId('generate-plan-error')).toBeNull(),
-    );
-  });
 });
 
 describe('R7: meal schedule muestra horarios y perfil', () => {
@@ -216,7 +174,7 @@ describe('R7: meal schedule muestra horarios y perfil', () => {
     expect(mockGetNutritionProfile).not.toHaveBeenCalled();
   });
 
-  it('shows loading, safe padding, and navigates back', async () => {
+  it('shows loading and the metrics under the native header (#95 R6)', async () => {
     mockGetNutritionPlan.mockReturnValue(pending<NutritionPlanState>());
     mockGetNutritionProfile.mockReturnValue(pending<NutritionProfileState>());
 
@@ -225,7 +183,6 @@ describe('R7: meal schedule muestra horarios y perfil', () => {
     await waitFor(() =>
       expect(screen.getByTestId('screen-meal-schedule')).toBeVisible(),
     );
-    expect(screen.getByText('Horario de comidas')).toBeVisible();
     expect(screen.getByTestId('meal-schedule-loading')).toBeVisible();
     expect(screen.getByTestId('meal-schedule-summary-skeleton')).toHaveProp(
       'className',
@@ -245,16 +202,8 @@ describe('R7: meal schedule muestra horarios y perfil', () => {
     );
     expect(
       screen.getByTestId('screen-meal-schedule').props.contentContainerStyle,
-    ).toEqual(
-      expect.objectContaining({
-        padding: 24,
-        paddingTop: 52,
-        paddingBottom: 120,
-      }),
-    );
+    ).toEqual({ padding: 24, gap: 16, paddingBottom: 48 });
 
-    await fireEvent.press(screen.getByTestId('meal-schedule-back'));
-    expect(mockRouter.back).toHaveBeenCalledTimes(1);
   });
 
   it('renders the plan summary, ordered portions, and complete profile', async () => {
@@ -473,23 +422,6 @@ describe('R8: generar plan con degradación por kind', () => {
   });
 });
 
-describe('#61 R10: los controles táctiles declaran TOUCH_SLOP', () => {
-  it('el botón de volver llega a 44 pt sin crecer a la vista', async () => {
-    mockGetNutritionPlan.mockReturnValue(pending<NutritionPlanState>());
-    mockGetNutritionProfile.mockReturnValue(pending<NutritionProfileState>());
-
-    await renderMealSchedule();
-
-    await waitFor(() =>
-      expect(screen.getByTestId('meal-schedule-back')).toBeVisible(),
-    );
-
-    expect(screen.getByTestId('meal-schedule-back').props.hitSlop).toEqual(
-      TOUCH_SLOP,
-    );
-  });
-});
-
 describe('#62 R5: el título de card usa un único tratamiento', () => {
   it('aplica la receta canónica a Perfil nutricional', async () => {
     mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan() });
@@ -534,5 +466,17 @@ describe('#87 R11: MealScheduleContent lee por TanStack Query', () => {
     expect(queryClient.getQueryData(nutritionKeys.profile('pet-1'))).toEqual(
       profileState,
     );
+  });
+});
+
+describe('#95 R5: la pantalla no dibuja cabecera propia', () => {
+  it('retira el botón y el título del cuerpo', async () => {
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan() });
+    mockGetNutritionProfile.mockResolvedValue({ kind: 'ok', profile: makeProfile() });
+    await renderMealSchedule();
+    await waitFor(() => expect(screen.getByTestId('screen-meal-schedule')).toBeVisible());
+    await screen.findByTestId('meal-schedule-summary');
+    expect(screen.queryByTestId('meal-schedule-back')).toBeNull();
+    expect(screen.queryByText(es['mealSchedule.mealSchedule'])).toBeNull();
   });
 });

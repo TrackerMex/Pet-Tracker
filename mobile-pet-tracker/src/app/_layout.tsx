@@ -9,9 +9,11 @@ import { Uniwind } from 'uniwind';
 
 import { usePushRegistration } from '../hooks/use-push-registration';
 import { DEFAULT_LANGUAGE, type Language } from '../i18n/catalog';
-import { AuthProvider } from '../providers/auth-provider';
-import { LanguageProvider } from '../providers/language-provider';
+import { AuthProvider, useAuth } from '../providers/auth-provider';
+import { LanguageProvider, useTranslate } from '../providers/language-provider';
 import { QueryProvider } from '../providers/query-provider';
+import { SelectedPetProvider } from '../providers/selected-pet-provider';
+import { useThemeColors } from '../theme/use-theme-colors';
 import { getStoredLanguage } from '../utils/language-preference';
 import { getStoredTheme } from '../utils/theme-preference';
 
@@ -58,12 +60,44 @@ export default function RootLayout() {
         <LanguageProvider initial={initialLanguage}>
           <AuthProvider>
             <QueryProvider>
-              <PushRegistration />
-              <Stack screenOptions={{ headerShown: false }} />
+              <SelectedPetProvider>
+                <PushRegistration />
+                <RootStack />
+              </SelectedPetProvider>
             </QueryProvider>
           </AuthProvider>
         </LanguageProvider>
       </HeroUINativeProvider>
     </GestureHandlerRootView>
+  );
+}
+
+function RootStack() {
+  const { status } = useAuth();
+  const t = useTranslate();
+  const [background, foreground] = useThemeColors(['background', 'foreground']);
+  const headerOptions = {
+    headerShown: true,
+    headerStyle: { backgroundColor: background },
+    headerTintColor: foreground,
+    headerTitleStyle: { fontFamily: 'Inter-Bold' },
+    headerShadowVisible: false,
+  };
+
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="index" />
+      <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="(auth)" />
+      <Stack.Screen name="reset-password" />
+      <Stack.Protected guard={status === 'authenticated'}>
+        <Stack.Screen name="add-reminder" options={{ ...headerOptions, title: t('addReminder.addReminder') }} />
+        <Stack.Screen name="pets/add" options={{ ...headerOptions, title: t('addPet.addPet') }} />
+        <Stack.Screen name="pets/[petId]/docs" options={{ ...headerOptions, title: '' }} />
+        <Stack.Screen name="weight-log" options={{ ...headerOptions, title: t('weightLog.weightLog') }} />
+        <Stack.Screen name="meal-schedule" options={{ ...headerOptions, title: t('mealSchedule.mealSchedule') }} />
+        <Stack.Screen name="pairing" options={{ ...headerOptions, title: '' }} />
+      </Stack.Protected>
+    </Stack>
   );
 }

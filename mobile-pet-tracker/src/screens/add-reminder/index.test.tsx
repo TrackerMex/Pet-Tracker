@@ -1,12 +1,11 @@
 import {
-  act,
   fireEvent,
   render,
   screen,
   within,
   waitFor,
 } from '@testing-library/react-native';
-import { router, useFocusEffect } from 'expo-router';
+import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import { useEffect } from 'react';
 
@@ -15,6 +14,7 @@ import {
   type CreateReminderState,
 } from '../../api/reminders';
 import type { Reminder } from '../../api/types';
+import { es } from '../../i18n/catalog';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
 import {
@@ -40,14 +40,14 @@ jest.mock('expo-router', () => {
 
   return {
     router: { push: jest.fn(), back: jest.fn() },
-    useFocusEffect: jest.fn(),
-    Redirect: ({ href }: { href: string }) => {
+      Redirect: ({ href }: { href: string }) => {
       const props = { testID: 'add-reminder-redirect', href };
 
       return React.createElement(View, props);
     },
   };
 });
+
 
 jest.mock('@expo/ui', () => {
   const React = jest.requireActual<typeof import('react')>('react');
@@ -86,7 +86,6 @@ jest.mock('react-native-safe-area-context', () => ({
 
 const mockCreateReminder = jest.mocked(createReminder);
 const mockUseAuth = jest.mocked(useAuth);
-const mockUseFocusEffect = jest.mocked(useFocusEffect);
 const mockRouter = jest.mocked(router);
 
 function pending<T>(): Promise<T> {
@@ -126,16 +125,6 @@ async function pickDate(date: Date) {
   );
 }
 
-async function blurScreen() {
-  await act(() => {
-    mockUseFocusEffect.mock.calls.forEach(([effect]) => {
-      const cleanup = effect();
-
-      if (typeof cleanup === 'function') cleanup();
-    });
-  });
-}
-
 function makeReminder(overrides: Partial<Reminder> = {}): Reminder {
   return {
     id: 'reminder-1',
@@ -148,103 +137,6 @@ function makeReminder(overrides: Partial<Reminder> = {}): Reminder {
     ...overrides,
   };
 }
-
-describe('R1: el formulario vuelve a sus valores iniciales al perder el foco', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
-    mockUseAuth.mockReturnValue({
-      status: 'authenticated',
-      token: 'jwt-token',
-      signIn: jest.fn(),
-      signOut: jest.fn(),
-    } satisfies AuthContextValue);
-    mockCreateReminder.mockReturnValue(pending());
-  });
-
-  it('restaura los ocho valores visibles tras el blur', async () => {
-    const selectedTime = new Date(2030, 0, 2, 14, 45);
-    await renderAddReminder();
-    await waitFor(() => expect(screen.getByTestId('title-input')).toBeVisible());
-
-    await fireEvent.press(screen.getByTestId('type-chip-food'));
-    await fireEvent.changeText(screen.getByTestId('title-input'), 'Cena');
-    await pickDate(new Date(2030, 0, 2, 12));
-    await fireEvent.press(screen.getByTestId('time-field'));
-    await fireEvent(
-      screen.getByTestId('time-picker'),
-      'onValueChange',
-      { nativeEvent: { timestamp: selectedTime.getTime(), utcOffset: 0 } },
-      selectedTime,
-    );
-    await fireEvent.press(screen.getByTestId('advance-chip-0'));
-    await fireEvent.changeText(screen.getByTestId('title-input'), '');
-    await fireEvent.press(screen.getByTestId('add-reminder-submit'));
-    await fireEvent.press(screen.getByTestId('time-field'));
-    await fireEvent.press(screen.getByTestId('date-field'));
-
-    expect(screen.getByTestId('add-reminder-error')).toBeVisible();
-    expect(screen.getByTestId('date-picker')).toBeVisible();
-    expect(screen.getByTestId('time-picker')).toBeVisible();
-
-    await blurScreen();
-
-    await waitFor(() => {
-      expect(
-        screen.getByTestId('type-chip-vaccine').props.accessibilityState,
-      ).toEqual({ selected: true });
-      expect(screen.getByTestId('title-input').props.value).toBe('');
-      expect(screen.getByTestId('date-field')).toHaveTextContent(
-        'Elige una fecha',
-      );
-      expect(
-        screen.getByTestId('advance-chip-10080').props.accessibilityState,
-      ).toEqual({ selected: true });
-      expect(screen.queryByTestId('date-picker')).toBeNull();
-      expect(screen.queryByTestId('time-picker')).toBeNull();
-      expect(screen.queryByTestId('add-reminder-error')).toBeNull();
-    });
-
-    await fireEvent.press(screen.getByTestId('time-field'));
-    const picker = screen.getByTestId('time-picker');
-    expect((picker.props.value as Date).getHours()).toBe(9);
-    expect((picker.props.value as Date).getMinutes()).toBe(0);
-  });
-});
-
-describe('R7: el guarda de envío sobrevive al blur', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
-    mockUseAuth.mockReturnValue({
-      status: 'authenticated',
-      token: 'jwt-token',
-      signIn: jest.fn(),
-      signOut: jest.fn(),
-    } satisfies AuthContextValue);
-    mockCreateReminder.mockReturnValue(pending<CreateReminderState>());
-  });
-
-  it('mantiene deshabilitado el envío pendiente tras el blur', async () => {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(12, 0, 0, 0);
-    await renderAddReminder();
-    await waitFor(() => expect(screen.getByTestId('title-input')).toBeVisible());
-    await fireEvent.changeText(screen.getByTestId('title-input'), 'Rabies');
-    await pickDate(tomorrow);
-    await fireEvent.press(screen.getByTestId('add-reminder-submit'));
-    await waitFor(() =>
-      expect(screen.getByTestId('add-reminder-submit')).toBeDisabled(),
-    );
-
-    await blurScreen();
-
-    await waitFor(() =>
-      expect(screen.getByTestId('add-reminder-submit')).toBeDisabled(),
-    );
-  });
-});
 
 describe('R8: formulario de alta con chips y pickers', () => {
   beforeEach(() => {
@@ -268,23 +160,19 @@ describe('R8: formulario de alta con chips y pickers', () => {
     expect(screen.queryByTestId('screen-add-reminder')).toBeNull();
   });
 
-  it('uses uniform metrics and navigates back', async () => {
+  it('uses the metrics under the native header (#95 R6)', async () => {
     await renderAddReminder();
 
     await waitFor(() =>
       expect(screen.getByTestId('screen-add-reminder')).toBeVisible(),
     );
-    expect(screen.getByText('Agregar recordatorio')).toBeVisible();
     expect(
       screen.getByTestId('screen-add-reminder').props.contentContainerStyle,
     ).toEqual({
       padding: 24,
       gap: 16,
-      paddingTop: 52,
-      paddingBottom: 120,
+      paddingBottom: 48,
     });
-    await fireEvent.press(screen.getByTestId('add-reminder-back'));
-    expect(mockRouter.back).toHaveBeenCalledTimes(1);
   });
 
   it('renders all reminder types and selects vaccine by default', async () => {
@@ -551,7 +439,7 @@ describe('#61 R10: los controles táctiles declaran TOUCH_SLOP', () => {
     mockCreateReminder.mockReturnValue(pending());
   });
 
-  it.each(['add-reminder-back', 'type-chip-vaccine', 'advance-chip-1440'])(
+  it.each(['type-chip-vaccine', 'advance-chip-1440'])(
     '%s llega a 44 pt sin crecer a la vista',
     async (testID) => {
       await renderAddReminder();
@@ -595,5 +483,17 @@ describe('#62 R12: el placeholder del formulario sale del tema', () => {
     expect(
       (await screen.findByTestId('title-input')).props.placeholderTextColor,
     ).toBe(muted);
+  });
+});
+
+describe('#95 R5: la pantalla no dibuja cabecera propia', () => {
+  it('retira el botón y el título del cuerpo', async () => {
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
+    mockCreateReminder.mockReturnValue(pending());
+    await renderAddReminder();
+    await waitFor(() => expect(screen.getByTestId('screen-add-reminder')).toBeVisible());
+    expect(screen.queryByTestId('add-reminder-back')).toBeNull();
+    expect(screen.queryByText(es['addReminder.addReminder'])).toBeNull();
   });
 });

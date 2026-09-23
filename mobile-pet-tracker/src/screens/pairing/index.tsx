@@ -11,7 +11,6 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ArrowLeft } from 'reicon-react-native';
 
 import { claimDevice, releaseDevice } from '../../api/devices';
 import { listPets, type PetsState } from '../../api/pets';
@@ -28,7 +27,6 @@ import {
 } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
-import { useThemeColors } from '../../theme/use-theme-colors';
 import { connectivityLabelKey } from '../../utils/device-connectivity';
 
 function isPetsError(state: PetsState): boolean {
@@ -69,7 +67,6 @@ export function PairingScreen() {
   const t = useTranslate();
   const { selectedPetId, selectPet } = useSelectedPet();
   const insets = useSafeAreaInsets();
-  const [foreground] = useThemeColors(['foreground']);
   const pets = useQuery({
     queryKey: petKeys.list(),
     queryFn: () => listPets(baseUrl, token ?? ''),
@@ -114,10 +111,6 @@ export function PairingScreen() {
     useCallback(() => {
       refetchTracking();
     }, [refetchTracking]),
-  );
-
-  useFocusEffect(
-    useCallback(() => () => resetPairingState(), [resetPairingState]),
   );
 
   useEffect(() => {
@@ -181,7 +174,7 @@ export function PairingScreen() {
     setPhase('idle');
     setReadyDevice(null);
     if (destination === 'map') {
-      router.push('/map');
+      router.dismissTo('/map');
       return;
     }
     router.back();
@@ -249,20 +242,9 @@ export function PairingScreen() {
       contentContainerStyle={{
         padding: 24,
         gap: 16,
-        paddingTop: insets.top + 12,
-        paddingBottom: insets.bottom + 96,
+        paddingBottom: insets.bottom + 24,
       }}
     >
-      <Pressable
-        accessibilityLabel={t('pairing.back')}
-        accessibilityRole="button"
-        testID="pairing-back"
-        className="size-11 items-center justify-center rounded-full bg-default"
-        onPress={() => router.back()}
-      >
-        <ArrowLeft size={20} color={foreground} />
-      </Pressable>
-
       {pets.data === undefined ? (
         <View testID="pairing-skeleton" className="gap-3">
           <Skeleton

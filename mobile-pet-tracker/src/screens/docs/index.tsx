@@ -1,9 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import { router } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ArrowLeft } from 'reicon-react-native';
 
 import { listPetDocs, type PetDocument } from '../../api/media';
 import { getPet } from '../../api/pets';
@@ -12,8 +10,6 @@ import { Card } from '../../components/card';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
-import { TOUCH_SLOP } from '../../theme/touch-target';
-import { useThemeColors } from '../../theme/use-theme-colors';
 import {
   CATEGORY_SLOTS,
   documentCategory,
@@ -48,7 +44,6 @@ export function DocsScreen({ petId }: { petId: string }) {
   const { token } = useAuth();
   const t = useTranslate();
   const insets = useSafeAreaInsets();
-  const [foreground] = useThemeColors(['foreground']);
   const pet = useQuery({
     queryKey: petKeys.detail(petId),
     queryFn: () => getPet(baseUrl, token ?? '', petId),
@@ -67,33 +62,20 @@ export function DocsScreen({ petId }: { petId: string }) {
       contentContainerStyle={{
         padding: 24,
         gap: 16,
-        paddingTop: insets.top + 12,
-        paddingBottom: insets.bottom + 96,
+        paddingBottom: insets.bottom + 24,
       }}
     >
-      <View className="flex-row items-center gap-3">
-        <Pressable
-          accessibilityLabel={t('docs.backToProfile')}
-          accessibilityRole="button"
-          testID="docs-back"
-          hitSlop={TOUCH_SLOP}
-          className="size-10 items-center justify-center rounded-full bg-default"
-          onPress={() => router.back()}
-        >
-          <ArrowLeft size={20} color={foreground} />
-        </Pressable>
-        <View className="flex-1 gap-1">
-          <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
-            {t('docs.documentsOf')}
+      <View className="gap-1">
+        <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
+          {t('docs.documentsOf')}
+        </Text>
+        {pet.data === undefined ? (
+          <Skeleton testID="docs-header-skeleton" className="h-8 w-36 rounded-xl" />
+        ) : (
+          <Text className="text-2xl font-black text-foreground">
+            {petName ?? t('docs.pet')}
           </Text>
-          {pet.data === undefined ? (
-            <Skeleton testID="docs-header-skeleton" className="h-8 w-36 rounded-xl" />
-          ) : (
-            <Text className="text-2xl font-black text-foreground">
-              {petName ?? t('docs.pet')}
-            </Text>
-          )}
-        </View>
+        )}
       </View>
 
       {docs.data === undefined ? (

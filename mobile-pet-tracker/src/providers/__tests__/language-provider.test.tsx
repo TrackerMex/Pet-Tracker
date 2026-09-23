@@ -47,19 +47,33 @@ function LocaleProbe() {
 }
 
 describe('#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y parámetros', () => {
-  // 259 en `303fc19` + 1 de `home.walks` (#67 R7b) + 16 de #68 + 14 de #78 + 2 de #73 + 1 de #90 + 4 de #98.
+  // 259 en `303fc19` + 1 de `home.walks` (#67 R7b) + 16 de #68 + 14 de #78 + 2 de #73 + 1 de #90 + 4 de #98 - 6 de #95 R5 (las seis claves de volver).
   it('mantiene la base más las claves de #68 y los mismos marcadores en ambos idiomas', () => {
     const englishKeys = Object.keys(en).sort();
     const spanishKeys = Object.keys(es).sort();
 
     expect(englishKeys).toHaveLength(
-      260 + 16 + 1 + 4 + 7 + 14 + 2 + 1 + 4,
+      260 + 16 + 1 + 4 + 7 + 14 + 2 + 1 + 4 - 6,
     );
     expect(spanishKeys).toEqual(englishKeys);
     for (const key of englishKeys) {
       expect(markerNames(es[key as keyof typeof es])).toEqual(
         markerNames(en[key as keyof typeof en]),
       );
+    }
+  });
+
+  it('#95 R5: el catálogo ya no trae las seis claves de volver', () => {
+    const removed = [
+      ['addReminder', 'ToReminders'],
+      ['addPet', 'ToProfile'],
+      ['docs', 'ToProfile'],
+      ['weightLog', 'ToHealth'],
+      ['mealSchedule', 'ToFood'],
+      ['pairing', ''],
+    ].map(([namespace, suffix]) => `${namespace}.back${suffix}`);
+    for (const language of [en, es]) {
+      for (const key of removed) expect(Object.keys(language)).not.toContain(key);
     }
   });
 

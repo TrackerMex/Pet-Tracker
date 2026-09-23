@@ -129,15 +129,15 @@ describe('#65 R4: Map resuelve su copy por clave', () => {
 });
 
 describe('#65 R5: Health resuelve su copy por clave', () => {
-  it('resuelve las 33 ocurrencias normativas', () => {
-    expect(R5_HEALTH).toHaveLength(32 + 1); // +1 #90 R5
+  it('resuelve las 32 ocurrencias normativas', () => {
+    expect(R5_HEALTH).toHaveLength(32 + 1 + 1 - 2); // +1 #90 R5, +1 #95 R4, -2 #95 R5
     checkUses(R5_HEALTH);
   });
 });
 
 describe('#65 R6: Food resuelve su copy por clave', () => {
-  it('resuelve las 38 ocurrencias normativas', () => {
-    expect(R6_FOOD).toHaveLength(35 + 3);
+  it('resuelve las 37 ocurrencias normativas', () => {
+    expect(R6_FOOD).toHaveLength(35 + 3 + 1 - 2); // +1 #95 R4, -2 #95 R5
     checkUses(R6_FOOD);
   });
 });
@@ -162,29 +162,29 @@ describe('#98 R9: el copy de comidas servidas queda registrado', () => {
 });
 
 describe('#65 R7: Profile resuelve su copy por clave', () => {
-  it('resuelve las 35 ocurrencias normativas', () => {
-    expect(R7_PROFILE).toHaveLength(35);
+  it('resuelve las 34 ocurrencias normativas', () => {
+    expect(R7_PROFILE).toHaveLength(35 - 1); // #95 R5
     checkUses(R7_PROFILE);
   });
 });
 
 describe('#65 R8: Recordatorios resuelve su copy por clave', () => {
-  it('resuelve las 50 ocurrencias normativas', () => {
-    expect(R8_REMINDERS).toHaveLength(50);
+  it('resuelve las 49 ocurrencias normativas', () => {
+    expect(R8_REMINDERS).toHaveLength(50 + 1 - 2); // +1 #95 R4, -2 #95 R5
     checkUses(R8_REMINDERS);
   });
 });
 
 describe('#65 R9: el alta de mascota resuelve su copy por clave', () => {
-  it('resuelve las 42 ocurrencias normativas', () => {
-    expect(R9_ADD_PET).toHaveLength(42);
+  it('resuelve las 41 ocurrencias normativas', () => {
+    expect(R9_ADD_PET).toHaveLength(42 + 1 - 2); // +1 #95 R4, -2 #95 R5
     checkUses(R9_ADD_PET);
   });
 });
 
 describe('#65 R10: el emparejado del collar resuelve su copy por clave', () => {
   it('resuelve las ocurrencias normativas y el delta de conectividad', () => {
-    expect(R10_PAIRING).toHaveLength(42 + 2 + 1 + 4); // +4 #94 E1: la tabla del Mapa comparte el util
+    expect(R10_PAIRING).toHaveLength(42 + 2 + 1 + 4 - 1); // +4 #94 E1: la tabla del Mapa comparte el util; -1 #95 R5
     checkUses(R10_PAIRING);
   });
 });
@@ -454,7 +454,7 @@ describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () =>
   });
 
   it('no deja ningún valor fijo del catálogo como literal entero en las pantallas', () => {
-    expect(SCREEN_FILES).toHaveLength(19 + 2 + 1);
+    expect(SCREEN_FILES).toHaveLength(19 + 2 + 1 + 1); // #95 R4
 
     for (const file of SCREEN_FILES) {
       const literals = wholeLiterals(readFileSync(join(SOURCE_ROOT, file), 'utf8'));

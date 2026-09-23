@@ -7,6 +7,8 @@ import {
   useState,
 } from 'react';
 
+import { useAuth } from './auth-provider';
+
 export interface SelectedPetContextValue {
   selectedPetId: string | null;
   selectPet: (id: string) => void;
@@ -17,8 +19,16 @@ const SelectedPetContext = createContext<SelectedPetContextValue | undefined>(
 );
 
 export function SelectedPetProvider({ children }: { children: ReactNode }) {
-  const [selectedPetId, setSelectedPetId] = useState<string | null>(null);
-  const selectPet = useCallback((id: string) => setSelectedPetId(id), []);
+  const { token } = useAuth();
+  const [selection, setSelection] = useState<{ token: string | null; petId: string | null }>({
+    token: null,
+    petId: null,
+  });
+  if (selection.token !== token) {
+    setSelection({ token, petId: null });
+  }
+  const selectedPetId = selection.token === token ? selection.petId : null;
+  const selectPet = useCallback((id: string) => setSelection({ token, petId: id }), [token]);
   const value = useMemo(
     () => ({ selectedPetId, selectPet }),
     [selectPet, selectedPetId],

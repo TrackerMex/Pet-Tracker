@@ -22,7 +22,7 @@ import {
   type PetTrackingState,
 } from '../../api/subscriptions';
 import type { PetProfile } from '../../api/types';
-import PairingRoute from '../../app/(tabs)/pairing';
+import PairingRoute from '../../app/pairing';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
 import { SelectedPetProvider } from '../../providers/selected-pet-provider';
@@ -46,7 +46,7 @@ jest.mock('../../providers/auth-provider', () => ({
 }));
 
 jest.mock('expo-router', () => ({
-  router: { push: jest.fn(), back: jest.fn() },
+  router: { push: jest.fn(), back: jest.fn(), dismissTo: jest.fn() },
   useFocusEffect: jest.fn(),
   useIsFocused: () => true,
 }));
@@ -127,66 +127,6 @@ async function renderPairing() {
   return renderWithProviders(<PairingRoute />, { wrapper: PairingWrapper });
 }
 
-async function blurPairing() {
-  await act(async () => {
-    mockUseFocusEffect.mock.calls.forEach(([focusCallback]) => {
-      const cleanup = focusCallback();
-      if (typeof cleanup === 'function') cleanup();
-    });
-    await Promise.resolve();
-  });
-}
-
-describe('R5: el estado local de pairing se limpia al perder el foco', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    process.env.EXPO_PUBLIC_API_URL = apiUrl;
-    mockUseAuth.mockReturnValue({
-      status: 'authenticated',
-      token: 'jwt-token',
-      signIn: jest.fn(),
-      signOut: jest.fn(),
-    } satisfies AuthContextValue);
-    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
-  });
-
-  it('limpia la vista ready y el código tras el blur', async () => {
-    mockClaimDevice.mockResolvedValue({ kind: 'ok', device: makeDevice() });
-    await renderPairing();
-    await fireEvent.changeText(
-      await screen.findByTestId('activation-code-input'),
-      'ACT-READY',
-    );
-    await fireEvent.press(screen.getByTestId('pairing-submit'));
-    expect(await screen.findByTestId('pairing-ready')).toBeVisible();
-
-    await blurPairing();
-
-    await waitFor(() => {
-      expect(screen.queryByTestId('pairing-ready')).toBeNull();
-      expect(screen.getByTestId('activation-code-input').props.value).toBe('');
-      expect(screen.queryByTestId('pairing-error')).toBeNull();
-    });
-  });
-
-  it('limpia actionError tras el blur', async () => {
-    mockClaimDevice.mockResolvedValue({ kind: 'invalid' });
-    await renderPairing();
-    await fireEvent.changeText(
-      await screen.findByTestId('activation-code-input'),
-      'ACT-INVALID',
-    );
-    await fireEvent.press(screen.getByTestId('pairing-submit'));
-    expect(await screen.findByTestId('pairing-error')).toBeVisible();
-
-    await blurPairing();
-
-    await waitFor(() => {
-      expect(screen.queryByTestId('pairing-error')).toBeNull();
-    });
-  });
-});
-
 describe('R6: el estado local de pairing se limpia al cambiar de mascota', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -239,45 +179,7 @@ describe('R6: el estado local de pairing se limpia al cambiar de mascota', () =>
   });
 });
 
-describe('R7: el guarda de envío sobrevive al blur', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    process.env.EXPO_PUBLIC_API_URL = apiUrl;
-    mockUseAuth.mockReturnValue({
-      status: 'authenticated',
-      token: 'jwt-token',
-      signIn: jest.fn(),
-      signOut: jest.fn(),
-    } satisfies AuthContextValue);
-    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
-    mockClaimDevice.mockReturnValue(pending<ClaimDeviceState>());
-  });
-
-  it('mantiene deshabilitado el claim pendiente tras el blur', async () => {
-    await renderPairing();
-    await fireEvent.changeText(
-      await screen.findByTestId('activation-code-input'),
-      'ACT-PENDING',
-    );
-    await fireEvent.press(screen.getByTestId('pairing-submit'));
-    await waitFor(() =>
-      expect(screen.getByTestId('pairing-submit')).toBeDisabled(),
-    );
-
-    await blurPairing();
-    await fireEvent.changeText(
-      screen.getByTestId('activation-code-input'),
-      'ACT-AGAIN',
-    );
-
-    await waitFor(() =>
-      expect(screen.getByTestId('pairing-submit')).toBeDisabled(),
-    );
-    expect(mockClaimDevice).toHaveBeenCalledTimes(1);
-  });
-});
-
-describe('R4: /pairing monta dentro de (tabs) con selector de mascota y estados de carga', () => {
+describe('R4: /pairing monta en el Stack raíz con selector de mascota y estados de carga', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     process.env.EXPO_PUBLIC_API_URL = apiUrl;
@@ -290,7 +192,7 @@ describe('R4: /pairing monta dentro de (tabs) con selector de mascota y estados 
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
   });
 
-  it('renders the real route with uniform metrics and a dimensioned skeleton', async () => {
+  it('renders the real route with uniform metrics and a dimensioned skeleton (#95 R6)', async () => {
     mockListPets.mockReturnValue(pending<PetsState>());
 
     await renderPairing();
@@ -299,21 +201,11 @@ describe('R4: /pairing monta dentro de (tabs) con selector de mascota y estados 
     expect(screen.getByTestId('screen-pairing').props.contentContainerStyle).toEqual({
       padding: 24,
       gap: 16,
-      paddingTop: 52,
-      paddingBottom: 120,
+      paddingBottom: 48,
     });
     expect(screen.getByTestId('pairing-skeleton')).toBeVisible();
     expect(screen.getAllByTestId(/^pairing-content-skeleton-/)).toHaveLength(3);
     expect(mockListPets).toHaveBeenCalledWith(apiUrl, 'jwt-token');
-  });
-
-  it('goes back from the screen header', async () => {
-    mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
-
-    await renderPairing();
-    await fireEvent.press(screen.getByTestId('pairing-back'));
-
-    expect(mockRouter.back).toHaveBeenCalledTimes(1);
   });
 
   it.each([
@@ -623,7 +515,7 @@ describe('R7: tras el 201 muestra "El collar está listo" con el collar y sus CT
 
     await fireEvent.press(screen.getByTestId('ready-map'));
 
-    expect(mockRouter.push).toHaveBeenCalledWith('/map');
+    expect(mockRouter.dismissTo).toHaveBeenCalledWith('/map');
     expect(screen.queryByTestId('pairing-ready')).toBeNull();
     expect(screen.getByTestId('activation-code-input')).toBeVisible();
   });
@@ -636,6 +528,16 @@ describe('R7: tras el 201 muestra "El collar está listo" con el collar y sus CT
     expect(mockRouter.back).toHaveBeenCalledTimes(1);
     expect(screen.queryByTestId('pairing-ready')).toBeNull();
     expect(screen.getByTestId('activation-code-input')).toBeVisible();
+  });
+
+  describe('#95 R8: ver en el mapa desapila pairing', () => {
+    it('usa dismissTo una vez y no apila otra instancia de tabs', async () => {
+      await renderReady();
+      await fireEvent.press(screen.getByTestId('ready-map'));
+      expect(mockRouter.dismissTo).toHaveBeenCalledTimes(1);
+      expect(mockRouter.dismissTo).toHaveBeenCalledWith('/map');
+      expect(mockRouter.push).not.toHaveBeenCalled();
+    });
   });
 });
 
@@ -1008,5 +910,16 @@ describe('#87 R15: PairingScreen lee por TanStack Query', () => {
     expect(queryClient.getQueryData(deviceKeys.tracking('pet-1'))).toEqual(
       trackingState,
     );
+  });
+});
+
+describe('#95 R5: la pantalla no dibuja cabecera propia', () => {
+  it('retira el botón de volver del cuerpo', async () => {
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn() });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    await renderPairing();
+    await waitFor(() => expect(screen.getByTestId('screen-pairing')).toBeVisible());
+    expect(screen.queryByTestId(['pairing', 'back'].join('-'))).toBeNull();
   });
 });
