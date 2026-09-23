@@ -13,4 +13,6 @@
 - init.sh de base sobre a833f153: exit 0 (unit 170/1298, movil 80/1426, e2e 27+3 skip). Log en scratchpad.
 - spec_author: spec en spec_ready (85c37fb3).
 - Espejo Notion: https://app.notion.com/p/3e46115a9b278122852beaf03a9e0428 (En revision, 2026-09-23).
-- Firma via Notion: Aprobado, page_last_edited_at 2026-09-23T18:42:29.873Z; P1 = A, A13 y A14 aprobadas. Siguiente: handoff a Codex.
+- Firma via Notion: Aprobado, page_last_edited_at 2026-09-23T18:42:29.873Z; P1 = A, A13 y A14 aprobadas.
+- Firma f5a491ee. Notion Rol actual = Implementer. #114 in_progress.
+- Handoff: progress/handoff_mobile-reminders-alerts-to-stack.md. Esperando a Codex.
