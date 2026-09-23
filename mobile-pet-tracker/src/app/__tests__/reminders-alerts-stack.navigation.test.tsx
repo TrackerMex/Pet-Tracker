@@ -10,7 +10,7 @@ import AuthLayout from '../(auth)/_layout';
 import TabsLayout from '../(tabs)/_layout';
 import RootLayout from '../_layout';
 
-let mockAuthState = { status: 'authenticated', token: 'token-a' };
+let mockAuthState: { status: 'authenticated' | 'unauthenticated'; token: string | null } = { status: 'authenticated', token: 'token-a' };
 const mockAuthListeners = new Set<() => void>();
 let mockRemindersMounts = 0;
 let mockAlertsMounts = 0;

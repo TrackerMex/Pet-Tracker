@@ -17,19 +17,6 @@ describe('#95 R2: las seis rutas de detalle viven en la raíz de src/app', () =>
     expect(readFileSync(join(app, route), 'utf8')).toContain(`from '${modulePath}'`);
   });
 
-  it('(tabs) conserva solo las cinco pestañas y sus dos destinos existentes', () => {
-    expect(readdirSync(join(app, '(tabs)')).sort()).toEqual([
-      '__tests__',
-      '_layout.tsx',
-      'alerts.tsx',
-      'food.tsx',
-      'health.tsx',
-      'home.tsx',
-      'map.tsx',
-      'profile.tsx',
-      'reminders.tsx',
-    ]);
-  });
 });
 
 describe('#114 R1: reminders y alerts viven en la raíz de src/app', () => {

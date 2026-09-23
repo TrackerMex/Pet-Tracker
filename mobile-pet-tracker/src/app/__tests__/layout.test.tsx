@@ -322,7 +322,8 @@ describe('#95 R2: el layout raíz monta el provider y el Stack de detalle', () =
     if (!isValidElement<{ guard: boolean; children: ReactNode }>(protectedGroup)) return;
     expect(protectedGroup.type).toBe(Stack.Protected);
     expect(protectedGroup.props.guard).toBe(true);
-    expect(Children.toArray(protectedGroup.props.children).map((child) =>
+    expect(Children.toArray(protectedGroup.props.children).slice(0, 6).map((child) =>
+      // #114 R1: reminders y alerts van detrás
       isValidElement<{ name: string }>(child) ? [child.type, child.props.name] : null,
     )).toEqual([
       [Stack.Screen, 'add-reminder'],
