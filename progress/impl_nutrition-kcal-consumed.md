@@ -19,15 +19,23 @@
 
 - Rojo `pnpm test:e2e -- meals.e2e-spec` → `exit=1`, 1 suite failed, 2 failed / 16 passed: R2 `toMatchObject` esperaba `kcalConsumedToday: 0` y faltaba; R9 de #83 esperaba la misma clave en `Object.keys` y faltaba. Los otros tests pasan.
 - Rojo `pnpm test:e2e -- nutrition.e2e-spec` → `exit=1`, 1 suite failed, 1 failed / 22 passed: R24 de #17 esperaba `kcalConsumedToday: 0` en `toEqual` y faltaba. Los otros tests pasan.
+- Verde compartido R2-R4: `pnpm test:e2e -- meals.e2e-spec` → `exit=0`, 1 suite, 22 tests; `pnpm test:e2e -- nutrition.e2e-spec` → `exit=0`, 1 suite, 23 tests. R2, R9 y R24 pasan.
 
 ## R3
 
 - Rojo `pnpm test:e2e -- meals.e2e-spec` → `exit=1`, 4 failed / 16 passed: los 2 casos R3 fallan por `kcalConsumedToday` ausente (`530` hoy en zona extrema; `0` ayer). `servedOn` y `servedToday` sí coinciden con el día civil del owner. Persisten los rojos previstos de R2 y R9.
+- Verde compartido: ambos casos pasan dentro de los 22/22 de `meals.e2e-spec`.
 
 ## R4
 
 - Rojo `pnpm test:e2e -- meals.e2e-spec` → `exit=1`, 6 failed / 16 passed: los 2 casos R4 fallan por `kcalConsumedToday` ausente (`530` antes del cambio; `0` con franjas nuevas). Las inserciones del plan vigente y `servedToday` funcionan. Persisten los rojos previstos de R2, R3 y R9.
+- Verde compartido: ambos casos pasan dentro de los 22/22 de `meals.e2e-spec`.
 
 ## Cierre
 
-Pendiente.
+- `pnpm test` → `exit=0`, 170 suites, 1298 tests (+3 respecto a 1295).
+- `pnpm exec tsc --noEmit` → `exit=0`.
+- `pnpm lint` → `exit=0`.
+- E2E filtrados: `meals.e2e-spec` 22/22 (+5); `nutrition.e2e-spec` 23/23 (sin cambio). Mismas suites. Cada e2e se lanzó con `pgrep -af 'init\.sh|test:e2e|jest-e2e' | grep -v pgrep` vacío.
+- No se corrió `./init.sh` completo por indicación del leader (LocalStack compartido); lo hará el reviewer.
+- Commits: pendiente de completar tras el verde y la trazabilidad final.

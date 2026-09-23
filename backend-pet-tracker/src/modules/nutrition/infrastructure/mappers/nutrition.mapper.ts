@@ -35,6 +35,7 @@ export interface NutritionPlanResponse {
 
 export interface NutritionPlanTodayResponse extends NutritionPlanResponse {
   servedToday: string[];
+  kcalConsumedToday: number;
 }
 
 export interface MealServingResponse {
@@ -83,8 +84,9 @@ export function toNutritionPlanResponse(
 export function toNutritionPlanTodayResponse({
   plan,
   servedToday,
+  kcalConsumedToday,
 }: NutritionPlanToday): NutritionPlanTodayResponse {
-  return { ...toNutritionPlanResponse(plan), servedToday };
+  return { ...toNutritionPlanResponse(plan), servedToday, kcalConsumedToday };
 }
 
 export function toMealServingResponse(

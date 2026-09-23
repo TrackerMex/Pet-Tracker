@@ -1,5 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { servedInPlan } from '@/modules/nutrition/domain/entities/meal-serving.entity';
+import {
+  kcalConsumed,
+  servedInPlan,
+} from '@/modules/nutrition/domain/entities/meal-serving.entity';
 import type { NutritionPlan } from '@/modules/nutrition/domain/entities/nutrition-plan.entity';
 import { NutritionPlanNotFoundError } from '@/modules/nutrition/domain/errors/nutrition.errors';
 import { MEAL_SERVING_REPOSITORY } from '@/modules/nutrition/domain/repositories/meal-serving.repository';
@@ -13,6 +16,7 @@ import type { PetRepository } from '@/modules/pets/domain/repositories/pet.repos
 export interface NutritionPlanToday {
   plan: NutritionPlan;
   servedToday: string[];
+  kcalConsumedToday: number;
 }
 
 @Injectable()
@@ -30,6 +34,15 @@ export class GetNutritionPlanUseCase {
     if (!plan) throw new NutritionPlanNotFoundError(petId);
     const day = await ownerLocalDay(this.pets, petId, now);
     const served = await this.meals.listTimesServedOn(petId, day);
-    return { plan, servedToday: servedInPlan(plan.mealTimes, served) };
+    const servedToday = servedInPlan(plan.mealTimes, served);
+    return {
+      plan,
+      servedToday,
+      kcalConsumedToday: kcalConsumed(
+        plan.merKcal,
+        plan.mealsPerDay,
+        servedToday.length,
+      ),
+    };
   }
 }
