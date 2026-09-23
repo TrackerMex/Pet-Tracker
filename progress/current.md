@@ -17,3 +17,4 @@
 - Firma f5a491ee. Notion Rol actual = Implementer. #114 in_progress.
 - Handoff: progress/handoff_mobile-reminders-alerts-to-stack.md. Esperando a Codex.
 - #113 aprobada por su reviewer (ronda 2, movil 80/1443); PR abierta. Al mergear: traer main a esta branch con merge (no rebase) tras Codex; posibles conflictos en ui-copy-table.ts, ui-language.test.ts y specs/mobile-ui-language/design.md §2. Catalogo: #114 aporta 0, no recuenta. Cierre esperado sobre main con #113: 82/1452.
+- Review #114: APROBADO sin bloqueantes (progress/review_mobile-reminders-alerts-to-stack.md), sobre 349c1a41 con init.sh del leader exit 0 (movil 82/1435). Obs. 1 (candado tautologico en el test de R3) registrada en #100; Obs. 6 (appllama excluida por el handoff) llevada a leader.md §Catalogo. Siguiente: smoke humano.
