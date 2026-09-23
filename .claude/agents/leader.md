@@ -303,6 +303,8 @@ El implementador por defecto es Codex CLI en terminal aparte (ver `CLAUDE.md`
 y paras.
 
 ```
+Worktree: <ruta absoluta>   <- PRIMERA LINEA, antes que nada
+Antes de tocar nada, confirma en el reporte: `pwd` y `git branch --show-current`
 Feature: <nombre>, branch: feature/<id>-<nombre>
 Spec aprobada: specs/<feature>/requirements.md (status: approved)
 Lee también: specs/<feature>/design.md y tasks.md
@@ -324,9 +326,38 @@ Reglas críticas:
     implementación. Un único commit con todo incumple C4 de CHECKPOINTS.md
   - Actualizar specs/<feature>/traceability.md tras cada commit
   - No crear recursos AWS reales ni correr cdk deploy: eso lo hace el humano
+  - NO son tuyos, no los toques: progress/history.md, progress/current.md,
+    STATUS.md y el campo `status` de feature_list.json. Son artefactos de
+    cierre del leader y los escribe él DESPUÉS del veredicto del reviewer.
+    Tu sitio para contarlo todo es progress/impl_<feature>.md
+  - NO abras la PR ni la edites: la abre el leader al cerrar, con el
+    veredicto en la mano
 Criterios de aceptación: <los R-ids de requirements.md>
 Al terminar: escribir resultado en progress/impl_<feature>.md
 ```
+
+### Por qué esas dos líneas están ahí (#108, 2026-09-23)
+
+Las dos salieron de la misma feature, y ninguna causó pérdida — las dos costaron
+diagnóstico:
+
+- **La ruta del worktree.** Se le dio `Pet-Tracker-wt-108` y trabajó en
+  `Pet-Tracker-wt-ui`, cambiándolo de branch por el camino y dejando el otro en
+  detached. La ruta iba en el cuerpo del prompt, no en la primera línea, y no se
+  le pidió confirmarla.
+- **Los artefactos de cierre.** Escribió `progress/history.md` y vació
+  `progress/current.md`. Su texto era honesto y decía que no marcaba `done`,
+  pero la bitácora se escribe **con el veredicto del reviewer en la mano**, no
+  antes, y salió en el conflicto del merge siguiente. El handoff le prohibía
+  marcar `done`, mergear y abrir PR — **no** la bitácora. La sesión paralela
+  confirmó tener el mismo hueco.
+
+También abrió la PR por su cuenta, con su propio título y cuerpo, que el leader
+tuvo que reescribir.
+
+**La lección de fondo es la de B5 (#55):** si algo cambia cómo se escriben los
+handoffs, no vale dejarlo en un mensaje ni en el handoff de una feature — va
+aquí, que es lo que se lee cada vez.
 
 Codex ya lee `AGENTS.md` de forma nativa, así que no repitas ahí el mapa del
 repo. Lo que sí debe ir explícito es todo lo que dependa de **esta** feature.
