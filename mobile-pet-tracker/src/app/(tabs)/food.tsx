@@ -214,7 +214,17 @@ export default function FoodScreen() {
                     <ForkKnife size={26} color={accent} />
                   </View>
                 </View>
-                <View testID="food-plan-progress" className="gap-1.5">
+                <View
+                  testID="food-plan-progress"
+                  className="gap-1.5"
+                  accessible
+                  accessibilityRole="progressbar"
+                  accessibilityLabel={t('food.kcalConsumedOfTarget', {
+                    consumed: loadedPlan.kcalConsumedToday,
+                    target: loadedPlan.merKcal,
+                  })}
+                  accessibilityValue={{ min: 0, max: 100, now: kcalPct }}
+                >
                   <View className="flex-row items-center justify-between">
                     <Text
                       testID="food-plan-consumed"
