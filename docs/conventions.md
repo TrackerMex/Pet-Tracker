@@ -225,18 +225,23 @@ de defendido: la defensa (exigir que el siguiente carácter sea `<` de elemento)
 sería otro símbolo que vigilar. Si algún día un candado de estos vigila algo que
 también aparezca como texto en la pantalla, ese cálculo cambia.
 
-El patrón vive en tres candados. Localízalos por contenido y no por número de
+El patrón vive en estos candados. Localízalos por contenido y no por número de
 línea, porque los números se desplazan con cada merge:
 
 - `mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts`, la
   implementación de referencia: `grep -n "lastIndexOf('<', use.index)"`.
 - `mobile-pet-tracker/src/app/(tabs)/__tests__/food.test.tsx`, el
   `meal-toggle` (#109): `grep -n "lastIndexOf('<', anchor)"`.
-- `mobile-pet-tracker/src/screens/home/index.test.tsx`, el
-  `reminders-see-all` (#112): el mismo grep.
+- `mobile-pet-tracker/src/screens/home/index.test.tsx`, la campana
+  `home-alerts-bell` (#121) y el `reminders-see-all` (#112): el mismo grep.
 
 No queda ningún recorte de `<Tag` a `</Tag>` por migrar:
 `grep -rn "lastIndexOf('<[A-Z]" mobile-pet-tracker/src` no devuelve nada.
+
+Tampoco vale aseverar la receta contra el fichero entero. Si otro elemento del
+mismo fichero la repite, esa copia da el verde aunque el elemento vigilado la
+pierda: así pasaba con la campana hasta #121. Ancla en el propio tag y recorta
+como arriba.
 
 ### Esperas sobre el árbol renderizado
 
