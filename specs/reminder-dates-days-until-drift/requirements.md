@@ -332,3 +332,159 @@ prueba en otro momento.
 ## Aprobación
 
 - [x] Spec aprobada por humano (fecha: 2026-09-23, vía Notion)
+
+---
+
+## Enmienda E1 — R5 (mes y año del día civil), R6 (umbrales de la pantalla) y filas heredadas a componentes locales
+
+> Escrita el 2026-09-24 sobre la spec aprobada (firma `2665ffd3`), tras el
+> **RECHAZO** de la primera revisión (`progress/review_reminder-dates-days-until-drift.md`,
+> commit `158fbf43`, sobre la punta de Codex `5b1cb8e9`). No toca D1-D4, ni
+> R1-R4, ni sus tests, ni la firma original: todo eso sigue firmado y su
+> trazabilidad sigue valiendo. Añade **R5** y **R6** y mueve un candado
+> heredado. Su casilla va **sin marcar**: el humano reabre el gate solo para
+> esta enmienda.
+
+### El hecho medido (H1-H4 del reviewer)
+
+El código de producción en `5b1cb8e9` es **correcto** (da `1` del 30 de
+septiembre al 1 de octubre y del 31 de diciembre al 1 de enero, en `UTC` y en
+`America/Mexico_City`). El hueco está en las tablas que esta spec firmó:
+todas sus fechas caen entre el 9 y el 20 de septiembre, así que ningún test
+observa el **mes** ni el **año** del día civil. Estas mutaciones de
+`daysUntil` dejan verde la suite móvil:
+
+| Id | Mutación en `src/utils/reminder-dates.ts` | Efecto en producción |
+|---|---|---|
+| U8 | `return to.getDate() - from.getDate();` | del 30-sep al 1-oct da `-29`: un recordatorio de mañana sale de «Esta semana» y pierde «¡Próximo!» cada fin de mes. **Suite entera verde: 82/82 suites, 1467/1467 tests** |
+| U9 | `getMonth()` → `0` | `-29` a fin de mes |
+| U10 | `getFullYear()` → `2026` | `-364` a fin de año |
+| U15 | `getMonth()` → `getMonth() + 1` | cuenta mal cruzando meses de distinta longitud |
+| U11 | solo `getMonth` → `getUTCMonth` | en Ciudad de México, el último día del mes tras las 18:00, `-29` |
+| U12 | solo `getFullYear` → `getUTCFullYear` | en Ciudad de México, el 31 de diciembre tras las 18:00, `-364` |
+
+Y en la pantalla (anterior a #84, bajo en severidad): `days <= 7` → `days <= 8`
+en la píldora y `days <= 10` → `days <= 11` en el badge sobreviven, porque
+ningún test tiene un recordatorio a +8 ni a +11 días (H3).
+
+Además (H4), las tres filas heredadas `zero` / `positive` / `negative` de
+`describe('R4: reminder-dates combina y cuenta días'` usan instantes con `Z`;
+con la semántica de día civil, `negative` recibe `-2` en un host UTC−9
+(`Pacific/Gambier`). Ningún host del proyecto está en esa zona, pero
+contradice «siguen dando `0` y `-1`» de §Candados.
+
+### Decisión: E1 añade **R5** y **R6**, no reescribe R1, R2 ni R3
+
+R1-R3 están firmados, la implementación los cumple al pie y sus pares
+rojo→verde están en traceability. Añadir filas a sus tablas sería modificar
+requisitos aprobados (C6) y dejaría sin sentido sus rojos versionados. R5 y
+R6 aseveran **otras propiedades** en `describe` propios. Los tests de R1-R3 no
+se tocan.
+
+### R5 — El día civil incluye el mes y el año
+
+*(requisito de verificación sobre código ya correcto: su rojo es una
+**mutación de producción** versionada en el commit rojo y revertida en el
+verde, CHECKPOINTS.md C4 quinto punto; nunca una mutación del doble)*
+
+**WHEN** `from` y `to` caen en meses o años civiles locales distintos,
+**THE SYSTEM SHALL** contar los días civiles locales que los separan a través
+del cambio de mes o de año, usando el año, el mes y el día locales de cada
+fecha.
+
+- **Test**: `src/utils/reminder-dates.test.ts`, al final del fichero,
+  `describe('#84 R5: el día civil incluye el mes y el año (Enmienda E1)'`
+  → **un** `it.each` de 3 filas `[título, from, to, esperado]` con título
+  `'%s'` y cuerpo `expect(daysUntil(from, to)).toBe(esperado)` (`toBe`, no
+  `toEqual`).
+- Filas 1 y 2 con **componentes locales** (`new Date(año, mesIndex, día, hora, minuto)`).
+  Fila 3 con dos dobles de Ciudad de México construidos por un helper
+  **propio de este `describe`** con la forma del `skewed` de R2 (mismo
+  fichero), pero que recibe **año, mes y día locales** además del instante
+  ISO: `getFullYear`, `getMonth`, `getDate` devuelven los locales dados;
+  `getUTCFullYear`, `getUTCMonth`, `getUTCDate` y `getTime` salen del
+  instante ISO; `as unknown as Date`. El helper de R2 no se toca.
+
+| # | Título de la fila (`%s`) | `from` | `to` | Esperado |
+|---|---|---|---|---|
+| 1 | `fin de mes: 30 de septiembre 20:00 → 1 de octubre 09:00 = 1` | `new Date(2026, 8, 30, 20, 0)` | `new Date(2026, 9, 1, 9, 0)` | `1` |
+| 2 | `fin de año: 31 de diciembre 23:30 → 1 de enero 00:30 = 1` | `new Date(2026, 11, 31, 23, 30)` | `new Date(2027, 0, 1, 0, 30)` | `1` |
+| 3 | `Ciudad de México, 31 de diciembre 20:00 → 1 de enero 09:00 = 1` | doble: locales 2026, 11, 31; instante `'2027-01-01T02:00:00.000Z'` | doble: locales 2027, 0, 1; instante `'2027-01-01T15:00:00.000Z'` | `1` |
+
+- **Rojo versionado**: U8 (`return to.getDate() - from.getDate();` como
+  cuerpo entero de `daysUntil`). Pone rojas las 3 filas (`-29`, `-30`,
+  `-30`); el resto de `reminder-dates.test.ts` sigue verde. El verde lo
+  revierte: `git diff <verde de R3> -- src/utils/reminder-dates.ts` vacío.
+- **Mutaciones que deben dejarlo rojo** (sondas del reviewer, sin versionar;
+  medidas por él en `5b1cb8e9` con estas mismas filas): U8 (3 filas), U9 (3),
+  U10 (2), U11 (fila 3, recibe `335`), U12 (fila 3, recibe `-364`), U15 (1).
+- **Zonas**: medido por el leader el 2026-09-24 en las 419 zonas IANA del
+  Node del VPS (más `UTC`): las filas 1 y 2 se construyen sin caer en un
+  hueco de cambio de hora, dan `1` con la fórmula de D1 y U8 las pone rojas
+  en todas.
+
+### R6 — Los umbrales de la píldora (7) y del badge (10) no se aflojan
+
+*(requisito de verificación sobre código ya correcto; rojo = mutación de
+producción versionada en `src/screens/reminders/index.tsx`, revertida en el
+verde; C4 quinto punto)*
+
+**WHILE** la pantalla de recordatorios muestra recordatorios `scheduled`,
+**THE SYSTEM SHALL** dejar fuera de la píldora «Esta semana» un recordatorio a
+8 días, darle el badge «¡Próximo!», y no dar el badge a uno a 11 días.
+
+- **Test**: `src/screens/reminders/index.test.tsx`, `describe` nuevo **al
+  final del fichero**:
+  `describe('#84 R6: los umbrales de la píldora y del badge no se aflojan (Enmienda E1)'`,
+  con el **mismo arnés** que el `describe` de R3 (su `beforeEach` y
+  `afterEach`: relojes falsos, hora del sistema `new Date(2026, 8, 10, 8, 0)`),
+  y **un** `it`:
+  `it('08:00 del 10 de septiembre: +8 días queda fuera de la semana con badge y +11 días queda sin badge')`.
+  Recordatorios `scheduled` vía `makeReminder({ id, dueAt })`:
+  `plus-eight` → `new Date(2026, 8, 18, 9, 0).toISOString()` y
+  `plus-eleven` → `new Date(2026, 8, 21, 9, 0).toISOString()`.
+- **Aserciones**: `within(getByTestId('reminder-row-plus-eight')).getByText('· en 8 días')`;
+  `getByTestId('reminder-upcoming-plus-eight')` visible;
+  `within(getByTestId('reminder-row-plus-eleven')).getByText('· en 11 días')`;
+  `queryByTestId('reminder-upcoming-plus-eleven')` es `null`;
+  `within(getByTestId('pill-week')).getByText('0')`.
+- **Rojo versionado** en `src/screens/reminders/index.tsx`, en el mismo commit
+  que el test: en la píldora `days <= 7` → `days <= 8` **y** en el badge
+  (`{!inactive && days >= 0 && days <= 10 ? (`) `days <= 10` → `days <= 11`.
+  El verde revierte las dos: `git diff origin/main -- mobile-pet-tracker/src/screens/reminders/index.tsx`
+  **vacío** al final (D1 sigue valiendo: la pantalla no cambia).
+- **Mutaciones que deben dejarlo rojo por separado** (sondas del reviewer):
+  solo la de la píldora (S8) y solo la del badge (S9).
+
+### Candado heredado que se mueve con E1 (H4)
+
+En el **commit rojo de R5**, las filas de
+`it.each(…)('returns a %s integer'` de
+`describe('R4: reminder-dates combina y cuenta días'` pasan de instantes con
+`Z` a componentes locales, **con los mismos esperados** (`0`, `1`, `-1`):
+
+| Ancla actual | Pasa a |
+|---|---|
+| `const from = new Date('2026-08-24T09:00:00.000Z');` | `const from = new Date(2026, 7, 24, 9, 0, 0);` |
+| `['zero', new Date('2026-08-24T09:00:00.000Z'), 0],` | `['zero', new Date(2026, 7, 24, 9, 0, 0), 0],` |
+| `['positive', new Date('2026-08-25T09:00:01.000Z'), 1],` | `['positive', new Date(2026, 7, 25, 9, 0, 1), 1],` |
+| `['negative', new Date('2026-08-23T08:59:59.000Z'), -1],` | `['negative', new Date(2026, 7, 23, 8, 59, 59), -1],` |
+
+Medido por el leader en las 419 zonas: dan `0`, `1` y `-1` en todas. Con U8
+siguen verdes (no es su trabajo cazarla: lo hace R5).
+
+### Recuentos con E1
+
+| Fichero | Delta total de #84 sobre la base medida al arrancar |
+|---|---|
+| `src/utils/reminder-dates.test.ts` | **+16** (R1 10 + R2 3 + R5 3) |
+| `src/screens/reminders/index.test.tsx` | **+3** (R3 2 + R6 1) |
+| Suite móvil | **+19 tests, +0 suites**: con la base de Codex en esta branch (82 / 1452), **82 / 1471** |
+| `language-provider.test.tsx` y `ui-copy-table.ts` | **+0** (ninguna clave nueva) |
+
+El grep de cierre de tasks.md sigue valiendo (`Date.UTC(` ×2; `Math.ceil`,
+`getUTC`, `getTime` ×0 en `reminder-dates.ts`).
+
+### Aprobación de la Enmienda E1
+
+- [ ] Enmienda E1 aprobada por humano (fecha: ____) ← gate obligatorio antes de la ronda 2 de Codex

@@ -146,3 +146,69 @@ Todo **sin pipe** (el código de salida de un pipe es el del último comando):
 - [ ] `git diff --stat origin/main...HEAD -- mobile-pet-tracker` → exactamente
       los tres ficheros de [[design]] §Archivos afectados.
 - [ ] Rellenar [[traceability]] con los seis hashes y las mutaciones.
+
+---
+
+## Enmienda E1 — ronda 2 (tras el rechazo `158fbf43`)
+
+> Solo tras la firma humana de la Enmienda E1 ([[requirements]] §Enmienda E1).
+> Producción queda **idéntica** a `5b1cb8e9`: las dos mutaciones de esta ronda
+> se versionan en sus rojos y se revierten en sus verdes. Actualizar
+> [[traceability]] **tras cada commit**, no al final (H5 de la ronda 1).
+
+### Antes de empezar (ronda 2)
+
+- [ ] `git log --oneline -1` → `review(#84): veredicto del reviewer` o
+      posterior del leader; `git merge-base --is-ancestor 5b1cb8e9 HEAD; echo $?` → `0`.
+- [ ] Medir sin pipe: `bunx jest --runTestsByPath src/utils/reminder-dates.test.ts src/screens/reminders/index.test.tsx; echo "exit=$?"`
+      → `exit=0`, 17 y 28 tests (la base de esta ronda).
+
+### R5 — el día civil incluye el mes y el año
+
+- [ ] **(1) Commit rojo** `test(reminder-dates): lock month and year of the civil day (R5)`.
+  - `src/utils/reminder-dates.test.ts`:
+    - las filas heredadas de `'returns a %s integer'` y su `const from` a
+      componentes locales, tabla de [[requirements]] §Enmienda E1 «Candado
+      heredado», literal;
+    - `describe('#84 R5: el día civil incluye el mes y el año (Enmienda E1)'`
+      al final, con su helper propio de dobles (año, mes, día locales +
+      instante ISO) y **un** `it.each` de 3 filas, títulos y fechas literales
+      de la tabla de R5.
+  - **Mutación versionada** en `src/utils/reminder-dates.ts`: cuerpo de
+    `daysUntil` = `return to.getDate() - from.getDate();`.
+  Rojo esperado: las 3 filas de R5, por aserción (`-29`, `-30`, `-30`); los
+  otros 17 tests del fichero verdes.
+- [ ] **(2) Commit verde** `feat(reminder-dates): revert the R5 probe mutation, month and year locked (R5)`.
+  `git diff 720817f8 -- src/utils/reminder-dates.ts; echo "exit=$?"` → vacío.
+
+### R6 — umbrales de la píldora y del badge
+
+- [ ] **(1) Commit rojo** `test(reminders): lock the week pill and badge thresholds (R6)`.
+  - `src/screens/reminders/index.test.tsx`, al final:
+    `describe('#84 R6: los umbrales de la píldora y del badge no se aflojan (Enmienda E1)'`
+    con el `beforeEach`/`afterEach` del `describe` de R3 y el `it` literal de
+    [[requirements]] R6 (recordatorios `plus-eight` y `plus-eleven`, cinco
+    aserciones).
+  - **Mutación versionada** en `src/screens/reminders/index.tsx`: en la
+    píldora `days <= 7` → `days <= 8`; en la línea
+    `{!inactive && days >= 0 && days <= 10 ? (`, `days <= 10` → `days <= 11`.
+  Rojo esperado: el `it` de R6, por aserción; los 28 tests previos verdes.
+- [ ] **(2) Commit verde** `feat(reminders): revert the R6 probe mutation, thresholds locked (R6)`.
+  `git diff origin/main -- src/screens/reminders/index.tsx; echo "exit=$?"` → vacío.
+
+### Sondas (no se commitean; cada una roja y restaurada con `git diff` vacío)
+
+- R5: U9 (`getMonth()` → `0`), U10 (`getFullYear()` → `2026`), U11 (solo
+  `getMonth` → `getUTCMonth`), U12 (solo `getFullYear` → `getUTCFullYear`),
+  U15 (`getMonth() + 1`).
+- R6: solo la píldora `<= 8` (S8) y solo el badge `<= 11` (S9).
+
+### Cierre (ronda 2)
+
+- [ ] `bunx jest --runTestsByPath src/utils/reminder-dates.test.ts src/screens/reminders/index.test.tsx src/screens/home/format.test.ts; echo "exit=$?"`
+      → `exit=0`; 20, 29 y 13 tests.
+- [ ] `bun run test; echo "exit=$?"` → `exit=0`, **82 suites / 1471 tests**
+      (+19 sobre 82 / 1452).
+- [ ] `bunx tsc --noEmit; echo "exit=$?"` y `bun run lint; echo "exit=$?"` → `exit=0`.
+- [ ] `git diff 5b1cb8e9 HEAD -- src/utils/reminder-dates.ts src/screens/reminders/index.tsx; echo "exit=$?"` → vacío.
+- [ ] Grep de cierre de la ronda 1, igual.
