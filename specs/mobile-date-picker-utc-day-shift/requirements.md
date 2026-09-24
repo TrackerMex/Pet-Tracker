@@ -449,7 +449,7 @@ si H + 1 h pasa de medianoche, hacerla otro día.
 6. Borrar los tres recordatorios de prueba. La mascota `Smoke 123` puede
    quedarse.
 
-- [ ] Prueba de humo de R8 superada por el humano (fecha: ____, dispositivo: ____)
+- [X] Prueba de humo de R8 superada por el humano (fecha: 24-09-2026, dispositivo: CPH2709)
 
 ---
 
