@@ -870,3 +870,42 @@ describe('#84 R3: recordatorios cuenta días de calendario en la píldora, el ba
     expect(within(screen.getByTestId('pill-week')).getByText('0')).toBeVisible();
   });
 });
+
+describe('#84 R6: los umbrales de la píldora y del badge no se aflojan (Enmienda E1)', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date(2026, 8, 10, 8, 0));
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('08:00 del 10 de septiembre: +8 días queda fuera de la semana con badge y +11 días queda sin badge', async () => {
+    mockListReminders.mockResolvedValue({
+      kind: 'ok',
+      reminders: [
+        makeReminder({ id: 'plus-eight', dueAt: new Date(2026, 8, 18, 9, 0).toISOString() }),
+        makeReminder({ id: 'plus-eleven', dueAt: new Date(2026, 8, 21, 9, 0).toISOString() }),
+      ],
+    });
+
+    await renderReminders();
+    await waitFor(() => expect(screen.getByTestId('reminder-row-plus-eleven')).toBeVisible());
+
+    expect(within(screen.getByTestId('reminder-row-plus-eight')).getByText('· en 8 días')).toBeVisible();
+    expect(screen.getByTestId('reminder-upcoming-plus-eight')).toBeVisible();
+    expect(within(screen.getByTestId('reminder-row-plus-eleven')).getByText('· en 11 días')).toBeVisible();
+    expect(screen.queryByTestId('reminder-upcoming-plus-eleven')).toBeNull();
+    expect(within(screen.getByTestId('pill-week')).getByText('0')).toBeVisible();
+  });
+});
