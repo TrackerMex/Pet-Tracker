@@ -3330,6 +3330,11 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
         'utf8',
       );
       const anchor = source.indexOf('testID="reminders-see-all"');
+      // #112 R1: own opening tag of reminders-see-all, from `<` to `<`. Ending
+      // at `</Pressable>` let a nested Pressable lend it a foreign style. A `<`
+      // inside the tag shrinks the slice and fails red; a string child placed
+      // before the first element child still lands in the slice and can pass
+      // green. Both limits: docs/conventions.md, opening-tag slices section.
       const block = source.slice(
         source.lastIndexOf('<', anchor),
         source.indexOf('<', anchor),
