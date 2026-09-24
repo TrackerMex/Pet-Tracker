@@ -220,7 +220,7 @@ describe('#78 R10: la campana vive en el hero y lleva al centro de alertas', () 
     expect(mockRouter.push).toHaveBeenCalledWith('/alerts');
   });
 
-  it('#121 R1: usa la ruta real sin cast Href y conserva el feedback de pulsado, acotado a su tag de apertura', () => {
+  it('#121 R1: usa la ruta real sin cast Href y conserva el feedback de pulsado, acotado a su tag de apertura, con ancla única (#122 R1)', () => {
     const source = readFileSync(
       join(process.cwd(), 'src/screens/home/index.tsx'),
       'utf8',
@@ -237,6 +237,7 @@ describe('#78 R10: la campana vive en el hero y lleva al centro de alertas', () 
 
     expect(appRoutes(join(process.cwd(), 'src/app'))).toContain('/alerts');
     expect(source).not.toContain("'/alerts' as Href");
+    expect(source.lastIndexOf('testID="home-alerts-bell"')).toBe(anchor);
     expect(block).toMatch(
       /style=\{\(\{ pressed \}\) => \(\{ opacity: pressed \? 0\.8 : 1 \}\)\}/,
     );
@@ -3321,7 +3322,7 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
       expect(quickActions).not.toContain("'/reminders'");
     });
 
-    it('#112 R1: muestra feedback visual al pulsar el enlace, acotado a su tag de apertura', async () => {
+    it('#112 R1: muestra feedback visual al pulsar el enlace, acotado a su tag de apertura, con ancla única (#122 R1)', async () => {
       const opacityOf = (style: unknown): unknown => {
         const entries = (Array.isArray(style) ? style.flat(Infinity) : [style])
           .filter(
@@ -3350,6 +3351,7 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
       );
 
       expect(opacityOf(link.props.style)).toBe(1);
+      expect(source.lastIndexOf('testID="reminders-see-all"')).toBe(anchor);
       expect(block).toMatch(
         /style=\{\(\{ pressed \}\) => \(\{ opacity: pressed \? 0\.8 : 1 \}\)\}/,
       );

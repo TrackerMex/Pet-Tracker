@@ -806,7 +806,7 @@ describe('#107 R5: el botón por franja conserva su feedback de pulsado', () => 
     expect(opacityOf(toggle.props.style)).toBe(1);
   });
 
-  it('#109 R1: acota el bloque de fuente al tag de apertura propio del meal-toggle', () => {
+  it('#109 R1: acota el bloque de fuente al tag de apertura propio del meal-toggle, con ancla única (#122 R1)', () => {
     const source = readFileSync('src/app/(tabs)/food.tsx', 'utf8');
     const anchor = source.indexOf('testID={`meal-toggle-${index}`}');
     // This is the meal-toggle's own opening tag, from `<` to `<`: ending at
@@ -818,6 +818,7 @@ describe('#107 R5: el botón por franja conserva su feedback de pulsado', () => 
       source.indexOf('<', anchor),
     );
 
+    expect(source.lastIndexOf('testID={`meal-toggle-${index}`}')).toBe(anchor);
     expect(block).toMatch(
       /style=\{\(\{ pressed \}\) => \(\{\s*opacity: pressed \? 0\.8 : 1,?\s*\}\)\}/,
     );
