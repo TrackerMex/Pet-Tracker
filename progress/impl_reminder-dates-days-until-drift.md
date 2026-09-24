@@ -33,3 +33,38 @@
 - `git diff --stat origin/main...HEAD -- mobile-pet-tracker` → exactamente `src/utils/reminder-dates.ts`, `src/utils/reminder-dates.test.ts`, `src/screens/reminders/index.test.tsx` (3 ficheros, 107 inserciones y 2 borrados).
 - Trazabilidad R1–R3 completa con los seis hashes. R4 continúa pendiente de smoke Android y firma humana; no se marcó su casilla.
 - Sin cambios backend, claves de catálogo, dependencias, pantalla de producción ni Home. Sin push ni PR, según el handoff.
+
+## Ronda 2
+
+- `pwd`: `/home/claude/sites/Pet-Tracker-wt-backend`
+- `git branch --show-current`: `feature/84-reminder-dates-days-until-drift`
+- Enmienda E1 firmada por humano (`7024a55b`); R4 sigue siendo del humano. Ninguna skill Expo cargada: lógica y tests sin UI nueva.
+- `git log --oneline -1`: `02c70791 chore(harness): #84 firma de E1 y handoff de la ronda 2`; `5b1cb8e9` y `7024a55b` son ancestros de HEAD (`exit=0` ambos). Árbol inicial limpio.
+- Base de ronda 2, medida sin pipe: `reminder-dates.test.ts` 17/17, `reminders/index.test.tsx` 28/28, comando conjunto 2 suites/45 tests, suite móvil 82 suites/1467 tests y snapshot 1/1; todos `exit=0`.
+
+### TDD y sondas
+
+- R5 rojo `45908678` — `test(reminder-dates): lock month and year of the civil day (R5)`: `bunx jest --runTestsByPath src/utils/reminder-dates.test.ts; echo "exit=$?"` → `exit=1`, 3 fallos R5 por aserción (`-29`, `-30`, `-30` frente a `1`), otros 17 verdes. El mismo commit mueve el candado heredado a fechas locales y versiona U8 (`to.getDate() - from.getDate()`).
+- R5 verde `c759482b` — `feat(reminder-dates): revert the R5 probe mutation, month and year locked (R5)`: test util → `exit=0`, 20/20. `git diff 720817f8 -- mobile-pet-tracker/src/utils/reminder-dates.ts; echo "exit=$?"` → diff vacío, `exit=0`.
+- R6 rojo `32313d9f` — `test(reminders): lock the week pill and badge thresholds (R6)`: test de pantalla → `exit=1`, 1 fallo R6 por aserción (`reminder-upcoming-plus-eleven` presente al esperar `null`); los 28 tests previos verdes. Mutación versionada de los dos umbrales (`<= 8`, `<= 11`).
+- R6 verde `3e530242` — `feat(reminders): revert the R6 probe mutation, thresholds locked (R6)`: test de pantalla → `exit=0`, 29/29. `git diff origin/main -- mobile-pet-tracker/src/screens/reminders/index.tsx; echo "exit=$?"` → diff vacío, `exit=0`.
+- Sondas R5 sin commit, cada una seguida de `git diff 3e530242 -- mobile-pet-tracker/src/utils/reminder-dates.ts; echo "exit=$?"` → diff vacío, `exit=0`:
+  - U9 (`getMonth()` → `0`): `exit=1`, fallan las 3 filas R5; 3 failed/17 passed.
+  - U10 (`getFullYear()` → `2026`): `exit=1`, fallan las filas R5 de fin de año y Ciudad de México; 2 failed/18 passed.
+  - U11 (solo `getMonth()` → `getUTCMonth()`): `exit=1`, falla la fila R5 de Ciudad de México; 1 failed/19 passed.
+  - U12 (solo `getFullYear()` → `getUTCFullYear()`): `exit=1`, falla la fila R5 de Ciudad de México; 1 failed/19 passed.
+  - U15 (`getMonth() + 1`): `exit=1`, falla la fila R5 de fin de mes; 1 failed/19 passed.
+- Sondas R6 sin commit, cada una seguida de `git diff 3e530242 -- mobile-pet-tracker/src/screens/reminders/index.tsx; echo "exit=$?"` → diff vacío, `exit=0`:
+  - S8 (solo píldora `<= 8`): `exit=1`, el `it` de R6 no encuentra `0` en `pill-week`; 1 failed/28 passed.
+  - S9 (solo badge `<= 11`): `exit=1`, el `it` de R6 encuentra `reminder-upcoming-plus-eleven` al esperar `null`; 1 failed/28 passed.
+
+### Cierre de ronda 2
+
+- `bunx jest --runTestsByPath src/utils/reminder-dates.test.ts src/screens/reminders/index.test.tsx src/screens/home/format.test.ts; echo "exit=$?"` → `exit=0`, 3 suites/62 tests: 20 util, 29 pantalla, 13 Home.
+- `bun run test; echo "exit=$?"` → `exit=0`, 82 suites/1471 tests, snapshot 1/1; +4 tests/+0 suites sobre la base de ronda 2. El guard C8 pasó dentro de la suite.
+- `bunx tsc --noEmit; echo "exit=$?"` → `exit=0`; `bun run lint; echo "exit=$?"` → `exit=0`.
+- `git diff 5b1cb8e9 HEAD -- mobile-pet-tracker/src/utils/reminder-dates.ts mobile-pet-tracker/src/screens/reminders/index.tsx; echo "exit=$?"` → diff vacío, `exit=0`. La producción queda igual que en la ronda 1.
+- `grep -c "Date.UTC(" src/utils/reminder-dates.ts` → `2`; `grep -c "Math.ceil\|getUTC\|getTime" src/utils/reminder-dates.ts` → `0` (grep sale `1` por ausencia de coincidencias).
+- Diff móvil de la ronda 2 frente a `5b1cb8e9`: solo `src/utils/reminder-dates.test.ts` y `src/screens/reminders/index.test.tsx`. R1–R3 y el helper de R2 intactos; ningún cambio backend, catálogo, dependencias ni TZ.
+- Cuatro commits TDD de la ronda 2, en orden: `45908678` R5 rojo, `c759482b` R5 verde, `32313d9f` R6 rojo, `3e530242` R6 verde. Traceability se actualizó en el árbol inmediatamente después de cada commit; R5, R6 y el candado heredado tienen hash. R4 sigue pendiente de firma humana.
+- No se ejecutó `./init.sh`, ni se hizo rebase, merge, push o PR.
