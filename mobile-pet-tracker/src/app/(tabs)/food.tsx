@@ -306,7 +306,6 @@ export default function FoodScreen() {
                           {portionGrams} g
                         </Text>
                       </View>
-                      {false && <Pressable testID={`meal-toggle-${index}`} style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })} />}
                       <Pressable
                         testID={`meal-toggle-${index}`}
                         accessibilityRole="button"
@@ -317,7 +316,9 @@ export default function FoodScreen() {
                         }
                         disabled={pendingMealTime === mealTime}
                         className="min-h-11 justify-center"
-                        style={{ opacity: 1 }}
+                        style={({ pressed }) => ({
+                          opacity: pressed ? 0.8 : 1,
+                        })}
                         onPress={() => void toggleMeal(mealTime, served)}
                       >
                         <Text

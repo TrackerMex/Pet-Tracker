@@ -329,7 +329,6 @@ export function HomeScreen() {
                 onSelect={selectPet}
               />
             </View>
-            {false && <Pressable testID="home-alerts-bell" style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })} />}
             <Pressable
               testID="home-alerts-bell"
               accessibilityRole="button"
@@ -339,7 +338,7 @@ export function HomeScreen() {
                   : t('home.alertsBell')
               }
               className="size-11 items-center justify-center rounded-full"
-              style={{ opacity: 1 }}
+              style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
               onPress={() => router.push('/alerts')}
             >
               <Bell size={24} color={muted} />
@@ -647,12 +646,11 @@ export function HomeScreen() {
               >
                 {t('home.reminders')}
               </Text>
-              {false && <Pressable testID="reminders-see-all" style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })} />}
               <Pressable
                 testID="reminders-see-all"
                 accessibilityRole="button"
                 className="min-h-11 justify-center"
-                style={{ opacity: 1 }}
+                style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
                 onPress={() => router.push('/reminders')}
               >
                 <Text className="text-xs font-semibold text-accent-strong">
