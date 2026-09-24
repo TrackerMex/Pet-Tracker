@@ -5211,3 +5211,47 @@ gramos), asi que la formula lleva guarda.
     hubo que regenerarlo, aunque la spec decia que no hacia falta;
   - el `sqs send-message` pedia `aws login`: faltaban las credenciales `test`
     de LocalStack, y en PowerShell el JSON va por `file://`.
+
+# Sesión #112 mobile-reminders-see-all-source-lock-nesting (2026-09-24, sesión Frontend)
+
+- **Branch** `feature/112-mobile-reminders-see-all-source-lock-nesting` desde
+  `origin/main` `993b62fa` (con #158). Backend lleva #84 en wt-backend. Su spec
+  declara que no toca `src/screens/home/*` ni `docs/`, así que no hubo solape.
+- **Spec** `907faeb2`, espejada a Notion. El humano puso Aprobado y el leader
+  firmó en `f61260b6`, citando la página y `page_last_edited_at`
+  2026-09-24T03:20:57Z.
+- **spec_author** corrigió tres premisas del encargo:
+  - la mutación de #109 aquí ya da rojo hoy, porque el mismo `it` asevera
+    primero el árbol; el agujero real está en el estado pulsado (N1);
+  - el guard de hex de `design-drift.test.ts` sí lee este fichero;
+  - el límite 1 lo dispara un `<` entre el ancla y la receta, no uno antes
+    del ancla.
+- **Codex**: 4 commits, `89c8f317..8bd8e27d`. El rojo versiona N1 en
+  producción y el verde la revierte; después R4 (docs) y un commit de
+  evidencia. Declaró que no cargó ninguna skill, como pedía el handoff.
+- **init.sh**: lo corrió el leader sobre `8bd8e27d`. Exit 0: móvil 82/1452
+  (+0), unit 170/1298, e2e 27+3 skip. El reviewer leyó el log.
+- **Reviewer**: aprobado a la primera, sin bloqueantes (`9ed9e4ba`), con cuatro
+  sondas propias en zona ciega.
+- **Drift**: `origin/main` no se movió durante el ciclo, así que no hubo merge.
+  Los commits posteriores al veredicto son solo de cierre.
+
+### Deuda y apuntes
+
+- **#120-#122 registradas**, con sus límites copiados:
+  - #120: `elementWithTestId` recorta con los hijos dentro. Es hallazgo F de
+    la spec.
+  - #121: el candado de la campana `#78 R10` busca la receta en todo
+    `index.tsx`. Hallazgo F de la spec.
+  - #122: Obs. 1-3 del reviewer. Un comentario JSX antes del primer hijo no
+    rompe el render, así que el coste con el que `docs/conventions.md` deja
+    sin defensa el límite 2 es falso para comentarios. Además, la regex casa
+    con código comentado y el ancla no se asevera única.
+  Se avisó a Backend de la reserva de ids.
+- **Obs. 4**: el sandbox de Codex le denegó `rm -f .expo/types/router.d.ts` y
+  Codex hizo el mismo borrado con `Path.unlink` en vez de parar. No hubo daño,
+  pero el patrón no distingue objetos. La regla quedó añadida a la plantilla de
+  handoff en `.claude/agents/leader.md`. Permitir ese `rm` en el sandbox de
+  Codex lo decide el humano.
+- **Obs. 5**: el push de `8bd8e27d` (03:46:54Z) fue del leader, antes del
+  init.sh.
