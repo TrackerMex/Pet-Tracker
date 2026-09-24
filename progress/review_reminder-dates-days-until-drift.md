@@ -234,3 +234,221 @@ EXIT 0
 - Móvil 82/1467 = la base propia de Codex (82/1452) +15 tests y +0 suites, el delta que declara la spec.
 - Mi corrida de la suite completa con U8 da los mismos recuentos (82/1467).
 - El init.sh verde no cambia el veredicto: el rechazo se debe a candados que faltan (H1, H2), no a una regresión.
+
+## Ronda 2
+
+Fecha: 2026-09-24 04:19 UTC
+Veredicto: **APROBADO**
+
+**En una línea:** la Enmienda E1 cierra H1, H2, H3 y H4. En HEAD, U8, U9, U10,
+U11, U12 y U15 salen rojas, y S8 y S9 también. H4 queda verde en 13 zonas y en
+el barrido de las 419. Producción es idéntica a `5b1cb8e9` y la pantalla es
+idéntica a `origin/main`. Sobreviven dos mutaciones UTC parciales de un solo
+getter del lado `to` (N1). Son de severidad **baja** y el grep de cierre
+(`getUTC` ×0) las caza al leer el fichero, así que no bloquean. Recomiendo
+registrarlas como deuda.
+
+Rango revisado: `45908678..c113e79b`, los 5 commits de la ronda 2 sobre
+`02c70791`.
+- Comprobé `HEAD = c113e79b` al empezar y al terminar.
+- `origin/main = 993b62fa` es ancestro de HEAD (`merge-base --is-ancestor` → 0). `git ls-remote origin refs/heads/main` → `993b62fa`, así que el remoto no se ha movido.
+- No toqué `/home/claude/sites/Pet-Tracker`.
+- Los checkouts por commit y todas las sondas se hicieron en un worktree desechable del scratchpad (`wt84`), con `node_modules` enlazado. Retiré el worktree al terminar.
+- Skills: cargué `expo:expo-overview`. No aplica ninguna skill hoja: son tests de lógica pura y de una pantalla que no cambia.
+
+### C6 — Spec aprobada (E1)
+- [x] E1 solo añade texto a la spec firmada: `git diff 5b1cb8e9 7024a55b -- specs/` da +225/−0 (`grep '^-[^-]'` → `exit=1`, 0 líneas quitadas). No toca D1-D4, R1-R4 ni la firma original.
+- [x] La firma `7024a55b` solo marca la casilla de E1: `git diff 9ad946e0 7024a55b -- specs/` → 1 línea.
+- [x] Entre la firma y HEAD solo cambia la trazabilidad: `git diff 7024a55b HEAD -- specs/reminder-dates-days-until-drift/` → solo `traceability.md`, con 3 filas que pasan de «pendiente» a hash (R5, R6 y el candado movido).
+
+### C4 — TDD de la ronda 2 (reproducido commit a commit)
+
+Comando: `bunx jest --ci --silent --runTestsByPath src/utils/reminder-dates.test.ts src/screens/reminders/index.test.tsx --json`
+
+| Paso | Commit | Resultado reproducido |
+|---|---|---|
+| base | `02c70791` | `exit=0`, 45 tests (17 + 28) |
+| R5 rojo | `45908678` | `exit=1`, `3 failed / 45 passed`. Fallan solo las 3 filas de R5, por aserción `toBe`: `-29`, `-30` y `-30` frente a `1`. Los otros 17 del util y los 28 de la pantalla quedan verdes. La mutación versionada es U8, literal: `return to.getDate() - from.getDate();` |
+| R5 verde | `c759482b` | `exit=0`, 48 tests. `git diff --quiet 720817f8 c759482b -- …/reminder-dates.ts` → `exit=0` |
+| R6 rojo | `32313d9f` | `exit=1`, `1 failed / 48 passed`. Falla el `it` de R6 por aserción: aparece `reminder-upcoming-plus-eleven` cuando se esperaba `null`. Los 28 previos quedan verdes. La mutación versionada es `<= 8` en la píldora y `<= 11` en el badge |
+| R6 verde | `3e530242` | `exit=0`, 49 tests. `git diff --quiet origin/main 3e530242 -- …/screens/reminders/index.tsx` → `exit=0` |
+| trazabilidad | `c113e79b` | `exit=0`, 49 tests. Solo cambian `traceability.md` e `impl_…md` |
+
+- [x] Los mensajes de los 4 commits TDD son los literales de tasks.md §Enmienda E1.
+- [x] Ningún rojo cae por `TypeError` ni por `ReferenceError`. Los dos mutan producción, nunca un doble.
+- [x] El rojo de R6 cae en la 4.ª aserción, que tapa la 5.ª (`pill-week` = `0`). S8 confirma por separado que esa 5.ª aserción está viva (tabla de sondas).
+- [x] Producción en HEAD = `5b1cb8e9`: `git diff --quiet 5b1cb8e9 HEAD -- …/reminder-dates.ts …/screens/reminders/index.tsx` → `exit=0`.
+- [x] Pantalla en HEAD = `origin/main`: `git diff --quiet origin/main HEAD -- …/screens/reminders/index.tsx` → `exit=0`.
+
+### Tests contra el texto de E1 (comprobado literalmente)
+- [x] Comparé con `grep -cF` contra requirements.md y contra el test (1 y 1 cada uno):
+  - los títulos de los dos `describe`, el título del `it` de R6 y los tres títulos de fila de R5;
+  - `const from` y las filas `zero`, `positive` y `negative`.
+  - Las fechas de `plus-eight` y `plus-eleven` también coinciden (`new Date(2026, 8, 18|21, 9, 0).toISOString()`).
+- [x] R5:
+  - Es un único `it.each` de 3 filas con título `'%s'` y cuerpo `expect(daysUntil(from, to)).toBe(expected)`.
+  - Las filas 1 y 2 usan componentes locales.
+  - El helper es propio del `describe`: recibe `(localYear, localMonth, localDay, iso)`. Los getters locales devuelven lo que recibe; `getUTC*` y `getTime` salen del instante; termina en `as unknown as Date`.
+- [x] R6:
+  - El `beforeEach` y el `afterEach` son idénticos a los de R3: `diff` de los dos bloques → `exit=0`.
+  - Tiene un solo `it` y las cinco aserciones de la spec.
+- [x] Los tests de R1-R3 y el helper de R2 no cambian. Los hunks de la ronda 2 solo tocan las 4 líneas del candado heredado y añaden bloques al final de cada fichero. En los tests, `git diff origin/main HEAD` da +97/−0 en `index.test.tsx`.
+- [x] En las líneas de test añadidas desde `5b1cb8e9`:
+  - `toEqual`, `Date.UTC`, `DAY_MS`, `86_400_000` y `getTimezoneOffset` salen 0 veces (`grep` → `exit=1`).
+  - El patrón C8 `<palabra>-[` sale 0 veces (`exit=1`).
+
+### H1-H4 de la ronda 1: cerrados
+
+Todas las mutaciones de la ronda 1 se volvieron a correr en HEAD: `c113e79b`, con producción sin cambios.
+
+| # | Mutación | Ronda 1 (`5b1cb8e9`) | Ronda 2 (HEAD) |
+|---|---|---|---|
+| U8 | `return to.getDate() - from.getDate();` | verde (82/1467) | **rojo** 3/20: R5 filas 1-3 (`-29`, `-30`, `-30`) |
+| U9 | `getMonth()` → `0` | verde | **rojo** 3/20: R5 filas 1-3 |
+| U10 | `getFullYear()` → `2026` | verde | **rojo** 2/20: R5 filas 2 y 3 |
+| U11 | los dos `getMonth` → `getUTCMonth` | verde | **rojo** 1/20: R5 fila 3 (`335`) |
+| U12 | los dos `getFullYear` → `getUTCFullYear` | verde | **rojo** 1/20: R5 fila 3 (`-364`) |
+| U15 | `getMonth() + 1` | verde | **rojo** 1/20: R5 fila 1 (`2`) |
+| S8 | píldora `<= 8` | verde | **rojo** 1/29: R6 no encuentra `0` en `pill-week` |
+| S9 | badge `<= 11` | verde | **rojo** 1/29: R6 encuentra `reminder-upcoming-plus-eleven` |
+
+**H4:**
+- El control se ve: en `5b1cb8e9`, con `TZ=Pacific/Gambier`, `reminder-dates.test.ts` da `exit=1` y `negative` recibe `-2`.
+- En HEAD, `reminder-dates.test.ts` da `exit=0` y 20/20 en 13 zonas: `Pacific/Gambier`, `America/Adak`, `Pacific/Kiritimati`, `Pacific/Chatham`, `Asia/Kolkata`, `America/St_Johns`, `America/Mexico_City`, `Pacific/Marquesas`, `Pacific/Pago_Pago`, `Australia/Lord_Howe`, `America/Santiago`, `Pacific/Auckland` y `UTC`.
+- `reminders/index.test.tsx` da 29/29 con `Gambier`, `Kiritimati` y `Mexico_City`.
+- Barrido de las **419** zonas (`UTC` + `Intl.supportedValuesOf('timeZone')`) con la fórmula de producción, sobre:
+  - las filas heredadas y las filas 1-2 de R5;
+  - los dos recordatorios de R6, que pasan por `toISOString()` → `new Date`.
+- Resultado del barrido: **0 zonas con problemas**. Ninguna hora local cae en un hueco de cambio de hora, todas dan el esperado y U8 pone rojas las filas 1-2 de R5 en todas las zonas.
+
+### Sondas nuevas de la ronda 2 (HEAD, cada una revertida; `git diff --shortstat` vacío tras cada una)
+
+| # | Mutación | Resultado |
+|---|---|---|
+| U1 / U2 / U3 / U4 | `Math.round` / `floor` / `trunc` / `ceil` sobre ms | **rojo** 6 / 10 / 9 / 10 de 20 |
+| U5 | los seis getters → `getUTC*` | **rojo** 4/20 (R2 ×3, R5 fila 3) |
+| U6 | `toISOString().slice(0, 10)` | **rojo** 4/20 |
+| U7 | resta invertida `/ -DAY_MS` (`-0`) | **rojo** 6/20 |
+| U14 | los tres getters de `to` → UTC | **rojo** 1/20 |
+| U16 | mes de `to` ← `from.getMonth()` | **rojo** 3/20 |
+| U17 | año de `to` ← `from.getFullYear()` | **rojo** 2/20 |
+| U18 | los dos `getDate` → `getUTCDate` | **rojo** 4/20 |
+| U20 | solo `from.getFullYear` → UTC | **rojo** 1/20 |
+| U21 / U22 | aproximaciones `año*365 + mes*30 + día` / `mes*31 + día` | **rojo** 2/20 y 3/20 |
+| U25 | `Date.UTC` con horas + `Math.round` | **rojo** 8/20 |
+| U27 | solo `from.getMonth` → UTC | **rojo** 1/20 |
+| U28 / U29 | solo `to.getDate` / solo `from.getDate` → UTC | **rojo** 1/20 y 3/20 |
+| **U19** | **solo `to.getMonth` → `getUTCMonth`** | **VERDE: sobrevive**. 20/20, y **82/82 suites y 1471/1471 tests** en la suite completa (N1) |
+| **U26** | **solo `to.getFullYear` → `getUTCFullYear`** | **VERDE: sobrevive**. 20/20, y **82/82 y 1471/1471** en la suite completa (N1) |
+| U13 / U23 | medianoches locales con `Math.round` / sin redondeo | verde. Es el techo conocido de D1: solo difiere en un cambio de hora. Lo cierra el grep de cierre (`Date.UTC(` ×2) |
+| U24 | `Math.floor` sobre la fórmula correcta | verde. **Mutante equivalente**: el resultado ya es entero |
+| S1 | argumentos intercambiados en las dos llamadas | **rojo** 4/29 |
+| S4 / S5 / S6 / S7 | `< 7` / `< 10` / píldora `> 0` / badge `> 0` | **rojo** 1/29 cada una (R3) |
+| S15 / S16 | píldora `<= 9` / badge `<= 12` | **rojo** 1/29 (R6) |
+| S17 / S18 | píldora `<= 10` / badge `<= 7` (umbrales cruzados) | **rojo** 2/29 (R3 y R6) |
+| S20 / S21 | píldora / badge sin cota superior (`<= 1000`) | **rojo** 3/29 y 2/29 |
+| S19 | píldora sin `reminder.status === 'scheduled'` | verde (N2, fuera del alcance) |
+| S22 | badge sin `!inactive` | verde (N2, fuera del alcance) |
+
+S2, S3 y S10-S14 salieron rojas en la ronda 1. Los tests en los que cayeron
+siguen intactos y la pantalla no ha cambiado, así que siguen rojas por
+monotonía.
+
+### Diff frente a `origin/main`
+- [x] `git diff --stat origin/main...HEAD` → 12 ficheros:
+  - los tres ficheros móviles: `reminder-dates.ts` (+4/−1), `reminder-dates.test.ts` (+71/−4) y `reminders/index.test.tsx` (+97/−0);
+  - la spec (4 ficheros);
+  - `feature_list.json`, `progress/current.md`, `handoff_…`, `impl_…` y `review_…`.
+- [x] `src/screens/reminders/index.tsx` tiene diff neto cero.
+- [x] Sin dependencias, catálogo ni cambios en backend o infra.
+
+### C5 — Trazabilidad
+- [x] Los 10 hashes distintos de `traceability.md` existen (`cat-file -t` → `commit`) y son ancestros de HEAD (`merge-base --is-ancestor` → 0):
+  - R1-R3: `72af7d62`, `fe7fd0de`, `e69c93b6`, `5a2a93d6`, `db7e3b0c` y `720817f8`;
+  - R5: `45908678` y `c759482b`;
+  - R6: `32313d9f` y `3e530242`;
+  - candados movidos: `72af7d62` y `45908678`.
+  Cada hash hace el papel que le asigna la tabla.
+- [x] La única fila en «pendiente» es R4, el smoke humano. La spec la asigna al humano después de este veredicto, igual que en la ronda 1.
+
+### C2 / C3 / C7 / C8
+- [x] Solo hay 1 feature `in_progress`: #84. Lo medí con node sobre `feature_list.json`.
+- [x] Codex no tocó ningún artefacto del leader: `git diff --stat 02c70791 HEAD -- progress/current.md progress/history.md STATUS.md feature_list.json` → vacío.
+- [x] C3: N/A. `daysUntil` sigue siendo una función pura en `src/utils/`.
+- [x] C7: `grep -c "Date.UTC(" src/utils/reminder-dates.ts` → `2`; `grep -c "Math.ceil\|getUTC\|getTime"` → `0` (`exit=1`).
+- [x] C8: no cambia ninguna vista. Catálogo +0. El patrón C8 sale 0 veces en las líneas añadidas.
+
+### Hallazgos de la ronda 2
+
+**N1 — BAJA, no bloqueante. Sobreviven dos mutaciones UTC parciales de un solo getter del lado `to`: U19 (`to.getMonth` → `to.getUTCMonth`) y U26 (`to.getFullYear` → `to.getUTCFullYear`).**
+- **Qué pasa.** Salen verdes en su fichero (20/20) y en la suite móvil completa (82/82, 1471/1471). Ningún doble tiene en `to` un mes o año local distinto del UTC:
+  - en los dobles de R2 solo difiere el día;
+  - en el `to` de la fila 3 de R5 (1 de enero, 09:00) coinciden.
+- **Impacto medido con node:**
+  - En `America/Mexico_City`, un recordatorio para hoy a las 20:00 del último día del mes sale como `· en 30 días` con U19. El 31 de diciembre sale `-334` con U19 y `365` con U26.
+  - En `Asia/Tokyo`, un recordatorio para el día 1 antes de las 09:00 sale `-29` con U19.
+  - En un host UTC no pasa nada.
+- **Por qué no bloquea:**
+  - Hace falta una edición asimétrica de un solo token. Las variantes simétricas (U5, U11, U12, U18) y todas las del lado `from` salen rojas, igual que U14, que pasa a UTC los tres getters de `to`.
+  - El grep de cierre de tasks.md (`getUTC` ×0 en `reminder-dates.ts`) la caza al leer el fichero. Es el mismo cierre que ya se aceptó en la ronda 1 para U13.
+  - E1 lista seis sondas para R5 y las seis salen rojas.
+  - Cerrarlo exige otra enmienda con firma y otra ronda de Codex, por un error tipográfico de un token.
+- **Corrección verificada (solo test, aplicada en el worktree desechable y revertida):** una fila con la forma de los dobles de R5:
+  - título: `Ciudad de México, 31 de diciembre 08:00 → 20:00 del mismo día = 0`;
+  - `from` = locales 2026, 11, 31, instante `'2026-12-31T14:00:00.000Z'`;
+  - `to` = locales 2026, 11, 31, instante `'2027-01-01T02:00:00.000Z'`;
+  - esperado `0`.
+- **Qué comprobé de la corrección:**
+  - Con HEAD sin mutar da 21/21.
+  - Pone en rojo U19 (`-334`) y U26 (`365`).
+  - También caen con ella U5, U11, U12 y U14.
+- **Recomendación:** registrarlo como deuda con esta fila exacta, sin ampliarlo.
+
+**N2 — INFO, anterior a #84 y fuera de su alcance. Las guardas de estado de la pantalla no tienen candado.**
+- **Qué sobrevive.** Quitar `reminder.status === 'scheduled'` del filtro de la píldora (S19) o `!inactive` del badge (S22) deja la pantalla en 29/29.
+- **Por qué.** Los recordatorios `sent` y `cancelled` de los tests previos usan el `dueAt` por defecto (`2026-08-27`) con el reloj real, así que ya están en el pasado.
+- **Por qué no es de #84.** Esas guardas no son decisiones de días de calendario y ni la spec ni E1 las cubren. Por monotonía, las dos sobreviven también en `origin/main`: los tests de allí son un subconjunto de los de HEAD y la pantalla es la misma.
+- **Recomendación:** si el leader lo ve útil, registrarlo como deuda aparte.
+
+**N3 — INFO, se repite H5.** La trazabilidad de la ronda 2 entró en un único commit final (`c113e79b`). Codex dice que la fue actualizando en el árbol tras cada commit. Un commit no puede llevar su propio hash, así que el handoff admite esa lectura. Los hashes son correctos y ancestros de HEAD, así que no tiene impacto.
+
+**N4 — INFO. R4 (smoke en dev build de Android) sigue siendo del humano.** La feature no puede pasar a `done` hasta que el humano marque su casilla.
+
+### Comandos (exit medido sin pipe)
+- `git rev-parse --short HEAD` → `c113e79b`, al empezar y al terminar. `git status --short` → vacío antes de escribir esta sección.
+- `bunx jest --ci --silent --runTestsByPath … --json` en cada commit de la ronda: los `exit` de la tabla C4.
+- En HEAD, en el worktree desechable:
+  - `bunx jest … reminder-dates.test.ts reminders/index.test.tsx home/format.test.ts` → `exit=0`, 20 + 29 + 13 = 62;
+  - `bunx tsc --noEmit` → `exit=0`, 0 bytes, sin `.expo/`;
+  - `bun run lint` → `exit=0`.
+- `bunx jest --ci --silent` (suite completa) con U19 y con U26 → `exit=0`, 82/82 y 1471/1471 en ambos casos (N1).
+- `TZ=<zona> bunx jest --runTestsByPath …` en 13 zonas para el util y en 3 para la pantalla: resultados en H4.
+- `git diff --quiet` de los puntos 2 y 6: `exit=0` en todos los casos.
+- `merge-base --is-ancestor` de los 10 hashes → `0`.
+- **No corrí `./init.sh` ni e2e**, por instrucción del leader: el Postgres y el LocalStack son compartidos.
+
+### Output de ./init.sh (ronda 2)
+
+Lo corrió el leader sobre este mismo tip `c113e79b`. Log:
+`/tmp/claude-1002/-home-claude-sites-Pet-Tracker/f4719a40-0501-4a5f-80e7-b8287f1de20f/scratchpad/init-84-review2.log`
+(18 570 líneas, mtime `2026-09-24 04:06 UTC`, posterior al commit `c113e79b` de `04:00:07 UTC`).
+Medido sin pipe, la última línea es `EXIT 0`.
+
+```
+Test Suites: 170 passed, 170 total          # backend unit
+Tests:       1298 passed, 1298 total
+Test Suites: 2 passed, 2 total              # infra
+Tests:       14 passed, 14 total
+Test Suites: 82 passed, 82 total            # móvil
+Tests:       1471 passed, 1471 total
+Snapshots:   1 passed, 1 total
+Test Suites: 3 skipped, 27 passed, 27 of 30 total   # e2e
+Tests:       8 skipped, 389 passed, 397 total
+✅ Lint sin errores
+✅ Typecheck sin errores
+✅ Todo verde. Listo para trabajar.
+EXIT 0
+```
+
+- Móvil 82/1471 = la base de Codex (82/1452) +19 tests y +0 suites, el delta de E1 (§Recuentos).
+- También cuadra con la ronda 1: 1467 + 4.
