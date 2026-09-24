@@ -346,6 +346,10 @@ Reglas críticas:
     Tu sitio para contarlo todo es progress/impl_<feature>.md
   - Si el sandbox te deniega un comando, PARA y repórtalo. No lo sustituyas
     por otro que haga lo mismo con otra herramienta (#112, Obs. 4)
+  - Si la feature corre `tsc` en mobile-pet-tracker/: pedir
+    `test ! -e .expo/types/router.d.ts` antes de cada `bunx tsc --noEmit` y
+    PARAR si existe. Nunca `rm -f`: el sandbox de Codex lo deniega (#121,
+    Enmienda 1). Solo `expo start` regenera ese fichero
   - NO abras la PR ni la edites: la abre el leader al cerrar, con el
     veredicto en la mano
 Criterios de aceptación: <los R-ids de requirements.md>
