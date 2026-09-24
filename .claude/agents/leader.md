@@ -338,7 +338,10 @@ Reglas críticas:
   - TDD por requisito: test rojo → verde → refactor (ver specs/<feature>/tasks.md)
   - UN COMMIT POR REQUISITO como mínimo, con el test rojo antes que su
     implementación. Un único commit con todo incumple C4 de CHECKPOINTS.md
-  - Actualizar specs/<feature>/traceability.md tras cada commit
+  - Rellenar specs/<feature>/traceability.md con los hashes en UN commit
+    final `docs(<scope>): ...` tras el último verde. No mezclar ficheros de
+    arnés en los commits TDD (#84 y #123: pedir «tras cada commit» chocaba
+    con la lista cerrada de commits y nunca se cumplió)
   - No crear recursos AWS reales ni correr cdk deploy: eso lo hace el humano
   - NO son tuyos, no los toques: progress/history.md, progress/current.md,
     STATUS.md y el campo `status` de feature_list.json. Son artefactos de
