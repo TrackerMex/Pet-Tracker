@@ -8,6 +8,7 @@ import {
 import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import { useEffect } from 'react';
+import { Platform } from 'react-native';
 
 import {
   createReminder,
@@ -487,5 +488,65 @@ describe('#95 R5: la pantalla no dibuja cabecera propia', () => {
     await waitFor(() => expect(screen.getByTestId('screen-add-reminder')).toBeVisible());
     expect(screen.queryByTestId('add-reminder-back')).toBeNull();
     expect(screen.queryByText(es['addReminder.addReminder'])).toBeNull();
+  });
+});
+
+const originalPlatform = Platform.OS;
+
+function setPlatform(os: string): void {
+  Object.defineProperty(Platform, 'OS', { configurable: true, value: os });
+}
+
+function wallClock(local: number[], utc: number[]): Date {
+  return Object.assign(new Date(local[0], local[1], local[2], local[3], local[4]), {
+    getUTCFullYear: () => utc[0],
+    getUTCMonth: () => utc[1],
+    getUTCDate: () => utc[2],
+  });
+}
+
+describe('#123: pickers de fecha de Nuevo recordatorio en Android a las 20:00 del 24 de septiembre', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date(2026, 8, 24, 20, 0));
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockCreateReminder.mockResolvedValue({ kind: 'ok', reminder: makeReminder() });
+    setPlatform('android');
+  });
+
+  afterEach(() => {
+    setPlatform(originalPlatform);
+    jest.useRealTimers();
+  });
+
+  describe('#123 R4: Nuevo recordatorio muestra y guarda el día elegido', () => {
+    it.each([
+      ['elegir hoy (24 de septiembre) guarda hoy', [2026, 8, 23, 18, 0], [2026, 8, 24], '24/9/2026', new Date(2026, 8, 24, 21, 30).toISOString()],
+      ['elegir el 1 de octubre guarda el 1 de octubre (cruce de mes)', [2026, 8, 30, 18, 0], [2026, 9, 1], '1/10/2026', new Date(2026, 9, 1, 21, 30).toISOString()],
+      ['elegir el 1 de enero de 2027 guarda el 1 de enero (cruce de año)', [2026, 11, 31, 18, 0], [2027, 0, 1], '1/1/2027', new Date(2027, 0, 1, 21, 30).toISOString()],
+    ] as [string, number[], number[], string, string][])('%s', async (_title, local, utc, etiqueta, dueAt) => {
+      await renderAddReminder();
+      await waitFor(() => expect(screen.getByTestId('title-input')).toBeVisible());
+      await fireEvent.changeText(screen.getByTestId('title-input'), 'Rabies');
+      await pickDate(wallClock(local, utc));
+      await fireEvent.press(screen.getByTestId('time-field'));
+      const timePicker = within(screen.getByTestId('expo-ui-picker-host')).getByTestId('time-picker');
+      await fireEvent(timePicker, 'onValueChange', {}, new Date(2026, 8, 24, 21, 30));
+      expect(within(screen.getByTestId('date-field')).getByText(etiqueta)).toBeVisible();
+      await fireEvent.press(screen.getByTestId('add-reminder-submit'));
+      await waitFor(() => expect(mockCreateReminder).toHaveBeenCalledWith(
+        'http://example.test/v1',
+        'jwt-token',
+        'pet-1',
+        { type: 'vaccine', title: 'Rabies', dueAt, advanceMinutes: 10080 },
+      ));
+    });
   });
 });
