@@ -823,6 +823,18 @@ describe('#107 R5: el botón por franja conserva su feedback de pulsado', () => 
       /style=\{\(\{ pressed \}\) => \(\{\s*opacity: pressed \? 0\.8 : 1,?\s*\}\)\}/,
     );
   });
+
+  it('#122 R2: el botón baja a opacidad 0.8 mientras se pulsa', async () => {
+    await renderFood();
+    const toggle = await screen.findByTestId('meal-toggle-0');
+
+    await fireEvent(toggle, 'responderGrant', {
+      nativeEvent: {},
+      persist: () => undefined,
+    });
+
+    expect(toggle).toHaveStyle({ opacity: 0.8 });
+  });
 });
 
 describe('R6: aiExplanation nullable con gracia', () => {

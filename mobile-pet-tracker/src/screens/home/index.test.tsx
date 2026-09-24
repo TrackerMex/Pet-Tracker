@@ -244,6 +244,18 @@ describe('#78 R10: la campana vive en el hero y lleva al centro de alertas', () 
     expect(source).toContain('<Bell size={24} color={muted} />');
   });
 
+  it('#122 R2: la campana baja a opacidad 0.8 mientras se pulsa', async () => {
+    await renderHome();
+    const bell = await screen.findByTestId('home-alerts-bell');
+
+    await fireEvent(bell, 'responderGrant', {
+      nativeEvent: {},
+      persist: () => undefined,
+    });
+
+    expect(bell).toHaveStyle({ opacity: 0.8 });
+  });
+
   it('no pinta campana cuando no hay mascotas', async () => {
     mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
 
@@ -3355,6 +3367,18 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
       expect(block).toMatch(
         /style=\{\(\{ pressed \}\) => \(\{ opacity: pressed \? 0\.8 : 1 \}\)\}/,
       );
+    });
+
+    it('#122 R2: el enlace baja a opacidad 0.8 mientras se pulsa', async () => {
+      await renderHome();
+      const link = await screen.findByTestId('reminders-see-all');
+
+      await fireEvent(link, 'responderGrant', {
+        nativeEvent: {},
+        persist: () => undefined,
+      });
+
+      expect(link).toHaveStyle({ opacity: 0.8 });
     });
   });
 
