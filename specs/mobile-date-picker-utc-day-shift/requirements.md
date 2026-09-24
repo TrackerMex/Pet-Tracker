@@ -1,6 +1,6 @@
 ---
 feature: "mobile-date-picker-utc-day-shift"
-status: spec_ready       # draft | spec_ready | approved
+status: approved         # draft | spec_ready | approved
 tags: [harness, spec, mobile]
 ---
 
@@ -504,4 +504,4 @@ si H + 1 h pasa de medianoche, hacerla otro día.
 
 ## Aprobación
 
-- [ ] Spec aprobada por humano (fecha: ____)
+- [x] Spec aprobada por humano (fecha: 2026-09-24, vía Notion)
