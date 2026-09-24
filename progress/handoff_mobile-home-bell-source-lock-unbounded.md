@@ -126,3 +126,23 @@ los commits por R-id con hashes; el rojo de (1) con su linea de fallo y su
 matcher y «otros»; comandos y salidas exactas del cierre; el delta; y cualquier
 decision que la spec no cerrara literalmente.
 ```
+
+---
+
+## Enmienda 1 (2026-09-24): `rm -f` denegado por el sandbox de Codex
+
+Codex paro al arrancar, como pedia el handoff: el filtro de su ejecutor rechaza
+`rm -f` aunque tenga el sistema de archivos accesible. El humano autoriza esta
+sustitucion, que **no borra nada**, solo verifica:
+
+- Donde el handoff o `tasks.md` dicen `rm -f .expo/types/router.d.ts`, ejecuta
+  `test ! -e .expo/types/router.d.ts; echo "exit=$?"`.
+- `exit=0` (el fichero no existe): sigue.
+- `exit=1` (el fichero existe): **para y reportalo**. No lo borres por otra via.
+
+Por que vale: el fichero no existe en este worktree (medido por el leader en
+592ed031), y `.expo/types/` no cambia desde el 2026-09-06, aunque desde entonces
+`tsc`, `expo lint` e `init.sh` han corrido muchas veces. Ninguno de esos
+comandos lo regenera: solo lo crea el servidor de Metro (`expo start`), que
+aqui no se lanza. La precondicion que protegia el `rm -f` ya se cumple.
+Declaralo en el reporte como decision del humano.
