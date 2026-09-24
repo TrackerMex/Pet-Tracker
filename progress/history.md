@@ -5332,3 +5332,53 @@ arreglo ingenuo con `getUTC*`, y es lo que canda R2.
   siguiente por orden del humano.
 - Leccion guardada en memoria: una tabla de fechas que no cruza mes ni ano
   deja `getMonth`/`getFullYear` sin vigilar.
+
+# Sesión #121 mobile-home-bell-source-lock-unbounded (2026-09-24, sesión Frontend)
+
+- **Branch** `feature/121-mobile-home-bell-source-lock-unbounded` desde
+  `origin/main` `f44cf3d5` (con #159, #112). Backend cerraba #84 en
+  wt-backend; no tocaba `src/screens/home/*` ni `docs/`, así que no hubo solape.
+- **Spec** `24157f80`, espejada a Notion. El humano puso Aprobado y el leader
+  firmó en `6df6581f`, citando la página y `page_last_edited_at`
+  2026-09-24T14:36:08Z. Ocho puntos firmados; sin prueba de humo.
+- **spec_author** confirmó todas las premisas del encargo y midió que N1
+  (`style={{ opacity: 1 }}` en la campana) dejaba verde la suite móvil entera,
+  82/1452. Declaró tres cambios hacia rojo (E1, V6, A0) y aceptó P1, P2 y P4
+  como puntos ciegos de #122.
+- **Codex** paró al arrancar: su sandbox rechazó `rm -f .expo/types/router.d.ts`
+  («rm -f style commands are not permitted») y el handoff, desde #112 Obs. 4,
+  le pedía parar en vez de sustituirlo. El fichero no existía y `.expo/types/`
+  no cambiaba desde el 2026-09-06, así que el humano autorizó la **Enmienda 1**
+  (`c94e0cbf`): `test ! -e` en lugar de `rm -f`, y parar si existe. Después, 4
+  commits `0c50bf5a..1bb01d41`: el rojo versiona N1 y el verde la revierte,
+  luego R4 (docs) y la evidencia. Sin skills.
+- **init.sh**: lo corrió el leader sobre `1bb01d41`, con turno pactado con
+  Backend. Exit 0: móvil 82/1452 (+0), unit 170/1298, e2e 27+3 skip.
+- **Merge**: el humano mergeó #160 (#84) durante la validación. `origin/main`
+  70f841f3 entró por merge (`2c84acac`), sin rebase, para no invalidar los
+  hashes de trazabilidad. Sobre el merge: móvil 82/1471 (la base nueva de
+  main, +0), tsc y lint limpios. No se repitió el init.sh completo: #84 no toca
+  ningún fichero de #121 y Backend lo pasó completo sobre a5dec36a.
+- **Reviewer**: aprobado a la primera, sin bloqueantes (`2de31d38`). Rehízo el
+  rojo, re-midió las 16 sondas de R2/R3 y plantó cinco propias (O1-O5).
+- **Drift**: `origin/main` no se movió después del merge; entre el veredicto y
+  `origin/main` solo difiere `index.test.tsx`, que es el cambio de #121.
+
+### Deuda y apuntes
+
+- **#124 registrada** (hallazgo F de la spec): `toContain('<Bell size={24}
+  color={muted} />')` del mismo `it` mira el fichero entero. Límites copiados:
+  es latente (necesita una segunda copia literal, sonda B2) y el recorte de
+  `<` a `<` no vale tal cual, porque el icono es hijo y no tag de apertura.
+- **#122 enmendada**: los call-sites pasan a tres, y entran O2 (spread
+  `{...override}` con `style` opcional detrás de la receta: verde en fichero,
+  suite, tsc y lint; no es defecto del recorte y solo lo cierra una pata de
+  árbol que pulse), O5 (ancla no única con un ternario renderizado) y O4 (rojo
+  falso seguro por la misma raíz).
+- **Obs. 5 del reviewer**: #121 nunca pasó a `in_progress` en
+  `feature_list.json` tras la firma; va directo a `done` con el veredicto.
+- **Obs. 6**: la evidencia de Codex vive en `/tmp/121_*.log`, sin versionar; el
+  reviewer la re-midió entera.
+- **Plantilla de handoff**: `.claude/agents/leader.md` pide ahora `test ! -e`
+  en vez de `rm -f` para `router.d.ts`. Se avisó a Backend del id #124; sus
+  siguientes ids empiezan en #125.
