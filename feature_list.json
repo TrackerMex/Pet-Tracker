@@ -2382,7 +2382,7 @@
   {
     "id": 123,
     "name": "mobile-date-picker-utc-day-shift",
-    "status": "pending",
+    "status": "done",
     "priority": "P1",
     "description": "BUG reportado por el humano el 2026-09-24 durante el smoke de #84, en un dev build de Android en Mexico (UTC-6): al elegir el 24 de septiembre en el calendario de Nuevo recordatorio, la app muestra y guarda el 23. ORDEN DEL HUMANO (2026-09-24): prioridad alta, va justo despues de cerrar #84 y antes de las demas pending, porque guarda datos mal. Causa verificada por la sesion Backend en el codigo de @expo/ui 57.0.11 (node_modules, sin parchear): el DatePickerDialog de Jetpack Compose (android/src/main/java/expo/modules/ui/DatePickerView.kt) devuelve en el boton OK state.selectedDateMillis tal cual, que en Material3 es la MEDIANOCHE UTC del dia elegido; src/jetpack-compose/DatePicker/index.tsx lo convierte con new Date(date) y la pantalla lo lee con getters LOCALES. En un offset negativo, 2026-09-24T00:00Z es el 23 a las 18:00 local: el texto del boton (date.toLocaleDateString) dice 23 y combineDateAndTime(date, time) de src/utils/reminder-dates.ts guarda el recordatorio el 23. Pasa con CUALQUIER dia, no solo con hoy. Simetricamente, initialDate: value.toISOString() se interpreta como dia UTC, asi que despues de las 18:00 locales el calendario abre con MANANA seleccionado. El minimumDate si se convierte bien (toUtcDayMillis en el nativo). Afecta a los DOS usos de ExpoDateTimePicker con mode=\"date\" (grep ExpoDateTimePicker en src): src/screens/add-reminder/index.tsx (fecha del recordatorio) y src/screens/add-pet/index.tsx (birthDate, que dateToIso serializa con getters locales: la mascota queda nacida un dia antes). El picker de hora (mode=\"time\") no pasa por selectedDateMillis de fecha; la spec tiene que verificarlo, no suponerlo. Introducido con los pickers nativos de Expo UI (commit 02f02ae4, fix(mobile-reminders) R8). Arreglo esperado solo movil: convertir en un unico helper la fecha devuelta (getUTCFullYear/getUTCMonth/getUTCDate a un Date local) y la inicial (dia local a medianoche UTC) en los dos call sites, sin parchear node_modules. Los tests deben simular un offset negativo con dobles como los de #84 R2/R5 (jest no deja forzar TZ desde un test) e incluir cruce de mes y de ano (memoria: tablas de un solo mes dejan getMonth/getFullYear ciegos). Anclas por contenido, nunca por numero de linea.",
     "acceptance_criteria": [
@@ -2413,6 +2413,25 @@
     ],
     "files_affected": [
       "mobile-pet-tracker/src/screens/home/index.test.tsx"
+    ]
+  },
+  {
+    "id": 125,
+    "name": "reminder-advance-already-past",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Reportado por el humano el 2026-09-24 durante el smoke de #123 (dev build de Android, Mexico): al crear un recordatorio para el 1 del mes siguiente o el ultimo dia del mes, sin cambiar la hora (09:00), la notificacion push salta EN CUANTO SE GUARDA. Causa verificada por la sesion Backend sobre main f72c1fc0 (no es un fallo de codigo, es de experiencia): Nuevo recordatorio preselecciona el aviso \"7 dias antes\" (`useState(10080)` en src/screens/add-reminder/index.tsx, opciones ADVANCE_OPTIONS 0 / 1440 / 4320 / 10080) y el backend encola el aviso cuando `dueAt - advanceMinutes <= now` (findDue en backend-pet-tracker/src/modules/reminders/infrastructure/repositories/reminder.drizzle.repository.ts); con menos de 7 dias de margen ese momento ya paso y se envia al instante. Ademas el cuerpo del push es solo `Recordatorio: ${reminder.title}` (reminders-dispatch.service.ts), sin decir para cuando es, asi que parece que salta sin motivo. DECISION DEL HUMANO (2026-09-24), opciones C + A: (C, movil) en Nuevo recordatorio los chips de aviso cuyo momento (fecha+hora elegidas menos el aviso) ya paso quedan desactivados y la seleccion pasa al mayor aviso todavia en el futuro, recalculado al cambiar fecha u hora; (A, backend) el cuerpo del push dice cuando vence el recordatorio, con la fecha/hora formateada en la zona del owner (users.timezone, varchar NOT NULL DEFAULT 'UTC'). NO se eligio B (omitir el aviso en el backend). La spec tiene que cerrar: el copy exacto del cuerpo y su idioma (hoy el push va en espanol fijo, la app tiene i18n es/en), que pasa si el aviso de 0 minutos tambien quedara en el pasado (el formulario ya exige fecha futura), y si hace falta partirla en mitad backend y mitad movil como #83/#98. Si anade copy movil, recontar como delta el candado de longitud del catalogo (language-provider.test.tsx) y ui-copy-table.ts. Tests de fecha cruzando mes y ano; anclas por contenido, nunca por numero de linea.",
+    "acceptance_criteria": [
+      "En Nuevo recordatorio, un chip de aviso cuyo momento ya paso para la fecha y hora elegidas queda desactivado y no se puede seleccionar; la seleccion pasa al mayor aviso aun en el futuro y se recalcula al cambiar fecha u hora",
+      "Crear un recordatorio con menos de 7 dias de margen no dispara una notificacion inmediata por el aviso preseleccionado",
+      "El cuerpo del push de recordatorio dice cuando vence (fecha y hora en la zona del owner), con tests del formato en una zona de offset negativo",
+      "Suite movil y backend verdes medidas sin pipe; cero dependencias nuevas",
+      "Gate humano: smoke en dev build de Android (nunca Expo Go) creando recordatorios a menos de 7 dias y a mas de 7 dias, comprobando los chips y el texto de la notificacion. No delegable a IA"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/add-reminder/index.tsx",
+      "mobile-pet-tracker/src/screens/add-reminder/index.test.tsx",
+      "backend-pet-tracker/src/modules/reminders/infrastructure/reminders-dispatch.service.ts"
     ]
   }
 ]
