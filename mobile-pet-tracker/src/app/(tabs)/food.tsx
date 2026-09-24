@@ -316,10 +316,11 @@ export default function FoodScreen() {
                         }
                         disabled={pendingMealTime === mealTime}
                         className="min-h-11 justify-center"
-                        style={{ opacity: 1 }}
+                        style={({ pressed }) => ({
+                          opacity: pressed ? 0.8 : 1,
+                        })}
                         onPress={() => void toggleMeal(mealTime, served)}
                       >
-                        {/* style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })} */}
                         <Text
                           testID={
                             served
