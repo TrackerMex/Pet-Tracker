@@ -650,14 +650,12 @@ export function HomeScreen() {
                 testID="reminders-see-all"
                 accessibilityRole="button"
                 className="min-h-11 justify-center"
-                style={{ opacity: 1 }}
+                style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
                 onPress={() => router.push('/reminders')}
               >
-                <Pressable style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}>
-                  <Text className="text-xs font-semibold text-accent-strong">
-                    {t('home.remindersSeeAll')}
-                  </Text>
-                </Pressable>
+                <Text className="text-xs font-semibold text-accent-strong">
+                  {t('home.remindersSeeAll')}
+                </Text>
               </Pressable>
             </View>
 
