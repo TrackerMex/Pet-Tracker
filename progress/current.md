@@ -23,5 +23,13 @@
   uso en add-reminder y add-pet; rojos naturales). Handoff en
   progress/handoff_mobile-date-picker-utc-day-shift.md. Solo movil: Codex no corre init.sh ni e2e.
   R8 (smoke en dev build de Android en Mexico, despues de las 18:00) es del humano.
-- Siguiente: el humano confirma que Codex termino -> leer progress/impl_mobile-date-picker-utc-day-shift.md
-  -> turno de init.sh con Frontend -> reviewer.
+- Codex: 4e63ef3d..fe76ec44 (14 commits TDD, rojos naturales, + trazabilidad), movil 83/1491.
+- init.sh de revision (turno cedido por Frontend) sobre fe76ec44: exit=0 sin pipe; unit 170/1298,
+  movil 83/1491, e2e 27 + 3 skipped. LocalStack devuelto.
+- Reviewer: APROBADO a la primera (30f04b46). Suite 61/61 en 7 TZ reales; ida y vuelta con Date
+  reales en 10 zonas. H1 baja: traceability rellenada al final otra vez (la instruccion choca con
+  la lista cerrada de commits; se corrige en la plantilla de handoff). H2 baja: reabrir el dialogo
+  tras elegir fecha no tiene test (`date ?? toPickerValue(...)` sobrevive; solo afecta a zonas
+  UTC+). Deuda candidata, sin registrar hasta que decida el humano.
+- Integrado origin/main f72c1fc0 (#121) por merge, sin conflictos.
+- Siguiente: smoke R8 del humano (dev build de Android, Mexico, despues de las 18:00) -> cierre.
