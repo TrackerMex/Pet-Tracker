@@ -146,3 +146,113 @@ verde con sus fallos esperados, los git diff vacios tras los verdes de R2 y
 R3, sondas extra si las haces, recuentos finales, grep-clean de tasks.md
 §Cierre, lista de commits con hash) y parar.
 ```
+
+---
+
+## Ronda 2 — R5 y R6 (Enmienda E1), tras el rechazo de la ronda 1
+
+> Pegar el bloque de abajo en la terminal de Codex CLI. Sustituye al de la
+> ronda 1, que ya está hecho.
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-backend   <- PRIMERA LINEA: trabaja AQUI y solo aqui
+Antes de tocar nada, confirma en el reporte: `pwd` y `git branch --show-current`.
+Tienen que dar /home/claude/sites/Pet-Tracker-wt-backend y
+feature/84-reminder-dates-days-until-drift. Si no, PARA.
+NO toques /home/claude/sites/Pet-Tracker: es el worktree de otra sesion.
+
+Feature: reminder-dates-days-until-drift (#84), RONDA 2.
+La ronda 1 (tus commits 72af7d62..5b1cb8e9) fue RECHAZADA por el reviewer:
+  progress/review_reminder-dates-days-until-drift.md (commit 158fbf43),
+  hallazgos H1-H4.
+Tu codigo de produccion es correcto y NO cambia. El hueco estaba en las
+tablas que prescribia la spec: todas sus fechas caian entre el 9 y el 20 de
+septiembre, asi que `return to.getDate() - from.getDate();` dejaba verde la
+suite movil entera.
+La spec se enmendo y el humano firmo la enmienda (commit de firma 7024a55b):
+  specs/reminder-dates-days-until-drift/requirements.md  §Enmienda E1 (al final):
+      R5 y R6 nuevos, sus tests literales, las mutaciones versionadas, el
+      candado heredado que se mueve y los recuentos.
+  specs/reminder-dates-days-until-drift/tasks.md         §Enmienda E1 — ronda 2 (al final):
+      orden de commits de esta ronda, sondas y cierre.
+Lee las dos secciones enteras antes de tocar nada. R1-R4 y sus tests NO cambian.
+
+== QUE HAY QUE HACER (cuatro commits, sondas y trazabilidad) ==
+
+  1. test(reminder-dates): lock month and year of the civil day (R5)                <- ROJO
+     - src/utils/reminder-dates.test.ts:
+       * filas zero/positive/negative de 'returns a %s integer' y su
+         `const from` a componentes locales, tabla literal de §Enmienda E1
+         "Candado heredado" (mismos esperados 0, 1, -1);
+       * describe '#84 R5: el día civil incluye el mes y el año (Enmienda E1)'
+         al final, con su helper PROPIO de dobles (anio, mes, dia locales +
+         instante ISO; forma del skewed de R2 mas getTime) y UN it.each de 3
+         filas, titulos y fechas literales de la tabla de R5.
+     - MISMO commit, mutacion de produccion versionada en
+       src/utils/reminder-dates.ts: el cuerpo de daysUntil pasa a ser
+       `return to.getDate() - from.getDate();`.
+     - Rojo esperado: las 3 filas de R5 (recibidos -29, -30, -30); los otros
+       17 tests del fichero verdes.
+  2. feat(reminder-dates): revert the R5 probe mutation, month and year locked (R5)  <- VERDE
+     - Revierte la mutacion:
+       git diff 720817f8 -- mobile-pet-tracker/src/utils/reminder-dates.ts; echo "exit=$?"
+       -> salida VACIA.
+  3. test(reminders): lock the week pill and badge thresholds (R6)                  <- ROJO
+     - src/screens/reminders/index.test.tsx, al final: describe
+       '#84 R6: los umbrales de la píldora y del badge no se aflojan (Enmienda E1)'
+       con el beforeEach/afterEach del describe de R3 y el it literal de
+       requirements R6 (plus-eight y plus-eleven, cinco aserciones).
+     - MISMO commit, mutacion de produccion versionada en
+       src/screens/reminders/index.tsx: en la pildora `days <= 7` ->
+       `days <= 8`; en la linea `{!inactive && days >= 0 && days <= 10 ? (`,
+       `days <= 10` -> `days <= 11`. Localiza ambas con grep -n.
+     - Rojo esperado: el it de R6, por asercion; los 28 tests previos verdes.
+  4. feat(reminders): revert the R6 probe mutation, thresholds locked (R6)          <- VERDE
+     - Revierte las dos:
+       git diff origin/main -- mobile-pet-tracker/src/screens/reminders/index.tsx; echo "exit=$?"
+       -> salida VACIA.
+  5. Sondas (NO se commitean; cada una roja y restaurada con git diff vacio):
+     R5: U9, U10, U11, U12, U15; R6: S8 (solo pildora <= 8) y S9 (solo badge
+     <= 11). Lista exacta en tasks.md §Enmienda E1. Deja el rojo de cada una
+     en el reporte.
+
+== REGLAS CRITICAS ==
+
+- Un commit por paso, el test rojo SIEMPRE antes que su verde. Mensajes
+  literales de arriba (y de tasks.md §Enmienda E1).
+- Actualiza specs/reminder-dates-days-until-drift/traceability.md TRAS CADA
+  COMMIT, no al final (H5 de la ronda 1): filas R5 y R6 y la fila del
+  candado heredado en "Candados ajenos movidos".
+- R5 y R6 son requisitos de VERIFICACION (CHECKPOINTS.md C4, quinto punto):
+  el rojo es una mutacion de PRODUCCION versionada; nunca del doble ni del
+  test. Produccion al final identica a 5b1cb8e9:
+    git diff 5b1cb8e9 HEAD -- mobile-pet-tracker/src/utils/reminder-dates.ts mobile-pet-tracker/src/screens/reminders/index.tsx; echo "exit=$?"
+  -> vacio.
+- Valores esperados LITERALES; `toBe`, no `toEqual`. Fechas con componentes
+  locales. NO toques la config global de jest ni TZ.
+- NO toques los tests de R1, R2 ni R3, ni el helper skewed de R2.
+- Sin comentarios nuevos en produccion. Nada de la forma `<palabra>-[` en
+  codigo de test (guard C8 de design-drift.test.ts).
+- bun para todo en movil; nunca npx ni npm. Cero dependencias.
+- NO rebasees, NO mergees main, NO hagas push.
+- NO toques progress/history.md, progress/current.md, STATUS.md ni el campo
+  status de feature_list.json. NO marques la casilla de R4.
+
+== ENTORNO ==
+
+- NO corras ./init.sh (Postgres y LocalStack compartidos; esta feature no
+  los necesita).
+- Base de esta ronda (tasks.md §Enmienda E1 "Antes de empezar"): midela sin
+  pipe; esperado reminder-dates.test.ts 17, reminders/index.test.tsx 28,
+  suite movil 82 suites / 1467 tests.
+- Cierre: comandos de tasks.md §Enmienda E1 "Cierre (ronda 2)", desde
+  mobile-pet-tracker/, sin pipe. Esperado: 20, 29 y 13 tests en los tres
+  ficheros; suite movil 82 / 1471; tsc y lint exit=0.
+
+Criterios de aceptacion: R1-R3 y R5-R6 de requirements.md (R4 lo firma el humano).
+
+Al terminar: anade un apartado "## Ronda 2" a
+progress/impl_reminder-dates-days-until-drift.md (pwd y branch, base medida,
+salida de cada rojo y cada verde, los git diff vacios, sondas con su rojo,
+recuentos finales, lista de commits con hash) y para.
+```

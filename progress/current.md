@@ -37,4 +37,10 @@
 - Enmienda E1 (9ad946e0): R5 (fin de mes, fin de ano, Nochevieja CDMX; rojo U8), R6 (umbrales;
   rojo <= 8 / <= 11 en la pantalla), filas heredadas a componentes locales. Filas verificadas por el
   leader en las 419 zonas IANA. Espejo en Notion, gate reabierto solo para E1 ("En revision").
-- Siguiente: el humano firma E1 en Notion -> commit de firma -> handoff ronda 2 a Codex.
+- Firma de E1: el humano aprobo en Notion (Estado del gate = Aprobado, casilla de E1 marcada,
+  page_last_edited_at 2026-09-24T03:46:13.647Z). Commit de firma 7024a55b; Notion Rol actual =
+  Implementer.
+- Ronda 2: handoff en progress/handoff_reminder-dates-days-until-drift.md §Ronda 2. Solo tests (R5,
+  R6 y filas heredadas); produccion identica a 5b1cb8e9. Esperado movil 82/1471.
+- Siguiente: el humano confirma que Codex termino la ronda 2 -> leer el apartado Ronda 2 del impl ->
+  turno de init.sh con Frontend -> reviewer ronda 2.
