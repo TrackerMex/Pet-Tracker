@@ -21,6 +21,7 @@ import {
   useTranslate,
 } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import { fromPickerValue } from '../../utils/date-picker-value';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 import { useThemeColors } from '../../theme/use-theme-colors';
@@ -399,7 +400,7 @@ export function AddPetScreen() {
             value={birthDate ?? new Date()}
             onDismiss={() => setShowDatePicker(false)}
             onValueChange={(_event, selectedDate) => {
-              setBirthDate(selectedDate);
+              setBirthDate(fromPickerValue(selectedDate));
               setShowDatePicker(false);
             }}
           />
