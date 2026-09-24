@@ -3312,7 +3312,7 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
       expect(quickActions).not.toContain("'/reminders'");
     });
 
-    it('muestra feedback visual al pulsar el enlace', async () => {
+    it('#112 R1: muestra feedback visual al pulsar el enlace, acotado a su tag de apertura', async () => {
       const opacityOf = (style: unknown): unknown => {
         const entries = (Array.isArray(style) ? style.flat(Infinity) : [style])
           .filter(
@@ -3330,9 +3330,14 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
         'utf8',
       );
       const anchor = source.indexOf('testID="reminders-see-all"');
+      // #112 R1: own opening tag of reminders-see-all, from `<` to `<`. Ending
+      // at `</Pressable>` let a nested Pressable lend it a foreign style. A `<`
+      // inside the tag shrinks the slice and fails red; a string child placed
+      // before the first element child still lands in the slice and can pass
+      // green. Both limits: docs/conventions.md, opening-tag slices section.
       const block = source.slice(
-        source.lastIndexOf('<Pressable', anchor),
-        source.indexOf('</Pressable>', anchor),
+        source.lastIndexOf('<', anchor),
+        source.indexOf('<', anchor),
       );
 
       expect(opacityOf(link.props.style)).toBe(1);

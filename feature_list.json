@@ -2170,7 +2170,7 @@
   {
     "id": 112,
     "name": "mobile-reminders-see-all-source-lock-nesting",
-    "status": "pending",
+    "status": "done",
     "priority": "P3",
     "description": "Gemelo del patron roto que #109 arreglo, dejado fuera de su alcance porque el fichero lo tenia tomado #108. La sesion Backend confirmo el 2026-09-22 que #108 NO lo absorbe: su spec esta firmada y acota el fichero a las dos lineas de los literales partidos, asi que meterlo obligaria a enmendar una spec firmada y reabrir el gate humano -y el ahorro de dos lineas no paga reabrir un gate-. Verificado por ellos contra main e4c9ea99, lineas 3356-3359 de mobile-pet-tracker/src/screens/home/index.test.tsx: el candado de reminders-see-all recorta con source.slice(source.lastIndexOf('<Pressable', anchor), source.indexOf('</Pressable>', anchor)) y el ancla es testID=\"reminders-see-all\". El agujero es el mismo que cerro #109: con un Pressable anidado dentro, el corte cae en el cierre del HIJO y el bloque se queda con el tag de apertura del hijo y su style, asi que el candado pasa VERDE vigilando el elemento equivocado y no avisa. El arreglo son dos lineas: recortar de menor-que a menor-que, el tag de apertura propio. El patron, sus DOS limites conocidos y cual de los dos avisa estan ya escritos en docs/conventions.md seccion Recortes del tag de apertura en candados de fuente, asi que esta feature solo aplica lo que ya esta decidido. OJO al orden: el fichero lo tocan tambien #108 y #110, asi que hay que coordinar con la sesion Backend antes de arrancar.",
     "acceptance_criteria": [
@@ -2324,6 +2324,57 @@
       "mobile-pet-tracker/src/app/(tabs)/food.tsx",
       "mobile-pet-tracker/src/components/pet-hero-header.tsx",
       "docs/ui-guidelines.md",
+      "docs/conventions.md"
+    ]
+  },
+  {
+    "id": 120,
+    "name": "mobile-classnames-element-slice-children",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada al cerrar #112 el 2026-09-24. Es el hallazgo F de su spec: specs/mobile-reminders-see-all-source-lock-nesting/requirements.md §Fuera de alcance, con el detalle en design.md §Barrido de gemelos. Es un primo del patron que cerraron #109 y #112, NO un gemelo. El helper elementWithTestId esta duplicado en mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts y en legibility-classnames.test.ts (localizar con grep -n \"function elementWithTestId\"). Recorta desde el ancla testID=\"...\" hasta indexOf(closingTag, start), asi que los hijos quedan DENTRO del bloque. Medido sobre 993b62fa con pill-active de src/screens/reminders/index.tsx: si se quita rounded-xl del propio tag y se anade un hijo <View className=\"rounded-xl\" />, el candado de #62 R4 sigue en VERDE. LIMITE: en legibility-classnames hay candados que aseveran precisamente sobre el hijo, asi que no se puede migrar a ciegas al recorte de < a <. La spec tiene que clasificar call-site a call-site cuales vigilan el tag propio y cuales el subarbol. No toca produccion.",
+    "acceptance_criteria": [
+      "Cada call-site de elementWithTestId queda clasificado por escrito: vigila el tag propio o el subarbol",
+      "Los que vigilan el tag propio pasan al recorte de < a < de docs/conventions.md §Recortes del tag de apertura en candados de fuente; los de subarbol se quedan, con su motivo escrito",
+      "Sonda de mutacion: con rounded-xl solo en un hijo de pill-active, el candado de #62 R4 pasa a ROJO; hoy pasa en verde",
+      "Cero cambio en produccion; suite movil verde medida sin pipe; delta de tests declarado"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts",
+      "mobile-pet-tracker/src/__tests__/legibility-classnames.test.ts"
+    ]
+  },
+  {
+    "id": 121,
+    "name": "mobile-home-bell-source-lock-unbounded",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada al cerrar #112 el 2026-09-24. Es el hallazgo F de su spec, con el detalle en specs/mobile-reminders-see-all-source-lock-nesting/design.md §Barrido de gemelos. El candado esta en mobile-pet-tracker/src/screens/home/index.test.tsx: it('usa la ruta real sin cast Href y conserva el feedback de pulsado'), dentro de describe('#78 R10: la campana vive en el hero y lleva al centro de alertas'). Asevera la receta de pulsado (style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}) contra TODO src/screens/home/index.tsx con expect(source).toMatch(...), y no contra el tag de la campana. Medido sobre 993b62fa: con style={{ opacity: 1 }} en home-alerts-bell el fichero sigue en 140/140 VERDE, porque le basta la receta de reminders-see-all. El recorte no esta mal acotado: no existe. La campana vive en src/screens/home/index.tsx (grep -n 'testID=\"home-alerts-bell\"'). El arreglo natural es anclar ahi y recortar de < a <, como hizo #112. OJO: ese it comprueba ademas la ruta /alerts y el icono Bell; esas aserciones no se tocan.",
+    "acceptance_criteria": [
+      "La asercion de la receta de pulsado de la campana se acota al tag de apertura de home-alerts-bell, con el recorte de < a < de docs/conventions.md",
+      "Sonda de mutacion: con style={{ opacity: 1 }} en home-alerts-bell, el candado pasa a ROJO por su asercion de fuente; hoy da verde",
+      "Las demas aserciones del it (ruta /alerts sin cast Href, icono Bell) no cambian",
+      "Cero cambio en produccion; suite movil verde medida sin pipe; delta de tests declarado"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/home/index.test.tsx"
+    ]
+  },
+  {
+    "id": 122,
+    "name": "mobile-source-lock-slice-blind-spots",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada al cerrar #112 el 2026-09-24. Viene de las Obs. 1-3 del veredicto (progress/review_mobile-reminders-see-all-source-lock-nesting.md §Sondas propias en zona ciega, sondas P1, P2 y P4). Son tres verdes falsos que YA existian con el recorte viejo, asi que no son una regresion de #112. Afectan a los candados de fuente que recortan de < a <: el meal-toggle de #109 en src/app/(tabs)/__tests__/food.test.tsx y reminders-see-all de #112 en src/screens/home/index.test.tsx (localizar con grep -rn \"lastIndexOf('<', anchor)\" mobile-pet-tracker/src). (1, media) P1: un comentario JSX {/* receta */} entre el > del tag y el primer hijo deja el fichero en 140/140 verde con el propio tag en opacity: 1. docs/conventions.md §Recortes del tag de apertura en candados de fuente deja sin defensa el limite 2 porque 'en la practica rompe media suite al intentarlo'. Eso es cierto para una cadena hija (L2 tumba 118 tests), pero NO para un comentario, que no se renderiza. El calculo de coste es falso para comentarios y hay que corregirlo. El comentario del call-site de #112, que dice 'a string child', se queda corto por lo mismo. (2, baja) P2: la regex casa con codigo comentado. Si se comenta con // la receta dentro del propio tag y se pone style={{ opacity: 1 }}, el candado sigue verde con los dos recortes. (3, baja) P4: el candado no asevera que el ancla sea unica. Un senuelo {false && <Pressable testID=\"reminders-see-all\" ...receta... />} delante del sujeto lo deja verde; cerrarlo costaria indexOf === lastIndexOf. P3 (prop duplicada) NO entra, porque lo para tsc con TS17001. LIMITES: (2) y (3) son de peso bajo y la spec puede decidir documentarlos en vez de defenderlos; cada defensa nueva es otro simbolo que vigilar, que es justo el coste que conventions.md sopesa. Tampoco entran elementWithTestId (#120) ni la campana (#121).",
+    "acceptance_criteria": [
+      "docs/conventions.md deja de justificar el limite 2 con un coste que no vale para comentarios JSX; la spec decide defenderlo, y como, o aceptarlo por escrito",
+      "Para P2 y P4, la spec decide por escrito si los defiende o los documenta, con la sonda que lo demuestra",
+      "Cada defensa que se anada lleva su sonda de mutacion: la P1, P2 o P4 que le toque pasa de VERDE a ROJO en los dos call-sites",
+      "Cero cambio en produccion; suite movil verde medida sin pipe; ninguna sonda de R2/R3 de #109 ni de #112 cambia de veredicto sin declararlo"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/app/(tabs)/__tests__/food.test.tsx",
+      "mobile-pet-tracker/src/screens/home/index.test.tsx",
       "docs/conventions.md"
     ]
   }
