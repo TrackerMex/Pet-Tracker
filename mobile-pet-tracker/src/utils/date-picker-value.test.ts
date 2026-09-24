@@ -46,3 +46,18 @@ describe('#123 R2: en Android, toPickerValue abre el diálogo en el día local',
     expect(toPickerValue(wallClock(local, utc)).toISOString()).toBe(esperado);
   });
 });
+
+describe('#123 R3: fuera de Android las dos conversiones devuelven el mismo objeto', () => {
+  beforeEach(() => setPlatform('ios'));
+  afterEach(() => setPlatform(originalPlatform));
+
+  it('ios: fromPickerValue devuelve el mismo Date', () => {
+    const picked = wallClock([2026, 8, 23, 18, 0], [2026, 8, 24]);
+    expect(fromPickerValue(picked)).toBe(picked);
+  });
+
+  it('ios: toPickerValue devuelve el mismo Date', () => {
+    const day = wallClock([2026, 8, 24, 20, 0], [2026, 8, 25]);
+    expect(toPickerValue(day)).toBe(day);
+  });
+});
