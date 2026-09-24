@@ -1,6 +1,6 @@
 ---
 feature: "mobile-reminders-see-all-source-lock-nesting"
-status: spec_ready       # draft | spec_ready | approved
+status: approved         # draft | spec_ready | approved
 tags: [harness, spec, mobile, deuda]
 ---
 
@@ -219,7 +219,7 @@ y descartada.
 
 ## Aprobación
 
-- [ ] **Aprobado por humano** (fecha: ____) ← gate obligatorio antes de
+- [x] **Aprobado por humano** (fecha: 2026-09-23) ← gate obligatorio antes de
       implementar. Al marcar esta casilla el humano firma también los seis
       puntos de §Qué firma el humano al aprobar esta spec.
 
