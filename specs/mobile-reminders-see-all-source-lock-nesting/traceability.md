@@ -11,11 +11,11 @@ tags: [harness, spec, mobile, deuda]
 
 | Requisito | Test (archivo::nombre) | Commit rojo | Commit verde |
 |---|---|---|---|
-| R1: el bloque se acota al tag de apertura propio | `src/screens/home/index.test.tsx` :: `#70 R10: enlace a la lista de recordatorios` › `#112 R1: muestra feedback visual al pulsar el enlace, acotado a su tag de apertura` | pendiente | pendiente |
-| R2: rojo ante los dos agujeros (N1, W1) | el mismo test de R1, cerrado por **mutación de producción** (C4, vía **b**). N1 va versionada en el rojo; W1 es sonda temporal, con su veredicto en `progress/impl_mobile-reminders-see-all-source-lock-nesting.md` | pendiente | pendiente |
-| R3: mismo veredicto en las doce sondas (E1 declarada) | el mismo test de R1. Tabla de las doce sondas en el mismo reporte; son temporales y no se commitean | pendiente (mismo candado de R1/R2) | pendiente |
-| R4: el patrón, anclado por contenido | **sin test**: el comentario sobre el `const block` en `src/screens/home/index.test.tsx` y el párrafo sustituido en `docs/conventions.md` §Recortes del tag de apertura. Lo verifica el `reviewer` leyendo, más `grep -rn "lastIndexOf('<[A-Z]" mobile-pet-tracker/src` → exit 1 | N/A: entregable documental declarado sin test | pendiente |
-| R5: cero diff de producción | **sin test**: `git diff --exit-code origin/main...HEAD -- mobile-pet-tracker/src/screens/home/index.tsx` → exit 0. Lo verifica el `reviewer` | pendiente (N1 versionada) | pendiente (N1 revertida) |
+| R1: el bloque se acota al tag de apertura propio | `src/screens/home/index.test.tsx` :: `#70 R10: enlace a la lista de recordatorios` › `#112 R1: muestra feedback visual al pulsar el enlace, acotado a su tag de apertura` | `89c8f317` | `2597d29e` |
+| R2: rojo ante los dos agujeros (N1, W1) | el mismo test de R1, cerrado por **mutación de producción** (C4, vía **b**). N1 va versionada en el rojo; W1 es sonda temporal, con su veredicto en `progress/impl_mobile-reminders-see-all-source-lock-nesting.md` | `89c8f317` | `2597d29e` |
+| R3: mismo veredicto en las doce sondas (E1 declarada) | el mismo test de R1. Tabla de las doce sondas en el mismo reporte; son temporales y no se commitean | `89c8f317` (mismo candado de R1/R2) | `2597d29e`; sondas temporales sin commit |
+| R4: el patrón, anclado por contenido | **sin test**: el comentario sobre el `const block` en `src/screens/home/index.test.tsx` y el párrafo sustituido en `docs/conventions.md` §Recortes del tag de apertura. Lo verifica el `reviewer` leyendo, más `grep -rn "lastIndexOf('<[A-Z]" mobile-pet-tracker/src` → exit 1 | N/A: entregable documental declarado sin test | `99dc211c` |
+| R5: cero diff de producción | **sin test**: `git diff --exit-code origin/main...HEAD -- mobile-pet-tracker/src/screens/home/index.tsx` → exit 0. Lo verifica el `reviewer` | `89c8f317` (N1 versionada) | `2597d29e` (N1 revertida) |
 
 Regla: el reviewer no aprueba si alguna fila queda «pendiente».
 
