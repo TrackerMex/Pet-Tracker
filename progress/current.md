@@ -42,5 +42,11 @@
   Implementer.
 - Ronda 2: handoff en progress/handoff_reminder-dates-days-until-drift.md §Ronda 2. Solo tests (R5,
   R6 y filas heredadas); produccion identica a 5b1cb8e9. Esperado movil 82/1471.
-- Siguiente: el humano confirma que Codex termino la ronda 2 -> leer el apartado Ronda 2 del impl ->
-  turno de init.sh con Frontend -> reviewer ronda 2.
+- Ronda 2 de Codex: 45908678..c113e79b (4 commits TDD + trazabilidad), movil 82/1471.
+- init.sh de revision ronda 2 (turno cedido por Frontend) sobre c113e79b: exit=0 sin pipe; unit
+  170/1298, movil 82/1471, e2e 27 + 3 skipped. LocalStack devuelto.
+- Reviewer ronda 2: APROBADO (5f471fc2). H1-H4 cerrados (U8-U15 y S8-S9 rojos; 419 zonas sin
+  fallo). N1 baja: getUTCMonth/getUTCFullYear solo del lado `to` sobrevive (lo caza el grep de
+  cierre); N2 info: filtros scheduled/!inactive sin candado, anterior a #84. Deuda candidata, sin
+  registrar hasta que decida el humano.
+- Siguiente: smoke R4 del humano en dev build de Android -> cierre (merge de origin/main, no rebase).
