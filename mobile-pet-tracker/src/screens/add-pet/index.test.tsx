@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import * as ImagePicker from 'expo-image-picker';
+import { Platform } from 'react-native';
 
 import { requestPhotoUploadUrl, uploadPhotoToUrl } from '../../api/media';
 import { createPet } from '../../api/pets';
@@ -480,6 +481,64 @@ describe('#95 R6: métricas bajo cabecera nativa', () => {
     await renderAddPet();
     expect(screen.getByTestId('screen-add-pet').props.contentContainerStyle).toEqual({
       padding: 24, gap: 16, paddingBottom: 48,
+    });
+  });
+});
+
+const originalPlatform = Platform.OS;
+
+function setPlatform(os: string): void {
+  Object.defineProperty(Platform, 'OS', { configurable: true, value: os });
+}
+
+function wallClock(local: number[], utc: number[]): Date {
+  return Object.assign(new Date(local[0], local[1], local[2], local[3], local[4]), {
+    getUTCFullYear: () => utc[0],
+    getUTCMonth: () => utc[1],
+    getUTCDate: () => utc[2],
+  });
+}
+
+describe('#123: picker de nacimiento de Añadir mascota en Android a las 20:00 del 24 de septiembre', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date(2026, 8, 24, 20, 0));
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = 'http://example.test/v1';
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockUseSelectedPet.mockReturnValue({ selectedPetId: 'pet-1', selectPet });
+    mockCreatePet.mockResolvedValue({ kind: 'ok', pet: { id: 'pet-new', name: 'Nala' } as never });
+    setPlatform('android');
+  });
+
+  afterEach(() => {
+    setPlatform(originalPlatform);
+    jest.useRealTimers();
+  });
+
+  describe('#123 R6: Añadir mascota muestra y manda el día de nacimiento elegido', () => {
+    it.each([
+      ['elegir hoy (24 de septiembre de 2026) manda 2026-09-24', [2026, 8, 23, 18, 0], [2026, 8, 24], '24/9/2026', '2026-09-24'],
+      ['elegir el 1 de octubre de 2025 manda 2025-10-01 (cruce de mes)', [2025, 8, 30, 18, 0], [2025, 9, 1], '1/10/2025', '2025-10-01'],
+      ['elegir el 1 de enero de 2026 manda 2026-01-01 (cruce de año)', [2025, 11, 31, 18, 0], [2026, 0, 1], '1/1/2026', '2026-01-01'],
+    ] as [string, number[], number[], string, string][])('%s', async (_title, local, utc, etiqueta, birthDate) => {
+      await renderAddPet();
+      await fireEvent.changeText(screen.getByTestId('name-input'), 'Nala');
+      await fireEvent.press(screen.getByTestId('birth-date-field'));
+      const picker = within(screen.getByTestId('expo-ui-picker-host')).getByTestId('birth-date-picker');
+      await fireEvent(picker, 'onValueChange', {}, wallClock(local, utc));
+      expect(within(screen.getByTestId('birth-date-field')).getByText(etiqueta)).toBeVisible();
+      await fireEvent.press(screen.getByTestId('add-pet-submit'));
+      await waitFor(() => expect(mockCreatePet).toHaveBeenCalledWith(
+        'http://example.test/v1',
+        'jwt-token',
+        { name: 'Nala', species: 'dog', birthDate },
+      ));
     });
   });
 });
