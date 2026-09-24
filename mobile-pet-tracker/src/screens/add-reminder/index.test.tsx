@@ -549,4 +549,18 @@ describe('#123: pickers de fecha de Nuevo recordatorio en Android a las 20:00 de
       ));
     });
   });
+
+  describe('#123 R5: el calendario de Nuevo recordatorio abre en el día local; el mínimo y la hora no se convierten', () => {
+    it('abre en el 24, con el mínimo en el instante actual y la hora a las 09:00', async () => {
+      await renderAddReminder();
+      await waitFor(() => expect(screen.getByTestId('date-field')).toBeVisible());
+      await fireEvent.press(screen.getByTestId('date-field'));
+      const picker = within(screen.getByTestId('expo-ui-picker-host')).getByTestId('date-picker');
+      expect((picker.props.value as Date).toISOString()).toBe('2026-09-24T00:00:00.000Z');
+      expect((picker.props.minimumDate as Date).getTime()).toBe(new Date(2026, 8, 24, 20, 0).getTime());
+      await fireEvent(picker, 'onDismiss');
+      await fireEvent.press(screen.getByTestId('time-field'));
+      expect((within(screen.getByTestId('expo-ui-picker-host')).getByTestId('time-picker').props.value as Date).getTime()).toBe(new Date(2026, 8, 24, 9, 0).getTime());
+    });
+  });
 });
