@@ -2347,7 +2347,7 @@
   {
     "id": 121,
     "name": "mobile-home-bell-source-lock-unbounded",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P3",
     "description": "Registrada al cerrar #112 el 2026-09-24. Es el hallazgo F de su spec, con el detalle en specs/mobile-reminders-see-all-source-lock-nesting/design.md §Barrido de gemelos. El candado esta en mobile-pet-tracker/src/screens/home/index.test.tsx: it('usa la ruta real sin cast Href y conserva el feedback de pulsado'), dentro de describe('#78 R10: la campana vive en el hero y lleva al centro de alertas'). Asevera la receta de pulsado (style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}) contra TODO src/screens/home/index.tsx con expect(source).toMatch(...), y no contra el tag de la campana. Medido sobre 993b62fa: con style={{ opacity: 1 }} en home-alerts-bell el fichero sigue en 140/140 VERDE, porque le basta la receta de reminders-see-all. El recorte no esta mal acotado: no existe. La campana vive en src/screens/home/index.tsx (grep -n 'testID=\"home-alerts-bell\"'). El arreglo natural es anclar ahi y recortar de < a <, como hizo #112. OJO: ese it comprueba ademas la ruta /alerts y el icono Bell; esas aserciones no se tocan.",
     "acceptance_criteria": [
