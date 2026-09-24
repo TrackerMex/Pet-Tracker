@@ -27,3 +27,14 @@
   init.sh ni e2e. R4 (smoke en dev build de Android) es del humano.
 - Siguiente: el humano confirma que Codex termino -> leer progress/impl_reminder-dates-days-until-drift.md
   -> avisar a Frontend -> reviewer.
+- Ronda 1 de Codex: 72af7d62..5b1cb8e9 (6 commits TDD + trazabilidad), movil 82/1467.
+- init.sh de revision (turno cedido por Frontend) sobre 5b1cb8e9: exit=0 sin pipe; unit 170/1298,
+  movil 82/1467, e2e 27 + 3 skipped. LocalStack devuelto.
+- Reviewer ronda 1: RECHAZADO (158fbf43). H1 alta: las tablas firmadas solo tienen fechas del 9 al
+  20 de septiembre; `to.getDate() - from.getDate()` deja verde la suite entera (82/1467). H2 media:
+  UTC parcial (solo mes o solo año) sobrevive a R2. H3 baja: umbrales <= 8 / <= 11 sobreviven. H4
+  baja: filas heredadas con Z fallan en UTC-9. Produccion correcta.
+- Enmienda E1 (9ad946e0): R5 (fin de mes, fin de ano, Nochevieja CDMX; rojo U8), R6 (umbrales;
+  rojo <= 8 / <= 11 en la pantalla), filas heredadas a componentes locales. Filas verificadas por el
+  leader en las 419 zonas IANA. Espejo en Notion, gate reabierto solo para E1 ("En revision").
+- Siguiente: el humano firma E1 en Notion -> commit de firma -> handoff ronda 2 a Codex.
