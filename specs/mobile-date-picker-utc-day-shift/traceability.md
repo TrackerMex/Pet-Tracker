@@ -36,7 +36,7 @@ ancestros y habría que reapuntarlos verificando `git merge-base --is-ancestor`.
 | R5 — Nuevo recordatorio abre en el día local; mínimo y hora sin convertir | `#123 R5: el calendario de Nuevo recordatorio abre en el día local; el mínimo y la hora no se convierten` | 4d02bb34 | 86204625 |
 | R6 — Añadir mascota muestra y manda el día de nacimiento | `#123 R6: Añadir mascota muestra y manda el día de nacimiento elegido` | b4bf8d41 | 752528ba |
 | R7 — Añadir mascota abre en el día local; máximo sin convertir | `#123 R7: el calendario de nacimiento abre en el día local y el máximo no se convierte` | 25c0175f | 6d5769d7 |
-| R8 — smoke en dev build de Android en México | humano | — | pendiente (casilla de [[requirements]] §Prueba de humo) |
+| R8 — smoke en dev build de Android en México | humano | — | firmado por el humano en `ca12fb97` (2026-09-24, CPH2709) |
 
 ## Candados ajenos movidos
 

@@ -5382,3 +5382,70 @@ arreglo ingenuo con `getUTC*`, y es lo que canda R2.
 - **Plantilla de handoff**: `.claude/agents/leader.md` pide ahora `test ! -e`
   en vez de `rm -f` para `router.d.ts`. Se avisó a Backend del id #124; sus
   siguientes ids empiezan en #125.
+
+## #123 `mobile-date-picker-utc-day-shift` — 2026-09-24
+
+Sesion Backend, worktree `/home/claude/sites/Pet-Tracker-wt-backend`, branch
+`feature/123-mobile-date-picker-utc-day-shift` desde `origin/main` 70f841f3
+(#160 mergeada: #84 y el registro de #123) e integrada con f72c1fc0 (#121)
+por merge. En paralelo, Frontend cerraba #121 y especificaba #122.
+
+### Que se hizo
+
+Bug P1 reportado por el humano en el smoke de #84. En Android el
+`DatePickerDialog` de `@expo/ui` 57.0.11 devuelve `selectedDateMillis`, que en
+Material3 es la medianoche UTC del dia tocado, y abre con el valor tomado como
+dia UTC. La app lo leia con getters locales: en Mexico (UTC-6) Nuevo
+recordatorio y la fecha de nacimiento de Anadir mascota guardaban el dia
+anterior, y despues de las 18:00 el calendario abria en manana. Modulo nuevo
+`src/utils/date-picker-value.ts`: `toPickerValue` (medianoche UTC del dia
+local, lo que recibe el dialogo) y `fromPickerValue` (medianoche local del dia
+UTC, lo que guarda la pantalla), usados en `value=` y en `onValueChange` de las
+dos pantallas. Cero claves, cero dependencias, cero parches a `node_modules`,
+cero cambios nativos.
+
+Decisiones firmadas: **D1** un modulo con dos funciones; **D2** solo Android
+convierte (el `DatePicker` de SwiftUI devuelve un instante local; convertir
+siempre romperia iOS en offsets positivos); **D3** `minimumDate`,
+`maximumDate` y el picker de hora no se tocan (el nativo ya los convierte con
+`toUtcDayMillis`; convertirlos dejaria elegir ayer o prohibiria hoy); **D4**
+dobles de reloj de pared con getters UTC sesgados, porque jest no deja forzar
+`TZ`; **D9** copy intacto.
+
+### Premisas que no se heredaron
+
+`spec_author` corrigio la entrada: add-pet tenia el bug desde su creacion
+(`f44f8dc5`), no desde `02f02ae4`; el candado `#90 R6` asumia lo contrario y
+seguia verde porque jest corre como `'ios'` (queda como candado de la rama
+iOS); la app no muestra `birthDate`, solo `ageMonths`, asi que el smoke mira la
+edad. El leader pidio antes de espejar dos filas de R1 (Honolulu y Kiritimati)
+para que ningun offset fijo de -48 h a +48 h sobreviviera a la tabla; el techo
+que queda (medianoche local sin `Date.UTC`, verde solo en un host UTC) lo cubre
+el grep de cierre.
+
+### Gate y ciclo
+
+- Spec `045b091b`, espejada a Notion; firma `b279cdfb`
+  (`page_last_edited_at` 2026-09-24T16:11:47Z).
+- Codex: 14 commits TDD, todos los rojos naturales (el codigo de hoy era el
+  defecto), movil 82/1471 a 83/1491.
+- Reviewer (`30f04b46`): **aprobado a la primera**. Rehizo los 14 commits,
+  corrio las sondas de la spec, 61/61 en 7 `TZ` reales y una ida y vuelta con
+  `Date` reales en 10 zonas. init.sh exit=0 en revision, corrido por el leader
+  con turno de LocalStack cedido por Frontend.
+- R8: smoke en dev build de Android firmado por el humano en su propio commit
+  (`ca12fb97`, CPH2709, 2026-09-24).
+
+### Desviaciones y deuda, todas no bloqueantes
+
+- **H1 (baja, proceso)**: Codex relleno la trazabilidad al final otra vez,
+  igual que en #84. La plantilla de handoff lo pedia «tras cada commit», lo que
+  chocaba con la lista cerrada de commits; ya pide un commit final
+  (`.claude/agents/leader.md`).
+- **H2 (baja)**: ningun test cubre reabrir el dialogo tras elegir fecha;
+  `value={date ?? toPickerValue(new Date())}` sobrevive. Solo afectaria a
+  zonas UTC+ (en Mexico no). No registrada: el humano no la pidio.
+- **#125 registrada** durante el smoke: el aviso por defecto «7 dias antes»
+  dispara el push al guardar si faltan menos de 7 dias y el cuerpo no dice
+  cuando vence. El humano eligio C (desactivar en la app los avisos ya
+  pasados) + A (fecha de vencimiento en el cuerpo del push).
