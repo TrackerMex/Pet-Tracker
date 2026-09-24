@@ -14,4 +14,14 @@
   Android (D2, iOS devuelve instante local); min/max y picker de hora sin tocar (D3). Filas de
   Honolulu y Kiritimati pedidas por el leader: ningun offset fijo sobrevive. +1 suite, +20 tests.
 - Espejo en Notion, gate "En revision": https://app.notion.com/p/3e56115a9b2781258d1dd75065e82870
-- Siguiente: firma humana en Notion -> commit de firma -> handoff a Codex.
+- Firma: el humano aprobo en Notion (Estado del gate = Aprobado, casilla marcada,
+  page_last_edited_at 2026-09-24T16:11:47.658Z). Commit de firma b279cdfb; Notion Rol actual =
+  Implementer.
+- feature: mobile-date-picker-utc-day-shift (#123), status in_progress
+- inicio: 2026-09-24T16:15Z
+- plan: Codex CLI implementa R1-R7 en este worktree (helper date-picker-value solo en Android y su
+  uso en add-reminder y add-pet; rojos naturales). Handoff en
+  progress/handoff_mobile-date-picker-utc-day-shift.md. Solo movil: Codex no corre init.sh ni e2e.
+  R8 (smoke en dev build de Android en Mexico, despues de las 18:00) es del humano.
+- Siguiente: el humano confirma que Codex termino -> leer progress/impl_mobile-date-picker-utc-day-shift.md
+  -> turno de init.sh con Frontend -> reviewer.
