@@ -21,7 +21,7 @@ import {
   useTranslate,
 } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
-import { fromPickerValue } from '../../utils/date-picker-value';
+import { fromPickerValue, toPickerValue } from '../../utils/date-picker-value';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
 import { TOUCH_SLOP } from '../../theme/touch-target';
 import { useThemeColors } from '../../theme/use-theme-colors';
@@ -397,7 +397,7 @@ export function AddPetScreen() {
             mode="date"
             maximumDate={new Date()}
             presentation="dialog"
-            value={birthDate ?? new Date()}
+            value={toPickerValue(birthDate ?? new Date())}
             onDismiss={() => setShowDatePicker(false)}
             onValueChange={(_event, selectedDate) => {
               setBirthDate(fromPickerValue(selectedDate));
