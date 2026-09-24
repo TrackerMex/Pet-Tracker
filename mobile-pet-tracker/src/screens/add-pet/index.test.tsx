@@ -541,4 +541,14 @@ describe('#123: picker de nacimiento de Añadir mascota en Android a las 20:00 d
       ));
     });
   });
+
+  describe('#123 R7: el calendario de nacimiento abre en el día local y el máximo no se convierte', () => {
+    it('abre en el 24, con el máximo en el instante actual', async () => {
+      await renderAddPet();
+      await fireEvent.press(screen.getByTestId('birth-date-field'));
+      const picker = within(screen.getByTestId('expo-ui-picker-host')).getByTestId('birth-date-picker');
+      expect((picker.props.value as Date).toISOString()).toBe('2026-09-24T00:00:00.000Z');
+      expect((picker.props.maximumDate as Date).getTime()).toBe(new Date(2026, 8, 24, 20, 0).getTime());
+    });
+  });
 });
