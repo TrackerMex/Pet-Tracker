@@ -239,7 +239,7 @@ export function RemindersScreen() {
                     return (
                       reminder.status === 'scheduled' &&
                       days >= 0 &&
-                      days <= 8
+                      days <= 7
                     );
                   }).length
                 }
@@ -292,7 +292,7 @@ export function RemindersScreen() {
                       <Text className="text-xs font-semibold text-muted">
                         {t(meta.labelKey)}
                       </Text>
-                      {!inactive && days >= 0 && days <= 11 ? (
+                      {!inactive && days >= 0 && days <= 10 ? (
                         <Text
                           testID={`reminder-upcoming-${reminder.id}`}
                           className="rounded-full bg-warning-soft px-2 py-0.5 text-2xs font-bold text-warning-strong"
