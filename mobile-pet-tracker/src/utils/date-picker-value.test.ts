@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 
-import { fromPickerValue } from './date-picker-value';
+import { fromPickerValue, toPickerValue } from './date-picker-value';
 
 const originalPlatform = Platform.OS;
 
@@ -29,5 +29,20 @@ describe('#123 R1: en Android, fromPickerValue convierte el día UTC del diálog
   ] as [string, number[], number[], number[]][])('%s', (_title, local, utc, esperado) => {
     const r = fromPickerValue(wallClock(local, utc));
     expect([r.getFullYear(), r.getMonth(), r.getDate()]).toEqual(esperado);
+  });
+});
+
+describe('#123 R2: en Android, toPickerValue abre el diálogo en el día local', () => {
+  beforeEach(() => setPlatform('android'));
+  afterEach(() => setPlatform(originalPlatform));
+
+  it.each([
+    ['24 de septiembre a las 20:00 en CDMX (en UTC ya es el 25)', [2026, 8, 24, 20, 0], [2026, 8, 25], '2026-09-24T00:00:00.000Z'],
+    ['30 de septiembre a las 20:00 en CDMX (en UTC ya es 1 de octubre)', [2026, 8, 30, 20, 0], [2026, 9, 1], '2026-09-30T00:00:00.000Z'],
+    ['31 de diciembre a las 20:00 en CDMX (en UTC ya es 2027)', [2026, 11, 31, 20, 0], [2027, 0, 1], '2026-12-31T00:00:00.000Z'],
+    ['1 de enero de 2027 a medianoche en CDMX (valor ya elegido, al reabrir)', [2027, 0, 1, 0, 0], [2027, 0, 1], '2027-01-01T00:00:00.000Z'],
+    ['24 de septiembre a las 00:30 en Madrid (en UTC aún es el 23)', [2026, 8, 24, 0, 30], [2026, 8, 23], '2026-09-24T00:00:00.000Z'],
+  ] as [string, number[], number[], string][])('%s', (_title, local, utc, esperado) => {
+    expect(toPickerValue(wallClock(local, utc)).toISOString()).toBe(esperado);
   });
 });
