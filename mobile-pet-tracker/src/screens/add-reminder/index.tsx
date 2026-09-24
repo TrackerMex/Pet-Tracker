@@ -14,6 +14,7 @@ import {
   useTranslate,
 } from '../../providers/language-provider';
 import { useSelectedPet } from '../../providers/selected-pet-provider';
+import { fromPickerValue } from '../../utils/date-picker-value';
 import { combineDateAndTime } from '../../utils/reminder-dates';
 import { REMINDER_TYPE_META } from '../../utils/reminder-meta';
 import { CONTINUOUS_CORNER } from '../../theme/native-styles';
@@ -218,7 +219,7 @@ function AddReminderContent({ petId }: { petId: string }) {
             value={date ?? new Date()}
             onDismiss={() => setShowDatePicker(false)}
             onValueChange={(_event, selectedDate) => {
-              setDate(selectedDate);
+              setDate(fromPickerValue(selectedDate));
               setShowDatePicker(false);
             }}
           />
