@@ -226,6 +226,10 @@ describe('#78 R10: la campana vive en el hero y lleva al centro de alertas', () 
       'utf8',
     );
     const anchor = source.indexOf('testID="home-alerts-bell"');
+    // #121 R1: own opening tag of home-alerts-bell, from `<` to `<`. Matching
+    // the whole file let the reminders-see-all recipe stand in for the bell's.
+    // Same two limits as reminders-see-all: docs/conventions.md, opening-tag
+    // slices section.
     const block = source.slice(
       source.lastIndexOf('<', anchor),
       source.indexOf('<', anchor),
