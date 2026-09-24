@@ -228,7 +228,7 @@ describe('#78 R10: la campana vive en el hero y lleva al centro de alertas', () 
     const anchor = source.indexOf('testID="home-alerts-bell"');
     // #121 R1: own opening tag of home-alerts-bell, from `<` to `<`. Matching
     // the whole file let the reminders-see-all recipe stand in for the bell's.
-    // Same two limits as reminders-see-all: docs/conventions.md, opening-tag
+    // Same limits as reminders-see-all: docs/conventions.md, opening-tag
     // slices section.
     const block = source.slice(
       source.lastIndexOf('<', anchor),
@@ -237,6 +237,8 @@ describe('#78 R10: la campana vive en el hero y lleva al centro de alertas', () 
 
     expect(appRoutes(join(process.cwd(), 'src/app'))).toContain('/alerts');
     expect(source).not.toContain("'/alerts' as Href");
+    // #122 R1: the slice assumes one anchor. A second copy (a decoy, the other
+    // branch of a ternary, a comment) would be the one sliced.
     expect(source.lastIndexOf('testID="home-alerts-bell"')).toBe(anchor);
     expect(block).toMatch(
       /style=\{\(\{ pressed \}\) => \(\{ opacity: pressed \? 0\.8 : 1 \}\)\}/,
@@ -248,6 +250,8 @@ describe('#78 R10: la campana vive en el hero y lleva al centro de alertas', () 
     await renderHome();
     const bell = await screen.findByTestId('home-alerts-bell');
 
+    // #122 R2: responderGrant is the first event of userEvent.press; stopping
+    // there leaves the Pressable pressed, so this reads the opacity that runs.
     await fireEvent(bell, 'responderGrant', {
       nativeEvent: {},
       persist: () => undefined,
@@ -3354,15 +3358,18 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
       const anchor = source.indexOf('testID="reminders-see-all"');
       // #112 R1: own opening tag of reminders-see-all, from `<` to `<`. Ending
       // at `</Pressable>` let a nested Pressable lend it a foreign style. A `<`
-      // inside the tag shrinks the slice and fails red; a string child placed
-      // before the first element child still lands in the slice and can pass
-      // green. Both limits: docs/conventions.md, opening-tag slices section.
+      // inside the tag shrinks the slice and fails red; a string or a JSX
+      // comment placed before the first element child still lands in the slice
+      // and can pass green, which is why #122 R2 presses the link. All limits:
+      // docs/conventions.md, opening-tag slices section.
       const block = source.slice(
         source.lastIndexOf('<', anchor),
         source.indexOf('<', anchor),
       );
 
       expect(opacityOf(link.props.style)).toBe(1);
+      // #122 R1: the slice assumes one anchor. A second copy (a decoy, the other
+      // branch of a ternary, a comment) would be the one sliced.
       expect(source.lastIndexOf('testID="reminders-see-all"')).toBe(anchor);
       expect(block).toMatch(
         /style=\{\(\{ pressed \}\) => \(\{ opacity: pressed \? 0\.8 : 1 \}\)\}/,
@@ -3373,6 +3380,8 @@ describe('#70 R1: la Home dibuja la sección de recordatorios', () => {
       await renderHome();
       const link = await screen.findByTestId('reminders-see-all');
 
+      // #122 R2: responderGrant is the first event of userEvent.press; stopping
+      // there leaves the Pressable pressed, so this reads the opacity that runs.
       await fireEvent(link, 'responderGrant', {
         nativeEvent: {},
         persist: () => undefined,

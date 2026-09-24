@@ -818,6 +818,8 @@ describe('#107 R5: el botón por franja conserva su feedback de pulsado', () => 
       source.indexOf('<', anchor),
     );
 
+    // #122 R1: the slice assumes one anchor. A second copy (a decoy, the other
+    // branch of a ternary, a comment) would be the one sliced.
     expect(source.lastIndexOf('testID={`meal-toggle-${index}`}')).toBe(anchor);
     expect(block).toMatch(
       /style=\{\(\{ pressed \}\) => \(\{\s*opacity: pressed \? 0\.8 : 1,?\s*\}\)\}/,
@@ -828,6 +830,8 @@ describe('#107 R5: el botón por franja conserva su feedback de pulsado', () => 
     await renderFood();
     const toggle = await screen.findByTestId('meal-toggle-0');
 
+    // #122 R2: responderGrant is the first event of userEvent.press; stopping
+    // there leaves the Pressable pressed, so this reads the opacity that runs.
     await fireEvent(toggle, 'responderGrant', {
       nativeEvent: {},
       persist: () => undefined,
