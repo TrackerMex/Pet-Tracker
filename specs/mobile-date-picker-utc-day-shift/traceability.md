@@ -29,13 +29,13 @@ ancestros y habría que reapuntarlos verificando `git merge-base --is-ancestor`.
 
 | Requisito | Test (título literal del `describe`) | Commit rojo | Commit verde |
 |---|---|---|---|
-| R1 — `fromPickerValue`: día UTC del diálogo → día local (5 filas: 3 de CDMX + Honolulu + Kiritimati) | `#123 R1: en Android, fromPickerValue convierte el día UTC del diálogo en día local` | pendiente | pendiente |
-| R2 — `toPickerValue`: día local → medianoche UTC | `#123 R2: en Android, toPickerValue abre el diálogo en el día local` | pendiente | pendiente |
-| R3 — fuera de Android, mismo objeto | `#123 R3: fuera de Android las dos conversiones devuelven el mismo objeto` | pendiente | pendiente |
-| R4 — Nuevo recordatorio muestra y guarda el día elegido | `#123 R4: Nuevo recordatorio muestra y guarda el día elegido` | pendiente | pendiente |
-| R5 — Nuevo recordatorio abre en el día local; mínimo y hora sin convertir | `#123 R5: el calendario de Nuevo recordatorio abre en el día local; el mínimo y la hora no se convierten` | pendiente | pendiente |
-| R6 — Añadir mascota muestra y manda el día de nacimiento | `#123 R6: Añadir mascota muestra y manda el día de nacimiento elegido` | pendiente | pendiente |
-| R7 — Añadir mascota abre en el día local; máximo sin convertir | `#123 R7: el calendario de nacimiento abre en el día local y el máximo no se convierte` | pendiente | pendiente |
+| R1 — `fromPickerValue`: día UTC del diálogo → día local (5 filas: 3 de CDMX + Honolulu + Kiritimati) | `#123 R1: en Android, fromPickerValue convierte el día UTC del diálogo en día local` | 4e63ef3d | e87c4e4f |
+| R2 — `toPickerValue`: día local → medianoche UTC | `#123 R2: en Android, toPickerValue abre el diálogo en el día local` | fbb3afdc | e0f9e411 |
+| R3 — fuera de Android, mismo objeto | `#123 R3: fuera de Android las dos conversiones devuelven el mismo objeto` | 06892186 | 08b68ba4 |
+| R4 — Nuevo recordatorio muestra y guarda el día elegido | `#123 R4: Nuevo recordatorio muestra y guarda el día elegido` | 928de550 | 3a5c20b2 |
+| R5 — Nuevo recordatorio abre en el día local; mínimo y hora sin convertir | `#123 R5: el calendario de Nuevo recordatorio abre en el día local; el mínimo y la hora no se convierten` | 4d02bb34 | 86204625 |
+| R6 — Añadir mascota muestra y manda el día de nacimiento | `#123 R6: Añadir mascota muestra y manda el día de nacimiento elegido` | b4bf8d41 | 752528ba |
+| R7 — Añadir mascota abre en el día local; máximo sin convertir | `#123 R7: el calendario de nacimiento abre en el día local y el máximo no se convierte` | 25c0175f | 6d5769d7 |
 | R8 — smoke en dev build de Android en México | humano | — | pendiente (casilla de [[requirements]] §Prueba de humo) |
 
 ## Candados ajenos movidos
