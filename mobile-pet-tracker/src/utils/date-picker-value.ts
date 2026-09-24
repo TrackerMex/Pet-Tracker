@@ -3,5 +3,5 @@ export function fromPickerValue(picked: Date): Date {
 }
 
 export function toPickerValue(day: Date): Date {
-  return day;
+  return new Date(Date.UTC(day.getFullYear(), day.getMonth(), day.getDate()));
 }
