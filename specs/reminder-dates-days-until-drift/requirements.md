@@ -277,7 +277,7 @@ prueba en otro momento.
    `· en 10 días` y lleva «¡Próximo!». (Antes: `· en 11 días`, sin badge.)
 4. Borrar los tres recordatorios de prueba.
 
-- [ ] Prueba de humo de R4 superada por el humano (fecha: ____, dispositivo: ____)
+- [X] Prueba de humo de R4 superada por el humano (fecha: 24-09-2026, dispositivo: CPH2709)
 
 ---
 
