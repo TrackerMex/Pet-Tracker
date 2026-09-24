@@ -5255,3 +5255,80 @@ gramos), asi que la formula lleva guarda.
   Codex lo decide el humano.
 - **Obs. 5**: el push de `8bd8e27d` (03:46:54Z) fue del leader, antes del
   init.sh.
+
+## #84 `reminder-dates-days-until-drift` — 2026-09-24
+
+Sesion Backend, worktree `/home/claude/sites/Pet-Tracker-wt-backend`, branch
+`feature/84-reminder-dates-days-until-drift` desde `origin/main` 446f5581,
+adelantada por fast-forward a 993b62fa (#114 mergeada) antes de firmar e
+integrada con `origin/main` (#112, #120-#122) por merge al cerrar. En
+paralelo, la sesion Frontend cerraba #114 y #112 y arrancaba #121 en el tree
+principal.
+
+### Que se hizo
+
+`daysUntil(from, to)` de `src/utils/reminder-dates.ts` hacia `Math.ceil` sobre
+una resta de milisegundos: contaba bloques de 24 h redondeados hacia arriba.
+Hoy a las 20:00 salia «en 1 dias», +7 dias a una hora posterior salia 8 y se
+caia de «Esta semana», y ayer a una hora posterior daba `-0`, que contaba como
+«Esta semana» y llevaba «¡Proximo!». Ahora resta el dia civil local de cada
+fecha (`Date.UTC(getFullYear(), getMonth(), getDate())`) y divide por
+`DAY_MS`. Misma firma, mismo modulo; la pantalla de Recordatorios no cambia.
+Cero claves de catalogo y cero dependencias.
+
+Decisiones firmadas: **D1** arreglo en sitio; **D2** no se unifica con
+`calendarDaysUntil` de la Home (dominios distintos; unificar tocaba la Home y
+su candado `#70 R5`); **D3** candado de zona horaria con dobles de Ciudad de
+Mexico, porque jest no deja forzar `TZ` desde un test; **D4** copy intacto
+(«· en 0 dias», «· en 1 dias»; «Hoy» y el singular serian otra feature).
+
+### Premisas que no se heredaron
+
+`spec_author` corrigio dos del leader: `pill-week` SI es consumidor (la
+pildora de la misma pantalla) y hay un tercero, el badge
+`reminder-upcoming-<id>`; y los ejemplos 23:30 → 00:30 y 08:00 → 07:00 no
+fallaban con el codigo viejo. La entrada decia que el defecto se desplazaba en
+offset negativo: `Math.ceil` sobre ms no lee la zona; ese riesgo es el del
+arreglo ingenuo con `getUTC*`, y es lo que canda R2.
+
+### Gate y ciclo
+
+- Spec `62f32f55`, espejada a Notion; firma `2665ffd3`
+  (`page_last_edited_at` 2026-09-23T22:47:37Z).
+- Codex ronda 1: seis commits TDD (R2 y R3 con rojo por mutacion de
+  produccion versionada, C4 quinto punto), movil 82/1452 a 82/1467.
+- Reviewer ronda 1: **rechazado** (`158fbf43`). H1: todas las fechas de las
+  tablas caian del 9 al 20 de septiembre; `to.getDate() - from.getDate()`
+  dejaba verde la suite entera (82/1467) y en produccion daba `-29` cada fin de
+  mes. H2: la mutacion UTC parcial (solo mes o solo ano) sobrevivia a R2. H3:
+  umbrales `<= 8` / `<= 11` sin candado. H4: filas heredadas con `Z` fallaban
+  en UTC-9. El codigo era correcto; el hueco era de la spec.
+- Enmienda E1 (`9ad946e0`): R5 (fin de mes, fin de ano, Nochevieja en CDMX;
+  rojo U8), R6 (umbrales; rojo `<= 8` / `<= 11` en la pantalla), filas
+  heredadas a componentes locales; filas medidas en las 419 zonas IANA. Gate
+  reabierto solo para E1; firma `7024a55b` (`page_last_edited_at`
+  2026-09-24T03:46:13Z).
+- Codex ronda 2: cuatro commits TDD, produccion identica a la ronda 1. Movil
+  82/1471.
+- Reviewer ronda 2 (`5f471fc2`): aprobado; U8-U15 y S8-S9 rojos, 419 zonas
+  sin fallo. init.sh exit=0 en las dos rondas, corrido por el leader con turno
+  de LocalStack cedido por Frontend.
+- R4: smoke en dev build de Android firmado por el humano en su propio commit
+  (`a906104a`, CPH2709, 2026-09-24): "salio todo bien a pesar del bug del
+  calendario" (#123; para la prueba eligio el dia siguiente).
+
+### Desviaciones y deuda, todas no bloqueantes
+
+- **N1 (baja)**: `getUTCMonth` o `getUTCFullYear` solo del lado `to` sobrevive
+  a la suite; lo caza el grep de cierre (`getUTC` ×0). El reviewer propone una
+  fila CDMX 31-dic 08:00 → 20:00 = 0. No registrada: el humano no la pidio.
+- **N2 (info, anterior a #84)**: quitar `status === 'scheduled'` de la pildora
+  o `!inactive` del badge no rompe ningun test. No registrada.
+- H5/N3: Codex relleno la trazabilidad en un commit final en las dos rondas;
+  hashes correctos.
+- **#123 registrada** durante el smoke: el `DatePickerDialog` de `@expo/ui`
+  devuelve el dia elegido a medianoche UTC y la app lo lee en local, asi que
+  en UTC-6 Nuevo recordatorio y Anadir mascota guardan el dia anterior. P1,
+  siguiente por orden del humano.
+- Leccion guardada en memoria: una tabla de fechas que no cruza mes ni ano
+  deja `getMonth`/`getFullYear` sin vigilar.
