@@ -5313,8 +5313,9 @@ arreglo ingenuo con `getUTC*`, y es lo que canda R2.
 - Reviewer ronda 2 (`5f471fc2`): aprobado; U8-U15 y S8-S9 rojos, 419 zonas
   sin fallo. init.sh exit=0 en las dos rondas, corrido por el leader con turno
   de LocalStack cedido por Frontend.
-- R4: smoke en dev build de Android superado por el humano el 2026-09-24,
-  relatado en la sesion ("salio todo bien a pesar del bug del calendario").
+- R4: smoke en dev build de Android firmado por el humano en su propio commit
+  (`a906104a`, CPH2709, 2026-09-24): "salio todo bien a pesar del bug del
+  calendario" (#123; para la prueba eligio el dia siguiente).
 
 ### Desviaciones y deuda, todas no bloqueantes
 
