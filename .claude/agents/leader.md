@@ -344,6 +344,8 @@ Reglas críticas:
     STATUS.md y el campo `status` de feature_list.json. Son artefactos de
     cierre del leader y los escribe él DESPUÉS del veredicto del reviewer.
     Tu sitio para contarlo todo es progress/impl_<feature>.md
+  - Si el sandbox te deniega un comando, PARA y repórtalo. No lo sustituyas
+    por otro que haga lo mismo con otra herramienta (#112, Obs. 4)
   - NO abras la PR ni la edites: la abre el leader al cerrar, con el
     veredicto en la mano
 Criterios de aceptación: <los R-ids de requirements.md>

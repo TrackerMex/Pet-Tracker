@@ -225,14 +225,18 @@ de defendido: la defensa (exigir que el siguiente carácter sea `<` de elemento)
 sería otro símbolo que vigilar. Si algún día un candado de estos vigila algo que
 también aparezca como texto en la pantalla, ese cálculo cambia.
 
-El patrón ya vive en
-`mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts:309-311`. Queda
-un gemelo por migrar en
-`mobile-pet-tracker/src/screens/home/index.test.tsx:3355-3359`, registrado
-como **#112 `mobile-reminders-see-all-source-lock-nesting`**. #109 lo dejó
-fuera porque ese fichero lo tenía tomado #108; la sesión que lleva #108
-confirmó después que su spec firmada acota el fichero y **no lo absorbe**, así
-que se registró aparte.
+El patrón vive en tres candados. Localízalos por contenido y no por número de
+línea, porque los números se desplazan con cada merge:
+
+- `mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts`, la
+  implementación de referencia: `grep -n "lastIndexOf('<', use.index)"`.
+- `mobile-pet-tracker/src/app/(tabs)/__tests__/food.test.tsx`, el
+  `meal-toggle` (#109): `grep -n "lastIndexOf('<', anchor)"`.
+- `mobile-pet-tracker/src/screens/home/index.test.tsx`, el
+  `reminders-see-all` (#112): el mismo grep.
+
+No queda ningún recorte de `<Tag` a `</Tag>` por migrar:
+`grep -rn "lastIndexOf('<[A-Z]" mobile-pet-tracker/src` no devuelve nada.
 
 ### Esperas sobre el árbol renderizado
 
