@@ -220,15 +220,20 @@ describe('#78 R10: la campana vive en el hero y lleva al centro de alertas', () 
     expect(mockRouter.push).toHaveBeenCalledWith('/alerts');
   });
 
-  it('usa la ruta real sin cast Href y conserva el feedback de pulsado', () => {
+  it('#121 R1: usa la ruta real sin cast Href y conserva el feedback de pulsado, acotado a su tag de apertura', () => {
     const source = readFileSync(
       join(process.cwd(), 'src/screens/home/index.tsx'),
       'utf8',
     );
+    const anchor = source.indexOf('testID="home-alerts-bell"');
+    const block = source.slice(
+      source.lastIndexOf('<', anchor),
+      source.indexOf('<', anchor),
+    );
 
     expect(appRoutes(join(process.cwd(), 'src/app'))).toContain('/alerts');
     expect(source).not.toContain("'/alerts' as Href");
-    expect(source).toMatch(
+    expect(block).toMatch(
       /style=\{\(\{ pressed \}\) => \(\{ opacity: pressed \? 0\.8 : 1 \}\)\}/,
     );
     expect(source).toContain('<Bell size={24} color={muted} />');

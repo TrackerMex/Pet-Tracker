@@ -338,7 +338,7 @@ export function HomeScreen() {
                   : t('home.alertsBell')
               }
               className="size-11 items-center justify-center rounded-full"
-              style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
+              style={{ opacity: 1 }}
               onPress={() => router.push('/alerts')}
             >
               <Bell size={24} color={muted} />
