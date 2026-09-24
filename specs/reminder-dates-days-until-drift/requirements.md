@@ -277,7 +277,7 @@ prueba en otro momento.
    `· en 10 días` y lleva «¡Próximo!». (Antes: `· en 11 días`, sin badge.)
 4. Borrar los tres recordatorios de prueba.
 
-- [ ] Prueba de humo de R4 superada por el humano (fecha: ____, dispositivo: ____)
+- [x] Prueba de humo de R4 superada por el humano (fecha: 2026-09-24, dispositivo: dev build de Android del humano, modelo no indicado). Relatado por el humano en la sesion del leader, literal: «listo ya realice la prueba en el dev build salio todo bien a pesar del bug del calendario». El bug del calendario es #123, ajeno a #84: para la prueba se eligio el dia siguiente en el calendario.
 
 ---
 

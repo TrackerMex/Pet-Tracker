@@ -1615,7 +1615,7 @@
   {
     "id": 84,
     "name": "reminder-dates-days-until-drift",
-    "status": "in_progress",
+    "status": "done",
     "priority": "P3",
     "description": "Abierta al escribir la spec de #70 el 2026-09-09 (decision E3). mobile-pet-tracker/src/utils/reminder-dates.ts:15 calcula daysUntil con Math.ceil sobre una resta de milisegundos, que es el mismo patron que costo el veredicto rechazado de #68: el resultado depende de la hora del dia y se desplaza en zonas de offset negativo. #70 NO lo reutiliza a proposito -escribe su propio calendarDaysUntil con medianoches normalizadas- pero no lo arregla, porque lo consumen pill-week y el contador por fila de la pantalla de recordatorios y tocarlo desde #70 seria alcance ajeno. Merece feature propia con su candado de zona horaria.",
     "acceptance_criteria": [
