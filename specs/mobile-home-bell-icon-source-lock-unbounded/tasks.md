@@ -1,6 +1,6 @@
 ---
 feature: "mobile-home-bell-icon-source-lock-unbounded"
-status: spec_ready       # draft | spec_ready | approved
+status: approved         # draft | spec_ready | approved
 tags: [harness, spec, mobile, deuda]
 ---
 
