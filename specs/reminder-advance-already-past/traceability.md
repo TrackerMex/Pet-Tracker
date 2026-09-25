@@ -20,14 +20,16 @@ test o producción, ni una actualización por commit. El `reviewer` no aprueba
 si queda una fila de R1-R4 en «pendiente» (CHECKPOINTS C5). R5 la cierra el
 humano en su casilla de [[requirements]].
 
-Todos los rojos son **naturales** ([[design]] D10): ninguna fila lleva mutación
-versionada. Los rojos de R1 y R2 llevan un esqueleto de producción nombrado en
-[[tasks]].
+Los rojos de R1-R4 son **naturales** ([[design]] D10); los de R1 y R2 llevan un
+esqueleto de producción nombrado en [[tasks]]. R6 (Enmienda E1) es un requisito
+de verificación: su rojo lleva la mutación de producción versionada **X11**,
+revertida en su verde.
 
 Recuentos al cierre (base `40ec1b46`): `reminder-push-body.spec.ts` **7**;
 `reminders-dispatch.service.spec.ts` **4 → 6**; backend unit
-**170 / 1298 → 171 / 1307**; `add-reminder/index.test.tsx` **25 → 37**; móvil
-**83 / 1491 → 83 / 1503**; e2e e infra sin cambios.
+**170 / 1298 → 171 / 1307**; `add-reminder/index.test.tsx` **25 → 37** (ronda 1)
+**→ 39** (R6, Enmienda E1); móvil **83 / 1491 → 83 / 1503** (ronda 1) **→ 83 / 1508**
+tras integrar `origin/main` con #122 (+3) y R6 (+2); e2e e infra sin cambios.
 
 **No rebasear después de rellenar esta tabla**: los hashes dejarían de ser
 ancestros y habría que reapuntarlos verificando `git merge-base --is-ancestor`.
@@ -38,7 +40,7 @@ ancestros y habría que reapuntarlos verificando `git merge-base --is-ancestor`.
 | R2 — el dispatcher lee la zona por mascota; lectura fallida no encola (2 `it` + R6 movido) | `#125 R2: el dispatcher escribe en el cuerpo cuándo vence, en la zona del owner de cada mascota` | `123b4c4f` | `241ecf96` |
 | R3 — chips desactivados, selección derivada y aviso enviado (7 filas + 2 `it` + 3 candados movidos) | `#125 R3: los chips de aviso cuyo momento ya pasó quedan desactivados y la selección baja al mayor aviso aún futuro` | `ab4e9a58` | `6fedbc87` |
 | R4 — instante del cambio de fecha u hora y del envío (3 `it`) | `#125 R4: los chips se evalúan con el instante del último cambio de fecha u hora y guardar recalcula con el del envío` | `ec96b49b` | `b10b7f1e` |
-| R5 — smoke en dev build de Android | humano | — | pendiente (casilla de [[requirements]] §Prueba de humo) |
+| R5 — smoke en dev build de Android | humano | — | firmado por el humano en `07905716` (2026-09-25, CPH2709) |
 | R6 — la elección explícita se conserva al cambiar fecha u hora (Enmienda E1; verificación; mutación X11) | `#125 R6: la elección explícita del aviso se conserva al cambiar fecha u hora (Enmienda E1)` | `21ff2000` | `7d178b03` |
 
 ## Candados ajenos movidos
