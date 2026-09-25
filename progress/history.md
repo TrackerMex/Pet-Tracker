@@ -5499,3 +5499,65 @@ el grep de cierre.
   son preexistentes y ajenos a #122.
 - Siguiente en esta sesión: #124, en serie, porque toca el mismo `it` de la
   campana.
+
+## #125 `reminder-advance-already-past` — 2026-09-25
+
+Sesion Backend, worktree `/home/claude/sites/Pet-Tracker-wt-backend`, branch
+`feature/125-reminder-advance-already-past` desde `origin/main` 40ec1b46
+(#162: #123 y el registro de #125) e integrada con 2da66b86 (#122) por merge.
+En paralelo, Frontend cerraba #122 y empezaba #124.
+
+### Que se hizo
+
+Reportado por el humano en el smoke de #123: al crear un recordatorio a menos
+de 7 dias, el push saltaba al guardar. Causa: Nuevo recordatorio preseleccionaba
+«7 dias antes» y el backend encola cuando `dueAt - advanceMinutes <= now`; ademas
+el cuerpo era solo `Recordatorio: <titulo>`. Decision del humano: C + A (no B).
+- **Backend**: `reminderPushBody` (funcion pura en `reminders/application`,
+  compuesta desde `formatToParts` con `hourCycle: 'h23'`) devuelve
+  `Recordatorio: <titulo> · <dia> de <mes> a las <HH>:<mm>` en la zona del
+  owner; el dispatcher lee `findOwnerTimezone(reminder.petId)` dentro del
+  `try` de cada recordatorio, con caida a UTC. Sin cambios de puerto, modulo,
+  repositorio ni migracion.
+- **Movil**: los chips de aviso cuyo momento ya paso quedan desactivados
+  (`Pressable disabled` + ` opacity-50`); la seleccion es el mayor aviso activo
+  que no supera el ultimo elegido (D6, derivada); «ahora» es estado que se
+  fija al montar y al elegir fecha u hora, y Guardar recalcula con
+  `Date.now()`. +0 claves.
+
+### Premisas que no se heredaron
+
+`spec_author` midio que evaluar «ahora» en render no sirve (regla
+`react-hooks/purity` y React Compiler memoiza el `Date.now()` en el telefono
+pero no en jest), que el push va a todos los miembros con la hora del owner,
+que no hay e2e del cuerpo, que la ventana 24-sep → 1-oct cruza el cambio de
+hora de Nueva Zelanda (las filas de frontera usan junio → julio), y se aparto
+de la sugerencia del leader en D6 con un caso medido.
+
+### Gate y ciclo
+
+- Spec `6169eca4`, espejada a Notion; firma `699e90cf`.
+- Codex ronda 1: 8 commits TDD + trazabilidad en un commit final, backend
+  170/1298 → 171/1307, movil 83/1491 → 83/1503.
+- Reviewer ronda 1 (`5134d165`): **aprobado**. H1 (media, de spec): ningun
+  test distinguia «conservar la eleccion explicita» de «resetear a 7 dias» (X10,
+  X11 verdes); H2 (baja): con todo desactivado, «10080 fijo» sobrevivia.
+- Enmienda E1 (`ceb18fde`, `7238bc6d`), a peticion del humano: R6, solo tests,
+  rojo por mutacion versionada X11. Firma `aedb89be`.
+- Codex ronda 2: 2 commits TDD + trazabilidad; produccion identica. Movil
+  83/1508 (+3 de #122 al integrar main, +2 de R6).
+- Reviewer ronda 2 (`53c81300`): **aprobado**; X10, X11, X1 y el reset solo
+  en hora, rojos. init.sh exit=0 en las dos rondas, turno cedido por Frontend.
+- R5: smoke en dev build firmado por el humano en su propio commit
+  (`07905716`, CPH2709, 2026-09-25).
+
+### Desviaciones y deuda, todas no bloqueantes
+
+- H6 (info): el rojo de R1 se commiteo con el lint del backend en rojo (los
+  parametros sin usar del esqueleto); tasks.md lo permitia.
+- H9 (info): resetear a 7 dias solo cuando la fecha nueva es posterior pasaria
+  39/39 (todos los cambios de fecha de R6 van hacia atras). El codigo no lo
+  tiene. H10 (info): resetear en `onDismiss` quedaria fuera del WHEN de R6.
+- Limitaciones conocidas, no registradas: hora del push en la zona del owner
+  para todos los miembros; push en espanol fijo; sin pantalla para editar el
+  aviso de un recordatorio existente.

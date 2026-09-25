@@ -33,6 +33,16 @@ const REMINDER_TYPES = Object.entries(REMINDER_TYPE_META) as [
   (typeof REMINDER_TYPE_META)[ReminderType],
 ][];
 
+function isAdvancePast(dueAt: Date | null, minutes: number, now: number): boolean {
+  return dueAt !== null && dueAt.getTime() - minutes * 60_000 <= now;
+}
+
+function effectiveAdvance(dueAt: Date | null, preferred: number, now: number): number {
+  return ADVANCE_OPTIONS.filter(
+    ({ minutes }) => minutes <= preferred && !isAdvancePast(dueAt, minutes, now),
+  ).pop()?.minutes ?? preferred;
+}
+
 function initialTime(): Date {
   const time = new Date();
   time.setHours(9, 0, 0, 0);
@@ -51,6 +61,7 @@ function AddReminderContent({ petId }: { petId: string }) {
   const [date, setDate] = useState<Date | null>(null);
   const [time, setTime] = useState(initialTime);
   const [advanceMinutes, setAdvanceMinutes] = useState(10080);
+  const [now, setNow] = useState(Date.now);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -81,7 +92,7 @@ function AddReminderContent({ petId }: { petId: string }) {
         type,
         title: trimmedTitle,
         dueAt: dueAt.toISOString(),
-        advanceMinutes,
+        advanceMinutes: effectiveAdvance(dueAt, advanceMinutes, Date.now()),
       });
 
       switch (result.kind) {
@@ -110,6 +121,9 @@ function AddReminderContent({ petId }: { petId: string }) {
       setSubmitting(false);
     }
   }
+
+  const pickedDueAt = date ? combineDateAndTime(date, time) : null;
+  const selectedAdvance = effectiveAdvance(pickedDueAt, advanceMinutes, now);
 
   return (
     <ScrollView
@@ -220,6 +234,7 @@ function AddReminderContent({ petId }: { petId: string }) {
             onDismiss={() => setShowDatePicker(false)}
             onValueChange={(_event, selectedDate) => {
               setDate(fromPickerValue(selectedDate));
+              setNow(Date.now());
               setShowDatePicker(false);
             }}
           />
@@ -236,6 +251,7 @@ function AddReminderContent({ petId }: { petId: string }) {
             onDismiss={() => setShowTimePicker(false)}
             onValueChange={(_event, selectedTime) => {
               setTime(selectedTime);
+              setNow(Date.now());
               setShowTimePicker(false);
             }}
           />
@@ -248,7 +264,8 @@ function AddReminderContent({ petId }: { petId: string }) {
         </Text>
         <View className="flex-row flex-wrap gap-2">
           {ADVANCE_OPTIONS.map((option) => {
-            const selected = advanceMinutes === option.minutes;
+            const selected = selectedAdvance === option.minutes;
+            const disabled = isAdvancePast(pickedDueAt, option.minutes, now);
 
             return (
               <Pressable
@@ -257,11 +274,8 @@ function AddReminderContent({ petId }: { petId: string }) {
                 accessibilityState={{ selected }}
                 testID={`advance-chip-${option.minutes}`}
                 hitSlop={TOUCH_SLOP}
-                className={
-                  selected
-                    ? 'rounded-full border border-accent bg-accent-soft px-3 py-2'
-                    : 'rounded-full border border-border bg-default px-3 py-2'
-                }
+                disabled={disabled}
+                className={`${selected ? 'rounded-full border border-accent bg-accent-soft px-3 py-2' : 'rounded-full border border-border bg-default px-3 py-2'}${disabled ? ' opacity-50' : ''}`}
                 onPress={() => setAdvanceMinutes(option.minutes)}
               >
                 <Text className="text-sm font-semibold text-foreground">
