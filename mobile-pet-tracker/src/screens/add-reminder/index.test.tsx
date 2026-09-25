@@ -718,4 +718,48 @@ describe('#125: avisos que ya pasaron en Nuevo recordatorio', () => {
       ));
     });
   });
+
+  describe('#125 R6: la elección explícita del aviso se conserva al cambiar fecha u hora (Enmienda E1)', () => {
+    it('con avisos mayores activos, cambiar fecha u hora conserva el aviso elegido', async () => {
+      jest.setSystemTime(new Date(2026, 8, 24, 8, 0));
+      await renderAddReminder();
+      await waitFor(() => expect(screen.getByTestId('title-input')).toBeVisible());
+      await fireEvent.changeText(screen.getByTestId('title-input'), 'Rabies');
+
+      await pickDate(new Date(2026, 9, 10, 12, 0));
+      expectAdvanceChips([false, false, false, false], 10080);
+      await fireEvent.press(screen.getByTestId('advance-chip-1440'));
+      expectAdvanceChips([false, false, false, false], 1440);
+      await pickDate(new Date(2026, 9, 5, 12, 0));
+      expectAdvanceChips([false, false, false, false], 1440);
+      await pickTime(10, 0);
+      expectAdvanceChips([false, false, false, false], 1440);
+      await fireEvent.press(screen.getByTestId('add-reminder-submit'));
+      await waitFor(() => expect(mockCreateReminder).toHaveBeenCalledWith(
+        'http://example.test/v1',
+        'jwt-token',
+        'pet-1',
+        { type: 'vaccine', title: 'Rabies', dueAt: new Date(2026, 9, 5, 10, 0).toISOString(), advanceMinutes: 1440 },
+      ));
+    });
+
+    it('con todos los chips desactivados sigue marcada la elección, no un valor fijo', async () => {
+      jest.setSystemTime(new Date(2026, 8, 24, 8, 0));
+      await renderAddReminder();
+      await waitFor(() => expect(screen.getByTestId('title-input')).toBeVisible());
+      await fireEvent.changeText(screen.getByTestId('title-input'), 'Rabies');
+
+      await pickDate(new Date(2026, 9, 10, 12, 0));
+      expectAdvanceChips([false, false, false, false], 10080);
+      await fireEvent.press(screen.getByTestId('advance-chip-1440'));
+      expectAdvanceChips([false, false, false, false], 1440);
+      await pickDate(new Date(2026, 8, 24, 12, 0));
+      expectAdvanceChips([false, true, true, true], 0);
+      await pickTime(8, 0);
+      expectAdvanceChips([true, true, true, true], 1440);
+      await fireEvent.press(screen.getByTestId('add-reminder-submit'));
+      expect(screen.getByTestId('add-reminder-error')).toHaveTextContent('La fecha debe ser futura');
+      expect(mockCreateReminder).not.toHaveBeenCalled();
+    });
+  });
 });
