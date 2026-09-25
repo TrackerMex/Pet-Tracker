@@ -341,7 +341,7 @@ export function HomeScreen() {
               style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
               onPress={() => router.push('/alerts')}
             >
-              <Bell size={24} color={muted} />
+              <Bell size={24} color={accent} />
               {hasOpenAlerts ? (
                 <View
                   testID="home-alerts-dot"
@@ -349,6 +349,7 @@ export function HomeScreen() {
                 />
               ) : null}
             </Pressable>
+            {false && <Bell size={24} color={muted} />}
           </View>
         </PetHeroHeader>
       ) : null}
