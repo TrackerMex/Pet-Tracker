@@ -1939,7 +1939,7 @@
   {
     "id": 99,
     "name": "mobile-notifications-permission-recovery",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P3",
     "description": "Registrada el 2026-09-17 desde la seccion Fuera de alcance de la spec de #79, por decision del humano. Si el usuario deniega el permiso de notificaciones, hoy la app se queda sin salida: #79 R7 solo vuelve a pedirlo cuando el sistema dice canAskAgain true, asi que tras la segunda negativa en Android no hay forma de activar las notificaciones desde dentro de la app y el usuario tiene que llegar solo a los ajustes del sistema. Eso anula justo lo que #79 habilita: el backend manda push desde #13, el token no se registra nunca y el usuario no sabe por que no recibe nada. Alcance: detectar el estado denegado sin volver a lanzar el dialogo del sistema, mostrar un aviso con accion -banner o fila en Perfil, la spec decide cual y donde- y abrir los ajustes de notificaciones de la app con Linking.openSettings() o el intent de Android correspondiente. Al volver de los ajustes hay que reevaluar el permiso y, si quedo concedido, disparar el registro de #79 sin exigir un reinicio de la app. Depende de #79: no tiene sentido hasta que el registro exista. Ojo con no reintroducir el dialogo repetido que #79 R7 evita a proposito.",
     "acceptance_criteria": [
