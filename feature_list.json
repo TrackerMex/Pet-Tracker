@@ -2402,7 +2402,7 @@
   {
     "id": 124,
     "name": "mobile-home-bell-icon-source-lock-unbounded",
-    "status": "spec_ready",
+    "status": "done",
     "priority": "P3",
     "description": "Registrada al cerrar #121 el 2026-09-24. Es el hallazgo (F) de su spec: specs/mobile-home-bell-source-lock-unbounded/requirements.md §Fuera de alcance. En mobile-pet-tracker/src/screens/home/index.test.tsx, el it que devuelve grep -n \"usa la ruta real sin cast Href\" (titulado '#121 R1: ...', dentro de describe('#78 R10: la campana vive en el hero y lleva al centro de alertas')) asevera el icono con expect(source).toContain('<Bell size={24} color={muted} />') contra TODO src/screens/home/index.tsx. Hoy el candado esta VIVO: esa cadena aparece una sola vez (grep -c da 1), y con el icono de la campana en color={accent} el it cae en rojo por toContain (sonda B1). Pero una segunda copia literal en cualquier sitio del fichero le presta el verde: B1 mas {false && <Bell size={24} color={muted} />} detras de la campana deja el fichero en 140/140 VERDE (sonda B2, medida sobre f44cf3d5). El arbol no lo tapa: 'compone el selector y la campana...' solo comprueba que el color esta definido (toBeDefined). LIMITES: es LATENTE, porque necesita una segunda copia literal del mismo <Bell ...>, y es de peso bajo. OJO al arreglo: el icono es el primer HIJO de la campana, no su tag de apertura, asi que el recorte de < a < de docs/conventions.md no vale tal cual; la spec decide entre acotar al primer hijo (con los limites del patron), aseverar el color exacto en el arbol o documentarlo. No entra la receta de pulsado de la campana (cerrada en #121) ni los puntos ciegos del recorte (#122).",
     "acceptance_criteria": [
@@ -2432,6 +2432,22 @@
       "mobile-pet-tracker/src/screens/add-reminder/index.tsx",
       "mobile-pet-tracker/src/screens/add-reminder/index.test.tsx",
       "backend-pet-tracker/src/modules/reminders/infrastructure/reminders-dispatch.service.ts"
+    ]
+  },
+  {
+    "id": 126,
+    "name": "mobile-home-cell-icons-source-lock-unbounded",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada al cerrar #124 el 2026-09-25. Es el hallazgo (F) de su spec: specs/mobile-home-bell-icon-source-lock-unbounded/requirements.md §Fuera de alcance. En mobile-pet-tracker/src/screens/home/index.test.tsx, el it que devuelve grep -n \"#69 R9: usa iconos de reicon\" cuenta /<(?:Weight|Walk|Moon|Map) size=\\{20\\} color=\\{muted\\} \\/>/g sobre TODO src/screens/home/index.tsx con toHaveLength(4). Una copia senuelo le presta el verde: la sonda W2 (<Weight size={20} color={muted} /> pasado a color={accent} mas {false && <Weight size={20} color={muted} />} en la misma linea) deja el fichero en 144/144 VERDE, medida por Codex y re-medida por el reviewer de #124 sobre 6cd6ea20. El arbol no lo tapa: 'asigna cada valor, icono y etiqueta a su celda y a ninguna otra' solo comprueba toBeVisible del icono (icon-weight, icon-walk, icon-moon, icon-map). LIMITES: es LATENTE, porque necesita una copia literal del mismo icono en el fichero, y es de peso bajo. Solo se midio sobre Weight; Walk, Moon y Map comparten la regex pero no se sondearon. OJO: index.tsx ya tiene <Moon size={20} color={accent} /> y <Map size={20} color={accent} /> fuera de las celdas, que la regex no cuenta. Precedente del arreglo: #124 R1 asevera el color en el arbol con Uniwind.getCSSVariable espiado devolviendo su argumento y el literal '--color-muted' (nunca importado de produccion); la spec decide si lo repite por celda, si acota la fuente o si lo documenta. No entran la campana (#121, #122, #124) ni las aserciones del import de reicon y de los emojis del mismo it.",
+    "acceptance_criteria": [
+      "El candado del color de los cuatro iconos de celda deja de aceptar una copia <Icono size={20} color={muted} /> fuera de su celda, o la spec lo acepta por escrito como limite documentado",
+      "Sonda W2: pasa de VERDE a ROJO si se defiende; la mutacion sin copia (icono de celda en color={accent}) sigue en ROJO",
+      "Las demas aserciones del it #69 R9 (import de reicon, ningun emoji) no cambian",
+      "Cero cambio en produccion; suite movil verde medida sin pipe; delta de tests declarado"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/home/index.test.tsx"
     ]
   }
 ]
