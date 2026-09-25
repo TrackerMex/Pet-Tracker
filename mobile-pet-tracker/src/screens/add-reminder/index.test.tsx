@@ -683,4 +683,39 @@ describe('#125: avisos que ya pasaron en Nuevo recordatorio', () => {
       ));
     });
   });
+
+  describe('#125 R4: los chips se evalúan con el instante del último cambio de fecha u hora y guardar recalcula con el del envío', () => {
+    async function openAt(now: number[]) {
+      jest.setSystemTime(new Date(now[0], now[1], now[2], now[3], now[4]));
+      await renderAddReminder();
+      await waitFor(() => expect(screen.getByTestId('title-input')).toBeVisible());
+      await fireEvent.changeText(screen.getByTestId('title-input'), 'Rabies');
+      await pickDate(new Date(2026, 6, 1, 12, 0));
+      expectAdvanceChips([false, false, false, false], 10080);
+      jest.setSystemTime(new Date(2026, 5, 24, 9, 0));
+    }
+
+    it('cambiar la hora reevalúa los chips con el instante del cambio', async () => {
+      await openAt([2026, 5, 24, 8, 58]);
+      await pickTime(9, 0);
+      expectAdvanceChips([false, false, false, true], 4320);
+    });
+
+    it('volver a elegir la fecha reevalúa los chips con el instante del cambio', async () => {
+      await openAt([2026, 5, 24, 8, 58]);
+      await pickDate(new Date(2026, 6, 1, 12, 0));
+      expectAdvanceChips([false, false, false, true], 4320);
+    });
+
+    it('guardar envía el mayor aviso aún futuro en el instante del envío', async () => {
+      await openAt([2026, 5, 24, 8, 58]);
+      await fireEvent.press(screen.getByTestId('add-reminder-submit'));
+      await waitFor(() => expect(mockCreateReminder).toHaveBeenCalledWith(
+        'http://example.test/v1',
+        'jwt-token',
+        'pet-1',
+        { type: 'vaccine', title: 'Rabies', dueAt: new Date(2026, 6, 1, 9, 0).toISOString(), advanceMinutes: 4320 },
+      ));
+    });
+  });
 });
