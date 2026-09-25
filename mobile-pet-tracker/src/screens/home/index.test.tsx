@@ -243,6 +243,10 @@ describe('#78 R10: la campana vive en el hero y lleva al centro de alertas', () 
     expect(block).toMatch(
       /style=\{\(\{ pressed \}\) => \(\{ opacity: pressed \? 0\.8 : 1 \}\)\}/,
     );
+    // #124 R1: this matches the whole file, so any other copy of the icon lends
+    // it the green. The colour itself is locked in the tree by the #124 R1
+    // describe below. This line stays for what the tree cannot see: a platform
+    // branch, or a CSS variable name written by hand.
     expect(source).toContain('<Bell size={24} color={muted} />');
   });
 
