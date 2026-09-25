@@ -210,30 +210,68 @@ coincide con el de ficheros que el filtro pretendía coger.**
 Para aislar el tag de apertura de un elemento, recorta de `<` a `<` alrededor
 de un ancla que viva dentro de ese mismo tag; no recortes de `<Tag>` a
 `</Tag>`. Encoger la ventana produce un rojo seguro, mientras que ensancharla
-puede incluir propiedades de un hijo o hermano y fabricar un verde falso. Tiene
-**dos** límites conocidos, y solo uno es benigno:
+puede incluir propiedades de un hijo o hermano y fabricar un verde falso.
+
+El recorte da por hecho que el ancla es **única** en el fichero. Con dos copias
+(un señuelo `{false && …}`, las dos ramas de un ternario o un comentario con el
+mismo `testID`), `indexOf` recorta la primera, que puede no ser el elemento
+vigilado. Asevéralo en el mismo `it`, antes de la receta:
+
+```ts
+expect(source.lastIndexOf('testID="…"')).toBe(anchor);
+```
+
+Con el ancla única quedan **tres** límites conocidos, y solo el primero avisa:
 
 1. Un `<` dentro del propio tag (por ejemplo, `disabled={a < b}`) adelanta el
-   corte. **Falla hacia rojo**, así que avisa.
+   corte. **Falla hacia rojo**.
 2. Todo lo que viva entre el `>` que cierra el tag y el primer hijo **elemento**
-   entra en el bloque, incluida una **cadena hija**. Una cadena que contenga
-   literalmente lo que la regex busca da un **verde falso**. No avisa.
+   entra en el bloque. Una cadena hija con la receta rompe el render, pero un
+   comentario JSX `{/* … */}` o un `{false && '…'}` no se renderizan: dan un
+   **verde falso** con la suite entera en verde.
+3. La regex lee texto, no código. Una receta comentada con `//` o `/* */`, o
+   metida en una cadena, **dentro** del propio tag también da un verde falso.
 
-El segundo hay que construirlo a propósito —plantar la receta como texto— y en
-la práctica rompe media suite al intentarlo, por eso se deja documentado en vez
-de defendido: la defensa (exigir que el siguiente carácter sea `<` de elemento)
-sería otro símbolo que vigilar. Si algún día un candado de estos vigila algo que
-también aparezca como texto en la pantalla, ese cálculo cambia.
+Hay además un hueco que no es del recorte, sino de todo candado de fuente: la
+receta puede estar de verdad en el tag y no correr, porque un `{...override}`
+posterior cuyo `style` es opcional la pisa, y `tsc` no lo para.
+
+Hasta #122, el límite 2 se dejaba sin defensa porque «en la práctica rompe
+media suite al intentarlo». Eso vale para una cadena hija, pero es falso para un
+comentario. Los límites 2 y 3 y el `{...override}` los cierra lo mismo: una
+**pata de árbol que pulse** el elemento y lea su opacidad, porque mira lo que
+corre y no el texto:
+
+```ts
+await fireEvent(element, 'responderGrant', {
+  nativeEvent: {},
+  persist: () => undefined,
+});
+
+expect(element).toHaveStyle({ opacity: 0.8 });
+```
+
+`responderGrant` es el primer evento de `userEvent.press`, y parar ahí deja el
+`Pressable` pulsado. `fireEvent(element, 'pressIn')` **no** sirve: busca un
+`onPressIn` en las props, el `Pressable` no tiene ninguno propio, el evento no
+llega a nadie y la opacidad se queda en 1. La pata solo ve el estado que
+renderiza el test. La otra rama de un ternario la ve la unicidad del ancla, y
+por eso las dos defensas van juntas.
 
 El patrón vive en estos candados. Localízalos por contenido y no por número de
 línea, porque los números se desplazan con cada merge:
 
 - `mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts`, la
   implementación de referencia: `grep -n "lastIndexOf('<', use.index)"`.
+  Recorre todos los usos de un símbolo y no tiene ancla de `testID`, así que la
+  unicidad no aplica.
 - `mobile-pet-tracker/src/app/(tabs)/__tests__/food.test.tsx`, el
   `meal-toggle` (#109): `grep -n "lastIndexOf('<', anchor)"`.
 - `mobile-pet-tracker/src/screens/home/index.test.tsx`, la campana
   `home-alerts-bell` (#121) y el `reminders-see-all` (#112): el mismo grep.
+
+Los tres que recortan alrededor de `anchor` aseveran su unicidad y tienen al
+lado su pata que pulsa (#122): `grep -rn "'responderGrant'" mobile-pet-tracker/src`.
 
 No queda ningún recorte de `<Tag` a `</Tag>` por migrar:
 `grep -rn "lastIndexOf('<[A-Z]" mobile-pet-tracker/src` no devuelve nada.
