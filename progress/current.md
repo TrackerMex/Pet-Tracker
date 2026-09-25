@@ -32,4 +32,10 @@
   resetea a 7 dias"; el codigo es correcto. Cerrarlo exige Enmienda. H2 baja: con todos los chips
   desactivados, caer a 10080 fijo sobrevive (solo cambia que chip atenuado se ve marcado).
 - Integrado origin/main 2da66b86 (#122) por merge, sin conflictos.
-- Siguiente: decision del humano sobre H1 (Enmienda E1 test-only o deuda) + smoke R5 -> cierre.
+- Humano eligio Enmienda E1 (R6, solo tests) para H1/H2. E1 escrita (ceb18fde, 7238bc6d), espejada
+  a Notion y firmada (Aprobado, casilla marcada, page_last_edited_at 2026-09-25T15:52:14.181Z).
+  Commit de firma aedb89be.
+- Smoke R5 firmado por el humano en su propio commit 07905716 (CPH2709, 2026-09-25).
+- Ronda 2: handoff en progress/handoff_reminder-advance-already-past.md §Ronda 2. Esperado movil
+  83/1505, produccion identica a 97054568.
+- Siguiente: el humano confirma que Codex termino la ronda 2 -> turno de init.sh -> reviewer ronda 2 -> cierre.

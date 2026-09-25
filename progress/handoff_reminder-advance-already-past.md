@@ -150,3 +150,83 @@ Al terminar: escribir el resultado en progress/impl_reminder-advance-already-pas
 verde con sus fallos esperados, candados movidos, sondas con su rojo,
 recuentos finales, greps de cierre, lista de commits con hash) y parar.
 ```
+
+---
+
+## Ronda 2 — R6 (Enmienda E1), solo tests
+
+> Pegar el bloque de abajo en la terminal de Codex CLI. Sustituye al de la
+> ronda 1, que ya está hecho y aprobado.
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-backend   <- PRIMERA LINEA: trabaja AQUI y solo aqui
+Antes de tocar nada, confirma en el reporte: `pwd` y `git branch --show-current`.
+Tienen que dar /home/claude/sites/Pet-Tracker-wt-backend y
+feature/125-reminder-advance-already-past. Si no, PARA.
+NO toques /home/claude/sites/Pet-Tracker: es el worktree de otra sesion.
+
+Feature: reminder-advance-already-past (#125), RONDA 2.
+La ronda 1 (tus commits 459013a8..97054568) fue APROBADA por el reviewer
+(progress/review_reminder-advance-already-past.md, commit 5134d165). Su
+hallazgo H1 (y H2): ningun test distingue "la eleccion explicita del aviso se
+conserva al cambiar fecha u hora" de "cada cambio resetea a 7 dias", ni
+"con todo desactivado se marca la eleccion" de "se marca 10080 fijo". Tu
+codigo es correcto y NO cambia.
+El humano firmo la Enmienda E1 (commit de firma aedb89be):
+  specs/reminder-advance-already-past/requirements.md  §Enmienda E1 (al final):
+      R6, sus dos it literales, la mutacion versionada X11 y los recuentos.
+  specs/reminder-advance-already-past/tasks.md         §Enmienda E1 — ronda 2 (al final).
+Lee las dos secciones enteras antes de tocar nada. R1-R5 y sus tests no cambian.
+
+== QUE HAY QUE HACER (tres commits y sondas) ==
+
+  1. test(add-reminder): lock the kept advance choice across date and time changes (R6)   <- ROJO
+     - En mobile-pet-tracker/src/screens/add-reminder/index.test.tsx, un describe
+       hijo NUEVO al final del describe padre
+       '#125: avisos que ya pasaron en Nuevo recordatorio' (despues del de R4):
+       '#125 R6: la elección explícita del aviso se conserva al cambiar fecha u hora (Enmienda E1)'
+       con los DOS it literales de requirements R6 (pasos a-e de cada tabla),
+       reloj fijo new Date(2026, 8, 24, 8, 0), titulo 'Rabies', y los helpers
+       de modulo que ya existen (pickDate, pickTime, expectAdvanceChips).
+     - MISMO commit, mutacion de produccion versionada X11 en
+       mobile-pet-tracker/src/screens/add-reminder/index.tsx:
+       `setAdvanceMinutes(10080);` despues de
+       `setDate(fromPickerValue(selectedDate));` (picker de fecha) y despues de
+       `setTime(selectedTime);` (picker de hora). Nada mas en produccion.
+     - Rojo esperado: los dos it de R6 por asercion (el primero en el paso c,
+       el segundo en el paso d); los 37 tests previos verdes.
+  2. feat(add-reminder): revert the R6 probe mutation, advance choice locked (R6)          <- VERDE
+     - Revierte X11:
+       git diff b10b7f1e -- mobile-pet-tracker/src/screens/add-reminder/index.tsx; echo "exit=$?"
+       -> salida VACIA.
+  3. Sondas (sin commit; cada una roja y restaurada con git diff vacio):
+     X10 (solo en el picker de fecha), X1 (con todos desactivados marcar
+     10080 fijo en vez de la preferencia), y resetear solo en el picker de
+     hora. Anota que it y que paso se ponen rojos.
+  4. docs(reminders): fill #125 E1 traceability                                             <- FINAL
+     - Los dos hashes de R6 en specs/reminder-advance-already-past/traceability.md.
+
+== REGLAS ==
+
+- Un commit por paso, rojo antes que verde, mensajes literales de arriba.
+- Valores esperados LITERALES de las tablas de R6; nada calculado con
+  simbolos de produccion.
+- NO toques ningun test existente ni el backend.
+- Movil: bun (bunx, bun run), nunca npx ni npm; jest con --runTestsByPath.
+- Si el sandbox te deniega un comando, PARA y reportalo.
+- NO corras ./init.sh ni el e2e. NO rebasees, NO mergees main, NO hagas push.
+- NO toques progress/history.md, progress/current.md, STATUS.md ni el campo
+  status de feature_list.json. NO abras la PR.
+
+== CIERRE (sin pipe, `cmd; echo "exit=$?"`) ==
+
+- `cd mobile-pet-tracker && bunx jest --runTestsByPath src/screens/add-reminder/index.test.tsx` -> 39, exit=0
+- `bun run --cwd mobile-pet-tracker test` -> 83 suites / 1505 tests, exit=0
+- `bun run --cwd mobile-pet-tracker typecheck` y `bun run --cwd mobile-pet-tracker lint` -> exit=0
+- `git diff 97054568 HEAD -- backend-pet-tracker mobile-pet-tracker/src/screens/add-reminder/index.tsx; echo "exit=$?"` -> vacio
+
+Al terminar: anade un apartado "## Ronda 2" a
+progress/impl_reminder-advance-already-past.md (pwd y branch, base medida,
+salida del rojo y del verde, el git diff vacio, sondas con su rojo, recuentos
+finales, commits con hash) y para.
+```
