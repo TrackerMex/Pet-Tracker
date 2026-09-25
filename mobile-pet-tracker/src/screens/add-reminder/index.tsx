@@ -234,7 +234,6 @@ function AddReminderContent({ petId }: { petId: string }) {
             onDismiss={() => setShowDatePicker(false)}
             onValueChange={(_event, selectedDate) => {
               setDate(fromPickerValue(selectedDate));
-              setAdvanceMinutes(10080);
               setNow(Date.now());
               setShowDatePicker(false);
             }}
@@ -252,7 +251,6 @@ function AddReminderContent({ petId }: { petId: string }) {
             onDismiss={() => setShowTimePicker(false)}
             onValueChange={(_event, selectedTime) => {
               setTime(selectedTime);
-              setAdvanceMinutes(10080);
               setNow(Date.now());
               setShowTimePicker(false);
             }}
