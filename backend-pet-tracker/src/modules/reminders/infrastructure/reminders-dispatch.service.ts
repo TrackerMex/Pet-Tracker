@@ -6,6 +6,8 @@ import {
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { AWS_RESOURCE_NAMES, SQS_CLIENT } from '@/aws/aws.constants';
 import type { AwsResourceNames } from '@/aws/resource-names';
+import { PET_REPOSITORY } from '@/modules/pets/domain/repositories/pet.repository';
+import type { PetRepository } from '@/modules/pets/domain/repositories/pet.repository';
 import { REMINDER_REPOSITORY } from '@/modules/reminders/domain/repositories/reminder.repository';
 import type { ReminderRepository } from '@/modules/reminders/domain/repositories/reminder.repository';
 import { REMINDERS_SCOPE } from './reminders.constants';
@@ -20,6 +22,7 @@ export class RemindersDispatchService {
     @Inject(AWS_RESOURCE_NAMES) private readonly names: AwsResourceNames,
     @Inject(REMINDER_REPOSITORY)
     private readonly reminders: ReminderRepository,
+    @Inject(PET_REPOSITORY) private readonly pets: PetRepository,
   ) {}
 
   async dispatchOnce(): Promise<void> {
