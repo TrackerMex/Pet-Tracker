@@ -14,4 +14,14 @@
   findOwnerTimezone (D2, D3); chips desactivados con seleccion derivada (D6, se aparta de la
   sugerencia del leader con motivo medido). Backend +1 suite / +9, movil +12, +0 claves, e2e +0.
 - Espejo en Notion, gate "En revision": https://app.notion.com/p/3e56115a9b278131af7ce26582626036
-- Siguiente: firma humana en Notion -> commit de firma -> aviso a Frontend -> handoff a Codex.
+- Firma: el humano aprobo en Notion (Estado del gate = Aprobado, casilla marcada,
+  page_last_edited_at 2026-09-25T04:07:21.251Z). Commit de firma 699e90cf; Notion Rol actual =
+  Implementer.
+- feature: reminder-advance-already-past (#125), status in_progress
+- inicio: 2026-09-25T04:15Z
+- plan: Codex CLI implementa R1-R4 en este worktree (backend: reminderPushBody y zona del owner en el
+  dispatcher; movil: chips de aviso desactivados con seleccion derivada). Handoff en
+  progress/handoff_reminder-advance-already-past.md. Codex no corre init.sh ni e2e. R5 (smoke en dev
+  build de Android con dispatcher y notifier encendidos) es del humano.
+- Siguiente: el humano confirma que Codex termino -> leer progress/impl_reminder-advance-already-past.md
+  -> turno de init.sh con Frontend -> reviewer.
