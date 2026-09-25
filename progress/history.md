@@ -5449,3 +5449,53 @@ el grep de cierre.
   dispara el push al guardar si faltan menos de 7 dias y el cuerpo no dice
   cuando vence. El humano eligio C (desactivar en la app los avisos ya
   pasados) + A (fecha de vencimiento en el cuerpo del push).
+
+# Sesión #122 mobile-source-lock-slice-blind-spots (2026-09-24/25, sesión Frontend)
+
+- **Branch** `feature/122-mobile-source-lock-slice-blind-spots` desde
+  `origin/main` `f72c1fc0` (con #161, #121). Backend cerraba #123 y después
+  preparaba #125 en wt-backend; no tocaba `food`, `src/screens/home/*` ni
+  `docs/conventions.md`, así que no hubo solape.
+- **Spec** `103329f5`, espejada a Notion. El humano puso Aprobado y el leader
+  firmó en `c1db4481`, citando la página y `page_last_edited_at`
+  2026-09-24T21:16:52Z. Tres call-sites (meal-toggle en
+  `src/app/(tabs)/__tests__/food.test.tsx`; home-alerts-bell y
+  reminders-see-all en `src/screens/home/index.test.tsx`) y dos defensas: R1,
+  la unicidad del ancla, y R2, una pata de árbol que pulsa con
+  `responderGrant` y lee `opacity: 0.8`. O2c (spread condicional al estado)
+  queda como límite documentado.
+- **Codex**: 6 commits `8ea9fc83..64bb0d50`, sin skills. R1 rojo con P4
+  versionada (señuelo `{false && ...}` más `opacity: 1`): fallan solo los tres
+  `it` renombrados, por `toBe`. R2 rojo con P1 versionada (comentario JSX con
+  la receta más `opacity: 1`): fallan solo los tres `#122 R2`, por
+  `toHaveStyle`. Cada verde revierte producción a los blobs base. 78/78
+  sondas de R3 con el veredicto exigido; su runner temporal paró en M/W1 por un
+  selector que casaba con el `>` de un hijo, lo corrigió y reanudó sin
+  mutación colgada.
+- **Merge**: el humano mergeó #162 (#123 y el registro de #125) mientras Codex
+  trabajaba. `origin/main` 40ec1b46 entró por merge (`e078838b`) al terminar
+  Codex, sin rebase; los hashes de trazabilidad siguen siendo ancestros de
+  HEAD y el merge no toca ningún fichero de #122.
+- **init.sh**: lo corrió el leader sobre `e078838b`, con turno pactado con
+  Backend. Exit 0: móvil 83/1494 (+0 suites, +3 tests sobre la base de main
+  83/1491), unit 170/1298, e2e 27+3 skip.
+- **Reviewer**: aprobado a la primera, sin bloqueantes. Rehízo los dos rojos y
+  el verde de R1 en un worktree temporal y plantó cinco sondas propias (B/O5h,
+  M/P4, S/O2c, M/W1, B/O2), todas con el veredicto exigido.
+- **Drift**: entre el veredicto y el cierre no se movió ni la branch
+  (`e078838b` en local y en origin) ni `origin/main` (40ec1b46).
+
+### Deuda y apuntes
+
+- **(F) no se registra**. Con R2 puesta, la regex de fuente de S y M casi solo
+  añade rojos de forma (V6, E1), pero la línea de unicidad, la única defensa
+  contra O5h (que R2 no ve), vive en ese mismo `it`, y en la campana la regex
+  es el único control de la opacidad en reposo. Retirarla exigiría antes
+  separar la unicidad y añadir una pata de reposo a B, a cambio de borrar una
+  aserción que no estorba.
+- **Obs. 1 del reviewer**: #122 nunca pasó a `in_progress` tras la firma, igual
+  que #121; va directo a `done` con el veredicto.
+- **Obs. 4**: los avisos de Uniwind (`--color-foreground`) en los logs de jest
+  son preexistentes y ajenos a #122.
+- Siguiente en esta sesión: #124, en serie, porque toca el mismo `it` de la
+  campana.
