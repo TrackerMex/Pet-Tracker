@@ -806,7 +806,7 @@ describe('#107 R5: el botón por franja conserva su feedback de pulsado', () => 
     expect(opacityOf(toggle.props.style)).toBe(1);
   });
 
-  it('#109 R1: acota el bloque de fuente al tag de apertura propio del meal-toggle', () => {
+  it('#109 R1: acota el bloque de fuente al tag de apertura propio del meal-toggle, con ancla única (#122 R1)', () => {
     const source = readFileSync('src/app/(tabs)/food.tsx', 'utf8');
     const anchor = source.indexOf('testID={`meal-toggle-${index}`}');
     // This is the meal-toggle's own opening tag, from `<` to `<`: ending at
@@ -818,9 +818,26 @@ describe('#107 R5: el botón por franja conserva su feedback de pulsado', () => 
       source.indexOf('<', anchor),
     );
 
+    // #122 R1: the slice assumes one anchor. A second copy (a decoy, the other
+    // branch of a ternary, a comment) would be the one sliced.
+    expect(source.lastIndexOf('testID={`meal-toggle-${index}`}')).toBe(anchor);
     expect(block).toMatch(
       /style=\{\(\{ pressed \}\) => \(\{\s*opacity: pressed \? 0\.8 : 1,?\s*\}\)\}/,
     );
+  });
+
+  it('#122 R2: el botón baja a opacidad 0.8 mientras se pulsa', async () => {
+    await renderFood();
+    const toggle = await screen.findByTestId('meal-toggle-0');
+
+    // #122 R2: responderGrant is the first event of userEvent.press; stopping
+    // there leaves the Pressable pressed, so this reads the opacity that runs.
+    await fireEvent(toggle, 'responderGrant', {
+      nativeEvent: {},
+      persist: () => undefined,
+    });
+
+    expect(toggle).toHaveStyle({ opacity: 0.8 });
   });
 });
 
