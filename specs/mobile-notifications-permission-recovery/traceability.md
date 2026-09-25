@@ -35,9 +35,9 @@ ancestros y habría que reapuntarlos verificando `git merge-base --is-ancestor`.
 
 | Requisito | Test (título literal del `describe`) | Commit rojo | Commit verde |
 |---|---|---|---|
-| R1 — el hook publica el bloqueo solo con `granted` y `canAskAgain` en `false`; se apaga al desmontar (5 filas + 2 `it`) | `#99 R1: el hook publica el bloqueo solo con el permiso denegado y sin poder pedirse` | pendiente | pendiente |
-| R2 — al volver a `active` con el aviso encendido relee sin pedir y registra si quedó concedido (3 + 3 filas + 2 `it`) | `#99 R2: al volver a primer plano con el aviso encendido se reevalúa el permiso sin pedirlo` | pendiente | pendiente |
-| R3 — aviso en Perfil, acción `Linking.openSettings()`, copy es/en y tabla de idioma (5 `it` + 2 candados movidos) | `#99 R3: Perfil avisa de las notificaciones bloqueadas y abre la configuración de la app` | pendiente | pendiente |
+| R1 — el hook publica el bloqueo solo con `granted` y `canAskAgain` en `false`; se apaga al desmontar (5 filas + 2 `it`) | `#99 R1: el hook publica el bloqueo solo con el permiso denegado y sin poder pedirse` | `87225d80` | `3f185965` |
+| R2 — al volver a `active` con el aviso encendido relee sin pedir y registra si quedó concedido (3 + 3 filas + 2 `it`) | `#99 R2: al volver a primer plano con el aviso encendido se reevalúa el permiso sin pedirlo` | `897d7bc4` | `c235f02a` |
+| R3 — aviso en Perfil, acción `Linking.openSettings()`, copy es/en y tabla de idioma (5 `it` + 2 candados movidos) | `#99 R3: Perfil avisa de las notificaciones bloqueadas y abre la configuración de la app` | `05c41906` | `e10fcf1c` |
 | R4 — smoke en dev build de Android 13+ | humano | — | pendiente (casilla en [[requirements]] §Prueba de humo) |
 
 ## Candados ajenos movidos
