@@ -1,6 +1,6 @@
 ---
 feature: "mobile-notifications-permission-recovery"
-status: spec_ready         # draft | spec_ready | approved
+status: approved           # draft | spec_ready | approved
 tags: [harness, spec, mobile]
 ---
 
@@ -586,4 +586,4 @@ propia casilla, no en §Aprobación.
 
 ## Aprobación
 
-- [ ] Spec aprobada por humano (fecha: ____)
+- [x] Spec aprobada por humano (fecha: 2026-09-25)
