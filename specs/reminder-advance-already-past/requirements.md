@@ -1,6 +1,6 @@
 ---
 feature: "reminder-advance-already-past"
-status: spec_ready       # draft | spec_ready | approved
+status: approved         # draft | spec_ready | approved
 tags: [harness, spec, backend, mobile]
 ---
 
@@ -519,4 +519,4 @@ en §Aprobación.
 
 ## Aprobación
 
-- [ ] Spec aprobada por humano (fecha: ____)
+- [x] Spec aprobada por humano (fecha: 2026-09-24 hora de México, vía Notion)
