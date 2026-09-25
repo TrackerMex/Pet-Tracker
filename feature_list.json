@@ -2402,7 +2402,7 @@
   {
     "id": 124,
     "name": "mobile-home-bell-icon-source-lock-unbounded",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P3",
     "description": "Registrada al cerrar #121 el 2026-09-24. Es el hallazgo (F) de su spec: specs/mobile-home-bell-source-lock-unbounded/requirements.md §Fuera de alcance. En mobile-pet-tracker/src/screens/home/index.test.tsx, el it que devuelve grep -n \"usa la ruta real sin cast Href\" (titulado '#121 R1: ...', dentro de describe('#78 R10: la campana vive en el hero y lleva al centro de alertas')) asevera el icono con expect(source).toContain('<Bell size={24} color={muted} />') contra TODO src/screens/home/index.tsx. Hoy el candado esta VIVO: esa cadena aparece una sola vez (grep -c da 1), y con el icono de la campana en color={accent} el it cae en rojo por toContain (sonda B1). Pero una segunda copia literal en cualquier sitio del fichero le presta el verde: B1 mas {false && <Bell size={24} color={muted} />} detras de la campana deja el fichero en 140/140 VERDE (sonda B2, medida sobre f44cf3d5). El arbol no lo tapa: 'compone el selector y la campana...' solo comprueba que el color esta definido (toBeDefined). LIMITES: es LATENTE, porque necesita una segunda copia literal del mismo <Bell ...>, y es de peso bajo. OJO al arreglo: el icono es el primer HIJO de la campana, no su tag de apertura, asi que el recorte de < a < de docs/conventions.md no vale tal cual; la spec decide entre acotar al primer hijo (con los limites del patron), aseverar el color exacto en el arbol o documentarlo. No entra la receta de pulsado de la campana (cerrada en #121) ni los puntos ciegos del recorte (#122).",
     "acceptance_criteria": [
