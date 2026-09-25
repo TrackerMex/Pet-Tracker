@@ -5561,3 +5561,58 @@ de la sugerencia del leader en D6 con un caso medido.
 - Limitaciones conocidas, no registradas: hora del push en la zona del owner
   para todos los miembros; push en espanol fijo; sin pantalla para editar el
   aviso de un recordatorio existente.
+
+---
+
+# Sesión #124 mobile-home-bell-icon-source-lock-unbounded (2026-09-25, sesión Frontend)
+
+- **Branch** `feature/124-mobile-home-bell-icon-source-lock-unbounded` desde
+  `origin/main` `2da66b86` (#163, #122). Backend cerraba #125 en wt-backend
+  (add-reminder y reminders del backend) y después preparaba #99; ninguna de
+  las dos tocaba `src/screens/home/` ni `docs/conventions.md`.
+- **Spec** `926a30f4`, espejada a Notion. El humano puso Aprobado y el leader
+  firmó en `d79017a2`, citando la página y `page_last_edited_at`
+  2026-09-25T15:45:13.161Z. Opción (b): un `describe` anidado
+  `#124 R1: el icono de la campana se pinta con la tinta muted` dentro de
+  `#78 R10`, con dos `it` (sin y con alertas abiertas) que aseveran
+  `props.color` del `icon-bell` contra el literal `'--color-muted'`, con
+  `Uniwind.getCSSVariable` espiado devolviendo su argumento. La línea
+  `toContain` del `it` `#121 R1` se queda, con un comentario de 4 líneas (R3)
+  y un párrafo en `docs/conventions.md`. Punto 3 de la firma: el humano no pidió
+  la opción (a), así que el residuo B5d/B6d queda como límite documentado.
+- **Codex**: 4 commits `a6212f9e..205b126d`, sin skills. Rojo con B2
+  versionada (icono en `accent` más una copia señuelo `{false && ...}` en
+  muted): fallan solo los dos `it` nuevos, por `toBe` (Expected
+  `"--color-muted"`, Received `"--color-accent-strong"`), y el `it` `#121 R1`
+  pasa, que es el agujero. El verde restaura producción al blob
+  `dbb5b034`. 21/21 sondas con el veredicto exigido; B5d, B6d, F2 y W2 en
+  verde, como pedía la spec. Móvil 83/1494 → 83/1496.
+- **init.sh**: lo corrió el leader sobre `205b126d`, con turno pactado con
+  Backend. Exit 0: unit 170/1298, infra 2/14, móvil 83/1496, e2e 27+3 skip.
+- **Merge**: el humano mergeó #164 (#125) mientras Codex trabajaba.
+  `origin/main` `b602ff6e` entró por merge (`6cd6ea20`) al terminar Codex, sin
+  rebase. El merge no toca ningún fichero de #124. Sobre el merge, jest de
+  móvil 83/1510, tsc 0 y lint 0, sin init.sh: el backend es el de main, que
+  Backend validó con exit 0.
+- **Reviewer** (`366bc50f`): aprobado a la primera, sin bloqueantes. Rehízo el
+  rojo y el verde en un worktree temporal y re-midió las 21 sondas, no solo la
+  muestra.
+- **Drift**: entre el veredicto y el cierre la branch solo sumó el commit del
+  veredicto, y `origin/main` no se movió (`b602ff6e`).
+
+### Deuda y apuntes
+
+- **(F) registrada como #126** `mobile-home-cell-icons-source-lock-unbounded`
+  (id comprobado contra `origin/main` y pactado con Backend, que empieza en
+  #127): `#69 R9` cuenta los cuatro iconos de celda sobre todo `index.tsx`, y
+  la sonda W2 (Weight en `accent` más una copia señuelo) deja el fichero en
+  verde. Es latente y de peso bajo; solo se midió sobre Weight.
+- **Obs. 1 del reviewer**: #124 no pasó a `in_progress` tras la firma, igual
+  que #121 y #122, para no chocar en init.sh con el `in_progress` de #125. Va
+  directo a `done` con el veredicto.
+- **Obs. 4, para el spec_author**: el bloque `diff` de tasks.md §R3 (1) pintaba
+  las líneas de contexto con 2 espacios de más. Codex siguió la prosa («4
+  espacios»), y el blob `abbdb5b8` de la spec confirma que era lo correcto. Un
+  literal que se presenta byte a byte tiene que serlo.
+- Siguiente en esta sesión: la que elija el humano. #126 toca el mismo fichero
+  de test que #124, así que conviene que vaya después de su merge.

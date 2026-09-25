@@ -281,6 +281,17 @@ mismo fichero la repite, esa copia da el verde aunque el elemento vigilado la
 pierda: así pasaba con la campana hasta #121. Ancla en el propio tag y recorta
 como arriba.
 
+Un **hijo** del elemento, como el icono de la campana, queda fuera de ese
+recorte: vive después del `>` que cierra el tag. Contra el fichero entero tiene
+el mismo agujero que la receta, y acotarlo por posición al primer hijo sigue
+leyendo texto (un comentario `{/* … */}` delante lo engaña). Su prop se asevera
+en el **árbol**: con `jest.spyOn(Uniwind, 'getCSSVariable')` devolviendo el
+nombre que recibe, cada token pinta un color distinto, y el valor esperado es un
+literal del test (`'--color-muted'`), nunca uno sacado de `useThemeColors`. El
+árbol solo ve el estado que renderiza, así que el test monta los estados que
+cambian el elemento. Así lo hace la campana (#124):
+`grep -n "se pinta con la tinta muted" mobile-pet-tracker/src/screens/home/index.test.tsx`.
+
 ### Esperas sobre el árbol renderizado
 
 La condición que termina una espera debe ser la misma observación que hacen las

@@ -243,6 +243,10 @@ describe('#78 R10: la campana vive en el hero y lleva al centro de alertas', () 
     expect(block).toMatch(
       /style=\{\(\{ pressed \}\) => \(\{ opacity: pressed \? 0\.8 : 1 \}\)\}/,
     );
+    // #124 R1: this matches the whole file, so any other copy of the icon lends
+    // it the green. The colour itself is locked in the tree by the #124 R1
+    // describe below. This line stays for what the tree cannot see: a platform
+    // branch, or a CSS variable name written by hand.
     expect(source).toContain('<Bell size={24} color={muted} />');
   });
 
@@ -258,6 +262,45 @@ describe('#78 R10: la campana vive en el hero y lleva al centro de alertas', () 
     });
 
     expect(bell).toHaveStyle({ opacity: 0.8 });
+  });
+
+  describe('#124 R1: el icono de la campana se pinta con la tinta muted', () => {
+    beforeEach(() => {
+      // #124 R1: each CSS variable resolves to its own name, so muted and
+      // accent-strong stop being the same fallback colour in the tree.
+      jest
+        .spyOn(Uniwind, 'getCSSVariable')
+        .mockImplementation((token) => token);
+    });
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    it('sin alertas abiertas', async () => {
+      await renderHome();
+      const bell = await screen.findByTestId('home-alerts-bell');
+
+      expect(within(bell).getByTestId('icon-bell').props.color).toBe(
+        '--color-muted',
+      );
+    });
+
+    it('con alertas abiertas', async () => {
+      mockListAlerts.mockResolvedValue({
+        kind: 'ok',
+        items: [makeAlert()],
+        nextCursor: null,
+      });
+
+      await renderHome();
+      const bell = await screen.findByTestId('home-alerts-bell');
+      await within(bell).findByTestId('home-alerts-dot');
+
+      expect(within(bell).getByTestId('icon-bell').props.color).toBe(
+        '--color-muted',
+      );
+    });
   });
 
   it('no pinta campana cuando no hay mascotas', async () => {
