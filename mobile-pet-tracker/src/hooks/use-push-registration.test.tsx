@@ -1,11 +1,11 @@
-import { renderHook, waitFor } from '@testing-library/react-native';
+import { act, renderHook, waitFor } from '@testing-library/react-native';
 import * as Notifications from 'expo-notifications';
 import { router } from 'expo-router';
 import { Platform } from 'react-native';
 
 import { registerPushToken } from '../api/push-tokens';
 import { useAuth, type AuthContextValue } from '../providers/auth-provider';
-import { usePushRegistration } from './use-push-registration';
+import { useNotificationsBlocked, usePushRegistration } from './use-push-registration';
 
 let mockIsDevice = true;
 let mockProjectId: string | undefined = 'project-id';
@@ -490,6 +490,69 @@ describe('R10: banner en primer plano y tap que navega a /alerts', () => {
     await probe.unmount();
 
     expect(mockRemoveResponseListener).toHaveBeenCalledTimes(1);
+  });
+});
+
+function useRegistrationProbe(): boolean {
+  usePushRegistration();
+  return useNotificationsBlocked();
+}
+
+async function flushEvaluation(): Promise<void> {
+  await act(async () => undefined);
+}
+
+describe('#99 R1: el hook publica el bloqueo solo con el permiso denegado y sin poder pedirse', () => {
+  it.each([
+    ['denegado y canAskAgain false de entrada: aviso, sin diálogo', permission(false, false), undefined, true, 0],
+    ['segunda negativa en este arranque: aviso tras el diálogo', permission(false, true), permission(false, false), true, 1],
+    ['primera negativa: sin aviso, el diálogo vuelve en el siguiente arranque', permission(false, true), permission(false, true), false, 1],
+    ['concedido de entrada: sin aviso', permission(true, true), undefined, false, 0],
+    ['concedido en el diálogo: sin aviso', permission(false, true), permission(true, true), false, 1],
+  ] as const)('%s', async (_title, inicial, pedido, bloqueado, peticiones) => {
+    mockGetPermissions.mockResolvedValue(inicial);
+    if (pedido !== undefined) mockRequestPermissions.mockResolvedValue(pedido);
+
+    const probe = await renderHook(() => useRegistrationProbe());
+    await waitFor(() => {
+      if (inicial.granted || pedido?.granted) {
+        expect(mockRegisterPushToken).toHaveBeenCalledTimes(1);
+      } else {
+        expect(warnSpy).toHaveBeenCalledWith('[push] skipped: notification permission denied');
+      }
+    });
+    await flushEvaluation();
+
+    expect(probe.result.current).toBe(bloqueado);
+    expect(mockGetPermissions).toHaveBeenCalledTimes(1);
+    expect(mockRequestPermissions).toHaveBeenCalledTimes(peticiones);
+  });
+
+  it('al desmontar el aviso se apaga', async () => {
+    mockGetPermissions.mockResolvedValue(permission(false, false));
+    const probe = await renderHook(() => useRegistrationProbe());
+    const observer = await renderHook(() => useNotificationsBlocked());
+
+    await waitFor(() => expect(observer.result.current).toBe(true));
+    await probe.unmount();
+
+    expect(observer.result.current).toBe(false);
+  });
+
+  it('una evaluación que termina después de desmontar no enciende el aviso', async () => {
+    let resolvePermission!: (value: Notifications.NotificationPermissionsStatus) => void;
+    mockGetPermissions.mockReturnValue(new Promise((resolve) => {
+      resolvePermission = resolve;
+    }));
+    const probe = await renderHook(() => useRegistrationProbe());
+    const observer = await renderHook(() => useNotificationsBlocked());
+    await waitFor(() => expect(mockGetPermissions).toHaveBeenCalledTimes(1));
+
+    await probe.unmount();
+    await act(async () => { resolvePermission(permission(false, false)); });
+
+    expect(warnSpy).toHaveBeenCalledWith('[push] skipped: notification permission denied');
+    expect(observer.result.current).toBe(false);
   });
 });
 

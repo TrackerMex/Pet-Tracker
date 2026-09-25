@@ -129,3 +129,7 @@ export function usePushRegistration(): void {
       .catch(() => undefined);
   }, [pathname, setPushToken, status, token]);
 }
+
+export function useNotificationsBlocked(): boolean {
+  return false;
+}
