@@ -193,7 +193,7 @@ aunque `Moon` y `Map` también se pintan fuera de la tira.
 | Hecho | Evidencia |
 |---|---|
 | Dos horas después, `a1796c91` (2026-09-08 21:23:05, `test(mobile-home-quick-actions): name reicon doubles by icon (R7)`) renombró el doble **por componente**: `Weight` → `icon-weight`, `Walk` → `icon-walk`, `Moon` → `icon-moon`, `Map` → `icon-map`. También actualizó las cuatro referencias del `it` `asigna…` | `git show a1796c91`. Lo prescribía #71 R7 (`specs/mobile-home-quick-actions/requirements.md`, «Un ajuste obligatorio en el doble de `reicon` de la Home»), que además **exige** `within(tile)` y **prohíbe** el `getByTestId` global para el icono, porque `Weight` se repite a propósito |
-| Ningún `summary-icon-*` queda en el código | `git log -S "summary-icon-sleep"` da solo `18454a44` (lo añadió) y `a1796c91` (lo quitó). `git grep "summary-icon" origin/main -- mobile-pet-tracker/src` no devuelve nada |
+| Ningún `summary-icon-*` queda en el código | `git log -S "summary-icon-sleep" origin/main -- mobile-pet-tracker/src` da solo `18454a44` (lo añadió) y `a1796c91` (lo quitó); sin la ruta salen también `8a1a0e6a` y `4738568b`, que son docs y progress. `git grep "summary-icon" origin/main -- mobile-pet-tracker/src` no devuelve nada |
 | Los nombres de hoy dicen el componente, no la celda | el mock, `grep -n "mockIcon('icon-" src/screens/home/index.test.tsx` |
 | Ningún test busca un icono de celda con `getByTestId` global | los usos de `icon-weight`, `icon-walk`, `icon-moon` e `icon-map` son las cuatro filas de `asigna…` (acotadas con `within(value.parent!)`) y las dos del tile de peso de #71 (acotadas con `within(tile)`). R1 de esta feature tampoco: los compara como props del primer hijo de la celda |
 
