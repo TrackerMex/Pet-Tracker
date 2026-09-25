@@ -520,3 +520,100 @@ en §Aprobación.
 ## Aprobación
 
 - [x] Spec aprobada por humano (fecha: 2026-09-24 hora de México, vía Notion)
+
+---
+
+## Enmienda E1 — R6: la elección explícita del aviso se conserva al cambiar fecha u hora
+
+> Escrita el 2026-09-25 sobre la spec aprobada (firma `699e90cf`), tras la
+> revisión **aprobada** (`progress/review_reminder-advance-already-past.md`,
+> commit `5134d165`, sobre la punta de Codex `97054568`), por su hallazgo H1
+> (media) y H2 (baja), a petición del humano. No toca D1-D10, ni R1-R5, ni sus
+> tests, ni la firma original. Añade **R6**, **solo tests**: la producción no
+> cambia. Su casilla va **sin marcar**: el humano reabre el gate solo para
+> esta enmienda.
+
+### El hecho medido (H1 y H2 del reviewer)
+
+El código de `97054568` es **correcto**. El hueco está en los tests que la
+spec prescribió:
+
+| Id | Mutación en `src/screens/add-reminder/index.tsx` | Qué rompe en producción | Estado |
+|---|---|---|---|
+| X10 | `setAdvanceMinutes(10080);` en el `onValueChange` del picker de fecha | cambiar la fecha tira la elección explícita y vuelve a «7 días antes» | **verde** 37/37 |
+| X11 | lo mismo en el picker de fecha **y** en el de hora | cambiar fecha u hora tira la elección explícita | **verde** 37/37 |
+| X1 | con todos los chips desactivados, marcar `10080` fijo en vez de la preferencia | con el formulario ya inválido, se ve marcado «7 días antes» aunque el usuario eligiera otro | **verde** 37/37 |
+
+Por qué: en los pasos c y e del `it` de secuencia de R3, `1440` es a la vez
+la elección del usuario **y** el mayor aviso activo, así que «conservar la
+elección» (D6) y «resetear a 7 días y bajar al mayor activo» dan lo mismo. Y
+en la fila 7 de R3 (todos desactivados) la preferencia es la de por defecto,
+`10080`, así que «mantener la preferencia» y «marcar 10080 fijo» coinciden.
+
+### Decisión: E1 añade **R6**, no reescribe R3
+
+R3 está firmado, su secuencia es literal y sus pares rojo→verde están en
+traceability. R6 asevera la misma propiedad de D6 en casos donde la elección
+del usuario **no** coincide con el mayor aviso activo, en un `describe` propio.
+
+### R6 — La elección explícita del aviso se conserva al cambiar fecha u hora
+
+*(requisito de verificación sobre código ya correcto: su rojo es una
+**mutación de producción** versionada en el commit rojo y revertida en el
+verde, CHECKPOINTS.md C4 quinto punto; nunca una mutación del doble)*
+
+**WHILE** el usuario eligió explícitamente un aviso en Nuevo recordatorio,
+**WHEN** cambia la fecha o la hora,
+**THE SYSTEM SHALL** seguir marcando esa elección mientras esté activa aunque
+haya avisos mayores activos, **AND IF** todos los chips quedan desactivados,
+**THE SYSTEM SHALL** seguir marcando esa elección (no un valor fijo).
+
+- **Test**: `mobile-pet-tracker/src/screens/add-reminder/index.test.tsx`, un
+  `describe` hijo **nuevo al final** del `describe` padre
+  `describe('#125: avisos que ya pasaron en Nuevo recordatorio'` (mismo
+  `beforeEach`/`afterEach`), después de
+  `describe('#125 R4: los chips se evalúan con el instante del último cambio de fecha u hora y guardar recalcula con el del envío'`:
+  `describe('#125 R6: la elección explícita del aviso se conserva al cambiar fecha u hora (Enmienda E1)'`
+  con **dos** `it`. Reloj fijo en `new Date(2026, 8, 24, 8, 0)` (componentes
+  locales), título `'Rabies'`, y los helpers de módulo que ya existen
+  (`pickDate`, `pickTime`, `expectAdvanceChips`).
+
+`it('con avisos mayores activos, cambiar fecha u hora conserva el aviso elegido')`:
+
+| Paso | Acción | `expectAdvanceChips(…)` / aserción |
+|---|---|---|
+| a | `pickDate(new Date(2026, 9, 10, 12, 0))` | `[false, false, false, false], 10080` |
+| b | pulsar `advance-chip-1440` | `[false, false, false, false], 1440` |
+| c | `pickDate(new Date(2026, 9, 5, 12, 0))` | `[false, false, false, false], 1440` (7 días antes = 28 de septiembre a las 09:00, activo: la elección se conserva aunque 10080 esté activo) |
+| d | `pickTime(10, 0)` | `[false, false, false, false], 1440` |
+| e | Guardar | `mockCreateReminder` con `{ type: 'vaccine', title: 'Rabies', dueAt: new Date(2026, 9, 5, 10, 0).toISOString(), advanceMinutes: 1440 }` |
+
+`it('con todos los chips desactivados sigue marcada la elección, no un valor fijo')`:
+
+| Paso | Acción | `expectAdvanceChips(…)` / aserción |
+|---|---|---|
+| a | `pickDate(new Date(2026, 9, 10, 12, 0))` | `[false, false, false, false], 10080` |
+| b | pulsar `advance-chip-1440` | `[false, false, false, false], 1440` |
+| c | `pickDate(new Date(2026, 8, 24, 12, 0))` (hoy) | `[false, true, true, true], 0` (hoy a las 09:00: solo queda «Mismo día») |
+| d | `pickTime(8, 0)` | `[true, true, true, true], 1440` (hoy a las 08:00 = ahora: todos pasados, D5) |
+| e | Guardar | `add-reminder-error` `toHaveTextContent('La fecha debe ser futura')` y `mockCreateReminder` no llamado |
+
+- **Rojo versionado**: X11 — en `src/screens/add-reminder/index.tsx`, añadir
+  `setAdvanceMinutes(10080);` en el `onValueChange` de `testID="date-picker"`
+  (después de `setDate(fromPickerValue(selectedDate));`) y en el de
+  `testID="time-picker"` (después de `setTime(selectedTime);`). Pone rojos
+  los **dos** `it` (paso c de cada uno, por aserción); los 37 tests previos
+  siguen verdes. El verde lo revierte:
+  `git diff b10b7f1e -- mobile-pet-tracker/src/screens/add-reminder/index.tsx`
+  vacío.
+- **Mutaciones que deben dejarlo rojo** (sondas del reviewer, sin versionar):
+  X10 (solo en el picker de fecha: primer `it`, paso c; segundo `it`, paso d);
+  X1 (todos desactivados → `10080` fijo: segundo `it`, paso d); resetear solo
+  en el picker de hora (primer `it`, paso d).
+- **Recuentos**: `add-reminder/index.test.tsx` **37 → 39**; suite móvil
+  **83 / 1503 → 83 / 1505**; backend, e2e, catálogo y `ui-copy-table.ts`
+  **+0**. Ningún test existente cambia.
+
+### Aprobación de la Enmienda E1
+
+- [ ] Enmienda E1 aprobada por humano (fecha: ____) ← gate obligatorio antes de la ronda 2 de Codex

@@ -235,3 +235,27 @@ Todo **sin pipe** (el código de salida de un pipe es el del último comando):
 - [ ] Commit final `docs(reminders): fill #125 traceability` con los ocho
       hashes en [[traceability]], y el reporte con las bases, las sondas y los
       recuentos.
+
+---
+
+## Enmienda E1 — ronda 2 (R6, solo tests)
+
+> Solo tras la firma humana de la Enmienda E1 ([[requirements]] §Enmienda E1).
+> Producción queda **idéntica** a `b10b7f1e`.
+
+- [ ] Antes: `git merge-base --is-ancestor 97054568 HEAD; echo "exit=$?"` → `0`;
+      `test ! -e mobile-pet-tracker/.expo/types/router.d.ts` → `exit=0`; base
+      `bunx jest --runTestsByPath src/screens/add-reminder/index.test.tsx` → 37.
+- [ ] **(1) Commit rojo** `test(add-reminder): lock the kept advance choice across date and time changes (R6)`.
+  - `describe('#125 R6: …'` al final del `describe` padre `#125`, con los dos
+    `it` literales de [[requirements]] R6.
+  - **Mutación versionada** X11 en `src/screens/add-reminder/index.tsx`
+    (`setAdvanceMinutes(10080);` en los dos `onValueChange`).
+  Rojo esperado: los dos `it` de R6, por aserción; 37 verdes.
+- [ ] **(2) Commit verde** `feat(add-reminder): revert the R6 probe mutation, advance choice locked (R6)`.
+  `git diff b10b7f1e -- mobile-pet-tracker/src/screens/add-reminder/index.tsx; echo "exit=$?"` → vacío.
+- [ ] Sondas (sin commit, restauradas): X10, X1, reset solo en hora.
+- [ ] Cierre: add-reminder **39**; `bun run --cwd mobile-pet-tracker test` →
+      **83 / 1505**; typecheck y lint móvil `exit=0`.
+- [ ] **(3) Commit final** `docs(reminders): fill #125 E1 traceability` con
+      los dos hashes en [[traceability]].
