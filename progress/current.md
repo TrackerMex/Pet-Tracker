@@ -23,5 +23,13 @@
   dispatcher; movil: chips de aviso desactivados con seleccion derivada). Handoff en
   progress/handoff_reminder-advance-already-past.md. Codex no corre init.sh ni e2e. R5 (smoke en dev
   build de Android con dispatcher y notifier encendidos) es del humano.
-- Siguiente: el humano confirma que Codex termino -> leer progress/impl_reminder-advance-already-past.md
-  -> turno de init.sh con Frontend -> reviewer.
+- Codex: 459013a8..97054568 (8 commits TDD + trazabilidad en un commit final), backend 171/1307,
+  movil 83/1503.
+- init.sh de revision (turno cedido por Frontend) sobre 97054568: exit=0 sin pipe; unit 171/1307,
+  movil 83/1503, e2e 27 + 3 skipped (pet-reminders R7/R8 verdes con el PET_REPOSITORY real).
+- Reviewer: APROBADO a la primera (5134d165). H1 media (de spec, no de codigo): ningun test
+  distingue "se conserva la eleccion explicita al cambiar fecha u hora" (D6) de "cada cambio
+  resetea a 7 dias"; el codigo es correcto. Cerrarlo exige Enmienda. H2 baja: con todos los chips
+  desactivados, caer a 10080 fijo sobrevive (solo cambia que chip atenuado se ve marcado).
+- Integrado origin/main 2da66b86 (#122) por merge, sin conflictos.
+- Siguiente: decision del humano sobre H1 (Enmienda E1 test-only o deuda) + smoke R5 -> cierre.
