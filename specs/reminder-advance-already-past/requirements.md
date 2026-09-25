@@ -464,7 +464,7 @@ en §Aprobación.
    atenuados. **Guardar** → «La fecha debe ser futura» y no se crea nada.
 6. Borrar `Smoke 125 A` y `Smoke 125 C`.
 
-- [ ] Prueba de humo de R5 superada por el humano (fecha: ____, dispositivo: ____)
+- [X] Prueba de humo de R5 superada por el humano (fecha: 2026-09-25, dispositivo: CPH2709)
 
 ---
 
