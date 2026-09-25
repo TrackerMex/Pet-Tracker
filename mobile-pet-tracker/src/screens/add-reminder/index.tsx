@@ -61,7 +61,7 @@ function AddReminderContent({ petId }: { petId: string }) {
   const [date, setDate] = useState<Date | null>(null);
   const [time, setTime] = useState(initialTime);
   const [advanceMinutes, setAdvanceMinutes] = useState(10080);
-  const [now] = useState(Date.now);
+  const [now, setNow] = useState(Date.now);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -92,7 +92,7 @@ function AddReminderContent({ petId }: { petId: string }) {
         type,
         title: trimmedTitle,
         dueAt: dueAt.toISOString(),
-        advanceMinutes: effectiveAdvance(dueAt, advanceMinutes, now),
+        advanceMinutes: effectiveAdvance(dueAt, advanceMinutes, Date.now()),
       });
 
       switch (result.kind) {
@@ -234,6 +234,7 @@ function AddReminderContent({ petId }: { petId: string }) {
             onDismiss={() => setShowDatePicker(false)}
             onValueChange={(_event, selectedDate) => {
               setDate(fromPickerValue(selectedDate));
+              setNow(Date.now());
               setShowDatePicker(false);
             }}
           />
@@ -250,6 +251,7 @@ function AddReminderContent({ petId }: { petId: string }) {
             onDismiss={() => setShowTimePicker(false)}
             onValueChange={(_event, selectedTime) => {
               setTime(selectedTime);
+              setNow(Date.now());
               setShowTimePicker(false);
             }}
           />
