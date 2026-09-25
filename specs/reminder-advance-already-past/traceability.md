@@ -39,7 +39,7 @@ ancestros y habría que reapuntarlos verificando `git merge-base --is-ancestor`.
 | R3 — chips desactivados, selección derivada y aviso enviado (7 filas + 2 `it` + 3 candados movidos) | `#125 R3: los chips de aviso cuyo momento ya pasó quedan desactivados y la selección baja al mayor aviso aún futuro` | `ab4e9a58` | `6fedbc87` |
 | R4 — instante del cambio de fecha u hora y del envío (3 `it`) | `#125 R4: los chips se evalúan con el instante del último cambio de fecha u hora y guardar recalcula con el del envío` | `ec96b49b` | `b10b7f1e` |
 | R5 — smoke en dev build de Android | humano | — | pendiente (casilla de [[requirements]] §Prueba de humo) |
-| R6 — la elección explícita se conserva al cambiar fecha u hora (Enmienda E1; verificación; mutación X11) | `#125 R6: la elección explícita del aviso se conserva al cambiar fecha u hora (Enmienda E1)` | pendiente | pendiente |
+| R6 — la elección explícita se conserva al cambiar fecha u hora (Enmienda E1; verificación; mutación X11) | `#125 R6: la elección explícita del aviso se conserva al cambiar fecha u hora (Enmienda E1)` | `21ff2000` | `7d178b03` |
 
 ## Candados ajenos movidos
 

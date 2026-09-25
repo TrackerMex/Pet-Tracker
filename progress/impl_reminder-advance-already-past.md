@@ -92,3 +92,21 @@ Todas las sondas mutaron un solo fichero de producción de forma temporal, ejecu
 | R4 | `ec96b49b` — `test(add-reminder): re-evaluate chips on date or time change and on save (R4)` | `b10b7f1e` — `feat(add-reminder): refresh the evaluation instant on change and on save (R4)` |
 
 Commit final: `docs(reminders): fill #125 traceability` (es el commit que contiene este reporte; consultar su hash con `git log -1`).
+
+## Ronda 2
+
+- Worktree confirmado antes de tocar código: `pwd` → `/home/claude/sites/Pet-Tracker-wt-backend`; `git branch --show-current` → `feature/125-reminder-advance-already-past`.
+- Base: Enmienda E1 firmada (`aedb89be`); `git merge-base --is-ancestor 97054568 HEAD` → `exit=0`; `mobile-pet-tracker/.expo/types/router.d.ts` ausente; Jest enfocado antes de R6 → 37/37, `exit=0`.
+- Rojo X11 versionado (`21ff2000`): Jest enfocado → 2 fallidos, 37 verdes, 39 total, `exit=1`. Fallaron por aserción `con avisos mayores activos…` en el paso c (fecha) y `con todos los chips desactivados…` en el paso d (hora).
+- Verde (`7d178b03`): se quitaron los dos resets de X11; Jest enfocado → 39/39, `exit=0`. `git diff b10b7f1e -- mobile-pet-tracker/src/screens/add-reminder/index.tsx; echo "exit=$?"` → salida vacía, `exit=0`.
+- Sondas sin commit, Jest enfocado y restauración con `git diff --exit-code` vacío (`exit=0`) tras cada una:
+
+| Mutación | Fallos por aserción (`exit=1`) | Verdes |
+|---|---|---|
+| X10, reset solo en fecha | 2: primer `it` paso c; segundo `it` paso d | 37 |
+| X1, fallback fijo `10080` cuando todos están desactivados | 1: segundo `it` paso d | 38 |
+| Reset solo en hora | 2: primer `it` paso d; segundo `it` paso d | 37 |
+
+- Cierre: Jest enfocado exacto → 39/39, `exit=0`; suite móvil → 83 suites / 1508 tests, `exit=0`; typecheck y lint móvil → `exit=0`. Los **1508** superan en tres el recuento 1505 de E1: el merge `d3d6c9b3` posterior a `97054568` incorporó tres tests de #122 (food, campana y enlace de Home). La base de suite para esta ronda es por tanto 1506, inferida de ese diff; R6 añade los dos tests previstos.
+- `git diff 97054568 HEAD -- backend-pet-tracker mobile-pet-tracker/src/screens/add-reminder/index.tsx; echo "exit=$?"` → salida vacía, `exit=0`. Backend y producción móvil sin cambios respecto de la ronda 1.
+- Commits R6: rojo `21ff2000` (`test(add-reminder): lock the kept advance choice across date and time changes (R6)`); verde `7d178b03` (`feat(add-reminder): revert the R6 probe mutation, advance choice locked (R6)`). Trazabilidad y este reporte: commit final `docs(reminders): fill #125 E1 traceability` (hash en `git log -1`).
