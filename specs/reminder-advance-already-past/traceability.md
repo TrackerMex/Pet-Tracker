@@ -34,10 +34,10 @@ ancestros y habría que reapuntarlos verificando `git merge-base --is-ancestor`.
 
 | Requisito | Test (título literal del `describe`) | Commit rojo | Commit verde |
 |---|---|---|---|
-| R1 — cuerpo del push con fecha y hora en la zona del owner (7 filas: 3 de Ciudad de México con cruce de mes y de año, UTC, Kiritimati, null, no IANA) | `#125 R1: el cuerpo del push dice cuándo vence, en la zona del owner` | pendiente | pendiente |
-| R2 — el dispatcher lee la zona por mascota; lectura fallida no encola (2 `it` + R6 movido) | `#125 R2: el dispatcher escribe en el cuerpo cuándo vence, en la zona del owner de cada mascota` | pendiente | pendiente |
-| R3 — chips desactivados, selección derivada y aviso enviado (7 filas + 2 `it` + 3 candados movidos) | `#125 R3: los chips de aviso cuyo momento ya pasó quedan desactivados y la selección baja al mayor aviso aún futuro` | pendiente | pendiente |
-| R4 — instante del cambio de fecha u hora y del envío (3 `it`) | `#125 R4: los chips se evalúan con el instante del último cambio de fecha u hora y guardar recalcula con el del envío` | pendiente | pendiente |
+| R1 — cuerpo del push con fecha y hora en la zona del owner (7 filas: 3 de Ciudad de México con cruce de mes y de año, UTC, Kiritimati, null, no IANA) | `#125 R1: el cuerpo del push dice cuándo vence, en la zona del owner` | `459013a8` | `2c0bcb42` |
+| R2 — el dispatcher lee la zona por mascota; lectura fallida no encola (2 `it` + R6 movido) | `#125 R2: el dispatcher escribe en el cuerpo cuándo vence, en la zona del owner de cada mascota` | `123b4c4f` | `241ecf96` |
+| R3 — chips desactivados, selección derivada y aviso enviado (7 filas + 2 `it` + 3 candados movidos) | `#125 R3: los chips de aviso cuyo momento ya pasó quedan desactivados y la selección baja al mayor aviso aún futuro` | `ab4e9a58` | `6fedbc87` |
+| R4 — instante del cambio de fecha u hora y del envío (3 `it`) | `#125 R4: los chips se evalúan con el instante del último cambio de fecha u hora y guardar recalcula con el del envío` | `ec96b49b` | `b10b7f1e` |
 | R5 — smoke en dev build de Android | humano | — | pendiente (casilla de [[requirements]] §Prueba de humo) |
 
 ## Candados ajenos movidos
