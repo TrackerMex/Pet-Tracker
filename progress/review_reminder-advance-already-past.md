@@ -270,3 +270,151 @@ Tests:       8 skipped, 389 passed, 397 total
 ✅ Todo verde. Listo para trabajar.
 EXIT 0
 ```
+
+---
+
+## Ronda 2
+
+Fecha: 2026-09-25T16:30Z
+Veredicto: APROBADO
+
+Alcance: Enmienda E1 (R6, solo tests). Commits `21ff2000` (rojo con X11),
+`7d178b03` (verde, revierte X11) y `916b7f63` (trazabilidad). HEAD `916b7f63`,
+comprobado al empezar y al terminar. Árbol limpio. Firma de E1 `aedb89be`
+(espejo `7238bc6d`). Smoke de R5 firmado por el humano en `07905716`
+(CPH2709), ancestro de `aedb89be` (`is-ancestor` → exit 0). Skill cargada:
+`expo:expo-overview`. Merge-base con `origin/main` (tras `git fetch`):
+`2da66b86` = `origin/main`.
+
+Las sondas se hicieron en un worktree desechable (`git worktree add --detach`
+en el scratchpad, con `node_modules` enlazado). Cada una se restauró
+(`git diff --exit-code` = 0) y el worktree ya está eliminado.
+`Pet-Tracker-wt-backend` no se tocó.
+
+### Checklist ronda 2
+
+- [x] **C2**: solo #125 está `in_progress` en `feature_list.json` de esta branch.
+- [x] **C3**: producción idéntica a la de la ronda 1.
+  `git diff b10b7f1e HEAD -- mobile-pet-tracker/src/screens/add-reminder/index.tsx`
+  → vacío, exit 0. `git diff 97054568 HEAD -- backend-pet-tracker` → vacío,
+  exit 0.
+- [x] **C4**: los dos `it` nombran R6 en su `describe`. El rojo va antes que el
+  verde. El rojo lleva la mutación versionada de producción (C4, quinto punto),
+  y el verde la revierte: `git diff 7d178b03 21ff2000~1 -- …/index.tsx` → vacío.
+- [x] **C5**: la fila R6 tiene `21ff2000` / `7d178b03`, y los diez hashes de la
+  tabla son ancestros de HEAD (`is-ancestor` → exit 0 en todos). Los mensajes de
+  commit coinciden literalmente con tasks.md §E1. **La fila de R5 sigue
+  diciendo «pendiente»**: ver H8.
+- [x] **C6**: `git diff aedb89be HEAD -- specs/reminder-advance-already-past/`
+  solo cambia la fila R6 de `traceability.md` (1 línea), exit 0. La casilla de
+  R5 es del commit del humano `07905716`, anterior a la firma. `status: approved`.
+- [x] **C7**: N/A. No se reemplaza nada.
+- [x] **C8**: sin cambios de UI. Solo cambia un test.
+
+### 1. Los dos `it` frente al texto de E1
+
+Los dos `it` viven en
+`describe('#125 R6: la elección explícita del aviso se conserva al cambiar fecha u hora (Enmienda E1)'`,
+que es el último hijo del padre `#125` y va justo después del de R4. Heredan
+su `beforeEach`/`afterEach`. Usan reloj `new Date(2026, 8, 24, 8, 0)`, título
+`'Rabies'` y los helpers de módulo `pickDate`, `pickTime` y
+`expectAdvanceChips`. Los pasos a-e coinciden literalmente con las dos tablas:
+chips, selección, payload
+`{ type: 'vaccine', title: 'Rabies', dueAt: new Date(2026, 9, 5, 10, 0).toISOString(), advanceMinutes: 1440 }`,
+el texto `'La fecha debe ser futura'` y `not.toHaveBeenCalled()`. Ningún valor
+esperado sale de un símbolo de producción. Ningún test existente cambia:
+`git diff d3d6c9b3 HEAD -- …/index.test.tsx` no tiene ninguna línea `-`, y
+`git diff 21ff2000 HEAD` sobre el test sale vacío.
+
+### 2. Rojo, verde y sondas (Jest enfocado, `bunx jest --runTestsByPath src/screens/add-reminder/index.test.tsx --json`)
+
+El paso de cada fallo sale de la línea del stack que llama al test:
+L734 = 1c, L736 = 1d y L759 = 2d.
+
+| Id | Mutación | exit | Resultado |
+|---|---|---|---|
+| base | HEAD `916b7f63` | 0 | 39/39 |
+| **X11** (= rojo `21ff2000`) | reset `10080` en fecha y hora. Tras aplicarla, `git diff --exit-code 21ff2000 -- …/add-reminder/` → 0 | 1 | 37 verdes. Rojos por aserción: 1.º `it` en **c** y 2.º `it` en **d**, como dice E1 |
+| **X10** | reset solo en fecha | 1 | 37 verdes. Rojos: 1.º en c y 2.º en d (**H1 cerrado**) |
+| reset solo en hora | reset solo en hora | 1 | 37 verdes. Rojos: 1.º en d y 2.º en d |
+| **X1** | todos desactivados → `?? 10080` | 1 | 38 verdes. Rojo: 2.º en d (**H2 cerrado**) |
+| Y1 | todos desactivados → `?? 0` | 1 | Rojos: 2.º en d y la fila 7 de R3 |
+| Y2 | variante «pegajosa» en los dos pickers (la preferencia pasa a la efectiva) | 1 | Rojos: 2.º en d, secuencia de R3 y #123 R4 |
+| Y3 | reset a `10080` **solo si** la elección quedó en el pasado, en los dos pickers | 1 | 38 verdes. Rojo: **solo** el 2.º `it` de R6 en d. La secuencia de R3 no la veía; R6 la cierra |
+| **Y4** | reset a `10080` **solo si la fecha nueva es posterior** a la anterior | 0 | **verde 39/39** (H9) |
+| **Y5** | reset a `10080` en `onDismiss` de los dos pickers | 0 | **verde 39/39** (H10) |
+
+Las cuatro sondas de la spec (X11, X10, X1 y reset solo en hora) dan el rojo
+en el paso que dice E1 y coinciden fila a fila con el reporte de Codex.
+
+### 3. Recuentos y el +3 de la suite móvil
+
+- El log del leader
+  (`/tmp/claude-1002/-home-claude-sites-Pet-Tracker/f4719a40-0501-4a5f-80e7-b8287f1de20f/scratchpad/init-125-review2.log`,
+  modificado a las 16:14Z, después del commit del tip a las 16:03Z) termina en
+  `EXIT 0`, sin pipe. Recuentos: backend unit 171/1307, infra 2/14, móvil
+  **83/1508** y e2e 27 + 3 omitidas (389 + 8 omitidos). Backend, infra y e2e
+  son idénticos a la ronda 1.
+- 1508 = 1503 + 3 + 2. El +3 lo medí así: corrí Jest sobre
+  `src/app/(tabs)/__tests__/food.test.tsx` y `src/screens/home/index.test.tsx`
+  con las versiones de `5134d165` (antes del merge `d3d6c9b3`) y con las de
+  HEAD. Pasa de 195 a 198: food de 55 a 56 y home de 140 a 142, exit 0 en los
+  dos. Son los tres `it('#122 R2: … opacidad 0.8 …')`. Los otros tres cambios
+  de ese diff son renombres. `git diff --stat 97054568 HEAD` sobre
+  `mobile-pet-tracker`, `backend-pet-tracker` e `infra` solo toca esos dos
+  ficheros y `add-reminder/index.test.tsx`. La explicación del leader y la de
+  Codex se sostienen.
+- En HEAD: `bun run typecheck` → exit 0 y `bun run lint` → exit 0. El fichero
+  pasa 39/39 (exit 0) con `TZ=` America/Mexico_City, Pacific/Auckland (cambio
+  de horario el 27 de septiembre), Australia/Sydney (el 4 de octubre),
+  Pacific/Kiritimati y America/Adak.
+
+### 4. Alcance
+
+La ronda 2 (`e82fbc12..HEAD`) toca solo tres ficheros:
+`mobile-pet-tracker/src/screens/add-reminder/index.test.tsx` (+44),
+`progress/impl_reminder-advance-already-past.md` (+18) y
+`specs/reminder-advance-already-past/traceability.md` (1 línea). La mutación
+de `index.tsx` se anula entre el rojo y el verde (+2/−2).
+
+### Observaciones ronda 2
+
+Ningún hallazgo bloquea. H1 y H2 de la ronda 1 quedan **cerrados**.
+
+- **H8 (baja, de cierre, para el leader).** En `traceability.md` la fila R5
+  sigue en «pendiente (casilla de [[requirements]] §Prueba de humo)», pero esa
+  casilla ya está marcada por el humano en `07905716` (2026-09-25, CPH2709).
+  Hay que reflejarlo antes de la PR/done. El preámbulo de ese mismo fichero
+  también se quedó atrás respecto de E1. Sigue diciendo «ninguna fila lleva
+  mutación versionada», cuando R6 lleva X11. Sus recuentos siguen siendo los de
+  R1-R4: add-reminder 37 y móvil 1503, cuando ahora son 39 y 1508.
+- **H9 (info, fuera del texto literal de E1).** Y4 sobrevive: «resetear a 7
+  días solo cuando la fecha nueva es posterior a la anterior». Todos los
+  cambios de fecha después de una elección explícita (R6 1.º c, R6 2.º c y la
+  secuencia de R3) llevan la fecha **hacia atrás**. Con la hora no pasa: R6
+  cubre las dos direcciones (1.º d: 9→10; 2.º d: 9→8). El código de hoy no
+  tiene ese defecto. Cerrarlo exigiría otra enmienda, por ejemplo un paso que
+  mueva la fecha hacia adelante con 1440 elegido y 10080 activo. No lo pido.
+- **H10 (info, fuera del WHEN de R6).** Y5 sobrevive: si se cierra un picker
+  sin elegir nada, la elección se resetea a 7 días. R6 habla de *cambiar*
+  fecha u hora, y descartar el diálogo no cambia nada. Los dos tests que
+  disparan `onDismiss` (R8 y #123 R5) no hacen antes una elección explícita.
+  Solo importaría si el `DateTimePicker` de `@expo/ui` en Android llamara a
+  `onDismiss` también después de una selección. El smoke de R5 en CPH2709 no
+  lo sugiere.
+
+### Comandos (exit medido sin pipe)
+
+```
+git rev-parse HEAD                                              → 916b7f63… (inicio y fin)
+git diff aedb89be HEAD -- specs/reminder-advance-already-past/  → solo fila R6; exit 0
+git diff b10b7f1e HEAD -- …/add-reminder/index.tsx              → vacío; exit 0
+git diff 97054568 HEAD -- backend-pet-tracker                   → vacío; exit 0
+git merge-base --is-ancestor <10 hashes de traceability> HEAD   → exit 0 ×10
+git merge-base --is-ancestor 07905716 aedb89be                  → exit 0
+bunx jest --runTestsByPath src/screens/add-reminder/index.test.tsx → 39/39, exit 0 (y exit 1 con X11, X10, reset en hora, X1, Y1, Y2 y Y3; exit 0 con Y4 y Y5)
+bunx jest --runTestsByPath food.test.tsx home/index.test.tsx    → 195 (5134d165) / 198 (HEAD), exit 0
+bun run typecheck                                               → exit 0
+bun run lint                                                    → exit 0
+TZ=<5 zonas> bunx jest --runTestsByPath …/add-reminder/index.test.tsx → 39/39, exit 0 ×5
+```
