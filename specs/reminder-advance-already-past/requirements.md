@@ -618,4 +618,4 @@ haya avisos mayores activos, **AND IF** todos los chips quedan desactivados,
 
 ### Aprobación de la Enmienda E1
 
-- [ ] Enmienda E1 aprobada por humano (fecha: ____) ← gate obligatorio antes de la ronda 2 de Codex
+- [x] Enmienda E1 aprobada por humano (fecha: 2026-09-25, vía Notion) ← gate obligatorio antes de la ronda 2 de Codex
