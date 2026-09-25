@@ -602,7 +602,9 @@ haya avisos mayores activos, **AND IF** todos los chips quedan desactivados,
   `setAdvanceMinutes(10080);` en el `onValueChange` de `testID="date-picker"`
   (después de `setDate(fromPickerValue(selectedDate));`) y en el de
   `testID="time-picker"` (después de `setTime(selectedTime);`). Pone rojos
-  los **dos** `it` (paso c de cada uno, por aserción); los 37 tests previos
+  los **dos** `it` por aserción (el primero en el paso c; el segundo en el
+  paso d, porque en su paso c «Mismo día» es a la vez la elección rebajada y
+  el único activo); los 37 tests previos
   siguen verdes. El verde lo revierte:
   `git diff b10b7f1e -- mobile-pet-tracker/src/screens/add-reminder/index.tsx`
   vacío.
