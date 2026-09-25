@@ -486,6 +486,8 @@ añadidas por #68, registradas como delta sobre la tabla existente
 | 192 | `profile.couldNotUploadPhoto` | `Could not upload photo` | `No se pudo subir la foto` |
 | 211 | `profile.profile` | `Profile` | `Perfil` |
 | 219 | `profile.addPet` | `Add pet` | `Añadir mascota` |
+| — | `profile.notificationsBlocked` | `Notifications are turned off. Turn them on in your phone settings to receive alerts and reminders.` | `Las notificaciones están desactivadas. Actívalas en la configuración del teléfono para recibir alertas y recordatorios.` | ← añadida por #99 (R3)
+| — | `profile.openSettings` | `Open settings` | `Abrir configuración` | ← añadida por #99 (R3)
 | 234 | `common.noPetsYet` | `No pets yet` | `Aún no tienes mascotas` |
 | 240 | `profile.couldNotLoadPets` | `Could not load pets` | `No se pudieron cargar las mascotas` |
 | 253 | `profile.couldNotLoadPet` | `Could not load pet profile` | `No se pudo cargar el perfil de la mascota` |

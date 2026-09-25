@@ -3,7 +3,7 @@ import { router, type Href, useFocusEffect } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Button, Skeleton } from 'heroui-native';
 import { useCallback, useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Linking, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronRight } from 'reicon-react-native';
 import { useUniwind } from 'uniwind';
@@ -21,6 +21,7 @@ import { Card } from '../../components/card';
 import { PetHeroHeader } from '../../components/pet-hero-header';
 import { PetSwitcher } from '../../components/pet-switcher';
 import { usePetSelection } from '../../hooks/use-pet-selection';
+import { useNotificationsBlocked } from '../../hooks/use-push-registration';
 import { useAuth } from '../../providers/auth-provider';
 import {
   useLanguage,
@@ -99,6 +100,7 @@ export function ProfileScreen() {
   const [muted] = useThemeColors(['muted']);
   const [photoUploading, setPhotoUploading] = useState(false);
   const [photoError, setPhotoError] = useState<string | null>(null);
+  const notificationsBlocked = useNotificationsBlocked();
   const me = useQuery({
     queryKey: userKeys.me(),
     queryFn: () => getMe(baseUrl, token ?? ''),
@@ -207,6 +209,20 @@ export function ProfileScreen() {
           </Button.Label>
         </Button>
       </View>
+
+      {notificationsBlocked ? (
+        <Card testID="notifications-blocked-notice" className="items-start gap-3">
+          <Text className="font-normal text-foreground">
+            {t('profile.notificationsBlocked')}
+          </Text>
+          <Button
+            testID="notifications-open-settings"
+            onPress={() => void Linking.openSettings()}
+          >
+            <Button.Label>{t('profile.openSettings')}</Button.Label>
+          </Button>
+        </Card>
+      ) : null}
 
       {pets.data?.kind === 'ok' && pets.data.pets.length > 0 ? (
         <PetSwitcher
