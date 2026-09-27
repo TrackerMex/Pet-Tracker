@@ -519,7 +519,7 @@ propia casilla, no en §Aprobación.
    `[push] skipped: notification permission denied`. Es esperado (la
    reevaluación del regreso del diálogo, [[design]] D4) y no es un fallo.
 
-- [ ] Prueba de humo de R4 superada por el humano (fecha: ____, dispositivo: ____, Android: ____)
+- [x] Prueba de humo de R4 superada por el humano (fecha: 2026-09-27, dispositivo: ____, Android: CPH2709)
 
 ---
 
