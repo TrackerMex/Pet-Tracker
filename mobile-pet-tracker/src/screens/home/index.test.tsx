@@ -1921,6 +1921,10 @@ describe('#69 R1: la tira de hoy tiene cuatro celdas con tres divisores', () => 
       )?.[1] ?? '';
 
     expect(reiconImport).toMatch(/\bWeight\b/);
+    // #126 R1: this counts the whole file, so a copy of an icon anywhere lends
+    // it the fourth match. Each cell's icon, size and ink are locked in the
+    // tree by the #126 R1 describe below. This count stays for what the tree
+    // cannot see: a platform branch, or a CSS variable name written by hand.
     expect(
       source.match(
         /<(?:Weight|Walk|Moon|Map) size=\{20\} color=\{muted\} \/>/g,
