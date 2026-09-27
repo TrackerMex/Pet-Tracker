@@ -1,8 +1,8 @@
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 import { router, usePathname } from 'expo-router';
-import { useEffect, useRef } from 'react';
-import { Platform } from 'react-native';
+import { useEffect, useRef, useSyncExternalStore } from 'react';
+import { AppState, Platform } from 'react-native';
 
 import { registerPushToken } from '../api/push-tokens';
 import { useAuth } from '../providers/auth-provider';
@@ -23,6 +23,24 @@ function warnPush(reason: string, error?: unknown): void {
       ...(error === undefined ? [] : [error]),
     );
   }
+}
+
+let notificationsBlocked = false;
+const blockedListeners = new Set<() => void>();
+
+function subscribeNotificationsBlocked(listener: () => void): () => void {
+  blockedListeners.add(listener);
+  return () => { blockedListeners.delete(listener); };
+}
+
+function setNotificationsBlocked(blocked: boolean): void {
+  if (notificationsBlocked === blocked) return;
+  notificationsBlocked = blocked;
+  for (const listener of blockedListeners) listener();
+}
+
+export function useNotificationsBlocked(): boolean {
+  return useSyncExternalStore(subscribeNotificationsBlocked, () => notificationsBlocked);
 }
 
 export function usePushRegistration(): void {
@@ -73,10 +91,11 @@ export function usePushRegistration(): void {
     const responseSubscription =
       Notifications.addNotificationResponseReceivedListener(() => {
         router.push('/alerts');
-      });
+    });
     notifications.current = Notifications;
 
-    void (async () => {
+    let active = true;
+    const evaluate = async (ask: boolean): Promise<void> => {
       try {
         if (platform === 'android') {
           await Notifications.setNotificationChannelAsync('default', {
@@ -86,9 +105,10 @@ export function usePushRegistration(): void {
         }
 
         let permissions = await Notifications.getPermissionsAsync();
-        if (!permissions.granted && permissions.canAskAgain) {
+        if (ask && !permissions.granted && permissions.canAskAgain) {
           permissions = await Notifications.requestPermissionsAsync();
         }
+        if (active) setNotificationsBlocked(!permissions.granted && !permissions.canAskAgain);
         if (!permissions.granted) {
           warnPush('skipped: notification permission denied');
           return;
@@ -106,9 +126,18 @@ export function usePushRegistration(): void {
         warnPush('registration failed', error);
         // Registration is best-effort and runs again on the next app start.
       }
-    })();
+    };
+    void evaluate(true);
+    const appStateSubscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active' && notificationsBlocked) void evaluate(false);
+    });
 
-    return () => responseSubscription.remove();
+    return () => {
+      active = false;
+      setNotificationsBlocked(false);
+      appStateSubscription.remove();
+      responseSubscription.remove();
+    };
   }, [setPushToken, status, token]);
 
   useEffect(() => {

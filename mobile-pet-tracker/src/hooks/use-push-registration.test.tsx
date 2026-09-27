@@ -1,11 +1,11 @@
-import { renderHook, waitFor } from '@testing-library/react-native';
+import { act, renderHook, waitFor } from '@testing-library/react-native';
 import * as Notifications from 'expo-notifications';
 import { router } from 'expo-router';
-import { Platform } from 'react-native';
+import { AppState, Platform, type AppStateStatus } from 'react-native';
 
 import { registerPushToken } from '../api/push-tokens';
 import { useAuth, type AuthContextValue } from '../providers/auth-provider';
-import { usePushRegistration } from './use-push-registration';
+import { useNotificationsBlocked, usePushRegistration } from './use-push-registration';
 
 let mockIsDevice = true;
 let mockProjectId: string | undefined = 'project-id';
@@ -490,6 +490,155 @@ describe('R10: banner en primer plano y tap que navega a /alerts', () => {
     await probe.unmount();
 
     expect(mockRemoveResponseListener).toHaveBeenCalledTimes(1);
+  });
+});
+
+function useRegistrationProbe(): boolean {
+  usePushRegistration();
+  return useNotificationsBlocked();
+}
+
+async function flushEvaluation(): Promise<void> {
+  await act(async () => undefined);
+}
+
+describe('#99 R1: el hook publica el bloqueo solo con el permiso denegado y sin poder pedirse', () => {
+  it.each([
+    ['denegado y canAskAgain false de entrada: aviso, sin diálogo', permission(false, false), undefined, true, 0],
+    ['segunda negativa en este arranque: aviso tras el diálogo', permission(false, true), permission(false, false), true, 1],
+    ['primera negativa: sin aviso, el diálogo vuelve en el siguiente arranque', permission(false, true), permission(false, true), false, 1],
+    ['concedido de entrada: sin aviso', permission(true, true), undefined, false, 0],
+    ['concedido en el diálogo: sin aviso', permission(false, true), permission(true, true), false, 1],
+  ] as const)('%s', async (_title, inicial, pedido, bloqueado, peticiones) => {
+    mockGetPermissions.mockResolvedValue(inicial);
+    if (pedido !== undefined) mockRequestPermissions.mockResolvedValue(pedido);
+
+    const probe = await renderHook(() => useRegistrationProbe());
+    await waitFor(() => {
+      if (inicial.granted || pedido?.granted) {
+        expect(mockRegisterPushToken).toHaveBeenCalledTimes(1);
+      } else {
+        expect(warnSpy).toHaveBeenCalledWith('[push] skipped: notification permission denied');
+      }
+    });
+    await flushEvaluation();
+
+    expect(probe.result.current).toBe(bloqueado);
+    expect(mockGetPermissions).toHaveBeenCalledTimes(1);
+    expect(mockRequestPermissions).toHaveBeenCalledTimes(peticiones);
+  });
+
+  it('al desmontar el aviso se apaga', async () => {
+    mockGetPermissions.mockResolvedValue(permission(false, false));
+    const probe = await renderHook(() => useRegistrationProbe());
+    const observer = await renderHook(() => useNotificationsBlocked());
+
+    await waitFor(() => expect(observer.result.current).toBe(true));
+    await probe.unmount();
+
+    expect(observer.result.current).toBe(false);
+  });
+
+  it('una evaluación que termina después de desmontar no enciende el aviso', async () => {
+    let resolvePermission!: (value: Notifications.NotificationPermissionsStatus) => void;
+    mockGetPermissions.mockReturnValue(new Promise((resolve) => {
+      resolvePermission = resolve;
+    }));
+    const probe = await renderHook(() => useRegistrationProbe());
+    const observer = await renderHook(() => useNotificationsBlocked());
+    await waitFor(() => expect(mockGetPermissions).toHaveBeenCalledTimes(1));
+
+    await probe.unmount();
+    await act(async () => { resolvePermission(permission(false, false)); });
+
+    expect(warnSpy).toHaveBeenCalledWith('[push] skipped: notification permission denied');
+    expect(observer.result.current).toBe(false);
+  });
+});
+
+const mockAddAppStateListener = jest.mocked(AppState.addEventListener);
+const mockRemoveAppStateListener = jest.fn();
+let appStateListener: ((state: AppStateStatus) => void) | undefined;
+
+function captureAppStateListener(): void {
+  appStateListener = undefined;
+  mockAddAppStateListener.mockImplementation((_type, listener) => {
+    appStateListener = listener;
+    return { remove: mockRemoveAppStateListener };
+  });
+}
+
+describe('#99 R2: al volver a primer plano con el aviso encendido se reevalúa el permiso sin pedirlo', () => {
+  beforeEach(() => {
+    mockGetPermissions.mockReset();
+    mockGetPermissions.mockResolvedValue(permission(true, true));
+    captureAppStateListener();
+  });
+
+  it.each([
+    ['concedido en los ajustes: registra el token y apaga el aviso sin reiniciar', permission(true, true), 1, false],
+    ['sigue denegado: no registra y el aviso sigue', permission(false, false), 2, true],
+    ['denegado pero canAskAgain vuelve a true: tampoco lanza el diálogo aquí', permission(false, true), 2, false],
+  ] as const)('al volver a active, %s', async (_title, relectura, avisos, bloqueado) => {
+    mockGetPermissions.mockResolvedValueOnce(permission(false, false)).mockResolvedValueOnce(relectura);
+    const probe = await renderHook(() => useRegistrationProbe());
+    await waitFor(() => expect(probe.result.current).toBe(true));
+    expect(mockAddAppStateListener).toHaveBeenCalledTimes(1);
+    expect(mockAddAppStateListener).toHaveBeenCalledWith('change', expect.any(Function));
+
+    await act(async () => { appStateListener?.('active'); });
+    await waitFor(() => {
+      expect(warnSpy).toHaveBeenCalledTimes(avisos);
+      expect(mockRegisterPushToken).toHaveBeenCalledTimes(relectura.granted ? 1 : 0);
+    });
+    await flushEvaluation();
+
+    expect(probe.result.current).toBe(bloqueado);
+    expect(mockGetPermissions).toHaveBeenCalledTimes(2);
+    expect(mockRequestPermissions).not.toHaveBeenCalled();
+    expect(mockSetPushToken.mock.calls).toEqual(relectura.granted ? [['ExpoPushToken[xxx]']] : []);
+    expect(mockRegisterPushToken.mock.calls).toEqual(relectura.granted ? [
+      ['http://example.test/v1', 'jwt-token', { expoToken: 'ExpoPushToken[xxx]', platform: 'android' }],
+    ] : []);
+  });
+
+  it.each([
+    ['concedido de entrada, vuelve a active', permission(true, true), undefined, 'active'],
+    ['primera negativa, vuelve a active', permission(false, true), permission(false, true), 'active'],
+    ['aviso encendido, pasa a background', permission(false, false), undefined, 'background'],
+  ] as const)('no reevalúa: %s', async (_title, inicial, pedido, estado) => {
+    mockGetPermissions.mockResolvedValue(inicial);
+    if (pedido !== undefined) mockRequestPermissions.mockResolvedValue(pedido);
+    await renderHook(() => useRegistrationProbe());
+    await waitFor(() => {
+      if (inicial.granted) {
+        expect(mockRegisterPushToken).toHaveBeenCalledTimes(1);
+      } else {
+        expect(warnSpy).toHaveBeenCalledTimes(1);
+      }
+    });
+
+    await act(async () => { appStateListener?.(estado); });
+    await flushEvaluation();
+
+    expect(mockAddAppStateListener).toHaveBeenCalledTimes(1);
+    expect(mockGetPermissions).toHaveBeenCalledTimes(1);
+    expect(mockRegisterPushToken).toHaveBeenCalledTimes(inicial.granted ? 1 : 0);
+  });
+
+  it('retira el listener de AppState al desmontar', async () => {
+    const probe = await renderHook(() => useRegistrationProbe());
+    await waitFor(() => expect(mockAddAppStateListener).toHaveBeenCalledTimes(1));
+    await probe.unmount();
+    expect(mockRemoveAppStateListener).toHaveBeenCalledTimes(1);
+  });
+
+  it('sin precondiciones no se suscribe a AppState', async () => {
+    mockUseAuth.mockReturnValue({
+      ...authenticatedAuth(), status: 'unauthenticated', token: null,
+    });
+    await renderHook(() => useRegistrationProbe());
+    expect(mockAddAppStateListener).not.toHaveBeenCalled();
   });
 });
 

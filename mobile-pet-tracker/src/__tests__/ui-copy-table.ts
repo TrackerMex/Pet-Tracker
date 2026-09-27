@@ -205,6 +205,8 @@ export const R7_PROFILE: UseRow[] = [
   { file: 'src/screens/profile/index.tsx', key: 'profile.couldNotUploadPhoto' },
   { file: 'src/screens/profile/index.tsx', key: 'profile.profile' },
   { file: 'src/screens/profile/index.tsx', key: 'profile.addPet' },
+  { file: 'src/screens/profile/index.tsx', key: 'profile.notificationsBlocked' }, // #99 R3
+  { file: 'src/screens/profile/index.tsx', key: 'profile.openSettings' }, // #99 R3
   { file: 'src/screens/profile/index.tsx', key: 'common.noPetsYet' },
   { file: 'src/screens/profile/index.tsx', key: 'profile.couldNotLoadPets' },
   { file: 'src/screens/profile/index.tsx', key: 'profile.couldNotLoadPet' },
