@@ -1,6 +1,6 @@
 ---
 feature: "mobile-home-cell-icons-source-lock-unbounded"
-status: spec_ready       # draft | spec_ready | approved
+status: approved         # draft | spec_ready | approved
 tags: [harness, spec, mobile, deuda]
 ---
 
@@ -313,7 +313,7 @@ verificada y descartada.
 
 ## Aprobación
 
-- [ ] **Aprobado por humano** (fecha: ...) ← gate obligatorio antes de
+- [x] **Aprobado por humano** (fecha: 2026-09-27) ← gate obligatorio antes de
       implementar. Al marcar esta casilla el humano firma también los doce
       puntos de §Qué firma el humano al aprobar esta spec, incluida la decisión
       sobre #80 del punto 12.
