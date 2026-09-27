@@ -1931,6 +1931,93 @@ describe('#69 R1: la tira de hoy tiene cuatro celdas con tres divisores', () => 
     }
   });
 
+  describe('#126 R1: cada celda de la tira pinta su propio icono en muted', () => {
+    beforeEach(() => {
+      // #126 R1: each CSS variable resolves to its own name, so muted and
+      // accent-strong stop being the same fallback colour in the tree.
+      jest
+        .spyOn(Uniwind, 'getCSSVariable')
+        .mockImplementation((token) => token);
+    });
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    const cells = [
+      ['summary-weight', 'icon-weight'],
+      ['summary-activity', 'icon-walk'],
+      ['summary-sleep', 'icon-moon'],
+      ['summary-distance', 'icon-map'],
+    ] as const;
+
+    it('con las métricas de hoy', async () => {
+      await renderHome();
+      await waitFor(() =>
+        expect(screen.getByTestId('summary-weight')).toHaveTextContent(
+          '12.4 kg',
+        ),
+      );
+
+      for (const [valueTestID, iconTestID] of cells) {
+        // #126 R1: counted by the cell's children, not by testID: the icon,
+        // the value and the label, with the icon first.
+        const children = screen
+          .getByTestId(valueTestID)
+          .parent!.children.filter((child) => typeof child !== 'string');
+
+        expect(children).toHaveLength(3);
+        expect(children[0].props).toEqual({
+          testID: iconTestID,
+          size: 20,
+          color: '--color-muted',
+        });
+      }
+    });
+
+    it('sin métricas ni peso', async () => {
+      const pet = makePet({ currentWeightKg: null });
+      mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+      mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+      mockGetDailyActivity.mockResolvedValue({
+        kind: 'ok',
+        days: [
+          makeDay({
+            distanceM: null,
+            activeMinutes: null,
+            restMinutes: null,
+          }),
+        ],
+        weekComparison: {
+          distanceM: null,
+          activeMinutes: null,
+          walkCount: null,
+        },
+      });
+
+      await renderHome();
+      // #126 R1: a dash in summary-weight also shows before the pet detail
+      // loads, so wait for the collar card, which needs that detail.
+      await screen.findByTestId('collar-card');
+      await screen.findByTestId('summary-weight');
+      expect(screen.getByTestId('summary-weight')).toHaveTextContent('—');
+      expect(screen.getByTestId('summary-activity')).toHaveTextContent('—');
+
+      for (const [valueTestID, iconTestID] of cells) {
+        const children = screen
+          .getByTestId(valueTestID)
+          .parent!.children.filter((child) => typeof child !== 'string');
+
+        expect(children).toHaveLength(3);
+        expect(children[0].props).toEqual({
+          testID: iconTestID,
+          size: 20,
+          color: '--color-muted',
+        });
+      }
+    });
+  });
+
   it('#69 R12: deja que cada celda se anuncie por separado', async () => {
     await renderHome();
 
