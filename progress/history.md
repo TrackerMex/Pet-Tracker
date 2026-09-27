@@ -5616,3 +5616,67 @@ de la sugerencia del leader en D6 con un caso medido.
   literal que se presenta byte a byte tiene que serlo.
 - Siguiente en esta sesión: la que elija el humano. #126 toca el mismo fichero
   de test que #124, así que conviene que vaya después de su merge.
+
+## #99 `mobile-notifications-permission-recovery` — 2026-09-27
+
+Sesion Backend, worktree `/home/claude/sites/Pet-Tracker-wt-backend`, branch
+`feature/99-mobile-notifications-permission-recovery` desde `origin/main`
+d7cb0d60 (#165: cierre de #124). En paralelo, Frontend especificaba #126.
+
+### Que se hizo
+
+Registrada desde el Fuera de alcance de #79: tras la segunda negativa del
+permiso de notificaciones, Android deja `canAskAgain` en false y la app se
+quedaba sin salida (el token no se registraba nunca y el usuario no sabia por
+que). Solo movil.
+- **Hook** (`use-push-registration.ts`): almacen de modulo con
+  `useNotificationsBlocked()` sobre `useSyncExternalStore`; se enciende solo con
+  `granted` y `canAskAgain` en false y se apaga al desmontar. La evaluacion pasa
+  a `evaluate(ask)`: al arrancar pide (`evaluate(true)`), y al volver a
+  `active` con el aviso encendido relee sin pedir (`evaluate(false)`) y registra
+  el token si quedo concedido.
+- **Perfil**: `Card` con el aviso y el boton «Abrir configuración», que llama a
+  `Linking.openSettings()` (Informacion de la app; sin dependencias ni intent).
+  Aviso en Perfil y no en la Home (D1). +2 claves de catalogo con sus candados
+  (`englishKeys`, `#65 R7`, `R7_PROFILE`, tabla §2.7 de `mobile-ui-language`).
+- Movil 83/1510 → 83/1530; backend, infra y e2e sin cambios.
+
+### Gate y ciclo
+
+- **Spec**: `681c25cb`, espejada en Notion; el conversor partia la fila de
+  §2.7 por los pipes dentro de code spans, y se escapo solo en Notion. Firma
+  del humano en Notion, commit `5a2c9b5a`.
+- **Codex**: handoff por disco, 6 commits test-primero (rojos naturales; el de
+  R1 con el esqueleto de `useNotificationsBlocked`) y la trazabilidad al final
+  (`87225d80`..`07d1f9a7`). Cargo `building-native-ui` y
+  `appllama-app-design-skill`.
+- **init.sh**: lo corrio el leader sobre `07d1f9a7`, con turno cedido por
+  Frontend. Exit 0: unit 171/1307, infra 2/14, movil 83/1530, e2e 27+3 skip.
+- **Reviewer** (`d6130d7b`): aprobado a la primera, sin bloqueantes. Rehizo
+  rojos y verdes en un worktree temporal y las 23 sondas.
+- **Smoke R4**: firmado por el humano en la pagina de Notion (casilla marcada,
+  `page_last_edited_at` 2026-09-27T22:38:56.689Z), transcrito por el leader en
+  `f1db022b`. Casilla literal: fecha 2026-09-27, dispositivo vacio, CPH2709 en
+  el hueco de Android.
+- **Drift**: entre el veredicto y el cierre la branch solo sumo el commit del
+  veredicto y la transcripcion de la firma; `origin/main` no se movio
+  (d7cb0d60).
+
+### Deuda y apuntes
+
+- **H1 (baja, no se registra)**: `3f185965` desindenta de 6 a 4 espacios el
+  `});` que cierra `addNotificationResponseReceivedListener` en
+  `use-push-registration.ts`. Solo espacios; el lint no lo ve (sin prettier).
+- **H2 (baja)**: el `beforeEach` de `#99 R2` anade `mockReset` y el valor por
+  defecto de `mockGetPermissions`, que la spec no prescribia. Vacia las colas
+  `mockResolvedValueOnce` que `jest.clearAllMocks` no vacia; sin el, 41/41 igual.
+- **H3, para el spec_author**: la tabla de sondas declaraba 8 rojos para M7 y
+  son 6. Los 2 de mas eran cascada: un test que aborta en su primer `waitFor`
+  deja sin consumir sus `mockResolvedValueOnce`, y el siguiente las hereda. Una
+  tabla de sondas medida con ese arnes cuenta contagios como detecciones.
+- **Entorno del smoke**: en el CPH2709 (ColorOS) `adb shell pm clear` da
+  `SecurityException` por `CLEAR_APP_USER_DATA`. Para resetear una app en una
+  prueba de humo, dar la ruta de Ajustes (Borrar datos) o reinstalar.
+- **Firma de smoke en Notion**: primera vez que el humano firma una prueba de
+  humo en la pagina de Notion en vez de en un commit propio. El leader la
+  transcribio con la misma evidencia que una firma de spec.
