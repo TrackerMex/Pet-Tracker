@@ -2486,7 +2486,7 @@
   {
     "id": 130,
     "name": "mobile-weekly-day-row-accessible-lock",
-    "status": "spec_ready",
+    "status": "in_progress",
     "priority": "P3",
     "description": "Registrada al cerrar #74 el 2026-09-28. Es el hallazgo (F) de su spec: specs/mobile-metric-selector-a11y/requirements.md §Fuera de alcance, «#68 R9 sobre la fila de las siete columnas deja pasar accessible». En mobile-pet-tracker/src/screens/home/weekly-activity-chart.test.tsx, el it 'anuncia los huecos sin colapsar las siete columnas' (describe 'R9: cada columna se anuncia por separado') solo asevera que la fila weekly-activity-day-row no tiene accessibilityLabel (toBeUndefined). Con accessible en esa fila, que en dispositivo funde las siete columnas en un solo nodo de TalkBack, la grafica sigue en 36/36: lo midio el spec_author de #74 (blob de la mutacion 4ed672f1, citado en la spec). El leader verifico en 97f2d349 que esa asercion sigue siendo la unica sobre la fila. Lo cerraria la misma lista cerrada de props del host que #74 R2 usa para weekly-activity-metric y weekly-activity-card (grep \"#74 R2\" en el mismo fichero). No toca produccion.",
     "acceptance_criteria": [
