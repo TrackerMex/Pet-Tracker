@@ -11,9 +11,9 @@ Todos los tests viven en
 
 | Requisito | Test (archivo::nombre) | Commit rojo | Commit verde |
 |---|---|---|---|
-| R1 | `weekly-activity-chart.test.tsx::#130 R1: la fila de las siete columnas no se vuelve un nodo accesible › la fila solo lleva su testID, su clase, su estilo y sus hijos` | pendiente | pendiente |
-| R2 | `weekly-activity-chart.test.tsx::#130 R2: entre la tarjeta y cada columna no hay otro nodo › las siete columnas cuelgan de la fila, y la fila, de la tarjeta` | pendiente | pendiente |
-| R3 | sin test: cierre medido ([[tasks]] §R3 y `progress/impl_mobile-weekly-day-row-accessible-lock.md`) | no aplica | pendiente: el hash del **verde de R2**, que es el último commit de código |
+| R1 | `weekly-activity-chart.test.tsx::#130 R1: la fila de las siete columnas no se vuelve un nodo accesible › la fila solo lleva su testID, su clase, su estilo y sus hijos` | `24321406c120c2a6053385a806fc7cc1a4172f1e` | `f1a57a7ab7636bec65d114b0f5636f49812f4740` |
+| R2 | `weekly-activity-chart.test.tsx::#130 R2: entre la tarjeta y cada columna no hay otro nodo › las siete columnas cuelgan de la fila, y la fila, de la tarjeta` | `7a7b2e6b7071fb02726d8d579c8637a6ee55ab1c` | `c0601924934554d4859518413899da3146d8537e` |
+| R3 | sin test: cierre medido ([[tasks]] §R3 y `progress/impl_mobile-weekly-day-row-accessible-lock.md`) | no aplica | `c0601924934554d4859518413899da3146d8537e` |
 
 Regla: el reviewer no aprueba si alguna fila queda «pendiente».
 
