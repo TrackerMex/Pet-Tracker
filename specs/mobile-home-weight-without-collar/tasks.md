@@ -9,12 +9,15 @@ tags: [harness, spec, mobile]
 > Disciplina TDD: por requisito, **(1) commit rojo → (2) commit verde →
 > (3) refactor**, un commit por paso, **nunca implementación y test juntos**.
 > La única producción que viaja en un rojo es la mutación V3 del rojo de R3
-> (CHECKPOINTS C4, vía (b)), que el verde siguiente revierte. Anclas por
+> (CHECKPOINTS C4, vía (b)), que el verde siguiente revierte. **Enmienda 1**:
+> también la Q1 del rojo de R5, que sigue puesta durante el verde de R5 (un
+> cambio de test) y se revierte en un commit propio ([[design]] D9). Anclas por
 > contenido (`grep -n`), nunca por número de línea. Todo `describe` nuevo
 > lleva el prefijo `#77 R<n>:`. Los mensajes de commit son **literales** (los
 > de abajo, en inglés, `<scope>` = `mobile`). La trazabilidad se rellena **una
 > sola vez**, en el commit final `docs(mobile): fill #77 traceability` tras el
-> último verde ([[traceability]]).
+> último verde ([[traceability]]). **Enmienda 1**: la fila de R5 entra aparte,
+> en `docs(mobile): trace #77 R5`, que es siempre el último commit (§R5).
 >
 > Rutas relativas a `mobile-pet-tracker/` salvo que se diga otra cosa.
 
@@ -55,6 +58,16 @@ tags: [harness, spec, mobile]
       `specs/mobile-home-weight-without-collar/traceability.md`. En concreto,
       **no** tocar `specs/mobile-home-stats-strip/requirements.md` (su
       enmienda ya la escribió el spec_author) ni `docs/conventions.md`.
+      **Enmienda 1**: solo dentro de §R5 se tocan además
+      `src/app/(tabs)/__tests__/food.test.tsx` y, de forma transitoria,
+      `src/app/(tabs)/food.tsx`.
+- [ ] **Enmienda 1**: con la casilla de [[requirements]] §Enmienda 1 ›
+      Firma de la Enmienda 1 marcada, la «Reanudacion 1» del handoff cambia
+      así. Su punto 2 (no tocar food) queda superado **solo para §R5**. Su
+      punto 3 (tolerar una vez el rojo de
+      `keeps API order and selects the first pet by default` en la suite) vale
+      hasta el verde de R5 y **deja de valer** después. Sin la casilla, §R5 no
+      existe y la «Reanudacion 1» sigue entera.
 - [ ] Todo con **bun**: `bunx jest`, `bunx tsc`, `bun run …`. Nada de `npx` ni
       `npm`.
 - [ ] Skills (nombres de Claude; el leader da los de Codex en el handoff):
@@ -64,7 +77,8 @@ tags: [harness, spec, mobile]
 
 ## Orden y por qué (candado del sujeto ausente)
 
-`R1 → R2 → R3`, y R4 (humano) al final.
+`R1 → R2 → R3`, y R4 (humano) al final. **Enmienda 1**: R5 va después del
+verde de R3 y de sus sondas (§R5).
 
 - R1 asevera `summary-weight` (existe hoy en `ok`; su verde la saca de esa
   condición), `summary-note` (existe hoy, fuera de la fila), `collar-card` y
@@ -74,6 +88,8 @@ tags: [harness, spec, mobile]
   existe desde el verde de R1.
 - R3 asevera `summary-skeleton`, `summary-card-title`, `collar-card` (existen
   hoy) y la **ausencia** de `summary-weight` y `summary-note`.
+- R5 (Enmienda 1) no crea nada: asevera los chips `pet-chip-*` y
+  `mockGetNutritionPlan`, que ya existen en la base.
 
 ---
 
@@ -452,6 +468,188 @@ cuadrar es que **estén todos** los rojos listados.
 
 ---
 
+## R5 — (Enmienda 1) La espera del test de orden de food termina con la llamada al plan
+
+> Solo con la casilla de [[requirements]] §Enmienda 1 › Firma de la Enmienda 1
+> marcada. Sin ella, esta sección no existe. Va **después** del verde de R3 y
+> de sus sondas; si `docs(mobile): fill #77 traceability` ya está commiteado,
+> R5 va detrás y no lo toca. R5 no tiene refactor: su paso (3) es el revert de
+> la mutación ([[design]] D9). Todo desde `mobile-pet-tracker/`, sin pipe, con
+> las rutas de `(tabs)` **entre comillas**.
+>
+> En los `git diff` y `git log` de esta sección la ruta va con la magia `:/`
+> (`':/mobile-pet-tracker/…'`), que la ancla a la raíz del repo. Sin ella,
+> desde `mobile-pet-tracker/`, `-- mobile-pet-tracker/…` no casa con nada y
+> git sale con `exit=0` en silencio (medido): una comprobación vacía que pasa.
+
+- [ ] **Antes del rojo de R5**:
+  - `git rev-parse 'HEAD:mobile-pet-tracker/src/app/(tabs)/food.tsx'` →
+    `e310ff45ac9a6abc5475e983a2c03e1d7b5f909b`, y
+    `git rev-parse 'HEAD:mobile-pet-tracker/src/app/(tabs)/__tests__/food.test.tsx'`
+    → `abc6ad1579dfcadb3c9d309d41caecdba62ccb2d`. Si alguno es otro, **parar
+    y pedir al humano**: alguien movió food y el diff literal de abajo puede
+    no aplicar.
+  - `grep -c "queryFn: () => getNutritionPlan(baseUrl, token ?? '', selectedPetId!)," 'src/app/(tabs)/food.tsx'`
+    → `1` (ancla de Q1).
+  - `grep -c "it('keeps API order and selects the first pet by default'" 'src/app/(tabs)/__tests__/food.test.tsx'`
+    → `1`.
+  - `grep -cP '#[0-9]++(?! R[0-9])' 'src/app/(tabs)/__tests__/food.test.tsx'`
+    → `9`, y `grep -c '#77 R5' 'src/app/(tabs)/__tests__/food.test.tsx'` →
+    `0`. Tras cada commit de R5 el primero debe seguir en `9`: lo único nuevo
+    con `#` y cifras es `#77 R5`.
+  - Base del fichero:
+    `bunx jest --runTestsByPath 'src/app/(tabs)/__tests__/food.test.tsx'; echo "exit=$?"`
+    → `Tests: 56 passed, 56 total`, `exit=0`. Comprobar el **56** escrito, no
+    solo el `exit`: con la ruta mal citada, los paréntesis pueden dejar el
+    fichero sin correr. Si sale el rojo de
+    `keeps API order and selects the first pet by default`, es el flake que
+    R5 cierra: anotarlo en el reporte y repetir una vez.
+
+- [ ] **(1) Commit rojo** `test(mobile): expose the food nutrition plan race (R5)`,
+  con este cuerpo literal (una línea en blanco tras el título):
+  `Versions the R5 production mutation (CHECKPOINTS C4, route b); the next commit fixes the test and a later one reverts it.`
+  - `src/app/(tabs)/food.tsx`, **mutación Q1** y nada más. Dentro de
+    `const plan = useQuery({`, la línea
+    `    queryFn: () => getNutritionPlan(baseUrl, token ?? '', selectedPetId!),`
+    se sustituye por este bloque literal, con la misma sangría:
+
+```tsx
+    queryFn: ({ signal }) =>
+      new Promise<Awaited<ReturnType<typeof getNutritionPlan>>>((resolve) => {
+        const timer = setTimeout(
+          () => resolve(getNutritionPlan(baseUrl, token ?? '', selectedPetId!)),
+          200,
+        );
+        signal.addEventListener('abort', () => clearTimeout(timer));
+      }),
+```
+
+  - Ningún test cambia en este commit: el `it` que falla ya existe.
+
+  Diff medido: 8 inserciones y 1 borrado, solo en `food.tsx`. Rojo esperado
+  (medido, determinista):
+  `bunx jest --runTestsByPath 'src/app/(tabs)/__tests__/food.test.tsx'; echo "exit=$?"`
+  → `exit=1`, `Tests: 1 failed, 55 passed, 56 total`. El único rojo es
+  `R4: food resuelve la mascota seleccionada › keeps API order and selects the first pet by default`,
+  en `expect(mockGetNutritionPlan).toHaveBeenCalledWith(`, con
+  `Number of calls: 0`: la misma firma que el flake. Cualquier otro rojo, en
+  particular uno de `#98 R6`, quiere decir que el temporizador no se cancela
+  con el `abort`: **parar**. Además, con Q1 puesta:
+  - `bunx tsc --noEmit; echo "exit=$?"` → `exit=0`;
+  - `bunx jest --runTestsByPath src/__tests__/consistency-classnames.test.ts src/__tests__/legibility-classnames.test.ts src/__tests__/design-drift.test.ts src/__tests__/ui-language.test.ts src/app/__tests__/detail-stack.test.tsx; echo "exit=$?"`
+    → `Test Suites: 5 passed, 5 total`, `exit=0` (173 tests medidos).
+
+- [ ] **(2) Commit verde** `test(mobile): wait for the nutrition plan call with the pet chips (R5)`.
+  Solo `src/app/(tabs)/__tests__/food.test.tsx`, **con Q1 todavía puesta**:
+  el verde es un cambio de test y se prueba contra la mutación. En el
+  `it('keeps API order and selects the first pet by default'` del
+  `describe('R4: food resuelve la mascota seleccionada'`, este diff literal
+  (6 inserciones, 5 borrados):
+
+```diff
+       expect(screen.getByTestId('pet-chip-pet-1').props.accessibilityState).toEqual({
+         selected: true,
+       });
++      // #77 R5: the plan is requested after the commit that selects the chip.
++      expect(mockGetNutritionPlan).toHaveBeenCalledWith(
++        apiUrl,
++        'jwt-token',
++        'pet-1',
++      );
+     });
+     expect(mockListPets).toHaveBeenCalledWith(apiUrl, 'jwt-token');
+-    expect(mockGetNutritionPlan).toHaveBeenCalledWith(
+-      apiUrl,
+-      'jwt-token',
+-      'pet-1',
+-    );
+   });
+```
+
+  El `it` queda exactamente así:
+
+```tsx
+  it('keeps API order and selects the first pet by default', async () => {
+    mockListPets.mockResolvedValue({
+      kind: 'ok',
+      pets: [makePet(), makePet({ id: 'pet-2', name: 'Milo' })],
+    });
+
+    await renderFood();
+
+    await waitFor(() => {
+      expect(screen.getAllByTestId(/^pet-chip-/).map(({ props }) => props.testID)).toEqual([
+        'pet-chip-pet-1',
+        'pet-chip-pet-2',
+      ]);
+      expect(screen.getByTestId('pet-chip-pet-1').props.accessibilityState).toEqual({
+        selected: true,
+      });
+      // #77 R5: the plan is requested after the commit that selects the chip.
+      expect(mockGetNutritionPlan).toHaveBeenCalledWith(
+        apiUrl,
+        'jwt-token',
+        'pet-1',
+      );
+    });
+    expect(mockListPets).toHaveBeenCalledWith(apiUrl, 'jwt-token');
+  });
+```
+
+  Sin renombrar el `it`, sin helper nuevo y sin tocar el `beforeEach` de
+  `R4`, `asyncUtilTimeout` ni `testTimeout`. Verde (medido): el fichero
+  entero, con Q1, → `Tests: 56 passed, 56 total`, `exit=0`;
+  `bunx tsc --noEmit` y `bunx expo lint` → `exit=0`. Greps sobre el test:
+  `grep -c '#77 R5'` → `1`; `grep -cP '#[0-9]++(?! R[0-9])'` → `9`;
+  `grep -c StyleSheet` → `0`; `grep -c -- "-\["` → `0`.
+
+- [ ] **(3) Commit de revert** `fix(mobile): drop the nutrition plan delay (R5)`.
+  Revertir **exactamente** Q1 en `src/app/(tabs)/food.tsx`; el test no se
+  toca. Comprobaciones:
+  - `git diff --exit-code <hash del rojo de R5>~1 HEAD -- ':/mobile-pet-tracker/src/app/(tabs)/food.tsx'; echo "exit=$?"`
+    → `exit=0`;
+  - control de que esa ruta casa con algo (una ruta que no casa también da
+    `exit=0`):
+    `git diff --stat <hash del rojo de R5>~1 <hash del rojo de R5> -- ':/mobile-pet-tracker/src/app/(tabs)/food.tsx'`
+    → `1 file changed, 8 insertions(+), 1 deletion(-)`;
+  - `git rev-parse 'HEAD:mobile-pet-tracker/src/app/(tabs)/food.tsx'` →
+    `e310ff45ac9a6abc5475e983a2c03e1d7b5f909b`, el mismo de antes del rojo.
+
+  Verde (medido): el fichero entero → `Tests: 56 passed, 56 total`,
+  `exit=0`.
+
+- [ ] **Sondas de R5** (no se commitean; sobre el revert; las repite el
+  `reviewer`). Cada una con
+  `bunx jest --runTestsByPath 'src/app/(tabs)/__tests__/food.test.tsx' -t 'keeps API order and selects the first pet by default'; echo "exit=$?"`,
+  y tras cada una
+  `git diff --exit-code -- 'src/app/(tabs)/food.tsx'; echo "exit=$?"` →
+  `exit=0`. Las tres dan `exit=1` y `Tests: 1 failed, 55 skipped, 56 total`
+  (medido ×3 cada una):
+  - **Q2**: en la query del plan, `enabled: selectedPetId !== null,` →
+    `enabled: false,`. Firma: `Number of calls: 0`. La espera no se traga una
+    llamada que falta.
+  - **Q3**: en el `queryFn` del plan, `selectedPetId!` → `'pet-2'`. Firma:
+    `Received` con `"pet-2"` y `Number of calls: 1`. Los argumentos siguen
+    vigilados.
+  - **Q4**: Q1 con `'pet-2'` en vez de `selectedPetId!`. Misma firma que
+    Q3: el retraso no esconde un argumento equivocado.
+
+- [ ] **(4) Commit de traza** `docs(mobile): trace #77 R5`, **siempre el
+  último commit de la branch**. Solo documentación:
+  - [[traceability]]: una fila nueva **debajo de la de R4**, sin tocar las de
+    R1-R4. Literal, con los tres hashes cortos en su sitio:
+
+    `| R5 — (Enmienda 1) el test de orden de food espera la llamada a getNutritionPlan dentro de su waitFor; rojo por Q1 versionada, revertida en commit propio | R4: food resuelve la mascota seleccionada › keeps API order and selects the first pet by default (comentario #77 R5) | <hash del rojo de R5> | <hash del verde de R5> (revert: <hash del revert de R5>) |`
+  - `progress/impl_mobile-home-weight-without-collar.md`: una sección
+    `## R5 (Enmienda 1)` con la base del fichero, el rojo, el verde, el
+    revert, las tres sondas y la suite del cierre, con comandos y resultados.
+
+  Si `docs(mobile): fill #77 traceability` aún no existe, va **antes** que
+  este commit, rellena solo R1-R3 y deja R5 fuera. El `reviewer` no aprueba
+  con la fila de R5 ausente o en «pendiente».
+
+---
+
 ## Cierre (Codex, antes de escribir `progress/impl_mobile-home-weight-without-collar.md`)
 
 Todo **sin pipe** (el código de salida de un pipe es el del último comando),
@@ -461,7 +659,13 @@ desde `mobile-pet-tracker/` salvo que se diga otra cosa:
       → `exit=0`, **base + 13** (157 sobre `a8d5cb70`; 159 con #126).
 - [ ] Desde la raíz, `bun run --cwd mobile-pet-tracker test; echo "exit=$?"` →
       `exit=0`, **+0 suites y +13 tests** sobre la base (83 / 1543 sobre
-      `a8d5cb70`; 83 / 1545 con #126).
+      `a8d5cb70`; 83 / 1545 con #126). **Enmienda 1**: R5 suma +0 / +0. Con
+      el verde de R5 en la branch **no se tolera ningún rojo**: si cae
+      `keeps API order and selects the first pet by default`, **parar**,
+      guardar el log entero y avisar al leader.
+- [ ] **Enmienda 1**:
+      `bunx jest --runTestsByPath 'src/app/(tabs)/__tests__/food.test.tsx'; echo "exit=$?"`
+      → `Tests: 56 passed, 56 total`, `exit=0`.
 - [ ] `test ! -e .expo/types/router.d.ts; echo "exit=$?"` → `exit=0`, y
       después `bun run typecheck; echo "exit=$?"` y
       `bun run lint; echo "exit=$?"` → `exit=0`.
@@ -478,8 +682,22 @@ desde `mobile-pet-tracker/` salvo que se diga otra cosa:
       `grep -c StyleSheet` → `0`; `grep -c -- "-\["` → `0`;
       `grep -cP '#[0-9]++(?! R[0-9])'` → `1`;
       `grep -c "^describe('#77 R"` → `3`.
-- [ ] `git diff --stat origin/main...HEAD -- mobile-pet-tracker` → exactamente
-      `src/screens/home/index.tsx` y `src/screens/home/index.test.tsx`.
+- [ ] **Enmienda 1**. Greps sobre `'src/app/(tabs)/__tests__/food.test.tsx'`:
+      `grep -c '#77 R5'` → `1`; `grep -cP '#[0-9]++(?! R[0-9])'` → `9`;
+      `grep -c StyleSheet` → `0`; `grep -c -- "-\["` → `0`. Sobre producción:
+      `git diff --exit-code origin/main...HEAD -- ':/mobile-pet-tracker/src/app/(tabs)/food.tsx'; echo "exit=$?"`
+      → `exit=0`, y
+      `git log --oneline origin/main..HEAD -- ':/mobile-pet-tracker/src/app/(tabs)/food.tsx'`
+      → exactamente dos commits, el rojo y el revert de R5 (control de que la
+      ruta casa con algo).
+- [ ] `git diff --stat origin/main...HEAD -- ':/mobile-pet-tracker'` →
+      exactamente `src/screens/home/index.tsx`,
+      `src/screens/home/index.test.tsx` y, con la **Enmienda 1**,
+      `src/app/(tabs)/__tests__/food.test.tsx`. (**Enmienda 1**: la ruta pasa
+      de `mobile-pet-tracker` a `':/mobile-pet-tracker'`. Desde
+      `mobile-pet-tracker/`, la forma sin `:/` no casa con nada y el `--stat`
+      sale vacío con `exit=0`, medido.)
 - [ ] Commit final `docs(mobile): fill #77 traceability` con los seis hashes
       en [[traceability]], y el reporte con las bases, las sondas y los
-      recuentos.
+      recuentos. **Enmienda 1**: detrás va `docs(mobile): trace #77 R5`
+      (§R5, paso 4), que pasa a ser el último commit.

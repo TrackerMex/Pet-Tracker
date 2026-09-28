@@ -11,6 +11,7 @@ tags: [harness, spec, mobile]
 > [[../../docs/architecture|architecture]] para las capas. Toda la feature vive
 > en la capa de presentación móvil (`src/screens/home/index.tsx`): no toca
 > dominio, aplicación, infraestructura ni la capa de API del cliente.
+> **Enmienda 1**: además, un test de `src/app/(tabs)/` (D9).
 > Ninguna cita usa número de línea.
 
 ## El defecto, de punta a punta
@@ -242,6 +243,66 @@ peso de esa condición». #77 R1-R3 lo sustituyen. El spec_author añade
 cambia nada más de #69 (el estado `ok`, el skeleton, el copy, el resto de
 R7). Resuelve C4 de §0.2.
 
+
+### D9 — Enmienda 1: la carrera de food se cierra en el test, con rojo por Q1 (R5)
+
+Pendiente de la firma de la Enmienda 1 ([[requirements]] §Enmienda 1).
+
+- **Qué cambia.** En `src/app/(tabs)/__tests__/food.test.tsx` ›
+  `keeps API order and selects the first pet by default`, la aserción de
+  `mockGetNutritionPlan` con `(apiUrl, 'jwt-token', 'pet-1')` pasa de fuera
+  a dentro del `waitFor`, detrás de la de `accessibilityState` y precedida
+  del comentario `// #77 R5: …`. Es la misma aserción y el test no pierde
+  ninguna. `mockListPets` se queda fuera porque su respuesta es lo que pinta
+  los chips (§F4 de #111: implicada).
+- **Por qué dentro del `waitFor`.** Es la regla de `docs/conventions.md`
+  §«Esperas sobre el árbol renderizado»: la espera termina en la misma
+  observación que se asevera. Tiene dos precedentes exactos. Uno es el `it`
+  hermano, `selects a pressed pet and reloads its nutrition plan`, que ya
+  asevera su llamada dentro de la espera. El otro es el gemelo de `health`,
+  #111 S2 (`bcd8ba8a`).
+- **Por qué no anclar la espera a un nodo del plan.** El `beforeEach` de
+  `describe('R4: food resuelve la mascota seleccionada'` deja el plan en
+  `pending<NutritionPlanState>()`, así que el plan no llega a pintarse. La
+  única huella de la llamada es el mock.
+- **Por qué no en producción.** `food.tsx` es correcto: pide el plan en cuanto
+  hay mascota. Adelantar la llamada, o hacer síncrona la selección, cambiaría
+  el producto para arreglar un test.
+- **Por qué no un helper ni más tiempo.** Un `timeout` mayor, `asyncUtilTimeout`
+  o `testTimeout` esconden la ventana, no la cierran. Un helper para una sola
+  aserción sería una abstracción sin segundo usuario.
+- **Nombre del R-id.** El `it` **no** se renombra. Su título lo citan el
+  handoff, el log del leader y la fila de [[traceability]]. El R-id va en el
+  comentario `#77 R5` (C4, primer punto; `grep -c '#77 R5'` → `1`). El guard
+  de drift `#[0-9]++(?! R[0-9])` sigue en `9` en ese fichero.
+- **Rojo (C4, vía (b)).** La carrera depende de la carga de la máquina. Sin
+  tocar producción no hay rojo a voluntad, y mutar el doble está prohibido
+  (C4, quinto punto). El rojo es **Q1**, versionada en `food.tsx`: el
+  `queryFn` del plan espera 200 ms antes de llamar a `getNutritionPlan` y, si
+  TanStack aborta la query, cancela el temporizador escuchando el `signal`.
+  - **Por qué 200 ms.** Es más que el paso de 5 ms del Scheduler y menos que
+    el `timeout` de 1000 ms del `waitFor`, así que la ventana es segura y el
+    verde también. Son los mismos 200 ms de la viga de #111 R1, pero aquella
+    retrasaba la respuesta de un mock y se quedaba en el test. Aquí lo que
+    hay que retrasar es la **llamada**, que solo vive en producción; por eso
+    Q1 se revierte.
+  - **Por qué Q1 y no la versión sin `abort`.** Sin `abort`, el temporizador
+    sobrevive al desmontaje de cada test y resuelve en el siguiente: pone
+    `#98 R6` en rojo de rebote (medido). Con Q1 el único rojo es el de R5.
+  - **Fake timers.** `food.test.tsx` no los usa y Q1 usa `setTimeout` real.
+    No pasa nada, porque Q1 no sobrevive a la feature.
+- **Tres commits en vez de dos.** C4 dice que la mutación «se versiona en el
+  commit rojo y se revierte en el verde». Aquí el verde es un cambio **de
+  test**, y lo que hay que demostrar es que el test nuevo pasa **con la
+  mutación puesta**. Por eso Q1 sigue en el verde y sale en un tercer commit,
+  `fix(mobile): drop the nutrition plan delay (R5)`. Al final `food.tsx`
+  queda idéntico al del commit anterior al rojo de R5 (`git diff --exit-code`,
+  [[tasks]] §R5), y su diff contra `origin/main` es vacío.
+- **Por qué dentro de #77.** Lo pidió el humano: el flake tumbó la base de
+  Codex y la «Reanudacion 1» obliga a tolerarlo en el cierre. Son 11 líneas de
+  test sin producción final. Los sitios iguales de otras pantallas se quedan
+  como [H] en [[requirements]] §Fuera de alcance.
+
 ---
 
 ## Archivos afectados
@@ -255,7 +316,14 @@ R7). Resuelve C4 de §0.2.
 - `specs/mobile-home-stats-strip/requirements.md` — la enmienda de D8 (la
   escribe el spec_author en esta spec; Codex **no** la toca).
 - `specs/mobile-home-weight-without-collar/traceability.md` — la rellena Codex
-  una vez, en el último commit.
+  una vez, en el último commit. **Enmienda 1**: recibe un segundo commit,
+  `docs(mobile): trace #77 R5`, que solo añade la fila de R5.
+- **Enmienda 1** · `mobile-pet-tracker/src/app/(tabs)/__tests__/food.test.tsx`:
+  una aserción que entra en su `waitFor`, más el comentario `#77 R5`. Son 6
+  inserciones y 5 borrados, y el fichero sigue en 56 tests (D9).
+- **Enmienda 1** · `mobile-pet-tracker/src/app/(tabs)/food.tsx`: **transitorio**.
+  Q1 entra en el rojo de R5 y sale en su revert, así que el diff final es
+  vacío (D9).
 
 Nada más: ni `format.ts`, ni `src/api/`, ni el catálogo, ni `global.css`, ni
 `docs/`, ni backend, ni e2e, ni `package.json`/`bun.lock`.

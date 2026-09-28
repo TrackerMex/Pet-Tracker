@@ -23,6 +23,14 @@ tags: [harness, spec, mobile]
 > nativos** (no hay que regenerar el dev build), **cero backend**, **cero
 > claves de catálogo** y **cero llamadas nuevas a la API**.
 >
+> **Enmienda 1 (R5, 2026-09-28, pendiente de firma):** entra un segundo
+> fichero de test, `src/app/(tabs)/__tests__/food.test.tsx`, para cerrar la
+> carrera que tumbó la base de Codex. `src/app/(tabs)/food.tsx` cambia **solo
+> de forma transitoria** (la mutación Q1 se versiona y se revierte): su diff
+> final contra `origin/main` es **vacío**. Todo lo de R5 está en
+> §Enmienda 1; lo que la enmienda cambia fuera de ella lleva la marca
+> **Enmienda 1**.
+>
 > Base: `a8d5cb70` (= `origin/main` el 2026-09-27, con #99 mergeado por la
 > PR #166). Blobs de base: `src/screens/home/index.tsx` `dbb5b034`,
 > `src/screens/home/index.test.tsx` `abbdb5b8`: los mismos que midió #126 en
@@ -335,7 +343,9 @@ propia casilla, no en §Aprobación.
 |---|---|---|
 | `src/screens/home/index.test.tsx` | **144 → 151** (R1 +7) **→ 155** (R2 +4) **→ 157** (R3 +2). Con #126 ya mergeado: **146 → 153 → 157 → 159** | R1, R2, R3 · rojos |
 | `src/screens/home/index.tsx` · `testID="summary-note"` | **2 → 1** (ningún test lo cuenta; lo comprueba [[tasks]] §Cierre) | R2 · verde |
-| Suite móvil | **+0 suites, +13 tests**: sobre `a8d5cb70`, `83 / 1530 → 83 / 1543` (medido en el scratchpad con el borrador completo, exit 0; `tsc --noEmit` y `eslint` exit 0). Con #126 ya mergeado: `83 / 1532 → 83 / 1545` | — |
+| Suite móvil | **+0 suites, +13 tests**: sobre `a8d5cb70`, `83 / 1530 → 83 / 1543` (medido en el scratchpad con el borrador completo, exit 0; `tsc --noEmit` y `eslint` exit 0). Con #126 ya mergeado: `83 / 1532 → 83 / 1545`. **Enmienda 1**: R5 suma **+0 suites y +0 tests** (mueve una aserción, no añade `it`); el cierre sigue en `83 / 1545` | — |
+| **Enmienda 1** · `src/app/(tabs)/__tests__/food.test.tsx` | **56 → 56** (delta 0). `grep -c '#77 R5'` **0 → 1**; `grep -cP '#[0-9]++(?! R[0-9])'` **9 → 9** | R5 · verde |
+| **Enmienda 1** · `src/app/(tabs)/food.tsx` | **diff final vacío**: la mutación Q1 entra en el rojo de R5 y sale en su commit de revert | R5 · rojo y revert |
 | `specs/mobile-home-stats-strip/requirements.md` · `## Enmienda #77 — el peso se desacopla de la actividad` | bloque nuevo antes de `## Aprobación`, con su casilla (D8) | spec, no código |
 | Backend, infra, e2e | **+0** | — |
 
@@ -351,6 +361,7 @@ propia casilla, no en §Aprobación.
 | `src/__tests__/ui-language.test.ts` · `expect(R3_HOME).toHaveLength(21 + 15 + 1 + 4 + 7 + 2 + 1 + 2);` y `src/providers/__tests__/language-provider.test.tsx` · `260 + 16 + 1 + 4 + 7 + 14 + 2 + 1 + 4 - 6 + 1 + 2,` | Cero claves nuevas; cada clave de la Home sigue en su fichero (P10) |
 | `src/__tests__/consistency-classnames.test.ts` · `describe('#62 R15: todo contador usa cifras tabulares'` (`HOME_TABULAR_AT_9358CC7 = 4` y sus deltas de `#69 R10`, `#69 R14`, `#70 R18`) y `describe('#98 R10: los candados que esta feature no mueve'` | `style={TABULAR_NUMS}` sigue en **8** en `index.tsx` (P11) |
 | `src/__tests__/design-drift.test.ts` · `describe('C8: la UI no usa clases arbitrarias'`, `#69 R13`, `#71 R13`, `#70 R17`, `#85 R12`, `#98 R10`, `#108 R2` | Sin hex, sin clases arbitrarias, sin `StyleSheet`; en el test nuevo, `#` seguido de cifras solo como `#<id> R<n>` |
+| **Enmienda 1** · los otros **55** `it` de `src/app/(tabs)/__tests__/food.test.tsx` | Ninguno se toca. Verdes con y sin Q1 (medido: 56/56 con Q1 y el test arreglado, 3/3). `consistency-classnames`, `legibility-classnames`, `design-drift`, `ui-language` y `detail-stack` verdes con Q1 puesta (5 suites, 173 tests, exit 0) |
 
 ---
 
@@ -460,7 +471,7 @@ de §Candados y #126 R1 en verde. **No rebasear** después de que Codex rellene
 | 3. Los `it` de `describe('R9: summary degrada con gracia')` verdes sin debilitar ningún assert, más los del estado nuevo | Son **siete**, no cinco (C1): §Candados «Siguen verdes», sin tocarlos; los del estado nuevo, R1-R3 (13 tests) |
 | 4. Sin peso registrado la celda pinta `—`, no desaparece | R1 `pinta un guion sin peso registrado` (M2) y `pinta un guion y la nota cuando el perfil tampoco resuelve` (M3); R4 paso 2 |
 | 5. Cero llamadas nuevas a la API | R1 `no añade ninguna llamada a la API` y los seis recuentos de §Candados (M5) |
-| 6. Suite móvil verde; ninguna cifra de candado se mueve sin declararlo como delta | §Candados (solo se mueve el recuento del fichero de la Home), [[tasks]] §Cierre (comandos sin pipe) |
+| 6. Suite móvil verde; ninguna cifra de candado se mueve sin declararlo como delta | §Candados (solo se mueve el recuento del fichero de la Home), [[tasks]] §Cierre (comandos sin pipe). **Enmienda 1**: R5 cierra la carrera de `food.test.tsx` que la tumbaba de forma intermitente, con delta 0 |
 | 7. Gate humano: smoke en dev build de Android con una mascota sin collar y con peso | R4 |
 
 ---
@@ -487,6 +498,17 @@ de §Candados y #126 R1 en verde. **No rebasear** después de que Codex rellene
 - **Cambios en `docs/ui-guidelines.md`, `docs/conventions.md` (lo edita
   #126 R3), `global.css`, `src/i18n/catalog.ts`, `src/screens/home/format.ts`,
   `src/api/activity.ts`, `package.json` o `bun.lock`.**
+- **Enmienda 1 · Cerrar la carrera en producción.** `src/app/(tabs)/food.tsx`
+  es correcto: pide el plan en cuanto hay mascota. El defecto es la espera del
+  test. Diff final de `food.tsx` vacío (R5).
+- **Enmienda 1 · Un helper de espera, `asyncUtilTimeout`, `testTimeout` o un
+  `waitFor` con más `timeout`.** Alargar la espera no cierra la ventana, la
+  esconde. R5 cambia qué se espera, no cuánto.
+- **Enmienda 1 · `docs/conventions.md`.** §«Esperas sobre el árbol
+  renderizado» ya exige que la espera y las aserciones miren la misma
+  observación; R5 la aplica, no la cambia.
+- **Enmienda 1 · Los otros sitios de `food.test.tsx`.** Clasificados uno a uno
+  en §Enmienda 1 › Inventario: ninguno es carrera hoy y ninguno se toca.
 
 **Deuda o limitación conocida que esta feature no ejecuta:**
 
@@ -500,6 +522,226 @@ de §Candados y #126 R1 en verde. **No rebasear** después de que Codex rellene
   líneas; `self-center` la mantiene centrada respecto a la celda. No se fija
   número de líneas.
 
+**Enmienda 1 · Seguros hoy, con un límite conocido (no se tocan):**
+
+- **`#98 R5` (`sirve…`, `deshace…`) y `#98 R6`
+  (`muestra el aviso ante un fallo y lo borra en el reintento con éxito`).**
+  Tras `waitFor(() => expect(mockGetNutritionPlan).toHaveBeenCalledTimes(2))`
+  aseveran `refetchQueries` y su `invocationCallOrder`, o pulsan otra vez.
+  Seguros porque, con los mocks resueltos, el resto de `toggleMeal` tras
+  `await plan.refetch();` corre **solo en microtareas**: traza W2 del informe,
+  `queryFn → before-refetchQueries → before-haptics → finally-setPending-null`
+  antes de un `setTimeout(0)` y un `setImmediate` encolados en el `queryFn`.
+  **Límite**: una macrotarea entre `await plan.refetch();` y
+  `await queryClient.refetchQueries({` los tumba (mutación Q5, 100 ms: 3 rojos,
+  los dos de `#98 R5` y ese de `#98 R6`, 3/3).
+- **`#113 R2` (`con merKcal $merKcal y kcalConsumedToday $kcal pinta $consumed y $percent`),
+  `#113 R4` (`anima a 50, sube a 100 al servir…`) y `#113 R7`
+  (`… el relleno solo lleva width $width`).** Esperan un texto del plan y
+  después leen el ancho de la barra, que fija un `useEffect`
+  (`kcalBarWidth.set(withTiming(kcalPct, KCAL_BAR_TIMING));`). Seguros porque
+  los datos del plan llegan por el `useSyncExternalStore` de TanStack, que
+  hace un commit **síncrono** y React vacía sus efectos pasivos en el mismo
+  paso: traza W1 del informe, `layout-kcal → passive-kcal → micro-kcal`, sin
+  frontera de tarea. **Límite**: si esos datos llegasen por una actualización
+  no síncrona, la ventana se abriría como en R5; una macrotarea en ese efecto
+  (mutación Q6, 200 ms) pone **7** en rojo con `Received {"width":"0%"}` (las
+  filas que esperan 0% pasan).
+
+**Enmienda 1 · [H] Hallazgos no medidos (no se afirma que sean flakes, no se
+registran como feature desde aquí):**
+
+- **[H] El mismo patrón en otras pantallas.** Espera a un chip seleccionado y
+  asevera **fuera** la llamada de una query con
+  `enabled: selectedPetId !== null`:
+  `src/screens/home/index.test.tsx` › `keeps API order and selects the first pet by default`
+  (`mockGetPet` y `mockGetDailyActivity` con `'pet-1'`) y
+  `src/screens/reminders/index.test.tsx` ›
+  `uses the metrics under the native header, selects the first pet, and shows row skeletons (#114 R6)`
+  (`mockListReminders` con `'pet-1'`). Ninguno se midió. El de la Home vive en
+  el fichero que R1-R3 editan y se deja fuera a propósito para no mezclar
+  cambios en el guion de Codex. `health` ya está bien (#111 S2, `bcd8ba8a`).
+  Si el leader los quiere cerrados, es una feature propia con su medición.
+- **[H] La premisa de `specs/mobile-flaky-waits/requirements.md` §«Enmienda E1».**
+  Se corrige en §Enmienda 1 › El mecanismo. Esta spec **no** edita #111.
+
+---
+
+## Enmienda 1 — R5: la carrera del plan de nutrición en food
+
+> Abierta el 2026-09-28, a pregunta del humano: «¿podemos resolver el flake
+> food.test.tsx en esta feature?». Enmienda a una spec ya firmada: **necesita
+> su propia firma** (§Firma de la Enmienda 1). Sin esa casilla, R5 no existe y
+> Codex sigue con la «Reanudacion 1» del handoff tal cual.
+>
+> Todo lo de esta sección se **midió** en una copia de `mobile-pet-tracker/`
+> en el scratchpad del spec_author (sin pipe, sin `init.sh`, sin e2e), sobre
+> `c06aa893`. Los blobs de `src/app/(tabs)/food.tsx` (`e310ff45`) y
+> `src/app/(tabs)/__tests__/food.test.tsx` (`abc6ad15`) son los mismos en
+> `e9413a6e` (= `origin/main`, base de la implementación de Codex).
+> Comandos y logs: `progress/spec_amend_77_food.md`.
+>
+> Nombres propios de esta enmienda: las mutaciones son **Q1-Q6** (no las
+> M1-M5 de §R1) y las trazas son **W1** y **W2** (no las decisiones D1-D9
+> de [[design]]).
+
+### Qué falla
+
+La base de Codex cayó en la suite completa por un rojo ajeno a la Home
+(`progress/handoff_mobile-home-weight-without-collar.md` §«Reanudacion 1»):
+`src/app/(tabs)/__tests__/food.test.tsx` ›
+`R4: food resuelve la mascota seleccionada › keeps API order and selects the first pet by default`,
+en `expect(mockGetNutritionPlan).toHaveBeenCalledWith(`, con
+`Number of calls: 0` (`1 failed, 1531 passed, 1532 total`). Solo, el fichero
+pasa 10/10.
+
+El test espera en un `waitFor` el orden de los chips y `pet-chip-pet-1` con
+`accessibilityState` `{ selected: true }`, y **después, fuera de la espera**,
+asevera `mockGetNutritionPlan` con `(apiUrl, 'jwt-token', 'pet-1')`. Es el
+defecto que describe `docs/conventions.md` §«Esperas sobre el árbol
+renderizado»: la observación que termina la espera puede ser cierta mientras
+la aserción posterior es falsa (criterio §F4 de #111).
+
+### El mecanismo (medido)
+
+1. `usePetSelection({ data: pets.data, isRefreshing: pets.isRefetching });`
+   selecciona la primera mascota desde un `useEffect`. Ese `setState` va en
+   una lane por defecto, **no** síncrona.
+2. El commit de ese render pinta el chip seleccionado. Sus efectos pasivos
+   **no** se vacían en el mismo paso, y entre ellos está el de `useQuery`, que
+   ve `enabled: selectedPetId !== null` y lanza el `queryFn`. React agenda
+   esos efectos como una tarea aparte del Scheduler, que cede cada 5 ms con
+   `setImmediate`.
+3. El `waitFor` de RNTL comprueba cada 50 ms. Si esa comprobación cae entre el
+   commit y la tarea de los efectos, ve el chip seleccionado y sale. La
+   aserción de fuera encuentra entonces el mock sin llamar. Con la máquina
+   cargada, la ventana se abre.
+
+Traza con instrumentación (`console.log` en un `useLayoutEffect`, en un
+`queueMicrotask` y en el `queryFn`; variante fuera del repo). En el commit
+del chip sale `layout-pet:pet-1 → micro-pet:pet-1 → queryFn:pet-1`: entre el
+pintado y la llamada hay una frontera de tarea. A veces sale
+`layout → queryFn → micro`, cuando el Scheduler no cede; por eso el flake es
+intermitente.
+
+**Corrección de premisa (#111, Enmienda E1).** El sitio gemelo de `health`
+(`keeps API order and selects the first pet by default`) ya se clasificó en
+`specs/mobile-flaky-waits/requirements.md` §«Enmienda E1 — S2 no es defecto,
+y su vía de C4 no era obtenible». E1 lo metió en la tercera categoría de §F4,
+«causalmente implicado», y dio por hecho que no había ventana. **La ventana
+existe.** §F4 exime «un contador de mock cuyo efecto es justo el render que
+se esperó»: en ese caso la llamada **causa** el render. Aquí el orden es el
+inverso: el render **causa** la llamada, y la llamada llega una tarea
+después. E1 no vio la ventana porque sus vigas retrasaban la **respuesta** de
+un mock (`mockListPets`), y esa respuesta llega antes del render esperado. La
+viga que abre la ventana retrasa la **llamada**, entre el commit y el mock
+(Q1). El código de `health` ya está bien: #111 S2 (`bcd8ba8a`) dejó las
+aserciones dentro del `waitFor`. Esta enmienda **no** toca #111. Solo deja
+escrito que la premisa de E1 era falsa, para que nadie construya sobre ella.
+
+### R5 — La espera del test de orden termina con la llamada al plan
+
+**WHILE** la llamada a `getNutritionPlan` llegue hasta 200 ms después del
+commit que selecciona `pet-chip-pet-1` (mutación Q1),
+**THE SYSTEM SHALL** hacer pasar de forma determinista
+`R4: food resuelve la mascota seleccionada` › `keeps API order and selects the first pet by default`,
+cuyo `waitFor` termina **solo** cuando se cumplen a la vez tres cosas: los
+chips están en orden, `pet-chip-pet-1` está seleccionado y
+`mockGetNutritionPlan` se ha llamado con `(apiUrl, 'jwt-token', 'pet-1')`;
+**AND THE SYSTEM SHALL NOT**:
+
+- aseverar menos que hoy: el mismo orden `['pet-chip-pet-1', 'pet-chip-pet-2']`,
+  la misma selección, `mockListPets` con `(apiUrl, 'jwt-token')` y
+  `mockGetNutritionPlan` con **los mismos tres** argumentos;
+- dejar diff final en `src/app/(tabs)/food.tsx`;
+- añadir un helper;
+- tocar `asyncUtilTimeout`, `testTimeout` ni el `beforeEach` de `R4`.
+
+Cómo se cumple:
+
+- **Test**: el mismo `it`, sin renombrar. Dentro del `waitFor`, tras la
+  aserción de `accessibilityState`, entran dos cosas:
+  - el comentario
+    `// #77 R5: the plan is requested after the commit that selects the chip.`,
+    que nombra el R-id (C4, primer punto);
+  - la aserción de `mockGetNutritionPlan`, que sale de fuera.
+
+  `mockListPets` se queda fuera porque está implicada: su respuesta es lo que
+  pinta los chips. El diff literal (6 inserciones, 5 borrados) está en
+  [[tasks]] §R5.
+- **Rojo** (C4 vía **(b)**, [[design]] D9): sin tocar producción, la carrera
+  no se reproduce a voluntad. El rojo es la **mutación Q1 versionada**: el
+  `queryFn` del plan retrasa 200 ms la llamada a `getNutritionPlan` y cancela
+  el temporizador si TanStack aborta la query. Su firma es **idéntica** a la
+  del flake: el mismo `it`, la misma línea y `Number of calls: 0`.
+
+#### Mediciones
+
+Fichero entero = `bunx jest --runTestsByPath 'src/app/(tabs)/__tests__/food.test.tsx'`.
+Filtrado = el mismo comando con
+`-t 'keeps API order and selects the first pet by default'`. «Arreglado» es
+el test con el diff de [[tasks]] §R5.
+
+| Id | `food.tsx` | Test | Corrida | Resultado |
+|---|---|---|---|---|
+| B | base | base | fichero entero | 56/56, exit 0 |
+| R | Q1 | base | filtrado ×10 | **10/10 exit 1**: `1 failed, 55 skipped`, `Number of calls: 0` en `expect(mockGetNutritionPlan).toHaveBeenCalledWith(` |
+| R′ | Q1 | base | fichero entero ×3 | **3/3 exit 1**: `1 failed, 55 passed`; solo ese `it`, con la misma firma |
+| V | Q1 | arreglado | filtrado ×10 | **10/10 exit 0** |
+| V′ | Q1 | arreglado | fichero entero ×3 | **3/3 exit 0**, 56/56 |
+| F | base | arreglado | fichero entero ×3 | **3/3 exit 0**, 56/56 |
+| T1 | Q2: `enabled: false` en la query del plan | arreglado | filtrado ×3 | **3/3 exit 1**, `Number of calls: 0`: la espera no se traga una llamada que falta |
+| T2 | Q3: `'pet-2'` en vez de `selectedPetId!` en el `queryFn` | arreglado | filtrado ×3 | **3/3 exit 1**, `Received` con `"pet-2"`, `Number of calls: 1`: los argumentos siguen vigilados |
+| T3 | Q4: Q1 con `'pet-2'` | arreglado | filtrado ×3 | **3/3 exit 1**, igual que T2 |
+| S | Q1 | base y arreglado | `bunx tsc --noEmit` con cada test; `bunx expo lint` | exit 0 las tres veces (es el `tsc` del rojo y del verde de R5) |
+| K | Q1 | — | `consistency-classnames`, `legibility-classnames`, `design-drift`, `ui-language`, `detail-stack` | 5 suites, 173/173, exit 0 |
+| G | base | arreglado | suite completa ×1, `bunx tsc --noEmit`, `bunx expo lint` | **exit 0, 83 / 1532**; exit 0; exit 0 |
+
+La primera versión de la mutación no escuchaba el `abort` y dejaba un
+temporizador vivo tras desmontar. Ese temporizador ponía `#98 R6` en rojo de
+rebote. Q1 lo cancela, así que el único rojo es el de R5 ([[design]] D9).
+
+#### Inventario de `food.test.tsx`
+
+Cada espera seguida de una aserción, clasificada:
+
+| `describe` › `it` | Espera | Aserción posterior | Clase |
+|---|---|---|---|
+| `R4` › `shows and retries a $kind pet-list error` (3 filas) | `food-empty` tras el reintento | `mockListPets` ×2 | Segura: implicada (la segunda respuesta pinta `food-empty`) |
+| `R4` › `keeps API order and selects the first pet by default` | chips en orden, `pet-1` seleccionado | `mockListPets` con `(apiUrl, 'jwt-token')` | Segura: implicada (su respuesta pinta los chips) |
+| ídem | ídem | `mockGetNutritionPlan` con `'pet-1'` | **Carrera real: R5** (medidas R y R′) |
+| `R4` › `selects a pressed pet and reloads its nutrition plan` | — | ya dentro de su `waitFor` | Segura: es la forma que R5 copia |
+| `R5` › `renders kcal, grams, ordered meals, portions, and local-time badges` | `food-plan-card` | `mockRouter.push` tras la pulsación | Segura: síncrona en el `onPress` |
+| `R5` › `shows and retries a $kind plan error` (2 filas) | `food-plan-card` tras el reintento | `mockGetNutritionPlan` ×2 | Segura: implicada |
+| `#98 R5` › `sirve…` / `deshace…` | `mockGetNutritionPlan` ×2 | `mockServeMeal` / `mockUnserveMeal` | Segura: implicada (se llaman antes del refetch) |
+| ídem | ídem | `refetchQueries` y `invocationCallOrder` | Segura **hoy**: solo microtareas (traza W2). Límite: Q5 (§Fuera de alcance) |
+| `#98 R5` › `ignora la segunda pulsación mientras la primera está en vuelo` | `meal-toggle-0` | `mockServeMeal` ×1 | Segura: síncrona |
+| `#98 R6` › `no muestra error cuando el servidor ya estaba en el estado pedido` | `mockGetNutritionPlan` ×2 | ausencia del error | Fuera del patrón: el error se fijaría antes de la llamada |
+| `#98 R6` › `muestra el aviso ante un fallo y lo borra en el reintento con éxito` | `mockGetNutritionPlan` ×2 | pulsa otra vez | Segura **hoy** por la traza W2. Límite: Q5 |
+| `#106 R4` (los 4 `it` que vibran) | `mockNotificationAsync` ×1 | `toHaveBeenCalledWith` de esa llamada | Segura: misma observación |
+| `#106 R4` › `no vibra al montar o refrescar sin una pulsación` | `meal-toggle-0` | ausencia | Fuera del patrón: ausencia anclada |
+| `#113 R2` (`it.each` `con merKcal …`), `#113 R4` (`anima a 50…`), `#113 R7` (`it.each` `… el relleno solo lleva width …`) | texto del plan | ancho de la barra y `mockWithTiming` | Segura **hoy**: commit síncrono de `useSyncExternalStore` (traza W1). Límite: Q6 (§Fuera de alcance) |
+| `R10` › `does not replace a new selection while the stale pet list refreshes` | chips | `selectPet` `.not` | Fuera del patrón: ausencias ancladas |
+| `#87 R12` › `deja mascotas y plan en sus claves canónicas` | `food-plan-card` | `getQueryData` | Segura: implicada |
+
+**El único sitio defectuoso es R5.** Los «seguros hoy» se quedan como están:
+su límite está escrito en §Fuera de alcance y no pasa a ser trabajo de esta
+feature.
+
+#### Qué firma el humano con esta enmienda
+
+| Id | Decisión | En una línea |
+|---|---|---|
+| **R5** | Un segundo fichero de test en #77 | La aserción de `mockGetNutritionPlan` entra en el `waitFor` del test de orden; no se debilita nada y la producción de food queda igual |
+| **D9** | Rojo por mutación versionada, con commit de revert propio | Q1 entra en el rojo y **sigue puesta** durante el verde, porque el verde es un cambio de test y hay que probarlo contra ella. Sale en un tercer commit. C4 dice «se revierte en el verde»; aquí el verde es el test, así que el revert va aparte. El diff final de `food.tsx` es vacío. Ver [[design]] D9 |
+| **Traza** | Un segundo commit sobre [[traceability]] | [[traceability]] pide **un solo** commit, `docs(mobile): fill #77 traceability`. R5 añade otro, `docs(mobile): trace #77 R5`, que va **siempre el último** y solo añade la fila de R5 (fila literal en [[tasks]] §R5). El `reviewer` no aprueba con esa fila en «pendiente» |
+
+### Firma de la Enmienda 1
+
+- [ ] **Enmienda 1 (R5) aprobada por humano** (fecha: ____). Casilla propia.
+      Sin ella, R5 no existe: `food.test.tsx` y `food.tsx` no se tocan y
+      sigue valiendo el punto 3 de la «Reanudacion 1».
+
 ---
 
 ## Aprobación
@@ -509,3 +751,6 @@ de §Candados y #126 R1 en verde. **No rebasear** después de que Codex rellene
 Al aprobar, el humano firma además, **en su casilla propia**, la enmienda a
 #69 R7 (`specs/mobile-home-stats-strip/requirements.md`
 §`## Enmienda #77 — el peso se desacopla de la actividad`).
+
+La **Enmienda 1 (R5)** no se firma aquí: tiene su casilla propia en
+§Enmienda 1 › Firma de la Enmienda 1. La casilla de arriba no la cubre.
