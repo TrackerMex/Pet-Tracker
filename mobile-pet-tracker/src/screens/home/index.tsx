@@ -437,7 +437,8 @@ export function HomeScreen() {
               </Text>
             ) : null}
 
-            {activity.data?.kind === 'ok' ? (
+            {activity.data !== undefined &&
+            activity.data.kind !== 'unauthorized' ? (
               <View className="flex-row">
                 <View className="flex-1 items-center gap-1 border-r border-border">
                   <Weight size={20} color={muted} />
@@ -456,45 +457,49 @@ export function HomeScreen() {
                     {t('home.weight')}
                   </Text>
                 </View>
-                <View className="flex-1 items-center gap-1 border-r border-border">
-                  <Walk size={20} color={muted} />
-                  <Text
-                    testID="summary-activity"
-                    className="text-sm font-bold text-foreground"
-                    style={TABULAR_NUMS}
-                  >
-                    {fmtMinutes(today?.activeMinutes ?? null)}
-                  </Text>
-                  <Text className="text-2xs font-normal text-muted">
-                    {t('home.activity')}
-                  </Text>
-                </View>
-                <View className="flex-1 items-center gap-1 border-r border-border">
-                  <Moon size={20} color={muted} />
-                  <Text
-                    testID="summary-sleep"
-                    className="text-sm font-bold text-foreground"
-                    style={TABULAR_NUMS}
-                  >
-                    {fmtMinutes(today?.restMinutes ?? null)}
-                  </Text>
-                  <Text className="text-2xs font-normal text-muted">
-                    {t('home.sleep')}
-                  </Text>
-                </View>
-                <View className="flex-1 items-center gap-1">
-                  <Map size={20} color={muted} />
-                  <Text
-                    testID="summary-distance"
-                    className="text-sm font-bold text-foreground"
-                    style={TABULAR_NUMS}
-                  >
-                    {fmtKm(today?.distanceM ?? null)}
-                  </Text>
-                  <Text className="text-2xs font-normal text-muted">
-                    {t('home.distance')}
-                  </Text>
-                </View>
+                {activity.data.kind === 'ok' ? (
+                  <>
+                    <View className="flex-1 items-center gap-1 border-r border-border">
+                      <Walk size={20} color={muted} />
+                      <Text
+                        testID="summary-activity"
+                        className="text-sm font-bold text-foreground"
+                        style={TABULAR_NUMS}
+                      >
+                        {fmtMinutes(today?.activeMinutes ?? null)}
+                      </Text>
+                      <Text className="text-2xs font-normal text-muted">
+                        {t('home.activity')}
+                      </Text>
+                    </View>
+                    <View className="flex-1 items-center gap-1 border-r border-border">
+                      <Moon size={20} color={muted} />
+                      <Text
+                        testID="summary-sleep"
+                        className="text-sm font-bold text-foreground"
+                        style={TABULAR_NUMS}
+                      >
+                        {fmtMinutes(today?.restMinutes ?? null)}
+                      </Text>
+                      <Text className="text-2xs font-normal text-muted">
+                        {t('home.sleep')}
+                      </Text>
+                    </View>
+                    <View className="flex-1 items-center gap-1">
+                      <Map size={20} color={muted} />
+                      <Text
+                        testID="summary-distance"
+                        className="text-sm font-bold text-foreground"
+                        style={TABULAR_NUMS}
+                      >
+                        {fmtKm(today?.distanceM ?? null)}
+                      </Text>
+                      <Text className="text-2xs font-normal text-muted">
+                        {t('home.distance')}
+                      </Text>
+                    </View>
+                  </>
+                ) : null}
               </View>
             ) : null}
           </Card>
