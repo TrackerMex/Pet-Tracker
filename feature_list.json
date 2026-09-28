@@ -2518,7 +2518,7 @@
   {
     "id": 132,
     "name": "mobile-weekly-chart-root-accessible-lock",
-    "status": "spec_ready",
+    "status": "in_progress",
     "priority": "P3",
     "description": "Registrada al cerrar #130 el 2026-09-28. Es la obs. 1 de su veredicto (progress/review_mobile-weekly-day-row-accessible-lock.md, sonda wrapcard). En mobile-pet-tracker/src/screens/home/weekly-activity-chart.tsx, un <View accessible> que envuelva el <Card testID='weekly-activity-card'> del return de WeeklyActivityChart funde en un solo nodo de TalkBack la tarjeta entera, con el selector y las siete columnas dentro, y la grafica sigue en 43/43 (blob de la mutacion cec8a26e, medido por el reviewer sobre 7a68bb1a). No lo ve #130 R1 (las claves de la fila no cambian), ni #130 R2 (row.parent sigue siendo la tarjeta), ni #74 R2 (las props de la tarjeta no cambian). La (D) de #130 «no se miran los ancestros de la tarjeta en la Home» aparta src/screens/home/index.tsx, no el return de la propia grafica: la premisa «la tarjeta es la raiz host de lo que pinta WeeklyActivityChart» es cierta hoy y no tiene candado. Limites: el hueco es solo DENTRO de la grafica; lo que la Home ponga alrededor sigue fuera de alcance. Solo test. Toca el mismo test que #131.",
     "acceptance_criteria": [
