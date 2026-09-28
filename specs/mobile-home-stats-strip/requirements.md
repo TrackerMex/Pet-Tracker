@@ -550,6 +550,34 @@ lo habilita de paso.
 
 ---
 
+## Enmienda #77 — el peso se desacopla de la actividad
+
+`mobile-home-weight-without-collar` (#77), abierta por el humano al firmar
+esta spec, pinta la celda de peso aunque la actividad no esté disponible. Por
+ello retira las dos cláusulas de R7 que lo impedían, y con ellas la parte de
+la ratificación 4 de §Aprobación que decía que la fila entera aparece y
+desaparece con la actividad.
+
+- **Qué cambia:** en R7, «**sin celdas**» deja de valer para `no-tracking`,
+  `error`, `unreachable` y `missing-config`: en esos cuatro estados la fila
+  pinta la celda de peso (misma anatomía y mismas clases que en `ok`) seguida
+  de `summary-note`, que pasa a vivir **dentro** de la fila. Y se retira
+  «THE SYSTEM SHALL **no** desacoplar la celda de peso de esa condición: la
+  fila entera aparece y desaparece junta». Su justificación («Por qué el peso
+  no se emancipa…») queda sustituida por
+  `specs/mobile-home-weight-without-collar/design.md` D1 y D5.
+- **Qué NO cambia:** el resto de R7. Mientras la actividad carga sigue
+  `summary-skeleton` con la misma clase y **sin celdas**; con `ok`, las cuatro
+  celdas de siempre; el copy y las claves de las dos notas; y el estado `ok`
+  de R1-R6 y R8-R14 entero. Tampoco el test de R7: los siete `it` de
+  `describe('R9: summary degrada con gracia'` siguen verdes sin tocarlos.
+- **Fuente normativa nueva:** `specs/mobile-home-weight-without-collar/requirements.md`
+  R1-R3.
+
+- [x] Enmienda aprobada por humano (fecha: 2026-09-27)
+
+---
+
 ## Aprobación
 
 - [X] Aprobado por humano (fecha: 2026-09-08) ← gate obligatorio antes de implementar

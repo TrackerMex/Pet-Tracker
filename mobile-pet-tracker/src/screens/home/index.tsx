@@ -423,21 +423,8 @@ export function HomeScreen() {
               <Skeleton testID="summary-skeleton" className="h-16 w-full rounded-xl" />
             ) : null}
 
-            {activity.data?.kind === 'no-tracking' ? (
-              <Text testID="summary-note" className="font-normal text-muted">
-                {t('home.activityNeedsCollar')}
-              </Text>
-            ) : null}
-
-            {activity.data?.kind === 'error' ||
-            activity.data?.kind === 'unreachable' ||
-            activity.data?.kind === 'missing-config' ? (
-              <Text testID="summary-note" className="font-normal text-muted">
-                {t('home.couldNotLoadActivity')}
-              </Text>
-            ) : null}
-
-            {activity.data?.kind === 'ok' ? (
+            {activity.data !== undefined &&
+            activity.data.kind !== 'unauthorized' ? (
               <View className="flex-row">
                 <View className="flex-1 items-center gap-1 border-r border-border">
                   <Weight size={20} color={muted} />
@@ -456,45 +443,58 @@ export function HomeScreen() {
                     {t('home.weight')}
                   </Text>
                 </View>
-                <View className="flex-1 items-center gap-1 border-r border-border">
-                  <Walk size={20} color={muted} />
+                {activity.data.kind === 'ok' ? (
+                  <>
+                    <View className="flex-1 items-center gap-1 border-r border-border">
+                      <Walk size={20} color={muted} />
+                      <Text
+                        testID="summary-activity"
+                        className="text-sm font-bold text-foreground"
+                        style={TABULAR_NUMS}
+                      >
+                        {fmtMinutes(today?.activeMinutes ?? null)}
+                      </Text>
+                      <Text className="text-2xs font-normal text-muted">
+                        {t('home.activity')}
+                      </Text>
+                    </View>
+                    <View className="flex-1 items-center gap-1 border-r border-border">
+                      <Moon size={20} color={muted} />
+                      <Text
+                        testID="summary-sleep"
+                        className="text-sm font-bold text-foreground"
+                        style={TABULAR_NUMS}
+                      >
+                        {fmtMinutes(today?.restMinutes ?? null)}
+                      </Text>
+                      <Text className="text-2xs font-normal text-muted">
+                        {t('home.sleep')}
+                      </Text>
+                    </View>
+                    <View className="flex-1 items-center gap-1">
+                      <Map size={20} color={muted} />
+                      <Text
+                        testID="summary-distance"
+                        className="text-sm font-bold text-foreground"
+                        style={TABULAR_NUMS}
+                      >
+                        {fmtKm(today?.distanceM ?? null)}
+                      </Text>
+                      <Text className="text-2xs font-normal text-muted">
+                        {t('home.distance')}
+                      </Text>
+                    </View>
+                  </>
+                ) : (
                   <Text
-                    testID="summary-activity"
-                    className="text-sm font-bold text-foreground"
-                    style={TABULAR_NUMS}
+                    testID="summary-note"
+                    className="flex-3 self-center pl-3 font-normal text-muted"
                   >
-                    {fmtMinutes(today?.activeMinutes ?? null)}
+                    {activity.data.kind === 'no-tracking'
+                      ? t('home.activityNeedsCollar')
+                      : t('home.couldNotLoadActivity')}
                   </Text>
-                  <Text className="text-2xs font-normal text-muted">
-                    {t('home.activity')}
-                  </Text>
-                </View>
-                <View className="flex-1 items-center gap-1 border-r border-border">
-                  <Moon size={20} color={muted} />
-                  <Text
-                    testID="summary-sleep"
-                    className="text-sm font-bold text-foreground"
-                    style={TABULAR_NUMS}
-                  >
-                    {fmtMinutes(today?.restMinutes ?? null)}
-                  </Text>
-                  <Text className="text-2xs font-normal text-muted">
-                    {t('home.sleep')}
-                  </Text>
-                </View>
-                <View className="flex-1 items-center gap-1">
-                  <Map size={20} color={muted} />
-                  <Text
-                    testID="summary-distance"
-                    className="text-sm font-bold text-foreground"
-                    style={TABULAR_NUMS}
-                  >
-                    {fmtKm(today?.distanceM ?? null)}
-                  </Text>
-                  <Text className="text-2xs font-normal text-muted">
-                    {t('home.distance')}
-                  </Text>
-                </View>
+                )}
               </View>
             ) : null}
           </Card>
