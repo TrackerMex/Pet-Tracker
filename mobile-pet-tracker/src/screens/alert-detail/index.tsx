@@ -4,14 +4,18 @@ import { useEffect, useRef, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { ackAlert } from '../../api/alerts';
 import type { Alert } from '../../api/types';
 import { Card } from '../../components/card';
 import { useAlertsList } from '../../hooks/use-alerts-list';
+import { useAuth } from '../../providers/auth-provider';
 import { useLocale, useTranslate } from '../../providers/language-provider';
 import { useThemeColors } from '../../theme/use-theme-colors';
 import { alertTypeMeta } from '../../utils/alert-meta';
 
 export function AlertDetailScreen({ alertId }: { alertId: string }) {
+  const baseUrl = process.env.EXPO_PUBLIC_API_URL;
+  const { signOut, token } = useAuth();
   const alerts = useAlertsList();
   const t = useTranslate();
   const locale = useLocale();
@@ -21,7 +25,10 @@ export function AlertDetailScreen({ alertId }: { alertId: string }) {
     'warning-strong',
     'muted',
   ]);
-  const [acked] = useState<Alert | null>(null);
+  const [acked, setAcked] = useState<Alert | null>(null);
+  const [acking, setAcking] = useState(false);
+  const ackingRef = useRef(false);
+  const [actionError, setActionError] = useState<string | null>(null);
   const leavingRef = useRef(false);
   const found = alerts.data?.pages
     .flatMap((page) => (page.kind === 'ok' ? page.items : []))
@@ -35,6 +42,44 @@ export function AlertDetailScreen({ alertId }: { alertId: string }) {
       router.dismissTo('/alerts');
     }
   }, [found, firstPage, alerts.isFetching]);
+
+  async function handleAck() {
+    if (!alert || alert.status !== 'open' || ackingRef.current) return;
+    ackingRef.current = true;
+    setAcking(true);
+    setActionError(null);
+    try {
+      const result = await ackAlert(baseUrl, token ?? '', alertId);
+      switch (result.kind) {
+        case 'ok':
+          setAcked(result.alert);
+          return;
+        case 'already-closed':
+          setAcked({ ...alert, status: 'closed' });
+          return;
+        case 'not-found':
+          if (!leavingRef.current) {
+            leavingRef.current = true;
+            router.dismissTo('/alerts');
+          }
+          return;
+        case 'unreachable':
+          setActionError(t('common.cannotReachServer'));
+          return;
+        case 'unauthorized':
+          await signOut();
+          return;
+        case 'error':
+        case 'missing-config':
+          setActionError(t('common.somethingWentWrong'));
+      }
+    } catch {
+      setActionError(t('common.somethingWentWrong'));
+    } finally {
+      ackingRef.current = false;
+      setAcking(false);
+    }
+  }
 
   const card = alert ? (() => {
     const meta = alertTypeMeta(alert.type);
@@ -74,7 +119,21 @@ export function AlertDetailScreen({ alertId }: { alertId: string }) {
       contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={{ padding: 24, gap: 16, paddingBottom: insets.bottom + 24 }}
     >
-      {card ?? (alerts.isPending || alerts.isFetching ? (
+      {alert ? (
+        <>
+          {card}
+          {alert.status === 'open' ? (
+            <Button testID="alert-detail-ack" accessibilityRole="button" className="min-h-11" isDisabled={acking} onPress={() => void handleAck()}>
+              <Button.Label>{t('alerts.ack')}</Button.Label>
+            </Button>
+          ) : null}
+          {actionError ? (
+            <Text selectable testID="alert-detail-action-error" className="text-danger">
+              {actionError}
+            </Text>
+          ) : null}
+        </>
+      ) : alerts.isPending || alerts.isFetching ? (
         <Skeleton testID="alert-detail-loading" className="h-44 w-full rounded-card" />
       ) : firstPage && ['error', 'unreachable', 'missing-config'].includes(firstPage.kind) ? (
         <>
@@ -85,7 +144,7 @@ export function AlertDetailScreen({ alertId }: { alertId: string }) {
             <Button.Label>{t('common.retry')}</Button.Label>
           </Button>
         </>
-      ) : null)}
+      ) : null}
     </ScrollView>
   );
 }
