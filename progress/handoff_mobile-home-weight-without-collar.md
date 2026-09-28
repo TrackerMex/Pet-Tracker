@@ -185,3 +185,53 @@ tabla de sondas M1-M5, N1-N19, V3a y V3b con rojos esperados, rojos medidos y
 cuales; los comandos y salidas exactas del cierre; el delta; y cualquier
 decision que la spec no cerrara literalmente.
 ```
+
+---
+
+## Reanudacion 1 (2026-09-28): el rojo de la base es un flake ajeno
+
+Codex paro en la base, antes de cualquier commit, por un rojo en la suite
+completa: `src/app/(tabs)/__tests__/food.test.tsx` ›
+`R4: food resuelve la mascota seleccionada › keeps API order and selects the first pet by default`,
+`expect(mockGetNutritionPlan).toHaveBeenCalledWith(...)`, `Number of calls: 0`
+(su reporte, `progress/impl_mobile-home-weight-without-collar.md`). Parar fue
+correcto. El leader lo midio a las 02:19-02:22 UTC en este worktree, sin
+cambios en el arbol:
+
+- `food.test.tsx` solo, 10 corridas: 10/10 verdes (56/56, exit=0).
+- Suite movil completa, 3 corridas borrando `/tmp/jest_ru/perf-cache-*` antes
+  de cada una (para que el sequencer no adelante el fichero rojo): 3/3 verdes
+  (83 suites, 1532 tests, exit=0).
+- Causa probable, de la misma familia que `docs/conventions.md` §Esperas sobre
+  el arbol renderizado: el `waitFor` termina con los chips pintados y el chip
+  `pet-1` seleccionado, y despues asevera el contador de un mock. La query del
+  plan se activa con `enabled: selectedPetId !== null` y TanStack Query la
+  lanza de forma asincrona, asi que el chip puede estar seleccionado antes de
+  la llamada. Con la maquina cargada (hay otras sesiones corriendo jest) cae.
+  No lo toca #77: #77 solo cambia `src/screens/home/`.
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-backend   <- PRIMERA LINEA
+Confirma `pwd` y `git branch --show-current` otra vez y anadelo al reporte.
+
+Reanuda #77 segun progress/handoff_mobile-home-weight-without-collar.md
+(el bloque original sigue valiendo entero) con estos cambios:
+
+1. La base es valida. El rojo de food.test.tsx es un flake ajeno: el leader
+   lo midio en la seccion «Reanudacion 1» de ese fichero (10/10 del fichero
+   solo, 3/3 de la suite). Deja tu medicion de base en el reporte tal cual y
+   anade una linea que cite esa seccion. No vuelvas a medir la base: empieza
+   por el commit rojo de R1.
+2. NO toques src/app/(tabs)/__tests__/food.test.tsx ni src/app/(tabs)/food.tsx.
+3. En la suite completa del cierre: si el UNICO rojo es exactamente ese test
+   (`keeps API order and selects the first pet by default`, con
+   `Number of calls: 0`), no pares. Vuelve a correr la suite una vez, sin
+   tocar nada, y copia al reporte las lineas de resumen de las dos corridas.
+   Si cae cualquier otro test, o ese mismo dos veces seguidas, PARA y
+   reportalo con el log.
+4. Las corridas de un solo fichero (la Home) no cambian: cualquier rojo que
+   no sea el esperado de un commit rojo te para, como antes.
+5. Skills: `ponytail` no la pidio el handoff. Si la mantienes, los literales
+   de tasks.md y el Contrato de requirements.md mandan: nada de simplificar,
+   fundir ni reordenar los describe, los verdes ni la mutacion V3.
+```
