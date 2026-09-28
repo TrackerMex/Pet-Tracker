@@ -1415,9 +1415,9 @@
   {
     "id": 74,
     "name": "mobile-metric-selector-a11y",
-    "status": "pending",
+    "status": "done",
     "priority": "P3",
-    "description": "Deuda registrada al cerrar #68 el 2026-09-08. Son las tres observaciones no bloqueantes del tercer veredicto (progress/review_mobile-home-weekly-activity.md), con handoff ya escrito en progress/handoff_mobile-home-weekly-activity_a11y.md. La que pesa es de accesibilidad: el contenedor de las tres opciones del selector de metrica (mobile-pet-tracker/src/screens/home/weekly-activity-chart.tsx:325-328) no declara accessibilityRole='radiogroup', asi que TalkBack lee tres controles sueltos en vez de un conjunto y no anuncia '1 de 3'. Cada Pressable si tiene su rol radio y su accessibilityState.selected. Y no hay candado: el reviewer planto accessible + accessibilityLabel en ese contenedor -que en dispositivo COLAPSA los tres radios en un solo nodo, exactamente lo que R9 prohibe para el contenedor de las siete columnas- y la suite se quedo verde. Van con ella dos apuntes menores: minimumFontScale={0.85} es inerte en Android porque el runtime lee minimumFontSize (TextLayoutManager.kt:841-844 via conversions.h:1155) y <Text> no lo expone, asi que el suelo real es 4 dp y no el 85% que la linea aparenta prometer -ojo, adjustsFontSizeToFit SI funciona en Android en RN 0.86.2, lo inerte es solo su suelo-; y el jest.mock('uniwind') de weekly-activity-chart.test.tsx:53-56 quedo muerto desde que el SegmentedControl se fue.",
+    "description": "Deuda registrada al cerrar #68 el 2026-09-08. Son las tres observaciones no bloqueantes del tercer veredicto (progress/review_mobile-home-weekly-activity.md), con handoff ya escrito en progress/handoff_mobile-home-weekly-activity_a11y.md. La que pesa es de accesibilidad: el contenedor de las tres opciones del selector de metrica (mobile-pet-tracker/src/screens/home/weekly-activity-chart.tsx:325-328) no declara accessibilityRole='radiogroup', asi que TalkBack lee tres controles sueltos en vez de un conjunto y no anuncia '1 de 3'. Cada Pressable si tiene su rol radio y su accessibilityState.selected. Y no hay candado: el reviewer planto accessible + accessibilityLabel en ese contenedor -que en dispositivo COLAPSA los tres radios en un solo nodo, exactamente lo que R9 prohibe para el contenedor de las siete columnas- y la suite se quedo verde. Van con ella dos apuntes menores: minimumFontScale={0.85} es inerte en Android porque el runtime lee minimumFontSize (TextLayoutManager.kt:841-844 via conversions.h:1155) y <Text> no lo expone, asi que el suelo real es 4 dp y no el 85% que la linea aparenta prometer -ojo, adjustsFontSizeToFit SI funciona en Android en RN 0.86.2, lo inerte es solo su suelo-; y el jest.mock('uniwind') de weekly-activity-chart.test.tsx:53-56 quedo muerto desde que el SegmentedControl se fue. Cerrada el 2026-09-28: el contenedor weekly-activity-metric declara accessibilityRole='radiogroup' (R1) y dos listas cerradas de props del host candan el contenedor y la tarjeta que lo envuelve (R2). Suelo de fuente con la opcion A, firmada por el humano: adjustsFontSizeToFit sigue activo en las dos plataformas, minimumFontScale 0.85 y maxFontSizeMultiplier 1.2 quedan candados por plataforma, y un comentario dice que Android ignora el 0.85 y encoge hasta 4 dp (R3). El jest.mock('uniwind') muerto, borrado (R4). Movil 83/1550/1. Codex, ocho commits test-primero; reviewer aprobado a la primera (progress/review_mobile-metric-selector-a11y.md). Gate R6 superado por el humano con TalkBack en un OnePlus Nord 5 (Android 15): tres paradas, cada una con su rol de boton de opcion y la activa seleccionada; se oye 'Grupo de botones de opcion' y no '1 de 3'. Su hallazgo (F) medido queda como #130.",
     "acceptance_criteria": [
       "El contenedor del selector declara accessibilityRole='radiogroup' y TalkBack anuncia el conjunto",
       "Hay candado que FALLA si el contenedor recibe accessible o accessibilityLabel, copiando el patron que R9 ya usa para el contenedor de las siete columnas",
@@ -2481,6 +2481,22 @@
     ],
     "files_affected": [
       "mobile-pet-tracker/src/screens/reminders/index.test.tsx"
+    ]
+  },
+  {
+    "id": 130,
+    "name": "mobile-weekly-day-row-accessible-lock",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada al cerrar #74 el 2026-09-28. Es el hallazgo (F) de su spec: specs/mobile-metric-selector-a11y/requirements.md §Fuera de alcance, «#68 R9 sobre la fila de las siete columnas deja pasar accessible». En mobile-pet-tracker/src/screens/home/weekly-activity-chart.test.tsx, el it 'anuncia los huecos sin colapsar las siete columnas' (describe 'R9: cada columna se anuncia por separado') solo asevera que la fila weekly-activity-day-row no tiene accessibilityLabel (toBeUndefined). Con accessible en esa fila, que en dispositivo funde las siete columnas en un solo nodo de TalkBack, la grafica sigue en 36/36: lo midio el spec_author de #74 (blob de la mutacion 4ed672f1, citado en la spec). El leader verifico en 97f2d349 que esa asercion sigue siendo la unica sobre la fila. Lo cerraria la misma lista cerrada de props del host que #74 R2 usa para weekly-activity-metric y weekly-activity-card (grep \"#74 R2\" en el mismo fichero). No toca produccion.",
+    "acceptance_criteria": [
+      "Con accessible en weekly-activity-day-row, un it de la grafica FALLA; lo mismo con accessibilityLabel, aria-label o importantForAccessibility",
+      "Los esperados son literales del test, nunca importados de produccion",
+      "Las siete columnas siguen anunciandose por separado: los it de 'R9: cada columna se anuncia por separado' siguen verdes",
+      "Cero cambio en produccion; suite movil verde medida sin pipe; delta de tests declarado"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/home/weekly-activity-chart.test.tsx"
     ]
   }
 ]
