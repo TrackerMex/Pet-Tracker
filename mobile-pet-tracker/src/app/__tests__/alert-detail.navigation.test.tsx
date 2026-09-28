@@ -64,7 +64,9 @@ jest.mock('react-native-safe-area-context', () => ({
 jest.mock('reicon-react-native', () => {
   const React = jest.requireActual<typeof import('react')>('react');
   const { View } = jest.requireActual<typeof import('react-native')>('react-native');
-  const icon = () => (props: Record<string, unknown>) => React.createElement(View, props);
+  const icon = () => function MockIcon(props: Record<string, unknown>) {
+    return React.createElement(View, props);
+  };
   return { BatteryLow: icon(), Bell: icon(), LocationSlash: icon() };
 });
 jest.mock('../../theme/use-theme-colors', () => ({
