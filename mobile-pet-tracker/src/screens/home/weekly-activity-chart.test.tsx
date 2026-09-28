@@ -6,6 +6,7 @@ import {
 } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
+import { Platform } from 'react-native';
 import { BarChart } from 'react-native-chart-kit/v2';
 import {
   ReduceMotion,
@@ -49,11 +50,6 @@ const { join } = require('path');
 
 const mockUseReducedMotion = jest.fn<boolean, []>(() => true);
 let mockTheme: 'light' | 'dark' = 'light';
-
-jest.mock('uniwind', () => ({
-  ...jest.requireActual('uniwind'),
-  useUniwind: () => ({ theme: mockTheme, hasAdaptiveThemes: false }),
-}));
 
 jest.mock('react-native-reanimated', () => ({
   ...jest.requireActual<typeof import('react-native-reanimated')>(
@@ -1349,4 +1345,84 @@ describe('R8: tocar un día abre su detalle', () => {
       ).left,
     ).toBe(0);
   });
+});
+
+describe('#74 R1: el contenedor del selector se anuncia como grupo de opciones', () => {
+  it('declara el rol radiogroup en el contenedor de las tres opciones', async () => {
+    const result = await renderChart(
+      makeWeek('2026-09-02', [10, 20, 30, 40, 50, 60, 70]),
+    );
+
+    // #74 R1: getByRole skips a View that is not accessible, so the role is
+    // read from the host props of the container.
+    expect(
+      result.getByTestId('weekly-activity-metric').props.accessibilityRole,
+    ).toBe('radiogroup');
+  });
+});
+
+describe('#74 R2: el grupo del selector no colapsa sus tres opciones', () => {
+  it('el contenedor solo lleva su rol, su testID, su clase y sus hijos', async () => {
+    const result = await renderChart(
+      makeWeek('2026-09-02', [10, 20, 30, 40, 50, 60, 70]),
+    );
+
+    // #74 R2: a closed key list, so accessible, accessibilityLabel, aria-label,
+    // importantForAccessibility or any other new prop turns the lock red.
+    expect(
+      Object.keys(result.getByTestId('weekly-activity-metric').props).sort(),
+    ).toEqual(['accessibilityRole', 'children', 'className', 'testID']);
+  });
+
+  it('la tarjeta que lo envuelve tampoco se vuelve un nodo accesible', async () => {
+    const result = await renderChart(
+      makeWeek('2026-09-02', [10, 20, 30, 40, 50, 60, 70]),
+    );
+
+    expect(
+      Object.keys(result.getByTestId('weekly-activity-card').props).sort(),
+    ).toEqual(['children', 'className', 'style', 'testID']);
+  });
+});
+
+describe('#74 R3: el ajuste y el suelo de las etiquetas del selector, por plataforma', () => {
+  const originalPlatform = Platform.OS;
+
+  afterEach(() => {
+    Object.defineProperty(Platform, 'OS', {
+      configurable: true,
+      value: originalPlatform,
+    });
+  });
+
+  it.each([
+    ['android', true],
+    ['ios', true],
+  ])(
+    '%s: ajuste %s, escala mínima 0.85 y tope 1.2 en las tres etiquetas',
+    async (os, fits) => {
+      Object.defineProperty(Platform, 'OS', { configurable: true, value: os });
+      const result = await renderChart(
+        makeWeek('2026-09-02', [10, 20, 30, 40, 50, 60, 70]),
+      );
+
+      expect(
+        WEEKLY_METRICS.map((metric) => {
+          const { props } = result.getByTestId(
+            `weekly-activity-metric-label-${metric}`,
+          );
+
+          return [
+            props.adjustsFontSizeToFit,
+            props.minimumFontScale,
+            props.maxFontSizeMultiplier,
+          ];
+        }),
+      ).toEqual([
+        [fits, 0.85, 1.2],
+        [fits, 0.85, 1.2],
+        [fits, 0.85, 1.2],
+      ]);
+    },
+  );
 });

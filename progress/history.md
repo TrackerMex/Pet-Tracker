@@ -5875,3 +5875,65 @@ desaparecia entera y se llevaba el peso, que no depende del collar. Solo movil.
   `useApi` en `src/screens/home/`, y el test de R10 dobla por funcion
   (`mockListPets`, `mockGetPet`, `mockGetDailyActivity`,
   `mockListReminders`). Commit en la branch de #100.
+
+# Sesión #74 mobile-metric-selector-a11y (2026-09-28, sesión Frontend)
+
+- **Elección del humano** (2026-09-28, tras mergear PR #168 de #120): #74.
+- **Branch** `feature/74-mobile-metric-selector-a11y` desde `origin/main`
+  `c06b9749` (#168). Backend trabajaba #77 en wt-backend. PR #169 mergeó antes
+  del handoff, y `origin/main` `a07b67c4` entró en `25441c4b` por merge, sin
+  rebase ni conflictos. La base de suite subió de 1532 a 1545 (el cierre de
+  #77). El leader la re-midió sin pipe sobre `8f7aca56` y tradujo las cifras
+  del handoff con el delta firmado (+0 suites / +5 tests), sin enmienda.
+- **Spec** `5daefb6d`, espejada en Notion. El humano puso Aprobado y marcó la
+  casilla con la opción de R3 = A en la propia página, no en un comentario.
+  Firma del leader en `8f7aca56`. Diseño: `accessibilityRole="radiogroup"` en
+  `weekly-activity-metric` (R1); listas cerradas de props del host para el
+  contenedor y la tarjeta (R2); con A, `adjustsFontSizeToFit` sigue en las dos
+  plataformas, con `minimumFontScale` 0.85 y `maxFontSizeMultiplier` 1.2
+  candados por plataforma y un comentario que dice que Android ignora el 0.85
+  y encoge hasta 4 dp (R3); fuera el `jest.mock('uniwind')` muerto (R4).
+- **Codex**: 8 commits `ea01cec7..892c5543`, skill `building-native-ui` (nombre
+  del catálogo de Codex). R1 dio un rojo natural. R2 (`P2red`) y R3 (`P3redA`)
+  son rojos por la vía b, y cada verde revierte con `git checkout HEAD~1 --`.
+  Las 12 sondas de A dieron lo exigido. Móvil 83/1550/1.
+- **init.sh**: lo corrió el leader sobre `892c5543`, con permiso del humano y
+  aviso a Backend. `head`, `log` y `exit` quedaron en disco. Exit 0: unit
+  171/1307, infra 2/14, móvil 83/1550/1, e2e 27+3 skip.
+- **Reviewer** (`bd714080`): aprobado a la primera, sin bloqueantes. Rehízo los
+  rojos y re-midió las sondas en un worktree temporal.
+- **Gate R6** (casilla del humano en `86ba0e79` y `97f2d349`): superado el
+  2026-09-28 en un OnePlus Nord 5 (CPH2709), Android 15, con la opción A. El
+  literal del paso 2 que anotó el humano («Grupo de botones de opción y Botón
+  de minutos activos») no dejaba claros el rol ni el estado. El leader
+  preguntó, y el humano aclaró en el chat que TalkBack dijo la etiqueta,
+  «botón de opción» y «seleccionado». Aclaró también que no oyó «1 de 3», y que
+  los pasos 3 a 5 se cumplieron los tres. Paso 6: las tres etiquetas en una
+  línea y legibles. `traceability.md` R6 se rellenó al cerrar.
+- **Drift**: entre el veredicto (`892c5543`) y el cierre, la branch solo sumó
+  harness y la casilla del humano, con 0 líneas bajo `mobile-pet-tracker/`.
+  `origin/main` no se movió (`a07b67c4`).
+
+### Deuda y apuntes
+
+- **Hallazgos (F) de la spec**, clasificados uno a uno:
+  - **Registrado como #130** `mobile-weekly-day-row-accessible-lock`: `#68 R9`
+    solo asevera `accessibilityLabel` indefinido en
+    `weekly-activity-day-row`, así que `accessible` pasa en verde. Lo midió el
+    spec_author, y el leader verificó la aserción en el árbol. El id se asignó
+    contra `origin/main` (máximo 128) y las branches remotas: #129 ya lo usa
+    la rama de #100.
+  - **No se abre** «1 de 3». La spec ya preveía que RN 0.86.2 no lo produce, y
+    no es condición de paso. El humano no lo pidió.
+  - **No se abre** `selected` frente a `checked`: el paso 2 dio el estado
+    correcto.
+  - **No se abre** pasar de A a B: el paso 6 dio etiquetas legibles.
+- **Obs. 4 del reviewer** (F de proceso, sin id): las sondas que ocultan un
+  subárbol (`hide`, `importantForAccessibility="no-hide-descendants"`) fallan
+  en la consulta `getByTestId` y no en el matcher. No hay plantilla de §Sondas
+  en el harness, así que queda como nota de memoria del leader para las specs
+  futuras: la tabla de sondas distingue «rojo por aserción» de «rojo por
+  consulta».
+- **Obs. 1-3**: la nota de matchers de §Sondas no preveía `hide`, pero la tabla
+  «Exigido» sí se cumplió. La fila R5 cita `8ed1b9fc`, porque un commit no
+  puede citarse a sí mismo. Los 3 e2e omitidos son los de siempre.
