@@ -316,10 +316,10 @@ se oiga del grupo o de la posición, y lo que se vea en el paso 6, se anota, per
 no bloquea: si el paso 6 da una etiqueta ilegible con A, se abre la (F) de
 §Fuera de alcance.
 
-- [ ] Prueba de humo de R6 superada por el humano (fecha: ____, dispositivo: ____, Android: ____, opción de R3: ____)
-  - Paso 2, dicho literalmente: ____
-  - ¿Se oyó «Grupo de botones de opción»? ____ ¿Y «1 de 3»? ____
-  - Paso 6: ____
+- [X] Prueba de humo de R6 superada por el humano (fecha: 2026-09-28, dispositivo: One Plus Nord 5 (CPH2709), Android: 15, opción de R3: A)
+  - Paso 2, dicho literalmente: Grupo de botones de opción y Botón de minutos activos
+  - ¿Se oyó «Grupo de botones de opción»? Sí
+  - Paso 6: Sí
 
 ---
 
