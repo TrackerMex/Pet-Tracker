@@ -51,11 +51,6 @@ const { join } = require('path');
 const mockUseReducedMotion = jest.fn<boolean, []>(() => true);
 let mockTheme: 'light' | 'dark' = 'light';
 
-jest.mock('uniwind', () => ({
-  ...jest.requireActual('uniwind'),
-  useUniwind: () => ({ theme: mockTheme, hasAdaptiveThemes: false }),
-}));
-
 jest.mock('react-native-reanimated', () => ({
   ...jest.requireActual<typeof import('react-native-reanimated')>(
     'react-native-reanimated',
