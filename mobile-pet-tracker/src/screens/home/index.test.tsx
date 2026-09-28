@@ -1167,6 +1167,100 @@ describe('#77 R1: el peso se pinta aunque la actividad no esté disponible', () 
   });
 });
 
+describe('#77 R2: sin actividad, la fila es la celda de peso seguida de la nota', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    const pet = makePet({ currentWeightKg: 12.4 });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+    // #77 R2: each CSS variable resolves to its own name, so muted and
+    // accent-strong stop being the same fallback colour in the tree.
+    jest
+      .spyOn(Uniwind, 'getCSSVariable')
+      .mockImplementation((token) => token);
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it.each<[string, DailyActivityState, string]>([
+    ['sin collar', { kind: 'no-tracking' }, 'La actividad requiere un collar'],
+    ['con la actividad en error', { kind: 'error' }, 'No se pudo cargar la actividad'],
+    [
+      'sin conexión',
+      { kind: 'unreachable', message: 'network down' },
+      'No se pudo cargar la actividad',
+    ],
+    ['sin configuración', { kind: 'missing-config' }, 'No se pudo cargar la actividad'],
+  ])('%s: compone la celda y la nota en una sola fila', async (_state, activityState, noteCopy) => {
+    mockGetDailyActivity.mockResolvedValue(activityState);
+
+    await renderHome();
+    await waitFor(() =>
+      expect(screen.getByTestId('summary-weight')).toHaveTextContent('12.4 kg'),
+    );
+    const value = screen.getByTestId('summary-weight');
+    const cell = value.parent!;
+    const row = cell.parent!;
+    // #77 R2: counted by children, not by testID.
+    const rowChildren = row.children.filter((child) => typeof child !== 'string');
+    const cellChildren = cell.children.filter((child) => typeof child !== 'string');
+
+    expect(row.props.className).toBe('flex-row');
+    expect(row.props.accessible).toBeUndefined();
+    expect(row.props.accessibilityLabel).toBeUndefined();
+    expect(rowChildren).toHaveLength(2);
+    expect(rowChildren[0]).toBe(cell);
+    expect(rowChildren[1].props.testID).toBe('summary-note');
+
+    expect(cell.props.className).toBe(
+      'flex-1 items-center gap-1 border-r border-border',
+    );
+    expect(cell.props.accessible).toBeUndefined();
+    expect(cell.props.accessibilityLabel).toBeUndefined();
+    expect(cell.props.onPress).toBeUndefined();
+    expect(cellChildren).toHaveLength(3);
+    expect(cellChildren[0].props).toEqual({
+      testID: 'icon-weight',
+      size: 20,
+      color: '--color-muted',
+    });
+    expect(cellChildren[1]).toBe(value);
+    expect(value.props.className).toBe('text-sm font-bold text-foreground');
+    expect(value.props.style).toEqual({ fontVariant: ['tabular-nums'] });
+    expect(cellChildren[2].props.className).toBe(
+      'text-2xs font-normal text-muted',
+    );
+    expect(cellChildren[2]).toHaveTextContent('Peso');
+
+    const note = rowChildren[1];
+    expect(
+      within(screen.getByTestId('summary-card')).getByTestId('summary-note'),
+    ).toBe(note);
+    expect(note.props.className).toBe(
+      'flex-3 self-center pl-3 font-normal text-muted',
+    );
+    expect(note).toHaveTextContent(noteCopy);
+    expect(note.props.onPress).toBeUndefined();
+
+    for (const testID of [
+      'summary-activity',
+      'summary-sleep',
+      'summary-distance',
+    ]) {
+      expect(screen.queryByTestId(testID)).toBeNull();
+    }
+  });
+});
+
 describe('R10: last position enlaza al mapa', () => {
   const device = {
     model: 'PetTrack One',
