@@ -1653,9 +1653,9 @@
   {
     "id": 86,
     "name": "mobile-home-useapi-double-by-identity",
-    "status": "pending",
+    "status": "done",
     "priority": "P3",
-    "description": "Destapado por la cuarta parada de #85 el 2026-09-09. El test heredado 'R10: preserva la mascota durante el refetch' (mobile-pet-tracker/src/screens/home/index.test.tsx:790-800) sustituye useApi entero por un doble POSICIONAL: `hookCall++ % 3 === 0 ? petsResult : emptyResult`. El `% 3` codifica cuantas llamadas a useApi hace la Home por render. Al anadir #85 la cuarta peticion, el ciclo se desalinea en el segundo render, el hook de la lista recibe emptyResult y sale un `TypeError: Cannot read properties of undefined (reading 'nextVaccine')`, opaco y a tres capas de la causa. #85 lo parcheo con A10 cambiando el 3 por un 4, que conserva la intencion exacta pero deja la fragilidad intacta: CUALQUIER feature futura que anada una peticion a la Home lo rompera igual. El arreglo honesto es indexar el doble por la FUNCION pasada al hook, no por el orden de llamada, de modo que anadir o quitar peticiones no lo afecte.",
+    "description": "Destapado por la cuarta parada de #85 el 2026-09-09. El test heredado 'R10: preserva la mascota durante el refetch' (mobile-pet-tracker/src/screens/home/index.test.tsx:790-800) sustituye useApi entero por un doble POSICIONAL: `hookCall++ % 3 === 0 ? petsResult : emptyResult`. El `% 3` codifica cuantas llamadas a useApi hace la Home por render. Al anadir #85 la cuarta peticion, el ciclo se desalinea en el segundo render, el hook de la lista recibe emptyResult y sale un `TypeError: Cannot read properties of undefined (reading 'nextVaccine')`, opaco y a tres capas de la causa. #85 lo parcheo con A10 cambiando el 3 por un 4, que conserva la intencion exacta pero deja la fragilidad intacta: CUALQUIER feature futura que anada una peticion a la Home lo rompera igual. El arreglo honesto es indexar el doble por la FUNCION pasada al hook, no por el orden de llamada, de modo que anadir o quitar peticiones no lo afecte. DECIDIDO el 2026-09-28 por el humano: cerrada por verificacion, sin cambio de codigo. Su premisa caduco en ee94846d (#87 mobile-tanstack-query, R17), que migro las queries de la Home a TanStack Query: la Home ya no usa useApi y el test 'R10: preserva la mascota durante el refetch' dobla cada peticion por su funcion (mockListPets, mockGetPet, mockGetDailyActivity, mockListReminders), no por orden de llamada. Verificado en origin/main a07b67c4: git grep 'hookCall' y 'useApi' sobre src/screens/home/ sin resultados.",
     "acceptance_criteria": [
       "El doble de useApi de ese test resuelve por identidad de la funcion pasada, no por contador posicional",
       "Anadir una quinta llamada a useApi en la Home deja ese test verde sin tocarlo",
@@ -2480,6 +2480,23 @@
       "Cero cambio en produccion; suite movil verde medida sin pipe; delta de tests declarado"
     ],
     "files_affected": [
+      "mobile-pet-tracker/src/screens/reminders/index.test.tsx"
+    ]
+  },
+  {
+    "id": 129,
+    "name": "mobile-selected-pet-query-wait-race",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada al cerrar #77 el 2026-09-28, por decision del humano. Es el hallazgo [H] de specs/mobile-home-weight-without-collar/requirements.md (Enmienda 1, «El mismo patron en otras pantallas»), SIN MEDIR. #77 R5 cerro en src/app/(tabs)/__tests__/food.test.tsx una carrera: el test espera en un waitFor al chip de la mascota seleccionada y asevera FUERA de el la llamada de una query con enabled: selectedPetId !== null. usePetSelection fija la seleccion en un efecto y los efectos pasivos de useQuery corren en una tarea posterior del Scheduler, asi que el waitFor puede salir con el chip seleccionado y la llamada aun sin hacer (Number of calls: 0). El mismo patron aparece en dos tests mas: mobile-pet-tracker/src/screens/home/index.test.tsx › 'keeps API order and selects the first pet by default' (mockGetPet y mockGetDailyActivity con 'pet-1') y mobile-pet-tracker/src/screens/reminders/index.test.tsx › 'uses the metrics under the native header, selects the first pet, and shows row skeletons (#114 R6)' (mockListReminders con 'pet-1'). Ninguno se ha visto fallar. La spec tiene que MEDIRLOS primero: una mutacion de produccion que retrase la query, como Q1 de #77 (200 ms con abort), debe poner rojo cada test tal como esta. Si alguno no se pone rojo, la spec lo deja por escrito y lo saca del alcance. health ya esta bien (#111 S2, bcd8ba8a). Patron del arreglo: el de #77 R5, con la asercion dentro del waitFor, sin renombrar el it y sin tocar produccion.",
+    "acceptance_criteria": [
+      "La spec mide cada test con una mutacion de produccion que retrasa la query y declara, por test, si la carrera existe",
+      "En cada test con carrera medida, la asercion de la llamada a la query queda dentro del waitFor que espera el chip seleccionado; el rojo es la mutacion versionada y revertida en commit propio",
+      "Diff de produccion vacio; ningun it renombrado; guard de citas de cada fichero sin cambio",
+      "Suite movil completa verde, medida sin pipe; delta de tests declarado (se espera +0)"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/home/index.test.tsx",
       "mobile-pet-tracker/src/screens/reminders/index.test.tsx"
     ]
   }

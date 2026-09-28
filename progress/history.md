@@ -5867,3 +5867,11 @@ desaparecia entera y se llevaba el peso, que no depende del collar. Solo movil.
 - **Firma y hora**: la API de Notion no da la hora de la ultima edicion de la
   pagina. `139791bd` cita la hora de lectura del fetch; `cf89df8e` la llamo
   page_last_edited_at, y era la misma cosa.
+- **Despues del merge** (2026-09-28, PR #169): el humano pidio registrar el
+  [H] como #129 `mobile-selected-pet-query-wait-race` (P3, sin medir). Tambien
+  cerro #86 por verificacion. Su premisa, el doble posicional `hookCall++ % 3`
+  de `useApi` en el test de R10 de la Home, caduco en `ee94846d` (#87 R17).
+  Sobre `origin/main` `a07b67c4`, `git grep` no encuentra `hookCall` ni
+  `useApi` en `src/screens/home/`, y el test de R10 dobla por funcion
+  (`mockListPets`, `mockGetPet`, `mockGetDailyActivity`,
+  `mockListReminders`). Commit en la branch de #100.
