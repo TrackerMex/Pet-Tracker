@@ -319,7 +319,7 @@ no bloquea: si el paso 6 da una etiqueta ilegible con A, se abre la (F) de
 - [X] Prueba de humo de R6 superada por el humano (fecha: 2026-09-28, dispositivo: One Plus Nord 5 (CPH2709), Android: 15, opción de R3: A)
   - Paso 2, dicho literalmente: Grupo de botones de opción y Botón de minutos activos
   - ¿Se oyó «Grupo de botones de opción»? Sí
-  - Paso 6: Sí
+  - Paso 6: Las tres tarjetas en la misma línea, al nevegar entre ellas se ven mas legibles.
 
 ---
 
