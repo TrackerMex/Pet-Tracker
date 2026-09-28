@@ -6,6 +6,7 @@ import {
 } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
+import { Platform } from 'react-native';
 import { BarChart } from 'react-native-chart-kit/v2';
 import {
   ReduceMotion,
@@ -1387,4 +1388,46 @@ describe('#74 R2: el grupo del selector no colapsa sus tres opciones', () => {
       Object.keys(result.getByTestId('weekly-activity-card').props).sort(),
     ).toEqual(['children', 'className', 'style', 'testID']);
   });
+});
+
+describe('#74 R3: el ajuste y el suelo de las etiquetas del selector, por plataforma', () => {
+  const originalPlatform = Platform.OS;
+
+  afterEach(() => {
+    Object.defineProperty(Platform, 'OS', {
+      configurable: true,
+      value: originalPlatform,
+    });
+  });
+
+  it.each([
+    ['android', true],
+    ['ios', true],
+  ])(
+    '%s: ajuste %s, escala mínima 0.85 y tope 1.2 en las tres etiquetas',
+    async (os, fits) => {
+      Object.defineProperty(Platform, 'OS', { configurable: true, value: os });
+      const result = await renderChart(
+        makeWeek('2026-09-02', [10, 20, 30, 40, 50, 60, 70]),
+      );
+
+      expect(
+        WEEKLY_METRICS.map((metric) => {
+          const { props } = result.getByTestId(
+            `weekly-activity-metric-label-${metric}`,
+          );
+
+          return [
+            props.adjustsFontSizeToFit,
+            props.minimumFontScale,
+            props.maxFontSizeMultiplier,
+          ];
+        }),
+      ).toEqual([
+        [fits, 0.85, 1.2],
+        [fits, 0.85, 1.2],
+        [fits, 0.85, 1.2],
+      ]);
+    },
+  );
 });

@@ -370,7 +370,6 @@ function MetricSelector({
               }
               numberOfLines={1}
               adjustsFontSizeToFit
-              minimumFontScale={METRIC_LABEL_MIN_FONT_SCALE}
               maxFontSizeMultiplier={METRIC_LABEL_MAX_FONT_SIZE_MULTIPLIER}
             >
               {label}
