@@ -292,6 +292,15 @@ literal del test (`'--color-muted'`), nunca uno sacado de `useThemeColors`. El
 cambian el elemento. Así lo hace la campana (#124):
 `grep -n "se pinta con la tinta muted" mobile-pet-tracker/src/screens/home/index.test.tsx`.
 
+Si el elemento se **repite**, como los cuatro iconos de la tira de hoy, contar
+sus copias en el fichero entero tampoco lo acota: un señuelo en cualquier sitio
+repone la cuenta. El árbol ancla cada icono a su celda, que es el padre del
+valor que la celda pinta, y cierra la celda por sus hijos: cuántos tiene, cuál
+va primero y las props exactas del icono (componente, tamaño y tinta), con
+`toEqual`. Los estados que monta son los que cambian los datos de las celdas.
+Así lo hace la tira (#126):
+`grep -n "pinta su propio icono" mobile-pet-tracker/src/screens/home/index.test.tsx`.
+
 ### Esperas sobre el árbol renderizado
 
 La condición que termina una espera debe ser la misma observación que hacen las
