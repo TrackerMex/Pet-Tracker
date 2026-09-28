@@ -1,6 +1,6 @@
 ---
 feature: "mobile-weekly-day-row-accessible-lock"
-status: spec_ready       # draft | spec_ready | approved
+status: approved         # draft | spec_ready | approved
 tags: [spec, mobile, a11y, deuda]
 ---
 
