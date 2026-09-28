@@ -458,7 +458,7 @@ de §Candados y #126 R1 en verde. **No rebasear** después de que Codex rellene
 7. Con **TalkBack**: la celda se anuncia («7.5 kg», «Peso») y la nota se
    anuncia aparte.
 
-- [ ] Prueba de humo de R4 superada por el humano (fecha: ____, dispositivo: ____, Android: ____)
+- [X] Prueba de humo de R4 superada por el humano (fecha: 2026-09-28, dispositivo: One Plus Nord 5 (CPH2709), Android: 15)
 
 ---
 
