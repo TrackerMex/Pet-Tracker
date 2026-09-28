@@ -423,20 +423,6 @@ export function HomeScreen() {
               <Skeleton testID="summary-skeleton" className="h-16 w-full rounded-xl" />
             ) : null}
 
-            {activity.data?.kind === 'no-tracking' ? (
-              <Text testID="summary-note" className="font-normal text-muted">
-                {t('home.activityNeedsCollar')}
-              </Text>
-            ) : null}
-
-            {activity.data?.kind === 'error' ||
-            activity.data?.kind === 'unreachable' ||
-            activity.data?.kind === 'missing-config' ? (
-              <Text testID="summary-note" className="font-normal text-muted">
-                {t('home.couldNotLoadActivity')}
-              </Text>
-            ) : null}
-
             {activity.data !== undefined &&
             activity.data.kind !== 'unauthorized' ? (
               <View className="flex-row">
@@ -499,7 +485,16 @@ export function HomeScreen() {
                       </Text>
                     </View>
                   </>
-                ) : null}
+                ) : (
+                  <Text
+                    testID="summary-note"
+                    className="flex-3 self-center pl-3 font-normal text-muted"
+                  >
+                    {activity.data.kind === 'no-tracking'
+                      ? t('home.activityNeedsCollar')
+                      : t('home.couldNotLoadActivity')}
+                  </Text>
+                )}
               </View>
             ) : null}
           </Card>
