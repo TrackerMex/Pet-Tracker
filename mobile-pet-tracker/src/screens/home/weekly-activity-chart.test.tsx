@@ -1350,3 +1350,17 @@ describe('R8: tocar un día abre su detalle', () => {
     ).toBe(0);
   });
 });
+
+describe('#74 R1: el contenedor del selector se anuncia como grupo de opciones', () => {
+  it('declara el rol radiogroup en el contenedor de las tres opciones', async () => {
+    const result = await renderChart(
+      makeWeek('2026-09-02', [10, 20, 30, 40, 50, 60, 70]),
+    );
+
+    // #74 R1: getByRole skips a View that is not accessible, so the role is
+    // read from the host props of the container.
+    expect(
+      result.getByTestId('weekly-activity-metric').props.accessibilityRole,
+    ).toBe('radiogroup');
+  });
+});
