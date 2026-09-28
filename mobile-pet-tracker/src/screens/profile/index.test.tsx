@@ -9,7 +9,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useState, type ReactNode } from 'react';
-import { Text, TextInput } from 'react-native';
+import { Linking, Text, TextInput } from 'react-native';
 import { Uniwind } from 'uniwind';
 
 import { withThemeTransition } from 'react-native-nitro-theme-transition';
@@ -19,6 +19,8 @@ import { getPet, listPets, type PetState, type PetsState } from '../../api/pets'
 import { petKeys, userKeys } from '../../api/query-keys';
 import type { PetProfile } from '../../api/types';
 import { getMe, type MeState } from '../../api/users';
+import { useNotificationsBlocked } from '../../hooks/use-push-registration';
+import { en, es } from '../../i18n/catalog';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
 import {
@@ -65,6 +67,10 @@ jest.mock('../../api/users', () => ({
 
 jest.mock('../../providers/auth-provider', () => ({
   useAuth: jest.fn(),
+}));
+
+jest.mock('../../hooks/use-push-registration', () => ({
+  useNotificationsBlocked: jest.fn(() => false),
 }));
 
 jest.mock('../../utils/theme-preference', () => ({
@@ -948,5 +954,93 @@ describe('#72 R3: el mock del picker no hereda implementación entre tests', () 
       canceled: true,
       assets: null,
     });
+  });
+});
+
+const { readFileSync } = jest.requireActual<typeof import('fs')>('fs');
+const mockUseNotificationsBlocked = jest.mocked(useNotificationsBlocked);
+const mockOpenSettings = jest.mocked(Linking.openSettings);
+const NOTICE_ES = 'Las notificaciones están desactivadas. Actívalas en la configuración del teléfono para recibir alertas y recordatorios.';
+
+describe('#99 R3: Perfil avisa de las notificaciones bloqueadas y abre la configuración de la app', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockGetMe.mockReturnValue(pending<MeState>());
+    mockListPets.mockReturnValue(pending<PetsState>());
+    mockGetPet.mockReturnValue(pending<PetState>());
+    mockOpenSettings.mockResolvedValue(undefined);
+  });
+
+  afterEach(() => { mockUseNotificationsBlocked.mockReturnValue(false); });
+
+  it('con el permiso bloqueado pinta el aviso justo debajo de la cabecera, con su copy y su acción', async () => {
+    mockUseNotificationsBlocked.mockReturnValue(true);
+    await renderProfile();
+    const notice = await screen.findByTestId('notifications-blocked-notice');
+    const action = screen.getByTestId('notifications-open-settings');
+    const header = screen.getByTestId('profile-add-pet').parent!;
+    const content = header.parent!;
+
+    expect(notice).toBeVisible();
+    expect(content.parent?.props.testID).toBe('screen-profile');
+    expect(content.children.indexOf(header)).toBe(0);
+    expect(content.children.indexOf(notice)).toBe(1);
+    expect(notice).toHaveProperty('props.className', 'rounded-card border border-border bg-surface p-4 shadow-sm items-start gap-3');
+    expect(notice.children).toHaveLength(2);
+    expect(notice.children[0]).toHaveTextContent(NOTICE_ES);
+    expect(notice.children[0]).toHaveProperty('props.className', 'font-normal text-foreground');
+    expect(notice.children.indexOf(action)).toBe(1);
+    expect(action).toHaveTextContent('Abrir configuración');
+    expect(action.props.accessibilityRole).toBe('button');
+  });
+
+  it('pulsar la acción abre la configuración de la app una vez y no navega', async () => {
+    mockUseNotificationsBlocked.mockReturnValue(true);
+    await renderProfile();
+    const action = await screen.findByTestId('notifications-open-settings');
+    expect(action).toBeVisible();
+    fireEvent.press(action);
+    expect(mockOpenSettings).toHaveBeenCalledTimes(1);
+    expect(mockOpenSettings).toHaveBeenCalledWith();
+    expect(mockRouter.push).not.toHaveBeenCalled();
+  });
+
+  it('en inglés el aviso y la acción se pintan en inglés', async () => {
+    mockUseNotificationsBlocked.mockReturnValue(true);
+    await renderProfile();
+    const toggle = await screen.findByTestId('language-toggle');
+    expect(toggle).toBeVisible();
+    fireEvent.press(toggle);
+    await waitFor(() => expect(screen.getByTestId('notifications-blocked-notice').children[0]).toHaveTextContent(
+      'Notifications are turned off. Turn them on in your phone settings to receive alerts and reminders.',
+    ));
+    expect(screen.getByTestId('notifications-open-settings')).toHaveTextContent('Open settings');
+  });
+
+  it('registra las dos claves en los dos idiomas y en la tabla de idioma', () => {
+    const english = en as Record<string, string>;
+    const spanish = es as Record<string, string>;
+    expect(english['profile.notificationsBlocked']).toBe('Notifications are turned off. Turn them on in your phone settings to receive alerts and reminders.');
+    expect(english['profile.openSettings']).toBe('Open settings');
+    expect(spanish['profile.notificationsBlocked']).toBe(NOTICE_ES);
+    expect(spanish['profile.openSettings']).toBe('Abrir configuración');
+    const design = readFileSync('../specs/mobile-ui-language/design.md', 'utf8');
+    expect(design).toMatch(/\| — \| `profile\.notificationsBlocked`[^\n]*← añadida por #99 \(R3\)/);
+    expect(design).toMatch(/\| — \| `profile\.openSettings`[^\n]*← añadida por #99 \(R3\)/);
+  });
+
+  it('sin bloqueo no hay aviso en Perfil', async () => {
+    mockUseNotificationsBlocked.mockReturnValue(false);
+    await renderProfile();
+    expect(await screen.findByTestId('profile-sign-out')).toBeVisible();
+    expect(mockUseNotificationsBlocked).toHaveBeenCalled();
+    expect(screen.queryByTestId('notifications-blocked-notice')).toBeNull();
+    expect(screen.queryByTestId('notifications-open-settings')).toBeNull();
+    expect(screen.queryByText(NOTICE_ES)).toBeNull();
+    expect(screen.queryByText('Abrir configuración')).toBeNull();
   });
 });
