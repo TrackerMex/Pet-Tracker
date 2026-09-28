@@ -1,6 +1,6 @@
 ---
 feature: "mobile-alert-detail-screen"
-status: draft     # draft | approved
+status: approved    # draft | approved
 tags: [harness, spec, mobile]
 ---
 
@@ -569,16 +569,16 @@ ningún módulo nativo. App en español salvo el paso 7.
 
 ### Enmienda A15 — lista de A11 en `docs/conventions.md` y `docs/ui-guidelines.md`
 
-- [ ] Enmienda A15 aprobada por humano (fecha: )
+- [x] Enmienda A15 aprobada por humano (fecha: 2026-09-28)
 
 ### Enmienda A16 — `mobile-push-registration` R10
 
-- [ ] Enmienda A16 aprobada por humano (fecha: )
+- [x] Enmienda A16 aprobada por humano (fecha: 2026-09-28)
 
 ### Enmienda A17 — `mobile-alerts-center` decisiones 8, 11 y 12, invariante de rol y Fuera de alcance
 
-- [ ] Enmienda A17 aprobada por humano (fecha: )
+- [x] Enmienda A17 aprobada por humano (fecha: 2026-09-28)
 
 ### Aprobación de la spec
 
-- [ ] Aprobado por humano (fecha: ) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (fecha: 2026-09-28) ← gate obligatorio antes de implementar
