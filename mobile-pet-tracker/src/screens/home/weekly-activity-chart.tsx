@@ -629,6 +629,7 @@ export function WeeklyActivityChart(
           paddingRight: CHART_PAD_RIGHT,
         }}
       >
+        <View accessible>
         {days.map((day, dataIndex) => (
           <Pressable
             key={day.date}
@@ -677,6 +678,7 @@ export function WeeklyActivityChart(
             )}
           </Pressable>
         ))}
+        </View>
           </View>
           {selectedDay ? (
             <View

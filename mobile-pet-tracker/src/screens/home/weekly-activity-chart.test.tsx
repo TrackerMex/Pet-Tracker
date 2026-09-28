@@ -1440,3 +1440,29 @@ describe('#130 R1: la fila de las siete columnas no se vuelve un nodo accesible'
     ).toEqual(['children', 'className', 'style', 'testID']);
   });
 });
+
+describe('#130 R2: entre la tarjeta y cada columna no hay otro nodo', () => {
+  it('las siete columnas cuelgan de la fila, y la fila, de la tarjeta', async () => {
+    const result = await renderChart(
+      makeWeek('2026-09-02', [10, 20, 30, 40, 50, 60, 70]),
+    );
+    const row = result.getByTestId('weekly-activity-day-row');
+
+    // #130 R2: a wrapper between the card and the columns, accessible or not,
+    // turns the lock red, because it could fuse the seven columns into one.
+    expect(
+      row.children.map((child) =>
+        typeof child === 'string' ? child : child.props.testID,
+      ),
+    ).toEqual([
+      'weekly-activity-day-2026-09-02',
+      'weekly-activity-day-2026-09-03',
+      'weekly-activity-day-2026-09-04',
+      'weekly-activity-day-2026-09-05',
+      'weekly-activity-day-2026-09-06',
+      'weekly-activity-day-2026-09-07',
+      'weekly-activity-day-2026-09-08',
+    ]);
+    expect(row.parent?.props.testID).toBe('weekly-activity-card');
+  });
+});
