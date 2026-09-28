@@ -23,7 +23,7 @@ tags: [harness, spec, mobile]
 > nativos** (no hay que regenerar el dev build), **cero backend**, **cero
 > claves de catálogo** y **cero llamadas nuevas a la API**.
 >
-> **Enmienda 1 (R5, 2026-09-28, pendiente de firma):** entra un segundo
+> **Enmienda 1 (R5, 2026-09-28, firmada el 2026-09-28 en `139791bd`):** entra un segundo
 > fichero de test, `src/app/(tabs)/__tests__/food.test.tsx`, para cerrar la
 > carrera que tumbó la base de Codex. `src/app/(tabs)/food.tsx` cambia **solo
 > de forma transitoria** (la mutación Q1 se versiona y se revierte): su diff
