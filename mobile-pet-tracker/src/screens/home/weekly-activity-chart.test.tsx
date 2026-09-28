@@ -1426,3 +1426,17 @@ describe('#74 R3: el ajuste y el suelo de las etiquetas del selector, por plataf
     },
   );
 });
+
+describe('#130 R1: la fila de las siete columnas no se vuelve un nodo accesible', () => {
+  it('la fila solo lleva su testID, su clase, su estilo y sus hijos', async () => {
+    const result = await renderChart(
+      makeWeek('2026-09-02', [10, 20, 30, 40, 50, 60, 70]),
+    );
+
+    // #130 R1: a closed key list, so accessible, accessibilityLabel, aria-label,
+    // importantForAccessibility or any other new prop turns the lock red.
+    expect(
+      Object.keys(result.getByTestId('weekly-activity-day-row').props).sort(),
+    ).toEqual(['children', 'className', 'style', 'testID']);
+  });
+});
