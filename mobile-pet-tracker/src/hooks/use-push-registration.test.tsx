@@ -493,6 +493,35 @@ describe('R10: banner en primer plano y tap que navega a /alerts', () => {
   });
 });
 
+describe('#100 R7: el toque abre el detalle de su alerta', () => {
+  it.each([
+    ['hot', { alertId: 'alert-9' }, { pathname: '/alerts/[alertId]', params: { alertId: 'alert-9' } }],
+    ['cold', { alertId: 'alert-9' }, { pathname: '/alerts/[alertId]', params: { alertId: 'alert-9' } }],
+    ['hot', { alertId: '' }, '/alerts'],
+    ['cold', { alertId: '' }, '/alerts'],
+    ['hot', { alertId: 42 }, '/alerts'],
+    ['cold', { alertId: 42 }, '/alerts'],
+    ['hot', null, '/alerts'],
+    ['cold', null, '/alerts'],
+    ['hot', { reminderId: 'r-1' }, '/alerts'],
+    ['cold', { reminderId: 'r-1' }, '/alerts'],
+  ] as const)('navega con data %p en modo %s', async (mode, data, expected) => {
+    const response = {
+      notification: { request: { content: { data } } },
+    } as unknown as Notifications.NotificationResponse;
+    if (mode === 'cold') mockGetLastResponse.mockResolvedValue(response);
+    await renderHook(() => usePushRegistration());
+    if (mode === 'hot') {
+      await waitFor(() => expect(responseListener).toEqual(expect.any(Function)));
+      responseListener?.(response);
+    }
+    await waitFor(() => {
+      expect(mockRouterPush).toHaveBeenCalledTimes(1);
+      expect(mockRouterPush).toHaveBeenCalledWith(expected);
+    });
+  });
+});
+
 function useRegistrationProbe(): boolean {
   usePushRegistration();
   return useNotificationsBlocked();
@@ -682,3 +711,4 @@ describe('R15: importar el modulo no toca expo-notifications', () => {
     ).not.toThrow();
   });
 });
+
