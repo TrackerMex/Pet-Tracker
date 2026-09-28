@@ -1087,6 +1087,86 @@ describe('R9: summary degrada con gracia', () => {
   });
 });
 
+describe('#77 R1: el peso se pinta aunque la actividad no esté disponible', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    const pet = makePet({ currentWeightKg: 12.4 });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+  });
+
+  it.each<[string, DailyActivityState]>([
+    ['sin collar', { kind: 'no-tracking' }],
+    ['con la actividad en error', { kind: 'error' }],
+    ['sin conexión', { kind: 'unreachable', message: 'network down' }],
+    ['sin configuración', { kind: 'missing-config' }],
+  ])('%s: pinta el peso registrado', async (_state, activityState) => {
+    mockGetDailyActivity.mockResolvedValue(activityState);
+
+    await renderHome();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('summary-weight')).toHaveTextContent('12.4 kg'),
+    );
+  });
+
+  it('pinta un guion sin peso registrado', async () => {
+    const pet = makePet({ currentWeightKg: null });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+    mockGetDailyActivity.mockResolvedValue({ kind: 'no-tracking' });
+
+    await renderHome();
+    // #77 R1: the collar card needs the pet detail, so the dash below is the
+    // resolved profile without weight, not the dash shown while it loads.
+    await screen.findByTestId('collar-card');
+    await screen.findByTestId('summary-weight');
+
+    expect(screen.getByTestId('summary-weight')).toHaveTextContent('—');
+  });
+
+  it('pinta un guion y la nota cuando el perfil tampoco resuelve', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'unreachable', message: 'network down' });
+    mockGetDailyActivity.mockResolvedValue({ kind: 'no-tracking' });
+
+    await renderHome();
+    await screen.findByTestId('pet-hero-error');
+    await screen.findByTestId('summary-weight');
+
+    expect(screen.getByTestId('summary-weight')).toHaveTextContent('—');
+    expect(screen.getByTestId('summary-note')).toHaveTextContent(
+      'La actividad requiere un collar',
+    );
+  });
+
+  it('no añade ninguna llamada a la API', async () => {
+    mockGetDailyActivity.mockResolvedValue({ kind: 'no-tracking' });
+
+    await renderHome();
+    await waitFor(() =>
+      expect(screen.getByTestId('summary-weight')).toHaveTextContent('12.4 kg'),
+    );
+    const source = readFileSync(
+      join(process.cwd(), 'src/screens/home/index.tsx'),
+      'utf8',
+    );
+
+    expect(source).not.toContain('../../api/health-records');
+    expect({
+      pets: mockListPets.mock.calls.length,
+      detail: mockGetPet.mock.calls.length,
+      activity: mockGetDailyActivity.mock.calls.length,
+    }).toEqual({ pets: 1, detail: 1, activity: 1 });
+  });
+});
+
 describe('R10: last position enlaza al mapa', () => {
   const device = {
     model: 'PetTrack One',
