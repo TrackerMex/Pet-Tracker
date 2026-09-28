@@ -828,6 +828,18 @@ cumplido con las tres evidencias de arriba.
 
 ---
 
+## Enmienda externa A16 — la escribe #100 (2026-09-28)
+
+`mobile-alert-detail-screen` (#100) abre el detalle de la alerta tocada. **R10
+cambia solo en el destino del toque**: en caliente y en frío, el hook llama a
+`router.push(notificationHref(response))`, que da
+`{ pathname: '/alerts/[alertId]', params: { alertId } }` cuando
+`response.notification.request.content.data.alertId` es un `string` no vacío
+y `'/alerts'` en cualquier otro caso. El banner en primer plano no cambia. Su
+test sigue en `src/hooks/use-push-registration.test.tsx`; el caso con
+`alertId` lo cubre `#100 R7`. Firma: casilla A16 de
+`specs/mobile-alert-detail-screen/requirements.md` §Aprobación.
+
 ## Aprobación
 
 - [X] Aprobado por humano (fecha: 2026-09-17) ← gate obligatorio antes de implementar
