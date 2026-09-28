@@ -176,11 +176,12 @@ describe('#100 R3: el detalle pinta la alerta de la caché de la lista', () => {
   it('respeta las métricas A11 bajo cabecera nativa', async () => {
     mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert()], nextCursor: null });
     await renderDetail();
-    const root = await screen.findByTestId('screen-alert-detail');
+    const card = await screen.findByTestId('alert-detail-card');
+    const root = screen.getByTestId('screen-alert-detail');
     expect(root.props.className).toBe('flex-1 bg-background');
     expect(root.props.contentInsetAdjustmentBehavior).toBe('automatic');
     expect(root.props.contentContainerStyle).toEqual({ padding: 24, gap: 16, paddingBottom: 48 });
-    expect(screen.getByTestId('alert-detail-card').props.className).toBe('rounded-card border border-border bg-surface p-4 shadow-sm min-h-44 gap-3');
+    expect(card.props.className).toBe('rounded-card border border-border bg-surface p-4 shadow-sm min-h-44 gap-3');
   });
 });
 
