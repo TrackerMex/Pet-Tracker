@@ -2330,7 +2330,7 @@
   {
     "id": 120,
     "name": "mobile-classnames-element-slice-children",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P3",
     "description": "Registrada al cerrar #112 el 2026-09-24. Es el hallazgo F de su spec: specs/mobile-reminders-see-all-source-lock-nesting/requirements.md §Fuera de alcance, con el detalle en design.md §Barrido de gemelos. Es un primo del patron que cerraron #109 y #112, NO un gemelo. El helper elementWithTestId esta duplicado en mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts y en legibility-classnames.test.ts (localizar con grep -n \"function elementWithTestId\"). Recorta desde el ancla testID=\"...\" hasta indexOf(closingTag, start), asi que los hijos quedan DENTRO del bloque. Medido sobre 993b62fa con pill-active de src/screens/reminders/index.tsx: si se quita rounded-xl del propio tag y se anade un hijo <View className=\"rounded-xl\" />, el candado de #62 R4 sigue en VERDE. LIMITE: en legibility-classnames hay candados que aseveran precisamente sobre el hijo, asi que no se puede migrar a ciegas al recorte de < a <. La spec tiene que clasificar call-site a call-site cuales vigilan el tag propio y cuales el subarbol. No toca produccion.",
     "acceptance_criteria": [
@@ -2341,7 +2341,8 @@
     ],
     "files_affected": [
       "mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts",
-      "mobile-pet-tracker/src/__tests__/legibility-classnames.test.ts"
+      "mobile-pet-tracker/src/__tests__/legibility-classnames.test.ts",
+      "docs/conventions.md"
     ]
   },
   {
