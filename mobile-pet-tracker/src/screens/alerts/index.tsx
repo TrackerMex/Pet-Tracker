@@ -1,7 +1,7 @@
-import { useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
 import { useCallback, useRef, useState } from 'react';
-import { FlatList, Text, View } from 'react-native';
+import { FlatList, Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ackAlert } from '../../api/alerts';
@@ -189,7 +189,15 @@ export function AlertsScreen() {
               >
                 <Icon testID={`${rowId}-icon`} size={20} color={color} />
               </View>
-              <View className="min-w-0 flex-1 gap-1">
+              <Pressable
+                testID={`${rowId}-link`}
+                accessibilityRole="button"
+                className="min-h-11 min-w-0 flex-1 gap-1"
+                style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
+                onPress={() =>
+                  router.push({ pathname: '/alerts/[alertId]', params: { alertId: item.id } })
+                }
+              >
                 <Text
                   testID={`${rowId}-type`}
                   className="text-sm font-bold text-foreground"
@@ -208,7 +216,7 @@ export function AlertsScreen() {
                 >
                   {fmtOpenedAt(item.openedAt, now, t)}
                 </Text>
-              </View>
+              </Pressable>
               {item.status === 'open' ? (
                 <Button
                   testID={`${rowId}-ack`}
