@@ -276,3 +276,56 @@ progress/handoff_mobile-alert-detail-screen.md.
    gracefully` vuelve a salir en la suite de cierre, copiala al reporte; no la
    persigas.
 ```
+
+---
+
+## Reanudacion 2 (2026-09-28): parada en el rojo de R7
+
+Diagnostico del leader sobre `/tmp/r7.log`. El `it` nuevo de
+`src/app/__tests__/alert-detail.notification.test.tsx` falla como estaba
+previsto (Expected `/alerts/alert-1`, Received `/alerts`). Las diez filas de
+`#100 R7` en `src/hooks/use-push-registration.test.tsx` fallan antes de llegar
+a sus aserciones, por un problema de orden en el fichero y no por la spec:
+
+- El `it('no accede a expo-notifications al importar el modulo')` del
+  describe `R15` llama a `jest.resetModules()` y a
+  `jest.doMock('expo-notifications', <Proxy que lanza>)`. Ese factory queda
+  registrado para el resto del fichero.
+- El hook hace `require('expo-notifications')` en tiempo de ejecucion (linea
+  del `require` en `use-push-registration.ts`), asi que cualquier describe que
+  corra despues de `R15` recibe el Proxy.
+- `R15` era el ultimo describe y `#100 R7` quedo detras. design.md D8 no fijaba
+  el sitio.
+
+Parar fue lo correcto. El arreglo va dentro del mismo rojo, todavia sin
+commitear, asi que no hace falta un commit extra.
+
+Pegar en Codex:
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-backend   <- PRIMERA LINEA
+Confirma `pwd` y `git branch --show-current` (feature/100-mobile-alert-detail-screen)
+y que HEAD es f1149451, o el commit del leader que anade esta seccion encima
+de f1149451. Si no, PARA.
+Siguen vigentes todas las reglas del bloque original de
+progress/handoff_mobile-alert-detail-screen.md.
+
+1. En src/hooks/use-push-registration.test.tsx, mueve el describe
+   '#100 R7: el toque abre el detalle de su alerta' ENTERO, sin cambiarle ni
+   un caracter, justo detras del describe
+   'R10: banner en primer plano y tap que navega a /alerts' (antes de
+   '#99 R1: ...'). R15 vuelve a quedar como ultimo describe del fichero. No
+   toques R15 ni ningun otro describe.
+2. Repite el comando del rojo de R7 de tasks.md: exit=1, 2 suites y
+   EXACTAMENTE 3 fallos, las 2 filas con alertId 'alert-9' (hot y cold) por
+   su asercion de navegacion, y el it de alert-detail.notification.test.tsx.
+   Las otras 8 filas en verde. Si sale cualquier otra cosa, PARA.
+   Commit rojo de R7 con su mensaje literal y sigue el guion hasta el final
+   (sigue en pie la corrida extra de use-push-registration.navigation.test.tsx
+   tras el verde de R7).
+3. En el reporte, en §Desviaciones: el primer rojo (11 fallos, Expo Go por el
+   doMock de R15) y el segundo (3), con el motivo. Anade una observacion para
+   el reviewer: R15 deja registrado su doMock de expo-notifications y obliga a
+   que sea el ultimo describe del fichero; no lo arregles, es candidato a
+   deuda y lo decide el humano.
+```
