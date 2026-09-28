@@ -45,21 +45,21 @@ function readSource(relativePath: string): string {
   return readFileSync(join(sourceRoot, relativePath), 'utf8');
 }
 
-/** Bloque JSX que abre en el `testID` dado y cierra en `closingTag`. */
-function elementWithTestId(
-  source: string,
-  testId: string,
-  closingTag: string,
-): string {
-  const start = source.indexOf(`testID="${testId}"`);
+/**
+ * #120 R1: tag de apertura del elemento con el `testID` dado, sin sus hijos:
+ * del `<` que lo abre al siguiente `<`, cortado en `/>` si se cierra solo, para
+ * que el hueco hasta el siguiente elemento no entre. El ancla es única en el
+ * fichero; con dos copias, `indexOf` podría recortar la que no se vigila.
+ */
+function openingTagWithTestId(source: string, testId: string): string {
+  const anchor = source.indexOf(`testID="${testId}"`);
 
-  expect(start).toBeGreaterThan(-1);
+  expect(anchor).toBeGreaterThan(-1);
+  expect(source.lastIndexOf(`testID="${testId}"`)).toBe(anchor);
 
-  const end = source.indexOf(closingTag, start);
-
-  expect(end).toBeGreaterThan(start);
-
-  return source.slice(start, end);
+  return source
+    .slice(source.lastIndexOf('<', anchor), source.indexOf('<', anchor))
+    .split('/>')[0];
 }
 
 describe('#62 R1: la escala de radios está declarada y el botón primario tiene un solo radio', () => {
@@ -87,8 +87,8 @@ describe('#62 R1: la escala de radios está declarada y el botón primario tiene
     );
   });
 
-  it.each(primaryButtons)('%s aplica rounded-xl a %s', (path, testId) => {
-    const button = elementWithTestId(readSource(path), testId, '</Button>');
+  it.each(primaryButtons)('%s aplica rounded-xl a %s en su tag de apertura (#120 R1)', (path, testId) => {
+    const button = openingTagWithTestId(readSource(path), testId);
 
     expect(button).toContain('rounded-xl bg-accent');
     expect(button).not.toContain('rounded-2xl');
@@ -111,12 +111,8 @@ describe('#62 R2: cada skeleton tiene la forma del contenido que sustituye', () 
       'vaccines-skeleton',
       'h-24 w-full rounded-card',
     ],
-  ])('%s conserva dimensión y usa el radio de Card', (path, testId, classes) => {
-    const skeleton = elementWithTestId(
-      readSource(path),
-      testId,
-      '/>',
-    );
+  ])('%s conserva dimensión y usa el radio de Card en su tag de apertura (#120 R1)', (path, testId, classes) => {
+    const skeleton = openingTagWithTestId(readSource(path), testId);
 
     expect(skeleton).toContain(`className="${classes}"`);
   });
@@ -124,11 +120,10 @@ describe('#62 R2: cada skeleton tiene la forma del contenido que sustituye', () 
   // Enmienda #67: el skeleton de Home se muda al hero compartido. Reserva el
   // alto de la fotografía por `style` —260 no tiene utilidad de Tailwind y la
   // clase arbitraria está prohibida— y no lleva radio, porque va a sangre.
-  it('el skeleton del hero reserva el alto de la foto y no lleva radio', () => {
-    const skeleton = elementWithTestId(
+  it('el skeleton del hero reserva el alto de la foto y no lleva radio en su tag de apertura (#120 R1)', () => {
+    const skeleton = openingTagWithTestId(
       readSource(join('components', 'pet-hero-header.tsx')),
       'pet-hero-skeleton',
-      '/>',
     );
 
     expect(skeleton).toContain('className="w-full"');
@@ -154,11 +149,11 @@ describe('#62 R4: la app solo usa los radios de la escala declarada', () => {
     },
   );
 
-  it('lleva las tres píldoras de resumen de reminders a rounded-xl', () => {
+  it('lleva las tres píldoras de resumen de reminders a rounded-xl en su tag de apertura (#120 R1)', () => {
     const reminders = readSource(join('screens', 'reminders', 'index.tsx'));
 
     for (const testId of ['pill-active', 'pill-week', 'pill-inactive']) {
-      const pill = elementWithTestId(reminders, testId, '</View>');
+      const pill = openingTagWithTestId(reminders, testId);
 
       expect(pill).toContain('rounded-xl');
     }
