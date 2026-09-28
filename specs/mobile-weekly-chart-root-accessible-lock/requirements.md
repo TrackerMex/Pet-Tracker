@@ -1,6 +1,6 @@
 ---
 feature: "mobile-weekly-chart-root-accessible-lock"
-status: spec_ready       # draft | spec_ready | approved
+status: approved         # draft | spec_ready | approved
 tags: [spec, mobile, a11y, deuda]
 ---
 
@@ -247,7 +247,7 @@ el `leader` contra `origin/main`) y **(N)** premisa verificada y descartada.
 
 ## Aprobación
 
-- [ ] **Aprobado por humano** (fecha: ____) ← gate obligatorio antes de
+- [x] **Aprobado por humano** (fecha: 2026-09-28) ← gate obligatorio antes de
       implementar. Al marcar esta casilla, el humano firma también los ocho
       puntos de §Qué firma el humano al aprobar esta spec, y el primero en
       particular: hacer R1 en vez de cerrar #132 como (N).

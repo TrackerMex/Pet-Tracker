@@ -1,6 +1,6 @@
 ---
 feature: "mobile-weekly-chart-root-accessible-lock"
-status: spec_ready       # draft | spec_ready | approved
+status: approved         # draft | spec_ready | approved
 tags: [spec, mobile, a11y, deuda]
 ---
 
