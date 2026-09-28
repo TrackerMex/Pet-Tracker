@@ -1,6 +1,6 @@
 ---
 feature: "mobile-classnames-element-slice-children"
-status: draft            # draft | spec_ready | approved
+status: approved         # draft | spec_ready | approved
 tags: [harness, spec, mobile, deuda]
 ---
 

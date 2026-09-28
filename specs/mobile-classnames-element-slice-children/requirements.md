@@ -1,6 +1,6 @@
 ---
 feature: "mobile-classnames-element-slice-children"
-status: draft            # draft | spec_ready | approved
+status: approved         # draft | spec_ready | approved
 tags: [harness, spec, mobile, deuda]
 ---
 
@@ -279,7 +279,7 @@ el `leader` contra `origin/main`) y **(N)** premisa verificada y descartada.
 
 ## Aprobación
 
-- [ ] **Aprobado por humano** (fecha: ____) ← gate obligatorio antes de
+- [x] **Aprobado por humano** (fecha: 2026-09-27) ← gate obligatorio antes de
       implementar. Al marcar esta casilla, el humano firma también los trece
       puntos de §Qué firma el humano al aprobar esta spec.
 
