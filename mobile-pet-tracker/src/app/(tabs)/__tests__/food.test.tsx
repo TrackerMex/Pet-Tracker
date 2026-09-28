@@ -312,13 +312,14 @@ describe('R4: food resuelve la mascota seleccionada', () => {
       expect(screen.getByTestId('pet-chip-pet-1').props.accessibilityState).toEqual({
         selected: true,
       });
+      // #77 R5: the plan is requested after the commit that selects the chip.
+      expect(mockGetNutritionPlan).toHaveBeenCalledWith(
+        apiUrl,
+        'jwt-token',
+        'pet-1',
+      );
     });
     expect(mockListPets).toHaveBeenCalledWith(apiUrl, 'jwt-token');
-    expect(mockGetNutritionPlan).toHaveBeenCalledWith(
-      apiUrl,
-      'jwt-token',
-      'pet-1',
-    );
   });
 
   it('selects a pressed pet and reloads its nutrition plan', async () => {
