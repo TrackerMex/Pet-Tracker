@@ -738,7 +738,7 @@ feature.
 
 ### Firma de la Enmienda 1
 
-- [ ] **Enmienda 1 (R5) aprobada por humano** (fecha: ____). Casilla propia.
+- [x] **Enmienda 1 (R5) aprobada por humano** (fecha: 2026-09-28). Casilla propia.
       Sin ella, R5 no existe: `food.test.tsx` y `food.tsx` no se tocan y
       sigue valiendo el punto 3 de la «Reanudacion 1».
 
