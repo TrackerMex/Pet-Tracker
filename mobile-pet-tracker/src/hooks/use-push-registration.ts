@@ -1,6 +1,7 @@
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
-import { router, usePathname } from 'expo-router';
+import type { NotificationResponse } from 'expo-notifications';
+import { router, usePathname, type Href } from 'expo-router';
 import { useEffect, useRef, useSyncExternalStore } from 'react';
 import { AppState, Platform } from 'react-native';
 
@@ -8,6 +9,13 @@ import { registerPushToken } from '../api/push-tokens';
 import { useAuth } from '../providers/auth-provider';
 
 type NotificationsModule = typeof import('expo-notifications');
+
+function notificationHref(response: NotificationResponse): Href {
+  const alertId = response.notification?.request.content.data?.alertId;
+  return typeof alertId === 'string' && alertId.length > 0
+    ? { pathname: '/alerts/[alertId]', params: { alertId } }
+    : '/alerts';
+}
 
 function getProjectId(): string | undefined {
   const projectId = Constants.expoConfig?.extra?.eas?.projectId;
@@ -89,8 +97,8 @@ export function usePushRegistration(): void {
       }),
     });
     const responseSubscription =
-      Notifications.addNotificationResponseReceivedListener(() => {
-        router.push('/alerts');
+      Notifications.addNotificationResponseReceivedListener((response) => {
+        router.push(notificationHref(response));
     });
     notifications.current = Notifications;
 
@@ -153,7 +161,7 @@ export function usePushRegistration(): void {
     handledInitialResponse.current = true;
     void Notifications.getLastNotificationResponseAsync()
       .then((response) => {
-        if (response) router.push('/alerts');
+        if (response) router.push(notificationHref(response));
       })
       .catch(() => undefined);
   }, [pathname, setPushToken, status, token]);
