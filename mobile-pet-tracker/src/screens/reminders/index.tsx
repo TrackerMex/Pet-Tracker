@@ -371,12 +371,12 @@ export function RemindersScreen() {
                 <Button
                   testID="reminders-delete-confirm"
                   className="w-full rounded-xl bg-danger"
+                  variant="danger"
                   onPress={deleteSelectedReminder}
                 >
                   <Button.Label className="font-bold text-danger-foreground">
                     {t('reminders.delete')}
                   </Button.Label>
-                  {/* variant="danger" */}
                 </Button>
                 <Button
                   testID="reminders-delete-cancel"
