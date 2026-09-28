@@ -6,7 +6,7 @@ import { act, renderRouter, waitFor } from 'expo-router/testing-library';
 import { fireEvent, screen } from '@testing-library/react-native';
 import { Text } from 'react-native';
 
-import { ackAlert, listAlerts } from '../../api/alerts';
+import { ackAlert, listAlerts, type AckAlertState } from '../../api/alerts';
 import type { Alert } from '../../api/types';
 import AuthLayout from '../(auth)/_layout';
 import TabsLayout from '../(tabs)/_layout';
@@ -50,6 +50,13 @@ jest.mock('../../providers/auth-provider', () => ({
   AuthProvider: ({ children }: { children: React.ReactNode }) => children,
   useAuth: () => ({ status: 'authenticated', token: 'token-a', signOut: mockSignOut }),
 }));
+jest.mock('../../providers/query-provider', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { QueryClientProvider } = jest.requireActual<typeof import('@tanstack/react-query')>('@tanstack/react-query');
+  const { createQueryClient } = jest.requireActual<typeof import('../../providers/query-provider')>('../../providers/query-provider');
+  const client = createQueryClient(undefined, 0);
+  return { QueryProvider: ({ children }: { children: React.ReactNode }) => React.createElement(QueryClientProvider, { client }, children) };
+});
 jest.mock('react-native-safe-area-context', () => ({
   ...jest.requireActual('react-native-safe-area-context'),
   useSafeAreaInsets: () => ({ top: 40, right: 0, bottom: 24, left: 0 }),
@@ -112,12 +119,11 @@ describe('#100 R8: fila, detalle y vuelta al centro con la alerta leída', () =>
         ? { kind: 'ok', items: [makeAlert('alert-2', serverAcked ? 'acked' : 'open')], nextCursor: null }
         : { kind: 'ok', items: [makeAlert('alert-1')], nextCursor: 'c1' },
     );
-    jest.mocked(ackAlert).mockImplementation(async () => {
-      serverAcked = true;
-      return { kind: 'ok', alert: makeAlert('alert-2', 'acked') };
-    });
+    let resolveAck!: (result: AckAlertState) => void;
+    jest.mocked(ackAlert).mockReturnValue(new Promise((resolve) => { resolveAck = resolve; }));
 
     const app = renderRouter(routes(), { initialUrl: '/home' });
+    jest.useRealTimers();
     await waitFor(() => expect(app.getPathname()).toBe('/home'));
     await act(async () => router.push('/alerts'));
     await waitFor(() => expect(app.getPathname()).toBe('/alerts'));
@@ -127,6 +133,10 @@ describe('#100 R8: fila, detalle y vuelta al centro con la alerta leída', () =>
     await fireEvent.press(screen.getByTestId('alert-row-alert-2-link'));
     await waitFor(() => expect(app.getPathname()).toBe('/alerts/alert-2'));
     await fireEvent.press(await screen.findByTestId('alert-detail-ack'));
+    await act(async () => {
+      serverAcked = true;
+      resolveAck({ kind: 'ok', alert: makeAlert('alert-2', 'acked') });
+    });
     await waitFor(() => expect(screen.getByTestId('alert-detail-status')).toHaveTextContent('Leída'));
 
     await act(async () => router.back());
