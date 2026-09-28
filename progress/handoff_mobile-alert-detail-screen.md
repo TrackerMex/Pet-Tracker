@@ -329,3 +329,81 @@ progress/handoff_mobile-alert-detail-screen.md.
    que sea el ultimo describe del fichero; no lo arregles, es candidato a
    deuda y lo decide el humano.
 ```
+
+---
+
+## Reanudacion 3 (2026-09-28): parada en R8
+
+Diagnostico del leader sobre `/tmp/r8*.log` y el reporte de Codex:
+
+- **Rojo versionado `4f848e56`**: correcto (1 fallo, 25 verdes).
+- **Verde con temporizadores falsos**: falla porque el harness de pruebas no
+  vuelve a pintar, no por la produccion. Tras «Marcar leida», `ackAlert`
+  devuelve `ok` y `setAcked` se ejecuta (`r8debug.log`: `r8-debug-ack ok acked`),
+  pero el detalle no vuelve a pintarse. Hay avisos de `overlapping act()` y de
+  «not configured to support act» justo en `setAcked`. El cambio de estado se
+  queda en una cola de `act` que nunca se vacia bajo `renderRouter` con
+  temporizadores falsos. R5, en la prueba unitaria, cubre el mismo flujo en
+  verde.
+- **Por que la spec no lo vio**: la sonda S3 del spec_author marcaba la alerta
+  en el servidor y no pulsaba el boton del detalle, porque el detalle aun no
+  existia. design.md D8 no fija la sincronizacion, asi que elegirla es tuyo.
+- **Variante valida**: la de `/tmp/r8probe15.log` (temporizadores reales y un
+  `QueryClient` de vida corta) pasa.
+- **Rojo de la segunda comprobacion** (`/tmp/r8red-recheck.log`): falla en
+  `findByTestId('alert-detail-ack')`, y el arbol impreso es el centro (cabecera
+  «Alertas»). El detalle no encontro la alerta y salio: es lo que describe
+  tasks.md R8, que no fija la linea que falla. Con temporizadores reales, la
+  ruta `/alerts/alert-2` existe un instante antes del `dismissTo`, asi que
+  cualquiera de las dos lineas puede ser la que falle.
+- Parar fue lo correcto con la regla que te di. La regla se amplia aqui solo
+  para R8.
+
+Pegar en Codex:
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-backend   <- PRIMERA LINEA
+Confirma `pwd` y `git branch --show-current` (feature/100-mobile-alert-detail-screen)
+y que HEAD es 4f848e56, o el commit del leader que anade esta seccion encima
+de 4f848e56. Si no, PARA.
+Siguen vigentes todas las reglas del bloque original de
+progress/handoff_mobile-alert-detail-screen.md.
+
+1. La mutacion de R8 sigue plantada, como en 4f848e56; no la toques todavia.
+   En src/app/__tests__/alert-detail.navigation.test.tsx, y solo ahi, vuelve a
+   aplicar la sincronizacion de /tmp/r8probe15.log (temporizadores reales y un
+   QueryClient de vida corta). Limites:
+   - mismo describe, mismo nombre del unico it, mismos literales y las mismas
+     aserciones de D8: «Leida» en el detalle, fila «Leida» sin boton al
+     volver, y alert-404 que vuelve a '/alerts' con una sola entrada `alerts`;
+   - se quedan jest.mock('standard-navigation', () => ({})) y
+     afterEach(() => jest.useRealTimers()), y los dobles de D8 no cambian;
+   - si el QueryClient de vida corta necesita un doble, que sea solo de
+     `createQueryClient` (src/providers/query-provider), construido con el
+     `createQueryClient` real y solo `gcTime` cambiado;
+   - ningun cambio de produccion ademas de la mutacion plantada.
+2. Rojo con la mutacion aun plantada: el comando de tasks.md R8 da exit=1,
+   2 suites y EXACTAMENTE 1 fallo, en el it nuevo; los 25 del detalle, verdes.
+   Valen las dos lineas que siguen, y ninguna otra:
+   (a) waitFor de getPathname() con Expected '/alerts/alert-2', Received '/alerts';
+   (b) findByTestId('alert-detail-ack') con "Unable to find", siempre que el
+       arbol impreso sea el centro (cabecera "Alertas" y alert-row-alert-1)
+       y no el detalle cargando.
+   Cualquier otra cosa: PARA. Commit:
+   test(alert-detail): drive the round trip with real timers (R8, keeps mutation: found reads pages[0] only)
+3. Verde: revierte la mutacion.
+   `git diff --exit-code 9664ca9b HEAD -- mobile-pet-tracker/src/screens/alert-detail/index.tsx`
+   debe salir vacio tras el commit. Corre el comando de tasks.md R8 TRES veces,
+   cada una con su log (/tmp/r8g1.log, /tmp/r8g2.log, /tmp/r8g3.log): exit=0
+   las tres. Si alguna sale roja, PARA. Commit literal:
+   feat(alert-detail): search every cached page for the alert (R8)
+4. Sigue el guion con R9, R10 y el cierre, sin cambios.
+5. En el reporte, §Desviaciones R8:
+   - por que fallan los temporizadores falsos (con la lista de probes y lo que
+     descarto cada uno);
+   - el diff exacto de la sincronizacion contra 4f848e56;
+   - la linea en que fallo el rojo, (a) o (b), con el arbol si es (b);
+   - las tres corridas verdes;
+   - cuantos avisos de act quedan en el verde.
+   En traceability.md, la fila de R8 con los dos commits rojos y el verde.
+```
