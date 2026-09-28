@@ -204,10 +204,9 @@ export function RemindersScreen() {
           <View className="flex-row gap-3">
             <View
               testID="pill-active"
-              className="flex-1 items-center gap-1 bg-accent-soft p-3"
+              className="flex-1 items-center gap-1 rounded-xl bg-accent-soft p-3"
               style={CONTINUOUS_CORNER}
             >
-              <View className="rounded-xl" />
               <Text
                 className="text-lg font-black text-foreground"
                 style={TABULAR_NUMS}
