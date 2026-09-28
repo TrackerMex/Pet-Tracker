@@ -5929,3 +5929,64 @@ desaparecia entera y se llevaba el peso, que no depende del collar. Solo movil.
 - **Obs. 1-3**: la nota de matchers de §Sondas no preveía `hide`, pero la tabla
   «Exigido» sí se cumplió. La fila R5 cita `8ed1b9fc`, porque un commit no
   puede citarse a sí mismo. Los 3 e2e omitidos son los de siempre.
+
+# Sesión #130 mobile-weekly-day-row-accessible-lock (2026-09-28, sesión Frontend)
+
+- **Elección del humano** (2026-09-28, tras mergear PR #170 de #74): #130. No
+  se registra «1 de 3», también por decisión del humano.
+- **Branch** `feature/130-mobile-weekly-day-row-accessible-lock` desde
+  `origin/main` `3cf09ca5` (#170). Backend trabajaba #100 en wt-backend, sin
+  tocar los ficheros de la gráfica. `origin/main` no se movió en todo el
+  ciclo, así que no hubo merge de main.
+- **Spec** `8a780e00`, espejada en Notion
+  (https://app.notion.com/p/3e96115a9b2781cb9589f3ce4c32ec55). El humano
+  puso Aprobado (`page_last_edited_at` 2026-09-28T19:53:45.191Z) y el leader
+  firmó en `ceb6a51e`. Diseño: una lista cerrada de las props del host de
+  `weekly-activity-day-row` (R1, el patrón de `#74 R2`) y la cadena tarjeta
+  → fila → siete columnas por `children` y `parent` del `TestInstance` (R2).
+  La tabla de sondas ya distinguía rojo por aserción de rojo por consulta
+  (lección de #74).
+- **Handoff** `6ab1d9b6`. **Codex**: 5 commits `24321406..7a68bb1a`, skill
+  `building-native-ui`. Los dos rojos son por la vía b (`P1red`: `accessible`
+  en la fila; `P2red`: un `<View accessible>` alrededor de las columnas), y
+  cada verde revierte con `git checkout HEAD~1 --`. Las 21 sondas dieron lo
+  exigido. Móvil 83/1552/1 (+2).
+- **init.sh**: lo corrió el leader sobre `7a68bb1a`, con permiso del humano y
+  aviso a Backend, sin pipe. Exit 0: unit 171/1307, infra 2/14, móvil
+  83/1552/1, e2e 27+3 skip. El log quedó en el scratchpad de la sesión, sin
+  su propio `exit` dentro (obs. 7 del reviewer): la próxima vez, anexar el
+  `exit` al log.
+- **Reviewer** (`d7c3fdc7`): aprobado a la primera, sin bloqueantes. Rehízo
+  los dos rojos sobre la suite entera y nueve sondas sobre el árbol final, y
+  buscó zona ciega por su cuenta (`wrapcard`).
+- **Drift**: entre el veredicto (`7a68bb1a`) y el cierre, la branch solo sumó
+  harness, con 0 líneas bajo `mobile-pet-tracker/`. `origin/main` sigue en
+  `3cf09ca5`.
+
+### Deuda y apuntes
+
+- **Hallazgos (F)**, clasificados uno a uno. Los ids se asignaron contra
+  `origin/main` (máximo 130), las branches remotas y las locales (#129 lo usa
+  la rama de #100):
+  - **Registrado como #131** `mobile-weekly-day-row-layout-lock`: la (F) de la
+    spec. `flex-col` en la fila (`flexcol`) o `paddingLeft: 0` (`nopad`)
+    siguen verdes, 43/43, re-medido por el reviewer. El candado del padding
+    tiene que ser relacional con la geometría del gráfico.
+  - **Registrado como #132** `mobile-weekly-chart-root-accessible-lock`: la
+    obs. 1 del reviewer. Un `<View accessible>` alrededor de
+    `weekly-activity-card`, dentro del `return` de la gráfica, funde toda la
+    tarjeta y da 43/43 (blob `cec8a26e`). La (D) de la spec apartaba la Home,
+    no la raíz de la propia gráfica. Tocan el mismo test que #131: no conviene
+    llevarlas en paralelo.
+- **Obs. 3 (N)**: la «v1.0.1» que citó Codex es la cabecera de la skill
+  `building-native-ui`, no la del plugin. El leader lo verificó en
+  `~/.codex/plugins/cache/openai-curated/expo/`: skill `version: 1.0.1` y
+  `plugin.json` `1.0.2`. El catálogo de `leader.md` sigue siendo correcto.
+- **Obs. 4 (proceso)**: `git checkout <commit> -- <ruta>` deja el cambio en el
+  índice, y un `git checkout -- <ruta>` posterior restaura desde el índice,
+  así que la versión roja se queda. Para reproducir rojos desde un commit hay
+  que restaurar con `git checkout HEAD --`. Queda como nota de memoria del
+  leader para los encargos al reviewer.
+- **Obs. 5 y 6**: la autoría git no distingue a Codex del leader, y el
+  handoff listaba solo tres ficheros para el diff contra `origin/main`, sin
+  los del leader. Son informativas y no piden cambio.

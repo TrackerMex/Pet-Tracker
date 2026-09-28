@@ -2486,13 +2486,45 @@
   {
     "id": 130,
     "name": "mobile-weekly-day-row-accessible-lock",
-    "status": "in_progress",
+    "status": "done",
     "priority": "P3",
-    "description": "Registrada al cerrar #74 el 2026-09-28. Es el hallazgo (F) de su spec: specs/mobile-metric-selector-a11y/requirements.md §Fuera de alcance, «#68 R9 sobre la fila de las siete columnas deja pasar accessible». En mobile-pet-tracker/src/screens/home/weekly-activity-chart.test.tsx, el it 'anuncia los huecos sin colapsar las siete columnas' (describe 'R9: cada columna se anuncia por separado') solo asevera que la fila weekly-activity-day-row no tiene accessibilityLabel (toBeUndefined). Con accessible en esa fila, que en dispositivo funde las siete columnas en un solo nodo de TalkBack, la grafica sigue en 36/36: lo midio el spec_author de #74 (blob de la mutacion 4ed672f1, citado en la spec). El leader verifico en 97f2d349 que esa asercion sigue siendo la unica sobre la fila. Lo cerraria la misma lista cerrada de props del host que #74 R2 usa para weekly-activity-metric y weekly-activity-card (grep \"#74 R2\" en el mismo fichero). No toca produccion.",
+    "description": "Registrada al cerrar #74 el 2026-09-28. Es el hallazgo (F) de su spec: specs/mobile-metric-selector-a11y/requirements.md §Fuera de alcance, «#68 R9 sobre la fila de las siete columnas deja pasar accessible». En mobile-pet-tracker/src/screens/home/weekly-activity-chart.test.tsx, el it 'anuncia los huecos sin colapsar las siete columnas' (describe 'R9: cada columna se anuncia por separado') solo asevera que la fila weekly-activity-day-row no tiene accessibilityLabel (toBeUndefined). Con accessible en esa fila, que en dispositivo funde las siete columnas en un solo nodo de TalkBack, la grafica sigue en 36/36: lo midio el spec_author de #74 (blob de la mutacion 4ed672f1, citado en la spec). El leader verifico en 97f2d349 que esa asercion sigue siendo la unica sobre la fila. Lo cerraria la misma lista cerrada de props del host que #74 R2 usa para weekly-activity-metric y weekly-activity-card (grep \"#74 R2\" en el mismo fichero). No toca produccion. Cerrada el 2026-09-28: dos listas cerradas en el test de la grafica, sin tocar produccion. R1: las props del host de weekly-activity-day-row son exactamente children, className, style y testID (toEqual contra un literal). R2: los testID de row.children son los siete dias en orden, y row.parent es weekly-activity-card, asi que ningun nodo host se cuela entre la tarjeta y las columnas. Diff de produccion vacio: los dos rojos versionaron su mutacion (accessible en la fila; un View accessible alrededor de las siete columnas) y cada verde la revirtio. 21/21 sondas con el veredicto exigido; hide y ariahidden rojos por consulta, previstos en la spec. Movil 83/1552/1 (+2). Codex, cinco commits test-primero; reviewer aprobado a la primera (progress/review_mobile-weekly-day-row-accessible-lock.md). Sus hallazgos (F) quedan como #131 (forma y alineacion de la fila) y #132 (envoltorio accesible por encima de la tarjeta).",
     "acceptance_criteria": [
       "Con accessible en weekly-activity-day-row, un it de la grafica FALLA; lo mismo con accessibilityLabel, aria-label o importantForAccessibility",
       "Los esperados son literales del test, nunca importados de produccion",
       "Las siete columnas siguen anunciandose por separado: los it de 'R9: cada columna se anuncia por separado' siguen verdes",
+      "Cero cambio en produccion; suite movil verde medida sin pipe; delta de tests declarado"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/home/weekly-activity-chart.test.tsx"
+    ]
+  },
+  {
+    "id": 131,
+    "name": "mobile-weekly-day-row-layout-lock",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada al cerrar #130 el 2026-09-28. Es el hallazgo (F) de su spec: specs/mobile-weekly-day-row-accessible-lock/requirements.md §Fuera de alcance, «La forma y la alineacion de la fila no tienen candado». En mobile-pet-tracker/src/screens/home/weekly-activity-chart.tsx, la fila weekly-activity-day-row lleva className='flex-row' y un style con paddingLeft y paddingRight que alinea cada columna con su barra del grafico. Con className='flex-col' en la fila (sonda flexcol, blob 99ec492b) o con paddingLeft: 0 (sonda nopad, blob 9cb81179), la grafica sigue en 43/43: lo midio el spec_author de #130 y lo re-midio su reviewer sobre 7a68bb1a. Son las decisiones 10 y 11 de docs/ui-guidelines.md §Enmienda #70 para la fila. Limites: no es de accesibilidad; #130 R1 cierra las CLAVES de props de la fila, no sus valores. El candado honesto del padding es relacional (el padding de la fila frente a la geometria del grafico que coloca las barras), no un literal numerico copiado de la grafica. Toca el mismo test que #132.",
+    "acceptance_criteria": [
+      "Con className='flex-col' en weekly-activity-day-row, un it de la grafica FALLA",
+      "Con paddingLeft: 0 en la fila (sonda nopad), un it FALLA; el candado del padding es relacional con la geometria del grafico, sin importar simbolos de produccion ni copiar su literal",
+      "Los describe de #68, #74 y #130 siguen verdes y sin cambios",
+      "Cero cambio en produccion; suite movil verde medida sin pipe; delta de tests declarado"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/home/weekly-activity-chart.test.tsx"
+    ]
+  },
+  {
+    "id": 132,
+    "name": "mobile-weekly-chart-root-accessible-lock",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada al cerrar #130 el 2026-09-28. Es la obs. 1 de su veredicto (progress/review_mobile-weekly-day-row-accessible-lock.md, sonda wrapcard). En mobile-pet-tracker/src/screens/home/weekly-activity-chart.tsx, un <View accessible> que envuelva el <Card testID='weekly-activity-card'> del return de WeeklyActivityChart funde en un solo nodo de TalkBack la tarjeta entera, con el selector y las siete columnas dentro, y la grafica sigue en 43/43 (blob de la mutacion cec8a26e, medido por el reviewer sobre 7a68bb1a). No lo ve #130 R1 (las claves de la fila no cambian), ni #130 R2 (row.parent sigue siendo la tarjeta), ni #74 R2 (las props de la tarjeta no cambian). La (D) de #130 «no se miran los ancestros de la tarjeta en la Home» aparta src/screens/home/index.tsx, no el return de la propia grafica: la premisa «la tarjeta es la raiz host de lo que pinta WeeklyActivityChart» es cierta hoy y no tiene candado. Limites: el hueco es solo DENTRO de la grafica; lo que la Home ponga alrededor sigue fuera de alcance. Solo test. Toca el mismo test que #131.",
+    "acceptance_criteria": [
+      "Con un View accessible (o un Pressable) envolviendo weekly-activity-card dentro de WeeklyActivityChart, un it de la grafica FALLA",
+      "Los esperados son literales del test, nunca importados de produccion",
+      "Los describe de #68, #74 y #130 siguen verdes y sin cambios",
       "Cero cambio en produccion; suite movil verde medida sin pipe; delta de tests declarado"
     ],
     "files_affected": [
