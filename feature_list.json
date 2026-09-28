@@ -2330,9 +2330,9 @@
   {
     "id": 120,
     "name": "mobile-classnames-element-slice-children",
-    "status": "spec_ready",
+    "status": "done",
     "priority": "P3",
-    "description": "Registrada al cerrar #112 el 2026-09-24. Es el hallazgo F de su spec: specs/mobile-reminders-see-all-source-lock-nesting/requirements.md §Fuera de alcance, con el detalle en design.md §Barrido de gemelos. Es un primo del patron que cerraron #109 y #112, NO un gemelo. El helper elementWithTestId esta duplicado en mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts y en legibility-classnames.test.ts (localizar con grep -n \"function elementWithTestId\"). Recorta desde el ancla testID=\"...\" hasta indexOf(closingTag, start), asi que los hijos quedan DENTRO del bloque. Medido sobre 993b62fa con pill-active de src/screens/reminders/index.tsx: si se quita rounded-xl del propio tag y se anade un hijo <View className=\"rounded-xl\" />, el candado de #62 R4 sigue en VERDE. LIMITE: en legibility-classnames hay candados que aseveran precisamente sobre el hijo, asi que no se puede migrar a ciegas al recorte de < a <. La spec tiene que clasificar call-site a call-site cuales vigilan el tag propio y cuales el subarbol. No toca produccion.",
+    "description": "Registrada al cerrar #112 el 2026-09-24. Es el hallazgo F de su spec: specs/mobile-reminders-see-all-source-lock-nesting/requirements.md §Fuera de alcance, con el detalle en design.md §Barrido de gemelos. Es un primo del patron que cerraron #109 y #112, NO un gemelo. El helper elementWithTestId esta duplicado en mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts y en legibility-classnames.test.ts (localizar con grep -n \"function elementWithTestId\"). Recorta desde el ancla testID=\"...\" hasta indexOf(closingTag, start), asi que los hijos quedan DENTRO del bloque. Medido sobre 993b62fa con pill-active de src/screens/reminders/index.tsx: si se quita rounded-xl del propio tag y se anade un hijo <View className=\"rounded-xl\" />, el candado de #62 R4 sigue en VERDE. LIMITE: en legibility-classnames hay candados que aseveran precisamente sobre el hijo, asi que no se puede migrar a ciegas al recorte de < a <. La spec tiene que clasificar call-site a call-site cuales vigilan el tag propio y cuales el subarbol. No toca produccion. Cerrada el 2026-09-28: CS1-CS4 de consistency-classnames leen el tag de apertura con openingTagWithTestId (corte en />); en legibility, el it de reminders-delete-confirm lee variant y bg-danger en su tag y el texto en el bloque, que se queda por ser de subarbol. Reviewer aprobado (progress/review_mobile-classnames-element-slice-children.md, commit 526f3c6f). Sus dos hallazgos (F) son #127 y #128.",
     "acceptance_criteria": [
       "Cada call-site de elementWithTestId queda clasificado por escrito: vigila el tag propio o el subarbol",
       "Los que vigilan el tag propio pasan al recorte de < a < de docs/conventions.md §Recortes del tag de apertura en candados de fuente; los de subarbol se quedan, con su motivo escrito",
@@ -2449,6 +2449,38 @@
     ],
     "files_affected": [
       "mobile-pet-tracker/src/screens/home/index.test.tsx"
+    ]
+  },
+  {
+    "id": 127,
+    "name": "mobile-classnames-own-tag-tree-lock",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada al cerrar #120 el 2026-09-28. Es el primer hallazgo (F) de su spec: specs/mobile-classnames-element-slice-children/requirements.md §Fuera de alcance, «Los limites 2 y 3 sobre los nueve elementos de R1». Tras #120, CS1-CS4 de mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts leen la receta de nueve elementos (filas login-submit a pill-inactive de la spec de #120) con openingTagWithTestId, un recorte de fuente de < a <. Lo que el recorte de fuente no ve sigue en VERDE: un comentario JSX {/* rounded-xl */} o un {false && 'rounded-xl'} como primer hijo (sondas P-week-j y P-week-f, limite 2), o una linea // rounded-xl dentro del propio tag (P-week-l3, limite 3), con rounded-xl fuera del className de pill-week de src/screens/reminders/index.tsx. Medido por Codex y re-medido por el reviewer de #120 sobre 52d920a8. El humano lo firmo como limite documentado en la spec de #120 (punto 6 de su §Que firma el humano), no como agujero a cerrar dentro de ella. No toca produccion. El arbol lo cerraria: una asercion sobre props.className de cada elemento, como la que src/screens/reminders/index.test.tsx ya hace para bg-danger (grep -n \"props.className\" src/screens/reminders/index.test.tsx). Coste: montar cuatro pantallas y un componente. La spec decide si lo cierra en el arbol, por elemento, o si lo deja documentado.",
+    "acceptance_criteria": [
+      "Las sondas P-week-j, P-week-f y P-week-l3 de specs/mobile-classnames-element-slice-children/tasks.md §R3 pasan de VERDE a ROJO, o la spec las acepta por escrito como limite documentado",
+      "Las sondas que hoy dan rojo en consistency-classnames siguen en ROJO",
+      "Los esperados son literales del test, nunca importados de produccion",
+      "Cero cambio en produccion; suite movil verde medida sin pipe; delta de tests declarado"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts"
+    ]
+  },
+  {
+    "id": 128,
+    "name": "mobile-delete-confirm-label-tree-lock",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada al cerrar #120 el 2026-09-28. Es el segundo hallazgo (F) de su spec: specs/mobile-classnames-element-slice-children/requirements.md §Fuera de alcance, «El senuelo sobre el bloque de subarbol de CS5 (D-d)». En mobile-pet-tracker/src/__tests__/legibility-classnames.test.ts, el describe #61 R1 sigue leyendo el bloque entero de reminders-delete-confirm con elementWithTestId para las aserciones de subarbol, como la tinta de su etiqueta. Un senuelo {false && (<Button.Label className=\"font-bold text-danger-foreground\">{t('reminders.delete')}</Button.Label>)} delante de la etiqueta real, que pasa a className=\"font-bold text-foreground\" (sonda D-d, blob 50cc3d89 de src/screens/reminders/index.tsx), da VERDE en legibility, y el arbol de src/screens/reminders/index.test.tsx tampoco lo para. Medido por Codex y re-medido por el reviewer de #120 sobre 52d920a8. El humano lo firmo como limite documentado en la spec de #120 (punto 6 de su §Que firma el humano), no como agujero a cerrar dentro de ella. No toca produccion. Lo cerraria una asercion en el arbol sobre la clase de la etiqueta del boton destructivo.",
+    "acceptance_criteria": [
+      "La sonda D-d de specs/mobile-classnames-element-slice-children/tasks.md §R3 pasa de VERDE a ROJO, o la spec la acepta por escrito como limite documentado",
+      "El it de #120 R2 (variant y bg-danger en el tag de apertura) sigue igual y en verde",
+      "Los esperados son literales del test, nunca importados de produccion",
+      "Cero cambio en produccion; suite movil verde medida sin pipe; delta de tests declarado"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/reminders/index.test.tsx"
     ]
   }
 ]
