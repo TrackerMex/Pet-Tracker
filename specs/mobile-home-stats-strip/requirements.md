@@ -574,7 +574,7 @@ desaparece con la actividad.
 - **Fuente normativa nueva:** `specs/mobile-home-weight-without-collar/requirements.md`
   R1-R3.
 
-- [ ] Enmienda aprobada por humano
+- [x] Enmienda aprobada por humano (fecha: 2026-09-27)
 
 ---
 

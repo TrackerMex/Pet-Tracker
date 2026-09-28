@@ -1,6 +1,6 @@
 ---
 feature: "mobile-home-weight-without-collar"
-status: spec_ready         # draft | spec_ready | approved
+status: approved           # draft | spec_ready | approved
 tags: [harness, spec, mobile]
 ---
 
@@ -504,7 +504,7 @@ de §Candados y #126 R1 en verde. **No rebasear** después de que Codex rellene
 
 ## Aprobación
 
-- [ ] Spec aprobada por humano (fecha: ____)
+- [x] Spec aprobada por humano (fecha: 2026-09-27)
 
 Al aprobar, el humano firma además, **en su casilla propia**, la enmienda a
 #69 R7 (`specs/mobile-home-stats-strip/requirements.md`
