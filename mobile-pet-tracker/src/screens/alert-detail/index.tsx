@@ -30,9 +30,10 @@ export function AlertDetailScreen({ alertId }: { alertId: string }) {
   const ackingRef = useRef(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const leavingRef = useRef(false);
-  const found = alerts.data?.pages
-    .flatMap((page) => (page.kind === 'ok' ? page.items : []))
-    .find((alert) => alert.id === alertId);
+  const firstCachedPage = alerts.data?.pages[0];
+  const found = firstCachedPage?.kind === 'ok'
+    ? firstCachedPage.items.find((alert) => alert.id === alertId)
+    : undefined;
   const alert = found?.status === 'open' ? (acked ?? found) : found;
   const firstPage = alerts.data?.pages[0];
 
