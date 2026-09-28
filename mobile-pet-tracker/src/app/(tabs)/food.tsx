@@ -56,14 +56,7 @@ export default function FoodScreen() {
   usePetSelection({ data: pets.data, isRefreshing: pets.isRefetching });
   const plan = useQuery({
     queryKey: nutritionKeys.plan(selectedPetId ?? ''),
-    queryFn: ({ signal }) =>
-      new Promise<Awaited<ReturnType<typeof getNutritionPlan>>>((resolve) => {
-        const timer = setTimeout(
-          () => resolve(getNutritionPlan(baseUrl, token ?? '', selectedPetId!)),
-          200,
-        );
-        signal.addEventListener('abort', () => clearTimeout(timer));
-      }),
+    queryFn: () => getNutritionPlan(baseUrl, token ?? '', selectedPetId!),
     enabled: selectedPetId !== null,
   });
   const loadedPlan = plan.data?.kind === 'ok' ? plan.data.plan : null;
