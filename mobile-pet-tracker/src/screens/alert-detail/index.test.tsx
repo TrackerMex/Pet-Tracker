@@ -227,9 +227,9 @@ describe('#100 R4: el detalle pinta carga, error y salida sin la alerta', () => 
       expect(rendered.queryClient.getQueryData(alertKeys.list())).toEqual(
         expect.objectContaining({ pages: [{ kind: 'unauthorized' }] }),
       );
+      expect(screen.queryByTestId('alert-detail-loading')).toBeNull();
     });
     expect(screen.queryByTestId('alert-detail-card')).toBeNull();
-    expect(screen.queryByTestId('alert-detail-loading')).toBeNull();
     expect(screen.queryByTestId('alert-detail-error')).toBeNull();
     expect(mockDismissTo).not.toHaveBeenCalled();
   });
