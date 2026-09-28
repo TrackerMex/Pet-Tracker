@@ -12,3 +12,6 @@
 - Backend trabaja #77 en wt-backend: su diff movil es solo `home/index.tsx` e `index.test.tsx`. #74 toca `weekly-activity-chart.tsx` y su test, sin solape de ficheros.
 - Handoff viejo (`progress/handoff_mobile-home-weekly-activity_a11y.md`, de #68): es materia prima, no una spec. El spec_author verifica cada premisa contra el arbol de hoy.
 - Gate humano extra (criterio 6): TalkBack en dev build de Android sobre el selector. No es delegable.
+- Spec escrita por spec_author en 5daefb6d (spec_ready). Verificada por el leader contra el arbol: radiogroup ausente, `CollectionInfo` solo en `ReactScrollViewAccessibilityDelegate.kt`, suelo de 4 pt en `TextLayoutManager.kt`, `Card` reenvia `{...rest}` (P2red sobre la tarjeta llega al host), `WEEKLY_METRICS` ya bajo candado de toEqual (el `.map` de R3 no es tautologico), `building-native-ui` esta en el catalogo de Codex, ninguna ruta con parentesis.
+- Espejo en Notion: pagina https://app.notion.com/p/3e96115a9b2781498dccdace89dc490f (Specs, En revision / Spec Author), desde 5daefb6d, page_last_edited_at 2026-09-28T16:23:15.571Z. Dos celdas de §Premisas con `\|` se truncaron al crear y se corrigieron en la misma sesion.
+- Pendiente del humano: opcion de R3 (A recomendada, o B) en un comentario de la pagina, y `Estado del gate` = Aprobado.
