@@ -56,6 +56,8 @@ const METRIC_TAB_SPRING = {
 } as const;
 
 const TOOLTIP_WIDTH = 120;
+// Android ignores minimumFontScale: RN 0.86.2 only reads minimumFontSize, which
+// <Text> does not expose, so the shrink floor there is 4 dp (#74 R3).
 const METRIC_LABEL_MIN_FONT_SCALE = 0.85;
 const METRIC_LABEL_MAX_FONT_SIZE_MULTIPLIER = 1.2;
 
@@ -370,6 +372,7 @@ function MetricSelector({
               }
               numberOfLines={1}
               adjustsFontSizeToFit
+              minimumFontScale={METRIC_LABEL_MIN_FONT_SCALE}
               maxFontSizeMultiplier={METRIC_LABEL_MAX_FONT_SIZE_MULTIPLIER}
             >
               {label}
