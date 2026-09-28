@@ -319,6 +319,7 @@ function MetricSelector({
   return (
     <View
       testID="weekly-activity-metric"
+      accessibilityRole="radiogroup"
       className="relative flex-row gap-1 overflow-hidden rounded-full border border-border bg-default p-1"
     >
       {selectedLayout ? (
