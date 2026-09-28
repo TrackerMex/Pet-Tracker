@@ -37,6 +37,7 @@ ancestros y habría que reapuntarlos verificando `git merge-base --is-ancestor`
 | R2 — sin actividad, la fila es la celda de peso (anatomía, clases, tinta `muted`) seguida de la nota, dos hijos, dentro de `summary-card`; sin celdas de actividad (4 filas) | `#77 R2: sin actividad, la fila es la celda de peso seguida de la nota` | `f489b4706db0c4413ab4736cbc43d0d27e8dbc55` | `8974590cf8da924a69f8dff72980f8c05df468a2` |
 | R3 — ni celda ni nota mientras la actividad carga ni con `unauthorized` (2 `it`; rojo por V3 versionada) | `#77 R3: la fila no se pinta sin sesión ni mientras carga la actividad` | `4a9ab9cfb2e7a6a1c971932ea2d0d0a7bb784932` | `62a92ffd5c58dd30fa353f1bbfebf738f90e2e80` |
 | R4 — smoke en dev build de Android con una mascota sin collar y con peso | humano | — | — (smoke humano por ejecutar; casilla de [[requirements]] §Prueba de humo) |
+| R5 — (Enmienda 1) el test de orden de food espera la llamada a getNutritionPlan dentro de su waitFor; rojo por Q1 versionada, revertida en commit propio | R4: food resuelve la mascota seleccionada › keeps API order and selects the first pet by default (comentario #77 R5) | 3b0fcb6409dd9fb2ec2eeb9ff1c53ef8fa809b0c | d3cf35b54712bfbbb3853d50c8ed4cd13ff49626 (revert: 55533b96ea145da60b5bf1a5e99c24b75ee5438a) |
 
 ## Candados ajenos movidos
 

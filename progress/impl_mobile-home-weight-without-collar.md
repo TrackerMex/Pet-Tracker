@@ -107,3 +107,85 @@ Greps de cierre desde la raíz:
 ```
 
 `git diff --numstat origin/main...HEAD --` esos dos ficheros → test `220 0`, producción `51 51`. `git diff --check` → exit 0. La implementación sigue el Contrato aprobado; no hizo falta tomar decisiones de diseño fuera de la spec. R4 sigue reservado al humo humano en Android.
+
+## R5 (Enmienda 1)
+
+`pwd` → `/home/claude/sites/Pet-Tracker-wt-backend`; `git branch --show-current` → `feature/77-mobile-home-weight-without-collar`. Árbol limpio al reanudar. Skills cargadas en la sesión de #77: `expo:building-native-ui` (plugin Expo v1.0.2), `appllama-app-design-skill` para el cambio anterior de la Home y `ponytail` (full). R5 solo cambia un test al final; no añade diseño de pantalla.
+
+### Base de food y commits
+
+Desde `mobile-pet-tracker/`:
+
+| Precheck | Salida |
+|---|---|
+| `git rev-parse 'HEAD:mobile-pet-tracker/src/app/(tabs)/food.tsx'` | `e310ff45ac9a6abc5475e983a2c03e1d7b5f909b` |
+| `git rev-parse 'HEAD:mobile-pet-tracker/src/app/(tabs)/__tests__/food.test.tsx'` | `abc6ad1579dfcadb3c9d309d41caecdba62ccb2d` |
+| `grep -c "queryFn: () => getNutritionPlan(baseUrl, token ?? '', selectedPetId!)," 'src/app/(tabs)/food.tsx'` | `1` |
+| `grep -c "it('keeps API order and selects the first pet by default'" 'src/app/(tabs)/__tests__/food.test.tsx'` | `1` |
+| `grep -cP '#[0-9]++(?! R[0-9])' 'src/app/(tabs)/__tests__/food.test.tsx'` | `9` |
+| `grep -c '#77 R5' 'src/app/(tabs)/__tests__/food.test.tsx'` | `0`, grep exit 1 |
+| `bunx jest --runTestsByPath 'src/app/(tabs)/__tests__/food.test.tsx' > /tmp/pt77-r5-base-food.log 2>&1; echo "exit=$?"` | `exit=0`; `Test Suites: 1 passed, 1 total`; `Tests: 56 passed, 56 total` |
+
+| Paso | Commit | Evidencia |
+|---|---|---|
+| Rojo Q1 | `3b0fcb6409dd9fb2ec2eeb9ff1c53ef8fa809b0c` — `test(mobile): expose the food nutrition plan race (R5)` | Solo `food.tsx`, 8 inserciones y 1 borrado |
+| Verde con Q1 aún puesta | `d3cf35b54712bfbbb3853d50c8ed4cd13ff49626` — `test(mobile): wait for the nutrition plan call with the pet chips (R5)` | Solo `food.test.tsx`, 6 inserciones y 5 borrados |
+| Revert de Q1 | `55533b96ea145da60b5bf1a5e99c24b75ee5438a` — `fix(mobile): drop the nutrition plan delay (R5)` | Solo `food.tsx`, 1 inserción y 8 borrados |
+| Traza | `docs(mobile): trace #77 R5` (este mismo commit final; su hash se obtiene con `git rev-parse HEAD` tras commitear) | Solo esta sección y la fila R5 de `traceability.md` |
+
+El rojo Q1 (`/tmp/pt77-r5-red-food.log`) dio `Test Suites: 1 failed, 1 total`; `Tests: 1 failed, 55 passed, 56 total`; exit 1. Solo falló `R4: food resuelve la mascota seleccionada › keeps API order and selects the first pet by default` en `expect(mockGetNutritionPlan).toHaveBeenCalledWith(...)`: `Expected: "http://example.test/v1", "jwt-token", "pet-1"`; `Number of calls: 0`. Con Q1, `test ! -e .expo/types/router.d.ts` y `bunx tsc --noEmit` dieron exit 0. Las cinco suites `consistency-classnames`, `legibility-classnames`, `design-drift`, `ui-language` y `detail-stack` dieron `Test Suites: 5 passed, 5 total`; `Tests: 173 passed, 173 total`; exit 0 (`/tmp/pt77-r5-red-guards.log`).
+
+Con Q1 todavía puesta, el verde (`/tmp/pt77-r5-green-q1-food.log`) dio `Test Suites: 1 passed, 1 total`; `Tests: 56 passed, 56 total`; exit 0. El precheck de tipos, `bunx tsc --noEmit` y `bunx expo lint` dieron exit 0. Greps de `food.test.tsx`: `#77 R5` → `1`; guard de citas → `9`; `StyleSheet` → `0` (exit 1); clase arbitraria → `0` (exit 1). No se renombró el `it` ni se cambió otra aserción.
+
+Tras el revert, `/tmp/pt77-r5-revert-food.log` dio `Test Suites: 1 passed, 1 total`; `Tests: 56 passed, 56 total`; exit 0. Sus tres comprobaciones desde `mobile-pet-tracker/`:
+
+| Comando | Salida |
+|---|---|
+| `git diff --exit-code 3b0fcb64~1 HEAD -- ':/mobile-pet-tracker/src/app/(tabs)/food.tsx'; echo "exit=$?"` | `exit=0`, diff vacío |
+| `git diff --stat 3b0fcb64~1 3b0fcb64 -- ':/mobile-pet-tracker/src/app/(tabs)/food.tsx'` | `mobile-pet-tracker/src/app/(tabs)/food.tsx \| 9 ++++++++-`; `1 file changed, 8 insertions(+), 1 deletion(-)` |
+| `git rev-parse 'HEAD:mobile-pet-tracker/src/app/(tabs)/food.tsx'` | `e310ff45ac9a6abc5475e983a2c03e1d7b5f909b` |
+
+### Sondas Q2–Q4
+
+Todas corrieron `bunx jest --runTestsByPath 'src/app/(tabs)/__tests__/food.test.tsx' -t 'keeps API order and selects the first pet by default'` y dieron `Test Suites: 1 failed, 1 total`; `Tests: 1 failed, 55 skipped, 56 total`; exit 1. El único rojo fue ese `it`. Tras cada sonda, `git diff --exit-code -- 'src/app/(tabs)/food.tsx'; echo "exit=$?"` dio `exit=0` antes de la siguiente.
+
+| Sonda | Esperado | Medido | Firma (`Expected` / `Received`) |
+|---|---:|---:|---|
+| Q2 (`enabled: false`) | 1 | 1 | `Expected: "http://example.test/v1", "jwt-token", "pet-1"`; `Number of calls: 0` |
+| Q3 (argumento `pet-2`) | 1 | 1 | `Expected: "http://example.test/v1", "jwt-token", "pet-1"`; `Received: "http://example.test/v1", "jwt-token", "pet-2"`; `Number of calls: 1` |
+| Q4 (Q1 con `pet-2`) | 1 | 1 | Misma firma de Q3; `Number of calls: 1` |
+
+Logs: `/tmp/pt77-r5-probe-Q2.log`, `/tmp/pt77-r5-probe-Q3.log`, `/tmp/pt77-r5-probe-Q4.log`.
+
+### Cierre de la Enmienda 1
+
+| Comando | Salida exacta de resumen |
+|---|---|
+| `bunx jest --runTestsByPath src/screens/home/index.test.tsx > /tmp/pt77-r5-close-home.log 2>&1; echo "exit=$?"` | `exit=0`; `Test Suites: 1 passed, 1 total`; `Tests: 159 passed, 159 total` |
+| `bun run --cwd mobile-pet-tracker test > /tmp/pt77-r5-close-suite.log 2>&1; echo "exit=$?"` | `exit=0`; `Test Suites: 83 passed, 83 total`; `Tests: 1545 passed, 1545 total` |
+| `bunx jest --runTestsByPath 'src/app/(tabs)/__tests__/food.test.tsx' > /tmp/pt77-r5-close-food.log 2>&1; echo "exit=$?"` | `exit=0`; `Test Suites: 1 passed, 1 total`; `Tests: 56 passed, 56 total` |
+| `test ! -e .expo/types/router.d.ts; echo "exit=$?"` | `exit=0` |
+| `bun run typecheck > /tmp/pt77-r5-close-typecheck.log 2>&1; echo "exit=$?"` | `exit=0` |
+| `bun run lint > /tmp/pt77-r5-close-lint.log 2>&1; echo "exit=$?"` | `exit=0` |
+
+Greps desde `mobile-pet-tracker/`:
+
+| Ruta | Comando/patrón | Salida |
+|---|---|---|
+| `src/screens/home/index.tsx` | `grep -c 'testID="summary-note"'`; `grep -c '<Weight size={20} color={muted} />'`; `grep -c 'style={TABULAR_NUMS}'`; `grep -c "activity.data.kind !== 'unauthorized'"`; `grep -c "{activity.data?.kind === 'ok' ? ("` | `1`, `1`, `8`, `1`, `1` (todos exit 0) |
+| `src/screens/home/index.tsx` | `grep -c "{activity.data?.kind === 'no-tracking'"`; `grep -n 'health-records'` | `0`, salida vacía (ambos exit 1) |
+| `src/screens/home/index.test.tsx` | `grep -c StyleSheet`; `grep -c -- '-\['`; `grep -cP '#[0-9]++(?! R[0-9])'`; `grep -c "^describe('#77 R"` | `0` exit 1; `0` exit 1; `1` exit 0; `3` exit 0 |
+| `src/app/(tabs)/__tests__/food.test.tsx` | `grep -c '#77 R5'`; `grep -cP '#[0-9]++(?! R[0-9])'`; `grep -c StyleSheet`; `grep -c -- '-\['` | `1` exit 0; `9` exit 0; `0` exit 1; `0` exit 1 |
+
+`git diff --exit-code origin/main...HEAD -- ':/mobile-pet-tracker/src/app/(tabs)/food.tsx'; echo "exit=$?"` → `exit=0` (diff vacío). `git log --oneline origin/main..HEAD -- ':/mobile-pet-tracker/src/app/(tabs)/food.tsx'` → exactamente `55533b96 fix(mobile): drop the nutrition plan delay (R5)` y `3b0fcb64 test(mobile): expose the food nutrition plan race (R5)`.
+
+`git diff --stat origin/main...HEAD -- ':/mobile-pet-tracker'` →
+
+```text
+ .../src/app/(tabs)/__tests__/food.test.tsx         |  11 +-
+ mobile-pet-tracker/src/screens/home/index.test.tsx | 220 +++++++++++++++++++++
+ mobile-pet-tracker/src/screens/home/index.tsx      | 102 +++++-----
+ 3 files changed, 277 insertions(+), 56 deletions(-)
+```
+
+La producción de food termina sin diff; la decisión de diseño de R5 ya estaba cerrada por D9. R4 sigue reservado al humo humano en Android.
