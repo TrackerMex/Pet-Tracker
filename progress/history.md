@@ -5738,3 +5738,59 @@ que). Solo movil.
   actividad `kind: 'ok'`, la guardia de design-drift y el ancla del párrafo de
   R3 en `docs/conventions.md`.
 - Siguiente en esta sesión: la que elija el humano, tras el merge.
+
+# Sesión #120 mobile-classnames-element-slice-children (2026-09-28, sesión Frontend)
+
+- **Elección del humano** (2026-09-28, tras mergear PR #167 de #126 y #80): #120.
+- **Branch** `feature/120-mobile-classnames-element-slice-children` desde
+  `origin/main` `e9413a6e` (#167). Backend trabajaba #77 en wt-backend
+  (`home/index.tsx` y su test), sin solape de ficheros.
+- **Spec** `1b673736`, espejada en Notion desde ese commit. El humano marcó la
+  casilla, puso Aprobado y el leader firmó en `d413d168`, citando la página y
+  `page_last_edited_at` 2026-09-28T02:39:17.519Z. Diseño: CS1-CS4 de
+  `consistency-classnames` vigilan el tag propio y pasan a
+  `openingTagWithTestId` (de `<` a `<`, cortado en `/>`, ancla única), y
+  `elementWithTestId` sale del fichero. CS5 de `legibility-classnames` se parte
+  por aserción: `variant="danger"` y `bg-danger` se leen en el tag, y el texto
+  sigue en el bloque de subárbol. `docs/conventions.md` documenta el corte en
+  `/>` y la excepción de subárbol.
+- **Codex**: 6 commits `1ba18224..52d920a8`, sin skills, por la vía b de C4.
+  Cada rojo versiona su mutación y falla solo por su `toContain`: P-active-h
+  en R1 (`rounded-xl` del tag de `pill-active` a un hijo) y D-v en R2
+  (`variant="danger"` fuera del tag). Cada verde restaura `reminders/index.tsx`
+  al blob `8fbcd07c`. Las 26 sondas de R3 dieron el veredicto exigido, y los
+  cuatro blobs finales coinciden con la spec. Móvil 83/1532, +0.
+- **init.sh**: lo corrió el leader sobre `52d920a8`, con permiso del humano y
+  turno pactado con Backend. Los ficheros `head`, `log` y `exit` quedaron en
+  disco (obs. 5 de #126). Exit 0: unit 171/1307, infra 2/14, móvil 83/1532/1,
+  e2e 27+3 skip.
+- **Reviewer** (`526f3c6f`): aprobado a la primera, sin bloqueantes. Rehízo los
+  dos rojos y re-midió 12 sondas en un worktree temporal del scratchpad.
+  Además quitó el `.split('/>')` del helper y comprobó que S-j volvía al verde
+  falso.
+- **Drift**: entre el veredicto y el cierre, la branch solo sumó el commit del
+  veredicto, y `origin/main` no se movió (`e9413a6e`).
+
+### Deuda y apuntes
+
+- **Hallazgos (F) registrados**:
+  - #127 `mobile-classnames-own-tag-tree-lock`: límites 2 y 3 (P-week-j,
+    P-week-f, P-week-l3).
+  - #128 `mobile-delete-confirm-label-tree-lock`: el señuelo D-d sobre la
+    etiqueta del botón destructivo.
+
+  Los dos siguen en verde, porque el humano los firmó como límite en el
+  punto 6. Los ids se asignaron contra `origin/main` (máximo 126) y ninguna
+  branch remota usa 127 ni 128.
+- **Obs. 1 del reviewer**: las filas R3 y R5 de `traceability.md` decían
+  `HEAD`, porque un fichero no puede citar el hash de su propio commit. El
+  leader las cambió al cerrar por `52d920a8`, que es ancestro de HEAD. En
+  specs futuras, pedir el hash del último verde en esas filas, como hicieron
+  #124 y #126.
+- **Proceso**: el primer prompt del reviewer permitía sondas en el árbol
+  principal mientras init.sh leía ese árbol. El leader lo corrigió por mensaje
+  antes de que empezara, y el reviewer usó solo el worktree temporal. En
+  adelante, con init.sh en vuelo, sondas únicamente fuera del árbol que se
+  mide.
+- **Obs. 2**: el aviso de `.env` (faltan `RESEND_*` y `RESET_LINK_HOST`) y los
+  3 e2e omitidos son ajenos a #120.

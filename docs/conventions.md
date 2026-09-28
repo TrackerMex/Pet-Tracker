@@ -269,12 +269,30 @@ línea, porque los números se desplazan con cada merge:
   `meal-toggle` (#109): `grep -n "lastIndexOf('<', anchor)"`.
 - `mobile-pet-tracker/src/screens/home/index.test.tsx`, la campana
   `home-alerts-bell` (#121) y el `reminders-see-all` (#112): el mismo grep.
+- `mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts` y
+  `legibility-classnames.test.ts`, los candados de clases por `testID` (#120):
+  `grep -n "function openingTagWithTestId"`. El grep de `anchor` también los
+  encuentra, dentro del helper.
 
-Los tres que recortan alrededor de `anchor` aseveran su unicidad y tienen al
-lado su pata que pulsa (#122): `grep -rn "'responderGrant'" mobile-pet-tracker/src`.
+Los tres de `food.test.tsx` y `home/index.test.tsx` aseveran su unicidad y
+tienen al lado su pata que pulsa (#122):
+`grep -rn "'responderGrant'" mobile-pet-tracker/src`.
 
 No queda ningún recorte de `<Tag` a `</Tag>` por migrar:
 `grep -rn "lastIndexOf('<[A-Z]" mobile-pet-tracker/src` no devuelve nada.
+
+Los candados de clases por `testID` (#120) meten la unicidad dentro del helper
+y añaden un corte: si el elemento se cierra solo, el recorte acaba en su `/>`.
+Sin ese corte, el hueco entre el `/>` y el siguiente `<` del fichero entra en
+la ventana, y un comentario JSX o un `{false && '…'}` en ese hueco dan un
+verde falso. El comentario que sigue al skeleton de `pet-hero-header.tsx` vive
+ahí. Esos candados solo leen fuente, así que los límites 2 y 3 quedan como
+límites documentados. `legibility-classnames.test.ts` conserva a propósito
+`elementWithTestId`, que va del ancla al `</Button>` con los hijos dentro, para
+lo que es de los hijos del botón destructivo: la etiqueta, su texto y el veto
+del token del acento en todo el botón. Ese bloque tiene su propio hueco: un
+señuelo `{false && (…)}` con la etiqueta correcta delante de la real da un
+verde falso.
 
 Tampoco vale aseverar la receta contra el fichero entero. Si otro elemento del
 mismo fichero la repite, esa copia da el verde aunque el elemento vigilado la

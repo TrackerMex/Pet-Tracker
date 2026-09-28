@@ -62,7 +62,27 @@ function elementWithTestId(
   return source.slice(start, end);
 }
 
+/**
+ * #120 R2: tag de apertura del elemento con el `testID` dado, sin sus hijos:
+ * del `<` que lo abre al siguiente `<`, cortado en `/>` si se cierra solo, para
+ * que el hueco hasta el siguiente elemento no entre. El ancla es única en el
+ * fichero; con dos copias, `indexOf` podría recortar la que no se vigila.
+ */
+function openingTagWithTestId(source: string, testId: string): string {
+  const anchor = source.indexOf(`testID="${testId}"`);
+
+  expect(anchor).toBeGreaterThan(-1);
+  expect(source.lastIndexOf(`testID="${testId}"`)).toBe(anchor);
+
+  return source
+    .slice(source.lastIndexOf('<', anchor), source.indexOf('<', anchor))
+    .split('/>')[0];
+}
+
 describe('#61 R1: la etiqueta destructiva usa el token de danger', () => {
+  // #120 R2: este bloque va del ancla al `</Button>` con los hijos dentro, a
+  // propósito: la etiqueta y su texto son hijos del Button, y el token del
+  // acento no puede aparecer en ninguna parte del botón.
   const deleteConfirm = elementWithTestId(
     readSource(join('screens', 'reminders', 'index.tsx')),
     'reminders-delete-confirm',
@@ -79,9 +99,16 @@ describe('#61 R1: la etiqueta destructiva usa el token de danger', () => {
     expect(deleteConfirm).not.toContain('text-accent-foreground');
   });
 
-  it('conserva variant, testID y texto del botón', () => {
-    expect(deleteConfirm).toContain('variant="danger"');
-    expect(deleteConfirm).toContain('bg-danger');
+  it('conserva variant, testID y texto del botón, con variant y bg-danger en su tag de apertura (#120 R2)', () => {
+    // #120 R2: variant y bg-danger son props del propio Button y se leen en su
+    // tag; el texto es un hijo y se lee en el bloque entero.
+    const deleteConfirmTag = openingTagWithTestId(
+      readSource(join('screens', 'reminders', 'index.tsx')),
+      'reminders-delete-confirm',
+    );
+
+    expect(deleteConfirmTag).toContain('variant="danger"');
+    expect(deleteConfirmTag).toContain('bg-danger');
     expect(deleteConfirm).toContain("t('reminders.delete')");
   });
 });
