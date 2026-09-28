@@ -1364,3 +1364,27 @@ describe('#74 R1: el contenedor del selector se anuncia como grupo de opciones',
     ).toBe('radiogroup');
   });
 });
+
+describe('#74 R2: el grupo del selector no colapsa sus tres opciones', () => {
+  it('el contenedor solo lleva su rol, su testID, su clase y sus hijos', async () => {
+    const result = await renderChart(
+      makeWeek('2026-09-02', [10, 20, 30, 40, 50, 60, 70]),
+    );
+
+    // #74 R2: a closed key list, so accessible, accessibilityLabel, aria-label,
+    // importantForAccessibility or any other new prop turns the lock red.
+    expect(
+      Object.keys(result.getByTestId('weekly-activity-metric').props).sort(),
+    ).toEqual(['accessibilityRole', 'children', 'className', 'testID']);
+  });
+
+  it('la tarjeta que lo envuelve tampoco se vuelve un nodo accesible', async () => {
+    const result = await renderChart(
+      makeWeek('2026-09-02', [10, 20, 30, 40, 50, 60, 70]),
+    );
+
+    expect(
+      Object.keys(result.getByTestId('weekly-activity-card').props).sort(),
+    ).toEqual(['children', 'className', 'style', 'testID']);
+  });
+});
