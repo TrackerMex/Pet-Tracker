@@ -227,3 +227,52 @@ pila tras el segundo toque y no el back posterior; M-P1 con su comando,
 salida y lo que hiciste; los comandos y salidas exactas del cierre; el delta;
 y cualquier decision que la spec no cerrara literalmente.
 ```
+
+---
+
+## Reanudacion 1 (2026-09-28): parada en el rojo de R5
+
+Diagnostico del leader sobre `/tmp/r5.log` y el reporte de Codex. Los 10
+fallos previstos salieron tal cual. El undecimo es un defecto del test de R3
+commiteado en `12f07895`, no de la spec ni de R5:
+`it('respeta las métricas A11 bajo cabecera nativa')` espera
+`findByTestId('screen-alert-detail')`, que ya existe mientras la pantalla
+carga, y despues lee `getByTestId('alert-detail-card')` sin esperar a
+`listAlerts`. Es la carrera que prohibe docs/conventions.md §Tests. En R3 y R4
+salio verde por el orden de las tareas. El log lo muestra: Received una
+pantalla con `alert-detail-loading`. Ningun otro test del fichero lee la
+tarjeta sin esperarla. Parar ahi fue lo correcto.
+
+Pegar en Codex:
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-backend   <- PRIMERA LINEA
+Confirma `pwd` y `git branch --show-current` (feature/100-mobile-alert-detail-screen)
+y que HEAD es a9cd5edb, o el commit del leader que anade esta seccion al
+handoff encima de a9cd5edb. Si no, PARA.
+Siguen vigentes todas las reglas del bloque original de
+progress/handoff_mobile-alert-detail-screen.md.
+
+1. Aparta los cambios sin commitear de R5 con `git stash push -- mobile-pet-tracker`
+   (el reporte progress/impl_mobile-alert-detail-screen.md se queda fuera del
+   stash). `git status --short -- mobile-pet-tracker` debe salir vacio.
+2. En src/screens/alert-detail/index.test.tsx, SOLO el it
+   'respeta las métricas A11 bajo cabecera nativa': espera primero la tarjeta
+   (`const card = await screen.findByTestId('alert-detail-card');`) y lee
+   despues la raiz con `screen.getByTestId('screen-alert-detail')`. Mismas
+   aserciones, mismos literales, mismo nombre del it. Nada mas en el fichero.
+   bunx jest --runTestsByPath 'src/screens/alert-detail/index.test.tsx' > /tmp/r3fix.log 2>&1; echo "exit=$?"
+   -> exit=0, 1 suite. Commit (test-only, sin cambio de produccion):
+   test(alert-detail): wait for the card before reading the A11 metrics (R3)
+3. `git stash pop`. Si hay conflicto, PARA. Vuelve a correr el comando del
+   rojo de R5 de tasks.md: exit=1, 2 suites y EXACTAMENTE los 10 fallos
+   previstos (9 de #100 R5 + 'preserves every mutation sign-out with zero
+   delta'). Si sale cualquier otro, PARA. Despues sigue el guion desde el
+   commit rojo de R5 hasta el final, sin cambios.
+4. En el reporte, en §Desviaciones: el commit extra con su hash y el motivo,
+   el log del primer rojo de R5 (11 fallos) y el del segundo (10). En
+   traceability.md, anota el commit extra en la fila de R3 como correccion de
+   test posterior al verde. Si la linea `A worker process has failed to exit
+   gracefully` vuelve a salir en la suite de cierre, copiala al reporte; no la
+   persigas.
+```
