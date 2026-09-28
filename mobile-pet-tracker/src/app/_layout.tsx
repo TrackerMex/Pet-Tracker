@@ -98,7 +98,7 @@ function RootStack() {
         <Stack.Screen name="meal-schedule" options={{ ...headerOptions, title: t('mealSchedule.mealSchedule') }} />
         <Stack.Screen name="pairing" options={{ ...headerOptions, title: '' }} />
         <Stack.Screen name="reminders" options={{ ...headerOptions, title: t('reminders.reminders') }} />
-        <Stack.Screen name="alerts" dangerouslySingular options={{ ...headerOptions, title: t('alerts.title') }} />
+        <Stack.Screen name="alerts" options={{ ...headerOptions, title: t('alerts.title') }} />
         <Stack.Screen name="alerts/[alertId]" dangerouslySingular options={{ ...headerOptions, title: t('alerts.detailTitle') }} />
       </Stack.Protected>
     </Stack>

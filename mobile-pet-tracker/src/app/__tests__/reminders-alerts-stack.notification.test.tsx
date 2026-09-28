@@ -140,6 +140,7 @@ describe('#114 R3: el toque de notificación apila alerts una sola vez', () => {
     expect(rootStack(app)).toEqual(['(tabs)', 'add-reminder', 'alerts']);
     const mounts = mockAlertsMounts;
     await act(async () => tap({} as Notifications.NotificationResponse));
+    await act(async () => { jest.runOnlyPendingTimers(); });
     expect(rootStack(app)).toEqual(['(tabs)', 'add-reminder', 'alerts']);
     expect(mockAlertsMounts).toBe(mounts);
     await act(async () => router.back());
