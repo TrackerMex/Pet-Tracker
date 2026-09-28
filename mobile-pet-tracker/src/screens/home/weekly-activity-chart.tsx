@@ -320,8 +320,6 @@ function MetricSelector({
     <View
       testID="weekly-activity-metric"
       accessibilityRole="radiogroup"
-      accessible
-      accessibilityLabel="Metrica"
       className="relative flex-row gap-1 overflow-hidden rounded-full border border-border bg-default p-1"
     >
       {selectedLayout ? (
@@ -486,7 +484,7 @@ export function WeeklyActivityChart(
   };
 
   return (
-    <Card testID="weekly-activity-card" accessible className="gap-2">
+    <Card testID="weekly-activity-card" className="gap-2">
       <View
         testID="weekly-activity-header"
         className="flex-row items-start justify-between gap-3"
