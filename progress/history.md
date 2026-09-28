@@ -5794,3 +5794,76 @@ que). Solo movil.
   mide.
 - **Obs. 2**: el aviso de `.env` (faltan `RESEND_*` y `RESET_LINK_HOST`) y los
   3 e2e omitidos son ajenos a #120.
+
+## #77 `mobile-home-weight-without-collar` — 2026-09-28
+
+Sesion Backend, worktree `/home/claude/sites/Pet-Tracker-wt-backend`, branch
+`feature/77-mobile-home-weight-without-collar`. Spec sobre `a8d5cb70`,
+rebasada antes de la firma sobre `e9413a6e` (#167, #126). En paralelo,
+Frontend cerraba #120 y abria #74.
+
+### Que se hizo
+
+Registrada al firmar #69 (su R7 la dejo fuera): sin actividad ('no-tracking',
+error, unreachable, missing-config) la tira de «Resumen de hoy» de la Home
+desaparecia entera y se llevaba el peso, que no depende del collar. Solo movil.
+- **Home** (`src/screens/home/index.tsx`): sin actividad `ok` la fila pinta la
+  celda de peso con la anatomia de #69 (icono 20 `muted`, valor tabular,
+  etiqueta) y a su derecha la nota (`summary-note`, `flex-3 self-center pl-3`),
+  con un solo divisor. Con actividad `ok`, las cuatro celdas de #69 sin cambio.
+  Sin sesion o mientras carga la actividad, no hay fila (el Skeleton se queda).
+  Los dos bloques de nota sueltos se fusionan en uno. Cero claves de catalogo,
+  cero llamadas nuevas a la API. D1 por composicion (B). Enmienda a #69 R7
+  firmada con la spec.
+- **R5 (Enmienda 1)**: el test `keeps API order and selects the first pet by
+  default` de `food.test.tsx` aseveraba `mockGetNutritionPlan` fuera del
+  `waitFor`. `usePetSelection` fija la mascota en un efecto y los efectos
+  pasivos de `useQuery` corren en una tarea posterior del Scheduler, asi que a
+  veces salia `Number of calls: 0`. La asercion entra en el `waitFor`. Diff
+  de `food.tsx` vacio.
+- Home 146 → 159; movil 83/1532 → 83/1545; food 56 sin cambio.
+
+### Gate y ciclo
+
+- **Spec**: `8cd4230f`, espejada en Notion
+  (https://app.notion.com/p/3e96115a9b2781d8a624f9298b1d45f4). Firma en
+  Notion, commit `cf89df8e`.
+- **Codex R1-R3**: se detuvo en la base por el rojo de food (flake medido
+  por el leader: 10/10 y 3/3 verdes borrando la perf-cache). La Reanudacion 1
+  lo toleraba y Codex termino `a1ad6fc6`..`62a92ffd`, con la traza en
+  `3e4edd13`. R1 y R2 con rojo natural; R3 por la via b (V3 versionada y
+  revertida).
+- **Enmienda 1 (R5)**: a pregunta del humano. La escribio el spec_author en un
+  worktree aparte (`943f0e99`) y se trajo por cherry-pick (`95ee35ab`). Firma
+  en Notion de su casilla propia, commit `139791bd`. Codex, en cuatro commits
+  (D9): rojo con la mutacion Q1 (200 ms con `abort`) en `3b0fcb64`, verde en
+  `d3cf35b5`, revert en `55533b96` y traza en `7b56bebf`. Las sondas Q2-Q4
+  dieron un rojo cada una.
+- **Estado**: #77 se quedo en `spec_ready` durante la implementacion, a
+  proposito, como #124 y #126. El leader la paso a `in_progress` en `453aecd6`
+  antes del init.sh, creyendolo un olvido, y el mensaje de ese commit lo dice
+  asi. No cambio nada: init.sh acepta 0 y 1.
+- **init.sh**: lo corrio el leader sobre `453aecd6` con permiso del humano y
+  con el turno cedido por Frontend. Exit 0: unit 171/1307, infra 2/14, movil
+  83/1545, e2e 27+3 skip.
+- **Reviewer** (`68d7daf1`): aprobado a la primera. Hizo sondas propias en zona
+  ciega (P1, P3, N8), todas cubiertas, y corrio los candados de #120 contra el
+  arbol: 79/79. Su obs. 2 (la cabecera de la Enmienda seguia en «pendiente de
+  firma») se corrigio en `9f0e94ad`.
+- **Smoke R4**: el humano en su propio commit, `35d493a2` (2026-09-28, OnePlus
+  Nord 5 CPH2709, Android 15). El mismo commit subio la captura `home77.png` a
+  la raiz del repo. Por decision del humano se borra en el cierre; la evidencia
+  es la casilla.
+- **Merge de main** (`95cbacf7`, #120, sin rebase): limpio. Despues, movil
+  83/1545, typecheck y lint exit 0. `food.tsx` sin diff contra main.
+
+### Deuda y apuntes
+
+- **[H] sin medir**: el mismo patron de carrera (asercion de una query con
+  `enabled: selectedPetId !== null` fuera del `waitFor`) aparece en
+  `home/index.test.tsx` › `keeps API order and selects the first pet by
+  default` y en `reminders/index.test.tsx` (#114 R6). No se registra: requiere
+  decision del humano y una medicion propia (requirements §Fuera de alcance).
+- **Firma y hora**: la API de Notion no da la hora de la ultima edicion de la
+  pagina. `139791bd` cita la hora de lectura del fetch; `cf89df8e` la llamo
+  page_last_edited_at, y era la misma cosa.
