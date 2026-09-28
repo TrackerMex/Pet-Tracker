@@ -201,7 +201,7 @@ describe('#78 R12: el centro de alertas resuelve su copy por clave', () => {
     expect(R12_ALERTS.length).toBeGreaterThan(0);
     expect(
       R12_ALERTS.every(
-        ({ file }) => file === 'src/screens/alerts/index.tsx' || file === 'src/app/_layout.tsx', // #114 R4: el título lo pinta la cabecera
+        ({ file }) => file === 'src/screens/alerts/index.tsx' || file === 'src/app/_layout.tsx' || file === 'src/utils/alert-meta.ts', // #100 R3
       ),
     ).toBe(true);
     checkUses(R12_ALERTS);
@@ -454,7 +454,7 @@ describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () =>
   });
 
   it('no deja ningún valor fijo del catálogo como literal entero en las pantallas', () => {
-    expect(SCREEN_FILES).toHaveLength(19 + 2 + 1 + 1); // #95 R4
+    expect(SCREEN_FILES).toHaveLength(19 + 2 + 1 + 1 + 1); // #100 R3
 
     for (const file of SCREEN_FILES) {
       const literals = wholeLiterals(readFileSync(join(SOURCE_ROOT, file), 'utf8'));

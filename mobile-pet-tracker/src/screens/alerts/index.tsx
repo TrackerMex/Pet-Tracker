@@ -1,40 +1,17 @@
-import { useInfiniteQuery } from '@tanstack/react-query';
 import { useFocusEffect } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
 import { useCallback, useRef, useState } from 'react';
 import { FlatList, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { BatteryLow, Bell, LocationSlash } from 'reicon-react-native';
 
-import { ackAlert, listAlerts } from '../../api/alerts';
-import { alertKeys } from '../../api/query-keys';
+import { ackAlert } from '../../api/alerts';
 import type { Alert } from '../../api/types';
 import { Card } from '../../components/card';
+import { useAlertsList } from '../../hooks/use-alerts-list';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
 import { useThemeColors } from '../../theme/use-theme-colors';
-
-const ALERT_TYPE_META = {
-  geofence_exit: {
-    Icon: LocationSlash,
-    labelKey: 'alerts.typeGeofenceExit',
-    surface: 'bg-danger-soft',
-    ink: 'danger',
-  },
-  battery_low: {
-    Icon: BatteryLow,
-    labelKey: 'alerts.typeBatteryLow',
-    surface: 'bg-warning-soft',
-    ink: 'warning-strong',
-  },
-} as const;
-
-const UNKNOWN_ALERT_META = {
-  Icon: Bell,
-  labelKey: 'alerts.typeUnknown',
-  surface: 'bg-default',
-  ink: 'muted',
-} as const;
+import { alertTypeMeta } from '../../utils/alert-meta';
 
 function fmtOpenedAt(
   iso: string,
@@ -65,16 +42,7 @@ export function AlertsScreen() {
   const [ackingId, setAckingId] = useState<string | null>(null);
   const ackingIdRef = useRef<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
-  const alerts = useInfiniteQuery({
-    queryKey: alertKeys.list(),
-    queryFn: ({ pageParam }) =>
-      listAlerts(baseUrl, token ?? '', undefined, pageParam),
-    initialPageParam: undefined as string | undefined,
-    getNextPageParam: (lastPage) =>
-      lastPage.kind === 'ok' && lastPage.nextCursor !== null
-        ? lastPage.nextCursor
-        : undefined,
-  });
+  const alerts = useAlertsList();
   const refetchAlerts = alerts.refetch;
 
   useFocusEffect(
@@ -203,12 +171,7 @@ export function AlertsScreen() {
         ListEmptyComponent={empty}
         renderItem={({ item }) => {
           const rowId = `alert-row-${item.id}`;
-          const meta =
-            item.type in ALERT_TYPE_META
-              ? ALERT_TYPE_META[
-                  item.type as keyof typeof ALERT_TYPE_META
-                ]
-              : UNKNOWN_ALERT_META;
+          const meta = alertTypeMeta(item.type);
           const Icon = meta.Icon;
           const color = {
             danger,
