@@ -384,8 +384,8 @@ describe('#114 R1: la guarda de RootStack declara reminders y alerts tras las se
     const group = Children.toArray(stack?.children)[4];
     if (!isValidElement<{ children: ReactNode }>(group)) throw new Error('Expected protected group');
     const children = Children.toArray(group.props.children);
-    expect(children).toHaveLength(8);
-    expect(children.slice(6).map((child) =>
+    expect(children).toHaveLength(8 + 1); // #100 R2
+    expect(children.slice(6, 8).map((child) =>
       isValidElement<{ name: string; dangerouslySingular?: boolean }>(child)
         ? [child.type, child.props.name, child.props.dangerouslySingular]
         : null,
@@ -393,6 +393,45 @@ describe('#114 R1: la guarda de RootStack declara reminders y alerts tras las se
       [Stack.Screen, 'reminders', undefined],
       [Stack.Screen, 'alerts', true],
     ]);
+  });
+});
+
+describe('#100 R2: la guarda de RootStack declara el detalle de alerta tras alerts', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockGetStoredTheme.mockResolvedValue(undefined);
+    mockGetStoredLanguage.mockResolvedValue(undefined);
+  });
+
+  it('declara alerts/[alertId] como noveno hijo y singular', async () => {
+    await render(<RootLayout />);
+    await waitFor(() => expect(jest.mocked(Stack)).toHaveBeenCalled());
+    const stack = jest.mocked(Stack).mock.calls.at(-1)?.[0];
+    const group = Children.toArray(stack?.children)[4];
+    if (!isValidElement<{ children: ReactNode }>(group)) throw new Error('Expected protected group');
+    const children = Children.toArray(group.props.children);
+    expect(children).toHaveLength(9);
+    const detail = children[8];
+    expect(isValidElement<{ name: string; dangerouslySingular?: boolean }>(detail)
+      ? [detail.type, detail.props.name, detail.props.dangerouslySingular]
+      : null).toEqual([Stack.Screen, 'alerts/[alertId]', true]);
+  });
+
+  it('le da la cabecera nativa de #95 R4 con el título del detalle', async () => {
+    await render(<RootLayout />);
+    await waitFor(() => expect(jest.mocked(Stack)).toHaveBeenCalled());
+    const stack = jest.mocked(Stack).mock.calls.at(-1)?.[0];
+    const group = Children.toArray(stack?.children)[4];
+    if (!isValidElement<{ children: ReactNode }>(group)) throw new Error('Expected protected group');
+    const detail = Children.toArray(group.props.children)[8];
+    expect(isValidElement<{ options?: unknown }>(detail) ? detail.props.options : undefined).toEqual({
+      headerShown: true,
+      title: 't:alerts.detailTitle',
+      headerStyle: { backgroundColor: 'token:background' },
+      headerTintColor: 'token:foreground',
+      headerTitleStyle: { fontFamily: 'Inter-Bold' },
+      headerShadowVisible: false,
+    });
   });
 });
 
