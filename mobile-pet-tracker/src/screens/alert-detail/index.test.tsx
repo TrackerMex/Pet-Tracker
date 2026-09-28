@@ -266,3 +266,76 @@ describe('#100 R4: el detalle pinta carga, error y salida sin la alerta', () => 
     queryClient.clear();
   });
 });
+
+describe('#100 R5: el detalle marca leída la alerta', () => {
+  beforeEach(() => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [makeAlert()], nextCursor: null });
+  });
+
+  it('marca leída una vez y retira el botón', async () => {
+    mockAckAlert.mockResolvedValue({ kind: 'ok', alert: makeAlert({ status: 'acked' }) });
+    await renderDetail();
+    const button = await screen.findByTestId('alert-detail-ack');
+    expect(button.props.accessibilityRole).toBe('button');
+    expect(button.props.className).toContain('min-h-11');
+    expect(within(button).getByText('Marcar leída')).toBeVisible();
+    await fireEvent.press(button);
+    await waitFor(() => expect(mockAckAlert).toHaveBeenCalledWith(apiUrl, 'token-1', 'alert-1'));
+    await waitFor(() => expect(screen.getByTestId('alert-detail-status')).toHaveTextContent('Leída'));
+    expect(screen.queryByTestId('alert-detail-ack')).toBeNull();
+    expect(mockAckAlert).toHaveBeenCalledTimes(1);
+  });
+
+  it('muestra Resuelta si el servidor responde already-closed', async () => {
+    mockAckAlert.mockResolvedValue({ kind: 'already-closed' });
+    await renderDetail();
+    await fireEvent.press(await screen.findByTestId('alert-detail-ack'));
+    await waitFor(() => expect(screen.getByTestId('alert-detail-status')).toHaveTextContent('Resuelta'));
+    expect(screen.queryByTestId('alert-detail-ack')).toBeNull();
+  });
+
+  it('sale una sola vez si el servidor responde not-found', async () => {
+    mockAckAlert.mockResolvedValue({ kind: 'not-found' });
+    await renderDetail();
+    await fireEvent.press(await screen.findByTestId('alert-detail-ack'));
+    await waitFor(() => expect(mockDismissTo).toHaveBeenCalledWith('/alerts'));
+    expect(mockDismissTo).toHaveBeenCalledTimes(1);
+    expect(screen.queryByTestId('alert-detail-action-error')).toBeNull();
+  });
+
+  it.each([
+    ['error', 'Algo salió mal'],
+    ['missing-config', 'Algo salió mal'],
+    ['unreachable', 'No se pudo conectar con el servidor'],
+    ['rejected', 'Algo salió mal'],
+  ] as const)('muestra el error de $kind sin borrar la tarjeta', async (kind, message) => {
+    if (kind === 'rejected') mockAckAlert.mockRejectedValue(new Error('request failed'));
+    else if (kind === 'unreachable') mockAckAlert.mockResolvedValue({ kind, message: 'network down' });
+    else mockAckAlert.mockResolvedValue({ kind });
+    await renderDetail();
+    await fireEvent.press(await screen.findByTestId('alert-detail-ack'));
+    const error = await screen.findByTestId('alert-detail-action-error');
+    expect(error).toHaveTextContent(message);
+    expect(error.props.selectable).toBe(true);
+    expect(error.props.className).toBe('text-danger');
+    expect(screen.getByTestId('alert-detail-card')).toBeVisible();
+  });
+
+  it('cierra sesión una vez si el ack responde unauthorized', async () => {
+    mockAckAlert.mockResolvedValue({ kind: 'unauthorized' });
+    await renderDetail();
+    await fireEvent.press(await screen.findByTestId('alert-detail-ack'));
+    await waitFor(() => expect(mockSignOut).toHaveBeenCalledTimes(1));
+    expect(screen.queryByTestId('alert-detail-action-error')).toBeNull();
+  });
+
+  it('bloquea la segunda pulsación mientras el ack está en vuelo', async () => {
+    mockAckAlert.mockReturnValue(new Promise(() => undefined));
+    await renderDetail();
+    const button = await screen.findByTestId('alert-detail-ack');
+    await fireEvent.press(button);
+    await fireEvent.press(button);
+    expect(mockAckAlert).toHaveBeenCalledTimes(1);
+    expect(screen.getByTestId('alert-detail-ack')).toBeDisabled();
+  });
+});
