@@ -637,7 +637,7 @@ cuadrar es que **estén todos** los rojos listados.
 - [ ] **(4) Commit de traza** `docs(mobile): trace #77 R5`, **siempre el
   último commit de la branch**. Solo documentación:
   - [[traceability]]: una fila nueva **debajo de la de R4**, sin tocar las de
-    R1-R4. Literal, con los tres hashes cortos en su sitio:
+    R1-R4. Literal, con los tres hashes completos (40 caracteres, como las filas de R1-R3) en su sitio:
 
     `| R5 — (Enmienda 1) el test de orden de food espera la llamada a getNutritionPlan dentro de su waitFor; rojo por Q1 versionada, revertida en commit propio | R4: food resuelve la mascota seleccionada › keeps API order and selects the first pet by default (comentario #77 R5) | <hash del rojo de R5> | <hash del verde de R5> (revert: <hash del revert de R5>) |`
   - `progress/impl_mobile-home-weight-without-collar.md`: una sección
