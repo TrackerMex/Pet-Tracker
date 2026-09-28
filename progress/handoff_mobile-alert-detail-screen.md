@@ -407,3 +407,76 @@ progress/handoff_mobile-alert-detail-screen.md.
    - cuantos avisos de act quedan en el verde.
    En traceability.md, la fila de R8 con los dos commits rojos y el verde.
 ```
+
+---
+
+## Reanudacion 4 (2026-09-28): segunda parada en el rojo adicional de R8
+
+Diagnostico del leader sobre `/tmp/r8red3final.log`, el diff sin commitear y
+el reporte de Codex:
+
+- **R8** fallo por la linea (b) autorizada, con el centro impreso. Eso es
+  correcto.
+- **El fallo extra** es un defecto del test de R4 commiteado en `f1981f74`. No
+  lo causan la spec ni la variante de R8:
+  - `it('no pinta estado ni navega cuando la primera página es unauthorized')`
+    espera a que la cache de Query tenga `{ kind: 'unauthorized' }`, y despues
+    comprueba sin esperar que `alert-detail-loading` no este.
+  - El esqueleto se pinta mientras `alerts.isPending || alerts.isFetching`. La
+    cache se escribe antes de que React vuelva a pintar, asi que la comprobacion
+    puede llegar antes que el render.
+  - Es la carrera que prohibe docs/conventions.md §Esperas sobre el arbol
+    renderizado. Es la misma clase de defecto que la Reanudacion 1.
+  - En la primera medicion (`/tmp/r8red3.log`) salio verde. Es intermitente.
+  - La mutacion plantada no influye: con `pages[0]` unauthorized, `found` es
+    `undefined` con mutacion y sin ella.
+- **Doble de `QueryProvider`**: se acepta en lugar del de `createQueryClient`.
+  La regla 1 de la Reanudacion 3 era imposible tal como estaba escrita:
+  `QueryProvider` llama a su `createQueryClient` local, y un doble del export no
+  la alcanza. El doble pierde dos cosas:
+  - el `signOut` que se pasa al `QueryCache`;
+  - el `client.clear()` en `unauthenticated`.
+  
+  A R8 no le afecta: su `useAuth` siempre esta `authenticated` y ninguna
+  respuesta es `unauthorized`. Queda como observacion para el reviewer.
+- Parar fue lo correcto.
+
+Pegar en Codex:
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-backend   <- PRIMERA LINEA
+Confirma `pwd` y `git branch --show-current` (feature/100-mobile-alert-detail-screen)
+y que HEAD es b4123e5c, o el commit del leader que anade esta seccion encima
+de b4123e5c. Si no, PARA.
+Siguen vigentes todas las reglas del bloque original de
+progress/handoff_mobile-alert-detail-screen.md y de la Reanudacion 3.
+
+1. Aparta el cambio sin commitear de R8 con `git stash push -- mobile-pet-tracker`
+   (el reporte se queda fuera del stash). `git status --short -- mobile-pet-tracker`
+   debe salir vacio. La mutacion de R8 sigue plantada, no la toques.
+2. En src/screens/alert-detail/index.test.tsx, SOLO el it
+   'no pinta estado ni navega cuando la primera página es unauthorized': mueve
+   la linea `expect(screen.queryByTestId('alert-detail-loading')).toBeNull();`
+   dentro del waitFor que ya existe, como su ultima asercion. Las otras tres
+   aserciones se quedan despues del waitFor, en su orden. Mismos literales,
+   mismo nombre del it. Nada mas en el fichero.
+   Corre TRES veces, cada una con su log:
+   bunx jest --runTestsByPath 'src/screens/alert-detail/index.test.tsx' > /tmp/r4fix1.log 2>&1; echo "exit=$?"
+   (idem /tmp/r4fix2.log y /tmp/r4fix3.log) -> exit=0 las tres, 1 suite.
+   Si alguna sale roja, PARA. Commit (test-only, sin cambio de produccion):
+   test(alert-detail): wait for the skeleton to leave before the unauthorized checks (R4)
+3. `git stash pop`. Si hay conflicto, PARA. Sigue la Reanudacion 3 desde su
+   paso 2, con el mismo criterio: exit=1, 2 suites y EXACTAMENTE 1 fallo, en el
+   it de R8, por la linea (a) o (b), y los 25 del detalle en verde. Luego haz
+   el commit rojo adicional y sigue con los pasos 3 a 5, sin cambios.
+   El doble de QueryProvider que ya tienes se acepta tal cual: construido con
+   el createQueryClient real y solo gcTime=0.
+4. En el reporte, §Desviaciones:
+   - el commit extra, con su hash y su motivo;
+   - las tres corridas de r4fix;
+   - por que el doble es de QueryProvider y no de createQueryClient.
+   Anade una observacion para el reviewer: el doble pierde el signOut del
+   QueryCache y el clear() en 'unauthenticated'; en R8 no se ejercitan.
+   En traceability.md, anota el commit extra en la fila de R4 como correccion
+   de test posterior al verde.
+```
