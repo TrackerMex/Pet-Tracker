@@ -1,6 +1,6 @@
 ---
 feature: "mobile-metric-selector-a11y"
-status: spec_ready         # draft | spec_ready | approved
+status: approved         # draft | spec_ready | approved
 tags: [spec, mobile, a11y, deuda]
 ---
 
@@ -381,7 +381,7 @@ el `leader` contra `origin/main`) y **(N)** premisa verificada y descartada.
 
 ## Aprobación
 
-- [ ] **Aprobado por humano** (fecha: ____, opción de R3: ____) ← gate
+- [x] **Aprobado por humano** (fecha: 2026-09-28, opción de R3: A) ← gate
       obligatorio antes de implementar. Al marcar esta casilla, el humano
       firma también los nueve puntos de §Qué firma el humano al aprobar esta
       spec.
