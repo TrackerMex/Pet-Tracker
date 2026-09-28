@@ -1261,6 +1261,52 @@ describe('#77 R2: sin actividad, la fila es la celda de peso seguida de la nota'
   });
 });
 
+describe('#77 R3: la fila no se pinta sin sesión ni mientras carga la actividad', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    const pet = makePet({ currentWeightKg: 12.4 });
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+  });
+
+  it('no pinta la fila con la sesión caducada', async () => {
+    const onUnauthorized = jest.fn();
+    mockGetDailyActivity.mockResolvedValue({ kind: 'unauthorized' });
+
+    await renderWithProviders(<HomeScreen />, {
+      wrapper: HomeWrapper,
+      onUnauthorized,
+    });
+    await screen.findByTestId('collar-card');
+    await waitFor(() => expect(onUnauthorized).toHaveBeenCalled());
+    await waitFor(() =>
+      expect(screen.queryByTestId('summary-skeleton')).toBeNull(),
+    );
+
+    expect(screen.getByTestId('summary-card-title')).toBeVisible();
+    expect(screen.queryByTestId('summary-weight')).toBeNull();
+    expect(screen.queryByTestId('summary-note')).toBeNull();
+  });
+
+  it('no pinta la fila mientras la actividad carga', async () => {
+    mockGetDailyActivity.mockReturnValue(pending<DailyActivityState>());
+
+    await renderHome();
+    await screen.findByTestId('collar-card');
+
+    expect(screen.getByTestId('summary-skeleton')).toBeVisible();
+    expect(screen.queryByTestId('summary-weight')).toBeNull();
+    expect(screen.queryByTestId('summary-note')).toBeNull();
+  });
+});
+
 describe('R10: last position enlaza al mapa', () => {
   const device = {
     model: 'PetTrack One',

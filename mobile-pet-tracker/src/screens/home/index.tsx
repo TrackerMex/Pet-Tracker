@@ -423,8 +423,7 @@ export function HomeScreen() {
               <Skeleton testID="summary-skeleton" className="h-16 w-full rounded-xl" />
             ) : null}
 
-            {activity.data !== undefined &&
-            activity.data.kind !== 'unauthorized' ? (
+            {selectedPetId !== null ? (
               <View className="flex-row">
                 <View className="flex-1 items-center gap-1 border-r border-border">
                   <Weight size={20} color={muted} />
@@ -443,7 +442,7 @@ export function HomeScreen() {
                     {t('home.weight')}
                   </Text>
                 </View>
-                {activity.data.kind === 'ok' ? (
+                {activity.data?.kind === 'ok' ? (
                   <>
                     <View className="flex-1 items-center gap-1 border-r border-border">
                       <Walk size={20} color={muted} />
@@ -490,7 +489,7 @@ export function HomeScreen() {
                     testID="summary-note"
                     className="flex-3 self-center pl-3 font-normal text-muted"
                   >
-                    {activity.data.kind === 'no-tracking'
+                    {activity.data?.kind === 'no-tracking'
                       ? t('home.activityNeedsCollar')
                       : t('home.couldNotLoadActivity')}
                   </Text>
