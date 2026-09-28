@@ -13,8 +13,8 @@ mensajes literales de [[tasks]] (`<scope>` = `mobile`).
 
 **Codex rellena las columnas de commit en UN solo commit final**
 `docs(mobile): fill #77 traceability`, **después del último verde** (R3). No
-se toca este fichero en los commits TDD. El `reviewer` no aprueba si queda una
-fila de R1-R3 en «pendiente» (CHECKPOINTS C5). R4 la cierra el humano en su
+se toca este fichero en los commits TDD. El `reviewer` no aprueba si falta un
+commit de R1-R3 (CHECKPOINTS C5). R4 la cierra el humano en su
 casilla de [[requirements]].
 
 Los rojos de R1 y R2 son **naturales**. R3 es un requisito de verificación
@@ -33,10 +33,10 @@ ancestros y habría que reapuntarlos verificando `git merge-base --is-ancestor`
 
 | Requisito | Test (título literal del `describe`) | Commit rojo | Commit verde |
 |---|---|---|---|
-| R1 — la celda de peso se pinta en `no-tracking`, `error`, `unreachable` y `missing-config`: `12.4 kg`, o `—` sin peso o sin perfil; cero llamadas nuevas (4 filas + 3 `it`) | `#77 R1: el peso se pinta aunque la actividad no esté disponible` | pendiente | pendiente |
-| R2 — sin actividad, la fila es la celda de peso (anatomía, clases, tinta `muted`) seguida de la nota, dos hijos, dentro de `summary-card`; sin celdas de actividad (4 filas) | `#77 R2: sin actividad, la fila es la celda de peso seguida de la nota` | pendiente | pendiente |
-| R3 — ni celda ni nota mientras la actividad carga ni con `unauthorized` (2 `it`; rojo por V3 versionada) | `#77 R3: la fila no se pinta sin sesión ni mientras carga la actividad` | pendiente | pendiente |
-| R4 — smoke en dev build de Android con una mascota sin collar y con peso | humano | — | pendiente (casilla de [[requirements]] §Prueba de humo) |
+| R1 — la celda de peso se pinta en `no-tracking`, `error`, `unreachable` y `missing-config`: `12.4 kg`, o `—` sin peso o sin perfil; cero llamadas nuevas (4 filas + 3 `it`) | `#77 R1: el peso se pinta aunque la actividad no esté disponible` | `a1ad6fc648b7ec151bfac669a481a926df738a58` | `f3a17f447da175c6c0ba122dc5ac2355a0a1bfdb` |
+| R2 — sin actividad, la fila es la celda de peso (anatomía, clases, tinta `muted`) seguida de la nota, dos hijos, dentro de `summary-card`; sin celdas de actividad (4 filas) | `#77 R2: sin actividad, la fila es la celda de peso seguida de la nota` | `f489b4706db0c4413ab4736cbc43d0d27e8dbc55` | `8974590cf8da924a69f8dff72980f8c05df468a2` |
+| R3 — ni celda ni nota mientras la actividad carga ni con `unauthorized` (2 `it`; rojo por V3 versionada) | `#77 R3: la fila no se pinta sin sesión ni mientras carga la actividad` | `4a9ab9cfb2e7a6a1c971932ea2d0d0a7bb784932` | `62a92ffd5c58dd30fa353f1bbfebf738f90e2e80` |
+| R4 — smoke en dev build de Android con una mascota sin collar y con peso | humano | — | — (smoke humano por ejecutar; casilla de [[requirements]] §Prueba de humo) |
 
 ## Candados ajenos movidos
 
