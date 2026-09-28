@@ -1465,7 +1465,7 @@
   {
     "id": 77,
     "name": "mobile-home-weight-without-collar",
-    "status": "spec_ready",
+    "status": "in_progress",
     "priority": "P3",
     "description": "Abierta por decision del humano el 2026-09-08 al firmar la spec de #69, que la dejo explicitamente fuera y escribio por que (specs/mobile-home-stats-strip/requirements.md R7). Hoy la tira de estadisticas de la Home aparece y desaparece ENTERA con el estado de la actividad: si activity.data no es 'ok' -mascota sin collar (402 no-tracking), error, unreachable o missing-config- no se pinta ninguna celda. El peso se va con ellas aunque no dependa del collar para nada: viene de currentWeightKg del perfil, que es otra peticion y otro estado de carga. El resultado es que una mascota sin collar tiene peso registrado y el dueno no lo ve en la Home. Lo que cuesta arreglarlo, ya medido en R7 de #69: una fila que a veces tiene una celda y a veces cuatro, con su propio juego de divisores, y reescribir los cinco 'it' de describe('R9: summary degrada con gracia') en src/screens/home/index.test.tsx:441-560. No es un ajuste, es un estado de carga nuevo. Relativo a antes de #69 no se pierde nada -el peso no se pintaba en la Home en ningun estado-, asi que esto es mejora, no regresion.",
     "acceptance_criteria": [
