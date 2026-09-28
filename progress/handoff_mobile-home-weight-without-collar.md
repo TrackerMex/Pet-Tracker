@@ -235,3 +235,129 @@ Reanuda #77 segun progress/handoff_mobile-home-weight-without-collar.md
    de tasks.md y el Contrato de requirements.md mandan: nada de simplificar,
    fundir ni reordenar los describe, los verdes ni la mutacion V3.
 ```
+
+---
+
+## Reanudacion 2 (2026-09-28): Enmienda 1, R5
+
+R1-R3 estan hechos y el leader los valido (hasta `3e4edd13`, `docs(mobile):
+fill #77 traceability`). El humano pidio cerrar el flake de `food.test.tsx`
+dentro de #77: es la **Enmienda 1 (R5)** de `requirements.md`, firmada en su
+casilla propia (§Enmienda 1 › Firma de la Enmienda 1). Deja sin efecto los
+puntos 2 y 3 de la «Reanudacion 1»: ahora `food.test.tsx` y `food.tsx` si se
+tocan, y en la suite completa ya **no se tolera ningun rojo**.
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-backend   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+Confirma `pwd` y `git branch --show-current` otra vez y anadelo al reporte.
+Para si la branch no es feature/77-mobile-home-weight-without-collar.
+No toques /home/claude/sites/Pet-Tracker, Pet-Tracker-wt-ui, Pet-Tracker-wt-77amend,
+pet-tracker-43 ni pt-skills, ni cambies de branch en ningun worktree.
+
+Reanuda #77 con la Enmienda 1 (R5). El bloque original y la «Reanudacion 1»
+de progress/handoff_mobile-home-weight-without-collar.md siguen valiendo,
+SALVO sus puntos 2 y 3, que esta reanudacion sustituye.
+
+Lee enteros, antes de tocar nada:
+  specs/mobile-home-weight-without-collar/requirements.md §«Enmienda 1 — R5»
+    (mecanismo, EARS de R5, tabla de mediciones, inventario, que firma)
+  specs/mobile-home-weight-without-collar/design.md D9
+  specs/mobile-home-weight-without-collar/tasks.md §R5 y §Cierre
+tasks.md §R5 es tu guion: tiene la mutacion Q1 literal, el diff literal del
+test, los tres commits, las sondas Q2-Q4, la fila literal de traceability y
+todos los comandos. No uses numeros de linea: localiza con los grep de tasks.
+
+== QUE HACES ==
+
+El test `R4: food resuelve la mascota seleccionada › keeps API order and
+selects the first pet by default` (src/app/(tabs)/__tests__/food.test.tsx)
+asevera `mockGetNutritionPlan` FUERA de su waitFor, y la llamada llega una
+tarea despues del commit que selecciona el chip: flake. R5 mete esa asercion
+dentro del waitFor. La produccion (src/app/(tabs)/food.tsx) no cambia: su
+diff final contra origin/main es VACIO.
+
+Orden EXACTO, un commit por paso, test primero:
+  Antes     tasks.md §R5 «Antes del rojo de R5»: blobs e310ff45... de food.tsx
+            y abc6ad15... de food.test.tsx (si alguno difiere, PARA), los
+            grep de ancla, guard 9, `#77 R5` 0, y el fichero en 56 passed
+  (1) rojo  SOLO food.tsx: la mutacion Q1 literal de tasks.md. Mensaje
+            `test(mobile): expose the food nutrition plan race (R5)` con el
+            cuerpo literal de tasks.md. Fichero: 1 failed, 55 passed; el
+            unico rojo es ese it, `Number of calls: 0`. Si cae otro (sobre
+            todo uno de `#98 R6`), PARA. Con Q1: tsc exit 0 y las 5 suites de
+            candados de tasks.md, 173 tests, exit 0
+  (2) verde SOLO food.test.tsx, CON Q1 TODAVIA PUESTA: el diff literal de
+            tasks.md (6 inserciones, 5 borrados). Mensaje
+            `test(mobile): wait for the nutrition plan call with the pet chips (R5)`.
+            56 passed; tsc y lint exit 0; greps del test de tasks.md
+  (3) revert SOLO food.tsx: revertir Q1 EXACTAMENTE. Mensaje
+            `fix(mobile): drop the nutrition plan delay (R5)`. Las tres
+            comprobaciones de tasks.md (diff vacio, control --stat 8/1, blob
+            e310ff45...). 56 passed
+  Sondas    Q2, Q3, Q4 sobre el revert. No se commitean. Cada una: aplicar,
+            medir con -t, apuntar, REVERTIR, y
+            `git diff --exit-code -- 'src/app/(tabs)/food.tsx'; echo "exit=$?"`
+            -> exit=0 antes de la siguiente. Las tres: exit=1, 1 failed,
+            55 skipped, con la firma de tasks.md
+  Cierre    tasks.md §Cierre ENTERO otra vez (Home 159, suite 83 / 1545,
+            food 56, typecheck, lint, todos los greps, incluidos los de
+            Enmienda 1 y el --stat con ':/mobile-pet-tracker')
+  (4) traza `docs(mobile): trace #77 R5`, SIEMPRE el ultimo commit: la fila
+            literal de R5 debajo de la de R4 en traceability.md, con los tres
+            hashes COMPLETOS (40 caracteres), y una seccion
+            `## R5 (Enmienda 1)` al final de
+            progress/impl_mobile-home-weight-without-collar.md
+
+Ficheros que cambian en estos cuatro commits, y nada mas:
+  mobile-pet-tracker/src/app/(tabs)/food.tsx            (solo en (1) y (3))
+  mobile-pet-tracker/src/app/(tabs)/__tests__/food.test.tsx   (solo en (2))
+  specs/mobile-home-weight-without-collar/traceability.md     (solo en (4))
+  progress/impl_mobile-home-weight-without-collar.md          (solo en (4))
+
+== REGLAS CRITICAS ==
+
+- Suite completa del cierre: con el verde de R5 en la branch NO se tolera
+  ningun rojo. Si cae `keeps API order and selects the first pet by default`
+  o cualquier otro, PARA, guarda el log ENTERO y reportalo. No repitas la
+  corrida para buscar un verde.
+- No renombres el it, no anadas helper, no toques el beforeEach de `R4`,
+  `asyncUtilTimeout`, `testTimeout` ni ningun otro it de food.test.tsx.
+- En food.test.tsx NO escribas `#` + numero salvo como `#77 R5` (el guard
+  `grep -cP '#[0-9]++(?! R[0-9])'` debe seguir en 9). Ni `StyleSheet` ni
+  `<palabra>-[`.
+- No toques index.tsx ni index.test.tsx de la Home, ni las filas R1-R4 de
+  traceability.md, ni las secciones existentes del reporte (solo anades la
+  de R5). No rebasees, no reescribas commits ya hechos.
+- Rutas en git: desde mobile-pet-tracker/, `-- mobile-pet-tracker/...` no
+  casa con nada y git sale con exit 0 en silencio. Usa la magia `:/`
+  (`':/mobile-pet-tracker/...'`) como indica tasks.md, y cita entre comillas
+  toda ruta con `(tabs)`.
+- Skills: `building-native-ui` (plugin expo de tu catalogo, v1.0.2). No pidas
+  `expo-overview` ni `expo-native-ui`: no existen en tu catalogo. R5 no
+  cambia ninguna pantalla, asi que `appllama-app-design-skill` no hace falta.
+  Di en el reporte cuales cargaste.
+- NO son tuyos: progress/history.md, progress/current.md, STATUS.md,
+  feature_list.json, requirements.md, design.md y tasks.md.
+- Si el sandbox te deniega un comando, PARA y reportalo.
+- NO abras la PR ni hagas push.
+
+== ENTORNO ==
+
+- Jest, tsc y lint desde mobile-pet-tracker/. bun / bunx; nunca npx ni
+  npm i -g.
+- Antes de cada `bunx tsc --noEmit` o `bun run typecheck`:
+  `test ! -e .expo/types/router.d.ts; echo "exit=$?"`. exit=0: sigue.
+  exit=1: PARA y reportalo. Nunca `rm -f`.
+- Jest con --runTestsByPath y la ruta entre comillas simples:
+  `'src/app/(tabs)/__tests__/food.test.tsx'`. Sin comillas, los parentesis
+  son regex y jest salta el fichero con exit 0: comprueba que imprime
+  `Test Suites: 1` y el recuento 56 escrito.
+- Mide SIN pipe: `cmd > fichero 2>&1; echo "exit=$?"`.
+- NO lances ./init.sh ni e2e, ni toques Postgres o LocalStack.
+
+Al terminar, la seccion `## R5 (Enmienda 1)` del reporte lleva: pwd y
+branch; skills cargadas; la base de food (blobs, greps, 56); los cuatro
+commits con hash; el rojo con `Expected`/`Received` y `Number of calls`; el
+verde; las tres comprobaciones del revert; la tabla de sondas Q2-Q4
+(esperado, medido, firma); y las salidas exactas del cierre.
+```
