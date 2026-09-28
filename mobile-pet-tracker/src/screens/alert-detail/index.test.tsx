@@ -1,13 +1,16 @@
-import { screen, waitFor, within } from '@testing-library/react-native';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react-native';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
 import type { TestInstance } from 'test-renderer';
 
 import { ackAlert, listAlerts, type AlertsState } from '../../api/alerts';
+import { alertKeys } from '../../api/query-keys';
 import type { Alert } from '../../api/types';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
+import { createQueryClient } from '../../providers/query-provider';
 import { renderWithProviders } from '../../../test/render-with-providers';
 import { AlertDetailScreen } from '.';
 
@@ -178,5 +181,87 @@ describe('#100 R3: el detalle pinta la alerta de la caché de la lista', () => {
     expect(root.props.contentInsetAdjustmentBehavior).toBe('automatic');
     expect(root.props.contentContainerStyle).toEqual({ padding: 24, gap: 16, paddingBottom: 48 });
     expect(screen.getByTestId('alert-detail-card').props.className).toBe('rounded-card border border-border bg-surface p-4 shadow-sm min-h-44 gap-3');
+  });
+});
+
+describe('#100 R4: el detalle pinta carga, error y salida sin la alerta', () => {
+  it('pinta solo el esqueleto mientras carga', async () => {
+    mockListAlerts.mockReturnValue(new Promise<AlertsState>(() => undefined));
+    await renderDetail();
+    const loading = await screen.findByTestId('alert-detail-loading');
+    expect(loading.props.className).toContain('h-44 w-full rounded-card');
+    expect(screen.queryByTestId('alert-detail-card')).toBeNull();
+    expect(screen.queryByTestId('alert-detail-error')).toBeNull();
+    expect(mockDismissTo).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    { kind: 'error' },
+    { kind: 'unreachable', message: 'network down' },
+    { kind: 'missing-config' },
+  ] as AlertsState[])('pinta $kind y reintenta la lista', async (error) => {
+    mockListAlerts
+      .mockResolvedValueOnce(error)
+      .mockResolvedValue({ kind: 'ok', items: [makeAlert()], nextCursor: null });
+    await renderDetail();
+    const errorText = await screen.findByTestId('alert-detail-error');
+    expect(errorText).toHaveTextContent('Algo salió mal');
+    expect(errorText.props.selectable).toBe(true);
+    expect(errorText.props.className).toBe('text-danger');
+    const retry = screen.getByTestId('alert-detail-retry');
+    expect(retry.props.className).toContain('min-h-11');
+    expect(within(retry).getByText('Reintentar')).toBeVisible();
+    expect(mockDismissTo).not.toHaveBeenCalled();
+
+    await fireEvent.press(retry);
+    await waitFor(() => expect(mockListAlerts).toHaveBeenCalledTimes(2));
+    await screen.findByTestId('alert-detail-card');
+  });
+
+  it('no pinta estado ni navega cuando la primera página es unauthorized', async () => {
+    mockListAlerts.mockResolvedValue({ kind: 'unauthorized' });
+    const rendered = await renderDetail();
+    await waitFor(() => {
+      expect(mockListAlerts).toHaveBeenCalledTimes(1);
+      expect(rendered.queryClient.getQueryData(alertKeys.list())).toEqual(
+        expect.objectContaining({ pages: [{ kind: 'unauthorized' }] }),
+      );
+    });
+    expect(screen.queryByTestId('alert-detail-card')).toBeNull();
+    expect(screen.queryByTestId('alert-detail-loading')).toBeNull();
+    expect(screen.queryByTestId('alert-detail-error')).toBeNull();
+    expect(mockDismissTo).not.toHaveBeenCalled();
+  });
+
+  it('sale al centro una sola vez cuando la alerta no está', async () => {
+    mockListAlerts.mockResolvedValue({ kind: 'ok', items: [], nextCursor: null });
+    const rendered = await renderDetail();
+    await waitFor(() => expect(mockDismissTo).toHaveBeenCalledWith('/alerts'));
+    expect(mockDismissTo).toHaveBeenCalledTimes(1);
+    await rendered.queryClient.refetchQueries({ queryKey: alertKeys.list() });
+    expect(mockDismissTo).toHaveBeenCalledTimes(1);
+  });
+
+  it('espera una recarga de caché vieja antes de salir y luego pinta la alerta', async () => {
+    let resolveAlerts!: (value: AlertsState) => void;
+    mockListAlerts.mockReturnValue(new Promise((resolve) => { resolveAlerts = resolve; }));
+    const queryClient = createQueryClient(jest.fn(), 60_000);
+    queryClient.setQueryData(alertKeys.list(), {
+      pages: [{ kind: 'ok', items: [makeAlert({ id: 'another-alert' })], nextCursor: null }],
+      pageParams: [undefined],
+    });
+    await render(
+      <QueryClientProvider client={queryClient}>
+        <DetailWrapper><AlertDetailScreen alertId="alert-1" /></DetailWrapper>
+      </QueryClientProvider>,
+    );
+
+    await waitFor(() => expect(mockListAlerts).toHaveBeenCalledTimes(1));
+    expect(screen.getByTestId('alert-detail-loading')).toBeVisible();
+    expect(mockDismissTo).not.toHaveBeenCalled();
+    resolveAlerts({ kind: 'ok', items: [makeAlert()], nextCursor: null });
+    await screen.findByTestId('alert-detail-card');
+    expect(mockDismissTo).not.toHaveBeenCalled();
+    queryClient.clear();
   });
 });
