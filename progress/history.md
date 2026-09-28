@@ -5680,3 +5680,61 @@ que). Solo movil.
 - **Firma de smoke en Notion**: primera vez que el humano firma una prueba de
   humo en la pagina de Notion en vez de en un commit propio. El leader la
   transcribio con la misma evidencia que una firma de spec.
+
+# Sesión #126 mobile-home-cell-icons-source-lock-unbounded (+ #80) (2026-09-25/28, sesión Frontend)
+
+- **Elección del humano** (2026-09-25, tras mergear PR #165 de #124): #126, y
+  #80 `mobile-test-double-icon-scope` con ella si su premisa ya no se sostenía.
+- **Branch** `feature/126-mobile-home-cell-icons-source-lock-unbounded` desde
+  `origin/main` `d7cb0d60` (#165, #124). Backend trabajaba #99 en wt-backend
+  con una lista cerrada de ficheros sin solape (Perfil, push, catálogo).
+- **Spec** `f1335cc4` + `eb4368dd`, espejada en Notion desde `eb4368dd`. El
+  humano puso Aprobado y el leader firmó en `9152cfe0`, citando la página y
+  `page_last_edited_at` 2026-09-27T22:44:22.618Z. Diseño: un `describe`
+  anidado `#126 R1: cada celda de la tira pinta su propio icono en muted`
+  dentro de `#69 R1`, con dos `it` (con las métricas de hoy y sin métricas ni
+  peso). Para cada celda toma el parent del Text del valor, filtra los hijos
+  cadena, asevera `toHaveLength(3)` y
+  `children[0].props` `toEqual({ testID, size: 20, color: '--color-muted' })`,
+  con `Uniwind.getCSSVariable` espiado devolviendo su argumento. La cuenta
+  `toHaveLength(4)` de `#69 R9` se queda, con un comentario de 4 líneas (R3) y
+  un párrafo en `docs/conventions.md`. #80 por la propuesta (a), en el punto
+  12 de la firma: se cierra por verificación, sin cambio de código.
+- **Codex**: 4 commits `f83a9361..fbedfc03`, sin skills. El rojo versiona W2
+  (Weight en `accent` más una copia señuelo en muted): fallan solo los dos
+  `it` nuevos, por `toEqual` en la celda de peso, y `#69 R9` pasa, que es el
+  agujero. El verde restaura producción al blob `dbb5b034`. 79/79 sondas con
+  el veredicto exigido; los *5d/*6d en verde (146/0), como pedía la spec.
+  Móvil 83/1510 → 83/1512.
+- **Merge**: el humano mergeó #99 (PR #166) mientras Codex trabajaba.
+  `origin/main` `a8d5cb70` entró por merge (`b4b5490c`) al terminar Codex, sin
+  rebase. El merge no toca ningún fichero de #126.
+- **init.sh**: lo corrió el leader sobre `b4b5490c`, con permiso del humano y
+  turno pactado con Backend. Exit 0: unit 171/1307, infra 2/14, móvil 83/1532
+  (1530 de main + 2 de #126), e2e 27+3 skip.
+- **Reviewer** (`7b3b83d6`): aprobado a la primera, sin bloqueantes. Plantó
+  sus propias mutaciones en zona ciega (sueño y distancia, fuera de la celda de
+  peso) y el candado mordió. Verificó #80: `git grep "summary-icon"` da exit 1
+  en `origin/main` y en HEAD, y los usos de iconos de celda están acotados.
+- **Drift**: entre el veredicto y el cierre la branch solo sumó el commit del
+  veredicto, y `origin/main` no se movió (`a8d5cb70`).
+
+### Deuda y apuntes
+
+- **Obs. 2 del reviewer (no se registra)**: una tinta condicionada a un umbral
+  que ninguno de los dos estados del fixture dispara, como
+  `distanceM > 5000 ? accent : muted` más una copia, deja 146/146 verde. Es el
+  límite de fijar dos estados, del mismo tipo que el residuo *5d/*6d. Cerrarlo
+  pediría un tercer estado de fixture, y eso es decisión de spec.
+- **Obs. 3**: la sonda `own_S_wrapped` del reviewer agotó el heap de jest y
+  quedó sin veredicto. Fallo de la sonda, no de la feature.
+- **Obs. 5, para el leader**: el `git rev-parse` que precedía a init.sh se
+  imprimió fuera del log. En cierres futuros, meter `git rev-parse HEAD` dentro
+  del mismo fichero de log.
+- **Coordinación con #77** (Backend): #77 toca el mismo fichero de test, así
+  que va después del merge de #126 y Backend rebasa su branch de spec. Avisos
+  pasados a Backend: la cuenta de `#69 R9` debe seguir en 4 (no escribir el
+  literal del icono de peso dos veces), #126 R1 cubre solo estados de
+  actividad `kind: 'ok'`, la guardia de design-drift y el ancla del párrafo de
+  R3 en `docs/conventions.md`.
+- Siguiente en esta sesión: la que elija el humano, tras el merge.
