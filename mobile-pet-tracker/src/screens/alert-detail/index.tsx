@@ -35,6 +35,7 @@ export function AlertDetailScreen({ alertId }: { alertId: string }) {
     .find((alert) => alert.id === alertId);
   const alert = found?.status === 'open' ? (acked ?? found) : found;
   const firstPage = alerts.data?.pages[0];
+  const retryKey = 'common.retry' as const;
 
   useEffect(() => {
     if (found === undefined && firstPage?.kind === 'ok' && !alerts.isFetching && !leavingRef.current) {
@@ -141,7 +142,7 @@ export function AlertDetailScreen({ alertId }: { alertId: string }) {
             {t('common.somethingWentWrong')}
           </Text>
           <Button testID="alert-detail-retry" className="min-h-11" onPress={() => void alerts.refetch()}>
-            <Button.Label>{t('common.retry')}</Button.Label>
+            <Button.Label>{t(retryKey)}</Button.Label>
           </Button>
         </>
       ) : null}
