@@ -29,3 +29,10 @@
      - diff de drift;
      - `gh pr create`.
 - Backend (2026-09-29): tras limpiar la sesion arranca #81 mobile-quick-actions-typography-lock en wt-backend. Solo toca los tiles de acciones rapidas de la Home, no la grafica semanal.
+- Enmienda 1, primera version: c1876aae, pusheada. R1 pasa a 3 `it` (render inicial, tras el layout a 295 y con un dia seleccionado). Base tras #100: 86/1598. Medidas en `progress/spec_e1_mobile-weekly-chart-root-accessible-lock.md`.
+- Decisiones del humano (2026-09-29) sobre las preguntas abiertas del spec_author:
+  - metrica: «4.º it», asi que R1 cubre los tres estados internos de la grafica: `chartWidth`, `selection` y `selectedMetricIndex`;
+  - candado sobre el texto del componente: «No»;
+  - recuentos de las sondas de la ronda 1: «Aceptar».
+- El spec_author esta retomado para anadir R1·4 (E1.3) en un commit nuevo encima de c1876aae. Si no hay commit suyo encima de c1876aae, no termino: relanzalo con estas tres decisiones.
+- Despues: re-espejar Notion (En revision) y seguir el paso 3 de la lista de arriba.
