@@ -689,26 +689,54 @@ describe('R15: importar el modulo no toca expo-notifications', () => {
       'expo-notifications unavailable in Expo Go',
     );
 
+    const headerNotifications =
+      jest.requireMock<typeof Notifications>('expo-notifications');
+
     jest.resetModules();
 
-    expect(() =>
-      jest.isolateModules(() => {
-        jest.doMock(
-          'expo-notifications',
-          () =>
-            new Proxy(
-              {},
-              {
-                get() {
-                  throw expoGoImportError;
+    try {
+      expect(() =>
+        jest.isolateModules(() => {
+          jest.doMock(
+            'expo-notifications',
+            () =>
+              new Proxy(
+                {},
+                {
+                  get() {
+                    throw expoGoImportError;
+                  },
                 },
-              },
-            ),
-        );
+              ),
+          );
 
-        jest.requireActual('./use-push-registration');
-      }),
-    ).not.toThrow();
+          jest.requireActual('./use-push-registration');
+        }),
+      ).not.toThrow();
+    } finally {
+      // jest.doMock es global al fichero: los describe posteriores vuelven a
+      // recibir el mock de la cabecera (#133 R1).
+      jest.doMock('expo-notifications', () => headerNotifications);
+    }
   });
 });
 
+describe('#133 R1: tras R15, el hook recibe el mock de expo-notifications de la cabecera', () => {
+  it('llama a cada jest.fn de la cabecera y registra el token', async () => {
+    mockGetPermissions.mockResolvedValue(permission(false, true));
+    mockRequestPermissions.mockResolvedValue(permission(true, true));
+
+    await renderHook(() => usePushRegistration());
+
+    await waitFor(() => {
+      expect(mockRegisterPushToken).toHaveBeenCalledWith(
+        'http://example.test/v1',
+        'jwt-token',
+        { expoToken: 'ExpoPushToken[xxx]', platform: 'android' },
+      );
+    });
+    for (const mock of notificationMocks) {
+      expect(mock).toHaveBeenCalled();
+    }
+  });
+});

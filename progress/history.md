@@ -6214,3 +6214,83 @@ test, diff de produccion vacio.
   - la autoria git no distingue al implementador (obs. 4).
 - **Handoff ronda 2**: se quito la peticion de titular el reporte, porque la
   spec dice «sin tocar lo de la ronda 1».
+
+## #133 `mobile-push-registration-r15-domock-scope` — 2026-09-29
+
+Sesion Backend, worktree `/home/claude/sites/Pet-Tracker-wt-backend`, branch
+`feature/133-mobile-push-registration-r15-domock-scope`, creada desde
+`origin/main` `073fa6cb` (merge de PR #174, #81). En paralelo, Frontend
+llevaba #136 en el arbol principal. Los ficheros no se cruzaban.
+
+### Que se hizo
+
+Se acota el `jest.doMock` de R15 en
+`mobile-pet-tracker/src/hooks/use-push-registration.test.tsx`. Solo cambia el
+test y el diff de produccion queda vacio.
+- **R1**: el `it` de R15 captura el mock de cabecera con `jest.requireMock`
+  antes de `jest.resetModules()`, y lo restaura con
+  `jest.doMock('expo-notifications', () => headerNotifications)` en un
+  `finally`. Un `describe` nuevo, `#133 R1`, va detras de R15 y prueba que el
+  hook vuelve a recibir la cabecera. Con esto, los `describe` nuevos ya no
+  tienen que ir «antes de R15».
+- **R2**: R15 sigue siendo un candado real, cerrado por mutacion (via b).
+  - S1, S2 y S4 lo ponen rojo por asercion.
+  - H1-H5 ponen rojo solo el `describe` de `#133 R1`.
+  - S3 y H4+S1/S2 quedan verdes a proposito: son el limite conocido y la
+    prueba de que el reset es de carga.
+- **R3**: cierre medido. Titulos base + 1, `git diff -w` sin lineas `-`,
+  tsc y eslint con exit 0, grep-clean.
+- Movil pasa de 86/1608 a 86/1609 (+1).
+
+### Como
+
+- **Premisas corregidas en la spec**. El `spec_author` las verifico contra
+  jest-runtime 29.7.0 y la entrada se equivocaba en tres:
+  - `isolateModules` no contiene la fuga;
+  - `jest.dontMock` devuelve el modulo real, no la cabecera;
+  - quitar el reset deja R15 tautologico.
+- **Spec y gate**. La spec la escribio el `spec_author` (`f4e8673a`), se
+  espejo a Notion (`7a7c7c79`) y el leader la firmo tras la aprobacion del
+  humano en Notion (`1102934a`, 2026-09-29). En el punto 4 el humano decidio
+  «registra S3 como deuda nueva», y quedo registrada como #137 (`7f11e9be`).
+- **Handoff** a Codex (`5d7af5db`), con los blobs de base fijados (test
+  `1e4ecca9`, hook `316a36f2`).
+- **Codex**, tres commits test-primero:
+  - `b24895d5`: el rojo de R1, 1 fallo por excepcion
+    (`expo-notifications unavailable in Expo Go`), que es el defecto real;
+  - `0b517529`: el verde, 52/52;
+  - `d98c143b`: la evidencia.
+- **Reviewer**: aprobado a la primera y sin bloqueantes (`04427584`).
+  - Midio el rojo, el verde, las 11 sondas de tasks.md y seis propias en un
+    worktree del scratchpad, no en el arbol vivo.
+  - Todas dieron el veredicto exigido, salvo la sonda propia O1 (ver abajo).
+- **init.sh**: lo lanzo el leader con permiso del humano, tras el
+  «adelante» de Frontend, sobre `d98c143b`. Sin pipe, con HEAD y `exit=`
+  anexados al log. `exit=0`: unit 171/1307, infra 2/14, movil 86/1609,
+  e2e 27+3 skip / 389+8 skip.
+- **Drift**: el HEAD revisado es `d98c143b` y `origin/main` sigue en
+  `073fa6cb`. Despues solo hay commits del leader en `progress/`,
+  `STATUS.md` y `feature_list.json`.
+
+### Deuda y apuntes
+
+- **Registrada como #139** `mobile-push-registration-r1-restore-identity-lock`,
+  por decision del humano. Es la obs. 1 del reviewer, sonda O1.
+  - Si el `finally` restaura otro objeto con las mismas siete `jest.fn` y
+    otro `AndroidImportance`, el fichero sigue verde.
+  - Eso desmiente dos frases de la spec: «cualquier restauracion» (R2) y D2.
+  - El codigo si restaura el objeto de cabecera: la medida V1 pasa en verde,
+    y V1+O1 da rojo. El hueco esta en el test y en la redaccion, no en el
+    arreglo.
+  - Id reservado con Frontend: #138 es suyo, y #140 lo usara si registra algo.
+- **Obs. 2 del reviewer**: su primera corrida de la suite completa se solapo
+  con el init.sh del leader y dio 1 rojo en `food.test.tsx`, un `waitFor`
+  agotado con load 7.26 en 4 CPU. Sin solape salio verde. Es el control mas
+  favorable, no una absolucion. Lo que falla: el prompt del reviewer le
+  dejaba correr la suite entera mientras init.sh estaba en vuelo.
+- **Obs. 3 del reviewer**: el handoff decia que el diff contra `origin/main`
+  tenia solo tres ficheros, «nada mas». Es falso, porque los commits del
+  leader en la branch anaden siete. Codex lo detecto. En futuros handoffs,
+  el diff acumulado se mide contra el HEAD del handoff.
+- La memoria del leader «R15 ultimo describe» se borra cuando #133 este en
+  `main`.
