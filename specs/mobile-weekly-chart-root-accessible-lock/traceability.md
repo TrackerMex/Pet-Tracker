@@ -11,8 +11,8 @@ Todos los tests viven en
 
 | Requisito | Test (archivo::nombre) | Commit rojo | Commit verde |
 |---|---|---|---|
-| R1 | `weekly-activity-chart.test.tsx::#132 R1: la tarjeta es la raíz host de lo que pinta la gráfica › entre el nodo que monta la gráfica y la tarjeta no hay ningún otro` | pendiente | pendiente |
-| R2 | sin test: cierre medido ([[tasks]] §R2 y `progress/impl_mobile-weekly-chart-root-accessible-lock.md`) | no aplica | pendiente |
+| R1 | `weekly-activity-chart.test.tsx::#132 R1: la tarjeta es la raíz host de lo que pinta la gráfica › entre el nodo que monta la gráfica y la tarjeta no hay ningún otro` | `4fb4481c` | `99629c30` |
+| R2 | sin test: cierre medido ([[tasks]] §R2 y `progress/impl_mobile-weekly-chart-root-accessible-lock.md`) | no aplica | `99629c30` |
 
 Regla: el reviewer no aprueba si alguna fila queda «pendiente».
 
