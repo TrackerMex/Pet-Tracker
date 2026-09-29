@@ -14,10 +14,10 @@ dentro de
 
 | Requisito | Test (archivo::nombre) | Commit rojo | Commit verde |
 |---|---|---|---|
-| R1 | `index.test.tsx::#81 R1-R6: … › #136 R1: cada tile baja a opacidad 0.8 mientras se pulsa y vuelve a 1 al soltarlo, con la esquina continua` | pendiente | pendiente |
-| R2 | `index.test.tsx::#81 R1-R6: … › #81 R3: cada tile lleva rounded-xl como único radio y la esquina continua` (enmendado) | pendiente | pendiente |
-| R3 | `consistency-classnames.test.ts::#62 R14: toda esquina no-cápsula que dibuja el repo es continua › screens/home/index.tsx importa y aplica sus 1 esquinas`, `… › fusiona la esquina una vez y la entrega a las dos ramas de Card` y `#98 R10: los candados que esta feature no mueve › deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban` (enmendados) | pendiente | pendiente |
-| R4 | sin test: cierre medido ([[tasks]] §R4 y `progress/impl_mobile-quick-actions-pressed-feedback.md`) | no aplica | pendiente (verde común) |
+| R1 | `index.test.tsx::#81 R1-R6: … › #136 R1: cada tile baja a opacidad 0.8 mientras se pulsa y vuelve a 1 al soltarlo, con la esquina continua` | `f3a912ce4dbc3c563f43f10c11a4ffe69b5e3a60` | `6146ae0e003f24a79f75f8bc5944c23446b698de` |
+| R2 | `index.test.tsx::#81 R1-R6: … › #81 R3: cada tile lleva rounded-xl como único radio y la esquina continua` (enmendado) | `0634eaa83c5d59ece70524e49c0e497392efcd36` | `6146ae0e003f24a79f75f8bc5944c23446b698de` |
+| R3 | `consistency-classnames.test.ts::#62 R14: toda esquina no-cápsula que dibuja el repo es continua › screens/home/index.tsx importa y aplica sus 1 esquinas`, `… › fusiona la esquina una vez y la entrega a las dos ramas de Card` y `#98 R10: los candados que esta feature no mueve › deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban` (enmendados) | `3bdb4c96bbfa44898ca4f19069847e534d1b6b23` | `6146ae0e003f24a79f75f8bc5944c23446b698de` |
+| R4 | sin test: cierre medido ([[tasks]] §R4 y `progress/impl_mobile-quick-actions-pressed-feedback.md`) | no aplica | `6146ae0e003f24a79f75f8bc5944c23446b698de` (verde común) |
 | R5 | sin test: prueba de humo del humano en dev build de Android ([[requirements]] §Prueba de humo del humano) | no aplica | no aplica: casilla de R5 en [[requirements]] |
 
 Regla: el reviewer no aprueba si alguna fila queda «pendiente». La casilla de
