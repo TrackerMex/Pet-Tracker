@@ -800,6 +800,12 @@ copy completa en cada una.
 | — | `home.alertsBell` | `Alerts` | `Alertas` | ← añadida por #78 (R3)
 | — | `home.alertsBellUnread` | `Unread alerts` | `Alertas sin leer` | ← añadida por #78 (R3)
 
+### §2.14 — Añadidos por #100 — Detalle de alerta
+
+| — | `alerts.detailTitle` | `Alert` | `Alerta` | ← añadida por #100 (R1)
+| — | `alerts.statusOpen` | `Unread` | `Sin leer` | ← añadida por #100 (R1)
+| — | `alerts.openedAt` **(param)** | `Detected {{date}}` | `Detectada el {{date}}` | ← añadida por #100 (R1)
+
 ## 3. La infraestructura
 
 ### 3.1 Decisiones

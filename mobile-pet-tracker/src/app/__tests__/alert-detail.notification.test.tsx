@@ -16,7 +16,7 @@ import IndexRoute from '../index';
 const mockSetPushToken = jest.fn();
 let mockAuthState = { status: 'loading', token: null as string | null, setPushToken: mockSetPushToken };
 const mockAuthListeners = new Set<() => void>();
-let mockAlertsMounts = 0;
+let mockDetailMounts = 0;
 
 jest.mock('standard-navigation', () => ({}));
 jest.mock('expo-font', () => ({ useFonts: () => [true] }));
@@ -79,9 +79,9 @@ function routes() {
         else if (key === '(tabs)/_layout') result[key] = TabsLayout;
         else if (key === '(auth)/_layout') result[key] = AuthLayout;
         else if (key.endsWith('/_layout')) throw new Error(`Unexpected layout: ${key}`);
-        else if (key.endsWith('alerts')) {
-          result[key] = function ListStub() {
-            useState(() => { mockAlertsMounts += 1; return 0; });
+        else if (key.endsWith('alerts/[alertId]')) {
+          result[key] = function DetailStub() {
+            useState(() => { mockDetailMounts += 1; return 0; });
             return <Text>{key}</Text>;
           };
         } else result[key] = () => <Text>{key}</Text>;
@@ -96,18 +96,16 @@ function rootStack(app: ReturnType<typeof renderRouter>) {
   return app.getRouterState()?.routes[0]?.state?.routes.map((route) => route.name) ?? [];
 }
 
-
-
 const mockGetLastResponse = jest.mocked(Notifications.getLastNotificationResponseAsync);
 const mockAddResponseListener = jest.mocked(Notifications.addNotificationResponseReceivedListener);
 
-describe('#114 R3: el toque de notificación apila alerts una sola vez', () => {
+describe('#100 R7: el toque apila el detalle de su alerta una sola vez', () => {
   afterEach(() => jest.useRealTimers());
 
-  it('conserva una tabs en frío y la pantalla actual bajo alerts en caliente', async () => {
+  it('abre el detalle en frío y en caliente, sin duplicarlo, y cae al centro sin id', async () => {
     jest.clearAllMocks();
     mockAuthState = { status: 'loading', token: null, setPushToken: mockSetPushToken };
-    mockAlertsMounts = 0;
+    mockDetailMounts = 0;
     jest.mocked(Notifications.getPermissionsAsync).mockResolvedValue({ granted: true, canAskAgain: true } as Notifications.NotificationPermissionsStatus);
     jest.mocked(Notifications.getExpoPushTokenAsync).mockResolvedValue({ type: 'expo', data: 'ExpoPushToken[xxx]' });
     jest.mocked(Notifications.setNotificationChannelAsync).mockResolvedValue(null);
@@ -115,6 +113,9 @@ describe('#114 R3: el toque de notificación apila alerts una sola vez', () => {
     mockAddResponseListener.mockReturnValue({ remove: jest.fn() });
     let resolveLastResponse!: (response: Notifications.NotificationResponse) => void;
     mockGetLastResponse.mockReturnValue(new Promise((resolve) => { resolveLastResponse = resolve; }));
+    const response = (data: Record<string, unknown>) => ({
+      notification: { request: { content: { data } } },
+    }) as unknown as Notifications.NotificationResponse;
 
     const app = renderRouter(routes(), { initialUrl: '/' });
     await act(async () => {
@@ -122,29 +123,37 @@ describe('#114 R3: el toque de notificación apila alerts una sola vez', () => {
       mockAuthListeners.forEach((listener) => listener());
     });
     await waitFor(() => expect(mockGetLastResponse).toHaveBeenCalledTimes(1));
-    await act(async () => resolveLastResponse({} as Notifications.NotificationResponse));
-    await waitFor(() => expect(app.getPathname()).toBe('/alerts'));
-    expect(rootStack(app)).toEqual(['(tabs)', 'alerts']);
+    await act(async () => resolveLastResponse(response({ alertId: 'alert-1' })));
+    await act(async () => { jest.runOnlyPendingTimers(); });
+    await waitFor(() => expect(app.getPathname()).toBe('/alerts/alert-1'));
+    expect(rootStack(app)).toEqual(['(tabs)', 'alerts/[alertId]']);
+
     await act(async () => router.back());
     await waitFor(() => expect(app.getPathname()).toBe('/home'));
-    expect(rootStack(app)).toEqual(['(tabs)']);
     expect(router.canGoBack()).toBe(false);
 
     await act(async () => router.push('/add-reminder'));
     await waitFor(() => expect(app.getPathname()).toBe('/add-reminder'));
-    expect(rootStack(app)).toEqual(['(tabs)', 'add-reminder']);
     const tap = mockAddResponseListener.mock.calls.at(-1)?.[0];
     if (!tap) throw new Error('Expected notification listener');
-    await act(async () => tap({} as Notifications.NotificationResponse));
-    await waitFor(() => expect(app.getPathname()).toBe('/alerts'));
-    expect(rootStack(app)).toEqual(['(tabs)', 'add-reminder', 'alerts']);
-    const mounts = mockAlertsMounts;
-    await act(async () => tap({} as Notifications.NotificationResponse));
+    await act(async () => tap(response({ alertId: 'alert-2' })));
     await act(async () => { jest.runOnlyPendingTimers(); });
-    expect(rootStack(app)).toEqual(['(tabs)', 'add-reminder', 'alerts']);
-    expect(mockAlertsMounts).toBe(mounts);
-    await act(async () => router.back());
-    await waitFor(() => expect(app.getPathname()).toBe('/add-reminder'));
-    expect(rootStack(app)).toEqual(['(tabs)', 'add-reminder']);
+    await waitFor(() => expect(app.getPathname()).toBe('/alerts/alert-2'));
+    expect(rootStack(app)).toEqual(['(tabs)', 'add-reminder', 'alerts/[alertId]']);
+    const mounts = mockDetailMounts;
+
+    await act(async () => tap(response({ alertId: 'alert-2' })));
+    await act(async () => { jest.runOnlyPendingTimers(); });
+    expect(rootStack(app)).toEqual(['(tabs)', 'add-reminder', 'alerts/[alertId]']);
+    expect(mockDetailMounts).toBe(mounts);
+
+    await act(async () => tap(response({ alertId: 'alert-3' })));
+    await act(async () => { jest.runOnlyPendingTimers(); });
+    await waitFor(() => expect(app.getPathname()).toBe('/alerts/alert-3'));
+    expect(mockDetailMounts).toBe(mounts + 1);
+
+    await act(async () => tap(response({})));
+    await act(async () => { jest.runOnlyPendingTimers(); });
+    await waitFor(() => expect(app.getPathname()).toBe('/alerts'));
   });
 });
