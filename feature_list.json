@@ -2558,9 +2558,9 @@
   {
     "id": 132,
     "name": "mobile-weekly-chart-root-accessible-lock",
-    "status": "pending",
+    "status": "done",
     "priority": "P3",
-    "description": "Registrada al cerrar #130 el 2026-09-28. Es la obs. 1 de su veredicto (progress/review_mobile-weekly-day-row-accessible-lock.md, sonda wrapcard). En mobile-pet-tracker/src/screens/home/weekly-activity-chart.tsx, un <View accessible> que envuelva el <Card testID='weekly-activity-card'> del return de WeeklyActivityChart funde en un solo nodo de TalkBack la tarjeta entera, con el selector y las siete columnas dentro, y la grafica sigue en 43/43 (blob de la mutacion cec8a26e, medido por el reviewer sobre 7a68bb1a). No lo ve #130 R1 (las claves de la fila no cambian), ni #130 R2 (row.parent sigue siendo la tarjeta), ni #74 R2 (las props de la tarjeta no cambian). La (D) de #130 «no se miran los ancestros de la tarjeta en la Home» aparta src/screens/home/index.tsx, no el return de la propia grafica: la premisa «la tarjeta es la raiz host de lo que pinta WeeklyActivityChart» es cierta hoy y no tiene candado. Limites: el hueco es solo DENTRO de la grafica; lo que la Home ponga alrededor sigue fuera de alcance. Solo test. Toca el mismo test que #131.",
+    "description": "Registrada al cerrar #130 el 2026-09-28. Es la obs. 1 de su veredicto (progress/review_mobile-weekly-day-row-accessible-lock.md, sonda wrapcard). En mobile-pet-tracker/src/screens/home/weekly-activity-chart.tsx, un <View accessible> que envuelva el <Card testID='weekly-activity-card'> del return de WeeklyActivityChart funde en un solo nodo de TalkBack la tarjeta entera, con el selector y las siete columnas dentro, y la grafica sigue en 43/43 (blob de la mutacion cec8a26e, medido por el reviewer sobre 7a68bb1a). No lo ve #130 R1 (las claves de la fila no cambian), ni #130 R2 (row.parent sigue siendo la tarjeta), ni #74 R2 (las props de la tarjeta no cambian). La (D) de #130 «no se miran los ancestros de la tarjeta en la Home» aparta src/screens/home/index.tsx, no el return de la propia grafica: la premisa «la tarjeta es la raiz host de lo que pinta WeeklyActivityChart» es cierta hoy y no tiene candado. Limites: el hueco es solo DENTRO de la grafica; lo que la Home ponga alrededor sigue fuera de alcance. Solo test. Toca el mismo test que #131. Cerrada el 2026-09-29 en dos rondas, solo test y sin tocar produccion. R1: el padre host de weekly-activity-card es el View del propio test (testID 'chart-parent', toBe contra un literal) en los cuatro estados internos de la grafica: el primer render, tras medir el layout a 295, con un dia seleccionado y con otra metrica seleccionada. La ronda 1 solo miraba el primer render: el reviewer la rechazo porque un envoltorio que aparecia tras el layout o con un dia seleccionado dejaba la suite en verde (3296180d). La Enmienda 1, firmada en Notion (27724fb3), anadio los otros tres estados. Diff de produccion vacio: cada uno de los cuatro rojos versiono su mutacion y el verde siguiente la revirtio. 30/30 sondas con el veredicto exigido. Las 12 (D) de la Enmienda 1 siguen siendo huecos firmados; trendwrap, callbackwrap y motionwrap solo los ve la Home. Movil 86/1601/1 (+4 sobre origin/main 4efb6c81, 86/1597). Codex en diez commits, ocho de codigo test-primero y dos de evidencia; reviewer aprobado en la ronda 2 (progress/review_mobile-weekly-chart-root-accessible-lock.md) e init.sh EXIT=0 sobre fb3de49e. Su hallazgo (F) wrapmetric queda como #135.",
     "acceptance_criteria": [
       "Con un View accessible (o un Pressable) envolviendo weekly-activity-card dentro de WeeklyActivityChart, un it de la grafica FALLA",
       "Los esperados son literales del test, nunca importados de produccion",
@@ -2604,6 +2604,22 @@
       "mobile-pet-tracker/src/screens/alert-detail/index.tsx",
       "mobile-pet-tracker/src/__tests__/design-drift.test.ts",
       "mobile-pet-tracker/src/__tests__/ui-copy-table.ts"
+    ]
+  },
+  {
+    "id": 135,
+    "name": "mobile-weekly-chart-metric-selector-parent-lock",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada al cerrar #132 el 2026-09-29. Es el hallazgo (F) de su spec (specs/mobile-weekly-chart-root-accessible-lock/requirements.md §Fuera de alcance, «Los hijos de la tarjeta que no son la fila no tienen candado de estructura») y la obs. 1 de su veredicto de la ronda 2. En mobile-pet-tracker/src/screens/home/weekly-activity-chart.tsx, un <View accessible> alrededor de <MetricSelector dentro de la tarjeta (sonda wrapmetric, blob d053148a654bb15abf0e75c2d056d94bea7b930a) deja la grafica en verde (43/43 antes de #132, 47/47 tras cerrarla) y tambien la Home y las suites que leen la grafica. En Android funde en un solo nodo de TalkBack las tres opciones del selector que #74 separo. #74 R2 cierra las props del contenedor weekly-activity-metric, no su padre; #130 R2 fija solo la fila de las siete columnas; #132 R1 fija solo el padre de la tarjeta. El remedio que apunta la spec de #132 es el de #130 R2: fijar por children los hijos host de weekly-activity-card. Limites: solo dentro de la tarjeta; la spec debe medir la base al arrancar y localizar todo por contenido (grep \"#130 R2\" y \"#132 R1\" en el mismo test), nunca por numero de linea. Solo test. Toca el mismo test que #131.",
+    "acceptance_criteria": [
+      "Con un View accessible (o un Pressable) envolviendo el selector de metrica dentro de weekly-activity-card, un it de la grafica FALLA por asercion",
+      "Los esperados son literales del test, nunca importados de produccion",
+      "Los describe de #68, #74, #130 y #132 siguen verdes y sin cambios",
+      "Cero cambio en produccion; suite movil verde medida sin pipe; delta de tests declarado"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/home/weekly-activity-chart.test.tsx"
     ]
   },
   {

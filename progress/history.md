@@ -6143,3 +6143,74 @@ nodos host, tile a tile, con esperados literales y sin imports nuevos.
 - **Premisas caducadas de la entrada**: las lineas `index.tsx:544-555` y las
   cifras 68/68 y 1054/1054. O6 ya lo cerraba #85 R7, y
   `docs/ui-guidelines.md` no hizo falta (§Enmienda #70, punto 12).
+
+## #132 `mobile-weekly-chart-root-accessible-lock` — 2026-09-29
+
+Sesion Frontend, arbol principal `/home/claude/sites/Pet-Tracker`, branch
+`feature/132-mobile-weekly-chart-root-accessible-lock`, creada desde
+`origin/main` `035be7fe` (merge de PR #171, #130). En paralelo, Backend cerro
+#100 y arranco #81 en `wt-backend`.
+
+### Que se hizo
+
+Candado de estructura sobre la raiz de la grafica semanal de la Home. Solo
+test, diff de produccion vacio.
+- **R1**: un `it` monta `WeeklyActivityChart` dentro de un
+  `<View testID="chart-parent">` del propio test y asevera con `toBe`, contra
+  literales, que es el padre host de `weekly-activity-card`. Lo hace en los
+  cuatro estados internos de la grafica: primer render (R1·1), tras medir el
+  layout a 295 (R1·2), con un dia seleccionado (R1·3) y con otra metrica
+  seleccionada (R1·4).
+- **R2**: cierre medido, con 30 sondas, greps de candado y blobs finales.
+- Movil 83/1552/1 → 86/1601/1: +4 tests propios, el resto viene de #100 por
+  merge.
+
+### Como
+
+- **Spec** del `spec_author` (`1fb41f83`). El leader verifico una premisa
+  falsa que destapo: con `wrapcard`, 4 `it` de orden de la Home ya fallaban
+  por `toEqual`. El gate decidia entre R1 y cerrar como (N); el humano eligio
+  R1 y firmo desde Notion (`4126e990`, 2026-09-28).
+- **Ronda 1**: Codex, dos commits de codigo por la via b (`4fb4481c`,
+  `99629c30`) y uno de evidencia (`40e40dfe`). El reviewer la **rechazo**
+  (`3296180d`): R1 solo miraba el primer render. `layoutwrap` (un
+  `<View accessible>` si `chartWidth > 0`) y `selwrap` (un `<Pressable>` con
+  un dia seleccionado) dejaban la suite en 83/1553 verde.
+- **Enmienda 1**: el humano eligio enmendar R1 y respondio tres preguntas:
+  un «4.º it» para la metrica; «No» a un candado sobre el texto del
+  componente; «Aceptar» a los recuentos de la ronda 1. La escribio el
+  `spec_author` (`c1876aae`, `552995ee`) y se firmo desde Notion (`27724fb3`,
+  2026-09-29). Anade 12 filas (D) de huecos declarados, entre ellas el tema
+  (`themewrap`).
+- **Merge** de `origin/main` `4efb6c81` (#100) en `02128a12`, sin rebase ni
+  conflictos.
+- **Ronda 2**: Codex, seis commits de codigo por la via b (`3a0022f6`,
+  `061ca9ea`, `728ad1c6`, `be6ac464`, `f27dd25d`, `97f8c18c`) y uno de
+  evidencia (`fb3de49e`). El rojo de E1.3 da 2 fallos: R1·4 y el rebote
+  declarado de R6. Las 30 sondas dan lo exigido.
+- **Reviewer** de la ronda 2: aprobado sin bloqueantes (`89489048`). Midio
+  los rojos y las sondas en un worktree propio, sin mutar el arbol principal.
+- **init.sh**: lo lanzo el leader con permiso del humano, tras avisar a
+  Backend, sobre `fb3de49e`. Sin pipe, con `head` y `exit` a disco.
+  `EXIT=0`: unit 171/1307, infra 2/14, movil 86/1601/1, e2e 27+3 skip.
+- **Drift**: el HEAD revisado es `fb3de49e` y `origin/main` es ancestro.
+  Despues solo hay commits del leader en `progress/`, `STATUS.md` y
+  `feature_list.json`.
+
+### Deuda y apuntes
+
+- **Registrado como #135** `mobile-weekly-chart-metric-selector-parent-lock`:
+  es la (F) `wrapmetric`. Un `<View accessible>` alrededor de
+  `<MetricSelector` dentro de la tarjeta sigue verde (obs. 1 del reviewer).
+  El id se asigno contra `origin/main` (maximo 134, con #133 y #134
+  reservadas por Backend).
+- **Las 12 (D) siguen siendo huecos firmados** (obs. 5). `trendwrap`,
+  `callbackwrap` y `motionwrap` solo los ve la Home. No se describen como
+  cubiertos.
+- **Obs. no bloqueantes** del reviewer, sin registro:
+  - el catalogo de Codex dice `building-native-ui` v1.0.1 y no v1.0.2
+    (deuda B5, obs. 2);
+  - el reporte de Codex no tiene titulo (obs. 3);
+  - la autoria git no distingue al implementador (obs. 4).
+- **Handoff ronda 2**: se quito la peticion de titular el reporte, porque la
+  spec dice «sin tocar lo de la ronda 1».
