@@ -2650,6 +2650,27 @@ describe('#81 R1-R6: la rejilla de accesos rápidos no deja decisiones sin canda
       expect(labelNode.props.style).toBeUndefined();
     }
   });
+
+  it('#81 R2: cada tile tiene dos hijos, el icono arriba y la etiqueta debajo', async () => {
+    await renderHome();
+    await screen.findByTestId('quick-action-weight');
+
+    for (const [testID, iconTestID, label] of [
+      ['quick-action-weight', 'icon-weight', 'Peso'],
+      ['quick-action-reminder', 'icon-calendar-plus', 'Recordatorio'],
+      ['quick-action-documents', 'icon-file-text', 'Documentos'],
+    ] as const) {
+      const tile = screen.getByTestId(testID);
+
+      // #81 R2: counted by children, so a wrapper or a third child turns red.
+      expect(tile.children).toHaveLength(2);
+      expect(tile.children[0]).toHaveProperty('props.testID', iconTestID);
+      expect(tile.children[1]).toBe(within(tile).getByText(label));
+      expect(tile.props.className).not.toMatch(
+        /(?:^|\s)flex-(?:row|row-reverse|col-reverse)(?:\s|$)/,
+      );
+    }
+  });
 });
 
 describe('#85 R1: la sección recupera su rótulo en los dos idiomas', () => {
