@@ -532,34 +532,34 @@ ningún módulo nativo. App en español salvo el paso 7.
 
 **Pasos**
 
-- [ ] 1. Home → campana → Alertas → tocar el **texto** de una fila (tipo,
+- [X] 1. Home → campana → Alertas → tocar el **texto** de una fila (tipo,
       mascota u hora): entra "Alerta" con cabecera nativa y flecha, sin barra
       flotante. La tarjeta muestra icono, tipo, mascota, "Detectada el …" con
       fecha y hora, y la píldora "Sin leer"; debajo, "Marcar leída". Al pulsar
       el texto de la fila baja su opacidad.
-- [ ] 2. "Marcar leída" en el detalle: la píldora pasa a "Leída" y el botón
+- [X] 2. "Marcar leída" en el detalle: la píldora pasa a "Leída" y el botón
       desaparece. Flecha atrás: en Alertas esa fila ya dice "Leída" y no tiene
       botón.
-- [ ] 3. "Marcar leída" **en la fila** de otra alerta abierta: se marca sin
+- [X] 3. "Marcar leída" **en la fila** de otra alerta abierta: se marca sin
       navegar al detalle.
-- [ ] 4. **Toque en caliente con `alertId`**: desde Home, disparar la
+- [X] 4. **Toque en caliente con `alertId`**: desde Home, disparar la
       notificación con el `alertId` real y tocar el banner → se abre el
       detalle de **esa** alerta. Atrás → Home.
-- [ ] 5. **Misma notificación otra vez**: con ese detalle abierto, disparar la
+- [X] 5. **Misma notificación otra vez**: con ese detalle abierto, disparar la
       misma y tocarla → sigue en el mismo detalle; **un** atrás sale a Home.
-- [ ] 6. **Toque en frío**:
+- [X] 6. **Toque en frío**:
       `adb -s <ip:puerto> shell am force-stop com.trackermex.pettracker`;
       disparar la notificación y tocarla en la bandeja → la app abre en el
       detalle de esa alerta. Atrás → Home **con** la barra; un segundo atrás
       sale de la app.
-- [ ] 7. **Alerta que no existe**: disparar con un `alertId` inventado (un uuid
+- [X] 7. **Alerta que no existe**: disparar con un `alertId` inventado (un uuid
       cualquiera) y tocarla → acaba en Alertas, sin mensaje de error. Tema
       oscuro (Profile) e inglés: el detalle toma fondo y texto del tema y su
       título es "Alert".
-- [ ] 8. Métricas: en el detalle no queda hueco entre la cabecera y la tarjeta,
+- [X] 8. Métricas: en el detalle no queda hueco entre la cabecera y la tarjeta,
       y el contenido termina ~24 px sobre la barra del sistema.
 
-- [ ] Prueba de humo superada (fecha: )
+- [X] Prueba de humo superada (fecha: 2026-09-29)
 
 ## Aprobación
 
