@@ -1466,3 +1466,27 @@ describe('#130 R2: entre la tarjeta y cada columna no hay otro nodo', () => {
     expect(row.parent?.props.testID).toBe('weekly-activity-card');
   });
 });
+
+describe('#132 R1: la tarjeta es la raíz host de lo que pinta la gráfica', () => {
+  it('entre el nodo que monta la gráfica y la tarjeta no hay ningún otro', async () => {
+    const { View } = jest.requireActual<typeof import('react-native')>(
+      'react-native',
+    );
+    const result = await render(
+      <ChartWrapper language="es">
+        <View testID="chart-parent">
+          <WeeklyActivityChart
+            days={makeWeek('2026-09-02', [10, 20, 30, 40, 50, 60, 70])}
+            weekComparison={NO_COMPARISON}
+          />
+        </View>
+      </ChartWrapper>,
+    );
+
+    // #132 R1: the test mounts the chart inside a host of its own, so a wrapper
+    // around the card, accessible or not, turns the lock red.
+    expect(
+      result.getByTestId('weekly-activity-card').parent?.props.testID,
+    ).toBe('chart-parent');
+  });
+});
