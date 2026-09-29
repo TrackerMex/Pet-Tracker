@@ -15,6 +15,7 @@ Todos los tests viven en
 | R2 | sin test: cierre medido ([[tasks]] §R2 y `progress/impl_mobile-weekly-chart-root-accessible-lock.md`) | no aplica | `99629c30` |
 | R1 (Enmienda 1) | `weekly-activity-chart.test.tsx::#132 R1: la tarjeta es la raíz host de lo que pinta la gráfica › tras medir el gráfico, entre el nodo que monta la gráfica y la tarjeta sigue sin haber otro` | pendiente | pendiente |
 | R1 (Enmienda 1) | `weekly-activity-chart.test.tsx::#132 R1: la tarjeta es la raíz host de lo que pinta la gráfica › con un día seleccionado, entre el nodo que monta la gráfica y la tarjeta sigue sin haber otro` | pendiente | pendiente |
+| R1 (Enmienda 1) | `weekly-activity-chart.test.tsx::#132 R1: la tarjeta es la raíz host de lo que pinta la gráfica › con otra métrica seleccionada, entre el nodo que monta la gráfica y la tarjeta sigue sin haber otro` | pendiente | pendiente |
 | R2 (Enmienda 1) | sin test: cierre medido ([[tasks]] §E1 — Cierre y la sección `## Enmienda 1` de `progress/impl_mobile-weekly-chart-root-accessible-lock.md`) | no aplica | pendiente |
 
 Regla: el reviewer no aprueba si alguna fila queda «pendiente».
@@ -32,17 +33,20 @@ Los mensajes exactos están en [[tasks]].
 ### Enmienda 1
 
 Las filas de la ronda 1 **no se tocan**: sus hashes siguen en la historia. Las
-tres filas «(Enmienda 1)» las rellena el implementer en el commit de evidencia
+cuatro filas «(Enmienda 1)» las rellena el implementer en el commit de evidencia
 de [[tasks]] §E1 — Cierre, en este orden de commits:
 
 1. rojo de E1.1: `test(mobile): expose a wrapper that appears after the weekly chart's layout with a versioned mutation (R1)`;
 2. verde de E1.1: `test(mobile): lock the weekly activity card as the chart's host root after layout (R1)`;
 3. rojo de E1.2: `test(mobile): expose a wrapper that appears with a selected day with a versioned mutation (R1)`;
 4. verde de E1.2: `test(mobile): lock the weekly activity card as the chart's host root with a selected day (R1)`;
-5. evidencia: `docs(mobile): record the weekly chart root lock evidence after amendment 1 (R2)`.
+5. rojo de E1.3: `test(mobile): expose a wrapper that appears with another metric selected with a versioned mutation (R1)`;
+6. verde de E1.3: `test(mobile): lock the weekly activity card as the chart's host root with another metric selected (R1)`;
+7. evidencia: `docs(mobile): record the weekly chart root lock evidence after amendment 1 (R2)`.
 
 La primera fila «(Enmienda 1)» cita los commits 1 y 2; la segunda, el 3 y el 4;
-la de R2, el 4, por la misma razón que la fila de R2 de la ronda 1.
+la tercera, el 5 y el 6; la de R2, el 6, por la misma razón que la fila de R2
+de la ronda 1.
 
 ## Requisitos sin test propio
 

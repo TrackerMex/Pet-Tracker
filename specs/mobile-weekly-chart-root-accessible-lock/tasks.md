@@ -306,21 +306,24 @@ aserción para que case.
 - `package.json` y `bun.lock`: no hay dependencia nueva. Tampoco ficheros
   nativos.
 
-## Enmienda 1 — R1 en tres estados
+## Enmienda 1 — R1 en cuatro estados
 
 > Solo si la casilla de [[requirements]] §Enmienda 1 › Firma de la Enmienda 1
 > está marcada. Es la ronda 2 de #132, **encima** de la historia de la ronda 1:
 > `4fb4481c`, `99629c30` y `40e40dfe` se quedan, sin rebase ni amend. Mismo
 > orden TDD y misma vía **b** que en R1: cada `it` nuevo tiene su commit rojo,
 > con una mutación de producción versionada, y su verde, que la revierte con
-> `git checkout HEAD~1 --`. Cuatro commits de código y uno de evidencia, en el
+> `git checkout HEAD~1 --`. Seis commits de código y uno de evidencia, en el
 > orden de abajo y con los mensajes literales.
 >
 > Cada `it` nuevo crea su sujeto antes de aseverarlo: monta el centinela, llega
-> a su estado y prueba que llegó (`toBeOnTheScreen`) antes de mirar la raíz.
+> a su estado y prueba que llegó antes de mirar la raíz: con `toBeOnTheScreen`
+> en R1·2 y R1·3, y con el `accessibilityState` de la opción pulsada, por
+> `toEqual`, en R1·4.
 > Todo se localiza por contenido, como en el resto de este fichero.
-> «R1·1» es el `it` de la ronda 1, «R1·2» el de tras medir y «R1·3» el del día
-> seleccionado, los tres en `describe('#132 R1: la tarjeta es la raíz host de lo que pinta la gráfica'`.
+> «R1·1» es el `it` de la ronda 1, «R1·2» el de tras medir, «R1·3» el del día
+> seleccionado y «R1·4» el de otra métrica seleccionada, los cuatro en
+> `describe('#132 R1: la tarjeta es la raíz host de lo que pinta la gráfica'`.
 
 ### E1 — Antes de tocar nada
 
@@ -359,7 +362,7 @@ aserción para que case.
      `exit=0`, con 33 bloques `● Console` de ruido.
 
    Si la suite da otra cifra con `exit=0`, **anota la medida** y úsala como
-   base: el delta exigido es +2 tests y +0 suites sobre lo medido, y los
+   base: el delta exigido es +3 tests y +0 suites sobre lo medido, y los
    «N failed de M» de los rojos se desplazan igual. Si la gráfica o la Home dan
    otra cifra, **para**.
 8. Las reglas de literales de §Antes de tocar nada, paso 7, valen igual. Los
@@ -535,7 +538,105 @@ Ninguno.
 
 #### (3) Refactor
 
-Ninguno. Los tres `it` montan a mano y se quedan así: no se extrae un helper
+Ninguno.
+
+### E1.3 — R1·4, con otra métrica seleccionada
+
+#### (1) Rojo
+
+1. En el test, otra vez justo antes de la última línea del fichero (`});`),
+   detrás del `  });` que cierra R1·3, añade una línea en blanco y este bloque:
+
+   ```tsx
+     it('con otra métrica seleccionada, entre el nodo que monta la gráfica y la tarjeta sigue sin haber otro', async () => {
+       const { View } = jest.requireActual<typeof import('react-native')>(
+         'react-native',
+       );
+       const result = await render(
+         <ChartWrapper language="es">
+           <View testID="chart-parent">
+             <WeeklyActivityChart
+               days={makeWeek('2026-09-02', [10, 20, 30, 40, 50, 60, 70])}
+               weekComparison={NO_COMPARISON}
+             />
+           </View>
+         </ChartWrapper>,
+       );
+       const layout = result.getByTestId('weekly-activity-chart-layout');
+
+       await fireEvent(layout, 'layout', {
+         nativeEvent: {
+           layout: { width: 295, height: 0, x: 0, y: 0 },
+         },
+       });
+       await fireEvent.press(
+         result.getByTestId('weekly-activity-metric-distanceM'),
+       );
+
+       // #132 R1: switching the metric must not put a host between the chart's
+       // root and the card either, even though the selector lives inside it.
+       expect(
+         result.getByTestId('weekly-activity-metric-distanceM').props
+           .accessibilityState,
+       ).toEqual({ selected: true });
+       expect(
+         result.getByTestId('weekly-activity-card').parent?.props.testID,
+       ).toBe('chart-parent');
+     });
+   ```
+
+   Es la forma de
+   `R6 › repinta distancia desde la opción pulsada con los mismos datos`: el
+   layout a 295 de `renderChart`, el `press` sobre
+   `weekly-activity-metric-distanceM` y la misma precondición. El test da el
+   blob `d7f938da18fc038d309d75505e3582dd4ae4b0be`.
+2. **La mutación `metricwrap`**, en la gráfica: el mismo primer cambio que
+   `layoutwrap` (`  return (` justo encima de la línea de la tarjeta pasa a
+   `  const card = (`) y, justo debajo del `  );` que sigue a `    </Card>`,
+   esta línea, con dos espacios de sangría:
+   `  return selectedMetricIndex !== 0 ? <View accessible>{card}</View> : card;`
+
+   La gráfica da el blob `35fe29993602bec41ec826d1ec3e074f2b346e29`, y
+   `git diff --numstat` de la gráfica, `2 1`.
+3. La gráfica da `exit=1`: **2 failed** y 45 passed de 47. Son estos dos, y
+   solo estos:
+   - `#132 R1: la tarjeta es la raíz host de lo que pinta la gráfica › con otra métrica seleccionada, entre el nodo que monta la gráfica y la tarjeta sigue sin haber otro`,
+     por `expect(received).toBe(expected) // Object.is equality`, con
+     `Expected: "chart-parent"` y `Received: undefined`. La precondición de
+     `accessibilityState` pasa: el índice vive en `WeeklyActivityChart`, por
+     encima del envoltorio;
+   - `R6: el selector cambia de métrica sin volver a pedir nada › desliza una única píldora entre las medidas reales de las pestañas`,
+     por `expect(jest.fn()).toHaveBeenNthCalledWith(n, ...expected)`, con
+     `n: 1` y `Number of calls: 0`. Es el rebote que ya daba
+     `metricwrap` antes de R1·4: el envoltorio remonta el selector al cambiar
+     de métrica y este pierde las medidas de sus pestañas.
+4. La corrida de sondas da `exit=1`, `Test Suites: 1 failed, 1 passed, 2 total`
+   y 2 failed y 204 passed de 206: la Home, verde. La suite da `exit=1`:
+   **2 failed** y 1599 passed de 1601, **1 suite failed** y 85 passed de 86, y
+   1 snapshot passed. Son los únicos rojos. Si falla otro test, o R1·2 o R1·3,
+   **para**.
+5. Commit rojo:
+
+   ```bash
+   git add mobile-pet-tracker/src/screens/home/weekly-activity-chart.test.tsx mobile-pet-tracker/src/screens/home/weekly-activity-chart.tsx
+   git commit -m "test(mobile): expose a wrapper that appears with another metric selected with a versioned mutation (R1)"
+   ```
+
+#### (2) Verde
+
+1. `git checkout HEAD~1 -- mobile-pet-tracker/src/screens/home/weekly-activity-chart.tsx`.
+   La gráfica vuelve a `c258abedde92d2be981be8507d3d898f13c612cb`.
+2. La gráfica da 47 de 47, `exit=0`.
+3. Commit verde:
+
+   ```bash
+   git add mobile-pet-tracker/src/screens/home/weekly-activity-chart.tsx
+   git commit -m "test(mobile): lock the weekly activity card as the chart's host root with another metric selected (R1)"
+   ```
+
+#### (3) Refactor
+
+Ninguno. Los cuatro `it` montan a mano y se quedan así: no se extrae un helper
 ([[design]] §Enmienda 1).
 
 ### E1 — Sondas
@@ -545,7 +646,7 @@ mutación, el blob, la corrida de sondas (en `hexbare`, la de su fila), las
 cuentas con la primera línea de cada error, la restauración con
 `git checkout HEAD --` de los dos ficheros, y `git diff --exit-code` y
 `git diff --cached --exit-code` de `mobile-pet-tracker/src` en 0. **Nada de
-esto se commitea.** Se mide sobre 46 + 159 = 205 tests.
+esto se commitea.** Se mide sobre 47 + 159 = 206 tests.
 
 Convenciones, además de las de §Sondas:
 
@@ -557,56 +658,68 @@ Convenciones, además de las de §Sondas:
   `  const t = useTranslate();` (`grep -c` da 1, en `WeeklyActivityChart`), la
   línea `  const reduceMotion = useReducedMotion();`. `useReducedMotion` ya está
   importado.
-- **«Los 40 de la gráfica»**, con `hidewrap`, son los 37 de §Sondas más R1·1,
-  R1·2 y R1·3, los tres por consulta: 32 por consulta y 8 por aserción. R1·1
-  cae en `Unable to find an element with testID: weekly-activity-card`; R1·2 y
-  R1·3, en su primera consulta,
+- **«Los 41 de la gráfica»**, con `hidewrap`, son los 37 de §Sondas más R1·1,
+  R1·2, R1·3 y R1·4, los cuatro por consulta: 33 por consulta y 8 por
+  aserción. R1·1 cae en
+  `Unable to find an element with testID: weekly-activity-card`; R1·2, R1·3 y
+  R1·4, en su primera consulta,
   `Unable to find an element with testID: weekly-activity-chart-layout`.
+- **«El rebote de R6»** es
+  `R6: el selector cambia de métrica sin volver a pedir nada › desliza una única píldora entre las medidas reales de las pestañas`,
+  por `expect(jest.fn()).toHaveBeenNthCalledWith(n, ...expected)`, con
+  `n: 1` y `Number of calls: 0`. Cae con toda mutación cuyo envoltorio aparece
+  o desaparece al cambiar de métrica: el tipo del elemento raíz cambia, React
+  remonta la tarjeta y `MetricSelector` pierde las medidas de sus pestañas.
 - **«Rojo por»**: «aserción» es `expect(received).<matcher>` o
   `expect(jest.fn()).<matcher>`, y «consulta» es `Unable to find an element with testID: …`.
 
-| Sonda | Mutación | Blob de la gráfica | Exigido (205) | Rojo por |
+| Sonda | Mutación | Blob de la gráfica | Exigido (206) | Rojo por |
 |---|---|---|---|---|
-| `wrapcard` | la de su fila en §Sondas | `cec8a26e4f276f0a0615702a03626d2b0f3acfcc` | rojo 7, 2 suites: R1·1, R1·2 y R1·3, y los 4 de orden | aserción: `toBe` en los tres de R1, `toEqual` en la Home |
-| `presscard` | la de su fila en §Sondas | `330939c55f1e1ae6461c80b7ae832b5b478f5e72` | rojo 7, como `wrapcard` | aserción, como `wrapcard` |
-| `wrapplain` | la de su fila en §Sondas | `063030360d7644506e3be9976a44688d870d3192` | rojo 7, como `wrapcard` | aserción, como `wrapcard` |
-| `hidewrap` | la de su fila en §Sondas | `a1864b0bc7ef7711092442465a11e9488b0a24ac` | rojo 49: los 40 de la gráfica y los 9 de la Home | los tres de R1, **por consulta** |
-| `fragment` | la de su fila en §Sondas | `e3248830029f390df6e5f8dc0132112ef83a16cf` | **verde**, 205/205 | no aplica |
-| `sibling` | la de su fila en §Sondas | `27969c056d5f4d7167793bd9591281a42edc279d` | **verde**, 205/205: (D) | no aplica |
+| `wrapcard` | la de su fila en §Sondas | `cec8a26e4f276f0a0615702a03626d2b0f3acfcc` | rojo 8, 2 suites: R1·1, R1·2, R1·3 y R1·4, y los 4 de orden | aserción: `toBe` en los cuatro de R1, `toEqual` en la Home |
+| `presscard` | la de su fila en §Sondas | `330939c55f1e1ae6461c80b7ae832b5b478f5e72` | rojo 8, como `wrapcard` | aserción, como `wrapcard` |
+| `wrapplain` | la de su fila en §Sondas | `063030360d7644506e3be9976a44688d870d3192` | rojo 8, como `wrapcard` | aserción, como `wrapcard` |
+| `hidewrap` | la de su fila en §Sondas | `a1864b0bc7ef7711092442465a11e9488b0a24ac` | rojo 50, 2 suites: los 41 de la gráfica y los 9 de la Home | los cuatro de R1, **por consulta** |
+| `fragment` | la de su fila en §Sondas | `e3248830029f390df6e5f8dc0132112ef83a16cf` | **verde**, 206/206 | no aplica |
+| `sibling` | la de su fila en §Sondas | `27969c056d5f4d7167793bd9591281a42edc279d` | **verde**, 206/206: (D) | no aplica |
 | `cardacc` | la de su fila en §Sondas | `8fc10f1cec33e74740e1684bdad635a656af95cb` | rojo 1: tarjeta | aserción, `toEqual` |
 | `cardpress` | la de su fila en §Sondas | `2a460368e92f97e28c1e7e6dae849b81a157f729` | rojo 1: tarjeta | aserción, `toEqual` |
 | `wrapinner` | la de su fila en §Sondas | `e2c6f4e6578e1b7b747c91db7f1ec54ea00d11df` | rojo 1: `#130 R2` | aserción, `toBe` |
-| `wrapmetric` | la de su fila en §Sondas | `d053148a654bb15abf0e75c2d056d94bea7b930a` | **verde**, 205/205: (F) | no aplica |
-| `hexbare` | **en el test**, `// #132 R1: the test mounts` pasa a `// #132: the test mounts` (`grep -c` da 1) | la gráfica, sin tocar; **el test**, `f3dcd70b3decf04b5dac10a5f903a50fdbb05268` | con `bunx jest --runTestsByPath src/__tests__/design-drift.test.ts`: `Test Suites: 1`, `exit=1`, 1 failed de 55, `#68 R18: la actividad semanal no mete drift de estilo › keeps arbitrary text, hex colors, and StyleSheet out of feature sources` | aserción, `toEqual` |
-| `layoutwrap` | condicionar la raíz: `  return chartWidth > 0 ? <View accessible>{card}</View> : card;` | `bbf810f65e80843f005e7dc134bf094596bd5ae3` | **rojo 2**, 1 suite: R1·2 y R1·3; la Home, verde | aserción, `toBe` |
+| `wrapmetric` | la de su fila en §Sondas | `d053148a654bb15abf0e75c2d056d94bea7b930a` | **verde**, 206/206: (F) | no aplica |
+| `hexbare` | **en el test**, `// #132 R1: the test mounts` pasa a `// #132: the test mounts` (`grep -c` da 1) | la gráfica, sin tocar; **el test**, `4fb93a347143d82443e18b7515ede7bef3135ce1` | con `bunx jest --runTestsByPath src/__tests__/design-drift.test.ts`: `Test Suites: 1`, `exit=1`, 1 failed de 55, `#68 R18: la actividad semanal no mete drift de estilo › keeps arbitrary text, hex colors, and StyleSheet out of feature sources` | aserción, `toEqual` |
+| `layoutwrap` | condicionar la raíz: `  return chartWidth > 0 ? <View accessible>{card}</View> : card;` | `bbf810f65e80843f005e7dc134bf094596bd5ae3` | **rojo 3**, 1 suite: R1·2, R1·3 y R1·4; la Home, verde | aserción, `toBe` |
 | `layoutwrapctl` | condicionar la raíz: `  return chartWidth === 0 ? <View accessible>{card}</View> : card;` | `ebb667168df1b7985c0d394e896f71a09dc3240c` | rojo 5, 2 suites: R1·1 y los 4 de orden | aserción: `toBe` en R1·1, `toEqual` en la Home |
 | `selwrap` | condicionar la raíz: `  return selection !== null ? <Pressable onPress={() => setSelection(null)}>{card}</Pressable> : card;` | `c81f498f06157e866bda07a60956a79c83464e9a` | **rojo 1**, 1 suite: R1·3; la Home, verde | aserción, `toBe` |
-| `selwrapctl` | condicionar la raíz: `  return selection === null ? <View accessible>{card}</View> : card;` | `ed32f2baf17275b908d364bff8565032a614dbcb` | rojo 6, 2 suites: R1·1, R1·2 y los 4 de orden | aserción: `toBe` en R1, `toEqual` en la Home |
-| `widewrap` | condicionar la raíz: `  return chartWidth > 400 ? <View accessible>{card}</View> : card;` | `e63e077bf1d234926d0e2277fcbd56c6dad255c4` | **verde**, 205/205: (D) | no aplica |
-| `selidxwrap` | condicionar la raíz: `  return selection?.dataIndex === 6 ? <View accessible>{card}</View> : card;` | `9e886ebd7c23f824a1e9013a13f75f470bcc855a` | **verde**, 205/205: (D) | no aplica |
-| `metricwrap` | condicionar la raíz: `  return selectedMetricIndex !== 0 ? <View accessible>{card}</View> : card;` | `35fe29993602bec41ec826d1ec3e074f2b346e29` | rojo 1, de rebote: `R6: el selector cambia de métrica sin volver a pedir nada › desliza una única píldora entre las medidas reales de las pestañas`. R1 y la Home, verdes: (D) | aserción, `toHaveBeenNthCalledWith` («Number of calls: 0») |
+| `selwrapctl` | condicionar la raíz: `  return selection === null ? <View accessible>{card}</View> : card;` | `ed32f2baf17275b908d364bff8565032a614dbcb` | rojo 7, 2 suites: R1·1, R1·2 y R1·4, y los 4 de orden | aserción: `toBe` en R1, `toEqual` en la Home |
+| `metricwrap` | condicionar la raíz: `  return selectedMetricIndex !== 0 ? <View accessible>{card}</View> : card;` | `35fe29993602bec41ec826d1ec3e074f2b346e29` | **rojo 2**, 1 suite: R1·4 y el rebote de R6; la Home, verde | aserción: `toBe` en R1·4, `toHaveBeenNthCalledWith` en R6 |
+| `metricwrapctl` | condicionar la raíz: `  return selectedMetricIndex === 0 ? <View accessible>{card}</View> : card;` | `7c076e39bbd1780ba4cfac959c67f25ea00a9a77` | rojo 8, 2 suites: R1·1, R1·2 y R1·3, el rebote de R6 y los 4 de orden | aserción: `toBe` en R1, `toHaveBeenNthCalledWith` en R6, `toEqual` en la Home |
+| `widewrap` | condicionar la raíz: `  return chartWidth > 400 ? <View accessible>{card}</View> : card;` | `e63e077bf1d234926d0e2277fcbd56c6dad255c4` | **verde**, 206/206: (D) | no aplica |
+| `selidxwrap` | condicionar la raíz: `  return selection?.dataIndex === 6 ? <View accessible>{card}</View> : card;` | `9e886ebd7c23f824a1e9013a13f75f470bcc855a` | **verde**, 206/206: (D) | no aplica |
+| `metricidxwrap` | condicionar la raíz: `  return selectedMetricIndex === 2 ? <View accessible>{card}</View> : card;` | `fd20e1e557e4a03f546d961ecd003ecd28d81914` | **verde**, 206/206: (D) | no aplica |
 | `trendwrap` | condicionar la raíz: `  return trend !== null ? <View accessible>{card}</View> : card;` | `18d947ef655e164cdaecb599fc5efe0103cdac7f` | rojo 4, 1 suite: los 4 de orden; la gráfica, verde: (D) | aserción, `toEqual` |
-| `zerowrap` | condicionar la raíz: `  return average === null ? <View accessible>{card}</View> : card;` | `e6e2594f4195faeadc4c37b05fea3c9150d57063` | **verde**, 205/205: (D) | no aplica |
-| `missingwrap` | condicionar la raíz: `  return days.some((day) => day.source === 'missing') ? <View accessible>{card}</View> : card;` | `a3088d7e2a7f9fc308d7265ba5c6cf39a9af3d3f` | **verde**, 205/205: (D) | no aplica |
-| `selmissingwrap` | condicionar la raíz: `  return selectedDay?.source === 'missing' ? <View accessible>{card}</View> : card;` | `cfb9d5480f7f554b64d256e12811415ec7809187` | **verde**, 205/205: (D) | no aplica |
-| `emptywrap` | condicionar la raíz: `  return hasMeasuredDay ? card : <View accessible>{card}</View>;` | `69665259a1e586f393c0fbaefcb5d3ec85b8bf89` | **verde**, 205/205: fuera del WHILE | no aplica |
+| `zerowrap` | condicionar la raíz: `  return average === null ? <View accessible>{card}</View> : card;` | `e6e2594f4195faeadc4c37b05fea3c9150d57063` | **verde**, 206/206: (D) | no aplica |
+| `missingwrap` | condicionar la raíz: `  return days.some((day) => day.source === 'missing') ? <View accessible>{card}</View> : card;` | `a3088d7e2a7f9fc308d7265ba5c6cf39a9af3d3f` | **verde**, 206/206: (D) | no aplica |
+| `selmissingwrap` | condicionar la raíz: `  return selectedDay?.source === 'missing' ? <View accessible>{card}</View> : card;` | `cfb9d5480f7f554b64d256e12811415ec7809187` | **verde**, 206/206: (D) | no aplica |
+| `emptywrap` | condicionar la raíz: `  return hasMeasuredDay ? card : <View accessible>{card}</View>;` | `69665259a1e586f393c0fbaefcb5d3ec85b8bf89` | **verde**, 206/206: fuera del WHILE | no aplica |
 | `callbackwrap` | condicionar la raíz: `  return onSelectDay !== undefined ? <View accessible>{card}</View> : card;` | `e41851bb64d028233099b3644a990ca26a3960b9` | rojo 4, 1 suite: los 4 de orden; la gráfica, verde: (D) | aserción, `toEqual` |
-| `localewrap` | condicionar la raíz: `  return locale.startsWith('es') ? card : <View accessible>{card}</View>;` | `ccec4f330be3a2e0aff5ab439ce235a244c8b12f` | **verde**, 205/205: (D) | no aplica |
+| `localewrap` | condicionar la raíz: `  return locale.startsWith('es') ? card : <View accessible>{card}</View>;` | `ccec4f330be3a2e0aff5ab439ce235a244c8b12f` | **verde**, 206/206: (D) | no aplica |
+| `themewrap` | condicionar la raíz: `  return accentStrong.startsWith('dark') ? <View accessible>{card}</View> : card;` | `b8df65f8fbf2cbc9f98abf6248e3ae2099e74269` | **verde**, 206/206: (D) | no aplica |
 | `motionwrap` | condicionar la raíz, con el tercer cambio: `  return reduceMotion ? card : <View accessible>{card}</View>;` | `eb91d5292527529944cf04cdbef8d7452527abc2` | rojo 4, 1 suite: los 4 de orden; la gráfica, verde: (D) | aserción, `toEqual` |
-| `oswrap` | condicionar la raíz: `  return process.env.EXPO_OS === 'android' ? <View accessible>{card}</View> : card;` | `4cd9051b3518277fb5d6e39621cfa8b8117c978b` | **verde**, 205/205: (D) | no aplica |
+| `oswrap` | condicionar la raíz: `  return process.env.EXPO_OS === 'android' ? <View accessible>{card}</View> : card;` | `4cd9051b3518277fb5d6e39621cfa8b8117c978b` | **verde**, 206/206: (D) | no aplica |
 
 Las filas exigidas, las que el candado tiene que ver, son las de `wrapcard` a
-`selwrapctl`. Las de `widewrap` a `oswrap` documentan los huecos (D) de
+`metricwrapctl`. Las de `widewrap` a `oswrap` documentan los huecos (D) de
 [[requirements]] §Enmienda 1 › Zona ciega: se miden igual, y un rojo **nuevo**
-en una de ellas no es un fallo, pero se reporta. Si una fila exigida da otro
-veredicto, **para** y repórtalo con el log. No ajustes la aserción para que
-case.
+en una de ellas no es un fallo, pero se reporta. `themewrap` sale verde aunque
+`R9: el selector sigue el tema de la app` monte el tema oscuro: el envoltorio
+existe desde el primer render, no cambia al pulsar y R9 no mira la raíz. Si
+una fila exigida da otro veredicto, **para** y repórtalo con el log. No ajustes
+la aserción para que case.
 
 ### E1 — Cierre (R2 enmendado)
 
-1. Suite completa, sin pipe: 86 suites / 1600 tests / 1 snapshot, `exit=0`, o
-   la base de §E1 — Antes de tocar nada más 2 tests y 0 suites. La gráfica, 46
-   de 46 (`Test Suites: 1`). La corrida de sondas, 205 de 205. La Home, 159 de
+1. Suite completa, sin pipe: 86 suites / 1601 tests / 1 snapshot, `exit=0`, o
+   la base de §E1 — Antes de tocar nada más 3 tests y 0 suites. La gráfica, 47
+   de 47 (`Test Suites: 1`). La corrida de sondas, 206 de 206. La Home, 159 de
    159.
 2. `tsc` y `eslint`, con los comandos de §R2 — Cierre, pasos 2 y 3: `exit=0` los
    dos.
@@ -615,22 +728,23 @@ case.
    - `grep -ciE "stylesheet|text-\[10px\]"` da 0 en los dos ficheros;
      `grep -c "use-api"` da 1 y `grep -c "useApi"` da 0 en el test;
    - en el test, de la ronda 1 a la Enmienda 1: `grep -c "#132"` y
-     `grep -c "#132 R1:"` pasan de 2 a 4 los dos (el título del `describe` y los
-     tres comentarios); `grep -c "^describe('#132 R"` sigue en 1;
-     `grep -c "chart-parent"` pasa de 2 a 6; `grep -c "requireActual"`, de 9 a
-     11; `grep -c "weekly-activity-card"`, de 4 a 6; `grep -c "width: 295"`, de
-     2 a 4; `grep -c "await fireEvent"`, de 12 a 15;
+     `grep -c "#132 R1:"` pasan de 2 a 5 los dos (el título del `describe` y los
+     cuatro comentarios); `grep -c "^describe('#132 R"` sigue en 1;
+     `grep -c "chart-parent"` pasa de 2 a 8; `grep -c "requireActual"`, de 9 a
+     12; `grep -c "weekly-activity-card"`, de 4 a 7; `grep -c "width: 295"`, de
+     2 a 5; `grep -c "await fireEvent"`, de 12 a 17;
+     `grep -c "weekly-activity-metric-walkCount"` sigue en 0;
      `grep -c "// #132 R1: the test mounts"` sigue en 1; `grep -c "#130"` sigue
      en 4 y `grep -c "#74"`, en 5.
 4. Desde la raíz del repo:
    - `git diff --stat origin/main...HEAD -- mobile-pet-tracker/` lista **solo**
      el test;
    - `git diff --numstat origin/main...HEAD -- mobile-pet-tracker/src/screens/home/weekly-activity-chart.test.tsx`
-     da `85`, `0` y la ruta, y
+     da `121`, `0` y la ruta, y
      `git diff -U0 origin/main...HEAD -- mobile-pet-tracker/src/screens/home/weekly-activity-chart.test.tsx | grep -c "^@@"`
      da 1;
    - `git diff --numstat 40e40dfe HEAD -- mobile-pet-tracker/src/screens/home/weekly-activity-chart.test.tsx`
-     da `61`, `0` y la ruta, y
+     da `97`, `0` y la ruta, y
      `git diff -U0 40e40dfe HEAD -- mobile-pet-tracker/src/screens/home/weekly-activity-chart.test.tsx | grep -c "^@@"`
      da 1. Con esto, R1·1 y los `describe` de #68, #74 y #130 no han cambiado;
    - el `git diff --exit-code origin/main...HEAD -- …` de §R2 — Cierre, paso 5,
@@ -640,19 +754,19 @@ case.
    | Ruta | Blob |
    |---|---|
    | `src/screens/home/weekly-activity-chart.tsx` | `c258abedde92d2be981be8507d3d898f13c612cb` (el de base) |
-   | `src/screens/home/weekly-activity-chart.test.tsx` | `6689cc26014993cf3de73245e0158b44215a3106` |
+   | `src/screens/home/weekly-activity-chart.test.tsx` | `d7f938da18fc038d309d75505e3582dd4ae4b0be` |
 
 6. Añade al final de `progress/impl_mobile-weekly-chart-root-accessible-lock.md`
    una sección `## Enmienda 1`, **sin tocar lo de la ronda 1**, con:
    - la base medida y el resultado de los pasos 5 y 6 de §E1 — Antes de tocar
      nada;
-   - las salidas de los dos rojos y los dos verdes (cuentas, `exit` y los `it`
-     rojos con su matcher);
+   - las salidas de los tres rojos y los tres verdes (cuentas, `exit` y los
+     `it` rojos con su matcher);
    - la tabla de §E1 — Sondas, con una columna «medido»;
    - los blobs y los números de este cierre.
 
-   Rellena en [[traceability]] las tres filas «(Enmienda 1)», sin tocar las de
-   la ronda 1. La fila de R2 (Enmienda 1) cita el hash del **verde de E1.2**.
+   Rellena en [[traceability]] las cuatro filas «(Enmienda 1)», sin tocar las de
+   la ronda 1. La fila de R2 (Enmienda 1) cita el hash del **verde de E1.3**.
    Commitea:
 
    ```bash

@@ -53,14 +53,14 @@ tags: [spec, mobile, a11y, deuda]
   > **Enmienda 1**: esta frase es la que dejó pasar `layoutwrap` y `selwrap`
   > (veredicto de la ronda 1, obs. 1). Que nada de la raíz dependa hoy del
   > ancho no impide que dependa mañana. La sustituye §Enmienda 1: el `it` de la
-  > ronda 1 sigue sin disparar el `layout`, y dos `it` nuevos lo disparan.
+  > ronda 1 sigue sin disparar el `layout`, y tres `it` nuevos lo disparan.
 - **Un solo escenario, la semana entera medida**
   (`makeWeek('2026-09-02', [10, 20, 30, 40, 50, 60, 70])`), el mismo de
   `#130`. La gráfica tiene un único `return (`, con la tarjeta como raíz, y el
   estado vacío pinta dentro de esa misma tarjeta
   (`grep -c '<Card testID="weekly-activity-card"' src/screens/home/weekly-activity-chart.tsx`
   da 1).
-  > **Enmienda 1**: sigue siendo un solo conjunto de datos, pero ahora en tres
+  > **Enmienda 1**: sigue siendo un solo conjunto de datos, pero ahora en cuatro
   > estados (§Enmienda 1).
 - **El rojo es una mutación de producción versionada** (C4, vía **b**),
   porque la base ya cumple: `wrapcard`, un `<View accessible>` alrededor de la
@@ -164,23 +164,30 @@ sin candado de estructura: es la **(F)** de [[requirements]] §Fuera de alcance.
 - **Un gate de TalkBack.** El árbol de producción acaba idéntico al de
   `origin/main`: no hay nada nuevo que oír en un dispositivo.
 
-## Enmienda 1 — R1 en tres estados
+## Enmienda 1 — R1 en cuatro estados
 
 > Ver [[requirements]] §Enmienda 1. Todo lo de esta sección se midió sobre
-> `02128a12` en un `git worktree` temporal
-> (`progress/spec_e1_mobile-weekly-chart-root-accessible-lock.md`).
+> `02128a12` en un `git worktree` temporal, dos veces: en la primera redacción
+> y, tras las decisiones del humano del 2026-09-29, en la segunda, desde
+> `87bebb89` (`progress/spec_e1_mobile-weekly-chart-root-accessible-lock.md`).
 
 ### Decisiones
 
-- **Dos `it` nuevos en el mismo `describe` de `#132 R1`**, detrás del de la
-  ronda 1: uno tras el `layout` y otro con un día seleccionado. El de la ronda 1
-  no se toca, ni su título ni su cuerpo ni sus hashes en [[traceability]]. El
-  diff sigue siendo un solo bloque añadido: `61 0` contra `40e40dfe` y `85 0`
-  contra `origin/main`, un hunk en cada caso.
+- **Tres `it` nuevos en el mismo `describe` de `#132 R1`**, detrás del de la
+  ronda 1: uno tras el `layout`, otro con un día seleccionado y otro con otra
+  métrica seleccionada. El de la ronda 1 no se toca, ni su título ni su cuerpo
+  ni sus hashes en [[traceability]]. El diff sigue siendo un solo bloque
+  añadido: `97 0` contra `40e40dfe` y `121 0` contra `origin/main`, un hunk en
+  cada caso.
+- **Los tres cubren el estado propio de la gráfica**, que son los tres
+  `useState` de `WeeklyActivityChart`: `chartWidth` (el `it` 2), `selection`
+  (el 3) y `selectedMetricIndex` (el 4). El `it` de la ronda 1 monta el otro
+  lado de los tres. El cuarto `it` es la respuesta del humano a la primera
+  redacción («4.º it», 2026-09-29).
 - **Cada `it` monta a mano, como el de la ronda 1**, con el mismo centinela, los
   mismos datos y el `View` del `requireActual` del propio `it`. No se extrae un
   helper: extraerlo reescribiría el `it` de la ronda 1 y abriría un segundo hunk.
-  El precio son 30 y 31 líneas casi repetidas, a sabiendas.
+  El precio son 30, 31 y 36 líneas casi repetidas, a sabiendas.
 - **El `layout` se dispara como en `renderChart` y `renderChartWithProps`**:
   `await fireEvent` sobre `weekly-activity-chart-layout` con `width: 295`. Es
   el ancho y el evento de esos dos helpers (`grep -c "width: 295"` da 2 en
@@ -188,30 +195,58 @@ sin candado de estructura: es la **(F)** de [[requirements]] §Fuera de alcance.
   con `getByTestId` y no con `queryByTestId` y un `if`: si el nodo de layout
   desaparece, el `it` cae por consulta en vez de saltarse el layout en
   silencio. No hacen falta timers falsos: el test no los usa
-  (`grep -c "useFakeTimers"` da 0) y los dos estados se alcanzan tras su
-  `await`.
+  (`grep -c "useFakeTimers"` da 0) y los estados se alcanzan tras su `await`.
 - **La selección se hace pulsando la columna real**,
   `weekly-activity-day-2026-09-02`, la primera de `makeWeek('2026-09-02', …)`.
   Su `onPress` llama a `handleColumnPress`, que llama a `selectDay`. No se toca
   el estado por dentro.
-- **Cada `it` prueba que llegó a su estado antes de aseverar la raíz**, con
-  `toBeOnTheScreen`: `weekly-activity-bar-chart` en el `it` 2, que solo existe
-  dentro de `{chartWidth > 0 ? (`, y `weekly-activity-tooltip` en el `it` 3, que
-  solo existe dentro de `{selectedDay ? (`. Sin esa precondición, un layout o un
-  `press` que no llegasen dejarían un `it` verde que no mira lo que dice mirar.
+- **La métrica se cambia pulsando `weekly-activity-metric-distanceM`**, tras el
+  mismo layout. Es la forma de
+  `R6 › repinta distancia desde la opción pulsada con los mismos datos`:
+  `renderChart` (que dispara el layout a 295), `fireEvent.press` sobre esa
+  opción y la precondición de su `accessibilityState` en `{ selected: true }`.
+  `R6 › desliza una única píldora…` y
+  `R12 › cambia la tendencia al delta de la métrica seleccionada` pulsan la
+  misma opción, y la Home también. Ningún `it` de la gráfica pulsa `walkCount`
+  (`grep -c "weekly-activity-metric-walkCount"` da 0): la tercera métrica
+  queda como muestra no montada (sonda `metricidxwrap`, hueco (D)). El layout
+  va antes del `press`, como en el `it` 3, para que el `it` 4 mida la gráfica
+  en uso y solo se distinga del `it` 2 en la métrica.
+- **Cada `it` prueba que llegó a su estado antes de aseverar la raíz**:
+  `weekly-activity-bar-chart` en el `it` 2, que solo existe dentro de
+  `{chartWidth > 0 ? (`, y `weekly-activity-tooltip` en el `it` 3, que solo
+  existe dentro de `{selectedDay ? (`, los dos con `toBeOnTheScreen`. En el
+  `it` 4, el `accessibilityState` de `weekly-activity-metric-distanceM` en
+  `{ selected: true }`, con `toEqual`: no hay un `testID` que solo exista con
+  otra métrica, y la selección se lee en la opción, como hace `R6`. Sin esa
+  precondición, un layout o un `press` que no llegasen dejarían un `it` verde
+  que no mira lo que dice mirar.
 - **Un rojo versionado por `it` nuevo**, cada uno en su propio par rojo y verde
   (C4, vía **b**):
-  - rojo 1: el `it` 2 con `layoutwrap`. El único rojo es el `it` 2, porque el
-    `it` 3 aún no existe y el de la ronda 1 no mide tras el layout;
+  - rojo 1: el `it` 2 con `layoutwrap`. El único rojo es el `it` 2, porque los
+    `it` 3 y 4 aún no existen y el de la ronda 1 no mide tras el layout;
   - rojo 2: el `it` 3 con `selwrap`. Con `layoutwrap`, el rojo 2 caería también
-    en el `it` 2 y dejaría de ser único; `selwrap` solo lo ve el `it` 3.
+    en el `it` 2 y dejaría de ser único; `selwrap` solo lo ve el `it` 3;
+  - rojo 3: el `it` 4 con `metricwrap`. **No es único**: son 2 rojos en 1
+    suite, el `it` 4 y `R6 › desliza una única píldora…`, que ya caía con esa
+    mutación antes del `it` 4 (la primera redacción lo midió: 1 failed de
+    205; con el `it` 4, 2 failed de 206). El envoltorio que aparece al
+    cambiar de métrica cambia el tipo del elemento raíz, React remonta la
+    tarjeta entera y `MetricSelector` pierde las medidas de sus pestañas. No hay mutación de esta clase que lo evite:
+    cualquier envoltorio que solo aparezca con otra métrica remonta el selector
+    al cambiarla.
 
-  Los dos rojos son 1 en 1 suite: la Home no dispara el layout de la gráfica ni
-  selecciona un día (medido).
-- **Controles de las dos mutaciones**: `layoutwrapctl` y `selwrapctl` invierten
-  la condición. Prueban que la forma «condicionar la raíz» está bien construida
-  y que el candado la ve cuando el envoltorio cae en su estado: dan rojo en los
-  `it` que montan el otro lado del umbral y en los 4 de orden de la Home.
+  La Home no ve ninguno de los tres (medido): no dispara el layout de la
+  gráfica ni selecciona un día, y el `it` que pulsa `distanceM` no mira la
+  raíz después.
+- **Controles de las tres mutaciones**: `layoutwrapctl`, `selwrapctl` y
+  `metricwrapctl` invierten la condición. Prueban que la forma «condicionar la
+  raíz» está bien construida y que el candado la ve cuando el envoltorio cae en
+  su estado: dan rojo en los `it` que montan el otro lado del umbral y en los 4
+  de orden de la Home. `metricwrapctl` tumba además
+  `R6 › desliza una única píldora…`, por el mismo rebote que `metricwrap`: al
+  pulsar `distanceM` el envoltorio desaparece y el selector también se remonta
+  (medido: rojo 8).
 - **Los comentarios nuevos empiezan por `// #132 R1:`**, como el de la ronda 1,
   por `#68 R18`. `hexbare` sigue mutando solo el de la ronda 1, que sigue siendo
   único con `// #132 R1: the test mounts`.
@@ -223,17 +258,18 @@ sin candado de estructura: es la **(F)** de [[requirements]] §Fuera de alcance.
 | El host que monta la gráfica → la tarjeta, antes de medir | `#132 R1`, `it` 1 |
 | Lo mismo, tras medir a 295 px | `#132 R1`, `it` 2 |
 | Lo mismo, con el primer día seleccionado | `#132 R1`, `it` 3 |
-| Una raíz condicionada a otra entrada | nadie: son los huecos (D) de [[requirements]] §Enmienda 1 › Zona ciega |
+| Lo mismo, con la segunda métrica seleccionada | `#132 R1`, `it` 4 |
+| Una raíz condicionada a una entrada externa, o a un valor del estado propio que R1 no monta | nadie: son los huecos (D) de [[requirements]] §Enmienda 1 › Zona ciega |
 
 El resto de la tabla de §Qué cierra cada candado tras #132 no cambia.
 
 ### Archivos afectados por la Enmienda 1
 
-- El test: 61 líneas añadidas al final, de 44 a 46 tests.
-- La gráfica: **solo** en los dos commits rojos, con `layoutwrap` y con
-  `selwrap`, que los verdes revierten. Diff acumulado vacío.
+- El test: 97 líneas añadidas al final, de 44 a 47 tests.
+- La gráfica: **solo** en los tres commits rojos, con `layoutwrap`, con
+  `selwrap` y con `metricwrap`, que los verdes revierten. Diff acumulado vacío.
 - La evidencia: una sección `## Enmienda 1` al final de
-  `progress/impl_mobile-weekly-chart-root-accessible-lock.md` y tres filas
+  `progress/impl_mobile-weekly-chart-root-accessible-lock.md` y cuatro filas
   nuevas en [[traceability]].
 
 ### Alternativas descartadas en la Enmienda 1
@@ -242,16 +278,19 @@ El resto de la tabla de §Qué cierra cada candado tras #132 no cambia.
   un solo `return` y que devuelva la tarjeta sin condición. Cerraría la clase
   entera, incluidos los huecos (D). Se puede escribir con lo que ya hay en el
   test (`import * as ts from 'typescript';` y `findVariableInitializer`), pero
-  ata el candado a la forma del código y no a lo que llega a TalkBack, y el
-  humano eligió los estados. Queda como decisión abierta en el gate.
-- **Un solo `it` que asevere tres veces**, una por estado. Si cae el primero, los
-  otros dos no se miden, y el rojo versionado 2 caería en el mismo `it` que el 1.
-- **`it.each` con los tres estados.** Reescribe el `it` de la ronda 1.
+  ata el candado a la forma del código y no a lo que llega a TalkBack. El
+  humano lo descartó el 2026-09-29: «No».
+- **Un solo `it` que asevere cuatro veces**, una por estado. Si cae el primero,
+  los otros no se miden, y los rojos versionados caerían en el mismo `it`.
+- **`it.each` con los cuatro estados.** Reescribe el `it` de la ronda 1.
 - **Montar con `renderChart` o `renderChartWithProps`.** Disparan el layout,
   pero montan la gráfica directamente en el `wrapper` y no dejan meter el
   centinela. Darles un parámetro tocaría helpers que usan los `describe` de
   #68, #74 y #130, como ya descartó la ronda 1.
-- **Un cuarto `it` con otra métrica seleccionada.** Es el hueco de `metricwrap`,
-  que hoy solo ve `R6` de rebote. Lo decide el humano en el gate.
+- **Pulsar `walkCount`, o un quinto `it` con la tercera métrica.** El `it` 4
+  pone `selectedMetricIndex` al otro lado del 0, que es el índice por defecto
+  de `WEEKLY_METRICS[selectedMetricIndex] ?? WEEKLY_METRICS[0]`. Con la
+  tercera métrica seguiría habiendo muestras sin montar en el ancho y en el
+  día. `metricidxwrap` queda como hueco (D), igual que `selidxwrap`.
 - **Más muestras del ancho.** `widewrap` sigue verde con 0 y 295, y con más
   muestras seguiría habiendo un umbral sin mirar: es un continuo.
