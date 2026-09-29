@@ -11,9 +11,9 @@ Todos los tests viven en
 
 | Requisito | Entrada | Test (archivo::nombre) | Commit rojo | Commit verde |
 |---|---|---|---|---|
-| R1 | #137 | `use-push-registration.test.tsx::R15: importar el modulo no toca expo-notifications › no accede a expo-notifications al importar el modulo` (existente; cambia su fábrica) | pendiente | pendiente |
-| R2 | #139 | `use-push-registration.test.tsx::#139 R2: tras R15, expo-notifications vuelve a ser el objeto de la cabecera › jest.requireMock devuelve el mismo objeto, no una copia` | pendiente | pendiente |
-| R3 | #137 y #139 | sin test: cierre medido ([[tasks]] §R3 y `progress/impl_mobile-push-registration-r15-named-import-lock.md`) | no aplica | pendiente |
+| R1 | #137 | `use-push-registration.test.tsx::R15: importar el modulo no toca expo-notifications › no accede a expo-notifications al importar el modulo` (existente; cambia su fábrica) | `814f90ffc7782cc06557c2aef11b1ec0c3d08c15` | `e106aceee622d91c3b8318dcb1f70d80689c5447` |
+| R2 | #139 | `use-push-registration.test.tsx::#139 R2: tras R15, expo-notifications vuelve a ser el objeto de la cabecera › jest.requireMock devuelve el mismo objeto, no una copia` | `5ed27bee4f30c5b06979f0dd69578910fde3937d` | `942bfc137856b7d316fe423209016980ec362aca` |
+| R3 | #137 y #139 | sin test: cierre medido ([[tasks]] §R3 y `progress/impl_mobile-push-registration-r15-named-import-lock.md`) | no aplica | `942bfc137856b7d316fe423209016980ec362aca` |
 
 Regla: el reviewer no aprueba si alguna fila queda «pendiente».
 
