@@ -1,6 +1,6 @@
 ---
 feature: "mobile-push-registration-r15-named-import-lock"
-status: spec_ready         # draft | spec_ready | approved
+status: approved           # draft | spec_ready | approved
 tags: [spec, mobile, test, deuda]
 ---
 

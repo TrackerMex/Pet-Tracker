@@ -1,6 +1,6 @@
 ---
 feature: "mobile-push-registration-r15-named-import-lock"
-status: spec_ready         # draft | spec_ready | approved
+status: approved           # draft | spec_ready | approved
 tags: [spec, mobile, test, deuda]
 ---
 
@@ -258,9 +258,11 @@ alternativa, da rojo con O1 y O6 y **verde** con O4 y O5 ([[design]] D2).
 
 ## Aprobación
 
-- [ ] **Aprobado por humano** (fecha: ____) ← gate obligatorio antes de
+- [x] **Aprobado por humano** (fecha: 2026-09-29) ← gate obligatorio antes de
       implementar. Al marcar esta casilla, el humano firma también los cinco
       puntos de §Qué firma el humano al aprobar esta spec, y en particular el
       tercero (aceptar el límite S5 o pedir que se registre como deuda).
+      - Punto 3, decisión del humano (2026-09-29): «acepto el límite S5». S5
+        queda como límite conocido de R1; no se registra como deuda.
 
 > No hay gate de dispositivo: el cambio es solo de test.

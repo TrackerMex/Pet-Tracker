@@ -1,6 +1,6 @@
 ---
 feature: "mobile-push-registration-r1-restore-identity-lock"
-status: spec_ready         # draft | spec_ready | approved  ← se firma dentro de la spec de #137
+status: approved           # draft | spec_ready | approved  ← se firma dentro de la spec de #137
 tags: [harness, spec, mobile, puntero]
 ---
 
