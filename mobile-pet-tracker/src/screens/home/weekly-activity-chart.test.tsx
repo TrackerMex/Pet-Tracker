@@ -1550,4 +1550,40 @@ describe('#132 R1: la tarjeta es la raíz host de lo que pinta la gráfica', () 
       result.getByTestId('weekly-activity-card').parent?.props.testID,
     ).toBe('chart-parent');
   });
+
+  it('con otra métrica seleccionada, entre el nodo que monta la gráfica y la tarjeta sigue sin haber otro', async () => {
+    const { View } = jest.requireActual<typeof import('react-native')>(
+      'react-native',
+    );
+    const result = await render(
+      <ChartWrapper language="es">
+        <View testID="chart-parent">
+          <WeeklyActivityChart
+            days={makeWeek('2026-09-02', [10, 20, 30, 40, 50, 60, 70])}
+            weekComparison={NO_COMPARISON}
+          />
+        </View>
+      </ChartWrapper>,
+    );
+    const layout = result.getByTestId('weekly-activity-chart-layout');
+
+    await fireEvent(layout, 'layout', {
+      nativeEvent: {
+        layout: { width: 295, height: 0, x: 0, y: 0 },
+      },
+    });
+    await fireEvent.press(
+      result.getByTestId('weekly-activity-metric-distanceM'),
+    );
+
+    // #132 R1: switching the metric must not put a host between the chart's
+    // root and the card either, even though the selector lives inside it.
+    expect(
+      result.getByTestId('weekly-activity-metric-distanceM').props
+        .accessibilityState,
+    ).toEqual({ selected: true });
+    expect(
+      result.getByTestId('weekly-activity-card').parent?.props.testID,
+    ).toBe('chart-parent');
+  });
 });
