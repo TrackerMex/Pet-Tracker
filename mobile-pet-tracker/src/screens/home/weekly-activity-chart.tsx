@@ -486,7 +486,6 @@ export function WeeklyActivityChart(
   };
 
   return (
-    <View accessible>
     <Card testID="weekly-activity-card" className="gap-2">
       <View
         testID="weekly-activity-header"
@@ -732,6 +731,5 @@ export function WeeklyActivityChart(
         </Text>
       )}
     </Card>
-    </View>
   );
 }
