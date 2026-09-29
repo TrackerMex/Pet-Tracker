@@ -6125,10 +6125,12 @@ nodos host, tile a tile, con esperados literales y sin imports nuevos.
 
 ### Deuda y apuntes
 
-- **(F) sin registrar**: los tiles no tienen feedback de pulsado (no hay
-  `pressed` en su `Pressable`). Es anterior a #81 y design.md lo deja fuera
-  de alcance. Queda a decision del humano; si se registra, el id empieza en
-  #136, verificado contra `origin/main` y las branches remotas.
+- **Registrado como #136** `mobile-quick-actions-pressed-feedback`, por
+  decision del humano tras abrir la PR #174: los tiles no tienen feedback de
+  pulsado (no hay `pressed` en su `Pressable`). Es anterior a #81 y design.md
+  lo deja fuera de alcance. Anadirlo obliga a enmendar #81 R3. Id asignado
+  contra `origin/main` (maximo 134) y las branches remotas (#135 en la de
+  #132).
 - **Obs. 1 del reviewer**: las sondas `m6_tile*` desmontan un nodo durante
   una espera y miden una carrera. Sus rojos de mas no son deterministas
   (Codex vio 5, el reviewer 2 y luego 3). En specs futuras, rotular esas filas
