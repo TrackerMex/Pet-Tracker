@@ -6345,7 +6345,7 @@ Sesion Frontend, worktree `/home/claude/sites/Pet-Tracker`, branch
 - **Smoke R5**: el humano lo firmo en su propio commit, `598ca9d7`, en un
   OnePlus Nord 5 con Android 15. Dijo que la captura (`s136.png`, en la raiz
   del repo) apenas deja apreciar el atenuado, pero que todos los pasos se
-  cumplieron.
+  cumplieron. Por decision del humano, la captura se queda en la raiz.
 - **Notion**: Implementado / Completado.
 
 ### Deuda y apuntes
@@ -6357,6 +6357,6 @@ Sesion Frontend, worktree `/home/claude/sites/Pet-Tracker`, branch
   la spec lo firmo (§Que firma, punto 4). No se registra.
 - **Obs. 3 del reviewer**: `active:opacity-50` en el `className` de los tiles
   deja la suite en verde, porque `#81` fija el `className` con `toContain`.
-  Queda fuera de #136 (§Fuera de alcance (D)). Se pregunto al humano si
-  registrarla como #140, y sigue sin respuesta.
+  Queda fuera de #136 (§Fuera de alcance (D)). El humano decidio no
+  registrarla (2026-09-29).
 - `android_only`: es el punto ciego declarado, medido en verde. Lo cerro R5.
