@@ -2692,6 +2692,63 @@ describe('#81 R1-R6: la rejilla de accesos rápidos no deja decisiones sin canda
     }
   });
 
+  it('#136 R1: cada tile baja a opacidad 0.8 mientras se pulsa y vuelve a 1 al soltarlo, con la esquina continua', async () => {
+    await renderHome();
+    await screen.findByTestId('quick-action-weight');
+    const testIDs = [
+      'quick-action-weight',
+      'quick-action-reminder',
+      'quick-action-documents',
+    ];
+
+    for (const testID of testIDs) {
+      const tile = screen.getByTestId(testID);
+
+      // #136 R1: the whole style with toEqual, at rest and pressed. toHaveStyle
+      // matches a subset and would let a stray key or a lost corner through.
+      expect(tile.props.style).toEqual({
+        borderCurve: 'continuous',
+        opacity: 1,
+      });
+
+      // #136 R1: responderGrant is the first event of a real press and leaves
+      // the Pressable pressed, as in the #122 R2 bell test.
+      await fireEvent(tile, 'responderGrant', {
+        nativeEvent: {},
+        persist: () => undefined,
+      });
+
+      expect(tile.props.style).toEqual({
+        borderCurve: 'continuous',
+        opacity: 0.8,
+      });
+      // #136 R1: only the pressed tile dims. A pressed state shared by the row
+      // turns red here.
+      for (const otherID of testIDs.filter((id) => id !== testID)) {
+        expect(screen.getByTestId(otherID).props.style).toEqual({
+          borderCurve: 'continuous',
+          opacity: 1,
+        });
+      }
+
+      // #136 R1: responderTerminate ends the press through the same pressOut
+      // path as a release, without onPress: a release needs a native target
+      // that the test tree lacks. The pressed state clears 130 ms later, the
+      // minimum press duration of Pressability, so waitFor polls for it.
+      await fireEvent(tile, 'responderTerminate', {
+        nativeEvent: {},
+        persist: () => undefined,
+      });
+
+      await waitFor(() =>
+        expect(tile.props.style).toEqual({
+          borderCurve: 'continuous',
+          opacity: 1,
+        }),
+      );
+    }
+  });
+
   it('#81 R4: la sección pone el rótulo encima de la fila, y la fila, los tres tiles sin envoltorio', async () => {
     await renderHome();
     const quickActions = await screen.findByTestId('quick-actions');
