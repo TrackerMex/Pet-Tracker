@@ -5998,3 +5998,78 @@ desaparecia entera y se llevaba el peso, que no depende del collar. Solo movil.
 - **Obs. 5 y 6**: la autoría git no distingue a Codex del leader, y el
   handoff listaba solo tres ficheros para el diff contra `origin/main`, sin
   los del leader. Son informativas y no piden cambio.
+
+## #100 `mobile-alert-detail-screen` — 2026-09-29
+
+Sesion Backend, worktree `/home/claude/sites/Pet-Tracker-wt-backend`, branch
+`feature/100-mobile-alert-detail-screen`, creada desde `origin/main`
+`a07b67c4` (#169). En paralelo, Frontend cerro #74 y #130 y abrio #132 en el
+arbol principal.
+
+### Que se hizo
+
+Pantalla de detalle de alerta. Solo movil, sin endpoint nuevo.
+- **Ruta** `alerts/[alertId]` en el Stack raiz, singular. El detalle lee la
+  cache de `alertKeys.list()` y deja atender la alerta con el mismo
+  `ackAlert` que el centro. `not-found` al atender hace `dismissTo` al
+  centro.
+- **Notificaciones**: el tap con `data.alertId` abre esa alerta, con la app
+  cerrada o en segundo plano. Sin `alertId`, o con una alerta que ya no
+  existe, lleva al centro sin error visible. Cierra la Obs. 1 de #114 (R9).
+- **Centro**: cada fila enlaza a su detalle y conserva el feedback `pressed`.
+- Tres claves de catalogo nuevas (R1). Movil 83/1550/1 → 86/1595/1 (+3
+  suites, +45 tests); 86/1597/1 tras mergear main con #130.
+
+### Gate y ciclo
+
+- **Spec**: `1c83f83f`, espejada en Notion
+  (https://app.notion.com/p/3e96115a9b278123b423dc4dad4509bb) en
+  `2fa016b9`. Firma en Notion, commit `cf52c00f`, con las enmiendas A15-A17.
+  Se quedo en `spec_ready` hasta `done`, como #77.
+- **Codex**: `fc55c55c..b1dae7ce`, con la traza en `b1dae7ce`. Paro cuatro
+  veces. Ninguna parada fue de diseño:
+  - **Reanudacion 1 (R5)**: un test de R3 leia `alert-detail-card` sin
+    esperar a `listAlerts`, la carrera que prohibe `docs/conventions.md`
+    §Tests.
+  - **Reanudacion 2 (R7)**: el describe nuevo se puso despues de R15, y el
+    `doMock` de R15 rompia todo lo que venia detras (11 fallos en vez de 3).
+    Se movio detras de R10.
+  - **Reanudacion 3 (R8)**: bajo `renderRouter` con temporizadores falsos, el
+    `setState` que llega tras el `await` de `ackAlert` no repinta. Segundo
+    commit rojo con temporizadores reales y un QueryClient de `gcTime` corto.
+  - **Reanudacion 4 (R8)**: un test de R4 (`unauthorized`) comprobaba sin
+    esperar que el esqueleto ya no estaba.
+- **init.sh** sobre `b1dae7ce`: lo corrio el leader con permiso del humano y
+  con el turno cedido por Frontend. Exit 0: unit 171/1307, infra 2/14, movil
+  86/1595/1, e2e 27+3 skip.
+- **Reviewer** (`c5a54b94`): aprobado a la primera, pendiente de humo, sin
+  bloqueantes. Rehizo los rojos y las sondas en copias `git archive` de cada
+  commit, fuera del arbol revisado.
+- **Smoke**: el humano en su propio commit, `19566f97` (2026-09-29, dev
+  build de Android), los ocho pasos y la casilla final. Durante la prueba, un
+  intento fallo sin alerta nueva en la cola; el humano lo resolvio por su
+  cuenta y la causa no se conoce.
+- **Merges** (sin rebase): la branch del humano en `75e606a2`, y
+  `origin/main` (#130, PR #171) en `4603e660`, con conflicto solo en
+  `STATUS.md` (ambos lados conservados).
+- **Drift**: entre el veredicto y el cierre, lo unico que no viene de main es
+  `19566f97` (solo `requirements.md`). En codigo de la app, el diff
+  `c5a54b94..HEAD` es el `weekly-activity-chart.test.tsx` de #130.
+- **init.sh de cierre** sobre `4603e660`, sin pipe y con el `exit` anexado al
+  log. Exit 0: unit 171/1307, infra 2/14, movil 86/1597/1, e2e 27+3 skip.
+
+### Deuda y apuntes
+
+- **Registrado como #133** `mobile-push-registration-r15-domock-scope`: el
+  `jest.doMock('expo-notifications', …)` de R15 persiste y obliga a que R15
+  sea el ultimo describe de `use-push-registration.test.tsx` (obs. 5 del
+  reviewer). Solo test.
+- **Registrado como #134** `mobile-alert-ack-outcome-helper`: el switch de
+  `ackAlert` esta duplicado entre el centro y el detalle; solo `not-found`
+  difiere a proposito. No es invalidacion de cache (D2 y R5 la excluyen).
+- Ids asignados contra `origin/main` (maximo 132) y las branches remotas.
+- **Obs. no bloqueantes** del reviewer: nombres de `it.each` sin interpolar
+  (7), la clausula «SHALL NOT invalidar ni escribir la cache» de R5 sin test
+  (8), una incoherencia interna de R4 (9). No se registran.
+- **«A worker process has failed to exit gracefully»**: preexistente, no
+  bloquea, no se persigue.

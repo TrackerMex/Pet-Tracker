@@ -1957,9 +1957,9 @@
   {
     "id": 100,
     "name": "mobile-alert-detail-screen",
-    "status": "spec_ready",
+    "status": "done",
     "priority": "P3",
-    "description": "Registrada el 2026-09-17 desde la seccion Fuera de alcance de la spec de #79, por decision del humano. El tap sobre una notificacion push lleva hoy al centro de alertas (#79 R10 fija router.push('/alerts')) y la alerta recien llegada se ve arriba, pero no se navega a ELLA: el payload trae data.petId y data.alertId y nadie los usa. La razon es que no existe pantalla de detalle: #78 cerro explicitamente en su Fuera de alcance que la fila no navega. Alcance: pantalla de detalle de una alerta -tipo, mascota, momento de apertura, estado, y la accion de atender que hoy vive en la fila del centro-, ruta que acepte el id, y que el handler de tap de #79 navegue a ella usando data.alertId cuando venga en el payload, cayendo al centro de alertas cuando no venga o cuando la alerta ya no exista. Decision que la spec tiene que cerrar: si la pantalla vive en (tabs) o en un Stack, que enlaza con #95; y si el detalle necesita un GET por id en el backend o basta con lo que ya devuelve el listado, porque si hace falta endpoint nuevo es feature de backend aparte. Depende de #79 para la mitad del tap. AMPLIADA el 2026-09-23 con la Observacion 1 del reviewer de #114 (progress/review_mobile-reminders-alerts-to-stack.md), no bloqueante alli: en mobile-pet-tracker/src/app/__tests__/reminders-alerts-stack.notification.test.tsx, describe '#114 R3', las dos aserciones que siguen al SEGUNDO toque (pila igual y contador de montajes igual) no pueden fallar tal como estan escritas, porque se evaluan tras un act que no vacia los temporizadores falsos de renderRouter y la navegacion aun no se ha aplicado. Quitar dangerouslySingular de alerts solo lo detecta el back que viene despues. La conducta es correcta hoy (sonda del reviewer con los temporizadores vaciados: montajes 2 a 2, pila estable); lo debil es el candado de la clausula 'la pantalla no se vuelve a montar'. Solo aplica si #100 toca ese listener o ese test: entonces su spec vacia los temporizadores (jest.runOnlyPendingTimers dentro de act) antes de esas dos aserciones, con criterio de cierre que quitar dangerouslySingular las ponga rojas a ellas y no solo al back.",
+    "description": "Registrada el 2026-09-17 desde la seccion Fuera de alcance de la spec de #79, por decision del humano. El tap sobre una notificacion push lleva hoy al centro de alertas (#79 R10 fija router.push('/alerts')) y la alerta recien llegada se ve arriba, pero no se navega a ELLA: el payload trae data.petId y data.alertId y nadie los usa. La razon es que no existe pantalla de detalle: #78 cerro explicitamente en su Fuera de alcance que la fila no navega. Alcance: pantalla de detalle de una alerta -tipo, mascota, momento de apertura, estado, y la accion de atender que hoy vive en la fila del centro-, ruta que acepte el id, y que el handler de tap de #79 navegue a ella usando data.alertId cuando venga en el payload, cayendo al centro de alertas cuando no venga o cuando la alerta ya no exista. Decision que la spec tiene que cerrar: si la pantalla vive en (tabs) o en un Stack, que enlaza con #95; y si el detalle necesita un GET por id en el backend o basta con lo que ya devuelve el listado, porque si hace falta endpoint nuevo es feature de backend aparte. Depende de #79 para la mitad del tap. AMPLIADA el 2026-09-23 con la Observacion 1 del reviewer de #114 (progress/review_mobile-reminders-alerts-to-stack.md), no bloqueante alli: en mobile-pet-tracker/src/app/__tests__/reminders-alerts-stack.notification.test.tsx, describe '#114 R3', las dos aserciones que siguen al SEGUNDO toque (pila igual y contador de montajes igual) no pueden fallar tal como estan escritas, porque se evaluan tras un act que no vacia los temporizadores falsos de renderRouter y la navegacion aun no se ha aplicado. Quitar dangerouslySingular de alerts solo lo detecta el back que viene despues. La conducta es correcta hoy (sonda del reviewer con los temporizadores vaciados: montajes 2 a 2, pila estable); lo debil es el candado de la clausula 'la pantalla no se vuelve a montar'. Solo aplica si #100 toca ese listener o ese test: entonces su spec vacia los temporizadores (jest.runOnlyPendingTimers dentro de act) antes de esas dos aserciones, con criterio de cierre que quitar dangerouslySingular las ponga rojas a ellas y no solo al back. Cerrada 2026-09-29: reviewer aprobado (c5a54b94, sobre b1dae7ce, 0 bloqueantes); prueba de humo en dev build de Android superada y firmada por el humano en 19566f97; movil 86/1597/1 tras mergear main (#130). Deuda del veredicto registrada como #133 (doMock de R15 en use-push-registration.test.tsx) y #134 (helper del desenlace de ackAlert).",
     "acceptance_criteria": [
       "Existe una pantalla de detalle de alerta accesible desde la fila del centro de alertas",
       "El tap sobre una notificacion con data.alertId abre esa alerta concreta, con la app cerrada y en segundo plano",
@@ -2569,6 +2569,41 @@
     ],
     "files_affected": [
       "mobile-pet-tracker/src/screens/home/weekly-activity-chart.test.tsx"
+    ]
+  },
+  {
+    "id": 133,
+    "name": "mobile-push-registration-r15-domock-scope",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada al cerrar #100 el 2026-09-29, por decision del humano. Es la deuda 5 del reviewer de #100 (progress/review_mobile-alert-detail-screen.md, «#133 (propuesta)»). En mobile-pet-tracker/src/hooks/use-push-registration.test.tsx, el describe 'R15: importar el modulo no toca expo-notifications' llama a jest.resetModules() y a jest.doMock('expo-notifications', <Proxy que lanza>), y ese factory queda registrado para el resto del fichero. Como el hook hace require('expo-notifications') en tiempo de ejecucion, todo describe que corra despues de R15 falla con «expo-notifications unavailable in Expo Go» antes de llegar a sus aserciones. Por eso R15 tiene que ser el ultimo describe del fichero, y toda spec que anada tests ahi debe fijar el sitio («antes de R15»). Ya paro a Codex en el rojo de #100 R7 (11 fallos en vez de 3; Reanudacion 2 del handoff de #100 lo movio detras de R10). Alcance: acotar ese doMock (jest.isolateModules, o jest.dontMock + jest.resetModules al salir de R15) para que el orden de los describe deje de importar. Solo test; no cambia produccion. Ancla por contenido: grep -n \"jest.doMock\" en ese fichero.",
+    "acceptance_criteria": [
+      "Un describe nuevo colocado DESPUES de 'R15: importar el modulo no toca expo-notifications' corre sus aserciones sin el error «expo-notifications unavailable in Expo Go»; el rojo de la spec lo demuestra con ese describe versionado en commit propio",
+      "R15 sigue poniendose rojo si importar el modulo toca expo-notifications (sonda de mutacion documentada en la spec)",
+      "Diff de produccion vacio; ningun it renombrado",
+      "Suite movil completa verde, medida sin pipe; delta de tests declarado"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/hooks/use-push-registration.test.tsx"
+    ]
+  },
+  {
+    "id": 134,
+    "name": "mobile-alert-ack-outcome-helper",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada al cerrar #100 el 2026-09-29, por decision del humano. Es la deuda 5 del reviewer de #100 (progress/review_mobile-alert-detail-screen.md, «#134 (propuesta)») y la del «switch de ackAlert duplicado» de specs/mobile-alert-detail-screen/requirements.md §Fuera de alcance. El switch sobre el resultado de ackAlert esta duplicado entre handleAck de mobile-pet-tracker/src/screens/alerts/index.tsx y handleAck de mobile-pet-tracker/src/screens/alert-detail/index.tsx (ancla por contenido: grep -n \"ackAlert(baseUrl\"). Coinciden unreachable (common.cannotReachServer), unauthorized (signOut), error/missing-config y catch (common.somethingWentWrong); ok y already-closed marcan la alerta como acked/closed en el estado local de cada pantalla (por id en el centro, unica en el detalle); not-found difiere a proposito: el centro pinta common.somethingWentWrong y el detalle hace router.dismissTo('/alerts') una vez. Alcance: extraer la clasificacion del resultado a un helper y dejar a cada pantalla solo not-found y el destino del ok/already-closed, sin cambio de conducta. Delimitacion: NO es invalidar ni escribir la cache de alertKeys.list(); #100 D2 y R5 lo excluyen a proposito. Contratos que la spec debe medir antes de mover nada: el mapa screenSignOutCalls de src/__tests__/design-drift.test.ts (cuenta signOut por pantalla; hoy 'screens/alert-detail/index.tsx': 1) y las tablas R12_ALERTS y R13_ALERT_DETAIL de src/__tests__/ui-copy-table.ts (cuentan cada t('...') por fichero), que se mueven si las llamadas salen de las pantallas.",
+    "acceptance_criteria": [
+      "Un solo sitio clasifica los resultados comunes de ackAlert; cada pantalla conserva solo not-found y el destino del ok/already-closed",
+      "Conducta sin cambio: los tests de #78 y #100 R5 del centro y del detalle pasan sin tocar sus aserciones",
+      "La spec declara el efecto sobre screenSignOutCalls y sobre R12_ALERTS/R13_ALERT_DETAIL antes de implementar",
+      "Suite movil completa verde, medida sin pipe; tsc y lint exit 0 con salida vacia"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/alerts/index.tsx",
+      "mobile-pet-tracker/src/screens/alert-detail/index.tsx",
+      "mobile-pet-tracker/src/__tests__/design-drift.test.ts",
+      "mobile-pet-tracker/src/__tests__/ui-copy-table.ts"
     ]
   }
 ]
