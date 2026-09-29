@@ -1,6 +1,6 @@
 ---
 feature: "mobile-quick-actions-pressed-feedback"
-status: spec_ready         # draft | spec_ready | approved
+status: approved           # draft | spec_ready | approved
 tags: [spec, mobile, ui, deuda]
 ---
 
