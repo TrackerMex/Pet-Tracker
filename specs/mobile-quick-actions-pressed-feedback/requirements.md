@@ -311,7 +311,7 @@ tests juntos, 220 tests ([[tasks]] §Sondas).
 **Criterio de paso**: los pasos 2 a 5 se cumplen tal como están escritos para
 los tres tiles.
 
-- [ ] Prueba de humo de R5 superada por el humano (fecha: ____, dispositivo: ____, Android: ____)
+- [X] Prueba de humo de R5 superada por el humano (fecha: 2026-09-29, dispositivo: OnePlus Nord 5, Android: 15)
 
 ---
 
