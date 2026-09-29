@@ -2671,6 +2671,26 @@ describe('#81 R1-R6: la rejilla de accesos rápidos no deja decisiones sin canda
       );
     }
   });
+
+  it('#81 R3: cada tile lleva rounded-xl como único radio y la esquina continua', async () => {
+    await renderHome();
+    await screen.findByTestId('quick-action-weight');
+
+    for (const testID of [
+      'quick-action-weight',
+      'quick-action-reminder',
+      'quick-action-documents',
+    ]) {
+      const tile = screen.getByTestId(testID);
+
+      expect(
+        tile.props.className
+          .split(' ')
+          .filter((token: string) => /^rounded(?:-|$)/.test(token)),
+      ).toEqual(['rounded-xl']);
+      expect(tile.props.style).toEqual({ borderCurve: 'continuous' });
+    }
+  });
 });
 
 describe('#85 R1: la sección recupera su rótulo en los dos idiomas', () => {
