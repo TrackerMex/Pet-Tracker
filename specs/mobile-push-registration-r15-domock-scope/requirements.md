@@ -1,6 +1,6 @@
 ---
 feature: "mobile-push-registration-r15-domock-scope"
-status: spec_ready       # draft | spec_ready | approved
+status: approved         # draft | spec_ready | approved
 tags: [spec, mobile, test, deuda]
 ---
 
@@ -204,10 +204,13 @@ antes o fuera de sus `expect`.
 
 ## Aprobación
 
-- [ ] **Aprobado por humano** (fecha: ____) ← gate obligatorio antes de
+- [x] **Aprobado por humano** (fecha: 2026-09-29) ← gate obligatorio antes de
       implementar. Al marcar esta casilla, el humano firma también los cinco
       puntos de §Qué firma el humano al aprobar esta spec, y el cuarto en
       particular: dejar abierto el límite S3 o pedir que se registre como
       deuda.
+      - Punto 4, decisión del humano (2026-09-29): «registra S3 como deuda
+        nueva». Queda registrada como #137 en `feature_list.json`; #133 no la
+        cierra.
 
 > No hay gate de dispositivo: el cambio es solo de test.
