@@ -21,7 +21,7 @@ tags: [spec, mobile, a11y, deuda]
 > con los `grep` que se citan, y las cuentas se vuelven a medir al arrancar
 > ([[tasks]] §Antes de tocar nada).
 >
-> **Enmienda 1 (R1 y R2, 2026-09-29, pendiente de firma):** tras el rechazo de
+> **Enmienda 1 (R1 y R2, 2026-09-29, firmada el 2026-09-29 vía Notion):** tras el rechazo de
 > la ronda 1 (`progress/review_mobile-weekly-chart-root-accessible-lock.md`,
 > obs. 1), R1 pasa a cubrir también el estado **tras el layout**, el de **un
 > día seleccionado** y el de **otra métrica seleccionada**, con tres `it`
@@ -592,7 +592,7 @@ ciega.
 
 ### Firma de la Enmienda 1
 
-- [ ] **Enmienda 1 (R1 y R2) aprobada por humano** (fecha: ____). Casilla
+- [x] **Enmienda 1 (R1 y R2) aprobada por humano** (fecha: 2026-09-29). Casilla
       propia. Al marcarla, el humano firma también los siete puntos de §Qué
       firma el humano con esta enmienda. Sin ella, Codex no toca nada y la
       ronda 1 sigue rechazada.
