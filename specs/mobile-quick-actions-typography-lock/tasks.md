@@ -1,6 +1,6 @@
 ---
 feature: "mobile-quick-actions-typography-lock"
-status: spec_ready       # draft | spec_ready | approved
+status: approved         # draft | spec_ready | approved
 tags: [spec, mobile, ui, deuda]
 ---
 

@@ -17,3 +17,4 @@
 - Aviso de solape futuro: #129 (`pending`) tambien lista `index.test.tsx`. Si mergea antes del handoff, cambia el blob de base y la spec manda parar.
 - Espejo en Notion (2026-09-29): https://app.notion.com/p/3ea6115a9b2781f79890d7a101702323, `Estado del gate` = En revision, `Rol actual` = Spec Author.
 - **Esperando gate humano** de `specs/mobile-quick-actions-typography-lock/requirements.md`. Tras la aprobacion: verificar propiedad y `page_last_edited_at` en Notion, frontmatters a `approved`, commit de firma, `Rol actual` = Implementer y handoff a Codex (skill `building-native-ui`, commits test-primero por via b).
+- Gate aprobado en Notion (2026-09-29): Estado del gate = Aprobado, page_last_edited_at 2026-09-29T18:44:39.075Z, sin comentarios. Commit de firma en esta branch; frontmatters a approved.
