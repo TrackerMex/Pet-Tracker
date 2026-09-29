@@ -1559,7 +1559,7 @@
   {
     "id": 81,
     "name": "mobile-quick-actions-typography-lock",
-    "status": "pending",
+    "status": "done",
     "priority": "P3",
     "description": "Deuda declarada por Codex y verificada por el reviewer al cerrar #71 el 2026-09-09. La receta tipografica de la etiqueta de los tiles -text-2xs font-semibold, prescrita por design.md §D12 de specs/mobile-home-quick-actions/- NO esta vigilada: una sonda de produccion a text-xs font-medium deja la suite movil COMPLETA verde, 68/68 suites y 1054/1054 tests, no solo el filtro dirigido. Es la septima dimension del tile; las otras seis quedaron bajo candado en #71. Va con dos residuales de la misma auditoria que la spec debe decidir si congela o deja como libertad de implementacion: los detalles de composicion interior items-center gap-1.5 py-3, y que un Pressable ANIDADO dentro de un tile no se cuenta en el recuento de hijos -otra clase de defecto, y cerrarlo congelaria la composicion interior-. AMPLIADA el 2026-09-09 con el hallazgo O6 del tercer pase de #70: el ORDEN de los hijos de un elemento repetido tampoco esta vigilado. Intercambiar los bloques Text de nombre y fecha en index.tsx:544-555 deja 86/86 verdes -la fecha se dibujaria encima del nombre y ningun test lo diria- porque todo llega por within(row).getByTestId(...), agnostico al orden. Es la cuarta dimension destapada en cuatro rondas seguidas -#69, #71, #70 y este O6-, siempre por el mismo mecanismo. La regla general quedo escrita en docs/ui-guidelines.md §Enmienda #70. En #70 el orden de nombre y fecha se cierra de rebote por O5-b, que fija row.children[1]; en el tile de #71 no hay nada equivalente.",
     "acceptance_criteria": [
@@ -2620,6 +2620,25 @@
     ],
     "files_affected": [
       "mobile-pet-tracker/src/screens/home/weekly-activity-chart.test.tsx"
+    ]
+  },
+  {
+    "id": 136,
+    "name": "mobile-quick-actions-pressed-feedback",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada el 2026-09-29 al cerrar #81, por decision del humano; es el hallazgo (F) de la spec de #81, que quedo fuera de alcance porque no cabe en una feature de solo tests. Los tres tiles de accesos rapidos de la Home (quick-action-weight, quick-action-reminder y quick-action-documents, salidos de QUICK_ACTIONS.map en src/screens/home/index.tsx) son Pressable con style={CONTINUOUS_CORNER} y sin estado pressed: al pulsarlos no cambia nada. docs/ui-guidelines.md pide feedback pressed en todo elemento tappable, y C8 de CHECKPOINTS.md lo verifica. Antes solo existia como 'Deuda transversal detectada en #71, sin id' en progress/history.md, que hablaba de todos los Pressable de la app; esta entrada se limita a los tres tiles y no audita los demas. Receta ya usada en el repo: style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })} (campana y 'Ver todos' de la Home, filas del centro de alertas, meal-toggle de Nutricion); el selector de metrica de weekly-activity-chart.tsx la combina con otras claves en una funcion que devuelve un array. El tile tiene que conservar la esquina continua. OJO, choca con candados vigentes que la spec debe enmendar a proposito y no de rebote: #81 R3 asevera que el style del host de cada tile es toEqual({ borderCurve: 'continuous' }), y #62 R14 y #98 R10 vigilan en el fuente las 2 esquinas CONTINUOUS_CORNER de index.tsx (sonda e11 de #81); hay que medir cuales se mueven. El candado del feedback va en render, con el patron de #122 R2 (responderGrant y toHaveStyle({ opacity: 0.8 })), no solo en el fuente. Cambia lo que se pinta, asi que necesita smoke en dev build de Android.",
+    "acceptance_criteria": [
+      "Pulsar cada uno de los tres tiles pone su opacidad en 0.8 y soltarlo la devuelve a 1, medido en el arbol renderizado y no solo en el fuente",
+      "Cada tile conserva borderCurve continuous en reposo y pulsado, y rounded-xl como unico radio",
+      "Quitar la receta de pulsado de un solo tile pone la suite roja",
+      "La spec declara antes de implementar que candados enmienda (#81 R3 como minimo) y mide si se mueven #62 R14 y #98 R10; ninguna otra cifra de candado se mueve",
+      "Suite movil completa verde, medida sin pipe; tsc y lint exit 0",
+      "Smoke en dev build de Android: los tres tiles dan feedback visible al pulsarlos"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/home/index.tsx",
+      "mobile-pet-tracker/src/screens/home/index.test.tsx"
     ]
   }
 ]

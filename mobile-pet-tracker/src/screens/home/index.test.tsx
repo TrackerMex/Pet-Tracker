@@ -2607,6 +2607,159 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
   });
 });
 
+describe('#81 R1-R6: la rejilla de accesos rápidos no deja decisiones sin candado', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    const pet = makePet();
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+    mockGetDailyActivity.mockResolvedValue({
+      kind: 'ok',
+      days: [makeDay()],
+      weekComparison: { distanceM: 5, activeMinutes: 10, walkCount: 20 },
+    });
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('#81 R1: cada etiqueta lleva la receta entera y ningún estilo en línea', async () => {
+    await renderHome();
+    await screen.findByTestId('quick-action-weight');
+
+    for (const [testID, label] of [
+      ['quick-action-weight', 'Peso'],
+      ['quick-action-reminder', 'Recordatorio'],
+      ['quick-action-documents', 'Documentos'],
+    ] as const) {
+      const labelNode = within(screen.getByTestId(testID)).getByText(label);
+
+      // #81 R1: the whole class list with toBe, because toContain lets a
+      // contradicting token such as font-bold through.
+      expect(labelNode.props.className).toBe(
+        'text-2xs font-semibold text-foreground',
+      );
+      expect(labelNode.props.style).toBeUndefined();
+    }
+  });
+
+  it('#81 R2: cada tile tiene dos hijos, el icono arriba y la etiqueta debajo', async () => {
+    await renderHome();
+    await screen.findByTestId('quick-action-weight');
+
+    for (const [testID, iconTestID, label] of [
+      ['quick-action-weight', 'icon-weight', 'Peso'],
+      ['quick-action-reminder', 'icon-calendar-plus', 'Recordatorio'],
+      ['quick-action-documents', 'icon-file-text', 'Documentos'],
+    ] as const) {
+      const tile = screen.getByTestId(testID);
+
+      // #81 R2: counted by children, so a wrapper or a third child turns red.
+      expect(tile.children).toHaveLength(2);
+      expect(tile.children[0]).toHaveProperty('props.testID', iconTestID);
+      expect(tile.children[1]).toBe(within(tile).getByText(label));
+      expect(tile.props.className).not.toMatch(
+        /(?:^|\s)flex-(?:row|row-reverse|col-reverse)(?:\s|$)/,
+      );
+    }
+  });
+
+  it('#81 R3: cada tile lleva rounded-xl como único radio y la esquina continua', async () => {
+    await renderHome();
+    await screen.findByTestId('quick-action-weight');
+
+    for (const testID of [
+      'quick-action-weight',
+      'quick-action-reminder',
+      'quick-action-documents',
+    ]) {
+      const tile = screen.getByTestId(testID);
+
+      expect(
+        tile.props.className
+          .split(' ')
+          .filter((token: string) => /^rounded(?:-|$)/.test(token)),
+      ).toEqual(['rounded-xl']);
+      expect(tile.props.style).toEqual({ borderCurve: 'continuous' });
+    }
+  });
+
+  it('#81 R4: la sección pone el rótulo encima de la fila, y la fila, los tres tiles sin envoltorio', async () => {
+    await renderHome();
+    const quickActions = await screen.findByTestId('quick-actions');
+    const title = within(quickActions).getByTestId('quick-actions-title');
+    const tileRow = within(quickActions).getByTestId('quick-actions-row');
+
+    expect(quickActions.children).toHaveLength(2);
+    expect(quickActions.children[0]).toHaveProperty(
+      'props.testID',
+      'quick-actions-title',
+    );
+    expect(quickActions.children[1]).toHaveProperty(
+      'props.testID',
+      'quick-actions-row',
+    );
+    expect(quickActions.props.className).toBe('gap-3');
+    expect(quickActions.props.style).toBeUndefined();
+    expect(title.props.style).toBeUndefined();
+    // #81 R4: the tiles by children, so a wrapper around a tile turns red.
+    expect(
+      tileRow.children.map((child) =>
+        typeof child === 'string' ? child : child.props.testID,
+      ),
+    ).toEqual([
+      'quick-action-weight',
+      'quick-action-reminder',
+      'quick-action-documents',
+    ]);
+    expect(tileRow.props.className).toBe('flex-row gap-3');
+    expect(tileRow.props.style).toBeUndefined();
+  });
+
+  it('#81 R5: cada tile se anuncia con su propia etiqueta visible', async () => {
+    await renderHome();
+    await screen.findByTestId('quick-action-weight');
+
+    for (const [testID, label] of [
+      ['quick-action-weight', 'Peso'],
+      ['quick-action-reminder', 'Recordatorio'],
+      ['quick-action-documents', 'Documentos'],
+    ] as const) {
+      expect(screen.getByTestId(testID)).toHaveAccessibleName(label);
+    }
+  });
+
+  it('#81 R6: dibuja los tres tiles aunque el detalle de la mascota falle', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'unreachable', message: 'network down' });
+
+    await renderHome();
+    await screen.findByTestId('pet-hero-error');
+
+    expect(screen.getByTestId('quick-actions-row').children).toHaveLength(3);
+  });
+
+  it('#81 R6: dibuja los tres tiles aunque la actividad semanal falle', async () => {
+    mockGetDailyActivity.mockResolvedValue({ kind: 'error' });
+
+    await renderHome();
+    await waitFor(() =>
+      expect(screen.getByTestId('summary-note')).toHaveTextContent(
+        'No se pudo cargar la actividad',
+      ),
+    );
+
+    expect(screen.getByTestId('quick-actions-row').children).toHaveLength(3);
+  });
+});
+
 describe('#85 R1: la sección recupera su rótulo en los dos idiomas', () => {
   beforeEach(() => {
     jest.clearAllMocks();
