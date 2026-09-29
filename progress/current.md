@@ -42,4 +42,4 @@
   - El rojo de E1.3 son 2: R1·4 por `toBe` y R6 de rebote.
   - Hay 12 filas (D). Frente a lo que vio el humano entra una nueva: el tema (`themewrap`, verde).
   - `metricwrapctl` da 8 rojos.
-- Re-espejo en Notion lanzado: pagina entera desde 552995ee, Estado del gate = En revision, Rol actual = Spec Author. Falta que el humano firme la Enmienda 1 (`Estado del gate` = Aprobado); despues va el commit de firma y el paso 4 de la lista.
+- Re-espejo en Notion hecho (2026-09-29T18:37:44.674Z): pagina entera desde 552995ee, 70/70 filas de tabla, Estado del gate = En revisión, Rol actual = Spec Author, Bloqueadores vacio. Falta que el humano firme la Enmienda 1 (`Estado del gate` = Aprobado); despues va el commit de firma y el paso 4 de la lista.
