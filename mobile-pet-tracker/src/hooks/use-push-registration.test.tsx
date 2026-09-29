@@ -71,6 +71,11 @@ const mockAddResponseListener = jest.mocked(
 const mockGetLastResponse = jest.mocked(
   Notifications.getLastNotificationResponseAsync,
 );
+// El objeto que construyo la fabrica de la cabecera. R15 registra otra
+// fabrica y la restaura en su finally: tras R15 tiene que volver este mismo
+// objeto, no una copia (#139 R2).
+const headerNotificationsModule =
+  jest.requireMock<typeof Notifications>('expo-notifications');
 const notificationMocks = [
   mockSetNotificationHandler,
   mockSetNotificationChannel,
@@ -709,7 +714,7 @@ describe('R15: importar el modulo no toca expo-notifications', () => {
     } finally {
       // jest.doMock es global al fichero: los describe posteriores vuelven a
       // recibir el mock de la cabecera (#133 R1).
-      jest.doMock('expo-notifications', () => headerNotifications);
+      jest.doMock('expo-notifications', () => ({ ...headerNotifications, AndroidImportance: { MAX: 5 } }));
     }
   });
 });
@@ -731,5 +736,13 @@ describe('#133 R1: tras R15, el hook recibe el mock de expo-notifications de la 
     for (const mock of notificationMocks) {
       expect(mock).toHaveBeenCalled();
     }
+  });
+});
+
+describe('#139 R2: tras R15, expo-notifications vuelve a ser el objeto de la cabecera', () => {
+  it('jest.requireMock devuelve el mismo objeto, no una copia', () => {
+    expect(jest.requireMock('expo-notifications')).toBe(
+      headerNotificationsModule,
+    );
   });
 });
