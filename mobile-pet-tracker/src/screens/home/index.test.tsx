@@ -2691,6 +2691,38 @@ describe('#81 R1-R6: la rejilla de accesos rápidos no deja decisiones sin canda
       expect(tile.props.style).toEqual({ borderCurve: 'continuous' });
     }
   });
+
+  it('#81 R4: la sección pone el rótulo encima de la fila, y la fila, los tres tiles sin envoltorio', async () => {
+    await renderHome();
+    const quickActions = await screen.findByTestId('quick-actions');
+    const title = within(quickActions).getByTestId('quick-actions-title');
+    const tileRow = within(quickActions).getByTestId('quick-actions-row');
+
+    expect(quickActions.children).toHaveLength(2);
+    expect(quickActions.children[0]).toHaveProperty(
+      'props.testID',
+      'quick-actions-title',
+    );
+    expect(quickActions.children[1]).toHaveProperty(
+      'props.testID',
+      'quick-actions-row',
+    );
+    expect(quickActions.props.className).toBe('gap-3');
+    expect(quickActions.props.style).toBeUndefined();
+    expect(title.props.style).toBeUndefined();
+    // #81 R4: the tiles by children, so a wrapper around a tile turns red.
+    expect(
+      tileRow.children.map((child) =>
+        typeof child === 'string' ? child : child.props.testID,
+      ),
+    ).toEqual([
+      'quick-action-weight',
+      'quick-action-reminder',
+      'quick-action-documents',
+    ]);
+    expect(tileRow.props.className).toBe('flex-row gap-3');
+    expect(tileRow.props.style).toBeUndefined();
+  });
 });
 
 describe('#85 R1: la sección recupera su rótulo en los dos idiomas', () => {
