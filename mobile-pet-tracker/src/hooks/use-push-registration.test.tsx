@@ -712,3 +712,22 @@ describe('R15: importar el modulo no toca expo-notifications', () => {
   });
 });
 
+describe('#133 R1: tras R15, el hook recibe el mock de expo-notifications de la cabecera', () => {
+  it('llama a cada jest.fn de la cabecera y registra el token', async () => {
+    mockGetPermissions.mockResolvedValue(permission(false, true));
+    mockRequestPermissions.mockResolvedValue(permission(true, true));
+
+    await renderHook(() => usePushRegistration());
+
+    await waitFor(() => {
+      expect(mockRegisterPushToken).toHaveBeenCalledWith(
+        'http://example.test/v1',
+        'jwt-token',
+        { expoToken: 'ExpoPushToken[xxx]', platform: 'android' },
+      );
+    });
+    for (const mock of notificationMocks) {
+      expect(mock).toHaveBeenCalled();
+    }
+  });
+});
