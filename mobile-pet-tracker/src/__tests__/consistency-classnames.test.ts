@@ -249,7 +249,9 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
   const directUses = [
     [join('app', '(auth)', 'forgot.tsx'), 1],
     [join('components', 'pet-hero-header.tsx'), 1],
-    [join('screens', 'home', 'index.tsx'), 2],
+    // #136 R3: the quick action tiles spread the corner inside their pressed
+    // style, so the Home keeps a single direct use, collar-pair-link.
+    [join('screens', 'home', 'index.tsx'), 1],
     [join('screens', 'home', 'weekly-activity-chart.tsx'), 1],
     [join('screens', 'health', 'index.tsx'), 2],
     [join('app', '(tabs)', 'food.tsx'), 2],
@@ -304,9 +306,10 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
       'StyleSheet.flatten([CONTINUOUS_CORNER, style])',
     );
     expect(card.match(/style=\{mergedStyle\}/g)).toHaveLength(2);
+    // #136 R3: minus one, the tiles' corner now travels in their pressed style.
     expect(
       directUses.reduce((total, [, count]) => total + count, 2),
-    ).toBe(33 + 1 + 1);
+    ).toBe(33 + 1 + 1 - 1);
   });
 });
 
@@ -382,9 +385,11 @@ describe('#98 R10: los candados que esta feature no mueve', () => {
         0,
       );
 
-    expect(home.match(/style=\{CONTINUOUS_CORNER\}/g)).toHaveLength(2);
+    // #136 R3: the tiles' corner moved into their pressed style, one direct
+    // use less in the Home and in the repo.
+    expect(home.match(/style=\{CONTINUOUS_CORNER\}/g)).toHaveLength(1);
     expect(food.match(/style=\{CONTINUOUS_CORNER\}/g)).toHaveLength(2);
-    expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(33);
+    expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(32);
     expect(count(/rounded-xl bg-accent(?=[\s'"`])/g)).toBe(13);
     expect(count(/bg-accent-soft/g)).toBe(16);
     expect(home.match(/text-accent-strong\b/g)).toHaveLength(2);
