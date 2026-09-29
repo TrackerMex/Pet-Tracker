@@ -13,10 +13,10 @@ Todos los tests viven en
 |---|---|---|---|
 | R1 | `weekly-activity-chart.test.tsx::#132 R1: la tarjeta es la raíz host de lo que pinta la gráfica › entre el nodo que monta la gráfica y la tarjeta no hay ningún otro` | `4fb4481c` | `99629c30` |
 | R2 | sin test: cierre medido ([[tasks]] §R2 y `progress/impl_mobile-weekly-chart-root-accessible-lock.md`) | no aplica | `99629c30` |
-| R1 (Enmienda 1) | `weekly-activity-chart.test.tsx::#132 R1: la tarjeta es la raíz host de lo que pinta la gráfica › tras medir el gráfico, entre el nodo que monta la gráfica y la tarjeta sigue sin haber otro` | pendiente | pendiente |
-| R1 (Enmienda 1) | `weekly-activity-chart.test.tsx::#132 R1: la tarjeta es la raíz host de lo que pinta la gráfica › con un día seleccionado, entre el nodo que monta la gráfica y la tarjeta sigue sin haber otro` | pendiente | pendiente |
-| R1 (Enmienda 1) | `weekly-activity-chart.test.tsx::#132 R1: la tarjeta es la raíz host de lo que pinta la gráfica › con otra métrica seleccionada, entre el nodo que monta la gráfica y la tarjeta sigue sin haber otro` | pendiente | pendiente |
-| R2 (Enmienda 1) | sin test: cierre medido ([[tasks]] §E1 — Cierre y la sección `## Enmienda 1` de `progress/impl_mobile-weekly-chart-root-accessible-lock.md`) | no aplica | pendiente |
+| R1 (Enmienda 1) | `weekly-activity-chart.test.tsx::#132 R1: la tarjeta es la raíz host de lo que pinta la gráfica › tras medir el gráfico, entre el nodo que monta la gráfica y la tarjeta sigue sin haber otro` | `3a0022f6` | `061ca9ea` |
+| R1 (Enmienda 1) | `weekly-activity-chart.test.tsx::#132 R1: la tarjeta es la raíz host de lo que pinta la gráfica › con un día seleccionado, entre el nodo que monta la gráfica y la tarjeta sigue sin haber otro` | `728ad1c6` | `be6ac464` |
+| R1 (Enmienda 1) | `weekly-activity-chart.test.tsx::#132 R1: la tarjeta es la raíz host de lo que pinta la gráfica › con otra métrica seleccionada, entre el nodo que monta la gráfica y la tarjeta sigue sin haber otro` | `f27dd25d` | `97f8c18c` |
+| R2 (Enmienda 1) | sin test: cierre medido ([[tasks]] §E1 — Cierre y la sección `## Enmienda 1` de `progress/impl_mobile-weekly-chart-root-accessible-lock.md`) | no aplica | `97f8c18c` |
 
 Regla: el reviewer no aprueba si alguna fila queda «pendiente».
 
