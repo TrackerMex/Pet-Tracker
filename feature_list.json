@@ -2574,7 +2574,7 @@
   {
     "id": 133,
     "name": "mobile-push-registration-r15-domock-scope",
-    "status": "spec_ready",
+    "status": "in_progress",
     "priority": "P3",
     "description": "Registrada al cerrar #100 el 2026-09-29, por decision del humano. Es la deuda 5 del reviewer de #100 (progress/review_mobile-alert-detail-screen.md, «#133 (propuesta)»). En mobile-pet-tracker/src/hooks/use-push-registration.test.tsx, el describe 'R15: importar el modulo no toca expo-notifications' llama a jest.resetModules() y a jest.doMock('expo-notifications', <Proxy que lanza>), y ese factory queda registrado para el resto del fichero. Como el hook hace require('expo-notifications') en tiempo de ejecucion, todo describe que corra despues de R15 falla con «expo-notifications unavailable in Expo Go» antes de llegar a sus aserciones. Por eso R15 tiene que ser el ultimo describe del fichero, y toda spec que anada tests ahi debe fijar el sitio («antes de R15»). Ya paro a Codex en el rojo de #100 R7 (11 fallos en vez de 3; Reanudacion 2 del handoff de #100 lo movio detras de R10). Alcance: acotar ese doMock (jest.isolateModules, o jest.dontMock + jest.resetModules al salir de R15) para que el orden de los describe deje de importar. Solo test; no cambia produccion. Ancla por contenido: grep -n \"jest.doMock\" en ese fichero.",
     "acceptance_criteria": [
