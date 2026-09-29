@@ -43,3 +43,5 @@
   - Hay 12 filas (D). Frente a lo que vio el humano entra una nueva: el tema (`themewrap`, verde).
   - `metricwrapctl` da 8 rojos.
 - Re-espejo en Notion hecho (2026-09-29T18:37:44.674Z): pagina entera desde 552995ee, 70/70 filas de tabla, Estado del gate = En revisión, Rol actual = Spec Author, Bloqueadores vacio. Falta que el humano firme la Enmienda 1 (`Estado del gate` = Aprobado); despues va el commit de firma y el paso 4 de la lista.
+- Firma de la Enmienda 1 (2026-09-29): en Notion, `Estado del gate` = Aprobado, con `page_last_edited_at` 2026-09-29T18:41:08.044Z y la casilla marcada con fecha 2026-09-29. No hay comentarios. Commit de firma: 27724fb3.
+- Handoff de la ronda 2 a Codex: `progress/handoff_mobile-weekly-chart-root-accessible-lock_r2.md`. Notion: Rol actual = Implementer. **Esperando a Codex**; hasta que el humano confirme, el leader solo toca `docs/`, `specs/`, `progress/` y `feature_list.json`. Siguen los pasos 5 y 6 de la lista de arriba.
