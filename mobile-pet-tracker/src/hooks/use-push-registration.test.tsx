@@ -697,18 +697,11 @@ describe('R15: importar el modulo no toca expo-notifications', () => {
     try {
       expect(() =>
         jest.isolateModules(() => {
-          jest.doMock(
-            'expo-notifications',
-            () =>
-              new Proxy(
-                {},
-                {
-                  get() {
-                    throw expoGoImportError;
-                  },
-                },
-              ),
-          );
+          // Lanza en el propio require, no al leer una propiedad: un import
+          // con nombre no lee ninguna al importarse (#137 R1).
+          jest.doMock('expo-notifications', () => {
+            throw expoGoImportError;
+          });
 
           jest.requireActual('./use-push-registration');
         }),

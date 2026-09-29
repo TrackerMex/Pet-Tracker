@@ -1,6 +1,6 @@
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
-import type { NotificationResponse } from 'expo-notifications';
+import { type NotificationResponse, setNotificationHandler } from 'expo-notifications';
 import { router, usePathname, type Href } from 'expo-router';
 import { useEffect, useRef, useSyncExternalStore } from 'react';
 import { AppState, Platform } from 'react-native';
@@ -88,7 +88,7 @@ export function usePushRegistration(): void {
 
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const Notifications = require('expo-notifications') as NotificationsModule;
-    Notifications.setNotificationHandler({
+    setNotificationHandler({
       handleNotification: async () => ({
         shouldShowBanner: true,
         shouldShowList: true,
