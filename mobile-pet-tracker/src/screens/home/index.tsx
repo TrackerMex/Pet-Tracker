@@ -588,6 +588,7 @@ export function HomeScreen() {
                     key={testID}
                     testID={testID}
                     accessibilityRole="button"
+                    accessibilityLabel={t(QUICK_ACTIONS[(index + 1) % 3].labelKey)}
                     className={`min-h-11 flex-1 items-center gap-1.5 rounded-xl py-3 ${CATEGORY_SLOTS[slot].surface}`}
                     style={CONTINUOUS_CORNER}
                     onPress={() => router.push(href(selectedPetId))}

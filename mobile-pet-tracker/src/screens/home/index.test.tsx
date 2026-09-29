@@ -2723,6 +2723,19 @@ describe('#81 R1-R6: la rejilla de accesos rápidos no deja decisiones sin canda
     expect(tileRow.props.className).toBe('flex-row gap-3');
     expect(tileRow.props.style).toBeUndefined();
   });
+
+  it('#81 R5: cada tile se anuncia con su propia etiqueta visible', async () => {
+    await renderHome();
+    await screen.findByTestId('quick-action-weight');
+
+    for (const [testID, label] of [
+      ['quick-action-weight', 'Peso'],
+      ['quick-action-reminder', 'Recordatorio'],
+      ['quick-action-documents', 'Documentos'],
+    ] as const) {
+      expect(screen.getByTestId(testID)).toHaveAccessibleName(label);
+    }
+  });
 });
 
 describe('#85 R1: la sección recupera su rótulo en los dos idiomas', () => {
