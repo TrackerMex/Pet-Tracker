@@ -11,9 +11,9 @@ Todos los tests viven en
 
 | Requisito | Test (archivo::nombre) | Commit rojo | Commit verde |
 |---|---|---|---|
-| R1 | `use-push-registration.test.tsx::#133 R1: tras R15, el hook recibe el mock de expo-notifications de la cabecera › llama a cada jest.fn de la cabecera y registra el token` | pendiente | pendiente |
-| R2 | `use-push-registration.test.tsx::R15: importar el modulo no toca expo-notifications › no accede a expo-notifications al importar el modulo` (existente; cierre por mutación, [[tasks]] §R2) | no aplica | pendiente |
-| R3 | sin test: cierre medido ([[tasks]] §R3 y `progress/impl_mobile-push-registration-r15-domock-scope.md`) | no aplica | pendiente |
+| R1 | `use-push-registration.test.tsx::#133 R1: tras R15, el hook recibe el mock de expo-notifications de la cabecera › llama a cada jest.fn de la cabecera y registra el token` | `b24895d5aba7af0d1dd5aa8c13d8c0402f369338` | `0b517529668bc0598e28acffc11fd6bd64a7d14a` |
+| R2 | `use-push-registration.test.tsx::R15: importar el modulo no toca expo-notifications › no accede a expo-notifications al importar el modulo` (existente; cierre por mutación, [[tasks]] §R2) | no aplica | `0b517529668bc0598e28acffc11fd6bd64a7d14a` |
+| R3 | sin test: cierre medido ([[tasks]] §R3 y `progress/impl_mobile-push-registration-r15-domock-scope.md`) | no aplica | `0b517529668bc0598e28acffc11fd6bd64a7d14a` |
 
 Regla: el reviewer no aprueba si alguna fila queda «pendiente».
 
