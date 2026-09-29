@@ -18,3 +18,8 @@
 - Espejo en Notion (2026-09-29): https://app.notion.com/p/3ea6115a9b2781f79890d7a101702323, `Estado del gate` = En revision, `Rol actual` = Spec Author.
 - **Esperando gate humano** de `specs/mobile-quick-actions-typography-lock/requirements.md`. Tras la aprobacion: verificar propiedad y `page_last_edited_at` en Notion, frontmatters a `approved`, commit de firma, `Rol actual` = Implementer y handoff a Codex (skill `building-native-ui`, commits test-primero por via b).
 - Gate aprobado en Notion (2026-09-29): Estado del gate = Aprobado, page_last_edited_at 2026-09-29T18:44:39.075Z, sin comentarios. Commit de firma en esta branch; frontmatters a approved.
+- Handoff a Codex (2026-09-29): `progress/handoff_mobile-quick-actions-typography-lock.md`, sobre la firma 0894f07a. `feature_list.json` #81 pasa a `in_progress`. Notion: `Rol actual` = Implementer.
+  - feature: mobile-quick-actions-typography-lock (#81)
+  - inicio: 2026-09-29
+  - plan: Codex anade el describe de #81 con siete `it` (R1-R6) a `src/screens/home/index.test.tsx`, test primero por via b (seis mutaciones versionadas en la Home, revertidas en cada verde), mide las sondas de tasks.md y deja evidencia en `progress/impl_mobile-quick-actions-typography-lock.md` y hashes en traceability.md. Diff de produccion vacio.
+- **Esperando** a que el humano confirme que Codex termino. Siguiente: pedir permiso al humano para init.sh (el clasificador se lo deniega al reviewer), correrlo el leader y lanzar `reviewer`.
