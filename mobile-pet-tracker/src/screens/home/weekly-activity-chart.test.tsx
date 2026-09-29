@@ -1489,4 +1489,34 @@ describe('#132 R1: la tarjeta es la raíz host de lo que pinta la gráfica', () 
       result.getByTestId('weekly-activity-card').parent?.props.testID,
     ).toBe('chart-parent');
   });
+
+  it('tras medir el gráfico, entre el nodo que monta la gráfica y la tarjeta sigue sin haber otro', async () => {
+    const { View } = jest.requireActual<typeof import('react-native')>(
+      'react-native',
+    );
+    const result = await render(
+      <ChartWrapper language="es">
+        <View testID="chart-parent">
+          <WeeklyActivityChart
+            days={makeWeek('2026-09-02', [10, 20, 30, 40, 50, 60, 70])}
+            weekComparison={NO_COMPARISON}
+          />
+        </View>
+      </ChartWrapper>,
+    );
+    const layout = result.getByTestId('weekly-activity-chart-layout');
+
+    await fireEvent(layout, 'layout', {
+      nativeEvent: {
+        layout: { width: 295, height: 0, x: 0, y: 0 },
+      },
+    });
+
+    // #132 R1: the layout gives the chart its width, so a wrapper that only
+    // shows up once the chart is measured turns the lock red here.
+    expect(result.getByTestId('weekly-activity-bar-chart')).toBeOnTheScreen();
+    expect(
+      result.getByTestId('weekly-activity-card').parent?.props.testID,
+    ).toBe('chart-parent');
+  });
 });
