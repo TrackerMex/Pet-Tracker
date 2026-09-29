@@ -2688,7 +2688,12 @@ describe('#81 R1-R6: la rejilla de accesos rápidos no deja decisiones sin canda
           .split(' ')
           .filter((token: string) => /^rounded(?:-|$)/.test(token)),
       ).toEqual(['rounded-xl']);
-      expect(tile.props.style).toEqual({ borderCurve: 'continuous' });
+      // #136 R2: at rest the corner travels with the opacity of the pressed
+      // recipe; #136 R1 locks the pressed and released values.
+      expect(tile.props.style).toEqual({
+        borderCurve: 'continuous',
+        opacity: 1,
+      });
     }
   });
 
