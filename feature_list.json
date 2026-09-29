@@ -2640,5 +2640,25 @@
       "mobile-pet-tracker/src/screens/home/index.tsx",
       "mobile-pet-tracker/src/screens/home/index.test.tsx"
     ]
+  },
+  {
+    "id": 138,
+    "name": "mobile-collar-pair-link-pressed-feedback",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada el 2026-09-29 por decision del humano; es el hallazgo (F) de la spec de #136 (specs/mobile-quick-actions-pressed-feedback/requirements.md, Fuera de alcance). El boton 'Vincular collar' de la Home (testID collar-pair-link, en src/screens/home/index.tsx, dentro de la tarjeta del collar y solo cuando la mascota no tiene dispositivo; localizar con grep -n 'testID=\"collar-pair-link\"') es un Pressable con style={CONTINUOUS_CORNER} y sin estado pressed: al pulsarlo no cambia nada. docs/ui-guidelines.md pide feedback pressed en todo elemento tappable y C8 de CHECKPOINTS.md lo verifica. Se limita a este boton y no audita los demas Pressable de la app. Receta: la misma que #136 fija para los tiles de accesos rapidos, una funcion de pressed que devuelve un objeto con ...CONTINUOUS_CORNER y opacity: pressed ? 0.8 : 1, con cambio instantaneo (la version animada y la receta de animate-expo quedaron descartadas y firmadas en #136). DEPENDE DE #136: toca el mismo fichero y los mismos candados de fuente, asi que la spec se escribe con #136 ya mergeada y mide su base contra origin/main. Con #136 mergeada, la Home queda con 1 style={CONTINUOUS_CORNER} (este boton) y todo src/ sin tests con 32; esta feature los moveria a 0 y 31, lo que cambia la fila de la Home en directUses de #62 R14 (y el titulo que genera it.each), su suma, y las cifras de #98 R10 en consistency-classnames.test.ts. La spec decide si la fila de la Home se queda con 0 o se retira, y lo declara como enmienda a proposito. Los tests actuales del boton ('shows the pair action for a pet without a collar and opens pairing' y 'does not show the pair action when the pet has a collar', en src/screens/home/index.test.tsx) no miran su style: el candado del feedback va en render, con el patron de #136 R1 (responderGrant, responderTerminate con waitFor y toEqual sobre el style entero). Cambia lo que se pinta, asi que necesita smoke en dev build de Android.",
+    "acceptance_criteria": [
+      "Pulsar collar-pair-link pone su opacidad en 0.8 y soltarlo la devuelve a 1, medido en el arbol renderizado y no solo en el fuente",
+      "El boton conserva borderCurve continuous en reposo y pulsado, y rounded-xl como unico radio",
+      "Quitar la receta de pulsado del boton pone la suite roja",
+      "La spec declara antes de implementar que candados enmienda (#62 R14 y #98 R10 como minimo, medidos sobre la base con #136 mergeada); ninguna otra cifra de candado se mueve",
+      "Suite movil completa verde, medida sin pipe; tsc y lint exit 0",
+      "Smoke en dev build de Android: el boton da feedback visible al pulsarlo y sigue abriendo el emparejamiento"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/home/index.tsx",
+      "mobile-pet-tracker/src/screens/home/index.test.tsx",
+      "mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts"
+    ]
   }
 ]
