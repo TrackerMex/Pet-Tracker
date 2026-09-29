@@ -36,3 +36,10 @@
   - recuentos de las sondas de la ronda 1: «Aceptar».
 - El spec_author esta retomado para anadir R1·4 (E1.3) en un commit nuevo encima de c1876aae. Si no hay commit suyo encima de c1876aae, no termino: relanzalo con estas tres decisiones.
 - Despues: re-espejar Notion (En revision) y seguir el paso 3 de la lista de arriba.
+- Enmienda 1, version final: 552995ee, pusheada.
+  - R1 pasa a 4 `it`: render inicial, tras el layout, con un dia seleccionado y con otra metrica.
+  - Cifras: base 86/1598, cierre 86/1601.
+  - El rojo de E1.3 son 2: R1·4 por `toBe` y R6 de rebote.
+  - Hay 12 filas (D). Frente a lo que vio el humano entra una nueva: el tema (`themewrap`, verde).
+  - `metricwrapctl` da 8 rojos.
+- Re-espejo en Notion lanzado: pagina entera desde 552995ee, Estado del gate = En revision, Rol actual = Spec Author. Falta que el humano firme la Enmienda 1 (`Estado del gate` = Aprobado); despues va el commit de firma y el paso 4 de la lista.
