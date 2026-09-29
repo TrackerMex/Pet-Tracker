@@ -20,6 +20,17 @@ tags: [spec, mobile, a11y, deuda]
 > los de esta spec ni los de la entrada de `feature_list.json`: todo se localiza
 > con los `grep` que se citan, y las cuentas se vuelven a medir al arrancar
 > ([[tasks]] §Antes de tocar nada).
+>
+> **Enmienda 1 (R1 y R2, 2026-09-29, pendiente de firma):** tras el rechazo de
+> la ronda 1 (`progress/review_mobile-weekly-chart-root-accessible-lock.md`,
+> obs. 1), R1 pasa a cubrir también el estado **tras el layout** y el de **un
+> día seleccionado**, con dos `it` nuevos. Todo lo de la enmienda está en
+> §Enmienda 1, que es lo que vale tras su firma; lo que cambia fuera de ella
+> lleva la marca **Enmienda 1**. Su base medida es `02128a12` (el merge de
+> `origin/main` `4efb6c81` en esta branch). El frontmatter sigue en `approved`,
+> como en el precedente de #77 (`specs/mobile-home-weight-without-collar/`):
+> la enmienda no rige hasta que se marque su casilla propia (§Enmienda 1 ›
+> Firma de la Enmienda 1).
 
 ## Contexto mínimo para implementar sin más contexto
 
@@ -108,6 +119,11 @@ gráfico y las siete columnas en una sola parada.
   ya son rojos hoy con la misma mutación (medido: 5 failed de 1553; 2 suites
   failed de 83).
 
+  > **Enmienda 1**: R1 se amplía a tres estados (antes de medir, tras el
+  > layout y con un día seleccionado) y a tres `it`. El texto que rige tras la
+  > firma es el de §Enmienda 1 › R1 enmendado. El `it` de arriba se queda tal
+  > cual, y sus hashes de ronda 1 también.
+
 - **R2**: THE SYSTEM SHALL cerrar con:
 
   1. **El delta declarado**: +0 suites y +1 test. La gráfica pasa de 43 a 44, y
@@ -130,7 +146,14 @@ gráfico y las siete columnas en una sola parada.
   No tiene test propio: es una propiedad del diff y de la suite. Lo cierra el
   `reviewer` por inspección.
 
+  > **Enmienda 1**: las cifras del cierre (delta, `numstat`, `grep` y tabla de
+  > sondas) se re-miden y se sustituyen por las de §Enmienda 1 › R2 enmendado.
+
 ## Tabla de sondas, resumen
+
+> **Enmienda 1**: esta tabla es la de ronda 1. La que rige tras la firma, con
+> las sondas de estado y las de los huecos declarados, es la de §Enmienda 1 ›
+> Sondas.
 
 Las sondas, con el blob exacto de cada mutación y los `it` que fallan, están en
 [[tasks]] §Sondas. Se miden con la gráfica **y** la Home en la misma corrida,
@@ -165,6 +188,10 @@ que leen la gráfica como texto (`design-drift`, `consistency-classnames` y
    marcar entra en el alcance (sonda `wrapplain`). Su coste: un envoltorio
    legítimo obliga a tocar el candado a sabiendas. Es el mismo trato que firmó
    `#130 R2` para la fila.
+   **Enmienda 1**: este punto era falso tal como estaba escrito. R1 solo miraba
+   el primer render, y un host que aparece tras el layout (`layoutwrap`) o con
+   un día seleccionado (`selwrap`) dejaba la suite entera en verde. Se reescribe
+   en §Enmienda 1 › Punto 2 reescrito.
 3. **El centinela es del test.** El padre real de la tarjeta en `renderChart` es
    un nodo de `HeroUINativeProvider` (`RNCSafeAreaProvider`), y aseverar sobre
    él ataría el candado a una librería de terceros. R1 monta la gráfica dentro
@@ -180,6 +207,8 @@ que leen la gráfica como texto (`design-drift`, `consistency-classnames` y
 6. **Sin gate de TalkBack.** El árbol de producción acaba idéntico al de
    `origin/main`: en un dispositivo no hay nada nuevo que oír. El único gate
    humano es la casilla de §Aprobación.
+   **Enmienda 1**: la enmienda tiene su propia casilla (§Enmienda 1 › Firma de
+   la Enmienda 1), que firma la spec enmendada y no es un gate de TalkBack.
 7. **Requisitos sin test propio**: R2, que es una propiedad del diff y de la
    suite. Lo cierra el `reviewer` por inspección, y queda declarado aquí antes
    del handoff, como pide C4.
@@ -191,9 +220,9 @@ que leen la gráfica como texto (`design-drift`, `consistency-classnames` y
 
 | Criterio | Cubierto por |
 |---|---|
-| 1. Con un `View accessible` (o un `Pressable`) envolviendo `weekly-activity-card` dentro de `WeeklyActivityChart`, un `it` de la gráfica falla | R1: sondas `wrapcard` y `presscard`, rojas por `toBe` en la gráfica. Además `wrapplain` y `hidewrap` |
+| 1. Con un `View accessible` (o un `Pressable`) envolviendo `weekly-activity-card` dentro de `WeeklyActivityChart`, un `it` de la gráfica falla | R1: sondas `wrapcard` y `presscard`, rojas por `toBe` en la gráfica. Además `wrapplain` y `hidewrap`. **Enmienda 1**: también cuando el envoltorio solo aparece tras el layout (`layoutwrap`) o con un día seleccionado (`selwrap`) |
 | 2. Los esperados son literales del test, nunca importados de producción | R1: `'chart-parent'` y `'weekly-activity-card'` se escriben en el test. De la gráfica solo se importa el componente que se prueba, como ya hace el test |
-| 3. Los `describe` de #68, #74 y #130 siguen verdes y sin cambios | R2.3: un solo bloque añadido al final, 0 líneas borradas, y la gráfica en 44/44 |
+| 3. Los `describe` de #68, #74 y #130 siguen verdes y sin cambios | R2.3: un solo bloque añadido al final, 0 líneas borradas, y la gráfica en 44/44. **Enmienda 1**: la gráfica en 46/46, y `61 0` en un hunk contra `40e40dfe` (§Enmienda 1 › R2 enmendado) |
 | 4. Cero cambio en producción; suite verde medida sin pipe; delta declarado | R2.1 y R2.2, con el rojo por mutación versionada y revertida (punto 4) |
 
 ## Fuera de alcance
@@ -215,6 +244,11 @@ el `leader` contra `origin/main`) y **(N)** premisa verificada y descartada.
   `return (`, con la tarjeta como raíz, y el estado vacío pinta dentro de esa
   misma tarjeta. La condición de render del contenido la fijan ya los `it` de
   `R13`.
+  **Enmienda 1**: esta viñeta delimitaba datos, no estados, y se apoyaba en el
+  único `return (`, que es justo lo que `layoutwrap` y `selwrap` rompen sin que
+  R1 lo viera. Tras la enmienda sigue habiendo un solo juego de datos, pero R1
+  monta tres estados. Lo que R1 sigue sin variar está inventariado, y declarado
+  como (D), en §Enmienda 1 › Zona ciega.
 - **(D)** No se vuelven a candar las props de la tarjeta (`#74 R2`, sondas
   `cardacc` y `cardpress`), ni la fila ni sus columnas (`#130 R1`, `#130 R2` y
   `#68 R9`, sonda `wrapinner`).
@@ -243,6 +277,251 @@ el `leader` contra `origin/main`) y **(N)** premisa verificada y descartada.
 - **(N)** *Que un `<>` o un componente sin host alrededor de la tarjeta sea un
   hueco.* No crean nodo host ni llegan a TalkBack (sonda `fragment`, verde).
 
+## Enmienda 1 — R1: el estado tras el layout y el de un día seleccionado
+
+> Abierta el 2026-09-29 tras el veredicto rechazado de la ronda 1
+> (`progress/review_mobile-weekly-chart-root-accessible-lock.md`, obs. 1,
+> bloqueante). El humano la eligió con estas palabras: «Enmendar R1: R1 pasa a
+> cubrir también el estado tras el layout y el de un día seleccionado;
+> layoutwrap y selwrap serían rojos exigidos». Enmienda a una spec ya firmada:
+> **necesita su propia firma** (§Firma de la Enmienda 1). Sin esa casilla, R1 y
+> R2 siguen como arriba y Codex no toca nada.
+>
+> Todo lo de esta sección se **midió** en un `git worktree` temporal del
+> spec_author, desacoplado en `02128a12`. Las medidas se hicieron sin pipe, con
+> `--runTestsByPath` y comprobando `Test Suites: N`, sin `init.sh` ni e2e, y
+> con una caché de jest propia del scratchpad (`--cacheDirectory`). Comandos y
+> logs:
+> `progress/spec_e1_mobile-weekly-chart-root-accessible-lock.md`.
+
+### Qué falló en la ronda 1
+
+R1 montaba la gráfica una vez y aseveraba en el primer render, antes de que el
+gráfico se midiera. Dos mutaciones del `reviewer` condicionan la raíz a un
+estado que ese render no alcanza. Las dos cambian `  return (`, justo encima de
+la línea de la tarjeta, por `  const card = (`, y añaden detrás del `  );` que
+cierra la tarjeta:
+
+- `layoutwrap`: `  return chartWidth > 0 ? <View accessible>{card}</View> : card;`
+- `selwrap`: `  return selection !== null ? <Pressable onPress={() => setSelection(null)}>{card}</Pressable> : card;`
+
+Con cualquiera de las dos, la suite entera seguía en verde (1553 de 1553 sobre
+`035be7fe`, medido por el `reviewer`). En Android las dos funden la tarjeta
+entera en un solo nodo de TalkBack, y `selwrap` es el patrón corriente de
+«tocar fuera para cerrar el tooltip». La decisión que lo dejó pasar es la de
+[[design]] «No dispara el `layout`», que la Enmienda 1 sustituye.
+
+### Premisas re-medidas sobre `02128a12`
+
+| Premisa | Veredicto | Evidencia |
+|---|---|---|
+| El código de la branch es el de `02128a12` | **cierta** | el `HEAD` al abrir la enmienda, `6faa86c1`, solo toca `progress/current.md` |
+| Blobs de partida | **medidos** | la gráfica `c258abedde92d2be981be8507d3d898f13c612cb` (el de `origin/main` y el de base de la ronda 1) y el test `326aa48242b28195849d4e9fe8179004162623d2` (el final de la ronda 1) |
+| En `mobile-pet-tracker/`, `origin/main` (`4efb6c81`) solo difiere de la branch en el `it` de la ronda 1 | **cierta** | `git diff --stat 4efb6c81 02128a12 -- mobile-pet-tracker` lista solo el test, con 24 inserciones |
+| Base | **medida sin pipe** | la gráfica, 44/44 con `Test Suites: 1`, `exit=0`. La gráfica y la Home, 203/203 con `Test Suites: 2`, `exit=0`. La suite, 86 suites / 1598 tests / 1 snapshot, `exit=0`, con 33 bloques `● Console` de ruido. `test ! -e .expo/types/router.d.ts` da `exit=0`, y `bunx tsc --noEmit` y `bunx eslint` de los dos ficheros dan `exit=0` |
+| `origin/main` sin la ronda 1: 86 / 1597 / 1 | **derivada, no medida** | 1598 menos el `it` de la ronda 1 (fila de arriba) |
+| La Home no ve un envoltorio que solo aparece tras el layout o con un día seleccionado | **cierta, medida** | con `layoutwrap` y con `selwrap`, los 159 de la Home siguen verdes sobre el árbol final (§Sondas) |
+| `WeeklyActivityChart` tiene un solo `return (` y ningún `return` temprano | **cierta** | `grep -c '^  return ($'` da 4 en la gráfica: los de `ActivityBar`, `DetailMetric`, `MetricSelector` y `WeeklyActivityChart`. El de `WeeklyActivityChart` es la línea justo encima de la línea de la tarjeta. El único `return;` dentro del componente es `if (day === undefined) return;`, en el handler `selectDay`, que no pinta nada |
+| `weekly-activity-bar-chart` solo existe tras medir | **cierta** | la gráfica monta `BarChart` solo dentro de `{chartWidth > 0 ? (`, y el mock del test le pone ese `testID`. `R11 › reserva la altura y no monta el gráfico antes de medir` ya lo asevera |
+| `weekly-activity-tooltip` solo existe con un día seleccionado | **cierta** | va dentro del primer `{selectedDay ? (` |
+| Pulsar `weekly-activity-day-2026-09-02` selecciona un día | **cierta, medida** | es la primera columna de `makeWeek('2026-09-02', …)`. Su `onPress` llama a `handleColumnPress`, y el tercer `it` ve el tooltip en pantalla |
+
+### R1 enmendado
+
+- **R1**: WHILE `WeeklyActivityChart` pinte al menos un día medido, THE SYSTEM
+  SHALL mantener el `View` con `testID="weekly-activity-card"` como **raíz host
+  de lo que pinta la gráfica** en cada uno de estos tres estados. En los tres,
+  la gráfica se monta dentro de `<View testID="chart-parent">`, con
+  `makeWeek('2026-09-02', [10, 20, 30, 40, 50, 60, 70])` y `NO_COMPARISON`:
+
+  1. **Primer render, antes de medir**:
+     `#132 R1: la tarjeta es la raíz host de lo que pinta la gráfica › entre el nodo que monta la gráfica y la tarjeta no hay ningún otro`.
+     Es el `it` de la ronda 1, que no se toca.
+  2. **Tras el layout** de `weekly-activity-chart-layout` a 295 px de ancho,
+     con `weekly-activity-bar-chart` en pantalla:
+     `#132 R1: la tarjeta es la raíz host de lo que pinta la gráfica › tras medir el gráfico, entre el nodo que monta la gráfica y la tarjeta sigue sin haber otro`.
+  3. **Con un día seleccionado**, tras ese mismo layout y un `press` sobre
+     `weekly-activity-day-2026-09-02`, con `weekly-activity-tooltip` en
+     pantalla:
+     `#132 R1: la tarjeta es la raíz host de lo que pinta la gráfica › con un día seleccionado, entre el nodo que monta la gráfica y la tarjeta sigue sin haber otro`.
+
+  Cada `it` asevera, con `toBe` y literales del test, que
+  `getByTestId('weekly-activity-card').parent?.props.testID` es
+  `'chart-parent'`. Los `it` 2 y 3 aseveran antes, con `toBeOnTheScreen`, que
+  han llegado a su estado.
+
+  IF existe un host entre la raíz de la gráfica y la tarjeta en alguno de esos
+  estados, sea un `<View accessible>`, un `<Pressable>` o un `<View>` sin
+  marcar, THEN SHALL fallar **por aserción** (`expect(received).toBe(expected)`)
+  cada `it` cuyo estado lo contenga. Eso incluye el host que solo aparece tras
+  medir (`layoutwrap`: caen los `it` 2 y 3) y el que solo aparece con un día
+  seleccionado (`selwrap`: cae el `it` 3). IF el envoltorio oculta su subárbol
+  (`hidewrap`), THEN los tres SHALL fallar **por consulta**. IF la tarjeta se
+  envuelve en un `<>`, THEN los tres SHALL seguir verdes.
+
+  Cada `it` nuevo tiene su rojo, que es una mutación de producción versionada
+  en su propio commit (C4, vía **b**): `layoutwrap` para el `it` 2 y `selwrap`
+  para el `it` 3. Con cada una, la suite SHALL dar **exactamente 1 rojo en 1
+  suite**, el `it` nuevo de ese commit, por `toBe`. Medido: con `layoutwrap`,
+  1 failed de 1599; con `selwrap`, 1 failed de 1600; en los dos, 1 suite failed
+  de 86.
+
+### R2 enmendado
+
+- **R2**: THE SYSTEM SHALL cerrar con los siete puntos de R2, con estas cifras:
+
+  1. **Delta**: +0 suites y +2 tests sobre la base de §Premisas re-medidas.
+     La suite pasa de 86 / 1598 / 1 a 86 / 1600 / 1. La gráfica, de 44 a 46. La
+     gráfica y la Home, de 203 a 205. La Home sigue en 159. El acumulado contra
+     `origin/main` (86 / 1597 / 1, derivado) es +0 suites y +3 tests. Si la base
+     medida al arrancar es otra, el delta exigido sigue siendo +2 tests y +0
+     suites sobre lo medido.
+  2. **Diff de producción vacío**, como en R2.2: la gráfica acaba en
+     `c258abedde92d2be981be8507d3d898f13c612cb`.
+  3. **Un solo bloque añadido**. Contra `origin/main`, el test da `85 0` en
+     `--numstat` y un solo hunk. Contra el commit de evidencia de la ronda 1
+     (`40e40dfe`), da `61 0` y un solo hunk: el `it` de la ronda 1 y los
+     `describe` de #68, #74 y #130 no cambian.
+  4. **Cifras de candado**: las de [[tasks]] §E1 — Cierre.
+  5. `tsc` y `eslint`, como en R2.5.
+  6. **Ninguna dependencia nueva** ni copy nueva.
+  7. **Tabla de sondas**: la de §Sondas de esta enmienda, re-medida sobre el
+     árbol final, en una sección nueva `## Enmienda 1` al final de
+     `progress/impl_mobile-weekly-chart-root-accessible-lock.md`.
+
+  No tiene test propio. Lo cierra el `reviewer` por inspección.
+
+### Zona ciega: inventario de las ramas de la gráfica
+
+El hueco de la ronda 1 no es una mutación suelta. Es una clase: **una raíz
+condicionada a algo que R1 no varía**. Para acotarla se inventariaron **todas**
+las ramas condicionales de la gráfica (blob `c258abed`): ternarios, `&&`, `||`,
+`??`, `?.()` e `if` con `return` temprano. El encadenamiento opcional que solo
+lee una propiedad (`selectedDatum?.value`, `selectedLayout?.x`,
+`bar.raw?.date`) no cuenta como rama: no elige qué se pinta. Cada rama se
+localiza con `grep -cF '<ancla>' src/screens/home/weekly-activity-chart.tsx`, que da 1 salvo
+donde se indica otra cifra. Una rama solo puede meter un host entre la raíz y
+la tarjeta si decide **qué devuelve la raíz**. Hoy ninguna lo hace: la raíz es
+la tarjeta, sin condición.
+
+| Grupo | Ramas (ancla) | N | Clase | Por qué |
+|---|---|---|---|---|
+| A. `ActivityBar` (`function ActivityBar({`) | `useSharedValue(reduceMotion ? 1 : 0)`; `average === null \|\| bar.value === 0`; `if (reduceMotion) {`; `{drawAverage && averageY !== null ? (`; `{reduceMotion ? (` | 5 | no aplica | pinta cada barra dentro de `BarChart`, que está dentro de la tarjeta. En el test, además, `BarChart` está mockeado |
+| B. Helpers de texto | `formatMetricValue`: `if (metric === 'distanceM') return fmtKm(value);` y `if (metric === 'walkCount') return fmtCount(value);`. `dayAccessibilityLabel`: `if (day.source === 'missing') {`, `if (metric === 'distanceM') {`, `if (metric === 'walkCount') {` y `value: value ?? '—',`. `formatTrendPercent`: `locale.startsWith('es') ? formatted.replace('.', ',') : formatted` | 7 | no aplica | devuelven una cadena y no pintan nodos |
+| C. `MetricSelector` (`function MetricSelector({`) | `WEEKLY_METRICS[selectedIndex] ?? WEEKLY_METRICS[0]`; `if (selectedX === undefined \|\| selectedWidth === undefined) return;`; `lastPositionedMetric.current === selectedMetric \|\|`; `if (width <= 0) return;`; `if (previous?.x === x && previous.width === width) return current;`; `{selectedLayout ? (`; `labels[index] ?? ''`; `opacity: pressed ? 0.8 : 1,`; `{selected ? (`; `? 'shrink text-xs font-semibold text-accent-strong'` | 10 | no aplica | el selector es hijo de la tarjeta, así que todo lo que decide queda debajo de ella. Su padre es la (F) `wrapmetric` |
+| D. `WeeklyActivityChart`, antes del `return` | `WEEKLY_METRICS[selectedMetricIndex] ?? WEEKLY_METRICS[0]`; `metricLabels[selectedMetricIndex] ?? metricLabels[0]`; `day.source === 'missing' ? null : metricValue(day, selectedMetric)`; `day.source !== 'missing' && typeof value === 'number' ? [value] : []`; `const average = hasPositiveValue`; `day.source !== 'missing' && typeof value === 'number' && value > 0`; `selection === null ? undefined : days[selection.dataIndex]`; `selection === null ? undefined : chartData[selection.dataIndex]`; el ternario `selection === null` de `const tooltipLeft =`; `selection !== null && typeof selectedDatum?.value === 'number'` | 10 | hoy no deciden la raíz | calculan valores que se pintan dentro de la tarjeta. Si alguien condicionara la raíz a uno de ellos, cuenta qué valores monta R1: es la tabla siguiente |
+| E. Handlers | `if (day === undefined) return;`; `onSelectDay?.(day);`; `days.length === 0 ? 0 : plotWidth / days.length` | 3 | no aplica | cambian `selection` o llaman a la prop, y no pintan. `selection` y `onSelectDay` están en la tabla siguiente |
+| F. El `return` de `WeeklyActivityChart` | `{average !== null ? (`; `{hasMeasuredDay ? (`; `{trend !== null ? (`; `{trend > 0 ? (`; `{trend < 0 ? (`; `{chartWidth > 0 ? (`; `{selectedDay ? (` (da 2: tooltip y detalle); `selectedDay.source === 'missing'` (da 2: el texto del tooltip y `{selectedDay.source === 'missing' ? (`, del detalle); `selection?.dataIndex === dataIndex` (da 2: `className` y `accessibilityState`); `{day.source === 'missing' ? (` | 13 | no aplica | todas están dentro de la tarjeta. `<Card testID="weekly-activity-card"` es lo primero que devuelve el único `return (`, y `    </Card>` es lo último antes de `  );` |
+
+Son 48 ramas, y ninguna decide hoy la raíz. La tabla siguiente recoge las
+entradas de las que podría colgar una raíz condicionada. Para cada una da qué
+valor monta R1 y qué pasa con una sonda que condiciona la raíz a ella. Todas
+las sondas tienen la forma de [[tasks]] §E1 — Sondas («condicionar la
+raíz»), envuelven la tarjeta en `<View accessible>`, salvo `selwrap`, y se
+midieron sobre el árbol final (205 tests).
+
+| Entrada | Dónde la lee hoy la gráfica | R1 la monta con | Sonda: condición del envoltorio | Medido (205) | Clase |
+|---|---|---|---|---|---|
+| `chartWidth` | `{chartWidth > 0 ? (` y `const tooltipLeft =` | 0 (`it` 1) y 295 (`it` 2 y 3) | `layoutwrap`: `chartWidth > 0`. `layoutwrapctl`: `chartWidth === 0` | rojo 2 (`it` 2 y 3, `toBe`). Rojo 5 (`it` 1, `toBe`, y los 4 de orden, `toEqual`) | **cubierta**, a los dos lados del único umbral que usa la gráfica |
+| `chartWidth`, otro umbral | ningún sitio | 0 y 295 | `widewrap`: `chartWidth > 400` | verde | **hueco (D)**: el ancho es un continuo y R1 toma dos muestras |
+| `selection` | grupo D y `{selectedDay ? (` | `null` (`it` 1 y 2) y el día 0 (`it` 3) | `selwrap`: `selection !== null`, con `<Pressable onPress={() => setSelection(null)}>`. `selwrapctl`: `selection === null` | rojo 1 (`it` 3, `toBe`). Rojo 6 (`it` 1 y 2, `toBe`, y los 4 de orden) | **cubierta**, a los dos lados de `null` |
+| El índice seleccionado | `selection?.dataIndex === dataIndex` | solo el 0 | `selidxwrap`: `selection?.dataIndex === 6` | verde | **hueco (D)** |
+| `selectedMetricIndex` | las dos anclas `?? …[0]` del grupo D | solo el 0 | `metricwrap`: `selectedMetricIndex !== 0` | rojo 1 **de rebote**: `R6: el selector cambia de métrica sin volver a pedir nada › desliza una única píldora entre las medidas reales de las pestañas`, por `toHaveBeenNthCalledWith`. El envoltorio remonta el selector y pierde sus medidas: no lo ve R1 ni ningún candado de la raíz | **hueco (D)** |
+| Un día sin dato | grupo D | ninguno | `missingwrap`: `days.some((day) => day.source === 'missing')` | verde | **hueco (D)** |
+| El día seleccionado, sin dato | `selectedDay.source === 'missing'` | no | `selmissingwrap`: `selectedDay?.source === 'missing'` | verde | **hueco (D)** |
+| Ningún valor positivo | `const average = hasPositiveValue` y `{average !== null ? (` | no (los siete son > 0) | `zerowrap`: `average === null` | verde | **hueco (D)** |
+| Ningún día medido | `{hasMeasuredDay ? (` | no | `emptywrap`: sin día medido | verde | **fuera del WHILE** de R1: es el estado vacío, (D) de la ronda 1 |
+| La comparación | `const trend = weekComparison[selectedMetric];` y `{trend !== null ? (` | `NO_COMPARISON` (todo `null`) | `trendwrap`: `trend !== null` | rojo 4: los 4 de orden, por `toEqual`, porque la Home pasa comparación | **hueco (D)** en la gráfica. La Home lo ve de rebote, como veía `wrapcard` antes de #132 |
+| `onSelectDay` | `onSelectDay?.(day);` | sin la prop | `callbackwrap`: `onSelectDay !== undefined` | rojo 4: los 4 de orden | **hueco (D)** en la gráfica, y la Home de rebote |
+| El idioma | `const locale = useLocale();` | `es` | `localewrap`: la raíz envuelve si el idioma no es `es` | verde | **hueco (D)** |
+| Movimiento reducido | la raíz no lo lee: `useReducedMotion()` da 1, y es de `ActivityBar` | `true`, el valor por defecto del mock | `motionwrap`: lo lee en la raíz y envuelve si es `false` | rojo 4: los 4 de orden | **hueco (D)** en la gráfica, y la Home de rebote |
+| La plataforma | la gráfica no la lee: `Platform` da 0 y `EXPO_OS` da 0 | la del preset de jest | `oswrap`: `process.env.EXPO_OS === 'android'` | verde | **hueco (D)** |
+
+**Conclusión.** R1 enmendado cierra los dos estados que encontró el `reviewer`,
+y los dos lados de los dos umbrales que cruza el estado propio de la gráfica en
+su escenario (`chartWidth > 0` y `selection === null`). No cierra una raíz
+condicionada a datos, props, entorno u otra métrica que R1 no varía: son las 11
+filas «hueco (D)». Hoy no existe ninguna raíz así. Cerrar la clase entera pide
+otro candado, sobre el texto del componente y no sobre el árbol
+([[design]] §Enmienda 1 › Alternativas descartadas en la Enmienda 1). El humano eligió el de
+estados.
+
+### Punto 2 reescrito
+
+El punto 2 de §Qué firma el humano al aprobar esta spec queda sustituido por
+este:
+
+> 2. **El candado es estructural, y cerrado sobre los tres estados que monta
+>    R1.** Cualquier host nuevo entre la raíz de la gráfica y la tarjeta pone
+>    R1 en rojo, sea accesible o no, si existe en alguno de esos tres estados:
+>    antes de medir, tras medir a 295 px y con el primer día seleccionado. El
+>    `View` sin marcar también entra (sonda `wrapplain`). Los tres estados van
+>    con la semana entera medida, `NO_COMPARISON`, en español, sin
+>    `onSelectDay`, con la primera métrica y con el movimiento reducido del
+>    mock. R1 no ve un host que solo aparece con otro valor de esas entradas:
+>    son los huecos (D) de §Enmienda 1 › Zona ciega. Hoy la raíz no depende de
+>    ninguna. Su coste: un envoltorio legítimo obliga a tocar el candado a
+>    sabiendas. Es el mismo trato que firmó `#130 R2` para la fila.
+
+### Sondas
+
+La tabla completa, con el blob de cada mutación, está en [[tasks]] §E1 —
+Sondas. Ninguna sonda de la ronda 1 cambia de veredicto. Cambian tres
+recuentos, porque los dos `it` nuevos también ven las mutaciones:
+
+| Sonda de la ronda 1 | Exigido en la ronda 1 (203) | Exigido tras la Enmienda 1 (205) | Por qué cambia |
+|---|---|---|---|
+| `wrapcard`, `presscard`, `wrapplain` | rojo 5: R1, por `toBe`, y los 4 de orden | **rojo 7**: los tres `it` de R1, por `toBe`, y los 4 de orden | el envoltorio existe en los tres estados |
+| `hidewrap` | rojo 47 | **rojo 49**: 40 de la gráfica (32 por consulta y 8 por aserción) y los 9 de la Home | los dos `it` nuevos caen **por consulta** en su primera consulta, `weekly-activity-chart-layout` |
+| `hexbare` | rojo 1 de 55 en `design-drift`, blob del test `378edd75` | igual, con blob del test `f3dcd70b3decf04b5dac10a5f903a50fdbb05268` | el test mutado ya lleva los dos `it` nuevos |
+| `fragment`, `sibling`, `cardacc`, `cardpress`, `wrapinner`, `wrapmetric` | como en §Tabla de sondas | igual, sobre 205 | no cambia nada |
+
+Entran además cuatro sondas exigidas de estado (`layoutwrap`, `layoutwrapctl`,
+`selwrap` y `selwrapctl`) y las once de los huecos declarados, más
+`emptywrap`, con el veredicto de la tabla de §Zona ciega.
+
+### Fuera de alcance de la Enmienda 1
+
+- **(D)** Las 11 filas «hueco (D)» de §Zona ciega: una raíz condicionada a
+  otro ancho, a otro índice seleccionado, a otra métrica, a datos que R1 no
+  monta, a la comparación, a `onSelectDay`, al idioma, al movimiento reducido o
+  a la plataforma. Premisa verificada: ninguna de esas entradas decide hoy la
+  raíz, porque hay un solo `return (` y ningún `return` temprano.
+- **(D)** Extraer un helper con el montaje de los tres `it`. Tocaría el `it` de
+  la ronda 1 y rompería el `61 0` de R2 enmendado, punto 3.
+- Siguen como estaban el (D) `sibling`, la (F) `wrapmetric` y las dos (N) de
+  §Fuera de alcance.
+
+### Qué firma el humano con esta enmienda
+
+1. **R1 pasa de un `it` a tres**, en el mismo `describe`. El `it` de la ronda 1
+   no se toca. Cuesta +2 tests.
+2. **El punto 2 de §Qué firma queda sustituido** por el de §Punto 2 reescrito:
+   el candado es cerrado sobre tres estados, no sobre todos. Las 11 filas
+   «hueco (D)» de §Zona ciega quedan fuera a sabiendas. La Home ve tres de
+   ellas de rebote (comparación, `onSelectDay` y movimiento reducido), y `R6`
+   ve otra (métrica), también de rebote.
+3. **Los dos rojos versionados de la enmienda son únicos**: 1 rojo en 1 suite
+   cada uno, porque la Home no los ve. En la ronda 1 eran 5 en 2 suites.
+4. **Tres recuentos de la ronda 1 cambian sin cambiar su veredicto**:
+   `wrapcard`, `presscard` y `wrapplain` pasan de rojo 5 a rojo 7, `hidewrap`
+   pasa de 47 a 49 y `hexbare` cambia de blob.
+5. **La historia de la ronda 1 se queda** (`4fb4481c`, `99629c30` y
+   `40e40dfe`), sin rebase. La ronda 2 añade encima 5 commits: 4 de código y 1
+   de evidencia. En [[traceability]], las filas de la ronda 1 conservan sus
+   hashes y entran 3 filas nuevas.
+6. **Sin gate de TalkBack**, igual que en la ronda 1: el árbol de producción
+   acaba idéntico al de `origin/main`.
+7. **El frontmatter sigue en `approved`**, como en #77. Hasta que se marque la
+   casilla de abajo, la enmienda no existe para Codex.
+
+### Firma de la Enmienda 1
+
+- [ ] **Enmienda 1 (R1 y R2) aprobada por humano** (fecha: ____). Casilla
+      propia. Al marcarla, el humano firma también los siete puntos de §Qué
+      firma el humano con esta enmienda. Sin ella, Codex no toca nada y la
+      ronda 1 sigue rechazada.
+
 ---
 
 ## Aprobación
@@ -252,5 +531,6 @@ el `leader` contra `origin/main`) y **(N)** premisa verificada y descartada.
       puntos de §Qué firma el humano al aprobar esta spec, y el primero en
       particular: hacer R1 en vez de cerrar #132 como (N).
 
-> **Esta feature tiene una sola casilla**: esta. No hay gate de TalkBack
-> (§Qué firma el humano, punto 6).
+> **Esta feature tiene dos casillas**: esta, de la spec de la ronda 1, y la de
+> §Enmienda 1 › Firma de la Enmienda 1, que esta no cubre. No hay gate de
+> TalkBack (§Qué firma el humano, punto 6).
