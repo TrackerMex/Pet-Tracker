@@ -689,26 +689,35 @@ describe('R15: importar el modulo no toca expo-notifications', () => {
       'expo-notifications unavailable in Expo Go',
     );
 
+    const headerNotifications =
+      jest.requireMock<typeof Notifications>('expo-notifications');
+
     jest.resetModules();
 
-    expect(() =>
-      jest.isolateModules(() => {
-        jest.doMock(
-          'expo-notifications',
-          () =>
-            new Proxy(
-              {},
-              {
-                get() {
-                  throw expoGoImportError;
+    try {
+      expect(() =>
+        jest.isolateModules(() => {
+          jest.doMock(
+            'expo-notifications',
+            () =>
+              new Proxy(
+                {},
+                {
+                  get() {
+                    throw expoGoImportError;
+                  },
                 },
-              },
-            ),
-        );
+              ),
+          );
 
-        jest.requireActual('./use-push-registration');
-      }),
-    ).not.toThrow();
+          jest.requireActual('./use-push-registration');
+        }),
+      ).not.toThrow();
+    } finally {
+      // jest.doMock es global al fichero: los describe posteriores vuelven a
+      // recibir el mock de la cabecera (#133 R1).
+      jest.doMock('expo-notifications', () => headerNotifications);
+    }
   });
 });
 
