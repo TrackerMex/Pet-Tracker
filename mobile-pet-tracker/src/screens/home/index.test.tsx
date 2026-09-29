@@ -2607,6 +2607,51 @@ describe('#71 R1: la Home dibuja la rejilla de accesos rápidos', () => {
   });
 });
 
+describe('#81 R1-R6: la rejilla de accesos rápidos no deja decisiones sin candado', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    const pet = makePet();
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+    mockGetDailyActivity.mockResolvedValue({
+      kind: 'ok',
+      days: [makeDay()],
+      weekComparison: { distanceM: 5, activeMinutes: 10, walkCount: 20 },
+    });
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('#81 R1: cada etiqueta lleva la receta entera y ningún estilo en línea', async () => {
+    await renderHome();
+    await screen.findByTestId('quick-action-weight');
+
+    for (const [testID, label] of [
+      ['quick-action-weight', 'Peso'],
+      ['quick-action-reminder', 'Recordatorio'],
+      ['quick-action-documents', 'Documentos'],
+    ] as const) {
+      const labelNode = within(screen.getByTestId(testID)).getByText(label);
+
+      // #81 R1: the whole class list with toBe, because toContain lets a
+      // contradicting token such as font-bold through.
+      expect(labelNode.props.className).toBe(
+        'text-2xs font-semibold text-foreground',
+      );
+      expect(labelNode.props.style).toBeUndefined();
+    }
+  });
+});
+
 describe('#85 R1: la sección recupera su rótulo en los dos idiomas', () => {
   beforeEach(() => {
     jest.clearAllMocks();
