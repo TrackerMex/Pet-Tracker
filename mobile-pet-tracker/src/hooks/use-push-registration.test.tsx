@@ -714,7 +714,7 @@ describe('R15: importar el modulo no toca expo-notifications', () => {
     } finally {
       // jest.doMock es global al fichero: los describe posteriores vuelven a
       // recibir el mock de la cabecera (#133 R1).
-      jest.doMock('expo-notifications', () => ({ ...headerNotifications, AndroidImportance: { MAX: 5 } }));
+      jest.doMock('expo-notifications', () => headerNotifications);
     }
   });
 });
