@@ -573,7 +573,7 @@ export function HomeScreen() {
           </>
         ) : null}
 
-        {selectedPetId ? (
+        {selectedPetId && detail.data?.kind === 'ok' && activity.data?.kind === 'ok' ? (
           <View testID="quick-actions" className="gap-3">
             <Text
               testID="quick-actions-title"

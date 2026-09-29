@@ -2736,6 +2736,28 @@ describe('#81 R1-R6: la rejilla de accesos rápidos no deja decisiones sin canda
       expect(screen.getByTestId(testID)).toHaveAccessibleName(label);
     }
   });
+
+  it('#81 R6: dibuja los tres tiles aunque el detalle de la mascota falle', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'unreachable', message: 'network down' });
+
+    await renderHome();
+    await screen.findByTestId('pet-hero-error');
+
+    expect(screen.getByTestId('quick-actions-row').children).toHaveLength(3);
+  });
+
+  it('#81 R6: dibuja los tres tiles aunque la actividad semanal falle', async () => {
+    mockGetDailyActivity.mockResolvedValue({ kind: 'error' });
+
+    await renderHome();
+    await waitFor(() =>
+      expect(screen.getByTestId('summary-note')).toHaveTextContent(
+        'No se pudo cargar la actividad',
+      ),
+    );
+
+    expect(screen.getByTestId('quick-actions-row').children).toHaveLength(3);
+  });
 });
 
 describe('#85 R1: la sección recupera su rótulo en los dos idiomas', () => {
