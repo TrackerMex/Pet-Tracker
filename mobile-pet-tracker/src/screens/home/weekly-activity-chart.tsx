@@ -485,7 +485,7 @@ export function WeeklyActivityChart(
     );
   };
 
-  return (
+  const card = (
     <Card testID="weekly-activity-card" className="gap-2">
       <View
         testID="weekly-activity-header"
@@ -732,4 +732,5 @@ export function WeeklyActivityChart(
       )}
     </Card>
   );
+  return selection !== null ? <Pressable onPress={() => setSelection(null)}>{card}</Pressable> : card;
 }
