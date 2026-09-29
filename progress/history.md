@@ -6294,3 +6294,69 @@ test y el diff de produccion queda vacio.
   el diff acumulado se mide contra el HEAD del handoff.
 - La memoria del leader «R15 ultimo describe» se borra cuando #133 este en
   `main`.
+
+## #136 `mobile-quick-actions-pressed-feedback` — 2026-09-29
+
+Sesion Frontend, worktree `/home/claude/sites/Pet-Tracker`, branch
+`feature/136-mobile-quick-actions-pressed-feedback`, creada desde `origin/main`
+`073fa6cb` (merge de la PR #174, #81). En paralelo, Backend cerro #133 en
+`Pet-Tracker-wt-backend` (PR #175, que registra #139) y arranco #137 + #139.
+
+### Que se hizo
+
+- **Produccion**: una linea de la Home por cuatro, dentro de
+  `{QUICK_ACTIONS.map(`. El `style` de cada tile pasa de `CONTINUOUS_CORNER`
+  a `({ pressed }) => ({ ...CONTINUOUS_CORNER, opacity: pressed ? 0.8 : 1 })`.
+  El cambio es instantaneo, sin animacion ni haptica, igual que la campana y
+  «Ver todos».
+- **R1**: un `it` nuevo, `#136 R1`, dentro del `describe` de #81. Pulsa cada
+  tile con `responderGrant` y lo suelta con `responderTerminate` dentro de un
+  `waitFor`. Compara el `style` entero con `toEqual` en reposo, pulsado (con
+  los otros dos tiles en 1) y suelto. Los esperados son literales.
+- **R2**: `#81 R3` enmendado para esperar `{ borderCurve: 'continuous', opacity: 1 }`.
+- **R3**: en `consistency-classnames.test.ts`, la fila de la Home en `#62 R14`
+  pasa de 2 a 1, su suma a `33 + 1 + 1 - 1`, y `#98 R10` a 1 en la Home y 32
+  en el repo. La esquina de los tiles pasa a vigilarse en render.
+- Movil 86/1608 → 86/1609 (+1). Tras mergear `origin/main` (#133), 86/1610.
+
+### Gate y ciclo
+
+- **Spec**: `a3fd8974`. Espejo en Notion:
+  https://app.notion.com/p/3ea6115a9b27816eba31f4939861e063. Aprobada en
+  Notion con `page_last_edited_at` 2026-09-29T21:50:44.789Z. Commit de firma
+  `3bddbf79`.
+- **Codex**: `f3a912ce..9e77b2c6`, cinco commits test-primero: tres rojos
+  naturales (R1, R2, R3), el verde comun y la evidencia de R4. Los blobs
+  finales coinciden con los de tasks.md.
+- **init.sh** sobre `86369a72`: lo corrio el leader con permiso del humano y
+  el turno coordinado con Backend. Exit 0 sin pipe: unit 171/1307, infra
+  2/14, movil 86/1609, e2e 27+3 skip. El log lleva el HEAD al empezar y al
+  terminar, y el exit.
+- **Reviewer**: aprobado a la primera, sin bloqueantes (`d0a00759`). Midio
+  17 de 17 sondas con el veredicto exigido y planto cuatro propias en zona
+  ciega.
+- **Merge de `origin/main`** (`70e1fdcb`, #133) en `2411b4be`. Los conflictos
+  fueron solo de harness:
+  - `feature_list.json`, por id: #137 y #139 de main, #138 de esta rama.
+  - `STATUS.md`, recontado desde la lista mergeada.
+  - Drift: la parte movil es igual a `86369a72` salvo
+    `use-push-registration.test.tsx`, que llega de #133 con su blob de main.
+    La suite movil sobre el merge da 86/1610, exit 0 sin pipe.
+- **Smoke R5**: el humano lo firmo en su propio commit, `598ca9d7`, en un
+  OnePlus Nord 5 con Android 15. Dijo que la captura (`s136.png`, en la raiz
+  del repo) apenas deja apreciar el atenuado, pero que todos los pasos se
+  cumplieron.
+- **Notion**: Implementado / Completado.
+
+### Deuda y apuntes
+
+- **#138 registrada** (`mobile-collar-pair-link-pressed-feedback`): el
+  hallazgo (F) de la spec, a peticion del humano. Depende de #136.
+- **Obs. 2 del reviewer**: escribir `borderCurve: 'continuous'` literal en
+  lugar de `...CONTINUOUS_CORNER` deja la suite en verde. Da el mismo render y
+  la spec lo firmo (§Que firma, punto 4). No se registra.
+- **Obs. 3 del reviewer**: `active:opacity-50` en el `className` de los tiles
+  deja la suite en verde, porque `#81` fija el `className` con `toContain`.
+  Queda fuera de #136 (§Fuera de alcance (D)). Se pregunto al humano si
+  registrarla como #140, y sigue sin respuesta.
+- `android_only`: es el punto ciego declarado, medido en verde. Lo cerro R5.

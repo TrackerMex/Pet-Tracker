@@ -18,7 +18,7 @@ dentro de
 | R2 | `index.test.tsx::#81 R1-R6: … › #81 R3: cada tile lleva rounded-xl como único radio y la esquina continua` (enmendado) | `0634eaa83c5d59ece70524e49c0e497392efcd36` | `6146ae0e003f24a79f75f8bc5944c23446b698de` |
 | R3 | `consistency-classnames.test.ts::#62 R14: toda esquina no-cápsula que dibuja el repo es continua › screens/home/index.tsx importa y aplica sus 1 esquinas`, `… › fusiona la esquina una vez y la entrega a las dos ramas de Card` y `#98 R10: los candados que esta feature no mueve › deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban` (enmendados) | `3bdb4c96bbfa44898ca4f19069847e534d1b6b23` | `6146ae0e003f24a79f75f8bc5944c23446b698de` |
 | R4 | sin test: cierre medido ([[tasks]] §R4 y `progress/impl_mobile-quick-actions-pressed-feedback.md`) | no aplica | `6146ae0e003f24a79f75f8bc5944c23446b698de` (verde común) |
-| R5 | sin test: prueba de humo del humano en dev build de Android ([[requirements]] §Prueba de humo del humano) | no aplica | no aplica: casilla de R5 en [[requirements]] |
+| R5 | sin test: prueba de humo del humano en dev build de Android ([[requirements]] §Prueba de humo del humano) | no aplica | `598ca9d7db5aa42109baefd9eaa7acf598c10c56` (firma del humano: casilla de R5 en [[requirements]], OnePlus Nord 5, Android 15, 2026-09-29) |
 
 Regla: el reviewer no aprueba si alguna fila queda «pendiente». La casilla de
 R5 la marca el humano después del veredicto, y la feature no pasa a `done` sin
