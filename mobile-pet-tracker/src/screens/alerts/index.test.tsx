@@ -6,7 +6,7 @@ import {
   within,
 } from '@testing-library/react-native';
 import { defaultScheduler, notifyManager } from '@tanstack/react-query';
-import { useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
 import type { TestInstance } from 'test-renderer';
@@ -50,6 +50,7 @@ jest.mock('../../providers/auth-provider', () => ({
 
 jest.mock('expo-router', () => ({
   useFocusEffect: jest.fn(),
+  router: { push: jest.fn() },
 }));
 
 jest.mock('react-native-safe-area-context', () => ({
@@ -87,6 +88,7 @@ const mockAckAlert = jest.mocked(ackAlert);
 const mockListAlerts = jest.mocked(listAlerts);
 const mockUseAuth = jest.mocked(useAuth);
 const mockUseFocusEffect = jest.mocked(useFocusEffect);
+const mockRouterPush = jest.mocked(router.push);
 const mockSignOut = jest.fn<Promise<void>, []>();
 
 function makeAlert(overrides: Partial<Alert> = {}): Alert {
@@ -396,7 +398,7 @@ describe('#78 R6: cada fila de alerta trae su icono, su hueco, su tinta y sus tr
       expect(row.children).toHaveLength(3);
       expect(elementChild(row, 0).props.className).toContain('size-11');
       expect(elementChild(row, 1).props.className).toBe(
-        'min-w-0 flex-1 gap-1',
+        'min-h-11 min-w-0 flex-1 gap-1',
       );
       const column = elementChild(row, 1);
       expect(column.children).toHaveLength(3);
@@ -431,7 +433,7 @@ describe('#78 R6: cada fila de alerta trae su icono, su hueco, su tinta y sus tr
       );
       expect(elementChild(row, 0).props.className).toContain('size-11');
       expect(elementChild(row, 1).props.className).toBe(
-        'min-w-0 flex-1 gap-1',
+        'min-h-11 min-w-0 flex-1 gap-1',
       );
     }
 
@@ -1081,3 +1083,56 @@ describe(
     });
   },
 );
+
+describe('#100 R6: la columna de texto de cada fila abre su detalle', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockListAlerts.mockReset();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListAlerts.mockResolvedValue({
+      kind: 'ok',
+      items: [makeAlert(), makeAlert({ id: 'alert-2' })],
+      nextCursor: null,
+    });
+  });
+
+  it('abre el id de la fila pulsada, incluso con dos filas', async () => {
+    await renderAlerts();
+    await fireEvent.press(await screen.findByTestId('alert-row-alert-2-link'));
+    await fireEvent.press(screen.getByTestId('alert-row-alert-1-link'));
+    expect(mockRouterPush).toHaveBeenNthCalledWith(1, {
+      pathname: '/alerts/[alertId]', params: { alertId: 'alert-2' },
+    });
+    expect(mockRouterPush).toHaveBeenNthCalledWith(2, {
+      pathname: '/alerts/[alertId]', params: { alertId: 'alert-1' },
+    });
+  });
+
+  it('da rol, altura y opacidad de pulsado solo al enlace', async () => {
+    await renderAlerts();
+    const link = await screen.findByTestId('alert-row-alert-1-link');
+    expect(link.props.accessibilityRole).toBe('button');
+    expect(link.props.className).toBe('min-h-11 min-w-0 flex-1 gap-1');
+    expect(link).toHaveStyle({ opacity: 1 });
+    const row = screen.getByTestId('alert-row-alert-1');
+    expect(row.props.accessibilityRole).toBeUndefined();
+    expect(row.props.onPress).toBeUndefined();
+    await fireEvent(link, 'responderGrant', { nativeEvent: {}, persist: () => undefined });
+    expect(link).toHaveStyle({ opacity: 0.8 });
+  });
+
+  it('conserva Marcar leída sin navegar al pulsarlo', async () => {
+    mockAckAlert.mockResolvedValue({ kind: 'ok', alert: makeAlert({ status: 'acked' }) });
+    await renderAlerts();
+    await screen.findByTestId('alert-row-alert-1-link');
+    await fireEvent.press(screen.getByTestId('alert-row-alert-1-ack'));
+    await waitFor(() => expect(mockAckAlert).toHaveBeenCalledTimes(1));
+    expect(mockRouterPush).not.toHaveBeenCalled();
+  });
+});

@@ -400,9 +400,9 @@ export const R11_RESET: UseRow[] = [
 
 export const R12_ALERTS: UseRow[] = [
   { file: 'src/app/_layout.tsx', key: 'alerts.title' }, // #114 R4
-  { file: 'src/screens/alerts/index.tsx', key: 'alerts.typeGeofenceExit' },
-  { file: 'src/screens/alerts/index.tsx', key: 'alerts.typeBatteryLow' },
-  { file: 'src/screens/alerts/index.tsx', key: 'alerts.typeUnknown' },
+  { file: 'src/utils/alert-meta.ts', key: 'alerts.typeGeofenceExit' },
+  { file: 'src/utils/alert-meta.ts', key: 'alerts.typeBatteryLow' },
+  { file: 'src/utils/alert-meta.ts', key: 'alerts.typeUnknown' },
   { file: 'src/screens/alerts/index.tsx', key: 'alerts.justNow' },
   { file: 'src/screens/alerts/index.tsx', key: 'alerts.minutesAgo' },
   { file: 'src/screens/alerts/index.tsx', key: 'alerts.hoursAgo' },
@@ -420,6 +420,20 @@ export const R12_ALERTS: UseRow[] = [
   { file: 'src/screens/alerts/index.tsx', key: 'alerts.statusClosed' },
 ];
 
+export const R13_ALERT_DETAIL: UseRow[] = [
+  { file: 'src/app/_layout.tsx', key: 'alerts.detailTitle' },
+  { file: 'src/screens/alert-detail/index.tsx', key: 'alerts.openedAt' },
+  { file: 'src/screens/alert-detail/index.tsx', key: 'alerts.statusOpen' },
+  { file: 'src/screens/alert-detail/index.tsx', key: 'alerts.statusAcked' },
+  { file: 'src/screens/alert-detail/index.tsx', key: 'alerts.statusClosed' },
+  { file: 'src/screens/alert-detail/index.tsx', key: 'alerts.ack' },
+  { file: 'src/screens/alert-detail/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/alert-detail/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/alert-detail/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/alert-detail/index.tsx', key: 'common.cannotReachServer' },
+  { file: 'src/screens/alert-detail/index.tsx', key: 'common.retry' },
+];
+
 export const ALL_USES: UseRow[] = [
   ...R1_AUTH,
   ...R2_TABS,
@@ -433,6 +447,7 @@ export const ALL_USES: UseRow[] = [
   ...R10_PAIRING,
   ...R11_RESET,
   ...R12_ALERTS,
+  ...R13_ALERT_DETAIL,
 ];
 
 describe('#65: la tabla de uso de copy está disponible al runner', () => {
@@ -446,7 +461,7 @@ describe('#65: la tabla de uso de copy está disponible al runner', () => {
     const blocks = [
       R1_AUTH, R2_TABS, R3_HOME, R4_MAP, R5_HEALTH, R6_FOOD,
       R7_PROFILE, R8_REMINDERS, R9_ADD_PET, R10_PAIRING, R11_RESET,
-      R12_ALERTS,
+      R12_ALERTS, R13_ALERT_DETAIL,
     ];
 
     expect(ALL_USES).toHaveLength(

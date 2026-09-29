@@ -1025,6 +1025,22 @@ no cambian. Su test sigue en `src/app/(tabs)/__tests__/alerts.test.tsx`, con el
 import `'../../alerts'`. Firma: casilla A14 de
 `specs/mobile-reminders-alerts-to-stack/requirements.md` §Aprobación.
 
+## Enmienda externa A17 — la escribe #100 (2026-09-28)
+
+`mobile-alert-detail-screen` (#100) crea el detalle de alerta. (1)
+**Decisión 8**: la columna de texto de cada fila es un `Pressable`
+`alert-row-<id>-link` con `accessibilityRole="button"` que hace
+`router.push({ pathname: '/alerts/[alertId]', params: { alertId } })`; la
+tarjeta sigue sin `onPress` y la fila sin rol. (2) **Decisiones 11 y 12**: la
+clase de esa columna es `'min-h-11 min-w-0 flex-1 gap-1'`. (3) **Invariante
+de rol**: `accessibilityRole="button"` lo llevan el botón "Marcar leída" y el
+enlace de la columna, nada más. (4) **Fuera de alcance**: el detalle ya existe
+(`src/app/alerts/[alertId].tsx`); navegar a la geocerca o a la mascota sigue
+fuera. (5) La tabla de tipos vive en `src/utils/alert-meta.ts` y la consulta
+infinita en `src/hooks/use-alerts-list.ts`, compartidas con el detalle.
+Firma: casilla A17 de `specs/mobile-alert-detail-screen/requirements.md`
+§Aprobación.
+
 ## Aprobación
 
 - [X] Aprobado por humano (fecha: 2026-09-11) ← gate obligatorio antes de implementar

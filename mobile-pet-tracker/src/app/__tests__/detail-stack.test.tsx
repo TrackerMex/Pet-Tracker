@@ -42,6 +42,16 @@ describe('#114 R1: reminders y alerts viven en la raíz de src/app', () => {
   });
 });
 
+describe('#100 R2: el detalle de alerta vive en src/app/alerts/[alertId].tsx', () => {
+  it('es un route delgado que importa la pantalla de src/screens/alert-detail', () => {
+    const route = join(app, 'alerts/[alertId].tsx');
+    expect(existsSync(route)).toBe(true);
+    const source = readFileSync(route, 'utf8');
+    expect(source).toContain('useLocalSearchParams');
+    expect(source).toContain("from '../../screens/alert-detail'");
+  });
+});
+
 describe('#95 R7: el reset de #63 queda solo donde no lo cubre el Stack', () => {
   it.each([
     ['add-reminder', 0],
