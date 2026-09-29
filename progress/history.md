@@ -6073,3 +6073,71 @@ Pantalla de detalle de alerta. Solo movil, sin endpoint nuevo.
   (8), una incoherencia interna de R4 (9). No se registran.
 - **«A worker process has failed to exit gracefully»**: preexistente, no
   bloquea, no se persigue.
+
+## #81 `mobile-quick-actions-typography-lock` — 2026-09-29
+
+Sesion Backend, worktree `/home/claude/sites/Pet-Tracker-wt-backend`, branch
+`feature/81-mobile-quick-actions-typography-lock`, creada desde `origin/main`
+`4efb6c81` (merge de la PR #172, #100). En paralelo, Frontend cerro #132 en el
+arbol principal (PR #173, que registra #135).
+
+### Que se hizo
+
+Solo test: un `describe('#81 R1-R6: …')` con siete `it` en
+`src/screens/home/index.test.tsx`, entre `#71 R1` y `#85 R1`. Asevera sobre
+nodos host, tile a tile, con esperados literales y sin imports nuevos.
+- **R1**: la receta de la etiqueta, `'text-2xs font-semibold text-foreground'`
+  por `toBe`, y `style` `toBeUndefined()`. `toContain` dejaba pasar `m1_bold`.
+- **R2**: la anatomia de D1, con dos hijos: el icono en `children[0]` y la
+  etiqueta en `children[1]`. Cierra el orden, el envoltorio (`e9`) y la
+  direccion (`e1`, `e2`).
+- **R3**: los tokens `rounded*` son exactamente `['rounded-xl']` y `style`
+  es `{ borderCurve: 'continuous' }` literal, no `CONTINUOUS_CORNER`.
+- **R4**: la seccion y la fila, contando `children`, mas el `style` del
+  rotulo.
+- **R5**: `toHaveAccessibleName` por tile.
+- **R6**: la fila y los tres tiles se pintan con el detalle `unreachable` y
+  con la actividad en `error`.
+- `items-center gap-1.5 py-3` quedan libres a proposito: ningun D del diseno
+  los fija (sonda `e10`, verde).
+- Diff de produccion **vacio**. Movil 86/1597/1 → 86/1604/1 (+7).
+
+### Gate y ciclo
+
+- **Spec**: `bedd12fc`, cerrada antes de tiempo a peticion del humano. El
+  spec_author llevaba ~1h40m midiendo sondas con la suite completa, y quedaron
+  8 sondas «no validadas en spec» como minimo exigido.
+- **Notion**: espejo en https://app.notion.com/p/3ea6115a9b2781f79890d7a101702323.
+  Aprobada en Notion con `page_last_edited_at` 2026-09-29T18:44:39.075Z.
+  Commit de firma `0894f07a`. La casilla de Notion traia fecha 2026-09-26,
+  anterior a la pagina; en disco se copio 2026-09-29, y el commit lo declara.
+- **Codex**: `a7a2df31..7d580e44`, trece commits sin paradas: seis pares
+  rojo→verde por la via b y la evidencia de R7. Cada rojo lleva el blob de
+  mutacion de tasks.md y cada verde devuelve la Home a `ff591a1f`.
+- **init.sh** sobre `7d580e44`: lo corrio el leader con permiso del humano y
+  el turno coordinado con Frontend. Exit 0 sin pipe: unit 171/1307, infra
+  2/14, movil 86/1604/1, e2e 27+3 skip.
+- **Reviewer**: aprobado a la primera, sin bloqueantes. Rehizo 9 sondas y el
+  rojo de R6 por su cuenta.
+- **Drift**: entre el veredicto y el cierre, HEAD sigue en `7d580e44`. Hay 0
+  lineas nuevas bajo `mobile-pet-tracker/` y `origin/main` sigue en
+  `4efb6c81`.
+
+### Deuda y apuntes
+
+- **(F) sin registrar**: los tiles no tienen feedback de pulsado (no hay
+  `pressed` en su `Pressable`). Es anterior a #81 y design.md lo deja fuera
+  de alcance. Queda a decision del humano; si se registra, el id empieza en
+  #136, verificado contra `origin/main` y las branches remotas.
+- **Obs. 1 del reviewer**: las sondas `m6_tile*` desmontan un nodo durante
+  una espera y miden una carrera. Sus rojos de mas no son deterministas
+  (Codex vio 5, el reviewer 2 y luego 3). En specs futuras, rotular esas filas
+  como «minimo estable; extras no deterministas».
+- **Obs. 3 del reviewer**: el log de init.sh no se autoidentifica. En
+  proximos gates, el leader anade `git rev-parse HEAD` y `echo "exit=$?"` al
+  final del log.
+- **Obs. 2**: `impl_*.md` dice skill v1.0.1 y lo instalado es v1.0.2. Sin
+  impacto.
+- **Premisas caducadas de la entrada**: las lineas `index.tsx:544-555` y las
+  cifras 68/68 y 1054/1054. O6 ya lo cerraba #85 R7, y
+  `docs/ui-guidelines.md` no hizo falta (§Enmienda #70, punto 12).
