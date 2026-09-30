@@ -2742,5 +2742,21 @@
     "files_affected": [
       "mobile-pet-tracker/src/screens/home/weekly-activity-chart.test.tsx"
     ]
+  },
+  {
+    "id": 143,
+    "name": "mobile-weekly-day-selected-first-metric-lock",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada el 2026-09-30 al cerrar #140, por decision del humano. Es la observacion 1 del reviewer de #140 (progress/review_mobile-weekly-day-column-content-lock.md, mutacion propia z_labelselfirstmetric, blob 6eda3dd1). En mobile-pet-tracker/src/screens/home/weekly-activity-chart.tsx, si la clase de la etiqueta del dia pasa a 'text-2xs font-semibold text-foreground' solo cuando hay un dia seleccionado y la metrica es la primera (selectedMetricIndex === 0), la grafica y las otras cinco suites que la leen siguen verdes: 6 suites, 384/384, medido por el reviewer sobre 047d319a. #140 R1 y R2 solo seleccionan un dia despues de cambiar a distanceM, asi que ningun candado ejecuta la combinacion «dia seleccionado con la metrica por defecto». La tabla de estados de specs/mobile-weekly-day-column-content-lock/requirements.md marca los dos estados por separado, pero no declara la combinacion ni como (D) ni como (F). Limites: NO es un defecto de la implementacion de #140, cuyos tests coinciden byte a byte con tasks.md. Solo esta medida la mutacion de la etiqueta; el valor, la raya y la columna en esa combinacion no se probaron, y la spec debe medirlos antes de decidir si entran. La spec decide si amplia los estados de #140 R1 y R2 o anade un describe nuevo, y declara por escrito cualquier cambio en un describe previo. Los esperados deben ser literales del test, nunca importados de produccion. Toca el mismo test que #141 y #142 y se especifica en el mismo ciclo que ellas, por decision del humano.",
+    "acceptance_criteria": [
+      "Con la sonda z_labelselfirstmetric (blob 6eda3dd1) plantada en la grafica, un it FALLA por asercion",
+      "Los esperados son literales del test, nunca importados de produccion",
+      "Los describe previos siguen verdes; cualquier cambio en ellos esta declarado en la spec",
+      "Cero cambio en produccion; suite movil verde medida sin pipe; delta de tests declarado"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/home/weekly-activity-chart.test.tsx"
+    ]
   }
 ]
