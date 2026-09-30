@@ -205,7 +205,7 @@ describe('#79 R2: app.json declara el plugin de notificaciones y POST_NOTIFICATI
 
   it('conserva los plugins existentes y añade expo-notifications', () => {
     expect(expo.plugins).toContain('expo-router');
-    expect(expo.plugins).toContain('expo-secure-store');
+    // #60 R5: expo-secure-store pasa a tupla con faceIDPermission: false; la candan los it de #60 R5.
     expect(expo.plugins).toContainEqual([
       'expo-splash-screen',
       {
@@ -298,5 +298,38 @@ describe('#60 R4: app.json declara la identidad de iOS', () => {
       deploymentTarget: '17.0',
       config: { usesNonExemptEncryption: false },
     });
+  });
+});
+
+describe('#60 R5: app.json deja solo el permiso de galería, en español', () => {
+  const plugins = appJson.expo.plugins as unknown[];
+
+  it('#60 R5: declara expo-image-picker con el texto de galería y sin cámara ni micrófono', () => {
+    expect(plugins).toContainEqual([
+      'expo-image-picker',
+      {
+        photosPermission:
+          'Se usa para elegir de tu galería la foto de perfil de tu mascota.',
+        cameraPermission: false,
+        microphonePermission: false,
+      },
+    ]);
+  });
+
+  it('#60 R5: declara expo-secure-store sin Face ID y una sola vez por plugin', () => {
+    expect(plugins).toContainEqual([
+      'expo-secure-store',
+      { faceIDPermission: false },
+    ]);
+    expect(plugins).not.toContain('expo-secure-store');
+    expect(
+      plugins.map((plugin) => (Array.isArray(plugin) ? plugin[0] : plugin)),
+    ).toEqual([
+      'expo-router',
+      'expo-splash-screen',
+      'expo-secure-store',
+      'expo-notifications',
+      'expo-image-picker',
+    ]);
   });
 });
