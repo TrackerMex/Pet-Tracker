@@ -44,6 +44,14 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 
   return {
     ...resolvedConfig,
+    ...(resetLinkHost
+      ? {
+          ios: {
+            ...resolvedConfig.ios,
+            associatedDomains: [`applinks:${resetLinkHost}`],
+          },
+        }
+      : {}),
     android: {
       ...resolvedConfig.android,
       ...(hasGoogleServicesFile ? { googleServicesFile } : {}),
