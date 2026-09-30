@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
+import { Platform } from 'react-native';
 
 import { MAP_ZOOM, PetMap } from '../pet-map';
 
@@ -14,8 +15,28 @@ const mockGoogleMapsView = jest.fn(
   },
 );
 
+const mockAppleMapsView = jest.fn(
+  (props: Record<string, unknown> & { children?: ReactNode }) => {
+    const React = jest.requireActual<typeof import('react')>('react');
+    const { View } = jest.requireActual<typeof import('react-native')>(
+      'react-native',
+    );
+
+    return React.createElement(View, props, props.children);
+  },
+);
+
 jest.mock('expo-maps', () => ({
   __esModule: true,
+  AppleMaps: {
+    View: (props: Record<string, unknown> & { children?: ReactNode }) =>
+      mockAppleMapsView(props),
+    MapColorScheme: {
+      AUTOMATIC: 'AUTOMATIC',
+      LIGHT: 'LIGHT',
+      DARK: 'DARK',
+    },
+  },
   GoogleMaps: {
     View: (props: Record<string, unknown> & { children?: ReactNode }) =>
       mockGoogleMapsView(props),
@@ -31,8 +52,20 @@ jest.mock('../../theme/use-theme-colors', () => ({
   useThemeColors: () => ['accent-color'],
 }));
 
+const originalPlatform = Platform.OS;
+
+function setPlatform(os: string): void {
+  Object.defineProperty(Platform, 'OS', { configurable: true, value: os });
+}
+
 beforeEach(() => {
   mockGoogleMapsView.mockClear();
+  mockAppleMapsView.mockClear();
+  setPlatform('android');
+});
+
+afterEach(() => {
+  setPlatform(originalPlatform);
 });
 
 describe('R1: PetMap renderiza la vista de expo-maps con el contrato del tab Map', () => {
@@ -176,5 +209,86 @@ describe('R1 (mobile-map-zoom-controls): el wrapper oculta los controles nativos
 
     expect(mapProps.uiSettings).toEqual({ zoomControlsEnabled: false });
     expect(mapProps).not.toHaveProperty('contentPadding');
+  });
+});
+
+describe('#60 R1: en iOS PetMap pinta AppleMaps.View con el contrato del tab Map', () => {
+  const center = { latitude: 19.4326, longitude: -99.1332 };
+
+  it('#60 R1: en Android pinta GoogleMaps.View y nunca AppleMaps.View', async () => {
+    await render(
+      <PetMap center={center} marker={null} polylines={[]} colorScheme="light" />,
+    );
+
+    expect(mockGoogleMapsView).toHaveBeenCalledTimes(1);
+    expect(mockAppleMapsView).not.toHaveBeenCalled();
+    expect(screen.getByTestId('map-view').props.uiSettings).toEqual({
+      zoomControlsEnabled: false,
+    });
+  });
+
+  describe('en iOS', () => {
+    beforeEach(() => {
+      setPlatform('ios');
+    });
+
+    it('#60 R1: pinta AppleMaps.View y nunca GoogleMaps.View, con cámara, marker, polylines y estilo del contrato', async () => {
+      const marker = { latitude: 19.45, longitude: -99.12 };
+      const polylines = [
+        {
+          id: 'trip-0',
+          coordinates: [
+            { latitude: 19.4326, longitude: -99.1332 },
+            { latitude: 19.433, longitude: -99.1328 },
+          ],
+        },
+      ];
+
+      await render(
+        <PetMap
+          center={center}
+          marker={marker}
+          polylines={polylines}
+          colorScheme="light"
+        />,
+      );
+
+      expect(mockAppleMapsView).toHaveBeenCalledTimes(1);
+      expect(mockGoogleMapsView).not.toHaveBeenCalled();
+      const mapProps = screen.getByTestId('map-view').props;
+      expect(mapProps.style).toEqual({ flex: 1 });
+      expect(mapProps.cameraPosition).toEqual({ coordinates: center, zoom: 16 });
+      expect(mapProps.markers).toEqual([
+        { id: 'last-position', coordinates: marker },
+      ]);
+      expect(mapProps.polylines).toEqual([
+        { ...polylines[0], color: 'accent-color' },
+      ]);
+    });
+
+    it.each([
+      ['dark', 'DARK'],
+      ['light', 'LIGHT'],
+    ] as const)('#60 R1: mapea el tema %s al esquema nativo %s', async (colorScheme, expected) => {
+      await render(
+        <PetMap center={center} marker={null} polylines={[]} colorScheme={colorScheme} />,
+      );
+
+      expect(mockAppleMapsView).toHaveBeenCalledTimes(1);
+      expect(screen.getByTestId('map-view').props.colorScheme).toBe(expected);
+    });
+
+    it('#60 R1: oculta el botón de mi ubicación y el cambio de inclinación, sin contentPadding', async () => {
+      await render(
+        <PetMap center={center} marker={null} polylines={[]} colorScheme="light" />,
+      );
+
+      const mapProps = screen.getByTestId('map-view').props;
+      expect(mapProps.uiSettings).toEqual({
+        myLocationButtonEnabled: false,
+        togglePitchEnabled: false,
+      });
+      expect(mapProps).not.toHaveProperty('contentPadding');
+    });
   });
 });
