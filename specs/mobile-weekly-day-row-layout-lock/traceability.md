@@ -11,11 +11,11 @@ Todos los tests viven en
 
 | Requisito | Entrada | Test (archivo::nombre) | Commit rojo | Commit verde |
 |---|---|---|---|---|
-| R1 | #131 | `weekly-activity-chart.test.tsx::#131 R1: la fila de las siete columnas es una fila › la fila solo lleva flex-row antes y después de medir, con otra métrica y con un día seleccionado` | pendiente | pendiente |
-| R2 | #131 | `weekly-activity-chart.test.tsx::#131 R2: la fila deja a cada lado el mismo hueco que el gráfico › el padding de la fila son los dos huecos de la línea de media, también con otra métrica y con un día seleccionado` | pendiente | pendiente |
-| R3 | #131 | `weekly-activity-chart.test.tsx::#131 R3: cada columna reparte la fila a partes iguales › las siete columnas llevan flex-1 y centran su contenido antes y después de medir, con otra métrica y con un día seleccionado` | pendiente | pendiente |
-| R4 | #135 | `weekly-activity-chart.test.tsx::#135 R4: entre la tarjeta y cada uno de sus hijos no hay otro nodo`, sus tres `it`: `› sin comparación: cabecera, selector, gráfico y fila antes y después de medir y con otra métrica, y el detalle al final con un día seleccionado`, `› con comparación, la tendencia va entre el selector y el gráfico` y `› sin ningún día medido, la tarjeta solo tiene la cabecera y el mensaje` | pendiente | pendiente |
-| R5 | #131 y #135 | sin test: cierre medido ([[tasks]] §R5 y `progress/impl_mobile-weekly-day-row-layout-lock.md`) | no aplica | pendiente |
+| R1 | #131 | `weekly-activity-chart.test.tsx::#131 R1: la fila de las siete columnas es una fila › la fila solo lleva flex-row antes y después de medir, con otra métrica y con un día seleccionado` | `81251dfcc2918f71f385d4bac6528a2cd99448a9` | `1dfe1d223d11ac219bc8dd69f7319d68961925d3` |
+| R2 | #131 | `weekly-activity-chart.test.tsx::#131 R2: la fila deja a cada lado el mismo hueco que el gráfico › el padding de la fila son los dos huecos de la línea de media, también con otra métrica y con un día seleccionado` | `6ccce2e71d5ffe2d7657bc85a1324e336b08fdde` | `c16ef7c36fabe17c5e2748c67eab41680f50e575` |
+| R3 | #131 | `weekly-activity-chart.test.tsx::#131 R3: cada columna reparte la fila a partes iguales › las siete columnas llevan flex-1 y centran su contenido antes y después de medir, con otra métrica y con un día seleccionado` | `950b28a53324da57fc39ca5fd2775d2e5d31879e` | `5c22414fe9b0f466c915687d0bf88d946048332f` |
+| R4 | #135 | `weekly-activity-chart.test.tsx::#135 R4: entre la tarjeta y cada uno de sus hijos no hay otro nodo`, sus tres `it`: `› sin comparación: cabecera, selector, gráfico y fila antes y después de medir y con otra métrica, y el detalle al final con un día seleccionado`, `› con comparación, la tendencia va entre el selector y el gráfico` y `› sin ningún día medido, la tarjeta solo tiene la cabecera y el mensaje` | `a6f4d676cf5b4bbb2135f1fc209b8180a4d7ba0c` | `3a85668fd4615a64fd321057a048e974c73c2160` |
+| R5 | #131 y #135 | sin test: cierre medido ([[tasks]] §R5 y `progress/impl_mobile-weekly-day-row-layout-lock.md`) | no aplica | `3a85668fd4615a64fd321057a048e974c73c2160` |
 
 Regla: el reviewer no aprueba si alguna fila queda «pendiente».
 
