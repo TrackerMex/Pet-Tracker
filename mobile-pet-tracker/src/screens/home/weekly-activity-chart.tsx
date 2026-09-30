@@ -653,7 +653,7 @@ export function WeeklyActivityChart(
           >
             <Text
               testID="weekly-activity-day-label"
-              className={selection !== null && selectedMetricIndex === 0 ? 'text-2xs font-semibold text-foreground' : 'text-2xs font-semibold text-muted'}
+              className="text-2xs font-semibold text-muted"
             >
               {weekdayLabel(day.date, locale, 'short')}
             </Text>
