@@ -11,9 +11,9 @@ Todos los tests viven en
 
 | Requisito | Test (archivo::nombre) | Commit rojo | Commit verde |
 |---|---|---|---|
-| R1 | `weekly-activity-chart.test.tsx::#140 R1: cada columna tiene la etiqueta del día y, debajo, su valor o su raya › las siete columnas tienen dos hijos, la etiqueta primero, antes y después de medir, con otra métrica y con un día seleccionado, medido o sin datos` | pendiente | pendiente |
-| R2 | `weekly-activity-chart.test.tsx::#140 R2: la etiqueta, el valor y la raya de cada columna llevan su receta exacta › la clase de los dos hijos de cada columna, por posición, antes y después de medir, con otra métrica y con un día seleccionado, medido o sin datos` | pendiente | pendiente |
-| R3 | sin test: cierre medido ([[tasks]] §R3 y `progress/impl_mobile-weekly-day-column-content-lock.md`) | no aplica | pendiente |
+| R1 | `weekly-activity-chart.test.tsx::#140 R1: cada columna tiene la etiqueta del día y, debajo, su valor o su raya › las siete columnas tienen dos hijos, la etiqueta primero, antes y después de medir, con otra métrica y con un día seleccionado, medido o sin datos` | `a760e834b9f467e217d8b1f737545881296f5b30` | `ebbee7b9628ff24a2bb7b15e93d465b3088e8f1a` |
+| R2 | `weekly-activity-chart.test.tsx::#140 R2: la etiqueta, el valor y la raya de cada columna llevan su receta exacta › la clase de los dos hijos de cada columna, por posición, antes y después de medir, con otra métrica y con un día seleccionado, medido o sin datos` | `c22fba61fdc6cbd6a8f2b24a12d021b615329ce3` | `e72f1d1bd50e534b754e374c879ead14277106dd` |
+| R3 | sin test: cierre medido ([[tasks]] §R3 y `progress/impl_mobile-weekly-day-column-content-lock.md`) | no aplica | `e72f1d1bd50e534b754e374c879ead14277106dd` |
 
 Regla: el reviewer no aprueba si alguna fila queda «pendiente».
 
