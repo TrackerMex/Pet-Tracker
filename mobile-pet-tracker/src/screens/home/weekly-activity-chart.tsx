@@ -513,14 +513,12 @@ export function WeeklyActivityChart(
       </View>
       {hasMeasuredDay ? (
         <>
-          <View accessible>
           <MetricSelector
             labels={metricLabels}
             selectedIndex={selectedMetricIndex}
             accentStrong={accentStrong}
             onSelect={setSelectedMetricIndex}
           />
-          </View>
           {trend !== null ? (
             <View
               testID="weekly-activity-trend"
