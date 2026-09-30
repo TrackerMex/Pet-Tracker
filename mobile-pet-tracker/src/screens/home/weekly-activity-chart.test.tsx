@@ -1913,3 +1913,79 @@ describe('#140 R1: cada columna tiene la etiqueta del día y, debajo, su valor o
     expect(columnChildren()).toStrictEqual(expected);
   });
 });
+
+describe('#140 R2: la etiqueta, el valor y la raya de cada columna llevan su receta exacta', () => {
+  it('la clase de los dos hijos de cada columna, por posición, antes y después de medir, con otra métrica y con un día seleccionado, medido o sin datos', async () => {
+    const result = await renderChartWithProps(
+      {
+        days: makeWeek('2026-09-02', [10, 20, 30, 40, 50, null, 70]),
+        weekComparison: NO_COMPARISON,
+      },
+      'es',
+      false,
+    );
+    const label = 'text-2xs font-semibold text-muted';
+    const value = 'text-2xs font-semibold text-foreground';
+    const dash = 'text-2xs font-normal text-muted';
+    const expected = [
+      [label, value],
+      [label, value],
+      [label, value],
+      [label, value],
+      [label, value],
+      [label, dash],
+      [label, value],
+    ];
+    const columnClassNames = () =>
+      result
+        .getByTestId('weekly-activity-day-row')
+        .children.map((column) =>
+          typeof column === 'string'
+            ? column
+            : column.children.map((child) =>
+                typeof child === 'string' ? child : child.props.className,
+              ),
+        );
+
+    // #140 R2: the exact class of the label, the value and the dash by position,
+    // so another colour, weight or size on any of them, in any column, turns the
+    // lock red, in each state the chart reaches inside this test. toStrictEqual,
+    // for the same reason as in #140 R1.
+    expect(columnClassNames()).toStrictEqual(expected);
+
+    const layout = result.getByTestId('weekly-activity-chart-layout');
+
+    await fireEvent(layout, 'layout', {
+      nativeEvent: {
+        layout: { width: 295, height: 0, x: 0, y: 0 },
+      },
+    });
+
+    expect(result.getByTestId('weekly-activity-bar-chart')).toBeOnTheScreen();
+    expect(columnClassNames()).toStrictEqual(expected);
+
+    await fireEvent.press(
+      result.getByTestId('weekly-activity-metric-distanceM'),
+    );
+
+    expect(
+      result.getByTestId('weekly-activity-metric-distanceM').props
+        .accessibilityState,
+    ).toEqual({ selected: true });
+    expect(columnClassNames()).toStrictEqual(expected);
+
+    await fireEvent.press(result.getByTestId('weekly-activity-day-2026-09-05'));
+
+    expect(result.getByTestId('weekly-activity-tooltip')).toBeOnTheScreen();
+    expect(columnClassNames()).toStrictEqual(expected);
+
+    await fireEvent.press(result.getByTestId('weekly-activity-day-2026-09-07'));
+
+    expect(
+      within(result.getByTestId('weekly-activity-detail')).getByText(
+        'Sin datos de este día',
+      ),
+    ).toBeOnTheScreen();
+    expect(columnClassNames()).toStrictEqual(expected);
+  });
+});

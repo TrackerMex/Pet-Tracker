@@ -653,7 +653,7 @@ export function WeeklyActivityChart(
           >
             <Text
               testID="weekly-activity-day-label"
-              className="text-2xs font-semibold text-muted"
+              className="text-2xs font-semibold text-foreground"
             >
               {weekdayLabel(day.date, locale, 'short')}
             </Text>
