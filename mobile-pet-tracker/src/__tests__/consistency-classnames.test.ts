@@ -249,9 +249,10 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
   const directUses = [
     [join('app', '(auth)', 'forgot.tsx'), 1],
     [join('components', 'pet-hero-header.tsx'), 1],
-    // #136 R3: the quick action tiles spread the corner inside their pressed
-    // style, so the Home keeps a single direct use, collar-pair-link.
-    [join('screens', 'home', 'index.tsx'), 1],
+    // #136 R3 and #138 R3: the quick action tiles and collar-pair-link spread
+    // the corner inside their pressed style, so the Home keeps no direct use.
+    // The row stays at 0 to lock that and the import.
+    [join('screens', 'home', 'index.tsx'), 0],
     [join('screens', 'home', 'weekly-activity-chart.tsx'), 1],
     [join('screens', 'health', 'index.tsx'), 2],
     [join('app', '(tabs)', 'food.tsx'), 2],
@@ -307,9 +308,10 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
     );
     expect(card.match(/style=\{mergedStyle\}/g)).toHaveLength(2);
     // #136 R3: minus one, the tiles' corner now travels in their pressed style.
+    // #138 R3: minus one more, collar-pair-link's corner travels in its own.
     expect(
       directUses.reduce((total, [, count]) => total + count, 2),
-    ).toBe(33 + 1 + 1 - 1);
+    ).toBe(33 + 1 + 1 - 1 - 1);
   });
 });
 
@@ -387,9 +389,11 @@ describe('#98 R10: los candados que esta feature no mueve', () => {
 
     // #136 R3: the tiles' corner moved into their pressed style, one direct
     // use less in the Home and in the repo.
-    expect(home.match(/style=\{CONTINUOUS_CORNER\}/g)).toHaveLength(1);
+    // #138 R3: collar-pair-link's corner moved too, so the Home has none left.
+    // With no match, match() returns null: the ?? [] keeps the count readable.
+    expect(home.match(/style=\{CONTINUOUS_CORNER\}/g) ?? []).toHaveLength(0);
     expect(food.match(/style=\{CONTINUOUS_CORNER\}/g)).toHaveLength(2);
-    expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(32);
+    expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31);
     expect(count(/rounded-xl bg-accent(?=[\s'"`])/g)).toBe(13);
     expect(count(/bg-accent-soft/g)).toBe(16);
     expect(home.match(/text-accent-strong\b/g)).toHaveLength(2);
