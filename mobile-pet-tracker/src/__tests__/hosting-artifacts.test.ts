@@ -154,3 +154,61 @@ describe('#60 R8: apple-app-site-association delega /reset-password en la app de
     ]);
   });
 });
+
+describe('#60 R9: la guía de iOS y RESET_LINK_HOST quedan documentadas', () => {
+  it('#60 R9: documenta los gates de iOS en la sección Feature 60', () => {
+    const verification = readRepositoryFile('docs', 'verification.md');
+    const feature60 =
+      verification
+        .split('### Feature 60 — mobile-ios-support')[1]
+        ?.split(/^### Feature /m)[0] ?? '';
+
+    for (const fragment of [
+      'Dev build de iOS vía EAS',
+      'bunx eas-cli@latest device:create',
+      'bunx eas-cli@latest env:set',
+      '--visibility plaintext',
+      'bunx eas-cli@latest build -p ios --profile development',
+      'REPLACE_WITH_APPLE_TEAM_ID',
+      'curl -fsSI',
+      'Content-Type: application/json',
+      'bunx expo start --dev-client',
+      'progress/impl_mobile-ios-support.md',
+    ]) {
+      expect(feature60).toContain(fragment);
+    }
+    expect(feature60).not.toMatch(/--visibility secret/);
+  });
+
+  it('#60 R9: el README de hosting explica el AASA, su .htaccess y el Team ID, y AGENTS.md lo nombra', () => {
+    const readme = readRepositoryFile('hosting', 'README.md');
+    const hostingRow =
+      readRepositoryFile('AGENTS.md')
+        .split('\n')
+        .find((line) => line.startsWith('| `hosting/` |')) ?? '';
+
+    for (const fragment of [
+      'apple-app-site-association',
+      '.htaccess',
+      'REPLACE_WITH_APPLE_TEAM_ID',
+      '§Feature 60',
+    ]) {
+      expect(readme).toContain(fragment);
+    }
+    expect(hostingRow).toContain('apple-app-site-association');
+  });
+
+  it('#60 R9: la fila de RESET_LINK_HOST y el .env.example móvil nombran la variable de EAS', () => {
+    const row =
+      readRepositoryFile('docs', 'conventions.md')
+        .split('\n')
+        .find((line) => line.startsWith('| `RESET_LINK_HOST` |')) ?? '';
+    const example = readRepositoryFile('mobile-pet-tracker', '.env.example');
+
+    expect(row).toContain('EAS');
+    expect(row).toContain('`development`');
+    expect(row).toContain('`plaintext`');
+    expect(example).toContain('EAS');
+    expect(example).toContain('§Feature 60');
+  });
+});
