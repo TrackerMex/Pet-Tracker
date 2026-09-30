@@ -209,20 +209,19 @@ No era teórico. Confirmado en dos features más, además de #106 y #109:
 
 ### Cómo se vuelve a medir
 
-El catálogo está cacheado y caduca:
+Mide lo **instalado**, no el catálogo remoto:
 
 ```bash
-python3 -c "
-import json
-d=json.load(open('$HOME/.codex/cache/remote_plugin_catalog/f787738308dab44d.json'))
-p=[x for x in d['plugins'] if x.get('name')=='expo'][0]
-print(p['release']['version'])
-[print(' -', s['name']) for s in p['release']['skills']]
-"
+grep -h '"version"' ~/.codex/plugins/cache/openai-curated/expo/*/.codex-plugin/plugin.json 2>/dev/null \
+  || find ~/.codex/plugins/cache/openai-curated/expo -maxdepth 3 -name '*.json' -exec grep -h '"version"' {} + | head -1
+find ~/.codex/plugins/cache/openai-curated/expo -name SKILL.md | sed 's#.*/skills/##; s#/SKILL.md##' | sort
 ```
 
-El nombre del fichero es un hash y cambia. Si no está, busca el `.json` más
-grande de ese directorio.
+El directorio intermedio es un hash y cambia. El 2026-09-30 (#60) seguía en
+`1.0.2` con las mismas 13 skills. Hasta esa fecha se medía sobre
+`~/.codex/cache/remote_plugin_catalog/*.json`, pero ese día el catálogo
+remoto ya **no listaba `expo`** y el script viejo moría con `IndexError`:
+lo que Codex carga es lo instalado, y eso no depende del catálogo.
 
 ## Gate de aprobación vía Notion
 
