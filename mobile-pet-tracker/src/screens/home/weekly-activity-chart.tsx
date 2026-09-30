@@ -651,6 +651,12 @@ export function WeeklyActivityChart(
             }}
             onPress={() => handleColumnPress(dataIndex)}
           >
+            <Text
+              testID="weekly-activity-day-label"
+              className="text-2xs font-semibold text-muted"
+            >
+              {weekdayLabel(day.date, locale, 'short')}
+            </Text>
             {day.source === 'missing' ? (
               <Text
                 testID={`weekly-activity-missing-${day.date}`}
@@ -669,12 +675,6 @@ export function WeeklyActivityChart(
                 )}
               </Text>
             )}
-            <Text
-              testID="weekly-activity-day-label"
-              className="text-2xs font-semibold text-muted"
-            >
-              {weekdayLabel(day.date, locale, 'short')}
-            </Text>
           </Pressable>
         ))}
           </View>
