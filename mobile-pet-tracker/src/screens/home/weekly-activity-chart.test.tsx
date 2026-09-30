@@ -2270,3 +2270,72 @@ describe('#142 R2: la lista de hijos de la tarjeta es cerrada, sin ningún nodo 
     ).toStrictEqual(['weekly-activity-header', 'weekly-activity-empty']);
   });
 });
+
+describe('#143 R3: con la primera métrica y un día seleccionado, cada columna conserva su forma y sus recetas', () => {
+  it('la clase de cada columna y el testID y la clase de sus dos hijos, por posición, con un día medido seleccionado y con el día sin datos seleccionado', async () => {
+    const result = await renderChart(
+      makeWeek('2026-09-02', [10, 20, 30, 40, 50, null, 70]),
+    );
+    const resting = 'min-h-11 flex-1 items-center justify-end';
+    const selected =
+      'min-h-11 flex-1 items-center justify-end border-t-2 border-accent-strong';
+    const label = [
+      'weekly-activity-day-label',
+      'text-2xs font-semibold text-muted',
+    ];
+    const value = 'text-2xs font-semibold text-foreground';
+    const dash = 'text-2xs font-normal text-muted';
+    const columns = () =>
+      result
+        .getByTestId('weekly-activity-day-row')
+        .children.map((column) =>
+          typeof column === 'string'
+            ? column
+            : [
+                column.props.className,
+                column.children.map((child) =>
+                  typeof child === 'string'
+                    ? child
+                    : [child.props.testID, child.props.className],
+                ),
+              ],
+        );
+
+    await fireEvent.press(result.getByTestId('weekly-activity-day-2026-09-05'));
+
+    // #143 R3: the chart opens on the first metric, and a day selected there is
+    // the first thing a user does; the column, its label and its value or dash,
+    // by position, keep the class they have with any other metric.
+    expect(
+      result.getByTestId('weekly-activity-metric-activeMinutes').props
+        .accessibilityState,
+    ).toEqual({ selected: true });
+    expect(result.getByTestId('weekly-activity-tooltip')).toBeOnTheScreen();
+    expect(columns()).toStrictEqual([
+      [resting, [label, ['weekly-activity-value-2026-09-02', value]]],
+      [resting, [label, ['weekly-activity-value-2026-09-03', value]]],
+      [resting, [label, ['weekly-activity-value-2026-09-04', value]]],
+      [selected, [label, ['weekly-activity-value-2026-09-05', value]]],
+      [resting, [label, ['weekly-activity-value-2026-09-06', value]]],
+      [resting, [label, ['weekly-activity-missing-2026-09-07', dash]]],
+      [resting, [label, ['weekly-activity-value-2026-09-08', value]]],
+    ]);
+
+    await fireEvent.press(result.getByTestId('weekly-activity-day-2026-09-07'));
+
+    expect(
+      within(result.getByTestId('weekly-activity-detail')).getByText(
+        'Sin datos de este día',
+      ),
+    ).toBeOnTheScreen();
+    expect(columns()).toStrictEqual([
+      [resting, [label, ['weekly-activity-value-2026-09-02', value]]],
+      [resting, [label, ['weekly-activity-value-2026-09-03', value]]],
+      [resting, [label, ['weekly-activity-value-2026-09-04', value]]],
+      [resting, [label, ['weekly-activity-value-2026-09-05', value]]],
+      [resting, [label, ['weekly-activity-value-2026-09-06', value]]],
+      [selected, [label, ['weekly-activity-missing-2026-09-07', dash]]],
+      [resting, [label, ['weekly-activity-value-2026-09-08', value]]],
+    ]);
+  });
+});
