@@ -730,6 +730,7 @@ export function WeeklyActivityChart(
           {t('weeklyActivity.noDataYet')}
         </Text>
       )}
+      <View />
     </Card>
   );
 }
