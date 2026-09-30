@@ -1,6 +1,6 @@
 /// <reference types="node" />
 
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import appJson from '../../app.json';
@@ -113,5 +113,44 @@ describe('R12: la configuracion y los gates manuales quedan documentados', () =>
     const agents = readRepositoryFile('AGENTS.md');
 
     expect(agents).toMatch(/^\| `hosting\/` \|/m);
+  });
+});
+
+describe('#60 R8: apple-app-site-association delega /reset-password en la app de iOS', () => {
+  const aasaPath = join(hostingRoot, '.well-known', 'apple-app-site-association');
+
+  it('#60 R8: publica un único detalle para el App ID de iOS y solo la ruta de reset', () => {
+    expect(existsSync(aasaPath)).toBe(true);
+    const aasa = JSON.parse(readFileSync(aasaPath, 'utf8')) as {
+      applinks: { details: { appIDs: string[]; components: unknown[] }[] };
+    };
+
+    expect(Object.keys(aasa)).toEqual(['applinks']);
+    expect(Object.keys(aasa.applinks)).toEqual(['details']);
+    expect(aasa.applinks.details).toHaveLength(1);
+    expect(Object.keys(aasa.applinks.details[0] ?? {})).toEqual(['appIDs', 'components']);
+    expect(aasa.applinks.details[0]?.appIDs).toHaveLength(1);
+    expect(aasa.applinks.details[0]?.appIDs[0]).toMatch(
+      /^(?:REPLACE_WITH_APPLE_TEAM_ID|[A-Z0-9]{10})\.com\.trackermex\.pettracker$/,
+    );
+    expect(aasa.applinks.details[0]?.components).toEqual([
+      { '/': '/reset-password*' },
+    ]);
+  });
+
+  it('#60 R8: fuerza application/json solo para el fichero sin extensión', () => {
+    const htaccessPath = join(hostingRoot, '.well-known', '.htaccess');
+
+    expect(existsSync(htaccessPath)).toBe(true);
+    expect(
+      readFileSync(htaccessPath, 'utf8')
+        .trim()
+        .split('\n')
+        .map((line) => line.trim()),
+    ).toEqual([
+      '<Files "apple-app-site-association">',
+      'ForceType application/json',
+      '</Files>',
+    ]);
   });
 });
