@@ -1672,3 +1672,72 @@ describe('#131 R2: la fila deja a cada lado el mismo hueco que el gráfico', () 
     expectRowOnPlotEdges();
   });
 });
+
+describe('#131 R3: cada columna reparte la fila a partes iguales', () => {
+  it('las siete columnas llevan flex-1 y centran su contenido antes y después de medir, con otra métrica y con un día seleccionado', async () => {
+    const result = await renderChartWithProps(
+      {
+        days: makeWeek('2026-09-02', [10, 20, 30, 40, 50, 60, 70]),
+        weekComparison: NO_COMPARISON,
+      },
+      'es',
+      false,
+    );
+    const resting = 'min-h-11 flex-1 items-center justify-end';
+    const selected =
+      'min-h-11 flex-1 items-center justify-end border-t-2 border-accent-strong';
+    const allResting = [
+      resting,
+      resting,
+      resting,
+      resting,
+      resting,
+      resting,
+      resting,
+    ];
+    const columnClassNames = () =>
+      result
+        .getByTestId('weekly-activity-day-row')
+        .children.map((column) =>
+          typeof column === 'string' ? column : column.props.className,
+        );
+
+    // #131 R3: the exact class of each column by position, so a column without
+    // flex-1 or without its centring, selected or not, turns the lock red.
+    expect(columnClassNames()).toEqual(allResting);
+
+    const layout = result.getByTestId('weekly-activity-chart-layout');
+
+    await fireEvent(layout, 'layout', {
+      nativeEvent: {
+        layout: { width: 295, height: 0, x: 0, y: 0 },
+      },
+    });
+
+    expect(result.getByTestId('weekly-activity-bar-chart')).toBeOnTheScreen();
+    expect(columnClassNames()).toEqual(allResting);
+
+    await fireEvent.press(
+      result.getByTestId('weekly-activity-metric-distanceM'),
+    );
+
+    expect(
+      result.getByTestId('weekly-activity-metric-distanceM').props
+        .accessibilityState,
+    ).toEqual({ selected: true });
+    expect(columnClassNames()).toEqual(allResting);
+
+    await fireEvent.press(result.getByTestId('weekly-activity-day-2026-09-05'));
+
+    expect(result.getByTestId('weekly-activity-tooltip')).toBeOnTheScreen();
+    expect(columnClassNames()).toEqual([
+      resting,
+      resting,
+      resting,
+      selected,
+      resting,
+      resting,
+      resting,
+    ]);
+  });
+});

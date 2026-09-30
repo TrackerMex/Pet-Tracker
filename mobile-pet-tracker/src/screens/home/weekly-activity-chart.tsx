@@ -636,7 +636,7 @@ export function WeeklyActivityChart(
             className={
               selection?.dataIndex === dataIndex
                 ? 'min-h-11 flex-1 items-center justify-end border-t-2 border-accent-strong'
-                : 'min-h-11 flex-1 items-center justify-end'
+                : 'min-h-11 items-center justify-end'
             }
             accessible
             accessibilityRole="button"
