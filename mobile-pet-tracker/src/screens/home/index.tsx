@@ -589,7 +589,10 @@ export function HomeScreen() {
                     testID={testID}
                     accessibilityRole="button"
                     className={`min-h-11 flex-1 items-center gap-1.5 rounded-xl py-3 ${CATEGORY_SLOTS[slot].surface}`}
-                    style={CONTINUOUS_CORNER}
+                    style={({ pressed }) => ({
+                      ...CONTINUOUS_CORNER,
+                      opacity: pressed ? 0.8 : 1,
+                    })}
                     onPress={() => router.push(href(selectedPetId))}
                   >
                     <Icon size={24} color={quickActionInks[index]} />
