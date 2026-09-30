@@ -1587,3 +1587,48 @@ describe('#132 R1: la tarjeta es la raíz host de lo que pinta la gráfica', () 
     ).toBe('chart-parent');
   });
 });
+
+describe('#131 R1: la fila de las siete columnas es una fila', () => {
+  it('la fila solo lleva flex-row antes y después de medir, con otra métrica y con un día seleccionado', async () => {
+    const result = await renderChartWithProps(
+      {
+        days: makeWeek('2026-09-02', [10, 20, 30, 40, 50, 60, 70]),
+        weekComparison: NO_COMPARISON,
+      },
+      'es',
+      false,
+    );
+    const rowClassName = () =>
+      result.getByTestId('weekly-activity-day-row').props.className;
+
+    // #131 R1: the exact class, so flex-col, flex-row-reverse or any added class
+    // turns the lock red, in each state the chart reaches inside this test.
+    expect(rowClassName()).toBe('flex-row');
+
+    const layout = result.getByTestId('weekly-activity-chart-layout');
+
+    await fireEvent(layout, 'layout', {
+      nativeEvent: {
+        layout: { width: 295, height: 0, x: 0, y: 0 },
+      },
+    });
+
+    expect(result.getByTestId('weekly-activity-bar-chart')).toBeOnTheScreen();
+    expect(rowClassName()).toBe('flex-row');
+
+    await fireEvent.press(
+      result.getByTestId('weekly-activity-metric-distanceM'),
+    );
+
+    expect(
+      result.getByTestId('weekly-activity-metric-distanceM').props
+        .accessibilityState,
+    ).toEqual({ selected: true });
+    expect(rowClassName()).toBe('flex-row');
+
+    await fireEvent.press(result.getByTestId('weekly-activity-day-2026-09-05'));
+
+    expect(result.getByTestId('weekly-activity-tooltip')).toBeOnTheScreen();
+    expect(rowClassName()).toBe('flex-row');
+  });
+});

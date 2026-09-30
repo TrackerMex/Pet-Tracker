@@ -623,7 +623,7 @@ export function WeeklyActivityChart(
           </View>
           <View
         testID="weekly-activity-day-row"
-        className="flex-row"
+        className="flex-col"
         style={{
           paddingLeft: CHART_PAD_LEFT,
           paddingRight: CHART_PAD_RIGHT,
