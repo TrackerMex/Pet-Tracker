@@ -625,7 +625,7 @@ export function WeeklyActivityChart(
         testID="weekly-activity-day-row"
         className="flex-row"
         style={{
-          paddingLeft: 0,
+          paddingLeft: CHART_PAD_LEFT,
           paddingRight: CHART_PAD_RIGHT,
         }}
       >
