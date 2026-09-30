@@ -384,3 +384,68 @@ describe('#60 R6: RESET_LINK_HOST declara el dominio asociado de iOS', () => {
     });
   });
 });
+
+describe('#60 R7: sin RESET_LINK_HOST iOS queda sin dominio asociado y el aviso lo dice', () => {
+  const originalApiKey = process.env.GOOGLE_MAPS_API_KEY_ANDROID;
+  const originalResetLinkHost = process.env.RESET_LINK_HOST;
+  let warnSpy: jest.SpiedFunction<typeof console.warn>;
+
+  beforeEach(() => {
+    process.env.GOOGLE_MAPS_API_KEY_ANDROID = 'maps-test-key';
+    warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+  });
+
+  afterEach(() => {
+    warnSpy.mockRestore();
+
+    if (originalApiKey === undefined) {
+      delete process.env.GOOGLE_MAPS_API_KEY_ANDROID;
+    } else {
+      process.env.GOOGLE_MAPS_API_KEY_ANDROID = originalApiKey;
+    }
+
+    if (originalResetLinkHost === undefined) {
+      delete process.env.RESET_LINK_HOST;
+    } else {
+      process.env.RESET_LINK_HOST = originalResetLinkHost;
+    }
+  });
+
+  it.each([
+    ['ausente', undefined],
+    ['vacío', ''],
+    ['solo espacios', '   '],
+  ])('#60 R7: con un host %s no declara associatedDomains y avisa una vez por Android e iOS', (_case, resetLinkHost) => {
+    if (resetLinkHost === undefined) {
+      delete process.env.RESET_LINK_HOST;
+    } else {
+      process.env.RESET_LINK_HOST = resetLinkHost;
+    }
+
+    const resolved = resolveConfig({
+      config: appJson.expo,
+    } as unknown as ConfigContext);
+
+    expect(resolved.ios).toEqual({
+      icon: './assets/expo.icon',
+      bundleIdentifier: 'com.trackermex.pettracker',
+      deploymentTarget: '17.0',
+      config: { usesNonExemptEncryption: false },
+    });
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    const warning = warnSpy.mock.calls[0]?.[0];
+    for (const fragment of [
+      'RESET_LINK_HOST',
+      'Android',
+      'App Links',
+      'iOS',
+      'associatedDomains',
+      'Universal Links',
+      'docs/verification.md',
+      '§Feature 59 — auth-reset-deep-link',
+      '§Feature 60 — mobile-ios-support',
+    ]) {
+      expect(warning).toEqual(expect.stringContaining(fragment));
+    }
+  });
+});
