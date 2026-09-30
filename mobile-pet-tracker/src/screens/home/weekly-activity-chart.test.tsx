@@ -1741,3 +1741,101 @@ describe('#131 R3: cada columna reparte la fila a partes iguales', () => {
     ]);
   });
 });
+
+describe('#135 R4: entre la tarjeta y cada uno de sus hijos no hay otro nodo', () => {
+  it('sin comparación: cabecera, selector, gráfico y fila antes y después de medir y con otra métrica, y el detalle al final con un día seleccionado', async () => {
+    const result = await renderChartWithProps(
+      {
+        days: makeWeek('2026-09-02', [10, 20, 30, 40, 50, 60, 70]),
+        weekComparison: NO_COMPARISON,
+      },
+      'es',
+      false,
+    );
+    const withoutTrend = [
+      'weekly-activity-header',
+      'weekly-activity-metric',
+      'weekly-activity-chart-layout',
+      'weekly-activity-day-row',
+    ];
+    const cardChildren = () =>
+      result
+        .getByTestId('weekly-activity-card')
+        .children.map((child) =>
+          typeof child === 'string' ? child : child.props.testID,
+        );
+
+    // #135 R4: a wrapper around the metric selector, or around any other child
+    // of the card, accessible or not, turns the lock red in the state where it
+    // shows up.
+    expect(cardChildren()).toEqual(withoutTrend);
+
+    const layout = result.getByTestId('weekly-activity-chart-layout');
+
+    await fireEvent(layout, 'layout', {
+      nativeEvent: {
+        layout: { width: 295, height: 0, x: 0, y: 0 },
+      },
+    });
+
+    expect(result.getByTestId('weekly-activity-bar-chart')).toBeOnTheScreen();
+    expect(cardChildren()).toEqual(withoutTrend);
+
+    await fireEvent.press(
+      result.getByTestId('weekly-activity-metric-distanceM'),
+    );
+
+    expect(
+      result.getByTestId('weekly-activity-metric-distanceM').props
+        .accessibilityState,
+    ).toEqual({ selected: true });
+    expect(cardChildren()).toEqual(withoutTrend);
+
+    await fireEvent.press(result.getByTestId('weekly-activity-day-2026-09-05'));
+
+    expect(result.getByTestId('weekly-activity-tooltip')).toBeOnTheScreen();
+    expect(cardChildren()).toEqual([
+      ...withoutTrend,
+      'weekly-activity-detail',
+    ]);
+  });
+
+  it('con comparación, la tendencia va entre el selector y el gráfico', async () => {
+    const result = await renderChart(
+      makeWeek('2026-09-02', [10, 20, 30, 40, 50, 60, 70]),
+      { ...NO_COMPARISON, activeMinutes: 12.5 },
+    );
+
+    // #135 R4: the trend only exists with a comparison, so its place among the
+    // children of the card needs a render of its own.
+    expect(result.getByTestId('weekly-activity-trend')).toBeOnTheScreen();
+    expect(
+      result
+        .getByTestId('weekly-activity-card')
+        .children.map((child) =>
+          typeof child === 'string' ? child : child.props.testID,
+        ),
+    ).toEqual([
+      'weekly-activity-header',
+      'weekly-activity-metric',
+      'weekly-activity-trend',
+      'weekly-activity-chart-layout',
+      'weekly-activity-day-row',
+    ]);
+  });
+
+  it('sin ningún día medido, la tarjeta solo tiene la cabecera y el mensaje', async () => {
+    const result = await renderChart(
+      makeWeek('2026-09-02', [null, null, null, null, null, null, null]),
+    );
+
+    // #135 R4: the empty branch of the card is locked as well.
+    expect(
+      result
+        .getByTestId('weekly-activity-card')
+        .children.map((child) =>
+          typeof child === 'string' ? child : child.props.testID,
+        ),
+    ).toEqual(['weekly-activity-header', 'weekly-activity-empty']);
+  });
+});
