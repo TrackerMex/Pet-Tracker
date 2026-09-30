@@ -289,3 +289,14 @@ describe('#79 R14: google-services.json se declara solo cuando existe', () => {
     expect(warning).toEqual(expect.stringContaining('docs/verification.md'));
   });
 });
+
+describe('#60 R4: app.json declara la identidad de iOS', () => {
+  it('#60 R4: fija bundleIdentifier, deploymentTarget 17.0 y cifrado exento sin tocar el icono', () => {
+    expect(appJson.expo.ios).toEqual({
+      icon: './assets/expo.icon',
+      bundleIdentifier: 'com.trackermex.pettracker',
+      deploymentTarget: '17.0',
+      config: { usesNonExemptEncryption: false },
+    });
+  });
+});
