@@ -1,6 +1,6 @@
 ---
 feature: "mobile-weekly-card-children-strict-lock"
-status: spec_ready         # draft | spec_ready | approved  ← se firma dentro de la spec de #141
+status: approved           # draft | spec_ready | approved  ← se firma dentro de la spec de #141
 tags: [harness, spec, mobile, puntero]
 ---
 
