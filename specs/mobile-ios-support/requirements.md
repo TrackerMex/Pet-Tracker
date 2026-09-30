@@ -1,6 +1,6 @@
 ---
 feature: "mobile-ios-support"
-status: spec_ready         # draft | spec_ready | approved
+status: approved           # draft | spec_ready | approved
 tags: [spec, mobile, ios, eas, universal-links]
 ---
 
@@ -705,7 +705,7 @@ premisa verificada y descartada.
 
 ## Aprobación
 
-- [ ] **Aprobado por humano** (fecha: ____) ← gate obligatorio antes de
+- [x] **Aprobado por humano** (fecha: 2026-09-30) ← gate obligatorio antes de
       implementar. Al marcar esta casilla, el humano firma también los
       quince puntos de §Qué firma el humano al aprobar esta spec.
 
