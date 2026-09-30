@@ -6360,3 +6360,75 @@ Sesion Frontend, worktree `/home/claude/sites/Pet-Tracker`, branch
   Queda fuera de #136 (§Fuera de alcance (D)). El humano decidio no
   registrarla (2026-09-29).
 - `android_only`: es el punto ciego declarado, medido en verde. Lo cerro R5.
+
+## #137 `mobile-push-registration-r15-named-import-lock` y #139 `mobile-push-registration-r1-restore-identity-lock` — 2026-09-30
+
+Sesion Backend, worktree `/home/claude/sites/Pet-Tracker-wt-backend`, branch
+`feature/137-mobile-push-registration-r15-named-import-lock`, creada desde
+`origin/main` `70e1fdcb` (merge de la PR #175, #133). Dos entradas, un ciclo y
+una spec, por decision del humano (2026-09-29): las dos tocaban el `it` de R15
+de `use-push-registration.test.tsx`. La spec vive en
+`specs/mobile-push-registration-r15-named-import-lock/`, y #139 tiene un
+fichero puntero, como #107. Solo #137 paso a `in_progress` (init.sh:156). En
+paralelo, Frontend cerro #136 (PR #176) y arranco #138 en el arbol principal,
+sin compartir fichero.
+
+### Que se hizo
+
+- **R1 (#137)**: la fabrica de `jest.doMock('expo-notifications')` del `it`
+  de R15 ya no es un `Proxy` que lanza al leer una propiedad. Ahora lanza en el
+  propio `require`. Babel compila un `import { x }` con nombre a un `require`
+  sin acceso a propiedad, y el `Proxy` no lo veia (sonda S3 de #133). Con la
+  fabrica nueva, S3 pone R15 en rojo, y S1, S2 y S4 siguen haciendolo.
+- **R2 (#139)**: `headerNotificationsModule` captura a nivel de modulo, antes
+  de cualquier `it`, el objeto de la fabrica de la cabecera. Un `describe`
+  final asevera con `toBe` que `jest.requireMock('expo-notifications')` vuelve
+  a ser ese objeto tras R15. Una copia con otro `AndroidImportance` (O1 de
+  #133), una copia plana o un `Proxy` transparente lo ponen en rojo.
+- **R3**: evidencia en `progress/impl_mobile-push-registration-r15-named-import-lock.md`
+  y trazabilidad con los hashes de Codex.
+- Diff de produccion **vacio**: solo el test, con 18 inserciones y 12
+  borrados. Movil 86/1609 → 86/1610 (+1).
+
+### Gate y ciclo
+
+- **Spec**: `4e03f419` (spec_author). La premisa P2, que un import con nombre
+  evalua `DevicePushTokenAutoRegistration.fx.js` y lanza en Android dentro de
+  Expo Go, se verifico leyendo `expo-notifications` 57.0.19. No se midio en
+  dispositivo.
+- **Espejo en Notion**:
+  https://app.notion.com/p/3ea6115a9b27813ab13ccdd1ff30e1cb. Aprobada en
+  Notion con `page_last_edited_at` 2026-09-29T23:19:41.932Z, y en el chat:
+  «ya aprobé en Notion, acepto el límite S5». Commit de firma `0aa09510`.
+- **Handoff a Codex**: `730d2df2`. La lista cerrada de ficheros se midio desde
+  el commit del handoff, no contra `origin/main` (la leccion de la obs. 3 de
+  #133).
+- **Codex**: cinco commits test-primero por la via b. `814f90ff` es el rojo de
+  R1 (S3 plantada en el hook) y `e106acee` su verde. `5ed27bee` es el rojo de
+  R2 (O1 plantada en el `finally`) y `942bfc13` su verde. `d0ce3e60` recoge la
+  evidencia.
+- **init.sh** sobre `d0ce3e60`, lanzado por el leader con permiso del humano y
+  tras avisar a Frontend: exit 0, medido sin pipe y con el HEAD y el exit en
+  el log. Unit 171/1307, infra 2/14, movil 86/1610, e2e 27+3 skip / 389+8
+  skip.
+- **Reviewer**: aprobado a la primera, sin bloqueantes (`524715be`). Hizo sus
+  sondas en un worktree del scratchpad, sin correr la suite entera mientras
+  init.sh estaba en vuelo. Confirmo que R2 no es tautologico: la constante no
+  es de produccion y el `finally` no la reasigna.
+- **Merge de `origin/main`** (`76849396`, #136) en `5c06404a`, sin conflictos.
+  Drift: los hooks son iguales a `d0ce3e60`, y el diff de produccion contra
+  `origin/main` es solo el test. La suite movil sobre el merge da 86/1611,
+  exit 0 sin pipe.
+- **Notion**: Implementado / Completado.
+
+### Deuda y apuntes
+
+- **Limite S5**, aceptado por el humano en la firma y no registrado como
+  deuda: R1 no ve un import de `expo-notifications` que llegue a traves de un
+  modulo que el test mockea. La sonda Z2 del reviewer mide el complemento: a
+  traves de un modulo local no mockeado, R1 si se pone rojo.
+- **Obs. 1 del reviewer**: la sonda Z3 (`import()` dinamico) no es
+  informativa. Este jest la tumba con `TypeError` antes del matcher. Queda como
+  limite de medida, no como deuda.
+- **Obs. 3 del reviewer**: `current.md` seguia en «Esperando a Codex». Se
+  cerro al archivar la sesion.
