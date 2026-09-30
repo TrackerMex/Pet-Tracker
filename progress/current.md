@@ -12,4 +12,4 @@
 - init.sh de arranque sobre 95a46292, lanzado tras el «adelante» de Frontend (#60 esperando sus gates humanos R11-R13): **exit 0**, medido sin pipe y con el HEAD igual al empezar y al terminar. Unit 171/1307, infra 2/14, movil 86/1621, e2e 27+3 skip / 389+8 skip.
 - `spec_author` lanzado para #141 + #142 + #143. Sus sondas van en un worktree del scratchpad y no corre la suite entera.
 - Spec lista en 9fb515f3 (`spec_ready`, casilla de §Aprobacion sin marcar). El `leader` la verifico: los seis blobs de `tasks.md` se reproducen pegando sus bloques y aplicando sus mutaciones sobre la base (test `b4474f36`, `5e4c6905`, `3e0ff4a3`; grafica `9f3c5bfd`, `0ac97f35`, `6eda3dd1`). Las 350 lineas nuevas son solo añadidos, sin `#` suelto ni literales vetados, y la base es un prefijo exacto del test final.
-- #141, #142 y #143 pasan a `spec_ready` en `feature_list.json`. Espejo en Notion con `En revisión`. **Parado en el gate humano.**
+- #141, #142 y #143 pasan a `spec_ready` en `feature_list.json`. Espejo en Notion con `En revisión`: página 3eb6115a9b2781ddba98f0eae468eead, espejo del commit 9fb515f3. **Parado en el gate humano.**
