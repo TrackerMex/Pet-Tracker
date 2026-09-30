@@ -935,6 +935,75 @@ describe('R10 (mobile-device-pairing): la collar card sin collar enlaza a /pairi
     await screen.findByTestId('collar-card');
     expect(screen.queryByTestId('collar-pair-link')).toBeNull();
   });
+
+  it('#138 R1: el botón baja a opacidad 0.8 mientras se pulsa y vuelve a 1 al soltarlo, con la esquina continua', async () => {
+    mockGetPet.mockResolvedValue({
+      kind: 'ok',
+      pet: makePet({ device: null }),
+    });
+
+    await renderHome();
+
+    const link = await screen.findByTestId('collar-pair-link');
+
+    // #138 R1: the whole style with toEqual, at rest and pressed. toHaveStyle
+    // matches a subset and would let a stray key or a lost corner through.
+    expect(link.props.style).toEqual({
+      borderCurve: 'continuous',
+      opacity: 1,
+    });
+
+    // #138 R1: responderGrant is the first event of a real press and leaves
+    // the Pressable pressed, as in the #136 R1 quick action tile test.
+    await fireEvent(link, 'responderGrant', {
+      nativeEvent: {},
+      persist: () => undefined,
+    });
+
+    expect(link.props.style).toEqual({
+      borderCurve: 'continuous',
+      opacity: 0.8,
+    });
+
+    // #138 R1: responderTerminate ends the press through the same pressOut
+    // path as a release, without onPress: a release needs a native target
+    // that the test tree lacks. The pressed state clears 130 ms later, the
+    // minimum press duration of Pressability, so waitFor polls for it.
+    await fireEvent(link, 'responderTerminate', {
+      nativeEvent: {},
+      persist: () => undefined,
+    });
+
+    await waitFor(() =>
+      expect(link.props.style).toEqual({
+        borderCurve: 'continuous',
+        opacity: 1,
+      }),
+    );
+  });
+
+  it('#138 R2: en reposo, el botón lleva rounded-xl como único radio y la esquina continua con opacidad 1', async () => {
+    mockGetPet.mockResolvedValue({
+      kind: 'ok',
+      pet: makePet({ device: null }),
+    });
+
+    await renderHome();
+
+    const link = await screen.findByTestId('collar-pair-link');
+
+    // #138 R2: the corner leaves the source counts of #62 R14, which also
+    // kept rounded-full off this tag, so the tree locks the radius instead.
+    expect(
+      link.props.className
+        .split(' ')
+        .filter((token: string) => /^rounded(?:-|$)/.test(token)),
+    ).toEqual(['rounded-xl']);
+    expect(link.props.style).toEqual({
+      borderCurve: 'continuous',
+      opacity: 1,
+    });
+  });
 });
 
 describe('R9: summary degrada con gracia', () => {

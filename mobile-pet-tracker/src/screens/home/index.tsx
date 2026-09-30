@@ -561,7 +561,10 @@ export function HomeScreen() {
                       accessibilityRole="button"
                       testID="collar-pair-link"
                       className="min-h-11 items-center justify-center rounded-xl bg-accent-soft px-4"
-                      style={CONTINUOUS_CORNER}
+                      style={({ pressed }) => ({
+                        ...CONTINUOUS_CORNER,
+                        opacity: pressed ? 0.8 : 1,
+                      })}
                       onPress={() => router.push('/pairing')}
                 >
                   <Text className="font-bold text-foreground">

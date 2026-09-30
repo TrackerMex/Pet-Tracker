@@ -6432,3 +6432,82 @@ sin compartir fichero.
   limite de medida, no como deuda.
 - **Obs. 3 del reviewer**: `current.md` seguia en «Esperando a Codex». Se
   cerro al archivar la sesion.
+
+## #138 `mobile-collar-pair-link-pressed-feedback` — 2026-09-30
+
+Sesion Frontend, worktree `/home/claude/sites/Pet-Tracker`, branch
+`feature/138-mobile-collar-pair-link-pressed-feedback`, creada desde
+`origin/main` `76849396` (merge de la PR #176, #136). En paralelo, Backend
+cerro #137 + #139 en `Pet-Tracker-wt-backend` (PR #177, mergeada durante el
+ciclo). Los `./init.sh` de las dos sesiones se turnaron con aviso explicito.
+
+### Que se hizo
+
+- **Produccion**: una linea de la Home por cuatro. El `style` de
+  `collar-pair-link` pasa de `CONTINUOUS_CORNER` a
+  `({ pressed }) => ({ ...CONTINUOUS_CORNER, opacity: pressed ? 0.8 : 1 })`,
+  la misma receta que los tiles de #136. Cambio instantaneo, sin animacion ni
+  haptica.
+- **R1**: un `it` nuevo, `#138 R1`, dentro del `describe` del collar. Pulsa
+  el boton y compara el `style` entero con `toEqual` en reposo, pulsado y
+  suelto. Los esperados son literales.
+- **R2**: un `it` nuevo, `#138 R2`: en reposo, `rounded-xl` es el unico radio
+  y el `style` es `{ borderCurve: 'continuous', opacity: 1 }`.
+- **R3**: en `consistency-classnames.test.ts`, la fila de la Home en `#62 R14`
+  baja a 0 (no se retira) y `#98 R10` a 0 en la Home y 31 en el repo. La
+  esquina del boton pasa a vigilarse en render.
+- Movil 86/1610 → 86/1612 (+2). Tras mergear `origin/main` (#137 + #139),
+  86/1613.
+
+### Gate y ciclo
+
+- **Spec**: `258393b6`. Espejo en Notion:
+  https://app.notion.com/p/3eb6115a9b27813680dac4b49846036a. Aprobada en
+  Notion con `page_last_edited_at` 2026-09-30T01:08:19.246Z, sin
+  comentarios. Commit de firma `22b71872`.
+- **Handoff**: `508e350d`. Pedia `building-native-ui` y
+  `appllama-app-design-skill` por sus nombres de Codex y vetaba
+  `animate-expo`.
+- **Codex**: `6dc6570b..cb60bba8`, cinco commits test-primero: tres rojos
+  naturales (R1, R2, R3), el verde comun `828aade3` y la evidencia de R4. Los
+  blobs finales coinciden con los de tasks.md (Home `0d439ebc`).
+- **init.sh** sobre `cb60bba8`: lo corrio el leader con permiso del humano y
+  el turno coordinado con Backend. Exit 0 sin pipe: unit 171/1307, infra
+  2/14, movil 86/1612, e2e 27+3 skip. El log lleva el HEAD al empezar y al
+  terminar, y el exit.
+- **Reviewer**: aprobado a la primera, sin bloqueantes (`dafe71cc`). Re-midio
+  las 15 sondas de tasks.md.
+- **Merge de `origin/main`** (`343e3fbe`, #137 + #139) en `2169c7ea`, sin
+  conflictos. Drift: la parte movil es igual a `cb60bba8` salvo
+  `use-push-registration.test.tsx`, que llega de #177 con su blob de main. La
+  suite movil sobre el merge da 86/1613, exit 0 sin pipe.
+- **Smoke R5**: el humano lo firmo en su propio commit, `de1256d6`, en un
+  OnePlus Nord 5 con Android 15. El commit solo toca la casilla de R5, y no
+  hay cambios en `mobile-pet-tracker/` desde el veredicto.
+- **Notion**: Implementado / Completado.
+
+### Deuda y apuntes
+
+- **(F) sin registrar**: la letra del corolario de la Decision fija 12 de
+  `docs/ui-guidelines.md` dice que toda esquina no-capsula declara
+  `style={CONTINUOUS_CORNER}`, pero ya son cuatro los sitios que la componen
+  de otra forma y la Home no tiene ningun uso directo. Seria un cambio de la
+  carta, no de codigo. Sigue sin id; el siguiente id libre es #140.
+- **Obs. 1 del reviewer**: Codex cargo tambien la skill `ponytail`, que el
+  handoff no pedia. No dejo huella: los blobs finales coinciden byte a byte
+  con tasks.md.
+- **Obs. 2 del reviewer (B5)**: el `SKILL.md` de `building-native-ui` que
+  tiene instalado Codex declara la version 1.0.1, y `leader.md` §Catalogo real
+  de skills de Codex asume la 1.0.2. Hay que revisar la tabla de
+  equivalencias antes del proximo handoff movil.
+- **Obs. 3 del reviewer**: la tabla de sondas de `impl_…md` mete lo medido
+  con `<br>` dentro de la columna «Spec y exigido», en vez de en una columna
+  «medido» aparte. Los datos son correctos.
+- **Obs. 4 del reviewer**: el ancla de R4.3 (`origin/main...HEAD`) se movio
+  con #177, pero el merge-base siguio en `76849396`, asi que la medida no
+  cambio.
+- **Obs. 5 del reviewer**: la sangria irregular del `<Pressable>` del collar
+  viene de `97136ad9`. Las mutaciones de la spec se anclan en ella: si alguien
+  la normaliza, caducan los blobs y literales de tasks.md.
+- **Obs. 6 del reviewer**: el ruido del log de init.sh (worker que no sale y
+  `ERROR` de Nest) ya existia. Las suites terminan en verde.
