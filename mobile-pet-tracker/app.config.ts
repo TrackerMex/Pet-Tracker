@@ -24,7 +24,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 
   if (!resetLinkHost) {
     warnings.push(
-      'RESET_LINK_HOST no está definida; el build de Android quedará sin intent filters de App Links. Consulta docs/verification.md §Feature 59 — auth-reset-deep-link.',
+      'RESET_LINK_HOST no está definida; el build de Android quedará sin intent filters de App Links y el de iOS sin associatedDomains de Universal Links. Consulta docs/verification.md §Feature 59 — auth-reset-deep-link y §Feature 60 — mobile-ios-support.',
     );
   }
 
