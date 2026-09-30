@@ -15,12 +15,12 @@ su fila, y las tres citan los mismos dos commits.
 
 | Requisito | Test (archivo::nombre) | Commit rojo | Commit verde |
 |---|---|---|---|
-| R1 (#141) | `weekly-activity-chart.test.tsx::#141 R1: cada columna muestra el valor de su propio día › el texto de los dos hijos de cada columna, por posición, antes de medir y, ya medido, en las tres métricas sin día seleccionado, con un día medido y con el día sin datos` | pendiente | pendiente |
-| R2 (#142) | `weekly-activity-chart.test.tsx::#142 R2: la lista de hijos de la tarjeta es cerrada, sin ningún nodo de más al final › sin comparación: antes y después de medir, en las tres métricas y con un día seleccionado, medido o sin datos, también con la primera métrica` | pendiente | pendiente |
-| R2 (#142) | `weekly-activity-chart.test.tsx::#142 R2: la lista de hijos de la tarjeta es cerrada, sin ningún nodo de más al final › con comparación: la tendencia entre el selector y el gráfico, sin día seleccionado y con uno` | pendiente | pendiente |
-| R2 (#142) | `weekly-activity-chart.test.tsx::#142 R2: la lista de hijos de la tarjeta es cerrada, sin ningún nodo de más al final › sin ningún día medido: la cabecera y el mensaje, y nada más` | pendiente | pendiente |
-| R3 (#143) | `weekly-activity-chart.test.tsx::#143 R3: con la primera métrica y un día seleccionado, cada columna conserva su forma y sus recetas › la clase de cada columna y el testID y la clase de sus dos hijos, por posición, con un día medido seleccionado y con el día sin datos seleccionado` | pendiente | pendiente |
-| R4 (las tres) | sin test: cierre medido ([[tasks]] §R4 y `progress/impl_mobile-weekly-day-column-value-cross-lock.md`) | no aplica | pendiente |
+| R1 (#141) | `weekly-activity-chart.test.tsx::#141 R1: cada columna muestra el valor de su propio día › el texto de los dos hijos de cada columna, por posición, antes de medir y, ya medido, en las tres métricas sin día seleccionado, con un día medido y con el día sin datos` | `d84b74abdc550eddb6b4e2cfe66a4843a851c253` | `779142949c708b03473b905a9b76aeefc4f1b688` |
+| R2 (#142) | `weekly-activity-chart.test.tsx::#142 R2: la lista de hijos de la tarjeta es cerrada, sin ningún nodo de más al final › sin comparación: antes y después de medir, en las tres métricas y con un día seleccionado, medido o sin datos, también con la primera métrica` | `a7ec30ac8d7fb007cc0e43156524dc2225e2a2d1` | `1e3640623b638b63443b417482b294654be77572` |
+| R2 (#142) | `weekly-activity-chart.test.tsx::#142 R2: la lista de hijos de la tarjeta es cerrada, sin ningún nodo de más al final › con comparación: la tendencia entre el selector y el gráfico, sin día seleccionado y con uno` | `a7ec30ac8d7fb007cc0e43156524dc2225e2a2d1` | `1e3640623b638b63443b417482b294654be77572` |
+| R2 (#142) | `weekly-activity-chart.test.tsx::#142 R2: la lista de hijos de la tarjeta es cerrada, sin ningún nodo de más al final › sin ningún día medido: la cabecera y el mensaje, y nada más` | `a7ec30ac8d7fb007cc0e43156524dc2225e2a2d1` | `1e3640623b638b63443b417482b294654be77572` |
+| R3 (#143) | `weekly-activity-chart.test.tsx::#143 R3: con la primera métrica y un día seleccionado, cada columna conserva su forma y sus recetas › la clase de cada columna y el testID y la clase de sus dos hijos, por posición, con un día medido seleccionado y con el día sin datos seleccionado` | `7e8b406afd9543b6954ce2a9b28882f0130e466b` | `7d95624ff02f2b6120997553a2634185f0c316ea` |
+| R4 (las tres) | sin test: cierre medido ([[tasks]] §R4 y `progress/impl_mobile-weekly-day-column-value-cross-lock.md`) | no aplica | `7d95624ff02f2b6120997553a2634185f0c316ea` |
 
 Regla: el reviewer no aprueba si alguna fila queda «pendiente».
 
