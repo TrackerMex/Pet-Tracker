@@ -2542,7 +2542,7 @@
   {
     "id": 131,
     "name": "mobile-weekly-day-row-layout-lock",
-    "status": "spec_ready",
+    "status": "in_progress",
     "priority": "P3",
     "description": "Registrada al cerrar #130 el 2026-09-28. Es el hallazgo (F) de su spec: specs/mobile-weekly-day-row-accessible-lock/requirements.md §Fuera de alcance, «La forma y la alineacion de la fila no tienen candado». En mobile-pet-tracker/src/screens/home/weekly-activity-chart.tsx, la fila weekly-activity-day-row lleva className='flex-row' y un style con paddingLeft y paddingRight que alinea cada columna con su barra del grafico. Con className='flex-col' en la fila (sonda flexcol, blob 99ec492b) o con paddingLeft: 0 (sonda nopad, blob 9cb81179), la grafica sigue en 43/43: lo midio el spec_author de #130 y lo re-midio su reviewer sobre 7a68bb1a. Son las decisiones 10 y 11 de docs/ui-guidelines.md §Enmienda #70 para la fila. Limites: no es de accesibilidad; #130 R1 cierra las CLAVES de props de la fila, no sus valores. El candado honesto del padding es relacional (el padding de la fila frente a la geometria del grafico que coloca las barras), no un literal numerico copiado de la grafica. Toca el mismo test que #132.",
     "acceptance_criteria": [
@@ -2693,6 +2693,22 @@
     ],
     "files_affected": [
       "mobile-pet-tracker/src/hooks/use-push-registration.test.tsx"
+    ]
+  },
+  {
+    "id": 140,
+    "name": "mobile-weekly-day-column-content-lock",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada el 2026-09-30 al firmar la spec de #131 + #135, por decision del humano sobre el punto 8 de su §Que firma el humano. Es el hallazgo (F) de specs/mobile-weekly-day-row-layout-lock/requirements.md §Fuera de alcance, «El contenido de cada columna no tiene candado de orden ni de color». En mobile-pet-tracker/src/screens/home/weekly-activity-chart.tsx, cada columna weekly-activity-day-<fecha> tiene dos hijos host: la etiqueta del dia (testID weekly-activity-day-label, className 'text-2xs font-semibold text-muted') y, debajo, el valor (weekly-activity-value-<fecha>, 'text-2xs font-semibold text-foreground') o el guion de un dia missing (weekly-activity-missing-<fecha>, 'text-2xs font-normal text-muted'). Medido por el spec_author de #131 sobre 343e3fbe: con la etiqueta movida debajo del valor (sonda colswap, blob 6214543c), con la etiqueta en text-foreground (labelcolor, f58f4903) o con el valor en text-muted (valuecolor, bc902097), la grafica sigue verde hoy, tras #131 y #135 (53/53) y en las otras cuatro suites que leen la grafica (index.test.tsx, design-drift, consistency-classnames y ui-language). Son las decisiones 12 (orden de sus hijos) y 7 (color y receta de cada texto) de docs/ui-guidelines.md §Enmienda #70 para la columna. Limites: solo esas tres sondas estan medidas; la clase del guion del dia missing no se probo, y la spec debe medirla antes de decidir si entra. #131 R3 fija la clase de la columna, no la de sus hijos; #130 R2 fija los hijos de la fila, no los de cada columna. Los esperados deben ser literales del test, nunca importados de produccion. Toca el mismo test que #131 y #135.",
+    "acceptance_criteria": [
+      "Con la etiqueta del dia debajo del valor en cada columna (sonda colswap), un it de la grafica FALLA por asercion",
+      "Con la etiqueta en text-foreground (sonda labelcolor) o el valor en text-muted (sonda valuecolor), un it de la grafica FALLA por asercion",
+      "Los describe de #68, #74, #130, #131, #132 y #135 siguen verdes y sin cambios",
+      "Cero cambio en produccion; suite movil verde medida sin pipe; delta de tests declarado"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/home/weekly-activity-chart.test.tsx"
     ]
   }
 ]
