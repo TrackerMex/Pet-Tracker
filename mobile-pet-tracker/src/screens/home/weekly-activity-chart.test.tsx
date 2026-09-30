@@ -1587,3 +1587,255 @@ describe('#132 R1: la tarjeta es la raíz host de lo que pinta la gráfica', () 
     ).toBe('chart-parent');
   });
 });
+
+describe('#131 R1: la fila de las siete columnas es una fila', () => {
+  it('la fila solo lleva flex-row antes y después de medir, con otra métrica y con un día seleccionado', async () => {
+    const result = await renderChartWithProps(
+      {
+        days: makeWeek('2026-09-02', [10, 20, 30, 40, 50, 60, 70]),
+        weekComparison: NO_COMPARISON,
+      },
+      'es',
+      false,
+    );
+    const rowClassName = () =>
+      result.getByTestId('weekly-activity-day-row').props.className;
+
+    // #131 R1: the exact class, so flex-col, flex-row-reverse or any added class
+    // turns the lock red, in each state the chart reaches inside this test.
+    expect(rowClassName()).toBe('flex-row');
+
+    const layout = result.getByTestId('weekly-activity-chart-layout');
+
+    await fireEvent(layout, 'layout', {
+      nativeEvent: {
+        layout: { width: 295, height: 0, x: 0, y: 0 },
+      },
+    });
+
+    expect(result.getByTestId('weekly-activity-bar-chart')).toBeOnTheScreen();
+    expect(rowClassName()).toBe('flex-row');
+
+    await fireEvent.press(
+      result.getByTestId('weekly-activity-metric-distanceM'),
+    );
+
+    expect(
+      result.getByTestId('weekly-activity-metric-distanceM').props
+        .accessibilityState,
+    ).toEqual({ selected: true });
+    expect(rowClassName()).toBe('flex-row');
+
+    await fireEvent.press(result.getByTestId('weekly-activity-day-2026-09-05'));
+
+    expect(result.getByTestId('weekly-activity-tooltip')).toBeOnTheScreen();
+    expect(rowClassName()).toBe('flex-row');
+  });
+});
+
+describe('#131 R2: la fila deja a cada lado el mismo hueco que el gráfico', () => {
+  it('el padding de la fila son los dos huecos de la línea de media, también con otra métrica y con un día seleccionado', async () => {
+    const result = await renderChart(
+      makeWeek('2026-09-02', [10, 20, 30, 40, 50, 60, 70]),
+    );
+    const expectRowOnPlotEdges = () => {
+      const average = result.getByTestId('weekly-activity-average').props;
+
+      // #131 R2: the chart draws the average line from the left edge of the plot
+      // to its right edge, so the row pads by exactly those two gaps and by
+      // nothing else. No literal from the chart and no imported constant.
+      expect(
+        mergeObjectStyles(
+          result.getByTestId('weekly-activity-day-row').props.style,
+        ),
+      ).toEqual({
+        paddingLeft: average.x1,
+        paddingRight: (latestBarChartProps().width as number) - average.x2,
+      });
+    };
+
+    expectRowOnPlotEdges();
+
+    await fireEvent.press(
+      result.getByTestId('weekly-activity-metric-distanceM'),
+    );
+
+    expect(
+      result.getByTestId('weekly-activity-metric-distanceM').props
+        .accessibilityState,
+    ).toEqual({ selected: true });
+    expectRowOnPlotEdges();
+
+    await fireEvent.press(result.getByTestId('weekly-activity-day-2026-09-05'));
+
+    expect(result.getByTestId('weekly-activity-tooltip')).toBeOnTheScreen();
+    expectRowOnPlotEdges();
+  });
+});
+
+describe('#131 R3: cada columna reparte la fila a partes iguales', () => {
+  it('las siete columnas llevan flex-1 y centran su contenido antes y después de medir, con otra métrica y con un día seleccionado', async () => {
+    const result = await renderChartWithProps(
+      {
+        days: makeWeek('2026-09-02', [10, 20, 30, 40, 50, 60, 70]),
+        weekComparison: NO_COMPARISON,
+      },
+      'es',
+      false,
+    );
+    const resting = 'min-h-11 flex-1 items-center justify-end';
+    const selected =
+      'min-h-11 flex-1 items-center justify-end border-t-2 border-accent-strong';
+    const allResting = [
+      resting,
+      resting,
+      resting,
+      resting,
+      resting,
+      resting,
+      resting,
+    ];
+    const columnClassNames = () =>
+      result
+        .getByTestId('weekly-activity-day-row')
+        .children.map((column) =>
+          typeof column === 'string' ? column : column.props.className,
+        );
+
+    // #131 R3: the exact class of each column by position, so a column without
+    // flex-1 or without its centring, selected or not, turns the lock red.
+    expect(columnClassNames()).toEqual(allResting);
+
+    const layout = result.getByTestId('weekly-activity-chart-layout');
+
+    await fireEvent(layout, 'layout', {
+      nativeEvent: {
+        layout: { width: 295, height: 0, x: 0, y: 0 },
+      },
+    });
+
+    expect(result.getByTestId('weekly-activity-bar-chart')).toBeOnTheScreen();
+    expect(columnClassNames()).toEqual(allResting);
+
+    await fireEvent.press(
+      result.getByTestId('weekly-activity-metric-distanceM'),
+    );
+
+    expect(
+      result.getByTestId('weekly-activity-metric-distanceM').props
+        .accessibilityState,
+    ).toEqual({ selected: true });
+    expect(columnClassNames()).toEqual(allResting);
+
+    await fireEvent.press(result.getByTestId('weekly-activity-day-2026-09-05'));
+
+    expect(result.getByTestId('weekly-activity-tooltip')).toBeOnTheScreen();
+    expect(columnClassNames()).toEqual([
+      resting,
+      resting,
+      resting,
+      selected,
+      resting,
+      resting,
+      resting,
+    ]);
+  });
+});
+
+describe('#135 R4: entre la tarjeta y cada uno de sus hijos no hay otro nodo', () => {
+  it('sin comparación: cabecera, selector, gráfico y fila antes y después de medir y con otra métrica, y el detalle al final con un día seleccionado', async () => {
+    const result = await renderChartWithProps(
+      {
+        days: makeWeek('2026-09-02', [10, 20, 30, 40, 50, 60, 70]),
+        weekComparison: NO_COMPARISON,
+      },
+      'es',
+      false,
+    );
+    const withoutTrend = [
+      'weekly-activity-header',
+      'weekly-activity-metric',
+      'weekly-activity-chart-layout',
+      'weekly-activity-day-row',
+    ];
+    const cardChildren = () =>
+      result
+        .getByTestId('weekly-activity-card')
+        .children.map((child) =>
+          typeof child === 'string' ? child : child.props.testID,
+        );
+
+    // #135 R4: a wrapper around the metric selector, or around any other child
+    // of the card, accessible or not, turns the lock red in the state where it
+    // shows up.
+    expect(cardChildren()).toEqual(withoutTrend);
+
+    const layout = result.getByTestId('weekly-activity-chart-layout');
+
+    await fireEvent(layout, 'layout', {
+      nativeEvent: {
+        layout: { width: 295, height: 0, x: 0, y: 0 },
+      },
+    });
+
+    expect(result.getByTestId('weekly-activity-bar-chart')).toBeOnTheScreen();
+    expect(cardChildren()).toEqual(withoutTrend);
+
+    await fireEvent.press(
+      result.getByTestId('weekly-activity-metric-distanceM'),
+    );
+
+    expect(
+      result.getByTestId('weekly-activity-metric-distanceM').props
+        .accessibilityState,
+    ).toEqual({ selected: true });
+    expect(cardChildren()).toEqual(withoutTrend);
+
+    await fireEvent.press(result.getByTestId('weekly-activity-day-2026-09-05'));
+
+    expect(result.getByTestId('weekly-activity-tooltip')).toBeOnTheScreen();
+    expect(cardChildren()).toEqual([
+      ...withoutTrend,
+      'weekly-activity-detail',
+    ]);
+  });
+
+  it('con comparación, la tendencia va entre el selector y el gráfico', async () => {
+    const result = await renderChart(
+      makeWeek('2026-09-02', [10, 20, 30, 40, 50, 60, 70]),
+      { ...NO_COMPARISON, activeMinutes: 12.5 },
+    );
+
+    // #135 R4: the trend only exists with a comparison, so its place among the
+    // children of the card needs a render of its own.
+    expect(result.getByTestId('weekly-activity-trend')).toBeOnTheScreen();
+    expect(
+      result
+        .getByTestId('weekly-activity-card')
+        .children.map((child) =>
+          typeof child === 'string' ? child : child.props.testID,
+        ),
+    ).toEqual([
+      'weekly-activity-header',
+      'weekly-activity-metric',
+      'weekly-activity-trend',
+      'weekly-activity-chart-layout',
+      'weekly-activity-day-row',
+    ]);
+  });
+
+  it('sin ningún día medido, la tarjeta solo tiene la cabecera y el mensaje', async () => {
+    const result = await renderChart(
+      makeWeek('2026-09-02', [null, null, null, null, null, null, null]),
+    );
+
+    // #135 R4: the empty branch of the card is locked as well.
+    expect(
+      result
+        .getByTestId('weekly-activity-card')
+        .children.map((child) =>
+          typeof child === 'string' ? child : child.props.testID,
+        ),
+    ).toEqual(['weekly-activity-header', 'weekly-activity-empty']);
+  });
+});
