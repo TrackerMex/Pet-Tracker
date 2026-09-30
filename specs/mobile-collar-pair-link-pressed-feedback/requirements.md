@@ -328,7 +328,7 @@ corridos juntos (222 tests). Todas se midieron al escribir esta spec.
 
 **Criterio de paso**: los pasos 2 a 4 se cumplen tal como están escritos.
 
-- [ ] Prueba de humo de R5 superada por el humano (fecha: ____, dispositivo: ____, Android: ____)
+- [X] Prueba de humo de R5 superada por el humano (fecha: 2026-09-29, dispositivo: OnePlus Nord 5, Android: 15)
 
 ---
 
