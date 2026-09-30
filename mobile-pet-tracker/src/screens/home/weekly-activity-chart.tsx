@@ -671,7 +671,7 @@ export function WeeklyActivityChart(
               >
                 {formatMetricValue(
                   selectedMetric,
-                  metricValue(dataIndex === 6 ? days[0] : day, selectedMetric),
+                  metricValue(day, selectedMetric),
                 )}
               </Text>
             )}
