@@ -6511,3 +6511,97 @@ ciclo). Los `./init.sh` de las dos sesiones se turnaron con aviso explicito.
   la normaliza, caducan los blobs y literales de tasks.md.
 - **Obs. 6 del reviewer**: el ruido del log de init.sh (worker que no sale y
   `ERROR` de Nest) ya existia. Las suites terminan en verde.
+
+## #131 `mobile-weekly-day-row-layout-lock` y #135 `mobile-weekly-chart-metric-selector-parent-lock` — 2026-09-30
+
+Sesion Backend, worktree `/home/claude/sites/Pet-Tracker-wt-backend`, branch
+`feature/131-mobile-weekly-day-row-layout-lock`, creada desde `origin/main`
+`343e3fbe` (merge de la PR #177, #137 + #139). Por decision del humano, las
+dos entradas se hicieron en un solo ciclo con una sola spec
+(`specs/mobile-weekly-day-row-layout-lock/`, con un puntero para #135). Solo
+#131 paso a `in_progress`, porque init.sh aborta con dos (init.sh:156). En
+paralelo, Frontend cerro #138 (PR #178, mergeada durante el ciclo) y arranco
+#60 `mobile-ios-support` en el arbol principal. Los `./init.sh` de las dos
+sesiones se turnaron con aviso explicito.
+
+### Que se hizo
+
+- **Produccion**: sin cambios. Cada rojo fue una mutacion versionada de
+  `weekly-activity-chart.tsx`, y el verde siguiente la revirtio con
+  `git checkout HEAD~1 --`. El blob final es el de base, `c258abed`.
+- **Tests**: cuatro `describe` nuevos al final de
+  `weekly-activity-chart.test.tsx`, con seis `it`.
+  - **#131 R1**: la fila `weekly-activity-day-row` es exactamente
+    `flex-row` (`toBe`). Se comprueba en los cuatro estados que alcanza el
+    test (antes de medir, tras medir, con la segunda metrica y con un dia
+    seleccionado), cada uno con su guarda.
+  - **#131 R2**: el estilo entero de la fila, fusionado, es igual a
+    `{ paddingLeft: x1, paddingRight: width - x2 }`. `x1` y `x2` salen de
+    la linea de media pintada y `width` del `BarChart`, sin literales ni
+    `CHART_PAD_*`. Es el primer candado sobre los extremos de la linea.
+  - **#131 R3**: las siete columnas, por posicion en los hijos host, con su
+    clase exacta en reposo y con el dia seleccionado.
+  - **#135 R4**: los hijos host de la tarjeta forman una lista cerrada de
+    `testID` en cada estado: sin y con dia seleccionado, con comparacion y
+    vacia.
+- Movil 86/1613 → 86/1619 (+6).
+
+### Gate y ciclo
+
+- **Spec**: `b2782430`, con la tabla de requirements.md arreglada en
+  `5ee029ff`.
+  - Espejo en Notion:
+    https://app.notion.com/p/3eb6115a9b2781e1a29df31cfb6ddc5b.
+  - Aprobada en Notion con `page_last_edited_at` 2026-09-30T02:49:44.014Z.
+  - Commit de firma: `d3992c47`.
+  - Punto 8 (el contenido de cada columna): el humano decidio registrarlo
+    como entrada nueva, #140.
+- **Handoff**: `51a13bf6`. No pedia skills, porque la feature es solo de
+  test. Exigia commits test-primero y medir la lista cerrada de ficheros
+  desde el hash del handoff.
+- **Codex**: `81251dfc..2e1dcb2f`, nueve commits: un rojo y un verde por
+  requisito (R1 a R4) y uno de evidencia. El diff desde el handoff solo toca
+  el test, el reporte y traceability.md. El blob final del test es
+  `416bf8b2`, el que preveia tasks.md.
+- **init.sh** sobre `2e1dcb2f`: lo corrio el leader con aviso a Frontend,
+  sin pipe y con el HEAD al empezar y al terminar.
+  - Resultado: exit 0.
+  - Suites: unit 171/1307, infra 2/14, movil 86/1619, e2e 27+3 skip /
+    389+8 skip.
+- **Reviewer**: aprobado a la primera, sin bloqueantes (`96cc335e`).
+  - Re-midio los ocho commits de C4.
+  - Re-midio las 12 sondas de la spec y 6 propias en la zona ciega, todo en
+    un worktree de scratch.
+- **Drift**: `origin/main` seguia en `3820b89a` al cerrar. Desde el
+  veredicto solo cambia el reporte de revision.
+- **Notion**: Implementado / Completado.
+
+### Deuda y apuntes
+
+- **#140 registrada**: el orden (`colswap`) y el color (`labelcolor`,
+  `valuecolor`) del contenido de cada columna. Queda como pending, P3.
+- **(F) sin registrar**:
+  - `padconst`: si cambia `CHART_PAD_LEFT`, la fila y la linea de media se
+    mueven juntas y la grafica entera se desalinea de
+    `react-native-chart-kit` sin que nada lo vea.
+  - `wrapoptions`: un envoltorio dentro del selector, alrededor de sus tres
+    opciones.
+  - Siguen sin id. El siguiente id libre es #141.
+- **Obs. 1 del reviewer**: dos combinaciones de estado que ningun candado
+  ve y que la tabla de zona ciega no declara.
+  - `z_selnoflexfirst`: la columna seleccionada sin `flex-1`, pero solo con
+    la primera metrica.
+  - `z_detailwraptrend`: el detalle envuelto, pero solo con comparacion.
+  - No es defecto de la implementacion: los tests coinciden byte a byte con
+    tasks.md.
+  - Queda sin registrar, a decision del humano.
+- **Obs. 2 del reviewer**: `z_padtrend` sale verde, como ya declaraba la
+  tabla (R2 con comparacion: (D)).
+- **Obs. 3 y 4 del reviewer**: el reporte de Codex tiene unas 47 lineas
+  vacias sobrantes y no puede citar el hash de su propio commit. Las dos son
+  cosmeticas.
+- **Obs. 5 del reviewer**: el aviso «worker process has failed to exit
+  gracefully» del log de init.sh ya existia. Las suites terminan en verde.
+- **Obs. 7 del reviewer**: los commits de Codex y los del leader comparten
+  autor git (la configuracion de la maquina). Al implementador lo distinguen
+  el handoff y el reporte, no la autoria.
