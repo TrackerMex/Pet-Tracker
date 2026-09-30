@@ -7,6 +7,7 @@ import {
 } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
 import { useEffect, type ReactNode } from 'react';
+import { Platform } from 'react-native';
 
 import {
   getPet,
@@ -88,6 +89,14 @@ jest.mock('expo-maps', () => {
     React.createElement(View, props, props.children as ReactNode);
   return {
     __esModule: true,
+    AppleMaps: {
+      View: stub,
+      MapColorScheme: {
+        AUTOMATIC: 'AUTOMATIC',
+        LIGHT: 'LIGHT',
+        DARK: 'DARK',
+      },
+    },
     GoogleMaps: {
       View: stub,
       MapColorScheme: {
@@ -242,7 +251,18 @@ async function renderMap() {
   });
 }
 
+const originalPlatform = Platform.OS;
+
+function setPlatform(os: string): void {
+  Object.defineProperty(Platform, 'OS', { configurable: true, value: os });
+}
+
+afterEach(() => {
+  setPlatform(originalPlatform);
+});
+
 beforeEach(() => {
+  setPlatform('android');
   jest.clearAllMocks();
   mockFocusCleanup = undefined;
   mockTheme = 'light';
@@ -1517,6 +1537,44 @@ describe('#94 R7: el poll refresca también el detalle', () => {
       apiUrl,
       'jwt-token',
       'pet-1',
+    );
+  });
+});
+
+describe('#60 R2: en iOS el tab Map monta el mapa de Apple con la última posición', () => {
+  beforeEach(() => {
+    setPlatform('ios');
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({
+      kind: 'ok',
+      position: makeLastPosition({ lat: 19.45, lng: -99.12 }),
+    });
+  });
+
+  it('#60 R2: centra el mapa de Apple en la última posición y oculta sus controles de ubicación e inclinación', async () => {
+    await renderMap();
+
+    await waitFor(() => expect(screen.getByTestId('map-view')).toBeVisible());
+    expect(screen.getByTestId('map-view').props).toEqual(
+      expect.objectContaining({
+        cameraPosition: {
+          coordinates: { latitude: 19.45, longitude: -99.12 },
+          zoom: 16,
+        },
+        markers: [
+          {
+            id: 'last-position',
+            coordinates: { latitude: 19.45, longitude: -99.12 },
+          },
+        ],
+        polylines: [],
+        style: { flex: 1 },
+        colorScheme: 'LIGHT',
+        uiSettings: {
+          myLocationButtonEnabled: false,
+          togglePitchEnabled: false,
+        },
+      }),
     );
   });
 });
