@@ -2698,13 +2698,45 @@
   {
     "id": 140,
     "name": "mobile-weekly-day-column-content-lock",
-    "status": "spec_ready",
+    "status": "in_progress",
     "priority": "P3",
     "description": "Registrada el 2026-09-30 al firmar la spec de #131 + #135, por decision del humano sobre el punto 8 de su §Que firma el humano. Es el hallazgo (F) de specs/mobile-weekly-day-row-layout-lock/requirements.md §Fuera de alcance, «El contenido de cada columna no tiene candado de orden ni de color». En mobile-pet-tracker/src/screens/home/weekly-activity-chart.tsx, cada columna weekly-activity-day-<fecha> tiene dos hijos host: la etiqueta del dia (testID weekly-activity-day-label, className 'text-2xs font-semibold text-muted') y, debajo, el valor (weekly-activity-value-<fecha>, 'text-2xs font-semibold text-foreground') o el guion de un dia missing (weekly-activity-missing-<fecha>, 'text-2xs font-normal text-muted'). Medido por el spec_author de #131 sobre 343e3fbe: con la etiqueta movida debajo del valor (sonda colswap, blob 6214543c), con la etiqueta en text-foreground (labelcolor, f58f4903) o con el valor en text-muted (valuecolor, bc902097), la grafica sigue verde hoy, tras #131 y #135 (53/53) y en las otras cuatro suites que leen la grafica (index.test.tsx, design-drift, consistency-classnames y ui-language). Son las decisiones 12 (orden de sus hijos) y 7 (color y receta de cada texto) de docs/ui-guidelines.md §Enmienda #70 para la columna. Limites: solo esas tres sondas estan medidas; la clase del guion del dia missing no se probo, y la spec debe medirla antes de decidir si entra. #131 R3 fija la clase de la columna, no la de sus hijos; #130 R2 fija los hijos de la fila, no los de cada columna. Los esperados deben ser literales del test, nunca importados de produccion. Toca el mismo test que #131 y #135.",
     "acceptance_criteria": [
       "Con la etiqueta del dia debajo del valor en cada columna (sonda colswap), un it de la grafica FALLA por asercion",
       "Con la etiqueta en text-foreground (sonda labelcolor) o el valor en text-muted (sonda valuecolor), un it de la grafica FALLA por asercion",
       "Los describe de #68, #74, #130, #131, #132 y #135 siguen verdes y sin cambios",
+      "Cero cambio en produccion; suite movil verde medida sin pipe; delta de tests declarado"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/home/weekly-activity-chart.test.tsx"
+    ]
+  },
+  {
+    "id": 141,
+    "name": "mobile-weekly-day-column-value-cross-lock",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada el 2026-09-30 al firmar la spec de #140, por decision del humano sobre el punto 8 de su §Que firma el humano. Es el hallazgo (F) de specs/mobile-weekly-day-column-content-lock/requirements.md §Fuera de alcance, «El valor de una columna puede ser el de otra sin un rojo». En mobile-pet-tracker/src/screens/home/weekly-activity-chart.tsx, cada columna weekly-activity-day-<fecha> pinta su valor en weekly-activity-value-<fecha> con formatMetricValue(selectedMetric, metricValue(day, selectedMetric)). Medido por el spec_author de #140 sobre c387a49d (base origin/main 0af5d921): con metricValue(dataIndex === 6 ? days[0] : day, selectedMetric) (sonda valuecross, blob 9f3c5bfd), la septima columna ensena el valor del primer dia y todo sigue verde hoy, tras #140 y en las 6 suites que leen la grafica (el test de la grafica, src/screens/home/index.test.tsx, design-drift, consistency-classnames, legibility-classnames y ui-language; 384/384). Es la decision 1 (el dato que muestra) de docs/ui-guidelines.md §Enmienda #70 cruzada entre columnas: #68 R3 ya la cierra para la etiqueta (sonda labelcross, rojo), nadie para el valor. Limites: solo esa sonda esta medida (septima columna con el valor de la primera, metrica activa); el test consulta weekly-activity-value-<fecha> de tres fechas sueltas (grep da 2026-09-02, 2026-09-06 y 2026-09-07), y la spec debe medir que columnas y que metricas ve cada asercion existente antes de disenar. Los esperados deben ser literales del test, nunca calculados con formatMetricValue ni metricValue de produccion (memoria candados-tautologicos), y la semana debe tener un valor distinto por dia. Toca el mismo test que #140: depende de que #140 este mergeado.",
+    "acceptance_criteria": [
+      "Con la septima columna mostrando el valor del primer dia (sonda valuecross), un it de la grafica FALLA por asercion",
+      "El texto esperado de cada columna es un literal del test, no el resultado de formatMetricValue ni de metricValue",
+      "Los describe de #68, #74, #130, #131, #132, #135 y #140 siguen verdes y sin cambios",
+      "Cero cambio en produccion; suite movil verde medida sin pipe; delta de tests declarado"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/home/weekly-activity-chart.test.tsx"
+    ]
+  },
+  {
+    "id": 142,
+    "name": "mobile-weekly-card-children-strict-lock",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada el 2026-09-30 al firmar la spec de #140, por decision del humano sobre el punto 8 de su §Que firma el humano. Es el hallazgo (F) de specs/mobile-weekly-day-column-content-lock/requirements.md §Fuera de alcance, «La lista cerrada de hijos de la tarjeta (#135 R4) no ve un hijo de mas al final». En mobile-pet-tracker/src/screens/home/weekly-activity-chart.test.tsx, el describe '#135 R4: entre la tarjeta y cada uno de sus hijos no hay otro nodo' compara las listas de hijos host de la tarjeta con toEqual, que ignora un ultimo elemento undefined de un array: un hijo host extra sin testID al final de la tarjeta pasa. Medido por el spec_author de #140 sobre c387a49d (base origin/main 0af5d921): con '      <View />' justo encima de '    </Card>' en la grafica (sonda cardtail, blob 0ac97f35), todo sigue verde hoy, tras #140 y en las 6 suites que leen la grafica (384/384). El remedio que la spec de #140 midio para su propio candado es toStrictEqual (sonda loose: con toEqual, coltail pasa; con toStrictEqual, rojo). Limites: solo cardtail esta medida, con el View en esa posicion; no se midio en que ramas de la tarjeta (con o sin comparacion, vacia) aparece, ni si los hermanos #130 R2 y #131 R3, que #140 cubre de paso para la fila (sonda rowtail), tienen el mismo hueco en otra parte. #135 R4 es un describe firmado de otra feature: cambiar sus aserciones es una enmienda a sabiendas, y la spec debe decidir entre editarlo o anadir un hermano estricto. Toca el mismo test que #140 y #141: depende de que #140 este mergeado.",
+    "acceptance_criteria": [
+      "Con un <View /> de mas al final de la tarjeta (sonda cardtail), un it de la grafica FALLA por asercion",
+      "La lista cerrada de hijos de la tarjeta se compara con toStrictEqual en todas las ramas que hoy cubre #135 R4",
+      "Los describe de #68, #74, #130, #131, #132 y #140 siguen verdes; cualquier cambio en #135 R4 esta declarado en la spec",
       "Cero cambio en produccion; suite movil verde medida sin pipe; delta de tests declarado"
     ],
     "files_affected": [
