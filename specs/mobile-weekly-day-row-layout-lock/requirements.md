@@ -1,6 +1,6 @@
 ---
 feature: "mobile-weekly-day-row-layout-lock"
-status: spec_ready       # draft | spec_ready | approved
+status: approved         # draft | spec_ready | approved
 tags: [spec, mobile, test, deuda]
 ---
 
@@ -473,7 +473,7 @@ el `leader` contra `origin/main`) y **(N)** premisa verificada y descartada.
 
 ## Aprobación
 
-- [ ] **Aprobado por humano** (fecha: ____) ← gate obligatorio antes de
+- [x] **Aprobado por humano** (fecha: 2026-09-29) ← gate obligatorio antes de
       implementar. Al marcar esta casilla, el humano firma también los diez
       puntos de §Qué firma el humano al aprobar esta spec, y en particular el
       octavo (registrar o no como entrada nueva el contenido de la columna).
