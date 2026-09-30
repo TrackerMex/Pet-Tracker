@@ -6605,3 +6605,63 @@ sesiones se turnaron con aviso explicito.
 - **Obs. 7 del reviewer**: los commits de Codex y los del leader comparten
   autor git (la configuracion de la maquina). Al implementador lo distinguen
   el handoff y el reporte, no la autoria.
+
+## #140 `mobile-weekly-day-column-content-lock` — 2026-09-30
+
+Sesion Backend, worktree `/home/claude/sites/Pet-Tracker-wt-backend`, branch
+`feature/140-mobile-weekly-day-column-content-lock`, creada desde `origin/main`
+`0af5d921` (merge de la PR #179, #131 + #135). En paralelo, Frontend siguio
+con #60 `mobile-ios-support` en el arbol principal. Los `./init.sh` de las dos
+sesiones se turnaron con aviso explicito.
+
+### Que se hizo
+
+- **Produccion**: sin cambios. Cada rojo fue una mutacion versionada de
+  `weekly-activity-chart.tsx` (`colswap` para R1, `labelcolor` para R2) y el
+  verde siguiente la revirtio con `git checkout HEAD~1 --`. El blob final es
+  el de base, `c258abed`.
+- **Tests**: dos `describe` nuevos al final de
+  `weekly-activity-chart.test.tsx`, con dos `it`. Blob final `2f3828f4`, el
+  que fijaba la spec.
+  - **#140 R1**: los `testID` de los dos hijos host de cada una de las siete
+    columnas, en orden (la etiqueta, y el valor o la raya), en cinco estados,
+    con `toStrictEqual`.
+  - **#140 R2**: el `className` de esos dos hijos, por posicion, en los
+    mismos cinco estados, con `toStrictEqual` y esperados literales del test.
+- **Spec**: `specs/mobile-weekly-day-column-content-lock/`, escrita por el
+  `spec_author` en a9a52160 y firmada desde Notion (commit de firma
+  68995488).
+- **Implementacion**: Codex CLI, cinco commits test-primero via b
+  (a760e834..047d319a) sobre el handoff 5564b15b.
+- **Revision**: aprobada a la primera y sin bloqueantes (678cd46d). El
+  reviewer reprodujo los dos rojos por asercion, re-midio las sondas de la
+  spec y planto dos propias.
+
+### Resultado
+
+- `./init.sh` sobre 047d319a, corrido por el leader con aviso a Frontend:
+  exit 0 sin pipe, con el HEAD igual al empezar y al terminar. Unit
+  171/1307, infra 2/14, movil 86/1621 (+2 sobre 86/1619), e2e 27+3 skip /
+  389+8 skip.
+- Estado final: `done`. Notion: `Estado del gate` = Implementado,
+  `Rol actual` = Completado.
+
+### Deuda y apuntes
+
+- **#141 y #142 registradas** por decision del humano (punto 8 de la spec):
+  `valuecross` y `cardtail`. Las dos estan `pending`, P3, tocan el mismo test
+  y dependen de que #140 este en `main`. El siguiente id libre es #143.
+- **Obs. 1 del reviewer**: `z_labelselfirstmetric` (la etiqueta en
+  `text-foreground` solo con un dia seleccionado y la primera metrica) sale
+  verde en las 6 suites. R1 y R2 solo seleccionan un dia tras cambiar a
+  `distanceM`, y la tabla de estados de la spec no declara esa combinacion
+  ni como (D) ni como (F). Es un limite de la spec, no de la implementacion.
+  Queda sin registrar, a decision del humano.
+- **Obs. 2 del reviewer**: un nieto `Text` dentro de la etiqueta
+  (`z_labelnested`) lo ve un test previo (`R3: la letra del eje sale de la
+  fecha`), pero al formatear el diff jest agota el heap (exit 134). No queda
+  verde, aunque tampoco es un rojo por asercion. Informativo.
+- **Obs. 5 y 6 del reviewer**: Codex no cargo skills (deuda B5; aqui no
+  afecta porque no hay UI) y sus commits firman con la identidad git del VPS.
+- La direccion uds de Frontend caduco al reiniciarse su sesion; el aviso fue
+  por `ListAgents` a la `Frontend` local interactive.
