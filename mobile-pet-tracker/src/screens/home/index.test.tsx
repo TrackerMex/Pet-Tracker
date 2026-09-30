@@ -981,6 +981,29 @@ describe('R10 (mobile-device-pairing): la collar card sin collar enlaza a /pairi
       }),
     );
   });
+
+  it('#138 R2: en reposo, el botón lleva rounded-xl como único radio y la esquina continua con opacidad 1', async () => {
+    mockGetPet.mockResolvedValue({
+      kind: 'ok',
+      pet: makePet({ device: null }),
+    });
+
+    await renderHome();
+
+    const link = await screen.findByTestId('collar-pair-link');
+
+    // #138 R2: the corner leaves the source counts of #62 R14, which also
+    // kept rounded-full off this tag, so the tree locks the radius instead.
+    expect(
+      link.props.className
+        .split(' ')
+        .filter((token: string) => /^rounded(?:-|$)/.test(token)),
+    ).toEqual(['rounded-xl']);
+    expect(link.props.style).toEqual({
+      borderCurve: 'continuous',
+      opacity: 1,
+    });
+  });
 });
 
 describe('R9: summary degrada con gracia', () => {
