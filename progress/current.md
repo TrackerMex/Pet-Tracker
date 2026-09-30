@@ -10,4 +10,5 @@
 - Sesion paralela: Backend trabaja #137 + #139 en `Pet-Tracker-wt-backend` (branch `feature/137-mobile-push-registration-r15-named-import-lock`, spec firmada 0aa09510); su Codex solo toca `mobile-pet-tracker/src/hooks/use-push-registration.test.tsx`. Siguiente id libre: #140, para la sesion que registre primero. No correr `./init.sh` sin avisar a Backend.
 - Spec en `specs/mobile-collar-pair-link-pressed-feedback/` (commit 258393b6, `spec_ready`). Delta declarado +0 suites / +2 tests (86 / 1610 a 86 / 1612). La fila de la Home en `directUses` de #62 R14 queda en 0 (no se retira).
 - Espejo en Notion (2026-09-30): https://app.notion.com/p/3eb6115a9b27813680dac4b49846036a, `Estado del gate` = En revision, `Rol actual` = Spec Author.
-- **Esperando** el gate humano en Notion. Condicion del smoke R5: hace falta una mascota sin collar; si no la hay, parar y avisar, sin desvincular un collar real.
+- Gate aprobado en Notion (2026-09-30): Estado del gate = Aprobado, page_last_edited_at 2026-09-30T01:08:19.246Z, sin comentarios; casilla marcada con fecha 2026-09-29, copiada a disco. Commit de firma en esta branch; frontmatters a approved. origin/main sigue en 76849396 y los tres blobs de base coinciden con la spec.
+- Condicion del smoke R5: hace falta una mascota sin collar; si no la hay, parar y avisar, sin desvincular un collar real.

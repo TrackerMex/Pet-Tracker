@@ -1,6 +1,6 @@
 ---
 feature: "mobile-collar-pair-link-pressed-feedback"
-status: spec_ready         # draft | spec_ready | approved
+status: approved           # draft | spec_ready | approved
 tags: [spec, mobile, ui, deuda]
 ---
 
@@ -389,7 +389,7 @@ premisa verificada y descartada.
 
 ## Aprobación
 
-- [ ] **Aprobado por humano** (fecha: ____) ← gate obligatorio antes de
+- [x] **Aprobado por humano** (fecha: 2026-09-29) ← gate obligatorio antes de
       implementar. Al marcar esta casilla, el humano firma también los diez
       puntos de §Qué firma el humano al aprobar esta spec.
 
