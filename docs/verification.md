@@ -830,6 +830,161 @@ Registra únicamente los resultados y status en
 `progress/impl_auth-reset-deep-link.md`. G1–G4 siguen pendientes hasta esa
 confirmación humana; las suites automáticas no los sustituyen.
 
+### Feature 60 — mobile-ios-support
+
+Dev build de iOS vía EAS. No hay Mac ni simulador de iOS: el build de
+desarrollo lo compila EAS Build en la nube y se instala en un iPhone físico
+con iOS 18 o superior. Estos gates los ejecuta una persona, en orden, desde
+PowerShell en `mobile-pet-tracker/`. Ninguna IA ejecuta `eas build`,
+`eas credentials`, `eas device:create` ni `eas env:set`, ni toca la clave
+`.p8` de APNs, certificados o perfiles de aprovisionamiento: los genera y los
+guarda EAS. Nunca copies al reporte el dominio real, el Team ID, UDIDs,
+correos, contraseñas ni tokens.
+
+Supuestos de entorno, todos obligatorios:
+
+- PC con Windows; los comandos van con `bunx`, nunca con `npx`. En
+  PowerShell escribe `curl.exe` donde este texto dice `curl`: `curl` a secas
+  es un alias de `Invoke-WebRequest`.
+- El iPhone y el PC están en la misma red Wi-Fi.
+- El Firewall de Windows admite conexiones entrantes a los puertos 8081
+  (Metro) y 3000 (backend) en la red privada.
+- Backend y LocalStack levantados, y `mobile-pet-tracker/.env` con
+  `EXPO_PUBLIC_API_URL=http://<IP LAN del PC>:3000/v1`.
+- El `.env` gitignoreado de la raíz con `EMAIL_ENABLED=true` y las
+  credenciales de Resend de §Feature 58 G2, el mismo `RESET_LINK_HOST` de
+  §Feature 59 G3, y `PUSH_ENABLED=true` y `NOTIFIER_ENABLED=true` para que el
+  notifier mande el push real por Expo. Reinicia el backend tras cambiarlo.
+- Modo de desarrollador activado en el iPhone (Ajustes → Privacidad y
+  seguridad → Modo de desarrollador). iOS solo muestra el interruptor tras
+  instalar el primer build interno, y al activarlo reinicia.
+- Al abrir el dev build, iOS pregunta si la app puede buscar dispositivos en
+  la red local: acéptalo. Sin ese permiso el dev client no encuentra Metro.
+
+1. **I1 — registrar el iPhone en EAS.**
+
+   ```bash
+   bunx eas-cli@latest login
+   bunx eas-cli@latest device:create
+   ```
+
+   Abre en el iPhone la URL o el QR que imprime `device:create` e instala el
+   perfil que ofrece. Un build interno solo se instala en los dispositivos
+   registrados antes de compilarlo.
+
+2. **I2 — declarar `RESET_LINK_HOST` en EAS.**
+
+   El builder de EAS no recibe `mobile-pet-tracker/.env` (está en
+   `.gitignore`). La variable vive en el entorno `development` de EAS, el que
+   usa el perfil `development` de `eas.json`:
+
+   ```bash
+   bunx eas-cli@latest env:set --name RESET_LINK_HOST --value <RESET_LINK_HOST> --environment development --visibility plaintext
+   ```
+
+   Vale también la visibilidad `sensitive`. Nunca `secret`: esas variables no
+   están disponibles cuando EAS CLI evalúa `app.config.ts` en tu máquina, y
+   `associatedDomains` no llegaría a la sincronización de capacidades del App
+   ID. Usa el mismo host pelado que en §Feature 59 G3.
+
+3. **I3 — publicar el AASA en Hostinger antes de instalar el build.**
+
+   Sustituye `REPLACE_WITH_APPLE_TEAM_ID` en
+   `hosting/.well-known/apple-app-site-association` por el Team ID de la
+   cuenta de Apple Developer (developer.apple.com → Account → Membership, 10
+   caracteres). El Team ID no es secreto: cualquiera lo lee en el AASA
+   publicado, y el test del fichero acepta el placeholder o un Team ID real.
+   Sube `hosting/.well-known/apple-app-site-association` y
+   `hosting/.well-known/.htaccess` a `public_html/.well-known/`. Con el host
+   real sustituido localmente:
+
+   ```bash
+   curl -fsSI https://<RESET_LINK_HOST>/.well-known/apple-app-site-association
+   ```
+
+   Debe responder 200, con `Content-Type: application/json` y sin redirección:
+   ni 301 ni 302 ni cabecera `Location:`. iOS descarga el AASA a través de la
+   CDN de Apple al instalar la app; si el build se instala antes que el
+   fichero, la CDN puede tardar horas en refrescarse. Comprobación opcional
+   de lo que ve la CDN:
+
+   ```bash
+   curl -fsS https://app-site-association.cdn-apple.com/a/v1/<RESET_LINK_HOST>
+   ```
+
+4. **I4 — compilar e instalar el dev build de iOS.**
+
+   ```bash
+   bunx eas-cli@latest build -p ios --profile development
+   ```
+
+   Responde a los prompts: inicia sesión con la cuenta de Apple Developer,
+   deja que EAS genere el certificado de distribución y el perfil ad hoc con
+   el iPhone de I1, y acepta configurar las notificaciones push (EAS genera y
+   guarda la clave APNs; la `.p8` no se descarga ni entra al repo). EAS no
+   pregunta por el cifrado de exportación porque `app.json` ya declara
+   `ios.config.usesNonExemptEncryption: false`. Si EAS CLI propone escribir
+   en `app.json` o en `eas.json`, responde que no y para: cualquier cambio en
+   esos ficheros es una enmienda de spec. Si el build no ofrece la clave de
+   push, créala con
+   `bunx eas-cli@latest credentials -p ios` antes de repetir el build. En el
+   log del build comprueba que `RESET_LINK_HOST` figura entre las variables
+   cargadas del entorno `development`. Instala el build abriendo en el iPhone
+   el enlace o el QR que imprime EAS, y activa el modo de desarrollador si
+   iOS lo pide.
+
+   Si el build falla al compilar el icono (`./assets/expo.icon`), para y
+   regístralo: el arreglo (`"image": "latest"` en `build.development.ios` de
+   `eas.json`) es una enmienda de spec, no un cambio en caliente.
+
+5. **I5 — smoke en el iPhone.**
+
+   ```bash
+   bunx expo start --dev-client
+   ```
+
+   Abre el dev build, acepta la red local y conecta con el Metro del PC.
+   Después, en orden:
+
+   - **Login contra la IP LAN**: inicia sesión con una cuenta propia. Si
+     falla sin llegar al backend, anota el error y para: es el supuesto de ATS
+     de la spec, y su arreglo es una enmienda de spec, no un cambio en caliente.
+   - **Mapa**: el tab Map pinta el mapa de Apple centrado en la última
+     posición, con el marcador y el recorrido y sin botón de mi ubicación.
+     Con la app en tema oscuro (se cambia en el perfil), el mapa pasa a oscuro.
+   - **Foto HEIC**: haz una foto con la cámara del iPhone en formato de alta
+     eficiencia (Ajustes → Cámara → Formatos). Elígela en el alta de mascota
+     y después como foto nueva en el perfil: las dos suben sin el error de
+     formato y la foto se ve después.
+   - **Reset por Universal Link**: con el dev build conectado a Metro, pide
+     el restablecimiento con `POST /v1/auth/forgot-password` y abre el enlace
+     del correo desde la app Mail del iPhone: debe abrir el dev build en
+     `/reset-password` con el token. Completa el formulario y confirma el
+     login con la contraseña nueva. Mantén pulsado el mismo enlace y elige
+     abrirlo en Safari: debe mostrarse la página fallback de Hostinger.
+   - **Push**: acepta el permiso de notificaciones al iniciar sesión, deja la
+     app en segundo plano y dispara una alerta real o el mensaje manual de
+     §Feature 79 («Disparar la notificación a mano desde Windows»). La
+     notificación debe llegar al iPhone. El requisito de
+     `google-services.json` de esa sección es solo de Android.
+
+6. **I6 — regresión de Android.**
+
+   ```bash
+   bunx expo prebuild --clean --platform android
+   bunx expo run:android
+   ```
+
+   En `android/app/src/main/AndroidManifest.xml`, `RECORD_AUDIO` y `CAMERA`
+   solo aparecen con `tools:node="remove"`
+   (`findstr "RECORD_AUDIO CAMERA" android\app\src\main\AndroidManifest.xml`).
+   En el dev build de Android, el tab Map sigue pintando el mapa de Google y
+   el alta de mascota sigue eligiendo foto de la galería.
+
+Registra únicamente los resultados y status de I1–I6 en
+`progress/impl_mobile-ios-support.md`. Siguen pendientes hasta esa
+confirmación humana; las suites automáticas no los sustituyen.
+
 ### Feature 79 — mobile-push-registration: `google-services.json` del dev build
 
 El registro del push token falla en un dev build **local** si Firebase no está
