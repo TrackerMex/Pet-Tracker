@@ -1,4 +1,5 @@
-import { GoogleMaps } from 'expo-maps';
+import { AppleMaps, GoogleMaps } from 'expo-maps';
+import { Platform } from 'react-native';
 
 import { useThemeColors } from '../theme/use-theme-colors';
 
@@ -29,12 +30,31 @@ export function PetMap(props: PetMapProps) {
       ...polyline,
       color: polylineColor,
     })),
-    colorScheme:
-      props.colorScheme === 'dark'
-        ? GoogleMaps.MapColorScheme.DARK
-        : GoogleMaps.MapColorScheme.LIGHT,
-    uiSettings: { zoomControlsEnabled: false },
   };
 
-  return <GoogleMaps.View {...mapViewProps} />;
+  if (Platform.OS === 'ios') {
+    return (
+      <AppleMaps.View
+        {...mapViewProps}
+        colorScheme={
+          props.colorScheme === 'dark'
+            ? AppleMaps.MapColorScheme.DARK
+            : AppleMaps.MapColorScheme.LIGHT
+        }
+        uiSettings={{ myLocationButtonEnabled: false, togglePitchEnabled: false }}
+      />
+    );
+  }
+
+  return (
+    <GoogleMaps.View
+      {...mapViewProps}
+      colorScheme={
+        props.colorScheme === 'dark'
+          ? GoogleMaps.MapColorScheme.DARK
+          : GoogleMaps.MapColorScheme.LIGHT
+      }
+      uiSettings={{ zoomControlsEnabled: false }}
+    />
+  );
 }
