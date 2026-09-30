@@ -1839,3 +1839,77 @@ describe('#135 R4: entre la tarjeta y cada uno de sus hijos no hay otro nodo', (
     ).toEqual(['weekly-activity-header', 'weekly-activity-empty']);
   });
 });
+
+describe('#140 R1: cada columna tiene la etiqueta del día y, debajo, su valor o su raya', () => {
+  it('las siete columnas tienen dos hijos, la etiqueta primero, antes y después de medir, con otra métrica y con un día seleccionado, medido o sin datos', async () => {
+    const result = await renderChartWithProps(
+      {
+        days: makeWeek('2026-09-02', [10, 20, 30, 40, 50, null, 70]),
+        weekComparison: NO_COMPARISON,
+      },
+      'es',
+      false,
+    );
+    const label = 'weekly-activity-day-label';
+    const expected = [
+      [label, 'weekly-activity-value-2026-09-02'],
+      [label, 'weekly-activity-value-2026-09-03'],
+      [label, 'weekly-activity-value-2026-09-04'],
+      [label, 'weekly-activity-value-2026-09-05'],
+      [label, 'weekly-activity-value-2026-09-06'],
+      [label, 'weekly-activity-missing-2026-09-07'],
+      [label, 'weekly-activity-value-2026-09-08'],
+    ];
+    const columnChildren = () =>
+      result
+        .getByTestId('weekly-activity-day-row')
+        .children.map((column) =>
+          typeof column === 'string'
+            ? column
+            : column.children.map((child) =>
+                typeof child === 'string' ? child : child.props.testID,
+              ),
+        );
+
+    // #140 R1: the host children of each column by position, so a swap, a wrapper
+    // or an extra node in any column turns the lock red, in each state the chart
+    // reaches inside this test. toStrictEqual, because toEqual skips a trailing
+    // undefined: a last child without testID would pass.
+    expect(columnChildren()).toStrictEqual(expected);
+
+    const layout = result.getByTestId('weekly-activity-chart-layout');
+
+    await fireEvent(layout, 'layout', {
+      nativeEvent: {
+        layout: { width: 295, height: 0, x: 0, y: 0 },
+      },
+    });
+
+    expect(result.getByTestId('weekly-activity-bar-chart')).toBeOnTheScreen();
+    expect(columnChildren()).toStrictEqual(expected);
+
+    await fireEvent.press(
+      result.getByTestId('weekly-activity-metric-distanceM'),
+    );
+
+    expect(
+      result.getByTestId('weekly-activity-metric-distanceM').props
+        .accessibilityState,
+    ).toEqual({ selected: true });
+    expect(columnChildren()).toStrictEqual(expected);
+
+    await fireEvent.press(result.getByTestId('weekly-activity-day-2026-09-05'));
+
+    expect(result.getByTestId('weekly-activity-tooltip')).toBeOnTheScreen();
+    expect(columnChildren()).toStrictEqual(expected);
+
+    await fireEvent.press(result.getByTestId('weekly-activity-day-2026-09-07'));
+
+    expect(
+      within(result.getByTestId('weekly-activity-detail')).getByText(
+        'Sin datos de este día',
+      ),
+    ).toBeOnTheScreen();
+    expect(columnChildren()).toStrictEqual(expected);
+  });
+});
