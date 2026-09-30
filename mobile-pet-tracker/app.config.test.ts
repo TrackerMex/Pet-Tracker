@@ -333,3 +333,54 @@ describe('#60 R5: app.json deja solo el permiso de galería, en español', () =>
     ]);
   });
 });
+
+describe('#60 R6: RESET_LINK_HOST declara el dominio asociado de iOS', () => {
+  const originalApiKey = process.env.GOOGLE_MAPS_API_KEY_ANDROID;
+  const originalResetLinkHost = process.env.RESET_LINK_HOST;
+  let warnSpy: jest.SpiedFunction<typeof console.warn>;
+
+  beforeEach(() => {
+    warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+  });
+
+  afterEach(() => {
+    warnSpy.mockRestore();
+
+    if (originalApiKey === undefined) {
+      delete process.env.GOOGLE_MAPS_API_KEY_ANDROID;
+    } else {
+      process.env.GOOGLE_MAPS_API_KEY_ANDROID = originalApiKey;
+    }
+
+    if (originalResetLinkHost === undefined) {
+      delete process.env.RESET_LINK_HOST;
+    } else {
+      process.env.RESET_LINK_HOST = originalResetLinkHost;
+    }
+  });
+
+  it.each([
+    ['con clave de mapas y google-services.json', 'maps-test-key', true],
+    ['sin clave de mapas ni google-services.json (builder de EAS)', undefined, false],
+  ])('#60 R6: %s, añade applinks del host recortado a ios', (_case, apiKey, hasGoogleServices) => {
+    if (apiKey === undefined) {
+      delete process.env.GOOGLE_MAPS_API_KEY_ANDROID;
+    } else {
+      process.env.GOOGLE_MAPS_API_KEY_ANDROID = apiKey;
+    }
+    process.env.RESET_LINK_HOST = '  reset.example.test  ';
+    mockExistsSync.mockReturnValue(hasGoogleServices);
+
+    const resolved = resolveConfig({
+      config: appJson.expo,
+    } as unknown as ConfigContext);
+
+    expect(resolved.ios).toEqual({
+      icon: './assets/expo.icon',
+      bundleIdentifier: 'com.trackermex.pettracker',
+      deploymentTarget: '17.0',
+      config: { usesNonExemptEncryption: false },
+      associatedDomains: ['applinks:reset.example.test'],
+    });
+  });
+});
