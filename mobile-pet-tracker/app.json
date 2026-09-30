@@ -8,7 +8,12 @@
     "scheme": "mobilepettracker",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "bundleIdentifier": "com.trackermex.pettracker",
+      "deploymentTarget": "17.0",
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.trackermex.pettracker",
