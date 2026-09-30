@@ -14,10 +14,10 @@ dentro de
 
 | Requisito | Test (archivo::nombre) | Commit rojo | Commit verde |
 |---|---|---|---|
-| R1 | `index.test.tsx::R10 (mobile-device-pairing): … › #138 R1: el botón baja a opacidad 0.8 mientras se pulsa y vuelve a 1 al soltarlo, con la esquina continua` | pendiente | pendiente |
-| R2 | `index.test.tsx::R10 (mobile-device-pairing): … › #138 R2: en reposo, el botón lleva rounded-xl como único radio y la esquina continua con opacidad 1` | pendiente | pendiente |
-| R3 | `consistency-classnames.test.ts::#62 R14: toda esquina no-cápsula que dibuja el repo es continua › screens/home/index.tsx importa y aplica sus 0 esquinas`, `… › fusiona la esquina una vez y la entrega a las dos ramas de Card` y `#98 R10: los candados que esta feature no mueve › deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban` (enmendados) | pendiente | pendiente |
-| R4 | sin test: cierre medido ([[tasks]] §R4 y `progress/impl_mobile-collar-pair-link-pressed-feedback.md`) | no aplica | pendiente (verde común) |
+| R1 | `index.test.tsx::R10 (mobile-device-pairing): … › #138 R1: el botón baja a opacidad 0.8 mientras se pulsa y vuelve a 1 al soltarlo, con la esquina continua` | `6dc6570b767c95ee6479eee606bf700628029c79` | `828aade35f5b921e6efa825f5792fc71d9a9c765` |
+| R2 | `index.test.tsx::R10 (mobile-device-pairing): … › #138 R2: en reposo, el botón lleva rounded-xl como único radio y la esquina continua con opacidad 1` | `22309656208fd73e00be3bb7659899826209751b` | `828aade35f5b921e6efa825f5792fc71d9a9c765` |
+| R3 | `consistency-classnames.test.ts::#62 R14: toda esquina no-cápsula que dibuja el repo es continua › screens/home/index.tsx importa y aplica sus 0 esquinas`, `… › fusiona la esquina una vez y la entrega a las dos ramas de Card` y `#98 R10: los candados que esta feature no mueve › deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban` (enmendados) | `d9878554aec1651babda4094df836a803c16b8b2` | `828aade35f5b921e6efa825f5792fc71d9a9c765` |
+| R4 | sin test: cierre medido ([[tasks]] §R4 y `progress/impl_mobile-collar-pair-link-pressed-feedback.md`) | no aplica | `828aade35f5b921e6efa825f5792fc71d9a9c765` (verde común) |
 | R5 | sin test: prueba de humo del humano en dev build de Android ([[requirements]] §Prueba de humo del humano) | no aplica | pendiente (firma del humano: casilla de R5 en [[requirements]]) |
 
 Regla: el reviewer no aprueba si alguna fila de R1 a R4 queda «pendiente». La
