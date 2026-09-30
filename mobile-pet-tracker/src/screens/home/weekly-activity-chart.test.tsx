@@ -1632,3 +1632,43 @@ describe('#131 R1: la fila de las siete columnas es una fila', () => {
     expect(rowClassName()).toBe('flex-row');
   });
 });
+
+describe('#131 R2: la fila deja a cada lado el mismo hueco que el gráfico', () => {
+  it('el padding de la fila son los dos huecos de la línea de media, también con otra métrica y con un día seleccionado', async () => {
+    const result = await renderChart(
+      makeWeek('2026-09-02', [10, 20, 30, 40, 50, 60, 70]),
+    );
+    const expectRowOnPlotEdges = () => {
+      const average = result.getByTestId('weekly-activity-average').props;
+
+      // #131 R2: the chart draws the average line from the left edge of the plot
+      // to its right edge, so the row pads by exactly those two gaps and by
+      // nothing else. No literal from the chart and no imported constant.
+      expect(
+        mergeObjectStyles(
+          result.getByTestId('weekly-activity-day-row').props.style,
+        ),
+      ).toEqual({
+        paddingLeft: average.x1,
+        paddingRight: (latestBarChartProps().width as number) - average.x2,
+      });
+    };
+
+    expectRowOnPlotEdges();
+
+    await fireEvent.press(
+      result.getByTestId('weekly-activity-metric-distanceM'),
+    );
+
+    expect(
+      result.getByTestId('weekly-activity-metric-distanceM').props
+        .accessibilityState,
+    ).toEqual({ selected: true });
+    expectRowOnPlotEdges();
+
+    await fireEvent.press(result.getByTestId('weekly-activity-day-2026-09-05'));
+
+    expect(result.getByTestId('weekly-activity-tooltip')).toBeOnTheScreen();
+    expectRowOnPlotEdges();
+  });
+});
