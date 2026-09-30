@@ -42,11 +42,24 @@
           "imageWidth": 76
         }
       ],
-      "expo-secure-store",
+      [
+        "expo-secure-store",
+        {
+          "faceIDPermission": false
+        }
+      ],
       [
         "expo-notifications",
         {
           "defaultChannel": "default"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Se usa para elegir de tu galería la foto de perfil de tu mascota.",
+          "cameraPermission": false,
+          "microphonePermission": false
         }
       ]
     ],
