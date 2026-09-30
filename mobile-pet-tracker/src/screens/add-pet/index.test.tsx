@@ -21,6 +21,11 @@ jest.mock('../../api/media', () => ({
 }));
 jest.mock('expo-image-picker', () => ({
   launchImageLibraryAsync: jest.fn(),
+  UIImagePickerPreferredAssetRepresentationMode: {
+    Automatic: 'automatic',
+    Compatible: 'compatible',
+    Current: 'current',
+  },
 }));
 jest.mock('../../providers/auth-provider', () => ({ useAuth: jest.fn() }));
 jest.mock('../../providers/selected-pet-provider', () => ({
@@ -280,6 +285,19 @@ describe('R7: foto opcional tras alta', () => {
     );
     expect(mockRouter.back).toHaveBeenCalledTimes(1);
     expect(mockRouter.replace).not.toHaveBeenCalled();
+  });
+
+  it('#60 R3: pide al picker la representación compatible para que iOS entregue JPEG y no HEIC', async () => {
+    await renderAddPet();
+
+    await pressPickPhoto();
+
+    expect(mockLaunchImageLibrary).toHaveBeenCalledTimes(1);
+    expect(mockLaunchImageLibrary).toHaveBeenCalledWith({
+      mediaTypes: ['images'],
+      quality: 0.8,
+      preferredAssetRepresentationMode: 'compatible',
+    });
   });
 });
 

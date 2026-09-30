@@ -59,6 +59,11 @@ jest.mock('../../api/media', () => ({
 
 jest.mock('expo-image-picker', () => ({
   launchImageLibraryAsync: jest.fn(),
+  UIImagePickerPreferredAssetRepresentationMode: {
+    Automatic: 'automatic',
+    Compatible: 'compatible',
+    Current: 'current',
+  },
 }), { virtual: true });
 
 jest.mock('../../api/users', () => ({
@@ -603,6 +608,20 @@ describe('R7: cambiar foto', () => {
       { uri: 'http://example.test/old.jpg', cacheKey: 'pet-1' },
     ]);
     expect(mockUploadPhotoToUrl).not.toHaveBeenCalled();
+  });
+
+  it('#60 R3: pide al picker la representación compatible para que iOS entregue JPEG y no HEIC', async () => {
+    await renderProfile();
+    await waitFor(() => expect(screen.getByTestId('change-photo')).toBeVisible());
+
+    await fireEvent.press(screen.getByTestId('change-photo'));
+
+    expect(mockLaunchImageLibrary).toHaveBeenCalledTimes(1);
+    expect(mockLaunchImageLibrary).toHaveBeenCalledWith({
+      mediaTypes: ['images'],
+      quality: 0.8,
+      preferredAssetRepresentationMode: 'compatible',
+    });
   });
 });
 
