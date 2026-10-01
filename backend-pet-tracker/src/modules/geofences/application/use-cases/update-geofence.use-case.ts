@@ -68,7 +68,7 @@ export class UpdateGeofenceUseCase {
 }
 
 function resetsEvaluation(existing: Geofence, dto: UpdateGeofenceDto): boolean {
-  return (['active'] as const).some(
+  return (['active', 'centerLat', 'centerLng', 'radiusM'] as const).some(
     (key) => dto[key] !== undefined && dto[key] !== existing[key],
   );
 }
