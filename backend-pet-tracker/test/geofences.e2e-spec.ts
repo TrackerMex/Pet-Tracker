@@ -719,6 +719,14 @@ describe('Geofences CRUD (e2e)', () => {
       return id;
     }
 
+    async function alertById(id: string) {
+      const [row] = await db
+        .select()
+        .from(alertEvents)
+        .where(eq(alertEvents.id, id));
+      return row;
+    }
+
     function deleteZone(owner: TestUser, petId: string, geofenceId: string) {
       return api()
         .delete(`/v1/pets/${petId}/geofences/${geofenceId}`)
@@ -744,6 +752,46 @@ describe('Geofences CRUD (e2e)', () => {
           .where(eq(geofences.petId, pet.id));
         expect(rows).toHaveLength(0);
       });
+    });
+
+    describe('#145 R2: DELETE cierra las alertas no cerradas de la zona y no toca ninguna otra', () => {
+      it.each(['open', 'acked'] as const)(
+        'alerta %s de la zona: queda closed, con closed_at y sin geofence_id; la cerrada de antes, la de otra zona y la de batería no cambian',
+        async (status) => {
+          const owner = await seedUser(`145r2-${status}-owner`);
+          const pet = await createPetViaApi(owner, `145R2-${status}-${RUN_ID}`);
+          const zone = (await createGeofenceViaApi(owner, pet.id)).id as string;
+          const otherZone = (await createGeofenceViaApi(owner, pet.id))
+            .id as string;
+          const target = await seedAlert(pet.id, zone, status);
+          const history = await seedAlert(pet.id, zone, 'closed');
+          const other = await seedAlert(pet.id, otherZone, 'open');
+          const battery = await seedAlert(pet.id, null, 'open', 'battery_low');
+          const before = Date.now();
+
+          await deleteZone(owner, pet.id, zone).expect(204);
+
+          const closed = await alertById(target);
+          expect(closed).toMatchObject({ status: 'closed', geofenceId: null });
+          expect(closed.closedAt?.getTime() ?? 0).toBeGreaterThanOrEqual(
+            before,
+          );
+          expect(await alertById(history)).toMatchObject({
+            status: 'closed',
+            geofenceId: null,
+            closedAt: HISTORY_CLOSED_AT,
+          });
+          expect(await alertById(other)).toMatchObject({
+            status: 'open',
+            geofenceId: otherZone,
+            closedAt: null,
+          });
+          expect(await alertById(battery)).toMatchObject({
+            status: 'open',
+            closedAt: null,
+          });
+        },
+      );
     });
   });
 });
