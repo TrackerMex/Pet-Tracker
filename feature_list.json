@@ -750,15 +750,22 @@
     "name": "mobile-geofences",
     "status": "pending",
     "priority": "P3",
-    "description": "Pantalla Geofences del diseño: listado y dibujo/edición de zonas seguras sobre el mapa de #36 contra geofences CRUD. Depende de #36. UX más compleja del roadmap.",
+    "description": "Pantalla de geocercas por mascota: LISTA. Repartida el 2026-10-01 por decision del humano, a partir de progress/explore_mobile-geofences.md: el backend se endurece en #145 y el editor sobre el mapa va en #146; #41 queda para la lista. Decisiones del humano (2026-10-01, aceptadas las recomendaciones del explorer): solo circulos (type safe_circle; los poligonos los descarto #11 en su D1); una zona por mascota; entrada desde una fila Geocercas en el Perfil, junto a documentos, emparejamiento y recordatorios; ruta delgada por mascota (precedente src/app/pets/[petId]/docs.tsx) y pantalla en src/screens/geofences/; solo el owner edita (myRole === 'owner', precedente canSetLostMode de src/screens/map/index.tsx) y los demas roles (family, walker, vet) ven la lista en solo lectura; switch de activa en cada fila con PATCH {active}; borrado con confirmacion destructiva; una mascota sin suscripcion (402 DEVICE_SUBSCRIPTION_REQUIRED, que el backend devuelve tambien en los GET) muestra el estado sin seguimiento, con el mismo patron que {kind: 'no-tracking'}. La lista no dibuja mapa: los circulos sobre el mapa llegan con #146, y los de la pestana Mapa quedan fuera de las dos. Coordinacion con #60 (decision del humano 2026-10-01): #60 tambien toca src/screens/profile/index.tsx y su test, asi que la spec se escribe contra el estado de la branch de #60 (03f57706) y el handoff a Codex no se hace hasta que #60 este en main. Tambien depende de #145: borrar una zona con una alerta sin cerrar probablemente da 500 hoy (inferido, sin test). Premisas caducadas del enunciado original: files_affected apuntaba a src/app/geofences/ (contradice la convencion de ruta delgada); no existe useMutation en produccion ni helper PATCH en src/api/http.ts. Candados que se mueven: los recuentos del Stack en src/app/__tests__/layout.test.tsx y detail-stack.test.tsx, y el catalogo de src/providers/__tests__/language-provider.test.tsx con su tabla en src/__tests__/ui-copy-table.ts.",
     "acceptance_criteria": [
-      "Crear, editar y borrar geocerca sobre el mapa con persistencia en backend",
-      "Tests de la lógica de geometría/estado nombrando R-ids",
-      "Gate humano: dibujo de zona en dispositivo real"
+      "La lista muestra las geocercas de la mascota (nombre, radio, activa) contra GET /v1/pets/:petId/geofences, con estados de carga, vacio, error y sin seguimiento (402)",
+      "El owner activa y desactiva cada zona con un switch (PATCH {active}) y la borra con confirmacion destructiva (DELETE); los demas roles ven la lista sin controles de escritura",
+      "Entrada desde una fila Geocercas en el Perfil; ruta delgada por mascota y pantalla en src/screens/geofences/",
+      "Tests que nombran su R-id; candados del Stack y del catalogo actualizados y anclados por contenido",
+      "Gate humano: smoke en dev build de Android (lista, toggle, borrado, cuenta no-owner, mascota sin collar)"
     ],
     "files_affected": [
-      "mobile-pet-tracker/src/app/geofences/",
-      "mobile-pet-tracker/src/api/geofences.ts"
+      "mobile-pet-tracker/src/api/geofences.ts",
+      "mobile-pet-tracker/src/api/http.ts",
+      "mobile-pet-tracker/src/api/query-keys.ts",
+      "mobile-pet-tracker/src/app/pets/[petId]/geofences.tsx",
+      "mobile-pet-tracker/src/screens/geofences/",
+      "mobile-pet-tracker/src/screens/profile/index.tsx",
+      "mobile-pet-tracker/src/i18n/catalog.ts"
     ]
   },
   {
@@ -2781,6 +2788,48 @@
     ],
     "files_affected": [
       "mobile-pet-tracker/src/screens/home/weekly-activity-chart.test.tsx"
+    ]
+  },
+  {
+    "id": 145,
+    "name": "geofence-alert-consistency",
+    "status": "done",
+    "priority": "P2",
+    "description": "Registrada el 2026-10-01 por decision del humano, desde progress/explore_mobile-geofences.md §Riesgos R12 (decision 12 del explorer). Endurece el backend de geocercas antes de que la app movil las edite (#41 lista, #146 editor). Todo se dedujo leyendo el codigo; ninguno de estos agujeros tiene un test que lo cubra: (1) un PATCH que cambia la geometria (centerLat, centerLng, radiusM) no resetea geofence_state, asi que la siguiente posicion puede dar una alerta de salida espuria (zona movida o encogida) o cerrar una alerta abierta con un regreso espurio (zona agrandada); (2) PATCH {active: false} no cierra la alerta abierta de esa zona; (3) INFERIDO, sin reproducir: al borrar una zona con una alerta geofence_exit no cerrada, ON DELETE SET NULL de alert_events.geofence_id la deja en (petId, 'geofence_exit', NULL); si ya hay otra no cerrada con geofence_id nulo en la misma mascota, choca con el indice unico alert_events_open_anti_spam_idx (predicado status <> 'closed') y el DELETE probablemente da un 23505 sin mapear y un 500. GeofenceDrizzleRepository.delete es un db.delete sin tratar errores; (4) las alertas que quedan huerfanas tras el DELETE no se cierran nunca, porque closeOpenAlert busca por geofenceId. Ademas, docs/data-model.md sigue diciendo que el indice antispam usa WHERE status='open' (el real es status <> 'closed' desde la migracion 0008). Limites: el (3) se reproduce primero con un e2e rojo antes de arreglarlo; si no se reproduce, la spec lo declara y no lo arregla. La semantica exacta (resetear a unknown, cerrar, o que estado de alerta usar) la decide la spec con el humano. No cambia el contrato HTTP salvo que la spec lo declare. Tampoco cubre: el 402 en los GET (decision de producto aparte), la carrera conocida del limite de 5 (spec de #11) ni que updatedAt cambie en cada evaluacion.",
+    "acceptance_criteria": [
+      "Cambiar la geometria de una zona por PATCH deja su estado de modo que la siguiente posicion no genera una alerta espuria, con test que nombra su R-id",
+      "Desactivar una zona cierra su alerta abierta, con test que nombra su R-id",
+      "El DELETE de una zona con alerta no cerrada responde 204 y no 500; el caso se reproduce primero con un e2e rojo",
+      "Ninguna alerta queda abierta y huerfana tras borrar su zona",
+      "docs/data-model.md describe el predicado real del indice antispam",
+      "Suite backend y e2e verdes medidas sin pipe; delta de tests declarado"
+    ],
+    "files_affected": [
+      "backend-pet-tracker/src/modules/geofences/",
+      "backend-pet-tracker/src/modules/alerts/",
+      "backend-pet-tracker/test/",
+      "docs/data-model.md"
+    ]
+  },
+  {
+    "id": 146,
+    "name": "mobile-geofence-editor",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada el 2026-10-01 por decision del humano, al repartir #41 a partir de progress/explore_mobile-geofences.md: es el editor de geocercas sobre el mapa (crear y editar). Depende de #41 (lista y punto de entrada), de #145 (backend endurecido) y de #60 (rama AppleMaps de PetMap). Decisiones del humano (2026-10-01): solo circulos; tocar el mapa (onMapClick, existe en GoogleMaps y AppleMaps) fija el centro, y el centro inicial es la ultima posicion conocida de la mascota o el centro del mapa; un slider de 20 a 2000 m con paso de 10 m (el rango del backend, no el 50-500 del Make) fija el radio con previsualizacion del circulo; solo el owner crea o edita. Hechos verificados por el explorer sobre expo-maps 57.0.2: el tipo circles {id?, center, radius en metros, color?, lineColor?, lineWidth?} es igual en las dos plataformas; NO hay eventos de arrastre de marker; onMapLongClick es solo de Google; onCameraMove dispara con frecuencias distintas en Android e iOS; la camara se reaplica cada vez que cambia el valor de cameraPosition, asi que el editor debe desacoplarla del centro del circulo, y conviene un helper puro de zoom por radio con tabla de casos. Alcance: ampliar PetMap con props opcionales (circulos, onMapClick, zoom) en las dos ramas sin romper la pestana Mapa; formulario con nombre y slider; POST y PATCH de geometria; errores 409 GEOFENCE_NAME_TAKEN, 400 MAX_GEOFENCES_REACHED (el limite de 5 se muestra desde el error del servidor, no contando en el cliente) y 400 de validacion sin code; dibujar las zonas en el mapa de la pantalla de geocercas. La spec decide si el editor es ruta propia o sheet (riesgo de gestos con el mapa dentro de un sheet). Fuera de alcance: los circulos en la pestana Mapa (Make §1.2), los poligonos y las zonas compartidas entre mascotas. Codex no tiene skill de mapas: toda la guia de expo-maps debe quedar escrita en la spec.",
+    "acceptance_criteria": [
+      "El owner crea una geocerca tocando el mapa y fijando el radio con un slider de 20 a 2000 m, con previsualizacion del circulo, y la persiste con POST",
+      "El owner edita nombre, centro y radio de una geocerca existente con PATCH",
+      "PetMap pinta circulos y emite el toque en GoogleMaps y AppleMaps sin romper la pestana Mapa; la camara no se recentra con cada toque",
+      "Los errores 409, 400 MAX_GEOFENCES_REACHED y 400 de validacion se muestran al usuario",
+      "Tests de la logica de geometria y estado que nombran su R-id",
+      "Gate humano: dibujo de zona en dev build de Android"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/components/pet-map.tsx",
+      "mobile-pet-tracker/src/api/geofences.ts",
+      "mobile-pet-tracker/src/screens/geofences/",
+      "mobile-pet-tracker/src/utils/"
     ]
   }
 ]
