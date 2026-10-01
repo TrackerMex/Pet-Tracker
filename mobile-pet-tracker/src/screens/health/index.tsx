@@ -132,8 +132,7 @@ export function HealthScreen() {
           {vaccines.data === undefined || vaccines.isRefetching ? (
             <Skeleton
               testID="vaccines-skeleton"
-              className="h-24 w-full"
-              // className="h-24 w-full rounded-card"
+              className="h-24 w-full rounded-card"
             />
           ) : null}
 

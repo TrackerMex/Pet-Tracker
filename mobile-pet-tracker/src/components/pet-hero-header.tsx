@@ -158,8 +158,7 @@ export function PetHeroHeader({
         ) : (
           <Skeleton
             testID="pet-hero-skeleton"
-            className="w-full bg-default"
-            // className="w-full"
+            className="w-full"
             style={{ height: PET_HERO_MEDIA_HEIGHT }}
           />
         )}
