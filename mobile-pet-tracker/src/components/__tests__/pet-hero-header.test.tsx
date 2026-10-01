@@ -612,3 +612,16 @@ describe('#73 E2: el punto de "en linea" pulsa con Reanimated y respeta reduced 
     expect(mockCancelAnimation).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('#127 R2: el skeleton del hero lleva su receta en el árbol', () => {
+  afterEach(() => cleanup());
+
+  it('pinta pet-hero-skeleton con la clase w-full sin radio y el alto de 260 como único estilo, los vea o no el recorte de fuente', async () => {
+    await renderHero(<PetHeroHeader pet={null} variant="bleed" />);
+
+    const skeleton = screen.getByTestId('pet-hero-skeleton');
+
+    expect(skeleton.props.className).toBe('w-full');
+    expect(skeleton.props.style).toStrictEqual({ height: 260 });
+  });
+});
