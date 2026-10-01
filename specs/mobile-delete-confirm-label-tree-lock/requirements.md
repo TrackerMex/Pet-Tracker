@@ -1,6 +1,6 @@
 ---
 feature: "mobile-delete-confirm-label-tree-lock"
-status: spec_ready         # draft | spec_ready | approved  ← se firma dentro de la spec de #127
+status: approved           # draft | spec_ready | approved  ← se firma dentro de la spec de #127
 tags: [harness, spec, mobile, puntero]
 ---
 

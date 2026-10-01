@@ -1,6 +1,6 @@
 ---
 feature: "mobile-classnames-own-tag-tree-lock"
-status: spec_ready       # draft | spec_ready | approved
+status: approved         # draft | spec_ready | approved
 tags: [spec, mobile, test, deuda]
 ---
 
@@ -509,7 +509,7 @@ hallazgo candidato a registrarse como otra feature (sin id: lo asigna el
 
 ## Aprobación
 
-- [ ] **Aprobado por humano** (fecha: ________) ← gate obligatorio antes de
+- [x] **Aprobado por humano** (fecha: 2026-09-30) ← gate obligatorio antes de
       implementar. Al marcar esta casilla, el humano firma también los once
       puntos de §Qué firma el humano al aprobar esta spec. En particular firma
       el tercero (los literales acoplados a heroui-native 1.0.8) y el octavo
