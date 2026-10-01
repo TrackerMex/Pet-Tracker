@@ -6,6 +6,7 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { uuidv7 } from 'uuidv7';
 import { DRIZZLE } from '@/db/drizzle.constants';
+import { alertEvents } from '@/db/schema/alerts.schema';
 import { auditLog } from '@/db/schema/audit-log.schema';
 import { devices, petDevices } from '@/db/schema/devices.schema';
 import { geofences } from '@/db/schema/geofences.schema';
@@ -691,6 +692,58 @@ describe('Geofences CRUD (e2e)', () => {
           ),
         );
       expect(entries).toHaveLength(0);
+    });
+  });
+  describe('#145: consistencia entre geocercas y alertas', () => {
+    const HISTORY_CLOSED_AT = new Date('2026-10-01T10:10:00.000Z');
+
+    async function seedAlert(
+      petId: string,
+      geofenceId: string | null,
+      status: 'open' | 'acked' | 'closed',
+      type: 'geofence_exit' | 'battery_low' = 'geofence_exit',
+    ): Promise<string> {
+      const id = uuidv7();
+      await db.insert(alertEvents).values({
+        id,
+        petId,
+        geofenceId,
+        type,
+        status,
+        payload: {},
+        openedAt: new Date('2026-10-01T10:00:00.000Z'),
+        ackedAt:
+          status === 'open' ? null : new Date('2026-10-01T10:05:00.000Z'),
+        closedAt: status === 'closed' ? HISTORY_CLOSED_AT : null,
+      });
+      return id;
+    }
+
+    function deleteZone(owner: TestUser, petId: string, geofenceId: string) {
+      return api()
+        .delete(`/v1/pets/${petId}/geofences/${geofenceId}`)
+        .set('Authorization', `Bearer ${owner.token}`);
+    }
+
+    describe('#145 R1: DELETE de una zona con alerta no cerrada responde 204, también si otra zona de la mascota ya se borró con su alerta no cerrada', () => {
+      it('borrar la zona A (alerta open) y después la zona B (alerta acked) de la misma mascota responde 204 las dos veces', async () => {
+        const owner = await seedUser('145r1-owner');
+        const pet = await createPetViaApi(owner, `145R1-${RUN_ID}`);
+        const zoneA = (await createGeofenceViaApi(owner, pet.id)).id as string;
+        const zoneB = (await createGeofenceViaApi(owner, pet.id)).id as string;
+        await seedAlert(pet.id, zoneA, 'open');
+        await seedAlert(pet.id, zoneB, 'acked');
+
+        const first = await deleteZone(owner, pet.id, zoneA);
+        const second = await deleteZone(owner, pet.id, zoneB);
+
+        expect([first.status, second.status]).toEqual([204, 204]);
+        const rows = await db
+          .select()
+          .from(geofences)
+          .where(eq(geofences.petId, pet.id));
+        expect(rows).toHaveLength(0);
+      });
     });
   });
 });
