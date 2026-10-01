@@ -695,6 +695,10 @@ describe('Geofences CRUD (e2e)', () => {
     });
   });
   describe('#145: consistencia entre geocercas y alertas', () => {
+    const SEEDED_STATE = {
+      state: 'outside' as const,
+      updatedAt: '2026-10-01T10:00:00.000Z',
+    };
     const HISTORY_CLOSED_AT = new Date('2026-10-01T10:10:00.000Z');
 
     async function seedAlert(
@@ -727,10 +731,37 @@ describe('Geofences CRUD (e2e)', () => {
       return row;
     }
 
+    async function seedState(geofenceId: string, active = true) {
+      await db
+        .update(geofences)
+        .set({ geofenceState: SEEDED_STATE, active })
+        .where(eq(geofences.id, geofenceId));
+    }
+
+    async function storedState(geofenceId: string) {
+      const [row] = await db
+        .select({ geofenceState: geofences.geofenceState })
+        .from(geofences)
+        .where(eq(geofences.id, geofenceId));
+      return row.geofenceState;
+    }
+
     function deleteZone(owner: TestUser, petId: string, geofenceId: string) {
       return api()
         .delete(`/v1/pets/${petId}/geofences/${geofenceId}`)
         .set('Authorization', `Bearer ${owner.token}`);
+    }
+
+    function patchZone(
+      owner: TestUser,
+      petId: string,
+      geofenceId: string,
+      body: Record<string, unknown>,
+    ) {
+      return api()
+        .patch(`/v1/pets/${petId}/geofences/${geofenceId}`)
+        .set('Authorization', `Bearer ${owner.token}`)
+        .send(body);
     }
 
     describe('#145 R1: DELETE de una zona con alerta no cerrada responde 204, también si otra zona de la mascota ya se borró con su alerta no cerrada', () => {
@@ -792,6 +823,60 @@ describe('Geofences CRUD (e2e)', () => {
           });
         },
       );
+    });
+
+    describe('#145 R3: PATCH que cambia active reinicia el estado de evaluación de la zona y cierra sus alertas no cerradas', () => {
+      it('desactivar con alerta open: la cierra conservando geofence_id, el estado vuelve a {unknown, null} y la alerta de otra zona sigue abierta', async () => {
+        const owner = await seedUser('145r3a-owner');
+        const pet = await createPetViaApi(owner, `145R3a-${RUN_ID}`);
+        const zone = (await createGeofenceViaApi(owner, pet.id)).id as string;
+        const otherZone = (await createGeofenceViaApi(owner, pet.id))
+          .id as string;
+        await seedState(zone);
+        const target = await seedAlert(pet.id, zone, 'open');
+        const other = await seedAlert(pet.id, otherZone, 'open');
+        const before = Date.now();
+
+        const response = await patchZone(owner, pet.id, zone, {
+          active: false,
+        }).expect(200);
+
+        expect(response.body).toMatchObject({
+          active: false,
+          state: { value: 'unknown', updatedAt: null },
+        });
+        expect(await storedState(zone)).toEqual({
+          state: 'unknown',
+          updatedAt: null,
+        });
+        const closed = await alertById(target);
+        expect(closed).toMatchObject({ status: 'closed', geofenceId: zone });
+        expect(closed.closedAt?.getTime() ?? 0).toBeGreaterThanOrEqual(before);
+        expect(await alertById(other)).toMatchObject({
+          status: 'open',
+          closedAt: null,
+        });
+      });
+
+      it('reactivar una zona inactiva con estado sembrado lo reinicia a {unknown, null}', async () => {
+        const owner = await seedUser('145r3b-owner');
+        const pet = await createPetViaApi(owner, `145R3b-${RUN_ID}`);
+        const zone = (await createGeofenceViaApi(owner, pet.id)).id as string;
+        await seedState(zone, false);
+
+        const response = await patchZone(owner, pet.id, zone, {
+          active: true,
+        }).expect(200);
+
+        expect(response.body).toMatchObject({
+          active: true,
+          state: { value: 'unknown', updatedAt: null },
+        });
+        expect(await storedState(zone)).toEqual({
+          state: 'unknown',
+          updatedAt: null,
+        });
+      });
     });
   });
 });
