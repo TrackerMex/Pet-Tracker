@@ -921,5 +921,45 @@ describe('Geofences CRUD (e2e)', () => {
         },
       );
     });
+
+    describe('#145 R5: PATCH sin cambio de geometría ni de active conserva el estado de evaluación y las alertas de la zona', () => {
+      it.each([
+        ['solo name', 'name', { name: 'Renombrada' }],
+        [
+          'name con la misma geometría y el mismo active que ya tiene',
+          'full',
+          {
+            name: 'Renombrada',
+            centerLat: 19.4326,
+            centerLng: -99.1332,
+            radiusM: 100,
+            active: true,
+          },
+        ],
+      ])(
+        '%s: el estado sembrado y la alerta open no cambian',
+        async (_title, label, body) => {
+          const owner = await seedUser(`145r5-${label}-owner`);
+          const pet = await createPetViaApi(owner, `145R5-${label}-${RUN_ID}`);
+          const zone = (await createGeofenceViaApi(owner, pet.id)).id as string;
+          await seedState(zone);
+          const target = await seedAlert(pet.id, zone, 'open');
+
+          const response = await patchZone(owner, pet.id, zone, body).expect(
+            200,
+          );
+
+          expect(response.body).toMatchObject({
+            name: 'Renombrada',
+            state: { value: 'outside', updatedAt: SEEDED_STATE.updatedAt },
+          });
+          expect(await storedState(zone)).toEqual(SEEDED_STATE);
+          expect(await alertById(target)).toMatchObject({
+            status: 'open',
+            closedAt: null,
+          });
+        },
+      );
+    });
   });
 });
