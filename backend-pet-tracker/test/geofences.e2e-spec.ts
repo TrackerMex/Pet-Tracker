@@ -878,5 +878,48 @@ describe('Geofences CRUD (e2e)', () => {
         });
       });
     });
+
+    describe('#145 R4: PATCH que cambia la geometría reinicia el estado de evaluación de la zona y cierra sus alertas no cerradas', () => {
+      it.each([
+        ['centerLat', 19.44],
+        ['centerLng', -99.14],
+        ['radiusM', 250],
+      ] as const)(
+        'cambiar %s a %p: el estado vuelve a {unknown, null}, la alerta acked de la zona queda closed y la de otra zona no cambia',
+        async (key, value) => {
+          const owner = await seedUser(`145r4-${key}-owner`);
+          const pet = await createPetViaApi(owner, `145R4-${key}-${RUN_ID}`);
+          const zone = (await createGeofenceViaApi(owner, pet.id)).id as string;
+          const otherZone = (await createGeofenceViaApi(owner, pet.id))
+            .id as string;
+          await seedState(zone);
+          const target = await seedAlert(pet.id, zone, 'acked');
+          const other = await seedAlert(pet.id, otherZone, 'acked');
+          const before = Date.now();
+
+          const response = await patchZone(owner, pet.id, zone, {
+            [key]: value,
+          }).expect(200);
+
+          expect(response.body).toMatchObject({
+            [key]: value,
+            state: { value: 'unknown', updatedAt: null },
+          });
+          expect(await storedState(zone)).toEqual({
+            state: 'unknown',
+            updatedAt: null,
+          });
+          const closed = await alertById(target);
+          expect(closed).toMatchObject({ status: 'closed', geofenceId: zone });
+          expect(closed.closedAt?.getTime() ?? 0).toBeGreaterThanOrEqual(
+            before,
+          );
+          expect(await alertById(other)).toMatchObject({
+            status: 'acked',
+            closedAt: null,
+          });
+        },
+      );
+    });
   });
 });
