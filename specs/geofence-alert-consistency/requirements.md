@@ -1,6 +1,6 @@
 ---
 feature: "geofence-alert-consistency"
-status: spec_ready         # draft | spec_ready | approved
+status: approved           # draft | spec_ready | approved
 tags: [harness, spec, backend]
 ---
 
@@ -754,4 +754,4 @@ Ningún `it` ni `describe` existente se edita.
 
 ## Aprobación
 
-- [ ] Spec aprobada por humano (fecha: ____)
+- [x] Spec aprobada por humano (fecha: 2026-10-01)

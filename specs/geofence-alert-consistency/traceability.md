@@ -1,6 +1,6 @@
 ---
 feature: "geofence-alert-consistency"
-status: spec_ready         # draft | spec_ready | approved
+status: approved           # draft | spec_ready | approved
 tags: [harness, spec, backend]
 ---
 
