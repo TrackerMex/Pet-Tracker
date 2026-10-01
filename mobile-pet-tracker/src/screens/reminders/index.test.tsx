@@ -909,3 +909,53 @@ describe('#84 R6: los umbrales de la píldora y del badge no se aflojan (Enmiend
     expect(within(screen.getByTestId('pill-week')).getByText('0')).toBeVisible();
   });
 });
+
+describe('#127 R3: las tres píldoras de resumen llevan su receta en el árbol', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  });
+
+  it('pinta cada píldora con su clase exacta, rounded-xl incluido, y la esquina continua, las vea o no el recorte de fuente', async () => {
+    mockListReminders.mockResolvedValue({
+      kind: 'ok',
+      reminders: [makeReminder()],
+    });
+
+    await renderReminders();
+    await waitFor(() =>
+      expect(screen.getByTestId('reminder-row-reminder-1')).toBeVisible(),
+    );
+
+    expect(
+      ['pill-active', 'pill-week', 'pill-inactive'].map((testID) => {
+        const { className, style } = screen.getByTestId(testID).props;
+
+        return { testID, className, style };
+      }),
+    ).toStrictEqual([
+      {
+        testID: 'pill-active',
+        className: 'flex-1 items-center gap-1 rounded-xl bg-accent-soft p-3',
+        style: { borderCurve: 'continuous' },
+      },
+      {
+        testID: 'pill-week',
+        className: 'flex-1 items-center gap-1 rounded-xl bg-default p-3',
+        style: { borderCurve: 'continuous' },
+      },
+      {
+        testID: 'pill-inactive',
+        className: 'flex-1 items-center gap-1 rounded-xl bg-default p-3',
+        style: { borderCurve: 'continuous' },
+      },
+    ]);
+  });
+});

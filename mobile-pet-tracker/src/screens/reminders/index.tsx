@@ -223,8 +223,9 @@ export function RemindersScreen() {
             </View>
             <View
               testID="pill-week"
-              className="flex-1 items-center gap-1 rounded-xl bg-default p-3"
+              className="flex-1 items-center gap-1 bg-default p-3"
               style={CONTINUOUS_CORNER}
+              // rounded-xl
             >
               <Text
                 className="text-lg font-black text-foreground"
