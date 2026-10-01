@@ -959,3 +959,39 @@ describe('#127 R3: las tres píldoras de resumen llevan su receta en el árbol',
     ]);
   });
 });
+
+describe('#128 R4: el botón destructivo del sheet y su etiqueta llevan su receta en el árbol', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+  });
+
+  it('pinta reminders-delete-confirm con la variante danger y bg-danger, y su única etiqueta Eliminar con text-danger-foreground, haya o no un señuelo en la fuente', async () => {
+    mockListReminders.mockResolvedValue({
+      kind: 'ok',
+      reminders: [makeReminder()],
+    });
+
+    await renderReminders();
+    await waitFor(() =>
+      expect(screen.getByTestId('reminder-row-reminder-1')).toBeVisible(),
+    );
+    await fireEvent.press(screen.getByTestId('reminder-delete-reminder-1'));
+
+    const confirm = screen.getByTestId('reminders-delete-confirm');
+
+    expect(confirm.props.className).toBe(
+      'pressable-feedback__root button__root button__root--variant-danger button__root--size-md w-full rounded-xl bg-danger',
+    );
+    expect(within(confirm).getByText('Eliminar').props.className).toBe(
+      'button__label button__label--variant-danger button__label--size-md font-bold text-danger-foreground',
+    );
+  });
+});
