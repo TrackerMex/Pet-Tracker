@@ -2758,5 +2758,21 @@
     "files_affected": [
       "mobile-pet-tracker/src/screens/home/weekly-activity-chart.test.tsx"
     ]
+  },
+  {
+    "id": 144,
+    "name": "mobile-weekly-day-selected-position-lock",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada el 2026-10-01 al cerrar #141 + #142 + #143, por decision del humano. Son las observaciones 1 y 2 del reviewer de #141 (progress/review_mobile-weekly-day-column-value-cross-lock.md §Observaciones). En mobile-pet-tracker/src/screens/home/weekly-activity-chart.tsx, tres mutaciones propias del reviewer dan VERDE en las 6 suites que leen la grafica (389/389, medido sobre 5a3f13cc): own_valuecrosslastsel (blob ee78ddc2: la ultima columna muestra el valor del primer dia solo mientras ella misma esta seleccionada), own_labelselfirstcol (blob ed5d9494: la etiqueta pasa a text-foreground solo con la primera columna seleccionada y la primera metrica) y own_cardtailcompmissing (blob 799976d7: un <View /> de mas al final de la tarjeta solo con comparacion y el dia missing seleccionado). #141 R1 y #143 R3 solo seleccionan 2026-09-05 (cuarta columna) y 2026-09-07 (sexta, missing); la primera y la ultima no se seleccionan nunca. #142 R2.2 usa una semana sin dia missing. Limites: NO es un defecto de la implementacion de #141-#143, cuyos tests coinciden byte a byte con su tasks.md. Solo estan medidas esas tres mutaciones; otras posiciones y combinaciones no se probaron. Las tres dependen de la posicion o de la combinacion a proposito, como valuecrosstrend, que la spec de #141 declaro (D): la spec decide, sonda a sonda, si la cierra o la declara (D) por escrito, y declara cualquier cambio en un describe previo. Los esperados deben ser literales del test, nunca importados de produccion. Toca el mismo test que #140-#143.",
+    "acceptance_criteria": [
+      "Con cada una de las sondas own_valuecrosslastsel (blob ee78ddc2), own_labelselfirstcol (blob ed5d9494) y own_cardtailcompmissing (blob 799976d7) plantada en la grafica, un it FALLA por asercion, o la spec la acepta por escrito como (D)",
+      "Los esperados son literales del test, nunca importados de produccion",
+      "Los describe previos siguen verdes; cualquier cambio en ellos esta declarado en la spec",
+      "Cero cambio en produccion; suite movil verde medida sin pipe; delta de tests declarado"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/home/weekly-activity-chart.test.tsx"
+    ]
   }
 ]
