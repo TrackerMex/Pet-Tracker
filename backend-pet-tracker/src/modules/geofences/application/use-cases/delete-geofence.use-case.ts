@@ -10,8 +10,8 @@ const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
- * DELETE /v1/pets/:petId/geofences/:geofenceId (R14, R15). Hard delete: nada
- * referencia todavia a `geofences`, no hay cascada que disparar.
+ * DELETE /v1/pets/:petId/geofences/:geofenceId (R14, R15). Hard delete; el
+ * repositorio cierra antes las alertas no cerradas de la zona (#145 R2).
  */
 @Injectable()
 export class DeleteGeofenceUseCase {

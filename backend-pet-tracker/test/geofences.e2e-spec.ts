@@ -6,6 +6,7 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { uuidv7 } from 'uuidv7';
 import { DRIZZLE } from '@/db/drizzle.constants';
+import { alertEvents } from '@/db/schema/alerts.schema';
 import { auditLog } from '@/db/schema/audit-log.schema';
 import { devices, petDevices } from '@/db/schema/devices.schema';
 import { geofences } from '@/db/schema/geofences.schema';
@@ -691,6 +692,274 @@ describe('Geofences CRUD (e2e)', () => {
           ),
         );
       expect(entries).toHaveLength(0);
+    });
+  });
+  describe('#145: consistencia entre geocercas y alertas', () => {
+    const SEEDED_STATE = {
+      state: 'outside' as const,
+      updatedAt: '2026-10-01T10:00:00.000Z',
+    };
+    const HISTORY_CLOSED_AT = new Date('2026-10-01T10:10:00.000Z');
+
+    async function seedAlert(
+      petId: string,
+      geofenceId: string | null,
+      status: 'open' | 'acked' | 'closed',
+      type: 'geofence_exit' | 'battery_low' = 'geofence_exit',
+    ): Promise<string> {
+      const id = uuidv7();
+      await db.insert(alertEvents).values({
+        id,
+        petId,
+        geofenceId,
+        type,
+        status,
+        payload: {},
+        openedAt: new Date('2026-10-01T10:00:00.000Z'),
+        ackedAt:
+          status === 'open' ? null : new Date('2026-10-01T10:05:00.000Z'),
+        closedAt: status === 'closed' ? HISTORY_CLOSED_AT : null,
+      });
+      return id;
+    }
+
+    async function alertById(id: string) {
+      const [row] = await db
+        .select()
+        .from(alertEvents)
+        .where(eq(alertEvents.id, id));
+      return row;
+    }
+
+    async function seedState(geofenceId: string, active = true) {
+      await db
+        .update(geofences)
+        .set({ geofenceState: SEEDED_STATE, active })
+        .where(eq(geofences.id, geofenceId));
+    }
+
+    async function storedState(geofenceId: string) {
+      const [row] = await db
+        .select({ geofenceState: geofences.geofenceState })
+        .from(geofences)
+        .where(eq(geofences.id, geofenceId));
+      return row.geofenceState;
+    }
+
+    function deleteZone(owner: TestUser, petId: string, geofenceId: string) {
+      return api()
+        .delete(`/v1/pets/${petId}/geofences/${geofenceId}`)
+        .set('Authorization', `Bearer ${owner.token}`);
+    }
+
+    function patchZone(
+      owner: TestUser,
+      petId: string,
+      geofenceId: string,
+      body: Record<string, unknown>,
+    ) {
+      return api()
+        .patch(`/v1/pets/${petId}/geofences/${geofenceId}`)
+        .set('Authorization', `Bearer ${owner.token}`)
+        .send(body);
+    }
+
+    describe('#145 R1: DELETE de una zona con alerta no cerrada responde 204, también si otra zona de la mascota ya se borró con su alerta no cerrada', () => {
+      it('borrar la zona A (alerta open) y después la zona B (alerta acked) de la misma mascota responde 204 las dos veces', async () => {
+        const owner = await seedUser('145r1-owner');
+        const pet = await createPetViaApi(owner, `145R1-${RUN_ID}`);
+        const zoneA = (await createGeofenceViaApi(owner, pet.id)).id as string;
+        const zoneB = (await createGeofenceViaApi(owner, pet.id)).id as string;
+        await seedAlert(pet.id, zoneA, 'open');
+        await seedAlert(pet.id, zoneB, 'acked');
+
+        const first = await deleteZone(owner, pet.id, zoneA);
+        const second = await deleteZone(owner, pet.id, zoneB);
+
+        expect([first.status, second.status]).toEqual([204, 204]);
+        const rows = await db
+          .select()
+          .from(geofences)
+          .where(eq(geofences.petId, pet.id));
+        expect(rows).toHaveLength(0);
+      });
+    });
+
+    describe('#145 R2: DELETE cierra las alertas no cerradas de la zona y no toca ninguna otra', () => {
+      it.each(['open', 'acked'] as const)(
+        'alerta %s de la zona: queda closed, con closed_at y sin geofence_id; la cerrada de antes, la de otra zona y la de batería no cambian',
+        async (status) => {
+          const owner = await seedUser(`145r2-${status}-owner`);
+          const pet = await createPetViaApi(owner, `145R2-${status}-${RUN_ID}`);
+          const zone = (await createGeofenceViaApi(owner, pet.id)).id as string;
+          const otherZone = (await createGeofenceViaApi(owner, pet.id))
+            .id as string;
+          const target = await seedAlert(pet.id, zone, status);
+          const history = await seedAlert(pet.id, zone, 'closed');
+          const other = await seedAlert(pet.id, otherZone, 'open');
+          const battery = await seedAlert(pet.id, null, 'open', 'battery_low');
+          const before = Date.now();
+
+          await deleteZone(owner, pet.id, zone).expect(204);
+
+          const closed = await alertById(target);
+          expect(closed).toMatchObject({ status: 'closed', geofenceId: null });
+          expect(closed.closedAt?.getTime() ?? 0).toBeGreaterThanOrEqual(
+            before,
+          );
+          expect(await alertById(history)).toMatchObject({
+            status: 'closed',
+            geofenceId: null,
+            closedAt: HISTORY_CLOSED_AT,
+          });
+          expect(await alertById(other)).toMatchObject({
+            status: 'open',
+            geofenceId: otherZone,
+            closedAt: null,
+          });
+          expect(await alertById(battery)).toMatchObject({
+            status: 'open',
+            closedAt: null,
+          });
+        },
+      );
+    });
+
+    describe('#145 R3: PATCH que cambia active reinicia el estado de evaluación de la zona y cierra sus alertas no cerradas', () => {
+      it('desactivar con alerta open: la cierra conservando geofence_id, el estado vuelve a {unknown, null} y la alerta de otra zona sigue abierta', async () => {
+        const owner = await seedUser('145r3a-owner');
+        const pet = await createPetViaApi(owner, `145R3a-${RUN_ID}`);
+        const zone = (await createGeofenceViaApi(owner, pet.id)).id as string;
+        const otherZone = (await createGeofenceViaApi(owner, pet.id))
+          .id as string;
+        await seedState(zone);
+        const target = await seedAlert(pet.id, zone, 'open');
+        const other = await seedAlert(pet.id, otherZone, 'open');
+        const before = Date.now();
+
+        const response = await patchZone(owner, pet.id, zone, {
+          active: false,
+        }).expect(200);
+
+        expect(response.body).toMatchObject({
+          active: false,
+          state: { value: 'unknown', updatedAt: null },
+        });
+        expect(await storedState(zone)).toEqual({
+          state: 'unknown',
+          updatedAt: null,
+        });
+        const closed = await alertById(target);
+        expect(closed).toMatchObject({ status: 'closed', geofenceId: zone });
+        expect(closed.closedAt?.getTime() ?? 0).toBeGreaterThanOrEqual(before);
+        expect(await alertById(other)).toMatchObject({
+          status: 'open',
+          closedAt: null,
+        });
+      });
+
+      it('reactivar una zona inactiva con estado sembrado lo reinicia a {unknown, null}', async () => {
+        const owner = await seedUser('145r3b-owner');
+        const pet = await createPetViaApi(owner, `145R3b-${RUN_ID}`);
+        const zone = (await createGeofenceViaApi(owner, pet.id)).id as string;
+        await seedState(zone, false);
+
+        const response = await patchZone(owner, pet.id, zone, {
+          active: true,
+        }).expect(200);
+
+        expect(response.body).toMatchObject({
+          active: true,
+          state: { value: 'unknown', updatedAt: null },
+        });
+        expect(await storedState(zone)).toEqual({
+          state: 'unknown',
+          updatedAt: null,
+        });
+      });
+    });
+
+    describe('#145 R4: PATCH que cambia la geometría reinicia el estado de evaluación de la zona y cierra sus alertas no cerradas', () => {
+      it.each([
+        ['centerLat', 19.44],
+        ['centerLng', -99.14],
+        ['radiusM', 250],
+      ] as const)(
+        'cambiar %s a %p: el estado vuelve a {unknown, null}, la alerta acked de la zona queda closed y la de otra zona no cambia',
+        async (key, value) => {
+          const owner = await seedUser(`145r4-${key}-owner`);
+          const pet = await createPetViaApi(owner, `145R4-${key}-${RUN_ID}`);
+          const zone = (await createGeofenceViaApi(owner, pet.id)).id as string;
+          const otherZone = (await createGeofenceViaApi(owner, pet.id))
+            .id as string;
+          await seedState(zone);
+          const target = await seedAlert(pet.id, zone, 'acked');
+          const other = await seedAlert(pet.id, otherZone, 'acked');
+          const before = Date.now();
+
+          const response = await patchZone(owner, pet.id, zone, {
+            [key]: value,
+          }).expect(200);
+
+          expect(response.body).toMatchObject({
+            [key]: value,
+            state: { value: 'unknown', updatedAt: null },
+          });
+          expect(await storedState(zone)).toEqual({
+            state: 'unknown',
+            updatedAt: null,
+          });
+          const closed = await alertById(target);
+          expect(closed).toMatchObject({ status: 'closed', geofenceId: zone });
+          expect(closed.closedAt?.getTime() ?? 0).toBeGreaterThanOrEqual(
+            before,
+          );
+          expect(await alertById(other)).toMatchObject({
+            status: 'acked',
+            closedAt: null,
+          });
+        },
+      );
+    });
+
+    describe('#145 R5: PATCH sin cambio de geometría ni de active conserva el estado de evaluación y las alertas de la zona', () => {
+      it.each([
+        ['solo name', 'name', { name: 'Renombrada' }],
+        [
+          'name con la misma geometría y el mismo active que ya tiene',
+          'full',
+          {
+            name: 'Renombrada',
+            centerLat: 19.4326,
+            centerLng: -99.1332,
+            radiusM: 100,
+            active: true,
+          },
+        ],
+      ])(
+        '%s: el estado sembrado y la alerta open no cambian',
+        async (_title, label, body) => {
+          const owner = await seedUser(`145r5-${label}-owner`);
+          const pet = await createPetViaApi(owner, `145R5-${label}-${RUN_ID}`);
+          const zone = (await createGeofenceViaApi(owner, pet.id)).id as string;
+          await seedState(zone);
+          const target = await seedAlert(pet.id, zone, 'open');
+
+          const response = await patchZone(owner, pet.id, zone, body).expect(
+            200,
+          );
+
+          expect(response.body).toMatchObject({
+            name: 'Renombrada',
+            state: { value: 'outside', updatedAt: SEEDED_STATE.updatedAt },
+          });
+          expect(await storedState(zone)).toEqual(SEEDED_STATE);
+          expect(await alertById(target)).toMatchObject({
+            status: 'open',
+            closedAt: null,
+          });
+        },
+      );
     });
   });
 });
