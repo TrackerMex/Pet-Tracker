@@ -839,7 +839,7 @@ Convenciones:
 |---|---|---|---|---|---|
 | `P1red` | los cuatro de autenticación | los de R1 | 33 | verde | rojo 4 de 788: R1-login, R1-forgot, R1-register y R1-reset, por `toBe` |
 | `B-login-j` | login | `378fd105` | 33 | verde | rojo 1 de 788: R1-login, por `toBe` |
-| `B-login-h` | login | `10ab4fde` | nueve | rojo 1: `#62 R1: la escala de radios está declarada y el botón primario tiene un solo radio › app/(auth)/login.tsx aplica rounded-xl a login-submit en su tag de apertura (#120 R1)`, por `toContain` | rojo 2 de 220: ese, igual, y R1-login, por `toBe` |
+| `B-login-h` | login | `10ab4fdd` | nueve | rojo 1: `#62 R1: la escala de radios está declarada y el botón primario tiene un solo radio › app/(auth)/login.tsx aplica rounded-xl a login-submit en su tag de apertura (#120 R1)`, por `toContain` | rojo 2 de 220: ese, igual, y R1-login, por `toBe` |
 | `Z-label` | login | `5c8e9b14` | 33 | verde | **verde**, 788/788: (F) |
 | `Z-state` | login | `e248151f` | nueve | rojo 2: `#62 R4: la app solo usa los radios de la escala declarada › no deja la clase fuera de escala rounded-lg en producción` y `#98 R10: los candados que esta feature no mueve › deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban`, por `toEqual` | rojo 2 de 220, los mismos: R1 no ve el estado de envío, (D) |
 | `Z-state2` | login | `c5a2de62` | 33 | verde | **verde**, 788/788: (D) |
