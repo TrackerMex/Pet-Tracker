@@ -6805,3 +6805,115 @@ spec de #120 y las dos son solo de test. En paralelo, Frontend siguio con #60
   1.0.8. Una subida de version los pone en rojo a proposito.
 - **Obs. 4**: el aviso de init.sh sobre STATUS.md (128/143 frente a 128/144)
   queda corregido en este cierre (130/144).
+
+## #145 `geofence-alert-consistency` — 2026-10-01
+
+Sesion Backend, worktree `/home/claude/sites/Pet-Tracker-wt-backend`, branch
+`feature/145-geofence-alert-consistency`, creada desde `origin/main` `3db47fb0`.
+En paralelo, Frontend siguio con #60 `mobile-ios-support` en el arbol
+principal, esperando sus gates humanos. Los `./init.sh` se avisaron antes y
+despues.
+
+### Origen y reparto de #41
+
+- El humano pidio seguir con #41 `mobile-geofences` y, desde ahora, priorizar
+  las features de producto. El `explorer` dejo
+  `progress/explore_mobile-geofences.md` (commit a5c8271a de
+  `feature/41-mobile-geofences`, copiado tal cual a esta branch para que la
+  spec lo cite). El leader corrigio en linea una premisa falsa: las constantes
+  de radio no existen y el rango 20-2000 esta literal en el DTO.
+- Decisiones del humano (2026-10-01, AskUserQuestion):
+  - Coordinacion con #60: la spec de #41 se escribe contra `pet-map.tsx` de
+    03f57706 (branch de #60), y su handoff espera a que #60 este en `main`.
+  - Reparto en tres features: #145 endurece el backend (esta), #41 queda como
+    la lista y #146 es el editor sobre el mapa.
+  - UX: aceptadas todas las recomendaciones del explorer (solo circulos, fila
+    Geocercas en el Perfil, toque en el mapa mas slider de 20 a 2000 m con
+    paso de 10, solo el owner edita, switch de activa por fila, estado sin
+    seguimiento ante el 402, una zona por mascota, circulos de la pestana
+    Mapa fuera de alcance, smoke en dev build de Android).
+- `feature_list.json` (a8c8e449): #41 reacotada a la lista, con
+  `files_affected` corregidos a la convencion de ruta delgada; #145 y #146
+  registradas. Ids verificados libres contra `origin/main` y las branches
+  remotas.
+- Para #41: Frontend confirmo que #60 no tocara
+  `src/screens/profile/index.tsx` mas alla de 03f57706. Su unico cambio en
+  ese fichero son dos lineas dentro de `ImagePicker.launchImageLibraryAsync`
+  (ancla grepeable: `quality: 0.8,`), con
+  `preferredAssetRepresentationMode: ImagePicker.UIImagePickerPreferredAssetRepresentationMode.Compatible`.
+  La fila Geocercas no se cruza con ese cambio. Blob de `profile/index.tsx` en
+  03f57706: ef3e7362. Si el smoke de iPhone de #60 obliga a corregir ese
+  fichero, Frontend avisa antes de tocarlo.
+
+### Que se hizo
+
+- **Produccion** (`backend-pet-tracker/src/modules/geofences/`):
+  - El `DELETE` de una zona cierra antes, en una transaccion, sus alertas no
+    cerradas (`status <> 'closed'`), y despues borra. Antes, borrar la segunda
+    zona de una mascota con alerta no cerrada daba un 500: un `23505` en
+    `alert_events_open_anti_spam_idx`, porque el `SET NULL` de `geofence_id`
+    chocaba con la huerfana de la primera.
+  - Un `PATCH` que cambia `active` (en los dos sentidos) o la geometria, a un
+    valor distinto del guardado, devuelve `geofence_state` a
+    `{state: 'unknown', updatedAt: null}` y cierra las alertas no cerradas de
+    la zona, conservando su `geofence_id`, en la misma transaccion que el
+    `UPDATE`. El cierre es silencioso: ni push ni `alert_resolved`.
+  - El puerto `GeofenceRepository.update` gana
+    `options: { resetEvaluation: boolean }`. La decision vive en
+    `resetsEvaluation(existing, dto)` del caso de uso, y el cierre en la
+    funcion de modulo `closeOpenAlerts` del repositorio. Renombrar no
+    reinicia nada y el contrato HTTP no cambia.
+  - Cuatro comentarios que #145 dejaba falsos («nada referencia todavia a
+    `geofences`», «se deja intacto»), en el puerto,
+    `delete-geofence.use-case.ts` y `alerts-engine-store.ts`.
+- **Docs**: `docs/data-model.md` describe el predicado real del indice
+  anti-spam (`status <> 'closed'` desde la migracion 0008) y los cierres de
+  #145.
+- **Tests**: 10 `it` nuevos en `test/geofences.e2e-spec.ts`, bajo
+  `describe('#145: consistencia entre geocercas y alertas'`, que siembran
+  alertas y estado en la BD y verifican por HTTP y por BD. R1 reproduce el
+  500 con un rojo natural (`[204, 500]`). R5 es de verificacion: su rojo fue
+  la mutacion versionada MV (`'name'` en la lista de claves), revertida en su
+  verde.
+- **Spec**: `specs/geofence-alert-consistency/`, escrita por el `spec_author`
+  en f8535620. Confirmo con sondas medidas los cuatro agujeros R12 del
+  explorer. Espejada en Notion y firmada desde alli (commit de firma
+  748f160a; `Estado del gate` = Aprobado, page_last_edited_at
+  2026-10-01T17:19:49.251Z, leido por el leader en la pagina).
+- **Implementacion**: Codex CLI, desde el handoff 321300f9
+  (`progress/handoff_geofence-alert-consistency.md`). Doce commits
+  test-primero, de b4dd456f a 6a46f677, con los mensajes literales de
+  `tasks.md`. Las 14 sondas M1-M14 dieron exactamente sus rojos esperados, todos
+  por asercion, a la primera y sin paradas.
+- **Revision**: aprobada a la primera y sin bloqueantes
+  (`progress/review_geofence-alert-consistency.md`). El reviewer repitio
+  M1, M3, M9, M10, M12 y M14 sobre el arbol final y comprobo que el verde de
+  R5 deja el caso de uso identico al verde de R4.
+
+### Resultado
+
+- `./init.sh` sobre 6a46f677, corrido por el leader con aviso a Frontend:
+  exit 0 sin pipe, con el HEAD igual al revisado. Unit 171/1307, infra 2/14,
+  movil 86/1634, e2e 27+3 skip / 399+8 skip (+10 sobre 389).
+- Estado final: `done`. Notion: `Estado del gate` = Implementado,
+  `Rol actual` = Completado.
+
+### Deuda y apuntes
+
+- **Fuera de alcance firmado**: la carrera entre el motor y el CRUD (el motor
+  puede escribir su estado despues del reinicio; se arreglaria con
+  `SELECT ... FOR UPDATE`), las huerfanas anteriores a #145 (D7 de `design.md`
+  da la consulta para contarlas, y limpiarlas es decision del humano), el 409
+  del `PATCH` sin candado e2e y el titulo caducado
+  `... WHERE status=open` de `alerts.schema.spec.ts`. La atomicidad la fija
+  un grep (`this.db.transaction(` = 2), no un test.
+- **Obs. del reviewer, no bloqueantes**: Codex reescribio la prosa de
+  recuentos de `traceability.md` (sin tocar la tabla); falta una linea en
+  blanco antes del `describe` de #145 (cosmetico, eslint pasa); el reporte
+  cita el commit 12 como HEAD, porque no puede contener su propio hash.
+- **Avisos de `init.sh` ajenos a #145**: al `.env` de este worktree le faltan
+  `RESEND_API_KEY`, `RESEND_FROM` y `RESET_LINK_HOST`; STATUS.md decia
+  130/144 y queda corregido en este cierre (131/146); 3 features `done` sin
+  spec; el worker de jest movil que no sale limpio.
+- **Siguiente**: #41 (la lista) en su branch desde `origin/main`, con la spec
+  contra 03f57706 y el handoff tras el merge de #60; despues #146.
