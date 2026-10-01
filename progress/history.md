@@ -6665,3 +6665,70 @@ sesiones se turnaron con aviso explicito.
   afecta porque no hay UI) y sus commits firman con la identidad git del VPS.
 - La direccion uds de Frontend caduco al reiniciarse su sesion; el aviso fue
   por `ListAgents` a la `Frontend` local interactive.
+
+## #141 `mobile-weekly-day-column-value-cross-lock`, #142 `mobile-weekly-card-children-strict-lock` y #143 `mobile-weekly-day-selected-first-metric-lock` — 2026-09-30
+
+Sesion Backend, worktree `/home/claude/sites/Pet-Tracker-wt-backend`, branch
+`feature/141-mobile-weekly-day-column-value-cross-lock`, creada desde
+`origin/main` `4d536a43` (merge de la PR #180, #140). Un solo ciclo y una sola
+spec para las tres, por decision del humano: las tres son solo de test y
+tocan `weekly-activity-chart.test.tsx`. #143 es la obs. 1 del reviewer de
+#140 (`z_labelselfirstmetric`). En paralelo, Frontend siguio con #60
+`mobile-ios-support` en el arbol principal, esperando sus gates humanos. Los
+`./init.sh` de las dos sesiones se turnaron con aviso explicito.
+
+### Que se hizo
+
+- **Produccion**: sin cambios. Cada rojo fue una mutacion versionada de
+  `weekly-activity-chart.tsx` (`valuecross` para R1, `cardtail` para R2,
+  `z_labelselfirstmetric` para R3) y el verde siguiente la revirtio con
+  `git checkout HEAD~1 --`. El blob final es el de base, `c258abed`.
+- **Tests**: tres `describe` nuevos al final de
+  `weekly-activity-chart.test.tsx`, con cinco `it` (+350/−0). Blob final
+  `3e0ff4a3`, el que fijaba la spec; la base es un prefijo exacto.
+  - **#141 R1**: cada columna muestra el valor de su propio dia, contra
+    literales del test y con `toStrictEqual`, con y sin dia seleccionado.
+    Cierra `valuecross` y sus variantes.
+  - **#142 R2**: la lista cerrada de hijos de la tarjeta con `toStrictEqual`
+    en tres `it` (R2.1, R2.2 con comparacion, R2.3 vacia). Cierra `cardtail`.
+  - **#143 R3**: con la primera metrica y un dia seleccionado (medido o sin
+    datos), la clase de cada columna y el `testID` y la clase de sus dos
+    hijos, por posicion, con `toStrictEqual`. Cierra `z_labelselfirstmetric`.
+- **Spec**: `specs/mobile-weekly-day-column-value-cross-lock/`, con punteros
+  en `specs/mobile-weekly-card-children-strict-lock/` y
+  `specs/mobile-weekly-day-selected-first-metric-lock/`. Escrita por el
+  `spec_author` en 9fb515f3 y firmada desde Notion (commit de firma
+  c164d592).
+- **Implementacion**: Codex CLI, siete commits test-primero via b
+  (d84b74ab..5a3f13cc) sobre el handoff 0883b1fe.
+- **Revision**: aprobada a la primera y sin bloqueantes (2364e189). El
+  reviewer reprodujo los tres rojos por asercion, re-midio las 34 sondas de
+  la spec y planto tres propias.
+
+### Resultado
+
+- `./init.sh` sobre 5a3f13cc, corrido por el leader con aviso a Frontend:
+  exit 0 sin pipe, con el HEAD igual al empezar y al terminar. Unit
+  171/1307, infra 2/14, movil 86/1626 (+5 sobre 86/1621), e2e 27+3 skip /
+  389+8 skip.
+- Estado final: `done` para #141, #142 y #143. Notion: `Estado del gate` =
+  Implementado, `Rol actual` = Completado.
+
+### Deuda y apuntes
+
+- **Obs. 1 del reviewer**: la posicion del dia seleccionado no se cruza.
+  R1, R2 y R3 solo seleccionan la cuarta y la sexta columna. Dos mutaciones
+  propias salen verdes en las 6 suites (389/389): `own_valuecrosslastsel`
+  (`ee78ddc2`, la ultima columna muestra el valor del primer dia solo cuando
+  ella esta seleccionada) y `own_labelselfirstcol` (`ed5d9494`, la etiqueta
+  cambia solo con la primera columna seleccionada y la primera metrica). Es
+  un limite de la spec, no de la implementacion. Queda sin registrar, a
+  decision del humano: (D) en §Fuera de alcance, o (F) seleccionando tambien
+  la primera y la ultima columna.
+- **Obs. 2 del reviewer**: `own_cardtailcompmissing` (`799976d7`, un
+  `<View />` de mas en la tarjeta solo con comparacion y el dia `missing`
+  seleccionado) sale verde: R2.2 usa una semana sin dia `missing`. Mismo
+  tratamiento que la obs. 1, sin registrar.
+- **Obs. 5 a 7 del reviewer**: Codex no cargo skills (la spec se lo pedia;
+  no hay UI), sus commits firman con la identidad git del VPS y su informe
+  empieza con dos lineas de salida cruda antes del titulo. Informativas.
