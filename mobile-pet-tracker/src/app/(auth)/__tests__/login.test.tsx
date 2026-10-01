@@ -154,3 +154,22 @@ describe('#61 R8: login tiene contenedor de scroll con safe areas', () => {
     ).not.toHaveProperty('alignItems');
   });
 });
+
+describe('#127 R1: el botón de envío de login lleva su receta en el árbol', () => {
+  beforeEach(() => {
+    mockUseAuth.mockReturnValue({
+      status: 'unauthenticated',
+      token: null,
+      signIn: mockSignIn,
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+  });
+
+  it('pinta login-submit con la clase exacta, rounded-xl y bg-accent incluidos, la vea o no el recorte de fuente', async () => {
+    await renderLogin();
+
+    expect(screen.getByTestId('login-submit').props.className).toBe(
+      'pressable-feedback__root button__root button__root--variant-primary button__root--size-md w-full rounded-xl bg-accent',
+    );
+  });
+});
