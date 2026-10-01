@@ -47,13 +47,17 @@ export interface GeofenceRepository {
   /** Geocerca de esa mascota por id, o null si no existe o es de otra (R9). */
   findByIdAndPet(id: string, petId: string): Promise<Geofence | null>;
 
-  /** Actualiza solo las claves presentes en `changes` y refresca `updated_at` (R10). */
+  /**
+   * Actualiza solo las claves presentes en `changes` y refresca `updated_at`
+   * (R10). Con `resetEvaluation` (#145), en la misma transaccion devuelve
+   * `geofence_state` al default y cierra las alertas no cerradas de la zona.
+   */
   update(
     id: string,
     changes: GeofenceFieldChanges,
     options: { resetEvaluation: boolean },
   ): Promise<Geofence>;
 
-  /** Hard delete (R14): nada referencia todavia a `geofences`. */
+  /** Hard delete (R14); antes cierra sus alertas no cerradas (#145 R2). */
   delete(id: string): Promise<void>;
 }

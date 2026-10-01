@@ -1,9 +1,9 @@
 import type { GeofenceState } from '@/pipeline/geofence-eval';
 
 // Puerto propio del worker (D2, mismo criterio D14 de wialon-ingestion-
-// pipeline): GeofenceRepository (#11) se deja intacto — su design.md ya
-// descarto explicitamente un metodo updateState para este consumidor, y de
-// hecho no expone forma alguna de tocar geofence_state. Token junto a la
+// pipeline): el motor es el unico que escribe un geofence_state evaluado.
+// GeofenceRepository (#11) no lo evalua; desde #145 solo lo devuelve al
+// default cuando un PATCH cambia la geometria o `active`. Token junto a la
 // interface (docs/conventions.md §Tokens de inyeccion).
 export const ALERTS_ENGINE_STORE = Symbol('AlertsEngineStore');
 
