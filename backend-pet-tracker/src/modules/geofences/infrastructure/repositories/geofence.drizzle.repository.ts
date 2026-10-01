@@ -91,7 +91,11 @@ export class GeofenceDrizzleRepository implements GeofenceRepository {
     return rows[0] ? toDomain(rows[0]) : null;
   }
 
-  async update(id: string, changes: GeofenceFieldChanges): Promise<Geofence> {
+  async update(
+    id: string,
+    changes: GeofenceFieldChanges,
+    options: { resetEvaluation: boolean },
+  ): Promise<Geofence> {
     const { centerLat, centerLng, radiusM, ...columns } = changes;
     const geometryChanges =
       centerLat !== undefined ||
@@ -105,18 +109,29 @@ export class GeofenceDrizzleRepository implements GeofenceRepository {
       ? await this.mergedGeometry(id, { centerLat, centerLng, radiusM })
       : undefined;
 
-    try {
-      const [row] = await this.db
-        .update(geofences)
-        .set({
-          ...columns,
-          ...(geometry ? { geometry } : {}),
-          updatedAt: new Date(),
-        })
-        .where(eq(geofences.id, id))
-        .returning();
+    const now = new Date();
 
-      return toDomain(row);
+    try {
+      return await this.db.transaction(async (tx) => {
+        const [row] = await tx
+          .update(geofences)
+          .set({
+            ...columns,
+            ...(geometry ? { geometry } : {}),
+            ...(options.resetEvaluation
+              ? { geofenceState: { state: 'unknown', updatedAt: null } }
+              : {}),
+            updatedAt: now,
+          })
+          .where(eq(geofences.id, id))
+          .returning();
+
+        if (options.resetEvaluation) {
+          await closeOpenAlerts(tx, id, now);
+        }
+
+        return toDomain(row);
+      });
     } catch (error) {
       throw translateUniqueViolation(error, undefined, columns.name);
     }

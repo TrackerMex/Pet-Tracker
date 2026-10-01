@@ -48,7 +48,11 @@ export interface GeofenceRepository {
   findByIdAndPet(id: string, petId: string): Promise<Geofence | null>;
 
   /** Actualiza solo las claves presentes en `changes` y refresca `updated_at` (R10). */
-  update(id: string, changes: GeofenceFieldChanges): Promise<Geofence>;
+  update(
+    id: string,
+    changes: GeofenceFieldChanges,
+    options: { resetEvaluation: boolean },
+  ): Promise<Geofence>;
 
   /** Hard delete (R14): nada referencia todavia a `geofences`. */
   delete(id: string): Promise<void>;
