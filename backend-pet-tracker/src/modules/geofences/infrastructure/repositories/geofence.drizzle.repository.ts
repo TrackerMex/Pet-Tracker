@@ -1,8 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, asc, count, eq } from 'drizzle-orm';
+import { and, asc, count, eq, ne } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { uuidv7 } from 'uuidv7';
 import { DRIZZLE } from '@/db/drizzle.constants';
+import { alertEvents } from '@/db/schema/alerts.schema';
 import { GeofenceCircleColumn, geofences } from '@/db/schema/geofences.schema';
 import {
   Geofence,
@@ -122,7 +123,10 @@ export class GeofenceDrizzleRepository implements GeofenceRepository {
   }
 
   async delete(id: string): Promise<void> {
-    await this.db.delete(geofences).where(eq(geofences.id, id));
+    await this.db.transaction(async (tx) => {
+      await closeOpenAlerts(tx, id, new Date());
+      await tx.delete(geofences).where(eq(geofences.id, id));
+    });
   }
 
   private async mergedGeometry(
@@ -143,6 +147,22 @@ export class GeofenceDrizzleRepository implements GeofenceRepository {
       radiusM: partial.radiusM ?? row.geometry.radiusM,
     };
   }
+}
+
+function closeOpenAlerts(
+  db: Pick<NodePgDatabase, 'update'>,
+  geofenceId: string,
+  closedAt: Date,
+) {
+  return db
+    .update(alertEvents)
+    .set({ status: 'closed', closedAt })
+    .where(
+      and(
+        eq(alertEvents.geofenceId, geofenceId),
+        ne(alertEvents.status, 'closed'),
+      ),
+    );
 }
 
 function toDomain(row: GeofenceRow): Geofence {
