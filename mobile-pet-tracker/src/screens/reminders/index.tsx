@@ -374,8 +374,7 @@ export function RemindersScreen() {
                   variant="danger"
                   onPress={deleteSelectedReminder}
                 >
-                  {/* <Button.Label className="font-bold text-danger-foreground"> */}
-                  <Button.Label className="font-bold text-foreground">
+                  <Button.Label className="font-bold text-danger-foreground">
                     {t('reminders.delete')}
                   </Button.Label>
                 </Button>
