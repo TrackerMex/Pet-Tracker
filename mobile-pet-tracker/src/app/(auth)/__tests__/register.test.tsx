@@ -237,3 +237,22 @@ describe('#61 R7: register usa las métricas de pantalla uniformes', () => {
     expect(screen.getAllByText('Crear cuenta')).toHaveLength(2);
   });
 });
+
+describe('#127 R1: el botón de envío de register lleva su receta en el árbol', () => {
+  beforeEach(() => {
+    mockUseAuth.mockReturnValue({
+      status: 'unauthenticated',
+      token: null,
+      signIn: mockSignIn,
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+  });
+
+  it('pinta register-submit, deshabilitado al montar, con la clase exacta, rounded-xl y bg-accent incluidos, la vea o no el recorte de fuente', async () => {
+    await renderRegister();
+
+    expect(screen.getByTestId('register-submit').props.className).toBe(
+      'pressable-feedback__root button__root button__root--variant-primary button__root--size-md disabled:element-disabled w-full rounded-xl bg-accent',
+    );
+  });
+});

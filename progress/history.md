@@ -6732,3 +6732,76 @@ tocan `weekly-activity-chart.test.tsx`. #143 es la obs. 1 del reviewer de
 - **Obs. 5 a 7 del reviewer**: Codex no cargo skills (la spec se lo pedia;
   no hay UI), sus commits firman con la identidad git del VPS y su informe
   empieza con dos lineas de salida cruda antes del titulo. Informativas.
+
+## #127 `mobile-classnames-own-tag-tree-lock` y #128 `mobile-delete-confirm-label-tree-lock` — 2026-10-01
+
+Sesion Backend, worktree `/home/claude/sites/Pet-Tracker-wt-backend`, branch
+`feature/127-mobile-classnames-own-tag-tree-lock`, creada desde `origin/main`
+`886558db` (merge de la PR #181, #141 + #142 + #143). Un solo ciclo y una sola
+spec para las dos, por decision del humano: son los dos hallazgos (F) de la
+spec de #120 y las dos son solo de test. En paralelo, Frontend siguio con #60
+`mobile-ios-support` en el arbol principal, esperando sus gates humanos. Los
+`./init.sh` de las dos sesiones se turnaron con aviso explicito.
+
+### Que se hizo
+
+- **Produccion**: sin cambios. Cada rojo fue una mutacion versionada y el
+  verde siguiente la revirtio con `git checkout HEAD~1 --`; el diff de
+  produccion contra `origin/main` es vacio.
+- **Tests**: un candado sobre el arbol renderizado para cada uno de los nueve
+  elementos que CS1-CS5 leen con un recorte de fuente de `<` a `<`, con el
+  `className` literal del test. El recorte no ve un comentario JSX ni un
+  `{false && ...}` como primer hijo (limite 2), ni una linea `//` dentro del
+  propio tag (limite 3). Ocho `it` nuevos en siete ficheros de test.
+  - **#127 R1**: los botones de envio de login, register, forgot y
+    reset-password.
+  - **#127 R2**: los skeletons de vacunas y del hero.
+  - **#127 R3**: las tres pildoras de resumen de recordatorios.
+  - **#128 R4**: el boton de confirmar borrado y su etiqueta, con la
+    cardinalidad de una sola etiqueta «Eliminar». Cierra el senuelo `D-d`.
+  - **#127 R5**: `docs/conventions.md` documenta los limites del recorte y el
+    acoplamiento de los literales de R1 y R4 a heroui-native 1.0.8.
+- **Spec**: `specs/mobile-classnames-own-tag-tree-lock/`, con puntero en
+  `specs/mobile-delete-confirm-label-tree-lock/`. Escrita por el
+  `spec_author` en 86dbde23 y firmada desde Notion (commit de firma
+  40e2c12d).
+- **Implementacion**: Codex CLI, nueve commits test-primero via b
+  (91a5fb23..d0742cb0) y uno de evidencia (f53012c9) sobre el handoff
+  b5d1062f.
+- **Dos paradas de Codex, las dos por erratas de la spec**, no de su
+  trabajo:
+  1. `B-login-h`: `tasks.md` citaba el blob `10ab4fde`; el real es
+     `10ab4fdd`. El leader lo reprodujo desde la base y comprobo los otros 19
+     blobs. Errata en 968c1ebc.
+  2. `D-h`: dos rojos de R7 en `reminders/index.test.tsx` fallan por consulta
+     (`Unable to find an element with testID: reminder-delete-reminder-1`),
+     en cascada del test anterior. El leader los midio en la base 886558db:
+     son preexistentes. Errata en b268f8d5.
+- **Revision**: aprobada a la primera y sin bloqueantes (22c144a0). El
+  reviewer re-midio 12 sondas de la spec y planto 3 propias en zona ciega
+  (`OWN-register-j`, `OWN-d-after`, `OWN-inactive-f`): las tres dan verde en
+  el candado de fuente y rojo en el de arbol.
+
+### Resultado
+
+- `./init.sh` sobre f53012c9, corrido por el leader con aviso a Frontend:
+  exit 0 sin pipe, con el HEAD igual al empezar y al terminar. Unit
+  171/1307, infra 2/14, movil 86/1634 (+8 sobre 86/1626), e2e 27+3 skip /
+  389+8 skip.
+- Estado final: `done` para #127 y #128. Notion: `Estado del gate` =
+  Implementado, `Rol actual` = Completado.
+
+### Deuda y apuntes
+
+- **Obs. 1 del reviewer**: la frase de `requirements.md` «Todas las rojas son
+  por asercion, salvo `Z-d-dup`» solo es exacta para los `it` nuevos. No se
+  enmendo la spec firmada; la errata de `tasks.md` acota el alcance. Una spec
+  futura debe decir «de los `it` nuevos» y clasificar tambien los rojos
+  preexistentes de cada sonda.
+- **Obs. 2**: `Z-label`, `Z-state2` y `Z-child` siguen en verde, como firmo
+  el humano. (D) los otros estados y (F) la tinta de `Button.Label` de envio
+  y la tipografia de los hijos de pildora quedan sin id.
+- **Obs. 3**: los literales de R1 y R4 incluyen las clases de heroui-native
+  1.0.8. Una subida de version los pone en rojo a proposito.
+- **Obs. 4**: el aviso de init.sh sobre STATUS.md (128/143 frente a 128/144)
+  queda corregido en este cierre (130/144).

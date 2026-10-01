@@ -87,3 +87,13 @@ describe('#61 R8: forgot tiene contenedor de scroll con safe areas', () => {
     expect(screenRoot.props.contentInsetAdjustmentBehavior).toBe('automatic');
   });
 });
+
+describe('#127 R1: el botón de envío de forgot lleva su receta en el árbol', () => {
+  it('pinta forgot-submit, deshabilitado, con la clase exacta, rounded-xl y bg-accent incluidos, la vea o no el recorte de fuente', async () => {
+    await render(<Forgot />, { wrapper: AuthScreenWrapper });
+
+    expect(screen.getByTestId('forgot-submit').props.className).toBe(
+      'pressable-feedback__root button__root button__root--variant-primary button__root--size-md disabled:element-disabled w-full rounded-xl bg-accent',
+    );
+  });
+});

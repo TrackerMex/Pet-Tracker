@@ -2477,7 +2477,7 @@
   {
     "id": 127,
     "name": "mobile-classnames-own-tag-tree-lock",
-    "status": "pending",
+    "status": "done",
     "priority": "P3",
     "description": "Registrada al cerrar #120 el 2026-09-28. Es el primer hallazgo (F) de su spec: specs/mobile-classnames-element-slice-children/requirements.md §Fuera de alcance, «Los limites 2 y 3 sobre los nueve elementos de R1». Tras #120, CS1-CS4 de mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts leen la receta de nueve elementos (filas login-submit a pill-inactive de la spec de #120) con openingTagWithTestId, un recorte de fuente de < a <. Lo que el recorte de fuente no ve sigue en VERDE: un comentario JSX {/* rounded-xl */} o un {false && 'rounded-xl'} como primer hijo (sondas P-week-j y P-week-f, limite 2), o una linea // rounded-xl dentro del propio tag (P-week-l3, limite 3), con rounded-xl fuera del className de pill-week de src/screens/reminders/index.tsx. Medido por Codex y re-medido por el reviewer de #120 sobre 52d920a8. El humano lo firmo como limite documentado en la spec de #120 (punto 6 de su §Que firma el humano), no como agujero a cerrar dentro de ella. No toca produccion. El arbol lo cerraria: una asercion sobre props.className de cada elemento, como la que src/screens/reminders/index.test.tsx ya hace para bg-danger (grep -n \"props.className\" src/screens/reminders/index.test.tsx). Coste: montar cuatro pantallas y un componente. La spec decide si lo cierra en el arbol, por elemento, o si lo deja documentado.",
     "acceptance_criteria": [
@@ -2487,13 +2487,20 @@
       "Cero cambio en produccion; suite movil verde medida sin pipe; delta de tests declarado"
     ],
     "files_affected": [
-      "mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts"
+      "mobile-pet-tracker/src/app/(auth)/__tests__/login.test.tsx",
+      "mobile-pet-tracker/src/app/(auth)/__tests__/forgot.test.tsx",
+      "mobile-pet-tracker/src/app/(auth)/__tests__/register.test.tsx",
+      "mobile-pet-tracker/src/screens/reset-password/index.test.tsx",
+      "mobile-pet-tracker/src/screens/health/index.test.tsx",
+      "mobile-pet-tracker/src/components/__tests__/pet-hero-header.test.tsx",
+      "mobile-pet-tracker/src/screens/reminders/index.test.tsx",
+      "docs/conventions.md"
     ]
   },
   {
     "id": 128,
     "name": "mobile-delete-confirm-label-tree-lock",
-    "status": "pending",
+    "status": "done",
     "priority": "P3",
     "description": "Registrada al cerrar #120 el 2026-09-28. Es el segundo hallazgo (F) de su spec: specs/mobile-classnames-element-slice-children/requirements.md §Fuera de alcance, «El senuelo sobre el bloque de subarbol de CS5 (D-d)». En mobile-pet-tracker/src/__tests__/legibility-classnames.test.ts, el describe #61 R1 sigue leyendo el bloque entero de reminders-delete-confirm con elementWithTestId para las aserciones de subarbol, como la tinta de su etiqueta. Un senuelo {false && (<Button.Label className=\"font-bold text-danger-foreground\">{t('reminders.delete')}</Button.Label>)} delante de la etiqueta real, que pasa a className=\"font-bold text-foreground\" (sonda D-d, blob 50cc3d89 de src/screens/reminders/index.tsx), da VERDE en legibility, y el arbol de src/screens/reminders/index.test.tsx tampoco lo para. Medido por Codex y re-medido por el reviewer de #120 sobre 52d920a8. El humano lo firmo como limite documentado en la spec de #120 (punto 6 de su §Que firma el humano), no como agujero a cerrar dentro de ella. No toca produccion. Lo cerraria una asercion en el arbol sobre la clase de la etiqueta del boton destructivo.",
     "acceptance_criteria": [
@@ -2503,7 +2510,8 @@
       "Cero cambio en produccion; suite movil verde medida sin pipe; delta de tests declarado"
     ],
     "files_affected": [
-      "mobile-pet-tracker/src/screens/reminders/index.test.tsx"
+      "mobile-pet-tracker/src/screens/reminders/index.test.tsx",
+      "docs/conventions.md"
     ]
   },
   {
@@ -2751,6 +2759,22 @@
     "description": "Registrada el 2026-09-30 al cerrar #140, por decision del humano. Es la observacion 1 del reviewer de #140 (progress/review_mobile-weekly-day-column-content-lock.md, mutacion propia z_labelselfirstmetric, blob 6eda3dd1). En mobile-pet-tracker/src/screens/home/weekly-activity-chart.tsx, si la clase de la etiqueta del dia pasa a 'text-2xs font-semibold text-foreground' solo cuando hay un dia seleccionado y la metrica es la primera (selectedMetricIndex === 0), la grafica y las otras cinco suites que la leen siguen verdes: 6 suites, 384/384, medido por el reviewer sobre 047d319a. #140 R1 y R2 solo seleccionan un dia despues de cambiar a distanceM, asi que ningun candado ejecuta la combinacion «dia seleccionado con la metrica por defecto». La tabla de estados de specs/mobile-weekly-day-column-content-lock/requirements.md marca los dos estados por separado, pero no declara la combinacion ni como (D) ni como (F). Limites: NO es un defecto de la implementacion de #140, cuyos tests coinciden byte a byte con tasks.md. Solo esta medida la mutacion de la etiqueta; el valor, la raya y la columna en esa combinacion no se probaron, y la spec debe medirlos antes de decidir si entran. La spec decide si amplia los estados de #140 R1 y R2 o anade un describe nuevo, y declara por escrito cualquier cambio en un describe previo. Los esperados deben ser literales del test, nunca importados de produccion. Toca el mismo test que #141 y #142 y se especifica en el mismo ciclo que ellas, por decision del humano.",
     "acceptance_criteria": [
       "Con la sonda z_labelselfirstmetric (blob 6eda3dd1) plantada en la grafica, un it FALLA por asercion",
+      "Los esperados son literales del test, nunca importados de produccion",
+      "Los describe previos siguen verdes; cualquier cambio en ellos esta declarado en la spec",
+      "Cero cambio en produccion; suite movil verde medida sin pipe; delta de tests declarado"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/screens/home/weekly-activity-chart.test.tsx"
+    ]
+  },
+  {
+    "id": 144,
+    "name": "mobile-weekly-day-selected-position-lock",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada el 2026-10-01 al cerrar #141 + #142 + #143, por decision del humano. Son las observaciones 1 y 2 del reviewer de #141 (progress/review_mobile-weekly-day-column-value-cross-lock.md §Observaciones). En mobile-pet-tracker/src/screens/home/weekly-activity-chart.tsx, tres mutaciones propias del reviewer dan VERDE en las 6 suites que leen la grafica (389/389, medido sobre 5a3f13cc): own_valuecrosslastsel (blob ee78ddc2: la ultima columna muestra el valor del primer dia solo mientras ella misma esta seleccionada), own_labelselfirstcol (blob ed5d9494: la etiqueta pasa a text-foreground solo con la primera columna seleccionada y la primera metrica) y own_cardtailcompmissing (blob 799976d7: un <View /> de mas al final de la tarjeta solo con comparacion y el dia missing seleccionado). #141 R1 y #143 R3 solo seleccionan 2026-09-05 (cuarta columna) y 2026-09-07 (sexta, missing); la primera y la ultima no se seleccionan nunca. #142 R2.2 usa una semana sin dia missing. Limites: NO es un defecto de la implementacion de #141-#143, cuyos tests coinciden byte a byte con su tasks.md. Solo estan medidas esas tres mutaciones; otras posiciones y combinaciones no se probaron. Las tres dependen de la posicion o de la combinacion a proposito, como valuecrosstrend, que la spec de #141 declaro (D): la spec decide, sonda a sonda, si la cierra o la declara (D) por escrito, y declara cualquier cambio en un describe previo. Los esperados deben ser literales del test, nunca importados de produccion. Toca el mismo test que #140-#143.",
+    "acceptance_criteria": [
+      "Con cada una de las sondas own_valuecrosslastsel (blob ee78ddc2), own_labelselfirstcol (blob ed5d9494) y own_cardtailcompmissing (blob 799976d7) plantada en la grafica, un it FALLA por asercion, o la spec la acepta por escrito como (D)",
       "Los esperados son literales del test, nunca importados de produccion",
       "Los describe previos siguen verdes; cualquier cambio en ellos esta declarado en la spec",
       "Cero cambio en produccion; suite movil verde medida sin pipe; delta de tests declarado"

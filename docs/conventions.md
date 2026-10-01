@@ -286,13 +286,22 @@ y añaden un corte: si el elemento se cierra solo, el recorte acaba en su `/>`.
 Sin ese corte, el hueco entre el `/>` y el siguiente `<` del fichero entra en
 la ventana, y un comentario JSX o un `{false && '…'}` en ese hueco dan un
 verde falso. El comentario que sigue al skeleton de `pet-hero-header.tsx` vive
-ahí. Esos candados solo leen fuente, así que los límites 2 y 3 quedan como
-límites documentados. `legibility-classnames.test.ts` conserva a propósito
+ahí. Esos candados solo leen fuente, así que los límites 2 y 3 los cierra el
+árbol: cada uno de los nueve elementos tiene, en el test de su pantalla o de su
+componente, una pata que asevera con `toBe` su `className` entero, y su `style`
+donde lo lleva (#127 R1 a R3): `grep -rn "#127 R" mobile-pet-tracker/src`. En
+los `Button`, ese `className` incluye las clases que añade heroui-native
+(`pressable-feedback__root button__root …`): al subir su versión hay que volver
+a medir esos literales. `legibility-classnames.test.ts` conserva a propósito
 `elementWithTestId`, que va del ancla al `</Button>` con los hijos dentro, para
 lo que es de los hijos del botón destructivo: la etiqueta, su texto y el veto
 del token del acento en todo el botón. Ese bloque tiene su propio hueco: un
 señuelo `{false && (…)}` con la etiqueta correcta delante de la real da un
-verde falso.
+verde falso. Lo cierra el árbol (#128 R4):
+`grep -n "#128 R4" mobile-pet-tracker/src/screens/reminders/index.test.tsx`
+abre el sheet, busca la etiqueta con `within` dentro del botón y asevera con
+`toBe` su `className` y el del propio botón. Un señuelo que no se renderiza no
+está en el árbol, y uno que se renderiza da dos etiquetas y rompe la consulta.
 
 Tampoco vale aseverar la receta contra el fichero entero. Si otro elemento del
 mismo fichero la repite, esa copia da el verde aunque el elemento vigilado la

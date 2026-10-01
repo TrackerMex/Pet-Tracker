@@ -687,3 +687,31 @@ describe('#87 R13: HealthScreen lee por TanStack Query', () => {
     );
   });
 });
+
+describe('#127 R2: el skeleton de vacunas lleva su receta en el árbol', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated',
+      token: 'jwt-token',
+      signIn: jest.fn(),
+      signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockListWeights.mockReturnValue(pending<WeightsState>());
+  });
+
+  it('pinta vaccines-skeleton con la clase exacta, rounded-card incluido, la vea o no el recorte de fuente', async () => {
+    mockListVaccines.mockReturnValue(pending<VaccinesState>());
+
+    await renderHealth();
+
+    await waitFor(() =>
+      expect(screen.getByTestId('vaccines-skeleton')).toBeVisible(),
+    );
+    expect(screen.getByTestId('vaccines-skeleton').props.className).toBe(
+      'skeleton__root h-24 w-full rounded-card',
+    );
+  });
+});
