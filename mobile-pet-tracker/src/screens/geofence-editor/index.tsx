@@ -1,12 +1,12 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { Button, Input, Label, Skeleton, Slider, TextField } from 'heroui-native';
+import { Button, Input, Label, Skeleton, Slider, Switch, TextField } from 'heroui-native';
 import { useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUniwind } from 'uniwind';
 
-import { createGeofence, listGeofences, updateGeofence, type Geofence, type GeofenceSaveState } from '../../api/geofences';
+import { createGeofence, listGeofences, setGeofenceActive, updateGeofence, type Geofence, type GeofenceSaveState, type GeofenceWriteState } from '../../api/geofences';
 import { getLastPosition } from '../../api/positions';
 import { geofenceKeys, positionKeys } from '../../api/query-keys';
 import { Card } from '../../components/card';
@@ -99,19 +99,22 @@ function GeofenceEditorForm({ petId, zone, geofences, initialName, initialCenter
   }));
   if (!zone) circles.push({ id: 'draft', center, radius });
 
-  const save = async () => {
+  async function run(request: () => Promise<GeofenceSaveState | GeofenceWriteState>, onOk: () => unknown) {
     setBusy(true); setError(null);
     try {
-      const draft = { name: name.trim(), centerLat: center.latitude, centerLng: center.longitude, radiusM: radius };
-      const result = zone
-        ? await updateGeofence(baseUrl, token ?? '', petId, zone.id, draft)
-        : await createGeofence(baseUrl, token ?? '', petId, draft);
-      if (result.kind === 'ok') {
-        void queryClient.invalidateQueries({ queryKey: geofenceKeys.list(petId) });
-        router.back();
-      } else if (result.kind === 'unauthorized') await signOut();
+      const result = await request();
+      if (result.kind === 'ok') await onOk();
+      else if (result.kind === 'unauthorized') await signOut();
       else setError(messageFor(t, result.kind));
     } catch { setError(messageFor(t, 'error')); } finally { setBusy(false); }
+  }
+  const refresh = () => queryClient.invalidateQueries({ queryKey: geofenceKeys.list(petId) });
+  const leave = () => { void refresh(); router.back(); };
+  const save = () => {
+    const draft = { name: name.trim(), centerLat: center.latitude, centerLng: center.longitude, radiusM: radius };
+    return run(() => zone
+      ? updateGeofence(baseUrl, token ?? '', petId, zone.id, draft)
+      : createGeofence(baseUrl, token ?? '', petId, draft), leave);
   };
 
   return <View testID="screen-geofence-editor" className="flex-1">
@@ -139,6 +142,12 @@ function GeofenceEditorForm({ petId, zone, geofences, initialName, initialCenter
             setCamera({ center, zoom: zoomForRadius(next) });
           }} /></Slider.Track>
       </Slider>
+      {zone ? <View testID="geofence-editor-active-row" className="flex-row items-center justify-between gap-3">
+        <Text className="font-semibold text-foreground">{t('geofences.statusActive')}</Text>
+        <Switch testID="geofence-editor-active" isSelected={zone.active} hitSlop={10} isDisabled={busy}
+          accessibilityLabel={t('geofences.activeLabel', { name: zone.name })}
+          onSelectedChange={(active) => void run(() => setGeofenceActive(baseUrl, token ?? '', petId, zone.id, active), refresh)} />
+      </View> : null}
       {zone ? <Text testID="geofence-editor-reset-note" className="text-sm font-normal text-muted">{t('geofenceEditor.resetNote')}</Text> : null}
       <Button testID="geofence-editor-save" className="rounded-xl bg-accent" isDisabled={busy || name.trim() === ''} onPress={() => void save()}>
         <Button.Label className="font-bold text-accent-foreground">{t('geofenceEditor.save')}</Button.Label>
