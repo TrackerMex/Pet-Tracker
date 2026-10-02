@@ -1,7 +1,7 @@
 # review: mobile-geofence-editor (#146)
 Fecha: 2026-10-02
 Revisado: `feature/146-mobile-geofence-editor` en `Pet-Tracker-wt-146`, HEAD `c0940cd0` (merge de `f6d45af5` con origin/main `cb14497c`)
-Veredicto: RECHAZADO
+Veredicto: APROBADO (ronda 2, HEAD 552f557d; la ronda 1 en c0940cd0 fue RECHAZADO, se conserva abajo)
 
 Motivo, en una línea: dos mutaciones plantadas en zona ciega de R7 sobreviven con
 el fichero del editor entero en verde (68/68). El código de producción es
@@ -112,3 +112,76 @@ No lo corrí: el clasificador se lo deniega al subagente. El leader lo corrió e
 … ✅ Lint sin errores / ✅ Typecheck sin errores / ✅ Todo verde. Listo para trabajar.
 ```
 Las cifras coinciden con el resumen del leader: backend 174/1335, móvil 90/1852 + 1 snapshot, e2e 28 + 3 skipped (431 tests, 8 skipped), drizzle OK. Los `ERROR [PollerService]`/`ECONNREFUSED 4566` y el `DrizzleQueryError` del log son ruido esperado del arranque y de los e2e: los totales están verdes.
+
+## Ronda 2 (2026-10-02)
+Revisado: HEAD `552f557d` (c249391b test + 552f557d trazabilidad), sobre la ronda 1 en `c0940cd0`.
+Alcance: delta desde la ronda 1 y R7. C2-C8 no se repiten enteros; las
+observaciones no bloqueantes 2-8 de la ronda 1 no se reabren (el delta no las toca).
+Veredicto ronda 2: **APROBADO**.
+
+### 1. Lista cerrada
+- `git diff --name-only c0940cd0 552f557d`: `mobile-pet-tracker/src/screens/geofence-editor/index.test.tsx`,
+  `progress/handoff_…`, `progress/impl_…`, `progress/review_…`, `specs/mobile-geofence-editor/traceability.md`. Nada más.
+- `git diff --stat c0940cd0 552f557d -- mobile-pet-tracker`: solo `src/screens/geofence-editor/index.test.tsx` (+10 / −4). Cero cambios de producción.
+- `git log --oneline c0940cd0..HEAD`: 826ae816 (review), f45c7159 (handoff), c249391b (test, 1 fichero), 552f557d (traceability + impl, 2 ficheros).
+
+### 2. Diff de c249391b contra la Reanudación 4
+Coincide literalmente con los pasos 1-4, todo dentro del describe `#146 R7`:
+- it «un toque en un POI mueve el centro del borrador»: `await edit()` pasa a `mount()` + `findByTestId('geofence-editor-name')`; la aserción pasa a `circles()[2]` `toEqual({ id: 'draft', center: tap, radius: 150 })`.
+- it «al soltar el slider la cámara encuadra el borrador»: `mapClick` con `tap` tras `edit()`; la cámara esperada es `{ coordinates: tap, zoom: 15 }`.
+- it «TalkBack sube y baja el radio de diez en diez y encuadra»: `mapClick` con `tap` tras `edit()`; `cameraPosition.coordinates` `toEqual(tap)` después del zoom ~16.907 y después del zoom 17.
+- it «TalkBack no sale de 20 ni de 2000»: modo crear; `circles()[2]` `toEqual({ id: 'draft', center: { 19.5, −99.2 }, radius: 20 })` y `circles()[2].radius` `toBe(2000)`.
+No cambia ningún título ni se añade o quita ningún `it`. El editor sigue en 68.
+
+### 3. Mutaciones (corridas por el reviewer)
+Comando, desde `mobile-pet-tracker/` y sin pipe:
+`bunx jest --runTestsByPath 'src/screens/geofence-editor/index.test.tsx' > <fichero> 2>&1; echo "exit=$?"`.
+Antes de empezar, `test ! -e .expo/types/router.d.ts` dio exit 0. Cada mutación se plantó con `sed` en
+`src/screens/geofence-editor/index.tsx` y se revirtió con `git checkout HEAD -- src/screens/geofence-editor/index.tsx`.
+Después de cada reversión, `git diff --stat -- mobile-pet-tracker` y `git diff --cached --stat` salieron vacíos.
+El único fichero modificado en el repo era este review.
+
+| Mutación | Cambio plantado | Resultado | `it` rojos (línea de la aserción) |
+|---|---|---|---|
+| Verde | ninguno | exit=0, **68 / 68** | n/a |
+| **Z1** (ronda 1) | `setCamera({ center, ` → `setCamera({ center: camera.center, ` en `onChangeEnd` y en la acción de TalkBack | exit=1, **2 fallan / 66** | «al soltar el slider…» (:250, `toEqual`, 19.41/−99.11 frente a 19.4/−99.1); «TalkBack sube y baja…» (:260, `toEqual`, la misma diferencia) |
+| **Z2** (ronda 1) | `circles.push({ id: 'draft', center, radius })` → `center: initialCenter, radius: initialRadius` | exit=1, **2 fallan / 66** | «un toque en un POI…» (:229, centro 19.41/−99.11 frente a 19.5/−99.2); «TalkBack no sale de 20 ni de 2000» (:271, radio 20 frente a 150) |
+| S1, zona ciega | Z1 solo en la acción de TalkBack | exit=1, 1 falla / 67 | «TalkBack sube y baja…» (:260) |
+| S2, zona ciega | Z1 solo en `onChangeEnd` | exit=1, 1 falla / 67 | «al soltar el slider…» (:250) |
+| S3, zona ciega | al crear, solo el radio congelado: `radius: initialRadius` | exit=1, 1 falla / 67 | «TalkBack no sale de 20 ni de 2000» (:271, 20 frente a 150) |
+| S4, zona ciega | al crear, solo el centro congelado: `center: initialCenter` | exit=1, 1 falla / 67 | «un toque en un POI…» (:229) |
+| S5, zona ciega | al editar, el círculo de la zona usa `radiusM` en vez de `radius` | exit=1, 1 falla / 67 | «mover el slider cambia el radio…» (:241, `toBe`, 300 frente a 150) |
+| S6, zona ciega | al editar, el círculo de la zona usa el centro guardado en vez de `center` | exit=1, 2 fallan / 66 | «un toque en el mapa…» (:222); «un toque dentro de un círculo…» (:235) |
+
+Las ocho mutaciones mueren por aserción y no por consulta: todas fallan en `toEqual`/`toBe` sobre props
+ya renderizados. Z1 y Z2 fallan exactamente en los dos `it` que declara la reanudación, y en las
+aserciones nuevas (:229, :250, :260, :271). Las salidas están en el scratchpad del leader, en `r2-<mutación>.txt`.
+
+### 4. Trazabilidad
+- La fila R7 añade `c249391b` test(geofences): lock the draft camera and the create draft (R7) junto a `77857cec` y `04c4f646`. El resto de filas sigue igual: el diff c0940cd0..552f557d de traceability.md es 1 línea (+1 / −1).
+- Ninguna fila dice «pendiente»: la única coincidencia es la regla de la línea 38.
+- `git merge-base --is-ancestor c249391b HEAD` → 0; `git merge-base --is-ancestor 552f557d HEAD` → 0.
+- Los dos mensajes siguen el formato de conventions y citan R7.
+
+### 5. ./init.sh (lo corrió el leader en 552f557d)
+`init146r2.head` = `552f557d` = HEAD. Las líneas de resumen de `init146r2.log` coinciden con lo esperado:
+```
+Test Suites: 174 passed, 174 total          (backend)
+Tests:       1335 passed, 1335 total
+Test Suites: 90 passed, 90 total            (móvil)
+Tests:       1852 passed, 1852 total
+Snapshots:   1 passed, 1 total
+[✓] migrations applied successfully!
+Test Suites: 3 skipped, 28 passed, 28 of 31 total   (e2e)
+Tests:       8 skipped, 423 passed, 431 total
+✅ Todo verde. Listo para trabajar.
+```
+Los `ERROR` de Nest del log son ruido conocido: los consumers arrancan antes que LocalStack (ECONNREFUSED 4566),
+y hay un insert duplicado que un e2e provoca a propósito. Ninguna suite falla.
+
+### Observaciones ronda 2
+Ninguna bloqueante. La Observación 1 de la ronda 1 queda cerrada: Z1 y Z2 mueren por sus dos vías,
+y las cuatro sondas que se añadieron en zona ciega de R7 (S1-S4), más las dos de modo editar (S5, S6), también mueren.
+Una nota informativa: al pasar «un toque en un POI…» a modo crear, el `pOIClick` en modo editar se queda sin `it`
+propio. El manejador `onPress` es el mismo para los tres eventos, y en modo editar el toque lo siguen
+cubriendo «un toque en el mapa…» y «un toque dentro de un círculo…». Este cambio lo prescribía la reanudación.
