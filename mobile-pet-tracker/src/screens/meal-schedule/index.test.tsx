@@ -118,6 +118,8 @@ jest.mock(
   { virtual: true },
 );
 
+// Jest copies process.env; Node's environment makes Date observe TZ.
+const hostProcess = process.getBuiltinModule('process');
 const apiUrl = 'http://example.test/v1';
 const mockGenerateNutritionPlan = jest.mocked(generateNutritionPlan);
 const mockGetNutritionPlan = jest.mocked(getNutritionPlan);
@@ -625,9 +627,9 @@ describe('#147 R5: Editar abre el selector en la hora de la fila y publica el PA
   });
 
   it('abre un único selector de hora con la hora local de la fila', async () => {
-    const previousTZ = process.env.TZ;
+    const previousTZ = hostProcess.env.TZ;
     try {
-      process.env.TZ = 'America/Mexico_City';
+      hostProcess.env.TZ = 'America/Mexico_City';
       await renderMealSchedule();
       await fireEvent.press(await screen.findByTestId('meal-time-edit-1'));
       expect(screen.queryByTestId('meal-time-picker')).not.toBeNull();
@@ -640,8 +642,8 @@ describe('#147 R5: Editar abre el selector en la hora de la fila y publica el PA
       await fireEvent(picker, 'onDismiss');
       await waitFor(() => expect(screen.getByTestId('meal-time-edit-0').props.accessibilityState).not.toEqual(expect.objectContaining({ disabled: true })));
     } finally {
-      if (previousTZ === undefined) delete process.env.TZ;
-      else process.env.TZ = previousTZ;
+      if (previousTZ === undefined) delete hostProcess.env.TZ;
+      else hostProcess.env.TZ = previousTZ;
     }
   });
 
@@ -699,9 +701,9 @@ describe('#147 R6: Añadir comida abre el selector a las 12:00 y publica el POST
   });
 
   it('abre el selector a las 12:00 locales', async () => {
-    const previousTZ = process.env.TZ;
+    const previousTZ = hostProcess.env.TZ;
     try {
-      process.env.TZ = 'America/Mexico_City';
+      hostProcess.env.TZ = 'America/Mexico_City';
       await renderMealSchedule();
       await fireEvent.press(await screen.findByTestId('add-meal-time-button'));
       expect(screen.queryByTestId('meal-time-picker')).not.toBeNull();
@@ -712,8 +714,8 @@ describe('#147 R6: Añadir comida abre el selector a las 12:00 y publica el POST
       await fireEvent(picker, 'onDismiss');
       await waitFor(() => expect(screen.getByTestId('meal-time-edit-0').props.accessibilityState).not.toEqual(expect.objectContaining({ disabled: true })));
     } finally {
-      if (previousTZ === undefined) delete process.env.TZ;
-      else process.env.TZ = previousTZ;
+      if (previousTZ === undefined) delete hostProcess.env.TZ;
+      else hostProcess.env.TZ = previousTZ;
     }
   });
 
