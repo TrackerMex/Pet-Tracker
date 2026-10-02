@@ -289,4 +289,50 @@ describe('Meal schedule editing (e2e)', () => {
       expect((await plansOf(pet.id)).at(-1)?.engineMealsPerDay).toBe(2);
     });
   });
+
+  const moveMealTime = (
+    user: UserFixture,
+    petId: string,
+    from: string,
+    body: Record<string, unknown>,
+  ) =>
+    api()
+      .patch(`/v1/pets/${petId}/meal-times/${from}`)
+      .set(auth(user.token))
+      .send(body);
+
+  describe('R4 (meal-schedule-editing #103): PATCH meal-times mueve una franja como copia nueva del plan', () => {
+    it('mueve dos franjas seguidas y reordena', async () => {
+      const owner = await seedUser('r4');
+      const pet = await seedPet(owner);
+      await seedPlan(owner, pet.id);
+      const response = await moveMealTime(owner, pet.id, '07:30', {
+        mealTime: '08:15',
+      }).expect(200);
+      expect(Object.keys(response.body as object).sort()).toEqual(
+        [
+          'id',
+          'petId',
+          'rerKcal',
+          'merKcal',
+          'dailyGrams',
+          'mealsPerDay',
+          'mealTimes',
+          'objective',
+          'warnings',
+          'aiExplanation',
+          'generatedAt',
+        ].sort(),
+      );
+      expect(response.body).toMatchObject({
+        mealTimes: ['08:15', '19:30'],
+        mealsPerDay: 2,
+      });
+      const next = await moveMealTime(owner, pet.id, '19:30', {
+        mealTime: '06:00',
+      }).expect(200);
+      expect(next.body).toMatchObject({ mealTimes: ['06:00', '08:15'] });
+      expect(await plansOf(pet.id)).toHaveLength(3);
+    });
+  });
 });
