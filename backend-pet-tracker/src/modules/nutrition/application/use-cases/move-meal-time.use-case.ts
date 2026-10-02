@@ -1,3 +1,4 @@
+import { ownerLocalDay } from '@/modules/pets/application/owner-local-day';
 import { PET_REPOSITORY } from '@/modules/pets/domain/repositories/pet.repository';
 import type { PetRepository } from '@/modules/pets/domain/repositories/pet.repository';
 import { Inject, Injectable } from '@nestjs/common';
@@ -29,11 +30,13 @@ export class MoveMealTimeUseCase {
   async execute(input: MoveMealTimeInput): Promise<NutritionPlan> {
     const plan = await this.nutrition.findLatestPlan(input.petId);
     if (!plan) throw new NutritionPlanRequiredError(input.petId);
-    const created = await this.nutrition.insertPlan(
+    const servedOn = await ownerLocalDay(this.pets, input.petId, input.now);
+    const created = await this.nutrition.insertPlanAndMoveServing(
       copyWithMealTimes(
         plan,
         plan.mealTimes.map((t) => (t === input.from ? input.to : t)),
       ),
+      { servedOn, from: input.from, to: input.to },
     );
     return created;
   }

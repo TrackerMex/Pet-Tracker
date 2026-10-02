@@ -1,9 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { desc, eq } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { uuidv7 } from 'uuidv7';
 import { DRIZZLE } from '@/db/drizzle.constants';
 import {
+  mealServings,
   nutritionPlans,
   nutritionProfiles,
 } from '@/db/schema/nutrition.schema';
@@ -13,7 +14,10 @@ import {
 } from '@/modules/nutrition/domain/entities/nutrition-profile.entity';
 import type { NewNutritionPlan } from '@/modules/nutrition/domain/entities/nutrition-plan.entity';
 import { NutritionPlan } from '@/modules/nutrition/domain/entities/nutrition-plan.entity';
-import type { NutritionRepository } from '@/modules/nutrition/domain/repositories/nutrition.repository';
+import type {
+  MealTimeMove,
+  NutritionRepository,
+} from '@/modules/nutrition/domain/repositories/nutrition.repository';
 
 type NutritionProfileRow = typeof nutritionProfiles.$inferSelect;
 type NutritionPlanRow = typeof nutritionPlans.$inferSelect;
@@ -84,6 +88,28 @@ export class NutritionDrizzleRepository implements NutritionRepository {
       .values({ id: uuidv7(), ...plan })
       .returning();
     return toPlan(row);
+  }
+  async insertPlanAndMoveServing(
+    plan: NewNutritionPlan,
+    move: MealTimeMove,
+  ): Promise<NutritionPlan> {
+    return this.db.transaction(async (tx) => {
+      const [row] = await tx
+        .insert(nutritionPlans)
+        .values({ id: uuidv7(), ...plan })
+        .returning();
+      await tx
+        .update(mealServings)
+        .set({ mealTime: move.to })
+        .where(
+          and(
+            eq(mealServings.petId, plan.petId),
+            eq(mealServings.servedOn, move.servedOn),
+            eq(mealServings.mealTime, move.from),
+          ),
+        );
+      return toPlan(row);
+    });
   }
 }
 
