@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, notExists } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { uuidv7 } from 'uuidv7';
 import { DRIZZLE } from '@/db/drizzle.constants';
@@ -98,9 +98,31 @@ export class NutritionDrizzleRepository implements NutritionRepository {
         .insert(nutritionPlans)
         .values({ id: uuidv7(), ...plan })
         .returning();
+      // ponytail: concurrent serving at the destination may conflict; add locking if retries are insufficient.
       await tx
         .update(mealServings)
         .set({ mealTime: move.to })
+        .where(
+          and(
+            eq(mealServings.petId, plan.petId),
+            eq(mealServings.servedOn, move.servedOn),
+            eq(mealServings.mealTime, move.from),
+            notExists(
+              tx
+                .select()
+                .from(mealServings)
+                .where(
+                  and(
+                    eq(mealServings.petId, plan.petId),
+                    eq(mealServings.servedOn, move.servedOn),
+                    eq(mealServings.mealTime, move.to),
+                  ),
+                ),
+            ),
+          ),
+        );
+      await tx
+        .delete(mealServings)
         .where(
           and(
             eq(mealServings.petId, plan.petId),
