@@ -73,7 +73,7 @@ export function copyWithMealTimes(
     engineMealsPerDay: engineMealCount(plan),
     objective: plan.objective,
     warnings: plan.warnings,
-    aiExplanation: null,
-    inputsHash: '0'.repeat(64),
+    aiExplanation: plan.aiExplanation,
+    inputsHash: plan.inputsHash,
   };
 }
