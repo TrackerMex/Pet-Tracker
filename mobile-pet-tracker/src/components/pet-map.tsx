@@ -18,13 +18,18 @@ export type PetMapProps = {
 export const MAP_ZOOM = 16;
 
 export function PetMap(props: PetMapProps) {
-  const [polylineColor] = useThemeColors(['accent-strong']);
+  const [polylineColor, circleFill] = useThemeColors(['accent-strong', 'tab-pill']);
+  const forward = (coordinates: Partial<MapCoordinates> | undefined) => {
+    if (typeof coordinates?.latitude === 'number' && typeof coordinates.longitude === 'number') {
+      props.onPress?.({ latitude: coordinates.latitude, longitude: coordinates.longitude });
+    }
+  };
   const mapViewProps = {
     testID: 'map-view',
     style: { flex: 1 },
     cameraPosition: {
       coordinates: props.center,
-      zoom: MAP_ZOOM,
+      zoom: props.zoom ?? MAP_ZOOM,
     },
     markers: props.marker
       ? [{ id: 'last-position', coordinates: props.marker }]
@@ -38,6 +43,15 @@ export function PetMap(props: PetMapProps) {
         ? GoogleMaps.MapColorScheme.DARK
         : GoogleMaps.MapColorScheme.LIGHT,
     uiSettings: { zoomControlsEnabled: false },
+    circles: (props.circles ?? []).map((c) => ({
+      id: c.id, center: c.center, radius: c.radius,
+      color: circleFill, lineColor: polylineColor, lineWidth: 2,
+    })),
+    ...(props.onPress ? {
+      onMapClick: (event: { coordinates: Partial<MapCoordinates> }) => forward(event.coordinates),
+      onPOIClick: (event: { coordinates: Partial<MapCoordinates> }) => forward(event.coordinates),
+      onCircleClick: (event: { clickCoordinates?: Partial<MapCoordinates> }) => forward(event.clickCoordinates),
+    } : {}),
   };
 
   return <GoogleMaps.View {...mapViewProps} />;
