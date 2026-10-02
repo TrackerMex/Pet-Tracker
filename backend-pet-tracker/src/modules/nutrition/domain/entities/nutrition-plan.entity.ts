@@ -40,3 +40,16 @@ export class NutritionPlan implements NutritionPlanProps {
     Object.assign(this, props);
   }
 }
+
+export function engineMealCount(plan: NutritionPlan): number {
+  return plan.mealsPerDay;
+}
+
+export function carriedSchedule(
+  latest: NutritionPlan | null,
+  engine: { mealsPerDay: number; mealTimes: string[] },
+): { mealsPerDay: number; mealTimes: string[] } {
+  if (latest)
+    return { mealsPerDay: engine.mealsPerDay, mealTimes: engine.mealTimes };
+  return { mealsPerDay: engine.mealsPerDay, mealTimes: engine.mealTimes };
+}
