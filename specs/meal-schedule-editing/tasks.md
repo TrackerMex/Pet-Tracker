@@ -483,6 +483,48 @@ merge de `origin/main` (#41). Los hashes de la ronda 1 no se tocan, así que
     añadidos a los de la ronda 1;
   - §Ronda 2 del impl, con los rojos, los verdes, las sondas y (6).
 
+## Ronda 3 (E4) — candado de B3 del reviewer
+
+El hash del handoff de esta ronda (H2) es el commit de la enmienda E4. Todo
+`git diff` de esta ronda se mide desde H2. Los hashes de las rondas 1 y 2 no
+se tocan, así que **no se rebasea**.
+
+- [ ] (1) Rojo B3 — commit
+      `test(meal-schedule-editing): lock today-only destination check on serving move (R5)`.
+      El commit lleva dos cambios ([[requirements]] R5, E4):
+  - el `it` 4 del `describe` R5 e2e, justo después del `it` 3, con el código
+    de referencia de la spec;
+  - la mutación versionada: sin `eq(mealServings.servedOn, move.servedOn)`
+    dentro del `notExists(` de `insertPlanAndMoveServing`. El `servedOn` del
+    `UPDATE` y el del `DELETE` no se tocan.
+
+  Rojo: **solo** el `it` 4 de R5, por matcher en su `toEqual` final. Corre
+  `<e2e-mt>` (1 fallo / 23 verdes / 24) y `<e2e-nut>` (2 / 45 en verde). Si
+  cae otro `it`, o el `it` 4 no cae por matcher, **parar**.
+- [ ] (2) Verde B3 — commit
+      `feat(meal-schedule-editing): restore served_on in destination check after R5 lock (R5)`.
+      Revierte exactamente la mutación. Comprobar con
+      `git diff <rojo B3>^ HEAD -- backend-pet-tracker/src/modules/nutrition/infrastructure/repositories/nutrition.drizzle.repository.ts`,
+      que debe salir vacío. `<e2e-mt>` da 24 tests en verde y `<e2e-nut>`
+      sigue en 2 suites / 45 tests en verde.
+- [ ] (3) Evidencia, desde `backend-pet-tracker/`:
+  - `pnpm test`: 174 suites / 1335 tests, sin cambio;
+  - `pnpm exec tsc --noEmit` y `pnpm lint`, los dos con exit 0;
+  - `git diff --name-only <H2> HEAD`, que solo puede tocar estos ficheros:
+    - `backend-pet-tracker/src/modules/nutrition/infrastructure/repositories/nutrition.drizzle.repository.ts`
+    - `backend-pet-tracker/test/meal-times.e2e-spec.ts`
+    - `specs/meal-schedule-editing/traceability.md`
+    - `progress/impl_meal-schedule-editing.md`
+
+  No hay sondas nuevas: el reviewer ya midió la receta (T5-T15). El
+  `pnpm test:e2e` entero (31 ficheros / 431 tests) y `./init.sh` los corre
+  el leader.
+- [ ] (4) Commit `docs(meal-schedule-editing): fill #103 traceability round 3`.
+      Lleva dos cambios:
+  - la fila R5 de [[traceability]], con los hashes de (1) y (2) añadidos
+    como «ronda 3 (E4)» a los de las rondas 1 y 2;
+  - §Ronda 3 del impl, con el rojo, el verde y (3).
+
 ## Cierre
 
 - [ ] `git diff --stat <hash del handoff>..HEAD` solo toca ficheros de la

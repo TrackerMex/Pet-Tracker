@@ -106,6 +106,30 @@ tags: [harness, spec]
 >   ficheros cerrada y la reanudación están en
 >   `progress/handoff_meal-schedule-editing_ronda2.md`.
 >
+> **Enmienda E4 (2026-10-02, ronda 3, aprobada por el humano en
+> el chat de la sesión Frontend):** el `reviewer` rechazó la ronda 2 sobre
+> `42d161cc` (`progress/review_meal-schedule-editing.md`, `# Ronda 2`, B3).
+> B1 y B2 quedan cerrados. El código de producción sigue siendo correcto.
+>
+> - **B3 (R5/R6).** R6 solo se activa si el destino tiene una fila «**de
+>   hoy**». En `insertPlanAndMoveServing`, esa condición es
+>   `eq(mealServings.servedOn, move.servedOn)` dentro del `notExists(`. Si
+>   se quita, todo sigue verde (meal-times 23/23, meals + nutrition 45/45).
+>   En producción, una servida de **cualquier día pasado** en `to` haría que
+>   el `UPDATE` se saltara y que el `DELETE` borrara en silencio la servida
+>   de hoy.
+> - E4 añade el `it` 4 de R5 y un candado con mutación versionada. No toca
+>   el `it` 1 prescrito ni re-declara S9, y no añade sondas nuevas.
+> - Antes de esta enmienda, el reviewer midió la receta sobre `42d161cc`
+>   (T5-T15 en el review). El `it` 4 está verde sobre la producción de HEAD
+>   y cae por matcher con la mutación. Ningún rojo declarado de S9, S10,
+>   S11, S21 ni S22 cambia de forma, y ningún verde declarado cae.
+> - Cambian los recuentos de meal-times (24 tests) y del e2e entero (431
+>   tests). Las cifras unit no cambian.
+> - La ronda 3 se mide desde el commit de E4, no desde H0 ni desde el de E3.
+>   La lista de ficheros cerrada y la reanudación están en
+>   `progress/handoff_meal-schedule-editing_ronda3.md`.
+>
 > Depende de:
 > - `nutrition-profile-engine` (#17, `done`): `nutrition_plans` append-only,
 >   `findLatestPlan`, `generate`;
@@ -646,6 +670,66 @@ contra el padre del rojo queda vacío.
 - S22: el `NOT EXISTS` sin `eq(mealServings.petId, plan.petId)` → `it` 3
   rojo por matcher en `servingsOf(A)`. La `'08:15'` de B salta el `UPDATE`,
   y el `DELETE` borra la `'07:30'` de A.
+
+**(E4, ronda 3)** Se añade el `it` 4 al mismo `describe`, justo después del
+`it` 3. Fija la condición «de hoy» de R6 en el lado de R5: una servida de
+otro día en `to` no ocupa el destino.
+
+4. `'una servida de otro dia en el destino no bloquea el movimiento'`.
+   - El owner tiene la zona por defecto (`UTC`) y la mascota tiene P0.
+   - Se inserta a mano (`insertServing`) una fila de **ayer** en `'08:15'`,
+     con `servedOn: shiftDay(localDayOf(Date.now(), 'UTC'), -1)` y
+     `createdBy` = owner. Se guarda como `[yesterday]`.
+   - El owner sirve `'07:30'` por `POST …/meals`, que responde `201`. Se
+     guarda `[, served] = await servingsOf(pet.id)`: `servingsOf` ordena por
+     `servedOn` y luego por `mealTime`, así que la de hoy va segunda.
+   - El owner hace `PATCH …/meal-times/07:30 {mealTime: '08:15'}`, que
+     responde `200`.
+   - `servingsOf(pet.id)` es exactamente (`toEqual`)
+     `[yesterday, { ...served, mealTime: '08:15' }]`.
+
+   Código de referencia, el mismo que midió el reviewer (T5-T15):
+
+   ```ts
+   it('una servida de otro dia en el destino no bloquea el movimiento', async () => {
+     const owner = await seedUser('r5-past-destination');
+     const pet = await seedPet(owner);
+     await seedPlan(owner, pet.id);
+     const [yesterday] = await insertServing(
+       pet.id,
+       owner.id,
+       shiftDay(localDayOf(Date.now(), 'UTC'), -1),
+       '08:15',
+     );
+     await serveMeal(owner, pet.id, { mealTime: '07:30' }).expect(201);
+     const [, served] = await servingsOf(pet.id);
+     await moveMealTime(owner, pet.id, '07:30', { mealTime: '08:15' }).expect(
+       200,
+     );
+     expect(await servingsOf(pet.id)).toEqual([
+       yesterday,
+       { ...served, mealTime: '08:15' },
+     ]);
+   });
+   ```
+
+**Candado de ronda 3 (E4, B3)**: es un requisito de verificación sobre
+código ya correcto. Va en un commit rojo con una **mutación de producción
+versionada**: en `nutrition.drizzle.repository.ts`, se quita
+`eq(mealServings.servedOn, move.servedOn)` de **dentro del `notExists(`** de
+`insertPlanAndMoveServing`. El `servedOn` del `UPDATE` exterior y el del
+`DELETE` no se tocan. El rojo esperado es **solo** el `it` 4, por matcher en
+el `toEqual` final: la fila de ayer en `'08:15'` hace que el `UPDATE` se
+salte, y el `DELETE` borra la de hoy. `<e2e-nut>` sigue verde. En el commit
+verde se revierte la mutación, y el diff del fichero contra el padre del
+rojo queda vacío.
+
+**Rojos que el `it` 4 añade a sondas existentes (E4, medidos por el
+reviewer)**: son «Otros rojos» del criterio E2 y no paran el trabajo. Con
+S22, S11 o el `NOT EXISTS` sin `mealTime = to`, el `it` 4 cae por matcher.
+Con S21 cae con `500` en el `PATCH`, porque quedan filas de B del `it` 3 en
+la base; depende del orden, como los otros rojos de S21. Con S9, S10 y el
+`DELETE` sin `petId` o sin `servedOn`, el `it` 4 sigue verde.
 
 La atomicidad la garantiza `this.db.transaction` ([[design]] D5). La revisa
 el `reviewer` leyendo el código; no hay test de fallo a mitad de transacción.
