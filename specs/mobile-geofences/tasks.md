@@ -33,10 +33,10 @@ tags: [harness, spec, mobile]
 ## Antes de empezar
 
 - [ ] `git branch --show-current` → `feature/41-mobile-geofences`.
-- [ ] #60 está en `main` y la branch está encima:
-      `git merge-base --is-ancestor 03f57706 HEAD; echo "exit=$?"` → `exit=0`.
-      Si sale `1`, **no empezar**: avisar al leader (la base cambió y hay que
-      re-verificar [[design]] D9).
+- [ ] La branch está encima de `origin/main` `4e8d6cc3`:
+      `git merge-base --is-ancestor 4e8d6cc3 HEAD; echo "exit=$?"` → `exit=0`.
+      Si sale `1`, **no empezar**: avisar al leader. #60 **no** hace falta
+      (enmienda E1 de [[requirements]], 2026-10-02).
 - [ ] Anotar `git rev-parse --short HEAD` en `progress/impl_mobile-geofences.md`
       como **HEAD del handoff**. Todos los `git diff` de §Cierre se miden contra
       ese hash. No rebasear después de rellenar [[traceability]].
@@ -54,7 +54,9 @@ tags: [harness, spec, mobile]
 - [ ] Medir la base **sin pipe** y anotarla:
       `bunx jest --silent > /tmp/base41.txt 2>&1; echo "exit=$?"` → `exit=0`.
       Referencias: en `03f57706`, 86 suites / 1640 tests / 1 snapshot; en el
-      merge simulado de `4e8d6cc3` con `03f57706`, 86 / 1655 / 1. Manda la que
+      merge simulado de `4e8d6cc3` con `03f57706`, 86 / 1655 / 1; en
+      `6a46f677` (mismo `mobile-pet-tracker/` que `4e8d6cc3`, sin #60), 86 /
+      1634 en el `./init.sh` del leader. Manda la que
       mida Codex; de ella sale el delta de §Cierre.
       `bunx tsc --noEmit > /tmp/tsc41.txt 2>&1; echo "exit=$?"` y
       `bunx expo lint > /tmp/lint41.txt 2>&1; echo "exit=$?"` → `exit=0` y los

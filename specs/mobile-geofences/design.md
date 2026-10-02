@@ -539,8 +539,10 @@ R10 1, que suman 76.
 
 - **Sin imports nuevos.** `TOUCH_SLOP`, `CONTINUOUS_CORNER`, `ChevronRight`,
   `router`, `Href` y `muted` ya están en el fichero.
-- **Antes del handoff** (#60 en `main`), comprobar sobre el `main`
-  resultante:
+- **Antes del handoff**, comprobar sobre la base del handoff. Por la
+  enmienda E1 de [[requirements]] (2026-10-02), esa base es `4e8d6cc3` sin
+  #60, cuyo blob del Perfil es `4cc1c08b`. El leader lo comprobó ese día y
+  dio 1 y 3:
   - el `grep` de `pairing-link` (1 línea);
   - `grep -c '<ChevronRight' src/screens/profile/index.tsx` → `3`.
 
@@ -588,8 +590,8 @@ Diffstat de la implementación de referencia: 22 ficheros, +1328 / −14.
 
 Ver [[requirements]] §Coordinación. En corto:
 
-- **#60.** El handoff espera a que #60 esté en `main`, y luego se verifica
-  D9.
+- **#60.** Por la enmienda E1 (2026-10-02), el handoff ya no espera a #60.
+  D9 se verificó sobre `4e8d6cc3`.
 - **Candados compartidos.** El catálogo, `SCREEN_FILES`, los recuentos de
   `#62` y `#98`, los hijos de la guarda y el nombre del bloque `R14_*` los
   recuenta quien mergee segundo.

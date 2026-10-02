@@ -20,8 +20,13 @@ tags: [harness, spec, mobile]
 > `feature/60-mobile-ios-support`, que **aún no está en `main`**
 > (`origin/main` = `4e8d6cc3`, merge de #145). El humano decidió el
 > 2026-10-01 escribir esta spec contra la branch de #60, porque #60 también
-> toca `src/screens/profile/index.tsx` y su test (§Coordinación). El handoff
-> a Codex espera a que #60 esté en `main`.
+> toca `src/screens/profile/index.tsx` y su test (§Coordinación).
+>
+> **Enmienda E1 (2026-10-02, aprobada por el humano en el chat de la sesión
+> Backend):** el handoff a Codex **ya no espera a #60**. Codex implementa
+> sobre `origin/main` `4e8d6cc3`, sin #60. El leader verificó en ese árbol
+> las nueve anclas de [[tasks]] §Antes de empezar y los literales de las
+> filas 5–10 de [[design]] D8 (§Coordinación).
 >
 > **Medición de la base**:
 >
@@ -619,11 +624,20 @@ Clasificado viñeta a viñeta, con su premisa verificada contra `03f57706` y
   - Toca `src/screens/profile/index.tsx`, su test y `docs/conventions.md`.
   - Esta spec está anclada a los blobs de `03f57706`: `ef3e7362` (pantalla)
     y `b52c4b44` (test). En `main`, hoy, son `4cc1c08b` y `08203f12`.
-  - **El handoff a Codex no se hace hasta que #60 esté en `main`.** Antes del
-    handoff, el leader pone la branch de #41 sobre ese `main` y comprueba
-    que las anclas de R9 siguen ahí ([[tasks]] §Antes de empezar).
-  - Si #60 cambia esos blobs antes de mergear, se re-verifican R9 y las
-    filas 5–10 de [[design]] D8.
+  - **Enmienda E1 (2026-10-02):** el handoff se hace sobre `main` sin #60.
+    En `4e8d6cc3`, #60 solo cambia en esos dos ficheros tres cosas, y
+    ninguna toca las anclas de R9 ni los recuentos de D8:
+    - la llamada a `ImagePicker.launchImageLibraryAsync` (+2 líneas);
+    - el mock de `expo-image-picker` (+5);
+    - un `it` dentro del `describe('R7: cambiar foto')` (+14).
+
+    Fuera de esos ficheros, #60 no toca ningún candado de #41: de
+    `src/__tests__`, `src/app`, `src/i18n`, `src/api` y `src/providers` solo
+    cambia `src/__tests__/hosting-artifacts.test.ts`.
+  - Quien mergee **segundo** (#41 o #60) resuelve el posible conflicto
+    textual en `src/screens/profile/index.test.tsx` conservando los dos
+    cambios. Si #60 cambia el Perfil fuera de esas líneas antes de mergear,
+    re-verifica R9 y las filas 5–10 de [[design]] D8.
 - **Candados compartidos.** Cualquier otra feature que añada claves al
   catálogo, rutas al `Stack.Protected`, filas al Perfil o bloques a
   `ui-copy-table.ts` mueve los mismos candados:
