@@ -39,8 +39,11 @@ de #41 (`Añadir zona` o tocando una zona).
 >   `95b2aaa4`); las props nuevas viajan en `mapViewProps` (§Coordinación).
 >
 > **Base de tests sin medir.** Esta spec no corre jest: el leader re-mide la
-> base al preparar el handoff. Referencia: #41 cerró en 88 suites / 1716
-> tests / 1 skipped sobre `03f57706` (1731 al mezclarse con `main`). El delta
+> base al preparar el handoff. Referencia: la base que midió el leader en el
+> handoff (H0 `9dee0e62`) es 88 suites / 1710 tests / 0 skipped / 1 snapshot.
+> *(Errata del 2026-10-02, tras el reviewer: aquí decía «88 suites / 1716
+> tests / 1 skipped sobre `03f57706` (1731 al mezclarse con `main`)», cifras
+> que no corresponden a la base real.)* El delta
 > de esta spec es **+142 tests y +2 suites** ([[design]] §Delta de tests);
 > la ampliación de R11–R18 (2026-10-02) suma 41 de esos tests y ninguna
 > suite. Las anclas de la ampliación se verificaron sobre `d637757e`.
@@ -1342,8 +1345,12 @@ que sigue fuera:
   - `git grep -n "queryKey: \[" -- mobile-pet-tracker/src/screens/geofence-editor`
     (las claves salen de `geofenceKeys` y `positionKeys`);
   - `git grep -n "useMutation\|useFocusEffect\|staleSeconds" -- mobile-pet-tracker/src/screens/geofence-editor`;
-  - `git grep -n "#146[^ ]\|#146 [^R]" -- mobile-pet-tracker/src` (todo
-    `#146` va seguido de ` R<n>`).
+  - `git grep -n "#146[^ ]\|#146 [^R\\]" -- mobile-pet-tracker/src` (todo
+    `#146` va seguido de ` R<n>`, salvo el sufijo `#146 \\(R1\\)` de la regex
+    que exige R1). *(Errata del 2026-10-02, tras el reviewer: el patrón
+    decía `#146 [^R]` y coincidía con ese sufijo. Codex lo esquivó partiendo
+    la cadena en `b46b233c`; la regex es idéntica en ejecución y se queda
+    así.)*
 - **Ficheros intocables:**
   `git diff <HEAD del handoff> -- backend-pet-tracker infra mobile-pet-tracker/package.json mobile-pet-tracker/app.json mobile-pet-tracker/bun.lock`
   sale vacío: no hay dependencias nuevas (`heroui-native` trae el `Slider`;

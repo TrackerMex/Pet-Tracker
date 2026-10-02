@@ -258,7 +258,7 @@ corre jest.
 
 | Id | Mutación | Muere en |
 |---|---|---|
-| M1 | `zoomForRadius` sin el tope `Math.min(18, …)` | `#146 R2`, filas 75 y 20 |
+| M1 | `zoomForRadius` sin el tope `Math.min(18, …)` | `#146 R2`, fila 20 (errata del 2026-10-02: decía «filas 75 y 20», pero sin el tope la de 75 m ya da 18, según la corrida de Codex) |
 | M2 | Relleno del círculo con `accent-strong` en vez de `tab-pill` | `#146 R3` it 2 |
 | M3 | `forward` sin la guarda de `number` | `#146 R3` it 8 |
 | M4 | `circles: []` siempre, ignorando `props.circles` | `#146 R3` it 1 |
