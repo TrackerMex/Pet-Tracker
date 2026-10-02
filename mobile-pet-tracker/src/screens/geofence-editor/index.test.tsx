@@ -1,9 +1,10 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react-native';
 import { router } from 'expo-router';
+import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
-import { Alert } from 'react-native';
+import { Alert, DeviceEventEmitter } from 'react-native';
 
 import { renderWithProviders } from '../../../test/render-with-providers';
 import { createGeofence, deleteGeofence, listGeofences, setGeofenceActive, updateGeofence, type Geofence } from '../../api/geofences';
@@ -73,7 +74,7 @@ function mount(geofenceId?: string, language: Language = 'es', onUnauthorized?: 
   function Wrapper({ children }: { children: ReactNode }) {
     const queryClient = useQueryClient();
     if (seedList && !queryClient.getQueryData(expectedListKey)) queryClient.setQueryData(expectedListKey, { kind: 'ok', geofences: [casa, parque] });
-    return <HeroUINativeProvider><LanguageProvider initial={language}>{children}</LanguageProvider></HeroUINativeProvider>;
+    return <HeroUINativeProvider><LanguageProvider initial={language}><HeaderHeightContext.Provider value={91}>{children}</HeaderHeightContext.Provider></LanguageProvider></HeroUINativeProvider>;
   }
   return renderWithProviders(<GeofenceEditorScreen petId="pet-1" geofenceId={geofenceId} />, { onUnauthorized, wrapper: Wrapper });
 }
@@ -203,6 +204,16 @@ describe('#146 R6: el editor pinta el formulario sobre el mapa y sus estados', (
     expect(form.props.contentContainerStyle).toEqual({ padding: 24, gap: 16, paddingBottom: 48 });
     expect(screen.getByTestId('geofence-editor-radius-value').props.selectable).toBe(true);
     expect(screen.getByTestId('geofence-editor-radius-thumb').props.accessibilityLabel).toBe('Radio de la zona');
+    expect(root).toHaveStyle({ paddingBottom: 0 });
+    await fireEvent(root, 'layout', { persist() {}, nativeEvent: { layout: { x: 0, y: 0, width: 400, height: 700 } } });
+    await act(async () => {
+      DeviceEventEmitter.emit('keyboardWillShow', {
+        startCoordinates: { screenX: 0, screenY: 800, width: 400, height: 0 },
+        endCoordinates: { screenX: 0, screenY: 500, width: 400, height: 300 },
+        duration: 0, easing: 'keyboard', isEventFromThisApp: true,
+      });
+    });
+    await waitFor(() => expect(screen.getByTestId('screen-geofence-editor')).toHaveStyle({ paddingBottom: 291 }));
   });
   it('pinta el formulario en inglés', async () => {
     await edit('en');
