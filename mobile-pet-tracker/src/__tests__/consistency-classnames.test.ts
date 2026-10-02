@@ -183,7 +183,7 @@ describe('#62 R7: ningún glifo tipográfico hace de icono', () => {
     expect(filesMatching(/[←›]/)).toEqual([]);
   });
 
-  it('profile usa tres ChevronRight de reicon', () => {
+  it('profile usa cuatro ChevronRight de reicon', () => {
     const profile = readSource(join('screens', 'profile', 'index.tsx'));
 
     expect(profile).toContain(
@@ -191,7 +191,7 @@ describe('#62 R7: ningún glifo tipográfico hace de icono', () => {
     );
     expect(
       profile.match(/<ChevronRight size=\{20\} color=\{muted\} \/>/g),
-    ).toHaveLength(3);
+    ).toHaveLength(3 + 1); // #41 R9
   });
 });
 
@@ -260,7 +260,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
     [join('screens', 'meal-schedule', 'index.tsx'), 1],
     [join('screens', 'weight-log', 'index.tsx'), 1],
     [join('screens', 'docs', 'index.tsx'), 1],
-    [join('screens', 'profile', 'index.tsx'), 3],
+    [join('screens', 'profile', 'index.tsx'), 3 + 1], // #41 R9
     [join('screens', 'reminders', 'index.tsx'), 4],
     [join('screens', 'add-pet', 'index.tsx'), 5],
     [join('screens', 'add-reminder', 'index.tsx'), 3],
@@ -311,7 +311,7 @@ describe('#62 R14: toda esquina no-cápsula que dibuja el repo es continua', () 
     // #138 R3: minus one more, collar-pair-link's corner travels in its own.
     expect(
       directUses.reduce((total, [, count]) => total + count, 2),
-    ).toBe(33 + 1 + 1 - 1 - 1);
+    ).toBe(33 + 1 + 1 - 1 - 1 + 1); // #41 R9: geofences-link
   });
 });
 
@@ -393,7 +393,7 @@ describe('#98 R10: los candados que esta feature no mueve', () => {
     // With no match, match() returns null: the ?? [] keeps the count readable.
     expect(home.match(/style=\{CONTINUOUS_CORNER\}/g) ?? []).toHaveLength(0);
     expect(food.match(/style=\{CONTINUOUS_CORNER\}/g)).toHaveLength(2);
-    expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31);
+    expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31 + 1); // #41 R9: geofences-link
     expect(count(/rounded-xl bg-accent(?=[\s'"`])/g)).toBe(13);
     expect(count(/bg-accent-soft/g)).toBe(16);
     expect(home.match(/text-accent-strong\b/g)).toHaveLength(2);
