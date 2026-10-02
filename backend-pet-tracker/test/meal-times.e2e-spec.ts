@@ -655,4 +655,116 @@ describe('Meal schedule editing (e2e)', () => {
       expect(response.body).toHaveProperty('code', 'MEAL_TIME_NOT_IN_PLAN');
     });
   });
+
+  describe('R9 (meal-schedule-editing #103): 422 con code propio y sin persistir', () => {
+    it('sin plan en POST y PATCH', async () => {
+      const owner = await seedUser('r9-no-plan');
+      const pet = await seedPet(owner);
+      const add = await addMealTime(owner, pet.id, {
+        mealTime: '12:00',
+      }).expect(422);
+      const move = await moveMealTime(owner, pet.id, '07:30', {
+        mealTime: '08:15',
+      }).expect(422);
+      for (const response of [add, move])
+        expect(response.body).toEqual({
+          statusCode: 422,
+          code: 'NUTRITION_PLAN_REQUIRED',
+          message: 'Generate a nutrition plan before serving meals',
+        });
+      expect(await plansOf(pet.id)).toHaveLength(0);
+      expect(await servingsOf(pet.id)).toEqual([]);
+      expect(
+        await db
+          .select()
+          .from(auditLog)
+          .where(
+            and(
+              eq(auditLog.userId, owner.id),
+              eq(auditLog.entity, 'nutrition_plan'),
+            ),
+          ),
+      ).toEqual([]);
+    });
+    it('PATCH: origen fuera del plan, destino repetido o igual', async () => {
+      const owner = await seedUser('r9-move');
+      const pet = await seedPet(owner);
+      await seedPlan(owner, pet.id);
+      const outside = await moveMealTime(owner, pet.id, '12:00', {
+        mealTime: '07:30',
+      }).expect(422);
+      expect(outside.body).toEqual({
+        statusCode: 422,
+        code: 'MEAL_TIME_NOT_IN_PLAN',
+        message: 'mealTime is not part of the current nutrition plan',
+      });
+      for (const to of ['19:30', '07:30']) {
+        const duplicate = await moveMealTime(owner, pet.id, '07:30', {
+          mealTime: to,
+        }).expect(422);
+        expect(duplicate.body).toEqual({
+          statusCode: 422,
+          code: 'MEAL_TIME_DUPLICATE',
+          message: 'mealTime is already part of the current nutrition plan',
+        });
+      }
+      expect(await plansOf(pet.id)).toHaveLength(1);
+      expect(await servingsOf(pet.id)).toEqual([]);
+      expect(
+        await db
+          .select()
+          .from(auditLog)
+          .where(
+            and(
+              eq(auditLog.userId, owner.id),
+              eq(auditLog.action, 'meal_time.move'),
+            ),
+          ),
+      ).toEqual([]);
+    });
+    it('POST: duplicado y limite de seis', async () => {
+      const owner = await seedUser('r9-add');
+      const pet = await seedPet(owner);
+      await seedPlan(owner, pet.id);
+      const duplicate = await addMealTime(owner, pet.id, {
+        mealTime: '07:30',
+      }).expect(422);
+      expect(duplicate.body).toEqual({
+        statusCode: 422,
+        code: 'MEAL_TIME_DUPLICATE',
+        message: 'mealTime is already part of the current nutrition plan',
+      });
+      for (const mealTime of ['09:00', '11:00', '13:00', '15:00'])
+        await addMealTime(owner, pet.id, { mealTime }).expect(201);
+      const limit = await addMealTime(owner, pet.id, {
+        mealTime: '17:00',
+      }).expect(422);
+      expect(limit.body).toEqual({
+        statusCode: 422,
+        code: 'MEAL_TIMES_LIMIT_REACHED',
+        message: 'The nutrition plan already has the maximum of 6 meal times',
+      });
+      const fullDuplicate = await addMealTime(owner, pet.id, {
+        mealTime: '09:00',
+      }).expect(422);
+      expect(fullDuplicate.body).toEqual({
+        statusCode: 422,
+        code: 'MEAL_TIME_DUPLICATE',
+        message: 'mealTime is already part of the current nutrition plan',
+      });
+      expect(await plansOf(pet.id)).toHaveLength(5);
+      expect(await servingsOf(pet.id)).toEqual([]);
+      expect(
+        await db
+          .select()
+          .from(auditLog)
+          .where(
+            and(
+              eq(auditLog.userId, owner.id),
+              eq(auditLog.action, 'meal_time.add'),
+            ),
+          ),
+      ).toHaveLength(4);
+    });
+  });
 });

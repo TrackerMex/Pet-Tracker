@@ -104,3 +104,46 @@ describe('R7 (meal-schedule-editing #103): meal_time.move se audita despues de e
     expect(record).not.toHaveBeenCalled();
   });
 });
+
+describe('R9 (meal-schedule-editing #103): el PATCH lanza en orden sin escribir ni auditar', () => {
+  it('sin plan lanza NutritionPlanRequiredError', async () => {
+    const { useCase, insertPlan, insertPlanAndMoveServing, record } =
+      buildUseCase(null);
+    await expect(useCase.execute(INPUT)).rejects.toMatchObject({
+      name: 'NutritionPlanRequiredError',
+    });
+    expect(insertPlan).not.toHaveBeenCalled();
+    expect(insertPlanAndMoveServing).not.toHaveBeenCalled();
+    expect(record).not.toHaveBeenCalled();
+  });
+  it('el origen fuera gana al destino duplicado', async () => {
+    const { useCase, insertPlan, insertPlanAndMoveServing, record } =
+      buildUseCase();
+    await expect(
+      useCase.execute({ ...INPUT, from: '12:00', to: '07:30' }),
+    ).rejects.toMatchObject({ name: 'MealTimeNotInPlanError' });
+    expect(insertPlan).not.toHaveBeenCalled();
+    expect(insertPlanAndMoveServing).not.toHaveBeenCalled();
+    expect(record).not.toHaveBeenCalled();
+  });
+  it('origen igual al destino lanza MealTimeDuplicateError', async () => {
+    const { useCase, insertPlan, insertPlanAndMoveServing, record } =
+      buildUseCase();
+    await expect(
+      useCase.execute({ ...INPUT, to: '07:30' }),
+    ).rejects.toMatchObject({ name: 'MealTimeDuplicateError' });
+    expect(insertPlan).not.toHaveBeenCalled();
+    expect(insertPlanAndMoveServing).not.toHaveBeenCalled();
+    expect(record).not.toHaveBeenCalled();
+  });
+  it('destino ya en el plan lanza MealTimeDuplicateError', async () => {
+    const { useCase, insertPlan, insertPlanAndMoveServing, record } =
+      buildUseCase();
+    await expect(
+      useCase.execute({ ...INPUT, to: '19:30' }),
+    ).rejects.toMatchObject({ name: 'MealTimeDuplicateError' });
+    expect(insertPlan).not.toHaveBeenCalled();
+    expect(insertPlanAndMoveServing).not.toHaveBeenCalled();
+    expect(record).not.toHaveBeenCalled();
+  });
+});

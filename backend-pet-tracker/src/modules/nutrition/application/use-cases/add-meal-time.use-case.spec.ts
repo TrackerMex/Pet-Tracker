@@ -68,3 +68,44 @@ describe('R7 (meal-schedule-editing #103): meal_time.add se audita despues de es
     expect(record).not.toHaveBeenCalled();
   });
 });
+
+describe('R9 (meal-schedule-editing #103): el POST lanza en orden sin escribir ni auditar', () => {
+  it('sin plan lanza NutritionPlanRequiredError', async () => {
+    const { useCase, insertPlan, insertPlanAndMoveServing, record } =
+      buildUseCase(null);
+    await expect(useCase.execute(INPUT)).rejects.toMatchObject({
+      name: 'NutritionPlanRequiredError',
+    });
+    expect(insertPlan).not.toHaveBeenCalled();
+    expect(insertPlanAndMoveServing).not.toHaveBeenCalled();
+    expect(record).not.toHaveBeenCalled();
+  });
+  it('el duplicado gana al limite de seis', async () => {
+    const { useCase, insertPlan, insertPlanAndMoveServing, record } =
+      buildUseCase({
+        ...PLAN,
+        mealsPerDay: 6,
+        mealTimes: ['07:30', '09:00', '11:00', '13:00', '15:00', '19:30'],
+      });
+    await expect(
+      useCase.execute({ ...INPUT, mealTime: '09:00' }),
+    ).rejects.toMatchObject({ name: 'MealTimeDuplicateError' });
+    expect(insertPlan).not.toHaveBeenCalled();
+    expect(insertPlanAndMoveServing).not.toHaveBeenCalled();
+    expect(record).not.toHaveBeenCalled();
+  });
+  it('una hora nueva con seis comidas lanza MealTimesLimitReachedError', async () => {
+    const { useCase, insertPlan, insertPlanAndMoveServing, record } =
+      buildUseCase({
+        ...PLAN,
+        mealsPerDay: 6,
+        mealTimes: ['07:30', '09:00', '11:00', '13:00', '15:00', '19:30'],
+      });
+    await expect(
+      useCase.execute({ ...INPUT, mealTime: '17:00' }),
+    ).rejects.toMatchObject({ name: 'MealTimesLimitReachedError' });
+    expect(insertPlan).not.toHaveBeenCalled();
+    expect(insertPlanAndMoveServing).not.toHaveBeenCalled();
+    expect(record).not.toHaveBeenCalled();
+  });
+});
