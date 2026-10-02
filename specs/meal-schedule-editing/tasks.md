@@ -342,8 +342,14 @@ Por qué este orden:
     `pet-meals.drizzle-reader.ts`, los dos `desc(` del `orderBy` pasan a
     `asc(`, y el import se ajusta para que `lint` pase.
 
-  Rojo: R11 por matcher (`mealsToday {0,2}`). Anotar en el impl si arrastra
-  algún e2e de #83 (declarado en [[requirements]] R11).
+  Rojo: R11 por matcher (`mealsToday {0,2}`). Arrastra también al rojo
+  (E2 de [[requirements]]), todos por matcher sobre `mealsToday`:
+  - R5 `it` 1 y R6 `it` 1, 2 y 3 de `test/meal-times.e2e-spec.ts`;
+  - R10 `it` 4 de `test/meals.e2e-spec.ts` (#83).
+
+  Correr los dos ficheros y anotar en el impl cada `it` que cae, con su
+  línea decisiva. Si cae alguno más, o alguno de estos no cae por matcher,
+  parar y reportar.
 - [ ] (2) Implementación mínima que lo pasa — commit
       `feat(meal-schedule-editing): restore pet-meals reader order after R11 lock (R11)`.
       Revierte exactamente la mutación. Comprobar
@@ -376,9 +382,16 @@ Por qué este orden:
   4. revertir con `git checkout HEAD -- <fichero>`;
   5. comprobar `git status --porcelain` y `git diff --cached` vacíos.
 
-  En el impl §Sondas, una tabla `| Sonda | Mutación | Ficheros corridos | Resultado | Exigido cumplido |`.
-  Si alguna no da su «Exigido», **parar y reportar**: no se ajusta ni la
-  sonda ni el test. Ninguna sonda se commitea.
+  En el impl §Sondas, una tabla `| Sonda | Mutación | Ficheros corridos | Resultado | Exigido cumplido | Otros rojos |`.
+  El «Exigido» es un mínimo (E2 de [[requirements]]). Un rojo por matcher
+  en otro `it` va a «Otros rojos» y no para el trabajo. Hay que **parar y
+  reportar**, sin ajustar la sonda ni el test, si pasa cualquiera de estas
+  tres cosas (criterio al pie de [[requirements]] §Sondas):
+  - falta un rojo exigido, o no es por matcher;
+  - cae un verde declarado (S3, S8);
+  - aparece cualquier rojo que no sea por matcher.
+
+  Ninguna sonda se commitea.
 
 ## R13 — la migración se aplica, es idempotente, y el árbol queda verde y documentado (verificación)
 

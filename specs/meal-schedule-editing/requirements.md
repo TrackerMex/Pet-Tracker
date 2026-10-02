@@ -44,6 +44,40 @@ tags: [harness, spec]
 >   tres ficheros del leader: este, [[tasks]] y
 >   `progress/handoff_meal-schedule-editing_r8.md`.
 >
+> **Enmienda E2 (2026-10-02, aprobada por el humano en el chat de
+> la sesión Frontend):** el rojo de R11 declara todo lo que arrastra, y el
+> «Exigido» de §Sondas pasa a ser un mínimo.
+>
+> - Con la mutación de R11 (`asc` en el reader), el perfil lee el plan más
+>   antiguo. Cae entonces por matcher todo e2e que compruebe `mealsToday`
+>   después de editar o regenerar el plan. R11 solo declaraba «algún e2e de
+>   #83». Ahora los nombra, y todos caen en su aserción sobre `mealsToday`:
+>   - en `test/meal-times.e2e-spec.ts`, R5 `it` 1 y R6 `it` 1, 2 y 3;
+>   - en `test/meals.e2e-spec.ts`, R10 `it` 4 (#83, «excluye las franjas del
+>     plan anterior tras regenerar»).
+>
+>   El verde de R11 los devuelve todos a verde.
+> - Codex lo detectó leyendo el código antes de escribir el rojo (C4), y paró
+>   tras el verde de R10 (`7b44b604`). El leader lo verificó contra las
+>   aserciones de `mealsToday` de esos `it`. Los demás e2e que nombran
+>   `mealsToday` (`pets`, `devices`, `device-subscriptions`, `pet-lost-mode`)
+>   solo comprueban que la clave existe, así que no caen.
+> - El «Exigido» de cada sonda es el conjunto **mínimo** de rojos. Un rojo
+>   por matcher en otro `it` de los ficheros corridos se anota y no para el
+>   trabajo. El criterio exacto está al pie de §Sondas.
+> - No cambian los tests, la implementación, las mutaciones, las sondas ni
+>   los recuentos finales. R12 se re-verificó contra `7b44b604` y no arrastra
+>   nada sin declarar:
+>   - `copyWithMealTimes` solo lo usan add, move y su spec de entidad;
+>   - los unit de add y move comparan con `expect.objectContaining`;
+>   - el e2e R2 inserta sus planes editados con `insertPlanRow`.
+> - El commit de esta enmienda cae entre R10 y R11 de la historia de Codex.
+>   Añade al `git diff --stat` de [[tasks]] §Cierre dos ficheros del leader:
+>   - `progress/handoff_meal-schedule-editing_r11.md`;
+>   - `progress/current.md`, que E1 también tocó sin declararlo.
+>
+>   Con los tres de E1, son cinco.
+>
 > Depende de:
 > - `nutrition-profile-engine` (#17, `done`): `nutrition_plans` append-only,
 >   `findLatestPlan`, `generate`;
@@ -823,9 +857,12 @@ un `it` sobre P0 (`merKcal 1059`):
 correcto** (P6). Su rojo legítimo es una **mutación de producción, versionada
 en el commit rojo** y revertida en el verde: en `pet-meals.drizzle-reader.ts`,
 `desc(…)` → `asc(…)` en los dos términos del `orderBy`. Así el perfil lee P0,
-`mealsToday` es `{0,2}` y el test cae por matcher. La mutación puede arrastrar
-al rojo algún e2e de #83 que lea el perfil con más de un plan (declarado: el
-verde lo devuelve todo).
+`mealsToday` es `{0,2}` y el test cae por matcher.
+
+La mutación arrastra al rojo, también por matcher sobre `mealsToday`, estos
+`it` (E2). El verde los devuelve todos a verde:
+- R5 `it` 1 y R6 `it` 1, 2 y 3 de `test/meal-times.e2e-spec.ts`;
+- R10 `it` 4 de `test/meals.e2e-spec.ts` (#83).
 
 **Sonda exigida** — S18: `serve-meal.use-case.ts` comprueba contra
 `MEAL_TIMES_BY_COUNT[plan.mealsPerDay]` (con el cast que haga falta) en vez
@@ -1011,8 +1048,18 @@ indicado, se anota el resultado y se revierte con `git checkout HEAD -- <fichero
 | S19 | R12 | `aiExplanation: null` en la copia | e2e R12 rojo por matcher (paso 3); unit R3 `it` 1 rojo |
 | S20 | R12 | `inputsHash: '0'.repeat(64)` en la copia | e2e R12 rojo por matcher (paso 3); unit R3 `it` 1 rojo |
 
-Si una sonda no da su «Exigido», Codex **para y lo reporta**. No ajusta la
-sonda ni el test para que cuadre.
+El «Exigido» es el conjunto **mínimo** de rojos (E2). Codex **para y lo
+reporta**, sin ajustar la sonda ni el test para que cuadre, si ocurre
+cualquiera de estas cosas:
+- un rojo exigido no aparece, o aparece pero no es por matcher;
+- cae un verde declarado (S3: «el resto verdes»; S8: «2 y 4 verdes»);
+- hay un rojo que no es por matcher (`ReferenceError`, `TypeError`, timeout,
+  error de compilación o error de consulta del propio test), en cualquier
+  `it`.
+
+Un rojo **por matcher** en otro `it` de los ficheros corridos no para el
+trabajo: se anota en la columna «Otros rojos» del impl, con el nombre del
+`it` y la línea decisiva.
 
 ---
 
