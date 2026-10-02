@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { deleteGeofence, listGeofences, setGeofenceActive, type Geofence, type GeofenceWriteState } from '../../api/geofences';
+import { GEOFENCE_MAX_PER_PET, deleteGeofence, listGeofences, setGeofenceActive, type Geofence, type GeofenceWriteState } from '../../api/geofences';
 import { getPet } from '../../api/pets';
 import { geofenceKeys, petKeys } from '../../api/query-keys';
 import { Card } from '../../components/card';
@@ -29,6 +29,7 @@ export function GeofencesScreen({ petId }: { petId: string }) {
   });
 
   const isOwner = pet.data?.kind === 'ok' && pet.data.pet.myRole === 'owner';
+  const atLimit = geofences.data?.kind === 'ok' && geofences.data.geofences.length >= GEOFENCE_MAX_PER_PET;
 
   async function write(request: () => Promise<GeofenceWriteState>) {
     setBusy(true);
@@ -145,10 +146,13 @@ export function GeofencesScreen({ petId }: { petId: string }) {
         </>
       )}
       {isOwner && geofences.data?.kind === 'ok' ? (
-        <Button testID="geofences-add" className="rounded-xl bg-accent" isDisabled={busy}
+        <>
+        <Button testID="geofences-add" className="rounded-xl bg-accent" isDisabled={busy || atLimit}
           onPress={() => router.push({ pathname: '/pets/[petId]/geofence-editor', params: { petId } })}>
           <Button.Label className="font-bold text-accent-foreground">{t('geofenceEditor.add')}</Button.Label>
         </Button>
+        {atLimit ? <Text testID="geofences-limit" className="text-sm font-normal text-muted">{t('geofenceEditor.limitNotice', { max: GEOFENCE_MAX_PER_PET })}</Text> : null}
+        </>
       ) : null}
       {actionError ? (
         <Text testID="geofences-action-error" selectable className="text-danger">{actionError}</Text>
