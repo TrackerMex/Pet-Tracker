@@ -243,3 +243,58 @@ export async function unserveMeal(
   }
   return { kind: 'error' };
 }
+
+export type MealTimeErrorCode =
+  | 'NUTRITION_PLAN_REQUIRED'
+  | 'MEAL_TIME_NOT_IN_PLAN'
+  | 'MEAL_TIME_DUPLICATE'
+  | 'MEAL_TIMES_LIMIT_REACHED';
+
+export type EditMealTimeState =
+  | { kind: 'ok' }
+  | { kind: 'invalid' }
+  | { kind: 'forbidden' }
+  | { kind: 'unprocessable'; code: MealTimeErrorCode }
+  | { kind: 'unauthorized' }
+  | { kind: 'error' }
+  | { kind: 'unreachable'; message: string }
+  | { kind: 'missing-config' };
+
+async function editMealTimeState(
+  response: Response,
+  okStatus: 200 | 201,
+): Promise<EditMealTimeState> {
+  if (response.status === okStatus) return { kind: 'ok' };
+  if (response.status === 400) return { kind: 'invalid' };
+  if (response.status === 403) return { kind: 'forbidden' };
+  if (response.status === 401) return { kind: 'unauthorized' };
+  if (response.status === 422) {
+    const body = await readJson(response);
+    const code = isObjectBody(body) ? body.code : undefined;
+    if (
+      code === 'NUTRITION_PLAN_REQUIRED' ||
+      code === 'MEAL_TIME_NOT_IN_PLAN' ||
+      code === 'MEAL_TIME_DUPLICATE' ||
+      code === 'MEAL_TIMES_LIMIT_REACHED'
+    ) {
+      return { kind: 'unprocessable', code };
+    }
+  }
+  return { kind: 'error' };
+}
+
+export async function addMealTime(
+  baseUrl: string | undefined,
+  token: string,
+  petId: string,
+  mealTime: string,
+  fetchFn: typeof fetch = fetch,
+): Promise<EditMealTimeState> {
+  if (!baseUrl) return { kind: 'missing-config' };
+  const result = await postJson(
+    baseUrl, `/pets/${petId}/meal-times`, token, { mealTime }, fetchFn,
+  );
+  return result.kind === 'unreachable'
+    ? result
+    : editMealTimeState(result.response, 201);
+}
