@@ -229,3 +229,118 @@ Al terminar, escribe progress/impl_mobile-meal-schedule-editing.md con:
 De jest copia solo las lineas de resumen y los bloques `●` de cada `it`
 rojo. NO pegues los console.info de HeroUI ni los console.warn de Uniwind.
 ```
+
+---
+
+## Reanudación 1: parada en §Cierre (2026-10-02)
+
+> Codex paró en §Cierre con HEAD `b5d46054`. La parada fue correcta, porque
+> el handoff exige «si falla otro `it`, PARA». `bun run test` dio 88/1759,
+> exit 1, con tres rojos en candados globales que la spec no movía:
+>
+> - `#87 R19`: el inventario de `signOut(` de meal-schedule pasa de 1 a 2;
+> - `#98 R10` y `#64 R9`: los usos de `bg-accent-soft` pasan de 16 a 18.
+>
+> El leader los reproduce: 3 rojos de 108 en los dos ficheros. La
+> producción cumple la spec; el hueco estaba en ella. El humano aprueba la
+> **Enmienda E1** en el chat. La firma es el commit que añade esta
+> reanudación. E1 añade dos commits de test, uno por fichero, y la lista
+> cerrada pasa a 13 ficheros. También deja por escrito la técnica TZ de
+> `2c873c47`, que el humano confirma haber autorizado. Los dos refactors
+> (`2c873c47` y `b5d46054`) se quedan; los juzga el reviewer.
+
+Pegar en Codex CLI:
+
+```
+Worktree: /home/claude/sites/Pet-Tracker   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+Reanudacion 1 de #147 tras tu parada en §Cierre. Ejecuta y pega en el
+informe:
+  pwd
+  git branch --show-current
+  git rev-parse --short HEAD
+  git rev-parse --short HEAD~1
+  git rev-parse --short HEAD~2
+  git status --short
+PARA si:
+- la branch no es feature/147-mobile-meal-schedule-editing;
+- HEAD~1 no es 98cc1154 (la enmienda);
+- HEAD~2 no es b5d46054 (tu ultimo commit);
+- `git status --short` muestra algo distinto de
+  `?? progress/impl_mobile-meal-schedule-editing.md`.
+HEAD es el commit del leader que firma E1 y anade esta reanudacion. Lee:
+- requirements.md §Enmienda E1;
+- tasks.md §Enmienda E1 y la nota E1.2 de §Tecnica TZ;
+- la seccion «Reanudacion 1» de progress/handoff_mobile-meal-schedule-editing.md.
+Siguen en vigor todas las reglas del handoff original. H0 sigue siendo
+b367ed44.
+
+La produccion es correcta: NO la cambies.
+
+1. Desde mobile-pet-tracker/, sin pipe, mide el rojo de partida:
+     bunx jest src/__tests__/consistency-classnames.test.ts src/__tests__/design-drift.test.ts > /tmp/147-e1-base.txt 2>&1; echo "exit=$?"
+   Esperado: 2 suites, 3 fallan de 108, exit=1. Son los tres `it` de
+   requirements.md §Enmienda E1. Si sale otra cosa, PARA.
+
+2. E1-a. Haz las ediciones literales de tasks.md §Enmienda E1-a en
+   src/__tests__/consistency-classnames.test.ts. Localizalas por contenido,
+   no por numero de linea. Repite el comando del paso 1: esperado 1 falla
+   (el de #87 R19) y exit=1. Commit SOLO con ese fichero y este mensaje
+   literal:
+     test(mobile-meal-schedule-editing): count the meal time controls among accent-soft uses (R4)
+
+3. E1-b. Haz la edicion literal de tasks.md §Enmienda E1-b en
+   src/__tests__/design-drift.test.ts. Repite el comando: esperado 0
+   fallan de 108 y exit=0. Commit SOLO con ese fichero y este mensaje
+   literal:
+     test(mobile-meal-schedule-editing): count the meal schedule 401 sign-out (R8)
+   Despues de cada commit, comprueba con `git show --stat HEAD` que lleva
+   un solo fichero.
+
+4. Corre las sondas de las dos tablas de tasks.md §Enmienda E1 sobre el
+   verde. Despues de cada una, restaura con `git checkout HEAD -- <ruta>`
+   y comprueba que `git diff --cached --stat` sale vacio.
+
+5. §Cierre de tasks.md, entero y en orden:
+   - el pgrep vacio;
+   - `bun run test`: 88 suites / 1759 tests y exit 0;
+   - `bun run lint`: exit 0;
+   - `test ! -e .expo/types/router.d.ts && bun run typecheck`: exit 0;
+   - los tres grep-clean, vacios.
+   Cada comando a fichero, sin pipe, con su exit. Si algo falla, PARA y
+   reporta: no ajustes ninguna asercion.
+
+6. Rellena specs/mobile-meal-schedule-editing/traceability.md. En la fila
+   de R4 cita tambien el commit de E1-a, y en la de R8 el de E1-b. Despues,
+   un solo commit con SOLO traceability.md y
+   progress/impl_mobile-meal-schedule-editing.md, con el mensaje literal de
+   tasks.md:
+     docs(mobile-meal-schedule-editing): fill #147 traceability
+   No rebasees despues.
+
+Listas del cierre:
+- Commits tuyos: los 20 que ya tienes (los 18 C4, 2c873c47 y b5d46054),
+  mas E1-a, E1-b y el de trazabilidad. Son 23.
+- Ficheros que cambian TUS commits: los 13 de design.md §Archivos
+  afectados.
+- El `git diff --name-only H0..HEAD` incluye ademas cinco ficheros que
+  cambian los commits del leader (98cc1154 y el de esta reanudacion), y no
+  cuentan como tuyos:
+  - specs/mobile-meal-schedule-editing/requirements.md
+  - specs/mobile-meal-schedule-editing/design.md
+  - specs/mobile-meal-schedule-editing/tasks.md
+  - progress/current.md
+  - progress/handoff_mobile-meal-schedule-editing.md
+  Pega ese diff completo y senala esos cinco.
+
+No lances ./init.sh. No hagas push. No abras la PR.
+
+Informe: en progress/impl_mobile-meal-schedule-editing.md, una seccion
+«Reanudacion 1» con:
+- las salidas del paso 0;
+- las cuentas y el exit de los pasos 1, 2 y 3;
+- el `git show --stat` de cada commit;
+- cada sonda con su diff y el `it` que cae;
+- el cierre completo, con exit y cifras.
+De jest copia solo las lineas de resumen y los bloques `●` de cada `it`
+rojo.
+```

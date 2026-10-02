@@ -391,8 +391,9 @@ a cada test una copia de `process.env`
 (`jest-util/build/createProcessObject.js`), así que asignarle `TZ` no cambia
 la zona que lee `Date`. Codex lo corrigió en `2c873c47` con
 `process.getBuiltinModule('process').env`, y la sonda pasó a rojo en R5 y R6
-(informe §Sonda TZ corregida). Codex dice que el humano lo autorizó
-en su sesión; esta enmienda lo deja por escrito. [[tasks]] §Técnica TZ 1 se
+(informe §Sonda TZ corregida). El humano confirmó en el chat del
+leader, el 2026-10-02, que se lo autorizó a Codex en su sesión. Esta
+enmienda lo deja por escrito. [[tasks]] §Técnica TZ 1 se
 lee con ese cambio. Los dos refactors de Codex, `2c873c47` (TZ) y `b5d46054`
 (formato de §2.16), se quedan; el reviewer los juzga.
 
@@ -401,4 +402,4 @@ El precedente que citaba la spec, `src/screens/home/weekly-activity-chart.test.t
 probablemente es igual de ciego. Es una deuda candidata, **sin medir** y
 fuera de #147.
 
-- [ ] Enmienda E1 aprobada por humano (fecha: ____, commit de firma: el que marca esta casilla)
+- [x] Enmienda E1 aprobada por humano (fecha: 2026-10-02, en el chat del leader; commit de firma: el que marca esta casilla)
