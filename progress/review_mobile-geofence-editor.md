@@ -185,3 +185,208 @@ y las cuatro sondas que se añadieron en zona ciega de R7 (S1-S4), más las dos 
 Una nota informativa: al pasar «un toque en un POI…» a modo crear, el `pOIClick` en modo editar se queda sin `it`
 propio. El manejador `onPress` es el mismo para los tres eventos, y en modo editar el toque lo siguen
 cubriendo «un toque en el mapa…» y «un toque dentro de un círculo…». Este cambio lo prescribía la reanudación.
+
+## Ronda 3 — enmienda E1 (2026-10-02)
+
+Revisado en `/home/claude/sites/Pet-Tracker-wt-146`, branch
+`feature/146-mobile-geofence-editor`, HEAD `495319fa`, árbol limpio al entrar
+(`pwd`, `git branch --show-current`, `git rev-parse --short HEAD`,
+`git status --short` vacío). Skill cargada: `expo:expo-overview`; carta
+aplicada: `docs/ui-guidelines.md` y C8 de `CHECKPOINTS.md`.
+
+Veredicto ronda 3: **APROBADO**.
+
+El cierre de la feature sigue pendiente de la casilla humana «Paso 9 repetido
+y superado tras E1, en el dev build de Android» (§Aprobación, hoy `[ ]`). Este
+veredicto no la sustituye.
+
+### Checklist sobre el delta de E1
+
+- C2 estado: [x] `feature_list.json` tiene una sola feature `in_progress`
+  (#146). [x] `progress/current.md` registra el paso 9 fallido, la causa, E1,
+  la firma `bc917ff7` y la Reanudación 5 en `7e7b16b9`.
+- C3 arquitectura: [x] el delta solo añade imports de `react-native`
+  (`KeyboardAvoidingView`), `react` (`useContext`) y
+  `expo-router/react-navigation` (`HeaderHeightContext`) en la pantalla. No
+  hay capas nuevas ni lógica fuera de la pantalla.
+- C4 TDD: [x] el bloque nuevo vive en el `it` de
+  `describe('#146 R6: …')`. [x] Historial rojo→verde: `b493f04d` (test,
+  1 fichero) → `caffb588` (feat, 1 fichero) → `495319fa` (docs). Rojo
+  reproducido por mí (punto 4).
+- C5 trazabilidad: [x] la fila R6 cita `b493f04d` y `caffb588`; solo cambia
+  esa línea (numstat 1/1). [x] La única aparición de «pendiente» es la regla
+  de la línea 38, no una fila. [x] Los tres mensajes son literales del handoff
+  y siguen `tipo(scope): desc (R6, E1)`.
+- C6 spec aprobada: [x] `status: approved`. [x] La casilla «Enmienda E1
+  aprobada por humano, P-E1 incluida» está marcada. La marcó `bc917ff7`
+  (`- [ ]` → `- [x] … (fecha: 2026-10-02)`).
+- C7 sin código huérfano: [x] la raíz `View` del formulario se sustituye en
+  sitio. `View` sigue en uso (contenedor del mapa). No queda ningún módulo ni
+  test reemplazado.
+- C8 UI móvil: [x] grep-clean sobre `git diff 635087af..HEAD --
+  mobile-pet-tracker/`: cero hex, cero clases arbitrarias, cero
+  `StyleSheet.create`, cero shadow/elevation (exit=1, sin coincidencias).
+  [x] Safe area: `insets.bottom + 24` del `contentContainerStyle` del
+  formulario no cambia. [x] Ni Skeleton, ni tappables, ni animaciones
+  Reanimated nuevas. [x] `docs/` no menciona `KeyboardAvoidingView` ni
+  `HeaderHeightContext`, así que el cambio no choca con ninguna decisión fija
+  de la carta.
+
+### 1–2. Producción hace exactamente E1.1
+
+Evidencia: `git show caffb588` y grep en `src/screens/geofence-editor/index.tsx`.
+
+- `:6` `import { Alert, KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';`
+  sale de `react-native`.
+- `:138` `<KeyboardAvoidingView testID="screen-geofence-editor" className="flex-1" behavior="padding" keyboardVerticalOffset={headerHeight}>`
+  y `:182` `</KeyboardAvoidingView>;`. `Platform` no aparece en el fichero.
+- `:3` `import { HeaderHeightContext } from 'expo-router/react-navigation';`
+  y `:94` `const headerHeight = useContext(HeaderHeightContext);`, justo tras
+  `useSafeAreaInsets()`. No hay `?? 0` ni `useHeaderHeight` en el fichero.
+- La raíz de carga y errores sigue en `:82` `<ScrollView testID="screen-geofence-editor" className="flex-1 bg-background"`
+  y cierra en `:86`. Los cuatro hunks de `caffb588` no la tocan.
+
+### 3. El test hace exactamente E1.2
+
+- `mount()` envuelve los `children` del `Wrapper` en
+  `<HeaderHeightContext.Provider value={91}>`, importado de
+  `'expo-router/react-navigation'`. `DeviceEventEmitter` viene de
+  `'react-native'`. Es el único cambio en `mount()`.
+- Comparé el bloque de `requirements.md` E1.2 punto 2 con las líneas
+  207–216 de `index.test.tsx`, sin la sangría: **idénticos** (`diff`
+  exit=0). El bloque va tras la última aserción previa del `it`
+  `'compone mapa y formulario sin fondo sobre el mapa y con las métricas A11 en el formulario'`.
+- No hay `it` nuevos. El número de llamadas `it(`/`it.each(` es 51 en
+  `635087af` y 51 en HEAD. Mi corrida en HEAD da `Tests: 68 passed, 68 total`
+  (exit=0), así que el editor sigue en 68.
+- §«Esperas sobre el árbol renderizado»: la única espera nueva es
+  `waitFor(() => expect(screen.getByTestId('screen-geofence-editor')).toHaveStyle({ paddingBottom: 291 }))`.
+  Espera sobre el árbol, vuelve a consultar el nodo dentro de `waitFor` y
+  asevera lo mismo que observa. No hay contadores de mock ni timers.
+
+### 4. Historial rojo→verde
+
+- `b493f04d`: solo `index.test.tsx` (+13 −2). `caffb588`: solo
+  `index.tsx` (+6 −4). `495319fa`: solo `traceability.md` e
+  `impl_mobile-geofence-editor.md`.
+- `git diff b493f04d HEAD -- index.test.tsx` está vacío: el test de HEAD es
+  el del commit rojo.
+- Para reproducir el rojo hice `git checkout caffb588^ -- index.tsx`
+  (el padre de `caffb588` es `b493f04d`) y corrí jest sobre el fichero:
+  exit=1, `Tests: 1 failed, 67 passed, 68 total`. Solo cae it 18, **por
+  aserción** en `index.test.tsx:207`
+  `expect(root).toHaveStyle({ paddingBottom: 0 })`, con
+  `- paddingBottom: 0;` y sin Received.
+- Restauré con `git checkout HEAD -- …/index.tsx` (exit=0). Después,
+  `git diff --cached --stat` quedó vacío y `git diff --stat` solo mostraba
+  este fichero de review, aún sin commitear.
+
+### 5. Mutaciones
+
+Cada mutación la planté con `perl` sobre `index.tsx`, corrí jest sobre el
+fichero y la revertí con `git checkout HEAD --`. Tras cada reversión,
+`git diff --stat -- mobile-pet-tracker` y `git diff --cached --stat`
+quedaron vacíos. Los logs están en el scratchpad (`r3-<id>.txt`).
+
+| Id | Mutación | Esperado | Visto | Cómo cae |
+|---|---|---|---|---|
+| E1-a | quitar `behavior="padding"` | 67/68, it 18 en `paddingBottom: 0` | 67/68, `:207`, `- paddingBottom: 0` | aserción |
+| E1-b | `keyboardVerticalOffset={0}` | 67/68, it 18 en 291, llega 200 | 67/68, `:216`, `- 291 / + 200` | aserción |
+| E1-c | quitar `keyboardVerticalOffset` | 67/68, it 18 en 291, llega 200 | 67/68, `:216`, `- 291 / + 200` | aserción |
+| E1-d | `behavior="height"` | 67/68, it 18 en `paddingBottom: 0` | 67/68, `:207`, `- paddingBottom: 0` | aserción |
+| RV-1 | offset `headerHeight + 1` | rojo en 291, llega 292 | 67/68, `:216`, `- 291 / + 292` | aserción |
+| RV-2 | `enabled={false}` | rojo en 291, llega 0 | 67/68, `:216`, `- 291 / + 0` | aserción |
+| RV-3 | raíz `View`; la KAV (con su propio `useContext`) envuelve `<GeofenceEditorForm>` en `GeofenceEditorScreen` | rojo en `:207` | 67/68, `:207`, `- paddingBottom: 0` | aserción |
+| RV-4 | raíz `View`; la KAV envuelve solo el `ScrollView` del formulario | rojo antes del bloque nuevo | 67/68, `:197` `childTestIds(root)` | aserción (la de hijos de antes) |
+| RV-5 | `behavior={Platform.OS === "ios" ? "padding" : undefined}` | verde: zona ciega, jest-expo corre como iOS | 68/68, exit=0 | no cae |
+| RV-6 | `useHeaderHeight()` en lugar de `useContext(HeaderHeightContext)` | verde: el Provider de `mount()` evita que lance | 68/68, exit=0 | no cae |
+| RV-7 | `keyboardVerticalOffset={91}` (literal) | verde: coincide con el valor del Provider | 68/68, exit=0 | no cae |
+
+Las cuatro de la tabla E1.3 caen donde dice la spec y como dice el informe
+de Codex. RV-1 a RV-4 confirman que el candado fija el valor exacto del
+offset, el `enabled` y que la KAV es la raíz con el testID. RV-5 a RV-7
+pasan: ver las observaciones 1 y 2.
+
+### 6. Trazabilidad
+
+`git diff 635087af..HEAD -- specs/mobile-geofence-editor/traceability.md`
+cambia una sola línea, la fila R6. Añade
+`` `b493f04d` test(geofences): lock the keyboard padding of the editor root (R6, E1); `caffb588` feat(geofences): keep the editor form above the keyboard (R6, E1) ``
+tras los tres hashes que ya estaban. Los dos hashes son ancestros de HEAD
+(`git merge-base --is-ancestor`, exit=0).
+
+### 7. Alcance cerrado
+
+- `git diff --stat 635087af..HEAD` toca 4 ficheros: `index.test.tsx`,
+  `index.tsx`, `traceability.md` e `impl_mobile-geofence-editor.md`.
+- `git diff --stat origin/main...HEAD -- mobile-pet-tracker/` contra
+  `origin/main` = `cb14497c` (tras un `fetch`) da 22 ficheros, el mismo
+  conjunto que en `8944dfe9`, la ronda 2 (`diff` de `--name-only` vacío). Los
+  22 aparecen en `design.md`, la lista de ficheros del handoff original.
+
+### 8. El informe de Codex cuadra con el árbol
+
+- Paso 0 en `635087af` con `git diff --stat 7e7b16b9 HEAD` limitado a
+  `progress/`: cuadra con el historial.
+- Rojo 1/67, `:207`, `- paddingBottom: 0`: lo reproduje igual. Verde 68/68:
+  lo reproduje igual.
+- E1-a…E1-d: los bloques `●` del informe dan `:207`/`:216` y `200`, como en
+  mis corridas.
+- Cierre 90 suites / 1852 tests / 1 snapshot: coincide con el log del
+  `init.sh` del leader.
+- Lista de commits propios: 46 hashes más el documental `495319fa` = 47. Son
+  46 distintos, todos ancestros de HEAD, e incluyen `b493f04d` y `caffb588`.
+  Al cruzar con `git log --ancestry-path 9dee0e62..HEAD` (64 commits) sale
+  64 = 46 + 16 excluidos + `fb3c7488` + `495319fa`. Ver la observación 3.
+
+### init.sh
+
+No lo ejecuté, por orden del leader. El clasificador lo deniega y otra
+sesión lanza el suyo. Leí entero el resumen de
+`…/scratchpad/init-146-r3.log` (22 854 líneas, rutas de
+`/home/claude/sites/Pet-Tracker-wt-146`; el leader lo corrió sobre
+`495319fa` con exit=0):
+
+```
+Build exitoso
+Backend unit:  Test Suites: 174 passed, 174 total / Tests: 1335 passed, 1335 total
+               Test Suites: 2 passed, 2 total / Tests: 14 passed, 14 total
+Móvil:         Test Suites: 90 passed, 90 total / Tests: 1852 passed, 1852 total / Snapshots: 1 passed, 1 total
+               (PASS src/screens/geofence-editor/index.test.tsx)
+e2e:           Test Suites: 3 skipped, 28 passed, 28 of 31 total / Tests: 8 skipped, 423 passed, 431 total
+Lint sin errores · Typecheck sin errores · Todo verde. Listo para trabajar.
+```
+
+Ningún paso del log tiene marca de fallo. Las líneas `ERROR` de Nest
+(`PositionsConsumerService`, `PollerService`, `DrizzleQueryError` en e2e)
+son logs de casos de error esperados dentro de suites que pasan.
+
+### Observaciones ronda 3
+
+1. **No bloqueante. Zona ciega por plataforma (RV-5).**
+   `behavior={Platform.OS === 'ios' ? 'padding' : undefined}`, la receta de
+   la guía de Expo que E1.1 descarta a propósito, deja el editor en 68/68.
+   jest-expo corre con `Platform.OS === 'ios'`, y en ese caso it 18 no
+   distingue Android. Es justo la plataforma del fallo. Hoy la producción no
+   importa `Platform` (verificado por grep). La spec ya dice que el efecto en
+   el teléfono solo lo ve la prueba de humo (§Fuera de alcance, «Comportamiento
+   del teclado»). Por eso la casilla del paso 9 en el dev build de Android es
+   la que cierra este hueco, y sigue sin marcar.
+2. **No bloqueante. El origen del offset no está candado (RV-6, RV-7).**
+   Con el Provider de `mount()` a 91, `useHeaderHeight()` no lanza en este
+   fichero, y un literal `keyboardVerticalOffset={91}` da el mismo 291. Las
+   dos mutaciones pasan. Lo que it 18 fija es el valor, no que salga de
+   `useContext(HeaderHeightContext)`. Hoy el código cumple E1.1 a la letra
+   (grep, punto 2). En la app, `useHeaderHeight` funcionaría dentro del stack
+   nativo; el literal, no, porque la altura de la cabecera varía según el
+   dispositivo.
+3. **No bloqueante. Lista de excluidos incompleta en el informe de Codex.**
+   La lista de «Commits del leader/humano y merges excluidos» de la
+   Reanudación 5 omite `fb3c7488`. Es posterior a H0, es el segundo padre del
+   merge `9dbe3de5` y solo toca `progress/current.md`. No cambia la cuenta de
+   47 propios ni la afirmación de que los excluidos solo tocan `progress/` o
+   `specs/`.
+4. **No bloqueante, informativa.** En el log de `init.sh`, la suite móvil
+   avisa «A worker process has failed to exit gracefully» justo antes de su
+   resumen verde. No sale en los ficheros de E1 ni cambia el resultado
+   (90/1852, exit=0).
