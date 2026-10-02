@@ -125,7 +125,6 @@ export class NutritionDrizzleRepository implements NutritionRepository {
         .delete(mealServings)
         .where(
           and(
-            eq(mealServings.petId, plan.petId),
             eq(mealServings.servedOn, move.servedOn),
             eq(mealServings.mealTime, move.from),
           ),

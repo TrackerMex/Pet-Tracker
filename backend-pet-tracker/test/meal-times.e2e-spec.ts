@@ -417,6 +417,27 @@ describe('Meal schedule editing (e2e)', () => {
       );
       expect(await servingsOf(pet.id)).toEqual(before);
     });
+
+    it('no toca las servidas de otra mascota', async () => {
+      const owner = await seedUser('r5-isolated-owner');
+      const pet = await seedPet(owner);
+      await seedPlan(owner, pet.id);
+      const neighborOwner = await seedUser('r5-neighbor-owner');
+      const neighbor = await seedPet(neighborOwner);
+      const today = localDayOf(Date.now(), 'UTC');
+      await insertServing(neighbor.id, neighborOwner.id, today, '07:30');
+      await insertServing(neighbor.id, neighborOwner.id, today, '08:15');
+      const neighborBefore = await servingsOf(neighbor.id);
+      await serveMeal(owner, pet.id, { mealTime: '07:30' }).expect(201);
+      const [served] = await servingsOf(pet.id);
+      await moveMealTime(owner, pet.id, '07:30', { mealTime: '08:15' }).expect(
+        200,
+      );
+      expect(await servingsOf(pet.id)).toEqual([
+        { ...served, mealTime: '08:15' },
+      ]);
+      expect(await servingsOf(neighbor.id)).toEqual(neighborBefore);
+    });
   });
 
   describe('R6 (meal-schedule-editing #103): si el destino ya tiene servida hoy, gana la del destino', () => {
