@@ -31,6 +31,7 @@ import { MealScheduleScreen } from '.';
 import { renderWithProviders } from '../../../test/render-with-providers';
 
 jest.mock('../../api/nutrition', () => ({
+  addMealTime: jest.fn(),
   moveMealTime: jest.fn(),
   generateNutritionPlan: jest.fn(),
   getNutritionPlan: jest.fn(),
@@ -119,6 +120,7 @@ const apiUrl = 'http://example.test/v1';
 const mockGenerateNutritionPlan = jest.mocked(generateNutritionPlan);
 const mockGetNutritionPlan = jest.mocked(getNutritionPlan);
 const mockGetNutritionProfile = jest.mocked(getNutritionProfile);
+const mockAddMealTime = jest.mocked(addMealTime);
 const mockMoveMealTime = jest.mocked(moveMealTime);
 const mockGetPet = jest.mocked(getPet);
 const mockUseAuth = jest.mocked(useAuth);
@@ -206,6 +208,8 @@ beforeEach(() => {
   mockGenerateNutritionPlan.mockReset();
   mockGetNutritionPlan.mockReset();
   mockGetNutritionProfile.mockReset();
+  mockAddMealTime.mockReset();
+  mockAddMealTime.mockResolvedValue({ kind: 'ok' });
   mockMoveMealTime.mockReset();
   mockMoveMealTime.mockResolvedValue({ kind: 'ok' });
   mockGetPet.mockReset();
@@ -680,6 +684,64 @@ describe('#147 R5: Editar abre el selector en la hora de la fila y publica el PA
     });
     expect(mockMoveMealTime).not.toHaveBeenCalled();
     expect(jest.mocked(addMealTime)?.mock.calls ?? []).toEqual([]);
+    await waitFor(() => expect(screen.getByTestId('meal-time-edit-0').props.accessibilityState).not.toEqual(expect.objectContaining({ disabled: true })));
+  });
+});
+
+
+describe('#147 R6: Añadir comida abre el selector a las 12:00 y publica el POST', () => {
+  beforeEach(() => {
+    mockGetPet.mockResolvedValue(petState('owner'));
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan() });
+    mockGetNutritionProfile.mockResolvedValue({ kind: 'ok', profile: makeProfile() });
+  });
+
+  it('abre el selector a las 12:00 locales', async () => {
+    const previousTZ = process.env.TZ;
+    try {
+      process.env.TZ = 'America/Mexico_City';
+      await renderMealSchedule();
+      await fireEvent.press(await screen.findByTestId('add-meal-time-button'));
+      expect(screen.queryByTestId('meal-time-picker')).not.toBeNull();
+      const picker = screen.getByTestId('meal-time-picker');
+      expect([picker.props.value.getHours(), picker.props.value.getMinutes()]).toEqual([12, 0]);
+      expect(picker.props.mode).toBe('time');
+      expect(picker.props.presentation).toBe('dialog');
+      await fireEvent(picker, 'onDismiss');
+      await waitFor(() => expect(screen.getByTestId('meal-time-edit-0').props.accessibilityState).not.toEqual(expect.objectContaining({ disabled: true })));
+    } finally {
+      if (previousTZ === undefined) delete process.env.TZ;
+      else process.env.TZ = previousTZ;
+    }
+  });
+
+  it('al elegir una hora llama a addMealTime con la hora local rellenada a dos dígitos', async () => {
+    await renderMealSchedule();
+    await fireEvent.press(await screen.findByTestId('add-meal-time-button'));
+    expect(screen.queryByTestId('meal-time-picker')).not.toBeNull();
+    const chosen = Object.assign(new Date(2026, 9, 2, 8, 5), { getUTCHours: () => 14, getUTCMinutes: () => 7, toISOString: () => '2026-10-02T14:07:00.000Z' });
+    await fireEvent(screen.getByTestId('meal-time-picker'), 'onValueChange', {}, chosen);
+    await waitFor(() => {
+      expect(screen.getByTestId('meal-time-edit-0')).toBeVisible();
+      expect(mockAddMealTime).toHaveBeenCalledTimes(1);
+      expect(mockAddMealTime).toHaveBeenCalledWith('http://example.test/v1', 'jwt-token', 'pet-1', '08:05');
+      expect(screen.queryByTestId('meal-time-picker')).toBeNull();
+    });
+    expect(mockMoveMealTime).not.toHaveBeenCalled();
+    await waitFor(() => expect(screen.getByTestId('meal-time-edit-0').props.accessibilityState).not.toEqual(expect.objectContaining({ disabled: true })));
+  });
+
+  it('al cerrar el selector sin elegir no llama a nada', async () => {
+    await renderMealSchedule();
+    await fireEvent.press(await screen.findByTestId('add-meal-time-button'));
+    expect(screen.queryByTestId('meal-time-picker')).not.toBeNull();
+    await fireEvent(screen.getByTestId('meal-time-picker'), 'onDismiss');
+    await waitFor(() => {
+      expect(screen.getByTestId('meal-time-edit-0')).toBeVisible();
+      expect(screen.queryByTestId('meal-time-picker')).toBeNull();
+    });
+    expect(mockMoveMealTime).not.toHaveBeenCalled();
+    expect(mockAddMealTime).not.toHaveBeenCalled();
     await waitFor(() => expect(screen.getByTestId('meal-time-edit-0').props.accessibilityState).not.toEqual(expect.objectContaining({ disabled: true })));
   });
 });
