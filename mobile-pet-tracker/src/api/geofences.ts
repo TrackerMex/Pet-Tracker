@@ -46,3 +46,33 @@ export async function listGeofences(
     ? { kind: 'ok', geofences: body }
     : { kind: 'error' };
 }
+
+export type GeofenceWriteState =
+  | { kind: 'ok' }
+  | { kind: 'not-found' }
+  | { kind: 'no-tracking' }
+  | { kind: 'unauthorized' }
+  | { kind: 'error' }
+  | { kind: 'unreachable'; message: string }
+  | { kind: 'missing-config' };
+
+export async function setGeofenceActive(
+  _baseUrl: string | undefined,
+  _token: string,
+  _petId: string,
+  _geofenceId: string,
+  _active: boolean,
+  _fetchFn: typeof fetch = fetch,
+): Promise<GeofenceWriteState> {
+  return { kind: 'missing-config' };
+}
+
+export async function deleteGeofence(
+  _baseUrl: string | undefined,
+  _token: string,
+  _petId: string,
+  _geofenceId: string,
+  _fetchFn: typeof fetch = fetch,
+): Promise<GeofenceWriteState> {
+  return { kind: 'missing-config' };
+}

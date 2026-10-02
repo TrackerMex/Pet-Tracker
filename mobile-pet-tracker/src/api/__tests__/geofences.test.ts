@@ -1,4 +1,4 @@
-import { listGeofences, type Geofence } from '../geofences';
+import { deleteGeofence, listGeofences, setGeofenceActive, type Geofence } from '../geofences';
 
 const baseUrl = 'http://example.test/v1/';
 
@@ -65,6 +65,57 @@ describe('#41 R2: listGeofences mapea la lista por kind', () => {
   it.each([undefined, ''])('maps missing base URL %p without fetching', async (missingUrl) => {
     const fetchFn = jest.fn();
     await expect(listGeofences(missingUrl, 'jwt-token', 'pet-1', fetchFn)).resolves.toEqual({ kind: 'missing-config' });
+    expect(fetchFn).not.toHaveBeenCalled();
+  });
+});
+
+describe('#41 R3: setGeofenceActive y deleteGeofence mapean la escritura por kind', () => {
+  it.each([true, false])('patches only the active flag %p', async (active) => {
+    const fetchFn = jest.fn().mockResolvedValue(response(200, makeGeofence('zone-1', active)));
+    await expect(setGeofenceActive(baseUrl, 'jwt-token', 'pet-1', 'zone-1', active, fetchFn)).resolves.toEqual({ kind: 'ok' });
+    expect(fetchFn).toHaveBeenCalledTimes(1);
+    expect(fetchFn).toHaveBeenCalledWith('http://example.test/v1/pets/pet-1/geofences/zone-1', {
+      method: 'PATCH',
+      headers: { Authorization: 'Bearer jwt-token', 'Content-Type': 'application/json' },
+      body: active ? '{"active":true}' : '{"active":false}',
+    });
+  });
+
+  it('deletes without a body and maps 204 to ok', async () => {
+    const fetchFn = jest.fn().mockResolvedValue(response(204, undefined));
+    await expect(deleteGeofence(baseUrl, 'jwt-token', 'pet-1', 'zone-1', fetchFn)).resolves.toEqual({ kind: 'ok' });
+    expect(fetchFn).toHaveBeenCalledTimes(1);
+    expect(fetchFn).toHaveBeenCalledWith('http://example.test/v1/pets/pet-1/geofences/zone-1', {
+      method: 'DELETE', headers: { Authorization: 'Bearer jwt-token' },
+    });
+  });
+
+  it.each([
+    [404, 'not-found'], [402, 'no-tracking'], [401, 'unauthorized'],
+    [403, 'error'], [400, 'error'], [500, 'error'], [204, 'error'],
+  ] as const)('setGeofenceActive maps HTTP %i', async (status, kind) => {
+    const fetchFn = jest.fn().mockResolvedValue(response(status, {}));
+    await expect(setGeofenceActive(baseUrl, 'jwt-token', 'pet-1', 'zone-1', false, fetchFn)).resolves.toEqual({ kind });
+  });
+
+  it.each([
+    [404, 'not-found'], [402, 'no-tracking'], [401, 'unauthorized'],
+    [403, 'error'], [500, 'error'], [200, 'error'],
+  ] as const)('deleteGeofence maps HTTP %i', async (status, kind) => {
+    const fetchFn = jest.fn().mockResolvedValue(response(status, {}));
+    await expect(deleteGeofence(baseUrl, 'jwt-token', 'pet-1', 'zone-1', fetchFn)).resolves.toEqual({ kind });
+  });
+
+  it('maps fetch rejections to unreachable', async () => {
+    const fetchFn = jest.fn().mockRejectedValue(new Error('network down'));
+    await expect(setGeofenceActive(baseUrl, 'jwt-token', 'pet-1', 'zone-1', false, fetchFn)).resolves.toEqual({ kind: 'unreachable', message: 'network down' });
+    await expect(deleteGeofence(baseUrl, 'jwt-token', 'pet-1', 'zone-1', fetchFn)).resolves.toEqual({ kind: 'unreachable', message: 'network down' });
+  });
+
+  it.each([undefined, ''])('maps missing base URL %p without fetching', async (missingUrl) => {
+    const fetchFn = jest.fn();
+    await expect(setGeofenceActive(missingUrl, 'jwt-token', 'pet-1', 'zone-1', false, fetchFn)).resolves.toEqual({ kind: 'missing-config' });
+    await expect(deleteGeofence(missingUrl, 'jwt-token', 'pet-1', 'zone-1', fetchFn)).resolves.toEqual({ kind: 'missing-config' });
     expect(fetchFn).not.toHaveBeenCalled();
   });
 });
