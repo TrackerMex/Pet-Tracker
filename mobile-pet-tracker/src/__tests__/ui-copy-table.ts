@@ -195,6 +195,15 @@ export const R6_FOOD: UseRow[] = [
   { file: 'src/screens/meal-schedule/index.tsx', key: 'common.cannotReachServer' },
   { file: 'src/screens/meal-schedule/index.tsx', key: 'common.somethingWentWrong' },
   { file: 'src/screens/meal-schedule/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.addMeal' },
+  { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.editTime' },
+  { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.editTimeLabel' },
+  { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.errorInvalidTime' },
+  { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.errorEditForbidden' },
+  { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.errorPlanRequired' },
+  { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.errorTimeNotInPlan' },
+  { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.errorDuplicateTime' },
+  { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.errorMealLimit' },
 ];
 
 export const R7_PROFILE: UseRow[] = [
