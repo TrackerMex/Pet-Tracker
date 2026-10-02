@@ -223,10 +223,10 @@ describe('#146 R7: el toque y el slider mueven el borrador sin perseguir la cám
     expect(screen.getByTestId('map-view').props.cameraPosition).toEqual({ coordinates: { latitude: 19.4, longitude: -99.1 }, zoom: 17 });
   });
   it('un toque en un POI mueve el centro del borrador', async () => {
-    await edit();
+    await mount(); await screen.findByTestId('geofence-editor-name');
     expect(typeof screen.getByTestId('map-view').props.onPOIClick).toBe('function');
     await fireEvent(screen.getByTestId('map-view'), 'pOIClick', { coordinates: tap, name: 'POI' });
-    expect(circles()[0].center).toEqual(tap);
+    expect(circles()[2]).toEqual({ id: 'draft', center: tap, radius: 150 });
   });
   it('un toque dentro de un círculo mueve el centro al punto tocado', async () => {
     await edit();
@@ -244,29 +244,35 @@ describe('#146 R7: el toque y el slider mueven el borrador sin perseguir la cám
   });
   it('al soltar el slider la cámara encuadra el borrador', async () => {
     await edit();
+    await fireEvent(screen.getByTestId('map-view'), 'mapClick', { coordinates: tap });
     await fireEvent(screen.getByTestId('geofence-editor-radius'), 'change', 600);
     await fireEvent(screen.getByTestId('geofence-editor-radius'), 'changeEnd', [600]);
-    expect(screen.getByTestId('map-view').props.cameraPosition).toEqual({ coordinates: { latitude: 19.4, longitude: -99.1 }, zoom: 15 });
+    expect(screen.getByTestId('map-view').props.cameraPosition).toEqual({ coordinates: tap, zoom: 15 });
   });
   it('TalkBack sube y baja el radio de diez en diez y encuadra', async () => {
     await edit();
+    await fireEvent(screen.getByTestId('map-view'), 'mapClick', { coordinates: tap });
     const thumb = screen.getByTestId('geofence-editor-radius-thumb');
     expect(thumb.props.accessibilityActions).toEqual([{ name: 'increment' }, { name: 'decrement' }]);
     await fireEvent(thumb, 'accessibilityAction', { nativeEvent: { actionName: 'increment' } });
     expect(screen.getByTestId('geofence-editor-radius').props.value).toBe(160);
     expect(screen.getByTestId('map-view').props.cameraPosition.zoom).toBeCloseTo(16.907, 3);
+    expect(screen.getByTestId('map-view').props.cameraPosition.coordinates).toEqual(tap);
     await fireEvent(thumb, 'accessibilityAction', { nativeEvent: { actionName: 'decrement' } });
     expect(screen.getByTestId('geofence-editor-radius').props.value).toBe(150);
     expect(screen.getByTestId('map-view').props.cameraPosition.zoom).toBe(17);
+    expect(screen.getByTestId('map-view').props.cameraPosition.coordinates).toEqual(tap);
   });
   it('TalkBack no sale de 20 ni de 2000', async () => {
-    await edit();
+    await mount(); await screen.findByTestId('geofence-editor-name');
     await fireEvent(screen.getByTestId('geofence-editor-radius'), 'change', 20);
     await fireEvent(screen.getByTestId('geofence-editor-radius-thumb'), 'accessibilityAction', { nativeEvent: { actionName: 'decrement' } });
     expect(screen.getByTestId('geofence-editor-radius').props.value).toBe(20);
+    expect(circles()[2]).toEqual({ id: 'draft', center: { latitude: 19.5, longitude: -99.2 }, radius: 20 });
     await fireEvent(screen.getByTestId('geofence-editor-radius'), 'change', 2000);
     await fireEvent(screen.getByTestId('geofence-editor-radius-thumb'), 'accessibilityAction', { nativeEvent: { actionName: 'increment' } });
     expect(screen.getByTestId('geofence-editor-radius').props.value).toBe(2000);
+    expect(circles()[2].radius).toBe(2000);
   });
   it('escribir el nombre actualiza el campo', async () => {
     await edit(); await fireEvent.changeText(screen.getByTestId('geofence-editor-name'), 'Casa nueva');
