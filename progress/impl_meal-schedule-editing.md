@@ -2919,3 +2919,365 @@ Diffstat del árbol final preparado: se mide con `git diff --cached --stat H0` u
 > backend-pet-tracker@0.0.1 lint /home/claude/sites/Pet-Tracker/backend-pet-tracker
 > eslint "{src,apps,libs,test}/**/*.ts" --fix
 ```
+
+
+## Ronda 2
+
+### Base H1 y entorno
+
+Worktree: `/home/claude/sites/Pet-Tracker`.
+
+Salidas iniciales, antes de modificar código:
+
+```text
+$ git branch --show-current
+feature/103-meal-schedule-editing
+$ git rev-parse HEAD
+4dd7e29f286ace18da77e95581315e17e6985b7a
+$ git log --oneline -4
+4dd7e29f docs(spec): amend #103 with round-2 locks for B1 and B2 (E3)
+49ffac05 Merge origin/main (#41 mobile-geofences) into feature/103-meal-schedule-editing
+90017ed4 docs(meal-schedule-editing): fill #103 traceability
+95f66de6 docs(meal-schedule-editing): document engine_meals_per_day and amend #83 D4 (R13)
+$ git rev-parse HEAD^
+49ffac055f3992784e57ff6fb82ab5b72c4c9c46
+$ git merge-base --is-ancestor 90017ed4 HEAD
+exit=0
+$ git status --porcelain
+(sin salida)
+$ pgrep -af 'init\.sh|test:e2e|jest-e2e' | grep -v pgrep
+(sin salida; exit=1, ninguna coincidencia)
+```
+
+H1 = `4dd7e29f286ace18da77e95581315e17e6985b7a`. Branch, padre y
+ascendencia coinciden con el handoff E3. #103 sigue `in_progress` con la
+spec aprobada; E3 tiene aprobación humana documentada.
+
+Incidencia de arranque: se lanzó `./init.sh` por la regla general de AGENTS
+antes de leer la excepción del handoff. Se detuvo con SIGTERM al grupo de
+procesos propio durante el build backend, antes de unit, infra y E2E.
+No se vuelve a ejecutar. El `pgrep` de arriba se midió después de detenerlo.
+
+Skill cargada: `ponytail:ponytail` (full, instrucción activa de la sesión).
+Ninguna skill Expo. No se modifica `DATABASE_URL`, `.env`, otras bases ni
+otros worktrees. Gate completo, push y PR: delegados al leader.
+
+Plan E3: B1 rojo/verde, B2 rojo/verde, S21-S24 de una en una,
+medidas finales y commit de trazabilidad. Solo los seis ficheros del handoff.
+
+Base Postgres verificada con lecturas: `pet_tracker`, 19 migraciones,
+`engine_meals_per_day|integer|YES`.
+
+Medidas en H1, sin pipe y con logs `/tmp/pt103-r2-base-*.log`:
+
+```text
+pnpm test: exit=0
+Test Suites: 174 passed, 174 total
+Tests:       1335 passed, 1335 total
+<e2e-mt>: exit=0
+Test Suites: 1 passed, 1 total
+Tests:       22 passed, 22 total
+<e2e-nut>: exit=0
+Test Suites: 2 passed, 2 total
+Tests:       45 passed, 45 total
+pnpm exec tsc --noEmit: exit=0 (sin salida)
+```
+
+`pnpm lint` en H1: exit=0; solo salida del script, sin cambios de código.
+
+### B1 — R3 rojo
+
+El fixture compartido queda intacto. R3 `it` 1 recibe los overrides de E3
+y los esperados son literales. Mutación versionada: `objective: 'maintenance'`
+y `warnings: []` en `copyWithMealTimes`.
+
+`pnpm test -- nutrition-plan.entity add-meal-time.use-case move-meal-time.use-case`: exit=1.
+Único rojo: R3 `it` 1; las unit de add y move siguen verdes.
+
+```text
+FAIL src/modules/nutrition/domain/entities/nutrition-plan.entity.spec.ts
+  ● R3 (meal-schedule-editing #103): copyWithMealTimes ordena, recuenta y resuelve el numero del motor › copia los campos completos, ordena, recuenta y resuelve el motor
+
+    expect(received).toStrictEqual(expected) // deep equality
+
+    - Expected  - 7
+    + Received  + 2
+
+    @@ -8,15 +8,10 @@
+          "12:00",
+          "19:30",
+        ],
+        "mealsPerDay": 3,
+        "merKcal": 1059,
+    -   "objective": "weight_loss",
+    +   "objective": "maintenance",
+        "petId": "pet",
+        "rerKcal": 662,
+    -   "warnings": Array [
+    -     Object {
+    -       "code": "weight_loss_plan",
+    -       "message": "aviso",
+    -     },
+    -   ],
+    +   "warnings": Array [],
+      }
+
+      108 |         ['19:30', '07:30', '12:00'],
+      109 |       ),
+    > 110 |     ).toStrictEqual({
+          |       ^
+      111 |       petId: 'pet',
+      112 |       rerKcal: 662,
+      113 |       merKcal: 1059,
+
+      at Object.<anonymous> (modules/nutrition/domain/entities/nutrition-plan.entity.spec.ts:110:7)
+
+Test Suites: 1 failed, 2 passed, 3 total
+Tests:       1 failed, 25 passed, 26 total
+Snapshots:   0 total
+Time:        1.042 s
+Ran all test suites matching nutrition-plan.entity|add-meal-time.use-case|move-meal-time.use-case.
+ ELIFECYCLE  Test failed. See above for more details.
+```
+
+Medida separada exigida: `pnpm test -- nutrition-plan.entity`, exit=1,
+1 suite fallida, 1 test fallido / 9 verdes / 10 total; el mismo matcher de R3.
+`pnpm lint`: exit=0, sin cambios adicionales.
+
+Commit rojo B1: `ea73bb6dc0f0819f75d3f539a9126c802aa741de` —
+`test(meal-schedule-editing): lock objective and warnings on edited copy (R3)`.
+Solo entity + su test; el reporte se guarda en el commit final.
+
+### B1 — R3 verde
+
+Se restaura entity con `git show ea73bb6d^:<ruta> > <ruta>`, sin usar checkout
+contra un commit antiguo. No se cambia el test.
+
+Commit verde B1: `45e744ce43ca5ff067d6412bddc39c5f019f6d1b` —
+`feat(meal-schedule-editing): restore copyWithMealTimes after R3 lock (R3)`.
+
+```text
+pnpm test -- nutrition-plan.entity add-meal-time.use-case move-meal-time.use-case: exit=0
+Test Suites: 3 passed, 3 total
+Tests:       26 passed, 26 total
+<e2e-mt>: exit=0
+Test Suites: 1 passed, 1 total
+Tests:       22 passed, 22 total
+<e2e-nut>: exit=0
+Test Suites: 2 passed, 2 total
+Tests:       45 passed, 45 total
+pnpm exec tsc --noEmit: exit=0 (sin salida)
+pnpm lint: exit=0
+$ git diff ea73bb6d^ HEAD -- backend-pet-tracker/src/modules/nutrition/domain/entities/nutrition-plan.entity.ts
+(sin salida)
+exit=0
+```
+
+### B2 — R5 rojo
+
+Se añade únicamente R5 `it` 3: `no toca las servidas de otra mascota`.
+A tiene P0; B pertenece a otro owner y no tiene plan. B tiene servidas de
+hoy UTC a 07:30 y 08:15. Se mueve A y se comprueban primero A y después B.
+Mutación versionada: quitar solo `eq(mealServings.petId, plan.petId)` del
+DELETE de `insertPlanAndMoveServing`.
+
+`<e2e-mt>`: exit=1. Único rojo: R5 `it` 3, matcher en `servingsOf(B)`.
+B pierde 07:30; A ya pasó su aserción de movimiento. Otros rojos: ninguno.
+
+```text
+FAIL test/meal-times.e2e-spec.ts
+  ● Meal schedule editing (e2e) › R5 (meal-schedule-editing #103): la servida de hoy se mueve con su franja y los dias pasados no › no toca las servidas de otra mascota
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 8
+    + Received  + 0
+
+    @@ -1,16 +1,8 @@
+      Array [
+        Object {
+          "createdBy": "01a0fdd7-f6b9-7043-b459-b9144265ef06",
+    -     "id": "01a0fdd7-f6c5-75e1-b41e-f1ce1e909d5b",
+    -     "mealTime": "07:30",
+    -     "petId": "01a0fdd7-f6bf-7b80-bf0b-f8103c543396",
+    -     "servedAt": 2026-10-02T18:19:44.199Z,
+    -     "servedOn": "2026-10-02",
+    -   },
+    -   Object {
+    -     "createdBy": "01a0fdd7-f6b9-7043-b459-b9144265ef06",
+          "id": "01a0fdd7-f6c8-72d9-98ad-271f1332d339",
+          "mealTime": "08:15",
+          "petId": "01a0fdd7-f6bf-7b80-bf0b-f8103c543396",
+          "servedAt": 2026-10-02T18:19:44.200Z,
+          "servedOn": "2026-10-02",
+
+      437 |         { ...served, mealTime: '08:15' },
+      438 |       ]);
+    > 439 |       expect(await servingsOf(neighbor.id)).toEqual(neighborBefore);
+          |                                             ^
+      440 |     });
+      441 |   });
+      442 |
+
+      at Object.<anonymous> (meal-times.e2e-spec.ts:439:45)
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 22 passed, 23 total
+Snapshots:   0 total
+Time:        3.767 s, estimated 8 s
+Ran all test suites matching test/meal-times.e2e-spec.ts.
+```
+
+`<e2e-nut>`: exit=0.
+
+```text
+Test Suites: 2 passed, 2 total
+Tests:       45 passed, 45 total
+```
+
+`pnpm lint` antes del rojo B2: exit=0.
+
+Commit rojo B2: `ae11f28e5ce4bfa34142e832a11f55573e45ca7c` —
+`test(meal-schedule-editing): lock serving move to the edited pet (R5)`.
+Solo el test e2e y la mutación DELETE del repositorio.
+
+### B2 — R5 verde
+
+Se restaura el repositorio con `git show ae11f28e^:<ruta> > <ruta>`.
+La única modificación del verde es devolver el filtro `petId` del DELETE.
+
+Medidas verdes B2 (logs `/tmp/pt103-r2-b2-green-*.log`):
+
+```text
+<e2e-mt>: exit=0
+Test Suites: 1 passed, 1 total
+Tests:       23 passed, 23 total
+<e2e-nut>: exit=0
+Test Suites: 2 passed, 2 total
+Tests:       45 passed, 45 total
+pnpm exec tsc --noEmit: exit=0 (sin salida)
+pnpm lint: exit=0
+$ git diff ae11f28e^ HEAD -- backend-pet-tracker/src/modules/nutrition/infrastructure/repositories/nutrition.drizzle.repository.ts
+(sin salida)
+exit=0
+```
+
+Commit verde B2: `888e07a6886cea74874467cc1733dff0dd9a4c70` —
+`feat(meal-schedule-editing): restore pet filter on serving delete after R5 lock (R5)`.
+
+### Sondas S21-S24 (E2)
+
+Sobre el verde B2, una a una; ninguna mutación se versiona. Para poder medir
+un árbol completamente limpio después de cada sonda, el borrador propio del
+reporte se conserva en `/tmp/pt103-r2-impl-draft.md` durante las sondas y se
+recupera antes del commit final de documentación. No se usa stash.
+
+
+| Sonda | Mutación | Ficheros corridos | Resultado | Exigido cumplido | Otros rojos |
+|---|---|---|---|---|---|
+| S21 | UPDATE sin filtro petId | `test/meal-times.e2e-spec.ts` (`<e2e-mt>`) | exit=1; 1 suite roja; 4 rojos / 19 verdes / 23 | Sí: R5 it 3, `.expect(200)`: expected 200 OK, got 500 Internal Server Error | R7 it 2 (`PATCH audita actor, plan nuevo, origen, destino y dia`), R11 it 1 (`servir, mover y deshacer usan las franjas del plan editado`), R12 it 1 (`hereda la explicacion y el hash y generate devuelve la misma copia`): todos `.expect(200)`, expected 200 OK, got 500 Internal Server Error |
+| S22 | NOT EXISTS sin filtro petId | `test/meal-times.e2e-spec.ts` (`<e2e-mt>`) | exit=1; 1 suite roja; 1 rojo / 22 verdes / 23 | Sí: R5 it 3, `servingsOf(A).toEqual`; expected fila en 08:15, received `[]` | Ninguno |
+| S23 | Solo warnings: [] | `nutrition-plan.entity.spec.ts` (`pnpm test -- nutrition-plan.entity`) | exit=1; 1 suite roja; 1 rojo / 9 verdes / 10 | Sí: R3 it 1, `toStrictEqual`; expected aviso weight_loss_plan, received `[]` | Ninguno |
+| S24 | Solo objective: maintenance | `nutrition-plan.entity.spec.ts` (`pnpm test -- nutrition-plan.entity`) | exit=1; 1 suite roja; 1 rojo / 9 verdes / 10 | Sí: R3 it 1, `toStrictEqual`; expected weight_loss, received maintenance | Ninguno |
+
+S21 cumple el mínimo E2: los otros tres rojos son también matchers HTTP,
+no errores de consulta del test. Ninguna sonda produjo un rojo ajeno a
+matcher. Logs: `/tmp/pt103-r2-s21.log` a `/tmp/pt103-r2-s24.log`.
+
+Restauraciones y comprobaciones, ejecutadas después de cada sonda:
+
+```text
+S21:
+$ git checkout HEAD -- backend-pet-tracker/src/modules/nutrition/infrastructure/repositories/nutrition.drizzle.repository.ts
+exit=0
+$ git status --porcelain
+(sin salida)
+$ git diff --cached
+(sin salida)
+$ git diff --exit-code
+(sin salida; exit=0)
+$ git diff --cached --exit-code
+(sin salida; exit=0)
+
+S22:
+$ git checkout HEAD -- backend-pet-tracker/src/modules/nutrition/infrastructure/repositories/nutrition.drizzle.repository.ts
+exit=0
+$ git status --porcelain
+(sin salida)
+$ git diff --cached
+(sin salida)
+$ git diff --exit-code
+(sin salida; exit=0)
+$ git diff --cached --exit-code
+(sin salida; exit=0)
+
+S23:
+$ git checkout HEAD -- backend-pet-tracker/src/modules/nutrition/domain/entities/nutrition-plan.entity.ts
+exit=0
+$ git status --porcelain
+(sin salida)
+$ git diff --cached
+(sin salida)
+$ git diff --exit-code
+(sin salida; exit=0)
+$ git diff --cached --exit-code
+(sin salida; exit=0)
+
+S24:
+$ git checkout HEAD -- backend-pet-tracker/src/modules/nutrition/domain/entities/nutrition-plan.entity.ts
+exit=0
+$ git status --porcelain
+(sin salida)
+$ git diff --cached
+(sin salida)
+$ git diff --exit-code
+(sin salida; exit=0)
+$ git diff --cached --exit-code
+(sin salida; exit=0)
+```
+
+
+### Evidencia final de ronda 2 (paso 6)
+
+Medido después de restaurar S24, sobre el código verde final. Logs
+`/tmp/pt103-r2-final-*.log`; todos los comandos se midieron sin pipe.
+
+```text
+pnpm test: exit=0
+Test Suites: 174 passed, 174 total
+Tests:       1335 passed, 1335 total
+<e2e-mt>: exit=0
+Test Suites: 1 passed, 1 total
+Tests:       23 passed, 23 total
+<e2e-nut>: exit=0
+Test Suites: 2 passed, 2 total
+Tests:       45 passed, 45 total
+pnpm exec tsc --noEmit: exit=0 (sin salida)
+pnpm lint: exit=0
+> eslint "{src,apps,libs,test}/**/*.ts" --fix
+```
+
+Delta contra H1: unit 0 suites / 0 tests; meal-times 0 suites / +1 test;
+meals + nutrition 0 suites / 0 tests. E2E completo esperado por E3:
+31 ficheros / 430 tests; su medición y `./init.sh` siguen **delegados al
+leader**. No se declaran ejecutados en esta ronda ni se marca #103 done.
+
+Control de alcance medido desde H1, sobre el verde B2 antes del commit de
+documentación:
+
+```text
+$ git diff --name-only 4dd7e29f HEAD
+backend-pet-tracker/src/modules/nutrition/domain/entities/nutrition-plan.entity.spec.ts
+backend-pet-tracker/test/meal-times.e2e-spec.ts
+exit=0
+$ git diff 4dd7e29f HEAD -- backend-pet-tracker/src/modules/nutrition/domain/entities/nutrition-plan.entity.ts backend-pet-tracker/src/modules/nutrition/infrastructure/repositories/nutrition.drizzle.repository.ts
+(sin salida)
+exit=0
+```
+
+El commit final `docs(meal-schedule-editing): fill #103 traceability round 2`
+añade solo este reporte y las filas R3 y R5 de `traceability.md`, conservando
+los hashes de la ronda 1. Los cuatro commits de código siguen el orden y los
+mensajes literales del handoff; la producción tiene diff neto cero contra H1.
+Las observaciones N1-N6 quedan fuera de esta ronda. No se hace rebase,
+amend, push ni PR. Bookkeeping y gate completo permanecen con el leader.
