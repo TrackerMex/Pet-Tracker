@@ -16,6 +16,7 @@ import {
   R11_RESET,
   R12_ALERTS,
   R13_ALERT_DETAIL,
+  R14_GEOFENCES,
   type UseRow,
 } from './ui-copy-table';
 
@@ -252,6 +253,16 @@ describe('#100 R10: el detalle de alerta resuelve su copy por clave', () => {
   });
 });
 
+describe('#41 R10: las zonas seguras resuelven su copy por clave', () => {
+  it('registra cada ocurrencia de la pantalla y de su cabecera', () => {
+    expect(R14_GEOFENCES).toHaveLength(18);
+    expect(R14_GEOFENCES.every(({ file }) =>
+      file === 'src/app/_layout.tsx' || file === 'src/screens/geofences/index.tsx',
+    )).toBe(true);
+    checkUses(R14_GEOFENCES);
+  });
+});
+
 const REPOSITORY_ROOT = join(SOURCE_ROOT, '..');
 
 const SIGNATURE_LINE = '- [ ] Enmienda aprobada por humano';
@@ -465,7 +476,7 @@ describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () =>
   });
 
   it('no deja ningún valor fijo del catálogo como literal entero en las pantallas', () => {
-    expect(SCREEN_FILES).toHaveLength(19 + 2 + 1 + 1 + 1 + 1); // #100 R10
+    expect(SCREEN_FILES).toHaveLength(19 + 2 + 1 + 1 + 1 + 1 + 1); // #100 R10, #41 R10
 
     for (const file of SCREEN_FILES) {
       const literals = wholeLiterals(readFileSync(join(SOURCE_ROOT, file), 'utf8'));

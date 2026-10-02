@@ -15,6 +15,7 @@ export function GeofencesScreen({ petId }: { petId: string }) {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { signOut, token } = useAuth();
   const t = useTranslate();
+  const retryKey = 'common.retry' as const;
   const insets = useSafeAreaInsets();
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -135,7 +136,7 @@ export function GeofencesScreen({ petId }: { petId: string }) {
               : t('common.somethingWentWrong')}
           </Text>
           <Button testID="geofences-retry" className="min-h-11" onPress={() => void geofences.refetch()}>
-            <Button.Label>{t('common.retry')}</Button.Label>
+            <Button.Label>{t(retryKey)}</Button.Label>
           </Button>
         </>
       )}

@@ -435,6 +435,27 @@ export const R13_ALERT_DETAIL: UseRow[] = [
   { file: 'src/screens/alert-detail/index.tsx', key: 'common.retry' },
 ];
 
+export const R14_GEOFENCES: UseRow[] = [
+  { file: 'src/app/_layout.tsx', key: 'geofences.title' },
+  { file: 'src/screens/geofences/index.tsx', key: 'common.cannotReachServer' },
+  { file: 'src/screens/geofences/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/geofences/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/geofences/index.tsx', key: 'geofences.deleteTitle' },
+  { file: 'src/screens/geofences/index.tsx', key: 'geofences.deleteBody' },
+  { file: 'src/screens/geofences/index.tsx', key: 'geofences.cancel' },
+  { file: 'src/screens/geofences/index.tsx', key: 'geofences.delete' },
+  { file: 'src/screens/geofences/index.tsx', key: 'geofences.empty' },
+  { file: 'src/screens/geofences/index.tsx', key: 'geofences.radius' },
+  { file: 'src/screens/geofences/index.tsx', key: 'geofences.activeLabel' },
+  { file: 'src/screens/geofences/index.tsx', key: 'geofences.delete' },
+  { file: 'src/screens/geofences/index.tsx', key: 'geofences.statusActive' },
+  { file: 'src/screens/geofences/index.tsx', key: 'geofences.statusInactive' },
+  { file: 'src/screens/geofences/index.tsx', key: 'geofences.needsCollar' },
+  { file: 'src/screens/geofences/index.tsx', key: 'common.cannotReachServer' },
+  { file: 'src/screens/geofences/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/geofences/index.tsx', key: 'common.retry' },
+];
+
 export const ALL_USES: UseRow[] = [
   ...R1_AUTH,
   ...R2_TABS,
@@ -449,6 +470,7 @@ export const ALL_USES: UseRow[] = [
   ...R11_RESET,
   ...R12_ALERTS,
   ...R13_ALERT_DETAIL,
+  ...R14_GEOFENCES,
 ];
 
 describe('#65: la tabla de uso de copy está disponible al runner', () => {
@@ -462,7 +484,7 @@ describe('#65: la tabla de uso de copy está disponible al runner', () => {
     const blocks = [
       R1_AUTH, R2_TABS, R3_HOME, R4_MAP, R5_HEALTH, R6_FOOD,
       R7_PROFILE, R8_REMINDERS, R9_ADD_PET, R10_PAIRING, R11_RESET,
-      R12_ALERTS, R13_ALERT_DETAIL,
+      R12_ALERTS, R13_ALERT_DETAIL, R14_GEOFENCES,
     ];
 
     expect(ALL_USES).toHaveLength(
