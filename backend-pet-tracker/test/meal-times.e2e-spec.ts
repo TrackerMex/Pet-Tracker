@@ -1,6 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { asc, eq, inArray } from 'drizzle-orm';
+import { and, asc, eq, inArray } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import request from 'supertest';
 import { App } from 'supertest/types';
@@ -500,6 +500,78 @@ describe('Meal schedule editing (e2e)', () => {
             .expect(200)
         ).body,
       ).toHaveProperty('mealsToday', { served: 1, total: 3 });
+    });
+  });
+
+  describe('R7 (meal-schedule-editing #103): POST y PATCH dejan filas meal_time.add y meal_time.move en audit_log', () => {
+    it('POST audita actor, plan nuevo y hora anadida', async () => {
+      const owner = await seedUser('r7-add');
+      const pet = await seedPet(owner);
+      await seedPlan(owner, pet.id);
+      const response = await addMealTime(owner, pet.id, {
+        mealTime: '12:00',
+      }).expect(201);
+      const result = response.body as { id: string };
+      const rows = await db
+        .select({
+          userId: auditLog.userId,
+          entity: auditLog.entity,
+          entityId: auditLog.entityId,
+          meta: auditLog.meta,
+        })
+        .from(auditLog)
+        .where(
+          and(
+            eq(auditLog.userId, owner.id),
+            eq(auditLog.action, 'meal_time.add'),
+          ),
+        );
+      expect(rows).toEqual([
+        {
+          userId: owner.id,
+          entity: 'nutrition_plan',
+          entityId: result.id,
+          meta: { petId: pet.id, mealTime: '12:00' },
+        },
+      ]);
+    });
+
+    it('PATCH audita actor, plan nuevo, origen, destino y dia', async () => {
+      const owner = await seedUser('r7-move');
+      const pet = await seedPet(owner);
+      await seedPlan(owner, pet.id);
+      await serveMeal(owner, pet.id, { mealTime: '07:30' }).expect(201);
+      const response = await moveMealTime(owner, pet.id, '07:30', {
+        mealTime: '08:15',
+      }).expect(200);
+      const result = response.body as { id: string };
+      const rows = await db
+        .select({
+          userId: auditLog.userId,
+          entity: auditLog.entity,
+          entityId: auditLog.entityId,
+          meta: auditLog.meta,
+        })
+        .from(auditLog)
+        .where(
+          and(
+            eq(auditLog.userId, owner.id),
+            eq(auditLog.action, 'meal_time.move'),
+          ),
+        );
+      expect(rows).toEqual([
+        {
+          userId: owner.id,
+          entity: 'nutrition_plan',
+          entityId: result.id,
+          meta: {
+            petId: pet.id,
+            from: '07:30',
+            to: '08:15',
+            servedOn: localDayOf(Date.now(), 'UTC'),
+          },
+        },
+      ]);
     });
   });
 });

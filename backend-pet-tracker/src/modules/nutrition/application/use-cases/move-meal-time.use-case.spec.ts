@@ -74,3 +74,33 @@ describe('R5 (meal-schedule-editing #103): el use case mueve la servida del dia 
     expect(insertPlan).not.toHaveBeenCalled();
   });
 });
+
+describe('R7 (meal-schedule-editing #103): meal_time.move se audita despues de escribir y nunca si falla', () => {
+  it('audita el id nuevo despues de resolver la escritura', async () => {
+    const { useCase, insertPlanAndMoveServing, record } = buildUseCase();
+    await useCase.execute(INPUT);
+    expect(record).toHaveBeenCalledTimes(1);
+    expect(record).toHaveBeenCalledWith({
+      userId: 'user',
+      action: 'meal_time.move',
+      entity: 'nutrition_plan',
+      entityId: 'created',
+      meta: {
+        petId: 'pet',
+        from: '07:30',
+        to: '08:15',
+        servedOn: '2026-10-02',
+      },
+    });
+    expect(insertPlanAndMoveServing.mock.invocationCallOrder[0]).toBeLessThan(
+      record.mock.invocationCallOrder[0],
+    );
+  });
+
+  it('no audita cuando la escritura falla', async () => {
+    const { useCase, insertPlanAndMoveServing, record } = buildUseCase();
+    insertPlanAndMoveServing.mockRejectedValue(new Error('db down'));
+    await expect(useCase.execute(INPUT)).rejects.toThrow('db down');
+    expect(record).not.toHaveBeenCalled();
+  });
+});
