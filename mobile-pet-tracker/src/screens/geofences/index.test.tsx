@@ -1,6 +1,7 @@
-import { fireEvent, screen, waitFor, within } from '@testing-library/react-native';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react-native';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
+import { Alert } from 'react-native';
 
 import { renderWithProviders } from '../../../test/render-with-providers';
 import { deleteGeofence, listGeofences, setGeofenceActive, type Geofence, type GeofenceWriteState } from '../../api/geofences';
@@ -278,6 +279,107 @@ describe('#41 R6: el dueño activa y desactiva una zona', () => {
     mockSetActive.mockResolvedValue({ kind: 'unauthorized' });
     await mount();
     await fireEvent.press(await screen.findByTestId('geofence-geofence-1-active'));
+    await waitFor(() => expect(mockSignOut).toHaveBeenCalledTimes(1));
+    expect(mockList).toHaveBeenCalledTimes(1);
+  });
+});
+
+function alertButton(label: string) {
+  const button = jest.mocked(Alert.alert).mock.calls.at(-1)?.[2]?.find((item) => item.text === label);
+  expect(button).toBeDefined();
+  return button!;
+}
+
+describe('#41 R7: el dueño borra una zona tras confirmar', () => {
+  const rows = [makeGeofence(), makeGeofence({ id: 'geofence-2', name: 'Parque', active: false })];
+  beforeEach(() => { jest.spyOn(Alert, 'alert').mockImplementation(() => undefined); });
+  afterEach(() => { jest.restoreAllMocks(); });
+
+  it('pinta los dos borrados con sus recetas y como tercer hijo', async () => {
+    mockList.mockResolvedValue({ kind: 'ok', geofences: rows });
+    await mount();
+    await screen.findByTestId('geofence-geofence-1');
+    for (const id of ['geofence-1', 'geofence-2']) {
+      const button = screen.getByTestId(`geofence-${id}-delete`);
+      expect(button.props.className).toBe('pressable-feedback__root button__root button__root--variant-danger-soft button__root--size-sm min-h-11 rounded-xl bg-danger-soft');
+      expect(button.props.accessibilityRole).toBe('button');
+      expect(button.props.accessibilityState.disabled).toBe(false);
+      expect(button).toHaveStyle({ borderCurve: 'continuous' });
+      expect(within(button).getByText('Eliminar').props.className).toBe('button__label button__label--variant-danger-soft button__label--size-sm font-semibold text-danger');
+      expect(childTestIds(screen.getByTestId(`geofence-${id}`))).toEqual([undefined, `geofence-${id}-active`, `geofence-${id}-delete`]);
+    }
+  });
+
+  it('deshabilita los dos borrados mientras el interruptor escribe y no abre Alert', async () => {
+    mockList.mockResolvedValue({ kind: 'ok', geofences: rows });
+    mockSetActive.mockReturnValue(new Promise(() => undefined));
+    await mount();
+    await screen.findByTestId('geofence-geofence-1-delete');
+    await fireEvent.press(screen.getByTestId('geofence-geofence-1-active'));
+    await waitFor(() => expect(screen.getByTestId('geofence-geofence-1-delete').props.accessibilityState.disabled).toBe(true));
+    for (const id of ['geofence-1', 'geofence-2']) {
+      const button = screen.getByTestId(`geofence-${id}-delete`);
+      expect(button.props.accessibilityState.disabled).toBe(true);
+      await fireEvent.press(button);
+    }
+    expect(Alert.alert).not.toHaveBeenCalled();
+    expect(mockDelete).not.toHaveBeenCalled();
+  });
+
+  it('abre la confirmación nativa exacta y Cancelar no borra', async () => {
+    mockList.mockResolvedValue({ kind: 'ok', geofences: rows });
+    await mount();
+    await fireEvent.press(await screen.findByTestId('geofence-geofence-1-delete'));
+    expect(Alert.alert).toHaveBeenCalledTimes(1);
+    expect(Alert.alert).toHaveBeenCalledWith('¿Eliminar Casa?',
+      'Dejarás de recibir alertas de esta zona. Esta acción no se puede deshacer.', [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Eliminar', style: 'destructive', onPress: expect.any(Function) },
+      ]);
+    await act(async () => { alertButton('Cancelar').onPress?.(); });
+    expect(mockDelete).not.toHaveBeenCalled();
+  });
+
+  it('confirmar borra una vez y quita la tarjeta con la lista recargada', async () => {
+    mockList.mockResolvedValueOnce({ kind: 'ok', geofences: rows })
+      .mockResolvedValue({ kind: 'ok', geofences: [rows[0]] });
+    mockDelete.mockResolvedValue({ kind: 'ok' });
+    await mount();
+    await fireEvent.press(await screen.findByTestId('geofence-geofence-2-delete'));
+    expect(Alert.alert).toHaveBeenCalledTimes(1);
+    expect(jest.mocked(Alert.alert).mock.calls[0][0]).toBe('¿Eliminar Parque?');
+    expect(mockDelete).not.toHaveBeenCalled();
+    await act(async () => { alertButton('Eliminar').onPress?.(); });
+    await waitFor(() => expect(screen.getByTestId('geofence-geofence-1-delete').props.accessibilityState.disabled).toBe(false));
+    expect(screen.getByTestId('geofence-geofence-1')).toBeVisible();
+    expect(screen.queryByTestId('geofence-geofence-2')).toBeNull();
+    expect(mockDelete).toHaveBeenCalledTimes(1);
+    expect(mockDelete).toHaveBeenCalledWith(apiUrl, 'token-1', 'pet-1', 'geofence-2');
+    expect(mockList).toHaveBeenCalledTimes(2);
+  });
+
+  it.each([
+    [{ kind: 'error' }, 'Algo salió mal'],
+    [{ kind: 'unreachable', message: 'offline' }, 'No se pudo conectar con el servidor'],
+  ] as const)('pinta el fallo %p y conserva la tarjeta', async (state, message) => {
+    mockList.mockResolvedValue({ kind: 'ok', geofences: [makeGeofence()] });
+    mockDelete.mockResolvedValue(state);
+    await mount();
+    await fireEvent.press(await screen.findByTestId('geofence-geofence-1-delete'));
+    await act(async () => { alertButton('Eliminar').onPress?.(); });
+    expect(await screen.findByTestId('geofences-action-error')).toHaveTextContent(message);
+    expect(screen.getByTestId('geofence-geofence-1')).toBeVisible();
+    expect(mockDelete).toHaveBeenCalledTimes(1);
+    expect(mockDelete).toHaveBeenCalledWith(apiUrl, 'token-1', 'pet-1', 'geofence-1');
+    expect(mockList).toHaveBeenCalledTimes(1);
+  });
+
+  it('cierra la sesión una vez ante unauthorized del borrado', async () => {
+    mockList.mockResolvedValue({ kind: 'ok', geofences: [makeGeofence()] });
+    mockDelete.mockResolvedValue({ kind: 'unauthorized' });
+    await mount();
+    await fireEvent.press(await screen.findByTestId('geofence-geofence-1-delete'));
+    await act(async () => { alertButton('Eliminar').onPress?.(); });
     await waitFor(() => expect(mockSignOut).toHaveBeenCalledTimes(1));
     expect(mockList).toHaveBeenCalledTimes(1);
   });
