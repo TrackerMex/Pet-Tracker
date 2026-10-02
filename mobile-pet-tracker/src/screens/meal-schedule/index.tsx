@@ -13,7 +13,8 @@ import {
   type NutritionPlanState,
   type NutritionProfileState,
 } from '../../api/nutrition';
-import { nutritionKeys } from '../../api/query-keys';
+import { getPet } from '../../api/pets';
+import { nutritionKeys, petKeys } from '../../api/query-keys';
 import { Card } from '../../components/card';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
@@ -48,6 +49,11 @@ function MealScheduleContent({ petId }: { petId: string }) {
     queryKey: nutritionKeys.profile(petId),
     queryFn: () => getNutritionProfile(baseUrl, token ?? '', petId),
   });
+  const pet = useQuery({
+    queryKey: petKeys.detail(petId),
+    queryFn: () => getPet(baseUrl, token ?? '', petId),
+  });
+  const isOwner = pet.data?.kind === 'ok' && pet.data.pet.myRole === 'owner';
   const loadedPlan = plan.data?.kind === 'ok' ? plan.data.plan : null;
   const loadedProfile =
     profile.data?.kind === 'ok' ? profile.data.profile : null;
@@ -179,7 +185,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
             </View>
           </Card>
 
-          <View className="gap-3">
+          <View testID="meal-times-section" className="gap-3">
             <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
               {t('mealSchedule.timesAndPortions')}
             </Text>
@@ -206,9 +212,35 @@ function MealScheduleContent({ petId }: { petId: string }) {
                   <Text className="font-semibold text-muted">
                     {portionGrams} g
                   </Text>
+                  {isOwner ? (
+                    <Button
+                      testID={`meal-time-edit-${index}`}
+                      accessibilityLabel={t('mealSchedule.editTimeLabel', { time: mealTime })}
+                      variant="secondary"
+                      size="sm"
+                      className="min-h-11 rounded-xl bg-accent-soft"
+                      onPress={() => undefined}
+                    >
+                      <Button.Label className="font-semibold text-accent-strong">
+                        {t('mealSchedule.editTime')}
+                      </Button.Label>
+                    </Button>
+                  ) : null}
                 </Card>
               );
             })}
+            {isOwner ? (
+              <Button
+                testID="add-meal-time-button"
+                variant="secondary"
+                className="rounded-xl bg-accent-soft"
+                onPress={() => undefined}
+              >
+                <Button.Label className="font-bold text-accent-strong">
+                  {t('mealSchedule.addMeal')}
+                </Button.Label>
+              </Button>
+            ) : null}
           </View>
         </>
       ) : null}
