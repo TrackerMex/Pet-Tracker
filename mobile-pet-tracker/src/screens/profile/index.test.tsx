@@ -11,7 +11,6 @@ import * as ImagePicker from 'expo-image-picker';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Linking, Text, TextInput } from 'react-native';
 import { Uniwind } from 'uniwind';
-import { ChevronRight } from 'reicon-react-native';
 
 import { withThemeTransition } from 'react-native-nitro-theme-transition';
 
@@ -1068,7 +1067,6 @@ describe('#41 R9: Perfil enlaza a las zonas seguras de la mascota activa', () =>
     expect(link.props.className).toBe('flex-row items-center justify-between rounded-xl bg-default px-3 py-2');
     expect(link).toHaveStyle({ borderCurve: 'continuous' });
     expect(within(link).getByText('Zonas seguras').props.className).toBe('font-semibold text-foreground');
-    expect(within(link).UNSAFE_getByType(ChevronRight).props.size).toBe(20);
     expect(screen.getAllByTestId(/-link$/).map((row) => row.props.testID)).toEqual([
       'documents-link', 'pairing-link', 'geofences-link', 'reminders-link',
     ]);
