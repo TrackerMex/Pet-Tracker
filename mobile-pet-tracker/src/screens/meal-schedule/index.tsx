@@ -1,3 +1,5 @@
+import { Host } from '@expo/ui';
+import ExpoDateTimePicker from '@expo/ui/community/datetime-picker';
 import { useQuery } from '@tanstack/react-query';
 import { Redirect } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
@@ -7,6 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Clock, ForkKnife } from 'reicon-react-native';
 
 import {
+  moveMealTime,
   generateNutritionPlan,
   getNutritionPlan,
   getNutritionProfile,
@@ -30,6 +33,17 @@ function isProfileError(state: NutritionProfileState): boolean {
   return ['error', 'unreachable', 'missing-config'].includes(state.kind);
 }
 
+function pickerValue(mealTime: string): Date {
+  const [hours, minutes] = mealTime.split(':').map(Number);
+  const date = new Date();
+  date.setHours(hours, minutes, 0, 0);
+  return date;
+}
+
+function toMealTime(date: Date): string {
+  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+}
+
 function MealScheduleContent({ petId }: { petId: string }) {
   const [accent, accentForeground] = useThemeColors([
     'accent-strong',
@@ -39,6 +53,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
   const { signOut, token } = useAuth();
   const t = useTranslate();
   const insets = useSafeAreaInsets();
+  const [picker, setPicker] = useState<{ from: string | null } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
   const plan = useQuery({
@@ -219,7 +234,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
                       variant="secondary"
                       size="sm"
                       className="min-h-11 rounded-xl bg-accent-soft"
-                      onPress={() => undefined}
+                      onPress={() => setPicker({ from: mealTime })}
                     >
                       <Button.Label className="font-semibold text-accent-strong">
                         {t('mealSchedule.editTime')}
@@ -242,6 +257,25 @@ function MealScheduleContent({ petId }: { petId: string }) {
               </Button>
             ) : null}
           </View>
+          {picker !== null ? (
+            <Host matchContents>
+              <ExpoDateTimePicker
+                testID="meal-time-picker"
+                mode="time"
+                presentation="dialog"
+                value={pickerValue(picker.from ?? '12:00')}
+                onValueChange={(_event, selected) => {
+                  const { from } = picker;
+                  setPicker(null);
+                  const mealTime = toMealTime(selected);
+                  if (from !== null && mealTime !== from) {
+                    void moveMealTime(baseUrl, token ?? '', petId, from, mealTime);
+                  }
+                }}
+                onDismiss={() => setPicker(null)}
+              />
+            </Host>
+          ) : null}
         </>
       ) : null}
 
