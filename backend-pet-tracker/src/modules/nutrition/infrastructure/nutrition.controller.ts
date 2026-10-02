@@ -93,6 +93,7 @@ export class NutritionController {
   }
 
   @Post('meal-times')
+  @RequirePetRole('owner')
   async addMealTime(
     @Req() request: PetAccessRequest,
     @Body() body: unknown,
@@ -112,6 +113,7 @@ export class NutritionController {
   }
 
   @Patch('meal-times/:mealTime')
+  @RequirePetRole('owner')
   async moveMealTime(
     @Req() request: PetAccessRequest,
     @Param('mealTime') from: string,
