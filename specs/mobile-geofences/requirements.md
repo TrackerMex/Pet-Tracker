@@ -1,6 +1,6 @@
 ---
 feature: "mobile-geofences"
-status: draft    # draft | approved
+status: approved    # draft | approved
 tags: [harness, spec, mobile]
 ---
 
@@ -750,8 +750,8 @@ no entra ningún módulo nativo. La app va en español salvo en el paso 8.
 
 ### Enmienda A18 — lista de A11 en `docs/conventions.md` y `docs/ui-guidelines.md`
 
-- [ ] Enmienda A18 aprobada por humano (fecha: )
+- [x] Enmienda A18 aprobada por humano (fecha: 2026-10-01)
 
 ### Aprobación de la spec
 
-- [ ] Aprobado por humano (fecha: ) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (fecha: 2026-10-01) ← gate obligatorio antes de implementar
