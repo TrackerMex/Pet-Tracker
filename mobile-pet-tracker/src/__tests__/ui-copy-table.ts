@@ -192,6 +192,9 @@ export const R6_FOOD: UseRow[] = [
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.generatePlan' },
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.nutritionProfile' },
   { file: 'src/screens/meal-schedule/index.tsx', key: 'mealSchedule.noNutritionProfileYet' },
+  { file: 'src/screens/meal-schedule/index.tsx', key: 'common.cannotReachServer' },
+  { file: 'src/screens/meal-schedule/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/meal-schedule/index.tsx', key: 'common.somethingWentWrong' },
 ];
 
 export const R7_PROFILE: UseRow[] = [
