@@ -1,6 +1,6 @@
 ---
 feature: "mobile-meal-schedule-editing"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec, mobile]
 ---
 
@@ -298,7 +298,7 @@ Cada una está detallada en [[design]] §Decisiones (D1-D10).
 
 ## Aprobación
 
-- [ ] Spec aprobada por humano (fecha: ____, commit de firma: ____). Es un gate
+- [x] Spec aprobada por humano (fecha: 2026-10-02, commit de firma: el que marca esta casilla). Es un gate
       obligatorio antes del handoff a Codex.
 
 ## Prueba de humo (gate humano propio, después del veredicto del reviewer)
