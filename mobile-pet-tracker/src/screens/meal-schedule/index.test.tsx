@@ -15,8 +15,9 @@ import {
   type NutritionPlanState,
   type NutritionProfileState,
 } from '../../api/nutrition';
+import { getPet, type PetState } from '../../api/pets';
 import { nutritionKeys } from '../../api/query-keys';
-import type { NutritionPlan, NutritionProfile } from '../../api/types';
+import type { NutritionPlan, NutritionProfile, PetProfile } from '../../api/types';
 import { es } from '../../i18n/catalog';
 import { useAuth, type AuthContextValue } from '../../providers/auth-provider';
 import { LanguageProvider } from '../../providers/language-provider';
@@ -32,6 +33,8 @@ jest.mock('../../api/nutrition', () => ({
   getNutritionPlan: jest.fn(),
   getNutritionProfile: jest.fn(),
 }));
+
+jest.mock('../../api/pets', () => ({ getPet: jest.fn() }));
 
 jest.mock('../../providers/auth-provider', () => ({
   useAuth: jest.fn(),
@@ -83,6 +86,7 @@ const apiUrl = 'http://example.test/v1';
 const mockGenerateNutritionPlan = jest.mocked(generateNutritionPlan);
 const mockGetNutritionPlan = jest.mocked(getNutritionPlan);
 const mockGetNutritionProfile = jest.mocked(getNutritionProfile);
+const mockGetPet = jest.mocked(getPet);
 const mockUseAuth = jest.mocked(useAuth);
 
 function makePlan(overrides: Partial<NutritionPlan> = {}): NutritionPlan {
@@ -121,6 +125,21 @@ function makeProfile(
   };
 }
 
+function petState(myRole: PetProfile['myRole'] = 'owner'): PetState {
+  return { kind: 'ok', pet: {
+    id: 'pet-1', name: 'Luna', species: 'dog', breed: null, sex: null,
+    birthDate: null, approxAgeMonths: null, ageMonths: 30, currentWeightKg: null,
+    size: null, color: null, sterilized: null, microchip: null, photoUrl: null,
+    lostMode: false, lastPosition: null, lastCommunicationAt: null, myRole,
+    device: null, nextVaccine: null, nextReminder: null, activitySummary: null,
+    mealsToday: null, createdAt: '2026-10-01T12:00:00.000Z', updatedAt: '2026-10-01T12:00:00.000Z',
+  } };
+}
+
+function childTestIds(node: ReturnType<typeof screen.getByTestId>) {
+  return node.children.map((child) => typeof child === 'string' ? undefined : child.props.testID);
+}
+
 function pending<T>(): Promise<T> {
   return new Promise(() => undefined);
 }
@@ -153,6 +172,8 @@ beforeEach(() => {
   mockGenerateNutritionPlan.mockReset();
   mockGetNutritionPlan.mockReset();
   mockGetNutritionProfile.mockReset();
+  mockGetPet.mockReset();
+  mockGetPet.mockResolvedValue(petState('family'));
   process.env.EXPO_PUBLIC_API_URL = apiUrl;
   mockUseAuth.mockReturnValue({
     status: 'authenticated',
@@ -479,5 +500,76 @@ describe('#95 R5: la pantalla no dibuja cabecera propia', () => {
     await screen.findByTestId('meal-schedule-summary');
     expect(screen.queryByTestId('meal-schedule-back')).toBeNull();
     expect(screen.queryByText(es['mealSchedule.mealSchedule'])).toBeNull();
+  });
+});
+
+
+describe('#147 R4: solo el owner ve Editar y Añadir comida', () => {
+  beforeEach(() => {
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan() });
+    mockGetNutritionProfile.mockResolvedValue({ kind: 'ok', profile: makeProfile() });
+  });
+
+  it('el owner ve Editar en cada fila y Añadir comida bajo la lista', async () => {
+    mockGetPet.mockResolvedValue(petState('owner'));
+    await renderMealSchedule();
+    await waitFor(() => expect(childTestIds(screen.getByTestId('meal-time-row-1'))).toEqual([undefined, undefined, undefined, 'meal-time-edit-1']));
+    expect(childTestIds(screen.getByTestId('meal-time-row-0'))).toEqual([undefined, undefined, undefined, 'meal-time-edit-0']);
+    expect(mockGetPet).toHaveBeenCalledWith('http://example.test/v1', 'jwt-token', 'pet-1');
+    expect(childTestIds(screen.getByTestId('meal-times-section'))).toEqual([undefined, 'meal-time-row-0', 'meal-time-row-1', 'add-meal-time-button']);
+    for (const [index, label] of [[0, 'Editar horario de las 07:30'], [1, 'Editar horario de las 19:30']] as const) {
+      const button = within(screen.getByTestId(`meal-time-row-${index}`)).getByTestId(`meal-time-edit-${index}`);
+      expect(button.props.accessibilityLabel).toBe(label);
+      expect(within(button).getByText('Editar')).toBeVisible();
+      expect(button.props.className.split(' ')).toEqual(expect.arrayContaining(['min-h-11', 'rounded-xl', 'bg-accent-soft']));
+      expect(within(button).getByText('Editar').props.className.split(' ')).toEqual(expect.arrayContaining(['font-semibold', 'text-accent-strong']));
+    }
+    const add = screen.getByTestId('add-meal-time-button');
+    expect(within(add).getByText('Añadir comida')).toBeVisible();
+    expect(add.props.className.split(' ')).toEqual(expect.arrayContaining(['rounded-xl', 'bg-accent-soft']));
+    expect(within(add).getByText('Añadir comida').props.className.split(' ')).toEqual(expect.arrayContaining(['font-bold', 'text-accent-strong']));
+  });
+
+  it.each(['family', 'walker', 'vet'] as const)('%s no ve controles de edición', async (role) => {
+    mockGetPet.mockResolvedValue(petState(role));
+    const { queryClient } = await renderMealSchedule();
+    await waitFor(() => {
+      expect(queryClient.getQueryData(['pets', 'detail', 'pet-1'])).toEqual(petState(role));
+      expect(childTestIds(screen.getByTestId('meal-times-section'))).toEqual([undefined, 'meal-time-row-0', 'meal-time-row-1']);
+      for (const index of [0, 1]) {
+        expect(childTestIds(screen.getByTestId(`meal-time-row-${index}`))).toEqual([undefined, undefined, undefined]);
+        expect(screen.queryByTestId(`meal-time-edit-${index}`)).toBeNull();
+      }
+      expect(screen.queryByTestId('add-meal-time-button')).toBeNull();
+    });
+  });
+
+  it('sin el detalle de la mascota resuelto no hay controles', async () => {
+    mockGetPet.mockReturnValue(pending<PetState>());
+    await renderMealSchedule();
+    await waitFor(() => {
+      expect(childTestIds(screen.getByTestId('meal-times-section'))).toEqual([undefined, 'meal-time-row-0', 'meal-time-row-1']);
+      expect(screen.getByTestId('meal-time-row-1')).toBeVisible();
+      expect(mockGetPet).toHaveBeenCalled();
+      for (const index of [0, 1]) {
+        expect(childTestIds(screen.getByTestId(`meal-time-row-${index}`))).toEqual([undefined, undefined, undefined]);
+        expect(screen.queryByTestId(`meal-time-edit-${index}`)).toBeNull();
+      }
+      expect(screen.queryByTestId('add-meal-time-button')).toBeNull();
+    });
+  });
+
+  it('con el detalle de la mascota en error no hay controles', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'error' });
+    const { queryClient } = await renderMealSchedule();
+    await waitFor(() => {
+      expect(queryClient.getQueryData(['pets', 'detail', 'pet-1'])).toEqual({ kind: 'error' });
+      expect(childTestIds(screen.getByTestId('meal-times-section'))).toEqual([undefined, 'meal-time-row-0', 'meal-time-row-1']);
+      for (const index of [0, 1]) {
+        expect(childTestIds(screen.getByTestId(`meal-time-row-${index}`))).toEqual([undefined, undefined, undefined]);
+        expect(screen.queryByTestId(`meal-time-edit-${index}`)).toBeNull();
+      }
+      expect(screen.queryByTestId('add-meal-time-button')).toBeNull();
+    });
   });
 });
