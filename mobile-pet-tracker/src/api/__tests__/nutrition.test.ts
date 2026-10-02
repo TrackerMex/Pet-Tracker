@@ -1,4 +1,5 @@
 import {
+  addMealTime,
   generateNutritionPlan,
   getNutritionPlan,
   getNutritionProfile,
@@ -402,5 +403,46 @@ describe('#98 R2: serveMeal y unserveMeal mapean la respuesta por kind', () => {
       ),
     ).resolves.toEqual({ kind: 'missing-config' });
     expect(missingConfigFetch).not.toHaveBeenCalled();
+  });
+});
+
+
+describe('#147 R2: addMealTime publica la franja y mapea por kind', () => {
+  it('publica POST /meal-times con el token y el body exacto, y 201 es ok', async () => {
+    const fetchFn = jest.fn().mockResolvedValue(response(201, makePlan())) as unknown as typeof fetch;
+
+    await expect(addMealTime(baseUrl, 'jwt-token', 'pet-1', '08:05', fetchFn)).resolves.toEqual({ kind: 'ok' });
+    expect(fetchFn).toHaveBeenCalledTimes(1);
+    expect(fetchFn).toHaveBeenCalledWith('http://example.test/v1/pets/pet-1/meal-times', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer jwt-token', 'Content-Type': 'application/json' },
+      body: '{"mealTime":"08:05"}',
+    });
+  });
+
+  it.each([
+    { label: '400', kind: 'invalid', backend: response(400, {}), expected: { kind: 'invalid' } },
+    { label: '403', kind: 'forbidden', backend: response(403, {}), expected: { kind: 'forbidden' } },
+    ...['NUTRITION_PLAN_REQUIRED', 'MEAL_TIME_NOT_IN_PLAN', 'MEAL_TIME_DUPLICATE', 'MEAL_TIMES_LIMIT_REACHED'].map((code) => ({
+      label: `422 ${code}`, kind: 'unprocessable', backend: response(422, { code }), expected: { kind: 'unprocessable', code },
+    })),
+    { label: '422 SOMETHING_ELSE', kind: 'error', backend: response(422, { code: 'SOMETHING_ELSE' }), expected: { kind: 'error' } },
+    { label: '422 JSON inválido', kind: 'error', backend: invalidJsonResponse(422), expected: { kind: 'error' } },
+    { label: '401', kind: 'unauthorized', backend: response(401, {}), expected: { kind: 'unauthorized' } },
+    ...[200, 404, 500].map((status) => ({ label: String(status), kind: 'error', backend: response(status, {}), expected: { kind: 'error' } })),
+  ])('mapea $label a $kind', async ({ backend, expected }) => {
+    const fetchFn = jest.fn().mockResolvedValue(backend) as unknown as typeof fetch;
+    await expect(addMealTime(baseUrl, 'jwt-token', 'pet-1', '08:05', fetchFn)).resolves.toEqual(expected);
+  });
+
+  it('devuelve unreachable con el mensaje si fetch rechaza', async () => {
+    const fetchFn = jest.fn().mockRejectedValue(new Error('network down')) as unknown as typeof fetch;
+    await expect(addMealTime(baseUrl, 'jwt-token', 'pet-1', '08:05', fetchFn)).resolves.toEqual({ kind: 'unreachable', message: 'network down' });
+  });
+
+  it('devuelve missing-config sin llamar a fetch si falta la URL base', async () => {
+    const fetchFn = jest.fn() as unknown as typeof fetch;
+    await expect(addMealTime(undefined, 'jwt-token', 'pet-1', '08:05', fetchFn)).resolves.toEqual({ kind: 'missing-config' });
+    expect(fetchFn).not.toHaveBeenCalled();
   });
 });
