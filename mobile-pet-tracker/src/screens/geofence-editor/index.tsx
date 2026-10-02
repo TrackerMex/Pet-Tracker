@@ -1,11 +1,12 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { router } from 'expo-router';
 import { Button, Input, Label, Skeleton, Slider, TextField } from 'heroui-native';
 import { useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUniwind } from 'uniwind';
 
-import { listGeofences, type Geofence, type GeofenceSaveState } from '../../api/geofences';
+import { createGeofence, listGeofences, updateGeofence, type Geofence, type GeofenceSaveState } from '../../api/geofences';
 import { getLastPosition } from '../../api/positions';
 import { geofenceKeys, positionKeys } from '../../api/query-keys';
 import { Card } from '../../components/card';
@@ -65,7 +66,7 @@ export function GeofenceEditorScreen({ petId, geofenceId }: { petId: string; geo
   } else {
     const last = position.data?.kind === 'ok' ? position.data.position : null;
     return <GeofenceEditorForm
-      zone={zone} geofences={list.data.geofences}
+      petId={petId} zone={zone} geofences={list.data.geofences}
       initialName={zone?.name ?? ''} initialRadius={zone?.radiusM ?? 150}
       initialCenter={zone ? { latitude: zone.centerLat, longitude: zone.centerLng } : last ? { latitude: last.lat, longitude: last.lng } : DEFAULT_CENTER}
     />;
@@ -77,12 +78,17 @@ export function GeofenceEditorScreen({ petId, geofenceId }: { petId: string; geo
   </ScrollView>;
 }
 
-function GeofenceEditorForm({ zone, geofences, initialName, initialCenter, initialRadius }: {
-  zone?: Geofence; geofences: Geofence[]; initialName: string; initialCenter: MapCoordinates; initialRadius: number;
+function GeofenceEditorForm({ petId, zone, geofences, initialName, initialCenter, initialRadius }: {
+  petId: string; zone?: Geofence; geofences: Geofence[]; initialName: string; initialCenter: MapCoordinates; initialRadius: number;
 }) {
   const t = useTranslate();
   const insets = useSafeAreaInsets();
   const { theme } = useUniwind();
+  const queryClient = useQueryClient();
+  const baseUrl = process.env.EXPO_PUBLIC_API_URL;
+  const { token, signOut } = useAuth();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [name, setName] = useState(initialName);
   const [center, setCenter] = useState(initialCenter);
   const [radius, setRadius] = useState(initialRadius);
@@ -92,6 +98,21 @@ function GeofenceEditorForm({ zone, geofences, initialName, initialCenter, initi
     radius: id === zone?.id ? radius : radiusM,
   }));
   if (!zone) circles.push({ id: 'draft', center, radius });
+
+  const save = async () => {
+    setBusy(true); setError(null);
+    try {
+      const draft = { name: name.trim(), centerLat: center.latitude, centerLng: center.longitude, radiusM: radius };
+      const result = zone
+        ? await updateGeofence(baseUrl, token ?? '', petId, zone.id, draft)
+        : await createGeofence(baseUrl, token ?? '', petId, draft);
+      if (result.kind === 'ok') {
+        void queryClient.invalidateQueries({ queryKey: geofenceKeys.list(petId) });
+        router.back();
+      } else if (result.kind === 'unauthorized') await signOut();
+      else setError(messageFor(t, result.kind));
+    } catch { setError(messageFor(t, 'error')); } finally { setBusy(false); }
+  };
 
   return <View testID="screen-geofence-editor" className="flex-1">
     <View testID="geofence-editor-map" className="flex-1">
@@ -119,6 +140,10 @@ function GeofenceEditorForm({ zone, geofences, initialName, initialCenter, initi
           }} /></Slider.Track>
       </Slider>
       {zone ? <Text testID="geofence-editor-reset-note" className="text-sm font-normal text-muted">{t('geofenceEditor.resetNote')}</Text> : null}
+      <Button testID="geofence-editor-save" className="rounded-xl bg-accent" isDisabled={busy || name.trim() === ''} onPress={() => void save()}>
+        <Button.Label className="font-bold text-accent-foreground">{t('geofenceEditor.save')}</Button.Label>
+      </Button>
+      {error ? <Text testID="geofence-editor-error" selectable className="text-danger">{error}</Text> : null}
     </ScrollView>
   </View>;
 }
