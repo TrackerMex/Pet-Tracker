@@ -49,5 +49,5 @@ export const mediaKeys = {
 };
 
 export const geofenceKeys = {
-  list: (_petId: string) => ['geofences', 'list'] as const,
+  list: (petId: string) => ['geofences', 'list', petId] as const,
 };
