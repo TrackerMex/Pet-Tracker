@@ -574,4 +574,85 @@ describe('Meal schedule editing (e2e)', () => {
       ]);
     });
   });
+
+  describe('R8 (meal-schedule-editing #103): body invalido responde 400 antes de leer el plan', () => {
+    const invalidBodies: Record<string, unknown>[] = [
+      {},
+      { mealTime: 730 },
+      ...['7:30', '24:00', '12:60', '99:99', '07:30:00', ' 07:30'].map(
+        (mealTime) => ({ mealTime }),
+      ),
+      { mealTime: '08:00', extra: true },
+    ];
+
+    it('POST rechaza cada body de la lista', async () => {
+      const owner = await seedUser('r8-add');
+      const pet = await seedPet(owner);
+      await seedPlan(owner, pet.id);
+      for (const body of invalidBodies) {
+        const response = await addMealTime(owner, pet.id, body).expect(400);
+        expect(response.body).toMatchObject({
+          statusCode: 400,
+          message: 'Validation failed',
+        });
+      }
+      expect(await plansOf(pet.id)).toHaveLength(1);
+      expect(
+        await db
+          .select()
+          .from(auditLog)
+          .where(
+            and(
+              eq(auditLog.userId, owner.id),
+              eq(auditLog.action, 'meal_time.add'),
+            ),
+          ),
+      ).toEqual([]);
+    });
+
+    it('PATCH rechaza cada body de la lista', async () => {
+      const owner = await seedUser('r8-move');
+      const pet = await seedPet(owner);
+      await seedPlan(owner, pet.id);
+      for (const body of invalidBodies) {
+        const response = await moveMealTime(
+          owner,
+          pet.id,
+          '07:30',
+          body,
+        ).expect(400);
+        expect(response.body).toMatchObject({
+          statusCode: 400,
+          message: 'Validation failed',
+        });
+      }
+      expect(await plansOf(pet.id)).toHaveLength(1);
+      expect(
+        await db
+          .select()
+          .from(auditLog)
+          .where(
+            and(
+              eq(auditLog.userId, owner.id),
+              eq(auditLog.action, 'meal_time.move'),
+            ),
+          ),
+      ).toEqual([]);
+    });
+
+    it('sin plan tambien es 400 y meals conserva su patron', async () => {
+      const owner = await seedUser('r8-no-plan');
+      const pet = await seedPet(owner);
+      await addMealTime(owner, pet.id, { mealTime: '7:30' }).expect(400);
+      await moveMealTime(owner, pet.id, '07:30', { mealTime: '24:00' }).expect(
+        400,
+      );
+      const planned = await seedPet(owner);
+      await seedPlan(owner, planned.id);
+      const response = await serveMeal(owner, planned.id, {
+        mealTime: '99:99',
+      }).expect(422);
+      expect(response.body).toHaveProperty('code', 'MEAL_TIME_NOT_IN_PLAN');
+    });
+  });
 });
