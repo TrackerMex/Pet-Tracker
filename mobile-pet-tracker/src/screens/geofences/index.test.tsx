@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
 import { Alert } from 'react-native';
 
 import { renderWithProviders } from '../../../test/render-with-providers';
-import { deleteGeofence, listGeofences, setGeofenceActive, type Geofence, type GeofenceWriteState } from '../../api/geofences';
+import { GEOFENCE_MAX_PER_PET, deleteGeofence, listGeofences, setGeofenceActive, type Geofence, type GeofenceWriteState } from '../../api/geofences';
 import { getPet, type PetState } from '../../api/pets';
 import type { PetProfile } from '../../api/types';
 import type { Language } from '../../i18n/catalog';
@@ -13,6 +13,7 @@ import { LanguageProvider } from '../../providers/language-provider';
 import { GeofencesScreen } from '.';
 
 jest.mock('../../api/geofences', () => ({
+  GEOFENCE_MAX_PER_PET: jest.requireActual('../../api/geofences').GEOFENCE_MAX_PER_PET,
   deleteGeofence: jest.fn(), listGeofences: jest.fn(), setGeofenceActive: jest.fn(),
 }));
 jest.mock('expo-router', () => ({ router: { push: jest.fn() } }));
@@ -490,5 +491,35 @@ describe('#146 R9: el dueño entra al editor desde la lista', () => {
     await mount('en'); const column = await screen.findByTestId('geofence-geofence-1-edit');
     expect(column.props.accessibilityLabel).toBe('Edit Casa zone');
     expect(screen.getByTestId('geofences-add')).toHaveTextContent('Add zone');
+  });
+});
+
+describe('#146 R12: con el máximo de zonas la lista no ofrece añadir otra', () => {
+  const fiveZones = Array.from({ length: GEOFENCE_MAX_PER_PET }, (_, i) => makeGeofence({ id: `geofence-${i + 1}` }));
+  it('con cinco zonas deshabilita Añadir zona y pinta el aviso del máximo justo después', async () => {
+    mockList.mockResolvedValue({ kind: 'ok', geofences: fiveZones }); await mount();
+    const add = await screen.findByTestId('geofences-add');
+    expect(add.props.accessibilityState.disabled).toBe(true);
+    const notice = screen.getByTestId('geofences-limit');
+    expect(notice).toHaveTextContent('Esta mascota ya tiene 5 zonas, el máximo. Elimina una para añadir otra.');
+    expect(notice.props.className).toBe('text-sm font-normal text-muted');
+    const ids = childTestIds(add.parent!);
+    expect(ids.slice(ids.indexOf('geofences-add'), ids.indexOf('geofences-add') + 2)).toEqual(['geofences-add', 'geofences-limit']);
+  });
+  it('con cuatro zonas deja Añadir zona habilitada y sin aviso', async () => {
+    mockList.mockResolvedValue({ kind: 'ok', geofences: fiveZones.slice(0, 4) }); await mount();
+    const add = await screen.findByTestId('geofences-add');
+    expect(add.props.accessibilityState.disabled).toBe(false);
+    expect(screen.queryByTestId('geofences-limit')).toBeNull();
+  });
+  it('no pinta el aviso a quien no es dueño aunque haya cinco zonas', async () => {
+    mockGetPet.mockResolvedValue(petState('family'));
+    mockList.mockResolvedValue({ kind: 'ok', geofences: fiveZones }); await mount();
+    await screen.findByTestId('geofence-geofence-1-status');
+    expect(screen.queryByTestId('geofences-limit')).toBeNull();
+  });
+  it('pinta el aviso del máximo en inglés', async () => {
+    mockList.mockResolvedValue({ kind: 'ok', geofences: fiveZones }); await mount('en');
+    expect(await screen.findByTestId('geofences-limit')).toHaveTextContent('This pet already has 5 zones, the maximum. Delete one to add another.');
   });
 });

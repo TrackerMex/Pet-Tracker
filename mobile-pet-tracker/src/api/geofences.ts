@@ -14,6 +14,9 @@ export interface Geofence {
   updatedAt: string;
 }
 
+/** Espejo de GEOFENCE_MAX_PER_PET de backend-pet-tracker/src/modules/geofences/geofences.constants.ts. */
+export const GEOFENCE_MAX_PER_PET = 5;
+
 export type GeofenceListState =
   | { kind: 'ok'; geofences: Geofence[] }
   | { kind: 'no-tracking' }
