@@ -100,7 +100,13 @@ describe('R2 (meal-schedule-editing #103): engineMealCount y carriedSchedule dec
 describe('R3 (meal-schedule-editing #103): copyWithMealTimes ordena, recuenta y resuelve el numero del motor', () => {
   it('copia los campos completos, ordena, recuenta y resuelve el motor', () => {
     expect(
-      copyWithMealTimes(plan(), ['19:30', '07:30', '12:00']),
+      copyWithMealTimes(
+        plan({
+          objective: 'weight_loss',
+          warnings: [{ code: 'weight_loss_plan', message: 'aviso' }],
+        }),
+        ['19:30', '07:30', '12:00'],
+      ),
     ).toStrictEqual({
       petId: 'pet',
       rerKcal: 662,
@@ -109,8 +115,8 @@ describe('R3 (meal-schedule-editing #103): copyWithMealTimes ordena, recuenta y 
       mealsPerDay: 3,
       mealTimes: ['07:30', '12:00', '19:30'],
       engineMealsPerDay: 2,
-      objective: 'maintenance',
-      warnings: [],
+      objective: 'weight_loss',
+      warnings: [{ code: 'weight_loss_plan', message: 'aviso' }],
       aiExplanation: 'texto',
       inputsHash: 'a'.repeat(64),
     });
