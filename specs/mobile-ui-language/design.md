@@ -826,15 +826,16 @@ copy completa en cada una.
 
 | # | Clave | `en` | `es` | Origen |
 |---|---|---|---|---|
-| — | `mealSchedule.addMeal` | Add meal | Añadir comida | ← añadida por #147 (R1) |
-| — | `mealSchedule.editTime` | Edit | Editar | ← añadida por #147 (R1) |
-| — | `mealSchedule.editTimeLabel` **(param)** | Edit {{time}} meal time | Editar horario de las {{time}} | ← añadida por #147 (R1) |
-| — | `mealSchedule.errorInvalidTime` | That time is not valid | La hora no es válida | ← añadida por #147 (R1) |
-| — | `mealSchedule.errorEditForbidden` | Only the owner can change meal times | Solo el dueño puede cambiar los horarios | ← añadida por #147 (R1) |
-| — | `mealSchedule.errorPlanRequired` | Generate a meal plan first | Primero genera un plan de alimentación | ← añadida por #147 (R1) |
-| — | `mealSchedule.errorTimeNotInPlan` | That meal time is no longer in the plan | Ese horario ya no está en el plan | ← añadida por #147 (R1) |
-| — | `mealSchedule.errorDuplicateTime` | There is already a meal at that time | Ya hay una comida a esa hora | ← añadida por #147 (R1) |
-| — | `mealSchedule.errorMealLimit` | The plan already has the maximum of 6 meals | El plan ya tiene el máximo de 6 comidas | ← añadida por #147 (R1) |
+| — | `mealSchedule.addMeal` | `Add meal` | `Añadir comida` | ← añadida por #147 (R1)
+| — | `mealSchedule.editTime` | `Edit` | `Editar` | ← añadida por #147 (R1)
+| — | `mealSchedule.editTimeLabel` **(param)** | `Edit {{time}} meal time` | `Editar horario de las {{time}}` | ← añadida por #147 (R1)
+| — | `mealSchedule.errorInvalidTime` | `That time is not valid` | `La hora no es válida` | ← añadida por #147 (R1)
+| — | `mealSchedule.errorEditForbidden` | `Only the owner can change meal times` | `Solo el dueño puede cambiar los horarios` | ← añadida por #147 (R1)
+| — | `mealSchedule.errorPlanRequired` | `Generate a meal plan first` | `Primero genera un plan de alimentación` | ← añadida por #147 (R1)
+| — | `mealSchedule.errorTimeNotInPlan` | `That meal time is no longer in the plan` | `Ese horario ya no está en el plan` | ← añadida por #147 (R1)
+| — | `mealSchedule.errorDuplicateTime` | `There is already a meal at that time` | `Ya hay una comida a esa hora` | ← añadida por #147 (R1)
+| — | `mealSchedule.errorMealLimit` | `The plan already has the maximum of 6 meals` | `El plan ya tiene el máximo de 6 comidas` | ← añadida por #147 (R1)
+
 
 ## 3. La infraestructura
 
