@@ -42,14 +42,19 @@ export class NutritionPlan implements NutritionPlanProps {
 }
 
 export function engineMealCount(plan: NutritionPlan): number {
-  return plan.mealsPerDay;
+  return plan.engineMealsPerDay ?? plan.mealsPerDay;
 }
 
 export function carriedSchedule(
   latest: NutritionPlan | null,
   engine: { mealsPerDay: number; mealTimes: string[] },
 ): { mealsPerDay: number; mealTimes: string[] } {
-  if (latest)
-    return { mealsPerDay: engine.mealsPerDay, mealTimes: engine.mealTimes };
-  return { mealsPerDay: engine.mealsPerDay, mealTimes: engine.mealTimes };
+  const schedule =
+    latest !== null && engineMealCount(latest) === engine.mealsPerDay
+      ? latest
+      : engine;
+  return {
+    mealsPerDay: schedule.mealsPerDay,
+    mealTimes: [...schedule.mealTimes],
+  };
 }
