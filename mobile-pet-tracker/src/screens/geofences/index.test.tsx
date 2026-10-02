@@ -148,6 +148,7 @@ describe('#41 R5: la pantalla pinta la lista de zonas y sus estados', () => {
     const card = await screen.findByTestId('geofences-no-tracking');
     expect(card).toHaveTextContent('Las zonas seguras requieren un collar');
     expect(card.props.className).toBe('rounded-card border border-border bg-surface p-4 shadow-sm items-center py-8');
+    expect(within(card).getByText('Las zonas seguras requieren un collar').props.className).toBe('text-center font-normal text-muted');
     expect(screen.queryByTestId('geofences-retry')).toBeNull();
   });
 
