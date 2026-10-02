@@ -38,6 +38,13 @@ export class MoveMealTimeUseCase {
       ),
       { servedOn, from: input.from, to: input.to },
     );
+    await this.audit.record({
+      userId: input.userId,
+      action: 'meal_time.move',
+      entity: 'nutrition_plan',
+      entityId: created.id,
+      meta: { petId: input.petId, from: input.from, to: input.to, servedOn },
+    });
     return created;
   }
 }

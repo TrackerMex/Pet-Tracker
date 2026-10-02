@@ -27,6 +27,13 @@ export class AddMealTimeUseCase {
     const created = await this.nutrition.insertPlan(
       copyWithMealTimes(plan, [...plan.mealTimes, input.mealTime]),
     );
+    await this.audit.record({
+      userId: input.userId,
+      action: 'meal_time.add',
+      entity: 'nutrition_plan',
+      entityId: created.id,
+      meta: { petId: input.petId, mealTime: input.mealTime },
+    });
     return created;
   }
 }
