@@ -598,3 +598,168 @@ comprobacion vacia de cada reversion. Copia de jest solo las lineas de
 resumen y los bloques `●` de cada `it` rojo, con su matcher, Expected y
 Received.
 ```
+
+## Reanudación 5 — enmienda E1, teclado sobre el formulario (2026-10-02)
+
+> El reviewer aprobó la ronda 2 (`8944dfe9`). La prueba de humo pasó salvo
+> el paso 9: con el teclado abierto, Guardar queda inalcanzable. La causa es
+> edge-to-edge (`progress/explore_mobile-geofence-editor-keyboard.md` §1 y
+> la sección «Verificación del leader»). El humano aprobó la enmienda E1
+> vía Notion, con firma en `bc917ff7`. E1 está en
+> `specs/mobile-geofence-editor/requirements.md` §Enmienda E1. R6 §Formulario
+> cambia su raíz a `KeyboardAvoidingView`.
+>
+> Se refuerza R6 it 18 sin `it` nuevos. El recuento sigue en editor 68 y
+> total 90 / 1852. `origin/main` no se ha movido desde el merge `c0940cd0`,
+> así que no hay merge previo. El leader comprobó contra `node_modules` del
+> worktree tres cosas:
+>
+> - `expo-router/react-navigation` exporta `HeaderHeightContext`.
+> - El `KeyboardAvoidingView` de RN 0.86 pasa `className` y `testID` al
+>   `View` host, así que las aserciones actuales de it 18 siguen valiendo.
+> - uniwind envuelve `KeyboardAvoidingView`, así que `className` se aplica
+>   en la app.
+>
+> Ningún inventario global (`consistency-classnames`, `design-drift`,
+> `ui-language`) cuenta algo que este cambio mueva.
+
+Pegar en Codex CLI:
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-146   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+Reanudacion 5 de #146: enmienda E1 (teclado). Ejecuta `pwd`,
+`git branch --show-current`, `git rev-parse --short HEAD` y
+`git status --short`. Para si la branch no es
+feature/146-mobile-geofence-editor o si `git status --short` no sale
+vacio. HEAD sera el commit del leader que anade esta reanudacion a
+progress/handoff_mobile-geofence-editor.md (su padre es bc917ff7). Lee
+la seccion «Reanudacion 5» de ese fichero y, en
+specs/mobile-geofence-editor/requirements.md, la seccion
+«## Enmienda E1 — el formulario se aparta del teclado (paso 9)» entera
+(E1.1 a E1.3). Siguen en vigor las reglas del handoff original y de las
+reanudaciones 1 a 4. H0 sigue siendo 9dee0e62. NO rebasees: la branch
+lleva merges (c0940cd0, 9dbe3de5). Skill de tu plugin expo para esta
+tarea: `building-native-ui`. No pidas otras por nombre.
+
+Esperas: cumple docs/conventions.md §«Esperas sobre el arbol renderizado».
+El bloque de E1.2 ya la cumple: copialo literal, sin cambiar la espera
+por un contador de mock ni por un timer.
+
+Ficheros que puedes tocar, y ninguno mas:
+  mobile-pet-tracker/src/screens/geofence-editor/index.test.tsx
+  mobile-pet-tracker/src/screens/geofence-editor/index.tsx
+  specs/mobile-geofence-editor/traceability.md
+  progress/impl_mobile-geofence-editor.md
+
+0. Desde mobile-pet-tracker/: `test ! -e .expo/types/router.d.ts`. Si
+   existe, PARA y pide al humano que lo borre (no lo borres tu).
+
+1. ROJO. Solo index.test.tsx:
+   a. Imports: anade
+        import { HeaderHeightContext } from 'expo-router/react-navigation';
+      y cambia `import { Alert } from 'react-native';` por
+        import { Alert, DeviceEventEmitter } from 'react-native';
+      (`act`, `fireEvent` y `waitFor` ya se importan de
+      @testing-library/react-native.)
+   b. En la funcion `mount()`, el `Wrapper` devuelve hoy
+        <HeroUINativeProvider><LanguageProvider initial={language}>{children}</LanguageProvider></HeroUINativeProvider>
+      Cambia `{children}` por
+        <HeaderHeightContext.Provider value={91}>{children}</HeaderHeightContext.Provider>
+      Nada mas cambia en mount().
+   c. Localiza por TITULO, no por linea, el it
+      'compone mapa y formulario sin fondo sobre el mapa y con las métricas A11 en el formulario'
+      (describe '#146 R6: …'). Al final, tras su ultima asercion actual,
+      anade LITERAL el bloque de E1.2 punto 2:
+        expect(root).toHaveStyle({ paddingBottom: 0 });
+        await fireEvent(root, 'layout', { persist() {}, nativeEvent: { layout: { x: 0, y: 0, width: 400, height: 700 } } });
+        await act(async () => {
+          DeviceEventEmitter.emit('keyboardWillShow', {
+            startCoordinates: { screenX: 0, screenY: 800, width: 400, height: 0 },
+            endCoordinates: { screenX: 0, screenY: 500, width: 400, height: 300 },
+            duration: 0, easing: 'keyboard', isEventFromThisApp: true,
+          });
+        });
+        await waitFor(() => expect(screen.getByTestId('screen-geofence-editor')).toHaveStyle({ paddingBottom: 291 }));
+      `root` es la constante que el it ya declara. No cambies el titulo
+      ni anadas o quites `it`.
+   d. Desde mobile-pet-tracker/, sin pipe:
+        bunx jest --runTestsByPath 'src/screens/geofence-editor/index.test.tsx' > /tmp/e1-red.txt 2>&1; echo "exit=$?"
+      Esperado: EXACTAMENTE 1 falla / 67 pasan, y es ese it, por
+      ASERCION en `toHaveStyle({ paddingBottom: 0 })` (la raiz `View` de
+      hoy no tiene paddingBottom). Si falla otro it, o falla por consulta
+      o por import, PARA y reporta.
+   e. Commit con SOLO index.test.tsx. Mensaje literal:
+        test(geofences): lock the keyboard padding of the editor root (R6, E1)
+
+2. VERDE. Solo index.tsx:
+   a. `import { useState } from 'react';` pasa a
+        import { useContext, useState } from 'react';
+      `import { Alert, ScrollView, Text, View } from 'react-native';` pasa a
+        import { Alert, KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
+      y justo despues de `import { router } from 'expo-router';` anade
+        import { HeaderHeightContext } from 'expo-router/react-navigation';
+   b. En `function GeofenceEditorForm`, justo despues de
+      `const insets = useSafeAreaInsets();` anade
+        const headerHeight = useContext(HeaderHeightContext);
+      Sin `?? 0` y sin useHeaderHeight (lanza fuera de un navegador; E1.1).
+   c. Su return abre hoy con
+        return <View testID="screen-geofence-editor" className="flex-1">
+      Cambialo por
+        return <KeyboardAvoidingView testID="screen-geofence-editor" className="flex-1" behavior="padding" keyboardVerticalOffset={headerHeight}>
+      y su cierre, la linea `  </View>;` justo antes de la `}` que cierra
+      GeofenceEditorForm, por `  </KeyboardAvoidingView>;`. Sin
+      Platform.OS. NO toques la otra raiz con el mismo testID (el
+      `<ScrollView testID="screen-geofence-editor" …>` de carga y errores).
+   d. El comando de 1.d hacia /tmp/e1-green.txt. Esperado: 68 passed / 68,
+      exit=0. Si algo falla, PARA y reporta: no ajustes la asercion.
+   e. Commit con SOLO index.tsx. Mensaje literal:
+        feat(geofences): keep the editor form above the keyboard (R6, E1)
+
+3. MUTACIONES de la tabla de E1.3, una a una sobre index.tsx. Para cada
+   una: planta, corre el comando de 1.d hacia /tmp/e1-<id>.txt, y
+   revierte con
+     git checkout HEAD -- mobile-pet-tracker/src/screens/geofence-editor/index.tsx
+   (HEAD, no un hash). Comprueba que
+   `git diff --stat -- mobile-pet-tracker/src/screens/geofence-editor/index.tsx`
+   y `git diff --cached --stat` salen vacios antes de la siguiente.
+     E1-a  quitar `behavior="padding"`
+           cae it 18 en toHaveStyle({ paddingBottom: 0 })
+     E1-b  `keyboardVerticalOffset={0}`
+           cae it 18 en toHaveStyle({ paddingBottom: 291 }), llega 200
+     E1-c  quitar el prop `keyboardVerticalOffset={headerHeight}`
+           cae it 18 en toHaveStyle({ paddingBottom: 291 }), llega 200
+     E1-d  `behavior="height"` en vez de "padding"
+           cae it 18 en toHaveStyle({ paddingBottom: 0 })
+   Esperado en cada una: EXACTAMENTE 1 falla / 67 pasan, solo it 18, por
+   ASERCION en el punto indicado. En E1-c, si tsc o lint protestan por
+   `headerHeight` sin usar, da igual: solo corre jest. Si otra cosa falla,
+   o falla en otro punto, PARA y reporta. No toques la asercion para que
+   cuadre. Las mutaciones nunca se commitean.
+
+4. CIERRE, desde mobile-pet-tracker/, sin pipe, cada uno a fichero con su
+   exit: `test ! -e .expo/types/router.d.ts`, `bunx tsc --noEmit`,
+   `bunx expo lint` y la suite entera `bunx jest`. Esperado: 90 suites /
+   1852 tests / 1 snapshot, y exit=0 en los tres.
+
+5. En specs/mobile-geofence-editor/traceability.md, anade los hashes de los
+   commits de 1.e y 2.e a la fila de R6, junto a los que ya cita, con su
+   asunto como en las demas entradas. No cambies otras filas. Commit con
+   SOLO traceability.md y progress/impl_mobile-geofence-editor.md. Mensaje
+   literal:
+     docs(geofences): cite the keyboard lock in #146 traceability (R6, E1)
+
+No lances ./init.sh ni toques Postgres ni LocalStack. No hagas push.
+
+Listas del cierre: los 44 commits tuyos de antes mas los tres de esta
+reanudacion, 47 en total. Ficheros: los del handoff original. Los commits
+del leader y del humano tocan solo progress/ y specs/, mas los merges
+c0940cd0 y 9dbe3de5.
+
+Informe: en progress/impl_mobile-geofence-editor.md, una seccion
+«Reanudacion 5» con las salidas del paso 0, el diff de cada commit
+(`git show <hash> -- <fichero>`), las cuentas y el exit de 1.d, 2.d, cada
+mutacion y el paso 4, el diff de cada mutacion plantada antes de
+revertirla, y la comprobacion vacia de cada reversion. Copia de jest solo
+las lineas de resumen y los bloques `●` de cada it rojo, con su matcher,
+Expected y Received.
+```
