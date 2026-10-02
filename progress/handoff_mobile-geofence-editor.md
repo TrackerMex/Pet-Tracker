@@ -294,3 +294,80 @@ en adelante copia de jest solo las lineas de resumen y los bloques `●` de
 cada `it` rojo (matcher, Expected, Received). NO pegues los console.info
 de HeroUI ni los console.warn de Uniwind: el informe ya pesa 483 KB.
 ```
+
+---
+
+## Reanudación 2 — parada en el rojo de R9 (2026-10-02)
+
+> Codex paró antes de commitear el rojo de R9, con HEAD `84719d8f` (verde
+> de R8). Hubo 11 rojos frente a los 10 que declara tasks.md. Los diez
+> esperados estaban; el adicional es el Declarado
+> `#146 R9 › no pinta Añadir zona con unauthorized`.
+>
+> Diagnóstico del leader: el fallo está en el ancla que escribió Codex al
+> aplicar la regla de §Esperas de la reanudación 1, y no en la producción.
+> La espera
+> `waitFor(() => expect(screen.getByTestId('screen-geofences').children).toHaveLength(0))`
+> no puede cumplirse nunca. `screen-geofences` es un `ScrollView`, y en el
+> árbol de host un `ScrollView` siempre envuelve su contenido en un `View`
+> (el del `contentContainerStyle`). Por eso `children` mide 1 aunque la rama
+> `unauthorized` pinte `null`. La spec no fija el cuerpo de ese `it`, solo su
+> título y que sea Declarado.
+>
+> El ancla correcta es la del hermano de #41 y la del arreglo de R6: que
+> desaparezca `geofences-loading`. En `src/screens/geofences/index.tsx`, el
+> Skeleton se pinta mientras `geofences.data` o `pet.data` son `undefined`.
+> Que desaparezca equivale a que ya se pintó la rama final, y en
+> `unauthorized` no hay ningún nodo positivo al que anclarse. El cambio va
+> dentro del rojo de R9, aún sin commit, así que no hay commit extra: siguen
+> siendo 39.
+
+Pegar en Codex CLI:
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-146   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+Reanudacion 2 de #146 tras tu parada en el rojo de R9. Ejecuta `pwd`,
+`git branch --show-current`, `git rev-parse --short HEAD` y
+`git status --short`. Para si la branch no es
+feature/146-mobile-geofence-editor, o si `git status --short` muestra
+algo distinto de
+` M mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts`,
+` M mobile-pet-tracker/src/screens/geofences/index.test.tsx` y
+`?? progress/impl_mobile-geofence-editor.md`. HEAD sera el commit del
+leader que anade esta reanudacion a progress/handoff_mobile-geofence-editor.md
+(su padre es 84719d8f). Lee la seccion «Reanudacion 2» de ese fichero:
+lleva el diagnostico. Las reglas del handoff original y de la
+reanudacion 1 siguen todas en vigor. H0 sigue siendo 9dee0e62.
+
+1. En mobile-pet-tracker/src/screens/geofences/index.test.tsx, dentro del
+   it.each 'no pinta Añadir zona con %s' de `#146 R9` (localizalo por el
+   titulo, no por numero de linea), sustituye SOLO la rama de
+   `unauthorized`:
+     else await waitFor(() => expect(screen.getByTestId('screen-geofences').children).toHaveLength(0));
+   por:
+     else await waitFor(() => expect(screen.queryByTestId('geofences-loading')).toBeNull());
+   No toques ninguna otra linea ni ninguna otra expectativa.
+   Motivo: un ScrollView siempre tiene un View interno como hijo, asi que
+   ese `children` nunca mide 0. La regla de §Esperas sigue en pie: cuando
+   la rama final no pinta ningun nodo, el ancla es la desaparicion del
+   Skeleton de carga.
+2. Repite el rojo de R9 con el mismo comando. Deben salir EXACTAMENTE los
+   10 rojos de tasks.md (6 por consulta + 4 heredados por asercion) y los
+   6 Declarado en verde. Para comprobar que el Declarado no es
+   intermitente, corre el comando tres veces seguidas, sin pipe. Las tres
+   deben dar las mismas cuentas. Si no, PARA y reporta.
+3. Si cuadra, commitea el rojo de R9 con su mensaje literal de tasks.md
+     test(geofences): add geofence list editor entry test (R9)
+   y sigue el guion: verde de R9, R12, R13, R14, R16, R11, R10 y R18, las
+   mutaciones (M10 y M11 sostienen los Declarado de R9: comprueba que el
+   de `unauthorized` cae con su mutacion), el cierre y la trazabilidad,
+   todo como dicen el handoff original y la reanudacion 1.
+
+Antes de inventar un ancla de §Esperas, comprueba que puede cumplirse con
+la produccion correcta. Mira el nodo en el arbol de host, no en el JSX.
+
+Informe: en progress/impl_mobile-geofence-editor.md, una seccion
+«Reanudacion 2» con las salidas del paso 0 y las cuentas y el exit de las
+tres corridas del paso 2. Copia de jest solo las lineas de resumen y los
+bloques `●` de cada `it` rojo.
+```
