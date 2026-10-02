@@ -449,8 +449,8 @@ claves `geofences.*`. R2 y R3 van antes que la pantalla porque R5 dobla
 > hallazgo H1 (`../progress/review_mobile-geofences.md`). La implementa el
 > subagente `implementer` por ser trivial (excepción de `CLAUDE.md`). Llamamos
 > **H3** al commit
-> `docs(specs): amend #41 with E3, the no-tracking text takes the muted recipe`,
-> que añade esta sección. Mismas reglas que el resto de este fichero: desde
+> `docs(specs): put the E3 probe after the green commit in #41 tasks`,
+> que deja esta sección en su forma final (la añadió fa9049c0). Mismas reglas que el resto de este fichero: desde
 > `mobile-pet-tracker/`, `bunx`, sin pipe, rutas de jest entre comillas
 > simples, anclas por contenido.
 
@@ -487,14 +487,6 @@ claves `geofences.*`. R2 y R3 van antes que la pantalla porque R5 dobla
         `font-normal` ni `text-center` (verificado por el leader en d5830bab).
       - `tsc` como en (1) y `bunx expo lint > /tmp/e3lint.txt 2>&1; echo "exit=$?"`
         → `exit=0` y 0 bytes cada uno.
-      - **Sonda M58** sobre el verde, sin commitear: cambiar esa clase por
-        `text-danger`, correr solo `'src/screens/geofences/index.test.tsx'` →
-        `exit=1` con el mismo `it` rojo. Restaurar con
-        `git checkout HEAD -- src/screens/geofences/index.tsx` **antes** del
-        commit verde no vale (borraría el verde): plantar la sonda **después**
-        del commit verde y restaurar con
-        `git checkout HEAD -- src/screens/geofences/index.tsx`; luego
-        `git status --short` y `git diff --cached --stat` vacíos.
       - Suite completa:
         `bunx jest --silent > /tmp/e3close.txt 2>&1; echo "exit=$?"` →
         `exit=0`, **88 suites, 1710 tests, 1 snapshot**: los mismos recuentos
@@ -502,6 +494,12 @@ claves `geofences.*`. R2 y R3 van antes que la pantalla porque R5 dobla
 
       Commit **solo** de `src/screens/geofences/index.tsx`:
       `feat(geofences): give the no-tracking text the muted recipe (R5, E3)`.
+
+      **Sonda M58**, después de ese commit y sin commitearla: cambiar esa
+      clase por `text-danger`, correr solo
+      `'src/screens/geofences/index.test.tsx'` → `exit=1` con el mismo `it`
+      rojo. Restaurar con `git checkout HEAD -- src/screens/geofences/index.tsx`;
+      luego `git status --short` y `git diff --cached --stat` vacíos.
 - [ ] **(3) Trazabilidad.** En [[traceability]], la fila de R5 añade los dos
       hashes con sus mensajes. En `../progress/impl_mobile-geofences.md`, una
       sección nueva "Enmienda E3 (implementer)" con: las salidas de "Antes de
