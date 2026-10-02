@@ -4,7 +4,11 @@ import { useThemeColors } from '../theme/use-theme-colors';
 
 export type MapCoordinates = { latitude: number; longitude: number };
 export type MapPolyline = { id: string; coordinates: MapCoordinates[] };
+export type MapCircle = { id: string; center: MapCoordinates; radius: number };
 export type PetMapProps = {
+  circles?: MapCircle[];
+  zoom?: number;
+  onPress?: (coordinates: MapCoordinates) => void;
   center: MapCoordinates;
   marker: MapCoordinates | null;
   polylines: MapPolyline[];
