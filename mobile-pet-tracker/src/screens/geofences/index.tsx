@@ -116,7 +116,11 @@ export function GeofencesScreen({ petId }: { petId: string }) {
                 <Button.Label className="font-semibold text-danger">{t('geofences.delete')}</Button.Label>
               </Button>
               </>
-            ) : null}
+            ) : (
+              <Text testID={`geofence-${geofence.id}-status`} className="self-start rounded-full bg-default px-2 py-0.5 text-2xs font-bold text-muted">
+                {geofence.active ? t('geofences.statusActive') : t('geofences.statusInactive')}
+              </Text>
+            )}
           </Card>
         ))
       ) : geofences.data.kind === 'no-tracking' ? (
