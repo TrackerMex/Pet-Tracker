@@ -673,3 +673,152 @@ Restaura cada sonda con `git checkout HEAD -- <ruta>`; después
 - [[traceability]] cita los dos commits nuevos en sus filas, R4 y R8, junto a
   los que ya cita.
 
+
+---
+
+## §Enmienda E2 — las dos cláusulas de R7 sin candado ([[requirements]] §Enmienda E2)
+
+Va **después** de `d05d8725` (tu trazabilidad) y no reescribe nada anterior:
+**no rebases ni enmiendes** commits previos. Son dos commits de test, y los dos
+tocan **solo** `mobile-pet-tracker/src/screens/meal-schedule/index.test.tsx`.
+La producción no cambia.
+
+Los dos son **vía (b)** de C4: nacen verdes porque la producción ya cumple R7, y
+su cierre se demuestra con las sondas de la tabla de abajo, que hoy pasan en
+verde (las midió el reviewer) y tienen que ponerse rojas.
+
+Comando de los dos ciclos, desde `mobile-pet-tracker/`, sin pipe:
+`bunx jest src/screens/meal-schedule > /tmp/147-e2-<paso>.txt 2>&1; echo "exit=$?"`.
+Antes de E2-a da 1 suite, 51/51, exit 0. Después de E2-a, 51/51. Después de
+E2-b, **54/54**. Si algún `it` sale rojo sobre la producción sin mutar, **PARA**:
+la premisa de la enmienda es falsa y lo decide el leader.
+
+### E2-a — ningún refetch en los kinds que no son ok (E2.2)
+
+En `src/screens/meal-schedule/index.test.tsx`, localiza por contenido, no por
+número de línea:
+
+1. En el `it.each` de `describe('#147 R8: cada error del contrato tiene su mensaje')`
+   (el `it` cuyo título es `'$label muestra «$literal»'`), después de su
+   **última** línea (la espera de cierre sobre `meal-time-edit-0`), añade:
+   ```ts
+       expect(mockGetNutritionPlan).toHaveBeenCalledTimes(1); // #147 E2.2: ningún refetch si no es ok
+       expect(mockGetPet).toHaveBeenCalledTimes(1);
+   ```
+2. En `it('401 cierra sesión sin mensaje')`, después de su **última** línea
+   (también la espera de cierre), añade las mismas dos líneas.
+
+No toques nada más. El recuento no cambia: 51 tests.
+
+- Commit: `test(mobile-meal-schedule-editing): lock no refetch on every failed meal time edit (R7)`
+
+### E2-b — R7 sobre el flujo Añadir (E2.1)
+
+En el mismo fichero, dentro de
+`describe('#147 R7: tras un éxito refetchea plan y mascota, sin estado optimista')`,
+**después** de `it('un resultado que no es ok no refetchea')` y antes del `});`
+que cierra el `describe`, añade estos tres `it` literales. Usan los mismos
+mocks del `beforeEach` de ese `describe` y los defaults del `beforeEach` global
+(`mockAddMealTime` resuelve `{ kind: 'ok' }`). Siguen §Esperas: espera conjunta,
+ausencias tras un nodo positivo observado y espera de cierre.
+
+```ts
+  it('tras ok de Añadir refetchea el plan y el detalle de la mascota y repinta con la fila nueva', async () => {
+    mockGetNutritionPlan
+      .mockResolvedValueOnce({ kind: 'ok', plan: makePlan() })
+      .mockResolvedValueOnce({ kind: 'ok', plan: makePlan({ mealTimes: ['07:30', '08:05', '19:30'] }) });
+    await renderMealSchedule();
+    await fireEvent.press(await screen.findByTestId('add-meal-time-button'));
+    await fireEvent(screen.getByTestId('meal-time-picker'), 'onValueChange', {}, new Date(2026, 9, 2, 8, 5));
+    await waitFor(() => {
+      expect(within(screen.getByTestId('meal-time-row-1')).queryByText('08:05')).not.toBeNull();
+      expect(screen.getByTestId('meal-time-edit-0').props.accessibilityState).not.toEqual(expect.objectContaining({ disabled: true }));
+    });
+    expect(mockAddMealTime).toHaveBeenCalledTimes(1);
+    expect(mockGetNutritionPlan).toHaveBeenCalledTimes(2);
+    expect(mockGetPet).toHaveBeenCalledTimes(2);
+    await waitFor(() => expect(screen.getByTestId('meal-time-edit-0').props.accessibilityState).not.toEqual(expect.objectContaining({ disabled: true })));
+  });
+
+  it('mientras Añadir vuela, todos los controles están deshabilitados y no aparece la fila nueva', async () => {
+    let resolve!: (state: EditMealTimeState) => void;
+    mockAddMealTime.mockReturnValue(new Promise((done) => { resolve = done; }));
+    await renderMealSchedule();
+    await fireEvent.press(await screen.findByTestId('add-meal-time-button'));
+    await fireEvent(screen.getByTestId('meal-time-picker'), 'onValueChange', {}, new Date(2026, 9, 2, 8, 5));
+    await waitFor(() => {
+      expect(mockAddMealTime).toHaveBeenCalledTimes(1);
+      for (const id of ['meal-time-edit-0', 'meal-time-edit-1', 'add-meal-time-button']) {
+        expect(screen.getByTestId(id).props.accessibilityState).toEqual(expect.objectContaining({ disabled: true }));
+      }
+    });
+    expect(screen.queryByTestId('meal-time-row-2')).toBeNull();
+    expect(within(screen.getByTestId('meal-time-row-1')).getByText('19:30')).toBeVisible();
+    expect(screen.queryByText('08:05')).toBeNull();
+    await act(async () => resolve({ kind: 'ok' }));
+    await waitFor(() => expect(screen.getByTestId('meal-time-edit-0').props.accessibilityState).not.toEqual(expect.objectContaining({ disabled: true })));
+  });
+
+  it('tras ok de Añadir los controles siguen deshabilitados y sin fila nueva hasta que termina el refetch', async () => {
+    let resolve!: (state: NutritionPlanState) => void;
+    mockGetNutritionPlan.mockResolvedValueOnce({ kind: 'ok', plan: makePlan() })
+      .mockReturnValueOnce(new Promise((done) => { resolve = done; }));
+    await renderMealSchedule();
+    await fireEvent.press(await screen.findByTestId('add-meal-time-button'));
+    await fireEvent(screen.getByTestId('meal-time-picker'), 'onValueChange', {}, new Date(2026, 9, 2, 8, 5));
+    await waitFor(() => {
+      for (const id of ['meal-time-edit-0', 'meal-time-edit-1', 'add-meal-time-button']) {
+        expect(screen.getByTestId(id).props.accessibilityState).toEqual(expect.objectContaining({ disabled: true }));
+      }
+      expect(mockGetNutritionPlan).toHaveBeenCalledTimes(2);
+    });
+    expect(screen.queryByTestId('meal-time-row-2')).toBeNull();
+    expect(within(screen.getByTestId('meal-time-row-1')).getByText('19:30')).toBeVisible();
+    await act(async () => resolve({ kind: 'ok', plan: makePlan({ mealTimes: ['07:30', '08:05', '19:30'] }) }));
+    await waitFor(() => expect(screen.getByTestId('meal-time-edit-0').props.accessibilityState).not.toEqual(expect.objectContaining({ disabled: true })));
+  });
+```
+
+`makePlan()` trae `mealTimes: ['07:30', '19:30']`, así que la fila nueva de
+08:05 cae en la fila 1 tras el refetch y la fila 2 solo existe si alguien pinta
+la fila nueva antes de tiempo.
+
+- Commit: `test(mobile-meal-schedule-editing): lock refetch and disabled controls for added meal times (R7)`
+
+### Sondas de E2 (sobre el verde, en `src/screens/meal-schedule/index.tsx`)
+
+Son las 13 de `progress/review_mobile-meal-schedule-editing.md` §Observaciones 1,
+más un control. Mide cada una con el comando de arriba. Restaura con
+`git checkout HEAD -- src/screens/meal-schedule/index.tsx`, y después
+`git diff --cached --stat` y `git status --short` deben salir vacíos (salvo el
+informe sin trackear). «Por matcher» es un `expect` que falla. «Por consulta»
+es un `getBy…` que no encuentra el nodo (`Unable to find`).
+
+| # | Sonda | Debe ponerse rojo |
+|---|---|---|
+| 1 | En la rama `from === null` de `onValueChange`, `queryClient.setQueryData(nutritionKeys.plan(petId), …)` añade la hora nueva **antes** de `addMealTime`, con rollback al snapshot si el kind no es ok o si rechaza | E2-b it 2 y it 3, por matcher en `queryByTestId('meal-time-row-2')` |
+| 2 | `setEditing(false)` justo después de `void runMealTimeEdit(...)` en esa rama | E2-b it 2 y it 3, por matcher en el `waitFor` de `disabled: true` |
+| 3 | Llamar a `addMealTime` fuera de `runMealTimeEdit` y delegar en él solo los kinds no ok y el rechazo (sin refetch tras el ok) | E2-b it 1 (por matcher: la fila 1 no muestra `08:05`), it 2 y it 3 (por matcher en `disabled: true`) |
+| 4 | `await plan.refetch()` en la rama `invalid` de `runMealTimeEdit` | fila `invalid` de R8, por matcher (2 frente a 1) |
+| 5 | Lo mismo en `forbidden` | fila `forbidden` de R8 |
+| 6 | Lo mismo en `NUTRITION_PLAN_REQUIRED` | fila `NUTRITION_PLAN_REQUIRED` de R8 |
+| 7 | Lo mismo en `MEAL_TIME_NOT_IN_PLAN` | fila `MEAL_TIME_NOT_IN_PLAN` de R8 |
+| 8 | Lo mismo en `MEAL_TIMES_LIMIT_REACHED` | fila `MEAL_TIMES_LIMIT_REACHED` de R8 |
+| 9 | Lo mismo en `unauthorized` | `it('401 cierra sesión sin mensaje')` |
+| 10 | Lo mismo en `unreachable` | fila `unreachable` de R8 |
+| 11 | Lo mismo en `error`/`missing-config` | filas `error` y `missing-config` de R8 |
+| 12 | Lo mismo en el `catch` | fila `rechazo` de R8 |
+| 13 | `await queryClient.refetchQueries({ queryKey: petKeys.detail(petId) })` en `forbidden` | fila `forbidden` de R8, por matcher en `mockGetPet` (2 frente a 1) |
+| C | Control: `await plan.refetch()` en `MEAL_TIME_DUPLICATE` | R7 it 4 **y** fila `MEAL_TIME_DUPLICATE` de R8 |
+
+Si una sonda sale verde, o roja por otro `it` o por consulta donde la tabla
+dice matcher, apúntalo en `impl` con la primera línea roja y **PARA**.
+
+### Lo que cambia en §Cierre
+
+- Las cifras pasan a **88 suites / 1762 tests** (+3 de E2-b).
+- La lista de `git diff --name-only <hash-del-handoff>..HEAD` **de tus commits**
+  sigue siendo la de [[design]] §Archivos afectados: **13** ficheros.
+- [[traceability]] cita en la fila R7 los dos commits nuevos y los tests que
+  añaden, junto a los que ya cita. Va en un commit propio:
+  `docs(mobile-meal-schedule-editing): cite amendment E2 in #147 traceability`.

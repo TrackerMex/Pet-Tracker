@@ -344,3 +344,113 @@ Informe: en progress/impl_mobile-meal-schedule-editing.md, una seccion
 De jest copia solo las lineas de resumen y los bloques `●` de cada `it`
 rojo.
 ```
+
+## Reanudación 2: rechazo del reviewer en R7 (2026-10-02)
+
+> El reviewer rechaza en `d05d8725` (`progress/review_mobile-meal-schedule-editing.md`).
+> El motivo único es que R7 tiene dos cláusulas sin candado: el flujo Añadir
+> no tiene test de R7, y «ningún refetch si no es ok» solo está candado para
+> `MEAL_TIME_DUPLICATE`. Hay 13 mutaciones de producción que pasan en verde.
+> La producción cumple. El hueco viene de tasks.md §R7, que solo prescribió el
+> flujo Editar; Codex hizo lo prescrito. El humano aprueba la **Enmienda E2**
+> en el chat, y la firma es el commit que añade esta reanudación. E2 añade dos
+> commits de test, los dos solo sobre `index.test.tsx`. Las cifras pasan a
+> 88/1762 y la lista cerrada sigue en 13 ficheros.
+
+Pegar en Codex CLI:
+
+```
+Worktree: /home/claude/sites/Pet-Tracker   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+Reanudacion 2 de #147 tras el rechazo del reviewer. Ejecuta y pega en el
+informe:
+  pwd
+  git branch --show-current
+  git rev-parse --short HEAD
+  git rev-parse --short HEAD~1
+  git status --short
+PARA si:
+- la branch no es feature/147-mobile-meal-schedule-editing;
+- HEAD~1 no es d05d8725 (tu commit de trazabilidad);
+- `git status --short` no sale vacio.
+HEAD es el commit del leader que firma E2 y anade esta reanudacion. Lee:
+- requirements.md §Enmienda E2;
+- tasks.md §Enmienda E2 (y §Esperas, que sigue obligatoria);
+- progress/review_mobile-meal-schedule-editing.md §Observaciones 1;
+- la seccion «Reanudacion 2» de progress/handoff_mobile-meal-schedule-editing.md.
+Siguen en vigor todas las reglas del handoff original. H0 sigue siendo
+b367ed44. No rebasees ni enmiendes ningun commit anterior.
+
+La produccion es correcta: NO la cambies. Solo tocas
+mobile-pet-tracker/src/screens/meal-schedule/index.test.tsx, y despues
+traceability.md y tu informe.
+
+1. Desde mobile-pet-tracker/, sin pipe:
+     bunx jest src/screens/meal-schedule > /tmp/147-e2-base.txt 2>&1; echo "exit=$?"
+   Esperado: 1 suite, 51/51, exit=0. Si sale otra cosa, PARA.
+
+2. E2-a. Anade las dos lineas literales de tasks.md §Enmienda E2-a en sus
+   dos sitios, localizandolos por contenido. Repite el comando: esperado
+   51/51 y exit=0. Si algun `it` sale rojo, PARA: la premisa es falsa y lo
+   decide el leader. Commit SOLO con ese fichero y este mensaje literal:
+     test(mobile-meal-schedule-editing): lock no refetch on every failed meal time edit (R7)
+
+3. E2-b. Anade los tres `it` literales de tasks.md §Enmienda E2-b donde
+   indica. Repite el comando: esperado 54/54 y exit=0. Si sale rojo, PARA.
+   Commit SOLO con ese fichero y este mensaje literal:
+     test(mobile-meal-schedule-editing): lock refetch and disabled controls for added meal times (R7)
+   Despues de cada commit, comprueba con `git show --stat HEAD` que lleva
+   un solo fichero.
+
+4. Corre las 13 sondas y el control de la tabla de tasks.md §Enmienda E2,
+   cada una por separado sobre el verde, con el comando del paso 1. Cada
+   sonda debe caer en el `it` y del modo (matcher o consulta) que dice la
+   tabla. Despues de cada una restaura con
+     git checkout HEAD -- src/screens/meal-schedule/index.tsx
+   y comprueba que `git diff --cached --stat` y `git status --short` salen
+   vacios. Si alguna sonda sale verde o cae distinto, PARA y reporta.
+
+5. §Cierre de tasks.md, entero y en orden:
+   - el pgrep vacio;
+   - `bun run test`: 88 suites / 1762 tests y exit 0;
+   - `bun run lint`: exit 0;
+   - `test ! -e .expo/types/router.d.ts && bun run typecheck`: exit 0;
+   - los tres grep-clean, vacios.
+   Cada comando a fichero, sin pipe, con su exit. Si algo falla, PARA y
+   reporta: no ajustes ninguna asercion.
+
+6. En specs/mobile-meal-schedule-editing/traceability.md, la fila R7 cita
+   tambien los dos commits de E2 y sus tests: las filas del it.each de R8 y
+   el 401 (E2-a), y los tres `it` nuevos de R7 (E2-b). Despues, un solo
+   commit con SOLO traceability.md y
+   progress/impl_mobile-meal-schedule-editing.md, con este mensaje literal:
+     docs(mobile-meal-schedule-editing): cite amendment E2 in #147 traceability
+   No rebasees despues.
+
+Listas del cierre:
+- Commits tuyos: los 23 que ya tienes, mas E2-a, E2-b y el de trazabilidad.
+  Son 26.
+- Ficheros que cambian TUS commits: los mismos 13 de design.md §Archivos
+  afectados.
+- El `git diff --name-only H0..HEAD` incluye ademas seis ficheros que
+  cambian los commits del leader (98cc1154, d8edb20e y el de esta
+  reanudacion), y no cuentan como tuyos:
+  - specs/mobile-meal-schedule-editing/requirements.md
+  - specs/mobile-meal-schedule-editing/design.md
+  - specs/mobile-meal-schedule-editing/tasks.md
+  - progress/current.md
+  - progress/handoff_mobile-meal-schedule-editing.md
+  - progress/review_mobile-meal-schedule-editing.md
+  Pega ese diff completo y senala esos seis.
+
+No lances ./init.sh. No hagas push. No abras la PR.
+
+Informe: en progress/impl_mobile-meal-schedule-editing.md, una seccion
+«Reanudacion 2» al final con:
+- las salidas del paso 0;
+- las cuentas y el exit de los pasos 1, 2 y 3;
+- el `git show --stat` de cada commit;
+- cada sonda con su diff y el `it` que cae, y el modo (matcher/consulta);
+- el cierre completo, con exit y cifras.
+De jest copia solo las lineas de resumen y la primera linea del bloque `●`
+de cada `it` rojo.
+```

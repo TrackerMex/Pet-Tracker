@@ -403,3 +403,43 @@ probablemente es igual de ciego. Es una deuda candidata, **sin medir** y
 fuera de #147.
 
 - [x] Enmienda E1 aprobada por humano (fecha: 2026-10-02, en el chat del leader; commit de firma: el que marca esta casilla)
+
+## Enmienda E2 — dos cláusulas de R7 sin candado
+
+El reviewer rechazó #147 en `d05d8725`
+(`progress/review_mobile-meal-schedule-editing.md` §Observaciones 1). La
+producción cumple R7. El hueco está en [[tasks]] §R7, que prescribió los
+cuatro `it` solo sobre el flujo Editar, y en su tabla de sondas, que solo
+pedía «refetch en `finally`». Con cada una de estas 13 mutaciones,
+`src/screens/meal-schedule` queda en 51/51 verde:
+
+| Cláusula de R7 | Mutaciones que hoy pasan en verde |
+|---|---|
+| **WHILE** una llamada de **R6** está en curso: controles deshabilitados y ninguna fila nueva antes del refetch. **WHEN** ok: los dos refetch y rehabilitar al final | 3: añadido optimista con rollback; `setEditing(false)` justo después de lanzar el añadido; `addMealTime` fuera de `runMealTimeEdit`, sin refetch tras el ok |
+| **IF** cualquier otro `kind` **THEN** ningún refetch | 10: `await plan.refetch()` en `invalid`, `forbidden`, `NUTRITION_PLAN_REQUIRED`, `MEAL_TIME_NOT_IN_PLAN`, `MEAL_TIMES_LIMIT_REACHED`, `unauthorized`, `unreachable`, `error`/`missing-config` y el `catch`; y `refetchQueries(petKeys.detail)` en `forbidden`. Solo `MEAL_TIME_DUPLICATE` está candado |
+
+R7 no cambia. Esta enmienda solo añade los candados que le faltaban.
+
+### E2.1 — R7 se candada también sobre el flujo Añadir
+
+**WHEN** se cierra #147, **THE SYSTEM SHALL** tener en
+`describe('#147 R7: …')` tres `it` más que hacen sobre `add-meal-time-button`
+lo mismo que los tres primeros hacen sobre `meal-time-edit-1`: refetch y
+repintado tras el ok, controles deshabilitados sin fila nueva mientras vuela
+`addMealTime`, y controles deshabilitados sin fila nueva mientras vuela el
+refetch.
+
+### E2.2 — «ningún refetch» se candada en todos los kinds que no son ok
+
+**WHEN** se cierra #147, **THE SYSTEM SHALL** comprobar en cada fila del
+`it.each` de `#147 R8` y en `it('401 cierra sesión sin mensaje')` que
+`getNutritionPlan` y `getPet` se llamaron **1** vez cada uno al terminar el
+test.
+
+Las ediciones literales, los mensajes de commit y las sondas están en
+[[tasks]] §Enmienda E2. Las cifras pasan de 88 suites / 1759 tests a
+**88 suites / 1762** (+3 de E2.1; E2.2 solo añade aserciones). La lista cerrada
+de [[design]] §Archivos afectados no cambia: siguen siendo 13 ficheros, porque
+los dos commits tocan solo `src/screens/meal-schedule/index.test.tsx`.
+
+- [x] Enmienda E2 aprobada por humano (fecha: 2026-10-02, en el chat del leader; commit de firma: el que marca esta casilla)
