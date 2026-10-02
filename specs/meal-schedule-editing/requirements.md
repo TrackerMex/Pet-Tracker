@@ -25,6 +25,25 @@ tags: [harness, spec]
 > aplicada. Esta feature añade **una migración** (`0018`, decisión de gate G1),
 > cero dependencias nuevas y cero variables de entorno nuevas.
 >
+> **Enmienda E1 (2026-10-02, aprobada por el humano en el chat de
+> la sesión Frontend):** el rojo de R8 incluye también el `it` 2.
+>
+> - Con `z.string()`, `PATCH …/meal-times/07:30 {mealTime: '7:30'}` mueve la
+>   franja y responde `200`, donde el `it` 2 exige `400`. Es un rojo legítimo
+>   por matcher, pero R8 y [[tasks]] R8 solo declaraban los `it` 1 y 3.
+> - Codex lo detectó antes de escribir el test (C4) y paró tras el verde de
+>   R7 (`78a85563`). El leader lo verificó contra `move-meal-time.use-case.ts`
+>   en ese commit: no hay ninguna comprobación de formato entre el parse del
+>   body y el insert, y el `check` de `nutrition_plans` solo acota
+>   `meals_per_day`.
+> - Cambian solo las dos líneas «Rojo» (R8 aquí y [[tasks]] R8 (1)). No
+>   cambian el test, la implementación, las sondas ni los recuentos. R9-R12
+>   se re-verificaron contra `78a85563` y sus rojos declarados cuadran.
+> - El commit de esta enmienda cae entre R7 y R8 de la historia de Codex y
+>   añade al `git diff --stat <hash del handoff>..HEAD` de [[tasks]] §Cierre
+>   tres ficheros del leader: este, [[tasks]] y
+>   `progress/handoff_meal-schedule-editing_r8.md`.
+>
 > Depende de:
 > - `nutrition-profile-engine` (#17, `done`): `nutrition_plans` append-only,
 >   `findLatestPlan`, `generate`;
@@ -651,8 +670,9 @@ tres `it`. La lista de bodies inválidos es:
    - en otra mascota con P0, `POST …/meals {mealTime: '99:99'}` → `422` con
      `code 'MEAL_TIME_NOT_IN_PLAN'`.
 
-**Rojo** por matcher: con `z.string()`, `'7:30'` da `201` en el `it` 1 y
-`422` en el `it` 3.
+**Rojo** por matcher (E1): con `z.string()`, `'7:30'` da `201` en el
+`it` 1, `200` en el `it` 2 (el `PATCH` mueve `07:30` a `'7:30'`) y `422`
+en el `it` 3.
 
 **Sonda exigida** — S14: `EditMealTimeSchema` con `MEAL_TIME_PATTERN` → los
 tres `it` rojos por matcher, porque `'24:00'` pasa la validación.

@@ -296,8 +296,8 @@ Por qué este orden:
 
 - [ ] (1) Escribir test que falla para R8 — commit
       `test(meal-schedule-editing): lock strict HH:MM validation on meal-times (R8)`.
-      El `describe` R8 en el e2e. Rojo por matcher: `'7:30'` da `201` en el
-      `it` 1 y `422` en el `it` 3.
+      El `describe` R8 en el e2e. Rojo por matcher (E1 de [[requirements]]):
+      `'7:30'` da `201` en el `it` 1, `200` en el `it` 2 y `422` en el `it` 3.
 - [ ] (2) Implementación mínima que lo pasa — commit
       `feat(meal-schedule-editing): validate meal-times body with strict HH:MM (R8)`.
       `STRICT_MEAL_TIME_PATTERN` y la regex en `EditMealTimeSchema`
