@@ -335,6 +335,7 @@ describe('#62 R15: todo contador usa cifras tabulares', () => {
     [join('screens', 'health', 'index.tsx'), 2],
     [join('screens', 'weight-log', 'index.tsx'), 2],
     [join('screens', 'reminders', 'index.tsx'), 3],
+    [join('screens', 'geofence-editor', 'index.tsx'), 1],
   ] as const;
 
   it.each(counters)('%s aplica TABULAR_NUMS a sus %i valores', (path, count) => {
@@ -348,7 +349,7 @@ describe('#62 R15: todo contador usa cifras tabulares', () => {
 
   it('#69 R10: mantiene la base cerrada más los deltas medidos', () => {
     expect(counters.reduce((total, [, count]) => total + count, 0)).toBe(
-      14 + 4 + 1 + 1 + 1 + 1,
+      14 + 4 + 1 + 1 + 1 + 1 + 1, // #146 R18
     );
   });
 
