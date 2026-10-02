@@ -83,10 +83,10 @@ function GeofenceEditorForm({ zone, geofences, initialName, initialCenter, initi
   const t = useTranslate();
   const insets = useSafeAreaInsets();
   const { theme } = useUniwind();
-  const [name] = useState(initialName);
-  const [center] = useState(initialCenter);
-  const [radius] = useState(initialRadius);
-  const [camera] = useState({ center: initialCenter, zoom: zoomForRadius(initialRadius) });
+  const [name, setName] = useState(initialName);
+  const [center, setCenter] = useState(initialCenter);
+  const [radius, setRadius] = useState(initialRadius);
+  const [camera, setCamera] = useState({ center: initialCenter, zoom: zoomForRadius(initialRadius) });
   const circles = geofences.map(({ id, centerLat, centerLng, radiusM }) => ({
     id, center: id === zone?.id ? center : { latitude: centerLat, longitude: centerLng },
     radius: id === zone?.id ? radius : radiusM,
@@ -95,19 +95,28 @@ function GeofenceEditorForm({ zone, geofences, initialName, initialCenter, initi
 
   return <View testID="screen-geofence-editor" className="flex-1">
     <View testID="geofence-editor-map" className="flex-1">
-      <PetMap center={camera.center} zoom={camera.zoom} marker={null} polylines={[]} circles={circles} colorScheme={theme === 'dark' ? 'dark' : 'light'} />
+      <PetMap onPress={setCenter} center={camera.center} zoom={camera.zoom} marker={null} polylines={[]} circles={circles} colorScheme={theme === 'dark' ? 'dark' : 'light'} />
     </View>
     <ScrollView testID="geofence-editor-form" className="bg-background"
       style={{ flexGrow: 0, flexShrink: 1 }} keyboardShouldPersistTaps="handled"
       contentContainerStyle={{ padding: 24, gap: 16, paddingBottom: insets.bottom + 24 }}>
       <TextField>
         <Label className="text-xs font-semibold text-foreground">{t('geofenceEditor.nameLabel')}</Label>
-        <Input testID="geofence-editor-name" className="rounded-xl bg-default" maxLength={120} value={name} />
+        <Input testID="geofence-editor-name" className="rounded-xl bg-default" maxLength={120} value={name} onChangeText={setName} />
       </TextField>
       <Text testID="geofence-editor-map-hint" className="text-sm font-normal text-muted">{t('geofenceEditor.mapHint')}</Text>
       <Text testID="geofence-editor-radius-value" selectable style={TABULAR_NUMS} className="font-bold text-foreground">{t('geofences.radius', { meters: Math.round(radius) })}</Text>
-      <Slider testID="geofence-editor-radius" value={radius} minValue={20} maxValue={2000} step={10}>
-        <Slider.Track><Slider.Fill /><Slider.Thumb testID="geofence-editor-radius-thumb" accessibilityLabel={t('geofenceEditor.radiusLabel')} /></Slider.Track>
+      <Slider testID="geofence-editor-radius" value={radius} minValue={20} maxValue={2000} step={10}
+        onChange={(v) => setRadius(Array.isArray(v) ? v[0] : v)}
+        onChangeEnd={(v) => setCamera({ center, zoom: zoomForRadius(Array.isArray(v) ? v[0] : v) })}>
+        <Slider.Track><Slider.Fill /><Slider.Thumb testID="geofence-editor-radius-thumb" accessibilityLabel={t('geofenceEditor.radiusLabel')}
+          accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
+          onAccessibilityAction={({ nativeEvent: { actionName } }) => {
+            if (actionName !== 'increment' && actionName !== 'decrement') return;
+            const next = actionName === 'increment' ? Math.min(2000, radius + 10) : Math.max(20, radius - 10);
+            setRadius(next);
+            setCamera({ center, zoom: zoomForRadius(next) });
+          }} /></Slider.Track>
       </Slider>
       {zone ? <Text testID="geofence-editor-reset-note" className="text-sm font-normal text-muted">{t('geofenceEditor.resetNote')}</Text> : null}
     </ScrollView>
