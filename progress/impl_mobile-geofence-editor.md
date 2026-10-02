@@ -17729,3 +17729,769 @@ merge-exit=0
 Los dos diffs salen vacíos: producción restaurada e índice vacío antes de preparar el commit documental. Los 43 commits propios anteriores a este commit se comprobaron con `git merge-base --is-ancestor <hash> HEAD`, todos en exit=0. Después de commitear se comprueban el total de 44, los dos ficheros de ese commit y el estado limpio del worktree.
 
 Esta reanudación cambia exactamente tres rutas frente a `f45c7159`: el test del editor, traceability.md y este informe. No se ejecutan init.sh, comandos de Postgres/LocalStack, push ni PR. La prueba de humo sigue a cargo del humano; el leader mantiene el status de la feature y el veredicto del reviewer.
+
+
+## Reanudacion 5 — enmienda E1 (teclado), 2026-10-02
+
+### Entrada y paso 0
+
+```text
+$ pwd
+/home/claude/sites/Pet-Tracker-wt-146
+$ git branch --show-current
+feature/146-mobile-geofence-editor
+$ git rev-parse --short HEAD
+635087af
+$ git status --short
+$ git diff --stat 7e7b16b9 HEAD
+ progress/current.md                        | 1 +
+ progress/handoff_mobile-geofence-editor.md | 8 +++++---
+ 2 files changed, 6 insertions(+), 3 deletions(-)
+```
+
+Rama correcta, árbol limpio y delta de entrada limitado a `progress/`. H0 sigue siendo `9dee0e62`; se conservan los merges `c0940cd0` y `9dbe3de5`, sin rebase. Leídos el handoff original, las reanudaciones 1–5 y E1.1–E1.4 con su aprobación humana. Cargado `building-native-ui` del plugin Expo (`/home/claude/.codex/plugins/cache/openai-curated/expo/11c74d6b/skills/building-native-ui/SKILL.md`), con Ponytail full activo. Consultada la documentación versionada de SDK 57 exigida por `mobile-pet-tracker/AGENTS.md`: https://docs.expo.dev/versions/v57.0.0/. Para E1 se siguen los cambios literales de la spec y del handoff.
+
+Desde `mobile-pet-tracker/`, sin pipe:
+
+```bash
+test ! -e .expo/types/router.d.ts > /tmp/e1-step0.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+```
+
+Log `/tmp/e1-step0.txt`: 0 bytes. El fichero generado no existe. Plan: rojo de R6 it 18, verde con `KeyboardAvoidingView` y altura del contexto, cuatro mutaciones aisladas, cierre de TypeScript/lint/Jest y trazabilidad de R6. La espera se copia literal y consulta el árbol dentro de `waitFor`; no se añade ningún `it`.
+
+### Paso 1 — rojo real y commit de test
+
+Solo cambia el test: import del contexto y `DeviceEventEmitter`, provider con altura 91 dentro del `Wrapper` de `mount()` y bloque literal E1.2 tras la última aserción de R6 it 18. Ningún título ni recuento cambia.
+
+Desde `mobile-pet-tracker/`:
+
+```bash
+bunx jest --runTestsByPath 'src/screens/geofence-editor/index.test.tsx' > /tmp/e1-red.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=1
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 67 passed, 68 total
+Snapshots:   0 total
+Time:        7.976 s, estimated 8 s
+Ran all test suites within paths "src/screens/geofence-editor/index.test.tsx".
+```
+
+Exactamente un rojo, R6 it 18, por aserción en `paddingBottom: 0`. Expected: la clave con valor 0; Received: sin esa clave. Los otros 67 pasan. Bloque del fallo:
+
+```text
+  ● #146 R6: el editor pinta el formulario sobre el mapa y sus estados › compone mapa y formulario sin fondo sobre el mapa y con las métricas A11 en el formulario
+
+    expect(instance).toHaveStyle()
+
+    - Expected
+    + Received
+
+    - paddingBottom: 0;
+
+      205 |     expect(screen.getByTestId('geofence-editor-radius-value').props.selectable).toBe(true);
+      206 |     expect(screen.getByTestId('geofence-editor-radius-thumb').props.accessibilityLabel).toBe('Radio de la zona');
+    > 207 |     expect(root).toHaveStyle({ paddingBottom: 0 });
+          |                  ^
+      208 |     await fireEvent(root, 'layout', { persist() {}, nativeEvent: { layout: { x: 0, y: 0, width: 400, height: 700 } } });
+      209 |     await act(async () => {
+      210 |       DeviceEventEmitter.emit('keyboardWillShow', {
+
+      at Object.toHaveStyle (src/screens/geofence-editor/index.test.tsx:207:18)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+Commit rojo `b493f04d`, solo `index.test.tsx`. Salida literal de `git show b493f04d -- mobile-pet-tracker/src/screens/geofence-editor/index.test.tsx`:
+
+```diff
+commit b493f04d260b490c7cc25257846fa3e33f39273e
+Author: Claude <claude@srv1178023.hstgr.cloud>
+Date:   Fri Oct 2 23:07:00 2026 +0000
+
+    test(geofences): lock the keyboard padding of the editor root (R6, E1)
+
+diff --git a/mobile-pet-tracker/src/screens/geofence-editor/index.test.tsx b/mobile-pet-tracker/src/screens/geofence-editor/index.test.tsx
+index 9144f62d..cdc35ce8 100644
+--- a/mobile-pet-tracker/src/screens/geofence-editor/index.test.tsx
++++ b/mobile-pet-tracker/src/screens/geofence-editor/index.test.tsx
+@@ -1,9 +1,10 @@
+ import { useQueryClient } from '@tanstack/react-query';
+ import { act, fireEvent, screen, waitFor, within } from '@testing-library/react-native';
+ import { router } from 'expo-router';
++import { HeaderHeightContext } from 'expo-router/react-navigation';
+ import { HeroUINativeProvider } from 'heroui-native';
+ import type { ReactNode } from 'react';
+-import { Alert } from 'react-native';
++import { Alert, DeviceEventEmitter } from 'react-native';
+
+ import { renderWithProviders } from '../../../test/render-with-providers';
+ import { createGeofence, deleteGeofence, listGeofences, setGeofenceActive, updateGeofence, type Geofence } from '../../api/geofences';
+@@ -73,7 +74,7 @@ function mount(geofenceId?: string, language: Language = 'es', onUnauthorized?:
+   function Wrapper({ children }: { children: ReactNode }) {
+     const queryClient = useQueryClient();
+     if (seedList && !queryClient.getQueryData(expectedListKey)) queryClient.setQueryData(expectedListKey, { kind: 'ok', geofences: [casa, parque] });
+-    return <HeroUINativeProvider><LanguageProvider initial={language}>{children}</LanguageProvider></HeroUINativeProvider>;
++    return <HeroUINativeProvider><LanguageProvider initial={language}><HeaderHeightContext.Provider value={91}>{children}</HeaderHeightContext.Provider></LanguageProvider></HeroUINativeProvider>;
+   }
+   return renderWithProviders(<GeofenceEditorScreen petId="pet-1" geofenceId={geofenceId} />, { onUnauthorized, wrapper: Wrapper });
+ }
+@@ -203,6 +204,16 @@ describe('#146 R6: el editor pinta el formulario sobre el mapa y sus estados', (
+     expect(form.props.contentContainerStyle).toEqual({ padding: 24, gap: 16, paddingBottom: 48 });
+     expect(screen.getByTestId('geofence-editor-radius-value').props.selectable).toBe(true);
+     expect(screen.getByTestId('geofence-editor-radius-thumb').props.accessibilityLabel).toBe('Radio de la zona');
++    expect(root).toHaveStyle({ paddingBottom: 0 });
++    await fireEvent(root, 'layout', { persist() {}, nativeEvent: { layout: { x: 0, y: 0, width: 400, height: 700 } } });
++    await act(async () => {
++      DeviceEventEmitter.emit('keyboardWillShow', {
++        startCoordinates: { screenX: 0, screenY: 800, width: 400, height: 0 },
++        endCoordinates: { screenX: 0, screenY: 500, width: 400, height: 300 },
++        duration: 0, easing: 'keyboard', isEventFromThisApp: true,
++      });
++    });
++    await waitFor(() => expect(screen.getByTestId('screen-geofence-editor')).toHaveStyle({ paddingBottom: 291 }));
+   });
+   it('pinta el formulario en inglés', async () => {
+     await edit('en');
+```
+
+### Paso 2 — verde y commit de producción
+
+Solo cambia `index.tsx`: los tres imports, `useContext(HeaderHeightContext)` inmediatamente después de los insets del formulario, y raíz/cierre de `KeyboardAvoidingView` con `behavior="padding"` y `keyboardVerticalOffset={headerHeight}`. La rama de carga/errores conserva su `ScrollView`; sin fallback, `useHeaderHeight` ni selección por plataforma.
+
+Desde `mobile-pet-tracker/`:
+
+```bash
+bunx jest --runTestsByPath 'src/screens/geofence-editor/index.test.tsx' > /tmp/e1-green.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=0
+Test Suites: 1 passed, 1 total
+Tests:       68 passed, 68 total
+Snapshots:   0 total
+Time:        7.832 s, estimated 8 s
+Ran all test suites within paths "src/screens/geofence-editor/index.test.tsx".
+```
+
+Los 68 tests pasan; it 18 observa `paddingBottom` 0 antes del teclado y 291 después.
+
+Commit verde `caffb588`, solo `index.tsx`. Salida literal de `git show caffb588 -- mobile-pet-tracker/src/screens/geofence-editor/index.tsx`:
+
+```diff
+commit caffb5886b7f008c30ffaef239c7ddd9cdad5db1
+Author: Claude <claude@srv1178023.hstgr.cloud>
+Date:   Fri Oct 2 23:07:25 2026 +0000
+
+    feat(geofences): keep the editor form above the keyboard (R6, E1)
+
+diff --git a/mobile-pet-tracker/src/screens/geofence-editor/index.tsx b/mobile-pet-tracker/src/screens/geofence-editor/index.tsx
+index b18b76d5..b0ae85cf 100644
+--- a/mobile-pet-tracker/src/screens/geofence-editor/index.tsx
++++ b/mobile-pet-tracker/src/screens/geofence-editor/index.tsx
+@@ -1,8 +1,9 @@
+ import { useQuery, useQueryClient } from '@tanstack/react-query';
+ import { router } from 'expo-router';
++import { HeaderHeightContext } from 'expo-router/react-navigation';
+ import { Button, Input, Label, Skeleton, Slider, Switch, TextField } from 'heroui-native';
+-import { useState } from 'react';
+-import { Alert, ScrollView, Text, View } from 'react-native';
++import { useContext, useState } from 'react';
++import { Alert, KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
+ import { useSafeAreaInsets } from 'react-native-safe-area-context';
+ import { useUniwind } from 'uniwind';
+
+@@ -90,6 +91,7 @@ function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, ini
+ }) {
+   const t = useTranslate();
+   const insets = useSafeAreaInsets();
++  const headerHeight = useContext(HeaderHeightContext);
+   const { theme } = useUniwind();
+   const queryClient = useQueryClient();
+   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
+@@ -133,7 +135,7 @@ function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, ini
+     ]);
+   };
+
+-  return <View testID="screen-geofence-editor" className="flex-1">
++  return <KeyboardAvoidingView testID="screen-geofence-editor" className="flex-1" behavior="padding" keyboardVerticalOffset={headerHeight}>
+     <View testID="geofence-editor-map" className="flex-1">
+       <PetMap onPress={readOnly ? undefined : setCenter} center={readOnly ? initialCenter : camera.center} zoom={readOnly ? zoomForRadius(initialRadius) : camera.zoom} marker={null} polylines={[]} circles={circles} colorScheme={theme === 'dark' ? 'dark' : 'light'} />
+     </View>
+@@ -177,5 +179,5 @@ function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, ini
+       {error ? <Text testID="geofence-editor-error" selectable className="text-danger">{error}</Text> : null}
+       </>}
+     </ScrollView>
+-  </View>;
++  </KeyboardAvoidingView>;
+ }
+```
+
+### Paso 3 — mutaciones E1, una a una
+
+#### E1-a — quitar `behavior="padding"`
+
+Diff plantado antes de correr Jest y revertir:
+
+```diff
+diff --git a/mobile-pet-tracker/src/screens/geofence-editor/index.tsx b/mobile-pet-tracker/src/screens/geofence-editor/index.tsx
+index b0ae85cf..2e9f5a9e 100644
+--- a/mobile-pet-tracker/src/screens/geofence-editor/index.tsx
++++ b/mobile-pet-tracker/src/screens/geofence-editor/index.tsx
+@@ -135,7 +135,7 @@ function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, ini
+     ]);
+   };
+
+-  return <KeyboardAvoidingView testID="screen-geofence-editor" className="flex-1" behavior="padding" keyboardVerticalOffset={headerHeight}>
++  return <KeyboardAvoidingView testID="screen-geofence-editor" className="flex-1" keyboardVerticalOffset={headerHeight}>
+     <View testID="geofence-editor-map" className="flex-1">
+       <PetMap onPress={readOnly ? undefined : setCenter} center={readOnly ? initialCenter : camera.center} zoom={readOnly ? zoomForRadius(initialRadius) : camera.zoom} marker={null} polylines={[]} circles={circles} colorScheme={theme === 'dark' ? 'dark' : 'light'} />
+     </View>
+```
+
+Desde `mobile-pet-tracker/`:
+
+```bash
+bunx jest --runTestsByPath 'src/screens/geofence-editor/index.test.tsx' > /tmp/e1-E1-a.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=1
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 67 passed, 68 total
+Snapshots:   0 total
+Time:        7.675 s, estimated 8 s
+Ran all test suites within paths "src/screens/geofence-editor/index.test.tsx".
+```
+
+Solo it 18 falla, por aserción `paddingBottom: 0` (Received sin esa clave), como E1.3.
+
+```text
+  ● #146 R6: el editor pinta el formulario sobre el mapa y sus estados › compone mapa y formulario sin fondo sobre el mapa y con las métricas A11 en el formulario
+
+    expect(instance).toHaveStyle()
+
+    - Expected
+    + Received
+
+    - paddingBottom: 0;
+
+      205 |     expect(screen.getByTestId('geofence-editor-radius-value').props.selectable).toBe(true);
+      206 |     expect(screen.getByTestId('geofence-editor-radius-thumb').props.accessibilityLabel).toBe('Radio de la zona');
+    > 207 |     expect(root).toHaveStyle({ paddingBottom: 0 });
+          |                  ^
+      208 |     await fireEvent(root, 'layout', { persist() {}, nativeEvent: { layout: { x: 0, y: 0, width: 400, height: 700 } } });
+      209 |     await act(async () => {
+      210 |       DeviceEventEmitter.emit('keyboardWillShow', {
+
+      at Object.toHaveStyle (src/screens/geofence-editor/index.test.tsx:207:18)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+Reversión E1-a (exit=0 en los tres comandos; ambos diffs producen 0 bytes):
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/geofence-editor/index.tsx
+$ git diff --stat -- mobile-pet-tracker/src/screens/geofence-editor/index.tsx
+$ git diff --cached --stat
+```
+
+#### E1-b — `keyboardVerticalOffset={0}`
+
+Diff plantado antes de correr Jest y revertir:
+
+```diff
+diff --git a/mobile-pet-tracker/src/screens/geofence-editor/index.tsx b/mobile-pet-tracker/src/screens/geofence-editor/index.tsx
+index b0ae85cf..4a9f344a 100644
+--- a/mobile-pet-tracker/src/screens/geofence-editor/index.tsx
++++ b/mobile-pet-tracker/src/screens/geofence-editor/index.tsx
+@@ -135,7 +135,7 @@ function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, ini
+     ]);
+   };
+
+-  return <KeyboardAvoidingView testID="screen-geofence-editor" className="flex-1" behavior="padding" keyboardVerticalOffset={headerHeight}>
++  return <KeyboardAvoidingView testID="screen-geofence-editor" className="flex-1" behavior="padding" keyboardVerticalOffset={0}>
+     <View testID="geofence-editor-map" className="flex-1">
+       <PetMap onPress={readOnly ? undefined : setCenter} center={readOnly ? initialCenter : camera.center} zoom={readOnly ? zoomForRadius(initialRadius) : camera.zoom} marker={null} polylines={[]} circles={circles} colorScheme={theme === 'dark' ? 'dark' : 'light'} />
+     </View>
+```
+
+Desde `mobile-pet-tracker/`:
+
+```bash
+bunx jest --runTestsByPath 'src/screens/geofence-editor/index.test.tsx' > /tmp/e1-E1-b.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=1
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 67 passed, 68 total
+Snapshots:   0 total
+Time:        8.887 s
+Ran all test suites within paths "src/screens/geofence-editor/index.test.tsx".
+```
+
+Solo it 18 falla, por aserción `paddingBottom: 291`; Received 200, como E1.3.
+
+```text
+  ● #146 R6: el editor pinta el formulario sobre el mapa y sus estados › compone mapa y formulario sin fondo sobre el mapa y con las métricas A11 en el formulario
+
+    expect(instance).toHaveStyle()
+
+    - Expected
+    + Received
+
+    - paddingBottom: 291;
+    + paddingBottom: 200;
+
+      214 |       });
+      215 |     });
+    > 216 |     await waitFor(() => expect(screen.getByTestId('screen-geofence-editor')).toHaveStyle({ paddingBottom: 291 }));
+          |                  ^
+      217 |   });
+      218 |   it('pinta el formulario en inglés', async () => {
+      219 |     await edit('en');
+
+      at Object.<anonymous> (src/screens/geofence-editor/index.test.tsx:216:18)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+Reversión E1-b (exit=0 en los tres comandos; ambos diffs producen 0 bytes):
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/geofence-editor/index.tsx
+$ git diff --stat -- mobile-pet-tracker/src/screens/geofence-editor/index.tsx
+$ git diff --cached --stat
+```
+
+#### E1-c — quitar el prop `keyboardVerticalOffset`
+
+Diff plantado antes de correr Jest y revertir:
+
+```diff
+diff --git a/mobile-pet-tracker/src/screens/geofence-editor/index.tsx b/mobile-pet-tracker/src/screens/geofence-editor/index.tsx
+index b0ae85cf..7eeff8b2 100644
+--- a/mobile-pet-tracker/src/screens/geofence-editor/index.tsx
++++ b/mobile-pet-tracker/src/screens/geofence-editor/index.tsx
+@@ -135,7 +135,7 @@ function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, ini
+     ]);
+   };
+
+-  return <KeyboardAvoidingView testID="screen-geofence-editor" className="flex-1" behavior="padding" keyboardVerticalOffset={headerHeight}>
++  return <KeyboardAvoidingView testID="screen-geofence-editor" className="flex-1" behavior="padding">
+     <View testID="geofence-editor-map" className="flex-1">
+       <PetMap onPress={readOnly ? undefined : setCenter} center={readOnly ? initialCenter : camera.center} zoom={readOnly ? zoomForRadius(initialRadius) : camera.zoom} marker={null} polylines={[]} circles={circles} colorScheme={theme === 'dark' ? 'dark' : 'light'} />
+     </View>
+```
+
+Desde `mobile-pet-tracker/`:
+
+```bash
+bunx jest --runTestsByPath 'src/screens/geofence-editor/index.test.tsx' > /tmp/e1-E1-c.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=1
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 67 passed, 68 total
+Snapshots:   0 total
+Time:        8.551 s, estimated 9 s
+Ran all test suites within paths "src/screens/geofence-editor/index.test.tsx".
+```
+
+Solo it 18 falla, por aserción `paddingBottom: 291`; Received 200, como E1.3. Se ejecuta solo Jest sobre la mutación; TypeScript/lint no se lanzan con `headerHeight` sin usar.
+
+```text
+  ● #146 R6: el editor pinta el formulario sobre el mapa y sus estados › compone mapa y formulario sin fondo sobre el mapa y con las métricas A11 en el formulario
+
+    expect(instance).toHaveStyle()
+
+    - Expected
+    + Received
+
+    - paddingBottom: 291;
+    + paddingBottom: 200;
+
+      214 |       });
+      215 |     });
+    > 216 |     await waitFor(() => expect(screen.getByTestId('screen-geofence-editor')).toHaveStyle({ paddingBottom: 291 }));
+          |                  ^
+      217 |   });
+      218 |   it('pinta el formulario en inglés', async () => {
+      219 |     await edit('en');
+
+      at Object.<anonymous> (src/screens/geofence-editor/index.test.tsx:216:18)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+Reversión E1-c (exit=0 en los tres comandos; ambos diffs producen 0 bytes):
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/geofence-editor/index.tsx
+$ git diff --stat -- mobile-pet-tracker/src/screens/geofence-editor/index.tsx
+$ git diff --cached --stat
+```
+
+#### E1-d — `behavior="height"`
+
+Diff plantado antes de correr Jest y revertir:
+
+```diff
+diff --git a/mobile-pet-tracker/src/screens/geofence-editor/index.tsx b/mobile-pet-tracker/src/screens/geofence-editor/index.tsx
+index b0ae85cf..7cdf9dca 100644
+--- a/mobile-pet-tracker/src/screens/geofence-editor/index.tsx
++++ b/mobile-pet-tracker/src/screens/geofence-editor/index.tsx
+@@ -135,7 +135,7 @@ function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, ini
+     ]);
+   };
+
+-  return <KeyboardAvoidingView testID="screen-geofence-editor" className="flex-1" behavior="padding" keyboardVerticalOffset={headerHeight}>
++  return <KeyboardAvoidingView testID="screen-geofence-editor" className="flex-1" behavior="height" keyboardVerticalOffset={headerHeight}>
+     <View testID="geofence-editor-map" className="flex-1">
+       <PetMap onPress={readOnly ? undefined : setCenter} center={readOnly ? initialCenter : camera.center} zoom={readOnly ? zoomForRadius(initialRadius) : camera.zoom} marker={null} polylines={[]} circles={circles} colorScheme={theme === 'dark' ? 'dark' : 'light'} />
+     </View>
+```
+
+Desde `mobile-pet-tracker/`:
+
+```bash
+bunx jest --runTestsByPath 'src/screens/geofence-editor/index.test.tsx' > /tmp/e1-E1-d.txt 2>&1; echo "exit=$?"
+```
+
+```text
+exit=1
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 67 passed, 68 total
+Snapshots:   0 total
+Time:        7.675 s, estimated 9 s
+Ran all test suites within paths "src/screens/geofence-editor/index.test.tsx".
+```
+
+Solo it 18 falla, por aserción `paddingBottom: 0` (Received sin esa clave), como E1.3.
+
+```text
+  ● #146 R6: el editor pinta el formulario sobre el mapa y sus estados › compone mapa y formulario sin fondo sobre el mapa y con las métricas A11 en el formulario
+
+    expect(instance).toHaveStyle()
+
+    - Expected
+    + Received
+
+    - paddingBottom: 0;
+
+      205 |     expect(screen.getByTestId('geofence-editor-radius-value').props.selectable).toBe(true);
+      206 |     expect(screen.getByTestId('geofence-editor-radius-thumb').props.accessibilityLabel).toBe('Radio de la zona');
+    > 207 |     expect(root).toHaveStyle({ paddingBottom: 0 });
+          |                  ^
+      208 |     await fireEvent(root, 'layout', { persist() {}, nativeEvent: { layout: { x: 0, y: 0, width: 400, height: 700 } } });
+      209 |     await act(async () => {
+      210 |       DeviceEventEmitter.emit('keyboardWillShow', {
+
+      at Object.toHaveStyle (src/screens/geofence-editor/index.test.tsx:207:18)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+```
+
+Reversión E1-d (exit=0 en los tres comandos; ambos diffs producen 0 bytes):
+
+```text
+$ git checkout HEAD -- mobile-pet-tracker/src/screens/geofence-editor/index.tsx
+$ git diff --stat -- mobile-pet-tracker/src/screens/geofence-editor/index.tsx
+$ git diff --cached --stat
+```
+
+Las cuatro mutaciones se plantaron de una en una y se revirtieron contra HEAD, `caffb588`. Ninguna mutación se versiona.
+
+### Paso 4 — cierre completo
+
+Comandos en orden, desde `mobile-pet-tracker/`, cada salida a su fichero sin pipe:
+
+```bash
+test ! -e .expo/types/router.d.ts > /tmp/e1-close-router.txt 2>&1; echo "exit=$?"
+bunx tsc --noEmit > /tmp/e1-close-tsc.txt 2>&1; echo "exit=$?"
+bunx expo lint > /tmp/e1-close-lint.txt 2>&1; echo "exit=$?"
+bunx jest > /tmp/e1-close-jest.txt 2>&1; echo "exit=$?"
+```
+
+| Comprobación | Exit | Bytes del log | Resultado |
+|---|---|---|---|
+| Ausencia de `.expo/types/router.d.ts` | 0 | 0 | Ausente; ningún fichero borrado |
+| `bunx tsc --noEmit` | 0 | 0 | Sin errores, salida vacía |
+| `bunx expo lint` | 0 | 0 | Sin errores, salida vacía |
+| `bunx jest` | 0 | 1876181 | 90 suites / 1852 tests / 1 snapshot; todos pasan |
+
+```text
+Test Suites: 90 passed, 90 total
+Tests:       1852 passed, 1852 total
+Snapshots:   1 passed, 1 total
+Time:        48.721 s
+Ran all test suites.
+```
+
+Cierre exacto: editor 68, total 90 / 1852 / 1 snapshot, sin skipped. E1 añade 0 tests y 0 suites; se conserva el delta de #146 de +2 suites / +142 tests frente a la base 88 / 1710. TypeScript y lint tienen salida vacía.
+
+### Paso 5 — trazabilidad, commit documental y listas del cierre
+
+Solo se añade a R6 `b493f04d` con `test(geofences): lock the keyboard padding of the editor root (R6, E1)` y `caffb588` con `feat(geofences): keep the editor form above the keyboard (R6, E1)`, junto a los tres hashes existentes. Comprobado: exactamente una línea cambiada, la fila R6; todas las otras filas idénticas. Ambos hashes son ancestros de HEAD (exit=0).
+
+El commit documental lleva solo `specs/mobile-geofence-editor/traceability.md` y `progress/impl_mobile-geofence-editor.md`, con el asunto literal:
+
+```text
+docs(geofences): cite the keyboard lock in #146 traceability (R6, E1)
+```
+
+Diff de trazabilidad del commit documental, identificable como HEAD al cerrar (`git show --format= HEAD -- specs/mobile-geofence-editor/traceability.md`; se comprueba después del commit contra este mismo diff). Su hash se obtiene con `git rev-parse --short HEAD`. El diff del informe es esta sección añadida, sin modificar el contenido anterior; no se incluye dentro de sí mismo.
+
+```diff
+diff --git a/specs/mobile-geofence-editor/traceability.md b/specs/mobile-geofence-editor/traceability.md
+index f321b713..c903d2ce 100644
+--- a/specs/mobile-geofence-editor/traceability.md
++++ b/specs/mobile-geofence-editor/traceability.md
+@@ -17,7 +17,7 @@ de refactor si lo hubo), con hash corto y mensaje.
+ | R3 | `src/components/__tests__/pet-map.test.tsx::#146 R3: PetMap pinta círculos, acepta zoom y emite el toque` | `106b851b` test(geofences): add PetMap circles, zoom and press test (R3); `d3f4eedb` feat(geofences): let PetMap draw circles and report taps (R3) |
+ | R4 | `src/api/__tests__/geofences.test.ts::#146 R4: createGeofence y updateGeofence mapean el guardado por kind` | `c55d8d51` test(geofences): add geofence create and update API test (R4); `f652d3e2` feat(geofences): create and update geofences with save states (R4) |
+ | R5 | `src/app/__tests__/detail-stack.test.tsx::#146 R5: el editor de zonas vive en src/app/pets/[petId]/geofence-editor.tsx` y `src/app/__tests__/layout.test.tsx::#146 R5: la guarda de RootStack declara el editor de zonas tras la lista` | `3e17680e` test(geofences): add geofence editor route test (R5); `d9ba0f3e` feat(geofences): add the geofence editor route (R5) |
+-| R6 | `src/screens/geofence-editor/index.test.tsx::#146 R6: el editor pinta el formulario sobre el mapa y sus estados` | `75572a0f` test(geofences): add geofence editor loading and states test (R6); `aec76ccc` feat(geofences): load the geofence editor and its states (R6); `92e04a0d` test(geofences): wait for the tree in the 401 case (R6) |
++| R6 | `src/screens/geofence-editor/index.test.tsx::#146 R6: el editor pinta el formulario sobre el mapa y sus estados` | `75572a0f` test(geofences): add geofence editor loading and states test (R6); `aec76ccc` feat(geofences): load the geofence editor and its states (R6); `92e04a0d` test(geofences): wait for the tree in the 401 case (R6); `b493f04d` test(geofences): lock the keyboard padding of the editor root (R6, E1); `caffb588` feat(geofences): keep the editor form above the keyboard (R6, E1) |
+ | R7 | `src/screens/geofence-editor/index.test.tsx::#146 R7: el toque y el slider mueven el borrador sin perseguir la cámara` | `77857cec` test(geofences): add geofence editor draft test (R7); `04c4f646` feat(geofences): move the draft with taps and the slider (R7); `c249391b` test(geofences): lock the draft camera and the create draft (R7) |
+ | R8 | `src/screens/geofence-editor/index.test.tsx::#146 R8: Guardar crea o actualiza la zona y vuelve a la lista` | `33b76a86` test(geofences): add geofence editor save test (R8); `84719d8f` feat(geofences): save the geofence and return to the list (R8) |
+ | R9 | `src/screens/geofences/index.test.tsx::#146 R9: el dueño entra al editor desde la lista` | `6be00c8a` test(geofences): add geofence list editor entry test (R9); `41745421` test(geofences): use the R1 English edit label (R9); `9310ce08` feat(geofences): open the editor from the geofence list (R9); `394efbd6` refactor(geofences): seed the owner role before the loading case (R9) |
+```
+
+#### Comprobaciones de alcance y esperas
+
+- Bloque E1.2 copiado literal (solo indentación del cuerpo del test).
+- Títulos y declaraciones `it`, `it.each` y `describe` idénticos a la entrada `635087af`; E1 refuerza R6 it 18 sin añadir o quitar tests.
+- C8: ningún estilo arbitrario, hex, sombra legacy, fondo nuevo sobre el mapa ni componente crudo introducido; A11 y los estilos del formulario se mantienen en las aserciones de it 18. Los candados globales pasan en la suite completa.
+- Informe append-only: el contenido de HEAD es un prefijo exacto del fichero de trabajo.
+- Producción restaurada al verde e índice vacío antes de preparar el commit documental.
+
+```text
+$ git diff --stat -- mobile-pet-tracker/src/screens/geofence-editor/index.tsx
+$ git diff --cached --stat
+```
+
+Ambos comandos: exit=0, salida vacía.
+
+Búsquedas de §Verificación, todas con salida vacía y exit=1 (sin coincidencias):
+
+```bash
+git grep -n "queryKey: \[" -- mobile-pet-tracker/src/screens/geofence-editor
+git grep -n "useMutation\|useFocusEffect\|staleSeconds" -- mobile-pet-tracker/src/screens/geofence-editor
+git grep -n "#146[^ ]\|#146 [^R\\]" -- mobile-pet-tracker/src
+```
+
+#### Lista de commits propios
+
+46 commits propios ya existentes, todos ancestros de HEAD, verificados uno a uno con `git merge-base --is-ancestor <hash> HEAD` (exit=0). Los 44 anteriores más rojo y verde E1:
+
+```text
+ac8bbb12 docs(specs): apply amendment A19 of #146
+e37baecc test(geofences): add geofence editor catalog keys test (R1)
+3b7829c7 feat(geofences): add geofence editor catalog keys (R1)
+c0b2b4e1 test(geofences): add zoomForRadius test (R2)
+e496b3ad feat(geofences): frame a circle by its radius (R2)
+106b851b test(geofences): add PetMap circles, zoom and press test (R3)
+d3f4eedb feat(geofences): let PetMap draw circles and report taps (R3)
+b8d354dc test(geofences): lock the default map center in one place (R17)
+a3d30a36 refactor(map): export DEFAULT_CENTER from PetMap (R17)
+c55d8d51 test(geofences): add geofence create and update API test (R4)
+f652d3e2 feat(geofences): create and update geofences with save states (R4)
+6c5211f7 test(geofences): reject geofences without a numeric center (R15)
+f9b62c58 feat(geofences): validate the geofence center from the list (R15)
+3e17680e test(geofences): add geofence editor route test (R5)
+d9ba0f3e feat(geofences): add the geofence editor route (R5)
+75572a0f test(geofences): add geofence editor loading and states test (R6)
+aec76ccc feat(geofences): load the geofence editor and its states (R6)
+77857cec test(geofences): add geofence editor draft test (R7)
+92e04a0d test(geofences): wait for the tree in the 401 case (R6)
+04c4f646 feat(geofences): move the draft with taps and the slider (R7)
+33b76a86 test(geofences): add geofence editor save test (R8)
+84719d8f feat(geofences): save the geofence and return to the list (R8)
+6be00c8a test(geofences): add geofence list editor entry test (R9)
+41745421 test(geofences): use the R1 English edit label (R9)
+9310ce08 feat(geofences): open the editor from the geofence list (R9)
+02ac6843 test(geofences): lock the client-side geofence limit (R12)
+6e12baea feat(geofences): disable add zone at the geofence limit (R12)
+3cdc9fb9 test(geofences): add geofence editor active switch test (R13)
+e7851418 feat(geofences): toggle the zone from the editor (R13)
+7483443a test(geofences): add geofence editor delete test (R14)
+4f87940a feat(geofences): delete the zone from the editor (R14)
+86e2dd49 test(geofences): add geofence editor read-only test (R16)
+8836846d feat(geofences): show the zone read-only to non-owners (R16)
+e805a7f4 test(geofences): add map tab geofence circles test (R11)
+4c368245 feat(geofences): draw active geofences on the map tab (R11)
+50ccd870 test(geofences): add geofence editor copy-by-key test (R10)
+f774bdc8 feat(geofences): resolve geofence editor copy by key (R10)
+9560f178 test(geofences): count the editor among tabular counters (R18)
+a3896732 feat(geofences): use tabular digits in the editor radius (R18)
+394efbd6 refactor(geofences): seed the owner role before the loading case (R9)
+b46b233c refactor(geofences): compose the language spec suffix for the prefix check (R1)
+f6d45af5 docs(geofences): fill #146 traceability
+c249391b test(geofences): lock the draft camera and the create draft (R7)
+552f557d docs(geofences): cite the R7 lock in #146 traceability
+b493f04d test(geofences): lock the keyboard padding of the editor root (R6, E1)
+caffb588 feat(geofences): keep the editor form above the keyboard (R6, E1)
+
+47.º propio: HEAD después de este commit documental,
+docs(geofences): cite the keyboard lock in #146 traceability (R6, E1).
+Hash: git rev-parse --short HEAD después de commitear.
+```
+
+47 en el cierre: 44 previos + 3 de esta reanudación. Commits del leader/humano y merges excluidos del cómputo propio:
+
+```text
+d86897b2 chore(harness): reanudacion 1 del handoff de #146 tras la parada en R7
+d36cf64e chore(harness): reanudacion 2 del handoff de #146 tras la parada en R9
+42f89caf chore(harness): reanudacion 3 del handoff de #146 tras la parada en R9
+c0940cd0 Merge origin/main (cb14497c, #103) into feature/146-mobile-geofence-editor
+826ae816 chore(harness): veredicto del reviewer de #146, rechazado por R7
+f45c7159 chore(harness): reanudacion 4 de #146 tras el rechazo por R7
+8944dfe9 chore(harness): veredicto del reviewer de #146, ronda 2 aprobada
+434538c1 docs(specs): erratas de #146 senaladas por el reviewer
+ef4651f9 Prueba de humno supera
+9dbe3de5 Merge branch 'feature/146-mobile-geofence-editor' of https://github.com/TrackerMex/Pet-Tracker into feature/146-mobile-geofence-editor
+0620b801 docs(spec): write amendment E1 of #146 for the keyboard over the editor form
+a71e4d97 docs(progress): record amendment E1 of #146 in current.md
+bc917ff7 Approve amendment E1 of #146 (firma via Notion)
+7e7b16b9 chore(harness): reanudacion 5 de #146 para la enmienda E1
+caa7d7ae docs(progress): record E1 signature and resumption 5 of #146
+635087af chore(harness): anchor resumption 5 of #146 on 7e7b16b9 instead of HEAD
+```
+
+Comprobado: cada commit excluido, salvo los merges `c0940cd0` y `9dbe3de5`, toca únicamente `progress/` o `specs/`. Los dos merges siguen siendo ancestros de HEAD; no se reescribe el historial.
+
+#### Lista de ficheros propios desde H0
+
+Unión de `git diff-tree --no-commit-id --name-only -r <hash>` sobre los 46 commits propios existentes (el documental final conserva esas rutas):
+
+```text
+docs/conventions.md
+docs/ui-guidelines.md
+mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+mobile-pet-tracker/src/__tests__/design-drift.test.ts
+mobile-pet-tracker/src/__tests__/ui-copy-table.ts
+mobile-pet-tracker/src/__tests__/ui-language.test.ts
+mobile-pet-tracker/src/api/__tests__/geofences.test.ts
+mobile-pet-tracker/src/api/geofences.ts
+mobile-pet-tracker/src/app/__tests__/detail-stack.test.tsx
+mobile-pet-tracker/src/app/__tests__/layout.test.tsx
+mobile-pet-tracker/src/app/_layout.tsx
+mobile-pet-tracker/src/app/pets/[petId]/geofence-editor.tsx
+mobile-pet-tracker/src/components/__tests__/pet-map.test.tsx
+mobile-pet-tracker/src/components/pet-map.tsx
+mobile-pet-tracker/src/i18n/catalog.ts
+mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+mobile-pet-tracker/src/screens/geofence-editor/index.test.tsx
+mobile-pet-tracker/src/screens/geofence-editor/index.tsx
+mobile-pet-tracker/src/screens/geofences/index.test.tsx
+mobile-pet-tracker/src/screens/geofences/index.tsx
+mobile-pet-tracker/src/screens/map/index.test.tsx
+mobile-pet-tracker/src/screens/map/index.tsx
+mobile-pet-tracker/src/utils/zoom-for-radius.test.ts
+mobile-pet-tracker/src/utils/zoom-for-radius.ts
+progress/impl_mobile-geofence-editor.md
+specs/mobile-geofence-editor/traceability.md
+specs/mobile-ui-language/design.md
+```
+
+27 rutas, las del handoff original. Esta reanudación cambia exactamente las cuatro rutas autorizadas frente a `635087af`:
+
+```text
+mobile-pet-tracker/src/screens/geofence-editor/index.test.tsx
+mobile-pet-tracker/src/screens/geofence-editor/index.tsx
+progress/impl_mobile-geofence-editor.md
+specs/mobile-geofence-editor/traceability.md
+```
+
+`git diff --name-only 9dee0e62 HEAD` sobre el historial completo (antes del commit documental, que no añade rutas), incluidas las aportaciones del leader/humano y de los merges:
+
+```text
+STATUS.md
+backend-pet-tracker/src/db/migrations/0018_nutrition_plans_engine_meals.sql
+backend-pet-tracker/src/db/migrations/meta/0018_snapshot.json
+backend-pet-tracker/src/db/migrations/meta/_journal.json
+backend-pet-tracker/src/db/schema/meal-servings.schema.spec.ts
+backend-pet-tracker/src/db/schema/nutrition.schema.spec.ts
+backend-pet-tracker/src/db/schema/nutrition.schema.ts
+backend-pet-tracker/src/modules/nutrition/application/dto/meal.dto.ts
+backend-pet-tracker/src/modules/nutrition/application/use-cases/add-meal-time.use-case.spec.ts
+backend-pet-tracker/src/modules/nutrition/application/use-cases/add-meal-time.use-case.ts
+backend-pet-tracker/src/modules/nutrition/application/use-cases/generate-nutrition-plan.use-case.ts
+backend-pet-tracker/src/modules/nutrition/application/use-cases/move-meal-time.use-case.spec.ts
+backend-pet-tracker/src/modules/nutrition/application/use-cases/move-meal-time.use-case.ts
+backend-pet-tracker/src/modules/nutrition/application/use-cases/serve-meal.use-case.spec.ts
+backend-pet-tracker/src/modules/nutrition/domain/entities/nutrition-plan.entity.spec.ts
+backend-pet-tracker/src/modules/nutrition/domain/entities/nutrition-plan.entity.ts
+backend-pet-tracker/src/modules/nutrition/domain/errors/nutrition.errors.ts
+backend-pet-tracker/src/modules/nutrition/domain/nutrition.constants.ts
+backend-pet-tracker/src/modules/nutrition/domain/repositories/nutrition.repository.ts
+backend-pet-tracker/src/modules/nutrition/infrastructure/mappers/nutrition-error.mapper.ts
+backend-pet-tracker/src/modules/nutrition/infrastructure/nutrition.controller.ts
+backend-pet-tracker/src/modules/nutrition/infrastructure/repositories/nutrition.drizzle.repository.ts
+backend-pet-tracker/src/modules/nutrition/nutrition.module.ts
+backend-pet-tracker/test/meal-times.e2e-spec.ts
+docs/conventions.md
+docs/data-model.md
+docs/ui-guidelines.md
+feature_list.json
+mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+mobile-pet-tracker/src/__tests__/design-drift.test.ts
+mobile-pet-tracker/src/__tests__/ui-copy-table.ts
+mobile-pet-tracker/src/__tests__/ui-language.test.ts
+mobile-pet-tracker/src/api/__tests__/geofences.test.ts
+mobile-pet-tracker/src/api/geofences.ts
+mobile-pet-tracker/src/app/__tests__/detail-stack.test.tsx
+mobile-pet-tracker/src/app/__tests__/layout.test.tsx
+mobile-pet-tracker/src/app/_layout.tsx
+mobile-pet-tracker/src/app/pets/[petId]/geofence-editor.tsx
+mobile-pet-tracker/src/components/__tests__/pet-map.test.tsx
+mobile-pet-tracker/src/components/pet-map.tsx
+mobile-pet-tracker/src/i18n/catalog.ts
+mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+mobile-pet-tracker/src/screens/geofence-editor/index.test.tsx
+mobile-pet-tracker/src/screens/geofence-editor/index.tsx
+mobile-pet-tracker/src/screens/geofences/index.test.tsx
+mobile-pet-tracker/src/screens/geofences/index.tsx
+mobile-pet-tracker/src/screens/map/index.test.tsx
+mobile-pet-tracker/src/screens/map/index.tsx
+mobile-pet-tracker/src/utils/zoom-for-radius.test.ts
+mobile-pet-tracker/src/utils/zoom-for-radius.ts
+progress/current.md
+progress/explore_meal-schedule-editing.md
+progress/explore_mobile-geofence-editor-keyboard.md
+progress/handoff_meal-schedule-editing.md
+progress/handoff_meal-schedule-editing_r11.md
+progress/handoff_meal-schedule-editing_r8.md
+progress/handoff_meal-schedule-editing_ronda2.md
+progress/handoff_meal-schedule-editing_ronda3.md
+progress/handoff_mobile-geofence-editor.md
+progress/history.md
+progress/impl_meal-schedule-editing.md
+progress/impl_mobile-geofence-editor.md
+progress/review_meal-schedule-editing.md
+progress/review_mobile-geofence-editor.md
+specs/meal-schedule-editing/design.md
+specs/meal-schedule-editing/requirements.md
+specs/meal-schedule-editing/tasks.md
+specs/meal-schedule-editing/traceability.md
+specs/meals-served-tracking/design.md
+specs/mobile-geofence-editor/design.md
+specs/mobile-geofence-editor/requirements.md
+specs/mobile-geofence-editor/traceability.md
+specs/mobile-ui-language/design.md
+```
+
+Los cambios ajenos en backend, status y otras specs vienen del historial y los merges; quedan fuera de la lista de 27 rutas de los commits propios. En esta reanudación no se ejecutan `./init.sh`, comandos de Postgres/LocalStack, push ni PR. No se modifica el status de la feature ni ninguna casilla de aprobación. La repetición del paso 9 y la comprobación de que al cerrar el teclado el mapa recupera su alto y acepta toques quedan para el humano en el dev build de Android.
+
+Después de commitear: comprobar el asunto literal y los dos ficheros del commit documental, la igualdad del diff de trazabilidad arriba (normalizando espacios en líneas vacías), los 47 commits propios, las cuatro rutas de la reanudación y `git status --short` vacío. El resultado se entrega junto al hash documental en el mensaje de cierre.
+
+Las líneas vacías de contexto de los diffs se muestran vacías, sin su espacio de prefijo, para mantener `git diff --check` limpio; el resto de los diffs copiados se conserva.
