@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
+import { router } from 'expo-router';
 import { Button, Skeleton, Switch } from 'heroui-native';
 import { useState } from 'react';
-import { Alert, ScrollView, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { deleteGeofence, listGeofences, setGeofenceActive, type Geofence, type GeofenceWriteState } from '../../api/geofences';
@@ -85,16 +86,20 @@ export function GeofencesScreen({ petId }: { petId: string }) {
           <Card testID="geofences-empty" className="items-center py-8">
             <Text className="text-center font-normal text-muted">{t('geofences.empty')}</Text>
           </Card>
-        ) : geofences.data.geofences.map((geofence) => (
-          <Card key={geofence.id} testID={`geofence-${geofence.id}`} className="flex-row items-center gap-3">
-            <View className="min-w-0 flex-1 gap-1">
-              <Text testID={`geofence-${geofence.id}-name`} selectable className="font-bold text-foreground">
-                {geofence.name}
-              </Text>
-              <Text testID={`geofence-${geofence.id}-radius`} className="text-sm font-normal text-muted">
-                {t('geofences.radius', { meters: Math.round(geofence.radiusM) })}
-              </Text>
-            </View>
+        ) : geofences.data.geofences.map((geofence) => {
+          const nameAndRadius = <>
+            <Text testID={`geofence-${geofence.id}-name`} selectable={!isOwner} className="font-bold text-foreground">{geofence.name}</Text>
+            <Text testID={`geofence-${geofence.id}-radius`} className="text-sm font-normal text-muted">{t('geofences.radius', { meters: Math.round(geofence.radiusM) })}</Text>
+          </>;
+          return <Card key={geofence.id} testID={`geofence-${geofence.id}`} className="flex-row items-center gap-3">
+            {isOwner ? (
+              <Pressable testID={`geofence-${geofence.id}-edit`} accessibilityRole="button"
+                accessibilityLabel={t('geofenceEditor.editLabel', { name: geofence.name })} disabled={busy}
+                className="min-h-11 min-w-0 flex-1 gap-1" style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
+                onPress={() => router.push({ pathname: '/pets/[petId]/geofence-editor', params: { petId, geofenceId: geofence.id } })}>
+                {nameAndRadius}
+              </Pressable>
+            ) : <View className="min-w-0 flex-1 gap-1">{nameAndRadius}</View>}
             {isOwner ? (
               <>
               <Switch
@@ -121,8 +126,8 @@ export function GeofencesScreen({ petId }: { petId: string }) {
                 {geofence.active ? t('geofences.statusActive') : t('geofences.statusInactive')}
               </Text>
             )}
-          </Card>
-        ))
+          </Card>;
+        })
       ) : geofences.data.kind === 'no-tracking' ? (
         <Card testID="geofences-no-tracking" className="items-center py-8">
           <Text className="text-center font-normal text-muted">{t('geofences.needsCollar')}</Text>
@@ -139,6 +144,12 @@ export function GeofencesScreen({ petId }: { petId: string }) {
           </Button>
         </>
       )}
+      {isOwner && geofences.data?.kind === 'ok' ? (
+        <Button testID="geofences-add" className="rounded-xl bg-accent" isDisabled={busy}
+          onPress={() => router.push({ pathname: '/pets/[petId]/geofence-editor', params: { petId } })}>
+          <Button.Label className="font-bold text-accent-foreground">{t('geofenceEditor.add')}</Button.Label>
+        </Button>
+      ) : null}
       {actionError ? (
         <Text testID="geofences-action-error" selectable className="text-danger">{actionError}</Text>
       ) : null}
