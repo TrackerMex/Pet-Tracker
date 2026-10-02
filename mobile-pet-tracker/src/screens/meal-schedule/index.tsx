@@ -56,6 +56,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
   const t = useTranslate();
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
+  const [editError, setEditError] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [picker, setPicker] = useState<{ from: string | null } | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -90,12 +91,48 @@ function MealScheduleContent({ petId }: { petId: string }) {
 
   async function runMealTimeEdit(request: () => Promise<EditMealTimeState>) {
     setEditing(true);
+    setEditError(null);
     try {
       const result = await request();
-      if (result.kind === 'ok') {
-        await plan.refetch();
-        await queryClient.refetchQueries({ queryKey: petKeys.detail(petId) });
+      switch (result.kind) {
+        case 'ok':
+          await plan.refetch();
+          await queryClient.refetchQueries({ queryKey: petKeys.detail(petId) });
+          return;
+        case 'invalid':
+          setEditError(t('mealSchedule.errorInvalidTime'));
+          return;
+        case 'forbidden':
+          setEditError(t('mealSchedule.errorEditForbidden'));
+          return;
+        case 'unprocessable':
+          switch (result.code) {
+            case 'NUTRITION_PLAN_REQUIRED':
+              setEditError(t('mealSchedule.errorPlanRequired'));
+              break;
+            case 'MEAL_TIME_NOT_IN_PLAN':
+              setEditError(t('mealSchedule.errorTimeNotInPlan'));
+              break;
+            case 'MEAL_TIME_DUPLICATE':
+              setEditError(t('mealSchedule.errorDuplicateTime'));
+              break;
+            case 'MEAL_TIMES_LIMIT_REACHED':
+              setEditError(t('mealSchedule.errorMealLimit'));
+              break;
+          }
+          return;
+        case 'unauthorized':
+          await signOut();
+          return;
+        case 'unreachable':
+          setEditError(t('common.cannotReachServer'));
+          return;
+        case 'error':
+        case 'missing-config':
+          setEditError(t('common.somethingWentWrong'));
       }
+    } catch {
+      setEditError(t('common.somethingWentWrong'));
     } finally {
       setEditing(false);
     }
@@ -262,6 +299,11 @@ function MealScheduleContent({ petId }: { petId: string }) {
                 </Card>
               );
             })}
+            {isOwner && editError !== null ? (
+              <Text testID="meal-time-error" selectable className="text-danger">
+                {editError}
+              </Text>
+            ) : null}
             {isOwner ? (
               <Button
                 testID="add-meal-time-button"
