@@ -1,5 +1,6 @@
 import {
   addMealTime,
+  moveMealTime,
   generateNutritionPlan,
   getNutritionPlan,
   getNutritionProfile,
@@ -443,6 +444,46 @@ describe('#147 R2: addMealTime publica la franja y mapea por kind', () => {
   it('devuelve missing-config sin llamar a fetch si falta la URL base', async () => {
     const fetchFn = jest.fn() as unknown as typeof fetch;
     await expect(addMealTime(undefined, 'jwt-token', 'pet-1', '08:05', fetchFn)).resolves.toEqual({ kind: 'missing-config' });
+    expect(fetchFn).not.toHaveBeenCalled();
+  });
+});
+
+
+describe('#147 R3: moveMealTime publica el PATCH y mapea por kind', () => {
+  it('publica PATCH /meal-times/:from con body { mealTime: to }, y 200 es ok', async () => {
+    const fetchFn = jest.fn().mockResolvedValue(response(200, makePlan())) as unknown as typeof fetch;
+    await expect(moveMealTime(baseUrl, 'jwt-token', 'pet-1', '19:30', '20:05', fetchFn)).resolves.toEqual({ kind: 'ok' });
+    expect(fetchFn).toHaveBeenCalledTimes(1);
+    expect(fetchFn).toHaveBeenCalledWith('http://example.test/v1/pets/pet-1/meal-times/19:30', {
+      method: 'PATCH',
+      headers: { Authorization: 'Bearer jwt-token', 'Content-Type': 'application/json' },
+      body: '{"mealTime":"20:05"}',
+    });
+  });
+
+  it('trata un 201 como error', async () => {
+    const fetchFn = jest.fn().mockResolvedValue(response(201, {})) as unknown as typeof fetch;
+    await expect(moveMealTime(baseUrl, 'jwt-token', 'pet-1', '19:30', '20:05', fetchFn)).resolves.toEqual({ kind: 'error' });
+  });
+
+  it('comparte el mapeo de errores de addMealTime', async () => {
+    const fetchMock = jest.fn();
+    const fetchFn = fetchMock as unknown as typeof fetch;
+    for (const [backend, expected] of [
+      [response(400, {}), { kind: 'invalid' }],
+      [response(403, {}), { kind: 'forbidden' }],
+      [response(422, { code: 'MEAL_TIME_NOT_IN_PLAN' }), { kind: 'unprocessable', code: 'MEAL_TIME_NOT_IN_PLAN' }],
+      [response(422, { code: 'MEAL_TIME_DUPLICATE' }), { kind: 'unprocessable', code: 'MEAL_TIME_DUPLICATE' }],
+      [response(401, {}), { kind: 'unauthorized' }],
+      [response(500, {}), { kind: 'error' }],
+    ] as const) {
+      fetchMock.mockResolvedValueOnce(backend);
+      await expect(moveMealTime(baseUrl, 'jwt-token', 'pet-1', '19:30', '20:05', fetchFn)).resolves.toEqual(expected);
+    }
+    fetchMock.mockRejectedValueOnce(new Error('network down'));
+    await expect(moveMealTime(baseUrl, 'jwt-token', 'pet-1', '19:30', '20:05', fetchFn)).resolves.toEqual({ kind: 'unreachable', message: 'network down' });
+    fetchMock.mockClear();
+    await expect(moveMealTime(undefined, 'jwt-token', 'pet-1', '19:30', '20:05', fetchFn)).resolves.toEqual({ kind: 'missing-config' });
     expect(fetchFn).not.toHaveBeenCalled();
   });
 });
