@@ -2830,9 +2830,9 @@
   {
     "id": 146,
     "name": "mobile-geofence-editor",
-    "status": "pending",
+    "status": "spec_ready",
     "priority": "P3",
-    "description": "Registrada el 2026-10-01 por decision del humano, al repartir #41 a partir de progress/explore_mobile-geofences.md: es el editor de geocercas sobre el mapa (crear y editar). Depende de #41 (lista y punto de entrada), de #145 (backend endurecido) y de #60 (rama AppleMaps de PetMap). Decisiones del humano (2026-10-01): solo circulos; tocar el mapa (onMapClick, existe en GoogleMaps y AppleMaps) fija el centro, y el centro inicial es la ultima posicion conocida de la mascota o el centro del mapa; un slider de 20 a 2000 m con paso de 10 m (el rango del backend, no el 50-500 del Make) fija el radio con previsualizacion del circulo; solo el owner crea o edita. Hechos verificados por el explorer sobre expo-maps 57.0.2: el tipo circles {id?, center, radius en metros, color?, lineColor?, lineWidth?} es igual en las dos plataformas; NO hay eventos de arrastre de marker; onMapLongClick es solo de Google; onCameraMove dispara con frecuencias distintas en Android e iOS; la camara se reaplica cada vez que cambia el valor de cameraPosition, asi que el editor debe desacoplarla del centro del circulo, y conviene un helper puro de zoom por radio con tabla de casos. Alcance: ampliar PetMap con props opcionales (circulos, onMapClick, zoom) en las dos ramas sin romper la pestana Mapa; formulario con nombre y slider; POST y PATCH de geometria; errores 409 GEOFENCE_NAME_TAKEN, 400 MAX_GEOFENCES_REACHED (el limite de 5 se muestra desde el error del servidor, no contando en el cliente) y 400 de validacion sin code; dibujar las zonas en el mapa de la pantalla de geocercas. La spec decide si el editor es ruta propia o sheet (riesgo de gestos con el mapa dentro de un sheet). Fuera de alcance: los circulos en la pestana Mapa (Make §1.2), los poligonos y las zonas compartidas entre mascotas. Codex no tiene skill de mapas: toda la guia de expo-maps debe quedar escrita en la spec.",
+    "description": "Registrada el 2026-10-01 por decision del humano, al repartir #41 a partir de progress/explore_mobile-geofences.md: es el editor de geocercas sobre el mapa (crear y editar). Depende de #41 (lista y punto de entrada), de #145 (backend endurecido) y de #60 (rama AppleMaps de PetMap). Decisiones del humano (2026-10-01): solo circulos; tocar el mapa (onMapClick, existe en GoogleMaps y AppleMaps) fija el centro, y el centro inicial es la ultima posicion conocida de la mascota o el centro del mapa; un slider de 20 a 2000 m con paso de 10 m (el rango del backend, no el 50-500 del Make) fija el radio con previsualizacion del circulo; solo el owner crea o edita. Hechos verificados por el explorer sobre expo-maps 57.0.2: el tipo circles {id?, center, radius en metros, color?, lineColor?, lineWidth?} es igual en las dos plataformas; NO hay eventos de arrastre de marker; onMapLongClick es solo de Google; onCameraMove dispara con frecuencias distintas en Android e iOS; la camara se reaplica cada vez que cambia el valor de cameraPosition, asi que el editor debe desacoplarla del centro del circulo, y conviene un helper puro de zoom por radio con tabla de casos. Alcance: ampliar PetMap con props opcionales (circulos, onMapClick, zoom) en las dos ramas sin romper la pestana Mapa; formulario con nombre y slider; POST y PATCH de geometria; errores 409 GEOFENCE_NAME_TAKEN, 400 MAX_GEOFENCES_REACHED (el limite de 5 se muestra desde el error del servidor, no contando en el cliente) y 400 de validacion sin code; dibujar las zonas en el mapa de la pantalla de geocercas. La spec decide si el editor es ruta propia o sheet (riesgo de gestos con el mapa dentro de un sheet). Fuera de alcance: los circulos en la pestana Mapa (Make §1.2), los poligonos y las zonas compartidas entre mascotas. Codex no tiene skill de mapas: toda la guia de expo-maps debe quedar escrita en la spec. Actualizacion 2026-10-02: #60 deja de ser dependencia (aparcada por decision del humano, 286c94bd); la spec se escribe contra el PetMap de main, con las props nuevas en mapViewProps, y la prueba de humo es en el dev build de Android, asi que la rama iOS queda sin verificar. Spec en specs/mobile-geofence-editor/ (spec_ready, pendiente del gate humano). Dependencia dura: #41 mergeada en main; la base de tests se mide en el handoff.",
     "acceptance_criteria": [
       "El owner crea una geocerca tocando el mapa y fijando el radio con un slider de 20 a 2000 m, con previsualizacion del circulo, y la persiste con POST",
       "El owner edita nombre, centro y radio de una geocerca existente con PATCH",
@@ -2842,10 +2842,30 @@
       "Gate humano: dibujo de zona en dev build de Android"
     ],
     "files_affected": [
+      "mobile-pet-tracker/src/app/pets/[petId]/geofence-editor.tsx",
+      "mobile-pet-tracker/src/screens/geofence-editor/index.tsx",
+      "mobile-pet-tracker/src/screens/geofence-editor/index.test.tsx",
+      "mobile-pet-tracker/src/screens/geofences/index.tsx",
+      "mobile-pet-tracker/src/screens/geofences/index.test.tsx",
+      "mobile-pet-tracker/src/utils/zoom-for-radius.ts",
+      "mobile-pet-tracker/src/utils/zoom-for-radius.test.ts",
       "mobile-pet-tracker/src/components/pet-map.tsx",
+      "mobile-pet-tracker/src/components/__tests__/pet-map.test.tsx",
       "mobile-pet-tracker/src/api/geofences.ts",
-      "mobile-pet-tracker/src/screens/geofences/",
-      "mobile-pet-tracker/src/utils/"
+      "mobile-pet-tracker/src/api/__tests__/geofences.test.ts",
+      "mobile-pet-tracker/src/app/_layout.tsx",
+      "mobile-pet-tracker/src/app/__tests__/layout.test.tsx",
+      "mobile-pet-tracker/src/app/__tests__/detail-stack.test.tsx",
+      "mobile-pet-tracker/src/i18n/catalog.ts",
+      "mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx",
+      "mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts",
+      "mobile-pet-tracker/src/__tests__/design-drift.test.ts",
+      "mobile-pet-tracker/src/__tests__/ui-copy-table.ts",
+      "mobile-pet-tracker/src/__tests__/ui-language.test.ts",
+      "docs/conventions.md",
+      "docs/ui-guidelines.md",
+      "specs/mobile-ui-language/design.md",
+      "specs/mobile-geofence-editor/"
     ]
   }
 ]
