@@ -208,3 +208,89 @@ de ficheros intocables) con su salida; el `git diff --name-only H0 HEAD`;
 el delta final sobre tu base, por fichero segun design.md §Delta de tests;
 y cualquier decision que la spec no cerrara literalmente.
 ```
+
+---
+
+## Reanudación 1 — parada en el verde de R7 (2026-10-02)
+
+> Codex paró en el verde de R7 con HEAD `77857cec` (rojo de R7) y la
+> producción de R7 sin stage en `src/screens/geofence-editor/index.tsx`.
+> Paró bien: lo exigía la regla de «si falla otro `it`, PARA».
+>
+> Diagnóstico del leader: el `it` rojo es
+> `#146 R6 › deja el 401 de la lista al manejador global y no pinta estado`
+> y es intermitente, no una regresión de R7. Con el mismo árbol, el conjunto
+> de cinco ficheros del verde de R7 dio 2 rojos y 1 verde en tres corridas
+> (`--maxWorkers=2`), siempre ese `it`. Aislado con `-t` dio 6/6 verdes.
+> El test espera al contador de `onUnauthorized` y consulta el árbol justo
+> después. El `QueryCache` global llama al manejador antes de que el
+> observador repinte, así que a veces el Skeleton de carga sigue montado.
+> Eso incumple `docs/conventions.md` §Esperas sobre el árbol renderizado.
+> El hermano de #41 (`src/screens/geofences/index.test.tsx`, mismo título)
+> ya espera además a que desaparezca `geofences-loading`. El diff de R7
+> solo toca `GeofenceEditorForm`, que no se monta en la rama `unauthorized`.
+>
+> El arreglo es un commit de test extra, fuera de la lista literal de
+> tasks.md, autorizado por el leader. No cambia ninguna expectativa: solo
+> la espera. Total de commits: 39. El delta de tests no cambia.
+
+Pegar en Codex CLI:
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-146   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+Reanudacion de #146 tras tu parada en el verde de R7. Ejecuta `pwd`,
+`git branch --show-current`, `git rev-parse --short HEAD` y
+`git status --short`. Para si la branch no es
+feature/146-mobile-geofence-editor, o si `git status --short` muestra
+algo distinto de ` M mobile-pet-tracker/src/screens/geofence-editor/index.tsx`
+y `?? progress/impl_mobile-geofence-editor.md`. HEAD sera el commit del
+leader que anade esta reanudacion a progress/handoff_mobile-geofence-editor.md
+(su padre es 77857cec). Lee la seccion «Reanudacion 1» de ese fichero:
+lleva el diagnostico. Las reglas del handoff original siguen todas en vigor.
+H0 sigue siendo 9dee0e62.
+
+1. Arregla la espera del `it` de R6
+   'deja el 401 de la lista al manejador global y no pinta estado', en
+   mobile-pet-tracker/src/screens/geofence-editor/index.test.tsx. Localizalo
+   por ese titulo, no por numero de linea. Sustituye SOLO la linea
+   `expect(screen.queryByTestId('geofence-editor-loading')).toBeNull();`
+   que sigue al `waitFor` de `onUnauthorized` por
+   `await waitFor(() => expect(screen.queryByTestId('geofence-editor-loading')).toBeNull());`
+   Es el patron del hermano de #41 en src/screens/geofences/index.test.tsx.
+   No toques ninguna otra linea ni ninguna expectativa. Tampoco toques la
+   produccion de R7, que sigue sin stage.
+2. Commit con SOLO ese fichero (`git add` de esa ruta y nada mas). Mensaje
+   literal:
+     test(geofences): wait for the tree in the 401 case (R6)
+   Comprueba despues con `git show --stat HEAD` que el commit lleva un solo
+   fichero y que index.tsx sigue con ` M` en `git status --short`.
+3. Con la produccion de R7 en el arbol, corre CINCO veces seguidas el
+   conjunto de cinco ficheros de tu intento de verde de R7, con
+   `--maxWorkers=2` y sin pipe. Las cinco deben dar 190/190 verdes y exit=0.
+   Si alguna da rojo, PARA y reporta. No vuelvas a tocar el test.
+4. Si las cinco son verdes, sigue el guion: verde de R7 con su mensaje
+   literal de tasks.md
+     feat(geofences): move the draft with taps and the slider (R7)
+   y despues R8, R9, R12, R13, R14, R16, R11, R10 y R18, las mutaciones,
+   el cierre y la trazabilidad, todo como dice el handoff original.
+
+Regla nueva para el resto de la feature: aplica docs/conventions.md
+§Esperas sobre el arbol renderizado. Si un test asevera el arbol, la
+espera es sobre el arbol. Nunca esperes a un contador de mock o a la cache
+de Query y consultes el arbol despues. Una aserción de ausencia se ancla
+antes a la aparicion o al estado final de un nodo del mismo escenario.
+
+Listas del cierre:
+- Ficheros que TU cambias desde H0: los del handoff original. El commit
+  del leader con esta reanudacion toca solo
+  progress/handoff_mobile-geofence-editor.md y no cuenta como tuyo.
+- Commits: los 38 literales mas el del paso 2, que va entre el rojo y el
+  verde de R7. En total, 39 tuyos.
+
+Informe: sigue en progress/impl_mobile-geofence-editor.md, con una seccion
+«Reanudacion 1» que lleve las salidas del paso 0, el `git show --stat` del
+paso 2 y las cuentas y el exit de las cinco corridas del paso 3. De aqui
+en adelante copia de jest solo las lineas de resumen y los bloques `●` de
+cada `it` rojo (matcher, Expected, Received). NO pegues los console.info
+de HeroUI ni los console.warn de Uniwind: el informe ya pesa 483 KB.
+```
