@@ -423,6 +423,66 @@ Por qué este orden:
       todas las filas de [[traceability]] con sus hashes rojo, verde y docs.
       **No rebasear** después: invalida los hashes.
 
+## Ronda 2 (E3) — candados de B1 y B2 del reviewer
+
+El hash del handoff de esta ronda (H1) es el commit de la enmienda E3. Todo
+`git diff` de esta ronda se mide desde H1, no desde H0: entre los dos está el
+merge de `origin/main` (#41). Los hashes de la ronda 1 no se tocan, así que
+**no se rebasea**.
+
+- [ ] (1) Rojo B1 — commit
+      `test(meal-schedule-editing): lock objective and warnings on edited copy (R3)`.
+      El commit lleva dos cambios ([[requirements]] R3, E3):
+  - los overrides de `objective` y `warnings` en el origen del unit R3
+    `it` 1, con el esperado escrito a mano;
+  - la mutación versionada `objective: 'maintenance'` y `warnings: []` en
+    `copyWithMealTimes`.
+
+  Rojo: solo el unit R3 `it` 1, por matcher. Corre
+  `pnpm test -- nutrition-plan.entity`, y además las unit de add y move.
+- [ ] (2) Verde B1 — commit
+      `feat(meal-schedule-editing): restore copyWithMealTimes after R3 lock (R3)`.
+      Revierte exactamente la mutación. Comprobar con
+      `git diff <rojo B1>^ HEAD -- backend-pet-tracker/src/modules/nutrition/domain/entities/nutrition-plan.entity.ts`,
+      que debe salir vacío.
+- [ ] (3) Rojo B2 — commit
+      `test(meal-schedule-editing): lock serving move to the edited pet (R5)`.
+      El commit lleva dos cambios ([[requirements]] R5, E3):
+  - el `it` 3 del `describe` R5 e2e;
+  - la mutación versionada: sin `eq(mealServings.petId, plan.petId)` en el
+    `DELETE` de `insertPlanAndMoveServing`.
+
+  Rojo: el `it` 3 de R5, por matcher en `servingsOf(B)`. Corre `<e2e-mt>` y
+  `<e2e-nut>`. Si cae otro `it` por matcher, se anota con su línea decisiva
+  (criterio E2). Si cae cualquier rojo que no sea por matcher, **parar**.
+- [ ] (4) Verde B2 — commit
+      `feat(meal-schedule-editing): restore pet filter on serving delete after R5 lock (R5)`.
+      Revierte exactamente la mutación. Comprobar con
+      `git diff <rojo B2>^ HEAD -- backend-pet-tracker/src/modules/nutrition/infrastructure/repositories/nutrition.drizzle.repository.ts`,
+      que debe salir vacío. `<e2e-mt>` da 23 tests en verde y `<e2e-nut>` sigue
+      en 2 suites / 45 tests en verde.
+- [ ] (5) Sondas S21-S24 de [[requirements]] §Sondas, una a una sobre el
+      árbol verde de (4), con el mismo procedimiento y el mismo criterio
+      (E2) que §Sondas. En el impl, la misma tabla, en §Ronda 2.
+- [ ] (6) Evidencia, desde `backend-pet-tracker/`:
+  - `pnpm test`: 174 suites / 1335 tests, sin cambio;
+  - `pnpm exec tsc --noEmit` y `pnpm lint`, los dos con exit 0;
+  - `git diff --name-only <H1> HEAD`, que solo puede tocar estos ficheros:
+    - `backend-pet-tracker/src/modules/nutrition/domain/entities/nutrition-plan.entity.ts`
+    - `backend-pet-tracker/src/modules/nutrition/domain/entities/nutrition-plan.entity.spec.ts`
+    - `backend-pet-tracker/src/modules/nutrition/infrastructure/repositories/nutrition.drizzle.repository.ts`
+    - `backend-pet-tracker/test/meal-times.e2e-spec.ts`
+    - `specs/meal-schedule-editing/traceability.md`
+    - `progress/impl_meal-schedule-editing.md`
+
+  El `pnpm test:e2e` entero (31 ficheros / 430 tests) y `./init.sh` los
+  corre el leader.
+- [ ] (7) Commit `docs(meal-schedule-editing): fill #103 traceability round 2`.
+      Lleva dos cambios:
+  - las filas R3 y R5 de [[traceability]], con los hashes de (1)-(4)
+    añadidos a los de la ronda 1;
+  - §Ronda 2 del impl, con los rojos, los verdes, las sondas y (6).
+
 ## Cierre
 
 - [ ] `git diff --stat <hash del handoff>..HEAD` solo toca ficheros de la

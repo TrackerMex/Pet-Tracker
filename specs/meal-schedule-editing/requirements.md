@@ -78,6 +78,34 @@ tags: [harness, spec]
 >
 >   Con los tres de E1, son cinco.
 >
+> **Enmienda E3 (2026-10-02, ronda 2, aprobada por el humano en
+> el chat de la sesión Frontend):** el `reviewer` rechazó la ronda 1 sobre
+> `90017ed4` (`progress/review_meal-schedule-editing.md`, B1 y B2). El
+> código de producción es correcto. El fallo está en la spec: dos cláusulas
+> de requisitos aprobados no tenían ningún test que las vigilara.
+>
+> - **B1 (R3).** El fixture de R3 `it` 1 usa `objective: 'maintenance'` y
+>   `warnings: []`, que son justo los valores de una copia que los
+>   reinicie. Con `objective: 'maintenance'` o con `warnings: []` en
+>   `copyWithMealTimes`, todo sigue verde. E3 da al origen de ese `it` otros
+>   valores, y añade un candado con mutación versionada.
+> - **B2 (R5).** Ninguna e2e siembra una segunda mascota con servidas. Si
+>   se quita `eq(mealServings.petId, plan.petId)` del `UPDATE`, del
+>   `NOT EXISTS` o del `DELETE` de `insertPlanAndMoveServing`, todo sigue
+>   verde. En producción, eso borraría o movería servidas de otras
+>   mascotas. E3 añade el `it` 3 de R5 y un candado con mutación
+>   versionada.
+> - Los dos son candados sobre código ya correcto. Su rojo es una
+>   **mutación de producción** que va en el commit rojo y se revierte en el
+>   verde (C4, como R11 y R12).
+> - Nuevas sondas: S21-S24. Cambian los recuentos de meal-times (23 tests)
+>   y del e2e entero (430 tests). Las cifras unit no cambian.
+> - Antes de E3, el leader mergeó `origin/main` (`d855ab5e`, #41) en la
+>   branch, en `49ffac05`. El backend quedó idéntico a `90017ed4`.
+> - La ronda 2 se mide desde el commit de E3, no desde H0. La lista de
+>   ficheros cerrada y la reanudación están en
+>   `progress/handoff_meal-schedule-editing_ronda2.md`.
+>
 > Depende de:
 > - `nutrition-profile-engine` (#17, `done`): `nutrition_plans` append-only,
 >   `findLatestPlan`, `generate`;
@@ -413,7 +441,11 @@ con dos `it`. El origen es un plan con `mealsPerDay 2`,
 
 1. `toStrictEqual` contra el objeto **entero**, escrito a mano: `mealTimes`
    `['07:30','12:00','19:30']`, `mealsPerDay 3`, `engineMealsPerDay 2` y los
-   demás campos del origen, sin `id` ni `generatedAt`.
+   demás campos del origen, sin `id` ni `generatedAt`. **(E3)** El origen de
+   este `it` lleva además `objective: 'weight_loss'` y
+   `warnings: [{ code: 'weight_loss_plan', message: 'aviso' }]`, pasados como
+   overrides de `plan()`. El fixture compartido no cambia. El objeto
+   esperado repite esos dos valores escritos a mano.
 2. El array que se pasó sigue siendo `['19:30','07:30','12:00']`, y el
    `mealTimes` del origen no cambia.
 
@@ -454,6 +486,20 @@ de R9 y **no** se implementan aquí. `@RequirePetRole` es de R10.
   matcher.
 - S6: `copyWithMealTimes` con `engineMealsPerDay: plan.engineMealsPerDay` (sin
   resolver) → unit `it` 1 y e2e `it` 2 rojos por matcher.
+
+**Candado de ronda 2 (E3, B1)**: es un requisito de verificación sobre
+código ya correcto. Va en un commit rojo con una **mutación de producción
+versionada**. En `copyWithMealTimes` se escriben a la vez
+`objective: 'maintenance'` y `warnings: []`, y el commit lleva también el
+cambio de fixture del unit `it` 1. El rojo esperado es el unit `it` 1, por
+matcher (`toStrictEqual`). En el commit verde se revierte la mutación, y el
+diff de `nutrition-plan.entity.ts` contra el padre del rojo queda vacío.
+
+**Sondas de ronda 2 (E3)**:
+
+- S23: solo `warnings: []` en la copia → unit `it` 1 rojo por matcher.
+- S24: solo `objective: 'maintenance'` en la copia → unit `it` 1 rojo por
+  matcher.
 
 ### R4 — `PATCH /v1/pets/:petId/meal-times/:mealTime` mueve una franja como copia nueva del plan (H1, H3)
 
@@ -564,6 +610,42 @@ dos `it`:
 
 **Rojo**: el `it` 1 cae por matcher, porque la fila Y sigue en `'07:30'`. El
 `it` 2 está verde ya en el rojo (declarado).
+
+**(E3, ronda 2)** Se añade el `it` 3 al mismo `describe`:
+
+3. `'no toca las servidas de otra mascota'`.
+   - **Mascota A:** el owner A tiene la zona por defecto (`UTC`, como en
+     R6) y la mascota A tiene P0.
+   - **Mascota B:** su owner B es **otro** usuario. No tiene plan.
+   - Con `today = localDayOf(Date.now(), 'UTC')`, se insertan a mano
+     (`insertServing`) dos filas de B para `today`: una en `'07:30'` y
+     otra en `'08:15'`. Se guarda `neighborBefore = await servingsOf(B)`.
+   - El owner A sirve `'07:30'` por `POST …/meals`, que responde `201`, y
+     se guarda `[served] = await servingsOf(A)`.
+   - El owner A hace `PATCH …/meal-times/07:30 {mealTime: '08:15'}`, que
+     responde `200`.
+   - En este orden, `toEqual`:
+     - `servingsOf(A)` es `[{ ...served, mealTime: '08:15' }]`;
+     - `servingsOf(B)` es `neighborBefore`.
+
+**Candado de ronda 2 (E3, B2)**: es un requisito de verificación sobre
+código ya correcto. Va en un commit rojo con una **mutación de producción
+versionada**: en `nutrition.drizzle.repository.ts`, se quita
+`eq(mealServings.petId, plan.petId)` del `DELETE` de
+`insertPlanAndMoveServing` y se dejan solo `servedOn` y `mealTime`. El rojo
+esperado es el `it` 3, por matcher en `servingsOf(B)`: B pierde su
+`'07:30'`. En el commit verde se revierte la mutación, y el diff del fichero
+contra el padre del rojo queda vacío.
+
+**Sondas de ronda 2 (E3)**:
+
+- S21: el `UPDATE` sin `eq(mealServings.petId, plan.petId)` → `it` 3 rojo.
+  La fila `'07:30'` de B pasa a `'08:15'` y choca con la unique: el `PATCH`
+  da `500` y falla el `.expect(200)`. Es un rojo por aserción, igual que en
+  R8.
+- S22: el `NOT EXISTS` sin `eq(mealServings.petId, plan.petId)` → `it` 3
+  rojo por matcher en `servingsOf(A)`. La `'08:15'` de B salta el `UPDATE`,
+  y el `DELETE` borra la `'07:30'` de A.
 
 La atomicidad la garantiza `this.db.transaction` ([[design]] D5). La revisa
 el `reviewer` leyendo el código; no hay test de fallo a mitad de transacción.
@@ -1047,6 +1129,10 @@ indicado, se anota el resultado y se revierte con `git checkout HEAD -- <fichero
 | S18 | R11 | `serve-meal` contra `MEAL_TIMES_BY_COUNT[plan.mealsPerDay]` | e2e R11 rojo por matcher (`422` en el paso 2) |
 | S19 | R12 | `aiExplanation: null` en la copia | e2e R12 rojo por matcher (paso 3); unit R3 `it` 1 rojo |
 | S20 | R12 | `inputsHash: '0'.repeat(64)` en la copia | e2e R12 rojo por matcher (paso 3); unit R3 `it` 1 rojo |
+| S21 | R5 (E3) | `UPDATE` de `insertPlanAndMoveServing` sin filtro `petId` | e2e R5 `it` 3 rojo (`500` en el `PATCH`, falla `.expect(200)`) |
+| S22 | R5 (E3) | `NOT EXISTS` sin filtro `petId` | e2e R5 `it` 3 rojo por matcher (`servingsOf(A)` vacío) |
+| S23 | R3 (E3) | solo `warnings: []` en la copia | unit R3 `it` 1 rojo por matcher |
+| S24 | R3 (E3) | solo `objective: 'maintenance'` en la copia | unit R3 `it` 1 rojo por matcher |
 
 El «Exigido» es el conjunto **mínimo** de rojos (E2). Codex **para y lo
 reporta**, sin ajustar la sonda ni el test para que cuadre, si ocurre
