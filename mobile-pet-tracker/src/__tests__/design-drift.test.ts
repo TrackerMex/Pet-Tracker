@@ -452,6 +452,7 @@ describe('#87 R19: use-' + 'api no deja huella', () => {
     'screens/docs/index.tsx': 0,
     'screens/alerts/index.tsx': 1,
     'screens/alert-detail/index.tsx': 1,
+    'screens/geofences/index.tsx': 1,
     'screens/home/index.tsx': 0,
     'screens/pairing/index.tsx': 2,
     'screens/profile/index.tsx': 2,

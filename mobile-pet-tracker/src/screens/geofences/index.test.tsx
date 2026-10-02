@@ -3,7 +3,7 @@ import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
 
 import { renderWithProviders } from '../../../test/render-with-providers';
-import { deleteGeofence, listGeofences, setGeofenceActive, type Geofence, type GeofenceListState } from '../../api/geofences';
+import { deleteGeofence, listGeofences, setGeofenceActive, type Geofence, type GeofenceWriteState } from '../../api/geofences';
 import { getPet, type PetState } from '../../api/pets';
 import type { PetProfile } from '../../api/types';
 import type { Language } from '../../i18n/catalog';
@@ -180,5 +180,105 @@ describe('#41 R5: la pantalla pinta la lista de zonas y sus estados', () => {
     expect(mockSignOut).not.toHaveBeenCalled();
     expect(screen.queryByTestId('geofences-error')).toBeNull();
     expect(screen.queryByTestId('geofences-empty')).toBeNull();
+  });
+});
+
+describe('#41 R6: el dueño activa y desactiva una zona', () => {
+  const rows = [makeGeofence(), makeGeofence({ id: 'geofence-2', name: 'Parque', active: false })];
+
+  it('pinta el interruptor con el estado del servidor y su etiqueta accesible', async () => {
+    mockList.mockResolvedValue({ kind: 'ok', geofences: rows });
+    await mount();
+    await screen.findByTestId('geofence-geofence-1');
+    for (const [id, label, checked] of [
+      ['geofence-1', 'Zona Casa activa', true], ['geofence-2', 'Zona Parque activa', false],
+    ] as const) {
+      const toggle = screen.getByTestId(`geofence-${id}-active`);
+      expect(toggle.props.role).toBe('switch');
+      expect(toggle.props.accessibilityState).toEqual({ checked, disabled: false });
+      expect(toggle.props.accessibilityLabel).toBe(label);
+      expect(toggle.props.hitSlop).toBe(10);
+      expect(childTestIds(screen.getByTestId(`geofence-${id}`))[1]).toBe(`geofence-${id}-active`);
+    }
+  });
+
+  it('envía el valor contrario una vez y repinta con la lista recargada', async () => {
+    mockList.mockResolvedValueOnce({ kind: 'ok', geofences: rows })
+      .mockResolvedValue({ kind: 'ok', geofences: [rows[0], { ...rows[1], active: true }] });
+    mockSetActive.mockResolvedValue({ kind: 'ok' });
+    await mount();
+    const toggle = await screen.findByTestId('geofence-geofence-2-active');
+    expect(toggle.props.accessibilityState.checked).toBe(false);
+    await fireEvent.press(toggle);
+    await waitFor(() => expect(screen.getByTestId('geofence-geofence-2-active').props.accessibilityState).toEqual({ checked: true, disabled: false }));
+    expect(mockSetActive).toHaveBeenCalledTimes(1);
+    expect(mockSetActive).toHaveBeenCalledWith(apiUrl, 'token-1', 'pet-1', 'geofence-2', true);
+    expect(mockList).toHaveBeenCalledTimes(2);
+  });
+
+  it('bloquea los dos interruptores mientras escribe sin anticipar el estado', async () => {
+    mockList.mockResolvedValue({ kind: 'ok', geofences: rows });
+    mockSetActive.mockReturnValue(new Promise<GeofenceWriteState>(() => undefined));
+    await mount();
+    const first = await screen.findByTestId('geofence-geofence-1-active');
+    await fireEvent.press(first);
+    await waitFor(() => expect(screen.getByTestId('geofence-geofence-1-active').props.accessibilityState.disabled).toBe(true));
+    for (const [id, checked] of [['geofence-1', true], ['geofence-2', false]] as const) {
+      const toggle = screen.getByTestId(`geofence-${id}-active`);
+      expect(toggle.props.accessibilityState).toEqual({ checked, disabled: true });
+      await fireEvent.press(toggle);
+    }
+    expect(mockSetActive).toHaveBeenCalledTimes(1);
+    expect(mockSetActive).toHaveBeenCalledWith(apiUrl, 'token-1', 'pet-1', 'geofence-1', false);
+    expect(mockList).toHaveBeenCalledTimes(1);
+  });
+
+  it.each(['not-found', 'no-tracking'] as const)('recarga ante %s sin mensaje', async (kind) => {
+    mockList.mockResolvedValueOnce({ kind: 'ok', geofences: [makeGeofence()] })
+      .mockResolvedValue({ kind: 'ok', geofences: [] });
+    mockSetActive.mockResolvedValue({ kind });
+    await mount();
+    await fireEvent.press(await screen.findByTestId('geofence-geofence-1-active'));
+    expect(await screen.findByTestId('geofences-empty')).toBeVisible();
+    expect(mockList).toHaveBeenCalledTimes(2);
+    expect(screen.queryByTestId('geofences-action-error')).toBeNull();
+  });
+
+  it.each([
+    ['error', 'Algo salió mal'], ['missing-config', 'Algo salió mal'],
+    ['unreachable', 'No se pudo conectar con el servidor'], ['rejection', 'Algo salió mal'],
+  ] as const)('pinta %s sin recargar y limpia el error al siguiente intento', async (kind, message) => {
+    mockList.mockResolvedValue({ kind: 'ok', geofences: [makeGeofence()] });
+    if (kind === 'rejection') mockSetActive.mockRejectedValueOnce(new Error('offline'));
+    else if (kind === 'unreachable') mockSetActive.mockResolvedValueOnce({ kind, message: 'offline' });
+    else mockSetActive.mockResolvedValueOnce({ kind });
+    let finishRetry: (result: GeofenceWriteState) => void = () => undefined;
+    mockSetActive.mockReturnValueOnce(new Promise((resolve) => { finishRetry = resolve; }));
+    await mount();
+    await fireEvent.press(await screen.findByTestId('geofence-geofence-1-active'));
+    const error = await screen.findByTestId('geofences-action-error');
+    expect(error).toHaveTextContent(message);
+    expect(error.props.selectable).toBe(true);
+    expect(error.props.className).toBe('text-danger');
+    expect(error.parent?.children.at(-1)).toBe(error);
+    expect(screen.getByTestId('geofence-geofence-1-active').props.accessibilityState).toEqual({ checked: true, disabled: false });
+    expect(mockList).toHaveBeenCalledTimes(1);
+    await fireEvent.press(screen.getByTestId('geofence-geofence-1-active'));
+    await waitFor(() => expect(screen.getByTestId('geofence-geofence-1-active').props.accessibilityState.disabled).toBe(true));
+    expect(screen.queryByTestId('geofences-action-error')).toBeNull();
+    expect(mockSetActive).toHaveBeenCalledTimes(2);
+    finishRetry({ kind: 'ok' });
+    await waitFor(() => expect(screen.getByTestId('geofence-geofence-1-active').props.accessibilityState.disabled).toBe(false));
+    expect(mockList).toHaveBeenCalledTimes(2);
+    expect(screen.queryByTestId('geofences-action-error')).toBeNull();
+  });
+
+  it('cierra la sesión una vez ante unauthorized de escritura', async () => {
+    mockList.mockResolvedValue({ kind: 'ok', geofences: [makeGeofence()] });
+    mockSetActive.mockResolvedValue({ kind: 'unauthorized' });
+    await mount();
+    await fireEvent.press(await screen.findByTestId('geofence-geofence-1-active'));
+    await waitFor(() => expect(mockSignOut).toHaveBeenCalledTimes(1));
+    expect(mockList).toHaveBeenCalledTimes(1);
   });
 });
