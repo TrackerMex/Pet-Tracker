@@ -1,3 +1,4 @@
+import { MoveMealTimeUseCase } from '@/modules/nutrition/application/use-cases/move-meal-time.use-case';
 import {
   BadRequestException,
   Body,
@@ -6,6 +7,8 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Patch,
+  Param,
   Put,
   Req,
   UseGuards,
@@ -43,6 +46,7 @@ export class NutritionController {
     private readonly generatePlan: GenerateNutritionPlanUseCase,
     private readonly getPlan: GetNutritionPlanUseCase,
     private readonly addMealTimeUseCase: AddMealTimeUseCase,
+    private readonly moveMealTimeUseCase: MoveMealTimeUseCase,
   ) {}
 
   @Put('nutrition-profile')
@@ -100,6 +104,29 @@ export class NutritionController {
           petId: request.petMembership.petId,
           mealTime: dto.mealTime,
           userId: request.user.id,
+        }),
+      );
+    } catch (error) {
+      throw mapNutritionError(error);
+    }
+  }
+
+  @Patch('meal-times/:mealTime')
+  async moveMealTime(
+    @Req() request: PetAccessRequest,
+    @Param('mealTime') from: string,
+    @Body() body: unknown,
+  ): Promise<NutritionPlanResponse> {
+    const dto = parseBody(EditMealTimeSchema, body);
+    const now = new Date();
+    try {
+      return toNutritionPlanResponse(
+        await this.moveMealTimeUseCase.execute({
+          petId: request.petMembership.petId,
+          from,
+          to: dto.mealTime,
+          userId: request.user.id,
+          now,
         }),
       );
     } catch (error) {

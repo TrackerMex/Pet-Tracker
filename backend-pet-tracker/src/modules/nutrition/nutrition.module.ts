@@ -1,3 +1,4 @@
+import { MoveMealTimeUseCase } from '@/modules/nutrition/application/use-cases/move-meal-time.use-case';
 import { AddMealTimeUseCase } from '@/modules/nutrition/application/use-cases/add-meal-time.use-case';
 import { Module } from '@nestjs/common';
 import { UpsertNutritionProfileUseCase } from '@/modules/nutrition/application/use-cases/upsert-nutrition-profile.use-case';
@@ -18,6 +19,7 @@ import { PetsModule } from '@/modules/pets/pets.module';
   imports: [PetsModule],
   controllers: [NutritionController, MealsController],
   providers: [
+    MoveMealTimeUseCase,
     AddMealTimeUseCase,
     UpsertNutritionProfileUseCase,
     GetNutritionProfileUseCase,
