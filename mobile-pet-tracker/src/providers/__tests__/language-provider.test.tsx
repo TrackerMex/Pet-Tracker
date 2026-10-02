@@ -229,7 +229,7 @@ describe('#146 R1: el catálogo trae las claves del editor de zonas', () => {
         new RegExp(
           '\\| — \\| `' +
             escapeRegExp(key) +
-            '`[^\\n]*← añadida por #146 \\(R1\\)',
+            '`[^\\n]*← añadida por #' + '146 \\(R1\\)',
         ),
       );
     }
