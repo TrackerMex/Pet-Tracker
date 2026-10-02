@@ -418,4 +418,88 @@ describe('Meal schedule editing (e2e)', () => {
       expect(await servingsOf(pet.id)).toEqual(before);
     });
   });
+
+  describe('R6 (meal-schedule-editing #103): si el destino ya tiene servida hoy, gana la del destino', () => {
+    it('fusiona: queda la fila del destino y se borra la del origen', async () => {
+      const owner = await seedUser('r6-merge');
+      const family = await seedUser('r6-destination');
+      const pet = await seedPet(owner);
+      await seedPlan(owner, pet.id);
+      await addMember(pet.id, family.id, 'family');
+      const [destination] = await insertServing(
+        pet.id,
+        family.id,
+        localDayOf(Date.now(), 'UTC'),
+        '08:15',
+      );
+      await serveMeal(owner, pet.id, { mealTime: '07:30' }).expect(201);
+      await moveMealTime(owner, pet.id, '07:30', { mealTime: '08:15' }).expect(
+        200,
+      );
+      expect(await servingsOf(pet.id)).toEqual([destination]);
+      expect((await getPlan(owner, pet.id).expect(200)).body).toMatchObject({
+        servedToday: ['08:15'],
+      });
+      expect(
+        (
+          await api()
+            .get(`/v1/pets/${pet.id}`)
+            .set(auth(owner.token))
+            .expect(200)
+        ).body,
+      ).toHaveProperty('mealsToday', { served: 1, total: 2 });
+    });
+
+    it('mover a una hora con huerfana la revive', async () => {
+      const owner = await seedUser('r6-move-orphan');
+      const pet = await seedPet(owner);
+      await seedPlan(owner, pet.id);
+      const [destination] = await insertServing(
+        pet.id,
+        owner.id,
+        localDayOf(Date.now(), 'UTC'),
+        '08:15',
+      );
+      await moveMealTime(owner, pet.id, '07:30', { mealTime: '08:15' }).expect(
+        200,
+      );
+      expect(await servingsOf(pet.id)).toEqual([destination]);
+      expect((await getPlan(owner, pet.id).expect(200)).body).toMatchObject({
+        servedToday: ['08:15'],
+      });
+      expect(
+        (
+          await api()
+            .get(`/v1/pets/${pet.id}`)
+            .set(auth(owner.token))
+            .expect(200)
+        ).body,
+      ).toHaveProperty('mealsToday', { served: 1, total: 2 });
+    });
+
+    it('anadir una hora con huerfana la revive', async () => {
+      const owner = await seedUser('r6-add-orphan');
+      const pet = await seedPet(owner);
+      await seedPlan(owner, pet.id);
+      const [destination] = await insertServing(
+        pet.id,
+        owner.id,
+        localDayOf(Date.now(), 'UTC'),
+        '12:00',
+      );
+      await addMealTime(owner, pet.id, { mealTime: '12:00' }).expect(201);
+      expect(await servingsOf(pet.id)).toEqual([destination]);
+      expect((await getPlan(owner, pet.id).expect(200)).body).toMatchObject({
+        servedToday: ['12:00'],
+      });
+      expect(
+        (
+          await api()
+            .get(`/v1/pets/${pet.id}`)
+            .set(auth(owner.token))
+            .expect(200)
+        ).body,
+      ).toHaveProperty('mealsToday', { served: 1, total: 3 });
+    });
+  });
 });
