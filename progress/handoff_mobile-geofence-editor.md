@@ -448,3 +448,153 @@ Informe: en progress/impl_mobile-geofence-editor.md, una seccion
 paso 2 y las cuentas y el exit del paso 3. Copia de jest solo las lineas
 de resumen y los bloques `●` de cada `it` rojo.
 ```
+
+## Reanudación 4 — rechazo del reviewer por R7 (2026-10-02)
+
+> Codex cerró la feature en `f6d45af5`. El leader mergeó origin/main
+> (`cb14497c`, #103) en `c0940cd0` y corrió `./init.sh` en verde. El
+> reviewer rechazó en `826ae816` (`progress/review_mobile-geofence-editor.md`,
+> Observación 1): dos cláusulas de R7 no tienen candado. Dos mutaciones
+> plantadas en `src/screens/geofence-editor/index.tsx` dejan el fichero del
+> editor en 68/68:
+>
+> - **Z1.** `onChangeEnd` del slider y la acción de TalkBack hacen
+>   `setCamera({ center: camera.center, … })` en vez de `{ center, … }`.
+>   Los `it` 5 y 6 de R7 nunca mueven el centro antes de soltar, y el centro
+>   del borrador coincide con el de la cámara inicial.
+> - **Z2.** Al crear, el círculo `'draft'` se pinta con
+>   `initialCenter`/`initialRadius` en vez de `center`/`radius`. Los 8 `it`
+>   de R7 entran por `edit()`.
+>
+> Diagnóstico del leader: la producción es correcta y no cambia. Solo se
+> refuerzan cuatro `it` existentes de `#146 R7`, sin cambiar sus títulos ni
+> el recuento. El delta sigue en +142 / editor 68, y la spec no se enmienda.
+> Los `it` 1 y 3 siguen cubriendo el toque en modo editar; el 4, el radio en
+> modo editar.
+>
+> - it 5 y it 6: un toque en el mapa antes de soltar o de TalkBack, y la
+>   cámara debe encuadrar el punto tocado. Esto mata Z1 por sus dos vías.
+> - it 2 y it 7: pasan a modo crear y aseveran el círculo `'draft'`. El 2
+>   cubre el centro y el 7 el radio. Esto mata Z2.
+>
+> Como el verde ya existe, el rojo se demuestra plantando Z1 y Z2 (vía
+> Declarado) y revirtiéndolas. Commits extra: uno de test y uno de
+> trazabilidad. Los dos refactors no autorizados (`394efbd6`, `b46b233c`)
+> se quedan: el reviewer los juzgó no bloqueantes (Observaciones 2 y 3).
+
+Pegar en Codex CLI:
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-146   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+Reanudacion 4 de #146 tras el rechazo del reviewer. Ejecuta `pwd`,
+`git branch --show-current`, `git rev-parse --short HEAD` y
+`git status --short`. Para si la branch no es
+feature/146-mobile-geofence-editor o si `git status --short` no sale
+vacio. HEAD sera el commit del leader que anade esta reanudacion a
+progress/handoff_mobile-geofence-editor.md (su padre es 826ae816). Lee
+la seccion «Reanudacion 4» de ese fichero y la Observacion 1 de
+progress/review_mobile-geofence-editor.md. Siguen en vigor las reglas del
+handoff original y de las reanudaciones 1 a 3. H0 sigue siendo 9dee0e62.
+NO rebasees: la branch lleva el merge c0940cd0 de origin/main.
+
+La produccion es correcta: NO la cambies. Solo cambia el fichero
+mobile-pet-tracker/src/screens/geofence-editor/index.test.tsx, y dentro
+de el solo cuatro `it` del describe
+'#146 R7: el toque y el slider mueven el borrador sin perseguir la cámara'.
+Localizalos por titulo, no por numero de linea. No cambies ningun titulo
+ni anadas o quites `it`. `tap` es la constante del describe
+({ latitude: 19.41, longitude: -99.11 }).
+
+1. it 'un toque en un POI mueve el centro del borrador': pasa a modo
+   crear. Sustituye `await edit();` por
+     await mount(); await screen.findByTestId('geofence-editor-name');
+   (lo mismo que hace el it de R6 'al crear dibuja el borrador despues de
+   las zonas existentes') y sustituye
+     expect(circles()[0].center).toEqual(tap);
+   por
+     expect(circles()[2]).toEqual({ id: 'draft', center: tap, radius: 150 });
+2. it 'al soltar el slider la cámara encuadra el borrador': justo despues
+   de `await edit();` anade
+     await fireEvent(screen.getByTestId('map-view'), 'mapClick', { coordinates: tap });
+   y en la ultima asercion cambia
+     { coordinates: { latitude: 19.4, longitude: -99.1 }, zoom: 15 }
+   por
+     { coordinates: tap, zoom: 15 }
+3. it 'TalkBack sube y baja el radio de diez en diez y encuadra': justo
+   despues de `await edit();` anade la misma linea `mapClick` del paso 2.
+   Despues de la asercion del zoom ~16.907 anade
+     expect(screen.getByTestId('map-view').props.cameraPosition.coordinates).toEqual(tap);
+   y despues de la asercion del zoom 17 anade esa misma linea otra vez.
+   El resto del it no cambia.
+4. it 'TalkBack no sale de 20 ni de 2000': pasa a modo crear con la misma
+   sustitucion de `await edit();` del paso 1. Despues de
+     expect(screen.getByTestId('geofence-editor-radius').props.value).toBe(20);
+   anade
+     expect(circles()[2]).toEqual({ id: 'draft', center: { latitude: 19.5, longitude: -99.2 }, radius: 20 });
+   y despues de la asercion del valor 2000 anade
+     expect(circles()[2].radius).toBe(2000);
+   ({ latitude: 19.5, longitude: -99.2 } es `lastPosition`, el centro
+   inicial al crear, como en el it de R6 citado en el paso 1.)
+
+5. Verde con la produccion actual, desde mobile-pet-tracker/, sin pipe:
+     bunx jest --runTestsByPath 'src/screens/geofence-editor/index.test.tsx' > /tmp/r7-green.txt 2>&1; echo "exit=$?"
+   Esperado: 1 suite, 68 passed / 68, exit=0. Si algo falla, PARA y
+   reporta: no ajustes la asercion.
+
+6. Rojo de Z1. En mobile-pet-tracker/src/screens/geofence-editor/index.tsx
+   cambia, en el `onChangeEnd` del slider y en el manejador de la accion
+   de TalkBack, `setCamera({ center, ` por
+   `setCamera({ center: camera.center, ` (dos sitios, nada mas). Corre el
+   mismo comando del paso 5 hacia /tmp/r7-z1.txt. Esperado: EXACTAMENTE 2
+   fallan / 66 pasan, por ASERCION: 'al soltar el slider la cámara
+   encuadra el borrador' y 'TalkBack sube y baja el radio de diez en diez
+   y encuadra'. Revierte con
+     git checkout HEAD -- mobile-pet-tracker/src/screens/geofence-editor/index.tsx
+   y comprueba que `git diff --stat -- mobile-pet-tracker/src/screens/geofence-editor/index.tsx`
+   y `git diff --cached --stat` salen vacios.
+
+7. Rojo de Z2. En el mismo fichero cambia
+     if (!zone) circles.push({ id: 'draft', center, radius });
+   por
+     if (!zone) circles.push({ id: 'draft', center: initialCenter, radius: initialRadius });
+   Corre el comando del paso 5 hacia /tmp/r7-z2.txt. Esperado: EXACTAMENTE
+   2 fallan / 66 pasan, por ASERCION: 'un toque en un POI mueve el centro
+   del borrador' y 'TalkBack no sale de 20 ni de 2000'. Revierte igual que
+   en el paso 6 y comprueba lo mismo.
+
+   Si en el paso 6 o en el 7 falla otro `it`, o menos de los dos
+   declarados, PARA y reporta. No toques la asercion para que cuadre.
+
+8. Commit con SOLO el fichero de test (`git add` de esa ruta y nada mas).
+   Mensaje literal:
+     test(geofences): lock the draft camera and the create draft (R7)
+   Comprueba con `git show --stat HEAD` que lleva un solo fichero y que
+   `git status --short` queda vacio.
+
+9. Cierre, desde mobile-pet-tracker/, sin pipe:
+   `test ! -e .expo/types/router.d.ts` (si existe, PARA y pide al humano
+   que lo borre), luego `bunx tsc --noEmit`, `bunx expo lint` y la suite
+   entera `bunx jest`, cada uno a fichero con su exit. Esperado: 90 suites
+   / 1852 tests / 1 snapshot, y exit=0 en los tres.
+
+10. En specs/mobile-geofence-editor/traceability.md, anade el hash del
+    commit del paso 8 a la fila de R7, junto a los que ya cita. No cambies
+    otras filas. Commit con SOLO traceability.md y
+    progress/impl_mobile-geofence-editor.md. Mensaje literal:
+      docs(geofences): cite the R7 lock in #146 traceability
+
+No lances ./init.sh ni toques Postgres ni LocalStack. No hagas push.
+
+Listas del cierre: los 42 commits tuyos de antes mas los dos de esta
+reanudacion, 44 en total. Ficheros: los del handoff original. Los commits
+del leader tocan solo progress/handoff_mobile-geofence-editor.md y
+progress/review_mobile-geofence-editor.md, mas el merge c0940cd0.
+
+Informe: en progress/impl_mobile-geofence-editor.md, una seccion
+«Reanudacion 4» con las salidas del paso 0, el diff del paso 8
+(`git show HEAD -- <fichero de test>`), las cuentas y el exit de los pasos
+5, 6, 7 y 9, el diff de cada mutacion plantada antes de revertirla, y la
+comprobacion vacia de cada reversion. Copia de jest solo las lineas de
+resumen y los bloques `●` de cada `it` rojo, con su matcher, Expected y
+Received.
+```
