@@ -187,7 +187,7 @@ corre jest.
 | M12 | El editor filtra las zonas inactivas al dibujar | `#146 R6` it 10 |
 | M13 | `const retryKey = 'common.retry' as const;` y `t(retryKey)` | `#146 R10` (es la mutación que planta su commit rojo, vía (b) de C4) |
 | M14 | `dangerouslySingular` en el `Stack.Screen` del editor | `#146 R5`, layout it 1 |
-| M15 | Una de las doce claves falta en `es` | `#146 R1` |
+| M15 | Una de las catorce claves falta en `es` | `#146 R1` |
 | M16 | `onMapClick`/`onPOIClick`/`onCircleClick` registrados aunque no llegue `onPress` | `#146 R3` it 4 |
 | M17 | El nombre del dueño vuelve a `selectable` | `#41 R5` 'pinta cada nombre y radio…' (aserción cambiada, D8 fila 8) |
 
@@ -299,7 +299,7 @@ de ajustar la aserción.
 
 | Fila | Candado (fichero › describe) | Cambio exacto | Requisito |
 |---|---|---|---|
-| 1 | `language-provider.test.tsx` › `#65 R12` | la expresión pasa de `… - 6 + 1 + 2 + 3 + 11,` a `… - 6 + 1 + 2 + 3 + 11 + 12,` (320 → 332); el comentario que acaba en `+ 11 de #41 R1 (geofences.*).` gana ` + 12 de #146 R1 (geofenceEditor.*).` | R1 |
+| 1 | `language-provider.test.tsx` › `#65 R12` | la expresión pasa de `… - 6 + 1 + 2 + 3 + 11,` a `… - 6 + 1 + 2 + 3 + 11 + 12 + 2,` (320 → 334); el comentario que acaba en `+ 11 de #41 R1 (geofences.*).` gana ` + 12 de #146 R1 (geofenceEditor.*) + 2 de #146 R1 (geofenceEditor.limitNotice, geofenceEditor.ownerOnly).` | R1 |
 | 2 | `layout.test.tsx` › `#114 R1` | `toHaveLength(8 + 1 + 1); // #100 R2, #41 R4` → `toHaveLength(8 + 1 + 1 + 1); // #100 R2, #41 R4, #146 R5` | R5 |
 | 3 | `layout.test.tsx` › `#100 R2` | `toHaveLength(9 + 1); // #41 R4` → `toHaveLength(9 + 1 + 1); // #41 R4, #146 R5` | R5 |
 | 4 | `layout.test.tsx` › `#41 R4` | `toHaveLength(10);` → `toHaveLength(10 + 1); // #146 R5`; `children[9]` sigue siendo `pets/[petId]/geofences` | R5 |

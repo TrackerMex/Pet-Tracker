@@ -12,7 +12,7 @@ de refactor si lo hubo), con hash corto y mensaje.
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | `src/providers/__tests__/language-provider.test.tsx::#146 R1: el catálogo trae las doce claves del editor de zonas` | pendiente |
+| R1 | `src/providers/__tests__/language-provider.test.tsx::#146 R1: el catálogo trae las claves del editor de zonas` | pendiente |
 | R2 | `src/utils/zoom-for-radius.test.ts::#146 R2: zoomForRadius encuadra el círculo con su radio` | pendiente |
 | R3 | `src/components/__tests__/pet-map.test.tsx::#146 R3: PetMap pinta círculos, acepta zoom y emite el toque` | pendiente |
 | R4 | `src/api/__tests__/geofences.test.ts::#146 R4: createGeofence y updateGeofence mapean el guardado por kind` | pendiente |

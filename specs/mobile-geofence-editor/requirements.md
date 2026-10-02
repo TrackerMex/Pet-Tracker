@@ -65,7 +65,8 @@ aprobado en #41.
    `maxValue 2000`, `step 10`; radio por defecto al crear: **150 m**. Al
    editar se conserva el radio guardado aunque no caiga en la rejilla de 10.
    *Recomendación*: heroui (carta de UI punto 5: heroui primero).
-3. **P3 — Doce claves de copy** `geofenceEditor.*` (tabla en R1).
+3. **P3 — Catorce claves de copy** `geofenceEditor.*` (tabla en R1): las doce
+   del editor más `limitNotice` (R12) y `ownerOnly` (R16).
    *Recomendación*: aprobar los textos tal cual.
 4. **P4 — El mapa del editor dibuja todas las zonas de la mascota, activas o
    no (mirar).** La zona editada se dibuja con los valores del borrador; al
@@ -81,9 +82,10 @@ aprobado en #41.
 6. **P6 — Entrada desde la lista (mirar).** Para el dueño, la columna de
    nombre y radio de cada zona pasa a ser un botón (`geofence-<id>-edit`) que
    abre el editor, y aparece `Añadir zona` (`geofences-add`) siempre que la
-   lista cargó `ok`, también vacía y también con 5 zonas (el límite lo dice
-   el servidor). **Cambia aserciones aprobadas de #41 R5 y R7** ([[design]]
-   D8), y el nombre del dueño deja de ser `selectable` (D7).
+   lista cargó `ok`, también vacía; con 5 zonas sigue visible pero
+   deshabilitada y con el aviso del máximo debajo (R12, P12). **Cambia
+   aserciones aprobadas de #41 R5 y R7** ([[design]] D8), y el nombre del
+   dueño deja de ser `selectable` (D7).
    *Recomendación*: aceptar.
 7. **P7 — PATCH completo.** Al editar se envía siempre el borrador completo
    `{ name, centerLat, centerLng, radiusM }`, con el nombre recortado. El
@@ -102,18 +104,50 @@ aprobado en #41.
     esas acciones (errata E8): las añade el editor.
     *Recomendación*: aceptar; sin ellas el radio no es accesible.
 
-11. **P11 — TODO**
-12. **P12 — TODO**
-13. **P13 — TODO**
-14. **P14 — TODO**
-15. **P15 — TODO**
-16. **P16 — TODO**
-17. **P17 — TODO**
-18. **P18 — TODO**
+11. **P11 — La pestaña Mapa dibuja las zonas activas (mirar).** Solo las
+    activas, como círculos con el color de R3; sin recarga en el poll de
+    15 s; si la lista falla o tarda, la pestaña queda como hoy, sin aviso
+    (R11). *Recomendación*: aceptar; las inactivas no vigilan nada y
+    pintarlas confunde.
+12. **P12 — Límite de 5 en el cliente (mirar, sustituye parte de P6).**
+    Constante `GEOFENCE_MAX_PER_PET = 5` exportada de `src/api/geofences.ts`,
+    espejo de la del backend; con 5 zonas `Añadir zona` se deshabilita y
+    aparece `geofenceEditor.limitNotice` (R12). El 400 del servidor y
+    `limitReached` siguen para la carrera entre dispositivos.
+    *Recomendación*: aceptar el texto del aviso tal cual (R1).
+13. **P13 — El interruptor del editor escribe en el acto.** Como el de la
+    lista: `PATCH { active }` inmediato, recarga la lista y no sale del
+    editor; Guardar sigue sin enviar `active` (P7 intacto, R13).
+    *Recomendación*: aceptar.
+14. **P14 — Eliminar en el editor.** Mismo diálogo nativo que la lista
+    (título con el nombre, Cancelar / Eliminar); al confirmar borra, recarga
+    la lista y vuelve. Interruptor y Eliminar solo al editar (R14).
+    *Recomendación*: aceptar.
+15. **P15 — El centro se valida con `typeof`.** Sin `Number.isFinite`: un
+    JSON no transporta `NaN` ni `Infinity`, y `radiusM` ya se valida así
+    (R15). *Recomendación*: aceptar.
+16. **P16 — Solo lectura para quien no es dueño (mirar).** La lista sigue
+    sin abrir el editor a quien no es dueño (R9 intacto); el editor, si llega
+    por URL, muestra la zona sin controles o, al crear, la tarjeta
+    `geofenceEditor.ownerOnly`. Un fallo al leer el rol cuenta como no dueño,
+    igual que en #41 (R16). *Recomendación*: aceptar; abrir el editor desde
+    la lista para todos los roles sería una pantalla para leer lo que la
+    pestaña Mapa (R11) ya enseña.
+17. **P17 — `DEFAULT_CENTER` vive en `src/components/pet-map.tsx`.** Junto a
+    `MAP_ZOOM`, exportado; la pestaña Mapa y el editor lo importan (R17).
+    *Recomendación*: aceptar.
+18. **P18 — Títulos de test sin números (mirar).** Renombra títulos
+    aprobados que llevan recuentos caducos o que caducarían:
+    `#62 R1` "trece botones", "doce bloques" de `ALL_USES`, `#87 R18` "cinco
+    recursos" y el `it` de R1 de esta spec ([[design]] D15).
+    *Recomendación*: aceptar; un número en un título caduca con la próxima
+    feature y nadie lo reescribe.
 
-**Delimitación de rol:** el editor no comprueba el rol. Solo el dueño ve las
-entradas (R9); si otro rol llegase por URL, el backend responde 403 y el
-editor pinta el error genérico.
+**Delimitación de rol:** el editor comprueba el rol con la misma consulta
+que la lista de #41 (R16). Solo el dueño ve las entradas (R9); si otro rol
+llega por URL, al editar ve la zona en solo lectura y al crear una tarjeta
+de "solo el dueño" (P16). El 403 del backend sigue pintando el error
+genérico si el rol cambia entre la carga y el guardado.
 
 ## Requisitos funcionales
 
@@ -121,7 +155,7 @@ editor pinta el error genérico.
 
 - **R1**: THE SYSTEM SHALL registrar en `src/i18n/catalog.ts`, en los dos
   idiomas e inmediatamente después de la línea `'geofences.deleteBody'` de
-  cada idioma, estas doce claves (P3):
+  cada idioma, estas catorce claves (P3):
 
   | Clave | es | en |
   |---|---|---|
@@ -137,10 +171,13 @@ editor pinta el error genérico.
   | `geofenceEditor.notFound` | La mascota o la zona ya no están disponibles. | This pet or zone is no longer available. |
   | `geofenceEditor.add` | Añadir zona | Add zone |
   | `geofenceEditor.editLabel` | Editar zona {{name}} | Edit {{name}} zone |
+  | `geofenceEditor.limitNotice` | Esta mascota ya tiene {{max}} zonas, el máximo. Elimina una para añadir otra. | This pet already has {{max}} zones, the maximum. Delete one to add another. |
+  | `geofenceEditor.ownerOnly` | Solo el dueño de la mascota puede crear o editar zonas. | Only the pet's owner can create or edit zones. |
 
-  `editLabel` es la única con parámetro (`{{name}}`). El `mapHint` en inglés
-  lleva apóstrofo: en el catálogo va entre comillas dobles, como
-  `'geofences.deleteBody'` en inglés.
+  `editLabel` (`{{name}}`) y `limitNotice` (`{{max}}`, R12) son las únicas
+  con parámetro. El `mapHint` y el `ownerOnly` en inglés llevan apóstrofo:
+  en el catálogo van entre comillas dobles, como `'geofences.deleteBody'` en
+  inglés.
 
   THE SYSTEM SHALL además añadir en `specs/mobile-ui-language/design.md`,
   justo antes de la línea `## 3. La infraestructura`, la sección
@@ -149,19 +186,22 @@ editor pinta el error genérico.
   `` | — | `<clave>` | `<en>` | `<es>` | ← añadida por #146 (R1) ``.
 
   *Test*: `src/providers/__tests__/language-provider.test.tsx`,
-  `describe('#146 R1: el catálogo trae las doce claves del editor de zonas')`
-  › `it('registra las doce claves en los dos idiomas y en la tabla de la spec de idioma')`.
+  `describe('#146 R1: el catálogo trae las claves del editor de zonas')`
+  › `it('registra las claves del editor en los dos idiomas y en la tabla de la spec de idioma')`
+  (títulos sin recuento, P18).
   Se calca del `describe('#41 R1: …')` (mismo array de traducciones y mismo
   `readFileSync` de `../specs/mobile-ui-language/design.md`), con el sufijo de
   regex `← añadida por #146 \(R1\)`, y va justo después de él.
 
   *Candado heredado*: `#65 R12` (longitud del catálogo). Su expresión pasa de
-  `… - 6 + 1 + 2 + 3 + 11,` a `… - 6 + 1 + 2 + 3 + 11 + 12,` (320 → 332) y
-  su comentario gana ` + 12 de #146 R1 (geofenceEditor.*)`. El `+ 12` queda
-  visible: no se colapsa la suma.
+  `… - 6 + 1 + 2 + 3 + 11,` a `… - 6 + 1 + 2 + 3 + 11 + 12 + 2,` (320 → 334)
+  y su comentario gana
+  ` + 12 de #146 R1 (geofenceEditor.*) + 2 de #146 R1 (geofenceEditor.limitNotice, geofenceEditor.ownerOnly)`.
+  El `+ 12` y el `+ 2` quedan visibles: no se colapsa la suma (el `+ 2`
+  separa las dos claves que trajo la ampliación de la spec).
 
-  Rojo real en `95b2aaa4`: ninguna de las doce claves existe (1 nuevo por
-  aserción + `#65 R12` heredado).
+  Rojo real en `d637757e`: ninguna de las catorce claves existe (1 nuevo
+  por aserción + `#65 R12` heredado).
 
 ### R2 — `zoomForRadius`
 
@@ -417,8 +457,13 @@ editor pinta el error genérico.
     `position.data` es `ok` con `position` no nula
     (`{ latitude: lat, longitude: lng }`); en cualquier otro caso
     (`ok` con `null`, `no-tracking`, `unauthorized`, `error`, `unreachable`,
-    `missing-config`) un `DEFAULT_CENTER = { latitude: 19.4326, longitude: -99.1332 }`
-    local (duplicado del de la pestaña Mapa, deuda).
+    `missing-config`) el `DEFAULT_CENTER` que R17 exporta desde
+    `src/components/pet-map.tsx` (importado de `'../../components/pet-map'`,
+    nunca redeclarado: R17 lo candea).
+  - al editar, el formulario recibe además la zona entera como prop `zone`
+    (la `Geofence` de `list.data.geofences`, no una copia en estado): R13
+    lee de ella `zone.active`, que se repinta tras cada recarga de la lista.
+    Al crear, `zone` es `undefined`.
 
   Su estado: `name`, `center`, `radius`, `camera` (`{ center, zoom }`,
   inicial `{ center: centroInicial, zoom: zoomForRadius(radioInicial) }`),
@@ -555,7 +600,9 @@ editor pinta el error genérico.
   `queryClient` sale de `useQueryClient()`, `router` de `expo-router` y
   `signOut` de `useAuth()`. La invalidación va **antes** de `router.back()`
   (errata E9: la lista no se recarga sola al volver). Ante un error el
-  borrador se conserva.
+  borrador se conserva. R13 extrae este cuerpo a un `run` local que
+  comparten Guardar, el interruptor y Eliminar, sin cambiar su
+  comportamiento (los 16 `it` de R8 siguen verdes en ese refactor).
 
   *Test*: mismo fichero,
   `describe('#146 R8: Guardar crea o actualiza la zona y vuelve a la lista')`,
@@ -573,8 +620,10 @@ editor pinta el error genérico.
      `'pressable-feedback__root button__root button__root--variant-primary button__root--size-md rounded-xl bg-accent'`,
      etiqueta
      `'button__label button__label--variant-primary button__label--size-md font-bold text-accent-foreground'`
-     y `childTestIds(save.parent)` igual a
-     `[undefined, 'geofence-editor-map-hint', 'geofence-editor-radius-value', 'geofence-editor-radius', 'geofence-editor-reset-note', 'geofence-editor-save']`.
+     y, en `childTestIds(save.parent)`, `'geofence-editor-reset-note'`
+     justo antes de `'geofence-editor-save'` (adyacencia, no la lista
+     entera: R13 mete la fila del interruptor y R14 el botón Eliminar en ese
+     mismo padre; el orden completo lo cierra R14 it 2).
   4. `'deshabilita Guardar mientras guarda y no envía dos veces'`
   5. `'deshabilita Guardar con el nombre vacío'` — deshabilitado al crear y
      habilitado tras escribir.
@@ -618,9 +667,9 @@ editor pinta el error genérico.
   `selectable` a `selectable={!isOwner}` (D7: un `Text` seleccionable dentro
   de un `Pressable` se traga el toque en Android).
 
-  WHILE quien mira es el dueño AND la lista es `ok` (vacía o con 5 zonas
-  incluidas, P6), THE SYSTEM SHALL pintar, entre el cierre `)}` de la cadena
-  de estados y `{actionError ? (`:
+  WHILE quien mira es el dueño AND la lista es `ok` (también vacía; con 5
+  zonas R12 lo deshabilita y añade el aviso, P6), THE SYSTEM SHALL pintar,
+  entre el cierre `)}` de la cadena de estados y `{actionError ? (`:
 
   ```tsx
   <Button testID="geofences-add" className="rounded-xl bg-accent" isDisabled={busy} onPress={() => router.push({ pathname: '/pets/[petId]/geofence-editor', params: { petId } })}>
@@ -661,19 +710,23 @@ editor pinta el error genérico.
 
 - **R10**: THE SYSTEM SHALL resolver por clave todo el copy nuevo de #146, y
   `src/__tests__/ui-copy-table.ts` SHALL exportar
-  `export const R15_GEOFENCE_EDITOR: UseRow[]` con **17 filas**
-  `{ file, key }`:
+  `export const R15_GEOFENCE_EDITOR: UseRow[]` con **27 filas**
+  `{ file, key }`, una por ocurrencia de `t('…')`:
 
-  - `src/app/_layout.tsx`: `geofenceEditor.title`;
-  - `src/screens/geofences/index.tsx`: `geofenceEditor.editLabel`,
-    `geofenceEditor.add`;
-  - `src/screens/geofence-editor/index.tsx` (14): `geofenceEditor.notFound`,
+  - `src/app/_layout.tsx` (1): `geofenceEditor.title`;
+  - `src/screens/geofences/index.tsx` (3): `geofenceEditor.editLabel`,
+    `geofenceEditor.add`, `geofenceEditor.limitNotice` (R12);
+  - `src/screens/geofence-editor/index.tsx` (23): `geofenceEditor.notFound`,
     `geofences.needsCollar`, `geofenceEditor.nameTaken`,
     `geofenceEditor.limitReached`, `geofenceEditor.invalid`,
     `common.cannotReachServer`, `common.somethingWentWrong`, `common.retry`,
     `geofenceEditor.nameLabel`, `geofenceEditor.mapHint`, `geofences.radius`,
     `geofenceEditor.radiusLabel`, `geofenceEditor.resetNote`,
-    `geofenceEditor.save`.
+    `geofenceEditor.save`; de R13 `geofences.statusActive` y
+    `geofences.activeLabel`; de R14 `geofences.delete` (**dos filas**: el
+    botón y el diálogo), `geofences.deleteTitle`, `geofences.deleteBody` y
+    `geofences.cancel`; de R16 `geofenceEditor.ownerOnly` (**dos filas**: la
+    tarjeta al crear y la nota de solo lectura).
 
   El bloque se añade al final de `ALL_USES` (tras `...R14_GEOFENCES,`) y a
   la línea de bloques `R12_ALERTS, R13_ALERT_DETAIL, R14_GEOFENCES,` →
@@ -682,12 +735,19 @@ editor pinta el error genérico.
   *Test*: `src/__tests__/ui-language.test.ts`,
   `describe('#146 R10: el editor de zonas resuelve su copy por clave')` ›
   `it('registra cada ocurrencia del editor y de sus entradas')`:
-  `expect(R15_GEOFENCE_EDITOR).toHaveLength(17)`, que todo `file` sea uno de
+  `expect(R15_GEOFENCE_EDITOR).toHaveLength(27)`, que todo `file` sea uno de
   los tres de arriba, y `checkUses(R15_GEOFENCE_EDITOR)`. Va justo después
   del `describe('#41 R10: …')`.
 
   *Candado heredado*: `#65 R18`. `SCREEN_FILES` pasa a
-  `toHaveLength(19 + 2 + 1 + 1 + 1 + 1 + 1 + 1); // #100 R10, #41 R10, #146 R10`.
+  `toHaveLength(19 + 2 + 1 + 1 + 1 + 1 + 1 + 1); // #100 R10, #41 R10, #146 R10`
+  (la ampliación no añade ficheros de pantalla: el aviso va en la lista y la
+  solo lectura en el editor).
+
+  En el mismo commit rojo, el `it('cuadra ALL_USES con la suma de los doce bloques')`
+  de `src/__tests__/ui-copy-table.ts` (el de la línea de bloques de arriba)
+  se renombra a `it('cuadra ALL_USES con la suma de sus bloques')` (ya eran
+  catorce antes de #146; P18, [[design]] D8 fila 16).
 
   Rojo por la vía (b) de C4: cuando R10 llega, el editor ya resuelve por
   clave, así que el commit rojo **planta** la mutación M13
@@ -697,35 +757,461 @@ editor pinta el error genérico.
 
 ### R11 — Pestaña Mapa: círculos de las zonas
 
-TODO
+- **R11**: THE SYSTEM SHALL hacer que `src/screens/map/index.tsx` lea las
+  zonas de la mascota seleccionada con
+
+  ```ts
+  const geofences = useQuery({
+    queryKey: geofenceKeys.list(selectedPetId ?? ''),
+    queryFn: () => listGeofences(baseUrl, token ?? '', selectedPetId!),
+    enabled: selectedPetId !== null,
+  });
+  ```
+
+  (misma forma que sus consultas `detail`, `last`, `positions` y `route`) y
+  pase a su `PetMap` la prop `circles={circles}` de R3, con solo las zonas
+  **activas** (P11):
+
+  ```ts
+  const circles = geofences.data?.kind === 'ok'
+    ? geofences.data.geofences
+        .filter(({ active }) => active)
+        .map(({ id, centerLat, centerLng, radiusM }) => ({ id, center: { latitude: centerLat, longitude: centerLng }, radius: radiusM }))
+    : [];
+  ```
+
+  WHILE la lista de zonas está pendiente o no es `ok` (`no-tracking`,
+  `error`, `unreachable`, `missing-config`), THE SYSTEM SHALL pintar la
+  pestaña igual que sin esta feature, con `circles` `[]`: la lista no entra
+  en `isLoading`, no pinta error ni reintento propios y no condiciona el
+  montaje de `PetMap` (sigue siendo `petsReady && last.data?.kind === 'ok'`).
+  El `unauthorized` lo atiende el manejador global del `QueryCache`, como en
+  cualquier otra consulta.
+
+  THE SYSTEM SHALL NOT meter las zonas en el poll de `POLL_MS` del
+  `useFocusEffect`: cambian solo por el editor, que invalida
+  `geofenceKeys.list(petId)` al guardar, activar o borrar (R8, R13, R14), y
+  esa invalidación recarga también esta consulta porque comparte clave.
+
+  Imports: `listGeofences` de `'../../api/geofences'`, y `geofenceKeys` entra
+  en el import que hoy es
+  `import { petKeys, positionKeys, tripKeys } from '../../api/query-keys';`.
+
+  *Test*: `src/screens/map/index.test.tsx`. El fichero gana un doble del
+  módulo `../../api/geofences` con `listGeofences` como `jest.fn()`, que el
+  `beforeEach` común deja **pendiente** con el helper `pending<T>()` del
+  propio fichero, igual que ya deja `getLastPosition`, `listPositions` y
+  `getDayRoute`: así ningún `it` existente cambia de comportamiento.
+  `describe('#146 R11: la pestaña Mapa dibuja las zonas activas de la mascota')`,
+  6 `it`:
+
+  1. `'dibuja como círculos solo las zonas activas de la mascota'` — lista
+     `ok` con Casa (`geofence-1`, 19.4 / -99.1, 150, activa) y Parque
+     (`geofence-2`, 19.42 / -99.15, 600, inactiva); las `circles` que recibe
+     la vista stub de expo-maps (leídas como ya lee `polylines` el
+     `describe('R7: ruta del día como polylines')`), comparadas solo por
+     `{ id, center, radius }`, son
+     `[{ id: 'geofence-1', center: { latitude: 19.4, longitude: -99.1 }, radius: 150 }]`.
+  2. `'pide las zonas de la mascota seleccionada con su token'` —
+     `listGeofences` llamado con `(apiUrl, 'jwt-token', 'pet-1')`.
+  3–4. `it.each(['pendiente', 'error'])('con la lista de zonas %s pinta el mapa sin círculos')`
+     — **Declarado**: la vista se monta y recibe `circles` `[]`.
+  5. `'no pide zonas sin mascota seleccionada'` — **Declarado**: con
+     `listPets` en `{ kind: 'ok', pets: [] }`, `listGeofences` no se llama.
+  6. `'el poll de 15 s no vuelve a pedir las zonas'` — **Declarado**: con los
+     timers falsos del `describe('#94 R7: el poll refresca también el detalle')`,
+     tras avanzar 15000 ms `listGeofences` sigue con una sola llamada.
+
+  Recuento: **6 `it`: 2 rojos por aserción** (1: la vista recibe `[]`; 2:
+  `listGeofences` no se llama) **y 4 Declarado** (3–4 por M18, 5 por M19, 6
+  por M20, [[design]] §Mutaciones) **+ 1 heredado por aserción**: `#87 R18`
+  ([[design]] D8 fila 13), que gana la clave de zonas y pierde el "cinco"
+  del título (P18).
+
+  El commit verde corre también `src/components/__tests__/pet-map.test.tsx`.
 
 ### R12 — Lista: límite de 5 zonas en el cliente
 
-TODO
+- **R12**: THE SYSTEM SHALL exportar desde `src/api/geofences.ts`, justo
+  antes de la línea `export type GeofenceListState =`,
+
+  ```ts
+  /** Espejo de GEOFENCE_MAX_PER_PET de backend-pet-tracker/src/modules/geofences/geofences.constants.ts. */
+  export const GEOFENCE_MAX_PER_PET = 5;
+  ```
+
+  con el mismo nombre que la constante del backend, para que un `git grep`
+  las encuentre juntas (P12).
+
+  WHILE quien mira es el dueño AND la lista es `ok` con
+  `GEOFENCE_MAX_PER_PET` zonas o más, THE SYSTEM SHALL, en
+  `src/screens/geofences/index.tsx`:
+
+  - calcular, justo después de `const isOwner = …`,
+    `const atLimit = geofences.data?.kind === 'ok' && geofences.data.geofences.length >= GEOFENCE_MAX_PER_PET;`;
+  - pintar `geofences-add` (R9) con `isDisabled={busy || atLimit}`;
+  - pintar como **hermano siguiente** de `geofences-add`, dentro de la misma
+    condición de R9 (dueño y lista `ok`), solo si `atLimit`,
+    `<Text testID="geofences-limit" className="text-sm font-normal text-muted">{t('geofenceEditor.limitNotice', { max: GEOFENCE_MAX_PER_PET })}</Text>`.
+
+  El error de acción sigue siendo el último hijo. El
+  `400 MAX_GEOFENCES_REACHED` y `geofenceEditor.limitReached` del editor se
+  quedan (R4, R8): cubren la carrera de dos dispositivos creando a la vez.
+
+  *Test*: `src/screens/geofences/index.test.tsx`. El doble del módulo
+  `../../api/geofences` del fichero **conserva la constante real** (la toma
+  con `jest.requireActual`, no la reescribe): si el doble la omitiera, la
+  pantalla leería `undefined`, `length >= undefined` es `false` y el aviso no
+  saldría nunca, en silencio. `describe('#146 R12: con el máximo de zonas la lista no ofrece añadir otra')`,
+  4 `it`:
+
+  1. `'con cinco zonas deshabilita Añadir zona y pinta el aviso del máximo justo después'`
+     — asevera **primero** `accessibilityState.disabled` `true` de
+     `geofences-add`; luego el texto
+     `'Esta mascota ya tiene 5 zonas, el máximo. Elimina una para añadir otra.'`
+     y que en los `childTestIds` del contenido de la lista
+     `geofences-limit` va justo detrás de `geofences-add`.
+  2. `'con cuatro zonas deja Añadir zona habilitada y sin aviso'` —
+     **Declarado**.
+  3. `'no pinta el aviso a quien no es dueño aunque haya cinco zonas'` —
+     **Declarado** (`family`).
+  4. `'pinta el aviso del máximo en inglés'` —
+     `'This pet already has 5 zones, the maximum. Delete one to add another.'`
+
+  Las cinco zonas del fixture se construyen con el `makeGeofence` del
+  fichero (ids `geofence-1` … `geofence-5`). Recuento: **4 `it`: 1 rojo por
+  aserción (1), 1 por consulta (4: no hay `geofences-limit`) y 2 Declarado**
+  (2 por M21, 3 por M22).
 
 ### R13 — Editor: activar y desactivar
 
-TODO
+- **R13**: THE SYSTEM SHALL extraer el cuerpo de Guardar (R8) a una función
+  local del formulario y llamarla desde los tres sitios que escriben
+  (Guardar, este interruptor y Eliminar de R14):
+
+  ```ts
+  async function run(
+    request: () => Promise<GeofenceSaveState | GeofenceWriteState>,
+    onOk: () => unknown,
+  ) {
+    setBusy(true); setError(null);
+    try {
+      const result = await request();
+      if (result.kind === 'ok') await onOk();
+      else if (result.kind === 'unauthorized') await signOut();
+      else setError(messageFor(t, result.kind));
+    } catch { setError(messageFor(t, 'error')); } finally { setBusy(false); }
+  }
+  const refresh = () => queryClient.invalidateQueries({ queryKey: geofenceKeys.list(petId) });
+  const leave = () => { void refresh(); router.back(); };
+  ```
+
+  Guardar pasa a `run(() => (geofenceId ? updateGeofence(…) : createGeofence(…)), leave)`
+  con el mismo borrador de R8. Un solo `signOut(` en el fichero (el candado
+  `#87 R19` no se mueve más que en R8). `GeofenceWriteState` se importa de
+  `../../api/geofences` como tipo.
+
+  WHILE se edita una zona (`zone` definida, R6) AND quien mira es el dueño
+  (R16), THE SYSTEM SHALL pintar en el formulario, **entre el slider y la
+  nota de reinicio**,
+
+  ```tsx
+  <View testID="geofence-editor-active-row" className="flex-row items-center justify-between gap-3">
+    <Text className="font-semibold text-foreground">{t('geofences.statusActive')}</Text>
+    <Switch testID="geofence-editor-active" isSelected={zone.active} hitSlop={10} isDisabled={busy}
+      accessibilityLabel={t('geofences.activeLabel', { name: zone.name })}
+      onSelectedChange={(active) => void run(() => setGeofenceActive(baseUrl, token ?? '', petId, zone.id, active), refresh)} />
+  </View>
+  ```
+
+  (`Switch` de `heroui-native`, mismas props que el de la lista de #41).
+
+  WHEN el dueño cambia el interruptor, THE SYSTEM SHALL escribir **en el
+  acto** solo `{ active }` con `setGeofenceActive` (P13), recargar la lista
+  con `refresh` y **quedarse en el editor**; el borrador (nombre, centro,
+  radio) no se toca y Guardar sigue enviando solo
+  `{ name, centerLat, centerLng, radiusM }` (P7). `busy` es el mismo de
+  Guardar: mientras cualquiera de las dos escrituras vuela, Guardar y el
+  interruptor están deshabilitados. Al crear no hay interruptor.
+
+  *Test*: `src/screens/geofence-editor/index.test.tsx`; el doble de
+  `../../api/geofences` del fichero gana `setGeofenceActive` (y
+  `deleteGeofence` para R14), y `queryClient.invalidateQueries` se espía
+  **sin reemplazar** su implementación (como en R8), para que la recarga
+  ocurra de verdad.
+  `describe('#146 R13: el interruptor del editor activa o desactiva la zona sin salir')`,
+  7 `it`:
+
+  1. `'pinta el interruptor de zona activa entre el slider y la nota de reinicio'`
+     — con Casa: la fila con su clase exacta, el texto `'Activa'`, el switch
+     con `role` `'switch'`, `accessibilityState` `{ checked: true, disabled: false }`,
+     etiqueta `'Zona Casa activa'` y `hitSlop` 10; en los `childTestIds` del
+     contenido del formulario, `'geofence-editor-radius'`,
+     `'geofence-editor-active-row'` y `'geofence-editor-reset-note'` seguidos.
+  2. `'desactivar escribe solo el estado, recarga la lista y se queda en el editor'`
+     — `setGeofenceActive` una vez con `(apiUrl, 'token-1', 'pet-1', 'geofence-1', false)`;
+     `updateGeofence` y `router.back` sin llamar; `invalidateQueries` con
+     `{ queryKey: ['geofences', 'list', 'pet-1'] }`; la segunda respuesta de
+     `listGeofences` trae Casa inactiva y el switch pasa a `checked: false`.
+  3. `'deshabilita el interruptor y Guardar mientras escribe'` —
+     `setGeofenceActive` pendiente.
+  4. `'Guardar tras cambiar el interruptor envía el PATCH sin el estado'` —
+     las claves del borrador que recibe `updateGeofence` son exactamente
+     `['centerLat', 'centerLng', 'name', 'radiusM']` (`Object.keys(…).sort()`).
+  5–6. `it.each(['not-found', 'unreachable'])('un fallo %s del interruptor pinta el error bajo el formulario y no vuelve')`
+     — el texto de `messageFor` (como en R8 7–14), `router.back` sin llamar.
+  7. `'un 401 del interruptor cierra sesión una vez'`
+
+  Recuento: **7 `it`, 7 rojos por consulta** (no hay
+  `geofence-editor-active`). Los 16 `it` de R8 siguen verdes tras extraer
+  `run` (se corre la suite entera del editor en el verde).
 
 ### R14 — Editor: eliminar
 
-TODO
+- **R14**: WHILE se edita una zona (`zone` definida) AND quien mira es el
+  dueño (R16), THE SYSTEM SHALL pintar en el formulario, **justo después de
+  Guardar** y antes del error,
+
+  ```tsx
+  <Button testID="geofence-editor-delete" variant="danger-soft" className="rounded-xl bg-danger-soft" isDisabled={busy} onPress={confirmDelete}>
+    <Button.Label className="font-semibold text-danger">{t('geofences.delete')}</Button.Label>
+  </Button>
+  ```
+
+  (tamaño por defecto `md`, sin `accessibilityLabel` propio: la etiqueta
+  visible es el nombre accesible), con `confirmDelete` idéntico en forma al
+  de la lista de #41:
+
+  ```ts
+  Alert.alert(t('geofences.deleteTitle', { name: zone.name }), t('geofences.deleteBody'), [
+    { text: t('geofences.cancel'), style: 'cancel' },
+    { text: t('geofences.delete'), style: 'destructive',
+      onPress: () => void run(() => deleteGeofence(baseUrl, token ?? '', petId, zone.id), leave) },
+  ]);
+  ```
+
+  WHEN el dueño confirma, THE SYSTEM SHALL borrar con `deleteGeofence` y,
+  con `ok`, invalidar `geofenceKeys.list(petId)` **antes** de
+  `router.back()` (el `leave` de R13, P14). Con cualquier otro `kind`, el
+  error de `messageFor` bajo el formulario y sin volver; con
+  `unauthorized`, `signOut`. Cancelar no escribe. `busy` es el compartido:
+  Guardar, el interruptor y Eliminar se deshabilitan juntos. Al crear no hay
+  Eliminar.
+
+  Orden de los hijos del contenido del formulario del dueño al editar:
+  nombre, `geofence-editor-map-hint`, `geofence-editor-radius-value`,
+  `geofence-editor-radius`, `geofence-editor-active-row`,
+  `geofence-editor-reset-note`, `geofence-editor-save`,
+  `geofence-editor-delete` (y el error, si lo hay). Al crear: nombre,
+  `map-hint`, `radius-value`, `radius`, `save`.
+
+  *Test*: mismo fichero; `Alert.alert` espiado con
+  `jest.spyOn(Alert, 'alert').mockImplementation(() => undefined)` en el
+  `beforeEach` del `describe` y el botón del diálogo elegido del último
+  `mock.calls` por su `text`, como en `#41 R7`.
+  `describe('#146 R14: Eliminar en el editor borra la zona y vuelve a la lista')`,
+  9 `it`:
+
+  1. `'pinta Eliminar con la receta de peligro justo después de Guardar'` —
+     clase
+     `'pressable-feedback__root button__root button__root--variant-danger-soft button__root--size-md rounded-xl bg-danger-soft'`,
+     etiqueta
+     `'button__label button__label--variant-danger-soft button__label--size-md font-semibold text-danger'`
+     con texto `'Eliminar'`, `accessibilityState.disabled` `false`.
+  2. `'ordena el formulario del dueño al editar'` — `childTestIds` del
+     contenido igual a
+     `[undefined, 'geofence-editor-map-hint', 'geofence-editor-radius-value', 'geofence-editor-radius', 'geofence-editor-active-row', 'geofence-editor-reset-note', 'geofence-editor-save', 'geofence-editor-delete']`.
+  3. `'al crear no pinta ni el interruptor ni Eliminar'` — **Declarado**.
+  4. `'pide confirmación con el nombre de la zona y Cancelar no borra'` —
+     título `'¿Eliminar Casa?'`, cuerpo el de `geofences.deleteBody`, botones
+     `[{ text: 'Cancelar', style: 'cancel' }, { text: 'Eliminar', style: 'destructive' }]`
+     (comparados por `text` y `style`); pulsar Cancelar deja
+     `deleteGeofence` sin llamar.
+  5. `'al confirmar borra una vez y vuelve a la lista recargada'` —
+     `deleteGeofence` con `(apiUrl, 'token-1', 'pet-1', 'geofence-1')`;
+     `invalidateQueries` antes de `router.back` (`mock.invocationCallOrder`).
+  6. `'deshabilita Eliminar, Guardar y el interruptor mientras borra'`
+  7. `'un fallo al borrar pinta el error y no vuelve'` — `unreachable`.
+  8. `'un 401 al borrar cierra sesión una vez'`
+  9. `'pinta Eliminar en inglés'` — `'Delete'` y título `'Delete Casa?'`.
+
+  Recuento: **9 `it`: 7 rojos por consulta** (1, 4–9: no hay
+  `geofence-editor-delete`), **1 por aserción** (2: falta el último id) **y
+  1 Declarado** (3, por M23). Ningún candado heredado cuenta botones
+  `danger-soft` (el de `#61 R1` en `legibility-classnames.test.ts` mira un
+  tag concreto de otra pantalla; [[design]] D8 "Verificado que no
+  cambia").
 
 ### R15 — `isGeofence` valida el centro
 
-TODO
+- **R15**: WHEN `listGeofences` recibe un 200 con alguna zona cuyo
+  `centerLat` o `centerLng` no sea `number`, THE SYSTEM SHALL devolver
+  `{ kind: 'error' }`, como ya hace con `name`, `radiusM` o `active` mal
+  tipados. `isGeofence` de `src/api/geofences.ts` añade a su conjunción
+  `typeof item.centerLat === 'number' && typeof item.centerLng === 'number'`
+  (solo `typeof`, igual que `radiusM`: un JSON no transporta `NaN` ni
+  `Infinity`, P15). Cierra la errata E13: el editor (R6) y la pestaña Mapa
+  (R11) leen el centro de la lista sin otra comprobación.
+
+  *Test*: `src/api/__tests__/geofences.test.ts`,
+  `describe('#146 R15: listGeofences rechaza una zona sin centro numérico')`,
+  1 `it.each` de 3 filas `('maps %s to error')`, cada una construida desde
+  `makeGeofence('zone-1')` del fichero cambiando **solo** el centro:
+
+  | Fila | Zona |
+  |---|---|
+  | `'a string centerLat'` | `centerLat: '19.4'` |
+  | `'a missing centerLng'` | sin la clave `centerLng` |
+  | `'a null centerLat'` | `centerLat: null` |
+
+  y la misma aserción que `#41 R2` (`resolves.toEqual({ kind: 'error' })`).
+  En el mismo commit rojo se reescribe la fila `'an item without name'` de
+  `#41 R2` para que parta de `makeGeofence('zone-1')` sin la clave `name`
+  (hoy es `{ id, radiusM, active }`, que tampoco trae centro: tras R15
+  seguiría en rojo aunque se quitara la comprobación de `name`;
+  [[design]] D8 fila 14). Recuento: **3 `it`, 3 rojos por aserción**
+  (devuelve `ok`).
 
 ### R16 — Editor: solo lectura para quien no es dueño
 
-TODO
+- **R16**: THE SYSTEM SHALL leer el rol en el editor con la **misma**
+  consulta y el mismo cálculo que la lista de #41
+  (`src/screens/geofences/index.tsx`), sin helper compartido:
+
+  ```ts
+  const pet = useQuery({ queryKey: petKeys.detail(petId), queryFn: () => getPet(baseUrl, token ?? '', petId) });
+  const isOwner = pet.data?.kind === 'ok' && pet.data.pet.myRole === 'owner';
+  ```
+
+  (`getPet` de `../../api/pets`, `petKeys` de `../../api/query-keys`). Un
+  rol que falla al leerse (`error`, `unreachable`, `missing-config`) cuenta
+  como **no dueño**, igual que en la lista; su `unauthorized` lo cierra el
+  `QueryCache` global.
+
+  THE SYSTEM SHALL ampliar las ramas sin formulario de R6:
+
+  - la rama 1 (esqueleto) añade `|| pet.data === undefined` a su condición;
+  - tras la rama 5, una **rama 6**: al crear (`!geofenceId`) y sin ser
+    dueño, `Card testID="geofence-editor-owner-only"` (`items-center py-8`)
+    con un `Text` `text-center font-normal text-muted` y
+    `t('geofenceEditor.ownerOnly')`.
+
+  WHILE se edita una zona AND quien mira no es dueño, THE SYSTEM SHALL
+  montar `GeofenceEditorForm` con `readOnly` (prop `readOnly={!isOwner}`),
+  que:
+
+  - pasa a `PetMap` `onPress={readOnly ? undefined : setCenter}`: el mapa
+    no registra toques (R3 no añade `onMapClick` / `onPOIClick` /
+    `onCircleClick`) y dibuja los mismos `circles` de R6, con la zona en su
+    centro y radio guardados;
+  - pinta como contenido del formulario, en este orden y **nada más**:
+    1. `Text testID="geofence-editor-name-text" selectable className="font-bold text-foreground"`
+       con `zone.name`;
+    2. el mismo `geofence-editor-radius-value` de R6 (un solo nodo con
+       `TABULAR_NUMS` en el fichero, R18);
+    3. `Text testID="geofence-editor-read-only" className="text-sm font-normal text-muted"`
+       con `t('geofenceEditor.ownerOnly')`.
+
+  Sin campo de nombre, pista, slider, interruptor, nota de reinicio,
+  Guardar ni Eliminar. La lista de #41 sigue sin ofrecer el editor a quien
+  no es dueño (R9 sin cambios, P16): esta rama cubre la URL abierta a mano
+  y el rol que cambia con la pantalla abierta.
+
+  *Test*: `src/screens/geofence-editor/index.test.tsx`; el fichero gana un
+  doble de `../../api/pets` con `getPet` que en el `beforeEach` común
+  resuelve un perfil `ok` con `myRole: 'owner'` (así R6–R14 siguen siendo
+  el dueño sin tocarlos).
+  `describe('#146 R16: quien no es dueño ve la zona sin poder editarla')`,
+  9 `it`:
+
+  1. `'pinta el esqueleto mientras carga el rol'` — `getPet` pendiente y la
+     lista `ok`.
+  2–5. `it.each(['family', 'walker', 'vet', 'un error al leer el rol'])('al editar como %s pinta la zona en solo lectura')`
+     — asevera **primero** `childTestIds` del contenido del formulario igual
+     a `['geofence-editor-name-text', 'geofence-editor-radius-value', 'geofence-editor-read-only']`;
+     luego `'Casa'`, `'Radio de 150 m'`, el texto
+     `'Solo el dueño de la mascota puede crear o editar zonas.'` y
+     `queryByTestId` nulo para `geofence-editor-name`,
+     `geofence-editor-radius`, `geofence-editor-active`,
+     `geofence-editor-save` y `geofence-editor-delete`. La fila del error es
+     `getPet` resuelto `{ kind: 'error' }`.
+  6. `'en solo lectura el mapa no registra toques y dibuja la zona guardada'`
+     (`family`) — `onMapClick`, `onPOIClick` y `onCircleClick` de la vista
+     stub `undefined`; el círculo de Casa en 19.4 / -99.1 con radio 150.
+  7. `'al crear sin ser dueño pinta la tarjeta de solo dueño'` (`walker`).
+  8. `'pinta la solo lectura en inglés'` —
+     `"Only the pet's owner can create or edit zones."`
+  9. `'pide el rol de la mascota con su token'` — `getPet` con
+     `(apiUrl, 'token-1', 'pet-1')`.
+
+  Recuento: **9 `it`: 6 rojos por aserción** (2–6, 9) **y 3 por consulta**
+  (1, 7, 8).
 
 ### R17 — `DEFAULT_CENTER` en un solo sitio
 
-TODO
+- **R17**: THE SYSTEM SHALL declarar el centro por defecto del mapa una
+  sola vez, en `src/components/pet-map.tsx`, justo después de
+  `export const MAP_ZOOM = 16;`:
+
+  ```ts
+  export const DEFAULT_CENTER: MapCoordinates = { latitude: 19.4326, longitude: -99.1332 };
+  ```
+
+  y la pestaña Mapa (`src/screens/map/index.tsx`) SHALL borrar su
+  `const DEFAULT_CENTER = {` local e importarlo, ampliando su
+  `import { PetMap } from '../../components/pet-map';` a
+  `import { DEFAULT_CENTER, PetMap } from '../../components/pet-map';`. El
+  uso (`: DEFAULT_CENTER;` en el cálculo de `center`) no cambia. El editor
+  (R6) lo importa del mismo módulo (P17).
+
+  *Test*: `src/__tests__/design-drift.test.ts`, al final del fichero,
+  `describe('#146 R17: el centro por defecto del mapa vive en un solo sitio')`,
+  con su propio filtro de producción, igual al de `#94 R5`
+  (`filesMatching(pattern).filter((path) => !/\.test\.tsx?$/.test(path))`,
+  local al `describe`), 2 `it`:
+
+  1. `'declara DEFAULT_CENTER solo en el componente del mapa'` —
+     ficheros de producción que casan `/\bconst DEFAULT_CENTER\b/` igual a
+     `[join('components', 'pet-map.tsx')]`.
+  2. `'escribe las coordenadas por defecto solo en el componente del mapa'`
+     — ficheros de producción que casan `/19\.4326|-99\.1332/` igual a
+     `[join('components', 'pet-map.tsx')]`.
+
+  `filesMatching` devuelve rutas relativas a `src` con el separador del
+  sistema: la expectativa se construye con el `join` que el fichero ya
+  importa (lo usa `const sourceRoot = join(process.cwd(), 'src');`).
+  Recuento: **2 `it`, 2 rojos por aserción** (hoy dan
+  `[join('screens', 'map', 'index.tsx')]`). Se ejecuta tras R3 y antes de
+  R6, así el editor nace importándolo. El verde corre también la suite de
+  la pestaña Mapa (`src/screens/map/index.test.tsx`), que no cambia.
 
 ### R18 — El editor entra en los contadores de `TABULAR_NUMS`
 
-TODO
+- **R18**: THE SYSTEM SHALL contar el editor entre los contadores con
+  cifras tabulares: `src/screens/geofence-editor/index.tsx` importa
+  `TABULAR_NUMS` con un `import { … } from '../../theme/native-styles';`
+  con llaves (la forma que lee el candado; puede ir en varias líneas, como
+  en la pestaña Mapa) y lo aplica **exactamente una vez**, en
+  `geofence-editor-radius-value` (R6), que el dueño y la solo lectura (R16)
+  comparten como un único nodo del JSX.
+
+  *Test*: `src/__tests__/consistency-classnames.test.ts`,
+  `describe('#62 R15: todo contador usa cifras tabulares')`:
+
+  - `const counters` gana, tras
+    `[join('screens', 'reminders', 'index.tsx'), 3],`, la fila
+    `[join('screens', 'geofence-editor', 'index.tsx'), 1],` (+1 caso del
+    `it.each(counters)('%s aplica TABULAR_NUMS a sus %i valores')`);
+  - `it('#69 R10: mantiene la base cerrada más los deltas medidos')` pasa de
+    `14 + 4 + 1 + 1 + 1 + 1,` a `14 + 4 + 1 + 1 + 1 + 1 + 1, // #146 R18`.
+
+  Recuento: **1 `it` nuevo (la fila), Declarado**: el editor ya lo cumple
+  desde R6. Va por la vía (b) de C4: el commit rojo añade la fila y el
+  sumando **y** planta M24 (quita `style={TABULAR_NUMS}` de
+  `geofence-editor-radius-value`), que cae en la fila nueva
+  (`source.match(…)` da `null`); el verde revierte M24. `#69 R10` sigue
+  verde en los dos commits (cuenta las filas, no el fuente).
+  [[design]] D8 fila 17.
 
 ## Enmiendas a docs (gate propio)
 

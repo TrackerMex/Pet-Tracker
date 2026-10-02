@@ -86,8 +86,8 @@ debe quedar vacío. Ninguna mutación se commitea salvo M13 en R10.
   - `bunx jest --runTestsByPath 'src/providers/__tests__/language-provider.test.tsx' > /tmp/146-r1.log 2>&1; echo "exit=$?"`
     → `exit≠0` con 2 rojos por aserción: el nuevo y `#65 R12`.
 - [ ] **Verde** `feat(geofences): add geofence editor catalog keys (R1)`
-  - `src/i18n/catalog.ts`: las doce claves `geofenceEditor.*` en `es` y en
-    `en`, con los textos de R1 (el catálogo pasa de 320 a 332 claves).
+  - `src/i18n/catalog.ts`: las catorce claves `geofenceEditor.*` en `es` y
+    en `en`, con los textos de R1 (el catálogo pasa de 320 a 334 claves).
   - `specs/mobile-ui-language/design.md`: la sección
     `### §2.16 — Añadidos por #146 — Editor de zonas seguras` justo antes de
     `## 3. La infraestructura`, una fila por clave.
@@ -221,8 +221,11 @@ Vía (b) de C4: cuando R10 llega, el copy ya se resuelve por clave, así que
 el rojo se fabrica con la mutación M13 y el verde la quita.
 
 - [ ] **Rojo** `test(geofences): add geofence editor copy-by-key test (R10)`
-  - `src/__tests__/ui-copy-table.ts`: `R15_GEOFENCE_EDITOR` (17 filas),
-    añadido tras `...R14_GEOFENCES,` y en la línea de bloques.
+  - `src/__tests__/ui-copy-table.ts`: `R15_GEOFENCE_EDITOR` (27 filas),
+    añadido tras `...R14_GEOFENCES,` y en la línea de bloques; el `it`
+    `'cuadra ALL_USES con la suma de los doce bloques'` se renombra a
+    `'cuadra ALL_USES con la suma de sus bloques'` (fila 16 de [[design]]
+    D8).
   - `src/__tests__/ui-language.test.ts`: el `describe` de [[requirements]]
     R10 justo después del `describe('#41 R10: …')`, y la fila 12 de
     [[design]] D8.
