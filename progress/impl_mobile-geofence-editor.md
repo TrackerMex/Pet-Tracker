@@ -17255,3 +17255,477 @@ specs/mobile-ui-language/design.md
 ```
 
 `git status --short`: salida vacía. El último commit lleva exactamente los dos ficheros de cierre. No se rebasea la branch; los 41 hashes de código/tests/docs A19 permanecen ancestros de HEAD.
+
+
+## Reanudacion 4
+
+2026-10-02. Rechazo del reviewer por Observación 1: se refuerzan exclusivamente los cuatro `it` autorizados de R7. Producción correcta; solo se modifica temporalmente para plantar Z1 y Z2 y se restaura con `git checkout HEAD -- <ruta>`.
+
+### Paso 0 — worktree, branch, HEAD e índice
+
+```text
+$ pwd
+/home/claude/sites/Pet-Tracker-wt-146
+$ git branch --show-current
+feature/146-mobile-geofence-editor
+$ git rev-parse --short HEAD
+f45c7159
+$ git status --short
+```
+
+`git status --short`: salida vacía. HEAD `f45c7159` tiene padre `826ae816`; H0 sigue siendo `9dee0e62`. Se conserva el merge `c0940cd0` de origin/main, sin rebase. Leídos el handoff original, Reanudaciones 1–4 y Observación 1 del review. Skills releídas: Ponytail (full), building-native-ui y native-data-fetching en las rutas ya registradas al inicio. También se leyó la documentación de [Expo SDK 57](https://docs.expo.dev/versions/v57.0.0/) por `mobile-pet-tracker/AGENTS.md`.
+
+Los títulos y los 8 `it` de R7 se conservan. Comprobación por títulos contra HEAD inicial: solo difieren `un toque en un POI mueve el centro del borrador`, `al soltar el slider la cámara encuadra el borrador`, `TalkBack sube y baja el radio de diez en diez y encuadra` y `TalkBack no sale de 20 ni de 2000`; no hay cambios fuera de ese describe. No se añaden tests: el editor sigue en 68 y el delta de #146 en +142 / +2 suites.
+
+### Paso 5 — verde con la producción actual
+
+Desde `mobile-pet-tracker/`, sin pipe:
+
+```bash
+bunx jest --runTestsByPath 'src/screens/geofence-editor/index.test.tsx' > /tmp/r7-green.txt 2>&1; echo "exit=$?"
+```
+
+Exit=0; 1 suite / 68 pasan / 68 total.
+
+```text
+Test Suites: 1 passed, 1 total
+Tests:       68 passed, 68 total
+Snapshots:   0 total
+Time:        8.832 s
+Ran all test suites within paths "src/screens/geofence-editor/index.test.tsx".
+```
+
+### Paso 6 — rojo Z1
+
+Diff de la mutación plantada, capturado antes de revertir:
+
+```diff
+diff --git a/mobile-pet-tracker/src/screens/geofence-editor/index.tsx b/mobile-pet-tracker/src/screens/geofence-editor/index.tsx
+index b18b76d5..3d0eac17 100644
+--- a/mobile-pet-tracker/src/screens/geofence-editor/index.tsx
++++ b/mobile-pet-tracker/src/screens/geofence-editor/index.tsx
+@@ -151,14 +151,14 @@ function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, ini
+       {readOnly ? <Text testID="geofence-editor-read-only" className="text-sm font-normal text-muted">{t('geofenceEditor.ownerOnly')}</Text> : <>
+       <Slider testID="geofence-editor-radius" value={radius} minValue={20} maxValue={2000} step={10}
+         onChange={(v) => setRadius(Array.isArray(v) ? v[0] : v)}
+-        onChangeEnd={(v) => setCamera({ center, zoom: zoomForRadius(Array.isArray(v) ? v[0] : v) })}>
++        onChangeEnd={(v) => setCamera({ center: camera.center, zoom: zoomForRadius(Array.isArray(v) ? v[0] : v) })}>
+         <Slider.Track><Slider.Fill /><Slider.Thumb testID="geofence-editor-radius-thumb" accessibilityLabel={t('geofenceEditor.radiusLabel')}
+           accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
+           onAccessibilityAction={({ nativeEvent: { actionName } }) => {
+             if (actionName !== 'increment' && actionName !== 'decrement') return;
+             const next = actionName === 'increment' ? Math.min(2000, radius + 10) : Math.max(20, radius - 10);
+             setRadius(next);
+-            setCamera({ center, zoom: zoomForRadius(next) });
++            setCamera({ center: camera.center, zoom: zoomForRadius(next) });
+           }} /></Slider.Track>
+       </Slider>
+       {zone ? <View testID="geofence-editor-active-row" className="flex-row items-center justify-between gap-3">
+```
+
+Desde `mobile-pet-tracker/`, sin pipe:
+
+```bash
+bunx jest --runTestsByPath 'src/screens/geofence-editor/index.test.tsx' > /tmp/r7-z1.txt 2>&1; echo "exit=$?"
+```
+
+Exit=1; exactamente 2 fallan / 66 pasan / 68 total; 1 suite. Ambos fallos por `toEqual`: centro viejo de la cámara en vez de `tap` en slider y TalkBack. Ningún otro `it` falla.
+
+```text
+  ● #146 R7: el toque y el slider mueven el borrador sin perseguir la cámara › al soltar el slider la cámara encuadra el borrador
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 2
+    + Received  + 2
+
+      Object {
+        "coordinates": Object {
+    -     "latitude": 19.41,
+    -     "longitude": -99.11,
+    +     "latitude": 19.4,
+    +     "longitude": -99.1,
+        },
+        "zoom": 15,
+      }
+
+      248 |     await fireEvent(screen.getByTestId('geofence-editor-radius'), 'change', 600);
+      249 |     await fireEvent(screen.getByTestId('geofence-editor-radius'), 'changeEnd', [600]);
+    > 250 |     expect(screen.getByTestId('map-view').props.cameraPosition).toEqual({ coordinates: tap, zoom: 15 });
+          |                                                                 ^
+      251 |   });
+      252 |   it('TalkBack sube y baja el radio de diez en diez y encuadra', async () => {
+      253 |     await edit();
+
+      at Object.toEqual (src/screens/geofence-editor/index.test.tsx:250:65)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+  ● #146 R7: el toque y el slider mueven el borrador sin perseguir la cámara › TalkBack sube y baja el radio de diez en diez y encuadra
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 2
+    + Received  + 2
+
+      Object {
+    -   "latitude": 19.41,
+    -   "longitude": -99.11,
+    +   "latitude": 19.4,
+    +   "longitude": -99.1,
+      }
+
+      258 |     expect(screen.getByTestId('geofence-editor-radius').props.value).toBe(160);
+      259 |     expect(screen.getByTestId('map-view').props.cameraPosition.zoom).toBeCloseTo(16.907, 3);
+    > 260 |     expect(screen.getByTestId('map-view').props.cameraPosition.coordinates).toEqual(tap);
+          |                                                                             ^
+      261 |     await fireEvent(thumb, 'accessibilityAction', { nativeEvent: { actionName: 'decrement' } });
+      262 |     expect(screen.getByTestId('geofence-editor-radius').props.value).toBe(150);
+      263 |     expect(screen.getByTestId('map-view').props.cameraPosition.zoom).toBe(17);
+
+      at Object.toEqual (src/screens/geofence-editor/index.test.tsx:260:77)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 66 passed, 68 total
+Snapshots:   0 total
+Time:        7.973 s, estimated 9 s
+Ran all test suites within paths "src/screens/geofence-editor/index.test.tsx".
+```
+
+Reversión y comprobaciones (las tres salidas vacías, exit=0; los dos diffs tienen 0 bytes):
+
+```bash
+git checkout HEAD -- mobile-pet-tracker/src/screens/geofence-editor/index.tsx
+git diff --stat -- mobile-pet-tracker/src/screens/geofence-editor/index.tsx
+git diff --cached --stat
+```
+
+### Paso 7 — rojo Z2
+
+Diff de la mutación plantada, capturado antes de revertir:
+
+```diff
+diff --git a/mobile-pet-tracker/src/screens/geofence-editor/index.tsx b/mobile-pet-tracker/src/screens/geofence-editor/index.tsx
+index b18b76d5..4d11cc46 100644
+--- a/mobile-pet-tracker/src/screens/geofence-editor/index.tsx
++++ b/mobile-pet-tracker/src/screens/geofence-editor/index.tsx
+@@ -104,7 +104,7 @@ function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, ini
+     id, center: id === zone?.id && !readOnly ? center : { latitude: centerLat, longitude: centerLng },
+     radius: id === zone?.id && !readOnly ? radius : radiusM,
+   }));
+-  if (!zone) circles.push({ id: 'draft', center, radius });
++  if (!zone) circles.push({ id: 'draft', center: initialCenter, radius: initialRadius });
+
+   async function run(request: () => Promise<GeofenceSaveState | GeofenceWriteState>, onOk: () => unknown) {
+     setBusy(true); setError(null);
+```
+
+Desde `mobile-pet-tracker/`, sin pipe:
+
+```bash
+bunx jest --runTestsByPath 'src/screens/geofence-editor/index.test.tsx' > /tmp/r7-z2.txt 2>&1; echo "exit=$?"
+```
+
+Exit=1; exactamente 2 fallan / 66 pasan / 68 total; 1 suite. Ambos fallos por `toEqual`: el círculo `draft` conserva el centro inicial tras tocar el POI, y conserva radio 150 cuando el radio llega a 20. Ningún otro `it` falla.
+
+```text
+  ● #146 R7: el toque y el slider mueven el borrador sin perseguir la cámara › un toque en un POI mueve el centro del borrador
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 2
+    + Received  + 2
+
+      Object {
+        "center": Object {
+    -     "latitude": 19.41,
+    -     "longitude": -99.11,
+    +     "latitude": 19.5,
+    +     "longitude": -99.2,
+        },
+        "id": "draft",
+        "radius": 150,
+      }
+
+      227 |     expect(typeof screen.getByTestId('map-view').props.onPOIClick).toBe('function');
+      228 |     await fireEvent(screen.getByTestId('map-view'), 'pOIClick', { coordinates: tap, name: 'POI' });
+    > 229 |     expect(circles()[2]).toEqual({ id: 'draft', center: tap, radius: 150 });
+          |                          ^
+      230 |   });
+      231 |   it('un toque dentro de un círculo mueve el centro al punto tocado', async () => {
+      232 |     await edit();
+
+      at Object.toEqual (src/screens/geofence-editor/index.test.tsx:229:26)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+  ● #146 R7: el toque y el slider mueven el borrador sin perseguir la cámara › TalkBack no sale de 20 ni de 2000
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+    @@ -2,7 +2,7 @@
+        "center": Object {
+          "latitude": 19.5,
+          "longitude": -99.2,
+        },
+        "id": "draft",
+    -   "radius": 20,
+    +   "radius": 150,
+      }
+
+      269 |     await fireEvent(screen.getByTestId('geofence-editor-radius-thumb'), 'accessibilityAction', { nativeEvent: { actionName: 'decrement' } });
+      270 |     expect(screen.getByTestId('geofence-editor-radius').props.value).toBe(20);
+    > 271 |     expect(circles()[2]).toEqual({ id: 'draft', center: { latitude: 19.5, longitude: -99.2 }, radius: 20 });
+          |                          ^
+      272 |     await fireEvent(screen.getByTestId('geofence-editor-radius'), 'change', 2000);
+      273 |     await fireEvent(screen.getByTestId('geofence-editor-radius-thumb'), 'accessibilityAction', { nativeEvent: { actionName: 'increment' } });
+      274 |     expect(screen.getByTestId('geofence-editor-radius').props.value).toBe(2000);
+
+      at Object.toEqual (src/screens/geofence-editor/index.test.tsx:271:26)
+      at asyncGeneratorStep (node_modules/@babel/runtime/helpers/asyncToGenerator.js:3:17)
+      at _next (node_modules/@babel/runtime/helpers/asyncToGenerator.js:17:9)
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 66 passed, 68 total
+Snapshots:   0 total
+Time:        7.618 s, estimated 8 s
+Ran all test suites within paths "src/screens/geofence-editor/index.test.tsx".
+```
+
+Reversión y comprobaciones (las tres salidas vacías, exit=0; los dos diffs tienen 0 bytes):
+
+```bash
+git checkout HEAD -- mobile-pet-tracker/src/screens/geofence-editor/index.tsx
+git diff --stat -- mobile-pet-tracker/src/screens/geofence-editor/index.tsx
+git diff --cached --stat
+```
+
+### Paso 8 — commit exclusivo de test
+
+```bash
+git add mobile-pet-tracker/src/screens/geofence-editor/index.test.tsx
+git commit -m 'test(geofences): lock the draft camera and the create draft (R7)'
+git show --stat HEAD
+```
+
+```text
+commit c249391b0fd90e467c6fc0e80ac2c6cd097352ac
+Author: Claude <claude@srv1178023.hstgr.cloud>
+Date:   Fri Oct 2 20:01:18 2026 +0000
+
+    test(geofences): lock the draft camera and the create draft (R7)
+
+ .../src/screens/geofence-editor/index.test.tsx             | 14 ++++++++++----
+ 1 file changed, 10 insertions(+), 4 deletions(-)
+```
+
+`git status --short`: salida vacía tras este commit, antes de escribir esta sección del informe. Se registró la evidencia de los pasos anteriores fuera del worktree hasta comprobar ese estado.
+
+Diff pedido (`git show HEAD -- mobile-pet-tracker/src/screens/geofence-editor/index.test.tsx`), con HEAD `c249391b`:
+
+```diff
+commit c249391b0fd90e467c6fc0e80ac2c6cd097352ac
+Author: Claude <claude@srv1178023.hstgr.cloud>
+Date:   Fri Oct 2 20:01:18 2026 +0000
+
+    test(geofences): lock the draft camera and the create draft (R7)
+
+diff --git a/mobile-pet-tracker/src/screens/geofence-editor/index.test.tsx b/mobile-pet-tracker/src/screens/geofence-editor/index.test.tsx
+index 367efa30..9144f62d 100644
+--- a/mobile-pet-tracker/src/screens/geofence-editor/index.test.tsx
++++ b/mobile-pet-tracker/src/screens/geofence-editor/index.test.tsx
+@@ -223,10 +223,10 @@ describe('#146 R7: el toque y el slider mueven el borrador sin perseguir la cám
+     expect(screen.getByTestId('map-view').props.cameraPosition).toEqual({ coordinates: { latitude: 19.4, longitude: -99.1 }, zoom: 17 });
+   });
+   it('un toque en un POI mueve el centro del borrador', async () => {
+-    await edit();
++    await mount(); await screen.findByTestId('geofence-editor-name');
+     expect(typeof screen.getByTestId('map-view').props.onPOIClick).toBe('function');
+     await fireEvent(screen.getByTestId('map-view'), 'pOIClick', { coordinates: tap, name: 'POI' });
+-    expect(circles()[0].center).toEqual(tap);
++    expect(circles()[2]).toEqual({ id: 'draft', center: tap, radius: 150 });
+   });
+   it('un toque dentro de un círculo mueve el centro al punto tocado', async () => {
+     await edit();
+@@ -244,29 +244,35 @@ describe('#146 R7: el toque y el slider mueven el borrador sin perseguir la cám
+   });
+   it('al soltar el slider la cámara encuadra el borrador', async () => {
+     await edit();
++    await fireEvent(screen.getByTestId('map-view'), 'mapClick', { coordinates: tap });
+     await fireEvent(screen.getByTestId('geofence-editor-radius'), 'change', 600);
+     await fireEvent(screen.getByTestId('geofence-editor-radius'), 'changeEnd', [600]);
+-    expect(screen.getByTestId('map-view').props.cameraPosition).toEqual({ coordinates: { latitude: 19.4, longitude: -99.1 }, zoom: 15 });
++    expect(screen.getByTestId('map-view').props.cameraPosition).toEqual({ coordinates: tap, zoom: 15 });
+   });
+   it('TalkBack sube y baja el radio de diez en diez y encuadra', async () => {
+     await edit();
++    await fireEvent(screen.getByTestId('map-view'), 'mapClick', { coordinates: tap });
+     const thumb = screen.getByTestId('geofence-editor-radius-thumb');
+     expect(thumb.props.accessibilityActions).toEqual([{ name: 'increment' }, { name: 'decrement' }]);
+     await fireEvent(thumb, 'accessibilityAction', { nativeEvent: { actionName: 'increment' } });
+     expect(screen.getByTestId('geofence-editor-radius').props.value).toBe(160);
+     expect(screen.getByTestId('map-view').props.cameraPosition.zoom).toBeCloseTo(16.907, 3);
++    expect(screen.getByTestId('map-view').props.cameraPosition.coordinates).toEqual(tap);
+     await fireEvent(thumb, 'accessibilityAction', { nativeEvent: { actionName: 'decrement' } });
+     expect(screen.getByTestId('geofence-editor-radius').props.value).toBe(150);
+     expect(screen.getByTestId('map-view').props.cameraPosition.zoom).toBe(17);
++    expect(screen.getByTestId('map-view').props.cameraPosition.coordinates).toEqual(tap);
+   });
+   it('TalkBack no sale de 20 ni de 2000', async () => {
+-    await edit();
++    await mount(); await screen.findByTestId('geofence-editor-name');
+     await fireEvent(screen.getByTestId('geofence-editor-radius'), 'change', 20);
+     await fireEvent(screen.getByTestId('geofence-editor-radius-thumb'), 'accessibilityAction', { nativeEvent: { actionName: 'decrement' } });
+     expect(screen.getByTestId('geofence-editor-radius').props.value).toBe(20);
++    expect(circles()[2]).toEqual({ id: 'draft', center: { latitude: 19.5, longitude: -99.2 }, radius: 20 });
+     await fireEvent(screen.getByTestId('geofence-editor-radius'), 'change', 2000);
+     await fireEvent(screen.getByTestId('geofence-editor-radius-thumb'), 'accessibilityAction', { nativeEvent: { actionName: 'increment' } });
+     expect(screen.getByTestId('geofence-editor-radius').props.value).toBe(2000);
++    expect(circles()[2].radius).toBe(2000);
+   });
+   it('escribir el nombre actualiza el campo', async () => {
+     await edit(); await fireEvent.changeText(screen.getByTestId('geofence-editor-name'), 'Casa nueva');
+```
+
+### Paso 9 — cierre completo
+
+Todos los comandos desde `mobile-pet-tracker/`, sin pipe y en el orden indicado. Primero se comprobó la ausencia del fichero generado de rutas; después TypeScript, lint y Jest completo.
+
+```bash
+test ! -e .expo/types/router.d.ts; echo "exit=$?"
+bunx tsc --noEmit > /tmp/r7-close-tsc.txt 2>&1; echo "exit=$?"
+bunx expo lint > /tmp/r7-close-lint.txt 2>&1; echo "exit=$?"
+bunx jest > /tmp/r7-close-jest.txt 2>&1; echo "exit=$?"
+```
+
+| Comprobación | Exit | Bytes del log | Resultado |
+|---|---|---|---|
+| Ausencia de `.expo/types/router.d.ts` | 0 | — | Ausente; no se borró ningún fichero |
+| `bunx tsc --noEmit` | 0 | 0 | Sin errores |
+| `bunx expo lint` | 0 | 0 | Sin errores |
+| `bunx jest` | 0 | 1856087 | 90 suites / 1852 tests / 1 snapshot; todos pasan |
+
+```text
+Test Suites: 90 passed, 90 total
+Tests:       1852 passed, 1852 total
+Snapshots:   1 passed, 1 total
+Time:        48.702 s
+Ran all test suites.
+```
+
+El editor conserva 68 tests (R7 conserva sus 8 `it`). El cierre mantiene el delta +2 suites / +142 tests frente a la base 88 / 1710, sin skipped y con el mismo snapshot. Z1 y Z2 se demuestran únicamente por sus corridas rojas de los pasos 6 y 7; nunca se versionan las mutaciones.
+
+### Paso 10 — trazabilidad y listas del cierre
+
+Solo se añade `c249391b` a la fila de R7, junto a `77857cec` y `04c4f646`. Comprobación contra HEAD: una sola línea modificada, empieza por `| R7 |`; el resto del fichero no cambia.
+
+El segundo commit de esta reanudación lleva únicamente `specs/mobile-geofence-editor/traceability.md` y `progress/impl_mobile-geofence-editor.md`, con el mensaje literal:
+
+```bash
+git add specs/mobile-geofence-editor/traceability.md progress/impl_mobile-geofence-editor.md
+git commit -m 'docs(geofences): cite the R7 lock in #146 traceability'
+```
+
+44 commits propios en el cierre: los 42 anteriores, `c249391b` (43.º) y el commit documental que contiene esta sección (44.º, HEAD después de commitear; su hash se obtiene con `git rev-parse --short HEAD`). No se modifica el historial ni se hace rebase.
+
+```text
+43 commits propios ya existentes (42 previos + test R7), todos ancestros de HEAD:
+ac8bbb12 docs(specs): apply amendment A19 of #146
+e37baecc test(geofences): add geofence editor catalog keys test (R1)
+3b7829c7 feat(geofences): add geofence editor catalog keys (R1)
+c0b2b4e1 test(geofences): add zoomForRadius test (R2)
+e496b3ad feat(geofences): frame a circle by its radius (R2)
+106b851b test(geofences): add PetMap circles, zoom and press test (R3)
+d3f4eedb feat(geofences): let PetMap draw circles and report taps (R3)
+b8d354dc test(geofences): lock the default map center in one place (R17)
+a3d30a36 refactor(map): export DEFAULT_CENTER from PetMap (R17)
+c55d8d51 test(geofences): add geofence create and update API test (R4)
+f652d3e2 feat(geofences): create and update geofences with save states (R4)
+6c5211f7 test(geofences): reject geofences without a numeric center (R15)
+f9b62c58 feat(geofences): validate the geofence center from the list (R15)
+3e17680e test(geofences): add geofence editor route test (R5)
+d9ba0f3e feat(geofences): add the geofence editor route (R5)
+75572a0f test(geofences): add geofence editor loading and states test (R6)
+aec76ccc feat(geofences): load the geofence editor and its states (R6)
+77857cec test(geofences): add geofence editor draft test (R7)
+92e04a0d test(geofences): wait for the tree in the 401 case (R6)
+04c4f646 feat(geofences): move the draft with taps and the slider (R7)
+33b76a86 test(geofences): add geofence editor save test (R8)
+84719d8f feat(geofences): save the geofence and return to the list (R8)
+6be00c8a test(geofences): add geofence list editor entry test (R9)
+41745421 test(geofences): use the R1 English edit label (R9)
+9310ce08 feat(geofences): open the editor from the geofence list (R9)
+02ac6843 test(geofences): lock the client-side geofence limit (R12)
+6e12baea feat(geofences): disable add zone at the geofence limit (R12)
+3cdc9fb9 test(geofences): add geofence editor active switch test (R13)
+e7851418 feat(geofences): toggle the zone from the editor (R13)
+7483443a test(geofences): add geofence editor delete test (R14)
+4f87940a feat(geofences): delete the zone from the editor (R14)
+86e2dd49 test(geofences): add geofence editor read-only test (R16)
+8836846d feat(geofences): show the zone read-only to non-owners (R16)
+e805a7f4 test(geofences): add map tab geofence circles test (R11)
+4c368245 feat(geofences): draw active geofences on the map tab (R11)
+50ccd870 test(geofences): add geofence editor copy-by-key test (R10)
+f774bdc8 feat(geofences): resolve geofence editor copy by key (R10)
+9560f178 test(geofences): count the editor among tabular counters (R18)
+a3896732 feat(geofences): use tabular digits in the editor radius (R18)
+394efbd6 refactor(geofences): seed the owner role before the loading case (R9)
+b46b233c refactor(geofences): compose the language spec suffix for the prefix check (R1)
+f6d45af5 docs(geofences): fill #146 traceability
+c249391b test(geofences): lock the draft camera and the create draft (R7)
+
+44.º propio, commit de este informe: docs(geofences): cite the R7 lock in #146 traceability; hash = git rev-parse --short HEAD tras el commit.
+
+Commits del leader excluidos:
+d86897b2 chore(harness): reanudacion 1 del handoff de #146 tras la parada en R7
+d36cf64e chore(harness): reanudacion 2 del handoff de #146 tras la parada en R9
+42f89caf chore(harness): reanudacion 3 del handoff de #146 tras la parada en R9
+c0940cd0 Merge origin/main (cb14497c, #103) into feature/146-mobile-geofence-editor
+826ae816 chore(harness): veredicto del reviewer de #146, rechazado por R7
+f45c7159 chore(harness): reanudacion 4 de #146 tras el rechazo por R7
+
+Lista de ficheros de los commits propios desde H0 (se conserva en esta reanudación):
+docs/conventions.md
+docs/ui-guidelines.md
+mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+mobile-pet-tracker/src/__tests__/design-drift.test.ts
+mobile-pet-tracker/src/__tests__/ui-copy-table.ts
+mobile-pet-tracker/src/__tests__/ui-language.test.ts
+mobile-pet-tracker/src/api/__tests__/geofences.test.ts
+mobile-pet-tracker/src/api/geofences.ts
+mobile-pet-tracker/src/app/__tests__/detail-stack.test.tsx
+mobile-pet-tracker/src/app/__tests__/layout.test.tsx
+mobile-pet-tracker/src/app/_layout.tsx
+mobile-pet-tracker/src/app/pets/[petId]/geofence-editor.tsx
+mobile-pet-tracker/src/components/__tests__/pet-map.test.tsx
+mobile-pet-tracker/src/components/pet-map.tsx
+mobile-pet-tracker/src/i18n/catalog.ts
+mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+mobile-pet-tracker/src/screens/geofence-editor/index.test.tsx
+mobile-pet-tracker/src/screens/geofence-editor/index.tsx
+mobile-pet-tracker/src/screens/geofences/index.test.tsx
+mobile-pet-tracker/src/screens/geofences/index.tsx
+mobile-pet-tracker/src/screens/map/index.test.tsx
+mobile-pet-tracker/src/screens/map/index.tsx
+mobile-pet-tracker/src/utils/zoom-for-radius.test.ts
+mobile-pet-tracker/src/utils/zoom-for-radius.ts
+progress/impl_mobile-geofence-editor.md
+specs/mobile-geofence-editor/traceability.md
+specs/mobile-ui-language/design.md
+```
+
+La lista propia tiene 27 rutas, todas dentro del handoff original. Se obtiene por la unión de `git diff-tree --no-commit-id --name-only -r <hash>` de los commits propios para excluir las aportaciones del leader y del merge de origin/main. Este commit documental conserva esa lista. Los commits del leader de handoff/review solo tocan `progress/handoff_mobile-geofence-editor.md` y `progress/review_mobile-geofence-editor.md`; el merge `c0940cd0` queda fuera del cómputo propio.
+
+Comprobaciones previas al commit documental:
+
+```text
+$ git diff --stat f45c7159 -- mobile-pet-tracker/src/screens/geofence-editor/index.tsx
+$ git diff --cached --stat
+$ git merge-base --is-ancestor c0940cd0 HEAD; echo "merge-exit=$?"
+merge-exit=0
+```
+
+Los dos diffs salen vacíos: producción restaurada e índice vacío antes de preparar el commit documental. Los 43 commits propios anteriores a este commit se comprobaron con `git merge-base --is-ancestor <hash> HEAD`, todos en exit=0. Después de commitear se comprueban el total de 44, los dos ficheros de ese commit y el estado limpio del worktree.
+
+Esta reanudación cambia exactamente tres rutas frente a `f45c7159`: el test del editor, traceability.md y este informe. No se ejecutan init.sh, comandos de Postgres/LocalStack, push ni PR. La prueba de humo sigue a cargo del humano; el leader mantiene el status de la feature y el veredicto del reviewer.
