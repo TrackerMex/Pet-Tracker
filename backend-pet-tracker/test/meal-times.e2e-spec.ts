@@ -346,7 +346,7 @@ describe('Meal schedule editing (e2e)', () => {
   const addMember = (
     petId: string,
     userId: string,
-    role: 'family' | 'walker',
+    role: 'family' | 'walker' | 'vet',
   ) => db.insert(petUsers).values({ petId, userId, role, status: 'active' });
   const insertServing = (
     petId: string,
@@ -765,6 +765,48 @@ describe('Meal schedule editing (e2e)', () => {
             ),
           ),
       ).toHaveLength(4);
+    });
+  });
+
+  describe('R10 (meal-schedule-editing #103): solo el owner edita; 404 del guard precede', () => {
+    it('family, walker y vet reciben 403 incluso con body vacio', async () => {
+      const owner = await seedUser('r10-owner');
+      const pet = await seedPet(owner);
+      await seedPlan(owner, pet.id);
+      const memberIds: string[] = [];
+      for (const role of ['family', 'walker', 'vet'] as const) {
+        const member = await seedUser(`r10-${role}`);
+        memberIds.push(member.id);
+        await addMember(pet.id, member.id, role);
+        await addMealTime(member, pet.id, { mealTime: '12:00' }).expect(403);
+        await addMealTime(member, pet.id, {}).expect(403);
+        await moveMealTime(member, pet.id, '07:30', {
+          mealTime: '08:15',
+        }).expect(403);
+        await moveMealTime(member, pet.id, '07:30', {}).expect(403);
+      }
+      expect(await plansOf(pet.id)).toHaveLength(1);
+      expect(
+        await db
+          .select()
+          .from(auditLog)
+          .where(
+            and(
+              inArray(auditLog.userId, [owner.id, ...memberIds]),
+              inArray(auditLog.action, ['meal_time.add', 'meal_time.move']),
+            ),
+          ),
+      ).toEqual([]);
+    });
+
+    it('outsider y petId no uuid reciben 404', async () => {
+      const owner = await seedUser('r10-hidden-owner');
+      const outsider = await seedUser('r10-outsider');
+      const pet = await seedPet(owner);
+      await addMealTime(outsider, pet.id, {}).expect(404);
+      await moveMealTime(outsider, pet.id, '07:30', {}).expect(404);
+      await addMealTime(owner, 'not-a-uuid', {}).expect(404);
+      await moveMealTime(owner, 'not-a-uuid', '07:30', {}).expect(404);
     });
   });
 });
