@@ -83,6 +83,7 @@ export const nutritionPlans = pgTable(
     dailyGrams: integer('daily_grams').notNull(),
     mealsPerDay: integer('meals_per_day').notNull(),
     mealTimes: jsonb('meal_times').$type<string[]>().notNull(),
+    engineMealsPerDay: integer('engine_meals_per_day'),
     objective: varchar('objective', { length: 20 })
       .$type<'maintenance' | 'weight_loss' | 'growth'>()
       .notNull(),

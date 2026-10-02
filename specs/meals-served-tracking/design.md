@@ -57,6 +57,13 @@ tags: [harness, spec]
   "huérfanas" quedan guardadas (auditoría, historial) y fuera del conteo, así
   `served ≤ total` siempre. Una sola función pura lo decide (D8).
 
+  **Enmienda #103 (`meal-schedule-editing`)**: mover una franja con
+  `PATCH /v1/pets/:petId/meal-times/:mealTime` arrastra la servida de hoy (día
+  civil del owner) a la hora nueva en la misma transacción; si el destino ya
+  tenía una servida de hoy, gana la del destino y se borra la del origen. Una
+  huérfana cuya hora vuelve al plan cuenta otra vez. Lo dicho arriba sigue
+  valiendo al regenerar y para los días pasados.
+
 ## Decisiones de esta spec (D5-D12)
 
 ### D5 — La tabla vive en `nutrition.schema.ts`; declaración literal (R1)

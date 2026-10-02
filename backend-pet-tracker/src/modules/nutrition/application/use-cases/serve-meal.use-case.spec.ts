@@ -19,6 +19,7 @@ function plan(mealTimes: string[]): NutritionPlan {
     dailyGrams: 305,
     mealsPerDay: mealTimes.length,
     mealTimes,
+    engineMealsPerDay: null,
     objective: 'maintenance',
     warnings: [],
     aiExplanation: null,
