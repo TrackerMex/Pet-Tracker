@@ -739,7 +739,7 @@ no entra ningún módulo nativo. La app va en español salvo en el paso 8.
 - **Cuenta que no es dueña (P16).**
   1. Registra una segunda cuenta `<email2>` desde la app.
   2. Desde la máquina del backend, dale acceso de `family`:
-     `docker exec pet-tracker-postgres psql -U pet_tracker -d pet_tracker -c "insert into pet_users (pet_id, user_id, role, status) values ('01a02806-be17-759e-b84f-36ee794ee964', (select id from users where email = 'herd@gmail.com'), 'family', 'active');"`
+     `docker exec pet-tracker-postgres psql -U pet_tracker -d pet_tracker -c "insert into pet_users (pet_id, user_id, role, status) values ('', (select id from users where email = ''), 'family', 'active');"`
 - **adb.** El teléfono sale **dos veces** en `adb devices -l` (IP y mDNS).
   En Windows, `adb devices -l | findstr 192.168` da la línea de la IP; usa
   **siempre** `adb -s <ip:puerto>` con ese valor.
@@ -778,7 +778,7 @@ no entra ningún módulo nativo. La app va en español salvo en el paso 8.
       queda hueco entre la cabecera y la primera tarjeta, y el contenido
       termina unos 24 px sobre la barra del sistema.
 - [X] 9. **Limpieza.** Borra la fila de membresía:
-      `docker exec pet-tracker-postgres psql -U pet_tracker -d pet_tracker -c "delete from pet_users where pet_id = '01a02806-be17-759e-b84f-36ee794ee964' and role = 'family' and user_id = (select id from users where email = 'herd@gmail.com');"`
+      `docker exec pet-tracker-postgres psql -U pet_tracker -d pet_tracker -c "delete from pet_users where pet_id = '' and role = 'family' and user_id = (select id from users where email = '');"`
       Debe responder `DELETE 1`.
 
 - [X] Prueba de humo superada (fecha: 2026-10-02)
