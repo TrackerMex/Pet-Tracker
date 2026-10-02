@@ -126,7 +126,8 @@ corrió su fichero de test.
 | M29 | El enlace del Perfil empuja la ruta de documentos | `#41 R9` |
 | M30 | La etiqueta del enlace es `profile.gpsSettings` | `#65 R7`, `#65 R18`, la fila GPS de R10 de `device-pairing` (excepción) y `#41 R9` |
 | M31–M45, M48–M52 | La decisión de la fila 2 copia la de la fila 1, o difiere de ella con `index === 0`. Afecta a: nombre, clase del nombre, clase del radio, clase de la tarjeta, clase de la columna, `hitSlop`, clase del borrado, clase de la píldora, ser dueño, tarjeta pulsable, texto de la píldora, `isSelected`, etiqueta accesible, destino del borrado, destino del `PATCH`, `selectable`, radio, clase de la etiqueta, `size` y esquina | `#41 R5`–`R8` (D3, tabla por fila) |
-| M46 / M47 | Chevrón de 28 / etiqueta `font-normal` en el enlace del Perfil | `#41 R9` y `#62 R7` |
+| M46 | Chevrón de 28 en el enlace del Perfil | `#62 R7` (enmienda E2: `#41 R9` no mide el `size`) |
+| M47 | Etiqueta `font-normal` en el enlace del Perfil | `#41 R9` |
 | M53 / M54 | Solo la fila 1 se deshabilita durante la escritura (`Switch` / borrado) | `'bloquea los dos interruptores…'` / `'deshabilita los dos borrados…'` |
 | M55 / M56 | La fila 1 escribe con otro id / con otro valor | `'bloquea los dos interruptores…'` |
 | M57 | El borrado de la fila 1 apunta a otro id | los 2 `it.each` de error de R7 |

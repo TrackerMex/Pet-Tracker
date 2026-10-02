@@ -432,7 +432,10 @@ claves `geofences.*`. R2 y R3 van antes que la pantalla porque R5 dobla
       vacío.
 - [ ] `git diff --name-only <HEAD del handoff>` lista **solo** los ficheros de
       [[design]] §Archivos afectados, más `../specs/mobile-geofences/traceability.md`
-      y `../progress/impl_mobile-geofences.md`.
+      y `../progress/impl_mobile-geofences.md`, y los cuatro del commit de la
+      enmienda E2 del leader: `../specs/mobile-geofences/requirements.md`,
+      `../specs/mobile-geofences/design.md`, este `tasks.md` y
+      `../progress/handoff_mobile-geofences_r9.md`.
 - [ ] [[traceability]]: hash rojo → verde por requisito y el commit de A18.
 - [ ] `progress/impl_mobile-geofences.md`: HEAD del handoff, base medida,
       recuentos de cierre, la mutación de R10 plantada y revertida, y

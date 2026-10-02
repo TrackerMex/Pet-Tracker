@@ -28,6 +28,21 @@ tags: [harness, spec, mobile]
 > las nueve anclas de [[tasks]] §Antes de empezar y los literales de las
 > filas 5–10 de [[design]] D8 (§Coordinación).
 >
+> **Enmienda E2 (2026-10-02, aprobada por el humano en el chat de la sesión
+> Backend):** el `it` de R9 **no** comprueba el `size` del chevrón.
+>
+> - Codex le había añadido
+>   `within(link).UNSAFE_getByType(ChevronRight)`, que no estaba en la spec.
+> - RNTL 14.0.1 quitó las consultas `UNSAFE_*` (`docs/guides/migration-v14.md`
+>   del paquete), así que el verde de R9 daba `TypeError`.
+> - La consulta y su import se borran y no se sustituyen. La mutación M46 la
+>   caza solo `#62 R7`, que cuenta cuatro veces el literal exacto
+>   `<ChevronRight size={20} color={muted} />` ([[design]] §1).
+> - Se arregla en un commit de test propio entre el rojo y el verde de R9
+>   (`progress/handoff_mobile-geofences_r9.md`). El commit de esta enmienda
+>   añade al `git diff --name-only` de [[tasks]] §Cierre cuatro ficheros del
+>   leader: este, [[design]], [[tasks]] y ese handoff.
+>
 > **Medición de la base**:
 >
 > - La tomó el spec_author el 2026-10-01, sobre una copia
