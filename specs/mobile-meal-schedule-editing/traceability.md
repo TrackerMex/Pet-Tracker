@@ -14,7 +14,7 @@ tags: [harness, spec, mobile]
 | R4 | `mobile-pet-tracker/src/screens/meal-schedule/index.test.tsx`::`#147 R4: solo el owner ve Editar y Añadir comida` › `el owner ve Editar en cada fila y Añadir comida bajo la lista`; `%s no ve controles de edición` (family, walker, vet); `sin el detalle de la mascota resuelto no hay controles`; `con el detalle de la mascota en error no hay controles`.<br>E1-a: `mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts`::`#98 R10` › `deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban`, y `#64 R9` › `conserva los usos de bg-accent-soft que sí son acento` (16 + 2). | `9c88290b` — `test(mobile-meal-schedule-editing): lock owner-only meal time controls (R4)`<br>`3c497607` — `feat(mobile-meal-schedule-editing): show edit and add meal controls to owners (R4)`<br>`1526db05` — `test(mobile-meal-schedule-editing): count the meal time controls among accent-soft uses (R4)` |
 | R5 | `mobile-pet-tracker/src/screens/meal-schedule/index.test.tsx`::`#147 R5: Editar abre el selector en la hora de la fila y publica el PATCH` › `abre un único selector de hora con la hora local de la fila`; `al elegir una hora nueva llama a moveMealTime con la hora local y cierra el selector`; `al cerrar el selector sin elegir no llama a nada`; `elegir la misma hora de la fila no llama a nada`.<br>E1.2: TZ sobre process real; sonda setUTCHours roja tras el refactor autorizado. | `4a9c91d5` — `test(mobile-meal-schedule-editing): lock edit time picker and PATCH call (R5)`<br>`fc2c792a` — `feat(mobile-meal-schedule-editing): edit a meal time with the native time picker (R5)`<br>`2c873c47` — `refactor(mobile-meal-schedule-editing): apply picker test timezone to Node process (R5,R6)` |
 | R6 | `mobile-pet-tracker/src/screens/meal-schedule/index.test.tsx`::`#147 R6: Añadir comida abre el selector a las 12:00 y publica el POST` › `abre el selector a las 12:00 locales`; `al elegir una hora llama a addMealTime con la hora local rellenada a dos dígitos`; `al cerrar el selector sin elegir no llama a nada`.<br>E1.2: TZ sobre process real; sonda setUTCHours roja tras el refactor autorizado. | `2860d495` — `test(mobile-meal-schedule-editing): lock add meal picker and POST call (R6)`<br>`fd48f9c3` — `feat(mobile-meal-schedule-editing): add a meal time with the native time picker (R6)`<br>`2c873c47` — `refactor(mobile-meal-schedule-editing): apply picker test timezone to Node process (R5,R6)` |
-| R7 | `mobile-pet-tracker/src/screens/meal-schedule/index.test.tsx`::`#147 R7: tras un éxito refetchea plan y mascota, sin estado optimista` › `tras ok refetchea el plan y el detalle de la mascota y repinta con la hora nueva`; `mientras la edición vuela, todos los controles están deshabilitados y la lista no cambia`; `los controles siguen deshabilitados hasta que termina el refetch`; `un resultado que no es ok no refetchea`.<br>Último it: vía (b); pasa por construcción en el rojo C4. La sonda «refetch en finally» lo hace caer: Expected 1 llamada, Received 2; 1 test rojo / 38 omitidos / 39 total, 1 suite, exit 1. Evidencia en [[../../progress/impl_mobile-meal-schedule-editing\|informe]]. | `13363d1b` — `test(mobile-meal-schedule-editing): lock refetch after success without optimistic state (R7)`<br>`a6a85313` — `feat(mobile-meal-schedule-editing): refetch plan and pet after a meal time edit (R7)` |
+| R7 | `mobile-pet-tracker/src/screens/meal-schedule/index.test.tsx`::`#147 R7: tras un éxito refetchea plan y mascota, sin estado optimista` › `tras ok refetchea el plan y el detalle de la mascota y repinta con la hora nueva`; `mientras la edición vuela, todos los controles están deshabilitados y la lista no cambia`; `los controles siguen deshabilitados hasta que termina el refetch`; `un resultado que no es ok no refetchea`.<br>Último it: vía (b); pasa por construcción en el rojo C4. La sonda «refetch en finally» lo hace caer: Expected 1 llamada, Received 2; 1 test rojo / 38 omitidos / 39 total, 1 suite, exit 1. Evidencia en [[../../progress/impl_mobile-meal-schedule-editing\|informe]].<br>E2-a (E2.2): en `#147 R8: cada error del contrato tiene su mensaje`, las diez filas de `$label muestra «$literal»` (invalid, forbidden, NUTRITION_PLAN_REQUIRED, MEAL_TIME_NOT_IN_PLAN, MEAL_TIME_DUPLICATE, MEAL_TIMES_LIMIT_REACHED, unreachable, error, missing-config, rechazo) y `401 cierra sesión sin mensaje` candan una sola llamada a `mockGetNutritionPlan` y `mockGetPet` tras la espera de cierre.<br>E2-b (E2.1): en este describe de R7, `tras ok de Añadir refetchea el plan y el detalle de la mascota y repinta con la fila nueva`; `mientras Añadir vuela, todos los controles están deshabilitados y no aparece la fila nueva`; `tras ok de Añadir los controles siguen deshabilitados y sin fila nueva hasta que termina el refetch`. Vía (b): las 13 sondas de E2 y su control fallan exactamente por los matchers prescritos; diffs y primeras líneas rojas en el informe, sección Reanudación 2. | `13363d1b` — `test(mobile-meal-schedule-editing): lock refetch after success without optimistic state (R7)`<br>`a6a85313` — `feat(mobile-meal-schedule-editing): refetch plan and pet after a meal time edit (R7)`<br>`e277b810` — `test(mobile-meal-schedule-editing): lock no refetch on every failed meal time edit (R7)`<br>`bf81642a` — `test(mobile-meal-schedule-editing): lock refetch and disabled controls for added meal times (R7)` |
 | R8 | `mobile-pet-tracker/src/screens/meal-schedule/index.test.tsx`::`#147 R8: cada error del contrato tiene su mensaje` › `$label muestra «$literal»` (invalid, forbidden, NUTRITION_PLAN_REQUIRED, MEAL_TIME_NOT_IN_PLAN, MEAL_TIME_DUPLICATE, MEAL_TIMES_LIMIT_REACHED, unreachable, error, missing-config, rechazo); `401 cierra sesión sin mensaje`; `una nueva edición retira el error anterior`.<br>`mobile-pet-tracker/src/__tests__/ui-language.test.ts`::`#65 R6` (inventario de common.*).<br>E1-b: `mobile-pet-tracker/src/__tests__/design-drift.test.ts`::`#87 R19` › `preserves every mutation sign-out with zero delta` (meal-schedule: 2). | `b343c919` — `test(mobile-meal-schedule-editing): lock meal time edit error messages (R8)`<br>`3d79a82c` — `feat(mobile-meal-schedule-editing): show inline errors for meal time edits (R8)`<br>`e8789628` — `test(mobile-meal-schedule-editing): count the meal schedule 401 sign-out (R8)` |
 | R9 | `mobile-pet-tracker/src/__tests__/ui-language.test.ts`::`#147 R9: el copy del horario editable queda registrado` › `nombra las nueve ocurrencias nuevas y las resuelve en su fichero`; candado `#65 R6` › `resuelve las 50 ocurrencias normativas` (38 + 3 + 9). | `f134d9d4` — `test(mobile-meal-schedule-editing): lock meal schedule editing copy registration (R9)`<br>`ddd0ba67` — `feat(mobile-meal-schedule-editing): register meal schedule editing copy uses (R9)` |
 
@@ -27,7 +27,7 @@ Convención de commit: `feat(<scope>): <desc> (R1,R2)`.
 El implementer actualiza esta tabla tras cada commit; el reviewer la valida
 al aprobar (ver [[../../docs/specs|specs]] y [[../../CHECKPOINTS|CHECKPOINTS]] C5).
 
-## Verificación de implementación y E1
+## Verificación de implementación, E1 y E2
 
 Los 18 commits C4 conservan su orden y los mensajes literales. Los refactors
 `2c873c47` (R5/R6, TZ autorizado y ratificado por E1.2) y `b5d46054` (R1,
@@ -39,7 +39,7 @@ exit 1; tras E1-b pasan los 108, exit 0. Sus tres sondas detectan los fallos
 prescritos y se restauran con índice vacío. El informe conserva sus diffs,
 los bloques rojos y los resúmenes, así como todas las sondas originales.
 
-Cierre móvil: `bun run test` — 88 suites / 1759 tests, exit 0;
+Cierre móvil de E1: `bun run test` — 88 suites / 1759 tests, exit 0;
 `bun run lint` — exit 0; `test ! -e .expo/types/router.d.ts && bun run typecheck`
 — exit 0. Los tres grep-clean de §Cierre salen vacíos. No se añaden suites ni
 dependencias. H0 sigue siendo `b367ed44`.
@@ -47,3 +47,23 @@ dependencias. H0 sigue siendo `b367ed44`.
 La prueba de humo Android queda a cargo del humano y no se marca realizada.
 `./init.sh` queda a cargo del leader antes del reviewer, según el handoff.
 Esta tabla documenta evidencia de implementación; el reviewer valida C5/C8.
+
+## Verificación de la Enmienda E2
+
+`e277b810` (E2-a) añade las aserciones de ningún refetch a las diez filas de
+R8 y al 401: 1 suite / 51 tests, exit 0 antes y después. `bf81642a` (E2-b)
+añade los tres tests de R7 sobre Añadir: 1 suite / 54 tests, exit 0. Ambos
+commits llevan solo `mobile-pet-tracker/src/screens/meal-schedule/index.test.tsx`.
+
+Las 13 sondas y el control de tasks.md §Enmienda E2 se ejecutaron por
+separado sobre el verde: todas fallan exactamente en los tests y matchers
+prescritos, con exit 1. Tras cada una se restaura producción desde HEAD;
+índice y status quedan vacíos. Ninguna sonda queda omitida.
+
+Cierre de Reanudación 2: gate de procesos vacío; `bun run test` — 88 suites /
+1762 tests, exit 0; `bun run lint` — exit 0;
+`test ! -e .expo/types/router.d.ts && bun run typecheck` — exit 0;
+los tres grep-clean vacíos. H0 sigue siendo `b367ed44`. Son 26 commits
+propios y los mismos 13 ficheros de design.md; los tres commits del leader y
+sus seis ficheros se identifican por separado en el informe. La producción
+coincide con `f26f85fd`; no se rebasea ni se enmienda ningún commit.

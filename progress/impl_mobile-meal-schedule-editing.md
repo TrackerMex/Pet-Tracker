@@ -6048,3 +6048,873 @@ No se tocaron las cinco rutas del leader durante la implementación ni la reanud
 ### Decisiones de Reanudación 1
 
 No se toman decisiones de producto nuevas. Se aplican únicamente las ediciones literales de E1-a y E1-b. E1.2 ratifica la preparación TZ autorizada, sin introducir cambios adicionales. Se conservan los mensajes, el conteo de tests y la producción. La prueba de humo no se ejecuta ni se marca; init.sh, push y PR quedan a cargo del leader según el handoff.
+
+## Reanudación 2
+
+2026-10-02. Enmienda E2 aprobada por humano y firmada por el leader en `f26f85fd`, después de la trazabilidad `d05d8725`. H0 permanece en `b367ed44`. Se aplican únicamente E2-a y E2-b, vía (b) de C4, y su documentación. Los comandos móviles se ejecutan desde `/home/claude/sites/Pet-Tracker/mobile-pet-tracker`, sin pipes.
+
+### Paso 0: identidad y estado inicial
+
+```text
+$ pwd
+/home/claude/sites/Pet-Tracker
+$ git branch --show-current
+feature/147-mobile-meal-schedule-editing
+$ git rev-parse --short HEAD
+f26f85fd
+$ git rev-parse --short HEAD~1
+d05d8725
+$ git status --short
+(salida vacía)
+```
+
+Las cinco comprobaciones terminan con exit 0. Se cumplen las tres condiciones de arranque: branch correcta, padre d05d8725 y árbol limpio. Ningún commit previo se rebasea ni se enmienda.
+
+Lecturas: requirements.md §Enmienda E2 (casilla humana marcada), tasks.md §Enmienda E2, §Esperas y §Cierre, review §Observaciones 1 y handoff original y §Reanudación 2; además, arquitectura, convenciones, carta de UI y verificación. El informe anterior conserva las decisiones y evidencia de la implementación original y de E1.
+
+Skills cargadas de verdad en esta reanudación:
+
+- `/home/claude/.codex/plugins/cache/ponytail/ponytail/4.10.0/skills/ponytail/SKILL.md` (full).
+- `/home/claude/.codex/plugins/cache/openai-curated/expo/11c74d6b/skills/building-native-ui/SKILL.md`.
+- `/home/claude/.codex/plugins/cache/openai-curated/expo/11c74d6b/skills/native-data-fetching/SKILL.md`.
+- `/home/claude/.codex/plugins/cache/openai-curated/expo/11c74d6b/skills/expo-ui-jetpack-compose/SKILL.md`.
+- `.agents/skills/appllama-app-design-skill/SKILL.md`.
+
+Se consultó también la [referencia versionada de Expo SDK 57](https://docs.expo.dev/versions/v57.0.0/), como pide mobile-pet-tracker/AGENTS.md. La carta y el handoff rigen el alcance: sin cambios permanentes de producción y sin estado optimista; smoke Android reservado al humano.
+
+### Paso 1: base verde
+
+```sh
+bunx jest src/screens/meal-schedule > /tmp/147-e2-base.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 1 passed, 1 total
+Tests:       51 passed, 51 total
+Snapshots:   0 total
+Time:        7.872 s, estimated 8 s
+Ran all test suites matching /src\/screens\/meal-schedule/i.
+exit=0
+```
+
+### Paso 2: E2-a, ningún refetch tras error
+
+```sh
+bunx jest src/screens/meal-schedule > /tmp/147-e2-a.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 1 passed, 1 total
+Tests:       51 passed, 51 total
+Snapshots:   0 total
+Time:        12.264 s
+Ran all test suites matching /src\/screens\/meal-schedule/i.
+exit=0
+```
+
+Se localizaron por contenido las diez filas del it.each de R8 y el 401. En los dos sitios se añadieron literalmente, después de la espera final sobre meal-time-edit-0, las dos líneas de tasks.md E2-a:
+
+```ts
+    expect(mockGetNutritionPlan).toHaveBeenCalledTimes(1); // #147 E2.2: ningún refetch si no es ok
+    expect(mockGetPet).toHaveBeenCalledTimes(1);
+```
+
+No se movió ninguna aserción ni se introdujo copy. El recuento permanece en 51/51; la premisa de E2-a se cumple.
+
+```sh
+git add -- mobile-pet-tracker/src/screens/meal-schedule/index.test.tsx
+git commit -m 'test(mobile-meal-schedule-editing): lock no refetch on every failed meal time edit (R7)'
+git show --stat HEAD > /tmp/147-e2-a-stat.txt 2>&1; echo "exit=$?"
+```
+
+```text
+commit e277b8102c4f1cb84a8c6736b7ac2aa8a42a4b33
+Author: Claude <claude@srv1178023.hstgr.cloud>
+Date:   Fri Oct 2 23:10:32 2026 +0000
+
+    test(mobile-meal-schedule-editing): lock no refetch on every failed meal time edit (R7)
+
+ mobile-pet-tracker/src/screens/meal-schedule/index.test.tsx | 4 ++++
+ 1 file changed, 4 insertions(+)
+exit=0
+```
+
+El commit `e277b810` contiene un solo fichero. El status posterior queda vacío.
+
+### Paso 3: E2-b, R7 sobre Añadir
+
+```sh
+bunx jest src/screens/meal-schedule > /tmp/147-e2-b.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 1 passed, 1 total
+Tests:       54 passed, 54 total
+Snapshots:   0 total
+Time:        7.476 s, estimated 13 s
+Ran all test suites matching /src\/screens\/meal-schedule/i.
+exit=0
+```
+
+Se insertaron los tres it literales de tasks.md E2-b al final del describe de R7, después de «un resultado que no es ok no refetchea». Se comprobó por igualdad de texto que el bloque coincide con el prescrito. Mantiene las esperas conjuntas, las ausencias ancladas en nodos observados y las esperas de cierre. No añade copy nueva. La suite pasa de 51 a 54 tests.
+
+```sh
+git add -- mobile-pet-tracker/src/screens/meal-schedule/index.test.tsx
+git commit -m 'test(mobile-meal-schedule-editing): lock refetch and disabled controls for added meal times (R7)'
+git show --stat HEAD > /tmp/147-e2-b-stat.txt 2>&1; echo "exit=$?"
+```
+
+```text
+commit bf81642ab16907d02c3384e8f36532fadbcb3a72
+Author: Claude <claude@srv1178023.hstgr.cloud>
+Date:   Fri Oct 2 23:11:10 2026 +0000
+
+    test(mobile-meal-schedule-editing): lock refetch and disabled controls for added meal times (R7)
+
+ .../src/screens/meal-schedule/index.test.tsx       | 55 ++++++++++++++++++++++
+ 1 file changed, 55 insertions(+)
+exit=0
+```
+
+El commit `bf81642a` contiene un solo fichero. El status posterior queda vacío. Entre ambos commits se añaden 59 líneas al test y ninguna a producción.
+
+### Paso 4: las 13 sondas y el control, por separado sobre el verde
+
+Cada sonda parte de HEAD `bf81642a` limpio y modifica temporalmente solo src/screens/meal-schedule/index.tsx. Después de cada ejecución se usa esta restauración, desde mobile-pet-tracker/:
+
+```sh
+git checkout HEAD -- src/screens/meal-schedule/index.tsx
+git diff --cached --stat
+git status --short
+```
+
+Las salidas y los códigos se registraron para cada sonda en `/tmp/147-e2-probe-<n>-restore.txt`, `-cached.txt` y `-status.txt`. Las tres salidas son vacías, con exit 0, en todas las sondas. Se contrastó cada lista de it rojos, la cifra de fallos y el matcher con la tabla de E2. Ninguna caída se produce por consulta «Unable to find».
+
+#### Sonda 1: Añadido optimista antes de addMealTime, con rollback al snapshot
+
+```diff
+diff --git a/mobile-pet-tracker/src/screens/meal-schedule/index.tsx b/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
+index cb77bf55..2e0dec35 100644
+--- a/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
++++ b/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
+@@ -330,7 +330,23 @@ function MealScheduleContent({ petId }: { petId: string }) {
+                   setPicker(null);
+                   const mealTime = toMealTime(selected);
+                   if (from === null) {
+-                    void runMealTimeEdit(() => addMealTime(baseUrl, token ?? '', petId, mealTime));
++                    const snapshot = queryClient.getQueryData<NutritionPlanState>(nutritionKeys.plan(petId));
++                    if (snapshot?.kind === 'ok') {
++                      queryClient.setQueryData(nutritionKeys.plan(petId), {
++                        ...snapshot,
++                        plan: { ...snapshot.plan, mealTimes: [...snapshot.plan.mealTimes, mealTime].sort() },
++                      });
++                    }
++                    void runMealTimeEdit(async () => {
++                      try {
++                        const result = await addMealTime(baseUrl, token ?? '', petId, mealTime);
++                        if (result.kind !== 'ok') queryClient.setQueryData(nutritionKeys.plan(petId), snapshot);
++                        return result;
++                      } catch (error) {
++                        queryClient.setQueryData(nutritionKeys.plan(petId), snapshot);
++                        throw error;
++                      }
++                    });
+                   } else if (mealTime !== from) {
+                     void runMealTimeEdit(() => moveMealTime(baseUrl, token ?? '', petId, from, mealTime));
+                   }
+```
+
+```sh
+bunx jest src/screens/meal-schedule > /tmp/147-e2-probe-1.txt 2>&1; echo "exit=$?"
+```
+
+```text
+  ● #147 R7: tras un éxito refetchea plan y mascota, sin estado optimista › mientras Añadir vuela, todos los controles están deshabilitados y no aparece la fila nueva
+  ● #147 R7: tras un éxito refetchea plan y mascota, sin estado optimista › tras ok de Añadir los controles siguen deshabilitados y sin fila nueva hasta que termina el refetch
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 52 passed, 54 total
+Snapshots:   0 total
+Time:        7.316 s, estimated 8 s
+Ran all test suites matching /src\/screens\/meal-schedule/i.
+exit=1
+```
+
+E2-b it 2 e it 3: por matcher `toBeNull()` sobre `queryByTestId('meal-time-row-2')`; reciben una fila host en vez de null. El rollback cubre tanto kind no ok como rechazo.
+
+Restauración desde HEAD: exit 0 y salida vacía; `git diff --cached --stat`: exit 0 y vacío; `git status --short`: exit 0 y vacío. Coinciden exactamente los it y el modo prescritos.
+
+#### Sonda 2: Rehabilitar justo después de lanzar runMealTimeEdit para Añadir
+
+```diff
+diff --git a/mobile-pet-tracker/src/screens/meal-schedule/index.tsx b/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
+index cb77bf55..4c0f4ca3 100644
+--- a/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
++++ b/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
+@@ -331,6 +331,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
+                   const mealTime = toMealTime(selected);
+                   if (from === null) {
+                     void runMealTimeEdit(() => addMealTime(baseUrl, token ?? '', petId, mealTime));
++                    setEditing(false);
+                   } else if (mealTime !== from) {
+                     void runMealTimeEdit(() => moveMealTime(baseUrl, token ?? '', petId, from, mealTime));
+                   }
+```
+
+```sh
+bunx jest src/screens/meal-schedule > /tmp/147-e2-probe-2.txt 2>&1; echo "exit=$?"
+```
+
+```text
+  ● #147 R7: tras un éxito refetchea plan y mascota, sin estado optimista › mientras Añadir vuela, todos los controles están deshabilitados y no aparece la fila nueva
+  ● #147 R7: tras un éxito refetchea plan y mascota, sin estado optimista › tras ok de Añadir los controles siguen deshabilitados y sin fila nueva hasta que termina el refetch
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 52 passed, 54 total
+Snapshots:   0 total
+Time:        8.83 s
+Ran all test suites matching /src\/screens\/meal-schedule/i.
+exit=1
+```
+
+E2-b it 2 e it 3: por matcher `toEqual(expect.objectContaining({ disabled: true }))` en sus waitFor; reciben controles habilitados.
+
+Restauración desde HEAD: exit 0 y salida vacía; `git diff --cached --stat`: exit 0 y vacío; `git status --short`: exit 0 y vacío. Coinciden exactamente los it y el modo prescritos.
+
+#### Sonda 3: addMealTime fuera de runMealTimeEdit, delegando solo errores y rechazos
+
+```diff
+diff --git a/mobile-pet-tracker/src/screens/meal-schedule/index.tsx b/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
+index cb77bf55..d3a4a9d8 100644
+--- a/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
++++ b/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
+@@ -330,7 +330,11 @@ function MealScheduleContent({ petId }: { petId: string }) {
+                   setPicker(null);
+                   const mealTime = toMealTime(selected);
+                   if (from === null) {
+-                    void runMealTimeEdit(() => addMealTime(baseUrl, token ?? '', petId, mealTime));
++                    void addMealTime(baseUrl, token ?? '', petId, mealTime)
++                      .then((result) => {
++                        if (result.kind !== 'ok') void runMealTimeEdit(() => Promise.resolve(result));
++                      })
++                      .catch((error) => { void runMealTimeEdit(() => Promise.reject(error)); });
+                   } else if (mealTime !== from) {
+                     void runMealTimeEdit(() => moveMealTime(baseUrl, token ?? '', petId, from, mealTime));
+                   }
+```
+
+```sh
+bunx jest src/screens/meal-schedule > /tmp/147-e2-probe-3.txt 2>&1; echo "exit=$?"
+```
+
+```text
+  ● #147 R7: tras un éxito refetchea plan y mascota, sin estado optimista › tras ok de Añadir refetchea el plan y el detalle de la mascota y repinta con la fila nueva
+  ● #147 R7: tras un éxito refetchea plan y mascota, sin estado optimista › mientras Añadir vuela, todos los controles están deshabilitados y no aparece la fila nueva
+  ● #147 R7: tras un éxito refetchea plan y mascota, sin estado optimista › tras ok de Añadir los controles siguen deshabilitados y sin fila nueva hasta que termina el refetch
+Test Suites: 1 failed, 1 total
+Tests:       3 failed, 51 passed, 54 total
+Snapshots:   0 total
+Time:        10.703 s
+Ran all test suites matching /src\/screens\/meal-schedule/i.
+exit=1
+```
+
+E2-b it 1: por matcher `not.toBeNull()` sobre la hora 08:05 de la fila 1; recibe null. E2-b it 2 e it 3: por matcher de `disabled: true` en sus waitFor; reciben controles habilitados.
+
+Restauración desde HEAD: exit 0 y salida vacía; `git diff --cached --stat`: exit 0 y vacío; `git status --short`: exit 0 y vacío. Coinciden exactamente los it y el modo prescritos.
+
+#### Sonda 4: Refetch de plan en invalid
+
+```diff
+diff --git a/mobile-pet-tracker/src/screens/meal-schedule/index.tsx b/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
+index cb77bf55..706dcc8a 100644
+--- a/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
++++ b/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
+@@ -100,6 +100,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
+           await queryClient.refetchQueries({ queryKey: petKeys.detail(petId) });
+           return;
+         case 'invalid':
++          await plan.refetch();
+           setEditError(t('mealSchedule.errorInvalidTime'));
+           return;
+         case 'forbidden':
+```
+
+```sh
+bunx jest src/screens/meal-schedule > /tmp/147-e2-probe-4.txt 2>&1; echo "exit=$?"
+```
+
+```text
+  ● #147 R8: cada error del contrato tiene su mensaje › invalid muestra «La hora no es válida»
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 53 passed, 54 total
+Snapshots:   0 total
+Time:        6.816 s, estimated 11 s
+Ran all test suites matching /src\/screens\/meal-schedule/i.
+exit=1
+```
+
+Fila invalid de R8: por matcher `mockGetNutritionPlan.toHaveBeenCalledTimes(1)`; se observan 2 llamadas.
+
+Restauración desde HEAD: exit 0 y salida vacía; `git diff --cached --stat`: exit 0 y vacío; `git status --short`: exit 0 y vacío. Coinciden exactamente los it y el modo prescritos.
+
+#### Sonda 5: Refetch de plan en forbidden
+
+```diff
+diff --git a/mobile-pet-tracker/src/screens/meal-schedule/index.tsx b/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
+index cb77bf55..bbf48982 100644
+--- a/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
++++ b/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
+@@ -103,6 +103,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
+           setEditError(t('mealSchedule.errorInvalidTime'));
+           return;
+         case 'forbidden':
++          await plan.refetch();
+           setEditError(t('mealSchedule.errorEditForbidden'));
+           return;
+         case 'unprocessable':
+```
+
+```sh
+bunx jest src/screens/meal-schedule > /tmp/147-e2-probe-5.txt 2>&1; echo "exit=$?"
+```
+
+```text
+  ● #147 R8: cada error del contrato tiene su mensaje › forbidden muestra «Solo el dueño puede cambiar los horarios»
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 53 passed, 54 total
+Snapshots:   0 total
+Time:        7.122 s
+Ran all test suites matching /src\/screens\/meal-schedule/i.
+exit=1
+```
+
+Fila forbidden de R8: por matcher `mockGetNutritionPlan.toHaveBeenCalledTimes(1)`; se observan 2 llamadas.
+
+Restauración desde HEAD: exit 0 y salida vacía; `git diff --cached --stat`: exit 0 y vacío; `git status --short`: exit 0 y vacío. Coinciden exactamente los it y el modo prescritos.
+
+#### Sonda 6: Refetch de plan en NUTRITION_PLAN_REQUIRED
+
+```diff
+diff --git a/mobile-pet-tracker/src/screens/meal-schedule/index.tsx b/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
+index cb77bf55..723a23b2 100644
+--- a/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
++++ b/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
+@@ -108,6 +108,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
+         case 'unprocessable':
+           switch (result.code) {
+             case 'NUTRITION_PLAN_REQUIRED':
++              await plan.refetch();
+               setEditError(t('mealSchedule.errorPlanRequired'));
+               break;
+             case 'MEAL_TIME_NOT_IN_PLAN':
+```
+
+```sh
+bunx jest src/screens/meal-schedule > /tmp/147-e2-probe-6.txt 2>&1; echo "exit=$?"
+```
+
+```text
+  ● #147 R8: cada error del contrato tiene su mensaje › NUTRITION_PLAN_REQUIRED muestra «Primero genera un plan de alimentación»
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 53 passed, 54 total
+Snapshots:   0 total
+Time:        6.987 s, estimated 7 s
+Ran all test suites matching /src\/screens\/meal-schedule/i.
+exit=1
+```
+
+Fila NUTRITION_PLAN_REQUIRED de R8: por matcher `mockGetNutritionPlan.toHaveBeenCalledTimes(1)`; se observan 2 llamadas.
+
+Restauración desde HEAD: exit 0 y salida vacía; `git diff --cached --stat`: exit 0 y vacío; `git status --short`: exit 0 y vacío. Coinciden exactamente los it y el modo prescritos.
+
+#### Sonda 7: Refetch de plan en MEAL_TIME_NOT_IN_PLAN
+
+```diff
+diff --git a/mobile-pet-tracker/src/screens/meal-schedule/index.tsx b/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
+index cb77bf55..17d464d0 100644
+--- a/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
++++ b/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
+@@ -111,6 +111,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
+               setEditError(t('mealSchedule.errorPlanRequired'));
+               break;
+             case 'MEAL_TIME_NOT_IN_PLAN':
++              await plan.refetch();
+               setEditError(t('mealSchedule.errorTimeNotInPlan'));
+               break;
+             case 'MEAL_TIME_DUPLICATE':
+```
+
+```sh
+bunx jest src/screens/meal-schedule > /tmp/147-e2-probe-7.txt 2>&1; echo "exit=$?"
+```
+
+```text
+  ● #147 R8: cada error del contrato tiene su mensaje › MEAL_TIME_NOT_IN_PLAN muestra «Ese horario ya no está en el plan»
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 53 passed, 54 total
+Snapshots:   0 total
+Time:        6.738 s, estimated 7 s
+Ran all test suites matching /src\/screens\/meal-schedule/i.
+exit=1
+```
+
+Fila MEAL_TIME_NOT_IN_PLAN de R8: por matcher `mockGetNutritionPlan.toHaveBeenCalledTimes(1)`; se observan 2 llamadas.
+
+Restauración desde HEAD: exit 0 y salida vacía; `git diff --cached --stat`: exit 0 y vacío; `git status --short`: exit 0 y vacío. Coinciden exactamente los it y el modo prescritos.
+
+#### Sonda 8: Refetch de plan en MEAL_TIMES_LIMIT_REACHED
+
+```diff
+diff --git a/mobile-pet-tracker/src/screens/meal-schedule/index.tsx b/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
+index cb77bf55..c6ac2c23 100644
+--- a/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
++++ b/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
+@@ -117,6 +117,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
+               setEditError(t('mealSchedule.errorDuplicateTime'));
+               break;
+             case 'MEAL_TIMES_LIMIT_REACHED':
++              await plan.refetch();
+               setEditError(t('mealSchedule.errorMealLimit'));
+               break;
+           }
+```
+
+```sh
+bunx jest src/screens/meal-schedule > /tmp/147-e2-probe-8.txt 2>&1; echo "exit=$?"
+```
+
+```text
+  ● #147 R8: cada error del contrato tiene su mensaje › MEAL_TIMES_LIMIT_REACHED muestra «El plan ya tiene el máximo de 6 comidas»
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 53 passed, 54 total
+Snapshots:   0 total
+Time:        6.683 s, estimated 7 s
+Ran all test suites matching /src\/screens\/meal-schedule/i.
+exit=1
+```
+
+Fila MEAL_TIMES_LIMIT_REACHED de R8: por matcher `mockGetNutritionPlan.toHaveBeenCalledTimes(1)`; se observan 2 llamadas.
+
+Restauración desde HEAD: exit 0 y salida vacía; `git diff --cached --stat`: exit 0 y vacío; `git status --short`: exit 0 y vacío. Coinciden exactamente los it y el modo prescritos.
+
+#### Sonda 9: Refetch de plan en unauthorized
+
+```diff
+diff --git a/mobile-pet-tracker/src/screens/meal-schedule/index.tsx b/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
+index cb77bf55..1e6074c6 100644
+--- a/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
++++ b/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
+@@ -122,6 +122,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
+           }
+           return;
+         case 'unauthorized':
++          await plan.refetch();
+           await signOut();
+           return;
+         case 'unreachable':
+```
+
+```sh
+bunx jest src/screens/meal-schedule > /tmp/147-e2-probe-9.txt 2>&1; echo "exit=$?"
+```
+
+```text
+  ● #147 R8: cada error del contrato tiene su mensaje › 401 cierra sesión sin mensaje
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 53 passed, 54 total
+Snapshots:   0 total
+Time:        6.912 s, estimated 7 s
+Ran all test suites matching /src\/screens\/meal-schedule/i.
+exit=1
+```
+
+It «401 cierra sesión sin mensaje»: por matcher `mockGetNutritionPlan.toHaveBeenCalledTimes(1)`; se observan 2 llamadas.
+
+Restauración desde HEAD: exit 0 y salida vacía; `git diff --cached --stat`: exit 0 y vacío; `git status --short`: exit 0 y vacío. Coinciden exactamente los it y el modo prescritos.
+
+#### Sonda 10: Refetch de plan en unreachable
+
+```diff
+diff --git a/mobile-pet-tracker/src/screens/meal-schedule/index.tsx b/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
+index cb77bf55..51682246 100644
+--- a/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
++++ b/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
+@@ -125,6 +125,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
+           await signOut();
+           return;
+         case 'unreachable':
++          await plan.refetch();
+           setEditError(t('common.cannotReachServer'));
+           return;
+         case 'error':
+```
+
+```sh
+bunx jest src/screens/meal-schedule > /tmp/147-e2-probe-10.txt 2>&1; echo "exit=$?"
+```
+
+```text
+  ● #147 R8: cada error del contrato tiene su mensaje › unreachable muestra «No se pudo conectar con el servidor»
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 53 passed, 54 total
+Snapshots:   0 total
+Time:        6.945 s, estimated 7 s
+Ran all test suites matching /src\/screens\/meal-schedule/i.
+exit=1
+```
+
+Fila unreachable de R8: por matcher `mockGetNutritionPlan.toHaveBeenCalledTimes(1)`; se observan 2 llamadas.
+
+Restauración desde HEAD: exit 0 y salida vacía; `git diff --cached --stat`: exit 0 y vacío; `git status --short`: exit 0 y vacío. Coinciden exactamente los it y el modo prescritos.
+
+#### Sonda 11: Refetch de plan en error/missing-config
+
+```diff
+diff --git a/mobile-pet-tracker/src/screens/meal-schedule/index.tsx b/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
+index cb77bf55..56369cec 100644
+--- a/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
++++ b/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
+@@ -129,6 +129,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
+           return;
+         case 'error':
+         case 'missing-config':
++          await plan.refetch();
+           setEditError(t('common.somethingWentWrong'));
+       }
+     } catch {
+```
+
+```sh
+bunx jest src/screens/meal-schedule > /tmp/147-e2-probe-11.txt 2>&1; echo "exit=$?"
+```
+
+```text
+  ● #147 R8: cada error del contrato tiene su mensaje › error muestra «Algo salió mal»
+  ● #147 R8: cada error del contrato tiene su mensaje › missing-config muestra «Algo salió mal»
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 52 passed, 54 total
+Snapshots:   0 total
+Time:        6.715 s, estimated 7 s
+Ran all test suites matching /src\/screens\/meal-schedule/i.
+exit=1
+```
+
+Filas error y missing-config de R8: por matcher `mockGetNutritionPlan.toHaveBeenCalledTimes(1)`; ambas observan 2 llamadas.
+
+Restauración desde HEAD: exit 0 y salida vacía; `git diff --cached --stat`: exit 0 y vacío; `git status --short`: exit 0 y vacío. Coinciden exactamente los it y el modo prescritos.
+
+#### Sonda 12: Refetch de plan en catch
+
+```diff
+diff --git a/mobile-pet-tracker/src/screens/meal-schedule/index.tsx b/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
+index cb77bf55..74d21ca2 100644
+--- a/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
++++ b/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
+@@ -132,6 +132,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
+           setEditError(t('common.somethingWentWrong'));
+       }
+     } catch {
++      await plan.refetch();
+       setEditError(t('common.somethingWentWrong'));
+     } finally {
+       setEditing(false);
+```
+
+```sh
+bunx jest src/screens/meal-schedule > /tmp/147-e2-probe-12.txt 2>&1; echo "exit=$?"
+```
+
+```text
+  ● #147 R8: cada error del contrato tiene su mensaje › rechazo muestra «Algo salió mal»
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 53 passed, 54 total
+Snapshots:   0 total
+Time:        7.109 s
+Ran all test suites matching /src\/screens\/meal-schedule/i.
+exit=1
+```
+
+Fila rechazo de R8: por matcher `mockGetNutritionPlan.toHaveBeenCalledTimes(1)`; se observan 2 llamadas.
+
+Restauración desde HEAD: exit 0 y salida vacía; `git diff --cached --stat`: exit 0 y vacío; `git status --short`: exit 0 y vacío. Coinciden exactamente los it y el modo prescritos.
+
+#### Sonda 13: Refetch de mascota en forbidden
+
+```diff
+diff --git a/mobile-pet-tracker/src/screens/meal-schedule/index.tsx b/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
+index cb77bf55..93ec3da5 100644
+--- a/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
++++ b/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
+@@ -103,6 +103,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
+           setEditError(t('mealSchedule.errorInvalidTime'));
+           return;
+         case 'forbidden':
++          await queryClient.refetchQueries({ queryKey: petKeys.detail(petId) });
+           setEditError(t('mealSchedule.errorEditForbidden'));
+           return;
+         case 'unprocessable':
+```
+
+```sh
+bunx jest src/screens/meal-schedule > /tmp/147-e2-probe-13.txt 2>&1; echo "exit=$?"
+```
+
+```text
+  ● #147 R8: cada error del contrato tiene su mensaje › forbidden muestra «Solo el dueño puede cambiar los horarios»
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 53 passed, 54 total
+Snapshots:   0 total
+Time:        6.78 s, estimated 7 s
+Ran all test suites matching /src\/screens\/meal-schedule/i.
+exit=1
+```
+
+Fila forbidden de R8: por matcher `mockGetPet.toHaveBeenCalledTimes(1)`; se observan 2 llamadas.
+
+Restauración desde HEAD: exit 0 y salida vacía; `git diff --cached --stat`: exit 0 y vacío; `git status --short`: exit 0 y vacío. Coinciden exactamente los it y el modo prescritos.
+
+#### Sonda C: Control: refetch de plan en MEAL_TIME_DUPLICATE
+
+```diff
+diff --git a/mobile-pet-tracker/src/screens/meal-schedule/index.tsx b/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
+index cb77bf55..d7d77d50 100644
+--- a/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
++++ b/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
+@@ -114,6 +114,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
+               setEditError(t('mealSchedule.errorTimeNotInPlan'));
+               break;
+             case 'MEAL_TIME_DUPLICATE':
++              await plan.refetch();
+               setEditError(t('mealSchedule.errorDuplicateTime'));
+               break;
+             case 'MEAL_TIMES_LIMIT_REACHED':
+```
+
+```sh
+bunx jest src/screens/meal-schedule > /tmp/147-e2-probe-C.txt 2>&1; echo "exit=$?"
+```
+
+```text
+  ● #147 R7: tras un éxito refetchea plan y mascota, sin estado optimista › un resultado que no es ok no refetchea
+  ● #147 R8: cada error del contrato tiene su mensaje › MEAL_TIME_DUPLICATE muestra «Ya hay una comida a esa hora»
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 52 passed, 54 total
+Snapshots:   0 total
+Time:        6.8 s, estimated 7 s
+Ran all test suites matching /src\/screens\/meal-schedule/i.
+exit=1
+```
+
+R7 it 4 y fila MEAL_TIME_DUPLICATE de R8: por matcher `mockGetNutritionPlan.toHaveBeenCalledTimes(1)`; ambos observan 2 llamadas.
+
+Restauración desde HEAD: exit 0 y salida vacía; `git diff --cached --stat`: exit 0 y vacío; `git status --short`: exit 0 y vacío. Coinciden exactamente los it y el modo prescritos.
+
+Se ejecutaron las 13 sondas y el control. Todas las mutaciones fueron detectadas y restauradas; ninguna sonda se omite. Antes del cierre, el árbol y el índice vuelven a estar limpios.
+
+### Paso 5: §Cierre completo, en orden
+
+Para respetar «sin pipe», los filtros de pgrep y de los dos grep-clean se ejecutan como comandos separados sobre ficheros intermedios. Se conservan los patrones de tasks.md y se registra el exit de cada comando.
+
+#### 5.1 Gate de procesos
+
+```sh
+pgrep -af 'init\.sh|test:e2e|jest-e2e' > /tmp/147-e2-close-pgrep-raw.txt 2>&1; echo "exit=$?"
+grep -v pgrep /tmp/147-e2-close-pgrep-raw.txt > /tmp/147-e2-close-pgrep.txt 2>&1; echo "exit=$?"
+```
+
+```text
+pgrep: exit=0 (solo procesos de la propia inspección)
+filtro grep -v pgrep: exit=1
+(salida filtrada vacía)
+```
+
+No hay init.sh ni E2E en vuelo. El exit 1 del filtro expresa ausencia de coincidencias y cumple el gate.
+
+#### 5.2 Suite móvil completa
+
+```sh
+bun run test > /tmp/147-e2-close-test.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 88 passed, 88 total
+Tests:       1762 passed, 1762 total
+Snapshots:   1 passed, 1 total
+Time:        41.831 s, estimated 46 s
+Ran all test suites.
+exit=0
+```
+
+#### 5.3 Lint
+
+```sh
+bun run lint > /tmp/147-e2-close-lint.txt 2>&1; echo "exit=$?"
+```
+
+```text
+$ expo lint
+exit=0
+```
+
+#### 5.4 Typecheck, con la guarda de router
+
+```sh
+{ test ! -e .expo/types/router.d.ts && bun run typecheck; } > /tmp/147-e2-close-typecheck.txt 2>&1; echo "exit=$?"
+```
+
+```text
+$ tsc --noEmit
+exit=0
+```
+
+La guarda confirma que router.d.ts no existe; no se borra ningún fichero. El grupo de shell captura también la salida y el exit si la guarda falla.
+
+#### 5.5 Los tres grep-clean
+
+```sh
+git diff b367ed44 -- src/screens/meal-schedule/index.tsx src/api/nutrition.ts > /tmp/147-e2-close-ui-diff.txt 2>&1; echo "exit=$?"
+grep '^+' /tmp/147-e2-close-ui-diff.txt > /tmp/147-e2-close-ui-added.txt 2>&1; echo "exit=$?"
+grep -nE "#[0-9a-fA-F]{3,8}\b|className=\"[^\"]*\[|StyleSheet\.create|rounded-(2xl|lg|md|sm)\b|elevation|shadow(Color|Offset|Opacity|Radius)" /tmp/147-e2-close-ui-added.txt > /tmp/147-e2-close-grep-ui.txt 2>&1; echo "exit=$?"
+```
+
+```text
+git diff: exit=0
+grep '^+': exit=0
+grep-clean UI: exit=1
+(salida vacía)
+```
+
+```sh
+git diff b367ed44 -- src/screens/meal-schedule/index.tsx > /tmp/147-e2-close-dimensions-diff.txt 2>&1; echo "exit=$?"
+grep -nE "^[-+].*(contentContainerStyle|padding: 24|gap: 16|insets\.bottom \+ 24)" /tmp/147-e2-close-dimensions-diff.txt > /tmp/147-e2-close-grep-dimensions.txt 2>&1; echo "exit=$?"
+```
+
+```text
+git diff: exit=0
+grep-clean dimensiones: exit=1
+(salida vacía)
+```
+
+```sh
+git diff b367ed44 --stat -- package.json bun.lock > /tmp/147-e2-close-grep-deps.txt 2>&1; echo "exit=$?"
+```
+
+```text
+(salida vacía)
+exit=0
+```
+
+Los exit 1 de grep significan que no hay coincidencias. Los tres gates salen vacíos: sin violaciones de tokens, sin cambios de dimensiones y sin dependencias nuevas. El cierre termina verde con 88/1762; no se ajusta ninguna aserción.
+
+### Paso 6: trazabilidad y commits propios
+
+La fila R7 de traceability.md cita `e277b810` (E2-a), las diez filas del it.each de R8 y el 401 con los dos contadores, y `bf81642a` (E2-b) con los tres it nuevos de Añadir. Conserva los dos hashes del par C4 original y la sonda de vía (b). Se añade la evidencia de las 13 sondas y el control y del cierre 88/1762. Ninguna fila de la tabla queda pendiente.
+
+Lista de commits propios, en orden desde H0:
+
+```text
+0cbb155e test(mobile-meal-schedule-editing): lock nine meal schedule editing catalog keys (R1)
+a131c0cc feat(mobile-meal-schedule-editing): add meal schedule editing copy in es and en (R1)
+f559d77a test(mobile-meal-schedule-editing): lock addMealTime request and state mapping (R2)
+35ed6ada feat(mobile-meal-schedule-editing): add addMealTime api client (R2)
+befe2220 test(mobile-meal-schedule-editing): lock moveMealTime request and state mapping (R3)
+0438799b feat(mobile-meal-schedule-editing): add moveMealTime api client (R3)
+9c88290b test(mobile-meal-schedule-editing): lock owner-only meal time controls (R4)
+3c497607 feat(mobile-meal-schedule-editing): show edit and add meal controls to owners (R4)
+4a9c91d5 test(mobile-meal-schedule-editing): lock edit time picker and PATCH call (R5)
+fc2c792a feat(mobile-meal-schedule-editing): edit a meal time with the native time picker (R5)
+2860d495 test(mobile-meal-schedule-editing): lock add meal picker and POST call (R6)
+fd48f9c3 feat(mobile-meal-schedule-editing): add a meal time with the native time picker (R6)
+13363d1b test(mobile-meal-schedule-editing): lock refetch after success without optimistic state (R7)
+a6a85313 feat(mobile-meal-schedule-editing): refetch plan and pet after a meal time edit (R7)
+b343c919 test(mobile-meal-schedule-editing): lock meal time edit error messages (R8)
+3d79a82c feat(mobile-meal-schedule-editing): show inline errors for meal time edits (R8)
+f134d9d4 test(mobile-meal-schedule-editing): lock meal schedule editing copy registration (R9)
+ddd0ba67 feat(mobile-meal-schedule-editing): register meal schedule editing copy uses (R9)
+2c873c47 refactor(mobile-meal-schedule-editing): apply picker test timezone to Node process (R5,R6)
+b5d46054 refactor(mobile-meal-schedule-editing): match language spec table format (R1)
+1526db05 test(mobile-meal-schedule-editing): count the meal time controls among accent-soft uses (R4)
+e8789628 test(mobile-meal-schedule-editing): count the meal schedule 401 sign-out (R8)
+d05d8725 docs(mobile-meal-schedule-editing): fill #147 traceability
+e277b810 test(mobile-meal-schedule-editing): lock no refetch on every failed meal time edit (R7)
+bf81642a test(mobile-meal-schedule-editing): lock refetch and disabled controls for added meal times (R7)
+HEAD docs(mobile-meal-schedule-editing): cite amendment E2 in #147 traceability
+```
+
+Son 26 al incluir el único commit de documentación que contiene este informe: los 23 anteriores, E2-a, E2-b y el cierre documental. El último se identifica como HEAD porque su hash depende del propio informe; se obtiene después con `git log -1 --format="%h %s"`, sin enmendar ni rebasear. Los otros 25 hashes se contrastaron con git log.
+
+El último commit lleva SOLO specs/mobile-meal-schedule-editing/traceability.md y progress/impl_mobile-meal-schedule-editing.md, con este mensaje literal:
+
+```sh
+git commit -m 'docs(mobile-meal-schedule-editing): cite amendment E2 in #147 traceability'
+```
+
+Las rutas que cambian los commits propios se calcularon con git diff-tree para cada hash propio, excluyendo `98cc1154`, `d8edb20e` y `f26f85fd` del leader. Coinciden exactamente con los mismos 13 ficheros de design.md §Archivos afectados:
+
+```text
+mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+mobile-pet-tracker/src/__tests__/design-drift.test.ts
+mobile-pet-tracker/src/__tests__/ui-copy-table.ts
+mobile-pet-tracker/src/__tests__/ui-language.test.ts
+mobile-pet-tracker/src/api/__tests__/nutrition.test.ts
+mobile-pet-tracker/src/api/nutrition.ts
+mobile-pet-tracker/src/i18n/catalog.ts
+mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+mobile-pet-tracker/src/screens/meal-schedule/index.test.tsx
+mobile-pet-tracker/src/screens/meal-schedule/index.tsx
+progress/impl_mobile-meal-schedule-editing.md
+specs/mobile-meal-schedule-editing/traceability.md
+specs/mobile-ui-language/design.md
+```
+
+### Diff completo H0..HEAD y los seis ficheros del leader
+
+```sh
+git diff --name-only b367ed44..HEAD
+```
+
+```text
+mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+mobile-pet-tracker/src/__tests__/design-drift.test.ts
+mobile-pet-tracker/src/__tests__/ui-copy-table.ts
+mobile-pet-tracker/src/__tests__/ui-language.test.ts
+mobile-pet-tracker/src/api/__tests__/nutrition.test.ts
+mobile-pet-tracker/src/api/nutrition.ts
+mobile-pet-tracker/src/i18n/catalog.ts
+mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+mobile-pet-tracker/src/screens/meal-schedule/index.test.tsx
+mobile-pet-tracker/src/screens/meal-schedule/index.tsx
+progress/current.md
+progress/handoff_mobile-meal-schedule-editing.md
+progress/impl_mobile-meal-schedule-editing.md
+progress/review_mobile-meal-schedule-editing.md
+specs/mobile-meal-schedule-editing/design.md
+specs/mobile-meal-schedule-editing/requirements.md
+specs/mobile-meal-schedule-editing/tasks.md
+specs/mobile-meal-schedule-editing/traceability.md
+specs/mobile-ui-language/design.md
+exit=0
+```
+
+Son 19 rutas: las 13 propias y estas seis de los commits del leader (`98cc1154`, `d8edb20e` y `f26f85fd`), que NO cuentan como propias:
+
+- `specs/mobile-meal-schedule-editing/requirements.md`.
+- `specs/mobile-meal-schedule-editing/design.md`.
+- `specs/mobile-meal-schedule-editing/tasks.md`.
+- `progress/current.md`.
+- `progress/handoff_mobile-meal-schedule-editing.md`.
+- `progress/review_mobile-meal-schedule-editing.md`.
+
+La salida se obtuvo antes del último commit documental; ambos documentos ya estaban incluidos desde d05d8725. Se contrasta de nuevo después del commit contra este inventario, sin modificar el informe ni crear otro commit.
+
+```sh
+git diff f26f85fd HEAD -- mobile-pet-tracker/src/screens/meal-schedule/index.tsx mobile-pet-tracker/src/api/nutrition.ts
+```
+
+```text
+(salida vacía)
+exit=0
+```
+
+### Decisiones y entrega
+
+Solo se añaden las aserciones y los tests literales de E2, más trazabilidad e informe. Las sondas de producción se restauraron todas. No se ejecuta init.sh ni E2E, no se hace push ni se abre PR. No se modifica el estado de la feature ni se marca el smoke Android. El leader conserva el cierre de lifecycle y la revisión posterior. Se comprobarán tras el último commit los 26 commits propios, los 13 ficheros propios, el diff completo de 19 rutas y el árbol limpio.
