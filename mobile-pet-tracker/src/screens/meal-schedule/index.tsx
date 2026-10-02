@@ -1,6 +1,6 @@
 import { Host } from '@expo/ui';
 import ExpoDateTimePicker from '@expo/ui/community/datetime-picker';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Redirect } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
 import { useState } from 'react';
@@ -14,6 +14,7 @@ import {
   generateNutritionPlan,
   getNutritionPlan,
   getNutritionProfile,
+  type EditMealTimeState,
   type NutritionPlanState,
   type NutritionProfileState,
 } from '../../api/nutrition';
@@ -54,6 +55,8 @@ function MealScheduleContent({ petId }: { petId: string }) {
   const { signOut, token } = useAuth();
   const t = useTranslate();
   const insets = useSafeAreaInsets();
+  const queryClient = useQueryClient();
+  const [editing, setEditing] = useState(false);
   const [picker, setPicker] = useState<{ from: string | null } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
@@ -83,6 +86,19 @@ function MealScheduleContent({ petId }: { petId: string }) {
   function retryAll() {
     plan.refetch();
     profile.refetch();
+  }
+
+  async function runMealTimeEdit(request: () => Promise<EditMealTimeState>) {
+    setEditing(true);
+    try {
+      const result = await request();
+      if (result.kind === 'ok') {
+        await plan.refetch();
+        await queryClient.refetchQueries({ queryKey: petKeys.detail(petId) });
+      }
+    } finally {
+      setEditing(false);
+    }
   }
 
   async function handleGenerate() {
@@ -234,6 +250,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
                       accessibilityLabel={t('mealSchedule.editTimeLabel', { time: mealTime })}
                       variant="secondary"
                       size="sm"
+                      isDisabled={editing}
                       className="min-h-11 rounded-xl bg-accent-soft"
                       onPress={() => setPicker({ from: mealTime })}
                     >
@@ -248,6 +265,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
             {isOwner ? (
               <Button
                 testID="add-meal-time-button"
+                isDisabled={editing}
                 variant="secondary"
                 className="rounded-xl bg-accent-soft"
                 onPress={() => setPicker({ from: null })}
@@ -270,9 +288,9 @@ function MealScheduleContent({ petId }: { petId: string }) {
                   setPicker(null);
                   const mealTime = toMealTime(selected);
                   if (from === null) {
-                    void addMealTime(baseUrl, token ?? '', petId, mealTime);
+                    void runMealTimeEdit(() => addMealTime(baseUrl, token ?? '', petId, mealTime));
                   } else if (mealTime !== from) {
-                    void moveMealTime(baseUrl, token ?? '', petId, from, mealTime);
+                    void runMealTimeEdit(() => moveMealTime(baseUrl, token ?? '', petId, from, mealTime));
                   }
                 }}
                 onDismiss={() => setPicker(null)}
