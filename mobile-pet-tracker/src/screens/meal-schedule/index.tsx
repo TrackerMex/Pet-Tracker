@@ -9,6 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Clock, ForkKnife } from 'reicon-react-native';
 
 import {
+  addMealTime,
   moveMealTime,
   generateNutritionPlan,
   getNutritionPlan,
@@ -249,7 +250,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
                 testID="add-meal-time-button"
                 variant="secondary"
                 className="rounded-xl bg-accent-soft"
-                onPress={() => undefined}
+                onPress={() => setPicker({ from: null })}
               >
                 <Button.Label className="font-bold text-accent-strong">
                   {t('mealSchedule.addMeal')}
@@ -268,7 +269,9 @@ function MealScheduleContent({ petId }: { petId: string }) {
                   const { from } = picker;
                   setPicker(null);
                   const mealTime = toMealTime(selected);
-                  if (from !== null && mealTime !== from) {
+                  if (from === null) {
+                    void addMealTime(baseUrl, token ?? '', petId, mealTime);
+                  } else if (mealTime !== from) {
                     void moveMealTime(baseUrl, token ?? '', petId, from, mealTime);
                   }
                 }}
