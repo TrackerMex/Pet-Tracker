@@ -442,3 +442,78 @@ claves `geofences.*`. R2 y R3 van antes que la pantalla porque R5 dobla
       cualquier desviación de esta spec.
 - [ ] Prueba de humo: la corre **el humano** en un dev build de Android
       ([[requirements]] §Prueba de humo). Codex no la marca.
+
+## Enmienda E3 — clase del texto de "sin rastreo" (implementer)
+
+> Llega tras el cierre de Codex (d5830bab) y la revisión aprobada con el
+> hallazgo H1 (`../progress/review_mobile-geofences.md`). La implementa el
+> subagente `implementer` por ser trivial (excepción de `CLAUDE.md`). Llamamos
+> **H3** al commit
+> `docs(specs): amend #41 with E3, the no-tracking text takes the muted recipe`,
+> que añade esta sección. Mismas reglas que el resto de este fichero: desde
+> `mobile-pet-tracker/`, `bunx`, sin pipe, rutas de jest entre comillas
+> simples, anclas por contenido.
+
+- [ ] **Antes de empezar.** `pwd` = `/home/claude/sites/Pet-Tracker-wt-backend/mobile-pet-tracker`,
+      `git branch --show-current` = `feature/41-mobile-geofences`,
+      `git log --oneline -1` = H3 y `git status --short` vacío. Si no, **parar**.
+      `test ! -e .expo/types/router.d.ts; echo "exit=$?"` → `exit=0` (si sale 1,
+      parar y reportarlo: no se borra). Anclas, una línea cada una:
+      - `grep -cF "<Text>{t('geofences.needsCollar')}</Text>" src/screens/geofences/index.tsx` → `1`;
+      - `grep -cF "it('pinta el 402 sin Reintentar'" src/screens/geofences/index.test.tsx` → `1`.
+- [ ] **(1) Rojo.** En `src/screens/geofences/index.test.tsx`, dentro del
+      `it('pinta el 402 sin Reintentar')`, justo después de
+      `expect(card.props.className).toBe('rounded-card border border-border bg-surface p-4 shadow-sm items-center py-8');`,
+      añadir **una** línea, calcada de la del `it` del vacío:
+
+      ```tsx
+      expect(within(card).getByText('Las zonas seguras requieren un collar').props.className).toBe('text-center font-normal text-muted');
+      ```
+
+      `bunx jest --runTestsByPath 'src/screens/geofences/index.test.tsx' > /tmp/e3.log 2>&1; echo "exit=$?"`
+      → `exit=1`, 1 suite, 32 `it` pasan y falla **exactamente 1**:
+      `#41 R5` › `'pinta el 402 sin Reintentar'`, **por aserción** (`toBe`,
+      Expected `"text-center font-normal text-muted"`, Received `undefined`).
+      `test ! -e .expo/types/router.d.ts && bunx tsc --noEmit > /tmp/e3tsc.txt 2>&1; echo "exit=$?"`
+      → `exit=0`, 0 bytes.
+      Commit **solo** de ese fichero:
+      `test(geofences): the no-tracking text takes the muted recipe (R5, E3)`.
+- [ ] **(2) Verde.** En `src/screens/geofences/index.tsx` cambiar
+      `<Text>{t('geofences.needsCollar')}</Text>` por
+      `<Text className="text-center font-normal text-muted">{t('geofences.needsCollar')}</Text>`.
+      Nada más.
+      - `bunx jest --runTestsByPath 'src/screens/geofences/index.test.tsx' 'src/__tests__/consistency-classnames.test.ts' 'src/__tests__/legibility-classnames.test.ts' 'src/__tests__/design-drift.test.ts' 'src/__tests__/ui-language.test.ts' > /tmp/e3g.log 2>&1; echo "exit=$?"`
+        → `exit=0`, 5 suites. Ninguno de esos candados cuenta `text-muted`,
+        `font-normal` ni `text-center` (verificado por el leader en d5830bab).
+      - `tsc` como en (1) y `bunx expo lint > /tmp/e3lint.txt 2>&1; echo "exit=$?"`
+        → `exit=0` y 0 bytes cada uno.
+      - **Sonda M58** sobre el verde, sin commitear: cambiar esa clase por
+        `text-danger`, correr solo `'src/screens/geofences/index.test.tsx'` →
+        `exit=1` con el mismo `it` rojo. Restaurar con
+        `git checkout HEAD -- src/screens/geofences/index.tsx` **antes** del
+        commit verde no vale (borraría el verde): plantar la sonda **después**
+        del commit verde y restaurar con
+        `git checkout HEAD -- src/screens/geofences/index.tsx`; luego
+        `git status --short` y `git diff --cached --stat` vacíos.
+      - Suite completa:
+        `bunx jest --silent > /tmp/e3close.txt 2>&1; echo "exit=$?"` →
+        `exit=0`, **88 suites, 1710 tests, 1 snapshot**: los mismos recuentos
+        del cierre de Codex (E3 no añade `it`).
+
+      Commit **solo** de `src/screens/geofences/index.tsx`:
+      `feat(geofences): give the no-tracking text the muted recipe (R5, E3)`.
+- [ ] **(3) Trazabilidad.** En [[traceability]], la fila de R5 añade los dos
+      hashes con sus mensajes. En `../progress/impl_mobile-geofences.md`, una
+      sección nueva "Enmienda E3 (implementer)" con: las salidas de "Antes de
+      empezar", el rojo (cuentas, exit, el `it` con matcher/Expected/Received),
+      el `tsc` del rojo, el verde de los 5 ficheros, `tsc` y `lint`, la sonda
+      M58 y su restauración, la suite completa y los tres hashes. Commit
+      **solo** de esos dos ficheros:
+      `docs(geofences): add the E3 commits to #41 traceability`.
+- [ ] **Cierre de E3.** `git log --oneline H3..HEAD` → 3 commits.
+      `git diff --name-only H3` → **solo**
+      `mobile-pet-tracker/src/screens/geofences/index.test.tsx`,
+      `mobile-pet-tracker/src/screens/geofences/index.tsx`,
+      `specs/mobile-geofences/traceability.md` y
+      `progress/impl_mobile-geofences.md`. Sin push, sin PR, sin `init.sh` y
+      sin reescribir commits (la branch ya está en remoto).

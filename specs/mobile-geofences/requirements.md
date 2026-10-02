@@ -43,6 +43,20 @@ tags: [harness, spec, mobile]
 >   añade al `git diff --name-only` de [[tasks]] §Cierre cuatro ficheros del
 >   leader: este, [[design]], [[tasks]] y ese handoff.
 >
+> **Enmienda E3 (2026-10-02, aprobada por el humano en el chat de la sesión
+> Backend):** el texto de "sin rastreo" (R5 rama 4) lleva la clase
+> `text-center font-normal text-muted`, la misma receta que el estado vacío.
+>
+> - El reviewer la encontró como hueco de spec (H1 de
+>   `progress/review_mobile-geofences.md`): R5 no fijaba la clase, Codex dejó
+>   un `<Text>` sin `className` y su mutación m13 (`text-danger`) sobrevivió
+>   con la suite en verde.
+> - El `it` `'pinta el 402 sin Reintentar'` de `#41 R5` añade una aserción
+>   sobre la clase del texto; el número de `it` no cambia ([[design]] D7, M58).
+> - Por ser un cambio trivial lo implementa el subagente `implementer` (la
+>   excepción de `CLAUDE.md`), en dos commits rojo→verde y uno de
+>   trazabilidad ([[tasks]] §Enmienda E3).
+>
 > **Medición de la base**:
 >
 > - La tomó el spec_author el 2026-10-01, sobre una copia
@@ -410,8 +424,8 @@ antes de aprobarla.
 
      El resto de hijos lo fijan R6–R8.
   4. **Sin rastreo.** `no-tracking`: `Card` `geofences-no-tracking` con
-     `items-center py-8` y el texto `geofences.needsCollar`. Sin
-     "Reintentar".
+     `items-center py-8` y un `Text` con `geofences.needsCollar` y la clase
+     `text-center font-normal text-muted` (enmienda E3). Sin "Reintentar".
   5. **Sesión caducada.** `unauthorized`: nada. El cierre de sesión lo hace
      el `onUnauthorized` global del `QueryCache`; la pantalla no llama a
      `signOut`.

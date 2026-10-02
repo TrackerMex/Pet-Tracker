@@ -131,6 +131,7 @@ corrió su fichero de test.
 | M53 / M54 | Solo la fila 1 se deshabilita durante la escritura (`Switch` / borrado) | `'bloquea los dos interruptores…'` / `'deshabilita los dos borrados…'` |
 | M55 / M56 | La fila 1 escribe con otro id / con otro valor | `'bloquea los dos interruptores…'` |
 | M57 | El borrado de la fila 1 apunta a otro id | los 2 `it.each` de error de R7 |
+| M58 | Texto de "sin rastreo" con otra clase (`text-danger`), o sin clase | `#41 R5` › `'pinta el 402 sin Reintentar'` (enmienda E3; es la m13 del reviewer, que sobrevivía antes de E3) |
 
 ## D1 — Ruta y pila (guía de router para Codex)
 
@@ -401,7 +402,8 @@ con el mismo `beforeEach` que el de `#100 R2`. Tiene dos `it`:
   4. Vacío, con la clase exacta de la tarjeta.
   5. Dos filas (D3).
   6. Radio en inglés.
-  7. 402, sin "Reintentar".
+  7. 402, sin "Reintentar", con la clase exacta de la tarjeta y la del texto
+     (`text-center font-normal text-muted`, enmienda E3).
   8–10. `it.each` de error (`error`, `missing-config`, `unreachable`):
      texto, `selectable`, clase exacta de "Reintentar", y al pulsarlo 2
      llamadas a la lista y aparece la fila.
