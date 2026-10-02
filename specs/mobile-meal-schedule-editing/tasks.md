@@ -140,8 +140,10 @@ se añade ninguna suite.
 | R8 | +12 | 1758 |
 | R9 | +1 | **1759** |
 
-Lo que esperas al final es **88 suites / 1759 tests**. Si `./init.sh` da
-otra cifra, explica la diferencia en `impl` antes de cerrar.
+Lo que esperas al final es **88 suites / 1759 tests** en `bun run test`
+desde `mobile-pet-tracker/`. Si da otra cifra, explica la diferencia en `impl`
+antes de cerrar. `./init.sh` **no es tuyo**: comparte Postgres y LocalStack con
+otra sesión. Lo corre el leader antes del reviewer.
 
 ---
 
@@ -576,7 +578,15 @@ otra cifra, explica la diferencia en `impl` antes de cerrar.
 
 Todo se ejecuta sin pipe, para medir el exit code real.
 
-1. `./init.sh` desde la raíz del worktree debe dar **exit 0** y **88 suites / 1759 tests**.
+1. Desde `mobile-pet-tracker/`, cada comando por separado y sin pipe, con su exit code en `impl`:
+   - antes, `pgrep -af 'init\.sh|test:e2e|jest-e2e' | grep -v pgrep` debe salir vacío.
+     Si no lo está, espera a que acabe: la suite entera con `init.sh` en vuelo da
+     rojos falsos por carga (#133);
+   - `bun run test`: **exit 0** y **88 suites / 1759 tests**;
+   - `bun run lint`: exit 0;
+   - `test ! -e .expo/types/router.d.ts && bun run typecheck`: exit 0. Si el
+     `test` falla, **PARA** (§Arranque paso 2).
+   No lances `./init.sh` ni los e2e del backend.
 2. Grep-clean, desde `mobile-pet-tracker/`. Cada comando debe salir vacío:
    - `git diff <hash-del-handoff> -- src/screens/meal-schedule/index.tsx src/api/nutrition.ts | grep '^+' | grep -nE "#[0-9a-fA-F]{3,8}\b|className=\"[^\"]*\[|StyleSheet\.create|rounded-(2xl|lg|md|sm)\b|elevation|shadow(Color|Offset|Opacity|Radius)"`
    - `git diff <hash-del-handoff> -- src/screens/meal-schedule/index.tsx | grep -nE "^[-+].*(contentContainerStyle|padding: 24|gap: 16|insets\.bottom \+ 24)"`
@@ -593,4 +603,4 @@ Todo se ejecuta sin pipe, para medir el exit code real.
    - la primera línea roja de cada commit de test;
    - el resultado de cada sonda (o cuáles no corriste y por qué);
    - la sonda de vía (b) de R7;
-   - el exit code y las cifras de `./init.sh`.
+   - el exit code y las cifras de los tres comandos del paso 1.
