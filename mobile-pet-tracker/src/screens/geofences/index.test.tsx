@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
@@ -7,6 +8,7 @@ import { Alert } from 'react-native';
 import { renderWithProviders } from '../../../test/render-with-providers';
 import { GEOFENCE_MAX_PER_PET, deleteGeofence, listGeofences, setGeofenceActive, type Geofence, type GeofenceWriteState } from '../../api/geofences';
 import { getPet, type PetState } from '../../api/pets';
+import { petKeys } from '../../api/query-keys';
 import type { PetProfile } from '../../api/types';
 import type { Language } from '../../i18n/catalog';
 import { LanguageProvider } from '../../providers/language-provider';
@@ -58,8 +60,10 @@ function childTestIds(node: ReturnType<typeof screen.getByTestId>) {
   return node.children.map((child) => typeof child === 'string' ? undefined : child.props.testID);
 }
 
-function mount(language: Language = 'es', onUnauthorized?: () => void) {
+function mount(language: Language = 'es', onUnauthorized?: () => void, seedRole = false) {
   function Wrapper({ children }: { children: ReactNode }) {
+    const queryClient = useQueryClient();
+    if (seedRole && !queryClient.getQueryData(petKeys.detail('pet-1'))) queryClient.setQueryData(petKeys.detail('pet-1'), petState());
     return <HeroUINativeProvider><LanguageProvider initial={language}>{children}</LanguageProvider></HeroUINativeProvider>;
   }
   return renderWithProviders(<GeofencesScreen petId="pet-1" />, { onUnauthorized, wrapper: Wrapper });
@@ -480,7 +484,7 @@ describe('#146 R9: el dueño entra al editor desde la lista', () => {
   it.each(['cargando', 'no-tracking', 'error', 'unauthorized'] as const)('no pinta Añadir zona con %s', async (kind) => {
     if (kind === 'cargando') mockList.mockReturnValue(new Promise(() => undefined));
     else mockList.mockResolvedValue({ kind });
-    await mount();
+    await mount('es', undefined, kind === 'cargando');
     if (kind === 'cargando') expect(screen.getByTestId('geofences-loading')).toBeVisible();
     else if (kind === 'no-tracking') await screen.findByTestId('geofences-no-tracking');
     else if (kind === 'error') await screen.findByTestId('geofences-error');
