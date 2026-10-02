@@ -863,4 +863,32 @@ describe('Meal schedule editing (e2e)', () => {
       ).toHaveProperty('mealsToday', { served: 1, total: 3 });
     });
   });
+
+  describe('R12 (meal-schedule-editing #103): la copia conserva inputsHash y aiExplanation y generate la devuelve', () => {
+    it('hereda la explicacion y el hash y generate devuelve la misma copia', async () => {
+      const owner = await seedUser('r12');
+      const pet = await seedPet(owner);
+      await seedPlan(owner, pet.id);
+      const [p0] = await plansOf(pet.id);
+      await db
+        .update(nutritionPlans)
+        .set({ aiExplanation: 'explicacion previa' })
+        .where(eq(nutritionPlans.id, p0.id));
+      const response = await moveMealTime(owner, pet.id, '07:30', {
+        mealTime: '08:15',
+      }).expect(200);
+      expect(response.body).toHaveProperty('aiExplanation', null);
+      const result = response.body as { id: string };
+      const rows = await plansOf(pet.id);
+      expect(rows).toHaveLength(2);
+      expect(rows[1].aiExplanation).toBe('explicacion previa');
+      expect(rows[1].inputsHash).toBe(p0.inputsHash);
+      const generated = await generatePlan(owner, pet.id).expect(200);
+      expect(generated.body).toMatchObject({
+        id: result.id,
+        mealTimes: ['08:15', '19:30'],
+      });
+      expect(await plansOf(pet.id)).toHaveLength(2);
+    });
+  });
 });
