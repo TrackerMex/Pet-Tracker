@@ -343,3 +343,62 @@ Expo Go.
 
 - [ ] Prueba de humo superada en dev build de Android (fecha: ____,
       dispositivo: ____, firmado por: ____)
+
+## Enmienda E1 — dos candados globales que la spec no movía, y la técnica TZ
+
+> Escrita el 2026-10-02 sobre la spec firmada (`86771e3e`), después de que Codex
+> parara en §Cierre con HEAD `b5d46054`
+> (`progress/impl_mobile-meal-schedule-editing.md` §Bloqueo en §Cierre).
+> No toca D1-D10, ni R1-R9, ni la producción. Solo amplía la lista cerrada
+> de ficheros con dos tests de candado y corrige una técnica de tasks.md.
+> Su casilla va **sin marcar**: el humano reabre el gate solo para esta
+> enmienda.
+
+### El hecho medido
+
+`bun run test` sobre `b5d46054` da 88 suites / 1759 tests, exit 1. Los tres
+`it` rojos son candados globales que ya existían; el leader los reproduce con
+`bunx jest src/__tests__/design-drift.test.ts src/__tests__/consistency-classnames.test.ts`,
+que da 3 rojos de 108:
+
+| Candado | Fichero | Expected | Received | Origen en la spec |
+|---|---|---|---|---|
+| `#87 R19` › `preserves every mutation sign-out with zero delta` | `src/__tests__/design-drift.test.ts` | meal-schedule `1` | `2` | el `await signOut()` del `case 'unauthorized'` de R8 ([[design]] §Estado y handler) |
+| `#98 R10` › `deja CONTINUOUS_CORNER, bg-accent-soft y el acento donde estaban` | `src/__tests__/consistency-classnames.test.ts` | `16` | `18` | el `bg-accent-soft` de `meal-time-edit-*` y el de `add-meal-time-button` (R4, [[design]] §Decisiones de cada control) |
+| `#64 R9` › `conserva los dieciséis usos de bg-accent-soft que sí son acento` | `src/__tests__/consistency-classnames.test.ts` | `16` | `18` | lo mismo |
+
+La producción cumple la spec: los dos `bg-accent-soft` y el `signOut()` los
+exige la propia spec. El hueco es que la spec no listó los inventarios
+globales que esos tres sitios mueven.
+
+### E1.1 — los dos inventarios se mueven en commits de test propios
+
+**WHEN** se cierra #147, **THE SYSTEM SHALL**:
+
+- contar en `#87 R19` **2** llamadas a `signOut(` en `screens/meal-schedule/index.tsx`;
+- contar en `#98 R10` y en `#64 R9` **16 + 2** usos de `bg-accent-soft` en `src/`.
+
+El título de `#64 R9` deja de llevar el número, como hizo #146 con el `it`
+de los «trece botones primarios». Las ediciones literales y los mensajes de
+commit están en [[tasks]] §Enmienda E1. La lista cerrada de [[design]]
+§Archivos afectados pasa de 11 a 13 ficheros. Las cifras no cambian: siguen
+siendo 88 suites / 1759 tests, porque solo cambian aserciones existentes.
+
+### E1.2 — la técnica TZ de tasks.md era ciega en jest
+
+La sonda `setUTCHours` de R5 quedó verde con `process.env.TZ`. Jest 29 da
+a cada test una copia de `process.env`
+(`jest-util/build/createProcessObject.js`), así que asignarle `TZ` no cambia
+la zona que lee `Date`. Codex lo corrigió en `2c873c47` con
+`process.getBuiltinModule('process').env`, y la sonda pasó a rojo en R5 y R6
+(informe §Sonda TZ corregida). Codex dice que el humano lo autorizó
+en su sesión; esta enmienda lo deja por escrito. [[tasks]] §Técnica TZ 1 se
+lee con ese cambio. Los dos refactors de Codex, `2c873c47` (TZ) y `b5d46054`
+(formato de §2.16), se quedan; el reviewer los juzga.
+
+El precedente que citaba la spec, `src/screens/home/weekly-activity-chart.test.tsx`
+(`process.env.TZ = 'America/Mexico_City'`), usa la misma técnica y
+probablemente es igual de ciego. Es una deuda candidata, **sin medir** y
+fuera de #147.
+
+- [ ] Enmienda E1 aprobada por humano (fecha: ____, commit de firma: el que marca esta casilla)

@@ -116,6 +116,9 @@ usan dos técnicas, cada una con su precedente:
    - si no, reasigna el valor previo.
    No asignes `undefined`: guardaría la cadena `"undefined"`.
    La aserción es `[value.getHours(), value.getMinutes()]`.
+   **Enmienda E1.2**: en jest, `process.env` es una copia y asignarle `TZ` no
+   cambia la zona de `Date`. Asigna y restaura sobre
+   `process.getBuiltinModule('process').env` (hecho en `2c873c47`).
 2. **Valor elegido**: un `Date` local con los getters UTC y `toISOString`
    **cruzados**, al estilo de `wallClock` en
    `src/screens/add-reminder/index.test.tsx`:
@@ -604,3 +607,69 @@ Todo se ejecuta sin pipe, para medir el exit code real.
    - el resultado de cada sonda (o cuáles no corriste y por qué);
    - la sonda de vía (b) de R7;
    - el exit code y las cifras de los tres comandos del paso 1.
+
+---
+
+## §Enmienda E1 — los dos inventarios globales ([[requirements]] §Enmienda E1)
+
+Va **después** de `b5d46054` y **antes** de §Cierre. Son dos commits de test,
+uno por fichero. Cada uno lleva **solo** su fichero. La producción no cambia.
+
+El rojo de los dos ya está medido en el informe (§Cierre detenido): son los
+tres `it` del `bun run test` sobre `b5d46054`. Cada commit lo vuelve verde.
+
+Comando de los dos ciclos, desde `mobile-pet-tracker/`:
+`bunx jest src/__tests__/consistency-classnames.test.ts src/__tests__/design-drift.test.ts`.
+Antes de E1-a da 3 rojos de 108. Después de E1-a, 1 rojo. Después de E1-b, 0.
+
+### E1-a — `bg-accent-soft` (R4)
+
+En `src/__tests__/consistency-classnames.test.ts`, localiza cada sitio por su
+contenido, no por número de línea:
+
+1. En el `it` de `#98 R10` que asevera el recuento de `bg-accent-soft`, la
+   línea `expect(count(/bg-accent-soft/g)).toBe(16);` pasa a
+   `expect(count(/bg-accent-soft/g)).toBe(16 + 2); // #147 R4: meal-time-edit y add-meal-time-button`.
+2. En `#64 R9`, cambian tres sitios:
+   - el comentario de encima del `it`
+     (el que empieza por `// 17 en` y menciona `PetHero` y `#67 R6`)
+     gana debajo la línea `// + 2 de #147 R4: meal-time-edit y add-meal-time-button.`;
+   - el título `'conserva los dieciséis usos de bg-accent-soft que sí son acento'`
+     pasa a `'conserva los usos de bg-accent-soft que sí son acento'`;
+   - `expect(accentSoftCount).toBe(16);` pasa a
+     `expect(accentSoftCount).toBe(16 + 2); // #147 R4`.
+
+No toques las otras aserciones de esos dos `it`.
+
+- Commit: `test(mobile-meal-schedule-editing): count the meal time controls among accent-soft uses (R4)`
+
+| Sonda (sobre el verde, en `src/screens/meal-schedule/index.tsx`) | Debe ponerse rojo |
+|---|---|
+| Un tercer `bg-accent-soft` (por ejemplo en el `className` del error) | `#98 R10` y `#64 R9`, por matcher (19 frente a 18). También caen las filas de R8 que miran `className === 'text-danger'` |
+| Quitar `bg-accent-soft` del botón de añadir | `#98 R10` y `#64 R9` (17 frente a 18), y el `it` owner de R4 |
+
+### E1-b — `signOut(` (R8)
+
+En `src/__tests__/design-drift.test.ts`, dentro de `screenSignOutCalls` del
+`describe` de `#87 R19`, la entrada
+`'screens/meal-schedule/index.tsx': 1,` pasa a
+`'screens/meal-schedule/index.tsx': 2, // #147 R8: el 401 de la edición de franjas`.
+No toques nada más.
+
+- Commit: `test(mobile-meal-schedule-editing): count the meal schedule 401 sign-out (R8)`
+
+| Sonda (sobre el verde) | Debe ponerse rojo |
+|---|---|
+| Quitar el `await signOut()` del `case 'unauthorized'` | `#87 R19` (1 frente a 2) y el `it` `401 cierra sesión sin mensaje` de R8 |
+
+Restaura cada sonda con `git checkout HEAD -- <ruta>`; después
+`git diff --cached --stat` debe salir vacío.
+
+### Lo que cambia en §Cierre
+
+- Las cifras no cambian: **88 suites / 1759 tests**.
+- La lista de `git diff --name-only <hash-del-handoff>..HEAD` es la de
+  [[design]] §Archivos afectados: **13** ficheros.
+- [[traceability]] cita los dos commits nuevos en sus filas, R4 y R8, junto a
+  los que ya cita.
+

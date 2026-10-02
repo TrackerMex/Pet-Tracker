@@ -258,6 +258,15 @@ Medido con `git diff --name-only cb14497c...origin/feature/146-mobile-geofence-e
    `ui-language.test.ts`.** Es un conflicto textual de append. Se conservan
    los dos bloques.
 
+4. **Enmienda E1.** #146 también toca los dos ficheros de E1.
+   - En `consistency-classnames.test.ts` cambia la línea de
+     `rounded-xl bg-accent`, que es la anterior a la de `bg-accent-soft`, así
+     que el conflicto textual está garantizado. Se conservan las dos
+     ediciones.
+   - En `design-drift.test.ts` añade
+     `'screens/geofence-editor/index.tsx': 1` al mismo objeto
+     `screenSignOutCalls`. Se conservan las dos entradas.
+
 #146 no toca `R6_FOOD` (añade su propio bloque `R15_GEOFENCE_EDITOR`), ni
 `nutrition.ts`, ni la pantalla. La regla es la misma que la de la memoria
 «Reparto de ficheros caduca al mergear»: el que mergea segundo rebasa y vuelve
@@ -278,11 +287,13 @@ El móvil es un cliente sin capas domain/application/infrastructure. Se sigue
 | `mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx` | test | `+ 9` en la suma y `describe('#147 R1')` | R1 |
 | `mobile-pet-tracker/src/__tests__/ui-copy-table.ts` | test | 12 filas en `R6_FOOD` | R8, R9 |
 | `mobile-pet-tracker/src/__tests__/ui-language.test.ts` | test | longitud de `R6_FOOD` y `describe('#147 R9')` | R8, R9 |
+| `mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts` | test | `bg-accent-soft` 16 → 16 + 2 en `#98 R10` y `#64 R9` (Enmienda E1) | R4 |
+| `mobile-pet-tracker/src/__tests__/design-drift.test.ts` | test | `signOut(` de meal-schedule 1 → 2 en `#87 R19` (Enmienda E1) | R8 |
 | `specs/mobile-ui-language/design.md` | spec | §2.16 con 9 filas | R1 |
 | `specs/mobile-meal-schedule-editing/traceability.md` | spec | la rellena Codex | — |
 | `progress/impl_mobile-meal-schedule-editing.md` | progress | el informe de Codex | — |
 
-No se toca nada más. En particular quedan fuera `src/api/http.ts`, `src/api/pets.ts`,
+Son 13 ficheros desde la Enmienda E1; en la firma eran 11. No se toca nada más. En particular quedan fuera `src/api/http.ts`, `src/api/pets.ts`,
 `src/api/query-keys.ts`, `src/app/**`, `package.json`, `bun.lock` y
 `backend-pet-tracker/**`.
 
