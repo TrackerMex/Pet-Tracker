@@ -52,6 +52,32 @@ export async function postJson(
   }
 }
 
+export async function patchJson(
+  baseUrl: string,
+  path: string,
+  token: string,
+  body: unknown,
+  fetchFn: typeof fetch,
+): Promise<GetResult> {
+  try {
+    const response = await fetchFn(apiUrl(baseUrl, path), {
+      method: 'PATCH',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+
+    return { kind: 'response', response };
+  } catch (error) {
+    return {
+      kind: 'unreachable',
+      message: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
 export async function deleteJson(
   baseUrl: string,
   path: string,

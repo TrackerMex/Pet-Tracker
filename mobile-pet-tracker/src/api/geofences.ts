@@ -1,4 +1,4 @@
-import { getJson, readJson } from './http';
+import { deleteJson, getJson, patchJson, readJson } from './http';
 
 export interface Geofence {
   id: string;
@@ -56,23 +56,39 @@ export type GeofenceWriteState =
   | { kind: 'unreachable'; message: string }
   | { kind: 'missing-config' };
 
+function writeState(response: Response, okStatus: number): GeofenceWriteState {
+  if (response.status === okStatus) return { kind: 'ok' };
+  if (response.status === 404) return { kind: 'not-found' };
+  if (response.status === 402) return { kind: 'no-tracking' };
+  if (response.status === 401) return { kind: 'unauthorized' };
+  return { kind: 'error' };
+}
+
 export async function setGeofenceActive(
-  _baseUrl: string | undefined,
-  _token: string,
-  _petId: string,
-  _geofenceId: string,
-  _active: boolean,
-  _fetchFn: typeof fetch = fetch,
+  baseUrl: string | undefined,
+  token: string,
+  petId: string,
+  geofenceId: string,
+  active: boolean,
+  fetchFn: typeof fetch = fetch,
 ): Promise<GeofenceWriteState> {
-  return { kind: 'missing-config' };
+  if (!baseUrl) return { kind: 'missing-config' };
+  const result = await patchJson(
+    baseUrl, `/pets/${petId}/geofences/${geofenceId}`, token, { active }, fetchFn,
+  );
+  return result.kind === 'unreachable' ? result : writeState(result.response, 200);
 }
 
 export async function deleteGeofence(
-  _baseUrl: string | undefined,
-  _token: string,
-  _petId: string,
-  _geofenceId: string,
-  _fetchFn: typeof fetch = fetch,
+  baseUrl: string | undefined,
+  token: string,
+  petId: string,
+  geofenceId: string,
+  fetchFn: typeof fetch = fetch,
 ): Promise<GeofenceWriteState> {
-  return { kind: 'missing-config' };
+  if (!baseUrl) return { kind: 'missing-config' };
+  const result = await deleteJson(
+    baseUrl, `/pets/${petId}/geofences/${geofenceId}`, token, fetchFn,
+  );
+  return result.kind === 'unreachable' ? result : writeState(result.response, 204);
 }
