@@ -1,4 +1,5 @@
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react-native';
+import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
 import { Alert } from 'react-native';
@@ -14,6 +15,7 @@ import { GeofencesScreen } from '.';
 jest.mock('../../api/geofences', () => ({
   deleteGeofence: jest.fn(), listGeofences: jest.fn(), setGeofenceActive: jest.fn(),
 }));
+jest.mock('expo-router', () => ({ router: { push: jest.fn() } }));
 jest.mock('../../api/pets', () => ({ getPet: jest.fn() }));
 const mockSignOut = jest.fn().mockResolvedValue(undefined);
 jest.mock('../../providers/auth-provider', () => ({
@@ -124,11 +126,11 @@ describe('#41 R5: la pantalla pinta la lista de zonas y sus estados', () => {
       expect(row.props.role).toBeUndefined();
       expect(row.props.accessibilityRole).toBeUndefined();
       const column = row.children[0] as ReturnType<typeof screen.getByTestId>;
-      expect(column.props.className).toBe('min-w-0 flex-1 gap-1');
+      expect(column.props.className).toBe('min-h-11 min-w-0 flex-1 gap-1');
       expect(childTestIds(column)).toEqual([`geofence-${id}-name`, `geofence-${id}-radius`]);
       const nameNode = within(row).getByTestId(`geofence-${id}-name`);
       expect(nameNode).toHaveTextContent(name);
-      expect(nameNode.props.selectable).toBe(true);
+      expect(nameNode.props.selectable).toBe(false);
       expect(nameNode.props.className).toBe('font-bold text-foreground');
       const radiusNode = within(row).getByTestId(`geofence-${id}-radius`);
       expect(radiusNode).toHaveTextContent(radius);
@@ -307,7 +309,7 @@ describe('#41 R7: el dueño borra una zona tras confirmar', () => {
       expect(button.props.accessibilityState.disabled).toBe(false);
       expect(button).toHaveStyle({ borderCurve: 'continuous' });
       expect(within(button).getByText('Eliminar').props.className).toBe('button__label button__label--variant-danger-soft button__label--size-sm font-semibold text-danger');
-      expect(childTestIds(screen.getByTestId(`geofence-${id}`))).toEqual([undefined, `geofence-${id}-active`, `geofence-${id}-delete`]);
+      expect(childTestIds(screen.getByTestId(`geofence-${id}`))).toEqual([`geofence-${id}-edit`, `geofence-${id}-active`, `geofence-${id}-delete`]);
     }
   });
 
@@ -423,5 +425,70 @@ describe('#41 R8: quien no es dueño ve las zonas sin controles', () => {
     await screen.findByTestId('geofence-geofence-1');
     expect(screen.getByTestId('geofence-geofence-1-status')).toHaveTextContent('Active');
     expect(screen.getByTestId('geofence-geofence-2-status')).toHaveTextContent('Inactive');
+  });
+});
+
+const mockPush = jest.mocked(router.push);
+
+describe('#146 R9: el dueño entra al editor desde la lista', () => {
+  beforeEach(() => { mockList.mockResolvedValue({ kind: 'ok', geofences: [makeGeofence()] }); });
+  it('convierte la columna de cada zona en un botón al editor para el dueño', async () => {
+    await mount(); const column = await screen.findByTestId('geofence-geofence-1-edit');
+    expect(column.props.accessibilityRole).toBe('button');
+    expect(column.props.accessibilityLabel).toBe('Editar zona Casa');
+    expect(column.props.className).toBe('min-h-11 min-w-0 flex-1 gap-1');
+    expect(column).toHaveStyle({ opacity: 1 });
+    await fireEvent(column, 'responderGrant', { nativeEvent: {}, persist: () => undefined });
+    expect(column).toHaveStyle({ opacity: 0.8 });
+  });
+  it('abre el editor de la zona tocada', async () => {
+    await mount(); await fireEvent.press(await screen.findByTestId('geofence-geofence-1-edit'));
+    expect(mockPush).toHaveBeenCalledWith({ pathname: '/pets/[petId]/geofence-editor', params: { petId: 'pet-1', geofenceId: 'geofence-1' } });
+  });
+  it('no abre el editor mientras una escritura está en vuelo', async () => {
+    mockSetActive.mockReturnValue(new Promise(() => undefined)); await mount();
+    const column = await screen.findByTestId('geofence-geofence-1-edit');
+    await fireEvent.press(screen.getByTestId('geofence-geofence-1-active'));
+    await waitFor(() => expect(column.props.accessibilityState.disabled).toBe(true));
+    await fireEvent.press(column); expect(mockPush).not.toHaveBeenCalled();
+  });
+  it('pinta Añadir zona con la receta primaria antes del error de acción', async () => {
+    mockSetActive.mockResolvedValue({ kind: 'error' }); await mount();
+    const add = await screen.findByTestId('geofences-add');
+    expect(add.props.className).toBe('pressable-feedback__root button__root button__root--variant-primary button__root--size-md rounded-xl bg-accent');
+    expect(within(add).getByText('Añadir zona').props.className).toBe('button__label button__label--variant-primary button__label--size-md font-bold text-accent-foreground');
+    await fireEvent.press(add);
+    expect(mockPush).toHaveBeenCalledWith({ pathname: '/pets/[petId]/geofence-editor', params: { petId: 'pet-1' } });
+    await fireEvent.press(screen.getByTestId('geofence-geofence-1-active'));
+    const error = await screen.findByTestId('geofences-action-error');
+    const ids = childTestIds(error.parent!);
+    expect(ids.at(-2)).toBe('geofences-add'); expect(ids.at(-1)).toBe('geofences-action-error');
+  });
+  it('pinta Añadir zona también con la lista vacía', async () => {
+    mockList.mockResolvedValue({ kind: 'ok', geofences: [] }); await mount();
+    expect(await screen.findByTestId('geofences-add')).toHaveTextContent('Añadir zona');
+    expect(screen.getByTestId('geofences-empty')).toBeVisible();
+  });
+  it.each(['family', 'un error al leer el rol'] as const)('no ofrece editar ni añadir a %s', async (role) => {
+    mockGetPet.mockResolvedValue(role === 'family' ? petState(role) : { kind: 'error' }); await mount();
+    const name = await screen.findByTestId('geofence-geofence-1-name');
+    expect(name.props.selectable).toBe(true);
+    expect(screen.queryByTestId('geofence-geofence-1-edit')).toBeNull();
+    expect(screen.queryByTestId('geofences-add')).toBeNull();
+  });
+  it.each(['cargando', 'no-tracking', 'error', 'unauthorized'] as const)('no pinta Añadir zona con %s', async (kind) => {
+    if (kind === 'cargando') mockList.mockReturnValue(new Promise(() => undefined));
+    else mockList.mockResolvedValue({ kind });
+    await mount();
+    if (kind === 'cargando') expect(screen.getByTestId('geofences-loading')).toBeVisible();
+    else if (kind === 'no-tracking') await screen.findByTestId('geofences-no-tracking');
+    else if (kind === 'error') await screen.findByTestId('geofences-error');
+    else await waitFor(() => expect(screen.queryByTestId('geofences-loading')).toBeNull());
+    expect(screen.queryByTestId('geofences-add')).toBeNull();
+  });
+  it('nombra el botón de editar y Añadir zona en inglés', async () => {
+    await mount('en'); const column = await screen.findByTestId('geofence-geofence-1-edit');
+    expect(column.props.accessibilityLabel).toBe('Edit zone Casa');
+    expect(screen.getByTestId('geofences-add')).toHaveTextContent('Add zone');
   });
 });

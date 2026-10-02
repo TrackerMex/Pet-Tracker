@@ -99,7 +99,7 @@ describe('#62 R1: la escala de radios está declarada y el botón primario tiene
       readFileSync(path, 'utf8').match(/rounded-xl bg-accent(?=[\s'"`])/g) ?? [],
     );
 
-    expect(primaryRadius).toHaveLength(13 + 1); // #146 R8
+    expect(primaryRadius).toHaveLength(13 + 1 + 1); // #146 R8, #146 R9
     expect(filesMatching(/rounded-2xl bg-accent(?=[\s'"`])/)).toEqual([]);
   });
 });
@@ -394,7 +394,7 @@ describe('#98 R10: los candados que esta feature no mueve', () => {
     expect(home.match(/style=\{CONTINUOUS_CORNER\}/g) ?? []).toHaveLength(0);
     expect(food.match(/style=\{CONTINUOUS_CORNER\}/g)).toHaveLength(2);
     expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31 + 1); // #41 R9: geofences-link
-    expect(count(/rounded-xl bg-accent(?=[\s'"`])/g)).toBe(13 + 1); // #146 R8
+    expect(count(/rounded-xl bg-accent(?=[\s'"`])/g)).toBe(13 + 1 + 1); // #146 R8, #146 R9
     expect(count(/bg-accent-soft/g)).toBe(16);
     expect(home.match(/text-accent-strong\b/g)).toHaveLength(2);
     expect(food.match(/text-accent-strong\b/g)).toHaveLength(1);
