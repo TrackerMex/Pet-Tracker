@@ -245,3 +245,113 @@ log (`scratchpad/init41.log`, 21395 líneas):
 
 Delta móvil contra la base 86/1634: **+2 suites, +76 tests**, el mismo
 snapshot. Coincide con tasks.md §Cierre.
+
+## Revisión de la enmienda E3 (c71e8d7b)
+
+Fecha: 2026-10-02 (UTC)
+Alcance: solo el delta `888a2d6e` (H3) `..c71e8d7b`. La revisión anterior
+(APROBADO sobre `d5830bab`) sigue valiendo para todo lo demás.
+**Veredicto: APROBADO.**
+
+Verificado en `/home/claude/sites/Pet-Tracker-wt-backend`, branch
+`feature/41-mobile-geofences`. HEAD = `origin/feature/41-mobile-geofences` =
+`c71e8d7b`. Árbol limpio al entrar y al salir.
+
+### Commits y ficheros
+
+- `git log --oneline 888a2d6e..c71e8d7b` da 3 commits, en este orden y con
+  los mensajes literales de tasks.md §Enmienda E3:
+  1. `8d37dae0` `test(geofences): the no-tracking text takes the muted recipe (R5, E3)`
+     (05:56:21). `--stat`: solo `index.test.tsx`, +1 línea.
+  2. `113135d6` `feat(geofences): give the no-tracking text the muted recipe (R5, E3)`
+     (05:57:34). `--stat`: solo `index.tsx`, 1+/1-.
+  3. `c71e8d7b` `docs(geofences): add the E3 commits to #41 traceability`
+     (05:58:24). `--stat`: solo `progress/impl_mobile-geofences.md` y
+     `specs/mobile-geofences/traceability.md`.
+- `git diff --name-only 888a2d6e c71e8d7b` da exactamente esos 4 ficheros.
+- `888a2d6e` es ancestro de `c71e8d7b` y es el H3 que nombra tasks.md.
+- El rojo añade la línea calcada del `it` del vacío:
+  `expect(within(card).getByText('Las zonas seguras requieren un collar').props.className).toBe('text-center font-normal text-muted');`
+- El verde cambia solo `<Text>` por
+  `<Text className="text-center font-normal text-muted">` en la rama
+  `no-tracking`.
+
+### C4: el rojo antes del verde, medido por este reviewer
+
+No monté un worktree temporal: habría que instalar node_modules. Planté a
+mano en el working tree la reversión de la className. Después:
+
+- `git diff 8d37dae0 -- mobile-pet-tracker | wc -c` dio **0**. El árbol móvil
+  era idéntico byte a byte al del commit rojo.
+- `bunx jest --runTestsByPath 'src/screens/geofences/index.test.tsx'` dio
+  **exit=1**, `Tests: 1 failed, 32 passed, 33 total`.
+- El único rojo: `#41 R5: la pantalla pinta la lista de zonas y sus estados ›
+  pinta el 402 sin Reintentar`. Falla por aserción `toBe`, en la línea 151:
+  Expected `"text-center font-normal text-muted"`, Received `undefined`.
+- Restauré con `git checkout HEAD -- src/screens/geofences/index.tsx`.
+  `git status --short` y `git diff --cached --stat` quedaron vacíos.
+
+### Sonda m13/M58
+
+Puse `className="text-danger"` en ese `Text`.
+
+- El mismo fichero dio **exit=1**, `1 failed, 32 passed, 33 total`.
+- Cae el mismo `it`: Expected `"text-center font-normal text-muted"`,
+  Received `"text-danger"`.
+- Restauré igual. `git status --short` y `git diff --cached --stat` quedaron
+  vacíos.
+
+La m13 de la tabla de mutaciones, que antes sobrevivía, ahora muere. La
+variante "sin clase" de M58 es el propio rojo de arriba.
+
+### Gate móvil en HEAD `c71e8d7b`
+
+Desde `mobile-pet-tracker/`, sin pipe. Load average 0.76, sin otro jest ni
+init.sh en vuelo.
+
+| Comando | exit | Resultado |
+|---|---|---|
+| `bunx jest --silent > f 2>&1` | 0 | **88 suites / 1710 tests / 1 snapshot**, sin `FAIL` |
+| `test ! -e .expo/types/router.d.ts && bunx tsc --noEmit > f 2>&1` | 0 | 0 bytes (`router.d.ts` no existe) |
+| `bunx expo lint > f 2>&1` | 0 | 0 bytes |
+
+Los recuentos son iguales a los del cierre de Codex, porque E3 no añade
+ningún `it`. No hubo rojos fuera de `src/screens/geofences/`, así que no hizo
+falta una segunda corrida. No corrí `./init.sh`: el delta no toca backend ni
+infra, y así lo pidió el leader.
+
+### Trazabilidad
+
+- `git diff 888a2d6e c71e8d7b -- specs/mobile-geofences/traceability.md`
+  cambia solo la fila R5.
+- Esa fila añade `E3: 8d37dae0 — test(...) (R5, E3); 113135d6 — feat(...) (R5, E3)`,
+  con los mensajes literales.
+- El resto de la tabla no cambia y no hay filas "pendiente".
+- `impl_mobile-geofences.md` §"Enmienda E3 (implementer)" coincide con lo que
+  medí: 33 `it`, 1 rojo por `toBe`, M58 rojo, 88/1710/1.
+
+### Conformidad con la carta (C8)
+
+- La clase es idéntica a la del texto del estado vacío de la misma pantalla
+  (`geofences.empty`, `index.tsx`). La misma receta se usa en `docs/`,
+  `pairing/` y `(auth)/forgot.tsx`.
+- `text-muted` es el tono neutro de la carta para texto informativo. No es un
+  error, así que no corresponde `text-danger`, que la R5 rama 6 reserva al
+  error.
+- Cumple `docs/ui-guidelines.md` §inventario punto 7 ("color y receta
+  tipográfica de cada texto"), ahora con un `expect` que se vio fallar.
+- R5 rama 4 (requirements.md), D7 `#41 R5` punto 7 y la fila M58 de design.md
+  describen exactamente lo implementado.
+
+### Estado de H1
+
+**H1 cerrado.** El texto "sin rastreo" tiene clase fijada por la spec (E3),
+un candado y una sonda que lo demuestra (m13/M58 en rojo).
+
+### Observación (no bloqueante)
+
+La aprobación humana de E3 consta solo en la cabecera de la enmienda
+("aprobada por el humano en el chat de la sesión Backend"), escrita en
+`fa9049c0` por el leader. No hay un commit de firma propio. Este reviewer no
+puede verificar el chat. El leader decide si la registra igual que las demás
+firmas antes de la PR.
