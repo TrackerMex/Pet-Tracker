@@ -371,3 +371,80 @@ Informe: en progress/impl_mobile-geofence-editor.md, una seccion
 tres corridas del paso 2. Copia de jest solo las lineas de resumen y los
 bloques `●` de cada `it` rojo.
 ```
+
+---
+
+## Reanudación 3 — parada en el verde de R9 (2026-10-02)
+
+> Codex paró en el verde de R9, con HEAD `6be00c8a` (rojo de R9) y la
+> producción de R9 sin stage en `src/screens/geofences/index.tsx`. Un `it`
+> seguía rojo: `#146 R9 › nombra el botón de editar y Añadir zona en
+> inglés`. Esperaba `accessibilityLabel` = `'Edit zone Casa'` y recibió
+> `'Edit Casa zone'`. Los otros 221 tests, tsc y lint pasaron.
+>
+> Diagnóstico del leader: la producción cumple la spec y la expectativa
+> no. requirements.md R1 fija `geofenceEditor.editLabel` en inglés como
+> `Edit {{name}} zone`, y así está en `catalog.ts` desde el verde de R1 y
+> en specs/mobile-ui-language/design.md. La spec solo da el título del
+> `it` 12 de R9, no su literal en inglés, y Codex lo tradujo a mano desde
+> el español (`Editar zona {{name}}`). En el rojo el `it` caía por
+> consulta, así que el literal nunca se llegó a comparar.
+>
+> Arreglo: un commit de test extra que corrige ese literal para que case
+> con R1. La expectativa vuelve a la spec, no a la producción. No se
+> reescribe 6be00c8a. Total de commits: 40. El delta de tests no cambia.
+
+Pegar en Codex CLI:
+
+```
+Worktree: /home/claude/sites/Pet-Tracker-wt-146   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+Reanudacion 3 de #146 tras tu parada en el verde de R9. Ejecuta `pwd`,
+`git branch --show-current`, `git rev-parse --short HEAD` y
+`git status --short`. Para si la branch no es
+feature/146-mobile-geofence-editor, o si `git status --short` muestra
+algo distinto de ` M mobile-pet-tracker/src/screens/geofences/index.tsx`
+y `?? progress/impl_mobile-geofence-editor.md`. HEAD sera el commit del
+leader que anade esta reanudacion a progress/handoff_mobile-geofence-editor.md
+(su padre es 6be00c8a). Lee la seccion «Reanudacion 3» de ese fichero:
+lleva el diagnostico. Siguen en vigor las reglas del handoff original y
+de las reanudaciones 1 y 2. H0 sigue siendo 9dee0e62.
+
+1. En mobile-pet-tracker/src/screens/geofences/index.test.tsx, dentro del
+   `it` 'nombra el botón de editar y Añadir zona en inglés' de `#146 R9`
+   (localizalo por el titulo, no por numero de linea), sustituye SOLO
+     expect(column.props.accessibilityLabel).toBe('Edit zone Casa');
+   por
+     expect(column.props.accessibilityLabel).toBe('Edit Casa zone');
+   Es el valor de requirements.md R1 (`Edit {{name}} zone`) con
+   name = Casa. No toques ninguna otra linea ni la produccion de R9, que
+   sigue sin stage.
+2. Commit con SOLO ese fichero (`git add` de esa ruta y nada mas). Mensaje
+   literal:
+     test(geofences): use the R1 English edit label (R9)
+   Comprueba con `git show --stat HEAD` que el commit lleva un solo
+   fichero y que index.tsx sigue con ` M`.
+3. Repite tu intento de verde de R9 con el mismo comando, sin pipe. Debe
+   salir todo verde, con exit=0, y tsc y lint con exit=0. Si falla algo,
+   PARA y reporta.
+4. Si cuadra, commitea el verde de R9 con su mensaje literal de tasks.md
+     feat(geofences): open the editor from the geofence list (R9)
+   y sigue el guion: R12, R13, R14, R16, R11, R10 y R18, las mutaciones,
+   el cierre y la trazabilidad.
+
+Regla nueva para el resto de la feature: todo literal de copy que
+asevere un test (en espanol o en ingles) se copia de la tabla de
+requirements.md R1. NUNCA lo traduzcas tu desde el otro idioma: el orden
+de palabras cambia. Antes de commitear cada rojo, revisa con grep que los
+literales nuevos de copy de ese rojo aparecen tal cual en la tabla de R1,
+y pega la comprobacion en el informe.
+
+Listas del cierre: commits, los 38 literales mas los dos extra autorizados
+(el de R6 de la reanudacion 1 y el del paso 2), 40 en total. Ficheros: los
+del handoff original. Los commits del leader solo tocan
+progress/handoff_mobile-geofence-editor.md.
+
+Informe: en progress/impl_mobile-geofence-editor.md, una seccion
+«Reanudacion 3» con las salidas del paso 0, el `git show --stat` del
+paso 2 y las cuentas y el exit del paso 3. Copia de jest solo las lineas
+de resumen y los bloques `●` de cada `it` rojo.
+```
