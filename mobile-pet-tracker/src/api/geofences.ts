@@ -1,4 +1,4 @@
-import { deleteJson, getJson, patchJson, readJson } from './http';
+import { deleteJson, getJson, patchJson, postJson, readJson } from './http';
 
 export interface Geofence {
   id: string;
@@ -97,16 +97,31 @@ export type GeofenceDraft = { name: string; centerLat: number; centerLng: number
 export type GeofenceSaveState = GeofenceWriteState
   | { kind: 'name-taken' } | { kind: 'limit-reached' } | { kind: 'invalid' };
 
+async function saveState(response: Response, okStatus: number): Promise<GeofenceSaveState> {
+  if (response.status === 409 || response.status === 400) {
+    const code = (await readJson(response) as { code?: string } | undefined)?.code;
+    if (response.status === 409 && code === 'GEOFENCE_NAME_TAKEN') return { kind: 'name-taken' };
+    if (response.status === 400) {
+      return { kind: code === 'MAX_GEOFENCES_REACHED' ? 'limit-reached' : 'invalid' };
+    }
+  }
+  return writeState(response, okStatus);
+}
+
 export async function createGeofence(
   baseUrl: string | undefined, token: string, petId: string,
   draft: GeofenceDraft, fetchFn: typeof fetch = fetch,
 ): Promise<GeofenceSaveState> {
-  return { kind: 'missing-config' };
+  if (!baseUrl) return { kind: 'missing-config' };
+  const result = await postJson(baseUrl, `/pets/${petId}/geofences`, token, { ...draft, type: 'safe_circle' }, fetchFn);
+  return result.kind === 'unreachable' ? result : saveState(result.response, 201);
 }
 
 export async function updateGeofence(
   baseUrl: string | undefined, token: string, petId: string, geofenceId: string,
   draft: GeofenceDraft, fetchFn: typeof fetch = fetch,
 ): Promise<GeofenceSaveState> {
-  return { kind: 'missing-config' };
+  if (!baseUrl) return { kind: 'missing-config' };
+  const result = await patchJson(baseUrl, `/pets/${petId}/geofences/${geofenceId}`, token, draft, fetchFn);
+  return result.kind === 'unreachable' ? result : saveState(result.response, 200);
 }
