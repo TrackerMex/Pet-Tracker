@@ -30,7 +30,6 @@ function messageFor(t: ReturnType<typeof useTranslate>, kind: GeofenceSaveState[
 }
 
 export function GeofenceEditorScreen({ petId, geofenceId }: { petId: string; geofenceId?: string }) {
-  const retryKey = 'common.retry' as const;
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
   const { token } = useAuth();
   const t = useTranslate();
@@ -60,7 +59,7 @@ export function GeofenceEditorScreen({ petId, geofenceId }: { petId: string; geo
     content = <>
       <Text testID="geofence-editor-load-error" selectable className="text-danger">{messageFor(t, list.data.kind)}</Text>
       <Button testID="geofence-editor-retry" className="min-h-11" onPress={() => void list.refetch()}>
-        <Button.Label>{t(retryKey)}</Button.Label>
+        <Button.Label>{t('common.retry')}</Button.Label>
       </Button>
     </>;
   } else if (geofenceId && !zone) {
