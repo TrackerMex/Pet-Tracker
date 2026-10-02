@@ -631,9 +631,11 @@ Reanudacion 5 de #146: enmienda E1 (teclado). Ejecuta `pwd`,
 `git branch --show-current`, `git rev-parse --short HEAD` y
 `git status --short`. Para si la branch no es
 feature/146-mobile-geofence-editor o si `git status --short` no sale
-vacio. HEAD sera el commit del leader que anade esta reanudacion a
-progress/handoff_mobile-geofence-editor.md (su padre es bc917ff7). Lee
-la seccion «Reanudacion 5» de ese fichero y, en
+vacio. Esta reanudacion entro en 7e7b16b9 (padre bc917ff7); HEAD puede
+ser un commit posterior del leader. Comprueba que
+`git diff --stat 7e7b16b9 HEAD` solo lista ficheros de progress/ y para
+si lista otros. Lee la seccion «Reanudacion 5» de
+progress/handoff_mobile-geofence-editor.md y, en
 specs/mobile-geofence-editor/requirements.md, la seccion
 «## Enmienda E1 — el formulario se aparta del teclado (paso 9)» entera
 (E1.1 a E1.3). Siguen en vigor las reglas del handoff original y de las
