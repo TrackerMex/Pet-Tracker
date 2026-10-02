@@ -3,6 +3,7 @@ import {
   NutritionPlanProps,
   engineMealCount,
   carriedSchedule,
+  copyWithMealTimes,
 } from './nutrition-plan.entity';
 
 function plan(overrides: Partial<NutritionPlanProps> = {}): NutritionPlan {
@@ -93,5 +94,33 @@ describe('R2 (meal-schedule-editing #103): engineMealCount y carriedSchedule dec
     },
   ])('$label', ({ latest, engine, expected }) => {
     expect(carriedSchedule(latest, engine)).toEqual(expected);
+  });
+});
+
+describe('R3 (meal-schedule-editing #103): copyWithMealTimes ordena, recuenta y resuelve el numero del motor', () => {
+  it('copia los campos completos, ordena, recuenta y resuelve el motor', () => {
+    expect(
+      copyWithMealTimes(plan(), ['19:30', '07:30', '12:00']),
+    ).toStrictEqual({
+      petId: 'pet',
+      rerKcal: 662,
+      merKcal: 1059,
+      dailyGrams: 305,
+      mealsPerDay: 3,
+      mealTimes: ['07:30', '12:00', '19:30'],
+      engineMealsPerDay: 2,
+      objective: 'maintenance',
+      warnings: [],
+      aiExplanation: 'texto',
+      inputsHash: 'a'.repeat(64),
+    });
+  });
+
+  it('no muta el array de entrada ni las horas del origen', () => {
+    const original = plan();
+    const times = ['19:30', '07:30', '12:00'];
+    copyWithMealTimes(original, times);
+    expect(times).toEqual(['19:30', '07:30', '12:00']);
+    expect(original.mealTimes).toEqual(['07:30', '19:30']);
   });
 });

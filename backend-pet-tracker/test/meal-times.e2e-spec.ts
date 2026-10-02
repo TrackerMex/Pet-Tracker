@@ -219,4 +219,74 @@ describe('Meal schedule editing (e2e)', () => {
       expect((await plansOf(pet.id)).at(-1)?.engineMealsPerDay).toBe(3);
     });
   });
+
+  const addMealTime = (
+    user: UserFixture,
+    petId: string,
+    body: Record<string, unknown>,
+  ) =>
+    api().post(`/v1/pets/${petId}/meal-times`).set(auth(user.token)).send(body);
+
+  describe('R3 (meal-schedule-editing #103): POST meal-times anade una franja como copia nueva del plan', () => {
+    it('anade 12:00 a P0, ordena y deja P0 intacto', async () => {
+      const owner = await seedUser('r3-copy');
+      const pet = await seedPet(owner);
+      const original = await seedPlan(owner, pet.id);
+      const [p0] = await plansOf(pet.id);
+      const response = await addMealTime(owner, pet.id, {
+        mealTime: '12:00',
+      }).expect(201);
+      const result = response.body as { id: string };
+      expect(Object.keys(response.body as object).sort()).toEqual(
+        [
+          'id',
+          'petId',
+          'rerKcal',
+          'merKcal',
+          'dailyGrams',
+          'mealsPerDay',
+          'mealTimes',
+          'objective',
+          'warnings',
+          'aiExplanation',
+          'generatedAt',
+        ].sort(),
+      );
+      expect(result.id).not.toBe(p0.id);
+      expect(response.body).toMatchObject({
+        mealTimes: ['07:30', '12:00', '19:30'],
+        mealsPerDay: 3,
+        rerKcal: p0.rerKcal,
+        merKcal: p0.merKcal,
+        dailyGrams: p0.dailyGrams,
+      });
+      expect(original.body).toMatchObject({ mealTimes: ['07:30', '19:30'] });
+      const rows = await plansOf(pet.id);
+      expect(rows).toHaveLength(2);
+      expect(rows[0]).toEqual(p0);
+      expect(rows[1].engineMealsPerDay).toBe(2);
+      const latest = await api()
+        .get(`/v1/pets/${pet.id}/nutrition-plan`)
+        .set(auth(owner.token))
+        .expect(200);
+      expect(latest.body).toHaveProperty('id', result.id);
+    });
+
+    it('un plan anterior a 0018 resuelve el numero del motor con meals_per_day', async () => {
+      const owner = await seedUser('r3-legacy');
+      const pet = await seedPet(owner);
+      await insertPlanRow(pet.id, {
+        mealsPerDay: 2,
+        engineMealsPerDay: null,
+        mealTimes: ['08:00', '20:00'],
+      });
+      const response = await addMealTime(owner, pet.id, {
+        mealTime: '13:00',
+      }).expect(201);
+      expect(response.body).toMatchObject({
+        mealTimes: ['08:00', '13:00', '20:00'],
+      });
+      expect((await plansOf(pet.id)).at(-1)?.engineMealsPerDay).toBe(2);
+    });
+  });
 });

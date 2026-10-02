@@ -58,3 +58,22 @@ export function carriedSchedule(
     mealTimes: [...schedule.mealTimes],
   };
 }
+
+export function copyWithMealTimes(
+  plan: NutritionPlan,
+  mealTimes: string[],
+): NewNutritionPlan {
+  return {
+    petId: plan.petId,
+    rerKcal: plan.rerKcal,
+    merKcal: plan.merKcal,
+    dailyGrams: plan.dailyGrams,
+    mealsPerDay: plan.mealsPerDay,
+    mealTimes,
+    engineMealsPerDay: plan.engineMealsPerDay,
+    objective: plan.objective,
+    warnings: plan.warnings,
+    aiExplanation: plan.aiExplanation,
+    inputsHash: plan.inputsHash,
+  };
+}
