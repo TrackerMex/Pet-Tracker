@@ -4,15 +4,16 @@ import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
 
 import { renderWithProviders } from '../../../test/render-with-providers';
-import { createGeofence, listGeofences, updateGeofence, type Geofence } from '../../api/geofences';
+import { createGeofence, deleteGeofence, listGeofences, setGeofenceActive, updateGeofence, type Geofence } from '../../api/geofences';
 import { getLastPosition } from '../../api/positions';
 import type { LastPosition } from '../../api/types';
-import type { Language } from '../../i18n/catalog';
+import { catalog, type Language } from '../../i18n/catalog';
 import { LanguageProvider } from '../../providers/language-provider';
 import { GeofenceEditorScreen } from '.';
 
 jest.mock('../../api/geofences', () => ({
   listGeofences: jest.fn(), createGeofence: jest.fn(), updateGeofence: jest.fn(),
+  setGeofenceActive: jest.fn(), deleteGeofence: jest.fn(),
 }));
 jest.mock('../../api/positions', () => ({ getLastPosition: jest.fn() }));
 const mockSignOut = jest.fn().mockResolvedValue(undefined);
@@ -48,6 +49,8 @@ const mockList = jest.mocked(listGeofences);
 const mockPosition = jest.mocked(getLastPosition);
 const mockCreate = jest.mocked(createGeofence);
 const mockUpdate = jest.mocked(updateGeofence);
+const mockSetActive = jest.mocked(setGeofenceActive);
+const mockDelete = jest.mocked(deleteGeofence);
 const apiUrl = 'http://example.test/v1';
 const casa: Geofence = {
   id: 'geofence-1', petId: 'pet-1', name: 'Casa', type: 'safe_circle',
@@ -82,6 +85,8 @@ beforeEach(() => {
   mockPosition.mockReset().mockResolvedValue({ kind: 'ok', position: lastPosition });
   mockCreate.mockReset().mockResolvedValue({ kind: 'ok' });
   mockUpdate.mockReset().mockResolvedValue({ kind: 'ok' });
+  mockSetActive.mockReset().mockResolvedValue({ kind: 'ok' });
+  mockDelete.mockReset().mockResolvedValue({ kind: 'ok' });
   process.env.EXPO_PUBLIC_API_URL = apiUrl;
 });
 
@@ -349,6 +354,70 @@ describe('#146 R8: Guardar crea o actualiza la zona y vuelve a la lista', () => 
     mockUpdate.mockResolvedValue({ kind: 'unauthorized' });
     await edit(); const save = screen.getByTestId('geofence-editor-save');
     await fireEvent.press(save);
+    await waitFor(() => expect(mockSignOut).toHaveBeenCalledTimes(1));
+    expect(mockBack).not.toHaveBeenCalled();
+  });
+});
+
+describe('#146 R13: el interruptor del editor activa o desactiva la zona sin salir', () => {
+  it('pinta el interruptor de zona activa entre el slider y la nota de reinicio', async () => {
+    await edit(); const toggle = screen.getByTestId('geofence-editor-active');
+    const row = screen.getByTestId('geofence-editor-active-row');
+    expect(row.props.className).toBe('flex-row items-center justify-between gap-3');
+    expect(row).toHaveTextContent(catalog.es['geofences.statusActive']);
+    expect(toggle.props.role).toBe('switch');
+    expect(toggle.props.accessibilityState).toEqual({ checked: true, disabled: false });
+    expect(toggle.props.accessibilityLabel).toBe(catalog.es['geofences.activeLabel'].replace('{{name}}', casa.name));
+    expect(toggle.props.hitSlop).toBe(10);
+    const ids = childTestIds(row.parent!);
+    expect(ids.slice(ids.indexOf('geofence-editor-radius'), ids.indexOf('geofence-editor-radius') + 3)).toEqual(['geofence-editor-radius', 'geofence-editor-active-row', 'geofence-editor-reset-note']);
+  });
+  it('desactivar escribe solo el estado, recarga la lista y se queda en el editor', async () => {
+    mockList.mockResolvedValueOnce({ kind: 'ok', geofences: [casa, parque] }).mockResolvedValue({ kind: 'ok', geofences: [{ ...casa, active: false }, parque] });
+    const { queryClient } = await edit();
+    const invalidate = jest.spyOn(queryClient, 'invalidateQueries');
+    await fireEvent.press(screen.getByTestId('geofence-editor-active'));
+    await waitFor(() => expect(screen.getByTestId('geofence-editor-active').props.accessibilityState).toEqual({ checked: false, disabled: false }));
+    expect(mockSetActive).toHaveBeenCalledTimes(1);
+    expect(mockSetActive).toHaveBeenCalledWith(apiUrl, 'token-1', 'pet-1', 'geofence-1', false);
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: expectedListKey });
+    expect(mockList).toHaveBeenCalledTimes(2);
+    expect(mockUpdate).not.toHaveBeenCalled(); expect(mockBack).not.toHaveBeenCalled();
+  });
+  it('deshabilita el interruptor y Guardar mientras escribe', async () => {
+    mockSetActive.mockReturnValue(new Promise(() => undefined)); await edit();
+    const toggle = screen.getByTestId('geofence-editor-active');
+    await fireEvent.press(toggle);
+    await waitFor(() => expect(toggle.props.accessibilityState.disabled).toBe(true));
+    expect(screen.getByTestId('geofence-editor-save').props.accessibilityState.disabled).toBe(true);
+    await fireEvent.press(toggle); await fireEvent.press(screen.getByTestId('geofence-editor-save'));
+    expect(mockSetActive).toHaveBeenCalledTimes(1); expect(mockUpdate).not.toHaveBeenCalled();
+  });
+  it('Guardar tras cambiar el interruptor envía el PATCH sin el estado', async () => {
+    mockList.mockResolvedValueOnce({ kind: 'ok', geofences: [casa, parque] }).mockResolvedValue({ kind: 'ok', geofences: [{ ...casa, active: false }, parque] });
+    await edit();
+    await fireEvent.changeText(screen.getByTestId('geofence-editor-name'), 'Casa nueva');
+    await fireEvent(screen.getByTestId('map-view'), 'mapClick', { coordinates: { latitude: 19.41, longitude: -99.11 } });
+    await fireEvent(screen.getByTestId('geofence-editor-radius'), 'change', 300);
+    await fireEvent.press(screen.getByTestId('geofence-editor-active'));
+    await waitFor(() => expect(screen.getByTestId('geofence-editor-active').props.accessibilityState).toEqual({ checked: false, disabled: false }));
+    await fireEvent.press(screen.getByTestId('geofence-editor-save'));
+    await waitFor(() => expect(mockUpdate).toHaveBeenCalledTimes(1));
+    const draft = mockUpdate.mock.calls[0][4];
+    expect(Object.keys(draft).sort()).toEqual(['centerLat', 'centerLng', 'name', 'radiusM']);
+    expect(draft).toEqual({ name: 'Casa nueva', centerLat: 19.41, centerLng: -99.11, radiusM: 300 });
+  });
+  it.each(['not-found', 'unreachable'] as const)('un fallo %s del interruptor pinta el error bajo el formulario y no vuelve', async (kind) => {
+    mockSetActive.mockResolvedValue(kind === 'unreachable' ? { kind, message: 'offline' } : { kind });
+    await edit(); await fireEvent.press(screen.getByTestId('geofence-editor-active'));
+    const error = await screen.findByTestId('geofence-editor-error');
+    expect(error).toHaveTextContent(kind === 'not-found' ? 'La mascota o la zona ya no están disponibles.' : catalog.es['common.cannotReachServer']);
+    expect(childTestIds(error.parent!).at(-1)).toBe('geofence-editor-error');
+    expect(mockBack).not.toHaveBeenCalled();
+  });
+  it('un 401 del interruptor cierra sesión una vez', async () => {
+    mockSetActive.mockResolvedValue({ kind: 'unauthorized' }); await edit();
+    await fireEvent.press(screen.getByTestId('geofence-editor-active'));
     await waitFor(() => expect(mockSignOut).toHaveBeenCalledTimes(1));
     expect(mockBack).not.toHaveBeenCalled();
   });
