@@ -8,6 +8,8 @@ import { HeroUINativeProvider } from 'heroui-native';
 import { useEffect } from 'react';
 
 import {
+  addMealTime,
+  moveMealTime,
   generateNutritionPlan,
   getNutritionPlan,
   getNutritionProfile,
@@ -29,6 +31,7 @@ import { MealScheduleScreen } from '.';
 import { renderWithProviders } from '../../../test/render-with-providers';
 
 jest.mock('../../api/nutrition', () => ({
+  moveMealTime: jest.fn(),
   generateNutritionPlan: jest.fn(),
   getNutritionPlan: jest.fn(),
   getNutritionProfile: jest.fn(),
@@ -53,6 +56,36 @@ jest.mock('expo-router', () => {
 
       return React.createElement(View, props);
     },
+  };
+});
+
+jest.mock('@expo/ui', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>(
+    'react-native',
+  );
+
+  return {
+    Host: (props: Record<string, unknown>) => {
+      const { children, ...hostProps } = props;
+
+      return React.createElement(
+        View,
+        { ...hostProps, testID: 'expo-ui-picker-host' },
+        children as never,
+      );
+    },
+  };
+});
+
+jest.mock('@expo/ui/community/datetime-picker', () => {
+  const React = jest.requireActual<typeof import('react')>('react');
+  const { View } = jest.requireActual<typeof import('react-native')>(
+    'react-native',
+  );
+
+  return function MockDateTimePicker(props: Record<string, unknown>) {
+    return React.createElement(View, props);
   };
 });
 
@@ -86,6 +119,7 @@ const apiUrl = 'http://example.test/v1';
 const mockGenerateNutritionPlan = jest.mocked(generateNutritionPlan);
 const mockGetNutritionPlan = jest.mocked(getNutritionPlan);
 const mockGetNutritionProfile = jest.mocked(getNutritionProfile);
+const mockMoveMealTime = jest.mocked(moveMealTime);
 const mockGetPet = jest.mocked(getPet);
 const mockUseAuth = jest.mocked(useAuth);
 
@@ -172,6 +206,8 @@ beforeEach(() => {
   mockGenerateNutritionPlan.mockReset();
   mockGetNutritionPlan.mockReset();
   mockGetNutritionProfile.mockReset();
+  mockMoveMealTime.mockReset();
+  mockMoveMealTime.mockResolvedValue({ kind: 'ok' });
   mockGetPet.mockReset();
   mockGetPet.mockResolvedValue(petState('family'));
   process.env.EXPO_PUBLIC_API_URL = apiUrl;
@@ -571,5 +607,79 @@ describe('#147 R4: solo el owner ve Editar y Añadir comida', () => {
       }
       expect(screen.queryByTestId('add-meal-time-button')).toBeNull();
     });
+  });
+});
+
+
+describe('#147 R5: Editar abre el selector en la hora de la fila y publica el PATCH', () => {
+  beforeEach(() => {
+    mockGetPet.mockResolvedValue(petState('owner'));
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan() });
+    mockGetNutritionProfile.mockResolvedValue({ kind: 'ok', profile: makeProfile() });
+  });
+
+  it('abre un único selector de hora con la hora local de la fila', async () => {
+    const previousTZ = process.env.TZ;
+    try {
+      process.env.TZ = 'America/Mexico_City';
+      await renderMealSchedule();
+      await fireEvent.press(await screen.findByTestId('meal-time-edit-1'));
+      expect(screen.queryByTestId('meal-time-picker')).not.toBeNull();
+      expect(screen.getAllByTestId('meal-time-picker')).toHaveLength(1);
+      expect(screen.getAllByTestId('expo-ui-picker-host')).toHaveLength(1);
+      const picker = screen.getByTestId('meal-time-picker');
+      expect(picker.props.mode).toBe('time');
+      expect(picker.props.presentation).toBe('dialog');
+      expect([picker.props.value.getHours(), picker.props.value.getMinutes()]).toEqual([19, 30]);
+      await fireEvent(picker, 'onDismiss');
+      await waitFor(() => expect(screen.getByTestId('meal-time-edit-0').props.accessibilityState).not.toEqual(expect.objectContaining({ disabled: true })));
+    } finally {
+      if (previousTZ === undefined) delete process.env.TZ;
+      else process.env.TZ = previousTZ;
+    }
+  });
+
+  it('al elegir una hora nueva llama a moveMealTime con la hora local y cierra el selector', async () => {
+    await renderMealSchedule();
+    await fireEvent.press(await screen.findByTestId('meal-time-edit-1'));
+    expect(screen.queryByTestId('meal-time-picker')).not.toBeNull();
+    const chosen = Object.assign(new Date(2026, 9, 2, 20, 5), { getUTCHours: () => 3, getUTCMinutes: () => 7, toISOString: () => '2026-10-03T03:07:00.000Z' });
+    await fireEvent(screen.getByTestId('meal-time-picker'), 'onValueChange', {}, chosen);
+    await waitFor(() => {
+      expect(screen.getByTestId('meal-time-edit-0')).toBeVisible();
+      expect(mockMoveMealTime).toHaveBeenCalledTimes(1);
+      expect(mockMoveMealTime).toHaveBeenCalledWith('http://example.test/v1', 'jwt-token', 'pet-1', '19:30', '20:05');
+      expect(screen.queryByTestId('meal-time-picker')).toBeNull();
+    });
+    expect(jest.mocked(addMealTime)?.mock.calls ?? []).toEqual([]);
+    await waitFor(() => expect(screen.getByTestId('meal-time-edit-0').props.accessibilityState).not.toEqual(expect.objectContaining({ disabled: true })));
+  });
+
+  it('al cerrar el selector sin elegir no llama a nada', async () => {
+    await renderMealSchedule();
+    await fireEvent.press(await screen.findByTestId('meal-time-edit-1'));
+    expect(screen.queryByTestId('meal-time-picker')).not.toBeNull();
+    await fireEvent(screen.getByTestId('meal-time-picker'), 'onDismiss');
+    await waitFor(() => {
+      expect(screen.getByTestId('meal-time-edit-0')).toBeVisible();
+      expect(screen.queryByTestId('meal-time-picker')).toBeNull();
+    });
+    expect(mockMoveMealTime).not.toHaveBeenCalled();
+    expect(jest.mocked(addMealTime)?.mock.calls ?? []).toEqual([]);
+    await waitFor(() => expect(screen.getByTestId('meal-time-edit-0').props.accessibilityState).not.toEqual(expect.objectContaining({ disabled: true })));
+  });
+
+  it('elegir la misma hora de la fila no llama a nada', async () => {
+    await renderMealSchedule();
+    await fireEvent.press(await screen.findByTestId('meal-time-edit-1'));
+    expect(screen.queryByTestId('meal-time-picker')).not.toBeNull();
+    await fireEvent(screen.getByTestId('meal-time-picker'), 'onValueChange', {}, new Date(2026, 9, 2, 19, 30));
+    await waitFor(() => {
+      expect(screen.getByTestId('meal-time-edit-0')).toBeVisible();
+      expect(screen.queryByTestId('meal-time-picker')).toBeNull();
+    });
+    expect(mockMoveMealTime).not.toHaveBeenCalled();
+    expect(jest.mocked(addMealTime)?.mock.calls ?? []).toEqual([]);
+    await waitFor(() => expect(screen.getByTestId('meal-time-edit-0').props.accessibilityState).not.toEqual(expect.objectContaining({ disabled: true })));
   });
 });
