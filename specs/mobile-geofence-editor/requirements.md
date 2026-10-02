@@ -1652,5 +1652,5 @@ Dos casillas más. La primera autoriza a Codex a implementar E1 y firma
 P-E1. La segunda cierra la feature junto con la de §Prueba de humo, que
 el humano ya marcó con el paso 9 pendiente.
 
-- [ ] Enmienda E1 aprobada por humano, P-E1 incluida (fecha: ____)
+- [x] Enmienda E1 aprobada por humano, P-E1 incluida (fecha: 2026-10-02)
 - [ ] Paso 9 repetido y superado tras E1, en el dev build de Android (fecha: ____)
