@@ -809,4 +809,58 @@ describe('Meal schedule editing (e2e)', () => {
       await moveMealTime(owner, 'not-a-uuid', '07:30', {}).expect(404);
     });
   });
+
+  const unserveMeal = (user: UserFixture, petId: string, mealTime: string) =>
+    api().delete(`/v1/pets/${petId}/meals/${mealTime}`).set(auth(user.token));
+
+  describe('R11 (meal-schedule-editing #103): servir, deshacer, GET del plan y perfil leen el plan editado', () => {
+    it('servir, mover y deshacer usan las franjas del plan editado', async () => {
+      const owner = await seedUser('r11-readers');
+      const pet = await seedPet(owner);
+      await seedPlan(owner, pet.id);
+      await addMealTime(owner, pet.id, { mealTime: '12:00' }).expect(201);
+      await serveMeal(owner, pet.id, { mealTime: '12:00' }).expect(201);
+      expect((await getPlan(owner, pet.id).expect(200)).body).toMatchObject({
+        servedToday: ['12:00'],
+        mealsPerDay: 3,
+        kcalConsumedToday: 353,
+      });
+      expect(
+        (
+          await api()
+            .get(`/v1/pets/${pet.id}`)
+            .set(auth(owner.token))
+            .expect(200)
+        ).body,
+      ).toHaveProperty('mealsToday', { served: 1, total: 3 });
+      await moveMealTime(owner, pet.id, '07:30', { mealTime: '08:15' }).expect(
+        200,
+      );
+      const offPlan = await serveMeal(owner, pet.id, {
+        mealTime: '07:30',
+      }).expect(422);
+      expect(offPlan.body).toHaveProperty('code', 'MEAL_TIME_NOT_IN_PLAN');
+      await serveMeal(owner, pet.id, { mealTime: '08:15' }).expect(201);
+      expect(
+        (
+          await api()
+            .get(`/v1/pets/${pet.id}`)
+            .set(auth(owner.token))
+            .expect(200)
+        ).body,
+      ).toHaveProperty('mealsToday', { served: 2, total: 3 });
+      expect((await getPlan(owner, pet.id).expect(200)).body).toMatchObject({
+        kcalConsumedToday: 706,
+      });
+      await unserveMeal(owner, pet.id, '12:00').expect(204);
+      expect(
+        (
+          await api()
+            .get(`/v1/pets/${pet.id}`)
+            .set(auth(owner.token))
+            .expect(200)
+        ).body,
+      ).toHaveProperty('mealsToday', { served: 1, total: 3 });
+    });
+  });
 });
