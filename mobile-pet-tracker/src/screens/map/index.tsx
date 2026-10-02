@@ -20,7 +20,7 @@ import {
 import { petKeys, positionKeys, tripKeys } from '../../api/query-keys';
 import { getDayRoute } from '../../api/trips';
 import { Card } from '../../components/card';
-import { PetMap } from '../../components/pet-map';
+import { DEFAULT_CENTER, PetMap } from '../../components/pet-map';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
@@ -78,10 +78,6 @@ function fmtAgo(
   return t('map.agoHours', { hours: Math.floor(seconds / 3600) });
 }
 
-const DEFAULT_CENTER = {
-  latitude: 19.4326,
-  longitude: -99.1332,
-};
 const POLL_MS = 15000;
 
 export function MapScreen() {

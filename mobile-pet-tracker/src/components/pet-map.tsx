@@ -16,6 +16,7 @@ export type PetMapProps = {
 };
 
 export const MAP_ZOOM = 16;
+export const DEFAULT_CENTER: MapCoordinates = { latitude: 19.4326, longitude: -99.1332 };
 
 export function PetMap(props: PetMapProps) {
   const [polylineColor, circleFill] = useThemeColors(['accent-strong', 'tab-pill']);
