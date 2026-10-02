@@ -41,7 +41,9 @@ de #41 (`Añadir zona` o tocando una zona).
 > **Base de tests sin medir.** Esta spec no corre jest: el leader re-mide la
 > base al preparar el handoff. Referencia: #41 cerró en 88 suites / 1716
 > tests / 1 skipped sobre `03f57706` (1731 al mezclarse con `main`). El delta
-> de esta spec es **+101 tests y +2 suites** ([[design]] §Delta de tests).
+> de esta spec es **+142 tests y +2 suites** ([[design]] §Delta de tests);
+> la ampliación de R11–R18 (2026-10-02) suma 41 de esos tests y ninguna
+> suite. Las anclas de la ampliación se verificaron sobre `d637757e`.
 >
 > **Regla de prefijo:** todo `describe` nuevo nombra `#146 R<n>`; nunca un
 > `#146` suelto en código ni en tests.
@@ -72,11 +74,13 @@ aprobado en #41.
    no (mirar).** La zona editada se dibuja con los valores del borrador; al
    crear, el borrador se añade el último con id `'draft'`. La descripción
    pedía "dibujar las zonas en el mapa de la pantalla de geocercas", pero la
-   lista de #41 no tiene mapa (errata E3): el dibujo vive en el editor.
+   lista de #41 no tiene mapa (errata E3): el dibujo vive en el editor y,
+   desde R11, en la pestaña Mapa (allí solo las activas, P11).
    *Recomendación*: aceptar; un mapa en la lista sería otra feature.
 5. **P5 — Centro inicial.** Al crear: la última posición conocida
-   (`getLastPosition`) si es `ok` con posición; si no, el centro por defecto
-   de la pestaña Mapa (19.4326, -99.1332). Al editar: el centro guardado. No
+   (`getLastPosition`) si es `ok` con posición; si no, `DEFAULT_CENTER`
+   (19.4326, -99.1332), que R17 saca de la pestaña Mapa a
+   `src/components/pet-map.tsx` para que los dos lo compartan (P17). Al editar: el centro guardado. No
    se mira la antigüedad de la posición (`staleSeconds`).
    *Recomendación*: aceptar.
 6. **P6 — Entrada desde la lista (mirar).** Para el dueño, la columna de
@@ -1246,47 +1250,39 @@ que firma la casilla.
 
 ## Fuera de alcance
 
+La ampliación del 2026-10-02 trajo dentro círculos en la pestaña Mapa (R11),
+límite en el cliente (R12), activar y borrar desde el editor (R13, R14),
+revalidar el centro (R15), rol en el editor (R16), `DEFAULT_CENTER` único
+(R17), títulos sin cifra (P18) y `TABULAR_NUMS` en los contadores (R18). Lo
+que sigue fuera:
+
 ### Delimitaciones (no son features: marcan el borde de esta)
 
 - **iOS / `AppleMaps`.** Las props nuevas viajan en `mapViewProps`, que hoy
   solo recibe `GoogleMaps.View`. Que lleguen a `AppleMaps.View` lo verifica
-  #60 (aparcada). En Apple, `onCircleClick` no trae coordenadas y no hay
-  toque de POI (errata E6).
-- **Círculos en la pestaña Mapa** (Make §1.2), **polígonos** y **zonas
-  compartidas entre mascotas**: fuera por la propia descripción.
-- **Borrar y activar/desactivar** siguen en la lista de #41; el editor no
-  los ofrece.
+  #60 (aparcada), también para los círculos de la pestaña Mapa. En Apple,
+  `onCircleClick` no trae coordenadas y no hay toque de POI (errata E6).
+- **Polígonos** y **zonas compartidas entre mascotas**: fuera por la propia
+  descripción.
+- **Tocar un círculo en la pestaña Mapa** no abre el editor ni muestra nada:
+  la pestaña solo pinta las zonas activas (R11, P11).
 - **Arrastrar el centro.** expo-maps no tiene eventos de arrastre de marker
   y `onMapLongClick` es solo de Google: el centro se fija con un toque.
-- **Contar el límite de 5 en el cliente.** `Añadir zona` aparece también con
-  5 zonas; el límite lo dice el `400 MAX_GEOFENCES_REACHED` (P6).
-- **Rol en el editor.** El editor no consulta `myRole`; un 403 pinta el
-  error genérico (§Qué firma, delimitación de rol).
-- **Revalidar `centerLat`/`centerLng` de la lista.** `isGeofence` de #41 D2
-  solo comprueba `id`, `name`, `radiusM` y `active`, y decía que "#146 lo
-  revalidará al editar". Esta spec **no** lo hace (errata E13): el editor
-  confía en el tipo, como la lista.
 - **Comportamiento del teclado** sobre el formulario: solo lo cubre la prueba
   de humo (paso 9), jest no lo ve.
 
 ### Deuda candidata (para registrar en `feature_list.json` al cerrar, si el humano quiere)
 
-- `DEFAULT_CENTER` queda duplicado entre `src/screens/map/index.tsx` (local,
-  sin exportar) y el editor.
-- El título `'deja los trece botones primarios sólidos en un único radio'`
-  de `#62 R1` sigue diciendo "trece" con `13 + 1 + 1`; y
-  `'cuadra ALL_USES con la suma de los doce bloques'` dice "doce" con quince
-  bloques. No se renombran títulos aprobados.
 - La suma de `SCREEN_FILES` sigue creciendo a mano.
-- El `TABULAR_NUMS` del editor no entra en los contadores de `#62 R15`, que
-  solo miran ficheros listados.
+- `GEOFENCE_MAX_PER_PET` es un espejo a mano del backend (R12, D11): ningún
+  test cruza los dos paquetes.
 
 ## Coordinación con otras sesiones
 
 - **#60 está aparcada** (`286c94bd`) y dejó de ser dependencia el
   2026-10-02 por decisión del humano. Esta spec se escribe contra el
   `PetMap` de `main` (blob `08c6e385`; test, blob `1e94de45`), idénticos en
-  `95b2aaa4`.
+  `95b2aaa4` y en `d637757e`.
 - **Quien mergee segundo resuelve** `src/components/pet-map.tsx` y
   `src/components/__tests__/pet-map.test.tsx`. Por eso las props nuevas van
   dentro del objeto `mapViewProps` y no sueltas en el JSX: es el punto por el
@@ -1296,13 +1292,23 @@ que firma la casilla.
   coordenadas y sin POI, errata E6).
 - **La comprobación en iOS espera a #60** y queda fuera del gate de #146: la
   prueba de humo de esta spec es solo en dev build de Android.
-- **#41** no cambia: esta spec modifica su pantalla y su test (R9) y la
+- **Pestaña Mapa.** R11 y R17 tocan `src/screens/map/index.tsx` y R11 su
+  test `src/screens/map/index.test.tsx` (doble de `../../api/geofences` y
+  D8 filas 13 y 19). Cualquier sesión paralela sobre esa pantalla choca
+  aquí: quien mergee segundo resuelve, re-anclando por contenido.
+- **Backend.** #146 no toca `backend-pet-tracker/`. Si alguien cambia
+  `GEOFENCE_MAX_PER_PET` en
+  `backend-pet-tracker/src/modules/geofences/geofences.constants.ts`, el
+  espejo de `src/api/geofences.ts` (R12) cambia en el mismo PR.
+- **#41** no cambia: esta spec modifica su pantalla y su test (R9, R12) y la
   lista de A11 (A19), pero no su spec. Las aserciones de #41 que cambian
   están inventariadas en [[design]] D8.
 - **Candados compartidos.** El catálogo (`#65 R12`), la sección §2.x de
   `specs/mobile-ui-language/design.md`, los nombres de bloque de
   `ui-copy-table.ts` (`R15_…`), los recuentos de `#62 R1` y `#98 R10`, la
-  lista de `#87 R19` y el id A19 son sitios donde cualquier feature móvil
+  tabla de contadores de `#62 R15` y la suma de `#69 R10` (R18), los
+  barridos de `design-drift.test.ts` (R17), la lista de `#87 R19` y el id
+  A19 son sitios donde cualquier feature móvil
   paralela escribe. Si otra mergea antes, el leader re-ancla por contenido al
   hacer el handoff y renumera lo que choque (§2.16, `R15`, A19).
 
@@ -1316,7 +1322,7 @@ que firma la casilla.
   ficheros pedidos.
 - **Delta de cierre contra la base medida al arrancar**: **+2 suites**
   (`src/utils/zoom-for-radius.test.ts` y
-  `src/screens/geofence-editor/index.test.tsx`) y **+101 tests**, con el
+  `src/screens/geofence-editor/index.test.tsx`) y **+142 tests**, con el
   reparto por fichero de [[design]] §Delta de tests. Ninguna suite pasa de
   verde a roja.
 - **Recorridos del router real.** Los ocho ficheros de [[tasks]]
@@ -1358,9 +1364,11 @@ salvo en el paso 10. iOS queda fuera (§Coordinación).
 - **Token y mascota.** `<jwt>` y `<petId>` (mascota con collar y suscripción
   activa) como en la prueba de humo de #41 (§Precondiciones de
   `specs/mobile-geofences/requirements.md`), con `curl.exe` en Windows.
-- **Zonas de partida.** La mascota tiene **4 zonas** (las Casa y Parque de
-  #41 más dos cualesquiera creadas con el mismo `curl.exe -X POST`), para
-  llegar al límite en el paso 6.
+- **Zonas de partida.** La mascota tiene **3 zonas** (las Casa y Parque de
+  #41 activas, más una "Extra1" creada con el mismo `curl.exe -X POST`),
+  para llegar al límite en el paso 6.
+- **Segunda cuenta.** `<email2>` es una cuenta con rol **family** sobre
+  `<petId>` (invitada desde la cuenta dueña), para el paso 14.
 - **adb.** Usa **siempre** `adb -s <ip:puerto>` (el teléfono sale dos veces
   en `adb devices -l`; en Windows, `adb devices -l | findstr 192.168`).
 
@@ -1372,7 +1380,7 @@ salvo en el paso 10. iOS queda fuera (§Coordinación).
 - [ ] 2. **Crear.** El mapa centra en la última posición de la mascota con un
       círculo de 150 m. Escribe "Paseo", toca otro punto del mapa: el
       círculo se mueve y **la cámara no**. Guarda: vuelves a la lista y
-      "Paseo" ya está (5 zonas).
+      "Paseo" ya está (4 zonas).
 - [ ] 3. **Toques en POI y en círculo.** Abre Añadir zona otra vez. Toca un
       POI (un comercio con icono): el centro salta ahí. Toca dentro de un
       círculo existente: el centro salta al punto tocado. Vuelve atrás sin
@@ -1383,8 +1391,13 @@ salvo en el paso 10. iOS queda fuera (§Coordinación).
       el círculo. Desactiva TalkBack.
 - [ ] 5. **Nombre repetido.** Crea una zona llamada "Casa": bajo Guardar sale
       "Ya tienes una zona con ese nombre." y el borrador sigue ahí.
-- [ ] 6. **Límite.** Con 5 zonas, crea "Sexta": sale "Esta mascota ya tiene
-      el máximo de zonas.".
+- [ ] 6. **Límite.** Con 4 zonas, abre Añadir zona y escribe "Quinta". Sin
+      guardar, crea otra zona "Extra2" con el `curl.exe -X POST` de las
+      precondiciones (ya son 5). Guarda "Quinta": bajo Guardar sale "Esta
+      mascota ya tiene el máximo de zonas." (el 400 del backend). Vuelve
+      atrás, sal a Perfil y entra otra vez en Zonas seguras: con 5 zonas,
+      **Añadir zona** sale deshabilitado y debajo dice "Esta mascota ya
+      tiene 5 zonas, el máximo. Elimina una para añadir otra." (R12).
 - [ ] 7. **Editar.** En la lista, toca el **nombre** de "Paseo" y luego,
       tras volver, su **radio**: los dos abren el editor con nombre, centro
       y radio precargados y la nota de reinicio visible. Mueve el slider a
@@ -1395,18 +1408,42 @@ salvo en el paso 10. iOS queda fuera (§Coordinación).
       alcanzable haciendo scroll en el formulario.
 - [ ] 10. **Tema e idioma.** En tema oscuro, mapa oscuro y círculos visibles.
       En inglés, "Safe zone", "Add zone" y "Save".
-- [ ] 11. **Limpieza.** Borra "Paseo" y las dos zonas extra:
+- [ ] 11. **Activar desde el editor.** Abre "Paseo": bajo el slider, la
+      fila "Activa" con el interruptor encendido. Apágalo: sigues en el
+      editor y el interruptor queda apagado. Vuelve atrás: en la lista,
+      "Paseo" sale inactiva. Ábrela otra vez y enciéndela (R13).
+- [ ] 12. **Pestaña Mapa.** Con `<petId>` seleccionada, ve a la pestaña
+      Mapa: se ven los círculos de las zonas activas y no el de ninguna
+      inactiva. En la lista, apaga "Extra1"; vuelve al Mapa: su círculo ya
+      no está. Enciéndela otra vez (R11).
+- [ ] 13. **Eliminar desde el editor.** Abre "Extra2" y toca **Eliminar**:
+      sale "¿Eliminar Extra2?". Cancelar te deja en el editor sin cambios.
+      Repite y confirma: vuelves a la lista, "Extra2" ya no está, Añadir
+      zona vuelve a estar habilitado y el aviso del límite desaparece
+      (R14, R12).
+- [ ] 14. **Solo lectura.** Cierra sesión y entra con `<email2>`. Perfil →
+      Zonas seguras: no hay Añadir zona y tocar una zona no abre el editor
+      (P16). Abre el editor por enlace:
+      `adb -s <ip:puerto> shell am start -a android.intent.action.VIEW -d "mobilepettracker://pets/<petId>/geofence-editor?geofenceId=<geofenceId>"`
+      (si sale el lanzador del dev client, entra al servidor de Metro y
+      repite): ves el nombre como texto, el radio y "Solo el dueño de la
+      mascota puede crear o editar zonas."; tocar el mapa no mueve el
+      círculo y no hay campo, slider, interruptor, Guardar ni Eliminar.
+      Repite el comando sin `?geofenceId=<geofenceId>`: solo sale la
+      tarjeta con ese mismo texto (R16). Vuelve a la cuenta dueña.
+- [ ] 15. **Limpieza.** Borra "Paseo" y "Extra1":
       `curl.exe -X DELETE -H "Authorization: Bearer <jwt>" "<API>/pets/<petId>/geofences/<geofenceId>"`.
 
 - [ ] Prueba de humo superada (fecha: ____)
 
 ## Riesgos
 
-- **#41 aún no está en `main`.** La spec se escribió sobre `95b2aaa4`. Si
-  #41 cambia antes de mergear (p. ej. por su prueba de humo), las anclas de
-  R9 y D8 pueden moverse: el leader las re-verifica con `grep -F` antes del
-  handoff.
-- **Base sin medir.** El delta (+101 / +2) se suma a la base que el leader
+- **Anclas sobre una base congelada.** R1–R10 se anclaron sobre `95b2aaa4`
+  y la ampliación sobre `d637757e`, que ya contiene #41. Si `main` toca
+  antes del handoff los ficheros de #41 o de la pestaña Mapa, las anclas de
+  R9, R11–R18 y D8 pueden moverse: el leader las re-verifica con `grep -F`
+  antes del handoff.
+- **Base sin medir.** El delta (+142 / +2) se suma a la base que el leader
   mida en el árbol del handoff.
 - **El `Slider` real y los gestos no los ve jest.** Los tests usan un doble
   del `Slider` (D5) y la vista stub de expo-maps; el arrastre del thumb, el
@@ -1427,6 +1464,18 @@ salvo en el paso 10. iOS queda fuera (§Coordinación).
 - **#60 aparcada:** iOS sin verificar (§Coordinación).
 - **Choques en candados compartidos** (catálogo, §2.16, `R15_…`, A19):
   §Coordinación.
+- **Espejo del límite.** `GEOFENCE_MAX_PER_PET` del cliente (R12) no lo
+  cruza ningún test con el backend; si diverge, el 400 `limitReached` sigue
+  diciendo la verdad (R4) y el aviso miente. §Coordinación.
+- **El editor lee la zona de la caché de la lista** (R6, R13). Si la lista
+  está desfasada, el interruptor arranca con el `active` viejo; cada
+  escritura invalida `geofenceKeys.list(petId)` y lo repinta (R13 it 2).
+- **La pestaña Mapa se recarga por clave compartida** (R11, D10): no está en
+  el poll, así que depende de que la lista y el editor invaliden. Lo cubre
+  el paso 12.
+- **Rol que falla = no dueño** (R16, P16): con `petKeys.detail` en error el
+  editor queda en solo lectura aunque quien mira sea el dueño. Es la opción
+  segura; reintentar es salir y volver.
 - **Un literal del editor que coincida con un valor del catálogo** haría
   saltar el escaneo de literales de `#65 R18`. Todo el copy va por `t(…)`, así
   que no se espera; si salta, Codex para y lo reporta.
