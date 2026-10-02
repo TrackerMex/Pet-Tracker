@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { Button, Skeleton, Switch } from 'heroui-native';
 import { useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { Alert, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { listGeofences, setGeofenceActive, type GeofenceWriteState } from '../../api/geofences';
+import { deleteGeofence, listGeofences, setGeofenceActive, type Geofence, type GeofenceWriteState } from '../../api/geofences';
 import { getPet } from '../../api/pets';
 import { geofenceKeys, petKeys } from '../../api/query-keys';
 import { Card } from '../../components/card';
@@ -57,6 +57,20 @@ export function GeofencesScreen({ petId }: { petId: string }) {
     }
   }
 
+  function confirmDelete(geofence: Geofence) {
+    Alert.alert(
+      t('geofences.deleteTitle', { name: geofence.name }),
+      t('geofences.deleteBody'),
+      [
+        { text: t('geofences.cancel'), style: 'cancel' },
+        {
+          text: t('geofences.delete'), style: 'destructive',
+          onPress: () => void write(() => deleteGeofence(baseUrl, token ?? '', petId, geofence.id)),
+        },
+      ],
+    );
+  }
+
   return (
     <ScrollView
       testID="screen-geofences"
@@ -82,6 +96,7 @@ export function GeofencesScreen({ petId }: { petId: string }) {
               </Text>
             </View>
             {isOwner ? (
+              <>
               <Switch
                 testID={`geofence-${geofence.id}-active`}
                 isSelected={geofence.active}
@@ -90,6 +105,17 @@ export function GeofencesScreen({ petId }: { petId: string }) {
                 accessibilityLabel={t('geofences.activeLabel', { name: geofence.name })}
                 onSelectedChange={(active) => void write(() => setGeofenceActive(baseUrl, token ?? '', petId, geofence.id, active))}
               />
+              <Button
+                testID={`geofence-${geofence.id}-delete`}
+                variant="danger-soft"
+                size="sm"
+                className="min-h-11 rounded-xl bg-danger-soft"
+                isDisabled={busy}
+                onPress={() => confirmDelete(geofence)}
+              >
+                <Button.Label className="font-semibold text-danger">{t('geofences.delete')}</Button.Label>
+              </Button>
+              </>
             ) : null}
           </Card>
         ))
