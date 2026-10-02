@@ -5,6 +5,8 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import {
+  MealTimeDuplicateError,
+  MealTimesLimitReachedError,
   MealAlreadyServedError,
   MealServingNotFoundError,
   MealTimeNotInPlanError,
@@ -80,5 +82,19 @@ export function mapNutritionError(error: unknown): unknown {
     });
   }
 
+  if (error instanceof MealTimeDuplicateError) {
+    return new UnprocessableEntityException({
+      statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+      code: 'MEAL_TIME_DUPLICATE',
+      message: 'mealTime is already part of the current nutrition plan',
+    });
+  }
+  if (error instanceof MealTimesLimitReachedError) {
+    return new UnprocessableEntityException({
+      statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+      code: 'MEAL_TIMES_LIMIT_REACHED',
+      message: 'The nutrition plan already has the maximum of 6 meal times',
+    });
+  }
   return error;
 }

@@ -6,7 +6,11 @@ import { AUDIT_LOGGER } from '@/audit/audit-log.repository';
 import type { AuditLogger } from '@/audit/audit-log.repository';
 import { copyWithMealTimes } from '@/modules/nutrition/domain/entities/nutrition-plan.entity';
 import type { NutritionPlan } from '@/modules/nutrition/domain/entities/nutrition-plan.entity';
-import { NutritionPlanRequiredError } from '@/modules/nutrition/domain/errors/nutrition.errors';
+import {
+  MealTimeDuplicateError,
+  MealTimeNotInPlanError,
+  NutritionPlanRequiredError,
+} from '@/modules/nutrition/domain/errors/nutrition.errors';
 import { NUTRITION_REPOSITORY } from '@/modules/nutrition/domain/repositories/nutrition.repository';
 import type { NutritionRepository } from '@/modules/nutrition/domain/repositories/nutrition.repository';
 
@@ -30,6 +34,10 @@ export class MoveMealTimeUseCase {
   async execute(input: MoveMealTimeInput): Promise<NutritionPlan> {
     const plan = await this.nutrition.findLatestPlan(input.petId);
     if (!plan) throw new NutritionPlanRequiredError(input.petId);
+    if (!plan.mealTimes.includes(input.from))
+      throw new MealTimeNotInPlanError(input.petId, input.from);
+    if (plan.mealTimes.includes(input.to))
+      throw new MealTimeDuplicateError(input.petId, input.to);
     const servedOn = await ownerLocalDay(this.pets, input.petId, input.now);
     const created = await this.nutrition.insertPlanAndMoveServing(
       copyWithMealTimes(

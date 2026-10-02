@@ -55,3 +55,21 @@ export class MealServingNotFoundError extends Error {
     this.name = 'MealServingNotFoundError';
   }
 }
+
+export class MealTimeDuplicateError extends Error {
+  constructor(petId: string, mealTime: string) {
+    super(
+      `Meal time ${mealTime} is already in the current plan for pet ${petId}`,
+    );
+    this.name = 'MealTimeDuplicateError';
+  }
+}
+
+export class MealTimesLimitReachedError extends Error {
+  constructor(petId: string) {
+    super(
+      `Nutrition plan for pet ${petId} already has the maximum number of meal times`,
+    );
+    this.name = 'MealTimesLimitReachedError';
+  }
+}
