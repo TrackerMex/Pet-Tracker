@@ -3,6 +3,7 @@ import {
   alertKeys,
   deviceKeys,
   healthKeys,
+  geofenceKeys,
   mediaKeys,
   nutritionKeys,
   petKeys,
@@ -132,5 +133,14 @@ describe('#87 R7: las claves siguen la convención y no colisionan', () => {
       expect(factory()[0]).toBe(domain);
     }
     expect(petKeys.detail('p1').slice(0, 1)).toEqual(['pets']);
+  });
+});
+
+describe('#41 R2: la lista de zonas seguras tiene su propia clave por mascota', () => {
+  it('devuelve la clave exacta del dominio geofences', () => {
+    expect(geofenceKeys.list('p1')).toEqual(['geofences', 'list', 'p1']);
+  });
+  it('no colisiona entre mascotas', () => {
+    expect(geofenceKeys.list('p1')).not.toEqual(geofenceKeys.list('p2'));
   });
 });

@@ -52,6 +52,16 @@ describe('#100 R2: el detalle de alerta vive en src/app/alerts/[alertId].tsx', (
   });
 });
 
+describe('#41 R4: las zonas seguras viven en src/app/pets/[petId]/geofences.tsx', () => {
+  it('es un route delgado que importa la pantalla de src/screens/geofences', () => {
+    const route = join(app, 'pets/[petId]/geofences.tsx');
+    expect(existsSync(route)).toBe(true);
+    const source = readFileSync(route, 'utf8');
+    expect(source).toContain('useLocalSearchParams');
+    expect(source).toContain("from '../../../screens/geofences'");
+  });
+});
+
 describe('#95 R7: el reset de #63 queda solo donde no lo cubre el Stack', () => {
   it.each([
     ['add-reminder', 0],
