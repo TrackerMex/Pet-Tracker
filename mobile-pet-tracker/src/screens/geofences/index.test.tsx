@@ -488,7 +488,7 @@ describe('#146 R9: el dueño entra al editor desde la lista', () => {
   });
   it('nombra el botón de editar y Añadir zona en inglés', async () => {
     await mount('en'); const column = await screen.findByTestId('geofence-geofence-1-edit');
-    expect(column.props.accessibilityLabel).toBe('Edit zone Casa');
+    expect(column.props.accessibilityLabel).toBe('Edit Casa zone');
     expect(screen.getByTestId('geofences-add')).toHaveTextContent('Add zone');
   });
 });
