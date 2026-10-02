@@ -1,4 +1,5 @@
 import {
+  act,
   fireEvent,
   screen,
   waitFor,
@@ -13,6 +14,7 @@ import {
   generateNutritionPlan,
   getNutritionPlan,
   getNutritionProfile,
+  type EditMealTimeState,
   type GeneratePlanState,
   type NutritionPlanState,
   type NutritionProfileState,
@@ -742,6 +744,80 @@ describe('#147 R6: Añadir comida abre el selector a las 12:00 y publica el POST
     });
     expect(mockMoveMealTime).not.toHaveBeenCalled();
     expect(mockAddMealTime).not.toHaveBeenCalled();
+    await waitFor(() => expect(screen.getByTestId('meal-time-edit-0').props.accessibilityState).not.toEqual(expect.objectContaining({ disabled: true })));
+  });
+});
+
+
+describe('#147 R7: tras un éxito refetchea plan y mascota, sin estado optimista', () => {
+  beforeEach(() => {
+    mockGetPet.mockResolvedValue(petState('owner'));
+    mockGetNutritionPlan.mockResolvedValue({ kind: 'ok', plan: makePlan() });
+    mockGetNutritionProfile.mockResolvedValue({ kind: 'ok', profile: makeProfile() });
+  });
+
+  it('tras ok refetchea el plan y el detalle de la mascota y repinta con la hora nueva', async () => {
+    mockGetNutritionPlan
+      .mockResolvedValueOnce({ kind: 'ok', plan: makePlan() })
+      .mockResolvedValueOnce({ kind: 'ok', plan: makePlan({ mealTimes: ['07:30', '20:05'] }) });
+    await renderMealSchedule();
+    await fireEvent.press(await screen.findByTestId('meal-time-edit-1'));
+    await fireEvent(screen.getByTestId('meal-time-picker'), 'onValueChange', {}, new Date(2026, 9, 2, 20, 5));
+    await waitFor(() => {
+      expect(within(screen.getByTestId('meal-time-row-1')).queryByText('20:05')).not.toBeNull();
+      expect(screen.getByTestId('meal-time-edit-0').props.accessibilityState).not.toEqual(expect.objectContaining({ disabled: true }));
+    });
+    expect(mockGetNutritionPlan).toHaveBeenCalledTimes(2);
+    expect(mockGetPet).toHaveBeenCalledTimes(2);
+    await waitFor(() => expect(screen.getByTestId('meal-time-edit-0').props.accessibilityState).not.toEqual(expect.objectContaining({ disabled: true })));
+  });
+
+  it('mientras la edición vuela, todos los controles están deshabilitados y la lista no cambia', async () => {
+    let resolve!: (state: EditMealTimeState) => void;
+    mockMoveMealTime.mockReturnValue(new Promise((done) => { resolve = done; }));
+    await renderMealSchedule();
+    await fireEvent.press(await screen.findByTestId('meal-time-edit-1'));
+    await fireEvent(screen.getByTestId('meal-time-picker'), 'onValueChange', {}, new Date(2026, 9, 2, 20, 5));
+    await waitFor(() => {
+      expect(mockMoveMealTime).toHaveBeenCalledTimes(1);
+      for (const id of ['meal-time-edit-0', 'meal-time-edit-1', 'add-meal-time-button']) {
+        expect(screen.getByTestId(id).props.accessibilityState).toEqual(expect.objectContaining({ disabled: true }));
+      }
+    });
+    expect(within(screen.getByTestId('meal-time-row-1')).getByText('19:30')).toBeVisible();
+    expect(screen.queryByText('20:05')).toBeNull();
+    await act(async () => resolve({ kind: 'ok' }));
+    await waitFor(() => expect(screen.getByTestId('meal-time-edit-0').props.accessibilityState).not.toEqual(expect.objectContaining({ disabled: true })));
+  });
+
+  it('los controles siguen deshabilitados hasta que termina el refetch', async () => {
+    let resolve!: (state: NutritionPlanState) => void;
+    mockGetNutritionPlan.mockResolvedValueOnce({ kind: 'ok', plan: makePlan() })
+      .mockReturnValueOnce(new Promise((done) => { resolve = done; }));
+    await renderMealSchedule();
+    await fireEvent.press(await screen.findByTestId('meal-time-edit-1'));
+    await fireEvent(screen.getByTestId('meal-time-picker'), 'onValueChange', {}, new Date(2026, 9, 2, 20, 5));
+    await waitFor(() => {
+      for (const id of ['meal-time-edit-0', 'meal-time-edit-1', 'add-meal-time-button']) {
+        expect(screen.getByTestId(id).props.accessibilityState).toEqual(expect.objectContaining({ disabled: true }));
+      }
+      expect(mockGetNutritionPlan).toHaveBeenCalledTimes(2);
+    });
+    await act(async () => resolve({ kind: 'ok', plan: makePlan({ mealTimes: ['07:30', '20:05'] }) }));
+    await waitFor(() => expect(screen.getByTestId('meal-time-edit-0').props.accessibilityState).not.toEqual(expect.objectContaining({ disabled: true })));
+  });
+
+  it('un resultado que no es ok no refetchea', async () => {
+    mockMoveMealTime.mockResolvedValue({ kind: 'unprocessable', code: 'MEAL_TIME_DUPLICATE' });
+    await renderMealSchedule();
+    await fireEvent.press(await screen.findByTestId('meal-time-edit-1'));
+    await fireEvent(screen.getByTestId('meal-time-picker'), 'onValueChange', {}, new Date(2026, 9, 2, 20, 5));
+    await waitFor(() => {
+      expect(mockMoveMealTime).toHaveBeenCalledTimes(1);
+      expect(screen.getByTestId('meal-time-edit-0').props.accessibilityState).not.toEqual(expect.objectContaining({ disabled: true }));
+    });
+    expect(mockGetNutritionPlan).toHaveBeenCalledTimes(1);
+    expect(mockGetPet).toHaveBeenCalledTimes(1);
     await waitFor(() => expect(screen.getByTestId('meal-time-edit-0').props.accessibilityState).not.toEqual(expect.objectContaining({ disabled: true })));
   });
 });
