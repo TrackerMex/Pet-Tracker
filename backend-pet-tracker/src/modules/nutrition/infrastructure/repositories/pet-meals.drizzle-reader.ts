@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, asc, eq } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DRIZZLE } from '@/db/drizzle.constants';
 import { mealServings, nutritionPlans } from '@/db/schema/nutrition.schema';
@@ -24,7 +24,7 @@ export class PetMealsDrizzleReader implements PetMealsReader {
       })
       .from(nutritionPlans)
       .where(eq(nutritionPlans.petId, petId))
-      .orderBy(asc(nutritionPlans.generatedAt), asc(nutritionPlans.id))
+      .orderBy(desc(nutritionPlans.generatedAt), desc(nutritionPlans.id))
       .limit(1);
     if (!plan) return null;
 
