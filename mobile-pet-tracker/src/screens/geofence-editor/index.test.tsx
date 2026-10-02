@@ -1,4 +1,5 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react-native';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react-native';
+import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
 import type { ReactNode } from 'react';
 
@@ -257,5 +258,98 @@ describe('#146 R7: el toque y el slider mueven el borrador sin perseguir la cám
   it('escribir el nombre actualiza el campo', async () => {
     await edit(); await fireEvent.changeText(screen.getByTestId('geofence-editor-name'), 'Casa nueva');
     expect(screen.getByTestId('geofence-editor-name').props.value).toBe('Casa nueva');
+  });
+});
+
+
+const mockBack = jest.mocked(router.back);
+const expectedListKey = ['geofences', 'list', 'pet-1'];
+
+describe('#146 R8: Guardar crea o actualiza la zona y vuelve a la lista', () => {
+  it('al crear envía el borrador recortado y vuelve a la lista recargada', async () => {
+    const { queryClient } = await mount();
+    const save = await screen.findByTestId('geofence-editor-save');
+    const invalidate = jest.spyOn(queryClient, 'invalidateQueries');
+    await fireEvent.changeText(screen.getByTestId('geofence-editor-name'), '  Paseo  ');
+    await fireEvent.press(save);
+    await waitFor(() => expect(mockBack).toHaveBeenCalledTimes(1));
+    expect(mockCreate).toHaveBeenCalledWith(apiUrl, 'token-1', 'pet-1', { name: 'Paseo', centerLat: 19.5, centerLng: -99.2, radiusM: 150 });
+    expect(mockUpdate).not.toHaveBeenCalled();
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: expectedListKey });
+    expect(invalidate.mock.invocationCallOrder[0]).toBeLessThan(mockBack.mock.invocationCallOrder[0]);
+  });
+  it('al editar envía el borrador completo con PATCH', async () => {
+    await edit(); const save = screen.getByTestId('geofence-editor-save');
+    await fireEvent(screen.getByTestId('map-view'), 'mapClick', { coordinates: { latitude: 19.41, longitude: -99.11 } });
+    await fireEvent.changeText(screen.getByTestId('geofence-editor-name'), 'Casa nueva');
+    await fireEvent.press(save);
+    await waitFor(() => expect(mockBack).toHaveBeenCalledTimes(1));
+    expect(mockUpdate).toHaveBeenCalledWith(apiUrl, 'token-1', 'pet-1', 'geofence-1', { name: 'Casa nueva', centerLat: 19.41, centerLng: -99.11, radiusM: 150 });
+    expect(mockCreate).not.toHaveBeenCalled();
+  });
+  it('pinta Guardar con la receta primaria tras la nota de reinicio', async () => {
+    await edit(); const save = screen.getByTestId('geofence-editor-save');
+    expect(save.props.className).toBe('pressable-feedback__root button__root button__root--variant-primary button__root--size-md rounded-xl bg-accent');
+    expect(within(save).getByText('Guardar').props.className).toBe('button__label button__label--variant-primary button__label--size-md font-bold text-accent-foreground');
+    const ids = childTestIds(save.parent!);
+    expect(ids.slice(ids.indexOf('geofence-editor-reset-note'), ids.indexOf('geofence-editor-reset-note') + 2)).toEqual(['geofence-editor-reset-note', 'geofence-editor-save']);
+  });
+  it('deshabilita Guardar mientras guarda y no envía dos veces', async () => {
+    mockUpdate.mockReturnValue(new Promise(() => undefined)); await edit();
+    const save = screen.getByTestId('geofence-editor-save');
+    await fireEvent.press(save);
+    expect(save.props.accessibilityState.disabled).toBe(true);
+    await fireEvent.press(save);
+    expect(mockUpdate).toHaveBeenCalledTimes(1);
+  });
+  it('deshabilita Guardar con el nombre vacío', async () => {
+    await mount(); const save = await screen.findByTestId('geofence-editor-save');
+    expect(save.props.accessibilityState.disabled).toBe(true);
+    await fireEvent.changeText(screen.getByTestId('geofence-editor-name'), 'Casa');
+    expect(save.props.accessibilityState.disabled).toBe(false);
+  });
+  it('deshabilita Guardar con un nombre de solo espacios', async () => {
+    await edit(); const save = screen.getByTestId('geofence-editor-save');
+    await fireEvent.changeText(screen.getByTestId('geofence-editor-name'), '   ');
+    expect(save.props.accessibilityState.disabled).toBe(true);
+    await fireEvent.press(save); expect(mockUpdate).not.toHaveBeenCalled();
+  });
+  it.each([
+    ['name-taken', 'Ya tienes una zona con ese nombre.'],
+    ['limit-reached', 'Esta mascota ya tiene el máximo de zonas.'],
+    ['invalid', 'Revisa el nombre y el radio de la zona.'],
+    ['not-found', 'La mascota o la zona ya no están disponibles.'],
+    ['no-tracking', 'Las zonas seguras requieren un collar'],
+    ['unreachable', 'No se pudo conectar con el servidor'],
+    ['error', 'Algo salió mal'], ['missing-config', 'Algo salió mal'],
+  ] as const)('pinta %s bajo Guardar y conserva el borrador', async (kind, message) => {
+    mockUpdate.mockResolvedValue(kind === 'unreachable' ? { kind, message: 'offline' } : { kind });
+    await edit(); const save = screen.getByTestId('geofence-editor-save');
+    await fireEvent.changeText(screen.getByTestId('geofence-editor-name'), 'Mi casa');
+    await fireEvent.press(save);
+    const error = await screen.findByTestId('geofence-editor-error');
+    expect(error).toHaveTextContent(message);
+    expect(error.props.selectable).toBe(true);
+    expect(error.props.className).toBe('text-danger');
+    expect(childTestIds(save.parent!).at(-1)).toBe('geofence-editor-error');
+    expect(screen.getByTestId('geofence-editor-name').props.value).toBe('Mi casa');
+    expect(screen.getByTestId('geofence-editor-radius').props.value).toBe(150);
+    expect(mockBack).not.toHaveBeenCalled();
+  });
+  it('un rechazo pinta el error genérico y el siguiente intento lo borra', async () => {
+    mockUpdate.mockRejectedValueOnce(new Error('offline')).mockResolvedValue({ kind: 'ok' });
+    await edit(); const save = screen.getByTestId('geofence-editor-save');
+    await fireEvent.press(save);
+    expect(await screen.findByTestId('geofence-editor-error')).toHaveTextContent('Algo salió mal');
+    await fireEvent.press(save);
+    await waitFor(() => expect(screen.queryByTestId('geofence-editor-error')).toBeNull());
+    expect(mockBack).toHaveBeenCalledTimes(1);
+  });
+  it('un 401 cierra sesión una vez y no vuelve a la lista', async () => {
+    mockUpdate.mockResolvedValue({ kind: 'unauthorized' });
+    await edit(); const save = screen.getByTestId('geofence-editor-save');
+    await fireEvent.press(save);
+    await waitFor(() => expect(mockSignOut).toHaveBeenCalledTimes(1));
+    expect(mockBack).not.toHaveBeenCalled();
   });
 });
