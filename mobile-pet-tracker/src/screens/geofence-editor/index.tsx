@@ -14,6 +14,7 @@ import { Card } from '../../components/card';
 import { DEFAULT_CENTER, PetMap, type MapCoordinates } from '../../components/pet-map';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
+import { TABULAR_NUMS } from '../../theme/native-styles';
 import { zoomForRadius } from '../../utils/zoom-for-radius';
 
 function messageFor(t: ReturnType<typeof useTranslate>, kind: GeofenceSaveState['kind']): string {
@@ -146,7 +147,7 @@ function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, ini
       </TextField>
       <Text testID="geofence-editor-map-hint" className="text-sm font-normal text-muted">{t('geofenceEditor.mapHint')}</Text>
       </>}
-      <Text testID="geofence-editor-radius-value" selectable className="font-bold text-foreground">{t('geofences.radius', { meters: Math.round(readOnly ? initialRadius : radius) })}</Text>
+      <Text testID="geofence-editor-radius-value" selectable style={TABULAR_NUMS} className="font-bold text-foreground">{t('geofences.radius', { meters: Math.round(readOnly ? initialRadius : radius) })}</Text>
       {readOnly ? <Text testID="geofence-editor-read-only" className="text-sm font-normal text-muted">{t('geofenceEditor.ownerOnly')}</Text> : <>
       <Slider testID="geofence-editor-radius" value={radius} minValue={20} maxValue={2000} step={10}
         onChange={(v) => setRadius(Array.isArray(v) ? v[0] : v)}
