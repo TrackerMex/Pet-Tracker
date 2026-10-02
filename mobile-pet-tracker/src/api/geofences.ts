@@ -26,7 +26,8 @@ function isGeofence(value: unknown): value is Geofence {
   if (typeof value !== 'object' || value === null) return false;
   const item = value as Record<string, unknown>;
   return typeof item.id === 'string' && typeof item.name === 'string' &&
-    typeof item.radiusM === 'number' && typeof item.active === 'boolean';
+    typeof item.radiusM === 'number' && typeof item.active === 'boolean' &&
+    typeof item.centerLat === 'number' && typeof item.centerLng === 'number';
 }
 
 export async function listGeofences(
