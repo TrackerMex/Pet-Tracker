@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react-native';
 import { router } from 'expo-router';
 import { HeroUINativeProvider } from 'heroui-native';
@@ -6,8 +7,9 @@ import { Alert } from 'react-native';
 
 import { renderWithProviders } from '../../../test/render-with-providers';
 import { createGeofence, deleteGeofence, listGeofences, setGeofenceActive, updateGeofence, type Geofence } from '../../api/geofences';
+import { getPet, type PetState } from '../../api/pets';
 import { getLastPosition } from '../../api/positions';
-import type { LastPosition } from '../../api/types';
+import type { LastPosition, PetProfile } from '../../api/types';
 import { catalog, type Language } from '../../i18n/catalog';
 import { LanguageProvider } from '../../providers/language-provider';
 import { GeofenceEditorScreen } from '.';
@@ -16,6 +18,7 @@ jest.mock('../../api/geofences', () => ({
   listGeofences: jest.fn(), createGeofence: jest.fn(), updateGeofence: jest.fn(),
   setGeofenceActive: jest.fn(), deleteGeofence: jest.fn(),
 }));
+jest.mock('../../api/pets', () => ({ getPet: jest.fn() }));
 jest.mock('../../api/positions', () => ({ getLastPosition: jest.fn() }));
 const mockSignOut = jest.fn().mockResolvedValue(undefined);
 jest.mock('../../providers/auth-provider', () => ({
@@ -52,6 +55,7 @@ const mockCreate = jest.mocked(createGeofence);
 const mockUpdate = jest.mocked(updateGeofence);
 const mockSetActive = jest.mocked(setGeofenceActive);
 const mockDelete = jest.mocked(deleteGeofence);
+const mockGetPet = jest.mocked(getPet);
 const apiUrl = 'http://example.test/v1';
 const casa: Geofence = {
   id: 'geofence-1', petId: 'pet-1', name: 'Casa', type: 'safe_circle',
@@ -65,8 +69,10 @@ const lastPosition: LastPosition = { lat: 19.5, lng: -99.2, ts: 0, accuracy: nul
 function childTestIds(node: ReturnType<typeof screen.getByTestId>) {
   return node.children.map((child) => typeof child === 'string' ? undefined : child.props.testID);
 }
-function mount(geofenceId?: string, language: Language = 'es', onUnauthorized?: () => void) {
+function mount(geofenceId?: string, language: Language = 'es', onUnauthorized?: () => void, seedList = false) {
   function Wrapper({ children }: { children: ReactNode }) {
+    const queryClient = useQueryClient();
+    if (seedList && !queryClient.getQueryData(expectedListKey)) queryClient.setQueryData(expectedListKey, { kind: 'ok', geofences: [casa, parque] });
     return <HeroUINativeProvider><LanguageProvider initial={language}>{children}</LanguageProvider></HeroUINativeProvider>;
   }
   return renderWithProviders(<GeofenceEditorScreen petId="pet-1" geofenceId={geofenceId} />, { onUnauthorized, wrapper: Wrapper });
@@ -88,6 +94,7 @@ beforeEach(() => {
   mockUpdate.mockReset().mockResolvedValue({ kind: 'ok' });
   mockSetActive.mockReset().mockResolvedValue({ kind: 'ok' });
   mockDelete.mockReset().mockResolvedValue({ kind: 'ok' });
+  mockGetPet.mockReset().mockResolvedValue(petState());
   process.env.EXPO_PUBLIC_API_URL = apiUrl;
 });
 
@@ -505,5 +512,63 @@ describe('#146 R14: Eliminar en el editor borra la zona y vuelve a la lista', ()
     expect(button).toHaveTextContent(catalog.en['geofences.delete']);
     await fireEvent.press(button);
     expect(jest.mocked(Alert.alert).mock.calls[0][0]).toBe(catalog.en['geofences.deleteTitle'].replace('{{name}}', casa.name));
+  });
+});
+
+function petState(myRole: PetProfile['myRole'] = 'owner'): PetState {
+  return { kind: 'ok', pet: {
+    id: 'pet-1', name: 'Luna', species: 'dog', breed: null, sex: null,
+    birthDate: null, approxAgeMonths: null, ageMonths: 30, currentWeightKg: null,
+    size: null, color: null, sterilized: null, microchip: null, photoUrl: null,
+    lostMode: false, lastPosition: null, lastCommunicationAt: null, myRole,
+    device: null, nextVaccine: null, nextReminder: null, activitySummary: null,
+    mealsToday: null, createdAt: '2026-10-01T12:00:00.000Z', updatedAt: '2026-10-01T12:00:00.000Z',
+  } };
+}
+
+describe('#146 R16: quien no es dueño ve la zona sin poder editarla', () => {
+  it('pinta el esqueleto mientras carga el rol', async () => {
+    mockGetPet.mockReturnValue(new Promise(() => undefined));
+    mockList.mockReturnValue(new Promise(() => undefined));
+    // La lista ya está en caché al montar; evita confundir la carga de lista con la del rol.
+    await mount('geofence-1', 'es', undefined, true);
+    expect(await screen.findByTestId('geofence-editor-loading')).toBeVisible();
+    expect(screen.queryByTestId('geofence-editor-form')).toBeNull();
+  });
+  it.each(['family', 'walker', 'vet', 'un error al leer el rol'] as const)('al editar como %s pinta la zona en solo lectura', async (role) => {
+    mockGetPet.mockResolvedValue(role === 'un error al leer el rol' ? { kind: 'error' } : petState(role));
+    await mount('geofence-1'); await screen.findByTestId('geofence-editor-form');
+    const radius = screen.getByTestId('geofence-editor-radius-value');
+    expect(childTestIds(radius.parent!)).toEqual(['geofence-editor-name-text', 'geofence-editor-radius-value', 'geofence-editor-read-only']);
+    const name = screen.getByTestId('geofence-editor-name-text');
+    expect(name).toHaveTextContent(casa.name); expect(name.props.selectable).toBe(true);
+    expect(name.props.className).toBe('font-bold text-foreground');
+    expect(radius).toHaveTextContent(catalog.es['geofences.radius'].replace('{{meters}}', '150'));
+    const notice = screen.getByTestId('geofence-editor-read-only');
+    expect(notice).toHaveTextContent('Solo el dueño de la mascota puede crear o editar zonas.');
+    expect(notice.props.className).toBe('text-sm font-normal text-muted');
+    for (const id of ['name', 'map-hint', 'radius', 'active', 'reset-note', 'save', 'delete']) expect(screen.queryByTestId(`geofence-editor-${id}`)).toBeNull();
+  });
+  it('en solo lectura el mapa no registra toques y dibuja la zona guardada', async () => {
+    mockGetPet.mockResolvedValue(petState('family')); await mount('geofence-1');
+    await screen.findByTestId('geofence-editor-form'); const map = screen.getByTestId('map-view');
+    expect(map.props.onMapClick).toBeUndefined();
+    expect(map.props.onPOIClick).toBeUndefined(); expect(map.props.onCircleClick).toBeUndefined();
+    expect(circles()[0]).toEqual({ id: casa.id, center: { latitude: casa.centerLat, longitude: casa.centerLng }, radius: casa.radiusM });
+  });
+  it('al crear sin ser dueño pinta la tarjeta de solo dueño', async () => {
+    mockGetPet.mockResolvedValue(petState('walker')); await mount();
+    const card = await screen.findByTestId('geofence-editor-owner-only');
+    expect(card).toHaveTextContent('Solo el dueño de la mascota puede crear o editar zonas.');
+    expect(card.props.className).toBe('rounded-card border border-border bg-surface p-4 shadow-sm items-center py-8');
+    expect(screen.queryByTestId('geofence-editor-form')).toBeNull();
+  });
+  it('pinta la solo lectura en inglés', async () => {
+    mockGetPet.mockResolvedValue(petState('family')); await mount('geofence-1', 'en');
+    expect(await screen.findByTestId('geofence-editor-read-only')).toHaveTextContent("Only the pet's owner can create or edit zones.");
+  });
+  it('pide el rol de la mascota con su token', async () => {
+    await mount('geofence-1');
+    await waitFor(() => expect(mockGetPet).toHaveBeenCalledWith(apiUrl, 'token-1', 'pet-1'));
   });
 });
