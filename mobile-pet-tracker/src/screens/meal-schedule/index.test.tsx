@@ -856,6 +856,8 @@ describe('#147 R8: cada error del contrato tiene su mensaje', () => {
     expect(error.props.className).toBe('text-danger');
     expect(childTestIds(screen.getByTestId('meal-times-section'))).toEqual([undefined, 'meal-time-row-0', 'meal-time-row-1', 'meal-time-error', 'add-meal-time-button']);
     await waitFor(() => expect(screen.getByTestId('meal-time-edit-0').props.accessibilityState).not.toEqual(expect.objectContaining({ disabled: true })));
+    expect(mockGetNutritionPlan).toHaveBeenCalledTimes(1); // #147 E2.2: ningún refetch si no es ok
+    expect(mockGetPet).toHaveBeenCalledTimes(1);
   });
 
   it('401 cierra sesión sin mensaje', async () => {
@@ -871,6 +873,8 @@ describe('#147 R8: cada error del contrato tiene su mensaje', () => {
     });
     expect(screen.queryByTestId('meal-time-error')).toBeNull();
     await waitFor(() => expect(screen.getByTestId('meal-time-edit-0').props.accessibilityState).not.toEqual(expect.objectContaining({ disabled: true })));
+    expect(mockGetNutritionPlan).toHaveBeenCalledTimes(1); // #147 E2.2: ningún refetch si no es ok
+    expect(mockGetPet).toHaveBeenCalledTimes(1);
   });
 
   it('una nueva edición retira el error anterior', async () => {
