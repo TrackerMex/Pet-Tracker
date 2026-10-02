@@ -3,28 +3,16 @@
 > Este archivo describe el estado de la sesion en curso.
 > Al cerrar la sesion, mueve este contenido a progress/history.md y deja solo esta plantilla.
 
-## #41 `mobile-geofences` — la lista (2026-10-01, sesion Backend)
-
-- Branch `feature/41-mobile-geofences` en `Pet-Tracker-wt-backend`. Nacio de `origin/main` 3db47fb0 con el explore (a5c8271a) y recibio `origin/main` 4e8d6cc3 (merge de la PR #183, #145 `geofence-alert-consistency`) en el merge 28f1a0f2. `router.d.ts` ausente.
-- Reparto decidido por el humano (2026-10-01): #145 backend (mergeada), #41 la lista (esta), #146 el editor sobre el mapa. UX: aceptadas todas las recomendaciones de `progress/explore_mobile-geofences.md`.
-- Base de codigo: `./init.sh` del leader sobre 6a46f677, sin pipe, exit 0 (unit 171/1307, infra 2/14, movil 86/1634, e2e 27+3 skip / 399+8 skip). De 6a46f677 a 4e8d6cc3 solo cambian `STATUS.md`, `feature_list.json` y `progress/`, asi que la medida vale para esta base.
-- Coordinacion con #60 (Frontend, branch `feature/60-mobile-ios-support` en 03f57706, sin PR, gates humanos pendientes): de los ficheros de #41, #60 solo toca `src/screens/profile/index.tsx` (+2 lineas en `ImagePicker.launchImageLibraryAsync`, ancla `quality: 0.8,`; blob ef3e7362) y `src/screens/profile/index.test.tsx` (+19). La spec se escribe contra esos dos ficheros en 03f57706; el handoff a Codex espera a que #60 este en `main`.
-- Spec escrita por el `spec_author` en `specs/mobile-geofences/` (spec_ready): R1-R10, P1-P16 para el gate, enmienda A18 con casilla propia y prueba de humo en dev build de Android. Delta medido: +2 suites, +76 tests. El leader verifico las premisas de entorno de la prueba de humo (contenedor `pet-tracker-postgres`, columnas de `pet_users`, `subscription:set --unit-id`, package `com.trackermex.pettracker`). Espejada en Notion (https://app.notion.com/p/3ec6115a9b278176864bc2a6fdc09773, Estado del gate = En revision, Rol actual = Spec Author); a la espera del gate humano.
-- Firmada el 2026-10-01 en Notion (spec y enmienda A18, las dos casillas); commit de firma f044fa79. Notion: Estado del gate = Aprobado, Rol actual = Implementer.
-- Handoff a Codex bloqueado hasta que #60 este en `main` (origin/main 4e8d6cc3 al firmar). Al mergear: traer `main`, re-verificar las anclas de R9 y las filas 5-10 de D8 (`tasks.md` §Antes de empezar), y escribir el handoff.
-- Enmienda E1 (2026-10-02, aprobada por el humano en chat: "Handoff #41 + spec #146"): el handoff ya no espera a #60; Codex implementa sobre `4e8d6cc3` sin #60. Commit 3a166fba. Anclas de tasks.md y literales de D8 filas 5-10 verificados en ese arbol por el leader.
-- Handoff a Codex: `progress/handoff_mobile-geofences.md` (H0 = el commit que lo anade). #41 `in_progress`. Plan: 22 commits (A18 + R1-R10 rojo/verde + trazabilidad), delta +2 suites / +76 tests, sin init.sh. Mientras Codex implementa, el leader no toca `mobile-pet-tracker/`.
-- En paralelo: spec de #146 `mobile-geofence-editor` por el `spec_author` en el worktree `Pet-Tracker-wt-146`, branch `feature/146-mobile-geofence-editor`, nacida de 3a166fba. No mide la base ni corre jest (la base real necesita #41 y #60 en `main`); el leader la re-mide al hacer su handoff.
-- #60 aparcada por Frontend; #146 ya no depende de ella (se especifica sobre `main` sin #60).
-- Codex paro en R9 por `UNSAFE_getByType` (RNTL 14 no lo tiene). Enmienda E2 (aprobada por el humano en chat, 2026-10-02): el `it` de R9 no mide el chevron; commit 147c90d7 y reanudacion en `progress/handoff_mobile-geofences_r9.md`.
-- Codex termino: 24 commits desde H0, HEAD d5830bab subido. Delta +2 suites / +76 tests (88/1710/1). `./init.sh` del leader sobre d5830bab, sin pipe, exit 0 (log en el scratchpad de la sesion).
-- Reviewer: APROBADO sobre d5830bab (`progress/review_mobile-geofences.md`, commit 6d954741), con H1: el texto de "sin rastreo" no tenia clase y la mutacion `text-danger` sobrevivia.
-- Enmienda E3 (aprobada por el humano en chat, 2026-10-02: "E3 + implementer"): ese texto lleva `text-center font-normal text-muted` y el `it` del 402 lo comprueba. Commit fa9049c0, pasos en `specs/mobile-geofences/tasks.md` §Enmienda E3.
-- **Fallback al subagente `implementer`** (excepcion de `CLAUDE.md`): E3 es trivial (una clase y una asercion), asi que no pasa por Codex. Reporta en `progress/impl_mobile-geofences.md` §Enmienda E3. Despues: reviewer sobre el delta de E3, prueba de humo del humano, cierre.
-
 ## #146 `mobile-geofence-editor` — el editor (2026-10-02, sesion Backend)
 
 - Branch `feature/146-mobile-geofence-editor` en `Pet-Tracker-wt-146`. Spec escrita por el `spec_author` sobre `95b2aaa4` (HEAD de #41) en el relanzamiento con correcciones elegido por el humano ("Relanzar con correcciones"); el primer intento entro en bucle de compactacion y se paro. Commit de la spec e3d1189d, subido a origin.
 - El leader verifico las anclas por contenido en `95b2aaa4` y la API de `expo-maps` 57.0.2 (`GoogleMapsCircle`, `onMapClick`, `onPOIClick`, `onCircleClick`).
 - Espejada en Notion (https://app.notion.com/p/3ed6115a9b278117b049c095c0b99285, Estado del gate = En revision, Rol actual = Spec Author); a la espera del gate humano. Tres casillas: A19, spec (P1-P10 y D7) y prueba de humo.
 - Bloqueadores del handoff: #41 aun no esta en `main`; base de tests sin medir (delta esperado +2 suites / +101 tests). iOS sin verificar mientras #60 siga aparcada.
+- #41 mergeada en `main` (PR #184, d855ab5e, 2026-10-02). Esta branch recibio `origin/main` d855ab5e en el commit de merge que sigue a esta linea; la base de la spec pasa de 95b2aaa4 a d855ab5e (de uno a otro solo cambian `progress/`, `STATUS.md`, `feature_list.json` y `specs/mobile-geofences/requirements.md`, sin codigo).
+- **Ampliacion de alcance** (decision del humano en el chat de la sesion Backend, 2026-10-02: "revisando la spec #146 hay que agregar de una vez lo que esta en fuera de alcance"; seleccion por AskUserQuestion, todas las opciones marcadas):
+  - Producto: (1) circulos de las zonas en la pestana Mapa; (2) limite de 5 zonas en el cliente: con 5, «Añadir zona» deshabilitado y un aviso; (3) borrar y activar/desactivar tambien desde el editor; (4) `isGeofence` revalida `centerLat`/`centerLng`.
+  - Deuda: (5) el editor consulta `myRole` y pinta solo lectura a quien no es dueño; (6) `DEFAULT_CENTER` en un solo sitio; (7) renombrar los titulos «trece» de `#62 R1` y «doce bloques» de `ALL_USES` para que cuadren con sus sumas; (8) el editor entra en los ficheros que cuentan los contadores de `TABULAR_NUMS` de `#62 R15`.
+  - Centro de la zona: se mantiene el toque en el mapa (P7/R7). El marker de expo-maps 57.0.2 es `draggable` pero no emite evento al soltarlo.
+  - Siguen fuera, sin cambio: iOS (#60 aparcada), poligonos (#11 D1), zonas compartidas (`pet_id NOT NULL`) y el teclado (solo prueba de humo).
+- Gate de Notion parado (Estado del gate = Draft) hasta re-espejar la spec ampliada. La ampliacion la escribe el `spec_author`.

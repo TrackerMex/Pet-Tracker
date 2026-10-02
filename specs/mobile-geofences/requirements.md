@@ -739,49 +739,49 @@ no entra ningún módulo nativo. La app va en español salvo en el paso 8.
 - **Cuenta que no es dueña (P16).**
   1. Registra una segunda cuenta `<email2>` desde la app.
   2. Desde la máquina del backend, dale acceso de `family`:
-     `docker exec pet-tracker-postgres psql -U pet_tracker -d pet_tracker -c "insert into pet_users (pet_id, user_id, role, status) values ('<petId>', (select id from users where email = '<email2>'), 'family', 'active');"`
+     `docker exec pet-tracker-postgres psql -U pet_tracker -d pet_tracker -c "insert into pet_users (pet_id, user_id, role, status) values ('', (select id from users where email = ''), 'family', 'active');"`
 - **adb.** El teléfono sale **dos veces** en `adb devices -l` (IP y mDNS).
   En Windows, `adb devices -l | findstr 192.168` da la línea de la IP; usa
   **siempre** `adb -s <ip:puerto>` con ese valor.
 
 **Pasos**
 
-- [ ] 1. **Entrada desde el Perfil.** Con la mascota con rastreo activa,
+- [X] 1. **Entrada desde el Perfil.** Con la mascota con rastreo activa,
       entra en Perfil. La fila "Zonas seguras" aparece justo después de
       "Configuración del Dispositivo GPS", con chevrón. Al tocarla entra
       "Zonas seguras" con cabecera nativa y flecha, sin barra flotante.
-- [ ] 2. **Lista.** Aparecen "Casa" (Radio de 150 m, interruptor encendido)
+- [X] 2. **Lista.** Aparecen "Casa" (Radio de 150 m, interruptor encendido)
       y debajo "Parque" (Radio de 300 m, interruptor apagado), cada una con
       "Eliminar".
-- [ ] 3. **Activar.** Enciende "Parque": el interruptor queda encendido.
+- [X] 3. **Activar.** Enciende "Parque": el interruptor queda encendido.
       Luego:
       1. Atrás y vuelve a entrar: sigue encendido.
-      2. `adb -s <ip:puerto> shell am force-stop com.trackermex.pettracker`,
+      2. `adb -s 192.168.1.10:39855 shell am force-stop com.trackermex.pettracker`,
          abre la app y vuelve a la pantalla: sigue encendido, es decir, lo
          guardó el servidor.
       3. Apágalo otra vez.
-- [ ] 4. **Borrar.**
+- [X] 4. **Borrar.**
       1. Toca "Eliminar" en "Parque": sale "¿Eliminar Parque?" con el cuerpo
          de P4.
       2. "Cancelar": la zona sigue.
       3. Repite y pulsa "Eliminar": "Parque" desaparece y "Casa" sigue.
-- [ ] 5. **Cuenta que no es dueña.** Cierra sesión y entra con `<email2>`.
+- [X] 5. **Cuenta que no es dueña.** Cierra sesión y entra con `<email2>`.
       En Perfil, "Zonas seguras" de esa mascota muestra "Casa" con la
       píldora "Activa", sin interruptor ni "Eliminar".
-- [ ] 6. **Sin collar.** De vuelta en tu cuenta, activa la mascota sin
+- [X] 6. **Sin collar.** De vuelta en tu cuenta, activa la mascota sin
       collar y entra en "Zonas seguras": se ve "Las zonas seguras requieren
       un collar", sin "Reintentar".
-- [ ] 7. **Vacío.** Borra "Casa" desde la app: se ve "Aún no hay zonas
+- [X] 7. **Vacío.** Borra "Casa" desde la app: se ve "Aún no hay zonas
       seguras".
-- [ ] 8. **Tema e idioma.** Con tema oscuro (Profile) e inglés, la pantalla
+- [X] 8. **Tema e idioma.** Con tema oscuro (Profile) e inglés, la pantalla
       toma fondo y texto del tema y su título es "Safe zones". Métricas: no
       queda hueco entre la cabecera y la primera tarjeta, y el contenido
       termina unos 24 px sobre la barra del sistema.
-- [ ] 9. **Limpieza.** Borra la fila de membresía:
-      `docker exec pet-tracker-postgres psql -U pet_tracker -d pet_tracker -c "delete from pet_users where pet_id = '<petId>' and role = 'family' and user_id = (select id from users where email = '<email2>');"`
+- [X] 9. **Limpieza.** Borra la fila de membresía:
+      `docker exec pet-tracker-postgres psql -U pet_tracker -d pet_tracker -c "delete from pet_users where pet_id = '' and role = 'family' and user_id = (select id from users where email = '');"`
       Debe responder `DELETE 1`.
 
-- [ ] Prueba de humo superada (fecha: )
+- [X] Prueba de humo superada (fecha: 2026-10-02)
 
 ## Aprobación
 
