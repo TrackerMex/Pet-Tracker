@@ -1,9 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
-import { Button, Skeleton } from 'heroui-native';
+import { Button, Skeleton, Switch } from 'heroui-native';
+import { useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { listGeofences } from '../../api/geofences';
+import { listGeofences, setGeofenceActive, type GeofenceWriteState } from '../../api/geofences';
 import { getPet } from '../../api/pets';
 import { geofenceKeys, petKeys } from '../../api/query-keys';
 import { Card } from '../../components/card';
@@ -12,9 +13,11 @@ import { useTranslate } from '../../providers/language-provider';
 
 export function GeofencesScreen({ petId }: { petId: string }) {
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
-  const { token } = useAuth();
+  const { signOut, token } = useAuth();
   const t = useTranslate();
   const insets = useSafeAreaInsets();
+  const [busy, setBusy] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
   const pet = useQuery({
     queryKey: petKeys.detail(petId),
     queryFn: () => getPet(baseUrl, token ?? '', petId),
@@ -23,6 +26,36 @@ export function GeofencesScreen({ petId }: { petId: string }) {
     queryKey: geofenceKeys.list(petId),
     queryFn: () => listGeofences(baseUrl, token ?? '', petId),
   });
+
+  const isOwner = pet.data?.kind === 'ok' && pet.data.pet.myRole === 'owner';
+
+  async function write(request: () => Promise<GeofenceWriteState>) {
+    setBusy(true);
+    setActionError(null);
+    try {
+      const result = await request();
+      switch (result.kind) {
+        case 'ok':
+        case 'not-found':
+        case 'no-tracking':
+          await geofences.refetch();
+          break;
+        case 'unauthorized':
+          await signOut();
+          break;
+        case 'unreachable':
+          setActionError(t('common.cannotReachServer'));
+          break;
+        case 'error':
+        case 'missing-config':
+          setActionError(t('common.somethingWentWrong'));
+      }
+    } catch {
+      setActionError(t('common.somethingWentWrong'));
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return (
     <ScrollView
@@ -48,6 +81,16 @@ export function GeofencesScreen({ petId }: { petId: string }) {
                 {t('geofences.radius', { meters: Math.round(geofence.radiusM) })}
               </Text>
             </View>
+            {isOwner ? (
+              <Switch
+                testID={`geofence-${geofence.id}-active`}
+                isSelected={geofence.active}
+                hitSlop={10}
+                isDisabled={busy}
+                accessibilityLabel={t('geofences.activeLabel', { name: geofence.name })}
+                onSelectedChange={(active) => void write(() => setGeofenceActive(baseUrl, token ?? '', petId, geofence.id, active))}
+              />
+            ) : null}
           </Card>
         ))
       ) : geofences.data.kind === 'no-tracking' ? (
@@ -66,6 +109,9 @@ export function GeofencesScreen({ petId }: { petId: string }) {
           </Button>
         </>
       )}
+      {actionError ? (
+        <Text testID="geofences-action-error" selectable className="text-danger">{actionError}</Text>
+      ) : null}
     </ScrollView>
   );
 }
