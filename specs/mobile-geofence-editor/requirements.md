@@ -1,6 +1,6 @@
 ---
 feature: "mobile-geofence-editor"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec, mobile]
 ---
 
@@ -1490,8 +1490,8 @@ salvo en el paso 10. iOS queda fuera (§Coordinación).
 
 ### Enmienda A19 — lista de A11 en `docs/conventions.md` y `docs/ui-guidelines.md`
 
-- [ ] Enmienda A19 aprobada por humano (fecha: ____)
+- [x] Enmienda A19 aprobada por humano (fecha: 2026-10-02)
 
 ### Aprobación de la spec
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (fecha: 2026-10-02) ← gate obligatorio antes de implementar
