@@ -3,7 +3,7 @@
 > Este archivo describe el estado de la sesion en curso.
 > Al cerrar la sesion, mueve este contenido a progress/history.md y deja solo esta plantilla.
 
-- feature: #147 `mobile-meal-schedule-editing` (pending, sin spec)
+- feature: #147 `mobile-meal-schedule-editing` (in_progress, handoff a Codex)
 - inicio: 2026-10-02, sesión Frontend, tree principal, branch `feature/147-mobile-meal-schedule-editing` desde `origin/main` cb14497c (merge de #103, PR #185)
 - elección: el humano elige #147 por AskUserQuestion frente a #105, #18 y #101
 - plan: tabla de escalado, «feature `pending` sin spec». Las decisiones de UI quedaron cerradas al partir #103 (entrada de `feature_list.json`), así que no hay explorer: `spec_author` y gate en Notion.
@@ -16,3 +16,5 @@
 - 2026-10-02: espejo en Notion para el gate: https://app.notion.com/p/3ed6115a9b27810cae6dc0200db0593b (base *Specs*, `Estado del gate` = En revisión, `Rol actual` = Spec Author). El cuerpo es `requirements.md` en `4e37fd19`. **Para** hasta que el humano ponga `Estado del gate` = Aprobado.
 - 2026-10-02: Backend pide turno de `./init.sh` en `wt-146` (ronda 2 del reviewer de #146, pet_tracker_wt). Frontend no tiene nada en vuelo (pgrep vacío) y le da turno. No lanza init.sh ni e2e hasta su aviso de fin.
 - 2026-10-02: Backend termina el `./init.sh` de #146 ronda 2 en `wt-146` (exit 0). Postgres y LocalStack quedan libres.
+- 2026-10-02: el humano aprueba en Notion. El leader verifica la página: `Estado del gate` = Aprobado, `page_last_edited_at` 2026-10-02T20:16:14.524Z. Firma en `86771e3e`: frontmatter `approved` en los cuatro ficheros y casilla de §Aprobación marcada. En Notion, `Rol actual` pasa a Implementer.
+- 2026-10-02: handoff a Codex en `progress/handoff_mobile-meal-schedule-editing.md`; H0 es el commit que lo añade, con padre `86771e3e`. El leader repite sobre `86771e3e` las medidas de tasks.md §Arranque y todas dan su valor: la suma en `language-provider.test.tsx:56`, `R6_FOOD` en `ui-language.test.ts:142`, los literales `common.*` y los recuentos 4/1; `router.d.ts` no existe. `origin/main` sigue en cb14497c y #146 aún no ha mergeado. Se piden 19 commits literales y cierre en 88/1759. Skills de Codex: `building-native-ui`, `native-data-fetching`, `expo-ui-jetpack-compose` y `appllama-app-design-skill`. #147 pasa a `in_progress`. **Para** hasta que el humano confirme que Codex terminó.

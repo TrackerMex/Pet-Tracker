@@ -2857,7 +2857,7 @@
   {
     "id": 147,
     "name": "mobile-meal-schedule-editing",
-    "status": "spec_ready",
+    "status": "in_progress",
     "priority": "P3",
     "description": "Registrada el 2026-10-02 al partir #103 en mitad backend (#103) y mitad movil (esta), como #83/#98. Recibe los criterios 3 y 4 originales de #103. Depende de #103 mergeada y con la migracion 0018 aplicada a la base donde se pruebe, y de #41, porque reutiliza el patchJson que #41 anade a src/api/http.ts en su R3 (en origin/main aun no existe). El catalogo de src/providers/__tests__/language-provider.test.tsx queda en 320 tras #41: se mide de nuevo al escribir esta spec, no se copia. Contrato del backend (#103): POST /v1/pets/:petId/meal-times {mealTime} responde 201 y PATCH /v1/pets/:petId/meal-times/:mealTime {mealTime} responde 200, los dos con el plan completo (sin servedToday); 400 de validacion (HH:MM estricto), 403 si no es owner, 422 NUTRITION_PLAN_REQUIRED, MEAL_TIME_NOT_IN_PLAN, MEAL_TIME_DUPLICATE y MEAL_TIMES_LIMIT_REACHED (maximo 6 comidas). Decisiones de UI cerradas al partir: el boton Anadir comida va debajo de la lista; cada fila gana Editar horario con ExpoDateTimePicker, como en add-reminder; los controles viven solo en meal-schedule; se ocultan si myRole !== 'owner' (precedente canSetLostMode de src/screens/map/index.tsx) y el 403 queda como red de seguridad; tras editar o anadir se refrescan nutritionKeys.plan y petKeys.detail, como toggleMeal de src/app/(tabs)/food.tsx en #98, sin estado optimista; sin dependencias nuevas. Candados que se mueven: el catalogo de language-provider.test.tsx, su tabla en src/__tests__/ui-copy-table.ts, src/__tests__/ui-language.test.ts y el test de meal-schedule. Se rige por docs/ui-guidelines.md.",
     "acceptance_criteria": [
