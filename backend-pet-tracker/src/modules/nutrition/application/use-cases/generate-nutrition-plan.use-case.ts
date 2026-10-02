@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { nutritionInputHash } from '@/modules/nutrition/application/nutrition-input-hash';
+import { carriedSchedule } from '@/modules/nutrition/domain/entities/nutrition-plan.entity';
 import type { NutritionPlan } from '@/modules/nutrition/domain/entities/nutrition-plan.entity';
 import {
   NutritionProfileRequiredError,
@@ -53,6 +54,8 @@ export class GenerateNutritionPlanUseCase {
     return this.nutrition.insertPlan({
       petId,
       ...result,
+      ...carriedSchedule(latestPlan, result),
+      engineMealsPerDay: result.mealsPerDay,
       aiExplanation: null,
       inputsHash,
     });

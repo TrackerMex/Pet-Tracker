@@ -2058,18 +2058,24 @@
   {
     "id": 103,
     "name": "meal-schedule-editing",
-    "status": "pending",
+    "status": "done",
     "priority": "P3",
-    "description": "Registrada el 2026-09-21 desde la seccion Fuera de alcance de la spec de #98, por decision del humano. Los botones Editar horario y Anadir comida del diseno llevan sin backend desde #38, que ya los declaro no implementables en specs/mobile-food/requirements.md:306-309. #83 y #98 resolvieron marcar servido, pero no tocar los horarios: hoy mealTimes sale del plan generado y el usuario no puede cambiarlo. src/screens/meal-schedule/index.tsx (324 lineas; es el cuerpo de la pantalla desde #102, y su route delgado lo mueve #95 de src/app/(tabs)/ a src/app/meal-schedule.tsx) es hoy de solo lectura, verificado con grep: no contiene ni un POST, PATCH, PUT ni DELETE. Necesita backend nuevo: endpoints para editar y anadir franjas del plan, y una decision de diseno que #83 dejo abierta en su D4 (que pasa con las comidas ya servidas de una franja que el usuario borra o mueve). Se partira en mitad backend y mitad movil cuando se escriba su spec, como se hizo con #83/#98; no se pre-parte ahora.",
+    "description": "Registrada el 2026-09-21 desde la seccion Fuera de alcance de la spec de #98, por decision del humano. Los botones Editar horario y Anadir comida del diseno llevan sin backend desde #38, que ya los declaro no implementables en specs/mobile-food/requirements.md:306-309. #83 y #98 resolvieron marcar servido, pero no tocar los horarios: hoy mealTimes sale del plan generado y el usuario no puede cambiarlo. src/screens/meal-schedule/index.tsx (324 lineas; es el cuerpo de la pantalla desde #102, y su route delgado lo mueve #95 de src/app/(tabs)/ a src/app/meal-schedule.tsx) es hoy de solo lectura, verificado con grep: no contiene ni un POST, PATCH, PUT ni DELETE. Necesita backend nuevo: endpoints para editar y anadir franjas del plan, y una decision de diseno que #83 dejo abierta en su D4 (que pasa con las comidas ya servidas de una franja que el usuario borra o mueve). Se partira en mitad backend y mitad movil cuando se escriba su spec, como se hizo con #83/#98; no se pre-parte ahora. Partida el 2026-10-02 al escribir su spec (specs/meal-schedule-editing/), con decisiones del humano del mismo dia: #103 es la mitad backend (POST /v1/pets/:petId/meal-times para anadir, PATCH /v1/pets/:petId/meal-times/:mealTime para mover, ambos solo owner y como copia append-only del plan con el mismo inputsHash; columna engine_meals_per_day en la migracion 0018 para que el horario editado sobreviva a regenerar mientras el motor no cambie el numero de comidas; la servida de hoy se mueve con su franja y, si choca, gana la del destino, lo que enmienda la D4 de #83). No hay borrado de franjas (H3). La mitad movil es #147, y sus criterios 3 y 4 originales pasan alli.",
     "acceptance_criteria": [
-      "La spec cierra por escrito que ocurre con las meal_servings de una franja editada o borrada, resolviendo la D4 de #83",
+      "La spec cierra por escrito que ocurre con las meal_servings de una franja editada, resolviendo la D4 de #83",
       "Backend expone editar y anadir franja con sus tests e2e; el plan generado deja de ser la unica fuente de mealTimes",
-      "src/screens/meal-schedule/index.tsx gana los botones del diseno contra esos endpoints, sin estado optimista, con el mismo patron de refetch que #98",
-      "Gate humano: smoke en dev build de Android editando una franja con comida ya servida"
+      "Los criterios moviles originales (botones de meal-schedule contra estos endpoints con el refetch de #98, y el smoke en dev build de Android editando una franja con comida ya servida) pasan a #147. El backend no tiene smoke propio: sus e2e corren contra Postgres real"
     ],
     "files_affected": [
       "backend-pet-tracker/src/modules/nutrition/",
-      "mobile-pet-tracker/src/screens/meal-schedule/index.tsx"
+      "backend-pet-tracker/src/db/schema/nutrition.schema.ts",
+      "backend-pet-tracker/src/db/schema/nutrition.schema.spec.ts",
+      "backend-pet-tracker/src/db/schema/meal-servings.schema.spec.ts",
+      "backend-pet-tracker/src/db/migrations/",
+      "backend-pet-tracker/test/meal-times.e2e-spec.ts",
+      "docs/data-model.md",
+      "docs/conventions.md",
+      "specs/meals-served-tracking/design.md"
     ]
   },
   {
@@ -2870,6 +2876,30 @@
       "docs/ui-guidelines.md",
       "specs/mobile-ui-language/design.md",
       "specs/mobile-geofence-editor/"
+    ]
+  },
+  {
+    "id": 147,
+    "name": "mobile-meal-schedule-editing",
+    "status": "pending",
+    "priority": "P3",
+    "description": "Registrada el 2026-10-02 al partir #103 en mitad backend (#103) y mitad movil (esta), como #83/#98. Recibe los criterios 3 y 4 originales de #103. Depende de #103 mergeada y con la migracion 0018 aplicada a la base donde se pruebe, y de #41, porque reutiliza el patchJson que #41 anade a src/api/http.ts en su R3 (en origin/main aun no existe). El catalogo de src/providers/__tests__/language-provider.test.tsx queda en 320 tras #41: se mide de nuevo al escribir esta spec, no se copia. Contrato del backend (#103): POST /v1/pets/:petId/meal-times {mealTime} responde 201 y PATCH /v1/pets/:petId/meal-times/:mealTime {mealTime} responde 200, los dos con el plan completo (sin servedToday); 400 de validacion (HH:MM estricto), 403 si no es owner, 422 NUTRITION_PLAN_REQUIRED, MEAL_TIME_NOT_IN_PLAN, MEAL_TIME_DUPLICATE y MEAL_TIMES_LIMIT_REACHED (maximo 6 comidas). Decisiones de UI cerradas al partir: el boton Anadir comida va debajo de la lista; cada fila gana Editar horario con ExpoDateTimePicker, como en add-reminder; los controles viven solo en meal-schedule; se ocultan si myRole !== 'owner' (precedente canSetLostMode de src/screens/map/index.tsx) y el 403 queda como red de seguridad; tras editar o anadir se refrescan nutritionKeys.plan y petKeys.detail, como toggleMeal de src/app/(tabs)/food.tsx en #98, sin estado optimista; sin dependencias nuevas. Candados que se mueven: el catalogo de language-provider.test.tsx, su tabla en src/__tests__/ui-copy-table.ts, src/__tests__/ui-language.test.ts y el test de meal-schedule. Se rige por docs/ui-guidelines.md.",
+    "acceptance_criteria": [
+      "src/screens/meal-schedule/index.tsx gana Anadir comida debajo de la lista y Editar horario en cada fila contra los endpoints de #103, sin estado optimista y con el mismo refetch que #98",
+      "Los controles solo se muestran al owner; los demas roles ven la pantalla en solo lectura",
+      "Los errores 400, 403 y 422 (MEAL_TIME_DUPLICATE, MEAL_TIMES_LIMIT_REACHED, MEAL_TIME_NOT_IN_PLAN, NUTRITION_PLAN_REQUIRED) se muestran al usuario",
+      "Tests que nombran su R-id; candados de catalogo y de idioma movidos con su delta declarado; grep-clean de docs/ui-guidelines.md; sin dependencias nuevas",
+      "Gate humano: smoke en dev build de Android moviendo una franja ya servida hoy y anadiendo una"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/api/nutrition.ts",
+      "mobile-pet-tracker/src/screens/meal-schedule/index.tsx",
+      "mobile-pet-tracker/src/screens/meal-schedule/index.test.tsx",
+      "mobile-pet-tracker/src/i18n/catalog.ts",
+      "mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx",
+      "mobile-pet-tracker/src/__tests__/ui-copy-table.ts",
+      "mobile-pet-tracker/src/__tests__/ui-language.test.ts",
+      "specs/mobile-ui-language/design.md"
     ]
   }
 ]

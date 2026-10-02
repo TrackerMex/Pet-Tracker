@@ -445,7 +445,7 @@ versionado.
 ### LocalStack sigue compartido: ahí el aviso previo se mantiene
 
 SQS, DynamoDB y S3 viven en un único LocalStack en `:4566`. Separar Postgres no
-lo separa. **14 de las 30 suites e2e lo tocan** y siguen necesitando aviso a la
+lo separa. **14 de las 31 suites e2e lo tocan** y siguen necesitando aviso a la
 otra sesión antes de correr:
 
 `activity`, `alerts-center-notifier`, `alerts-engine`, `aws-real-ingest`,
@@ -453,7 +453,7 @@ otra sesión antes de correr:
 `localstack-provisioning`, `media`, `media-docs`, `pet-reminders`, `positions`,
 `resource-isolation`
 
-Las otras 16 solo tocan Postgres: con base propia, se solapan sin avisar.
+Las otras 17 solo tocan Postgres: con base propia, se solapan sin avisar.
 
 ### Antes de lanzar un gate, comprueba que no hay otro
 

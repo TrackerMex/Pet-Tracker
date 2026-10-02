@@ -84,15 +84,17 @@ describe('R1 (meals-served-tracking #83): tabla meal_servings y migracion nueva'
     expect(config.checks).toHaveLength(0);
   });
 
-  it('usa la ultima migracion renombrada y no altera otras tablas', () => {
+  it('usa su migracion renombrada, registrada en el journal, y no altera otras tablas', () => {
     const migration = findMealServingsMigration();
     const journal = JSON.parse(
       readFileSync(join(MIGRATIONS_DIR, 'meta', '_journal.json'), 'utf8'),
-    ) as { entries: Array<{ idx: number }> };
+    ) as { entries: Array<{ idx: number; tag: string }> };
 
     expect(migration.file).toMatch(/^\d{4}_meal_servings\.sql$/);
     expect(Number(migration.file.slice(0, 4))).toBe(
-      journal.entries.at(-1)?.idx,
+      journal.entries.find(
+        (entry) => entry.tag === migration.file.replace(/\.sql$/, ''),
+      )?.idx,
     );
     expect(migration.sql).not.toContain('ALTER TABLE "pets"');
     expect(migration.sql).not.toContain('ALTER TABLE "nutrition_plans"');

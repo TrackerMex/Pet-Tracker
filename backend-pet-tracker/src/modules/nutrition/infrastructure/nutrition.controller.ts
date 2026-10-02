@@ -1,3 +1,4 @@
+import { MoveMealTimeUseCase } from '@/modules/nutrition/application/use-cases/move-meal-time.use-case';
 import {
   BadRequestException,
   Body,
@@ -6,10 +7,14 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Patch,
+  Param,
   Put,
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { AddMealTimeUseCase } from '@/modules/nutrition/application/use-cases/add-meal-time.use-case';
+import { EditMealTimeSchema } from '@/modules/nutrition/application/dto/meal.dto';
 import { ZodType } from 'zod';
 import {
   UpsertNutritionProfileDto,
@@ -40,6 +45,8 @@ export class NutritionController {
     private readonly getProfile: GetNutritionProfileUseCase,
     private readonly generatePlan: GenerateNutritionPlanUseCase,
     private readonly getPlan: GetNutritionPlanUseCase,
+    private readonly addMealTimeUseCase: AddMealTimeUseCase,
+    private readonly moveMealTimeUseCase: MoveMealTimeUseCase,
   ) {}
 
   @Put('nutrition-profile')
@@ -79,6 +86,50 @@ export class NutritionController {
     try {
       return toNutritionPlanResponse(
         await this.generatePlan.execute(request.petMembership.petId),
+      );
+    } catch (error) {
+      throw mapNutritionError(error);
+    }
+  }
+
+  @Post('meal-times')
+  @RequirePetRole('owner')
+  async addMealTime(
+    @Req() request: PetAccessRequest,
+    @Body() body: unknown,
+  ): Promise<NutritionPlanResponse> {
+    const dto = parseBody(EditMealTimeSchema, body);
+    try {
+      return toNutritionPlanResponse(
+        await this.addMealTimeUseCase.execute({
+          petId: request.petMembership.petId,
+          mealTime: dto.mealTime,
+          userId: request.user.id,
+        }),
+      );
+    } catch (error) {
+      throw mapNutritionError(error);
+    }
+  }
+
+  @Patch('meal-times/:mealTime')
+  @RequirePetRole('owner')
+  async moveMealTime(
+    @Req() request: PetAccessRequest,
+    @Param('mealTime') from: string,
+    @Body() body: unknown,
+  ): Promise<NutritionPlanResponse> {
+    const dto = parseBody(EditMealTimeSchema, body);
+    const now = new Date();
+    try {
+      return toNutritionPlanResponse(
+        await this.moveMealTimeUseCase.execute({
+          petId: request.petMembership.petId,
+          from,
+          to: dto.mealTime,
+          userId: request.user.id,
+          now,
+        }),
       );
     } catch (error) {
       throw mapNutritionError(error);
