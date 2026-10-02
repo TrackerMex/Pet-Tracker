@@ -171,7 +171,7 @@ describe('#146 R6: el editor pinta el formulario sobre el mapa y sus estados', (
     const onUnauthorized = jest.fn();
     mockList.mockResolvedValue({ kind: 'unauthorized' }); await mount('geofence-1', 'es', onUnauthorized);
     await waitFor(() => expect(onUnauthorized).toHaveBeenCalledTimes(1));
-    expect(screen.queryByTestId('geofence-editor-loading')).toBeNull();
+    await waitFor(() => expect(screen.queryByTestId('geofence-editor-loading')).toBeNull());
     expect(screen.queryByTestId('geofence-editor-load-error')).toBeNull();
     expect(screen.queryByTestId('geofence-editor-name')).toBeNull();
   });
