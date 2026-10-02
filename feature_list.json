@@ -748,9 +748,9 @@
   {
     "id": 41,
     "name": "mobile-geofences",
-    "status": "pending",
+    "status": "done",
     "priority": "P3",
-    "description": "Pantalla de geocercas por mascota: LISTA. Repartida el 2026-10-01 por decision del humano, a partir de progress/explore_mobile-geofences.md: el backend se endurece en #145 y el editor sobre el mapa va en #146; #41 queda para la lista. Decisiones del humano (2026-10-01, aceptadas las recomendaciones del explorer): solo circulos (type safe_circle; los poligonos los descarto #11 en su D1); una zona por mascota; entrada desde una fila Geocercas en el Perfil, junto a documentos, emparejamiento y recordatorios; ruta delgada por mascota (precedente src/app/pets/[petId]/docs.tsx) y pantalla en src/screens/geofences/; solo el owner edita (myRole === 'owner', precedente canSetLostMode de src/screens/map/index.tsx) y los demas roles (family, walker, vet) ven la lista en solo lectura; switch de activa en cada fila con PATCH {active}; borrado con confirmacion destructiva; una mascota sin suscripcion (402 DEVICE_SUBSCRIPTION_REQUIRED, que el backend devuelve tambien en los GET) muestra el estado sin seguimiento, con el mismo patron que {kind: 'no-tracking'}. La lista no dibuja mapa: los circulos sobre el mapa llegan con #146, y los de la pestana Mapa quedan fuera de las dos. Coordinacion con #60 (decision del humano 2026-10-01): #60 tambien toca src/screens/profile/index.tsx y su test, asi que la spec se escribe contra el estado de la branch de #60 (03f57706) y el handoff a Codex no se hace hasta que #60 este en main. Tambien depende de #145: borrar una zona con una alerta sin cerrar probablemente da 500 hoy (inferido, sin test). Premisas caducadas del enunciado original: files_affected apuntaba a src/app/geofences/ (contradice la convencion de ruta delgada); no existe useMutation en produccion ni helper PATCH en src/api/http.ts. Candados que se mueven: los recuentos del Stack en src/app/__tests__/layout.test.tsx y detail-stack.test.tsx, y el catalogo de src/providers/__tests__/language-provider.test.tsx con su tabla en src/__tests__/ui-copy-table.ts.",
+    "description": "Pantalla de geocercas por mascota: LISTA. Repartida el 2026-10-01 por decision del humano, a partir de progress/explore_mobile-geofences.md: el backend se endurece en #145 y el editor sobre el mapa va en #146; #41 queda para la lista. Decisiones del humano (2026-10-01, aceptadas las recomendaciones del explorer): solo circulos (type safe_circle; los poligonos los descarto #11 en su D1); cada zona pertenece a una sola mascota y no se comparte (pet_id NOT NULL), y una mascota tiene hasta 5 (GEOFENCE_MAX_PER_PET); entrada desde una fila Geocercas en el Perfil, junto a documentos, emparejamiento y recordatorios; ruta delgada por mascota (precedente src/app/pets/[petId]/docs.tsx) y pantalla en src/screens/geofences/; solo el owner edita (myRole === 'owner', precedente canSetLostMode de src/screens/map/index.tsx) y los demas roles (family, walker, vet) ven la lista en solo lectura; switch de activa en cada fila con PATCH {active}; borrado con confirmacion destructiva; una mascota sin suscripcion (402 DEVICE_SUBSCRIPTION_REQUIRED, que el backend devuelve tambien en los GET) muestra el estado sin seguimiento, con el mismo patron que {kind: 'no-tracking'}. La lista no dibuja mapa: los circulos sobre el mapa llegan con #146, y los de la pestana Mapa quedan fuera de las dos. Coordinacion con #60 (decision del humano 2026-10-01): #60 tambien toca src/screens/profile/index.tsx y su test, asi que la spec se escribe contra el estado de la branch de #60 (03f57706) y el handoff a Codex no se hace hasta que #60 este en main. Tambien depende de #145, ya en main: DELETE devuelve 204 y cierra las alertas abiertas de la zona (#145 R1/R2). Spec en specs/mobile-geofences/; la fila del Perfil se rotula 'Zonas seguras' (P1). Premisas caducadas del enunciado original: files_affected apuntaba a src/app/geofences/ (contradice la convencion de ruta delgada); no existe useMutation en produccion ni helper PATCH en src/api/http.ts. Candados que se mueven: los recuentos del Stack en src/app/__tests__/layout.test.tsx y detail-stack.test.tsx, y el catalogo de src/providers/__tests__/language-provider.test.tsx con su tabla en src/__tests__/ui-copy-table.ts.",
     "acceptance_criteria": [
       "La lista muestra las geocercas de la mascota (nombre, radio, activa) contra GET /v1/pets/:petId/geofences, con estados de carga, vacio, error y sin seguimiento (402)",
       "El owner activa y desactiva cada zona con un switch (PATCH {active}) y la borra con confirmacion destructiva (DELETE); los demas roles ven la lista sin controles de escritura",
@@ -760,12 +760,28 @@
     ],
     "files_affected": [
       "mobile-pet-tracker/src/api/geofences.ts",
+      "mobile-pet-tracker/src/api/__tests__/geofences.test.ts",
       "mobile-pet-tracker/src/api/http.ts",
       "mobile-pet-tracker/src/api/query-keys.ts",
+      "mobile-pet-tracker/src/api/__tests__/query-keys.test.ts",
       "mobile-pet-tracker/src/app/pets/[petId]/geofences.tsx",
-      "mobile-pet-tracker/src/screens/geofences/",
+      "mobile-pet-tracker/src/app/_layout.tsx",
+      "mobile-pet-tracker/src/app/__tests__/layout.test.tsx",
+      "mobile-pet-tracker/src/app/__tests__/detail-stack.test.tsx",
+      "mobile-pet-tracker/src/screens/geofences/index.tsx",
+      "mobile-pet-tracker/src/screens/geofences/index.test.tsx",
       "mobile-pet-tracker/src/screens/profile/index.tsx",
-      "mobile-pet-tracker/src/i18n/catalog.ts"
+      "mobile-pet-tracker/src/screens/profile/index.test.tsx",
+      "mobile-pet-tracker/src/i18n/catalog.ts",
+      "mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx",
+      "mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts",
+      "mobile-pet-tracker/src/__tests__/design-drift.test.ts",
+      "mobile-pet-tracker/src/__tests__/ui-copy-table.ts",
+      "mobile-pet-tracker/src/__tests__/ui-language.test.ts",
+      "docs/conventions.md",
+      "docs/ui-guidelines.md",
+      "specs/mobile-ui-language/design.md",
+      "specs/mobile-geofences/"
     ]
   },
   {

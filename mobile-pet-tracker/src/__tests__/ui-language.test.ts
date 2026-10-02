@@ -16,6 +16,7 @@ import {
   R11_RESET,
   R12_ALERTS,
   R13_ALERT_DETAIL,
+  R14_GEOFENCES,
   type UseRow,
 } from './ui-copy-table';
 
@@ -164,7 +165,7 @@ describe('#98 R9: el copy de comidas servidas queda registrado', () => {
 
 describe('#65 R7: Profile resuelve su copy por clave', () => {
   it('resuelve las 36 ocurrencias normativas', () => {
-    expect(R7_PROFILE).toHaveLength(35 - 1 + 2); // #95 R5, +2 #99 R3
+    expect(R7_PROFILE).toHaveLength(35 - 1 + 2 + 1); // #95 R5, +2 #99 R3, +1 #41 R9
     checkUses(R7_PROFILE);
   });
 });
@@ -249,6 +250,16 @@ describe('#100 R10: el detalle de alerta resuelve su copy por clave', () => {
       file === 'src/app/_layout.tsx' || file === 'src/screens/alert-detail/index.tsx',
     )).toBe(true);
     checkUses(R13_ALERT_DETAIL);
+  });
+});
+
+describe('#41 R10: las zonas seguras resuelven su copy por clave', () => {
+  it('registra cada ocurrencia de la pantalla y de su cabecera', () => {
+    expect(R14_GEOFENCES).toHaveLength(18);
+    expect(R14_GEOFENCES.every(({ file }) =>
+      file === 'src/app/_layout.tsx' || file === 'src/screens/geofences/index.tsx',
+    )).toBe(true);
+    checkUses(R14_GEOFENCES);
   });
 });
 
@@ -465,7 +476,7 @@ describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () =>
   });
 
   it('no deja ningún valor fijo del catálogo como literal entero en las pantallas', () => {
-    expect(SCREEN_FILES).toHaveLength(19 + 2 + 1 + 1 + 1 + 1); // #100 R10
+    expect(SCREEN_FILES).toHaveLength(19 + 2 + 1 + 1 + 1 + 1 + 1); // #100 R10, #41 R10
 
     for (const file of SCREEN_FILES) {
       const literals = wholeLiterals(readFileSync(join(SOURCE_ROOT, file), 'utf8'));

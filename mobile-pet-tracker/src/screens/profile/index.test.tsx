@@ -1044,3 +1044,34 @@ describe('#99 R3: Perfil avisa de las notificaciones bloqueadas y abre la config
     expect(screen.queryByText('Abrir configuración')).toBeNull();
   });
 });
+
+describe('#41 R9: Perfil enlaza a las zonas seguras de la mascota activa', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    mockUseAuth.mockReturnValue({
+      status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut: jest.fn(),
+    } satisfies AuthContextValue);
+    mockGetMe.mockReturnValue(pending<MeState>());
+    const pet = makePet();
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [pet] });
+    mockGetPet.mockResolvedValue({ kind: 'ok', pet });
+  });
+
+  it('pinta la fila de zonas seguras tras la de GPS y abre la ruta de la mascota activa', async () => {
+    await renderProfile();
+    const link = await screen.findByTestId('geofences-link');
+    expect(link).toHaveTextContent('Zonas seguras');
+    expect(link.props.accessibilityRole).toBe('button');
+    expect(link.props.hitSlop).toEqual({ top: 6, bottom: 6, left: 6, right: 6 });
+    expect(link.props.className).toBe('flex-row items-center justify-between rounded-xl bg-default px-3 py-2');
+    expect(link).toHaveStyle({ borderCurve: 'continuous' });
+    expect(within(link).getByText('Zonas seguras').props.className).toBe('font-semibold text-foreground');
+    expect(screen.getAllByTestId(/-link$/).map((row) => row.props.testID)).toEqual([
+      'documents-link', 'pairing-link', 'geofences-link', 'reminders-link',
+    ]);
+    await fireEvent.press(link);
+    expect(mockRouter.push).toHaveBeenCalledTimes(1);
+    expect(mockRouter.push).toHaveBeenCalledWith('/pets/pet-1/geofences');
+  });
+});

@@ -47,3 +47,7 @@ export const userKeys = {
 export const mediaKeys = {
   petDocs: (petId: string) => ['media', 'pet-docs', petId] as const,
 };
+
+export const geofenceKeys = {
+  list: (petId: string) => ['geofences', 'list', petId] as const,
+};

@@ -100,6 +100,7 @@ function RootStack() {
         <Stack.Screen name="reminders" options={{ ...headerOptions, title: t('reminders.reminders') }} />
         <Stack.Screen name="alerts" dangerouslySingular options={{ ...headerOptions, title: t('alerts.title') }} />
         <Stack.Screen name="alerts/[alertId]" dangerouslySingular options={{ ...headerOptions, title: t('alerts.detailTitle') }} />
+        <Stack.Screen name="pets/[petId]/geofences" options={{ ...headerOptions, title: t('geofences.title') }} />
       </Stack.Protected>
     </Stack>
   );

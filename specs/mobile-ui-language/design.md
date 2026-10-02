@@ -806,6 +806,22 @@ copy completa en cada una.
 | — | `alerts.statusOpen` | `Unread` | `Sin leer` | ← añadida por #100 (R1)
 | — | `alerts.openedAt` **(param)** | `Detected {{date}}` | `Detectada el {{date}}` | ← añadida por #100 (R1)
 
+### §2.15 — Añadidos por #41 — Zonas seguras
+
+| Literal | Clave | `en` | `es` |
+|---|---|---|---|
+| — | `geofences.title` | `Safe zones` | `Zonas seguras` | ← añadida por #41 (R1)
+| — | `geofences.empty` | `No safe zones yet` | `Aún no hay zonas seguras` | ← añadida por #41 (R1)
+| — | `geofences.needsCollar` | `Safe zones require a collar` | `Las zonas seguras requieren un collar` | ← añadida por #41 (R1)
+| — | `geofences.radius` **(param)** | `{{meters}} m radius` | `Radio de {{meters}} m` | ← añadida por #41 (R1)
+| — | `geofences.activeLabel` **(param)** | `{{name}} zone active` | `Zona {{name}} activa` | ← añadida por #41 (R1)
+| — | `geofences.statusActive` | `Active` | `Activa` | ← añadida por #41 (R1)
+| — | `geofences.statusInactive` | `Inactive` | `Inactiva` | ← añadida por #41 (R1)
+| — | `geofences.delete` | `Delete` | `Eliminar` | ← añadida por #41 (R1)
+| — | `geofences.cancel` | `Cancel` | `Cancelar` | ← añadida por #41 (R1)
+| — | `geofences.deleteTitle` **(param)** | `Delete {{name}}?` | `¿Eliminar {{name}}?` | ← añadida por #41 (R1)
+| — | `geofences.deleteBody` | `You'll stop getting alerts for this zone. This can't be undone.` | `Dejarás de recibir alertas de esta zona. Esta acción no se puede deshacer.` | ← añadida por #41 (R1)
+
 ## 3. La infraestructura
 
 ### 3.1 Decisiones

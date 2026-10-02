@@ -331,6 +331,20 @@ export function ProfileScreen() {
             </Text>
             <ChevronRight size={20} color={muted} />
           </Pressable>
+
+          <Pressable
+            accessibilityRole="button"
+            testID="geofences-link"
+            hitSlop={TOUCH_SLOP}
+            className="flex-row items-center justify-between rounded-xl bg-default px-3 py-2"
+            style={CONTINUOUS_CORNER}
+            onPress={() => router.push(`/pets/${pet.id}/geofences` as Href)}
+          >
+            <Text className="font-semibold text-foreground">
+              {t('geofences.title')}
+            </Text>
+            <ChevronRight size={20} color={muted} />
+          </Pressable>
         </>
       ) : null}
 

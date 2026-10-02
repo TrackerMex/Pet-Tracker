@@ -617,7 +617,7 @@ compite con `bun.lock`. `init.sh` ya corre la parte móvil con
   **Excepción nombrada (enmienda A11 de #95, 2026-09-23)**: una pantalla empujada
   sobre el Stack raíz con cabecera nativa (`headerShown: true`) —hoy
   `add-reminder`, `pets/add`, `pets/[petId]/docs`, `weight-log`,
-  `meal-schedule`, `pairing`, `reminders`, `alerts` (estas dos por la enmienda A13 de #114, 2026-09-23) y `alerts/[alertId]` (por la enmienda A15 de #100, 2026-09-28)— no lleva `paddingTop: insets.top + 12`, porque
+  `meal-schedule`, `pairing`, `reminders`, `alerts` (estas dos por la enmienda A13 de #114, 2026-09-23), `alerts/[alertId]` (por la enmienda A15 de #100, 2026-09-28) y `pets/[petId]/geofences` (por la enmienda A18 de #41, 2026-10-02)— no lleva `paddingTop: insets.top + 12`, porque
   el inset superior lo consume la cabecera, ni `paddingBottom: insets.bottom +
   96`, porque sobre ella no flota el `FloatingTabBar`. Su
   `contentContainerStyle` es `padding: 24`, `gap: 16` y `paddingBottom:
