@@ -384,3 +384,43 @@ describe('#41 R7: el dueño borra una zona tras confirmar', () => {
     expect(mockList).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('#41 R8: quien no es dueño ve las zonas sin controles', () => {
+  const rows = [makeGeofence(), makeGeofence({ id: 'geofence-2', name: 'Parque', active: false })];
+  it.each(['family', 'walker', 'vet'] as const)('pinta las dos píldoras para %s sin controles', async (role) => {
+    mockGetPet.mockResolvedValue(petState(role));
+    mockList.mockResolvedValue({ kind: 'ok', geofences: rows });
+    await mount();
+    await screen.findByTestId('geofence-geofence-1');
+    for (const [id, label] of [['geofence-1', 'Activa'], ['geofence-2', 'Inactiva']]) {
+      const pill = screen.getByTestId(`geofence-${id}-status`);
+      expect(pill).toHaveTextContent(label);
+      expect(pill.props.className).toBe('self-start rounded-full bg-default px-2 py-0.5 text-2xs font-bold text-muted');
+      expect(childTestIds(screen.getByTestId(`geofence-${id}`))).toEqual([undefined, `geofence-${id}-status`]);
+      expect(screen.queryByTestId(`geofence-${id}-delete`)).toBeNull();
+    }
+    expect(screen.queryAllByRole('switch')).toEqual([]);
+    expect(mockSetActive).not.toHaveBeenCalled();
+    expect(mockDelete).not.toHaveBeenCalled();
+  });
+
+  it('un error al leer el rol deja la lista en solo lectura', async () => {
+    mockGetPet.mockResolvedValue({ kind: 'error' });
+    mockList.mockResolvedValue({ kind: 'ok', geofences: rows });
+    await mount();
+    await screen.findByTestId('geofence-geofence-1');
+    expect(screen.getByTestId('geofence-geofence-1-status')).toHaveTextContent('Activa');
+    expect(screen.getByTestId('geofence-geofence-2-status')).toHaveTextContent('Inactiva');
+    expect(screen.queryAllByRole('switch')).toEqual([]);
+    expect(screen.queryAllByTestId(/-delete$/)).toEqual([]);
+  });
+
+  it('pinta las píldoras en inglés', async () => {
+    mockGetPet.mockResolvedValue(petState('family'));
+    mockList.mockResolvedValue({ kind: 'ok', geofences: rows });
+    await mount('en');
+    await screen.findByTestId('geofence-geofence-1');
+    expect(screen.getByTestId('geofence-geofence-1-status')).toHaveTextContent('Active');
+    expect(screen.getByTestId('geofence-geofence-2-status')).toHaveTextContent('Inactive');
+  });
+});
