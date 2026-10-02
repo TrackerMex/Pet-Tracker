@@ -21,3 +21,10 @@
 - Reviewer: APROBADO sobre d5830bab (`progress/review_mobile-geofences.md`, commit 6d954741), con H1: el texto de "sin rastreo" no tenia clase y la mutacion `text-danger` sobrevivia.
 - Enmienda E3 (aprobada por el humano en chat, 2026-10-02: "E3 + implementer"): ese texto lleva `text-center font-normal text-muted` y el `it` del 402 lo comprueba. Commit fa9049c0, pasos en `specs/mobile-geofences/tasks.md` §Enmienda E3.
 - **Fallback al subagente `implementer`** (excepcion de `CLAUDE.md`): E3 es trivial (una clase y una asercion), asi que no pasa por Codex. Reporta en `progress/impl_mobile-geofences.md` §Enmienda E3. Despues: reviewer sobre el delta de E3, prueba de humo del humano, cierre.
+
+## #146 `mobile-geofence-editor` — el editor (2026-10-02, sesion Backend)
+
+- Branch `feature/146-mobile-geofence-editor` en `Pet-Tracker-wt-146`. Spec escrita por el `spec_author` sobre `95b2aaa4` (HEAD de #41) en el relanzamiento con correcciones elegido por el humano ("Relanzar con correcciones"); el primer intento entro en bucle de compactacion y se paro. Commit de la spec e3d1189d, subido a origin.
+- El leader verifico las anclas por contenido en `95b2aaa4` y la API de `expo-maps` 57.0.2 (`GoogleMapsCircle`, `onMapClick`, `onPOIClick`, `onCircleClick`).
+- Espejada en Notion (https://app.notion.com/p/3ed6115a9b278117b049c095c0b99285, Estado del gate = En revision, Rol actual = Spec Author); a la espera del gate humano. Tres casillas: A19, spec (P1-P10 y D7) y prueba de humo.
+- Bloqueadores del handoff: #41 aun no esta en `main`; base de tests sin medir (delta esperado +2 suites / +101 tests). iOS sin verificar mientras #60 siga aparcada.
