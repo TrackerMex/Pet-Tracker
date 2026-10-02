@@ -80,6 +80,7 @@ describe('R15 (nutrition-profile-engine #17): tablas de nutricion y migracion 00
         'daily_grams',
         'meals_per_day',
         'meal_times',
+        'engine_meals_per_day',
         'objective',
         'warnings',
         'ai_explanation',
@@ -117,6 +118,45 @@ describe('R15 (nutrition-profile-engine #17): tablas de nutricion y migracion 00
     expect(migration.sql).not.toContain('ALTER TABLE "weights"');
     expect(migration.sql).not.toMatch(
       /UNIQUE\s*\(\s*"pet_id"\s*,\s*"inputs_hash"/i,
+    );
+  });
+});
+
+function findEngineMealsMigration(): { file: string; sql: string } {
+  const file = readdirSync(MIGRATIONS_DIR)
+    .filter((name) => name.endsWith('.sql'))
+    .find((name) =>
+      readFileSync(join(MIGRATIONS_DIR, name), 'utf8').includes(
+        'ADD COLUMN "engine_meals_per_day"',
+      ),
+    );
+  if (!file) throw new Error('Engine meals migration not found');
+  return { file, sql: readFileSync(join(MIGRATIONS_DIR, file), 'utf8') };
+}
+
+describe('R1 (meal-schedule-editing #103): columna engine_meals_per_day y migracion 0018', () => {
+  it('declara engine_meals_per_day integer, nullable y sin default', () => {
+    const column = getTableConfig(nutritionPlans).columns.find(
+      (column) => column.name === 'engine_meals_per_day',
+    );
+    expect(column?.getSQLType()).toBe('integer');
+    expect(column?.notNull).toBe(false);
+    expect(column?.hasDefault).toBe(false);
+  });
+
+  it('0018 renombrada, registrada en el journal y con el ADD COLUMN exacto', () => {
+    const migration = findEngineMealsMigration();
+    const journal = JSON.parse(
+      readFileSync(join(MIGRATIONS_DIR, 'meta', '_journal.json'), 'utf8'),
+    ) as { entries: Array<{ idx: number; tag: string }> };
+    expect(migration.file).toMatch(/^\d{4}_nutrition_plans_engine_meals\.sql$/);
+    const entries = journal.entries.filter(
+      (entry) => entry.tag === migration.file.replace(/\.sql$/, ''),
+    );
+    expect(entries).toHaveLength(1);
+    expect(entries[0].idx).toBe(Number(migration.file.slice(0, 4)));
+    expect(migration.sql.trim()).toBe(
+      'ALTER TABLE "nutrition_plans" ADD COLUMN "engine_meals_per_day" integer;',
     );
   });
 });
