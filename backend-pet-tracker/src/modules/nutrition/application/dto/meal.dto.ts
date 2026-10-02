@@ -7,3 +7,6 @@ export const ServeMealSchema = z.strictObject({
 });
 
 export type ServeMealDto = z.infer<typeof ServeMealSchema>;
+
+export const EditMealTimeSchema = z.strictObject({ mealTime: z.string() });
+export type EditMealTimeDto = z.infer<typeof EditMealTimeSchema>;

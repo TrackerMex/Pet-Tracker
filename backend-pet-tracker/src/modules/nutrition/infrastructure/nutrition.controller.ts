@@ -10,6 +10,8 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { AddMealTimeUseCase } from '@/modules/nutrition/application/use-cases/add-meal-time.use-case';
+import { EditMealTimeSchema } from '@/modules/nutrition/application/dto/meal.dto';
 import { ZodType } from 'zod';
 import {
   UpsertNutritionProfileDto,
@@ -40,6 +42,7 @@ export class NutritionController {
     private readonly getProfile: GetNutritionProfileUseCase,
     private readonly generatePlan: GenerateNutritionPlanUseCase,
     private readonly getPlan: GetNutritionPlanUseCase,
+    private readonly addMealTimeUseCase: AddMealTimeUseCase,
   ) {}
 
   @Put('nutrition-profile')
@@ -79,6 +82,25 @@ export class NutritionController {
     try {
       return toNutritionPlanResponse(
         await this.generatePlan.execute(request.petMembership.petId),
+      );
+    } catch (error) {
+      throw mapNutritionError(error);
+    }
+  }
+
+  @Post('meal-times')
+  async addMealTime(
+    @Req() request: PetAccessRequest,
+    @Body() body: unknown,
+  ): Promise<NutritionPlanResponse> {
+    const dto = parseBody(EditMealTimeSchema, body);
+    try {
+      return toNutritionPlanResponse(
+        await this.addMealTimeUseCase.execute({
+          petId: request.petMembership.petId,
+          mealTime: dto.mealTime,
+          userId: request.user.id,
+        }),
       );
     } catch (error) {
       throw mapNutritionError(error);
