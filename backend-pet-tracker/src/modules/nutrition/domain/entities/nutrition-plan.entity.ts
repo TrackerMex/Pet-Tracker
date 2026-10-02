@@ -71,8 +71,8 @@ export function copyWithMealTimes(
     mealsPerDay: mealTimes.length,
     mealTimes: [...mealTimes].sort(),
     engineMealsPerDay: engineMealCount(plan),
-    objective: 'maintenance',
-    warnings: [],
+    objective: plan.objective,
+    warnings: plan.warnings,
     aiExplanation: plan.aiExplanation,
     inputsHash: plan.inputsHash,
   };
