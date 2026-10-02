@@ -1381,54 +1381,54 @@ salvo en el paso 10. iOS queda fuera (§Coordinación).
 
 **Pasos**
 
-- [ ] 1. **Entrada.** Perfil → Zonas seguras. Bajo la lista aparece
+- [X] 1. **Entrada.** Perfil → Zonas seguras. Bajo la lista aparece
       **Añadir zona** con la receta primaria. Tócalo: se abre "Zona segura"
       con la cabecera nativa y el botón atrás.
-- [ ] 2. **Crear.** El mapa centra en la última posición de la mascota con un
+- [X] 2. **Crear.** El mapa centra en la última posición de la mascota con un
       círculo de 150 m. Escribe "Paseo", toca otro punto del mapa: el
       círculo se mueve y **la cámara no**. Guarda: vuelves a la lista y
       "Paseo" ya está (4 zonas).
-- [ ] 3. **Toques en POI y en círculo.** Abre Añadir zona otra vez. Toca un
+- [X] 3. **Toques en POI y en círculo.** Abre Añadir zona otra vez. Toca un
       POI (un comercio con icono): el centro salta ahí. Toca dentro de un
       círculo existente: el centro salta al punto tocado. Vuelve atrás sin
       guardar.
-- [ ] 4. **TalkBack.** Ajustes → Accesibilidad → TalkBack activado. En el
+- [X] 4. **TalkBack.** Ajustes → Accesibilidad → TalkBack activado. En el
       editor, enfoca el slider: anuncia "Radio de la zona". Desliza arriba y
       abajo con un dedo: el radio sube y baja de 10 en 10 y el mapa encuadra
       el círculo. Desactiva TalkBack.
-- [ ] 5. **Nombre repetido.** Crea una zona llamada "Casa": bajo Guardar sale
+- [X] 5. **Nombre repetido.** Crea una zona llamada "Casa": bajo Guardar sale
       "Ya tienes una zona con ese nombre." y el borrador sigue ahí.
-- [ ] 6. **Límite.** Con 4 zonas, abre Añadir zona y escribe "Quinta". Sin
+- [X] 6. **Límite.** Con 4 zonas, abre Añadir zona y escribe "Quinta". Sin
       guardar, crea otra zona "Extra2" con el `curl.exe -X POST` de las
       precondiciones (ya son 5). Guarda "Quinta": bajo Guardar sale "Esta
       mascota ya tiene el máximo de zonas." (el 400 del backend). Vuelve
       atrás, sal a Perfil y entra otra vez en Zonas seguras: con 5 zonas,
       **Añadir zona** sale deshabilitado y debajo dice "Esta mascota ya
       tiene 5 zonas, el máximo. Elimina una para añadir otra." (R12).
-- [ ] 7. **Editar.** En la lista, toca el **nombre** de "Paseo" y luego,
+- [X] 7. **Editar.** En la lista, toca el **nombre** de "Paseo" y luego,
       tras volver, su **radio**: los dos abren el editor con nombre, centro
       y radio precargados y la nota de reinicio visible. Mueve el slider a
       otro radio y guarda: la lista muestra el radio nuevo.
-- [ ] 8. **Sin rebote.** En el editor, arrastra el mapa lejos del círculo y
+- [X] 8. **Sin rebote.** En el editor, arrastra el mapa lejos del círculo y
       toca un punto: el centro se mueve y la cámara **no** vuelve atrás.
 - [ ] 9. **Teclado.** Toca el nombre: con el teclado abierto, Guardar sigue
       alcanzable haciendo scroll en el formulario.
-- [ ] 10. **Tema e idioma.** En tema oscuro, mapa oscuro y círculos visibles.
+- [X] 10. **Tema e idioma.** En tema oscuro, mapa oscuro y círculos visibles.
       En inglés, "Safe zone", "Add zone" y "Save".
-- [ ] 11. **Activar desde el editor.** Abre "Paseo": bajo el slider, la
+- [X] 11. **Activar desde el editor.** Abre "Paseo": bajo el slider, la
       fila "Activa" con el interruptor encendido. Apágalo: sigues en el
       editor y el interruptor queda apagado. Vuelve atrás: en la lista,
       "Paseo" sale inactiva. Ábrela otra vez y enciéndela (R13).
-- [ ] 12. **Pestaña Mapa.** Con `<petId>` seleccionada, ve a la pestaña
+- [X] 12. **Pestaña Mapa.** Con `<petId>` seleccionada, ve a la pestaña
       Mapa: se ven los círculos de las zonas activas y no el de ninguna
       inactiva. En la lista, apaga "Extra1"; vuelve al Mapa: su círculo ya
       no está. Enciéndela otra vez (R11).
-- [ ] 13. **Eliminar desde el editor.** Abre "Extra2" y toca **Eliminar**:
+- [X] 13. **Eliminar desde el editor.** Abre "Extra2" y toca **Eliminar**:
       sale "¿Eliminar Extra2?". Cancelar te deja en el editor sin cambios.
       Repite y confirma: vuelves a la lista, "Extra2" ya no está, Añadir
       zona vuelve a estar habilitado y el aviso del límite desaparece
       (R14, R12).
-- [ ] 14. **Solo lectura.** Cierra sesión y entra con `<email2>`. Perfil →
+- [X] 14. **Solo lectura.** Cierra sesión y entra con `<email2>`. Perfil →
       Zonas seguras: no hay Añadir zona y tocar una zona no abre el editor
       (P16). Abre el editor por enlace:
       `adb -s <ip:puerto> shell am start -a android.intent.action.VIEW -d "mobilepettracker://pets/<petId>/geofence-editor?geofenceId=<geofenceId>"`
@@ -1438,10 +1438,10 @@ salvo en el paso 10. iOS queda fuera (§Coordinación).
       círculo y no hay campo, slider, interruptor, Guardar ni Eliminar.
       Repite el comando sin `?geofenceId=<geofenceId>`: solo sale la
       tarjeta con ese mismo texto (R16). Vuelve a la cuenta dueña.
-- [ ] 15. **Limpieza.** Borra "Paseo" y "Extra1":
+- [X] 15. **Limpieza.** Borra "Paseo" y "Extra1":
       `curl.exe -X DELETE -H "Authorization: Bearer <jwt>" "<API>/pets/<petId>/geofences/<geofenceId>"`.
 
-- [ ] Prueba de humo superada (fecha: ____)
+- [X] Prueba de humo superada (fecha: 2026-10-02)
 
 ## Riesgos
 
