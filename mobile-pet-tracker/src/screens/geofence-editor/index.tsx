@@ -1,8 +1,9 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
+import { HeaderHeightContext } from 'expo-router/react-navigation';
 import { Button, Input, Label, Skeleton, Slider, Switch, TextField } from 'heroui-native';
-import { useState } from 'react';
-import { Alert, ScrollView, Text, View } from 'react-native';
+import { useContext, useState } from 'react';
+import { Alert, KeyboardAvoidingView, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUniwind } from 'uniwind';
 
@@ -90,6 +91,7 @@ function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, ini
 }) {
   const t = useTranslate();
   const insets = useSafeAreaInsets();
+  const headerHeight = useContext(HeaderHeightContext);
   const { theme } = useUniwind();
   const queryClient = useQueryClient();
   const baseUrl = process.env.EXPO_PUBLIC_API_URL;
@@ -133,7 +135,7 @@ function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, ini
     ]);
   };
 
-  return <View testID="screen-geofence-editor" className="flex-1">
+  return <KeyboardAvoidingView testID="screen-geofence-editor" className="flex-1" behavior="padding" keyboardVerticalOffset={headerHeight}>
     <View testID="geofence-editor-map" className="flex-1">
       <PetMap onPress={readOnly ? undefined : setCenter} center={readOnly ? initialCenter : camera.center} zoom={readOnly ? zoomForRadius(initialRadius) : camera.zoom} marker={null} polylines={[]} circles={circles} colorScheme={theme === 'dark' ? 'dark' : 'light'} />
     </View>
@@ -177,5 +179,5 @@ function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, ini
       {error ? <Text testID="geofence-editor-error" selectable className="text-danger">{error}</Text> : null}
       </>}
     </ScrollView>
-  </View>;
+  </KeyboardAvoidingView>;
 }
