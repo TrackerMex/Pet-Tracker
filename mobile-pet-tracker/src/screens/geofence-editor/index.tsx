@@ -2,11 +2,11 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { Button, Input, Label, Skeleton, Slider, Switch, TextField } from 'heroui-native';
 import { useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { Alert, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUniwind } from 'uniwind';
 
-import { createGeofence, listGeofences, setGeofenceActive, updateGeofence, type Geofence, type GeofenceSaveState, type GeofenceWriteState } from '../../api/geofences';
+import { createGeofence, deleteGeofence, listGeofences, setGeofenceActive, updateGeofence, type Geofence, type GeofenceSaveState, type GeofenceWriteState } from '../../api/geofences';
 import { getLastPosition } from '../../api/positions';
 import { geofenceKeys, positionKeys } from '../../api/query-keys';
 import { Card } from '../../components/card';
@@ -117,6 +117,15 @@ function GeofenceEditorForm({ petId, zone, geofences, initialName, initialCenter
       : createGeofence(baseUrl, token ?? '', petId, draft), leave);
   };
 
+  const confirmDelete = () => {
+    if (!zone) return;
+    Alert.alert(t('geofences.deleteTitle', { name: zone.name }), t('geofences.deleteBody'), [
+      { text: t('geofences.cancel'), style: 'cancel' },
+      { text: t('geofences.delete'), style: 'destructive',
+        onPress: () => void run(() => deleteGeofence(baseUrl, token ?? '', petId, zone.id), leave) },
+    ]);
+  };
+
   return <View testID="screen-geofence-editor" className="flex-1">
     <View testID="geofence-editor-map" className="flex-1">
       <PetMap onPress={setCenter} center={camera.center} zoom={camera.zoom} marker={null} polylines={[]} circles={circles} colorScheme={theme === 'dark' ? 'dark' : 'light'} />
@@ -152,6 +161,9 @@ function GeofenceEditorForm({ petId, zone, geofences, initialName, initialCenter
       <Button testID="geofence-editor-save" className="rounded-xl bg-accent" isDisabled={busy || name.trim() === ''} onPress={() => void save()}>
         <Button.Label className="font-bold text-accent-foreground">{t('geofenceEditor.save')}</Button.Label>
       </Button>
+      {zone ? <Button testID="geofence-editor-delete" variant="danger-soft" className="rounded-xl bg-danger-soft" isDisabled={busy} onPress={confirmDelete}>
+        <Button.Label className="font-semibold text-danger">{t('geofences.delete')}</Button.Label>
+      </Button> : null}
       {error ? <Text testID="geofence-editor-error" selectable className="text-danger">{error}</Text> : null}
     </ScrollView>
   </View>;
