@@ -92,3 +92,21 @@ export async function deleteGeofence(
   );
   return result.kind === 'unreachable' ? result : writeState(result.response, 204);
 }
+
+export type GeofenceDraft = { name: string; centerLat: number; centerLng: number; radiusM: number };
+export type GeofenceSaveState = GeofenceWriteState
+  | { kind: 'name-taken' } | { kind: 'limit-reached' } | { kind: 'invalid' };
+
+export async function createGeofence(
+  baseUrl: string | undefined, token: string, petId: string,
+  draft: GeofenceDraft, fetchFn: typeof fetch = fetch,
+): Promise<GeofenceSaveState> {
+  return { kind: 'missing-config' };
+}
+
+export async function updateGeofence(
+  baseUrl: string | undefined, token: string, petId: string, geofenceId: string,
+  draft: GeofenceDraft, fetchFn: typeof fetch = fetch,
+): Promise<GeofenceSaveState> {
+  return { kind: 'missing-config' };
+}
