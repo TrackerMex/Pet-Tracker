@@ -7017,3 +7017,97 @@ spec de #146 en el worktree `Pet-Tracker-wt-146`.
 - **Siguiente**: #146, el editor sobre el mapa. Su spec (e3d1189d) esta en el
   gate humano en Notion y su handoff a Codex espera a que esta PR este en
   `main`.
+
+## #103 `meal-schedule-editing` — editar y añadir franjas de comida (mitad backend) — 2026-10-02
+
+Sesion Frontend, tree principal (`/home/claude/sites/Pet-Tracker`), branch
+`feature/103-meal-schedule-editing` desde `origin/main` 4e8d6cc3. Recibio
+`origin/main` d855ab5e (#41) en el merge 49ffac05, sin conflictos. En paralelo:
+Backend con #41 en `wt-backend` y la spec de #146 en `Pet-Tracker-wt-146`.
+
+### Spec y gates
+
+- Explore (554f3153) con 11 decisiones abiertas, re-verificadas por el leader
+  contra 4e8d6cc3. El humano decidio por AskUserQuestion las de producto:
+  el horario editado se conserva al recalcular mientras el motor no cambie el
+  numero de comidas; la servida de hoy se mueve con su franja; no hay borrado
+  de franjas; solo el dueño edita. El resto, con la recomendacion del explore.
+  Se parte en #103 (backend) y #147 `mobile-meal-schedule-editing` (movil).
+- Spec del `spec_author` en db279440: R1-R13, sondas S1-S20, G1-G3. Espejada
+  en Notion (pagina `3ed6115a-9b27-818e-82a9-c7b4973f8e73`), aprobada alli y
+  firmada por el leader en 2b74cd62. Handoff a Codex en 2ae63956 (H0).
+- Enmiendas, todas aprobadas por el humano en el chat de la sesion Frontend:
+  - **E1** (d5cdede0): el rojo de R8 incluye el `it` 2.
+  - **E2** (9c7a358b): declara el arrastre de la mutacion de R11 y convierte
+    el «Exigido» de las sondas en un minimo.
+  - **E3** (4dd7e29f, ronda 2): candados de B1 y B2 con sondas S21-S24.
+  - **E4** (3465f9df, ronda 3): candado de B3 con el `it` 4 de R5, receta
+    medida por el reviewer antes de la firma.
+
+### Que se hizo
+
+- **Produccion** (`backend-pet-tracker/src/`):
+  - Migracion 0018: columna `engine_meals_per_day` en `nutrition_plans` (R1).
+    Al regenerar el plan, el horario editado se arrastra si el motor da el
+    mismo numero de comidas; si no, vuelve a los horarios por defecto (R2).
+  - `POST /v1/pets/:petId/meal-times` (añadir) y
+    `PATCH /v1/pets/:petId/meal-times/:mealTime` (mover), como copia
+    append-only del plan con el mismo `inputsHash` (R3, R4, R12).
+  - La servida de hoy (`ownerLocalDay`) se mueve con su franja en la misma
+    transaccion (`insertPlanAndMoveServing`, R5) y, si choca, gana la del
+    destino (R6). Los dias pasados no se tocan.
+  - Auditoria `meal_time.add` y `meal_time.move` (R7); HH:MM estricto (R8);
+    422 por duplicado y por septima franja, ordenado al escribir (R9); solo
+    owner (R10); los lectores ven el plan editado (R11).
+- **Docs** (R13): `docs/data-model.md`, `docs/conventions.md` y la D4 de #83
+  enmendada en `specs/meals-served-tracking/design.md`.
+- **Implementacion**: Codex CLI, tres rondas test-primero.
+  - Ronda 1: 26 commits hasta 90017ed4 (12 pares rojo/verde, R13 por la via
+    b, trazabilidad). Paro en R8 (E1) y en R11 (E2).
+  - Ronda 2: 5 commits hasta 42d161cc (B1 y B2, mutaciones versionadas y
+    revertidas, S21-S24). Lanzo `./init.sh` pese al handoff y lo corto en el
+    build (review R2-N2).
+  - Ronda 3: 3 commits hasta 0e6c0167 (B3: eff86580 rojo, f3254d70 verde,
+    trazabilidad). Sin `./init.sh`.
+  - Produccion con diff neto cero en las rondas 2 y 3.
+
+### Revision
+
+- Gates del leader, sin pipe, con turno de Backend (logs en el scratchpad de
+  la sesion, `gate103/`):
+  - 90017ed4 (17:55-17:59Z): `pnpm test:e2e` y `./init.sh` exit 0; unit
+    174/1335, infra 2/14, movil 86/1634, e2e 31 ficheros / 429.
+  - 42d161cc (18:26-18:33Z): exit 0; movil 88/1710 (por #41), e2e 31 / 430.
+  - 0e6c0167 (18:59-19:05Z): `pnpm test:e2e` exit 0, 28+3 saltadas / 423+8
+    saltados (431); `./init.sh` exit 0, unit 174/1335, infra 2/14, movil
+    88/1710, 19 migraciones aplicadas.
+- Reviewer RECHAZADO sobre 90017ed4: **B1** (el fixture de R3 coincidia con
+  `objective: 'maintenance'` y `warnings: []`) y **B2** (quitar el filtro
+  `petId` del UPDATE, NOT EXISTS o DELETE de `insertPlanAndMoveServing` dejaba
+  todo verde).
+- Reviewer RECHAZADO sobre 42d161cc: **B3** (quitar el `servedOn` de dentro
+  del `notExists(` dejaba todo verde; una servida pasada en el destino
+  borraria la de hoy).
+- Reviewer **APROBADO** sobre 0e6c0167 (`progress/review_meal-schedule-editing.md`).
+  Las nueve condiciones de `insertPlanAndMoveServing` (tres clausulas por
+  petId, servedOn y mealTime) quedan con candado.
+
+### Resultado
+
+- Estado final: `done`. Unit 171/1307 → 174/1335 (+3 suites, +28 tests);
+  e2e 27+3 / 399+8 → 28+3 / 423+8. Notion: `Estado del gate` =
+  Implementado, `Rol actual` = Completado.
+- Sin prueba de humo propia: los e2e corren contra Postgres real. El smoke en
+  dev build de Android editando una franja con comida ya servida es de #147.
+
+### Deuda y apuntes
+
+- **Tras el merge**: `pnpm db:migrate` en `pet_tracker_wt` (Postgres 5433), que
+  sigue en 18 migraciones; `pet_tracker` ya tiene la 0018.
+- Observaciones no bloqueantes del review, sin id registrado: N2-N6 y R2-N3.
+- **Leccion** (memoria `prueba-de-mutacion-en-zona-ciega`): la tabla de sondas
+  solo muto lo que la spec nombraba. E3 aplico la leccion al `pet_id` y no a
+  cada condicion, y hizo falta E4. Una mutacion por clausula y condicion, y
+  medir la receta antes de firmar.
+- **Siguiente**: #147 `mobile-meal-schedule-editing`, anclada en el merge real
+  de #41 (d855ab5e), no en las cifras de su spec.

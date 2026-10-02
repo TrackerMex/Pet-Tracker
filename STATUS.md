@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-10-02
-**Features completadas**: 132/146 (`feature_list.json`)
-**En progreso**: ninguna. #41 cerrada en esta rama, PR pendiente. #146 (el editor de zonas) tiene la spec en su gate humano, en la branch `feature/146-mobile-geofence-editor`. La sesión Frontend sigue con #103
+**Features completadas**: 133/147 (`feature_list.json`)
+**En progreso**: ninguna. #103 cerrada en esta rama, PR pendiente. #146 (el editor de zonas) tiene la spec en su gate humano, en la branch `feature/146-mobile-geofence-editor`. #147 (la mitad móvil de #103) espera spec
 
-**Pendientes**: 14 (#18, #60, #101, #103, #105, #115-#119, #129, #134, #144 y #146). **#41 `mobile-geofences` cerrada**: la app móvil tiene por fin la lista de zonas seguras de cada mascota. Se entra desde una fila «Zonas seguras» del Perfil, justo después de la del dispositivo GPS, y la ruta delgada `src/app/pets/[petId]/geofences.tsx` monta `src/screens/geofences/`. La lista muestra nombre, radio y estado de cada zona, con carga, vacío, error con Reintentar y el 402 sin rastreo («Las zonas seguras requieren un collar»). El dueño activa o desactiva cada zona con un interruptor (`PATCH {active}`) y la borra con confirmación destructiva (`DELETE`); los demás roles ven una píldora Activa/Inactiva sin controles. `src/api/http.ts` gana `patchJson`, y `src/api/geofences.ts` mapea cada respuesta a un `kind`. El editor sobre el mapa queda para #146. La enmienda A18 añade la pantalla a la lista de A11 en `docs/`. Móvil 86/1634 → 88/1710 (+2 suites, +76 tests). Codex hizo 23 commits test-primero (A18, diez pares rojo/verde, el test de E2 y la trazabilidad) y paró una vez en R9, porque `UNSAFE_getByType` no existe en RNTL 14 (enmienda E2). El reviewer aprobó con una observación de carta (H1, el texto sin rastreo sin clase), cerrada con la enmienda E3 por el subagente `implementer` y revisada aparte. El humano pasó la prueba de humo en dev build de Android el 2026-10-02
+**Pendientes**: 14 (#18, #60, #101, #105, #115-#119, #129, #134, #144, #146 y #147). **#103 `meal-schedule-editing` cerrada (mitad backend)**: el horario de comidas deja de salir solo del plan generado. `POST /v1/pets/:petId/meal-times` añade una franja y `PATCH /v1/pets/:petId/meal-times/:mealTime` la mueve, solo el dueño, con HH:MM estricto, 422 por duplicado o por séptima franja, y auditoría `meal_time.add`/`meal_time.move`. Cada edición es una copia append-only del plan con el mismo `inputsHash`. La migración 0018 añade `engine_meals_per_day`: al regenerar, el horario editado se conserva mientras el motor no cambie el número de comidas. La servida de hoy se mueve con su franja en la misma transacción y, si choca, gana la del destino (enmienda la D4 de #83). Sin borrado de franjas. Unit 171/1307 → 174/1335, e2e 399 → 431. Codex en tres rondas test-primero; el reviewer rechazó dos por huecos de candado (B1-B3, enmiendas E3 y E4) y aprobó la tercera sobre 0e6c0167. Tras el merge, `pnpm db:migrate` en `pet_tracker_wt`. La mitad móvil es #147
 
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
@@ -88,6 +88,12 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
+- **`meal-schedule-editing` (#103) done** (2026-10-02, tree principal,
+  sesion Frontend): mitad backend de editar y añadir franjas de comida
+  (POST y PATCH de `meal-times`, migración 0018, la servida de hoy se mueve
+  con su franja). Tres rondas de Codex; reviewer aprobado sobre 0e6c0167.
+  Gate: `./init.sh` exit 0 (unit 174/1335, infra 2/14, móvil 88/1710, e2e
+  431). PR abierta; #147 lleva la mitad móvil.
 - **`mobile-weekly-chart-root-accessible-lock` (#132) done** (2026-09-29, tree
   principal, sesion Frontend): R1 fija la tarjeta como raíz host de la gráfica
   en sus cuatro estados internos, solo test. Dos rondas: la ronda 1 se rechazó
@@ -1282,6 +1288,13 @@ debe listar las 4 URLs de cola.
 
 ## Última sesión
 
+- **2026-10-02** — **#103 `meal-schedule-editing` cerrada** (sesion
+  Frontend, tree principal): spec firmada desde Notion (`2b74cd62`), enmiendas
+  E1-E4 aprobadas en el chat. Codex, tres rondas test-primero; rondas 1 y 2
+  rechazadas por huecos de candado (B1-B3), ronda 3 aprobada sobre
+  `0e6c0167`. Integra `origin/main` (#41) por merge (`49ffac05`). Siguiente:
+  merge humano del PR, `pnpm db:migrate` en `pet_tracker_wt` y la spec de
+  #147.
 - **2026-09-29** — **#132 `mobile-weekly-chart-root-accessible-lock` cerrada**
   (sesion Frontend, tree principal): spec firmada desde Notion (`4126e990`) y
   Enmienda 1 también (`27724fb3`). Codex, dos rondas test-primero por la vía b

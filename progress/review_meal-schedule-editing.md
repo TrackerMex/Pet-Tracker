@@ -1,6 +1,6 @@
 # review: meal-schedule-editing (#103, mitad backend)
 Fecha: 2026-10-02
-Veredicto: RECHAZADO (ronda 2 sobre 42d161cc; ronda 1 RECHAZADO sobre 90017ed4)
+Veredicto: APROBADO (ronda 3 sobre 0e6c0167; ronda 2 RECHAZADO sobre 42d161cc; ronda 1 RECHAZADO sobre 90017ed4)
 
 ## HEAD verificado
 - Branch: feature/103-meal-schedule-editing
@@ -347,3 +347,110 @@ Conclusión: **la receta E4 sirve**.
 - Ningún verde declarado cae, y no aparece ningún rojo por consulta.
 - Lo único que se añade son rojos del propio `it` 4 bajo Q3, Q7 y S11 (por matcher) y bajo S21 (`500` en la aserción HTTP, por las filas que deja el `it` 3). E2 los admite. Si la enmienda enumera los «otros rojos» de S21, conviene que nombre también el `it` 4, como dependiente del orden.
 - Esta medición no cambia el veredicto de la ronda 2: sigue RECHAZADO por B3 hasta que E4 esté firmada e implementada.
+
+# Ronda 3
+
+## HEAD verificado
+- Branch: `feature/103-meal-schedule-editing`. HEAD: `0e6c016724e7d9c7196213b2b41d5b74e95cbdc5`. El árbol estaba limpio al empezar (`git status --porcelain` y `git diff --cached` vacíos).
+- `git log 3465f9df^..HEAD`: 3465f9df (E4, H2), eff86580 (rojo B3), f3254d70 (verde B3) y 0e6c0167 (docs). Cadena lineal: cada padre es el commit anterior. No hay rebase: 42d161cc es el padre de H2.
+- El script de sondas aborta si HEAD deja de ser 0e6c0167. No se movió en toda la revisión.
+- El review vale solo para este HEAD.
+
+## Gate (logs del leader)
+Leído de `gate103/r3-*`. No ejecuté `./init.sh` ni `pnpm test:e2e` entero.
+
+| Medida | Línea del log | Exigido | OK |
+|---|---|---|---|
+| `r3.head` | `0e6c016724e7…` | HEAD | sí |
+| `r3-e2e.exit` / `r3-init.exit` | `0` / `0` | 0 | sí |
+| Arranque | e2e a las 18:59:02Z, su exit a las 19:00:36Z; init a las 19:00:36Z, exit a las 19:05:20Z. Uno tras otro, no a la vez, y después del último commit de Codex (18:57:42Z) | — | sí |
+| e2e (log aparte) | r3-e2e.log:276-277 `3 skipped, 28 passed, 28 of 31 total` / `8 skipped, 423 passed, 431 total` | 31 / 431 (28 + 3; 423 + 8) | sí |
+| e2e (init) | r3-init.log:21552-21553, las mismas cifras | igual | sí |
+| Unit backend | r3-init.log:218-219 `174 passed` / `1335 passed` | 174 / 1335 | sí |
+| Harness | r3-init.log:231-232, 2 / 14 | 2 / 14 | sí |
+| Mobile | r3-init.log:21246-21247, `88 passed` / `1710 passed` | 88 / 1710 | sí |
+| Migraciones | r3-init.log:21262 `migrations applied successfully!` | — | sí |
+| Lint / Typecheck | r3-init.log:21576 `✅ Todo verde` | verde | sí |
+| Ruido `ERROR` | 8 en `r3-init.log` (PollerService 4, PositionsConsumer 1, AlertsEngineConsumer 1, ExceptionsHandler de `pet_users` 1 más su `severity: 'ERROR'`) y 2 en `r3-e2e.log` | igual que en la ronda 2 (8 / 2) | sí |
+
+e2e pasa de 430 a 431 tests y de 422 a 423 que pasan: es el `it` 4 de R5. Los 8 saltados y los 3 ficheros saltados no cambian. Unit, harness y mobile, igual que en la ronda 2.
+
+## C2-C7 sobre el delta H2..HEAD
+
+### Checklist C2 — Estado coherente
+- [x] Solo 1 feature in_progress: `feature_list.json` tiene únicamente `103 meal-schedule-editing`.
+- [x] `progress/current.md` llega hasta la aprobación de E4 (`:42`, «Apruebo E4»). La entrada de cierre de la ronda 2 (R2-N1) ya está (`:40`). Falta la de la ronda 3: Codex terminó en 0e6c0167 y el leader corrió el gate `r3-*`. Es tarea del leader (obs. R3-N1).
+
+### Checklist C3 — Arquitectura
+- [x] Producción con diff neto cero en H2..HEAD: `git diff 3465f9df HEAD -- nutrition.drizzle.repository.ts` y `git diff 42d161cc HEAD -- …` salen vacíos, y `git diff 3465f9df HEAD --stat -- backend-pet-tracker/src` no lista nada. Las capas son las que aprobó la ronda 1.
+- [x] Atomicidad: el `UPDATE … NOT EXISTS` y el `DELETE` siguen dentro de `this.db.transaction` (`:102-132`), sin cambios.
+
+### Checklist C4 — TDD
+- [x] El test nuevo nombra su R-id: el `it` 4 `'una servida de otro dia en el destino no bloquea el movimiento'` (`:442`) está en `describe('R5 (meal-schedule-editing #103): la servida de hoy se mueve con su franja y los dias pasados no')`, justo después del `it` 3.
+- [x] **El `it` 4 es byte a byte el que medí en T5-T15.** Reconstruí el fichero aplicando el bloque de inserción de `scratchpad/probeE4.sh` a `git show 42d161cc:backend-pet-tracker/test/meal-times.e2e-spec.ts`. El resultado es idéntico a `git show HEAD:…` (`cmp` sin salida; sha256 `7471b708…bca0d` en los dos). También coincide con el código de referencia de la spec (§R5, E4). `git diff 42d161cc HEAD -- test/meal-times.e2e-spec.ts` es solo ese bloque de +21 líneas.
+- [x] Historial rojo→verde con un par:
+  - eff86580 (rojo) toca dos ficheros: el e2e (+21) y el repositorio (-1). La línea que quita es exactamente `eq(mealServings.servedOn, move.servedOn),` dentro del `notExists(` (antes `:117`). El `servedOn` del `UPDATE` (`:108`) y el del `DELETE` (`:129`) no se tocan.
+  - f3254d70 (verde) solo toca el repositorio (+1) y devuelve el blob a `4cdc10f2`. `git diff eff86580^ f3254d70 -- nutrition.drizzle.repository.ts` sale vacío (0 bytes).
+  - `git diff eff86580 HEAD -- backend-pet-tracker/test` sale vacío, así que el test del rojo es el de HEAD. Por eso Q6 sobre HEAD reproduce el árbol backend del rojo.
+- [x] El rojo es por matcher. El log de Codex (`/tmp/pt103-r3-red-mt.log`) da `1 failed, 23 passed, 24 total`, y `<e2e-nut>` (`red-nut.log`) 45/45. Mi V1 lo repite igual: `:457` `toEqual`, `- Expected - 8 / + Received + 0`. Falta la fila de hoy (`servedOn` de hoy, `08:15`) y queda la de ayer en `08:15`.
+
+### Checklist C5 — Trazabilidad
+- [x] `traceability.md` no tiene filas «pendiente». La única coincidencia es la línea 38, la de la regla.
+- [x] El diff de `traceability.md` en H2..HEAD es de 1 línea (+1/-1): solo la fila R5. Conserva los 4 hashes de las rondas 1 y 2 y añade «ronda 3 (E4): rojo `eff86580e75b…` … verde `f3254d701ac8…` …» con hashes completos y mensajes literales.
+- [x] Los 31 hashes completos del fichero son ancestros de HEAD (`git merge-base --is-ancestor`, 31 de 31).
+- [x] Los 3 mensajes coinciden literalmente con tasks.md §Ronda 3 (1), (2) y (4).
+- [x] Lista cerrada: `git diff --name-only 3465f9df HEAD` da 3 ficheros, `test/meal-times.e2e-spec.ts`, `progress/impl_meal-schedule-editing.md` y `specs/meal-schedule-editing/traceability.md`. El cuarto permitido, el repositorio, queda en diff neto cero. El impl solo añade (+210/-0): las rondas 1 y 2 del informe no se tocan.
+
+### Checklist C6 — Spec aprobada
+- [x] `requirements.md:3` `status: approved` y `:1296` `- [x] Aprobado por humano (fecha: 2026-10-02)`. E4 está en la cabecera (`:109-130`), en §R5 (`it` 4, código de referencia, candado de ronda 3 y rojos añadidos) y en tasks.md §Ronda 3. Su aprobación humana consta en `current.md:42` y en el mensaje de 3465f9df.
+
+### Checklist C7 — Sin código huérfano
+- [x] N/A: la ronda 3 no reemplaza ni elimina nada.
+
+## Sondas propias
+Las corrí en el tree principal sobre HEAD, una tras otra y en primer plano, con `scratchpad/r3probe.sh`. Logs en `scratchpad/r3/`. Cada sonda:
+1. comprueba que HEAD es 0e6c0167 y que `pgrep -af 'init\.sh|jest'` sale vacío;
+2. comprueba que la línea a quitar tiene el texto esperado y la borra con `sed`;
+3. corre `<e2e-mt>` (y `<e2e-nut>` en V1);
+4. restaura con `git checkout HEAD -- nutrition.drizzle.repository.ts` e imprime `git status --porcelain`, `git diff --cached --name-only` y el diff de producción.
+
+Tras cada sonda, el status solo mostró ` M progress/review_meal-schedule-editing.md`, el índice salió vacío y el diff de producción tenía 0 bytes. La base es `pet_tracker` en :5433, tomada del `.env` de la raíz. `DATABASE_URL` no estaba exportada.
+
+Como el `it` 4 y la producción de HEAD son byte a byte los que medí en T5-T15, basta con repetir Q6 y una muestra de dos. Elegí Q4 (S9), porque E4 se apoya en que S9 conserva su forma y no la re-declara, y Q7, la otra condición del mismo `NOT EXISTS`, donde el `it` 4 añade un rojo.
+
+| # | Mutación (se quita la línea) | Resultado | Rojos y línea decisiva | Igual que |
+|---|---|---|---|---|
+| V0 | ninguna (control) | verde, `24 passed, 24 total`, exit 0 | n/a | T5 |
+| **V1** | **Q6: `NOT EXISTS` sin `servedOn` (`:117`)** | rojo, `1 failed, 23 passed, 24 total`. `<e2e-nut>` verde, `45 passed, 45 total`, exit 0 | **solo** R5 `it` 4, `:457` `toEqual`, `- Expected - 8 / + Received + 0`, por matcher | T6 y el rojo de Codex |
+| V2 | Q4/S9: `UPDATE` sin `servedOn` (`:108`) | rojo, `1 failed, 23 passed` | R5 `it` 1, `:391` `toEqual`, `- 1 / + 1`, por matcher; el `it` 4 sigue verde | T10. S9 conserva su forma |
+| V3 | Q7: `NOT EXISTS` sin `mealTime = to` (`:118`) | rojo, `3 failed, 21 passed` | R5 `it` 1 `:391` (`- 8`), `it` 3 `:436` (`- 10 / + 1`) e `it` 4 `:457` (`- 8`), los tres por matcher | T12 |
+
+Con las mediciones T6-T13 de la ronda 2, que valen para este árbol porque el test y la producción son idénticos, las 9 condiciones de `insertPlanAndMoveServing` dan rojo. Las 3 cláusulas (UPDATE, NOT EXISTS y DELETE) tienen 3 condiciones cada una: `petId`, `servedOn` y `mealTime`.
+
+| Cláusula | `petId` | `servedOn` | `mealTime` |
+|---|---|---|---|
+| UPDATE | Q2/T8 (`500` en el `it` 3) | Q4/T10, **V2** | Q5/T11 |
+| NOT EXISTS | Q3/T9 | **Q6/T6, V1** (antes ciega) | Q7/T12, **V3** |
+| DELETE | Q1/T7 | Q8/T13 | Q9 (ronda 2, sin el `it` 4; sus rojos R5 `it` 1-3 van antes del `it` 4 y no dependen de él) |
+
+No queda ninguna condición literal de R5/R6 en zona ciega.
+
+## Observaciones
+### Bloqueantes
+Ninguna. **B3 está cerrado**: la mutación Q6 da rojo solo en el `it` 4 y por matcher en su `toEqual` final, `<e2e-nut>` sigue verde, y el `it` 4 coincide con el código de referencia de la spec.
+
+### No bloqueantes
+- **R3-N1.** A `progress/current.md` le falta la entrada de cierre de la ronda 3: Codex terminó en 0e6c0167 (18:57:42Z) y el leader corrió el gate en `gate103/r3-*` (18:59-19:05Z). Es tarea del leader.
+- **R2-N2: resuelta.** Esta vez Codex no lanzó `./init.sh`. Su informe lo dice («no `./init.sh`, E2E completo…» en el plan y «siguen delegados al leader» al cierre), y su `pgrep` previo sale vacío. Sus logs en `/tmp/pt103-r3-*` son solo lint, `tsc`, `<e2e-mt>`, `<e2e-nut>` y `pnpm test`, entre las 18:53 y las 18:57Z. No hay ningún log de `init` en `/tmp` en esa ventana, y el gate del leader arrancó después de su último commit.
+- **R2-N3.** Sigue siendo informativa. E4 ya declara en §R5 que con S21 el `it` 4 también cae con `500` y depende del orden. No lo repetí porque el `it` 4 es idéntico al de T8.
+- R2-N1 está hecha (`current.md:40`). N1-N6 de la ronda 1 no cambian, porque la producción tiene diff neto cero en H2..HEAD.
+
+## Veredicto ronda 3
+**APROBADO** sobre HEAD `0e6c016724e7d9c7196213b2b41d5b74e95cbdc5` (branch `feature/103-meal-schedule-editing`).
+
+- **B3 cerrado:** el `it` 4 es byte a byte la receta medida y el código de referencia de E4. Q6 sobre HEAD da rojo solo en él, por matcher en `:457`. Las 9 condiciones de `insertPlanAndMoveServing` quedan vigiladas.
+- **C4:** el rojo es por matcher, el verde revierte exactamente (`git diff eff86580^ f3254d70` vacío) y la producción tiene diff neto cero en H2..HEAD.
+- **C5:** la lista cerrada, los mensajes literales y la fila R5 «ronda 3 (E4)» cumplen. Hay 31 de 31 hashes ancestros y ninguna fila pendiente.
+- **Gate del leader verde:** e2e 31/431 (423 + 8), init exit 0, unit 174/1335, harness 2/14 y mobile 88/1710.
+- B1 y B2 siguen cerrados (ronda 2) y la producción no cambió desde entonces.
+- Queda la R3-N1 (entrada de cierre en `current.md`), que es del leader y no bloquea.
