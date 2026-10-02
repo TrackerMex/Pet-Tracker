@@ -1,6 +1,6 @@
 ---
 feature: "meal-schedule-editing"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec]
 ---
 
@@ -1053,7 +1053,7 @@ otra base con `pnpm db:migrate`; es operativa, no gate ([[design]]
 Firmar sin editar = aceptar H1-H4 y A1-A5 tal cual, las decisiones D1-D12 de
 [[design]] y **las tres decisiones de gate**:
 
-- [ ] **G1** — migración `0018` con `engine_meals_per_day` nullable; `generate` compara el número del motor del plan vigente. Si se rechaza, la spec vuelve al `spec_author`: R1 desaparece y R2/R3 se reescriben con la alternativa C y su fallo documentado (el caso del gato de R2)
-- [ ] **G2** — choque en el destino: fusión; gana la fila del destino y las huérfanas reviven
-- [ ] **G3** — auditoría `meal_time.add` / `meal_time.move` con el id del plan nuevo, después de escribir
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] **G1** — migración `0018` con `engine_meals_per_day` nullable; `generate` compara el número del motor del plan vigente. Si se rechaza, la spec vuelve al `spec_author`: R1 desaparece y R2/R3 se reescriben con la alternativa C y su fallo documentado (el caso del gato de R2)
+- [x] **G2** — choque en el destino: fusión; gana la fila del destino y las huérfanas reviven
+- [x] **G3** — auditoría `meal_time.add` / `meal_time.move` con el id del plan nuevo, después de escribir
+- [x] Aprobado por humano (fecha: 2026-10-02) ← gate obligatorio antes de implementar
