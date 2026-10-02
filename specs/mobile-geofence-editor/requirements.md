@@ -476,8 +476,13 @@ genérico si el rol cambia entre la carga y el guardado.
   inicial `{ center: centroInicial, zoom: zoomForRadius(radioInicial) }`),
   `busy` y `error`. Su árbol:
 
-  - raíz `View testID="screen-geofence-editor" className="flex-1"` (sin
-    fondo: el mapa va detrás, carta punto 10);
+  - raíz `KeyboardAvoidingView` de `react-native`,
+    `testID="screen-geofence-editor" className="flex-1" behavior="padding" keyboardVerticalOffset={headerHeight}`,
+    con `const headerHeight = useContext(HeaderHeightContext);` entre los
+    hooks del principio de `GeofenceEditorForm` (`HeaderHeightContext` de
+    `'expo-router/react-navigation'`, `useContext` de `'react'`). Sin fondo:
+    el mapa va detrás, carta punto 10. *(Enmienda E1, 2026-10-02: antes era
+    un `View`; ver §Enmienda E1.)*
   - primer hijo `View testID="geofence-editor-map" className="flex-1"` con
     `<PetMap center={camera.center} zoom={camera.zoom} marker={null} polylines={[]} circles={circles} colorScheme={theme === 'dark' ? 'dark' : 'light'} />`
     (`theme` de `useUniwind()`, como la pestaña Mapa);
@@ -526,7 +531,9 @@ genérico si el rol cambia entre la carga y el guardado.
       — raíz `flex-1`; `childTestIds(raíz)` igual a
       `['geofence-editor-map', 'geofence-editor-form']`; el formulario con
       `toHaveStyle({ flexGrow: 0, flexShrink: 1 })` y
-      `contentInsetAdjustmentBehavior` `undefined`.
+      `contentInsetAdjustmentBehavior` `undefined`. *(E1)* Además, la raíz
+      aparta el formulario del teclado con la altura de la cabecera: el
+      código exacto está en §Enmienda E1.
   19. `'pinta el formulario en inglés'`
 
   Los círculos se comparan solo por `{ id, center, radius }` (el color lo
@@ -1271,14 +1278,27 @@ que sigue fuera:
   la pestaña solo pinta las zonas activas (R11, P11).
 - **Arrastrar el centro.** expo-maps no tiene eventos de arrastre de marker
   y `onMapLongClick` es solo de Google: el centro se fija con un toque.
-- **Comportamiento del teclado** sobre el formulario: solo lo cubre la prueba
-  de humo (paso 9), jest no lo ve.
+- **Comportamiento del teclado** sobre el formulario: jest asevera el
+  `paddingBottom` que la raíz calcula con un evento de teclado simulado (R6
+  it 18, E1). Que ese padding deje Guardar alcanzable en el teléfono solo lo
+  ve la prueba de humo (paso 9).
+- **Teclado en el resto de la app** (Login, Registro, Olvidé, Reset,
+  Registro de peso, Add pet, Add reminder, Pairing): tienen el mismo fallo
+  (§Enmienda E1), pero E1 solo arregla el editor. El resto va en
+  §Deuda candidata.
 
 ### Deuda candidata (para registrar en `feature_list.json` al cerrar, si el humano quiere)
 
 - La suma de `SCREEN_FILES` sigue creciendo a mano.
 - `GEOFENCE_MAX_PER_PET` es un espejo a mano del backend (R12, D11): ningún
   test cruza los dos paquetes.
+- **Teclado en toda la app** (E1). Con edge-to-edge, ninguna pantalla con
+  inputs deja alcanzable su acción principal con el teclado abierto. El
+  diagnóstico y los dos caminos están en
+  `progress/explore_mobile-geofence-editor-keyboard.md` §3–§4: un
+  `KeyboardAvoidingView` por pantalla, como E1, o `react-native-keyboard-controller`,
+  que exige dependencia nueva y dev build nuevo. Conviene codificar la regla
+  en `docs/ui-guidelines.md`, que hoy no dice nada del teclado.
 
 ## Coordinación con otras sesiones
 
@@ -1467,7 +1487,13 @@ salvo en el paso 10. iOS queda fuera (§Coordinación).
 - **Primer `invalidateQueries` de `src/`.** No hay precedente en el árbol; la
   forma está fijada en R8 y su orden frente a `router.back()` lo asevera R8
   it 1 (M8).
-- **Teclado** sobre el formulario: solo prueba de humo (paso 9).
+- **Teclado** sobre el formulario (E1). El cálculo del `KeyboardAvoidingView`
+  depende de que `screenY` (`getWindowVisibleDisplayFrame().bottom`) excluya
+  el teclado bajo edge-to-edge. RN 0.86 lo usa así, pero solo el paso 9 lo
+  confirma. Si el padding se queda corto o se pasa en el teléfono, el plan B
+  es un `Keyboard.addListener` propio con
+  `paddingBottom = e.endCoordinates.height + insets.bottom` (opción D del
+  explore), y eso pediría otra enmienda.
 - **#60 aparcada:** iOS sin verificar (§Coordinación).
 - **Choques en candados compartidos** (catálogo, §2.16, `R15_…`, A19):
   §Coordinación.
@@ -1487,6 +1513,123 @@ salvo en el paso 10. iOS queda fuera (§Coordinación).
   saltar el escaneo de literales de `#65 R18`. Todo el copy va por `t(…)`, así
   que no se espera; si salta, Codex para y lo reporta.
 
+## Enmienda E1 — el formulario se aparta del teclado (paso 9)
+
+### El hecho medido
+
+El 2026-10-02 la prueba de humo pasó salvo el paso 9: con el teclado
+abierto, el formulario no se desplaza y Guardar queda inalcanzable. El
+humano comprobó que Login y Registro de peso fallan igual. La causa está en
+`progress/explore_mobile-geofence-editor-keyboard.md` §1. El manifest pide
+`adjustResize`, pero RN 0.86 activa edge-to-edge con targetSdk 35 o más, y
+con él Android ya no encoge la vista raíz cuando sale el teclado: solo
+manda el inset del IME y emite `keyboardDidShow`. Ninguna pantalla consume
+ese inset.
+
+El humano decidió arreglarlo dentro de #146 y solo en el editor. El resto
+de la app va como deuda candidata (§Fuera de alcance).
+
+### E1.1 — la raíz del formulario es un `KeyboardAvoidingView`
+
+Es el cambio de R6 §Formulario, raíz. Solo JS: no añade dependencias ni
+pide dev build nuevo.
+
+- `behavior="padding"` en las dos plataformas, sin `Platform.OS`. La guía
+  de Expo recomienda `undefined` en Android, pero ese consejo da por hecho
+  que la ventana se redimensiona, y con `behavior` sin definir el
+  `KeyboardAvoidingView` es un `View` que no hace nada (explore §1, aviso).
+- `keyboardVerticalOffset={headerHeight}`. El `frame` del componente es
+  relativo al padre y `screenY` va en coordenadas de ventana: sin el offset,
+  el padding se queda corto en la altura de la cabecera, que es justo la
+  franja donde cae Guardar.
+- `headerHeight` sale de `useContext(HeaderHeightContext)`, no de
+  `useHeaderHeight()`. `useHeaderHeight` lanza un error fuera de un
+  navegador, y los tests montan la pantalla sin él. El stack nativo de
+  expo-router provee ese mismo contexto
+  (`expo-router/build/react-navigation/native-stack/views/NativeStackView.native.js`,
+  `HeaderHeightContext.Provider`). Sin navegador vale `undefined`, y el
+  `KeyboardAvoidingView` lo trata como 0: no hace falta `?? 0`.
+- **Decisión de producto (P-E1).** Con el teclado abierto, el mapa
+  (`flex-1`) cede el alto primero y puede quedar en 0 o casi 0 mientras se
+  escribe el nombre. *Recomendación:* aceptarlo, sin alto mínimo. Mientras
+  se escribe, el mapa no se usa, y un alto mínimo podría devolver Guardar a
+  debajo del teclado en pantallas bajas. Al cerrar el teclado, el mapa
+  vuelve.
+
+### E1.2 — el test: se refuerza R6 it 18, sin `it` nuevo
+
+El recuento no cambia: editor **68**, total **+142 tests, +2 suites**.
+[[design]] §Delta de tests y [[tasks]] no se tocan.
+
+1. **`mount()`** envuelve los `children` de su `Wrapper` en
+   `<HeaderHeightContext.Provider value={91}>`, con `HeaderHeightContext`
+   importado de `'expo-router/react-navigation'`. Así queda cada test como en
+   la app, donde la cabecera siempre provee su altura.
+2. **R6 it 18**
+   (`'compone mapa y formulario sin fondo sobre el mapa y con las métricas A11 en el formulario'`)
+   añade al final, tras sus aserciones actuales:
+
+   ```tsx
+   expect(root).toHaveStyle({ paddingBottom: 0 });
+   await fireEvent(root, 'layout', { persist() {}, nativeEvent: { layout: { x: 0, y: 0, width: 400, height: 700 } } });
+   await act(async () => {
+     DeviceEventEmitter.emit('keyboardWillShow', {
+       startCoordinates: { screenX: 0, screenY: 800, width: 400, height: 0 },
+       endCoordinates: { screenX: 0, screenY: 500, width: 400, height: 300 },
+       duration: 0, easing: 'keyboard', isEventFromThisApp: true,
+     });
+   });
+   await waitFor(() => expect(screen.getByTestId('screen-geofence-editor')).toHaveStyle({ paddingBottom: 291 }));
+   ```
+
+   `act`, `fireEvent` y `waitFor` vienen de `@testing-library/react-native`
+   y `DeviceEventEmitter` de `'react-native'`. Por qué cada pieza:
+
+   - **`291`** = `frame.y + frame.height − (screenY − offset)` = 0 + 700 −
+     (500 − 91). Sin el offset daría 200.
+   - **`'keyboardWillShow'`**: jest-expo corre con `Platform.OS === 'ios'`, y
+     en iOS el `KeyboardAvoidingView` escucha `keyboardWillShow`. En Android
+     escucha `keyboardDidShow` y hace la misma cuenta.
+   - **`persist() {}`**: el `onLayout` del `KeyboardAvoidingView` llama a
+     `event.persist()`.
+   - **La espera** cumple `docs/conventions.md` §Esperas: espera al árbol
+     renderizado, porque el cálculo es asíncrono, y vuelve a consultar el nodo
+     dentro de `waitFor`.
+
+   El leader lo midió el 2026-10-02 con una sonda aislada, RNTL 14.0.1 y
+   RN 0.86.2: `paddingBottom` 0 antes del evento y 291 después. RNTL 14 ya no
+   tiene `UNSAFE_getByType`, así que las props del componente compuesto no
+   se pueden leer. Se asevera su efecto en el nodo host.
+
+### E1.3 — rojo y mutaciones
+
+- **Rojo real.** Con la raíz `View` de hoy, it 18 cae **por aserción** en
+  `toHaveStyle({ paddingBottom: 0 })`: el `View` no tiene `paddingBottom`.
+  Solo ese `it` pasa a rojo: editor 67/68.
+- **Mutaciones** que Codex planta y revierte tras el verde. Cada una debe
+  dejar el editor en **67/68, con it 18 cayendo por aserción**:
+
+  | Id | Mutación en `index.tsx` | Dónde cae it 18 |
+  |---|---|---|
+  | E1-a | quitar `behavior="padding"` | `paddingBottom: 0` (no hay clave) |
+  | E1-b | `keyboardVerticalOffset={0}` | `paddingBottom: 291` (llega 200) |
+  | E1-c | quitar el prop `keyboardVerticalOffset` | `paddingBottom: 291` (llega 200) |
+  | E1-d | `behavior="height"` | `paddingBottom: 0` (no hay clave) |
+
+- **Commits**, test primero:
+  - `test(geofences): lock the keyboard padding of the editor root (R6, E1)`,
+    con el `mount()` y it 18 en rojo;
+  - `feat(geofences): keep the editor form above the keyboard (R6, E1)`;
+  - un `docs(geofences): …` que cita los dos en la fila R6 de
+    [[traceability]].
+
+### E1.4 — prueba de humo
+
+Se repite **solo el paso 9**, en el dev build de Android: no hace falta
+rebuild, basta recargar el bundle. Además, con el teclado cerrado, el mapa
+vuelve a su alto y tocar el mapa sigue moviendo el centro, como en el paso 8.
+La casilla está en §Aprobación.
+
 ## Aprobación
 
 > Tres casillas, tres gates (lección `gate-humano-sin-casilla-donde-firmar`):
@@ -1502,3 +1645,12 @@ salvo en el paso 10. iOS queda fuera (§Coordinación).
 ### Aprobación de la spec
 
 - [x] Aprobado por humano (fecha: 2026-10-02) ← gate obligatorio antes de implementar
+
+### Enmienda E1 — teclado sobre el formulario (2026-10-02)
+
+Dos casillas más. La primera autoriza a Codex a implementar E1 y firma
+P-E1. La segunda cierra la feature junto con la de §Prueba de humo, que
+el humano ya marcó con el paso 9 pendiente.
+
+- [ ] Enmienda E1 aprobada por humano, P-E1 incluida (fecha: ____)
+- [ ] Paso 9 repetido y superado tras E1, en el dev build de Android (fecha: ____)
