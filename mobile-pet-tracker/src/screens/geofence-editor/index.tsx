@@ -7,8 +7,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUniwind } from 'uniwind';
 
 import { createGeofence, deleteGeofence, listGeofences, setGeofenceActive, updateGeofence, type Geofence, type GeofenceSaveState, type GeofenceWriteState } from '../../api/geofences';
+import { getPet } from '../../api/pets';
 import { getLastPosition } from '../../api/positions';
-import { geofenceKeys, positionKeys } from '../../api/query-keys';
+import { geofenceKeys, petKeys, positionKeys } from '../../api/query-keys';
 import { Card } from '../../components/card';
 import { DEFAULT_CENTER, PetMap, type MapCoordinates } from '../../components/pet-map';
 import { useAuth } from '../../providers/auth-provider';
@@ -42,9 +43,11 @@ export function GeofenceEditorScreen({ petId, geofenceId }: { petId: string; geo
     queryFn: () => getLastPosition(baseUrl, token ?? '', petId),
     enabled: !geofenceId,
   });
+  const pet = useQuery({ queryKey: petKeys.detail(petId), queryFn: () => getPet(baseUrl, token ?? '', petId) });
+  const isOwner = pet.data?.kind === 'ok' && pet.data.pet.myRole === 'owner';
   const zone = list.data?.kind === 'ok' ? list.data.geofences.find(({ id }) => id === geofenceId) : undefined;
   let content;
-  if (list.data === undefined || (!geofenceId && position.data === undefined)) {
+  if (list.data === undefined || (!geofenceId && position.data === undefined) || pet.data === undefined) {
     content = <Skeleton testID="geofence-editor-loading" className="h-24 w-full rounded-card" />;
   } else if (list.data.kind === 'no-tracking') {
     content = <Card testID="geofence-editor-no-tracking" className="items-center py-8">
@@ -63,10 +66,14 @@ export function GeofenceEditorScreen({ petId, geofenceId }: { petId: string; geo
     content = <Card testID="geofence-editor-not-found" className="items-center py-8">
       <Text className="text-center font-normal text-muted">{messageFor(t, 'not-found')}</Text>
     </Card>;
+  } else if (!geofenceId && !isOwner) {
+    content = <Card testID="geofence-editor-owner-only" className="items-center py-8">
+      <Text className="text-center font-normal text-muted">{t('geofenceEditor.ownerOnly')}</Text>
+    </Card>;
   } else {
     const last = position.data?.kind === 'ok' ? position.data.position : null;
     return <GeofenceEditorForm
-      petId={petId} zone={zone} geofences={list.data.geofences}
+      petId={petId} readOnly={!isOwner} zone={zone} geofences={list.data.geofences}
       initialName={zone?.name ?? ''} initialRadius={zone?.radiusM ?? 150}
       initialCenter={zone ? { latitude: zone.centerLat, longitude: zone.centerLng } : last ? { latitude: last.lat, longitude: last.lng } : DEFAULT_CENTER}
     />;
@@ -78,8 +85,8 @@ export function GeofenceEditorScreen({ petId, geofenceId }: { petId: string; geo
   </ScrollView>;
 }
 
-function GeofenceEditorForm({ petId, zone, geofences, initialName, initialCenter, initialRadius }: {
-  petId: string; zone?: Geofence; geofences: Geofence[]; initialName: string; initialCenter: MapCoordinates; initialRadius: number;
+function GeofenceEditorForm({ petId, readOnly, zone, geofences, initialName, initialCenter, initialRadius }: {
+  petId: string; readOnly: boolean; zone?: Geofence; geofences: Geofence[]; initialName: string; initialCenter: MapCoordinates; initialRadius: number;
 }) {
   const t = useTranslate();
   const insets = useSafeAreaInsets();
@@ -94,8 +101,8 @@ function GeofenceEditorForm({ petId, zone, geofences, initialName, initialCenter
   const [radius, setRadius] = useState(initialRadius);
   const [camera, setCamera] = useState({ center: initialCenter, zoom: zoomForRadius(initialRadius) });
   const circles = geofences.map(({ id, centerLat, centerLng, radiusM }) => ({
-    id, center: id === zone?.id ? center : { latitude: centerLat, longitude: centerLng },
-    radius: id === zone?.id ? radius : radiusM,
+    id, center: id === zone?.id && !readOnly ? center : { latitude: centerLat, longitude: centerLng },
+    radius: id === zone?.id && !readOnly ? radius : radiusM,
   }));
   if (!zone) circles.push({ id: 'draft', center, radius });
 
@@ -128,17 +135,20 @@ function GeofenceEditorForm({ petId, zone, geofences, initialName, initialCenter
 
   return <View testID="screen-geofence-editor" className="flex-1">
     <View testID="geofence-editor-map" className="flex-1">
-      <PetMap onPress={setCenter} center={camera.center} zoom={camera.zoom} marker={null} polylines={[]} circles={circles} colorScheme={theme === 'dark' ? 'dark' : 'light'} />
+      <PetMap onPress={readOnly ? undefined : setCenter} center={readOnly ? initialCenter : camera.center} zoom={readOnly ? zoomForRadius(initialRadius) : camera.zoom} marker={null} polylines={[]} circles={circles} colorScheme={theme === 'dark' ? 'dark' : 'light'} />
     </View>
     <ScrollView testID="geofence-editor-form" className="bg-background"
       style={{ flexGrow: 0, flexShrink: 1 }} keyboardShouldPersistTaps="handled"
       contentContainerStyle={{ padding: 24, gap: 16, paddingBottom: insets.bottom + 24 }}>
+      {readOnly ? <Text testID="geofence-editor-name-text" selectable className="font-bold text-foreground">{zone?.name}</Text> : <>
       <TextField>
         <Label className="text-xs font-semibold text-foreground">{t('geofenceEditor.nameLabel')}</Label>
         <Input testID="geofence-editor-name" className="rounded-xl bg-default" maxLength={120} value={name} onChangeText={setName} />
       </TextField>
       <Text testID="geofence-editor-map-hint" className="text-sm font-normal text-muted">{t('geofenceEditor.mapHint')}</Text>
-      <Text testID="geofence-editor-radius-value" selectable style={TABULAR_NUMS} className="font-bold text-foreground">{t('geofences.radius', { meters: Math.round(radius) })}</Text>
+      </>}
+      <Text testID="geofence-editor-radius-value" selectable style={TABULAR_NUMS} className="font-bold text-foreground">{t('geofences.radius', { meters: Math.round(readOnly ? initialRadius : radius) })}</Text>
+      {readOnly ? <Text testID="geofence-editor-read-only" className="text-sm font-normal text-muted">{t('geofenceEditor.ownerOnly')}</Text> : <>
       <Slider testID="geofence-editor-radius" value={radius} minValue={20} maxValue={2000} step={10}
         onChange={(v) => setRadius(Array.isArray(v) ? v[0] : v)}
         onChangeEnd={(v) => setCamera({ center, zoom: zoomForRadius(Array.isArray(v) ? v[0] : v) })}>
@@ -165,6 +175,7 @@ function GeofenceEditorForm({ petId, zone, geofences, initialName, initialCenter
         <Button.Label className="font-semibold text-danger">{t('geofences.delete')}</Button.Label>
       </Button> : null}
       {error ? <Text testID="geofence-editor-error" selectable className="text-danger">{error}</Text> : null}
+      </>}
     </ScrollView>
   </View>;
 }
