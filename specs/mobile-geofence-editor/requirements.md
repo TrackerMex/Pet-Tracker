@@ -102,6 +102,15 @@ aprobado en #41.
     esas acciones (errata E8): las añade el editor.
     *Recomendación*: aceptar; sin ellas el radio no es accesible.
 
+11. **P11 — TODO**
+12. **P12 — TODO**
+13. **P13 — TODO**
+14. **P14 — TODO**
+15. **P15 — TODO**
+16. **P16 — TODO**
+17. **P17 — TODO**
+18. **P18 — TODO**
+
 **Delimitación de rol:** el editor no comprueba el rol. Solo el dueño ve las
 entradas (R9); si otro rol llegase por URL, el backend responde 403 y el
 editor pinta el error genérico.
@@ -685,6 +694,38 @@ editor pinta el error genérico.
   (`const retryKey = 'common.retry' as const;` y `t(retryKey)` en el
   editor) y el verde la revierte. Recuento: 1 rojo por aserción + `#65 R18`
   heredado.
+
+### R11 — Pestaña Mapa: círculos de las zonas
+
+TODO
+
+### R12 — Lista: límite de 5 zonas en el cliente
+
+TODO
+
+### R13 — Editor: activar y desactivar
+
+TODO
+
+### R14 — Editor: eliminar
+
+TODO
+
+### R15 — `isGeofence` valida el centro
+
+TODO
+
+### R16 — Editor: solo lectura para quien no es dueño
+
+TODO
+
+### R17 — `DEFAULT_CENTER` en un solo sitio
+
+TODO
+
+### R18 — El editor entra en los contadores de `TABULAR_NUMS`
+
+TODO
 
 ## Enmiendas a docs (gate propio)
 

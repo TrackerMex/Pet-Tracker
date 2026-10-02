@@ -235,6 +235,38 @@ el rojo se fabrica con la mutación M13 y el verde la quita.
   - Revierte M13: vuelve `t('common.retry')`.
   - Mismo comando + CANDADOS → `exit=0`; tsc y lint en `exit=0`.
 
+## R11 — Pestaña Mapa: círculos de las zonas
+
+TODO
+
+## R12 — Lista: límite de 5 zonas en el cliente
+
+TODO
+
+## R13 — Editor: activar y desactivar
+
+TODO
+
+## R14 — Editor: eliminar
+
+TODO
+
+## R15 — `isGeofence` valida el centro
+
+TODO
+
+## R16 — Editor: solo lectura para quien no es dueño
+
+TODO
+
+## R17 — `DEFAULT_CENTER` en un solo sitio
+
+TODO
+
+## R18 — El editor entra en los contadores de `TABULAR_NUMS`
+
+TODO
+
 ## Cierre
 
 - [ ] Suite completa, sin pipe:

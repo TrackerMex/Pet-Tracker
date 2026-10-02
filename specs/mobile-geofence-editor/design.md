@@ -132,6 +132,18 @@ sigue pudiendo copiarlo. Cambia una aserción aprobada de #41 R5 (D8 fila 8).
 tarjetas y guardado). Así cada clave aparece una sola vez como `t('…')` y el
 candado de R10 cuenta 14 usos en el editor sin duplicados.
 
+### D10 — Pestaña Mapa: TODO
+
+### D11 — Límite de 5: TODO
+
+### D12 — Interruptor y Eliminar en el editor: TODO
+
+### D13 — Rol en el editor: TODO
+
+### D14 — `DEFAULT_CENTER`: TODO
+
+### D15 — Títulos de test sin número: TODO
+
 ## Erratas sobre la entrada de feature_list (E1–E13)
 
 | # | La entrada dice / supone | Lo que hay en `95b2aaa4` y cómo lo trata la spec |
@@ -313,6 +325,8 @@ no una fila que falte):
 - `#41 R10`: `R14_GEOFENCES` sigue con 18 filas y sin tocar. Las dos claves
   nuevas de la lista (`geofenceEditor.editLabel`, `geofenceEditor.add`) van
   en `R15_GEOFENCE_EDITOR` con las del editor ([[requirements]] R10).
+
+TODO D8: filas nuevas de la ampliación (R11–R18, títulos).
 
 ## Delta de tests
 

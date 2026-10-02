@@ -22,6 +22,14 @@ de refactor si lo hubo), con hash corto y mensaje.
 | R8 | `src/screens/geofence-editor/index.test.tsx::#146 R8: Guardar crea o actualiza la zona y vuelve a la lista` | pendiente |
 | R9 | `src/screens/geofences/index.test.tsx::#146 R9: el dueño entra al editor desde la lista` | pendiente |
 | R10 | `src/__tests__/ui-language.test.ts::#146 R10: el editor de zonas resuelve su copy por clave` | pendiente |
+| R11 | TODO | pendiente |
+| R12 | TODO | pendiente |
+| R13 | TODO | pendiente |
+| R14 | TODO | pendiente |
+| R15 | TODO | pendiente |
+| R16 | TODO | pendiente |
+| R17 | TODO | pendiente |
+| R18 | TODO | pendiente |
 | Enmienda A19 | `src/__tests__/hero-header-amendments.test.ts` sigue verde; `grep -c 'enmienda A19 de #146'` da 1 en cada doc | pendiente |
 
 Las aserciones heredadas que cambian ([[design]] D8) viajan en el commit
