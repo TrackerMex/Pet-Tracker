@@ -1,4 +1,4 @@
-import { deleteJson, getJson, postJson, readJson } from './http';
+import { deleteJson, getJson, patchJson, postJson, readJson } from './http';
 import type { NutritionPlan, NutritionProfile } from './types';
 
 export type NutritionProfileState =
@@ -297,4 +297,22 @@ export async function addMealTime(
   return result.kind === 'unreachable'
     ? result
     : editMealTimeState(result.response, 201);
+}
+
+
+export async function moveMealTime(
+  baseUrl: string | undefined,
+  token: string,
+  petId: string,
+  from: string,
+  to: string,
+  fetchFn: typeof fetch = fetch,
+): Promise<EditMealTimeState> {
+  if (!baseUrl) return { kind: 'missing-config' };
+  const result = await patchJson(
+    baseUrl, `/pets/${petId}/meal-times/${from}`, token, { mealTime: to }, fetchFn,
+  );
+  return result.kind === 'unreachable'
+    ? result
+    : editMealTimeState(result.response, 200);
 }
