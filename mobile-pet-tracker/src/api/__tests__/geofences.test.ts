@@ -48,7 +48,7 @@ describe('#41 R2: listGeofences mapea la lista por kind', () => {
   it.each([
     ['invalid JSON', invalidJsonResponse(200)],
     ['an object instead of an array', response(200, {})],
-    ['an item without name', response(200, [{ id: 'zone-1', radiusM: 150, active: true }])],
+    ['an item without name', response(200, [Object.fromEntries(Object.entries(makeGeofence('zone-1')).filter(([key]) => key !== 'name'))])],
     ['a string radiusM', response(200, [{ ...makeGeofence('zone-1'), radiusM: '150' }])],
     ['a string active', response(200, [{ ...makeGeofence('zone-1'), active: 'true' }])],
     ['a null item', response(200, [null])],
@@ -177,5 +177,16 @@ describe('#146 R4: createGeofence y updateGeofence mapean el guardado por kind',
     await expect(createGeofence(url, 'jwt-token', 'pet-1', draft, fetchFn)).resolves.toEqual({ kind: 'missing-config' });
     await expect(updateGeofence(url, 'jwt-token', 'pet-1', 'zone-1', draft, fetchFn)).resolves.toEqual({ kind: 'missing-config' });
     expect(fetchFn).not.toHaveBeenCalled();
+  });
+});
+
+describe('#146 R15: listGeofences rechaza una zona sin centro numérico', () => {
+  it.each([
+    ['a string centerLat', { ...makeGeofence('zone-1'), centerLat: '19.4' }],
+    ['a missing centerLng', Object.fromEntries(Object.entries(makeGeofence('zone-1')).filter(([key]) => key !== 'centerLng'))],
+    ['a null centerLat', { ...makeGeofence('zone-1'), centerLat: null }],
+  ])('maps %s to error', async (_name, zone) => {
+    const fetchFn = jest.fn().mockResolvedValue(response(200, [zone]));
+    await expect(listGeofences(baseUrl, 'jwt-token', 'pet-1', fetchFn)).resolves.toEqual({ kind: 'error' });
   });
 });
