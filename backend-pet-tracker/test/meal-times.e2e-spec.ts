@@ -7,12 +7,12 @@ import { App } from 'supertest/types';
 import { uuidv7 } from 'uuidv7';
 import { DRIZZLE } from '@/db/drizzle.constants';
 import { auditLog } from '@/db/schema/audit-log.schema';
-import { nutritionPlans } from '@/db/schema/nutrition.schema';
-import { pets } from '@/db/schema/pets.schema';
+import { mealServings, nutritionPlans } from '@/db/schema/nutrition.schema';
+import { pets, petUsers } from '@/db/schema/pets.schema';
 import { users } from '@/db/schema/users.schema';
 import { TOKEN_SERVICE } from '@/modules/auth/domain/ports/token-service';
 import type { TokenService } from '@/modules/auth/domain/ports/token-service';
-import { localDayOf } from '@/pipeline/local-day';
+import { localDayOf, shiftDay } from '@/pipeline/local-day';
 import { AppModule } from '../src/app.module';
 
 describe('Meal schedule editing (e2e)', () => {
@@ -333,6 +333,89 @@ describe('Meal schedule editing (e2e)', () => {
       }).expect(200);
       expect(next.body).toMatchObject({ mealTimes: ['06:00', '08:15'] });
       expect(await plansOf(pet.id)).toHaveLength(3);
+    });
+  });
+
+  const serveMeal = (
+    user: UserFixture,
+    petId: string,
+    body: Record<string, unknown>,
+  ) => api().post(`/v1/pets/${petId}/meals`).set(auth(user.token)).send(body);
+  const getPlan = (user: UserFixture, petId: string) =>
+    api().get(`/v1/pets/${petId}/nutrition-plan`).set(auth(user.token));
+  const addMember = (
+    petId: string,
+    userId: string,
+    role: 'family' | 'walker',
+  ) => db.insert(petUsers).values({ petId, userId, role, status: 'active' });
+  const insertServing = (
+    petId: string,
+    createdBy: string,
+    servedOn: string,
+    mealTime: string,
+  ) =>
+    db
+      .insert(mealServings)
+      .values({ id: uuidv7(), petId, createdBy, servedOn, mealTime })
+      .returning();
+  const servingsOf = (petId: string) =>
+    db
+      .select()
+      .from(mealServings)
+      .where(eq(mealServings.petId, petId))
+      .orderBy(asc(mealServings.servedOn), asc(mealServings.mealTime));
+
+  describe('R5 (meal-schedule-editing #103): la servida de hoy se mueve con su franja y los dias pasados no', () => {
+    it('mueve la de hoy en los dos extremos de zona y deja la de ayer', async () => {
+      for (const [index, timezone] of [
+        'Pacific/Kiritimati',
+        'Pacific/Pago_Pago',
+      ].entries()) {
+        const owner = await seedUser(`r5-owner-${index}`, timezone);
+        const family = await seedUser(`r5-family-${index}`);
+        const pet = await seedPet(owner);
+        await seedPlan(owner, pet.id, timezone);
+        await addMember(pet.id, family.id, 'family');
+        await serveMeal(family, pet.id, { mealTime: '07:30' }).expect(201);
+        const [today] = await servingsOf(pet.id);
+        expect(today.createdBy).toBe(family.id);
+        const [yesterday] = await insertServing(
+          pet.id,
+          owner.id,
+          shiftDay(localDayOf(Date.now(), timezone), -1),
+          '07:30',
+        );
+        await moveMealTime(owner, pet.id, '07:30', {
+          mealTime: '08:15',
+        }).expect(200);
+        expect(await servingsOf(pet.id)).toEqual([
+          yesterday,
+          { ...today, mealTime: '08:15' },
+        ]);
+        expect((await getPlan(owner, pet.id).expect(200)).body).toMatchObject({
+          servedToday: ['08:15'],
+        });
+        expect(
+          (
+            await api()
+              .get(`/v1/pets/${pet.id}`)
+              .set(auth(owner.token))
+              .expect(200)
+          ).body,
+        ).toHaveProperty('mealsToday', { served: 1, total: 2 });
+      }
+    });
+
+    it('sin servida de hoy en el origen no cambia ninguna fila', async () => {
+      const owner = await seedUser('r5-absent');
+      const pet = await seedPet(owner);
+      await seedPlan(owner, pet.id);
+      await serveMeal(owner, pet.id, { mealTime: '07:30' }).expect(201);
+      const before = await servingsOf(pet.id);
+      await moveMealTime(owner, pet.id, '19:30', { mealTime: '21:00' }).expect(
+        200,
+      );
+      expect(await servingsOf(pet.id)).toEqual(before);
     });
   });
 });
