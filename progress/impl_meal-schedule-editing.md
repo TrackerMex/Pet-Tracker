@@ -3281,3 +3281,213 @@ los hashes de la ronda 1. Los cuatro commits de código siguen el orden y los
 mensajes literales del handoff; la producción tiene diff neto cero contra H1.
 Las observaciones N1-N6 quedan fuera de esta ronda. No se hace rebase,
 amend, push ni PR. Bookkeeping y gate completo permanecen con el leader.
+
+## Ronda 3
+
+Identidad inicial, antes de cambios de código:
+
+```text
+$ git branch --show-current
+feature/103-meal-schedule-editing
+$ git rev-parse HEAD
+3465f9dfbd5be2d58c3269d4b5ccf6324d999356
+$ git log --oneline -3
+3465f9df docs(spec): amend #103 with round-3 lock for B3 (E4)
+42d161cc docs(meal-schedule-editing): fill #103 traceability round 2
+888e07a6 feat(meal-schedule-editing): restore pet filter on serving delete after R5 lock (R5)
+$ git rev-parse HEAD^
+42d161ccccb2de02d87ab6fe203297ca1a8337e8
+```
+
+H2 = `3465f9dfbd5be2d58c3269d4b5ccf6324d999356`; branch y padre
+coinciden con el handoff E4. Árbol inicial limpio. Se continúa solo #103,
+todavía `in_progress`, con el candado B3 aprobado. Plan: añadir R5 `it` 4
+y versionar la mutación mínima del `notExists`, medir el rojo exacto,
+restaurar producción, medir el verde y completar la trazabilidad.
+Se respeta la excepción expresa del handoff: no `./init.sh`, E2E completo,
+push, PR ni bookkeeping del leader. Skill Ponytail aplicada solo al backend.
+
+Control inicial de entorno (sin imprimir credenciales):
+
+```text
+$ pgrep -af 'init\.sh|test:e2e|jest-e2e' | grep -v pgrep
+(sin salida; exit=1, ningún proceso)
+base=pet_tracker host=localhost port=5433
+DATABASE_URL heredada=ausente
+journal=19
+$ docker exec pet-tracker-postgres psql -U pet_tracker -d pet_tracker -Atc 'select count(*) from drizzle.__drizzle_migrations'
+19
+$ docker exec pet-tracker-postgres psql -U pet_tracker -d pet_tracker -Atc "select column_name, data_type, is_nullable from information_schema.columns where table_name = 'nutrition_plans' and column_name = 'engine_meals_per_day'"
+engine_meals_per_day|integer|YES
+```
+
+0018 ya está aplicada; las lecturas no modifican Postgres. No se exporta
+`DATABASE_URL` ni se modifica `.env`. El `it` 4 entra justo después del
+`it` 3 existente, con el código de referencia de E4. La única mutación de
+producción elimina el `servedOn` interior del `notExists`; se mantienen
+los filtros de día del UPDATE exterior y del DELETE.
+
+### Rojo B3 — paso (1)
+
+Comandos desde `backend-pet-tracker/`, sin pipe, con redirección a
+`/tmp/pt103-r3-red-<etiqueta>.log`, captura inmediata de `$?` y
+`echo "exit=$meal103_exit"`. El `pgrep` previo a cada E2E salió vacío.
+
+```text
+$ pnpm lint
+exit=0
+> eslint "{src,apps,libs,test}/**/*.ts" --fix
+$ pnpm exec jest --config ./test/jest-e2e.json test/meal-times.e2e-spec.ts
+exit=1
+FAIL test/meal-times.e2e-spec.ts
+  ● Meal schedule editing (e2e) › R5 (meal-schedule-editing #103): la servida de hoy se mueve con su franja y los dias pasados no › una servida de otro dia en el destino no bloquea el movimiento
+
+    expect(received).toEqual(expected) // deep equality
+    - Expected  - 8
+    + Received  + 0
+
+    @@ -5,14 +5,6 @@
+          "mealTime": "08:15",
+          "petId": "01a0fdf7-1fe2-7023-82e7-5c4675fef9e6",
+          "servedAt": 2026-10-02T18:53:46.375Z,
+          "servedOn": "2026-10-01",
+        },
+    -   Object {
+    -     "createdBy": "01a0fdf7-1fdd-7204-8e01-fd0325bd4dcc",
+    -     "id": "01a0fdf7-200f-76ae-9ba4-a6a0feb1603c",
+    -     "mealTime": "08:15",
+    -     "petId": "01a0fdf7-1fe2-7023-82e7-5c4675fef9e6",
+    -     "servedAt": 2026-10-02T18:53:46.384Z,
+    -     "servedOn": "2026-10-02",
+    -   },
+      ]
+
+    > 457 |       expect(await servingsOf(pet.id)).toEqual([
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 23 passed, 24 total
+$ pnpm exec jest --config ./test/jest-e2e.json test/meals.e2e-spec.ts test/nutrition.e2e-spec.ts
+exit=0
+Test Suites: 2 passed, 2 total
+Tests:       45 passed, 45 total
+```
+
+Único rojo: el `toEqual` final del `it` 4. La fila de ayer permanece en
+`08:15` y falta la de hoy; no hay fallos por HTTP, consulta o timeout.
+
+Commit rojo B3: `eff86580e75ba3f115614533bc761560740dbae2` —
+`test(meal-schedule-editing): lock today-only destination check on serving move (R5)`.
+Solo versiona el test (+21 líneas) y la mutación de producción (-1 línea).
+Este reporte permanece fuera del índice hasta el commit de documentación.
+
+### Verde B3 — paso (2)
+
+Restauración exacta desde el padre del rojo, sin tocar el índice:
+
+```text
+$ git show eff86580^:backend-pet-tracker/src/modules/nutrition/infrastructure/repositories/nutrition.drizzle.repository.ts > backend-pet-tracker/src/modules/nutrition/infrastructure/repositories/nutrition.drizzle.repository.ts
+exit=0
+$ git diff --exit-code eff86580^ -- backend-pet-tracker/src/modules/nutrition/infrastructure/repositories/nutrition.drizzle.repository.ts
+(sin salida; exit=0)
+```
+
+Se restaura únicamente `eq(mealServings.servedOn, move.servedOn)` dentro
+del `notExists`. Medidas del verde, desde `backend-pet-tracker/`, sin pipe;
+logs `/tmp/pt103-r3-green-{mt,nut,tsc,lint}.log`. El `pgrep` previo a cada
+E2E sigue vacío.
+
+```text
+$ pnpm exec jest --config ./test/jest-e2e.json test/meal-times.e2e-spec.ts
+exit=0
+Test Suites: 1 passed, 1 total
+Tests:       24 passed, 24 total
+$ pnpm exec jest --config ./test/jest-e2e.json test/meals.e2e-spec.ts test/nutrition.e2e-spec.ts
+exit=0
+Test Suites: 2 passed, 2 total
+Tests:       45 passed, 45 total
+$ pnpm exec tsc --noEmit
+(sin salida; exit=0)
+$ pnpm lint
+exit=0
+> eslint "{src,apps,libs,test}/**/*.ts" --fix
+```
+
+Commit verde B3: `f3254d701ac8d730c1b65c15c081243324dada19` —
+`feat(meal-schedule-editing): restore served_on in destination check after R5 lock (R5)`.
+Solo versiona la restauración de la línea eliminada en el rojo.
+
+Diff requerido, medido después del commit verde:
+
+```text
+$ git diff --exit-code eff86580^ HEAD -- backend-pet-tracker/src/modules/nutrition/infrastructure/repositories/nutrition.drizzle.repository.ts
+(sin salida)
+exit=0
+$ git diff --exit-code 3465f9df HEAD -- backend-pet-tracker/src/modules/nutrition/infrastructure/repositories/nutrition.drizzle.repository.ts
+(sin salida)
+exit=0
+```
+
+Producción restaurada exactamente; diff neto cero contra el padre del rojo
+y contra H2. No se cambian los hashes ni el código de las rondas 1 y 2.
+
+### Evidencia y alcance — pasos (3) y (4)
+
+Suite unitaria final medida sobre el verde commiteado, sin pipe, en
+`/tmp/pt103-r3-final-unit.log`:
+
+```text
+$ pnpm test
+exit=0
+Test Suites: 174 passed, 174 total
+Tests:       1335 passed, 1335 total
+```
+
+Recuentos finales: unit 174 / 1335 (sin cambio); `<e2e-mt>` 24 tests
+(+1 desde H2); `<e2e-nut>` 2 / 45 (sin cambio). `tsc` y `lint` tienen
+exit 0, como se registra en el verde. No hay sondas nuevas en esta ronda.
+
+Control de la lista cerrada desde H2, sobre el verde B3 antes del commit
+de documentación, y sobre el árbol preparado con sus dos documentos:
+
+```text
+$ git diff --name-only 3465f9df HEAD
+backend-pet-tracker/test/meal-times.e2e-spec.ts
+exit=0
+$ git diff --name-only 3465f9df
+backend-pet-tracker/test/meal-times.e2e-spec.ts
+progress/impl_meal-schedule-editing.md
+specs/meal-schedule-editing/traceability.md
+exit=0
+$ git diff --check
+(sin salida; exit=0)
+$ git status --short
+ M progress/impl_meal-schedule-editing.md
+ M specs/meal-schedule-editing/traceability.md
+```
+
+El repositorio de producción está permitido en la lista cerrada, pero no
+aparece en el diff final porque el verde revierte íntegramente el rojo.
+El commit `docs(meal-schedule-editing): fill #103 traceability round 3`
+lleva solo este reporte y la fila R5 de `traceability.md`: conserva los
+hashes de las rondas 1 y 2 y añade los dos de ronda 3 (E4).
+
+El E2E completo esperado por E4 (31 ficheros / 431 tests) y `./init.sh`
+siguen **delegados al leader**; no se declaran ejecutados ni se marca #103
+`done`. Tampoco se hace push, PR, rebase ni amend. Las observaciones N1-N6
+y R2-N1 a R2-N3 quedan fuera de esta ronda.
+
+Comprobación final de cierre antes del commit de documentación:
+
+```text
+Mutación roja exacta: 1 línea; restauración verde exacta: OK
+Padres, mensajes y lista cerrada: OK
+Reporte anterior intacto; trazabilidad cambia solo R5: OK
+Hashes de trazabilidad ancestros de HEAD: 31/31; filas pendientes: 0
+$ pnpm lint
+exit=0
+> eslint "{src,apps,libs,test}/**/*.ts" --fix
+```
+
+Este último lint se midió sin pipe en `/tmp/pt103-r3-docs-lint.log`, antes
+del tercer commit. Los únicos cambios netos de la ronda son el `it` 4,
+esta sección añadida al reporte y la ampliación de la fila R5.
