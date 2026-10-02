@@ -18,17 +18,17 @@ centro, mueve un slider de 20 a 2000 m para fijar el radio, ve el círculo en
 borrador y guarda con `POST` (crear) o `PATCH` (editar). Entra desde la lista
 de #41 (`Añadir zona` o tocando una zona).
 
-> **Base de escritura: `95b2aaa4`.** Es el HEAD de #41
-> (`feature/41-mobile-geofences`, código implementado y aprobado por el
-> reviewer, pendiente solo de su prueba de humo). **#41 aún no está en
-> `main`.** Todas las anclas de esta spec se verificaron por contenido
-> (`grep -F`) contra ese árbol.
+> **Bases de escritura.** R1–R10 se anclaron sobre `95b2aaa4` (HEAD de
+> #41 antes de su merge) y la ampliación R11–R18 sobre `d637757e`. #41 está
+> en `main` desde `d855ab5e` (PR #184, 2026-10-02) y de `95b2aaa4` a
+> `d637757e` no cambia código móvil, así que las dos bases dan las mismas
+> anclas. Todas se verificaron por contenido (`grep -F`).
 >
 > **Dependencias:**
 >
-> - **#41** (lista y punto de entrada): dependencia dura. Codex no arranca
->   hasta que #41 esté en `origin/main` y esta branch se haya actualizado
->   desde allí ([[tasks]] §Precondiciones).
+> - **#41** (lista y punto de entrada): dependencia dura, ya cumplida: está
+>   en `main` (`d855ab5e`) y esta branch lo recibió en `d637757e`
+>   ([[tasks]] §Precondiciones).
 > - **#145** (backend endurecido): ya en `main` (`4e8d6cc3`). Fija los
 >   códigos `GEOFENCE_NAME_TAKEN`, `MAX_GEOFENCES_REACHED` y
 >   `GEOFENCE_NOT_FOUND`, y que el reinicio de una zona solo ocurre al cambiar
@@ -1485,7 +1485,7 @@ salvo en el paso 10. iOS queda fuera (§Coordinación).
 > Tres casillas, tres gates (lección `gate-humano-sin-casilla-donde-firmar`):
 >
 > - la de A19 autoriza cambiar texto normativo ajeno;
-> - la de la spec autoriza implementar y firma P1–P10 y D7;
+> - la de la spec autoriza implementar y firma P1–P18 y D7;
 > - la de §Prueba de humo cierra la feature.
 
 ### Enmienda A19 — lista de A11 en `docs/conventions.md` y `docs/ui-guidelines.md`

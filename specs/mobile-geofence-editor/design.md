@@ -6,8 +6,9 @@ tags: [harness, spec, mobile]
 
 # Diseño — [[mobile-geofence-editor]]
 
-> Base: `95b2aaa4` (HEAD de #41). Anclas por contenido (§Anclas). Las
-> decisiones de producto P1–P10 están en [[requirements]] §Qué firma.
+> Bases: `95b2aaa4` (R1–R10) y `d637757e` (R11–R18), mismo código móvil.
+> Anclas por contenido (§Anclas). Las decisiones de producto P1–P18 están en
+> [[requirements]] §Qué firma.
 
 ## Decisiones técnicas
 
