@@ -649,3 +649,15 @@ describe('#108 R4: la convención de cita del guard está documentada', () => {
     expect(section).toContain('`#108 R1`');
   });
 });
+
+describe('#146 R17: el centro por defecto del mapa vive en un solo sitio', () => {
+  const productionFilesMatching = (pattern: RegExp) =>
+    filesMatching(pattern).filter((path) => !/\.test\.tsx?$/.test(path));
+
+  it('declara DEFAULT_CENTER solo en el componente del mapa', () => {
+    expect(productionFilesMatching(/\bconst DEFAULT_CENTER\b/)).toEqual([join('components', 'pet-map.tsx')]);
+  });
+  it('escribe las coordenadas por defecto solo en el componente del mapa', () => {
+    expect(productionFilesMatching(/19\.4326|-99\.1332/)).toEqual([join('components', 'pet-map.tsx')]);
+  });
+});
