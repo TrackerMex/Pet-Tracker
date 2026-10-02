@@ -1,0 +1,1 @@
+ALTER TABLE "nutrition_plans" ADD COLUMN "engine_meals_per_day" integer;

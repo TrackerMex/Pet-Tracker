@@ -96,6 +96,7 @@ function toPlan(row: NutritionPlanRow): NutritionPlan {
     dailyGrams: row.dailyGrams,
     mealsPerDay: row.mealsPerDay,
     mealTimes: row.mealTimes,
+    engineMealsPerDay: row.engineMealsPerDay ?? null,
     objective: row.objective,
     warnings: row.warnings,
     aiExplanation: row.aiExplanation ?? null,

@@ -53,6 +53,7 @@ export class GenerateNutritionPlanUseCase {
     return this.nutrition.insertPlan({
       petId,
       ...result,
+      engineMealsPerDay: result.mealsPerDay,
       aiExplanation: null,
       inputsHash,
     });

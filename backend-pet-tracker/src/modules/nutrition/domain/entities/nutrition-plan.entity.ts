@@ -11,6 +11,7 @@ export interface NutritionPlanProps {
   dailyGrams: number;
   mealsPerDay: number;
   mealTimes: string[];
+  engineMealsPerDay: number | null;
   objective: NutritionObjective;
   warnings: NutritionWarning[];
   aiExplanation: string | null;
@@ -28,6 +29,7 @@ export class NutritionPlan implements NutritionPlanProps {
   readonly dailyGrams: number;
   readonly mealsPerDay: number;
   readonly mealTimes: string[];
+  readonly engineMealsPerDay: number | null;
   readonly objective: NutritionObjective;
   readonly warnings: NutritionWarning[];
   readonly aiExplanation: string | null;
