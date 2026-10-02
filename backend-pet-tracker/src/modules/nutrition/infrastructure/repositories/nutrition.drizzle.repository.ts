@@ -114,7 +114,6 @@ export class NutritionDrizzleRepository implements NutritionRepository {
                 .where(
                   and(
                     eq(mealServings.petId, plan.petId),
-                    eq(mealServings.servedOn, move.servedOn),
                     eq(mealServings.mealTime, move.to),
                   ),
                 ),

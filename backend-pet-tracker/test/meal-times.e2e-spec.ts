@@ -438,6 +438,27 @@ describe('Meal schedule editing (e2e)', () => {
       ]);
       expect(await servingsOf(neighbor.id)).toEqual(neighborBefore);
     });
+
+    it('una servida de otro dia en el destino no bloquea el movimiento', async () => {
+      const owner = await seedUser('r5-past-destination');
+      const pet = await seedPet(owner);
+      await seedPlan(owner, pet.id);
+      const [yesterday] = await insertServing(
+        pet.id,
+        owner.id,
+        shiftDay(localDayOf(Date.now(), 'UTC'), -1),
+        '08:15',
+      );
+      await serveMeal(owner, pet.id, { mealTime: '07:30' }).expect(201);
+      const [, served] = await servingsOf(pet.id);
+      await moveMealTime(owner, pet.id, '07:30', { mealTime: '08:15' }).expect(
+        200,
+      );
+      expect(await servingsOf(pet.id)).toEqual([
+        yesterday,
+        { ...served, mealTime: '08:15' },
+      ]);
+    });
   });
 
   describe('R6 (meal-schedule-editing #103): si el destino ya tiene servida hoy, gana la del destino', () => {
