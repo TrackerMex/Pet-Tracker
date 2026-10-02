@@ -6917,3 +6917,103 @@ despues.
   spec; el worker de jest movil que no sale limpio.
 - **Siguiente**: #41 (la lista) en su branch desde `origin/main`, con la spec
   contra 03f57706 y el handoff tras el merge de #60; despues #146.
+
+## #41 `mobile-geofences` — la lista de zonas seguras — 2026-10-02
+
+Sesion Backend, worktree `/home/claude/sites/Pet-Tracker-wt-backend`, branch
+`feature/41-mobile-geofences`. Nacio de `origin/main` 3db47fb0 con el explore
+(a5c8271a) y recibio `origin/main` 4e8d6cc3 (#145) en el merge 28f1a0f2. En
+paralelo: Frontend con #60 (aparcada) y despues #103 en el arbol principal; la
+spec de #146 en el worktree `Pet-Tracker-wt-146`.
+
+### Spec y gates
+
+- Reparto del humano (2026-10-01): #145 backend (ya mergeada), #41 la lista y
+  #146 el editor sobre el mapa. UX: aceptadas todas las recomendaciones de
+  `progress/explore_mobile-geofences.md`.
+- Spec del `spec_author` en c01e6e92: R1-R10, P1-P16, enmienda A18 con
+  casilla propia y prueba de humo en dev build de Android. Espejada en Notion
+  (pagina `3ec6115a-9b27-8176-864b-c2a6fdc09773`) y firmada desde alli, spec y
+  A18 (commit de firma f044fa79).
+- Enmiendas, todas aprobadas por el humano en el chat de la sesion Backend:
+  - **E1** (3a166fba, "Handoff #41 + spec #146"): el handoff deja de esperar
+    a #60; Codex implementa sobre 4e8d6cc3 sin #60.
+  - **E2** (147c90d7): el `it` de R9 no mide el chevron, porque RNTL 14 no
+    tiene `UNSAFE_getByType`. Reanudacion en
+    `progress/handoff_mobile-geofences_r9.md`.
+  - **E3** (fa9049c0, "E3 + implementer"): el texto del 402 lleva
+    `text-center font-normal text-muted` y el `it` del 402 lo comprueba.
+  - Ninguna de las tres tiene commit de firma propio; el reviewer lo anoto
+    para E3. La firma de la prueba de humo (48096f0b) es posterior a las tres.
+
+### Que se hizo
+
+- **Produccion** (`mobile-pet-tracker/src/`):
+  - Fila «Zonas seguras» en el Perfil, justo despues de la del dispositivo
+    GPS, con chevron (R9).
+  - Ruta delgada `app/pets/[petId]/geofences.tsx` y pantalla
+    `screens/geofences/`, con cabecera nativa y metricas A11 (R4).
+  - La lista pinta nombre, radio y estado de cada zona, con carga, vacio,
+    error con Reintentar y el 402 sin rastreo (R5).
+  - El dueño activa o desactiva cada zona con un interruptor
+    (`PATCH {active}`, R6) y la borra con confirmacion destructiva
+    (`DELETE`, R7); los demas roles ven una pildora Activa/Inactiva sin
+    controles (R8).
+  - `api/http.ts` gana `patchJson`; `api/geofences.ts` valida con
+    `isGeofence` y mapea cada respuesta a un `kind` (R2, R3);
+    `query-keys.ts` gana `geofenceKeys`.
+  - Copy por clave: 11 claves `geofences.*` en el catalogo y bloque
+    `R14_GEOFENCES` en `ui-copy-table.ts` (R1, R10).
+- **Docs**: A18 añade `pets/[petId]/geofences` a la lista de A11 en
+  `docs/conventions.md` y `docs/ui-guidelines.md`.
+- **Implementacion**: Codex CLI desde el handoff 04cf1c1c
+  (`progress/handoff_mobile-geofences.md`). 23 commits test-primero hasta
+  d5830bab: A18, diez pares rojo/verde, el test de E2 y la trazabilidad.
+  Paro una vez, en R9 (E2). R10 fue de verificacion por la via (b), con la
+  mutacion versionada en el rojo.
+- **E3**: por el fallback al subagente `implementer` (cambio trivial, una
+  clase y una asercion), anotado en `progress/current.md`. Commits 8d37dae0
+  (rojo), 113135d6 (verde) y c71e8d7b (trazabilidad).
+
+### Revision
+
+- `./init.sh` del leader sobre d5830bab, sin pipe, exit 0: unit 171/1307,
+  infra 2/14, movil 88/1710, e2e 27+3 skip / 399+8 skip.
+- Reviewer APROBADO sobre d5830bab (6d954741), con los diez rojos re-medidos
+  en un worktree temporal. Observaciones: H1 (texto del 402 sin clase; la
+  mutacion `text-danger` sobrevivia), H2 (la consulta de R9, resuelta con E2)
+  y H3 (fechas de A18, informativa).
+- Reviewer APROBADO sobre el delta de E3 (95b2aaa4): rojo medido en el arbol
+  del commit rojo, sonda m13/M58 en rojo, y movil 88/1710 con `tsc` y
+  `expo lint` en exit 0 y salida vacia. H1 queda cerrado.
+
+### Prueba de humo
+
+- Hecha por el humano el 2026-10-02 en dev build de Android, los nueve pasos
+  (commit de firma 48096f0b). La preparacion la hizo un leader en la maquina
+  del humano (450cbd7d, 4479f522): backend en 192.168.1.6:3000, Rocky con
+  rastreo, Herdr sin collar, y las cinco zonas «Smoke NN» del humo de #145
+  sustituidas por «Casa» y «Parque».
+- La firma cambio los marcadores de §Precondiciones y de los pasos 3 y 9 de
+  `requirements.md` por los valores reales (id de mascota, correo de la
+  segunda cuenta, `ip:puerto` de adb). Se deja tal cual: es el texto que firmo
+  el humano.
+- La DB local del humano iba dos migraciones por detras de `main`
+  (0016_drop_devices_connectivity, 0017_meal_servings), fuera de la ruta de
+  geocercas; decision del humano.
+
+### Resultado
+
+- Estado final: `done`. Movil 86/1634 → 88/1710 (+2 suites, +76 tests).
+  Notion: `Estado del gate` = Implementado, `Rol actual` = Completado.
+
+### Deuda y apuntes
+
+- **Deuda candidata de la spec** (§Fuera de alcance, sin id reservado; no se
+  registra sin decision del humano): el 402 en los `GET` impide ver o
+  preparar zonas de una mascota sin suscripcion; el limite de 5 zonas solo
+  aparece al crear (cosa de #146); las alertas huerfanas previas a #145 no se
+  limpian; las filas del Perfil no tienen respuesta visual al pulsarlas.
+- **Siguiente**: #146, el editor sobre el mapa. Su spec (e3d1189d) esta en el
+  gate humano en Notion y su handoff a Codex espera a que esta PR este en
+  `main`.
