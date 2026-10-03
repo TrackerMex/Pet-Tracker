@@ -341,8 +341,8 @@ Expo Go.
    abre Horario de comidas. Ninguna fila muestra `Editar` y no aparece
    `Añadir comida`.
 
-- [ ] Prueba de humo superada en dev build de Android (fecha: ____,
-      dispositivo: ____, firmado por: ____)
+- [X] Prueba de humo superada en dev build de Android (fecha: 2026-10-02,
+      dispositivo: OnePlus Nord 5, firmado por: AlexisSM377)
 
 ## Enmienda E1 — dos candados globales que la spec no movía, y la técnica TZ
 
