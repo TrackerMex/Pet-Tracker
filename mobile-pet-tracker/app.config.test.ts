@@ -285,6 +285,12 @@ describe('#101 R7: icono de notificación blanco tintado', () => {
   });
 });
 
+describe('#101 R9: iOS intacto', () => {
+  it('ios.icon sigue siendo ./assets/expo.icon', () => {
+    expect(appJson.expo.ios.icon).toBe('./assets/expo.icon');
+  });
+});
+
 describe('#79 R14: google-services.json se declara solo cuando existe', () => {
   const originalApiKey = process.env.GOOGLE_MAPS_API_KEY_ANDROID;
   const originalResetLinkHost = process.env.RESET_LINK_HOST;
