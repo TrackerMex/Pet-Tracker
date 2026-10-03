@@ -1,6 +1,6 @@
 ---
 feature: "meals-history"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec]
 ---
 
@@ -690,7 +690,7 @@ Clasificado viñeta a viñeta; cada una con su razón.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (fecha: 2026-10-03, desde Notion: página `3ee6115a-9b27-81b8-b100-c70a69cfbb64`, `Estado del gate` = Aprobado, `page_last_edited_at` 2026-10-03T19:07:08.029Z) ← gate obligatorio antes de implementar
 
 Decisiones que esta spec cerró por su cuenta y el humano puede objetar aquí:
 (1) rejilla lunes-primero para ambos idiomas; (2) `today` del backend manda
