@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-10-02
-**Features completadas**: 133/147 (`feature_list.json`)
-**En progreso**: ninguna. #103 cerrada en esta rama, PR pendiente. #146 (el editor de zonas) tiene la spec en su gate humano, en la branch `feature/146-mobile-geofence-editor`. #147 (la mitad móvil de #103) espera spec
+**Última actualización**: 2026-10-03
+**Features completadas**: 134/148 (`feature_list.json`)
+**En progreso**: ninguna en esta rama. #146 cerrada en `feature/146-mobile-geofence-editor`, PR pendiente. #147 (la mitad móvil de #103) avanza en la sesión Frontend, branch `feature/147-mobile-meal-schedule-editing`
 
-**Pendientes**: 14 (#18, #60, #101, #105, #115-#119, #129, #134, #144, #146 y #147). **#103 `meal-schedule-editing` cerrada (mitad backend)**: el horario de comidas deja de salir solo del plan generado. `POST /v1/pets/:petId/meal-times` añade una franja y `PATCH /v1/pets/:petId/meal-times/:mealTime` la mueve, solo el dueño, con HH:MM estricto, 422 por duplicado o por séptima franja, y auditoría `meal_time.add`/`meal_time.move`. Cada edición es una copia append-only del plan con el mismo `inputsHash`. La migración 0018 añade `engine_meals_per_day`: al regenerar, el horario editado se conserva mientras el motor no cambie el número de comidas. La servida de hoy se mueve con su franja en la misma transacción y, si choca, gana la del destino (enmienda la D4 de #83). Sin borrado de franjas. Unit 171/1307 → 174/1335, e2e 399 → 431. Codex en tres rondas test-primero; el reviewer rechazó dos por huecos de candado (B1-B3, enmiendas E3 y E4) y aprobó la tercera sobre 0e6c0167. Tras el merge, `pnpm db:migrate` en `pet_tracker_wt`. La mitad móvil es #147
+**Pendientes**: 14 (#18, #60, #101, #105, #115-#119, #129, #134, #144, #147 y #148). **#146 `mobile-geofence-editor` cerrada**: el dueño crea y edita zonas seguras circulares sobre el mapa. Un toque fija el centro y un slider de 20 a 2000 m, de 10 en 10, fija el radio, con el círculo de previsualización. Desde el editor también se activa, desactiva y borra la zona. Quien no es dueño la ve en solo lectura. Las zonas activas se dibujan en la pestaña Mapa y en la pantalla de zonas. Con 5 zonas, «Añadir zona» se deshabilita y muestra un aviso. La enmienda E1 aparta el teclado del formulario (`KeyboardAvoidingView`, edge-to-edge). Móvil 88/1710 → 90/1852. Codex en tres rondas test-primero; el reviewer rechazó la primera (Z1 y Z2 de R7 sin candado) y aprobó la segunda y la tercera (E1). Prueba de humo en el dev build de Android superada, paso 9 repetido tras E1. iOS sin verificar mientras #60 siga aparcada. #148 registrada: el mismo arreglo del teclado en el resto de pantallas con inputs
 
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
@@ -88,6 +88,14 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
+- **`mobile-geofence-editor` (#146) done** (2026-10-03, `Pet-Tracker-wt-146`,
+  sesion Backend): editor de zonas seguras circulares sobre el mapa (crear,
+  editar, activar y borrar), círculos en la pestaña Mapa, límite de 5 en el
+  cliente y solo lectura para quien no es dueño. Enmienda E1: teclado sobre
+  el formulario. Tres rondas de Codex; reviewer aprobado en las rondas 2
+  (`8944dfe9`) y 3 (`330b24a3`). Gate: `./init.sh` exit 0 sobre `495319fa`
+  (unit 174/1335, móvil 90/1852, e2e 28+3). Prueba de humo en Android
+  firmada por el humano (`80845eeb`). PR #186 abierta. #148 registrada.
 - **`meal-schedule-editing` (#103) done** (2026-10-02, tree principal,
   sesion Frontend): mitad backend de editar y añadir franjas de comida
   (POST y PATCH de `meal-times`, migración 0018, la servida de hoy se mueve
@@ -1288,6 +1296,14 @@ debe listar las 4 URLs de cola.
 
 ## Última sesión
 
+- **2026-10-03** — **#146 `mobile-geofence-editor` cerrada** (sesion
+  Backend, `Pet-Tracker-wt-146`): spec ampliada por decisión del humano y
+  firmada desde Notion (`00961ee6`). Codex, tres rondas test-primero; la
+  ronda 1 se rechazó por Z1 y Z2 de R7 y las rondas 2 y 3 se aprobaron. El
+  paso 9 de la prueba de humo falló porque el teclado tapaba Guardar. La
+  enmienda E1 (`bc917ff7`) lo arregló en el editor, y el humano repitió el
+  paso (`80845eeb`). Registra #148 (el arreglo del teclado en el resto de
+  pantallas con inputs). Siguiente: merge humano del PR #186.
 - **2026-10-02** — **#103 `meal-schedule-editing` cerrada** (sesion
   Frontend, tree principal): spec firmada desde Notion (`2b74cd62`), enmiendas
   E1-E4 aprobadas en el chat. Codex, tres rondas test-primero; rondas 1 y 2

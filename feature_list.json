@@ -2836,22 +2836,46 @@
   {
     "id": 146,
     "name": "mobile-geofence-editor",
-    "status": "pending",
+    "status": "done",
     "priority": "P3",
-    "description": "Registrada el 2026-10-01 por decision del humano, al repartir #41 a partir de progress/explore_mobile-geofences.md: es el editor de geocercas sobre el mapa (crear y editar). Depende de #41 (lista y punto de entrada), de #145 (backend endurecido) y de #60 (rama AppleMaps de PetMap). Decisiones del humano (2026-10-01): solo circulos; tocar el mapa (onMapClick, existe en GoogleMaps y AppleMaps) fija el centro, y el centro inicial es la ultima posicion conocida de la mascota o el centro del mapa; un slider de 20 a 2000 m con paso de 10 m (el rango del backend, no el 50-500 del Make) fija el radio con previsualizacion del circulo; solo el owner crea o edita. Hechos verificados por el explorer sobre expo-maps 57.0.2: el tipo circles {id?, center, radius en metros, color?, lineColor?, lineWidth?} es igual en las dos plataformas; NO hay eventos de arrastre de marker; onMapLongClick es solo de Google; onCameraMove dispara con frecuencias distintas en Android e iOS; la camara se reaplica cada vez que cambia el valor de cameraPosition, asi que el editor debe desacoplarla del centro del circulo, y conviene un helper puro de zoom por radio con tabla de casos. Alcance: ampliar PetMap con props opcionales (circulos, onMapClick, zoom) en las dos ramas sin romper la pestana Mapa; formulario con nombre y slider; POST y PATCH de geometria; errores 409 GEOFENCE_NAME_TAKEN, 400 MAX_GEOFENCES_REACHED (el limite de 5 se muestra desde el error del servidor, no contando en el cliente) y 400 de validacion sin code; dibujar las zonas en el mapa de la pantalla de geocercas. La spec decide si el editor es ruta propia o sheet (riesgo de gestos con el mapa dentro de un sheet). Fuera de alcance: los circulos en la pestana Mapa (Make §1.2), los poligonos y las zonas compartidas entre mascotas. Codex no tiene skill de mapas: toda la guia de expo-maps debe quedar escrita en la spec.",
+    "description": "Registrada el 2026-10-01 por decision del humano, al repartir #41 a partir de progress/explore_mobile-geofences.md: es el editor de geocercas sobre el mapa (crear y editar). Depende de #41 (lista y punto de entrada), de #145 (backend endurecido) y de #60 (rama AppleMaps de PetMap). Decisiones del humano (2026-10-01): solo circulos; tocar el mapa (onMapClick, existe en GoogleMaps y AppleMaps) fija el centro, y el centro inicial es la ultima posicion conocida de la mascota o el centro del mapa; un slider de 20 a 2000 m con paso de 10 m (el rango del backend, no el 50-500 del Make) fija el radio con previsualizacion del circulo; solo el owner crea o edita. Hechos verificados por el explorer sobre expo-maps 57.0.2: el tipo circles {id?, center, radius en metros, color?, lineColor?, lineWidth?} es igual en las dos plataformas; NO hay eventos de arrastre de marker; onMapLongClick es solo de Google; onCameraMove dispara con frecuencias distintas en Android e iOS; la camara se reaplica cada vez que cambia el valor de cameraPosition, asi que el editor debe desacoplarla del centro del circulo, y conviene un helper puro de zoom por radio con tabla de casos. Alcance: ampliar PetMap con props opcionales (circulos, onMapClick, zoom) en las dos ramas sin romper la pestana Mapa; formulario con nombre y slider; POST y PATCH de geometria; errores 409 GEOFENCE_NAME_TAKEN, 400 MAX_GEOFENCES_REACHED (el limite de 5 se muestra desde el error del servidor, no contando en el cliente) y 400 de validacion sin code; dibujar las zonas en el mapa de la pantalla de geocercas. La spec decide si el editor es ruta propia o sheet (riesgo de gestos con el mapa dentro de un sheet). Fuera de alcance: los circulos en la pestana Mapa (Make §1.2), los poligonos y las zonas compartidas entre mascotas. Codex no tiene skill de mapas: toda la guia de expo-maps debe quedar escrita en la spec. Actualizacion 2026-10-02: #60 deja de ser dependencia (aparcada por decision del humano, 286c94bd); la spec se escribe contra el PetMap de main, con las props nuevas en mapViewProps, y la prueba de humo es en el dev build de Android, asi que la rama iOS queda sin verificar. Ampliacion 2026-10-02 (decision del humano, deja sin efecto lo contrario de arriba): circulos de las zonas activas en la pestana Mapa; limite de 5 tambien en el cliente (Anadir zona deshabilitado con aviso, espejo de GEOFENCE_MAX_PER_PET; el 400 sigue traducido); activar y eliminar desde el editor en modo edicion; isGeofence revalida el centro; el editor consulta el rol y queda en solo lectura para quien no es owner; DEFAULT_CENTER en un solo sitio; titulos de test sin cifras; el TABULAR_NUMS del editor entra en los contadores de #62 R15. Siguen fuera iOS, poligonos, zonas compartidas, arrastre del centro y teclado (solo prueba de humo). Spec en specs/mobile-geofence-editor/. Enmienda E1 (2026-10-02, tras fallar el paso 9 de la prueba de humo): la raiz del editor pasa a KeyboardAvoidingView con behavior padding y el offset de HeaderHeightContext, porque con edge-to-edge adjustResize ya no encoge la ventana; el mismo arreglo en el resto de la app (Login, Registro de peso) queda como deuda candidata. Dependencia dura: #41 mergeada en main; la base de tests se mide en el handoff.",
     "acceptance_criteria": [
       "El owner crea una geocerca tocando el mapa y fijando el radio con un slider de 20 a 2000 m, con previsualizacion del circulo, y la persiste con POST",
       "El owner edita nombre, centro y radio de una geocerca existente con PATCH",
       "PetMap pinta circulos y emite el toque en GoogleMaps y AppleMaps sin romper la pestana Mapa; la camara no se recentra con cada toque",
       "Los errores 409, 400 MAX_GEOFENCES_REACHED y 400 de validacion se muestran al usuario",
       "Tests de la logica de geometria y estado que nombran su R-id",
+      "La pestana Mapa dibuja las zonas activas de la mascota; con 5 zonas Anadir zona sale deshabilitado con aviso",
+      "El owner activa, desactiva y elimina la zona desde el editor; quien no es owner la ve en solo lectura",
       "Gate humano: dibujo de zona en dev build de Android"
     ],
     "files_affected": [
+      "mobile-pet-tracker/src/app/pets/[petId]/geofence-editor.tsx",
+      "mobile-pet-tracker/src/screens/geofence-editor/index.tsx",
+      "mobile-pet-tracker/src/screens/geofence-editor/index.test.tsx",
+      "mobile-pet-tracker/src/screens/geofences/index.tsx",
+      "mobile-pet-tracker/src/screens/geofences/index.test.tsx",
+      "mobile-pet-tracker/src/utils/zoom-for-radius.ts",
+      "mobile-pet-tracker/src/utils/zoom-for-radius.test.ts",
       "mobile-pet-tracker/src/components/pet-map.tsx",
+      "mobile-pet-tracker/src/components/__tests__/pet-map.test.tsx",
+      "mobile-pet-tracker/src/screens/map/index.tsx",
+      "mobile-pet-tracker/src/screens/map/index.test.tsx",
       "mobile-pet-tracker/src/api/geofences.ts",
-      "mobile-pet-tracker/src/screens/geofences/",
-      "mobile-pet-tracker/src/utils/"
+      "mobile-pet-tracker/src/api/__tests__/geofences.test.ts",
+      "mobile-pet-tracker/src/app/_layout.tsx",
+      "mobile-pet-tracker/src/app/__tests__/layout.test.tsx",
+      "mobile-pet-tracker/src/app/__tests__/detail-stack.test.tsx",
+      "mobile-pet-tracker/src/i18n/catalog.ts",
+      "mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx",
+      "mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts",
+      "mobile-pet-tracker/src/__tests__/design-drift.test.ts",
+      "mobile-pet-tracker/src/__tests__/ui-copy-table.ts",
+      "mobile-pet-tracker/src/__tests__/ui-language.test.ts",
+      "docs/conventions.md",
+      "docs/ui-guidelines.md",
+      "specs/mobile-ui-language/design.md",
+      "specs/mobile-geofence-editor/"
     ]
   },
   {
@@ -2876,6 +2900,29 @@
       "mobile-pet-tracker/src/__tests__/ui-copy-table.ts",
       "mobile-pet-tracker/src/__tests__/ui-language.test.ts",
       "specs/mobile-ui-language/design.md"
+    ]
+  },
+  {
+    "id": 148,
+    "name": "mobile-keyboard-avoiding-forms",
+    "status": "pending",
+    "priority": "P2",
+    "description": "Registrada el 2026-10-03 por decision del humano al cerrar #146 (deuda candidata de su enmienda E1). Con edge-to-edge (RN 0.86, targetSdk 35 o mas) el adjustResize del manifest ya no encoge la ventana, y ninguna pantalla con inputs consume el inset del teclado salvo src/screens/geofence-editor/index.tsx, que lo resuelve desde #146 E1 con KeyboardAvoidingView behavior padding y keyboardVerticalOffset de HeaderHeightContext (importado de expo-router/react-navigation; useHeaderHeight lanza fuera de un navegador). Fallo relatado por el humano en el dev build de Android (2026-10-02): en Login y en Registro de peso el formulario no hace scroll con el teclado abierto. Pantallas con inputs verificadas por grep en 3e110bc8: src/app/(auth)/login.tsx, register.tsx y forgot.tsx; src/screens/add-pet, add-reminder, pairing, reset-password y weight-log. Solo login y weight-log estan confirmadas en el telefono; la spec decide si las demas fallan igual (las pantallas cortas pueden no necesitarlo) y verifica la lista contra main al escribirse, porque #147 puede anadir inputs a meal-schedule. Limites: mismo patron que #146 E1, sin dependencias nuevas (react-native-keyboard-controller no esta instalado y no entra sin decision del humano). Las pantallas de (auth) van con headerShown false (src/app/(auth)/_layout.tsx): alli no hay cabecera y la spec mide que offset les toca. jest-expo corre como iOS: el test emite keyboardWillShow, y un behavior solo de iOS pasaria en verde (RV-5 de #146), por eso el cierre exige prueba de humo en Android. Fuera: iOS mientras #60 siga aparcada.",
+    "acceptance_criteria": [
+      "Cada pantalla con inputs que la spec declare afectada mantiene su accion principal (Entrar, Guardar, Enviar) alcanzable con el teclado abierto en el dev build de Android",
+      "Patron de #146 E1: KeyboardAvoidingView con behavior padding en las dos plataformas y offset de HeaderHeightContext donde haya cabecera; sin dependencias nuevas",
+      "Un test por pantalla que emite el evento de teclado y asevera el paddingBottom del host, nombrando su R-id; la spec declara la sonda que cubre un behavior solo de iOS",
+      "Gate humano: prueba de humo en dev build de Android, una casilla por pantalla"
+    ],
+    "files_affected": [
+      "mobile-pet-tracker/src/app/(auth)/login.tsx",
+      "mobile-pet-tracker/src/app/(auth)/register.tsx",
+      "mobile-pet-tracker/src/app/(auth)/forgot.tsx",
+      "mobile-pet-tracker/src/screens/add-pet/index.tsx",
+      "mobile-pet-tracker/src/screens/add-reminder/index.tsx",
+      "mobile-pet-tracker/src/screens/pairing/index.tsx",
+      "mobile-pet-tracker/src/screens/reset-password/index.tsx",
+      "mobile-pet-tracker/src/screens/weight-log/index.tsx"
     ]
   }
 ]

@@ -8,6 +8,7 @@ import {
 import { HeroUINativeProvider } from 'heroui-native';
 import { useEffect, type ReactNode } from 'react';
 
+import { listGeofences, type Geofence, type GeofenceListState } from '../../api/geofences';
 import {
   getPet,
   listPets,
@@ -17,6 +18,7 @@ import {
   type SetLostModeState,
 } from '../../api/pets';
 import {
+  geofenceKeys,
   petKeys,
   positionKeys,
   tripKeys,
@@ -46,6 +48,8 @@ import { renderWithProviders } from '../../../test/render-with-providers';
 
 let mockFocusCleanup: (() => void) | undefined;
 let mockTheme: 'light' | 'dark' = 'light';
+
+jest.mock('../../api/geofences', () => ({ listGeofences: jest.fn() }));
 
 jest.mock('../../api/pets', () => ({
   getPet: jest.fn(),
@@ -109,6 +113,7 @@ jest.mock('uniwind', () => ({
   useUniwind: () => ({ theme: mockTheme, hasAdaptiveThemes: false }),
 }));
 
+const mockListGeofences = jest.mocked(listGeofences);
 const apiUrl = 'http://example.test/v1';
 const mockGetDayRoute = jest.mocked(getDayRoute);
 const mockGetLastPosition = jest.mocked(getLastPosition);
@@ -261,6 +266,7 @@ beforeEach(() => {
   mockGetLastPosition.mockReturnValue(pending<LastPositionState>());
   mockListPositions.mockReturnValue(pending<PositionsState>());
   mockGetDayRoute.mockReturnValue(pending<DayRouteState>());
+  mockListGeofences.mockReset().mockReturnValue(pending<GeofenceListState>());
 });
 
 describe('R4: map resuelve la mascota seleccionada', () => {
@@ -1259,7 +1265,7 @@ describe('#62 R15: el overlay del mapa usa cifras tabulares', () => {
 });
 
 describe('#87 R18: MapScreen lee por TanStack Query', () => {
-  it('deja sus cinco recursos en las claves canónicas', async () => {
+  it('deja cada recurso en su clave canónica', async () => {
     initialSelectedPetId = 'pet-1';
     const petsState: PetsState = { kind: 'ok', pets: [makePet()] };
     const petDetailState: PetState = {
@@ -1280,6 +1286,8 @@ describe('#87 R18: MapScreen lee por TanStack Query', () => {
       date: '2026-08-21',
       trips: [makeTrip()],
     };
+    const geofencesState: GeofenceListState = { kind: 'ok', geofences: [] };
+    mockListGeofences.mockResolvedValue(geofencesState);
     mockListPets.mockResolvedValue(petsState);
     mockGetPet.mockResolvedValue(petDetailState);
     mockGetLastPosition.mockResolvedValue(lastState);
@@ -1304,6 +1312,7 @@ describe('#87 R18: MapScreen lee por TanStack Query', () => {
     expect(queryClient.getQueryData(tripKeys.dayRoute('pet-1'))).toEqual(
       routeState,
     );
+    await waitFor(() => expect(queryClient.getQueryData(geofenceKeys.list('pet-1'))).toEqual(geofencesState));
   });
 });
 
@@ -1518,5 +1527,52 @@ describe('#94 R7: el poll refresca también el detalle', () => {
       'jwt-token',
       'pet-1',
     );
+  });
+});
+
+const casa: Geofence = {
+  id: 'geofence-1', petId: 'pet-1', name: 'Casa', type: 'safe_circle',
+  centerLat: 19.4, centerLng: -99.1, radiusM: 150, active: true,
+  state: { value: 'unknown', updatedAt: null },
+  createdAt: '2026-10-01T12:00:00.000Z', updatedAt: '2026-10-01T12:00:00.000Z',
+};
+const parque: Geofence = { ...casa, id: 'geofence-2', name: 'Parque', centerLat: 19.42, centerLng: -99.15, radiusM: 600, active: false };
+
+describe('#146 R11: la pestaña Mapa dibuja las zonas activas de la mascota', () => {
+  beforeEach(() => {
+    initialSelectedPetId = 'pet-1';
+    mockListPets.mockResolvedValue({ kind: 'ok', pets: [makePet()] });
+    mockGetLastPosition.mockResolvedValue({ kind: 'ok', position: makeLastPosition() });
+  });
+  it('dibuja como círculos solo las zonas activas de la mascota', async () => {
+    mockListGeofences.mockResolvedValue({ kind: 'ok', geofences: [casa, parque] });
+    await renderMap();
+    await waitFor(() => expect(screen.getByTestId('map-view').props.circles.map(({ id, center, radius }: { id: string; center: unknown; radius: number }) => ({ id, center, radius }))).toEqual([
+      { id: 'geofence-1', center: { latitude: 19.4, longitude: -99.1 }, radius: 150 },
+    ]));
+  });
+  it('pide las zonas de la mascota seleccionada con su token', async () => {
+    await renderMap();
+    await waitFor(() => expect(mockListGeofences).toHaveBeenCalledWith(apiUrl, 'jwt-token', 'pet-1'));
+  });
+  it.each(['pendiente', 'error'] as const)('con la lista de zonas %s pinta el mapa sin círculos', async (kind) => {
+    if (kind === 'error') mockListGeofences.mockResolvedValue({ kind });
+    await renderMap(); const map = await screen.findByTestId('map-view');
+    expect(map).toBeVisible(); expect(map.props.circles).toEqual([]);
+  });
+  it('no pide zonas sin mascota seleccionada', async () => {
+    initialSelectedPetId = null; mockListPets.mockResolvedValue({ kind: 'ok', pets: [] });
+    await renderMap(); await screen.findByTestId('map-no-pets');
+    expect(mockListGeofences).not.toHaveBeenCalled();
+  });
+  it('el poll de 15 s no vuelve a pedir las zonas', async () => {
+    jest.useFakeTimers({ doNotFake: ['requestAnimationFrame'] });
+    mockListGeofences.mockResolvedValue({ kind: 'ok', geofences: [] });
+    try {
+      await renderMap(); await screen.findByTestId('map-view');
+      const initialCalls = mockListGeofences.mock.calls.length;
+      await act(async () => { jest.advanceTimersByTime(15000); await Promise.resolve(); await Promise.resolve(); });
+      expect(mockListGeofences).toHaveBeenCalledTimes(initialCalls);
+    } finally { mockFocusCleanup?.(); jest.useRealTimers(); }
   });
 });

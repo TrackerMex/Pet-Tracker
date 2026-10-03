@@ -62,6 +62,16 @@ describe('#41 R4: las zonas seguras viven en src/app/pets/[petId]/geofences.tsx'
   });
 });
 
+describe('#146 R5: el editor de zonas vive en src/app/pets/[petId]/geofence-editor.tsx', () => {
+  it('es un route delgado que importa la pantalla de src/screens/geofence-editor', () => {
+    const route = join(app, 'pets/[petId]/geofence-editor.tsx');
+    expect(existsSync(route)).toBe(true);
+    const source = readFileSync(route, 'utf8');
+    expect(source).toContain('useLocalSearchParams');
+    expect(source).toContain("from '../../../screens/geofence-editor'");
+  });
+});
+
 describe('#95 R7: el reset de #63 queda solo donde no lo cubre el Stack', () => {
   it.each([
     ['add-reminder', 0],

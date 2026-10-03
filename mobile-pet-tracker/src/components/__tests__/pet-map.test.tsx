@@ -1,7 +1,7 @@
-import { render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen } from '@testing-library/react-native';
 import type { ReactNode } from 'react';
 
-import { MAP_ZOOM, PetMap } from '../pet-map';
+import { MAP_ZOOM, PetMap, type PetMapProps } from '../pet-map';
 
 const mockGoogleMapsView = jest.fn(
   (props: Record<string, unknown> & { children?: ReactNode }) => {
@@ -28,7 +28,7 @@ jest.mock('expo-maps', () => ({
 }));
 
 jest.mock('../../theme/use-theme-colors', () => ({
-  useThemeColors: () => ['accent-color'],
+  useThemeColors: (tokens: string[]) => tokens.map((token) => `color:${token}`),
 }));
 
 beforeEach(() => {
@@ -176,5 +176,65 @@ describe('R1 (mobile-map-zoom-controls): el wrapper oculta los controles nativos
 
     expect(mapProps.uiSettings).toEqual({ zoomControlsEnabled: false });
     expect(mapProps).not.toHaveProperty('contentPadding');
+  });
+});
+
+describe('#146 R3: PetMap pinta círculos, acepta zoom y emite el toque', () => {
+  const center = { latitude: 19.4, longitude: -99.1 };
+  const circle = { id: 'zone-1', center, radius: 150 };
+  const mount = async (extra: Partial<PetMapProps> = {}) => {
+    await render(<PetMap center={center} marker={null} polylines={[]} colorScheme="light" {...extra} />);
+    return screen.getByTestId('map-view').props;
+  };
+
+  it('pasa los círculos a la vista con su id, centro y radio', async () => {
+    const props = await mount({ circles: [circle] });
+    expect(props.circles).toEqual([expect.objectContaining(circle)]);
+  });
+  it('pinta los círculos con relleno tab-pill y borde accent-strong de 2', async () => {
+    const props = await mount({ circles: [circle] });
+    expect(props.circles).toEqual([{ ...circle, color: 'color:tab-pill', lineColor: 'color:accent-strong', lineWidth: 2 }]);
+  });
+  it('usa el zoom recibido en la cámara', async () => {
+    expect((await mount({ zoom: 14 })).cameraPosition.zoom).toBe(14);
+  });
+  it('sin zoom ni onPress conserva MAP_ZOOM, pasa una lista de círculos vacía y no registra toques', async () => {
+    const props = await mount();
+    expect(props.cameraPosition.zoom).toBe(16);
+    expect(props.circles).toEqual([]);
+    expect(props.onMapClick).toBeUndefined();
+    expect(props.onPOIClick).toBeUndefined();
+    expect(props.onCircleClick).toBeUndefined();
+  });
+  it('un toque en el mapa emite sus coordenadas', async () => {
+    const onPress = jest.fn(); const props = await mount({ onPress });
+    expect(typeof props.onMapClick).toBe('function');
+    await fireEvent(screen.getByTestId('map-view'), 'mapClick', { coordinates: center });
+    expect(onPress).toHaveBeenCalledWith(center);
+  });
+  it('un toque en un POI emite sus coordenadas', async () => {
+    const onPress = jest.fn(); const props = await mount({ onPress });
+    expect(typeof props.onPOIClick).toBe('function');
+    await fireEvent(screen.getByTestId('map-view'), 'pOIClick', { coordinates: center, name: 'POI' });
+    expect(onPress).toHaveBeenCalledWith(center);
+  });
+  it('un toque en un círculo emite el punto tocado', async () => {
+    const onPress = jest.fn(); const props = await mount({ onPress });
+    expect(typeof props.onCircleClick).toBe('function');
+    const clickCoordinates = { latitude: 19.45, longitude: -99.2 };
+    await fireEvent(screen.getByTestId('map-view'), 'circleClick', { ...circle, clickCoordinates });
+    expect(onPress).toHaveBeenCalledWith(clickCoordinates);
+  });
+  it('ignora un toque sin latitud o sin longitud', async () => {
+    const onPress = jest.fn(); const props = await mount({ onPress });
+    expect(typeof props.onMapClick).toBe('function');
+    expect(typeof props.onPOIClick).toBe('function');
+    expect(typeof props.onCircleClick).toBe('function');
+    for (const coordinates of [{ latitude: 19.4 }, { longitude: -99.1 }]) {
+      await fireEvent(screen.getByTestId('map-view'), 'mapClick', { coordinates });
+      await fireEvent(screen.getByTestId('map-view'), 'pOIClick', { coordinates });
+      await fireEvent(screen.getByTestId('map-view'), 'circleClick', { clickCoordinates: coordinates });
+    }
+    expect(onPress).not.toHaveBeenCalled();
   });
 });

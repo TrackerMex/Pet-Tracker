@@ -6,6 +6,7 @@ import { Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useUniwind } from 'uniwind';
 
+import { listGeofences } from '../../api/geofences';
 import {
   getPet,
   listPets,
@@ -17,10 +18,10 @@ import {
   listPositions,
   type LastPositionState,
 } from '../../api/positions';
-import { petKeys, positionKeys, tripKeys } from '../../api/query-keys';
+import { geofenceKeys, petKeys, positionKeys, tripKeys } from '../../api/query-keys';
 import { getDayRoute } from '../../api/trips';
 import { Card } from '../../components/card';
-import { PetMap } from '../../components/pet-map';
+import { DEFAULT_CENTER, PetMap } from '../../components/pet-map';
 import { usePetSelection } from '../../hooks/use-pet-selection';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
@@ -78,10 +79,6 @@ function fmtAgo(
   return t('map.agoHours', { hours: Math.floor(seconds / 3600) });
 }
 
-const DEFAULT_CENTER = {
-  latitude: 19.4326,
-  longitude: -99.1332,
-};
 const POLL_MS = 15000;
 
 export function MapScreen() {
@@ -116,6 +113,11 @@ export function MapScreen() {
   const route = useQuery({
     queryKey: tripKeys.dayRoute(selectedPetId ?? ''),
     queryFn: () => getDayRoute(baseUrl, token ?? '', selectedPetId!),
+    enabled: selectedPetId !== null,
+  });
+  const geofences = useQuery({
+    queryKey: geofenceKeys.list(selectedPetId ?? ''),
+    queryFn: () => listGeofences(baseUrl, token ?? '', selectedPetId!),
     enabled: selectedPetId !== null,
   });
   const refetchDetail = detail.refetch;
@@ -196,6 +198,11 @@ export function MapScreen() {
           })),
         }))
       : [];
+  const circles = geofences.data?.kind === 'ok'
+    ? geofences.data.geofences
+        .filter(({ active }) => active)
+        .map(({ id, centerLat, centerLng, radiusM }) => ({ id, center: { latitude: centerLat, longitude: centerLng }, radius: radiusM }))
+    : [];
   const latestSpeed =
     positions.data?.kind === 'ok'
       ? positions.data.items[positions.data.items.length - 1]?.speedKmh
@@ -274,6 +281,7 @@ export function MapScreen() {
             center={center}
             marker={marker}
             polylines={polylines}
+            circles={circles}
             colorScheme={theme === 'dark' ? 'dark' : 'light'}
           />
           {position === null ? (
