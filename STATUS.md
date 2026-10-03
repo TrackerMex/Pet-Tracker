@@ -88,6 +88,8 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
+- **2026-10-03**: añadidos el primer icono de la app (`pet-tracker-app-icon.png`) y el PNG monocromo adjuntado por el usuario (`pet-tracker-notification-monochrome-original.png`) a `mobile-pet-tracker/assets/images/`, conservando los archivos originales. Integración pendiente en #101.
+
 - **2026-10-03**: icono de Pet Tracker (perrito robótico violeta) aprobado por el humano y versionado como `mobile-pet-tracker/assets/images/pet-tracker-notification-color-96.png` (96×96 RGBA, fondo transparente). Sin integrar en `app.json`; la integración es #101, ampliada al icono de la app.
 
 - **`mobile-meal-schedule-editing` (#147) done** (2026-10-03, tree principal,
@@ -1305,6 +1307,8 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-10-03** — Subidos el primer icono de la app y la imagen adjunta a `docs/pet-tracker-icon-session`. Copias idénticas por SHA-256 a sus originales. Incorporada la actualización remota de la rama conservando el inventario actual de 135/148 y el historial del equipo.
 
 - **2026-10-03** — **#147 `mobile-meal-schedule-editing` cerrada** (sesion
   Frontend, tree principal): spec firmada desde Notion (`86771e3e`), enmiendas
