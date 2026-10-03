@@ -396,7 +396,7 @@ describe('#98 R10: los candados que esta feature no mueve', () => {
     expect(food.match(/style=\{CONTINUOUS_CORNER\}/g)).toHaveLength(2);
     expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31 + 1); // #41 R9: geofences-link
     expect(count(/rounded-xl bg-accent(?=[\s'"`])/g)).toBe(13 + 1 + 1); // #146 R8, #146 R9
-    expect(count(/bg-accent-soft/g)).toBe(16);
+    expect(count(/bg-accent-soft/g)).toBe(16 + 2); // #147 R4: meal-time-edit y add-meal-time-button
     expect(home.match(/text-accent-strong\b/g)).toHaveLength(2);
     expect(food.match(/text-accent-strong\b/g)).toHaveLength(1);
     expect(filesMatching(/\brounded-(?:2xl|lg|md|sm)\b/)).toEqual([]);
@@ -452,7 +452,8 @@ describe('#64 R9: el color categórico solo se nombra en el módulo de paleta', 
   });
 
   // 17 en `303fc19` − 1 el que vivía en el `PetHero` local de Profile (#67 R6).
-  it('conserva los dieciséis usos de bg-accent-soft que sí son acento', () => {
+  // + 2 de #147 R4: meal-time-edit y add-meal-time-button.
+  it('conserva los usos de bg-accent-soft que sí son acento', () => {
     const accentSoftCount = sourceFiles().reduce(
       (total, path) =>
         total + (readFileSync(path, 'utf8').match(/bg-accent-soft/g) ?? []).length,
@@ -461,7 +462,7 @@ describe('#64 R9: el color categórico solo se nombra en el módulo de paleta', 
     const reminders = readSource(join('screens', 'reminders', 'index.tsx'));
     const docs = readSource(join('screens', 'docs', 'index.tsx'));
 
-    expect(accentSoftCount).toBe(16);
+    expect(accentSoftCount).toBe(16 + 2); // #147 R4
     expect(reminders.match(/bg-accent-soft/g)).toHaveLength(1);
     expect(docs.match(/bg-accent-soft/g)).toBeNull();
   });

@@ -1,4 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
+import { Host } from '@expo/ui';
+import ExpoDateTimePicker from '@expo/ui/community/datetime-picker';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Redirect } from 'expo-router';
 import { Button, Skeleton } from 'heroui-native';
 import { useState } from 'react';
@@ -7,13 +9,17 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Clock, ForkKnife } from 'reicon-react-native';
 
 import {
+  addMealTime,
+  moveMealTime,
   generateNutritionPlan,
   getNutritionPlan,
   getNutritionProfile,
+  type EditMealTimeState,
   type NutritionPlanState,
   type NutritionProfileState,
 } from '../../api/nutrition';
-import { nutritionKeys } from '../../api/query-keys';
+import { getPet } from '../../api/pets';
+import { nutritionKeys, petKeys } from '../../api/query-keys';
 import { Card } from '../../components/card';
 import { useAuth } from '../../providers/auth-provider';
 import { useTranslate } from '../../providers/language-provider';
@@ -29,6 +35,17 @@ function isProfileError(state: NutritionProfileState): boolean {
   return ['error', 'unreachable', 'missing-config'].includes(state.kind);
 }
 
+function pickerValue(mealTime: string): Date {
+  const [hours, minutes] = mealTime.split(':').map(Number);
+  const date = new Date();
+  date.setHours(hours, minutes, 0, 0);
+  return date;
+}
+
+function toMealTime(date: Date): string {
+  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+}
+
 function MealScheduleContent({ petId }: { petId: string }) {
   const [accent, accentForeground] = useThemeColors([
     'accent-strong',
@@ -38,6 +55,10 @@ function MealScheduleContent({ petId }: { petId: string }) {
   const { signOut, token } = useAuth();
   const t = useTranslate();
   const insets = useSafeAreaInsets();
+  const queryClient = useQueryClient();
+  const [editError, setEditError] = useState<string | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [picker, setPicker] = useState<{ from: string | null } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
   const plan = useQuery({
@@ -48,6 +69,11 @@ function MealScheduleContent({ petId }: { petId: string }) {
     queryKey: nutritionKeys.profile(petId),
     queryFn: () => getNutritionProfile(baseUrl, token ?? '', petId),
   });
+  const pet = useQuery({
+    queryKey: petKeys.detail(petId),
+    queryFn: () => getPet(baseUrl, token ?? '', petId),
+  });
+  const isOwner = pet.data?.kind === 'ok' && pet.data.pet.myRole === 'owner';
   const loadedPlan = plan.data?.kind === 'ok' ? plan.data.plan : null;
   const loadedProfile =
     profile.data?.kind === 'ok' ? profile.data.profile : null;
@@ -61,6 +87,55 @@ function MealScheduleContent({ petId }: { petId: string }) {
   function retryAll() {
     plan.refetch();
     profile.refetch();
+  }
+
+  async function runMealTimeEdit(request: () => Promise<EditMealTimeState>) {
+    setEditing(true);
+    setEditError(null);
+    try {
+      const result = await request();
+      switch (result.kind) {
+        case 'ok':
+          await plan.refetch();
+          await queryClient.refetchQueries({ queryKey: petKeys.detail(petId) });
+          return;
+        case 'invalid':
+          setEditError(t('mealSchedule.errorInvalidTime'));
+          return;
+        case 'forbidden':
+          setEditError(t('mealSchedule.errorEditForbidden'));
+          return;
+        case 'unprocessable':
+          switch (result.code) {
+            case 'NUTRITION_PLAN_REQUIRED':
+              setEditError(t('mealSchedule.errorPlanRequired'));
+              break;
+            case 'MEAL_TIME_NOT_IN_PLAN':
+              setEditError(t('mealSchedule.errorTimeNotInPlan'));
+              break;
+            case 'MEAL_TIME_DUPLICATE':
+              setEditError(t('mealSchedule.errorDuplicateTime'));
+              break;
+            case 'MEAL_TIMES_LIMIT_REACHED':
+              setEditError(t('mealSchedule.errorMealLimit'));
+              break;
+          }
+          return;
+        case 'unauthorized':
+          await signOut();
+          return;
+        case 'unreachable':
+          setEditError(t('common.cannotReachServer'));
+          return;
+        case 'error':
+        case 'missing-config':
+          setEditError(t('common.somethingWentWrong'));
+      }
+    } catch {
+      setEditError(t('common.somethingWentWrong'));
+    } finally {
+      setEditing(false);
+    }
   }
 
   async function handleGenerate() {
@@ -179,7 +254,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
             </View>
           </Card>
 
-          <View className="gap-3">
+          <View testID="meal-times-section" className="gap-3">
             <Text className="text-xs font-semibold uppercase tracking-widest text-muted">
               {t('mealSchedule.timesAndPortions')}
             </Text>
@@ -206,10 +281,64 @@ function MealScheduleContent({ petId }: { petId: string }) {
                   <Text className="font-semibold text-muted">
                     {portionGrams} g
                   </Text>
+                  {isOwner ? (
+                    <Button
+                      testID={`meal-time-edit-${index}`}
+                      accessibilityLabel={t('mealSchedule.editTimeLabel', { time: mealTime })}
+                      variant="secondary"
+                      size="sm"
+                      isDisabled={editing}
+                      className="min-h-11 rounded-xl bg-accent-soft"
+                      onPress={() => setPicker({ from: mealTime })}
+                    >
+                      <Button.Label className="font-semibold text-accent-strong">
+                        {t('mealSchedule.editTime')}
+                      </Button.Label>
+                    </Button>
+                  ) : null}
                 </Card>
               );
             })}
+            {isOwner && editError !== null ? (
+              <Text testID="meal-time-error" selectable className="text-danger">
+                {editError}
+              </Text>
+            ) : null}
+            {isOwner ? (
+              <Button
+                testID="add-meal-time-button"
+                isDisabled={editing}
+                variant="secondary"
+                className="rounded-xl bg-accent-soft"
+                onPress={() => setPicker({ from: null })}
+              >
+                <Button.Label className="font-bold text-accent-strong">
+                  {t('mealSchedule.addMeal')}
+                </Button.Label>
+              </Button>
+            ) : null}
           </View>
+          {picker !== null ? (
+            <Host matchContents>
+              <ExpoDateTimePicker
+                testID="meal-time-picker"
+                mode="time"
+                presentation="dialog"
+                value={pickerValue(picker.from ?? '12:00')}
+                onValueChange={(_event, selected) => {
+                  const { from } = picker;
+                  setPicker(null);
+                  const mealTime = toMealTime(selected);
+                  if (from === null) {
+                    void runMealTimeEdit(() => addMealTime(baseUrl, token ?? '', petId, mealTime));
+                  } else if (mealTime !== from) {
+                    void runMealTimeEdit(() => moveMealTime(baseUrl, token ?? '', petId, from, mealTime));
+                  }
+                }}
+                onDismiss={() => setPicker(null)}
+              />
+            </Host>
+          ) : null}
         </>
       ) : null}
 

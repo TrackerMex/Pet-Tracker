@@ -47,13 +47,13 @@ function LocaleProbe() {
 }
 
 describe('#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y parámetros', () => {
-  // 259 en `303fc19` + 1 de `home.walks` (#67 R7b) + 16 de #68 + 14 de #78 + 2 de #73 + 1 de #90 + 4 de #98 - 6 de #95 R5 (las seis claves de volver) + 1 de #113 R3 (food.kcalConsumedOfTarget) + 2 de #99 R3 (profile.notificationsBlocked, profile.openSettings) + 3 de #100 R1 (alerts.detailTitle, alerts.statusOpen, alerts.openedAt) + 11 de #41 R1 (geofences.*) + 12 de #146 R1 (geofenceEditor.*) + 2 de #146 R1 (geofenceEditor.limitNotice, geofenceEditor.ownerOnly).
+  // 259 en `303fc19` + 1 de `home.walks` (#67 R7b) + 16 de #68 + 14 de #78 + 2 de #73 + 1 de #90 + 4 de #98 - 6 de #95 R5 (las seis claves de volver) + 1 de #113 R3 (food.kcalConsumedOfTarget) + 2 de #99 R3 (profile.notificationsBlocked, profile.openSettings) + 3 de #100 R1 (alerts.detailTitle, alerts.statusOpen, alerts.openedAt) + 11 de #41 R1 (geofences.*) + 12 de #146 R1 (geofenceEditor.*) + 2 de #146 R1 (geofenceEditor.limitNotice, geofenceEditor.ownerOnly) + 9 de #147 R1 (mealSchedule.* del horario editable).
   it('mantiene la base más las claves de #68 y los mismos marcadores en ambos idiomas', () => {
     const englishKeys = Object.keys(en).sort();
     const spanishKeys = Object.keys(es).sort();
 
     expect(englishKeys).toHaveLength(
-      260 + 16 + 1 + 4 + 7 + 14 + 2 + 1 + 4 - 6 + 1 + 2 + 3 + 11 + 12 + 2,
+      260 + 16 + 1 + 4 + 7 + 14 + 2 + 1 + 4 - 6 + 1 + 2 + 3 + 11 + 12 + 2 + 9,
     );
     expect(spanishKeys).toEqual(englishKeys);
     for (const key of englishKeys) {
@@ -333,6 +333,39 @@ describe('#78 R3: el catálogo trae las claves del centro de alertas', () => {
     for (const [key, englishValue, spanishValue] of translations) {
       expect(english[key]).toBe(englishValue);
       expect(spanish[key]).toBe(spanishValue);
+    }
+  });
+});
+
+
+describe('#147 R1: el catálogo trae las nueve claves del horario editable', () => {
+  it('registra las nueve claves en los dos idiomas y en la tabla de la spec de idioma', () => {
+    const english = en as Record<string, string>;
+    const spanish = es as Record<string, string>;
+    const languageDesign = readFileSync(
+      join(process.cwd(), '../specs/mobile-ui-language/design.md'),
+      'utf8',
+    );
+    const translations = [
+      ["mealSchedule.addMeal", "Add meal", "Añadir comida"],
+      ["mealSchedule.editTime", "Edit", "Editar"],
+      ["mealSchedule.editTimeLabel", "Edit {{time}} meal time", "Editar horario de las {{time}}"],
+      ["mealSchedule.errorInvalidTime", "That time is not valid", "La hora no es válida"],
+      ["mealSchedule.errorEditForbidden", "Only the owner can change meal times", "Solo el dueño puede cambiar los horarios"],
+      ["mealSchedule.errorPlanRequired", "Generate a meal plan first", "Primero genera un plan de alimentación"],
+      ["mealSchedule.errorTimeNotInPlan", "That meal time is no longer in the plan", "Ese horario ya no está en el plan"],
+      ["mealSchedule.errorDuplicateTime", "There is already a meal at that time", "Ya hay una comida a esa hora"],
+      ["mealSchedule.errorMealLimit", "The plan already has the maximum of 6 meals", "El plan ya tiene el máximo de 6 comidas"],
+    ] as const;
+
+    for (const [key, englishValue, spanishValue] of translations) {
+      expect(english[key]).toBe(englishValue);
+      expect(spanish[key]).toBe(spanishValue);
+      expect(languageDesign).toMatch(
+        new RegExp(
+          '\\| — \\| `' + escapeRegExp(key) + '`[^\\n]*← añadida por #147 \\(R1\\)',
+        ),
+      );
     }
   });
 });

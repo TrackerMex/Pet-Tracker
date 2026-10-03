@@ -139,8 +139,8 @@ describe('#65 R5: Health resuelve su copy por clave', () => {
 });
 
 describe('#65 R6: Food resuelve su copy por clave', () => {
-  it('resuelve las 38 ocurrencias normativas', () => {
-    expect(R6_FOOD).toHaveLength(35 + 3 + 1 - 2 + 1); // +1 #95 R4, -2 #95 R5, +1 #113 R3
+  it('resuelve las 50 ocurrencias normativas', () => {
+    expect(R6_FOOD).toHaveLength(35 + 3 + 1 - 2 + 1 + 3 + 9); // +1 #95 R4, -2 #95 R5, +1 #113 R3, +3 #147 R8, +9 #147 R9
     checkUses(R6_FOOD);
   });
 });
@@ -497,5 +497,26 @@ describe('#65 R18: los sitios resuelven por clave y no queda copy suelta', () =>
 
       expect({ file, looseCopy }).toEqual({ file, looseCopy: [] });
     }
+  });
+});
+
+
+describe('#147 R9: el copy del horario editable queda registrado', () => {
+  it('nombra las nueve ocurrencias nuevas y las resuelve en su fichero', () => {
+    const keys: TranslationKey[] = [
+      'mealSchedule.addMeal',
+      'mealSchedule.editTime',
+      'mealSchedule.editTimeLabel',
+      'mealSchedule.errorInvalidTime',
+      'mealSchedule.errorEditForbidden',
+      'mealSchedule.errorPlanRequired',
+      'mealSchedule.errorTimeNotInPlan',
+      'mealSchedule.errorDuplicateTime',
+      'mealSchedule.errorMealLimit',
+    ];
+    const rows = R6_FOOD.filter(({ key }) => keys.includes(key));
+    expect(rows.map(({ key }) => key)).toEqual(keys);
+    expect(rows.every(({ file }) => file === 'src/screens/meal-schedule/index.tsx')).toBe(true);
+    checkUses(rows);
   });
 });
