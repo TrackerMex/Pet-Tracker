@@ -72,8 +72,8 @@ ellos y los candea con tests que leen la cabecera PNG.
 >
 > **Base de tests sin medir.** Esta spec no corre jest. Referencia: `STATUS.md`
 > cita móvil **90 suites / 1913 tests** tras integrar #146 y #147. Delta
-> estimado de esta spec: **+1 suite, +16 tests** (7 en `app.assets.test.ts`,
-> 9 en `app.config.test.ts`). El leader re-mide al preparar el handoff.
+> estimado de esta spec: **+1 suite, +15 tests** (7 en `app.assets.test.ts`,
+> 8 en `app.config.test.ts`; errata del 2026-10-03: decía +16/9, pero los literales de R2–R9 son ocho). El leader re-mide al preparar el handoff.
 >
 > **Regla de prefijo:** todo `describe` nuevo nombra `#101 R<n>`; nunca un
 > `#101` suelto en código ni en tests.

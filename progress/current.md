@@ -10,7 +10,7 @@
 - **Spec:** `specs/mobile-app-and-notification-icons/` (borrador `c112367c`; enmienda D7 `7e315531`; **firma de aprobación `add2dade`**, 2026-10-03)
 - **Espejo Notion:** https://app.notion.com/p/3ee6115a9b27811d9920ded211b9c8f8 — `Estado del gate = Aprobado`, `Rol actual = Implementer` (2026-10-03)
 - **Handoff:** `progress/handoff_mobile-app-and-notification-icons.md` (sin skills de expo; un rojo y un verde por R en el orden R2, R8, R3, R4, R5, R6, R7, R9; trazabilidad en un `docs` final)
-- **Línea base** (suite móvil en `add2dade`, medida por el leader): 90 suites / 1913 tests, exit 0 (`bunx jest --ci`); esperado al cierre 91 / 1929
+- **Línea base** (suite móvil en `add2dade`, medida por el leader): 90 suites / 1913 tests, exit 0 (`bunx jest --ci`); esperado al cierre 91 / 1928 (la spec decía +16: errata, son +15)
 - **Sesión paralela:** Frontend trabaja #105 (`feature/105-meals-history`, `in_progress` desde 2026-10-03 en su propia branch) en el worktree principal; su Codex toca `backend-pet-tracker/` y `mobile-pet-tracker/` (pantallas), el nuestro solo `app.json`, los dos tests de raíz, `scripts/` y `assets/images/`. Cada `feature_list.json` de branch lleva una sola `in_progress`, así que `./init.sh` no aborta en ninguno de los dos worktrees; el choque es solo el conflicto de `feature_list.json` al mergear la segunda PR. Postgres/LocalStack compartidos: avisarnos antes de cada `./init.sh`.
 
 ### Bloqueado por el humano

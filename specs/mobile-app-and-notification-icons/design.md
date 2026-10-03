@@ -107,7 +107,7 @@ tags: [harness, spec, mobile]
   - `toContainEqual(['expo-notifications', { defaultChannel: 'default' }])`
     → `toContainEqual(['expo-notifications', expect.objectContaining({ defaultChannel: 'default' })])`.
   El segundo `it` de ese `describe` y el resto del fichero no cambian. Se
-  añaden nueve `describe('#101 R<n>: …')` con un `it` cada uno (literales en
+  añaden ocho `describe('#101 R<n>: …')` con un `it` cada uno (literales en
   [[requirements]]): R2, R3, R4, R5, R6, R7, R8, R9 y el tuple exacto de cada
   plugin se asevera con `toContainEqual([nombre, { …tres claves… }])`
   (igualdad profunda: una clave de más o de menos rompe). Para
@@ -124,7 +124,7 @@ Todo en `mobile-pet-tracker/` (capa infraestructura/config; nada en
 `src/`):
 
 - `app.json` — las cuatro ediciones de arriba (R5, R6, R7).
-- `app.config.test.ts` — dos relajaciones en `#79 R2` + nueve `describe` `#101`.
+- `app.config.test.ts` — dos relajaciones en `#79 R2` + ocho `describe` `#101` (errata 2026-10-03: decía nueve).
 - `app.assets.test.ts` — **nuevo**, siete `describe` `#101` (R2–R8).
 - `scripts/make-icons.mjs` — **nuevo**, one-off (D6). No es test ni fuente
   de la app.
