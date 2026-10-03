@@ -1,11 +1,10 @@
 # pet-tracker — Status
 
-**Última actualización**: 2026-08-29
-**Features completadas**: 51/57 (`feature_list.json`)
-**En progreso**: #54 `android-map-never-ready` (spec aprobada 2026-08-28, en manos de Codex CLI)
+**Última actualización**: 2026-10-02
+**Features completadas**: 54/59 (`feature_list.json`)
+**En progreso**: ninguna (según `feature_list.json`)
 
-**Pendientes**: 4 (#18, #41, #42, #53). #54 migra el tab Map de `react-native-maps` a `expo-maps`: el discriminador en dispositivo (`progress/discriminador_android-map-never-ready.md`) probó que el mapa solo pinta el watermark porque su `SurfaceView` no se compone bajo Fabric, no por la clave ni por el ciclo de vida. Su R8 es un smoke humano en dev build de Android que exige tiles + marker + polyline en ambos temas. Fuente del diseño Figma versionada en
-`specs/mobile-figma-polish/design-src/`.
+**Pendientes**: 5 (#18, #41, #42, #53, #59).
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
 desde 2026-08-10. Hay recursos vivos en la cuenta, aunque hoy sin coste.
@@ -73,6 +72,8 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Estado actual
+
+- **2026-10-02**: icono de Pet Tracker creado con las referencias del usuario y la skill create-logo. PNG entregado como propuesta visual; integración en la app pendiente. Inventario actualizado a 54/59, sin features en progreso.
 
 - **`auth-forgot-password` (#44) done** (2026-08-28): endpoints públicos de
   solicitud/reset con respuesta uniforme, token opaco SHA-256 de un solo uso
@@ -821,6 +822,8 @@ debe listar las 4 URLs de cola.
 ---
 
 ## Última sesión
+
+- **2026-10-02** — Creado el icono estático de Pet Tracker con imagegen: perrito robótico violeta y pin de ubicación. Entregado PNG fuera del código de la app. Verificación general interrumpida en las pruebas móviles, sin resultado final de init.sh. Siguiente: integrar el recurso si el usuario lo solicita.
 
 - **2026-08-28** — #44 `auth-forgot-password` **cerrada** (49/54). Codex
   implementó R1–R13 con TDD estricto por requisito, migración 0015, entrega

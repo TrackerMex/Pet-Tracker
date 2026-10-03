@@ -2326,3 +2326,11 @@ Flake de `add-pet` por mocks sin reinicializar. Sin trabajo en curso.
   el working tree del VPS.
 - Filas G1–G4 de `traceability.md` pasadas a confirmado (`d7931d5`).
 - Estado final: `done` (54/59). PR pendiente de crear/mergear.
+
+### 2026-10-02 — Pet Tracker app icon
+
+- Solicitud: crear el icono a partir de dos referencias y la skill pública create-logo.
+- Entrega: PNG estático con perrito robótico violeta y pin de ubicación, generado con imagegen y guardado como artefacto visual de esta conversación.
+- Código de la app y feature_list.json sin cambios; integración pendiente de solicitud.
+- STATUS.md sincronizado con el inventario real: 54/59 completadas y cinco pendientes.
+- Verificación: build completado y pruebas de backend/infra ejecutadas; init.sh interrumpido al dejar de producir resultados la suite móvil. No se declara ninguna feature completada en esta sesión.
