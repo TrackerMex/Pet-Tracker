@@ -226,6 +226,12 @@ describe('#79 R2: app.json declara el plugin de notificaciones y POST_NOTIFICATI
   });
 });
 
+describe('#101 R2: icono de la app', () => {
+  it('expo.icon es ./assets/images/icon.png', () => {
+    expect(appJson.expo.icon).toBe('./assets/images/icon.png');
+  });
+});
+
 describe('#79 R14: google-services.json se declara solo cuando existe', () => {
   const originalApiKey = process.env.GOOGLE_MAPS_API_KEY_ANDROID;
   const originalResetLinkHost = process.env.RESET_LINK_HOST;
