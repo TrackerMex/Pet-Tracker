@@ -263,6 +263,19 @@ describe('#101 R5: fondo plano del adaptive icon', () => {
   });
 });
 
+describe('#101 R6: splash con el perrito sobre violeta', () => {
+  it('el plugin expo-splash-screen declara splash-icon.png sobre #9460FC con imageWidth 200', () => {
+    expect(appJson.expo.plugins).toContainEqual([
+      'expo-splash-screen',
+      {
+        backgroundColor: '#9460FC',
+        image: './assets/images/splash-icon.png',
+        imageWidth: 200,
+      },
+    ]);
+  });
+});
+
 describe('#79 R14: google-services.json se declara solo cuando existe', () => {
   const originalApiKey = process.env.GOOGLE_MAPS_API_KEY_ANDROID;
   const originalResetLinkHost = process.env.RESET_LINK_HOST;

@@ -69,3 +69,18 @@ describe('#101 R5: fondo plano del adaptive icon', () => {
     expect(existsSync(join(__dirname, 'assets/images/android-icon-background.png'))).toBe(false);
   });
 });
+
+describe('#101 R6: splash con el perrito sobre violeta', () => {
+  it('splash-icon.png (plugin expo-splash-screen) mide 1024x1024 RGBA', () => {
+    const plugin = appJson.expo.plugins.find(
+      (entry) => Array.isArray(entry) && entry[0] === 'expo-splash-screen',
+    ) as [string, { image: string }];
+
+    expect(readIhdr(plugin[1].image)).toEqual({
+      width: 1024,
+      height: 1024,
+      bitDepth: 8,
+      colorType: 6,
+    });
+  });
+});
