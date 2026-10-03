@@ -486,4 +486,14 @@ describe('#147 R3: moveMealTime publica el PATCH y mapea por kind', () => {
     await expect(moveMealTime(undefined, 'jwt-token', 'pet-1', '19:30', '20:05', fetchFn)).resolves.toEqual({ kind: 'missing-config' });
     expect(fetchFn).not.toHaveBeenCalled();
   });
+
+  it.each([
+    { label: '422 NUTRITION_PLAN_REQUIRED', backend: response(422, { code: 'NUTRITION_PLAN_REQUIRED' }), expected: { kind: 'unprocessable', code: 'NUTRITION_PLAN_REQUIRED' } },
+    { label: '422 MEAL_TIMES_LIMIT_REACHED', backend: response(422, { code: 'MEAL_TIMES_LIMIT_REACHED' }), expected: { kind: 'unprocessable', code: 'MEAL_TIMES_LIMIT_REACHED' } },
+    { label: '422 SOMETHING_ELSE', backend: response(422, { code: 'SOMETHING_ELSE' }), expected: { kind: 'error' } },
+    { label: '422 JSON inválido', backend: invalidJsonResponse(422), expected: { kind: 'error' } },
+  ])('PATCH mapea $label como la tabla de R2', async ({ backend, expected }) => {
+    const fetchFn = jest.fn().mockResolvedValue(backend) as unknown as typeof fetch;
+    await expect(moveMealTime(baseUrl, 'jwt-token', 'pet-1', '19:30', '20:05', fetchFn)).resolves.toEqual(expected);
+  });
 });
