@@ -212,7 +212,7 @@ describe('#79 R2: app.json declara el plugin de notificaciones y POST_NOTIFICATI
     ]);
     expect(expo.plugins).toContainEqual([
       'expo-notifications',
-      { defaultChannel: 'default' },
+      expect.objectContaining({ defaultChannel: 'default' }),
     ]);
   });
 

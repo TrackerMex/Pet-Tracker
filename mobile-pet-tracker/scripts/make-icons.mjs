@@ -27,3 +27,6 @@ silhouette.scan(0, 0, silhouette.bitmap.width, silhouette.bitmap.height, (_x, _y
 await new Jimp(1024, 1024, 0x00000000)
   .composite(silhouette.clone().resize(676, 676, Jimp.RESIZE_BICUBIC), 174, 174)
   .writeAsync(`${images}/android-icon-monochrome.png`);
+
+await silhouette.clone().resize(96, 96, Jimp.RESIZE_BICUBIC)
+  .writeAsync(`${images}/pet-tracker-notification-96.png`);

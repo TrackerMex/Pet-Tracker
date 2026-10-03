@@ -40,6 +40,8 @@
       [
         "expo-notifications",
         {
+          "icon": "./assets/images/pet-tracker-notification-96.png",
+          "color": "#9460FC",
           "defaultChannel": "default"
         }
       ]
