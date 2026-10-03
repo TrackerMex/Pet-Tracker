@@ -73,7 +73,7 @@ debe listar las 4 URLs de cola.
 
 ## Estado actual
 
-- **2026-10-02**: icono de Pet Tracker creado con las referencias del usuario y la skill create-logo. PNG entregado como propuesta visual; integración en la app pendiente. Inventario actualizado a 54/59, sin features en progreso.
+- **2026-10-02**: icono de Pet Tracker creado con las referencias del usuario y la skill create-logo. PNG entregado como propuesta visual; añadido icono de notificaciones de 96×96, blanco con fondo transparente. Integración en la app pendiente. Inventario actualizado a 54/59, sin features en progreso.
 
 - **`auth-forgot-password` (#44) done** (2026-08-28): endpoints públicos de
   solicitud/reset con respuesta uniforme, token opaco SHA-256 de un solo uso
@@ -823,7 +823,7 @@ debe listar las 4 URLs de cola.
 
 ## Última sesión
 
-- **2026-10-02** — Creado el icono estático de Pet Tracker con imagegen: perrito robótico violeta y pin de ubicación. Entregado PNG fuera del código de la app. Verificación general interrumpida en las pruebas móviles, sin resultado final de init.sh. Siguiente: integrar el recurso si el usuario lo solicita.
+- **2026-10-02** — Creado el icono estático de Pet Tracker con imagegen: perrito robótico violeta y pin de ubicación. Entregados PNG del icono principal y del icono monocromo de notificaciones (96×96) fuera del código de la app. Verificación general interrumpida en las pruebas móviles, sin resultado final de init.sh. Siguiente: integrar el recurso si el usuario lo solicita.
 
 - **2026-08-28** — #44 `auth-forgot-password` **cerrada** (49/54). Codex
   implementó R1–R13 con TDD estricto por requisito, migración 0015, entrega
