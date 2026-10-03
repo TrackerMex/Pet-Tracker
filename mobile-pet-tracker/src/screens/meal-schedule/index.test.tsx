@@ -1033,4 +1033,20 @@ describe('#147 R8: cada error del contrato tiene su mensaje', () => {
     await act(async () => resolve({ kind: 'ok' }));
     await waitFor(() => expect(screen.getByTestId('meal-time-edit-0').props.accessibilityState).not.toEqual(expect.objectContaining({ disabled: true })));
   });
+
+  it('401 en Añadir cierra sesión sin mensaje', async () => {
+    const signOut = jest.fn();
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut });
+    mockAddMealTime.mockResolvedValue({ kind: 'unauthorized' });
+    await renderMealSchedule();
+    await fireEvent.press(await screen.findByTestId('add-meal-time-button'));
+    await fireEvent(screen.getByTestId('meal-time-picker'), 'onValueChange', {}, new Date(2026, 9, 2, 8, 5));
+    await waitFor(() => {
+      expect(signOut).toHaveBeenCalledTimes(1);
+      expect(screen.getByTestId('meal-time-edit-0').props.accessibilityState).not.toEqual(expect.objectContaining({ disabled: true }));
+    });
+    expect(screen.queryByTestId('meal-time-error')).toBeNull();
+    expect(mockGetNutritionPlan).toHaveBeenCalledTimes(1);
+    expect(mockGetPet).toHaveBeenCalledTimes(1);
+  });
 });
