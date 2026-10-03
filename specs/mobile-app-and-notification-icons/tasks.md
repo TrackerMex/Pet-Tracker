@@ -15,26 +15,24 @@ tags: [harness, spec, mobile]
 ## Precondiciones
 
 - [ ] Spec aprobada ([[requirements]] §Aprobación, casilla principal).
-- [ ] Casilla «Asset R1 entregado» marcada: `assets/images/pet-tracker-app-icon-foreground.png`
-      está en la branch (el humano lo commitea antes del handoff).
 - [ ] `cd mobile-pet-tracker && bun install --frozen-lockfile` exit 0 (el
       worktree no trae `node_modules`); `test ! -e .expo/types/router.d.ts`.
 - [ ] `ls node_modules/jimp-compact/dist/jimp.js` existe.
 
-## R1 — Fuente del adaptive icon entregada por el humano
+## R1 — Fuentes del humano intactas
 
-- [ ] (1) `app.assets.test.ts` nuevo con el helper `readIhdr` y el
-      `describe('#101 R1: …')`. Nota: si la fuente ya está en el árbol
-      (precondición), este test **nace verde**; es la única excepción al
-      rojo-primero porque el sujeto lo crea el humano, no Codex. Comprobar
-      el rojo mutando la expectativa (`height: 1023`) antes de dejarla en
-      1024, y decirlo en `progress/impl_<feature>.md`.
-- [ ] (2) Nada que implementar (el fichero es del humano).
+- [ ] (1) Sin test jest. Candado: `git diff --stat d29d49d5 --` sobre las
+      tres rutas `pet-tracker-*` de [[design]] §Verificaciones del reviewer,
+      vacío al cerrar.
+- [ ] (2) Nada que implementar: ningún commit toca esas tres rutas ni añade
+      un asset nuevo bajo `assets/images/` fuera de
+      `pet-tracker-notification-96.png` (R7).
 - [ ] (3) Refactor: ninguno.
 
 ## R2 — Icono de la app (`icon.png`)
 
-- [ ] (1) Tests: `#101 R2` en `app.assets.test.ts` y en `app.config.test.ts`.
+- [ ] (1) Tests: `#101 R2` en `app.assets.test.ts` (**nuevo**, con el helper
+      `readIhdr`) y en `app.config.test.ts`.
       Los dos **nacen verdes**: el `icon.png` de la plantilla ya mide
       1024×1024 RGBA y la ruta no cambia; son candados de no-regresión sobre
       bytes nuevos. Comprobar el rojo con la mutación (`height: 1023`) y
@@ -56,14 +54,20 @@ tags: [harness, spec, mobile]
 
 - [ ] (1) Tests rojos: `#101 R3` en `app.assets.test.ts` (rojo real: el
       foreground de la plantilla mide 512×512) y en `app.config.test.ts`.
-- [ ] (2) Añadir la copia al script y correrlo.
+- [ ] (2) Añadir al script la fila del foreground ([[design]] tabla: resize
+      1254→676 y `composite` en (174, 174) sobre lienzo transparente de
+      1024, D7) y correrlo. Anotar en `progress/impl_<feature>.md` la salida
+      del comando de bbox de [[design]] §Verificaciones del reviewer
+      (`{x0:174,y0:174,x1:849,y1:849}`).
 - [ ] (3) Refactor con tests verdes.
 
 ## R4 — Monochrome del adaptive icon
 
 - [ ] (1) Tests rojos: `#101 R4` en `app.assets.test.ts` (rojo real: la
       plantilla mide 432×432) y en `app.config.test.ts`.
-- [ ] (2) Añadir el `scan` R=G=B=255 al script y correrlo.
+- [ ] (2) Añadir al script la fila del monochrome (umbral D5 sobre
+      `monochrome-original` a 1254, R=G=B=255, resize 1254→676, `composite`
+      en (174, 174)) y correrlo. Anotar la bbox (dentro de `[174, 850]`).
 - [ ] (3) Refactor con tests verdes.
 
 ## R5 — Fondo plano del adaptive icon
@@ -75,7 +79,7 @@ tags: [harness, spec, mobile]
       `git rm mobile-pet-tracker/assets/images/android-icon-background.png`.
 - [ ] (3) Refactor con tests verdes.
 
-## R6 — Splash con el perrito sobre violeta
+## R6 — Splash con el icono sobre violeta
 
 - [ ] (1) Tests rojos: `#101 R6` en `app.config.test.ts` y en
       `app.assets.test.ts` (rojo real: 228×213 hoy).
@@ -110,7 +114,8 @@ tags: [harness, spec, mobile]
 - [ ] Suite móvil completa verde y `tsc --noEmit` exit 0; anotar recuento de
       suites/tests en `progress/impl_<feature>.md`.
 - [ ] `git diff --stat d29d49d5 -- mobile-pet-tracker/package.json bun.lock
-      mobile-pet-tracker/src` vacío.
+      mobile-pet-tracker/src` vacío; ídem sobre las tres fuentes
+      `pet-tracker-*` (R1).
 - [ ] [[traceability]] con hash por fila.
 
 ## R10 — Prueba en dispositivo (humano)

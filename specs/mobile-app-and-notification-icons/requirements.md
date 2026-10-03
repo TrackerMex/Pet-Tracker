@@ -72,7 +72,7 @@ ellos y los candea con tests que leen la cabecera PNG.
 >
 > **Base de tests sin medir.** Esta spec no corre jest. Referencia: `STATUS.md`
 > cita móvil **90 suites / 1913 tests** tras integrar #146 y #147. Delta
-> estimado de esta spec: **+1 suite, +17 tests** (8 en `app.assets.test.ts`,
+> estimado de esta spec: **+1 suite, +16 tests** (7 en `app.assets.test.ts`,
 > 9 en `app.config.test.ts`). El leader re-mide al preparar el handoff.
 >
 > **Regla de prefijo:** todo `describe` nuevo nombra `#101 R<n>`; nunca un
@@ -83,8 +83,9 @@ ellos y los candea con tests que leen la cabecera PNG.
 Decisiones cerradas por el humano el 2026-10-03 (no se reabren): tinte de
 notificación `#9460FC`; `adaptiveIcon.backgroundColor` plano `#9460FC`;
 splash con el perrito sobre `#9460FC` dentro de esta feature; `ios.icon`
-intacto; `web.favicon` regenerado; foreground del adaptive icon entregado por
-el humano sobre transparente a 1024×1024.
+intacto; `web.favicon` regenerado; **las tres fuentes de `5d3dfdca` y
+`463c1ee9` son todo el arte: no hay cuarto asset** (cerrado el 2026-10-03 al
+revisar el borrador; de ahí D7).
 
 Decisiones que toma esta spec y que el humano firma con la aprobación:
 
@@ -107,24 +108,43 @@ Decisiones que toma esta spec y que el humano firma con la aprobación:
   reescala hacia arriba (con 100 dp se tiraría la mitad de la resolución).
   En Android 12+ el sistema pinta `windowSplashScreenAnimatedIcon` dentro de
   un círculo de 240 dp del que solo el 66 % central (160 dp) está
-  garantizado: el perrito ocupa el 66 % central del PNG de 1024 (R1), es
+  garantizado: el icono ocupa el 66 % central del PNG de 1024 (R3, D7), es
   decir ~133 dp de los 200, y cabe. Con `imageWidth` mayor que 240 el borde
-  del perrito saldría del círculo.
+  del icono saldría del círculo.
 - **D4 — `splash-icon.png` es una copia byte a byte del foreground**
   (`android-icon-foreground.png`). Las dos superficies exigen la misma
   geometría (arte en el 66 % central) y así hay una sola fuente de verdad.
   Se conserva la ruta `./assets/images/splash-icon.png` para no cambiar más
   claves de `app.json` que las necesarias.
-- **D5 — umbral de alfa 128** para el icono de notificación, aplicado a
-  1254×1254 **antes** de reducir a 96×96. El alfa de la fuente es bimodal
-  (tabla de arriba): el umbral conserva 395 091 px, recorta los ~17 000 px
-  de borde semitransparente y la reducción bicúbica vuelve a suavizar el
-  contorno a 96 px. Umbralizar después de reducir dejaría el contorno
-  dentado.
+- **D5 — umbral de alfa 128** para las dos derivadas de la silueta (R4, R7),
+  aplicado a 1254×1254 **antes** de reducir (a 676 para R4, a 96 para R7).
+  El alfa de la fuente es bimodal (tabla de arriba): el umbral conserva
+  395 091 px, recorta los ~17 000 px de borde semitransparente (y los 48 px
+  de alfa 1 pegados a x = 0) y la reducción bicúbica vuelve a suavizar el
+  contorno. Umbralizar después de reducir dejaría el contorno dentado.
 - **D6 — el script de derivación se commitea** en
   `mobile-pet-tracker/scripts/make-icons.mjs` para que la próxima vez que
   cambie el arte baste con volver a correrlo. No añade dependencia y no entra
   en ningún gate (ver §Contexto).
+- **D7 — el foreground del adaptive icon es el icono completo encajado en la
+  zona segura**, no un perrito recortado sobre transparente. El arte de
+  `pet-tracker-app-icon.png` llena el lienzo (la silueta llega al 97 % del
+  ancho) y no existe el perrito sin fondo a resolución útil (`color-96` mide
+  96 px). Receta: lienzo transparente de 1024×1024, el icono reducido de 1254
+  a 676 (66 %) y compuesto en (174, 174); el resto del lienzo es alfa 0 y lo
+  pinta `backgroundColor`. Consecuencia visual que el humano firma: el
+  launcher muestra el icono completo (perrito sobre su degradado) recortado
+  por la forma del launcher, con las orejas enteras; el borde de paralaje y
+  las esquinas del squircle los pinta `#9460FC`, a 4–7 niveles del borde del
+  degradado (`#9863FC` arriba, `#8E59FC` abajo), por debajo de lo
+  perceptible. El splash hereda el mismo PNG (D4): cuadrado del icono de
+  ~132 dp sobre `#9460FC` en Android < 12 y disco recortado por el sistema en
+  Android 12+. *Alternativas descartadas:* (a) esperar un cuarto asset con el
+  perrito sobre transparente: el humano cerró que las tres fuentes son todo
+  el arte; (b) enmascarar el icono con el alfa de `monochrome-original`: la
+  silueta tiene los ojos huecos y no está alineada píxel a píxel con el icono;
+  (c) chroma key sobre el degradado: la cara del perrito es del mismo violeta
+  que el fondo.
 
 ## Requisitos
 
@@ -134,18 +154,15 @@ relativas a `mobile-pet-tracker/assets/images/` salvo que se diga otra cosa.
 = `w`, `readUInt32BE(20)` = `h`, byte 24 (profundidad) = 8 y byte 25 (tipo
 de color) = `tipo`. Tipo 6 = RGBA.
 
-- **R1 — Fuente del adaptive icon (gate humano propio).** WHEN el humano
-  entrega el perrito sobre fondo transparente THE SYSTEM SHALL tenerlo en
-  `mobile-pet-tracker/assets/images/pet-tracker-app-icon-foreground.png` con
-  `IHDR(1024, 1024, 6)` y con todo píxel de alfa > 0 dentro del cuadrado
-  central del 66 % (x e y en `[174, 850]`), y THE SYSTEM SHALL no arrancar la
-  implementación hasta que la casilla de §Aprobación «Asset R1 entregado»
-  esté marcada con el `sha256` y las medidas del fichero.
-  *Test:* `mobile-pet-tracker/app.assets.test.ts`,
-  `describe('#101 R1: fuente del adaptive icon entregada por el humano')`,
-  `it('pet-tracker-app-icon-foreground.png mide 1024x1024 RGBA')`. La
-  condición del 66 % la verifica el humano al firmar y el reviewer con el
-  comando de [[design]] §Verificaciones del reviewer (no es test jest).
+- **R1 — Fuentes del humano intactas.** WHILE la feature esté abierta THE
+  SYSTEM SHALL conservar byte a byte las tres fuentes de `d29d49d5`:
+  `pet-tracker-app-icon.png` (`IHDR(1254, 1254, 2)`),
+  `pet-tracker-notification-monochrome-original.png` (`IHDR(1254, 1254, 6)`)
+  y `pet-tracker-notification-color-96.png` (`IHDR(96, 96, 6)`); todo PNG
+  derivado sale de ellas por el script (D6, D7) y no entra ningún asset nuevo
+  del humano. *Sin test jest:* lo verifica el reviewer con `git diff --stat
+  d29d49d5 --` sobre las tres rutas vacío ([[design]] §Verificaciones del
+  reviewer).
 
 - **R2 — Icono de la app.** WHEN se corre el script de derivación THE SYSTEM
   SHALL escribir `icon.png` con `IHDR(1024, 1024, 6)`, resultado de reducir
@@ -157,29 +174,38 @@ de color) = `tipo`. Tipo 6 = RGBA.
   `it('expo.icon es ./assets/images/icon.png')`.
 
 - **R3 — Foreground del adaptive icon.** WHEN se corre el script THE SYSTEM
-  SHALL escribir `android-icon-foreground.png` como copia byte a byte de
-  `pet-tracker-app-icon-foreground.png` (R1), con `IHDR(1024, 1024, 6)`, AND
-  `app.json` SHALL mantener `android.adaptiveIcon.foregroundImage =
+  SHALL escribir `android-icon-foreground.png` con `IHDR(1024, 1024, 6)`:
+  lienzo transparente de 1024×1024 con `pet-tracker-app-icon.png` reducido de
+  1254 a 676 (bicúbico, sin recorte) compuesto en (174, 174), de modo que
+  todo píxel con alfa > 0 queda en el cuadrado central del 66 % (x e y en
+  `[174, 850]`) (D7), AND `app.json` SHALL mantener
+  `android.adaptiveIcon.foregroundImage =
   "./assets/images/android-icon-foreground.png"`.
   *Tests:* `app.assets.test.ts`, `describe('#101 R3: foreground del adaptive
   icon')`, `it('android-icon-foreground.png (adaptiveIcon.foregroundImage)
   mide 1024x1024 RGBA')`; `app.config.test.ts`, `describe('#101 R3:
   foreground del adaptive icon')`, `it('android.adaptiveIcon.foregroundImage
-  es ./assets/images/android-icon-foreground.png')`.
+  es ./assets/images/android-icon-foreground.png')`. La zona segura la
+  verifica el reviewer con [[design]] §Verificaciones del reviewer.
 
 - **R4 — Monochrome del adaptive icon.** WHEN se corre el script THE SYSTEM
   SHALL escribir `android-icon-monochrome.png` con `IHDR(1024, 1024, 6)`
-  derivado del foreground (R1) conservando su canal alfa y fijando R, G y B
-  a 255 en todos los píxeles (silueta blanca), AND `app.json` SHALL mantener
-  `android.adaptiveIcon.monochromeImage =
+  derivado de `pet-tracker-notification-monochrome-original.png` con la
+  receta de D5 (alfa ≥ 128 pasa a 255 y el resto a 0; R, G y B a 255 en
+  todos los píxeles) y **después** reducido de 1254 a 676 (bicúbico, sin
+  recorte) y compuesto en (174, 174) sobre un lienzo transparente de
+  1024×1024 (silueta blanca en la zona segura: medido sobre la fuente, el
+  alfa ≥ 128 cae en x `[206, 817]`, y `[251, 773]`), AND `app.json` SHALL
+  mantener `android.adaptiveIcon.monochromeImage =
   "./assets/images/android-icon-monochrome.png"`.
   *Tests:* `app.assets.test.ts`, `describe('#101 R4: monochrome del adaptive
   icon')`, `it('android-icon-monochrome.png (adaptiveIcon.monochromeImage)
   mide 1024x1024 RGBA')`; `app.config.test.ts`, `describe('#101 R4:
   monochrome del adaptive icon')`,
   `it('android.adaptiveIcon.monochromeImage es
-  ./assets/images/android-icon-monochrome.png')`. La blancura la verifica el
-  reviewer con [[design]] §Verificaciones del reviewer.
+  ./assets/images/android-icon-monochrome.png')`. La blancura y la zona
+  segura las verifica el reviewer con [[design]] §Verificaciones del
+  reviewer.
 
 - **R5 — Fondo plano del adaptive icon.** WHEN se lee `app.json` THE SYSTEM
   SHALL declarar `android.adaptiveIcon.backgroundColor = "#9460FC"` y no
@@ -236,9 +262,10 @@ de color) = `tipo`. Tipo 6 = RGBA.
 
 - **R10 — Prueba en dispositivo (gate humano propio).** WHEN el humano
   reconstruye el **dev build de Android** (prebuild limpio + `run:android`;
-  los PNG no viajan por Metro ni por OTA) THE SYSTEM SHALL mostrar (a) el
-  perrito sobre violeta en el launcher, (b) un splash violeta `#9460FC` con
-  el perrito y sin logo de Expo ni fondo azul, y (c) en una notificación
+  los PNG no viajan por Metro ni por OTA) THE SYSTEM SHALL mostrar (a) en el
+  launcher el icono completo (perrito sobre su degradado) recortado por la
+  forma del launcher, con las orejas enteras (D7), (b) un splash violeta
+  `#9460FC` con el icono y sin logo de Expo ni fondo azul, y (c) en una notificación
   push real recibida con la app en segundo plano, el icono pequeño blanco
   tintado de `#9460FC` y no el icono de la app. Pasos en [[design]] §Prueba
   de humo. Sin test jest: la casilla de §Aprobación «Smoke R10» es el
@@ -257,11 +284,7 @@ de color) = `tipo`. Tipo 6 = RGBA.
 - **Un solo escritor:** solo se tocan `mobile-pet-tracker/app.json`,
   `app.config.test.ts`, `app.assets.test.ts` (nuevo), `scripts/make-icons.mjs`
   (nuevo) y los PNG listados en [[design]] §Archivos afectados. Ningún
-  fichero bajo `src/`.
-- **Fuentes intactas:** `pet-tracker-app-icon.png`,
-  `pet-tracker-notification-monochrome-original.png` y
-  `pet-tracker-notification-color-96.png` no cambian (`git diff --stat`
-  vacío sobre los tres).
+  fichero bajo `src/`. Las tres fuentes `pet-tracker-*` son R1.
 
 ## Fuera de alcance
 
@@ -283,15 +306,8 @@ de color) = `tipo`. Tipo 6 = RGBA.
 
 - [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
 
-### Asset R1 entregado (gate humano propio, antes del handoff)
-
-- [ ] `mobile-pet-tracker/assets/images/pet-tracker-app-icon-foreground.png`
-      subido y commiteado en esta branch. `sha256`: ________________ ·
-      IHDR: ____×____ tipo ____ (debe ser 1024×1024 tipo 6) · arte dentro del
-      66 % central: sí / no · fecha: ____ · commit: ________
-
 ### Smoke R10 (gate humano propio, antes de `done`)
 
-- [ ] Launcher con el perrito sobre violeta (dispositivo: ________, fecha: ____)
-- [ ] Splash `#9460FC` con el perrito, sin logo de Expo
+- [ ] Launcher con el icono completo recortado por la forma del launcher, orejas enteras (dispositivo: ________, fecha: ____)
+- [ ] Splash `#9460FC` con el icono, sin logo de Expo
 - [ ] Notificación push real con icono blanco tintado `#9460FC` (no el icono de la app)

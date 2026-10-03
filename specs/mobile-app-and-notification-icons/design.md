@@ -36,14 +36,18 @@ tags: [harness, spec, mobile]
   |---|---|---|---|---|
   | `icon.png` | `pet-tracker-app-icon.png` | resize 1254→1024 bicúbico | 1024×1024, 6 | R2 |
   | `favicon.png` | `pet-tracker-app-icon.png` | resize 1254→48 bicúbico (directo, no desde `icon.png`) | 48×48, 6 | R8 |
-  | `android-icon-foreground.png` | `pet-tracker-app-icon-foreground.png` (humano, R1) | copia byte a byte (`fs.copyFileSync`) | 1024×1024, 6 | R3 |
-  | `splash-icon.png` | `android-icon-foreground.png` | copia byte a byte | 1024×1024, 6 | R6 |
-  | `android-icon-monochrome.png` | `pet-tracker-app-icon-foreground.png` | `scan`: R=G=B=255, alfa intacto | 1024×1024, 6 | R4 |
+  | `android-icon-foreground.png` | `pet-tracker-app-icon.png` | resize 1254→676 bicúbico; `new Jimp(1024, 1024, 0x00000000)` + `composite(icono, 174, 174)` (D7) | 1024×1024, 6 | R3 |
+  | `splash-icon.png` | `android-icon-foreground.png` | copia byte a byte (`fs.copyFileSync`) | 1024×1024, 6 | R6 |
+  | `android-icon-monochrome.png` | `pet-tracker-notification-monochrome-original.png` | `scan`: alfa = (alfa ≥ 128 ? 255 : 0), R=G=B=255 (D5); **después** resize 1254→676 bicúbico y `composite` en (174, 174) sobre `new Jimp(1024, 1024, 0x00000000)` | 1024×1024, 6 | R4 |
   | `pet-tracker-notification-96.png` | `pet-tracker-notification-monochrome-original.png` | `scan`: alfa = (alfa ≥ 128 ? 255 : 0), R=G=B=255; **después** resize 1254→96 bicúbico | 96×96, 6 | R7 |
   | `android-icon-background.png` | — | `git rm` | no existe | R5 |
 
   Nada se recorta: todas las fuentes son cuadradas y el arte ya trae sus
-  márgenes. El script sobreescribe sin preguntar y es idempotente.
+  márgenes; el 66 % de la zona segura se consigue encogiendo el icono entero
+  (676 = round(1024 × 0.66), 174 = (1024 − 676) / 2), no recortándolo. El
+  script sobreescribe sin preguntar y es idempotente.
+  *Verificado:* `grep -c "composite" node_modules/jimp-compact/dist/jimp.js`
+  devuelve 8 y el constructor `new Jimp(w, h, color)` existe en jimp 0.16.
 - **`app.json` cambia exactamente cuatro cosas** (R5, R6, R7; el resto de
   claves se conserva byte a byte):
   1. `android.adaptiveIcon.backgroundColor`: `"#E6F4FE"` → `"#9460FC"`.
@@ -76,7 +80,7 @@ tags: [harness, spec, mobile]
     `withAndroidSplashStyles.js` lo fija como `windowSplashScreenAnimatedIcon`
     (Android 12+). Con 200 dp la xxxhdpi pide 800 px de una fuente de 1024
     (D3).
-- **Test de cabeceras `app.assets.test.ts` (R1–R8).** Nuevo fichero en la
+- **Test de cabeceras `app.assets.test.ts` (R2–R8).** Nuevo fichero en la
   raíz de `mobile-pet-tracker/`, junto a `app.config.test.ts` (mismo patrón:
   `import appJson from './app.json'`, `node:fs`, `node:path`). **Sin mock de
   `node:fs`** (a diferencia de `app.config.test.ts`, que mockea `existsSync`
@@ -89,10 +93,11 @@ tags: [harness, spec, mobile]
   R2–R4 y R6–R8 se leen de `app.json` (`appJson.expo.icon`,
   `android.adaptiveIcon.foregroundImage`, …, el segundo elemento del tuple
   del plugin): si alguien mueve la ruta, `app.config.test.ts` lo caza y
-  este test mide el fichero nuevo. R1 usa la ruta literal de la fuente. R5
-  usa `existsSync` real y espera `false`. Ocho `it` en ocho `describe`
-  `#101 R<n>` — un candado por fichero, nunca un bucle sobre «todos los PNG»
-  (regla de cláusulas universales).
+  este test mide el fichero nuevo. R5 usa `existsSync` real y espera
+  `false`. Siete `it` en siete `describe` `#101 R<n>` (R2–R8) — un candado
+  por fichero, nunca un bucle sobre «todos los PNG» (regla de cláusulas
+  universales). R1 no tiene test jest: lo cierra el reviewer con `git diff`
+  (§Verificaciones del reviewer).
 - **Cambios en `app.config.test.ts`.** En `describe('#79 R2: …')`,
   `it('conserva los plugins existentes y añade expo-notifications')`, dos
   aserciones pasan de valor exacto a presencia, porque sus valores ahora los
@@ -120,11 +125,9 @@ Todo en `mobile-pet-tracker/` (capa infraestructura/config; nada en
 
 - `app.json` — las cuatro ediciones de arriba (R5, R6, R7).
 - `app.config.test.ts` — dos relajaciones en `#79 R2` + nueve `describe` `#101`.
-- `app.assets.test.ts` — **nuevo**, ocho `describe` `#101` (R1–R8).
+- `app.assets.test.ts` — **nuevo**, siete `describe` `#101` (R2–R8).
 - `scripts/make-icons.mjs` — **nuevo**, one-off (D6). No es test ni fuente
   de la app.
-- `assets/images/pet-tracker-app-icon-foreground.png` — **nuevo, lo entrega
-  el humano** (R1).
 - `assets/images/icon.png`, `favicon.png`, `android-icon-foreground.png`,
   `android-icon-monochrome.png`, `splash-icon.png` — regenerados (R2, R8,
   R3, R4, R6).
@@ -132,26 +135,31 @@ Todo en `mobile-pet-tracker/` (capa infraestructura/config; nada en
 - `assets/images/android-icon-background.png` — **eliminado** (R5).
 
 Intactos: `assets/expo.icon` (R9), las tres fuentes `pet-tracker-*` ya en el
-árbol, `src/**`, `package.json`, `bun.lock`.
+árbol (R1: no entra ningún asset nuevo del humano), `src/**`,
+`package.json`, `bun.lock`.
 
 ## Verificaciones del reviewer (sin test jest)
 
 Desde `mobile-pet-tracker/`, con `bun` y el `jimp-compact` ya instalado:
 
-- **R1, arte en el 66 % central** (x, y ∈ [174, 850]):
-  `bun -e "const J=require('jimp-compact');J.read('assets/images/pet-tracker-app-icon-foreground.png').then(i=>{let x0=1e9,y0=1e9,x1=-1,y1=-1;i.scan(0,0,i.bitmap.width,i.bitmap.height,(x,y,k)=>{if(i.bitmap.data[k+3]>0){x0=Math.min(x0,x);y0=Math.min(y0,y);x1=Math.max(x1,x);y1=Math.max(y1,y)}});console.log({x0,y0,x1,y1})})"`
-  → los cuatro valores dentro de `[174, 850]`.
+- **R3 y R4, arte en el 66 % central** (x, y ∈ [174, 850]), una corrida por
+  fichero:
+  `bun -e "const J=require('jimp-compact');J.read('assets/images/android-icon-foreground.png').then(i=>{let x0=1e9,y0=1e9,x1=-1,y1=-1;i.scan(0,0,i.bitmap.width,i.bitmap.height,(x,y,k)=>{if(i.bitmap.data[k+3]>0){x0=Math.min(x0,x);y0=Math.min(y0,y);x1=Math.max(x1,x);y1=Math.max(y1,y)}});console.log({x0,y0,x1,y1})})"`
+  → para el foreground exactamente `{x0:174,y0:174,x1:849,y1:849}` (el
+  icono es opaco de borde a borde); para `android-icon-monochrome.png`
+  (misma orden con la otra ruta) los cuatro valores dentro de `[174, 850]`
+  (esperado ≈ x `[206, 817]`, y `[251, 773]`, ±2 por el bicúbico).
 - **R4 y R7, blancura:** mismo esquema contando píxeles con alfa > 0 y
   `(r, g, b) !== (255, 255, 255)` → debe imprimir 0 para
   `android-icon-monochrome.png` y para `pet-tracker-notification-96.png`.
-- **R3, R6, copias:** `cmp assets/images/pet-tracker-app-icon-foreground.png
-  assets/images/android-icon-foreground.png` y `cmp
-  assets/images/android-icon-foreground.png assets/images/splash-icon.png`
-  sin salida.
-- **R9 y fuentes intactas:** `git diff --stat d29d49d5 --
+- **R6, copia:** `cmp assets/images/android-icon-foreground.png
+  assets/images/splash-icon.png` sin salida.
+- **R1 y R9, fuentes intactas:** `git diff --stat d29d49d5 --
   mobile-pet-tracker/assets/expo.icon mobile-pet-tracker/assets/images/pet-tracker-app-icon.png
   mobile-pet-tracker/assets/images/pet-tracker-notification-monochrome-original.png
-  mobile-pet-tracker/assets/images/pet-tracker-notification-color-96.png` vacío.
+  mobile-pet-tracker/assets/images/pet-tracker-notification-color-96.png` vacío,
+  y `git diff --stat d29d49d5 --name-status -- mobile-pet-tracker/assets/images`
+  sin ninguna `A` que no sea `pet-tracker-notification-96.png`.
 - **Restricciones:** `git diff --stat d29d49d5 -- mobile-pet-tracker/package.json
   bun.lock mobile-pet-tracker/bun.lock mobile-pet-tracker/src` vacío.
 - **Historial test-primero (C4):** cada R con su commit rojo antes del verde
@@ -171,12 +179,14 @@ mDNS), así que todo `adb` lleva `-s <ip:puerto>`.
    `bunx expo prebuild --clean --platform android` y
    `grep -c "notification_icon" android/app/src/main/AndroidManifest.xml`
    debe ser ≥ 1; luego `bunx expo run:android`.
-5. **(a) Launcher:** vuelve al escritorio: el perrito sobre violeta, no el
-   icono de Expo. Opcional en Android 13+ con «Iconos temáticos» activo: la
-   silueta blanca tintada por el sistema (R4).
+5. **(a) Launcher:** vuelve al escritorio: el icono completo (perrito sobre
+   su degradado) recortado por la forma del launcher, orejas enteras, no el
+   icono de Expo (D7). Opcional en Android 13+ con «Iconos temáticos»
+   activo: la silueta blanca tintada por el sistema (R4).
 6. **(b) Splash:** `adb -s <ip:puerto> shell am force-stop
    com.trackermex.pettracker` y abre la app desde el launcher: fondo
-   `#9460FC` con el perrito, sin logo de Expo ni azul `#208AEF`.
+   `#9460FC` con el icono (cuadrado en Android < 12, disco en 12+), sin
+   logo de Expo ni azul `#208AEF`.
 7. **(c) Notificación:** sigue `specs/mobile-push-registration/requirements.md`
    §Prueba de humo (gate humano) — R12 desde su paso 2 (iniciar sesión y
    conceder `POST_NOTIFICATIONS`) hasta que llegue una push con la app en
@@ -188,11 +198,15 @@ mDNS), así que todo `adb` lleva `-s <ip:puerto>`.
 
 ## Alternativas descartadas
 
-- **Apuntar `foregroundImage` y `image` del splash directamente a
-  `pet-tracker-app-icon-foreground.png`** y no commitear copias: menos
-  ficheros, pero cambia dos claves más de `app.json` y mezcla fuente con
-  derivado. La copia byte a byte cuesta cero y mantiene la convención
-  «`pet-tracker-*` = fuente del humano».
+- **Pedir un cuarto asset (perrito sobre transparente)** para el foreground:
+  el humano cerró el 2026-10-03 que las tres fuentes son todo el arte (D7).
+  Las dos vías para fabricarlo sin él también caen: enmascarar
+  `pet-tracker-app-icon.png` con el alfa de `monochrome-original` (ojos
+  huecos y sin alineación píxel a píxel) y chroma key sobre el degradado (la
+  cara es del mismo violeta que el fondo).
+- **Apuntar `image` del splash directamente a `android-icon-foreground.png`**
+  y no commitear la copia: cambia una clave más de `app.json` por ahorrar un
+  fichero que cuesta cero.
 - **Umbralizar después de reducir** (R7): contorno dentado a 96 px (D5).
 - **Decodificar el PNG entero en el test** (zlib + desfiltrado) para
   candar blancura y 66 %: ~40 líneas de parser en un test para dos

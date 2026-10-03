@@ -8,7 +8,7 @@ tags: [harness, spec, mobile]
 
 | Requisito | Test (archivo::nombre) | Commit (hash + mensaje) |
 |---|---|---|
-| R1 | `mobile-pet-tracker/app.assets.test.ts::#101 R1: fuente del adaptive icon entregada por el humano › pet-tracker-app-icon-foreground.png mide 1024x1024 RGBA` | pendiente |
+| R1 | sin test jest: `git diff --stat d29d49d5 --` sobre las tres fuentes `pet-tracker-*` vacío ([[design]] §Verificaciones del reviewer) | pendiente |
 | R2 | `mobile-pet-tracker/app.assets.test.ts::#101 R2 › icon.png (expo.icon) mide 1024x1024 RGBA`; `mobile-pet-tracker/app.config.test.ts::#101 R2 › expo.icon es ./assets/images/icon.png` | pendiente |
 | R3 | `app.assets.test.ts::#101 R3 › android-icon-foreground.png (adaptiveIcon.foregroundImage) mide 1024x1024 RGBA`; `app.config.test.ts::#101 R3 › android.adaptiveIcon.foregroundImage es ./assets/images/android-icon-foreground.png` | pendiente |
 | R4 | `app.assets.test.ts::#101 R4 › android-icon-monochrome.png (adaptiveIcon.monochromeImage) mide 1024x1024 RGBA`; `app.config.test.ts::#101 R4 › android.adaptiveIcon.monochromeImage es ./assets/images/android-icon-monochrome.png` | pendiente |
@@ -19,8 +19,9 @@ tags: [harness, spec, mobile]
 | R9 | `app.config.test.ts::#101 R9 › ios.icon sigue siendo ./assets/expo.icon` | pendiente |
 | R10 | gate humano: casillas «Smoke R10» de [[requirements]] §Aprobación (sin test jest) | pendiente |
 
-Regla: el reviewer no aprueba si alguna fila queda "pendiente" (R10 se cierra
-con las casillas firmadas, no con un hash de test).
+Regla: el reviewer no aprueba si alguna fila queda "pendiente" (R1 se cierra
+con el hash del último commit de la branch y el `git diff` vacío; R10 con las
+casillas firmadas, no con un hash de test).
 Convención de commit: `feat(mobile-app-and-notification-icons): <desc> (R1,R2)`.
 El implementer actualiza esta tabla tras cada commit; el reviewer la valida
 al aprobar (ver [[../../docs/specs|specs]] y [[../../CHECKPOINTS|CHECKPOINTS]] C5).
