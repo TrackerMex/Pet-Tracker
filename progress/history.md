@@ -7182,9 +7182,9 @@ con #103 y #147 en el tree principal.
 
 ### Deuda y apuntes
 
-- **Deuda candidata, sin registrar**: el arreglo del teclado en el resto de
-  la app (Login, Registro de peso y cualquier formulario con inputs). Queda
-  pendiente de la decision del humano.
+- **#148 `mobile-keyboard-avoiding-forms` registrada** (decision del humano
+  por AskUserQuestion, 2026-10-03): el arreglo del teclado en el resto de
+  pantallas con inputs, con el patron de E1. PR #186.
 - Observaciones no bloqueantes del review, sin id registrado:
   - Ronda 1: 2, 3, 6 y 8. La 7 (espera sobre cache en un `it` de #41) es para
     #41.

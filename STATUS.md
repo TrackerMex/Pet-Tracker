@@ -1,10 +1,10 @@
 # pet-tracker — Status
 
 **Última actualización**: 2026-10-03
-**Features completadas**: 134/147 (`feature_list.json`)
+**Features completadas**: 134/148 (`feature_list.json`)
 **En progreso**: ninguna en esta rama. #146 cerrada en `feature/146-mobile-geofence-editor`, PR pendiente. #147 (la mitad móvil de #103) avanza en la sesión Frontend, branch `feature/147-mobile-meal-schedule-editing`
 
-**Pendientes**: 13 (#18, #60, #101, #105, #115-#119, #129, #134, #144 y #147). **#146 `mobile-geofence-editor` cerrada**: el dueño crea y edita zonas seguras circulares sobre el mapa. Un toque fija el centro y un slider de 20 a 2000 m, de 10 en 10, fija el radio, con el círculo de previsualización. Desde el editor también se activa, desactiva y borra la zona. Quien no es dueño la ve en solo lectura. Las zonas activas se dibujan en la pestaña Mapa y en la pantalla de zonas. Con 5 zonas, «Añadir zona» se deshabilita y muestra un aviso. La enmienda E1 aparta el teclado del formulario (`KeyboardAvoidingView`, edge-to-edge). Móvil 88/1710 → 90/1852. Codex en tres rondas test-primero; el reviewer rechazó la primera (Z1 y Z2 de R7 sin candado) y aprobó la segunda y la tercera (E1). Prueba de humo en el dev build de Android superada, paso 9 repetido tras E1. iOS sin verificar mientras #60 siga aparcada
+**Pendientes**: 14 (#18, #60, #101, #105, #115-#119, #129, #134, #144, #147 y #148). **#146 `mobile-geofence-editor` cerrada**: el dueño crea y edita zonas seguras circulares sobre el mapa. Un toque fija el centro y un slider de 20 a 2000 m, de 10 en 10, fija el radio, con el círculo de previsualización. Desde el editor también se activa, desactiva y borra la zona. Quien no es dueño la ve en solo lectura. Las zonas activas se dibujan en la pestaña Mapa y en la pantalla de zonas. Con 5 zonas, «Añadir zona» se deshabilita y muestra un aviso. La enmienda E1 aparta el teclado del formulario (`KeyboardAvoidingView`, edge-to-edge). Móvil 88/1710 → 90/1852. Codex en tres rondas test-primero; el reviewer rechazó la primera (Z1 y Z2 de R7 sin candado) y aprobó la segunda y la tercera (E1). Prueba de humo en el dev build de Android superada, paso 9 repetido tras E1. iOS sin verificar mientras #60 siga aparcada. #148 registrada: el mismo arreglo del teclado en el resto de pantallas con inputs
 
 **En producción**: no
 **Infra AWS real**: la stack `PetTrackerDev` está **desplegada** en `us-east-1`
@@ -95,7 +95,7 @@ debe listar las 4 URLs de cola.
   el formulario. Tres rondas de Codex; reviewer aprobado en las rondas 2
   (`8944dfe9`) y 3 (`330b24a3`). Gate: `./init.sh` exit 0 sobre `495319fa`
   (unit 174/1335, móvil 90/1852, e2e 28+3). Prueba de humo en Android
-  firmada por el humano (`80845eeb`). PR abierta.
+  firmada por el humano (`80845eeb`). PR #186 abierta. #148 registrada.
 - **`meal-schedule-editing` (#103) done** (2026-10-02, tree principal,
   sesion Frontend): mitad backend de editar y añadir franjas de comida
   (POST y PATCH de `meal-times`, migración 0018, la servida de hoy se mueve
@@ -1302,9 +1302,8 @@ debe listar las 4 URLs de cola.
   ronda 1 se rechazó por Z1 y Z2 de R7 y las rondas 2 y 3 se aprobaron. El
   paso 9 de la prueba de humo falló porque el teclado tapaba Guardar. La
   enmienda E1 (`bc917ff7`) lo arregló en el editor, y el humano repitió el
-  paso (`80845eeb`). Siguiente: merge humano del PR y decidir si el arreglo
-  del teclado del resto de la app (Login, Registro de peso) se registra
-  como feature.
+  paso (`80845eeb`). Registra #148 (el arreglo del teclado en el resto de
+  pantallas con inputs). Siguiente: merge humano del PR #186.
 - **2026-10-02** — **#103 `meal-schedule-editing` cerrada** (sesion
   Frontend, tree principal): spec firmada desde Notion (`2b74cd62`), enmiendas
   E1-E4 aprobadas en el chat. Codex, tres rondas test-primero; rondas 1 y 2
