@@ -443,3 +443,45 @@ de [[design]] §Archivos afectados no cambia: siguen siendo 13 ficheros, porque
 los dos commits tocan solo `src/screens/meal-schedule/index.test.tsx`.
 
 - [x] Enmienda E2 aprobada por humano (fecha: 2026-10-02, en el chat del leader; commit de firma: el que marca esta casilla)
+
+## Enmienda E3 — «rehabilitar solo cuando hayan terminado los dos» sin candado
+
+El reviewer rechazó #147 por segunda vez en `c918e756`
+(`progress/review_mobile-meal-schedule-editing.md` §Ronda 2, R2-Observaciones 1).
+E2 cerró las 13 sondas de la ronda 1, pero queda una tercera cláusula de R7 sin
+candado: el paso 3 del **WHEN** ok («rehabilitar los controles solo cuando hayan
+terminado los dos») y el **WHILE** «hasta que terminan los refetch». Con
+cualquiera de estas dos mutaciones en la rama `ok` de `runMealTimeEdit`,
+`src/screens/meal-schedule` queda en 54/54 verde:
+
+| Mutación | Qué rompe |
+|---|---|
+| `setEditing(false)` entre `await plan.refetch()` y `await queryClient.refetchQueries({ queryKey: petKeys.detail(petId) })` | rehabilita antes de que termine el refetch del detalle de la mascota |
+| `void queryClient.refetchQueries({ queryKey: petKeys.detail(petId) })` (sin `await`) | no espera al refetch del detalle de la mascota |
+
+Los `it` que retienen algo tras el ok (R7 it 3 y E2-b it 3) solo retienen la
+segunda llamada a `getNutritionPlan`. Ningún test retiene la segunda llamada a
+`getPet`, así que la ventana entre el fin de un refetch y el del otro no la mira
+nadie. La producción cumple R7. El hueco vuelve a estar en [[tasks]] §R7 y
+§Enmienda E2, que solo prescribieron retener el refetch del plan.
+
+R7 no cambia. Esta enmienda solo añade el candado que falta.
+
+### E3.1 — los controles esperan también al refetch de la mascota
+
+**WHEN** se cierra #147, **THE SYSTEM SHALL** tener en
+`describe('#147 R7: …')` dos `it` más, uno por flujo (Editar sobre
+`meal-time-edit-1` y Añadir sobre `add-meal-time-button`). Cada uno retiene la
+**segunda** llamada a `getPet` y comprueba tres cosas:
+
+- con el plan ya repintado, todos los controles siguen con
+  `accessibilityState.disabled === true`;
+- `getPet` se llamó 2 veces;
+- los controles se rehabilitan al resolver esa llamada.
+
+Las ediciones literales, el mensaje de commit y las sondas están en [[tasks]]
+§Enmienda E3. Las cifras pasan de 88 suites / 1762 tests a **88 suites / 1764**.
+La lista cerrada de [[design]] §Archivos afectados no cambia: siguen siendo 13
+ficheros, porque el commit toca solo `src/screens/meal-schedule/index.test.tsx`.
+
+- [ ] Enmienda E3 aprobada por humano (fecha: ____, commit de firma: el que marca esta casilla)

@@ -822,3 +822,123 @@ dice matcher, apúntalo en `impl` con la primera línea roja y **PARA**.
 - [[traceability]] cita en la fila R7 los dos commits nuevos y los tests que
   añaden, junto a los que ya cita. Va en un commit propio:
   `docs(mobile-meal-schedule-editing): cite amendment E2 in #147 traceability`.
+
+## §Enmienda E3 — los controles esperan también al refetch de la mascota ([[requirements]] §Enmienda E3)
+
+Va **después** de `c918e756` (tu trazabilidad de E2) y no reescribe nada
+anterior: **no rebases ni enmiendes** commits previos. Es un commit de test que
+toca **solo** `mobile-pet-tracker/src/screens/meal-schedule/index.test.tsx`. La
+producción no cambia.
+
+Es **vía (b)** de C4: nace verde porque la producción ya cumple R7. Su cierre
+se demuestra con las sondas de la tabla de abajo, que hoy pasan en verde (las
+midió el reviewer) y tienen que ponerse rojas.
+
+Comando, desde `mobile-pet-tracker/`, sin pipe:
+`bunx jest src/screens/meal-schedule > /tmp/147-e3-<paso>.txt 2>&1; echo "exit=$?"`.
+Antes de E3-a da 1 suite, 54/54, exit 0. Después, **56/56**. Si algún `it` sale
+rojo sobre la producción sin mutar, **PARA**: la premisa de la enmienda es falsa
+y lo decide el leader.
+
+### E3-a — dos `it` que retienen la segunda llamada a `getPet` (E3.1)
+
+En `src/screens/meal-schedule/index.test.tsx`, dentro de
+`describe('#147 R7: tras un éxito refetchea plan y mascota, sin estado optimista')`,
+**después** de `it('tras ok de Añadir los controles siguen deshabilitados y sin fila nueva hasta que termina el refetch')`
+y antes del `});` que cierra el `describe`, añade estos dos `it` literales.
+Localiza por contenido, no por número de línea. Usan los mocks del `beforeEach`
+de ese `describe`. El `mockResolvedValueOnce` de `getPet` cubre la carga
+inicial, y el `mockReturnValueOnce` retiene el refetch.
+
+Siguen §Esperas:
+
+- espera conjunta de `disabled: true` y de la segunda llamada a `getPet`;
+- espera del repintado del plan, que demuestra que el refetch del plan ya
+  terminó;
+- después, aserción síncrona de `disabled: true` y espera de cierre tras
+  resolver.
+
+```ts
+  it('los controles siguen deshabilitados hasta que termina también el refetch de la mascota', async () => {
+    let resolvePet!: (state: PetState) => void;
+    mockGetNutritionPlan
+      .mockResolvedValueOnce({ kind: 'ok', plan: makePlan() })
+      .mockResolvedValueOnce({ kind: 'ok', plan: makePlan({ mealTimes: ['07:30', '20:05'] }) });
+    mockGetPet.mockResolvedValueOnce(petState('owner'))
+      .mockReturnValueOnce(new Promise((done) => { resolvePet = done; }));
+    await renderMealSchedule();
+    await fireEvent.press(await screen.findByTestId('meal-time-edit-1'));
+    await fireEvent(screen.getByTestId('meal-time-picker'), 'onValueChange', {}, new Date(2026, 9, 2, 20, 5));
+    await waitFor(() => {
+      for (const id of ['meal-time-edit-0', 'meal-time-edit-1', 'add-meal-time-button']) {
+        expect(screen.getByTestId(id).props.accessibilityState).toEqual(expect.objectContaining({ disabled: true }));
+      }
+      expect(mockGetPet).toHaveBeenCalledTimes(2);
+    });
+    await waitFor(() => expect(within(screen.getByTestId('meal-time-row-1')).queryByText('20:05')).not.toBeNull());
+    for (const id of ['meal-time-edit-0', 'meal-time-edit-1', 'add-meal-time-button']) {
+      expect(screen.getByTestId(id).props.accessibilityState).toEqual(expect.objectContaining({ disabled: true }));
+    }
+    await act(async () => resolvePet(petState('owner')));
+    await waitFor(() => expect(screen.getByTestId('meal-time-edit-0').props.accessibilityState).not.toEqual(expect.objectContaining({ disabled: true })));
+  });
+
+  it('tras ok de Añadir los controles siguen deshabilitados hasta que termina también el refetch de la mascota', async () => {
+    let resolvePet!: (state: PetState) => void;
+    mockGetNutritionPlan
+      .mockResolvedValueOnce({ kind: 'ok', plan: makePlan() })
+      .mockResolvedValueOnce({ kind: 'ok', plan: makePlan({ mealTimes: ['07:30', '08:05', '19:30'] }) });
+    mockGetPet.mockResolvedValueOnce(petState('owner'))
+      .mockReturnValueOnce(new Promise((done) => { resolvePet = done; }));
+    await renderMealSchedule();
+    await fireEvent.press(await screen.findByTestId('add-meal-time-button'));
+    await fireEvent(screen.getByTestId('meal-time-picker'), 'onValueChange', {}, new Date(2026, 9, 2, 8, 5));
+    await waitFor(() => {
+      for (const id of ['meal-time-edit-0', 'meal-time-edit-1', 'add-meal-time-button']) {
+        expect(screen.getByTestId(id).props.accessibilityState).toEqual(expect.objectContaining({ disabled: true }));
+      }
+      expect(mockGetPet).toHaveBeenCalledTimes(2);
+    });
+    await waitFor(() => expect(within(screen.getByTestId('meal-time-row-1')).queryByText('08:05')).not.toBeNull());
+    for (const id of ['meal-time-edit-0', 'meal-time-edit-1', 'meal-time-edit-2', 'add-meal-time-button']) {
+      expect(screen.getByTestId(id).props.accessibilityState).toEqual(expect.objectContaining({ disabled: true }));
+    }
+    await act(async () => resolvePet(petState('owner')));
+    await waitFor(() => expect(screen.getByTestId('meal-time-edit-0').props.accessibilityState).not.toEqual(expect.objectContaining({ disabled: true })));
+  });
+```
+
+`PetState` ya está importado en el fichero (`import { getPet, type PetState } from '../../api/pets'`).
+`isOwner` lee `pet.data`, que TanStack Query conserva mientras el refetch está
+en vuelo, así que los controles siguen montados y la consulta no falla. R7 fija
+el orden: primero el plan y después la mascota. Por eso el plan ya se ha
+repintado cuando la segunda llamada a `getPet` sigue retenida.
+
+- Commit: `test(mobile-meal-schedule-editing): lock disabled controls until the pet detail refetch ends (R7)`
+
+### Sondas de E3 (sobre el verde, en `src/screens/meal-schedule/index.tsx`)
+
+Son las 2 de `progress/review_mobile-meal-schedule-editing.md`
+§R2-Observaciones 1, las dos en la rama `case 'ok':` de `runMealTimeEdit`.
+Mídelas con el comando de arriba y restaura con
+`git checkout HEAD -- src/screens/meal-schedule/index.tsx`. Después,
+`git diff --cached --stat` y `git status --short` deben salir vacíos (salvo el
+informe sin trackear). «Por matcher» y «por consulta» significan lo mismo que
+en §Enmienda E2.
+
+| # | Sonda | Debe ponerse rojo |
+|---|---|---|
+| 1 | `setEditing(false);` entre `await plan.refetch();` y `await queryClient.refetchQueries({ queryKey: petKeys.detail(petId) });` | E3-a it 1 y it 2, por matcher en `disabled: true` |
+| 2 | `void queryClient.refetchQueries({ queryKey: petKeys.detail(petId) });` en lugar de `await …` | E3-a it 1 y it 2, por matcher en `disabled: true` |
+
+Si una sonda sale verde, o roja por otro `it` o por consulta, apúntalo en `impl`
+con la primera línea roja y **PARA**.
+
+### Lo que cambia en §Cierre
+
+- Las cifras pasan a **88 suites / 1764 tests** (+2 de E3-a).
+- La lista de `git diff --name-only <hash-del-handoff>..HEAD` **de tus commits**
+  sigue siendo la de [[design]] §Archivos afectados: **13** ficheros.
+- [[traceability]] cita en la fila R7 el commit nuevo y sus dos tests, junto a
+  los que ya cita. Va en un commit propio:
+  `docs(mobile-meal-schedule-editing): cite amendment E3 in #147 traceability`.

@@ -230,3 +230,273 @@ Tests:       8 skipped, 423 passed, 431 total
 ✅ Typecheck sin errores
 ✅ Todo verde. Listo para trabajar.
 ```
+
+## Ronda 2
+
+Fecha: 2026-10-02T23:54Z
+Veredicto: RECHAZADO
+
+Revisado en HEAD `c918e756`, tras la Enmienda E2 (firma `f26f85fd`; E2-a
+`e277b810`, E2-b `bf81642a`, trazabilidad `c918e756`). El leader corrió
+`./init.sh` en ese HEAD (exit 0). Yo leí el log y no lo relancé.
+
+**E2 cumple lo que prometía.** Las 13 sondas de la ronda 1 y el control caen
+rojas por matcher. Ninguna de las 24 sondas rojas que volví a muestrear
+(R7/R8) regresa.
+
+**Motivo del rechazo:** queda una tercera cláusula de R7 sin candado. Dos
+sondas nuevas dejan `src/screens/meal-schedule` en 54/54 verde, exit 0. La
+cláusula es «rehabilitar los controles solo cuando hayan terminado **los
+dos**», junto con el WHILE «desde `onValueChange` hasta que terminan los
+refetch». Ningún test mantiene pendiente el refetch del detalle de la mascota
+(`getPet`), así que nadie vigila esa ventana. Detalle en §R2-Observaciones 1.
+
+El hueco existe desde `a6a85313` (el feat de R7). También estaba en
+`d05d8725` y **no lo detecté en la ronda 1**: mis sondas «habilitar antes del
+refetch» y «refetch sin `await`» tocaban los dos refetch a la vez o solo el
+del plan. El fallo de cobertura de la ronda 1 es mío, no de Codex ni de E2.
+
+### Checklist C2 — Estado coherente
+- [x] Solo 1 feature in_progress (#147)
+- [x] progress/current.md lo lleva el leader (modificación sin commitear; no la toqué)
+
+### Checklist C3 — Arquitectura
+- [x] Sin cambios: `f26f85fd..HEAD` no toca producción (abajo)
+
+### Checklist C4 — TDD
+- [x] E2-a y E2-b son vía (b) y nacen verdes, como prescribe tasks.md §Enmienda E2:
+  - con el `index.test.tsx` de `e277b810` sobre la producción de HEAD: 51/51, exit 0;
+  - en HEAD: 54/54, exit 0.
+- [x] Las ediciones son literales: comparé las líneas añadidas por cada commit con los bloques `ts` de tasks.md §Enmienda E2.
+  - E2-a: las 2 líneas aparecen 2 veces, tras la espera de cierre del `it.each` de `#147 R8` y tras la de `401 cierra sesión sin mensaje`.
+  - E2-b: las 54 líneas del bloque, idénticas, más 1 línea en blanco de separación, dentro del `describe` de `#147 R7` y después de `un resultado que no es ok no refetchea`.
+- [x] Los mensajes de commit son los literales de tasks.md.
+- [x] Las 13 sondas de la ronda 1 caen rojas por matcher (tabla abajo).
+- [ ] **R7 sigue sin candado completo:** hay 2 sondas verdes (§R2-Observaciones 1).
+
+### Checklist C5 — Trazabilidad
+- [x] La fila R7 cita `e277b810` y `bf81642a`. Los tres nombres de `it` de E2-b existen tal cual en `index.test.tsx` (líneas 826, 843 y 862 en HEAD), y E2-a nombra las 10 filas de R8 y el 401.
+- [x] Los 26 hashes citados en traceability.md son ancestros de HEAD (`git merge-base --is-ancestor`, 26 ok)
+- [x] Ninguna fila «pendiente». La única aparición de la palabra es la regla de la línea 25.
+
+### Checklist C6 — Spec aprobada
+- [x] El diff de `f26f85fd` en requirements.md solo añade §Enmienda E2, y su casilla humana está marcada (2026-10-02)
+
+### Checklist C7 — Sin código huérfano
+- [x] N/A
+
+### Checklist C8 — UI móvil
+- [x] Sin cambios de UI: E2 solo toca tests
+
+### Lista cerrada
+- [x] `git diff --name-only b367ed44..HEAD` da 19 rutas:
+  - 13 de Codex: los 10 ficheros de `mobile-pet-tracker/`, `specs/mobile-ui-language/design.md`, traceability.md e impl.
+  - 6 del leader: current.md, handoff, review, y design.md, requirements.md y tasks.md de #147.
+- [x] `git diff --name-only f26f85fd..HEAD` da solo `index.test.tsx`, el informe impl y traceability.md. No hay ningún cambio de producción.
+
+### Sondas de la ronda 2
+
+Las corrí en HEAD desde `mobile-pet-tracker/`:
+
+- `pgrep` vacío antes de cada tanda;
+- `bunx jest src/screens/meal-schedule` sin pipe;
+- cada sonda restaurada con `git checkout HEAD -- src/screens/meal-schedule/index.tsx`.
+
+Al terminar, `git diff --cached` está vacío y `git status` solo muestra el
+`progress/current.md` del leader. Los logs están en el scratchpad de la sesión
+(`…/scratchpad/probes2/<id>.log`).
+
+Salen 48 sondas: 46 rojas y 2 verdes.
+
+**Las 13 de la ronda 1 y el control: todas rojas por matcher.**
+
+| Sonda | Rojo en | Primera línea roja |
+|---|---|---|
+| Añadido optimista con rollback | E2-b it 2 y it 3 | `expect(screen.queryByTestId('meal-time-row-2')).toBeNull()` |
+| `setEditing(false)` tras lanzar el añadido | E2-b it 2 y it 3 | `waitFor` de `disabled: true` (`toEqual`) |
+| `addMealTime` fuera de `runMealTimeEdit`, sin refetch tras el ok (mi variante mantiene `editing` durante el vuelo, por eso el it 2 sigue verde) | E2-b it 1 y it 3 | `queryByText('08:05')` `not.toBeNull()` |
+| `await plan.refetch()` en `invalid` | fila `invalid` | `Expected number of calls: 1 / Received: 2` |
+| … en `forbidden` | fila `forbidden` | igual |
+| … en `NUTRITION_PLAN_REQUIRED` | su fila | igual |
+| … en `MEAL_TIME_NOT_IN_PLAN` | su fila | igual |
+| … en `MEAL_TIMES_LIMIT_REACHED` | su fila | igual |
+| … en `unauthorized` | `401 cierra sesión sin mensaje` (línea 931, `mockGetNutritionPlan`) | igual |
+| … en `unreachable` | su fila | igual |
+| … en `error`/`missing-config` | filas `error` y `missing-config` | igual |
+| … en el `catch` | fila `rechazo` | igual |
+| `refetchQueries(petKeys.detail)` en `forbidden` | fila `forbidden` (línea 915, `mockGetPet`) | igual |
+| Control: `await plan.refetch()` en `MEAL_TIME_DUPLICATE` | R7 it 4 y fila `MEAL_TIME_DUPLICATE` | igual |
+
+**Variantes nuevas (11): 9 rojas y 2 verdes.**
+
+| Sonda | Resultado |
+|---|---|
+| `void plan.refetch()` (sin `await`) en `invalid` | rojo, fila `invalid`, 2 frente a 1 |
+| `void queryClient.invalidateQueries({ queryKey: nutritionKeys.plan(petId) })` en `MEAL_TIMES_LIMIT_REACHED` | rojo, su fila |
+| `setTimeout(() => void plan.refetch(), 0)` en `forbidden` | rojo, su fila |
+| Refetch del detalle de la mascota en el `catch` | rojo, fila `rechazo` |
+| Refetch del detalle de la mascota en `unauthorized` | rojo, 401 |
+| Refetch tras un no-ok solo en el flujo Añadir (envolviendo la petición) | rojo, 4 filas `add` |
+| Refetch tras un no-ok solo en el flujo Editar | rojo, 5 filas `edit`, el 401 y el R7 it 4 |
+| Añadir que tras el ok solo refetchea el plan | rojo, E2-b it 1 (`mockGetPet`: Expected 2, Received 1) |
+| `void plan.refetch()` con `await` del detalle de la mascota | rojo, R7 it 3 y E2-b it 3 |
+| **`setEditing(false)` entre `await plan.refetch()` y `await queryClient.refetchQueries(petKeys.detail)`** | **verde, 54/54, exit 0** |
+| **`void queryClient.refetchQueries({ queryKey: petKeys.detail(petId) })` (sin `await`) en la rama `ok`** | **verde, 54/54, exit 0** |
+
+**Sin regresión: las 24 sondas rojas de la ronda 1 sobre R7 y R8 siguen
+todas rojas**, con la misma forma que en la ronda 1. Son 23 que volví a
+ejecutar aquí más el control, que ya está en la tabla de arriba.
+
+- R7, 9 sondas:
+  - añadido optimista sin rollback: 7 rojos;
+  - edición optimista con rollback: 1 rojo, R7 it 2;
+  - sin refetch del plan: 4 rojos;
+  - sin refetch de la mascota: 2 rojos;
+  - refetch en `finally`: 14 rojos;
+  - habilitar antes del refetch: 2 rojos;
+  - refetch sin `await`: 2 rojos;
+  - quitar `isDisabled` en la fila: 5 rojos;
+  - quitar `isDisabled` en Añadir: 5 rojos.
+- R8, 14 sondas:
+  - las 6 claves de dominio cambiadas: un rojo en su fila cada una (la de `MEAL_TIME_DUPLICATE`, en 2 tests);
+  - `unreachable`, `missing-config`, `error` y `catch` remapeados;
+  - mensaje en el 401;
+  - sin limpiar el error anterior;
+  - sin `selectable`: 10 rojos;
+  - error oculto: 11 rojos.
+
+La edición optimista con rollback cae por consulta (`Unable to find an
+element with text: 19:30`), y lo mismo hacía en la ronda 1 (log
+`probes/R7-optimistic-move-rollback.log`). Es la aserción del it 2 de R7 sobre
+la fila 1, sin cambios. El error oculto también cae por consulta
+(`meal-time-error`), como en la ronda 1.
+
+### R2-Observaciones
+
+1. **Bloqueante: «rehabilitar solo cuando hayan terminado los dos» no tiene
+   candado sobre el refetch del detalle de la mascota.**
+
+   Con cualquiera de estas dos mutaciones en la rama `ok` de `runMealTimeEdit`
+   (`src/screens/meal-schedule/index.tsx`), la suite de la pantalla queda en
+   54/54 verde, exit 0:
+
+   ```ts
+   await plan.refetch();
+   setEditing(false);                                                      // a) rehabilita antes del refetch de la mascota
+   await queryClient.refetchQueries({ queryKey: petKeys.detail(petId) });
+   ```
+
+   ```ts
+   await plan.refetch();
+   void queryClient.refetchQueries({ queryKey: petKeys.detail(petId) });   // b) no espera al refetch de la mascota
+   ```
+
+   La causa es que los tres `it` que retienen algo después del ok (R7 it 3 y
+   E2-b it 3) solo retienen la segunda llamada a `getNutritionPlan`. Ningún
+   test hace `mockGetPet.mockReturnValueOnce(<promesa pendiente>)` para la
+   segunda llamada, así que la ventana entre el fin del refetch del plan y el
+   fin del refetch del detalle de la mascota no la mira nadie. Los dos
+   `toHaveBeenCalledTimes(2)` sobre `mockGetPet` (R7 it 1 y E2-b it 1) solo
+   prueban que el refetch se lanza, no que se espera.
+
+   El origen también es la spec: tasks.md §R7 y §Enmienda E2 solo prescriben
+   retener el refetch del plan. La producción cumple R7 hoy, porque espera
+   los dos refetch antes del `finally`.
+
+   **Criterio de cierre:**
+   - las 2 sondas tienen que ponerse rojas por matcher;
+   - las 46 sondas rojas de esta ronda tienen que seguir rojas.
+
+   La forma natural es un `it` gemelo de R7 it 3 que retenga la segunda
+   llamada a `getPet` en lugar de la de `getNutritionPlan`. Afirmaría
+   `disabled: true` en los tres controles mientras está pendiente, y su
+   rehabilitación al resolverla. Si se pone uno por flujo (Editar y Añadir),
+   igual que hizo E2 con los tres primeros `it`, las cifras pasan de
+   88/1762 a 88/1764. Con uno solo, a 88/1763.
+
+   Como mueve §Cifras, el cambio pasa por enmienda firmada antes de volver a
+   Codex. La decisión es del leader.
+
+2. **No bloqueante:** se mantienen las observaciones 2 a 5 de la ronda 1:
+   - el rojo de suite completa a mitad de branch, ya cerrado por E1;
+   - `<Host matchContents>`, pendiente de la prueba de humo;
+   - la doble línea en blanco en `nutrition.ts`;
+   - la prueba de humo Android, que es del humano.
+
+### Output de ./init.sh (ronda 2)
+Lo corrió el leader entre las 23:39:12Z y las 23:43:28Z. Leí
+`init-review2.log`: `review2-head.txt` = `c918e756` e
+`init-review2.exit` = `exit=0`.
+```
+✅ Build exitoso
+Test Suites: 174 passed, 174 total
+Tests:       1335 passed, 1335 total
+Test Suites: 2 passed, 2 total
+Tests:       14 passed, 14 total
+A worker process has failed to exit gracefully and has been force exited. …
+Test Suites: 88 passed, 88 total
+Tests:       1762 passed, 1762 total
+✅ Tests pasados
+Test Suites: 3 skipped, 28 passed, 28 of 31 total
+Tests:       8 skipped, 423 passed, 431 total
+✅ Tests e2e pasados
+✅ Lint sin errores
+✅ Typecheck sin errores
+✅ Todo verde. Listo para trabajar.
+```
+
+### Pre-verificación del borrador E3
+
+Fecha: 2026-10-03T00:05Z. HEAD `c918e756`. El borrador está en `specs/mobile-meal-schedule-editing/tasks.md` §Enmienda E3, sin commitear. Producción no se ha tocado. No se ha corrido `init.sh`, ni e2e, ni la suite entera. Antes de cada tanda, `pgrep -af 'init\.sh|test:e2e|jest-e2e'` salió vacío.
+
+**Resultado: cierra.** Los dos `it` de E3-a compilan. Sin mutar pasan 56/56, y las dos sondas verdes de R2-Observaciones 1 salen rojas en los dos `it`, por matcher sobre `disabled: true`.
+
+**Montaje.** Pegué los dos `it` del bloque `ts` de E3-a de forma temporal, literales, extraídos por script de tasks.md, en `src/screens/meal-schedule/index.test.tsx`. Van tras el `});` del último `it` de E2-b («tras ok de Añadir los controles siguen deshabilitados y sin fila nueva hasta que termina el refetch») y antes del cierre de `describe('#147 R7: …')`, que es lo que dice tasks.md. Quedaron en las líneas 881 y 905 del pegado. `PetState` ya está importado en la línea 22 (`import { getPet, type PetState } from '../../api/pets'`), así que el bloque no necesita imports nuevos.
+
+**Línea base sin mutar**
+
+| Comprobación | Resultado |
+|---|---|
+| `bunx jest src/screens/meal-schedule`, corrida 1 (sin pipe) | 56/56, exit 0 |
+| `bunx jest src/screens/meal-schedule`, corrida 2 (sin pipe) | 56/56, exit 0 |
+| `bunx jest src/screens/meal-schedule`, corrida 3 (sin pipe) | 56/56, exit 0 |
+| `bunx tsc --noEmit`, tras `test ! -e .expo/types/router.d.ts` | exit 0 |
+| `bunx eslint src/screens/meal-schedule/index.test.tsx` | exit 0 |
+
+Los dos `it` nuevos salen ✓ en las tres corridas, con 94 ms y 117 ms en la primera.
+
+**Sondas de R2-Observaciones 1.** Cada una se corrió dos veces y dio el mismo resultado las dos veces.
+
+| Sonda (rama `ok` de `runMealTimeEdit`) | Suite | `it` E3-a 1 (Editar) | `it` E3-a 2 (Añadir) |
+|---|---|---|---|
+| 1: `setEditing(false)` entre `await plan.refetch()` y `await queryClient.refetchQueries(...)` | 2 failed / 56, exit 1 | ✗ | ✗ |
+| 2: `void queryClient.refetchQueries(...)` (sin `await`) | 2 failed / 56, exit 1 | ✗ | ✗ |
+
+La primera línea roja es la misma en las cuatro celdas. Falla el primer `waitFor` de cada `it` (`index.test.tsx:891:18` en el `it` 1 y `:915:18` en el `it` 2, numeración del pegado temporal), en la aserción `expect(screen.getByTestId(id).props.accessibilityState).toEqual(expect.objectContaining({ disabled: true }))`:
+
+```
+expect(received).toEqual(expected) // deep equality
+- ObjectContaining {
+-   "disabled": true,
++ Object {
++   "busy": undefined,
++   "checked": undefined,
++   "disabled": false,
+```
+
+Es un rojo por matcher, no por consulta. Ninguna celda dice «Unable to find». Con las dos sondas fallan solo los dos `it` de E3-a. Los otros 54 siguen verdes, igual que en la ronda 2, donde los 54 tests seguían en verde.
+
+**Muestra de regresión en R7.** Las sondas se corrieron con los `it` pegados y se compararon con los logs de la ronda 2, que eran sobre 54 tests.
+
+| Sonda | Ronda 2 (54) | Con E3 (56) | ¿Pierde algún `it` rojo? |
+|---|---|---|---|
+| `R7-enable-before-refetch` | 2 failed | 4 failed (+ los 2 de E3-a) | no |
+| `R7-no-await-refetch` | 2 failed | 4 failed (+ los 2 de E3-a) | no |
+| `R7-refetch-finally` | 14 failed | 14 failed, mismo conjunto | no |
+| `R7-add-not-disabled` | 2 failed | 3 failed (+ E3-a `it` 2) | no |
+
+En las cuatro, el conjunto de `it` rojos con E3 contiene al de la ronda 2. El diff de los nombres de los `●` no tiene ninguna línea `<`. Las primeras líneas rojas se mantienen: `toEqual … disabled` en tres sondas y `not.toBeNull()` / `Received: null` en `R7-refetch-finally`.
+
+**Restauración.** `git checkout HEAD -- src/screens/meal-schedule/index.tsx src/screens/meal-schedule/index.test.tsx`. Después, `git diff --cached --stat` sale vacío y `git status --short` lista solo `progress/current.md`, `progress/review_mobile-meal-schedule-editing.md`, `specs/mobile-meal-schedule-editing/requirements.md` y `specs/mobile-meal-schedule-editing/tasks.md`.
+
+**Ajustes.** El bloque no necesita ninguno. Una nota que no bloquea: los dos `it` fijan el orden plan → mascota, porque esperan el plan repintado con la mascota todavía retenida. Esto coincide con los pasos 1 y 2 del **WHEN** ok de R7, así que no constriñe más de lo que pide la spec.
