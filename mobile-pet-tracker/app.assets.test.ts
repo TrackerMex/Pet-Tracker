@@ -41,3 +41,14 @@ describe('#101 R8: favicon', () => {
     });
   });
 });
+
+describe('#101 R3: foreground del adaptive icon', () => {
+  it('android-icon-foreground.png (adaptiveIcon.foregroundImage) mide 1024x1024 RGBA', () => {
+    expect(readIhdr(appJson.expo.android.adaptiveIcon.foregroundImage)).toEqual({
+      width: 1024,
+      height: 1024,
+      bitDepth: 8,
+      colorType: 6,
+    });
+  });
+});

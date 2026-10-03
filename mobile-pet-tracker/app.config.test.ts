@@ -238,6 +238,14 @@ describe('#101 R8: favicon', () => {
   });
 });
 
+describe('#101 R3: foreground del adaptive icon', () => {
+  it('android.adaptiveIcon.foregroundImage es ./assets/images/android-icon-foreground.png', () => {
+    expect(appJson.expo.android.adaptiveIcon.foregroundImage).toBe(
+      './assets/images/android-icon-foreground.png',
+    );
+  });
+});
+
 describe('#79 R14: google-services.json se declara solo cuando existe', () => {
   const originalApiKey = process.env.GOOGLE_MAPS_API_KEY_ANDROID;
   const originalResetLinkHost = process.env.RESET_LINK_HOST;
