@@ -2100,7 +2100,7 @@
   {
     "id": 105,
     "name": "meals-history",
-    "status": "spec_ready",
+    "status": "in_progress",
     "priority": "P3",
     "description": "Registrada el 2026-09-21 desde la seccion Fuera de alcance de la spec de #98, por decision del humano. Las comidas servidas de dias anteriores existen como filas desde #83 (meal_servings tiene servedOn por fila), pero NO son consultables: verificado en el puerto backend-pet-tracker/src/modules/nutrition/domain/repositories/meal-serving.repository.ts, que solo expone create, deleteOne y listTimesServedOn(petId, servedOn) de UN dia, y en pet-meals.drizzle-reader.ts, cuyo unico metodo es findMealsToday. Asi que esto no es una feature movil pura como parecia al registrarla: necesita metodo de rango en el puerto y su unica implementacion drizzle (verificado 2026-10-03 en progress/explore_meals-history.md: no hay segunda implementacion, los dobles de los use cases son parciales), endpoint nuevo y despues pantalla. Nadie ha pedido este historial todavia; queda registrado para que exista la entrada, no porque haga falta ya. Antes de especificarlo conviene preguntar al humano para que lo quiere, porque el alcance cambia mucho entre un resumen de los ultimos siete dias y un calendario navegable. Caso de uso declarado por el humano el 2026-10-03: calendario navegable mes a mes, con marcador por dia y detalle al tocar, con entrada desde la pestana de comidas como subpantalla del stack (no tab nuevo); endpoint de rango arbitrario.",
     "acceptance_criteria": [
