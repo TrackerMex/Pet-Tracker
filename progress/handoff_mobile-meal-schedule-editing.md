@@ -454,3 +454,108 @@ Informe: en progress/impl_mobile-meal-schedule-editing.md, una seccion
 De jest copia solo las lineas de resumen y la primera linea del bloque `●`
 de cada `it` rojo.
 ```
+
+## Reanudación 3: segundo rechazo del reviewer en R7 (2026-10-03)
+
+> El reviewer rechaza la ronda 2 en `c918e756` (`progress/review_mobile-meal-schedule-editing.md`
+> §Ronda 2). E2 cierra sus 13 sondas sin regresiones, pero queda otra cláusula
+> de R7 sin candado: «rehabilitar solo cuando hayan terminado los dos». Ningún
+> test retiene la segunda llamada a `getPet`, y dos mutaciones de la rama `ok`
+> pasan en verde. La producción cumple; el hueco vuelve a ser de la spec. El
+> borrador de E3 (`65b7434b`) lo pre-verificó el reviewer: 56/56 en tres
+> corridas, y las dos sondas rojas por matcher. El humano aprueba la **Enmienda
+> E3** en el chat, y la firma es el commit que añade esta reanudación. E3 es
+> un commit de test, solo sobre `index.test.tsx`. Las cifras pasan a 88/1764 y
+> la lista cerrada sigue en 13 ficheros.
+
+Pegar en Codex CLI:
+
+```
+Worktree: /home/claude/sites/Pet-Tracker   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+Reanudacion 3 de #147 tras el segundo rechazo del reviewer. Ejecuta y pega
+en el informe:
+  pwd
+  git branch --show-current
+  git log --oneline -3
+  git status --short
+PARA si:
+- la branch no es feature/147-mobile-meal-schedule-editing;
+- el tercer commit de `git log --oneline -3` no es c918e756 (tu trazabilidad
+  de E2);
+- `git status --short` no sale vacio.
+Los dos commits de encima son del leader: el borrador de E3 (65b7434b) y la
+firma de E3, que anade esta reanudacion. Lee:
+- requirements.md §Enmienda E3;
+- tasks.md §Enmienda E3 (y §Esperas, que sigue obligatoria);
+- progress/review_mobile-meal-schedule-editing.md §Ronda 2;
+- la seccion «Reanudacion 3» de progress/handoff_mobile-meal-schedule-editing.md.
+Siguen en vigor todas las reglas del handoff original. H0 sigue siendo
+b367ed44. No rebasees ni enmiendes ningun commit anterior.
+
+La produccion es correcta: NO la cambies. Solo tocas
+mobile-pet-tracker/src/screens/meal-schedule/index.test.tsx, y despues
+traceability.md y tu informe.
+
+1. Desde mobile-pet-tracker/, sin pipe:
+     bunx jest src/screens/meal-schedule > /tmp/147-e3-base.txt 2>&1; echo "exit=$?"
+   Esperado: 1 suite, 54/54, exit=0. Si sale otra cosa, PARA.
+
+2. E3-a. Anade los dos `it` literales de tasks.md §Enmienda E3-a donde
+   indica, localizando el sitio por contenido. Repite el comando: esperado
+   56/56 y exit=0. Si algun `it` sale rojo, PARA: la premisa es falsa y lo
+   decide el leader. Commit SOLO con ese fichero y este mensaje literal:
+     test(mobile-meal-schedule-editing): lock disabled controls until the pet detail refetch ends (R7)
+   Comprueba con `git show --stat HEAD` que lleva un solo fichero.
+
+3. Corre las 2 sondas de la tabla de tasks.md §Enmienda E3, cada una por
+   separado sobre el verde, con el comando del paso 1. Las dos deben caer en
+   los dos `it` de E3-a, por matcher en `disabled: true`. Despues de cada
+   una restaura con
+     git checkout HEAD -- src/screens/meal-schedule/index.tsx
+   y comprueba que `git diff --cached --stat` y `git status --short` salen
+   vacios. Si alguna sonda sale verde o cae distinto, PARA y reporta.
+
+4. §Cierre de tasks.md, entero y en orden:
+   - el pgrep vacio;
+   - `bun run test`: 88 suites / 1764 tests y exit 0;
+   - `bun run lint`: exit 0;
+   - `test ! -e .expo/types/router.d.ts && bun run typecheck`: exit 0;
+   - los tres grep-clean, vacios.
+   Cada comando a fichero, sin pipe, con su exit. Si algo falla, PARA y
+   reporta: no ajustes ninguna asercion.
+
+5. En specs/mobile-meal-schedule-editing/traceability.md, la fila R7 cita
+   tambien el commit de E3-a y sus dos `it`. Despues, un solo commit con
+   SOLO traceability.md y progress/impl_mobile-meal-schedule-editing.md, con
+   este mensaje literal:
+     docs(mobile-meal-schedule-editing): cite amendment E3 in #147 traceability
+   No rebasees despues.
+
+Listas del cierre:
+- Commits tuyos: los 26 que ya tienes, mas E3-a y el de trazabilidad.
+  Son 28.
+- Ficheros que cambian TUS commits: los mismos 13 de design.md §Archivos
+  afectados.
+- El `git diff --name-only H0..HEAD` incluye ademas seis ficheros que
+  cambian los commits del leader (98cc1154, d8edb20e, f26f85fd, 65b7434b y
+  el de esta reanudacion), y no cuentan como tuyos:
+  - specs/mobile-meal-schedule-editing/requirements.md
+  - specs/mobile-meal-schedule-editing/design.md
+  - specs/mobile-meal-schedule-editing/tasks.md
+  - progress/current.md
+  - progress/handoff_mobile-meal-schedule-editing.md
+  - progress/review_mobile-meal-schedule-editing.md
+  Pega ese diff completo y senala esos seis.
+
+No lances ./init.sh. No hagas push. No abras la PR.
+
+Informe: en progress/impl_mobile-meal-schedule-editing.md, una seccion
+«Reanudacion 3» al final con:
+- las salidas del paso 0;
+- las cuentas y el exit de los pasos 1 y 2;
+- el `git show --stat` del commit;
+- cada sonda con su diff, los `it` que caen y el modo (matcher/consulta);
+- el cierre completo, con exit y cifras.
+De jest copia solo las lineas de resumen y la primera linea del bloque `●`
+de cada `it` rojo.
+```

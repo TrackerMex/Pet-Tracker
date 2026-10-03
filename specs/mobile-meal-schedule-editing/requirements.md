@@ -484,4 +484,4 @@ Las ediciones literales, el mensaje de commit y las sondas están en [[tasks]]
 La lista cerrada de [[design]] §Archivos afectados no cambia: siguen siendo 13
 ficheros, porque el commit toca solo `src/screens/meal-schedule/index.test.tsx`.
 
-- [ ] Enmienda E3 aprobada por humano (fecha: ____, commit de firma: el que marca esta casilla)
+- [x] Enmienda E3 aprobada por humano (fecha: 2026-10-03, en el chat del leader; commit de firma: el que marca esta casilla)
