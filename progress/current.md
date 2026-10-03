@@ -19,7 +19,16 @@
   features `in_progress` aborta, así que el paso a `in_progress` de #105 se
   avisa antes a `Backend`.
 - **Plan:**
-  1. `./init.sh` en este worktree (lanzado, log en scratchpad)
-  2. `explorer` → `progress/explore_meals-history.md` (lanzado)
-  3. `spec_author` → `specs/meals-history/` → `spec_ready`
-  4. Espejo a Notion y PARAR hasta el gate humano
+  1. `./init.sh` en este worktree — EXIT=0 (hecho)
+  2. `explorer` → `progress/explore_meals-history.md` (hecho; dos premisas
+     del brief del leader eran falsas y se corrigieron en `feature_list.json`)
+  3. `spec_author` → `specs/meals-history/` → `spec_ready` (hecho, commit
+     `423ce5e8`)
+  4. Espejo a Notion (hecho, 2026-10-03): página `#105 meals-history` en la
+     base *Specs*, `Estado del gate = En revisión`, `Rol actual = Spec Author`
+     — https://app.notion.com/p/3ee6115a9b2781b8b100c70a69cfbb64
+- **Estado al parar:** esperando que el humano ponga `Estado del gate =
+  Aprobado` en Notion. Siguiente paso del leader: verificar propiedad y
+  `last_edited`, pasar el frontmatter a `approved`, commit de firma citando
+  página + hora + cuenta, avisar a `Backend` antes de `in_progress`, y
+  entonces handoff a Codex.
