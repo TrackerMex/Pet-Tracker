@@ -1,10 +1,14 @@
 import {
+  BadRequestException,
   ConflictException,
   HttpStatus,
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 import {
+  InvalidDateError,
+  InvalidRangeError,
+  RangeTooLargeError,
   MealTimeDuplicateError,
   MealTimesLimitReachedError,
   MealAlreadyServedError,
@@ -18,6 +22,19 @@ import {
 } from '@/modules/nutrition/domain/errors/nutrition.errors';
 
 export function mapNutritionError(error: unknown): unknown {
+  if (error instanceof InvalidDateError) {
+    return badRequest('INVALID_DATE', 'Dates must be calendar days YYYY-MM-DD');
+  }
+  if (error instanceof InvalidRangeError) {
+    return badRequest('INVALID_RANGE', 'from must not be after to');
+  }
+  if (error instanceof RangeTooLargeError) {
+    return badRequest(
+      'RANGE_TOO_LARGE',
+      'Requested range exceeds the maximum window',
+    );
+  }
+
   if (error instanceof NutritionPlanRequiredError) {
     return new UnprocessableEntityException({
       statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
@@ -97,4 +114,12 @@ export function mapNutritionError(error: unknown): unknown {
     });
   }
   return error;
+}
+
+function badRequest(code: string, message: string): BadRequestException {
+  return new BadRequestException({
+    statusCode: HttpStatus.BAD_REQUEST,
+    code,
+    message,
+  });
 }

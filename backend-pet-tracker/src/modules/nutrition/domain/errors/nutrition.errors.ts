@@ -73,3 +73,24 @@ export class MealTimesLimitReachedError extends Error {
     this.name = 'MealTimesLimitReachedError';
   }
 }
+
+export class InvalidDateError extends Error {
+  constructor(value: string) {
+    super(`not a calendar date (YYYY-MM-DD): ${value}`);
+    this.name = 'InvalidDateError';
+  }
+}
+
+export class InvalidRangeError extends Error {
+  constructor() {
+    super('from must not be after to');
+    this.name = 'InvalidRangeError';
+  }
+}
+
+export class RangeTooLargeError extends Error {
+  constructor() {
+    super('requested range exceeds the maximum allowed window');
+    this.name = 'RangeTooLargeError';
+  }
+}
