@@ -8,3 +8,7 @@ await icon.clone().resize(1024, 1024, Jimp.RESIZE_BICUBIC)
 
 await icon.clone().resize(48, 48, Jimp.RESIZE_BICUBIC)
   .writeAsync(`${images}/favicon.png`);
+
+await new Jimp(1024, 1024, 0x00000000)
+  .composite(icon.clone().resize(676, 676, Jimp.RESIZE_BICUBIC), 174, 174)
+  .writeAsync(`${images}/android-icon-foreground.png`);
