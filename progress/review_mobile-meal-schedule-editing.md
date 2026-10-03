@@ -1033,3 +1033,256 @@ tabla quedan clasificados aquí y no los convertiré en bloqueantes en la ronda 
 - R4, los `kind` distintos de `ok`;
 - R7, la hora nueva en Añadir durante el refetch del plan;
 - R7, el orden de los refetch.
+
+## Ronda 4
+
+Fecha: 2026-10-03T05:07Z
+Veredicto: APROBADO
+
+Revisado en HEAD `fe2505b3`, tras la Enmienda E4 (firma `f64a3c60`). Los
+commits son E4-a `a9406528`, E4-b `12730ded`, E4-c `f170159f`, E4-d `81e26781`,
+E4-e `0e56c182` y la trazabilidad `2f00b54e`. `4f988319` y `fe2505b3` son del
+leader y solo tocan `progress/current.md`. El leader corrió `./init.sh` en
+`4f988319` con exit 0. Yo leí el log y no lo relancé.
+
+**E4 cierra los 5 huecos y no abre ninguno.** Los cinco commits son literales
+respecto a tasks.md §Enmienda E4. Las 8 sondas de §Sondas de E4 caen rojas por
+matcher, cada una solo en su `it`. Las 2 sondas que dejaron verde la ronda 3
+ahora caen rojas en el `it` nuevo.
+
+Repetí 37 sondas rojas de las rondas 1–3 y ninguna regresa:
+
+- ninguna pierde un rojo;
+- el número de «Unable to find» solo cambia donde la mutación borra el nodo.
+
+Con la regla de barrido de §Pre-verificación §2 sin cambios, la tabla de
+cláusulas queda sin ningún hueco bloqueante. Los cuatro «no bloqueante»
+comprometidos allí siguen así y no bloquean.
+
+### Checklist C2 — Estado coherente
+- [x] Solo 1 feature in_progress: #147 en `feature_list.json`
+- [x] progress/current.md lo lleva el leader (`4f988319`, `fe2505b3`); no lo toqué
+
+### Checklist C3 — Arquitectura
+- [x] Sin cambios: `f64a3c60..HEAD` no toca producción (abajo)
+
+### Checklist C4 — TDD
+- [x] Los 5 commits de E4 son vía (b) y nacen verdes, como prescribe tasks.md §Enmienda E4. Producción no cambia desde `f64a3c60`. En HEAD, la pantalla da 59/59 y la API 62/62, las dos con exit 0.
+- [x] Cada commit toca un solo fichero de test, con un solo hunk y 0 líneas borradas. Las líneas añadidas son idénticas al bloque `ts` de su paso en tasks.md; en b–e, más 1 línea en blanco delante:
+
+  | Commit | Fichero | Hunk |
+  |---|---|---|
+  | E4-a `a9406528` | `index.test.tsx` | `@@ -805,6 +805,8 @@` (2 líneas) |
+  | E4-b `12730ded` | `index.test.tsx` | `@@ -1002,4 +1002,25 @@` (21 líneas) |
+  | E4-c `f170159f` | `nutrition.test.ts` | `@@ -486,4 +486,14 @@` (10 líneas) |
+  | E4-d `81e26781` | `index.test.tsx` | `@@ -690,6 +690,16 @@` (10 líneas) |
+  | E4-e `0e56c182` | `index.test.tsx` | `@@ -1033,4 +1033,20 @@` (16 líneas) |
+
+- [x] Los cinco mensajes de commit son los literales de tasks.md §Enmienda E4, y van en el orden prescrito: a, b, c, d, e.
+- [x] Cada `it` nuevo vive en el `describe('#147 R<n>…')` de su requisito:
+  - E4-a en R7;
+  - E4-b y E4-e en R8;
+  - E4-c en R3;
+  - E4-d en R5.
+- [x] Las 8 sondas de §Sondas de E4 caen rojas por matcher, cada una solo en su `it` (tabla abajo).
+
+### Checklist C5 — Trazabilidad
+- [x] traceability.md cita los cinco commits de E4 junto a las citas anteriores, sin reescribir ninguna:
+  - R3 `f170159f`;
+  - R5 `81e26781`;
+  - R7 `a9406528`;
+  - R8 `12730ded` y `0e56c182`.
+
+  Añade también la sección «## Verificación de la Enmienda E4».
+- [x] Los 34 hashes citados son ancestros de HEAD (`git merge-base --is-ancestor`, 34 ok).
+- [x] Ninguna fila «pendiente». La palabra solo aparece en dos sitios:
+  - la regla de la línea 25;
+  - la prosa «llamada pendiente de Añadir» de la fila R8 (línea 18), que describe el caso y no es un estado.
+
+### Checklist C6 — Spec aprobada
+- [x] La casilla humana de §Enmienda E4 está marcada en `f64a3c60` (2026-10-03, «en el chat del leader»)
+- [ ] La casilla del smoke sigue sin marcar. Es el gate humano de siempre y no bloquea este veredicto.
+
+### Checklist C7 — Sin código huérfano
+- [x] N/A
+
+### Checklist C8 — UI móvil
+- [x] Sin cambios de UI: E4 solo toca tests
+
+### Lista cerrada
+- [x] `git diff --name-only b367ed44..HEAD` da 19 rutas, el mismo conjunto que en las rondas 2 y 3.
+- [x] Son 44 commits: 34 de Codex y 10 del leader:
+  - `98cc1154`, `d8edb20e`, `f26f85fd`, `65b7434b`, `39174fe7`;
+  - `57757499`, `bec2d141`, `f64a3c60`, `4f988319`, `fe2505b3`.
+- [x] `git diff --name-only f64a3c60..HEAD` da solo 5 ficheros, y ninguno es de producción:
+  - `index.test.tsx` y `nutrition.test.ts`;
+  - current.md, el informe impl y traceability.md.
+- [x] El informe impl solo añade «## Reanudacion 4» (hunk `@@ -7303,3 +7303,836 @@`). Lo que declara coincide con lo que medí:
+  - bases 56/58 antes y 59/62 después;
+  - las 8 sondas con exit 1;
+  - el cierre en 88/1771, con lint y typecheck en exit 0.
+
+### Sondas de la ronda 4
+
+Las corrí en HEAD desde `mobile-pet-tracker/` con jest dirigido, sin pipe y
+sin init.sh. Antes de cada tanda comprobé que `pgrep -af 'init\.sh|test:e2e|jest-e2e'`
+salía vacío, y lo estuvo siempre: antes de las bases y las 8 sondas de E4
+(04:56:55Z) y antes de cada tanda de regresión (04:58:34Z y 05:03:58Z).
+
+Las mutaciones fueron temporales. Tras cada sonda restauré con
+`git checkout HEAD --`. `git diff --cached --stat` sale vacío. Al acabar,
+`git status --short` solo muestra este informe.
+
+**Base (04:56:55Z–04:57:06Z):** `src/screens/meal-schedule` da **59/59** y
+`src/api/__tests__/nutrition.test.ts` da **62/62**, las dos con exit 0.
+
+**Las 8 sondas de tasks.md §Sondas de E4 (04:57:09Z–04:57:53Z).** Todas
+salen con exit 1 y 1 failed: 58/59 en la pantalla y 61/62 en la API. Cada una
+cae solo en su `it`, y ninguna con «Unable to find».
+
+| Sonda | `it` rojo | Sitio | Matcher / recibido |
+|---|---|---|---|
+| 1 (H-r3-1, R7 Editar) | «los controles siguen deshabilitados hasta que termina el refetch» | `:818:41` | `toBeNull`, recibe `<Text …>20:05</Text>` |
+| 2 (H-r3-2, R8 Añadir) | «una nueva llamada de Añadir retira el error anterior» | `waitFor` `:1027:18`, línea 1031 | `toBeNull`, recibe el `Text` con «Ya hay una comida a esa hora» |
+| 3 (H1 `NUTRITION_PLAN_REQUIRED`) | su fila de «PATCH mapea $label como la tabla de R2» | `:497:99` | `resolves.toEqual` |
+| 4 (H1 `MEAL_TIMES_LIMIT_REACHED`) | su fila | `:497:99` | `resolves.toEqual` |
+| 5 (H1 otro código) | su fila | `:497:99` | `resolves.toEqual` |
+| 6 (H1 no JSON) | su fila | `:497:99` | `resolves.toEqual` |
+| 7 (H2 primera fila) | «Editar en la primera fila abre el selector con su hora y la publica como origen» | `:698:78` | `toEqual`, recibe `[19, 30]` |
+| 8 (H3 401 en Añadir) | «401 en Añadir cierra sesión sin mensaje» | `waitFor` `:1044:18`, línea 1045 | `toHaveBeenCalledTimes`, 0 llamadas |
+
+**Las 2 sondas que dejaron verde la ronda 3 (04:58:34Z–05:02:02Z).** Las dos
+salen ahora con exit 1, 58/59, por matcher y solo en el `it` nuevo de E4:
+
+- `N3-move-patch-after-ok` cae en «los controles siguen deshabilitados hasta que termina el refetch», en `:818:41` (`toBeNull`);
+- `N3-clear-error-edit-only` cae en «una nueva llamada de Añadir retira el error anterior», en `:1027:18` (`toBeNull`).
+
+**Controles de los «no bloqueante».** Siguen verdes, como clasifiqué en
+§Pre-verificación §3 y §5:
+
+- `N3-parallel-refetch` y `S-parallel` (`Promise.all`): 59/59, exit 0;
+- `S-add-hour-plan-hold`: 59/59, exit 0.
+
+**Regresión: 37 sondas rojas de las rondas 1–3**, entre las 04:58:34Z y las
+05:06:41Z. Para cada sonda comparé el conjunto de `it` rojos con el de su log
+anterior más reciente: `r3/regression/`, `r3/`, `probes2/` o `probes/`. El
+resultado:
+
+- las 37 siguen con exit 1;
+- ninguna pierde un `it` rojo;
+- ninguna da `suiteFail`.
+
+Las sondas, por requisito:
+
+- R2/R3: `R2-422-drop-limit`, `R2-okStatus-200`, `R3-okStatus-201`, `R3-url-encoded`, `R3-body`.
+- R4: `R4-family`, `R4-a11y-label-param`.
+- R5/R6: `R5-same-hour-calls`, `R5R6-setUTCHours`, `R6-default-00`.
+- R7:
+  - `R7-optimistic-add-rollback`, `R7-optimistic-move-rollback`, `R7-refetch-finally`, `R7-enable-before-refetch`;
+  - `R7-refetch-on-401`, `R7-row-not-disabled`, `R7-add-no-refetch`, `R7-no-pet-refetch`.
+- R8:
+  - `R8-limit-key`, `R8-duplicate-key`, `R8-catch-key`, `R8-401-message`;
+  - `R8-no-error-clear`, `R8-not-selectable`, `R8-error-after-add`.
+- E1/R1/R9: `E1b-no-401-signout`, `E1a-extra-accent-soft`, `R1-es-literal`, `R9-missing-addMeal-use`.
+- N de la ronda 2: `N-enable-between-refetches`, `N-no-await-pet-refetch`, `N-edit-nonok-refetch`, `N-add-ok-plan-only`.
+- N3 de la ronda 3: `N3-add-patch-after-ok`, `N3-clear-error-add-only`, `N3-reverse-order`, `N3-third-row-enabled`.
+
+Nueve sondas ganan rojos en los `it` de E4, y lo hacen donde deben:
+
+| Sonda | Rojo nuevo | Antes → ahora |
+|---|---|---|
+| `R7-optimistic-move-rollback` | «los controles siguen deshabilitados…» (`:818`, matcher) | 1 → 2 failed |
+| `R7-refetch-finally` | «401 en Añadir cierra sesión sin mensaje» | 14 → 15 |
+| `R7-refetch-on-401` | «401 en Añadir…» | 1 → 2 |
+| `R8-401-message` | «401 en Añadir…» | 1 → 2 |
+| `E1b-no-401-signout` | «401 en Añadir…» | 2 → 3 |
+| `R7-row-not-disabled` | «una nueva llamada de Añadir retira el error anterior» | 7 → 8 |
+| `R8-no-error-clear` | «una nueva llamada de Añadir…» | 1 → 2 |
+| `R8-duplicate-key` | «una nueva llamada de Añadir…» | 2 → 3 |
+| `R2-422-drop-limit` | «PATCH mapea 422 MEAL_TIMES_LIMIT_REACHED como la tabla de R2» | 1 → 2 |
+
+Hay dos casos más:
+
+- **`R8-error-after-add` pasa de 11 a 12 rojos.** Esa sonda borra el nodo del
+  error (`{false ? (`), así que el único rojo posible es por consulta. El `it`
+  nuevo de E4-b espera ese nodo antes de pulsar Añadir, y cae igual que los 11
+  anteriores (`meal-time-error`, «Unable to find»). Con el nodo borrado, ese
+  rojo por consulta es la propia aserción de presencia, y así lo acepté en las
+  rondas 1–3.
+- **`R7-optimistic-move-rollback` sigue con 1 «Unable to find»**, el mismo de
+  la ronda 1 (`19:30` en «mientras la edición vuela…»). Ahora además cae por
+  matcher en `:818`.
+
+Ninguna otra sonda tiene rojos por consulta.
+
+### Barrido de la ronda 4
+
+Apliqué la regla de §Pre-verificación §2 sin cambios sobre la tabla de §3, en
+HEAD. Las filas que cambian:
+
+| Cláusula | Rama / miembro | Candado (`it`) | Sonda | Estado |
+|---|---|---|---|---|
+| R3: «la misma tabla de R2» | 422 `NUTRITION_PLAN_REQUIRED`, 422 `MEAL_TIMES_LIMIT_REACHED`, 422 otro código, 422 no JSON | E4-c «PATCH mapea $label como la tabla de R2» (4 filas) | sondas 3–6, rojas en `:497:99` | candado (era **H1**) |
+| R5: `value` y `from` = hora de la fila `i` | fila 0 (además de la 1, la última) | E4-d «Editar en la primera fila abre el selector con su hora y la publica como origen» | sonda 7, roja en `:698:78` | candado (era **H2**) |
+| R8 IF 401: `signOut()` sin error | Añadir | E4-e «401 en Añadir cierra sesión sin mensaje» | sonda 8, roja en `:1044:18` | candado (era **H3**) |
+| R7 WHILE: ni la hora nueva, Editar, tramo del refetch del plan | — | E4-a en «los controles siguen deshabilitados hasta que termina el refetch» | sonda 1 y `N3-move-patch-after-ok`, rojas en `:818:41` | candado (hueco 1 de la ronda 3) |
+| R8 WHEN nueva llamada: retira el error | R6 (Añadir) | E4-b «una nueva llamada de Añadir retira el error anterior» | sonda 2 y `N3-clear-error-edit-only`, rojas en `:1027:18` | candado (hueco 2 de la ronda 3) |
+
+Las demás filas de §3 no cambian: siguen «candado», y sus sondas de la
+muestra siguen rojas. Los cuatro «no bloqueante» se mantienen y no bloquean:
+
+1. R1, los literales en design.md. Lo leí: design.md no cambia desde `f64a3c60`.
+2. R4, un solo `kind` distinto de `ok` como representante.
+3. R7, la hora nueva en Añadir durante el refetch del plan (`S-add-hour-plan-hold`, verde).
+4. R7, el orden plan → mascota frente a `Promise.all` (`S-parallel` / `N3-parallel-refetch`, verdes).
+
+Busqué alguna cláusula que mencione un miembro que los candados nuevos dejen
+fuera, y no encontré ninguna:
+
+- E4-e solo comprueba que se rehabilita `meal-time-edit-0`, pero R8 IF 401 no
+  pide rehabilitar: pide `signOut()` y que no haya error, y las dos cosas
+  están aseveradas.
+- E4.5 es un SHALL sobre el contenido de los tests. Lo verifiqué leyendo:
+  cada `it` asevera lo que su paso de tasks.md dice.
+
+**No queda ningún hueco bloqueante.**
+
+### R4-Observaciones
+
+Ninguna bloquea.
+
+1. **La casilla del smoke de requirements.md (línea 344) sigue sin marcar.**
+   Es el gate humano en dev build de Android. El leader no debe marcar #147
+   como `done` hasta que el humano la cierre (CLAUDE.md, reglas duras).
+2. **La fila R8 de traceability.md dice «llamada pendiente de Añadir».** Es
+   prosa que describe el caso, no un estado. No dispara C5, pero la palabra
+   puede confundir a un grep futuro que busque filas «pendiente».
+3. **E4-e solo mira la rehabilitación en `meal-time-edit-0`.** R8 IF 401 no la
+   exige, así que no es hueco. Lo apunto por si algún día se enmienda R8 para
+   pedirla.
+4. **init.sh vuelve a dar el aviso de jest «A worker process has failed to exit
+   gracefully» en la suite móvil.** Ya salía en las rondas 1–3. No cambia el
+   exit ni los totales.
+
+### Output de ./init.sh (ronda 4)
+Lo corrió el leader entre las 04:48:57Z y las 04:52:54Z. Leí
+`init-review4.log`: `review4-head.txt` = `4f988319` e
+`init-review4.exit` = `exit=0`. `4f988319..HEAD` solo toca
+`progress/current.md`.
+```
+✅ Build exitoso
+Test Suites: 174 passed, 174 total
+Tests:       1335 passed, 1335 total
+Test Suites: 2 passed, 2 total
+Tests:       14 passed, 14 total
+A worker process has failed to exit gracefully and has been force exited. …
+Test Suites: 88 passed, 88 total
+Tests:       1771 passed, 1771 total
+✅ Tests pasados
+Test Suites: 3 skipped, 28 passed, 28 of 31 total
+Tests:       8 skipped, 423 passed, 431 total
+✅ Tests e2e pasados
+✅ Lint sin errores
+✅ Typecheck sin errores
+✅ Todo verde. Listo para trabajar.
+```
