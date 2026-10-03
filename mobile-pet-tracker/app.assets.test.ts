@@ -84,3 +84,19 @@ describe('#101 R6: splash con el perrito sobre violeta', () => {
     });
   });
 });
+
+describe('#101 R7: icono de notificación blanco tintado', () => {
+  it('pet-tracker-notification-96.png (plugin expo-notifications) mide 96x96 RGBA', () => {
+    const plugin = appJson.expo.plugins.find(
+      (entry) => Array.isArray(entry) && entry[0] === 'expo-notifications',
+    ) as [string, { icon: string }];
+
+    expect(plugin[1].icon).toBeDefined();
+    expect(readIhdr(plugin[1].icon)).toEqual({
+      width: 96,
+      height: 96,
+      bitDepth: 8,
+      colorType: 6,
+    });
+  });
+});

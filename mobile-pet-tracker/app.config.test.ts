@@ -272,6 +272,19 @@ describe('#101 R6: splash con el perrito sobre violeta', () => {
   });
 });
 
+describe('#101 R7: icono de notificación blanco tintado', () => {
+  it('el plugin expo-notifications declara icon pet-tracker-notification-96.png, color #9460FC y defaultChannel default', () => {
+    expect(appJson.expo.plugins).toContainEqual([
+      'expo-notifications',
+      {
+        icon: './assets/images/pet-tracker-notification-96.png',
+        color: '#9460FC',
+        defaultChannel: 'default',
+      },
+    ]);
+  });
+});
+
 describe('#79 R14: google-services.json se declara solo cuando existe', () => {
   const originalApiKey = process.env.GOOGLE_MAPS_API_KEY_ANDROID;
   const originalResetLinkHost = process.env.RESET_LINK_HOST;
