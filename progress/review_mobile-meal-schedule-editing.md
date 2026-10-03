@@ -500,3 +500,536 @@ En las cuatro, el conjunto de `it` rojos con E3 contiene al de la ronda 2. El di
 **Restauración.** `git checkout HEAD -- src/screens/meal-schedule/index.tsx src/screens/meal-schedule/index.test.tsx`. Después, `git diff --cached --stat` sale vacío y `git status --short` lista solo `progress/current.md`, `progress/review_mobile-meal-schedule-editing.md`, `specs/mobile-meal-schedule-editing/requirements.md` y `specs/mobile-meal-schedule-editing/tasks.md`.
 
 **Ajustes.** El bloque no necesita ninguno. Una nota que no bloquea: los dos `it` fijan el orden plan → mascota, porque esperan el plan repintado con la mascota todavía retenida. Esto coincide con los pasos 1 y 2 del **WHEN** ok de R7, así que no constriñe más de lo que pide la spec.
+
+## Ronda 3
+
+Fecha: 2026-10-03T04:05Z
+Veredicto: RECHAZADO
+
+Revisado en HEAD `57757499`, tras la Enmienda E3 (firma `39174fe7`; E3-a
+`e184ab68`, trazabilidad `0b0f856c`; `57757499` solo toca
+`progress/current.md`). El leader corrió `./init.sh` en `0b0f856c` (exit 0).
+Yo leí el log y no lo relancé.
+
+**E3 cumple lo que prometía.** E3-a es literal respecto a tasks.md y su
+mensaje de commit también. Las 2 sondas de §R2-Observaciones 1 caen rojas por
+matcher, y solo en los dos `it` de E3-a. En la muestra de 18 sondas rojas de
+la ronda 2 (R7 y R8) ninguna regresa.
+
+**Motivo del rechazo:** al repasar cada «o», «cualquier», «todos» y «los dos»
+de R7 y R8 aparecen dos cláusulas más sin candado. Cada una tiene una sonda
+que deja `src/screens/meal-schedule` en 56/56 verde, exit 0:
+
+- **R7:** la lista no cambia mientras el refetch del plan está retenido, pero
+  solo se vigila en el flujo Añadir, no en Editar.
+- **R8:** «una nueva llamada de R5 o R6 retira el error» solo se vigila con
+  R5 (Editar), no con R6 (Añadir).
+
+Detalle en §R3-Observaciones 1.
+
+Producción cumple las dos cláusulas. Los huecos vienen de la prescripción de
+tasks.md: §R7 `it('los controles siguen deshabilitados hasta que termina el
+refetch')` y §R8 `it('una nueva edición retira el error anterior')`. No los
+introdujo Codex, que siguió la prescripción al pie de la letra. Existen desde
+la ronda 1 y **no los detecté ni en la ronda 1 ni en la 2**. Ese fallo de
+cobertura es mío.
+
+### Checklist C2 — Estado coherente
+- [x] Solo 1 feature in_progress: #147 en `feature_list.json`
+- [x] progress/current.md lo lleva el leader (`57757499`); no lo toqué
+
+### Checklist C3 — Arquitectura
+- [x] Sin cambios: `39174fe7..HEAD` no toca producción (abajo)
+
+### Checklist C4 — TDD
+- [x] E3-a es vía (b) y nace verde, como prescribe tasks.md §Enmienda E3. La producción no cambia desde `39174fe7`, y en HEAD da 56/56, exit 0.
+- [x] La edición es literal:
+  - `git show e184ab68` tiene un solo hunk `@@ -879,0 +880,48 @@` y solo toca `index.test.tsx`;
+  - son las 47 líneas del bloque `ts` de tasks.md §Enmienda E3-a, idénticas, más 1 línea en blanco delante, con 0 líneas borradas;
+  - la doble línea en blanco antes del `describe` de R8 ya existía en `c918e756`.
+- [x] El mensaje de commit es el literal de tasks.md (línea 917 de §Enmienda E3).
+- [x] Las 2 sondas de §R2-Observaciones 1 caen rojas por matcher (tabla abajo).
+- [ ] **R7 y R8 siguen sin candado completo:** quedan 2 sondas verdes (§R3-Observaciones 1).
+
+### Checklist C5 — Trazabilidad
+- [x] La fila R7 cita `e184ab68`, y los dos nombres de `it` de E3-a existen tal cual en `index.test.tsx` (líneas 881 y 905 en HEAD)
+- [x] Los 28 hashes citados en traceability.md son ancestros de HEAD (`git merge-base --is-ancestor`, 28 ok)
+- [x] Ninguna fila «pendiente». La única aparición de la palabra es la regla de la línea 25.
+
+### Checklist C6 — Spec aprobada
+- [x] La casilla humana de §Enmienda E3 está marcada en `39174fe7` (2026-10-03, «en el chat del leader»)
+- [ ] La casilla del smoke sigue sin marcar. Es el gate humano de siempre y no bloquea este veredicto.
+
+### Checklist C7 — Sin código huérfano
+- [x] N/A
+
+### Checklist C8 — UI móvil
+- [x] Sin cambios de UI: E3 solo toca tests
+
+### Lista cerrada
+- [x] `git diff --name-only b367ed44..HEAD` da 19 rutas, el mismo conjunto que en la ronda 2:
+  - 13 de Codex: los 10 ficheros de `mobile-pet-tracker/`, `specs/mobile-ui-language/design.md`, traceability.md e impl.
+  - 6 del leader: current.md, handoff, review, y design.md, requirements.md y tasks.md de #147.
+- [x] Son 34 commits: 28 de Codex y 6 del leader (`98cc1154`, `d8edb20e`, `f26f85fd`, `65b7434b`, `39174fe7`, `57757499`).
+- [x] `git diff --name-only 39174fe7..HEAD` da solo `index.test.tsx`, current.md, el informe impl y traceability.md. No hay ningún cambio de producción.
+- [x] El informe impl solo añade «## Reanudación 3» (hunk `@@ -6918,3 +6918,388 @@`).
+
+### Sondas de la ronda 3
+
+Las corrí en HEAD desde `mobile-pet-tracker/`, siempre con jest dirigido
+(`bunx jest src/screens/meal-schedule`), sin pipe y con `pgrep` vacío antes de
+cada tanda. Después de cada sonda restauré con `git checkout HEAD --` sobre el
+fichero mutado. Al final, `git diff --cached --stat` sale vacío y
+`git status --short` también.
+
+**Línea base.** HEAD da 56/56, exit 0 (03:44:20–03:44:28Z).
+
+**Sondas de E3 (§R2-Observaciones 1)**, entre las 03:44:30Z y las 03:44:59Z:
+
+| Sonda | Resultado | `it` E3-a 1 (Editar) | `it` E3-a 2 (Añadir) |
+|---|---|---|---|
+| `N-enable-between-refetches` | 2 failed / 56, exit 1 | ✗ `:891:18` | ✗ `:915:18` |
+| `N-no-await-pet-refetch` | 2 failed / 56, exit 1 | ✗ `:891:18` | ✗ `:915:18` |
+
+Las cuatro celdas fallan en la misma aserción,
+`toEqual(expect.objectContaining({ disabled: true }))`, con Received
+`"disabled": false`. Son rojos por matcher y ninguno dice «Unable to find».
+Los otros 54 `it` siguen verdes.
+
+**Barrido de cláusulas de R7 y R8.** Son sondas nuevas en `index.tsx`:
+
+| Sonda | Cláusula | Resultado | Primer rojo |
+|---|---|---|---|
+| `N3-move-patch-after-ok`: en Editar, tras el ok, `queryClient.setQueryData(nutritionKeys.plan(petId), …)` cambia la hora `from` por la nueva antes del refetch | R7 WHILE «ni la hora nueva … antes de que el refetch resuelva», flujo R5 | **56/56 verde, exit 0** | — |
+| `N3-add-patch-after-ok`: el mismo parche en Añadir (control) | la misma cláusula, flujo R6 | 1 failed / 56 | E2-b `it` 3, `:875:53`, `queryByTestId('meal-time-row-2')).toBeNull()` |
+| `N3-clear-error-edit-only`: quita `setEditError(null)` de `runMealTimeEdit` y lo pone solo antes de la llamada de Editar | R8 «nueva llamada de R5 o R6», rama R6 | **56/56 verde, exit 0** | — |
+| `N3-clear-error-add-only`: lo mismo, pero solo antes de Añadir (control) | la misma cláusula, rama R5 | 1 failed / 56 | `una nueva edición retira el error anterior`, `:994:18`, `toBeNull()` |
+| `N3-parallel-refetch`: `await Promise.all([plan.refetch(), refetchQueries(pet)])` | R7 orden de los pasos 1 y 2 | 56/56 verde | — (§R3-Observaciones 2) |
+| `N3-reverse-order`: primero el refetch de la mascota y luego el del plan | R7 pasos 1 y 2, y «los dos» | 2 failed / 56 | los dos `it` de E3-a, `:897:18` y `:921:18`, `not.toBeNull()` |
+| `N3-third-row-enabled`: `isDisabled={editing && index < 2}` | R7 «**todos** los `meal-time-edit-*`» | 1 failed / 56 | E3-a `it` 2, `:923:63` (`meal-time-edit-2`) |
+
+Ninguno de los rojos de esta tabla dice «Unable to find».
+
+**Corridas que coincidieron con el `./init.sh` de Backend en wt-146.** Ese
+init.sh arrancó a las 03:46:52Z. La primera tanda de 5 sondas N3
+(03:46:47–03:47:41Z) se solapó con él:
+
+- `N3-move-patch-after-ok`: verde;
+- `N3-add-patch-after-ok`: 1 rojo;
+- `N3-clear-error-edit-only`: verde;
+- `N3-clear-error-add-only`: 1 rojo;
+- `N3-parallel-refetch`: verde.
+
+Repetí las 7 sondas N3 con `pgrep` vacío y la CPU libre (03:54:46–03:55:50Z),
+y dieron exactamente lo mismo. Las dos sondas verdes que sostienen el rechazo
+las volví a correr sobre HEAD limpio a las 04:02:24–04:02:43Z. Las dos dieron
+`Tests: 56 passed, 56 total`, exit 0. La línea base, las sondas de E3 y la
+muestra de regresión corrieron fuera de esa ventana.
+
+**Medida de los candados que faltan.** Los pegué en `index.test.tsx` solo para
+medir y después restauré con `git checkout HEAD --`.
+
+- **Hueco 1.** En R7 `it('los controles siguen deshabilitados hasta que
+  termina el refetch')` añadí dos líneas tras la primera espera conjunta y
+  antes de `resolve(...)`:
+  ```ts
+  expect(screen.queryByText('20:05')).toBeNull();
+  expect(within(screen.getByTestId('meal-time-row-1')).getByText('19:30')).toBeVisible();
+  ```
+  - Línea base con el candado: 57/57, exit 0, medida dos veces.
+  - Con `N3-move-patch-after-ok`, el `it` cae rojo en `:808:41`, `toBeNull()`, con Received `<Text …>20:05</Text>`. Es un rojo por matcher.
+  - **El orden importa.** Con la línea `getByText('19:30')` primero, la misma sonda cae rojo por consulta (`:808:58`, «Unable to find»). La aserción de matcher tiene que ir delante.
+- **Hueco 2.** Añadí un `it` espejo de `una nueva edición retira el error anterior`, llamado `una nueva llamada de Añadir retira el error anterior`:
+  - edita la fila 1 con `moveMealTime → MEAL_TIME_DUPLICATE` y espera a ver el error;
+  - añade con `addMealTime → pending()`;
+  - espera conjunta: los tres controles deshabilitados **y** `queryByTestId('meal-time-error')` null;
+  - resuelve con ok y termina con la espera de cierre.
+
+  Línea base: 57/57. Con `N3-clear-error-edit-only` cae rojo en `:1017:18` por matcher: `toBeNull()` con Received el `Text` «Ya hay una comida a esa hora».
+
+**Muestra de regresión sobre las rojas de la ronda 2.** Son 18 sondas, corridas
+entre las 03:57:06Z y las 04:00:23Z con `pgrep` vacío:
+
+- R7: `R7-optimistic-add-rollback`, `R7-optimistic-move-rollback`, `R7-add-no-refetch`, `R7-no-plan-refetch`, `R7-no-pet-refetch`, `R7-refetch-on-forbidden`, `R7-pet-refetch-on-forbidden`, `R7-refetch-on-401`, `R7-row-not-disabled` y `R7-add-btn-not-disabled`.
+- N: `N-add-ok-plan-only`, `N-edit-nonok-refetch` y `N-no-await-plan-refetch`.
+- R8: `R8-limit-key`, `R8-no-error-clear`, `R8-401-message`, `R8-error-after-add` y `R8-catch-key`.
+
+Las 18 salen rojas, exit 1. Comparé los nombres de los `●` con el log de la
+ronda 2 de cada sonda:
+
+- ninguna pierde un `it` rojo (diff sin líneas `<`);
+- 6 ganan los `it` de E3-a: `R7-add-no-refetch`, `R7-no-plan-refetch`, `R7-no-pet-refetch`, `R7-row-not-disabled`, `R7-add-btn-not-disabled` y `N-add-ok-plan-only`;
+- el número de «Unable to find» es idéntico al de la ronda 2 en las 18. Es 1 en `R7-optimistic-move-rollback` y 11 en `R8-error-after-add`, igual que antes; E3 no añade ninguno.
+
+### R3-Observaciones
+
+#### 1. Bloqueante: dos cláusulas sin candado, una de R7 y otra de R8
+
+**Hueco 1, R7 en el flujo Editar.** La cláusula es el WHILE de R7: «seguir
+pintando las horas del plan que había en caché. Ni la hora nueva ni la fila
+nueva aparecen antes de que el refetch resuelva». La ventana «hasta que
+terminan los refetch» solo se vigila en Añadir (E2-b `it` 3). En Editar,
+`it('los controles siguen deshabilitados hasta que termina el refetch')`
+(línea 795 en HEAD) retiene la segunda llamada a `getNutritionPlan` y asevera
+solo `disabled` y el número de llamadas. No mira la lista.
+
+Sonda `N3-move-patch-after-ok`: tras el ok de `moveMealTime`, se parchea la
+caché del plan con `setQueryData` cambiando `19:30` por `20:05` antes del
+refetch. Es estado optimista colado después del ok. Resultado: 56/56 verde. El
+test del rollback optimista de Editar no lo ve porque mira la ventana en vuelo,
+antes del ok, no la del refetch.
+
+Origen: tasks.md §R7 (líneas 435–440) prescribe ese `it` sin aserción sobre la
+lista.
+
+Candado medido: las dos líneas de arriba, con `queryByText('20:05')).toBeNull()`
+**delante** y `within(meal-time-row-1).getByText('19:30')` detrás, insertadas
+tras la primera espera conjunta. Base 57/57; sonda roja por matcher.
+
+**Hueco 2, R8 con una nueva llamada de R6.** La cláusula es «**WHEN** empieza
+una nueva llamada de R5 **o** R6 **THE SYSTEM SHALL** quitar el
+`meal-time-error` anterior» (requirements.md línea 241). El único candado es
+`it('una nueva edición retira el error anterior')` (línea 983 en HEAD), que
+siempre provoca el error con Añadir y lo retira con una nueva llamada de
+**Editar** (R5). Nadie comprueba que una nueva llamada de **Añadir** (R6) lo
+retire.
+
+Sonda `N3-clear-error-edit-only`: quita `setEditError(null)` de
+`runMealTimeEdit` y lo pone solo antes de la llamada de Editar. Resultado:
+56/56 verde. El control, que retira el error solo en Añadir, cae rojo en el
+`it` existente, así que la rama R5 está vigilada y la R6 no.
+
+Origen: tasks.md §R8 (líneas 513–518) prescribe solo la combinación «añade y
+luego edita». Es el mismo patrón que en `clausulas-universales-candadas-en-un-caso`:
+un «o» con un solo candado.
+
+Candado medido: el `it` espejo descrito arriba, «edita con DUPLICATE y luego
+añade con `pending()`». Base 57/57; sonda roja por matcher en `toBeNull()`.
+
+Ninguno de los dos huecos pide cambiar producción: `index.tsx` ya cumple las
+dos cláusulas. Basta con un candado por rama en `index.test.tsx` (vía b, nace
+verde), como en E2 y E3.
+
+#### 2. No bloqueante: el orden plan → mascota no está candado frente a ejecutarlos en paralelo
+
+R7 numera los pasos 1 (`await plan.refetch()`) y 2 (`await
+refetchQueries(pet)`). `N3-parallel-refetch` (`Promise.all` de los dos) queda
+en 56/56 verde. El orden invertido sí cae rojo (`N3-reverse-order`, 2 rojos en
+E3-a), y con `Promise.all` los dos refetch terminan antes de rehabilitar, así
+que ninguna cláusula observable de R7 cambia: ni el bloqueo, ni la lista, ni
+el número de llamadas. Si el leader quiere fijar la secuencia estricta, haría
+falta un test que retenga el plan y asevere que `getPet` no se ha llamado
+todavía. Lo anoto como límite y no lo exijo.
+
+#### 3. No bloqueante: los mensajes de R8 y el 401 se candan por `kind` en un solo flujo
+
+El `it.each` de R8 y `401 cierra sesión sin mensaje` recorren cada `kind` en un
+solo flujo. Un remapeo por flujo en el callsite pasaría sin que nadie lo viera.
+Hoy es improbable, porque el mapeo vive en `runMealTimeEdit`, que comparten los
+dos flujos. Lo anoto como límite: si algún día el mapeo se separa por flujo,
+hará falta candarlo por rama.
+
+### Output de ./init.sh (ronda 3)
+Lo corrió el leader entre las 03:38:11Z y las 03:42:48Z. Leí
+`init-review3.log`: `review3-head.txt` = `0b0f856c` e
+`init-review3.exit` = `exit=0`. `0b0f856c..HEAD` solo toca
+`progress/current.md`.
+```
+✅ Build exitoso
+Test Suites: 174 passed, 174 total
+Tests:       1335 passed, 1335 total
+Test Suites: 2 passed, 2 total
+Tests:       14 passed, 14 total
+A worker process has failed to exit gracefully and has been force exited. …
+Test Suites: 88 passed, 88 total
+Tests:       1764 passed, 1764 total
+✅ Tests pasados
+Test Suites: 3 skipped, 28 passed, 28 of 31 total
+Tests:       8 skipped, 423 passed, 431 total
+✅ Tests e2e pasados
+✅ Lint sin errores
+✅ Typecheck sin errores
+✅ Todo verde. Listo para trabajar.
+```
+
+### Pre-verificación del borrador E4 y barrido de cláusulas
+
+Fecha: 2026-10-03, entre las 04:07Z y las 04:22Z. HEAD `57757499`. El borrador E4
+está sin commitear en requirements.md (§Enmienda E4) y tasks.md (§Enmienda E4).
+No toqué specs/ ni commiteé nada.
+
+Todo lo corrí desde `mobile-pet-tracker/` con jest dirigido, sin pipe y sin
+init.sh. Antes de cada tanda comprobé que `pgrep -af 'init\.sh|test:e2e|jest-e2e'`
+salía vacío; lo estuvo siempre (la última vez, a las 04:21:25Z). Las mutaciones
+fueron temporales. Al final restauré los cuatro ficheros con
+`git checkout HEAD --`:
+
+- `index.test.tsx` y `index.tsx`;
+- `nutrition.test.ts` y `nutrition.ts`.
+
+`git diff --cached --stat` sale vacío. `git status --short` solo muestra este
+informe y los dos ficheros del borrador del leader.
+
+**Resultado: E4 reproduce tal como está redactada, pero es insuficiente.** El
+barrido encuentra 3 huecos más, todos de la misma familia: cláusulas con varios
+miembros candadas en uno solo. Producción cumple las tres; ninguna pide cambiar
+código. Las tres tienen candado medido (vía b, nace verde y su sonda cae roja
+por matcher).
+
+#### 1. E4 tal como está redactada
+
+Pegué los bloques literales de tasks.md §E4-a y §E4-b en `index.test.tsx` con
+las anclas que da el texto. Resultados:
+
+| Medida | Resultado | Hora |
+|---|---|---|
+| Base con E4-a | 56/56, exit 0 | 04:07:54Z |
+| Base con E4-a + E4-b | 57/57, exit 0 | 04:08:04Z |
+| Sonda 1 (envoltura `.then` en el callsite de Editar) | 1 failed / 57, exit 1. Solo cae «los controles siguen deshabilitados hasta que termina el refetch», en `:808:41`, `expect(received).toBeNull()` (Received `<Text …>20:05</Text>`). Cae por matcher. | 04:08:25Z |
+| Sonda 2 (`setEditError(null)` solo antes de Editar) | 1 failed / 57, exit 1. Solo cae «una nueva llamada de Añadir retira el error anterior», en `:1017:18`, `toBeNull` (Received el `Text` `meal-time-error` con «Ya hay una comida a esa hora»). Cae por matcher. | 04:08:35Z |
+
+No encontré ningún paso ni sonda ambiguos. Las anclas de E4-a, el `});` del
+primer `waitFor` y la línea `await act(async () => resolve({ kind: 'ok', plan: makePlan({ mealTimes: ['07:30', '20:05'] }) }));`
+son únicas dentro de su `it`.
+
+Hay una sola nota cosmética. tasks.md §E4-b no dice que haya que dejar una línea
+en blanco antes del `it` nuevo. Yo la puse, igual que en E3-a. Si se omite, el
+resultado no cambia.
+
+#### 2. Regla del barrido
+
+Es la misma regla que apliqué en las rondas 2 y 3. La dejo escrita para que no
+cambie en la ronda 4.
+
+1. **Miembros enumerados.** Cada miembro enumerado necesita al menos un `it` que
+   lo ejercite y lo asevere, dentro de cada frase EARS que lo cuantifique. Un
+   miembro cuenta como enumerado en cualquiera de estos casos:
+   - aparece en un «o», en una lista o en una tabla;
+   - se hereda por referencia: «la llamada» es la llamada «de R5 o R6», y «la
+     misma tabla de R2» trae todas las filas de R2.
+2. **Dos dimensiones en una frase.** Si una misma frase enumera dos dimensiones
+   (por ejemplo flujo × resultado), basta con un candado por miembro de cada
+   dimensión. No exijo el producto cartesiano.
+3. **Cuantificador abierto.** Son frases como «cualquier otro status», «`kind`
+   distinto de `ok`» o «fila `i`».
+   - Si la salida es la misma para todo el conjunto, basta un representante.
+   - Si la salida depende del miembro (la hora de la fila `i`), hacen falta dos
+     muestras que distingan la función de una constante. Es la lección de
+     `candados-tautologicos`.
+4. **WHILE con ventana.** Cada propiedad se vigila, por miembro, en el último
+   tramo de la ventana que tiene estado propio en producción. Los tramos son:
+   en vuelo, refetch del plan y refetch de la mascota. Así se cerró el hueco 1
+   de la ronda 3.
+5. **SHALL sobre documentos.** Los que hablan de design.md los verifico
+   leyendo; no exijo sonda.
+
+**Hueco bloqueante** = un miembro sin `it`, más una sonda de un solo sitio que lo
+viola y deja verde el jest dirigido.
+
+#### 3. Tabla cláusula × rama × candado × sonda
+
+Los nombres son los de los `it` de HEAD + E4. «—» significa que hace falta sonda
+porque nadie lo canda.
+
+| Cláusula | Rama / miembro | Candado (`it`) | Sonda | Estado |
+|---|---|---|---|---|
+| R1: 9 claves con su valor | es y en, ×9 | `#147 R1` «registra las nueve claves en los dos idiomas y en la tabla de la spec de idioma» | — | candado |
+| R1: total base + 9 | en = 329; es con las mismas claves | `#65 R12` «mantiene la base más las claves de #68 y los mismos marcadores en ambos idiomas» | — | candado |
+| R1: mismos `{{…}}` | cada clave | el mismo `it` (bucle `markerNames`) | — | candado |
+| R1: design.md lista cada clave con su marca | ×9 | `#147 R1` (regex por clave) | — | candado |
+| R1: design.md «con sus dos literales» | ×18 | la regex usa `[^\n]*` y no mira los literales | no medida (no toco specs/) | **no bloqueante** (regla 5). Leí las líneas 829–837: los 18 literales coinciden con el catálogo. Es el mismo candado que tienen #41, #70, #78 y #100. |
+| R2: un fetch, POST, URL sin barra final, cabeceras, body | — | «publica POST /meal-times con el token y el body exacto, y 201 es ok». El `baseUrl` del test termina en `/`, así que la URL exacta canda el recorte. | — | candado |
+| R2: tabla | 201, 400, 403, 422 ×4 códigos, 422 otro código, 422 no JSON, 401, otro status (200/404/500) | `it.each` «mapea $label a $kind» | — | candado |
+| R2: fetch rechaza / sin baseUrl | unreachable con mensaje / missing-config sin fetch | «devuelve unreachable…» / «devuelve missing-config…» | — | candado |
+| R3: un fetch, PATCH, URL con `from`, cabeceras, body | — | «publica PATCH /meal-times/:from…» | — | candado |
+| R3: solo 200 es ok; 201 da error | — | el mismo `it` / «trata un 201 como error» | — | candado |
+| R3: «la misma tabla de R2» | 400, 403, 422 NOT_IN_PLAN, 422 DUPLICATE, 401, otro status (500), rechazo, missing-config | «comparte el mapeo de errores de addMealTime» | — | candado |
+| R3: «la misma tabla de R2» | **422 NUTRITION_PLAN_REQUIRED** | — | `S-r3-npr`: 58/58 verde | **HUECO H1** |
+| R3: «la misma tabla de R2» | **422 MEAL_TIMES_LIMIT_REACHED** | — | `S-r3-limit`: 58/58 verde | **HUECO H1** |
+| R3: «la misma tabla de R2» | **422 con otro código** | — | `S-r3-other`: 58/58 verde | **HUECO H1** |
+| R3: «la misma tabla de R2» | **422 con body no JSON** | — | `S-r3-nojson`: 58/58 verde | **HUECO H1** |
+| R4: el owner ve el botón como 4.º hijo, con testID, «Editar» y su `accessibilityLabel` | filas 0 y 1 (la etiqueta depende de la fila: dos muestras) | «el owner ve Editar en cada fila y Añadir comida bajo la lista» | — | candado |
+| R4: el owner ve «Añadir comida» como último hijo, y la sección lleva su testID | — | el mismo `it` | — | candado |
+| R4 IF: family / walker / vet | ×3 | `it.each` «%s no ve controles de edición» | — | candado |
+| R4 IF: `kind` distinto de `ok` | representante `error` | «con el detalle de la mascota en error no hay controles» | — | **no bloqueante** (regla 3: la salida es la misma para cualquier `kind`, y producción hace una sola comparación `=== 'ok'`) |
+| R4 IF: sin resolver | pending | «sin el detalle de la mascota resuelto no hay controles» | — | candado |
+| R4 IF: cada fila conserva 3 hijos y la sección solo tiene título + filas | en los 3 casos IF | los tres `it` de arriba | — | candado |
+| R5: un único picker en `Host`, con testID, mode y presentation | — | «abre un único selector de hora con la hora local de la fila» | — | candado |
+| R5: `value` = hora local de la **fila i**; `moveMealTime(…, horaDeLaFila, …)` | **solo i = 1, que es la última fila** | ningún `it` pulsa otra fila | `S-row-last` (`from` = última franja): 57/57 verde | **HUECO H2** |
+| R5: onValueChange desmonta y llama una vez con HH:MM local | — | «al elegir una hora nueva llama a moveMealTime con la hora local y cierra el selector» | — | candado |
+| R5 IF: misma hora **o** onDismiss; ni move ni add | las 2 ramas × las 2 funciones | «elegir la misma hora de la fila no llama a nada» / «al cerrar el selector sin elegir no llama a nada» | — | candado |
+| R6: 12:00 local, mode, presentation | — | «abre el selector a las 12:00 locales» | — | candado |
+| R6: onValueChange desmonta y llama a add una vez | — | «al elegir una hora llama a addMealTime con la hora local rellenada a dos dígitos» | — | candado |
+| R6 IF: onDismiss, ninguna de las dos | ×2 funciones | «al cerrar el selector sin elegir no llama a nada» (R6) | — | candado |
+| R7 WHILE: **todos** deshabilitados | Editar × {en vuelo, refetch del plan, refetch de la mascota} | «mientras la edición vuela…» / «los controles siguen deshabilitados hasta que termina el refetch» / «…hasta que termina también el refetch de la mascota» | — | candado |
+| R7 WHILE: **todos** deshabilitados | Añadir × los 3 tramos | «mientras Añadir vuela…» / «tras ok de Añadir los controles siguen deshabilitados y sin fila nueva…» / «tras ok de Añadir … refetch de la mascota» (incluye `edit-2`) | — | candado |
+| R7 WHILE: **ni** la hora nueva | último tramo (refetch del plan) | E4-a en «los controles siguen deshabilitados hasta que termina el refetch»; en vuelo, «mientras la edición vuela…» y «mientras Añadir vuela…» (`08:05`) | E4-1 roja | candado |
+| R7 WHILE: **ni** la fila nueva | último tramo | «tras ok de Añadir … sin fila nueva…» (`row-2`); en vuelo, «mientras Añadir vuela…» | — | candado |
+| R7 WHILE: hora nueva en Añadir, tramo del refetch del plan | producto del miembro × flujo | sin `queryByText('08:05')` en ese `it` | `S-add-hour-plan-hold` (reescribe la franja 0 con `08:05` tras el ok): 57/57 verde | **no bloqueante** (reglas 2 y 4: el miembro ya está candado en su último tramo con Editar; el mutante no añade fila, reescribe una existente) |
+| R7 WHEN ok: paso 1 `plan.refetch` | Editar / Añadir | «tras ok refetchea el plan…» / «tras ok de Añadir refetchea…» | — | candado |
+| R7 WHEN ok: paso 2 refetch de la mascota | Editar / Añadir | los mismos dos `it` (`getPet` ×2) | — | candado |
+| R7 WHEN ok: paso 3, rehabilitar solo tras los dos | Editar / Añadir | E3 ×2 (mascota retenida) + los dos `it` con el plan retenido | — | candado |
+| R7 WHEN ok: orden 1 → 2 (obs. 2 de la ronda 3) | secuencia frente a paralelo | ninguno lo distingue. El orden invertido sí cae (N3-reverse-order, ronda 3). | `S-parallel` (`Promise.all`): 57/57 verde | **no bloqueante** (ver §5) |
+| R7 IF: cualquier otro `kind`, sin refetch de ninguna clave | invalid, forbidden, 4 códigos 422, unreachable, error, missing-config, rechazo | `it.each` de R8 (aserciones E2.2) | — | candado |
+| R7 IF: cualquier otro `kind` | unauthorized | «401 cierra sesión sin mensaje» | — | candado |
+| R7 IF: cualquier otro `kind` | flujos Editar y Añadir | los dos aparecen en el `it.each` | — | candado |
+| R8 WHEN error: 10 filas con literal, `selectable`, `className`, penúltimo hijo y único | ×10 | `it.each` «$label muestra «$literal»» | — | candado |
+| R8 WHEN error: flujos | Editar (5 filas) / Añadir (5 filas) | el mismo `it.each` | — | candado |
+| R8 WHEN error: `kind` × flujo (obs. 3 de la ronda 3, mensajes) | producto cartesiano | — | no medida | **no bloqueante** (regla 2, ver §5) |
+| R8 IF 401: `signOut()` sin error | Editar | «401 cierra sesión sin mensaje» | — | candado |
+| R8 IF 401: `signOut()` sin error | **Añadir** | — | `S-401-add` (el callsite de Añadir convierte `unauthorized` en `error`): 57/57 verde | **HUECO H3** |
+| R8 WHEN nueva llamada: retira el error | R5 / R6 | «una nueva edición retira el error anterior» / E4-b «una nueva llamada de Añadir retira el error anterior» | N3 (ronda 3) / E4-2 rojas | candado |
+| R9: 9 claves en `R6_FOOD` | ×9 | `#147 R9` «nombra las nueve ocurrencias nuevas y las resuelve en su fichero» | — | candado |
+| R9: +1 `common.cannotReachServer`, +2 `common.somethingWentWrong`; 38 → 50 | — | `#65 R6` «resuelve las 50 ocurrencias normativas» (longitud 50 + `checkUses`, recuento exacto por fichero × clave) | — | candado |
+| E1: `bg-accent-soft` / `signOut(` | — | «conserva los usos de bg-accent-soft que sí son acento» / «preserves every mutation sign-out with zero delta» | — | candado |
+| E2, E3, E4 | — | ya están en las filas de R7 y R8 | — | candado |
+
+Logs de las sondas en el scratchpad (`e4/S-*.log`), entre las 04:19:58Z y las
+04:21:00Z. Las dos bases salen verdes en esa misma tanda: `src/screens/meal-schedule`
+da 57/57 y `nutrition.test.ts` da 58/58, las dos con exit 0.
+
+#### 4. Los 3 huecos, con su candado medido
+
+Los tres son de vía (b): nacen verdes porque producción ya cumple. Los inserté
+en una copia de trabajo de HEAD + E4. La base y las sondas corrieron entre las
+04:21:25Z y las 04:22:06Z, con `pgrep` vacío:
+
+- base: `src/screens/meal-schedule` da **59/59** y `nutrition.test.ts` da
+  **62/62**, las dos con exit 0;
+- cada sonda de la tabla cae roja en su `it` nuevo y solo en él, siempre por
+  matcher (0 «Unable to find»).
+
+**H1. R3, «la misma tabla de R2», 4 filas sin candado.** `addMealTime` y
+`moveMealTime` comparten `editMealTimeState(response, okStatus)`. Aun así, R3
+cuantifica sobre la tabla de R2 en su propia frase, y el `it` «comparte el mapeo
+de errores de addMealTime» se salta 4 filas. Hay dos tipos de sonda que las dejan
+pasar:
+
+- una envoltura sobre el retorno de `moveMealTime` (`S-r3-npr`, `S-r3-limit`);
+- una rama condicionada a `okStatus === 200` en el bloque 422 de
+  `editMealTimeState` (`S-r3-other`, `S-r3-nojson`).
+
+Las cuatro dan 58/58 verde. El candado medido va dentro de `describe('#147 R3…')`
+de `src/api/__tests__/nutrition.test.ts`, detrás del `it` «comparte el mapeo de
+errores de addMealTime», con una línea en blanco delante:
+
+```ts
+  it.each([
+    { label: '422 NUTRITION_PLAN_REQUIRED', backend: response(422, { code: 'NUTRITION_PLAN_REQUIRED' }), expected: { kind: 'unprocessable', code: 'NUTRITION_PLAN_REQUIRED' } },
+    { label: '422 MEAL_TIMES_LIMIT_REACHED', backend: response(422, { code: 'MEAL_TIMES_LIMIT_REACHED' }), expected: { kind: 'unprocessable', code: 'MEAL_TIMES_LIMIT_REACHED' } },
+    { label: '422 SOMETHING_ELSE', backend: response(422, { code: 'SOMETHING_ELSE' }), expected: { kind: 'error' } },
+    { label: '422 JSON inválido', backend: invalidJsonResponse(422), expected: { kind: 'error' } },
+  ])('PATCH mapea $label como la tabla de R2', async ({ backend, expected }) => {
+    const fetchFn = jest.fn().mockResolvedValue(backend) as unknown as typeof fetch;
+    await expect(moveMealTime(baseUrl, 'jwt-token', 'pet-1', '19:30', '20:05', fetchFn)).resolves.toEqual(expected);
+  });
+```
+
+Cada una de las 4 sondas cae en su fila y solo en ella, en `:497:99`, con
+`expect(received).resolves.toEqual(expected)`. Son +4 tests.
+
+**H2. R5, «la hora de la fila i», solo se prueba con la última fila.** Los cuatro
+`it` de R5, el `it.each` de R8 y todos los de R7 pulsan `meal-time-edit-1`. Con
+dos franjas, esa es la última. Por la regla 3, la salida depende de `i`, y una
+sola muestra no distingue la función de una constante.
+
+`S-row-last` cambia `onPress={() => setPicker({ from: mealTime })}` por la última
+franja del plan. Da 57/57 verde. El candado medido va dentro de
+`describe('#147 R5…')`, detrás del `it` «elegir la misma hora de la fila no llama
+a nada», con una línea en blanco delante:
+
+```ts
+  it('Editar en la primera fila abre el selector con su hora y la publica como origen', async () => {
+    await renderMealSchedule();
+    await fireEvent.press(await screen.findByTestId('meal-time-edit-0'));
+    const picker = screen.getByTestId('meal-time-picker');
+    expect([picker.props.value.getHours(), picker.props.value.getMinutes()]).toEqual([7, 30]);
+    await fireEvent(picker, 'onValueChange', {}, new Date(2026, 9, 2, 8, 5));
+    await waitFor(() => expect(mockMoveMealTime).toHaveBeenCalledWith('http://example.test/v1', 'jwt-token', 'pet-1', '07:30', '08:05'));
+    await waitFor(() => expect(screen.getByTestId('meal-time-edit-0').props.accessibilityState).not.toEqual(expect.objectContaining({ disabled: true })));
+  });
+```
+
+La sonda cae en `:698:78`, `expect(received).toEqual(expected)`, porque recibe
+`[19, 30]`. Es +1 test.
+
+**H3. R8, «IF la llamada devuelve unauthorized», solo se prueba en Editar.** «La
+llamada» es la de la frase anterior, «la llamada de R5 o R6». Es el mismo caso
+que el hueco 2 de la ronda 3, que E4-b cierra para la frase de retirar el error.
+
+`S-401-add` envuelve el callsite de Añadir para convertir `unauthorized` en
+`{ kind: 'error' }`. Da 57/57 verde. El candado medido va dentro de
+`describe('#147 R8…')`, detrás de E4-b, con una línea en blanco delante:
+
+```ts
+  it('401 en Añadir cierra sesión sin mensaje', async () => {
+    const signOut = jest.fn();
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut });
+    mockAddMealTime.mockResolvedValue({ kind: 'unauthorized' });
+    await renderMealSchedule();
+    await fireEvent.press(await screen.findByTestId('add-meal-time-button'));
+    await fireEvent(screen.getByTestId('meal-time-picker'), 'onValueChange', {}, new Date(2026, 9, 2, 8, 5));
+    await waitFor(() => {
+      expect(signOut).toHaveBeenCalledTimes(1);
+      expect(screen.getByTestId('meal-time-edit-0').props.accessibilityState).not.toEqual(expect.objectContaining({ disabled: true }));
+    });
+    expect(screen.queryByTestId('meal-time-error')).toBeNull();
+    expect(mockGetNutritionPlan).toHaveBeenCalledTimes(1);
+    expect(mockGetPet).toHaveBeenCalledTimes(1);
+  });
+```
+
+La sonda cae en el `waitFor` de `:1044:18`, en la aserción de la línea 1045, `expect(jest.fn()).toHaveBeenCalledTimes(expected)`,
+con 0 llamadas recibidas. Es +1 test.
+
+Este candado no cambia el recuento `signOut(` de `design-drift`
+(«preserves every mutation sign-out with zero delta»), porque solo cuenta
+producción.
+
+**Cifras si entran los tres.** El total pasa de los 1765 de E4 §Cierre a **88
+suites / 1771 tests**: +6 tests y +0 suites. La lista cerrada sigue en 13
+ficheros, porque `nutrition.test.ts` ya está en ella.
+
+Las copias de trabajo con los tres candados quedaron en el scratchpad:
+`e4/cand/index.test.candidate.tsx` y `e4/cand/nutrition.test.candidate.ts`. No
+están en el árbol.
+
+#### 5. Observaciones 2 y 3 de la ronda 3, clasificadas por la letra
+
+**Obs. 2, orden plan → mascota: no bloqueante.**
+
+- R7 numera los pasos 1, 2 y 3, pero en este requirements.md la numeración no
+  implica secuencia: R4 usa «1.» y «2.» para dos cosas que se pintan a la vez.
+- La única restricción temporal que la frase escribe es el paso 3, «rehabilitar
+  los controles solo cuando hayan terminado los dos», y está candada en los dos
+  flujos.
+- La forma `await …; await …;` está en design.md (línea 141) como guía de
+  implementación, no en una cláusula EARS.
+
+`S-parallel` (`Promise.all`) da 57/57 verde y no viola ninguna cláusula
+escrita. En la ronda 4 no la bloquearé. Si el leader quiere la secuencia
+estricta, primero tiene que escribirla en requirements.md.
+
+**Obs. 3, mensajes por `kind` en un solo flujo: no bloqueante, salvo la parte del 401.**
+
+- Los mensajes no bloquean. La frase WHEN de R8 enumera flujo × resultado. Cada
+  una de las 10 filas tiene su candado, y cada flujo tiene 5 (regla 2). En la
+  ronda 4 no exigiré el producto cartesiano.
+- La parte del 401 sí bloquea. «IF la llamada devuelve unauthorized» es una
+  frase aparte, con una sola dimensión enumerada (R5 o R6), y solo tiene
+  candado en R5. Es **H3**. En la ronda 3 la clasifiqué como no bloqueante con
+  el argumento de que `runMealTimeEdit` es compartida. Ese mismo argumento no
+  salvó el hueco 2 de la ronda 3, que también vive en `runMealTimeEdit`. Lo
+  corrijo aquí para que la regla sea una sola.
+
+#### 6. Qué bloquearía en la ronda 4
+
+Con E4 tal como está y nada más, la ronda 4 sale **RECHAZADO** por H1, H2 y H3.
+Con E4 más los tres candados de §4, el barrido de R1–R9 y E1–E4 no deja ninguna
+otra rama sin candado según la regla de §2. Los cuatro «no bloqueante» de la
+tabla quedan clasificados aquí y no los convertiré en bloqueantes en la ronda 4:
+
+- R1, los literales en design.md;
+- R4, los `kind` distintos de `ok`;
+- R7, la hora nueva en Añadir durante el refetch del plan;
+- R7, el orden de los refetch.

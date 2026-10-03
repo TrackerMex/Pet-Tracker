@@ -485,3 +485,100 @@ La lista cerrada de [[design]] §Archivos afectados no cambia: siguen siendo 13
 ficheros, porque el commit toca solo `src/screens/meal-schedule/index.test.tsx`.
 
 - [x] Enmienda E3 aprobada por humano (fecha: 2026-10-03, en el chat del leader; commit de firma: el que marca esta casilla)
+
+## Enmienda E4 — cinco ramas sin candado en R3, R5, R7 y R8, con barrido completo
+
+El reviewer rechazó #147 por tercera vez en `57757499`
+(`progress/review_mobile-meal-schedule-editing.md` §Ronda 3, R3-Observaciones 1)
+por dos ramas sin candado. Antes de firmar esta enmienda se le pidió un
+**barrido exhaustivo** de R1–R9 y E1–E3: cada cláusula que cuantifica sobre
+varios casos, con su candado por rama. El barrido está en el mismo fichero,
+§Pre-verificación del borrador E4 y barrido de cláusulas, y encontró 3 ramas
+más. Las cinco son de la misma familia: un «o», una tabla heredada o una fila
+`i` candados en un solo miembro. Con cada una de estas mutaciones, la suite
+dirigida queda en verde:
+
+| # | Cláusula | Rama candada | Rama ciega | Mutación que hoy pasa en verde |
+|---|---|---|---|---|
+| E4.1 | R7 **WHILE**: «ni la hora nueva ni la fila nueva aparecen antes de que el refetch resuelva» | Añadir | Editar | tras el ok de `moveMealTime`, `setQueryData` del plan cambia `19:30` por `20:05` antes del refetch |
+| E4.2 | R8: «**WHEN** empieza una nueva llamada de R5 **o** R6 … quitar el `meal-time-error` anterior» | R5 | R6 | `setEditError(null)` solo antes de la llamada de Editar |
+| E4.3 | R3: `moveMealTime` mapea con «la misma tabla de R2» | 400, 403, 401, 422 `MEAL_TIME_NOT_IN_PLAN`, 422 `MEAL_TIME_DUPLICATE`, otro status, rechazo, sin `baseUrl` | 422 `NUTRITION_PLAN_REQUIRED`, 422 `MEAL_TIMES_LIMIT_REACHED`, 422 con otro código, 422 con body no JSON | una envoltura del retorno de `moveMealTime`, o una rama `okStatus === 200` dentro del bloque 422 de `editMealTimeState` |
+| E4.4 | R5: el selector se abre con la hora de la **fila i**, y esa hora es el `from` del PATCH | i = 1 (la última fila) | cualquier otra fila | `onPress` abre el selector con la última franja del plan, sea cual sea la fila |
+| E4.5 | R8: «**IF** la llamada devuelve `unauthorized`» (la llamada de R5 o R6): `signOut()` sin mensaje | R5 | R6 | el callsite de Añadir convierte `unauthorized` en `{ kind: 'error' }` |
+
+La producción cumple las cinco. El hueco está en [[tasks]], que prescribió un
+solo miembro en cada caso. R1–R9 no cambian. Esta enmienda solo añade los
+candados que faltan.
+
+Según el barrido, con estos cinco candados no queda ninguna otra rama sin
+candado en R1–R9 y E1–E4. El reviewer clasificó como **no bloqueantes** cuatro
+puntos y se comprometió a no bloquear por ellos en la ronda 4:
+
+- R1: los literales de design.md;
+- R4: un solo representante de `kind` distinto de `ok`;
+- R7: la hora nueva en Añadir durante el refetch del plan;
+- R7: el orden plan → mascota frente a `Promise.all`. La letra de R7 solo exige
+  «rehabilitar cuando hayan terminado los dos», y eso ya está candado.
+
+### E4.1 — Editar no repinta la lista mientras el refetch del plan sigue retenido
+
+**WHEN** se cierra #147, **THE SYSTEM SHALL** comprobar en
+`it('los controles siguen deshabilitados hasta que termina el refetch')` del
+`describe('#147 R7: …')` dos cosas mientras la segunda llamada a
+`getNutritionPlan` sigue retenida:
+
+- `20:05` no aparece;
+- la fila 1 sigue mostrando `19:30`.
+
+### E4.2 — una nueva llamada de Añadir también retira el error
+
+**WHEN** se cierra #147, **THE SYSTEM SHALL** tener en
+`describe('#147 R8: …')` un `it` espejo de
+`it('una nueva edición retira el error anterior')`. Provoca el error con
+Editar, lo retira con una nueva llamada de Añadir y comprueba que
+`meal-time-error` desaparece mientras esa llamada vuela.
+
+### E4.3 — `moveMealTime` recorre las cuatro filas de R2 que faltaban
+
+**WHEN** se cierra #147, **THE SYSTEM SHALL** tener en
+`describe('#147 R3: …')` de `src/api/__tests__/nutrition.test.ts` un
+`it.each` sobre `moveMealTime` con cuatro filas:
+
+| Respuesta | Resultado |
+|---|---|
+| 422 `NUTRITION_PLAN_REQUIRED` | `unprocessable` con ese código |
+| 422 `MEAL_TIMES_LIMIT_REACHED` | `unprocessable` con ese código |
+| 422 con otro código | `error` |
+| 422 con body no JSON | `error` |
+
+### E4.4 — Editar en la primera fila
+
+**WHEN** se cierra #147, **THE SYSTEM SHALL** tener en
+`describe('#147 R5: …')` un `it` que pulsa `meal-time-edit-0` y comprueba dos
+cosas:
+
+- el selector se abre a las 07:30;
+- al elegir otra hora, `moveMealTime` recibe `'07:30'` como `from`.
+
+### E4.5 — 401 en Añadir
+
+**WHEN** se cierra #147, **THE SYSTEM SHALL** tener en
+`describe('#147 R8: …')` un `it` en el que `addMealTime` devuelve
+`unauthorized`. Debe comprobar cuatro cosas:
+
+- `signOut()` se llama una vez;
+- los controles se rehabilitan;
+- no hay `meal-time-error`;
+- no hay refetch.
+
+Las ediciones literales, los mensajes de commit y las sondas están en [[tasks]]
+§Enmienda E4.
+
+- **Cifras.** Pasan de 88 suites / 1764 tests a **88 suites / 1771**: +1 de
+  E4.2, +4 de E4.3, +1 de E4.4 y +1 de E4.5. E4.1 solo añade aserciones.
+- **Lista cerrada.** La de [[design]] §Archivos afectados no cambia: siguen
+  siendo 13 ficheros. Los commits tocan solo
+  `src/screens/meal-schedule/index.test.tsx` y
+  `src/api/__tests__/nutrition.test.ts`, que ya están en ella.
+
+- [ ] Enmienda E4 aprobada por humano (fecha: ____, commit de firma: el que marca esta casilla)

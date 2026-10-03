@@ -942,3 +942,221 @@ con la primera línea roja y **PARA**.
 - [[traceability]] cita en la fila R7 el commit nuevo y sus dos tests, junto a
   los que ya cita. Va en un commit propio:
   `docs(mobile-meal-schedule-editing): cite amendment E3 in #147 traceability`.
+
+## §Enmienda E4 — cinco candados por rama en R3, R5, R7 y R8 ([[requirements]] §Enmienda E4)
+
+Va **después** de `0b0f856c` (tu trazabilidad de E3) y no reescribe nada
+anterior: **no rebases ni enmiendes** commits previos.
+
+Son cinco commits de test, en este orden: E4-a, E4-b, E4-c, E4-d y E4-e. Solo
+tocan dos ficheros:
+
+- `mobile-pet-tracker/src/screens/meal-schedule/index.test.tsx`;
+- `mobile-pet-tracker/src/api/__tests__/nutrition.test.ts`.
+
+La producción no cambia. Todos son **vía (b)** de C4: nacen verdes porque la
+producción ya cumple R3, R5, R7 y R8. Su cierre se demuestra con las sondas de
+la tabla de abajo, que hoy pasan en verde (las midió el reviewer) y tienen que
+ponerse rojas.
+
+Cada `it` nuevo va precedido de **una línea en blanco**, como el resto del
+fichero.
+
+Comandos, desde `mobile-pet-tracker/`, sin pipe:
+
+- pantalla: `bunx jest src/screens/meal-schedule > /tmp/147-e4-<paso>.txt 2>&1; echo "exit=$?"`;
+- API: `bunx jest src/api/__tests__/nutrition.test.ts > /tmp/147-e4-<paso>.txt 2>&1; echo "exit=$?"`.
+
+Antes de E4-a dan 56/56 y 58/58, exit 0. Se espera:
+
+| Después de | Pantalla | API |
+|---|---|---|
+| E4-a | 56 | 58 |
+| E4-b | 57 | 58 |
+| E4-c | 57 | **62** |
+| E4-d | 58 | 62 |
+| E4-e | **59** | 62 |
+
+Si algún `it` sale rojo sobre la producción sin mutar, **PARA**: la premisa de
+la enmienda es falsa y lo decide el leader.
+
+### E4-a — Editar no repinta la lista con el refetch del plan retenido (E4.1)
+
+En `src/screens/meal-schedule/index.test.tsx`, dentro de
+`describe('#147 R7: tras un éxito refetchea plan y mascota, sin estado optimista')`,
+localiza por contenido `it('los controles siguen deshabilitados hasta que termina el refetch', async () => {`.
+Ojo: no es el de E2-b («…sin fila nueva hasta que termina el refetch») ni el de
+E3-a («…hasta que termina también el refetch de la mascota»).
+
+En ese `it`, **después** del `});` que cierra su primer `await waitFor(() => {`
+(la espera conjunta de `disabled: true` y `toHaveBeenCalledTimes(2)`) y
+**antes** de `await act(async () => resolve({ kind: 'ok', plan: makePlan({ mealTimes: ['07:30', '20:05'] }) }));`,
+añade estas dos líneas literales, **en este orden**:
+
+```ts
+    expect(screen.queryByText('20:05')).toBeNull(); // #147 E4.1: ni la hora nueva antes del refetch
+    expect(within(screen.getByTestId('meal-time-row-1')).getByText('19:30')).toBeVisible();
+```
+
+El orden importa. Con el `getByText('19:30')` primero, la sonda 1 cae por
+consulta («Unable to find») en vez de por matcher. No toques nada más. El
+recuento no cambia: 56 tests.
+
+- Commit: `test(mobile-meal-schedule-editing): lock unchanged list while the edit refetch is in flight (R7)`
+
+### E4-b — una nueva llamada de Añadir retira el error (E4.2)
+
+En el mismo fichero, dentro de
+`describe('#147 R8: cada error del contrato tiene su mensaje')`, **después** de
+`it('una nueva edición retira el error anterior')`, añade este `it` literal. Es
+el espejo del anterior: el error lo provoca Editar y lo retira Añadir.
+
+Sigue §Esperas, en este orden:
+
+1. espera a ver el error;
+2. espera de cierre;
+3. espera conjunta de `disabled: true` y de la ausencia del error;
+4. tras resolver, espera de cierre.
+
+```ts
+  it('una nueva llamada de Añadir retira el error anterior', async () => {
+    mockMoveMealTime.mockResolvedValue({ kind: 'unprocessable', code: 'MEAL_TIME_DUPLICATE' });
+    let resolve!: (state: EditMealTimeState) => void;
+    mockAddMealTime.mockReturnValue(new Promise((done) => { resolve = done; }));
+    await renderMealSchedule();
+    await fireEvent.press(await screen.findByTestId('meal-time-edit-1'));
+    await fireEvent(screen.getByTestId('meal-time-picker'), 'onValueChange', {}, new Date(2026, 9, 2, 20, 5));
+    await waitFor(() => expect(screen.getByTestId('meal-time-error').props.children).toBe('Ya hay una comida a esa hora'));
+    await waitFor(() => expect(screen.getByTestId('meal-time-edit-0').props.accessibilityState).not.toEqual(expect.objectContaining({ disabled: true })));
+    await fireEvent.press(screen.getByTestId('add-meal-time-button'));
+    await fireEvent(screen.getByTestId('meal-time-picker'), 'onValueChange', {}, new Date(2026, 9, 2, 8, 5));
+    await waitFor(() => {
+      for (const id of ['meal-time-edit-0', 'meal-time-edit-1', 'add-meal-time-button']) {
+        expect(screen.getByTestId(id).props.accessibilityState).toEqual(expect.objectContaining({ disabled: true }));
+      }
+      expect(screen.queryByTestId('meal-time-error')).toBeNull();
+    });
+    await act(async () => resolve({ kind: 'ok' }));
+    await waitFor(() => expect(screen.getByTestId('meal-time-edit-0').props.accessibilityState).not.toEqual(expect.objectContaining({ disabled: true })));
+  });
+```
+
+- Commit: `test(mobile-meal-schedule-editing): lock error clearing when a new add starts (R8)`
+
+### E4-c — `moveMealTime` recorre las filas de R2 que faltaban (E4.3)
+
+En `src/api/__tests__/nutrition.test.ts`, dentro de
+`describe('#147 R3: moveMealTime publica el PATCH y mapea por kind')`, añade
+este `it.each` literal **después** de
+`it('comparte el mapeo de errores de addMealTime')`. Usa los helpers
+`response`, `invalidJsonResponse` y `baseUrl`, que ya existen en el fichero.
+
+```ts
+  it.each([
+    { label: '422 NUTRITION_PLAN_REQUIRED', backend: response(422, { code: 'NUTRITION_PLAN_REQUIRED' }), expected: { kind: 'unprocessable', code: 'NUTRITION_PLAN_REQUIRED' } },
+    { label: '422 MEAL_TIMES_LIMIT_REACHED', backend: response(422, { code: 'MEAL_TIMES_LIMIT_REACHED' }), expected: { kind: 'unprocessable', code: 'MEAL_TIMES_LIMIT_REACHED' } },
+    { label: '422 SOMETHING_ELSE', backend: response(422, { code: 'SOMETHING_ELSE' }), expected: { kind: 'error' } },
+    { label: '422 JSON inválido', backend: invalidJsonResponse(422), expected: { kind: 'error' } },
+  ])('PATCH mapea $label como la tabla de R2', async ({ backend, expected }) => {
+    const fetchFn = jest.fn().mockResolvedValue(backend) as unknown as typeof fetch;
+    await expect(moveMealTime(baseUrl, 'jwt-token', 'pet-1', '19:30', '20:05', fetchFn)).resolves.toEqual(expected);
+  });
+```
+
+- Commit: `test(mobile-meal-schedule-editing): lock the remaining R2 table rows on the PATCH mapping (R3)`
+
+### E4-d — Editar en la primera fila (E4.4)
+
+En `src/screens/meal-schedule/index.test.tsx`, dentro de
+`describe('#147 R5: Editar abre el selector en la hora de la fila y publica el PATCH')`,
+añade este `it` literal **después** de
+`it('elegir la misma hora de la fila no llama a nada')`:
+
+```ts
+  it('Editar en la primera fila abre el selector con su hora y la publica como origen', async () => {
+    await renderMealSchedule();
+    await fireEvent.press(await screen.findByTestId('meal-time-edit-0'));
+    const picker = screen.getByTestId('meal-time-picker');
+    expect([picker.props.value.getHours(), picker.props.value.getMinutes()]).toEqual([7, 30]);
+    await fireEvent(picker, 'onValueChange', {}, new Date(2026, 9, 2, 8, 5));
+    await waitFor(() => expect(mockMoveMealTime).toHaveBeenCalledWith('http://example.test/v1', 'jwt-token', 'pet-1', '07:30', '08:05'));
+    await waitFor(() => expect(screen.getByTestId('meal-time-edit-0').props.accessibilityState).not.toEqual(expect.objectContaining({ disabled: true })));
+  });
+```
+
+- Commit: `test(mobile-meal-schedule-editing): lock the first row's time as the edit origin (R5)`
+
+### E4-e — 401 en Añadir (E4.5)
+
+En el mismo fichero, dentro de
+`describe('#147 R8: cada error del contrato tiene su mensaje')`, añade este
+`it` literal **después** del `it` de E4-b,
+`it('una nueva llamada de Añadir retira el error anterior')`. Debe quedar como
+el último `it` del `describe`.
+
+```ts
+  it('401 en Añadir cierra sesión sin mensaje', async () => {
+    const signOut = jest.fn();
+    mockUseAuth.mockReturnValue({ status: 'authenticated', token: 'jwt-token', signIn: jest.fn(), signOut });
+    mockAddMealTime.mockResolvedValue({ kind: 'unauthorized' });
+    await renderMealSchedule();
+    await fireEvent.press(await screen.findByTestId('add-meal-time-button'));
+    await fireEvent(screen.getByTestId('meal-time-picker'), 'onValueChange', {}, new Date(2026, 9, 2, 8, 5));
+    await waitFor(() => {
+      expect(signOut).toHaveBeenCalledTimes(1);
+      expect(screen.getByTestId('meal-time-edit-0').props.accessibilityState).not.toEqual(expect.objectContaining({ disabled: true }));
+    });
+    expect(screen.queryByTestId('meal-time-error')).toBeNull();
+    expect(mockGetNutritionPlan).toHaveBeenCalledTimes(1);
+    expect(mockGetPet).toHaveBeenCalledTimes(1);
+  });
+```
+
+Este `it` no cambia el recuento de `signOut(` de `design-drift`, porque ese
+inventario solo cuenta producción.
+
+- Commit: `test(mobile-meal-schedule-editing): lock sign-out on 401 from add (R8)`
+
+### Sondas de E4 (sobre el verde)
+
+Las 8 vienen de `progress/review_mobile-meal-schedule-editing.md`:
+
+- la 1 y la 2, de §R3-Observaciones 1;
+- de la 3 a la 8, de §Pre-verificación del borrador E4 y barrido de cláusulas,
+  §4.
+
+Mídelas con el comando de su fichero, después del commit de E4-e. Restaura cada
+una con `git checkout HEAD -- <fichero de producción>`.
+
+Al final, `git diff --cached --stat` y `git status --short` deben salir vacíos,
+salvo el informe sin trackear. «Por matcher» y «por consulta» significan lo
+mismo que en §Enmienda E2.
+
+| # | Fichero | Sonda | Debe ponerse rojo, solo él y por matcher |
+|---|---|---|---|
+| 1 | `src/screens/meal-schedule/index.tsx` | En `onValueChange`, rama `mealTime !== from`, envuelve la petición de Editar: `() => moveMealTime(...).then((r) => { if (r.kind === 'ok') queryClient.setQueryData(nutritionKeys.plan(petId), …); return r; })`. El parche sustituye en `mealTimes` la hora `from` por `mealTime`, así que la caché cambia tras el ok y antes de `plan.refetch()` | `los controles siguen deshabilitados hasta que termina el refetch`, en `queryByText('20:05')).toBeNull()` |
+| 2 | `src/screens/meal-schedule/index.tsx` | Quita `setEditError(null);` de `runMealTimeEdit` y llámalo solo justo antes de `void runMealTimeEdit(() => moveMealTime(...))` en `onValueChange` | `una nueva llamada de Añadir retira el error anterior`, en `queryByTestId('meal-time-error')).toBeNull()` |
+| 3 | `src/api/nutrition.ts` | En `moveMealTime`, cambia `: editMealTimeState(result.response, 200);` por `: editMealTimeState(result.response, 200).then((s): EditMealTimeState => (s.kind === 'unprocessable' && s.code === 'NUTRITION_PLAN_REQUIRED' ? { kind: 'error' } : s));` | la fila `422 NUTRITION_PLAN_REQUIRED` de `PATCH mapea $label como la tabla de R2` |
+| 4 | `src/api/nutrition.ts` | Lo mismo que la 3, con `'MEAL_TIMES_LIMIT_REACHED'` | la fila `422 MEAL_TIMES_LIMIT_REACHED` |
+| 5 | `src/api/nutrition.ts` | En `editMealTimeState`, dentro de `if (response.status === 422) {`, justo después del `}` que cierra el `if` de los cuatro códigos: `if (okStatus === 200 && isObjectBody(body)) return { kind: 'invalid' };` | la fila `422 SOMETHING_ELSE` |
+| 6 | `src/api/nutrition.ts` | Lo mismo que la 5, con `!isObjectBody(body)` | la fila `422 JSON inválido` |
+| 7 | `src/screens/meal-schedule/index.tsx` | Cambia `onPress={() => setPicker({ from: mealTime })}` por `onPress={() => setPicker({ from: loadedPlan.mealTimes[loadedPlan.mealTimes.length - 1] })}` | `Editar en la primera fila abre el selector con su hora y la publica como origen`, en `toEqual([7, 30])` |
+| 8 | `src/screens/meal-schedule/index.tsx` | En `onValueChange`, envuelve la petición de Añadir: `() => addMealTime(...).then((r) => (r.kind === 'unauthorized' ? ({ kind: 'error' } as const) : r))` | `401 en Añadir cierra sesión sin mensaje`, en `expect(signOut).toHaveBeenCalledTimes(1)` |
+
+Si una sonda sale verde, o roja por otro `it` o por consulta, apúntalo en `impl`
+con la primera línea roja y **PARA**.
+
+### Lo que cambia en §Cierre
+
+- Las cifras pasan a **88 suites / 1771 tests**: +1 de E4-b, +4 de E4-c, +1 de
+  E4-d y +1 de E4-e.
+- La lista de `git diff --name-only <hash-del-handoff>..HEAD` **de tus commits**
+  sigue siendo la de [[design]] §Archivos afectados: **13** ficheros.
+- [[traceability]] cita, junto a lo que ya cita en cada fila:
+  - E4-c en la fila R3;
+  - E4-d en la fila R5;
+  - E4-a en la fila R7;
+  - E4-b y E4-e en la fila R8.
+
+  Va en un commit propio:
+  `docs(mobile-meal-schedule-editing): cite amendment E4 in #147 traceability`.
