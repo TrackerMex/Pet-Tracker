@@ -8136,3 +8136,144 @@ git diff f64a3c60 HEAD -- mobile-pet-tracker/src/screens/meal-schedule/index.tsx
 exit=0
 ```
 Solo se añaden los cinco bloques prescritos (E4-a amplía un it existente) y sus citas y evidencia. No se ejecuta init.sh ni E2E, no se hace push ni se abre PR, no se cambia el estado de la feature ni se marca el smoke Android. El leader conserva el lifecycle y la revisión posterior. Tras el commit documental se comprobarán los 34 commits propios, los 13 ficheros propios, las 19 rutas totales y el árbol limpio.
+
+## Merge de origin/main (#146)
+
+Fecha: 2026-10-03. Tarea de integración (fallback trivial de CLAUDE.md §Excepciones), no implementación de feature. Merge, no rebase: los hashes de traceability.md siguen siendo de la branch.
+
+### Comprobaciones previas
+
+- Branch: `feature/147-mobile-meal-schedule-editing`.
+- HEAD: `bc6a2f0963560e311c96ac2d247628b2704d61c8` (`bc6a2f09`).
+- `git status --short`: vacío.
+- `git fetch origin` → `origin/main` = `60ae4fa486f0d52754440be369731b924c08fa33` (`60ae4fa4`, merge de #146, PR #186).
+- Merge-base: `cb14497cd09cb7eaccc756f22bc7ea95aa462a0f`.
+
+### Conflictos
+
+`git merge --no-ff --no-commit origin/main` dio exactamente los 3 previstos:
+
+1. `mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts`
+2. `mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx`
+3. `specs/mobile-ui-language/design.md`
+
+Automergeados sin conflicto (entre otros): `feature_list.json` (JSON válido tras el merge), `design-drift.test.ts`, `ui-copy-table.ts`, `ui-language.test.ts`, `src/i18n/catalog.ts`. Ningún choque semántico: la suite sale verde sin tocar nada fuera de los 3 ficheros. `progress/current.md` no lo toca el merge.
+
+### Resoluciones (diff combinado, `git show --cc 285e94ef`)
+
+Columna 1 = lado #147 (`bc6a2f09`), columna 2 = lado main (`60ae4fa4`).
+
+- consistency-classnames: los dos lados, cada uno con su comentario.
+- language-provider: comentario de main + « + 9 de #147 R1 (mealSchedule.* del horario editable).», una sola frase; suma `… + 11 + 12 + 2 + 9`.
+- mobile-ui-language/design.md: §2.16 de #146 tal como viene de main; la de #147 después, renombrada `### §2.17 — Añadidos por #147 — Horario de comidas editable`, tabla intacta. Se cae la línea en blanco doble que el lado #147 tenía antes de `## 3.`.
+
+```diff
+diff --cc mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+index 97d0f263,b166b3db..362a994c
+--- a/mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
++++ b/mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+@@@ -394,8 -395,8 +395,8 @@@ describe('#98 R10: los candados que est
+      expect(home.match(/style=\{CONTINUOUS_CORNER\}/g) ?? []).toHaveLength(0);
+      expect(food.match(/style=\{CONTINUOUS_CORNER\}/g)).toHaveLength(2);
+      expect(count(/style=\{CONTINUOUS_CORNER\}/g)).toBe(31 + 1); // #41 R9: geofences-link
+-     expect(count(/rounded-xl bg-accent(?=[\s'"`])/g)).toBe(13);
++     expect(count(/rounded-xl bg-accent(?=[\s'"`])/g)).toBe(13 + 1 + 1); // #146 R8, #146 R9
+ -    expect(count(/bg-accent-soft/g)).toBe(16);
+ +    expect(count(/bg-accent-soft/g)).toBe(16 + 2); // #147 R4: meal-time-edit y add-meal-time-button
+      expect(home.match(/text-accent-strong\b/g)).toHaveLength(2);
+      expect(food.match(/text-accent-strong\b/g)).toHaveLength(1);
+      expect(filesMatching(/\brounded-(?:2xl|lg|md|sm)\b/)).toEqual([]);
+diff --cc mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+index 65133b5f,f2207a5f..f9197c63
+--- a/mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
++++ b/mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+@@@ -47,13 -47,13 +47,13 @@@ function LocaleProbe() 
+  }
+  
+  describe('#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y parámetros', () => {
+-   // 259 en `303fc19` + 1 de `home.walks` (#67 R7b) + 16 de #68 + 14 de #78 + 2 de #73 + 1 de #90 + 4 de #98 - 6 de #95 R5 (las seis claves de volver) + 1 de #113 R3 (food.kcalConsumedOfTarget) + 2 de #99 R3 (profile.notificationsBlocked, profile.openSettings) + 3 de #100 R1 (alerts.detailTitle, alerts.statusOpen, alerts.openedAt) + 11 de #41 R1 (geofences.*) + 9 de #147 R1 (mealSchedule.* del horario editable).
+ -  // 259 en `303fc19` + 1 de `home.walks` (#67 R7b) + 16 de #68 + 14 de #78 + 2 de #73 + 1 de #90 + 4 de #98 - 6 de #95 R5 (las seis claves de volver) + 1 de #113 R3 (food.kcalConsumedOfTarget) + 2 de #99 R3 (profile.notificationsBlocked, profile.openSettings) + 3 de #100 R1 (alerts.detailTitle, alerts.statusOpen, alerts.openedAt) + 11 de #41 R1 (geofences.*) + 12 de #146 R1 (geofenceEditor.*) + 2 de #146 R1 (geofenceEditor.limitNotice, geofenceEditor.ownerOnly).
+++  // 259 en `303fc19` + 1 de `home.walks` (#67 R7b) + 16 de #68 + 14 de #78 + 2 de #73 + 1 de #90 + 4 de #98 - 6 de #95 R5 (las seis claves de volver) + 1 de #113 R3 (food.kcalConsumedOfTarget) + 2 de #99 R3 (profile.notificationsBlocked, profile.openSettings) + 3 de #100 R1 (alerts.detailTitle, alerts.statusOpen, alerts.openedAt) + 11 de #41 R1 (geofences.*) + 12 de #146 R1 (geofenceEditor.*) + 2 de #146 R1 (geofenceEditor.limitNotice, geofenceEditor.ownerOnly) + 9 de #147 R1 (mealSchedule.* del horario editable).
+    it('mantiene la base más las claves de #68 y los mismos marcadores en ambos idiomas', () => {
+      const englishKeys = Object.keys(en).sort();
+      const spanishKeys = Object.keys(es).sort();
+  
+      expect(englishKeys).toHaveLength(
+-       260 + 16 + 1 + 4 + 7 + 14 + 2 + 1 + 4 - 6 + 1 + 2 + 3 + 11 + 9,
+ -      260 + 16 + 1 + 4 + 7 + 14 + 2 + 1 + 4 - 6 + 1 + 2 + 3 + 11 + 12 + 2,
+++      260 + 16 + 1 + 4 + 7 + 14 + 2 + 1 + 4 - 6 + 1 + 2 + 3 + 11 + 12 + 2 + 9,
+      );
+      expect(spanishKeys).toEqual(englishKeys);
+      for (const key of englishKeys) {
+diff --cc specs/mobile-ui-language/design.md
+index 8dee4a92,151b2e20..92cf42ff
+--- a/specs/mobile-ui-language/design.md
++++ b/specs/mobile-ui-language/design.md
+@@@ -822,21 -822,25 +822,39 @@@ copy completa en cada una
+  | — | `geofences.deleteTitle` **(param)** | `Delete {{name}}?` | `¿Eliminar {{name}}?` | ← añadida por #41 (R1)
+  | — | `geofences.deleteBody` | `You'll stop getting alerts for this zone. This can't be undone.` | `Dejarás de recibir alertas de esta zona. Esta acción no se puede deshacer.` | ← añadida por #41 (R1)
+  
+- ### §2.16 — Añadidos por #147 — Horario de comidas editable
++ ### §2.16 — Añadidos por #146 — Editor de zonas seguras
++ 
++ | Pantalla | Clave | en | es | Origen |
++ |---|---|---|---|---|
++ | — | `geofenceEditor.title` | Safe zone | Zona segura | ← añadida por #146 (R1) |
++ | — | `geofenceEditor.nameLabel` | Name | Nombre | ← añadida por #146 (R1) |
++ | — | `geofenceEditor.mapHint` | Tap the map to move the zone's center. | Toca el mapa para mover el centro de la zona. | ← añadida por #146 (R1) |
++ | — | `geofenceEditor.radiusLabel` | Zone radius | Radio de la zona | ← añadida por #146 (R1) |
++ | — | `geofenceEditor.resetNote` | Saving a new center or radius re-evaluates the zone and closes its open alerts. | Al guardar un centro o radio nuevos, la zona se vuelve a evaluar y se cierran sus alertas abiertas. | ← añadida por #146 (R1) |
++ | — | `geofenceEditor.save` | Save | Guardar | ← añadida por #146 (R1) |
++ | — | `geofenceEditor.nameTaken` | You already have a zone with that name. | Ya tienes una zona con ese nombre. | ← añadida por #146 (R1) |
++ | — | `geofenceEditor.limitReached` | This pet already has the maximum number of zones. | Esta mascota ya tiene el máximo de zonas. | ← añadida por #146 (R1) |
++ | — | `geofenceEditor.invalid` | Check the zone name and radius. | Revisa el nombre y el radio de la zona. | ← añadida por #146 (R1) |
++ | — | `geofenceEditor.notFound` | This pet or zone is no longer available. | La mascota o la zona ya no están disponibles. | ← añadida por #146 (R1) |
++ | — | `geofenceEditor.add` | Add zone | Añadir zona | ← añadida por #146 (R1) |
++ | — | `geofenceEditor.editLabel` | Edit {{name}} zone | Editar zona {{name}} | ← añadida por #146 (R1) |
++ | — | `geofenceEditor.limitNotice` | This pet already has {{max}} zones, the maximum. Delete one to add another. | Esta mascota ya tiene {{max}} zonas, el máximo. Elimina una para añadir otra. | ← añadida por #146 (R1) |
++ | — | `geofenceEditor.ownerOnly` | Only the pet's owner can create or edit zones. | Solo el dueño de la mascota puede crear o editar zonas. | ← añadida por #146 (R1) |
++ 
+++### §2.17 — Añadidos por #147 — Horario de comidas editable
+ +
+ +| # | Clave | `en` | `es` | Origen |
+ +|---|---|---|---|---|
+ +| — | `mealSchedule.addMeal` | `Add meal` | `Añadir comida` | ← añadida por #147 (R1)
+ +| — | `mealSchedule.editTime` | `Edit` | `Editar` | ← añadida por #147 (R1)
+ +| — | `mealSchedule.editTimeLabel` **(param)** | `Edit {{time}} meal time` | `Editar horario de las {{time}}` | ← añadida por #147 (R1)
+ +| — | `mealSchedule.errorInvalidTime` | `That time is not valid` | `La hora no es válida` | ← añadida por #147 (R1)
+ +| — | `mealSchedule.errorEditForbidden` | `Only the owner can change meal times` | `Solo el dueño puede cambiar los horarios` | ← añadida por #147 (R1)
+ +| — | `mealSchedule.errorPlanRequired` | `Generate a meal plan first` | `Primero genera un plan de alimentación` | ← añadida por #147 (R1)
+ +| — | `mealSchedule.errorTimeNotInPlan` | `That meal time is no longer in the plan` | `Ese horario ya no está en el plan` | ← añadida por #147 (R1)
+ +| — | `mealSchedule.errorDuplicateTime` | `There is already a meal at that time` | `Ya hay una comida a esa hora` | ← añadida por #147 (R1)
+ +| — | `mealSchedule.errorMealLimit` | `The plan already has the maximum of 6 meals` | `El plan ya tiene el máximo de 6 comidas` | ← añadida por #147 (R1)
+ +
+- 
+  ## 3. La infraestructura
+  
+  ### 3.1 Decisiones
+```
+
+### Referencias a «§2.16» relativas a #147 (reportadas, sin cambiar)
+
+`grep -rn '2\.16'` en `mobile-pet-tracker/src/__tests__/`: ninguna. En `specs/mobile-meal-schedule-editing/`:
+
+- `requirements.md:398` — «(formato de §2.16), se quedan; el reviewer los juzga.»
+- `design.md:230` — «`### §2.16 — Añadidos por #147 — Horario de comidas editable` justo antes de»
+- `design.md:254` — «#146 ocupa `§2.16 — Añadidos por #146`. Si» (la propia previsión del conflicto)
+- `design.md:292` — «`specs/mobile-ui-language/design.md` | spec | §2.16 con 9 filas | R1»
+- `traceability.md:34` — «formato de §2.16) están después de sus verdes»
+- `tasks.md:169` — «la sección `§2.16 — Añadidos por #147 — Horario de comidas editable` en»
+
+Fuera de esas dos rutas también nombran §2.16 para #147: `progress/review_mobile-meal-schedule-editing.md:57`, `progress/handoff_mobile-meal-schedule-editing.md:59` y este mismo informe (líneas 37, 5005, 5009). Son históricos.
+
+### Verificación (desde `mobile-pet-tracker/`, cada comando a fichero, sin pipe)
+
+- `pgrep -af 'init\.sh|test:e2e|jest-e2e' | grep -v pgrep`: vacío.
+- `.expo/types/router.d.ts`: no existe.
+- `bun run test`: exit 0. `Test Suites: 90 passed, 90 total`; `Tests: 1913 passed, 1913 total`; `Snapshots: 1 passed, 1 total`; `Time: 51.198 s`. 90 = 88 de #147 + 2 suites nuevas de #146 (`src/screens/geofence-editor/index.test.tsx`, `src/utils/zoom-for-radius.test.ts`); ninguna suite borrada por ningún lado.
+- `bun run lint` (`expo lint`): exit 0.
+- `test ! -e .expo/types/router.d.ts && bun run typecheck` (`tsc --noEmit`): exit 0.
+
+### Commit de merge
+
+`285e94ef0b183ef8cac8d4b3985b4e83d4f19920` (`285e94ef`), padres `bc6a2f09` y `60ae4fa4`. Sin push, sin `./init.sh`.
