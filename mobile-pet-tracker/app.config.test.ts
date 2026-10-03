@@ -254,6 +254,15 @@ describe('#101 R4: monochrome del adaptive icon', () => {
   });
 });
 
+describe('#101 R5: fondo plano del adaptive icon', () => {
+  it('android.adaptiveIcon.backgroundColor es #9460FC y no declara backgroundImage', () => {
+    expect(appJson.expo.android.adaptiveIcon.backgroundColor).toBe('#9460FC');
+    expect(
+      (appJson.expo.android.adaptiveIcon as { backgroundImage?: string }).backgroundImage,
+    ).toBeUndefined();
+  });
+});
+
 describe('#79 R14: google-services.json se declara solo cuando existe', () => {
   const originalApiKey = process.env.GOOGLE_MAPS_API_KEY_ANDROID;
   const originalResetLinkHost = process.env.RESET_LINK_HOST;

@@ -1,6 +1,6 @@
 /// <reference types="node" />
 
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import appJson from './app.json';
@@ -61,5 +61,11 @@ describe('#101 R4: monochrome del adaptive icon', () => {
       bitDepth: 8,
       colorType: 6,
     });
+  });
+});
+
+describe('#101 R5: fondo plano del adaptive icon', () => {
+  it('android-icon-background.png ya no existe en assets/images', () => {
+    expect(existsSync(join(__dirname, 'assets/images/android-icon-background.png'))).toBe(false);
   });
 });
