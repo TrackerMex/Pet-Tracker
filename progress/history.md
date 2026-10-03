@@ -2340,3 +2340,4 @@ Flake de `add-pet` por mocks sin reinicializar. Sin trabajo en curso.
 
 - Variante del perrito en color creada con imagegen y exportada a PNG de 96×96 con transparencia real, ambas propiedades verificadas.
 - Artefacto entregado en esta conversación. Código de la app y feature_list.json sin cambios; no se repitieron pruebas de aplicación para esta entrega visual.
+- El usuario aprobó la variante en color y pidió subirla a docs/pet-tracker-icon-session. Recurso copiado a mobile-pet-tracker/assets/images/pet-tracker-notification-color-96.png; SHA-256 idéntico al PNG aprobado, tamaño 96×96 y transparencia verificados. Configuración de la app sin cambios.

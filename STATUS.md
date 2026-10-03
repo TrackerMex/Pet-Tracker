@@ -823,7 +823,7 @@ debe listar las 4 URLs de cola.
 
 ## Última sesión
 
-- **2026-10-03** — Entregada variante en color del icono de notificaciones, PNG 96×96 con fondo transparente. Tamaño y canal alfa verificados; sin cambios en código o inventario de features.
+- **2026-10-03** — Entregada variante en color del icono de notificaciones, PNG 96×96 con fondo transparente. Guardado el recurso aprobado en `mobile-pet-tracker/assets/images/pet-tracker-notification-color-96.png` para subirlo a `docs/pet-tracker-icon-session`. Tamaño, transparencia e integridad verificados; integración pendiente.
 
 - **2026-10-02** — Creado el icono estático de Pet Tracker con imagegen: perrito robótico violeta y pin de ubicación. Entregados PNG del icono principal y del icono monocromo de notificaciones (96×96) fuera del código de la app. Verificación general interrumpida en las pruebas móviles, sin resultado final de init.sh. Siguiente: integrar el recurso si el usuario lo solicita.
 
