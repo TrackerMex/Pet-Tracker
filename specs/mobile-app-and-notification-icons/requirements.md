@@ -1,6 +1,6 @@
 ---
 feature: "mobile-app-and-notification-icons"
-status: draft        # draft | approved
+status: approved     # draft | approved
 tags: [harness, spec, mobile]
 ---
 
@@ -304,7 +304,10 @@ de color) = `tipo`. Tipo 6 = RGBA.
 
 ## Aprobación
 
-- [ ] Aprobado por humano (fecha: ____) ← gate obligatorio antes de implementar
+- [x] Aprobado por humano (fecha: 2026-10-03) ← gate obligatorio antes de implementar
+      Firmado desde Notion: página https://app.notion.com/p/3ee6115a9b27811d9920ded211b9c8f8,
+      `Estado del gate = Aprobado`, `page_last_edited_at` 2026-10-03T19:02:43Z,
+      cuenta alexfdgf32@gmail.com. Espejo del commit `7e315531`.
 
 ### Smoke R10 (gate humano propio, antes de `done`)
 
