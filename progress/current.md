@@ -38,3 +38,4 @@
   - R8 IF 401: solo se prueba en Editar.
 
   Se clasifican 4 puntos como no bloqueantes, y el reviewer se compromete a no bloquear por ellos en la ronda 4; entre ellos, el orden plan → mascota. Con los cinco candados no queda ninguna rama sin candado. El leader amplía E4 a cinco commits de test (E4-a…E4-e) y 8 sondas. Las cifras pasan de 88/1764 a 88/1771. La lista cerrada sigue en 13. La casilla de E4 queda sin marcar: **para** hasta que el humano la apruebe.
+- 2026-10-03: el humano aprueba la Enmienda E4 en el chat. Se marca su casilla y se añade la «Reanudación 4» al handoff. H0 sigue en `b367ed44`. Le toca a Codex: E4-a…E4-e, las 8 sondas, §Cierre (88/1771) y la trazabilidad. En total serán 34 commits suyos. **Para** hasta que el humano confirme que Codex terminó.

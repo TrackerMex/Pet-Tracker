@@ -559,3 +559,126 @@ Informe: en progress/impl_mobile-meal-schedule-editing.md, una seccion
 De jest copia solo las lineas de resumen y la primera linea del bloque `●`
 de cada `it` rojo.
 ```
+
+## Reanudación 4: tercer rechazo del reviewer y barrido completo de cláusulas (2026-10-03)
+
+> El reviewer rechaza la ronda 3 en `57757499` (`progress/review_mobile-meal-schedule-editing.md`
+> §Ronda 3). E3 cierra sus 2 sondas sin regresiones, pero hay dos ramas más
+> sin candado: el WHILE de R7 en Editar y la retirada del error de R8 en
+> Añadir. Es la tercera ronda de la misma familia, así que antes de firmar el
+> reviewer hizo un barrido exhaustivo de R1–R9 y E1–E3 (§Pre-verificación del
+> borrador E4 y barrido de cláusulas). El barrido encontró 3 ramas más (R3,
+> R5 y el 401 de R8 en Añadir) y midió los cinco candados: todos nacen verdes y
+> sus sondas caen rojas por matcher.
+>
+> El humano aprueba la **Enmienda E4** en el chat. La firma es el commit que
+> añade esta reanudación. E4 son cinco commits de test sobre
+> `index.test.tsx` y `nutrition.test.ts`. Las cifras pasan a 88/1771 y la
+> lista cerrada sigue en 13 ficheros. Según el barrido, no queda ninguna otra
+> rama sin candado.
+
+Pegar en Codex CLI:
+
+```
+Worktree: /home/claude/sites/Pet-Tracker   <- PRIMERA LINEA. Trabaja AQUI y en ningun otro sitio
+Reanudacion 4 de #147 tras el tercer rechazo del reviewer. Ejecuta y pega
+en el informe:
+  pwd
+  git branch --show-current
+  git log --oneline -4
+  git status --short
+PARA si:
+- la branch no es feature/147-mobile-meal-schedule-editing;
+- el cuarto commit de `git log --oneline -4` no es 0b0f856c (tu trazabilidad
+  de E3);
+- `git status --short` no sale vacio.
+Los tres commits de encima son del leader: el log del init.sh de la ronda 3
+(57757499), el borrador de E4 (bec2d141) y la firma de E4, que anade esta
+reanudacion. Lee:
+- requirements.md §Enmienda E4;
+- tasks.md §Enmienda E4 (y §Esperas, que sigue obligatoria);
+- progress/review_mobile-meal-schedule-editing.md §Ronda 3, incluida su
+  subseccion «Pre-verificacion del borrador E4 y barrido de clausulas»;
+- la seccion «Reanudacion 4» de progress/handoff_mobile-meal-schedule-editing.md.
+Siguen en vigor todas las reglas del handoff original. H0 sigue siendo
+b367ed44. No rebasees ni enmiendes ningun commit anterior.
+
+La produccion es correcta: NO la cambies. Solo tocas dos ficheros de test,
+mobile-pet-tracker/src/screens/meal-schedule/index.test.tsx y
+mobile-pet-tracker/src/api/__tests__/nutrition.test.ts. Despues tocas
+traceability.md y tu informe.
+
+1. Desde mobile-pet-tracker/, sin pipe, los dos comandos de tasks.md
+   §Enmienda E4:
+     bunx jest src/screens/meal-schedule > /tmp/147-e4-base-screen.txt 2>&1; echo "exit=$?"
+     bunx jest src/api/__tests__/nutrition.test.ts > /tmp/147-e4-base-api.txt 2>&1; echo "exit=$?"
+   Esperado: 56/56 y 58/58, los dos con exit=0. Si sale otra cosa, PARA.
+
+2. Cinco commits de test, en este orden: E4-a, E4-b, E4-c, E4-d, E4-e.
+   - Cada bloque es literal, tal como esta en tasks.md, y va en el sitio que
+     indica (localizalo por contenido, no por numero de linea).
+   - Deja una linea en blanco antes de cada `it` nuevo.
+   - Tras cada uno, repite el comando de su fichero. Los recuentos esperados
+     estan en la tabla de tasks.md §Enmienda E4, todos con exit=0. Si algun
+     `it` sale rojo, PARA: la premisa es falsa y lo decide el leader.
+   - Cada commit lleva SOLO su fichero de test y el mensaje literal de
+     tasks.md. Comprueba con `git show --stat HEAD` que lleva un solo
+     fichero.
+
+3. Corre las 8 sondas de la tabla de tasks.md §Enmienda E4, cada una por
+   separado sobre el verde, con el comando del fichero de test que vigila.
+   Cada una debe caer en el `it` (o la fila del it.each) que indica la
+   tabla, solo en el y por matcher. Despues de cada una restaura con
+     git checkout HEAD -- <fichero de produccion mutado>
+   y comprueba que `git diff --cached --stat` y `git status --short` salen
+   vacios. Si alguna sonda sale verde o cae distinto, PARA y reporta.
+
+4. §Cierre de tasks.md, entero y en orden:
+   - el pgrep vacio;
+   - `bun run test`: 88 suites / 1771 tests y exit 0;
+   - `bun run lint`: exit 0;
+   - `test ! -e .expo/types/router.d.ts && bun run typecheck`: exit 0;
+   - los tres grep-clean, vacios.
+   Cada comando a fichero, sin pipe, con su exit. Si algo falla, PARA y
+   reporta: no ajustes ninguna asercion.
+
+5. En specs/mobile-meal-schedule-editing/traceability.md, cita lo nuevo
+   junto a lo que ya cita cada fila:
+   - R3: E4-c;
+   - R5: E4-d;
+   - R7: E4-a;
+   - R8: E4-b y E4-e.
+   Despues, un solo commit con SOLO traceability.md y
+   progress/impl_mobile-meal-schedule-editing.md, con este mensaje literal:
+     docs(mobile-meal-schedule-editing): cite amendment E4 in #147 traceability
+   No rebasees despues.
+
+Listas del cierre:
+- Commits tuyos: los 28 que ya tienes, mas los 5 de E4 y el de
+  trazabilidad. Son 34.
+- Ficheros que cambian TUS commits: los mismos 13 de design.md §Archivos
+  afectados.
+- El `git diff --name-only H0..HEAD` incluye ademas seis ficheros que
+  cambian los commits del leader (98cc1154, d8edb20e, f26f85fd, 65b7434b,
+  39174fe7, 57757499, bec2d141 y el de esta reanudacion), y no cuentan como
+  tuyos:
+  - specs/mobile-meal-schedule-editing/requirements.md
+  - specs/mobile-meal-schedule-editing/design.md
+  - specs/mobile-meal-schedule-editing/tasks.md
+  - progress/current.md
+  - progress/handoff_mobile-meal-schedule-editing.md
+  - progress/review_mobile-meal-schedule-editing.md
+  Pega ese diff completo y senala esos seis.
+
+No lances ./init.sh. No hagas push. No abras la PR.
+
+Informe: en progress/impl_mobile-meal-schedule-editing.md, una seccion
+«Reanudacion 4» al final con:
+- las salidas del paso 0;
+- las cuentas y el exit del paso 1 y de cada commit del paso 2;
+- el `git show --stat` de cada commit;
+- cada sonda con su diff, los `it` que caen y el modo (matcher/consulta);
+- el cierre completo, con exit y cifras.
+De jest copia solo las lineas de resumen y la primera linea del bloque `●`
+de cada `it` rojo.
+```

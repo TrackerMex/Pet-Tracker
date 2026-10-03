@@ -581,4 +581,4 @@ Las ediciones literales, los mensajes de commit y las sondas están en [[tasks]]
   `src/screens/meal-schedule/index.test.tsx` y
   `src/api/__tests__/nutrition.test.ts`, que ya están en ella.
 
-- [ ] Enmienda E4 aprobada por humano (fecha: ____, commit de firma: el que marca esta casilla)
+- [x] Enmienda E4 aprobada por humano (fecha: 2026-10-03, en el chat del leader; commit de firma: el que marca esta casilla)
