@@ -453,6 +453,7 @@ describe('#87 R19: use-' + 'api no deja huella', () => {
     'screens/alerts/index.tsx': 1,
     'screens/alert-detail/index.tsx': 1,
     'screens/geofences/index.tsx': 1,
+    'screens/geofence-editor/index.tsx': 1,
     'screens/home/index.tsx': 0,
     'screens/pairing/index.tsx': 2,
     'screens/profile/index.tsx': 2,
@@ -647,5 +648,17 @@ describe('#108 R4: la convención de cita del guard está documentada', () => {
   it('documenta el guard y la forma canónica', () => {
     expect(section).toContain('design-drift.test.ts');
     expect(section).toContain('`#108 R1`');
+  });
+});
+
+describe('#146 R17: el centro por defecto del mapa vive en un solo sitio', () => {
+  const productionFilesMatching = (pattern: RegExp) =>
+    filesMatching(pattern).filter((path) => !/\.test\.tsx?$/.test(path));
+
+  it('declara DEFAULT_CENTER solo en el componente del mapa', () => {
+    expect(productionFilesMatching(/\bconst DEFAULT_CENTER\b/)).toEqual([join('components', 'pet-map.tsx')]);
+  });
+  it('escribe las coordenadas por defecto solo en el componente del mapa', () => {
+    expect(productionFilesMatching(/19\.4326|-99\.1332/)).toEqual([join('components', 'pet-map.tsx')]);
   });
 });

@@ -822,7 +822,26 @@ copy completa en cada una.
 | — | `geofences.deleteTitle` **(param)** | `Delete {{name}}?` | `¿Eliminar {{name}}?` | ← añadida por #41 (R1)
 | — | `geofences.deleteBody` | `You'll stop getting alerts for this zone. This can't be undone.` | `Dejarás de recibir alertas de esta zona. Esta acción no se puede deshacer.` | ← añadida por #41 (R1)
 
-### §2.16 — Añadidos por #147 — Horario de comidas editable
+### §2.16 — Añadidos por #146 — Editor de zonas seguras
+
+| Pantalla | Clave | en | es | Origen |
+|---|---|---|---|---|
+| — | `geofenceEditor.title` | Safe zone | Zona segura | ← añadida por #146 (R1) |
+| — | `geofenceEditor.nameLabel` | Name | Nombre | ← añadida por #146 (R1) |
+| — | `geofenceEditor.mapHint` | Tap the map to move the zone's center. | Toca el mapa para mover el centro de la zona. | ← añadida por #146 (R1) |
+| — | `geofenceEditor.radiusLabel` | Zone radius | Radio de la zona | ← añadida por #146 (R1) |
+| — | `geofenceEditor.resetNote` | Saving a new center or radius re-evaluates the zone and closes its open alerts. | Al guardar un centro o radio nuevos, la zona se vuelve a evaluar y se cierran sus alertas abiertas. | ← añadida por #146 (R1) |
+| — | `geofenceEditor.save` | Save | Guardar | ← añadida por #146 (R1) |
+| — | `geofenceEditor.nameTaken` | You already have a zone with that name. | Ya tienes una zona con ese nombre. | ← añadida por #146 (R1) |
+| — | `geofenceEditor.limitReached` | This pet already has the maximum number of zones. | Esta mascota ya tiene el máximo de zonas. | ← añadida por #146 (R1) |
+| — | `geofenceEditor.invalid` | Check the zone name and radius. | Revisa el nombre y el radio de la zona. | ← añadida por #146 (R1) |
+| — | `geofenceEditor.notFound` | This pet or zone is no longer available. | La mascota o la zona ya no están disponibles. | ← añadida por #146 (R1) |
+| — | `geofenceEditor.add` | Add zone | Añadir zona | ← añadida por #146 (R1) |
+| — | `geofenceEditor.editLabel` | Edit {{name}} zone | Editar zona {{name}} | ← añadida por #146 (R1) |
+| — | `geofenceEditor.limitNotice` | This pet already has {{max}} zones, the maximum. Delete one to add another. | Esta mascota ya tiene {{max}} zonas, el máximo. Elimina una para añadir otra. | ← añadida por #146 (R1) |
+| — | `geofenceEditor.ownerOnly` | Only the pet's owner can create or edit zones. | Solo el dueño de la mascota puede crear o editar zonas. | ← añadida por #146 (R1) |
+
+### §2.17 — Añadidos por #147 — Horario de comidas editable
 
 | # | Clave | `en` | `es` | Origen |
 |---|---|---|---|---|
@@ -835,7 +854,6 @@ copy completa en cada una.
 | — | `mealSchedule.errorTimeNotInPlan` | `That meal time is no longer in the plan` | `Ese horario ya no está en el plan` | ← añadida por #147 (R1)
 | — | `mealSchedule.errorDuplicateTime` | `There is already a meal at that time` | `Ya hay una comida a esa hora` | ← añadida por #147 (R1)
 | — | `mealSchedule.errorMealLimit` | `The plan already has the maximum of 6 meals` | `El plan ya tiene el máximo de 6 comidas` | ← añadida por #147 (R1)
-
 
 ## 3. La infraestructura
 

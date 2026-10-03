@@ -47,13 +47,13 @@ function LocaleProbe() {
 }
 
 describe('#65 R12: el catálogo tiene los dos idiomas y t resuelve claves y parámetros', () => {
-  // 259 en `303fc19` + 1 de `home.walks` (#67 R7b) + 16 de #68 + 14 de #78 + 2 de #73 + 1 de #90 + 4 de #98 - 6 de #95 R5 (las seis claves de volver) + 1 de #113 R3 (food.kcalConsumedOfTarget) + 2 de #99 R3 (profile.notificationsBlocked, profile.openSettings) + 3 de #100 R1 (alerts.detailTitle, alerts.statusOpen, alerts.openedAt) + 11 de #41 R1 (geofences.*) + 9 de #147 R1 (mealSchedule.* del horario editable).
+  // 259 en `303fc19` + 1 de `home.walks` (#67 R7b) + 16 de #68 + 14 de #78 + 2 de #73 + 1 de #90 + 4 de #98 - 6 de #95 R5 (las seis claves de volver) + 1 de #113 R3 (food.kcalConsumedOfTarget) + 2 de #99 R3 (profile.notificationsBlocked, profile.openSettings) + 3 de #100 R1 (alerts.detailTitle, alerts.statusOpen, alerts.openedAt) + 11 de #41 R1 (geofences.*) + 12 de #146 R1 (geofenceEditor.*) + 2 de #146 R1 (geofenceEditor.limitNotice, geofenceEditor.ownerOnly) + 9 de #147 R1 (mealSchedule.* del horario editable).
   it('mantiene la base más las claves de #68 y los mismos marcadores en ambos idiomas', () => {
     const englishKeys = Object.keys(en).sort();
     const spanishKeys = Object.keys(es).sort();
 
     expect(englishKeys).toHaveLength(
-      260 + 16 + 1 + 4 + 7 + 14 + 2 + 1 + 4 - 6 + 1 + 2 + 3 + 11 + 9,
+      260 + 16 + 1 + 4 + 7 + 14 + 2 + 1 + 4 - 6 + 1 + 2 + 3 + 11 + 12 + 2 + 9,
     );
     expect(spanishKeys).toEqual(englishKeys);
     for (const key of englishKeys) {
@@ -191,6 +191,45 @@ describe('#41 R1: el catálogo trae las once claves de zonas seguras', () => {
           '\\| — \\| `' +
             escapeRegExp(key) +
             '`[^\\n]*← añadida por #41 \\(R1\\)',
+        ),
+      );
+    }
+  });
+});
+
+describe('#146 R1: el catálogo trae las claves del editor de zonas', () => {
+  it('registra las claves del editor en los dos idiomas y en la tabla de la spec de idioma', () => {
+    const english = en as Record<string, string>;
+    const spanish = es as Record<string, string>;
+    const languageDesign = readFileSync(
+      join(process.cwd(), '../specs/mobile-ui-language/design.md'),
+      'utf8',
+    );
+    const translations = [
+      ["geofenceEditor.title", "Safe zone", "Zona segura"],
+      ["geofenceEditor.nameLabel", "Name", "Nombre"],
+      ["geofenceEditor.mapHint", "Tap the map to move the zone's center.", "Toca el mapa para mover el centro de la zona."],
+      ["geofenceEditor.radiusLabel", "Zone radius", "Radio de la zona"],
+      ["geofenceEditor.resetNote", "Saving a new center or radius re-evaluates the zone and closes its open alerts.", "Al guardar un centro o radio nuevos, la zona se vuelve a evaluar y se cierran sus alertas abiertas."],
+      ["geofenceEditor.save", "Save", "Guardar"],
+      ["geofenceEditor.nameTaken", "You already have a zone with that name.", "Ya tienes una zona con ese nombre."],
+      ["geofenceEditor.limitReached", "This pet already has the maximum number of zones.", "Esta mascota ya tiene el máximo de zonas."],
+      ["geofenceEditor.invalid", "Check the zone name and radius.", "Revisa el nombre y el radio de la zona."],
+      ["geofenceEditor.notFound", "This pet or zone is no longer available.", "La mascota o la zona ya no están disponibles."],
+      ["geofenceEditor.add", "Add zone", "Añadir zona"],
+      ["geofenceEditor.editLabel", "Edit {{name}} zone", "Editar zona {{name}}"],
+      ["geofenceEditor.limitNotice", "This pet already has {{max}} zones, the maximum. Delete one to add another.", "Esta mascota ya tiene {{max}} zonas, el máximo. Elimina una para añadir otra."],
+      ["geofenceEditor.ownerOnly", "Only the pet's owner can create or edit zones.", "Solo el dueño de la mascota puede crear o editar zonas."],
+    ] as const;
+
+    for (const [key, englishValue, spanishValue] of translations) {
+      expect(english[key]).toBe(englishValue);
+      expect(spanish[key]).toBe(spanishValue);
+      expect(languageDesign).toMatch(
+        new RegExp(
+          '\\| — \\| `' +
+            escapeRegExp(key) +
+            '`[^\\n]*← añadida por #' + '146 \\(R1\\)',
         ),
       );
     }

@@ -384,7 +384,7 @@ describe('#114 R1: la guarda de RootStack declara reminders y alerts tras las se
     const group = Children.toArray(stack?.children)[4];
     if (!isValidElement<{ children: ReactNode }>(group)) throw new Error('Expected protected group');
     const children = Children.toArray(group.props.children);
-    expect(children).toHaveLength(8 + 1 + 1); // #100 R2, #41 R4
+    expect(children).toHaveLength(8 + 1 + 1 + 1); // #100 R2, #41 R4, #146 R5
     expect(children.slice(6, 8).map((child) =>
       isValidElement<{ name: string; dangerouslySingular?: boolean }>(child)
         ? [child.type, child.props.name, child.props.dangerouslySingular]
@@ -410,7 +410,7 @@ describe('#100 R2: la guarda de RootStack declara el detalle de alerta tras aler
     const group = Children.toArray(stack?.children)[4];
     if (!isValidElement<{ children: ReactNode }>(group)) throw new Error('Expected protected group');
     const children = Children.toArray(group.props.children);
-    expect(children).toHaveLength(9 + 1); // #41 R4
+    expect(children).toHaveLength(9 + 1 + 1); // #41 R4, #146 R5
     const detail = children[8];
     expect(isValidElement<{ name: string; dangerouslySingular?: boolean }>(detail)
       ? [detail.type, detail.props.name, detail.props.dangerouslySingular]
@@ -449,7 +449,7 @@ describe('#41 R4: la guarda de RootStack declara las zonas seguras tras el detal
     const group = Children.toArray(stack?.children)[4];
     if (!isValidElement<{ children: ReactNode }>(group)) throw new Error('Expected protected group');
     const children = Children.toArray(group.props.children);
-    expect(children).toHaveLength(10);
+    expect(children).toHaveLength(10 + 1); // #146 R5
     const detail = children[9];
     expect(isValidElement<{ name: string; dangerouslySingular?: boolean }>(detail)
       ? [detail.type, detail.props.name, detail.props.dangerouslySingular]
@@ -466,6 +466,45 @@ describe('#41 R4: la guarda de RootStack declara las zonas seguras tras el detal
     expect(isValidElement<{ options?: unknown }>(detail) ? detail.props.options : undefined).toEqual({
       headerShown: true,
       title: 't:geofences.title',
+      headerStyle: { backgroundColor: 'token:background' },
+      headerTintColor: 'token:foreground',
+      headerTitleStyle: { fontFamily: 'Inter-Bold' },
+      headerShadowVisible: false,
+    });
+  });
+});
+
+describe('#146 R5: la guarda de RootStack declara el editor de zonas tras la lista', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockGetStoredTheme.mockResolvedValue(undefined);
+    mockGetStoredLanguage.mockResolvedValue(undefined);
+  });
+
+  it('declara pets/[petId]/geofence-editor como undécimo hijo y no singular', async () => {
+    await render(<RootLayout />);
+    await waitFor(() => expect(jest.mocked(Stack)).toHaveBeenCalled());
+    const stack = jest.mocked(Stack).mock.calls.at(-1)?.[0];
+    const group = Children.toArray(stack?.children)[4];
+    if (!isValidElement<{ children: ReactNode }>(group)) throw new Error('Expected protected group');
+    const children = Children.toArray(group.props.children);
+    expect(children).toHaveLength(11);
+    const detail = children[10];
+    expect(isValidElement<{ name: string; dangerouslySingular?: boolean }>(detail)
+      ? [detail.type, detail.props.name, detail.props.dangerouslySingular]
+      : null).toEqual([Stack.Screen, 'pets/[petId]/geofence-editor', undefined]);
+  });
+
+  it('le da la cabecera nativa de #95 R4 con el título del editor de zonas', async () => {
+    await render(<RootLayout />);
+    await waitFor(() => expect(jest.mocked(Stack)).toHaveBeenCalled());
+    const stack = jest.mocked(Stack).mock.calls.at(-1)?.[0];
+    const group = Children.toArray(stack?.children)[4];
+    if (!isValidElement<{ children: ReactNode }>(group)) throw new Error('Expected protected group');
+    const detail = Children.toArray(group.props.children)[10];
+    expect(isValidElement<{ options?: unknown }>(detail) ? detail.props.options : undefined).toEqual({
+      headerShown: true,
+      title: 't:geofenceEditor.title',
       headerStyle: { backgroundColor: 'token:background' },
       headerTintColor: 'token:foreground',
       headerTitleStyle: { fontFamily: 'Inter-Bold' },

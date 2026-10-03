@@ -468,6 +468,36 @@ export const R14_GEOFENCES: UseRow[] = [
   { file: 'src/screens/geofences/index.tsx', key: 'common.retry' },
 ];
 
+export const R15_GEOFENCE_EDITOR: UseRow[] = [
+  { file: 'src/app/_layout.tsx', key: 'geofenceEditor.title' },
+  { file: 'src/screens/geofences/index.tsx', key: 'geofenceEditor.editLabel' },
+  { file: 'src/screens/geofences/index.tsx', key: 'geofenceEditor.add' },
+  { file: 'src/screens/geofences/index.tsx', key: 'geofenceEditor.limitNotice' },
+  { file: 'src/screens/geofence-editor/index.tsx', key: 'geofenceEditor.notFound' },
+  { file: 'src/screens/geofence-editor/index.tsx', key: 'geofences.needsCollar' },
+  { file: 'src/screens/geofence-editor/index.tsx', key: 'geofenceEditor.nameTaken' },
+  { file: 'src/screens/geofence-editor/index.tsx', key: 'geofenceEditor.limitReached' },
+  { file: 'src/screens/geofence-editor/index.tsx', key: 'geofenceEditor.invalid' },
+  { file: 'src/screens/geofence-editor/index.tsx', key: 'common.cannotReachServer' },
+  { file: 'src/screens/geofence-editor/index.tsx', key: 'common.somethingWentWrong' },
+  { file: 'src/screens/geofence-editor/index.tsx', key: 'common.retry' },
+  { file: 'src/screens/geofence-editor/index.tsx', key: 'geofenceEditor.nameLabel' },
+  { file: 'src/screens/geofence-editor/index.tsx', key: 'geofenceEditor.mapHint' },
+  { file: 'src/screens/geofence-editor/index.tsx', key: 'geofences.radius' },
+  { file: 'src/screens/geofence-editor/index.tsx', key: 'geofenceEditor.radiusLabel' },
+  { file: 'src/screens/geofence-editor/index.tsx', key: 'geofenceEditor.resetNote' },
+  { file: 'src/screens/geofence-editor/index.tsx', key: 'geofenceEditor.save' },
+  { file: 'src/screens/geofence-editor/index.tsx', key: 'geofences.statusActive' },
+  { file: 'src/screens/geofence-editor/index.tsx', key: 'geofences.activeLabel' },
+  { file: 'src/screens/geofence-editor/index.tsx', key: 'geofences.delete' },
+  { file: 'src/screens/geofence-editor/index.tsx', key: 'geofences.delete' },
+  { file: 'src/screens/geofence-editor/index.tsx', key: 'geofences.deleteTitle' },
+  { file: 'src/screens/geofence-editor/index.tsx', key: 'geofences.deleteBody' },
+  { file: 'src/screens/geofence-editor/index.tsx', key: 'geofences.cancel' },
+  { file: 'src/screens/geofence-editor/index.tsx', key: 'geofenceEditor.ownerOnly' },
+  { file: 'src/screens/geofence-editor/index.tsx', key: 'geofenceEditor.ownerOnly' },
+];
+
 export const ALL_USES: UseRow[] = [
   ...R1_AUTH,
   ...R2_TABS,
@@ -483,6 +513,7 @@ export const ALL_USES: UseRow[] = [
   ...R12_ALERTS,
   ...R13_ALERT_DETAIL,
   ...R14_GEOFENCES,
+  ...R15_GEOFENCE_EDITOR,
 ];
 
 describe('#65: la tabla de uso de copy está disponible al runner', () => {
@@ -492,11 +523,11 @@ describe('#65: la tabla de uso de copy está disponible al runner', () => {
 
   // Enmienda (3): el candado es la consistencia interna, no una constante
   // escrita a mano — es la tercera vez que una cifra congelada envejece.
-  it('cuadra ALL_USES con la suma de los doce bloques', () => {
+  it('cuadra ALL_USES con la suma de sus bloques', () => {
     const blocks = [
       R1_AUTH, R2_TABS, R3_HOME, R4_MAP, R5_HEALTH, R6_FOOD,
       R7_PROFILE, R8_REMINDERS, R9_ADD_PET, R10_PAIRING, R11_RESET,
-      R12_ALERTS, R13_ALERT_DETAIL, R14_GEOFENCES,
+      R12_ALERTS, R13_ALERT_DETAIL, R14_GEOFENCES, R15_GEOFENCE_EDITOR,
     ];
 
     expect(ALL_USES).toHaveLength(
