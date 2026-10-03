@@ -7347,3 +7347,19 @@ paralelo: Backend con #146 en `Pet-Tracker-wt-146`.
   Las referencias a «§2.16» en la spec de #147 quedan como históricas. `bun run test` da 90/1913 (88 + 2 suites de #146) con exit 0; lint y typecheck, exit 0. Informe en `progress/impl_mobile-meal-schedule-editing.md` §Merge de origin/main (#146). Se pide turno de `./init.sh` a Backend.
 - 2026-10-03: Backend da turno («Libre»). El leader corre `./init.sh` sobre `095006c0` (05:58:12Z–06:02:40Z), con exit 0: unit 174/1335, infra 2/14, **móvil 90/1913**, e2e 28+3 / 423+8, lint y typecheck verdes. El log está en el scratchpad (`init147/init-close.log`). Se avisa a Backend del fin.
 - 2026-10-03: cierre. #147 pasa a `done` en `feature_list.json` (`files_affected` gana los tres tests que tocó: `nutrition.test.ts`, `consistency-classnames.test.ts` y `design-drift.test.ts`). STATUS.md queda en 135/148. Notion: `Estado del gate` = Implementado y `Rol actual` = Completado.
+
+### 2026-10-02 — Pet Tracker app icon
+
+- Solicitud: crear el icono a partir de dos referencias y la skill pública create-logo.
+- Entrega: PNG estático con perrito robótico violeta y pin de ubicación, generado con imagegen y guardado como artefacto visual de esta conversación.
+- Código de la app y feature_list.json sin cambios; integración pendiente de solicitud.
+- Verificación: build completado y pruebas de backend/infra ejecutadas; init.sh interrumpido al dejar de producir resultados la suite móvil. No se declara ninguna feature completada en esta sesión.
+- Continuación: icono de notificaciones creado como símbolo geométrico y exportado a PNG 96×96. Verificados tamaño exacto, transparencia real y RGB blanco en todos los píxeles visibles. Sin cambios en la app.
+
+### 2026-10-03 — Color notification icon
+
+- Variante del perrito en color creada con imagegen y exportada a PNG de 96×96 con transparencia real, ambas propiedades verificadas.
+- Artefacto entregado en esta conversación. Código de la app y feature_list.json sin cambios; no se repitieron pruebas de aplicación para esta entrega visual.
+- El usuario aprobó la variante en color y pidió subirla a docs/pet-tracker-icon-session. Recurso copiado a mobile-pet-tracker/assets/images/pet-tracker-notification-color-96.png; SHA-256 idéntico al PNG aprobado, tamaño 96×96 y transparencia verificados. Configuración de la app sin cambios.
+- Merge de `main` en la rama (2026-10-03, sesión leader): `STATUS.md` y `history.md` se resolvieron conservando la versión de `main` (la rama partía de 37d0c8b3, inventario 54/59 ya caduco) y añadiendo solo estas dos entradas y la línea de «Estado actual». El PNG no tuvo conflicto.
+- Continuación: el usuario pidió subir el primer icono de la app y su imagen adjunta. Copiados a assets/images/pet-tracker-app-icon.png y assets/images/pet-tracker-notification-monochrome-original.png en la misma rama; integridad SHA-256 verificada para ambos. Se conserva el contenido original de los PNG. Rebase sobre la actualización remota ae68ec4b; conflictos de STATUS.md e history.md resueltos conservando la versión remota y añadiendo solo esta entrega.
