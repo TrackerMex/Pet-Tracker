@@ -7111,3 +7111,107 @@ Backend con #41 en `wt-backend` y la spec de #146 en `Pet-Tracker-wt-146`.
   medir la receta antes de firmar.
 - **Siguiente**: #147 `mobile-meal-schedule-editing`, anclada en el merge real
   de #41 (d855ab5e), no en las cifras de su spec.
+
+## #146 `mobile-geofence-editor` — el editor de zonas seguras — 2026-10-03
+
+Sesion Backend, worktree `Pet-Tracker-wt-146`, branch
+`feature/146-mobile-geofence-editor`. Recibio `origin/main` d855ab5e (#41) y
+cb14497c (#103) por merge, sin conflictos de codigo. En paralelo: Frontend
+con #103 y #147 en el tree principal.
+
+### Spec y gates
+
+- Spec del `spec_author` (e3d1189d) sobre el HEAD de #41; el primer intento
+  entro en bucle de compactacion y se relanzo con correcciones. Ampliacion de
+  alcance por decision del humano (eff6fe6e, R11-R18). Espejada en Notion
+  (pagina `3ed6115a9b278117b049c095c0b99285`), aprobada alli y firmada por el
+  leader en 00961ee6 (A19 y spec).
+- Base medida por el leader en 00961ee6: movil 88 / 1710 / 1 snapshot.
+  Objetivo 90 / 1852. Handoff a Codex en 9dee0e62 (H0).
+- Erratas de la spec (base 1710, fila M1, patron `#146 [^R\\]`) corregidas en
+  434538c1 con el visto bueno del humano en chat.
+- **Enmienda E1** (teclado), escrita en 0620b801, aprobada via Notion y
+  firmada en bc917ff7. Reanudacion 5 en 7e7b16b9.
+
+### Que se hizo
+
+- **Produccion** (`mobile-pet-tracker/src/`):
+  - `screens/geofence-editor/index.tsx` y la ruta delgada
+    `app/pets/[petId]/geofence-editor.tsx`: crear y editar zonas circulares.
+    Un toque en el mapa (incluidos POI y circulos) fija el centro; el slider
+    de 20 a 2000 m, de 10 en 10, fija el radio, con el borrador como ultimo
+    circulo. La camara se desacopla del centro y encuadra al soltar
+    (`zoomForRadius`).
+  - En modo edicion tambien activa, desactiva y borra. Consulta `myRole` y
+    queda en solo lectura para quien no es dueño. Traduce los errores 409
+    `GEOFENCE_NAME_TAKEN`, 400 `MAX_GEOFENCES_REACHED` y el 400 de
+    validacion.
+  - `PetMap` gana circulos, `onMapClick` y zoom en `mapViewProps`. La pestaña
+    Mapa dibuja las zonas activas. `DEFAULT_CENTER` vive en un solo sitio.
+  - La lista de zonas deshabilita «Añadir zona» con 5 y muestra un aviso;
+    `isGeofence` revalida el centro. Catalogo 320 → 334 claves.
+  - E1: la raiz del editor es un `KeyboardAvoidingView` con
+    `behavior="padding"` y `keyboardVerticalOffset` de `HeaderHeightContext`
+    (caffb588).
+- **Tests**: movil 88/1710 → 90/1852 (+2 suites, +142 tests). Codex hizo
+  47 commits test-primero en tres rondas.
+
+### Revision
+
+- Reviewer RECHAZADO sobre c0940cd0 (826ae816): Z1 (la camara encuadraba el
+  centro viejo al soltar) y Z2 (el borrador congelado en modo crear) de R7
+  sin candado. La Reanudacion 4 reforzo cuatro `it` sin cambiar el recuento.
+- Reviewer APROBADO sobre 552f557d (8944dfe9), con `init.sh` verde del leader.
+- Prueba de humo del humano (2026-10-02): todos los pasos pasaron salvo el 9.
+  Con el teclado abierto, Guardar quedaba inalcanzable. Causa (explore
+  `progress/explore_mobile-geofence-editor-keyboard.md`, verificada por el
+  leader con una sonda): edge-to-edge con targetSdk 35 o mas, `adjustResize`
+  ya no encoge la raiz. Login y Registro de peso fallan igual.
+- E1 implementada por Codex (b493f04d rojo, caffb588 verde, 495319fa
+  trazabilidad). `./init.sh` del leader sobre 495319fa, coordinado con
+  Frontend: exit 0, unit 174/1335, movil 90/1852, e2e 28+3 saltadas.
+  Reviewer APROBADO en la ronda 3 (330b24a3).
+- El humano repitio el paso 9 en el dev build de Android y marco sus casillas
+  (80845eeb).
+
+### Resultado
+
+- Estado final: `done`. Notion: `Estado del gate` = Implementado, `Rol
+  actual` = Completado.
+- iOS sin verificar mientras #60 siga aparcada.
+
+### Deuda y apuntes
+
+- **Deuda candidata, sin registrar**: el arreglo del teclado en el resto de
+  la app (Login, Registro de peso y cualquier formulario con inputs). Queda
+  pendiente de la decision del humano.
+- Observaciones no bloqueantes del review, sin id registrado:
+  - Ronda 1: 2, 3, 6 y 8. La 7 (espera sobre cache en un `it` de #41) es para
+    #41.
+  - Ronda 3: RV-5 (un `behavior` solo de iOS pasa en jest; lo cubre la prueba
+    de humo en Android) y RV-6/RV-7 (el origen del offset no tiene candado).
+- **Lecciones** (memoria): `teclado-edge-to-edge-kav`, `literales-copy-desde-r1`
+  y `handoff-codex-citar-esperas`.
+
+### Bitacora de la sesion
+
+- Branch `feature/146-mobile-geofence-editor` en `Pet-Tracker-wt-146`. Spec escrita por el `spec_author` sobre `95b2aaa4` (HEAD de #41) en el relanzamiento con correcciones elegido por el humano ("Relanzar con correcciones"); el primer intento entro en bucle de compactacion y se paro. Commit de la spec e3d1189d, subido a origin.
+- El leader verifico las anclas por contenido en `95b2aaa4` y la API de `expo-maps` 57.0.2 (`GoogleMapsCircle`, `onMapClick`, `onPOIClick`, `onCircleClick`).
+- Espejada en Notion (https://app.notion.com/p/3ed6115a9b278117b049c095c0b99285, Estado del gate = En revision, Rol actual = Spec Author); a la espera del gate humano. Tres casillas: A19, spec (P1-P10 y D7) y prueba de humo.
+- Bloqueadores del handoff (antes de la ampliacion): #41 aun no esta en `main`; base de tests sin medir (delta esperado +2 suites / +101 tests). iOS sin verificar mientras #60 siga aparcada.
+- #41 mergeada en `main` (PR #184, d855ab5e, 2026-10-02). Esta branch recibio `origin/main` d855ab5e en el commit de merge que sigue a esta linea; la base de la spec pasa de 95b2aaa4 a d855ab5e (de uno a otro solo cambian `progress/`, `STATUS.md`, `feature_list.json` y `specs/mobile-geofences/requirements.md`, sin codigo).
+- **Ampliacion de alcance** (decision del humano en el chat de la sesion Backend, 2026-10-02: "revisando la spec #146 hay que agregar de una vez lo que esta en fuera de alcance"; seleccion por AskUserQuestion, todas las opciones marcadas):
+  - Producto: (1) circulos de las zonas en la pestana Mapa; (2) limite de 5 zonas en el cliente: con 5, «Añadir zona» deshabilitado y un aviso; (3) borrar y activar/desactivar tambien desde el editor; (4) `isGeofence` revalida `centerLat`/`centerLng`.
+  - Deuda: (5) el editor consulta `myRole` y pinta solo lectura a quien no es dueño; (6) `DEFAULT_CENTER` en un solo sitio; (7) renombrar los titulos «trece» de `#62 R1` y «doce bloques» de `ALL_USES` para que cuadren con sus sumas; (8) el editor entra en los ficheros que cuentan los contadores de `TABULAR_NUMS` de `#62 R15`.
+  - Centro de la zona: se mantiene el toque en el mapa (P7/R7). El marker de expo-maps 57.0.2 es `draggable` pero no emite evento al soltarlo.
+  - Siguen fuera, sin cambio: iOS (#60 aparcada), poligonos (#11 D1), zonas compartidas (`pet_id NOT NULL`) y el teclado (solo prueba de humo).
+- Ampliacion escrita por el `spec_author` (eff6fe6e, 139 llamadas, sin bucle de compactacion): R11-R18, P11-P18, 14 claves de copy (catalogo 320 -> 334), prueba de humo de 15 pasos. Delta esperado: +2 suites / +142 tests. El leader corrigio notas de base caducas en 9726daad (#41 ya en `main`; Aprobacion y design.md citaban P1-P10).
+- Re-espejada en Notion desde 9726daad (Estado del gate = En revision, Rol actual = Spec Author). Tres casillas: A19, spec (P1-P18 y D7) y prueba de humo. Bloqueadores restantes del handoff: base de tests sin medir (el leader la mide en el arbol del handoff) e iOS sin verificar mientras #60 siga aparcada.
+- Firmada en 00961ee6 (2026-10-02, aprobacion via Notion: Estado del gate = Aprobado, `page_last_edited_at` 2026-10-02T17:57:11.105Z sobre el espejo de 9726daad): A19 y spec. Queda la casilla de la prueba de humo.
+- Base medida por el leader en este arbol (00961ee6, `bunx jest --maxWorkers=2` en `mobile-pet-tracker/`, exit=0): 88 suites / 1710 tests / 0 skipped / 1 snapshot, la misma con la que cerro #41. La nota "1716 / 1 skipped" de requirements.md §Contexto estaba mal copiada; el handoff lo dice. Objetivo de cierre: 90 / 1852. Las 46 anclas de design.md §Anclas dan su numero en 00961ee6.
+- Handoff a Codex: `progress/handoff_mobile-geofence-editor.md` (H0 = el commit que lo anade). #146 `in_progress`. Plan: 38 commits (A19 + R1-R18 rojo/verde + trazabilidad), delta +2 suites / +142 tests, sin init.sh. Mientras Codex implementa, el leader no toca `mobile-pet-tracker/` en este worktree.
+- Codex cerro en 42 commits (f6d45af5). El leader mergeo origin/main (cb14497c, #103) en c0940cd0. El reviewer rechazo la ronda 1 (826ae816): Z1 y Z2 de R7 sin candado. La Reanudacion 4 (f45c7159) reforzo cuatro `it` de R7 sin cambiar el recuento (c249391b + 552f557d, 44 commits de Codex). init.sh verde en 552f557d, y la ronda 2 del reviewer quedo aprobada (8944dfe9). Las erratas de la spec (base 1710, fila M1, patron `#146 [^R\\]`) se corrigieron en 434538c1, con el visto bueno del humano en chat.
+- Prueba de humo del humano (2026-10-02, relatada en chat): pasaron todos los pasos salvo el 9. En el teclado, "no hace scroll en el formulario" y Guardar queda inalcanzable. Segun el humano, Login y Registro de peso tampoco hacen scroll con el teclado abierto en el mismo telefono: parece un fallo de toda la app. El humano decidio arreglarlo dentro de #146 (AskUserQuestion, "Arreglar dentro de #146"). El explorer investiga en `progress/explore_mobile-geofence-editor-keyboard.md`; despues van la enmienda E1, el gate humano, Codex, el reviewer y repetir el paso 9.
+- Causa del paso 9 (explore, verificado por el leader): edge-to-edge con targetSdk 35 o mas; `adjustResize` ya no encoge la raiz y ninguna pantalla consume el inset del IME. El explore proponia `UNSAFE_getByType`, que RNTL 14 elimino; el leader midio con una sonda aislada que un evento `keyboardWillShow` simulado da `paddingBottom` 291 en el host. Enmienda E1 escrita en 0620b801: la raiz del editor pasa a `KeyboardAvoidingView` (`behavior="padding"`, offset de `HeaderHeightContext`), se refuerza R6 it 18 sin cambiar el recuento (68 / +142), hay 4 mutaciones y solo se repite el paso 9. El arreglo transversal queda como deuda candidata. Espejo en Notion y gate humano pendientes; el handoff (Reanudacion 5) se escribe despues de la aprobacion.
+- E1 aprobada por el humano via Notion (pagina en Aprobado, page_last_edited_at 2026-10-02T22:53:57Z; confirmado en chat). Firma en bc917ff7. El humano marco tambien en Notion la casilla "Paso 9 repetido y superado tras E1", que no se copio a disco porque E1 aun no esta implementada; en Notion se desmarco. Reanudacion 5 para Codex en 7e7b16b9 (rojo de it 18, verde en index.tsx, mutaciones E1-a a E1-d y cierre en 90 / 1852). Notion: Rol actual = Implementer. Siguiente: Codex, despues init.sh (preguntando «¿Libre?» a Frontend), reviewer ronda 3 y el humano repite el paso 9.
+- Codex implemento E1 (b493f04d rojo, caffb588 verde, 495319fa trazabilidad). El leader corrio init.sh sobre 495319fa con exit=0 (movil 90 / 1852), coordinado con Frontend. El reviewer aprobo la ronda 3 en 330b24a3 con cuatro observaciones no bloqueantes. RV-5 (`behavior` solo en iOS pasa en jest, que corre como iOS) la cierra unicamente el paso 9 en Android. Pendiente: el humano repite el paso 9 en el dev build de Android y marca la casilla de E1.4.
