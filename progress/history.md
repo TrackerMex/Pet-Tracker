@@ -2335,3 +2335,8 @@ Flake de `add-pet` por mocks sin reinicializar. Sin trabajo en curso.
 - STATUS.md sincronizado con el inventario real: 54/59 completadas y cinco pendientes.
 - Verificación: build completado y pruebas de backend/infra ejecutadas; init.sh interrumpido al dejar de producir resultados la suite móvil. No se declara ninguna feature completada en esta sesión.
 - Continuación: icono de notificaciones creado como símbolo geométrico y exportado a PNG 96×96. Verificados tamaño exacto, transparencia real y RGB blanco en todos los píxeles visibles. Sin cambios en la app.
+
+### 2026-10-03 — Color notification icon
+
+- Variante del perrito en color creada con imagegen y exportada a PNG de 96×96 con transparencia real, ambas propiedades verificadas.
+- Artefacto entregado en esta conversación. Código de la app y feature_list.json sin cambios; no se repitieron pruebas de aplicación para esta entrega visual.
