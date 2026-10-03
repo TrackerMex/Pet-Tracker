@@ -805,6 +805,8 @@ describe('#147 R7: tras un éxito refetchea plan y mascota, sin estado optimista
       }
       expect(mockGetNutritionPlan).toHaveBeenCalledTimes(2);
     });
+    expect(screen.queryByText('20:05')).toBeNull(); // #147 E4.1: ni la hora nueva antes del refetch
+    expect(within(screen.getByTestId('meal-time-row-1')).getByText('19:30')).toBeVisible();
     await act(async () => resolve({ kind: 'ok', plan: makePlan({ mealTimes: ['07:30', '20:05'] }) }));
     await waitFor(() => expect(screen.getByTestId('meal-time-edit-0').props.accessibilityState).not.toEqual(expect.objectContaining({ disabled: true })));
   });
