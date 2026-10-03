@@ -6918,3 +6918,388 @@ exit=0
 ### Decisiones y entrega
 
 Solo se añaden las aserciones y los tests literales de E2, más trazabilidad e informe. Las sondas de producción se restauraron todas. No se ejecuta init.sh ni E2E, no se hace push ni se abre PR. No se modifica el estado de la feature ni se marca el smoke Android. El leader conserva el cierre de lifecycle y la revisión posterior. Se comprobarán tras el último commit los 26 commits propios, los 13 ficheros propios, el diff completo de 19 rutas y el árbol limpio.
+
+## Reanudación 3
+
+2026-10-03. E3 aprobada por humano y firmada en `39174fe7`, tras el borrador del leader `65b7434b` y la trazabilidad de E2 `c918e756`. H0 permanece en `b367ed44`. Se aplica E3-a por vía (b) de C4 y se documentan sus dos sondas y el cierre. Los comandos móviles se ejecutan desde `/home/claude/sites/Pet-Tracker/mobile-pet-tracker`, sin pipes.
+
+### Paso 0: identidad y estado inicial
+
+```text
+$ pwd
+/home/claude/sites/Pet-Tracker
+$ git branch --show-current
+feature/147-mobile-meal-schedule-editing
+$ git log --oneline -3
+39174fe7 Approve amendment E3 of #147 and resume Codex (firma en chat)
+65b7434b Draft amendment E3 of #147 after the round 2 rejection
+c918e756 docs(mobile-meal-schedule-editing): cite amendment E2 in #147 traceability
+$ git status --short
+(salida vacía)
+```
+
+Las cuatro comprobaciones terminan con exit 0. La branch es la prescrita, el tercer commit es c918e756 y el árbol está limpio. Se leyeron requirements.md §Enmienda E3 (casilla humana marcada), tasks.md §Enmienda E3, §Esperas y §Cierre, review §Ronda 2 (incluida la pre-verificación del borrador) y handoff §Reanudación 3. Siguen las reglas y las skills ya cargadas del handoff original, registradas en el arranque y en Reanudación 2; no se carga una skill nueva. No se rebasea ni se enmienda ningún commit previo.
+
+### Paso 1: base verde
+
+```sh
+bunx jest src/screens/meal-schedule > /tmp/147-e3-base.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 1 passed, 1 total
+Tests:       54 passed, 54 total
+Snapshots:   0 total
+Time:        11.677 s
+Ran all test suites matching /src\/screens\/meal-schedule/i.
+exit=0
+```
+
+### Paso 2: E3-a verde
+
+```sh
+bunx jest src/screens/meal-schedule > /tmp/147-e3-a.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 1 passed, 1 total
+Tests:       56 passed, 56 total
+Snapshots:   0 total
+Time:        7.115 s, estimated 12 s
+Ran all test suites matching /src\/screens\/meal-schedule/i.
+exit=0
+```
+
+Se extrajo literalmente el bloque ts de tasks.md E3-a y se insertó dentro del describe de R7, después de «tras ok de Añadir los controles siguen deshabilitados y sin fila nueva hasta que termina el refetch». La ubicación se localizó por contenido. Se comprobó la igualdad del bloque con la spec. No se cambió ningún test anterior, import ni literal de copy. PetState ya estaba importado; se reutilizan los mocks existentes.
+
+Los dos it retienen la segunda llamada a getPet, esperan conjuntamente el árbol deshabilitado y las dos llamadas, observan el plan repintado y mantienen todos los controles deshabilitados hasta resolver la mascota. Ambos terminan con la espera de cierre prescrita. El test de Añadir también comprueba el nuevo meal-time-edit-2.
+
+```sh
+git add -- mobile-pet-tracker/src/screens/meal-schedule/index.test.tsx
+git commit -m 'test(mobile-meal-schedule-editing): lock disabled controls until the pet detail refetch ends (R7)'
+git show --stat HEAD > /tmp/147-e3-a-stat.txt 2>&1; echo "exit=$?"
+```
+
+```text
+commit e184ab68ef4603f8c3b784e06a08b10ce8e127a1
+Author: Claude <claude@srv1178023.hstgr.cloud>
+Date:   Sat Oct 3 03:32:59 2026 +0000
+
+    test(mobile-meal-schedule-editing): lock disabled controls until the pet detail refetch ends (R7)
+
+ .../src/screens/meal-schedule/index.test.tsx       | 48 ++++++++++++++++++++++
+ 1 file changed, 48 insertions(+)
+exit=0
+```
+
+El commit `e184ab68` lleva un solo fichero: index.test.tsx, con 48 líneas añadidas y dos tests. El status posterior sale vacío. La producción correcta permanece intacta.
+
+### Paso 3: las dos sondas, por separado sobre el verde
+
+Cada sonda parte de HEAD e184ab68 limpio y modifica temporalmente solo src/screens/meal-schedule/index.tsx. Las dos mutaciones se aplican en la rama ok de runMealTimeEdit. Tras cada una se restaura desde el mismo HEAD y se comprueban el índice y el status.
+
+#### Sonda 1: Rehabilitar entre el refetch del plan y el de la mascota
+
+```diff
+diff --git a/mobile-pet-tracker/src/screens/meal-schedule/index.tsx b/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
+index cb77bf55..49f9dd9f 100644
+--- a/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
++++ b/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
+@@ -97,6 +97,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
+       switch (result.kind) {
+         case 'ok':
+           await plan.refetch();
++          setEditing(false);
+           await queryClient.refetchQueries({ queryKey: petKeys.detail(petId) });
+           return;
+         case 'invalid':
+```
+
+```sh
+bunx jest src/screens/meal-schedule > /tmp/147-e3-probe-1.txt 2>&1; echo "exit=$?"
+```
+
+```text
+  ● #147 R7: tras un éxito refetchea plan y mascota, sin estado optimista › los controles siguen deshabilitados hasta que termina también el refetch de la mascota
+  ● #147 R7: tras un éxito refetchea plan y mascota, sin estado optimista › tras ok de Añadir los controles siguen deshabilitados hasta que termina también el refetch de la mascota
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 54 passed, 56 total
+Snapshots:   0 total
+Time:        9.311 s
+Ran all test suites matching /src\/screens\/meal-schedule/i.
+exit=1
+```
+
+Caen exactamente E3-a it 1 (Editar) e it 2 (Añadir), por matcher `toEqual(expect.objectContaining({ disabled: true }))` en el primer waitFor de cada uno: se espera disabled true y se recibe false. No hay caída por consulta «Unable to find» y los otros 54 tests permanecen verdes.
+
+```sh
+git checkout HEAD -- src/screens/meal-schedule/index.tsx > /tmp/147-e3-probe-1-restore.txt 2>&1; echo "exit=$?"
+git diff --cached --stat > /tmp/147-e3-probe-1-cached.txt 2>&1; echo "exit=$?"
+git status --short > /tmp/147-e3-probe-1-status.txt 2>&1; echo "exit=$?"
+```
+
+```text
+checkout: exit=0, salida vacía
+diff --cached --stat: exit=0, salida vacía
+status --short: exit=0, salida vacía
+```
+
+#### Sonda 2: Lanzar el refetch de la mascota con void en lugar de await
+
+```diff
+diff --git a/mobile-pet-tracker/src/screens/meal-schedule/index.tsx b/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
+index cb77bf55..ff45d0bb 100644
+--- a/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
++++ b/mobile-pet-tracker/src/screens/meal-schedule/index.tsx
+@@ -97,7 +97,7 @@ function MealScheduleContent({ petId }: { petId: string }) {
+       switch (result.kind) {
+         case 'ok':
+           await plan.refetch();
+-          await queryClient.refetchQueries({ queryKey: petKeys.detail(petId) });
++          void queryClient.refetchQueries({ queryKey: petKeys.detail(petId) });
+           return;
+         case 'invalid':
+           setEditError(t('mealSchedule.errorInvalidTime'));
+```
+
+```sh
+bunx jest src/screens/meal-schedule > /tmp/147-e3-probe-2.txt 2>&1; echo "exit=$?"
+```
+
+```text
+  ● #147 R7: tras un éxito refetchea plan y mascota, sin estado optimista › los controles siguen deshabilitados hasta que termina también el refetch de la mascota
+  ● #147 R7: tras un éxito refetchea plan y mascota, sin estado optimista › tras ok de Añadir los controles siguen deshabilitados hasta que termina también el refetch de la mascota
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 54 passed, 56 total
+Snapshots:   0 total
+Time:        9.182 s, estimated 10 s
+Ran all test suites matching /src\/screens\/meal-schedule/i.
+exit=1
+```
+
+Caen exactamente E3-a it 1 (Editar) e it 2 (Añadir), por matcher `toEqual(expect.objectContaining({ disabled: true }))` en el primer waitFor de cada uno: se espera disabled true y se recibe false. No hay caída por consulta «Unable to find» y los otros 54 tests permanecen verdes.
+
+```sh
+git checkout HEAD -- src/screens/meal-schedule/index.tsx > /tmp/147-e3-probe-2-restore.txt 2>&1; echo "exit=$?"
+git diff --cached --stat > /tmp/147-e3-probe-2-cached.txt 2>&1; echo "exit=$?"
+git status --short > /tmp/147-e3-probe-2-status.txt 2>&1; echo "exit=$?"
+```
+
+```text
+checkout: exit=0, salida vacía
+diff --cached --stat: exit=0, salida vacía
+status --short: exit=0, salida vacía
+```
+
+Las dos sondas se ejecutaron y detectaron exactamente el fallo prescrito. Ninguna se omite. Antes del cierre, la producción vuelve al verde y el índice y el árbol quedan limpios.
+
+### Paso 4: §Cierre completo, en orden
+
+Como en E2, pgrep y los dos grep-clean se miden con filtros separados sobre ficheros, conservando los patrones de tasks.md y el exit de cada comando, sin pipes.
+
+#### 4.1 Gate de procesos
+
+```sh
+pgrep -af 'init\.sh|test:e2e|jest-e2e' > /tmp/147-e3-close-pgrep-raw.txt 2>&1; echo "exit=$?"
+grep -v pgrep /tmp/147-e3-close-pgrep-raw.txt > /tmp/147-e3-close-pgrep.txt 2>&1; echo "exit=$?"
+```
+
+```text
+pgrep: exit=0 (procesos de la propia inspección)
+grep -v pgrep: exit=1
+(salida filtrada vacía)
+```
+
+El gate está vacío: ningún init.sh ni E2E en vuelo. El exit 1 del filtro significa que no hay coincidencias.
+
+#### 4.2 Suite móvil completa
+
+```sh
+bun run test > /tmp/147-e3-close-test.txt 2>&1; echo "exit=$?"
+```
+
+```text
+Test Suites: 88 passed, 88 total
+Tests:       1764 passed, 1764 total
+Snapshots:   1 passed, 1 total
+Time:        59.905 s
+Ran all test suites.
+exit=0
+```
+
+#### 4.3 Lint
+
+```sh
+bun run lint > /tmp/147-e3-close-lint.txt 2>&1; echo "exit=$?"
+```
+
+```text
+$ expo lint
+exit=0
+```
+
+#### 4.4 Typecheck con guarda de router
+
+```sh
+{ test ! -e .expo/types/router.d.ts && bun run typecheck; } > /tmp/147-e3-close-typecheck.txt 2>&1; echo "exit=$?"
+```
+
+```text
+$ tsc --noEmit
+exit=0
+```
+
+La guarda confirma que router.d.ts no existe. El grupo de shell captura también el exit y cualquier salida de la guarda. No se borra ningún fichero.
+
+#### 4.5 Los tres grep-clean
+
+```sh
+git diff b367ed44 -- src/screens/meal-schedule/index.tsx src/api/nutrition.ts > /tmp/147-e3-close-ui-diff.txt 2>&1; echo "exit=$?"
+grep '^+' /tmp/147-e3-close-ui-diff.txt > /tmp/147-e3-close-ui-added.txt 2>&1; echo "exit=$?"
+grep -nE "#[0-9a-fA-F]{3,8}\b|className=\"[^\"]*\[|StyleSheet\.create|rounded-(2xl|lg|md|sm)\b|elevation|shadow(Color|Offset|Opacity|Radius)" /tmp/147-e3-close-ui-added.txt > /tmp/147-e3-close-grep-ui.txt 2>&1; echo "exit=$?"
+```
+
+```text
+git diff: exit=0
+grep '^+': exit=0
+grep-clean UI: exit=1
+(salida vacía)
+```
+
+```sh
+git diff b367ed44 -- src/screens/meal-schedule/index.tsx > /tmp/147-e3-close-dimensions-diff.txt 2>&1; echo "exit=$?"
+grep -nE "^[-+].*(contentContainerStyle|padding: 24|gap: 16|insets\.bottom \+ 24)" /tmp/147-e3-close-dimensions-diff.txt > /tmp/147-e3-close-grep-dimensions.txt 2>&1; echo "exit=$?"
+```
+
+```text
+git diff: exit=0
+grep-clean dimensiones: exit=1
+(salida vacía)
+```
+
+```sh
+git diff b367ed44 --stat -- package.json bun.lock > /tmp/147-e3-close-grep-deps.txt 2>&1; echo "exit=$?"
+```
+
+```text
+(salida vacía)
+exit=0
+```
+
+Los exit 1 de grep indican ausencia de coincidencias. Los tres gates salen vacíos: tokens, dimensiones y dependencias. El cierre pasa con 88 suites / 1764 tests, lint y typecheck en exit 0. No se ajusta ninguna aserción.
+
+### Paso 5: trazabilidad y listas del cierre
+
+La fila R7 de traceability.md añade `e184ab68` y los dos it literales de E3-a, conservando el par C4 original y las enmiendas anteriores. El cierre de E3 documenta la vía (b), ambas sondas y 88/1764. Ninguna fila de la tabla queda pendiente.
+
+Commits propios, en orden desde H0:
+
+```text
+0cbb155e test(mobile-meal-schedule-editing): lock nine meal schedule editing catalog keys (R1)
+a131c0cc feat(mobile-meal-schedule-editing): add meal schedule editing copy in es and en (R1)
+f559d77a test(mobile-meal-schedule-editing): lock addMealTime request and state mapping (R2)
+35ed6ada feat(mobile-meal-schedule-editing): add addMealTime api client (R2)
+befe2220 test(mobile-meal-schedule-editing): lock moveMealTime request and state mapping (R3)
+0438799b feat(mobile-meal-schedule-editing): add moveMealTime api client (R3)
+9c88290b test(mobile-meal-schedule-editing): lock owner-only meal time controls (R4)
+3c497607 feat(mobile-meal-schedule-editing): show edit and add meal controls to owners (R4)
+4a9c91d5 test(mobile-meal-schedule-editing): lock edit time picker and PATCH call (R5)
+fc2c792a feat(mobile-meal-schedule-editing): edit a meal time with the native time picker (R5)
+2860d495 test(mobile-meal-schedule-editing): lock add meal picker and POST call (R6)
+fd48f9c3 feat(mobile-meal-schedule-editing): add a meal time with the native time picker (R6)
+13363d1b test(mobile-meal-schedule-editing): lock refetch after success without optimistic state (R7)
+a6a85313 feat(mobile-meal-schedule-editing): refetch plan and pet after a meal time edit (R7)
+b343c919 test(mobile-meal-schedule-editing): lock meal time edit error messages (R8)
+3d79a82c feat(mobile-meal-schedule-editing): show inline errors for meal time edits (R8)
+f134d9d4 test(mobile-meal-schedule-editing): lock meal schedule editing copy registration (R9)
+ddd0ba67 feat(mobile-meal-schedule-editing): register meal schedule editing copy uses (R9)
+2c873c47 refactor(mobile-meal-schedule-editing): apply picker test timezone to Node process (R5,R6)
+b5d46054 refactor(mobile-meal-schedule-editing): match language spec table format (R1)
+1526db05 test(mobile-meal-schedule-editing): count the meal time controls among accent-soft uses (R4)
+e8789628 test(mobile-meal-schedule-editing): count the meal schedule 401 sign-out (R8)
+d05d8725 docs(mobile-meal-schedule-editing): fill #147 traceability
+e277b810 test(mobile-meal-schedule-editing): lock no refetch on every failed meal time edit (R7)
+bf81642a test(mobile-meal-schedule-editing): lock refetch and disabled controls for added meal times (R7)
+c918e756 docs(mobile-meal-schedule-editing): cite amendment E2 in #147 traceability
+e184ab68 test(mobile-meal-schedule-editing): lock disabled controls until the pet detail refetch ends (R7)
+HEAD docs(mobile-meal-schedule-editing): cite amendment E3 in #147 traceability
+```
+
+Son 28 al incluir el único commit documental que contiene este informe: los 26 anteriores, E3-a y su trazabilidad. El último se identifica como HEAD porque su hash depende del informe; se obtiene después con `git log -1 --format="%h %s"`, sin enmendar ni rebasear. Los otros 27 hashes se contrastaron con git log.
+
+Ese commit lleva SOLO specs/mobile-meal-schedule-editing/traceability.md y progress/impl_mobile-meal-schedule-editing.md, con este mensaje literal:
+
+```sh
+git commit -m 'docs(mobile-meal-schedule-editing): cite amendment E3 in #147 traceability'
+```
+
+Las rutas que cambian los commits propios se calcularon con git diff-tree por hash, excluyendo los cinco commits del leader. Coinciden exactamente con los mismos 13 ficheros de design.md §Archivos afectados:
+
+```text
+mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+mobile-pet-tracker/src/__tests__/design-drift.test.ts
+mobile-pet-tracker/src/__tests__/ui-copy-table.ts
+mobile-pet-tracker/src/__tests__/ui-language.test.ts
+mobile-pet-tracker/src/api/__tests__/nutrition.test.ts
+mobile-pet-tracker/src/api/nutrition.ts
+mobile-pet-tracker/src/i18n/catalog.ts
+mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+mobile-pet-tracker/src/screens/meal-schedule/index.test.tsx
+mobile-pet-tracker/src/screens/meal-schedule/index.tsx
+progress/impl_mobile-meal-schedule-editing.md
+specs/mobile-meal-schedule-editing/traceability.md
+specs/mobile-ui-language/design.md
+```
+
+### Diff completo H0..HEAD y atribución de los seis ficheros del leader
+
+```sh
+git diff --name-only b367ed44..HEAD
+```
+
+```text
+mobile-pet-tracker/src/__tests__/consistency-classnames.test.ts
+mobile-pet-tracker/src/__tests__/design-drift.test.ts
+mobile-pet-tracker/src/__tests__/ui-copy-table.ts
+mobile-pet-tracker/src/__tests__/ui-language.test.ts
+mobile-pet-tracker/src/api/__tests__/nutrition.test.ts
+mobile-pet-tracker/src/api/nutrition.ts
+mobile-pet-tracker/src/i18n/catalog.ts
+mobile-pet-tracker/src/providers/__tests__/language-provider.test.tsx
+mobile-pet-tracker/src/screens/meal-schedule/index.test.tsx
+mobile-pet-tracker/src/screens/meal-schedule/index.tsx
+progress/current.md
+progress/handoff_mobile-meal-schedule-editing.md
+progress/impl_mobile-meal-schedule-editing.md
+progress/review_mobile-meal-schedule-editing.md
+specs/mobile-meal-schedule-editing/design.md
+specs/mobile-meal-schedule-editing/requirements.md
+specs/mobile-meal-schedule-editing/tasks.md
+specs/mobile-meal-schedule-editing/traceability.md
+specs/mobile-ui-language/design.md
+exit=0
+```
+
+Son 19 rutas: 13 propias y estas seis de los commits del leader (`98cc1154`, `d8edb20e`, `f26f85fd`, `65b7434b` y `39174fe7`), que NO cuentan como propias:
+
+- `specs/mobile-meal-schedule-editing/requirements.md`.
+- `specs/mobile-meal-schedule-editing/design.md`.
+- `specs/mobile-meal-schedule-editing/tasks.md`.
+- `progress/current.md`.
+- `progress/handoff_mobile-meal-schedule-editing.md`.
+- `progress/review_mobile-meal-schedule-editing.md`.
+
+La salida se obtuvo antes del último commit documental; ambos documentos ya estaban incluidos. Se contrasta de nuevo después del commit contra este inventario sin modificar el informe ni crear otro commit.
+
+```sh
+git diff 39174fe7 HEAD -- mobile-pet-tracker/src/screens/meal-schedule/index.tsx mobile-pet-tracker/src/api/nutrition.ts
+```
+
+```text
+(salida vacía)
+exit=0
+```
+
+### Decisiones y entrega
+
+Solo se insertan los dos it literales de E3-a y se actualizan trazabilidad e informe. Las dos mutaciones de producción se restauraron. No se ejecuta init.sh ni E2E, no se hace push ni se abre PR, no se modifica el estado de la feature ni se marca el smoke Android. El leader conserva el lifecycle y la revisión posterior. Tras el commit documental se comprobarán los 28 commits propios, los 13 ficheros propios, las 19 rutas totales y el árbol limpio.
