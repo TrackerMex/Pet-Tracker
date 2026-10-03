@@ -5,3 +5,6 @@ const icon = await Jimp.read(`${images}/pet-tracker-app-icon.png`);
 
 await icon.clone().resize(1024, 1024, Jimp.RESIZE_BICUBIC)
   .writeAsync(`${images}/icon.png`);
+
+await icon.clone().resize(48, 48, Jimp.RESIZE_BICUBIC)
+  .writeAsync(`${images}/favicon.png`);
