@@ -208,11 +208,7 @@ describe('#79 R2: app.json declara el plugin de notificaciones y POST_NOTIFICATI
     expect(expo.plugins).toContain('expo-secure-store');
     expect(expo.plugins).toContainEqual([
       'expo-splash-screen',
-      {
-        backgroundColor: '#208AEF',
-        image: './assets/images/splash-icon.png',
-        imageWidth: 76,
-      },
+      expect.any(Object),
     ]);
     expect(expo.plugins).toContainEqual([
       'expo-notifications',

@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+
 import Jimp from 'jimp-compact';
 
 const images = 'assets/images';
@@ -12,6 +14,8 @@ await icon.clone().resize(48, 48, Jimp.RESIZE_BICUBIC)
 await new Jimp(1024, 1024, 0x00000000)
   .composite(icon.clone().resize(676, 676, Jimp.RESIZE_BICUBIC), 174, 174)
   .writeAsync(`${images}/android-icon-foreground.png`);
+
+fs.copyFileSync(`${images}/android-icon-foreground.png`, `${images}/splash-icon.png`);
 
 const silhouette = await Jimp.read(`${images}/pet-tracker-notification-monochrome-original.png`);
 silhouette.scan(0, 0, silhouette.bitmap.width, silhouette.bitmap.height, (_x, _y, k) => {
