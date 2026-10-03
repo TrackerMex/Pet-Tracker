@@ -246,6 +246,14 @@ describe('#101 R3: foreground del adaptive icon', () => {
   });
 });
 
+describe('#101 R4: monochrome del adaptive icon', () => {
+  it('android.adaptiveIcon.monochromeImage es ./assets/images/android-icon-monochrome.png', () => {
+    expect(appJson.expo.android.adaptiveIcon.monochromeImage).toBe(
+      './assets/images/android-icon-monochrome.png',
+    );
+  });
+});
+
 describe('#79 R14: google-services.json se declara solo cuando existe', () => {
   const originalApiKey = process.env.GOOGLE_MAPS_API_KEY_ANDROID;
   const originalResetLinkHost = process.env.RESET_LINK_HOST;

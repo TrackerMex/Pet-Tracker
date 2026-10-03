@@ -52,3 +52,14 @@ describe('#101 R3: foreground del adaptive icon', () => {
     });
   });
 });
+
+describe('#101 R4: monochrome del adaptive icon', () => {
+  it('android-icon-monochrome.png (adaptiveIcon.monochromeImage) mide 1024x1024 RGBA', () => {
+    expect(readIhdr(appJson.expo.android.adaptiveIcon.monochromeImage)).toEqual({
+      width: 1024,
+      height: 1024,
+      bitDepth: 8,
+      colorType: 6,
+    });
+  });
+});
